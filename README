@@ -1,0 +1,10 @@
+* PFQ, a Linux kernel module for packet capture on multi-core architectures *  
+
+Nowadays commodity hardware is offering an ever increasing degree of parallelism 
+(CPUs with more and more cores, NICs with parallel queues). 
+However, most of the existing network monitoring software has not yet been 
+designed with high parallelism in mind. Therefore we designed a novel packet 
+capturing engine, named PFQ, that allows efficient capturing and in-kernel 
+aggregation, as well as connection-aware load balancing. Such an engine is based 
+on a novel lockless queue and allows parallel packet capturing to let the user-
+space application arbitrarily define its degree of parallelism. 
