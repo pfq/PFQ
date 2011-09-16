@@ -1,0 +1,74 @@
+# updates for the system pci.ids file
+#
+# IMPORTANT!  Entries in this list must be sorted as they
+#             would appear in the system pci.ids file.  Entries
+#             are sorted by ven, dev, subven, subdev
+#             (numerical order).
+#
+8086  Intel Corporation
+	10b6  82598 10GbE PCI-Express Ethernet Controller
+	10c6  82598EB 10-Gigabit AF Dual Port Network Connection
+		8086 a05f  10-Gigabit XF SR Dual Port Server Adapter
+		8086 a15f  10-Gigabit XF SR Dual Port Server Adapter
+	10c7  82598EB 10-Gigabit AF Network Connection
+		1014 037f  10-Gigabit XF SR Server Adapter
+		1014 0380  10-Gigabit XF LR Server Adapter
+		8086 a05f  10-Gigabit XF SR Server Adapter
+		8086 a15f  10-Gigabit XF SR Server Adapter
+		8086 a16f  10-Gigabit XF SR Server Adapter
+	10c8  82598EB 10-Gigabit AT Network Connection
+		8086 a10c  10-Gigabit AT Server Adapter
+		8086 a11c  10-Gigabit AT Server Adapter
+		8086 a12c  10-Gigabit AT Server Adapter
+	10db  82598EB 10-Gigabit Dual Port Network Connection
+	10dd  82598EB 10-Gigabit AT CX4 Network Connection
+	10e1  82598EB 10-Gigabit AF Dual Port Network Connection
+		8086 a15f  10-Gigabit SR Dual Port Express Module
+	10ec  82598EB 10-Gigabit AT CX4 Network Connection
+		8086 a01f  10-Gigabit CX4 Dual Port Server Adapter
+		8086 a11f  10-Gigabit CX4 Dual Port Server Adapter
+	10f1  82598EB 10-Gigabit AF Dual Port Network Connection
+		8086 a20f  10-Gigabit AF DA Dual Port Server Adapter
+		8086 a21f  10-Gigabit AF DA Dual Port Server Adapter
+	10f4  82598EB 10-Gigabit AF Network Connection
+		8086 106f  10-Gigabit XF LR Server Adapter
+		8086 a06f  10-Gigabit XF LR Server Adapter
+	10f7  82599EB 10-Gigabit KX4 Network Connection
+		108e 7b12  Sun Dual 10GbE PCIe 2.0 FEM
+		8086 000d  Ethernet Mezzanine Adapter X520-KX4-2
+	10f8  82599EB 10 Gigabit Dual Port Backplane Connection
+		8086 000c  Ethernet X520 10GbE Dual Port KX4-KR Mezz
+	10f9  82599EB 10 Gigabit CX4 Dual Port Network Connection
+	10fb  82599EB 10-Gigabit SFI/SFP+ Network Connection
+		108e 7b11  Ethernet Server Adapter X520-2
+		8086 0002  Ethernet Server Adapter X520-DA2
+		8086 0003  Ethernet Server Adapter X520-2
+		8086 0006  Ethernet Server Adapter X520-1
+		8086 000a  Ethernet Server Adapter X520-1
+		8086 000c  Ethernet Server Adapter X520-2
+		8086 7a11  Ethernet Server Adapter X520-2
+	10fc  82599EB 10-Gigabit XAUI/BX4 Network Connection
+	1507  82599EB 10 Gigabit Network Connection
+		108e 7b10  Ethernet Express Module X520-P2
+	1508  82598EB Gigabit BX Network Connection
+	150b  82598EB 10-Gigabit AT2 Server Adapter
+		8086 a10c  10-Gigabit AT2 Server Adapter
+		8086 a11c  10-Gigabit AT2 Server Adapter
+		8086 a12c  10-Gigabit AT2 Server Adapter
+	1514  82599EB  10 Gigabit KX4 Network Connection
+		8086 000b  Ethernet X520 10GbE Dual Port KX4 Mezz
+	1517  82599ES 10 Gigabit Network Connection
+		1137 006a  Cisco UCS CNA M61KR-I Intel Converged Network Adapter
+	151c  82599EB 10 Gigabit TN Network Connection
+		108e 7b13  Sun Dual 10GBASE-T LP
+		8086 a02c  Ethernet Server Adapter X520-T2
+		8086 a03c  Ethernet Server Adapter X520-T2
+		8086 a21c  Ethernet Server Adapter X520-T2
+	1528  Ethernet Controller 10 Gigabit X540-AT2
+		8086 0001  Ethernet Server Adapter X540-T2
+		8086 0002  Ethernet Server Adapter X540-T1
+		8086 001a  Ethernet Server Adapter X540-T2
+		8086 00a2  Ethernet Server Adapter X540-T1
+		8086 5003  Ethernet Server Adapter X540-T2
+	1529  82599 10 Gigabit Dual Port Backplane Connection with FCoE
+	152a  82599 10 Gigabit Dual port Network Connection with FCoE

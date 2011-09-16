@@ -1,0 +1,898 @@
+Linux* Base Driver for the 10 Gigabit PCI Express Family of Adapters
+====================================================================
+
+March 14, 2011
+
+Contents
+========
+
+- Important Note
+- In This Release
+- Identifying Your Adapter
+- Building and Installation
+- Command Line Parameters
+- Additional Configurations
+- Performance Tuning
+- Known Issues/Troubleshooting
+- Support
+
+IMPORTANT NOTE
+==============
+
+WARNING:  The ixgbe driver compiles by default with the LRO (Large Receive
+Offload) feature enabled.  This option offers the lowest CPU utilization for
+receives, but is completely incompatible with *routing/ip forwarding* and
+*bridging*.  If enabling ip forwarding or bridging is a requirement, it is
+necessary to disable LRO using compile time options as noted in the LRO
+section later in this document.  The result of not disabling LRO when combined
+with ip forwarding or bridging can be low throughput or even a kernel PANIC.
+
+In This Release
+===============
+
+This file describes the ixgbe Linux* Base Driver for the 10 Gigabit PCI 
+Express Family of Adapters.  This driver supports the 2.6.x kernel, and 
+includes support for any Linux supported system, including Itanium(R)2, 
+x86_64, i686, and PPC.
+
+This driver is only supported as a loadable module at this time.  Intel is
+not supplying patches against the kernel source to allow for static linking
+of the driver.  A version of the driver may already be included by your 
+distribution and/or the kernel.org kernel. For questions related to hardware 
+requirements, refer to the documentation supplied with your 10 Gigabit PCI
+Express adapter.  All hardware requirements listed apply to use with Linux.
+
+The following features are now available in supported kernels:
+ - Native VLANs
+ - Channel Bonding (teaming)
+ - SNMP
+ - Generic Receive Offload
+ - Data Center Bridging
+
+Channel Bonding documentation can be found in the Linux kernel source:
+/Documentation/networking/bonding.txt
+
+Instructions on updating ethtool can be found in the section "Additional
+Configurations" later in this document.
+
+Identifying Your Adapter
+========================
+
+The driver in this release is compatible with 82598 and 82599-based Intel 
+Network Connections.
+
+For more information on how to identify your adapter, go to the Adapter &
+Driver ID Guide at:
+
+    http://support.intel.com/support/network/sb/CS-012904.htm
+
+For the latest Intel network drivers for Linux, refer to the following
+website. Select the link for your adapter.
+
+    http://support.intel.com/support/go/network/adapter/home.htm
+
+SFP+ Devices with Pluggable Optics
+----------------------------------
+
+82599-BASED ADAPTERS  
+
+NOTES: If your 82599-based Intel(R) Network Adapter came with Intel optics, or
+is an Intel(R) Ethernet Server Adapter X520-2, then it only supports Intel 
+optics and/or the direct attach cables listed below.
+
+When 82599-based SFP+ devices are connected back to back, they should be set to
+the same Speed setting via ethtool. Results may vary if you mix speed settings. 
+ 
+Supplier    Type                                             Part Numbers
+
+SR Modules			
+Intel 	    DUAL RATE 1G/10G SFP+ SR (bailed)                FTLX8571D3BCV-IT	
+Intel	    DUAL RATE 1G/10G SFP+ SR (bailed)                AFBR-703SDZ-IN2
+Intel       DUAL RATE 1G/10G SFP+ SR (bailed)                AFBR-703SDDZ-IN1	
+LR Modules			
+Intel 	    DUAL RATE 1G/10G SFP+ LR (bailed)                FTLX1471D3BCV-IT	
+Intel	    DUAL RATE 1G/10G SFP+ LR (bailed)                AFCT-701SDZ-IN2
+Intel       DUAL RATE 1G/10G SFP+ LR (bailed)                AFCT-701SDDZ-IN1
+
+The following is a list of 3rd party SFP+ modules that have received some 
+testing. Not all modules are applicable to all devices.
+
+Supplier   Type                                              Part Numbers
+
+Finisar    SFP+ SR bailed, 10g single rate                   FTLX8571D3BCL
+Avago      SFP+ SR bailed, 10g single rate                   AFBR-700SDZ
+Finisar    SFP+ LR bailed, 10g single rate                   FTLX1471D3BCL
+		
+Finisar    DUAL RATE 1G/10G SFP+ SR (No Bail)	             FTLX8571D3QCV-IT
+Avago	   DUAL RATE 1G/10G SFP+ SR (No Bail)	             AFBR-703SDZ-IN1	
+Finisar	   DUAL RATE 1G/10G SFP+ LR (No Bail)	             FTLX1471D3QCV-IT
+Avago	   DUAL RATE 1G/10G SFP+ LR (No Bail)	             AFCT-701SDZ-IN1
+Finisar   1000BASE-T SFP                                    FCLF8522P2BTL
+Avago      1000BASE-T SFP                                    ABCU-5710RZ
+		
+82599-based adapters support all passive and active limiting direct attach 
+cables that comply with SFF-8431 v4.1 and SFF-8472 v10.4 specifications.
+
+Laser turns off for SFP+ when ifconfig down
+-------------------------------------------
+"ifconfig down" turns off the laser for 82599-based SFP+ fiber adapters.
+"ifconfig up" turns on the laser.
+
+
+82598-BASED ADAPTERS
+
+NOTES for 82598-Based Adapters: 
+- Intel(R) Network Adapters that support removable optical modules only support 
+  their original module type (i.e., the Intel(R) 10 Gigabit SR Dual Port    
+  Express Module only supports SR optical modules). If you plug in a different 
+  type of module, the driver will not load.
+- Hot Swapping/hot plugging optical modules is not supported.  
+- Only single speed, 10 gigabit modules are supported.  
+- LAN on Motherboard (LOMs) may support DA, SR, or LR modules. Other module 
+  types are not supported. Please see your system documentation for details.  
+
+The following is a list of 3rd party SFP+ modules and direct attach cables that have 
+received some testing. Not all modules are applicable to all devices.
+
+Supplier   Type                                              Part Numbers
+
+Finisar    SFP+ SR bailed, 10g single rate                   FTLX8571D3BCL
+Avago      SFP+ SR bailed, 10g single rate                   AFBR-700SDZ
+Finisar    SFP+ LR bailed, 10g single rate                   FTLX1471D3BCL
+
+82598-based adapters support all passive direct attach cables that comply 
+with SFF-8431 v4.1 and SFF-8472 v10.4 specifications. Active direct attach 
+cables are not supported.	
+
+Third party optic modules and cables referred to above are listed only for the 
+purpose of highlighting third party specifications and potential compatibility, 
+and are not recommendations or endorsements or sponsorship of any third party's
+product by Intel. Intel is not endorsing or promoting products made by any 
+third party and the third party reference is provided only to share information
+regarding certain optic modules and cables with the above specifications. There
+may be other manufacturers or suppliers, producing or supplying optic modules 
+and cables with similar or matching descriptions. Customers must use their own 
+discretion and diligence to purchase optic modules and cables from any third 
+party of their choice. Customer are solely responsible for assessing the 
+suitability of the product and/or devices and for the selection of the vendor 
+for purchasing any product. INTEL ASSUMES NO LIABILITY WHATSOEVER, AND INTEL
+DISCLAIMS ANY EXPRESS OR IMPLIED WARRANTY, RELATING TO SALE AND/OR USE OF 
+SUCH THIRD PARTY PRODUCTS OR SELECTION OF VENDOR BY CUSTOMERS.
+
+Building and Installation
+=========================
+
+To build a binary RPM* package of this driver, run 'rpmbuild -tb
+<filename.tar.gz>'.  Replace <filename.tar.gz> with the specific filename
+of the driver.
+
+NOTE: For the build to work properly, the currently running kernel MUST match
+      the version and configuration of the installed kernel sources.  If you
+      have just recompiled the kernel reboot the system now.
+
+      RPM functionality has only been tested in Red Hat distributions.
+
+To manually build this driver:
+
+1. Move the base driver tar file to the directory of your choice. For example,
+   use /home/username/ixgbe or /usr/local/src/ixgbe.
+
+2. Untar/unzip archive:
+
+     tar zxf ixgbe-x.x.x.tar.gz
+
+3. Change to the driver src directory:
+
+     cd ixgbe-x.x.x/src/
+
+4. Compile the driver module:
+
+     make install
+
+   The binary will be installed as:
+
+     /lib/modules/[KERNEL_VERSION]/kernel/drivers/net/ixgbe/ixgbe.[k]o
+
+   The install locations listed above are the default locations.  They might
+   not be correct for certain Linux distributions. 
+
+5. Load the module:
+   For kernel 2.6.x, use the modprobe command:
+     modprobe ixgbe <parameter>=<value>
+
+   Note that for 2.6 kernels the insmod command can be used if the full
+   path to the driver module is specified.  For example:
+
+     insmod /lib/modules/<KERNEL VERSION>/kernel/drivers/net/ixgbe/ixgbe.ko
+
+   With 2.6 based kernels also make sure that older ixgbe drivers are
+   removed from the kernel, before loading the new module:
+
+     rmmod ixgbe; modprobe ixgbe
+
+6. Assign an IP address to the interface by entering the following, where
+   x is the interface number:
+
+     ifconfig ethx <IP_address> netmask <netmask>
+
+7. Verify that the interface works. Enter the following, where <IP_address>
+   is the IP address for another machine on the same subnet as the interface
+   that is being tested:
+
+     ping  <IP_address>
+
+To build ixgbe driver with DCA:
+------------------------------
+
+If your kernel supports DCA, the driver will build by default with DCA enabled. 
+
+Command Line Parameters
+=======================
+
+If the driver is built as a module, the  following optional parameters are
+used by entering them on the command line with the modprobe command using
+this syntax:
+
+     modprobe ixgbe [<option>=<VAL1>,<VAL2>,...]
+
+For example:
+
+     modprobe ixgbe InterruptThrottleRate=16000,16000
+
+The default value for each parameter is generally the recommended setting,
+unless otherwise noted.
+
+RSS - Receive Side Scaling (or multiple queues for receives)
+------------------------------------------------------------
+Valid Range: 0 - 16
+0 = disables RSS
+1 = enables RSS and sets the descriptor queue count to 16 or the number of
+    online cpus, whichever is less.
+2-16 = enables RSS, with 2-16 queues
+Default Value: 1
+RSS also effects the number of transmit queues allocated on 2.6.23 and
+newer kernels with CONFIG_NETDEVICES_MULTIQUEUE set in the kernel .config file.
+CONFIG_NETDEVICES_MULTIQUEUE only exists from 2.6.23 to 2.6.26.  Other options 
+enable multiqueue in 2.6.27 and newer kernels.
+
+NOTE: The RSS parameter has no effect on 82599-based adapters unless the 
+FdirMode parameter is simultaneously used to disable Flow Director. See 
+Intel(R) Ethernet Flow Director section below for more detail.
+
+MQ - Multi Queue
+----------------
+Valid Range: 0, 1
+0 = Disables Multiple Queue support
+1 = Enabled Multiple Queue support (a prerequisite for RSS)
+Default Value: 1
+
+DCA - Direct Cache Access
+-------------------------
+Valid Range: 0, 1
+0 = Disables DCA support in the driver
+1 = Enables DCA support in the driver
+Default Value: 1 (when IXGBE_DCA is enabled)
+See the above instructions for enabling DCA.  If the driver is enabled for
+DCA this parameter allows load-time control of the feature.
+
+RxBufferMode
+------------
+Valid Range: 0 - 2
+Default Value: 2 (82598-based adapters); 0 (82599-based adapters)
+0 = Driver will use single buffer for Rx packets.
+1 = Driver will use packet split mode for Rx. Packet header will be 
+    received in header buffer and payload will be received in data buffer.
+2 = Optimal mode. Driver will use single buffer mode for non-Jumbo 
+    configurations and packet split mode for Jumbo configurations.
+
+NOTE: HeaderDataSplit is not supported in 82599-based adapters.
+
+IntMode
+-------------
+Valid Range: 0 - 2 (0 = Legacy Int, 1 = MSI and 2 = MSI-X)
+Default Value: 2
+IntMode controls allow load time control over the type of interrupt
+registered for by the driver.  MSI-X is required for multiple queue
+support, and some kernels and combinations of kernel .config options will
+force a lower level of interrupt support.  'cat /proc/interrupts' will show
+different values for each type of interrupt.
+  
+InterruptThrottleRate
+---------------------
+Valid Range: 956-488281 (0=off, 1=dynamic)
+Default Value: 8000
+     Interrupt Throttle Rate (interrupts/sec)
+The ITR parameter controls how many interrupts each interrupt vector can
+generate per second.  On MQ/RSS enabled kernels with MSI-X interrupts this
+means that each RX vector can generate (by default) 8000 interrupts per second
+and each TX vector can generate (by default) 4000 interrupts per second.
+Increasing ITR lowers latency at the cost of increased CPU utilization, though
+it may help throughput in some circumstances.
+1 = Dynamic mode attempts to moderate interrupts per vector while maintaining
+very low latency.  This can sometimes cause extra CPU utilization.  If planning
+on deploying ixgbe in a latency sensitive environment please consider this
+parameter.
+0 = Setting InterruptThrottleRate to 0 turns off any interrupt moderation and 
+may improve small packet latency, but is generally not suitable for bulk 
+throughput traffic due to the increased cpu utilization of the higher interrupt
+rate. Please note that on 82599-based adapters, disabling InterruptThrottleRate
+will also result in the driver disabling HW RSC. On 82598-based adapters, 
+disabling InterruptThrottleRate will also result in disabling LRO (Large Receive
+Offloads).
+
+LLI (Low Latency Interrupts)
+---------------------------- 
+LLI allows for immediate generation of an interrupt upon processing receive 
+packets that match certain criteria as set by the parameters described below. 
+LLI parameters are not enabled when Legacy interrupts are used. You must be 
+using MSI or MSI-X (see cat /proc/interrupts) to successfully use LLI.
+
+LLIPort
+-------
+Valid Range: 0 - 65535
+Default Value: 0 (disabled)
+
+  LLI is configured with the LLIPort command-line parameter, which specifies 
+  which TCP port should generate Low Latency Interrupts.
+
+  For example, using LLIPort=80 would cause the hardware to generate an 
+  immediate interrupt upon receipt of any packet sent to TCP port 80 on the 
+  local machine.
+
+WARNING: Enabling LLI can result in an excessive number of interrupts/second 
+that may cause problems with the system and in some cases may cause a kernel 
+panic.
+
+LLIPush
+-------
+Valid Range: 0-1
+Default Value: 0 (disabled)
+
+  LLIPush can be set to be enabled or disabled (default). It is most 
+  effective in an environment with many small transactions.
+  NOTE: Enabling LLIPush may allow a denial of service attack.
+
+LLISize
+-------
+Valid Range: 0-1500
+Default Value: 0 (disabled)
+
+  LLISize causes an immediate interrupt if the hardware receives a packet 
+  smaller than the specified size.
+
+LLIEType
+--------
+Valid Range: 0-x8fff
+Default Value: 0 (disabled)
+
+  Low Latency Interrupt Ethernet Protocol Type.
+
+LLIVLANP
+--------
+Valid Range: 0-7
+Default Value: 0 (disabled)
+
+  Low Latency Interrupt on VLAN priority threshold.
+
+Flow Control
+------------
+Ethernet Flow Control (IEEE 802.3x) can be configured with ethtool to enable
+receiving and transmitting pause frames for ixgbe. When tx is enabled, PAUSE 
+frames are generated when the receive packet buffer crosses a predefined 
+threshold.  When rx is enabled, the transmit unit will halt for the time delay
+specified when a PAUSE frame is received.
+
+Flow Control is enabled by default. If you want to disable a flow control 
+capable link partner, use ethtool:
+
+     ethtool -A eth? autoneg off rx off tx off
+
+NOTE: For 82598 backplane cards entering 1 gig mode, flow control default 
+behavior is changed to off.  Flow control in 1 gig mode on these devices can 
+lead to Tx hangs. 
+
+Intel(R) Ethernet Flow Director
+-------------------------------
+Supports advanced filters that direct receive packets by their flows to 
+different queues. Enables tight control on routing a flow in the platform. 
+Matches flows and CPU cores for flow affinity. Supports multiple parameters 
+for flexible flow classification and load balancing. 
+
+Flow director is enabled only if the kernel is multiple TX queue capable.
+
+An included script (set_irq_affinity.sh) automates setting the IRQ to CPU 
+affinity.
+
+You can verify that the driver is using Flow Director by looking at the counter
+in ethtool: fdir_miss and fdir_match.
+
+Other ethtool Commands:
+To enable Flow Director
+	ethtool -K ethX ntuple on
+To add a filter
+	Use -U switch. e.g., ethtool -U ethX flow-type tcp4 src-ip 0x178000a 
+        action 1
+To see the list of filters currently present:
+	ethtool -u ethX
+
+Perfect Filter: Perfect filter is an interface to load the filter table that 
+funnels all flow into queue_0 unless an alternative queue is specified using 
+"action". In that case, any flow that matches the filter criteria will be 
+directed to the appropriate queue. 
+ 
+If the queue is defined as -1, filter will drop matching packets. 
+
+To account for filter matches and misses, there are two stats in ethtool: 
+fdir_match and fdir_miss. In addition, rx_queue_N_packets shows the number of 
+packets processed by the Nth queue.
+
+The following three parameters impact Flow Director.
+
+FdirMode
+--------
+Valid Range: 0-2 (0=off, 1=ATR, 2=Perfect filter mode)
+Default Value: 1
+
+  Flow Director filtering modes.
+
+FdirPballoc
+-----------
+Valid Range: 0-2 (0=64k, 1=128k, 2=256k)
+Default Value: 0
+
+  Flow Director allocated packet buffer size.
+
+AtrSampleRate
+--------------
+Valid Range: 1-100
+Default Value: 20
+
+  Software ATR Tx packet sample rate. For example, when set to 20, every 20th
+  packet, looks to see if the packet will create a new flow.
+
+Node
+----
+Valid Range:   0-n
+Default Value: 1 (off)
+
+  0 - n: where n is the number of NUMA nodes (i.e. 0 - 3) currently online in 
+  your system
+  1: turns this option off
+
+  The Node parameter will allow you to pick which NUMA node you want to have 
+  the adapter allocate memory on.
+
+max_vfs
+-------
+Valid Range:   1-63
+Default Value: 0
+
+  If the value is greater than 0 it will also force the VMDq parameter to be 1
+  or more.
+
+  This parameter adds support for SR-IOV.  It causes the driver to spawn up to 
+  max_vfs worth of virtual function.  
+
+The parameters for the driver are referenced by position.  So, if you have a 
+dual port 82599-based adapter and you want N virtual functions per port, you 
+must specify a number for each port with each parameter separated by a comma.
+
+For example:
+  insmod ixgbe max_vfs=63,63
+
+NOTE: If both 82598 and 82599-based adapters are installed on the same machine,
+you must be careful in loading the driver with the parameters. Depending on 
+system configuration, number of slots, etc. it's impossible to predict in all
+cases where the positions would be on the command line and the user
+will have to specify zero in those positions occupied by an 82598 port.
+
+L2LBen
+------
+Valid Range: 0 = disable, 1 = enable (default)
+Default Value: 1
+
+  This parameter controls the internal switch (L2 loopback between pf and vf).
+  By default the switch is enabled.
+
+Additional Configurations
+=========================
+
+  Configuring the Driver on Different Distributions
+  -------------------------------------------------
+  Configuring a network driver to load properly when the system is started is
+  distribution dependent. Typically, the configuration process involves adding
+  an alias line to /etc/modules.conf or /etc/modprobe.conf as well as editing
+  other system startup scripts and/or configuration files.  Many popular Linux
+  distributions ship with tools to make these changes for you.  To learn the
+  proper way to configure a network device for your system, refer to your
+  distribution documentation.  If during this process you are asked for the
+  driver or module name, the name for the Linux Base Driver for the Intel
+  10GbE PCI Express Family of Adapters is ixgbe.
+
+  Viewing Link Messages
+  ---------------------
+  Link messages will not be displayed to the console if the distribution is
+  restricting system messages. In order to see network driver link messages on
+  your console, set dmesg to eight by entering the following:
+
+       dmesg -n 8
+
+  NOTE: This setting is not saved across reboots.
+
+  Jumbo Frames
+  ------------
+  The driver supports Jumbo Frames for all adapters. Jumbo Frames support is
+  enabled by changing the MTU to a value larger than the default of 1500.
+  The maximum value for the MTU is 16110.  Use the ifconfig command to
+  increase the MTU size.  For example:
+
+        ifconfig ethx mtu 9000 up
+
+  The maximum MTU setting for Jumbo Frames is 16110.  This value coincides
+  with the maximum Jumbo Frames size of 16128. This driver will attempt to
+  use multiple page sized buffers to receive each jumbo packet.  This
+  should help to avoid buffer starvation issues when allocating receive
+  packets.
+
+  ethtool
+  -------
+  The driver utilizes the ethtool interface for driver configuration and
+  diagnostics, as well as displaying statistical information. The latest 
+  ethtool version is required for this functionality.
+
+  The latest release of ethtool can be found from
+  http://ftp.kernel.org/pub/software/network/ethtool/.
+
+  NAPI
+  ----
+  NAPI (Rx polling mode) is supported in the ixgbe driver.  NAPI is enabled
+  or disabled based on the configuration of the kernel.  To override the 
+  default, use the following compile-time flags.
+
+  You can tell if NAPI is enabled in the driver by looking at the version 
+  number of the driver.  It will contain the string -NAPI if NAPI is enabled.
+
+  To enable NAPI, compile the driver module, passing in a configuration option:
+
+            make CFLAGS_EXTRA=-DIXGBE_NAPI install
+  NOTE: This will not do anything if NAPI is disabled in the kernel. 
+
+  To disable NAPI, compile the driver module, passing in a configuration 
+  option:
+
+            make CFLAGS_EXTRA=-DIXGBE_NO_NAPI install
+
+  See www.cyberus.ca/~hadi/usenix-paper.tgz for more information on NAPI.
+
+  LRO
+  ---
+  Large Receive Offload (LRO) is a technique for increasing inbound throughput
+  of high-bandwidth network connections by reducing CPU overhead. It works by
+  aggregating multiple incoming packets from a single stream into a larger 
+  buffer before they are passed higher up the networking stack, thus reducing
+  the number of packets that have to be processed. LRO combines multiple 
+  Ethernet frames into a single receive in the stack, thereby potentially 
+  decreasing CPU utilization for receives. 
+
+  IXGBE_NO_LRO is a compile time flag. The user can enable it at compile
+  time to remove support for LRO from the driver. The flag is used by adding 
+  CFLAGS_EXTRA="-DIXGBE_NO_LRO" to the make file when it's being compiled. 
+
+     make CFLAGS_EXTRA="-DIXGBE_NO_LRO" install
+
+  You can verify that the driver is using LRO by looking at these counters in 
+  ethtool:
+
+  lro_flushed - the total number of receives using LRO.
+  lro_aggregated - counts the total number of Ethernet packets that were combined.
+
+  NOTE: IPv6 and UDP are not supported by LRO.
+
+  HW RSC
+  ------
+  82599-based adapters support HW based receive side coalescing (RSC) which can
+  merge multiple frames from the same IPv4 TCP/IP flow into a single structure 
+  that can span one or more descriptors. It works similarly to SW Large receive 
+  offload technique. By default HW RSC is enabled and SW LRO can not be used 
+  for 82599-based adapters unless HW RSC is disabled.
+ 
+  IXGBE_NO_HW_RSC is a compile time flag. The user can enable it at compile 
+  time to remove support for HW RSC from the driver. The flag is used by adding 
+  CFLAGS_EXTRA="-DIXGBE_NO_HW_RSC" to the make file when it's being compiled.
+  
+     make CFLAGS_EXTRA="-DIXGBE_NO_HW_RSC" install
+ 
+  You can verify that the driver is using HW RSC by looking at the counter in 
+  ethtool:
+ 
+     hw_rsc_count - counts the total number of Ethernet packets that were being
+     combined.
+
+  rx_dropped_backlog
+  ------------------
+  When in a non-Napi (or Interrupt) mode, this counter indicates that the stack
+  is dropping packets. There is an adjustable parameter in the stack that allows
+  you to adjust the amount of backlog. We recommend increasing the 
+  netdev_max_backlog if the counter goes up.
+
+  # sysctl -a |grep netdev_max_backlog
+  net.core.netdev_max_backlog = 1000
+
+  # sysctl -e net.core.netdev_max_backlog=10000
+  net.core.netdev_max_backlog = 10000
+
+  MAC and VLAN anti-spoofing feature
+  ----------------------------------
+  When a malicious driver attempts to send a spoofed packet, it is dropped by 
+  the hardware and not transmitted.  An interrupt is sent to the PF driver 
+  notifying it of the spoof attempt.
+
+  When a spoofed packet is detected the PF driver will send the following 
+  message to the system log (displayed by  the "dmesg" command):
+
+       ixgbe ethx: ixgbe_spoof_check: n spoofed packets detected
+
+       Where x=the PF interface#  n=the number of spoofed packets
+
+   
+Performance Tuning
+==================
+
+An excellent article on performance tuning can be found at:
+
+http://www.redhat.com/promo/summit/2008/downloads/pdf/Thursday/Mark_Wagner.pdf
+
+Known Issues/Troubleshooting
+============================
+
+For known hardware and troubleshooting issues, refer to the following website.
+
+    http://support.intel.com/support/go/network/adapter/home.htm
+
+Either select the link for your adapter or perform a search for the adapter 
+number. The adapter's page lists many issues. For a complete list of hardware
+issues download your adapter's user guide and read the Release Notes.  
+
+  NOTE: After installing the driver, if your Intel Network Connection is not 
+  working, verify in the "In This Release" section of the readme that you have 
+  installed the correct driver.
+
+  MSI-X Issues with Kernels between 2.6.19 - 2.6.21 (inclusive)
+  ------------------------------------------------------------
+  Kernel panics and instability may be observed on any MSI-X hardware if you
+  use irqbalance with kernels between 2.6.19 and 2.6.21. 
+
+  If such problems are encountered, you may disable the irqbalance daemon or
+  upgrade to a newer kernel. 
+                         
+  Driver Compilation
+  ------------------
+  When trying to compile the driver by running make install, the following
+  error may occur:
+
+      "Linux kernel source not configured - missing version.h"
+
+  To solve this issue, create the version.h file by going to the Linux source
+  tree and entering:
+
+      make include/linux/version.h.
+
+  Do Not Use LRO When Routing or Bridging Packets
+  -----------------------------------------------
+  Due to a known general compatibility issue with LRO and routing, do not use
+  LRO when routing or bridging packets.
+
+  LRO and iSCSI Incompatibility
+  ----------------------------------
+  LRO is incompatible with iSCSI target or initiator traffic.  A panic may 
+  occur when iSCSI traffic is received through the ixgbe driver with LRO 
+  enabled.  To workaround this, the driver should be built and installed with:
+
+      # make CFLAGS_EXTRA=-DIXGBE_NO_LRO install
+
+  Performance Degradation with Jumbo Frames
+  -----------------------------------------
+  Degradation in throughput performance may be observed in some Jumbo frames
+  environments.  If this is observed, increasing the application's socket buffer
+  size and/or increasing the /proc/sys/net/ipv4/tcp_*mem entry values may help.
+  See the specific application manual and /usr/src/linux*/Documentation/
+  networking/ip-sysctl.txt for more details.
+
+  Multiple Interfaces on Same Ethernet Broadcast Network
+  ------------------------------------------------------
+  Due to the default ARP behavior on Linux, it is not possible to have
+  one system on two IP networks in the same Ethernet broadcast domain
+  (non-partitioned switch) behave as expected.  All Ethernet interfaces
+  will respond to IP traffic for any IP address assigned to the system.
+  This results in unbalanced receive traffic.
+
+  If you have multiple interfaces in a server, do either of the following:
+
+  - Turn on ARP filtering by entering:
+      echo 1 > /proc/sys/net/ipv4/conf/all/arp_filter
+
+  - Install the interfaces in separate broadcast domains - either in
+    different switches or in a switch partitioned to VLANs.
+
+  UDP Stress Test Dropped Packet Issue
+  --------------------------------------
+  Under small packets UDP stress test with 10GbE driver, the Linux system
+  may drop UDP packets due to the fullness of socket buffers. 
+  You can increase the kernel's default buffer sizes for udp by changing 
+  the values in /proc/sys/net/core/rmem_default and rmem_max.
+
+  Unplugging network cable while ethtool -p is running
+  ----------------------------------------------------
+  In kernel versions 2.5.50 and later (including 2.6 kernel), unplugging 
+  the network cable while ethtool -p is running will cause the system to 
+  become unresponsive to keyboard commands, except for control-alt-delete.  
+  Restarting the system appears to be the only remedy.
+
+  Cisco Catalyst 4948-10GE port resets may cause switch to shut down ports
+  ------------------------------------------------------------------------
+  82598-based hardware can re-establish link quickly and when connected to some 
+  switches, rapid resets within the driver may cause the switch port to become 
+  isolated due to "link flap". This is typically indicated by a yellow instead
+  of a green link light. Several operations may cause this problem, such as 
+  repeatedly running ethtool commands that cause a reset.  
+
+  A potential workaround is to use the Cisco IOS command "no errdisable detect 
+  cause all" from the Global Configuration prompt which enables the switch to 
+  keep the interfaces up, regardless of errors.
+
+  Installing Red Hat Enterprise Linux 4.7, 5.1, or 5.2 with an Intel(R) 10 
+  Gigabit AT Server Adapter may cause kernel panic
+  ----------------------------------------------------------------------------
+  A known issue may cause a kernel panic or hang after installing an 
+  82598AT-based Intel(R) 10 Gigabit AT Server Adapter in a Red Hat Enterprise 
+  Linux 4.7, 5.1, or 5.2 system.  The ixgbe driver for both the install kernel 
+  and the runtime kernel can create this panic if the 82598AT adapter is 
+  installed. Red Hat may release a security update that contains a fix for the 
+  panic that you can download using RHN (Red Hat Network) or Intel recommends 
+  that you install the ixgbe-1.3.31.5 driver or newer BEFORE installing the 
+  hardware.
+
+  Rx Page Allocation Errors
+  -------------------------
+  Page allocation failure. order:0 errors may occur under stress with kernels 
+  2.6.25 and above. This is caused by the way the Linux kernel reports this 
+  stressed condition.
+
+  DCB: Generic segmentation offload on causes bandwidth allocation issues
+  -----------------------------------------------------------------------
+  In order for DCB to work correctly, GSO (Generic Segmentation Offload aka
+  software TSO) must be disabled using ethtool.  By default since the hardware
+  supports TSO (hardware offload of segmentation) GSO will not be running.  
+  The GSO state can be queried with ethtool using ethtool -k ethX.
+
+  When using 82598-based network connections, ixgbe driver only supports 16 
+  queues on a platform with more than 16 cores
+  -------------------------------------------------------------------------
+  Due to known hardware limitations, RSS can only filter in a maximum of 16 
+  receive queues.
+
+  82599-based network connections support up to 64 queues.
+
+  Disable GRO when routing/bridging
+  ---------------------------------
+  Due to a known kernel issue, GRO must be turned off when routing/bridging. 
+  GRO can be turned off via ethtool. 
+
+      ethtool -K ethX gro off
+
+      where ethX is the ethernet interface you're trying to modify.
+
+  Lower than expected performance on dual port 10GbE devices
+  ----------------------------------------------------------
+  Some PCI-E x8 slots are actually configured as x4 slots. These slots have 
+  insufficient bandwidth for full 10Gbe line rate with dual port 10GbE devices.
+  The driver can detect this situation and will write the following message in
+  the system log: "PCI-Express bandwidth available for this card is not 
+  sufficient for optimal performance. For optimal performance a x8 PCI-Express
+  slot is required."
+  If this error occurs, moving your adapter to a true x8 slot will resolve the 
+  issue.
+
+  ethtool may incorrectly display SFP+ fiber module as Direct Attached cable
+  --------------------------------------------------------------------------
+  Due to kernel limitations, port type can only be correctly displayed on 
+  kernel 2.6.33 or greater.
+
+  Under Redhat 5.4 - System May Crash when Closing Guest OS Window after 
+  Loading/Unloading Physical Function (PF) Driver
+  -------------------------------------------------------------------------
+  Do not remove the ixgbe driver from Dom0 while Virtual Functions (VFs) are 
+  assigned to guests. VFs must first use the xm "pci-detach" command to 
+  hot-plug the VF device out of the VM it is assigned to or else shut down the
+  VM.
+
+  Unloading Physical Function (PF) Driver Causes System Reboots When VM is
+  Running and VF is Loaded on the VM
+  -----------------------------------------------------------------------------
+  Do not unload the PF driver (ixgbe) while VFs are assigned to guests.
+
+  Running ethtool -t ethX command causes break between PF and test client
+  -----------------------------------------------------------------------
+  When there are active VFs, "ethtool -t" will only run the link test.  The
+  driver will also log in syslog that VFs should be shut down to run a full
+  diags test.
+
+  SLES10 SP3 random system panic when reloading driver
+  ---------------------------------------------------
+  This is a known SLES-10 SP3 issue. After requesting interrupts for MSI-X 
+  vectors, system may panic. 
+
+  Currently the only known workaround is to build the drivers with 
+  CFLAGS_EXTRA=-DDISABLE_PCI_MSI if the driver need to be loaded/unloaded.
+  Otherwise the driver can be loaded once and will be safe, but unloading it 
+  will lead to the issue.
+
+  Enabling SR-IOV in a 32-bit or 64-bit Microsoft* Windows* Server 2008/R2 
+  Guest OS using Intel (R) 82576-based GbE or Intel (R) 82599-based 10GbE 
+  controller under KVM
+  -----------------------------------------------------------------------------
+  KVM Hypervisor/VMM supports direct assignment of a PCIe device to a VM.  This 
+  includes traditional PCIe devices, as well as SR-IOV-capable devices using
+  Intel 82576-based and 82599-based controllers.
+
+  While direct assignment of a PCIe device or an SR-IOV Virtual Function (VF)
+  to a Linux-based VM running 2.6.32 or later kernel works fine, there is a
+  known issue with Microsoft Windows Server 2008/R2 VM that results in a 
+  "yellow bang" error. This problem is within the KVM VMM itself, not the Intel
+  driver, or the SR-IOV logic of the VMM, but rather that KVM emulates an older
+  CPU model for the guests, and this older CPU model does not support MSI-X
+  interrupts, which is a requirement for Intel SR-IOV.  
+
+  If you wish to use the Intel 82576 or 82599-based controllers in SR-IOV mode
+  with KVM and a Microsoft Windows Server 2008/R2 guest try the following 
+  workaround. The workaround is to tell KVM to emulate a different model of CPU
+  when using qemu to create the KVM guest: 
+
+       "-cpu qemu64,model=13"
+
+
+Support
+=======
+
+For general information, go to the Intel support website at:
+
+    www.intel.com/support/
+
+or the Intel Wired Networking project hosted by Sourceforge at:
+
+    http://sourceforge.net/projects/e1000
+
+If an issue is identified with the released source code on the supported
+kernel with a supported adapter, email the specific information related
+to the issue to e1000-devel@lists.sf.net
+
+License
+=======
+
+Intel 10 Gigabit PCI Express Linux driver.
+Copyright(c) 1999 - 2011 Intel Corporation.
+
+This program is free software; you can redistribute it and/or modify it
+under the terms and conditions of the GNU General Public License,
+version 2, as published by the Free Software Foundation.
+
+This program is distributed in the hope it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
+more details.
+
+You should have received a copy of the GNU General Public License along with
+this program; if not, write to the Free Software Foundation, Inc.,
+51 Franklin St - Fifth Floor, Boston, MA 02110-1301 USA.
+
+The full GNU General Public License is included in this distribution in
+the file called "COPYING".
+
+Trademarks
+==========
+
+Intel, Itanium, and Pentium are trademarks or registered trademarks of
+Intel Corporation or its subsidiaries in the United States and other
+countries.
+
+* Other names and brands may be claimed as the property of others.
