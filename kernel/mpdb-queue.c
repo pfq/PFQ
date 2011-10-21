@@ -35,9 +35,8 @@ mpdb_enqueue(struct pfq_opt *pq, struct sk_buff *skb)
             hdr->if_index = (skb->dev ? skb->dev->ifindex : -1);
             hdr->hw_queue = skb_get_rx_queue(skb);                      
 
-            if (likely(pq->q_tstamp_type))
-                hdr->tstamp.tv64 = skb->tstamp.tv64;
-            else {
+            if (pq->q_tstamp_type > 0)
+            {
                 struct timespec ts;
                 skb_get_timestampns(skb, &ts); 
                 hdr->tstamp.tv.sec  = ts.tv_sec;

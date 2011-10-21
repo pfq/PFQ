@@ -261,7 +261,6 @@ namespace net {
     public:
         static const int any_device = Q_ANY_DEVICE;
         static const int any_queue  = Q_ANY_QUEUE;
-        static const int any_frame  = Q_ANY_FRAME;
 
         pfq()
         : m_q(-1),
@@ -388,13 +387,14 @@ namespace net {
             return ifreq_io.ifr_ifindex;
         }
 
-        void tstamp_type(int type)
+        void tstamp(bool value)
         {
-            if (::setsockopt(m_q, PF_Q, SO_TSTAMP_TYPE, &type, sizeof(int)) == -1)
+            size_t ts = static_cast<int>(value);
+            if (::setsockopt(m_q, PF_Q, SO_TSTAMP_TYPE, &ts, sizeof(int)) == -1)
                 throw std::runtime_error(__PRETTY_FUNCTION__);
         }
 
-        int tstamp_type() const
+        bool tstamp() const
         {
            int ret; socklen_t size = sizeof(int);
            if (::getsockopt(m_q, PF_Q, SO_GET_TSTAMP_TYPE, &ret, &size) == -1)
@@ -402,20 +402,29 @@ namespace net {
            return ret;
         }
 
-        void add_device(int index, int queue)
+        void add_device(int index, int queue = any_queue)
         {
             struct pfq_dev_queue dq = { index, queue };
             if (::setsockopt(m_q, PF_Q, SO_ADD_DEVICE, &dq, sizeof(dq)) == -1)
                 throw std::runtime_error(__PRETTY_FUNCTION__);
         }
         
-        void remove_device(int index, int queue)
+        void add_device(const char *dev, int queue = any_queue)
+        {
+            add_device(ifindex(dev), queue);
+        }                              
+
+        void remove_device(int index, int queue = any_queue)
         {
             struct pfq_dev_queue dq = { index, queue };
             if (::setsockopt(m_q, PF_Q, SO_REMOVE_DEVICE, &dq, sizeof(dq)) == -1)
                 throw std::runtime_error(__PRETTY_FUNCTION__);
         }
 
+        void remove_device(const char *dev, int queue = any_queue)
+        {
+            remove_device(ifindex(dev), queue);
+        }                              
         unsigned long 
         owners(int index, int queue) const
         {
@@ -425,6 +434,12 @@ namespace net {
             if (::getsockopt(m_q, PF_Q, SO_GET_OWNERS, &dq, &s) == -1)
                 throw std::runtime_error(__PRETTY_FUNCTION__);
             return *reinterpret_cast<unsigned long *>(&dq);
+        }
+
+        unsigned long 
+        owners(const char *dev, int queue) const
+        {
+            return owners(dev,queue);
         }
 
         int 

@@ -109,10 +109,10 @@ struct pfq_queue_descr
 
 #define Q_ANY_DEVICE         -1
 #define Q_ANY_QUEUE          -1
-#define Q_ANY_FRAME          -1
 
-#define Q_TSTAMP_TSC          0       /* default */
-#define Q_TSTAMP_NANO         1
+
+#define Q_TSTAMP_OFF          0       /* default */
+#define Q_TSTAMP_ON           1
 
 struct pfq_dev_queue
 {

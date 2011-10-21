@@ -35,7 +35,7 @@ struct packet_type       pfq_prot_hook;
 struct proto             pfq_proto;
 struct proto_ops         pfq_ops; 
 
-static int tstamp_type  = 0;           
+static int tstamp_type  = Q_TSTAMP_OFF;           
 static int awareness    = 0;
 static int pipeline_len = 64;
 static int queue_mem    = 65536*128;
@@ -63,7 +63,7 @@ MODULE_PARM_DESC(awareness,     "Awareness: 0, 1");
 MODULE_PARM_DESC(cap_len,       "Default capture length (bytes)");
 MODULE_PARM_DESC(pipeline_len,  "Pipeline length");
 MODULE_PARM_DESC(queue_mem,     "Queue memory (bytes)");
-MODULE_PARM_DESC(tstamp_type,   "Timestamp type: 0 = ns, 1 = tsc");
+MODULE_PARM_DESC(tstamp_type,   "Timestamp type: 0 = off, 1 = on(early)");
 
 /* uhm okay, this is a legit form of static polymorphism */
 
@@ -99,7 +99,7 @@ bool pfq_filter(const struct sk_buff *skb)
 }
 
 
-bool pfq_enqueue_skb(struct sk_buff *skb, struct pfq_opt *pq, bool clone, cycles_t * tsc, struct sk_buff *tsb)
+bool pfq_enqueue_skb(struct sk_buff *skb, struct pfq_opt *pq, bool clone)
 {
     /* eventually filter the packet... */
 
@@ -109,20 +109,7 @@ bool pfq_enqueue_skb(struct sk_buff *skb, struct pfq_opt *pq, bool clone, cycles
         return false;
     }
 
-    /* timestamp the packet, now! */
 
-    if(likely(pq->q_tstamp_type)) 
-    {
-        if (*tsc == 0)
-            *tsc = get_cycles();
-        skb->tstamp.tv64 = *tsc;
-    }
-    else 
-    {   
-        if (tsb->tstamp.tv64 == 0)            
-            __net_timestamp(tsb);
-        skb->tstamp.tv64 = tsb->tstamp.tv64; 
-    }
 
     /* enqueue the sk_buff: it's wait-free. */
 
@@ -192,11 +179,15 @@ pfq_load_balancer(unsigned long bm, const struct sk_buff *skb)
 int pfq_receive_skb(struct sk_buff *skb, int index, int queue)
 {       
     struct pfq_opt * pq;
-    cycles_t tsc;
-    struct sk_buff tsb;
     unsigned long bm;
     int me = get_cpu();
     int q;
+
+    /* if required, timestamp this packet now (early) */
+
+    if (skb->tstamp.tv64 == 0) {
+        __net_timestamp(skb);
+    }
 
     if (!awareness && skb_shared(skb)) {
         struct sk_buff *nskb = skb_clone(skb, GFP_ATOMIC);
@@ -209,8 +200,7 @@ int pfq_receive_skb(struct sk_buff *skb, int index, int queue)
         }
     }
 
-    pq = NULL; tsc = 0;
-    tsb.tstamp.tv64 = skb->tstamp.tv64; 
+    pq = NULL; 
 
     /* get the clone/balancing bitmap */
 
@@ -236,7 +226,7 @@ int pfq_receive_skb(struct sk_buff *skb, int index, int queue)
         if (pq == NULL)
             continue;
 
-        pfq_enqueue_skb(skb, pq, bm != 0, &tsc, &tsb);
+        pfq_enqueue_skb(skb, pq, bm != 0);
     }
 
     ////////////////////////////////////////////////////////////
@@ -350,7 +340,6 @@ static int pfq_ctor(struct pfq_opt *pq)
         return -EBUSY;
     }
 
-    pq->q_tstamp_type = tstamp_type;
     pq->q_queue_mem = queue_mem;
     pq->q_cap_len = cap_len;
 
