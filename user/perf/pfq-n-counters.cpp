@@ -24,6 +24,19 @@ typedef std::tuple<std::string, int, std::vector<int>> binding_type;
 
 using namespace net;
 
+namespace vt100
+{
+    const char * const CLEAR = "\E[2J";
+    const char * const EDOWN = "\E[J";
+    const char * const DOWN  = "\E[1B";
+    const char * const HOME  = "\E[H";
+    const char * const ELINE = "\E[K";
+    const char * const BOLD  = "\E[1m";
+    const char * const RESET = "\E[0m";
+    const char * const BLUE  = "\E[1;34m";
+    const char * const RED   = "\E[31m";
+}
+
 
 binding_type 
 binding_parser(const char *arg)
@@ -62,7 +75,7 @@ namespace test
                 });
 
             m_pfq.enable();
-            m_pfq.tstamp_type(1);
+            m_pfq.tstamp(false);
 
             m_buffer = new char[m_pfq.queue_size()];
 
@@ -258,7 +271,7 @@ main(int argc, char *argv[])
         //     1000000 * (static_cast<long double>(sum-old)/
         //     static_cast<long double>(static_cast<std::chrono::microseconds>(end-begin).count())) << " pkt/sec"  << std::endl;   
         
-        std::cout << "capture: " << (sum-old) << " pkt/sec"  << std::endl; 
+        std::cout << "capture: " << vt100::BOLD << (sum-old) << vt100::RESET << " pkt/sec" << std::endl; 
 
         old = sum, begin = end;
         old_stats = sum_stats;
