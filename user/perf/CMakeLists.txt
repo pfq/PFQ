@@ -10,6 +10,7 @@ include_directories(../../user/c++)
 
 add_executable(pfq-n-counters pfq-n-counters.cpp)
 add_executable(pfq-n-balancer pfq-n-balancer.cpp)
+add_executable(pfq-histo pfq-histo.cpp)
 
 target_link_libraries(pfq-n-counters -pthread)
 target_link_libraries(pfq-n-balancer -pthread)
