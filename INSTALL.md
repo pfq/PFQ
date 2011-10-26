@@ -6,8 +6,8 @@ Requisites
 
 To install PFQ, the following requisites must be present:
 
-* A 64-bit Linux operating system (currently the support for 32-bits architecture 
-  is not available) 
+* A 64-bit Linux operating system (the support for 32-bits architecture 
+  is not currently available) 
 
 * A modern Linux kernel: suggested Linux 2.6.39 or higher.  
 
@@ -26,27 +26,27 @@ Directories
 The package is organized as follow: 
 
 .  
-├── AUTHORS 
-├── driver 
-│   ├── ixgbe-3.3.9/
-│   │   ├── COPYING
-│   │   └── ...
-│   └── ixgbe-3.4.24/
-│       ├── COPYING
-│       └── ...
-├── INSTALL
-├── kernel
-│   ├── linux
-│   │   └── pf_q.h
-│   ├── Makefile
-│   └── ...
-├── README.md
-└── user
-    ├── c++
-    │   └── pfq.hpp
-    └── perf
-        ├── CMakeFiles
-        └── ...
+├── AUTHORS   
+├── driver   
+│   ├── ixgbe-3.3.9/  
+│   │   ├── COPYING  
+│   │   └── ...  
+│   └── ixgbe-3.4.24/  
+│       ├── COPYING  
+│       └── ...  
+├── INSTALL  
+├── kernel  
+│   ├── linux  
+│   │   └── pf_q.h  
+│   ├── Makefile  
+│   └── ...  
+├── README.md  
+└── user  
+    ├── c++  
+    │   └── pfq.hpp  
+    └── perf  
+        ├── CMakeFiles  
+        └── ...  
 
 
 - The directory driver/ contains optimized drivers for PFQ (pfq-aware drivers).
