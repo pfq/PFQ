@@ -51,15 +51,15 @@ The package is organized as follow:
         └── ...  
 
 
-- The directory driver/ contains optimized drivers for PFQ (pfq-aware drivers).
+* The directory driver/ contains optimized drivers for PFQ (pfq-aware drivers).
 
-- The directory kernel/ contains the source code of PFQ, along with the pf_q.h 
+* The directory kernel/ contains the source code of PFQ, along with the pf_q.h 
   header used by user-space applications.
 
-- The directory user/c++ contains an optimized C++11 inline library used to write 
+* The directory user/c++ contains an optimized C++11 inline library used to write 
   user-space applications.
 
-- The directory user/perf includes some tools and examples.  
+* The directory user/perf includes some tools and examples.  
 
 
 PFQ module
