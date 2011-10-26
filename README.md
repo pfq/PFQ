@@ -19,9 +19,9 @@ library and a set of diagnostic tools.
 Contributors
 ------------
 
-Nicola Bonelli <nicola.bonelli@cnit.it>
-Andrea Di Pietro <andrea.dipietro@for.unipi.it>
-Gregorio Procissi <g.procissi@iet.unipi.it>
+Nicola Bonelli <nicola.bonelli@cnit.it>  
+Andrea Di Pietro <andrea.dipietro@for.unipi.it>  
+Gregorio Procissi <g.procissi@iet.unipi.it>  
 
 More information are available [here][1].
 
