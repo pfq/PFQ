@@ -6,17 +6,18 @@ Requisites
 
 To install PFQ, the following requisites must be present:
 
-* A 64-bit Linux operating system (the support for 32-bits architecture 
+* A 64-bit Linux operating system (the support for 32-bit architectures 
   is not currently available) 
 
 * A modern Linux kernel: suggested Linux 2.6.39 or higher.  
 
-* Kernel headers installed, required to compile kernel modules for your running kernel.  
+* Kernel headers installed, required to compile kernel modules for your kernel.  
 
 * A working gcc compiler, usually the one used to compile the kernel.  
 
 * A working g++ compiler, g++-4.5 or higher, required to compile the user-space tools.  
 
+* CMake and make tool
 
 
 Directories 
@@ -92,7 +93,7 @@ application. A bad setup may impact on the performance dramatically.
 Multiple-queue NICs, like Intel 82599 for instance, allow a simple interrupt affinity 
 by means of the script set_irq_affinity.sh. Such a setup is sufficient in most cases.
 
-In addition to this, when configuring PFQ please bare in mind the following notes. 
+In addition to this, when configuring PFQ please bear in mind the following notes. 
 
 
 * The load balancing can be enabled on Intel 82599 by means of RSS or VMDQ. Other vendors 
@@ -104,10 +105,10 @@ In addition to this, when configuring PFQ please bare in mind the following note
   processor and Intel 82599 NIC) :-)
 
 * For a single capturing thread, a reserved core gives the best performance. Although the
-  PQF library is written in C++11, the standard has no means to setup the affinity for a 
-  std::thread. To to this you have to go native and use the non-posix system call 
+  PFQ library is written in C++11, the standard has no means to setup the affinity for a 
+  std::thread. To do this you have to go native and use the non-posix system call 
   pthread_setaffinity_np.
 
-* Flow Control of the NIC may slow dawn the link. Use ethtool to disable it.
+* Flow Control of the NIC may slow down the link. Use ethtool to disable it.
 
 
