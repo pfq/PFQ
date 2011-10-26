@@ -74,7 +74,9 @@ PFQ tools
 To compile the userland tools shipped with PFQ:
  
 \# cd user/perf
+
 \# cmake .
+
 \# make
 
 
