@@ -65,7 +65,7 @@ PFQ module
 
 To compile PFQ kernel module:
 
-# cd kernel && make && make install
+\# cd kernel && make && make install
 
 
 PFQ tools
@@ -73,9 +73,9 @@ PFQ tools
 
 To compile the userland tools shipped with PFQ:
  
-# cd user/perf
-# cmake .
-# make
+\# cd user/perf
+\# cmake .
+\# make
 
 
 Notes
