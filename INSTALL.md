@@ -1,8 +1,9 @@
 PFQ: a Linux kernel module for packet capturing on multi-core architectures
 ===========================================================================
 
-Requisites
-----------
+Requirements
+------------
+
 
 To install PFQ, the following requisites must be present:
 
