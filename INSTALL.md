@@ -98,15 +98,15 @@ In addition to this, when configuring PFQ please bear in mind the following note
 
 
 * The load balancing can be enabled on Intel 82599 by means of RSS or VMDQ. Other vendors 
-  may have different technologies.
+  may provide different technologies.
 
 * A good choice setup is to distribute interrupts among cores. The more core you have, 
   the best performance you obtain from PFQ. We have tested it with 12 cores with great 
-  satisfaction (13Mpps collected at user-space with 5% of CPUs, on top of a 2.66 Ghz Xeon 
-  processor and Intel 82599 NIC) :-)
+  satisfaction :-) -- 13Mpps collected at user-space with 5% of CPUs, on top of a 2.66 Ghz 
+  6-cores Xeon processor and Intel 82599 NIC.
 
 * For a single capturing thread, a reserved core gives the best performance. Although the
-  PFQ library is written in C++11, the standard has no means to setup the affinity for a 
+  PFQ library is written in C++11, the new standard has no means to setup the affinity for a 
   std::thread. To do this you have to go native and use the non-posix system call 
   pthread_setaffinity_np.
 
