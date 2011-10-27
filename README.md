@@ -10,7 +10,7 @@ packet capturing, in-kernel aggregation and packet steering across sockets.
 PFQ is highly optimized for multi-core architecture, as well as for network 
 devices supporting multiple hardware queues. It works with both vanilla 
 drivers and pfq-aware drivers (i.e. drivers optimized according to
-the PF\_RING philosophy.
+the PF\_RING philosophy).
 
 The package provides the source code of the kernel module, an optimized driver
 for Intel 82599 NICs based on ixgbe-3.4.24 source code, a C++11 user-space 
