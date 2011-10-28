@@ -165,7 +165,7 @@ namespace test
         unsigned long long m_read;
         size_t m_batch;
 
-    } __attribute__((aligned(64)));
+    } __attribute__((aligned(128)));
 }
 
 unsigned int hardware_concurrency()
