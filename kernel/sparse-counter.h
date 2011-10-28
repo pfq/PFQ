@@ -12,7 +12,7 @@
 
 #define MAX_CPU_CTX     64
 
-typedef struct { long value; } __attribute__((aligned(64))) __counter_t; 
+typedef struct { long value; } __attribute__((aligned(128))) __counter_t; 
 
 typedef struct { __counter_t ctx[MAX_CPU_CTX]; } sparse_counter_t;
 

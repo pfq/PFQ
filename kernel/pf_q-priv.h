@@ -43,7 +43,7 @@ struct pfq_opt
 
         pfq_kstat_t     q_stat;
 
-} __attribute__((aligned(64)));
+} __attribute__((aligned(128)));
 
 
 struct pfq_sock
@@ -59,6 +59,6 @@ struct pfq_pipeline
     struct sk_buff *queue[PFQ_PIPELINE_MAX_LEN];  /* sk_buff */
     size_t counter;
 
-} __attribute__((aligned(64)));
+} __attribute__((aligned(128)));
 
 #endif /* _PF_Q_TYPES_H_ */
