@@ -1,4 +1,3 @@
-#
 # (C) 2011 - Nicola Bonelli <nicola.bonelli@cnit.it>
 #
 
@@ -18,7 +17,6 @@ endif
 # set the install path
 
 INSTDIR := $(DESTDIR)/lib/modules/$(BUILD_KERNEL)/kernel/net/pf_q
-TARGETDIR := /usr/src/$(BUILD_KERNEL)/include/linux/
 
 all: Makefile pf_q.c linux/pf_q.h
 	make -C /lib/modules/$(BUILD_KERNEL)/build SUBDIRS=$(PWD) modules
@@ -31,9 +29,7 @@ install:
 	mkdir -p $(INSTDIR)
 	cp *.ko $(INSTDIR)
 	cp linux/pf_q.h $(DESTDIR)/usr/include/linux
-	@if test -d ${TARGETDIR}; then \
-		cp linux/pf_q.h ${TARGETDIR}; \
-	fi
+
 ifeq (,$(DESTDIR))
 	/sbin/depmod $(BUILD_KERNEL)
 endif
