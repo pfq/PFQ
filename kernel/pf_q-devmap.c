@@ -13,9 +13,7 @@
 
 MODULE_LICENSE("GPL");
 
-atomic_long_t pfq_vector[MAX_NUM_PFQ]; 
-
-unsigned long pfq_devmap[MAX_NUM_DEVICE][MAX_NUM_HW_QUEUE];
+unsigned long pfq_devmap[Q_MAX_DEVICE][Q_MAX_HW_QUEUE];
 
 static DEFINE_SEMAPHORE(devmap_sem);
 
@@ -32,9 +30,9 @@ int pfq_devmap_update(int action, int index, int queue, unsigned int id)
 
     down(&devmap_sem);
 
-    for(i=0; i < MAX_NUM_DEVICE; ++i)
+    for(i=0; i < Q_MAX_DEVICE; ++i)
     {
-        for(q=0; q < MAX_NUM_HW_QUEUE; ++q)
+        for(q=0; q < Q_MAX_HW_QUEUE; ++q)
         {
             if ( !pfq_devmap_equal(i,q,index,queue) )
                 continue;

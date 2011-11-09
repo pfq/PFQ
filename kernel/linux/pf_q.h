@@ -16,12 +16,13 @@
 #define Q_VERSION               "1.1"
 #define Q_VERSION_NUM           0x010001
 
-#define MAX_NUM_CPU             16
-#define MAX_NUM_PFQ             64
-#define MAX_NUM_DEVICE          256
-#define MAX_NUM_DEVICE_MASK     (MAX_NUM_DEVICE-1)
-#define MAX_NUM_HW_QUEUE        64
-#define MAX_NUM_HW_QUEUE_MASK   (MAX_NUM_HW_QUEUE-1)
+#define Q_MAX_CPU               16
+#define Q_MAX_ID                64
+
+#define Q_MAX_DEVICE            256
+#define Q_MAX_DEVICE_MASK       (Q_MAX_DEVICE-1)
+#define Q_MAX_HW_QUEUE          64
+#define Q_MAX_HW_QUEUE_MASK     (Q_MAX_HW_QUEUE-1)
 
 
 #else  /* __PFQ_MODULE__ */ 
@@ -29,9 +30,8 @@
 #include <linux/skbuff.h>
 
 extern const char * pfq_version(void);
-extern int   pfq_awareness(void);
-extern bool  pfq_poll(int index, int queue);
-extern int   pfq_receive_skb(struct sk_buff *skb, int ifindex, int queue);
+extern int  pfq_direct_capture(const struct sk_buff *skb);
+extern int  pfq_direct_receive(struct sk_buff *skb, int ifindex, int queue);
 
 #endif
 
@@ -109,7 +109,6 @@ struct pfq_queue_descr
 
 #define Q_ANY_DEVICE         -1
 #define Q_ANY_QUEUE          -1
-
 
 #define Q_TSTAMP_OFF          0       /* default */
 #define Q_TSTAMP_ON           1

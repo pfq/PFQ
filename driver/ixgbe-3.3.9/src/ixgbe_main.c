@@ -1024,9 +1024,9 @@ static void ixgbe_receive_skb(struct ixgbe_q_vector *q_vector,
 	struct ixgbe_adapter *adapter = q_vector->adapter;
 
 #ifdef HAVE_PFQ
-    if(pfq_awareness()) {
+    if(pfq_direct_capture(skb)) {
         skb->mac_len = 14;
-        pfq_receive_skb(skb, skb->dev->ifindex, skb_get_rx_queue(skb));
+        pfq_direct_receive(skb, skb->dev->ifindex, skb_get_rx_queue(skb));
         return;
     }
 #endif

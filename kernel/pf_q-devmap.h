@@ -17,53 +17,15 @@
 
 enum { map_reset, map_set };
 
-extern unsigned long pfq_devmap[MAX_NUM_DEVICE][MAX_NUM_HW_QUEUE];
-
-extern atomic_long_t pfq_vector[MAX_NUM_PFQ]; 
+extern unsigned long pfq_devmap[Q_MAX_DEVICE][Q_MAX_HW_QUEUE];
 
 
-// called from uc.
+// called from u-context
 //
 
 extern
 int pfq_devmap_update(int action, int index, int queue, unsigned int id);
   
-static inline 
-int pfq_devmap_get_free_id(struct pfq_opt * pq)
-{
-    int n = 0;
-    for(; n < MAX_NUM_PFQ; n++)
-    {            
-        if (!atomic_long_cmpxchg(pfq_vector + n, 0, (long)pq))
-            return n;         
-    }
-    return -1;
-}
-
-static inline 
-struct pfq_opt * 
-pfq_devmap_get_opt(unsigned int id)
-{
-    if (unlikely(id >= 64))
-    {
-        printk(KERN_WARNING "[PF_Q]: pfq_devmap_freeid: bad id(%u)\n", id);
-        return 0;
-    }
-    return (struct pfq_opt *)pfq_vector[id].counter;  // atomic_read not required here.
-}
-
-
-static inline 
-void pfq_devmap_release_id(unsigned int id)
-{
-    if (unlikely(id >= 64))
-    {
-        printk(KERN_WARNING "[PF_Q]: pfq_devmap_freeid: bad id(%u)\n", id);
-        return;
-    }
-    atomic_long_set(pfq_vector + id, 0);
-}
-
 
 static inline 
 int pfq_devmap_equal(int i1, int q1, int i2, int q2)
@@ -78,7 +40,7 @@ int pfq_devmap_equal(int i1, int q1, int i2, int q2)
 static inline 
 unsigned long pfq_devmap_get(int d, int q)
 {
-    return pfq_devmap[d & MAX_NUM_DEVICE_MASK][q & MAX_NUM_HW_QUEUE_MASK];
+    return pfq_devmap[d & Q_MAX_DEVICE_MASK][q & Q_MAX_HW_QUEUE_MASK];
 }
 
 

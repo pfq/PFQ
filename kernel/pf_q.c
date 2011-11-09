@@ -35,8 +35,7 @@ struct packet_type       pfq_prot_hook;
 struct proto             pfq_proto;
 struct proto_ops         pfq_ops; 
 
-static int tstamp_type  = Q_TSTAMP_OFF;           
-static int awareness    = 0;
+static int direct_path  = 0;
 static int pipeline_len = 64;
 static int queue_mem    = 65536*128;
 static int cap_len      = 1514;
@@ -45,25 +44,30 @@ DEFINE_SEMAPHORE(loadbalance_sem);
 
 static unsigned long long loadbalance_mask = 0;
 
-struct pfq_pipeline    pfq_skb_pipeline[MAX_NUM_CPU];
+struct pfq_pipeline    pfq_skb_pipeline[Q_MAX_CPU];
 
 MODULE_LICENSE("GPL");
+
 MODULE_AUTHOR("Nicola Bonelli <nicola.bonelli@cnit.it>");
 MODULE_AUTHOR("Andrea Di Pietro <andrea.dipietro@for.unipi.it>");
 
 MODULE_DESCRIPTION("packet catpure system for 64bit multi-core architecture");
 
-module_param(tstamp_type,   int, 0644);
-module_param(awareness,     int, 0644);
-module_param(pipeline_len,  int, 0644);
-module_param(queue_mem,     int, 0644);
-module_param(cap_len,       int, 0644);
+module_param(direct_path,  int, 0644);
+module_param(pipeline_len, int, 0644);
+module_param(queue_mem,    int, 0644);
+module_param(cap_len,      int, 0644);
 
-MODULE_PARM_DESC(awareness,     "Awareness: 0, 1");
-MODULE_PARM_DESC(cap_len,       "Default capture length (bytes)");
-MODULE_PARM_DESC(pipeline_len,  "Pipeline length");
-MODULE_PARM_DESC(queue_mem,     "Queue memory (bytes)");
-MODULE_PARM_DESC(tstamp_type,   "Timestamp type: 0 = off, 1 = on(early)");
+
+MODULE_PARM_DESC(direct_path, " Direct Path: 0 = off(classic), 1 = direct");
+MODULE_PARM_DESC(cap_len,     " Default capture length (bytes)");
+MODULE_PARM_DESC(pipeline_len," Pipeline length");
+MODULE_PARM_DESC(queue_mem,   " Queue memory (bytes)");
+
+
+/* atomic vector of pointers to pfq_opt */
+atomic_long_t pfq_vector[Q_MAX_ID]; 
+
 
 /* uhm okay, this is a legit form of static polymorphism */
 
@@ -92,7 +96,45 @@ inline void kunmap_skb_frag(void *vaddr)
 }
 
 
-  inline
+inline 
+int pfq_get_free_id(struct pfq_opt * pq)
+{
+    int n = 0;
+    for(; n < Q_MAX_ID; n++)
+    {            
+        if (!atomic_long_cmpxchg(pfq_vector + n, 0, (long)pq))
+            return n;         
+    }
+    return -1;
+}
+
+
+inline 
+struct pfq_opt * 
+pfq_get_opt(unsigned int id)
+{
+    if (unlikely(id >= Q_MAX_ID))
+    {
+        printk(KERN_WARNING "[PF_Q]: pfq_devmap_freeid: bad id(%u)\n", id);
+        return 0;
+    }
+    return (struct pfq_opt *)pfq_vector[id].counter;  // atomic_read not required here.
+}
+
+
+inline 
+void pfq_release_id(unsigned int id)
+{
+    if (unlikely(id >= Q_MAX_ID))
+    {
+        printk(KERN_WARNING "[PF_Q]: pfq_devmap_freeid: bad id(%u)\n", id);
+        return;
+    }
+    atomic_long_set(pfq_vector + id, 0);
+}
+
+
+inline
 bool pfq_filter(const struct sk_buff *skb)
 {
     return true;
@@ -176,7 +218,7 @@ pfq_load_balancer(unsigned long bm, const struct sk_buff *skb)
 /* pfq skb handler */
 
 
-int pfq_receive_skb(struct sk_buff *skb, int index, int queue)
+int pfq_direct_receive(struct sk_buff *skb, int index, int queue)
 {       
     struct pfq_opt * pq;
     unsigned long bm;
@@ -189,7 +231,7 @@ int pfq_receive_skb(struct sk_buff *skb, int index, int queue)
         __net_timestamp(skb);
     }
 
-    if (!awareness && skb_shared(skb)) {
+    if (!direct_path && skb_shared(skb)) {
         struct sk_buff *nskb = skb_clone(skb, GFP_ATOMIC);
         if (nskb == NULL) {
             skb = NULL;
@@ -219,7 +261,7 @@ int pfq_receive_skb(struct sk_buff *skb, int index, int queue)
     {        
         unsigned long lsb = bm & -bm;
         unsigned int zn = __builtin_ctz(lsb);
-        struct pfq_opt * pq = pfq_devmap_get_opt(zn);
+        struct pfq_opt * pq = pfq_get_opt(zn);
 
         bm &= ~lsb;
 
@@ -230,11 +272,6 @@ int pfq_receive_skb(struct sk_buff *skb, int index, int queue)
     }
 
     ////////////////////////////////////////////////////////////
-
-    // if (likely(awareness))
-    //     __kfree_skb(skb);
-    // else
-    //     kfree_skb(skb);
 
     if (pfq_skb_pipeline[me].counter < pipeline_len-1) {
 
@@ -247,25 +284,20 @@ int pfq_receive_skb(struct sk_buff *skb, int index, int queue)
     
     pfq_skb_pipeline[me].queue[pipeline_len-1] = skb;
 
-    if (awareness)
-        for(q = 0; q < pipeline_len; q++)
+    for(q = 0; q < pipeline_len; q++)
+    {
+        if(pfq_skb_pipeline[me].queue[q]) 
         {
-            if(pfq_skb_pipeline[me].queue[q])
+            if (likely(direct_path))
                 __kfree_skb(pfq_skb_pipeline[me].queue[q]);
-            
-            __builtin_prefetch (&pfq_skb_pipeline[me].queue[q+1], 0, 1);
-            __builtin_prefetch (&pfq_skb_pipeline[me].queue[q],   1, 1);
-            pfq_skb_pipeline[me].queue[q]=0;
+            else
+                kfree_skb(pfq_skb_pipeline[me].queue[q]);
         }
-    else
-        for(q = 0; q < pipeline_len; q++)
-        {
-            kfree_skb(pfq_skb_pipeline[me].queue[q]);
-
-            __builtin_prefetch (&pfq_skb_pipeline[me].queue[q+1], 0, 1);
-            __builtin_prefetch (&pfq_skb_pipeline[me].queue[q],   1, 1);
-            pfq_skb_pipeline[me].queue[q]=0;
-        }
+        
+        __builtin_prefetch (&pfq_skb_pipeline[me].queue[q+1], 0, 1);
+        __builtin_prefetch (&pfq_skb_pipeline[me].queue[q],   1, 1);
+        pfq_skb_pipeline[me].queue[q]=0;
+    }
 
     pfq_skb_pipeline[me].counter=0;
     return 0;
@@ -282,7 +314,7 @@ int pfq_packet_rcv
 #endif
     )
 {
-    return pfq_receive_skb(skb, dev->ifindex, skb_get_rx_queue(skb));
+    return pfq_direct_receive(skb, dev->ifindex, skb_get_rx_queue(skb));
 }
 
 static
@@ -333,7 +365,7 @@ static int pfq_ctor(struct pfq_opt *pq)
 
 
     /* get a unique id for this queue */
-    pq->q_id = pfq_devmap_get_free_id(pq);
+    pq->q_id = pfq_get_free_id(pq);
     if (pq->q_id == -1)
     {
         printk(KERN_WARNING "[PF_Q]: no queue available\n");
@@ -363,7 +395,7 @@ static void pfq_dtor(struct pfq_opt *pq)
 #ifdef Q_DEBUG
     printk(KERN_INFO "[PF_Q] queue dtor\n");
 #endif
-    pfq_devmap_release_id(pq->q_id); 
+    pfq_release_id(pq->q_id); 
 
     /* clean the loadbalance bit */
     
@@ -819,7 +851,7 @@ void pfq_net_proto_family_ctor(void)
 static
 void register_device_handler(void)
 {
-    if (awareness)
+    if (direct_path)
         return;
     pfq_prot_hook.func = pfq_packet_rcv;
     pfq_prot_hook.type = htons(ETH_P_ALL);
@@ -830,7 +862,7 @@ void register_device_handler(void)
 static
 void unregister_device_handler(void) 
 {
-    if (awareness)
+    if (direct_path)
         return;
     dev_remove_pack(&pfq_prot_hook); /* Remove protocol hook */
 }
@@ -874,7 +906,7 @@ static void __exit pfq_exit_module(void)
     proto_unregister(&pfq_proto);
 
     /* destroy pipeline queues */
-    for(n=0; n < MAX_NUM_CPU; n++) {
+    for(n=0; n < Q_MAX_CPU; n++) {
         for(i=0 ; i< PFQ_PIPELINE_MAX_LEN; i++) {
             kfree_skb(pfq_skb_pipeline[n].queue[i]);
             pfq_skb_pipeline[n].queue[i] = NULL;
@@ -888,9 +920,9 @@ static void __exit pfq_exit_module(void)
 /* pfq-10 aware drivers support */
 
 
-int pfq_awareness(void)
+int pfq_direct_capture(const struct sk_buff *skb)
 {
-    return awareness;
+    return direct_path;
 }
 
 
@@ -901,9 +933,9 @@ pfq_version(void)
 }
 
 
-EXPORT_SYMBOL_GPL(pfq_awareness);
+EXPORT_SYMBOL_GPL(pfq_direct_capture);
+EXPORT_SYMBOL_GPL(pfq_direct_receive);
 EXPORT_SYMBOL_GPL(pfq_version);
-EXPORT_SYMBOL_GPL(pfq_receive_skb);
 
 
 module_init(pfq_init_module);
