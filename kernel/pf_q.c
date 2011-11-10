@@ -77,6 +77,7 @@ pfq_sk(struct sock *sk)
     return (struct pfq_sock *)(sk);
 }
 
+
 inline void *kmap_skb_frag(const skb_frag_t *frag)
 {
 #ifdef CONFIG_HIGHMEM
@@ -218,7 +219,8 @@ pfq_load_balancer(unsigned long bm, const struct sk_buff *skb)
 /* pfq skb handler */
 
 
-int pfq_direct_receive(struct sk_buff *skb, int index, int queue)
+int 
+pfq_direct_receive(struct sk_buff *skb, int index, int queue)
 {       
     struct pfq_opt * pq;
     unsigned long bm;
@@ -303,9 +305,11 @@ int pfq_direct_receive(struct sk_buff *skb, int index, int queue)
     return 0;
 }
 
+
 /* simple HANDLER */       
 
-int pfq_packet_rcv
+int 
+pfq_packet_rcv
 (
     struct sk_buff *skb, struct net_device *dev,
     struct packet_type *pt
@@ -317,8 +321,8 @@ int pfq_packet_rcv
     return pfq_direct_receive(skb, dev->ifindex, skb_get_rx_queue(skb));
 }
 
-static
-int
+
+static int
 pfq_queue_alloc(struct pfq_opt *pq)
 {
     /* calculate the size of the buffer */
@@ -353,7 +357,8 @@ pfq_queue_free(struct pfq_opt *pq)
 }    
 
 
-static int pfq_ctor(struct pfq_opt *pq)
+static int 
+pfq_ctor(struct pfq_opt *pq)
 {
 
 #ifdef Q_DEBUG
@@ -390,7 +395,8 @@ static int pfq_ctor(struct pfq_opt *pq)
 }
 
 
-static void pfq_dtor(struct pfq_opt *pq)
+static void 
+pfq_dtor(struct pfq_opt *pq)
 {
 #ifdef Q_DEBUG
     printk(KERN_INFO "[PF_Q] queue dtor\n");
@@ -409,7 +415,8 @@ static void pfq_dtor(struct pfq_opt *pq)
 }
 
 
-static int pfq_create(
+static int 
+pfq_create(
 #if(LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,24))
     struct net *net,
 #endif
@@ -481,7 +488,9 @@ out:
     return err;
 }   
 
-static int pfq_release(struct socket *sock)
+
+static int 
+pfq_release(struct socket *sock)
 {
     struct sock * sk = sock->sk;
     struct pfq_opt * pq = pfq_sk(sk)->opt;
@@ -607,6 +616,7 @@ int pfq_getsockopt(struct socket *sock,
     return 0;
 }
 
+
 static
 int pfq_setsockopt(struct socket *sock,
                    int level, int optname,
@@ -714,6 +724,7 @@ pfq_memory_mmap(struct vm_area_struct *vma,
     return 0;
 }
 
+
 static int pfq_mmap(struct file *file,
                     struct socket *sock, struct vm_area_struct *vma)
 {
@@ -736,6 +747,7 @@ static int pfq_mmap(struct file *file,
 
     return 0;
 }
+
 
 unsigned int pfq_poll(struct file *file, struct socket *sock, poll_table * wait)
 {
@@ -922,7 +934,11 @@ static void __exit pfq_exit_module(void)
 
 int pfq_direct_capture(const struct sk_buff *skb)
 {
-    return direct_path;
+    return direct_path 
+#ifdef DIRECT_CAPTURE_FILTER
+        && pfq_devmap_bloom_get(skb->dev->ifindex)    
+#endif
+    ;
 }
 
 
