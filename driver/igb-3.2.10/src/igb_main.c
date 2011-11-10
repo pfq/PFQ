@@ -6138,7 +6138,7 @@ static void igb_receive_skb(struct igb_q_vector *q_vector,
 {
 	struct vlan_group **vlgrp = netdev_priv(skb->dev);
 
-#ifdef HAVE_PFQ
+#ifdef HAVE_PFQ 
     if(pfq_direct_capture(skb)) {
         skb->mac_len = 14;
         pfq_direct_receive(skb, skb->dev->ifindex, skb_get_rx_queue(skb));
@@ -6451,7 +6451,11 @@ static void igb_lro_flush(struct igb_q_vector *q_vector,
 #ifdef HAVE_VLAN_RX_REGISTER
 	igb_receive_skb(q_vector, skb);
 #else
-	napi_gro_receive(&q_vector->napi, skb);
+#ifdef HAVE_PFQ
+        pfq_gro_receive(&q_vector->napi, skb);
+#else
+        napi_gro_receive(&q_vector->napi, skb);
+#endif
 #endif
 	lrolist->stats.flushed++;
 }
@@ -6727,7 +6731,11 @@ static struct sk_buff *igb_lro_queue(struct igb_q_vector *q_vector,
 #ifdef HAVE_VLAN_RX_REGISTER
 	igb_receive_skb(q_vector, new_skb);
 #else
-	napi_gro_receive(&q_vector->napi, new_skb);
+#ifdef HAVE_PFQ
+        pfq_gro_receive(&q_vector->napi, new_skb);
+#else
+        napi_gro_receive(&q_vector->napi, new_skb);
+#endif
 #endif
 	return NULL;
 }
@@ -6846,7 +6854,11 @@ static bool igb_clean_rx_irq(struct igb_q_vector *q_vector, int budget)
 #ifdef HAVE_VLAN_RX_REGISTER
 			igb_receive_skb(q_vector, skb);
 #else
-			napi_gro_receive(&q_vector->napi, skb);
+#ifdef HAVE_PFQ
+                        pfq_gro_receive(&q_vector->napi, skb);
+#else
+                        napi_gro_receive(&q_vector->napi, skb);
+#endif
 #endif
 
 #ifndef NETIF_F_GRO
