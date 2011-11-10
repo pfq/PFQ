@@ -934,23 +934,80 @@ static void __exit pfq_exit_module(void)
 
 int pfq_direct_capture(const struct sk_buff *skb)
 {
-    return direct_path 
+        return direct_path 
 #ifdef DIRECT_CAPTURE_FILTER
         && pfq_devmap_bloom_get(skb->dev->ifindex)    
 #endif
-    ;
+        ;
+}
+
+static inline gro_result_t
+__pfq_gro_receive(struct napi_struct *napi, struct sk_buff *skb)
+{
+        struct sk_buff *p;
+
+        for (p = napi->gro_list; p; p = p->next) {
+                unsigned long diffs;
+
+                diffs = (unsigned long)p->dev ^ (unsigned long)skb->dev;
+                diffs |= p->vlan_tci ^ skb->vlan_tci;
+                diffs |= compare_ether_header(skb_mac_header(p),
+                                              skb_gro_mac_header(skb));
+                NAPI_GRO_CB(p)->same_flow = !diffs;
+                NAPI_GRO_CB(p)->flush = 0;
+        }
+
+        return dev_gro_receive(napi, skb);
+}
+
+
+gro_result_t 
+pfq_skb_finish(gro_result_t ret, struct sk_buff *skb)
+{
+        switch (ret) {
+        case GRO_NORMAL:
+            pfq_direct_receive(skb, skb->dev->ifindex, skb_get_rx_queue(skb));
+            break;
+
+        case GRO_DROP:
+        case GRO_MERGED_FREE:
+            kfree_skb(skb);
+            break;
+
+        case GRO_HELD:
+        case GRO_MERGED:
+            break;
+        }
+
+        return ret;
+}
+
+
+gro_result_t 
+pfq_gro_receive(struct napi_struct *napi, struct sk_buff *skb)
+{
+        if (pfq_direct_capture(skb))
+        {
+                skb_gro_reset_offset(skb);
+
+                return pfq_skb_finish( __pfq_gro_receive(napi,skb), skb );
+        }
+
+        /* kernel napi_gro_receive... */
+        return napi_gro_receive(napi,skb);
 }
 
 
 const char *
 pfq_version(void)
 {
-    return Q_VERSION;
+        return Q_VERSION;
 }
 
 
 EXPORT_SYMBOL_GPL(pfq_direct_capture);
 EXPORT_SYMBOL_GPL(pfq_direct_receive);
+EXPORT_SYMBOL_GPL(pfq_gro_receive);
 EXPORT_SYMBOL_GPL(pfq_version);
 
 

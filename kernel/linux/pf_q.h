@@ -28,10 +28,12 @@
 #else  /* __PFQ_MODULE__ */ 
 
 #include <linux/skbuff.h>
+#include <linux/netdevice.h>
 
 extern const char * pfq_version(void);
 extern int  pfq_direct_capture(const struct sk_buff *skb);
 extern int  pfq_direct_receive(struct sk_buff *skb, int ifindex, int queue);
+extern gro_result_t pfq_gro_receive(struct napi_struct *napi, struct sk_buff *skb);
 
 #endif
 
