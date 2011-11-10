@@ -53,7 +53,7 @@
 #include <linux/ethtool.h>
 #endif
 
-#ifdef HAVE_PFQ
+#ifdef CONFIG_PFQ
 #include "../../../kernel/linux/pf_q.h"
 #endif
 
@@ -1023,7 +1023,7 @@ static void ixgbe_receive_skb(struct ixgbe_q_vector *q_vector,
 {
 	struct ixgbe_adapter *adapter = q_vector->adapter;
 
-#ifdef HAVE_PFQ
+#ifdef CONFIG_PFQ
     if(pfq_direct_capture(skb)) {
         skb->mac_len = 14;
         pfq_direct_receive(skb, skb->dev->ifindex, skb_get_rx_queue(skb));

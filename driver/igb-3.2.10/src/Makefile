@@ -263,7 +263,7 @@ ifneq (,$(wildcard /etc/fedora-release))
   EXTRA_CFLAGS += -fno-strict-aliasing
 endif
 CFLAGS += $(EXTRA_CFLAGS)
-CFLAGS += -DHAVE_PFQ
+CFLAGS += -DCONFIG_PFQ
 
 .SILENT: $(TARGET)
 $(TARGET): $(filter-out $(TARGET), $(CFILES:.c=.o))
