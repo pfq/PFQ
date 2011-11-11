@@ -942,6 +942,8 @@ int pfq_direct_capture(const struct sk_buff *skb)
         ;
 }
 
+
+#if 0
 static inline gro_result_t
 __pfq_gro_receive(struct napi_struct *napi, struct sk_buff *skb)
 {
@@ -960,7 +962,6 @@ __pfq_gro_receive(struct napi_struct *napi, struct sk_buff *skb)
 
         return dev_gro_receive(napi, skb);
 }
-
 
 gro_result_t 
 pfq_skb_finish(gro_result_t ret, struct sk_buff *skb)
@@ -982,6 +983,7 @@ pfq_skb_finish(gro_result_t ret, struct sk_buff *skb)
 
         return ret;
 }
+#endif
 
 
 gro_result_t 
@@ -989,9 +991,9 @@ pfq_gro_receive(struct napi_struct *napi, struct sk_buff *skb)
 {
         if (pfq_direct_capture(skb))
         {
-                skb_gro_reset_offset(skb);
-
-                return pfq_skb_finish( __pfq_gro_receive(napi,skb), skb );
+                skb->mac_len = 14;
+                pfq_direct_receive(skb, skb->dev->ifindex, skb_get_rx_queue(skb));
+                return GRO_NORMAL;
         }
 
         /* kernel napi_gro_receive... */
