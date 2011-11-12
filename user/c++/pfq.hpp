@@ -411,7 +411,10 @@ namespace net {
         
         void add_device(const char *dev, int queue = any_queue)
         {
-            add_device(ifindex(dev), queue);
+            auto index = ifindex(dev);
+            if (index == -1)
+                throw std::runtime_error(std::string(__PRETTY_FUNCTION__).append(": device not found"));
+            add_device(index, queue);
         }                              
 
         void remove_device(int index, int queue = any_queue)
@@ -423,7 +426,10 @@ namespace net {
 
         void remove_device(const char *dev, int queue = any_queue)
         {
-            remove_device(ifindex(dev), queue);
+            auto index = ifindex(dev);
+            if (index == -1)
+                throw std::runtime_error(std::string(__PRETTY_FUNCTION__).append(": device not found"));
+            remove_device(index, queue);
         }                              
         unsigned long 
         owners(int index, int queue) const
