@@ -18,7 +18,7 @@
 #include <linux/ip.h>
 #include <linux/poll.h>
 #include <linux/etherdevice.h>
-
+#include <linux/if_vlan.h>  // VLAN_ETH_HLEN
 #include <net/sock.h>
 #ifdef CONFIG_INET
 #include <net/inet_common.h>
@@ -138,7 +138,8 @@ void pfq_release_id(unsigned int id)
 
 inline
 bool pfq_filter(const struct sk_buff *skb)
-{
+{             
+        /* TODO */
         return true;
 }
 
@@ -152,8 +153,6 @@ bool pfq_enqueue_skb(struct sk_buff *skb, struct pfq_opt *pq, bool clone)
                 sparse_inc(&pq->q_stat.drop);
                 return false;
         }
-
-
 
         /* enqueue the sk_buff: it's wait-free. */
 
@@ -180,14 +179,8 @@ pfq_load_balancer(unsigned long bm, const struct sk_buff *skb)
         int index[sizeof(unsigned long)<<3], i = 0;
         unsigned long candidates = bm & loadbalance_mask;
         unsigned long nolb = bm ^ candidates;
-
-        struct ethhdr * eh;
         struct iphdr * ip;
-
-        uint16_t proto;
         uint32_t hash;
-
-        int mac_len = sizeof(struct ethhdr);
 
         if (candidates == 0)
                 return nolb;
@@ -199,18 +192,7 @@ pfq_load_balancer(unsigned long bm, const struct sk_buff *skb)
                 candidates ^= (1<<zn);
         }
 
-        eh = (struct ethhdr *)skb_mac_header(skb);
-        proto = ntohs(eh->h_proto);
-
-        if (proto == 0x8100) {  /* vlan */
-                proto = *(uint16_t *)((char *)&eh->h_proto + 4); 
-                mac_len += 4;    
-        }
-
-        if (proto != 0x800)
-                return 0;
-
-        ip = (struct iphdr *)((unsigned char *)skb_mac_header(skb)+mac_len);
+        ip = (struct iphdr *)skb_network_header(skb);
 
         hash = ip->saddr ^ ip->daddr;
         return nolb | ( 1 << index[hash % i] );
@@ -991,7 +973,16 @@ pfq_gro_receive(struct napi_struct *napi, struct sk_buff *skb)
 {
         if (pfq_direct_capture(skb))
         {
-                skb->mac_len = 14;
+                int offset = 0;
+                if (skb->protocol == htons(ETH_P_802_3))
+                    offset = ETH_HLEN;
+                else if (skb->protocol == htons(ETH_P_8021Q))
+                    offset = VLAN_ETH_HLEN;
+
+                skb_set_network_header(skb, offset);
+                skb_reset_transport_header(skb);
+                skb_reset_mac_len(skb);
+
                 pfq_direct_receive(skb, skb->dev->ifindex, skb_get_rx_queue(skb));
                 return GRO_NORMAL;
         }

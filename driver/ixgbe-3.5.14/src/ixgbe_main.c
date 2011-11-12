@@ -1026,7 +1026,15 @@ static void ixgbe_receive_skb(struct ixgbe_q_vector *q_vector,
 
 #ifdef CONFIG_PFQ
     if(pfq_direct_capture(skb)) {
-        skb->mac_len = 14;
+        int offset = 0;
+        if (skb->protocol == htons(ETH_P_802_3))
+            offset = ETH_HLEN;
+        else if (skb->protocol == htons(ETH_P_8021Q))
+            offset = VLAN_ETH_HLEN;
+
+        skb_set_network_header(skb, offset);
+        skb_reset_transport_header(skb);
+        skb_reset_mac_len(skb);
         pfq_direct_receive(skb, skb->dev->ifindex, skb_get_rx_queue(skb));
         return;
     }
