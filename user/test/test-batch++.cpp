@@ -1,28 +1,29 @@
-#include <pfq.hpp>
 #include <cstdio>
+#include <string>
+#include <stdexcept>
 
+#include <pfq.hpp>
 using namespace net;
 
 int
 main(int argc, char *argv[])
 {
+    if (argc < 2)
+        throw std::runtime_error(std::string("usage: ").append(argv[0]).append(" dev"));
+    
     pfq r(pfq_open);
 
-    r.add_device(r.ifindex("eth3"), pfq::any_queue);
-
-    r.enable();
+    r.add_device(argv[1], pfq::any_queue);
 
     r.tstamp(true);
-
-    // assert(r.num_slots() == 4096);
+    
+    r.enable();
 
     int i = 0;
 
-    char * buffer = new char[r.queue_size()];
-
     for(;; i++)
     {
-            batch many = r.read( 1000000 /* timeout: micro */);
+            auto many = r.read( 1000000 /* timeout: micro */);
 
             batch::iterator it = many.begin();
             batch::iterator it_e = many.end();
@@ -46,10 +47,7 @@ main(int argc, char *argv[])
                     printf("\n");
             }
 
-            // usleep(200000);
     }
-
-    delete []buffer;
 
     return 0;
 }
