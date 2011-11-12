@@ -15,13 +15,13 @@ MODULE_LICENSE("GPL");
 
 unsigned long pfq_devmap[Q_MAX_DEVICE][Q_MAX_HW_QUEUE];
 
-uint8_t  pfq_devmap_bloom[Q_MAX_DEVICE];
+uint8_t  pfq_devmap_monitor[Q_MAX_DEVICE];
 
 
 static DEFINE_SEMAPHORE(devmap_sem);
 
 
-void pfq_devmap_bloom_update()
+void pfq_devmap_monitor_update()
 {
     int i,j;
     for(i=0; i < Q_MAX_DEVICE; ++i)
@@ -32,7 +32,7 @@ void pfq_devmap_bloom_update()
             val |= pfq_devmap[i][j];
         }
 
-        pfq_devmap_bloom[i] = (val ? 1 : 0);
+        pfq_devmap_monitor[i] = (val ? 1 : 0);
     }
 }
 
@@ -73,9 +73,9 @@ int pfq_devmap_update(int action, int index, int queue, unsigned int id)
         }
     }
     
-    /* update capture bloom filter... */
+    /* update capture monitor filter... */
     
-    pfq_devmap_bloom_update();
+    pfq_devmap_monitor_update();
 
     up(&devmap_sem);
     return n;

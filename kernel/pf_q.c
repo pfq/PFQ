@@ -937,7 +937,7 @@ int pfq_direct_capture(const struct sk_buff *skb)
 {
         return direct_path 
 #ifdef DIRECT_CAPTURE_FILTER
-        && pfq_devmap_bloom_get(skb->dev->ifindex)    
+        && pfq_devmap_monitor_get(skb->dev->ifindex)    
 #endif
         ;
 }
