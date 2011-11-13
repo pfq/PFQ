@@ -477,7 +477,6 @@ pfq_release(struct socket *sock)
 {
         struct sock * sk = sock->sk;
         struct pfq_opt * pq = pfq_sk(sk)->opt;
-        int sched_time = 0;
 
         if(!pq)
                 return 0;
@@ -486,11 +485,14 @@ pfq_release(struct socket *sock)
         pfq_devmap_update(map_reset, Q_ANY_DEVICE, Q_ANY_QUEUE, pq->q_id);
 
         pq->q_active = false;
+
         wmb();
 
-        /* TODO: reschedule for a while... */
-        while(sched_time++ < 64)
-                schedule();
+        /* Convenient way to avoid a race condition here,
+         * without using rwmutexes that are very expensive 
+         */
+
+        msleep(10 /* msec */);
 
         sock_orphan(sk);
         sock_put(sk);
