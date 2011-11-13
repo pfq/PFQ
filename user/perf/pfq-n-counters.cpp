@@ -1,3 +1,10 @@
+/***************************************************************
+ *                                                
+ * (C) 2011 - Nicola Bonelli <nicola.bonelli@cnit.it>   
+ *            Andrea Di Pietro <andrea.dipietro@for.unipi.it>
+ *
+ ****************************************************************/
+
 #include <affinity.hpp>
 
 #include <iostream>
@@ -17,6 +24,8 @@
 #include <pfq.hpp>
 
 int sleep_microseconds;
+
+bool enable_balance = false;
 
 static const int SECONDS = 600;
 
@@ -45,8 +54,12 @@ binding_parser(const char *arg)
     std::vector<int> queues;
 
     auto sc = std::find(arg, arg+strlen(arg), ':');
-    if (sc == arg+strlen(arg))
-        throw std::runtime_error("binding: parser error: ':' not found");
+    if (sc == arg + strlen(arg)) {
+        std::string err("'");
+        err.append(arg)
+           .append("' option error: ':' not found");
+        throw std::runtime_error(err);
+    }
 
     std::string dev(arg, sc);
 
@@ -66,18 +79,16 @@ namespace test
     struct ctx
     {
         ctx(const char *d, const std::vector<int> & q)
-        : m_buffer(), m_dev(d), m_queues(q), m_stop(false), m_pfq(pfq_open), m_read()
+        : m_dev(d), m_queues(q), m_stop(false), m_pfq(pfq_open), m_read()
         {
             std::for_each(m_queues.begin(), m_queues.end(),[&](int q) {
-
-                          std::cout << "setting dev: " << m_pfq.ifindex(d) << "@" << q << std::endl;       
-                    m_pfq.add_device(m_pfq.ifindex(d), q);
+                          std::cout << "setting dev: " << d << "@" << q << std::endl;       
+                    m_pfq.add_device(d, q);
                 });
 
+            m_pfq.load_balance(enable_balance);
             m_pfq.enable();
             m_pfq.tstamp(false);
-
-            m_buffer = new char[m_pfq.queue_size()];
 
             std::cout << "cxt: queue_size: " << m_pfq.queue_size() << " pfq_id:" << m_pfq.get_id() << std::endl;
         }
@@ -86,10 +97,9 @@ namespace test
         ctx& operator=(const ctx &) = delete;
 
         ctx(ctx && other)
-        : m_buffer(other.m_buffer), m_dev(other.m_dev), m_queues(other.m_queues), m_stop(other.m_stop.load()), 
+        : m_dev(other.m_dev), m_queues(other.m_queues), m_stop(other.m_stop.load()), 
           m_pfq(std::move(other.m_pfq)), m_read()
         {
-            other.m_buffer = 0;
         }
 
         ctx& operator=(ctx &&other)
@@ -98,10 +108,8 @@ namespace test
             m_queues = other.m_queues;
             m_stop.store(other.m_stop.load());
             m_pfq = std::move(other.m_pfq);
-            m_buffer = other.m_buffer;
 
             other.m_pfq = pfq();
-            other.m_buffer = 0;
             return *this;
         }
 
@@ -109,9 +117,6 @@ namespace test
         {
             for(;;)
             {
-                // batch many = m_pfq.recv(mutable_buffer(m_buffer, m_pfq.queue_size()),sleep_microseconds);
-                // auto many = m_pfq.recv(mutable_buffer(m_buffer, m_pfq.queue_size()), sleep_microseconds);
-                
                 auto many = m_pfq.read(sleep_microseconds);
 
                 m_read += many.size();
@@ -128,12 +133,6 @@ namespace test
             m_stop.store(true, std::memory_order_release);
         }
 
-        // unsigned long long
-        // counter() const
-        // {
-        //     return static_cast<volatile long long int>(m_counter); // read of 64bit is atomic only on 64bits arch. 
-        // }
-        
         pfq_stats
         stats() const
         {
@@ -153,8 +152,6 @@ namespace test
         }
 
     private:
-        char *m_buffer;
-
         const char *m_dev;
         std::vector<int> m_queues;
 
@@ -167,6 +164,7 @@ namespace test
 
     } __attribute__((aligned(128)));
 }
+
 
 unsigned int hardware_concurrency()
 {
@@ -181,20 +179,38 @@ unsigned int hardware_concurrency()
 }
 
 
+void usage(const char *name)
+{
+    throw std::runtime_error(std::string("usage: ").append(name).append("[-h|--help] [-b|--balance] T1 T2... | T = dev:core:queue,queue..."));
+}
+
+
 int
 main(int argc, char *argv[])
+try
 {
     if (argc < 2)
-        throw std::runtime_error(std::string("usage: ").append(argv[0]).append(" T1 T2... | T = dev:core:queue,queue..."));
-    
+        usage(argv[0]);
+
     std::vector<std::thread> vt;
     std::vector<test::ctx> ctx;
 
     std::vector<binding_type> vbinding;
-    
+
     // load vbinding vector:
     for(int i = 1; i < argc; ++i)
     {
+        if ( strcmp(argv[i], "-b") == 0 ||
+             strcmp(argv[i], "--balance") == 0) {
+            std::cout << "Balancing: ON" << std::endl;
+            enable_balance = true;
+            continue;
+        }
+
+        if ( strcmp(argv[i], "-h") == 0 ||
+             strcmp(argv[i], "--help") == 0)
+            usage(argv[0]);
+
         vbinding.push_back(binding_parser(argv[i]));
     }
     
@@ -282,4 +298,7 @@ main(int argc, char *argv[])
 
     return 0;
 }
- 
+catch(std::exception &e)
+{
+    std::cerr << e.what() << std::endl;
+}
