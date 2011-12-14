@@ -213,12 +213,12 @@ try
 
         vbinding.push_back(binding_parser(argv[i]));
     }
-    
+        
     // create threads' context:
-    for(int i = 1; i < argc; ++i)
+    for(int i = 0; i < vbinding.size(); ++i)
     {
-        std::cout << "pushing a context: " << std::get<0>(vbinding[i-1]) << ' ' << std::get<1>(vbinding[i-1]) << std::endl;
-        ctx.push_back(test::ctx(std::get<0>(vbinding[i-1]).c_str(), std::get<2>(vbinding[i-1])));        
+        std::cout << "pushing a context: " << std::get<0>(vbinding[i]) << ' ' << std::get<1>(vbinding[i]) << std::endl;
+        ctx.push_back(test::ctx(std::get<0>(vbinding[i]).c_str(), std::get<2>(vbinding[i])));        
     }
 
     sleep_microseconds = 20000 * ctx.size();
