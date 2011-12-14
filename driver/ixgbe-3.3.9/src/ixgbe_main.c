@@ -1033,7 +1033,11 @@ static void ixgbe_receive_skb(struct ixgbe_q_vector *q_vector,
 
         skb_set_network_header(skb, offset);
         skb_reset_transport_header(skb);
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,0,0)
         skb_reset_mac_len(skb);
+#else 
+        skb->mac_len = skb->network_header - skb->mac_header;
+#endif
         pfq_direct_receive(skb, skb->dev->ifindex, skb_get_rx_queue(skb));
         return;
     }
