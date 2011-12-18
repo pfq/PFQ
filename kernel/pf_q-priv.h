@@ -36,7 +36,7 @@ struct pfq_opt
         
         size_t          q_tot_mem;    /* pfq_queue_descr + q_queue_mem * 2 */
         size_t          q_queue_mem; 
-        size_t          q_cap_len;
+        size_t          q_caplen;
 
         wait_queue_head_t q_waitqueue;
 

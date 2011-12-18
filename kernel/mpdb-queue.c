@@ -15,8 +15,8 @@ mpdb_enqueue(struct pfq_opt *pq, struct sk_buff *skb)
     if (!atomic_read((atomic_t *)&queue_descr->disable))  
     {
         size_t packet_len = skb->len + skb->mac_len;
-        size_t cap_len    = min_t(size_t, pq->q_cap_len, packet_len);
-        size_t slot_len   = ALIGN(sizeof(struct pfq_hdr) + cap_len, 8);
+        size_t caplen     = min_t(size_t, pq->q_caplen, packet_len);
+        size_t slot_len   = ALIGN(sizeof(struct pfq_hdr) + caplen, 8);
 
         uint64_t new_data    = atomic64_add_return(0x0000000100000000ULL|slot_len, (atomic64_t *)&queue_descr->data);
         uint64_t queue_size  = DBMP_QUEUE_SIZE(new_data);
@@ -32,7 +32,7 @@ mpdb_enqueue(struct pfq_opt *pq, struct sk_buff *skb)
             /* setup the header */
 
             hdr->len      = packet_len;
-            hdr->caplen   = cap_len;
+            hdr->caplen   = caplen;
             hdr->if_index = skb->dev->ifindex;
             hdr->hw_queue = skb_get_rx_queue(skb);                      
 
@@ -44,10 +44,10 @@ mpdb_enqueue(struct pfq_opt *pq, struct sk_buff *skb)
                 hdr->tstamp.tv.nsec = ts.tv_nsec;
             }
 
-           /* copy cap_len bytes of packet */
+           /* copy caplen bytes of packet */
            
-            if (cap_len &&
-                skb_copy_bits(skb, /* offset */ -skb->mac_len, pkt, cap_len) != 0)
+            if (caplen &&
+                skb_copy_bits(skb, /* offset */ -skb->mac_len, pkt, caplen) != 0)
                 return false;
 
            /* commit the slot with release semantic */

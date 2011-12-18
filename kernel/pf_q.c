@@ -361,7 +361,7 @@ pfq_ctor(struct pfq_opt *pq)
         pfq_queue_alloc(pq, queue_mem);
         
         pq->q_tstamp  = 0;
-        pq->q_cap_len = cap_len;
+        pq->q_caplen  = cap_len;
         pq->q_queue_mem = queue_mem;
 
         /* initialize waitqueue */
