@@ -60,7 +60,7 @@ module_param(queue_mem,    int, 0644);
 module_param(cap_len,      int, 0644);
 
 
-MODULE_PARM_DESC(direct_path, " Direct Path: 0 = off(classic), 1 = direct");
+MODULE_PARM_DESC(direct_path, " Direct Path: 0 = classic, 1 = direct");
 MODULE_PARM_DESC(cap_len,     " Default capture length (bytes)");
 MODULE_PARM_DESC(pipeline_len," Pipeline length");
 MODULE_PARM_DESC(queue_mem,   " Queue memory (bytes)");
