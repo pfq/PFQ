@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.4)
 
 #set(CMAKE_VERBOSE_MAKEFILE 1)
 
-set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0 -g -march=native -Wall -std=c++0x")
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -march=native -Wall -std=c++0x")
 
 include_directories(.)
 include_directories(../../kernel)
