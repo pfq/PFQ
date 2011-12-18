@@ -473,7 +473,7 @@ namespace net {
                 this->poll(microseconds);
             }
 
-            // atomically swap the queues...
+            // atomic exchange: swap the queues...
             data = __sync_lock_test_and_set(&q->data,  ( index ? 0ULL : 0x8000000000000000ULL ));
             
             if( DBMP_QUEUE_SIZE(data) > m_queue_size) {
