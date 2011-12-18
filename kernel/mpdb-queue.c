@@ -33,7 +33,7 @@ mpdb_enqueue(struct pfq_opt *pq, struct sk_buff *skb)
 
             hdr->len      = packet_len;
             hdr->caplen   = cap_len;
-            hdr->if_index = (skb->dev ? skb->dev->ifindex : -1);
+            hdr->if_index = skb->dev->ifindex;
             hdr->hw_queue = skb_get_rx_queue(skb);                      
 
             if (pq->q_tstamp != 0)
