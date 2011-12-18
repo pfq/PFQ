@@ -29,10 +29,9 @@ typedef struct pfq_kstats
 
 struct pfq_opt
 {
-        bool            q_active;
         unsigned int    q_id;
 
-        int             q_tstamp_type;
+        int             q_tstamp;
         void *          q_mem;
         
         size_t          q_tot_mem;    /* pfq_queue_descr + q_queue_mem * 2 */
@@ -42,6 +41,8 @@ struct pfq_opt
         wait_queue_head_t q_waitqueue;
 
         pfq_kstat_t     q_stat;
+
+        bool            q_active;
 
 } __attribute__((aligned(128)));
 

@@ -4,6 +4,6 @@ MODULE_LICENSE("GPL");
 
 DEFINE_SEMAPHORE(global_sem);
 
-volatile struct pfq_global_t global;
+struct pfq_global_t global;
 
 

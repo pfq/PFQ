@@ -11,11 +11,15 @@
 struct pfq_global_t
 {
     /* devmap */
-    unsigned long devmap  [Q_MAX_DEVICE][Q_MAX_HW_QUEUE];
-    uint8_t devmap_monitor[Q_MAX_DEVICE];
+    volatile unsigned long devmap  [Q_MAX_DEVICE][Q_MAX_HW_QUEUE];
+    volatile uint8_t devmap_monitor[Q_MAX_DEVICE];
+
+    /* timestamp */
+    atomic_t   tstamp;
+
 };
 
-extern volatile struct pfq_global_t global;
+extern struct pfq_global_t global;
 extern struct semaphore    global_sem;
 
 #endif /* _PF_Q_GLOBAL_H_ */
