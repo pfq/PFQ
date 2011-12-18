@@ -10,15 +10,10 @@
 #include <linux/semaphore.h>
 
 #include <pf_q-devmap.h>
+#include <pf_q-global.h>
+
 
 MODULE_LICENSE("GPL");
-
-unsigned long pfq_devmap[Q_MAX_DEVICE][Q_MAX_HW_QUEUE];
-
-uint8_t  pfq_devmap_monitor[Q_MAX_DEVICE];
-
-
-static DEFINE_SEMAPHORE(devmap_sem);
 
 
 void pfq_devmap_monitor_update()
@@ -29,13 +24,12 @@ void pfq_devmap_monitor_update()
         unsigned long val = 0;
         for(j=0; j < Q_MAX_HW_QUEUE; ++j)
         {
-            val |= pfq_devmap[i][j];
+            val |= global.devmap[i][j];
         }
 
-        pfq_devmap_monitor[i] = (val ? 1 : 0);
+        global.devmap_monitor[i] = (val ? 1 : 0);
     }
 }
-
 
 
 int pfq_devmap_update(int action, int index, int queue, unsigned int id)
@@ -48,7 +42,7 @@ int pfq_devmap_update(int action, int index, int queue, unsigned int id)
         return 0; 
     }
 
-    down(&devmap_sem);
+    down(&global_sem);
 
     for(i=0; i < Q_MAX_DEVICE; ++i)
     {
@@ -60,14 +54,14 @@ int pfq_devmap_update(int action, int index, int queue, unsigned int id)
             /* map_set... */
             if (action == map_set) 
             {
-                pfq_devmap[i][q] |= (1<<id), n++;
+                global.devmap[i][q] |= (1<<id), n++;
                 continue;
             }
 
             /* map_reset */
-            if ( pfq_devmap[i][q] & (1<<id) )
+            if ( global.devmap[i][q] & (1<<id) )
             {
-                pfq_devmap[i][q] &= ~(1<<id), n++;
+                global.devmap[i][q] &= ~(1<<id), n++;
                 continue;
             }
         }
@@ -77,7 +71,7 @@ int pfq_devmap_update(int action, int index, int queue, unsigned int id)
     
     pfq_devmap_monitor_update();
 
-    up(&devmap_sem);
+    up(&global_sem);
     return n;
 }
 

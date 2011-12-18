@@ -18,15 +18,16 @@ mpdb_enqueue(struct pfq_opt *pq, struct sk_buff *skb)
         size_t cap_len    = min_t(size_t, pq->q_cap_len, packet_len);
         size_t slot_len   = ALIGN(sizeof(struct pfq_hdr) + cap_len, 8);
 
-        uint64_t new_data = atomic64_add_return(0x0000000100000000ULL|slot_len, (atomic64_t *)&queue_descr->data);
-        
-        if ( DBMP_QUEUE_SIZE(new_data) <= pq->q_queue_mem)
+        uint64_t new_data    = atomic64_add_return(0x0000000100000000ULL|slot_len, (atomic64_t *)&queue_descr->data);
+        uint64_t queue_size  = DBMP_QUEUE_SIZE(new_data);
+        bool     queue_index = DBMP_QUEUE_INDEX(new_data);
+
+        if (queue_size <= pq->q_queue_mem)
         {
             /* enqueue skb */
 
-            struct pfq_hdr * hdr = (struct pfq_hdr *)((char *)(queue_descr+1) + (DBMP_QUEUE_INDEX(new_data) ? pq->q_queue_mem : 0) 
-                                                                              +  DBMP_QUEUE_SIZE(new_data) - slot_len);
-            char * to = (char *)(hdr+1);
+            struct pfq_hdr * hdr = (struct pfq_hdr *)((char *)(queue_descr+1) + (queue_index ? pq->q_queue_mem : 0) + queue_size - slot_len);
+            char * pkt = (char *)(hdr+1);
 
             /* setup the header */
 
@@ -44,8 +45,9 @@ mpdb_enqueue(struct pfq_opt *pq, struct sk_buff *skb)
             }
 
            /* copy cap_len bytes of packet */
-           if (cap_len &&
-                skb_copy_bits(skb, /* offset */ -skb->mac_len, to, cap_len) != 0)
+           
+            if (cap_len &&
+                skb_copy_bits(skb, /* offset */ -skb->mac_len, pkt, cap_len) != 0)
                 return false;
 
            /* commit the slot with release semantic */
@@ -55,18 +57,20 @@ mpdb_enqueue(struct pfq_opt *pq, struct sk_buff *skb)
            
            /* watermark */
 
-           if ( (DBMP_QUEUE_SIZE(new_data) >  ( pq->q_queue_mem >> 1)) && queue_descr->poll_wait ) {
+           if ( (queue_size > ( pq->q_queue_mem >> 1)) && 
+                           queue_descr->poll_wait ) {
                 wake_up_interruptible(&pq->q_waitqueue);
            }
 
            return true;
         }
-        else if ( DBMP_QUEUE_SIZE(new_data) - slot_len <= pq->q_queue_mem )
+        else if ( (queue_size - slot_len) <= pq->q_queue_mem )
         {
             uint64_t valid_data =  new_data - (0x0000000100000000ULL|slot_len);
             
             atomic64_set((atomic64_t *)&queue_descr->valid_data, valid_data);
-            /* release semantic: note volatile variables are not reordered */
+            
+            /* release semantic: volatile variables are not reordered */
             atomic_set((atomic_t *)&queue_descr->disable,1);
         }
     }
