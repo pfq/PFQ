@@ -402,6 +402,20 @@ namespace net {
            return ret;
         }
 
+        void caplen(size_t value)
+        {
+            if (::setsockopt(m_q, PF_Q, SO_CAPLEN, &value, sizeof(value)) == -1)
+                throw std::runtime_error(__PRETTY_FUNCTION__);
+        }
+
+        size_t caplen() const
+        {
+           size_t ret; socklen_t size = sizeof(ret);
+           if (::getsockopt(m_q, PF_Q, SO_GET_CAPLEN, &ret, &size) == -1)
+                throw std::runtime_error(__PRETTY_FUNCTION__);
+           return ret;
+        }
+
         void add_device(int index, int queue = any_queue)
         {
             struct pfq_dev_queue dq = { index, queue };

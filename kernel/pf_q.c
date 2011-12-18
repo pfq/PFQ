@@ -600,6 +600,13 @@ int pfq_getsockopt(struct socket *sock,
                             return -EFAULT;
             } break;
 
+        case SO_GET_CAPLEN: 
+            {
+                    if (len != sizeof(size_t))
+                            return -EINVAL;
+                    if (copy_to_user(optval, &pq->q_caplen, sizeof(pq->q_caplen)))
+                            return -EFAULT;
+            } break;
         default:
             return -EFAULT;
         }
@@ -694,6 +701,14 @@ int pfq_setsockopt(struct socket *sock,
                     pq->q_tstamp = tstamp;
 
                     printk(KERN_INFO "[PFQ] global.tstamp => %d\n", atomic_read(&global.tstamp));
+            } break;
+        
+        case SO_CAPLEN: 
+            {
+                    if (optlen != sizeof(pq->q_caplen))
+                            return -EINVAL;
+                    if (copy_from_user(&pq->q_caplen, optval, optlen))
+                            return -EFAULT;
             } break;
 
         default: 

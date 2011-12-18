@@ -95,6 +95,7 @@ struct pfq_queue_descr
 #define SO_REMOVE_DEVICE        103
 #define SO_TSTAMP_TYPE          105
 #define SO_LOAD_BALANCE         106
+#define SO_CAPLEN               107
 
 /* get socket options */
 #define SO_GET_ID               120
@@ -105,6 +106,7 @@ struct pfq_queue_descr
 #define SO_GET_TSTAMP_TYPE      125
 #define SO_GET_TOT_MEM          126
 #define SO_GET_QUEUE_MEM        127
+#define SO_GET_CAPLEN           128
 
 
 /* struct used for setsockopt */
