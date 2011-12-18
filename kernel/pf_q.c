@@ -210,9 +210,10 @@ pfq_direct_receive(struct sk_buff *skb, int index, int queue)
         int me = get_cpu();
         int q;
 
-        /* if required, timestamp this packet now (early) */
+        /* if required, timestamp this packet now */
 
-        if (skb->tstamp.tv64 == 0) {
+        if (atomic_read(&global.tstamp) && 
+                        skb->tstamp.tv64 == 0) {
                 __net_timestamp(skb);
         }
 
@@ -306,11 +307,11 @@ pfq_packet_rcv
 
 
 static int
-pfq_queue_alloc(struct pfq_opt *pq)
+pfq_queue_alloc(struct pfq_opt *pq, int queue_mem)
 {
         /* calculate the size of the buffer */
 
-        int tot_mem = PAGE_ALIGN(sizeof(struct pfq_queue_descr) + pq->q_queue_mem * 2); // double-buffered
+        int tot_mem = PAGE_ALIGN(sizeof(struct pfq_queue_descr) + queue_mem * 2); // double-buffered
 
         /* align bufflen to page size */
 
@@ -323,7 +324,7 @@ pfq_queue_alloc(struct pfq_opt *pq)
 
         if (pq->q_mem == NULL)
         {
-                printk(KERN_INFO "pfq_queue_alloc: out of memory");
+                printk(KERN_INFO "[PFQ] pfq_queue_alloc: out of memory");
                 return -1;
         }
 
@@ -347,10 +348,6 @@ pfq_ctor(struct pfq_opt *pq)
 #ifdef Q_DEBUG
         printk(KERN_INFO "[PF_Q] queue ctor\n");
 #endif
-        pq->q_active = false;
-
-        /* initialize queue: nothing to do */
-
 
         /* get a unique id for this queue */
         pq->q_id = pfq_get_free_id(pq);
@@ -359,21 +356,24 @@ pfq_ctor(struct pfq_opt *pq)
                 printk(KERN_WARNING "[PF_Q]: no queue available\n");
                 return -EBUSY;
         }
-
-        pq->q_queue_mem = queue_mem;
+        
+        /* alloc queue memory */
+        pfq_queue_alloc(pq, queue_mem);
+        
+        pq->q_tstamp  = 0;
         pq->q_cap_len = cap_len;
+        pq->q_queue_mem = queue_mem;
 
-        /* alloc memory */
-        pfq_queue_alloc(pq);
-
+        /* initialize waitqueue */
+        init_waitqueue_head(&pq->q_waitqueue);
+        
         /* reset stats */
         sparse_set(0, &pq->q_stat.recv);
         sparse_set(0, &pq->q_stat.lost);
         sparse_set(0, &pq->q_stat.drop);
 
-        /* initialize waitqueue */
-
-        init_waitqueue_head(&pq->q_waitqueue);
+        /* disabled by default */
+        pq->q_active = false;
         return 0;
 }
 
@@ -486,6 +486,12 @@ pfq_release(struct socket *sock)
 
         pq->q_active = false;
 
+        /* decrease the global.tstamp counter */
+        if (pq->q_tstamp) {
+                atomic_dec(&global.tstamp);
+                printk(KERN_INFO "[PFQ] global.tstamp => %d\n", atomic_read(&global.tstamp));
+        }
+
         wmb();
 
         /* Convenient way to avoid a race condition here,
@@ -552,7 +558,7 @@ int pfq_getsockopt(struct socket *sock,
             {
                     if (len != sizeof(int))
                             return -EINVAL;
-                    if (copy_to_user(optval, &pq->q_tstamp_type, sizeof(pq->q_tstamp_type)))
+                    if (copy_to_user(optval, &pq->q_tstamp, sizeof(pq->q_tstamp)))
                             return -EFAULT;
             } break;
 
@@ -669,15 +675,25 @@ int pfq_setsockopt(struct socket *sock,
                             return -EINVAL;
                     if (copy_from_user(&dq, optval, optlen))
                             return -EFAULT;
+
                     pfq_devmap_update(map_reset, dq.if_index, dq.hw_queue, pq->q_id);
             } break;
 
         case SO_TSTAMP_TYPE: 
             {
-                    if (optlen != sizeof(pq->q_tstamp_type))
+                    int tstamp;
+                    if (optlen != sizeof(pq->q_tstamp))
                             return -EINVAL;
-                    if (copy_from_user(&pq->q_tstamp_type, optval, optlen))
+                    if (copy_from_user(&tstamp, optval, optlen))
                             return -EFAULT;
+                    if (tstamp != 0 && tstamp != 1)
+                            return -EINVAL;
+
+                    /* update the global.tstamp counter */
+                    atomic_add(tstamp - pq->q_tstamp, &global.tstamp);
+                    pq->q_tstamp = tstamp;
+
+                    printk(KERN_INFO "[PFQ] global.tstamp => %d\n", atomic_read(&global.tstamp));
             } break;
 
         default: 
