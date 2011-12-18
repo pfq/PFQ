@@ -344,10 +344,12 @@ pfq_queue_free(struct pfq_opt *pq)
 static int 
 pfq_ctor(struct pfq_opt *pq)
 {
-
 #ifdef Q_DEBUG
         printk(KERN_INFO "[PF_Q] queue ctor\n");
 #endif
+        
+        /* set to 0 by default */
+        memset(pq, 0, sizeof(struct pfq_opt));
 
         /* get a unique id for this queue */
         pq->q_id = pfq_get_free_id(pq);
