@@ -1,4 +1,4 @@
-# (C) 2011 - Nicola Bonelli <nicola.bonelli@cnit.it>
+# (C) 2011-12 Nicola Bonelli <nicola.bonelli@cnit.it>
 #
 
 TARGET = pfq
