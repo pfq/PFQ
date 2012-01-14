@@ -203,7 +203,7 @@ pfq_load_balancer(unsigned long bm, const struct sk_buff *skb)
 
 
 int 
-pfq_direct_receive(struct sk_buff *skb, int index, int queue)
+pfq_direct_receive(struct sk_buff *skb, int index, int queue, bool direct)
 {       
         struct pfq_opt * pq;
         unsigned long bm;
@@ -215,17 +215,6 @@ pfq_direct_receive(struct sk_buff *skb, int index, int queue)
         if (atomic_read(&global.tstamp) && 
                         skb->tstamp.tv64 == 0) {
                 __net_timestamp(skb);
-        }
-
-        if (!direct_path && skb_shared(skb)) {
-                struct sk_buff *nskb = skb_clone(skb, GFP_ATOMIC);
-                if (nskb == NULL) {
-                        skb = NULL;
-                } 
-                else {
-                        kfree_skb(skb);
-                        skb = nskb;
-                }
         }
 
         pq = NULL; 
@@ -274,7 +263,7 @@ pfq_direct_receive(struct sk_buff *skb, int index, int queue)
         {
                 if(pfq_skb_pipeline[me].queue[q]) 
                 {
-                        if (likely(direct_path))
+                        if (likely(direct))
                                 __kfree_skb(pfq_skb_pipeline[me].queue[q]);
                         else
                                 kfree_skb(pfq_skb_pipeline[me].queue[q]);
@@ -302,7 +291,18 @@ pfq_packet_rcv
 #endif
     )
 {
-        return pfq_direct_receive(skb, dev->ifindex, skb_get_rx_queue(skb));
+        if (skb_shared(skb)) {
+                struct sk_buff *nskb = skb_clone(skb, GFP_ATOMIC);
+                if (nskb == NULL) {
+                        return 0;
+                } 
+                else {
+                        kfree_skb(skb);
+                        skb = nskb;
+                }
+        }
+
+        return pfq_direct_receive(skb, dev->ifindex, skb_get_rx_queue(skb), false);
 }
 
 
@@ -949,7 +949,7 @@ static void __exit pfq_exit_module(void)
 
 /* pfq-10 aware drivers support */
 
-
+inline
 int pfq_direct_capture(const struct sk_buff *skb)
 {
         return direct_path 
@@ -1021,7 +1021,7 @@ pfq_gro_receive(struct napi_struct *napi, struct sk_buff *skb)
 #else
                 skb->mac_len = skb->network_header - skb->mac_header;
 #endif
-                pfq_direct_receive(skb, skb->dev->ifindex, skb_get_rx_queue(skb));
+                pfq_direct_receive(skb, skb->dev->ifindex, skb_get_rx_queue(skb), true);
                 return GRO_NORMAL;
         }
 
