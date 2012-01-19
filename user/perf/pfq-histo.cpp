@@ -32,7 +32,7 @@ main(int argc, char *argv[])
     // open a pfq socket:
     // 
 
-    pfq q(pfq_open);
+    pfq q(64);
 
     
     // add the device to this queue (hw queue = any)

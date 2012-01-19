@@ -23,11 +23,16 @@
 
 #include <pfq.hpp>
 
-int sleep_microseconds;
 
-bool enable_balance = false;
+namespace opt {
 
-static const int SECONDS = 600;
+    int sleep_microseconds;
+    bool enable_balance = false;
+    size_t caplen = 64;
+    size_t slots  = 131072;
+    static const int seconds = 600;
+}
+
 
 typedef std::tuple<std::string, int, std::vector<int>> binding_type;
 
@@ -79,18 +84,20 @@ namespace test
     struct ctx
     {
         ctx(const char *d, const std::vector<int> & q)
-        : m_dev(d), m_queues(q), m_stop(false), m_pfq(pfq_open), m_read()
+        : m_dev(d), m_queues(q), m_stop(false), m_pfq(opt::caplen), m_read()
         {
             std::for_each(m_queues.begin(), m_queues.end(),[&](int q) {
                           std::cout << "setting dev: " << d << "@" << q << std::endl;       
                     m_pfq.add_device(d, q);
                 });
 
-            m_pfq.load_balance(enable_balance);
-            m_pfq.enable();
+            m_pfq.caplen(opt::caplen);
+            m_pfq.slots (opt::slots);
+            m_pfq.load_balance(opt::enable_balance);
             m_pfq.tstamp(false);
-
-            std::cout << "cxt: queue_size: " << m_pfq.queue_size() << " pfq_id:" << m_pfq.get_id() << std::endl;
+            
+            m_pfq.enable();
+            std::cout << "cxt: queue_slots: " << m_pfq.slots() << " pfq_id:" << m_pfq.id() << std::endl;
         }
         
         ctx(const ctx &) = delete;
@@ -117,7 +124,7 @@ namespace test
         {
             for(;;)
             {
-                auto many = m_pfq.read(sleep_microseconds);
+                auto many = m_pfq.read(opt::sleep_microseconds);
 
                 m_read += many.size();
 
@@ -181,7 +188,7 @@ unsigned int hardware_concurrency()
 
 void usage(const char *name)
 {
-    throw std::runtime_error(std::string("usage: ").append(name).append("[-h|--help] [-b|--balance] T1 T2... | T = dev:core:queue,queue..."));
+    throw std::runtime_error(std::string("usage: ").append(name).append("[-h|--help] [-c caplen] [-s slots] [-b|--balance] T1 T2... | T = dev:core:queue,queue..."));
 }
 
 
@@ -203,7 +210,31 @@ try
         if ( strcmp(argv[i], "-b") == 0 ||
              strcmp(argv[i], "--balance") == 0) {
             std::cout << "Balancing: ON" << std::endl;
-            enable_balance = true;
+            opt::enable_balance = true;
+            continue;
+        }
+
+        if ( strcmp(argv[i], "-c") == 0 ||
+             strcmp(argv[i], "--caplen") == 0) {
+            i++;
+            if (i == argc)
+            {
+                throw std::runtime_error("caplen missing");
+            }
+
+            opt::caplen = std::atoi(argv[i]);
+            continue;
+        }
+
+        if ( strcmp(argv[i], "-s") == 0 ||
+             strcmp(argv[i], "--slots") == 0) {
+            i++;
+            if (i == argc)
+            {
+                throw std::runtime_error("slots missing");
+            }
+
+            opt::slots = std::atoi(argv[i]);
             continue;
         }
 
@@ -213,16 +244,20 @@ try
 
         vbinding.push_back(binding_parser(argv[i]));
     }
-        
+    
+    std::cout << "Caplen: " << opt::caplen << std::endl;
+    std::cout << "Slots : " << opt::slots << std::endl;
+
     // create threads' context:
-    for(int i = 0; i < vbinding.size(); ++i)
+    //
+    for(unsigned int i = 0; i < vbinding.size(); ++i)
     {
         std::cout << "pushing a context: " << std::get<0>(vbinding[i]) << ' ' << std::get<1>(vbinding[i]) << std::endl;
         ctx.push_back(test::ctx(std::get<0>(vbinding[i]).c_str(), std::get<2>(vbinding[i])));        
     }
 
-    sleep_microseconds = 30000 * ctx.size();
-    std::cout << "poll timeout " << sleep_microseconds << " usec" << std::endl;
+    opt::sleep_microseconds = 30000 * ctx.size();
+    std::cout << "poll timeout " << opt::sleep_microseconds << " usec" << std::endl;
 
     // create threads:
 
@@ -245,7 +280,7 @@ try
     std::cout << "----------- capture started ------------\n";
 
     auto begin = std::chrono::system_clock::now();
-    for(int y=0; y < SECONDS; y++)
+    for(int y=0; y < opt::seconds; y++)
     {
         std::this_thread::sleep_for(std::chrono::seconds(1));
         

@@ -8,7 +8,7 @@ using namespace net;
 int
 main(int argc, char *argv[])
 {
-    pfq q(pfq_open);
+    pfq q;
 
     q.tstamp(true);
     

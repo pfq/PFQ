@@ -32,17 +32,19 @@ struct pfq_opt
         unsigned int    q_id;
 
         int             q_tstamp;
-        void *          q_mem;
         
-        size_t          q_tot_mem;    /* pfq_queue_descr + q_queue_mem * 2 */
-        size_t          q_queue_mem; 
+        void *          q_addr;
+        size_t          q_queue_mem;  /* > sizeof(pfq_queue_descr) + q_slots * sizeof(slots) * 2 */
+
+        size_t          q_slots;      /* number of slots per queue */
         size_t          q_caplen;
+        size_t          q_slot_size;
 
         wait_queue_head_t q_waitqueue;
 
         pfq_kstat_t     q_stat;
 
-        bool            q_active;
+        int             q_active;
 
 } __attribute__((aligned(128)));
 

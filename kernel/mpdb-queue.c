@@ -7,78 +7,117 @@
 
 #include <mpdb-queue.h>
 
+void *
+mpdb_queue_alloc(struct pfq_opt *pq, int queue_mem, size_t * tot_mem)
+{
+        /* calculate the size of the buffer */
+
+        int tm = PAGE_ALIGN(queue_mem); 
+
+        /* align bufflen to page size */
+
+        int num_pages = tm / PAGE_SIZE; void *addr;
+
+        num_pages += (num_pages + (SHMLBA-1)) % SHMLBA;
+        *tot_mem = num_pages*PAGE_SIZE;
+
+        /* Memory is already zeroed */
+        addr = vmalloc_user(*tot_mem);
+        if (addr == NULL)
+        {
+                printk(KERN_INFO "[PF_Q] pfq_queue_alloc: out of memory");
+                *tot_mem = 0;
+                return NULL;
+        }
+
+        printk(KERN_INFO "[PF_Q] queue caplen:%lu mem:%lu\n", pq->q_caplen, *tot_mem); 
+        return addr;
+}
+
+
+void
+mpdb_queue_free(struct pfq_opt *pq)
+{
+        if (pq->q_addr) {
+                printk(KERN_INFO "[PF_Q] queue freed!\n"); 
+                vfree(pq->q_addr);
+
+                pq->q_addr = NULL;
+                pq->q_queue_mem = 0;
+        }
+}    
+
+
 bool 
 mpdb_enqueue(struct pfq_opt *pq, struct sk_buff *skb)
 {
-    struct pfq_queue_descr  *queue_descr = (struct pfq_queue_descr *)pq->q_mem;
+        struct pfq_queue_descr  *queue_descr = (struct pfq_queue_descr *)pq->q_addr;
 
-    if (!atomic_read((atomic_t *)&queue_descr->disable))  
-    {
-        size_t packet_len = skb->len + skb->mac_len;
-        size_t caplen     = min_t(size_t, pq->q_caplen, packet_len);
-        size_t slot_len   = ALIGN(sizeof(struct pfq_hdr) + caplen, 8);
-
-        uint64_t new_data    = atomic64_add_return(0x0000000100000000ULL|slot_len, (atomic64_t *)&queue_descr->data);
-        uint64_t queue_size  = DBMP_QUEUE_SIZE(new_data);
-        bool     queue_index = DBMP_QUEUE_INDEX(new_data);
-
-        if (queue_size <= pq->q_queue_mem)
+        if (!atomic_read((atomic_t *)&queue_descr->disabled))  
         {
-            /* enqueue skb */
+                size_t packet_len= skb->len + skb->mac_len;
+                size_t cap_len   = min(packet_len, pq->q_caplen);
 
-            struct pfq_hdr * hdr = (struct pfq_hdr *)((char *)(queue_descr+1) + (queue_index ? pq->q_queue_mem : 0) + queue_size - slot_len);
-            char * pkt = (char *)(hdr+1);
+                int  data    = atomic_add_return(1, (atomic_t *)&queue_descr->data);
+                int  q_len   = DBMP_QUEUE_LEN(data);
+                bool q_index = DBMP_QUEUE_INDEX(data);
 
-            /* setup the header */
+                if (q_len <= pq->q_slots)
+                {
+                        /* enqueue skb */
 
-            hdr->len      = packet_len;
-            hdr->caplen   = caplen;
-            hdr->if_index = skb->dev->ifindex;
-            hdr->hw_queue = skb_get_rx_queue(skb);                      
+                        struct pfq_hdr *p_hdr = (struct pfq_hdr *)((char *)(queue_descr+1) + q_index * pq->q_slot_size * pq->q_slots 
+                                        + (q_len-1) * pq->q_slot_size);
 
-            if (pq->q_tstamp != 0)
-            {
-                struct timespec ts;
-                skb_get_timestampns(skb, &ts); 
-                hdr->tstamp.tv.sec  = ts.tv_sec;
-                hdr->tstamp.tv.nsec = ts.tv_nsec;
-            }
+                        char *p_pkt = (char *)(p_hdr+1);
 
-           /* copy caplen bytes of packet */
-           
-            if (caplen &&
-                skb_copy_bits(skb, /* offset */ -skb->mac_len, pkt, caplen) != 0)
-                return false;
+                        /* copy caplen bytes of packet */
 
-           /* commit the slot with release semantic */
-           wmb();
+                        if (pq->q_caplen &&
+                                skb_copy_bits(skb, /* offset */ -skb->mac_len, p_pkt, cap_len) != 0)
+                        {    
+                                return false;
+                        }
 
-           hdr->commit = 1;
-           
-           /* watermark */
+                        /* setup the header */
 
-           if ( (queue_size > ( pq->q_queue_mem >> 1)) && 
-                           queue_descr->poll_wait ) {
+                        p_hdr->len      = packet_len;
+                        p_hdr->caplen   = cap_len;
+                        p_hdr->if_index = skb->dev->ifindex;
+                        p_hdr->hw_queue = skb_get_rx_queue(skb);                      
+
+                        if (pq->q_tstamp != 0)
+                        {
+                                struct timespec ts;
+                                skb_get_timestampns(skb, &ts); 
+                                p_hdr->tstamp.tv.sec  = ts.tv_sec;
+                                p_hdr->tstamp.tv.nsec = ts.tv_nsec;
+                        }
+
+                        /* commit the slot with release semantic */
+                        wmb();
+
+                        p_hdr->commit = 1;
+
+                        /* watermark */
+
+                        if ((q_len > ( pq->q_slots >> 1)) 
+                                        && queue_descr->poll_wait ) {
+                                wake_up_interruptible(&pq->q_waitqueue);
+                        }
+
+                        return true;
+                }
+                else if (q_len == (pq->q_slots+1))
+                {
+                        atomic_set((atomic_t *)&queue_descr->disabled,1);
+                }
+        }
+
+        if ( queue_descr->poll_wait ) {
                 wake_up_interruptible(&pq->q_waitqueue);
-           }
+        }
 
-           return true;
-        }
-        else if ( (queue_size - slot_len) <= pq->q_queue_mem )
-        {
-            uint64_t valid_data =  new_data - (0x0000000100000000ULL|slot_len);
-            
-            atomic64_set((atomic64_t *)&queue_descr->valid_data, valid_data);
-            
-            /* release semantic: volatile variables are not reordered */
-            atomic_set((atomic_t *)&queue_descr->disable,1);
-        }
-    }
-    
-    if ( queue_descr->poll_wait ) {
-        wake_up_interruptible(&pq->q_waitqueue);
-    }
-    
-    return false;
+        return false;
 }
 

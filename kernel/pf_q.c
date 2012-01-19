@@ -37,8 +37,8 @@ struct proto             pfq_proto;
 struct proto_ops         pfq_ops; 
 
 static int direct_path  = 0;
-static int pipeline_len = 64;
-static int queue_mem    = 65536*128;
+static int pipeline_len = 16;
+static int queue_slots  = 131072; // slots per queue
 static int cap_len      = 1514;
 
 DEFINE_SEMAPHORE(loadbalance_sem);
@@ -56,15 +56,14 @@ MODULE_DESCRIPTION("packet catpure system for 64bit multi-core architecture");
 
 module_param(direct_path,  int, 0644);
 module_param(pipeline_len, int, 0644);
-module_param(queue_mem,    int, 0644);
 module_param(cap_len,      int, 0644);
+module_param(queue_slots,  int, 0644);
 
 
 MODULE_PARM_DESC(direct_path, " Direct Path: 0 = classic, 1 = direct");
 MODULE_PARM_DESC(cap_len,     " Default capture length (bytes)");
 MODULE_PARM_DESC(pipeline_len," Pipeline length");
-MODULE_PARM_DESC(queue_mem,   " Queue memory (bytes)");
-
+MODULE_PARM_DESC(queue_slots, " Queue slots (default=65536)");
 
 /* atomic vector of pointers to pfq_opt */
 atomic_long_t pfq_vector[Q_MAX_ID]; 
@@ -156,7 +155,7 @@ bool pfq_enqueue_skb(struct sk_buff *skb, struct pfq_opt *pq, bool clone)
 
         /* enqueue the sk_buff: it's wait-free. */
 
-        if ( pq->q_active && mpdb_enqueue(pq, skb) ) {
+        if (pq->q_active && mpdb_enqueue(pq, skb)) {
 
                 /* increment recv counter */
                 sparse_inc(&pq->q_stat.recv);
@@ -306,40 +305,6 @@ pfq_packet_rcv
 }
 
 
-static int
-pfq_queue_alloc(struct pfq_opt *pq, int queue_mem)
-{
-        /* calculate the size of the buffer */
-
-        int tot_mem = PAGE_ALIGN(sizeof(struct pfq_queue_descr) + queue_mem * 2); // double-buffered
-
-        /* align bufflen to page size */
-
-        int num_pages = tot_mem / PAGE_SIZE;
-        num_pages += (num_pages + (SHMLBA-1)) % SHMLBA;
-        tot_mem = num_pages*PAGE_SIZE;
-
-        /* Memory is already zeroed */
-        pq->q_mem = vmalloc_user(tot_mem);
-
-        if (pq->q_mem == NULL)
-        {
-                printk(KERN_INFO "[PFQ] pfq_queue_alloc: out of memory");
-                return -1;
-        }
-
-        pq->q_tot_mem = tot_mem;
-        return 0;
-}
-
-
-static void
-pfq_queue_free(struct pfq_opt *pq)
-{
-        vfree(pq->q_mem);
-        pq->q_mem = NULL;
-}    
-
 
 static int 
 pfq_ctor(struct pfq_opt *pq)
@@ -359,13 +324,22 @@ pfq_ctor(struct pfq_opt *pq)
                 return -EBUSY;
         }
         
-        /* alloc queue memory */
-        pfq_queue_alloc(pq, queue_mem);
-        
-        pq->q_tstamp  = 0;
-        pq->q_caplen  = cap_len;
-        pq->q_queue_mem = queue_mem;
+        /* disable tiemstamping by default */
+        pq->q_tstamp = false;
 
+        /* queue is alloc when the socket is enabled */
+        pq->q_addr = NULL; 
+        pq->q_queue_mem = 0;
+        
+        /* set q_slots and q_caplen default values */
+        
+        pq->q_caplen    = cap_len;
+        pq->q_slot_size = DBMP_QUEUE_SLOT_SIZE(cap_len);
+        pq->q_slots     = queue_slots;
+
+        /* disabled by default */
+        pq->q_active = false;
+        
         /* initialize waitqueue */
         init_waitqueue_head(&pq->q_waitqueue);
         
@@ -374,8 +348,7 @@ pfq_ctor(struct pfq_opt *pq)
         sparse_set(0, &pq->q_stat.lost);
         sparse_set(0, &pq->q_stat.drop);
 
-        /* disabled by default */
-        pq->q_active = false;
+        printk(KERN_INFO "[PF_Q] caplen:%lu queue_slots:%lu slot_size:%lu\n", pq->q_caplen, pq->q_slots, pq->q_slot_size);
         return 0;
 }
 
@@ -396,7 +369,7 @@ pfq_dtor(struct pfq_opt *pq)
 
         up(&loadbalance_sem);
 
-        pfq_queue_free(pq);
+        mpdb_queue_free(pq);
 }
 
 
@@ -491,12 +464,12 @@ pfq_release(struct socket *sock)
         /* decrease the global.tstamp counter */
         if (pq->q_tstamp) {
                 atomic_dec(&global.tstamp);
-                printk(KERN_INFO "[PFQ] global.tstamp => %d\n", atomic_read(&global.tstamp));
+                printk(KERN_INFO "[PF_Q] global.tstamp => %d\n", atomic_read(&global.tstamp));
         }
 
         wmb();
 
-        /* Convenient way to avoid a race condition here,
+        /* Convenient way to avoid a race condition,
          * without using rwmutexes that are very expensive 
          */
 
@@ -534,7 +507,7 @@ int pfq_getsockopt(struct socket *sock,
         {
         case SO_GET_ID: 
             {
-                    if (len != sizeof(int))
+                    if (len != sizeof(pq->q_id))
                             return -EINVAL;
                     if (copy_to_user(optval, &pq->q_id, sizeof(pq->q_id)))
                             return -EFAULT;
@@ -548,17 +521,17 @@ int pfq_getsockopt(struct socket *sock,
                             return -EFAULT;
             } break;
 
-        case SO_GET_TOT_MEM: 
+        case SO_GET_SLOTS: 
             {
-                    if (len != sizeof(int))
+                    if (len != sizeof(pq->q_slots))
                             return -EINVAL;
-                    if (copy_to_user(optval, &pq->q_tot_mem, sizeof(pq->q_tot_mem)))
+                    if (copy_to_user(optval, &pq->q_slots, sizeof(pq->q_slots)))
                             return -EFAULT;
             } break;
 
         case SO_GET_TSTAMP_TYPE: 
             {
-                    if (len != sizeof(int))
+                    if (len != sizeof(pq->q_tstamp))
                             return -EINVAL;
                     if (copy_to_user(optval, &pq->q_tstamp, sizeof(pq->q_tstamp)))
                             return -EFAULT;
@@ -566,10 +539,12 @@ int pfq_getsockopt(struct socket *sock,
 
         case SO_GET_STATUS: 
             {
-                    if (len != sizeof(int))
+                    if (len != sizeof(pq->q_active)) 
                             return -EINVAL;
-                    if (copy_to_user(optval, &pq->q_active, sizeof(pq->q_active)))
+                    
+                    if (copy_to_user(optval, &pq->q_active, sizeof(pq->q_active))) 
                             return -EFAULT;
+                    
             } break;
 
         case SO_GET_OWNERS: 
@@ -604,7 +579,7 @@ int pfq_getsockopt(struct socket *sock,
 
         case SO_GET_CAPLEN: 
             {
-                    if (len != sizeof(size_t))
+                    if (len != sizeof(pq->q_caplen))
                             return -EINVAL;
                     if (copy_to_user(optval, &pq->q_caplen, sizeof(pq->q_caplen)))
                             return -EFAULT;
@@ -637,13 +612,44 @@ int pfq_setsockopt(struct socket *sock,
 
         switch(optname)
         {
-
         case SO_TOGGLE_QUEUE: 
             {
-                    if (optlen != sizeof(pq->q_active))
+                    int active;
+                    if (optlen != sizeof(active))
                             return -EINVAL;
-                    if (copy_from_user(&pq->q_active, optval, optlen))
+                    if (copy_from_user(&active, optval, optlen))
                             return -EFAULT;
+
+                    if (active)
+                    {
+                            if (!pq->q_addr)
+                            {
+                                    struct pfq_queue_descr *sq;
+
+                                    /* alloc queue memory */
+                                    pq->q_addr = mpdb_queue_alloc(pq, mpdb_queue_size(pq), &pq->q_queue_mem);
+                                    if (pq->q_addr == NULL) {
+                                            return -ENOMEM;
+                                    }
+                                    sq = (struct pfq_queue_descr *)pq->q_addr;
+                                    sq->data      = 0;
+                                    sq->disabled  = 0;
+                                    sq->poll_wait = 0;
+
+                                    wmb();
+
+                                    pq->q_active = true;
+                            }
+                    }
+                    else {
+                        pq->q_active = false;
+
+                        wmb();
+
+                        msleep(10);
+                        mpdb_queue_free(pq);
+                    }
+
             } break;
 
         case SO_LOAD_BALANCE: 
@@ -702,15 +708,26 @@ int pfq_setsockopt(struct socket *sock,
                     atomic_add(tstamp - pq->q_tstamp, &global.tstamp);
                     pq->q_tstamp = tstamp;
 
-                    printk(KERN_INFO "[PFQ] global.tstamp => %d\n", atomic_read(&global.tstamp));
+                    printk(KERN_INFO "[PF_Q] global.tstamp => %d\n", atomic_read(&global.tstamp));
             } break;
         
         case SO_CAPLEN: 
             {
-                    if (optlen != sizeof(pq->q_caplen))
+                    if (optlen != sizeof(pq->q_caplen)) 
                             return -EINVAL;
-                    if (copy_from_user(&pq->q_caplen, optval, optlen))
+                    if (copy_from_user(&pq->q_caplen, optval, optlen)) 
                             return -EFAULT;
+                    pq->q_slot_size = DBMP_QUEUE_SLOT_SIZE(pq->q_caplen);
+                    printk(KERN_INFO "[PF_Q] id:%d caplen:%lu queue_slots:%lu slot_size:%lu\n", pq->q_id, pq->q_caplen, pq->q_slots, pq->q_slot_size);
+            } break;
+
+        case SO_SLOTS: 
+            {
+                    if (optlen != sizeof(pq->q_slots)) 
+                            return -EINVAL;
+                    if (copy_from_user(&pq->q_slots, optval, optlen)) 
+                            return -EFAULT;
+                    printk(KERN_INFO "[PF_Q] id:%d caplen:%lu queue_slots:%lu slot_size:%lu\n", pq->q_id, pq->q_caplen, pq->q_slots, pq->q_slot_size);
             } break;
 
         default: 
@@ -735,7 +752,7 @@ pfq_memory_mmap(struct vm_area_struct *vma,
         start = vma->vm_start;
         if (remap_vmalloc_range(vma, ptr, 0) != 0)
         {
-                printk(KERN_INFO "pfq: remap_vmalloc_range\n");
+                printk(KERN_INFO "[PF_Q] remap_vmalloc_range\n");
                 return -EAGAIN;
         }
 
@@ -751,16 +768,16 @@ static int pfq_mmap(struct file *file,
         int ret;
 
         if(size % PAGE_SIZE) {
-                printk(KERN_INFO "pfq_mmap: len not multiple of PAGE_SIZE\n");
+                printk(KERN_INFO "[PF_Q] len not multiple of PAGE_SIZE\n");
                 return -EINVAL;
         }
 
-        if(size > pq->q_tot_mem) {
-                printk(KERN_INFO "pfq_mmap: area too large\n");
+        if(size > pq->q_queue_mem) {
+                printk(KERN_INFO "[PF_Q] area too large\n");
                 return -EINVAL;
         }
 
-        if((ret = pfq_memory_mmap(vma, size, pq->q_mem, VM_LOCKED)) < 0)
+        if((ret = pfq_memory_mmap(vma, size, pq->q_addr, VM_LOCKED)) < 0)
                 return ret;
 
         return 0;
@@ -770,11 +787,11 @@ static int pfq_mmap(struct file *file,
 unsigned int pfq_poll(struct file *file, struct socket *sock, poll_table * wait)
 {
         struct pfq_opt *pq = pfq_sk(sock->sk)->opt;
-        struct pfq_queue_descr *q = (struct pfq_queue_descr *)pq->q_mem;
+        struct pfq_queue_descr *q = (struct pfq_queue_descr *)pq->q_addr;
 
         unsigned int mask = 0;
 
-        if (mpdb_queue_size(pq) >= (pq->q_queue_mem >> 1)) {
+        if (mpdb_queue_len(pq) >= (pq->q_slots>>1)) {
                 q->poll_wait = 0; 
                 mask |= POLLIN | POLLRDNORM;
         }
