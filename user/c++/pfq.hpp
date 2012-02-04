@@ -122,10 +122,10 @@ namespace net {
                 return *hdr_;
             }
 
-            char *
+            void *
             data() const
             {
-                return reinterpret_cast<char *>(hdr_+1);
+                return hdr_+1;
             }
 
             bool 
@@ -190,10 +190,10 @@ namespace net {
                 return *hdr_;
             }
 
-            const char *
+            const void *
             data() const
             {
-                return reinterpret_cast<const char *>(hdr_+1);
+                return hdr_+1;
             }
 
             bool 
@@ -283,6 +283,15 @@ namespace net {
         uint32_t slot_size_;
         uint32_t batch_len_;
     };
+
+    static inline void * data(pfq_hdr &h)
+    {
+        return &h + 1;
+    }
+    static inline const void * data(const pfq_hdr &h)
+    {
+        return &h + 1;
+    }
 
     //////////////////////////////////////////////////////////////////////
 
