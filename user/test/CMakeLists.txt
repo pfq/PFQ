@@ -8,6 +8,7 @@ set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -march=native -Wall -Wextra -std=c+
 # C++11 tests
 
 add_executable(test-batch++ test-batch++.cpp)
+add_executable(test-range   test-range.cpp)
 add_executable(test-tstamp  test-tstamp.cpp)
 add_executable(test-caplen  test-caplen.cpp)
 add_executable(test-slot    test-slot.cpp)
