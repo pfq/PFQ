@@ -308,6 +308,7 @@ namespace net {
         , queue_size_(0)
         , queue_slots_(0)
         , queue_caplen_(0)
+        , queue_offset_(0)
         , slot_size_(0)
         , next_len_(0)
         {
@@ -326,12 +327,13 @@ namespace net {
             slot_size_ = align<8>(sizeof(pfq_hdr) + queue_caplen_);
         }
 
-        pfq(size_t caplen, size_t slots = 131072)
+        pfq(size_t caplen, size_t offset = 0, size_t slots = 131072)
         : fd_(-1)
         , queue_addr_(NULL)
         , queue_size_(0)
         , queue_slots_(0)
         , queue_caplen_(0)
+        , queue_offset_(offset)
         , slot_size_(0)
         , next_len_(0)
         {
@@ -346,6 +348,9 @@ namespace net {
             if (::setsockopt(fd_, PF_Q, SO_CAPLEN, &caplen, sizeof(caplen)) == -1)
                 throw std::runtime_error(__PRETTY_FUNCTION__);
             queue_caplen_ = caplen;
+            
+            if (::setsockopt(fd_, PF_Q, SO_OFFSET, &offset, sizeof(offset)) == -1)
+                throw std::runtime_error(__PRETTY_FUNCTION__);
             
             slot_size_ = align<8>(sizeof(pfq_hdr) + queue_caplen_);
         }
@@ -364,6 +369,7 @@ namespace net {
         , queue_size_(other.queue_size_)
         , queue_slots_(other.queue_slots_)
         , queue_caplen_(other.queue_caplen_)
+        , queue_offset_(other.queue_offset_)
         , slot_size_(0)
         , next_len_(0)
         {
@@ -383,6 +389,7 @@ namespace net {
                 queue_size_   = other.queue_size_;
                 queue_slots_  = other.queue_slots_;
                 queue_caplen_ = other.queue_caplen_;
+                queue_offset_ = other.queue_offset_;
                 slot_size_    = other.slot_size_;
                 next_len_     = other.next_len_;
             }
@@ -396,6 +403,7 @@ namespace net {
             std::swap(queue_size_,  other.queue_size_);
             std::swap(queue_slots_, other.queue_slots_);
             std::swap(queue_caplen_,other.queue_caplen_);
+            std::swap(queue_offset_,other.queue_offset_);
             std::swap(slot_size_,   other.slot_size_);
             std::swap(next_len_,    other.next_len_);
         }                           
@@ -490,6 +498,24 @@ namespace net {
         {
            size_t ret; socklen_t size = sizeof(ret);
            if (::getsockopt(fd_, PF_Q, SO_GET_CAPLEN, &ret, &size) == -1)
+                throw std::runtime_error(__PRETTY_FUNCTION__);
+           return ret;
+        }
+
+        void offset(size_t value)
+        {
+            if (is_enabled()) 
+                throw std::runtime_error(__PRETTY_FUNCTION__);
+            
+            if (::setsockopt(fd_, PF_Q, SO_OFFSET, &value, sizeof(value)) == -1) {
+                throw std::runtime_error(__PRETTY_FUNCTION__);
+            }
+        }
+
+        size_t offset() const
+        {
+           size_t ret; socklen_t size = sizeof(ret);
+           if (::getsockopt(fd_, PF_Q, SO_GET_OFFSET, &ret, &size) == -1)
                 throw std::runtime_error(__PRETTY_FUNCTION__);
            return ret;
         }
@@ -684,6 +710,7 @@ namespace net {
         size_t queue_size_;
         size_t queue_slots_; 
         size_t queue_caplen_;
+        size_t queue_offset_;
         size_t slot_size_;
         size_t next_len_;
     };
