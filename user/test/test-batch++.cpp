@@ -32,8 +32,8 @@ main(int argc, char *argv[])
             {
                     while(!it->commit);
 
-                    // printf("caplen:%d len:%d ifindex:%d hw_queue:%d tstamp: %u:%u -> ", it->caplen, it->len, it->if_index, it->hw_queue,
-                    //                                                                    it->tstamp.tv.sec, it->tstamp.tv.nsec);
+                    printf("caplen:%d len:%d ifindex:%d hw_queue:%d tstamp: %u:%u -> ", it->caplen, it->len, it->if_index, it->hw_queue,
+                                                                                       it->tstamp.tv.sec, it->tstamp.tv.nsec);
                     char *buff = static_cast<char *>(it.data());
 
                     for(int x=0; x < std::min<int>(it->caplen, 34); x++)
