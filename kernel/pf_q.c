@@ -351,6 +351,7 @@ pfq_ctor(struct pfq_opt *pq)
         /* set q_slots and q_caplen default values */
         
         pq->q_caplen    = cap_len;
+        pq->q_offset    = 0;
         pq->q_slot_size = DBMP_QUEUE_SLOT_SIZE(cap_len);
         pq->q_slots     = queue_slots;
 
@@ -601,6 +602,15 @@ int pfq_getsockopt(struct socket *sock,
                     if (copy_to_user(optval, &pq->q_caplen, sizeof(pq->q_caplen)))
                             return -EFAULT;
             } break;
+
+        case SO_GET_OFFSET: 
+            {
+                    if (len != sizeof(pq->q_offset))
+                            return -EINVAL;
+                    if (copy_to_user(optval, &pq->q_offset, sizeof(pq->q_offset)))
+                            return -EFAULT;
+            } break;
+
         default:
             return -EFAULT;
         }
@@ -736,6 +746,14 @@ int pfq_setsockopt(struct socket *sock,
                             return -EFAULT;
                     pq->q_slot_size = DBMP_QUEUE_SLOT_SIZE(pq->q_caplen);
                     printk(KERN_INFO "[PF_Q] id:%d caplen:%lu queue_slots:%lu slot_size:%lu\n", pq->q_id, pq->q_caplen, pq->q_slots, pq->q_slot_size);
+            } break;
+
+        case SO_OFFSET: 
+            {
+                    if (optlen != sizeof(pq->q_offset)) 
+                            return -EINVAL;
+                    if (copy_from_user(&pq->q_offset, optval, optlen)) 
+                            return -EFAULT;
             } break;
 
         case SO_SLOTS: 

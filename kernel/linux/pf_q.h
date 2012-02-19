@@ -111,6 +111,7 @@ struct pfq_queue_descr
 #define SO_LOAD_BALANCE         104
 #define SO_CAPLEN               105
 #define SO_SLOTS                106
+#define SO_OFFSET               107
 
 /* get socket options */
 #define SO_GET_ID               120
@@ -121,6 +122,7 @@ struct pfq_queue_descr
 #define SO_GET_QUEUE_MEM        125     /* size of the whole dbmp queue (bytes) */
 #define SO_GET_CAPLEN           126
 #define SO_GET_SLOTS            127
+#define SO_GET_OFFSET           128
 
 
 /* struct used for setsockopt */

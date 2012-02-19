@@ -55,6 +55,7 @@ struct pfq_opt
 
         size_t          q_slots;      /* number of slots per queue */
         size_t          q_caplen;
+        size_t          q_offset;    
         size_t          q_slot_size;
 
         wait_queue_head_t q_waitqueue;

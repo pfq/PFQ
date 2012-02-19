@@ -72,8 +72,8 @@ mpdb_enqueue(struct pfq_opt *pq, struct sk_buff *skb)
 
         if (!atomic_read((atomic_t *)&queue_descr->disabled))  
         {
-                size_t packet_len= skb->len + skb->mac_len;
-                size_t cap_len   = min(packet_len, pq->q_caplen);
+                size_t packet_len = skb->len + skb->mac_len;
+                size_t bytes = (packet_len > pq->q_offset) ? min(packet_len - pq->q_offset, pq->q_caplen) : 0;
 
                 int  data    = atomic_add_return(1, (atomic_t *)&queue_descr->data);
                 int  q_len   = DBMP_QUEUE_LEN(data);
@@ -88,10 +88,9 @@ mpdb_enqueue(struct pfq_opt *pq, struct sk_buff *skb)
 
                         char *p_pkt = (char *)(p_hdr+1);
 
-                        /* copy caplen bytes of packet */
+                        /* copy bytes of packet */
 
-                        if (pq->q_caplen &&
-                                skb_copy_bits(skb, /* offset */ -skb->mac_len, p_pkt, cap_len) != 0)
+                        if (bytes && skb_copy_bits(skb, pq->q_offset - skb->mac_len, p_pkt, bytes) != 0)
                         {    
                                 return false;
                         }
@@ -99,7 +98,7 @@ mpdb_enqueue(struct pfq_opt *pq, struct sk_buff *skb)
                         /* setup the header */
 
                         p_hdr->len      = packet_len;
-                        p_hdr->caplen   = cap_len;
+                        p_hdr->caplen   = bytes;
                         p_hdr->if_index = skb->dev->ifindex;
                         p_hdr->hw_queue = skb_get_rx_queue(skb);                      
 
