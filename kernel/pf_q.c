@@ -80,7 +80,7 @@ module_param(queue_slots,  int, 0644);
 MODULE_PARM_DESC(direct_path, " Direct Path: 0 = classic, 1 = direct");
 MODULE_PARM_DESC(cap_len,     " Default capture length (bytes)");
 MODULE_PARM_DESC(pipeline_len," Pipeline length");
-MODULE_PARM_DESC(queue_slots, " Queue slots (default=65536)");
+MODULE_PARM_DESC(queue_slots, " Queue slots (default=131072)");
 
 /* atomic vector of pointers to pfq_opt */
 atomic_long_t pfq_vector[Q_MAX_ID]; 
