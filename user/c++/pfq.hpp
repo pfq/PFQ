@@ -469,8 +469,8 @@ namespace net {
 
         void tstamp(bool value)
         {
-            size_t ts = static_cast<int>(value);
-            if (::setsockopt(fd_, PF_Q, SO_TSTAMP_TYPE, &ts, sizeof(int)) == -1)
+            int ts = static_cast<int>(value);
+            if (::setsockopt(fd_, PF_Q, SO_TSTAMP_TYPE, &ts, sizeof(ts)) == -1)
                 throw std::runtime_error(__PRETTY_FUNCTION__);
         }
 
