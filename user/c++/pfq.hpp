@@ -44,6 +44,7 @@
 #include <poll.h>
 
 #include <iostream>
+#include <sstream>
 #include <stdexcept>
 #include <iterator>
 #include <cstring>
@@ -53,6 +54,7 @@
 #include <thread>
 
 namespace net { 
+
 
     typedef std::pair<char *, size_t> mutable_buffer;
     typedef std::pair<const char *, const size_t> const_buffer;
@@ -294,6 +296,41 @@ namespace net {
     }
 
     //////////////////////////////////////////////////////////////////////
+
+    class pfq_error : public std::runtime_error
+    {
+        template <typename T>
+        void print(std::ostringstream &out, T&& x)
+        {
+            out << std::forward<T>(x);
+        }
+        template <typename T, typename ...Ts>
+        void print(std::ostringstream &out, T&& x, Ts&&... xs)
+        {
+            out << std::forward<T>(x) << ' ';
+            print(out, std::forward<Ts>(xs)...);
+        }
+
+        template <typename ...Ts>
+        std::string
+        format(Ts&& ...xs)
+        {
+            std::ostringstream s;
+            print(s, std::forward<Ts>(xs)...);
+            return s.str();
+        }
+
+    public:
+
+        template <typename ...Ts>
+        explicit
+        pfq_error(Ts&& ...xs)
+        : std::runtime_error(format("PFQ:", std::forward<Ts>(xs)...))
+        {}
+
+        virtual ~pfq_error() throw()
+        {}
+    };
 
     class pfq
     {
