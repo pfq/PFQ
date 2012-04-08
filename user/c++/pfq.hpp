@@ -361,15 +361,15 @@ namespace net {
         {
             fd_ = ::socket(PF_Q, SOCK_RAW, htons(ETH_P_ALL));
             if (fd_ == -1)
-                throw std::runtime_error("PFQ module not loaded");
+                throw pfq_error(__FUNCTION__, "module not loaded");
             
             socklen_t size = sizeof(queue_slots_);
             if (::getsockopt(fd_, PF_Q, SO_GET_SLOTS, &queue_slots_, &size) == -1)
-                throw std::runtime_error("PFQ: SO_GET_SLOTS");
+                throw pfq_error(__FUNCTION__, "SO_GET_SLOTS");
             
             size = sizeof(queue_caplen_);
             if (::getsockopt(fd_, PF_Q, SO_GET_CAPLEN, &queue_caplen_, &size) == -1)
-                throw std::runtime_error(__PRETTY_FUNCTION__);
+                throw pfq_error(__FUNCTION__, "SO_GET_CAPLEN");
 
             slot_size_ = align<8>(sizeof(pfq_hdr) + queue_caplen_);
         }
@@ -386,18 +386,18 @@ namespace net {
         {
             fd_ = ::socket(PF_Q, SOCK_RAW, htons(ETH_P_ALL));
             if (fd_ == -1)
-                throw std::runtime_error("PFQ module not loaded");
+                throw pfq_error(__FUNCTION__, "module not loaded");
             
             if (::setsockopt(fd_, PF_Q, SO_SLOTS, &slots, sizeof(slots)) == -1)
-                throw std::runtime_error("PFQ: SO_SLOTS");
+                throw pfq_error(__FUNCTION__, "SO_SLOTS");
             queue_slots_ = slots;
             
             if (::setsockopt(fd_, PF_Q, SO_CAPLEN, &caplen, sizeof(caplen)) == -1)
-                throw std::runtime_error(__PRETTY_FUNCTION__);
+                throw pfq_error(__FUNCTION__, "SO_CAPLEN");
             queue_caplen_ = caplen;
             
             if (::setsockopt(fd_, PF_Q, SO_OFFSET, &offset, sizeof(offset)) == -1)
-                throw std::runtime_error(__PRETTY_FUNCTION__);
+                throw pfq_error(__FUNCTION__, "SO_OFFSET");
             
             slot_size_ = align<8>(sizeof(pfq_hdr) + queue_caplen_);
         }
@@ -459,30 +459,30 @@ namespace net {
         {
             int one = 1;
             if(::setsockopt(fd_, PF_Q, SO_TOGGLE_QUEUE, &one, sizeof(one)) == -1)
-                throw std::runtime_error(__PRETTY_FUNCTION__);
+                throw pfq_error(__FUNCTION__, "SO_TOGGLE_QUEUE");
             
             size_t tot_mem; socklen_t size = sizeof(tot_mem);
             
             if (::getsockopt(fd_, PF_Q, SO_GET_QUEUE_MEM, &tot_mem, &size) == -1)
-                throw std::runtime_error("PFQ: SO_GET_QUEUE_MEM");
+                throw pfq_error(__FUNCTION__, "SO_GET_QUEUE_MEM");
             
             queue_size_ = tot_mem;
 
             if ((queue_addr_ = mmap(NULL, tot_mem, PROT_READ|PROT_WRITE, MAP_SHARED, fd_, 0)) == MAP_FAILED) 
-                throw std::runtime_error("PFQ: mmap error");
+                throw pfq_error(__FUNCTION__, "mmap error", strerror_(errno));
         }
 
         void disable()
         {
             if (munmap(queue_addr_, queue_size_) == -1)
-                throw std::runtime_error(std::string(__PRETTY_FUNCTION__).append(": munmap"));
+                throw pfq_error(__FUNCTION__, "munmap", strerror_(errno));
             
             queue_addr_ = NULL;
             queue_size_ = 0;
 
             int one = 0;
             if(::setsockopt(fd_, PF_Q, SO_TOGGLE_QUEUE, &one, sizeof(one)) == -1)
-                throw std::runtime_error(__PRETTY_FUNCTION__);
+                throw pfq_error(__FUNCTION__, "SO_TOGGLE_QUEUE");
         }
 
         bool is_enabled() const
@@ -492,7 +492,7 @@ namespace net {
                 int ret; socklen_t size = sizeof(ret);
 
                 if (::getsockopt(fd_, PF_Q, SO_GET_STATUS, &ret, &size) == -1)
-                    throw std::runtime_error(__PRETTY_FUNCTION__);
+                    throw pfq_error(__FUNCTION__, "SO_GET_STATUS");
                 return ret;
             }
             return false;
@@ -502,7 +502,7 @@ namespace net {
         {
             int one = value;
             if (::setsockopt(fd_, PF_Q, SO_LOAD_BALANCE, &one, sizeof(one)) == -1)
-                throw std::runtime_error(__PRETTY_FUNCTION__);
+                throw pfq_error(__FUNCTION__, "SO_LOAD_BALANCE");
         }
 
         int ifindex(const char *dev) const
@@ -518,24 +518,24 @@ namespace net {
         {
             int ts = static_cast<int>(value);
             if (::setsockopt(fd_, PF_Q, SO_TSTAMP_TYPE, &ts, sizeof(ts)) == -1)
-                throw std::runtime_error(__PRETTY_FUNCTION__);
+                throw pfq_error(__FUNCTION__, "SO_TSTAMP_TYPE");
         }
 
         bool tstamp() const
         {
            int ret; socklen_t size = sizeof(int);
            if (::getsockopt(fd_, PF_Q, SO_GET_TSTAMP_TYPE, &ret, &size) == -1)
-                throw std::runtime_error(__PRETTY_FUNCTION__);
+                throw pfq_error(__FUNCTION__, "SO_GET_TSTAMP_TYPE");
            return ret;
         }
 
         void caplen(size_t value)
         {
             if (is_enabled()) 
-                throw std::runtime_error(__PRETTY_FUNCTION__);
+                throw pfq_error(__FUNCTION__, "is_enabled");
             
             if (::setsockopt(fd_, PF_Q, SO_CAPLEN, &value, sizeof(value)) == -1) {
-                throw std::runtime_error(__PRETTY_FUNCTION__);
+                throw pfq_error(__FUNCTION__, "SO_CAPLEN");
             }
 
             slot_size_ = align<8>(sizeof(pfq_hdr)+ value);
@@ -545,17 +545,17 @@ namespace net {
         {
            size_t ret; socklen_t size = sizeof(ret);
            if (::getsockopt(fd_, PF_Q, SO_GET_CAPLEN, &ret, &size) == -1)
-                throw std::runtime_error(__PRETTY_FUNCTION__);
+                throw pfq_error(__FUNCTION__, "SO_GET_CAPLEN");
            return ret;
         }
 
         void offset(size_t value)
         {
             if (is_enabled()) 
-                throw std::runtime_error(__PRETTY_FUNCTION__);
+                throw pfq_error(__FUNCTION__, "is_enabled");
             
             if (::setsockopt(fd_, PF_Q, SO_OFFSET, &value, sizeof(value)) == -1) {
-                throw std::runtime_error(__PRETTY_FUNCTION__);
+                throw pfq_error(__FUNCTION__, "SO_OFFSET");
             }
         }
 
@@ -563,7 +563,7 @@ namespace net {
         {
            size_t ret; socklen_t size = sizeof(ret);
            if (::getsockopt(fd_, PF_Q, SO_GET_OFFSET, &ret, &size) == -1)
-                throw std::runtime_error(__PRETTY_FUNCTION__);
+                throw pfq_error(__FUNCTION__, "SO_GET_OFFSET");
            return ret;
         }
 
@@ -571,10 +571,10 @@ namespace net {
         slots(size_t value) 
         {             
             if (is_enabled()) 
-                throw std::runtime_error(__PRETTY_FUNCTION__);
+                throw pfq_error(__FUNCTION__, "is_enabled");
                       
             if (::setsockopt(fd_, PF_Q, SO_SLOTS, &value, sizeof(value)) == -1) {
-                throw std::runtime_error(__PRETTY_FUNCTION__);
+                throw pfq_error(__FUNCTION__, "SO_SLOTS");
             }
 
             queue_slots_ = value;
@@ -595,14 +595,14 @@ namespace net {
         {
             struct pfq_dev_queue dq = { index, queue };
             if (::setsockopt(fd_, PF_Q, SO_ADD_DEVICE, &dq, sizeof(dq)) == -1)
-                throw std::runtime_error(__PRETTY_FUNCTION__);
+                throw pfq_error(__FUNCTION__, "SO_ADD_DEVICE");
         }
         
         void add_device(const char *dev, int queue = any_queue)
         {
             auto index = ifindex(dev);
             if (index == -1)
-                throw std::runtime_error(std::string(__PRETTY_FUNCTION__).append(": device not found"));
+                throw pfq_error(__FUNCTION__, "device not found");
             add_device(index, queue);
         }                              
 
@@ -610,13 +610,13 @@ namespace net {
         {
             struct pfq_dev_queue dq = { index, queue };
             if (::setsockopt(fd_, PF_Q, SO_REMOVE_DEVICE, &dq, sizeof(dq)) == -1)
-                throw std::runtime_error(__PRETTY_FUNCTION__);
+                throw pfq_error(__FUNCTION__, "SO_REMOVE_DEVICE");
         }
         void remove_device(const char *dev, int queue = any_queue)
         {
             auto index = ifindex(dev);
             if (index == -1)
-                throw std::runtime_error(std::string(__PRETTY_FUNCTION__).append(": device not found"));
+                throw pfq_error(__FUNCTION__, "device not found");
             remove_device(index, queue);
         }  
 
@@ -627,7 +627,7 @@ namespace net {
             socklen_t s = sizeof(struct pfq_dev_queue);
 
             if (::getsockopt(fd_, PF_Q, SO_GET_OWNERS, &dq, &s) == -1)
-                throw std::runtime_error(__PRETTY_FUNCTION__);
+                throw pfq_error(__FUNCTION__, "SO_GET_OWNERS");
             return *reinterpret_cast<unsigned long *>(&dq);
         }
         unsigned long 
@@ -635,7 +635,7 @@ namespace net {
         {
             auto index = ifindex(dev);
             if (index == -1)
-                throw std::runtime_error(std::string(__PRETTY_FUNCTION__).append(": device not found"));
+                throw pfq_error(__FUNCTION__, "device not found");
             return owners(index,queue);
         }
 
@@ -647,7 +647,7 @@ namespace net {
 
             int ret = ::ppoll(&fd, 1, microseconds < 0 ? NULL : &timeout, NULL);
             if (ret < 0)
-               throw std::runtime_error(std::string(__PRETTY_FUNCTION__).append(strerror(errno)));
+               throw pfq_error(__FUNCTION__, "ppoll", strerror_(errno));
             return ret; 
         }
 
@@ -703,7 +703,7 @@ namespace net {
             auto this_batch = this->read(microseconds);
             
             if (buff.second < queue_slots_ * slot_size_)
-                throw std::runtime_error(std::string(__PRETTY_FUNCTION__).append(": buffer too short"));
+                throw pfq_error(__FUNCTION__, "buffer too small");
 
             memcpy(buff.first, this_batch.data(), this_batch.slot_size() * this_batch.size());
             return batch(buff.first, this_batch.slot_size(), this_batch.size());
@@ -715,7 +715,7 @@ namespace net {
             pfq_stats stat;
             socklen_t size = sizeof(struct pfq_stats);
             if (::getsockopt(fd_, PF_Q, SO_GET_STATS, &stat, &size) == -1)
-                throw std::runtime_error(__PRETTY_FUNCTION__);
+                throw pfq_error(__FUNCTION__, "SO_GET_STATS");
             return stat;
         }
 
@@ -738,7 +738,7 @@ namespace net {
 
             int ret; socklen_t size = sizeof(int);
             if (::getsockopt(fd_, PF_Q, SO_GET_ID, &ret, &size) == -1)
-                throw std::runtime_error(__PRETTY_FUNCTION__);
+                throw pfq_error(__FUNCTION__, "SO_GET_ID");
             return ret;
         }
 
