@@ -47,7 +47,7 @@ int mpsc_queue_ctor(mpsc_queue_t * self)
         self->tail = stub;
     }
     else {
-        printk(KERN_WARNING "mpsc_skbuff_queue_ctor: memory problem!\n");
+        printk(KERN_WARNING "[PFQ] mpsc_skbuff_queue_ctor: memory problem!\n");
         return -ENOMEM;
     }   
     return 0;

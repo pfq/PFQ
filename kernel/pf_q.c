@@ -114,7 +114,7 @@ pfq_get_opt(unsigned int id)
 {
         if (unlikely(id >= Q_MAX_ID))
         {
-                printk(KERN_WARNING "[PF_Q]: pfq_devmap_freeid: bad id(%u)\n", id);
+                printk(KERN_WARNING "[PF_Q] pfq_devmap_freeid: bad id(%u)\n", id);
                 return 0;
         }
         return (struct pfq_opt *)pfq_vector[id].counter;  // atomic_read not required here.
@@ -126,7 +126,7 @@ void pfq_release_id(unsigned int id)
 {
         if (unlikely(id >= Q_MAX_ID))
         {
-                printk(KERN_WARNING "[PF_Q]: pfq_devmap_freeid: bad id(%u)\n", id);
+                printk(KERN_WARNING "[PF_Q] pfq_devmap_freeid: bad id(%u)\n", id);
                 return;
         }
         atomic_long_set(pfq_vector + id, 0);
@@ -317,7 +317,7 @@ pfq_ctor(struct pfq_opt *pq)
         pq->q_id = pfq_get_free_id(pq);
         if (pq->q_id == -1)
         {
-                printk(KERN_WARNING "[PF_Q]: no queue available\n");
+                printk(KERN_WARNING "[PF_Q] no queue available\n");
                 return -EBUSY;
         }
         

@@ -55,7 +55,7 @@ int pfq_devmap_update(int action, int index, int queue, unsigned int id)
     
     if (unlikely(id >= 64))
     {
-        printk(KERN_WARNING "[PF_Q]: devmap_update: bad id(%u)\n",id);
+        printk(KERN_WARNING "[PF_Q] devmap_update: bad id(%u)\n",id);
         return 0; 
     }
 
