@@ -291,12 +291,11 @@ pfq_packet_rcv
         if (skb_shared(skb)) {
                 struct sk_buff *nskb = skb_clone(skb, GFP_ATOMIC);
                 if (nskb == NULL) {
+                        consume_skb(skb);
                         return 0;
                 } 
-                else {
-                        kfree_skb(skb);
-                        skb = nskb;
-                }
+                kfree_skb(skb);
+                skb = nskb;
         }
 
         return pfq_direct_receive(skb, dev->ifindex, skb_get_rx_queue(skb), false);
