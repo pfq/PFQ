@@ -332,8 +332,18 @@ namespace net {
         {}
     };
 
+    //////////////////////////////////////////////////////////////////////
+
     class pfq
     {
+        static 
+        std::string
+        strerror_(int errnum)
+        {
+            char buf[256];
+            return strerror_r(errnum, buf, sizeof(buf)-1);
+        }
+
     public:
 
         static const int any_device = Q_ANY_DEVICE;
