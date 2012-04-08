@@ -25,15 +25,15 @@
 #include <mpdb-queue.h>
 
 void *
-mpdb_queue_alloc(struct pfq_opt *pq, int queue_mem, size_t * tot_mem)
+mpdb_queue_alloc(struct pfq_opt *pq, size_t queue_mem, size_t * tot_mem)
 {
         /* calculate the size of the buffer */
 
-        int tm = PAGE_ALIGN(queue_mem); 
+        size_t tm = PAGE_ALIGN(queue_mem); 
 
         /* align bufflen to page size */
 
-        int num_pages = tm / PAGE_SIZE; void *addr;
+        size_t num_pages = tm / PAGE_SIZE; void *addr;
 
         num_pages += (num_pages + (SHMLBA-1)) % SHMLBA;
         *tot_mem = num_pages*PAGE_SIZE;
