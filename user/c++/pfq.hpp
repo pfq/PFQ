@@ -662,39 +662,30 @@ namespace net {
             size_t q_size = queue_slots_ * slot_size_;
 
             //  watermark for polling...
-            //
+            
             if( DBMP_QUEUE_LEN(data) < (queue_slots_ >> 1) ) {
                 this->poll(microseconds);
             }
 
             // clean the next buffer...
-            //
-            { 
-                char * p = static_cast<char *>(queue_addr_) + sizeof(pfq_queue_descr) + !index * q_size;
-                for(unsigned int i = 0; i < next_len_; i++)
-                {
-                    *reinterpret_cast<uint64_t *>(p) = 0; // h->commit = 0; (just a bit faster)
-                    p += slot_size_;
-                }
+            
+            char * p = static_cast<char *>(queue_addr_) + sizeof(pfq_queue_descr) + !index * q_size;
+            for(unsigned int i = 0; i < next_len_; i++)
+            {
+                *reinterpret_cast<uint64_t *>(p) = 0; // h->commit = 0; (just a bit faster)
+                p += slot_size_;
             }
 
-            // compiler barrier
-            //
             wmb();
 
-            // atomic exchange: swap the queues...
-            // 
             data = __sync_lock_test_and_set(&q->data, (index ? 0ULL : 0x8000000000000000ULL));
             
-            // just in case the queue was blocked, re-enable it
-            //
             q->disabled = 0;
-
-            // std::cout << "REAL_LEN: " << DBMP_QUEUE_LEN(data) << std::endl;
 
             next_len_ =  std::min(static_cast<size_t>(DBMP_QUEUE_LEN(data)), queue_slots_);
 
-            return batch(static_cast<char *>(queue_addr_) + sizeof(pfq_queue_descr) + index * q_size, slot_size_, next_len_);
+            return batch(static_cast<char *>(queue_addr_) + sizeof(pfq_queue_descr) + index * q_size, 
+                         slot_size_, next_len_);
         }
         
         batch
@@ -708,6 +699,28 @@ namespace net {
             memcpy(buff.first, this_batch.data(), this_batch.slot_size() * this_batch.size());
             return batch(buff.first, this_batch.slot_size(), this_batch.size());
         }
+
+        // typedef void (*pfq_handler)(char *user, const struct pfq_hdr *h, const char *data); 
+
+        template <typename Fun>
+        size_t dispatch(Fun callback, long int microseconds = -1, char *user = nullptr)
+        {
+            auto many = this->read(microseconds); 
+            
+            auto it = std::begin(many),
+                 it_e = std::end(many);
+            int n = 0;
+            for(; it != it_e; ++it)
+            {
+                while (!it->commit)
+                    std::this_thread::yield();
+
+                callback(user, &(*it), reinterpret_cast<const char *>(it.data()));
+                n++;
+            }
+            return n;
+        }
+
 
         pfq_stats
         stats() const

@@ -232,22 +232,6 @@ extern "C" {
  
     int pfq_dispatch(pfq_t *q, pfq_handler callback, char *user, int *ok)
     {
-        return firewall(ok, q, [&]() {
-            
-            auto many = q->read(100000); // usec
-            
-            auto it = std::begin(many),
-                 it_e = std::end(many);
-            int n = 0;
-            for(; it != it_e; ++it)
-            {
-                while (!it->commit)
-                    std::this_thread::yield();
-
-                callback(user, &(*it), reinterpret_cast<const char *>(it.data()));
-                n++;
-            }
-            return n;
-        });
+        return firewall(ok, q, [&]() { return q->dispatch(callback, 100000, user); });
     }
 }
