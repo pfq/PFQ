@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.4)
 
 include_directories(../../kernel)
-include_directories(../../user/c++)
+include_directories(../../user/C++)
 
 set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -march=native -Wall -Wextra -std=c++0x")
 
