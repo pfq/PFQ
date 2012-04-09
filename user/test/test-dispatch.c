@@ -67,7 +67,11 @@ main(int argc, char *argv[])
 
         printf("id: %d fd-> %d\n", id, pfq_fd(p));
 
-        pfq_add_device_by_name(p, "eth0", -1, &ok);
+        pfq_add_device_by_name(p, argv[1], -1, &ok);
+        if (!ok) {
+                printf("error: %s\n", pfq_error(p));
+                return -1;
+        }
 
         int n = 0;
         for(;n < 100; n++) {
