@@ -67,6 +67,8 @@ extern void pfq_remove_device_by_index(pfq_t *q, int index, int queue, int *ok);
 extern void pfq_remove_device_by_name(pfq_t *q, const char *dev, int queue, int *ok);
 extern int pfq_poll(pfq_t *q, long int usec, int *ok);
 extern int pfq_id(pfq_t const *q, int *ok);
+extern int pfq_fd(pfq_t const *q);
+
 extern struct pfq_stats pfq_get_stats(pfq_t const *q, int *ok);
 
 extern int pfq_dispatch(pfq_t *q, pfq_handler callback, char *user, int *ok);

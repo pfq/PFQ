@@ -218,7 +218,12 @@ extern "C" {
     {
         return firewall(ok, q, [&]() { return q->id(); });
     }
-    
+
+    int pfq_fd(pfq_t const *q)
+    {
+        return q->fd();
+    }
+
     struct pfq_stats
     pfq_get_stats(pfq_t const *q, int *ok)
     {

@@ -742,6 +742,11 @@ namespace net {
             return ret;
         }
 
+        int fd() const
+        {
+            return fd_;
+        }
+
     private:
         void close()
         {

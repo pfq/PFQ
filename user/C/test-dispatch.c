@@ -65,7 +65,7 @@ main(int argc, char *argv[])
                 return -1;
         }
 
-        printf("id: %d\n", id);
+        printf("id: %d fd-> %d\n", id, pfq_fd(p));
 
         pfq_add_device_by_name(p, "eth0", -1, &ok);
 
