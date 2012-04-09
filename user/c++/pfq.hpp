@@ -510,7 +510,7 @@ namespace net {
             struct ifreq ifreq_io;
             strncpy(ifreq_io.ifr_name, dev, IFNAMSIZ);
             if (::ioctl(fd_, SIOCGIFINDEX, &ifreq_io) == -1)
-                return -1;
+                throw pfq_error(__FUNCTION__, "SIOCGIFINDEX");
             return ifreq_io.ifr_ifindex;
         }
 
