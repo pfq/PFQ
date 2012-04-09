@@ -75,6 +75,7 @@ namespace net {
     static inline
     void rmb() { asm volatile ("": : :"memory"); }
 
+
     class batch 
     {
     public:
@@ -344,84 +345,84 @@ namespace net {
             return strerror_r(errnum, buf, sizeof(buf)-1);
         }
 
+        struct pfq_data
+        {
+            ~pfq_data()
+            {
+                if (fd != -1) {
+                    ::close(fd);
+                    fd = -1;
+                }
+            }
+
+            int fd;
+            void * queue_addr;
+            size_t queue_size;
+            size_t queue_slots; 
+            size_t queue_caplen;
+            size_t queue_offset;
+            size_t slot_size;
+            size_t next_len;
+        };
+
+        std::unique_ptr<pfq_data> pdata_;
+
     public:
 
-        static const int any_device = Q_ANY_DEVICE;
-        static const int any_queue  = Q_ANY_QUEUE;
+        static constexpr int any_device = Q_ANY_DEVICE;
+        static constexpr int any_queue  = Q_ANY_QUEUE;
 
         pfq()
-        : fd_(-1)
-        , queue_addr_(NULL)
-        , queue_size_(0)
-        , queue_slots_(0)
-        , queue_caplen_(0)
-        , queue_offset_(0)
-        , slot_size_(0)
-        , next_len_(0)
+        : pdata_(new pfq_data {-1, nullptr, 0, 0, 0, 0, 0, 0})
         {
-            fd_ = ::socket(PF_Q, SOCK_RAW, htons(ETH_P_ALL));
-            if (fd_ == -1)
+            pdata_->fd = ::socket(PF_Q, SOCK_RAW, htons(ETH_P_ALL));
+            if (pdata_->fd == -1)
                 throw pfq_error(__FUNCTION__, "module not loaded");
             
-            socklen_t size = sizeof(queue_slots_);
-            if (::getsockopt(fd_, PF_Q, SO_GET_SLOTS, &queue_slots_, &size) == -1)
+            socklen_t size = sizeof(pdata_->queue_slots);
+            if (::getsockopt(pdata_->fd, PF_Q, SO_GET_SLOTS, &pdata_->queue_slots, &size) == -1)
                 throw pfq_error(__FUNCTION__, "SO_GET_SLOTS");
             
-            size = sizeof(queue_caplen_);
-            if (::getsockopt(fd_, PF_Q, SO_GET_CAPLEN, &queue_caplen_, &size) == -1)
+            size = sizeof(pdata_->queue_caplen);
+            if (::getsockopt(pdata_->fd, PF_Q, SO_GET_CAPLEN, &pdata_->queue_caplen, &size) == -1)
                 throw pfq_error(__FUNCTION__, "SO_GET_CAPLEN");
 
-            slot_size_ = align<8>(sizeof(pfq_hdr) + queue_caplen_);
+            pdata_->slot_size = align<8>(sizeof(pfq_hdr) + pdata_->queue_caplen);
         }
 
         pfq(size_t caplen, size_t offset = 0, size_t slots = 131072)
-        : fd_(-1)
-        , queue_addr_(NULL)
-        , queue_size_(0)
-        , queue_slots_(0)
-        , queue_caplen_(0)
-        , queue_offset_(offset)
-        , slot_size_(0)
-        , next_len_(0)
+        : pdata_(new pfq_data { -1, nullptr, 0, 0, 0, offset, 0, 0 })
         {
-            fd_ = ::socket(PF_Q, SOCK_RAW, htons(ETH_P_ALL));
-            if (fd_ == -1)
+            pdata_->fd = ::socket(PF_Q, SOCK_RAW, htons(ETH_P_ALL));
+            if (pdata_->fd == -1)
                 throw pfq_error(__FUNCTION__, "module not loaded");
             
-            if (::setsockopt(fd_, PF_Q, SO_SLOTS, &slots, sizeof(slots)) == -1)
+            if (::setsockopt(pdata_->fd, PF_Q, SO_SLOTS, &slots, sizeof(slots)) == -1)
                 throw pfq_error(__FUNCTION__, "SO_SLOTS");
-            queue_slots_ = slots;
+            pdata_->queue_slots = slots;
             
-            if (::setsockopt(fd_, PF_Q, SO_CAPLEN, &caplen, sizeof(caplen)) == -1)
+            if (::setsockopt(pdata_->fd, PF_Q, SO_CAPLEN, &caplen, sizeof(caplen)) == -1)
                 throw pfq_error(__FUNCTION__, "SO_CAPLEN");
-            queue_caplen_ = caplen;
+            pdata_->queue_caplen = caplen;
             
-            if (::setsockopt(fd_, PF_Q, SO_OFFSET, &offset, sizeof(offset)) == -1)
+            if (::setsockopt(pdata_->fd, PF_Q, SO_OFFSET, &offset, sizeof(offset)) == -1)
                 throw pfq_error(__FUNCTION__, "SO_OFFSET");
             
-            slot_size_ = align<8>(sizeof(pfq_hdr) + queue_caplen_);
+            pdata_->slot_size = align<8>(sizeof(pfq_hdr) + pdata_->queue_caplen);
         }
 
-        ~pfq()
-        {
-            this->close();
-        }
+        ~pfq() = default;
 
+        /* pfq object is non copyable */
         pfq(const pfq&) = delete;
         pfq& operator=(const pfq&) = delete;
 
+
+        /* pfq object is moveable */
         pfq(pfq &&other)
-        : fd_(other.fd_)
-        , queue_addr_(other.queue_addr_)
-        , queue_size_(other.queue_size_)
-        , queue_slots_(other.queue_slots_)
-        , queue_caplen_(other.queue_caplen_)
-        , queue_offset_(other.queue_offset_)
-        , slot_size_(0)
-        , next_len_(0)
+        : pdata_(std::move(other.pdata_))
         {
-            slot_size_ = align<8>(sizeof(pfq_hdr) + queue_caplen_);
-            other.fd_ = -1;
+            pdata_->slot_size = align<8>(sizeof(pfq_hdr) + pdata_->queue_caplen);
         }
 
         pfq& 
@@ -429,176 +430,175 @@ namespace net {
         {
             if (this != &other)
             {
-                this->close();
-
-                fd_ = other.fd_;
-                queue_addr_   = other.queue_addr_;
-                queue_size_   = other.queue_size_;
-                queue_slots_  = other.queue_slots_;
-                queue_caplen_ = other.queue_caplen_;
-                queue_offset_ = other.queue_offset_;
-                slot_size_    = other.slot_size_;
-                next_len_     = other.next_len_;
+                pdata_ = std::move(other.pdata_);
             }
             return *this;
         }
         
-        void swap(pfq &other)
+        void 
+        swap(pfq &other)
         {
-            std::swap(fd_,          other.fd_);
-            std::swap(queue_addr_,  other.queue_addr_);
-            std::swap(queue_size_,  other.queue_size_);
-            std::swap(queue_slots_, other.queue_slots_);
-            std::swap(queue_caplen_,other.queue_caplen_);
-            std::swap(queue_offset_,other.queue_offset_);
-            std::swap(slot_size_,   other.slot_size_);
-            std::swap(next_len_,    other.next_len_);
+            std::swap(pdata_, other.pdata_);
         }                           
                 
-        void enable()
+        void 
+        enable()
         {
             int one = 1;
-            if(::setsockopt(fd_, PF_Q, SO_TOGGLE_QUEUE, &one, sizeof(one)) == -1)
+            if(::setsockopt(pdata_->fd, PF_Q, SO_TOGGLE_QUEUE, &one, sizeof(one)) == -1)
                 throw pfq_error(__FUNCTION__, "SO_TOGGLE_QUEUE");
             
             size_t tot_mem; socklen_t size = sizeof(tot_mem);
             
-            if (::getsockopt(fd_, PF_Q, SO_GET_QUEUE_MEM, &tot_mem, &size) == -1)
+            if (::getsockopt(pdata_->fd, PF_Q, SO_GET_QUEUE_MEM, &tot_mem, &size) == -1)
                 throw pfq_error(__FUNCTION__, "SO_GET_QUEUE_MEM");
             
-            queue_size_ = tot_mem;
+            pdata_->queue_size = tot_mem;
 
-            if ((queue_addr_ = mmap(NULL, tot_mem, PROT_READ|PROT_WRITE, MAP_SHARED, fd_, 0)) == MAP_FAILED) 
+            if ((pdata_->queue_addr = mmap(nullptr, tot_mem, PROT_READ|PROT_WRITE, MAP_SHARED, pdata_->fd, 0)) == MAP_FAILED) 
                 throw pfq_error(__FUNCTION__, "mmap error", strerror_(errno));
         }
 
-        void disable()
+        void 
+        disable()
         {
-            if (munmap(queue_addr_, queue_size_) == -1)
+            if (munmap(pdata_->queue_addr, pdata_->queue_size) == -1)
                 throw pfq_error(__FUNCTION__, "munmap", strerror_(errno));
             
-            queue_addr_ = NULL;
-            queue_size_ = 0;
+            pdata_->queue_addr = nullptr;
+            pdata_->queue_size = 0;
 
             int one = 0;
-            if(::setsockopt(fd_, PF_Q, SO_TOGGLE_QUEUE, &one, sizeof(one)) == -1)
+            if(::setsockopt(pdata_->fd, PF_Q, SO_TOGGLE_QUEUE, &one, sizeof(one)) == -1)
                 throw pfq_error(__FUNCTION__, "SO_TOGGLE_QUEUE");
         }
 
-        bool is_enabled() const
+        bool 
+        is_enabled() const
         {
-            if (fd_ != -1)
+            if (pdata_->fd != -1)
             {
                 int ret; socklen_t size = sizeof(ret);
 
-                if (::getsockopt(fd_, PF_Q, SO_GET_STATUS, &ret, &size) == -1)
+                if (::getsockopt(pdata_->fd, PF_Q, SO_GET_STATUS, &ret, &size) == -1)
                     throw pfq_error(__FUNCTION__, "SO_GET_STATUS");
                 return ret;
             }
             return false;
         }
 
-        void load_balance(bool value)
+        void 
+        load_balance(bool value)
         {
             int one = value;
-            if (::setsockopt(fd_, PF_Q, SO_LOAD_BALANCE, &one, sizeof(one)) == -1)
+            if (::setsockopt(pdata_->fd, PF_Q, SO_LOAD_BALANCE, &one, sizeof(one)) == -1)
                 throw pfq_error(__FUNCTION__, "SO_LOAD_BALANCE");
         }
 
-        int ifindex(const char *dev) const
+        int 
+        ifindex(const char *dev) const
         {
             struct ifreq ifreq_io;
             strncpy(ifreq_io.ifr_name, dev, IFNAMSIZ);
-            if (::ioctl(fd_, SIOCGIFINDEX, &ifreq_io) == -1)
+            if (::ioctl(pdata_->fd, SIOCGIFINDEX, &ifreq_io) == -1)
                 throw pfq_error(__FUNCTION__, "SIOCGIFINDEX");
             return ifreq_io.ifr_ifindex;
         }
 
-        void tstamp(bool value)
+        void 
+        tstamp(bool value)
         {
             int ts = static_cast<int>(value);
-            if (::setsockopt(fd_, PF_Q, SO_TSTAMP_TYPE, &ts, sizeof(ts)) == -1)
+            if (::setsockopt(pdata_->fd, PF_Q, SO_TSTAMP_TYPE, &ts, sizeof(ts)) == -1)
                 throw pfq_error(__FUNCTION__, "SO_TSTAMP_TYPE");
         }
 
-        bool tstamp() const
+        bool 
+        tstamp() const
         {
            int ret; socklen_t size = sizeof(int);
-           if (::getsockopt(fd_, PF_Q, SO_GET_TSTAMP_TYPE, &ret, &size) == -1)
+           if (::getsockopt(pdata_->fd, PF_Q, SO_GET_TSTAMP_TYPE, &ret, &size) == -1)
                 throw pfq_error(__FUNCTION__, "SO_GET_TSTAMP_TYPE");
            return ret;
         }
 
-        void caplen(size_t value)
+        void 
+        caplen(size_t value)
         {
             if (is_enabled()) 
                 throw pfq_error(__FUNCTION__, "is_enabled");
             
-            if (::setsockopt(fd_, PF_Q, SO_CAPLEN, &value, sizeof(value)) == -1) {
+            if (::setsockopt(pdata_->fd, PF_Q, SO_CAPLEN, &value, sizeof(value)) == -1) {
                 throw pfq_error(__FUNCTION__, "SO_CAPLEN");
             }
 
-            slot_size_ = align<8>(sizeof(pfq_hdr)+ value);
+            pdata_->slot_size = align<8>(sizeof(pfq_hdr)+ value);
         }
 
-        size_t caplen() const
+        size_t 
+        caplen() const
         {
            size_t ret; socklen_t size = sizeof(ret);
-           if (::getsockopt(fd_, PF_Q, SO_GET_CAPLEN, &ret, &size) == -1)
+           if (::getsockopt(pdata_->fd, PF_Q, SO_GET_CAPLEN, &ret, &size) == -1)
                 throw pfq_error(__FUNCTION__, "SO_GET_CAPLEN");
            return ret;
         }
 
-        void offset(size_t value)
+        void 
+        offset(size_t value)
         {
             if (is_enabled()) 
                 throw pfq_error(__FUNCTION__, "is_enabled");
             
-            if (::setsockopt(fd_, PF_Q, SO_OFFSET, &value, sizeof(value)) == -1) {
+            if (::setsockopt(pdata_->fd, PF_Q, SO_OFFSET, &value, sizeof(value)) == -1) {
                 throw pfq_error(__FUNCTION__, "SO_OFFSET");
             }
         }
 
-        size_t offset() const
+        size_t 
+        offset() const
         {
            size_t ret; socklen_t size = sizeof(ret);
-           if (::getsockopt(fd_, PF_Q, SO_GET_OFFSET, &ret, &size) == -1)
+           if (::getsockopt(pdata_->fd, PF_Q, SO_GET_OFFSET, &ret, &size) == -1)
                 throw pfq_error(__FUNCTION__, "SO_GET_OFFSET");
            return ret;
         }
 
-        void
+        void 
         slots(size_t value) 
         {             
             if (is_enabled()) 
                 throw pfq_error(__FUNCTION__, "is_enabled");
                       
-            if (::setsockopt(fd_, PF_Q, SO_SLOTS, &value, sizeof(value)) == -1) {
+            if (::setsockopt(pdata_->fd, PF_Q, SO_SLOTS, &value, sizeof(value)) == -1) {
                 throw pfq_error(__FUNCTION__, "SO_SLOTS");
             }
 
-            queue_slots_ = value;
+            pdata_->queue_slots = value;
         }
         
-        size_t
+        size_t 
         slots() const
         {
-            return queue_slots_;
+            return pdata_->queue_slots;
         }
 
-        size_t slot_size() const
+        size_t 
+        slot_size() const
         {
-            return slot_size_;
+            return pdata_->slot_size;
         }
 
-        void add_device(int index, int queue = any_queue)
+        void 
+        add_device(int index, int queue = any_queue)
         {
             struct pfq_dev_queue dq = { index, queue };
-            if (::setsockopt(fd_, PF_Q, SO_ADD_DEVICE, &dq, sizeof(dq)) == -1)
+            if (::setsockopt(pdata_->fd, PF_Q, SO_ADD_DEVICE, &dq, sizeof(dq)) == -1)
                 throw pfq_error(__FUNCTION__, "SO_ADD_DEVICE");
         }
         
-        void add_device(const char *dev, int queue = any_queue)
+        void 
+        add_device(const char *dev, int queue = any_queue)
         {
             auto index = ifindex(dev);
             if (index == -1)
@@ -606,13 +606,16 @@ namespace net {
             add_device(index, queue);
         }                              
 
-        void remove_device(int index, int queue = any_queue)
+        void 
+        remove_device(int index, int queue = any_queue)
         {
             struct pfq_dev_queue dq = { index, queue };
-            if (::setsockopt(fd_, PF_Q, SO_REMOVE_DEVICE, &dq, sizeof(dq)) == -1)
+            if (::setsockopt(pdata_->fd, PF_Q, SO_REMOVE_DEVICE, &dq, sizeof(dq)) == -1)
                 throw pfq_error(__FUNCTION__, "SO_REMOVE_DEVICE");
         }
-        void remove_device(const char *dev, int queue = any_queue)
+        
+        void 
+        remove_device(const char *dev, int queue = any_queue)
         {
             auto index = ifindex(dev);
             if (index == -1)
@@ -626,10 +629,11 @@ namespace net {
             struct pfq_dev_queue dq = { index, queue };
             socklen_t s = sizeof(struct pfq_dev_queue);
 
-            if (::getsockopt(fd_, PF_Q, SO_GET_OWNERS, &dq, &s) == -1)
+            if (::getsockopt(pdata_->fd, PF_Q, SO_GET_OWNERS, &dq, &s) == -1)
                 throw pfq_error(__FUNCTION__, "SO_GET_OWNERS");
             return *reinterpret_cast<unsigned long *>(&dq);
         }
+
         unsigned long 
         owners(const char *dev, int queue) const
         {
@@ -642,10 +646,10 @@ namespace net {
         int 
         poll(long int microseconds = -1 /* infinite */)
         {
-            struct pollfd fd = {fd_, POLLIN, 0 };
+            struct pollfd fd = {pdata_->fd, POLLIN, 0 };
             struct timespec timeout = { microseconds/1000000, (microseconds%1000000) * 1000};
 
-            int ret = ::ppoll(&fd, 1, microseconds < 0 ? NULL : &timeout, NULL);
+            int ret = ::ppoll(&fd, 1, microseconds < 0 ? nullptr : &timeout, nullptr);
             if (ret < 0)
                throw pfq_error(__FUNCTION__, "ppoll", strerror_(errno));
             return ret; 
@@ -654,26 +658,26 @@ namespace net {
         batch
         read(long int microseconds = -1) 
         {
-            struct pfq_queue_descr * q = static_cast<struct pfq_queue_descr *>(queue_addr_);
+            struct pfq_queue_descr * q = static_cast<struct pfq_queue_descr *>(pdata_->queue_addr);
 
             int data =  q->data;               
             int index  = DBMP_QUEUE_INDEX(data) ? 1 : 0;
             
-            size_t q_size = queue_slots_ * slot_size_;
+            size_t q_size = pdata_->queue_slots * pdata_->slot_size;
 
             //  watermark for polling...
             
-            if( DBMP_QUEUE_LEN(data) < (queue_slots_ >> 1) ) {
+            if( DBMP_QUEUE_LEN(data) < (pdata_->queue_slots >> 1) ) {
                 this->poll(microseconds);
             }
 
             // clean the next buffer...
             
-            char * p = static_cast<char *>(queue_addr_) + sizeof(pfq_queue_descr) + !index * q_size;
-            for(unsigned int i = 0; i < next_len_; i++)
+            char * p = static_cast<char *>(pdata_->queue_addr) + sizeof(pfq_queue_descr) + !index * q_size;
+            for(unsigned int i = 0; i < pdata_->next_len; i++)
             {
                 *reinterpret_cast<uint64_t *>(p) = 0; // h->commit = 0; (just a bit faster)
-                p += slot_size_;
+                p += pdata_->slot_size;
             }
 
             wmb();
@@ -682,10 +686,10 @@ namespace net {
             
             q->disabled = 0;
 
-            next_len_ =  std::min(static_cast<size_t>(DBMP_QUEUE_LEN(data)), queue_slots_);
+            pdata_->next_len =  std::min(static_cast<size_t>(DBMP_QUEUE_LEN(data)), pdata_->queue_slots);
 
-            return batch(static_cast<char *>(queue_addr_) + sizeof(pfq_queue_descr) + index * q_size, 
-                         slot_size_, next_len_);
+            return batch(static_cast<char *>(pdata_->queue_addr) + sizeof(pfq_queue_descr) + index * q_size, 
+                         pdata_->slot_size, pdata_->next_len);
         }
         
         batch
@@ -693,7 +697,7 @@ namespace net {
         {
             auto this_batch = this->read(microseconds);
             
-            if (buff.second < queue_slots_ * slot_size_)
+            if (buff.second < pdata_->queue_slots * pdata_->slot_size)
                 throw pfq_error(__FUNCTION__, "buffer too small");
 
             memcpy(buff.first, this_batch.data(), this_batch.slot_size() * this_batch.size());
@@ -721,13 +725,12 @@ namespace net {
             return n;
         }
 
-
         pfq_stats
         stats() const
         {
             pfq_stats stat;
             socklen_t size = sizeof(struct pfq_stats);
-            if (::getsockopt(fd_, PF_Q, SO_GET_STATS, &stat, &size) == -1)
+            if (::getsockopt(pdata_->fd, PF_Q, SO_GET_STATS, &stat, &size) == -1)
                 throw pfq_error(__FUNCTION__, "SO_GET_STATS");
             return stat;
         }
@@ -735,49 +738,33 @@ namespace net {
         size_t
         mem_size() const
         {
-            return queue_size_;
+            return pdata_->queue_size;
         }
 
         const void *
         mem_addr() const
         {
-            return queue_addr_;
+            return pdata_->queue_addr;
         }
 
-        int id() const
+        int 
+        id() const
         {
-            if (fd_ == -1)
+            if (pdata_->fd == -1)
                 return -1;
 
             int ret; socklen_t size = sizeof(int);
-            if (::getsockopt(fd_, PF_Q, SO_GET_ID, &ret, &size) == -1)
+            if (::getsockopt(pdata_->fd, PF_Q, SO_GET_ID, &ret, &size) == -1)
                 throw pfq_error(__FUNCTION__, "SO_GET_ID");
             return ret;
         }
 
-        int fd() const
+        int 
+        fd() const
         {
-            return fd_;
+            return pdata_->fd;
         }
 
-    private:
-        void close()
-        {
-            if (fd_ != -1) {
-                ::close(fd_);
-                fd_ = -1;
-            }
-        }
-
-        int fd_;
-
-        void * queue_addr_;
-        size_t queue_size_;
-        size_t queue_slots_; 
-        size_t queue_caplen_;
-        size_t queue_offset_;
-        size_t slot_size_;
-        size_t next_len_;
     };
 
 
