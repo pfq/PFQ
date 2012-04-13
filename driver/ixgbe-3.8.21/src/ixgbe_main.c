@@ -1064,7 +1064,7 @@ static void ixgbe_receive_skb(struct ixgbe_q_vector *q_vector,
 		if (!*vlgrp)
 			dev_kfree_skb_any(skb);
 #ifdef CONFIG_IXGBE_NAPI
-		else if (adapter->flags & IXGBE_FLAG_IN_NETPOLL)
+                else if (adapter->flags & IXGBE_FLAG_IN_NETPOLL)
 			vlan_hwaccel_rx(skb, *vlgrp, vlan_tag);
 		else
 			vlan_gro_receive(&q_vector->napi,
@@ -1079,11 +1079,7 @@ static void ixgbe_receive_skb(struct ixgbe_q_vector *q_vector,
 		if (adapter->flags & IXGBE_FLAG_IN_NETPOLL)
 			netif_rx(skb);
 		else {
-#ifdef CONFIG_PFQ
-                pfq_gro_receive(&q_vector->napi, skb);
-#else
-                napi_gro_receive(&q_vector->napi, skb);
-#endif
+                        napi_gro_receive(&q_vector->napi, skb);
                 }
 #else
 		if (netif_rx(skb) == NET_RX_DROP)
