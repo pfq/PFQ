@@ -42,7 +42,55 @@ void e1000_init_nvm_ops_generic(struct e1000_hw *hw)
 	DEBUGFUNC("e1000_init_nvm_ops_generic");
 
 	/* Initialize function pointers */
+	nvm->ops.init_params = e1000_null_ops_generic;
+	nvm->ops.acquire = e1000_null_ops_generic;
+	nvm->ops.read = e1000_null_read_nvm;
+	nvm->ops.release = e1000_null_nvm_generic;
 	nvm->ops.reload = e1000_reload_nvm_generic;
+	nvm->ops.update = e1000_null_ops_generic;
+	nvm->ops.valid_led_default = e1000_null_led_default;
+	nvm->ops.validate = e1000_null_ops_generic;
+	nvm->ops.write = e1000_null_write_nvm;
+}
+
+/**
+ *  e1000_null_nvm_read - No-op function, return 0
+ *  @hw: pointer to the HW structure
+ **/
+s32 e1000_null_read_nvm(struct e1000_hw *hw, u16 a, u16 b, u16 *c)
+{
+	DEBUGFUNC("e1000_null_read_nvm");
+	return E1000_SUCCESS;
+}
+
+/**
+ *  e1000_null_nvm_generic - No-op function, return void
+ *  @hw: pointer to the HW structure
+ **/
+void e1000_null_nvm_generic(struct e1000_hw *hw)
+{
+	DEBUGFUNC("e1000_null_nvm_generic");
+	return;
+}
+
+/**
+ *  e1000_null_led_default - No-op function, return 0
+ *  @hw: pointer to the HW structure
+ **/
+s32 e1000_null_led_default(struct e1000_hw *hw, u16 *data)
+{
+	DEBUGFUNC("e1000_null_led_default");
+	return E1000_SUCCESS;
+}
+
+/**
+ *  e1000_null_write_nvm - No-op function, return 0
+ *  @hw: pointer to the HW structure
+ **/
+s32 e1000_null_write_nvm(struct e1000_hw *hw, u16 a, u16 b, u16 *c)
+{
+	DEBUGFUNC("e1000_null_write_nvm");
+	return E1000_SUCCESS;
 }
 
 /**
@@ -325,7 +373,7 @@ static s32 e1000_ready_nvm_eeprom(struct e1000_hw *hw)
 		 */
 		while (timeout) {
 			e1000_shift_out_eec_bits(hw, NVM_RDSR_OPCODE_SPI,
-			                         hw->nvm.opcode_bits);
+						 hw->nvm.opcode_bits);
 			spi_stat_reg = (u8)e1000_shift_in_eec_bits(hw, 8);
 			if (!(spi_stat_reg & NVM_STATUS_RDY_SPI))
 				break;
@@ -448,7 +496,7 @@ s32 e1000_read_nvm_eerd(struct e1000_hw *hw, u16 offset, u16 words, u16 *data)
 			break;
 
 		data[i] = (E1000_READ_REG(hw, E1000_EERD) >>
-		           E1000_NVM_RW_REG_DATA);
+			   E1000_NVM_RW_REG_DATA);
 	}
 
 out:
@@ -501,7 +549,7 @@ s32 e1000_write_nvm_spi(struct e1000_hw *hw, u16 offset, u16 words, u16 *data)
 
 		/* Send the WRITE ENABLE command (8 bit opcode) */
 		e1000_shift_out_eec_bits(hw, NVM_WREN_OPCODE_SPI,
-		                         nvm->opcode_bits);
+					 nvm->opcode_bits);
 
 		e1000_standby_nvm(hw);
 
@@ -515,7 +563,7 @@ s32 e1000_write_nvm_spi(struct e1000_hw *hw, u16 offset, u16 words, u16 *data)
 		/* Send the Write command (8-bit opcode + addr) */
 		e1000_shift_out_eec_bits(hw, write_opcode, nvm->opcode_bits);
 		e1000_shift_out_eec_bits(hw, (u16)((offset + widx) * 2),
-		                         nvm->address_bits);
+					 nvm->address_bits);
 
 		/* Loop to allow for up to whole page write of eeprom */
 		while (widx < words) {
@@ -549,7 +597,7 @@ out:
  *  the value in pba_num.
  **/
 s32 e1000_read_pba_string_generic(struct e1000_hw *hw, u8 *pba_num,
-                                  u32 pba_num_size)
+				  u32 pba_num_size)
 {
 	s32 ret_val;
 	u16 nvm_data;

@@ -485,10 +485,9 @@ _kc_alloc_etherdev(int sizeof_priv)
 	int alloc_size;
 
 	alloc_size = sizeof(*dev) + sizeof_priv + IFNAMSIZ + 31;
-	dev = kmalloc(alloc_size, GFP_KERNEL);
+	dev = kzalloc(alloc_size, GFP_KERNEL);
 	if (!dev)
 		return NULL;
-	memset(dev, 0, alloc_size);
 
 	if (sizeof_priv)
 		dev->priv = (void *) (((unsigned long)(dev + 1) + 31) & ~31);
@@ -961,6 +960,21 @@ void _kc_netif_tx_start_all_queues(struct net_device *netdev)
 			netif_start_subqueue(netdev, i);
 }
 #endif /* HAVE_TX_MQ */
+
+#ifndef __WARN_printf
+void __kc_warn_slowpath(const char *file, int line, const char *fmt, ...)
+{
+	va_list args;
+
+	printk(KERN_WARNING "------------[ cut here ]------------\n");
+	printk(KERN_WARNING "WARNING: at %s:%d %s()\n", file, line);
+	va_start(args, fmt);
+	vprintk(fmt, args);
+	va_end(args);
+
+	dump_stack();
+}
+#endif /* __WARN_printf */
 #endif /* < 2.6.27 */
 
 /*****************************************************************************/
@@ -997,6 +1011,15 @@ _kc_pci_wake_from_d3(struct pci_dev *dev, bool enable)
 
 out:
 	return err;
+}
+
+void _kc_skb_add_rx_frag(struct sk_buff *skb, int i, struct page *page,
+			 int off, int size)
+{
+	skb_fill_page_desc(skb, i, page, off, size);
+	skb->len += size;
+	skb->data_len += size;
+	skb->truesize += size;
 }
 #endif /* < 2.6.28 */
 
@@ -1114,6 +1137,6 @@ int _kc_ethtool_op_set_flags(struct net_device *dev, u32 data, u32 supported)
 
 /******************************************************************************/
 #if ( LINUX_VERSION_CODE < KERNEL_VERSION(2,6,39) )
-#if (!(RHEL_RELEASE_CODE && RHEL_RELEASE_CODE > RHEL_RELEASE_VERSION(6,1)))
+#if (!(RHEL_RELEASE_CODE && RHEL_RELEASE_CODE > RHEL_RELEASE_VERSION(6,0)))
 #endif /* !(RHEL_RELEASE_CODE > RHEL_RELEASE_VERSION(6,0)) */
 #endif /* < 2.6.39 */

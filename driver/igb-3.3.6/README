@@ -1,7 +1,7 @@
 Linux* Base Driver for Intel(R) Ethernet Network Connection
 ===========================================================
 
-April 14, 2011
+October 17, 2011
 
 Contents
 ========
@@ -556,17 +556,23 @@ Additional Configurations
 Known Issues/Troubleshooting
 ============================
 
-For known hardware and troubleshooting issues, refer to the following website.
+Hardware Issues:
+----------------
+For known hardware and troubleshooting issues, either refer to the "Release 
+Notes" in your User Guide, or for more detailed information, go to the 
+following website:
 
-    http://support.intel.com/support/go/network/adapter/home.htm
+    http://www.intel.com
 
-Either select the link for your adapter or perform a search for the adapter 
-number. The adapter's page lists many issues. For a complete list of hardware
-issues download your adapter's user guide and read the Release Notes.  
+In the search box enter your devices controller ID followed by "spec update" 
+(i.e., 82599 spec update). The spec update file has complete information on
+known hardware issues.
+
+Software Issues:
+----------------
 
   NOTE: After installing the driver, if your Intel Ethernet Network Connection
-  is not working, verify in the "In This Release" section of the readme that 
-  you have installed the correct driver.
+  is not working, verify that you have installed the correct driver.
 
   Using the igb driver on 2.4 or older 2.6 based kernels
   ------------------------------------------------------

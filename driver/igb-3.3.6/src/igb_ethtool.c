@@ -155,7 +155,8 @@ static int igb_get_settings(struct net_device *netdev, struct ethtool_cmd *ecmd)
 				   SUPPORTED_1000baseT_Full|
 				   SUPPORTED_Autoneg |
 				   SUPPORTED_TP);
-		ecmd->advertising = ADVERTISED_TP;
+		ecmd->advertising = (ADVERTISED_TP |
+				     ADVERTISED_Pause);
 
 		if (hw->mac.autoneg == 1) {
 			ecmd->advertising |= ADVERTISED_Autoneg;
@@ -172,7 +173,8 @@ static int igb_get_settings(struct net_device *netdev, struct ethtool_cmd *ecmd)
 
 		ecmd->advertising = (ADVERTISED_1000baseT_Full |
 				     ADVERTISED_FIBRE |
-				     ADVERTISED_Autoneg);
+				     ADVERTISED_Autoneg |
+				     ADVERTISED_Pause);
 
 		ecmd->port = PORT_FIBRE;
 	} 
@@ -1591,7 +1593,7 @@ static int igb_link_test(struct igb_adapter *adapter, u64 *data)
 	} else {
 		e1000_check_for_link(&adapter->hw);
 		if (adapter->hw.mac.autoneg)
-			msleep(4000);
+			msleep(5000);
 
 		if (!(E1000_READ_REG(hw, E1000_STATUS) & E1000_STATUS_LU))
 			*data = 1;

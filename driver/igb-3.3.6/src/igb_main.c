@@ -59,8 +59,8 @@
 #define VERSION_SUFFIX
 
 #define MAJ 3
-#define MIN 2
-#define BUILD 10
+#define MIN 3
+#define BUILD 6
 #define DRV_VERSION __stringify(MAJ) "." __stringify(MIN) "." __stringify(BUILD) VERSION_SUFFIX DRV_DEBUG DRV_HW_PERF
 
 char igb_driver_name[] = "igb";
@@ -125,6 +125,8 @@ static void igb_set_rx_mode(struct net_device *);
 static void igb_update_phy_info(unsigned long);
 static void igb_watchdog(unsigned long);
 static void igb_watchdog_task(struct work_struct *);
+static void igb_dma_err_task(struct work_struct *);
+static void igb_dma_err_timer(unsigned long data);
 static netdev_tx_t igb_xmit_frame(struct sk_buff *skb, struct net_device *);
 static struct net_device_stats *igb_get_stats(struct net_device *);
 static int igb_change_mtu(struct net_device *, int);
@@ -166,6 +168,11 @@ static int igb_ndo_set_vf_bw(struct net_device *netdev, int vf, int tx_rate);
 static int igb_ndo_get_vf_config(struct net_device *netdev, int vf,
 				 struct ifla_vf_info *ivi);
 static void igb_check_vf_rate_limit(struct igb_adapter *);
+#endif
+static int igb_vf_configure(struct igb_adapter *adapter, int vf);
+static int igb_check_vf_assignment(struct igb_adapter *adapter);
+#ifdef HAVE_PCI_DEV_FLAGS_ASSIGNED
+static int igb_find_enabled_vfs(struct igb_adapter *adapter);
 #endif
 #ifdef CONFIG_PM
 static int igb_suspend(struct pci_dev *, pm_message_t);
@@ -306,6 +313,14 @@ static int __init igb_init_module(void)
 	       igb_driver_string, igb_driver_version);
 
 	printk(KERN_INFO "%s\n", igb_copyright);
+#ifdef IGB_SYSFS
+/* only use IGB_PROCFS if IGB_SYSFS is not defined */
+#else
+#ifdef IGB_PROCFS
+	if ( igb_procfs_topdir_init() )
+		printk(KERN_INFO "Procfs failed to initialize topdir\n");
+#endif /* IGB_PROCFS */
+#endif /* IGB_SYSFS  */
 
 #ifdef IGB_DCA
 	dca_register_notify(&dca_notifier);
@@ -316,7 +331,6 @@ static int __init igb_init_module(void)
 		register_reboot_notifier(&igb_notifier_reboot);
 	}
 #endif
-
 	return ret;
 }
 
@@ -337,6 +351,14 @@ static void __exit igb_exit_module(void)
 	unregister_reboot_notifier(&igb_notifier_reboot);
 #endif
 	pci_unregister_driver(&igb_driver);
+
+#ifdef IGB_SYSFS
+/* only compile IGB_PROCFS if IGB_SYSFS is not defined */
+#else
+#ifdef IGB_PROCFS
+	igb_procfs_topdir_exit();
+#endif /* IGB_PROCFS */
+#endif /* IGB_SYSFS */
 }
 
 module_exit(igb_exit_module);
@@ -895,10 +917,19 @@ static void igb_reset_sriov_capability(struct igb_adapter *adapter)
 
 	/* reclaim resources allocated to VFs */
 	if (adapter->vf_data) {
-		/* disable iov and allow time for transactions to clear */
-		pci_disable_sriov(pdev);
-		msleep(500);
+		if (!igb_check_vf_assignment(adapter)) {
+			/*
+			 * disable iov and allow time for transactions to
+			 * clear
+			 */
+			pci_disable_sriov(pdev);
+			msleep(500);
 
+			dev_info(pci_dev_to_dev(pdev), "IOV Disabled\n");
+		} else {
+			dev_info(pci_dev_to_dev(pdev), "IOV Not Disabled\n "
+					"VF(s) are assigned to guests!\n");
+		}
 		/* Disable Malicious Driver Detection */
 		igb_disable_mdd(adapter);
 
@@ -907,11 +938,10 @@ static void igb_reset_sriov_capability(struct igb_adapter *adapter)
 		adapter->vf_data = NULL;
 
 		/* switch rings back to PF ownership */
-		E1000_WRITE_REG(hw, E1000_IOVCTL, E1000_IOVCTL_REUSE_VFQ);
+		E1000_WRITE_REG(hw, E1000_IOVCTL,
+				E1000_IOVCTL_REUSE_VFQ);
 		E1000_WRITE_FLUSH(hw);
 		msleep(100);
-
-		dev_info(pci_dev_to_dev(pdev), "IOV Disabled\n");
 	}
 
 	adapter->vfs_allocated_count = 0;
@@ -926,9 +956,19 @@ static void igb_reset_sriov_capability(struct igb_adapter *adapter)
 static void igb_set_sriov_capability(struct igb_adapter *adapter)
 {
 	struct pci_dev *pdev = adapter->pdev;
-	unsigned char mac_addr[ETH_ALEN];
+	int old_vfs = 0;
 	int i;
 
+#ifdef HAVE_PCI_DEV_FLAGS_ASSIGNED
+	old_vfs = igb_find_enabled_vfs(adapter);
+#endif
+	if (old_vfs) {
+		dev_info(pci_dev_to_dev(pdev),
+				"%d pre-allocated VFs found - override "
+			 	"max_vfs setting of %d\n", old_vfs,
+				adapter->vfs_allocated_count);
+		adapter->vfs_allocated_count = old_vfs;
+ 	}
 	/* no VFs requested, do nothing */
 	if (!adapter->vfs_allocated_count)
 		return;
@@ -939,24 +979,29 @@ static void igb_set_sriov_capability(struct igb_adapter *adapter)
 	                           GFP_KERNEL);
 
 	if (adapter->vf_data) {
-		for (i = 0; i < adapter->vfs_allocated_count; i++) {
-			random_ether_addr(mac_addr);
-			igb_set_vf_mac(adapter, i, mac_addr);
+		if (!old_vfs) {
+			if (pci_enable_sriov(pdev,
+					adapter->vfs_allocated_count))
+				goto err_out;
 		}
+		for (i = 0; i < adapter->vfs_allocated_count; i++)
+			igb_vf_configure(adapter, i);
 
-		if (!pci_enable_sriov(pdev, adapter->vfs_allocated_count)) {
-			/* DMA Coalescing is not supported in IOV mode. */
-			if (adapter->hw.mac.type >= e1000_i350)
-				adapter->dmac = IGB_DMAC_DISABLE;
-			return;
-		}
+		/* DMA Coalescing is not supported in IOV mode. */
+		if (adapter->hw.mac.type >= e1000_i350)
+		adapter->dmac = IGB_DMAC_DISABLE;
+		if (adapter->hw.mac.type < e1000_i350)
+		adapter->flags |= IGB_FLAG_DETECT_BAD_DMA;
+		return;
 
-		kfree(adapter->vf_data);
-		adapter->vf_data = NULL;
 	}
 
+err_out:
+	kfree(adapter->vf_data);
+	adapter->vf_data = NULL;
 	adapter->vfs_allocated_count = 0;
-	dev_warn(pci_dev_to_dev(pdev), "Failed to initialize SR-IOV virtualization\n");
+	dev_warn(pci_dev_to_dev(pdev),
+			"Failed to initialize SR-IOV virtualization\n");
 }
 
 /**
@@ -1530,6 +1575,8 @@ int igb_up(struct igb_adapter *adapter)
 
 	netif_tx_start_all_queues(adapter->netdev);
 
+	if (adapter->flags & IGB_FLAG_DETECT_BAD_DMA)
+		schedule_work(&adapter->dma_err_task);
 	/* start the watchdog. */
 	hw->mac.get_link_status = 1;
 	schedule_work(&adapter->watchdog_task);
@@ -1569,6 +1616,8 @@ void igb_down(struct igb_adapter *adapter)
 	igb_irq_disable(adapter);
 
 	del_timer_sync(&adapter->watchdog_timer);
+	if (adapter->flags & IGB_FLAG_DETECT_BAD_DMA)
+		del_timer_sync(&adapter->dma_err_timer);
 	del_timer_sync(&adapter->phy_info_timer);
 
 	netif_carrier_off(netdev);
@@ -2114,6 +2163,7 @@ static int __devinit igb_probe(struct pci_dev *pdev,
 		goto err_eeprom;
 	}
 
+	/* copy the MAC address out of the NVM */
 	if (e1000_read_mac_addr(hw))
 		dev_err(pci_dev_to_dev(pdev), "NVM Read Error\n");
 	memcpy(netdev->dev_addr, hw->mac.addr, netdev->addr_len);
@@ -2138,11 +2188,16 @@ static int __devinit igb_probe(struct pci_dev *pdev,
 	e1000_read_nvm(&adapter->hw, 5, 1, &adapter->fw_version);
 	setup_timer(&adapter->watchdog_timer, &igb_watchdog,
 	            (unsigned long) adapter);
+	if (adapter->flags & IGB_FLAG_DETECT_BAD_DMA)
+		setup_timer(&adapter->dma_err_timer, &igb_dma_err_timer,
+			    (unsigned long) adapter);
 	setup_timer(&adapter->phy_info_timer, &igb_update_phy_info,
 	            (unsigned long) adapter);
 
 	INIT_WORK(&adapter->reset_task, igb_reset_task);
 	INIT_WORK(&adapter->watchdog_task, igb_watchdog_task);
+	if (adapter->flags & IGB_FLAG_DETECT_BAD_DMA)
+		INIT_WORK(&adapter->dma_err_task, igb_dma_err_task);
 
 	/* Initialize link properties that are user-changeable */
 	adapter->fc_autoneg = true;
@@ -2257,6 +2312,14 @@ static int __devinit igb_probe(struct pci_dev *pdev,
 		 pba_str);
 
 
+#ifdef IGB_SYSFS
+	igb_sysfs_init(adapter);
+#else
+#ifdef IGB_PROCFS
+	igb_procfs_init(adapter);
+#endif /* IGB_PROCFS */
+#endif /* IGB_SYSFS */
+
 	switch (hw->mac.type) {
 	case e1000_i350:
 		/* Enable EEE */
@@ -2325,6 +2388,8 @@ static void __devexit igb_remove(struct pci_dev *pdev)
 	 * explicitly disable watchdog tasks from being rescheduled  */
 	set_bit(__IGB_DOWN, &adapter->state);
 	del_timer_sync(&adapter->watchdog_timer);
+	if (adapter->flags & IGB_FLAG_DETECT_BAD_DMA)
+		del_timer_sync(&adapter->dma_err_timer);
 	del_timer_sync(&adapter->phy_info_timer);
 
 	flush_scheduled_work();
@@ -2363,6 +2428,14 @@ static void __devexit igb_remove(struct pci_dev *pdev)
 	pci_disable_pcie_error_reporting(pdev);
 
 	pci_disable_device(pdev);
+
+#ifdef IGB_SYSFS
+	igb_sysfs_exit(adapter);
+#else
+#ifdef IGB_PROCFS
+	igb_procfs_exit(adapter);
+#endif /* IGB_PROCFS */
+#endif /* IGB_SYSFS */
 }
 
 #ifdef HAVE_HW_TIME_STAMP
@@ -2606,6 +2679,9 @@ static int igb_open(struct net_device *netdev)
 
 	netif_tx_start_all_queues(netdev);
 
+	if (adapter->flags & IGB_FLAG_DETECT_BAD_DMA)
+		schedule_work(&adapter->dma_err_task);
+
 	/* start the watchdog. */
 	hw->mac.get_link_status = 1;
 	schedule_work(&adapter->watchdog_task);
@@ -2641,6 +2717,9 @@ static int igb_close(struct net_device *netdev)
 
 	WARN_ON(test_bit(__IGB_RESETTING, &adapter->state));
 	igb_down(adapter);
+
+	/*CMW test */
+	igb_release_hw_control(adapter);
 
 	igb_free_irq(adapter);
 
@@ -3089,7 +3168,7 @@ static void igb_rlpml_set(struct igb_adapter *adapter)
 
 	if (adapter->vmdq_pools && hw->mac.type != e1000_82575) {
 		int i;
-		for (i = 1; i < adapter->vmdq_pools; i++)
+		for (i = 0; i < adapter->vmdq_pools; i++)
 			igb_set_vf_rlpml(adapter, max_frame_size, pf_id + i);
 		/*
 		 * If we're in VMDQ or SR-IOV mode, then set global RLPML
@@ -3967,6 +4046,70 @@ static void igb_watchdog_task(struct work_struct *work)
 			  round_jiffies(jiffies + 2 * HZ));
 }
 
+static void igb_dma_err_task(struct work_struct *work)
+{
+	struct igb_adapter *adapter = container_of(work,
+	                                           struct igb_adapter,
+                                                   dma_err_task);
+	int vf;
+	struct e1000_hw *hw = &adapter->hw;
+	struct net_device *netdev = adapter->netdev;
+	u32 hgptc;
+	u32 ciaa, ciad;
+
+	hgptc = E1000_READ_REG(hw, E1000_HGPTC);
+	if (hgptc) /* If incrementing then no need for the check below */
+		goto dma_timer_reset;
+	/*
+	 * Check to see if a bad DMA write target from an errant or
+	 * malicious VF has caused a PCIe error.  If so then we can
+	 * issue a VFLR to the offending VF(s) and then resume without
+	 * requesting a full slot reset.
+	 */
+
+	for (vf = 0; vf < adapter->vfs_allocated_count; vf++) {
+		ciaa = (vf << 16) | 0x80000000;
+		/* 32 bit read so align, we really want status at offset 6 */
+		ciaa |= PCI_COMMAND;
+		E1000_WRITE_REG(hw, E1000_CIAA, ciaa);
+		ciad = E1000_READ_REG(hw, E1000_CIAD);
+		ciaa &= 0x7FFFFFFF;
+		/* disable debug mode asap after reading data */
+		E1000_WRITE_REG(hw, E1000_CIAA, ciaa);
+		/* Get the upper 16 bits which will be the PCI status reg */
+		ciad >>= 16;
+		if (ciad & (PCI_STATUS_REC_MASTER_ABORT |
+			    PCI_STATUS_REC_TARGET_ABORT |
+			    PCI_STATUS_SIG_SYSTEM_ERROR)) {
+			netdev_err(netdev, "VF %d suffered error\n", vf);
+			/* Issue VFLR */
+			ciaa = (vf << 16) | 0x80000000;
+			ciaa |= 0xA8;
+			E1000_WRITE_REG(hw, E1000_CIAA, ciaa);
+			ciad = 0x00008000;  /* VFLR */
+			E1000_WRITE_REG(hw, E1000_CIAD, ciad);
+			ciaa &= 0x7FFFFFFF;
+			E1000_WRITE_REG(hw, E1000_CIAA, ciaa);
+		}
+	}
+dma_timer_reset:
+	/* Reset the timer */
+	if (!test_bit(__IGB_DOWN, &adapter->state))
+		mod_timer(&adapter->dma_err_timer,
+			  round_jiffies(jiffies + HZ / 10));
+}
+
+/**
+ * igb_dma_err_timer - Timer Call-back
+ * @data: pointer to adapter cast into an unsigned long
+ **/
+static void igb_dma_err_timer(unsigned long data)
+{
+	struct igb_adapter *adapter = (struct igb_adapter *)data;
+	/* Do the rest outside of interrupt context */
+	schedule_work(&adapter->dma_err_task);
+}
+
 enum latency_range {
 	lowest_latency = 0,
 	low_latency = 1,
@@ -4460,8 +4603,8 @@ static void igb_tx_map(struct igb_ring *tx_ring,
 		size = frag->size;
 		data_len -= size;
 
-		dma = dma_map_page(tx_ring->dev, frag->page, frag->page_offset,
-				   size, DMA_TO_DEVICE);
+		dma = skb_frag_dma_map(tx_ring->dev, frag, 0, size,
+				DMA_TO_DEVICE);
 		if (dma_mapping_error(tx_ring->dev, dma))
 			goto dma_error;
 
@@ -4711,16 +4854,19 @@ static void igb_reset_task(struct work_struct *work)
  * @netdev: network interface device structure
  *
  * Returns the address of the device statistics structure.
- * The statistics are actually updated from the timer callback.
+ * The statistics are updated here and also from the timer callback.
  **/
 static struct net_device_stats *igb_get_stats(struct net_device *netdev)
 {
+	struct igb_adapter *adapter = netdev_priv(netdev);
+
+	if (!test_bit(__IGB_RESETTING, &adapter->state))
+		igb_update_stats(adapter);
+
 #ifdef HAVE_NETDEV_STATS_IN_NETDEV
 	/* only return the current stats */
 	return &netdev->stats;
 #else
-	struct igb_adapter *adapter = netdev_priv(netdev);
-
 	/* only return the current stats */
 	return &adapter->net_stats;
 #endif /* HAVE_NETDEV_STATS_IN_NETDEV */
@@ -4805,7 +4951,11 @@ static int igb_change_mtu(struct net_device *netdev, int new_mtu)
 
 void igb_update_stats(struct igb_adapter *adapter)
 {
-	struct net_device_stats *net_stats = igb_get_stats(adapter->netdev);
+#ifdef HAVE_NETDEV_STATS_IN_NETDEV
+	struct net_device_stats *net_stats = &adapter->netdev->stats;
+#else
+	struct net_device_stats *net_stats = &adapter->net_stats;
+#endif /* HAVE_NETDEV_STATS_IN_NETDEV */
 	struct e1000_hw *hw = &adapter->hw;
 #ifdef HAVE_PCI_ERS
 	struct pci_dev *pdev = adapter->pdev;
@@ -5188,6 +5338,117 @@ static int igb_notify_dca(struct notifier_block *nb, unsigned long event,
 }
 #endif /* IGB_DCA */
 
+static int igb_vf_configure(struct igb_adapter *adapter, int vf)
+{
+	unsigned char mac_addr[ETH_ALEN];
+#ifdef HAVE_PCI_DEV_FLAGS_ASSIGNED
+	struct pci_dev *pdev = adapter->pdev;
+	struct e1000_hw *hw = &adapter->hw;
+	struct pci_dev *pvfdev;
+	unsigned int device_id;
+	u16 thisvf_devfn;
+#endif
+
+	random_ether_addr(mac_addr);
+	igb_set_vf_mac(adapter, vf, mac_addr);
+
+#ifdef HAVE_PCI_DEV_FLAGS_ASSIGNED
+	switch (adapter->hw.mac.type) {
+	case e1000_82576:
+		device_id = IGB_82576_VF_DEV_ID;
+		/* VF Stride for 82576 is 2 */
+		thisvf_devfn = (pdev->devfn + 0x80 + (vf << 1)) |
+			(pdev->devfn & 1);
+		break;
+	case e1000_i350:
+		device_id = IGB_I350_VF_DEV_ID;
+		/* VF Stride for I350 is 4 */
+		thisvf_devfn = (pdev->devfn + 0x80 + (vf << 2)) |
+				(pdev->devfn & 3);
+		break;
+	default:
+		device_id = 0;
+		thisvf_devfn = 0;
+		break;
+	}
+
+	pvfdev = pci_get_device(hw->vendor_id, device_id, NULL);
+	while (pvfdev) {
+		if (pvfdev->devfn == thisvf_devfn)
+			break;
+		pvfdev = pci_get_device(hw->vendor_id,
+					device_id, pvfdev);
+	}
+
+	if (pvfdev)
+		adapter->vf_data[vf].vfdev = pvfdev;
+	else
+		dev_err(&pdev->dev,
+			"Couldn't find pci dev ptr for VF %4.4x\n",
+			thisvf_devfn);
+	return pvfdev != NULL;
+#else
+	return true;
+#endif
+}
+
+#ifdef HAVE_PCI_DEV_FLAGS_ASSIGNED
+static int igb_find_enabled_vfs(struct igb_adapter *adapter)
+{
+	struct e1000_hw *hw = &adapter->hw;
+	struct pci_dev *pdev = adapter->pdev;
+	struct pci_dev *pvfdev;
+	u16 vf_devfn = 0;
+	u16 vf_stride;
+	unsigned int device_id;
+	int vfs_found = 0;
+
+	switch (adapter->hw.mac.type) {
+	case e1000_82576:
+		device_id = IGB_82576_VF_DEV_ID;
+		/* VF Stride for 82576 is 2 */
+		vf_stride = 2;
+		break;
+	case e1000_i350:
+		device_id = IGB_I350_VF_DEV_ID;
+		/* VF Stride for I350 is 4 */
+		vf_stride = 4;
+		break;
+	default:
+		device_id = 0;
+		vf_stride = 0;
+		break;
+	}
+
+	vf_devfn = pdev->devfn + 0x80;
+	pvfdev = pci_get_device(hw->vendor_id, device_id, NULL);
+	while (pvfdev) {
+		if (pvfdev->devfn == vf_devfn)
+			vfs_found++;
+		vf_devfn += vf_stride;
+		pvfdev = pci_get_device(hw->vendor_id,
+					device_id, pvfdev);
+	}
+
+	return vfs_found;
+}
+#endif
+
+static int igb_check_vf_assignment(struct igb_adapter *adapter)
+{
+#ifdef HAVE_PCI_DEV_FLAGS_ASSIGNED
+	int i;
+	for (i = 0; i < adapter->vfs_allocated_count; i++) {
+		if (adapter->vf_data[i].vfdev) {
+			if (adapter->vf_data[i].vfdev->dev_flags &
+			    PCI_DEV_FLAGS_ASSIGNED)
+				return true;
+		}
+	}
+#endif
+	return false;
+}
+
 static void igb_ping_all_vfs(struct igb_adapter *adapter)
 {
 	struct e1000_hw *hw = &adapter->hw;
@@ -5505,6 +5766,9 @@ static int igb_ndo_set_vf_vlan(struct net_device *netdev,
 				 " attempting to use the VF device.\n");
 		}
 	} else {
+		if (adapter->vf_data[vf].pf_vlan)
+			dev_info(&adapter->pdev->dev,
+				 "Clearing VLAN on VF %d\n", vf);
 		igb_vlvf_set(adapter, adapter->vf_data[vf].pf_vlan,
 				   false, vf);
 		igb_set_vmvir(adapter, vlan, vf);
@@ -5919,7 +6183,15 @@ static void igb_systim_to_hwtstamp(struct igb_adapter *adapter,
 		regval <<= IGB_82580_TSYNC_SHIFT;
 
 	ns = timecounter_cyc2time(&adapter->clock, regval);
-	timecompare_update(&adapter->compare, ns);
+
+	/*
+	 * force a timecompare_update here (even if less than a second
+	 * has passed) in order to prevent the case when ptpd or other
+	 * software jumps the clock offset. othwerise there is a small
+	 * window when the timestamp would be based on previous skew
+	 * and invalid results would be pushed to the network stack.
+	 */
+	timecompare_update(&adapter->compare, 0);
 	memset(shhwtstamps, 0, sizeof(struct skb_shared_hwtstamps));
 	shhwtstamps->hwtstamp = ns_to_ktime(ns);
 	shhwtstamps->syststamp = timecompare_transform(&adapter->compare, ns);
@@ -6138,15 +6410,7 @@ static void igb_receive_skb(struct igb_q_vector *q_vector,
 {
 	struct vlan_group **vlgrp = netdev_priv(skb->dev);
 
-#ifdef CONFIG_PFQ 
-    if(pfq_direct_capture(skb)) {
-        skb->mac_len = 14;
-        pfq_direct_receive(skb, skb->dev->ifindex, skb_get_rx_queue(skb));
-        return;
-    }
-#endif
-
-    if (IGB_CB(skb)->vid) {
+	if (IGB_CB(skb)->vid) {
 		if (*vlgrp) {
 			vlan_gro_receive(&q_vector->napi, *vlgrp,
 					 IGB_CB(skb)->vid, skb);
@@ -6154,7 +6418,11 @@ static void igb_receive_skb(struct igb_q_vector *q_vector,
 			dev_kfree_skb_any(skb);
 		}
 	} else {
-		napi_gro_receive(&q_vector->napi, skb);
+#ifdef CONFIG_PFQ
+                pfq_gro_receive(&q_vector->napi, skb);
+#else
+                napi_gro_receive(&q_vector->napi, skb);
+#endif
 	}
 }
 
@@ -6576,7 +6844,7 @@ static bool igb_merge_frags(struct sk_buff *lro_skb, struct sk_buff *new_skb)
 	new_skb_info->nr_frags = 0;
 	new_skb->len = new_skb->data_len = 0;
 	new_skb->truesize -= data_len;
-	new_skb->data = skb_mac_header(new_skb);
+	new_skb->data = new_skb->head + NET_SKB_PAD + NET_IP_ALIGN;
 	skb_reset_tail_pointer(new_skb);
 	new_skb->protocol = 0;
 	new_skb->ip_summed = CHECKSUM_NONE;
@@ -6855,9 +7123,9 @@ static bool igb_clean_rx_irq(struct igb_q_vector *q_vector, int budget)
 			igb_receive_skb(q_vector, skb);
 #else
 #ifdef CONFIG_PFQ
-                        pfq_gro_receive(&q_vector->napi, skb);
+                pfq_gro_receive(&q_vector->napi, skb);
 #else
-                        napi_gro_receive(&q_vector->napi, skb);
+                napi_gro_receive(&q_vector->napi, skb);
 #endif
 #endif
 
@@ -7166,6 +7434,7 @@ static int igb_hwtstamp_ioctl(struct net_device *netdev,
 		tsync_rx_ctl |= E1000_TSYNCRXCTL_TYPE_EVENT_V2;
 		config.rx_filter = HWTSTAMP_FILTER_PTP_V2_EVENT;
 		is_l2 = true;
+		is_l4 = true;
 		break;
 	default:
 		return -ERANGE;
@@ -7720,6 +7989,7 @@ static void igb_netpoll(struct net_device *netdev)
 #endif /* CONFIG_NET_POLL_CONTROLLER */
 
 #ifdef HAVE_PCI_ERS
+#define E1000_DEV_ID_82576_VF 0x10CA
 /**
  * igb_io_error_detected - called when PCI error is detected
  * @pdev: Pointer to PCI device
@@ -7733,6 +8003,83 @@ static pci_ers_result_t igb_io_error_detected(struct pci_dev *pdev,
 {
 	struct net_device *netdev = pci_get_drvdata(pdev);
 	struct igb_adapter *adapter = netdev_priv(netdev);
+
+#ifdef CONFIG_PCI_IOV
+	struct pci_dev *bdev, *vfdev;
+	u32 dw0, dw1, dw2, dw3;
+	int vf, pos;
+	u16 req_id, pf_func;
+
+	if (!(adapter->flags & IGB_FLAG_DETECT_BAD_DMA))
+		goto skip_bad_vf_detection;
+
+	bdev = pdev->bus->self;
+	while (bdev && (bdev->pcie_type != PCI_EXP_TYPE_ROOT_PORT))
+		bdev = bdev->bus->self;
+
+	if (!bdev)
+		goto skip_bad_vf_detection;
+
+	pos = pci_find_ext_capability(bdev, PCI_EXT_CAP_ID_ERR);
+	if (!pos)
+		goto skip_bad_vf_detection;
+
+	pci_read_config_dword(bdev, pos + PCI_ERR_HEADER_LOG, &dw0);
+	pci_read_config_dword(bdev, pos + PCI_ERR_HEADER_LOG + 4, &dw1);
+	pci_read_config_dword(bdev, pos + PCI_ERR_HEADER_LOG + 8, &dw2);
+	pci_read_config_dword(bdev, pos + PCI_ERR_HEADER_LOG + 12, &dw3);
+
+	req_id = dw1 >> 16;
+	/* On the 82576 if bit 7 of the requestor ID is set then it's a VF */
+	if (!(req_id & 0x0080))
+		goto skip_bad_vf_detection;
+
+	pf_func = req_id & 0x01;
+	if ((pf_func & 1) == (pdev->devfn & 1)) {
+
+		vf = (req_id & 0x7F) >> 1;
+		dev_err(pci_dev_to_dev(pdev),
+			"VF %d has caused a PCIe error\n", vf);
+		dev_err(pci_dev_to_dev(pdev),
+			"TLP: dw0: %8.8x\tdw1: %8.8x\tdw2: "
+			"%8.8x\tdw3: %8.8x\n",
+			dw0, dw1, dw2, dw3);
+
+		/* Find the pci device of the offending VF */
+		vfdev = pci_get_device(PCI_VENDOR_ID_INTEL,
+				       E1000_DEV_ID_82576_VF, NULL);
+		while (vfdev) {
+			if (vfdev->devfn == (req_id & 0xFF))
+				break;
+			vfdev = pci_get_device(PCI_VENDOR_ID_INTEL,
+					       E1000_DEV_ID_82576_VF, vfdev);
+		}
+		/*
+ 		 * There's a slim chance the VF could have been hot plugged,
+ 		 * so if it is no longer present we don't need to issue the
+ 		 * VFLR.  Just clean up the AER in that case.
+ 		 */
+		if (vfdev) {
+			dev_err(pci_dev_to_dev(pdev),
+				"Issuing VFLR to VF %d\n", vf);
+			pci_write_config_dword(vfdev, 0xA8, 0x00008000);
+		}
+
+		pci_cleanup_aer_uncorrect_error_status(pdev);
+	}
+
+	/*
+ 	 * Even though the error may have occurred on the other port
+ 	 * we still need to increment the vf error reference count for
+ 	 * both ports because the I/O resume function will be called
+ 	 * for both of them.
+ 	 */
+	adapter->vferr_refcount++;
+
+	return PCI_ERS_RESULT_RECOVERED;
+
+skip_bad_vf_detection:
+#endif /* CONFIG_PCI_IOV */
 
 	netif_device_detach(netdev);
 
@@ -7773,7 +8120,7 @@ static pci_ers_result_t igb_io_slot_reset(struct pci_dev *pdev)
 		pci_enable_wake(pdev, PCI_D3hot, 0);
 		pci_enable_wake(pdev, PCI_D3cold, 0);
 
-		igb_reset(adapter);
+		schedule_work(&adapter->reset_task);
 		E1000_WRITE_REG(hw, E1000_WUS, ~0);
 		result = PCI_ERS_RESULT_RECOVERED;
 	}
@@ -7795,6 +8142,12 @@ static void igb_io_resume(struct pci_dev *pdev)
 {
 	struct net_device *netdev = pci_get_drvdata(pdev);
 	struct igb_adapter *adapter = netdev_priv(netdev);
+
+	if (adapter->vferr_refcount) {
+		dev_info(pci_dev_to_dev(pdev), "Resuming after VF err\n");
+		adapter->vferr_refcount--;
+		return;
+	}
 
 	if (netif_running(netdev)) {
 		if (igb_up(adapter)) {
@@ -8069,26 +8422,40 @@ static void igb_init_dmac(struct igb_adapter *adapter, u32 pba)
 			E1000_WRITE_REG(hw, E1000_DMCTXTH, 0);
 
 			/*
-			 * DMA Coalescing high water mark needs to be higher than the
-			 * RX threshold. set hwm to PBA -  2 * max frame size
-			 * */
-			hwm = pba - (2 * adapter->max_frame_size);
+			 * DMA Coalescing high water mark needs to be greater
+			 * than the Rx threshold. Set hwm to PBA - max frame
+			 * size in 16B units, capping it at PBA - 6KB.
+			 */
+			hwm = 64 * pba - adapter->max_frame_size / 16;
+			if (hwm < 64 * (pba - 6))
+				hwm = 64 * (pba - 6);
+			reg = E1000_READ_REG(hw, E1000_FCRTC);
+			reg &= ~E1000_FCRTC_RTH_COAL_MASK;
+			reg |= ((hwm << E1000_FCRTC_RTH_COAL_SHIFT)
+				& E1000_FCRTC_RTH_COAL_MASK);
+			E1000_WRITE_REG(hw, E1000_FCRTC, reg);
+
+			/* 
+			 * Set the DMA Coalescing Rx threshold to PBA - 2 * max
+ 			 * frame size, capping it at PBA - 10KB.
+ 			 */
+			dmac_thr = pba - adapter->max_frame_size / 512;
+			if (dmac_thr < pba - 10)
+				dmac_thr = pba - 10;
 			reg = E1000_READ_REG(hw, E1000_DMACR);
 			reg &= ~E1000_DMACR_DMACTHR_MASK;
-			dmac_thr = pba - 4;
 			reg |= ((dmac_thr << E1000_DMACR_DMACTHR_SHIFT)
 				& E1000_DMACR_DMACTHR_MASK);
 
 			/* transition to L0x or L1 if available..*/
 			reg |= (E1000_DMACR_DMAC_EN | E1000_DMACR_DMAC_LX_MASK);
 
-			/* watchdog timer= usec values in 32usec intervals */
+			/* watchdog timer= msec values in 32usec intervals */
 			reg |= ((adapter->dmac) >> 5);
 			E1000_WRITE_REG(hw, E1000_DMACR, reg);
 
 			/* no lower threshold to disable coalescing(smart fifb)-UTRESH=0*/
 			E1000_WRITE_REG(hw, E1000_DMCRTRH, 0);
-			E1000_WRITE_REG(hw, E1000_FCRTC, hwm);
 
 			/*
 			 * This sets the time to wait before requesting transition to
@@ -8115,4 +8482,5 @@ static void igb_init_dmac(struct igb_adapter *adapter, u32 pba)
 		E1000_WRITE_REG(hw, E1000_DMACR, 0);
 	}
 }
+
 /* igb_main.c */

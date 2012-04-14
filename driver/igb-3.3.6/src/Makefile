@@ -33,7 +33,7 @@ FAMILYH = e1000_82575.h
 # core driver files
 CFILES = igb_main.c $(FAMILYC) e1000_mac.c e1000_nvm.c e1000_phy.c \
 	 e1000_manage.c igb_param.c igb_ethtool.c kcompat.c e1000_api.c \
-	 e1000_mbx.c igb_vmdq.c
+	 e1000_mbx.c igb_vmdq.c igb_sysfs.c igb_procfs.c
 HFILES = igb.h e1000_hw.h e1000_osdep.h e1000_defines.h e1000_mac.h \
 	 e1000_nvm.h e1000_manage.h $(FAMILYH) kcompat.h e1000_regs.h \
 	 e1000_api.h igb_regtest.h e1000_mbx.h igb_vmdq.h
@@ -41,7 +41,7 @@ ifeq (,$(BUILD_KERNEL))
 BUILD_KERNEL=$(shell uname -r)
 endif
 
-DRIVER_NAME=igb_q
+DRIVER_NAME=igb
 
 ###########################################################################
 # Environment tests
@@ -263,7 +263,6 @@ ifneq (,$(wildcard /etc/fedora-release))
   EXTRA_CFLAGS += -fno-strict-aliasing
 endif
 CFLAGS += $(EXTRA_CFLAGS)
-CFLAGS += -DCONFIG_PFQ
 
 .SILENT: $(TARGET)
 $(TARGET): $(filter-out $(TARGET), $(CFILES:.c=.o))

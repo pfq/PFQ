@@ -30,6 +30,8 @@
 #ifndef _IGB_H_
 #define _IGB_H_
 
+#include <linux/kobject.h>
+
 #ifndef IGB_NO_LRO
 #include <net/tcp.h>
 #endif
@@ -71,6 +73,7 @@ struct igb_adapter;
 #include "e1000_api.h"
 #include "e1000_82575.h"
 #include "e1000_manage.h"
+#include "e1000_mbx.h"
 
 #define IGB_ERR(args...) printk(KERN_ERR "igb: " args)
 
@@ -113,10 +116,13 @@ struct igb_adapter;
 
 #define IGB_MAX_VF_MC_ENTRIES             30
 #define IGB_MAX_VF_FUNCTIONS               8
+#define IGB_82576_VF_DEV_ID           0x10CA
+#define IGB_I350_VF_DEV_ID            0x1520
 #define IGB_MAX_UTA_ENTRIES              128
 #define MAX_EMULATION_MAC_ADDRS           16
 #define OUI_LEN                            3
 #define IGB_MAX_VMDQ_QUEUES                8
+
 
 struct vf_data_storage {
 	unsigned char vf_mac_addresses[ETH_ALEN];
@@ -133,6 +139,7 @@ struct vf_data_storage {
 	u16 pf_qos;
 	u16 tx_rate;
 #endif
+	struct pci_dev *vfdev;
 };
 
 #define IGB_VF_FLAG_CTS            0x00000001 /* VF is clear to send data */
@@ -422,6 +429,17 @@ static inline u16 igb_desc_unused(const struct igb_ring *ring)
 	return ((ntc > ntu) ? 0 : ring->count) + ntc - ntu - 1;
 }
 
+// #ifdef EXT_THERMAL_SENSOR_SUPPORT
+// #ifdef IGB_PROCFS
+struct igb_therm_proc_data
+{
+	struct e1000_hw *hw;
+	struct e1000_thermal_diode_data *sensor_data;
+};
+
+//  #endif /* IGB_PROCFS */
+// #endif /* EXT_THERMAL_SENSOR_SUPPORT */
+
 /* board specific private data structure */
 struct igb_adapter {
 #ifdef HAVE_VLAN_RX_REGISTER
@@ -450,6 +468,7 @@ struct igb_adapter {
 	struct igb_ring *rx_ring[IGB_MAX_RX_QUEUES];
 
 	struct timer_list watchdog_timer;
+	struct timer_list dma_err_timer;
 	struct timer_list phy_info_timer;
 	u16 mng_vlan_id;
 	u32 bd_number;
@@ -465,6 +484,7 @@ struct igb_adapter {
 
 	struct work_struct reset_task;
 	struct work_struct watchdog_task;
+	struct work_struct dma_err_task;
 	bool fc_autoneg;
 	u8  tx_timeout_factor;
 
@@ -528,8 +548,21 @@ struct igb_adapter {
 #ifdef CONFIG_IGB_VMDQ_NETDEV
 	struct net_device *vmdq_netdev[IGB_MAX_VMDQ_QUEUES];
 #endif
+	int vferr_refcount;
 	int dmac;
 	u32 *shadow_vfta;
+
+#ifdef IGB_SYSFS
+	struct kobject *info_kobj;
+	struct kobject *therm_kobj[E1000_MAX_SENSORS];
+#else /* IGB_SYSFS */
+#ifdef IGB_PROCFS
+	struct proc_dir_entry *eth_dir;
+	struct proc_dir_entry *info_dir;
+	struct proc_dir_entry *therm_dir[E1000_MAX_SENSORS];
+	struct igb_therm_proc_data therm_data[E1000_MAX_SENSORS];
+#endif /* IGB_PROCFS */
+#endif /* IGB_SYSFS */
 };
 
 #ifdef CONFIG_IGB_VMDQ_NETDEV
@@ -557,6 +590,7 @@ struct igb_vmdq_adapter {
 #define IGB_FLAG_QUEUE_PAIRS       (1 << 5)
 #define IGB_FLAG_EEE               (1 << 6)
 #define IGB_FLAG_DMAC              (1 << 7)
+#define IGB_FLAG_DETECT_BAD_DMA    (1 << 8)
 
 #define IGB_MIN_TXPBSIZE           20408
 #define IGB_TX_BUF_4096            4096
@@ -657,4 +691,17 @@ extern void igb_enable_vlan_tags(struct igb_adapter *adapter);
 extern void igb_vlan_mode(struct net_device *, u32);
 #endif
 
+
+
+#ifdef IGB_SYSFS
+void igb_sysfs_exit(struct igb_adapter *adapter);
+int igb_sysfs_init(struct igb_adapter *adapter);
+#else
+#ifdef IGB_PROCFS
+int igb_procfs_init(struct igb_adapter* adapter);
+void igb_procfs_exit(struct igb_adapter* adapter);
+int igb_procfs_topdir_init(void);
+void igb_procfs_topdir_exit(void);
+#endif /* IGB_PROCFS */
+#endif /* IGB_SYSFS */
 #endif /* _IGB_H_ */

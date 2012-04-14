@@ -45,6 +45,8 @@
 		1028 1f60  Gigabit 4P I350-t rNDC
 		1028 1f62  Gigabit 4P X540/I350 rNDC
 		103c 339e  HP Ethernet 1Gb 2-port 361T Adapter
+		103c 337f  HP Ethernet 1Gb 2-port 361i Adapter
+		103c 3380  HP Ethernet 1Gb 2-port 366i Adapter
 		108e 7b16  Sun Quad Port GbE PCIe 2.0 ExpressModule, UTP		
 		108e 7b18  Sun Quad Port GbE PCIe 2.0 Low Profile Adapter, UTP		
 		8086 0001  Ethernet Server Adapter I350-T4
@@ -61,7 +63,7 @@
 		8086 00a3  Ethernet Server Adapter I350-F4
 		8086 00a4  Ethernet Server Adapter I350-F2
 	1523  I350 Gigabit Backplane Connection
-		103c 1784  HP Ethernet 1Gb 2-port 361FLB Adapter
+		103c 18d1  HP Ethernet 1Gb 2-port 361FLB Adapter
 		103c 339f  HP Ethernet 1Gb 4-port 366M Adapter
 		8086 1f52  Gigabit 4P I350-t Mezz
 	1524  I350 Gigabit Connection

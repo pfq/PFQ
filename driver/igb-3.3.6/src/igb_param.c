@@ -557,7 +557,6 @@ void __devinit igb_check_options(struct igb_adapter *adapter)
 				break;
 			}
 		}
-
 #ifdef module_param_array
 		if (num_RSS > bd) {
 #endif

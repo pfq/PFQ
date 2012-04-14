@@ -28,6 +28,29 @@
 #include "e1000_mbx.h"
 
 /**
+ *  e1000_null_mbx_check_for_flag - No-op function, return 0
+ *  @hw: pointer to the HW structure
+ **/
+static s32 e1000_null_mbx_check_for_flag(struct e1000_hw *hw, u16 mbx_id)
+{
+	DEBUGFUNC("e1000_null_mbx_check_flag");
+
+	return E1000_SUCCESS;
+}
+
+/**
+ *  e1000_null_mbx_transact - No-op function, return 0
+ *  @hw: pointer to the HW structure
+ **/
+static s32 e1000_null_mbx_transact(struct e1000_hw *hw, u32 *msg, u16 size,
+				   u16 mbx_id)
+{
+	DEBUGFUNC("e1000_null_mbx_rw_msg");
+
+	return E1000_SUCCESS;
+}
+
+/**
  *  e1000_read_mbx - Reads a message from the mailbox
  *  @hw: pointer to the HW structure
  *  @msg: The message buffer
@@ -269,6 +292,12 @@ out:
 void e1000_init_mbx_ops_generic(struct e1000_hw *hw)
 {
 	struct e1000_mbx_info *mbx = &hw->mbx;
+	mbx->ops.init_params = e1000_null_ops_generic;
+	mbx->ops.read = e1000_null_mbx_transact;
+	mbx->ops.write = e1000_null_mbx_transact;
+	mbx->ops.check_for_msg = e1000_null_mbx_check_for_flag;
+	mbx->ops.check_for_ack = e1000_null_mbx_check_for_flag;
+	mbx->ops.check_for_rst = e1000_null_mbx_check_for_flag;
 	mbx->ops.read_posted = e1000_read_posted_mbx;
 	mbx->ops.write_posted = e1000_write_posted_mbx;
 }
@@ -386,7 +415,7 @@ static s32 e1000_obtain_mbx_lock_pf(struct e1000_hw *hw, u16 vf_number)
  *  returns SUCCESS if it successfully copied message into the buffer
  **/
 static s32 e1000_write_mbx_pf(struct e1000_hw *hw, u32 *msg, u16 size,
-                              u16 vf_number)
+			      u16 vf_number)
 {
 	s32 ret_val;
 	u16 i;
@@ -429,7 +458,7 @@ out_no_write:
  *  a message due to a VF request so no polling for message is needed.
  **/
 static s32 e1000_read_mbx_pf(struct e1000_hw *hw, u32 *msg, u16 size,
-                             u16 vf_number)
+			     u16 vf_number)
 {
 	s32 ret_val;
 	u16 i;
