@@ -991,54 +991,10 @@ int pfq_direct_capture(const struct sk_buff *skb)
         ;
 }
 
-
-#if 0
-static inline gro_result_t
-__pfq_gro_receive(struct napi_struct *napi, struct sk_buff *skb)
-{
-        struct sk_buff *p;
-
-        for (p = napi->gro_list; p; p = p->next) {
-                unsigned long diffs;
-
-                diffs = (unsigned long)p->dev ^ (unsigned long)skb->dev;
-                diffs |= p->vlan_tci ^ skb->vlan_tci;
-                diffs |= compare_ether_header(skb_mac_header(p),
-                                              skb_gro_mac_header(skb));
-                NAPI_GRO_CB(p)->same_flow = !diffs;
-                NAPI_GRO_CB(p)->flush = 0;
-        }
-
-        return dev_gro_receive(napi, skb);
-}
-
-gro_result_t 
-pfq_skb_finish(gro_result_t ret, struct sk_buff *skb)
-{
-        switch (ret) {
-        case GRO_NORMAL:
-            pfq_direct_receive(skb, skb->dev->ifindex, skb_get_rx_queue(skb));
-            break;
-
-        case GRO_DROP:
-        case GRO_MERGED_FREE:
-            kfree_skb(skb);
-            break;
-
-        case GRO_HELD:
-        case GRO_MERGED:
-            break;
-        }
-
-        return ret;
-}
-#endif
-
-
 gro_result_t 
 pfq_gro_receive(struct napi_struct *napi, struct sk_buff *skb)
 {
-        if (pfq_direct_capture(skb))
+        if (likely(pfq_direct_capture(skb)))
         {
                 int offset = 0;
                 if (skb->protocol == htons(ETH_P_802_3))
