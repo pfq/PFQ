@@ -1041,22 +1041,6 @@ static void ixgbe_receive_skb(struct ixgbe_q_vector *q_vector,
 	struct ixgbe_adapter *adapter = q_vector->adapter;
 	u16 vlan_tag = IXGBE_CB(skb)->vid;
 
-#ifdef CONFIG_PFQ
-    if(pfq_direct_capture(skb)) {
-        int offset = 0;
-        if (skb->protocol == htons(ETH_P_802_3))
-            offset = ETH_HLEN;
-        else if (skb->protocol == htons(ETH_P_8021Q))
-            offset = VLAN_ETH_HLEN;
-
-        skb_set_network_header(skb, offset);
-        skb_reset_transport_header(skb);
-        skb_reset_mac_len(skb);
-        pfq_direct_receive(skb, skb->dev->ifindex, skb_get_rx_queue(skb));
-        return;
-    }
-#endif
-
 #ifdef NETIF_F_HW_VLAN_TX
 	if (vlan_tag & VLAN_VID_MASK) {
 		/* by placing vlgrp at start of structure we can alias it */
@@ -1079,7 +1063,11 @@ static void ixgbe_receive_skb(struct ixgbe_q_vector *q_vector,
 		if (adapter->flags & IXGBE_FLAG_IN_NETPOLL)
 			netif_rx(skb);
 		else {
+#ifdef CONFIG_PFQ
+                        pfq_gro_receive(&q_vector->napi, skb);
+#else
                         napi_gro_receive(&q_vector->napi, skb);
+#endif
                 }
 #else
 		if (netif_rx(skb) == NET_RX_DROP)
