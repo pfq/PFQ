@@ -999,6 +999,12 @@ pfq_gro_receive(struct napi_struct *napi, struct sk_buff *skb)
                 else if (skb->protocol == htons(ETH_P_8021Q))
                     offset = VLAN_ETH_HLEN;
 
+                if(skb_linearize(skb) < 0)
+                {
+                        __kfree_skb(skb);
+                        return GRO_DROP;
+                }
+
                 skb_set_network_header(skb, offset);
                 skb_reset_transport_header(skb);
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(3,0,0)                
