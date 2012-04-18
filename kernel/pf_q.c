@@ -984,11 +984,8 @@ static void __exit pfq_exit_module(void)
 inline
 int pfq_direct_capture(const struct sk_buff *skb)
 {
-        return direct_path 
-#ifdef DIRECT_CAPTURE_FILTER
-        && pfq_devmap_monitor_get(skb->dev->ifindex)    
-#endif
-        ;
+        return direct_path && 
+                pfq_devmap_monitor_get(skb->dev->ifindex);
 }
 
 gro_result_t 
