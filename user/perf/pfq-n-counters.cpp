@@ -29,6 +29,7 @@ namespace opt {
     int sleep_microseconds;
     bool enable_balance = false;
     size_t caplen = 64;
+    size_t offset = 0;
     size_t slots  = 131072;
     static const int seconds = 600;
 }
@@ -84,19 +85,19 @@ namespace test
     struct ctx
     {
         ctx(const char *d, const std::vector<int> & q)
-        : m_dev(d), m_queues(q), m_stop(false), m_pfq(opt::caplen), m_read()
+        : m_dev(d), m_queues(q), m_stop(false), m_pfq(opt::caplen, opt::offset, opt::slots), m_read()
         {
             std::for_each(m_queues.begin(), m_queues.end(),[&](int q) {
                           std::cout << "setting dev: " << d << "@" << q << std::endl;       
                     m_pfq.add_device(d, q);
                 });
-
-            m_pfq.caplen(opt::caplen);
-            m_pfq.slots (opt::slots);
+            
             m_pfq.load_balance(opt::enable_balance);
+ 
             m_pfq.tstamp(false);
             
             m_pfq.enable();
+
             std::cout << "cxt: queue_slots: " << m_pfq.slots() << " pfq_id:" << m_pfq.id() << std::endl;
         }
         
@@ -223,6 +224,18 @@ try
             }
 
             opt::caplen = std::atoi(argv[i]);
+            continue;
+        }
+
+        if ( strcmp(argv[i], "-o") == 0 ||
+             strcmp(argv[i], "--offset") == 0) {
+            i++;
+            if (i == argc)
+            {
+                throw std::runtime_error("offset missing");
+            }
+
+            opt::offset = std::atoi(argv[i]);
             continue;
         }
 
