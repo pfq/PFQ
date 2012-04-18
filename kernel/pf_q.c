@@ -176,10 +176,11 @@ pfq_load_balancer(unsigned long bm, const struct sk_buff *skb)
         int index[sizeof(unsigned long)<<3], i = 0;
         unsigned long candidates = bm & loadbalance_mask;
         unsigned long nolb = bm ^ candidates;
-        struct iphdr * ip;
+        struct ethhdr *eth;
         uint32_t hash;
 
-        if (candidates == 0)
+        eth = (struct ethhdr *)skb_mac_header(skb);
+        if (candidates == 0 || eth->h_proto != __constant_htons(ETH_P_IP))
                 return nolb;
 
         while(candidates)
@@ -189,9 +190,7 @@ pfq_load_balancer(unsigned long bm, const struct sk_buff *skb)
                 candidates ^= (1<<zn);
         }
 
-        ip = (struct iphdr *)skb_network_header(skb);
-
-        hash = ip->saddr ^ ip->daddr;
+        hash = ip_hdr(skb)->saddr ^ ip_hdr(skb)->daddr;
         return nolb | ( 1 << index[hash % i] );
 }
 
