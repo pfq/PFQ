@@ -392,7 +392,7 @@ pfq_create(
                 return -EPERM;
         if (sock->type != SOCK_RAW)
                 return -ESOCKTNOSUPPORT;
-        if (protocol != htons(ETH_P_ALL))
+        if (protocol != __constant_htons(ETH_P_ALL))
                 return -EPROTONOSUPPORT;
 
 #if(LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,11))
@@ -916,7 +916,7 @@ void register_device_handler(void)
         if (direct_path)
                 return;
         pfq_prot_hook.func = pfq_packet_rcv;
-        pfq_prot_hook.type = htons(ETH_P_ALL);
+        pfq_prot_hook.type = __constant_htons(ETH_P_ALL);
         dev_add_pack(&pfq_prot_hook);
 }
 
@@ -994,9 +994,9 @@ pfq_gro_receive(struct napi_struct *napi, struct sk_buff *skb)
         if (likely(pfq_direct_capture(skb)))
         {
                 int offset = 0;
-                if (skb->protocol == htons(ETH_P_802_3))
+                if (skb->protocol == __constant_htons(ETH_P_802_3))
                     offset = ETH_HLEN;
-                else if (skb->protocol == htons(ETH_P_8021Q))
+                else if (skb->protocol == __constant_htons(ETH_P_8021Q))
                     offset = VLAN_ETH_HLEN;
 
                 if(skb_linearize(skb) < 0)
