@@ -345,7 +345,6 @@ pfq_ctor(struct pfq_opt *pq)
         sparse_set(0, &pq->q_stat.lost);
         sparse_set(0, &pq->q_stat.drop);
 
-        printk(KERN_INFO "[PF_Q] caplen:%lu queue_slots:%lu slot_size:%lu\n", pq->q_caplen, pq->q_slots, pq->q_slot_size);
         return 0;
 }
 
@@ -713,7 +712,6 @@ int pfq_setsockopt(struct socket *sock,
                     /* update the global.tstamp counter */
                     atomic_add(tstamp - pq->q_tstamp, &global.tstamp);
                     pq->q_tstamp = tstamp;
-
                     printk(KERN_INFO "[PF_Q] global.tstamp => %d\n", atomic_read(&global.tstamp));
             } break;
         
@@ -724,7 +722,8 @@ int pfq_setsockopt(struct socket *sock,
                     if (copy_from_user(&pq->q_caplen, optval, optlen)) 
                             return -EFAULT;
                     pq->q_slot_size = DBMP_QUEUE_SLOT_SIZE(pq->q_caplen);
-                    printk(KERN_INFO "[PF_Q] id:%d caplen:%lu queue_slots:%lu slot_size:%lu\n", pq->q_id, pq->q_caplen, pq->q_slots, pq->q_slot_size);
+                    printk(KERN_INFO "[PF_Q] id:%d caplen:%lu -> slot_size:%lu\n", 
+                                    pq->q_id, pq->q_caplen, pq->q_slot_size);
             } break;
 
         case SO_OFFSET: 
@@ -733,6 +732,8 @@ int pfq_setsockopt(struct socket *sock,
                             return -EINVAL;
                     if (copy_from_user(&pq->q_offset, optval, optlen)) 
                             return -EFAULT;
+                    printk(KERN_INFO "[PF_Q] id:%d offset:%lu\n", 
+                                    pq->q_id, pq->q_offset);
             } break;
 
         case SO_SLOTS: 
@@ -741,7 +742,8 @@ int pfq_setsockopt(struct socket *sock,
                             return -EINVAL;
                     if (copy_from_user(&pq->q_slots, optval, optlen)) 
                             return -EFAULT;
-                    printk(KERN_INFO "[PF_Q] id:%d caplen:%lu queue_slots:%lu slot_size:%lu\n", pq->q_id, pq->q_caplen, pq->q_slots, pq->q_slot_size);
+                    printk(KERN_INFO "[PF_Q] id:%d queue_slots:%lu -> slot_size:%lu\n", 
+                                    pq->q_id, pq->q_slots, pq->q_slot_size);
             } break;
 
         default: 
