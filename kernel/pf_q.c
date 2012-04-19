@@ -185,7 +185,7 @@ pfq_load_balancer(unsigned long bm, const struct sk_buff *skb)
 
         while(candidates)
         {
-                int zn = __builtin_ctz(candidates);
+                int zn = __builtin_ctzl(candidates);
                 index[i++] = zn;
                 candidates ^= (1<<zn);
         }
