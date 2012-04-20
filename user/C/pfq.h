@@ -41,7 +41,6 @@ typedef void * pfq_t;
 
 typedef void (*pfq_handler)(char *user, const struct pfq_hdr *h, const char *data); 
 
-extern pfq_t pfq_default();
 extern pfq_t pfq_open(size_t calpen, size_t offset, size_t slots);
 extern void  pfq_close(pfq_t *);
 extern const char *pfq_error(pfq_t *);
@@ -52,8 +51,8 @@ extern int  pfq_is_enabled(pfq_t const *q, int *ok);
 
 extern void pfq_load_balance(pfq_t *q, int value, int *ok);
 extern int pfq_ifindex(pfq_t const *q, const char *dev, int *ok);
-extern void pfq_set_tstamp(pfq_t *q, int value, int *ok);
-extern int pfq_get_tstamp(pfq_t const *q, int *ok);
+extern void pfq_set_time_stamp(pfq_t *q, int value, int *ok);
+extern int pfq_get_time_stamp(pfq_t const *q, int *ok);
 extern void pfq_set_caplen(pfq_t *q, size_t value, int *ok);
 extern size_t pfq_get_caplen(pfq_t const *q, int *ok);
 extern void pfq_set_offset(pfq_t *q, size_t value, int *ok);

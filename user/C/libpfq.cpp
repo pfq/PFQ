@@ -87,17 +87,6 @@ extern "C" {
 
     /* costructor */
 
-    pfq_t *pfq_default()        
-    try
-    {
-        return new pfq_t;
-    }
-    catch(std::exception &e)
-    {
-        ::free(__error); __error = strdup(e.what());
-        return nullptr;
-    }
-
     pfq_t *pfq_open(size_t caplen, size_t offset, size_t slots)        
     try
     {
@@ -141,17 +130,17 @@ extern "C" {
 
     int pfq_ifindex(pfq_t const *q, const char *dev, int *ok)
     {
-        return firewall(ok, q, [&]() { return q->ifindex(dev); });
+        return firewall(ok, q, [&]() { return net::ifindex(q->fd(), dev); });
     }
 
-    void pfq_set_tstamp(pfq_t *q, int value, int *ok)
+    void pfq_set_time_stamp(pfq_t *q, int value, int *ok)
     {
-        firewall(ok, q, [&]() { q->tstamp(value); });
+        firewall(ok, q, [&]() { q->toggle_time_stamp(value); });
     }
 
-    int pfq_get_tstamp(pfq_t const *q, int *ok)
+    int pfq_get_time_stamp(pfq_t const *q, int *ok)
     {
-        return firewall(ok, q, [&]() { return q->tstamp(); });
+        return firewall(ok, q, [&]() { return q->time_stamp(); });
     }
 
     void pfq_set_caplen(pfq_t *q, size_t value, int *ok)
