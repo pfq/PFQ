@@ -251,6 +251,60 @@ Context(PFQ)
         Assert(s.lost, is_equal_to(0));
         Assert(s.drop, is_equal_to(0));
     }
+
+
+    Test(groups_mask)
+    {
+        pfq x;
+        AssertThrow(x.groups_mask());
+
+        x.open(64);
+
+        Assert(x.groups_mask(), is_equal_to(0));
+
+        auto v = x.groups();
+        Assert(v.empty(), is_true());
+    }
+
+    Test(join_group)
+    {
+        pfq x;
+        AssertThrow(x.join_group(12));
+
+        x.open(64);
+        int gid = x.join_group(0);
+        Assert(gid, is_equal_to(0));
+
+        gid = x.join_group(-1);
+        Assert(gid, is_equal_to(1));
+
+        auto v = x.groups();
+
+        Assert( v == (std::vector<int>{ 0, 1}) );
+
+    }
+
+    Test(leave_group)
+    {
+        pfq x;
+        AssertThrow(x.leave_group(12));
+
+        x.open(net::pfq_group::any, 64);
+        int gid = x.join_group(42);
+        Assert(gid, is_equal_to(42));
+
+        x.leave_group(42);
+
+        Assert(x.group_id(), is_equal_to(0));
+        Assert(x.groups() == std::vector<int>{ 0 });
+    }
+
+
+    Test(gid)
+    {
+        pfq x;
+        Assert(x.group_id(), is_equal_to(-1));
+    }
 }
 
 
