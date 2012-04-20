@@ -33,8 +33,9 @@
 #define Q_VERSION               "1.4.1"
 #define Q_VERSION_NUM           0x010001
 
-#define Q_MAX_CPU               16
+#define Q_MAX_CPU               64
 #define Q_MAX_ID                64
+#define Q_MAX_GROUP             64
 
 #define Q_MAX_DEVICE            256
 #define Q_MAX_DEVICE_MASK       (Q_MAX_DEVICE-1)
@@ -112,10 +113,11 @@ struct pfq_queue_descr
 #define SO_CAPLEN               105
 #define SO_SLOTS                106
 #define SO_OFFSET               107
+#define SO_GROUP_LEAVE          108
 
 /* get socket options */
 #define SO_GET_ID               120
-#define SO_GET_OWNERS           121
+#define SO_GET_GROUPS           121
 #define SO_GET_STATUS           122     /* 1 = enabled, 0 = disabled */
 #define SO_GET_STATS            123
 #define SO_GET_TSTAMP_TYPE      124
@@ -123,12 +125,14 @@ struct pfq_queue_descr
 #define SO_GET_CAPLEN           126
 #define SO_GET_SLOTS            127
 #define SO_GET_OFFSET           128
+#define SO_GROUP_JOIN           129
 
 
 /* struct used for setsockopt */
 
 #define Q_ANY_DEVICE         -1
 #define Q_ANY_QUEUE          -1
+#define Q_ANY_GROUP          -1
 
 #define Q_TSTAMP_OFF          0       /* default */
 #define Q_TSTAMP_ON           1
