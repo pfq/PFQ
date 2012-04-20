@@ -113,9 +113,9 @@ int pfq_get_free_id(struct pfq_opt * pq)
 
 inline 
 struct pfq_opt * 
-pfq_get_opt(unsigned int id)
+pfq_get_opt(int id)
 {
-        if (unlikely(id >= Q_MAX_ID))
+        if (unlikely(id >= Q_MAX_ID || id < 0))
         {
                 printk(KERN_WARNING "[PF_Q] pfq_devmap_freeid: bad id(%u)\n", id);
                 return 0;
@@ -125,9 +125,9 @@ pfq_get_opt(unsigned int id)
 
 
 inline 
-void pfq_release_id(unsigned int id)
+void pfq_release_id(int id)
 {
-        if (unlikely(id >= Q_MAX_ID))
+        if (unlikely(id >= Q_MAX_ID || id < 0))
         {
                 printk(KERN_WARNING "[PF_Q] pfq_devmap_freeid: bad id(%u)\n", id);
                 return;

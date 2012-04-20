@@ -46,7 +46,7 @@ typedef struct pfq_kstats
 
 struct pfq_opt
 {
-        unsigned int    q_id;
+        int             q_id;
 
         int             q_tstamp;
         
