@@ -89,15 +89,6 @@ Context(PFQ)
     }
 
 
-    Test(load_balance)
-    {
-        pfq x;
-        AssertThrow(x.load_balance(true));
-        x.open(64);
-        x.load_balance(false);
-    }
-
-    
     Test(ifindex)
     {
         pfq x;
@@ -197,7 +188,7 @@ Context(PFQ)
         pfq x;
         AssertThrow(x.add_device("eth0"));
 
-        x.open(64);
+        x.open(pfq_group::any, 64);
     
         AssertThrow(x.add_device("unknown"));
         x.add_device("eth0");
@@ -209,7 +200,7 @@ Context(PFQ)
         pfq x;
         AssertThrow(x.remove_device("eth0"));
 
-        x.open(64);
+        x.open(pfq_group::any, 64);
         
         AssertThrow(x.remove_device("unknown"));
         x.remove_device("eth0");
