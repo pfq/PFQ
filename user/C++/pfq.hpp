@@ -707,11 +707,11 @@ namespace net {
         queue
         read(long int microseconds = -1) 
         {
-            if (fd_ == -1)
-                throw pfq_error("PFQ: not open");
-            
-            struct pfq_queue_descr * q = static_cast<struct pfq_queue_descr *>(pdata_->queue_addr);
+            if (!pdata_ || !pdata_->queue_addr)
+                throw pfq_error("PFQ: not enabled");
 
+            struct pfq_queue_descr * q = static_cast<struct pfq_queue_descr *>(pdata_->queue_addr);
+            
             int data =  q->data;               
             int index  = DBMP_QUEUE_INDEX(data) ? 1 : 0;
             
