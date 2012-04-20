@@ -36,7 +36,9 @@ MODULE_LICENSE("GPL");
 DEFINE_SEMAPHORE(devmap_sem);
 
 atomic_long_t pfq_devmap [Q_MAX_DEVICE][Q_MAX_HW_QUEUE];
+
 atomic_t pfq_devmap_monitor [Q_MAX_DEVICE];
+
 
 void pfq_devmap_monitor_update()
 {
@@ -54,13 +56,13 @@ void pfq_devmap_monitor_update()
 }
 
 
-int pfq_devmap_update(int action, int index, int queue, unsigned int id)
+int pfq_devmap_update(int action, int index, int queue, int gid)
 {
     int n = 0, i,q;
     
-    if (unlikely(id >= 64))
+    if (unlikely(gid >= 64 || gid < 0))
     {
-        printk(KERN_WARNING "[PF_Q] devmap_update: bad id(%u)\n",id);
+        printk(KERN_WARNING "[PF_Q] devmap_update: bad gid(%u)\n",gid);
         return 0; 
     }
 
@@ -79,7 +81,7 @@ int pfq_devmap_update(int action, int index, int queue, unsigned int id)
             if (action == map_set) 
             {
                 tmp = atomic_long_read(&pfq_devmap[i][q]);
-                tmp |= 1L << id;
+                tmp |= 1L << gid;
                 atomic_long_set(&pfq_devmap[i][q], tmp); 
                 n++;
                 continue;
@@ -87,9 +89,9 @@ int pfq_devmap_update(int action, int index, int queue, unsigned int id)
 
             /* map_reset */
             tmp = atomic_long_read(&pfq_devmap[i][q]);
-            if (tmp & (1L<<id))
+            if (tmp & (1L<<gid))
             {
-                tmp &= ~(1L<<id);
+                tmp &= ~(1L<<gid);
                 atomic_long_set(&pfq_devmap[i][q], tmp); 
                 n++;
                 continue;

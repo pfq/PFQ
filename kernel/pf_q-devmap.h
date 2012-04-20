@@ -43,7 +43,7 @@ extern atomic_t pfq_devmap_monitor [Q_MAX_DEVICE];
 //
 
 extern
-int pfq_devmap_update(int action, int index, int queue, unsigned int id);
+int pfq_devmap_update(int action, int index, int queue, int gid);
 
 extern
 void pfq_devmap_monitor_update(void);
@@ -60,7 +60,7 @@ int pfq_devmap_equal(int i1, int q1, int i2, int q2)
 
 
 static inline 
-unsigned long pfq_devmap_get(int d, int q)
+unsigned long pfq_devmap_get_groups(int d, int q)
 {
     return atomic_long_read(&pfq_devmap[d & Q_MAX_DEVICE_MASK][q & Q_MAX_HW_QUEUE_MASK]);
 }
