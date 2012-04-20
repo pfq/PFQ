@@ -15,7 +15,7 @@ main(int argc, char *argv[])
 
     r.add_device(argv[1], pfq::any_queue);
 
-    r.tstamp(true);
+    r.toggle_time_stamp(true);
     
     r.enable();
     
@@ -23,8 +23,8 @@ main(int argc, char *argv[])
     {
             auto many = r.read( 1000000 /* timeout: micro */);
 
-            batch::iterator it = many.begin();
-            batch::iterator it_e = many.end();
+            queue::iterator it = many.begin();
+            queue::iterator it_e = many.end();
 
             std::cout << "batch size: " << many.size() << " ===>" << std::endl;
 

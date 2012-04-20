@@ -15,7 +15,7 @@ main(int argc, char *argv[])
 
     r.add_device(argv[1], pfq::any_queue);
 
-    r.tstamp(true);
+    r.toggle_time_stamp(true);
     
     r.enable();
     
