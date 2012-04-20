@@ -202,9 +202,8 @@ pfq_load_balancer(unsigned long sock_mask, const struct sk_buff *skb)
 int 
 pfq_direct_receive(struct sk_buff *skb, int index, int queue, bool direct)
 {       
-        int g_index[sizeof(unsigned long) << 3];
         unsigned long group_mask, sock_mask = 0;
-        int q, g_i = 0;
+        int q;
 
         int me = get_cpu();
 
@@ -221,18 +220,12 @@ pfq_direct_receive(struct sk_buff *skb, int index, int queue, bool direct)
         while (group_mask)
         {         
                 int zn = __builtin_ctzl(group_mask);
-                g_index[g_i++] = zn;
+
+                sock_mask |= pfq_load_balancer(atomic_long_read(&pfq_groups[zn].ids), skb);
+                
                 group_mask ^= (1L << zn);
         }
         
-        /* for each group... */
-
-        for(q = 0; q < g_i; q++)
-        {
-                int i = g_index[q];
-                sock_mask |= pfq_load_balancer(atomic_long_read(&pfq_groups[i].ids), skb);
-        }
-
         /* send this packet to selected sockets */
 
         while ( sock_mask != 0 )
