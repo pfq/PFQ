@@ -232,6 +232,9 @@ Context(PFQ)
         AssertThrow(x.read(10));
 
         x.open(64);
+        AssertThrow(x.read(10));
+        
+        x.enable();
         Assert(x.read(10).empty());
     }
 
