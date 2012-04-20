@@ -46,6 +46,8 @@
 
 #include <pf_q-priv.h>
 #include <pf_q-devmap.h>
+#include <pf_q-group.h>
+
 #include <mpdb-queue.h>
 
 struct net_proto_family  pfq_family_ops;
@@ -366,6 +368,8 @@ pfq_dtor(struct pfq_opt *pq)
 
         loadbalance_mask &= ~(1L << pq->q_id);
 
+        pfq_leave_all_groups(pq->q_id);
+
         up(&loadbalance_sem);
 
         mpdb_queue_free(pq);
@@ -512,6 +516,16 @@ int pfq_getsockopt(struct socket *sock,
                             return -EFAULT;
             } break;
 
+        case SO_GET_GROUPS:
+            {
+                    unsigned long grps;
+                    if(len != sizeof(unsigned long))
+                            return -EINVAL;
+                    grps = pfq_get_groups(pq->q_id);
+                    if (copy_to_user(optval, &grps, sizeof(grps)))
+                            return -EFAULT;
+            } break;
+
         case SO_GET_QUEUE_MEM: 
             {
                     if (len != sizeof(pq->q_queue_mem))
@@ -546,22 +560,6 @@ int pfq_getsockopt(struct socket *sock,
                     
             } break;
 
-        case SO_GET_OWNERS: 
-            {
-                    struct pfq_dev_queue dq;
-                    unsigned long owners; 
-
-                    if (len != sizeof(struct pfq_dev_queue))
-                            return -EINVAL;
-                    if (copy_from_user(&dq, optval, len))
-                            return -EFAULT;
-
-                    owners = pfq_devmap_get(dq.if_index, dq.hw_queue);
-
-                    if (copy_to_user(optval, &owners, sizeof(long)))
-                            return -EFAULT;
-            } break;
-
         case SO_GET_STATS: 
             {
                     struct pfq_stats stat;
@@ -590,6 +588,28 @@ int pfq_getsockopt(struct socket *sock,
                             return -EINVAL;
                     if (copy_to_user(optval, &pq->q_offset, sizeof(pq->q_offset)))
                             return -EFAULT;
+            } break;
+
+        case SO_GROUP_JOIN: 
+            {
+                    int gid;
+                    if (*optlen != sizeof(gid)) 
+                            return -EINVAL;
+                    if (copy_from_user(&gid, optval, *optlen)) 
+                            return -EFAULT;
+                    
+                    if (gid == Q_ANY_GROUP) {
+                            gid = pfq_join_free_group(pq->q_id);
+                            if (gid < 0)
+                                    return -EFAULT;
+                            if (copy_to_user(optval, &gid, sizeof(int)))
+                                    return -EFAULT;
+                    } else
+                    if (pfq_join_group(gid, pq->q_id) < 0) {
+                            return -EFAULT;
+                    }
+                    
+                    printk(KERN_INFO "[PF_Q] id:%d join -> gid:%d\n", pq->q_id, gid);
             } break;
 
         default:
@@ -747,6 +767,21 @@ int pfq_setsockopt(struct socket *sock,
                             return -EFAULT;
                     printk(KERN_INFO "[PF_Q] id:%d queue_slots:%lu -> slot_size:%lu\n", 
                                     pq->q_id, pq->q_slots, pq->q_slot_size);
+            } break;
+
+        case SO_GROUP_LEAVE: 
+            {
+                    int gid;
+                    if (optlen != sizeof(gid)) 
+                            return -EINVAL;
+                    if (copy_from_user(&gid, optval, optlen)) 
+                            return -EFAULT;
+                    
+                    if (pfq_leave_group(gid, pq->q_id) < 0) {
+                            return -EFAULT;
+                    }
+                    
+                    printk(KERN_INFO "[PF_Q] id:%d leave -> gid:%d\n", pq->q_id, gid);
             } break;
 
         default: 
