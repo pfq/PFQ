@@ -142,7 +142,7 @@ bool pfq_filter(const struct sk_buff *skb)
 }
 
 
-bool pfq_enqueue_skb(struct sk_buff *skb, struct pfq_opt *pq, bool clone)
+bool pfq_enqueue_skb(struct sk_buff *skb, struct pfq_opt *pq)
 {
         /* eventually filter the packet... */
 
@@ -202,10 +202,11 @@ pfq_load_balancer(unsigned long sock_mask, const struct sk_buff *skb)
 int 
 pfq_direct_receive(struct sk_buff *skb, int index, int queue, bool direct)
 {       
-        struct pfq_opt * pq;
-        unsigned long bm;
+        int g_index[sizeof(unsigned long) << 3];
+        unsigned long group_mask, sock_mask = 0;
+        int q, g_i = 0;
+
         int me = get_cpu();
-        int q;
 
         /* if required, timestamp this packet now */
 
@@ -214,43 +215,43 @@ pfq_direct_receive(struct sk_buff *skb, int index, int queue, bool direct)
                 __net_timestamp(skb);
         }
 
-        pq = NULL; 
+        /* get the balancing groups bitmap */
 
-        /* get the clone/balancing bitmap */
+        group_mask = pfq_devmap_get_groups(index, queue);
+        while (group_mask)
+        {         
+                int zn = __builtin_ctzl(group_mask);
+                g_index[g_i++] = zn;
+                group_mask ^= (1L << zn);
+        }
+        
+        /* for each group... */
 
-        bm =  pfq_devmap_get(index, queue);
-
-        /* load balancer among sockets */
-
-        if (loadbalance_mask)
+        for(q = 0; q < g_i; q++)
         {
-                bm = pfq_load_balancer(bm, skb);
+                int i = g_index[q];
+                sock_mask |= pfq_load_balancer(atomic_long_read(&pfq_groups[i].ids), skb);
         }
 
-        /* send this packet to eligible sockets */
+        /* send this packet to selected sockets */
 
-        while ( bm != 0 )
+        while ( sock_mask != 0 )
         {        
-                unsigned long lsb = bm & -bm;
+                unsigned long lsb = sock_mask & -sock_mask;
                 unsigned int zn = __builtin_ctz(lsb);
                 struct pfq_opt * pq = pfq_get_opt(zn);
-
-                bm &= ~lsb;
-
                 if (pq == NULL)
                         continue;
-
-                pfq_enqueue_skb(skb, pq, bm != 0);
+                sock_mask &= ~lsb;
+                pfq_enqueue_skb(skb, pq);
         }
 
-        ////////////////////////////////////////////////////////////
+        /* enqueue skb to kfree pipeline ... */
 
         if (pfq_skb_pipeline[me].counter < pipeline_len-1) {
-
                 pfq_skb_pipeline[me].queue[
                 pfq_skb_pipeline[me].counter++
                 ] = skb;
-
                 return 0;
         }
 
