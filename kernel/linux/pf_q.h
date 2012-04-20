@@ -106,8 +106,8 @@ struct pfq_queue_descr
 /* set socket options */
 
 #define SO_TOGGLE_QUEUE         100     /* enable = 1, disable = 0 */
-#define SO_ADD_DEVICE           101
-#define SO_REMOVE_DEVICE        102
+#define SO_ADD_BINDING          101
+#define SO_REMOVE_BINDING       102
 #define SO_TSTAMP_TYPE          103
 #define SO_CAPLEN               105
 #define SO_SLOTS                106
@@ -136,11 +136,14 @@ struct pfq_queue_descr
 #define Q_TSTAMP_OFF          0       /* default */
 #define Q_TSTAMP_ON           1
 
-struct pfq_dev_queue
+
+struct pfq_binding
 {
-    long int if_index;
+    int if_index;
     int hw_queue;
+    int group_id;
 };
+
 
 struct pfq_stats
 {
