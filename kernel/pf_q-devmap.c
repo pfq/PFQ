@@ -79,7 +79,7 @@ int pfq_devmap_update(int action, int index, int queue, unsigned int id)
             if (action == map_set) 
             {
                 tmp = atomic_long_read(&pfq_devmap[i][q]);
-                tmp |= (1<<id);
+                tmp |= 1L << id;
                 atomic_long_set(&pfq_devmap[i][q], tmp); 
                 n++;
                 continue;
@@ -87,9 +87,9 @@ int pfq_devmap_update(int action, int index, int queue, unsigned int id)
 
             /* map_reset */
             tmp = atomic_long_read(&pfq_devmap[i][q]);
-            if (tmp & (1<<id))
+            if (tmp & (1L<<id))
             {
-                tmp &= ~(1<<id);
+                tmp &= ~(1L<<id);
                 atomic_long_set(&pfq_devmap[i][q], tmp); 
                 n++;
                 continue;

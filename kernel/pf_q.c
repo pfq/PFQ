@@ -190,11 +190,11 @@ pfq_load_balancer(unsigned long bm, const struct sk_buff *skb)
         {
                 int zn = __builtin_ctzl(candidates);
                 index[i++] = zn;
-                candidates ^= (1<<zn);
+                candidates ^= (1L << zn);
         }
 
         hash = ip_hdr(skb)->saddr ^ ip_hdr(skb)->daddr;
-        return nolb | ( 1 << index[hash % i] );
+        return nolb | ( 1L << index[hash % i] );
 }
 
 
@@ -364,7 +364,7 @@ pfq_dtor(struct pfq_opt *pq)
 
         down(&loadbalance_sem);
 
-        loadbalance_mask &= ~(1<< pq->q_id);
+        loadbalance_mask &= ~(1L << pq->q_id);
 
         up(&loadbalance_sem);
 
@@ -672,9 +672,9 @@ int pfq_setsockopt(struct socket *sock,
                             return -EINTR;
 
                     if (value)
-                            loadbalance_mask |= (1 << pq->q_id);
+                            loadbalance_mask |= (1L << pq->q_id);
                     else
-                            loadbalance_mask &= ~(1 << pq->q_id);
+                            loadbalance_mask &= ~(1L << pq->q_id);
 
                     up(&loadbalance_sem);
             } break;
