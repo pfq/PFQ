@@ -802,10 +802,18 @@ static int pfq_mmap(struct file *file,
 
 unsigned int pfq_poll(struct file *file, struct socket *sock, poll_table * wait)
 {
-        struct pfq_opt *pq = pfq_sk(sock->sk)->opt;
-        struct pfq_queue_descr *q = (struct pfq_queue_descr *)pq->q_addr;
-
+        struct sock *sk = sock->sk;
+        struct pfq_sock *po = pfq_sk(sk);
+        struct pfq_opt *pq;
+        struct pfq_queue_descr * q;
         unsigned int mask = 0;
+
+        pq = po->opt;
+        if (pq == NULL)
+                return mask;
+        q = (struct pfq_queue_descr *)pq->q_addr;
+        if (q == NULL)
+                return mask;
 
         if (mpdb_queue_len(pq) >= (pq->q_slots>>1)) {
                 q->poll_wait = 0; 
