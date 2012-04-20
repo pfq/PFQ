@@ -9,13 +9,9 @@ set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -march=native -Wall -Wextra -std=c+
 
 # C++11 tests
 
-add_executable(test-batch++ test-batch++.cpp)
-add_executable(test-range   test-range.cpp)
-add_executable(test-tstamp  test-tstamp.cpp)
-add_executable(test-caplen  test-caplen.cpp)
-add_executable(test-offset  test-offset.cpp)
-add_executable(test-slot    test-slot.cpp)
+add_executable(test-regression test-regression.cpp)
+add_executable(test-dump test-dump.cpp)
+add_executable(test-for-range test-for-range.cpp)
 
 add_executable(test-dispatch test-dispatch.c)
-
 target_link_libraries(test-dispatch -lpfq -lstdc++)
