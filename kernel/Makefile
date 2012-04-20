@@ -8,7 +8,7 @@ EXTRA_CFLAGS += -DEXPORT_SYMTAB
 
 obj-m := $(TARGET).o 
 
-pfq-objs := pf_q.o pf_q-devmap.o pf_q-global.o mpdb-queue.o
+pfq-objs := pf_q.o pf_q-devmap.o mpdb-queue.o
 
 ifeq (,$(BUILD_KERNEL))
 BUILD_KERNEL=$(shell uname -r)
