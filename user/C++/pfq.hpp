@@ -52,6 +52,7 @@
 #include <cerrno>
 #include <cstdint>
 #include <thread>
+#include <vector>
 #include <system_error>
 
 
@@ -339,11 +340,19 @@ namespace net {
 
     //////////////////////////////////////////////////////////////////////
 
+    // group policies
+    
+    enum class pfq_group {
+        any,        // join the first free group
+        deferred    // join the groups later
+    };
+
     class pfq
     {
         struct pfq_data
         {
             int id;
+            int gid;
 
             void * queue_addr;
             size_t queue_size;
@@ -362,6 +371,7 @@ namespace net {
 
         static constexpr int any_device = Q_ANY_DEVICE;
         static constexpr int any_queue  = Q_ANY_QUEUE;
+        static constexpr int any_group  = Q_ANY_GROUP;
 
         pfq()
         : fd_(-1)
@@ -373,9 +383,16 @@ namespace net {
         : fd_(-1)
         , pdata_()
         {
-            this->open(caplen, offset, slots);
+            this->open(caplen, offset, slots); 
         }
-        
+    
+
+        pfq(pfq_group policy, size_t caplen, size_t offset = 0, size_t slots = 131072)
+        : fd_(-1)
+        , pdata_()
+        {
+            this->open(policy, caplen, offset, slots);
+        }
 
         ~pfq()
         {
@@ -420,6 +437,37 @@ namespace net {
             std::swap(pdata_, other.pdata_);
         }                           
 
+        int 
+        id() const
+        {
+            if (pdata_)
+                return pdata_->id;
+            return -1;
+        }
+
+        int 
+        group_id() const
+        {
+            if (pdata_)
+                return pdata_->gid;
+            return -1;
+        }
+
+        int 
+        fd() const
+        {
+            return fd_;
+        }
+
+        
+        void
+        open(pfq_group policy, size_t caplen, size_t offset = 0, size_t slots = 131072)
+        {
+            this->open(caplen, offset, slots);
+            if (policy == pfq_group::any) {
+                pdata_->gid = this->join_group(any_group);
+            }   
+        }
 
         void
         open(size_t caplen, size_t offset = 0, size_t slots = 131072)
@@ -432,7 +480,7 @@ namespace net {
                 throw pfq_error("PFQ: module not loaded");
             
             /* allocate pdata */
-            pdata_.reset(new pfq_data { -1, nullptr, 0, 0, 0, offset, 0, 0 });
+            pdata_.reset(new pfq_data { -1, -1, nullptr, 0, 0, 0, offset, 0, 0 });
 
             /* get id */
             socklen_t size = sizeof(pdata_->id);
@@ -472,7 +520,8 @@ namespace net {
                 fd_ = -1;
             }
         }
-
+        
+        
                 
         void 
         enable()
@@ -667,27 +716,51 @@ namespace net {
             remove_device(index, queue);
         }  
 
-        // unsigned long 
-        // owners(int index, int queue) const
-        // {
-        //     struct pfq_dev_queue dq = { index, queue };
-        //     socklen_t s = sizeof(struct pfq_dev_queue);
 
-        //     if (::getsockopt(fd_, PF_Q, SO_GET_OWNERS, &dq, &s) == -1)
-        //         throw pfq_error(errno, "PFQ: SO_GET_OWNERS");
-        //     return *reinterpret_cast<unsigned long *>(&dq);
-        // }
+        unsigned long
+        groups_mask() const
+        {
+            unsigned long mask; socklen_t size = sizeof(mask);
+            if (::getsockopt(fd_, PF_Q, SO_GET_GROUPS, &mask, &size) == -1)
+                throw pfq_error(errno, "PFQ: SO_GET_GROUPS");
+            return mask;
+        }
 
-        // unsigned long 
-        // owners(const char *dev, int queue) const
-        // {
-        //     auto index = ifindex(this->fd(), dev);
-        //     if (index == -1)
-        //         throw pfq_error("PFQ: device not found");
-        //     return owners(index,queue);
-        // }
+
+        std::vector<int>
+        groups() const
+        {
+            std::vector<int> vec;
+            auto grps = this->groups_mask();
+            for(int n = 0; grps != 0; n++)
+            {
+                if (grps & (1L << n)) {
+                    vec.push_back(n);
+                    grps &= ~(1L << n);
+                }
+            }
+            
+            return vec;
+        }
 
         
+        int
+        join_group(int gid)
+        {
+            socklen_t size = sizeof(gid);
+            if (::getsockopt(fd_, PF_Q, SO_GROUP_JOIN, &gid, &size) == -1)
+                throw pfq_error("PFQ: SO_GROUP_JOIN");
+            return gid;
+        }
+        
+        void
+        leave_group(int gid)
+        {
+            if (::setsockopt(fd_, PF_Q, SO_GROUP_LEAVE, &gid, sizeof(gid)) == -1)
+                throw pfq_error("PFQ: SO_GROUP_LEAVE");
+        }
+
+
         int 
         poll(long int microseconds = -1 /* infinite */)
         {
@@ -806,19 +879,6 @@ namespace net {
             return nullptr;
         }
 
-        int 
-        id() const
-        {
-            if (pdata_)
-                return pdata_->id;
-            return -1;
-        }
-
-        int 
-        fd() const
-        {
-            return fd_;
-        }
 
     };
 
