@@ -119,7 +119,7 @@ pfq_get_opt(int id)
 {
         if (unlikely(id >= Q_MAX_ID || id < 0))
         {
-                printk(KERN_WARNING "[PF_Q] pfq_devmap_freeid: bad id(%u)\n", id);
+                printk(KERN_WARNING "[PF_Q] pfq_devmap_freeid: bad id=%d\n", id);
                 return 0;
         }
         return (struct pfq_opt *)pfq_vector[id].counter;  // atomic_read not required here.
@@ -131,7 +131,7 @@ void pfq_release_id(int id)
 {
         if (unlikely(id >= Q_MAX_ID || id < 0))
         {
-                printk(KERN_WARNING "[PF_Q] pfq_devmap_freeid: bad id(%u)\n", id);
+                printk(KERN_WARNING "[PF_Q] pfq_devmap_freeid: bad id=%d\n", id);
                 return;
         }
         atomic_long_set(pfq_vector + id, 0);
@@ -321,7 +321,7 @@ pfq_ctor(struct pfq_opt *pq)
         pq->q_id = pfq_get_free_id(pq);
         if (pq->q_id == -1)
         {
-                printk(KERN_WARNING "[PF_Q] no queue available\n");
+                printk(KERN_WARNING "[PF_Q] no queue available!\n");
                 return -EBUSY;
         }
         
@@ -358,7 +358,7 @@ static void
 pfq_dtor(struct pfq_opt *pq)
 {
 #ifdef Q_DEBUG
-        printk(KERN_INFO "[PF_Q] queue dtor\n");
+        printk(KERN_INFO "[PF_Q|%d] queue dtor\n", pq->q_id);
 #endif
         pfq_release_id(pq->q_id); 
 
@@ -467,7 +467,7 @@ pfq_release(struct socket *sock)
         /* decrease the timestamp_toggle counter */
         if (pq->q_tstamp) {
                 atomic_dec(&timestamp_toggle);
-                printk(KERN_INFO "[PF_Q] timestamp_toggle => %d\n", atomic_read(&timestamp_toggle));
+                printk(KERN_INFO "[PF_Q|%d] timestamp_toggle => %d\n", pq->q_id, atomic_read(&timestamp_toggle));
         }
 
         wmb();
@@ -487,7 +487,7 @@ pfq_release(struct socket *sock)
         kfree(pq);
 
 #ifdef Q_DEBUG
-        printk(KERN_INFO "[PF_Q] queue freed.\n");
+        printk(KERN_INFO "[PF_Q|%d] queue freed.\n", pq->q_id);
 #endif
         return 0;
 }
@@ -609,7 +609,7 @@ int pfq_getsockopt(struct socket *sock,
                             return -EFAULT;
                     }
                     
-                    printk(KERN_INFO "[PF_Q] id:%d join -> gid:%d\n", pq->q_id, gid);
+                    printk(KERN_INFO "[PF_Q|%d] join -> gid:%d\n", pq->q_id, gid);
             } break;
 
         default:
@@ -735,7 +735,7 @@ int pfq_setsockopt(struct socket *sock,
                     /* update the timestamp_toggle counter */
                     atomic_add(tstamp - pq->q_tstamp, &timestamp_toggle);
                     pq->q_tstamp = tstamp;
-                    printk(KERN_INFO "[PF_Q] timestamp_toggle => %d\n", atomic_read(&timestamp_toggle));
+                    printk(KERN_INFO "[PF_Q|%d] timestamp_toggle => %d\n", pq->q_id, atomic_read(&timestamp_toggle));
             } break;
         
         case SO_CAPLEN: 
@@ -745,7 +745,7 @@ int pfq_setsockopt(struct socket *sock,
                     if (copy_from_user(&pq->q_caplen, optval, optlen)) 
                             return -EFAULT;
                     pq->q_slot_size = DBMP_QUEUE_SLOT_SIZE(pq->q_caplen);
-                    printk(KERN_INFO "[PF_Q] id:%d caplen:%lu -> slot_size:%lu\n", 
+                    printk(KERN_INFO "[PF_Q|%d] caplen:%lu -> slot_size:%lu\n", 
                                     pq->q_id, pq->q_caplen, pq->q_slot_size);
             } break;
 
@@ -755,8 +755,7 @@ int pfq_setsockopt(struct socket *sock,
                             return -EINVAL;
                     if (copy_from_user(&pq->q_offset, optval, optlen)) 
                             return -EFAULT;
-                    printk(KERN_INFO "[PF_Q] id:%d offset:%lu\n", 
-                                    pq->q_id, pq->q_offset);
+                    printk(KERN_INFO "[PF_Q|%d] offset:%lu\n", pq->q_id, pq->q_offset);
             } break;
 
         case SO_SLOTS: 
@@ -765,7 +764,7 @@ int pfq_setsockopt(struct socket *sock,
                             return -EINVAL;
                     if (copy_from_user(&pq->q_slots, optval, optlen)) 
                             return -EFAULT;
-                    printk(KERN_INFO "[PF_Q] id:%d queue_slots:%lu -> slot_size:%lu\n", 
+                    printk(KERN_INFO "[PF_Q|%d] queue_slots:%lu -> slot_size:%lu\n", 
                                     pq->q_id, pq->q_slots, pq->q_slot_size);
             } break;
 
@@ -781,7 +780,7 @@ int pfq_setsockopt(struct socket *sock,
                             return -EFAULT;
                     }
                     
-                    printk(KERN_INFO "[PF_Q] id:%d leave -> gid:%d\n", pq->q_id, gid);
+                    printk(KERN_INFO "[PF_Q|%d] leave -> gid:%d\n", pq->q_id, gid);
             } break;
 
         default: 
@@ -822,7 +821,7 @@ static int pfq_mmap(struct file *file,
         int ret;
 
         if(size % PAGE_SIZE) {
-                printk(KERN_INFO "[PF_Q] len not multiple of PAGE_SIZE\n");
+                printk(KERN_INFO "[PF_Q] size not multiple of PAGE_SIZE\n");
                 return -EINVAL;
         }
 
