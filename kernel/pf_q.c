@@ -172,27 +172,27 @@ bool pfq_enqueue_skb(struct sk_buff *skb, struct pfq_opt *pq, bool clone)
 /* pfq load balancer */
 
 unsigned long 
-pfq_load_balancer(unsigned long bm, const struct sk_buff *skb)
+pfq_load_balancer(unsigned long sock_mask, const struct sk_buff *skb)
 { 
-        int index[sizeof(unsigned long)<<3], i = 0;
-        unsigned long candidates = bm & loadbalance_mask;
-        unsigned long nolb = bm ^ candidates;
+        int index[sizeof(unsigned long)<<3];
+        int i = 0;
+        
         struct ethhdr *eth;
         uint32_t hash;
 
         eth = (struct ethhdr *)skb_mac_header(skb);
-        if (candidates == 0 || eth->h_proto != __constant_htons(ETH_P_IP))
-                return nolb;
+        if (sock_mask == 0 || eth->h_proto != __constant_htons(ETH_P_IP))
+                return 0;
 
-        while(candidates)
+        while(sock_mask)
         {
-                int zn = __builtin_ctzl(candidates);
+                int zn = __builtin_ctzl(sock_mask);
                 index[i++] = zn;
-                candidates ^= (1L << zn);
+                sock_mask ^= (1L << zn);
         }
 
         hash = ip_hdr(skb)->saddr ^ ip_hdr(skb)->daddr;
-        return nolb | ( 1L << index[hash % i] );
+        return 1L << index[hash % i];
 }
 
 
