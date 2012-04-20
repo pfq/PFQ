@@ -94,7 +94,7 @@ namespace test
             
             m_pfq.load_balance(opt::enable_balance);
  
-            m_pfq.tstamp(false);
+            m_pfq.toggle_time_stamp(false);
             
             m_pfq.enable();
 
