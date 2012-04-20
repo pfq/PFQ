@@ -793,13 +793,17 @@ namespace net {
         size_t
         mem_size() const
         {
-            return pdata_->queue_size;
+            if (pdata_)
+                return pdata_->queue_size;
+            return 0;
         }
 
         const void *
         mem_addr() const
         {
-            return pdata_->queue_addr;
+            if (pdata_)
+                return pdata_->queue_addr;
+            return nullptr;
         }
 
         int 
