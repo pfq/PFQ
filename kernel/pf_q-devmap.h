@@ -25,16 +25,19 @@
 #ifndef _PF_Q_DEVMAP_H_
 #define _PF_Q_DEVMAP_H_ 
 
+#include <linux/kernel.h>
+
 #define __PFQ_MODULE__
 #include <linux/pf_q.h>
 
 #include <pf_q-priv.h>
-#include <pf_q-global.h>
 
 /* pfq devmap */
 
 enum { map_reset, map_set };
 
+extern atomic_long_t pfq_devmap [Q_MAX_DEVICE][Q_MAX_HW_QUEUE];
+extern atomic_t pfq_devmap_monitor [Q_MAX_DEVICE];
 
 // called from u-context
 //
@@ -59,14 +62,14 @@ int pfq_devmap_equal(int i1, int q1, int i2, int q2)
 static inline 
 unsigned long pfq_devmap_get(int d, int q)
 {
-    return global.devmap[d & Q_MAX_DEVICE_MASK][q & Q_MAX_HW_QUEUE_MASK];
+    return atomic_long_read(&pfq_devmap[d & Q_MAX_DEVICE_MASK][q & Q_MAX_HW_QUEUE_MASK]);
 }
 
 
 static inline 
-uint8_t pfq_devmap_monitor_get(int index)
+int pfq_devmap_monitor_get(int index)
 {
-    return global.devmap_monitor[index & Q_MAX_DEVICE_MASK];
+    return atomic_read(&pfq_devmap_monitor[index & Q_MAX_DEVICE_MASK]);
 }
 
 

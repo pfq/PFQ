@@ -76,7 +76,6 @@ module_param(pipeline_len, int, 0644);
 module_param(cap_len,      int, 0644);
 module_param(queue_slots,  int, 0644);
 
-
 MODULE_PARM_DESC(direct_path, " Direct Path: 0 = classic, 1 = direct");
 MODULE_PARM_DESC(cap_len,     " Default capture length (bytes)");
 MODULE_PARM_DESC(pipeline_len," Pipeline length");
@@ -84,6 +83,10 @@ MODULE_PARM_DESC(queue_slots, " Queue slots (default=131072)");
 
 /* atomic vector of pointers to pfq_opt */
 atomic_long_t pfq_vector[Q_MAX_ID]; 
+
+/* timestamp toggle */
+
+atomic_t timestamp_toggle;
 
 
 /* uhm okay, this is a legit form of static polymorphism */
@@ -208,7 +211,7 @@ pfq_direct_receive(struct sk_buff *skb, int index, int queue, bool direct)
 
         /* if required, timestamp this packet now */
 
-        if (atomic_read(&global.tstamp) && 
+        if (atomic_read(&timestamp_toggle) && 
                         skb->tstamp.tv64 == 0) {
                 __net_timestamp(skb);
         }
@@ -457,10 +460,10 @@ pfq_release(struct socket *sock)
 
         pq->q_active = false;
 
-        /* decrease the global.tstamp counter */
+        /* decrease the timestamp_toggle counter */
         if (pq->q_tstamp) {
-                atomic_dec(&global.tstamp);
-                printk(KERN_INFO "[PF_Q] global.tstamp => %d\n", atomic_read(&global.tstamp));
+                atomic_dec(&timestamp_toggle);
+                printk(KERN_INFO "[PF_Q] timestamp_toggle => %d\n", atomic_read(&timestamp_toggle));
         }
 
         wmb();
@@ -709,10 +712,10 @@ int pfq_setsockopt(struct socket *sock,
                     if (tstamp != 0 && tstamp != 1)
                             return -EINVAL;
 
-                    /* update the global.tstamp counter */
-                    atomic_add(tstamp - pq->q_tstamp, &global.tstamp);
+                    /* update the timestamp_toggle counter */
+                    atomic_add(tstamp - pq->q_tstamp, &timestamp_toggle);
                     pq->q_tstamp = tstamp;
-                    printk(KERN_INFO "[PF_Q] global.tstamp => %d\n", atomic_read(&global.tstamp));
+                    printk(KERN_INFO "[PF_Q] timestamp_toggle => %d\n", atomic_read(&timestamp_toggle));
             } break;
         
         case SO_CAPLEN: 
