@@ -668,28 +668,27 @@ int pfq_setsockopt(struct socket *sock,
 
             } break;
 
-
-        case SO_ADD_DEVICE: 
+        case SO_ADD_BINDING: 
             {
-                    struct pfq_dev_queue dq;
-                    if (optlen != sizeof(struct pfq_dev_queue)) {
+                    struct pfq_binding dq;
+                    if (optlen != sizeof(struct pfq_binding)) {
                             return -EINVAL;
                     }
                     if (copy_from_user(&dq, optval, optlen))
                             return -EFAULT;
 
-                    pfq_devmap_update(map_set, dq.if_index, dq.hw_queue, pq->q_id);
+                    pfq_devmap_update(map_set, dq.if_index, dq.hw_queue, dq.group_id);
             } break;
 
-        case SO_REMOVE_DEVICE: 
+        case SO_REMOVE_BINDING: 
             {
-                    struct pfq_dev_queue dq;
-                    if (optlen != sizeof(struct pfq_dev_queue))
+                    struct pfq_binding dq;
+                    if (optlen != sizeof(struct pfq_binding))
                             return -EINVAL;
                     if (copy_from_user(&dq, optval, optlen))
                             return -EFAULT;
 
-                    pfq_devmap_update(map_reset, dq.if_index, dq.hw_queue, pq->q_id);
+                    pfq_devmap_update(map_reset, dq.if_index, dq.hw_queue, dq.group_id);
             } break;
 
         case SO_TSTAMP_TYPE: 
