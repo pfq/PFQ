@@ -674,46 +674,49 @@ namespace net {
 
 
         void 
-        add_device(int index, int queue = any_queue)
+        add_device(const char *dev, int queue = any_queue)
         {
             auto gid = group_id();
             if (gid < 0)
                 throw pfq_error("PFQ: default group undefined");
+
+            add_device_to_group(gid, dev, queue);
+        }                              
+
+        void
+        add_device_to_group(int gid, const char *dev, int queue = any_queue)
+        {
+            auto index = ifindex(this->fd(), dev);
+            if (index == -1)
+                throw pfq_error("PFQ: device not found");
 
             struct pfq_binding b = { index, queue, gid };
             if (::setsockopt(fd_, PF_Q, SO_ADD_BINDING, &b, sizeof(b)) == -1)
                 throw pfq_error(errno, "PFQ: SO_ADD_BINDING");
         }
-        
-        void 
-        add_device(const char *dev, int queue = any_queue)
-        {
-            auto index = ifindex(this->fd(), dev);
-            if (index == -1)
-                throw pfq_error("PFQ: device not found");
-            add_device(index, queue);
-        }                              
 
         void 
-        remove_device(int index, int queue = any_queue)
+        remove_device(const char *dev, int queue = any_queue)
         {
             auto gid = group_id();
             if (gid < 0)
                 throw pfq_error("PFQ: default group undefined");
-            
-            struct pfq_binding b = { index, queue, gid };
-            if (::setsockopt(fd_, PF_Q, SO_REMOVE_BINDING, &b, sizeof(b)) == -1)
-                throw pfq_error(errno, "PFQ: SO_REMOVE_BINDING");
-        }
         
+            remove_device_from_group(gid, dev, queue);
+        }  
+
+
         void 
-        remove_device(const char *dev, int queue = any_queue)
+        remove_device_from_group(int gid, const char *dev, int queue = any_queue)
         {
             auto index = ifindex(this->fd(), dev);
             if (index == -1)
                 throw pfq_error("PFQ: device not found");
-            remove_device(index, queue);
-        }  
+        
+            struct pfq_binding b = { index, queue, gid };
+            if (::setsockopt(fd_, PF_Q, SO_REMOVE_BINDING, &b, sizeof(b)) == -1)
+                throw pfq_error(errno, "PFQ: SO_REMOVE_BINDING");
+        }
 
 
         unsigned long
