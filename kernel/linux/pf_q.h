@@ -30,7 +30,7 @@
 #ifdef __PFQ_MODULE__
 
 
-#define Q_VERSION               "1.2"
+#define Q_VERSION               "1.4.1"
 #define Q_VERSION_NUM           0x010001
 
 #define Q_MAX_CPU               16
