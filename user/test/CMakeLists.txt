@@ -5,7 +5,7 @@ include_directories(../../user/C++)
 include_directories(../../user/C)
 link_directories(../../user/C)
 
-set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O3 -march=native -Wall -Wextra -std=c++0x")
+set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0 -g2 -Wall -D_GLIBCXX_DEBUG -Wextra -std=c++0x")
 
 # C++11 tests
 
