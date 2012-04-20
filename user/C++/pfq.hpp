@@ -579,15 +579,6 @@ namespace net {
 
 
         void 
-        load_balance(bool value)
-        {
-            int one = value;
-            if (::setsockopt(fd_, PF_Q, SO_LOAD_BALANCE, &one, sizeof(one)) == -1)
-                throw pfq_error(errno, "PFQ: SO_LOAD_BALANCE");
-        }
-
-
-        void 
         toggle_time_stamp(bool value)
         {
             int ts = static_cast<int>(value);

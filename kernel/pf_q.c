@@ -60,10 +60,6 @@ static int pipeline_len = 16;
 static int queue_slots  = 131072; // slots per queue
 static int cap_len      = 1514;
 
-DEFINE_SEMAPHORE(loadbalance_sem);
-
-static unsigned long long loadbalance_mask = 0;
-
 struct pfq_pipeline    pfq_skb_pipeline[Q_MAX_CPU];
 
 MODULE_LICENSE("GPL");
@@ -362,15 +358,7 @@ pfq_dtor(struct pfq_opt *pq)
 #endif
         pfq_release_id(pq->q_id); 
 
-        /* clean the loadbalance bit */
-
-        down(&loadbalance_sem);
-
-        loadbalance_mask &= ~(1L << pq->q_id);
-
         pfq_leave_all_groups(pq->q_id);
-
-        up(&loadbalance_sem);
 
         mpdb_queue_free(pq);
 }
@@ -680,24 +668,6 @@ int pfq_setsockopt(struct socket *sock,
 
             } break;
 
-        case SO_LOAD_BALANCE: 
-            {
-                    int value;
-                    if (optlen != sizeof(value))
-                            return -EINVAL;
-                    if (copy_from_user(&value, optval, optlen))
-                            return -EFAULT;
-
-                    if (down_interruptible(&loadbalance_sem) != 0)
-                            return -EINTR;
-
-                    if (value)
-                            loadbalance_mask |= (1L << pq->q_id);
-                    else
-                            loadbalance_mask &= ~(1L << pq->q_id);
-
-                    up(&loadbalance_sem);
-            } break;
 
         case SO_ADD_DEVICE: 
             {

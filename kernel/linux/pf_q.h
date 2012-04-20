@@ -109,7 +109,6 @@ struct pfq_queue_descr
 #define SO_ADD_DEVICE           101
 #define SO_REMOVE_DEVICE        102
 #define SO_TSTAMP_TYPE          103
-#define SO_LOAD_BALANCE         104
 #define SO_CAPLEN               105
 #define SO_SLOTS                106
 #define SO_OFFSET               107
