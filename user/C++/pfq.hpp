@@ -383,7 +383,7 @@ namespace net {
         : fd_(-1)
         , pdata_()
         {
-            this->open(caplen, offset, slots); 
+            this->open(pfq_group::any, caplen, offset, slots); 
         }
     
 
@@ -676,9 +676,13 @@ namespace net {
         void 
         add_device(int index, int queue = any_queue)
         {
-            struct pfq_dev_queue dq = { index, queue };
-            if (::setsockopt(fd_, PF_Q, SO_ADD_DEVICE, &dq, sizeof(dq)) == -1)
-                throw pfq_error(errno, "PFQ: SO_ADD_DEVICE");
+            auto gid = group_id();
+            if (gid < 0)
+                throw pfq_error("PFQ: default group undefined");
+
+            struct pfq_binding b = { index, queue, gid };
+            if (::setsockopt(fd_, PF_Q, SO_ADD_BINDING, &b, sizeof(b)) == -1)
+                throw pfq_error(errno, "PFQ: SO_ADD_BINDING");
         }
         
         void 
@@ -693,9 +697,13 @@ namespace net {
         void 
         remove_device(int index, int queue = any_queue)
         {
-            struct pfq_dev_queue dq = { index, queue };
-            if (::setsockopt(fd_, PF_Q, SO_REMOVE_DEVICE, &dq, sizeof(dq)) == -1)
-                throw pfq_error(errno, "PFQ: SO_REMOVE_DEVICE");
+            auto gid = group_id();
+            if (gid < 0)
+                throw pfq_error("PFQ: default group undefined");
+            
+            struct pfq_binding b = { index, queue, gid };
+            if (::setsockopt(fd_, PF_Q, SO_REMOVE_BINDING, &b, sizeof(b)) == -1)
+                throw pfq_error(errno, "PFQ: SO_REMOVE_BINDING");
         }
         
         void 
