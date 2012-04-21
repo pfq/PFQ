@@ -33,32 +33,34 @@ typedef struct { long value; } __attribute__((aligned(128))) __counter_t;
 
 typedef struct { __counter_t ctx[MAX_CPU_CTX]; } sparse_counter_t;
 
-  static inline 
+
+static inline 
 void sparse_inc(sparse_counter_t *sc)
 {
     sc->ctx[get_cpu() % MAX_CPU_CTX].value++;
 }
 
-  static inline 
+static inline 
 void sparse_dec(sparse_counter_t *sc)
 {
     sc->ctx[get_cpu() % MAX_CPU_CTX].value--;
 }
 
-  static inline 
-void sparse_add(long n, sparse_counter_t *sc)
+static inline 
+void sparse_add(sparse_counter_t *sc, long n) 
 {
     sc->ctx[get_cpu() % MAX_CPU_CTX].value += n;
 }
 
-  static inline 
-void sparse_sub(long n, sparse_counter_t *sc)
+static inline 
+void sparse_sub(sparse_counter_t *sc, long n)
 {
     sc->ctx[get_cpu() % MAX_CPU_CTX].value -= n;
 }
 
-  static inline
-void sparse_set(long n, sparse_counter_t *sc)
+
+static inline
+void sparse_set(sparse_counter_t *sc, long n)
 {
     unsigned int i, me = get_cpu();
     for(i = 0; i < MAX_CPU_CTX; i++) {
@@ -66,7 +68,7 @@ void sparse_set(long n, sparse_counter_t *sc)
     }
 }
 
-  static inline 
+static inline 
 long sparse_read(sparse_counter_t *sc) 
 {
     long ret = 0; int i;

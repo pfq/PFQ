@@ -336,9 +336,9 @@ pfq_ctor(struct pfq_opt *pq)
         init_waitqueue_head(&pq->q_waitqueue);
         
         /* reset stats */
-        sparse_set(0, &pq->q_stat.recv);
-        sparse_set(0, &pq->q_stat.lost);
-        sparse_set(0, &pq->q_stat.drop);
+        sparse_set(&pq->q_stat.recv, 0);
+        sparse_set(&pq->q_stat.lost, 0);
+        sparse_set(&pq->q_stat.drop, 0);
 
         return 0;
 }
