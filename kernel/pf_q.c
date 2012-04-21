@@ -137,7 +137,7 @@ void pfq_release_id(int id)
 inline
 bool pfq_filter(const struct sk_buff *skb)
 {             
-        /* TODO */
+        /* placeholder for future implementation */
         return true;
 }
 
