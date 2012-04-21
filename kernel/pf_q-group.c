@@ -40,7 +40,11 @@ inline void __pfq_group_ctor(int id)
 {
 	// printk(KERN_INFO "[PFQ] group id:%d constructor\n", id);
 	// ...
-	
+
+	sparse_set(&pfq_groups[id].recv, 0);
+	sparse_set(&pfq_groups[id].lost, 0);
+	sparse_set(&pfq_groups[id].drop, 0);
+
 	wmb();
 }
 

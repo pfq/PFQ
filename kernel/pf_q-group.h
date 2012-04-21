@@ -28,10 +28,15 @@
 #define __PFQ_MODULE__
 #include <linux/pf_q.h>
 
+#include <sparse-counter.h>
+
 struct pfq_group
 {
     atomic_long_t ids;
 
+	sparse_counter_t recv;
+	sparse_counter_t lost;
+	sparse_counter_t drop;
 };
 
 

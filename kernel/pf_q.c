@@ -220,10 +220,12 @@ pfq_direct_receive(struct sk_buff *skb, int index, int queue, bool direct)
         while (group_mask)
         {         
                 int zn = __builtin_ctzl(group_mask);
-
-                sock_mask |= pfq_load_balancer(atomic_long_read(&pfq_groups[zn].ids), skb);
                 
-                group_mask ^= (1L << zn);
+                sparse_inc(&pfq_groups[zn].recv);
+
+		sock_mask |= pfq_load_balancer(atomic_long_read(&pfq_groups[zn].ids), skb);
+                
+		group_mask ^= (1L << zn);
         }
         
         /* send this packet to selected sockets */
