@@ -302,10 +302,6 @@ pfq_packet_rcv
 static int 
 pfq_ctor(struct pfq_opt *pq)
 {
-#ifdef Q_DEBUG
-        printk(KERN_INFO "[PF_Q] queue ctor\n");
-#endif
-        
         /* set to 0 by default */
         memset(pq, 0, sizeof(struct pfq_opt));
 
@@ -349,9 +345,6 @@ pfq_ctor(struct pfq_opt *pq)
 static void 
 pfq_dtor(struct pfq_opt *pq)
 {
-#ifdef Q_DEBUG
-        printk(KERN_INFO "[PF_Q|%d] queue dtor\n", pq->q_id);
-#endif
         pfq_release_id(pq->q_id); 
 
         pfq_leave_all_groups(pq->q_id);
