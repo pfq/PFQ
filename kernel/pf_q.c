@@ -443,9 +443,6 @@ pfq_release(struct socket *sock)
         if(!pq)
                 return 0;
 
-        /* remove this pq from demux matrix */
-        pfq_devmap_update(map_reset, Q_ANY_DEVICE, Q_ANY_QUEUE, pq->q_id);
-
         pq->q_active = false;
 
         /* decrease the timestamp_toggle counter */
@@ -455,20 +452,21 @@ pfq_release(struct socket *sock)
         }
 
         wmb();
-
-        /* Convenient way to avoid a race condition,
+        
+	/* Convenient way to avoid a race condition,
          * without using rwmutexes that are very expensive 
          */
 
         msleep(10 /* msec */);
 
+        pfq_dtor(pq);
+
+	kfree(pq);
+
         sock_orphan(sk);
         sock_put(sk);
 
-        sock->sk = NULL;
-
-        pfq_dtor(pq);
-        kfree(pq);
+	sock->sk = NULL;
 
 #ifdef Q_DEBUG
         printk(KERN_INFO "[PF_Q|%d] queue freed.\n", pq->q_id);

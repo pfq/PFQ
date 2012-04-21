@@ -26,6 +26,7 @@
 #include <linux/semaphore.h>
 
 #include <pf_q-group.h>
+#include <pf_q-devmap.h>
 
 MODULE_LICENSE("GPL");
 
@@ -52,7 +53,9 @@ inline void __pfq_group_dtor(int gid)
 {
 	wmb();
 	// printk(KERN_INFO "[PFQ] group id:%d destructor\n", id);
-	// ...
+
+        /* remove this gid from demux matrix */
+        pfq_devmap_update(map_reset, Q_ANY_DEVICE, Q_ANY_QUEUE, gid);
 }
 
 
