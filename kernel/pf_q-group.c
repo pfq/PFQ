@@ -36,19 +36,19 @@ DEFINE_SEMAPHORE(group_sem);
 struct pfq_group pfq_groups[Q_MAX_GROUP];
 
 
-inline void __pfq_group_ctor(int id)
+inline void __pfq_group_ctor(int gid)
 {
 	// printk(KERN_INFO "[PFQ] group id:%d constructor\n", id);
 	// ...
 
-	sparse_set(&pfq_groups[id].recv, 0);
-	sparse_set(&pfq_groups[id].lost, 0);
-	sparse_set(&pfq_groups[id].drop, 0);
+	sparse_set(&pfq_groups[gid].recv, 0);
+	sparse_set(&pfq_groups[gid].lost, 0);
+	sparse_set(&pfq_groups[gid].drop, 0);
 
 	wmb();
 }
 
-inline void __pfq_group_dtor(int id)
+inline void __pfq_group_dtor(int gid)
 {
 	wmb();
 	// printk(KERN_INFO "[PFQ] group id:%d destructor\n", id);
