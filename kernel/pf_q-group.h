@@ -28,14 +28,14 @@
 #define __PFQ_MODULE__
 #include <linux/pf_q.h>
 
-typedef struct
+struct pfq_group
 {
     atomic_long_t ids;
 
-} pfq_group_t;
+};
 
 
-extern pfq_group_t pfq_groups[Q_MAX_GROUP];
+extern struct pfq_group pfq_groups[Q_MAX_GROUP];
 
 
 int pfq_join_free_group(int id);

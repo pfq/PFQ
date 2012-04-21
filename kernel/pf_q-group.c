@@ -33,7 +33,7 @@ MODULE_LICENSE("GPL");
 DEFINE_SEMAPHORE(group_sem);
 
 
-pfq_group_t pfq_groups[Q_MAX_GROUP];
+struct pfq_group pfq_groups[Q_MAX_GROUP];
 
 
 int pfq_join_free_group(int id)
