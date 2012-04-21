@@ -36,6 +36,22 @@ DEFINE_SEMAPHORE(group_sem);
 struct pfq_group pfq_groups[Q_MAX_GROUP];
 
 
+inline void __pfq_group_ctor(int id)
+{
+	// printk(KERN_INFO "[PFQ] group id:%d constructor\n", id);
+	// ...
+	
+	wmb();
+}
+
+inline void __pfq_group_dtor(int id)
+{
+	wmb();
+	// printk(KERN_INFO "[PFQ] group id:%d destructor\n", id);
+	// ...
+}
+
+
 int pfq_join_free_group(int id)
 {
         int n = 0;
@@ -45,6 +61,7 @@ int pfq_join_free_group(int id)
                 unsigned long tmp = atomic_long_read(&pfq_groups[n].ids);
                 if(tmp == 0)
                 {
+                        __pfq_group_ctor(n);
                         atomic_long_set(&pfq_groups[n].ids, 1L<<id);
                         up(&group_sem);
                         return n;
@@ -65,7 +82,10 @@ pfq_join_group(int gid, int id)
                 return -1;
 
         tmp = atomic_long_read(&pfq_groups[gid].ids);
-        tmp |= 1L << id;
+        if (!tmp) {
+         	__pfq_group_ctor(gid);
+	}
+	tmp |= 1L << id;
         atomic_long_set(&pfq_groups[gid].ids, tmp);
 
         up(&group_sem);
@@ -85,7 +105,9 @@ pfq_leave_group(int gid, int id)
         tmp = atomic_long_read(&pfq_groups[gid].ids);
         tmp &= ~(1L << id);
         atomic_long_set(&pfq_groups[gid].ids, tmp);
-
+        if (!tmp) {
+        	__pfq_group_dtor(gid);
+	}
         up(&group_sem);
         return 0;
 }
@@ -103,7 +125,10 @@ pfq_leave_all_groups(int id)
                 {
                         tmp &= ~(1L<<id);
                         atomic_long_set(&pfq_groups[n].ids, tmp);
-                }
+                	if (!tmp) {
+                        	__pfq_group_dtor(n);
+			}
+		}
         }
         up(&group_sem);
 }
