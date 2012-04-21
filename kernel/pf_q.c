@@ -80,6 +80,7 @@ MODULE_PARM_DESC(pipeline_len," Pipeline length");
 MODULE_PARM_DESC(queue_slots, " Queue slots (default=131072)");
 
 /* atomic vector of pointers to pfq_opt */
+
 atomic_long_t pfq_vector[Q_MAX_ID]; 
 
 /* timestamp toggle */
@@ -347,8 +348,6 @@ pfq_dtor(struct pfq_opt *pq)
 {
         pfq_release_id(pq->q_id); 
 
-        pfq_leave_all_groups(pq->q_id);
-
         mpdb_queue_free(pq);
 }
 
@@ -431,39 +430,42 @@ static int
 pfq_release(struct socket *sock)
 {
         struct sock * sk = sock->sk;
-        struct pfq_opt * pq = pfq_sk(sk)->opt;
+        struct pfq_opt * pq;
+	
+	if (!sk)
+		return 0;
+	
+	pq = pfq_sk(sk)->opt;
+	
+	if (pq) {
+		
+		pq->q_active = false;
 
-        if(!pq)
-                return 0;
+		/* decrease the timestamp_toggle counter */
+		if (pq->q_tstamp) {
+			atomic_dec(&timestamp_toggle);
+			printk(KERN_INFO "[PF_Q|%d] timestamp_toggle => %d\n", pq->q_id, atomic_read(&timestamp_toggle));
+		}
 
-        pq->q_active = false;
+        	pfq_leave_all_groups(pq->q_id);
 
-        /* decrease the timestamp_toggle counter */
-        if (pq->q_tstamp) {
-                atomic_dec(&timestamp_toggle);
-                printk(KERN_INFO "[PF_Q|%d] timestamp_toggle => %d\n", pq->q_id, atomic_read(&timestamp_toggle));
-        }
+		wmb();
 
-        wmb();
-        
-	/* Convenient way to avoid a race condition,
-         * without using rwmutexes that are very expensive 
-         */
+		/* Convenient way to avoid a race condition,
+		 * without using rwmutexes that are very expensive 
+		 */
 
-        msleep(10 /* msec */);
+		msleep(10 /* msec */);
 
-        pfq_dtor(pq);
+		pfq_dtor(pq);
 
-	kfree(pq);
+		kfree(pq);
+	}
 
         sock_orphan(sk);
-        sock_put(sk);
-
 	sock->sk = NULL;
-
-#ifdef Q_DEBUG
-        printk(KERN_INFO "[PF_Q|%d] queue freed.\n", pq->q_id);
-#endif
+        
+	sock_put(sk);
         return 0;
 }
 
