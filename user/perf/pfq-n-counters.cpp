@@ -84,34 +84,38 @@ namespace test
 {
     struct ctx
     {
-        ctx(const char *d, const std::vector<int> & q)
-        : m_dev(d), m_queues(q), m_stop(false), m_pfq(opt::caplen, opt::offset, opt::slots), m_read()
+        ctx(int id, const char *d, const std::vector<int> & q)
+        : m_id(id), m_dev(d), m_queues(q), m_stop(false), m_pfq(net::pfq_group::deferred, opt::caplen, opt::offset, opt::slots), m_read()
         {
+
+            int gid = opt::enable_balance ? 42 : m_id;   // any gid is valid...
+
             std::for_each(m_queues.begin(), m_queues.end(),[&](int q) {
                           std::cout << "setting dev: " << d << "@" << q << std::endl;       
-                    m_pfq.add_device(d, q);
+                    m_pfq.add_device_to_group(gid, d, q);
                 });
             
-            m_pfq.load_balance(opt::enable_balance);
- 
+            m_pfq.join_group(gid);
+
             m_pfq.toggle_time_stamp(false);
             
             m_pfq.enable();
 
-            std::cout << "cxt: queue_slots: " << m_pfq.slots() << " pfq_id:" << m_pfq.id() << std::endl;
+            std::cout << "ctx: queue_slots: " << m_pfq.slots() << " pfq_id:" << m_pfq.id() << std::endl;
         }
         
         ctx(const ctx &) = delete;
         ctx& operator=(const ctx &) = delete;
 
         ctx(ctx && other)
-        : m_dev(other.m_dev), m_queues(other.m_queues), m_stop(other.m_stop.load()), 
+        : m_id(other.m_id), m_dev(other.m_dev), m_queues(other.m_queues), m_stop(other.m_stop.load()), 
           m_pfq(std::move(other.m_pfq)), m_read()
         {
         }
 
         ctx& operator=(ctx &&other)
         {
+            m_id = other.m_id;
             m_dev = other.m_dev;
             m_queues = other.m_queues;
             m_stop.store(other.m_stop.load());
@@ -160,6 +164,8 @@ namespace test
         }
 
     private:
+        int m_id;
+
         const char *m_dev;
         std::vector<int> m_queues;
 
@@ -266,7 +272,7 @@ try
     for(unsigned int i = 0; i < vbinding.size(); ++i)
     {
         std::cout << "pushing a context: " << std::get<0>(vbinding[i]) << ' ' << std::get<1>(vbinding[i]) << std::endl;
-        ctx.push_back(test::ctx(std::get<0>(vbinding[i]).c_str(), std::get<2>(vbinding[i])));        
+        ctx.push_back(test::ctx(i, std::get<0>(vbinding[i]).c_str(), std::get<2>(vbinding[i])));        
     }
 
     opt::sleep_microseconds = 30000 * ctx.size();
@@ -293,6 +299,7 @@ try
     std::cout << "----------- capture started ------------\n";
 
     auto begin = std::chrono::system_clock::now();
+
     for(int y=0; y < opt::seconds; y++)
     {
         std::this_thread::sleep_for(std::chrono::seconds(1));
@@ -331,11 +338,9 @@ try
 
         auto end = std::chrono::system_clock::now();
 
-        // std::cout << "capture: " << 
-        //     1000000 * (static_cast<long double>(sum-old)/
-        //     static_cast<long double>(static_cast<std::chrono::microseconds>(end-begin).count())) << " pkt/sec"  << std::endl;   
-        
-        std::cout << "capture: " << vt100::BOLD << (sum-old) << vt100::RESET << " pkt/sec" << std::endl; 
+        std::cout << "capture: " << vt100::BOLD << 
+                ((sum-old)*1000000)/std::chrono::microseconds(end-begin).count() 
+                    << vt100::RESET << " pkt/sec" << std::endl; 
 
         old = sum, begin = end;
         old_stats = sum_stats;
