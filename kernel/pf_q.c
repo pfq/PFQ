@@ -484,9 +484,12 @@ int pfq_getsockopt(struct socket *sock,
         struct pfq_opt *pq = pfq_sk(sock->sk)->opt;
 
         if (pq == NULL)
-                return -EINVAL;
-        if (get_user(len, optlen) || len < 0)
                 return -EFAULT;
+        
+	if (get_user(len, optlen))
+                return -EFAULT;
+        if (len < 0)
+		return -EINVAL;
 
         switch(optname)
         {
@@ -575,16 +578,16 @@ int pfq_getsockopt(struct socket *sock,
         case SO_GROUP_JOIN: 
             {
                     int gid;
-                    if (*optlen != sizeof(gid)) 
+                    if (len != sizeof(gid)) 
                             return -EINVAL;
-                    if (copy_from_user(&gid, optval, *optlen)) 
+                    if (copy_from_user(&gid, optval, len)) 
                             return -EFAULT;
                     
                     if (gid == Q_ANY_GROUP) {
                             gid = pfq_join_free_group(pq->q_id);
                             if (gid < 0)
                                     return -EFAULT;
-                            if (copy_to_user(optval, &gid, sizeof(int)))
+                            if (copy_to_user(optval, &gid, len))
                                     return -EFAULT;
                     } else
                     if (pfq_join_group(gid, pq->q_id) < 0) {
