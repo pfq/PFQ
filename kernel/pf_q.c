@@ -599,6 +599,28 @@ int pfq_getsockopt(struct socket *sock,
                     printk(KERN_INFO "[PF_Q|%d] join -> gid:%d\n", pq->q_id, gid);
             } break;
 
+        case SO_GROUP_STATS: 
+            {
+                    struct pfq_stats stat;
+                    int gid;
+
+		    if (len != sizeof(stat)) 
+                            return -EINVAL;
+                    if (copy_from_user(&stat, optval, len)) 
+                            return -EFAULT;
+                    
+		    gid = stat.recv;
+                    if (gid < 0 || gid >= Q_MAX_GROUP)
+			    return -EINVAL;
+
+                    stat.recv = sparse_read(&pfq_groups[gid].recv);
+                    stat.lost = sparse_read(&pfq_groups[gid].lost);
+                    stat.drop = sparse_read(&pfq_groups[gid].drop);
+
+                    if (copy_to_user(optval, &stat, sizeof(stat)))
+                            return -EFAULT;
+            } break;
+
         default:
             return -EFAULT;
         }

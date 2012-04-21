@@ -125,6 +125,7 @@ struct pfq_queue_descr
 #define SO_GET_SLOTS            127
 #define SO_GET_OFFSET           128
 #define SO_GROUP_JOIN           129
+#define SO_GROUP_STATS          130
 
 
 /* struct used for setsockopt */
