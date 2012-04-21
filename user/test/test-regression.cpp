@@ -243,6 +243,19 @@ Context(PFQ)
         Assert(s.drop, is_equal_to(0));
     }
 
+    Test(group_stats)
+    {
+        pfq x;
+        AssertThrow(x.group_stats(42));
+
+        x.open(64);
+
+        auto s = x.group_stats(42);
+        Assert(s.recv, is_equal_to(0));
+        Assert(s.lost, is_equal_to(0));
+        Assert(s.drop, is_equal_to(0));
+    }
+
 
     Test(groups_mask)
     {

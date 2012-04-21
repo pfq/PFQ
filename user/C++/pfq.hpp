@@ -865,6 +865,17 @@ namespace net {
             return stat;
         }
 
+        pfq_stats
+        group_stats(int gid) const
+        {
+            pfq_stats stat;
+            stat.recv = gid;
+            socklen_t size = sizeof(struct pfq_stats);
+            if (::getsockopt(fd_, PF_Q, SO_GET_STATS, &stat, &size) == -1)
+                throw pfq_error(errno, "PFQ: SO_GET_STATS");
+            return stat;
+        }
+
         size_t
         mem_size() const
         {
