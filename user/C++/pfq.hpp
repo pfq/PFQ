@@ -342,9 +342,11 @@ namespace net {
 
     // group policies
     
-    enum class pfq_group {
-        any,        // join the first free group
-        deferred    // join the groups later
+    enum class pfq_group 
+    {
+        any,
+        priv,
+        undefined   
     };
 
     class pfq
@@ -369,9 +371,10 @@ namespace net {
 
     public:
 
-        static constexpr int any_device = Q_ANY_DEVICE;
-        static constexpr int any_queue  = Q_ANY_QUEUE;
-        static constexpr int any_group  = Q_ANY_GROUP;
+        static constexpr int any_device  = Q_ANY_DEVICE;
+        static constexpr int any_queue   = Q_ANY_QUEUE;
+        static constexpr int any_group   = Q_ANY_GROUP;
+        static constexpr int priv_group  = Q_PRIV_GROUP;
 
         pfq()
         : fd_(-1)
@@ -399,8 +402,8 @@ namespace net {
             this->close();
         }
 
-
         /* pfq object is non copyable */
+        
         pfq(const pfq&) = delete;
         pfq& operator=(const pfq&) = delete;
 
@@ -464,9 +467,14 @@ namespace net {
         open(pfq_group policy, size_t caplen, size_t offset = 0, size_t slots = 131072)
         {
             this->open(caplen, offset, slots);
+
             if (policy == pfq_group::any) {
                 pdata_->gid = this->join_group(any_group);
-            }   
+            }
+            else
+            if (policy == pfq_group::priv) {
+                pdata_->gid = this->join_group(priv_group);
+            }
         }
 
         void
