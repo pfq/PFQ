@@ -41,10 +41,13 @@ inline void __pfq_group_ctor(int gid)
 {
 	// printk(KERN_INFO "[PFQ] group id:%d constructor\n", id);
 	// ...
+        struct pfq_group * that = &pfq_groups[gid];
+	
+        that->private = false;
 
-	sparse_set(&pfq_groups[gid].recv, 0);
-	sparse_set(&pfq_groups[gid].lost, 0);
-	sparse_set(&pfq_groups[gid].drop, 0);
+	sparse_set(&that->recv, 0);
+	sparse_set(&that->lost, 0);
+	sparse_set(&that->drop, 0);
 
 	wmb();
 }
@@ -59,7 +62,7 @@ inline void __pfq_group_dtor(int gid)
 }
 
 
-int pfq_join_free_group(int id)
+int pfq_join_free_group(int id, bool priv)
 {
         int n = 0;
         down(&group_sem);
@@ -70,6 +73,7 @@ int pfq_join_free_group(int id)
                 {
                         __pfq_group_ctor(n);
                         atomic_long_set(&pfq_groups[n].ids, 1L<<id);
+			pfq_groups[n].private = priv;
                         up(&group_sem);
                         return n;
                 }
@@ -83,15 +87,22 @@ int
 pfq_join_group(int gid, int id)
 {
         unsigned long tmp;
-        down(&group_sem);
 
         if (gid < 0 || gid >= Q_MAX_GROUP)
                 return -1;
 
-        tmp = atomic_long_read(&pfq_groups[gid].ids);
+        down(&group_sem);
+        
+	tmp = atomic_long_read(&pfq_groups[gid].ids);
         if (!tmp) {
          	__pfq_group_ctor(gid);
 	}
+	
+	if (pfq_groups[gid].private) {
+        	up(&group_sem);
+		return -1;
+	}
+
 	tmp |= 1L << id;
         atomic_long_set(&pfq_groups[gid].ids, tmp);
 
@@ -104,18 +115,20 @@ int
 pfq_leave_group(int gid, int id)
 {
         unsigned long tmp;
-        down(&group_sem);
 
         if (gid < 0 || gid >= Q_MAX_GROUP)
                 return -1;
 
-        tmp = atomic_long_read(&pfq_groups[gid].ids);
+        down(&group_sem);
+        
+	tmp = atomic_long_read(&pfq_groups[gid].ids);
         tmp &= ~(1L << id);
         atomic_long_set(&pfq_groups[gid].ids, tmp);
         if (!tmp) {
         	__pfq_group_dtor(gid);
 	}
-        up(&group_sem);
+        
+	up(&group_sem);
         return 0;
 }
 

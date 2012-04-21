@@ -32,7 +32,9 @@
 
 struct pfq_group
 {
-    atomic_long_t ids;
+    bool 	private;
+
+	atomic_long_t ids;
 
 	sparse_counter_t recv;
 	sparse_counter_t lost;
@@ -43,7 +45,7 @@ struct pfq_group
 extern struct pfq_group pfq_groups[Q_MAX_GROUP];
 
 
-int pfq_join_free_group(int id);
+int pfq_join_free_group(int id, bool priv);
 
 int pfq_join_group(int gid, int id);
 

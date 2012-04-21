@@ -578,18 +578,19 @@ int pfq_getsockopt(struct socket *sock,
                     if (copy_from_user(&gid, optval, len)) 
                             return -EFAULT;
                     
-                    if (gid == Q_ANY_GROUP) {
-                            gid = pfq_join_free_group(pq->q_id);
+                    if (gid == Q_ANY_GROUP || gid == Q_PRIV_GROUP) {
+                            gid = pfq_join_free_group(pq->q_id, gid == Q_PRIV_GROUP);
                             if (gid < 0)
                                     return -EFAULT;
                             if (copy_to_user(optval, &gid, len))
                                     return -EFAULT;
                     } else
                     if (pfq_join_group(gid, pq->q_id) < 0) {
+                    	    printk(KERN_INFO "[PF_Q|%d] join error (gid:%d private)!\n", pq->q_id, gid);
                             return -EFAULT;
                     }
                     
-                    printk(KERN_INFO "[PF_Q|%d] join -> gid:%d\n", pq->q_id, gid);
+                    printk(KERN_INFO "[PF_Q|%d] join -> group id:%d\n", pq->q_id, gid);
             } break;
 
         case SO_GROUP_STATS: 
@@ -763,7 +764,7 @@ int pfq_setsockopt(struct socket *sock,
                             return -EFAULT;
                     }
                     
-                    printk(KERN_INFO "[PF_Q|%d] leave -> gid:%d\n", pq->q_id, gid);
+                    printk(KERN_INFO "[PF_Q|%d] leave -> group id:%d\n", pq->q_id, gid);
             } break;
 
         default: 

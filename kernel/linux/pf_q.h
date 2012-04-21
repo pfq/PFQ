@@ -133,6 +133,7 @@ struct pfq_queue_descr
 #define Q_ANY_DEVICE         -1
 #define Q_ANY_QUEUE          -1
 #define Q_ANY_GROUP          -1
+#define Q_PRIV_GROUP         -2
 
 #define Q_TSTAMP_OFF          0       /* default */
 #define Q_TSTAMP_ON           1
