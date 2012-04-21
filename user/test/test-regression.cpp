@@ -270,6 +270,17 @@ Context(PFQ)
         Assert(v.empty(), is_true());
     }
 
+    Test(join_private)
+    {
+        pfq x(pfq_group::priv, 64);
+
+        pfq y;
+
+        y.open(pfq_group::undefined, 64);
+
+        AssertThrow(y.join_group(x.group_id()));
+    }
+
     Test(join_group)
     {
         pfq x;
