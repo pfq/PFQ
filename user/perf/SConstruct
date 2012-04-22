@@ -1,0 +1,9 @@
+# SCon script
+
+env = Environment(CPPPATH=['.',  '../C++', '../C', '../../kernel'], 
+
+CXXFLAGS=['-O3','-march=native', '-Wall', '-Wextra', '-std=c++11'])
+
+env.Program(target = "pfq-n-counters", source = ["pfq-n-counters.cpp"], LIBS = ['pthread'])
+env.Program(target = "pfq-histo",      source = ["pfq-histo.cpp"], LIBS = ['pthread'])
+

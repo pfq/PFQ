@@ -1,0 +1,8 @@
+# SCon script
+
+env = Environment(CPPPATH=['.',  '../C++', '../C', '../../kernel'], 
+
+CXXFLAGS=['-O3','-march=native', '-Wall', '-Wextra', '-std=c++11'])
+
+env.Library(target = 'pfq', source = ['libpfq.cpp'], LIBS = ['stdc++'])
+

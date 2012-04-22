@@ -1,0 +1,12 @@
+# SCon script
+
+env = Environment(CPPPATH=['.',  '../C++', '../C', '../../kernel'], 
+CXXFLAGS=['-O0','-g2', '-D_GLIBCXX_DEBUG', '-Wall', '-Wextra', '-std=c++11'])
+
+env.Append(LIBPATH='../C')
+
+env.Program(target = "test-regression", source = ["test-regression.cpp"])
+env.Program(target = "test-dump", source = ["test-dump.cpp"])
+env.Program(target = "test-for-range", source = ["test-for-range.cpp"])
+
+env.Program(target = "test-dispatch", source = ["test-dispatch.c"], LIBS=['pfq', 'pthread', 'stdc++'])
