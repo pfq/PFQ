@@ -527,7 +527,6 @@ namespace net {
         }
         
         
-                
         void 
         enable()
         {
@@ -591,6 +590,7 @@ namespace net {
                 throw pfq_error(errno, "PFQ: SO_TSTAMP_TYPE");
         }
 
+
         bool 
         time_stamp() const
         {
@@ -613,6 +613,7 @@ namespace net {
 
             pdata_->slot_size = align<8>(sizeof(pfq_hdr)+ value);
         }
+        
 
         size_t 
         caplen() const
@@ -634,6 +635,7 @@ namespace net {
                 throw pfq_error(errno, "PFQ: SO_OFFSET");
             }
         }
+
 
         size_t 
         offset() const
@@ -657,7 +659,8 @@ namespace net {
 
             pdata_->queue_slots = value;
         }
-        
+
+
         size_t 
         slots() const
         {   
@@ -688,6 +691,7 @@ namespace net {
             bind_group(gid, dev, queue);
         }                              
 
+
         void
         bind_group(int gid, const char *dev, int queue = any_queue)
         {
@@ -699,6 +703,7 @@ namespace net {
             if (::setsockopt(fd_, PF_Q, SO_ADD_BINDING, &b, sizeof(b)) == -1)
                 throw pfq_error(errno, "PFQ: SO_ADD_BINDING");
         }
+
 
         void 
         unbind(const char *dev, int queue = any_queue)
@@ -733,6 +738,7 @@ namespace net {
             return mask;
         }
 
+
         std::vector<int>
         groups() const
         {
@@ -764,6 +770,7 @@ namespace net {
             return group.gid;
         }
         
+
         void
         leave_group(int gid)
         {
@@ -827,7 +834,8 @@ namespace net {
             return queue(static_cast<char *>(pdata_->queue_addr) + sizeof(pfq_queue_descr) + index * q_size, 
                          pdata_->slot_size, pdata_->next_len);
         }
-        
+
+
         queue
         recv(const mutable_buffer &buff, long int microseconds = -1) 
         {
@@ -864,6 +872,7 @@ namespace net {
             return n;
         }
 
+
         pfq_stats
         stats() const
         {
@@ -873,6 +882,7 @@ namespace net {
                 throw pfq_error(errno, "PFQ: SO_GET_STATS");
             return stat;
         }
+
 
         pfq_stats
         group_stats(int gid) const
@@ -885,6 +895,7 @@ namespace net {
             return stat;
         }
 
+
         size_t
         mem_size() const
         {
@@ -892,6 +903,7 @@ namespace net {
                 return pdata_->queue_size;
             return 0;
         }
+
 
         const void *
         mem_addr() const
