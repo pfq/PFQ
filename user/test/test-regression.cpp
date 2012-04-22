@@ -1,4 +1,9 @@
 #include <pfq.hpp>
+#include <future>
+#include <system_error>
+
+#include <sys/types.h>
+#include <sys/wait.h>
 
 #include "yats.hpp"
 
@@ -188,7 +193,7 @@ Context(PFQ)
         pfq x;
         AssertThrow(x.add_device("eth0"));
 
-        x.open(pfq_group::any, 64);
+        x.open(group_policy::open, 64);
     
         AssertThrow(x.add_device("unknown"));
         x.add_device("eth0");
@@ -200,7 +205,7 @@ Context(PFQ)
         pfq x;
         AssertThrow(x.remove_device("eth0"));
 
-        x.open(pfq_group::any, 64);
+        x.open(group_policy::open, 64);
         
         AssertThrow(x.remove_device("unknown"));
         x.remove_device("eth0");
@@ -246,11 +251,11 @@ Context(PFQ)
     Test(group_stats)
     {
         pfq x;
-        AssertThrow(x.group_stats(42));
+        AssertThrow(x.group_stats(11));
 
         x.open(64);
 
-        auto s = x.group_stats(42);
+        auto s = x.group_stats(11);
         Assert(s.recv, is_equal_to(0));
         Assert(s.lost, is_equal_to(0));
         Assert(s.drop, is_equal_to(0));
@@ -270,18 +275,55 @@ Context(PFQ)
         Assert(v.empty(), is_true());
     }
 
-    Test(join_private)
+    Test(join_restricted)
     {
-        pfq x(pfq_group::priv, 64);
+        pfq x(group_policy::restricted, 64);
 
         pfq y;
 
-        y.open(pfq_group::undefined, 64);
+        y.open(group_policy::undefined, 64);
 
-        AssertThrow(y.join_group(x.group_id()));
+        Assert( y.join_group(x.group_id()), is_equal_to(x.group_id()));
+        
     }
 
-    Test(join_group)
+
+    Test(join_restricted_thread)
+    {
+        pfq x(group_policy::restricted, 64);
+
+        auto task = std::async(std::launch::async, 
+                    [&] {
+                        pfq y(group_policy::undefined, 64);;
+                        Assert( y.join_group(x.group_id()), is_equal_to(x.group_id()));
+                    });
+        
+        task.wait();
+    }
+
+    Test(join_restricted_process)
+    {
+        pfq x(group_policy::restricted, 64);
+        pfq z(group_policy::open, 64);
+
+        auto p = fork();
+        if (p == -1)
+            throw std::system_error(errno, std::generic_category());
+
+        if (p == 0) {
+            pfq y(group_policy::undefined, 64);;
+            
+            Assert( y.join_group(z.group_id()), is_equal_to(z.group_id()));
+            AssertThrow(y.join_group(x.group_id()));
+            
+            exit(-1);
+        }
+
+        wait(nullptr);
+    }
+
+
+    Test(join_public)
     {
         pfq x;
         AssertThrow(x.join_group(12));
@@ -290,7 +332,7 @@ Context(PFQ)
         int gid = x.join_group(0);
         Assert(gid, is_equal_to(0));
 
-        gid = x.join_group(-1);
+        gid = x.join_group(pfq::any_group);
         Assert(gid, is_equal_to(1));
 
         auto v = x.groups();
@@ -304,7 +346,7 @@ Context(PFQ)
         pfq x;
         AssertThrow(x.leave_group(12));
 
-        x.open(net::pfq_group::any, 64);
+        x.open(group_policy::open, 64);
         int gid = x.join_group(42);
         Assert(gid, is_equal_to(42));
 

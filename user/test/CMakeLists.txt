@@ -15,3 +15,4 @@ add_executable(test-for-range test-for-range.cpp)
 
 add_executable(test-dispatch test-dispatch.c)
 target_link_libraries(test-dispatch -lpfq -lstdc++)
+target_link_libraries(test-regression -pthread)

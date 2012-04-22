@@ -85,7 +85,7 @@ namespace test
     struct ctx
     {
         ctx(int id, const char *d, const std::vector<int> & q)
-        : m_id(id), m_dev(d), m_queues(q), m_stop(false), m_pfq(pfq_group::undefined, opt::caplen, opt::offset, opt::slots), m_read()
+        : m_id(id), m_dev(d), m_queues(q), m_stop(false), m_pfq(group_policy::undefined, opt::caplen, opt::offset, opt::slots), m_read()
         {
 
             int gid = opt::enable_balance ? 42 : m_id;   // any gid is valid...
