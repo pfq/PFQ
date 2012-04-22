@@ -37,7 +37,8 @@ DEFINE_SEMAPHORE(group_sem);
 struct pfq_group pfq_groups[Q_MAX_GROUP];
 
 
-inline bool __pfq_is_joinable(int gid, bool restricted)
+inline bool 
+__pfq_is_joinable(int gid, bool restricted)
 {
 	int pid = pfq_groups[gid].pid;
 	if (pid != -1) { /* restricted group */
@@ -54,7 +55,8 @@ inline bool __pfq_is_joinable(int gid, bool restricted)
 }
 
 
-inline void __pfq_group_ctor(int gid)
+inline void 
+__pfq_group_ctor(int gid)
 {
 	// printk(KERN_INFO "[PFQ] group id:%d constructor\n", id);
 	// ...
@@ -69,7 +71,9 @@ inline void __pfq_group_ctor(int gid)
 	wmb();
 }
 
-inline void __pfq_group_dtor(int gid)
+
+inline void 
+__pfq_group_dtor(int gid)
 {
 	wmb();
 	// printk(KERN_INFO "[PFQ] group id:%d destructor\n", id);
@@ -79,7 +83,8 @@ inline void __pfq_group_dtor(int gid)
 }
 
 
-int pfq_join_free_group(int id, bool restricted)
+int 
+pfq_join_free_group(int id, bool restricted)
 {
         int n = 0;
         down(&group_sem);
