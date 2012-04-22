@@ -342,12 +342,13 @@ namespace net {
 
     // group policies
     
-    enum class pfq_group 
+    enum class group_policy 
     {
-        any,
-        priv,
+        restricted,
+        open,
         undefined   
     };
+
 
     class pfq
     {
@@ -374,7 +375,6 @@ namespace net {
         static constexpr int any_device  = Q_ANY_DEVICE;
         static constexpr int any_queue   = Q_ANY_QUEUE;
         static constexpr int any_group   = Q_ANY_GROUP;
-        static constexpr int priv_group  = Q_PRIV_GROUP;
 
         pfq()
         : fd_(-1)
@@ -386,11 +386,11 @@ namespace net {
         : fd_(-1)
         , pdata_()
         {
-            this->open(pfq_group::any, caplen, offset, slots); 
+            this->open(group_policy::open, caplen, offset, slots); 
         }
     
 
-        pfq(pfq_group policy, size_t caplen, size_t offset = 0, size_t slots = 131072)
+        pfq(group_policy policy, size_t caplen, size_t offset = 0, size_t slots = 131072)
         : fd_(-1)
         , pdata_()
         {
@@ -464,16 +464,13 @@ namespace net {
 
         
         void
-        open(pfq_group policy, size_t caplen, size_t offset = 0, size_t slots = 131072)
+        open(group_policy policy, size_t caplen, size_t offset = 0, size_t slots = 131072)
         {
             this->open(caplen, offset, slots);
 
-            if (policy == pfq_group::any) {
-                pdata_->gid = this->join_group(any_group);
-            }
-            else
-            if (policy == pfq_group::priv) {
-                pdata_->gid = this->join_group(priv_group);
+            if (policy != group_policy::undefined)
+            {
+                pdata_->gid = this->join_group(any_group, policy);
             }
         }
 
@@ -755,12 +752,17 @@ namespace net {
 
         
         int
-        join_group(int gid)
+        join_group(int gid, group_policy pol = group_policy::open)
         {
-            socklen_t size = sizeof(gid);
-            if (::getsockopt(fd_, PF_Q, SO_GROUP_JOIN, &gid, &size) == -1)
+            if (pol == group_policy::undefined)
+                throw pfq_error("PFQ: join with undefined policy!");
+
+            pfq_join group { gid, pol == group_policy::restricted ? 1 : 0 };
+
+            socklen_t size = sizeof(group);
+            if (::getsockopt(fd_, PF_Q, SO_GROUP_JOIN, &group, &size) == -1)
                 throw pfq_error("PFQ: SO_GROUP_JOIN");
-            return gid;
+            return group.gid;
         }
         
         void
