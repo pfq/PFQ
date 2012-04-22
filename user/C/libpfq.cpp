@@ -144,127 +144,127 @@ extern "C" {
 
     void pfq_enable(pfq_t *q, int *ok)
     {
-        firewall(ok, q, [&]() { q->enable(); });
+        firewall(ok, q, [&] { q->enable(); });
     }
 
     void pfq_disable(pfq_t *q, int *ok)
     {
-        firewall(ok, q, [&]() { q->disable(); });
+        firewall(ok, q, [&] { q->disable(); });
     }
 
     int pfq_is_enabled(pfq_t const *q, int *ok)
     {
-        return firewall(ok, q, [&]() { return q->is_enabled(); });
+        return firewall(ok, q, [&] { return q->is_enabled(); });
     }
 
 
     int pfq_ifindex(pfq_t const *q, const char *dev, int *ok)
     {
-        return firewall(ok, q, [&]() { return net::ifindex(q->fd(), dev); });
+        return firewall(ok, q, [&] { return net::ifindex(q->fd(), dev); });
     }
 
     void pfq_set_time_stamp(pfq_t *q, int value, int *ok)
     {
-        firewall(ok, q, [&]() { q->toggle_time_stamp(value); });
+        firewall(ok, q, [&] { q->toggle_time_stamp(value); });
     }
 
     int pfq_get_time_stamp(pfq_t const *q, int *ok)
     {
-        return firewall(ok, q, [&]() { return q->time_stamp(); });
+        return firewall(ok, q, [&] { return q->time_stamp(); });
     }
 
     void pfq_set_caplen(pfq_t *q, size_t value, int *ok)
     {
-        firewall(ok, q, [&]() { q->caplen(value); }); 
+        firewall(ok, q, [&] { q->caplen(value); }); 
     }
 
     size_t pfq_get_caplen(pfq_t const *q, int *ok)
     {
-        return firewall(ok, q, [&]() { return q->caplen(); }); 
+        return firewall(ok, q, [&] { return q->caplen(); }); 
     }
     
     void pfq_set_offset(pfq_t *q, size_t value, int *ok)
     {
-        firewall(ok, q, [&]() { q->offset(value); }); 
+        firewall(ok, q, [&] { q->offset(value); }); 
     }
 
     size_t pfq_get_offset(pfq_t const *q, int *ok)
     {
-        return firewall(ok, q, [&]() { return q->offset(); }); 
+        return firewall(ok, q, [&] { return q->offset(); }); 
     }
 
     void pfq_set_slots(pfq_t *q, size_t value, int *ok)
     {
-        firewall(ok, q, [&]() { q->slots(value); }); 
+        firewall(ok, q, [&] { q->slots(value); }); 
     }
 
     size_t pfq_get_slots(pfq_t const *q, int *ok)
     {
-        return firewall(ok, q, [&]() { return q->slots(); }); 
+        return firewall(ok, q, [&] { return q->slots(); }); 
     }
     
     size_t pfq_get_slot_size(pfq_t const *q, int *ok)
     {
-        return firewall(ok, q, [&]() { return q->slot_size(); });
+        return firewall(ok, q, [&] { return q->slot_size(); });
     }
 
 
     void pfq_bind(pfq_t *q, const char *dev, int queue, int *ok)
     {
-        firewall(ok, q, [&]() { q->bind(dev,queue); });
+        firewall(ok, q, [&] { q->bind(dev,queue); });
     }
 
     void pfq_bind_group(pfq_t *q, int gid, const char *dev, int queue, int *ok)
     {
-        firewall(ok, q, [&]() { q->bind_group(gid, dev,queue); });
+        firewall(ok, q, [&] { q->bind_group(gid, dev,queue); });
     }
 
     void pfq_unbind(pfq_t *q, const char *dev, int queue, int *ok)
     {
-        firewall(ok, q, [&]() { q->unbind(dev,queue); }); 
+        firewall(ok, q, [&] { q->unbind(dev,queue); }); 
     }
 
     void pfq_unbind_group(pfq_t *q, int gid, const char *dev, int queue, int *ok)
     {
-        firewall(ok, q, [&]() { q->unbind_group(gid, dev,queue); }); 
+        firewall(ok, q, [&] { q->unbind_group(gid, dev,queue); }); 
     }
 
     unsigned long
     pfq_group_mask(pfq_t *q, int *ok)
     {
-        return firewall(ok, q, [&]() { return q->groups_mask(); });
+        return firewall(ok, q, [&] { return q->groups_mask(); });
     }
 
     void pfq_join_group(pfq_t *q, int gid, enum pfq_group_policy pol, int *ok)
     {
-        firewall(ok, q, [&]() { q->join_group(gid, static_cast<net::group_policy>(pol)); });
+        firewall(ok, q, [&] { q->join_group(gid, static_cast<net::group_policy>(pol)); });
     }
 
     void pfq_leave_group(pfq_t *q, int gid, int *ok)
     {
-        firewall(ok, q, [&]() { q->leave_group(gid); });
+        firewall(ok, q, [&] { q->leave_group(gid); });
     }
 
 
     int pfq_poll(pfq_t *q, long int usec, int *ok)
     {
-        return firewall(ok, q, [&]() { return q->poll(usec); }); 
+        return firewall(ok, q, [&] { return q->poll(usec); }); 
     }
 
     struct pfq_stats
     pfq_get_stats(pfq_t const *q, int *ok)
     {
-        return firewall(ok, q, [&]() { return q->stats(); });
+        return firewall(ok, q, [&] { return q->stats(); });
     }
  
     struct pfq_stats
     pfq_get_group_stats(pfq_t const *q, int gid, int *ok)
     {
-        return firewall(ok, q, [&]() { return q->group_stats(gid); });
+        return firewall(ok, q, [&] { return q->group_stats(gid); });
     }
 
     int pfq_dispatch(pfq_t *q, pfq_handler callback, char *user, int *ok)
     {
-        return firewall(ok, q, [&]() { return q->dispatch(callback, 100000, user); });
+        return firewall(ok, q, [&] { return q->dispatch(callback, 100000, user); });
     }
 }
