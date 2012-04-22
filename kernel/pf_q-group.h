@@ -45,6 +45,13 @@ struct pfq_group
 extern struct pfq_group pfq_groups[Q_MAX_GROUP];
 
 
+static inline 
+bool __pfq_has_joined(int gid, int id)
+{
+	return atomic_long_read(&pfq_groups[gid].ids) & (1L << id);
+}
+
+
 int pfq_join_free_group(int id, bool restricted);
 
 int pfq_join_group(int gid, int id, bool restricted);

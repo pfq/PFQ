@@ -692,6 +692,10 @@ int pfq_setsockopt(struct socket *sock,
                     }
                     if (copy_from_user(&dq, optval, optlen))
                             return -EFAULT;
+                    
+		    if (!__pfq_has_joined(dq.group_id, pq->q_id)) {
+			    return -EPERM;
+		    }
 
                     pfq_devmap_update(map_set, dq.if_index, dq.hw_queue, dq.group_id);
             } break;
@@ -703,6 +707,10 @@ int pfq_setsockopt(struct socket *sock,
                             return -EINVAL;
                     if (copy_from_user(&dq, optval, optlen))
                             return -EFAULT;
+
+		    if (!__pfq_has_joined(dq.group_id, pq->q_id)) {
+			    return -EPERM;
+		    }
 
                     pfq_devmap_update(map_reset, dq.if_index, dq.hw_queue, dq.group_id);
             } break;

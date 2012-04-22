@@ -188,7 +188,7 @@ Context(PFQ)
     }
 
 
-    Test(add_device)
+    Test(bind_device)
     {
         pfq x;
         AssertThrow(x.bind("eth0"));
@@ -197,10 +197,12 @@ Context(PFQ)
     
         AssertThrow(x.bind("unknown"));
         x.bind("eth0");
+
+        AssertThrow(x.bind_group(11, "eth0"));
     }
     
 
-    Test(remove_device)
+    Test(unbind_device)
     {
         pfq x;
         AssertThrow(x.unbind("eth0"));
@@ -209,6 +211,8 @@ Context(PFQ)
         
         AssertThrow(x.unbind("unknown"));
         x.unbind("eth0");
+        
+        AssertThrow(x.unbind_group(11, "eth0"));
     }
 
 
