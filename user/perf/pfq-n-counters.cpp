@@ -92,7 +92,7 @@ namespace test
 
             std::for_each(m_queues.begin(), m_queues.end(),[&](int q) {
                           std::cout << "setting dev: " << d << "@" << q << std::endl;       
-                    m_pfq.add_device_to_group(gid, d, q);
+                    m_pfq.bind_group(gid, d, q);
                 });
             
             m_pfq.join_group(gid);

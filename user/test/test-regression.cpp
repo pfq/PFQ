@@ -191,24 +191,24 @@ Context(PFQ)
     Test(add_device)
     {
         pfq x;
-        AssertThrow(x.add_device("eth0"));
+        AssertThrow(x.bind("eth0"));
 
         x.open(group_policy::open, 64);
     
-        AssertThrow(x.add_device("unknown"));
-        x.add_device("eth0");
+        AssertThrow(x.bind("unknown"));
+        x.bind("eth0");
     }
     
 
     Test(remove_device)
     {
         pfq x;
-        AssertThrow(x.remove_device("eth0"));
+        AssertThrow(x.unbind("eth0"));
 
         x.open(group_policy::open, 64);
         
-        AssertThrow(x.remove_device("unknown"));
-        x.remove_device("eth0");
+        AssertThrow(x.unbind("unknown"));
+        x.unbind("eth0");
     }
 
 

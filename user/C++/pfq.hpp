@@ -679,17 +679,17 @@ namespace net {
 
 
         void 
-        add_device(const char *dev, int queue = any_queue)
+        bind(const char *dev, int queue = any_queue)
         {
             auto gid = group_id();
             if (gid < 0)
                 throw pfq_error("PFQ: default group undefined");
 
-            add_device_to_group(gid, dev, queue);
+            bind_group(gid, dev, queue);
         }                              
 
         void
-        add_device_to_group(int gid, const char *dev, int queue = any_queue)
+        bind_group(int gid, const char *dev, int queue = any_queue)
         {
             auto index = ifindex(this->fd(), dev);
             if (index == -1)
@@ -701,18 +701,18 @@ namespace net {
         }
 
         void 
-        remove_device(const char *dev, int queue = any_queue)
+        unbind(const char *dev, int queue = any_queue)
         {
             auto gid = group_id();
             if (gid < 0)
                 throw pfq_error("PFQ: default group undefined");
         
-            remove_device_from_group(gid, dev, queue);
+            unbind_group(gid, dev, queue);
         }  
 
 
         void 
-        remove_device_from_group(int gid, const char *dev, int queue = any_queue)
+        unbind_group(int gid, const char *dev, int queue = any_queue)
         {
             auto index = ifindex(this->fd(), dev);
             if (index == -1)
@@ -732,7 +732,6 @@ namespace net {
                 throw pfq_error(errno, "PFQ: SO_GET_GROUPS");
             return mask;
         }
-
 
         std::vector<int>
         groups() const

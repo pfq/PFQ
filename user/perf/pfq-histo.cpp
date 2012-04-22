@@ -37,7 +37,7 @@ main(int argc, char *argv[])
     
     // add the device to this queue (hw queue = any)
     //
-    q.add_device(argv[1]); 
+    q.bind(argv[1]); 
 
     
     // select tstamp type:

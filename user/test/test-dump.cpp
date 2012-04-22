@@ -13,7 +13,7 @@ main(int argc, char *argv[])
     
     pfq r(1514);
 
-    r.add_device(argv[1], pfq::any_queue);
+    r.bind(argv[1], pfq::any_queue);
 
     r.toggle_time_stamp(true);
     
