@@ -34,7 +34,16 @@
 
 #include <pfq.hpp>
 
+
+enum pfq_group_policy {
+        restricted,
+        open,
+        undefined   
+};
+
+
 typedef void (*pfq_handler)(char *user, const struct pfq_hdr *h, const char *data); 
+
 
 struct pfq_t : public net::pfq
 {
@@ -79,10 +88,14 @@ auto firewall(int *ok, Q *q, Fun fun)
 
 extern "C" {
 
-    
     namespace 
     {
         __thread char * __error = nullptr;
+    }
+
+    const char *pfq_error(pfq_t *q)
+    {
+        return q ? q->err : __error;
     }
 
     /* costructor */
@@ -98,14 +111,35 @@ extern "C" {
         return nullptr;
     }
 
+    pfq_t *pfq_open_restricted(size_t caplen, size_t offset, size_t slots)        
+    try
+    {
+        return new pfq_t(net::group_policy::restricted, caplen, offset, slots); 
+    }
+    catch(std::exception &e)
+    {
+        ::free(__error); __error = strdup(e.what());
+        return nullptr;
+    }
+
     void pfq_close(pfq_t *q)        
     {
         delete q;
     }
 
-    const char *pfq_error(pfq_t *q)
+    int pfq_id(pfq_t const *q)
     {
-        return q ? q->err : __error;
+        return q->id(); 
+    }
+
+    int pfq_group_id(pfq_t const *q)
+    {
+        return q->group_id();
+    }
+
+    int pfq_fd(pfq_t const *q)
+    {
+        return q->fd();
     }
 
     void pfq_enable(pfq_t *q, int *ok)
@@ -123,10 +157,6 @@ extern "C" {
         return firewall(ok, q, [&]() { return q->is_enabled(); });
     }
 
-    void pfq_load_balance(pfq_t *q, int value, int *ok)
-    {
-        firewall(ok, q, [&]() { q->load_balance(value); });
-    }
 
     int pfq_ifindex(pfq_t const *q, const char *dev, int *ok)
     {
@@ -178,39 +208,47 @@ extern "C" {
         return firewall(ok, q, [&]() { return q->slot_size(); });
     }
 
-    void pfq_add_device_by_index(pfq_t *q, int index, int queue, int *ok)
+
+    void pfq_bind(pfq_t *q, const char *dev, int queue, int *ok)
     {
-        firewall(ok, q, [&]() { q->add_device(index,queue); });
+        firewall(ok, q, [&]() { q->bind(dev,queue); });
     }
 
-    void pfq_add_device_by_name(pfq_t *q, const char *dev, int queue, int *ok)
+    void pfq_bind_group(pfq_t *q, int gid, const char *dev, int queue, int *ok)
     {
-        firewall(ok, q, [&]() { q->add_device(dev,queue); });
+        firewall(ok, q, [&]() { q->bind_group(gid, dev,queue); });
     }
 
-    void pfq_remove_device_by_index(pfq_t *q, int index, int queue, int *ok)
+    void pfq_unbind(pfq_t *q, const char *dev, int queue, int *ok)
     {
-        firewall(ok, q, [&]() { q->remove_device(index,queue); }); 
+        firewall(ok, q, [&]() { q->unbind(dev,queue); }); 
     }
 
-    void pfq_remove_device_by_name(pfq_t *q, const char *dev, int queue, int *ok)
+    void pfq_unbind_group(pfq_t *q, int gid, const char *dev, int queue, int *ok)
     {
-        firewall(ok, q, [&]() { q->remove_device(dev,queue); }); 
+        firewall(ok, q, [&]() { q->unbind_group(gid, dev,queue); }); 
     }
+
+    unsigned long
+    pfq_group_mask(pfq_t *q, int *ok)
+    {
+        return firewall(ok, q, [&]() { return q->groups_mask(); });
+    }
+
+    void pfq_join_group(pfq_t *q, int gid, enum pfq_group_policy pol, int *ok)
+    {
+        firewall(ok, q, [&]() { q->join_group(gid, static_cast<net::group_policy>(pol)); });
+    }
+
+    void pfq_leave_group(pfq_t *q, int gid, int *ok)
+    {
+        firewall(ok, q, [&]() { q->leave_group(gid); });
+    }
+
 
     int pfq_poll(pfq_t *q, long int usec, int *ok)
     {
         return firewall(ok, q, [&]() { return q->poll(usec); }); 
-    }
-
-    int pfq_id(pfq_t const *q, int *ok)
-    {
-        return firewall(ok, q, [&]() { return q->id(); });
-    }
-
-    int pfq_fd(pfq_t const *q)
-    {
-        return q->fd();
     }
 
     struct pfq_stats
@@ -219,6 +257,12 @@ extern "C" {
         return firewall(ok, q, [&]() { return q->stats(); });
     }
  
+    struct pfq_stats
+    pfq_get_group_stats(pfq_t const *q, int gid, int *ok)
+    {
+        return firewall(ok, q, [&]() { return q->group_stats(gid); });
+    }
+
     int pfq_dispatch(pfq_t *q, pfq_handler callback, char *user, int *ok)
     {
         return firewall(ok, q, [&]() { return q->dispatch(callback, 100000, user); });

@@ -35,6 +35,13 @@
 #include <stddef.h>
 #include <linux/pf_q.h>
 
+enum pfq_group_policy {
+        restricted,
+        open,
+        undefined   
+};
+
+
 /* placeholder type for pfq descriptor */
 
 typedef void * pfq_t;
