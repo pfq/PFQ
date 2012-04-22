@@ -37,13 +37,30 @@ DEFINE_SEMAPHORE(group_sem);
 struct pfq_group pfq_groups[Q_MAX_GROUP];
 
 
+inline bool __pfq_is_joinable(int gid, bool priv_join)
+{
+	int pid = pfq_groups[gid].pid;
+	if (pid != -1) { /* private group */
+        	return pid == current->pid;	
+	}
+	else {	/* non-private group */
+        	if (priv_join) {
+			return atomic_long_read(&pfq_groups[gid].ids) == 0;
+		}
+		else {
+                 	return true;
+		}
+	}
+}
+
+
 inline void __pfq_group_ctor(int gid)
 {
 	// printk(KERN_INFO "[PFQ] group id:%d constructor\n", id);
 	// ...
         struct pfq_group * that = &pfq_groups[gid];
 	
-        that->private = false;
+        that->pid = -1;
 
 	sparse_set(&that->recv, 0);
 	sparse_set(&that->lost, 0);
@@ -73,7 +90,7 @@ int pfq_join_free_group(int id, bool priv)
                 {
                         __pfq_group_ctor(n);
                         atomic_long_set(&pfq_groups[n].ids, 1L<<id);
-			pfq_groups[n].private = priv;
+			pfq_groups[n].pid = priv ? current->pid : -1;
                         up(&group_sem);
                         return n;
                 }
@@ -84,7 +101,7 @@ int pfq_join_free_group(int id, bool priv)
 
 
 int
-pfq_join_group(int gid, int id)
+pfq_join_group(int gid, int id, bool priv)
 {
         unsigned long tmp;
 
@@ -98,13 +115,15 @@ pfq_join_group(int gid, int id)
          	__pfq_group_ctor(gid);
 	}
 	
-	if (pfq_groups[gid].private) {
+	if (!__pfq_is_joinable(gid, priv)) {
         	up(&group_sem);
 		return -1;
 	}
-
+	
 	tmp |= 1L << id;
         atomic_long_set(&pfq_groups[gid].ids, tmp);
+	
+	pfq_groups[gid].pid = priv ? current->pid : -1;
 
         up(&group_sem);
         return 0;

@@ -32,7 +32,7 @@
 
 struct pfq_group
 {
-    bool 	private;
+    int pid;	/* process id for private join */;
 
 	atomic_long_t ids;
 
@@ -47,7 +47,7 @@ extern struct pfq_group pfq_groups[Q_MAX_GROUP];
 
 int pfq_join_free_group(int id, bool priv);
 
-int pfq_join_group(int gid, int id);
+int pfq_join_group(int gid, int id, bool priv);
 
 int pfq_leave_group(int gid, int id);
 
