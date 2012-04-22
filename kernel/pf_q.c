@@ -588,7 +588,7 @@ int pfq_getsockopt(struct socket *sock,
                     } else
                     if (pfq_join_group(group.gid, pq->q_id, group.policy) < 0) {
                     	    printk(KERN_INFO "[PF_Q|%d] join error (gid:%d)\n", pq->q_id, group.gid);
-                            return -EFAULT;
+                            return -EPERM;
                     }
                     
                     printk(KERN_INFO "[PF_Q|%d] join -> group id:%d\n", pq->q_id, group.gid);
