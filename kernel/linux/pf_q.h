@@ -83,7 +83,7 @@ struct pfq_hdr
         struct {
             uint32_t    sec;
             uint32_t    nsec;
-        } tv;           /* note: struct timespec is badly defined for 64 bits arch. */
+        } tv;               /* note: struct timespec is badly defined for 64 bits arch. */
     } tstamp;
 
 } __attribute__((packed));
@@ -149,9 +149,9 @@ struct pfq_binding
 
 struct pfq_stats
 {
-    unsigned long int recv;   // received by the queue    
-    unsigned long int lost;   // queue is full, packet lost...
-    unsigned long int drop;   // by filter
+    unsigned long int recv;   /* received by the queue         */
+    unsigned long int lost;   /* queue is full, packet lost... */
+    unsigned long int drop;   /* by filter                     */
 };
 
 #endif /* _PF_Q_H_ */
