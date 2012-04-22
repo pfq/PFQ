@@ -572,25 +572,26 @@ int pfq_getsockopt(struct socket *sock,
 
         case SO_GROUP_JOIN: 
             {
-                    int gid;
-                    if (len != sizeof(gid)) 
+                    struct pfq_join group;
+
+                    if (len != sizeof(group)) 
                             return -EINVAL;
-                    if (copy_from_user(&gid, optval, len)) 
+                    if (copy_from_user(&group, optval, len)) 
                             return -EFAULT;
                     
-                    if (gid == Q_ANY_GROUP || gid == Q_PRIV_GROUP) {
-                            gid = pfq_join_free_group(pq->q_id, gid == Q_PRIV_GROUP);
-                            if (gid < 0)
+                    if (group.gid == Q_ANY_GROUP) {
+                            group.gid = pfq_join_free_group(pq->q_id, group.policy);
+                            if (group.gid < 0)
                                     return -EFAULT;
-                            if (copy_to_user(optval, &gid, len))
+                            if (copy_to_user(optval, &group, len))
                                     return -EFAULT;
                     } else
-                    if (pfq_join_group(gid, pq->q_id) < 0) {
-                    	    printk(KERN_INFO "[PF_Q|%d] join error (gid:%d private)!\n", pq->q_id, gid);
+                    if (pfq_join_group(group.gid, pq->q_id, group.policy) < 0) {
+                    	    printk(KERN_INFO "[PF_Q|%d] join error (gid:%d)\n", pq->q_id, group.gid);
                             return -EFAULT;
                     }
                     
-                    printk(KERN_INFO "[PF_Q|%d] join -> group id:%d\n", pq->q_id, gid);
+                    printk(KERN_INFO "[PF_Q|%d] join -> group id:%d\n", pq->q_id, group.gid);
             } break;
 
         case SO_GROUP_STATS: 
