@@ -1032,17 +1032,17 @@ pfq_gro_receive(struct napi_struct *napi, struct sk_buff *skb)
 {
         if (likely(pfq_direct_capture(skb)))
         {
-                int offset = 0;
-                if (skb->protocol == __constant_htons(ETH_P_802_3))
-                    offset = ETH_HLEN;
-                else if (skb->protocol == __constant_htons(ETH_P_8021Q))
-                    offset = VLAN_ETH_HLEN;
-
+                int offset;
                 if(skb_linearize(skb) < 0)
                 {
                         __kfree_skb(skb);
                         return GRO_DROP;
                 }
+                
+		if (skb->protocol == __constant_htons(ETH_P_8021Q))
+                    offset = VLAN_ETH_HLEN;
+                else 
+                    offset = ETH_HLEN;
 
                 skb_set_network_header(skb, offset);
                 skb_reset_transport_header(skb);
