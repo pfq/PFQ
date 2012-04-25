@@ -70,10 +70,19 @@ extern gro_result_t pfq_gro_receive(struct napi_struct *napi, struct sk_buff *sk
 struct pfq_hdr
 {
     uint16_t    len;        /* length of the packet (off wire) */
-    uint16_t    vlan_tci;   /* 8021q */
+    uint16_t    caplen;     /* bytes captured */
 
-    uint16_t    mark:15,    /* for future classification */
-                commit:1;   /* release semantic */
+    union
+    {
+        struct 
+        {
+            uint16_t vlan_prio:3,   /* 8021q vlan priority */   
+                     ready:1,       /* internally used for release semantic */
+                     vlan_vid:12;   /* 8021q vlan id */
+        };
+
+        uint16_t     vlan_tci;
+    };
 
     uint8_t     if_index;   /* 256 devices */    
     uint8_t     hw_queue;   /* 256 queues per device */

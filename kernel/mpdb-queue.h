@@ -27,6 +27,7 @@
 
 #include <linux/skbuff.h>
 #include <linux/pf_q.h>
+#include <linux/if_vlan.h>
 #include <pf_q-priv.h>
 
 extern bool 

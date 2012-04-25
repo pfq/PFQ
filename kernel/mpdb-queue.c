@@ -98,7 +98,7 @@ mpdb_enqueue(struct pfq_opt *pq, struct sk_buff *skb)
                         /* setup the header */
 
                         p_hdr->len      = packet_len;
-                        p_hdr->vlan_tci = skb->vlan_tci;
+                        p_hdr->caplen 	= bytes;
                         p_hdr->if_index = skb->dev->ifindex;
                         p_hdr->hw_queue = skb_get_rx_queue(skb);                      
 
@@ -111,9 +111,16 @@ mpdb_enqueue(struct pfq_opt *pq, struct sk_buff *skb)
                         }
 
                         /* commit the slot with release semantic */
-                        wmb();
+                        
+			wmb();
 
-                        p_hdr->commit = 1;
+			if (skb->vlan_tci)
+			{
+                        	p_hdr->vlan_tci = skb->vlan_tci | (1<<12);
+			}
+			else {
+                        	p_hdr->ready = 1;
+			}
 
                         /* watermark */
 

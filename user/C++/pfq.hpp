@@ -819,7 +819,7 @@ namespace net {
             char * p = static_cast<char *>(pdata_->queue_addr) + sizeof(pfq_queue_descr) + !index * q_size;
             for(unsigned int i = 0; i < pdata_->next_len; i++)
             {
-                *reinterpret_cast<uint64_t *>(p) = 0; // h->commit = 0; (just a bit faster)
+                *reinterpret_cast<uint64_t *>(p) = 0; // h->ready = 0; (just a bit faster)
                 p += pdata_->slot_size;
             }
 
@@ -863,7 +863,7 @@ namespace net {
             int n = 0;
             for(; it != it_e; ++it)
             {
-                while (!it->commit)
+                while (!it->ready)
                     std::this_thread::yield();
 
                 callback(user, &(*it), reinterpret_cast<const char *>(it.data()));
