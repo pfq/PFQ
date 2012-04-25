@@ -69,7 +69,6 @@ extern gro_result_t pfq_gro_receive(struct napi_struct *napi, struct sk_buff *sk
 
 struct pfq_hdr
 {
-    uint16_t    caplen;     /* number of bytes captured */
     uint16_t    len;        /* length of the packet (off wire) */
 
     uint16_t    mark:15,    /* for future classification */
