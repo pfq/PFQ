@@ -27,7 +27,7 @@ main(int argc, char *argv[])
 
             for(auto & packet : many)
             {
-                while(!packet.commit);
+                while(!packet.ready);
 
                 // printf("caplen:%d len:%d ifindex:%d hw_queue:%d tstamp: %u:%u -> ", it->caplen, it->len, it->if_index, it->hw_queue,
                 //                                                                    it->tstamp.tv.sec, it->tstamp.tv.nsec);

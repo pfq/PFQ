@@ -71,7 +71,7 @@ main(int argc, char *argv[])
 
         std::for_each(b.begin(), b.end(), [&](volatile pfq_hdr &h) {
 
-           while(!h.commit);
+           while(!h.ready);
 
            // this time stamp ...
            //
