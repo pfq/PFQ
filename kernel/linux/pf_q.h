@@ -39,7 +39,7 @@
 
 #define Q_MAX_DEVICE            256
 #define Q_MAX_DEVICE_MASK       (Q_MAX_DEVICE-1)
-#define Q_MAX_HW_QUEUE          64
+#define Q_MAX_HW_QUEUE          256
 #define Q_MAX_HW_QUEUE_MASK     (Q_MAX_HW_QUEUE-1)
 
 
@@ -70,12 +70,14 @@ extern gro_result_t pfq_gro_receive(struct napi_struct *napi, struct sk_buff *sk
 struct pfq_hdr
 {
     uint16_t    len;        /* length of the packet (off wire) */
+    uint16_t    vlan_tci;   /* 8021q */
 
     uint16_t    mark:15,    /* for future classification */
                 commit:1;   /* release semantic */
 
     uint8_t     if_index;   /* 256 devices */    
     uint8_t     hw_queue;   /* 256 queues per device */
+
     union 
     {
         unsigned long long tv64;
@@ -127,15 +129,19 @@ struct pfq_queue_descr
 #define SO_GROUP_STATS          130
 
 
-/* struct used for setsockopt */
-
+/* defines */
 #define Q_ANY_DEVICE         -1
 #define Q_ANY_QUEUE          -1
 #define Q_ANY_GROUP          -1
 
+#define Q_VLAN_PRIO_MASK     0xe000
+#define Q_VLAN_VID_MASK      0x0fff
+#define Q_VLAN_TAG_PRESENT   0x1000
+
 #define Q_TSTAMP_OFF          0       /* default */
 #define Q_TSTAMP_ON           1
 
+/* struct used for setsockopt */
 
 struct pfq_binding
 {

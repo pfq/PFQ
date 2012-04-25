@@ -1027,22 +1027,30 @@ int pfq_direct_capture(const struct sk_buff *skb)
                 pfq_devmap_monitor_get(skb->dev->ifindex);
 }
 
+
 gro_result_t 
 pfq_gro_receive(struct napi_struct *napi, struct sk_buff *skb)
 {
         if (likely(pfq_direct_capture(skb)))
         {
-                int offset;
+                int offset = ETH_HLEN;
                 if(skb_linearize(skb) < 0)
                 {
                         __kfree_skb(skb);
                         return GRO_DROP;
                 }
                 
-		if (skb->protocol == __constant_htons(ETH_P_8021Q))
+		if (skb->protocol == __constant_htons(ETH_P_8021Q)) {
+		    struct vlan_hdr *vhdr;
+		    if (unlikely(!pskb_may_pull(skb, VLAN_HLEN)))
+		    {
+		        __kfree_skb(skb);
+		        return GRO_DROP;
+		    }
                     offset = VLAN_ETH_HLEN;
-                else 
-                    offset = ETH_HLEN;
+		    vhdr = (struct vlan_hdr *) skb->data;
+		    skb->vlan_tci = ntohs(vhdr->h_vlan_TCI);
+	        }
 
                 skb_set_network_header(skb, offset);
                 skb_reset_transport_header(skb);
