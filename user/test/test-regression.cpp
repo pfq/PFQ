@@ -319,8 +319,8 @@ Context(PFQ)
             
             Assert( y.join_group(z.group_id()), is_equal_to(z.group_id()));
             AssertThrow(y.join_group(x.group_id()));
-            
-            exit(-1);
+        
+            _Exit(1);
         }
 
         wait(nullptr);
