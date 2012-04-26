@@ -204,9 +204,7 @@ int
 pfq_direct_receive(struct sk_buff *skb, int index, int queue, bool direct)
 {       
         unsigned long group_mask, sock_mask = 0;
-        int q;
-
-        int me = get_cpu();
+        int q, me;
 
         /* if required, timestamp this packet now */
 
@@ -223,14 +221,16 @@ pfq_direct_receive(struct sk_buff *skb, int index, int queue, bool direct)
                 int zn = __builtin_ctzl(group_mask);
                 
                 sparse_inc(&pfq_groups[zn].recv);
-
-		sock_mask |= pfq_load_balancer(atomic_long_read(&pfq_groups[zn].ids), skb);
-                
+		
+                sock_mask |= pfq_load_balancer(atomic_long_read(&pfq_groups[zn].ids), skb);
 		group_mask ^= (1L << zn);
         }
         
-        /* send this packet to selected sockets */
+        /* reset skb->data to the beginning of the packet */
 
+        skb_push(skb, skb->mac_len);
+        
+        /* send this packet to selected sockets */
         while ( sock_mask != 0 )
         {        
                 unsigned long lsb = sock_mask & -sock_mask;
@@ -243,6 +243,8 @@ pfq_direct_receive(struct sk_buff *skb, int index, int queue, bool direct)
         }
 
         /* enqueue skb to kfree pipeline ... */
+        
+        me = get_cpu();
 
         if (pfq_skb_pipeline[me].counter < pipeline_len-1) {
                 pfq_skb_pipeline[me].queue[
@@ -1033,7 +1035,6 @@ pfq_gro_receive(struct napi_struct *napi, struct sk_buff *skb)
 {
         if (likely(pfq_direct_capture(skb)))
         {
-                int offset = ETH_HLEN;
                 if(skb_linearize(skb) < 0)
                 {
                         __kfree_skb(skb);
@@ -1047,12 +1048,11 @@ pfq_gro_receive(struct napi_struct *napi, struct sk_buff *skb)
 		        __kfree_skb(skb);
 		        return GRO_DROP;
 		    }
-                    offset = VLAN_ETH_HLEN;
 		    vhdr = (struct vlan_hdr *) skb->data;
 		    skb->vlan_tci = ntohs(vhdr->h_vlan_TCI);
 	        }
 
-                skb_set_network_header(skb, offset);
+                skb_reset_network_header(skb);
                 skb_reset_transport_header(skb);
 #if LINUX_VERSION_CODE >= KERNEL_VERSION(3,0,0)                
                 skb_reset_mac_len(skb);
