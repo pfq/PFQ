@@ -553,7 +553,7 @@ namespace net {
         disable()
         {
             if (fd_ == -1)
-                throw pfq_error(errno, "PFQ: not open");
+                throw pfq_error("PFQ: not open");
 
             if (munmap(pdata_->queue_addr, pdata_->queue_size) == -1)
                 throw pfq_error(errno, "PFQ: munmap");
@@ -766,7 +766,7 @@ namespace net {
 
             socklen_t size = sizeof(group);
             if (::getsockopt(fd_, PF_Q, SO_GROUP_JOIN, &group, &size) == -1)
-                throw pfq_error("PFQ: SO_GROUP_JOIN");
+                throw pfq_error(errno, "PFQ: SO_GROUP_JOIN");
             return group.gid;
         }
         
@@ -775,7 +775,7 @@ namespace net {
         leave_group(int gid)
         {
             if (::setsockopt(fd_, PF_Q, SO_GROUP_LEAVE, &gid, sizeof(gid)) == -1)
-                throw pfq_error("PFQ: SO_GROUP_LEAVE");
+                throw pfq_error(errno, "PFQ: SO_GROUP_LEAVE");
         }
 
 
