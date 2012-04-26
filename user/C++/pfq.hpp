@@ -386,7 +386,7 @@ namespace net {
         : fd_(-1)
         , pdata_()
         {
-            this->open(group_policy::open, caplen, offset, slots); 
+            this->open(group_policy::restricted, caplen, offset, slots); 
         }
     
 
