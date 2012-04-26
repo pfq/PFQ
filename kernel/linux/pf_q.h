@@ -76,9 +76,9 @@ struct pfq_hdr
     {
         struct 
         {
-            uint16_t vlan_prio:3,   /* 8021q vlan priority */   
+            uint16_t vlan_vid:12,   /* 8021q vlan id */
                      ready:1,       /* internally used for release semantic */
-                     vlan_vid:12;   /* 8021q vlan id */
+                     vlan_prio:3;   /* 8021q vlan priority */   
         };
 
         uint16_t     vlan_tci;
