@@ -119,7 +119,7 @@ pfq_get_opt(int id)
                 printk(KERN_WARNING "[PF_Q] pfq_devmap_freeid: bad id=%d\n", id);
                 return 0;
         }
-        return (struct pfq_opt *)pfq_vector[id].counter;  // atomic_read not required here.
+        return (struct pfq_opt *)atomic_long_read(&pfq_vector[id]);  
 }
 
 
