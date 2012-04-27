@@ -267,8 +267,12 @@ pfq_direct_receive(struct sk_buff *skb, int index, int queue, bool direct)
                 unsigned long lsb = sock_mask & -sock_mask;
                 unsigned int zn = __builtin_ctz(lsb);
                 struct pfq_opt * pq = pfq_get_opt(zn);
-                if (pq == NULL)
+                
+                if (pq == NULL) {
+                        sock_mask &= ~lsb;
                         continue;
+                }
+
                 sock_mask &= ~lsb;
                 pfq_enqueue_skb(skb, pq);
         }
