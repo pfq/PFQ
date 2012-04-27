@@ -170,32 +170,46 @@ bool pfq_enqueue_skb(struct sk_buff *skb, struct pfq_opt *pq)
 }
 
 
+
+/* unsigned long  */
+/* pfq_load_balancer(unsigned long sock_mask, const struct sk_buff *skb) */
+/* {  */
+/*         int index[sizeof(unsigned long)<<3]; */
+/*         int i = 0; */
+/*          */
+/*         struct ethhdr *eth; */
+/*         uint32_t hash; */
+/*  */
+/*         eth = (struct ethhdr *)skb_mac_header(skb); */
+/*         if (sock_mask == 0 || eth->h_proto != __constant_htons(eth_p_ip)) */
+/*                 return 0; */
+/*  */
+/*         while(sock_mask) */
+/*         { */
+/*                 int zn = __builtin_ctzl(sock_mask); */
+/*                 index[i++] = zn; */
+/*                 sock_mask ^= (1l << zn); */
+/*         } */
+/*  */
+/*         hash = ip_hdr(skb)->saddr ^ ip_hdr(skb)->daddr; */
+/*         return 1l << index[hash % i]; */
+/* } */
+
+
 /* pfq load balancer */
 
 unsigned long 
-pfq_load_balancer(unsigned long sock_mask, const struct sk_buff *skb)
+pfq_symmetric_steer(const struct sk_buff *skb)
 { 
-        int index[sizeof(unsigned long)<<3];
-        int i = 0;
-        
         struct ethhdr *eth;
-        uint32_t hash;
 
         eth = (struct ethhdr *)skb_mac_header(skb);
-        if (sock_mask == 0 || eth->h_proto != __constant_htons(ETH_P_IP))
+        if (eth->h_proto != __constant_htons(ETH_P_IP)) {
                 return 0;
-
-        while(sock_mask)
-        {
-                int zn = __builtin_ctzl(sock_mask);
-                index[i++] = zn;
-                sock_mask ^= (1L << zn);
         }
 
-        hash = ip_hdr(skb)->saddr ^ ip_hdr(skb)->daddr;
-        return 1L << index[hash % i];
+        return  ip_hdr(skb)->saddr ^ ip_hdr(skb)->daddr;
 }
-
 
 /* pfq skb handler */
 
@@ -216,16 +230,34 @@ pfq_direct_receive(struct sk_buff *skb, int index, int queue, bool direct)
         /* get the balancing groups bitmap */
 
         group_mask = pfq_devmap_get_groups(index, queue);
+                
         while (group_mask)
         {         
-                int zn = __builtin_ctzl(group_mask);
-                
-                sparse_inc(&pfq_groups[zn].recv);
-		
-                sock_mask |= pfq_load_balancer(atomic_long_read(&pfq_groups[zn].ids), skb);
-		group_mask ^= (1L << zn);
+                int first = __builtin_ctzl(group_mask);
+                unsigned long hash;
+
+                sparse_inc(&pfq_groups[first].recv);
+
+                hash = pfq_symmetric_steer(skb);
+
+                if (hash)
+                {       
+                        unsigned long eligible_mask = atomic_long_read(&pfq_groups[first].ids);
+                        int index[sizeof(unsigned long)<<3];
+                        int i = 0;
+
+                        while(eligible_mask) 
+                        { 
+                                int zero = __builtin_ctzl(eligible_mask); 
+                                index[i++] = zero; 
+                                eligible_mask &= ~(1L << zero); 
+                        }
+
+                        sock_mask |= (1L << index[hash % i]);
+                }
+                group_mask &= ~(1L << first);
         }
-        
+
         /* reset skb->data to the beginning of the packet */
 
         skb_push(skb, skb->mac_len);
@@ -272,6 +304,7 @@ pfq_direct_receive(struct sk_buff *skb, int index, int queue, bool direct)
 
         pfq_skb_pipeline[me].counter=0;
         return 0;
+
 }
 
 
