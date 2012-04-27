@@ -229,8 +229,7 @@ pfq_direct_receive(struct sk_buff *skb, int index, int queue, bool direct)
 
         /* get the balancing groups bitmap */
 
-        group_mask = pfq_devmap_get_groups(index, queue);
-                
+        group_mask = __pfq_devmap_get_groups(index, queue);
         while (group_mask)
         {         
                 int first = __builtin_ctzl(group_mask);
@@ -621,11 +620,11 @@ int pfq_getsockopt(struct socket *sock,
                             if (copy_to_user(optval, &group, len))
                                     return -EFAULT;
                     } else
+                    
                     if (pfq_join_group(group.gid, pq->q_id, group.policy) < 0) {
                     	    printk(KERN_INFO "[PF_Q|%d] join error (gid:%d)\n", pq->q_id, group.gid);
                             return -EPERM;
                     }
-                    
                     printk(KERN_INFO "[PF_Q|%d] join -> group id:%d\n", pq->q_id, group.gid);
             } break;
 
@@ -714,6 +713,7 @@ int pfq_setsockopt(struct socket *sock,
                         wmb();
 
                         msleep(10);
+                        
                         mpdb_queue_free(pq);
                     }
 
@@ -1059,9 +1059,9 @@ inline
 int pfq_direct_capture(const struct sk_buff *skb)
 {
         return direct_path && 
-                pfq_devmap_monitor_get(skb->dev->ifindex);
+                __pfq_devmap_monitor_get(skb->dev->ifindex);
 }
-
+                   
 
 gro_result_t 
 pfq_gro_receive(struct napi_struct *napi, struct sk_buff *skb)
