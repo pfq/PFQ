@@ -288,7 +288,22 @@ Context(PFQ)
         y.open(group_policy::undefined, 64);
 
         Assert( y.join_group(x.group_id()), is_equal_to(x.group_id()));
+    }
+
+    Test(join_deferred)
+    {
+        pfq x(group_policy::undefined, 64);
+
+        x.join_group(42);
+        x.join_group(42);
         
+        auto task = std::async(std::launch::async, 
+                    [&] {
+                        pfq y(group_policy::undefined, 64);
+                        Assert(y.join_group(42), is_equal_to(42));
+                    });
+        
+        task.wait();
     }
 
 
@@ -298,7 +313,7 @@ Context(PFQ)
 
         auto task = std::async(std::launch::async, 
                     [&] {
-                        pfq y(group_policy::undefined, 64);;
+                        pfq y(group_policy::undefined, 64);
                         Assert( y.join_group(x.group_id()), is_equal_to(x.group_id()));
                     });
         
