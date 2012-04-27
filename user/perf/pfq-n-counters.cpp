@@ -195,7 +195,7 @@ unsigned int hardware_concurrency()
 
 void usage(const char *name)
 {
-    throw std::runtime_error(std::string("usage: ").append(name).append("[-h|--help] [-c caplen] [-s slots] [-b|--balance] T1 T2... | T = dev:core:queue,queue..."));
+    throw std::runtime_error(std::string("usage: ").append(name).append("[-h|--help] [-c caplen] [-o offset] [-s slots] [-b|--balance] T1 T2... | T = dev:core:queue,queue..."));
 }
 
 
