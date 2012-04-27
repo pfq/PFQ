@@ -90,13 +90,13 @@ namespace test
 
             int gid = opt::enable_balance ? 42 : m_id;   // any gid is valid...
 
+            m_pfq.join_group(gid, group_policy::open);
+            
             std::for_each(m_queues.begin(), m_queues.end(),[&](int q) {
                           std::cout << "setting dev: " << d << "@" << q << std::endl;       
                     m_pfq.bind_group(gid, d, q);
                 });
             
-            m_pfq.join_group(gid);
-
             m_pfq.toggle_time_stamp(false);
             
             m_pfq.enable();
@@ -275,7 +275,7 @@ try
         ctx.push_back(test::ctx(i, std::get<0>(vbinding[i]).c_str(), std::get<2>(vbinding[i])));        
     }
 
-    opt::sleep_microseconds = 30000 * ctx.size();
+    opt::sleep_microseconds = 40000 * ctx.size();
     std::cout << "poll timeout " << opt::sleep_microseconds << " usec" << std::endl;
 
     // create threads:
