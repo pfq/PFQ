@@ -1,20 +1,17 @@
 # PFQ Makefile (c) 2011 Nicola Bonelli <nicola.bonelli@cnit.it>
 #
 
-SUBDIRS := kernel user
+MAKE_DIRECTORIES:= kernel user
 
-all:
-	@for i in $(SUBDIRS); do \
-	echo "make all in $$i..."; \
-	(cd $$i; $(MAKE) all); done
+.PHONY: all clean install
+all: $(MAKE_DIRECTORIES)
+clean: $(MAKE_DIRECTORIES)
+install: $(MAKE_DIRECTORIES)
 
-clean:
-	@for i in $(SUBDIRS); do \
-	echo "make clean in $$i..."; \
-	(cd $$i; $(MAKE) clean); done
+.PHONY: $(MAKE_DIRECTORIES)
+$(MAKE_DIRECTORIES):
+		@$(MAKE) --keep-going --directory=$@ $(MAKECMDGOALS)
 
-install:
-	@for i in $(SUBDIRS); do \
-	echo "make install in $$i..."; \
-	(cd $$i; $(MAKE) install); done
+.PHONY: $(MAKECMDGOALS)
+		$(MAKECMDGOALS): $(MAKE_DIRECTORIES)
 

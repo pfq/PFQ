@@ -1,17 +1,15 @@
+MAKE_DIRECTORIES = C C++ test perf
+INST_DIRECTORIES = C C++ 
 
-INSTDIR := /usr/include/pfq
+.PHONY: all install clean
+all: $(MAKE_DIRECTORIES)
+clean: $(MAKE_DIRECTORIES)
+install: $(INST_DIRECTORIES)
 
-all:
-	cd C    && cmake . && make
-	cd perf && cmake . && make
-	cd test && cmake . && make
+.PHONY: $(MAKE_DIRECTORIES)
+$(MAKE_DIRECTORIES):
+		@$(MAKE) --keep-going --directory=$@ $(MAKECMDGOALS)
 
-clean:
-	cd C    && cmake . && make clean
-	cd perf && cmake . && make clean
-	cd test && cmake . && make clean
-
-install:
-	mkdir -p ${INSTDIR}
-	cp c++/pfq.hpp ${INSTDIR}
+.PHONY: $(MAKECMDGOALS)
+		$(MAKECMDGOALS): $(MAKE_DIRECTORIES)
 
