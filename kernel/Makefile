@@ -16,7 +16,7 @@ endif
 
 # set the install path
 
-INSTDIR := $(DESTDIR)/lib/modules/$(BUILD_KERNEL)/kernel/net/pf_q
+INSTDIR := $(DESTDIR)/lib/modules/$(BUILD_KERNEL)/kernel/net/pfq
 
 all: Makefile pf_q.c linux/pf_q.h
 	make -C /lib/modules/$(BUILD_KERNEL)/build SUBDIRS=$(PWD) modules
@@ -28,7 +28,8 @@ clean:
 install:
 	mkdir -p $(INSTDIR)
 	cp *.ko $(INSTDIR)
-	cp linux/pf_q.h $(DESTDIR)/usr/include/linux
+	cp linux/pf_q.h   $(DESTDIR)/usr/include/linux
+	cp Module.symvers $(INSTDIR)
 
 ifeq (,$(DESTDIR))
 	/sbin/depmod $(BUILD_KERNEL)
