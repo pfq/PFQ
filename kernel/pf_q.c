@@ -1057,7 +1057,7 @@ static void __exit pfq_exit_module(void)
 }
 
 
-/* pfq-10 aware drivers support */
+/* pfq aware drivers support */
 
 inline
 int pfq_direct_capture(const struct sk_buff *skb)
@@ -1065,42 +1065,89 @@ int pfq_direct_capture(const struct sk_buff *skb)
         return direct_path && 
                 __pfq_devmap_monitor_get(skb->dev->ifindex);
 }
-                   
+
+
+inline
+int pfq_normalize_skb(struct sk_buff *skb)
+{
+	skb_reset_network_header(skb);
+	skb_reset_transport_header(skb);
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,0,0)                
+	skb_reset_mac_len(skb);
+#else
+	skb->mac_len = skb->network_header - skb->mac_header;
+#endif
+
+	if (skb->protocol == __constant_htons(ETH_P_8021Q)) {
+		
+		if (likely(!vlan_tx_tag_present(skb))) {
+		
+			struct vlan_hdr *vhdr;
+			if (unlikely(!pskb_may_pull(skb, VLAN_HLEN)))
+			{
+				__kfree_skb(skb);
+				return -1;
+			}
+			vhdr = (struct vlan_hdr *) skb->data;
+			skb->vlan_tci = ntohs(vhdr->h_vlan_TCI);
+
+		}
+	}
+
+	if(skb_linearize(skb) < 0)
+	{
+		__kfree_skb(skb);
+		return -1;
+	}
+
+	return 0;
+}
+
+
+int
+pfq_netif_receive_skb(struct sk_buff *skb)
+{
+        if (likely(pfq_direct_capture(skb)))
+        {
+		if (pfq_normalize_skb(skb) < 0)
+                	return NET_RX_DROP;
+
+		pfq_direct_receive(skb, skb->dev->ifindex, skb_get_rx_queue(skb), true);
+		return NET_RX_SUCCESS;
+	}
+
+	return netif_rx(skb);
+}
+
+
+int 
+pfq_netif_rx(struct sk_buff *skb)
+{
+        if (likely(pfq_direct_capture(skb)))
+        {
+		if (pfq_normalize_skb(skb) < 0)
+                	return NET_RX_DROP;
+		
+		pfq_direct_receive(skb, skb->dev->ifindex, skb_get_rx_queue(skb), true);
+		return NET_RX_SUCCESS;
+	}
+
+	return netif_receive_skb(skb);
+}
+
 
 gro_result_t 
 pfq_gro_receive(struct napi_struct *napi, struct sk_buff *skb)
 {
         if (likely(pfq_direct_capture(skb)))
         {
-                if(skb_linearize(skb) < 0)
-                {
-                        __kfree_skb(skb);
-                        return GRO_DROP;
-                }
-                
-		if (skb->protocol == __constant_htons(ETH_P_8021Q)) {
-		    struct vlan_hdr *vhdr;
-		    if (unlikely(!pskb_may_pull(skb, VLAN_HLEN)))
-		    {
-		        __kfree_skb(skb);
-		        return GRO_DROP;
-		    }
-		    vhdr = (struct vlan_hdr *) skb->data;
-		    skb->vlan_tci = ntohs(vhdr->h_vlan_TCI);
-	        }
+		if (pfq_normalize_skb(skb) < 0)
+                	return GRO_DROP;
 
-                skb_reset_network_header(skb);
-                skb_reset_transport_header(skb);
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,0,0)                
-                skb_reset_mac_len(skb);
-#else
-                skb->mac_len = skb->network_header - skb->mac_header;
-#endif
                 pfq_direct_receive(skb, skb->dev->ifindex, skb_get_rx_queue(skb), true);
                 return GRO_NORMAL;
         }
 
-        /* kernel napi_gro_receive... */
         return napi_gro_receive(napi,skb);
 }
 
@@ -1112,8 +1159,8 @@ pfq_version(void)
 }
 
 
-EXPORT_SYMBOL_GPL(pfq_direct_capture);
-EXPORT_SYMBOL_GPL(pfq_direct_receive);
+EXPORT_SYMBOL_GPL(pfq_netif_rx);
+EXPORT_SYMBOL_GPL(pfq_netif_receive_skb);
 EXPORT_SYMBOL_GPL(pfq_gro_receive);
 EXPORT_SYMBOL_GPL(pfq_version);
 
