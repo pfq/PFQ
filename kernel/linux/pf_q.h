@@ -119,12 +119,14 @@ struct pfq_queue_descr
 #define SO_ADD_BINDING          101
 #define SO_REMOVE_BINDING       102
 #define SO_TSTAMP_TYPE          103
+#define SO_GROUP_STEER          104
 #define SO_CAPLEN               105
 #define SO_SLOTS                106
 #define SO_OFFSET               107
 #define SO_GROUP_LEAVE          108
 
 /* get socket options */
+
 #define SO_GET_ID               120
 #define SO_GET_GROUPS           121
 #define SO_GET_STATUS           122     /* 1 = enabled, 0 = disabled */
@@ -139,6 +141,7 @@ struct pfq_queue_descr
 
 
 /* defines */
+
 #define Q_ANY_DEVICE         -1
 #define Q_ANY_QUEUE          -1
 #define Q_ANY_GROUP          -1
@@ -150,13 +153,15 @@ struct pfq_queue_descr
 #define Q_TSTAMP_OFF          0       /* default */
 #define Q_TSTAMP_ON           1
 
+#define STEER_NAME_LEN        64
+
 /* struct used for setsockopt */
 
 struct pfq_binding
 {
     int if_index;
     int hw_queue;
-    int group_id;
+    int gid;
 };
 
 
@@ -164,6 +169,13 @@ struct pfq_join
 {
     int gid;
     int policy;               /* 0=open, 1=restricted */
+};
+
+
+struct pfq_steer
+{
+    int gid;
+    const char *name;
 };
 
 

@@ -48,6 +48,9 @@
 #include <pf_q-devmap.h>
 #include <pf_q-group.h>
 
+#include <pf_q-steer.h>
+#include <pf_q-steer-fun.h>	// FIXME : to be removed from here
+
 #include <mpdb-queue.h>
 
 struct net_proto_family  pfq_family_ops;
@@ -307,7 +310,6 @@ pfq_direct_receive(struct sk_buff *skb, int index, int queue, bool direct)
 
         pfq_skb_pipeline[me].counter=0;
         return 0;
-
 }
 
 
@@ -754,6 +756,46 @@ int pfq_setsockopt(struct socket *sock,
                     pfq_devmap_update(map_reset, dq.if_index, dq.hw_queue, dq.group_id);
             } break;
 
+ 	case SO_GROUP_STEER:
+	    {
+		    struct pfq_steer st;
+		    
+		    if (optlen != sizeof(st)) 
+			    return -EINVAL;
+
+		    if (copy_from_user(&st, optval, optlen)) 
+			    return -EFAULT;
+		    
+                    if (st.gid < 0 || st.gid >= Q_MAX_GROUP)
+			    return -EINVAL;
+
+		    if (!__pfq_has_joined_group(st.gid, pq->q_id)) 
+			    return -EPERM;
+
+		    if (st.name == NULL) {
+			__pfq_set_steer_for_group(st.gid, NULL);
+                    	printk(KERN_INFO "[PFQ|%d] gid:%d -> steer:NONE\n", pq->q_id, st.gid);
+		    }
+		    else {
+                    	char name[STEER_NAME_LEN]; 
+			steer_function_t fun;
+
+                    	if (strncpy_from_user(name, st.name, STEER_NAME_LEN-1) < 0)
+				return -EFAULT;
+
+			name[STEER_NAME_LEN-1] = '\0';
+                        
+			fun = pfq_get_steer_function(name);
+			if (fun == NULL) {
+                    		printk(KERN_INFO "[PFQ|%d] gid:%d -> %s unknown function\n", pq->q_id, st.gid, name);
+				return -EINVAL;
+			}
+
+			__pfq_set_steer_for_group(st.gid, fun);
+                    	printk(KERN_INFO "[PFQ|%d] gid:%d steer:%s\n", pq->q_id, st.gid, name);
+		    }
+
+	    } break;
         case SO_TSTAMP_TYPE: 
             {
                     int tstamp;
@@ -1028,6 +1070,9 @@ static int __init pfq_init_module(void)
         /* finally register the basic device handler */
         register_device_handler();
 
+	/* register steer functions */
+
+	pfq_steer_factory_init();
         return 0;
 }
 
@@ -1054,6 +1099,8 @@ static void __exit pfq_exit_module(void)
         }
 
         printk(KERN_WARNING "[PF_Q] unloaded\n");
+	/* free steer functions */
+	pfq_steer_factory_free();
 }
 
 

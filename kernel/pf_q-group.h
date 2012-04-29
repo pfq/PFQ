@@ -29,12 +29,14 @@
 #include <linux/pf_q.h>
 
 #include <sparse-counter.h>
+#include <pf_q-steer.h>
 
 struct pfq_group
 {
     int pid;	/* process id for restricted join */;
 
 	atomic_long_t ids;
+    atomic_long_t steer;    /* steer_function_t */ 
 
 	sparse_counter_t recv;
 	sparse_counter_t lost;
@@ -46,11 +48,16 @@ extern struct pfq_group pfq_groups[Q_MAX_GROUP];
 
 
 static inline 
-bool __pfq_has_joined(int gid, int id)
+bool __pfq_has_joined_group(int gid, int id)
 {
 	return atomic_long_read(&pfq_groups[gid].ids) & (1L << id);
 }
 
+static inline
+void __pfq_set_steer_for_group(int gid, steer_function_t steer)
+{
+    atomic_long_set(&pfq_groups[gid].steer, (unsigned long)steer);
+}
 
 int pfq_join_free_group(int id, bool restricted);
 

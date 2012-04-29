@@ -63,21 +63,19 @@ __pfq_group_ctor(int gid)
         struct pfq_group * that = &pfq_groups[gid];
 	
         that->pid = -1;
+	
+	atomic_long_set(&that->steer, 0);
 
 	sparse_set(&that->recv, 0);
 	sparse_set(&that->lost, 0);
 	sparse_set(&that->drop, 0);
 
-	wmb();
 }
 
 
 inline void 
 __pfq_group_dtor(int gid)
 {
-	wmb();
-	// printk(KERN_INFO "[PFQ] group id:%d destructor\n", id);
-
         /* remove this gid from demux matrix */
         pfq_devmap_update(map_reset, Q_ANY_DEVICE, Q_ANY_QUEUE, gid);
 }
@@ -94,8 +92,9 @@ pfq_join_free_group(int id, bool restricted)
                 if(tmp == 0)
                 {
                         __pfq_group_ctor(n);
-                        atomic_long_set(&pfq_groups[n].ids, 1L<<id);
 			pfq_groups[n].pid = restricted ? current->pid : -1;
+			wmb();
+			atomic_long_set(&pfq_groups[n].ids, 1L<<id);
                         up(&group_sem);
                         return n;
                 }
@@ -149,6 +148,7 @@ pfq_leave_group(int gid, int id)
         tmp &= ~(1L << id);
         atomic_long_set(&pfq_groups[gid].ids, tmp);
         if (!tmp) {
+		wmb();
         	__pfq_group_dtor(gid);
 	}
         
@@ -170,6 +170,7 @@ pfq_leave_all_groups(int id)
                         tmp &= ~(1L<<id);
                         atomic_long_set(&pfq_groups[n].ids, tmp);
                 	if (!tmp) {
+				wmb();
                         	__pfq_group_dtor(n);
 			}
 		}

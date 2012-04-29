@@ -755,7 +755,15 @@ namespace net {
             return vec;
         }
 
-        
+        void
+        steer_group(int gid, const char *fun)
+        {
+            struct pfq_steer s { gid, fun };
+            if (::setsockopt(fd_, PF_Q, SO_GROUP_STEER, &s, sizeof(s)) == -1)
+                throw pfq_error(errno, "PFQ: SO_GROUP_STEER");
+        }
+
+
         int
         join_group(int gid, group_policy pol = group_policy::open)
         {
