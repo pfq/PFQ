@@ -25,8 +25,6 @@
 #ifndef _PF_Q_DEVMAP_H_
 #define _PF_Q_DEVMAP_H_ 
 
-#include <linux/kernel.h>
-
 #define __PFQ_MODULE__
 #include <linux/pf_q.h>
 
