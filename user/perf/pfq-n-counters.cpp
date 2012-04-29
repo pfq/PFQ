@@ -27,7 +27,7 @@
 namespace opt {
 
     int sleep_microseconds;
-    bool enable_balance = false;
+    std::string steer_function;
     size_t caplen = 64;
     size_t offset = 0;
     size_t slots  = 131072;
@@ -87,16 +87,18 @@ namespace test
         ctx(int id, const char *d, const std::vector<int> & q)
         : m_id(id), m_dev(d), m_queues(q), m_stop(false), m_pfq(group_policy::undefined, opt::caplen, opt::offset, opt::slots), m_read()
         {
-
-            int gid = opt::enable_balance ? 42 : m_id;   // any gid is valid...
-
-            m_pfq.join_group(gid, group_policy::open);
+            m_pfq.join_group(42, group_policy::open);
             
             std::for_each(m_queues.begin(), m_queues.end(),[&](int q) {
-                          std::cout << "setting dev: " << d << "@" << q << std::endl;       
-                    m_pfq.bind_group(gid, d, q);
+                          std::cout << "adding bind to " << d << "@" << q << std::endl;       
+                    m_pfq.bind_group(42, d, q);
                 });
-            
+
+            if (!opt::steer_function.empty() && (m_id == 0))
+            {
+                m_pfq.steer_group(42, opt::steer_function.c_str());
+            }   
+
             m_pfq.toggle_time_stamp(false);
             
             m_pfq.enable();
@@ -195,7 +197,7 @@ unsigned int hardware_concurrency()
 
 void usage(const char *name)
 {
-    throw std::runtime_error(std::string("usage: ").append(name).append("[-h|--help] [-c caplen] [-o offset] [-s slots] [-b|--balance] T1 T2... | T = dev:core:queue,queue..."));
+    throw std::runtime_error(std::string("usage: ").append(name).append("[-h|--help] [-c caplen] [-o offset] [-s slots] [-b|--balance function-name] T1 T2... | T = dev:core:queue,queue..."));
 }
 
 
@@ -216,8 +218,14 @@ try
     {
         if ( strcmp(argv[i], "-b") == 0 ||
              strcmp(argv[i], "--balance") == 0) {
-            std::cout << "Balancing: ON" << std::endl;
-            opt::enable_balance = true;
+            i++;
+            if (i == argc)
+            {
+                throw std::runtime_error("steer function missing");
+            }
+            opt::steer_function.assign(argv[i]);
+
+            std::cout << "Balancing with [" << opt::steer_function << "]" << std::endl;
             continue;
         }
 
