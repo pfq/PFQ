@@ -25,16 +25,15 @@
 #define _PF_Q_STEER_H_ 
 
 #include <linux/skbuff.h>
-
-#define STEER_NAME_LEN	64
+#define __PFQ_MODULE__
+#include <linux/pf_q.h>
 
 typedef unsigned long (*steer_function_t)(const struct sk_buff *);
 
 extern void pfq_steer_factory_init(void);
 extern void pfq_steer_factory_free(void);
-
-extern int pfq_register_steer_function(const char *name, steer_function_t fun);
-extern int pfq_unregister_steer_function(const char *name);
+extern int  pfq_register_steer_function(const char *name, steer_function_t fun);
+extern int  pfq_unregister_steer_function(const char *name);
 
 extern steer_function_t pfq_get_steer_function(const char *name);
 

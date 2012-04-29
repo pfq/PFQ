@@ -119,7 +119,7 @@ pfq_get_opt(int id)
 {
         if (unlikely(id >= Q_MAX_ID || id < 0))
         {
-                printk(KERN_WARNING "[PF_Q] pfq_devmap_freeid: bad id=%d\n", id);
+                printk(KERN_WARNING "[PFQ] pfq_devmap_freeid: bad id=%d\n", id);
                 return 0;
         }
         return (struct pfq_opt *)atomic_long_read(&pfq_vector[id]);  
@@ -131,7 +131,7 @@ void pfq_release_id(int id)
 {
         if (unlikely(id >= Q_MAX_ID || id < 0))
         {
-                printk(KERN_WARNING "[PF_Q] pfq_devmap_freeid: bad id=%d\n", id);
+                printk(KERN_WARNING "[PFQ] pfq_devmap_freeid: bad id=%d\n", id);
                 return;
         }
         atomic_long_set(pfq_vector + id, 0);
@@ -223,7 +223,7 @@ pfq_direct_receive(struct sk_buff *skb, int index, int queue, bool direct)
         unsigned long group_mask, sock_mask = 0;
         int q, me;
 
-        /* if required, timestamp this packet now */
+	/* if required, timestamp this packet now */
 
         if (atomic_read(&timestamp_toggle) && 
                         skb->tstamp.tv64 == 0) {
@@ -350,7 +350,7 @@ pfq_ctor(struct pfq_opt *pq)
         pq->q_id = pfq_get_free_id(pq);
         if (pq->q_id == -1)
         {
-                printk(KERN_WARNING "[PF_Q] no queue available!\n");
+                printk(KERN_WARNING "[PFQ] no queue available!\n");
                 return -EBUSY;
         }
         
@@ -484,7 +484,7 @@ pfq_release(struct socket *sock)
 		/* decrease the timestamp_toggle counter */
 		if (pq->q_tstamp) {
 			atomic_dec(&timestamp_toggle);
-			printk(KERN_INFO "[PF_Q|%d] timestamp_toggle => %d\n", pq->q_id, atomic_read(&timestamp_toggle));
+			printk(KERN_INFO "[PFQ|%d] timestamp_toggle => %d\n", pq->q_id, atomic_read(&timestamp_toggle));
 		}
 
         	pfq_leave_all_groups(pq->q_id);
@@ -616,9 +616,13 @@ int pfq_getsockopt(struct socket *sock,
 
                     if (len != sizeof(group)) 
                             return -EINVAL;
-                    if (copy_from_user(&group, optval, len)) 
-                            return -EFAULT;
                     
+		    if (copy_from_user(&group, optval, len)) 
+                            return -EFAULT;
+
+		    if (group.gid < Q_ANY_GROUP || group.gid >= Q_MAX_GROUP)
+			    return -EINVAL;
+
                     if (group.gid == Q_ANY_GROUP) {
                             group.gid = pfq_join_free_group(pq->q_id, group.policy);
                             if (group.gid < 0)
@@ -628,10 +632,10 @@ int pfq_getsockopt(struct socket *sock,
                     } else
                     
                     if (pfq_join_group(group.gid, pq->q_id, group.policy) < 0) {
-                    	    printk(KERN_INFO "[PF_Q|%d] join error (gid:%d)\n", pq->q_id, group.gid);
+                    	    printk(KERN_INFO "[PFQ|%d] join error (gid:%d)\n", pq->q_id, group.gid);
                             return -EPERM;
                     }
-                    printk(KERN_INFO "[PF_Q|%d] join -> group id:%d\n", pq->q_id, group.gid);
+                    printk(KERN_INFO "[PFQ|%d] join -> group id:%d\n", pq->q_id, group.gid);
             } break;
 
         case SO_GROUP_STATS: 
@@ -809,7 +813,7 @@ int pfq_setsockopt(struct socket *sock,
                     /* update the timestamp_toggle counter */
                     atomic_add(tstamp - pq->q_tstamp, &timestamp_toggle);
                     pq->q_tstamp = tstamp;
-                    printk(KERN_INFO "[PF_Q|%d] timestamp_toggle => %d\n", pq->q_id, atomic_read(&timestamp_toggle));
+                    printk(KERN_INFO "[PFQ|%d] timestamp_toggle => %d\n", pq->q_id, atomic_read(&timestamp_toggle));
             } break;
         
         case SO_CAPLEN: 
@@ -819,7 +823,7 @@ int pfq_setsockopt(struct socket *sock,
                     if (copy_from_user(&pq->q_caplen, optval, optlen)) 
                             return -EFAULT;
                     pq->q_slot_size = DBMP_QUEUE_SLOT_SIZE(pq->q_caplen);
-                    printk(KERN_INFO "[PF_Q|%d] caplen:%lu -> slot_size:%lu\n", 
+                    printk(KERN_INFO "[PFQ|%d] caplen:%lu -> slot_size:%lu\n", 
                                     pq->q_id, pq->q_caplen, pq->q_slot_size);
             } break;
 
@@ -829,7 +833,7 @@ int pfq_setsockopt(struct socket *sock,
                             return -EINVAL;
                     if (copy_from_user(&pq->q_offset, optval, optlen)) 
                             return -EFAULT;
-                    printk(KERN_INFO "[PF_Q|%d] offset:%lu\n", pq->q_id, pq->q_offset);
+                    printk(KERN_INFO "[PFQ|%d] offset:%lu\n", pq->q_id, pq->q_offset);
             } break;
 
         case SO_SLOTS: 
@@ -838,7 +842,7 @@ int pfq_setsockopt(struct socket *sock,
                             return -EINVAL;
                     if (copy_from_user(&pq->q_slots, optval, optlen)) 
                             return -EFAULT;
-                    printk(KERN_INFO "[PF_Q|%d] queue_slots:%lu -> slot_size:%lu\n", 
+                    printk(KERN_INFO "[PFQ|%d] queue_slots:%lu -> slot_size:%lu\n", 
                                     pq->q_id, pq->q_slots, pq->q_slot_size);
             } break;
 
@@ -854,7 +858,7 @@ int pfq_setsockopt(struct socket *sock,
                             return -EFAULT;
                     }
                     
-                    printk(KERN_INFO "[PF_Q|%d] leave -> group id:%d\n", pq->q_id, gid);
+                    printk(KERN_INFO "[PFQ|%d] leave -> group id:%d\n", pq->q_id, gid);
             } break;
 
         default: 
@@ -879,7 +883,7 @@ pfq_memory_mmap(struct vm_area_struct *vma,
         start = vma->vm_start;
         if (remap_vmalloc_range(vma, ptr, 0) != 0)
         {
-                printk(KERN_INFO "[PF_Q] remap_vmalloc_range\n");
+                printk(KERN_INFO "[PFQ] remap_vmalloc_range\n");
                 return -EAGAIN;
         }
 
@@ -895,12 +899,12 @@ static int pfq_mmap(struct file *file,
         int ret;
 
         if(size % PAGE_SIZE) {
-                printk(KERN_INFO "[PF_Q] size not multiple of PAGE_SIZE\n");
+                printk(KERN_INFO "[PFQ] size not multiple of PAGE_SIZE\n");
                 return -EINVAL;
         }
 
         if(size > pq->q_queue_mem) {
-                printk(KERN_INFO "[PF_Q] area too large\n");
+                printk(KERN_INFO "[PFQ] area too large\n");
                 return -EINVAL;
         }
 
@@ -1011,7 +1015,7 @@ void pfq_proto_ctor(void)
 {
         pfq_proto = (struct proto)
         {
-                .name  = "PF_Q",
+                .name  = "PFQ",
                 .owner = THIS_MODULE,
                 .obj_size = sizeof(struct pfq_sock)
         };
@@ -1053,7 +1057,7 @@ void unregister_device_handler(void)
 static int __init pfq_init_module(void)
 {
         int n;
-        printk(KERN_WARNING "[PF_Q] loaded (%s)\n", Q_VERSION);
+        printk(KERN_WARNING "[PFQ] loading (%s)\n", Q_VERSION);
 
         pfq_net_proto_family_ctor();
         pfq_proto_ops_ctor();
@@ -1073,6 +1077,9 @@ static int __init pfq_init_module(void)
 	/* register steer functions */
 
 	pfq_steer_factory_init();
+        
+	printk(KERN_WARNING "[PFQ] ready.\n");
+
         return 0;
 }
 
@@ -1101,6 +1108,8 @@ static void __exit pfq_exit_module(void)
         printk(KERN_WARNING "[PF_Q] unloaded\n");
 	/* free steer functions */
 	pfq_steer_factory_free();
+
+        printk(KERN_WARNING "[PFQ] unloaded\n");
 }
 
 

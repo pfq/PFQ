@@ -69,7 +69,7 @@ pfq_steer_factory_free()
 
 
 steer_function_t
-pfq_find_steer_function(const char *name)
+pfq_get_steer_function(const char *name)
 {
 	struct list_head *pos = NULL;
 	struct steer_factory_elem *this;
@@ -90,12 +90,16 @@ pfq_register_steer_function(const char *name, steer_function_t fun)
 {
 	struct steer_factory_elem * elem;
 
-	if (pfq_find_steer_function(name) != NULL)
+	if (pfq_get_steer_function(name) != NULL) {
+		printk(KERN_INFO "[PFQ] steer-factory error: name %s already in use.\n", name);
 		return -1;
+	}
 
 	elem = kmalloc(sizeof(struct steer_factory_elem), GFP_KERNEL);
-	if (elem == NULL)
+	if (elem == NULL) {
+		printk(KERN_INFO "[PFQ] steer-factory error: out of memory.\n");
 		return -1;
+	}
 
 	INIT_LIST_HEAD(&elem->steer_list);
 
@@ -105,6 +109,8 @@ pfq_register_steer_function(const char *name, steer_function_t fun)
         elem->name[STEER_NAME_LEN-1] = '\0';
 
 	list_add(&elem->steer_list, &steer_factory);
+
+	printk(KERN_INFO "[PFQ] %s function registered.\n", name);
 	return 0;
 }
 
@@ -125,6 +131,7 @@ pfq_unregister_steer_function(const char *name)
 			return 0;
 		}
 	}
+	printk(KERN_INFO "[PFQ] steer-factory error: %s no such function.\n", name);
 	return -1;
 }
 
