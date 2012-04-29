@@ -24,9 +24,18 @@
 #include <linux/list.h>
 #include <linux/string.h>
 #include <linux/module.h>
+#include <linux/semaphore.h>
 
 #include <pf_q-steer.h>
 #include <pf_q-steer-fun.h>
+
+
+MODULE_LICENSE("GPL");
+ 
+/* devmap */
+
+DEFINE_SEMAPHORE(steer_sem);
+
 
 struct steer_factory_elem {
 
@@ -62,18 +71,21 @@ pfq_steer_factory_free()
 {
 	struct list_head *pos = NULL, *q;
 	struct steer_factory_elem *this;
+
+	down(&steer_sem);
 	list_for_each_safe(pos, q, &steer_factory)
 	{
     		this = list_entry(pos, struct steer_factory_elem, steer_list);
 		list_del(pos);
 		kfree(this);
 	}
+	up(&steer_sem);
 	printk(KERN_INFO "[PFQ] steer factory freed.\n");
 }
 
 
 steer_function_t
-pfq_get_steer_function(const char *name)
+__pfq_get_steer_function(const char *name)
 {
 	struct list_head *pos = NULL;
 	struct steer_factory_elem *this;
@@ -81,12 +93,22 @@ pfq_get_steer_function(const char *name)
 	list_for_each(pos, &steer_factory)
 	{
     		this = list_entry(pos, struct steer_factory_elem, steer_list);
-        	if (!strcmp(this->name, name))
+        	if (!strcmp(this->name, name)) 
 			return this->function;
 	}
 	return NULL;
 }
 
+
+steer_function_t
+pfq_get_steer_function(const char *name)
+{
+	steer_function_t ret;
+	down(&steer_sem);
+	ret = __pfq_get_steer_function(name);
+	up(&steer_sem);
+	return ret;
+}
 
 
 int 
@@ -94,13 +116,16 @@ pfq_register_steer_function(const char *name, steer_function_t fun)
 {
 	struct steer_factory_elem * elem;
 
-	if (pfq_get_steer_function(name) != NULL) {
+	down(&steer_sem);
+	if (__pfq_get_steer_function(name) != NULL) {
+		up(&steer_sem);
 		printk(KERN_INFO "[PFQ] steer factory error: name %s already in use.\n", name);
 		return -1;
 	}
 
 	elem = kmalloc(sizeof(struct steer_factory_elem), GFP_KERNEL);
 	if (elem == NULL) {
+		up(&steer_sem);
 		printk(KERN_INFO "[PFQ] steer factory error: out of memory.\n");
 		return -1;
 	}
@@ -113,7 +138,8 @@ pfq_register_steer_function(const char *name, steer_function_t fun)
         elem->name[STEER_NAME_LEN-1] = '\0';
 
 	list_add(&elem->steer_list, &steer_factory);
-
+	up(&steer_sem);
+	
 	printk(KERN_INFO "[PFQ] %s function registered.\n", name);
 	return 0;
 }
@@ -125,16 +151,19 @@ pfq_unregister_steer_function(const char *name)
 	struct list_head *pos = NULL, *q;
 	struct steer_factory_elem *this;
 	
+	down(&steer_sem);
 	list_for_each_safe(pos, q, &steer_factory)
 	{
     		this = list_entry(pos, struct steer_factory_elem, steer_list);
 		if (!strcmp(this->name, name))
 		{
 			list_del(pos);
+			up(&steer_sem);
 	       		kfree(this);
 			return 0;
 		}
 	}
+	up(&steer_sem);
 	printk(KERN_INFO "[PFQ] steer factory error: %s no such function.\n", name);
 	return -1;
 }
