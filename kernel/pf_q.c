@@ -634,7 +634,7 @@ int pfq_getsockopt(struct socket *sock,
                             return -EFAULT;
                     
 		    gid = stat.recv;
-                    if (gid < 0 || gid >= Q_MAX_GROUP)
+                    if (gid < 0  || gid >= Q_MAX_GROUP)
 			    return -EINVAL;
 
                     stat.recv = sparse_read(&pfq_groups[gid].recv);
@@ -704,11 +704,8 @@ int pfq_setsockopt(struct socket *sock,
                     }
                     else {
                         pq->q_active = false;
-
-                        wmb();
-
                         msleep(10);
-                        
+                        wmb();
                         mpdb_queue_free(pq);
                     }
 
@@ -716,33 +713,39 @@ int pfq_setsockopt(struct socket *sock,
 
         case SO_ADD_BINDING: 
             {
-                    struct pfq_binding dq;
-                    if (optlen != sizeof(struct pfq_binding)) {
+                    struct pfq_binding bind;
+                    if (optlen != sizeof(struct pfq_binding)) 
                             return -EINVAL;
-                    }
-                    if (copy_from_user(&dq, optval, optlen))
+                    
+                    if (copy_from_user(&bind, optval, optlen))
                             return -EFAULT;
                     
-		    if (!__pfq_has_joined(dq.group_id, pq->q_id)) {
+                    if (bind.gid < 0 || bind.gid >= Q_MAX_GROUP)
+			    return -EINVAL;
+
+		    if (!__pfq_has_joined_group(bind.gid, pq->q_id)) {
 			    return -EPERM;
 		    }
 
-                    pfq_devmap_update(map_set, dq.if_index, dq.hw_queue, dq.group_id);
+                    pfq_devmap_update(map_set, bind.if_index, bind.hw_queue, bind.gid);
             } break;
 
         case SO_REMOVE_BINDING: 
             {
-                    struct pfq_binding dq;
+                    struct pfq_binding bind;
                     if (optlen != sizeof(struct pfq_binding))
                             return -EINVAL;
-                    if (copy_from_user(&dq, optval, optlen))
+                    
+		    if (copy_from_user(&bind, optval, optlen))
                             return -EFAULT;
 
-		    if (!__pfq_has_joined(dq.group_id, pq->q_id)) {
-			    return -EPERM;
-		    }
+                    if (bind.gid < 0 || bind.gid >= Q_MAX_GROUP)
+			    return -EINVAL;
 
-                    pfq_devmap_update(map_reset, dq.if_index, dq.hw_queue, dq.group_id);
+		    if (!__pfq_has_joined_group(bind.gid, pq->q_id)) 
+			    return -EPERM;
+
+                    pfq_devmap_update(map_reset, bind.if_index, bind.hw_queue, bind.gid);
             } break;
 
  	case SO_GROUP_STEER:
