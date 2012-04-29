@@ -20,7 +20,6 @@
 #  the file called "COPYING".
 # 
 
-
 set -e
 
 PFQ_KCOMPAT=/usr/local/include/pfq/pfq_kcompat.h
@@ -63,26 +62,26 @@ patch()
                 then
                     terminate "${PFQ} Internal error. Aborted!"
                 fi
-                echo -e "${PFQ} ${src} already patched :)"
+                echo -e "${PFQ} ${src} is already patched :)"
             fi
         fi
     done
 }
 
 
-echo -e "${PFQ} pfq'omatic ${PFQ_OMATIC_VERSION}"
+echo -e "${PFQ} pfq'omatic v${PFQ_OMATIC_VERSION}."
 
 preconditions
 
 files=`/usr/bin/find . -name \*.c`
 
-echo -e "${PFQ} sources:" $files"..."
+echo -e "${PFQ} searching for source codes..."
 
 patch $files
 
 cp $PFQ_SYMVERS . 
 
-echo -e "${PFQ} compiling driver..."
+echo -e "${PFQ} compiling the driver..."
 
 make
 
