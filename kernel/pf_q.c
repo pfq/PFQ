@@ -198,8 +198,22 @@ bool pfq_enqueue_skb(struct sk_buff *skb, struct pfq_opt *pq)
 /* } */
 
 
+struct pfq_steer_cache
+{
+	steer_function_t fun;
+	unsigned long ret;
+};
 
-/* pfq skb handler */
+
+inline unsigned long
+pfq_memoized_call(struct pfq_steer_cache *mem, steer_function_t fun, const struct sk_buff *skb)
+{
+	if (mem->fun != fun) {
+		mem->fun = fun;
+		mem->ret = fun(skb);
+	}
+	return mem->ret; 
+}
 
 
 int 
