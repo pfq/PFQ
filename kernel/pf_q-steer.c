@@ -1,0 +1,130 @@
+/***************************************************************
+ *                                                
+ * (C) 2011-12 Nicola Bonelli <nicola.bonelli@cnit.it>   
+ *
+ * This program is free software; you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation; either version 2 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program; if not, write to the Free Software Foundation,
+ * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
+ *
+ * The full GNU General Public License is included in this distribution in
+ * the file called "COPYING".
+ *
+ ****************************************************************/
+
+#include <linux/list.h>
+#include <linux/string.h>
+#include <linux/module.h>
+
+#include <pf_q-steer.h>
+#include <pf_q-steer-fun.h>
+
+struct steer_factory_elem {
+
+	struct list_head steer_list;
+	
+	char 			name[STEER_NAME_LEN];
+	steer_function_t 	function;
+};
+
+
+
+LIST_HEAD(steer_factory);
+
+/*
+ * register the default steer funcitons here!
+ */
+
+void 
+pfq_steer_factory_init() 
+{
+        pfq_register_steer_function("steer-ipv4-balance", steer_ipv4_balance);
+	
+	printk(KERN_INFO "[PFQ] steer-factory initialized.\n");
+}
+
+
+void 
+pfq_steer_factory_free()
+{
+	struct list_head *pos = NULL, *q;
+	struct steer_factory_elem *this;
+	list_for_each_safe(pos, q, &steer_factory)
+	{
+    		this = list_entry(pos, struct steer_factory_elem, steer_list);
+		list_del(pos);
+		kfree(this);
+	}
+	printk(KERN_INFO "[PFQ] steer-factory freed.\n");
+}
+
+
+steer_function_t
+pfq_find_steer_function(const char *name)
+{
+	struct list_head *pos = NULL;
+	struct steer_factory_elem *this;
+
+	list_for_each(pos, &steer_factory)
+	{
+    		this = list_entry(pos, struct steer_factory_elem, steer_list);
+        	if (!strcmp(this->name, name))
+			return this->function;
+	}
+	return NULL;
+}
+
+
+
+int 
+pfq_register_steer_function(const char *name, steer_function_t fun)
+{
+	struct steer_factory_elem * elem;
+
+	if (pfq_find_steer_function(name) != NULL)
+		return -1;
+
+	elem = kmalloc(sizeof(struct steer_factory_elem), GFP_KERNEL);
+	if (elem == NULL)
+		return -1;
+
+	INIT_LIST_HEAD(&elem->steer_list);
+
+	elem->function = fun;
+	
+	strncpy(elem->name, name, STEER_NAME_LEN-1);
+        elem->name[STEER_NAME_LEN-1] = '\0';
+
+	list_add(&elem->steer_list, &steer_factory);
+	return 0;
+}
+
+
+int 
+pfq_unregister_steer_function(const char *name)
+{
+	struct list_head *pos = NULL, *q;
+	struct steer_factory_elem *this;
+	
+	list_for_each_safe(pos, q, &steer_factory)
+	{
+    		this = list_entry(pos, struct steer_factory_elem, steer_list);
+		if (!strcmp(this->name, name))
+		{
+			list_del(pos);
+	       		kfree(this);
+			return 0;
+		}
+	}
+	return -1;
+}
+
