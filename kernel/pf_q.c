@@ -229,6 +229,15 @@ pfq_direct_receive(struct sk_buff *skb, int index, int queue, bool direct)
                 __net_timestamp(skb);
         }
 
+        /* reset skb->data to the beginning of the packet */
+        
+	if (skb->pkt_type != PACKET_OUTGOING) {	
+		skb_push(skb, skb->mac_len);
+	}
+	else {
+		skb->mac_len = ETH_HLEN;
+	}
+
         /* get the balancing groups bitmap */
 
         group_mask = __pfq_devmap_get_groups(index, queue);
