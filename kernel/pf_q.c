@@ -49,7 +49,6 @@
 #include <pf_q-group.h>
 
 #include <pf_q-steer.h>
-#include <pf_q-steer-fun.h>	// FIXME : to be removed from here
 
 #include <mpdb-queue.h>
 
@@ -199,20 +198,6 @@ bool pfq_enqueue_skb(struct sk_buff *skb, struct pfq_opt *pq)
 /* } */
 
 
-/* pfq load balancer */
-
-unsigned long 
-pfq_symmetric_steer(const struct sk_buff *skb)
-{ 
-        struct ethhdr *eth;
-
-        eth = (struct ethhdr *)skb_mac_header(skb);
-        if (eth->h_proto != __constant_htons(ETH_P_IP)) {
-                return 0;
-        }
-
-        return  ip_hdr(skb)->saddr ^ ip_hdr(skb)->daddr;
-}
 
 /* pfq skb handler */
 
