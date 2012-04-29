@@ -1152,17 +1152,10 @@ pfq_gro_receive(struct napi_struct *napi, struct sk_buff *skb)
 }
 
 
-const char *
-pfq_version(void)
-{
-        return Q_VERSION;
-}
-
 
 EXPORT_SYMBOL_GPL(pfq_netif_rx);
 EXPORT_SYMBOL_GPL(pfq_netif_receive_skb);
 EXPORT_SYMBOL_GPL(pfq_gro_receive);
-EXPORT_SYMBOL_GPL(pfq_version);
 
 
 module_init(pfq_init_module);
