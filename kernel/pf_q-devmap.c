@@ -29,8 +29,6 @@
 #include <pf_q-devmap.h>
 
 
-MODULE_LICENSE("GPL");
- 
 /* devmap */
 
 DEFINE_SEMAPHORE(devmap_sem);

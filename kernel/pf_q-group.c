@@ -28,8 +28,6 @@
 #include <pf_q-group.h>
 #include <pf_q-devmap.h>
 
-MODULE_LICENSE("GPL");
-
 
 DEFINE_SEMAPHORE(group_sem);
 

@@ -30,10 +30,6 @@
 #include <pf_q-steer-fun.h>
 
 
-MODULE_LICENSE("GPL");
- 
-/* devmap */
-
 DEFINE_SEMAPHORE(steer_sem);
 
 
