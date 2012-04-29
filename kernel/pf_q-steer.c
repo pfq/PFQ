@@ -47,10 +47,13 @@ LIST_HEAD(steer_factory);
 void 
 pfq_steer_factory_init() 
 {
-        pfq_register_steer_function("steer-vlan-id",   steer_vlan_id);
-        pfq_register_steer_function("steer-ipv4-addr", steer_ipv4_addr);
+        pfq_register_steer_function("steer-mac-addr",   steer_mac_addr);
+        pfq_register_steer_function("steer-vlan-untag", steer_vlan_untag);
+        pfq_register_steer_function("steer-vlan-id",    steer_vlan_id);
+        pfq_register_steer_function("steer-ipv4-addr",  steer_ipv4_addr);
+        pfq_register_steer_function("steer-ipv6-addr",  steer_ipv6_addr);
 	
-	printk(KERN_INFO "[PFQ] steer-factory initialized.\n");
+	printk(KERN_INFO "[PFQ] steer factory initialized.\n");
 }
 
 
@@ -65,7 +68,7 @@ pfq_steer_factory_free()
 		list_del(pos);
 		kfree(this);
 	}
-	printk(KERN_INFO "[PFQ] steer-factory freed.\n");
+	printk(KERN_INFO "[PFQ] steer factory freed.\n");
 }
 
 
@@ -92,13 +95,13 @@ pfq_register_steer_function(const char *name, steer_function_t fun)
 	struct steer_factory_elem * elem;
 
 	if (pfq_get_steer_function(name) != NULL) {
-		printk(KERN_INFO "[PFQ] steer-factory error: name %s already in use.\n", name);
+		printk(KERN_INFO "[PFQ] steer factory error: name %s already in use.\n", name);
 		return -1;
 	}
 
 	elem = kmalloc(sizeof(struct steer_factory_elem), GFP_KERNEL);
 	if (elem == NULL) {
-		printk(KERN_INFO "[PFQ] steer-factory error: out of memory.\n");
+		printk(KERN_INFO "[PFQ] steer factory error: out of memory.\n");
 		return -1;
 	}
 
@@ -132,7 +135,7 @@ pfq_unregister_steer_function(const char *name)
 			return 0;
 		}
 	}
-	printk(KERN_INFO "[PFQ] steer-factory error: %s no such function.\n", name);
+	printk(KERN_INFO "[PFQ] steer factory error: %s no such function.\n", name);
 	return -1;
 }
 

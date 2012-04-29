@@ -26,7 +26,13 @@
 
 #include <linux/skbuff.h>
 
+#define STEER_OK(x) ((x) == 0 ? 1 : (x))
+#define STEER_FAIL	0
+
+extern unsigned long steer_mac_addr(const struct sk_buff *skb);
+extern unsigned long steer_vlan_untag(const struct sk_buff *skb);
 extern unsigned long steer_vlan_id(const struct sk_buff *skb);
 extern unsigned long steer_ipv4_addr(const struct sk_buff *skb);
+extern unsigned long steer_ipv6_addr(const struct sk_buff *skb);
 
 #endif /* _PF_Q_STEER_FUN_H_ */
