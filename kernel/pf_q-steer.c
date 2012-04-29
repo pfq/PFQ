@@ -47,7 +47,8 @@ LIST_HEAD(steer_factory);
 void 
 pfq_steer_factory_init() 
 {
-        pfq_register_steer_function("steer-ipv4-balance", steer_ipv4_balance);
+        pfq_register_steer_function("steer-vlan-id",   steer_vlan_id);
+        pfq_register_steer_function("steer-ipv4-addr", steer_ipv4_addr);
 	
 	printk(KERN_INFO "[PFQ] steer-factory initialized.\n");
 }

@@ -26,6 +26,7 @@
 
 #include <linux/skbuff.h>
 
-extern unsigned long steer_ipv4_balance(const struct sk_buff *skb);
+extern unsigned long steer_vlan_id(const struct sk_buff *skb);
+extern unsigned long steer_ipv4_addr(const struct sk_buff *skb);
 
 #endif /* _PF_Q_STEER_FUN_H_ */

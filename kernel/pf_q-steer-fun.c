@@ -24,11 +24,18 @@
 #include <linux/skbuff.h>
 #include <linux/ip.h>
 #include <linux/if_ether.h>
+#include <linux/if_vlan.h>
 
-/* pfq load balancer */
+
+unsigned long
+steer_vlan_id(const struct sk_buff *skb)
+{
+ 	return skb->vlan_tci & VLAN_VID_MASK;
+}
+
 
 unsigned long 
-steer_ipv4_balance(const struct sk_buff *skb)
+steer_ipv4_addr(const struct sk_buff *skb)
 { 
         struct ethhdr *eth;
 
@@ -39,3 +46,5 @@ steer_ipv4_balance(const struct sk_buff *skb)
 
         return  ip_hdr(skb)->saddr ^ ip_hdr(skb)->daddr;
 }
+
+
