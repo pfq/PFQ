@@ -1138,12 +1138,14 @@ int pfq_normalize_skb(struct sk_buff *skb)
 		}
 	}
 
+#ifdef PFQ_USE_SKB_LINEARIZE
+#pragma message "[PFQ] use skb_linearize"
 	if(skb_linearize(skb) < 0)
 	{
 		__kfree_skb(skb);
 		return -1;
 	}
-
+#endif
 	return 0;
 }
 
