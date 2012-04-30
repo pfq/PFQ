@@ -288,9 +288,17 @@ pfq_direct_receive(struct sk_buff *skb, int index, int queue, bool direct)
                 pfq_enqueue_skb(skb, pq);
         }
 
-        /* enqueue skb to kfree pipeline ... */
-        
-        me = get_cpu();
+#ifndef PFQ_USE_SKB_PIPELINE
+	if (likely(direct))
+		__kfree_skb(skb);
+	else
+		kfree_skb(skb);
+#else
+#pragma message "[PFQ] using skb pipeline"
+	/* enqueue skb to kfree pipeline ... */
+	{
+	
+	int q, me = get_cpu();
 
         if (pfq_skb_pipeline[me].counter < pipeline_len-1) {
                 pfq_skb_pipeline[me].queue[
@@ -317,7 +325,10 @@ pfq_direct_receive(struct sk_buff *skb, int index, int queue, bool direct)
         }
 
         pfq_skb_pipeline[me].counter=0;
+	}
+#endif
         return 0;
+
 }
 
 
