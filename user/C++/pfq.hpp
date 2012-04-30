@@ -700,7 +700,7 @@ namespace net {
             if (index == -1)
                 throw pfq_error("PFQ: device not found");
 
-            struct pfq_binding b = { index, queue, gid };
+            struct pfq_binding b = { gid, index, queue };
             if (::setsockopt(fd_, PF_Q, SO_ADD_BINDING, &b, sizeof(b)) == -1)
                 throw pfq_error(errno, "PFQ: SO_ADD_BINDING");
         }
@@ -724,7 +724,7 @@ namespace net {
             if (index == -1)
                 throw pfq_error("PFQ: device not found");
         
-            struct pfq_binding b = { index, queue, gid };
+            struct pfq_binding b = { gid, index, queue };
             if (::setsockopt(fd_, PF_Q, SO_REMOVE_BINDING, &b, sizeof(b)) == -1)
                 throw pfq_error(errno, "PFQ: SO_REMOVE_BINDING");
         }

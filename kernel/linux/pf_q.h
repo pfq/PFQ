@@ -146,9 +146,9 @@ struct pfq_queue_descr
 
 struct pfq_binding
 {
+    int gid;
     int if_index;
     int hw_queue;
-    int gid;
 };
 
 /* groups policies */
