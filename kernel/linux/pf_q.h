@@ -27,8 +27,6 @@
 
 #ifdef __KERNEL__
 
-#ifdef __PFQ_MODULE__
-
 
 #define Q_VERSION               "1.4.1"
 #define Q_VERSION_NUM           0x010001
@@ -41,19 +39,6 @@
 #define Q_MAX_DEVICE_MASK       (Q_MAX_DEVICE-1)
 #define Q_MAX_HW_QUEUE          256
 #define Q_MAX_HW_QUEUE_MASK     (Q_MAX_HW_QUEUE-1)
-
-
-#else  /* __PFQ_MODULE__ */ 
-
-#include <linux/skbuff.h>
-#include <linux/netdevice.h>
-
-extern const char * pfq_version(void);
-extern int  pfq_direct_capture(const struct sk_buff *skb);
-extern int  pfq_direct_receive(struct sk_buff *skb, int ifindex, int queue);
-extern gro_result_t pfq_gro_receive(struct napi_struct *napi, struct sk_buff *skb);
-
-#endif
 
 #else  /* user space */
 
@@ -98,6 +83,7 @@ struct pfq_hdr
 
 } __attribute__((packed));
 
+
 /* 
     [pfq_queue_descr][ ... queue .... ][ ... queue ... ]
  */
@@ -139,21 +125,22 @@ struct pfq_queue_descr
 #define SO_GROUP_JOIN           129
 #define SO_GROUP_STATS          130
 
-
-/* defines */
+/* general defines */
 
 #define Q_ANY_DEVICE         -1
 #define Q_ANY_QUEUE          -1
 #define Q_ANY_GROUP          -1
 
-#define Q_VLAN_PRIO_MASK     0xe000
-#define Q_VLAN_VID_MASK      0x0fff
-#define Q_VLAN_TAG_PRESENT   0x1000
+/* timestamp */
 
 #define Q_TSTAMP_OFF          0       /* default */
 #define Q_TSTAMP_ON           1
 
-#define STEER_NAME_LEN        64
+/* vlan */
+
+#define Q_VLAN_PRIO_MASK     0xe000
+#define Q_VLAN_VID_MASK      0x0fff
+#define Q_VLAN_TAG_PRESENT   0x1000
 
 /* struct used for setsockopt */
 
@@ -164,13 +151,21 @@ struct pfq_binding
     int gid;
 };
 
+/* groups policies */
+
+#define Q_GROUP_RESTRICTED      0
+#define Q_GROUP_SHARED          1
+#define Q_GROUP_UNDEFINED       2
 
 struct pfq_join 
 {
     int gid;
-    int policy;               /* 0=open, 1=restricted */
+    int policy;               
 };
 
+/* steer functions */
+
+#define Q_STEER_NAME_LEN        64
 
 struct pfq_steer
 {
@@ -179,11 +174,14 @@ struct pfq_steer
 };
 
 
+/* pfq statistics for socket and groups */
+
 struct pfq_stats
 {
     unsigned long int recv;   /* received by the queue         */
     unsigned long int lost;   /* queue is full, packet lost... */
     unsigned long int drop;   /* by filter                     */
 };
+
 
 #endif /* _PF_Q_H_ */

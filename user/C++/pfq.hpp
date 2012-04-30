@@ -341,12 +341,13 @@ namespace net {
     //////////////////////////////////////////////////////////////////////
 
     // group policies
+    // 
     
     enum class group_policy 
     {
-        restricted,
-        open,
-        undefined   
+        restricted = Q_GROUP_RESTRICTED,
+        shared     = Q_GROUP_SHARED,
+        undefined  = Q_GROUP_UNDEFINED 
     };
 
 
@@ -765,7 +766,7 @@ namespace net {
 
 
         int
-        join_group(int gid, group_policy pol = group_policy::open)
+        join_group(int gid, group_policy pol = group_policy::shared)
         {
             if (pol == group_policy::undefined)
                 throw pfq_error("PFQ: join with undefined policy!");

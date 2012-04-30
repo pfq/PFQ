@@ -37,7 +37,7 @@ struct steer_factory_elem {
 
 	struct list_head steer_list;
 	
-	char 			name[STEER_NAME_LEN];
+	char 			name[Q_STEER_NAME_LEN];
 	steer_function_t 	function;
 };
 
@@ -130,8 +130,8 @@ pfq_register_steer_function(const char *name, steer_function_t fun)
 
 	elem->function = fun;
 	
-	strncpy(elem->name, name, STEER_NAME_LEN-1);
-        elem->name[STEER_NAME_LEN-1] = '\0';
+	strncpy(elem->name, name, Q_STEER_NAME_LEN-1);
+        elem->name[Q_STEER_NAME_LEN-1] = '\0';
 
 	list_add(&elem->steer_list, &steer_factory);
 	up(&steer_sem);

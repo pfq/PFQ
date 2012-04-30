@@ -193,7 +193,7 @@ Context(PFQ)
         pfq x;
         AssertThrow(x.bind("eth0"));
 
-        x.open(group_policy::open, 64);
+        x.open(group_policy::shared, 64);
     
         AssertThrow(x.bind("unknown"));
         x.bind("eth0");
@@ -207,7 +207,7 @@ Context(PFQ)
         pfq x;
         AssertThrow(x.unbind("eth0"));
 
-        x.open(group_policy::open, 64);
+        x.open(group_policy::shared, 64);
         
         AssertThrow(x.unbind("unknown"));
         x.unbind("eth0");
@@ -323,7 +323,7 @@ Context(PFQ)
     Test(join_restricted_process)
     {
         pfq x(group_policy::restricted, 64);
-        pfq z(group_policy::open, 64);
+        pfq z(group_policy::shared, 64);
 
         auto p = fork();
         if (p == -1)
@@ -365,7 +365,7 @@ Context(PFQ)
         pfq x;
         AssertThrow(x.leave_group(12));
 
-        x.open(group_policy::open, 64);
+        x.open(group_policy::shared, 64);
         int gid = x.join_group(42);
         Assert(gid, is_equal_to(42));
 
