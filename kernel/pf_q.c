@@ -754,10 +754,13 @@ int pfq_setsockopt(struct socket *sock,
                     if (copy_from_user(&bind, optval, optlen))
                             return -EFAULT;
                     
-                    if (bind.gid < 0 || bind.gid >= Q_MAX_GROUP)
-			    return -EINVAL;
+                    if (bind.gid < 0 || bind.gid >= Q_MAX_GROUP) {
+                    	    printk(KERN_INFO "[PFQ|%d] gid:%d -> invalid group.\n", pq->q_id, bind.gid);
+			    return -EINVAL; 
+		    }
 
 		    if (!__pfq_has_joined_group(bind.gid, pq->q_id)) {
+                    	    printk(KERN_INFO "[PFQ|%d] gid:%d -> no permission.\n", pq->q_id, bind.gid);
 			    return -EPERM;
 		    }
 
@@ -773,11 +776,15 @@ int pfq_setsockopt(struct socket *sock,
 		    if (copy_from_user(&bind, optval, optlen))
                             return -EFAULT;
 
-                    if (bind.gid < 0 || bind.gid >= Q_MAX_GROUP)
+                    if (bind.gid < 0 || bind.gid >= Q_MAX_GROUP) {
+                    	    printk(KERN_INFO "[PFQ|%d] gid:%d -> invalid group.\n", pq->q_id, bind.gid);
 			    return -EINVAL;
+		    }
 
-		    if (!__pfq_has_joined_group(bind.gid, pq->q_id)) 
+		    if (!__pfq_has_joined_group(bind.gid, pq->q_id)) {
+                    	    printk(KERN_INFO "[PFQ|%d] gid:%d -> no permission.\n", pq->q_id, bind.gid);
 			    return -EPERM;
+		    }
 
                     pfq_devmap_update(map_reset, bind.if_index, bind.hw_queue, bind.gid);
             } break;
@@ -792,24 +799,28 @@ int pfq_setsockopt(struct socket *sock,
 		    if (copy_from_user(&st, optval, optlen)) 
 			    return -EFAULT;
 		    
-                    if (st.gid < 0 || st.gid >= Q_MAX_GROUP)
+                    if (st.gid < 0 || st.gid >= Q_MAX_GROUP) {
+                    	    printk(KERN_INFO "[PFQ|%d] gid:%d -> invalid group.\n", pq->q_id, st.gid);
 			    return -EINVAL;
-
-		    if (!__pfq_has_joined_group(st.gid, pq->q_id)) 
+		    }
+		    
+		    if (!__pfq_has_joined_group(st.gid, pq->q_id)) {
+                    	    printk(KERN_INFO "[PFQ|%d] gid:%d -> no permission.\n", pq->q_id, st.gid);
 			    return -EPERM;
+		    }
 
 		    if (st.name == NULL) {
 			__pfq_set_steer_for_group(st.gid, NULL);
-                    	printk(KERN_INFO "[PFQ|%d] gid:%d -> steer:NONE\n", pq->q_id, st.gid);
+                    	printk(KERN_INFO "[PFQ|%d] gid:%d -> steer NONE\n", pq->q_id, st.gid);
 		    }
 		    else {
-                    	char name[STEER_NAME_LEN]; 
+                    	char name[Q_STEER_NAME_LEN]; 
 			steer_function_t fun;
 
-                    	if (strncpy_from_user(name, st.name, STEER_NAME_LEN-1) < 0)
+                    	if (strncpy_from_user(name, st.name, Q_STEER_NAME_LEN-1) < 0)
 				return -EFAULT;
 
-			name[STEER_NAME_LEN-1] = '\0';
+			name[Q_STEER_NAME_LEN-1] = '\0';
                         
 			fun = pfq_get_steer_function(name);
 			if (fun == NULL) {
@@ -818,7 +829,7 @@ int pfq_setsockopt(struct socket *sock,
 			}
 
 			__pfq_set_steer_for_group(st.gid, fun);
-                    	printk(KERN_INFO "[PFQ|%d] gid:%d steer:%s\n", pq->q_id, st.gid, name);
+                    	printk(KERN_INFO "[PFQ|%d] gid:%d -> steer %s\n", pq->q_id, st.gid, name);
 		    }
 
 	    } break;
