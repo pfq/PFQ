@@ -631,7 +631,7 @@ int pfq_getsockopt(struct socket *sock,
 
         case SO_GROUP_JOIN: 
             {
-                    struct pfq_join group;
+                    struct pfq_group_join group;
 
                     if (len != sizeof(group)) 
                             return -EINVAL;
@@ -643,14 +643,14 @@ int pfq_getsockopt(struct socket *sock,
 			    return -EINVAL;
 
                     if (group.gid == Q_ANY_GROUP) {
-                            group.gid = pfq_join_free_group(pq->q_id, group.policy);
+                            group.gid = pfq_join_free_group(pq->q_id, group.type, group.policy);
                             if (group.gid < 0)
                                     return -EFAULT;
                             if (copy_to_user(optval, &group, len))
                                     return -EFAULT;
                     } else
                     
-                    if (pfq_join_group(group.gid, pq->q_id, group.policy) < 0) {
+                    if (pfq_join_group(group.gid, pq->q_id, group.type, group.policy) < 0) {
                     	    printk(KERN_INFO "[PFQ|%d] join error (gid:%d)\n", pq->q_id, group.gid);
                             return -EPERM;
                     }

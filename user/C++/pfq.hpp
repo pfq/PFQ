@@ -343,13 +343,19 @@ namespace net {
     // group policies
     // 
     
-    enum class group_policy 
+    enum class group_policy : int16_t
     {
         restricted = Q_GROUP_RESTRICTED,
         shared     = Q_GROUP_SHARED,
         undefined  = Q_GROUP_UNDEFINED 
     };
 
+    enum class group_type : int16_t
+    {
+        data        = Q_GROUP_DATA,
+        control     = Q_GROUP_CONTROL,
+        out_of_band = Q_GROUP_OUT_OF_BAND
+    };
 
     class pfq
     {
@@ -387,15 +393,21 @@ namespace net {
         : fd_(-1)
         , pdata_()
         {
-            this->open(group_policy::restricted, caplen, offset, slots); 
+            this->open(group_type::data, group_policy::restricted, caplen, offset, slots); 
         }
     
-
         pfq(group_policy policy, size_t caplen, size_t offset = 0, size_t slots = 131072)
         : fd_(-1)
         , pdata_()
         {
-            this->open(policy, caplen, offset, slots);
+            this->open(group_type::data, policy, caplen, offset, slots);
+        }
+
+        pfq(group_type type, group_policy policy, size_t caplen, size_t offset = 0, size_t slots = 131072)
+        : fd_(-1)
+        , pdata_()
+        {
+            this->open(type, policy, caplen, offset, slots);
         }
 
         ~pfq()
@@ -463,15 +475,25 @@ namespace net {
             return fd_;
         }
 
-        
         void
         open(group_policy policy, size_t caplen, size_t offset = 0, size_t slots = 131072)
         {
             this->open(caplen, offset, slots);
-
+            
             if (policy != group_policy::undefined)
             {
-                pdata_->gid = this->join_group(any_group, policy);
+                pdata_->gid = this->join_group(any_group, group_type::data, policy);
+            }
+        }
+        
+        void
+        open(group_type type, group_policy policy, size_t caplen, size_t offset = 0, size_t slots = 131072)
+        {
+            this->open(caplen, offset, slots);
+            
+            if (policy != group_policy::undefined)
+            {
+                pdata_->gid = this->join_group(any_group, type, policy);
             }
         }
 
@@ -766,12 +788,12 @@ namespace net {
 
 
         int
-        join_group(int gid, group_policy pol = group_policy::shared)
+        join_group(int gid, group_type type = group_type::data, group_policy pol = group_policy::shared)
         {
             if (pol == group_policy::undefined)
                 throw pfq_error("PFQ: join with undefined policy!");
 
-            pfq_join group { gid, pol == group_policy::restricted ? 1 : 0 };
+            struct pfq_group_join group { gid, static_cast<int16_t>(type), static_cast<int16_t>(pol) };
 
             socklen_t size = sizeof(group);
             if (::getsockopt(fd_, PF_Q, SO_GROUP_JOIN, &group, &size) == -1)

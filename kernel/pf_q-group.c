@@ -21,6 +21,7 @@
  * the file called "COPYING".
  *
  ****************************************************************/
+
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/semaphore.h>
@@ -34,17 +35,23 @@ DEFINE_SEMAPHORE(group_sem);
 
 struct pfq_group pfq_groups[Q_MAX_GROUP];
 
+/* precondition: gid must be valid */
 
-inline bool 
-__pfq_is_joinable(int gid, bool restricted)
+
+static bool 
+__pfq_is_joinable(int gid, int policy)
 {
-	int pid = pfq_groups[gid].pid;
-	if (pid != -1) { /* restricted group */
-        	return pid == current->pid;	
+        struct pfq_group * that = &pfq_groups[gid];
+
+	if (!that->init)
+		return true;
+
+	if (that->pid != -1) { /* restricted group */
+        	return that->pid == current->pid;	
 	}
-	else {	/* open group */
-        	if (restricted) {
-			return atomic_long_read(&pfq_groups[gid].ids) == 0;
+	else {	/* shared group */
+        	if (policy == Q_GROUP_RESTRICTED) {
+			return __pfq_group_is_empty(gid);
 		}
 		else {
                  	return true;
@@ -53,46 +60,126 @@ __pfq_is_joinable(int gid, bool restricted)
 }
 
 
-inline void 
+static void 
 __pfq_group_ctor(int gid)
 {
-	// printk(KERN_INFO "[PFQ] group id:%d constructor\n", id);
-	// ...
         struct pfq_group * that = &pfq_groups[gid];
-	
+	int i;
+
         that->pid = -1;
 	
+	for(i = 0; i < Q_GROUP_TYPE_MAX; i++)
+	{
+		atomic_long_set(&that->id_mask[i], 0);
+	}
+
 	atomic_long_set(&that->steer, 0);
 
 	sparse_set(&that->recv, 0);
 	sparse_set(&that->lost, 0);
 	sparse_set(&that->drop, 0);
 
+	wmb();
+
+	that->init = true;
 }
 
 
-inline void 
+static void 
 __pfq_group_dtor(int gid)
 {
-        /* remove this gid from demux matrix */
+        struct pfq_group * that = &pfq_groups[gid];
+        
+	/* remove this gid from demux matrix */
         pfq_devmap_update(map_reset, Q_ANY_DEVICE, Q_ANY_QUEUE, gid);
+
+	wmb();
+
+	that->init = false;
+}
+
+
+
+static int
+__pfq_join_group(int gid, int id, int type, int policy)
+{
+        unsigned long tmp = 0;
+
+        if (!pfq_groups[gid].init) {
+         	__pfq_group_ctor(gid);
+	}
+	
+	if (!__pfq_is_joinable(gid, policy)) {
+		return -1;
+	}
+	
+	tmp |= 1L << id;
+        atomic_long_set(&pfq_groups[gid].id_mask[type], tmp);
+	pfq_groups[gid].pid = (policy == Q_GROUP_RESTRICTED ? current->pid : -1);
+
+        return 0;
+}
+
+
+static int
+__pfq_leave_group(int gid, int id)
+{
+        unsigned long tmp;
+	int i;
+
+	if (!pfq_groups[gid].init)
+		return -1;
+	
+	for(i = 0; i < Q_GROUP_TYPE_MAX; ++i)
+	{
+		tmp = atomic_long_read(&pfq_groups[gid].id_mask[i]);
+		tmp &= ~(1L << id);
+		atomic_long_set(&pfq_groups[gid].id_mask[i], tmp);
+	}
+
+	if (__pfq_group_is_empty(gid)) {
+        	__pfq_group_dtor(gid);
+	}
+        
+        return 0;
+}
+
+unsigned long
+__pfq_get_all_groups_mask(int gid)
+{
+	unsigned long mask = 0;
+	int i;
+	for(i = 0; i < Q_GROUP_TYPE_MAX; ++i)
+	{
+		mask |= atomic_long_read(&pfq_groups[gid].id_mask[i]);
+	}
+	return mask;
+}
+
+
+
+
+int
+pfq_join_group(int gid, int id, int type, int policy)
+{
+	int ret;
+	down(&group_sem);
+	ret = __pfq_join_group(gid, id, type, policy);
+	up(&group_sem);
+	return ret;
 }
 
 
 int 
-pfq_join_free_group(int id, bool restricted)
+pfq_join_free_group(int id, int type, int policy)
 {
         int n = 0;
         down(&group_sem);
         for(; n < Q_MAX_ID; n++)
         {            
-                unsigned long tmp = atomic_long_read(&pfq_groups[n].ids);
-                if(tmp == 0)
+                if(!pfq_groups[n].init)
                 {
-                        __pfq_group_ctor(n);
-			pfq_groups[n].pid = restricted ? current->pid : -1;
-			wmb();
-			atomic_long_set(&pfq_groups[n].ids, 1L<<id);
+			__pfq_join_group(n, id, type, policy);
                         up(&group_sem);
                         return n;
                 }
@@ -102,56 +189,15 @@ pfq_join_free_group(int id, bool restricted)
 }
 
 
-int
-pfq_join_group(int gid, int id, bool restricted)
-{
-        unsigned long tmp;
-
-        if (gid < 0 || gid >= Q_MAX_GROUP)
-                return -1;
-
-        down(&group_sem);
-        
-	tmp = atomic_long_read(&pfq_groups[gid].ids);
-        if (!tmp) {
-         	__pfq_group_ctor(gid);
-	}
-	
-	if (!__pfq_is_joinable(gid, restricted)) {
-        	up(&group_sem);
-		return -1;
-	}
-	
-	tmp |= 1L << id;
-        atomic_long_set(&pfq_groups[gid].ids, tmp);
-	
-	pfq_groups[gid].pid = restricted ? current->pid : -1;
-
-        up(&group_sem);
-        return 0;
-}
-
 
 int
 pfq_leave_group(int gid, int id)
 {
-        unsigned long tmp;
-
-        if (gid < 0 || gid >= Q_MAX_GROUP)
-                return -1;
-
+ 	int ret;
         down(&group_sem);
-        
-	tmp = atomic_long_read(&pfq_groups[gid].ids);
-        tmp &= ~(1L << id);
-        atomic_long_set(&pfq_groups[gid].ids, tmp);
-        if (!tmp) {
-		wmb();
-        	__pfq_group_dtor(gid);
-	}
-        
+        ret = __pfq_leave_group(gid,id);
 	up(&group_sem);
-        return 0;
+	return ret;
 }
 
 
@@ -162,16 +208,7 @@ pfq_leave_all_groups(int id)
         down(&group_sem);
         for(; n < Q_MAX_ID; n++)
         {            
-                unsigned long tmp = atomic_long_read(&pfq_groups[n].ids);
-                if(tmp & (1L << id))
-                {
-                        tmp &= ~(1L<<id);
-                        atomic_long_set(&pfq_groups[n].ids, tmp);
-                	if (!tmp) {
-				wmb();
-                        	__pfq_group_dtor(n);
-			}
-		}
+		__pfq_leave_group(n, id);
         }
         up(&group_sem);
 }
@@ -180,12 +217,13 @@ pfq_leave_all_groups(int id)
 unsigned long
 pfq_get_groups(int id)
 {
-        unsigned long ret = 0L;
+        unsigned long ret = 0;
         int n = 0;
         down(&group_sem);
         for(; n < Q_MAX_ID; n++)
-        {            
-                if(atomic_long_read(&pfq_groups[n].ids) & (1L << id))
+        {       
+		unsigned long mask = __pfq_get_all_groups_mask(n);
+                if(mask & (1L << id))
                 {
                         ret |= (1L << n);
                 }

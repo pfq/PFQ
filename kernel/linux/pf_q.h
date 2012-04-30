@@ -151,16 +151,25 @@ struct pfq_binding
     int hw_queue;
 };
 
-/* groups policies */
+
+/* group policies */
 
 #define Q_GROUP_RESTRICTED      0
 #define Q_GROUP_SHARED          1
 #define Q_GROUP_UNDEFINED       2
 
-struct pfq_join 
+/* group type */
+
+#define Q_GROUP_DATA            0
+#define Q_GROUP_CONTROL         1
+#define Q_GROUP_OUT_OF_BAND     2
+#define Q_GROUP_TYPE_MAX        3
+
+struct pfq_group_join
 {
-    int gid;
-    int policy;               
+    int     gid;
+    int16_t type;
+    int16_t policy;
 };
 
 /* steer functions */

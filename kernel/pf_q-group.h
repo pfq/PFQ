@@ -25,18 +25,21 @@
 #ifndef _PF_Q_GROUP_H_
 #define _PF_Q_GROUP_H_ 
 
-#define __PFQ_MODULE__
 #include <linux/pf_q.h>
 
 #include <sparse-counter.h>
 #include <pf_q-steer.h>
 
+
 struct pfq_group
 {
+    bool init; /* true if the group is constructed */
+
     int pid;	/* process id for restricted join */;
 
-	atomic_long_t ids;
-    atomic_long_t steer;    /* steer_function_t */ 
+	atomic_long_t id_mask[Q_GROUP_TYPE_MAX];    /* for different group types: Q_GROUP_DATA, Q_GROUP_CONTROL, etc... */
+
+	atomic_long_t steer;    /* steer_function_t */ 
 
 	sparse_counter_t recv;
 	sparse_counter_t lost;
@@ -46,12 +49,7 @@ struct pfq_group
 
 extern struct pfq_group pfq_groups[Q_MAX_GROUP];
 
-
-static inline 
-bool __pfq_has_joined_group(int gid, int id)
-{
-	return atomic_long_read(&pfq_groups[gid].ids) & (1L << id);
-}
+unsigned long __pfq_get_all_groups_mask(int gid);
 
 static inline
 void __pfq_set_steer_for_group(int gid, steer_function_t steer)
@@ -59,9 +57,22 @@ void __pfq_set_steer_for_group(int gid, steer_function_t steer)
     atomic_long_set(&pfq_groups[gid].steer, (unsigned long)steer);
 }
 
-int pfq_join_free_group(int id, bool restricted);
+static inline
+bool __pfq_group_is_empty(int gid)
+{
+	return __pfq_get_all_groups_mask(gid) == 0;
+}
 
-int pfq_join_group(int gid, int id, bool restricted);
+
+static inline
+bool __pfq_has_joined_group(int gid, int id)
+{
+	return __pfq_get_all_groups_mask(gid) & (1L << id);
+}
+
+int pfq_join_free_group(int id, int type, int policy);
+
+int pfq_join_group(int gid, int id, int type, int policy);
 
 int pfq_leave_group(int gid, int id);
 
