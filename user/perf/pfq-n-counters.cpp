@@ -87,7 +87,7 @@ namespace test
         ctx(int id, const char *d, const std::vector<int> & q)
         : m_id(id), m_dev(d), m_queues(q), m_stop(false), m_pfq(group_policy::undefined, opt::caplen, opt::offset, opt::slots), m_read()
         {
-            m_pfq.join_group(42, group_policy::shared);
+            m_pfq.join_group(42, group_type::data, group_policy::shared);
             
             std::for_each(m_queues.begin(), m_queues.end(),[&](int q) {
                           std::cout << "adding bind to " << d << "@" << q << std::endl;       
