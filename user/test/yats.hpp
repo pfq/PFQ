@@ -23,6 +23,8 @@
 #include <cstdlib>
 #include <iostream>
 #include <sstream>
+#include <string>
+#include <cstring>
 #include <type_traits>
 #include <functional>
 #include <algorithm>
@@ -31,6 +33,7 @@
 #include <vector>
 #include <memory>
 #include <map>
+#include <set>
 
 #ifdef __GNUC__
 #include <cxxabi.h>
@@ -171,7 +174,7 @@ catch(...) \
         static_error() \
         { expr; \
             std::cerr << "Static error failure: Test(" # expr ") is not an error. Reason -> " msg << std::endl; \
-            exit (EXIT_FAILURE);\
+            _Exit(EXIT_FAILURE);\
         } \
     } maybe_error_ = static_error();
 
@@ -280,20 +283,78 @@ namespace yats
         {}
     };
 
-    static int run()
+    static void usage(const char *name)
     {
+        std::cout << "Yats usage: " << name << " [options] [test...]" << std::endl;
+        std::cout << "Options:\n";
+        std::cout << "  -e          On error exit immediatly.\n";
+        std::cout << "  -c context  Run tests from the given context.\n";
+        std::cout << "  -h          Print this help.\n";
+
+        _Exit(EXIT_SUCCESS);
+    }
+
+    static int run(int argc = 0, char *argv[] = nullptr)
+    {
+        bool exit_immediatly = false, err = false;
+        bool verbose = false;
+
+        std::set<std::string> cxt;
+        std::set<std::string> test;
+
+        for(auto arg = argv + 1; arg != argv + argc; ++arg)
+        {
+            if (strcmp(*arg, "-h") == 0 ||
+                strcmp(*arg, "--help") == 0) {
+                usage(argv[0]);
+            }
+
+            if (strcmp(*arg, "-e") == 0 ||
+                strcmp(*arg, "--exit-immediatly") == 0) {
+                exit_immediatly = true;
+                continue;
+            }
+            
+            if (strcmp(*arg, "-v") == 0 ||
+                strcmp(*arg, "--verbose") == 0) {
+                verbose = true;
+                continue;
+            }
+
+            if (strcmp(*arg, "-c") == 0 ||
+                strcmp(*arg, "--context") == 0) {
+                if (++arg == (argv+argc))
+                    throw std::runtime_error("YATS: context missing");
+                cxt.insert(*arg);
+                continue;
+            }
+
+            test.insert(*arg);
+        }
+
         size_t tot_task = 0;
         for(auto& task : context::instance())
         {
+            if (!cxt.empty() &&
+                cxt.find(task.first) == cxt.end())
+                continue;
             tot_task += task.second.task_list_.size();
         }
 
-        unsigned int n = 0;
-        std::cout << "Running " << tot_task << " tests in " << context::instance().size() << " contexts." << std::endl;
+        unsigned int run = 0, ok = 0;
+        std::cout << "Loading " << tot_task << " tests in " << context::instance().size() << " contexts." << std::endl;
 
-        // iterate over contexts:        
+        // iterate over contexts: 
+        //
         for(auto& c : context::instance()) 
         {
+            if (!cxt.empty() &&
+                cxt.find(c.first) == cxt.end())
+                continue;
+
+            if (verbose)
+                std::cout << "Context " << c.first << ":\n";
+
             // run setup:
             std::for_each(std::begin(c.second.setup_), 
                           std::end(c.second.setup_), 
@@ -302,20 +363,33 @@ namespace yats
             // for each task... 
             for(auto& t : c.second.task_list_)
             {
+                if (!test.empty() &&
+                    test.find(t.second) == test.end())
+                    continue;
+
+                if (verbose)
+                    std::cout << "+ running Test(" << t.second << ")...\n";
+                
+                run++;
                 try
                 {    
                     // run the test...
                     t.first.operator()();
-                    n++;  
+                    ok++;  
                 }   
                 catch(yats_error &e)
                 {
+                    err = true;
                     std::cerr << e.what() << std::endl;
                 }
                 catch(std::exception &e)
                 {
+                    err = true;
                     std::cerr << "Context " << c.first << ": Test(" << t.second << ")\n -> Unexpected exception: '" << e.what() << "' error." << std::endl;
                 }
+                
+                if (err && exit_immediatly)
+                    _Exit(1);
             }
             
             // run teardown:
@@ -324,8 +398,8 @@ namespace yats
                            std::mem_fn(&context::task::operator()));
         }
 
-        std::cerr << tot_task - n << " tests failed." << std::endl;
-        return n == tot_task ? EXIT_SUCCESS : EXIT_FAILURE;
+        std::cerr << (run-ok) << " out of " << run  << " tests failed." << std::endl;
+        return ok == run ? EXIT_SUCCESS : EXIT_FAILURE;
     }
 
     struct task_register
