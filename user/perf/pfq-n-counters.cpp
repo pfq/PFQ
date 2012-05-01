@@ -31,6 +31,9 @@ namespace opt {
     size_t caplen = 64;
     size_t offset = 0;
     size_t slots  = 131072;
+
+    int group_id  = 42;
+
     static const int seconds = 600;
 }
 
@@ -87,16 +90,18 @@ namespace test
         ctx(int id, const char *d, const std::vector<int> & q)
         : m_id(id), m_dev(d), m_queues(q), m_stop(false), m_pfq(group_policy::undefined, opt::caplen, opt::offset, opt::slots), m_read()
         {
-            m_pfq.join_group(42, group_type::data, group_policy::shared);
+            int gid = opt::group_id != -1 ? opt::group_id : id;
+
+            m_pfq.join_group(gid, group_type::data, group_policy::shared);
             
             std::for_each(m_queues.begin(), m_queues.end(),[&](int q) {
                           std::cout << "adding bind to " << d << "@" << q << std::endl;       
-                    m_pfq.bind_group(42, d, q);
+                    m_pfq.bind_group(gid, d, q);
                 });
 
             if (!opt::steer_function.empty() && (m_id == 0))
             {
-                m_pfq.steer_group(42, opt::steer_function.c_str());
+                m_pfq.steer_group(gid, opt::steer_function.c_str());
             }   
 
             m_pfq.toggle_time_stamp(false);
@@ -197,7 +202,7 @@ unsigned int hardware_concurrency()
 
 void usage(const char *name)
 {
-    throw std::runtime_error(std::string("usage: ").append(name).append("[-h|--help] [-c caplen] [-o offset] [-s slots] [-b|--balance function-name] T1 T2... | T = dev:core:queue,queue..."));
+    throw std::runtime_error(std::string("usage: ").append(name).append("[-h|--help] [-c caplen] [-o offset] [-s slots] [-g gid ] [-b|--balance function-name] T1 T2... | T = dev:core:queue,queue..."));
 }
 
 
@@ -262,6 +267,22 @@ try
             }
 
             opt::slots = std::atoi(argv[i]);
+            continue;
+        }
+
+        if ( strcmp(argv[i], "-g") == 0 ||
+             strcmp(argv[i], "--gid") == 0) {
+            i++;
+            if (i == argc)
+            {
+                throw std::runtime_error("group_id missing");
+            }
+
+            if (strcmp(argv[i], "any") == 0)
+                opt::group_id = -1;
+            else
+                opt::group_id = std::atoi(argv[i]);
+
             continue;
         }
 
