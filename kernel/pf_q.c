@@ -41,7 +41,6 @@
 #include <net/inet_common.h>
 #endif
 
-#define __PFQ_MODULE__
 #include <linux/pf_q.h>
 
 #include <pf_q-priv.h>

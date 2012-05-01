@@ -25,7 +25,6 @@
 #define _PF_Q_STEER_H_ 
 
 #include <linux/skbuff.h>
-#define __PFQ_MODULE__
 #include <linux/pf_q.h>
 
 typedef unsigned long (*steer_function_t)(const struct sk_buff *);
