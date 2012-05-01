@@ -30,29 +30,29 @@
 #include <pf_q-steer-fun.h>
 
 
-unsigned long
+steer_ret_t
 steer_mac_addr(const struct sk_buff *skb)
 {
         uint16_t * a = (uint16_t *)eth_hdr(skb);
-	return STEER_OK( a[0] ^ a[1] ^ a[2] ^ a[3] ^ a[4] ^ a[5] );		
+	return steer_data( a[0] ^ a[1] ^ a[2] ^ a[3] ^ a[4] ^ a[5] );		
 }
 
 
-unsigned long
+steer_ret_t
 steer_vlan_untag(const struct sk_buff *skb)
 {
-	return skb->vlan_tci == 0;
+	return steer_data(skb->vlan_tci == 0);
 }
 
 
-unsigned long
+steer_ret_t
 steer_vlan_id(const struct sk_buff *skb)
 {
- 	return skb->vlan_tci & VLAN_VID_MASK;
+ 	return steer_data(skb->vlan_tci & VLAN_VID_MASK);
 }
 
 
-unsigned long 
+steer_ret_t
 steer_ipv4_addr(const struct sk_buff *skb)
 {       
 	if (eth_hdr(skb)->h_proto == htons(ETH_P_IP)) 
@@ -62,16 +62,16 @@ steer_ipv4_addr(const struct sk_buff *skb)
 
 		ip = skb_header_pointer(skb, skb->mac_len, sizeof(_iph), &_iph);
  		if (ip == NULL)
- 			return STEER_FAIL;
+ 			return steer_none();
 
-        	return STEER_OK( ip->saddr ^ ip->daddr );
+        	return steer_data( ip->saddr ^ ip->daddr );
 	}
 
-	return STEER_FAIL;
+	return steer_none();
 }
 
 
-unsigned long 
+steer_ret_t
 steer_ipv6_addr(const struct sk_buff *skb)
 {       
 	if (eth_hdr(skb)->h_proto == htons(ETH_P_IPV6)) 
@@ -81,9 +81,9 @@ steer_ipv6_addr(const struct sk_buff *skb)
 
 		ip6 = skb_header_pointer(skb, skb->mac_len, sizeof(_ip6h), &_ip6h);
  		if (ip6 == NULL)
- 			return STEER_FAIL;
+ 			return steer_none();
 
-		return STEER_OK(
+		return steer_data(
 			ip6->saddr.in6_u.u6_addr32[0] ^
 			ip6->saddr.in6_u.u6_addr32[1] ^
 			ip6->saddr.in6_u.u6_addr32[2] ^
@@ -94,10 +94,6 @@ steer_ipv6_addr(const struct sk_buff *skb)
 			ip6->daddr.in6_u.u6_addr32[3] );
 	}
 
-	return STEER_FAIL;
+	return steer_none();
 }
-
-
-
-
 

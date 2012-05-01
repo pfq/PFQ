@@ -24,15 +24,81 @@
 #ifndef _PF_Q_STEER_FUN_H_
 #define _PF_Q_STEER_FUN_H_ 
 
+#include <linux/pf_q.h>
 #include <linux/skbuff.h>
+ 
 
-#define STEER_OK(x) ((x) == 0 ? 1 : (x))
-#define STEER_FAIL	0
+typedef struct
+{
+	int type;
+	unsigned int hash;
+} steer_ret_t;
 
-extern unsigned long steer_mac_addr(const struct sk_buff *skb);
-extern unsigned long steer_vlan_untag(const struct sk_buff *skb);
-extern unsigned long steer_vlan_id(const struct sk_buff *skb);
-extern unsigned long steer_ipv4_addr(const struct sk_buff *skb);
-extern unsigned long steer_ipv6_addr(const struct sk_buff *skb);
+
+typedef steer_ret_t (*steer_function_t)(const struct sk_buff *);
+
+
+enum {
+    hash_clone = 1,
+    hash_bound = 2
+};
+
+
+static inline
+steer_ret_t steer_none(void)
+{
+    steer_ret_t ret = { 0, 0 };
+    return ret;
+}
+
+
+static inline
+steer_ret_t steer_data(unsigned long hash)
+{
+    steer_ret_t ret = { Q_GROUP_DATA, (hash < hash_bound ? hash + hash_bound : hash) };
+    return ret;
+}
+static inline
+steer_ret_t clone_data(void)
+{
+    steer_ret_t ret = { Q_GROUP_DATA, hash_clone };
+    return ret;
+}
+
+
+
+static inline
+steer_ret_t steer_control(unsigned long hash)
+{
+    steer_ret_t ret = { Q_GROUP_CONTROL, (hash < hash_bound ? hash + hash_bound : hash) };
+    return ret;
+}
+static inline
+steer_ret_t clone_control(void)
+{
+    steer_ret_t ret = { Q_GROUP_CONTROL, hash_clone };
+    return ret;
+}
+
+
+static inline
+steer_ret_t steer_out_of_band(unsigned long hash)
+{
+    steer_ret_t ret = { Q_GROUP_OUT_OF_BAND, (hash < hash_bound ? hash + hash_bound : hash) };
+    return ret;
+}
+static inline
+steer_ret_t clone_out_of_band(void)
+{
+    steer_ret_t ret = { Q_GROUP_OUT_OF_BAND, hash_clone };
+    return ret;
+}
+
+
+extern steer_ret_t steer_mac_addr(const struct sk_buff *skb);
+extern steer_ret_t steer_vlan_untag(const struct sk_buff *skb);
+extern steer_ret_t steer_vlan_id(const struct sk_buff *skb);
+extern steer_ret_t steer_ipv4_addr(const struct sk_buff *skb);
+extern steer_ret_t steer_ipv6_addr(const struct sk_buff *skb);
 
 #endif /* _PF_Q_STEER_FUN_H_ */

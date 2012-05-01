@@ -27,7 +27,7 @@
 #include <linux/skbuff.h>
 #include <linux/pf_q.h>
 
-typedef unsigned long (*steer_function_t)(const struct sk_buff *);
+#include <pf_q-steer-fun.h>
 
 extern void pfq_steer_factory_init(void);
 extern void pfq_steer_factory_free(void);
