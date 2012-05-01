@@ -33,8 +33,6 @@
 
 struct pfq_group
 {
-    bool init; /* true if the group is constructed */
-
     int pid;	/* process id for restricted join */;
 
 	atomic_long_t id_mask[Q_GROUP_TYPE_MAX];    /* for different group types: Q_GROUP_DATA, Q_GROUP_CONTROL, etc... */

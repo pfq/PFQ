@@ -43,7 +43,7 @@ __pfq_is_joinable(int gid, int policy)
 {
         struct pfq_group * that = &pfq_groups[gid];
 
-	if (!that->init)
+	if (!that->pid)
 		return true;
 
 	if (that->pid != -1) { /* restricted group */
@@ -78,10 +78,6 @@ __pfq_group_ctor(int gid)
 	sparse_set(&that->recv, 0);
 	sparse_set(&that->lost, 0);
 	sparse_set(&that->drop, 0);
-
-	wmb();
-
-	that->init = true;
 }
 
 
@@ -89,13 +85,11 @@ static void
 __pfq_group_dtor(int gid)
 {
         struct pfq_group * that = &pfq_groups[gid];
-        
+
 	/* remove this gid from demux matrix */
         pfq_devmap_update(map_reset, Q_ANY_DEVICE, Q_ANY_QUEUE, gid);
-
-	wmb();
-
-	that->init = false;
+	
+	that->pid = 0;
 }
 
 
@@ -105,7 +99,7 @@ __pfq_join_group(int gid, int id, int type, int policy)
 {
         unsigned long tmp = 0;
 
-        if (!pfq_groups[gid].init) {
+        if (!pfq_groups[gid].pid) {
          	__pfq_group_ctor(gid);
 	}
 	
@@ -113,10 +107,11 @@ __pfq_join_group(int gid, int id, int type, int policy)
 		return -1;
 	}
 	
+	tmp = atomic_long_read(&pfq_groups[gid].id_mask[type]);
 	tmp |= 1L << id;
         atomic_long_set(&pfq_groups[gid].id_mask[type], tmp);
+	
 	pfq_groups[gid].pid = (policy == Q_GROUP_RESTRICTED ? current->pid : -1);
-
         return 0;
 }
 
@@ -127,7 +122,7 @@ __pfq_leave_group(int gid, int id)
         unsigned long tmp;
 	int i;
 
-	if (!pfq_groups[gid].init)
+	if (!pfq_groups[gid].pid)
 		return -1;
 	
 	for(i = 0; i < Q_GROUP_TYPE_MAX; ++i)
@@ -157,8 +152,6 @@ __pfq_get_all_groups_mask(int gid)
 }
 
 
-
-
 int
 pfq_join_group(int gid, int id, int type, int policy)
 {
@@ -177,7 +170,7 @@ pfq_join_free_group(int id, int type, int policy)
         down(&group_sem);
         for(; n < Q_MAX_ID; n++)
         {            
-                if(!pfq_groups[n].init)
+                if(!pfq_groups[n].pid)
                 {
 			__pfq_join_group(n, id, type, policy);
                         up(&group_sem);
