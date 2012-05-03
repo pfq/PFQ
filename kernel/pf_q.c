@@ -36,6 +36,9 @@
 #include <linux/poll.h>
 #include <linux/etherdevice.h>
 #include <linux/if_vlan.h>  // VLAN_ETH_HLEN
+
+#include <linux/percpu.h>
+
 #include <net/sock.h>
 #ifdef CONFIG_INET
 #include <net/inet_common.h>
@@ -87,6 +90,18 @@ atomic_long_t pfq_vector[Q_MAX_ID];
 /* timestamp toggle */
 
 atomic_t timestamp_toggle;
+
+/* per-cpu data... */
+
+struct local_data 
+{
+  	unsigned long           eligible_mask;
+	unsigned long           sock_mask [Q_MAX_ID];
+        int                     sock_cnt;
+        struct pfq_queue_skb    batch_queue;
+};
+
+struct local_data __percpu 	* cpu_data;
 
 
 /* uhm okay, this is a legit form of static polymorphism */
@@ -287,44 +302,43 @@ pfq_direct_receive(struct sk_buff *skb, int index, int queue, bool direct)
                 pfq_enqueue_skb(skb, pq);
         }
 
-#ifndef PFQ_USE_SKB_PIPELINE
+
+#ifndef PFQ_USE_SKB_BATCH_QUEUE
 	if (likely(direct))
 		__kfree_skb(skb);
 	else
 		kfree_skb(skb);
 #else
-#pragma message "[PFQ] using skb pipeline"
+#pragma message "[PFQ] using skb batch queue"
 	/* enqueue skb to kfree pipeline ... */
 	{
 	
-	int q, me = get_cpu();
+	struct pfq_queue_skb * that_queue = &local_cache->batch_queue;
+        
+	if (pfq_queue_skb_push(that_queue, skb) == 0)
+	{
+		if (pfq_queue_skb_size(that_queue) == batch_len)
+		{
+			int n = 0;
 
-        if (pfq_skb_pipeline[me].counter < pipeline_len-1) {
-                pfq_skb_pipeline[me].queue[
-                pfq_skb_pipeline[me].counter++
-                ] = skb;
-                return 0;
-        }
+                        if (likely(direct))  {
+				queue_for_each_backward(skb, n, that_queue)
+				{
+                                	__kfree_skb(skb);
+				}
+			}
+			else {
+				queue_for_each_backward(skb, n, that_queue)
+				{
 
-        pfq_skb_pipeline[me].queue[pipeline_len-1] = skb;
-
-        for(q = 0; q < pipeline_len; q++)
-        {
-                if(pfq_skb_pipeline[me].queue[q]) 
-                {
-                        if (likely(direct))
-                                __kfree_skb(pfq_skb_pipeline[me].queue[q]);
-                        else
-                                kfree_skb(pfq_skb_pipeline[me].queue[q]);
-                }
-
-                __builtin_prefetch (&pfq_skb_pipeline[me].queue[q+1], 0, 1);
-                __builtin_prefetch (&pfq_skb_pipeline[me].queue[q],   1, 1);
-                pfq_skb_pipeline[me].queue[q]=0;
-        }
-
-        pfq_skb_pipeline[me].counter=0;
+                                	kfree_skb(skb);
+				}
+			}
+		
+			pfq_queue_skb_flush(that_queue);
+		} 
 	}
+
 #endif
         return 0;
 
@@ -1100,7 +1114,12 @@ static int __init pfq_init_module(void)
         if (n != 0)
                 return n;
 
-        /* register the pfq socket */
+	/* create a per-cpu context */
+	cpu_data = alloc_percpu(struct local_data);
+	if (!cpu_data)
+		return -ENOMEM;
+        
+	/* register the pfq socket */
         sock_register(&pfq_family_ops);
 
         /* finally register the basic device handler */
@@ -1118,7 +1137,7 @@ static int __init pfq_init_module(void)
 
 static void __exit pfq_exit_module(void)
 {        
-        int i,n;
+        int cpu;
 
         /* unregister the basic device handler */
         unregister_device_handler();
@@ -1129,15 +1148,24 @@ static void __exit pfq_exit_module(void)
         /* unregister the pfq protocol */
         proto_unregister(&pfq_proto);
 
-        /* destroy pipeline queues */
-        for(n=0; n < Q_MAX_CPU; n++) {
-                for(i=0 ; i< PFQ_PIPELINE_MAX_LEN; i++) {
-                        kfree_skb(pfq_skb_pipeline[n].queue[i]);
-                        pfq_skb_pipeline[n].queue[i] = NULL;
-                }
+        /* destroy pipeline queues (of each cpu) */
+
+        for_each_possible_cpu(cpu) {
+		
+                struct local_data *local_cache = per_cpu_ptr(cpu_data, cpu);
+                struct pfq_queue_skb *this_queue = &local_cache->batch_queue;
+                struct sk_buff *skb;
+		int n = 0;
+		queue_for_each(skb, n, this_queue)
+		{
+                 	kfree_skb(skb);
+		}
+       		pfq_queue_skb_flush(this_queue);
         }
 
-        printk(KERN_WARNING "[PF_Q] unloaded\n");
+        /* free per-cpu data */
+	free_percpu(cpu_data);
+
 	/* free steer functions */
 	pfq_steer_factory_free();
 
