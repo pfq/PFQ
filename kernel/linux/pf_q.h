@@ -88,20 +88,24 @@ struct pfq_hdr
 } __attribute__((packed));
 
 
+
 /* 
     [pfq_queue_descr][ ... queue .... ][ ... queue ... ]
  */
 
 struct pfq_queue_descr
 {
-    volatile int        data;
-    volatile int        disabled;
-    volatile int        poll_wait;
+    volatile int   data;
+    volatile int   poll_wait;
+
 } __attribute__((aligned(8)));
 
+
 #define DBMP_QUEUE_SLOT_SIZE(x)    ALIGN(sizeof(struct pfq_hdr) + x, 8)
-#define DBMP_QUEUE_INDEX(data)     ((data) & 0x8000000000000000ULL)
-#define DBMP_QUEUE_LEN(data)       ((data) & 0x7fffffffffffffffULL)
+
+#define DBMP_QUEUE_INDEX(data)     (((data) & 0xf0000000U) >> 28)
+#define DBMP_QUEUE_LEN(data)       ((data)  & 0x0fffffffU)
+
 
 /* set socket options */
 
