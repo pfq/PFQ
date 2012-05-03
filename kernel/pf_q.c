@@ -35,7 +35,7 @@
 #include <linux/ip.h>
 #include <linux/poll.h>
 #include <linux/etherdevice.h>
-#include <linux/if_vlan.h>  // VLAN_ETH_HLEN
+#include <linux/if_vlan.h> 
 
 #include <linux/percpu.h>
 
@@ -183,32 +183,6 @@ bool pfq_enqueue_skb(struct sk_buff *skb, struct pfq_opt *pq)
 
         return true;
 }
-
-
-
-/* unsigned long  */
-/* pfq_load_balancer(unsigned long sock_mask, const struct sk_buff *skb) */
-/* {  */
-/*         int index[sizeof(unsigned long)<<3]; */
-/*         int i = 0; */
-/*          */
-/*         struct ethhdr *eth; */
-/*         uint32_t hash; */
-/*  */
-/*         eth = (struct ethhdr *)skb_mac_header(skb); */
-/*         if (sock_mask == 0 || eth->h_proto != __constant_htons(eth_p_ip)) */
-/*                 return 0; */
-/*  */
-/*         while(sock_mask) */
-/*         { */
-/*                 int zn = __builtin_ctzl(sock_mask); */
-/*                 index[i++] = zn; */
-/*                 sock_mask ^= (1l << zn); */
-/*         } */
-/*  */
-/*         hash = ip_hdr(skb)->saddr ^ ip_hdr(skb)->daddr; */
-/*         return 1l << index[hash % i]; */
-/* } */
 
 
 struct pfq_steer_cache
@@ -379,7 +353,7 @@ pfq_packet_rcv
 #endif
     )
 {
-        if (skb_shared(skb)) {
+	if (skb_shared(skb)) {
                 struct sk_buff *nskb = skb_clone(skb, GFP_ATOMIC);
                 if (nskb == NULL) {
                         consume_skb(skb);
@@ -553,9 +527,11 @@ pfq_release(struct socket *sock)
 
 		pfq_dtor(pq);
 
+                msleep(10 /* msec */);
+
 		kfree(pq);
 	}
-
+        
         sock_orphan(sk);
 	sock->sk = NULL;
         
@@ -689,7 +665,8 @@ int pfq_getsockopt(struct socket *sock,
                     	    printk(KERN_INFO "[PFQ|%d] join error (gid:%d)\n", pq->q_id, group.gid);
                             return -EPERM;
                     }
-                    printk(KERN_INFO "[PFQ|%d] join -> group id:%d\n", pq->q_id, group.gid);
+                    printk(KERN_INFO "[PFQ|%d] join -> group id:%d type:%d\n", pq->q_id, 
+				    group.gid, group.type);
             } break;
 
         case SO_GROUP_STATS: 
@@ -757,13 +734,12 @@ int pfq_setsockopt(struct socket *sock,
                                     struct pfq_queue_descr *sq;
 
                                     /* alloc queue memory */
-                                    pq->q_addr = mpdb_queue_alloc(pq, mpdb_queue_size(pq), &pq->q_queue_mem);
+                                    pq->q_addr = mpdb_queue_alloc(pq, mpdb_queue_tot_mem(pq), &pq->q_queue_mem);
                                     if (pq->q_addr == NULL) {
                                             return -ENOMEM;
                                     }
                                     sq = (struct pfq_queue_descr *)pq->q_addr;
-                                    sq->data      = 0;
-                                    sq->disabled  = 0;
+                                    sq->data      = (1<<28);
                                     sq->poll_wait = 0;
 
                                     wmb();
