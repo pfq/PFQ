@@ -90,14 +90,14 @@ namespace net {
         {
             friend struct queue::const_iterator;
 
-            iterator(pfq_hdr *h, size_t slot_size)
-            : hdr_(h), slot_size_(slot_size)
+            iterator(pfq_hdr *h, size_t slot_size, int index)
+            : hdr_(h), slot_size_(slot_size), index_(index)
             {}
 
             ~iterator() = default;
             
             iterator(const iterator &other)
-            : hdr_(other.hdr_), slot_size_(other.slot_size_)
+            : hdr_(other.hdr_), slot_size_(other.slot_size_), index_(other.index_)
             {}
 
             iterator & 
@@ -134,6 +134,16 @@ namespace net {
                 return hdr_+1;
             }
 
+            bool
+            ready() const
+            {
+                if(hdr_->ready != index_) {
+                    return false;
+                }
+                rmb();
+                return true;
+            }
+
             bool 
             operator==(const iterator &other) const
             {
@@ -149,21 +159,22 @@ namespace net {
         private:
             pfq_hdr *hdr_;
             size_t   slot_size_;
+            int      index_;
         };
 
         /* simple forward const_iterator over frames */
         struct const_iterator : public std::iterator<std::forward_iterator_tag, pfq_hdr>
         {
-            const_iterator(pfq_hdr *h, size_t slot_size)
-            : hdr_(h), slot_size_(slot_size)
+            const_iterator(pfq_hdr *h, size_t slot_size, int index)
+            : hdr_(h), slot_size_(slot_size), index_(index)
             {}
 
             const_iterator(const const_iterator &other)
-            : hdr_(other.hdr_), slot_size_(other.slot_size_)
+            : hdr_(other.hdr_), slot_size_(other.slot_size_), index_(other.index_)
             {}
 
             const_iterator(const queue::iterator &other)
-            : hdr_(other.hdr_), slot_size_(other.slot_size_)
+            : hdr_(other.hdr_), slot_size_(other.slot_size_), index_(other.index_)
             {}
 
             ~const_iterator() = default;
@@ -202,6 +213,16 @@ namespace net {
                 return hdr_+1;
             }
 
+            bool
+            ready() const
+            {
+                if(hdr_->ready != index_) {
+                    return false;
+                }
+                rmb();
+                return true;
+            }
+
             bool 
             operator==(const const_iterator &other) const
             {
@@ -217,11 +238,12 @@ namespace net {
         private:
             pfq_hdr *hdr_;
             size_t   slot_size_;
+            int      index_;
         };
 
     public:
-        queue(void *addr, uint32_t slot_size, uint32_t queue_len)
-        : addr_(addr), slot_size_(slot_size), queue_len_(queue_len)
+        queue(void *addr, int slot_size, int queue_len, int index)
+        : addr_(addr), slot_size_(slot_size), queue_len_(queue_len), index_(index)
         {}
 
         ~queue() = default;
@@ -239,6 +261,12 @@ namespace net {
             return queue_len_ == false;
         }
 
+        int 
+        index() const
+        {
+            return index_;
+        }
+
         size_t
         slot_size() const
         {
@@ -254,56 +282,68 @@ namespace net {
         iterator
         begin()  
         {
-            return iterator(reinterpret_cast<pfq_hdr *>(addr_), slot_size_);
+            return iterator(reinterpret_cast<pfq_hdr *>(addr_), slot_size_, index_);
         }
 
         const_iterator
         begin() const  
         {
-            return const_iterator(reinterpret_cast<pfq_hdr *>(addr_), slot_size_);
+            return const_iterator(reinterpret_cast<pfq_hdr *>(addr_), slot_size_, index_);
         }
 
         iterator
         end()  
         {
             return iterator(reinterpret_cast<pfq_hdr *>(
-                        static_cast<char *>(addr_) + queue_len_ * slot_size_), slot_size_);
+                        static_cast<char *>(addr_) + queue_len_ * slot_size_), slot_size_, index_);
         }
 
         const_iterator
         end() const 
         {
             return const_iterator(reinterpret_cast<pfq_hdr *>(
-                        static_cast<char *>(addr_) + queue_len_ * slot_size_), slot_size_);
+                        static_cast<char *>(addr_) + queue_len_ * slot_size_), slot_size_, index_);
         }
 
         const_iterator
         cbegin() const
         {
-            return const_iterator(reinterpret_cast<pfq_hdr *>(addr_), slot_size_);
+            return const_iterator(reinterpret_cast<pfq_hdr *>(addr_), slot_size_, index_);
         }
 
         const_iterator
         cend() const 
         {
             return const_iterator(reinterpret_cast<pfq_hdr *>(
-                        static_cast<char *>(addr_) + queue_len_ * slot_size_), slot_size_);
+                        static_cast<char *>(addr_) + queue_len_ * slot_size_), slot_size_, index_);
         }
 
     private:
         void    *addr_;
-        uint32_t slot_size_;
-        uint32_t queue_len_;
+        int     slot_size_;
+        int     queue_len_;
+        int     index_;
     };
 
-    static inline void * data(pfq_hdr &h)
+    static inline void * data_ready(pfq_hdr &h, int index)
     {
+        if (h.ready != index)
+            return nullptr;
+
+        rmb();
+
         return &h + 1;
     }
-    static inline const void * data(const pfq_hdr &h)
+    static inline const void * data_ready(const pfq_hdr &h, int index)
     {
+        if (h.ready != index)
+            return nullptr;
+        
+        rmb();
+        
         return &h + 1;
     }
+ 
 
     //////////////////////////////////////////////////////////////////////
 
@@ -365,12 +405,11 @@ namespace net {
             int gid;
 
             void * queue_addr;
-            size_t queue_size;
+            size_t queue_tot_mem;
             size_t queue_slots; 
             size_t queue_caplen;
             size_t queue_offset;
             size_t slot_size;
-            size_t next_len;
         };
 
         int fd_;
@@ -508,7 +547,7 @@ namespace net {
                 throw pfq_error("PFQ: module not loaded");
             
             /* allocate pdata */
-            pdata_.reset(new pfq_data { -1, -1, nullptr, 0, 0, 0, offset, 0, 0 });
+            pdata_.reset(new pfq_data { -1, -1, nullptr, 0, 0, 0, offset, 0 });
 
             /* get id */
             socklen_t size = sizeof(pdata_->id);
@@ -564,7 +603,7 @@ namespace net {
             if (::getsockopt(fd_, PF_Q, SO_GET_QUEUE_MEM, &tot_mem, &size) == -1)
                 throw pfq_error(errno, "PFQ: SO_GET_QUEUE_MEM");
             
-            pdata_->queue_size = tot_mem;
+            pdata_->queue_tot_mem = tot_mem;
 
             if ((pdata_->queue_addr = mmap(nullptr, tot_mem, PROT_READ|PROT_WRITE, MAP_SHARED, fd_, 0)) == MAP_FAILED) 
                 throw pfq_error(errno, "PFQ: mmap error");
@@ -578,11 +617,11 @@ namespace net {
             if (fd_ == -1)
                 throw pfq_error("PFQ: not open");
 
-            if (munmap(pdata_->queue_addr, pdata_->queue_size) == -1)
+            if (munmap(pdata_->queue_addr, pdata_->queue_tot_mem) == -1)
                 throw pfq_error(errno, "PFQ: munmap");
             
             pdata_->queue_addr = nullptr;
-            pdata_->queue_size = 0;
+            pdata_->queue_tot_mem = 0;
             
             int one = 0;
             if(::setsockopt(fd_, PF_Q, SO_TOGGLE_QUEUE, &one, sizeof(one)) == -1)
@@ -879,7 +918,7 @@ namespace net {
                 throw pfq_error("PFQ: buffer too small");
 
             memcpy(buff.first, this_queue.data(), this_queue.slot_size() * this_queue.size());
-            return queue(buff.first, this_queue.slot_size(), this_queue.size());
+            return queue(buff.first, this_queue.slot_size(), this_queue.size(), this_queue.index());
         }
 
         // typedef void (*pfq_handler)(char *user, const struct pfq_hdr *h, const char *data); 
@@ -931,7 +970,7 @@ namespace net {
         mem_size() const
         {
             if (pdata_)
-                return pdata_->queue_size;
+                return pdata_->queue_tot_mem;
             return 0;
         }
 
