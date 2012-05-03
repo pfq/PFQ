@@ -70,13 +70,13 @@ namespace net {
     }
 
     static inline
-    void mb()  { asm volatile ("": : :"memory"); }
+    void mb()  { asm volatile ("mfence" ::: "memory"); }
 
     static inline
-    void wmb() { asm volatile ("": : :"memory"); }
+    void wmb() { asm volatile ("lfence" ::: "memory"); }
     
     static inline
-    void rmb() { asm volatile ("": : :"memory"); }
+    void rmb() { asm volatile ("sfence" ::: "memory"); }
 
 
     class queue 
