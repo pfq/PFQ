@@ -184,7 +184,7 @@ Context(PFQ)
 
         x.open(64);
         
-        Assert(x.slot_size(), is_equal_to(80));
+        Assert(x.slot_size(), is_equal_to(88));
     }
 
 

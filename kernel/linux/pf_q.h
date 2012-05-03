@@ -52,26 +52,9 @@
 
 #define PF_Q    27          /* packet q domain: note it's the same as the old pf_ring */
 
+
 struct pfq_hdr
 {
-    uint16_t    len;        /* length of the packet (off wire) */
-    uint16_t    caplen;     /* bytes captured */
-
-    union
-    {
-        struct 
-        {
-            uint16_t vlan_vid:12,   /* 8021q vlan id */
-                     ready:1,       /* internally used for release semantic */
-                     vlan_prio:3;   /* 8021q vlan priority */   
-        };
-
-        uint16_t     vlan_tci;
-    };
-
-    uint8_t     if_index;   /* 256 devices */    
-    uint8_t     hw_queue;   /* 256 queues per device */
-
     union 
     {
         unsigned long long tv64;
@@ -80,6 +63,27 @@ struct pfq_hdr
             uint32_t    nsec;
         } tv;               /* note: struct timespec is badly defined for 64 bits arch. */
     } tstamp;
+    
+    uint16_t    len;        /* length of the packet (off wire) */
+    uint16_t    caplen;     /* bytes captured */
+
+    union
+    {
+        struct 
+        {
+            uint16_t vlan_vid:12,   /* 8021q vlan id */
+                     reserved:1,    /* 8021q reserved bit */
+                     vlan_prio:3;   /* 8021q vlan priority */   
+        };
+
+        uint16_t     vlan_tci;
+    };
+
+    int         gid;        /* gruop id */
+    int         if_index;   /* interface index */    
+    
+    uint8_t     hw_queue;   /* 256 queues per device */
+    uint8_t     ready;
 
 } __attribute__((packed));
 
