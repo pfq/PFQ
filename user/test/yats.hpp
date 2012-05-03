@@ -287,9 +287,10 @@ namespace yats
     {
         std::cout << "Yats usage: " << name << " [options] [test...]" << std::endl;
         std::cout << "Options:\n";
-        std::cout << "  -e          On error exit immediatly.\n";
-        std::cout << "  -c context  Run tests from the given context.\n";
-        std::cout << "  -h          Print this help.\n";
+        std::cout << "  -e, --exit-immediatly   On error exit.\n";
+        std::cout << "  -c, --context context   Run tests from the given context.\n";
+        std::cout << "  -v, --verbose           Verbose mode.\n";
+        std::cout << "  -h, --help              Print this help.\n";
 
         _Exit(EXIT_SUCCESS);
     }
@@ -302,7 +303,7 @@ namespace yats
         std::set<std::string> cxt;
         std::set<std::string> test;
 
-        for(auto arg = argv + 1; arg != argv + argc; ++arg)
+        for(auto arg = argv + 1; argv && (arg != argv + argc); ++arg)
         {
             if (strcmp(*arg, "-h") == 0 ||
                 strcmp(*arg, "--help") == 0) {
