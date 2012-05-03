@@ -873,8 +873,9 @@ namespace net {
 
             struct pfq_queue_descr * q = static_cast<struct pfq_queue_descr *>(pdata_->queue_addr);
             
-            int data =  q->data;               
-            int index  = DBMP_QUEUE_INDEX(data) ? 1 : 0;
+            int data   = q->data;
+
+            int index  = DBMP_QUEUE_INDEX(data);
             
             size_t q_size = pdata_->queue_slots * pdata_->slot_size;
 
@@ -884,25 +885,17 @@ namespace net {
                 this->poll(microseconds);
             }
 
-            // clean the next buffer...
+            // reset the next buffer...
+            //
             
-            char * p = static_cast<char *>(pdata_->queue_addr) + sizeof(pfq_queue_descr) + !index * q_size;
-            for(unsigned int i = 0; i < pdata_->next_len; i++)
-            {
-                *reinterpret_cast<uint64_t *>(p) = 0; // h->ready = 0; (just a bit faster)
-                p += pdata_->slot_size;
-            }
-
-            wmb();
-
-            data = __sync_lock_test_and_set(&q->data, (index ? 0ULL : 0x8000000000000000ULL));
+            data = __sync_lock_test_and_set(&q->data, ((index+1) << 28));
             
-            q->disabled = 0;
+            
+            auto queue_len =  std::min(static_cast<size_t>(DBMP_QUEUE_LEN(data)), pdata_->queue_slots);
 
-            pdata_->next_len =  std::min(static_cast<size_t>(DBMP_QUEUE_LEN(data)), pdata_->queue_slots);
-
-            return queue(static_cast<char *>(pdata_->queue_addr) + sizeof(pfq_queue_descr) + index * q_size, 
-                         pdata_->slot_size, pdata_->next_len);
+            
+            return queue(static_cast<char *>(pdata_->queue_addr) + sizeof(pfq_queue_descr) + (index & 1) * q_size, 
+                            pdata_->slot_size, queue_len, index);
         }
 
 
