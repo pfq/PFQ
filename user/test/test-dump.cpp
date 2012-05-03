@@ -30,7 +30,8 @@ main(int argc, char *argv[])
 
             for(; it != it_e; ++it)
             {
-                    while(!it->ready);
+                    while (!it.ready())
+                        std::this_thread::yield();
 
                     printf("caplen:%d len:%d ifindex:%d hw_queue:%d tstamp: %u:%u -> ", it->caplen, it->len, it->if_index, it->hw_queue,
                                                                                        it->tstamp.tv.sec, it->tstamp.tv.nsec);

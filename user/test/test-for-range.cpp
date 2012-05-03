@@ -26,12 +26,10 @@ main(int argc, char *argv[])
             std::cout << "batch size: " << many.size() << " ===>" << std::endl;
 
             for(auto & packet : many)
-            {
-                while(!packet.ready);
-
-                // printf("caplen:%d len:%d ifindex:%d hw_queue:%d tstamp: %u:%u -> ", it->caplen, it->len, it->if_index, it->hw_queue,
-                //                                                                    it->tstamp.tv.sec, it->tstamp.tv.nsec);
-                char *buff = static_cast<char *>(data(packet));
+            {       
+                char *buff;
+                while(!(buff = static_cast<char *>(data_ready(packet, many.index()))))
+                    std::this_thread::yield();
 
                 for(int x=0; x < std::min<int>(packet.caplen, 34); x++)
                 {
