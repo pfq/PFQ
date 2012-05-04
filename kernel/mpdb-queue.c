@@ -76,7 +76,7 @@ mpdb_enqueue(struct pfq_opt *pq, struct sk_buff *skb)
         int  q_len   = DBMP_QUEUE_LEN(data);
         int  q_index = DBMP_QUEUE_INDEX(data);
 
-        if (q_len <= (pq->q_slots >> 1))
+        if (q_len <= (pq->q_slots))
         {
                 /* enqueue skb */
 
@@ -122,8 +122,8 @@ mpdb_enqueue(struct pfq_opt *pq, struct sk_buff *skb)
 
                 /* watermark */
 
-                if ((q_len > ( pq->q_slots >> 1)) 
-                                && queue_descr->poll_wait ) {
+                if ((q_len > (pq->q_slots >> 1)) && queue_descr->poll_wait 
+                                 && ((data & 255) == 0) ) {
                         wake_up_interruptible(&pq->q_waitqueue);
                 }
 
