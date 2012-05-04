@@ -264,7 +264,7 @@ pfq_direct_receive(struct sk_buff *skb, int __index, int __queue, bool direct)
 	if (pfq_queue_skb_size(batch_queue) < batch_len)
                 return 0;
 
-	queue_for_each_backward(skb, n, batch_queue)
+	queue_for_each(skb, n, batch_queue)
 	{
 #endif
         /* get the balancing groups bitmap */
