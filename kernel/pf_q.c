@@ -463,7 +463,7 @@ pfq_create(
 #endif
         /* alloc memory for this pq */
 
-        pq = (struct pfq_opt *)kmalloc( sizeof(struct pfq_opt), GFP_KERNEL);
+        pq = (struct pfq_opt *)kmalloc(sizeof(struct pfq_opt), GFP_KERNEL);
         if (!pq) 
         {
                 err = -ENOMEM;
@@ -932,8 +932,8 @@ pfq_memory_mmap(struct vm_area_struct *vma,
 }
 
 
-static int pfq_mmap(struct file *file,
-                    struct socket *sock, struct vm_area_struct *vma)
+static int 
+pfq_mmap(struct file *file, struct socket *sock, struct vm_area_struct *vma)
 {
         struct pfq_opt *pq = pfq_sk(sock->sk)->opt;
         unsigned long size = (unsigned long)(vma->vm_end - vma->vm_start);
@@ -956,7 +956,8 @@ static int pfq_mmap(struct file *file,
 }
 
 
-unsigned int pfq_poll(struct file *file, struct socket *sock, poll_table * wait)
+unsigned int 
+pfq_poll(struct file *file, struct socket *sock, poll_table * wait)
 {
         struct sock *sk = sock->sk;
         struct pfq_sock *po = pfq_sk(sk);
@@ -1104,16 +1105,16 @@ static int __init pfq_init_module(void)
         pfq_proto_ops_ctor();
         pfq_proto_ctor();
 
-        /* register pfq sniffer protocol */    
-        n = proto_register(&pfq_proto, 0);
-        if (n != 0)
-                return n;
-
 	/* create a per-cpu context */
 	cpu_data = alloc_percpu(struct local_data);
 	if (!cpu_data)
 		return -ENOMEM;
         
+        /* register pfq sniffer protocol */    
+        n = proto_register(&pfq_proto, 0);
+        if (n != 0)
+                return n;
+
 	/* register the pfq socket */
         sock_register(&pfq_family_ops);
 
