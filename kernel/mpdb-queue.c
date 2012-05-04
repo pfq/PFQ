@@ -76,7 +76,7 @@ mpdb_enqueue(struct pfq_opt *pq, struct sk_buff *skb)
         int  q_len   = DBMP_QUEUE_LEN(data);
         int  q_index = DBMP_QUEUE_INDEX(data);
 
-        if (q_len <= (pq->q_slots))
+        if (likely(q_len <= (pq->q_slots)))
         {
                 /* enqueue skb */
 
@@ -87,13 +87,20 @@ mpdb_enqueue(struct pfq_opt *pq, struct sk_buff *skb)
 
                 /* copy bytes of packet */
 
-                if (bytes && skb_copy_bits(skb, pq->q_offset, p_pkt, bytes) != 0)
+#ifdef PFQ_USE_SKB_LINEARIZE 
+                if (likely(bytes)) 
+                        skb_copy_from_linear_data_offset(skb, pq->q_offset, p_pkt, bytes);
+
+#else
+                if (likely(bytes) && 
+                        skb_copy_bits(skb, pq->q_offset, p_pkt, bytes) != 0)
                 {    
                         printk(KERN_INFO "[PFQ] BUG! skb_copy_bits failed (bytes=%lu, skb_len=%d mac_len=%d q_offset=%lu)!\n", 
                                                 bytes, skb->len, skb->mac_len, pq->q_offset);
                         return false;
                 }
 
+#endif                                
                 /* setup the header */
 
                 p_hdr->len      = skb->len;
