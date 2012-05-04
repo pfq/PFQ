@@ -228,7 +228,7 @@ void pfq_send_skb_to_mask(struct sk_buff *skb, unsigned long sock_mask)
 
 
 int 
-pfq_direct_receive(struct sk_buff *skb, int index, int queue, bool direct)
+pfq_direct_receive(struct sk_buff *skb, int __index, int __queue, bool direct)
 {       
         struct local_data * local_cache = this_cpu_ptr(cpu_data);
 	struct pfq_steer_cache steer_cache = { NULL, {0, 0}  };
@@ -269,7 +269,7 @@ pfq_direct_receive(struct sk_buff *skb, int index, int queue, bool direct)
 #endif
         /* get the balancing groups bitmap */
 
-        group_mask = __pfq_devmap_get_groups(index, queue);
+        group_mask = __pfq_devmap_get_groups(skb->dev->ifindex, skb_get_rx_queue(skb));
 
         while (group_mask)
         {         
