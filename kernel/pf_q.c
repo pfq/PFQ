@@ -164,11 +164,12 @@ bool pfq_filter(const struct sk_buff *skb)
 }
 
 
+inline
 bool pfq_enqueue_skb(struct sk_buff *skb, struct pfq_opt *pq)
 {
         /* eventually filter the packet... */
 
-        if (!pfq_filter(skb))
+        if (unlikely(!pfq_filter(skb)))
         {
                 sparse_inc(&pq->q_stat.drop);
                 return false;
