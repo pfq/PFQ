@@ -22,16 +22,16 @@
  ****************************************************************/
 
 
-#ifndef _PF_Q_BATCH_H_
-#define _PF_Q_BATCH_H_ 
+#ifndef _PF_Q_QUEUE_H_
+#define _PF_Q_QUEUE_H_ 
 
 
-#define PFQ_BATCH_MAX_LEN  1024
+#define PFQ_QUEUE_MAX_LEN  1024
 
 
 struct pfq_queue_skb
 {
-    struct sk_buff *queue[PFQ_BATCH_MAX_LEN];  /* sk_buff */
+    struct sk_buff *queue[PFQ_QUEUE_MAX_LEN];  /* sk_buff */
     size_t counter;
 };
 
@@ -49,7 +49,7 @@ static inline
 int
 pfq_queue_skb_push(struct pfq_queue_skb *q, struct sk_buff *skb)
 {
-	 if (q->counter < (PFQ_BATCH_MAX_LEN-1))
+	 if (q->counter < (PFQ_QUEUE_MAX_LEN-1))
 	 {
      	q->queue[q->counter++] = skb;
         return 0; 
@@ -73,4 +73,4 @@ pfq_queue_skb_size(struct pfq_queue_skb *q)
 }
 
 
-#endif /* _PF_Q_BATCH_H_ */
+#endif /* _PF_Q_QUEUE_H_ */

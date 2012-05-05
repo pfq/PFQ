@@ -49,7 +49,7 @@
 #include <pf_q-priv.h>
 #include <pf_q-devmap.h>
 #include <pf_q-group.h>
-#include <pf_q-batch.h>
+#include <pf_q-queue.h>
 #include <pf_q-steer.h>
 
 #include <mpdb-queue.h>
