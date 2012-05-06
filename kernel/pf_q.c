@@ -520,7 +520,7 @@ pfq_release(struct socket *sock)
 
         	pfq_leave_all_groups(pq->q_id);
 
-		wmb();
+		smp_wmb();
 
 		/* Convenient way to avoid a race condition,
 		 * without using rwmutexes that are very expensive 
@@ -745,7 +745,7 @@ int pfq_setsockopt(struct socket *sock,
                                     sq->data      = (1<<28);
                                     sq->poll_wait = 0;
 
-                                    wmb();
+                                    smp_wmb();
 
                                     pq->q_active = true;
                             }
@@ -753,7 +753,7 @@ int pfq_setsockopt(struct socket *sock,
                     else {
                         pq->q_active = false;
                         msleep(10);
-                        wmb();
+                        smp_wmb();
                         mpdb_queue_free(pq);
                     }
 
