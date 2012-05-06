@@ -30,7 +30,7 @@ namespace opt {
     std::string steer_function;
     size_t caplen = 64;
     size_t offset = 0;
-    size_t slots  = 131072;
+    size_t slots  = 262144;
 
     int group_id  = 42;
 
