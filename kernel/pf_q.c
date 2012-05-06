@@ -1028,7 +1028,7 @@ pfq_ioctl(struct socket *sock, unsigned int cmd, unsigned long arg)
 
 
 static
-void pfq_proto_ops_ctor(void)
+void pfq_proto_ops_init(void)
 {
         pfq_ops = (struct proto_ops) 
         {
@@ -1059,7 +1059,7 @@ void pfq_proto_ops_ctor(void)
 
 
 static
-void pfq_proto_ctor(void)
+void pfq_proto_init(void)
 {
         pfq_proto = (struct proto)
         {
@@ -1071,7 +1071,7 @@ void pfq_proto_ctor(void)
 
 
 static
-void pfq_net_proto_family_ctor(void)
+void pfq_net_proto_family_init(void)
 {
         pfq_family_ops = (struct net_proto_family)
         {
@@ -1107,9 +1107,9 @@ static int __init pfq_init_module(void)
         int n;
         printk(KERN_WARNING "[PFQ] loading (%s)\n", Q_VERSION);
 
-        pfq_net_proto_family_ctor();
-        pfq_proto_ops_ctor();
-        pfq_proto_ctor();
+        pfq_net_proto_family_init();
+        pfq_proto_ops_init();
+        pfq_proto_init();
 
 	/* create a per-cpu context */
 	cpu_data = alloc_percpu(struct local_data);
