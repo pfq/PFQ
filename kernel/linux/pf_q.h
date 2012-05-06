@@ -27,9 +27,7 @@
 
 #ifdef __KERNEL__
 
-
-#define Q_VERSION               "1.4.1"
-#define Q_VERSION_NUM           0x010001
+#define Q_VERSION               "2.0"
 
 #define Q_MAX_CPU               64
 #define Q_MAX_ID                64
