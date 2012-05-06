@@ -112,12 +112,16 @@ inline
 struct pfq_opt * 
 pfq_get_opt(unsigned int id)
 {
-        if (unlikely(id >= Q_MAX_ID))
+        struct pfq_opt * opt;
+        if (unlikely(id >= Q_MAX_ID || id < 0))
         {
-                printk(KERN_WARNING "[PF_Q] pfq_devmap_freeid: bad id(%u)\n", id);
-                return 0;
+                printk(KERN_WARNING "[PFQ] pfq_devmap_freeid: bad id=%d\n", id);
+                return NULL;
         }
-        return (struct pfq_opt *)pfq_vector[id].counter;  // atomic_read not required here.
+        
+	opt = (struct pfq_opt *)atomic_long_read(&pfq_vector[id]);  
+	smp_read_barrier_depends();
+	return opt;  
 }
 
 
@@ -429,9 +433,11 @@ pfq_create(
                 goto ctor_err;
         }
 
+	smp_wmb();
+
         /* store the pq */
         psk = pfq_sk(sk);
-        psk->opt = pq;
+	psk->opt = pq;
         return 0;
 
 ctor_err:    
