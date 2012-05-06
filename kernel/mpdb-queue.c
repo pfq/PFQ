@@ -111,7 +111,7 @@ mpdb_enqueue(struct pfq_opt *pq, struct sk_buff *skb)
                         }
 
                         /* commit the slot with release semantic */
-                        wmb();
+                        smp_wmb();
 
                         p_hdr->commit = 1;
 

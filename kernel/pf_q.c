@@ -469,8 +469,6 @@ pfq_release(struct socket *sock)
                 printk(KERN_INFO "[PF_Q] global.tstamp => %d\n", atomic_read(&global.tstamp));
         }
 
-        wmb();
-
         /* Convenient way to avoid a race condition,
          * without using rwmutexes that are very expensive 
          */
@@ -647,7 +645,7 @@ int pfq_setsockopt(struct socket *sock,
                                     sq->disabled  = 0;
                                     sq->poll_wait = 0;
 
-                                    wmb();
+                                    smp_wmb();
 
                                     pq->q_active = true;
                             }
@@ -655,7 +653,7 @@ int pfq_setsockopt(struct socket *sock,
                     else {
                         pq->q_active = false;
 
-                        wmb();
+                        smp_wmb();
 
                         msleep(10);
                         mpdb_queue_free(pq);
