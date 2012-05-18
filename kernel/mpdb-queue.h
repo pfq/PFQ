@@ -28,10 +28,15 @@
 #include <linux/skbuff.h>
 #include <linux/pf_q.h>
 #include <linux/if_vlan.h>
+#include <pf_q-queue.h>
 #include <pf_q-priv.h>
 
 extern bool 
 mpdb_enqueue(struct pfq_opt *pq, struct sk_buff *skb);
+
+
+extern int 
+mpdb_enqueue_batch(struct pfq_opt *pq, unsigned long queue_mask, int len, struct pfq_queue_skb *skbs);
 
 
 extern void *

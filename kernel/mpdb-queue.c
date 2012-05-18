@@ -65,6 +65,96 @@ mpdb_queue_free(struct pfq_opt *pq)
 }    
 
 
+int 
+mpdb_enqueue_batch(struct pfq_opt *pq, unsigned long queue, int queue_len, struct pfq_queue_skb *skbs)
+{
+        struct pfq_queue_descr *queue_descr = (struct pfq_queue_descr *)pq->q_addr;
+
+        int  data  = atomic_add_return(queue_len, (atomic_t *)&queue_descr->data);
+        
+        struct sk_buff *skb;
+        int n, sent = 0;
+
+        queue_for_each_mask(skb, queue, n, skbs)
+        {
+        
+        size_t bytes = (skb->len > pq->q_offset) ? min(skb->len - pq->q_offset, pq->q_caplen) : 0;
+        int  q_len   = DBMP_QUEUE_LEN(data);
+        int  q_index = DBMP_QUEUE_INDEX(data);
+
+        if (likely(q_len <= (pq->q_slots)))
+        {
+                /* enqueue skb */
+
+                struct pfq_hdr *p_hdr = (struct pfq_hdr *)((char *)(queue_descr+1) + (q_index&1) * pq->q_slot_size * pq->q_slots 
+                                                + (q_len-1) * pq->q_slot_size);
+
+                char *p_pkt = (char *)(p_hdr+1);
+
+                /* copy bytes of packet */
+
+#ifdef PFQ_USE_SKB_LINEARIZE 
+                if (likely(bytes)) 
+                        skb_copy_from_linear_data_offset(skb, pq->q_offset, p_pkt, bytes);
+
+#else
+                if (likely(bytes) && 
+                        skb_copy_bits(skb, pq->q_offset, p_pkt, bytes) != 0)
+                {    
+                        printk(KERN_INFO "[PFQ] BUG! skb_copy_bits failed (bytes=%lu, skb_len=%d mac_len=%d q_offset=%lu)!\n", 
+                                                bytes, skb->len, skb->mac_len, pq->q_offset);
+                        return false;
+                }
+#endif                                
+                /* setup the header */
+
+                p_hdr->len      = skb->len;
+                p_hdr->caplen 	= bytes;
+                p_hdr->if_index = skb->dev->ifindex & 0xff;
+                p_hdr->hw_queue = skb_get_rx_queue(skb) & 0xff;                      
+
+                if (pq->q_tstamp != 0)
+                {
+                        struct timespec ts;
+                        skb_get_timestampns(skb, &ts); 
+                        p_hdr->tstamp.tv.sec  = ts.tv_sec;
+                        p_hdr->tstamp.tv.nsec = ts.tv_nsec;
+                }
+
+		if (skb->vlan_tci)
+		{
+                	p_hdr->vlan_tci = skb->vlan_tci;
+		}
+                
+                /* commit the slot (release semantic) */
+
+		smp_wmb();
+
+                p_hdr->ready = q_index;
+
+                /* watermark */
+
+                if ((q_len > (pq->q_slots >> 1)) && queue_descr->poll_wait 
+                                 && ((data & 1023) == 0) ) {
+                        wake_up_interruptible(&pq->q_waitqueue);
+                }
+
+                sent++;
+        }
+        else {
+                if ( queue_descr->poll_wait ) {
+                        wake_up_interruptible(&pq->q_waitqueue);
+                }
+                return sent;
+        }
+
+                data++;
+        }
+
+        return sent;
+}
+
+
 bool 
 mpdb_enqueue(struct pfq_opt *pq, struct sk_buff *skb)
 {
@@ -130,7 +220,7 @@ mpdb_enqueue(struct pfq_opt *pq, struct sk_buff *skb)
                 /* watermark */
 
                 if ((q_len > (pq->q_slots >> 1)) && queue_descr->poll_wait 
-                                 && ((data & 255) == 0) ) {
+                                 && ((data & 1023) == 0) ) {
                         wake_up_interruptible(&pq->q_waitqueue);
                 }
 
