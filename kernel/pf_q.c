@@ -97,7 +97,7 @@ struct local_data
   	unsigned long           eligible_mask;
 	unsigned long           sock_mask [Q_MAX_ID];
         int                     sock_cnt;
-        struct pfq_queue_skb    batch_queue;
+        struct pfq_queue_skb    prefetch_queue;
 };
 
 struct local_data __percpu 	* cpu_data;
@@ -163,28 +163,20 @@ bool pfq_filter(const struct sk_buff *skb)
 
 
 inline
-bool pfq_enqueue_skb(struct sk_buff *skb, struct pfq_opt *pq)
+bool pfq_copy_to_user_skbs(struct pfq_opt *pq, unsigned long batch_queue, struct pfq_queue_skb *skbs)
 {
-        /* eventually filter the packet... */
-
-        if (unlikely(!pfq_filter(skb)))
-        {
-                sparse_inc(&pq->q_stat.drop);
-                return false;
-        }
-
         /* enqueue the sk_buff: it's wait-free. */
 
-        if (pq->q_active && mpdb_enqueue(pq, skb)) {
+        size_t len = hweight64(batch_queue);
+        size_t sent = 0;
 
-                /* increment recv counter */
-                sparse_inc(&pq->q_stat.recv);
-                return true;
+        if (likely(pq->q_active)) {
+                sent = mpdb_enqueue_batch(pq, batch_queue, len, skbs);
         }
-        else {
-                sparse_inc(&pq->q_stat.lost);
-                return false;
-        }
+
+        sparse_add(&pq->q_stat.recv, sent);
+        if (unlikely(len > sent))
+                sparse_add(&pq->q_stat.lost, len - sent);
 
         return true;
 }
@@ -200,7 +192,7 @@ struct pfq_steer_cache
 inline steer_ret_t
 pfq_memoized_call(struct pfq_steer_cache *mem, steer_function_t fun, const struct sk_buff *skb)
 {
-	if (mem->fun != fun) {
+	if (unlikely(mem->fun != fun)) {
 		mem->fun = fun;
 		mem->ret = fun(skb);
 	} 
@@ -211,16 +203,13 @@ pfq_memoized_call(struct pfq_steer_cache *mem, steer_function_t fun, const struc
 /* send this packet to selected sockets */
 
 inline
-void pfq_send_skb_to_mask(struct sk_buff *skb, unsigned long sock_mask)
+void pfq_enqueue_mask_to_batch(int j, unsigned long mask, unsigned long *batch_queue)
 {
-        while (sock_mask != 0)
-        {        
-                unsigned int zn = __builtin_ctz(sock_mask);
-		struct pfq_opt * pq = pfq_get_opt(zn);
-                if (pq) {
-                	pfq_enqueue_skb(skb, pq);
-                }
-                sock_mask ^= 1 << zn;
+        while(mask)
+        {
+                unsigned int i = __builtin_ctzl(mask);
+                batch_queue[i] |= 1L << j;
+                mask ^= 1L << i;
         }
 }
 
@@ -229,14 +218,12 @@ int
 pfq_direct_receive(struct sk_buff *skb, int __index, int __queue, bool direct)
 {       
         struct local_data * local_cache = this_cpu_ptr(cpu_data);
-	struct pfq_steer_cache steer_cache = { NULL, {0, 0}  };
-        unsigned long group_mask, sock_mask;
-
         struct pfq_steer_cache steer_cache = {NULL, {0, 0}};
         unsigned long group_mask, sock_mask, global_mask = 0;
         struct pfq_queue_skb * prefetch_queue = &local_cache->prefetch_queue;
         unsigned long batch_queue[sizeof(unsigned long) << 3];
         int n;
+
         /* if required, timestamp this packet now */
 
         if (atomic_read(&timestamp_toggle) && 
@@ -245,82 +232,99 @@ pfq_direct_receive(struct sk_buff *skb, int __index, int __queue, bool direct)
         }
 
         /* reset skb->data to the beginning of the packet */
-        
-	if (skb->pkt_type != PACKET_OUTGOING) {	
-		skb_push(skb, skb->mac_len);
-	}
-	else {
-		skb->mac_len = ETH_HLEN;
-	}
 
-	if (pfq_queue_skb_push(batch_queue, skb) == -1)
-	{
-                printk(KERN_INFO "[PFQ] batch_queue internal error\n");
+        if (skb->pkt_type != PACKET_OUTGOING) {	
+                skb_push(skb, skb->mac_len);
+        }
+        else {
+                skb->mac_len = ETH_HLEN;
+        }
+
+        if (pfq_queue_skb_push(prefetch_queue, skb) == -1)
+        {
+                printk(KERN_INFO "[PFQ] prefetch_queue internal error\n");
                 return -1;
         }
-	if (pfq_queue_skb_size(batch_queue) < batch_len)
+        if (pfq_queue_skb_size(prefetch_queue) < prefetch_len)
                 return 0;
 
-	queue_for_each(skb, n, batch_queue)
-	{
-        /* get the balancing groups bitmap */
+        memset(batch_queue, 0, sizeof(batch_queue));
 
-        group_mask = __pfq_devmap_get_groups(skb->dev->ifindex, skb_get_rx_queue(skb));
+        queue_for_each(skb, n, prefetch_queue)
+        {
+                /* get the balancing groups bitmap */
 
-        while (group_mask)
-        {         
-                int first = __builtin_ctzl(group_mask);
-                steer_ret_t resp;
-
-                steer_function_t steer_function = (steer_function_t) atomic_long_read(&pfq_groups[first].steer);
-
-                sparse_inc(&pfq_groups[first].recv);
+                group_mask = __pfq_devmap_get_groups(skb->dev->ifindex, skb_get_rx_queue(skb));
 
                 sock_mask = 0;
-                if (steer_function) {
+                while (group_mask)
+                {         
+                        int first = __builtin_ctzl(group_mask);
+                        steer_ret_t resp;
 
-                        resp = pfq_memoized_call(&steer_cache, steer_function, skb);
-                        if (likely(resp.hash)) {
+                        steer_function_t steer_function = (steer_function_t) atomic_long_read(&pfq_groups[first].steer);
 
-                                unsigned long eligible_mask = atomic_long_read(&pfq_groups[first].id_mask[resp.type]);
+                        sparse_inc(&pfq_groups[first].recv);
 
-                                if (resp.hash == hash_clone)
-                                {
-                                        sock_mask |= eligible_mask;
-                                        goto send_to_group;
-                                }
+                        if (steer_function) {
 
-                                if (unlikely(eligible_mask != local_cache->eligible_mask)) {
+                                resp = pfq_memoized_call(&steer_cache, steer_function, skb);
+                                if (likely(resp.hash)) {
 
-                                        local_cache->eligible_mask = eligible_mask;
-                                        local_cache->sock_cnt = 0;
-                                        while (eligible_mask)
-                                        {
-                                                int first_sock = eligible_mask & -eligible_mask;
-                                                local_cache->sock_mask[local_cache->sock_cnt++] = first_sock;
-                                                eligible_mask ^= first_sock;
+                                        unsigned long eligible_mask = atomic_long_read(&pfq_groups[first].id_mask[resp.type]);
+
+                                        if (resp.hash == hash_clone) {
+
+                                                sock_mask |= eligible_mask;
+                                                goto send_to_group;
+                                        }
+
+                                        if (unlikely(eligible_mask != local_cache->eligible_mask)) {
+
+                                                local_cache->eligible_mask = eligible_mask;
+                                                local_cache->sock_cnt = 0;
+                                                while (eligible_mask)
+                                                {
+                                                        int first_sock = eligible_mask & -eligible_mask;
+                                                        local_cache->sock_mask[local_cache->sock_cnt++] = first_sock;
+                                                        eligible_mask ^= first_sock;
+                                                }
+                                        }
+
+                                        if (local_cache->sock_cnt) {
+                                                sock_mask |= local_cache->sock_mask[resp.hash % local_cache->sock_cnt];
                                         }
                                 }
-
-                                if (local_cache->sock_cnt) {
-                                        sock_mask |= local_cache->sock_mask[resp.hash % local_cache->sock_cnt];
-                                }
                         }
+                        else {
+                                sock_mask |= atomic_long_read(&pfq_groups[first].id_mask[Q_GROUP_DATA]);
+                        }
+                send_to_group:
+                        group_mask ^= 1L << first;
                 }
-                else {
-                        sock_mask |= atomic_long_read(&pfq_groups[first].id_mask[Q_GROUP_DATA]);
-                }
-send_to_group:
-                if (sock_mask)
-                        pfq_send_skb_to_mask(skb, sock_mask);
 
-                group_mask ^= 1L << first;
+                pfq_enqueue_mask_to_batch(n, sock_mask, batch_queue);
+
+                global_mask |= sock_mask;
         }
 
-        if (likely(direct))
-		__kfree_skb(skb);
-	else
-		kfree_skb(skb);
+        while (global_mask)
+        {
+                unsigned int i = __builtin_ctzl(global_mask);
+                struct pfq_opt * pq = pfq_get_opt(i);
+                if (likely(pq)) {
+                        pfq_copy_to_user_skbs(pq, batch_queue[i], prefetch_queue);
+                }
+
+                global_mask ^= 1L << i;
+        }
+
+        queue_for_each_backward(skb, n, prefetch_queue)
+        {
+                if (likely(direct))
+                        __kfree_skb(skb);
+                else
+                        kfree_skb(skb);
 
         }       /* queue_for_each */
 
@@ -729,7 +733,7 @@ int pfq_setsockopt(struct socket *sock,
                                             return -ENOMEM;
                                     }
                                     sq = (struct pfq_queue_descr *)pq->q_addr;
-                                    sq->data      = (1<<28);
+                                    sq->data      = (1L << 28);
                                     sq->poll_wait = 0;
 
                                     smp_wmb();
@@ -1098,11 +1102,18 @@ static int __init pfq_init_module(void)
         pfq_proto_ops_init();
         pfq_proto_init();
 
+        if (prefetch_len >= (sizeof(unsigned long)<<3)) {
+                printk(KERN_WARNING "[PFQ] prefetch_len=%d not allawed (max=%lu)\n", prefetch_len, (sizeof(unsigned long) << 3)-1);
+                return -EFAULT;
+        }
+
 	/* create a per-cpu context */
 	cpu_data = alloc_percpu(struct local_data);
-	if (!cpu_data)
+	if (!cpu_data) {
+                printk(KERN_WARNING "[PFQ] not enought memory.\n");
 		return -ENOMEM;
-        
+        }
+
         /* register pfq sniffer protocol */    
         n = proto_register(&pfq_proto, 0);
         if (n != 0)
@@ -1119,7 +1130,6 @@ static int __init pfq_init_module(void)
 	pfq_steer_factory_init();
         
 	printk(KERN_WARNING "[PFQ] ready.\n");
-
         return 0;
 }
 
@@ -1142,7 +1152,7 @@ static void __exit pfq_exit_module(void)
         for_each_possible_cpu(cpu) {
 		
                 struct local_data *local_cache = per_cpu_ptr(cpu_data, cpu);
-                struct pfq_queue_skb *this_queue = &local_cache->batch_queue;
+                struct pfq_queue_skb *this_queue = &local_cache->prefetch_queue;
                 struct sk_buff *skb;
 		int n = 0;
 		queue_for_each(skb, n, this_queue)
