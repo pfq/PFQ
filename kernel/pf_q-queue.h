@@ -26,7 +26,7 @@
 #define _PF_Q_QUEUE_H_ 
 
 
-#define PFQ_QUEUE_MAX_LEN  1024
+#define PFQ_QUEUE_MAX_LEN  64
 
 
 struct pfq_queue_skb
