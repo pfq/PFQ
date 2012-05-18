@@ -62,9 +62,7 @@ struct proto_ops         pfq_ops;
 static int direct_path  = 0;
 static int queue_slots  = 131072; // slots per queue
 static int cap_len      = 1514;
-#ifdef PFQ_USE_SKB_BATCH_QUEUE
-static int batch_len 	= 16;
-#endif
+static int prefetch_len 	= 16;
 
 
 MODULE_LICENSE("GPL");
@@ -77,16 +75,12 @@ MODULE_DESCRIPTION("packet catpure system for 64bit multi-core architecture");
 module_param(direct_path,  int, 0644);
 module_param(cap_len,      int, 0644);
 module_param(queue_slots,  int, 0644);
-#ifdef PFQ_USE_SKB_BATCH_QUEUE
-module_param(batch_len,    int, 0644);
-#endif
+module_param(prefetch_len,    int, 0644);
 
 MODULE_PARM_DESC(direct_path, " Direct Path: 0 = classic, 1 = direct");
 MODULE_PARM_DESC(cap_len,     " Default capture length (bytes)");
 MODULE_PARM_DESC(queue_slots, " Queue slots (default=131072)");
-#ifdef PFQ_USE_SKB_BATCH_QUEUE
-MODULE_PARM_DESC(batch_len,   " Queue batch length");
-#endif
+MODULE_PARM_DESC(prefetch_len,   " Prefetch queue length");
 
 /* vector of pointers to pfq_opt */
 
@@ -238,11 +232,11 @@ pfq_direct_receive(struct sk_buff *skb, int __index, int __queue, bool direct)
 	struct pfq_steer_cache steer_cache = { NULL, {0, 0}  };
         unsigned long group_mask, sock_mask;
 
-#ifdef PFQ_USE_SKB_BATCH_QUEUE
-#pragma message "[PFQ] using skb batch queue"
-	struct pfq_queue_skb * batch_queue = &local_cache->batch_queue;
+        struct pfq_steer_cache steer_cache = {NULL, {0, 0}};
+        unsigned long group_mask, sock_mask, global_mask = 0;
+        struct pfq_queue_skb * prefetch_queue = &local_cache->prefetch_queue;
+        unsigned long batch_queue[sizeof(unsigned long) << 3];
         int n;
-#endif
         /* if required, timestamp this packet now */
 
         if (atomic_read(&timestamp_toggle) && 
@@ -259,7 +253,6 @@ pfq_direct_receive(struct sk_buff *skb, int __index, int __queue, bool direct)
 		skb->mac_len = ETH_HLEN;
 	}
 
-#ifdef PFQ_USE_SKB_BATCH_QUEUE
 	if (pfq_queue_skb_push(batch_queue, skb) == -1)
 	{
                 printk(KERN_INFO "[PFQ] batch_queue internal error\n");
@@ -270,7 +263,6 @@ pfq_direct_receive(struct sk_buff *skb, int __index, int __queue, bool direct)
 
 	queue_for_each(skb, n, batch_queue)
 	{
-#endif
         /* get the balancing groups bitmap */
 
         group_mask = __pfq_devmap_get_groups(skb->dev->ifindex, skb_get_rx_queue(skb));
@@ -330,15 +322,10 @@ send_to_group:
 	else
 		kfree_skb(skb);
 
-#ifdef PFQ_USE_SKB_BATCH_QUEUE
-        
         }       /* queue_for_each */
 
-        pfq_queue_skb_flush(batch_queue);
-
-#endif
+        pfq_queue_skb_flush(prefetch_queue);
         return 0;
-
 }
 
 
