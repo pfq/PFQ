@@ -45,6 +45,10 @@ struct pfq_queue_skb
         __builtin_prefetch((q)->queue[n-1], 0, 1), n--)
 
 
+#define queue_for_each_mask(skb, mask, n, q) \
+	for(n = __builtin_ctzl(mask); mask && ((skb = (q)->queue[n]), true); \
+            mask ^=(1L << n), n = __builtin_ctzl(mask))
+
 static inline
 int
 pfq_queue_skb_push(struct pfq_queue_skb *q, struct sk_buff *skb)
