@@ -13,5 +13,5 @@ clean:
 
 install:
 	mkdir -p ${INSTDIR}
-	cp c++/pfq.hpp ${INSTDIR}
+	cp C++/pfq.hpp ${INSTDIR}
 
