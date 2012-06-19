@@ -54,6 +54,10 @@
 #include <thread>
 #include <system_error>
 
+#if __GNUC__ == 4 &&  __GNUC_MINOR__ < 6 
+#define nullptr NULL
+#define noexcept throw()
+#endif
 
 namespace net { 
 
@@ -765,16 +769,17 @@ namespace net {
         size_t dispatch(Fun callback, long int microseconds = -1, char *user = nullptr)
         {
             auto many = this->read(microseconds); 
-            
-            auto it = std::begin(many),
-                 it_e = std::end(many);
             int n = 0;
+
+            auto it = many.begin(),
+                 it_e = many.end();
+            
             for(; it != it_e; ++it)
             {
                 while (!it->commit)
                     std::this_thread::yield();
 
-                callback(user, &(*it), reinterpret_cast<const char *>(it.data()));
+                callback(user, &*it, reinterpret_cast<const char *>(it.data()));
                 n++;
             }
             return n;
