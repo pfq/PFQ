@@ -58,7 +58,6 @@ steer_ret_t steer_none(void)
     return ret;
 }
 
-
 static inline
 steer_ret_t steer_data(unsigned long hash)
 {
@@ -73,14 +72,13 @@ steer_ret_t clone_data(void)
     return ret;
 }
 
-
-
 static inline
 steer_ret_t steer_control(unsigned long hash)
 {
     steer_ret_t ret = { Q_GROUP_CONTROL, (hash < hash_bound ? hash + hash_bound : hash) };
     return ret;
 }
+
 static inline
 steer_ret_t clone_control(void)
 {
@@ -88,13 +86,13 @@ steer_ret_t clone_control(void)
     return ret;
 }
 
-
 static inline
 steer_ret_t steer_out_of_band(unsigned long hash)
 {
     steer_ret_t ret = { Q_GROUP_OUT_OF_BAND, (hash < hash_bound ? hash + hash_bound : hash) };
     return ret;
 }
+
 static inline
 steer_ret_t clone_out_of_band(void)
 {
