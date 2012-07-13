@@ -38,6 +38,13 @@ typedef struct
 typedef steer_ret_t (*steer_function_t)(const struct sk_buff *);
 
 
+struct steer_hook 
+{
+    const char *        name;
+    steer_function_t    function;
+};
+
+
 enum {
     hash_clone = 1,
     hash_bound = 2
@@ -58,6 +65,7 @@ steer_ret_t steer_data(unsigned long hash)
     steer_ret_t ret = { Q_GROUP_DATA, (hash < hash_bound ? hash + hash_bound : hash) };
     return ret;
 }
+
 static inline
 steer_ret_t clone_data(void)
 {

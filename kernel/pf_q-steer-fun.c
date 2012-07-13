@@ -29,6 +29,14 @@
 
 #include <pf_q-steer-fun.h>
 
+struct steer_hook pfq_steer_hooks[] = {
+	{ "steer-mac-addr",   steer_mac_addr 	},
+        { "steer-vlan-untag", steer_vlan_untag 	},
+        { "steer-vlan-id",    steer_vlan_id	},
+        { "steer-ipv4-addr",  steer_ipv4_addr 	},
+        { "steer-ipv6-addr",  steer_ipv6_addr 	},
+	{ NULL, NULL}};
+
 
 steer_ret_t
 steer_mac_addr(const struct sk_buff *skb)

@@ -42,6 +42,8 @@ struct steer_factory_elem {
 };
 
 
+extern struct steer_hook pfq_steer_hooks[];
+
 
 LIST_HEAD(steer_factory);
 
@@ -52,12 +54,12 @@ LIST_HEAD(steer_factory);
 void 
 pfq_steer_factory_init() 
 {
-        pfq_register_steer_function("steer-mac-addr",   steer_mac_addr);
-        pfq_register_steer_function("steer-vlan-untag", steer_vlan_untag);
-        pfq_register_steer_function("steer-vlan-id",    steer_vlan_id);
-        pfq_register_steer_function("steer-ipv4-addr",  steer_ipv4_addr);
-        pfq_register_steer_function("steer-ipv6-addr",  steer_ipv6_addr);
-	
+	int i = 0;
+	for(; pfq_steer_hooks[i].name != NULL ; i++)
+	{          
+        	pfq_register_steer_function(pfq_steer_hooks[i].name, pfq_steer_hooks[i].function);
+	}
+
 	printk(KERN_INFO "[PFQ] steer factory initialized.\n");
 }
 
