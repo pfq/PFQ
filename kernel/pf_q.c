@@ -207,7 +207,7 @@ pfq_direct_receive(struct sk_buff *skb, int index, int queue, bool direct)
 {       
         struct pfq_opt * pq;
         unsigned long bm;
-        int me = get_cpu();
+        int me = smp_processor_id();
         int q;
 
         /* if required, timestamp this packet now */
