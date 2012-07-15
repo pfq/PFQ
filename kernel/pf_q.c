@@ -677,6 +677,11 @@ int pfq_getsockopt(struct socket *sock,
                     if (gid < 0  || gid >= Q_MAX_GROUP)
 			    return -EINVAL;
 
+		    if (!__pfq_has_joined_group(gid, pq->q_id)) {
+                    	    printk(KERN_INFO "[PFQ|%d] group stats: gid:%d -> no permission.\n", pq->q_id, gid);
+			    return -EPERM;
+		    }
+
                     stat.recv = sparse_read(&pfq_groups[gid].recv);
                     stat.lost = sparse_read(&pfq_groups[gid].lost);
                     stat.drop = sparse_read(&pfq_groups[gid].drop);

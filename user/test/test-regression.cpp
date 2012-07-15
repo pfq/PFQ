@@ -259,6 +259,10 @@ Context(PFQ)
 
         x.open(64);
 
+        AssertThrow(x.group_stats(11));
+
+        x.join_group(11);
+
         auto s = x.group_stats(11);
         Assert(s.recv, is_equal_to(0));
         Assert(s.lost, is_equal_to(0));
