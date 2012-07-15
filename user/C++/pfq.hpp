@@ -895,8 +895,10 @@ namespace net {
             auto queue_len =  std::min(static_cast<size_t>(DBMP_QUEUE_LEN(data)), pdata_->queue_slots);
 
             
-            return queue(static_cast<char *>(pdata_->queue_addr) + sizeof(pfq_queue_descr) + (index & 1) * q_size, 
-                            pdata_->slot_size, queue_len, index);
+            return queue(static_cast<char *>(pdata_->queue_addr) + 
+						 sizeof(pfq_queue_descr) + 
+						 (index & 1) * q_size, 
+                         pdata_->slot_size, queue_len, index);
         }
 
 

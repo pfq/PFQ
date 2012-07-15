@@ -26,7 +26,7 @@ main(int argc, char *argv[])
             queue::iterator it = many.begin();
             queue::iterator it_e = many.end();
 
-            std::cout << "batch size: " << many.size() << " ===>" << std::endl;
+            std::cout << "queue size: " << many.size() << " ===>" << std::endl;
 
             for(; it != it_e; ++it)
             {

@@ -125,8 +125,11 @@ static inline
 int
 pfq_iterator_ready(struct pfq_net_queue *nq, pfq_iterator_t iter)
 {
-	if (pfq_iterator_header(iter)->ready != nq->index)
-		return 0;
+	if (pfq_iterator_header(iter)->ready != nq->index) {
+	    printf("iter ready:%d index:%d\n", (int)pfq_iterator_header(iter)->ready,
+                                           nq->index); 
+        return 0;
+    }
 	rmb();
 	return 1;
 }
@@ -174,9 +177,9 @@ extern int pfq_disable(pfq_t *q);
 
 extern int pfq_is_enabled(pfq_t const *q);
 
-extern int pfq_toggle_time_stamp(pfq_t *q, int value);
+extern int pfq_toggle_timestamp(pfq_t *q, int value);
 
-extern int pfq_time_stamp(pfq_t const *q);
+extern int pfq_timestamp(pfq_t const *q);
 
 extern int pfq_ifindex(pfq_t const *q, const char *dev);
 
