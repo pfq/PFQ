@@ -876,7 +876,7 @@ namespace net {
             
             int data   = q->data;
 
-            int index  = DBMP_QUEUE_INDEX(data);
+            int index = DBMP_QUEUE_INDEX(data);
             
             size_t q_size = pdata_->queue_slots * pdata_->slot_size;
 
@@ -889,7 +889,7 @@ namespace net {
             // reset the next buffer...
             //
             
-            data = __sync_lock_test_and_set(&q->data, ((index+1) << 28));
+            data = __sync_lock_test_and_set(&q->data, ((index+1) << 24));
             
             
             auto queue_len =  std::min(static_cast<size_t>(DBMP_QUEUE_LEN(data)), pdata_->queue_slots);

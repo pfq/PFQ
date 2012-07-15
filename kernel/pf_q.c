@@ -62,7 +62,7 @@ struct proto_ops         pfq_ops;
 static int direct_path  = 0;
 static int queue_slots  = 131072; // slots per queue
 static int cap_len      = 1514;
-static int prefetch_len 	= 16;
+static int prefetch_len = 16;
 
 
 MODULE_LICENSE("GPL");
@@ -733,7 +733,7 @@ int pfq_setsockopt(struct socket *sock,
                                             return -ENOMEM;
                                     }
                                     sq = (struct pfq_queue_descr *)pq->q_addr;
-                                    sq->data      = (1L << 28);
+                                    sq->data      = (1L << 24);
                                     sq->poll_wait = 0;
 
                                     smp_wmb();

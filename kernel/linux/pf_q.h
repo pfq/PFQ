@@ -100,9 +100,8 @@ struct pfq_queue_descr
 
 
 #define DBMP_QUEUE_SLOT_SIZE(x)    ALIGN(sizeof(struct pfq_hdr) + x, 8)
-
-#define DBMP_QUEUE_INDEX(data)     (((data) & 0xf0000000U) >> 28)
-#define DBMP_QUEUE_LEN(data)       ((data)  & 0x0fffffffU)
+#define DBMP_QUEUE_INDEX(data)     (((data) & 0xff000000U) >> 24)
+#define DBMP_QUEUE_LEN(data)       ((data)  & 0x00ffffffU)
 
 
 /* set socket options */

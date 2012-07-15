@@ -538,7 +538,7 @@ pfq_read(pfq_t *q, struct pfq_net_queue *nq, long int microseconds)
 	// reset the next buffer...
 	//
 
-	data = __sync_lock_test_and_set(&qd->data, ((index+1) << 28));
+	data = __sync_lock_test_and_set(&qd->data, ((index+1) << 24));
 
 	size_t queue_len = min(DBMP_QUEUE_LEN(data), q->queue_slots);
 
