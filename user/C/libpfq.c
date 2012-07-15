@@ -517,11 +517,17 @@ pfq_get_group_stats(pfq_t const *q, int gid, struct pfq_stats *stats)
 int 
 pfq_read(pfq_t *q, struct pfq_net_queue *nq, long int microseconds) 
 {
-	struct pfq_queue_descr * qd = (struct pfq_queue_descr *)(q->queue_addr);
-	int data   = qd->data;
-	int index  = DBMP_QUEUE_INDEX(data);
-        
 	size_t q_size = q->queue_slots * q->slot_size;
+	struct pfq_queue_descr * qd;
+	int data, index;
+       
+        if (q->queue_addr == NULL) {
+         	return q->error = "PFQ: read on pfq socket not enabled", -1;
+	}
+
+	qd = (struct pfq_queue_descr *)(q->queue_addr);
+	data   = qd->data;
+	index  = DBMP_QUEUE_INDEX(data);
 
 	/*  watermark for polling... */
 
