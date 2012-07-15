@@ -2,7 +2,10 @@
 
 env = Environment(CPPPATH=['.',  '../C++', '../C', '../../kernel'], 
 
-CXXFLAGS=['-O3','-march=native', '-Wall', '-Wextra', '-std=c++11'])
+CFLAGS=['-O3','-march=native', '-Wall', '-Wextra' ])
 
-env.Library(target = 'pfq', source = ['libpfq.cpp'], LIBS = ['stdc++'])
+env.Append(CPPDEFINES=['_GNU_SOURCE'])
+
+env.Library(target = 'pfq', source = ['libpfq.c'])
+
 

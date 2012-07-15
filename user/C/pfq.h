@@ -35,48 +35,151 @@
 #include <stddef.h>
 #include <linux/pf_q.h>
 
-enum pfq_group_policy {
-        restricted,
-        open,
-        undefined   
+#ifndef PFQ_LIBRARY
+
+typedef void *pfq_t;   /* pfq descritor */
+
+#endif
+
+
+/* memory barriers */
+
+static inline
+void mb()  { asm volatile ("mfence" ::: "memory"); }
+
+static inline
+void wmb() { asm volatile ("lfence" ::: "memory"); }
+
+static inline
+void rmb() { asm volatile ("sfence" ::: "memory"); }
+
+
+/* pfq_net_queue */
+
+typedef char * pfq_iterator_t;
+
+struct pfq_net_queue
+{	
+	pfq_iterator_t queue; 	  		/* net queue */
+	int            index; 	  		/* current queue index */ 
+	size_t         len;       		/* number of packets in the queue */
+    size_t         slot_size;
 };
 
 
-/* placeholder type for pfq descriptor */
+static inline 
+pfq_iterator_t
+pfq_net_queue_begin(struct pfq_net_queue *nq)
+{
+    return nq->queue;
+}
+ 	
+static inline 
+pfq_iterator_t
+pfq_net_queue_end(struct pfq_net_queue *nq)
+{
+    return nq->queue + nq->len * nq->slot_size;
+}
 
-typedef void * pfq_t;
+static inline 
+pfq_iterator_t
+pfq_net_queue_next(struct pfq_net_queue *nq, pfq_iterator_t iter)
+{
+    return iter + nq->slot_size;
+}
 
-typedef void (*pfq_handler)(char *user, const struct pfq_hdr *h, const char *data); 
+static inline 
+pfq_iterator_t
+pfq_net_queue_prev(struct pfq_net_queue *nq, pfq_iterator_t iter)
+{
+    return iter - nq->slot_size;
+}
 
-extern pfq_t pfq_open(size_t calpen, size_t offset, size_t slots);
-extern void  pfq_close(pfq_t *);
+static inline
+struct pfq_hdr *
+pfq_net_queue_header(pfq_iterator_t iter)
+{
+    return (struct pfq_hdr *)iter;
+}
+
+static inline
+struct pfq_hdr *
+pfq_net_queue_data(pfq_iterator_t iter)
+{
+    return (struct pfq_hdr *)(iter + sizeof(struct pfq_hdr));
+}
+
+
+/* pfq handler */
+
+typedef void (*pfq_handler_t)(char *user, const struct pfq_hdr *h, const char *data); 
+
+/* 
+ * library functions 
+ */
+
+
+extern pfq_t* pfq_open(size_t calpen, size_t offset, size_t slots);
+
+/*
+ * group_type: 	 Q_GROUP_RESTRICTED, Q_GROUP_SHARED, Q_GROUP_UNDEFINED
+ * group_policy: Q_GROUP_DATA, Q_GROUP_CONTROL, Q_GROUP_OUT_OF_BAND...
+ */
+
+extern pfq_t* pfq_open_group(int group_type, 
+							 int group_policy, 
+							 size_t calpen, size_t offset, size_t slots);
+
+extern int pfq_close(pfq_t *);
+
 extern const char *pfq_error(pfq_t *);
 
-extern void pfq_enable(pfq_t *q, int *ok);
-extern int  pfq_disable(pfq_t *q, int *ok);
-extern int  pfq_is_enabled(pfq_t const *q, int *ok);
+extern int pfq_ifindex(pfq_t const *q, const char *dev);
+extern int pfq_enable(pfq_t *q);
+extern int pfq_disable(pfq_t *q);
 
-extern void pfq_load_balance(pfq_t *q, int value, int *ok);
-extern int pfq_ifindex(pfq_t const *q, const char *dev, int *ok);
-extern void pfq_set_time_stamp(pfq_t *q, int value, int *ok);
-extern int pfq_get_time_stamp(pfq_t const *q, int *ok);
-extern void pfq_set_caplen(pfq_t *q, size_t value, int *ok);
-extern size_t pfq_get_caplen(pfq_t const *q, int *ok);
-extern void pfq_set_offset(pfq_t *q, size_t value, int *ok);
-extern size_t pfq_get_offset(pfq_t const *q, int *ok);
-extern void pfq_set_slots(pfq_t *q, size_t value, int *ok);
-extern size_t pfq_get_slots(pfq_t const *q, int *ok);
-extern size_t pfq_get_slot_size(pfq_t const *q, int *ok);
-extern void pfq_add_device_by_index(pfq_t *q, int index, int queue, int *ok);
-extern void pfq_add_device_by_name(pfq_t *q, const char *dev, int queue,int *ok);
-extern void pfq_remove_device_by_index(pfq_t *q, int index, int queue, int *ok);
-extern void pfq_remove_device_by_name(pfq_t *q, const char *dev, int queue, int *ok);
-extern int pfq_poll(pfq_t *q, long int usec, int *ok);
-extern int pfq_id(pfq_t const *q, int *ok);
-extern int pfq_fd(pfq_t const *q);
+extern int pfq_is_enabled(pfq_t const *q);
 
-extern struct pfq_stats pfq_get_stats(pfq_t const *q, int *ok);
+extern int pfq_toggle_time_stamp(pfq_t *q, int value);
 
-extern int pfq_dispatch(pfq_t *q, pfq_handler callback, char *user, int *ok);
+extern int pfq_time_stamp(pfq_t const *q);
+
+extern int pfq_ifindex(pfq_t const *q, const char *dev);
+
+extern int pfq_set_caplen(pfq_t *q, size_t value);
+
+extern int pfq_get_caplen(pfq_t const *q);
+
+extern int pfq_set_offset(pfq_t *q, size_t value);
+
+extern int pfq_get_offset(pfq_t const *q);
+
+extern int pfq_set_slots(pfq_t *q, size_t value);
+
+extern int pfq_get_slots(pfq_t const *q);
+
+extern int pfq_get_slot_size(pfq_t const *q); 
+
+extern int pfq_bind_group(pfq_t *q, int gid, const char *dev, int queue);
+
+extern int pfq_bind(pfq_t *q, const char *dev, int queue);
+
+extern int pfq_unbind_group(pfq_t *q, int gid, const char *dev, int queue); /* Q_ANY_QUEUE */
+
+extern int pfq_unbind(pfq_t *q, const char *dev, int queue);
+
+extern int pfq_groups_mask(pfq_t const *q, unsigned long *_mask);
+
+extern int pfq_steer_function(pfq_t *q, int gid, const char *fun_name);
+
+extern int pfq_join_group(pfq_t *q, int gid, short int group_type, short int group_policy);
+
+extern int leave_group(pfq_t *q, int gid);
+        
+extern int pfq_poll(pfq_t *q, long int microseconds /* = -1 -> infinite */);
+
+extern int pfq_stats(pfq_t const *q, struct pfq_stats *stats); 
+
+extern int group_stats(pfq_t const *q, int gid, struct pfq_stats *stats); 
 
 #endif /* _PFQ_H_ */
