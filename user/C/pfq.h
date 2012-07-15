@@ -126,8 +126,6 @@ int
 pfq_iterator_ready(struct pfq_net_queue *nq, pfq_iterator_t iter)
 {
 	if (pfq_iterator_header(iter)->ready != nq->index) {
-	    printf("iter ready:%d index:%d\n", (int)pfq_iterator_header(iter)->ready,
-                                           nq->index); 
         return 0;
     }
 	rmb();
@@ -211,7 +209,7 @@ extern int pfq_steer_function(pfq_t *q, int gid, const char *fun_name);
 
 extern int pfq_join_group(pfq_t *q, int gid, short int group_type, short int group_policy);
 
-extern int leave_group(pfq_t *q, int gid);
+extern int pfq_leave_group(pfq_t *q, int gid);
         
 extern int pfq_poll(pfq_t *q, long int microseconds /* = -1 -> infinite */);
 

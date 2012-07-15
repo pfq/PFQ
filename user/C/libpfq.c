@@ -98,7 +98,6 @@ const char *pfq_error(pfq_t *q)
 
 /* costructor */
 
-
 pfq_t *
 pfq_open(size_t caplen, size_t offset, size_t slots)        
 {
@@ -462,7 +461,7 @@ pfq_join_group(pfq_t *q, int gid, short int group_type, short int group_policy)
 
 
 int
-leave_group(pfq_t *q, int gid)
+pfq_leave_group(pfq_t *q, int gid)                  
 {
 	if (setsockopt(q->fd, PF_Q, SO_GROUP_LEAVE, &gid, sizeof(gid)) == -1) {
 	        return q->error = "PFQ: SO_GROUP_LEAVE", -1;
@@ -524,7 +523,7 @@ pfq_read(pfq_t *q, struct pfq_net_queue *nq, long int microseconds)
         
 	size_t q_size = q->queue_slots * q->slot_size;
 
-	//  watermark for polling...
+	/*  watermark for polling... */
 
 	if( DBMP_QUEUE_LEN(data) < (q->queue_slots >> 1) ) {
 		if (pfq_poll(q, microseconds) < 0)
@@ -533,8 +532,7 @@ pfq_read(pfq_t *q, struct pfq_net_queue *nq, long int microseconds)
 		}
 	}
 
-	// reset the next buffer...
-	//
+	/* reset the next buffer... */
 
 	data = __sync_lock_test_and_set(&qd->data, ((index+1) << 24));
 

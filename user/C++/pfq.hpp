@@ -887,7 +887,6 @@ namespace net {
             }
 
             // reset the next buffer...
-            //
             
             data = __sync_lock_test_and_set(&q->data, ((index+1) << 24));
             
