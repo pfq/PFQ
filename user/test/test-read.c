@@ -49,7 +49,7 @@ main(int argc, char *argv[])
 			break;
 		}
                  
-		printf("queue size: %d\n", nq.len);
+		printf("queue size: %zd\n", nq.len);
 
 		it = pfq_net_queue_begin(&nq);
 		it_e = pfq_net_queue_end(&nq);

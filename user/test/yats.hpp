@@ -173,7 +173,7 @@ catch(...) \
     struct static_error {\
         static_error() \
         { expr; \
-            std::cerr << "Static error failure: Test(" # expr ") is not an error. Reason -> " msg << std::endl; \
+            std::cerr << "Static error failure: Test(" # expr "): " msg " is falsifiable." << std::endl; \
             _Exit(EXIT_FAILURE);\
         } \
     } maybe_error_ = static_error();

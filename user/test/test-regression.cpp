@@ -318,10 +318,10 @@ Context(PFQ)
         auto task = std::async(std::launch::async, 
                     [&] {
                         pfq y(group_policy::undefined, 64);
-                        Assert( y.join_group(x.group_id()), is_equal_to(x.group_id()));
+                        Assert(y.join_group(x.group_id()), is_equal_to(x.group_id()));
                     });
         
-        task.wait();
+        task.get(); // eventually rethrow the excpetion...
     }
 
     Test(join_restricted_process)
