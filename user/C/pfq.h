@@ -230,8 +230,8 @@ extern int pfq_id(pfq_t *q);
 
 extern int pfq_group_id(pfq_t *q);
 
-extern int pfq_stats(pfq_t const *q, struct pfq_stats *stats); 
+extern int pfq_get_stats(pfq_t const *q, struct pfq_stats *stats); 
 
-extern int group_stats(pfq_t const *q, int gid, struct pfq_stats *stats); 
+extern int pfq_get_group_stats(pfq_t const *q, int gid, struct pfq_stats *stats); 
 
 #endif /* _PFQ_H_ */

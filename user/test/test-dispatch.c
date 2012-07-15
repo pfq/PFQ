@@ -39,53 +39,56 @@ main(int argc, char *argv[])
                 return -1;
         }
 
-        // int caplen = pfq_get_caplen(p, &ok);
-        // if (!ok) {
-        //         printf("error: %s\n", pfq_error(p));
-        //         return -1;
-        // }
+        int caplen = pfq_get_caplen(p);
+        if (caplen < 0) {
+        	printf("error: %s\n", pfq_error(p));
+        	return -1;
+        }
 
-        // printf("caplen: %d\n", caplen);
+        printf("caplen: %d\n", caplen);
 
-        // int offset = pfq_get_offset(p, &ok);
-        // if (!ok) {
-        //         printf("error: %s\n", pfq_error(p));
-        //         return -1;
-        // }
+        int offset = pfq_get_offset(p);
+        if (offset < 0) {
+        	printf("error: %s\n", pfq_error(p));
+        	return -1;
+        }
 
-        // printf("offset: %d\n", offset);
+        printf("offset: %d\n", offset);
 
-        // int id = pfq_id(p, &ok);
-        // if (!ok) {
-        //         printf("error: %s\n", pfq_error(p));
-        //         return -1;
-        // }
+        int id = pfq_id(p);
+        if (id < 0) {
+        	printf("error: %s\n", pfq_error(p));
+        	return -1;
+        }
 
-        // printf("id: %d fd-> %d\n", id, pfq_fd(p));
+        printf("id: %d\n", id);
 
-        // pfq_bind(p, argv[1], -1, &ok);
-        // if (!ok) {
-        //         printf("error: %s\n", pfq_error(p));
-        //         return -1;
-        // }
+        if (pfq_bind(p, argv[1], Q_ANY_QUEUE) < 0) {
+        	printf("error: %s\n", pfq_error(p));
+        	return -1;
+        }
 
-        // int n = 0;
-        // for(;n < 100; n++) {
-        //         int n = pfq_dispatch(p, dispatch, NULL, &ok);
-        //         if (!ok) {
-        //                 printf("error: %s\n", pfq_error(p));
-        //         }
-        // }
+        int n = 0;
+	printf("dispatching...\n");
 
-        // struct pfq_stats s = pfq_get_stats(p, &ok);
-        // if (!ok) {
-        //         printf("error: %s\n", pfq_error(p));
-        //         return -1;
-        // }
+	for(;n < 10; n++) {
+                int many = pfq_dispatch(p, dispatch, 1000000, NULL);
+                if (many < 0) {
+                        printf("error: %s\n", pfq_error(p));
+			break;
+                }
+		printf("queue length: %d\n", many);
+        }
 
-        // printf("stats:: recv=%d lost=%d drop=%d\n", s.recv, s.lost, s.drop);
+        struct pfq_stats s;
+	if(pfq_get_stats(p, &s) < 0) {
+                printf("error: %s\n", pfq_error(p));
+                return -1;
+        }
 
-        pfq_close(p);
+        printf("stats:: recv=%d lost=%d drop=%d\n", s.recv, s.lost, s.drop);
+
+	pfq_close(p);
         return 0;
 }
 

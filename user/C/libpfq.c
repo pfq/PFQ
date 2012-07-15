@@ -41,6 +41,7 @@
 #include <net/ethernet.h>
 #include <arpa/inet.h>
 
+#include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
 #include <string.h>
@@ -241,7 +242,7 @@ pfq_is_enabled(pfq_t const *q)
 
 
 int
-pfq_toggle_time_stamp(pfq_t *q, int value)
+pfq_toggle_timestamp(pfq_t *q, int value)
 {
 	int ts = value;
 	if (setsockopt(q->fd, PF_Q, SO_TSTAMP_TYPE, &ts, sizeof(ts)) == -1) {
@@ -252,7 +253,7 @@ pfq_toggle_time_stamp(pfq_t *q, int value)
 
 
 int
-pfq_time_stamp(pfq_t const *q)
+pfq_timestamp(pfq_t const *q)
 {
 	pfq_t * mutable = (pfq_t *)q;
 	int ret; socklen_t size = sizeof(int);
@@ -489,7 +490,7 @@ pfq_poll(pfq_t *q, long int microseconds /* = -1 -> infinite */)
 
 
 int
-pfq_stats(pfq_t const *q, struct pfq_stats *stats) 
+pfq_get_stats(pfq_t const *q, struct pfq_stats *stats) 
 {
 	pfq_t *mutable = (pfq_t *)q;
 	socklen_t size = sizeof(struct pfq_stats);
@@ -501,7 +502,7 @@ pfq_stats(pfq_t const *q, struct pfq_stats *stats)
 
 
 int 
-group_stats(pfq_t const *q, int gid, struct pfq_stats *stats) 
+pfq_get_group_stats(pfq_t const *q, int gid, struct pfq_stats *stats) 
 {
 	pfq_t *mutable = (pfq_t *)q;
 	socklen_t size = sizeof(struct pfq_stats);
@@ -514,17 +515,14 @@ group_stats(pfq_t const *q, int gid, struct pfq_stats *stats)
 }
 
 
-/////
-
-
 int 
 pfq_read(pfq_t *q, struct pfq_net_queue *nq, long int microseconds) 
 {
 	struct pfq_queue_descr * qd = (struct pfq_queue_descr *)(q->queue_addr);
 	int data   = qd->data;
 	int index  = DBMP_QUEUE_INDEX(data);
-
-	// size_t q_size = q->queue_slots * q->slot_size;
+        
+	size_t q_size = q->queue_slots * q->slot_size;
 
 	//  watermark for polling...
 
@@ -542,7 +540,9 @@ pfq_read(pfq_t *q, struct pfq_net_queue *nq, long int microseconds)
 
 	size_t queue_len = min(DBMP_QUEUE_LEN(data), q->queue_slots);
 
-	nq->queue = (char *)(q->queue_addr) + sizeof(struct pfq_queue_descr) + (index & 1) * q->slot_size;
+	nq->queue = (char *)(q->queue_addr) + 
+			    sizeof(struct pfq_queue_descr) + 
+			    (index & 1) * q_size;
 	nq->index = index;
 	nq->len   = queue_len;
         nq->slot_size = q->slot_size; 
@@ -565,6 +565,30 @@ pfq_recv(pfq_t *q, void *buf, size_t buflen, struct pfq_net_queue *nq, long int 
 }
 
 
+int
+pfq_dispatch(pfq_t *q, pfq_handler_t cb, long int microseconds, char *user)
+{
+	struct pfq_net_queue nq;
+	int n = 0;
+	if (pfq_read(q, &nq, microseconds) < 0)
+	{
+		return -1;
+	}
+         
+	pfq_iterator_t it = pfq_net_queue_begin(&nq);
+	pfq_iterator_t it_end = pfq_net_queue_end(&nq);
+	
+	for(; it != it_end; it = pfq_net_queue_next(&nq, it))
+	{
+		while (!pfq_iterator_ready(&nq, it))
+			pfq_yield();
+
+		cb(user, pfq_iterator_header(it), pfq_iterator_data(it));
+		n++;
+	}
+        return n;
+}
+
 size_t
 pfq_mem_size(pfq_t const *q) 
 {
@@ -577,7 +601,6 @@ pfq_mem_addr(pfq_t const *q)
 {
 	return q->queue_addr;
 }
-
 
 
 int
