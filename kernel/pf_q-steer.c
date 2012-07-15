@@ -60,7 +60,7 @@ pfq_steer_factory_init()
         	pfq_register_steer_function(pfq_steer_hooks[i].name, pfq_steer_hooks[i].function);
 	}
 
-	printk(KERN_INFO "[PFQ] steer factory initialized.\n");
+	printk(KERN_INFO "[PFQ] steer factory initialized\n");
 }
 
 
@@ -78,7 +78,7 @@ pfq_steer_factory_free()
 		kfree(this);
 	}
 	up(&steer_sem);
-	printk(KERN_INFO "[PFQ] steer factory freed.\n");
+	printk(KERN_INFO "[PFQ] steer factory freed\n");
 }
 
 
@@ -117,14 +117,14 @@ pfq_register_steer_function(const char *name, steer_function_t fun)
 	down(&steer_sem);
 	if (__pfq_get_steer_function(name) != NULL) {
 		up(&steer_sem);
-		printk(KERN_INFO "[PFQ] steer factory error: name %s already in use.\n", name);
+		printk(KERN_INFO "[PFQ] steer factory error: name %s already in use\n", name);
 		return -1;
 	}
 
 	elem = kmalloc(sizeof(struct steer_factory_elem), GFP_KERNEL);
 	if (elem == NULL) {
 		up(&steer_sem);
-		printk(KERN_INFO "[PFQ] steer factory error: out of memory.\n");
+		printk(KERN_INFO "[PFQ] steer factory error: out of memory\n");
 		return -1;
 	}
 
@@ -138,7 +138,7 @@ pfq_register_steer_function(const char *name, steer_function_t fun)
 	list_add(&elem->steer_list, &steer_factory);
 	up(&steer_sem);
 	
-	printk(KERN_INFO "[PFQ] %s function registered.\n", name);
+	printk(KERN_INFO "[PFQ] %s function registered\n", name);
 	return 0;
 }
 
@@ -162,7 +162,7 @@ pfq_unregister_steer_function(const char *name)
 		}
 	}
 	up(&steer_sem);
-	printk(KERN_INFO "[PFQ] steer factory error: %s no such function.\n", name);
+	printk(KERN_INFO "[PFQ] steer factory error: %s no such function\n", name);
 	return -1;
 }
 

@@ -242,7 +242,7 @@ pfq_direct_receive(struct sk_buff *skb, int __index, int __queue, bool direct)
 
         if (pfq_queue_skb_push(prefetch_queue, skb) == -1)
         {
-                printk(KERN_INFO "[PFQ] prefetch_queue internal error\n");
+                printk(KERN_INFO "[PFQ] prefetch_queue internal error!\n");
                 return -1;
         }
         if (pfq_queue_skb_size(prefetch_queue) < prefetch_len)
@@ -656,11 +656,10 @@ int pfq_getsockopt(struct socket *sock,
                     } else
                     
                     if (pfq_join_group(group.gid, pq->q_id, group.type, group.policy) < 0) {
-                    	    printk(KERN_INFO "[PFQ|%d] join error (gid:%d)\n", pq->q_id, group.gid);
+                    	    printk(KERN_INFO "[PFQ|%d] join gid:%d (no permission)\n", pq->q_id, group.gid);
                             return -EPERM;
                     }
-                    printk(KERN_INFO "[PFQ|%d] join -> group id:%d type:%d\n", pq->q_id, 
-				    group.gid, group.type);
+                    printk(KERN_INFO "[PFQ|%d] join -> gid:%d type:%d\n", pq->q_id, group.gid, group.type);
             } break;
 
         case SO_GROUP_STATS: 
@@ -678,7 +677,7 @@ int pfq_getsockopt(struct socket *sock,
 			    return -EINVAL;
 
 		    if (!__pfq_has_joined_group(gid, pq->q_id)) {
-                    	    printk(KERN_INFO "[PFQ|%d] group stats: gid:%d -> no permission.\n", pq->q_id, gid);
+                    	    printk(KERN_INFO "[PFQ|%d] group stats: gid:%d (no permission)\n", pq->q_id, gid);
 			    return -EPERM;
 		    }
 
@@ -765,12 +764,12 @@ int pfq_setsockopt(struct socket *sock,
                             return -EFAULT;
                     
                     if (bind.gid < 0 || bind.gid >= Q_MAX_GROUP) {
-                    	    printk(KERN_INFO "[PFQ|%d] add binding: gid:%d -> invalid group.\n", pq->q_id, bind.gid);
+                    	    printk(KERN_INFO "[PFQ|%d] add binding: gid:%d (invalid group)\n", pq->q_id, bind.gid);
 			    return -EINVAL; 
 		    }
 
 		    if (!__pfq_has_joined_group(bind.gid, pq->q_id)) {
-                    	    printk(KERN_INFO "[PFQ|%d] add binding: gid:%d -> no permission.\n", pq->q_id, bind.gid);
+                    	    printk(KERN_INFO "[PFQ|%d] add binding: gid:%d (no permission)\n", pq->q_id, bind.gid);
 			    return -EPERM;
 		    }
 
@@ -787,12 +786,12 @@ int pfq_setsockopt(struct socket *sock,
                             return -EFAULT;
 
                     if (bind.gid < 0 || bind.gid >= Q_MAX_GROUP) {
-                    	    printk(KERN_INFO "[PFQ|%d] remove binding: gid:%d -> invalid group.\n", pq->q_id, bind.gid);
+                    	    printk(KERN_INFO "[PFQ|%d] remove binding: gid:%d (invalid group)\n", pq->q_id, bind.gid);
 			    return -EINVAL;
 		    }
 
 		    if (!__pfq_has_joined_group(bind.gid, pq->q_id)) {
-                    	    printk(KERN_INFO "[PFQ|%d] remove binding: gid:%d -> no permission.\n", pq->q_id, bind.gid);
+                    	    printk(KERN_INFO "[PFQ|%d] remove binding: gid:%d (no permission)\n", pq->q_id, bind.gid);
 			    return -EPERM;
 		    }
 
@@ -810,18 +809,18 @@ int pfq_setsockopt(struct socket *sock,
 			    return -EFAULT;
 		    
                     if (st.gid < 0 || st.gid >= Q_MAX_GROUP) {
-                    	    printk(KERN_INFO "[PFQ|%d] steer: gid:%d -> invalid group.\n", pq->q_id, st.gid);
+                    	    printk(KERN_INFO "[PFQ|%d] steer: gid:%d (invalid group)\n", pq->q_id, st.gid);
 			    return -EINVAL;
 		    }
 		    
 		    if (!__pfq_has_joined_group(st.gid, pq->q_id)) {
-                    	    printk(KERN_INFO "[PFQ|%d] steer: gid:%d -> no permission.\n", pq->q_id, st.gid);
+                    	    printk(KERN_INFO "[PFQ|%d] steer: gid:%d (no permission)\n", pq->q_id, st.gid);
 			    return -EPERM;
 		    }
 
 		    if (st.name == NULL) {
 			__pfq_set_steer_for_group(st.gid, NULL);
-                    	printk(KERN_INFO "[PFQ|%d] steer: gid:%d -> steer NONE\n", pq->q_id, st.gid);
+                    	printk(KERN_INFO "[PFQ|%d] steer: gid:%d (steer NONE)\n", pq->q_id, st.gid);
 		    }
 		    else {
                     	char name[Q_STEER_NAME_LEN]; 
@@ -834,12 +833,12 @@ int pfq_setsockopt(struct socket *sock,
                         
 			fun = pfq_get_steer_function(name);
 			if (fun == NULL) {
-                    		printk(KERN_INFO "[PFQ|%d] steer: gid:%d -> %s unknown function\n", pq->q_id, st.gid, name);
+                    		printk(KERN_INFO "[PFQ|%d] steer: gid:%d (%s unknown function)\n", pq->q_id, st.gid, name);
 				return -EINVAL;
 			}
 
 			__pfq_set_steer_for_group(st.gid, fun);
-                    	printk(KERN_INFO "[PFQ|%d] steer: gid:%d -> steer %s\n", pq->q_id, st.gid, name);
+                    	printk(KERN_INFO "[PFQ|%d] steer: gid:%d (steer function %s)\n", pq->q_id, st.gid, name);
 		    }
 
 	    } break;
@@ -901,7 +900,7 @@ int pfq_setsockopt(struct socket *sock,
                             return -EFAULT;
                     }
                     
-                    printk(KERN_INFO "[PFQ|%d] leave: group id:%d\n", pq->q_id, gid);
+                    printk(KERN_INFO "[PFQ|%d] leave: gid:%d\n", pq->q_id, gid);
             } break;
 
         default: 
@@ -1115,7 +1114,7 @@ static int __init pfq_init_module(void)
 	/* create a per-cpu context */
 	cpu_data = alloc_percpu(struct local_data);
 	if (!cpu_data) {
-                printk(KERN_WARNING "[PFQ] not enought memory.\n");
+                printk(KERN_WARNING "[PFQ] not enought memory\n");
 		return -ENOMEM;
         }
 
@@ -1134,7 +1133,7 @@ static int __init pfq_init_module(void)
 
 	pfq_steer_factory_init();
         
-	printk(KERN_WARNING "[PFQ] ready.\n");
+	printk(KERN_WARNING "[PFQ] ready\n");
         return 0;
 }
 
