@@ -47,7 +47,7 @@ __pfq_is_joinable(int gid, int policy)
 		return true;
 
 	if (that->pid != -1) { /* restricted group */
-        	return that->pid == current->pid;	
+        	return that->pid == current->tgid;	
 	}
 	else {	/* shared group */
         	if (policy == Q_GROUP_RESTRICTED) {
@@ -104,6 +104,7 @@ __pfq_join_group(int gid, int id, int type, int policy)
 	}
 	
 	if (!__pfq_is_joinable(gid, policy)) {
+		printk(KERN_INFO "[PFQ] gid:%d is not joinable with policy %d\n", gid, policy);
 		return -1;
 	}
 	
@@ -111,7 +112,7 @@ __pfq_join_group(int gid, int id, int type, int policy)
 	tmp |= 1L << id;
         atomic_long_set(&pfq_groups[gid].id_mask[type], tmp);
 	
-	pfq_groups[gid].pid = (policy == Q_GROUP_RESTRICTED ? current->pid : -1);
+	pfq_groups[gid].pid = (policy == Q_GROUP_RESTRICTED ? current->tgid : -1);
         return 0;
 }
 
