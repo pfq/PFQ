@@ -1,0 +1,5 @@
+# SCon script
+
+env = Environment(CXXFLAGS=['-O3','-g2', '-Wall', '-Wextra', '-std=c++11'])
+
+env.Program(target = 'pfq-pcap-test-rewrite', source = ['pfq-pcap-test-rewrite.cpp'], LIBS=['pcap'])
