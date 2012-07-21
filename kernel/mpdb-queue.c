@@ -70,12 +70,24 @@ mpdb_enqueue_batch(struct pfq_opt *pq, unsigned long queue, int qlen, struct pfq
 {
         struct pfq_queue_descr *queue_descr = (struct pfq_queue_descr *)pq->q_addr;
         struct sk_buff *skb;
-        int n, sent = 0;
+        int n, data, q_len, q_index, sent = 0;
+        char *ptr;
+         
+        data = atomic_read((atomic_t *)&queue_descr->data);
+        if (DBMP_QUEUE_LEN(data) > pq->q_slots)
+        {
+                if ( queue_descr->poll_wait && ((data & 1023) == 0) ) {
+                        wake_up_interruptible(&pq->q_waitqueue);
+                }
+                return 0;
+        }
 
-        int data    = atomic_add_return(qlen, (atomic_t *)&queue_descr->data);
-	int q_len   = DBMP_QUEUE_LEN(data) - qlen; 	
-        int q_index = DBMP_QUEUE_INDEX(data);
+        data    = atomic_add_return(qlen, (atomic_t *)&queue_descr->data);
         
+        q_len   = DBMP_QUEUE_LEN(data) - qlen; 	
+        q_index = DBMP_QUEUE_INDEX(data);
+        ptr     = (char *)(queue_descr+1) + (q_index&1) * pq->q_slot_size * pq->q_slots + q_len * pq->q_slot_size;
+
         queue_for_each_mask(skb, queue, n, skbs)
         {
 
@@ -83,14 +95,11 @@ mpdb_enqueue_batch(struct pfq_opt *pq, unsigned long queue, int qlen, struct pfq
 
         size_t bytes = (skb->len > pq->q_offset) ? min(skb->len - pq->q_offset, pq->q_caplen) : 0;
 
-        if (likely(slot_index <= (pq->q_slots)))
+        if (likely(slot_index <= pq->q_slots))
         {
                 /* enqueue skb */
 
-                struct pfq_hdr *p_hdr = (struct pfq_hdr *)(
-						(char *)(queue_descr+1) + 
-						(q_index&1) * pq->q_slot_size * pq->q_slots + 
-						slot_index * pq->q_slot_size);
+                struct pfq_hdr *p_hdr = (struct pfq_hdr *)ptr;
 
                 char *p_pkt = (char *)(p_hdr+1);
 
@@ -135,12 +144,10 @@ mpdb_enqueue_batch(struct pfq_opt *pq, unsigned long queue, int qlen, struct pfq
 
                 p_hdr->ready = (uint8_t)q_index;
 
-                /* watermark */
-
-                if ((slot_index >= (pq->q_slots >> 1)) && queue_descr->poll_wait 
-                                 && ((data & 1023) == 0) ) {
-                        wake_up_interruptible(&pq->q_waitqueue);
-                }
+                // if ((slot_index >= (pq->q_slots >> 1)) && queue_descr->poll_wait 
+                //                  && ((data & 1023) == 0) ) {
+                //         wake_up_interruptible(&pq->q_waitqueue);
+                // }
 
                 sent++;
         }
@@ -150,8 +157,16 @@ mpdb_enqueue_batch(struct pfq_opt *pq, unsigned long queue, int qlen, struct pfq
                 }
                 return sent;
         }
+                //  data++;
 
-                data++;
+                ptr += pq->q_slot_size;
+        }
+
+        /* watermark */
+        
+        if (queue_descr->poll_wait && ((data & 63) == 0) && ((q_len + qlen) >= (pq->q_slots >> 1))
+                          ) {
+                wake_up_interruptible(&pq->q_waitqueue);
         }
 
         return sent;
