@@ -30,6 +30,7 @@ install:
 	mkdir -p $(INSTDIR)
 	cp *.ko $(INSTDIR)
 	cp linux/pf_q.h $(DESTDIR)/usr/include/linux
+	mkdir -p /usr/local/include/pfq/
 	cp pf_q-steer-data.h /usr/local/include/pfq/
 	cp Module.symvers $(INSTDIR)
 
