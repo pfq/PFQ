@@ -233,20 +233,19 @@ pfq_direct_receive(struct sk_buff *skb, int _index, int _queue, bool direct)
 
         /* reset skb->data to the beginning of the packet */
 
-        if (skb->pkt_type != PACKET_OUTGOING) {	
+        if (likely(skb->pkt_type != PACKET_OUTGOING)) {	
                 skb_push(skb, skb->mac_len);
         }
         else {
                 skb->mac_len = ETH_HLEN;
         }
 
-        if (pfq_queue_skb_push(prefetch_queue, skb) == -1)
-        {
+        if (unlikely(pfq_queue_skb_push(prefetch_queue, skb) == -1)) {
                 printk(KERN_INFO "[PFQ] prefetch_queue internal error!\n");
                 return -1;
         }
 
-        if (pfq_queue_skb_size(prefetch_queue) < prefetch_len) {
+        if (likely(pfq_queue_skb_size(prefetch_queue) < prefetch_len)) {
                 return 0;
 	}
 
@@ -276,7 +275,6 @@ pfq_direct_receive(struct sk_buff *skb, int _index, int _queue, bool direct)
 
                         /* retrieve the steering function for this group */
                         steer_fun = (steering_function_t) atomic_long_read(&pfq_groups[gindex].steering);
-
                         if (steer_fun) {
 
 				/* call the steering function */
@@ -339,9 +337,8 @@ pfq_direct_receive(struct sk_buff *skb, int _index, int _queue, bool direct)
                         __kfree_skb(skb);
                 else
                         kfree_skb(skb);
-
-        }       /* queue_for_each */
-
+        }       
+	
         pfq_queue_skb_flush(prefetch_queue);
         return 0;
 }
