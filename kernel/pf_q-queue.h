@@ -41,8 +41,8 @@ struct pfq_queue_skb
         __builtin_prefetch((q)->queue[n+1], 0, 1), n++)
 
 #define queue_for_each_backward(skb, n, q) \
-	for(n = (q)->counter-1; (n >= 0) && (skb = (q)->queue[n]); \
-        __builtin_prefetch((q)->queue[n-1], 0, 1), n--)
+	for(n = (q)->counter; (n > 0) && (skb = (q)->queue[n-1]); \
+        __builtin_prefetch((q)->queue[n-2], 0, 1), n--)
 
 #define queue_for_each_mask(skb, mask, n, q) \
 	for(n = pfq_ctz(mask); mask && ((skb = (q)->queue[n]), true); \
