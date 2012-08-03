@@ -109,7 +109,7 @@ struct pfq_queue_descr
 #define SO_TOGGLE_QUEUE         100     /* enable = 1, disable = 0 */
 #define SO_ADD_BINDING          101
 #define SO_REMOVE_BINDING       102
-#define SO_TSTAMP_TYPE          103
+#define SO_TSTAMP_TOGGLE        103
 #define SO_GROUP_STEER          104
 #define SO_CAPLEN               105
 #define SO_SLOTS                106
@@ -122,7 +122,7 @@ struct pfq_queue_descr
 #define SO_GET_GROUPS           121
 #define SO_GET_STATUS           122     /* 1 = enabled, 0 = disabled */
 #define SO_GET_STATS            123
-#define SO_GET_TSTAMP_TYPE      124
+#define SO_GET_TSTAMP           124
 #define SO_GET_QUEUE_MEM        125     /* size of the whole dbmp queue (bytes) */
 #define SO_GET_CAPLEN           126
 #define SO_GET_SLOTS            127

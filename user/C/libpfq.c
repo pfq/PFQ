@@ -244,8 +244,8 @@ int
 pfq_toggle_timestamp(pfq_t *q, int value)
 {
 	int ts = value;
-	if (setsockopt(q->fd, PF_Q, SO_TSTAMP_TYPE, &ts, sizeof(ts)) == -1) {
-		return q->error = "PFQ: SO_TSTAMP_TYPE", -1;
+	if (setsockopt(q->fd, PF_Q, SO_TSTAMP_TOGGLE, &ts, sizeof(ts)) == -1) {
+		return q->error = "PFQ: SO_TSTAMP_TOGGLE", -1;
 	}
 	return q->error = NULL, 0;
 }
@@ -257,8 +257,8 @@ pfq_timestamp(pfq_t const *q)
 	pfq_t * mutable = (pfq_t *)q;
 	int ret; socklen_t size = sizeof(int);
 	
-	if (getsockopt(q->fd, PF_Q, SO_GET_TSTAMP_TYPE, &ret, &size) == -1) {
-	        return mutable->error = "PFQ: SO_GET_TSTAMP_TYPE", -1;
+	if (getsockopt(q->fd, PF_Q, SO_GET_TSTAMP, &ret, &size) == -1) {
+	        return mutable->error = "PFQ: SO_GET_TSTAMP", -1;
 	}
 	return mutable->error = NULL, ret;
 }

@@ -650,8 +650,8 @@ namespace net {
         toggle_time_stamp(bool value)
         {
             int ts = static_cast<int>(value);
-            if (::setsockopt(fd_, PF_Q, SO_TSTAMP_TYPE, &ts, sizeof(ts)) == -1)
-                throw pfq_error(errno, "PFQ: SO_TSTAMP_TYPE");
+            if (::setsockopt(fd_, PF_Q, SO_TSTAMP_TOGGLE, &ts, sizeof(ts)) == -1)
+                throw pfq_error(errno, "PFQ: SO_TSTAMP_TOGGLE");
         }
 
 
@@ -659,8 +659,8 @@ namespace net {
         time_stamp() const
         {
            int ret; socklen_t size = sizeof(int);
-           if (::getsockopt(fd_, PF_Q, SO_GET_TSTAMP_TYPE, &ret, &size) == -1)
-                throw pfq_error(errno, "PFQ: SO_GET_TSTAMP_TYPE");
+           if (::getsockopt(fd_, PF_Q, SO_GET_TSTAMP, &ret, &size) == -1)
+                throw pfq_error(errno, "PFQ: SO_GET_TSTAMP");
            return ret;
         }
 

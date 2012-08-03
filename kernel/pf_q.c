@@ -597,7 +597,7 @@ int pfq_getsockopt(struct socket *sock,
                             return -EFAULT;
             } break;
 
-        case SO_GET_TSTAMP_TYPE: 
+        case SO_GET_TSTAMP: 
             {
                     if (len != sizeof(pq->q_tstamp))
                             return -EINVAL;
@@ -850,11 +850,11 @@ int pfq_setsockopt(struct socket *sock,
 			}
 
 			__pfq_set_steering_for_group(st.gid, fun);
-                    	printk(KERN_INFO "[PFQ|%d] steer: gid:%d (steer function %s)\n", pq->q_id, st.gid, name);
+                    	
+			printk(KERN_INFO "[PFQ|%d] steer: gid:%d (steer function %s)\n", pq->q_id, st.gid, name);
 		    }
-
 	    } break;
-        case SO_TSTAMP_TYPE: 
+        case SO_TSTAMP_TOGGLE: 
             {
                     int tstamp;
                     if (optlen != sizeof(pq->q_tstamp))
