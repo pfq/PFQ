@@ -34,21 +34,21 @@ steering_ret_t
 steering_mac_addr(const struct sk_buff *skb, const void *state)
 {
         uint16_t * a = (uint16_t *)eth_hdr(skb);
-	return steering_data( a[0] ^ a[1] ^ a[2] ^ a[3] ^ a[4] ^ a[5] );		
+	return steering(Q_CLASS_DEFAULT, a[0] ^ a[1] ^ a[2] ^ a[3] ^ a[4] ^ a[5] );		
 }
 
 
 steering_ret_t
 steering_vlan_untag(const struct sk_buff *skb, const void *state)
 {
-	return steering_data(skb->vlan_tci == 0);
+	return steering(Q_CLASS_DEFAULT, skb->vlan_tci == 0);
 }
 
 
 steering_ret_t
 steering_vlan_id(const struct sk_buff *skb, const void *state)
 {
- 	return steering_data(skb->vlan_tci & VLAN_VID_MASK);
+ 	return steering(Q_CLASS_DEFAULT, skb->vlan_tci & VLAN_VID_MASK);
 }
 
 
@@ -62,12 +62,12 @@ steering_ipv4_addr(const struct sk_buff *skb, const void *state)
 
 		ip = skb_header_pointer(skb, skb->mac_len, sizeof(_iph), &_iph);
  		if (ip == NULL)
- 			return steering_none();
+ 			return none();
 
-        	return steering_data( ip->saddr ^ ip->daddr );
+        	return steering(Q_CLASS_DEFAULT, ip->saddr ^ ip->daddr );
 	}
 
-	return steering_none();
+	return none();
 }
 
 
@@ -81,9 +81,9 @@ steering_ipv6_addr(const struct sk_buff *skb, const void *state)
 
 		ip6 = skb_header_pointer(skb, skb->mac_len, sizeof(_ip6h), &_ip6h);
  		if (ip6 == NULL)
- 			return steering_none();
+ 			return none();
 
-		return steering_data(
+		return steering(Q_CLASS_DEFAULT,
 			ip6->saddr.in6_u.u6_addr32[0] ^
 			ip6->saddr.in6_u.u6_addr32[1] ^
 			ip6->saddr.in6_u.u6_addr32[2] ^
@@ -94,7 +94,7 @@ steering_ipv6_addr(const struct sk_buff *skb, const void *state)
 			ip6->daddr.in6_u.u6_addr32[3] );
 	}
 
-	return steering_none();
+	return none();
 }
 
 

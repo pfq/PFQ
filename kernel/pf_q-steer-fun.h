@@ -30,8 +30,8 @@
 
 typedef struct
 {
-	int          type;
-	unsigned int hash;
+	unsigned int  class;
+	unsigned long hash;
 } steering_ret_t;
 
 
@@ -46,60 +46,38 @@ typedef struct
 } steering_functor_t;
 
 
-enum {
-    hash_clone = 1,
-    hash_bound = 2
+enum action 
+{
+    action_drop  = 0,
+    action_clone = 1,
+    action_hash  = 2
 };
 
 
 static inline
-steering_ret_t steering_none(void)
+steering_ret_t none(void)
 {
-    steering_ret_t ret = { 0, 0 };
+    steering_ret_t ret = { 0, action_drop };
     return ret;
 }
 
+
 static inline
-steering_ret_t steering_data(unsigned long hash)
+steering_ret_t clone(unsigned int class)
 {
-    steering_ret_t ret = { Q_GROUP_DATA, (hash < hash_bound ? hash + hash_bound : hash) };
+    steering_ret_t ret = { class, class < Q_CLASS_MAX ? action_clone : action_drop };
     return ret;
 }
 
+
 static inline
-steering_ret_t clone_data(void)
+steering_ret_t steering(unsigned int class, unsigned long hash)
 {
-    steering_ret_t ret = { Q_GROUP_DATA, hash_clone };
+    steering_ret_t ret = {class, class < Q_CLASS_MAX ? (hash < action_hash ? hash + action_hash : hash) : action_drop };
     return ret;
 }
 
-static inline
-steering_ret_t steering_control(unsigned long hash)
-{
-    steering_ret_t ret = { Q_GROUP_CONTROL, (hash < hash_bound ? hash + hash_bound : hash) };
-    return ret;
-}
 
-static inline
-steering_ret_t clone_control(void)
-{
-    steering_ret_t ret = { Q_GROUP_CONTROL, hash_clone };
-    return ret;
-}
-
-static inline
-steering_ret_t steering_out_of_band(unsigned long hash)
-{
-    steering_ret_t ret = { Q_GROUP_OUT_OF_BAND, (hash < hash_bound ? hash + hash_bound : hash) };
-    return ret;
-}
-
-static inline
-steering_ret_t clone_out_of_band(void)
-{
-    steering_ret_t ret = { Q_GROUP_OUT_OF_BAND, hash_clone };
-    return ret;
-}
 
 
 #endif /* _PF_Q_STEER_FUN_H_ */
