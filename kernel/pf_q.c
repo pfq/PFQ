@@ -260,7 +260,7 @@ pfq_direct_receive(struct sk_buff *skb, int __index, int __queue, bool direct)
                 while (group_mask)
                 {         
                         int first = __builtin_ctzl(group_mask);
-                        steering_ret_t resp;
+                        steering_ret_t ret;
 
                         steering_function_t steering_function = (steering_function_t) atomic_long_read(&pfq_groups[first].steering);
 
@@ -268,12 +268,12 @@ pfq_direct_receive(struct sk_buff *skb, int __index, int __queue, bool direct)
 
                         if (steering_function) {
 
-                                resp = pfq_memoized_call(&steering_cache, steering_function, skb);
-                                if (likely(resp.hash)) {
+                                ret = pfq_memoized_call(&steering_cache, steering_function, skb);
+                                if (likely(ret.hash != action_drop)) {
 
-                                        unsigned long eligible_mask = atomic_long_read(&pfq_groups[first].id_mask[resp.type]);
+                                        unsigned long eligible_mask = atomic_long_read(&pfq_groups[first].id_mask[ret.class]);
 
-                                        if (resp.hash == hash_clone) {
+                                        if (ret.hash == action_clone) {
 
                                                 sock_mask |= eligible_mask;
                                                 goto send_to_group;
@@ -292,12 +292,12 @@ pfq_direct_receive(struct sk_buff *skb, int __index, int __queue, bool direct)
                                         }
 
                                         if (local_cache->sock_cnt) {
-                                                sock_mask |= local_cache->sock_mask[resp.hash % local_cache->sock_cnt];
+                                                sock_mask |= local_cache->sock_mask[ret.hash % local_cache->sock_cnt];
                                         }
                                 }
                         }
                         else {
-                                sock_mask |= atomic_long_read(&pfq_groups[first].id_mask[Q_GROUP_DATA]);
+                                sock_mask |= atomic_long_read(&pfq_groups[first].id_mask[Q_CLASS_DEFAULT]);
                         }
                 send_to_group:
                         group_mask ^= 1L << first;

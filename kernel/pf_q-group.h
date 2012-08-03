@@ -35,7 +35,7 @@ struct pfq_group
 {
     int pid;	/* process id for restricted join */;
 
-	atomic_long_t id_mask[Q_GROUP_CLASS_MAX];    /* for class: Q_GROUP_DATA, Q_GROUP_CONTROL, etc... */
+	atomic_long_t id_mask[Q_CLASS_MAX];    /* for class: Q_GROUP_DATA, Q_GROUP_CONTROL, etc... */
 
 	atomic_long_t steering;    /* steering_function_t */ 
 
