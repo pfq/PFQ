@@ -101,7 +101,7 @@ const char *pfq_error(pfq_t *q)
 pfq_t *
 pfq_open(size_t caplen, size_t offset, size_t slots)        
 {
-	return pfq_open_group(Q_GROUP_DATA, Q_GROUP_RESTRICTED, caplen, offset, slots); 
+	return pfq_open_group(Q_CLASS_DEFAULT, Q_GROUP_RESTRICTED, caplen, offset, slots); 
 }
 
 pfq_t *
