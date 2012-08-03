@@ -259,7 +259,7 @@ namespace net {
         bool
         empty() const
         {
-            return queue_len_ == false;
+            return queue_len_ == 0;
         }
 
         int 
