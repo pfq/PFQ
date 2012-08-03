@@ -44,7 +44,6 @@ struct pfq_queue_skb
 	for(n = (q)->counter-1; (n >= 0) && (skb = (q)->queue[n]); \
         __builtin_prefetch((q)->queue[n-1], 0, 1), n--)
 
-
 #define queue_for_each_mask(skb, mask, n, q) \
 	for(n = pfq_ctz(mask); mask && ((skb = (q)->queue[n]), true); \
             mask ^=(1L << n), n = pfq_ctz(mask))
@@ -53,7 +52,7 @@ static inline
 int
 pfq_queue_skb_push(struct pfq_queue_skb *q, struct sk_buff *skb)
 {
-	 if (q->counter < (PFQ_QUEUE_MAX_LEN-1))
+	 if (q->counter < PFQ_QUEUE_MAX_LEN)
 	 {
      	q->queue[q->counter++] = skb;
         return 0; 
