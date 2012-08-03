@@ -320,15 +320,12 @@ pfq_direct_receive(struct sk_buff *skb, int __index, int __queue, bool direct)
                 global_mask |= sock_mask;
         }
 
-        while (global_mask)
+	bitmask_for_each(global_mask, n)
         {
-                unsigned int i = pfq_ctz(global_mask);
-                struct pfq_opt * pq = pfq_get_opt(i);
+                struct pfq_opt * pq = pfq_get_opt(n);
                 if (likely(pq)) {
-                        pfq_copy_to_user_skbs(pq, batch_queue[i], prefetch_queue);
+                        pfq_copy_to_user_skbs(pq, batch_queue[n], prefetch_queue);
                 }
-
-                global_mask ^= 1L << i;
         }
 
         queue_for_each_backward(skb, n, prefetch_queue)
