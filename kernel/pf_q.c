@@ -751,16 +751,16 @@ int pfq_setsockopt(struct socket *sock,
                                     sq = (struct pfq_queue_descr *)pq->q_addr;
                                     sq->data      = (1L << 24);
                                     sq->poll_wait = 0;
-
-                                    smp_wmb();
-
+                                    
+				    smp_wmb();
                                     pq->q_active = true;
                             }
                     }
                     else {
                         pq->q_active = false;
                         msleep(10);
-                        smp_wmb();
+                        
+			smp_wmb();
                         mpdb_queue_free(pq);
                     }
 
@@ -812,46 +812,46 @@ int pfq_setsockopt(struct socket *sock,
 
  	case SO_GROUP_STEER:
 	    {
-		    struct pfq_steering st;
+		    struct pfq_steering s;
 		    
-		    if (optlen != sizeof(st)) 
+		    if (optlen != sizeof(s)) 
 			    return -EINVAL;
 
-		    if (copy_from_user(&st, optval, optlen)) 
+		    if (copy_from_user(&s, optval, optlen)) 
 			    return -EFAULT;
 		    
-                    if (st.gid < 0 || st.gid >= Q_MAX_GROUP) {
-                    	    printk(KERN_INFO "[PFQ|%d] steer: gid:%d (invalid group)\n", pq->q_id, st.gid);
+                    if (s.gid < 0 || s.gid >= Q_MAX_GROUP) {
+                    	    printk(KERN_INFO "[PFQ|%d] steer: gid:%d (invalid group)\n", pq->q_id, s.gid);
 			    return -EINVAL;
 		    }
 		    
-		    if (!__pfq_has_joined_group(st.gid, pq->q_id)) {
-                    	    printk(KERN_INFO "[PFQ|%d] steer: gid:%d (no permission)\n", pq->q_id, st.gid);
+		    if (!__pfq_has_joined_group(s.gid, pq->q_id)) {
+                    	    printk(KERN_INFO "[PFQ|%d] steer: gid:%d (no permission)\n", pq->q_id, s.gid);
 			    return -EPERM;
 		    }
 
-		    if (st.name == NULL) {
-			__pfq_set_steering_for_group(st.gid, NULL);
-                    	printk(KERN_INFO "[PFQ|%d] steer: gid:%d (steer NONE)\n", pq->q_id, st.gid);
+		    if (s.name == NULL) {
+			__pfq_set_steering_for_group(s.gid, NULL);
+                    	printk(KERN_INFO "[PFQ|%d] steer: gid:%d (steer NONE)\n", pq->q_id, s.gid);
 		    }
 		    else {
                     	char name[Q_STEERING_NAME_LEN]; 
 			steering_function_t fun;
 
-                    	if (strncpy_from_user(name, st.name, Q_STEERING_NAME_LEN-1) < 0)
+                    	if (strncpy_from_user(name, s.name, Q_STEERING_NAME_LEN-1) < 0)
 				return -EFAULT;
 
 			name[Q_STEERING_NAME_LEN-1] = '\0';
                         
 			fun = pfq_get_steering_function(name);
 			if (fun == NULL) {
-                    		printk(KERN_INFO "[PFQ|%d] steer: gid:%d (%s unknown function)\n", pq->q_id, st.gid, name);
+                    		printk(KERN_INFO "[PFQ|%d] steer: gid:%d (%s unknown function)\n", pq->q_id, s.gid, name);
 				return -EINVAL;
 			}
 
-			__pfq_set_steering_for_group(st.gid, fun);
+			__pfq_set_steering_for_group(s.gid, fun);
                     	
-			printk(KERN_INFO "[PFQ|%d] steer: gid:%d (steer function %s)\n", pq->q_id, st.gid, name);
+			printk(KERN_INFO "[PFQ|%d] steer: gid:%d (steer function %s)\n", pq->q_id, s.gid, name);
 		    }
 	    } break;
 
@@ -898,7 +898,7 @@ int pfq_setsockopt(struct socket *sock,
 		    }
 	    }
         
-        case SO_TSTAMP_TOGGLE: 
+	case SO_TSTAMP_TOGGLE: 
             {
                     int tstamp;
                     if (optlen != sizeof(pq->q_tstamp))
