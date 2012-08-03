@@ -433,9 +433,9 @@ pfq_groups_mask(pfq_t const *q, unsigned long *_mask)
 
 
 int
-pfq_steer_function(pfq_t *q, int gid, const char *fun_name)
+pfq_steering_function(pfq_t *q, int gid, const char *fun_name)
 {
-	struct pfq_steer s = { gid, fun_name };
+	struct pfq_steering s = { gid, fun_name };
 	if (setsockopt(q->fd, PF_Q, SO_GROUP_STEER, &s, sizeof(s)) == -1) {
 		return q->error = "PFQ: SO_GROUP_STEER", -1;
 	}
