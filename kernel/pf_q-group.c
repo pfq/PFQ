@@ -28,7 +28,7 @@
 
 #include <pf_q-group.h>
 #include <pf_q-devmap.h>
-
+#include <pf_q-bits.h>
 
 DEFINE_SEMAPHORE(group_sem);
 
@@ -95,9 +95,10 @@ __pfq_group_dtor(int gid)
 
 
 static int
-__pfq_join_group(int gid, int id, int class, int policy)
+__pfq_join_group(int gid, int id, unsigned long class_mask, int policy)
 {
         unsigned long tmp = 0;
+        unsigned int class;
 
         if (!pfq_groups[gid].pid) {
          	__pfq_group_ctor(gid);
@@ -107,10 +108,13 @@ __pfq_join_group(int gid, int id, int class, int policy)
 		printk(KERN_INFO "[PFQ] gid:%d is not joinable with policy %d\n", gid, policy);
 		return -1;
 	}
-	
-	tmp = atomic_long_read(&pfq_groups[gid].sock_mask[class]);
-	tmp |= 1L << id;
-        atomic_long_set(&pfq_groups[gid].sock_mask[class], tmp);
+
+	bitmask_for_each(class_mask, class)
+	{
+		tmp = atomic_long_read(&pfq_groups[gid].sock_mask[class]);
+		tmp |= 1L << id;
+		atomic_long_set(&pfq_groups[gid].sock_mask[class], tmp);
+	}
 	
 	pfq_groups[gid].pid = (policy == Q_GROUP_RESTRICTED ? current->tgid : -1);
         return 0;
@@ -154,18 +158,20 @@ __pfq_get_all_groups_mask(int gid)
 
 
 int
-pfq_join_group(int gid, int id, int type, int policy)
+pfq_join_group(int gid, int id, unsigned long class_mask, int policy)
 {
 	int ret;
 	down(&group_sem);
-	ret = __pfq_join_group(gid, id, type, policy);
+
+	ret = __pfq_join_group(gid, id, class_mask, policy);
+
 	up(&group_sem);
 	return ret;
 }
 
 
 int 
-pfq_join_free_group(int id, int type, int policy)
+pfq_join_free_group(int id, unsigned long class_mask, int policy)
 {
         int n = 0;
         down(&group_sem);
@@ -173,7 +179,7 @@ pfq_join_free_group(int id, int type, int policy)
         {            
                 if(!pfq_groups[n].pid)
                 {
-			__pfq_join_group(n, id, type, policy);
+			__pfq_join_group(n, id, class_mask, policy);
                         up(&group_sem);
                         return n;
                 }
@@ -219,7 +225,7 @@ pfq_get_groups(int id)
 		unsigned long mask = __pfq_get_all_groups_mask(n);
                 if(mask & (1L << id))
                 {
-                        ret |= (1L << n);
+                        ret |= (1UL << n);
                 }
         }
         up(&group_sem);

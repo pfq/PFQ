@@ -166,13 +166,13 @@ struct pfq_binding
 /* class type */
 
 #define Q_CLASS_MAX             16 
-#define Q_CLASS_DEFAULT         1
+#define Q_CLASS_DEFAULT         (1<<0)
 #define Q_CLASS_ANY             Q_CLASS_MAX-1
 
 struct pfq_group_join
 {
-    int     gid;
-    int16_t type;
+    int gid;
+    unsigned long class_mask;
     int16_t policy;
 };
 
