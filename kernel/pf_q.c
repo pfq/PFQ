@@ -51,6 +51,7 @@
 #include <pf_q-group.h>
 #include <pf_q-queue.h>
 #include <pf_q-steer.h>
+#include <pf_q-bits.h>
 
 #include <mpdb-queue.h>
 
@@ -207,7 +208,7 @@ void pfq_enqueue_mask_to_batch(int j, unsigned long mask, unsigned long *batch_q
 {
         while(mask)
         {
-                unsigned int i = __builtin_ctzl(mask);
+                unsigned int i = pfq_ctz(mask);
                 batch_queue[i] |= 1L << j;
                 mask ^= 1L << i;
         }
@@ -259,7 +260,7 @@ pfq_direct_receive(struct sk_buff *skb, int __index, int __queue, bool direct)
                 sock_mask = 0;
                 while (group_mask)
                 {         
-                        int gindex = __builtin_ctzl(group_mask);
+                        int gindex = pfq_ctz(group_mask);
                         steering_ret_t ret;
                         steering_function_t steer_fun;
 
@@ -316,7 +317,7 @@ pfq_direct_receive(struct sk_buff *skb, int __index, int __queue, bool direct)
 
         while (global_mask)
         {
-                unsigned int i = __builtin_ctzl(global_mask);
+                unsigned int i = pfq_ctz(global_mask);
                 struct pfq_opt * pq = pfq_get_opt(i);
                 if (likely(pq)) {
                         pfq_copy_to_user_skbs(pq, batch_queue[i], prefetch_queue);

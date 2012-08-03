@@ -25,9 +25,9 @@
 #ifndef _PF_Q_QUEUE_H_
 #define _PF_Q_QUEUE_H_ 
 
+#include <pf_q-bits.h>
 
 #define PFQ_QUEUE_MAX_LEN  64
-
 
 struct pfq_queue_skb
 {
@@ -46,8 +46,8 @@ struct pfq_queue_skb
 
 
 #define queue_for_each_mask(skb, mask, n, q) \
-	for(n = __builtin_ctzl(mask); mask && ((skb = (q)->queue[n]), true); \
-            mask ^=(1L << n), n = __builtin_ctzl(mask))
+	for(n = pfq_ctz(mask); mask && ((skb = (q)->queue[n]), true); \
+            mask ^=(1L << n), n = pfq_ctz(mask))
 
 static inline
 int
