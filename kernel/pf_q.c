@@ -182,19 +182,19 @@ bool pfq_copy_to_user_skbs(struct pfq_opt *pq, unsigned long batch_queue, struct
 }
 
 
-struct pfq_steer_cache
+struct pfq_steering_cache
 {
-	steer_function_t fun;
-	steer_ret_t ret;
+	steering_function_t fun;
+	steering_ret_t ret;
 };
 
 
-inline steer_ret_t
-pfq_memoized_call(struct pfq_steer_cache *mem, steer_function_t fun, const struct sk_buff *skb)
+inline steering_ret_t
+pfq_memoized_call(struct pfq_steering_cache *mem, steering_function_t fun, const struct sk_buff *skb)
 {
 	if (unlikely(mem->fun != fun)) {
 		mem->fun = fun;
-		mem->ret = fun(skb);
+		mem->ret = fun(skb, NULL);
 	} 
 	return mem->ret; 
 }
@@ -218,7 +218,7 @@ int
 pfq_direct_receive(struct sk_buff *skb, int __index, int __queue, bool direct)
 {       
         struct local_data * local_cache = this_cpu_ptr(cpu_data);
-        struct pfq_steer_cache steer_cache = {NULL, {0, 0}};
+        struct pfq_steering_cache steering_cache = {NULL, {0, 0}};
         unsigned long group_mask, sock_mask, global_mask = 0;
         struct pfq_queue_skb * prefetch_queue = &local_cache->prefetch_queue;
         unsigned long batch_queue[sizeof(unsigned long) << 3];
@@ -260,15 +260,15 @@ pfq_direct_receive(struct sk_buff *skb, int __index, int __queue, bool direct)
                 while (group_mask)
                 {         
                         int first = __builtin_ctzl(group_mask);
-                        steer_ret_t resp;
+                        steering_ret_t resp;
 
-                        steer_function_t steer_function = (steer_function_t) atomic_long_read(&pfq_groups[first].steer);
+                        steering_function_t steering_function = (steering_function_t) atomic_long_read(&pfq_groups[first].steer);
 
                         sparse_inc(&pfq_groups[first].recv);
 
-                        if (steer_function) {
+                        if (steering_function) {
 
-                                resp = pfq_memoized_call(&steer_cache, steer_function, skb);
+                                resp = pfq_memoized_call(&steering_cache, steering_function, skb);
                                 if (likely(resp.hash)) {
 
                                         unsigned long eligible_mask = atomic_long_read(&pfq_groups[first].id_mask[resp.type]);
@@ -800,7 +800,7 @@ int pfq_setsockopt(struct socket *sock,
 
  	case SO_GROUP_STEER:
 	    {
-		    struct pfq_steer st;
+		    struct pfq_steering st;
 		    
 		    if (optlen != sizeof(st)) 
 			    return -EINVAL;
@@ -819,25 +819,25 @@ int pfq_setsockopt(struct socket *sock,
 		    }
 
 		    if (st.name == NULL) {
-			__pfq_set_steer_for_group(st.gid, NULL);
+			__pfq_set_steering_for_group(st.gid, NULL);
                     	printk(KERN_INFO "[PFQ|%d] steer: gid:%d (steer NONE)\n", pq->q_id, st.gid);
 		    }
 		    else {
-                    	char name[Q_STEER_NAME_LEN]; 
-			steer_function_t fun;
+                    	char name[Q_STEERING_NAME_LEN]; 
+			steering_function_t fun;
 
-                    	if (strncpy_from_user(name, st.name, Q_STEER_NAME_LEN-1) < 0)
+                    	if (strncpy_from_user(name, st.name, Q_STEERING_NAME_LEN-1) < 0)
 				return -EFAULT;
 
-			name[Q_STEER_NAME_LEN-1] = '\0';
+			name[Q_STEERING_NAME_LEN-1] = '\0';
                         
-			fun = pfq_get_steer_function(name);
+			fun = pfq_get_steering_function(name);
 			if (fun == NULL) {
                     		printk(KERN_INFO "[PFQ|%d] steer: gid:%d (%s unknown function)\n", pq->q_id, st.gid, name);
 				return -EINVAL;
 			}
 
-			__pfq_set_steer_for_group(st.gid, fun);
+			__pfq_set_steering_for_group(st.gid, fun);
                     	printk(KERN_INFO "[PFQ|%d] steer: gid:%d (steer function %s)\n", pq->q_id, st.gid, name);
 		    }
 
@@ -1131,7 +1131,7 @@ static int __init pfq_init_module(void)
 
 	/* register steer functions */
 
-	pfq_steer_factory_init();
+	pfq_steering_factory_init();
         
 	printk(KERN_WARNING "[PFQ] ready\n");
         return 0;
@@ -1170,7 +1170,7 @@ static void __exit pfq_exit_module(void)
 	free_percpu(cpu_data);
 
 	/* free steer functions */
-	pfq_steer_factory_free();
+	pfq_steering_factory_free();
 
         printk(KERN_WARNING "[PFQ] unloaded\n");
 }

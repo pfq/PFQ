@@ -28,12 +28,19 @@
 #include <linux/pf_q.h>
 
 #include <pf_q-steer-fun.h>
+ 
+struct factory_hook 
+{
+    const char *            name;
+    steering_function_t     function;
+};
 
-extern void pfq_steer_factory_init(void);
-extern void pfq_steer_factory_free(void);
-extern int  pfq_register_steer_function(const char *name, steer_function_t fun);
-extern int  pfq_unregister_steer_function(const char *name);
 
-extern steer_function_t pfq_get_steer_function(const char *name);
+extern void pfq_steering_factory_init(void);
+extern void pfq_steering_factory_free(void);
+extern int  pfq_register_steering_function(const char *name, steering_function_t fun);
+extern int  pfq_unregister_steering_function(const char *name);
+
+extern steering_function_t pfq_get_steering_function(const char *name);
 
 #endif /* _PF_Q_STEER_H_ */

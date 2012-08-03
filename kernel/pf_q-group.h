@@ -37,7 +37,7 @@ struct pfq_group
 
 	atomic_long_t id_mask[Q_GROUP_TYPE_MAX];    /* for different group types: Q_GROUP_DATA, Q_GROUP_CONTROL, etc... */
 
-	atomic_long_t steer;    /* steer_function_t */ 
+	atomic_long_t steer;    /* steering_function_t */ 
 
 	sparse_counter_t recv;
 	sparse_counter_t lost;
@@ -50,7 +50,7 @@ extern struct pfq_group pfq_groups[Q_MAX_GROUP];
 unsigned long __pfq_get_all_groups_mask(int gid);
 
 static inline
-void __pfq_set_steer_for_group(int gid, steer_function_t steer)
+void __pfq_set_steering_for_group(int gid, steering_function_t steer)
 {
     atomic_long_set(&pfq_groups[gid].steer, (unsigned long)steer);
 }

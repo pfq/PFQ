@@ -28,40 +28,32 @@
 #include <linux/if_vlan.h>
 
 #include <pf_q-steer-fun.h>
+#include <pf_q-steer.h>
 
-struct steer_hook pfq_steer_hooks[] = {
-	{ "steer-mac-addr",   steer_mac_addr 	},
-        { "steer-vlan-untag", steer_vlan_untag 	},
-        { "steer-vlan-id",    steer_vlan_id	},
-        { "steer-ipv4-addr",  steer_ipv4_addr 	},
-        { "steer-ipv6-addr",  steer_ipv6_addr 	},
-	{ NULL, NULL}};
-
-
-steer_ret_t
-steer_mac_addr(const struct sk_buff *skb)
+steering_ret_t
+steering_mac_addr(const struct sk_buff *skb, const void *state)
 {
         uint16_t * a = (uint16_t *)eth_hdr(skb);
-	return steer_data( a[0] ^ a[1] ^ a[2] ^ a[3] ^ a[4] ^ a[5] );		
+	return steering_data( a[0] ^ a[1] ^ a[2] ^ a[3] ^ a[4] ^ a[5] );		
 }
 
 
-steer_ret_t
-steer_vlan_untag(const struct sk_buff *skb)
+steering_ret_t
+steering_vlan_untag(const struct sk_buff *skb, const void *state)
 {
-	return steer_data(skb->vlan_tci == 0);
+	return steering_data(skb->vlan_tci == 0);
 }
 
 
-steer_ret_t
-steer_vlan_id(const struct sk_buff *skb)
+steering_ret_t
+steering_vlan_id(const struct sk_buff *skb, const void *state)
 {
- 	return steer_data(skb->vlan_tci & VLAN_VID_MASK);
+ 	return steering_data(skb->vlan_tci & VLAN_VID_MASK);
 }
 
 
-steer_ret_t
-steer_ipv4_addr(const struct sk_buff *skb)
+steering_ret_t
+steering_ipv4_addr(const struct sk_buff *skb, const void *state)
 {       
 	if (eth_hdr(skb)->h_proto == htons(ETH_P_IP)) 
 	{ 
@@ -70,17 +62,17 @@ steer_ipv4_addr(const struct sk_buff *skb)
 
 		ip = skb_header_pointer(skb, skb->mac_len, sizeof(_iph), &_iph);
  		if (ip == NULL)
- 			return steer_none();
+ 			return steering_none();
 
-        	return steer_data( ip->saddr ^ ip->daddr );
+        	return steering_data( ip->saddr ^ ip->daddr );
 	}
 
-	return steer_none();
+	return steering_none();
 }
 
 
-steer_ret_t
-steer_ipv6_addr(const struct sk_buff *skb)
+steering_ret_t
+steering_ipv6_addr(const struct sk_buff *skb, const void *state)
 {       
 	if (eth_hdr(skb)->h_proto == htons(ETH_P_IPV6)) 
 	{ 
@@ -89,9 +81,9 @@ steer_ipv6_addr(const struct sk_buff *skb)
 
 		ip6 = skb_header_pointer(skb, skb->mac_len, sizeof(_ip6h), &_ip6h);
  		if (ip6 == NULL)
- 			return steer_none();
+ 			return steering_none();
 
-		return steer_data(
+		return steering_data(
 			ip6->saddr.in6_u.u6_addr32[0] ^
 			ip6->saddr.in6_u.u6_addr32[1] ^
 			ip6->saddr.in6_u.u6_addr32[2] ^
@@ -102,6 +94,15 @@ steer_ipv6_addr(const struct sk_buff *skb)
 			ip6->daddr.in6_u.u6_addr32[3] );
 	}
 
-	return steer_none();
+	return steering_none();
 }
+
+
+struct factory_hook pfq_steering_hooks[] = {
+	{ "steer-mac-addr",   steering_mac_addr 	},
+        { "steer-vlan-untag", steering_vlan_untag 	},
+        { "steer-vlan-id",    steering_vlan_id		},
+        { "steer-ipv4-addr",  steering_ipv4_addr 	},
+        { "steer-ipv6-addr",  steering_ipv6_addr 	},
+	{ NULL, NULL}};
 

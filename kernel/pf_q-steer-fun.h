@@ -30,19 +30,20 @@
 
 typedef struct
 {
-	int type;
+	int          type;
 	unsigned int hash;
-} steer_ret_t;
+} steering_ret_t;
 
 
-typedef steer_ret_t (*steer_function_t)(const struct sk_buff *);
+typedef steering_ret_t (*steering_function_t)(const struct sk_buff *, const void *);    
 
 
-struct steer_hook 
+typedef struct
 {
-    const char *        name;
-    steer_function_t    function;
-};
+    steering_function_t fun;
+    int             nclass;
+
+} steering_functor_t;
 
 
 enum {
@@ -52,59 +53,53 @@ enum {
 
 
 static inline
-steer_ret_t steer_none(void)
+steering_ret_t steering_none(void)
 {
-    steer_ret_t ret = { 0, 0 };
+    steering_ret_t ret = { 0, 0 };
     return ret;
 }
 
 static inline
-steer_ret_t steer_data(unsigned long hash)
+steering_ret_t steering_data(unsigned long hash)
 {
-    steer_ret_t ret = { Q_GROUP_DATA, (hash < hash_bound ? hash + hash_bound : hash) };
+    steering_ret_t ret = { Q_GROUP_DATA, (hash < hash_bound ? hash + hash_bound : hash) };
     return ret;
 }
 
 static inline
-steer_ret_t clone_data(void)
+steering_ret_t clone_data(void)
 {
-    steer_ret_t ret = { Q_GROUP_DATA, hash_clone };
+    steering_ret_t ret = { Q_GROUP_DATA, hash_clone };
     return ret;
 }
 
 static inline
-steer_ret_t steer_control(unsigned long hash)
+steering_ret_t steering_control(unsigned long hash)
 {
-    steer_ret_t ret = { Q_GROUP_CONTROL, (hash < hash_bound ? hash + hash_bound : hash) };
+    steering_ret_t ret = { Q_GROUP_CONTROL, (hash < hash_bound ? hash + hash_bound : hash) };
     return ret;
 }
 
 static inline
-steer_ret_t clone_control(void)
+steering_ret_t clone_control(void)
 {
-    steer_ret_t ret = { Q_GROUP_CONTROL, hash_clone };
+    steering_ret_t ret = { Q_GROUP_CONTROL, hash_clone };
     return ret;
 }
 
 static inline
-steer_ret_t steer_out_of_band(unsigned long hash)
+steering_ret_t steering_out_of_band(unsigned long hash)
 {
-    steer_ret_t ret = { Q_GROUP_OUT_OF_BAND, (hash < hash_bound ? hash + hash_bound : hash) };
+    steering_ret_t ret = { Q_GROUP_OUT_OF_BAND, (hash < hash_bound ? hash + hash_bound : hash) };
     return ret;
 }
 
 static inline
-steer_ret_t clone_out_of_band(void)
+steering_ret_t clone_out_of_band(void)
 {
-    steer_ret_t ret = { Q_GROUP_OUT_OF_BAND, hash_clone };
+    steering_ret_t ret = { Q_GROUP_OUT_OF_BAND, hash_clone };
     return ret;
 }
 
-
-extern steer_ret_t steer_mac_addr(const struct sk_buff *skb);
-extern steer_ret_t steer_vlan_untag(const struct sk_buff *skb);
-extern steer_ret_t steer_vlan_id(const struct sk_buff *skb);
-extern steer_ret_t steer_ipv4_addr(const struct sk_buff *skb);
-extern steer_ret_t steer_ipv6_addr(const struct sk_buff *skb);
 
 #endif /* _PF_Q_STEER_FUN_H_ */

@@ -177,11 +177,11 @@ struct pfq_group_join
     int16_t policy;
 };
 
-/* steer functions */
+/* steering functions */
 
-#define Q_STEER_NAME_LEN        64
+#define Q_STEERING_NAME_LEN        64
 
-struct pfq_steer
+struct pfq_steering
 {
     int gid;
     const char *name;
