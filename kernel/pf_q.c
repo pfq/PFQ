@@ -218,10 +218,10 @@ int
 pfq_direct_receive(struct sk_buff *skb, int _index, int _queue, bool direct)
 {       
         struct local_data * local_cache = this_cpu_ptr(cpu_data);
-        struct pfq_steering_cache steering_cache = {NULL, {0, 0}};
-        unsigned long group_mask, sock_mask, global_mask = 0;
+        unsigned long group_mask, sock_mask, global_mask;
         struct pfq_queue_skb * prefetch_queue = &local_cache->prefetch_queue;
         unsigned long batch_queue[sizeof(unsigned long) << 3];
+        struct pfq_steering_cache steering_cache;
         int n;
 
         /* if required, timestamp this packet now */
@@ -245,10 +245,17 @@ pfq_direct_receive(struct sk_buff *skb, int _index, int _queue, bool direct)
                 printk(KERN_INFO "[PFQ] prefetch_queue internal error!\n");
                 return -1;
         }
-        if (pfq_queue_skb_size(prefetch_queue) < prefetch_len)
-                return 0;
 
+        if (pfq_queue_skb_size(prefetch_queue) < prefetch_len) {
+                return 0;
+	}
+
+	/* initialize data */
+	
+	memset(&steering_cache, 0, sizeof(steering_cache));
         memset(batch_queue, 0, sizeof(batch_queue));
+
+        global_mask = 0;
 
         queue_for_each(skb, n, prefetch_queue)
         {
