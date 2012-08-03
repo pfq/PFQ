@@ -656,18 +656,19 @@ int pfq_getsockopt(struct socket *sock,
 			    return -EINVAL;
 
                     if (group.gid == Q_ANY_GROUP) {
-                            group.gid = pfq_join_free_group(pq->q_id, group.type, group.policy);
+
+                            group.gid = pfq_join_free_group(pq->q_id, group.class_mask, group.policy);
                             if (group.gid < 0)
                                     return -EFAULT;
                             if (copy_to_user(optval, &group, len))
                                     return -EFAULT;
                     } else
-                    
-                    if (pfq_join_group(group.gid, pq->q_id, group.type, group.policy) < 0) {
+                    if (pfq_join_group(group.gid, pq->q_id, group.class_mask, group.policy) < 0) {
                     	    printk(KERN_INFO "[PFQ|%d] join gid:%d (no permission)\n", pq->q_id, group.gid);
                             return -EPERM;
                     }
-                    printk(KERN_INFO "[PFQ|%d] join -> gid:%d type:%d\n", pq->q_id, group.gid, group.type);
+                    
+		    printk(KERN_INFO "[PFQ|%d] join -> gid:%d class:%lx\n", pq->q_id, group.gid, group.class_mask);
             } break;
 
         case SO_GROUP_STATS: 
