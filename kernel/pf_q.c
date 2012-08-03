@@ -216,7 +216,7 @@ void pfq_enqueue_mask_to_batch(int j, unsigned long mask, unsigned long *batch_q
 
 
 int 
-pfq_direct_receive(struct sk_buff *skb, int __index, int __queue, bool direct)
+pfq_direct_receive(struct sk_buff *skb, int _index, int _queue, bool direct)
 {       
         struct local_data * local_cache = this_cpu_ptr(cpu_data);
         struct pfq_steering_cache steering_cache = {NULL, {0, 0}};
@@ -254,7 +254,7 @@ pfq_direct_receive(struct sk_buff *skb, int __index, int __queue, bool direct)
         queue_for_each(skb, n, prefetch_queue)
         {
                 /* get the balancing groups bitmap */
-                group_mask = __pfq_devmap_get_groups(skb->dev->ifindex, skb_get_rx_queue(skb));
+                group_mask = __pfq_devmap_get_groups(_index, _queue);
 
                 sock_mask = 0;
                 while (group_mask)
