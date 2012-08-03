@@ -74,6 +74,7 @@ __pfq_group_ctor(int gid)
 	}
 
 	atomic_long_set(&that->steering, 0);
+	atomic_long_set(&that->state, 0);
 
 	sparse_set(&that->recv, 0);
 	sparse_set(&that->lost, 0);
@@ -85,11 +86,18 @@ static void
 __pfq_group_dtor(int gid)
 {
         struct pfq_group * that = &pfq_groups[gid];
+	void *state;
 
 	/* remove this gid from demux matrix */
         pfq_devmap_update(map_reset, Q_ANY_DEVICE, Q_ANY_QUEUE, gid);
 	
 	that->pid = 0;
+	
+	state = (void *)atomic_long_xchg(&pfq_groups[gid].state, 0L);
+
+	msleep(10);   /* speeling is possible here: user-context */
+	
+	kfree(state);
 }
 
 

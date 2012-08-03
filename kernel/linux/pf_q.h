@@ -115,6 +115,7 @@ struct pfq_queue_descr
 #define SO_SLOTS                106
 #define SO_OFFSET               107
 #define SO_GROUP_LEAVE          108
+#define SO_GROUP_STATE          109
 
 /* get socket options */
 
@@ -184,6 +185,14 @@ struct pfq_steering
 {
     int gid;
     const char *name;
+};
+
+
+struct pfq_group_state
+{
+    int gid;
+    const void * state;
+    size_t       size;      // sizeof(state)
 };
 
 

@@ -25,6 +25,8 @@
 #ifndef _PF_Q_GROUP_H_
 #define _PF_Q_GROUP_H_ 
 
+#include <linux/kernel.h>
+#include <linux/delay.h>
 #include <linux/pf_q.h>
 
 #include <sparse-counter.h>
@@ -38,7 +40,8 @@ struct pfq_group
 	atomic_long_t sock_mask[Q_CLASS_MAX];    /* for class: Q_GROUP_DATA, Q_GROUP_CONTROL, etc... */
 
 	atomic_long_t steering;    /* steering_function_t */ 
-
+    atomic_long_t state;       /* opaque state for the steering function */
+    
 	sparse_counter_t recv;
 	sparse_counter_t lost;
 	sparse_counter_t drop;
@@ -52,8 +55,20 @@ unsigned long __pfq_get_all_groups_mask(int gid);
 static inline
 void __pfq_set_steering_for_group(int gid, steering_function_t steer)
 {
-    atomic_long_set(&pfq_groups[gid].steering, (unsigned long)steer);
+    atomic_long_set(&pfq_groups[gid].steering, (long)steer);
 }
+
+
+static inline
+void __pfq_set_state_for_group(int gid, void *state)
+{
+	void * old = (void *)atomic_long_xchg(& pfq_groups[gid].state, (long)state);
+
+    msleep(10);
+
+	kfree(old);
+}
+
 
 static inline
 bool __pfq_group_is_empty(int gid)

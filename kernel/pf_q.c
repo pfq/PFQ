@@ -854,6 +854,50 @@ int pfq_setsockopt(struct socket *sock,
 			printk(KERN_INFO "[PFQ|%d] steer: gid:%d (steer function %s)\n", pq->q_id, st.gid, name);
 		    }
 	    } break;
+
+	case SO_GROUP_STATE:
+	    {
+		    struct pfq_group_state s;
+		    if (optlen != sizeof(s))
+			    return -EINVAL;
+		    
+		    if (copy_from_user(&s, optval, optlen)) 
+			    return -EFAULT;
+
+                    if (s.gid < 0 || s.gid >= Q_MAX_GROUP) {
+                    	    printk(KERN_INFO "[PFQ|%d] steer: gid:%d (invalid group)\n", pq->q_id, s.gid);
+			    return -EINVAL;
+		    }
+
+		    if (!__pfq_has_joined_group(s.gid, pq->q_id)) {
+                    	    printk(KERN_INFO "[PFQ|%d] steer: gid:%d (no permission)\n", pq->q_id, s.gid);
+			    return -EPERM;
+		    }
+
+		    if (s.size && s.state) {
+
+                    	void * state = kmalloc(s.size, GFP_KERNEL);
+			if (state == NULL) 
+				return -ENOMEM;
+
+			if(copy_from_user(state, s.state, s.size)) {
+                         	kfree(state);
+				return -EFAULT;
+			}
+			
+			smp_wmb();
+			__pfq_set_state_for_group(s.gid, state);
+                    	    
+			printk(KERN_INFO "[PFQ|%d] state: gid:%d (state of %zu bytes set)\n", pq->q_id, s.gid, s.size);
+		    }
+		    else { /* empty state */
+			   
+			__pfq_set_state_for_group(s.gid, NULL);
+			
+			printk(KERN_INFO "[PFQ|%d] state: gid:%d (empty state set)\n", pq->q_id, s.gid, s.size);
+		    }
+	    }
+        
         case SO_TSTAMP_TOGGLE: 
             {
                     int tstamp;
