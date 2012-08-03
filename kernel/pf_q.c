@@ -259,16 +259,22 @@ pfq_direct_receive(struct sk_buff *skb, int __index, int __queue, bool direct)
                 sock_mask = 0;
                 while (group_mask)
                 {         
-                        int first = __builtin_ctzl(group_mask);
+                        int gindex = __builtin_ctzl(group_mask);
                         steering_ret_t ret;
+                        steering_function_t steer_fun;
 
-                        steering_function_t steering_function = (steering_function_t) atomic_long_read(&pfq_groups[first].steering);
+			/* increment counter for this group */
+			sparse_inc(&pfq_groups[gindex].recv);
 
-                        sparse_inc(&pfq_groups[first].recv);
+                        /* retrieve the steering function for this group */
+                        steer_fun = (steering_function_t) atomic_long_read(&pfq_groups[gindex].steering);
 
-                        if (steering_function) {
+                        if (steer_fun) {
 
-                                ret = pfq_memoized_call(&steering_cache, steering_function, skb);
+				/* call the steering function */
+
+                                ret = pfq_memoized_call(&steering_cache, steer_fun, skb);
+
                                 if (likely(ret.hash != action_drop)) {
 
                                         unsigned long eligible_mask = atomic_long_read(&pfq_groups[gindex].sock_mask[ret.class]);
@@ -300,7 +306,7 @@ pfq_direct_receive(struct sk_buff *skb, int __index, int __queue, bool direct)
                                 sock_mask |= atomic_long_read(&pfq_groups[gindex].sock_mask[Q_CLASS_DEFAULT]);
                         }
                 send_to_group:
-                        group_mask ^= 1L << first;
+                        group_mask ^= 1L << gindex;
                 }
 
                 pfq_enqueue_mask_to_batch(n, sock_mask, batch_queue);

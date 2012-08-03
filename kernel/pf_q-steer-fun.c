@@ -99,10 +99,10 @@ steering_ipv6_addr(const struct sk_buff *skb, const void *state)
 
 
 struct factory_hook pfq_steering_hooks[] = {
-	{ "steer-mac-addr",   steering_mac_addr 	},
-        { "steer-vlan-untag", steering_vlan_untag 	},
-        { "steer-vlan-id",    steering_vlan_id		},
-        { "steer-ipv4-addr",  steering_ipv4_addr 	},
-        { "steer-ipv6-addr",  steering_ipv6_addr 	},
+	{ "steer-mac-addr",   steering_mac_addr   },
+        { "steer-vlan-untag", steering_vlan_untag },
+        { "steer-vlan-id",    steering_vlan_id	  },
+        { "steer-ipv4-addr",  steering_ipv4_addr  },
+        { "steer-ipv6-addr",  steering_ipv6_addr  },
 	{ NULL, NULL}};
 
