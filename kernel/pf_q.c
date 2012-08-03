@@ -223,7 +223,7 @@ pfq_direct_receive(struct sk_buff *skb, int _index, int _queue, bool direct)
         unsigned long group_mask, sock_mask, global_mask = 0;
         struct pfq_queue_skb * prefetch_queue = &local_cache->prefetch_queue;
         unsigned long batch_queue[sizeof(unsigned long) << 3];
-        unsigned int n;
+        int n;
 
         /* if required, timestamp this packet now */
 
@@ -259,7 +259,7 @@ pfq_direct_receive(struct sk_buff *skb, int _index, int _queue, bool direct)
                 sock_mask = 0;
                 while (group_mask)
                 {         
-                        int gindex = pfq_ctz(group_mask);
+                        unsigned int gindex = pfq_ctz(group_mask);
                         steering_ret_t ret;
                         steering_function_t steer_fun;
 
