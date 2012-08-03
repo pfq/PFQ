@@ -53,7 +53,6 @@ enum action
     action_hash  = 2
 };
 
-
 static inline
 steering_ret_t none(void)
 {

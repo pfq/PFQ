@@ -223,7 +223,7 @@ pfq_direct_receive(struct sk_buff *skb, int __index, int __queue, bool direct)
         unsigned long group_mask, sock_mask, global_mask = 0;
         struct pfq_queue_skb * prefetch_queue = &local_cache->prefetch_queue;
         unsigned long batch_queue[sizeof(unsigned long) << 3];
-        int n;
+        unsigned int n;
 
         /* if required, timestamp this packet now */
 
@@ -254,7 +254,6 @@ pfq_direct_receive(struct sk_buff *skb, int __index, int __queue, bool direct)
         queue_for_each(skb, n, prefetch_queue)
         {
                 /* get the balancing groups bitmap */
-
                 group_mask = __pfq_devmap_get_groups(skb->dev->ifindex, skb_get_rx_queue(skb));
 
                 sock_mask = 0;
