@@ -165,8 +165,9 @@ struct pfq_binding
 
 /* class type */
 
-#define Q_CLASS_DEFAULT         0
 #define Q_CLASS_MAX             16 
+#define Q_CLASS_DEFAULT         1
+#define Q_CLASS_ANY             Q_CLASS_MAX-1
 
 struct pfq_group_join
 {
