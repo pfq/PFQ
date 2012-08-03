@@ -271,7 +271,7 @@ pfq_direct_receive(struct sk_buff *skb, int __index, int __queue, bool direct)
                                 ret = pfq_memoized_call(&steering_cache, steering_function, skb);
                                 if (likely(ret.hash != action_drop)) {
 
-                                        unsigned long eligible_mask = atomic_long_read(&pfq_groups[first].id_mask[ret.class]);
+                                        unsigned long eligible_mask = atomic_long_read(&pfq_groups[gindex].sock_mask[ret.class]);
 
                                         if (ret.hash == action_clone) {
 
@@ -297,7 +297,7 @@ pfq_direct_receive(struct sk_buff *skb, int __index, int __queue, bool direct)
                                 }
                         }
                         else {
-                                sock_mask |= atomic_long_read(&pfq_groups[first].id_mask[Q_CLASS_DEFAULT]);
+                                sock_mask |= atomic_long_read(&pfq_groups[gindex].sock_mask[Q_CLASS_DEFAULT]);
                         }
                 send_to_group:
                         group_mask ^= 1L << first;

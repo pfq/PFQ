@@ -70,7 +70,7 @@ __pfq_group_ctor(int gid)
 	
 	for(i = 0; i < Q_CLASS_MAX; i++)
 	{
-		atomic_long_set(&that->id_mask[i], 0);
+		atomic_long_set(&that->sock_mask[i], 0);
 	}
 
 	atomic_long_set(&that->steering, 0);
@@ -108,9 +108,9 @@ __pfq_join_group(int gid, int id, int class, int policy)
 		return -1;
 	}
 	
-	tmp = atomic_long_read(&pfq_groups[gid].id_mask[class]);
+	tmp = atomic_long_read(&pfq_groups[gid].sock_mask[class]);
 	tmp |= 1L << id;
-        atomic_long_set(&pfq_groups[gid].id_mask[class], tmp);
+        atomic_long_set(&pfq_groups[gid].sock_mask[class], tmp);
 	
 	pfq_groups[gid].pid = (policy == Q_GROUP_RESTRICTED ? current->tgid : -1);
         return 0;
@@ -128,9 +128,9 @@ __pfq_leave_group(int gid, int id)
 	
 	for(i = 0; i < Q_CLASS_MAX; ++i)
 	{
-		tmp = atomic_long_read(&pfq_groups[gid].id_mask[i]);
+		tmp = atomic_long_read(&pfq_groups[gid].sock_mask[i]);
 		tmp &= ~(1L << id);
-		atomic_long_set(&pfq_groups[gid].id_mask[i], tmp);
+		atomic_long_set(&pfq_groups[gid].sock_mask[i], tmp);
 	}
 
 	if (__pfq_group_is_empty(gid)) {
@@ -147,7 +147,7 @@ __pfq_get_all_groups_mask(int gid)
 	int i;
 	for(i = 0; i < Q_CLASS_MAX; ++i)
 	{
-		mask |= atomic_long_read(&pfq_groups[gid].id_mask[i]);
+		mask |= atomic_long_read(&pfq_groups[gid].sock_mask[i]);
 	}
 	return mask;
 }
