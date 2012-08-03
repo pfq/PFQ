@@ -278,7 +278,12 @@ pfq_direct_receive(struct sk_buff *skb, int __index, int __queue, bool direct)
 
                                 if (likely(ret.hash != action_drop)) {
 
-                                        unsigned long eligible_mask = atomic_long_read(&pfq_groups[gindex].sock_mask[ret.class]);
+                                        unsigned long eligible_mask = 0;
+                                        unsigned int c;
+					bitmask_for_each(ret.class, c)
+					{
+						eligible_mask |= atomic_long_read(&pfq_groups[gindex].sock_mask[c]);
+					}
 
                                         if (ret.hash == action_clone) {
 
