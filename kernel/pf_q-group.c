@@ -68,12 +68,12 @@ __pfq_group_ctor(int gid)
 
         that->pid = -1;
 	
-	for(i = 0; i < Q_GROUP_TYPE_MAX; i++)
+	for(i = 0; i < Q_GROUP_CLASS_MAX; i++)
 	{
 		atomic_long_set(&that->id_mask[i], 0);
 	}
 
-	atomic_long_set(&that->steer, 0);
+	atomic_long_set(&that->steering, 0);
 
 	sparse_set(&that->recv, 0);
 	sparse_set(&that->lost, 0);
@@ -126,7 +126,7 @@ __pfq_leave_group(int gid, int id)
 	if (!pfq_groups[gid].pid)
 		return -1;
 	
-	for(i = 0; i < Q_GROUP_TYPE_MAX; ++i)
+	for(i = 0; i < Q_GROUP_CLASS_MAX; ++i)
 	{
 		tmp = atomic_long_read(&pfq_groups[gid].id_mask[i]);
 		tmp &= ~(1L << id);
@@ -145,7 +145,7 @@ __pfq_get_all_groups_mask(int gid)
 {
 	unsigned long mask = 0;
 	int i;
-	for(i = 0; i < Q_GROUP_TYPE_MAX; ++i)
+	for(i = 0; i < Q_GROUP_CLASS_MAX; ++i)
 	{
 		mask |= atomic_long_read(&pfq_groups[gid].id_mask[i]);
 	}

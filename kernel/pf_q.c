@@ -262,7 +262,7 @@ pfq_direct_receive(struct sk_buff *skb, int __index, int __queue, bool direct)
                         int first = __builtin_ctzl(group_mask);
                         steering_ret_t resp;
 
-                        steering_function_t steering_function = (steering_function_t) atomic_long_read(&pfq_groups[first].steer);
+                        steering_function_t steering_function = (steering_function_t) atomic_long_read(&pfq_groups[first].steering);
 
                         sparse_inc(&pfq_groups[first].recv);
 

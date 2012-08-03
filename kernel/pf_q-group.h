@@ -35,9 +35,9 @@ struct pfq_group
 {
     int pid;	/* process id for restricted join */;
 
-	atomic_long_t id_mask[Q_GROUP_TYPE_MAX];    /* for different group types: Q_GROUP_DATA, Q_GROUP_CONTROL, etc... */
+	atomic_long_t id_mask[Q_GROUP_CLASS_MAX];    /* for class: Q_GROUP_DATA, Q_GROUP_CONTROL, etc... */
 
-	atomic_long_t steer;    /* steering_function_t */ 
+	atomic_long_t steering;    /* steering_function_t */ 
 
 	sparse_counter_t recv;
 	sparse_counter_t lost;
@@ -52,7 +52,7 @@ unsigned long __pfq_get_all_groups_mask(int gid);
 static inline
 void __pfq_set_steering_for_group(int gid, steering_function_t steer)
 {
-    atomic_long_set(&pfq_groups[gid].steer, (unsigned long)steer);
+    atomic_long_set(&pfq_groups[gid].steering, (unsigned long)steer);
 }
 
 static inline

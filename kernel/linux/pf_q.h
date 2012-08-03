@@ -168,7 +168,7 @@ struct pfq_binding
 #define Q_GROUP_DATA            0
 #define Q_GROUP_CONTROL         1
 #define Q_GROUP_OUT_OF_BAND     2
-#define Q_GROUP_TYPE_MAX        3
+#define Q_GROUP_CLASS_MAX      16 
 
 struct pfq_group_join
 {
