@@ -279,7 +279,7 @@ pfq_direct_receive(struct sk_buff *skb, int _index, int _queue, bool direct)
 
                                         unsigned long eligible_mask = 0;
                                         unsigned int c;
-					bitmask_for_each(ret.class, c)
+					bitwise_for_each(ret.class, c)
 					{
 						eligible_mask |= atomic_long_read(&pfq_groups[gindex].sock_mask[c]);
 					}
@@ -319,7 +319,7 @@ pfq_direct_receive(struct sk_buff *skb, int _index, int _queue, bool direct)
                 global_mask |= sock_mask;
         }
 
-	bitmask_for_each(global_mask, n)
+	bitwise_for_each(global_mask, n)
         {
                 struct pfq_opt * pq = pfq_get_opt(n);
                 if (likely(pq)) {

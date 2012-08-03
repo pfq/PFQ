@@ -109,7 +109,7 @@ __pfq_join_group(int gid, int id, unsigned long class_mask, int policy)
 		return -1;
 	}
 
-	bitmask_for_each(class_mask, class)
+	bitwise_for_each(class_mask, class)
 	{
 		tmp = atomic_long_read(&pfq_groups[gid].sock_mask[class]);
 		tmp |= 1L << id;

@@ -30,8 +30,8 @@
          __builtin_choose_expr(__builtin_types_compatible_p(typeof(n),unsigned long), __builtin_ctzl(n), \
          __builtin_choose_expr(__builtin_types_compatible_p(typeof(n),unsigned long long), __builtin_ctzll(n), (void)0 )))
 
-#define bitmask_for_each(mask, n) \
-	for(; n = pfq_ctz(mask), mask ; mask^=(1L << n))
+#define bitwise_for_each(mask, n) \
+	for(; n = pfq_ctz(mask), mask ; mask^=(1UL << n))
 
 
 #endif /* _PF_Q_BITS_H_ */
