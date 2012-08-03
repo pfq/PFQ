@@ -206,11 +206,10 @@ pfq_memoized_call(struct pfq_steering_cache *mem, steering_function_t fun, const
 inline
 void pfq_enqueue_mask_to_batch(int j, unsigned long mask, unsigned long *batch_queue)
 {
-        while(mask)
-        {
-                unsigned int i = pfq_ctz(mask);
-                batch_queue[i] |= 1L << j;
-                mask ^= 1L << i;
+	unsigned int index;
+       	bitwise_for_each(mask, index)
+	{
+                batch_queue[index] |= 1l << j;
         }
 }
 
@@ -253,13 +252,15 @@ pfq_direct_receive(struct sk_buff *skb, int _index, int _queue, bool direct)
 
         queue_for_each(skb, n, prefetch_queue)
         {
+		unsigned int gindex;
+
                 /* get the balancing groups bitmap */
                 group_mask = __pfq_devmap_get_groups(_index, _queue);
 
                 sock_mask = 0;
-                while (group_mask)
-                {         
-                        unsigned int gindex = pfq_ctz(group_mask);
+                
+		bitwise_for_each(group_mask, gindex)
+		{
                         steering_ret_t ret;
                         steering_function_t steer_fun;
 
@@ -287,8 +288,8 @@ pfq_direct_receive(struct sk_buff *skb, int _index, int _queue, bool direct)
                                         if (ret.hash == action_clone) {
 
                                                 sock_mask |= eligible_mask;
-                                                goto send_to_group;
-                                        }
+                                        	continue;
+					}
 
                                         if (unlikely(eligible_mask != local_cache->eligible_mask)) {
 
@@ -310,11 +311,9 @@ pfq_direct_receive(struct sk_buff *skb, int _index, int _queue, bool direct)
                         else {
                                 sock_mask |= atomic_long_read(&pfq_groups[gindex].sock_mask[Q_CLASS_DEFAULT]);
                         }
-                send_to_group:
-                        group_mask ^= 1L << gindex;
                 }
 
-                pfq_enqueue_mask_to_batch(n, sock_mask, batch_queue);
+		pfq_enqueue_mask_to_batch(n, sock_mask, batch_queue);
 
                 global_mask |= sock_mask;
         }
