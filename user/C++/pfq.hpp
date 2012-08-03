@@ -392,10 +392,11 @@ namespace net {
     };
 
     typedef unsigned long class_mask;
+
     namespace 
     {
-        class_mask  class_default = Q_CLASS_DEFAULT;
-        class_mask  class_any     = Q_CLASS_ANY;
+        const class_mask  class_default = Q_CLASS_DEFAULT;
+        const class_mask  class_any     = Q_CLASS_ANY;
     }
 
     class pfq
