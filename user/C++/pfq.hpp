@@ -826,7 +826,15 @@ namespace net {
             if (::setsockopt(fd_, PF_Q, SO_GROUP_STEER, &s, sizeof(s)) == -1)
                 throw pfq_error(errno, "PFQ: SO_GROUP_STEER");
         }
-
+        
+        template <typename T>
+        void
+        set_group_state(int gid, const T &state)
+        {
+            struct pfq_group_state s { gid, &state, sizeof(state) };
+            if (::setsockopt(fd_, PF_Q, SO_GROUP_STATE, &s, sizeof(s)) == -1)
+                throw pfq_error(errno, "PFQ: SO_GROUP_STATE");
+        }
 
         int
         join_group(int gid, class_mask mask = class_default, group_policy pol = group_policy::shared)

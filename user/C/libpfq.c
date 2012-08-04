@@ -444,6 +444,17 @@ pfq_steering_function(pfq_t *q, int gid, const char *fun_name)
 
 
 int
+pfq_group_state(pfq_t *q, int gid, const void *state, size_t size)
+{
+	struct pfq_group_state s  = { gid, state, size };
+	if (setsockopt(q->fd, PF_Q, SO_GROUP_STATE, &s, sizeof(s)) == -1) {
+		return q->error = "PFQ: SO_GROUP_STATE", -1;
+	}
+	return q->error = NULL, 0;
+}
+
+
+int
 pfq_join_group(pfq_t *q, int gid, short int group_type, short int group_policy)
 {
 	if (group_policy == Q_GROUP_UNDEFINED) {

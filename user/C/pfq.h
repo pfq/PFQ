@@ -207,6 +207,8 @@ extern int pfq_groups_mask(pfq_t const *q, unsigned long *_mask);
 
 extern int pfq_steering_function(pfq_t *q, int gid, const char *fun_name);
 
+extern int pfq_group_state(pfq_t *q, int gid, const void *state, size_t size);
+
 extern int pfq_join_group(pfq_t *q, int gid, short int group_type, short int group_policy);
 
 extern int pfq_leave_group(pfq_t *q, int gid);
