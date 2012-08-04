@@ -820,7 +820,7 @@ namespace net {
         }
 
         void
-        steering_group(int gid, const char *fun)
+        set_steering_function(int gid, const char *fun)
         {
             struct pfq_steering s { gid, fun };
             if (::setsockopt(fd_, PF_Q, SO_GROUP_STEER, &s, sizeof(s)) == -1)
