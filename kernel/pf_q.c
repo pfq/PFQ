@@ -254,7 +254,6 @@ pfq_direct_receive(struct sk_buff *skb, int _index, int _queue, bool direct)
 
 	/* initialize data */
 	
-	memset(&steering_cache, 0, sizeof(steering_cache));
         memset(batch_queue, 0, sizeof(batch_queue));
 
         global_mask = 0;
@@ -263,11 +262,14 @@ pfq_direct_receive(struct sk_buff *skb, int _index, int _queue, bool direct)
         {
 		unsigned int gindex;
 
+		/* reset steering function in cache */
+		steering_cache.fun = (steering_function_t)0;
+
                 /* get the balancing groups bitmap */
                 group_mask = __pfq_devmap_get_groups(_index, _queue);
 
                 sock_mask = 0;
-                
+			
 		bitwise_for_each(group_mask, gindex)
 		{
                         steering_ret_t ret;
