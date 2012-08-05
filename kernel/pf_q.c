@@ -77,7 +77,7 @@ MODULE_DESCRIPTION("packet catpure system for 64bit multi-core architecture");
 module_param(direct_path,  int, 0644);
 module_param(cap_len,      int, 0644);
 module_param(queue_slots,  int, 0644);
-module_param(prefetch_len,    int, 0644);
+module_param(prefetch_len, int, 0644);
 
 MODULE_PARM_DESC(direct_path, " Direct Path: 0 = classic, 1 = direct");
 MODULE_PARM_DESC(cap_len,     " Default capture length (bytes)");
@@ -224,6 +224,7 @@ pfq_direct_receive(struct sk_buff *skb, int _index, int _queue, bool direct)
         unsigned long batch_queue[sizeof(unsigned long) << 3];
         struct pfq_steering_cache steering_cache;
         int n;
+
 
         /* if required, timestamp this packet now */
 
@@ -895,9 +896,9 @@ int pfq_setsockopt(struct socket *sock,
 			   
 			__pfq_set_state_for_group(s.gid, NULL);
 			
-			printk(KERN_INFO "[PFQ|%d] state: gid:%d (empty state set)\n", pq->q_id, s.gid, s.size);
+			printk(KERN_INFO "[PFQ|%d] state: gid:%d (empty state set)\n", pq->q_id, s.gid);
 		    }
-	    }
+	    } break;
         
 	case SO_TSTAMP_TOGGLE: 
             {
