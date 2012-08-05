@@ -187,6 +187,7 @@ bool pfq_copy_to_user_skbs(struct pfq_opt *pq, unsigned long batch_queue, struct
 struct pfq_steering_cache
 {
 	steering_function_t fun;
+	void * state;
 	steering_ret_t ret;
 };
 
@@ -195,7 +196,8 @@ inline steering_ret_t
 pfq_memoized_call(struct pfq_steering_cache *mem, steering_function_t fun, 
 		  const struct sk_buff *skb, void *state)
 {
-	if (unlikely(mem->fun != fun)) {
+	if (unlikely(mem->fun != fun || mem->state != state)) {
+		mem->state = state;
 		mem->fun = fun;
 		mem->ret = fun(skb, state);
 	} 
