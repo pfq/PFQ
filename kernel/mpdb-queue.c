@@ -65,12 +65,14 @@ mpdb_queue_free(struct pfq_opt *pq)
 }    
 
 
-int 
-mpdb_enqueue_batch(struct pfq_opt *pq, unsigned long queue, int qlen, struct pfq_queue_skb *skbs)
+size_t
+mpdb_enqueue_batch(struct pfq_opt *pq, unsigned long bitqueue, int qlen, struct pfq_queue_skb *skbs)
 {
 	struct pfq_queue_descr *queue_descr = (struct pfq_queue_descr *)pq->q_addr;
 	struct sk_buff *skb;
-	int n, data, q_len, q_index, sent = 0;
+	int data, q_len, q_index;
+	size_t sent = 0;
+	unsigned int n;
 	char *ptr;
 
 	data = atomic_read((atomic_t *)&queue_descr->data);
@@ -88,11 +90,11 @@ mpdb_enqueue_batch(struct pfq_opt *pq, unsigned long queue, int qlen, struct pfq
 	q_index = DBMP_QUEUE_INDEX(data);
 	ptr     = (char *)(queue_descr+1) + (q_index&1) * pq->q_slot_size * pq->q_slots + q_len * pq->q_slot_size;
 
-	queue_for_each_mask(skb, queue, n, skbs)
+	queue_for_each_mask(skb, bitqueue, n, skbs)
 	{
-		int slot_index = q_len + sent;
-
-		size_t bytes = (skb->len > pq->q_offset) ? min(skb->len - pq->q_offset, pq->q_caplen) : 0;
+		size_t slot_index = q_len + sent;
+		
+		unsigned int bytes = (skb->len > (int)pq->q_offset) ? min((int)skb->len - (int)pq->q_offset, (int)pq->q_caplen) : 0;
 
 		if (likely(slot_index <= pq->q_slots))
 		{
@@ -106,30 +108,30 @@ mpdb_enqueue_batch(struct pfq_opt *pq, unsigned long queue, int qlen, struct pfq
 
 #ifdef PFQ_USE_SKB_LINEARIZE 
 			if (likely(bytes)) 
-				skb_copy_from_linear_data_offset(skb, pq->q_offset, p_pkt, bytes);
+				skb_copy_from_linear_data_offset(skb, (int)pq->q_offset, p_pkt, bytes);
 
 #else
 			if (likely(bytes) && 
-					skb_copy_bits(skb, pq->q_offset, p_pkt, bytes) != 0)
+					skb_copy_bits(skb, (int)pq->q_offset, p_pkt, bytes) != 0)
 			{    
 				printk(KERN_INFO "[PFQ] BUG! skb_copy_bits failed (bytes=%lu, skb_len=%d mac_len=%d q_offset=%lu)!\n", 
 						bytes, skb->len, skb->mac_len, pq->q_offset);
-				return false;
+				return 0;
 			}
 #endif                                
 			/* setup the header */
 
-			p_hdr->len      = skb->len;
-			p_hdr->caplen 	= bytes;
+			p_hdr->len      = (uint16_t)skb->len;
+			p_hdr->caplen 	= (uint16_t)bytes;
 			p_hdr->if_index = skb->dev->ifindex & 0xff;
-			p_hdr->hw_queue = skb_get_rx_queue(skb) & 0xff;                      
+			p_hdr->hw_queue = (uint8_t)(skb_get_rx_queue(skb) & 0xff);                      
 
 			if (pq->q_tstamp != 0)
 			{
 				struct timespec ts;
 				skb_get_timestampns(skb, &ts); 
-				p_hdr->tstamp.tv.sec  = ts.tv_sec;
-				p_hdr->tstamp.tv.nsec = ts.tv_nsec;
+				p_hdr->tstamp.tv.sec  = (uint32_t)ts.tv_sec;
+				p_hdr->tstamp.tv.nsec = (uint32_t)ts.tv_nsec;
 			}
 
 			if (skb->vlan_tci)

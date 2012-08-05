@@ -46,7 +46,7 @@ struct pfq_queue_skb
 
 #define queue_for_each_mask(skb, mask, n, q) \
 	for(n = pfq_ctz(mask); mask && ((skb = (q)->queue[n]), true); \
-            mask ^=(1L << n), n = pfq_ctz(mask))
+            mask ^=(1UL << n), n = pfq_ctz(mask))
 
 static inline
 int
@@ -69,7 +69,7 @@ pfq_queue_skb_flush(struct pfq_queue_skb *q)
 }
 
 static inline
-int
+size_t
 pfq_queue_skb_size(struct pfq_queue_skb *q)
 {
 	return q->counter;

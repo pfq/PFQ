@@ -35,7 +35,7 @@ extern bool
 mpdb_enqueue(struct pfq_opt *pq, struct sk_buff *skb);
 
 
-extern int 
+extern size_t 
 mpdb_enqueue_batch(struct pfq_opt *pq, unsigned long queue_mask, int len, struct pfq_queue_skb *skbs);
 
 

@@ -129,15 +129,14 @@ int pfq_get_free_id(struct pfq_opt * pq)
 
 inline 
 struct pfq_opt * 
-pfq_get_opt(int id)
+pfq_get_opt(size_t id)
 {
         struct pfq_opt * opt;
-        if (unlikely(id >= Q_MAX_ID || id < 0))
+        if (unlikely(id >= Q_MAX_ID))
         {
-                printk(KERN_WARNING "[PFQ] pfq_devmap_freeid: bad id=%d\n", id);
+                printk(KERN_WARNING "[PFQ] pfq_devmap_freeid: bad id=%zd\n", id);
                 return NULL;
         }
-        
 	opt = (struct pfq_opt *)atomic_long_read(&pfq_vector[id]);  
 	smp_read_barrier_depends();
 	return opt;  
@@ -169,7 +168,7 @@ bool pfq_copy_to_user_skbs(struct pfq_opt *pq, unsigned long batch_queue, struct
 {
         /* enqueue the sk_buff: it's wait-free. */
 
-        size_t len = hweight64(batch_queue);
+        int len = (int)hweight64(batch_queue);
         size_t sent = 0;
 
         if (likely(pq->q_active)) {
@@ -208,12 +207,12 @@ pfq_memoized_call(struct pfq_steering_cache *mem, steering_function_t fun,
 /* send this packet to selected sockets */
 
 inline
-void pfq_enqueue_mask_to_batch(int j, unsigned long mask, unsigned long *batch_queue)
+void pfq_enqueue_mask_to_batch(unsigned long j, unsigned long mask, unsigned long *batch_queue)
 {
-	unsigned int index;
+	unsigned long index;
        	bitwise_for_each(mask, index)
 	{
-                batch_queue[index] |= 1l << j;
+                batch_queue[index] |= 1UL << j;
         }
 }
 
@@ -226,7 +225,7 @@ pfq_direct_receive(struct sk_buff *skb, int _index, int _queue, bool direct)
         struct pfq_queue_skb * prefetch_queue = &local_cache->prefetch_queue;
         unsigned long batch_queue[sizeof(unsigned long) << 3];
         struct pfq_steering_cache steering_cache;
-        int n;
+        long unsigned n;
 
 
         /* if required, timestamp this packet now */
@@ -309,7 +308,7 @@ pfq_direct_receive(struct sk_buff *skb, int _index, int _queue, bool direct)
                                                 local_cache->sock_cnt = 0;
                                                 while (eligible_mask)
                                                 {
-                                                        int first_sock = eligible_mask & -eligible_mask;
+                                                        unsigned long first_sock = eligible_mask & -eligible_mask;
                                                         local_cache->sock_mask[local_cache->sock_cnt++] = first_sock;
                                                         eligible_mask ^= first_sock;
                                                 }
@@ -691,7 +690,7 @@ int pfq_getsockopt(struct socket *sock,
                     if (copy_from_user(&stat, optval, len)) 
                             return -EFAULT;
                     
-		    gid = stat.recv;
+		    gid = (int)stat.recv;
                     if (gid < 0  || gid >= Q_MAX_GROUP)
 			    return -EINVAL;
 
@@ -1271,7 +1270,7 @@ int pfq_normalize_skb(struct sk_buff *skb)
 				return -1;
 			}
 			vhdr = (struct vlan_hdr *) skb->data;
-			skb->vlan_tci = ntohs(vhdr->h_vlan_TCI);
+			skb->vlan_tci = (uint16_t)ntohs(vhdr->h_vlan_TCI);
 
 		}
 	}
