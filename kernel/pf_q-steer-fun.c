@@ -102,13 +102,12 @@ steering_ret_t
 steering_dummy(const struct sk_buff *skb, const void *state)
 {
 	const int * s = (const int *)state;
-        static int counter = 0;
 	if (state == NULL) {
-		printk(KERN_INFO "[PFQ] steering dummy: state => NULL (%d)\n", counter++);
+		printk(KERN_INFO "[PFQ] steering dummy: state => NULL\n");
 		return none();
 	}
 
-	printk(KERN_INFO "[PFQ] steering dummy: state = %d (%d)\n", *s, counter++);
+	printk(KERN_INFO "[PFQ] steering dummy: state = %d\n", *s);
 	return clone(Q_CLASS_DEFAULT); 
 }
 
