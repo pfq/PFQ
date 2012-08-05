@@ -836,6 +836,14 @@ namespace net {
                 throw pfq_error(errno, "PFQ: SO_GROUP_STATE");
         }
 
+        void
+        set_group_state(int gid)
+        {
+            struct pfq_group_state s { gid, NULL, 0 };
+            if (::setsockopt(fd_, PF_Q, SO_GROUP_STATE, &s, sizeof(s)) == -1)
+                throw pfq_error(errno, "PFQ: SO_GROUP_STATE");
+        }
+
         int
         join_group(int gid, class_mask mask = class_default, group_policy pol = group_policy::shared)
         {
