@@ -98,11 +98,27 @@ steering_ipv6_addr(const struct sk_buff *skb, const void *state)
 }
 
 
+steering_ret_t
+steering_dummy(const struct sk_buff *skb, const void *state)
+{
+	const int * s = (const int *)state;
+        static int counter = 0;
+	if (state == NULL) {
+		printk(KERN_INFO "[PFQ] steering dummy: state => NULL (%d)\n", counter++);
+		return none();
+	}
+
+	printk(KERN_INFO "[PFQ] steering dummy: state = %d (%d)\n", *s, counter++);
+	return clone(Q_CLASS_DEFAULT); 
+}
+
+
 struct factory_hook pfq_steering_hooks[] = {
 	{ "steer-mac-addr",   steering_mac_addr   },
         { "steer-vlan-untag", steering_vlan_untag },
         { "steer-vlan-id",    steering_vlan_id	  },
         { "steer-ipv4-addr",  steering_ipv4_addr  },
         { "steer-ipv6-addr",  steering_ipv6_addr  },
+	{ "steer-dummy",      steering_dummy },
 	{ NULL, NULL}};
 
