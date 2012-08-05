@@ -192,11 +192,12 @@ struct pfq_steering_cache
 
 
 inline steering_ret_t
-pfq_memoized_call(struct pfq_steering_cache *mem, steering_function_t fun, const struct sk_buff *skb)
+pfq_memoized_call(struct pfq_steering_cache *mem, steering_function_t fun, 
+		  const struct sk_buff *skb, void *state)
 {
 	if (unlikely(mem->fun != fun)) {
 		mem->fun = fun;
-		mem->ret = fun(skb, NULL);
+		mem->ret = fun(skb, state);
 	} 
 	return mem->ret; 
 }
@@ -281,7 +282,7 @@ pfq_direct_receive(struct sk_buff *skb, int _index, int _queue, bool direct)
 
 				/* call the steering function */
 
-                                ret = pfq_memoized_call(&steering_cache, steer_fun, skb);
+                                ret = pfq_memoized_call(&steering_cache, steer_fun, skb, (void *)atomic_long_read(&pfq_groups[gindex].state));
 
                                 if (likely(ret.hash != action_drop)) {
 
