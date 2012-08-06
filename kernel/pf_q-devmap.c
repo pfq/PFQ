@@ -38,7 +38,7 @@ atomic_long_t pfq_devmap [Q_MAX_DEVICE][Q_MAX_HW_QUEUE];
 atomic_t pfq_devmap_monitor [Q_MAX_DEVICE];
 
 
-void pfq_devmap_monitor_update()
+void pfq_devmap_monitor_update(void)
 {
     int i,j;
     for(i=0; i < Q_MAX_DEVICE; ++i)

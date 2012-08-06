@@ -51,7 +51,7 @@ LIST_HEAD(steering_factory);
  */
 
 void 
-pfq_steering_factory_init() 
+pfq_steering_factory_init(void) 
 {
 	int i = 0;
 	for(; pfq_steering_hooks[i].name != NULL ; i++)
@@ -64,7 +64,7 @@ pfq_steering_factory_init()
 
 
 void 
-pfq_steering_factory_free()
+pfq_steering_factory_free(void)
 {
 	struct list_head *pos = NULL, *q;
 	struct steering_factory_elem *this;
