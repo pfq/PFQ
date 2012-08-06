@@ -837,7 +837,7 @@ namespace net {
         }
 
         void
-        set_group_state(int gid)
+        reset_group_state(int gid)
         {
             struct pfq_group_state s { gid, NULL, 0 };
             if (::setsockopt(fd_, PF_Q, SO_GROUP_STATE, &s, sizeof(s)) == -1)

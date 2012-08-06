@@ -34,7 +34,7 @@ main(int argc, char *argv[])
             r.read( 1000000 /* timeout: micro */);
     }
 
-    r.set_group_state(r.group_id()); 
+    r.reset_group_state(r.group_id()); 
     
     for(int i = 0; i < 5;++i)
     {
