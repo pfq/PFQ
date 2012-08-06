@@ -218,7 +218,7 @@ void pfq_enqueue_mask_to_batch(unsigned long j, unsigned long mask, unsigned lon
 
 
 int 
-pfq_direct_receive(struct sk_buff *skb, int _index, int _queue, bool direct)
+pfq_direct_receive(struct sk_buff *skb, bool direct)
 {       
         struct local_data * local_cache = this_cpu_ptr(cpu_data);
         unsigned long group_mask, sock_mask, global_mask;
@@ -267,7 +267,7 @@ pfq_direct_receive(struct sk_buff *skb, int _index, int _queue, bool direct)
 		steering_cache.fun = (steering_function_t)0;
 
                 /* get the balancing groups bitmap */
-                group_mask = __pfq_devmap_get_groups(_index, _queue);
+                group_mask = __pfq_devmap_get_groups(skb->dev->ifindex, skb_get_rx_queue(skb));   
 
                 sock_mask = 0;
 			
@@ -372,7 +372,7 @@ pfq_packet_rcv
                 skb = nskb;
         }
 
-        return pfq_direct_receive(skb, dev->ifindex, skb_get_rx_queue(skb), false);
+        return pfq_direct_receive(skb, false);
 }
 
 
@@ -1295,7 +1295,7 @@ pfq_netif_receive_skb(struct sk_buff *skb)
 		if (pfq_normalize_skb(skb) < 0)
                 	return NET_RX_DROP;
 
-		pfq_direct_receive(skb, skb->dev->ifindex, skb_get_rx_queue(skb), true);
+		pfq_direct_receive(skb, true);
 		return NET_RX_SUCCESS;
 	}
 
@@ -1311,7 +1311,7 @@ pfq_netif_rx(struct sk_buff *skb)
 		if (pfq_normalize_skb(skb) < 0)
                 	return NET_RX_DROP;
 		
-		pfq_direct_receive(skb, skb->dev->ifindex, skb_get_rx_queue(skb), true);
+		pfq_direct_receive(skb, true);
 		return NET_RX_SUCCESS;
 	}
 
@@ -1327,7 +1327,7 @@ pfq_gro_receive(struct napi_struct *napi, struct sk_buff *skb)
 		if (pfq_normalize_skb(skb) < 0)
                 	return GRO_DROP;
 
-                pfq_direct_receive(skb, skb->dev->ifindex, skb_get_rx_queue(skb), true);
+                pfq_direct_receive(skb, true);
                 return GRO_NORMAL;
         }
 
