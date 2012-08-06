@@ -299,7 +299,7 @@ pfq_direct_receive(struct sk_buff *skb, bool direct)
                                         if (ret.hash == action_clone) {
 
                                                 sock_mask |= eligible_mask;
-                                        	continue;
+                                        	continue; 
 					}
 
                                         if (unlikely(eligible_mask != local_cache->eligible_mask)) {
@@ -564,7 +564,8 @@ int pfq_getsockopt(struct socket *sock,
         
 	if (get_user(len, optlen))
                 return -EFAULT;
-        if (len < 0)
+        
+	if (len < 0)
 		return -EINVAL;
 
         switch(optname)
@@ -725,14 +726,11 @@ int pfq_setsockopt(struct socket *sock,
                    int optlen)
 {
         struct pfq_opt *pq = pfq_sk(sock->sk)->opt;
-        long int val;
         bool found = true;
 
         if (pq == NULL)
                 return -EINVAL;
-        if (get_user(val, (long int *)optval))
-                return -EFAULT;
-
+	
         switch(optname)
         {
         case SO_TOGGLE_QUEUE: 
@@ -975,16 +973,13 @@ int pfq_setsockopt(struct socket *sock,
 }        
 
 
-static
+static inline
 int
 pfq_memory_mmap(struct vm_area_struct *vma,
                 unsigned long size, char *ptr, unsigned int flags)
 {
-        unsigned long start;
-
         vma->vm_flags |= flags;
 
-        start = vma->vm_start;
         if (remap_vmalloc_range(vma, ptr, 0) != 0)
         {
                 printk(KERN_INFO "[PFQ] remap_vmalloc_range\n");
