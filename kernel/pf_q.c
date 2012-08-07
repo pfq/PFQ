@@ -276,7 +276,7 @@ pfq_direct_receive(struct sk_buff *skb, bool direct)
                         steering_ret_t ret;
                         steering_function_t steer_fun;
 
-			/* increment counter for this group */
+			/* increment recv counter for this group */
 			sparse_inc(&pfq_groups[gindex].recv);
 
                         /* retrieve the steering function for this group */
