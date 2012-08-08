@@ -76,15 +76,13 @@ mpdb_enqueue_batch(struct pfq_opt *pq, unsigned long bitqueue, int qlen, struct 
 	char *ptr;
 
 	data = atomic_read((atomic_t *)&queue_descr->data);
-	if (DBMP_QUEUE_LEN(data) > pq->q_slots)
+	
+	if (unlikely(DBMP_QUEUE_LEN(data) > pq->q_slots))
 	{
-		if ( queue_descr->poll_wait && ((data & 1023) == 0) ) {
-			wake_up_interruptible(&pq->q_waitqueue);
-		}
 		return 0;
 	}
-
-	data    = atomic_add_return(qlen, (atomic_t *)&queue_descr->data);
+	
+	data = atomic_add_return(qlen, (atomic_t *)&queue_descr->data);
 
 	q_len   = DBMP_QUEUE_LEN(data) - qlen; 	
 	q_index = DBMP_QUEUE_INDEX(data);
@@ -94,10 +92,10 @@ mpdb_enqueue_batch(struct pfq_opt *pq, unsigned long bitqueue, int qlen, struct 
 	{
 		size_t slot_index = q_len + sent;
 		
-		unsigned int bytes = (skb->len > (int)pq->q_offset) ? min((int)skb->len - (int)pq->q_offset, (int)pq->q_caplen) : 0;
-
 		if (likely(slot_index <= pq->q_slots))
 		{
+			unsigned int bytes = likely(skb->len > (int)pq->q_offset) ? min((int)skb->len - (int)pq->q_offset, (int)pq->q_caplen) : 0;
+			
 			/* enqueue skb */
 
 			struct pfq_hdr *p_hdr = (struct pfq_hdr *)ptr;
@@ -145,10 +143,11 @@ mpdb_enqueue_batch(struct pfq_opt *pq, unsigned long bitqueue, int qlen, struct 
 
 			p_hdr->ready = (uint8_t)q_index;
 
-			// if ((slot_index >= (pq->q_slots >> 1)) && queue_descr->poll_wait 
-			//                  && ((data & 1023) == 0) ) {
-			//         wake_up_interruptible(&pq->q_waitqueue);
-			// }
+			if (unlikely((slot_index & 16383) == 0) && 
+					(slot_index >= (pq->q_slots >> 1)) && 
+						queue_descr->poll_wait) {
+			        wake_up_interruptible(&pq->q_waitqueue);
+			}
 
 			sent++;
 		}
@@ -156,19 +155,11 @@ mpdb_enqueue_batch(struct pfq_opt *pq, unsigned long bitqueue, int qlen, struct 
 			if ( queue_descr->poll_wait ) {
 				wake_up_interruptible(&pq->q_waitqueue);
 			}
+
 			return sent;
 		}
 		
-		//  data++;
-
 		ptr += pq->q_slot_size;
-	}
-
-	/* watermark */
-
-	if (queue_descr->poll_wait && ((data & 63) == 0) && ((q_len + qlen) >= (pq->q_slots >> 1))
-	   ) {
-		wake_up_interruptible(&pq->q_waitqueue);
 	}
 
 	return sent;
