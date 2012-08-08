@@ -304,7 +304,7 @@ try
         ctx.push_back(test::ctx(i, std::get<0>(vbinding[i]).c_str(), std::get<2>(vbinding[i])));        
     }
 
-    opt::sleep_microseconds = 40000 * ctx.size();
+    opt::sleep_microseconds = 50000 * ctx.size();
     std::cout << "poll timeout " << opt::sleep_microseconds << " usec" << std::endl;
 
     // create threads:
