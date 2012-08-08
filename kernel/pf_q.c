@@ -320,7 +320,7 @@ pfq_direct_receive(struct sk_buff *skb, bool direct)
                                 }
                         }
                         else {
-                                sock_mask |= atomic_long_read(&pfq_groups[gindex].sock_mask[Q_CLASS_DEFAULT]);
+                                sock_mask |= atomic_long_read(&pfq_groups[gindex].sock_mask[0]);
                         }
                 }
 
@@ -329,6 +329,7 @@ pfq_direct_receive(struct sk_buff *skb, bool direct)
                 global_mask |= sock_mask;
         }
 
+	
 	bitwise_for_each(global_mask, n)
         {
                 struct pfq_opt * pq = pfq_get_opt(n);
@@ -678,7 +679,7 @@ int pfq_getsockopt(struct socket *sock,
                             return -EPERM;
                     }
                     
-		    printk(KERN_INFO "[PFQ|%d] join -> gid:%d class:%lx\n", pq->q_id, group.gid, group.class_mask);
+		    printk(KERN_INFO "[PFQ|%d] join -> gid:%d class_mask:%lx\n", pq->q_id, group.gid, group.class_mask);
             } break;
 
         case SO_GROUP_STATS: 
