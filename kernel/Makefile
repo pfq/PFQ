@@ -6,6 +6,7 @@ TARGET = pfq
 EXTRA_CFLAGS = -I$(PWD) 
 EXTRA_CFLAGS += -DEXPORT_SYMTAB  
 EXTRA_CFLAGS += -DPFQ_USE_SKB_LINEARIZE
+EXTRA_CFLAGS += -Ofast -march=native 
 
 obj-m := $(TARGET).o 
 
