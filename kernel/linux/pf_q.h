@@ -72,10 +72,10 @@ struct pfq_hdr
             uint16_t vlan_vid:12,   /* 8021q vlan id */
                      reserved:1,    /* 8021q reserved bit */
                      vlan_prio:3;   /* 8021q vlan priority */   
-        };
+        } vlan;
 
         uint16_t     vlan_tci;
-    };
+    } un;
 
     int         gid;        /* gruop id */
     int         if_index;   /* interface index */    
@@ -93,7 +93,7 @@ struct pfq_hdr
 
 struct pfq_queue_descr
 {
-    volatile int   data;
+    volatile unsigned int   data;
     volatile int   poll_wait;
 
 } __attribute__((aligned(8)));
@@ -101,7 +101,7 @@ struct pfq_queue_descr
 
 #define DBMP_QUEUE_SLOT_SIZE(x)    ALIGN(sizeof(struct pfq_hdr) + x, 8)
 #define DBMP_QUEUE_INDEX(data)     (((data) & 0xff000000U) >> 24)
-#define DBMP_QUEUE_LEN(data)       ((data)  & 0x00ffffffU)
+#define DBMP_QUEUE_LEN(data)       ((data) & 0x00ffffffU)
 
 
 /* set socket options */
@@ -173,8 +173,8 @@ struct pfq_binding
 struct pfq_group_join
 {
     int gid;
+    int policy;
     unsigned long class_mask;
-    int16_t policy;
 };
 
 /* steering functions */
@@ -183,16 +183,16 @@ struct pfq_group_join
 
 struct pfq_steering
 {
-    int gid;
     const char *name;
+    int gid;
 };
 
 
 struct pfq_group_state
 {
-    int gid;
     const void * state;
     size_t       size;      // sizeof(state)
+    int gid;
 };
 
 
