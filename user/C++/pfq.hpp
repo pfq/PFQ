@@ -91,7 +91,7 @@ namespace net {
         {
             friend struct queue::const_iterator;
 
-            iterator(pfq_hdr *h, size_t slot_size, int index)
+            iterator(pfq_hdr *h, size_t slot_size, size_t index)
             : hdr_(h), slot_size_(slot_size), index_(index)
             {}
 
@@ -160,13 +160,13 @@ namespace net {
         private:
             pfq_hdr *hdr_;
             size_t   slot_size_;
-            int      index_;
+            size_t   index_;
         };
 
         /* simple forward const_iterator over frames */
         struct const_iterator : public std::iterator<std::forward_iterator_tag, pfq_hdr>
         {
-            const_iterator(pfq_hdr *h, size_t slot_size, int index)
+            const_iterator(pfq_hdr *h, size_t slot_size, size_t index)
             : hdr_(h), slot_size_(slot_size), index_(index)
             {}
 
@@ -238,12 +238,12 @@ namespace net {
 
         private:
             pfq_hdr *hdr_;
-            size_t   slot_size_;
-            int      index_;
+            size_t  slot_size_;
+            size_t  index_;
         };
 
     public:
-        queue(void *addr, int slot_size, int queue_len, int index)
+        queue(void *addr, size_t slot_size, size_t queue_len, size_t index)
         : addr_(addr), slot_size_(slot_size), queue_len_(queue_len), index_(index)
         {}
 
@@ -262,7 +262,7 @@ namespace net {
             return queue_len_ == 0;
         }
 
-        int 
+        size_t 
         index() const
         {
             return index_;
@@ -321,12 +321,12 @@ namespace net {
 
     private:
         void    *addr_;
-        int     slot_size_;
-        int     queue_len_;
-        int     index_;
+        size_t  slot_size_;
+        size_t  queue_len_;
+        size_t  index_;
     };
 
-    static inline void * data_ready(pfq_hdr &h, int index)
+    static inline void * data_ready(pfq_hdr &h, size_t index)
     {
         if (h.ready != index)
             return nullptr;
@@ -335,7 +335,7 @@ namespace net {
 
         return &h + 1;
     }
-    static inline const void * data_ready(const pfq_hdr &h, int index)
+    static inline const void * data_ready(const pfq_hdr &h, size_t index)
     {
         if (h.ready != index)
             return nullptr;
@@ -822,7 +822,7 @@ namespace net {
         void
         set_steering_function(int gid, const char *fun)
         {
-            struct pfq_steering s { gid, fun };
+            struct pfq_steering s { fun, gid };
             if (::setsockopt(fd_, PF_Q, SO_GROUP_STEER, &s, sizeof(s)) == -1)
                 throw pfq_error(errno, "PFQ: SO_GROUP_STEER");
         }
@@ -831,7 +831,7 @@ namespace net {
         void
         set_group_state(int gid, const T &state)
         {
-            struct pfq_group_state s { gid, &state, sizeof(state) };
+            struct pfq_group_state s { &state, sizeof(state), gid };
             if (::setsockopt(fd_, PF_Q, SO_GROUP_STATE, &s, sizeof(s)) == -1)
                 throw pfq_error(errno, "PFQ: SO_GROUP_STATE");
         }
@@ -839,7 +839,7 @@ namespace net {
         void
         reset_group_state(int gid)
         {
-            struct pfq_group_state s { gid, NULL, 0 };
+            struct pfq_group_state s { NULL, 0, gid };
             if (::setsockopt(fd_, PF_Q, SO_GROUP_STATE, &s, sizeof(s)) == -1)
                 throw pfq_error(errno, "PFQ: SO_GROUP_STATE");
         }
@@ -850,7 +850,7 @@ namespace net {
             if (pol == group_policy::undefined)
                 throw pfq_error("PFQ: join with undefined policy!");
 
-            struct pfq_group_join group { gid, mask, static_cast<int16_t>(pol) };
+            struct pfq_group_join group { gid, static_cast<int16_t>(pol), mask };
 
             socklen_t size = sizeof(group);
             if (::getsockopt(fd_, PF_Q, SO_GROUP_JOIN, &group, &size) == -1)
@@ -891,10 +891,8 @@ namespace net {
 
             struct pfq_queue_descr * q = static_cast<struct pfq_queue_descr *>(pdata_->queue_addr);
             
-            int data   = q->data;
-
-            int index = DBMP_QUEUE_INDEX(data);
-            
+            size_t data = q->data;
+            size_t index = DBMP_QUEUE_INDEX(data);
             size_t q_size = pdata_->queue_slots * pdata_->slot_size;
 
             //  watermark for polling...
@@ -905,7 +903,7 @@ namespace net {
 
             // reset the next buffer...
             
-            data = __sync_lock_test_and_set(&q->data, ((index+1) << 24));
+            data = __sync_lock_test_and_set(&q->data, (unsigned int)((index+1) << 24));
             
             
             auto queue_len =  std::min(static_cast<size_t>(DBMP_QUEUE_LEN(data)), pdata_->queue_slots);
@@ -942,7 +940,7 @@ namespace net {
             
             auto it = std::begin(many),
                  it_e = std::end(many);
-            int n = 0;
+            size_t n = 0;
             for(; it != it_e; ++it)
             {
                 while (!it->ready)
@@ -970,7 +968,7 @@ namespace net {
         group_stats(int gid) const
         {
             pfq_stats stat;
-            stat.recv = gid;
+            stat.recv = static_cast<unsigned long>(gid);
             socklen_t size = sizeof(struct pfq_stats);
             if (::getsockopt(fd_, PF_Q, SO_GROUP_STATS, &stat, &size) == -1)
                 throw pfq_error(errno, "PFQ: SO_GET_STATS");
