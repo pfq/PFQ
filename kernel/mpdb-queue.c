@@ -134,7 +134,7 @@ mpdb_enqueue_batch(struct pfq_opt *pq, unsigned long bitqueue, int qlen, struct 
 
 			if (skb->vlan_tci)
 			{
-				p_hdr->vlan_tci = skb->vlan_tci;
+				p_hdr->un.vlan_tci = skb->vlan_tci;
 			}
 
 			/* commit the slot (release semantic) */
