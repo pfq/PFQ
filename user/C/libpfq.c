@@ -53,10 +53,6 @@
 
 typedef struct 
 {
-	int fd;
-	int id;
-	int gid;
-
 	void * queue_addr;
 
 	size_t queue_tot_mem;
@@ -67,10 +63,14 @@ typedef struct
 
 	const char * error;
 
+	int fd;
+	int id;
+	int gid;
+
 } pfq_t;
 
 
-#define  ALIGN8(value) ((value + 7) & ~7)
+#define  ALIGN8(value) ((value + 7) & ~(__typeof__(value))7)
 
 #define max(a,b) \
 	({ __typeof__ (a) _a = (a); \
@@ -104,8 +104,9 @@ pfq_open(size_t caplen, size_t offset, size_t slots)
 	return pfq_open_group(Q_CLASS_DEFAULT, Q_GROUP_RESTRICTED, caplen, offset, slots); 
 }
 
+
 pfq_t *
-pfq_open_group(int group_type, int group_policy, size_t caplen, size_t offset, size_t slots)
+pfq_open_group(unsigned long class_mask, int group_policy, size_t caplen, size_t offset, size_t slots)
 {
 	int fd = socket(PF_Q, SOCK_RAW, htons(ETH_P_ALL));
 	pfq_t * q;
@@ -160,7 +161,7 @@ pfq_open_group(int group_type, int group_policy, size_t caplen, size_t offset, s
 	
 	if (group_policy != Q_GROUP_UNDEFINED)
 	{
-		q->gid = pfq_join_group(q, Q_ANY_GROUP, group_type, group_policy);
+		q->gid = pfq_join_group(q, Q_ANY_GROUP, class_mask, group_policy);
 		if (q->gid == -1) {
 			return __error = q->error, free(q), NULL;
 		}
@@ -296,7 +297,7 @@ pfq_set_caplen(pfq_t *q, size_t value)
 }
 
 
-int
+ssize_t
 pfq_get_caplen(pfq_t const *q)
 {
 	size_t ret; socklen_t size = sizeof(ret);
@@ -305,7 +306,7 @@ pfq_get_caplen(pfq_t const *q)
 	if (getsockopt(q->fd, PF_Q, SO_GET_CAPLEN, &ret, &size) == -1) {
 		return mutable->error = "PFQ: SO_GET_CAPLEN", -1;
 	}
-	return mutable->error = NULL, ret;
+	return mutable->error = NULL, (ssize_t)ret;
 }
 
 
@@ -324,7 +325,7 @@ pfq_set_offset(pfq_t *q, size_t value)
 }
 
 
-int
+ssize_t
 pfq_get_offset(pfq_t const *q)
 {
 	pfq_t * mutable = (pfq_t *)q;
@@ -333,7 +334,7 @@ pfq_get_offset(pfq_t const *q)
 	if (getsockopt(q->fd, PF_Q, SO_GET_OFFSET, &ret, &size) == -1) {
 		return mutable->error = "PFQ: SO_GET_OFFSET", -1;
 	}
-	return mutable->error = NULL, ret;
+	return mutable->error = NULL, (ssize_t)ret;
 }
 
 
@@ -352,14 +353,14 @@ pfq_set_slots(pfq_t *q, size_t value)
 	return q->error = NULL, 0;
 }
 
-int
+size_t
 pfq_get_slots(pfq_t const *q) 
 {   
 	return q->queue_slots;
 }
 
 
-int
+size_t
 pfq_get_slot_size(pfq_t const *q) 
 {   
 	return q->slot_size;
@@ -435,7 +436,7 @@ pfq_groups_mask(pfq_t const *q, unsigned long *_mask)
 int
 pfq_steering_function(pfq_t *q, int gid, const char *fun_name)
 {
-	struct pfq_steering s = { gid, fun_name };
+	struct pfq_steering s = { fun_name, gid };
 	if (setsockopt(q->fd, PF_Q, SO_GROUP_STEER, &s, sizeof(s)) == -1) {
 		return q->error = "PFQ: SO_GROUP_STEER", -1;
 	}
@@ -446,7 +447,7 @@ pfq_steering_function(pfq_t *q, int gid, const char *fun_name)
 int
 pfq_group_state(pfq_t *q, int gid, const void *state, size_t size)
 {
-	struct pfq_group_state s  = { gid, state, size };
+	struct pfq_group_state s  = { state, size, gid };
 	if (setsockopt(q->fd, PF_Q, SO_GROUP_STATE, &s, sizeof(s)) == -1) {
 		return q->error = "PFQ: SO_GROUP_STATE", -1;
 	}
@@ -455,13 +456,13 @@ pfq_group_state(pfq_t *q, int gid, const void *state, size_t size)
 
 
 int
-pfq_join_group(pfq_t *q, int gid, short int group_type, short int group_policy)
+pfq_join_group(pfq_t *q, int gid, unsigned long class_mask, int group_policy)
 {
 	if (group_policy == Q_GROUP_UNDEFINED) {
          	return q->error = "PFQ: join with undefined policy!", -1;
 	}
 
-	struct pfq_group_join group = { gid, group_type, group_policy };
+	struct pfq_group_join group = { gid, group_policy, class_mask };
 
 	socklen_t size = sizeof(group);
 	if (getsockopt(q->fd, PF_Q, SO_GROUP_JOIN, &group, &size) == -1) {
@@ -517,7 +518,7 @@ pfq_get_group_stats(pfq_t const *q, int gid, struct pfq_stats *stats)
 	pfq_t *mutable = (pfq_t *)q;
 	socklen_t size = sizeof(struct pfq_stats);
 	
-	stats->recv = gid;
+	stats->recv = (unsigned int)gid;
 	if (getsockopt(q->fd, PF_Q, SO_GROUP_STATS, stats, &size) == -1) {
 		return mutable->error = "PFQ: SO_GET_STATS", -1;
 	}
@@ -525,13 +526,13 @@ pfq_get_group_stats(pfq_t const *q, int gid, struct pfq_stats *stats)
 }
 
 
-int 
+int
 pfq_read(pfq_t *q, struct pfq_net_queue *nq, long int microseconds) 
 {
 	size_t q_size = q->queue_slots * q->slot_size;
 	struct pfq_queue_descr * qd;
-	int data, index;
-       
+	unsigned int index, data;
+
         if (q->queue_addr == NULL) {
          	return q->error = "PFQ: read on pfq socket not enabled", -1;
 	}
@@ -561,7 +562,7 @@ pfq_read(pfq_t *q, struct pfq_net_queue *nq, long int microseconds)
 	nq->index = index;
 	nq->len   = queue_len;
         nq->slot_size = q->slot_size; 
-	return q->error = NULL, queue_len;
+	return q->error = NULL, (int)queue_len;
 }
 
 

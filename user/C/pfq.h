@@ -67,9 +67,9 @@ typedef char * pfq_iterator_t;
 struct pfq_net_queue
 {	
 	pfq_iterator_t queue; 	  		/* net queue */
-	int            index; 	  		/* current queue index */ 
 	size_t         len;       		/* number of packets in the queue */
     size_t         slot_size;
+	unsigned int   index; 	  		/* current queue index */ 
 };
 
 
@@ -157,11 +157,11 @@ typedef void (*pfq_handler_t)(char *user, const struct pfq_hdr *h, const char *d
 extern pfq_t* pfq_open(size_t calpen, size_t offset, size_t slots);
 
 /*
- * group_type: 	 Q_GROUP_RESTRICTED, Q_GROUP_SHARED, Q_GROUP_UNDEFINED
- * group_policy: Q_GROUP_DATA, Q_GROUP_CONTROL, Q_GROUP_OUT_OF_BAND...
+ * group_policy: Q_GROUP_RESTRICTED, Q_GROUP_SHARED, Q_GROUP_UNDEFINED...
+   class_mask  : Q_CLASS_DEFAULT| .... = Q_CLASS_ANY
  */
 
-extern pfq_t* pfq_open_group(int group_type, 
+extern pfq_t* pfq_open_group(unsigned long class_mask, 
 							 int group_policy, 
 							 size_t calpen, size_t offset, size_t slots);
 
@@ -183,17 +183,17 @@ extern int pfq_ifindex(pfq_t const *q, const char *dev);
 
 extern int pfq_set_caplen(pfq_t *q, size_t value);
 
-extern int pfq_get_caplen(pfq_t const *q);
+extern ssize_t pfq_get_caplen(pfq_t const *q);
 
 extern int pfq_set_offset(pfq_t *q, size_t value);
 
-extern int pfq_get_offset(pfq_t const *q);
+extern ssize_t pfq_get_offset(pfq_t const *q);
 
 extern int pfq_set_slots(pfq_t *q, size_t value);
 
-extern int pfq_get_slots(pfq_t const *q);
+extern size_t pfq_get_slots(pfq_t const *q);
 
-extern int pfq_get_slot_size(pfq_t const *q); 
+extern size_t pfq_get_slot_size(pfq_t const *q); 
 
 extern int pfq_bind_group(pfq_t *q, int gid, const char *dev, int queue);
 
@@ -209,7 +209,7 @@ extern int pfq_steering_function(pfq_t *q, int gid, const char *fun_name);
 
 extern int pfq_group_state(pfq_t *q, int gid, const void *state, size_t size);
 
-extern int pfq_join_group(pfq_t *q, int gid, short int group_type, short int group_policy);
+extern int pfq_join_group(pfq_t *q, int gid, unsigned long class_mask, int group_policy);
 
 extern int pfq_leave_group(pfq_t *q, int gid);
         
