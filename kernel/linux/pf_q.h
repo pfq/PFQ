@@ -83,7 +83,7 @@ struct pfq_hdr
     uint8_t     hw_queue;   /* 256 queues per device */
     uint8_t     ready;
 
-} __attribute__((packed));
+} /* __attribute__((packed)) */;
 
 
 
