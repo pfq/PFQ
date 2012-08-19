@@ -106,6 +106,13 @@ pfq_open(size_t caplen, size_t offset, size_t slots)
 
 
 pfq_t *
+pfq_open_orphan(size_t caplen, size_t offset, size_t slots)
+{
+	return pfq_open_group(Q_CLASS_DEFAULT, Q_GROUP_UNDEFINED, caplen, offset, slots); 
+}
+
+
+pfq_t *
 pfq_open_group(unsigned long class_mask, int group_policy, size_t caplen, size_t offset, size_t slots)
 {
 	int fd = socket(PF_Q, SOCK_RAW, htons(ETH_P_ALL));
