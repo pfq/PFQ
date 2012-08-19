@@ -259,6 +259,8 @@ pfq_direct_receive(struct sk_buff *skb, bool direct)
 
         global_mask = 0;
 
+	steering_cache.state = 0;
+
         queue_for_each(skb, n, prefetch_queue)
         {
 		unsigned int gindex;
