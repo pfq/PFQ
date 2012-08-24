@@ -43,6 +43,12 @@ typedef struct
 typedef steering_ret_t (*steering_function_t)(const struct sk_buff *, const void *);    
 
 
+struct steering_function
+{
+    const char *            name;
+    steering_function_t     function;
+};
+
 enum action 
 {
     action_drop  = 0,

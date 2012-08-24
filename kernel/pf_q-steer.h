@@ -29,13 +29,6 @@
 #include <linux/pf_q-steering.h>
  
 
-struct factory_hook 
-{
-    const char *            name;
-    steering_function_t     function;
-};
-
-
 extern void pfq_steering_factory_init(void);
 extern void pfq_steering_factory_free(void);
 extern int  pfq_register_steering_function(const char *name, steering_function_t fun);
