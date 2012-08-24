@@ -27,6 +27,8 @@
 
 #ifdef __KERNEL__
 
+#include <linux/types.h>
+
 #define Q_VERSION               "2.0"
 
 #define Q_MAX_CPU               64
@@ -84,7 +86,6 @@ struct pfq_hdr
     uint8_t     ready;
 
 } /* __attribute__((packed)) */;
-
 
 
 /* 
