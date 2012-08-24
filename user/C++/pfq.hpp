@@ -34,7 +34,6 @@
 
 #include <linux/if_ether.h>
 #include <linux/pf_q.h>
-#include <pf_q-steer-data.h>    /* Data for steering functions */
 
 #include <sys/types.h>          /* See NOTES */
 #include <sys/socket.h>
