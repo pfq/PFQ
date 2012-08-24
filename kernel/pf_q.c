@@ -134,7 +134,7 @@ pfq_get_opt(size_t id)
         struct pfq_opt * opt;
         if (unlikely(id >= Q_MAX_ID))
         {
-                printk(KERN_WARNING "[PFQ] pfq_devmap_freeid: bad id=%zd\n", id);
+                printk(KERN_WARNING "[PFQ] pfq_devmap_freeid: bad id=%zd!\n", id);
                 return NULL;
         }
 	opt = (struct pfq_opt *)atomic_long_read(&pfq_vector[id]);  
@@ -148,7 +148,7 @@ void pfq_release_id(int id)
 {
         if (unlikely(id >= Q_MAX_ID || id < 0))
         {
-                printk(KERN_WARNING "[PFQ] pfq_devmap_freeid: bad id=%d\n", id);
+                printk(KERN_WARNING "[PFQ] pfq_devmap_freeid: bad id=%d!\n", id);
                 return;
         }
         atomic_long_set(pfq_vector + id, 0);
@@ -677,7 +677,7 @@ int pfq_getsockopt(struct socket *sock,
                                     return -EFAULT;
                     } else
                     if (pfq_join_group(group.gid, pq->q_id, group.class_mask, group.policy) < 0) {
-                    	    printk(KERN_INFO "[PFQ|%d] join gid:%d (no permission)\n", pq->q_id, group.gid);
+                    	    printk(KERN_INFO "[PFQ|%d] join error: gid:%d no permission!\n", pq->q_id, group.gid);
                             return -EPERM;
                     }
                     
@@ -699,7 +699,7 @@ int pfq_getsockopt(struct socket *sock,
 			    return -EINVAL;
 
 		    if (!__pfq_has_joined_group(gid, pq->q_id)) {
-                    	    printk(KERN_INFO "[PFQ|%d] group stats: gid:%d (no permission)\n", pq->q_id, gid);
+                    	    printk(KERN_INFO "[PFQ|%d] group stats error: gid:%d no permission!\n", pq->q_id, gid);
 			    return -EPERM;
 		    }
 
@@ -783,12 +783,12 @@ int pfq_setsockopt(struct socket *sock,
                             return -EFAULT;
                     
                     if (bind.gid < 0 || bind.gid >= Q_MAX_GROUP) {
-                    	    printk(KERN_INFO "[PFQ|%d] add binding: gid:%d (invalid group)\n", pq->q_id, bind.gid);
+                    	    printk(KERN_INFO "[PFQ|%d] add binding error: gid:%d invalid group!\n", pq->q_id, bind.gid);
 			    return -EINVAL; 
 		    }
 
 		    if (!__pfq_has_joined_group(bind.gid, pq->q_id)) {
-                    	    printk(KERN_INFO "[PFQ|%d] add binding: gid:%d (no permission)\n", pq->q_id, bind.gid);
+                    	    printk(KERN_INFO "[PFQ|%d] add binding error: gid:%d no permission!\n", pq->q_id, bind.gid);
 			    return -EPERM;
 		    }
 
@@ -805,12 +805,12 @@ int pfq_setsockopt(struct socket *sock,
                             return -EFAULT;
 
                     if (bind.gid < 0 || bind.gid >= Q_MAX_GROUP) {
-                    	    printk(KERN_INFO "[PFQ|%d] remove binding: gid:%d (invalid group)\n", pq->q_id, bind.gid);
+                    	    printk(KERN_INFO "[PFQ|%d] remove binding error: gid:%d invalid group!\n", pq->q_id, bind.gid);
 			    return -EINVAL;
 		    }
 
 		    if (!__pfq_has_joined_group(bind.gid, pq->q_id)) {
-                    	    printk(KERN_INFO "[PFQ|%d] remove binding: gid:%d (no permission)\n", pq->q_id, bind.gid);
+                    	    printk(KERN_INFO "[PFQ|%d] remove binding error: gid:%d no permission!\n", pq->q_id, bind.gid);
 			    return -EPERM;
 		    }
 
@@ -828,18 +828,18 @@ int pfq_setsockopt(struct socket *sock,
 			    return -EFAULT;
 		    
                     if (s.gid < 0 || s.gid >= Q_MAX_GROUP) {
-                    	    printk(KERN_INFO "[PFQ|%d] steer: gid:%d (invalid group)\n", pq->q_id, s.gid);
+                    	    printk(KERN_INFO "[PFQ|%d] steering error: gid:%d invalid group!\n", pq->q_id, s.gid);
 			    return -EINVAL;
 		    }
 		    
 		    if (!__pfq_has_joined_group(s.gid, pq->q_id)) {
-                    	    printk(KERN_INFO "[PFQ|%d] steer: gid:%d (no permission)\n", pq->q_id, s.gid);
+                    	    printk(KERN_INFO "[PFQ|%d] steering error: gid:%d no permission!\n", pq->q_id, s.gid);
 			    return -EPERM;
 		    }
 
 		    if (s.name == NULL) {
 			__pfq_set_steering_for_group(s.gid, NULL);
-                    	printk(KERN_INFO "[PFQ|%d] steer: gid:%d (steer NONE)\n", pq->q_id, s.gid);
+                    	printk(KERN_INFO "[PFQ|%d] steering: gid:%d (steering NONE)\n", pq->q_id, s.gid);
 		    }
 		    else {
                     	char name[Q_STEERING_NAME_LEN]; 
@@ -852,13 +852,13 @@ int pfq_setsockopt(struct socket *sock,
                         
 			fun = pfq_get_steering_function(name);
 			if (fun == NULL) {
-                    		printk(KERN_INFO "[PFQ|%d] steer: gid:%d (%s unknown function)\n", pq->q_id, s.gid, name);
+                    		printk(KERN_INFO "[PFQ|%d] steering error: gid:%d '%s' unknown function!\n", pq->q_id, s.gid, name);
 				return -EINVAL;
 			}
 
 			__pfq_set_steering_for_group(s.gid, fun);
                     	
-			printk(KERN_INFO "[PFQ|%d] steer: gid:%d (steer function %s)\n", pq->q_id, s.gid, name);
+			printk(KERN_INFO "[PFQ|%d] steering gid:%d -> function '%s'\n", pq->q_id, s.gid, name);
 		    }
 	    } break;
 
@@ -872,12 +872,12 @@ int pfq_setsockopt(struct socket *sock,
 			    return -EFAULT;
 
                     if (s.gid < 0 || s.gid >= Q_MAX_GROUP) {
-                    	    printk(KERN_INFO "[PFQ|%d] steer: gid:%d (invalid group)\n", pq->q_id, s.gid);
+                    	    printk(KERN_INFO "[PFQ|%d] steering error: gid:%d invalid group!\n", pq->q_id, s.gid);
 			    return -EINVAL;
 		    }
 
 		    if (!__pfq_has_joined_group(s.gid, pq->q_id)) {
-                    	    printk(KERN_INFO "[PFQ|%d] steer: gid:%d (no permission)\n", pq->q_id, s.gid);
+                    	    printk(KERN_INFO "[PFQ|%d] steering error: gid:%d no permission!\n", pq->q_id, s.gid);
 			    return -EPERM;
 		    }
 
@@ -985,7 +985,7 @@ pfq_memory_mmap(struct vm_area_struct *vma,
 
         if (remap_vmalloc_range(vma, ptr, 0) != 0)
         {
-                printk(KERN_INFO "[PFQ] remap_vmalloc_range\n");
+                printk(KERN_INFO "[PFQ] remap_vmalloc_range!\n");
                 return -EAGAIN;
         }
 
@@ -1001,12 +1001,12 @@ pfq_mmap(struct file *file, struct socket *sock, struct vm_area_struct *vma)
         int ret;
 
         if(size % PAGE_SIZE) {
-                printk(KERN_INFO "[PFQ] size not multiple of PAGE_SIZE\n");
+                printk(KERN_INFO "[PFQ] size not multiple of PAGE_SIZE!\n");
                 return -EINVAL;
         }
 
         if(size > pq->q_queue_mem) {
-                printk(KERN_INFO "[PFQ] area too large\n");
+                printk(KERN_INFO "[PFQ] area too large!\n");
                 return -EINVAL;
         }
 
@@ -1160,21 +1160,21 @@ void unregister_device_handler(void)
 static int __init pfq_init_module(void)
 {
         int n;
-        printk(KERN_WARNING "[PFQ] loading (%s)\n", Q_VERSION);
+        printk(KERN_WARNING "[PFQ] loading (%s)...\n", Q_VERSION);
 
         pfq_net_proto_family_init();
         pfq_proto_ops_init();
         pfq_proto_init();
 
         if (prefetch_len >= (sizeof(unsigned long)<<3)) {
-                printk(KERN_WARNING "[PFQ] prefetch_len=%d not allawed (max=%lu)\n", prefetch_len, (sizeof(unsigned long) << 3)-1);
+                printk(KERN_WARNING "[PFQ] prefetch_len=%d not allawed (max=%lu)!\n", prefetch_len, (sizeof(unsigned long) << 3)-1);
                 return -EFAULT;
         }
 
 	/* create a per-cpu context */
 	cpu_data = alloc_percpu(struct local_data);
 	if (!cpu_data) {
-                printk(KERN_WARNING "[PFQ] not enought memory\n");
+                printk(KERN_WARNING "[PFQ] not enought memory!\n");
 		return -ENOMEM;
         }
 
@@ -1189,11 +1189,11 @@ static int __init pfq_init_module(void)
         /* finally register the basic device handler */
         register_device_handler();
 
-	/* register steer functions */
+	/* register steering functions */
 
 	pfq_steering_factory_init();
         
-	printk(KERN_WARNING "[PFQ] ready\n");
+	printk(KERN_WARNING "[PFQ] ready!\n");
         return 0;
 }
 
@@ -1229,10 +1229,10 @@ static void __exit pfq_exit_module(void)
         /* free per-cpu data */
 	free_percpu(cpu_data);
 
-	/* free steer functions */
+	/* free steering functions */
 	pfq_steering_factory_free();
 
-        printk(KERN_WARNING "[PFQ] unloaded\n");
+        printk(KERN_WARNING "[PFQ] unloaded.\n");
 }
 
 

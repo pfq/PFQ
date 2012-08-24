@@ -42,7 +42,7 @@ mpdb_queue_alloc(struct pfq_opt *pq, size_t queue_mem, size_t * tot_mem)
 	addr = vmalloc_user(*tot_mem);
 	if (addr == NULL)
 	{
-		printk(KERN_INFO "[PFQ|%d] pfq_queue_alloc: out of memory", pq->q_id);
+		printk(KERN_INFO "[PFQ|%d] pfq_queue_alloc: out of memory!", pq->q_id);
 		*tot_mem = 0;
 		return NULL;
 	}
@@ -56,7 +56,7 @@ void
 mpdb_queue_free(struct pfq_opt *pq)
 {
 	if (pq->q_addr) {
-		printk(KERN_INFO "[PFQ|%d] queue freed!\n", pq->q_id); 
+		printk(KERN_INFO "[PFQ|%d] queue freed.\n", pq->q_id); 
 		vfree(pq->q_addr);
 
 		pq->q_addr = NULL;

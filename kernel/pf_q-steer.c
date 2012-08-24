@@ -75,18 +75,20 @@ pfq_unregister_steering_functions(const char *module, struct steering_function *
 }
 
 
+/*
+ * register the default steering funcitons here!
  */
 
 void 
 pfq_steering_factory_init(void) 
 {
 	int i = 0;
-	for(; pfq_steering_hooks[i].name != NULL ; i++)
+	for(; default_steering_functions[i].name != NULL ; i++)
 	{          
-        	pfq_register_steering_function(pfq_steering_hooks[i].name, pfq_steering_hooks[i].function);
+        	pfq_register_steering_function("[PFQ]", default_steering_functions[i].name, default_steering_functions[i].function);
 	}
 
-	printk(KERN_INFO "[PFQ] steer factory initialized\n");
+	printk(KERN_INFO "[PFQ] steering factory initialized.\n");
 }
 
 
@@ -104,7 +106,7 @@ pfq_steering_factory_free(void)
 		kfree(this);
 	}
 	up(&steering_sem);
-	printk(KERN_INFO "[PFQ] steer factory freed\n");
+	printk(KERN_INFO "[PFQ] steering factory freed.\n");
 }
 
 
@@ -136,21 +138,18 @@ pfq_get_steering_function(const char *name)
 
 
 int 
-pfq_register_steering_function(const char *name, steering_function_t fun)
+__pfq_register_steering_function(const char *name, steering_function_t fun)
 {
 	struct steering_factory_elem * elem;
 
-	down(&steering_sem);
 	if (__pfq_get_steering_function(name) != NULL) {
-		up(&steering_sem);
-		printk(KERN_INFO "[PFQ] steer factory error: name %s already in use\n", name);
+		printk(KERN_INFO "[PFQ] steering factory error: name %s already in use!\n", name);
 		return -1;
 	}
 
 	elem = kmalloc(sizeof(struct steering_factory_elem), GFP_KERNEL);
 	if (elem == NULL) {
-		up(&steering_sem);
-		printk(KERN_INFO "[PFQ] steer factory error: out of memory\n");
+		printk(KERN_INFO "[PFQ] steering factory error: out of memory!\n");
 		return -1;
 	}
 
@@ -160,35 +159,55 @@ pfq_register_steering_function(const char *name, steering_function_t fun)
 	
 	strncpy(elem->name, name, Q_STEERING_NAME_LEN-1);
         elem->name[Q_STEERING_NAME_LEN-1] = '\0';
-
 	list_add(&elem->steering_list, &steering_factory);
-	up(&steering_sem);
 	
-	printk(KERN_INFO "[PFQ] %s function registered\n", name);
 	return 0;
 }
 
 
 int 
-pfq_unregister_steering_function(const char *name)
+pfq_register_steering_function(const char *module, const char *name, steering_function_t fun)
+{
+	int r;
+	down(&steering_sem);
+	r = __pfq_register_steering_function(name, fun);
+	up(&steering_sem);
+	if (r == 0)
+		printk(KERN_INFO "[PFQ]%s '%s' function registered.\n", module, name);
+	return r;
+}
+
+
+int 
+__pfq_unregister_steering_function(const char *name)
 {
 	struct list_head *pos = NULL, *q;
 	struct steering_factory_elem *this;
 	
-	down(&steering_sem);
 	list_for_each_safe(pos, q, &steering_factory)
 	{
     		this = list_entry(pos, struct steering_factory_elem, steering_list);
 		if (!strcmp(this->name, name))
 		{
 			list_del(pos);
-			up(&steering_sem);
 	       		kfree(this);
 			return 0;
 		}
 	}
-	up(&steering_sem);
-	printk(KERN_INFO "[PFQ] steer factory error: %s no such function\n", name);
+	printk(KERN_INFO "[PFQ] steering factory error: %s no such function\n", name);
 	return -1;
 }
+
+int 
+pfq_unregister_steering_function(const char *module, const char *name)
+{
+	int r;
+	down(&steering_sem);
+        r = __pfq_unregister_steering_function(name);
+	if (r == 0)
+		printk(KERN_INFO "[PFQ]%s '%s' function unregistered.\n", module, name);
+	up(&steering_sem);
+	return r;
+}
+
 
