@@ -1338,6 +1338,9 @@ EXPORT_SYMBOL_GPL(pfq_netif_rx);
 EXPORT_SYMBOL_GPL(pfq_netif_receive_skb);
 EXPORT_SYMBOL_GPL(pfq_gro_receive);
 
+EXPORT_SYMBOL_GPL(pfq_register_steering_functions);
+EXPORT_SYMBOL_GPL(pfq_unregister_steering_functions);
+
 
 module_init(pfq_init_module);
 module_exit(pfq_exit_module);

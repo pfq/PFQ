@@ -31,8 +31,11 @@
 
 extern void pfq_steering_factory_init(void);
 extern void pfq_steering_factory_free(void);
-extern int  pfq_register_steering_function(const char *name, steering_function_t fun);
-extern int  pfq_unregister_steering_function(const char *name);
+
+steering_function_t pfq_get_steering_function(const char *name);
+
+extern int  pfq_register_steering_function(const char *module, const char *name, steering_function_t fun);
+extern int  pfq_unregister_steering_function(const char *module, const char *name);
 
 extern steering_function_t pfq_get_steering_function(const char *name);
 

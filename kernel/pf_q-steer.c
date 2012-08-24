@@ -26,8 +26,9 @@
 #include <linux/module.h>
 #include <linux/semaphore.h>
 
+#include <linux/pf_q-steering.h>
+
 #include <pf_q-steer.h>
-#include <pf_q-steer-fun.h>
 
 
 DEFINE_SEMAPHORE(steering_sem);
@@ -41,13 +42,39 @@ struct steering_factory_elem
 };
 
 
-extern struct factory_hook pfq_steering_hooks[];
+extern struct steering_function default_steering_functions[];
 
 
 LIST_HEAD(steering_factory);
 
 /*
- * register the default steer funcitons here!
+ * register the steering funcitons here!
+ */
+
+int
+pfq_register_steering_functions(const char *module, struct steering_function *fun)
+{
+	int i = 0;
+	for(; fun[i].name != NULL; i++)
+	{
+		pfq_register_steering_function(module, fun[i].name, fun[i].function); 
+	}
+	return 0;
+}
+
+
+int
+pfq_unregister_steering_functions(const char *module, struct steering_function *fun)
+{
+	int i = 0;
+	for(; fun[i].name != NULL; i++)
+	{
+		pfq_unregister_steering_function(module, fun[i].name); 
+	}
+	return 0;
+}
+
+
  */
 
 void 

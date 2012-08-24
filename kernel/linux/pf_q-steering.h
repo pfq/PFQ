@@ -49,12 +49,18 @@ struct steering_function
     steering_function_t     function;
 };
 
+
+extern int pfq_register_steering_functions(const char *module, struct steering_function *fun);
+extern int pfq_unregister_steering_functions(const char *module, struct steering_function *fun);
+
+
 enum action 
 {
     action_drop  = 0,
     action_clone = 1,
     action_hash  = 2
 };
+
 
 static inline
 steering_ret_t none(void)
@@ -78,7 +84,6 @@ steering_ret_t steering(unsigned int class, unsigned long hash)
     steering_ret_t ret = {class, class < Q_CLASS_MAX ? (hash < action_hash ? hash + action_hash : hash) : action_drop };
     return ret;
 }
-
 
 
 
