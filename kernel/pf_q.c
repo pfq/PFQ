@@ -513,7 +513,8 @@ pfq_release(struct socket *sock)
 {
         struct sock * sk = sock->sk;
         struct pfq_opt * pq;
-	
+	int id = 0;
+
 	if (!sk)
 		return 0;
 	
@@ -521,6 +522,8 @@ pfq_release(struct socket *sock)
 	
 	if (pq) {
 		
+                id = pq->q_id;
+
 		pq->q_active = false;
 
 		/* decrease the timestamp_toggle counter */
@@ -548,8 +551,10 @@ pfq_release(struct socket *sock)
         
         sock_orphan(sk);
 	sock->sk = NULL;
-        
 	sock_put(sk);
+        
+	printk(KERN_INFO "[PFQ|%d] socket closed.\n", id);
+	
         return 0;
 }
 

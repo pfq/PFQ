@@ -97,6 +97,8 @@ __pfq_group_dtor(int gid)
 
 	msleep(10);   /* speeling is possible here: user-context */
 	
+	printk(KERN_INFO "[PFQ] group gid:%d destroyed.\n", gid);
+
 	kfree(state);
 }
 
