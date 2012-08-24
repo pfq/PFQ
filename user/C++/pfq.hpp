@@ -378,6 +378,25 @@ namespace net {
         return ifreq_io.ifr_ifindex;
     }
 
+    static inline
+    int nametoindex(const char *dev)
+    {
+        auto i = ::if_nametoindex(dev);
+        if (i == 0)
+            throw pfq_error("PFQ: unknown device");
+        return i;
+    }
+
+    static inline
+    std::string
+    indextoname(int i)
+    {
+        char buf[IF_NAMESIZE];
+        if (::if_indextoname(i, buf) == nullptr)
+            throw pfq_error("PFQ: index not available");
+        return buf;
+    }
+
     //////////////////////////////////////////////////////////////////////
 
     // group policies
