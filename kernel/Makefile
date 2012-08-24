@@ -3,38 +3,33 @@
 
 TARGET = pfq
 
-EXTRA_CFLAGS = -I$(PWD) 
+EXTRA_CFLAGS += -I$(obj) 
 EXTRA_CFLAGS += -DEXPORT_SYMTAB  
 EXTRA_CFLAGS += -DPFQ_USE_SKB_LINEARIZE
 EXTRA_CFLAGS += -Ofast -march=native 
 
 obj-m := $(TARGET).o 
 
-pfq-objs := pf_q.o pf_q-devmap.o pf_q-group.o pf_q-steer.o pf_q-steer-fun.o  mpdb-queue.o
+pfq-objs := pf_q.o pf_q-devmap.o pf_q-group.o pf_q-steer.o pf_q-steer-default.o  mpdb-queue.o
 
-ifeq (,$(BUILD_KERNEL))
-BUILD_KERNEL=$(shell uname -r)
-endif
+KERNELVERSION := $(shell uname -r)
 
-# set the install path
+INSTDIR := $(DESTDIR)/lib/modules/${KERNELVERSION}/kernel/net/pfq
 
-INSTDIR := $(DESTDIR)/lib/modules/$(BUILD_KERNEL)/kernel/net/pfq
-
-all: Makefile pf_q.c linux/pf_q.h
-	make -C /lib/modules/$(BUILD_KERNEL)/build SUBDIRS=$(PWD) modules
+all: 
+		make -C /lib/modules/${KERNELVERSION}/build M=$(PWD) modules
 
 clean:
-	make -C /lib/modules/$(BUILD_KERNEL)/build SUBDIRS=$(PWD) clean
-	\rm -f *~ Module.symvers  Module.markers  modules.order 
+		make -C /lib/modules/${KERNELVERSION}/build M=$(PWD) clean
 
 install:
-	mkdir -p $(INSTDIR)
-	cp *.ko $(INSTDIR)
-	cp linux/pf_q.h $(DESTDIR)/usr/include/linux
-	mkdir -p /usr/local/include/pfq/
-	cp pf_q-steer-data.h /usr/local/include/pfq/
-	cp Module.symvers $(INSTDIR)
+		mkdir -p $(INSTDIR)
+		cp ${TARGET}.ko $(INSTDIR)
+		cp linux/pf_q.h $(DESTDIR)/usr/include/linux
+		cp linux/pf_q-steering.h $(DESTDIR)/usr/include/linux
+		mkdir -p /usr/local/include/pfq/
+		cp Module.symvers $(INSTDIR)
 
 ifeq (,$(DESTDIR))
-	/sbin/depmod $(BUILD_KERNEL)
+		-/sbin/depmod -a ${KERNELVERSION}
 endif
