@@ -21,14 +21,7 @@
  *
  ****************************************************************/
 
-#include <linux/skbuff.h>
-#include <linux/ip.h>
-#include <linux/ipv6.h>
-#include <linux/if_ether.h>
-#include <linux/if_vlan.h>
-
-#include <pf_q-steer-fun.h>
-#include <pf_q-steer.h>
+#include <linux/pf_q-steering.h>
 
 steering_ret_t
 steering_mac_addr(const struct sk_buff *skb, const void *state)

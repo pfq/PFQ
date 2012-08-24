@@ -25,8 +25,13 @@
 #define _PF_Q_STEER_FUN_H_ 
 
 #include <linux/pf_q.h>
+
 #include <linux/skbuff.h>
- 
+#include <linux/ip.h>
+#include <linux/ipv6.h>
+#include <linux/if_ether.h>
+#include <linux/if_vlan.h>
+
 
 typedef struct
 {

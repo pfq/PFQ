@@ -26,8 +26,7 @@
 
 #include <linux/skbuff.h>
 #include <linux/pf_q.h>
-
-#include <pf_q-steer-fun.h>
+#include <linux/pf_q-steering.h>
  
 
 struct factory_hook 
