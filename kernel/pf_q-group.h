@@ -52,10 +52,11 @@ extern struct pfq_group pfq_groups[Q_MAX_GROUP];
 
 unsigned long __pfq_get_all_groups_mask(int gid);
 
+
 static inline
-void __pfq_set_steering_for_group(int gid, steering_function_t steer)
+void __pfq_set_steering_for_group(int gid, steering_function_t fun)
 {
-    atomic_long_set(&pfq_groups[gid].steering, (long)steer);
+    atomic_long_set(&pfq_groups[gid].steering, (long)fun);
 }
 
 
@@ -67,6 +68,24 @@ void __pfq_set_state_for_group(int gid, void *state)
     msleep(10);
 
 	kfree(old);
+}
+
+
+static inline
+void __pfq_dismiss_steering_function(steering_function_t fun)
+{
+	int n;
+	for(n = 0; n < Q_MAX_GROUP; n++)
+	{
+	    steering_function_t steer = (steering_function_t)atomic_long_read(&pfq_groups[n].steering);
+    	if (steer == fun)
+		{
+      		__pfq_set_steering_for_group(n, NULL);
+			__pfq_set_state_for_group(n, NULL);
+
+			printk(KERN_INFO "[PFQ] steering function @%p dismissed.\n", fun);
+		}
+	}
 }
 
 

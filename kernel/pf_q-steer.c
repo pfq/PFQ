@@ -28,6 +28,7 @@
 
 #include <linux/pf_q-steering.h>
 
+#include <pf_q-group.h>
 #include <pf_q-steer.h>
 
 
@@ -201,13 +202,21 @@ __pfq_unregister_steering_function(const char *name)
 int 
 pfq_unregister_steering_function(const char *module, const char *name)
 {
-	int r;
+	steering_function_t fun;
+	
 	down(&steering_sem);
-        r = __pfq_unregister_steering_function(name);
-	if (r == 0)
-		printk(KERN_INFO "[PFQ]%s '%s' function unregistered.\n", module, name);
+
+	fun = __pfq_get_steering_function(name);
+	if (fun == NULL) {
+        	return -1;
+	}
+
+	__pfq_dismiss_steering_function(fun);
+        __pfq_unregister_steering_function(name);
+	
+	printk(KERN_INFO "[PFQ]%s '%s' function unregistered.\n", module, name);
 	up(&steering_sem);
-	return r;
+	return 0;
 }
 
 
