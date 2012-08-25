@@ -85,7 +85,7 @@ pfq_steering_factory_init(void)
 	int i = 0;
 	for(; default_steering_functions[i].name != NULL ; i++)
 	{          
-        	pfq_register_steering_function("[PFQ]", default_steering_functions[i].name, default_steering_functions[i].function);
+        	pfq_register_steering_function("[core]", default_steering_functions[i].name, default_steering_functions[i].function);
 	}
 
 	printk(KERN_INFO "[PFQ] steering factory initialized.\n");
@@ -173,7 +173,7 @@ pfq_register_steering_function(const char *module, const char *name, steering_fu
 	r = __pfq_register_steering_function(name, fun);
 	up(&steering_sem);
 	if (r == 0)
-		pr_devel("[PFQ]%s '%s' function registered.\n", module, name);
+		printk(KERN_INFO "[PFQ]%s '%s' function registered.\n", module, name);
 	return r;
 }
 
@@ -205,7 +205,7 @@ pfq_unregister_steering_function(const char *module, const char *name)
 	down(&steering_sem);
         r = __pfq_unregister_steering_function(name);
 	if (r == 0)
-		pr_devel("[PFQ]%s '%s' function unregistered.\n", module, name);
+		printk(KERN_INFO "[PFQ]%s '%s' function unregistered.\n", module, name);
 	up(&steering_sem);
 	return r;
 }
