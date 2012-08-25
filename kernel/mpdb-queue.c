@@ -47,7 +47,7 @@ mpdb_queue_alloc(struct pfq_opt *pq, size_t queue_mem, size_t * tot_mem)
 		return NULL;
 	}
 
-	printk(KERN_DEBUG "[PFQ|%d] queue caplen:%lu mem:%lu\n", pq->q_id, pq->q_caplen, *tot_mem); 
+	pr_devel("[PFQ|%d] queue caplen:%lu mem:%lu\n", pq->q_id, pq->q_caplen, *tot_mem); 
 	return addr;
 }
 
@@ -56,7 +56,7 @@ void
 mpdb_queue_free(struct pfq_opt *pq)
 {
 	if (pq->q_addr) {
-		printk(KERN_DEBUG "[PFQ|%d] queue freed.\n", pq->q_id); 
+		pr_devel("[PFQ|%d] queue freed.\n", pq->q_id); 
 		vfree(pq->q_addr);
 
 		pq->q_addr = NULL;

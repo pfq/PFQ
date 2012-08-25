@@ -134,7 +134,7 @@ pfq_get_opt(size_t id)
         struct pfq_opt * opt;
         if (unlikely(id >= Q_MAX_ID))
         {
-                printk(KERN_DEBUG "[PFQ] pfq_devmap_freeid: bad id=%zd!\n", id);
+                pr_devel("[PFQ] pfq_devmap_freeid: bad id=%zd!\n", id);
                 return NULL;
         }
 	opt = (struct pfq_opt *)atomic_long_read(&pfq_vector[id]);  
@@ -148,7 +148,7 @@ void pfq_release_id(int id)
 {
         if (unlikely(id >= Q_MAX_ID || id < 0))
         {
-                printk(KERN_DEBUG "[PFQ] pfq_devmap_freeid: bad id=%d!\n", id);
+                pr_devel("[PFQ] pfq_devmap_freeid: bad id=%d!\n", id);
                 return;
         }
         atomic_long_set(pfq_vector + id, 0);
@@ -529,7 +529,7 @@ pfq_release(struct socket *sock)
 		/* decrease the timestamp_toggle counter */
 		if (pq->q_tstamp) {
 			atomic_dec(&timestamp_toggle);
-			printk(KERN_DEBUG "[PFQ|%d] timestamp_toggle => %d\n", pq->q_id, atomic_read(&timestamp_toggle));
+			pr_devel("[PFQ|%d] timestamp_toggle => %d\n", pq->q_id, atomic_read(&timestamp_toggle));
 		}
 
         	pfq_leave_all_groups(pq->q_id);
@@ -553,7 +553,7 @@ pfq_release(struct socket *sock)
 	sock->sk = NULL;
 	sock_put(sk);
         
-	printk(KERN_DEBUG "[PFQ|%d] socket closed.\n", id);
+	pr_devel("[PFQ|%d] socket closed.\n", id);
 	
         return 0;
 }
@@ -682,11 +682,11 @@ int pfq_getsockopt(struct socket *sock,
                                     return -EFAULT;
                     } else
                     if (pfq_join_group(group.gid, pq->q_id, group.class_mask, group.policy) < 0) {
-                    	    printk(KERN_DEBUG "[PFQ|%d] join error: gid:%d no permission!\n", pq->q_id, group.gid);
+                    	    pr_devel("[PFQ|%d] join error: gid:%d no permission!\n", pq->q_id, group.gid);
                             return -EPERM;
                     }
                     
-		    printk(KERN_DEBUG "[PFQ|%d] join -> gid:%d class_mask:%lx\n", pq->q_id, group.gid, group.class_mask);
+		    pr_devel("[PFQ|%d] join -> gid:%d class_mask:%lx\n", pq->q_id, group.gid, group.class_mask);
             } break;
 
         case SO_GROUP_STATS: 
@@ -704,7 +704,7 @@ int pfq_getsockopt(struct socket *sock,
 			    return -EINVAL;
 
 		    if (!__pfq_has_joined_group(gid, pq->q_id)) {
-                    	    printk(KERN_DEBUG "[PFQ|%d] group stats error: gid:%d no permission!\n", pq->q_id, gid);
+                    	    pr_devel("[PFQ|%d] group stats error: gid:%d no permission!\n", pq->q_id, gid);
 			    return -EPERM;
 		    }
 
@@ -788,12 +788,12 @@ int pfq_setsockopt(struct socket *sock,
                             return -EFAULT;
                     
                     if (bind.gid < 0 || bind.gid >= Q_MAX_GROUP) {
-                    	    printk(KERN_DEBUG "[PFQ|%d] add binding error: gid:%d invalid group!\n", pq->q_id, bind.gid);
+                    	    pr_devel("[PFQ|%d] add binding error: gid:%d invalid group!\n", pq->q_id, bind.gid);
 			    return -EINVAL; 
 		    }
 
 		    if (!__pfq_has_joined_group(bind.gid, pq->q_id)) {
-                    	    printk(KERN_DEBUG "[PFQ|%d] add binding error: gid:%d no permission!\n", pq->q_id, bind.gid);
+                    	    pr_devel("[PFQ|%d] add binding error: gid:%d no permission!\n", pq->q_id, bind.gid);
 			    return -EPERM;
 		    }
 
@@ -810,12 +810,12 @@ int pfq_setsockopt(struct socket *sock,
                             return -EFAULT;
 
                     if (bind.gid < 0 || bind.gid >= Q_MAX_GROUP) {
-                    	    printk(KERN_DEBUG "[PFQ|%d] remove binding error: gid:%d invalid group!\n", pq->q_id, bind.gid);
+                    	    pr_devel("[PFQ|%d] remove binding error: gid:%d invalid group!\n", pq->q_id, bind.gid);
 			    return -EINVAL;
 		    }
 
 		    if (!__pfq_has_joined_group(bind.gid, pq->q_id)) {
-                    	    printk(KERN_DEBUG "[PFQ|%d] remove binding error: gid:%d no permission!\n", pq->q_id, bind.gid);
+                    	    pr_devel("[PFQ|%d] remove binding error: gid:%d no permission!\n", pq->q_id, bind.gid);
 			    return -EPERM;
 		    }
 
@@ -833,18 +833,18 @@ int pfq_setsockopt(struct socket *sock,
 			    return -EFAULT;
 		    
                     if (s.gid < 0 || s.gid >= Q_MAX_GROUP) {
-                    	    printk(KERN_DEBUG "[PFQ|%d] steering error: gid:%d invalid group!\n", pq->q_id, s.gid);
+                    	    pr_devel("[PFQ|%d] steering error: gid:%d invalid group!\n", pq->q_id, s.gid);
 			    return -EINVAL;
 		    }
 		    
 		    if (!__pfq_has_joined_group(s.gid, pq->q_id)) {
-                    	    printk(KERN_DEBUG "[PFQ|%d] steering error: gid:%d no permission!\n", pq->q_id, s.gid);
+                    	    pr_devel("[PFQ|%d] steering error: gid:%d no permission!\n", pq->q_id, s.gid);
 			    return -EPERM;
 		    }
 
 		    if (s.name == NULL) {
 			__pfq_set_steering_for_group(s.gid, NULL);
-                    	printk(KERN_DEBUG "[PFQ|%d] steering: gid:%d (steering NONE)\n", pq->q_id, s.gid);
+                    	pr_devel("[PFQ|%d] steering: gid:%d (steering NONE)\n", pq->q_id, s.gid);
 		    }
 		    else {
                     	char name[Q_STEERING_NAME_LEN]; 
@@ -857,13 +857,13 @@ int pfq_setsockopt(struct socket *sock,
                         
 			fun = pfq_get_steering_function(name);
 			if (fun == NULL) {
-                    		printk(KERN_DEBUG "[PFQ|%d] steering error: gid:%d '%s' unknown function!\n", pq->q_id, s.gid, name);
+                    		pr_devel("[PFQ|%d] steering error: gid:%d '%s' unknown function!\n", pq->q_id, s.gid, name);
 				return -EINVAL;
 			}
 
 			__pfq_set_steering_for_group(s.gid, fun);
                     	
-			printk(KERN_DEBUG "[PFQ|%d] steering gid:%d -> function '%s'\n", pq->q_id, s.gid, name);
+			pr_devel("[PFQ|%d] steering gid:%d -> function '%s'\n", pq->q_id, s.gid, name);
 		    }
 	    } break;
 
@@ -877,12 +877,12 @@ int pfq_setsockopt(struct socket *sock,
 			    return -EFAULT;
 
                     if (s.gid < 0 || s.gid >= Q_MAX_GROUP) {
-                    	    printk(KERN_DEBUG "[PFQ|%d] steering error: gid:%d invalid group!\n", pq->q_id, s.gid);
+                    	    pr_devel("[PFQ|%d] steering error: gid:%d invalid group!\n", pq->q_id, s.gid);
 			    return -EINVAL;
 		    }
 
 		    if (!__pfq_has_joined_group(s.gid, pq->q_id)) {
-                    	    printk(KERN_DEBUG "[PFQ|%d] steering error: gid:%d no permission!\n", pq->q_id, s.gid);
+                    	    pr_devel("[PFQ|%d] steering error: gid:%d no permission!\n", pq->q_id, s.gid);
 			    return -EPERM;
 		    }
 
@@ -900,13 +900,13 @@ int pfq_setsockopt(struct socket *sock,
 			smp_wmb();
 			__pfq_set_state_for_group(s.gid, state);
                     	    
-			printk(KERN_DEBUG "[PFQ|%d] state: gid:%d (state of %zu bytes set)\n", pq->q_id, s.gid, s.size);
+			pr_devel("[PFQ|%d] state: gid:%d (state of %zu bytes set)\n", pq->q_id, s.gid, s.size);
 		    }
 		    else { /* empty state */
 			   
 			__pfq_set_state_for_group(s.gid, NULL);
 			
-			printk(KERN_DEBUG "[PFQ|%d] state: gid:%d (empty state set)\n", pq->q_id, s.gid);
+			pr_devel("[PFQ|%d] state: gid:%d (empty state set)\n", pq->q_id, s.gid);
 		    }
 	    } break;
         
@@ -923,7 +923,7 @@ int pfq_setsockopt(struct socket *sock,
                     /* update the timestamp_toggle counter */
                     atomic_add(tstamp - pq->q_tstamp, &timestamp_toggle);
                     pq->q_tstamp = tstamp;
-                    printk(KERN_DEBUG "[PFQ|%d] timestamp_toggle => %d\n", pq->q_id, atomic_read(&timestamp_toggle));
+                    pr_devel("[PFQ|%d] timestamp_toggle => %d\n", pq->q_id, atomic_read(&timestamp_toggle));
             } break;
         
         case SO_CAPLEN: 
@@ -933,7 +933,7 @@ int pfq_setsockopt(struct socket *sock,
                     if (copy_from_user(&pq->q_caplen, optval, optlen)) 
                             return -EFAULT;
                     pq->q_slot_size = DBMP_QUEUE_SLOT_SIZE(pq->q_caplen);
-                    printk(KERN_DEBUG "[PFQ|%d] caplen:%lu -> slot_size:%lu\n", 
+                    pr_devel("[PFQ|%d] caplen:%lu -> slot_size:%lu\n", 
                                     pq->q_id, pq->q_caplen, pq->q_slot_size);
             } break;
 
@@ -943,7 +943,7 @@ int pfq_setsockopt(struct socket *sock,
                             return -EINVAL;
                     if (copy_from_user(&pq->q_offset, optval, optlen)) 
                             return -EFAULT;
-                    printk(KERN_DEBUG "[PFQ|%d] offset:%lu\n", pq->q_id, pq->q_offset);
+                    pr_devel("[PFQ|%d] offset:%lu\n", pq->q_id, pq->q_offset);
             } break;
 
         case SO_SLOTS: 
@@ -952,7 +952,7 @@ int pfq_setsockopt(struct socket *sock,
                             return -EINVAL;
                     if (copy_from_user(&pq->q_slots, optval, optlen)) 
                             return -EFAULT;
-                    printk(KERN_DEBUG "[PFQ|%d] queue_slots:%lu -> slot_size:%lu\n", 
+                    pr_devel("[PFQ|%d] queue_slots:%lu -> slot_size:%lu\n", 
                                     pq->q_id, pq->q_slots, pq->q_slot_size);
             } break;
 
@@ -968,7 +968,7 @@ int pfq_setsockopt(struct socket *sock,
                             return -EFAULT;
                     }
                     
-                    printk(KERN_DEBUG "[PFQ|%d] leave: gid:%d\n", pq->q_id, gid);
+                    pr_devel("[PFQ|%d] leave: gid:%d\n", pq->q_id, gid);
             } break;
 
         default: 
