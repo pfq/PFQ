@@ -60,7 +60,7 @@ int pfq_devmap_update(int action, int index, int queue, int gid)
     
     if (unlikely(gid >= 64 || gid < 0))
     {
-        printk(KERN_WARNING "[PF_Q] devmap_update: bad gid(%u)\n",gid);
+        printk(KERN_DEBUG "[PF_Q] devmap_update: bad gid(%u)\n",gid);
         return 0; 
     }
 

@@ -97,7 +97,7 @@ __pfq_group_dtor(int gid)
 
 	msleep(10);   /* speeling is possible here: user-context */
 	
-	printk(KERN_INFO "[PFQ] group gid:%d destroyed.\n", gid);
+	printk(KERN_DEBUG "[PFQ] group gid:%d destroyed.\n", gid);
 
 	kfree(state);
 }
@@ -115,7 +115,7 @@ __pfq_join_group(int gid, int id, unsigned long class_mask, int policy)
 	}
 	
 	if (!__pfq_is_joinable(gid, policy)) {
-		printk(KERN_INFO "[PFQ] gid:%d is not joinable with policy %d\n", gid, policy);
+		printk(KERN_DEBUG "[PFQ] gid:%d is not joinable with policy %d\n", gid, policy);
 		return -1;
 	}
 
