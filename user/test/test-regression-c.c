@@ -119,7 +119,7 @@ void test_slot_size()
 {
 	pfq_t * q = pfq_open(64, 0, 1024);
         assert(q);
-	assert(pfq_get_slot_size(q) == 88);
+	assert(pfq_get_slot_size(q) == 96);
 	pfq_close(q);
 
 }
@@ -203,7 +203,7 @@ void test_group_stats()
         assert(q);
 
 	struct pfq_stats s;
-	assert(pfq_get_group_stats(q, 11, &s) == -1);
+	assert(pfq_get_group_stats(q, 11, &s) == 0);
 
 	assert(pfq_join_group(q, 11, Q_CLASS_DEFAULT, Q_GROUP_RESTRICTED) == 11);
 	

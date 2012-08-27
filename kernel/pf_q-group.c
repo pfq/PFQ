@@ -38,7 +38,7 @@ struct pfq_group pfq_groups[Q_MAX_GROUP];
 /* precondition: gid must be valid */
 
 
-static bool 
+bool 
 __pfq_is_joinable(int gid, int policy)
 {
         struct pfq_group * that = &pfq_groups[gid];

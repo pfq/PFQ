@@ -703,8 +703,9 @@ int pfq_getsockopt(struct socket *sock,
                     if (gid < 0  || gid >= Q_MAX_GROUP)
 			    return -EINVAL;
 
-		    if (!__pfq_has_joined_group(gid, pq->q_id)) {
-                    	    pr_devel("[PFQ|%d] group stats error: gid:%d no permission!\n", pq->q_id, gid);
+		    /* check whether the group is joinable.. */
+		    if (!__pfq_is_joinable(gid, Q_GROUP_SHARED)) {   
+                    	    pr_devel("[PFQ|%d] group stats error: gid:%d is not joinable!\n", pq->q_id, gid);
 			    return -EPERM;
 		    }
 
