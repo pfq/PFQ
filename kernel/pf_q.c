@@ -578,7 +578,7 @@ int pfq_getsockopt(struct socket *sock,
 
         switch(optname)
         {
-        case SO_GET_ID: 
+        case Q_SO_GET_ID: 
             {
                     if (len != sizeof(pq->q_id))
                             return -EINVAL;
@@ -586,7 +586,7 @@ int pfq_getsockopt(struct socket *sock,
                             return -EFAULT;
             } break;
 
-        case SO_GET_GROUPS:
+        case Q_SO_GET_GROUPS:
             {
                     unsigned long grps;
                     if(len != sizeof(unsigned long))
@@ -596,7 +596,7 @@ int pfq_getsockopt(struct socket *sock,
                             return -EFAULT;
             } break;
 
-        case SO_GET_QUEUE_MEM: 
+        case Q_SO_GET_QUEUE_MEM: 
             {
                     if (len != sizeof(pq->q_queue_mem))
                             return -EINVAL;
@@ -604,7 +604,7 @@ int pfq_getsockopt(struct socket *sock,
                             return -EFAULT;
             } break;
 
-        case SO_GET_SLOTS: 
+        case Q_SO_GET_SLOTS: 
             {
                     if (len != sizeof(pq->q_slots))
                             return -EINVAL;
@@ -612,7 +612,7 @@ int pfq_getsockopt(struct socket *sock,
                             return -EFAULT;
             } break;
 
-        case SO_GET_TSTAMP: 
+        case Q_SO_GET_TSTAMP: 
             {
                     if (len != sizeof(pq->q_tstamp))
                             return -EINVAL;
@@ -620,7 +620,7 @@ int pfq_getsockopt(struct socket *sock,
                             return -EFAULT;
             } break;
 
-        case SO_GET_STATUS: 
+        case Q_SO_GET_STATUS: 
             {
                     if (len != sizeof(pq->q_active)) 
                             return -EINVAL;
@@ -630,7 +630,7 @@ int pfq_getsockopt(struct socket *sock,
                     
             } break;
 
-        case SO_GET_STATS: 
+        case Q_SO_GET_STATS: 
             {
                     struct pfq_stats stat;
                     if (len != sizeof(struct pfq_stats))
@@ -644,7 +644,7 @@ int pfq_getsockopt(struct socket *sock,
                             return -EFAULT;
             } break;
 
-        case SO_GET_CAPLEN: 
+        case Q_SO_GET_CAPLEN: 
             {
                     if (len != sizeof(pq->q_caplen))
                             return -EINVAL;
@@ -652,7 +652,7 @@ int pfq_getsockopt(struct socket *sock,
                             return -EFAULT;
             } break;
 
-        case SO_GET_OFFSET: 
+        case Q_SO_GET_OFFSET: 
             {
                     if (len != sizeof(pq->q_offset))
                             return -EINVAL;
@@ -660,7 +660,7 @@ int pfq_getsockopt(struct socket *sock,
                             return -EFAULT;
             } break;
 
-        case SO_GROUP_JOIN: 
+        case Q_SO_GROUP_JOIN: 
             {
                     struct pfq_group_join group;
 
@@ -689,7 +689,7 @@ int pfq_getsockopt(struct socket *sock,
 		    pr_devel("[PFQ|%d] join -> gid:%d class_mask:%lx\n", pq->q_id, group.gid, group.class_mask);
             } break;
 
-        case SO_GROUP_STATS: 
+        case Q_SO_GET_GROUP_STATS: 
             {
                     struct pfq_stats stat;
                     int gid;
@@ -741,7 +741,7 @@ int pfq_setsockopt(struct socket *sock,
 	
         switch(optname)
         {
-        case SO_TOGGLE_QUEUE: 
+        case Q_SO_TOGGLE_QUEUE: 
             {
                     int active;
                     if (optlen != sizeof(active))
@@ -778,7 +778,7 @@ int pfq_setsockopt(struct socket *sock,
 
             } break;
 
-        case SO_ADD_BINDING: 
+        case Q_SO_ADD_BINDING: 
             {
                     struct pfq_binding bind;
                     if (optlen != sizeof(struct pfq_binding)) 
@@ -800,7 +800,7 @@ int pfq_setsockopt(struct socket *sock,
                     pfq_devmap_update(map_set, bind.if_index, bind.hw_queue, bind.gid);
             } break;
 
-        case SO_REMOVE_BINDING: 
+        case Q_SO_REMOVE_BINDING: 
             {
                     struct pfq_binding bind;
                     if (optlen != sizeof(struct pfq_binding))
@@ -822,7 +822,7 @@ int pfq_setsockopt(struct socket *sock,
                     pfq_devmap_update(map_reset, bind.if_index, bind.hw_queue, bind.gid);
             } break;
 
- 	case SO_GROUP_STEER:
+ 	case Q_SO_GROUP_STEER:
 	    {
 		    struct pfq_steering s;
 		    
@@ -867,7 +867,7 @@ int pfq_setsockopt(struct socket *sock,
 		    }
 	    } break;
 
-	case SO_GROUP_STATE:
+	case Q_SO_GROUP_STATE:
 	    {
 		    struct pfq_group_state s;
 		    if (optlen != sizeof(s))
@@ -910,7 +910,7 @@ int pfq_setsockopt(struct socket *sock,
 		    }
 	    } break;
         
-	case SO_TSTAMP_TOGGLE: 
+	case Q_SO_TSTAMP_TOGGLE: 
             {
                     int tstamp;
                     if (optlen != sizeof(pq->q_tstamp))
@@ -926,7 +926,7 @@ int pfq_setsockopt(struct socket *sock,
                     pr_devel("[PFQ|%d] timestamp_toggle => %d\n", pq->q_id, atomic_read(&timestamp_toggle));
             } break;
         
-        case SO_CAPLEN: 
+        case Q_SO_CAPLEN: 
             {
                     if (optlen != sizeof(pq->q_caplen)) 
                             return -EINVAL;
@@ -937,7 +937,7 @@ int pfq_setsockopt(struct socket *sock,
                                     pq->q_id, pq->q_caplen, pq->q_slot_size);
             } break;
 
-        case SO_OFFSET: 
+        case Q_SO_OFFSET: 
             {
                     if (optlen != sizeof(pq->q_offset)) 
                             return -EINVAL;
@@ -946,7 +946,7 @@ int pfq_setsockopt(struct socket *sock,
                     pr_devel("[PFQ|%d] offset:%lu\n", pq->q_id, pq->q_offset);
             } break;
 
-        case SO_SLOTS: 
+        case Q_SO_SLOTS: 
             {
                     if (optlen != sizeof(pq->q_slots)) 
                             return -EINVAL;
@@ -956,7 +956,7 @@ int pfq_setsockopt(struct socket *sock,
                                     pq->q_id, pq->q_slots, pq->q_slot_size);
             } break;
 
-        case SO_GROUP_LEAVE: 
+        case Q_SO_GROUP_LEAVE: 
             {
                     int gid;
                     if (optlen != sizeof(gid)) 

@@ -104,33 +104,30 @@ struct pfq_queue_descr
 #define DBMP_QUEUE_INDEX(data)     (((data) & 0xff000000U) >> 24)
 #define DBMP_QUEUE_LEN(data)       ((data) & 0x00ffffffU)
 
+/* PFQ socket options */
 
-/* set socket options */
+#define Q_SO_TOGGLE_QUEUE         1    /* enable = 1, disable = 0 */
+#define Q_SO_ADD_BINDING          2
+#define Q_SO_REMOVE_BINDING       3
+#define Q_SO_TSTAMP_TOGGLE        4
+#define Q_SO_GROUP_STEER          5
+#define Q_SO_CAPLEN               6
+#define Q_SO_SLOTS                7
+#define Q_SO_OFFSET               8
+#define Q_SO_GROUP_JOIN           9
+#define Q_SO_GROUP_LEAVE          10
+#define Q_SO_GROUP_STATE          11
 
-#define SO_TOGGLE_QUEUE         100     /* enable = 1, disable = 0 */
-#define SO_ADD_BINDING          101
-#define SO_REMOVE_BINDING       102
-#define SO_TSTAMP_TOGGLE        103
-#define SO_GROUP_STEER          104
-#define SO_CAPLEN               105
-#define SO_SLOTS                106
-#define SO_OFFSET               107
-#define SO_GROUP_LEAVE          108
-#define SO_GROUP_STATE          109
-
-/* get socket options */
-
-#define SO_GET_ID               120
-#define SO_GET_GROUPS           121
-#define SO_GET_STATUS           122     /* 1 = enabled, 0 = disabled */
-#define SO_GET_STATS            123
-#define SO_GET_TSTAMP           124
-#define SO_GET_QUEUE_MEM        125     /* size of the whole dbmp queue (bytes) */
-#define SO_GET_CAPLEN           126
-#define SO_GET_SLOTS            127
-#define SO_GET_OFFSET           128
-#define SO_GROUP_JOIN           129
-#define SO_GROUP_STATS          130
+#define Q_SO_GET_ID               12
+#define Q_SO_GET_STATUS           13     /* 1 = enabled, 0 = disabled */
+#define Q_SO_GET_STATS            14
+#define Q_SO_GET_TSTAMP           15
+#define Q_SO_GET_QUEUE_MEM        16     /* size of the whole dbmp queue (bytes) */
+#define Q_SO_GET_CAPLEN           17
+#define Q_SO_GET_SLOTS            18
+#define Q_SO_GET_OFFSET           19
+#define Q_SO_GET_GROUPS           20
+#define Q_SO_GET_GROUP_STATS      21
 
 /* general defines */
 
