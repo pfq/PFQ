@@ -238,7 +238,7 @@ void test_join_restricted()
 	pfq_t * y = pfq_open_group(Q_CLASS_DEFAULT, Q_GROUP_UNDEFINED, 64, 0, 1024);
 
 	int gid = pfq_group_id(q);
-	assert( pfq_join_group(y, gid, Q_CLASS_DEFAULT, Q_GROUP_SHARED) == gid);
+	assert( pfq_join_group(y, gid, Q_CLASS_DEFAULT, Q_GROUP_RESTRICTED) == gid);
 
 	pfq_close(q);
 	pfq_close(y);
@@ -268,7 +268,7 @@ void *restricted_thread(void *arg)
         assert(q);
 
 	long int gid = (long int)arg;
-	long int ngid = pfq_join_group(q, gid, Q_CLASS_DEFAULT, Q_GROUP_SHARED);
+	long int ngid = pfq_join_group(q, gid, Q_CLASS_DEFAULT, Q_GROUP_RESTRICTED);
 	
 	assert(ngid == gid);
 
@@ -378,21 +378,16 @@ main(int argc __attribute__((unused)), char *argv[]__attribute__((unused)))
 	test_poll();
 	
 	test_read();                  
-	
+
 	test_stats();
 	test_group_stats();
 
 	test_groups_mask();
-
 	test_join_deferred();
-
-	
 	test_join_restricted();
-	
 	test_join_restricted_thread();
-	
 	test_join_restricted_process();
-	
+
 	test_join_group();
 	test_leave_group();
     

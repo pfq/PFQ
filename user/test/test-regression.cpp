@@ -255,7 +255,6 @@ Context(PFQ)
     Test(group_stats)
     {
         pfq x;
-        AssertThrow(x.group_stats(11));
 
         x.open(64);
 
@@ -291,7 +290,7 @@ Context(PFQ)
 
         y.open(group_policy::undefined, 64);
 
-        Assert( y.join_group(x.group_id()), is_equal_to(x.group_id()));
+        Assert( y.join_group(x.group_id(), group_policy::restricted), is_equal_to(x.group_id()));
     }
 
     Test(join_deferred)
@@ -318,7 +317,7 @@ Context(PFQ)
         auto task = std::async(std::launch::async, 
                     [&] {
                         pfq y(group_policy::undefined, 64);
-                        Assert(y.join_group(x.group_id()), is_equal_to(x.group_id()));
+                        Assert(y.join_group(x.group_id(), group_policy::restricted), is_equal_to(x.group_id()));
                     });
         
         task.get(); // eventually rethrow the excpetion...
