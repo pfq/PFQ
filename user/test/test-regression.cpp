@@ -258,7 +258,7 @@ Context(PFQ)
 
         x.open(64);
 
-        AssertNothrow(x.group_stats(11));
+        AssertNoThrow(x.group_stats(11));
 
         x.join_group(11);
 

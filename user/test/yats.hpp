@@ -46,7 +46,7 @@
 
 #define Assert(...)                     XPASTE(YATS_ASSERT_       ,PP_NARG(__VA_ARGS__)) ( __VA_ARGS__) 
 #define AssertThrow(...)                XPASTE(YATS_ASSERT_THROW_ ,PP_NARG(__VA_ARGS__)) ( __VA_ARGS__) 
-#define AssertNothrow(value)            YATS_ASSERT_NOTHROW(value)
+#define AssertNoThrow(value)            YATS_ASSERT_NOTHROW(value)
 #define StaticError(expr,msg)           XPASTE(YATS_STATIC_ERROR_, __COUNTER__) (expr,msg)
 
 
