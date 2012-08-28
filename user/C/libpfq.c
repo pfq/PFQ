@@ -180,9 +180,11 @@ pfq_open_group(unsigned long class_mask, int group_policy, size_t caplen, size_t
 
 int pfq_close(pfq_t *q)
 {
-	if (q->fd != -1) {
-		if (q->queue_addr)
-			return pfq_disable(q);
+	if (q->fd != -1) 
+	{
+		if (q->queue_addr) 
+			pfq_disable(q);
+		
 		if (close(q->fd) < 0)
 			return q->error = "PFQ: close error", -1;
 	}
