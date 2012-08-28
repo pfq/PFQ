@@ -404,9 +404,10 @@ namespace net {
     
     enum class group_policy : int16_t
     {
+        undefined  = Q_GROUP_UNDEFINED, 
+        priv       = Q_GROUP_PRIVATE,
         restricted = Q_GROUP_RESTRICTED,
-        shared     = Q_GROUP_SHARED,
-        undefined  = Q_GROUP_UNDEFINED 
+        shared     = Q_GROUP_SHARED
     };
 
     typedef unsigned long class_mask;
@@ -541,7 +542,7 @@ namespace net {
             
             if (policy != group_policy::undefined)
             {
-                pdata_->gid = this->join_group(any_group, class_default, policy);
+                pdata_->gid = this->join_group(any_group, policy, class_default);
             }
         }
         
@@ -552,7 +553,7 @@ namespace net {
             
             if (policy != group_policy::undefined)
             {
-                pdata_->gid = this->join_group(any_group, mask, policy);
+                pdata_->gid = this->join_group(any_group, policy, mask);
             }
         }
 
@@ -863,7 +864,7 @@ namespace net {
         }
 
         int
-        join_group(int gid, class_mask mask = class_default, group_policy pol = group_policy::shared)
+        join_group(int gid, group_policy pol = group_policy::shared, class_mask mask = class_default)
         {
             if (pol == group_policy::undefined)
                 throw pfq_error("PFQ: join with undefined policy!");
