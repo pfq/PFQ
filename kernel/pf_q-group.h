@@ -35,12 +35,13 @@
 
 struct pfq_group
 {
-    int pid;	/* process id for restricted join */;
+    int policy;                             /* policy for the group */
+    int pid;	                            /* process id for restricted/private group */;
 
-	atomic_long_t sock_mask[Q_CLASS_MAX];    /* for class: Q_GROUP_DATA, Q_GROUP_CONTROL, etc... */
+	atomic_long_t sock_mask[Q_CLASS_MAX];   /* for class: Q_GROUP_DATA, Q_GROUP_CONTROL, etc... */
 
-	atomic_long_t steering;    /* steering_function_t */ 
-    atomic_long_t state;       /* opaque state for the steering function */
+	atomic_long_t steering;                 /* steering_function_t */ 
+    atomic_long_t state;                    /* opaque state for the steering function */
     
 	sparse_counter_t recv;
 	sparse_counter_t lost;
@@ -49,6 +50,7 @@ struct pfq_group
 
 
 extern struct pfq_group pfq_groups[Q_MAX_GROUP];
+
 
 unsigned long __pfq_get_all_groups_mask(int gid);
 
@@ -102,7 +104,7 @@ bool __pfq_has_joined_group(int gid, int id)
 	return __pfq_get_all_groups_mask(gid) & (1L << id);
 }
 
-bool __pfq_is_joinable(int gid, int policy);
+bool __pfq_group_access(int gid, int policy, bool join);
 
 int pfq_join_free_group(int id, unsigned long class_mask, int policy);
 

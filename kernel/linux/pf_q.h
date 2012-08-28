@@ -158,9 +158,10 @@ struct pfq_binding
 
 /* group policies */
 
-#define Q_GROUP_RESTRICTED      0
-#define Q_GROUP_SHARED          1
-#define Q_GROUP_UNDEFINED       2
+#define Q_GROUP_UNDEFINED       0
+#define Q_GROUP_PRIVATE         1
+#define Q_GROUP_RESTRICTED      2
+#define Q_GROUP_SHARED          3
 
 /* class type */
 

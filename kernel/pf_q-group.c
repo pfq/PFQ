@@ -35,28 +35,31 @@ DEFINE_SEMAPHORE(group_sem);
 
 struct pfq_group pfq_groups[Q_MAX_GROUP];
 
+
 /* precondition: gid must be valid */
 
 
 bool 
-__pfq_is_joinable(int gid, int policy)
+__pfq_group_access(int gid, int policy, bool join)
 {
         struct pfq_group * that = &pfq_groups[gid];
 
-	if (!that->pid)
-		return true;
+        switch(that->policy)
+	{
+        	case Q_GROUP_PRIVATE:
+        		return false;
 
-	if (that->pid != -1) { /* restricted group */
-        	return that->pid == current->tgid;	
+		case Q_GROUP_RESTRICTED:
+			return (join == false || policy == Q_GROUP_RESTRICTED) && that->pid == current->tgid;
+
+		case Q_GROUP_SHARED:
+			return join == false || policy == Q_GROUP_SHARED;
+
+		case Q_GROUP_UNDEFINED:
+			return true;
 	}
-	else {	/* shared group */
-        	if (policy == Q_GROUP_RESTRICTED) {
-			return __pfq_group_is_empty(gid);
-		}
-		else {
-                 	return true;
-		}
-	}
+
+	return false;
 }
 
 
@@ -67,7 +70,8 @@ __pfq_group_ctor(int gid)
 	int i;
 
         that->pid = -1;
-	
+	that->policy = Q_GROUP_UNDEFINED;
+
 	for(i = 0; i < Q_CLASS_MAX; i++)
 	{
 		atomic_long_set(&that->sock_mask[i], 0);
@@ -92,6 +96,7 @@ __pfq_group_dtor(int gid)
         pfq_devmap_update(map_reset, Q_ANY_DEVICE, Q_ANY_QUEUE, gid);
 	
 	that->pid = 0;
+	that->policy = Q_GROUP_UNDEFINED;
 	
 	state = (void *)atomic_long_xchg(&pfq_groups[gid].state, 0L);
 
@@ -114,7 +119,7 @@ __pfq_join_group(int gid, int id, unsigned long class_mask, int policy)
          	__pfq_group_ctor(gid);
 	}
 	
-	if (!__pfq_is_joinable(gid, policy)) {
+	if (!__pfq_group_access(gid, policy, true)) {
 		pr_devel("[PFQ] gid:%d is not joinable with policy %d\n", gid, policy);
 		return -1;
 	}
@@ -126,8 +131,10 @@ __pfq_join_group(int gid, int id, unsigned long class_mask, int policy)
 		atomic_long_set(&pfq_groups[gid].sock_mask[class], tmp);
 	}
 	
-	pfq_groups[gid].pid = (policy == Q_GROUP_RESTRICTED ? current->tgid : -1);
-        return 0;
+        pfq_groups[gid].policy = pfq_groups[gid].policy == Q_GROUP_UNDEFINED ?  policy : pfq_groups[gid].policy;
+	pfq_groups[gid].pid    = policy == Q_GROUP_RESTRICTED ? current->tgid : -1;
+	
+	return 0;
 }
 
 

@@ -82,7 +82,7 @@ module_param(prefetch_len, int, 0644);
 MODULE_PARM_DESC(direct_path, " Direct Path: 0 = classic, 1 = direct");
 MODULE_PARM_DESC(cap_len,     " Default capture length (bytes)");
 MODULE_PARM_DESC(queue_slots, " Queue slots (default=131072)");
-MODULE_PARM_DESC(prefetch_len,   " Prefetch queue length");
+MODULE_PARM_DESC(prefetch_len," Prefetch queue length");
 
 /* vector of pointers to pfq_opt */
 
@@ -680,12 +680,13 @@ int pfq_getsockopt(struct socket *sock,
                                     return -EFAULT;
                             if (copy_to_user(optval, &group, len))
                                     return -EFAULT;
-                    } else
-                    if (pfq_join_group(group.gid, pq->q_id, group.class_mask, group.policy) < 0) {
-                    	    pr_devel("[PFQ|%d] join error: gid:%d no permission!\n", pq->q_id, group.gid);
-                            return -EPERM;
-                    }
-                    
+                    } 
+                    else {
+			    if (pfq_join_group(group.gid, pq->q_id, group.class_mask, group.policy) < 0) {
+				    pr_devel("[PFQ|%d] join error: gid:%d no permission!\n", pq->q_id, group.gid);
+				    return -EPERM;
+			    }
+		    }                    
 		    pr_devel("[PFQ|%d] join -> gid:%d class_mask:%lx\n", pq->q_id, group.gid, group.class_mask);
             } break;
 
@@ -696,6 +697,7 @@ int pfq_getsockopt(struct socket *sock,
 
 		    if (len != sizeof(stat)) 
                             return -EINVAL;
+
                     if (copy_from_user(&stat, optval, len)) 
                             return -EFAULT;
                     
@@ -704,8 +706,8 @@ int pfq_getsockopt(struct socket *sock,
 			    return -EINVAL;
 
 		    /* check whether the group is joinable.. */
-		    if (!__pfq_is_joinable(gid, Q_GROUP_SHARED)) {   
-                    	    pr_devel("[PFQ|%d] group stats error: gid:%d is not joinable!\n", pq->q_id, gid);
+		    if (!__pfq_group_access(gid, Q_GROUP_UNDEFINED, false)) {   
+                    	    pr_devel("[PFQ|%d] group stats error: gid:%d access denied!\n", pq->q_id, gid);
 			    return -EPERM;
 		    }
 
