@@ -92,7 +92,7 @@ namespace test
         {
             int gid = opt::group_id != -1 ? opt::group_id : id;
 
-            m_pfq.join_group(gid, class_default, group_policy::shared);
+            m_pfq.join_group(gid, group_policy::shared);
             
             std::for_each(m_queues.begin(), m_queues.end(),[&](int q) {
                           std::cout << "adding bind to " << d << "@" << q << std::endl;       
