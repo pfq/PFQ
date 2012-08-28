@@ -453,7 +453,7 @@ namespace net {
         : fd_(-1)
         , pdata_()
         {
-            this->open(class_default, group_policy::restricted, caplen, offset, slots); 
+            this->open(class_default, group_policy::priv, caplen, offset, slots); 
         }
     
         pfq(group_policy policy, size_t caplen, size_t offset = 0, size_t slots = 131072)
