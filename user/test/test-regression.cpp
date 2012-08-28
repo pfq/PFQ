@@ -344,6 +344,44 @@ Context(PFQ)
         wait(nullptr);
     }
 
+    Test(join_private_)
+    {
+        pfq x(64);
+
+        pfq y(group_policy::undefined, 64);
+
+        AssertThrow(y.join_group(x.group_id(), group_policy::restricted));
+        AssertThrow(y.join_group(x.group_id(), group_policy::shared));
+        AssertThrow(y.join_group(x.group_id(), group_policy::priv));
+        AssertThrow(y.join_group(x.group_id(), group_policy::undefined));
+    }
+
+    Test(join_restricted_)
+    {
+        pfq x(group_policy::restricted, 64);
+
+        pfq y(group_policy::undefined, 64);
+
+        AssertNoThrow(y.join_group(x.group_id(), group_policy::restricted));
+        
+        AssertThrow(y.join_group(x.group_id(), group_policy::shared));
+        AssertThrow(y.join_group(x.group_id(), group_policy::priv));
+        AssertThrow(y.join_group(x.group_id(), group_policy::undefined));
+    }
+
+    Test(join_shared_)
+    {
+        pfq x(group_policy::shared, 64);
+
+        pfq y(group_policy::undefined, 64);
+        
+        AssertNoThrow(y.join_group(x.group_id(), group_policy::shared));
+
+        AssertThrow(y.join_group(x.group_id(), group_policy::restricted));
+        AssertThrow(y.join_group(x.group_id(), group_policy::priv));
+        AssertThrow(y.join_group(x.group_id(), group_policy::undefined));
+    }
+
 
     Test(join_public)
     {

@@ -244,6 +244,58 @@ void test_join_restricted()
 	pfq_close(y);
 }
 
+void test_join_private_()
+{
+	pfq_t * q = pfq_open(64, 0, 1024);
+	
+	pfq_t * y = pfq_open_group(Q_CLASS_DEFAULT, Q_GROUP_UNDEFINED, 64, 0, 1024);
+		
+	int gid = pfq_group_id(q);
+
+	assert( pfq_join_group(y, gid, Q_CLASS_DEFAULT, Q_GROUP_PRIVATE) < 0);
+	assert( pfq_join_group(y, gid, Q_CLASS_DEFAULT, Q_GROUP_RESTRICTED) < 0);
+	assert( pfq_join_group(y, gid, Q_CLASS_DEFAULT, Q_GROUP_SHARED) < 0);
+	assert( pfq_join_group(y, gid, Q_CLASS_DEFAULT, Q_GROUP_UNDEFINED) < 0);
+
+	pfq_close(q);
+	pfq_close(y);
+}
+
+void test_join_restricted_()
+{
+	pfq_t * q = pfq_open_group(Q_CLASS_DEFAULT, Q_GROUP_RESTRICTED, 64, 0, 1024);
+	
+	pfq_t * y = pfq_open_group(Q_CLASS_DEFAULT, Q_GROUP_UNDEFINED, 64, 0, 1024);
+		
+	int gid = pfq_group_id(q);
+
+	assert( pfq_join_group(y, gid, Q_CLASS_DEFAULT, Q_GROUP_PRIVATE) < 0);
+	assert( pfq_join_group(y, gid, Q_CLASS_DEFAULT, Q_GROUP_RESTRICTED) >= 0);
+	assert( pfq_join_group(y, gid, Q_CLASS_DEFAULT, Q_GROUP_SHARED) < 0);
+	assert( pfq_join_group(y, gid, Q_CLASS_DEFAULT, Q_GROUP_UNDEFINED) < 0);
+
+	pfq_close(q);
+	pfq_close(y);
+}
+
+
+void test_join_shared_()
+{
+	pfq_t * q = pfq_open_group(Q_CLASS_DEFAULT, Q_GROUP_SHARED, 64, 0, 1024);
+	
+	pfq_t * y = pfq_open_group(Q_CLASS_DEFAULT, Q_GROUP_UNDEFINED, 64, 0, 1024);
+		
+	int gid = pfq_group_id(q);
+
+	assert( pfq_join_group(y, gid, Q_CLASS_DEFAULT, Q_GROUP_PRIVATE) < 0);
+	assert( pfq_join_group(y, gid, Q_CLASS_DEFAULT, Q_GROUP_RESTRICTED) < 0);
+	assert( pfq_join_group(y, gid, Q_CLASS_DEFAULT, Q_GROUP_SHARED) >= 0);
+	assert( pfq_join_group(y, gid, Q_CLASS_DEFAULT, Q_GROUP_UNDEFINED) < 0);
+
+	pfq_close(q);
+	pfq_close(y);
+}
+
 void test_join_deferred()
 {
 	pfq_t * q = pfq_open_group(Q_CLASS_DEFAULT, Q_GROUP_UNDEFINED, 64, 0, 1024);
@@ -383,6 +435,11 @@ main(int argc __attribute__((unused)), char *argv[]__attribute__((unused)))
 	test_group_stats();
 
 	test_groups_mask();
+	
+	test_join_private_();
+	test_join_restricted_();
+	test_join_shared_();
+	
 	test_join_deferred();
 	test_join_restricted();
 	test_join_restricted_thread();
