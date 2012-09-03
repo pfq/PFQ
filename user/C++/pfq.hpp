@@ -374,9 +374,32 @@ namespace net {
         memset(&ifreq_io, 0, sizeof(struct ifreq));
         strncpy(ifreq_io.ifr_name, dev, IFNAMSIZ);
         if (::ioctl(fd, SIOCGIFINDEX, &ifreq_io) == -1)
-            throw pfq_error(errno, "SIOCGIFINDEX");
+            throw pfq_error(errno, "PFQ: ioctl SIOCGIFINDEX");
         return ifreq_io.ifr_ifindex;
     }
+
+
+    static inline
+    void toggle_promisc(int fd, const char *dev, bool value)
+    {
+        struct ifreq ifreq_io;
+        
+        memset(&ifreq_io, 0, sizeof(struct ifreq));
+        strncpy(ifreq_io.ifr_name, dev, IFNAMSIZ);
+
+        if(::ioctl(fd, SIOCGIFFLAGS, &ifreq_io) == -1) 
+            throw pfq_error(errno, "PFQ: ioctl SIOCGIFFLAGS");
+  
+        if (value)
+            ifreq_io.ifr_flags |= IFF_PROMISC;
+        else 
+            ifreq_io.ifr_flags &= ~IFF_PROMISC;
+
+        if(::ioctl(fd, SIOCSIFFLAGS, &ifreq_io) == -1)
+            throw pfq_error(errno, "PFQ: ioctl SIOCSIFFLAGS");
+
+    }
+
 
     static inline
     int nametoindex(const char *dev)
@@ -1011,7 +1034,6 @@ namespace net {
                 return pdata_->queue_addr;
             return nullptr;
         }
-
 
     };
 

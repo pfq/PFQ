@@ -289,6 +289,30 @@ pfq_ifindex(pfq_t const *q, const char *dev)
 }
 
 
+int pfq_toggle_promisc(pfq_t const *q, const char *dev, int value)
+{
+	struct ifreq ifreq_io;
+	pfq_t * mutable = (pfq_t *)q;
+
+	memset(&ifreq_io, 0, sizeof(struct ifreq));
+	strncpy(ifreq_io.ifr_name, dev, IFNAMSIZ);
+
+	if(ioctl(q->fd, SIOCGIFFLAGS, &ifreq_io) == -1) { 
+		return mutable->error = "PFQ: ioctl SIOCGIFFLAGS", -1;
+	}
+
+	if (value)
+		ifreq_io.ifr_flags |= IFF_PROMISC;
+	else 
+		ifreq_io.ifr_flags &= ~IFF_PROMISC;
+
+	if(ioctl(q->fd, SIOCSIFFLAGS, &ifreq_io) == -1) {
+		return mutable->error = "PFQ: ioctl SIOCSIFFLAGS", -1;
+	}
+	return mutable->error = NULL, 0;
+}
+
+
 int 
 pfq_set_caplen(pfq_t *q, size_t value)
 {

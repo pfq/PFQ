@@ -174,6 +174,8 @@ extern int pfq_close(pfq_t *);
 extern const char *pfq_error(pfq_t *);
 
 extern int pfq_ifindex(pfq_t const *q, const char *dev);
+extern int pfq_toggle_promisc(pfq_t const *q, const char *dev, int value);
+
 extern int pfq_enable(pfq_t *q);
 extern int pfq_disable(pfq_t *q);
 
