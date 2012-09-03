@@ -58,10 +58,11 @@
 
 namespace net { 
 
-
+    
     typedef std::pair<char *, size_t> mutable_buffer;
     typedef std::pair<const char *, const size_t> const_buffer;
 
+    
     template<size_t N, typename T>
     inline T align(T value)
     {
@@ -334,6 +335,7 @@ namespace net {
 
         return &h + 1;
     }
+
     static inline const void * data_ready(const pfq_hdr &h, size_t index)
     {
         if (h.ready != index)
@@ -365,59 +367,63 @@ namespace net {
 
     
     //////////////////////////////////////////////////////////////////////
+    // utility functions...
     
-    static inline 
-    int 
-    ifindex(int fd, const char *dev) 
+    namespace 
     {
-        struct ifreq ifreq_io;
-        memset(&ifreq_io, 0, sizeof(struct ifreq));
-        strncpy(ifreq_io.ifr_name, dev, IFNAMSIZ);
-        if (::ioctl(fd, SIOCGIFINDEX, &ifreq_io) == -1)
-            throw pfq_error(errno, "PFQ: ioctl SIOCGIFINDEX");
-        return ifreq_io.ifr_ifindex;
-    }
+        inline int 
+        ifindex(int fd, const char *dev) 
+        {
+            struct ifreq ifreq_io;
+            memset(&ifreq_io, 0, sizeof(struct ifreq));
+            strncpy(ifreq_io.ifr_name, dev, IFNAMSIZ);
+            if (::ioctl(fd, SIOCGIFINDEX, &ifreq_io) == -1)
+                throw pfq_error(errno, "PFQ: ioctl SIOCGIFINDEX");
+            return ifreq_io.ifr_ifindex;
+        }
 
 
-    static inline
-    void toggle_promisc(int fd, const char *dev, bool value)
-    {
-        struct ifreq ifreq_io;
+        inline
+        void toggle_promisc(int fd, const char *dev, bool value)
+        {
+            struct ifreq ifreq_io;
+
+            memset(&ifreq_io, 0, sizeof(struct ifreq));
+            strncpy(ifreq_io.ifr_name, dev, IFNAMSIZ);
+
+            if(::ioctl(fd, SIOCGIFFLAGS, &ifreq_io) == -1) 
+                throw pfq_error(errno, "PFQ: ioctl SIOCGIFFLAGS");
+
+            if (value)
+                ifreq_io.ifr_flags |= IFF_PROMISC;
+            else 
+                ifreq_io.ifr_flags &= ~IFF_PROMISC;
+
+            if(::ioctl(fd, SIOCSIFFLAGS, &ifreq_io) == -1)
+                throw pfq_error(errno, "PFQ: ioctl SIOCSIFFLAGS");
+
+        }
+
+
+        inline
+        int nametoindex(const char *dev)
+        {
+            auto i = ::if_nametoindex(dev);
+            if (i == 0)
+                throw pfq_error("PFQ: unknown device");
+            return i;
+        }
+
         
-        memset(&ifreq_io, 0, sizeof(struct ifreq));
-        strncpy(ifreq_io.ifr_name, dev, IFNAMSIZ);
-
-        if(::ioctl(fd, SIOCGIFFLAGS, &ifreq_io) == -1) 
-            throw pfq_error(errno, "PFQ: ioctl SIOCGIFFLAGS");
-  
-        if (value)
-            ifreq_io.ifr_flags |= IFF_PROMISC;
-        else 
-            ifreq_io.ifr_flags &= ~IFF_PROMISC;
-
-        if(::ioctl(fd, SIOCSIFFLAGS, &ifreq_io) == -1)
-            throw pfq_error(errno, "PFQ: ioctl SIOCSIFFLAGS");
-
-    }
-
-
-    static inline
-    int nametoindex(const char *dev)
-    {
-        auto i = ::if_nametoindex(dev);
-        if (i == 0)
-            throw pfq_error("PFQ: unknown device");
-        return i;
-    }
-
-    static inline
-    std::string
-    indextoname(int i)
-    {
-        char buf[IF_NAMESIZE];
-        if (::if_indextoname(i, buf) == nullptr)
-            throw pfq_error("PFQ: index not available");
-        return buf;
+        inline
+        std::string
+        indextoname(int i)
+        {
+            char buf[IF_NAMESIZE];
+            if (::if_indextoname(i, buf) == nullptr)
+                throw pfq_error("PFQ: index not available");
+            return buf;
+        }
     }
 
     //////////////////////////////////////////////////////////////////////
@@ -433,6 +439,9 @@ namespace net {
         shared     = Q_GROUP_SHARED
     };
 
+    // class mask
+    //
+    
     typedef unsigned long class_mask;
 
     namespace 
@@ -440,6 +449,11 @@ namespace net {
         const class_mask  class_default = Q_CLASS_DEFAULT;
         const class_mask  class_any     = Q_CLASS_ANY;
     }
+
+
+    //////////////////////////////////////////////////////////////////////
+    // PFQ class
+
 
     class pfq
     {
