@@ -64,8 +64,7 @@ struct proto_ops         pfq_ops;
 static int direct_path  = 0;
 static int queue_slots  = 131072; // slots per queue
 static int cap_len      = 1514;
-static int prefetch_len = 16;
-
+static int prefetch_len = 1;
 
 MODULE_LICENSE("GPL");
 
