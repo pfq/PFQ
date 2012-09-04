@@ -104,19 +104,19 @@ mpdb_enqueue_batch(struct pfq_opt *pq, unsigned long bitqueue, int qlen, struct 
 
 			/* copy bytes of packet */
 
-#ifdef PFQ_USE_SKB_LINEARIZE 
-			if (likely(bytes)) 
-				skb_copy_from_linear_data_offset(skb, (int)pq->q_offset, p_pkt, bytes);
 
-#else
-			if (likely(bytes) && 
-					skb_copy_bits(skb, (int)pq->q_offset, p_pkt, bytes) != 0)
-			{    
-				printk(KERN_WARNING "[PFQ] BUG! skb_copy_bits failed (bytes=%lu, skb_len=%d mac_len=%d q_offset=%lu)!\n", 
-						bytes, skb->len, skb->mac_len, pq->q_offset);
-				return 0;
+			if (likely(bytes)) 
+			{
+				if (skb_is_nonlinear(skb) && skb_copy_bits(skb, (int)pq->q_offset, p_pkt, bytes) != 0)
+				{    
+					printk(KERN_WARNING "[PFQ] BUG! skb_copy_bits failed (bytes=%u, skb_len=%d mac_len=%d q_offset=%lu)!\n", 
+							bytes, skb->len, skb->mac_len, pq->q_offset);
+					return 0;
+				}
+				else 
+					skb_copy_from_linear_data_offset(skb, (int)pq->q_offset, p_pkt, bytes);
 			}
-#endif                                
+				
 			/* setup the header */
 
 			p_hdr->len      = (uint16_t)skb->len;
