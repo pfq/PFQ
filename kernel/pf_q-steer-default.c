@@ -48,7 +48,7 @@ steering_vlan_id(const struct sk_buff *skb, const void *state)
 steering_ret_t
 steering_ipv4_addr(const struct sk_buff *skb, const void *state)
 {       
-	if (eth_hdr(skb)->h_proto == htons(ETH_P_IP)) 
+	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP)) 
 	{ 
 		struct iphdr _iph;
     		const struct iphdr *ip;
@@ -67,7 +67,7 @@ steering_ipv4_addr(const struct sk_buff *skb, const void *state)
 steering_ret_t
 steering_ipv6_addr(const struct sk_buff *skb, const void *state)
 {       
-	if (eth_hdr(skb)->h_proto == htons(ETH_P_IPV6)) 
+	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IPV6)) 
 	{ 
 		struct ipv6hdr _ip6h;
     		const struct ipv6hdr *ip6;
