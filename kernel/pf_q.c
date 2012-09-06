@@ -36,7 +36,6 @@
 #include <linux/ip.h>
 #include <linux/poll.h>
 #include <linux/etherdevice.h>
-#include <linux/if_vlan.h> 
 
 #include <linux/percpu.h>
 
@@ -53,6 +52,8 @@
 #include <pf_q-queue.h>
 #include <pf_q-steer.h>
 #include <pf_q-bits.h>
+#include <pf_q-vlan.h>
+
 #include <pf_q-mpdb-queue.h>
 
 struct net_proto_family  pfq_family_ops;
@@ -225,6 +226,13 @@ pfq_direct_receive(struct sk_buff *skb, bool direct)
         struct pfq_steering_cache steering_cache;
         long unsigned n;
 
+	/* if vlan header is present, remove it */
+
+	if (skb->protocol == cpu_to_be16(ETH_P_8021Q)) {
+		skb = pfq_vlan_untag(skb);
+		if (unlikely(!skb))
+			return -1;	
+	}
 
         /* if required, timestamp this packet now */
 
@@ -1247,8 +1255,7 @@ static void __exit pfq_exit_module(void)
 inline
 int pfq_direct_capture(const struct sk_buff *skb)
 {
-        return direct_path && 
-                __pfq_devmap_monitor_get(skb->dev->ifindex);
+        return direct_path && __pfq_devmap_monitor_get(skb->dev->ifindex);
 }
 
 
@@ -1263,21 +1270,6 @@ int pfq_normalize_skb(struct sk_buff *skb)
 	skb->mac_len = skb->network_header - skb->mac_header;
 #endif
 
-	if (skb->protocol == __constant_htons(ETH_P_8021Q)) {
-		
-		if (likely(!vlan_tx_tag_present(skb))) {
-		
-			struct vlan_hdr *vhdr;
-			if (unlikely(!pskb_may_pull(skb, VLAN_HLEN)))
-			{
-				__kfree_skb(skb);
-				return -1;
-			}
-			vhdr = (struct vlan_hdr *) skb->data;
-			skb->vlan_tci = (uint16_t)ntohs(vhdr->h_vlan_TCI);
-
-		}
-	}
 
 #ifdef PFQ_USE_SKB_LINEARIZE
 #pragma message "[PFQ] using skb_linearize"
