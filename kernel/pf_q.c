@@ -280,8 +280,11 @@ pfq_direct_receive(struct sk_buff *skb, bool direct)
         
         /* push the mac header: reset skb->data to the beginning of the packet */
 
-        skb_push(skb, skb->mac_len);
-        
+        if (likely(skb->pkt_type != PACKET_OUTGOING))
+        {
+            skb_push(skb, skb->mac_len);
+        }
+
 	/* if required, timestamp this packet now */
 
         if (atomic_read(&timestamp_toggle) && skb->tstamp.tv64 == 0) {
