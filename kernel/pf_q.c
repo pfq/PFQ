@@ -62,6 +62,11 @@ struct proto             pfq_proto;
 struct proto_ops         pfq_ops; 
 
 static int direct_path  = 0;
+
+static int sniff_incoming = 1;
+static int sniff_outgoing = 0;
+static int sniff_loopback = 0;
+
 static int queue_slots  = 131072; // slots per queue
 static int cap_len      = 1514;
 static int prefetch_len = 1;
@@ -78,10 +83,17 @@ module_param(cap_len,      int, 0644);
 module_param(queue_slots,  int, 0644);
 module_param(prefetch_len, int, 0644);
 
+module_param(sniff_incoming,  int, 0644);
+module_param(sniff_outgoing,  int, 0644);
+module_param(sniff_loopback,  int, 0644);
+
 MODULE_PARM_DESC(direct_path, " Direct Path: 0 = classic, 1 = direct");
 MODULE_PARM_DESC(cap_len,     " Default capture length (bytes)");
 MODULE_PARM_DESC(queue_slots, " Queue slots (default=131072)");
 MODULE_PARM_DESC(prefetch_len," Prefetch queue length");
+MODULE_PARM_DESC(sniff_incoming," Sniff incoming packets: (1 default)");
+MODULE_PARM_DESC(sniff_outgoing," Sniff outgoing packets: (0 default)");
+MODULE_PARM_DESC(sniff_loopback," Sniff lookback packets: (0 default)");
 
 /* vector of pointers to pfq_opt */
 
@@ -1175,20 +1187,22 @@ void pfq_net_proto_family_init(void)
 static
 void register_device_handler(void)
 {
-        if (direct_path)
-                return;
-        pfq_prot_hook.func = pfq_packet_rcv;
-        pfq_prot_hook.type = __constant_htons(ETH_P_ALL);
-        dev_add_pack(&pfq_prot_hook);
+        if (sniff_incoming || sniff_outgoing || sniff_loopback)
+        {
+                pfq_prot_hook.func = pfq_packet_rcv;
+                pfq_prot_hook.type = __constant_htons(ETH_P_ALL);
+                dev_add_pack(&pfq_prot_hook);
+        }
 }
 
 
 static
 void unregister_device_handler(void) 
 {
-        if (direct_path)
-                return;
-        dev_remove_pack(&pfq_prot_hook); /* Remove protocol hook */
+        if (sniff_incoming || sniff_outgoing || sniff_loopback)
+        {
+                dev_remove_pack(&pfq_prot_hook); /* Remove protocol hook */
+        }
 }
 
 
