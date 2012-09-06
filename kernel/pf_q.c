@@ -61,7 +61,7 @@ struct packet_type       pfq_prot_hook;
 struct proto             pfq_proto;
 struct proto_ops         pfq_ops; 
 
-static int direct_path  = 0;
+static int direct_path    = 0;
 
 static int sniff_incoming = 1;
 static int sniff_outgoing = 0;
@@ -78,22 +78,25 @@ MODULE_AUTHOR("Andrea Di Pietro <andrea.dipietro@for.unipi.it>");
 
 MODULE_DESCRIPTION("packet catpure system for 64bit multi-core architecture");
 
-module_param(direct_path,  int, 0644);
-module_param(cap_len,      int, 0644);
-module_param(queue_slots,  int, 0644);
-module_param(prefetch_len, int, 0644);
+module_param(direct_path,     int, 0644);
 
 module_param(sniff_incoming,  int, 0644);
 module_param(sniff_outgoing,  int, 0644);
 module_param(sniff_loopback,  int, 0644);
 
-MODULE_PARM_DESC(direct_path, " Direct Path: 0 = classic, 1 = direct");
-MODULE_PARM_DESC(cap_len,     " Default capture length (bytes)");
-MODULE_PARM_DESC(queue_slots, " Queue slots (default=131072)");
-MODULE_PARM_DESC(prefetch_len," Prefetch queue length");
+module_param(cap_len,         int, 0644);
+module_param(queue_slots,     int, 0644);
+module_param(prefetch_len,    int, 0644);
+
+MODULE_PARM_DESC(direct_path,   " Enable Direct Path: (0 default)");
+
 MODULE_PARM_DESC(sniff_incoming," Sniff incoming packets: (1 default)");
 MODULE_PARM_DESC(sniff_outgoing," Sniff outgoing packets: (0 default)");
 MODULE_PARM_DESC(sniff_loopback," Sniff lookback packets: (0 default)");
+
+MODULE_PARM_DESC(cap_len,       " Default capture length (bytes)");
+MODULE_PARM_DESC(queue_slots,   " Queue slots (default=131072)");
+MODULE_PARM_DESC(prefetch_len,  " Prefetch queue length");
 
 /* vector of pointers to pfq_opt */
 
@@ -266,27 +269,27 @@ pfq_direct_receive(struct sk_buff *skb, bool direct)
 	/* if vlan header is present, remove it */
 
 	if (skb->protocol == cpu_to_be16(ETH_P_8021Q)) {
-		skb = pfq_vlan_untag(skb);
+                skb = pfq_vlan_untag(skb);
 		if (unlikely(!skb))
 			return -1;	
 	}
+        
+        /* reset mac len */
 
+        skb_reset_mac_len(skb);
+        
+        /* push the mac header: reset skb->data to the beginning of the packet */
+
+        skb_push(skb, skb->mac_len);
+        
 	/* if required, timestamp this packet now */
 
         if (atomic_read(&timestamp_toggle) && skb->tstamp.tv64 == 0) {
                 __net_timestamp(skb);
         }
 
-        
-	/* reset skb->data to the beginning of the packet */
+        /* pfq_dump_skb(skb) */
 
-        if (likely(skb->pkt_type != PACKET_OUTGOING)) {	
-                skb_push(skb, skb->mac_len);
-        }
-        else {
-                skb->mac_len = ETH_HLEN;
-        }
-	
 	/* enqueue the packet to the prefetch queue */
 
         if (unlikely(pfq_queue_skb_push(prefetch_queue, skb) == -1)) {
@@ -414,6 +417,24 @@ pfq_packet_rcv
 	skb = skb_share_check(skb, GFP_ATOMIC);
 	if (unlikely(!skb))
 		return 0;
+
+        switch(skb->pkt_type)
+        {
+            case PACKET_OUTGOING: {
+                if (!sniff_outgoing)
+                        return 0;
+                skb->mac_len = ETH_HLEN;
+            } break;
+            
+            case PACKET_LOOPBACK: {
+                if (!sniff_loopback)
+                        return 0;
+            } break;
+
+            default: /* PACKET_INCOMING */
+                if (!sniff_incoming)
+                        return 0;
+        }
 
         return pfq_direct_receive(skb, false);
 }
@@ -1297,14 +1318,8 @@ int pfq_direct_capture(const struct sk_buff *skb)
 inline
 int pfq_normalize_skb(struct sk_buff *skb)
 {
-	skb_reset_network_header(skb);
+        skb_reset_network_header(skb);
 	skb_reset_transport_header(skb);
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,0,0)                
-	skb_reset_mac_len(skb);
-#else
-	skb->mac_len = skb->network_header - skb->mac_header;
-#endif
-
 
 #ifdef PFQ_USE_SKB_LINEARIZE
 #pragma message "[PFQ] using skb_linearize"
@@ -1355,6 +1370,7 @@ pfq_gro_receive(struct napi_struct *napi, struct sk_buff *skb)
 {
         if (likely(pfq_direct_capture(skb)))
         {
+
 		if (pfq_normalize_skb(skb) < 0)
                 	return GRO_DROP;
 
