@@ -30,8 +30,7 @@
 
 #include <net/sock.h>
 
-#include <mpsc-skbuff.h>
-#include <sparse-counter.h>
+#include <pf_q-sparse-counter.h>
 
 /* sparse_counter_t stats */
 

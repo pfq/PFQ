@@ -29,7 +29,7 @@
 #include <linux/delay.h>
 #include <linux/pf_q.h>
 
-#include <sparse-counter.h>
+#include <pf_q-sparse-counter.h>
 #include <pf_q-steer.h>
 
 

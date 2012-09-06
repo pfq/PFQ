@@ -53,8 +53,7 @@
 #include <pf_q-queue.h>
 #include <pf_q-steer.h>
 #include <pf_q-bits.h>
-
-#include <mpdb-queue.h>
+#include <pf_q-mpdb-queue.h>
 
 struct net_proto_family  pfq_family_ops;
 struct packet_type       pfq_prot_hook;

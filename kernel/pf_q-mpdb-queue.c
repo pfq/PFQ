@@ -22,7 +22,7 @@
  *
  ****************************************************************/
 
-#include <mpdb-queue.h>
+#include <pf_q-mpdb-queue.h>
 
 void *
 mpdb_queue_alloc(struct pfq_opt *pq, size_t queue_mem, size_t * tot_mem)
