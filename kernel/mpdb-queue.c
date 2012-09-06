@@ -101,7 +101,9 @@ mpdb_enqueue_batch(struct pfq_opt *pq, unsigned long bitqueue, int qlen, struct 
 			struct pfq_hdr *p_hdr = (struct pfq_hdr *)ptr;
 
 			char *p_pkt = (char *)(p_hdr+1);
-
+			
+			struct timespec ts;
+			
 			/* copy bytes of packet */
 
 			if (likely(bytes)) 
@@ -130,24 +132,19 @@ mpdb_enqueue_batch(struct pfq_opt *pq, unsigned long bitqueue, int qlen, struct 
 			}
 				
 			/* setup the header */
-
-			p_hdr->len      = (uint16_t)skb->len;
-			p_hdr->caplen 	= (uint16_t)bytes;
-			p_hdr->if_index = skb->dev->ifindex & 0xff;
-			p_hdr->hw_queue = (uint8_t)(skb_get_rx_queue(skb) & 0xff);                      
-
+			
 			if (pq->q_tstamp != 0)
 			{
-				struct timespec ts;
 				skb_get_timestampns(skb, &ts); 
-				p_hdr->tstamp.tv.sec  = (uint32_t)ts.tv_sec;
+		       		p_hdr->tstamp.tv.sec  = (uint32_t)ts.tv_sec;
 				p_hdr->tstamp.tv.nsec = (uint32_t)ts.tv_nsec;
 			}
-
-			if (skb->vlan_tci)
-			{
-				p_hdr->un.vlan_tci = skb->vlan_tci;
-			}
+			
+			p_hdr->len         = (uint16_t)skb->len;
+			p_hdr->caplen 	   = (uint16_t)bytes;
+			p_hdr->un.vlan_tci = skb->vlan_tci;
+			p_hdr->if_index    = skb->dev->ifindex & 0xff;
+			p_hdr->hw_queue    = (uint8_t)(skb_get_rx_queue(skb) & 0xff);                      
 
 			/* commit the slot (release semantic) */
 
