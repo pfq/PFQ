@@ -292,6 +292,8 @@ pfq_direct_receive(struct sk_buff *skb, bool direct)
 
 	/* enqueue the packet to the prefetch queue */
 
+        skb->cb[42] = direct;
+
         if (unlikely(pfq_queue_skb_push(prefetch_queue, skb) == -1)) {
                 printk(KERN_INFO "[PFQ] prefetch_queue internal error!\n");
                 return -1;
@@ -392,7 +394,7 @@ pfq_direct_receive(struct sk_buff *skb, bool direct)
 
         queue_for_each_backward(skb, n, prefetch_queue)
         {
-                if (likely(direct))
+                if (likely(skb->cb[42]))
                         __kfree_skb(skb);
                 else
                         kfree_skb(skb);
