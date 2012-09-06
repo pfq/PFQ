@@ -216,6 +216,8 @@ void pfq_enqueue_mask_to_batch(unsigned long j, unsigned long mask, unsigned lon
 }
 
 
+/* precondition: skb is not shared */
+
 int 
 pfq_direct_receive(struct sk_buff *skb, bool direct)
 {       
@@ -234,14 +236,14 @@ pfq_direct_receive(struct sk_buff *skb, bool direct)
 			return -1;	
 	}
 
-        /* if required, timestamp this packet now */
+	/* if required, timestamp this packet now */
 
-        if (atomic_read(&timestamp_toggle) && 
-                        skb->tstamp.tv64 == 0) {
+        if (atomic_read(&timestamp_toggle) && skb->tstamp.tv64 == 0) {
                 __net_timestamp(skb);
         }
 
-        /* reset skb->data to the beginning of the packet */
+        
+	/* reset skb->data to the beginning of the packet */
 
         if (likely(skb->pkt_type != PACKET_OUTGOING)) {	
                 skb_push(skb, skb->mac_len);
@@ -249,6 +251,8 @@ pfq_direct_receive(struct sk_buff *skb, bool direct)
         else {
                 skb->mac_len = ETH_HLEN;
         }
+	
+	/* enqueue the packet to the prefetch queue */
 
         if (unlikely(pfq_queue_skb_push(prefetch_queue, skb) == -1)) {
                 printk(KERN_INFO "[PFQ] prefetch_queue internal error!\n");
@@ -267,6 +271,8 @@ pfq_direct_receive(struct sk_buff *skb, bool direct)
 
 	steering_cache.state = 0;
 
+	/* for each packet in the prefetch queue */
+        
         queue_for_each(skb, n, prefetch_queue)
         {
 		unsigned int gindex;
@@ -358,8 +364,7 @@ pfq_direct_receive(struct sk_buff *skb, bool direct)
         return 0;
 }
 
-
-/* simple HANDLER */       
+/* simple packet HANDLER */       
 
 int 
 pfq_packet_rcv
@@ -371,19 +376,12 @@ pfq_packet_rcv
 #endif
     )
 {
-	if (skb_shared(skb)) {
-                struct sk_buff *nskb = skb_clone(skb, GFP_ATOMIC);
-                if (nskb == NULL) {
-                        consume_skb(skb);
-                        return 0;
-                } 
-                kfree_skb(skb);
-                skb = nskb;
-        }
+	skb = skb_share_check(skb, GFP_ATOMIC);
+	if (unlikely(!skb))
+		return 0;
 
         return pfq_direct_receive(skb, false);
 }
-
 
 
 static int 
