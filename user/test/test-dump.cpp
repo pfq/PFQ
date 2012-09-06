@@ -26,15 +26,17 @@ main(int argc, char *argv[])
             queue::iterator it = many.begin();
             queue::iterator it_e = many.end();
 
-            std::cout << "queue size: " << many.size() << " ===>" << std::endl;
-
             for(; it != it_e; ++it)
             {
                     while (!it.ready())
                         std::this_thread::yield();
 
-                    printf("caplen:%d len:%d ifindex:%d hw_queue:%d tstamp: %u:%u -> ", it->caplen, it->len, it->if_index, it->hw_queue,
-                                                                                       it->tstamp.tv.sec, it->tstamp.tv.nsec);
+                    // printf("vlan:%d caplen:%d len:%d ifindex:%d hw_queue:%d [%u:%u] -> ", 
+                    //        it->un.vlan.vlan_vid, it->caplen, it->len, it->if_index, it->hw_queue,
+                    //        it->tstamp.tv.sec, it->tstamp.tv.nsec);
+                    printf("vlan:%d caplen:%d len:%d ifindex:%d hw_queue:%d -> ", 
+                           it->un.vlan.vlan_vid, it->caplen, it->len, it->if_index, it->hw_queue);
+                    
                     char *buff = static_cast<char *>(it.data());
 
                     for(int x=0; x < std::min<int>(it->caplen, 34); x++)
