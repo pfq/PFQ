@@ -61,7 +61,7 @@ struct packet_type       pfq_prot_hook;
 struct proto             pfq_proto;
 struct proto_ops         pfq_ops; 
 
-static int direct_catpure    = 0;
+static int direct_capture = 0;
 
 static int sniff_incoming = 1;
 static int sniff_outgoing = 0;
@@ -78,7 +78,7 @@ MODULE_AUTHOR("Andrea Di Pietro <andrea.dipietro@for.unipi.it>");
 
 MODULE_DESCRIPTION("packet catpure system for 64bit multi-core architecture");
 
-module_param(direct_catpure,  int, 0644);
+module_param(direct_capture,  int, 0644);
 module_param(sniff_incoming,  int, 0644);
 module_param(sniff_outgoing,  int, 0644);
 module_param(sniff_loopback,  int, 0644);
@@ -87,7 +87,7 @@ module_param(cap_len,         int, 0644);
 module_param(queue_slots,     int, 0644);
 module_param(prefetch_len,    int, 0644);
 
-MODULE_PARM_DESC(direct_catpure," Direct capture packets: (0 default)");
+MODULE_PARM_DESC(direct_capture," Direct capture packets: (0 default)");
 MODULE_PARM_DESC(sniff_incoming," Sniff incoming packets: (1 default)");
 MODULE_PARM_DESC(sniff_outgoing," Sniff outgoing packets: (0 default)");
 MODULE_PARM_DESC(sniff_loopback," Sniff lookback packets: (0 default)");
@@ -1314,7 +1314,7 @@ static void __exit pfq_exit_module(void)
 inline
 int pfq_direct_capture(const struct sk_buff *skb)
 {
-        return direct_catpure && __pfq_devmap_monitor_get(skb->dev->ifindex);
+        return direct_capture && __pfq_devmap_monitor_get(skb->dev->ifindex);
 }
 
 
