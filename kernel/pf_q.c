@@ -184,17 +184,21 @@ bool pfq_copy_to_user_skbs(struct pfq_opt *pq, unsigned long batch_queue, struct
 {
         /* enqueue the sk_buff: it's wait-free. */
 
-        int len = (int)hweight64(batch_queue);
-        size_t sent = 0;
+        int len = 0; size_t sent = 0;
 
-        if (likely(pq->q_active)) {
+        if (likely(pq->q_active)) 
+        {
+                len  = (int)hweight64(batch_queue); 
                 sent = mpdb_enqueue_batch(pq, batch_queue, len, skbs);
+        	
+        	sparse_add(&pq->q_stat.recv, sent);
+        
+		if (len > sent) 
+		{
+			sparse_add(&pq->q_stat.lost, len - sent);
+			return false; 
+		}
         }
-
-        sparse_add(&pq->q_stat.recv, sent);
-        if (unlikely(len > sent))
-                sparse_add(&pq->q_stat.lost, len - sent);
-
         return true;
 }
 
@@ -305,8 +309,6 @@ pfq_direct_receive(struct sk_buff *skb, bool direct)
         if (atomic_read(&timestamp_toggle) && skb->tstamp.tv64 == 0) {
                 __net_timestamp(skb);
         }
-
-        /* pfq_dump_skb(skb) */
 
 	/* enqueue the packet to the prefetch queue */
 
