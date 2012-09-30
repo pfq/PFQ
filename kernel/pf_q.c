@@ -70,6 +70,7 @@ static int sniff_loopback = 0;
 static int queue_slots  = 131072; // slots per queue
 static int cap_len      = 1514;
 static int prefetch_len = 1;
+static int flow_control = 0;
 
 MODULE_LICENSE("GPL");
 
@@ -86,6 +87,7 @@ module_param(sniff_loopback,  int, 0644);
 module_param(cap_len,         int, 0644);
 module_param(queue_slots,     int, 0644);
 module_param(prefetch_len,    int, 0644);
+module_param(flow_control,    int, 0644);
 
 MODULE_PARM_DESC(direct_capture," Direct capture packets: (0 default)");
 MODULE_PARM_DESC(sniff_incoming," Sniff incoming packets: (1 default)");
@@ -95,6 +97,7 @@ MODULE_PARM_DESC(sniff_loopback," Sniff lookback packets: (0 default)");
 MODULE_PARM_DESC(cap_len,       " Default capture length (bytes)");
 MODULE_PARM_DESC(queue_slots,   " Queue slots (default=131072)");
 MODULE_PARM_DESC(prefetch_len,  " Prefetch queue length");
+MODULE_PARM_DESC(flow_control,  " Flow control value (default=0)");
 
 /* vector of pointers to pfq_opt */
 
@@ -111,10 +114,11 @@ struct local_data
   	unsigned long           eligible_mask;
 	unsigned long           sock_mask [Q_MAX_ID];
         int                     sock_cnt;
+        int 			flowctrl;
         struct pfq_queue_skb    prefetch_queue;
 };
 
-struct local_data __percpu 	* cpu_data;
+struct local_data __percpu    * cpu_data;
 
 
 /* uhm okay, this is a legit form of static polymorphism */
@@ -264,6 +268,19 @@ pfq_direct_receive(struct sk_buff *skb, bool direct)
         struct pfq_steering_cache steering_cache;
         long unsigned n;
 
+	/* flow control */
+
+	if (local_cache->flowctrl && 
+	    local_cache->flowctrl--) 
+	{
+                if (direct)
+                        __kfree_skb(skb);
+                else
+                        kfree_skb(skb);
+		
+		return 0;
+	}
+
 	/* if vlan header is present, remove it */
 
 	if (skb->protocol == cpu_to_be16(ETH_P_8021Q)) {
@@ -389,7 +406,8 @@ pfq_direct_receive(struct sk_buff *skb, bool direct)
         {
                 struct pfq_opt * pq = pfq_get_opt(n);
                 if (likely(pq)) {
-                        pfq_copy_to_user_skbs(pq, batch_queue[n], prefetch_queue);
+                        if (!pfq_copy_to_user_skbs(pq, batch_queue[n], prefetch_queue))
+                        	local_cache->flowctrl = flow_control;
                 }
         }
 
