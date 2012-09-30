@@ -77,7 +77,7 @@ MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Nicola Bonelli <nicola.bonelli@cnit.it>");
 MODULE_AUTHOR("Andrea Di Pietro <andrea.dipietro@for.unipi.it>");
 
-MODULE_DESCRIPTION("packet catpure system for 64bit multi-core architecture");
+MODULE_DESCRIPTION("Packet capture system for 64bit multi-core architectures");
 
 module_param(direct_capture,  int, 0644);
 module_param(sniff_incoming,  int, 0644);
