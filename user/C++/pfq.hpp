@@ -717,7 +717,7 @@ namespace net {
             struct pfq_queue_descr * q = static_cast<struct pfq_queue_descr *>(pdata_->queue_addr);
             
             int data =  q->data;               
-            int index  = DBMP_QUEUE_INDEX(data) ? 1 : 0;
+            int index  = DBMP_QUEUE_INDEX(data);
             
             size_t q_size = pdata_->queue_slots * pdata_->slot_size;
 
@@ -738,7 +738,7 @@ namespace net {
 
             wmb();
 
-            data = __sync_lock_test_and_set(&q->data, (index ? 0ULL : 0x8000000000000000ULL));
+            data = __sync_lock_test_and_set(&q->data, (index ? 0UL : 0x80000000UL));
             
             q->disabled = 0;
 
