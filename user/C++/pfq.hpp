@@ -138,11 +138,9 @@ namespace net {
             bool
             ready() const
             {
-                if(hdr_->ready != index_) {
-                    return false;
-                }
+                auto b = const_cast<volatile uint8_t &>(hdr_->commit) != (index_ & 0xff); 
                 rmb();
-                return true;
+                return b;
             }
 
             bool 
@@ -217,11 +215,9 @@ namespace net {
             bool
             ready() const
             {
-                if(hdr_->ready != index_) {
-                    return false;
-                }
+                auto b = const_cast<volatile uint8_t &>(hdr_->commit) != (index_ & 0xff); 
                 rmb();
-                return true;
+                return b;
             }
 
             bool 
@@ -326,23 +322,19 @@ namespace net {
         size_t  index_;
     };
 
-    static inline void * data_ready(pfq_hdr &h, size_t index)
+    static inline void * data_ready(pfq_hdr &h, uint8_t current_commit)
     {
-        if (h.ready != index)
+        if (const_cast<volatile uint8_t &>(h.commit) != current_commit)
             return nullptr;
-
         rmb();
-
         return &h + 1;
     }
 
-    static inline const void * data_ready(const pfq_hdr &h, size_t index)
+    static inline const void * data_ready(pfq_hdr const &h, uint8_t current_commit)
     {
-        if (h.ready != index)
+        if (const_cast<volatile uint8_t &>(h.commit) != current_commit)
             return nullptr;
-        
         rmb();
-        
         return &h + 1;
     }
  
