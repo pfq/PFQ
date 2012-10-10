@@ -50,14 +50,32 @@ typedef void *pfq_t;   /* pfq descritor */
 
 /* memory barriers */
 
-static inline
-void mb()  { asm volatile ("mfence" ::: "memory"); }
+#if defined(__GNU__)
+        inline void barrier() { asm volatile ("" ::: "memory"); }
+#else
+#error "Compiler not supported"
+#endif
 
-static inline
-void wmb() { asm volatile ("lfence" ::: "memory"); }
+#if defined(__i386__) && !defined(__LP64__)
+#error "32-bit architecture is not supported"
+#endif
 
-static inline
-void rmb() { asm volatile ("sfence" ::: "memory"); }
+#if defined(__LP64__)
+        inline void mb()  { asm volatile ("mfence" ::: "memory"); }
+        inline void rmb() { asm volatile ("lfence" ::: "memory"); }
+        inline void wmb() { asm volatile ("sfence" ::: "memory"); }
+#endif
+
+#ifdef CONFIG_SMP
+        inline void smp_mb()  { mb(); }
+        inline void smp_rmb() { barrier(); }
+        inline void smp_wmb() { barrier(); }
+#else
+        inline void smp_mb()  { barrier(); }
+        inline void smp_rmb() { barrier(); }
+        inline void smp_wmb() { barrier(); }
+#endif
+}
 
 
 /* pfq_net_queue */
@@ -128,7 +146,7 @@ pfq_iterator_ready(struct pfq_net_queue *nq, pfq_iterator_t iter)
 	if (pfq_iterator_header(iter)->commit != nq->index) {
         return 0;
     }
-	rmb();
+	smp_rmb();
 	return 1;
 }
 

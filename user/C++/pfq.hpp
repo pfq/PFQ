@@ -55,30 +55,47 @@
 #include <vector>
 #include <system_error>
 
+namespace 
+{
+
+#if defined(__GNU__)
+        inline void barrier() { asm volatile ("" ::: "memory"); }
+#else
+#error "Compiler not supported"
+#endif
+
+#if defined(__i386__) && !defined(__LP64__)
+#error "32-bit architecture is not supported"
+#endif
+
+#if defined(__LP64__)
+        inline void mb()  { asm volatile ("mfence" ::: "memory"); }
+        inline void rmb() { asm volatile ("lfence" ::: "memory"); }
+        inline void wmb() { asm volatile ("sfence" ::: "memory"); }
+#endif
+
+#ifdef CONFIG_SMP
+        inline void smp_mb()  { mb(); }
+        inline void smp_rmb() { barrier(); }
+        inline void smp_wmb() { barrier(); }
+#else
+        inline void smp_mb()  { barrier(); }
+        inline void smp_rmb() { barrier(); }
+        inline void smp_wmb() { barrier(); }
+#endif
+}
 
 namespace net { 
 
-    
     typedef std::pair<char *, size_t> mutable_buffer;
     typedef std::pair<const char *, const size_t> const_buffer;
 
-    
     template<size_t N, typename T>
     inline T align(T value)
     {
         static_assert((N & (N-1)) == 0, "align: N not a power of two");
         return (value + (N-1)) & ~(N-1);
     }
-
-    static inline
-    void mb()  { asm volatile ("mfence" ::: "memory"); }
-
-    static inline
-    void wmb() { asm volatile ("lfence" ::: "memory"); }
-    
-    static inline
-    void rmb() { asm volatile ("sfence" ::: "memory"); }
-
 
     class queue 
     {
@@ -139,7 +156,7 @@ namespace net {
             ready() const
             {
                 auto b = const_cast<volatile uint8_t &>(hdr_->commit) != (index_ & 0xff); 
-                rmb();
+                smp_rmb();
                 return b;
             }
 
@@ -216,7 +233,7 @@ namespace net {
             ready() const
             {
                 auto b = const_cast<volatile uint8_t &>(hdr_->commit) != (index_ & 0xff); 
-                rmb();
+                smp_rmb();
                 return b;
             }
 
@@ -326,7 +343,7 @@ namespace net {
     {
         if (const_cast<volatile uint8_t &>(h.commit) != current_commit)
             return nullptr;
-        rmb();
+        smp_rmb();
         return &h + 1;
     }
 
@@ -334,11 +351,10 @@ namespace net {
     {
         if (const_cast<volatile uint8_t &>(h.commit) != current_commit)
             return nullptr;
-        rmb();
+        smp_rmb();
         return &h + 1;
     }
  
-
     //////////////////////////////////////////////////////////////////////
 
     class pfq_error : public std::system_error
@@ -952,10 +968,8 @@ namespace net {
             
             data = __sync_lock_test_and_set(&q->data, (unsigned int)((index+1) << 24));
             
-            
             auto queue_len =  std::min(static_cast<size_t>(DBMP_QUEUE_LEN(data)), pdata_->queue_slots);
 
-            
             return queue(static_cast<char *>(pdata_->queue_addr) + 
 						 sizeof(pfq_queue_descr) + 
 						 (index & 1) * q_size, 
