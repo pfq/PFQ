@@ -930,7 +930,6 @@ namespace net {
             return ret; 
         }
 
-        
         queue
         read(long int microseconds = -1) 
         {
@@ -999,7 +998,7 @@ namespace net {
             size_t n = 0;
             for(; it != it_e; ++it)
             {
-                while (!it->ready)
+                while (!it.ready())
                     std::this_thread::yield();
 
                 callback(user, &(*it), reinterpret_cast<const char *>(it.data()));

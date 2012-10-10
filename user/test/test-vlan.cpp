@@ -30,7 +30,7 @@ main(int argc, char *argv[])
 
             for(; it != it_e; ++it)
             {
-                    while(!it->ready);
+                    while(!it.ready());
 
                     printf("vlan_vid:%d vlan_prio:%d caplen:%d len:%d ifindex:%d hw_queue:%d tstamp: %u:%u -> ", 
                            it->un.vlan.vlan_vid, it->un.vlan.vlan_prio,  

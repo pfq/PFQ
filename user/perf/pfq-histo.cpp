@@ -69,9 +69,12 @@ main(int argc, char *argv[])
     
         // std::cout << "batch size: " << b.size() << std::endl;
 
-        std::for_each(b.begin(), b.end(), [&](volatile pfq_hdr &h) {
+        std::for_each(b.begin(), b.end(), [&](pfq_hdr &h) {
 
-           while(!h.ready);
+           while(!net::data_ready(h, q.current_commit()))
+           {
+                std::this_thread::yield();
+           }
 
            // this time stamp ...
            //
