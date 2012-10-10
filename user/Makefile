@@ -1,4 +1,4 @@
-MAKE_DIRECTORIES = C C++ test perf regression
+MAKE_DIRECTORIES = C C++ test perf regress
 INST_DIRECTORIES = C C++ 
 
 .PHONY: all install clean
