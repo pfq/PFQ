@@ -83,7 +83,7 @@ struct pfq_hdr
     int         if_index;   /* interface index */    
     
     uint8_t     hw_queue;   /* 256 queues per device */
-    uint8_t     ready;
+    uint8_t     commit;
 
 } /* __attribute__((packed)) */;
 

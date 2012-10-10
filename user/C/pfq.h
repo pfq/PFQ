@@ -125,7 +125,7 @@ static inline
 int
 pfq_iterator_ready(struct pfq_net_queue *nq, pfq_iterator_t iter)
 {
-	if (pfq_iterator_header(iter)->ready != nq->index) {
+	if (pfq_iterator_header(iter)->commit != nq->index) {
         return 0;
     }
 	rmb();

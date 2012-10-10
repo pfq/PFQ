@@ -150,7 +150,7 @@ mpdb_enqueue_batch(struct pfq_opt *pq, unsigned long bitqueue, int qlen, struct 
 
 			smp_wmb();
 
-			p_hdr->ready = (uint8_t)q_index;
+			p_hdr->commit = (uint8_t)q_index;
 
 			if (unlikely((slot_index & 16383) == 0) && 
 					(slot_index >= (pq->q_slots >> 1)) && 
