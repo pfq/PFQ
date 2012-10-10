@@ -24,15 +24,20 @@
 #include <pfq.hpp>
 
 // ----------------------------------------
+//
+
 #include <unordered_map>
 #include <utility>
+#include <cstring>
+
 #include <pcap.h>
+#include <signal.h>
 #include <netinet/ip.h>
 #include <arpa/inet.h>
-#include <cstring>
 #include <net/ethernet.h>
 #include <netinet/if_ether.h>
 #include <linux/if_ether.h>
+
 
 namespace opt {
 
@@ -47,7 +52,7 @@ namespace opt {
 
     int group_id  = 42;
 
-    static const int seconds = 30;
+    static const int seconds = 60;
 }
 
 
@@ -126,6 +131,8 @@ private:
 
 typedef std::unordered_map<uint32_t, buffer> unmap_caplen;
 unmap_caplen map_cap;
+
+std::atomic_bool stop(false);
 
 
 binding_type 
@@ -223,24 +230,22 @@ namespace test
 
         void parse_packet (uint16_t cap_pfq, const char *data)
         {	
-
             struct ether_header *eth;
             struct iphdr *ip;
 
             eth = (struct ether_header *)(data - opt::offset);
-
             if (ntohs(eth->ether_type) == ETHERTYPE_IP)
             {
-                ip = (struct iphdr*) (data + sizeof(ether_header) - opt::offset);
+                ip = (struct iphdr*) (data - opt::offset + sizeof(ether_header));
 
-                map_counter[ntohl(ip->saddr)].first++;
+                map_counter[ip->saddr].first++;
 
-                auto it = map_cap.find(ntohl(ip->saddr));
+                auto it = map_cap.find(ip->saddr);
 
                 if (it != map_cap.end())
                 {
                     if(memcmp(data, it->second.get_data(), cap_pfq) == 0)
-                        map_counter[ntohl(ip->saddr)].second++;
+                        map_counter[ip->saddr].second++;
                 }
             }
         }
@@ -260,8 +265,7 @@ namespace test
                 {
 
                     char *packet = static_cast<char *>(it.data());
-                    uint16_t cap_pfq = it->caplen;
-                    parse_packet(cap_pfq, packet);
+                    parse_packet(it->caplen, packet);
                 }
 
                 m_read += many.size();
@@ -343,7 +347,7 @@ void packet_handler(u_char *, const struct pcap_pkthdr *h, const u_char *bytes)
     {
         ip = (struct iphdr*) (bytes + sizeof(ether_header));
 
-        map_cap.insert(unmap_caplen::value_type(ntohl(ip->saddr), buffer(h->caplen, bytes)));
+        map_cap.insert(unmap_caplen::value_type(ip->saddr, buffer(h->caplen, bytes)));
     }
 };
 
@@ -420,9 +424,9 @@ try
 
             opt::offset = std::atoi(argv[i]);
 
-            if (opt::offset > 14)
+            if (opt::offset > 12)
             {
-                throw std::runtime_error("offset <0: impossible || offset >14: can't point to the start of ip header");
+                throw std::runtime_error("offset: offset > 12 bytes");
             }
 
             continue;
@@ -478,6 +482,41 @@ try
         std::cout << "pcap_dispatch error" << std::endl;
     }
 
+    // ignore signals:
+    //
+   
+    sigset_t set;
+    sigfillset(&set);
+    sigprocmask(SIG_BLOCK, &set, nullptr);
+    
+    std::thread sighandler([]
+    {
+        sigset_t set;
+        int sig;
+        sigfillset(&set);
+        
+        for(;;)
+        {
+            if(sigwait(&set, &sig) !=0)
+               throw std::logic_error("sighandler");
+            switch(sig)
+            {
+                case SIGQUIT:
+                case SIGINT:
+                case SIGSTOP:
+                case SIGTERM:
+                {
+                    stop.store(true);
+                    return;
+                }
+                default:
+                std::cout << "sighandler: signal" << sig << " ignored" << std::endl;
+            }
+        }
+    });
+
+    sighandler.detach();
+
     // create threads' context:
     //
     
@@ -514,6 +553,9 @@ try
 
     for(int y=0; y < opt::seconds; y++)
     {
+        if (stop.load())
+            break;
+
         std::this_thread::sleep_for(std::chrono::seconds(1));
 
         sum = 0;
@@ -558,52 +600,45 @@ try
         old_stats = sum_stats;
     }
 
-
+    // stopping threads...
     std::for_each(ctx.begin(), ctx.end(), std::mem_fn(&test::ctx::stop));
+    
     std::for_each(vt.begin(), vt.end(), std::mem_fn(&std::thread::join));
 
     test::ctx::umap_counter_type map_tot; 
     int thread = 1;
 
     std::for_each(ctx.begin(), ctx.end(), [&](const test::ctx &c)
-                  {	
-                  std::cout << std::endl;
-                  std::cout << "\t ///// \tPKT ON THREAD #" << thread << " /////" <<std::endl;
-                  thread++;
+    {	
+         std::cout << std::endl;
+         std::cout << "\t ///// \tPKT ON THREAD #" << thread << " /////" <<std::endl;
+         
+         thread++;
 
-                  auto it = c.umap_begin();
-                  auto it_e = c.umap_end();
+         auto it = c.umap_begin();
+         auto it_e = c.umap_end();
 
-                  for (; it != it_e; ++it)
-                  {
-                  char ip_addr[INET_ADDRSTRLEN];
-                  auto y = ntohl(it->first); 
-                  inet_ntop(AF_INET, &(y), ip_addr, sizeof(ip_addr));
-                  std::cout << "ip: " << ip_addr << "\tpkt_arr: "<< it->second.first << "\tpkt_match: " << it->second.second <<std::endl;
+         for (; it != it_e; ++it)
+         {
+             char ip_addr[INET_ADDRSTRLEN];
+             auto y = it->first; 
 
-                  auto x = map_tot.find(ntohl(it->first));
+             inet_ntop(AF_INET, &(y), ip_addr, sizeof(ip_addr));
 
-                  if (x == it_e)
-                  {	
-                      map_tot[ntohl(it->first)].first = it->second.first;
-                      map_tot[ntohl(it->first)].second = it->second.second;
-                  }
-                  else if(x != it_e)
-                  {
-                      map_tot[ntohl(it->first)].first += it->second.first;
-                      map_tot[ntohl(it->first)].second += it->second.second;
-                  }
-
-                  }
+             std::cout << "ip: " << ip_addr << "\tpkt_arr: "<< it->second.first << "\tpkt_match: " << it->second.second <<std::endl;
+                 
+             map_tot[it->first].first  += it->second.first;
+             map_tot[it->first].second += it->second.second;
+         }
     
-                   std::cout << std::endl;
-
-                  });	
+         std::cout << std::endl;
+    });	
 
     std::cout << std::endl;
     std::cout << "\t ////////// \t GLOBAL STATISTICS \t//////////" << std::endl;
 
     char ip_[INET_ADDRSTRLEN];
+
     auto it_tot = map_tot.begin();
     auto it_e_tot = map_tot.end();
 
@@ -611,7 +646,7 @@ try
     {
         inet_ntop(AF_INET, &(it_tot->first), ip_, sizeof(ip_));
 
-        std::cout << "ip_: " << ip_ << "\tpkt_arr= " << it_tot->second.first << "\tpkt_match= " << it_tot->second.second << std::endl;
+        std::cout << "ip: " << ip_ << "\tpkt_arr: " << it_tot->second.first << "\tpkt_match: " << it_tot->second.second << std::endl;
     }
     std::cout << std::endl;
     
