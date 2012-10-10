@@ -964,6 +964,14 @@ namespace net {
         }
 
 
+        uint8_t
+        current_commit() const
+        {
+            struct pfq_queue_descr * q = static_cast<struct pfq_queue_descr *>(pdata_->queue_addr);
+            return DBMP_QUEUE_INDEX(q->data);
+        }
+
+
         queue
         recv(const mutable_buffer &buff, long int microseconds = -1) 
         {
