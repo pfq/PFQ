@@ -188,6 +188,8 @@ bool pfq_copy_to_user_skbs(struct pfq_opt *pq, unsigned long batch_queue, struct
 
         if (likely(pq->q_active)) 
         {
+        	smp_rmb();
+
                 len  = (int)hweight64(batch_queue); 
                 sent = mpdb_enqueue_batch(pq, batch_queue, len, skbs);
         	
@@ -596,29 +598,28 @@ pfq_release(struct socket *sock)
 {
         struct sock * sk = sock->sk;
         struct pfq_opt * pq;
-	int id = 0;
+	int id = -1;
 
 	if (!sk)
 		return 0;
 	
 	pq = pfq_sk(sk)->opt;
-	
 	if (pq) {
+
+               	id = pq->q_id;
 		
-                id = pq->q_id;
-
-		pq->q_active = false;
-
 		/* decrease the timestamp_toggle counter */
 		if (pq->q_tstamp) {
 			atomic_dec(&timestamp_toggle);
 			pr_devel("[PFQ|%d] timestamp_toggle => %d\n", pq->q_id, atomic_read(&timestamp_toggle));
 		}
 
+		pq->q_active = false;
+
         	pfq_leave_all_groups(pq->q_id);
 
 		/* Convenient way to avoid a race condition,
-		 * without using rwmutexes that are very expensive 
+		 * without using expensive rw-mutexes 
 		 */
 
 		msleep(10 /* msec */);
@@ -849,15 +850,15 @@ int pfq_setsockopt(struct socket *sock,
                                     sq->poll_wait = 0;
                                     
 				    smp_wmb();
+                                    
                                     pq->q_active = true;
                             }
                     }
                     else {
                         pq->q_active = false;
-                        
+			
                         msleep(10);
                         
-			smp_wmb();
                         mpdb_queue_free(pq);
                     }
 
