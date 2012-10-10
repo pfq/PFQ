@@ -14,17 +14,12 @@ set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O0 -g2 -Wall -Wextra")
 add_executable(test-dump test-dump.cpp)
 add_executable(test-vlan test-vlan.cpp)
 add_executable(test-for-range test-for-range.cpp)
-add_executable(test-regression test-regression.cpp)
 add_executable(test-steering-dummy test-steering-dummy.cpp)
 
 # C tests
 
 add_executable(test-read test-read.c)
 add_executable(test-dispatch test-dispatch.c)
-add_executable(test-regression-c test-regression-c.c)
 
 target_link_libraries(test-read -lpfq)
 target_link_libraries(test-dispatch -lpfq)
-
-target_link_libraries(test-regression -pthread)
-target_link_libraries(test-regression-c -lpfq -pthread)
