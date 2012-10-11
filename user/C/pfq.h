@@ -50,7 +50,7 @@ typedef void *pfq_t;   /* pfq descritor */
 
 /* memory barriers */
 
-#if defined(__GNU__)
+#if defined(__GNUC__)
         inline void barrier() { asm volatile ("" ::: "memory"); }
 #else
 #error "Compiler not supported"
