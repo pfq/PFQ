@@ -155,7 +155,7 @@ namespace net {
             bool
             ready() const
             {
-                auto b = const_cast<volatile uint8_t &>(hdr_->commit) != (index_ & 0xff); 
+                auto b = const_cast<volatile uint8_t &>(hdr_->commit) == index_; 
                 smp_rmb();
                 return b;
             }
@@ -232,7 +232,7 @@ namespace net {
             bool
             ready() const
             {
-                auto b = const_cast<volatile uint8_t &>(hdr_->commit) != (index_ & 0xff); 
+                auto b = const_cast<volatile uint8_t &>(hdr_->commit) == index_; 
                 smp_rmb();
                 return b;
             }
