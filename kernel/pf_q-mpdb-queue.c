@@ -98,7 +98,7 @@ mpdb_enqueue_batch(struct pfq_opt *pq, unsigned long bitqueue, int qlen, struct 
 			
 			/* enqueue skb */
 
-			struct pfq_hdr *p_hdr = (struct pfq_hdr *)ptr;
+			volatile struct pfq_hdr *p_hdr = (struct pfq_hdr *)ptr;
 
 			char *p_pkt = (char *)(p_hdr+1);
 			
