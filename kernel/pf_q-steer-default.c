@@ -65,6 +65,35 @@ steering_ipv4_addr(const struct sk_buff *skb, const void *state)
 
 
 steering_ret_t
+steering_flow(const struct sk_buff *skb, const void *state)
+{       
+	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP)) 
+	{ 
+		struct iphdr _iph;
+    		const struct iphdr *ip;
+
+		struct udphdr _udp;
+		const struct udphdr *udp;
+
+		ip = skb_header_pointer(skb, skb->mac_len, sizeof(_iph), &_iph);
+ 		if (ip == NULL)
+ 			return none();
+
+		if (ip->protocol != IPPROTO_UDP &&
+		    ip->protocol != IPPROTO_TCP) 
+			return none();
+		
+		udp = skb_header_pointer(skb, skb->mac_len + (ip->ihl<<2), sizeof(_udp), &_udp);
+		if (udp == NULL) 
+			return none();
+		
+        	return steering(Q_CLASS_DEFAULT, ip->saddr ^ ip->daddr ^ ((uint32_t)udp->source << 16) ^ udp->dest);
+	}
+
+	return none();
+}
+
+steering_ret_t
 steering_ipv6_addr(const struct sk_buff *skb, const void *state)
 {       
 	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IPV6)) 
@@ -97,5 +126,6 @@ struct steering_function default_steering_functions[] = {
         { "steer-vlan-id",    steering_vlan_id	  },
         { "steer-ipv4-addr",  steering_ipv4_addr  },
         { "steer-ipv6-addr",  steering_ipv6_addr  },
+        { "steer-flow",       steering_flow },
 	{ NULL, NULL}};
 
