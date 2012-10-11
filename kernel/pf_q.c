@@ -617,8 +617,6 @@ pfq_release(struct socket *sock)
 
         	pfq_leave_all_groups(pq->q_id);
 
-		smp_wmb();
-
 		/* Convenient way to avoid a race condition,
 		 * without using rwmutexes that are very expensive 
 		 */
@@ -856,6 +854,7 @@ int pfq_setsockopt(struct socket *sock,
                     }
                     else {
                         pq->q_active = false;
+                        
                         msleep(10);
                         
 			smp_wmb();
@@ -983,7 +982,6 @@ int pfq_setsockopt(struct socket *sock,
 				return -EFAULT;
 			}
 			
-			smp_wmb();
 			__pfq_set_state_for_group(s.gid, state);
                     	    
 			pr_devel("[PFQ|%d] state: gid:%d (state of %zu bytes set)\n", pq->q_id, s.gid, s.size);
