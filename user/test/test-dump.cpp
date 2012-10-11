@@ -28,8 +28,9 @@ main(int argc, char *argv[])
 
             for(; it != it_e; ++it)
             {
-                    while (!it.ready())
+                    while (!it.ready()) {
                         std::this_thread::yield();
+                    }
 
                     // printf("vlan:%d caplen:%d len:%d ifindex:%d hw_queue:%d [%u:%u] -> ", 
                     //        it->un.vlan.vlan_vid, it->caplen, it->len, it->if_index, it->hw_queue,
