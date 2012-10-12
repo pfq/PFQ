@@ -6,8 +6,7 @@ include_directories(../../kernel .)
 
 add_definitions(-D_GNU_SOURCE)
 
-install_files(/include/pfq pfq.h)
-install_files(/lib/ libpfq.a)
-
 add_library(pfq libpfq.c)
 
+install_targets(/lib pfq)
+install_files(/include/pfq pfq.h)

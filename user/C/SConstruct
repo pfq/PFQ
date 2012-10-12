@@ -6,6 +6,9 @@ CFLAGS=['-O3','-march=native', '-Wall', '-Wextra' ])
 
 env.Append(CPPDEFINES=['_GNU_SOURCE'])
 
-env.Library(target = 'pfq', source = ['libpfq.c'])
+pfq = env.Library(target = 'pfq', source = ['libpfq.c'])
 
+env.Alias('install', ['/usr/local/lib', '/usr/local/include/pfq'])
 
+env.Install("/usr/local/lib", pfq)
+env.Install("/usr/local/include/pfq", 'pfq.h')
