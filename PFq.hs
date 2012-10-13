@@ -57,9 +57,9 @@ data PktHdr = PktHdr {
 
 toPktHdr :: Ptr PktHdr -> IO PktHdr
 toPktHdr hdr = do
-    sec'  <- ((\h -> peekByteOff h 0)) hdr
-    nsec' <- ((\h -> peekByteOff h 4)) hdr
-    ifid' <- ((\h -> peekByteOff h 8)) hdr
+    sec'  <- ((\h -> peekByteOff h 0))  hdr
+    nsec' <- ((\h -> peekByteOff h 4))  hdr
+    ifid' <- ((\h -> peekByteOff h 8))  hdr
     gid'  <- ((\h -> peekByteOff h 12)) hdr
     len'  <- ((\h -> peekByteOff h 16)) hdr
     cap'  <- ((\h -> peekByteOff h 18)) hdr
@@ -92,7 +92,7 @@ getHeaders' :: Ptr PktHdr -> Ptr PktHdr -> Int -> IO [PktHdr]
 getHeaders' cur end slotSize 
     | cur == end = return []
     | otherwise  = do
-        h <- toPktHdr(cur) 
+        h <- toPktHdr cur 
         l <- getHeaders' (cur `plusPtr` slotSize) end slotSize 
         return (h:l)
 
@@ -120,9 +120,8 @@ bind :: Ptr PFqTag
 bind hdl name queue = do
     withCString name $ \dev -> do
         rv <- pfq_bind hdl dev (fromIntegral queue) 
-        when (rv == -1) $
-            ioError $ userError "PFq: Could not bind"
-        return ()
+        when (rv == -1) 
+            (ioError $ userError "PFq: Could not bind")
 
 
 -- enable:
@@ -132,9 +131,8 @@ enable :: Ptr PFqTag
 
 enable hdl = do
              rv <- pfq_enable hdl
-             when (rv == -1) $
-                ioError $ userError "PFq: Could not enable"
-             return ()
+             when (rv == -1) 
+                (ioError $ userError "PFq: Could not enable")
 
 -- readQ:
 --
@@ -168,16 +166,58 @@ setTimestamp :: Ptr PFqTag
 setTimestamp hdl toggle = do
     let value = if (toggle) then 1 else 0 
     rv <- pfq_set_timestamp hdl value
-    when (rv == -1) $
-        ioError $ userError "PFq: Could not set timestamp"
+    when (rv == -1) 
+        (ioError $ userError "PFq: Could not set timestamp")
 
 -- C functions from libpfq.c
 --
 
 foreign import ccall unsafe pfq_open            :: CSize -> CSize -> CSize -> IO (Ptr PFqTag)
+-- foreign import ccall unsafe pfq_open_orphan     :: CSize -> CSize -> CSize -> IO (Ptr PFqTag)
+-- foreign import ccall unsafe pfq_open_group      :: CLong -> CInt -> CSize -> CSize -> CSize -> IO (Ptr PFqTag)
 foreign import ccall unsafe pfq_close           :: Ptr PFqTag -> IO ()
+-- 
 foreign import ccall unsafe pfq_enable          :: Ptr PFqTag -> IO CInt
-foreign import ccall unsafe pfq_bind            :: Ptr PFqTag -> CString -> CInt -> IO CInt
-foreign import ccall unsafe pfq_read            :: Ptr PFqTag -> Ptr NetQueue -> CLong -> IO CInt
+-- foreign import ccall unsafe pfq_disable         :: Ptr PFqTag -> IO CInt
+-- foreign import ccall unsafe pfq_is_enabled      :: Ptr PFqTag -> IO CInt
+-- 
+-- foreign import ccall unsafe pfq_set_promisc     :: Ptr PFqTag -> CString -> CInt -> IO CInt
 foreign import ccall unsafe pfq_set_timestamp   :: Ptr PFqTag -> CInt -> IO CInt
+-- foreign import ccall unsafe pfq_get_timestamp   :: Ptr PFqTag -> IO CInt
+-- 
+-- foreign import ccall unsafe pfq_set_caplen      :: Ptr PFqTag -> CSize -> IO CInt
+-- foreign import ccall unsafe pfq_get_caplen      :: Ptr PFqTag -> CSSize
+-- 
+-- foreign import ccall unsafe pfq_set_offset      :: Ptr PFqTag -> CSize -> IO CInt
+-- foreign import ccall unsafe pfq_get_offset      :: Ptr PFqTag -> CSSize
+-- 
+-- foreign import ccall unsafe pfq_set_slots       :: Ptr PFqTag -> CSize -> IO CInt
+-- foreign import ccall unsafe pfq_get_slots       :: Ptr PFqTag -> CSize
+-- foreign import ccall unsafe pfq_get_slot_size   :: Ptr PFqTag -> CSize
+-- 
+foreign import ccall unsafe pfq_bind            :: Ptr PFqTag -> CString -> CInt -> IO CInt
+-- foreign import ccall unsafe pfq_bind_group      :: Ptr PFqTag -> CInt -> CString -> CInt -> IO CInt
+-- 
+-- foreign import ccall unsafe pfq_unbind          :: Ptr PFqTag -> CString -> CInt -> IO CInt
+-- foreign import ccall unsafe pfq_unbind_group    :: Ptr PFqTag -> CInt -> CString -> CInt -> IO CInt
+-- 
+-- foreign import ccall unsafe pfq_steering_function :: Ptr PFqTag -> CInt -> CString -> IO CInt
+-- foreign import ccall unsafe pfq_group_state       :: Ptr PFqTag -> CInt -> Ptr CChar -> CSize -> IO CInt
+-- 
+-- foreign import ccall unsafe pfq_poll            :: Ptr PFqTag -> CLong -> IO CInt
+-- 
+-- foreing import ccall unsafe pfq_id              :: Ptr PFqTag -> IO CInt
+-- foreing import ccall unsafe pfq_group_id        :: Ptr PFqTag -> IO CInt
+-- 
+-- 
+foreign import ccall unsafe pfq_read            :: Ptr PFqTag -> Ptr NetQueue -> CLong -> IO CInt
+
+
+-- extern int pfq_dispatch(pfq_t *q, pfq_handler_t cb, long int microseconds, char *user);
+-- extern int pfq_get_stats(pfq_t const *q, struct pfq_stats *stats); 
+-- extern int pfq_get_group_stats(pfq_t const *q, int gid, struct pfq_stats *stats); 
+
+
+
+
 
