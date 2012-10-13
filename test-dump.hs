@@ -1,20 +1,30 @@
 import PFq 
-
 import Foreign
+import System.Environment
+
+import Control.Monad
 
 recv :: Ptr PFqTag -> IO ()
 recv q = do 
     queue <- PFq.readQ q 10000
-    if ( PFq.queueLen(queue) == 0 ) then recv q else (print queue >> recv q)
+    if ( PFq.queueLen(queue) == 0 ) 
+       then recv q 
+       else do
+            hs <- PFq.getHeaders queue
+            mapM_ print hs 
+            -- putStrLn $ "qlen: " ++ show(PFq.queueLen(queue)) ++ " hlen: " ++ show(length hs)
+            recv q
 
-xxx :: IO ()
-xxx = do
+dumper :: String -> IO ()
+dumper dev = do
+    putStrLn  $ "dumping " ++ dev  ++ "..."
     fp <- PFq.open 64 0 4096
     withForeignPtr fp  $ \q -> do
-        PFq.enable q 
-        PFq.bind q "eth0" (-1)
+        PFq.enable q
+        PFq.toggleTimestamp q True
+        PFq.bind q dev (-1)
         recv q
-    return ()
 
 main = do
-    xxx >> (print "done")
+    dev <- liftM (!!0) getArgs
+    dumper dev
