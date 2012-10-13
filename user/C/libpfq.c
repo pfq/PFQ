@@ -251,7 +251,7 @@ pfq_is_enabled(pfq_t const *q)
 
 
 int
-pfq_toggle_timestamp(pfq_t *q, int value)
+pfq_set_timestamp(pfq_t *q, int value)
 {
 	int ts = value;
 	if (setsockopt(q->fd, PF_Q, Q_SO_SET_TSTAMP, &ts, sizeof(ts)) == -1) {
@@ -262,7 +262,7 @@ pfq_toggle_timestamp(pfq_t *q, int value)
 
 
 int
-pfq_timestamp(pfq_t const *q)
+pfq_get_timestamp(pfq_t const *q)
 {
 	pfq_t * mutable = (pfq_t *)q;
 	int ret; socklen_t size = sizeof(int);
@@ -289,7 +289,8 @@ pfq_ifindex(pfq_t const *q, const char *dev)
 }
 
 
-int pfq_toggle_promisc(pfq_t const *q, const char *dev, int value)
+int 
+pfq_set_promisc(pfq_t const *q, const char *dev, int value)
 {
 	struct ifreq ifreq_io;
 	pfq_t * mutable = (pfq_t *)q;

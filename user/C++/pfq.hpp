@@ -392,7 +392,7 @@ namespace net {
 
 
         inline
-        void toggle_promisc(int fd, const char *dev, bool value)
+        void set_promisc(int fd, const char *dev, bool value)
         {
             struct ifreq ifreq_io;
 
@@ -711,7 +711,7 @@ namespace net {
 
 
         void 
-        toggle_time_stamp(bool value)
+        set_timestamp(bool value)
         {
             int ts = static_cast<int>(value);
             if (::setsockopt(fd_, PF_Q, Q_SO_SET_TSTAMP, &ts, sizeof(ts)) == -1)
@@ -720,7 +720,7 @@ namespace net {
 
 
         bool 
-        time_stamp() const
+        get_timestamp() const
         {
            int ret; socklen_t size = sizeof(int);
            if (::getsockopt(fd_, PF_Q, Q_SO_GET_TSTAMP, &ret, &size) == -1)

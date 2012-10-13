@@ -107,13 +107,13 @@ Context(PFQ)
     Test(timestamp)
     {
         pfq x;
-        AssertThrow(x.toggle_time_stamp(true));
-        AssertThrow(x.time_stamp());
+        AssertThrow(x.set_timestamp(true));
+        AssertThrow(x.get_timestamp());
 
         x.open(64);
-        x.toggle_time_stamp(true);
+        x.set_timestamp(true);
 
-        Assert(x.time_stamp(), is_equal_to(true));
+        Assert(x.get_timestamp(), is_equal_to(true));
     }
 
 

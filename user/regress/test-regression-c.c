@@ -51,11 +51,11 @@ void test_timestamp()
 	pfq_t * q = pfq_open(64, 0, 1024);
         assert(q);
 
-	assert(pfq_timestamp(q) == 0);
-	assert(pfq_toggle_timestamp(q, 1) == 0);
-	assert(pfq_timestamp(q) == 1);
-	assert(pfq_toggle_timestamp(q, 0) == 0);
-	assert(pfq_timestamp(q) == 0);
+	assert(pfq_get_timestamp(q) == 0);
+	assert(pfq_set_timestamp(q, 1) == 0);
+	assert(pfq_get_timestamp(q) == 1);
+	assert(pfq_set_timestamp(q, 0) == 0);
+	assert(pfq_get_timestamp(q) == 0);
 
 	pfq_close(q);
 }
