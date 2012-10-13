@@ -150,6 +150,18 @@ readQ hdl msec =
                          queueIndex     = fromIntegral (cid  :: CUInt) 
                        }
 
+-- toggleTimestamp:
+--
+toggleTimestamp :: Ptr PFqTag 
+                -> Bool 
+                -> IO ()
+
+toggleTimestamp hdl toggle = do
+    let value = if (toggle) then 1 else 0 
+    rv <- pfq_toggle_timestamp hdl value
+    when (rv == -1) $
+        ioError $ userError "PFq: Could not toggle timestamp"
+
 -- C function
 --
 foreign import ccall unsafe pfq_open   :: CSize -> CSize -> CSize -> IO (Ptr PFqTag)
@@ -157,4 +169,5 @@ foreign import ccall unsafe pfq_close  :: Ptr PFqTag -> IO ()
 foreign import ccall unsafe pfq_enable :: Ptr PFqTag -> IO CInt
 foreign import ccall unsafe pfq_bind   :: Ptr PFqTag -> CString -> CInt -> IO CInt
 foreign import ccall unsafe pfq_read   :: Ptr PFqTag -> Ptr NetQueue -> CLong -> IO CInt
+foreign import ccall unsafe pfq_toggle_timestamp :: Ptr PFqTag -> CInt -> IO CInt
 
