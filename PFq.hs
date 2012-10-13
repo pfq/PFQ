@@ -74,6 +74,22 @@ toPktHdr hdr = do
                     hdrHwQueue  = fromIntegral (hwq'  :: CUChar),
                     hdrCommit   = fromIntegral (com'  :: CUChar)
                   }
+
+getHeaders :: NetQueue -> IO [PktHdr]
+-- getHeaders queue | trace ("getHeaders: slot_size=" ++ show(queueSlotSize queue) ++ " queue_addr:" ++ show (queuePtr queue) ) False = undefined 
+getHeaders queue = getHeaders' (queuePtr queue) (queuePtr queue `plusPtr` q_size) (fromIntegral $ queueSlotSize queue)
+                    where q_slot = fromIntegral $ queueSlotSize queue 
+                          q_len  = fromIntegral $ queueLen queue
+                          q_size = q_slot * q_len
+
+getHeaders' :: Ptr PktHdr -> Ptr PktHdr -> Int -> IO [PktHdr]
+getHeaders' cur end slotSize 
+    | cur == end = return []
+    | otherwise  = do
+        h <- toPktHdr(cur) 
+        l <- getHeaders' (cur `plusPtr` slotSize) end slotSize 
+        return (h:l)
+
 open :: Int  --
      -> Int  --
      -> Int  --
@@ -113,21 +129,27 @@ enable hdl = do
 
 -- read:
 --
+readQ :: Ptr PFqTag 
+      -> Int 
+      -> IO NetQueue
 
-readQ :: Ptr PFqTag -> Int -> IO NetQueue
 readQ hdl msec = 
-    allocaBytes ((32)) $ \queue -> do
+    allocaBytes ((24)) $ \queue -> do
        rv <- pfq_read hdl queue (fromIntegral msec)  
        when (rv == -1) $
             ioError $ userError "PFq: read error"
-       qptr <- ((\h -> peekByteOff h 0)) queue
-       clen <- ((\h -> peekByteOff h 8)) queue
-       css  <- ((\h -> peekByteOff h 16)) queue
-       cid  <- ((\h -> peekByteOff h 24)) queue
-       return NetQueue { queuePtr   = qptr :: Ptr PFqQueue,
-                         queueLen   = clen :: CSize,
-                         queueSlot  = css  :: CSize,
-                         queueIndex = cid  :: CUInt }
+       qptr <- ((\h -> peekByteOff h 0))  queue
+       clen <- ((\h -> peekByteOff h (sizeOf qptr)))  queue
+       css  <- ((\h -> peekByteOff h (sizeOf qptr + sizeOf clen))) queue
+       cid  <- ((\h -> peekByteOff h (sizeOf qptr + sizeOf clen + sizeOf css))) queue
+       let slotSize'= fromIntegral(css :: CSize)
+       let slotSize = slotSize' + slotSize' `mod` 8
+       return NetQueue { queuePtr       = qptr :: Ptr PktHdr,
+                         queueLen       = fromIntegral (clen :: CSize),
+                         queueSlotSize  = slotSize,
+                         queueIndex     = fromIntegral (cid  :: CUInt) 
+                       }
+
 -- C function
 --
 foreign import ccall unsafe pfq_open   :: CSize -> CSize -> CSize -> IO (Ptr PFqTag)
