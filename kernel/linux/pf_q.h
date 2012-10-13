@@ -64,9 +64,12 @@ struct pfq_hdr
         } tv;               /* note: struct timespec is badly defined for 64 bits arch. */
     } tstamp;
     
+    int         if_index;   /* interface index */    
+    int         gid;        /* gruop id */
+
     uint16_t    len;        /* length of the packet (off wire) */
     uint16_t    caplen;     /* bytes captured */
-
+    
     union
     {
         struct 
@@ -79,14 +82,10 @@ struct pfq_hdr
         uint16_t     vlan_tci;
     } un;
 
-    int         gid;        /* gruop id */
-    int         if_index;   /* interface index */    
-    
     uint8_t     hw_queue;   /* 256 queues per device */
     uint8_t     commit;
 
-} /* __attribute__((packed)) */;
-
+}; /* __attribute__((packed)); */
 
 /* 
     [pfq_queue_descr][ ... queue .... ][ ... queue ... ]
