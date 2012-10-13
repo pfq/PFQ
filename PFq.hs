@@ -6,11 +6,15 @@ module PFq
         open,
         bind,
         enable,
+        toggleTimestamp,
         readQ,
+        getHeaders,
         NetQueue(..)
     ) where
 
-import Control.Monad (when)
+import Data.Word
+
+import Control.Monad (liftM, when)
 
 import Foreign.Ptr 
 import Foreign.C.String (CString, peekCString, withCString)
@@ -21,9 +25,9 @@ import Foreign.Storable
 import Foreign.Concurrent as C (newForeignPtr) 
 import Foreign.ForeignPtr (ForeignPtr)
 
-newtype PFqTag = PFqTag ()
+import Debug.Trace
 
-newtype PFqQueue = PFqQueue ()
+newtype PFqTag = PFqTag ()
 
 -- NetQueue:
 --
@@ -37,7 +41,6 @@ data NetQueue = NetQueue {
 
 -- PktHdr:
 --
---- open socket:
 
 data PktHdr = PktHdr {
                 hdrSec      ::  Word32,
@@ -90,6 +93,8 @@ getHeaders' cur end slotSize
         l <- getHeaders' (cur `plusPtr` slotSize) end slotSize 
         return (h:l)
 
+-- open socket:
+--
 open :: Int  --
      -> Int  --
      -> Int  --
@@ -104,7 +109,6 @@ open caplen offset slots = do
 
 -- bind:
 --
-
 bind :: Ptr PFqTag 
      -> String      -- device name
      -> Int         -- queue index
@@ -117,10 +121,12 @@ bind hdl name queue = do
             ioError $ userError "PFq: Could not bind"
         return ()
 
+
 -- enable:
 --
+enable :: Ptr PFqTag 
+       -> IO ()
 
-enable :: Ptr PFqTag -> IO ()
 enable hdl = do
              rv <- pfq_enable hdl
              when (rv == -1) $
