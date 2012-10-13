@@ -941,9 +941,10 @@ namespace net {
             struct timespec timeout = { microseconds/1000000, (microseconds%1000000) * 1000};
 
             int ret = ::ppoll(&fd, 1, microseconds < 0 ? nullptr : &timeout, nullptr);
-            if (ret < 0)
+            if (ret < 0 &&
+            	errno != EINTR)
                throw pfq_error(errno, "PFQ: ppoll");
-            return ret; 
+            return 0; 
         }
 
         queue

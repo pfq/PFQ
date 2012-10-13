@@ -524,12 +524,13 @@ pfq_poll(pfq_t *q, long int microseconds /* = -1 -> infinite */)
 
 	struct pollfd fd = {q->fd, POLLIN, 0 };
 	struct timespec timeout = { microseconds/1000000, (microseconds%1000000) * 1000};
-
+	
 	int ret = ppoll(&fd, 1, microseconds < 0 ? NULL : &timeout, NULL);
-	if (ret < 0) {
-		return q->error = "PFQ: ppoll", -1;
+	if (ret < 0 &&
+	    	errno != EINTR) {
+	    return q->error = "PFQ: ppoll", -1;
 	}
-	return q->error = NULL, ret; 
+	return q->error = NULL, 0; 
 }
 
 
