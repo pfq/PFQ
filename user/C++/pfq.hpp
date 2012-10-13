@@ -621,18 +621,18 @@ namespace net {
                 throw pfq_error(errno, "PFQ: Q_SO_GET_ID");
 
             /* set queue slots */
-            if (::setsockopt(fd_, PF_Q, Q_SO_SLOTS, &slots, sizeof(slots)) == -1)
-                throw pfq_error(errno, "PFQ: Q_SO_SLOTS");
+            if (::setsockopt(fd_, PF_Q, Q_SO_SET_SLOTS, &slots, sizeof(slots)) == -1)
+                throw pfq_error(errno, "PFQ: Q_SO_SET_SLOTS");
             pdata_->queue_slots = slots;
             
             /* set caplen */
-            if (::setsockopt(fd_, PF_Q, Q_SO_CAPLEN, &caplen, sizeof(caplen)) == -1)
-                throw pfq_error(errno, "PFQ: Q_SO_CAPLEN");
+            if (::setsockopt(fd_, PF_Q, Q_SO_SET_CAPLEN, &caplen, sizeof(caplen)) == -1)
+                throw pfq_error(errno, "PFQ: Q_SO_SET_CAPLEN");
             pdata_->queue_caplen = caplen;
             
             /* set offset */
-            if (::setsockopt(fd_, PF_Q, Q_SO_OFFSET, &offset, sizeof(offset)) == -1)
-                throw pfq_error(errno, "PFQ: Q_SO_OFFSET");
+            if (::setsockopt(fd_, PF_Q, Q_SO_SET_OFFSET, &offset, sizeof(offset)) == -1)
+                throw pfq_error(errno, "PFQ: Q_SO_SET_OFFSET");
             
             pdata_->slot_size = align<8>(sizeof(pfq_hdr) + pdata_->queue_caplen);
         }
@@ -714,8 +714,8 @@ namespace net {
         toggle_time_stamp(bool value)
         {
             int ts = static_cast<int>(value);
-            if (::setsockopt(fd_, PF_Q, Q_SO_TSTAMP_TOGGLE, &ts, sizeof(ts)) == -1)
-                throw pfq_error(errno, "PFQ: Q_SO_TSTAMP_TOGGLE");
+            if (::setsockopt(fd_, PF_Q, Q_SO_SET_TSTAMP, &ts, sizeof(ts)) == -1)
+                throw pfq_error(errno, "PFQ: Q_SO_SET_TSTAMP");
         }
 
 
@@ -735,8 +735,8 @@ namespace net {
             if (is_enabled()) 
                 throw pfq_error("PFQ: enabled (caplen could not be set)");
             
-            if (::setsockopt(fd_, PF_Q, Q_SO_CAPLEN, &value, sizeof(value)) == -1) {
-                throw pfq_error(errno, "PFQ: Q_SO_CAPLEN");
+            if (::setsockopt(fd_, PF_Q, Q_SO_SET_CAPLEN, &value, sizeof(value)) == -1) {
+                throw pfq_error(errno, "PFQ: Q_SO_SET_CAPLEN");
             }
 
             pdata_->slot_size = align<8>(sizeof(pfq_hdr)+ value);
@@ -759,8 +759,8 @@ namespace net {
             if (is_enabled()) 
                 throw pfq_error("PFQ: enabled (offset could not be set)");
             
-            if (::setsockopt(fd_, PF_Q, Q_SO_OFFSET, &value, sizeof(value)) == -1) {
-                throw pfq_error(errno, "PFQ: Q_SO_OFFSET");
+            if (::setsockopt(fd_, PF_Q, Q_SO_SET_OFFSET, &value, sizeof(value)) == -1) {
+                throw pfq_error(errno, "PFQ: Q_SO_SET_OFFSET");
             }
         }
 
@@ -781,8 +781,8 @@ namespace net {
             if (is_enabled()) 
                 throw pfq_error("PFQ: enabled (slots could not be set)");
                       
-            if (::setsockopt(fd_, PF_Q, Q_SO_SLOTS, &value, sizeof(value)) == -1) {
-                throw pfq_error(errno, "PFQ: Q_SO_SLOTS");
+            if (::setsockopt(fd_, PF_Q, Q_SO_SET_SLOTS, &value, sizeof(value)) == -1) {
+                throw pfq_error(errno, "PFQ: Q_SO_SET_SLOTS");
             }
 
             pdata_->queue_slots = value;
@@ -887,8 +887,8 @@ namespace net {
         set_steering_function(int gid, const char *fun)
         {
             struct pfq_steering s { fun, gid };
-            if (::setsockopt(fd_, PF_Q, Q_SO_GROUP_STEER, &s, sizeof(s)) == -1)
-                throw pfq_error(errno, "PFQ: Q_SO_GROUP_STEER");
+            if (::setsockopt(fd_, PF_Q, Q_SO_SET_GROUP_STEER, &s, sizeof(s)) == -1)
+                throw pfq_error(errno, "PFQ: Q_SO_SET_GROUP_STEER");
         }
         
         template <typename T>

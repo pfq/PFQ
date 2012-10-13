@@ -108,11 +108,11 @@ struct pfq_queue_descr
 #define Q_SO_TOGGLE_QUEUE         1    /* enable = 1, disable = 0 */
 #define Q_SO_ADD_BINDING          2
 #define Q_SO_REMOVE_BINDING       3
-#define Q_SO_TSTAMP_TOGGLE        4
-#define Q_SO_GROUP_STEER          5
-#define Q_SO_CAPLEN               6
-#define Q_SO_SLOTS                7
-#define Q_SO_OFFSET               8
+#define Q_SO_SET_TSTAMP           4
+#define Q_SO_SET_GROUP_STEER      5
+#define Q_SO_SET_CAPLEN           6
+#define Q_SO_SET_SLOTS            7
+#define Q_SO_SET_OFFSET           8
 #define Q_SO_GROUP_JOIN           9
 #define Q_SO_GROUP_LEAVE          10
 #define Q_SO_GROUP_STATE          11

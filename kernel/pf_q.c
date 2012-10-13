@@ -908,7 +908,7 @@ int pfq_setsockopt(struct socket *sock,
                     pfq_devmap_update(map_reset, bind.if_index, bind.hw_queue, bind.gid);
             } break;
 
- 	case Q_SO_GROUP_STEER:
+ 	case Q_SO_SET_GROUP_STEER:
 	    {
 		    struct pfq_steering s;
 		    
@@ -995,7 +995,7 @@ int pfq_setsockopt(struct socket *sock,
 		    }
 	    } break;
         
-	case Q_SO_TSTAMP_TOGGLE: 
+	case Q_SO_SET_TSTAMP: 
             {
                     int tstamp;
                     if (optlen != sizeof(pq->q_tstamp))
@@ -1011,7 +1011,7 @@ int pfq_setsockopt(struct socket *sock,
                     pr_devel("[PFQ|%d] timestamp_toggle => %d\n", pq->q_id, atomic_read(&timestamp_toggle));
             } break;
         
-        case Q_SO_CAPLEN: 
+        case Q_SO_SET_CAPLEN: 
             {
                     if (optlen != sizeof(pq->q_caplen)) 
                             return -EINVAL;
@@ -1022,7 +1022,7 @@ int pfq_setsockopt(struct socket *sock,
                                     pq->q_id, pq->q_caplen, pq->q_slot_size);
             } break;
 
-        case Q_SO_OFFSET: 
+        case Q_SO_SET_OFFSET: 
             {
                     if (optlen != sizeof(pq->q_offset)) 
                             return -EINVAL;
@@ -1031,7 +1031,7 @@ int pfq_setsockopt(struct socket *sock,
                     pr_devel("[PFQ|%d] offset:%lu\n", pq->q_id, pq->q_offset);
             } break;
 
-        case Q_SO_SLOTS: 
+        case Q_SO_SET_SLOTS: 
             {
                     if (optlen != sizeof(pq->q_slots)) 
                             return -EINVAL;

@@ -146,22 +146,22 @@ pfq_open_group(unsigned long class_mask, int group_policy, size_t caplen, size_t
 	}
 
 	/* set queue slots */
-	if (setsockopt(fd, PF_Q, Q_SO_SLOTS, &slots, sizeof(slots)) == -1) {
-		return __error = "PFQ: Q_SO_SLOTS", free(q), NULL;
+	if (setsockopt(fd, PF_Q, Q_SO_SET_SLOTS, &slots, sizeof(slots)) == -1) {
+		return __error = "PFQ: Q_SO_SET_SLOTS", free(q), NULL;
 	}
 
 	q->queue_slots = slots;
 
 	/* set caplen */
-	if (setsockopt(fd, PF_Q, Q_SO_CAPLEN, &caplen, sizeof(caplen)) == -1) {
-		return __error = "PFQ: Q_SO_CAPLEN", free(q), NULL;
+	if (setsockopt(fd, PF_Q, Q_SO_SET_CAPLEN, &caplen, sizeof(caplen)) == -1) {
+		return __error = "PFQ: Q_SO_SET_CAPLEN", free(q), NULL;
 	}
 
 	q->queue_caplen = caplen;
 
 	/* set offset */
-	if (setsockopt(fd, PF_Q, Q_SO_OFFSET, &offset, sizeof(offset)) == -1) {
-		return __error = "PFQ: Q_SO_OFFSET", free(q), NULL;
+	if (setsockopt(fd, PF_Q, Q_SO_SET_OFFSET, &offset, sizeof(offset)) == -1) {
+		return __error = "PFQ: Q_SO_SET_OFFSET", free(q), NULL;
 	}
 
 	q->slot_size = ALIGN8(sizeof(struct pfq_hdr) + q->queue_caplen);
@@ -254,8 +254,8 @@ int
 pfq_toggle_timestamp(pfq_t *q, int value)
 {
 	int ts = value;
-	if (setsockopt(q->fd, PF_Q, Q_SO_TSTAMP_TOGGLE, &ts, sizeof(ts)) == -1) {
-		return q->error = "PFQ: Q_SO_TSTAMP_TOGGLE", -1;
+	if (setsockopt(q->fd, PF_Q, Q_SO_SET_TSTAMP, &ts, sizeof(ts)) == -1) {
+		return q->error = "PFQ: Q_SO_SET_TSTAMP", -1;
 	}
 	return q->error = NULL, 0;
 }
@@ -321,8 +321,8 @@ pfq_set_caplen(pfq_t *q, size_t value)
 		return q->error =  "PFQ: enabled (caplen could not be set)", -1;
 	}
 
-	if (setsockopt(q->fd, PF_Q, Q_SO_CAPLEN, &value, sizeof(value)) == -1) {
-		return q->error = "PFQ: Q_SO_CAPLEN", -1;
+	if (setsockopt(q->fd, PF_Q, Q_SO_SET_CAPLEN, &value, sizeof(value)) == -1) {
+		return q->error = "PFQ: Q_SO_SET_CAPLEN", -1;
 	}
 
 	q->slot_size = ALIGN8(sizeof(struct pfq_hdr)+ value);
@@ -351,8 +351,8 @@ pfq_set_offset(pfq_t *q, size_t value)
 		return q->error =  "PFQ: enabled (offset could not be set)", -1;
 	}
 
-	if (setsockopt(q->fd, PF_Q, Q_SO_OFFSET, &value, sizeof(value)) == -1) {
-		return q->error = "PFQ: Q_SO_OFFSET", -1;
+	if (setsockopt(q->fd, PF_Q, Q_SO_SET_OFFSET, &value, sizeof(value)) == -1) {
+		return q->error = "PFQ: Q_SO_SET_OFFSET", -1;
 	}
 	return q->error = NULL, 0;
 }
@@ -378,8 +378,8 @@ pfq_set_slots(pfq_t *q, size_t value)
 	if (enabled == 1) {
 		return q->error =  "PFQ: enabled (slots could not be set)", -1;
 	}
-	if (setsockopt(q->fd, PF_Q, Q_SO_SLOTS, &value, sizeof(value)) == -1) {
-		return q->error = "PFQ: Q_SO_SLOTS", -1;
+	if (setsockopt(q->fd, PF_Q, Q_SO_SET_SLOTS, &value, sizeof(value)) == -1) {
+		return q->error = "PFQ: Q_SO_SET_SLOTS", -1;
 	}
 
 	q->queue_slots = value;
@@ -470,8 +470,8 @@ int
 pfq_steering_function(pfq_t *q, int gid, const char *fun_name)
 {
 	struct pfq_steering s = { fun_name, gid };
-	if (setsockopt(q->fd, PF_Q, Q_SO_GROUP_STEER, &s, sizeof(s)) == -1) {
-		return q->error = "PFQ: Q_SO_GROUP_STEER", -1;
+	if (setsockopt(q->fd, PF_Q, Q_SO_SET_GROUP_STEER, &s, sizeof(s)) == -1) {
+		return q->error = "PFQ: Q_SO_SET_GROUP_STEER", -1;
 	}
 	return q->error = NULL, 0;
 }
