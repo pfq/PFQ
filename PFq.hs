@@ -78,6 +78,9 @@ toPktHdr hdr = do
                     hdrCommit   = fromIntegral (com'  :: CUChar)
                   }
 
+-- getHeaders: obtain a list of PktHdr from a NetQueue
+--
+
 getHeaders :: NetQueue -> IO [PktHdr]
 -- getHeaders queue | trace ("getHeaders: slot_size=" ++ show(queueSlotSize queue) ++ " queue_addr:" ++ show (queuePtr queue) ) False = undefined 
 getHeaders queue = getHeaders' (queuePtr queue) (queuePtr queue `plusPtr` q_size) (fromIntegral $ queueSlotSize queue)
@@ -133,7 +136,7 @@ enable hdl = do
                 ioError $ userError "PFq: Could not enable"
              return ()
 
--- read:
+-- readQ:
 --
 readQ :: Ptr PFqTag 
       -> Int 
@@ -168,12 +171,13 @@ setTimestamp hdl toggle = do
     when (rv == -1) $
         ioError $ userError "PFq: Could not set timestamp"
 
--- C function
+-- C functions from libpfq.c
 --
-foreign import ccall unsafe pfq_open   :: CSize -> CSize -> CSize -> IO (Ptr PFqTag)
-foreign import ccall unsafe pfq_close  :: Ptr PFqTag -> IO ()
-foreign import ccall unsafe pfq_enable :: Ptr PFqTag -> IO CInt
-foreign import ccall unsafe pfq_bind   :: Ptr PFqTag -> CString -> CInt -> IO CInt
-foreign import ccall unsafe pfq_read   :: Ptr PFqTag -> Ptr NetQueue -> CLong -> IO CInt
+
+foreign import ccall unsafe pfq_open            :: CSize -> CSize -> CSize -> IO (Ptr PFqTag)
+foreign import ccall unsafe pfq_close           :: Ptr PFqTag -> IO ()
+foreign import ccall unsafe pfq_enable          :: Ptr PFqTag -> IO CInt
+foreign import ccall unsafe pfq_bind            :: Ptr PFqTag -> CString -> CInt -> IO CInt
+foreign import ccall unsafe pfq_read            :: Ptr PFqTag -> Ptr NetQueue -> CLong -> IO CInt
 foreign import ccall unsafe pfq_set_timestamp   :: Ptr PFqTag -> CInt -> IO CInt
 
