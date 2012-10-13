@@ -29,14 +29,51 @@ newtype PFqQueue = PFqQueue ()
 --
 
 data NetQueue = NetQueue {
-                    queuePtr    :: Ptr PFqQueue
-                 ,  queueLen    :: CSize
-                 ,  queueSlot   :: CSize
-                 ,  queueIndex  :: CUInt
-                } deriving (Show)
+                    queuePtr        :: Ptr PktHdr
+                 ,  queueLen        :: Word64
+                 ,  queueSlotSize   :: Word64
+                 ,  queueIndex      :: Word32
+                } deriving (Eq, Show)
 
+-- PktHdr:
+--
 --- open socket:
 
+data PktHdr = PktHdr {
+                hdrSec      ::  Word32,
+                hdrNsec     ::  Word32,
+                hdrGid      ::  Word32,
+                hdrIfIndex  ::  Word32,
+                hdrLen      ::  Word16,
+                hdrCapLen   ::  Word16,
+                hdrTci      ::  Word16,
+                hdrHwQueue  ::  Word8,
+                hdrCommit   ::  Word8 
+              } deriving (Eq, Show)
+
+
+toPktHdr :: Ptr PktHdr -> IO PktHdr
+toPktHdr hdr = do
+    sec'  <- ((\h -> peekByteOff h 0)) hdr
+    nsec' <- ((\h -> peekByteOff h 4)) hdr
+    ifid' <- ((\h -> peekByteOff h 8)) hdr
+    gid'  <- ((\h -> peekByteOff h 12)) hdr
+    len'  <- ((\h -> peekByteOff h 16)) hdr
+    cap'  <- ((\h -> peekByteOff h 18)) hdr
+    tci'  <- ((\h -> peekByteOff h 20)) hdr
+    hwq'  <- ((\h -> peekByteOff h 22)) hdr
+    com'  <- ((\h -> peekByteOff h 23)) hdr
+    return PktHdr { 
+                    hdrSec      = fromIntegral (sec'  :: CUInt),
+                    hdrNsec     = fromIntegral (nsec' :: CUInt),
+                    hdrIfIndex  = fromIntegral (ifid' :: CInt),
+                    hdrGid      = fromIntegral (gid'  :: CInt),
+                    hdrLen      = fromIntegral (len'  :: CUShort),
+                    hdrCapLen   = fromIntegral (cap'  :: CUShort),
+                    hdrTci      = fromIntegral (tci'  :: CUShort),
+                    hdrHwQueue  = fromIntegral (hwq'  :: CUChar),
+                    hdrCommit   = fromIntegral (com'  :: CUChar)
+                  }
 open :: Int  --
      -> Int  --
      -> Int  --
