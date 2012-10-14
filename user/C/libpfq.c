@@ -416,6 +416,7 @@ pfq_bind_group(pfq_t *q, int gid, const char *dev, int queue)
 	return q->error = NULL, 0;
 }
 
+
 int 
 pfq_bind(pfq_t *q, const char *dev, int queue)
 {
@@ -423,7 +424,7 @@ pfq_bind(pfq_t *q, const char *dev, int queue)
 	if (gid < 0) {
 		return q->error = "PFQ: default group undefined", -1;
 	}
-	return pfq_bind_group(q, q->gid, dev, queue);
+	return pfq_bind_group(q, gid, dev, queue);
 }                              
 
 
@@ -597,6 +598,7 @@ pfq_read(pfq_t *q, struct pfq_net_queue *nq, long int microseconds)
 	nq->index = index;
 	nq->len   = queue_len;
         nq->slot_size = q->slot_size; 
+
 	return q->error = NULL, (int)queue_len;
 }
 
@@ -634,11 +636,12 @@ pfq_dispatch(pfq_t *q, pfq_handler_t cb, long int microseconds, char *user)
 		while (!pfq_iterator_ready(&nq, it))
 			pfq_yield();
 
-		cb(user, pfq_iterator_header(it), pfq_iterator_data(it));
+		cb(pfq_iterator_header(it), pfq_iterator_data(it), user);
 		n++;
 	}
         return n;
 }
+
 
 size_t
 pfq_mem_size(pfq_t const *q) 
