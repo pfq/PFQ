@@ -142,26 +142,26 @@ pfq_open_group(unsigned long class_mask, int group_policy, size_t caplen, size_t
 	/* get id */
 	socklen_t size = sizeof(q->id);
 	if (getsockopt(fd, PF_Q, Q_SO_GET_ID, &q->id, &size) == -1) {
-		return __error = "PFQ: Q_SO_GET_ID", free(q), NULL;
+		return __error = "PFQ: GET_ID error", free(q), NULL;
 	}
 
 	/* set queue slots */
 	if (setsockopt(fd, PF_Q, Q_SO_SET_SLOTS, &slots, sizeof(slots)) == -1) {
-		return __error = "PFQ: Q_SO_SET_SLOTS", free(q), NULL;
+		return __error = "PFQ: SET_SLOTS error", free(q), NULL;
 	}
 
 	q->queue_slots = slots;
 
 	/* set caplen */
 	if (setsockopt(fd, PF_Q, Q_SO_SET_CAPLEN, &caplen, sizeof(caplen)) == -1) {
-		return __error = "PFQ: Q_SO_SET_CAPLEN", free(q), NULL;
+		return __error = "PFQ: SET_CAPLEN error", free(q), NULL;
 	}
 
 	q->queue_caplen = caplen;
 
 	/* set offset */
 	if (setsockopt(fd, PF_Q, Q_SO_SET_OFFSET, &offset, sizeof(offset)) == -1) {
-		return __error = "PFQ: Q_SO_SET_OFFSET", free(q), NULL;
+		return __error = "PFQ: SET_OFFSET error", free(q), NULL;
 	}
 
 	q->slot_size = ALIGN8(sizeof(struct pfq_hdr) + q->queue_caplen);
@@ -198,13 +198,13 @@ pfq_enable(pfq_t *q)
 	int one = 1;
 
 	if(setsockopt(q->fd, PF_Q, Q_SO_TOGGLE_QUEUE, &one, sizeof(one)) == -1) {
-		return q->error = "PFQ: Q_SO_TOGGLE_QUEUE", -1;
+		return q->error = "PFQ: TOGGLE_QUEUE error", -1;
 	}
 
 	size_t tot_mem; socklen_t size = sizeof(tot_mem);
 
 	if (getsockopt(q->fd, PF_Q, Q_SO_GET_QUEUE_MEM, &tot_mem, &size) == -1) {
-		return q->error = "PFQ: Q_SO_GET_QUEUE_MEM", -1;
+		return q->error = "PFQ: GET_QUEUE_MEM error", -1;
 	}
 
 	q->queue_tot_mem = tot_mem;
@@ -220,7 +220,7 @@ int
 pfq_disable(pfq_t *q)
 {
 	if (munmap(q->queue_addr,q->queue_tot_mem) == -1) {
-		return q->error = "PFQ: munmap", -1;
+		return q->error = "PFQ: munmap error", -1;
 	}
 
 	q->queue_addr = NULL;
@@ -228,7 +228,7 @@ pfq_disable(pfq_t *q)
 
 	int one = 0;
 	if(setsockopt(q->fd, PF_Q, Q_SO_TOGGLE_QUEUE, &one, sizeof(one)) == -1) {
-		return q->error = "PFQ: Q_SO_TOGGLE_QUEUE", -1;
+		return q->error = "PFQ: TOGGLE_QUEUE error", -1;
 	}
 	return q->error = NULL, 0;
 }
@@ -242,7 +242,7 @@ pfq_is_enabled(pfq_t const *q)
 	{
 		int ret; socklen_t size = sizeof(ret);
 		if (getsockopt(q->fd, PF_Q, Q_SO_GET_STATUS, &ret, &size) == -1) {
-			return mutable->error = "PFQ: Q_SO_GET_STATUS", -1;
+			return mutable->error = "PFQ: GET_STATUS error", -1;
 		}
 		return mutable->error = NULL, ret;
 	}
@@ -255,7 +255,7 @@ pfq_set_timestamp(pfq_t *q, int value)
 {
 	int ts = value;
 	if (setsockopt(q->fd, PF_Q, Q_SO_SET_TSTAMP, &ts, sizeof(ts)) == -1) {
-		return q->error = "PFQ: Q_SO_SET_TSTAMP", -1;
+		return q->error = "PFQ: SET_TSTAMP error", -1;
 	}
 	return q->error = NULL, 0;
 }
@@ -268,7 +268,7 @@ pfq_get_timestamp(pfq_t const *q)
 	int ret; socklen_t size = sizeof(int);
 	
 	if (getsockopt(q->fd, PF_Q, Q_SO_GET_TSTAMP, &ret, &size) == -1) {
-	        return mutable->error = "PFQ: Q_SO_GET_TSTAMP", -1;
+	        return mutable->error = "PFQ: GET_TSTAMP error", -1;
 	}
 	return mutable->error = NULL, ret;
 }
@@ -283,7 +283,7 @@ pfq_ifindex(pfq_t const *q, const char *dev)
 	memset(&ifreq_io, 0, sizeof(struct ifreq));
 	strncpy(ifreq_io.ifr_name, dev, IFNAMSIZ);
 	if (ioctl(q->fd, SIOCGIFINDEX, &ifreq_io) == -1) {
-		return mutable->error = "PFQ: SIOCGIFINDEX", -1;
+		return mutable->error = "PFQ: ioctl SIOCGIFINDEX error", -1;
 	}
 	return mutable->error = NULL, ifreq_io.ifr_ifindex;
 }
@@ -299,7 +299,7 @@ pfq_set_promisc(pfq_t const *q, const char *dev, int value)
 	strncpy(ifreq_io.ifr_name, dev, IFNAMSIZ);
 
 	if(ioctl(q->fd, SIOCGIFFLAGS, &ifreq_io) == -1) { 
-		return mutable->error = "PFQ: ioctl SIOCGIFFLAGS", -1;
+		return mutable->error = "PFQ: ioctl SIOCGIFFLAGS error", -1;
 	}
 
 	if (value)
@@ -308,7 +308,7 @@ pfq_set_promisc(pfq_t const *q, const char *dev, int value)
 		ifreq_io.ifr_flags &= ~IFF_PROMISC;
 
 	if(ioctl(q->fd, SIOCSIFFLAGS, &ifreq_io) == -1) {
-		return mutable->error = "PFQ: ioctl SIOCSIFFLAGS", -1;
+		return mutable->error = "PFQ: ioctl SIOCSIFFLAGS error", -1;
 	}
 	return mutable->error = NULL, 0;
 }
@@ -323,7 +323,7 @@ pfq_set_caplen(pfq_t *q, size_t value)
 	}
 
 	if (setsockopt(q->fd, PF_Q, Q_SO_SET_CAPLEN, &value, sizeof(value)) == -1) {
-		return q->error = "PFQ: Q_SO_SET_CAPLEN", -1;
+		return q->error = "PFQ: SET_CAPLEN error", -1;
 	}
 
 	q->slot_size = ALIGN8(sizeof(struct pfq_hdr)+ value);
@@ -338,7 +338,7 @@ pfq_get_caplen(pfq_t const *q)
 	pfq_t * mutable = (pfq_t *)q;
 	
 	if (getsockopt(q->fd, PF_Q, Q_SO_GET_CAPLEN, &ret, &size) == -1) {
-		return mutable->error = "PFQ: Q_SO_GET_CAPLEN", -1;
+		return mutable->error = "PFQ: GET_CAPLEN error", -1;
 	}
 	return mutable->error = NULL, (ssize_t)ret;
 }
@@ -353,7 +353,7 @@ pfq_set_offset(pfq_t *q, size_t value)
 	}
 
 	if (setsockopt(q->fd, PF_Q, Q_SO_SET_OFFSET, &value, sizeof(value)) == -1) {
-		return q->error = "PFQ: Q_SO_SET_OFFSET", -1;
+		return q->error = "PFQ: SET_OFFSET error", -1;
 	}
 	return q->error = NULL, 0;
 }
@@ -366,7 +366,7 @@ pfq_get_offset(pfq_t const *q)
 	size_t ret; socklen_t size = sizeof(ret);
 	
 	if (getsockopt(q->fd, PF_Q, Q_SO_GET_OFFSET, &ret, &size) == -1) {
-		return mutable->error = "PFQ: Q_SO_GET_OFFSET", -1;
+		return mutable->error = "PFQ: GET_OFFSET error", -1;
 	}
 	return mutable->error = NULL, (ssize_t)ret;
 }
@@ -380,7 +380,7 @@ pfq_set_slots(pfq_t *q, size_t value)
 		return q->error =  "PFQ: enabled (slots could not be set)", -1;
 	}
 	if (setsockopt(q->fd, PF_Q, Q_SO_SET_SLOTS, &value, sizeof(value)) == -1) {
-		return q->error = "PFQ: Q_SO_SET_SLOTS", -1;
+		return q->error = "PFQ: SET_SLOTS error", -1;
 	}
 
 	q->queue_slots = value;
@@ -411,7 +411,7 @@ pfq_bind_group(pfq_t *q, int gid, const char *dev, int queue)
 
 	struct pfq_binding b = { gid, index, queue };
 	if (setsockopt(q->fd, PF_Q, Q_SO_ADD_BINDING, &b, sizeof(b)) == -1) {
-		return q->error = "PFQ: Q_SO_ADD_BINDING", -1;
+		return q->error = "PFQ: ADD_BINDING error", -1;
 	}
 	return q->error = NULL, 0;
 }
@@ -436,7 +436,7 @@ pfq_unbind_group(pfq_t *q, int gid, const char *dev, int queue) /* Q_ANY_QUEUE *
 	}
 	struct pfq_binding b = { gid, index, queue };
 	if (setsockopt(q->fd, PF_Q, Q_SO_REMOVE_BINDING, &b, sizeof(b)) == -1) {
-		return q->error = "PFQ: Q_SO_REMOVE_BINDING", -1;
+		return q->error = "PFQ: REMOVE_BINDING error", -1;
 	}
 	return q->error = NULL, 0;
 }
@@ -460,7 +460,7 @@ pfq_groups_mask(pfq_t const *q, unsigned long *_mask)
 	pfq_t * mutable = (pfq_t *)q;
 	
 	if (getsockopt(q->fd, PF_Q, Q_SO_GET_GROUPS, &mask, &size) == -1) {
-		return mutable->error = "PFQ: Q_SO_GET_GROUPS", -1;
+		return mutable->error = "PFQ: GET_GROUPS error", -1;
 	}
 	*_mask = mask;
 	return mutable->error = NULL, 0;
@@ -472,7 +472,7 @@ pfq_steering_function(pfq_t *q, int gid, const char *fun_name)
 {
 	struct pfq_steering s = { fun_name, gid };
 	if (setsockopt(q->fd, PF_Q, Q_SO_SET_GROUP_STEER, &s, sizeof(s)) == -1) {
-		return q->error = "PFQ: Q_SO_SET_GROUP_STEER", -1;
+		return q->error = "PFQ: SET_GROUP_STEER error", -1;
 	}
 	return q->error = NULL, 0;
 }
@@ -483,7 +483,7 @@ pfq_group_state(pfq_t *q, int gid, const void *state, size_t size)
 {
 	struct pfq_group_state s  = { state, size, gid };
 	if (setsockopt(q->fd, PF_Q, Q_SO_GROUP_STATE, &s, sizeof(s)) == -1) {
-		return q->error = "PFQ: Q_SO_GROUP_STATE", -1;
+		return q->error = "PFQ: GROUP_STATE error", -1;
 	}
 	return q->error = NULL, 0;
 }
@@ -500,7 +500,7 @@ pfq_join_group(pfq_t *q, int gid, unsigned long class_mask, int group_policy)
 
 	socklen_t size = sizeof(group);
 	if (getsockopt(q->fd, PF_Q, Q_SO_GROUP_JOIN, &group, &size) == -1) {
-	        return q->error = "PFQ: Q_SO_GROUP_JOIN", -1;
+	        return q->error = "PFQ: GROUP_JOIN error", -1;
 	}
 	return q->error = NULL, group.gid;
 }
@@ -510,7 +510,7 @@ int
 pfq_leave_group(pfq_t *q, int gid)                  
 {
 	if (setsockopt(q->fd, PF_Q, Q_SO_GROUP_LEAVE, &gid, sizeof(gid)) == -1) {
-	        return q->error = "PFQ: Q_SO_GROUP_LEAVE", -1;
+	        return q->error = "PFQ: GROUP_LEAVE error", -1;
 	}
 	return q->error = NULL, 0;
 }
@@ -529,7 +529,7 @@ pfq_poll(pfq_t *q, long int microseconds /* = -1 -> infinite */)
 	int ret = ppoll(&fd, 1, microseconds < 0 ? NULL : &timeout, NULL);
 	if (ret < 0 &&
 	    	errno != EINTR) {
-	    return q->error = "PFQ: ppoll", -1;
+	    return q->error = "PFQ: ppoll error", -1;
 	}
 	return q->error = NULL, 0; 
 }
@@ -541,7 +541,7 @@ pfq_get_stats(pfq_t const *q, struct pfq_stats *stats)
 	pfq_t *mutable = (pfq_t *)q;
 	socklen_t size = sizeof(struct pfq_stats);
 	if (getsockopt(q->fd, PF_Q, Q_SO_GET_STATS, stats, &size) == -1) {
-		return mutable->error = "PFQ: Q_SO_GET_STATS", -1;
+		return mutable->error = "PFQ: GET_STATS error", -1;
 	}
 	return mutable->error = NULL, 0;
 }
@@ -555,7 +555,7 @@ pfq_get_group_stats(pfq_t const *q, int gid, struct pfq_stats *stats)
 	
 	stats->recv = (unsigned int)gid;
 	if (getsockopt(q->fd, PF_Q, Q_SO_GET_GROUP_STATS, stats, &size) == -1) {
-		return mutable->error = "PFQ: Q_SO_GET_GROUP_STATS", -1;
+		return mutable->error = "PFQ: GET_GROUP_STATS error", -1;
 	}
 	return mutable->error = NULL, 0;
 }
