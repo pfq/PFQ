@@ -4,28 +4,47 @@ module PFq
     (
         PFqTag,
         open,
-        bind,
+        openNoGroup,
+        openGroup,
         enable,
+        disable,
+        getId,
+        getGroupId,
+        isEnabled,
+        bind,
+        bindGroup,
+        unbind,
+        unbindGroup,
         setTimestamp,
+        getTimestamp,
+        setPromisc,
+        getCaplen,
+        setCaplen,
+        getOffset,
+        setOffset,
+        getSlots,
+        setSlots,
+        getSlotSize,
         readQ,
+        dispatch,
+        getStats,
+        getGroupStats,
+        steeringFunction,
         getHeaders,
-        NetQueue(..)
+        NetQueue(..),
+        Callback(..)
     ) where
 
 import Data.Word
-
-import Control.Monad (liftM, when)
+import Debug.Trace
 
 import Foreign.Ptr 
 import Foreign.C.String (CString, peekCString, withCString)
 import Foreign.C.Types
 import Foreign.Marshal.Alloc
 import Foreign.Storable
-
 import Foreign.Concurrent as C (newForeignPtr) 
 import Foreign.ForeignPtr (ForeignPtr)
-
-import Debug.Trace
 
 newtype PFqTag = PFqTag ()
 
@@ -33,26 +52,34 @@ newtype PFqTag = PFqTag ()
 --
 
 data NetQueue = NetQueue {
-                    queuePtr        :: Ptr PktHdr
-                 ,  queueLen        :: Word64
-                 ,  queueSlotSize   :: Word64
-                 ,  queueIndex      :: Word32
-                } deriving (Eq, Show)
+      queuePtr        :: Ptr PktHdr
+   ,  queueLen        :: {-# UNPACK #-} !Word64
+   ,  queueSlotSize   :: {-# UNPACK #-} !Word64
+   ,  queueIndex      :: {-# UNPACK #-} !Word32
+   } deriving (Eq, Show)
 
 -- PktHdr:
 --
 
 data PktHdr = PktHdr {
-                hdrSec      ::  Word32,
-                hdrNsec     ::  Word32,
-                hdrGid      ::  Word32,
-                hdrIfIndex  ::  Word32,
-                hdrLen      ::  Word16,
-                hdrCapLen   ::  Word16,
-                hdrTci      ::  Word16,
-                hdrHwQueue  ::  Word8,
-                hdrCommit   ::  Word8 
-              } deriving (Eq, Show)
+      hdrSec      :: {-# UNPACK #-} !Word32
+    , hdrNsec     :: {-# UNPACK #-} !Word32
+    , hdrGid      :: {-# UNPACK #-} !Word32
+    , hdrIfIndex  :: {-# UNPACK #-} !Word32
+    , hdrLen      :: {-# UNPACK #-} !Word16
+    , hdrCapLen   :: {-# UNPACK #-} !Word16
+    , hdrTci      :: {-# UNPACK #-} !Word16
+    , hdrHwQueue  :: {-# UNPACK #-} !Word8
+    , hdrCommit   :: {-# UNPACK #-} !Word8 
+    } deriving (Eq, Show)
+
+-- Statistics:
+
+data Statistics = Statistics {
+      statReceived     :: {-# UNPACK #-} !Word32    -- packets received
+    , statLost         :: {-# UNPACK #-} !Word32    -- packets lost 
+    , statDropped      :: {-# UNPACK #-} !Word32    -- packets dropped 
+    } deriving (Eq, Show)
 
 
 toPktHdr :: Ptr PktHdr -> IO PktHdr
@@ -78,6 +105,26 @@ toPktHdr hdr = do
                     hdrCommit   = fromIntegral (com'  :: CUChar)
                   }
 
+-- type of the callback function passed to 'dispatch' 
+
+type Callback  = PktHdr -> Ptr Word8  -> IO ()
+
+type CPFqCallback = Ptr PktHdr -> Ptr Word8 -> Ptr Word8 -> IO ()
+               
+
+-- error handling 
+--
+
+throwPFqIf :: Ptr PFqTag -> (a -> Bool) -> a -> IO a
+throwPFqIf hdl p v = if p v
+    then pfq_error hdl >>= peekCString >>= ioError . userError
+    else return v
+
+
+throwPFqIf_ :: Ptr PFqTag -> (a -> Bool) -> a -> IO ()
+throwPFqIf_ hdl p v = throwPFqIf hdl p v >> return ()
+
+
 -- getHeaders: obtain a list of PktHdr from a NetQueue
 --
 
@@ -88,6 +135,7 @@ getHeaders queue = getHeaders' (queuePtr queue) (queuePtr queue `plusPtr` q_size
                           q_len  = fromIntegral $ queueLen queue
                           q_size = q_slot * q_len
 
+
 getHeaders' :: Ptr PktHdr -> Ptr PktHdr -> Int -> IO [PktHdr]
 getHeaders' cur end slotSize 
     | cur == end = return []
@@ -96,19 +144,44 @@ getHeaders' cur end slotSize
         l <- getHeaders' (cur `plusPtr` slotSize) end slotSize 
         return (h:l)
 
--- open socket:
+-- open:
 --
 open :: Int  --
      -> Int  --
      -> Int  --
      -> IO (ForeignPtr PFqTag)
 
-
 open caplen offset slots = do
-        ptr <- pfq_open (fromIntegral caplen) (fromIntegral offset) (fromIntegral slots)
-        when (ptr == nullPtr) $
-            ioError $ userError "PFq: Can't open socket"
-        C.newForeignPtr ptr (pfq_close ptr) 
+        pfq_open (fromIntegral caplen) (fromIntegral offset) (fromIntegral slots) >>=
+            throwPFqIf nullPtr (== nullPtr) >>= \ptr ->
+                C.newForeignPtr ptr (pfq_close ptr) 
+
+-- openNoGroup:
+--
+openNoGroup:: Int  --
+     -> Int  --
+     -> Int  --
+     -> IO (ForeignPtr PFqTag)
+
+openNoGroup caplen offset slots = do
+        pfq_open_nogroup (fromIntegral caplen) (fromIntegral offset) (fromIntegral slots) >>=
+            throwPFqIf nullPtr (== nullPtr) >>= \ptr ->
+                C.newForeignPtr ptr (pfq_close ptr) 
+
+
+-- openGroup:
+--
+openGroup:: Int  --
+     -> Int  -- TODO classMask: vedere PCREOption cap. 17
+     -> Int  --
+     -> Int  --
+     -> Int  --
+     -> IO (ForeignPtr PFqTag)
+
+openGroup classMask policy caplen offset slots = do
+        pfq_open_group (fromIntegral classMask) (fromIntegral policy) (fromIntegral caplen) (fromIntegral offset) (fromIntegral slots) >>=
+            throwPFqIf nullPtr (== nullPtr) >>= \ptr ->
+                C.newForeignPtr ptr (pfq_close ptr) 
 
 -- bind:
 --
@@ -119,20 +192,87 @@ bind :: Ptr PFqTag
 
 bind hdl name queue = do
     withCString name $ \dev -> do
-        rv <- pfq_bind hdl dev (fromIntegral queue) 
-        when (rv == -1) 
-            (ioError $ userError "PFq: Could not bind")
+        pfq_bind hdl dev (fromIntegral queue) >>= throwPFqIf_ hdl (== -1) 
+
+-- bindGroup:
+--
+bindGroup :: Ptr PFqTag
+          -> Int         -- group id
+          -> String      -- device name
+          -> Int         -- queue index
+          -> IO ()
+
+bindGroup hdl gid name queue = do
+    withCString name $ \dev -> do
+        pfq_bind_group hdl (fromIntegral gid) dev (fromIntegral queue) >>= throwPFqIf_ hdl (== -1) 
+
+
+-- unbind:
+--
+unbind :: Ptr PFqTag 
+     -> String      -- device name
+     -> Int         -- queue index
+     -> IO ()
+
+unbind hdl name queue = do
+    withCString name $ \dev -> do
+        pfq_unbind hdl dev (fromIntegral queue) >>= throwPFqIf_ hdl (== -1) 
+
+-- unbindGroup:
+--
+unbindGroup :: Ptr PFqTag
+          -> Int         -- group id
+          -> String      -- device name
+          -> Int         -- queue index
+          -> IO ()
+
+unbindGroup hdl gid name queue = do
+    withCString name $ \dev -> do
+        pfq_unbind_group hdl (fromIntegral gid) dev (fromIntegral queue) >>= throwPFqIf_ hdl (== -1) 
+
+
+-- getId:
+--
+getId :: Ptr PFqTag -> IO Int
+getId hdl = 
+    pfq_id hdl >>= throwPFqIf hdl (== -1) >>= return . fromIntegral 
+
+
+-- getGroupId:
+--
+getGroupId :: Ptr PFqTag -> IO Int
+getGroupId hdl = 
+    pfq_group_id hdl >>= throwPFqIf hdl (== -1) >>= return . fromIntegral
 
 
 -- enable:
 --
-enable :: Ptr PFqTag 
-       -> IO ()
+enable :: Ptr PFqTag -> IO ()
+enable hdl = 
+    pfq_enable hdl >>= throwPFqIf_ hdl (== -1)
 
-enable hdl = do
-             rv <- pfq_enable hdl
-             when (rv == -1) 
-                (ioError $ userError "PFq: Could not enable")
+
+-- disable:
+--
+disable :: Ptr PFqTag -> IO ()
+disable hdl = pfq_disable hdl >>= throwPFqIf_ hdl (== -1)
+
+-- isEnabled:
+--
+
+isEnabled :: Ptr PFqTag -> IO Bool
+isEnabled hdl = 
+    pfq_is_enabled hdl >>= throwPFqIf hdl (== -1) >>= \v ->
+        if (v == 0) then return False else return True
+
+
+-- setPromisc:
+--
+setPromisc :: Ptr PFqTag -> String -> Bool -> IO ()
+setPromisc hdl name value = 
+    withCString name $ \dev -> do
+        pfq_set_promisc hdl dev (if value then 1 else 0) >>=
+            throwPFqIf_ hdl (== -1)
 
 -- readQ:
 --
@@ -142,9 +282,7 @@ readQ :: Ptr PFqTag
 
 readQ hdl msec = 
     allocaBytes ((24)) $ \queue -> do
-       rv <- pfq_read hdl queue (fromIntegral msec)  
-       when (rv == -1) $
-            ioError $ userError "PFq: read error"
+       pfq_read hdl queue (fromIntegral msec) >>= throwPFqIf_ hdl (== -1) 
        qptr <- ((\h -> peekByteOff h 0))  queue
        clen <- ((\h -> peekByteOff h (sizeOf qptr)))  queue
        css  <- ((\h -> peekByteOff h (sizeOf qptr + sizeOf clen))) queue
@@ -156,68 +294,198 @@ readQ hdl msec =
                          queueSlotSize  = slotSize,
                          queueIndex     = fromIntegral (cid  :: CUInt) 
                        }
-
--- toggleTimestamp:
+-- setTimestamp:
 --
-setTimestamp :: Ptr PFqTag 
-                -> Bool 
-                -> IO ()
+
+setTimestamp :: Ptr PFqTag -> Bool -> IO ()
 
 setTimestamp hdl toggle = do
     let value = if (toggle) then 1 else 0 
-    rv <- pfq_set_timestamp hdl value
-    when (rv == -1) 
-        (ioError $ userError "PFq: Could not set timestamp")
+    pfq_set_timestamp hdl value >>= throwPFqIf_ hdl (== -1)
+
+
+-- getTimestamp:
+--
+getTimestamp :: Ptr PFqTag -> IO Bool 
+
+getTimestamp hdl = do
+    pfq_get_timestamp hdl >>= throwPFqIf hdl (== -1) >>= \v ->
+        if (v == 0) then return False else return True
+
+
+-- setCaplen:
+--
+setCaplen:: Ptr PFqTag -> Int -> IO ()
+
+setCaplen hdl value = do
+    pfq_set_caplen hdl (fromIntegral value) >>= throwPFqIf_ hdl (== -1)
+
+
+-- getCaplen:
+--
+getCaplen :: Ptr PFqTag -> IO Int  
+
+getCaplen hdl = 
+    pfq_get_caplen hdl >>= throwPFqIf hdl (== -1) >>= return . fromIntegral
+
+
+-- setOffset:
+--
+setOffset:: Ptr PFqTag -> Int -> IO ()
+
+setOffset hdl value = 
+    pfq_set_offset hdl (fromIntegral value) >>= throwPFqIf_ hdl (== -1)
+
+
+-- getOffset:
+--
+getOffset :: Ptr PFqTag -> IO Int  
+
+getOffset hdl = 
+    pfq_get_offset hdl >>= throwPFqIf hdl (== -1) >>= return . fromIntegral
+
+
+-- setSlots:
+--
+setSlots:: Ptr PFqTag -> Int -> IO ()
+
+setSlots hdl value = 
+    pfq_set_slots hdl (fromIntegral value) >>= throwPFqIf_ hdl (== -1)
+
+-- getSlots:
+--
+getSlots :: Ptr PFqTag -> IO Int  
+
+getSlots hdl = 
+    pfq_get_slots hdl >>= throwPFqIf hdl (== -1) >>= return . fromIntegral
+
+-- getSlotSize:
+--
+getSlotSize :: Ptr PFqTag -> IO Int  
+
+getSlotSize hdl = 
+    pfq_get_slot_size hdl >>= throwPFqIf hdl (== -1) >>= return . fromIntegral
+
+
+-- getStats:
+--
+
+getStats :: Ptr PFqTag 
+         -> IO Statistics
+         
+getStats hdl =
+    allocaBytes ((sizeOf (0 :: CLong)) * 3) $ \sp -> do
+        pfq_get_stats hdl sp >>= throwPFqIf_ hdl (== -1)
+        recv <- ((\ptr -> peekByteOff ptr 0 )) sp
+        lost <- ((\ptr -> peekByteOff ptr (sizeOf recv) )) sp
+        drop <- ((\ptr -> peekByteOff ptr (sizeOf recv + sizeOf lost))) sp
+        return Statistics { 
+                            statReceived = fromIntegral (recv :: CLong),
+                            statLost     = fromIntegral (lost :: CLong),
+                            statDropped  = fromIntegral (drop :: CLong)
+                          }
+
+-- getGroupStats:
+--
+
+getGroupStats :: Ptr PFqTag 
+              -> Int            -- gid
+              -> IO Statistics
+         
+getGroupStats hdl gid =
+    allocaBytes ((sizeOf (0 :: CLong)) * 3) $ \sp -> do
+        pfq_get_group_stats hdl (fromIntegral gid) sp >>= throwPFqIf_ hdl (== -1)
+        recv <- ((\ptr -> peekByteOff ptr 0 )) sp
+        lost <- ((\ptr -> peekByteOff ptr (sizeOf recv) )) sp
+        drop <- ((\ptr -> peekByteOff ptr (sizeOf recv + sizeOf lost))) sp
+        return Statistics { 
+                            statReceived = fromIntegral (recv :: CLong),
+                            statLost     = fromIntegral (lost :: CLong),
+                            statDropped  = fromIntegral (drop :: CLong)
+                          }
+
+-- steeringFunction:
+--
+
+steeringFunction :: Ptr PFqTag
+                 -> Int     -- group id
+                 -> String  -- steering function name
+                 -> IO ()
+
+steeringFunction hdl gid name =
+    withCString name $ \fname -> do
+        pfq_steering_function hdl (fromIntegral gid) fname >>= throwPFqIf_ hdl (== -1) 
+
+
+-- dispatch:
+-- 
+
+dispatch :: Ptr PFqTag  -- packet capture descriptor
+         -> Callback    -- ^ packet processing function
+         -> Int         -- ^ timeout
+         -> IO ()       -- 
+
+dispatch hdl f timeo = do
+    cback <- makeCallback f
+    ret  <- pfq_dispatch hdl cback (fromIntegral timeo) nullPtr
+    freeHaskellFunPtr cback
+    throwPFqIf_ hdl (== -1) (fromIntegral ret)
+
+
+makeCallback :: Callback -> IO (FunPtr CPFqCallback)
+makeCallback fun = make_callback $ \chdr ptr usr -> do
+    hdr <- toPktHdr chdr
+    fun hdr ptr
+
 
 -- C functions from libpfq.c
 --
 
-foreign import ccall unsafe pfq_open            :: CSize -> CSize -> CSize -> IO (Ptr PFqTag)
--- foreign import ccall unsafe pfq_open_orphan     :: CSize -> CSize -> CSize -> IO (Ptr PFqTag)
--- foreign import ccall unsafe pfq_open_group      :: CLong -> CInt -> CSize -> CSize -> CSize -> IO (Ptr PFqTag)
-foreign import ccall unsafe pfq_close           :: Ptr PFqTag -> IO ()
--- 
-foreign import ccall unsafe pfq_enable          :: Ptr PFqTag -> IO CInt
--- foreign import ccall unsafe pfq_disable         :: Ptr PFqTag -> IO CInt
--- foreign import ccall unsafe pfq_is_enabled      :: Ptr PFqTag -> IO CInt
--- 
--- foreign import ccall unsafe pfq_set_promisc     :: Ptr PFqTag -> CString -> CInt -> IO CInt
-foreign import ccall unsafe pfq_set_timestamp   :: Ptr PFqTag -> CInt -> IO CInt
--- foreign import ccall unsafe pfq_get_timestamp   :: Ptr PFqTag -> IO CInt
--- 
--- foreign import ccall unsafe pfq_set_caplen      :: Ptr PFqTag -> CSize -> IO CInt
--- foreign import ccall unsafe pfq_get_caplen      :: Ptr PFqTag -> CSSize
--- 
--- foreign import ccall unsafe pfq_set_offset      :: Ptr PFqTag -> CSize -> IO CInt
--- foreign import ccall unsafe pfq_get_offset      :: Ptr PFqTag -> CSSize
--- 
--- foreign import ccall unsafe pfq_set_slots       :: Ptr PFqTag -> CSize -> IO CInt
--- foreign import ccall unsafe pfq_get_slots       :: Ptr PFqTag -> CSize
--- foreign import ccall unsafe pfq_get_slot_size   :: Ptr PFqTag -> CSize
--- 
-foreign import ccall unsafe pfq_bind            :: Ptr PFqTag -> CString -> CInt -> IO CInt
--- foreign import ccall unsafe pfq_bind_group      :: Ptr PFqTag -> CInt -> CString -> CInt -> IO CInt
--- 
--- foreign import ccall unsafe pfq_unbind          :: Ptr PFqTag -> CString -> CInt -> IO CInt
--- foreign import ccall unsafe pfq_unbind_group    :: Ptr PFqTag -> CInt -> CString -> CInt -> IO CInt
--- 
--- foreign import ccall unsafe pfq_steering_function :: Ptr PFqTag -> CInt -> CString -> IO CInt
--- foreign import ccall unsafe pfq_group_state       :: Ptr PFqTag -> CInt -> Ptr CChar -> CSize -> IO CInt
--- 
--- foreign import ccall unsafe pfq_poll            :: Ptr PFqTag -> CLong -> IO CInt
--- 
--- foreing import ccall unsafe pfq_id              :: Ptr PFqTag -> IO CInt
--- foreing import ccall unsafe pfq_group_id        :: Ptr PFqTag -> IO CInt
--- 
--- 
-foreign import ccall unsafe pfq_read            :: Ptr PFqTag -> Ptr NetQueue -> CLong -> IO CInt
+foreign import ccall unsafe pfq_open              :: CSize -> CSize -> CSize -> IO (Ptr PFqTag)
+foreign import ccall unsafe pfq_open_nogroup      :: CSize -> CSize -> CSize -> IO (Ptr PFqTag)
+foreign import ccall unsafe pfq_open_group        :: CLong -> CInt -> CSize -> CSize -> CSize -> IO (Ptr PFqTag)
+
+foreign import ccall unsafe pfq_close             :: Ptr PFqTag -> IO ()
+foreign import ccall unsafe pfq_error             :: Ptr PFqTag -> IO CString
+
+foreign import ccall unsafe pfq_id                :: Ptr PFqTag -> IO CInt
+foreign import ccall unsafe pfq_group_id          :: Ptr PFqTag -> IO CInt
+
+foreign import ccall unsafe pfq_enable            :: Ptr PFqTag -> IO CInt
+foreign import ccall unsafe pfq_disable           :: Ptr PFqTag -> IO CInt
+foreign import ccall unsafe pfq_is_enabled        :: Ptr PFqTag -> IO CInt
+
+foreign import ccall unsafe pfq_set_promisc       :: Ptr PFqTag -> CString -> CInt -> IO CInt
+foreign import ccall unsafe pfq_set_timestamp     :: Ptr PFqTag -> CInt -> IO CInt
+foreign import ccall unsafe pfq_get_timestamp     :: Ptr PFqTag -> IO CInt
+
+foreign import ccall unsafe pfq_set_caplen        :: Ptr PFqTag -> CSize -> IO CInt
+foreign import ccall unsafe pfq_get_caplen        :: Ptr PFqTag -> IO CPtrdiff
+
+foreign import ccall unsafe pfq_set_offset        :: Ptr PFqTag -> CSize -> IO CInt
+foreign import ccall unsafe pfq_get_offset        :: Ptr PFqTag -> IO CPtrdiff 
+
+foreign import ccall unsafe pfq_set_slots         :: Ptr PFqTag -> CSize -> IO CInt
+foreign import ccall unsafe pfq_get_slots         :: Ptr PFqTag -> IO CSize
+foreign import ccall unsafe pfq_get_slot_size     :: Ptr PFqTag -> IO CSize
+
+foreign import ccall unsafe pfq_bind              :: Ptr PFqTag -> CString -> CInt -> IO CInt
+foreign import ccall unsafe pfq_bind_group        :: Ptr PFqTag -> CInt -> CString -> CInt -> IO CInt
+
+foreign import ccall unsafe pfq_unbind            :: Ptr PFqTag -> CString -> CInt -> IO CInt
+foreign import ccall unsafe pfq_unbind_group      :: Ptr PFqTag -> CInt -> CString -> CInt -> IO CInt
+
+foreign import ccall unsafe pfq_get_stats         :: Ptr PFqTag -> Ptr Statistics -> IO CInt
+foreign import ccall unsafe pfq_get_group_stats   :: Ptr PFqTag -> CInt -> Ptr Statistics -> IO CInt
+
+foreign import ccall unsafe pfq_steering_function :: Ptr PFqTag -> CInt -> CString -> IO CInt
+
+foreign import ccall pfq_dispatch                 :: Ptr PFqTag -> FunPtr CPFqCallback -> CLong -> Ptr Word8 -> IO CInt
+foreign import ccall "wrapper" make_callback      :: CPFqCallback -> IO (FunPtr CPFqCallback)
+
+foreign import ccall unsafe pfq_read              :: Ptr PFqTag -> Ptr NetQueue -> CLong -> IO CInt
 
 
--- extern int pfq_dispatch(pfq_t *q, pfq_handler_t cb, long int microseconds, char *user);
--- extern int pfq_get_stats(pfq_t const *q, struct pfq_stats *stats); 
--- extern int pfq_get_group_stats(pfq_t const *q, int gid, struct pfq_stats *stats); 
-
-
-
-
+-- TODO
+-- foreign import ccall unsafe pfq_group_state    :: Ptr PFqTag -> CInt -> Ptr CChar -> CSize -> IO CInt
 
