@@ -106,7 +106,7 @@ pfq_open(size_t caplen, size_t offset, size_t slots)
 
 
 pfq_t *
-pfq_open_orphan(size_t caplen, size_t offset, size_t slots)
+pfq_open_nogroup(size_t caplen, size_t offset, size_t slots)
 {
 	return pfq_open_group(Q_CLASS_DEFAULT, Q_GROUP_UNDEFINED, caplen, offset, slots); 
 }
