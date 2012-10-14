@@ -471,8 +471,8 @@ int
 pfq_steering_function(pfq_t *q, int gid, const char *fun_name)
 {
 	struct pfq_steering s = { fun_name, gid };
-	if (setsockopt(q->fd, PF_Q, Q_SO_SET_GROUP_STEER, &s, sizeof(s)) == -1) {
-		return q->error = "PFQ: SET_GROUP_STEER error", -1;
+	if (setsockopt(q->fd, PF_Q, Q_SO_GROUP_STEER_FUN, &s, sizeof(s)) == -1) {
+		return q->error = "PFQ: GROUP_STEER_FUN error", -1;
 	}
 	return q->error = NULL, 0;
 }

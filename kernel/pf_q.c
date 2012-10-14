@@ -910,7 +910,7 @@ int pfq_setsockopt(struct socket *sock,
                     pfq_devmap_update(map_reset, bind.if_index, bind.hw_queue, bind.gid);
             } break;
 
- 	case Q_SO_SET_GROUP_STEER:
+ 	case Q_SO_GROUP_STEER_FUN:
 	    {
 		    struct pfq_steering s;
 		    
