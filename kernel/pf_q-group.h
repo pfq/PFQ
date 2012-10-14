@@ -104,7 +104,7 @@ bool __pfq_has_joined_group(int gid, int id)
 	return __pfq_get_all_groups_mask(gid) & (1L << id);
 }
 
-bool __pfq_group_access(int gid, int policy, bool join);
+bool __pfq_group_access(int gid, int id, int policy, bool join);
 
 int pfq_join_free_group(int id, unsigned long class_mask, int policy);
 

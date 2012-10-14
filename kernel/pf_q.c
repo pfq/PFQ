@@ -784,11 +784,13 @@ int pfq_getsockopt(struct socket *sock,
                             return -EFAULT;
                     
 		    gid = (int)stat.recv;
-                    if (gid < 0  || gid >= Q_MAX_GROUP)
+                    if (gid < 0  || gid >= Q_MAX_GROUP) {
+                    	    pr_devel("[PFQ|%d] group stats error: gid:%d invalid argument!\n", pq->q_id, gid);
 			    return -EINVAL;
+		    }
 
 		    /* check whether the group is joinable.. */
-		    if (!__pfq_group_access(gid, Q_GROUP_UNDEFINED, false)) {   
+		    if (!__pfq_group_access(gid, pq->q_id, Q_GROUP_UNDEFINED, false)) {   
                     	    pr_devel("[PFQ|%d] group stats error: gid:%d access denied!\n", pq->q_id, gid);
 			    return -EPERM;
 		    }

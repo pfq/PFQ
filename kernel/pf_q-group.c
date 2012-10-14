@@ -40,9 +40,12 @@ struct pfq_group pfq_groups[Q_MAX_GROUP];
 
 
 bool 
-__pfq_group_access(int gid, int policy, bool join)
+__pfq_group_access(int gid, int id, int policy, bool join)
 {
         struct pfq_group * that = &pfq_groups[gid];
+        
+        if (__pfq_has_joined_group(gid,id))
+        	return true;
 
         switch(that->policy)
 	{
@@ -119,7 +122,7 @@ __pfq_join_group(int gid, int id, unsigned long class_mask, int policy)
          	__pfq_group_ctor(gid);
 	}
 	
-	if (!__pfq_group_access(gid, policy, true)) {
+	if (!__pfq_group_access(gid, id, policy, true)) {
 		pr_devel("[PFQ] gid:%d is not joinable with policy %d\n", gid, policy);
 		return -1;
 	}
