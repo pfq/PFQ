@@ -602,6 +602,8 @@ namespace net {
             }
         }
 
+    private:
+
         void
         open(size_t caplen, size_t offset = 0, size_t slots = 131072)
         {
@@ -637,6 +639,7 @@ namespace net {
             pdata_->slot_size = align<8>(sizeof(pfq_hdr) + pdata_->queue_caplen);
         }
 
+    public:
 
         void 
         close()
@@ -919,6 +922,7 @@ namespace net {
             socklen_t size = sizeof(group);
             if (::getsockopt(fd_, PF_Q, Q_SO_GROUP_JOIN, &group, &size) == -1)
                 throw pfq_error(errno, "PFQ: Q_SO_GROUP_JOIN");
+            
             return group.gid;
         }
         
