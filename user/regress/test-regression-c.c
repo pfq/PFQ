@@ -7,6 +7,7 @@
 
 #include <pthread.h>
 
+
 void test_enable_disable()
 {
 	pfq_t * q = pfq_open(64, 0, 1024);
@@ -119,7 +120,8 @@ void test_slot_size()
 {
 	pfq_t * q = pfq_open(64, 0, 1024);
         assert(q);
-	assert(pfq_get_slot_size(q) == 96);
+        size_t size = 64 + sizeof(struct pfq_hdr);
+	assert(pfq_get_slot_size(q) == (size + (size % 8)));
 	pfq_close(q);
 
 }
@@ -217,6 +219,63 @@ void test_group_stats()
 }
 
 
+void test_my_group_stats_priv()
+{
+	pfq_t * q = pfq_open_group(Q_CLASS_DEFAULT, Q_GROUP_PRIVATE, 64, 0, 1024);
+        assert(q);
+
+	auto gid = pfq_group_id(q);
+	assert(gid != -1);
+
+	struct pfq_stats s;
+	assert(pfq_get_group_stats(q, gid, &s) == 0);
+
+	assert(s.recv == 0);
+	assert(s.lost == 0);
+	assert(s.drop == 0);
+
+	pfq_close(q);
+}
+
+
+void test_my_group_stats_restricted()
+{
+	pfq_t * q = pfq_open_group(Q_CLASS_DEFAULT, Q_GROUP_RESTRICTED, 64, 0, 1024);
+        assert(q);
+
+	auto gid = pfq_group_id(q);
+	assert(gid != -1);
+
+	struct pfq_stats s;
+	assert(pfq_get_group_stats(q, gid, &s) == 0);
+
+	assert(s.recv == 0);
+	assert(s.lost == 0);
+	assert(s.drop == 0);
+
+	pfq_close(q);
+}
+
+
+void test_my_group_stats_shared()
+{
+	pfq_t * q = pfq_open_group(Q_CLASS_DEFAULT, Q_GROUP_SHARED, 64, 0, 1024);
+        assert(q);
+
+	auto gid = pfq_group_id(q);
+	assert(gid != -1);
+
+	struct pfq_stats s;
+	assert(pfq_get_group_stats(q, gid, &s) == 0);
+
+	assert(s.recv == 0);
+	assert(s.lost == 0);
+	assert(s.drop == 0);
+
+	pfq_close(q);
+}
+
+
 void test_groups_mask()
 {
 	pfq_t * q = pfq_open(64, 0, 1024);
@@ -263,37 +322,72 @@ void test_join_private_()
 
 void test_join_restricted_()
 {
+	{
 	pfq_t * q = pfq_open_group(Q_CLASS_DEFAULT, Q_GROUP_RESTRICTED, 64, 0, 1024);
-	
 	pfq_t * y = pfq_open_group(Q_CLASS_DEFAULT, Q_GROUP_UNDEFINED, 64, 0, 1024);
 		
 	int gid = pfq_group_id(q);
 
 	assert( pfq_join_group(y, gid, Q_CLASS_DEFAULT, Q_GROUP_PRIVATE) < 0);
-	assert( pfq_join_group(y, gid, Q_CLASS_DEFAULT, Q_GROUP_RESTRICTED) >= 0);
-	assert( pfq_join_group(y, gid, Q_CLASS_DEFAULT, Q_GROUP_SHARED) < 0);
-	assert( pfq_join_group(y, gid, Q_CLASS_DEFAULT, Q_GROUP_UNDEFINED) < 0);
-
+	
 	pfq_close(q);
 	pfq_close(y);
+	}
+
+	{
+	pfq_t * q = pfq_open_group(Q_CLASS_DEFAULT, Q_GROUP_RESTRICTED, 64, 0, 1024);
+	pfq_t * y = pfq_open_group(Q_CLASS_DEFAULT, Q_GROUP_UNDEFINED, 64, 0, 1024);
+		
+	int gid = pfq_group_id(q);
+
+	assert( pfq_join_group(y, gid, Q_CLASS_DEFAULT, Q_GROUP_RESTRICTED) >= 0);
+	
+	pfq_close(q);
+	pfq_close(y);
+	}
+
+	{
+	pfq_t * q = pfq_open_group(Q_CLASS_DEFAULT, Q_GROUP_RESTRICTED, 64, 0, 1024);
+	pfq_t * y = pfq_open_group(Q_CLASS_DEFAULT, Q_GROUP_UNDEFINED, 64, 0, 1024);
+		
+	int gid = pfq_group_id(q);
+
+	assert( pfq_join_group(y, gid, Q_CLASS_DEFAULT, Q_GROUP_SHARED) < 0);
+	assert( pfq_join_group(y, gid, Q_CLASS_DEFAULT, Q_GROUP_UNDEFINED) < 0);
+	
+	pfq_close(q);
+	pfq_close(y);
+	}
 }
 
 
 void test_join_shared_()
 {
+	{
 	pfq_t * q = pfq_open_group(Q_CLASS_DEFAULT, Q_GROUP_SHARED, 64, 0, 1024);
+	pfq_t * y = pfq_open_group(Q_CLASS_DEFAULT, Q_GROUP_UNDEFINED, 64, 0, 1024);
+		
+	int gid = pfq_group_id(q);
+
+	assert( pfq_join_group(y, gid, Q_CLASS_DEFAULT, Q_GROUP_SHARED) >= 0);
+
+	pfq_close(q);
+	pfq_close(y);
+	}
 	
+	{
+	pfq_t * q = pfq_open_group(Q_CLASS_DEFAULT, Q_GROUP_SHARED, 64, 0, 1024);
 	pfq_t * y = pfq_open_group(Q_CLASS_DEFAULT, Q_GROUP_UNDEFINED, 64, 0, 1024);
 		
 	int gid = pfq_group_id(q);
 
 	assert( pfq_join_group(y, gid, Q_CLASS_DEFAULT, Q_GROUP_PRIVATE) < 0);
 	assert( pfq_join_group(y, gid, Q_CLASS_DEFAULT, Q_GROUP_RESTRICTED) < 0);
-	assert( pfq_join_group(y, gid, Q_CLASS_DEFAULT, Q_GROUP_SHARED) >= 0);
 	assert( pfq_join_group(y, gid, Q_CLASS_DEFAULT, Q_GROUP_UNDEFINED) < 0);
 
 	pfq_close(q);
 	pfq_close(y);
+	}
 }
 
 void test_join_deferred()
@@ -430,10 +524,14 @@ main(int argc __attribute__((unused)), char *argv[]__attribute__((unused)))
 	test_poll();
 	
 	test_read();                  
-
+         
 	test_stats();
 	test_group_stats();
-
+        
+        test_my_group_stats_priv();
+	test_my_group_stats_restricted();
+	test_my_group_stats_shared();
+	
 	test_groups_mask();
 	
 	test_join_private_();
@@ -448,7 +546,7 @@ main(int argc __attribute__((unused)), char *argv[]__attribute__((unused)))
 	test_join_group();
 	test_leave_group();
     
-	printf("Test successfully passed.\n");
+	printf("Tests successfully passed.\n");
     	return 0;    
 }
 
