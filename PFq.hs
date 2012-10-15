@@ -25,7 +25,7 @@ module PFq
         getSlots,
         setSlots,
         getSlotSize,
-        readQ,
+        PFq.read,
         dispatch,
         getStats,
         getGroupStats,
@@ -274,13 +274,13 @@ setPromisc hdl name value =
         pfq_set_promisc hdl dev (if value then 1 else 0) >>=
             throwPFqIf_ hdl (== -1)
 
--- readQ:
+-- read:
 --
-readQ :: Ptr PFqTag 
-      -> Int 
-      -> IO NetQueue
+read :: Ptr PFqTag 
+     -> Int 
+     -> IO NetQueue
 
-readQ hdl msec = 
+read hdl msec = 
     allocaBytes ((24)) $ \queue -> do
        pfq_read hdl queue (fromIntegral msec) >>= throwPFqIf_ hdl (== -1) 
        qptr <- ((\h -> peekByteOff h 0))  queue
