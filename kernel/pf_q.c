@@ -752,8 +752,15 @@ int pfq_getsockopt(struct socket *sock,
 		    if (copy_from_user(&group, optval, len)) 
                             return -EFAULT;
 
-		    if (group.gid < Q_ANY_GROUP || group.gid >= Q_MAX_GROUP)
+		    if (group.gid < Q_ANY_GROUP || group.gid >= Q_MAX_GROUP) {
+			    pr_devel("[PFQ|%d] join error: bad gid:%d!\n", pq->q_id, group.gid);
 			    return -EINVAL;
+		    }
+
+		    if (group.class_mask == 0) {
+			    pr_devel("[PFQ|%d] join error: bad class_mask(%lu)!\n", pq->q_id, group.class_mask);
+			    return -EINVAL;
+		    }
 
                     if (group.gid == Q_ANY_GROUP) {
 
