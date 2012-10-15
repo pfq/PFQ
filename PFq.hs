@@ -31,8 +31,10 @@ module PFq
         getGroupStats,
         steeringFunction,
         getHeaders,
+        getPackets,
         NetQueue(..),
-        Callback(..)
+        Callback(..),
+        Packet
     ) where
 
 import Data.Word
@@ -124,6 +126,7 @@ throwPFqIf hdl p v = if p v
 throwPFqIf_ :: Ptr PFqTag -> (a -> Bool) -> a -> IO ()
 throwPFqIf_ hdl p v = throwPFqIf hdl p v >> return ()
 
+type Packet = (PktHdr, Ptr Word8)
 
 -- getHeaders: obtain a list of PktHdr from a NetQueue
 --
@@ -135,7 +138,6 @@ getHeaders queue = getHeaders' (queuePtr queue) (queuePtr queue `plusPtr` q_size
                           q_len  = fromIntegral $ queueLen queue
                           q_size = q_slot * q_len
 
-
 getHeaders' :: Ptr PktHdr -> Ptr PktHdr -> Int -> IO [PktHdr]
 getHeaders' cur end slotSize 
     | cur == end = return []
@@ -143,6 +145,22 @@ getHeaders' cur end slotSize
         h <- toPktHdr cur 
         l <- getHeaders' (cur `plusPtr` slotSize) end slotSize 
         return (h:l)
+
+
+getPackets :: NetQueue -> IO [Packet]
+getPackets queue = getPackets' (queuePtr queue) (queuePtr queue `plusPtr` q_size) (fromIntegral $ queueSlotSize queue)
+                    where q_slot = fromIntegral $ queueSlotSize queue 
+                          q_len  = fromIntegral $ queueLen queue
+                          q_size = q_slot * q_len
+
+getPackets' :: Ptr PktHdr -> Ptr PktHdr -> Int -> IO [Packet]
+getPackets' cur end slotSize 
+    | cur == end = return []
+    | otherwise  = do
+        h <- toPktHdr cur 
+        let p = cur `plusPtr` 24 :: Ptr Word8    
+        l <- getPackets' (cur `plusPtr` slotSize) end slotSize 
+        return ( (h, p) : l )
 
 -- open:
 --

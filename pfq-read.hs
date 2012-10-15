@@ -1,26 +1,32 @@
 import PFq as Q
 import Foreign
 import System.Environment
-
+import Numeric
 import Control.Monad
 
+dumpPacket :: Ptr Word8 -> IO ()
+dumpPacket ptr = do
+                bytes <- peekByteOff ptr 0 :: IO Word64
+                putStrLn $ showHex bytes ""
+                
 recvLoop :: Ptr PFqTag -> IO ()
 recvLoop q = do 
     queue <- Q.read q 10000
     if ( Q.queueLen(queue) == 0 ) 
        then recvLoop q 
        else do
-            hs <- Q.getHeaders queue
-            mapM_ print hs
+            ps <- Q.getPackets queue
+            -- mapM_ (print . fst) ps
+            mapM_ (dumpPacket . snd) ps
             gid <- Q.getGroupId q
-            Q.getStats q >>= print
+            -- Q.getStats q >>= print
             -- putStrLn $ "qlen: " ++ show(Q.queueLen(queue)) ++ " hlen: " ++ show(length hs)
             recvLoop q
 
 dumper :: String -> IO ()
 dumper dev = do
     putStrLn  $ "dumping " ++ dev  ++ "..."
-    fp <- Q.open 64 14 4096
+    fp <- Q.open 64 0 4096
     withForeignPtr fp  $ \q -> do
         Q.setTimestamp q True
         --Q.bind q dev (-1)
