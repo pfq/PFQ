@@ -9,47 +9,167 @@ import Control.Concurrent
 
 import Data.Maybe
 
-recvLoop :: Ptr PFqTag -> MVar a -> Int -> IO Int
-recvLoop q stop tot = do 
+
+recvLoop :: (Num a) => Ptr PFqTag -> MVar a -> IO Int
+recvLoop q counter = do 
     netQueue <- Q.read q 10000
     if ( Q.queueLen netQueue == 0 ) 
-       then do
-            c <- tryTakeMVar stop
-            if (isNothing c)
-            then recvLoop q stop tot
-            else return tot    
+       then recvLoop q counter 
        else do
-            -- ps <- Q.getPackets netQueue
-            -- mapM_ (print . fst) ps
-            c <- tryTakeMVar stop
-            if (isNothing c)
-            then recvLoop q stop (tot + (fromIntegral $ Q.queueLen netQueue))
-            else return tot    
+            c <- takeMVar counter
+            putMVar counter (c + fromIntegral (Q.queueLen netQueue))           
+            recvLoop q counter
+
+
 
 dumper :: String -> IO ()
 dumper dev = do
-    putStrLn  $ "dumping " ++ dev  ++ "..."
-    fp <- Q.open 64 0 4096
-    withForeignPtr fp  $ \q -> do
-        Q.setTimestamp q True
-        Q.bind q dev (-1)
-        Q.enable q 
+        putStrLn  $ "dumping " ++ dev  ++ "..."
         -- Q.steeringFunction q gid "steer-ipv4-addr"
-        Q.getSlotSize q >>= \o -> putStrLn $ "slot_size: " ++ show(o)
        
-        stop <- newEmptyMVar
-        end  <- newEmptyMVar
+        c0 <- newMVar 0
+        c1 <- newMVar 0
+        c2 <- newMVar 0
+        c3 <- newMVar 0
+        c4 <- newMVar 0
+        c5 <- newMVar 0
+        c6 <- newMVar 0
+        c7 <- newMVar 0
+        c8 <- newMVar 0
+        c9 <- newMVar 0
+        c10 <- newMVar 0
+        c11 <- newMVar 0
+        
+        forkOn 0 (
+                    do
+                    fp <- Q.openNoGroup 46 14 131000
+                    withForeignPtr fp  $ \q -> do
+                        Q.joinGroup q 42 1 3
+                        Q.bindGroup q 42 dev (-1)
+                        Q.enable q 
+                        -- Q.steeringFunction q 42 "steer-ipv4-addr"
+                        recvLoop q c0 >> return ()  
+                 )
 
-        forkOS (    do
-                    tot <- recvLoop q stop 0 
-                    putStrLn $ "packets: " ++ show (tot) 
-                    putMVar end True 
-               )
+        forkOn 1 (    
+                    do
+                    fp <- Q.openNoGroup 46 14 131000
+                    withForeignPtr fp  $ \q -> do
+                        Q.joinGroup q 42 1 3
+                        Q.bindGroup q 42 dev (-1)
+                        Q.enable q 
+                        recvLoop q c1 >> return ()  
+                 )
 
-        threadDelay 10000000
-        putMVar stop True
-        takeMVar end
-        return ()
+        forkOn 2 (
+                    do
+                    fp <- Q.openNoGroup 46 14 131000
+                    withForeignPtr fp  $ \q -> do
+                        Q.joinGroup q 42 1 3
+                        Q.bindGroup q 42 dev (-1)
+                        Q.enable q 
+                        recvLoop q c2 >> return ()  
+                 )
+
+        forkOn 3 (    
+                    do
+                    fp <- Q.openNoGroup 46 14 131000
+                    withForeignPtr fp  $ \q -> do
+                        Q.joinGroup q 42 1 3
+                        Q.bindGroup q 42 dev (-1)
+                        Q.enable q 
+                        recvLoop q c3 >> return ()  
+                 )
+
+        forkOn 4 (
+                    do
+                    fp <- Q.openNoGroup 46 14 131000
+                    withForeignPtr fp  $ \q -> do
+                        Q.joinGroup q 42 1 3
+                        Q.bindGroup q 42 dev (-1)
+                        Q.enable q 
+                        recvLoop q c4 >> return ()  
+                 )
+
+        forkOn 5 (    
+                    do
+                    fp <- Q.openNoGroup 46 14 131000
+                    withForeignPtr fp  $ \q -> do
+                        Q.joinGroup q 42 1 3
+                        Q.bindGroup q 42 dev (-1)
+                        Q.enable q 
+                        recvLoop q c5 >> return ()  
+                 )
+
+        forkOn 6 (
+                    do
+                    fp <- Q.openNoGroup 46 14 131000
+                    withForeignPtr fp  $ \q -> do
+                        Q.joinGroup q 42 1 3
+                        Q.bindGroup q 42 dev (-1)
+                        Q.enable q 
+                        recvLoop q c6 >> return ()  
+                 )
+
+        forkOn 7 (    
+                    do
+                    fp <- Q.openNoGroup 46 14 131000
+                    withForeignPtr fp  $ \q -> do
+                        Q.joinGroup q 42 1 3
+                        Q.bindGroup q 42 dev (-1)
+                        Q.enable q 
+                        recvLoop q c7 >> return ()  
+                 )
+        
+        forkOn 8 (
+                    do
+                    fp <- Q.openNoGroup 46 14 131000
+                    withForeignPtr fp  $ \q -> do
+                        Q.joinGroup q 42 1 3
+                        Q.bindGroup q 42 dev (-1)
+                        Q.enable q 
+                        recvLoop q c8 >> return ()  
+                 )
+
+        forkOn 9 (    
+                    do
+                    fp <- Q.openNoGroup 46 14 131000
+                    withForeignPtr fp  $ \q -> do
+                        Q.joinGroup q 42 1 3
+                        Q.bindGroup q 42 dev (-1)
+                        Q.enable q 
+                        recvLoop q c9 >> return ()  
+                 )
+
+        forkOn 10 (
+                    do
+                    fp <- Q.openNoGroup 46 14 131000
+                    withForeignPtr fp  $ \q -> do
+                        Q.joinGroup q 42 1 3
+                        Q.bindGroup q 42 dev (-1)
+                        Q.enable q 
+                        recvLoop q c10 >> return ()  
+                 )
+
+        forkOn 11 (    
+                    do
+                    fp <- Q.openNoGroup 46 14 131000
+                    withForeignPtr fp  $ \q -> do
+                        Q.joinGroup q 42 1 3
+                        Q.bindGroup q 42 dev (-1)
+                        Q.enable q 
+                        recvLoop q c11 >> return ()  
+                 )
+
+        dumpStat [c0, c1, c2, c3, c4, c5, c6, c7, c8, c9, c10, c11]  
+
+
+dumpStat :: (Show a, Num a) => [MVar a] -> IO ()
+dumpStat cs = do
+             threadDelay 1000000
+             t <- mapM (\v -> swapMVar v 0) cs
+             putStrLn $ "pkt/sec: " ++ show (sum t)
+             dumpStat cs
 
 main = do
     dev <- liftM (!!0) getArgs
