@@ -4,14 +4,6 @@ import System.Environment
 
 import Control.Monad
 
-handler :: Q.Callback
-handler h _ = print h
-
-recvDispatch :: Ptr PFqTag -> IO()
-recvDispatch q = do 
-        Q.dispatch q handler 1000 
-        recvDispatch q
-
 recvLoop :: Ptr PFqTag -> IO ()
 recvLoop q = do 
     queue <- Q.read q 10000
@@ -37,8 +29,7 @@ dumper dev = do
         Q.enable q 
         Q.steeringFunction q gid "steer-ipv4-addr"
         Q.getSlotSize q >>= \o -> putStrLn $ "slot_size: " ++ show(o)
-        -- recvLoop q
-        recvDispatch q
+        recvLoop q
 
 main = do
     dev <- liftM (!!0) getArgs
