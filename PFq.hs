@@ -15,6 +15,8 @@ module PFq
         bindGroup,
         unbind,
         unbindGroup,
+        joinGroup,
+        leaveGroup,
         setTimestamp,
         getTimestamp,
         setPromisc,
@@ -248,6 +250,27 @@ unbindGroup hdl gid name queue = do
     withCString name $ \dev -> do
         pfq_unbind_group hdl (fromIntegral gid) dev (fromIntegral queue) >>= throwPFqIf_ hdl (== -1) 
 
+-- joinGroup
+
+joinGroup :: Ptr PFqTag
+          -> Int        -- group id
+          -> Word64     -- class_mask TODO
+          -> Int        -- group policy
+          -> IO ()
+
+joinGroup hdl gid mask pol =
+    pfq_join_group hdl (fromIntegral gid) (fromIntegral mask) (fromIntegral pol) 
+        >>= throwPFqIf_ hdl (== -1)  
+
+-- leaveGroup
+
+leaveGroup :: Ptr PFqTag
+           -> Int        -- group id
+           -> IO ()
+
+leaveGroup hdl gid =
+    pfq_leave_group hdl (fromIntegral gid) 
+        >>= throwPFqIf_ hdl (== -1)  
 
 -- getId:
 --
@@ -443,6 +466,7 @@ dispatch :: Ptr PFqTag  -- packet capture descriptor
          -> Int         -- ^ timeout
          -> IO ()       -- 
 
+
 dispatch hdl f timeo = do
     cback <- makeCallback f
     ret  <- pfq_dispatch hdl cback (fromIntegral timeo) nullPtr
@@ -492,6 +516,9 @@ foreign import ccall unsafe pfq_bind_group        :: Ptr PFqTag -> CInt -> CStri
 
 foreign import ccall unsafe pfq_unbind            :: Ptr PFqTag -> CString -> CInt -> IO CInt
 foreign import ccall unsafe pfq_unbind_group      :: Ptr PFqTag -> CInt -> CString -> CInt -> IO CInt
+
+foreign import ccall unsafe pfq_join_group        :: Ptr PFqTag -> CInt -> CLong -> CInt -> IO CInt
+foreign import ccall unsafe pfq_leave_group       :: Ptr PFqTag -> CInt -> IO CInt
 
 foreign import ccall unsafe pfq_get_stats         :: Ptr PFqTag -> Ptr Statistics -> IO CInt
 foreign import ccall unsafe pfq_get_group_stats   :: Ptr PFqTag -> CInt -> Ptr Statistics -> IO CInt
