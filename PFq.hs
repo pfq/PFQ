@@ -1,4 +1,6 @@
+{-# LINE 1 "PFq.hsc" #-}
 {-# LANGUAGE ForeignFunctionInterface #-}
+{-# LINE 2 "PFq.hsc" #-}
 
 module PFq 
     (
@@ -36,10 +38,17 @@ module PFq
         getPackets,
         NetQueue(..),
         Callback,
+        class_default,
+        class_any,
+        policy_undefined,
+        policy_priv, 
+        policy_restricted,
+        policy_shared,
         Packet
     ) where
 
 import Data.Word
+import Data.Bits
 
 import Foreign.Ptr 
 import Foreign.C.String (CString, peekCString, withCString)
@@ -50,6 +59,9 @@ import Foreign.Concurrent as C (newForeignPtr)
 import Foreign.ForeignPtr (ForeignPtr)
 
 newtype PFqTag = PFqTag ()
+
+
+{-# LINE 62 "PFq.hsc" #-}
 
 -- NetQueue:
 --
@@ -83,6 +95,35 @@ data Statistics = Statistics {
     , statLost         :: {-# UNPACK #-} !Word32    -- packets lost 
     , statDropped      :: {-# UNPACK #-} !Word32    -- packets dropped 
     } deriving (Eq, Show)
+
+
+newtype ClassMask = ClassMask { unClassMask :: CLong }
+                        deriving (Eq, Show)
+
+newtype GroupPolicy = GroupPolicy { unGroupPolicy :: CInt }
+                        deriving (Eq, Show)
+
+class_default  :: ClassMask
+class_default  = ClassMask 1
+class_any      :: ClassMask
+class_any      = ClassMask 15
+
+{-# LINE 107 "PFq.hsc" #-}
+
+combineClassMasks :: [ClassMask] -> ClassMask
+combineClassMasks = ClassMask . foldr ((.|.) . unClassMask) 0
+
+policy_undefined   :: GroupPolicy
+policy_undefined   = GroupPolicy 0
+policy_priv        :: GroupPolicy
+policy_priv        = GroupPolicy 1
+policy_restricted  :: GroupPolicy
+policy_restricted  = GroupPolicy 2
+policy_shared      :: GroupPolicy
+policy_shared      = GroupPolicy 3
+
+{-# LINE 117 "PFq.hsc" #-}
+
 
 --
 
@@ -190,15 +231,15 @@ openNoGroup caplen offset slots = do
 
 -- openGroup:
 --
-openGroup:: Int  --
-     -> Int  -- TODO classMask: vedere PCREOption cap. 17
-     -> Int  --
-     -> Int  --
-     -> Int  --
-     -> IO (ForeignPtr PFqTag)
+openGroup :: [ClassMask]  --
+          -> GroupPolicy  -- 
+          -> Int  --
+          -> Int  --
+          -> Int  --
+          -> IO (ForeignPtr PFqTag)
 
-openGroup classMask policy caplen offset slots = do
-        pfq_open_group (fromIntegral classMask) (fromIntegral policy) (fromIntegral caplen) (fromIntegral offset) (fromIntegral slots) >>=
+openGroup ms policy caplen offset slots = do
+        pfq_open_group (unClassMask $ combineClassMasks ms) (unGroupPolicy policy) (fromIntegral caplen) (fromIntegral offset) (fromIntegral slots) >>=
             throwPFqIf nullPtr (== nullPtr) >>= \ptr ->
                 C.newForeignPtr ptr (pfq_close ptr) 
 
@@ -229,9 +270,9 @@ bindGroup hdl gid name queue = do
 -- unbind:
 --
 unbind :: Ptr PFqTag 
-     -> String      -- device name
-     -> Int         -- queue index
-     -> IO ()
+       -> String      -- device name
+       -> Int         -- queue index
+       -> IO ()
 
 unbind hdl name queue = do
     withCString name $ \dev -> do
@@ -240,10 +281,10 @@ unbind hdl name queue = do
 -- unbindGroup:
 --
 unbindGroup :: Ptr PFqTag
-          -> Int         -- group id
-          -> String      -- device name
-          -> Int         -- queue index
-          -> IO ()
+            -> Int         -- group id
+            -> String      -- device name
+            -> Int         -- queue index
+            -> IO ()
 
 unbindGroup hdl gid name queue = do
     withCString name $ \dev -> do
@@ -253,13 +294,13 @@ unbindGroup hdl gid name queue = do
 --
 
 joinGroup :: Ptr PFqTag
-          -> Int        -- group id
-          -> Word64     -- class_mask TODO
-          -> Int        -- group policy
+          -> Int            -- group id
+          -> [ClassMask]    -- 
+          -> GroupPolicy    -- group policy
           -> IO ()
 
-joinGroup hdl gid mask pol =
-    pfq_join_group hdl (fromIntegral gid) (fromIntegral mask) (fromIntegral pol) 
+joinGroup hdl gid ms pol =
+    pfq_join_group hdl (fromIntegral gid) (unClassMask $ combineClassMasks ms) (unGroupPolicy pol) 
         >>= throwPFqIf_ hdl (== -1)  
 
 -- leaveGroup:
