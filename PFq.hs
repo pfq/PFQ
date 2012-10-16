@@ -422,14 +422,7 @@ getStats :: Ptr PFqTag
 getStats hdl =
     allocaBytes ((sizeOf (0 :: CLong)) * 3) $ \sp -> do
         pfq_get_stats hdl sp >>= throwPFqIf_ hdl (== -1)
-        recv <- ((\ptr -> peekByteOff ptr 0 )) sp
-        lost <- ((\ptr -> peekByteOff ptr (sizeOf recv) )) sp
-        drop <- ((\ptr -> peekByteOff ptr (sizeOf recv + sizeOf lost))) sp
-        return Statistics { 
-                            statReceived = fromIntegral (recv :: CLong),
-                            statLost     = fromIntegral (lost :: CLong),
-                            statDropped  = fromIntegral (drop :: CLong)
-                          }
+        makeStats sp
 
 -- getGroupStats:
 --
@@ -441,13 +434,18 @@ getGroupStats :: Ptr PFqTag
 getGroupStats hdl gid =
     allocaBytes ((sizeOf (0 :: CLong)) * 3) $ \sp -> do
         pfq_get_group_stats hdl (fromIntegral gid) sp >>= throwPFqIf_ hdl (== -1)
-        recv <- ((\ptr -> peekByteOff ptr 0 )) sp
-        lost <- ((\ptr -> peekByteOff ptr (sizeOf recv) )) sp
-        drop <- ((\ptr -> peekByteOff ptr (sizeOf recv + sizeOf lost))) sp
+        makeStats sp
+
+
+makeStats :: Ptr a -> IO Statistics
+makeStats p = do
+        _recv <- ((\ptr -> peekByteOff ptr 0 )) p
+        _lost <- ((\ptr -> peekByteOff ptr (sizeOf _recv) )) p
+        _drop <- ((\ptr -> peekByteOff ptr (sizeOf _recv + sizeOf _lost))) p
         return Statistics { 
-                            statReceived = fromIntegral (recv :: CLong),
-                            statLost     = fromIntegral (lost :: CLong),
-                            statDropped  = fromIntegral (drop :: CLong)
+                            statReceived = fromIntegral (_recv :: CLong),
+                            statLost     = fromIntegral (_lost :: CLong),
+                            statDropped  = fromIntegral (_drop :: CLong)
                           }
 
 -- steeringFunction:
