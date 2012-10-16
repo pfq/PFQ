@@ -372,16 +372,16 @@ read :: Ptr PFqTag
 read hdl msec = 
     allocaBytes ((24)) $ \queue -> do
        pfq_read hdl queue (fromIntegral msec) >>= throwPFqIf_ hdl (== -1) 
-       qptr <- ((\h -> peekByteOff h 0))  queue
-       clen <- ((\h -> peekByteOff h (sizeOf qptr)))  queue
-       css  <- ((\h -> peekByteOff h (sizeOf qptr + sizeOf clen))) queue
-       cid  <- ((\h -> peekByteOff h (sizeOf qptr + sizeOf clen + sizeOf css))) queue
-       let slotSize'= fromIntegral(css :: CSize)
+       _ptr <- ((\h -> peekByteOff h 0))  queue
+       _len <- ((\h -> peekByteOff h (sizeOf _ptr)))  queue
+       _css <- ((\h -> peekByteOff h (sizeOf _ptr + sizeOf _len))) queue
+       _cid <- ((\h -> peekByteOff h (sizeOf _ptr + sizeOf _len + sizeOf _css))) queue
+       let slotSize'= fromIntegral(_css :: CSize)
        let slotSize = slotSize' + slotSize' `mod` 8
-       return NetQueue { queuePtr       = qptr :: Ptr PktHdr,
-                         queueLen       = fromIntegral (clen :: CSize),
+       return NetQueue { queuePtr       = _ptr :: Ptr PktHdr,
+                         queueLen       = fromIntegral (_len :: CSize),
                          queueSlotSize  = slotSize,
-                         queueIndex     = fromIntegral (cid  :: CUInt) 
+                         queueIndex     = fromIntegral (_cid  :: CUInt) 
                        }
 -- setTimestamp:
 --
