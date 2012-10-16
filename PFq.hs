@@ -84,6 +84,7 @@ data Statistics = Statistics {
     , statDropped      :: {-# UNPACK #-} !Word32    -- packets dropped 
     } deriving (Eq, Show)
 
+--
 
 toPktHdr :: Ptr PktHdr -> IO PktHdr
 toPktHdr hdr = do
@@ -114,7 +115,6 @@ type Callback  = PktHdr -> Ptr Word8  -> IO ()
 
 type CPFqCallback = Ptr PktHdr -> Ptr Word8 -> Ptr Word8 -> IO ()
                
-
 -- error handling 
 --
 
@@ -164,6 +164,7 @@ getPackets' cur end slotSize
 
 -- open:
 --
+
 open :: Int  --
      -> Int  --
      -> Int  --
@@ -248,7 +249,8 @@ unbindGroup hdl gid name queue = do
     withCString name $ \dev -> do
         pfq_unbind_group hdl (fromIntegral gid) dev (fromIntegral queue) >>= throwPFqIf_ hdl (== -1) 
 
--- joinGroup
+-- joinGroup:
+--
 
 joinGroup :: Ptr PFqTag
           -> Int        -- group id
@@ -260,7 +262,8 @@ joinGroup hdl gid mask pol =
     pfq_join_group hdl (fromIntegral gid) (fromIntegral mask) (fromIntegral pol) 
         >>= throwPFqIf_ hdl (== -1)  
 
--- leaveGroup
+-- leaveGroup:
+-- 
 
 leaveGroup :: Ptr PFqTag
            -> Int        -- group id
@@ -272,6 +275,7 @@ leaveGroup hdl gid =
 
 -- getId:
 --
+
 getId :: Ptr PFqTag -> IO Int
 getId hdl = 
     pfq_id hdl >>= throwPFqIf hdl (== -1) >>= return . fromIntegral 
@@ -279,6 +283,7 @@ getId hdl =
 
 -- getGroupId:
 --
+
 getGroupId :: Ptr PFqTag -> IO Int
 getGroupId hdl = 
     pfq_group_id hdl >>= throwPFqIf hdl (== -1) >>= return . fromIntegral
@@ -286,6 +291,7 @@ getGroupId hdl =
 
 -- enable:
 --
+
 enable :: Ptr PFqTag -> IO ()
 enable hdl = 
     pfq_enable hdl >>= throwPFqIf_ hdl (== -1)
@@ -293,6 +299,7 @@ enable hdl =
 
 -- disable:
 --
+
 disable :: Ptr PFqTag -> IO ()
 disable hdl = pfq_disable hdl >>= throwPFqIf_ hdl (== -1)
 
@@ -307,6 +314,7 @@ isEnabled hdl =
 
 -- setPromisc:
 --
+
 setPromisc :: Ptr PFqTag -> String -> Bool -> IO ()
 setPromisc hdl name value = 
     withCString name $ \dev -> do
@@ -315,6 +323,7 @@ setPromisc hdl name value =
 
 -- read:
 --
+
 read :: Ptr PFqTag 
      -> Int 
      -> IO NetQueue
