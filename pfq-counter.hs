@@ -1,12 +1,12 @@
 import PFq as Q
 import Foreign
 import System.Environment
+import System.Time
 import Numeric
 
 import Control.Monad
 import Control.Exception
 import Control.Concurrent
-
 
 recvLoop :: (Num a) => Ptr PFqTag -> MVar a -> IO Int
 recvLoop q counter = do 
@@ -14,8 +14,9 @@ recvLoop q counter = do
     if ( Q.queueLen netQueue == 0 ) 
        then recvLoop q counter 
        else do
-            c <- takeMVar counter
-            putMVar counter (c + fromIntegral (Q.queueLen netQueue))           
+            modifyMVar_ counter $ \c -> return (c + fromIntegral (Q.queueLen netQueue))
+            -- c <- takeMVar counter
+            -- putMVar counter (c + fromIntegral (Q.queueLen netQueue))           
             recvLoop q counter
 
 
@@ -41,15 +42,24 @@ launcher dev n  = do
 dumper :: String -> Int -> IO ()
 dumper dev n = do
         cs <- launcher dev n
-        dumpStat cs
+        t <- getClockTime
+        dumpStat cs t
 
 
-dumpStat :: (Show a, Num a) => [MVar a] -> IO ()
-dumpStat cs = do
+diffUSec :: ClockTime -> ClockTime -> Int
+diffUSec t1 t0 = (tdSec delta * 1000000) + truncate (fromIntegral(tdPicosec delta) / 1000000)
+                    where delta = diffClockTimes t1 t0
+
+
+dumpStat :: (Show a, Fractional a) => [MVar a] -> ClockTime -> IO ()
+dumpStat cs t0 = do
              threadDelay 1000000
+             t <- getClockTime
              cs' <- mapM (\v -> swapMVar v 0) cs
-             putStrLn $ "pkt/sec: " ++ show (sum cs')
-             dumpStat cs
+             let delta = diffUSec t t0
+             let rate = (sum cs' * 1000000) / fromIntegral delta  
+             putStrLn $ "duration: " ++ show delta ++ " pkt/sec: " ++ show rate
+             dumpStat cs t
 
 main = do
     args <- getArgs
