@@ -26,7 +26,7 @@ launcher dev n  = do
                                 do
                                 fp <- Q.openNoGroup 46 14 131000
                                 withForeignPtr fp  $ \q -> do
-                                    Q.joinGroup q 42 1 3
+                                    Q.joinGroup q 42 [Q.class_default] Q.policy_shared
                                     Q.bindGroup q 42 dev (-1)
                                     Q.enable q 
                                     -- Q.steeringFunction q 42 "steer-ipv4-addr"
