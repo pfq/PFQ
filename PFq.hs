@@ -35,12 +35,11 @@ module PFq
         getHeaders,
         getPackets,
         NetQueue(..),
-        Callback(..),
+        Callback,
         Packet
     ) where
 
 import Data.Word
-import Debug.Trace
 
 import Foreign.Ptr 
 import Foreign.C.String (CString, peekCString, withCString)
@@ -88,25 +87,25 @@ data Statistics = Statistics {
 
 toPktHdr :: Ptr PktHdr -> IO PktHdr
 toPktHdr hdr = do
-    sec'  <- ((\h -> peekByteOff h 0))  hdr
-    nsec' <- ((\h -> peekByteOff h 4))  hdr
-    ifid' <- ((\h -> peekByteOff h 8))  hdr
-    gid'  <- ((\h -> peekByteOff h 12)) hdr
-    len'  <- ((\h -> peekByteOff h 16)) hdr
-    cap'  <- ((\h -> peekByteOff h 18)) hdr
-    tci'  <- ((\h -> peekByteOff h 20)) hdr
-    hwq'  <- ((\h -> peekByteOff h 22)) hdr
-    com'  <- ((\h -> peekByteOff h 23)) hdr
+    _sec  <- ((\h -> peekByteOff h 0))  hdr
+    _nsec <- ((\h -> peekByteOff h 4))  hdr
+    _ifid <- ((\h -> peekByteOff h 8))  hdr
+    _gid  <- ((\h -> peekByteOff h 12)) hdr
+    _len  <- ((\h -> peekByteOff h 16)) hdr
+    _cap  <- ((\h -> peekByteOff h 18)) hdr
+    _tci  <- ((\h -> peekByteOff h 20)) hdr
+    _hwq  <- ((\h -> peekByteOff h 22)) hdr
+    _com  <- ((\h -> peekByteOff h 23)) hdr
     return PktHdr { 
-                    hdrSec      = fromIntegral (sec'  :: CUInt),
-                    hdrNsec     = fromIntegral (nsec' :: CUInt),
-                    hdrIfIndex  = fromIntegral (ifid' :: CInt),
-                    hdrGid      = fromIntegral (gid'  :: CInt),
-                    hdrLen      = fromIntegral (len'  :: CUShort),
-                    hdrCapLen   = fromIntegral (cap'  :: CUShort),
-                    hdrTci      = fromIntegral (tci'  :: CUShort),
-                    hdrHwQueue  = fromIntegral (hwq'  :: CUChar),
-                    hdrCommit   = fromIntegral (com'  :: CUChar)
+                    hdrSec      = fromIntegral (_sec  :: CUInt),
+                    hdrNsec     = fromIntegral (_nsec :: CUInt),
+                    hdrIfIndex  = fromIntegral (_ifid :: CInt),
+                    hdrGid      = fromIntegral (_gid  :: CInt),
+                    hdrLen      = fromIntegral (_len  :: CUShort),
+                    hdrCapLen   = fromIntegral (_cap  :: CUShort),
+                    hdrTci      = fromIntegral (_tci  :: CUShort),
+                    hdrHwQueue  = fromIntegral (_hwq  :: CUChar),
+                    hdrCommit   = fromIntegral (_com  :: CUChar)
                   }
 
 -- type of the callback function passed to 'dispatch' 
@@ -134,7 +133,6 @@ type Packet = (PktHdr, Ptr Word8)
 --
 
 getHeaders :: NetQueue -> IO [PktHdr]
--- getHeaders queue | trace ("getHeaders: slot_size=" ++ show(queueSlotSize queue) ++ " queue_addr:" ++ show (queuePtr queue) ) False = undefined 
 getHeaders queue = getHeaders' (queuePtr queue) (queuePtr queue `plusPtr` q_size) (fromIntegral $ queueSlotSize queue)
                     where q_slot = fromIntegral $ queueSlotSize queue 
                           q_len  = fromIntegral $ queueLen queue
@@ -359,7 +357,8 @@ getTimestamp hdl = do
 setCaplen:: Ptr PFqTag -> Int -> IO ()
 
 setCaplen hdl value = do
-    pfq_set_caplen hdl (fromIntegral value) >>= throwPFqIf_ hdl (== -1)
+    pfq_set_caplen hdl (fromIntegral value) 
+        >>= throwPFqIf_ hdl (== -1)
 
 
 -- getCaplen:
@@ -367,7 +366,8 @@ setCaplen hdl value = do
 getCaplen :: Ptr PFqTag -> IO Int  
 
 getCaplen hdl = 
-    pfq_get_caplen hdl >>= throwPFqIf hdl (== -1) >>= return . fromIntegral
+    pfq_get_caplen hdl >>= throwPFqIf hdl (== -1) 
+        >>= return . fromIntegral
 
 
 -- setOffset:
@@ -375,7 +375,8 @@ getCaplen hdl =
 setOffset:: Ptr PFqTag -> Int -> IO ()
 
 setOffset hdl value = 
-    pfq_set_offset hdl (fromIntegral value) >>= throwPFqIf_ hdl (== -1)
+    pfq_set_offset hdl (fromIntegral value) >>= 
+    throwPFqIf_ hdl (== -1)
 
 
 -- getOffset:
@@ -383,7 +384,8 @@ setOffset hdl value =
 getOffset :: Ptr PFqTag -> IO Int  
 
 getOffset hdl = 
-    pfq_get_offset hdl >>= throwPFqIf hdl (== -1) >>= return . fromIntegral
+    pfq_get_offset hdl >>= throwPFqIf hdl (== -1) >>= 
+    return . fromIntegral
 
 
 -- setSlots:
@@ -391,21 +393,24 @@ getOffset hdl =
 setSlots:: Ptr PFqTag -> Int -> IO ()
 
 setSlots hdl value = 
-    pfq_set_slots hdl (fromIntegral value) >>= throwPFqIf_ hdl (== -1)
+    pfq_set_slots hdl (fromIntegral value) 
+    >>= throwPFqIf_ hdl (== -1)
 
 -- getSlots:
 --
 getSlots :: Ptr PFqTag -> IO Int  
 
 getSlots hdl = 
-    pfq_get_slots hdl >>= throwPFqIf hdl (== -1) >>= return . fromIntegral
+    pfq_get_slots hdl >>= throwPFqIf hdl (== -1) 
+        >>= return . fromIntegral
 
 -- getSlotSize:
 --
 getSlotSize :: Ptr PFqTag -> IO Int  
 
 getSlotSize hdl = 
-    pfq_get_slot_size hdl >>= throwPFqIf hdl (== -1) >>= return . fromIntegral
+    pfq_get_slot_size hdl >>= throwPFqIf hdl (== -1) 
+        >>= return . fromIntegral
 
 
 -- getStats:
@@ -471,11 +476,11 @@ dispatch hdl f timeo = do
     cback <- makeCallback f
     ret  <- pfq_dispatch hdl cback (fromIntegral timeo) nullPtr
     freeHaskellFunPtr cback
-    throwPFqIf_ hdl (== -1) (fromIntegral ret)
+    throwPFqIf_ hdl (== (-1 :: Integer)) (fromIntegral ret)
 
 
 makeCallback :: Callback -> IO (FunPtr CPFqCallback)
-makeCallback fun = make_callback $ \chdr ptr usr -> do
+makeCallback fun = make_callback $ \chdr ptr _ -> do
     hdr <- toPktHdr chdr
     fun hdr ptr
 
@@ -529,7 +534,6 @@ foreign import ccall pfq_dispatch                 :: Ptr PFqTag -> FunPtr CPFqCa
 foreign import ccall "wrapper" make_callback      :: CPFqCallback -> IO (FunPtr CPFqCallback)
 
 foreign import ccall unsafe pfq_read              :: Ptr PFqTag -> Ptr NetQueue -> CLong -> IO CInt
-
 
 -- TODO
 -- foreign import ccall unsafe pfq_group_state    :: Ptr PFqTag -> CInt -> Ptr CChar -> CSize -> IO CInt
