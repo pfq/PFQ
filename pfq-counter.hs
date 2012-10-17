@@ -13,11 +13,11 @@ import Control.Concurrent
 recvLoop :: (Num a) => Ptr PFqTag -> MVar a -> IO Int
 recvLoop q counter = do 
     netQueue <- Q.read q 10000
-    if ( Q.queueLen netQueue == 0 ) 
-       then recvLoop q counter 
-       else do
-            modifyMVar_ counter $ \c -> return (c + fromIntegral (Q.queueLen netQueue))
-            recvLoop q counter
+    case (Q.queueLen netQueue) of 
+        0 ->  recvLoop q counter 
+        _ ->  do
+              modifyMVar_ counter $ \c -> return (c + fromIntegral (Q.queueLen netQueue))
+              recvLoop q counter
 
 
 launcher :: (Num a) => String -> Int -> Maybe String -> IO [MVar a]
