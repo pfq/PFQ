@@ -6,23 +6,26 @@ import System.Environment
 import Numeric
 import Control.Monad
 
-dumpPacket :: Ptr Word8 -> IO ()
-dumpPacket ptr = do
-                bytes <- peekByteOff ptr 0 :: IO Word64
+import Debug.Trace
+
+dumpPacket :: Q.Packet -> IO ()
+dumpPacket p = do
+                Q.waitForPacket p
+                bytes <- peekByteOff (Q.pData p) 0 :: IO Word64
                 putStrLn $ showHex bytes ""
-                
+
 recvLoop :: Ptr PFqTag -> IO ()
 recvLoop q = do 
     queue <- Q.read q 10000
-    if ( Q.queueLen(queue) == 0 ) 
+    if ( Q.qLen(queue) == 0 ) 
        then recvLoop q 
        else do
             ps <- Q.getPackets queue
             -- mapM_ (print . fst) ps
-            mapM_ (dumpPacket . snd) ps
+            mapM_ dumpPacket ps
             gid <- Q.getGroupId q
             -- Q.getStats q >>= print
-            -- putStrLn $ "qlen: " ++ show(Q.queueLen(queue)) ++ " hlen: " ++ show(length hs)
+            -- putStrLn $ "qlen: " ++ show(Q.qLen(queue)) ++ " hlen: " ++ show(length hs)
             recvLoop q
 
 dumper :: String -> IO ()

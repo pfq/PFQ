@@ -10,20 +10,32 @@ import System.Time
 import Control.Monad
 import Control.Concurrent
 
-recvLoop :: (Num a) => Ptr PFqTag -> MVar a -> IO Int
-recvLoop q counter = do 
+import Data.HashSet 
+
+data Key = Key Word32 Word32 Word16 Word16
+            deriving (Eq, Show)
+
+data State a = State { sCounter :: MVar a,
+                       sFlow    :: MVar a, 
+                       sSet     :: HashSet Key
+                     }
+
+
+recvLoop :: (Num a) => Ptr PFqTag -> State a -> IO Int
+recvLoop q state = do 
     netQueue <- Q.read q 10000
-    case (Q.queueLen netQueue) of 
-        0 ->  recvLoop q counter 
+    case (Q.qLen netQueue) of 
+        0 ->  recvLoop q state
         _ ->  do
-              modifyMVar_ counter $ \c -> return (c + fromIntegral (Q.queueLen netQueue))
-              recvLoop q counter
+              modifyMVar_ (sCounter state) $ \c -> return (c + fromIntegral (Q.qLen netQueue))
+              recvLoop q state
 
 
 launcher :: (Num a) => String -> Int -> Maybe String -> IO [MVar a]
 launcher _ 0 _ = return []
 launcher dev n steer = do 
          c <- newMVar 0
+         f <- newMVar 0
          _ <- forkOn (n-1) (
                   do
                   fp <- Q.openNoGroup 46 14 131000
@@ -32,7 +44,7 @@ launcher dev n steer = do
                       Q.bindGroup q 42 dev (-1)
                       Q.enable q 
                       when (isJust steer) (Q.steeringFunction q 42 (fromJust steer))
-                      recvLoop q c >> return ()  
+                      recvLoop q (State c f empty ) >> return ()  
                   )
 
          putStrLn $ "#" ++ show (n-1) ++ " started!"

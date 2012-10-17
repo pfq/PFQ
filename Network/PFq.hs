@@ -1,6 +1,6 @@
-{-# LINE 1 "PFq.hsc" #-}
+{-# LINE 1 "Network/PFq.hsc" #-}
 {-# LANGUAGE ForeignFunctionInterface #-}
-{-# LINE 2 "PFq.hsc" #-}
+{-# LINE 2 "Network/PFq.hsc" #-}
 
 module Network.PFq 
     (
@@ -34,21 +34,32 @@ module Network.PFq
         getStats,
         getGroupStats,
         steeringFunction,
-        getHeaders,
+    
         getPackets,
+        getHeader,
+        isPacketReady,
+        waitForPacket,
+
+        --- data
         NetQueue(..),
+        Packet(..),
         Callback,
+
         class_default,
         class_any,
         policy_undefined,
         policy_priv, 
         policy_restricted,
         policy_shared,
-        Packet
     ) where
+
 
 import Data.Word
 import Data.Bits
+import Debug.Trace 
+
+import Control.Monad 
+import Control.Concurrent
 
 import Foreign.Ptr 
 import Foreign.C.String (CString, peekCString, withCString)
@@ -61,40 +72,48 @@ import Foreign.ForeignPtr (ForeignPtr)
 newtype PFqTag = PFqTag ()
 
 
-{-# LINE 62 "PFq.hsc" #-}
+{-# LINE 73 "Network/PFq.hsc" #-}
 
 -- NetQueue:
 --
 
 data NetQueue = NetQueue {
-      queuePtr        :: Ptr PktHdr
-   ,  queueLen        :: {-# UNPACK #-} !Word64
-   ,  queueSlotSize   :: {-# UNPACK #-} !Word64
-   ,  queueIndex      :: {-# UNPACK #-} !Word32
+      qPtr        :: Ptr PktHdr
+   ,  qLen        :: {-# UNPACK #-} !Word64
+   ,  qSlotSize   :: {-# UNPACK #-} !Word64
+   ,  qIndex      :: {-# UNPACK #-} !Word32
    } deriving (Eq, Show)
 
 -- PktHdr:
 --
 
 data PktHdr = PktHdr {
-      hdrSec      :: {-# UNPACK #-} !Word32
-    , hdrNsec     :: {-# UNPACK #-} !Word32
-    , hdrGid      :: {-# UNPACK #-} !Word32
-    , hdrIfIndex  :: {-# UNPACK #-} !Word32
-    , hdrLen      :: {-# UNPACK #-} !Word16
-    , hdrCapLen   :: {-# UNPACK #-} !Word16
-    , hdrTci      :: {-# UNPACK #-} !Word16
-    , hdrHwQueue  :: {-# UNPACK #-} !Word8
-    , hdrCommit   :: {-# UNPACK #-} !Word8 
+      hSec      :: {-# UNPACK #-} !Word32
+    , hNsec     :: {-# UNPACK #-} !Word32
+    , hGid      :: {-# UNPACK #-} !Word32
+    , hIfIndex  :: {-# UNPACK #-} !Word32
+    , hLen      :: {-# UNPACK #-} !Word16
+    , hCapLen   :: {-# UNPACK #-} !Word16
+    , hTci      :: {-# UNPACK #-} !Word16
+    , hHwQueue  :: {-# UNPACK #-} !Word8
+    , hCommit   :: {-# UNPACK #-} !Word8 
     } deriving (Eq, Show)
 
 -- Statistics:
 
 data Statistics = Statistics {
-      statReceived     :: {-# UNPACK #-} !Word32    -- packets received
-    , statLost         :: {-# UNPACK #-} !Word32    -- packets lost 
-    , statDropped      :: {-# UNPACK #-} !Word32    -- packets dropped 
+      sReceived     :: {-# UNPACK #-} !Word32    -- packets received
+    , sLost         :: {-# UNPACK #-} !Word32    -- packets lost 
+    , sDropped      :: {-# UNPACK #-} !Word32    -- packets dropped 
     } deriving (Eq, Show)
+
+
+-- Packet:
+data Packet = Packet { 
+      pHdr   :: Ptr PktHdr
+   ,  pData  :: Ptr Word8
+   ,  pIndex :: Word32 
+   } deriving (Eq, Show)
 
 
 newtype ClassMask = ClassMask { unClassMask :: CLong }
@@ -108,7 +127,7 @@ class_default  = ClassMask 1
 class_any      :: ClassMask
 class_any      = ClassMask 15
 
-{-# LINE 107 "PFq.hsc" #-}
+{-# LINE 126 "Network/PFq.hsc" #-}
 
 combineClassMasks :: [ClassMask] -> ClassMask
 combineClassMasks = ClassMask . foldr ((.|.) . unClassMask) 0
@@ -122,7 +141,7 @@ policy_restricted  = GroupPolicy 2
 policy_shared      :: GroupPolicy
 policy_shared      = GroupPolicy 3
 
-{-# LINE 117 "PFq.hsc" #-}
+{-# LINE 136 "Network/PFq.hsc" #-}
 
 
 --
@@ -139,15 +158,15 @@ toPktHdr hdr = do
     _hwq  <- ((\h -> peekByteOff h 22)) hdr
     _com  <- ((\h -> peekByteOff h 23)) hdr
     return PktHdr { 
-                    hdrSec      = fromIntegral (_sec  :: CUInt),
-                    hdrNsec     = fromIntegral (_nsec :: CUInt),
-                    hdrIfIndex  = fromIntegral (_ifid :: CInt),
-                    hdrGid      = fromIntegral (_gid  :: CInt),
-                    hdrLen      = fromIntegral (_len  :: CUShort),
-                    hdrCapLen   = fromIntegral (_cap  :: CUShort),
-                    hdrTci      = fromIntegral (_tci  :: CUShort),
-                    hdrHwQueue  = fromIntegral (_hwq  :: CUChar),
-                    hdrCommit   = fromIntegral (_com  :: CUChar)
+                    hSec      = fromIntegral (_sec  :: CUInt),
+                    hNsec     = fromIntegral (_nsec :: CUInt),
+                    hIfIndex  = fromIntegral (_ifid :: CInt),
+                    hGid      = fromIntegral (_gid  :: CInt),
+                    hLen      = fromIntegral (_len  :: CUShort),
+                    hCapLen   = fromIntegral (_cap  :: CUShort),
+                    hTci      = fromIntegral (_tci  :: CUShort),
+                    hHwQueue  = fromIntegral (_hwq  :: CUChar),
+                    hCommit   = fromIntegral (_com  :: CUChar)
                   }
 
 -- type of the callback function passed to 'dispatch' 
@@ -168,40 +187,41 @@ throwPFqIf hdl p v = if p v
 throwPFqIf_ :: Ptr PFqTag -> (a -> Bool) -> a -> IO ()
 throwPFqIf_ hdl p v = throwPFqIf hdl p v >> return ()
 
-type Packet = (PktHdr, Ptr Word8)
-
--- getHeaders: obtain a list of PktHdr from a NetQueue
---
-
-getHeaders :: NetQueue -> IO [PktHdr]
-getHeaders queue = getHeaders' (queuePtr queue) (queuePtr queue `plusPtr` q_size) (fromIntegral $ queueSlotSize queue)
-                    where q_slot = fromIntegral $ queueSlotSize queue 
-                          q_len  = fromIntegral $ queueLen queue
-                          q_size = q_slot * q_len
-
-getHeaders' :: Ptr PktHdr -> Ptr PktHdr -> Int -> IO [PktHdr]
-getHeaders' cur end slotSize 
-    | cur == end = return []
-    | otherwise  = do
-        h <- toPktHdr cur 
-        l <- getHeaders' (cur `plusPtr` slotSize) end slotSize 
-        return (h:l)
-
 
 getPackets :: NetQueue -> IO [Packet]
-getPackets queue = getPackets' (queuePtr queue) (queuePtr queue `plusPtr` q_size) (fromIntegral $ queueSlotSize queue)
-                    where q_slot = fromIntegral $ queueSlotSize queue 
-                          q_len  = fromIntegral $ queueLen queue
-                          q_size = q_slot * q_len
+getPackets nq = getPackets' (qIndex nq) (qPtr nq) (qPtr nq `plusPtr` _size) (fromIntegral $ qSlotSize nq)
+                    where _slot = fromIntegral $ qSlotSize nq
+                          _len  = fromIntegral $ qLen nq
+                          _size = _slot * _len
 
-getPackets' :: Ptr PktHdr -> Ptr PktHdr -> Int -> IO [Packet]
-getPackets' cur end slotSize 
+
+getPackets' :: Word32 -> Ptr PktHdr -> Ptr PktHdr -> Int -> IO [Packet]
+getPackets' index cur end slotSize 
     | cur == end = return []
     | otherwise  = do
-        h <- toPktHdr cur 
+        let h = cur :: Ptr PktHdr 
         let p = cur `plusPtr` 24 :: Ptr Word8    
-        l <- getPackets' (cur `plusPtr` slotSize) end slotSize 
-        return ( (h, p) : l )
+        l <- getPackets' index (cur `plusPtr` slotSize) end slotSize 
+        return ( Packet h p index : l )
+
+
+isPacketReady :: Packet -> IO Bool
+isPacketReady p = do
+    _com  <- ((\h -> peekByteOff h 23)) (pHdr p) 
+    return ((_com :: CUChar) == (fromIntegral $ pIndex p))
+
+
+waitForPacket :: Packet -> IO ()
+waitForPacket p = do
+    ready <- isPacketReady p
+    when (not ready) $ yield >> waitForPacket p >> return ()
+
+
+getHeader :: Packet -> IO PktHdr
+getHeader p = do
+    waitForPacket p >> toPktHdr (pHdr p) 
+    toPktHdr (pHdr p) 
+
 
 -- open:
 --
@@ -227,7 +247,6 @@ openNoGroup caplen offset slots = do
         pfq_open_nogroup (fromIntegral caplen) (fromIntegral offset) (fromIntegral slots) >>=
             throwPFqIf nullPtr (== nullPtr) >>= \ptr ->
                 C.newForeignPtr ptr (pfq_close ptr) 
-
 
 -- openGroup:
 --
@@ -378,10 +397,10 @@ read hdl msec =
        _cid <- ((\h -> peekByteOff h (sizeOf _ptr + sizeOf _len + sizeOf _css))) queue
        let slotSize'= fromIntegral(_css :: CSize)
        let slotSize = slotSize' + slotSize' `mod` 8
-       return NetQueue { queuePtr       = _ptr :: Ptr PktHdr,
-                         queueLen       = fromIntegral (_len :: CSize),
-                         queueSlotSize  = slotSize,
-                         queueIndex     = fromIntegral (_cid  :: CUInt) 
+       return NetQueue { qPtr       = _ptr :: Ptr PktHdr,
+                         qLen       = fromIntegral (_len :: CSize),
+                         qSlotSize  = slotSize,
+                         qIndex     = fromIntegral (_cid  :: CUInt) 
                        }
 -- setTimestamp:
 --
@@ -493,9 +512,9 @@ makeStats p = do
         _lost <- ((\ptr -> peekByteOff ptr (sizeOf _recv) )) p
         _drop <- ((\ptr -> peekByteOff ptr (sizeOf _recv + sizeOf _lost))) p
         return Statistics { 
-                            statReceived = fromIntegral (_recv :: CLong),
-                            statLost     = fromIntegral (_lost :: CLong),
-                            statDropped  = fromIntegral (_drop :: CLong)
+                            sReceived = fromIntegral (_recv :: CLong),
+                            sLost     = fromIntegral (_lost :: CLong),
+                            sDropped  = fromIntegral (_drop :: CLong)
                           }
 
 -- steeringFunction:
