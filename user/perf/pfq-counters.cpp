@@ -20,19 +20,25 @@
 #include <atomic>
 #include <cmath>
 #include <tuple>
+#include <unordered_set>
 
 #include <pfq.hpp>
 
+#include <netinet/ip.h>
+#include <netinet/udp.h>
 
 namespace opt {
 
     int sleep_microseconds;
     std::string steer_function;
+
     size_t caplen = 64;
     size_t offset = 0;
     size_t slots  = 262144;
 
     int group_id  = 42;
+
+    bool flow = false;
 
     static const int seconds = 600;
 }
@@ -41,6 +47,21 @@ namespace opt {
 typedef std::tuple<std::string, int, std::vector<int>> binding_type;
 
 using namespace net;
+
+typedef std::tuple<uint32_t, uint32_t, uint16_t, uint16_t> Tuple;
+
+
+struct HashTuple {
+
+    uint32_t operator()(Tuple const &t) const
+    {
+
+        return std::get<0>(t) ^ std::get<1>(t) ^
+               std::get<2>(t) ^ (std::get<3>(t) << 16);
+    }
+
+};
+
 
 namespace vt100
 {
@@ -144,6 +165,27 @@ namespace test
 
                 if (m_stop.load(std::memory_order_relaxed))
                     return;
+
+                if (opt::flow) 
+                {
+                    auto it = many.begin();
+                    auto it_e = many.end();
+                    for(; it != it_e; ++it)
+                    {
+                        while(!it.ready())
+                            std::this_thread::yield();
+
+                        iphdr  *  ip = static_cast<iphdr *> (it.data());
+                        if (ip->protocol == IPPROTO_TCP ||
+                            ip->protocol == IPPROTO_UDP)
+                        {
+                            udphdr * udp = reinterpret_cast<udphdr *>(static_cast<char *>(it.data()) + (ip->ihl<<2));
+                     
+                            if (m_set.insert(std::make_tuple(ip->saddr, ip->daddr, udp->source, udp->dest)).second)
+                                m_flow++;
+                        }
+                    }
+                }
             }
         }
 
@@ -162,6 +204,12 @@ namespace test
         read() const
         {
             return m_read;
+        }
+
+        unsigned long 
+        flow() const
+        {
+            return m_flow;
         }
 
         size_t 
@@ -183,6 +231,10 @@ namespace test
         unsigned long long m_read;
         size_t m_batch;
 
+        std::unordered_set<std::tuple<uint32_t, uint32_t, uint16_t, uint16_t>, HashTuple> m_set;
+
+        unsigned long m_flow;
+
     } __attribute__((aligned(128)));
 }
 
@@ -202,7 +254,9 @@ unsigned int hardware_concurrency()
 
 void usage(const char *name)
 {
-    throw std::runtime_error(std::string("usage: ").append(name).append("[-h|--help] [-c caplen] [-o offset] [-s slots] [-g gid ] [-b|--balance function-name] T1 T2... | T = dev:core:queue,queue..."));
+    throw std::runtime_error(std::string("usage: ")
+               .append(name)
+               .append("[-h|--help] [-c caplen] [-o offset] [-f | --flow] [-s slots] [-g gid ] [-s|--steer function-name] T1 T2... \n\t| T = dev:core:queue,queue..."));
 }
 
 
@@ -221,8 +275,8 @@ try
     // load vbinding vector:
     for(int i = 1; i < argc; ++i)
     {
-        if ( strcmp(argv[i], "-b") == 0 ||
-             strcmp(argv[i], "--balance") == 0) {
+        if ( strcmp(argv[i], "-s") == 0 ||
+             strcmp(argv[i], "--steer") == 0) {
             i++;
             if (i == argc)
             {
@@ -286,6 +340,13 @@ try
             continue;
         }
 
+        if ( strcmp(argv[i], "-f") == 0 ||
+             strcmp(argv[i], "--flow") == 0)
+        {
+            opt::flow = true;
+            continue;
+        }
+
         if ( strcmp(argv[i], "-h") == 0 ||
              strcmp(argv[i], "--help") == 0)
             usage(argv[0]);
@@ -293,9 +354,16 @@ try
         vbinding.push_back(binding_parser(argv[i]));
     }
     
-    std::cout << "Caplen: " << opt::caplen << std::endl;
-    std::cout << "Slots : " << opt::slots << std::endl;
+    std::cout << "caplen: " << opt::caplen << std::endl;
+    std::cout << "slots : " << opt::slots << std::endl;
 
+    if (opt::flow) {
+        std::cout << "forcing offset to 14 bytes..." << std::endl;
+        opt::offset = 14;
+    }
+    
+    std::cout << "offset: " << opt::offset << std::endl;
+    
     // create threads' context:
     //
     for(unsigned int i = 0; i < vbinding.size(); ++i)
@@ -322,7 +390,7 @@ try
                   vt.push_back(std::move(t));
                   });
 
-    unsigned long long sum, old = 0;
+    unsigned long long sum, flow, old = 0;
     pfq_stats sum_stats, old_stats = {0,0,0};
 
     std::cout << "----------- capture started ------------\n";
@@ -334,10 +402,12 @@ try
         std::this_thread::sleep_for(std::chrono::seconds(1));
         
         sum = 0;
+        flow = 0;
         sum_stats = {0,0,0};
 
         std::for_each(ctx.begin(), ctx.end(), [&](const test::ctx &c) {
                         sum += c.read();
+                        flow += c.flow();
                         sum_stats += c.stats();
                       });
     
@@ -369,7 +439,13 @@ try
 
         std::cout << "capture: " << vt100::BOLD << 
                 ((sum-old)*1000000)/std::chrono::microseconds(end-begin).count() 
-                    << vt100::RESET << " pkt/sec" << std::endl; 
+                    << vt100::RESET << " pkt/sec"; 
+        
+        if (flow) {
+            std::cout << " flow: " << flow;    
+        }
+
+        std::cout << std::endl; 
 
         old = sum, begin = end;
         old_stats = sum_stats;
