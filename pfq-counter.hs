@@ -25,15 +25,16 @@ launcher _ 0 _ = return []
 launcher dev n steer = do 
          c <- newMVar 0
          _ <- forkOn (n-1) (
-                                do
-                                fp <- Q.openNoGroup 46 14 131000
-                                withForeignPtr fp  $ \q -> do
-                                    Q.joinGroup q 42 [Q.class_default] Q.policy_shared
-                                    Q.bindGroup q 42 dev (-1)
-                                    Q.enable q 
-                                    when (isJust steer) (Q.steeringFunction q 42 (fromJust steer))
-                                    recvLoop q c >> return ()  
-                           )
+                  do
+                  fp <- Q.openNoGroup 46 14 131000
+                  withForeignPtr fp  $ \q -> do
+                      Q.joinGroup q 42 [Q.class_default] Q.policy_shared
+                      Q.bindGroup q 42 dev (-1)
+                      Q.enable q 
+                      when (isJust steer) (Q.steeringFunction q 42 (fromJust steer))
+                      recvLoop q c >> return ()  
+                  )
+
          putStrLn $ "#" ++ show (n-1) ++ " started!"
          liftM2 (:) (return c) (launcher dev (n-1) steer)
                          
