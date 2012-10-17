@@ -1,4 +1,6 @@
-import PFq as Q
+module Main where
+
+import Network.PFq as Q
 import Foreign
 import System.Environment
 import Numeric

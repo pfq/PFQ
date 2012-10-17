@@ -1,6 +1,6 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
 
-module PFq 
+module Network.PFq 
     (
         PFqTag,
         open,
@@ -27,7 +27,7 @@ module PFq
         getSlots,
         setSlots,
         getSlotSize,
-        PFq.read,
+        Network.PFq.read,
         dispatch,
         getStats,
         getGroupStats,

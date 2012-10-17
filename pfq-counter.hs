@@ -1,6 +1,6 @@
 module Main where
 
-import PFq as Q
+import Network.PFq as Q
 
 import Foreign
 import Data.Maybe
