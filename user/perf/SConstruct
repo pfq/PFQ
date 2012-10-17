@@ -2,7 +2,7 @@
 
 env = Environment(CPPPATH=['.',  '../C++', '../C', '../utils', '../../kernel'], 
 
-CXXFLAGS=['-O3','-march=native', '-Wall', '-Wextra', '-std=c++11'])
+CXXFLAGS=['-Ofast','-march=native', '-Wall', '-Wextra', '-std=c++11'])
 
 env.Program(target = "pfq-counters",  source = ["pfq-counters.cpp"],  LIBS = ['pthread'])
 env.Program(target = "pfq-histogram", source = ["pfq-histogram.cpp"], LIBS = ['pthread'])
