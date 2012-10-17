@@ -9,7 +9,8 @@ include_directories(../utils)
 include_directories(../../kernel)
 include_directories(../../user/C++)
 
-add_executable(pfq-n-counters pfq-n-counters.cpp)
-add_executable(pfq-histo pfq-histo.cpp)
+add_executable(pfq-counters pfq-counters.cpp)
+add_executable(pfq-histogram pfq-histogram.cpp)
 
-target_link_libraries(pfq-n-counters -pthread)
+target_link_libraries(pfq-counters -pthread)
+target_link_libraries(pfq-histogram -pthread)
