@@ -1,4 +1,5 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
+{-# LANGUAGE BangPatterns #-}
 
 module Network.PFq 
     (
@@ -106,10 +107,11 @@ data Statistics = Statistics {
 
 
 -- Packet:
+
 data Packet = Packet { 
-      pHdr   :: Ptr PktHdr
+      pHdr   :: Ptr PktHdr      
    ,  pData  :: Ptr Word8
-   ,  pIndex :: Word32 
+   ,  pIndex :: !Word32 
    } deriving (Eq, Show)
 
 
@@ -119,13 +121,16 @@ newtype ClassMask = ClassMask { unClassMask :: CLong }
 newtype GroupPolicy = GroupPolicy { unGroupPolicy :: CInt }
                         deriving (Eq, Show)
 
+
 #{enum ClassMask, ClassMask
     , class_default = Q_CLASS_DEFAULT
     , class_any     = Q_CLASS_ANY
 }
 
+
 combineClassMasks :: [ClassMask] -> ClassMask
 combineClassMasks = ClassMask . foldr ((.|.) . unClassMask) 0
+
 
 #{enum GroupPolicy, GroupPolicy
     , policy_undefined  = Q_GROUP_UNDEFINED
@@ -198,20 +203,18 @@ getPackets' index cur end slotSize
 
 isPacketReady :: Packet -> IO Bool
 isPacketReady p = do
-    _com  <- ((\h -> peekByteOff h 23)) (pHdr p) 
+    !_com  <- ((\h -> peekByteOff h 23)) (pHdr p) 
     return ((_com :: CUChar) == (fromIntegral $ pIndex p))
 
 
 waitForPacket :: Packet -> IO ()
 waitForPacket p = do
-    ready <- isPacketReady p
-    when (not ready) $ yield >> waitForPacket p >> return ()
+    !ready <- isPacketReady p
+    when (not ready) $ yield >> waitForPacket p 
 
 
 getHeader :: Packet -> IO PktHdr
-getHeader p = do
-    waitForPacket p >> toPktHdr (pHdr p) 
-    toPktHdr (pHdr p) 
+getHeader p = waitForPacket p >> toPktHdr (pHdr p) 
 
 
 -- open:
