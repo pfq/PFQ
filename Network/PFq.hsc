@@ -206,15 +206,21 @@ isPacketReady p = do
     !_com  <- ((\h -> peekByteOff h 23)) (pHdr p) 
     return ((_com :: CUChar) == (fromIntegral $ pIndex p))
 
+{-# INLINE isPacketReady #-}
+
 
 waitForPacket :: Packet -> IO ()
 waitForPacket p = do
     !ready <- isPacketReady p
     when (not ready) $ yield >> waitForPacket p 
 
+{-# INLINE waitForPacket #-}
+
 
 getHeader :: Packet -> IO PktHdr
 getHeader p = waitForPacket p >> toPktHdr (pHdr p) 
+
+{-# INLINE getHeader #-}
 
 
 -- open:
