@@ -222,7 +222,7 @@ open :: Int  --
      -> Int  --
      -> IO (ForeignPtr PFqTag)
 
-open caplen offset slots = do
+open caplen offset slots = 
         pfq_open (fromIntegral caplen) (fromIntegral offset) (fromIntegral slots) >>=
             throwPFqIf nullPtr (== nullPtr) >>= \ptr ->
                 C.newForeignPtr ptr (pfq_close ptr) 
@@ -234,7 +234,7 @@ openNoGroup:: Int  --
      -> Int  --
      -> IO (ForeignPtr PFqTag)
 
-openNoGroup caplen offset slots = do
+openNoGroup caplen offset slots = 
         pfq_open_nogroup (fromIntegral caplen) (fromIntegral offset) (fromIntegral slots) >>=
             throwPFqIf nullPtr (== nullPtr) >>= \ptr ->
                 C.newForeignPtr ptr (pfq_close ptr) 
@@ -248,7 +248,7 @@ openGroup :: [ClassMask]  --
           -> Int  --
           -> IO (ForeignPtr PFqTag)
 
-openGroup ms policy caplen offset slots = do
+openGroup ms policy caplen offset slots = 
         pfq_open_group (unClassMask $ combineClassMasks ms) (unGroupPolicy policy) (fromIntegral caplen) (fromIntegral offset) (fromIntegral slots) >>=
             throwPFqIf nullPtr (== nullPtr) >>= \ptr ->
                 C.newForeignPtr ptr (pfq_close ptr) 
@@ -260,8 +260,8 @@ bind :: Ptr PFqTag
      -> Int         -- queue index
      -> IO ()
 
-bind hdl name queue = do
-    withCString name $ \dev -> do
+bind hdl name queue = 
+    withCString name $ \dev -> 
         pfq_bind hdl dev (fromIntegral queue) >>= throwPFqIf_ hdl (== -1) 
 
 -- bindGroup:
@@ -272,8 +272,8 @@ bindGroup :: Ptr PFqTag
           -> Int         -- queue index
           -> IO ()
 
-bindGroup hdl gid name queue = do
-    withCString name $ \dev -> do
+bindGroup hdl gid name queue = 
+    withCString name $ \dev -> 
         pfq_bind_group hdl (fromIntegral gid) dev (fromIntegral queue) >>= throwPFqIf_ hdl (== -1) 
 
 
@@ -284,8 +284,8 @@ unbind :: Ptr PFqTag
        -> Int         -- queue index
        -> IO ()
 
-unbind hdl name queue = do
-    withCString name $ \dev -> do
+unbind hdl name queue = 
+    withCString name $ \dev -> 
         pfq_unbind hdl dev (fromIntegral queue) >>= throwPFqIf_ hdl (== -1) 
 
 -- unbindGroup:
@@ -296,8 +296,8 @@ unbindGroup :: Ptr PFqTag
             -> Int         -- queue index
             -> IO ()
 
-unbindGroup hdl gid name queue = do
-    withCString name $ \dev -> do
+unbindGroup hdl gid name queue = 
+    withCString name $ \dev -> 
         pfq_unbind_group hdl (fromIntegral gid) dev (fromIntegral queue) >>= throwPFqIf_ hdl (== -1) 
 
 -- joinGroup:
@@ -368,7 +368,7 @@ isEnabled hdl =
 
 setPromisc :: Ptr PFqTag -> String -> Bool -> IO ()
 setPromisc hdl name value = 
-    withCString name $ \dev -> do
+    withCString name $ \dev -> 
         pfq_set_promisc hdl dev (if value then 1 else 0) >>=
             throwPFqIf_ hdl (== -1)
 
@@ -407,7 +407,7 @@ setTimestamp hdl toggle = do
 --
 getTimestamp :: Ptr PFqTag -> IO Bool 
 
-getTimestamp hdl = do
+getTimestamp hdl = 
     pfq_get_timestamp hdl >>= throwPFqIf hdl (== -1) >>= \v ->
         if (v == 0) then return False else return True
 
@@ -416,7 +416,7 @@ getTimestamp hdl = do
 --
 setCaplen:: Ptr PFqTag -> Int -> IO ()
 
-setCaplen hdl value = do
+setCaplen hdl value = 
     pfq_set_caplen hdl (fromIntegral value) 
         >>= throwPFqIf_ hdl (== -1)
 
@@ -517,7 +517,7 @@ steeringFunction :: Ptr PFqTag
                  -> IO ()
 
 steeringFunction hdl gid name =
-    withCString name $ \fname -> do
+    withCString name $ \fname -> 
         pfq_steering_function hdl (fromIntegral gid) fname >>= throwPFqIf_ hdl (== -1) 
 
 
