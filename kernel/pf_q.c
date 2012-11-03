@@ -617,16 +617,16 @@ pfq_release(struct socket *sock)
 		pq->q_active = false;
 
         	pfq_leave_all_groups(pq->q_id);
+                
+                msleep(GRACE_PERIOD);
+
+		pfq_dtor(pq);
 
 		/* Convenient way to avoid a race condition,
 		 * without using expensive rw-mutexes 
 		 */
 
-		msleep(10 /* msec */);
-
-		pfq_dtor(pq);
-
-                msleep(10 /* msec */);
+                msleep(GRACE_PERIOD);
 
 		kfree(pq);
 	}
@@ -866,7 +866,7 @@ int pfq_setsockopt(struct socket *sock,
                     else {
                         pq->q_active = false;
 			
-                        msleep(10);
+                        msleep(GRACE_PERIOD);
                         
                         mpdb_queue_free(pq);
                     }

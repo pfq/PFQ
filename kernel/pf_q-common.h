@@ -22,8 +22,8 @@
  *
  ****************************************************************/
 
-#ifndef _PF_Q_TYPES_H_
-#define _PF_Q_TYPES_H_ 
+#ifndef _PF_COMMON_H_
+#define _PF_COMMON_H_ 
 
 #include <linux/kernel.h>
 #include <linux/poll.h>
@@ -31,6 +31,10 @@
 #include <net/sock.h>
 
 #include <pf_q-sparse-counter.h>
+
+
+#define GRACE_PERIOD 10     /* msec */
+
 
 /* sparse_counter_t stats */
 
@@ -73,4 +77,4 @@ struct pfq_sock
 };
 
 
-#endif /* _PF_Q_TYPES_H_ */
+#endif /* _PF_COMMON_H_ */

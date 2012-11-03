@@ -29,6 +29,7 @@
 #include <linux/delay.h>
 #include <linux/pf_q.h>
 
+#include <pf_q-common.h>
 #include <pf_q-sparse-counter.h>
 #include <pf_q-steer.h>
 
@@ -59,6 +60,8 @@ static inline
 void __pfq_set_steering_for_group(int gid, steering_function_t fun)
 {
     atomic_long_set(&pfq_groups[gid].steering, (long)fun);
+    
+    msleep(GRACE_PERIOD);
 }
 
 
@@ -67,7 +70,7 @@ void __pfq_set_state_for_group(int gid, void *state)
 {
 	void * old = (void *)atomic_long_xchg(& pfq_groups[gid].state, (long)state);
 
-    msleep(10);
+    msleep(GRACE_PERIOD);
 
 	kfree(old);
 }

@@ -199,6 +199,7 @@ __pfq_unregister_steering_function(const char *name)
 	return -1;
 }
 
+
 int 
 pfq_unregister_steering_function(const char *module, const char *name)
 {
@@ -216,6 +217,7 @@ pfq_unregister_steering_function(const char *module, const char *name)
 	
 	printk(KERN_INFO "[PFQ]%s '%s' function unregistered.\n", module, name);
 	up(&steering_sem);
+
 	return 0;
 }
 

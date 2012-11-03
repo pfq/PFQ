@@ -102,11 +102,11 @@ __pfq_group_dtor(int gid)
 	that->policy = Q_GROUP_UNDEFINED;
 	
 	state = (void *)atomic_long_xchg(&pfq_groups[gid].state, 0L);
-
-	msleep(10);   /* speeling is possible here: user-context */
 	
 	pr_devel("[PFQ] group gid:%d destroyed.\n", gid);
 
+	msleep(GRACE_PERIOD);   /* speeling is possible here: user-context */
+	
 	kfree(state);
 }
 
