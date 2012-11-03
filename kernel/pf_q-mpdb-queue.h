@@ -28,8 +28,9 @@
 #include <linux/skbuff.h>
 #include <linux/pf_q.h>
 #include <linux/if_vlan.h>
+
 #include <pf_q-queue.h>
-#include <pf_q-priv.h>
+#include <pf_q-common.h>
 
 extern bool 
 mpdb_enqueue(struct pfq_opt *pq, struct sk_buff *skb);

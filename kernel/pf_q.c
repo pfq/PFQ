@@ -46,7 +46,7 @@
 
 #include <linux/pf_q.h>
 
-#include <pf_q-priv.h>
+#include <pf_q-common.h>
 #include <pf_q-devmap.h>
 #include <pf_q-group.h>
 #include <pf_q-queue.h>
