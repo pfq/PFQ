@@ -256,7 +256,7 @@ void usage(const char *name)
 {
     throw std::runtime_error(std::string("usage: ")
                .append(name)
-               .append("[-h|--help] [-c caplen] [-o offset] [-f | --flow] [-s slots] [-g gid ] [-s|--steer function-name] T1 T2... \n\t| T = dev:core:queue,queue..."));
+               .append("[-h|--help] [-c caplen] [-o offset] [-f | --flow] [-s slots] [-g gid ] [-x|--steer function-name] T1 T2... \n\t| T = dev:core:queue,queue..."));
 }
 
 
@@ -275,7 +275,7 @@ try
     // load vbinding vector:
     for(int i = 1; i < argc; ++i)
     {
-        if ( strcmp(argv[i], "-s") == 0 ||
+        if ( strcmp(argv[i], "-x") == 0 ||
              strcmp(argv[i], "--steer") == 0) {
             i++;
             if (i == argc)
