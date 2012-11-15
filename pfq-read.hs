@@ -12,7 +12,7 @@ dumpPacket :: Q.Packet -> IO ()
 dumpPacket p = do
                 Q.waitForPacket p
                 bytes <- peekByteOff (Q.pData p) 0 :: IO Word64
-                putStrLn $ showHex bytes ""
+                putStrLn $ "[" ++ (showHex bytes "") ++ "]"
 
 recvLoop :: Ptr PFqTag -> IO ()
 recvLoop q = do 
@@ -21,7 +21,7 @@ recvLoop q = do
        then recvLoop q 
        else do
             ps <- Q.getPackets queue
-            -- mapM_ (print . fst) ps
+            mapM_ (getHeader >=> print) ps
             mapM_ dumpPacket ps
             gid <- Q.getGroupId q
             -- Q.getStats q >>= print
@@ -43,5 +43,7 @@ dumper dev = do
         recvLoop q
 
 main = do
-    dev <- liftM (!!0) getArgs
-    dumper dev
+    args <- getArgs
+    case (length args) of
+        0   -> error "usage: pfq-read dev"
+        _   -> dumper (args !! 0)

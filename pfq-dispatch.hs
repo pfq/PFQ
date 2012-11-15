@@ -20,7 +20,6 @@ dumper dev = do
     fp <- Q.open 64 14 4096
     withForeignPtr fp  $ \q -> do
         Q.setTimestamp q True
-        --Q.bind q dev (-1)
         gid <- Q.getGroupId q
         Q.bindGroup q gid dev (-1)
         Q.enable q 
@@ -28,6 +27,8 @@ dumper dev = do
         Q.getSlotSize q >>= \o -> putStrLn $ "slot_size: " ++ show(o)
         recvDispatch q
 
-main = do
-    dev <- liftM (!!0) getArgs
-    dumper dev
+main = do    
+    args <- getArgs
+    case (length args) of
+        0   -> error "usage: pfq-dispatch dev"
+        _   -> dumper (args !! 0)
