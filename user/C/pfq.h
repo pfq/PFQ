@@ -42,9 +42,7 @@
 #endif
 
 #ifndef PFQ_LIBRARY
-
 typedef void *pfq_t;   /* pfq descritor */
-
 #endif
 
 
@@ -94,7 +92,7 @@ struct pfq_net_queue
 
 static inline 
 pfq_iterator_t
-pfq_net_queue_begin(struct pfq_net_queue *nq)
+pfq_net_queue_begin(struct pfq_net_queue const *nq)
 {
     return nq->queue;
 }
@@ -102,7 +100,7 @@ pfq_net_queue_begin(struct pfq_net_queue *nq)
 
 static inline 
 pfq_iterator_t
-pfq_net_queue_end(struct pfq_net_queue *nq)
+pfq_net_queue_end(struct pfq_net_queue const *nq)
 {
     return nq->queue + nq->len * nq->slot_size;
 }
@@ -110,7 +108,7 @@ pfq_net_queue_end(struct pfq_net_queue *nq)
 
 static inline 
 pfq_iterator_t
-pfq_net_queue_next(struct pfq_net_queue *nq, pfq_iterator_t iter)
+pfq_net_queue_next(struct pfq_net_queue const *nq, pfq_iterator_t iter)
 {
     return iter + nq->slot_size;
 }
@@ -118,7 +116,7 @@ pfq_net_queue_next(struct pfq_net_queue *nq, pfq_iterator_t iter)
 
 static inline 
 pfq_iterator_t
-pfq_net_queue_prev(struct pfq_net_queue *nq, pfq_iterator_t iter)
+pfq_net_queue_prev(struct pfq_net_queue const *nq, pfq_iterator_t iter)
 {
     return iter - nq->slot_size;
 }
@@ -142,7 +140,7 @@ pfq_iterator_data(pfq_iterator_t iter)
 
 static inline
 int
-pfq_iterator_ready(struct pfq_net_queue *nq, pfq_iterator_t iter)
+pfq_iterator_ready(struct pfq_net_queue const *nq, pfq_iterator_t iter)
 {
 	if (pfq_iterator_header(iter)->commit != nq->index) {
         return 0;
@@ -245,7 +243,7 @@ extern int pfq_read(pfq_t *q, struct pfq_net_queue *nq, long int microseconds);
 extern int pfq_recv(pfq_t *q, void *buf, size_t buflen, 
 					struct pfq_net_queue *nq, long int microseconds);
 
-extern int pfq_dispatch(pfq_t *q, pfq_handler_t cb, long int microseconds, char *user);
+extern int pfq_dispatch(pfq_t *q, pfq_handler_t cb, long int microseconds, char *user, int max_packets);
 
 extern size_t pfq_mem_size(pfq_t const *q);
 
