@@ -252,6 +252,8 @@ extern const void * pfq_mem_addr(pfq_t const *q);
 extern int pfq_id(pfq_t *q);
 
 extern int pfq_group_id(pfq_t *q);
+ 
+extern int pfq_get_fd(pfq_t *q);
 
 extern int pfq_get_stats(pfq_t const *q, struct pfq_stats *stats); 
 

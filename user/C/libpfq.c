@@ -695,3 +695,8 @@ pfq_group_id(pfq_t *q)
  	return q->gid;
 }
 
+
+int pfq_get_fd(pfq_t *q)
+{
+	return q->fd;
+}
