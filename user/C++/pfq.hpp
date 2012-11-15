@@ -1020,7 +1020,7 @@ namespace net {
                 while (!it.ready())
                     std::this_thread::yield();
 
-                callback(&(*it), reinterpret_cast<const char *>(it.data()), user);
+                callback(user, &(*it), reinterpret_cast<const char *>(it.data()));
                 n++;
             }
             return n;

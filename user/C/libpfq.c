@@ -46,6 +46,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <errno.h>
+#include <signal.h>
 
 #include <poll.h>
 
@@ -649,14 +650,12 @@ pfq_dispatch(pfq_t *q, pfq_handler_t cb, long int microseconds, char *user, int 
 
 	pfq_iterator_t it_end = pfq_net_queue_end(&q->netq);
 	
-	printf("Read a queue is empty? %d\n", q->it == it_end);
-	
 	for(; q->it != it_end; q->it = pfq_net_queue_next(&q->netq, q->it))
 	{
 		while (!pfq_iterator_ready(&q->netq, q->it))
 			pfq_yield();
 
-		cb(pfq_iterator_header(q->it), pfq_iterator_data(q->it), user);
+		cb(user, pfq_iterator_header(q->it), pfq_iterator_data(q->it));
 		n++;
 
 		if (max_packet > 0 && (n == max_packet)) {

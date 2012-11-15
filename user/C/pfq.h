@@ -164,7 +164,7 @@ pfq_yield()
 
 /* pfq handler */
 
-typedef void (*pfq_handler_t)(const struct pfq_hdr *h, const char *data, char *user); 
+typedef void (*pfq_handler_t)(char *user, const struct pfq_hdr *h, const char *data); 
 
 
 /* ************************************** *

@@ -5,7 +5,7 @@
 
 #define MIN(a,b) (a < b ? a : b)
 
-void dispatch(const struct pfq_hdr *h, const char *data, char *user __attribute__((unused)))
+void dispatch(char *user __attribute__((unused)), const struct pfq_hdr *h, const char *data)
 {
         int x;
         for(x = 0; x < MIN(h->caplen,34); x++)
