@@ -77,6 +77,7 @@ typedef void *pfq_t;   /* pfq descritor */
 #endif
 
 
+#ifndef PFQ_LIBRARY
 /* pfq_net_queue */
 
 typedef char * pfq_iterator_t;
@@ -88,6 +89,7 @@ struct pfq_net_queue
     size_t         slot_size;
 	unsigned int   index; 	  		/* current queue index */ 
 };
+#endif
 
 
 static inline 

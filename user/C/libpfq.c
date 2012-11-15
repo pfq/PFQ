@@ -51,6 +51,17 @@
 
 /* pfq descriptor */
 
+typedef char * pfq_iterator_t;
+
+struct pfq_net_queue
+{	
+	pfq_iterator_t queue; 	  		/* net queue */
+	size_t         len;       		/* number of packets in the queue */
+    	size_t         slot_size;
+	unsigned int   index; 	  		/* current queue index */ 
+};
+
+
 typedef struct 
 {
 	void * queue_addr;
@@ -67,8 +78,13 @@ typedef struct
 	int id;
 	int gid;
 
+	struct pfq_net_queue netq;
+	pfq_iterator_t 	it;
 } pfq_t;
 
+
+#define PFQ_LIBRARY 
+#include <pfq.h>
 
 #define  ALIGN8(value) ((value + 7) & ~(__typeof__(value))7)
 
@@ -82,9 +98,6 @@ typedef struct
 	   __typeof__ (b) _b = (b); \
 	  _a < _b ? _a : _b; })
 
-
-#define PFQ_LIBRARY
-#include <pfq.h>
 
 /* return the string error */
 
@@ -138,6 +151,7 @@ pfq_open_group(unsigned long class_mask, int group_policy, size_t caplen, size_t
 	q->queue_offset  = offset;
 	q->slot_size     = 0;
 	q->error 	 = NULL;
+        memset(&q->netq, 0, sizeof(q->netq));
 
 	/* get id */
 	socklen_t size = sizeof(q->id);
@@ -619,25 +633,36 @@ pfq_recv(pfq_t *q, void *buf, size_t buflen, struct pfq_net_queue *nq, long int 
 
 
 int
-pfq_dispatch(pfq_t *q, pfq_handler_t cb, long int microseconds, char *user)
+pfq_dispatch(pfq_t *q, pfq_handler_t cb, long int microseconds, char *user, int max_packet)
 {
-	struct pfq_net_queue nq;
 	int n = 0;
-	if (pfq_read(q, &nq, microseconds) < 0)
+
+	if (q->it == pfq_net_queue_end(&q->netq))
 	{
-		return -1;
-	}
-         
-	pfq_iterator_t it = pfq_net_queue_begin(&nq);
-	pfq_iterator_t it_end = pfq_net_queue_end(&nq);
+		if (pfq_read(q, &q->netq, microseconds) < 0)
+		{
+			return -1;
+		}
 	
-	for(; it != it_end; it = pfq_net_queue_next(&nq, it))
+		q->it = pfq_net_queue_begin(&q->netq);
+	}
+
+	pfq_iterator_t it_end = pfq_net_queue_end(&q->netq);
+	
+	printf("Read a queue is empty? %d\n", q->it == it_end);
+	
+	for(; q->it != it_end; q->it = pfq_net_queue_next(&q->netq, q->it))
 	{
-		while (!pfq_iterator_ready(&nq, it))
+		while (!pfq_iterator_ready(&q->netq, q->it))
 			pfq_yield();
 
-		cb(pfq_iterator_header(it), pfq_iterator_data(it), user);
+		cb(pfq_iterator_header(q->it), pfq_iterator_data(q->it), user);
 		n++;
+
+		if (max_packet > 0 && (n == max_packet)) {
+		       	q->it = pfq_net_queue_next(&q->netq, q->it);
+			break;
+		}
 	}
         return n;
 }
