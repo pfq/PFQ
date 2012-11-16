@@ -386,7 +386,7 @@ namespace net {
             memset(&ifreq_io, 0, sizeof(struct ifreq));
             strncpy(ifreq_io.ifr_name, dev, IFNAMSIZ);
             if (::ioctl(fd, SIOCGIFINDEX, &ifreq_io) == -1)
-                throw pfq_error(errno, "PFQ: ioctl SIOCGIFINDEX");
+                throw pfq_error(errno, "PFQ: ioctl get ifindex");
             return ifreq_io.ifr_ifindex;
         }
 
@@ -400,7 +400,7 @@ namespace net {
             strncpy(ifreq_io.ifr_name, dev, IFNAMSIZ);
 
             if(::ioctl(fd, SIOCGIFFLAGS, &ifreq_io) == -1) 
-                throw pfq_error(errno, "PFQ: ioctl SIOCGIFFLAGS");
+                throw pfq_error(errno, "PFQ: ioctl getflags");
 
             if (value)
                 ifreq_io.ifr_flags |= IFF_PROMISC;
@@ -408,7 +408,7 @@ namespace net {
                 ifreq_io.ifr_flags &= ~IFF_PROMISC;
 
             if(::ioctl(fd, SIOCSIFFLAGS, &ifreq_io) == -1)
-                throw pfq_error(errno, "PFQ: ioctl SIOCSIFFLAGS");
+                throw pfq_error(errno, "PFQ: ioctl setflags");
 
         }
 
@@ -608,7 +608,7 @@ namespace net {
         open(size_t caplen, size_t offset = 0, size_t slots = 131072)
         {
             if (fd_ != -1)
-                throw pfq_error("PFQ: already open");
+                throw pfq_error("PFQ: socket already open");
 
             fd_ = ::socket(PF_Q, SOCK_RAW, htons(ETH_P_ALL));
             if (fd_ == -1)
@@ -620,21 +620,21 @@ namespace net {
             /* get id */
             socklen_t size = sizeof(pdata_->id);
             if (::getsockopt(fd_, PF_Q, Q_SO_GET_ID, &pdata_->id, &size) == -1)
-                throw pfq_error(errno, "PFQ: Q_SO_GET_ID");
+                throw pfq_error(errno, "PFQ: get id error");
 
             /* set queue slots */
             if (::setsockopt(fd_, PF_Q, Q_SO_SET_SLOTS, &slots, sizeof(slots)) == -1)
-                throw pfq_error(errno, "PFQ: Q_SO_SET_SLOTS");
+                throw pfq_error(errno, "PFQ: set slots error");
             pdata_->queue_slots = slots;
             
             /* set caplen */
             if (::setsockopt(fd_, PF_Q, Q_SO_SET_CAPLEN, &caplen, sizeof(caplen)) == -1)
-                throw pfq_error(errno, "PFQ: Q_SO_SET_CAPLEN");
+                throw pfq_error(errno, "PFQ: set caplen error");
             pdata_->queue_caplen = caplen;
             
             /* set offset */
             if (::setsockopt(fd_, PF_Q, Q_SO_SET_OFFSET, &offset, sizeof(offset)) == -1)
-                throw pfq_error(errno, "PFQ: Q_SO_SET_OFFSET");
+                throw pfq_error(errno, "PFQ: set offset error");
             
             pdata_->slot_size = align<8>(sizeof(pfq_hdr) + pdata_->queue_caplen);
         }
@@ -664,13 +664,13 @@ namespace net {
             int one = 1;
 
             if(::setsockopt(fd_, PF_Q, Q_SO_TOGGLE_QUEUE, &one, sizeof(one)) == -1) {
-                throw pfq_error(errno, "PFQ: Q_SO_TOGGLE_QUEUE");
+                throw pfq_error(errno, "PFQ: queue: out of memory");
             }
 
             size_t tot_mem; socklen_t size = sizeof(tot_mem);
             
             if (::getsockopt(fd_, PF_Q, Q_SO_GET_QUEUE_MEM, &tot_mem, &size) == -1)
-                throw pfq_error(errno, "PFQ: Q_SO_GET_QUEUE_MEM");
+                throw pfq_error(errno, "PFQ: queue memory error");
             
             pdata_->queue_tot_mem = tot_mem;
 
@@ -684,17 +684,17 @@ namespace net {
         disable()
         {
             if (fd_ == -1)
-                throw pfq_error("PFQ: not open");
+                throw pfq_error("PFQ: socket not open");
 
             if (munmap(pdata_->queue_addr, pdata_->queue_tot_mem) == -1)
-                throw pfq_error(errno, "PFQ: munmap");
+                throw pfq_error(errno, "PFQ: munmap error");
             
             pdata_->queue_addr = nullptr;
             pdata_->queue_tot_mem = 0;
             
-            int one = 0;
-            if(::setsockopt(fd_, PF_Q, Q_SO_TOGGLE_QUEUE, &one, sizeof(one)) == -1)
-                throw pfq_error(errno, "PFQ: Q_SO_TOGGLE_QUEUE");
+            int zero = 0;
+            if(::setsockopt(fd_, PF_Q, Q_SO_TOGGLE_QUEUE, &zero, sizeof(zero)) == -1)
+                throw pfq_error(errno, "PFQ: queue cleanup error");
         }
 
         
@@ -706,7 +706,7 @@ namespace net {
                 int ret; socklen_t size = sizeof(ret);
 
                 if (::getsockopt(fd_, PF_Q, Q_SO_GET_STATUS, &ret, &size) == -1)
-                    throw pfq_error(errno, "PFQ: Q_SO_GET_STATUS");
+                    throw pfq_error(errno, "PFQ: get status error");
                 return ret;
             }
             return false;
@@ -718,7 +718,7 @@ namespace net {
         {
             int ts = static_cast<int>(value);
             if (::setsockopt(fd_, PF_Q, Q_SO_SET_TSTAMP, &ts, sizeof(ts)) == -1)
-                throw pfq_error(errno, "PFQ: Q_SO_SET_TSTAMP");
+                throw pfq_error(errno, "PFQ: set timestamp mode");
         }
 
 
@@ -727,7 +727,7 @@ namespace net {
         {
            int ret; socklen_t size = sizeof(int);
            if (::getsockopt(fd_, PF_Q, Q_SO_GET_TSTAMP, &ret, &size) == -1)
-                throw pfq_error(errno, "PFQ: Q_SO_GET_TSTAMP");
+                throw pfq_error(errno, "PFQ: get timestamp mode");
            return ret;
         }
 
@@ -739,7 +739,7 @@ namespace net {
                 throw pfq_error("PFQ: enabled (caplen could not be set)");
             
             if (::setsockopt(fd_, PF_Q, Q_SO_SET_CAPLEN, &value, sizeof(value)) == -1) {
-                throw pfq_error(errno, "PFQ: Q_SO_SET_CAPLEN");
+                throw pfq_error(errno, "PFQ: set caplen error");
             }
 
             pdata_->slot_size = align<8>(sizeof(pfq_hdr)+ value);
@@ -751,7 +751,7 @@ namespace net {
         {
            size_t ret; socklen_t size = sizeof(ret);
            if (::getsockopt(fd_, PF_Q, Q_SO_GET_CAPLEN, &ret, &size) == -1)
-                throw pfq_error(errno, "PFQ: Q_SO_GET_CAPLEN");
+                throw pfq_error(errno, "PFQ: get caplen error");
            return ret;
         }
 
@@ -763,7 +763,7 @@ namespace net {
                 throw pfq_error("PFQ: enabled (offset could not be set)");
             
             if (::setsockopt(fd_, PF_Q, Q_SO_SET_OFFSET, &value, sizeof(value)) == -1) {
-                throw pfq_error(errno, "PFQ: Q_SO_SET_OFFSET");
+                throw pfq_error(errno, "PFQ: set offset error");
             }
         }
 
@@ -773,7 +773,7 @@ namespace net {
         {
            size_t ret; socklen_t size = sizeof(ret);
            if (::getsockopt(fd_, PF_Q, Q_SO_GET_OFFSET, &ret, &size) == -1)
-                throw pfq_error(errno, "PFQ: Q_SO_GET_OFFSET");
+                throw pfq_error(errno, "PFQ: get offset error");
            return ret;
         }
 
@@ -785,7 +785,7 @@ namespace net {
                 throw pfq_error("PFQ: enabled (slots could not be set)");
                       
             if (::setsockopt(fd_, PF_Q, Q_SO_SET_SLOTS, &value, sizeof(value)) == -1) {
-                throw pfq_error(errno, "PFQ: Q_SO_SET_SLOTS");
+                throw pfq_error(errno, "PFQ: set slots error");
             }
 
             pdata_->queue_slots = value;
@@ -796,7 +796,7 @@ namespace net {
         slots() const
         {   
             if (!pdata_)
-                throw pfq_error("PFQ: not open");
+                throw pfq_error("PFQ: socket not open");
 
             return pdata_->queue_slots;
         }
@@ -806,7 +806,7 @@ namespace net {
         slot_size() const
         {
             if (!pdata_)
-                throw pfq_error("PFQ: not open");
+                throw pfq_error("PFQ: socket not open");
             
             return pdata_->slot_size;
         }
@@ -832,7 +832,7 @@ namespace net {
 
             struct pfq_binding b = { gid, index, queue };
             if (::setsockopt(fd_, PF_Q, Q_SO_ADD_BINDING, &b, sizeof(b)) == -1)
-                throw pfq_error(errno, "PFQ: Q_SO_ADD_BINDING");
+                throw pfq_error(errno, "PFQ: add binding error");
         }
 
 
@@ -856,7 +856,7 @@ namespace net {
         
             struct pfq_binding b = { gid, index, queue };
             if (::setsockopt(fd_, PF_Q, Q_SO_REMOVE_BINDING, &b, sizeof(b)) == -1)
-                throw pfq_error(errno, "PFQ: Q_SO_REMOVE_BINDING");
+                throw pfq_error(errno, "PFQ: remove binding error");
         }
 
 
@@ -865,7 +865,7 @@ namespace net {
         {
             unsigned long mask; socklen_t size = sizeof(mask);
             if (::getsockopt(fd_, PF_Q, Q_SO_GET_GROUPS, &mask, &size) == -1)
-                throw pfq_error(errno, "PFQ: Q_SO_GET_GROUPS");
+                throw pfq_error(errno, "PFQ: get groups error");
             return mask;
         }
 
@@ -891,7 +891,7 @@ namespace net {
         {
             struct pfq_steering s { fun, gid };
             if (::setsockopt(fd_, PF_Q, Q_SO_GROUP_STEER_FUN, &s, sizeof(s)) == -1)
-                throw pfq_error(errno, "PFQ: Q_SO_GROUP_STEER_FUN");
+                throw pfq_error(errno, "PFQ: set steering function error");
         }
         
         template <typename T>
@@ -900,7 +900,7 @@ namespace net {
         {
             struct pfq_group_state s { &state, sizeof(state), gid };
             if (::setsockopt(fd_, PF_Q, Q_SO_GROUP_STATE, &s, sizeof(s)) == -1)
-                throw pfq_error(errno, "PFQ: Q_SO_GROUP_STATE");
+                throw pfq_error(errno, "PFQ: set group state error");
         }
 
         void
@@ -908,7 +908,7 @@ namespace net {
         {
             struct pfq_group_state s { NULL, 0, gid };
             if (::setsockopt(fd_, PF_Q, Q_SO_GROUP_STATE, &s, sizeof(s)) == -1)
-                throw pfq_error(errno, "PFQ: Q_SO_GROUP_STATE");
+                throw pfq_error(errno, "PFQ: reset group state error");
         }
 
         int
@@ -921,7 +921,7 @@ namespace net {
 
             socklen_t size = sizeof(group);
             if (::getsockopt(fd_, PF_Q, Q_SO_GROUP_JOIN, &group, &size) == -1)
-                throw pfq_error(errno, "PFQ: Q_SO_GROUP_JOIN");
+                throw pfq_error(errno, "PFQ: join group error");
             
             return group.gid;
         }
@@ -931,7 +931,7 @@ namespace net {
         leave_group(int gid)
         {
             if (::setsockopt(fd_, PF_Q, Q_SO_GROUP_LEAVE, &gid, sizeof(gid)) == -1)
-                throw pfq_error(errno, "PFQ: Q_SO_GROUP_LEAVE");
+                throw pfq_error(errno, "PFQ: leave group error");
         }
 
 
@@ -939,7 +939,7 @@ namespace net {
         poll(long int microseconds = -1 /* infinite */)
         {
             if (fd_ == -1)
-                throw pfq_error("PFQ: not open");
+                throw pfq_error("PFQ: socket not open");
 
             struct pollfd fd = {fd_, POLLIN, 0 };
             struct timespec timeout = { microseconds/1000000, (microseconds%1000000) * 1000};
@@ -994,7 +994,7 @@ namespace net {
         recv(const mutable_buffer &buff, long int microseconds = -1) 
         {
             if (fd_ == -1)
-                throw pfq_error("PFQ: not open");
+                throw pfq_error("PFQ: socket not open");
             
             auto this_queue = this->read(microseconds);
             
@@ -1033,7 +1033,7 @@ namespace net {
             pfq_stats stat;
             socklen_t size = sizeof(struct pfq_stats);
             if (::getsockopt(fd_, PF_Q, Q_SO_GET_STATS, &stat, &size) == -1)
-                throw pfq_error(errno, "PFQ: Q_SO_GET_STATS");
+                throw pfq_error(errno, "PFQ: get stats error");
             return stat;
         }
 
@@ -1045,7 +1045,7 @@ namespace net {
             stat.recv = static_cast<unsigned long>(gid);
             socklen_t size = sizeof(struct pfq_stats);
             if (::getsockopt(fd_, PF_Q, Q_SO_GET_GROUP_STATS, &stat, &size) == -1)
-                throw pfq_error(errno, "PFQ: Q_SO_GET_GROUP_STATS");
+                throw pfq_error(errno, "PFQ: get group stats error");
             return stat;
         }
 
