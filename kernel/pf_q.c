@@ -981,8 +981,8 @@ int pfq_setsockopt(struct socket *sock,
 			    return -EPERM;
 		    }
 
-		    if (s.size && s.state) {
-
+		    if (s.size && s.state) 
+		    {
                     	void * state = kmalloc(s.size, GFP_KERNEL);
 			if (state == NULL) 
 				return -ENOMEM;
@@ -1004,6 +1004,36 @@ int pfq_setsockopt(struct socket *sock,
 		    }
 	    } break;
         
+	case Q_SO_GROUP_FPROG:
+	    {
+		    struct pfq_fprog fprog;
+		    if (optlen != sizeof(fprog))
+			    return -EINVAL;
+		    
+		    if (copy_from_user(&fprog, optval, optlen)) 
+			    return -EFAULT;
+
+                    if (fprog.gid < 0 || fprog.gid >= Q_MAX_GROUP) {
+                    	    pr_devel("[PFQ|%d] fprog error: gid:%d invalid group!\n", pq->q_id, fprog.gid);
+			    return -EINVAL;
+		    }
+
+		    if (!__pfq_has_joined_group(fprog.gid, pq->q_id)) {
+                    	    pr_devel("[PFQ|%d] fprog error: gid:%d no permission!\n", pq->q_id, fprog.gid);
+			    return -EPERM;
+		    }
+
+                    if (fprog.fcode.len > 0)  /* set the filter */
+		    {
+			pr_devel("[PFQ|%d] fprog: gid:%d (fprog len %d bytes)\n", pq->q_id, fprog.gid, fprog.fcode.len);
+		    }
+		    else 	/* reset the filter */
+		    {
+			pr_devel("[PFQ|%d] fprog: gid:%d (resetting filter)\n", pq->q_id, fprog.gid);
+		    }
+
+	    } break;
+
 	case Q_SO_SET_TSTAMP: 
             {
                     int tstamp;
