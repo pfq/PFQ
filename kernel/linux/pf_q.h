@@ -28,6 +28,7 @@
 #ifdef __KERNEL__
 
 #include <linux/types.h>
+#include <linux/filter.h>
 
 #define Q_VERSION               "2.0"
 
@@ -42,6 +43,8 @@
 
 #else  /* user space */
 
+#include <linux/filter.h>
+#include <linux/types.h>
 #include <sys/time.h>
 #include <unistd.h>
 #include <stdint.h>
@@ -116,17 +119,19 @@ struct pfq_queue_descr
 #define Q_SO_GROUP_LEAVE          9
 #define Q_SO_GROUP_STATE          10
 #define Q_SO_GROUP_STEER_FUN      11
+#define Q_SO_GROUP_FPROG          12     /* Berkeley packet filter */
 
-#define Q_SO_GET_ID               12
-#define Q_SO_GET_STATUS           13     /* 1 = enabled, 0 = disabled */
-#define Q_SO_GET_STATS            14
-#define Q_SO_GET_TSTAMP           15
-#define Q_SO_GET_QUEUE_MEM        16     /* size of the whole dbmp queue (bytes) */
-#define Q_SO_GET_CAPLEN           17
-#define Q_SO_GET_SLOTS            18
-#define Q_SO_GET_OFFSET           19
-#define Q_SO_GET_GROUPS           20
-#define Q_SO_GET_GROUP_STATS      21
+#define Q_SO_GET_ID               22
+#define Q_SO_GET_STATUS           23     /* 1 = enabled, 0 = disabled */
+#define Q_SO_GET_STATS            24
+#define Q_SO_GET_TSTAMP           25
+#define Q_SO_GET_QUEUE_MEM        26     /* size of the whole dbmp queue (bytes) */
+#define Q_SO_GET_CAPLEN           27
+#define Q_SO_GET_SLOTS            28
+#define Q_SO_GET_OFFSET           29
+#define Q_SO_GET_GROUPS           30
+#define Q_SO_GET_GROUP_STATS      31
+
 
 /* general defines */
 
@@ -191,6 +196,15 @@ struct pfq_group_state
     const void * state;
     size_t       size;      // sizeof(state)
     int gid;
+};
+
+
+/* pfq_fprog: per-group sock_fprog */
+
+struct pfq_fprog
+{
+    int gid;
+    struct sock_fprog fcode;
 };
 
 
