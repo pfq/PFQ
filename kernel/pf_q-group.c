@@ -105,7 +105,7 @@ __pfq_group_dtor(int gid)
 	
 	pr_devel("[PFQ] group gid:%d destroyed.\n", gid);
 
-	msleep(GRACE_PERIOD);   /* speeling is possible here: user-context */
+	msleep(GRACE_PERIOD);   /* sleeping is possible here: user-context */
 	
 	kfree(state);
 }
