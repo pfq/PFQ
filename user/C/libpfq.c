@@ -505,6 +505,40 @@ pfq_group_state(pfq_t *q, int gid, const void *state, size_t size)
 }
 
 
+int 
+pfq_group_fprog(pfq_t *q, int gid, struct sock_fprog *f)
+{                                                      
+	struct pfq_fprog fprog;
+	
+	fprog.gid = gid;
+	if (f != NULL)
+	{
+        	fprog.fcode.len = f->len;
+        	fprog.fcode.filter = f->filter;
+	}
+	else
+	{
+        	fprog.fcode.len = 0;
+        	fprog.fcode.filter = NULL;
+	}
+
+        if (setsockopt(q->fd, PF_Q, Q_SO_GROUP_FPROG, &fprog, sizeof(fprog)) == -1) {
+		return q->error = "PFQ: set group fprog error", -1;
+	}
+
+	return q->error = NULL, 0;
+}
+
+
+int 
+pfq_group_fprog_reset(pfq_t *q, int gid)
+{                                      
+	struct sock_fprog null = { 0, NULL };
+
+	return pfq_group_fprog(q, gid, &null);
+}
+
+
 int
 pfq_join_group(pfq_t *q, int gid, unsigned long class_mask, int group_policy)
 {

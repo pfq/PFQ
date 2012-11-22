@@ -911,6 +911,28 @@ namespace net {
                 throw pfq_error(errno, "PFQ: reset group state error");
         }
 
+        //
+        // BPF filters: pass in-kernel sock_fprog structure
+        //
+        
+        void
+        set_group_fprog(int gid, const sock_fprog &f)
+        {
+            struct pfq_fprog fprog = { gid, f };
+
+            if (::setsockopt(fd_, PF_Q, Q_SO_GROUP_FPROG, &fprog, sizeof(fprog)) == -1)
+                throw pfq_error(errno, "PFQ: set group fprog error");
+        }
+        
+        void
+        reset_group_fprog(int gid)
+        {
+            struct pfq_fprog fprog = { gid, {0, 0} };
+
+            if (::setsockopt(fd_, PF_Q, Q_SO_GROUP_FPROG, &fprog, sizeof(fprog)) == -1)
+                throw pfq_error(errno, "PFQ: reset group fprog error");
+        }
+
         int
         join_group(int gid, group_policy pol = group_policy::shared, class_mask mask = class_default)
         {

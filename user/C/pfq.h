@@ -232,6 +232,10 @@ extern int pfq_steering_function(pfq_t *q, int gid, const char *fun_name);
 
 extern int pfq_group_state(pfq_t *q, int gid, const void *state, size_t size);
 
+extern int pfq_group_fprog(pfq_t *q, int gid, struct sock_fprog *);
+
+extern int pfq_group_fprog_reset(pfq_t *q, int gid);
+
 extern int pfq_join_group(pfq_t *q, int gid, unsigned long class_mask, int group_policy);
 
 extern int pfq_leave_group(pfq_t *q, int gid);
@@ -258,5 +262,6 @@ extern int pfq_get_fd(pfq_t *q);
 extern int pfq_get_stats(pfq_t const *q, struct pfq_stats *stats); 
 
 extern int pfq_get_group_stats(pfq_t const *q, int gid, struct pfq_stats *stats); 
+
 
 #endif /* _PFQ_H_ */
