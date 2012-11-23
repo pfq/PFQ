@@ -80,8 +80,9 @@ __pfq_group_ctor(int gid)
 		atomic_long_set(&that->sock_mask[i], 0);
 	}
 
-	atomic_long_set(&that->steering, 0);
-	atomic_long_set(&that->state, 0);
+	atomic_long_set(&that->steering, 0L);
+	atomic_long_set(&that->state,    0L);
+	atomic_long_set(&that->filter,   0L);
 
 	sparse_set(&that->recv, 0);
 	sparse_set(&that->lost, 0);
@@ -94,6 +95,7 @@ __pfq_group_dtor(int gid)
 {
         struct pfq_group * that = &pfq_groups[gid];
 	void *state;
+        struct sk_filter *filter;
 
 	/* remove this gid from demux matrix */
         pfq_devmap_update(map_reset, Q_ANY_DEVICE, Q_ANY_QUEUE, gid);
@@ -101,13 +103,16 @@ __pfq_group_dtor(int gid)
 	that->pid = 0;
 	that->policy = Q_GROUP_UNDEFINED;
 	
-	state = (void *)atomic_long_xchg(&pfq_groups[gid].state, 0L);
+	state  = (void *)atomic_long_xchg(&pfq_groups[gid].state, 0L);
+	filter = (struct sk_filter *)atomic_long_xchg(&pfq_groups[gid].filter, 0L);
 	
-	pr_devel("[PFQ] group gid:%d destroyed.\n", gid);
-
 	msleep(GRACE_PERIOD);   /* sleeping is possible here: user-context */
 	
 	kfree(state);
+	
+       	pfq_free_sk_filter(filter); 
+	
+	pr_devel("[PFQ] group gid:%d destroyed.\n", gid);
 }
 
 

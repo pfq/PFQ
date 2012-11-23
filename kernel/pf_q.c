@@ -53,6 +53,7 @@
 #include <pf_q-steer.h>
 #include <pf_q-bits.h>
 #include <pf_q-vlan.h>
+#include <pf_q-bpf.h>
 
 #include <pf_q-mpdb-queue.h>
 
@@ -340,7 +341,7 @@ pfq_direct_receive(struct sk_buff *skb, bool direct)
 		unsigned int gindex;
 
 		/* reset steering function in cache */
-		steering_cache.fun = (steering_function_t)0;
+		steering_cache.fun = (steering_function_t)NULL;
 
                 /* get the balancing groups bitmap */
                 group_mask = __pfq_devmap_get_groups(skb->dev->ifindex, skb_get_rx_queue(skb));   
@@ -354,6 +355,14 @@ pfq_direct_receive(struct sk_buff *skb, bool direct)
 
 			/* increment recv counter for this group */
 			sparse_inc(&pfq_groups[gindex].recv);
+
+                        /* check bpf filter */
+			if (atomic_long_read(&pfq_groups[gindex].filter))
+			{
+				struct sk_filter * filter = (struct sk_filter *)atomic_long_read(&pfq_groups[gindex].filter);
+                        	if (!sk_run_filter(skb, filter->insns))
+                        		continue;
+			}
 
                         /* retrieve the steering function for this group */
                         steer_fun = (steering_function_t) atomic_long_read(&pfq_groups[gindex].steering);
@@ -1025,10 +1034,22 @@ int pfq_setsockopt(struct socket *sock,
 
                     if (fprog.fcode.len > 0)  /* set the filter */
 		    {
+			struct sk_filter *filter = pfq_alloc_sk_filter(&fprog.fcode);
+		 	if (filter == NULL)
+			{
+                    	    pr_devel("[PFQ|%d] fprog error: prepare_sk_filter for gid:%d\n", pq->q_id, fprog.gid);
+			    return -EINVAL;
+			}
+
+			__pfq_set_filter_for_group(fprog.gid, filter);
+
+			
 			pr_devel("[PFQ|%d] fprog: gid:%d (fprog len %d bytes)\n", pq->q_id, fprog.gid, fprog.fcode.len);
 		    }
 		    else 	/* reset the filter */
 		    {
+			__pfq_set_filter_for_group(fprog.gid, NULL);
+
 			pr_devel("[PFQ|%d] fprog: gid:%d (resetting filter)\n", pq->q_id, fprog.gid);
 		    }
 

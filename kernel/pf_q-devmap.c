@@ -31,6 +31,7 @@
 
 /* devmap */
 
+
 DEFINE_SEMAPHORE(devmap_sem);
 
 atomic_long_t pfq_devmap [Q_MAX_DEVICE][Q_MAX_HW_QUEUE];

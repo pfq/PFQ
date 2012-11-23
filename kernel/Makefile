@@ -11,7 +11,7 @@ EXTRA_CFLAGS += -Ofast -march=native
 
 obj-m := $(TARGET).o 
 
-pfq-objs := pf_q.o pf_q-devmap.o pf_q-group.o pf_q-vlan.o pf_q-steer.o pf_q-steer-default.o  pf_q-mpdb-queue.o
+pfq-objs := pf_q.o pf_q-devmap.o pf_q-group.o pf_q-vlan.o pf_q-steer.o pf_q-steer-default.o  pf_q-mpdb-queue.o pf_q-bpf.o 
 
 KERNELVERSION := $(shell uname -r)
 
