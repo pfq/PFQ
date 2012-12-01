@@ -378,8 +378,14 @@ try
     // create threads:
 
     int i = 0;
-    std::for_each(vbinding.begin(), vbinding.end(), [&](const binding_type &b) {
+    std::for_each(vbinding.begin(), vbinding.end(), [&](binding_type &b) {
+
                   std::thread t(std::ref(ctx[i++]));
+
+                  auto & qs = std::get<2>(b);
+                  if (qs.empty())
+                        qs.push_back(-1);
+
                   std::cout << "thread on core " << std::get<1>(b) << " -> queues [";
 
                   std::copy(std::get<2>(b).begin(), std::get<2>(b).end(),
