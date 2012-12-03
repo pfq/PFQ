@@ -368,7 +368,12 @@ try
     //
     for(unsigned int i = 0; i < vbinding.size(); ++i)
     {
+        auto & qs = std::get<2>(vbinding[i]);
+        if (qs.empty())
+            qs.push_back(-1);
+
         std::cout << "pushing a context: " << std::get<0>(vbinding[i]) << ' ' << std::get<1>(vbinding[i]) << std::endl;
+        
         ctx.push_back(test::ctx(i, std::get<0>(vbinding[i]).c_str(), std::get<2>(vbinding[i])));        
     }
 
@@ -382,10 +387,6 @@ try
 
                   std::thread t(std::ref(ctx[i++]));
 
-                  auto & qs = std::get<2>(b);
-                  if (qs.empty())
-                        qs.push_back(-1);
-
                   std::cout << "thread on core " << std::get<1>(b) << " -> queues [";
 
                   std::copy(std::get<2>(b).begin(), std::get<2>(b).end(),
@@ -393,8 +394,9 @@ try
                   std::cout << "]\n";
 
                   extra::set_affinity(t, std::get<1>(b));
+
                   vt.push_back(std::move(t));
-                  });
+    });
 
     unsigned long long sum, flow, old = 0;
     pfq_stats sum_stats, old_stats = {0,0,0};
