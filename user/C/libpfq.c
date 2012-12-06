@@ -80,7 +80,6 @@ typedef struct
 	int gid;
 
 	struct pfq_net_queue netq;
-	pfq_iterator_t 	it;
 } pfq_t;
 
 
@@ -675,34 +674,26 @@ pfq_recv(pfq_t *q, void *buf, size_t buflen, struct pfq_net_queue *nq, long int 
 
 
 int
-pfq_dispatch(pfq_t *q, pfq_handler_t cb, long int microseconds, char *user, int max_packet)
+pfq_dispatch(pfq_t *q, pfq_handler_t cb, long int microseconds, char *user)
 {
+	pfq_iterator_t it, it_end;
 	int n = 0;
 
-	if (q->it == pfq_net_queue_end(&q->netq))
+	if (pfq_read(q, &q->netq, microseconds) < 0)
 	{
-		if (pfq_read(q, &q->netq, microseconds) < 0)
-		{
-			return -1;
-		}
-	
-		q->it = pfq_net_queue_begin(&q->netq);
+		return -1;
 	}
-
-	pfq_iterator_t it_end = pfq_net_queue_end(&q->netq);
 	
-	for(; q->it != it_end; q->it = pfq_net_queue_next(&q->netq, q->it))
+	it = pfq_net_queue_begin(&q->netq);
+	it_end = pfq_net_queue_end(&q->netq);
+	
+	for(; it != it_end; it = pfq_net_queue_next(&q->netq, it))
 	{
-		while (!pfq_iterator_ready(&q->netq, q->it))
+		while (!pfq_iterator_ready(&q->netq, it))
 			pfq_yield();
 
-		cb(user, pfq_iterator_header(q->it), pfq_iterator_data(q->it));
+		cb(user, pfq_iterator_header(it), pfq_iterator_data(it));
 		n++;
-
-		if (max_packet > 0 && (n == max_packet)) {
-		       	q->it = pfq_net_queue_next(&q->netq, q->it);
-			break;
-		}
 	}
         return n;
 }

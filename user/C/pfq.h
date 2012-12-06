@@ -247,7 +247,7 @@ extern int pfq_read(pfq_t *q, struct pfq_net_queue *nq, long int microseconds);
 extern int pfq_recv(pfq_t *q, void *buf, size_t buflen, 
 					struct pfq_net_queue *nq, long int microseconds);
 
-extern int pfq_dispatch(pfq_t *q, pfq_handler_t cb, long int microseconds, char *user, int max_packets);
+extern int pfq_dispatch(pfq_t *q, pfq_handler_t cb, long int microseconds, char *user);
 
 extern size_t pfq_mem_size(pfq_t const *q);
 
