@@ -352,7 +352,11 @@ pfq_direct_receive(struct sk_buff *skb, bool direct)
                 group_mask = __pfq_devmap_get_groups(skb->dev->ifindex, skb_get_rx_queue(skb));   
 
                 sock_mask = 0;
-			
+		
+		/* prefetch the cpu value */
+
+		__builtin_prefetch(&cpu, 0, 2);
+
 		bitwise_for_each(group_mask, gindex)
 		{
                         steering_ret_t ret;
