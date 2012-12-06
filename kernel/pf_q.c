@@ -275,8 +275,10 @@ pfq_direct_receive(struct sk_buff *skb, bool direct)
         struct pfq_steering_cache steering_cache;
         long unsigned n;
 
+#ifdef PFQ_USE_FLOW_CONTROL
+	
 	/* flow control */
-
+	
 	if (local_cache->flowctrl && 
 	    local_cache->flowctrl--) 
 	{
@@ -287,6 +289,7 @@ pfq_direct_receive(struct sk_buff *skb, bool direct)
 		
 		return 0;
 	}
+#endif
 
 	/* if vlan header is present, remove it */
 
@@ -422,8 +425,13 @@ pfq_direct_receive(struct sk_buff *skb, bool direct)
         {
                 struct pfq_opt * pq = pfq_get_opt(n);
                 if (likely(pq)) {
-                        if (!pfq_copy_to_user_skbs(pq, batch_queue[n], prefetch_queue))
+                        
+#ifdef PFQ_USE_FLOW_CONTROL
+                        if (!pfq_copy_to_user_skbs(pq, cpu, batch_queue[n], prefetch_queue))
                         	local_cache->flowctrl = flow_control;
+#else
+			pfq_copy_to_user_skbs(pq, cpu, batch_queue[n], prefetch_queue);
+#endif
                 }
         }
 
