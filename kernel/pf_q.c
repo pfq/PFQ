@@ -438,10 +438,12 @@ pfq_direct_receive(struct sk_buff *skb, bool direct)
                 }
         }
 
-        queue_for_each_backward(skb, n, prefetch_queue)
+        queue_for_each(skb, n, prefetch_queue)
         {
                 if (likely(skb->cb[42]))
+		{
                         __kfree_skb(skb);
+		}
                 else
                         kfree_skb(skb);
         }       
