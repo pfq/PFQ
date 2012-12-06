@@ -269,8 +269,8 @@ int
 pfq_direct_receive(struct sk_buff *skb, bool direct)
 {       
         struct local_data * local_cache = this_cpu_ptr(cpu_data);
-        unsigned long group_mask, sock_mask, global_mask;
         struct pfq_queue_skb * prefetch_queue = &local_cache->prefetch_queue;
+        unsigned long group_mask, sock_mask, global_mask;
         unsigned long batch_queue[sizeof(unsigned long) << 3];
         struct pfq_steering_cache steering_cache;
         long unsigned n;
@@ -374,44 +374,44 @@ pfq_direct_receive(struct sk_buff *skb, bool direct)
                         steer_fun = (steering_function_t) atomic_long_read(&pfq_groups[gindex].steering);
                         if (steer_fun) {
 
-				/* call the steering function */
+			 	/* call the steering function */
 
-                                ret = pfq_memoized_call(&steering_cache, steer_fun, skb, (void *)atomic_long_read(&pfq_groups[gindex].state));
+                                 ret = pfq_memoized_call(&steering_cache, steer_fun, skb, (void *)atomic_long_read(&pfq_groups[gindex].state));
 
-                                if (likely(ret.hash != action_drop)) {
+                                 if (likely(ret.hash != action_drop)) {
 
-                                        unsigned long eligible_mask = 0;
-                                        unsigned int c;
-					bitwise_for_each(ret.class, c)
-					{
-						eligible_mask |= atomic_long_read(&pfq_groups[gindex].sock_mask[c]);
-					}
+                                         unsigned long eligible_mask = 0;
+                                         unsigned int c;
+			 		bitwise_for_each(ret.class, c)
+			 		{
+			 			eligible_mask |= atomic_long_read(&pfq_groups[gindex].sock_mask[c]);
+			 		}
 
-                                        if (ret.hash == action_clone) {
+                                         if (ret.hash == action_clone) {
 
-                                                sock_mask |= eligible_mask;
-                                        	continue; 
-					}
+                                                 sock_mask |= eligible_mask;
+                                         	continue; 
+			 		}
 
-                                        if (unlikely(eligible_mask != local_cache->eligible_mask)) {
+                                         if (unlikely(eligible_mask != local_cache->eligible_mask)) {
 
-                                                local_cache->eligible_mask = eligible_mask;
-                                                local_cache->sock_cnt = 0;
-                                                while (eligible_mask)
-                                                {
-                                                        unsigned long first_sock = eligible_mask & -eligible_mask;
-                                                        local_cache->sock_mask[local_cache->sock_cnt++] = first_sock;
-                                                        eligible_mask ^= first_sock;
-                                                }
-                                        }
+                                                 local_cache->eligible_mask = eligible_mask;
+                                                 local_cache->sock_cnt = 0;
+                                                 while (eligible_mask)
+                                                 {
+                                                         unsigned long first_sock = eligible_mask & -eligible_mask;
+                                                         local_cache->sock_mask[local_cache->sock_cnt++] = first_sock;
+                                                         eligible_mask ^= first_sock;
+                                                 }
+                                         }
 
-                                        if (local_cache->sock_cnt) {
-                                                sock_mask |= local_cache->sock_mask[ret.hash % local_cache->sock_cnt];
-                                        }
-                                }
+                                         if (local_cache->sock_cnt) {
+                                                 sock_mask |= local_cache->sock_mask[ret.hash % local_cache->sock_cnt];
+                                         }
+                                 }
                         }
                         else {
-                                sock_mask |= atomic_long_read(&pfq_groups[gindex].sock_mask[0]);
+                             sock_mask |= atomic_long_read(&pfq_groups[gindex].sock_mask[0]);
                         }
                 }
 
@@ -420,7 +420,6 @@ pfq_direct_receive(struct sk_buff *skb, bool direct)
                 global_mask |= sock_mask;
         }
 
-	
 	bitwise_for_each(global_mask, n)
         {
                 struct pfq_opt * pq = pfq_get_opt(n);
