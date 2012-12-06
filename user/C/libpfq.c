@@ -202,8 +202,15 @@ int pfq_close(pfq_t *q)
 		
 		if (close(q->fd) < 0)
 			return q->error = "PFQ: close error", -1;
+
+		free(q);
+		return 0;
+	}               
+	else
+	{
+		free(q);
+		return __error = "PFQ: socket not open", -1;
 	}
-	return q->error = "PFQ: socket not open", -1;
 }
 
 
