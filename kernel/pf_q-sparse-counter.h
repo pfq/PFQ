@@ -35,6 +35,31 @@ typedef struct { __counter_t ctx[MAX_CPU_CTX]; } sparse_counter_t;
 
 
 static inline 
+void __sparse_inc(sparse_counter_t *sc, int cpu)
+{
+    sc->ctx[cpu].value++;
+}
+
+static inline 
+void __sparse_dec(sparse_counter_t *sc, int cpu)
+{
+    sc->ctx[cpu].value--;
+}
+
+static inline 
+void __sparse_add(sparse_counter_t *sc, int cpu, long n) 
+{
+    sc->ctx[cpu].value += n;
+}
+
+static inline 
+void __sparse_sub(sparse_counter_t *sc, int cpu, long n)
+{
+    sc->ctx[cpu].value -= n;
+}
+
+
+static inline 
 void sparse_inc(sparse_counter_t *sc)
 {
     sc->ctx[get_cpu() % MAX_CPU_CTX].value++;

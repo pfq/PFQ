@@ -181,7 +181,7 @@ bool pfq_filter(const struct sk_buff *skb)
 
 
 inline
-bool pfq_copy_to_user_skbs(struct pfq_opt *pq, unsigned long batch_queue, struct pfq_queue_skb *skbs)
+bool pfq_copy_to_user_skbs(struct pfq_opt *pq, int cpu, unsigned long batch_queue, struct pfq_queue_skb *skbs)
 {
         /* enqueue the sk_buff: it's wait-free. */
 
@@ -194,11 +194,11 @@ bool pfq_copy_to_user_skbs(struct pfq_opt *pq, unsigned long batch_queue, struct
                 len  = (int)hweight64(batch_queue); 
                 sent = mpdb_enqueue_batch(pq, batch_queue, len, skbs);
         	
-        	sparse_add(&pq->q_stat.recv, sent);
+        	__sparse_add(&pq->q_stat.recv, cpu, sent);
         
 		if (len > sent) 
 		{
-			sparse_add(&pq->q_stat.lost, len - sent);
+			__sparse_add(&pq->q_stat.lost, cpu, len - sent);
 			return false; 
 		}
         }
@@ -334,6 +334,8 @@ pfq_direct_receive(struct sk_buff *skb, bool direct)
 
 	steering_cache.state = 0;
 
+	const int cpu = get_cpu();
+
 	/* for each packet in the prefetch queue */
         
         queue_for_each(skb, n, prefetch_queue)
@@ -354,7 +356,8 @@ pfq_direct_receive(struct sk_buff *skb, bool direct)
                         steering_function_t steer_fun;
 
 			/* increment recv counter for this group */
-			sparse_inc(&pfq_groups[gindex].recv);
+			
+			__sparse_inc(&pfq_groups[gindex].recv, cpu);
 
                         /* check bpf filter */
 			if (atomic_long_read(&pfq_groups[gindex].filter))
