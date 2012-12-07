@@ -284,7 +284,7 @@ try
             }
             opt::steer_function.assign(argv[i]);
 
-            std::cout << "Balancing with [" << opt::steer_function << "]" << std::endl;
+            std::cout << "balancing with [" << opt::steer_function << "]" << std::endl;
             continue;
         }
 
@@ -356,6 +356,12 @@ try
     
     std::cout << "caplen: " << opt::caplen << std::endl;
     std::cout << "slots : " << opt::slots << std::endl;
+    
+    if (opt::slots < 1024)
+    {
+        std::cout << "too few slots may affet the performance!" << std::endl;
+        _Exit(0); 
+    }
 
     if (opt::flow) {
         std::cout << "forcing offset to 14 bytes..." << std::endl;
