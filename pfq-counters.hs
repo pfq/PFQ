@@ -50,7 +50,7 @@ makeBinding s = case splitOn "." s of
 --
 data Options = Options 
                {
-                steering :: Maybe String,
+                steering :: [String],
                 caplen   :: Int,
                 offset   :: Int,
                 slots    :: Int,
@@ -60,7 +60,7 @@ data Options = Options
 
 -- default options
 --
-options = cmdArgsMode $ Options { steering = Nothing &= help "Steering function (ie: steer-ipv4-addr)",
+options = cmdArgsMode $ Options { steering = [] &= help "Steering function (ie: steer-ipv4-addr)",
                                   caplen   = 64,
                                   offset   = 0,
                                   slots    = 262144,
@@ -109,7 +109,7 @@ runThreads opt | (b:bs) <- bindings opt = do
                               forM_ (devs b') $ \dev ->
                                 forM_ (queues b') $ \queue ->
                                   Q.bindGroup q (groupId b') dev queue
-                              when (isJust $ steering opt) (Q.steeringFunction q (groupId b') (fromJust $ steering opt))
+                              unless (null $ steering opt) (Q.steeringFunction q (groupId b') (head $ steering opt)) -- FIXME
                               Q.enable q 
                               recvLoop q (State c f HS.empty) >> return ()  
                           )
