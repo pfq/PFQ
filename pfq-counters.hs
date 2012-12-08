@@ -75,7 +75,7 @@ main :: IO ()
 main = do
     opt <- cmdArgsRun options
     putStrLn $ "[pfq] " ++ show (opt)
-    cs  <- runThreads opt (map makeBinding $ bindings opt)
+    cs  <- runThreads opt 
     t   <- getClockTime
     dumpStat cs t
 
@@ -96,26 +96,26 @@ diffUSec t1 t0 = (tdSec delta * 1000000) + truncate ((fromIntegral(tdPicosec del
                     where delta = diffClockTimes t1 t0
 
 
-runThreads :: (Num a) => Options -> [Binding] -> IO [MVar a]
-runThreads _ [] = return []
-runThreads opt (b:bs) = do
+runThreads :: (Num a) => Options -> IO [MVar a]
+runThreads opt | []     <- bindings opt = return []
+runThreads opt | (b:bs) <- bindings opt = do
                  c <- newMVar 0
                  f <- newMVar 0
-                 _ <- forkOn (coreNum b) (
+                 _ <- forkOn (coreNum b') (
                           do
                           fp <- Q.openNoGroup (caplen opt) (offset opt) (slots opt)
                           withForeignPtr fp  $ \q -> do
-                              Q.joinGroup q (groupId b) [Q.class_default] Q.policy_shared
-                              forM_ (devs b) $ \dev ->
-                                forM_ (queues b) $ \queue ->
-                                  Q.bindGroup q (groupId b) dev queue
-                              when (isJust $ steering opt) (Q.steeringFunction q (groupId b) (fromJust $ steering opt))
+                              Q.joinGroup q (groupId b') [Q.class_default] Q.policy_shared
+                              forM_ (devs b') $ \dev ->
+                                forM_ (queues b') $ \queue ->
+                                  Q.bindGroup q (groupId b') dev queue
+                              when (isJust $ steering opt) (Q.steeringFunction q (groupId b') (fromJust $ steering opt))
                               Q.enable q 
                               recvLoop q (State c f HS.empty) >> return ()  
                           )
-                 putStrLn $ "[pfq] " ++ show(b) ++ " @core " ++ show (coreNum b) ++ " started!"
-                 liftM2 (:) (return c) (runThreads opt bs)
-
+                 putStrLn $ "[pfq] " ++ show(b') ++ " @core " ++ show (coreNum b') ++ " started!"
+                 liftM2 (:) (return c) (runThreads opt{ bindings = bs })
+                where b' = makeBinding (head $ bindings opt)
 
 recvLoop :: (Num a) => Ptr Q.PFqTag -> State a -> IO Int
 recvLoop q state = do 
