@@ -68,17 +68,37 @@ options = cmdArgsMode $ Options { steering = Nothing &= help "Steering function 
                                 } &= summary "PFq multi-threaded packet counter."
 
 
+-- main function
+--
+
 main :: IO ()
 main = do
     opt <- cmdArgsRun options
-    cs  <- launchThreads opt (map makeBinding $ bindings opt)
+    putStrLn $ "[pfq] " ++ show (opt)
+    cs  <- runThreads opt (map makeBinding $ bindings opt)
     t   <- getClockTime
     dumpStat cs t
 
 
-launchThreads :: (Num a) => Options -> [Binding] -> IO [MVar a]
-launchThreads _ [] = return []
-launchThreads opt (b:bs) = do
+dumpStat :: (RealFrac a) => [MVar a] -> ClockTime -> IO ()
+dumpStat cs t0 = do
+             threadDelay 1000000
+             t <- getClockTime
+             cs' <- mapM (\v -> swapMVar v 0) cs
+             let delta = diffUSec t t0
+             let rate = (sum cs' * 1000000) / fromIntegral delta  
+             putStrLn $ "Total rate pkt/sec: " ++ show ((truncate rate) :: Integer)
+             dumpStat cs t
+
+
+diffUSec :: ClockTime -> ClockTime -> Int
+diffUSec t1 t0 = (tdSec delta * 1000000) + truncate ((fromIntegral(tdPicosec delta) / 1000000) :: Double)
+                    where delta = diffClockTimes t1 t0
+
+
+runThreads :: (Num a) => Options -> [Binding] -> IO [MVar a]
+runThreads _ [] = return []
+runThreads opt (b:bs) = do
                  c <- newMVar 0
                  f <- newMVar 0
                  _ <- forkOn (coreNum b) (
@@ -89,23 +109,12 @@ launchThreads opt (b:bs) = do
                               forM_ (devs b) $ \dev ->
                                 forM_ (queues b) $ \queue ->
                                   Q.bindGroup q (groupId b) dev queue
-                              Q.enable q 
                               when (isJust $ steering opt) (Q.steeringFunction q (groupId b) (fromJust $ steering opt))
-                              recvLoop q (State c f HS.empty ) >> return ()  
+                              Q.enable q 
+                              recvLoop q (State c f HS.empty) >> return ()  
                           )
-                 putStrLn $ "#" ++ show(b) ++ " @core " ++ show (coreNum b) ++ " started!"
-                 liftM2 (:) (return c) (launchThreads opt bs)
-
-
-dumpStat :: (RealFrac a) => [MVar a] -> ClockTime -> IO ()
-dumpStat cs t0 = do
-             threadDelay 1000000
-             t <- getClockTime
-             cs' <- mapM (\v -> swapMVar v 0) cs
-             let delta = diffUSec t t0
-             let rate = (sum cs' * 1000000) / fromIntegral delta  
-             putStrLn $ "total rate pkt/sec: " ++ show ((truncate rate) :: Integer)
-             dumpStat cs t
+                 putStrLn $ "[pfq] " ++ show(b) ++ " @core " ++ show (coreNum b) ++ " started!"
+                 liftM2 (:) (return c) (runThreads opt bs)
 
 
 recvLoop :: (Num a) => Ptr Q.PFqTag -> State a -> IO Int
@@ -117,9 +126,5 @@ recvLoop q state = do
               modifyMVar_ (sCounter state) $ \c -> return (c + fromIntegral (Q.qLen netQueue))
               recvLoop q state
 
-
-diffUSec :: ClockTime -> ClockTime -> Int
-diffUSec t1 t0 = (tdSec delta * 1000000) + truncate ((fromIntegral(tdPicosec delta) / 1000000) :: Double)
-                    where delta = diffClockTimes t1 t0
 
 
