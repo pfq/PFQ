@@ -9,6 +9,7 @@ import System.Environment
 import System.Time
 
 import Control.Monad
+import Control.Applicative
 import Control.Concurrent
 
 import Data.Maybe
@@ -17,6 +18,8 @@ import Data.Data
 import Data.Typeable
 
 import qualified Data.HashSet as HS
+import qualified Data.Map as M
+
 import System.Console.CmdArgs
 
 
@@ -46,6 +49,12 @@ makeBinding s = case splitOn "." s of
                         ds : c : g : [] ->  Binding (splitOn ":" ds) (read c) (read g) [-1]
                         ds : c : g : qs ->  Binding (splitOn ":" ds) (read c) (read g) (map read qs)
 
+
+makeFun :: String -> (Int, String)
+makeFun s =  case splitOn ":" s of
+                n : [] -> (-1, n)
+                n : ns -> (read $ head ns, n)
+                
 -- Command line options 
 --
 data Options = Options 
@@ -75,7 +84,7 @@ main :: IO ()
 main = do
     opt <- cmdArgsRun options
     putStrLn $ "[pfq] " ++ show (opt)
-    cs  <- runThreads opt 
+    cs  <- runThreads opt (M.fromList $ map makeFun (steering opt)) 
     t   <- getClockTime
     dumpStat cs t
 
@@ -96,9 +105,9 @@ diffUSec t1 t0 = (tdSec delta * 1000000) + truncate ((fromIntegral(tdPicosec del
                     where delta = diffClockTimes t1 t0
 
 
-runThreads :: (Num a) => Options -> IO [MVar a]
-runThreads opt | []     <- bindings opt = return []
-runThreads opt | (b:bs) <- bindings opt = do
+runThreads :: (Num a) => Options -> M.Map Int String -> IO [MVar a]
+runThreads opt ms | []     <- bindings opt = return []
+runThreads opt ms | (b:bs) <- bindings opt = do
                  c <- newMVar 0
                  f <- newMVar 0
                  _ <- forkOn (coreNum b') (
@@ -109,13 +118,16 @@ runThreads opt | (b:bs) <- bindings opt = do
                               forM_ (devs b') $ \dev ->
                                 forM_ (queues b') $ \queue ->
                                   Q.bindGroup q (groupId b') dev queue
-                              unless (null $ steering opt) (Q.steeringFunction q (groupId b') (head $ steering opt)) -- FIXME
+                              when (isJust s) ((putStrLn $ "[pfq] Using steering " ++ (fromJust s) ++ " for gid " ++ show(groupId b') ++ "!") >>
+                                                Q.steeringFunction q (groupId b') (fromJust s)) 
                               Q.enable q 
                               recvLoop q (State c f HS.empty) >> return ()  
                           )
                  putStrLn $ "[pfq] " ++ show(b') ++ " @core " ++ show (coreNum b') ++ " started!"
-                 liftM2 (:) (return c) (runThreads opt{ bindings = bs })
+                 liftM2 (:) (return c) (runThreads opt{ bindings = bs } ms)
                 where b' = makeBinding (head $ bindings opt)
+                      s  = M.lookup (groupId b') ms <|> M.lookup (-1) ms 
+
 
 recvLoop :: (Num a) => Ptr Q.PFqTag -> State a -> IO Int
 recvLoop q state = do 
