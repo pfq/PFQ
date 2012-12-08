@@ -32,8 +32,8 @@ data State a = State { sCounter :: MVar a,
                        sSet     :: HS.HashSet Key
                      }
 
-type Queue = Int
 
+type Queue = Int
 
 data Binding = Binding { devs      :: [String],
                          coreNum   :: Int,
@@ -69,11 +69,11 @@ data Options = Options
 
 -- default options
 --
-options = cmdArgsMode $ Options { steering = [] &= help "Steering function (ie: steer-ipv4-addr)",
+options = cmdArgsMode $ Options { steering = [] &= typ "STEER"  &= help "Where STEER = function-name[:gid] (ie: steer-ipv4-addr)",
                                   caplen   = 64,
                                   offset   = 0,
                                   slots    = 262144,
-                                  bindings = [] &= typ "BINDING" &= help "Where BINDING = eth0:eth1:...:core[gid.queue.queue...]"
+                                  bindings = [] &= typ "BINDING" &= help "Where BINDING = eth0:...:ethx[.core[.gid[.queue.queue...]]]"
                                 } &= summary "PFq multi-threaded packet counter."
 
 
@@ -131,12 +131,10 @@ runThreads opt ms | (b:bs) <- bindings opt = do
 
 recvLoop :: (Num a) => Ptr Q.PFqTag -> State a -> IO Int
 recvLoop q state = do 
-    netQueue <- Q.read q 10000
+    netQueue <- Q.read q 20000
     case (Q.qLen netQueue) of 
         0 ->  recvLoop q state
         _ ->  do
               modifyMVar_ (sCounter state) $ \c -> return (c + fromIntegral (Q.qLen netQueue))
               recvLoop q state
-
-
 
