@@ -20,20 +20,26 @@ data State a = State { sCounter :: MVar a,
                        sSet     :: HashSet Key
                      }
 
+main :: IO ()
+main = do
+    args <- getArgs
+    case (length args) of
+        0   -> error "usage: pfq-counter dev #thread <steer-function>"
+        1   -> error "usage: pfq-counter dev #thread <steer-function>"
+        2   -> run (args !! 0) (Prelude.read(args !! 1) :: Int) Nothing
+        _   -> run (args !! 0) (Prelude.read(args !! 1) :: Int) (Just (args !! 2))
 
-recvLoop :: (Num a) => Ptr PFqTag -> State a -> IO Int
-recvLoop q state = do 
-    netQueue <- Q.read q 10000
-    case (Q.qLen netQueue) of 
-        0 ->  recvLoop q state
-        _ ->  do
-              modifyMVar_ (sCounter state) $ \c -> return (c + fromIntegral (Q.qLen netQueue))
-              recvLoop q state
+
+run :: String -> Int -> Maybe String -> IO ()
+run dev n steer = do
+        cs <- launchThreads dev n steer 
+        t  <- getClockTime
+        dumpStat cs t
 
 
-launcher :: (Num a) => String -> Int -> Maybe String -> IO [MVar a]
-launcher _ 0 _ = return []
-launcher dev n steer = do 
+launchThreads :: (Num a) => String -> Int -> Maybe String -> IO [MVar a]
+launchThreads _ 0 _ = return []
+launchThreads dev n steer = do 
          c <- newMVar 0
          f <- newMVar 0
          _ <- forkOn (n-1) (
@@ -48,21 +54,8 @@ launcher dev n steer = do
                   )
 
          putStrLn $ "#" ++ show (n-1) ++ " started!"
-         liftM2 (:) (return c) (launcher dev (n-1) steer)
+         liftM2 (:) (return c) (launchThreads dev (n-1) steer)
                          
-
-dumper :: String -> Int -> Maybe String -> IO ()
-dumper dev n steer = do
-        cs <- launcher dev n steer 
-        t  <- getClockTime
-        dumpStat cs t
-
-
-diffUSec :: ClockTime -> ClockTime -> Int
-diffUSec t1 t0 = (tdSec delta * 1000000) + truncate ((fromIntegral(tdPicosec delta) / 1000000) :: Double)
-                    where delta = diffClockTimes t1 t0
-
-
 dumpStat :: (RealFrac a) => [MVar a] -> ClockTime -> IO ()
 dumpStat cs t0 = do
              threadDelay 1000000
@@ -73,14 +66,21 @@ dumpStat cs t0 = do
              putStrLn $ "total rate pkt/sec: " ++ show ((truncate rate) :: Integer)
              dumpStat cs t
 
-main :: IO ()
-main = do
-    args <- getArgs
-    case (length args) of
-        0   -> error "usage: pfq-counter dev #thread <steer-function>"
-        1   -> error "usage: pfq-counter dev #thread <steer-function>"
-        2   -> dumper (args !! 0) (Prelude.read(args !! 1) :: Int) Nothing
-        _   -> dumper (args !! 0) (Prelude.read(args !! 1) :: Int) (Just (args !! 2))
+
+recvLoop :: (Num a) => Ptr PFqTag -> State a -> IO Int
+recvLoop q state = do 
+    netQueue <- Q.read q 10000
+    case (Q.qLen netQueue) of 
+        0 ->  recvLoop q state
+        _ ->  do
+              modifyMVar_ (sCounter state) $ \c -> return (c + fromIntegral (Q.qLen netQueue))
+              recvLoop q state
+
+
+diffUSec :: ClockTime -> ClockTime -> Int
+diffUSec t1 t0 = (tdSec delta * 1000000) + truncate ((fromIntegral(tdPicosec delta) / 1000000) :: Double)
+                    where delta = diffClockTimes t1 t0
+
 
 
 
