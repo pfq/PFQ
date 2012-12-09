@@ -37,20 +37,21 @@ data State a = State { sCounter :: MVar a,
 --
 data Options = Options 
                {
-                steering :: [String],
                 caplen   :: Int,
                 offset   :: Int,
                 slots    :: Int,
-                thread :: [String]
+                steering :: [String],
+                thread   :: [String]
                } deriving (Data, Typeable, Show)
 
 
 -- default options
 --
-options = cmdArgsMode $ Options { steering = [] &= typ "FUNCTION"  &= help "Where FUNCTION = function-name[:gid] (ie: steer-ipv4-addr)",
+options = cmdArgsMode $ Options { 
                                   caplen   = 64,
                                   offset   = 0,
                                   slots    = 262144,
+                                  steering = [] &= typ "FUNCTION"  &= help "Where FUNCTION = function-name[:gid] (ie: steer-ipv4-addr)",
                                   thread   = [] &= typ "BINDING" &= help "Where BINDING = eth0:...:ethx[.core[.gid[.queue.queue...]]]"
                                 } &= summary "PFq multi-threaded packet counter." &= program "pfq-counters"
 
