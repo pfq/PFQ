@@ -97,13 +97,13 @@ main = do
 
 dumpStat :: (RealFrac a) => [MVar a] -> ClockTime -> IO ()
 dumpStat cs t0 = do
-             threadDelay 1000000
-             t <- getClockTime
-             cs' <- mapM (\v -> swapMVar v 0) cs
-             let delta = diffUSec t t0
-             let rate = (sum cs' * 1000000) / fromIntegral delta  
-             putStrLn $ "Total rate pkt/sec: " ++ show ((truncate rate) :: Integer)
-             dumpStat cs t
+    threadDelay 1000000
+    t <- getClockTime
+    cs' <- mapM (\v -> swapMVar v 0) cs
+    let delta = diffUSec t t0
+    let rate = (sum cs' * 1000000) / fromIntegral delta  
+    putStrLn $ "Total rate pkt/sec: " ++ show ((truncate rate) :: Integer)
+    dumpStat cs t
 
 
 diffUSec :: ClockTime -> ClockTime -> Int
@@ -114,25 +114,25 @@ diffUSec t1 t0 = (tdSec delta * 1000000) + truncate ((fromIntegral(tdPicosec del
 runThreads :: (Num a) => Options -> M.Map Gid String -> IO [MVar a]
 runThreads opt ms | []     <- thread opt = return []
 runThreads opt ms | (t:ts) <- thread opt = do
-         c <- newMVar 0
-         f <- newMVar 0
-         _ <- forkOn (coreNum binding) (
-                  do
-                  fp <- Q.openNoGroup (caplen opt) (offset opt) (slots opt)
-                  withForeignPtr fp  $ \q -> do
-                      Q.joinGroup q (groupId binding) [Q.class_default] Q.policy_shared
-                      forM_ (devs binding) $ \dev ->
-                        forM_ (queues binding) $ \queue ->
-                          Q.bindGroup q (groupId binding) dev queue
-                      when (isJust sf) ((putStrLn $ "[pfq] Using steering " ++ (fromJust sf) ++ " for gid " ++ show(groupId binding) ++ "!") >>
-                                        Q.steeringFunction q (groupId binding) (fromJust sf)) 
-                      Q.enable q 
-                      recvLoop q (State c f HS.empty) >> return ()  
-                  )
-         putStrLn $ "[pfq] " ++ show(binding) ++ " @core " ++ show (coreNum binding) ++ " started!"
-         liftM2 (:) (return c) (runThreads opt{ thread = ts } ms)
-        where binding = makeBinding (head $ thread opt)
-              sf  = M.lookup (groupId binding) ms <|> M.lookup (-1) ms 
+    c <- newMVar 0
+    f <- newMVar 0
+    _ <- forkOn (coreNum binding) (
+             do
+             fp <- Q.openNoGroup (caplen opt) (offset opt) (slots opt)
+             withForeignPtr fp  $ \q -> do
+                 Q.joinGroup q (groupId binding) [Q.class_default] Q.policy_shared
+                 forM_ (devs binding) $ \dev ->
+                   forM_ (queues binding) $ \queue ->
+                     Q.bindGroup q (groupId binding) dev queue
+                 when (isJust sf) ((putStrLn $ "[pfq] Using steering " ++ (fromJust sf) ++ " for gid " ++ show(groupId binding) ++ "!") >>
+                                   Q.steeringFunction q (groupId binding) (fromJust sf)) 
+                 Q.enable q 
+                 recvLoop q (State c f HS.empty) >> return ()  
+             )
+    putStrLn $ "[pfq] " ++ show(binding) ++ " @core " ++ show (coreNum binding) ++ " started!"
+    liftM2 (:) (return c) (runThreads opt{ thread = ts } ms)
+    where binding = makeBinding (head $ thread opt)
+          sf = M.lookup (groupId binding) ms <|> M.lookup (-1) ms 
 
 
 recvLoop :: (Num a) => Ptr Q.PFqTag -> State a -> IO Int
