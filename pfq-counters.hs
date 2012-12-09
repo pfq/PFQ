@@ -33,9 +33,36 @@ data State a = State { sCounter :: MVar a,
                      }
 
 
-type Queue = Int
+-- Command line options 
+--
+data Options = Options 
+               {
+                steering :: [String],
+                caplen   :: Int,
+                offset   :: Int,
+                slots    :: Int,
+                thread :: [String]
+               } deriving (Data, Typeable, Show)
 
-data Binding = Binding { devs      :: [String],
+
+-- default options
+--
+options = cmdArgsMode $ Options { steering = [] &= typ "FUNCTION"  &= help "Where FUNCTION = function-name[:gid] (ie: steer-ipv4-addr)",
+                                  caplen   = 64,
+                                  offset   = 0,
+                                  slots    = 262144,
+                                  thread   = [] &= typ "BINDING" &= help "Where BINDING = eth0:...:ethx[.core[.gid[.queue.queue...]]]"
+                                } &= summary "PFq multi-threaded packet counter." &= program "pfq-counters"
+
+
+-- Group Options
+--
+        
+type Queue = Int                                 
+type Gid   = Int
+
+data Binding = Binding { 
+                         devs      :: [String],
                          coreNum   :: Int,
                          groupId   :: Int,
                          queues    :: [Queue] 
@@ -50,33 +77,11 @@ makeBinding s = case splitOn "." s of
                         ds : c : g : qs ->  Binding (splitOn ":" ds) (read c) (read g) (map read qs)
 
 
-makeFun :: String -> (Int, String)
+makeFun :: String -> (Gid, String)
 makeFun s =  case splitOn ":" s of
                 n : [] -> (-1, n)
                 n : ns -> (read $ head ns, n)
                 
--- Command line options 
---
-data Options = Options 
-               {
-                steering :: [String],
-                caplen   :: Int,
-                offset   :: Int,
-                slots    :: Int,
-                bindings :: [String]
-               } deriving (Data, Typeable, Show)
-
-
--- default options
---
-options = cmdArgsMode $ Options { steering = [] &= typ "STEER"  &= help "Where STEER = function-name[:gid] (ie: steer-ipv4-addr)",
-                                  caplen   = 64,
-                                  offset   = 0,
-                                  slots    = 262144,
-                                  bindings = [] &= typ "BINDING" &= help "Where BINDING = eth0:...:ethx[.core[.gid[.queue.queue...]]]"
-                                } &= summary "PFq multi-threaded packet counter."
-
-
 -- main function
 --
 
@@ -105,28 +110,28 @@ diffUSec t1 t0 = (tdSec delta * 1000000) + truncate ((fromIntegral(tdPicosec del
                     where delta = diffClockTimes t1 t0
 
 
-runThreads :: (Num a) => Options -> M.Map Int String -> IO [MVar a]
-runThreads opt ms | []     <- bindings opt = return []
-runThreads opt ms | (b:bs) <- bindings opt = do
-                 c <- newMVar 0
-                 f <- newMVar 0
-                 _ <- forkOn (coreNum b') (
-                          do
-                          fp <- Q.openNoGroup (caplen opt) (offset opt) (slots opt)
-                          withForeignPtr fp  $ \q -> do
-                              Q.joinGroup q (groupId b') [Q.class_default] Q.policy_shared
-                              forM_ (devs b') $ \dev ->
-                                forM_ (queues b') $ \queue ->
-                                  Q.bindGroup q (groupId b') dev queue
-                              when (isJust s) ((putStrLn $ "[pfq] Using steering " ++ (fromJust s) ++ " for gid " ++ show(groupId b') ++ "!") >>
-                                                Q.steeringFunction q (groupId b') (fromJust s)) 
-                              Q.enable q 
-                              recvLoop q (State c f HS.empty) >> return ()  
-                          )
-                 putStrLn $ "[pfq] " ++ show(b') ++ " @core " ++ show (coreNum b') ++ " started!"
-                 liftM2 (:) (return c) (runThreads opt{ bindings = bs } ms)
-                where b' = makeBinding (head $ bindings opt)
-                      s  = M.lookup (groupId b') ms <|> M.lookup (-1) ms 
+runThreads :: (Num a) => Options -> M.Map Gid String -> IO [MVar a]
+runThreads opt ms | []     <- thread opt = return []
+runThreads opt ms | (t:ts) <- thread opt = do
+         c <- newMVar 0
+         f <- newMVar 0
+         _ <- forkOn (coreNum binding) (
+                  do
+                  fp <- Q.openNoGroup (caplen opt) (offset opt) (slots opt)
+                  withForeignPtr fp  $ \q -> do
+                      Q.joinGroup q (groupId binding) [Q.class_default] Q.policy_shared
+                      forM_ (devs binding) $ \dev ->
+                        forM_ (queues binding) $ \queue ->
+                          Q.bindGroup q (groupId binding) dev queue
+                      when (isJust sf) ((putStrLn $ "[pfq] Using steering " ++ (fromJust sf) ++ " for gid " ++ show(groupId binding) ++ "!") >>
+                                        Q.steeringFunction q (groupId binding) (fromJust sf)) 
+                      Q.enable q 
+                      recvLoop q (State c f HS.empty) >> return ()  
+                  )
+         putStrLn $ "[pfq] " ++ show(binding) ++ " @core " ++ show (coreNum binding) ++ " started!"
+         liftM2 (:) (return c) (runThreads opt{ thread = ts } ms)
+        where binding = makeBinding (head $ thread opt)
+              sf  = M.lookup (groupId binding) ms <|> M.lookup (-1) ms 
 
 
 recvLoop :: (Num a) => Ptr Q.PFqTag -> State a -> IO Int
