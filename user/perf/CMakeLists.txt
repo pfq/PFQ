@@ -11,6 +11,8 @@ include_directories(../../user/C++)
 
 add_executable(pfq-counters pfq-counters.cpp)
 add_executable(pfq-histogram pfq-histogram.cpp)
+add_executable(pfq-stm pfq-stm.cpp)
 
 target_link_libraries(pfq-counters -pthread)
 target_link_libraries(pfq-histogram -pthread)
+target_link_libraries(pfq-stm -pthread)
