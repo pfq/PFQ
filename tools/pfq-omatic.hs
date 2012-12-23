@@ -24,10 +24,12 @@ import System.IO.Unsafe
 import System.Process
 import System.Directory
 import System.FilePath
-import Control.Monad(when,unless,forM,forM_)
+import Control.Monad(when,unless,forM)
 import Text.Regex.Posix
 
 import Data.List
+
+pfq_omatic_ver,pfq_kcompat,pfq_symvers,proc_cpuinfo :: String    
 
 pfq_omatic_ver  = "1.1"
 pfq_kcompat     = "/usr/local/include/pfq/pfq_kcompat.h"
@@ -39,15 +41,15 @@ uname_r :: String
 uname_r = head . lines $ unsafePerformIO $ readProcess "/bin/uname" ["-r"] "" 
 
 
+main :: IO ()
 main = do
     putStrLn $ "[PFQ] pfq-omatic: v" ++ pfq_omatic_ver
     sanityCheck
-    sources <- getRecursiveContents "." ".c"
-    forM_ sources tryPatch 
+    getRecursiveContents "." ".c" >>= mapM_ tryPatch 
     copyFile pfq_symvers "Module.symvers"
     let cmd = "make -j" ++ show getNumberOfPhyCores
     putStrLn $ "[PFQ] compiling: " ++ cmd ++ "..."
-    system $ cmd
+    _ <- system $ cmd
     putStrLn "[PFQ] done."
 
 

@@ -99,7 +99,8 @@ none _ = True
 
 -- main:
 --
-
+ 
+main :: IO ()
 main = cmdArgsRun options >>= \ops ->
     (dispatch $ algorithm ops) ops (firstcore ops)   
 
