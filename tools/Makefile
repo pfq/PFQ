@@ -9,9 +9,12 @@ HC=ghc
 
 .PHONY: all clean
 
-all: irq-affinity
+all: irq-affinity pfq-omatic
 
 irq-affinity: irq-affinity.hs
+		$(HC) $(GHCFLAGS) $< -o $@
+
+pfq-omatic: pfq-omatic.hs
 		$(HC) $(GHCFLAGS) $< -o $@
 
 install: all
@@ -21,5 +24,5 @@ install: all
 		cp pfq\'omatic.sh ${INSTDIR}/bin/
         
 clean:
-	   @rm -f irq-affinity 
+	   @rm -f irq-affinity pfq-omatic
 	   @rm -f *.o *.hi
