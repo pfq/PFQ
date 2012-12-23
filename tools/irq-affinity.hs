@@ -133,9 +133,9 @@ runBinding ops@(Options fstcr excl _ msi (d:ds)) lst = do
 showBinding :: Options -> Int -> IO ()
 showBinding (Options _ _ _ msi ds) _ = do
     forM_ ds $ \dev -> do
-        putStrLn $ "Binding for device " ++ show dev ++ " (" ++ show msi ++ "):"
+        putStrLn $ "Binding for device " ++ dev ++ " (" ++ show msi ++ "):"
         let irq  = getInterrupts dev msi
-        when (null irq) $ error $ "irq(s) not found for dev " ++ dev ++ "!"
+        when (null irq) $ error $ "irq vector not found for dev " ++ dev ++ "!"
         forM_ irq $ \n -> do
             getIrqAffinity n >>= \c -> putStrLn $ "   irq " ++ show n ++ " -> core " ++ show c
 
