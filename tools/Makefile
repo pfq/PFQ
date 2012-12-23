@@ -21,7 +21,7 @@ install: all
 		@mkdir -p ${INSTDIR}/include/pfq 
 		cp pfq_kcompat.h  ${INSTDIR}/include/pfq/
 		cp irq-affinity  ${INSTDIR}/bin/
-		cp pfq\'omatic.sh ${INSTDIR}/bin/
+		cp pfq-omatic ${INSTDIR}/bin/
         
 clean:
 	   @rm -f irq-affinity pfq-omatic
