@@ -1,7 +1,7 @@
 # PFQ Makefile (c) 2011-2013 Nicola Bonelli <nicola.bonelli@cnit.it>
 #
 
-MAKE_DIRECTORIES:= kernel user
+MAKE_DIRECTORIES:= kernel user tools
 
 .PHONY: all clean install
 
