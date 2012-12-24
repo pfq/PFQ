@@ -51,14 +51,21 @@ main = do
     putStrLn $ "[PFQ] compiling: " ++ cmd ++ "..."
     _ <- system $ cmd
     putStrLn "[PFQ] done."
+                                       
+
+regexFunCall :: String -> Int -> String
+regexFunCall fun n = fun ++ "[[:space:]]*" ++ "\\(" ++ args n  ++ "\\)"
+                        where args 0 = "[[:space:]]*"
+                              args 1 = "[^,]*"
+                              args x = "[^,]*," ++ args (x-1)
 
 
 tryPatch :: FilePath -> IO ()
 tryPatch file = do
     readFile file >>= \c ->
-        when (c =~ "netif_rx(.*)|netif_receive_skb(.*)|napi_gro_receive(.*,.*)") $ do
+        when (c =~ ((regexFunCall "netif_rx" 1) ++ "|" ++ (regexFunCall "netif_receive_skb" 1) ++ "|" ++ (regexFunCall "napi_gro_receive" 2))) $ do
             doesFileExist (file ++ ".orig") >>= \orig -> 
-                if (orig) 
+                if orig 
                 then putStrLn $ "[PFQ] " ++ file ++ " is already patched :)"
                 else makePatch file
                 
@@ -67,8 +74,8 @@ makePatch :: FilePath -> IO ()
 makePatch file = do
     putStrLn $ "[PFQ] patching " ++ file
     src <- readFile file
-    renameFile file (file ++ ".orig")
-    writeFile file ("#include " ++ show pfq_kcompat ++ "\n" ++ src) 
+    renameFile file $ file ++ ".orig"
+    writeFile file $ "#include " ++ show pfq_kcompat ++ "\n" ++ src 
 
 
 sanityCheck :: IO ()
