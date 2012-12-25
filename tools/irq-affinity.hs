@@ -169,7 +169,11 @@ getCpusFromMask mask  = [ n | n <- [0 .. 127], let p2 = 1 `shiftL` n, mask .&. p
 
 makeBinding :: Device -> [Int] -> Int -> Alg -> MSI -> [Int]
 makeBinding dev excl f (Alg f' s filt) msi = 
-    take nq [ n | let f''= if (f' == -1) then f else f', x <- [f'', f''+s .. 1024], let n = x `mod` getNumberOfPhyCores, filt n, n `notElem` excl]    
+    take nq [ n | let f''= if (f' == -1) then f else f, 
+                      x <- [f'', f''+s .. 64], 
+                      let n = x `mod` getNumberOfPhyCores, 
+                      filt n, 
+                      n `notElem` excl ]    
         where nq = getNumberOfQueues dev msi
 
 -- the following actions can be unsafe IO because the files they parse are not mutable
