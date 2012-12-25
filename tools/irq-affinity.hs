@@ -22,7 +22,8 @@ module Main where
 
 import Data.List(isInfixOf)
 import Data.List.Split(splitOn)
-import Control.Monad(when,forM_)
+import Control.Monad.State
+
 import Numeric(showHex,readHex)
 
 import Data.Bits
@@ -61,6 +62,9 @@ data Options = Options
                } deriving (Data, Typeable, Show)
 
 
+type BindState = StateT (Options, Int)
+
+
 -- default options
 --
 
@@ -97,48 +101,54 @@ makeAlg _ _                 = error "Unknown algorithm"
 none :: a -> Bool
 none _ = True
 
+
 -- main:
 --
  
 main :: IO ()
-main = cmdArgsRun options >>= \ops ->
-    (dispatch $ algorithm ops) ops (firstcore ops)   
+main = cmdArgsRun options >>= \ops -> do
+    let apply = forM_ (devices ops) $ \dev -> dispatch (algorithm ops) dev
+    evalStateT apply (ops, (firstcore ops))  
+
 
 -- dispatch command:
 --
 
-dispatch :: String -> (Options -> Int -> IO ())
-dispatch "" = showBinding
-dispatch _  = runBinding
+dispatch :: String -> (String -> BindState IO ())
+dispatch "" = showBinding 
+dispatch _  = makeBinding 
 
 
--- runBinding algorithm:
+-- makeBinding algorithm:
 --
 
-runBinding :: Options -> Int -> IO ()
-runBinding (Options _ _ _ _ []) _ = putStrLn "Done."
-runBinding ops@(Options fstcr excl _ msi (d:ds)) lst = do
-    putStrLn $ "Setting binding for device " ++ d ++ " (" ++ show msi ++ "):"
-    let alg  = makeAlg (splitOn ":" $ algorithm ops) fstcr
-    let irq  = getInterrupts d msi
-        core = makeBinding d excl lst alg msi  
-    when (null irq) $ error $ "irq(s) not found for dev " ++ d ++ "!"
-    when (null core) $ error "no eligible cores found!"
-    mapM_ setIrqAffinity $ zip irq core
-    runBinding ops{devices = ds} (last core + 1)
+makeBinding :: String -> BindState IO ()
+makeBinding dev = do
+    ps <- get
+    let op = fst ps
+        msi = msitype op
+        alg  = makeAlg (splitOn ":" $ algorithm op) (firstcore op)
+        irq  = getInterrupts dev msi
+        core = mkBinding dev (exclude op) (snd ps) alg msi  
+    lift $ putStrLn $ "Setting binding for device " ++ dev ++ " (" ++ show msi ++ "):"
+    lift $ when (null irq) $ error $ "irq(s) not found for dev " ++ dev ++ "!"
+    lift $ when (null core) $ error "no eligible cores found!"
+    lift $ mapM_ setIrqAffinity $ zip irq core
+    put (op, last core + 1)
 
 
 -- show current binding:
 --
 
-showBinding :: Options -> Int -> IO ()
-showBinding (Options _ _ _ msi ds) _ = do
-    forM_ ds $ \dev -> do
-        putStrLn $ "Binding for device " ++ dev ++ " (" ++ show msi ++ "):"
-        let irq  = getInterrupts dev msi
-        when (null irq) $ error $ "irq vector not found for dev " ++ dev ++ "!"
-        forM_ irq $ \n -> do
-            getIrqAffinity n >>= \c -> putStrLn $ "   irq " ++ show n ++ " -> core " ++ show c
+showBinding :: String -> BindState IO ()
+showBinding dev = do
+    ps <- get
+    let msi = msitype $ fst ps
+        irq = getInterrupts dev msi
+    lift $ putStrLn $ "Binding for device " ++ dev ++ " (" ++ show msi ++ "):"
+    lift $ when (null irq) $ error $ "irq vector not found for dev " ++ dev ++ "!"
+    lift $ forM_ irq $ \n -> do
+            getIrqAffinity n >>= \cs -> putStrLn $ "   irq " ++ show n ++ " -> core " ++ show cs
 
 
 -- set irq affinity for the given (irq,core) pair 
@@ -164,11 +174,11 @@ getCpusFromMask :: Int -> [Int]
 getCpusFromMask mask  = [ n | n <- [0 .. 127], let p2 = 1 `shiftL` n, mask .&. p2 /= 0] 
 
 
--- given a device, create the eligible list of core
+-- given a device and a binding algorithm, create the eligible list of core
 --
 
-makeBinding :: Device -> [Int] -> Int -> Alg -> MSI -> [Int]
-makeBinding dev excl f (Alg f' s filt) msi = 
+mkBinding :: Device -> [Int] -> Int -> Alg -> MSI -> [Int]
+mkBinding dev excl f (Alg f' s filt) msi = 
     take nq [ n | let f''= if (f' == -1) then f else f, 
                       x <- [f'', f''+s .. 64], 
                       let n = x `mod` getNumberOfPhyCores, 
@@ -192,5 +202,4 @@ getInterrupts dev msi = unsafePerformIO $ readFile proc_interrupt >>= \file ->
 getNumberOfPhyCores :: Int
 getNumberOfPhyCores = unsafePerformIO $ readFile proc_cpuinfo >>= \file ->  
     return $ length $ filter (isInfixOf "processor") $ lines file 
-
 
