@@ -179,7 +179,7 @@ getCpusFromMask mask  = [ n | n <- [0 .. 127], let p2 = 1 `shiftL` n, mask .&. p
 
 mkBinding :: Device -> [Int] -> Int -> Alg -> MSI -> [Int]
 mkBinding dev excl f (Alg f' s filt) msi = 
-    take nq [ n | let f''= if (f' == -1) then f else f, 
+    take nq [ n | let f''= if (f' == -1) then f else f', 
                       x <- [f'', f''+s .. 64], 
                       let n = x `mod` getNumberOfPhyCores, 
                       filt n, 
