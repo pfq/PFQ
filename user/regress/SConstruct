@@ -1,7 +1,7 @@
 # SCon script
 
-env = Environment(CPPPATH=['.', '../utils', '../C++', '../C', '../../kernel'], 
-    CXXFLAGS=['-Ofast','-g2', '-Wall', '-Wextra', '-std=c++11'])
+env = Environment(CPPPATH=['.', '../extra', '../C++', '../C', '../../kernel'], 
+CXXFLAGS=['-Ofast','-g2', '-Wall', '-Wextra', '-std=c++11'])
  
 env.Append(LIBPATH='../C')
 

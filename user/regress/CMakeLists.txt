@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.4)
 
-include_directories(../utils)
+include_directories(../extra)
 include_directories(../../kernel)
 include_directories(../../user/C++)
 include_directories(../../user/C)

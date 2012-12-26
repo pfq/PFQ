@@ -1,6 +1,6 @@
 # SCon script
 
-env = Environment(CPPPATH=['.',  '../C++', '../C', '../utils', '../../kernel'], 
+env = Environment(CPPPATH=['.',  '../C++', '../C', '../extra', '../../kernel'], 
 
 CXXFLAGS=['-Ofast','-march=native', '-Wall', '-Wextra', '-std=c++11'])
 
