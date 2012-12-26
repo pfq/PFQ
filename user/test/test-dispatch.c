@@ -72,7 +72,7 @@ main(int argc, char *argv[])
 	printf("dispatching...\n");
 
 	for(;n < 10; n++) {
-                int many = pfq_dispatch(p, dispatch, 1000000, NULL, 0);
+                int many = pfq_dispatch(p, dispatch, 1000000, NULL);
                 if (many < 0) {
                         printf("error: %s\n", pfq_error(p));
 			break;

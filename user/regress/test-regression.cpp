@@ -259,7 +259,7 @@ Context(PFQ)
 
         x.open(group_policy::undefined, 64);
 
-        AssertNoThrow(x.group_stats(11));
+        AssertNothrow(x.group_stats(11));
 
         x.join_group(11);
 
@@ -278,7 +278,7 @@ Context(PFQ)
 
         auto gid = x.group_id();
 
-        AssertNoThrow(x.group_stats(gid));
+        AssertNothrow(x.group_stats(gid));
 
         auto s = x.group_stats(gid);
         Assert(s.recv, is_equal_to(0));
@@ -294,7 +294,7 @@ Context(PFQ)
 
         auto gid = x.group_id();
 
-        AssertNoThrow(x.group_stats(gid));
+        AssertNothrow(x.group_stats(gid));
 
         auto s = x.group_stats(gid);
         Assert(s.recv, is_equal_to(0));
@@ -310,7 +310,7 @@ Context(PFQ)
 
         auto gid = x.group_id();
 
-        AssertNoThrow(x.group_stats(gid));
+        AssertNothrow(x.group_stats(gid));
 
         auto s = x.group_stats(gid);
         Assert(s.recv, is_equal_to(0));
@@ -410,7 +410,7 @@ Context(PFQ)
         {
             pfq x(group_policy::restricted, 64);
             pfq y(group_policy::undefined, 64);
-            AssertNoThrow(y.join_group(x.group_id(), group_policy::restricted));
+            AssertNothrow(y.join_group(x.group_id(), group_policy::restricted));
         }
         {
             pfq x(group_policy::restricted, 64);
@@ -439,7 +439,7 @@ Context(PFQ)
         {
             pfq x(group_policy::shared, 64);
             pfq y(group_policy::undefined, 64);
-            AssertNoThrow(y.join_group(x.group_id(), group_policy::shared));
+            AssertNothrow(y.join_group(x.group_id(), group_policy::shared));
         }
         {
             pfq x(group_policy::shared, 64);
