@@ -124,12 +124,11 @@ dispatch _  = makeBinding
 
 makeBinding :: String -> BindState IO ()
 makeBinding dev = do
-    ps <- get
-    let op = fst ps
-        msi = msitype op
+    (op,start) <- get
+    let msi  = msitype op
         alg  = makeAlg (splitOn ":" $ algorithm op) (firstcore op)
         irq  = getInterrupts dev msi
-        core = mkBinding dev (exclude op) (snd ps) alg msi  
+        core = mkBinding dev (exclude op) start alg msi  
     lift $ putStrLn $ "Setting binding for device " ++ dev ++ " (" ++ show msi ++ "):"
     lift $ when (null irq) $ error $ "irq(s) not found for dev " ++ dev ++ "!"
     lift $ when (null core) $ error "no eligible cores found!"
@@ -142,8 +141,8 @@ makeBinding dev = do
 
 showBinding :: String -> BindState IO ()
 showBinding dev = do
-    ps <- get
-    let msi = msitype $ fst ps
+    (op,_) <- get
+    let msi = msitype op
         irq = getInterrupts dev msi
     lift $ putStrLn $ "Binding for device " ++ dev ++ " (" ++ show msi ++ "):"
     lift $ when (null irq) $ error $ "irq vector not found for dev " ++ dev ++ "!"
