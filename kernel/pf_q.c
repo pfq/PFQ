@@ -76,7 +76,6 @@ static int flow_control = 0;
 MODULE_LICENSE("GPL");
 
 MODULE_AUTHOR("Nicola Bonelli <nicola.bonelli@cnit.it>");
-MODULE_AUTHOR("Andrea Di Pietro <andrea.dipietro@for.unipi.it>");
 
 MODULE_DESCRIPTION("Packet capture system for 64bit multi-core architectures");
 
