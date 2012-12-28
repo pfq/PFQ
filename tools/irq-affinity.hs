@@ -41,13 +41,14 @@ proc_cpuinfo   = "/proc/cpuinfo"
 type Device = String
 
 
-data MSI =  Rx | Tx | TxRx 
+data MSI =  Rx | Tx | TxRx | None 
             deriving (Data, Typeable, Eq, Read)
 
 instance Show MSI where
-    show Rx = "rx"
-    show Tx = "tx"
+    show Rx   = "rx"
+    show Tx   = "tx"
     show TxRx = "TxRx"
+    show None = ""
 
 -- Command line options 
 --
@@ -74,7 +75,7 @@ options = cmdArgsMode $ Options
                          firstcore = 0       &= typ "CORE" &= help "first core involved",
                          exclude   = []      &= typ "CORE" &= help "exclude core from binding",
                          algorithm = ""      &= help "binding algorithm: naive, round-robin, even, odd, all-in:id, comb:id",
-                         msitype   = TxRx    &= typ "MSI"  &= help "MSI type: TxRx, Rx, Tx", 
+                         msitype   = TxRx    &= typ "MSI"  &= help "MSI type: TxRx, Rx, Tx or None",  
                          devices   = []      &= args
                         } &= summary "irq-affinity: advanced Linux interrupt affinity binding." &= program "irq-affinity"
 
@@ -97,6 +98,7 @@ makeAlg ["odd"]           _ = Alg (-1)  1 odd
 makeAlg ["all-in", n]     _ = Alg (read n) 0 none  
 makeAlg ["comb", s]       n = Alg (n) (read s) none   
 makeAlg _ _                 = error "Unknown algorithm"   
+
 
 none :: a -> Bool
 none _ = True
@@ -129,7 +131,8 @@ makeBinding dev = do
         alg  = makeAlg (splitOn ":" $ algorithm op) (firstcore op)
         irq  = getInterrupts dev msi
         core = mkBinding dev (exclude op) start alg msi  
-    lift $ putStrLn $ "Setting binding for device " ++ dev ++ " (" ++ show msi ++ "):"
+    lift $ putStrLn $ "Setting binding for device " ++ dev ++ 
+        case msi of { None -> ":"; _ -> " (" ++ show msi ++ "):" }
     lift $ when (null irq) $ error $ "irq(s) not found for dev " ++ dev ++ "!"
     lift $ when (null core) $ error "no eligible cores found!"
     lift $ mapM_ setIrqAffinity $ zip irq core
@@ -144,7 +147,8 @@ showBinding dev = do
     (op,_) <- get
     let msi = msitype op
         irq = getInterrupts dev msi
-    lift $ putStrLn $ "Binding for device " ++ dev ++ " (" ++ show msi ++ "):"
+    lift $ putStrLn $ "Binding for device " ++ dev ++ 
+        case msi of { None -> ":";  _ -> " (" ++ show msi ++ "):" }
     lift $ when (null irq) $ error $ "irq vector not found for dev " ++ dev ++ "!"
     lift $ forM_ irq $ \n -> do
             getIrqAffinity n >>= \cs -> putStrLn $ "   irq " ++ show n ++ " -> core " ++ show cs
@@ -185,17 +189,23 @@ mkBinding dev excl f (Alg f' s filt) msi =
                       n `notElem` excl ]    
         where nq = getNumberOfQueues dev msi
 
+
+getDeviceName :: String -> MSI -> String
+getDeviceName dev None = dev
+getDeviceName dev msi  = dev ++ "-" ++ show msi
+
+
 -- the following actions can be unsafe IO because the files they parse are not mutable
 --
 
 getNumberOfQueues :: Device -> MSI -> Int
 getNumberOfQueues dev msi = unsafePerformIO $ readFile proc_interrupt >>= \file -> 
-    return $ length $ filter (isInfixOf $ dev ++ "-" ++ show msi) $ lines file 
+    return $ length $ filter (isInfixOf $ getDeviceName dev msi) $ lines file 
     
 
 getInterrupts :: Device -> MSI -> [Int]
 getInterrupts dev msi = unsafePerformIO $ readFile proc_interrupt >>= \file ->  
-    return $ map (read . takeWhile (/= ':')) $ filter (isInfixOf $ dev ++ "-" ++ show msi) $ lines file 
+    return $ map (read . takeWhile (/= ':')) $ filter (isInfixOf $ getDeviceName dev msi) $ lines file 
 
 
 getNumberOfPhyCores :: Int
