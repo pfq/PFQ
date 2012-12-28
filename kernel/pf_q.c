@@ -231,9 +231,10 @@ pfq_memoized_call(struct pfq_steering_cache *mem, steering_function_t fun,
 inline
 void pfq_enqueue_mask_to_batch(unsigned long j, unsigned long mask, unsigned long *batch_queue)
 {
-	unsigned long index;
-       	bitwise_for_each(mask, index)
+	unsigned long bit;
+       	bitwise_foreach(mask, bit)
 	{
+	        int index = pfq_ctz(bit);
                 batch_queue[index] |= 1UL << j;
         }
 }
@@ -272,7 +273,7 @@ pfq_direct_receive(struct sk_buff *skb, bool direct)
         unsigned long group_mask, sock_mask, global_mask;
         unsigned long batch_queue[sizeof(unsigned long) << 3];
         struct pfq_steering_cache steering_cache;
-        long unsigned n;
+        long unsigned n, bit;
 
 #ifdef PFQ_USE_FLOW_CONTROL
 	
@@ -342,8 +343,6 @@ pfq_direct_receive(struct sk_buff *skb, bool direct)
         
         queue_for_each(skb, n, prefetch_queue)
         {
-		unsigned int gindex;
-
 		/* reset steering function in cache */
 		steering_cache.fun = (steering_function_t)NULL;
 
@@ -356,8 +355,10 @@ pfq_direct_receive(struct sk_buff *skb, bool direct)
 
 		__builtin_prefetch(&cpu, 0, 2);
 
-                bitwise_for_each(group_mask, gindex)
+                bitwise_foreach(group_mask, bit)
                 {
+                        int gindex = pfq_ctz(bit);
+
                         steering_ret_t ret;
                         steering_function_t steer_fun;
 
@@ -384,10 +385,12 @@ pfq_direct_receive(struct sk_buff *skb, bool direct)
                                 if (likely(ret.hash != action_drop)) 
                                 {
                                         unsigned long eligible_mask = 0;
-                                        unsigned int c;
-                                        bitwise_for_each(ret.class, c)
+                                        unsigned long cbit;
+
+                                        bitwise_foreach(ret.class, cbit)
                                         {
-                                                eligible_mask |= atomic_long_read(&pfq_groups[gindex].sock_mask[c]);
+                                                int cindex = pfq_ctz(cbit);
+                                                eligible_mask |= atomic_long_read(&pfq_groups[gindex].sock_mask[cindex]);
                                         }
 
                                         if (ret.hash == action_clone) {
@@ -398,13 +401,14 @@ pfq_direct_receive(struct sk_buff *skb, bool direct)
 
                                         if (unlikely(eligible_mask != local_cache->eligible_mask)) {
 
+                                                unsigned long ebit;
+
                                                 local_cache->eligible_mask = eligible_mask;
                                                 local_cache->sock_cnt = 0;
-                                                while (eligible_mask)
+                                                
+                                                bitwise_foreach(eligible_mask, ebit) 
                                                 {
-                                                        unsigned long first_sock = eligible_mask & -eligible_mask;
-                                                        local_cache->sock_mask[local_cache->sock_cnt++] = first_sock;
-                                                        eligible_mask ^= first_sock;
+                                                        local_cache->sock_mask[local_cache->sock_cnt++] = ebit;
                                                 }
                                         }
 
@@ -431,11 +435,12 @@ pfq_direct_receive(struct sk_buff *skb, bool direct)
                 global_mask |= sock_mask;
         }
 
-	bitwise_for_each(global_mask, n)
+	bitwise_foreach(global_mask, bit)
         {
+                int n = pfq_ctz(bit);
                 struct pfq_opt * pq = pfq_get_opt(n);
-                if (likely(pq)) {
-                        
+                if (likely(pq)) 
+                {
 #ifdef PFQ_USE_FLOW_CONTROL
                         if (!pfq_copy_to_user_skbs(pq, cpu, batch_queue[n], prefetch_queue))
                         	local_cache->flowctrl = flow_control;
