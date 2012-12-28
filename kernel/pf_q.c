@@ -408,10 +408,17 @@ pfq_direct_receive(struct sk_buff *skb, bool direct)
                                                  }
                                          }
 
-                                         if (local_cache->sock_cnt) {
-                                                 sock_mask |= local_cache->sock_mask[ret.hash % local_cache->sock_cnt];
-                                         }
                                  }
+                                        switch(local_cache->sock_cnt) 
+                                        {
+                                                case 0: break;
+                                                case 1: sock_mask  |= local_cache->sock_mask[0]; break;
+                                                case 2: sock_mask  |= local_cache->sock_mask[ret.hash & 1]; break;
+                                                case 4: sock_mask  |= local_cache->sock_mask[ret.hash & 3]; break;
+                                                case 8: sock_mask  |= local_cache->sock_mask[ret.hash & 7]; break;
+                                                case 16: sock_mask |= local_cache->sock_mask[ret.hash & 15]; break;
+                                                default: sock_mask |= local_cache->sock_mask[ret.hash % local_cache->sock_cnt];
+                                        }
                         }
                         else {
                              sock_mask |= atomic_long_read(&pfq_groups[gindex].sock_mask[0]);
