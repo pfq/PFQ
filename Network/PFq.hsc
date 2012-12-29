@@ -1,6 +1,8 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
 {-# LANGUAGE BangPatterns #-}
 
+{-# OPTIONS_GHC -fno-warn-unused-binds #-}
+
 module Network.PFq 
     (
         PFqTag,
