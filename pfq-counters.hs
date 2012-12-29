@@ -114,9 +114,10 @@ diffUSec t1 t0 = (tdSec delta * 1000000) + truncate ((fromIntegral(tdPicosec del
 
 
 runThreads :: (Num a) => Options -> M.Map Gid String -> IO [MVar a]
-runThreads op ms 
-    | []     <- thread op = return []
-    | (_:ts) <- thread op = do
+runThreads op ms = do
+    forM (thread op) $ \tb -> do
+        let binding = makeBinding tb
+            sf = M.lookup (groupId binding) ms <|> M.lookup (-1) ms 
         c <- newMVar 0
         f <- newMVar 0
         _ <- forkOn (coreNum binding) (
@@ -133,9 +134,7 @@ runThreads op ms
                      recvLoop q (State c f HS.empty) >> return ()  
                  )
         putStrLn $ "[pfq] " ++ show binding ++ " @core " ++ show (coreNum binding) ++ " started!"
-        liftM2 (:) (return c) (runThreads op{ thread = ts } ms)
-        where binding = makeBinding (head $ thread op)
-              sf = M.lookup (groupId binding) ms <|> M.lookup (-1) ms 
+        return c 
 
 
 recvLoop :: (Num a) => Ptr Q.PFqTag -> State a -> IO Int
