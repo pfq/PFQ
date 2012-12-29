@@ -320,12 +320,11 @@ pfq_direct_receive(struct sk_buff *skb, bool direct)
 
         skb->cb[42] = direct;
 
-        if (unlikely(pfq_queue_skb_push(prefetch_queue, skb) == -1)) {
-                printk(KERN_INFO "[PFQ] prefetch_queue internal error!\n");
-                return -1;
-        }
+        /* enqueue this skb ... */
 
-        if (likely(pfq_queue_skb_size(prefetch_queue) < prefetch_len)) {
+        pfq_queue_skb_push(prefetch_queue, skb);
+
+        if (pfq_queue_skb_size(prefetch_queue) < prefetch_len) {
                 return 0;
 	}
 
@@ -457,7 +456,9 @@ pfq_direct_receive(struct sk_buff *skb, bool direct)
                         __kfree_skb(skb);
 		}
                 else
+                {
                         kfree_skb(skb);
+                }
         }       
 	
         pfq_queue_skb_flush(prefetch_queue);
@@ -1346,7 +1347,7 @@ static int __init pfq_init_module(void)
         pfq_proto_ops_init();
         pfq_proto_init();
 
-        if (prefetch_len >= (sizeof(unsigned long)<<3)) {
+        if (prefetch_len > PFQ_QUEUE_MAX_LEN) {
                 printk(KERN_INFO "[PFQ] prefetch_len=%d not allowed (max=%lu)!\n", prefetch_len, (sizeof(unsigned long) << 3)-1);
                 return -EFAULT;
         }

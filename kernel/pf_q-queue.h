@@ -48,6 +48,7 @@ struct pfq_queue_skb
 	for(n = pfq_ctz(mask); mask && ((skb = (q)->queue[n]), true); \
             mask ^=(1UL << n), n = pfq_ctz(mask))
 
+
 static inline
 int
 pfq_queue_skb_push(struct pfq_queue_skb *q, struct sk_buff *skb)
