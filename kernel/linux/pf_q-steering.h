@@ -35,9 +35,18 @@
 
 typedef struct
 {
-	unsigned int  class;
 	unsigned long hash;
+	unsigned int  type;
+	unsigned int  class;
 } steering_ret_t;
+
+
+enum action 
+{
+    action_drop  = 0,
+    action_clone = 1,
+    action_hash  = 2
+};
 
 
 typedef steering_ret_t (*steering_function_t)(const struct sk_buff *, const void *);    
@@ -54,34 +63,26 @@ extern int pfq_register_steering_functions(const char *module, struct steering_f
 extern int pfq_unregister_steering_functions(const char *module, struct steering_function *fun);
 
 
-enum action 
-{
-    action_drop  = 0,
-    action_clone = 1,
-    action_hash  = 2
-};
-
-
 static inline
 steering_ret_t none(void)
 {
-    steering_ret_t ret = { 0, action_drop };
+    steering_ret_t ret = { 0, action_drop, 0};
     return ret;
 }
 
 
 static inline
-steering_ret_t clone(unsigned int class)
+steering_ret_t clone(unsigned int cl)
 {
-    steering_ret_t ret = { class, class < Q_CLASS_MAX ? action_clone : action_drop };
+    steering_ret_t ret = { 0, action_clone, cl};
     return ret;
 }
 
 
 static inline
-steering_ret_t steering(unsigned int class, unsigned long hash)
+steering_ret_t steering(unsigned int cl, unsigned long hash)
 {
-    steering_ret_t ret = {class, class < Q_CLASS_MAX ? (hash < action_hash ? hash + action_hash : hash) : action_drop };
+    steering_ret_t ret = {hash, action_hash, cl};
     return ret;
 }
 

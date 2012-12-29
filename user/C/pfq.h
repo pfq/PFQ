@@ -182,7 +182,7 @@ extern pfq_t* pfq_open(size_t calpen, size_t offset, size_t slots);
 
 extern pfq_t * pfq_open_nogroup(size_t caplen, size_t offset, size_t slots);
 
-extern pfq_t* pfq_open_group(unsigned long class_mask, 
+extern pfq_t* pfq_open_group(unsigned int class_mask, 
 							 int group_policy, 
 							 size_t calpen, size_t offset, size_t slots);
 
@@ -236,7 +236,7 @@ extern int pfq_group_fprog(pfq_t *q, int gid, struct sock_fprog *);
 
 extern int pfq_group_fprog_reset(pfq_t *q, int gid);
 
-extern int pfq_join_group(pfq_t *q, int gid, unsigned long class_mask, int group_policy);
+extern int pfq_join_group(pfq_t *q, int gid, unsigned int class_mask, int group_policy);
 
 extern int pfq_leave_group(pfq_t *q, int gid);
         

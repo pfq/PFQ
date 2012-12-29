@@ -169,15 +169,20 @@ struct pfq_binding
 
 /* class type */
 
-#define Q_CLASS_MAX             (1<<4)  /* C_CLASS_MAX is a power of two */ 
-#define Q_CLASS_DEFAULT         (1<<0)
-#define Q_CLASS_ANY             Q_CLASS_MAX-1
+#define Q_CLASS(n)              (1U<<n)
+#define Q_CLASS_MAX             sizeof(unsigned int)<<3 
+
+#define Q_CLASS_DEFAULT         Q_CLASS(0)  
+#define Q_CLASS_DATA            Q_CLASS_DEFAULT
+#define Q_CLASS_CONTROL         Q_CLASS(1)
+#define Q_CLASS_ANY             -1
+
 
 struct pfq_group_join
 {
     int gid;
     int policy;
-    unsigned long class_mask;
+    unsigned int class_mask;
 };
 
 /* steering functions */

@@ -382,7 +382,7 @@ pfq_direct_receive(struct sk_buff *skb, bool direct)
 
                                 ret = pfq_memoized_call(&steering_cache, steer_fun, skb, (void *)atomic_long_read(&pfq_groups[gindex].state));
 
-                                if (likely(ret.hash != action_drop)) 
+                                if (likely(ret.type != action_drop)) 
                                 {
                                         unsigned long eligible_mask = 0;
                                         unsigned long cbit;
@@ -393,7 +393,7 @@ pfq_direct_receive(struct sk_buff *skb, bool direct)
                                                 eligible_mask |= atomic_long_read(&pfq_groups[gindex].sock_mask[cindex]);
                                         }
 
-                                        if (ret.hash == action_clone) {
+                                        if (ret.type == action_clone) {
 
                                                 sock_mask |= eligible_mask;
                                                 continue; 
@@ -795,7 +795,7 @@ int pfq_getsockopt(struct socket *sock,
 		    }
 
 		    if (group.class_mask == 0) {
-			    pr_devel("[PFQ|%d] join error: bad class_mask(%lu)!\n", pq->q_id, group.class_mask);
+			    pr_devel("[PFQ|%d] join error: bad class_mask(%x)!\n", pq->q_id, group.class_mask);
 			    return -EINVAL;
 		    }
 
@@ -813,7 +813,7 @@ int pfq_getsockopt(struct socket *sock,
 				    return -EPERM;
 			    }
 		    }                    
-		    pr_devel("[PFQ|%d] join -> gid:%d class_mask:%lx\n", pq->q_id, group.gid, group.class_mask);
+		    pr_devel("[PFQ|%d] join -> gid:%d class_mask:%x\n", pq->q_id, group.gid, group.class_mask);
             } break;
 
         case Q_SO_GET_GROUP_STATS: 

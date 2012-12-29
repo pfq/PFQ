@@ -41,7 +41,7 @@ struct pfq_group
     int policy;                             /* policy for the group */
     int pid;	                            /* process id for restricted/private group */;
 
-	atomic_long_t sock_mask[Q_CLASS_MAX];   /* for class: Q_GROUP_DATA, Q_GROUP_CONTROL, etc... */
+	atomic_long_t sock_mask[Q_CLASS_MAX];   /* for class: Q_CLASS_DATA, Q_CLASS_CONTROL, etc... */
 
 	atomic_long_t steering;                 /* steering_function_t */ 
     atomic_long_t state;                    /* opaque state for the steering function */

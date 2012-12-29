@@ -450,7 +450,7 @@ namespace net {
     // class mask
     //
     
-    typedef unsigned long class_mask;
+    typedef unsigned int class_mask;
 
     namespace 
     {
