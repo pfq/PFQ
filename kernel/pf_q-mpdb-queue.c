@@ -25,7 +25,7 @@
 #include <pf_q-mpdb-queue.h>
 
 void *
-mpdb_queue_alloc(struct pfq_opt *pq, size_t queue_mem, size_t * tot_mem)
+mpdb_queue_alloc(struct pfq_opt *pq, size_t queue_mem, size_t *tot_mem)
 {
 	/* calculate the size of the buffer */
 
@@ -35,11 +35,12 @@ mpdb_queue_alloc(struct pfq_opt *pq, size_t queue_mem, size_t * tot_mem)
 
 	size_t num_pages = tm / PAGE_SIZE; void *addr;
 
-	num_pages += (num_pages + (PAGE_SIZE-1)) % PAGE_SIZE;
+	num_pages += (num_pages + (PAGE_SIZE-1)) & (PAGE_SIZE-1);
 	*tot_mem = num_pages*PAGE_SIZE;
 
 	/* Memory is already zeroed */
-	addr = vmalloc_user(*tot_mem);
+
+        addr = vmalloc_user(*tot_mem);
 	if (addr == NULL)
 	{
 		printk(KERN_WARNING "[PFQ|%d] pfq_queue_alloc: out of memory!", pq->q_id);

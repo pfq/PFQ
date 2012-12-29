@@ -1178,13 +1178,13 @@ pfq_mmap(struct file *file, struct socket *sock, struct vm_area_struct *vma)
         unsigned long size = (unsigned long)(vma->vm_end - vma->vm_start);
         int ret;
 
-        if(size % PAGE_SIZE) {
-                printk(KERN_WARNING "[PFQ] size not multiple of PAGE_SIZE!\n");
+        if(size & (PAGE_SIZE-1)) {
+                printk(KERN_WARNING "[PFQ] pfq_mmap: size not multiple of PAGE_SIZE!\n");
                 return -EINVAL;
         }
 
         if(size > pq->q_queue_mem) {
-                printk(KERN_WARNING "[PFQ] area too large!\n");
+                printk(KERN_WARNING "[PFQ] pfq_mmap: area too large!\n");
                 return -EINVAL;
         }
 
