@@ -5,7 +5,7 @@ module Main where
 import qualified Network.PFq as Q
 
 import Foreign
-import System.Environment
+-- import System.Environment
 import System.Time
 
 import Control.Monad
@@ -15,7 +15,7 @@ import Control.Concurrent
 import Data.Maybe
 import Data.List.Split
 import Data.Data
-import Data.Typeable
+-- import Data.Typeable
 
 import qualified Data.HashSet as HS
 import qualified Data.Map as M
@@ -72,6 +72,7 @@ data Binding = Binding {
 
 makeBinding :: String -> Binding
 makeBinding s = case splitOn "." s of
+                        []              ->  error "makeBinding: empty string"
                         ds : []         ->  Binding (splitOn ":" ds) 0 42 [-1]
                         ds : c : []     ->  Binding (splitOn ":" ds) (read c) 42 [-1]
                         ds : c : g : [] ->  Binding (splitOn ":" ds) (read c) (read g) [-1]
@@ -80,6 +81,7 @@ makeBinding s = case splitOn "." s of
 
 makeFun :: String -> (Gid, String)
 makeFun s =  case splitOn ":" s of
+                []     -> error "makeFun: empty string"
                 n : [] -> (-1, n)
                 n : ns -> (read $ head ns, n)
                 
@@ -88,9 +90,9 @@ makeFun s =  case splitOn ":" s of
 
 main :: IO ()
 main = do
-    opt <- cmdArgsRun options
-    putStrLn $ "[pfq] " ++ show (opt)
-    cs  <- runThreads opt (M.fromList $ map makeFun (steering opt)) 
+    op <- cmdArgsRun options
+    putStrLn $ "[pfq] " ++ show op
+    cs  <- runThreads op (M.fromList $ map makeFun (steering op)) 
     t   <- getClockTime
     dumpStat cs t
 
@@ -112,13 +114,13 @@ diffUSec t1 t0 = (tdSec delta * 1000000) + truncate ((fromIntegral(tdPicosec del
 
 
 runThreads :: (Num a) => Options -> M.Map Gid String -> IO [MVar a]
-runThreads opt ms | []     <- thread opt = return []
-runThreads opt ms | (t:ts) <- thread opt = do
+runThreads op _  | []     <- thread op = return []
+runThreads op ms | (_:ts) <- thread op = do
     c <- newMVar 0
     f <- newMVar 0
     _ <- forkOn (coreNum binding) (
              do
-             fp <- Q.openNoGroup (caplen opt) (offset opt) (slots opt)
+             fp <- Q.openNoGroup (caplen op) (offset op) (slots op)
              withForeignPtr fp  $ \q -> do
                  Q.joinGroup q (groupId binding) [Q.class_default] Q.policy_shared
                  forM_ (devs binding) $ \dev ->
@@ -129,9 +131,9 @@ runThreads opt ms | (t:ts) <- thread opt = do
                  Q.enable q 
                  recvLoop q (State c f HS.empty) >> return ()  
              )
-    putStrLn $ "[pfq] " ++ show(binding) ++ " @core " ++ show (coreNum binding) ++ " started!"
-    liftM2 (:) (return c) (runThreads opt{ thread = ts } ms)
-    where binding = makeBinding (head $ thread opt)
+    putStrLn $ "[pfq] " ++ show binding ++ " @core " ++ show (coreNum binding) ++ " started!"
+    liftM2 (:) (return c) (runThreads op{ thread = ts } ms)
+    where binding = makeBinding (head $ thread op)
           sf = M.lookup (groupId binding) ms <|> M.lookup (-1) ms 
 
 

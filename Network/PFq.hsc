@@ -55,7 +55,7 @@ module Network.PFq
 
 import Data.Word
 import Data.Bits
-import Debug.Trace 
+-- import Debug.Trace 
 
 import Control.Monad 
 import Control.Concurrent
@@ -115,7 +115,7 @@ data Packet = Packet {
    } deriving (Eq, Show)
 
 
-newtype ClassMask = ClassMask { unClassMask :: CLong }
+newtype ClassMask = ClassMask { unClassMask :: CUInt }
                         deriving (Eq, Show)
 
 newtype GroupPolicy = GroupPolicy { unGroupPolicy :: CInt }
@@ -557,7 +557,7 @@ makeCallback fun = make_callback $ \chdr ptr _ -> do
 
 foreign import ccall unsafe pfq_open              :: CSize -> CSize -> CSize -> IO (Ptr PFqTag)
 foreign import ccall unsafe pfq_open_nogroup      :: CSize -> CSize -> CSize -> IO (Ptr PFqTag)
-foreign import ccall unsafe pfq_open_group        :: CLong -> CInt -> CSize -> CSize -> CSize -> IO (Ptr PFqTag)
+foreign import ccall unsafe pfq_open_group        :: CUInt -> CInt -> CSize -> CSize -> CSize -> IO (Ptr PFqTag)
 
 foreign import ccall unsafe pfq_close             :: Ptr PFqTag -> IO ()
 foreign import ccall unsafe pfq_error             :: Ptr PFqTag -> IO CString
@@ -589,7 +589,7 @@ foreign import ccall unsafe pfq_bind_group        :: Ptr PFqTag -> CInt -> CStri
 foreign import ccall unsafe pfq_unbind            :: Ptr PFqTag -> CString -> CInt -> IO CInt
 foreign import ccall unsafe pfq_unbind_group      :: Ptr PFqTag -> CInt -> CString -> CInt -> IO CInt
 
-foreign import ccall unsafe pfq_join_group        :: Ptr PFqTag -> CInt -> CLong -> CInt -> IO CInt
+foreign import ccall unsafe pfq_join_group        :: Ptr PFqTag -> CInt -> CUInt -> CInt -> IO CInt
 foreign import ccall unsafe pfq_leave_group       :: Ptr PFqTag -> CInt -> IO CInt
 
 foreign import ccall unsafe pfq_get_stats         :: Ptr PFqTag -> Ptr Statistics -> IO CInt

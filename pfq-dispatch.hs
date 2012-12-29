@@ -4,8 +4,6 @@ import Network.PFq as Q
 import Foreign
 import System.Environment
 
-import Control.Monad
-
 handler :: Q.Callback
 handler h _ = print h
 
@@ -27,6 +25,7 @@ dumper dev = do
         Q.getSlotSize q >>= \o -> putStrLn $ "slot_size: " ++ show(o)
         recvDispatch q
 
+main :: IO ()
 main = do    
     args <- getArgs
     case (length args) of

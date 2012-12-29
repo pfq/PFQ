@@ -6,7 +6,7 @@ import System.Environment
 import Numeric
 import Control.Monad
 
-import Debug.Trace
+-- import Debug.Trace
 
 dumpPacket :: Q.Packet -> IO ()
 dumpPacket p = do
@@ -23,7 +23,7 @@ recvLoop q = do
             ps <- Q.getPackets queue
             mapM_ (getHeader >=> print) ps
             mapM_ dumpPacket ps
-            gid <- Q.getGroupId q
+            -- gid <- Q.getGroupId q
             -- Q.getStats q >>= print
             -- putStrLn $ "qlen: " ++ show(Q.qLen(queue)) ++ " hlen: " ++ show(length hs)
             recvLoop q
@@ -42,6 +42,7 @@ dumper dev = do
         Q.getSlotSize q >>= \o -> putStrLn $ "slot_size: " ++ show(o)
         recvLoop q
 
+main :: IO ()
 main = do
     args <- getArgs
     case (length args) of
