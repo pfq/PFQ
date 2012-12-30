@@ -224,7 +224,7 @@ void test_my_group_stats_priv()
 	pfq_t * q = pfq_open_group(Q_CLASS_DEFAULT, Q_GROUP_PRIVATE, 64, 0, 1024);
         assert(q);
 
-	auto gid = pfq_group_id(q);
+	int gid = pfq_group_id(q);
 	assert(gid != -1);
 
 	struct pfq_stats s;
@@ -243,7 +243,7 @@ void test_my_group_stats_restricted()
 	pfq_t * q = pfq_open_group(Q_CLASS_DEFAULT, Q_GROUP_RESTRICTED, 64, 0, 1024);
         assert(q);
 
-	auto gid = pfq_group_id(q);
+	int gid = pfq_group_id(q);
 	assert(gid != -1);
 
 	struct pfq_stats s;
@@ -262,7 +262,7 @@ void test_my_group_stats_shared()
 	pfq_t * q = pfq_open_group(Q_CLASS_DEFAULT, Q_GROUP_SHARED, 64, 0, 1024);
         assert(q);
 
-	auto gid = pfq_group_id(q);
+	int gid = pfq_group_id(q);
 	assert(gid != -1);
 
 	struct pfq_stats s;
@@ -505,6 +505,29 @@ void test_leave_group()
 	pfq_close(q);
 }
 
+void test_vlan()
+{
+	pfq_t * q = pfq_open(64, 0, 1024);
+        int gid;
+
+	assert(q);
+
+        gid = pfq_group_id(q);
+        
+	assert(pfq_vlan_filters_enabled(q, gid, 1) == 0);
+	assert(pfq_vlan_filters_enabled(q, gid, 0) == 0);
+
+	assert(pfq_vlan_set_filter_vid(q, gid, 42) == -1);
+	assert(pfq_vlan_reset_filter_vid(q, gid, 42) == -1);
+	
+	assert(pfq_vlan_filters_enabled(q, gid, 1) == 0);
+	
+	assert(pfq_vlan_set_filter_vid(q, gid, 42) == 0);
+	assert(pfq_vlan_reset_filter_vid(q, gid, 42) == 0);
+	
+	pfq_close(q);
+}
+
 
 int
 main(int argc __attribute__((unused)), char *argv[]__attribute__((unused)))
@@ -545,8 +568,10 @@ main(int argc __attribute__((unused)), char *argv[]__attribute__((unused)))
 
 	test_join_group();
 	test_leave_group();
-    
-	printf("Tests successfully passed.\n");
+
+        test_vlan();
+
+        printf("Tests successfully passed.\n");
     	return 0;    
 }
 
