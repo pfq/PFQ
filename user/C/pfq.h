@@ -236,6 +236,12 @@ extern int pfq_group_fprog(pfq_t *q, int gid, struct sock_fprog *);
 
 extern int pfq_group_fprog_reset(pfq_t *q, int gid);
 
+extern int pfq_vlan_filters_enabled(pfq_t *q, int gid, int toggle);
+
+extern int pfq_vlan_set_filter_vid(pfq_t *q, int gid, int vid);
+
+extern int pfq_vlan_reset_filter_vid(pfq_t *q, int gid, int vid);
+
 extern int pfq_join_group(pfq_t *q, int gid, unsigned int class_mask, int group_policy);
 
 extern int pfq_leave_group(pfq_t *q, int gid);

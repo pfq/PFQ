@@ -615,6 +615,42 @@ pfq_get_group_stats(pfq_t const *q, int gid, struct pfq_stats *stats)
 	}
 	return mutable->error = NULL, 0;
 }
+ 
+
+int 
+pfq_vlan_filters_enabled(pfq_t *q, int gid, int toggle)
+{
+        struct pfq_vlan_toggle value = { gid, 0, toggle };
+
+        if (setsockopt(q->fd, PF_Q, Q_SO_GROUP_VLAN_FILT_TOGGLE, &value, sizeof(value)) == -1) {
+	        return q->error = "PFQ: vlan filters", -1;
+        }
+
+        return q->error = NULL, 0;
+}
+
+int 
+pfq_vlan_set_filter_vid(pfq_t *q, int gid, int vid)
+{
+        struct pfq_vlan_toggle value = { gid, vid, 1 };
+
+        if (setsockopt(q->fd, PF_Q, Q_SO_GROUP_VLAN_FILT, &value, sizeof(value)) == -1) {
+	        return q->error = "PFQ: vlan set filter", -1;
+        }
+
+        return q->error = NULL, 0;
+}
+
+int pfq_vlan_reset_filter_vid(pfq_t *q, int gid, int vid)
+{
+        struct pfq_vlan_toggle value = { gid, vid, 0 };
+
+        if (setsockopt(q->fd, PF_Q, Q_SO_GROUP_VLAN_FILT, &value, sizeof(value)) == -1) {
+	        return q->error = "PFQ: vlan reset filter", -1;
+        }
+        
+        return q->error = NULL, 0;
+}
 
 
 int
