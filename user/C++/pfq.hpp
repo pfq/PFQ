@@ -53,6 +53,7 @@
 #include <cstdint>
 #include <thread>
 #include <vector>
+#include <algorithm>
 #include <system_error>
 
 namespace 
@@ -458,6 +459,14 @@ namespace net {
         const class_mask  class_any     = Q_CLASS_ANY;
     }
 
+    // vlan
+    //
+
+    namespace
+    {
+        const int   vlan_untag  = Q_VLAN_UNTAG;
+        const int   vlan_anytag = Q_VLAN_ANYTAG;
+    }
 
     //////////////////////////////////////////////////////////////////////
     // PFQ class
@@ -1048,6 +1057,49 @@ namespace net {
             return n;
         }
 
+        //
+        // vlan filters
+        //
+
+        void vlan_filters_enabled(int gid, bool toggle)
+        {
+            pfq_vlan_toggle value { gid, 0, toggle};
+    
+            if (::setsockopt(fd_, PF_Q, Q_SO_GROUP_VLAN_FILT_TOGGLE, &value, sizeof(value)) == -1)
+                throw pfq_error(errno, "PFQ: vlan filters");
+        }
+
+        void vlan_set_filter_vid(int gid, int vid)
+        {
+            pfq_vlan_toggle value { gid, vid, true};
+    
+            if (::setsockopt(fd_, PF_Q, Q_SO_GROUP_VLAN_FILT, &value, sizeof(value)) == -1)
+                throw pfq_error(errno, "PFQ: vlan filters");
+        }
+
+        template <typename Iter>
+        void vlan_set_filter_vid(int gid, Iter beg, Iter end)
+        {
+            std::for_each(beg, end, [&](int vid) {
+                vlan_set_filter_vid(gid, vid);
+            });
+        }
+
+        void vlan_reset_filter_vid(int gid, int vid)
+        {
+            pfq_vlan_toggle value { gid, vid, false};
+    
+            if (::setsockopt(fd_, PF_Q, Q_SO_GROUP_VLAN_FILT, &value, sizeof(value)) == -1)
+                throw pfq_error(errno, "PFQ: vlan filters");
+        }
+        
+        template <typename Iter>
+        void vlan_reset_filter_vid(int gid, Iter beg, Iter end)
+        {
+            std::for_each(beg, end, [&](int vid) {
+                vlan_reset_filter_vid(gid, vid);
+            });
+        }
 
         pfq_stats
         stats() const
