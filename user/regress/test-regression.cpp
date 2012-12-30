@@ -493,6 +493,28 @@ Context(PFQ)
         pfq x;
         Assert(x.group_id(), is_equal_to(-1));
     }
+
+
+    Test(vlan_enable)
+    {
+        pfq x(64);
+        AssertNothrow(x.vlan_filters_enabled(x.group_id(), true));
+        AssertNothrow(x.vlan_filters_enabled(x.group_id(), false));
+    }
+
+    Test(vlan_filt)
+    {
+        pfq x(64);
+        AssertThrow(x.vlan_set_filter_vid(x.group_id(), 42));
+        AssertThrow(x.vlan_reset_filter_vid(x.group_id(), 42));
+
+        AssertNothrow(x.vlan_filters_enabled(x.group_id(), true));
+        AssertNothrow(x.vlan_set_filter_vid(x.group_id(), 42));
+        AssertNothrow(x.vlan_reset_filter_vid(x.group_id(), 42));
+        
+        AssertNothrow(x.vlan_filters_enabled(x.group_id(), false));
+    }
+
 }
 
 
