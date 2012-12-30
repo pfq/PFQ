@@ -84,16 +84,12 @@ struct sk_buff *pfq_vlan_untag(struct sk_buff *skb)
                 return skb;
         }
 
-
-        // skb = skb_share_check(skb, GFP_ATOMIC);
-        // if (unlikely(!skb))
-        //         goto err_free;
-
         if (unlikely(!pskb_may_pull(skb, VLAN_HLEN)))
                 goto err_free;
 
         vhdr = (struct vlan_hdr *) skb->data;
         vlan_tci = ntohs(vhdr->h_vlan_TCI);
+
         __vlan_hwaccel_put_tag(skb, vlan_tci);
 
         skb_pull_rcsum(skb, VLAN_HLEN);
