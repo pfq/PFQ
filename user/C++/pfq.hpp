@@ -1074,7 +1074,7 @@ namespace net {
             pfq_vlan_toggle value { gid, vid, true};
     
             if (::setsockopt(fd_, PF_Q, Q_SO_GROUP_VLAN_FILT, &value, sizeof(value)) == -1)
-                throw pfq_error(errno, "PFQ: vlan filters");
+                throw pfq_error(errno, "PFQ: vlan set filter");
         }
 
         template <typename Iter>
@@ -1090,7 +1090,7 @@ namespace net {
             pfq_vlan_toggle value { gid, vid, false};
     
             if (::setsockopt(fd_, PF_Q, Q_SO_GROUP_VLAN_FILT, &value, sizeof(value)) == -1)
-                throw pfq_error(errno, "PFQ: vlan filters");
+                throw pfq_error(errno, "PFQ: vlan reset filter");
         }
         
         template <typename Iter>
