@@ -143,7 +143,7 @@ mpdb_enqueue_batch(struct pfq_opt *pq, unsigned long bitqueue, int qlen, struct 
 			
 			p_hdr->len         = (uint16_t)skb->len;
 			p_hdr->caplen 	   = (uint16_t)bytes;
-			p_hdr->un.vlan_tci = skb->vlan_tci;
+			p_hdr->un.vlan_tci = skb->vlan_tci & ~VLAN_TAG_PRESENT;
 			p_hdr->if_index    = skb->dev->ifindex & 0xff;
 			p_hdr->hw_queue    = (uint8_t)(skb_get_rx_queue(skb) & 0xff);                      
 
