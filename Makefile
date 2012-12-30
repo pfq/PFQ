@@ -28,10 +28,7 @@ pfq-dispatch: Network/PFq.hs pfq-dispatch.hs
 		$(HC) $(GHCFLAGS) $(LIBS) pfq-dispatch.hs -o $@
 
 install: all
-		@mkdir -p ${INSTDIR}/include/pfq 
-		cp pfq_kcompat.h  ${INSTDIR}/include/pfq/
-		cp irq-affinity  ${INSTDIR}/bin/
-		cp pfq-omatic ${INSTDIR}/bin/
+		cp pfq-counters  ${INSTDIR}/bin/
         
 clean:
 	   @rm -f pfq-read pfq-counters pfq-dispatch
