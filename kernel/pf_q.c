@@ -366,12 +366,22 @@ pfq_direct_receive(struct sk_buff *skb, bool direct)
                         __sparse_inc(&pfq_groups[gindex].recv, cpu);
 
                         /* check bpf filter */
+
                         if (atomic_long_read(&pfq_groups[gindex].filter))
                         {
                                 struct sk_filter * filter = (struct sk_filter *)atomic_long_read(&pfq_groups[gindex].filter);
                                 if (!sk_run_filter(skb, filter->insns))
                                         continue;
                         }
+                        
+                        /* check vlan filter */
+
+                        if (__pfq_vlan_filters_enabled(gindex))
+                        {
+                                if (!__pfq_vid_filter_for_group(gindex, skb->vlan_tci & ~VLAN_TAG_PRESENT))
+                                        continue;
+                        }
+
 
                         /* retrieve the steering function for this group */
                         steer_fun = (steering_function_t) atomic_long_read(&pfq_groups[gindex].steering);
@@ -1072,7 +1082,6 @@ int pfq_setsockopt(struct socket *sock,
 
 			__pfq_set_filter_for_group(fprog.gid, filter);
 
-			
 			pr_devel("[PFQ|%d] fprog: gid:%d (fprog len %d bytes)\n", pq->q_id, fprog.gid, fprog.fcode.len);
 		    }
 		    else 	/* reset the filter */
@@ -1135,6 +1144,7 @@ int pfq_setsockopt(struct socket *sock,
                     int gid;
                     if (optlen != sizeof(gid)) 
                             return -EINVAL;
+                    
                     if (copy_from_user(&gid, optval, optlen)) 
                             return -EFAULT;
                     
@@ -1143,6 +1153,75 @@ int pfq_setsockopt(struct socket *sock,
                     }
                     
                     pr_devel("[PFQ|%d] leave: gid:%d\n", pq->q_id, gid);
+            } break;
+
+        case Q_SO_GROUP_VLAN_FILT_TOGGLE:
+            {
+		    struct pfq_vlan_toggle vlan;
+
+		    if (optlen != sizeof(vlan))
+			    return -EINVAL;
+		    
+		    if (copy_from_user(&vlan, optval, optlen)) 
+			    return -EFAULT;
+
+                    if (vlan.gid < 0 || vlan.gid >= Q_MAX_GROUP) {
+                    	    pr_devel("[PFQ|%d] vlan_filt error: gid:%d invalid group!\n", pq->q_id, vlan.gid);
+			    return -EINVAL;
+		    }
+
+		    if (!__pfq_has_joined_group(vlan.gid, pq->q_id)) {
+                    	    pr_devel("[PFQ|%d] vlan_filt error: gid:%d no permission!\n", pq->q_id, vlan.gid);
+			    return -EPERM;
+                    }
+
+		    __pfq_toggle_vlan_filters_for_group(vlan.gid, vlan.toggle);
+ 
+                    pr_devel("[PFQ|%d] vlan filters %s for gid:%d\n", pq->q_id, (vlan.toggle ? "enabled" : "disabled"), vlan.gid);
+            } break;
+
+        case Q_SO_GROUP_VLAN_FILT:
+            {
+		    struct pfq_vlan_toggle filt;
+
+		    if (optlen != sizeof(filt))
+			    return -EINVAL;
+		    
+		    if (copy_from_user(&filt, optval, optlen)) 
+			    return -EFAULT;
+
+		    if (!__pfq_has_joined_group(filt.gid, pq->q_id)) {
+                    	    pr_devel("[PFQ|%d] vlan_set error: gid:%d no permission!\n", pq->q_id, filt.gid);
+			    return -EPERM;
+		    }
+               
+                    if (filt.gid < 0 || filt.gid >= Q_MAX_GROUP) {
+                    	    pr_devel("[PFQ|%d] vlan_set error: gid:%d invalid group!\n", pq->q_id, filt.gid);
+			    return -EINVAL;
+		    }
+
+                    if (filt.vid < -1 || filt.vid > 4094) {
+                    	    pr_devel("[PFQ|%d] vlan_set error: gid:%d invalid vid:%d!\n", pq->q_id, filt.gid, filt.vid);
+			    return -EINVAL;
+                    }
+                
+                    if (!__pfq_vlan_filters_enabled(filt.gid)) {
+                    	    pr_devel("[PFQ|%d] vlan_set error: vlan filters disabled for gid:%d!\n", pq->q_id, filt.gid);
+			    return -EINVAL;
+                    }
+                    
+                    if (filt.vid  == -1) // any
+                    {
+                        int i;
+                        for(i = 1; i < 4095; i++)
+                                __pfq_set_vid_filter_for_group(filt.gid, filt.toggle, i);
+                    }
+                    else 
+                    {
+                        __pfq_set_vid_filter_for_group(filt.gid, filt.toggle, filt.vid);
+                    }
+
+                    pr_devel("[PFQ|%d] vlan_set filter vid %d for gid:%d\n", pq->q_id, filt.vid, filt.gid);
             } break;
 
         default: 

@@ -121,6 +121,9 @@ struct pfq_queue_descr
 #define Q_SO_GROUP_STEER_FUN      11
 #define Q_SO_GROUP_FPROG          12     /* Berkeley packet filter */
 
+#define Q_SO_GROUP_VLAN_FILT_TOGGLE 13     /* enable/disable VLAN filters */
+#define Q_SO_GROUP_VLAN_FILT        14     /* enable/disable VLAN ID filters */
+
 #define Q_SO_GET_ID               22
 #define Q_SO_GET_STATUS           23     /* 1 = enabled, 0 = disabled */
 #define Q_SO_GET_STATS            24
@@ -131,7 +134,6 @@ struct pfq_queue_descr
 #define Q_SO_GET_OFFSET           29
 #define Q_SO_GET_GROUPS           30
 #define Q_SO_GET_GROUP_STATS      31
-
 
 /* general defines */
 
@@ -149,6 +151,18 @@ struct pfq_queue_descr
 #define Q_VLAN_PRIO_MASK     0xe000
 #define Q_VLAN_VID_MASK      0x0fff
 #define Q_VLAN_TAG_PRESENT   0x1000
+
+#define Q_VLAN_UNTAG         0
+#define Q_VLAN_ANYTAG       -1
+
+
+struct pfq_vlan_toggle
+{
+    int gid;
+    int vid;
+    int toggle;
+};
+
 
 /* struct used for setsockopt */
 

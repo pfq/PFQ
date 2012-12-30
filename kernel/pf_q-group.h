@@ -45,7 +45,11 @@ struct pfq_group
 
 	atomic_long_t steering;                 /* steering_function_t */ 
     atomic_long_t state;                    /* opaque state for the steering function */
-	atomic_long_t filter; 					/* struct sk_filter pointer */
+
+    atomic_long_t filter; 					/* struct sk_filter pointer */
+
+    bool   vlan_filt;                       /* enable/disable vlan filtering */
+    char   vid_filters[4096];               /* vlan filters */
 
 	sparse_counter_t recv;
 	sparse_counter_t lost;
@@ -57,6 +61,35 @@ extern struct pfq_group pfq_groups[Q_MAX_GROUP];
 
 
 unsigned long __pfq_get_all_groups_mask(int gid);
+
+
+static inline
+bool __pfq_vlan_filters_enabled(int gid)
+{
+    return pfq_groups[gid].vlan_filt;
+}
+
+static inline
+void __pfq_toggle_vlan_filters_for_group(int gid, bool value)
+{
+    if (value)
+        memset(pfq_groups[gid].vid_filters, 0, 4096);
+    wmb();
+    pfq_groups[gid].vlan_filt = value;
+}
+
+static inline
+void __pfq_set_vid_filter_for_group(int gid, bool value, int vid)
+{
+    pfq_groups[gid].vid_filters[vid & 4095] = value;
+}
+
+static inline
+bool __pfq_vid_filter_for_group(int gid, int vid)
+{
+    return pfq_groups[gid].vid_filters[vid & 4095];
+}    
+
 
 
 static inline

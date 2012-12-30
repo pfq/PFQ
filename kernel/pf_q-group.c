@@ -112,6 +112,8 @@ __pfq_group_dtor(int gid)
 	
        	pfq_free_sk_filter(filter); 
 	
+        that->vlan_filt = false;
+
 	pr_devel("[PFQ] group gid:%d destroyed.\n", gid);
 }
 
