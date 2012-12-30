@@ -377,6 +377,7 @@ inline namespace yats
         std::cout << "  -c, --context context   Run tests from the given context.\n";
         std::cout << "  -v, --verbose           Verbose mode.\n";
         std::cout << "  -r, --run int           Number of run per Random test (1000 default).\n";
+        std::cout << "  -l, --list              Print the list of tests\n";
         std::cout << "  -h, --help              Print this help.\n";
 
         _Exit(EXIT_SUCCESS);
@@ -448,6 +449,24 @@ inline namespace yats
                     throw std::runtime_error("YATS: context missing");
                 repeat_run = atoi(*arg);
                 continue;
+            }
+
+            if (strcmp(*arg, "-l") == 0 ||
+                strcmp(*arg, "--list") == 0) {
+            
+                for(auto & c : context::instance()) 
+                {
+                    std::cout << "context " << c.first << ": ";
+                    int n = 1;
+                    for(auto & t : c.second->task_list_)
+                    {
+                        std::cout << t.second << ' ';
+                        if ((n++ & 7) == 0)
+                            std::cout << std::endl << "    ";
+                    }
+                    std::cout << std::endl;
+                }
+                _Exit(1);
             }
 
             run_test.insert(*arg);
