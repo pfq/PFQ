@@ -11,17 +11,20 @@ main(int argc, char *argv[])
     if (argc < 2)
         throw std::runtime_error(std::string("usage: ").append(argv[0]).append(" dev"));
     
-    pfq r(128);
+    pfq q(128);
 
-    r.bind(argv[1], pfq::any_queue);
+    q.bind(argv[1], pfq::any_queue);
 
-    r.set_timestamp(true);
+    q.set_timestamp(true);
     
-    r.enable();
-    
+    q.enable();
+
+    // q.vlan_filters_enabled(q.group_id(), true);
+    // q.vlan_set_filter_vid(q.group_id(), vlan_anytag);
+
     for(;;)
     {
-            auto many = r.read( 1000000 /* timeout: micro */);
+            auto many = q.read( 1000000 /* timeout: micro */);
 
             queue::iterator it = many.begin();
             queue::iterator it_e = many.end();
@@ -32,9 +35,6 @@ main(int argc, char *argv[])
                         std::this_thread::yield();
                     }
 
-                    // printf("vlan:%d caplen:%d len:%d ifindex:%d hw_queue:%d [%u:%u] -> ", 
-                    //        it->un.vlan.vlan_vid, it->caplen, it->len, it->if_index, it->hw_queue,
-                    //        it->tstamp.tv.sec, it->tstamp.tv.nsec);
                     printf("vlan:%d caplen:%d len:%d ifindex:%d hw_queue:%d -> ", 
                            it->un.vlan.vlan_vid, it->caplen, it->len, it->if_index, it->hw_queue);
                     
