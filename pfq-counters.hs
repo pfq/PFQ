@@ -17,7 +17,7 @@ import Data.List.Split
 import Data.Data
 -- import Data.Typeable
 
-import qualified Data.HashSet as HS
+import qualified Data.Set as S
 import qualified Data.Map as M
 
 import System.Console.CmdArgs
@@ -29,7 +29,7 @@ data Key = Key Word32 Word32 Word16 Word16
 
 data State a = State { sCounter :: MVar a,
                        sFlow    :: MVar a, 
-                       sSet     :: HS.HashSet Key
+                       sSet     :: S.Set Key
                      }
 
 
@@ -131,7 +131,7 @@ runThreads op ms = do
                      when (isJust sf) ((putStrLn $ "[pfq] Using steering " ++ fromJust sf ++ " for gid " ++ show(groupId binding) ++ "!") >>
                                        Q.steeringFunction q (groupId binding) (fromJust sf)) 
                      Q.enable q 
-                     recvLoop q (State c f HS.empty) >> return ()  
+                     recvLoop q (State c f S.empty) >> return ()  
                  )
         putStrLn $ "[pfq] " ++ show binding ++ " @core " ++ show (coreNum binding) ++ " started!"
         return c 
