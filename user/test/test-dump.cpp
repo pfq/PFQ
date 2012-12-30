@@ -19,9 +19,6 @@ main(int argc, char *argv[])
     
     q.enable();
 
-    // q.vlan_filters_enabled(q.group_id(), true);
-    // q.vlan_set_filter_vid(q.group_id(), vlan_anytag);
-
     for(;;)
     {
             auto many = q.read( 1000000 /* timeout: micro */);
