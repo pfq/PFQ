@@ -41,6 +41,10 @@ module Network.PFq
         isPacketReady,
         waitForPacket,
 
+        vlanFiltersEnabled,
+        vlanSetFilterId,
+        vlanResetFilterId,
+
         --- data
         NetQueue(..),
         Packet(..),
@@ -483,6 +487,41 @@ getSlotSize hdl =
     pfq_get_slot_size hdl >>= throwPFqIf hdl (== -1) 
         >>= return . fromIntegral
 
+-- vlanFiltersEnabled:
+--
+
+vlanFiltersEnabled :: Ptr PFqTag -> 
+                      Int        -> -- gid
+                      Bool       -> -- toggle
+                      IO ()
+vlanFiltersEnabled hdl gid value =
+    pfq_vlan_filters_enabled hdl (fromIntegral gid) (fromIntegral $ if value then 1 else 0)
+        >>= throwPFqIf_ hdl (== -1)
+
+
+-- vlanSetFilterId:
+--
+
+vlanSetFilterId :: Ptr PFqTag ->
+                   Int        -> -- gid
+                   Int        -> -- vlan id
+                   IO ()
+
+vlanSetFilterId hdl gid id =
+    pfq_vlan_set_filter_vid hdl (fromIntegral gid) (fromIntegral id)
+        >>= throwPFqIf_ hdl (== -1)
+
+-- vlanResetFilterId:
+--
+    
+vlanResetFilterId :: Ptr PFqTag ->
+                   Int        -> -- gid
+                   Int        -> -- vlan id
+                   IO ()
+
+vlanResetFilterId hdl gid id =
+    pfq_vlan_reset_filter_vid hdl (fromIntegral gid) (fromIntegral id)
+        >>= throwPFqIf_ hdl (== -1)
 
 -- getStats:
 --
@@ -604,6 +643,17 @@ foreign import ccall "wrapper" make_callback      :: CPFqCallback -> IO (FunPtr 
 
 foreign import ccall unsafe pfq_read              :: Ptr PFqTag -> Ptr NetQueue -> CLong -> IO CInt
 
+foreign import ccall unsafe pfq_vlan_filters_enabled  :: Ptr PFqTag -> CInt -> CInt -> IO CInt 
+foreign import ccall unsafe pfq_vlan_set_filter_vid   :: Ptr PFqTag -> CInt -> CInt -> IO CInt 
+foreign import ccall unsafe pfq_vlan_reset_filter_vid :: Ptr PFqTag -> CInt -> CInt -> IO CInt 
+
+
 -- TODO
+-- extern int pfq_get_groups_mask(pfq_t const *q, unsigned long *_mask);
+
 -- foreign import ccall unsafe pfq_group_state    :: Ptr PFqTag -> CInt -> Ptr CChar -> CSize -> IO CInt
+-- foreign import ccall unsafe pfq_ifindex        :: Ptr PFqTag -> CString -> IO CInt
+
+-- extern int pfq_group_fprog(pfq_t *q, int gid, struct sock_fprog *);
+-- extern int pfq_group_fprog_reset(pfq_t *q, int gid);
 
