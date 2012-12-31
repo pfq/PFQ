@@ -61,7 +61,6 @@ pfq_queue_skb_push(struct pfq_queue_skb *q, struct sk_buff *skb)
 	 return -1;
 }
 
-
 static inline
 void
 pfq_queue_skb_flush(struct pfq_queue_skb *q)

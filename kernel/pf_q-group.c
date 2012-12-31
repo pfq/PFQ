@@ -217,7 +217,6 @@ pfq_join_free_group(int id, unsigned long class_mask, int policy)
 }
 
 
-
 int
 pfq_leave_group(int gid, int id)
 {

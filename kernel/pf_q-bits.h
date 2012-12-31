@@ -31,9 +31,8 @@
          __builtin_choose_expr(__builtin_types_compatible_p(typeof(n),unsigned long long),  (unsigned int)__builtin_ctzll(n), (void)0 )))
 
 
-// #define bitwise_for_each(mask, n) for(; n = pfq_ctz(mask), mask ; mask^=(1UL << n))
-
 #define bitwise_foreach(mask, n) \
 	for(; n = mask & -mask, mask ; mask^=n)
+
 
 #endif /* _PF_Q_BITS_H_ */

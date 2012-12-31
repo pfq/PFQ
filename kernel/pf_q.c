@@ -1497,7 +1497,7 @@ static void __exit pfq_exit_module(void)
 }
 
 
-/* pfq aware drivers support */
+/* pfq direct capture drivers support */
 
 inline
 int pfq_direct_capture(const struct sk_buff *skb)
