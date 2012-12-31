@@ -378,7 +378,7 @@ pfq_direct_receive(struct sk_buff *skb, bool direct)
 
                         if (__pfq_vlan_filters_enabled(gindex))
                         {
-                                if (!__pfq_vid_filter_for_group(gindex, skb->vlan_tci & ~VLAN_TAG_PRESENT))
+                                if (!__pfq_check_group_vlan_filter(gindex, skb->vlan_tci & ~VLAN_TAG_PRESENT))
                                         continue;
                         }
 
@@ -1058,13 +1058,13 @@ int pfq_setsockopt(struct socket *sock,
 				return -EFAULT;
 			}
 			
-			__pfq_set_state_for_group(s.gid, state);
+			__pfq_set_group_state(s.gid, state);
                     	    
 			pr_devel("[PFQ|%d] state: gid:%d (state of %zu bytes set)\n", pq->q_id, s.gid, s.size);
 		    }
 		    else { /* empty state */
 			   
-			__pfq_set_state_for_group(s.gid, NULL);
+			__pfq_set_group_state(s.gid, NULL);
 			
 			pr_devel("[PFQ|%d] state: gid:%d (empty state set)\n", pq->q_id, s.gid);
 		    }
@@ -1091,7 +1091,7 @@ int pfq_setsockopt(struct socket *sock,
 		    }
 
 		    if (s.name == NULL) {
-			__pfq_set_steering_for_group(s.gid, NULL);
+			__pfq_set_group_steering(s.gid, NULL);
                     	pr_devel("[PFQ|%d] steering: gid:%d (steering NONE)\n", pq->q_id, s.gid);
 		    }
 		    else {
@@ -1109,7 +1109,7 @@ int pfq_setsockopt(struct socket *sock,
 				return -EINVAL;
 			}
 
-			__pfq_set_steering_for_group(s.gid, fun);
+			__pfq_set_group_steering(s.gid, fun);
                     	
 			pr_devel("[PFQ|%d] steering gid:%d -> function '%s'\n", pq->q_id, s.gid, name);
 		    }
@@ -1143,13 +1143,13 @@ int pfq_setsockopt(struct socket *sock,
 			    return -EINVAL;
 			}
 
-			__pfq_set_filter_for_group(fprog.gid, filter);
+			__pfq_set_group_filter(fprog.gid, filter);
 
 			pr_devel("[PFQ|%d] fprog: gid:%d (fprog len %d bytes)\n", pq->q_id, fprog.gid, fprog.fcode.len);
 		    }
 		    else 	/* reset the filter */
 		    {
-			__pfq_set_filter_for_group(fprog.gid, NULL);
+			__pfq_set_group_filter(fprog.gid, NULL);
 
 			pr_devel("[PFQ|%d] fprog: gid:%d (resetting filter)\n", pq->q_id, fprog.gid);
 		    }
@@ -1176,7 +1176,7 @@ int pfq_setsockopt(struct socket *sock,
 			    return -EPERM;
                     }
 
-		    __pfq_toggle_vlan_filters_for_group(vlan.gid, vlan.toggle);
+		    __pfq_toggle_group_vlan_filters(vlan.gid, vlan.toggle);
  
                     pr_devel("[PFQ|%d] vlan filters %s for gid:%d\n", pq->q_id, (vlan.toggle ? "enabled" : "disabled"), vlan.gid);
             } break;
@@ -1215,11 +1215,11 @@ int pfq_setsockopt(struct socket *sock,
                     {
                         int i;
                         for(i = 1; i < 4095; i++)
-                                __pfq_set_vid_filter_for_group(filt.gid, filt.toggle, i);
+                                __pfq_set_group_vlan_filter(filt.gid, filt.toggle, i);
                     }
                     else 
                     {
-                        __pfq_set_vid_filter_for_group(filt.gid, filt.toggle, filt.vid);
+                        __pfq_set_group_vlan_filter(filt.gid, filt.toggle, filt.vid);
                     }
 
                     pr_devel("[PFQ|%d] vlan_set filter vid %d for gid:%d\n", pq->q_id, filt.vid, filt.gid);

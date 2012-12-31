@@ -82,7 +82,13 @@ bool __pfq_vlan_filters_enabled(int gid)
 }
 
 static inline
-void __pfq_toggle_vlan_filters_for_group(int gid, bool value)
+bool __pfq_check_group_vlan_filter(int gid, int vid)
+{
+    return pfq_groups[gid].vid_filters[vid & 4095];
+}    
+
+static inline
+void __pfq_toggle_group_vlan_filters(int gid, bool value)
 {
     if (value)
         memset(pfq_groups[gid].vid_filters, 0, 4096);
@@ -91,21 +97,15 @@ void __pfq_toggle_vlan_filters_for_group(int gid, bool value)
 }
 
 static inline
-void __pfq_set_vid_filter_for_group(int gid, bool value, int vid)
+void __pfq_set_group_vlan_filter(int gid, bool value, int vid)
 {
     pfq_groups[gid].vid_filters[vid & 4095] = value;
 }
 
-static inline
-bool __pfq_vid_filter_for_group(int gid, int vid)
-{
-    return pfq_groups[gid].vid_filters[vid & 4095];
-}    
-
 
 
 static inline
-void __pfq_set_steering_for_group(int gid, steering_function_t fun)
+void __pfq_set_group_steering(int gid, steering_function_t fun)
 {
     atomic_long_set(&pfq_groups[gid].steering, (long)fun);
     
@@ -114,7 +114,7 @@ void __pfq_set_steering_for_group(int gid, steering_function_t fun)
 
 
 static inline
-void __pfq_set_state_for_group(int gid, void *state)
+void __pfq_set_group_state(int gid, void *state)
 {
 	void * old = (void *)atomic_long_xchg(& pfq_groups[gid].state, (long)state);
 
@@ -125,7 +125,7 @@ void __pfq_set_state_for_group(int gid, void *state)
 
 
 static inline
-void __pfq_set_filter_for_group(int gid, struct sk_filter *filter)
+void __pfq_set_group_filter(int gid, struct sk_filter *filter)
 {
 	struct sk_filter * old_filter = (void *)atomic_long_xchg(& pfq_groups[gid].filter, (long)filter);
 
@@ -144,8 +144,8 @@ void __pfq_dismiss_steering_function(steering_function_t fun)
 	    steering_function_t steer = (steering_function_t)atomic_long_read(&pfq_groups[n].steering);
     	if (steer == fun)
 		{
-      		__pfq_set_steering_for_group(n, NULL);
-			__pfq_set_state_for_group(n, NULL);
+      		__pfq_set_group_steering(n, NULL);
+			__pfq_set_group_state(n, NULL);
             
 			printk(KERN_INFO "[PFQ] steering function @%p dismissed.\n", fun);
 		}
