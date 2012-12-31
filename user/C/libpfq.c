@@ -272,7 +272,7 @@ pfq_is_enabled(pfq_t const *q)
 
 
 int
-pfq_set_timestamp(pfq_t *q, int value)
+pfq_timestamp_enabled(pfq_t *q, int value)
 {
 	int ts = value;
 	if (setsockopt(q->fd, PF_Q, Q_SO_SET_TSTAMP, &ts, sizeof(ts)) == -1) {
@@ -283,7 +283,7 @@ pfq_set_timestamp(pfq_t *q, int value)
 
 
 int
-pfq_get_timestamp(pfq_t const *q)
+pfq_is_timestamp_enabled(pfq_t const *q)
 {
 	pfq_t * mutable = (pfq_t *)q;
 	int ret; socklen_t size = sizeof(int);
@@ -630,7 +630,7 @@ pfq_vlan_filters_enabled(pfq_t *q, int gid, int toggle)
 }
 
 int 
-pfq_vlan_set_filter_vid(pfq_t *q, int gid, int vid)
+pfq_vlan_set_filter(pfq_t *q, int gid, int vid)
 {
         struct pfq_vlan_toggle value = { gid, vid, 1 };
 
@@ -641,7 +641,7 @@ pfq_vlan_set_filter_vid(pfq_t *q, int gid, int vid)
         return q->error = NULL, 0;
 }
 
-int pfq_vlan_reset_filter_vid(pfq_t *q, int gid, int vid)
+int pfq_vlan_reset_filter(pfq_t *q, int gid, int vid)
 {
         struct pfq_vlan_toggle value = { gid, vid, 0 };
 

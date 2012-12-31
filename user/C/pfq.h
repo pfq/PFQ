@@ -198,9 +198,9 @@ extern int pfq_disable(pfq_t *q);
 
 extern int pfq_is_enabled(pfq_t const *q);
 
-extern int pfq_set_timestamp(pfq_t *q, int value);
+extern int pfq_timestamp_enabled(pfq_t *q, int value);
 
-extern int pfq_get_timestamp(pfq_t const *q);
+extern int pfq_is_timestamp_enabled(pfq_t const *q);
 
 extern int pfq_ifindex(pfq_t const *q, const char *dev);
 
@@ -238,9 +238,9 @@ extern int pfq_group_fprog_reset(pfq_t *q, int gid);
 
 extern int pfq_vlan_filters_enabled(pfq_t *q, int gid, int toggle);
 
-extern int pfq_vlan_set_filter_vid(pfq_t *q, int gid, int vid);
+extern int pfq_vlan_set_filter(pfq_t *q, int gid, int vid);
 
-extern int pfq_vlan_reset_filter_vid(pfq_t *q, int gid, int vid);
+extern int pfq_vlan_reset_filter(pfq_t *q, int gid, int vid);
 
 extern int pfq_join_group(pfq_t *q, int gid, unsigned int class_mask, int group_policy);
 
