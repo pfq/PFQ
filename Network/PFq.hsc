@@ -415,7 +415,7 @@ setTimestamp :: Ptr PFqTag -> Bool -> IO ()
 
 setTimestamp hdl toggle = do
     let value = if (toggle) then 1 else 0 
-    pfq_set_timestamp hdl value >>= throwPFqIf_ hdl (== -1)
+    pfq_timestamp_enabled hdl value >>= throwPFqIf_ hdl (== -1)
 
 
 -- getTimestamp:
@@ -423,7 +423,7 @@ setTimestamp hdl toggle = do
 getTimestamp :: Ptr PFqTag -> IO Bool 
 
 getTimestamp hdl = 
-    pfq_get_timestamp hdl >>= throwPFqIf hdl (== -1) >>= \v ->
+    pfq_is_timestamp_enabled hdl >>= throwPFqIf hdl (== -1) >>= \v ->
         if (v == 0) then return False else return True
 
 
@@ -508,7 +508,7 @@ vlanSetFilterId :: Ptr PFqTag ->
                    IO ()
 
 vlanSetFilterId hdl gid id =
-    pfq_vlan_set_filter_vid hdl (fromIntegral gid) (fromIntegral id)
+    pfq_vlan_set_filter hdl (fromIntegral gid) (fromIntegral id)
         >>= throwPFqIf_ hdl (== -1)
 
 -- vlanResetFilterId:
@@ -520,7 +520,7 @@ vlanResetFilterId :: Ptr PFqTag ->
                    IO ()
 
 vlanResetFilterId hdl gid id =
-    pfq_vlan_reset_filter_vid hdl (fromIntegral gid) (fromIntegral id)
+    pfq_vlan_reset_filter hdl (fromIntegral gid) (fromIntegral id)
         >>= throwPFqIf_ hdl (== -1)
 
 -- getStats:
@@ -611,8 +611,8 @@ foreign import ccall unsafe pfq_disable           :: Ptr PFqTag -> IO CInt
 foreign import ccall unsafe pfq_is_enabled        :: Ptr PFqTag -> IO CInt
 
 foreign import ccall unsafe pfq_set_promisc       :: Ptr PFqTag -> CString -> CInt -> IO CInt
-foreign import ccall unsafe pfq_set_timestamp     :: Ptr PFqTag -> CInt -> IO CInt
-foreign import ccall unsafe pfq_get_timestamp     :: Ptr PFqTag -> IO CInt
+foreign import ccall unsafe pfq_timestamp_enabled :: Ptr PFqTag -> CInt -> IO CInt
+foreign import ccall unsafe pfq_is_timestamp_enabled :: Ptr PFqTag -> IO CInt
 
 foreign import ccall unsafe pfq_set_caplen        :: Ptr PFqTag -> CSize -> IO CInt
 foreign import ccall unsafe pfq_get_caplen        :: Ptr PFqTag -> IO CPtrdiff
@@ -644,8 +644,8 @@ foreign import ccall "wrapper" make_callback      :: CPFqCallback -> IO (FunPtr 
 foreign import ccall unsafe pfq_read              :: Ptr PFqTag -> Ptr NetQueue -> CLong -> IO CInt
 
 foreign import ccall unsafe pfq_vlan_filters_enabled  :: Ptr PFqTag -> CInt -> CInt -> IO CInt 
-foreign import ccall unsafe pfq_vlan_set_filter_vid   :: Ptr PFqTag -> CInt -> CInt -> IO CInt 
-foreign import ccall unsafe pfq_vlan_reset_filter_vid :: Ptr PFqTag -> CInt -> CInt -> IO CInt 
+foreign import ccall unsafe pfq_vlan_set_filter       :: Ptr PFqTag -> CInt -> CInt -> IO CInt 
+foreign import ccall unsafe pfq_vlan_reset_filter     :: Ptr PFqTag -> CInt -> CInt -> IO CInt 
 
 
 -- TODO
