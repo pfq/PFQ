@@ -108,32 +108,31 @@ struct pfq_queue_descr
 
 /* PFQ socket options */
 
-#define Q_SO_TOGGLE_QUEUE         1    /* enable = 1, disable = 0 */
-#define Q_SO_ADD_BINDING          2
-#define Q_SO_REMOVE_BINDING       3
-#define Q_SO_SET_TSTAMP           4
-#define Q_SO_SET_CAPLEN           5
-#define Q_SO_SET_SLOTS            6
-#define Q_SO_SET_OFFSET           7
-#define Q_SO_GROUP_JOIN           8
-#define Q_SO_GROUP_LEAVE          9
-#define Q_SO_GROUP_STATE          10
-#define Q_SO_GROUP_STEER_FUN      11
-#define Q_SO_GROUP_FPROG          12     /* Berkeley packet filter */
+#define Q_SO_TOGGLE_QUEUE           1       /* enable = 1, disable = 0 */
+#define Q_SO_ADD_BINDING            2
+#define Q_SO_REMOVE_BINDING         3
+#define Q_SO_SET_TSTAMP             4
+#define Q_SO_SET_CAPLEN             5
+#define Q_SO_SET_SLOTS              6
+#define Q_SO_SET_OFFSET             7
+#define Q_SO_GROUP_JOIN             8
+#define Q_SO_GROUP_LEAVE            9
+#define Q_SO_GROUP_STATE            10
+#define Q_SO_GROUP_STEER_FUN        11
+#define Q_SO_GROUP_FPROG            12      /* Berkeley packet filter */
+#define Q_SO_GROUP_VLAN_FILT_TOGGLE 13      /* enable/disable VLAN filters */
+#define Q_SO_GROUP_VLAN_FILT        14      /* enable/disable VLAN ID filters */
 
-#define Q_SO_GROUP_VLAN_FILT_TOGGLE 13     /* enable/disable VLAN filters */
-#define Q_SO_GROUP_VLAN_FILT        14     /* enable/disable VLAN ID filters */
-
-#define Q_SO_GET_ID               22
-#define Q_SO_GET_STATUS           23     /* 1 = enabled, 0 = disabled */
-#define Q_SO_GET_STATS            24
-#define Q_SO_GET_TSTAMP           25
-#define Q_SO_GET_QUEUE_MEM        26     /* size of the whole dbmp queue (bytes) */
-#define Q_SO_GET_CAPLEN           27
-#define Q_SO_GET_SLOTS            28
-#define Q_SO_GET_OFFSET           29
-#define Q_SO_GET_GROUPS           30
-#define Q_SO_GET_GROUP_STATS      31
+#define Q_SO_GET_ID                 20
+#define Q_SO_GET_STATUS             21      /* 1 = enabled, 0 = disabled */
+#define Q_SO_GET_STATS              23
+#define Q_SO_GET_TSTAMP             24
+#define Q_SO_GET_QUEUE_MEM          25      /* size of the whole dbmp queue (bytes) */
+#define Q_SO_GET_CAPLEN             26
+#define Q_SO_GET_SLOTS              27
+#define Q_SO_GET_OFFSET             28
+#define Q_SO_GET_GROUPS             29
+#define Q_SO_GET_GROUP_STATS        30
 
 /* general defines */
 
@@ -164,7 +163,8 @@ struct pfq_vlan_toggle
 };
 
 
-/* struct used for setsockopt */
+/* struct used for binding */
+
 
 struct pfq_binding
 {
@@ -172,7 +172,6 @@ struct pfq_binding
     int if_index;
     int hw_queue;
 };
-
 
 /* group policies */
 
@@ -198,6 +197,7 @@ struct pfq_group_join
     int policy;
     unsigned int class_mask;
 };
+
 
 /* steering functions */
 

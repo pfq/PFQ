@@ -708,87 +708,6 @@ int pfq_getsockopt(struct socket *sock,
 
         switch(optname)
         {
-        case Q_SO_GET_ID: 
-            {
-                    if (len != sizeof(pq->q_id))
-                            return -EINVAL;
-                    if (copy_to_user(optval, &pq->q_id, sizeof(pq->q_id)))
-                            return -EFAULT;
-            } break;
-
-        case Q_SO_GET_GROUPS:
-            {
-                    unsigned long grps;
-                    if(len != sizeof(unsigned long))
-                            return -EINVAL;
-                    grps = pfq_get_groups(pq->q_id);
-                    if (copy_to_user(optval, &grps, sizeof(grps)))
-                            return -EFAULT;
-            } break;
-
-        case Q_SO_GET_QUEUE_MEM: 
-            {
-                    if (len != sizeof(pq->q_queue_mem))
-                            return -EINVAL;
-                    if (copy_to_user(optval, &pq->q_queue_mem, sizeof(pq->q_queue_mem)))
-                            return -EFAULT;
-            } break;
-
-        case Q_SO_GET_SLOTS: 
-            {
-                    if (len != sizeof(pq->q_slots))
-                            return -EINVAL;
-                    if (copy_to_user(optval, &pq->q_slots, sizeof(pq->q_slots)))
-                            return -EFAULT;
-            } break;
-
-        case Q_SO_GET_TSTAMP: 
-            {
-                    if (len != sizeof(pq->q_tstamp))
-                            return -EINVAL;
-                    if (copy_to_user(optval, &pq->q_tstamp, sizeof(pq->q_tstamp)))
-                            return -EFAULT;
-            } break;
-
-        case Q_SO_GET_STATUS: 
-            {
-                    if (len != sizeof(pq->q_active)) 
-                            return -EINVAL;
-                    
-                    if (copy_to_user(optval, &pq->q_active, sizeof(pq->q_active))) 
-                            return -EFAULT;
-                    
-            } break;
-
-        case Q_SO_GET_STATS: 
-            {
-                    struct pfq_stats stat;
-                    if (len != sizeof(struct pfq_stats))
-                            return -EINVAL;
-
-                    stat.recv = sparse_read(&pq->q_stat.recv);
-                    stat.lost = sparse_read(&pq->q_stat.lost);
-                    stat.drop = sparse_read(&pq->q_stat.drop);
-
-                    if (copy_to_user(optval, &stat, sizeof(stat)))
-                            return -EFAULT;
-            } break;
-
-        case Q_SO_GET_CAPLEN: 
-            {
-                    if (len != sizeof(pq->q_caplen))
-                            return -EINVAL;
-                    if (copy_to_user(optval, &pq->q_caplen, sizeof(pq->q_caplen)))
-                            return -EFAULT;
-            } break;
-
-        case Q_SO_GET_OFFSET: 
-            {
-                    if (len != sizeof(pq->q_offset))
-                            return -EINVAL;
-                    if (copy_to_user(optval, &pq->q_offset, sizeof(pq->q_offset)))
-                            return -EFAULT;
-            } break;
 
         case Q_SO_GROUP_JOIN: 
             {
@@ -825,6 +744,88 @@ int pfq_getsockopt(struct socket *sock,
 			    }
 		    }                    
 		    pr_devel("[PFQ|%d] join -> gid:%d class_mask:%x\n", pq->q_id, group.gid, group.class_mask);
+            } break;
+
+        case Q_SO_GET_ID: 
+            {
+                    if (len != sizeof(pq->q_id))
+                            return -EINVAL;
+                    if (copy_to_user(optval, &pq->q_id, sizeof(pq->q_id)))
+                            return -EFAULT;
+            } break;
+
+        case Q_SO_GET_STATUS: 
+            {
+                    if (len != sizeof(pq->q_active)) 
+                            return -EINVAL;
+                    
+                    if (copy_to_user(optval, &pq->q_active, sizeof(pq->q_active))) 
+                            return -EFAULT;
+                    
+            } break;
+
+        case Q_SO_GET_STATS: 
+            {
+                    struct pfq_stats stat;
+                    if (len != sizeof(struct pfq_stats))
+                            return -EINVAL;
+
+                    stat.recv = sparse_read(&pq->q_stat.recv);
+                    stat.lost = sparse_read(&pq->q_stat.lost);
+                    stat.drop = sparse_read(&pq->q_stat.drop);
+
+                    if (copy_to_user(optval, &stat, sizeof(stat)))
+                            return -EFAULT;
+            } break;
+
+        case Q_SO_GET_TSTAMP: 
+            {
+                    if (len != sizeof(pq->q_tstamp))
+                            return -EINVAL;
+                    if (copy_to_user(optval, &pq->q_tstamp, sizeof(pq->q_tstamp)))
+                            return -EFAULT;
+            } break;
+
+        case Q_SO_GET_QUEUE_MEM: 
+            {
+                    if (len != sizeof(pq->q_queue_mem))
+                            return -EINVAL;
+                    if (copy_to_user(optval, &pq->q_queue_mem, sizeof(pq->q_queue_mem)))
+                            return -EFAULT;
+            } break;
+
+        case Q_SO_GET_CAPLEN: 
+            {
+                    if (len != sizeof(pq->q_caplen))
+                            return -EINVAL;
+                    if (copy_to_user(optval, &pq->q_caplen, sizeof(pq->q_caplen)))
+                            return -EFAULT;
+            } break;
+
+        case Q_SO_GET_SLOTS: 
+            {
+                    if (len != sizeof(pq->q_slots))
+                            return -EINVAL;
+                    if (copy_to_user(optval, &pq->q_slots, sizeof(pq->q_slots)))
+                            return -EFAULT;
+            } break;
+        
+        case Q_SO_GET_OFFSET: 
+            {
+                    if (len != sizeof(pq->q_offset))
+                            return -EINVAL;
+                    if (copy_to_user(optval, &pq->q_offset, sizeof(pq->q_offset)))
+                            return -EFAULT;
+            } break;
+
+        case Q_SO_GET_GROUPS:
+            {
+                    unsigned long grps;
+                    if(len != sizeof(unsigned long))
+                            return -EINVAL;
+                    grps = pfq_get_groups(pq->q_id);
+                    if (copy_to_user(optval, &grps, sizeof(grps)))
+                            return -EFAULT;
             } break;
 
         case Q_SO_GET_GROUP_STATS: 
@@ -965,6 +966,110 @@ int pfq_setsockopt(struct socket *sock,
                     pfq_devmap_update(map_reset, bind.if_index, bind.hw_queue, bind.gid);
             } break;
 
+	case Q_SO_SET_TSTAMP: 
+            {
+                    int tstamp;
+                    if (optlen != sizeof(pq->q_tstamp))
+                            return -EINVAL;
+                    if (copy_from_user(&tstamp, optval, optlen))
+                            return -EFAULT;
+                    if (tstamp != 0 && tstamp != 1)
+                            return -EINVAL;
+
+                    /* update the timestamp_toggle counter */
+                    atomic_add(tstamp - pq->q_tstamp, &timestamp_toggle);
+                    pq->q_tstamp = tstamp;
+                    pr_devel("[PFQ|%d] timestamp_toggle => %d\n", pq->q_id, atomic_read(&timestamp_toggle));
+            } break;
+        
+        case Q_SO_SET_CAPLEN: 
+            {
+                    if (optlen != sizeof(pq->q_caplen)) 
+                            return -EINVAL;
+                    if (copy_from_user(&pq->q_caplen, optval, optlen)) 
+                            return -EFAULT;
+                    pq->q_slot_size = DBMP_QUEUE_SLOT_SIZE(pq->q_caplen);
+                    pr_devel("[PFQ|%d] caplen:%lu -> slot_size:%lu\n", 
+                                    pq->q_id, pq->q_caplen, pq->q_slot_size);
+            } break;
+
+        case Q_SO_SET_SLOTS: 
+            {
+                    if (optlen != sizeof(pq->q_slots)) 
+                            return -EINVAL;
+                    if (copy_from_user(&pq->q_slots, optval, optlen)) 
+                            return -EFAULT;
+                    pr_devel("[PFQ|%d] queue_slots:%lu -> slot_size:%lu\n", 
+                                    pq->q_id, pq->q_slots, pq->q_slot_size);
+            } break;
+
+        case Q_SO_SET_OFFSET: 
+            {
+                    if (optlen != sizeof(pq->q_offset)) 
+                            return -EINVAL;
+                    if (copy_from_user(&pq->q_offset, optval, optlen)) 
+                            return -EFAULT;
+                    pr_devel("[PFQ|%d] offset:%lu\n", pq->q_id, pq->q_offset);
+            } break;
+
+        case Q_SO_GROUP_LEAVE: 
+            {
+                    int gid;
+                    if (optlen != sizeof(gid)) 
+                            return -EINVAL;
+                    
+                    if (copy_from_user(&gid, optval, optlen)) 
+                            return -EFAULT;
+                    
+                    if (pfq_leave_group(gid, pq->q_id) < 0) {
+                            return -EFAULT;
+                    }
+                    
+                    pr_devel("[PFQ|%d] leave: gid:%d\n", pq->q_id, gid);
+            } break;
+
+	case Q_SO_GROUP_STATE:
+	    {
+		    struct pfq_group_state s;
+		    if (optlen != sizeof(s))
+			    return -EINVAL;
+		    
+		    if (copy_from_user(&s, optval, optlen)) 
+			    return -EFAULT;
+
+                    if (s.gid < 0 || s.gid >= Q_MAX_GROUP) {
+                    	    pr_devel("[PFQ|%d] steering error: gid:%d invalid group!\n", pq->q_id, s.gid);
+			    return -EINVAL;
+		    }
+
+		    if (!__pfq_has_joined_group(s.gid, pq->q_id)) {
+                    	    pr_devel("[PFQ|%d] steering error: gid:%d no permission!\n", pq->q_id, s.gid);
+			    return -EPERM;
+		    }
+
+		    if (s.size && s.state) 
+		    {
+                    	void * state = kmalloc(s.size, GFP_KERNEL);
+			if (state == NULL) 
+				return -ENOMEM;
+
+			if(copy_from_user(state, s.state, s.size)) {
+                         	kfree(state);
+				return -EFAULT;
+			}
+			
+			__pfq_set_state_for_group(s.gid, state);
+                    	    
+			pr_devel("[PFQ|%d] state: gid:%d (state of %zu bytes set)\n", pq->q_id, s.gid, s.size);
+		    }
+		    else { /* empty state */
+			   
+			__pfq_set_state_for_group(s.gid, NULL);
+			
+			pr_devel("[PFQ|%d] state: gid:%d (empty state set)\n", pq->q_id, s.gid);
+		    }
+	    } break;
+
  	case Q_SO_GROUP_STEER_FUN:
 	    {
 		    struct pfq_steering s;
@@ -1010,48 +1115,6 @@ int pfq_setsockopt(struct socket *sock,
 		    }
 	    } break;
 
-	case Q_SO_GROUP_STATE:
-	    {
-		    struct pfq_group_state s;
-		    if (optlen != sizeof(s))
-			    return -EINVAL;
-		    
-		    if (copy_from_user(&s, optval, optlen)) 
-			    return -EFAULT;
-
-                    if (s.gid < 0 || s.gid >= Q_MAX_GROUP) {
-                    	    pr_devel("[PFQ|%d] steering error: gid:%d invalid group!\n", pq->q_id, s.gid);
-			    return -EINVAL;
-		    }
-
-		    if (!__pfq_has_joined_group(s.gid, pq->q_id)) {
-                    	    pr_devel("[PFQ|%d] steering error: gid:%d no permission!\n", pq->q_id, s.gid);
-			    return -EPERM;
-		    }
-
-		    if (s.size && s.state) 
-		    {
-                    	void * state = kmalloc(s.size, GFP_KERNEL);
-			if (state == NULL) 
-				return -ENOMEM;
-
-			if(copy_from_user(state, s.state, s.size)) {
-                         	kfree(state);
-				return -EFAULT;
-			}
-			
-			__pfq_set_state_for_group(s.gid, state);
-                    	    
-			pr_devel("[PFQ|%d] state: gid:%d (state of %zu bytes set)\n", pq->q_id, s.gid, s.size);
-		    }
-		    else { /* empty state */
-			   
-			__pfq_set_state_for_group(s.gid, NULL);
-			
-			pr_devel("[PFQ|%d] state: gid:%d (empty state set)\n", pq->q_id, s.gid);
-		    }
-	    } break;
-        
 	case Q_SO_GROUP_FPROG:
 	    {
 		    struct pfq_fprog fprog;
@@ -1092,68 +1155,6 @@ int pfq_setsockopt(struct socket *sock,
 		    }
 
 	    } break;
-
-	case Q_SO_SET_TSTAMP: 
-            {
-                    int tstamp;
-                    if (optlen != sizeof(pq->q_tstamp))
-                            return -EINVAL;
-                    if (copy_from_user(&tstamp, optval, optlen))
-                            return -EFAULT;
-                    if (tstamp != 0 && tstamp != 1)
-                            return -EINVAL;
-
-                    /* update the timestamp_toggle counter */
-                    atomic_add(tstamp - pq->q_tstamp, &timestamp_toggle);
-                    pq->q_tstamp = tstamp;
-                    pr_devel("[PFQ|%d] timestamp_toggle => %d\n", pq->q_id, atomic_read(&timestamp_toggle));
-            } break;
-        
-        case Q_SO_SET_CAPLEN: 
-            {
-                    if (optlen != sizeof(pq->q_caplen)) 
-                            return -EINVAL;
-                    if (copy_from_user(&pq->q_caplen, optval, optlen)) 
-                            return -EFAULT;
-                    pq->q_slot_size = DBMP_QUEUE_SLOT_SIZE(pq->q_caplen);
-                    pr_devel("[PFQ|%d] caplen:%lu -> slot_size:%lu\n", 
-                                    pq->q_id, pq->q_caplen, pq->q_slot_size);
-            } break;
-
-        case Q_SO_SET_OFFSET: 
-            {
-                    if (optlen != sizeof(pq->q_offset)) 
-                            return -EINVAL;
-                    if (copy_from_user(&pq->q_offset, optval, optlen)) 
-                            return -EFAULT;
-                    pr_devel("[PFQ|%d] offset:%lu\n", pq->q_id, pq->q_offset);
-            } break;
-
-        case Q_SO_SET_SLOTS: 
-            {
-                    if (optlen != sizeof(pq->q_slots)) 
-                            return -EINVAL;
-                    if (copy_from_user(&pq->q_slots, optval, optlen)) 
-                            return -EFAULT;
-                    pr_devel("[PFQ|%d] queue_slots:%lu -> slot_size:%lu\n", 
-                                    pq->q_id, pq->q_slots, pq->q_slot_size);
-            } break;
-
-        case Q_SO_GROUP_LEAVE: 
-            {
-                    int gid;
-                    if (optlen != sizeof(gid)) 
-                            return -EINVAL;
-                    
-                    if (copy_from_user(&gid, optval, optlen)) 
-                            return -EFAULT;
-                    
-                    if (pfq_leave_group(gid, pq->q_id) < 0) {
-                            return -EFAULT;
-                    }
-                    
-                    pr_devel("[PFQ|%d] leave: gid:%d\n", pq->q_id, gid);
-            } break;
 
         case Q_SO_GROUP_VLAN_FILT_TOGGLE:
             {
