@@ -83,14 +83,14 @@ Context(PFQ)
     }
 
     
-    Test(is_enabled)
+    Test(enabled)
     {
         pfq x;
-        Assert(x.is_enabled(), is_equal_to(false));
+        Assert(x.enabled(), is_equal_to(false));
         x.open(group_policy::undefined, 64);
-        Assert(x.is_enabled(), is_equal_to(false));
+        Assert(x.enabled(), is_equal_to(false));
         x.enable();
-        Assert(x.is_enabled(), is_equal_to(true));
+        Assert(x.enabled(), is_equal_to(true));
     }
 
 
@@ -107,13 +107,13 @@ Context(PFQ)
     Test(timestamp)
     {
         pfq x;
-        AssertThrow(x.set_timestamp(true));
-        AssertThrow(x.get_timestamp());
+        AssertThrow(x.timestamp_enabled(true));
+        AssertThrow(x.timestamp_enabled());
 
         x.open(group_policy::undefined, 64);
-        x.set_timestamp(true);
+        x.timestamp_enabled(true);
 
-        Assert(x.get_timestamp(), is_equal_to(true));
+        Assert(x.timestamp_enabled(), is_equal_to(true));
     }
 
 
@@ -505,12 +505,12 @@ Context(PFQ)
     Test(vlan_filt)
     {
         pfq x(64);
-        AssertThrow(x.vlan_set_filter_vid(x.group_id(), 42));
-        AssertThrow(x.vlan_reset_filter_vid(x.group_id(), 42));
+        AssertThrow(x.vlan_set_filter(x.group_id(), 42));
+        AssertThrow(x.vlan_reset_filter(x.group_id(), 42));
 
         AssertNothrow(x.vlan_filters_enabled(x.group_id(), true));
-        AssertNothrow(x.vlan_set_filter_vid(x.group_id(), 42));
-        AssertNothrow(x.vlan_reset_filter_vid(x.group_id(), 42));
+        AssertNothrow(x.vlan_set_filter(x.group_id(), 42));
+        AssertNothrow(x.vlan_reset_filter(x.group_id(), 42));
         
         AssertNothrow(x.vlan_filters_enabled(x.group_id(), false));
     }

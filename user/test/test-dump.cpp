@@ -15,7 +15,7 @@ main(int argc, char *argv[])
 
     q.bind(argv[1], pfq::any_queue);
 
-    q.set_timestamp(true);
+    q.timestamp_enabled(true);
     
     q.enable();
 

@@ -708,7 +708,7 @@ namespace net {
 
         
         bool 
-        is_enabled() const
+        enabled() const
         {
             if (fd_ != -1)
             {
@@ -723,7 +723,7 @@ namespace net {
 
 
         void 
-        set_timestamp(bool value)
+        timestamp_enabled(bool value)
         {
             int ts = static_cast<int>(value);
             if (::setsockopt(fd_, PF_Q, Q_SO_SET_TSTAMP, &ts, sizeof(ts)) == -1)
@@ -732,7 +732,7 @@ namespace net {
 
 
         bool 
-        get_timestamp() const
+        timestamp_enabled() const
         {
            int ret; socklen_t size = sizeof(int);
            if (::getsockopt(fd_, PF_Q, Q_SO_GET_TSTAMP, &ret, &size) == -1)
@@ -744,7 +744,7 @@ namespace net {
         void 
         caplen(size_t value)
         {
-            if (is_enabled()) 
+            if (enabled()) 
                 throw pfq_error("PFQ: enabled (caplen could not be set)");
             
             if (::setsockopt(fd_, PF_Q, Q_SO_SET_CAPLEN, &value, sizeof(value)) == -1) {
@@ -768,7 +768,7 @@ namespace net {
         void 
         offset(size_t value)
         {
-            if (is_enabled()) 
+            if (enabled()) 
                 throw pfq_error("PFQ: enabled (offset could not be set)");
             
             if (::setsockopt(fd_, PF_Q, Q_SO_SET_OFFSET, &value, sizeof(value)) == -1) {
@@ -790,7 +790,7 @@ namespace net {
         void 
         slots(size_t value) 
         {             
-            if (is_enabled()) 
+            if (enabled()) 
                 throw pfq_error("PFQ: enabled (slots could not be set)");
                       
             if (::setsockopt(fd_, PF_Q, Q_SO_SET_SLOTS, &value, sizeof(value)) == -1) {
@@ -988,7 +988,7 @@ namespace net {
             if (!pdata_ || !pdata_->queue_addr)
                 throw pfq_error("PFQ: not enabled");
 
-            struct pfq_queue_descr * q = static_cast<struct pfq_queue_descr *>(pdata_->queue_addr);
+            auto q = static_cast<struct pfq_queue_descr *>(pdata_->queue_addr);
             
             size_t data = q->data;
             size_t index = DBMP_QUEUE_INDEX(data);
@@ -1016,7 +1016,7 @@ namespace net {
         uint8_t
         current_commit() const
         {
-            struct pfq_queue_descr * q = static_cast<struct pfq_queue_descr *>(pdata_->queue_addr);
+            auto q = static_cast<struct pfq_queue_descr *>(pdata_->queue_addr);
             return DBMP_QUEUE_INDEX(q->data);
         }
 
@@ -1069,7 +1069,7 @@ namespace net {
                 throw pfq_error(errno, "PFQ: vlan filters");
         }
 
-        void vlan_set_filter_vid(int gid, int vid)
+        void vlan_set_filter(int gid, int vid)
         {
             pfq_vlan_toggle value { gid, vid, true};
     
@@ -1078,14 +1078,14 @@ namespace net {
         }
 
         template <typename Iter>
-        void vlan_set_filter_vid(int gid, Iter beg, Iter end)
+        void vlan_set_filter(int gid, Iter beg, Iter end)
         {
             std::for_each(beg, end, [&](int vid) {
-                vlan_set_filter_vid(gid, vid);
+                vlan_set_filter(gid, vid);
             });
         }
 
-        void vlan_reset_filter_vid(int gid, int vid)
+        void vlan_reset_filter(int gid, int vid)
         {
             pfq_vlan_toggle value { gid, vid, false};
     
@@ -1094,10 +1094,10 @@ namespace net {
         }
         
         template <typename Iter>
-        void vlan_reset_filter_vid(int gid, Iter beg, Iter end)
+        void vlan_reset_filter(int gid, Iter beg, Iter end)
         {
             std::for_each(beg, end, [&](int vid) {
-                vlan_reset_filter_vid(gid, vid);
+                vlan_reset_filter(gid, vid);
             });
         }
 

@@ -42,7 +42,7 @@ main(int argc, char *argv[])
     
     // select tstamp type:
     //
-    q.set_timestamp(true);
+    q.timestamp_enabled(true);
 
     // enable capturng for this queue:
     //
