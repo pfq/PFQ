@@ -558,6 +558,10 @@ pfq_join_group(pfq_t *q, int gid, unsigned int class_mask, int group_policy)
 	if (getsockopt(q->fd, PF_Q, Q_SO_GROUP_JOIN, &group, &size) == -1) {
 	        return q->error = "PFQ: join group error", -1;
 	}
+            
+        if (q->gid == -1)
+                q->gid = group.gid;
+	
 	return q->error = NULL, group.gid;
 }
 

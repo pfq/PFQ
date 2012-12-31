@@ -954,6 +954,9 @@ namespace net {
             if (::getsockopt(fd_, PF_Q, Q_SO_GROUP_JOIN, &group, &size) == -1)
                 throw pfq_error(errno, "PFQ: join group error");
             
+            if (pdata_->gid == -1)
+                pdata_->gid = group.gid;
+
             return group.gid;
         }
         
