@@ -262,6 +262,36 @@ pfq_dump_skb(struct sk_buff const *skb)
                        p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8], p[9], p[10], p[11], p[12], p[13], p[14], p[15],
                        p[16], p[17], p[18], p[19], p[20], p[21], p[22], p[23], p[24], p[25], p[26], p[27], p[28], p[29]);
 }
+ 
+
+inline
+unsigned int pfq_mod(unsigned long int a, unsigned int b)
+{
+    const unsigned int c = b - 1;
+    if (b & c)
+    {
+        switch(b)
+        {
+            case 3:  return a % 3;
+            case 5:  return a % 5;
+            case 6:  return a % 6;
+            case 7:  return a % 7;
+            case 9:  return a % 9;
+            case 10: return a % 10;
+            case 11: return a % 11;
+            case 12: return a % 12;
+            case 13: return a % 13;
+            case 14: return a % 14;
+            case 15: return a % 15;
+            default: return a % b;
+        }
+    }
+    else
+    {
+        return a & c;
+    }
+}
+
 
 /* precondition: skb is not shared */
 
@@ -421,15 +451,9 @@ pfq_direct_receive(struct sk_buff *skb, bool direct)
                                                 }
                                         }
 
-                                        switch(local_cache->sock_cnt) 
+                                        if (local_cache->sock_cnt)
                                         {
-                                                case 0: break;
-                                                case 1: sock_mask  |= local_cache->sock_mask[0]; break;
-                                                case 2: sock_mask  |= local_cache->sock_mask[ret.hash & 1]; break;
-                                                case 4: sock_mask  |= local_cache->sock_mask[ret.hash & 3]; break;
-                                                case 8: sock_mask  |= local_cache->sock_mask[ret.hash & 7]; break;
-                                                case 16: sock_mask |= local_cache->sock_mask[ret.hash & 15]; break;
-                                                default: sock_mask |= local_cache->sock_mask[ret.hash % local_cache->sock_cnt];
+                                                sock_mask |= local_cache->sock_mask[pfq_mod(ret.hash, local_cache->sock_cnt)];
                                         }
                                 }
                         }
