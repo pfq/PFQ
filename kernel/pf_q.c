@@ -479,7 +479,8 @@ pfq_receive(struct sk_buff *skb, bool direct)
 
                                         if (local_cache->sock_cnt)
                                         {
-                                                sock_mask |= local_cache->sock_mask[pfq_fold(ret.hash, local_cache->sock_cnt)];
+                                                unsigned int h = ret.hash ^ (ret.hash >> 3);
+                                                sock_mask |= local_cache->sock_mask[pfq_fold(h ^ (h >> 7), local_cache->sock_cnt)];
                                         }
                                 }
                         }
