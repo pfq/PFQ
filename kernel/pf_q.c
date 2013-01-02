@@ -320,10 +320,9 @@ unsigned int pfq_fold(unsigned long int a, unsigned int b)
 }            
 
 
-/* precondition: skb is not shared */
 
 int 
-pfq_direct_receive(struct sk_buff *skb, bool direct)
+pfq_receive(struct sk_buff *skb, bool direct)
 {       
         struct local_data * local_cache = this_cpu_ptr(cpu_data);
         struct pfq_queue_skb * prefetch_queue = &local_cache->prefetch_queue;
@@ -439,8 +438,8 @@ pfq_direct_receive(struct sk_buff *skb, bool direct)
                                         continue;
                         }
 
-
                         /* retrieve the steering function for this group */
+                        
                         steer_fun = (steering_function_t) atomic_long_read(&pfq_groups[gindex].steering);
                         if (steer_fun) 
                         {
@@ -560,7 +559,7 @@ pfq_packet_rcv
                         return 0;
         }
 
-        return pfq_direct_receive(skb, false);
+        return pfq_receive(skb, false);
 }
 
 
@@ -1583,7 +1582,7 @@ pfq_netif_receive_skb(struct sk_buff *skb)
 		if (pfq_normalize_skb(skb) < 0)
                 	return NET_RX_DROP;
 
-		pfq_direct_receive(skb, true);
+		pfq_receive(skb, true);
 		return NET_RX_SUCCESS;
 	}
 
@@ -1599,7 +1598,7 @@ pfq_netif_rx(struct sk_buff *skb)
 		if (pfq_normalize_skb(skb) < 0)
                 	return NET_RX_DROP;
 		
-		pfq_direct_receive(skb, true);
+		pfq_receive(skb, true);
 		return NET_RX_SUCCESS;
 	}
 
@@ -1616,7 +1615,7 @@ pfq_gro_receive(struct napi_struct *napi, struct sk_buff *skb)
 		if (pfq_normalize_skb(skb) < 0)
                 	return GRO_DROP;
 
-                pfq_direct_receive(skb, true);
+                pfq_receive(skb, true);
                 return GRO_NORMAL;
         }
 
