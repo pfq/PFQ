@@ -113,7 +113,7 @@ struct pfq_opt *
 pfq_get_opt(unsigned int id)
 {
         struct pfq_opt * opt;
-        if (unlikely(id >= Q_MAX_ID || id < 0))
+        if (unlikely(id >= Q_MAX_ID))
         {
                 printk(KERN_WARNING "[PFQ] pfq_devmap_freeid: bad id=%d\n", id);
                 return NULL;
@@ -207,7 +207,6 @@ pfq_load_balancer(unsigned long bm, const struct sk_buff *skb)
 int 
 pfq_direct_receive(struct sk_buff *skb, int index, int queue, bool direct)
 {       
-        struct pfq_opt * pq;
         unsigned long bm;
         int me = smp_processor_id();
         int q;
@@ -218,8 +217,6 @@ pfq_direct_receive(struct sk_buff *skb, int index, int queue, bool direct)
                         skb->tstamp.tv64 == 0) {
                 __net_timestamp(skb);
         }
-
-        pq = NULL; 
 
         /* get the clone/balancing bitmap */
 
@@ -613,13 +610,10 @@ int pfq_setsockopt(struct socket *sock,
                    int optlen)
 {
         struct pfq_opt *pq = pfq_sk(sock->sk)->opt;
-        long int val;
         bool found = true;
 
         if (pq == NULL)
                 return -EINVAL;
-        if (get_user(val, (long int *)optval))
-                return -EFAULT;
 
         switch(optname)
         {
@@ -767,11 +761,8 @@ int
 pfq_memory_mmap(struct vm_area_struct *vma,
                 unsigned long size, char *ptr, unsigned int flags)
 {
-        unsigned long start;
-
         vma->vm_flags |= flags;
 
-        start = vma->vm_start;
         if (remap_vmalloc_range(vma, ptr, 0) != 0)
         {
                 printk(KERN_INFO "[PF_Q] remap_vmalloc_range\n");

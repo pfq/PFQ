@@ -33,7 +33,7 @@
 MODULE_LICENSE("GPL");
 
 
-void pfq_devmap_monitor_update()
+void pfq_devmap_monitor_update(void)
 {
     int i,j;
     for(i=0; i < Q_MAX_DEVICE; ++i)
