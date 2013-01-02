@@ -192,9 +192,11 @@ pfq_load_balancer(unsigned long bm, const struct sk_buff *skb)
                 int zn = __builtin_ctzl(candidates);
                 index[i++] = zn;
                 candidates ^= (1<<zn);
-        }
-
+        }        
+        
         hash = ip_hdr(skb)->saddr ^ ip_hdr(skb)->daddr;
+        hash = hash ^ (hash >> 8) ^ (hash >> 16) ^ (hash >> 24);
+       
         return nolb | ( 1 << index[hash % i] );
 }
 
