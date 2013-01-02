@@ -413,6 +413,7 @@ pfq_receive(struct sk_buff *skb, bool direct)
                 bitwise_foreach(group_mask, bit)
                 {
                         int gindex = pfq_ctz(bit);
+                        struct sk_filter *bpf;
 
                         steering_ret_t ret;
                         steering_function_t steer_fun;
@@ -423,10 +424,9 @@ pfq_receive(struct sk_buff *skb, bool direct)
 
                         /* check bpf filter */
 
-                        if (atomic_long_read(&pfq_groups[gindex].filter))
+                        if ((bpf = (struct sk_filter *)atomic_long_read(&pfq_groups[gindex].filter)))
                         {
-                                struct sk_filter * filter = (struct sk_filter *)atomic_long_read(&pfq_groups[gindex].filter);
-                                if (!sk_run_filter(skb, filter->insns))
+                                if (!sk_run_filter(skb, bpf->insns))
                                         continue;
                         }
                         
@@ -458,7 +458,7 @@ pfq_receive(struct sk_buff *skb, bool direct)
                                                 eligible_mask |= atomic_long_read(&pfq_groups[gindex].sock_mask[cindex]);
                                         }
 
-                                        if (ret.type == action_clone) {
+                                        if (unlikely(ret.type == action_clone)) {
 
                                                 sock_mask |= eligible_mask;
                                                 continue; 
@@ -477,9 +477,9 @@ pfq_receive(struct sk_buff *skb, bool direct)
                                                 }
                                         }
 
-                                        if (local_cache->sock_cnt)
+                                        if (likely(local_cache->sock_cnt))
                                         {
-						unsigned int h = ret.hash ^ (ret.hash >> 8) ^ (ret.hash >> 16) ^ (ret.hash >> 24);
+						unsigned int h = ret.hash ^ (ret.hash >> 8) ^ (ret.hash >> 16);
 						sock_mask |= local_cache->sock_mask[pfq_fold(h, local_cache->sock_cnt)];
 					}
                                 }
