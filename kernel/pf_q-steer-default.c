@@ -57,7 +57,7 @@ steering_ipv4_addr(const struct sk_buff *skb, const void *state)
  		if (ip == NULL)
  			return none();
 
-        	return steering(Q_CLASS_DEFAULT, ip->saddr ^ ip->daddr );
+        	return steering(Q_CLASS_DEFAULT, ip->saddr ^ ip->daddr);
 	}
 
 	return none();
@@ -87,7 +87,7 @@ steering_flow(const struct sk_buff *skb, const void *state)
 		if (udp == NULL) 
 			return none();
 		
-        	return steering(Q_CLASS_DEFAULT, ip->saddr ^ ip->daddr ^ ((uint32_t)udp->source << 16) ^ udp->dest);
+        	return steering(Q_CLASS_DEFAULT, ip->saddr ^ ip->daddr ^ udp->source ^ udp->dest);
 	}
 
 	return none();

@@ -35,7 +35,7 @@
 
 typedef struct
 {
-	unsigned long hash;
+	unsigned int  hash;
 	unsigned int  type;
 	unsigned int  class;
 } steering_ret_t;
@@ -80,7 +80,7 @@ steering_ret_t clone(unsigned int cl)
 
 
 static inline
-steering_ret_t steering(unsigned int cl, unsigned long hash)
+steering_ret_t steering(unsigned int cl, unsigned int hash)
 {
     steering_ret_t ret = {hash, action_hash, cl};
     return ret;
