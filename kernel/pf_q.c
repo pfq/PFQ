@@ -269,7 +269,7 @@ pfq_dump_skb(struct sk_buff const *skb)
  */
 
 inline 
-unsigned clp2(unsigned long x)
+unsigned clp2(unsigned int x)
 {
         x = x - 1;
         x = x | (x >> 1);
@@ -277,7 +277,6 @@ unsigned clp2(unsigned long x)
         x = x | (x >> 4);
         x = x | (x >> 8);
         x = x | (x >> 16);
-        x = x | (x >> 32);
         return x + 1;
 }
 
@@ -287,7 +286,7 @@ unsigned clp2(unsigned long x)
  */
 
 inline
-unsigned int pfq_fold(unsigned long int a, unsigned int b)
+unsigned int pfq_fold(unsigned int a, unsigned int b)
 {
         const unsigned int c = b - 1;
         if (b & c)
