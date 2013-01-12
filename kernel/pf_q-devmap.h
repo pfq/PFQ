@@ -70,4 +70,15 @@ int __pfq_devmap_monitor_get(int index)
 }
 
 
+static inline
+void __pfq_devmap_monitor_reset(void)
+{
+    int n;
+    for(n = 0; n < Q_MAX_DEVICE; n++)
+    {
+        atomic_set(&pfq_devmap_monitor[n],0);
+    }
+}
+
+
 #endif /* _PF_Q_DEVMAP_H_ */

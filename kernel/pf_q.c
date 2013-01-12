@@ -1573,6 +1573,12 @@ static void __exit pfq_exit_module(void)
         /* unregister the pfq protocol */
         proto_unregister(&pfq_proto);
 
+        /* disable direct capture */
+        __pfq_devmap_monitor_reset();
+
+        /* wait grace period */
+        msleep(GRACE_PERIOD);
+
         /* destroy pipeline queues (of each cpu) */
 
         for_each_possible_cpu(cpu) {
@@ -1583,6 +1589,10 @@ static void __exit pfq_exit_module(void)
 		int n = 0;
 		queue_for_each(skb, n, this_queue)
 		{
+                        struct pfq_skb_cb *cb = (struct pfq_skb_cb *)skb->cb;
+                        if (unlikely(cb->stolen_skb))
+                                continue;
+
                  	kfree_skb(skb);
 		}
        		pfq_queue_skb_flush(this_queue);
