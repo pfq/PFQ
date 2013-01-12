@@ -347,14 +347,16 @@ pfq_receive(struct sk_buff *skb, bool direct)
 	}
 #endif
 
+#ifdef PFQ_USE_VLAN_UNTAGGING
+#pragma message "[PFQ] using vlan untagging"
 	/* if vlan header is present, remove it */
-
 	if (skb->protocol == cpu_to_be16(ETH_P_8021Q)) {
                 skb = pfq_vlan_untag(skb);
 		if (unlikely(!skb))
 			return -1;	
 	}
-        
+#endif
+
         /* reset mac len */
 
         skb_reset_mac_len(skb);
