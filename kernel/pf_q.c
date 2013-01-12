@@ -84,6 +84,7 @@ module_param(sniff_incoming,  int, 0644);
 module_param(sniff_outgoing,  int, 0644);
 module_param(sniff_loopback,  int, 0644);
 
+
 module_param(cap_len,         int, 0644);
 module_param(queue_slots,     int, 0644);
 module_param(prefetch_len,    int, 0644);
@@ -209,11 +210,11 @@ struct pfq_steering_cache
 {
 	steering_function_t fun;
 	void * state;
-	steering_ret_t ret;
+	steering_t ret;
 };
 
 
-inline steering_ret_t
+inline steering_t
 pfq_memoized_call(struct pfq_steering_cache *mem, steering_function_t fun, 
 		  const struct sk_buff *skb, void *state)
 {
@@ -316,8 +317,15 @@ unsigned int pfq_fold(unsigned int a, unsigned int b)
         {
                 return a & c;
         }
-}            
+}        
 
+
+struct pfq_skb_cb
+{
+        bool direct_skb;
+        bool stolen_skb;
+        bool send_to_kernel;
+};
 
 
 int 
@@ -328,6 +336,7 @@ pfq_receive(struct sk_buff *skb, bool direct)
         unsigned long group_mask, sock_mask, global_mask;
         unsigned long batch_queue[sizeof(unsigned long) << 3];
         struct pfq_steering_cache steering_cache;
+        struct pfq_skb_cb *cb; 
         long unsigned n, bit;
 
 #ifdef PFQ_USE_FLOW_CONTROL
@@ -346,16 +355,14 @@ pfq_receive(struct sk_buff *skb, bool direct)
 	}
 #endif
 
-#ifdef PFQ_USE_VLAN_UNTAGGING
-#pragma message "[PFQ] using vlan untagging"
 	/* if vlan header is present, remove it */
+
 	if (skb->protocol == cpu_to_be16(ETH_P_8021Q)) {
                 skb = pfq_vlan_untag(skb);
 		if (unlikely(!skb))
 			return -1;	
 	}
-#endif
-
+        
         /* reset mac len */
 
         skb_reset_mac_len(skb);
@@ -374,8 +381,13 @@ pfq_receive(struct sk_buff *skb, bool direct)
         }
 
 	/* enqueue the packet to the prefetch queue */
+                
+        cb = (struct pfq_skb_cb *) skb->cb;
 
-        skb->cb[42] = direct;
+        cb->direct_skb      = direct;
+        cb->stolen_skb      = false;
+        cb->send_to_kernel  = false;
+
 
         /* enqueue this skb ... */
 
@@ -411,12 +423,15 @@ pfq_receive(struct sk_buff *skb, bool direct)
 
 		__builtin_prefetch(&cpu, 0, 2);
 
+
+                /* for each group in this mask ... */
+
                 bitwise_foreach(group_mask, bit)
                 {
                         int gindex = pfq_ctz(bit);
                         struct sk_filter *bpf;
 
-                        steering_ret_t ret;
+                        steering_t ret;
                         steering_function_t steer_fun;
 
                         /* increment recv counter for this group */
@@ -447,6 +462,20 @@ pfq_receive(struct sk_buff *skb, bool direct)
                                 /* call the steering function */
 
                                 ret = pfq_memoized_call(&steering_cache, steer_fun, skb, (void *)atomic_long_read(&pfq_groups[gindex].state));
+
+                                if (ret.type == action_steal)
+                                {
+                                        cb = (struct pfq_skb_cb *) skb->cb;
+                                        cb->stolen_skb = true;
+                                        goto next_skb;
+                                }
+
+                                if (ret.type == action_to_kernel)
+                                {
+                                        cb = (struct pfq_skb_cb *) skb->cb;
+                                        cb->send_to_kernel = true;
+                                        goto next_skb;
+                                }
 
                                 if (likely(ret.type != action_drop)) 
                                 {
@@ -490,11 +519,15 @@ pfq_receive(struct sk_buff *skb, bool direct)
                                 sock_mask |= atomic_long_read(&pfq_groups[gindex].sock_mask[0]);
                         }
                 }
-
+                
                 pfq_enqueue_mask_to_batch(n, sock_mask, batch_queue);
-
                 global_mask |= sock_mask;
+        
+        next_skb: ;
+        
         }
+
+        /* copy packets to pfq sockets... */
 
 	bitwise_foreach(global_mask, bit)
         {
@@ -511,14 +544,25 @@ pfq_receive(struct sk_buff *skb, bool direct)
                 }
         }
 
+        /* free skb, or route them to kernel... */
+        
         queue_for_each(skb, n, prefetch_queue)
         {
-                if (likely(skb->cb[42]))
+                cb = (struct pfq_skb_cb *)skb->cb;
+        
+                if (unlikely(cb->stolen_skb))
+                        continue;
+
+                if (likely(cb->direct_skb))
 		{
-                        __kfree_skb(skb);
+		        if (cb->send_to_kernel)
+		                netif_receive_skb(skb);
+                        else
+                                __kfree_skb(skb);
 		}
                 else
                 {
+                        /* sniffed packets cannot be routed to kernel */
                         kfree_skb(skb);
                 }
         }       
@@ -526,6 +570,7 @@ pfq_receive(struct sk_buff *skb, bool direct)
         pfq_queue_skb_flush(prefetch_queue);
         return 0;
 }
+
 
 /* simple packet HANDLER */       
 

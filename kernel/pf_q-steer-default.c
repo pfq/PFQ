@@ -23,7 +23,7 @@
 
 #include <linux/pf_q-steering.h>
 
-steering_ret_t
+steering_t
 steering_mac_addr(const struct sk_buff *skb, const void *state)
 {
         uint16_t * a = (uint16_t *)eth_hdr(skb);
@@ -31,21 +31,21 @@ steering_mac_addr(const struct sk_buff *skb, const void *state)
 }
 
 
-steering_ret_t
+steering_t
 steering_vlan_untag(const struct sk_buff *skb, const void *state)
 {
 	return steering(Q_CLASS_DEFAULT, skb->vlan_tci == 0);
 }
 
 
-steering_ret_t
+steering_t
 steering_vlan_id(const struct sk_buff *skb, const void *state)
 {
  	return steering(Q_CLASS_DEFAULT, skb->vlan_tci & VLAN_VID_MASK);
 }
 
 
-steering_ret_t
+steering_t
 steering_ipv4_addr(const struct sk_buff *skb, const void *state)
 {       
 	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP)) 
@@ -55,16 +55,16 @@ steering_ipv4_addr(const struct sk_buff *skb, const void *state)
 
 		ip = skb_header_pointer(skb, skb->mac_len, sizeof(_iph), &_iph);
  		if (ip == NULL)
- 			return none();
+ 			return drop();
 
         	return steering(Q_CLASS_DEFAULT, ip->saddr ^ ip->daddr);
 	}
 
-	return none();
+	return drop();
 }
 
 
-steering_ret_t
+steering_t
 steering_flow(const struct sk_buff *skb, const void *state)
 {       
 	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP)) 
@@ -77,23 +77,24 @@ steering_flow(const struct sk_buff *skb, const void *state)
 
 		ip = skb_header_pointer(skb, skb->mac_len, sizeof(_iph), &_iph);
  		if (ip == NULL)
- 			return none();
+ 			return drop();
 
 		if (ip->protocol != IPPROTO_UDP &&
 		    ip->protocol != IPPROTO_TCP) 
-			return none();
+			return drop();
 		
 		udp = skb_header_pointer(skb, skb->mac_len + (ip->ihl<<2), sizeof(_udp), &_udp);
 		if (udp == NULL) 
-			return none();
+			return drop();
 		
         	return steering(Q_CLASS_DEFAULT, ip->saddr ^ ip->daddr ^ udp->source ^ udp->dest);
 	}
 
-	return none();
+	return drop();
 }
 
-steering_ret_t
+
+steering_t
 steering_ipv6_addr(const struct sk_buff *skb, const void *state)
 {       
 	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IPV6)) 
@@ -103,7 +104,7 @@ steering_ipv6_addr(const struct sk_buff *skb, const void *state)
 
 		ip6 = skb_header_pointer(skb, skb->mac_len, sizeof(_ip6h), &_ip6h);
  		if (ip6 == NULL)
- 			return none();
+ 			return drop();
 
 		return steering(Q_CLASS_DEFAULT,
 			ip6->saddr.in6_u.u6_addr32[0] ^
@@ -116,7 +117,24 @@ steering_ipv6_addr(const struct sk_buff *skb, const void *state)
 			ip6->daddr.in6_u.u6_addr32[3] );
 	}
 
-	return none();
+	return drop();
+}
+
+
+steering_t
+steering_none(const struct sk_buff *skb, const void *state)
+{
+        return to_kernel();
+}
+
+
+steering_t
+steering_black_hole(const struct sk_buff *skb, const void *state)
+{
+        struct sk_buff * mskb = (struct sk_buff *)skb;
+        kfree_skb(mskb);
+
+        return stolen();
 }
 
 
@@ -127,5 +145,7 @@ struct steering_function default_steering_functions[] = {
         { "steer-ipv4-addr",  steering_ipv4_addr  },
         { "steer-ipv6-addr",  steering_ipv6_addr  },
         { "steer-flow",       steering_flow },
+        { "steer-none",       steering_none },
+        { "steer-black-hole", steering_black_hole },
 	{ NULL, NULL}};
 

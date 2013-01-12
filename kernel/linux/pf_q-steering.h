@@ -38,18 +38,20 @@ typedef struct
 	unsigned int  hash:24;
 	unsigned int  type:8;
 	unsigned int  class;
-} steering_ret_t;
+} steering_t;
 
 
 enum action 
 {
     action_drop  = 0,
     action_clone = 1,
-    action_hash  = 2
+    action_hash  = 2,
+    action_steal = 3,
+    action_to_kernel = 4
 };
 
 
-typedef steering_ret_t (*steering_function_t)(const struct sk_buff *, const void *);    
+typedef steering_t (*steering_function_t)(const struct sk_buff *, const void *);    
 
 
 struct steering_function
@@ -63,26 +65,52 @@ extern int pfq_register_steering_functions(const char *module, struct steering_f
 extern int pfq_unregister_steering_functions(const char *module, struct steering_function *fun);
 
 
+/* ignore this packet, set this skb to be forwarded to the kernel */
+
 static inline
-steering_ret_t none(void)
+steering_t to_kernel(void)
 {
-    steering_ret_t ret = { 0, action_drop, 0};
+    steering_t ret = { 0, action_to_kernel, 0};
     return ret;
 }
 
 
+/* drop packet for the current group */
+
 static inline
-steering_ret_t clone(unsigned int cl)
+steering_t drop(void)
 {
-    steering_ret_t ret = { 0, action_clone, cl};
+    steering_t ret = { 0, action_drop, 0};
     return ret;
 }
 
 
+/* stolen packet: the skb is stolen by the steering function. (i.e. forwarded) */
+
 static inline
-steering_ret_t steering(unsigned int cl, unsigned int hash)
+steering_t stolen(void)
 {
-    steering_ret_t ret = {hash ^ (hash >> 8), action_hash, cl};
+    steering_t ret = { 0, action_steal, 0};
+    return ret;
+}
+
+
+/* broadcast skb: for this group, the packet is broadcasted to sockets of certain classes */
+
+static inline
+steering_t broadcast(unsigned int cl)
+{
+    steering_t ret = { 0, action_clone, cl};
+    return ret;
+}
+
+
+/* steering skb: for this group, the packet is dispatched across sockets of certain classes (by means of a hash) */
+
+static inline
+steering_t steering(unsigned int cl, unsigned int hash)
+{
+    steering_t ret = {hash ^ (hash >> 8), action_hash, cl};
     return ret;
 }
 
