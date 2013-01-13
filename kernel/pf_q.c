@@ -485,6 +485,7 @@ pfq_receive(struct sk_buff *skb, bool direct)
                                         unsigned long eligible_mask = 0;
                                         unsigned long cbit;
 
+
                                         bitwise_foreach(ret.class, cbit)
                                         {
                                                 int cindex = pfq_ctz(cbit);
@@ -558,7 +559,7 @@ pfq_receive(struct sk_buff *skb, bool direct)
 
                 if (likely(cb->direct_skb))
 		{
-		        if (cb->send_to_kernel)
+		        if (!sniff_incoming && cb->send_to_kernel)
 		                netif_receive_skb(skb);
                         else
                                 __kfree_skb(skb);
