@@ -43,11 +43,11 @@ typedef struct
 
 enum action 
 {
-    action_drop  = 0,
-    action_clone = 1,
-    action_hash  = 2,
-    action_steal = 3,
-    action_to_kernel = 4
+    action_drop      = 0x01,
+    action_clone     = 0x02,
+    action_dispatch  = 0x04,
+    action_steal     = 0x08,
+    action_pass      = 0x10,
 };
 
 
@@ -61,26 +61,35 @@ struct steering_function
 };
 
 
-extern int pfq_register_steering_functions(const char *module, struct steering_function *fun);
+extern int pfq_register_steering_functions  (const char *module, struct steering_function *fun);
 extern int pfq_unregister_steering_functions(const char *module, struct steering_function *fun);
 
 
-/* ignore this packet, set this skb to be forwarded to the kernel */
+/* none: ignore the packet for the current group */
 
 static inline
-steering_t to_kernel(void)
+steering_t none(void)
 {
-    steering_t ret = { 0, action_to_kernel, 0};
+    steering_t ret = { 0, action_drop, 0};
+    return ret;
+}
+
+/* broadcast: broadcast the skb of the given classes for this group */
+
+static inline
+steering_t broadcast(unsigned int cl)
+{
+    steering_t ret = { 0, action_clone, cl};
     return ret;
 }
 
 
-/* drop packet for the current group */
+/* steering skb: for this group, the packet is dispatched across sockets of the given classes (by means of hash) */
 
 static inline
-steering_t drop(void)
+steering_t steering(unsigned int cl, unsigned int hash)
 {
-    steering_t ret = { 0, action_drop, 0};
+    steering_t ret = {hash ^ (hash >> 8), action_dispatch, cl};
     return ret;
 }
 
@@ -95,24 +104,23 @@ steering_t stolen(void)
 }
 
 
-/* broadcast skb: for this group, the packet is broadcasted to sockets of certain classes */
+/* modifier */
+
+/* to_kernel: set the skb to be passed to kernel */
 
 static inline
-steering_t broadcast(unsigned int cl)
+steering_t to_kernel(steering_t ret)
 {
-    steering_t ret = { 0, action_clone, cl};
+    if (unlikely(ret.type & action_steal))
+    {
+        if (printk_ratelimit())
+ 	        pr_devel("[PFQ] to_kernel modifier applied to a stolen packet!\n");
+       return ret;
+    }
+    ret.type |= action_pass;
     return ret;
 }
 
-
-/* steering skb: for this group, the packet is dispatched across sockets of certain classes (by means of a hash) */
-
-static inline
-steering_t steering(unsigned int cl, unsigned int hash)
-{
-    steering_t ret = {hash ^ (hash >> 8), action_hash, cl};
-    return ret;
-}
 
 
 

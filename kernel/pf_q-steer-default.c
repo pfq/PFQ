@@ -32,7 +32,7 @@ steering_mac_addr(const struct sk_buff *skb, const void *state)
 
 
 steering_t
-steering_vlan_untag(const struct sk_buff *skb, const void *state)
+steering_vlan_untagged(const struct sk_buff *skb, const void *state)
 {
 	return steering(Q_CLASS_DEFAULT, skb->vlan_tci == 0);
 }
@@ -55,12 +55,12 @@ steering_ipv4_addr(const struct sk_buff *skb, const void *state)
 
 		ip = skb_header_pointer(skb, skb->mac_len, sizeof(_iph), &_iph);
  		if (ip == NULL)
- 			return drop();
+ 			return none();
 
         	return steering(Q_CLASS_DEFAULT, ip->saddr ^ ip->daddr);
 	}
 
-	return drop();
+	return none();
 }
 
 
@@ -77,20 +77,20 @@ steering_flow(const struct sk_buff *skb, const void *state)
 
 		ip = skb_header_pointer(skb, skb->mac_len, sizeof(_iph), &_iph);
  		if (ip == NULL)
- 			return drop();
+ 			return none();
 
 		if (ip->protocol != IPPROTO_UDP &&
 		    ip->protocol != IPPROTO_TCP) 
-			return drop();
+			return none();
 		
 		udp = skb_header_pointer(skb, skb->mac_len + (ip->ihl<<2), sizeof(_udp), &_udp);
 		if (udp == NULL) 
-			return drop();
+			return none();
 		
         	return steering(Q_CLASS_DEFAULT, ip->saddr ^ ip->daddr ^ udp->source ^ udp->dest);
 	}
 
-	return drop();
+	return none();
 }
 
 
@@ -104,7 +104,7 @@ steering_ipv6_addr(const struct sk_buff *skb, const void *state)
 
 		ip6 = skb_header_pointer(skb, skb->mac_len, sizeof(_ip6h), &_ip6h);
  		if (ip6 == NULL)
- 			return drop();
+ 			return none();
 
 		return steering(Q_CLASS_DEFAULT,
 			ip6->saddr.in6_u.u6_addr32[0] ^
@@ -117,14 +117,14 @@ steering_ipv6_addr(const struct sk_buff *skb, const void *state)
 			ip6->daddr.in6_u.u6_addr32[3] );
 	}
 
-	return drop();
+	return none();
 }
 
 
 steering_t
-steering_none(const struct sk_buff *skb, const void *state)
+steering_legacy(const struct sk_buff *skb, const void *state)
 {
-        return to_kernel();
+        return to_kernel(broadcast(Q_CLASS_ANY));
 }
 
 
@@ -139,13 +139,13 @@ steering_black_hole(const struct sk_buff *skb, const void *state)
 
 
 struct steering_function default_steering_functions[] = {
-	{ "steer-mac-addr",   steering_mac_addr   },
-        { "steer-vlan-untag", steering_vlan_untag },
-        { "steer-vlan-id",    steering_vlan_id	  },
-        { "steer-ipv4-addr",  steering_ipv4_addr  },
-        { "steer-ipv6-addr",  steering_ipv6_addr  },
-        { "steer-flow",       steering_flow },
-        { "steer-none",       steering_none },
-        { "steer-black-hole", steering_black_hole },
+        { "steer-vlan-untagged", steering_vlan_untagged },
+	{ "steer-mac-addr",      steering_mac_addr   },
+        { "steer-vlan-id",       steering_vlan_id    },
+        { "steer-ipv4-addr",     steering_ipv4_addr  },
+        { "steer-ipv6-addr",     steering_ipv6_addr  },
+        { "steer-flow",          steering_flow       },
+        { "steer-legacy",        steering_legacy     },
+        { "steer-black-hole",    steering_black_hole },
 	{ NULL, NULL}};
 

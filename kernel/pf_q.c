@@ -467,21 +467,20 @@ pfq_receive(struct sk_buff *skb, bool direct)
 
                                 ret = pfq_memoized_call(&steering_cache, steer_fun, skb, (void *)atomic_long_read(&pfq_groups[gindex].state));
 
-                                if (ret.type == action_steal)
+                                if (ret.type & action_steal)
                                 {
                                         cb = (struct pfq_skb_cb *) skb->cb;
                                         cb->stolen_skb = true;
                                         goto next_skb;
                                 }
 
-                                if (ret.type == action_to_kernel)
+                                if (ret.type & action_pass)
                                 {
                                         cb = (struct pfq_skb_cb *) skb->cb;
                                         cb->send_to_kernel = true;
-                                        goto next_skb;
                                 }
 
-                                if (likely(ret.type != action_drop)) 
+                                if (likely((ret.type & action_drop) == 0)) 
                                 {
                                         unsigned long eligible_mask = 0;
                                         unsigned long cbit;
@@ -492,7 +491,7 @@ pfq_receive(struct sk_buff *skb, bool direct)
                                                 eligible_mask |= atomic_long_read(&pfq_groups[gindex].sock_mask[cindex]);
                                         }
 
-                                        if (unlikely(ret.type == action_clone)) {
+                                        if (unlikely(ret.type & action_clone)) {
 
                                                 sock_mask |= eligible_mask;
                                                 continue; 
