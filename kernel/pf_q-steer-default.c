@@ -129,7 +129,7 @@ steering_legacy(const struct sk_buff *skb, const void *state)
 
 
 steering_t
-steering_black_hole(const struct sk_buff *skb, const void *state)
+steering_sink(const struct sk_buff *skb, const void *state)
 {
         struct sk_buff * mskb = (struct sk_buff *)skb;
         kfree_skb(mskb);
@@ -146,6 +146,6 @@ struct steering_function default_steering_functions[] = {
         { "steer-ipv6-addr",     steering_ipv6_addr  },
         { "steer-flow",          steering_flow       },
         { "steer-legacy",        steering_legacy     },
-        { "steer-black-hole",    steering_black_hole },
+        { "steer-sink",          steering_sink       },
 	{ NULL, NULL}};
 
