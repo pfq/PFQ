@@ -131,7 +131,7 @@ runThreads op ms = do
                      Q.joinGroup q (groupId binding) [Q.class_default] Q.policy_shared
                      forM_ (devs binding) $ \dev ->
                        forM_ (queues binding) $ \queue ->
-                         Q.bindGroup q (groupId binding) dev queue
+                         Q.setPromisc q dev True >> Q.bindGroup q (groupId binding) dev queue
                      when (isJust sf) ((putStrLn $ "[pfq] Using steering " ++ fromJust sf ++ " for gid " ++ show(groupId binding) ++ "!") >>
                         Q.steeringFunction q (groupId binding) (fromJust sf)) 
                      Q.enable q 
