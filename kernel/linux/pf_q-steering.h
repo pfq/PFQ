@@ -74,7 +74,7 @@ steering_t none(void)
     return ret;
 }
 
-/* broadcast: broadcast the skb of the given classes for this group */
+/* broadcast: for this group, broadcast the skb to sockets of the given classes */
 
 static inline
 steering_t broadcast(unsigned int cl)
@@ -84,7 +84,7 @@ steering_t broadcast(unsigned int cl)
 }
 
 
-/* steering skb: for this group, the packet is dispatched across sockets of the given classes (by means of hash) */
+/* steering skb: for this group, dispatch the skb across sockets of the given classes (by means of hash) */
 
 static inline
 steering_t steering(unsigned int cl, unsigned int hash)
@@ -120,8 +120,6 @@ steering_t to_kernel(steering_t ret)
     ret.type |= action_pass;
     return ret;
 }
-
-
 
 
 #endif /* _PF_Q_STEER_FUN_H_ */
