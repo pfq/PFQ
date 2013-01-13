@@ -565,7 +565,7 @@ pfq_receive(struct sk_buff *skb, bool direct)
 		}
                 else
                 {
-                        /* sniffed packets cannot be routed to kernel */
+                        /* to avoid loops, sniffed packets are not passed back to kernel */
                         kfree_skb(skb);
                 }
         }       
