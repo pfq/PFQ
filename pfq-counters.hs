@@ -7,10 +7,12 @@ import qualified Network.PFq as Q
 import Foreign
 -- import System.Environment
 import System.Time
+import System.Exit
 
 import Control.Monad
 import Control.Applicative
 import Control.Concurrent
+import Control.Exception
 
 import Data.Maybe
 import Data.List.Split
@@ -102,6 +104,8 @@ dumpStat cs t0 = do
     threadDelay 1000000
     t <- getClockTime
     cs' <- mapM (\v -> swapMVar v 0) cs
+    when ((-1) `elem` cs') $ do
+        exitFailure >> return ()
     let delta = diffUSec t t0
     let rate = (sum cs' * 1000000) / fromIntegral delta  
     putStrLn $ "Total rate pkt/sec: " ++ show ((truncate rate) :: Integer)
@@ -120,8 +124,8 @@ runThreads op ms = do
             sf = M.lookup (groupId binding) ms <|> M.lookup (-1) ms 
         c <- newMVar 0
         f <- newMVar 0
-        _ <- forkOn (coreNum binding) (
-                 do
+        _ <- forkOn (coreNum binding) ( 
+                 handle ((\e ->  (putStrLn $ "[pfq] Exception: " ++ show e) >> swapMVar c (-1) >> return ()) :: SomeException -> IO ()) $ do 
                  fp <- Q.openNoGroup (caplen op) (offset op) (slots op)
                  withForeignPtr fp  $ \q -> do
                      Q.joinGroup q (groupId binding) [Q.class_default] Q.policy_shared
@@ -129,7 +133,7 @@ runThreads op ms = do
                        forM_ (queues binding) $ \queue ->
                          Q.bindGroup q (groupId binding) dev queue
                      when (isJust sf) ((putStrLn $ "[pfq] Using steering " ++ fromJust sf ++ " for gid " ++ show(groupId binding) ++ "!") >>
-                                       Q.steeringFunction q (groupId binding) (fromJust sf)) 
+                        Q.steeringFunction q (groupId binding) (fromJust sf)) 
                      Q.enable q 
                      recvLoop q (State c f S.empty) >> return ()  
                  )
