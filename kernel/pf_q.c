@@ -206,6 +206,8 @@ bool pfq_copy_to_user_skbs(struct pfq_opt *pq, int cpu, unsigned long batch_queu
 }
 
 
+#if 0
+
 struct pfq_steering_cache
 {
 	steering_function_t fun;
@@ -226,6 +228,7 @@ pfq_memoized_call(struct pfq_steering_cache *mem, steering_function_t fun,
 	return mem->ret; 
 }
 
+#endif
 
 /* send this packet to selected sockets */
 
@@ -322,7 +325,9 @@ unsigned int pfq_fold(unsigned int a, unsigned int b)
 
 struct pfq_skb_cb
 {
-        bool direct_skb;
+	unsigned long group_mask;
+        
+	bool direct_skb;
         bool stolen_skb;
         bool send_to_kernel;
 };
@@ -333,9 +338,8 @@ pfq_receive(struct sk_buff *skb, bool direct)
 {       
         struct local_data * local_cache = this_cpu_ptr(cpu_data);
         struct pfq_queue_skb * prefetch_queue = &local_cache->prefetch_queue;
-        unsigned long group_mask, sock_mask, global_mask;
+        unsigned long group_mask, global_mask;
         unsigned long batch_queue[sizeof(unsigned long) << 3];
-        struct pfq_steering_cache steering_cache;
         struct pfq_skb_cb *cb; 
         long unsigned n, bit;
 
@@ -392,7 +396,6 @@ pfq_receive(struct sk_buff *skb, bool direct)
         cb->stolen_skb      = false;
         cb->send_to_kernel  = false;
 
-
         /* enqueue this skb ... */
 
         pfq_queue_skb_push(prefetch_queue, skb);
@@ -407,32 +410,38 @@ pfq_receive(struct sk_buff *skb, bool direct)
 
         global_mask = 0;
 
-	steering_cache.state = 0;
-
 	const int cpu = get_cpu();
+
+#ifdef PFQ_STEERING_PROFILE
+	cycles_t a = get_cycles();
+#endif
+
+#ifdef PFQ_STEERING_ENGINE_V1
+#pragma message "[PFQ] using steering engine v1"
 
 	/* for each packet in the prefetch queue */
         
-        queue_for_each(skb, n, prefetch_queue)
+	queue_for_each(skb, n, prefetch_queue)
         {
 		/* reset steering function in cache */
-		steering_cache.fun = (steering_function_t)NULL;
 
                 /* get the balancing groups bitmap */
-                group_mask = __pfq_devmap_get_groups(skb->dev->ifindex, skb_get_rx_queue(skb));   
 
-                sock_mask = 0;
+		group_mask = __pfq_devmap_get_groups(skb->dev->ifindex, skb_get_rx_queue(skb));   
+
+                unsigned long sock_mask = 0;
 		
 		/* prefetch the cpu value */
 
-		__builtin_prefetch(&cpu, 0, 2);
-
+		// __builtin_prefetch(&cpu, 0, 2);
 
                 /* for each group in this mask ... */
+			
 
                 bitwise_foreach(group_mask, bit)
                 {
-                        int gindex = pfq_ctz(bit);
+                        
+			int gindex = pfq_ctz(bit);
                         struct sk_filter *bpf;
 
                         steering_t ret;
@@ -441,6 +450,7 @@ pfq_receive(struct sk_buff *skb, bool direct)
                         /* increment recv counter for this group */
 
                         __sparse_inc(&pfq_groups[gindex].recv, cpu);
+	
 
                         /* check bpf filter */
 
@@ -461,11 +471,12 @@ pfq_receive(struct sk_buff *skb, bool direct)
                         /* retrieve the steering function for this group */
                         
                         steer_fun = (steering_function_t) atomic_long_read(&pfq_groups[gindex].steering);
-                        if (steer_fun) 
+                        
+			if (steer_fun) 
                         {
                                 /* call the steering function */
 
-                                ret = pfq_memoized_call(&steering_cache, steer_fun, skb, (void *)atomic_long_read(&pfq_groups[gindex].state));
+                                ret = steer_fun(skb, (void *)atomic_long_read(&pfq_groups[gindex].state));
 
                                 if (ret.type & action_steal)
                                 {
@@ -484,7 +495,6 @@ pfq_receive(struct sk_buff *skb, bool direct)
                                 {
                                         unsigned long eligible_mask = 0;
                                         unsigned long cbit;
-
 
                                         bitwise_foreach(ret.class, cbit)
                                         {
@@ -513,9 +523,9 @@ pfq_receive(struct sk_buff *skb, bool direct)
 
                                         if (likely(local_cache->sock_cnt))
                                         {
-						unsigned int h = ret.hash ^ (ret.hash >> 8) ^ (ret.hash >> 16);
-						sock_mask |= local_cache->sock_mask[pfq_fold(h, local_cache->sock_cnt)];
-					}
+		        			unsigned int h = ret.hash ^ (ret.hash >> 8) ^ (ret.hash >> 16);
+		        			sock_mask |= local_cache->sock_mask[pfq_fold(h, local_cache->sock_cnt)];
+		        		}
                                 }
                         }
                         else 
@@ -524,14 +534,152 @@ pfq_receive(struct sk_buff *skb, bool direct)
                         }
                 }
                 
+
                 pfq_enqueue_mask_to_batch(n, sock_mask, batch_queue);
-                global_mask |= sock_mask;
+                
+		global_mask |= sock_mask;
         
         next_skb: ;
         
         }
 
-        /* copy packets to pfq sockets... */
+#elif PFQ_STEERING_ENGINE_V2
+#pragma message "[PFQ] using steering engine v2"
+
+	unsigned long global_group_mask = 0;
+        queue_for_each(skb, n, prefetch_queue)
+        {
+                struct pfq_skb_cb *cb = (struct pfq_skb_cb *)skb->cb;
+		unsigned long group_mask = __pfq_devmap_get_groups(skb->dev->ifindex, skb_get_rx_queue(skb));  
+		
+		global_group_mask |= group_mask;
+
+		cb->group_mask = group_mask;
+	}
+
+
+        bitwise_foreach(global_group_mask, bit)
+        {
+		int gindex = pfq_ctz(bit);
+                
+                struct sk_filter *bpf = (struct sk_filter *)atomic_long_read(&pfq_groups[gindex].filter);
+
+                steering_function_t steer_fun = (steering_function_t) atomic_long_read(&pfq_groups[gindex].steering);
+
+                bool vlan_filter_enabled = __pfq_vlan_filters_enabled(gindex);
+
+        	queue_for_each(skb, n, prefetch_queue)
+		{
+                	struct pfq_skb_cb *cb = (struct pfq_skb_cb *)skb->cb;
+                	
+			unsigned long sock_mask = 0;
+                        
+			steering_t ret;
+
+			if ((cb->group_mask & bit) == 0)
+                         	continue;
+
+                        /* increment recv counter for this group */
+
+                        __sparse_inc(&pfq_groups[gindex].recv, cpu);
+	
+
+                        /* check bpf filter */
+
+                        if (bpf)
+                        {
+                                if (!sk_run_filter(skb, bpf->insns))
+                                        continue;
+                        }
+                        
+                        /* check vlan filter */
+
+                        if (vlan_filter_enabled)
+                        {
+                                if (!__pfq_check_group_vlan_filter(gindex, skb->vlan_tci & ~VLAN_TAG_PRESENT))
+                                        continue;
+                        }
+
+                        /* retrieve the steering function for this group */
+                        
+			if (steer_fun) 
+                        {
+                                /* call the steering function */
+
+                                ret = steer_fun(skb, (void *)atomic_long_read(&pfq_groups[gindex].state));
+
+                                if (ret.type & action_steal)
+                                {
+                                        cb->stolen_skb = true;
+                                        continue;
+                                }
+
+                                if (ret.type & action_pass)
+                                {
+                                        cb->send_to_kernel = true;
+                                }
+
+                                if (likely((ret.type & action_drop) == 0)) 
+                                {
+                                        unsigned long eligible_mask = 0;
+                                        unsigned long cbit;
+
+                                        bitwise_foreach(ret.class, cbit)
+                                        {
+                                                int cindex = pfq_ctz(cbit);
+                                                eligible_mask |= atomic_long_read(&pfq_groups[gindex].sock_mask[cindex]);
+                                        }
+
+                                        if (unlikely(ret.type & action_clone)) {
+
+                                                sock_mask |= eligible_mask;
+                                                continue; 
+                                        }
+
+                                        if (unlikely(eligible_mask != local_cache->eligible_mask)) {
+
+                                                unsigned long ebit;
+
+                                                local_cache->eligible_mask = eligible_mask;
+                                                local_cache->sock_cnt = 0;
+                                                
+                                                bitwise_foreach(eligible_mask, ebit) 
+                                                {
+                                                        local_cache->sock_mask[local_cache->sock_cnt++] = ebit;
+                                                }
+                                        }
+
+                                        if (likely(local_cache->sock_cnt))
+                                        {
+		        			unsigned int h = ret.hash ^ (ret.hash >> 8) ^ (ret.hash >> 16);
+		        			sock_mask |= local_cache->sock_mask[pfq_fold(h, local_cache->sock_cnt)];
+		        		}
+                                }
+                        }
+                        else 
+                        {
+                                sock_mask |= atomic_long_read(&pfq_groups[gindex].sock_mask[0]);
+                        }
+
+			
+			pfq_enqueue_mask_to_batch(n, sock_mask, batch_queue);
+			global_mask |= sock_mask;
+
+		}
+                
+	}
+#else
+#error PFQ_STEERING_ENGINE_Vx not defined!
+#endif
+
+#ifdef PFQ_STEERING_PROFILE
+	cycles_t b = get_cycles();
+			
+	if (printk_ratelimit())
+		printk(KERN_INFO "-> %llu\n", (b-a)/prefetch_len);
+#endif
+
+	/* copy packets to pfq sockets... */
 
 	bitwise_foreach(global_mask, bit)
         {
@@ -559,7 +707,7 @@ pfq_receive(struct sk_buff *skb, bool direct)
 
                 if (likely(cb->direct_skb))
 		{
-		        if (!sniff_incoming && cb->send_to_kernel)
+		        if (unlikely(!sniff_incoming && cb->send_to_kernel))
 		                netif_receive_skb(skb);
                         else
                                 __kfree_skb(skb);
