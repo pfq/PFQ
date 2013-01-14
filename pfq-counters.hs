@@ -75,8 +75,8 @@ data Binding = Binding {
 makeBinding :: String -> Binding
 makeBinding s = case splitOn "." s of
                         []              ->  error "makeBinding: empty string"
-                        ds : []         ->  Binding (splitOn ":" ds) 0 42 [-1]
-                        ds : c : []     ->  Binding (splitOn ":" ds) (read c) 42 [-1]
+                        ds : []         ->  Binding (splitOn ":" ds) 0 0 [-1]
+                        ds : c : []     ->  Binding (splitOn ":" ds) (read c) 0 [-1]
                         ds : c : g : [] ->  Binding (splitOn ":" ds) (read c) (read g) [-1]
                         ds : c : g : qs ->  Binding (splitOn ":" ds) (read c) (read g) (map read qs)
 
