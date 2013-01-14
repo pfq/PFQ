@@ -173,14 +173,6 @@ void pfq_release_id(int id)
 
 
 inline
-bool pfq_filter(const struct sk_buff *skb)
-{             
-        /* placeholder for future implementation */
-        return true;
-}
-
-
-inline
 bool pfq_copy_to_user_skbs(struct pfq_opt *pq, int cpu, unsigned long batch_queue, struct pfq_queue_skb *skbs)
 {
         /* enqueue the sk_buff: it's wait-free. */
