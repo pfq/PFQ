@@ -198,6 +198,9 @@ bool pfq_copy_to_user_skbs(struct pfq_opt *pq, int cpu, unsigned long batch_queu
 struct sk_buff *
 __pfq_alloc_skb(unsigned int size, gfp_t priority, int fclone, int node)
 {
+#ifdef PFQ_USE_SKB_RECYCLE
+#pragma message "[PFQ] *** using skb recycle ***"
+
         struct local_data * local_data = __this_cpu_ptr(cpu_data);
         struct sk_buff *skb;
 
@@ -205,6 +208,7 @@ __pfq_alloc_skb(unsigned int size, gfp_t priority, int fclone, int node)
         if (skb) 
                 return pfq_skb_recycle(skb);
         
+#endif
         return __alloc_skb(size, priority, fclone, node);
 }
 
@@ -387,7 +391,7 @@ pfq_receive(struct sk_buff *skb, bool direct)
 
 
 #ifdef PFQ_USE_VLAN_UNTAGGING
-#pragma message "[PFQ] using vlan untagging"
+#pragma message "[PFQ] using vlan untagging!"
         
         /* if vlan header is present, remove it */
         if (skb->protocol == cpu_to_be16(ETH_P_8021Q)) {
@@ -733,10 +737,7 @@ pfq_receive(struct sk_buff *skb, bool direct)
 		        if (unlikely(!sniff_incoming && cb->send_to_kernel))
 		                netif_receive_skb(skb);
                         else {
-				cycles_t a = get_cycles();
-
                                 pfq_kfree_skb_list(skb, &local_cache->recycle_list);
-
         		}
 		}
                 else
@@ -1696,7 +1697,7 @@ void unregister_device_handler(void)
 
 static int __init pfq_init_module(void)
 {
-        int cpu, n;
+        int n;
         printk(KERN_INFO "[PFQ] loading (%s)...\n", Q_VERSION);
 
         pfq_net_proto_family_init();
@@ -1715,12 +1716,18 @@ static int __init pfq_init_module(void)
 		return -ENOMEM;
         }
                 
-        /* setup skb-recycle list */
+#ifdef PFQ_USE_SKB_RECYCLE
+        {
+                int cpu;
 
-        for_each_possible_cpu(cpu) {
-                struct local_data *this_cpu = per_cpu_ptr(cpu_data, cpu);
-                skb_queue_head_init(&this_cpu->recycle_list);
+                /* setup skb-recycle list */
+
+                for_each_possible_cpu(cpu) {
+                        struct local_data *this_cpu = per_cpu_ptr(cpu_data, cpu);
+                        skb_queue_head_init(&this_cpu->recycle_list);
+                }
         }
+#endif
 
         /* register pfq sniffer protocol */    
         n = proto_register(&pfq_proto, 0);
@@ -1767,7 +1774,6 @@ static void __exit pfq_exit_module(void)
 		
                 struct local_data *local_cache = per_cpu_ptr(cpu_data, cpu);
                 struct pfq_queue_skb *this_queue = &local_cache->prefetch_queue;
-                struct sk_buff_head *list;
                 struct sk_buff *skb;
 		int n = 0;
 		queue_for_each(skb, n, this_queue)
@@ -1780,13 +1786,18 @@ static void __exit pfq_exit_module(void)
 		}
        		pfq_queue_skb_flush(this_queue);
 
-       	        /* flush recycle skb list */
-                
-                list = &local_cache->recycle_list;
-                while ((skb = skb_dequeue(list))!= NULL)
-                {         
-                        kfree_skb(skb);
+#ifdef PFQ_USE_SKB_RECYCLE
+                {
+                        /* flush recycle skb list */
+                        
+                        struct sk_buff_head *list = &local_cache->recycle_list;
+                        
+                        while ((skb = skb_dequeue(list))!= NULL)
+                        {         
+                                kfree_skb(skb);
+                        }
                 }
+#endif
         }
 
         /* free per-cpu data */
@@ -1815,7 +1826,7 @@ int pfq_normalize_skb(struct sk_buff *skb)
 	skb_reset_transport_header(skb);
 
 #ifdef PFQ_USE_SKB_LINEARIZE
-#pragma message "[PFQ] using skb_linearize"
+#pragma message "[PFQ] using skb_linearize!"
 	if(skb_linearize(skb) < 0)
 	{
 		__kfree_skb(skb);

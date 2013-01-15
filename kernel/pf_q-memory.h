@@ -31,10 +31,10 @@
 
 struct local_data 
 {
-  	unsigned long           eligible_mask;
-	unsigned long           sock_mask [Q_MAX_ID];
+        unsigned long           eligible_mask;
+        unsigned long           sock_mask [Q_MAX_ID];
         int                     sock_cnt;
-        int 			flowctrl;
+        int 			        flowctrl;
         struct pfq_queue_skb    prefetch_queue;
         struct sk_buff_head     recycle_list;     
 };
@@ -44,6 +44,7 @@ extern int recycle_len;
 
 extern struct local_data __percpu    * cpu_data;
 
+
 struct sk_buff * __pfq_alloc_skb(unsigned int size, gfp_t priority, int fclone, int node);
 struct sk_buff * pfq_dev_alloc_skb(unsigned int length);
 struct sk_buff * __pfq_netdev_alloc_skb(struct net_device *dev, unsigned int length, gfp_t gfp);
@@ -52,12 +53,15 @@ struct sk_buff * __pfq_netdev_alloc_skb(struct net_device *dev, unsigned int len
 static inline void
 pfq_kfree_skb_list(struct sk_buff *skb, struct sk_buff_head *list)
 {
+#ifdef PFQ_USE_SKB_RECYCLE
+
         if (likely(skb_queue_len(list) <= recycle_len))
         {
                 __skb_queue_head(list, skb);
                 return;
         }
-        
+
+#endif        
 	__kfree_skb(skb);     
 }
 
@@ -65,9 +69,13 @@ pfq_kfree_skb_list(struct sk_buff *skb, struct sk_buff_head *list)
 static inline void
 pfq_kfree_skb(struct sk_buff *skb)
 {
+#ifdef PFQ_USE_SKB_RECYCLE
         struct local_data * local_data = __this_cpu_ptr(cpu_data);
         struct sk_buff_head * list = &local_data->recycle_list;
 	    return pfq_kfree_skb_list(skb, list);
+#else
+        return pfq_kfree_skb_list(skb, NULL);
+#endif
 }
 
 
@@ -111,13 +119,14 @@ static inline
 struct sk_buff *
 pfq_alloc_skb(unsigned int size, gfp_t priority)
 {
+#ifdef PFQ_USE_SKB_RECYCLE
         struct local_data * local_data = __this_cpu_ptr(cpu_data);
         struct sk_buff *skb;
 
         skb = __skb_dequeue(&local_data->recycle_list);
         if (skb) 
                 return pfq_skb_recycle(skb);
-
+#endif
         return alloc_skb(size, priority);
 }
 
