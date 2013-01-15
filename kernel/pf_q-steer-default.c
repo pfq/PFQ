@@ -1,6 +1,6 @@
 /***************************************************************
  *                                                
- * (C) 2011-12 Nicola Bonelli <nicola.bonelli@cnit.it>   
+ * (C) 2011-13 Nicola Bonelli <nicola.bonelli@cnit.it>   
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
