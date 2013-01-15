@@ -54,6 +54,7 @@
 #include <pf_q-bits.h>
 #include <pf_q-vlan.h>
 #include <pf_q-bpf.h>
+#include <pf_q-memory.h>
 
 #include <pf_q-mpdb-queue.h>
 
@@ -71,8 +72,9 @@ static int sniff_loopback = 0;
 static int queue_slots  = 131072; // slots per queue
 static int cap_len      = 1514;
 static int prefetch_len = 1;
-static int recycle_len  = 1024;
 static int flow_control = 0;
+
+int recycle_len  = 1024;
 
 MODULE_LICENSE("GPL");
 
@@ -111,17 +113,6 @@ atomic_long_t pfq_vector[Q_MAX_ID];
 
 atomic_t timestamp_toggle;
 
-/* per-cpu data... */
-
-struct local_data 
-{
-  	unsigned long           eligible_mask;
-	unsigned long           sock_mask [Q_MAX_ID];
-        int                     sock_cnt;
-        int 			flowctrl;
-        struct pfq_queue_skb    prefetch_queue;
-        struct sk_buff_head     recycle_list;     
-};
 
 struct local_data __percpu    * cpu_data;
 
@@ -199,95 +190,6 @@ bool pfq_copy_to_user_skbs(struct pfq_opt *pq, int cpu, unsigned long batch_queu
 		}
         }
         return true;
-}
-
-
-/* static inline ... */
-
-
-struct sk_buff * __pfq_alloc_skb(unsigned int size, gfp_t priority, int fclone, int node);
-struct sk_buff * pfq_dev_alloc_skb(unsigned int length);
-struct sk_buff * __pfq_netdev_alloc_skb(struct net_device *dev, unsigned int length, gfp_t gfp);
-
-
-static inline void
-pfq_kfree_skb_list(struct sk_buff *skb, struct sk_buff_head *list)
-{
-        if (likely(skb_queue_len(list) <= recycle_len))
-        {
-                __skb_queue_head(list, skb);
-                return;
-        }
-        
-	__kfree_skb(skb);     
-}
-
-
-static inline void
-pfq_kfree_skb(struct sk_buff *skb)
-{
-        struct local_data * local_data = __this_cpu_ptr(cpu_data);
-        struct sk_buff_head * list = &local_data->recycle_list;
-	return pfq_kfree_skb_list(skb, list);
-}
-
-
-static inline 
-struct sk_buff *
-pfq_skb_recycle(struct sk_buff *skb)
-{
-        skb_recycle(skb);
-        return skb;
-}
-
-
-static inline 
-struct sk_buff *
-pfq_netdev_alloc_skb(struct net_device *dev, unsigned int length)
-{
-        return __pfq_netdev_alloc_skb(dev, length, GFP_ATOMIC);
-}
-
-
-static inline
-struct sk_buff *
-__pfq_netdev_alloc_skb_ip_align(struct net_device *dev, unsigned int length, gfp_t gfp)
-{
-        struct sk_buff *skb = __pfq_netdev_alloc_skb(dev, length + NET_IP_ALIGN, gfp);
-        if (NET_IP_ALIGN && likely(skb)) 
-                skb_reserve(skb, NET_IP_ALIGN);
-        return skb;
-}
-
-
-static inline
-struct sk_buff *
-pfq_netdev_alloc_skb_ip_align(struct net_device *dev, unsigned int length)
-{
-        return __pfq_netdev_alloc_skb_ip_align(dev, length, GFP_ATOMIC);
-}
-
-
-static inline
-struct sk_buff *
-pfq_alloc_skb(unsigned int size, gfp_t priority)
-{
-        struct local_data * local_data = __this_cpu_ptr(cpu_data);
-        struct sk_buff *skb;
-
-        skb = __skb_dequeue(&local_data->recycle_list);
-        if (skb) 
-                return pfq_skb_recycle(skb);
-
-        return alloc_skb(size, priority);
-}
-
-
-static inline
-struct sk_buff *
-pfq_alloc_skb_fclone(unsigned int size, gfp_t priority)
-{
-        return __pfq_alloc_skb(size, priority, 1, NUMA_NO_NODE);
 }
 
 
