@@ -334,6 +334,7 @@ pfq_receive(struct sk_buff *skb, bool direct)
         unsigned long batch_queue[sizeof(unsigned long) << 3];
         struct pfq_skb_cb *cb; 
         long unsigned n, bit;
+        int cpu;
 
 #ifdef PFQ_USE_FLOW_CONTROL
 	
@@ -402,7 +403,7 @@ pfq_receive(struct sk_buff *skb, bool direct)
 
         global_mask = 0;
 
-	const int cpu = get_cpu();
+	cpu = get_cpu();
 
 #ifdef PFQ_STEERING_PROFILE
 	cycles_t a = get_cycles();
@@ -423,10 +424,6 @@ pfq_receive(struct sk_buff *skb, bool direct)
 
                 unsigned long sock_mask = 0;
 		
-		/* prefetch the cpu value */
-
-		// __builtin_prefetch(&cpu, 0, 2);
-
                 /* for each group in this mask ... */
 			
 
@@ -526,7 +523,6 @@ pfq_receive(struct sk_buff *skb, bool direct)
                         }
                 }
                 
-
                 pfq_enqueue_mask_to_batch(n, sock_mask, batch_queue);
                 
 		global_mask |= sock_mask;
@@ -538,19 +534,20 @@ pfq_receive(struct sk_buff *skb, bool direct)
 #elif PFQ_STEERING_ENGINE_V2
 #pragma message "[PFQ] using steering engine v2"
 
-	unsigned long global_group_mask = 0;
+        group_mask = 0;
+
         queue_for_each(skb, n, prefetch_queue)
         {
                 struct pfq_skb_cb *cb = (struct pfq_skb_cb *)skb->cb;
-		unsigned long group_mask = __pfq_devmap_get_groups(skb->dev->ifindex, skb_get_rx_queue(skb));  
+		unsigned long local_group_mask = __pfq_devmap_get_groups(skb->dev->ifindex, skb_get_rx_queue(skb));  
 		
-		global_group_mask |= group_mask;
+		group_mask |= local_group_mask;
 
-		cb->group_mask = group_mask;
+		cb->group_mask = local_group_mask;
 	}
 
 
-        bitwise_foreach(global_group_mask, bit)
+        bitwise_foreach(group_mask, bit)
         {
 		int gindex = pfq_ctz(bit);
                 
