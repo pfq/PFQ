@@ -28,6 +28,7 @@ install:
 		cp ${TARGET}.ko $(INSTDIR)
 		cp linux/pf_q.h $(DESTDIR)/usr/include/linux
 		cp linux/pf_q-steering.h $(DESTDIR)/usr/include/linux
+		cp linux/pf_q-kcompat.h   $(DESTDIR)/usr/include/linux
 		mkdir -p /usr/local/include/pfq/
 		cp Module.symvers $(INSTDIR)
 

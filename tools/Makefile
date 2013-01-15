@@ -19,7 +19,6 @@ pfq-omatic: pfq-omatic.hs
 
 install: all
 		@mkdir -p ${INSTDIR}/include/pfq 
-		cp pfq_kcompat.h  ${INSTDIR}/include/pfq/
 		cp irq-affinity  ${INSTDIR}/bin/
 		cp pfq-omatic ${INSTDIR}/bin/
         

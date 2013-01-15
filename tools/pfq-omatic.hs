@@ -32,7 +32,7 @@ import Data.List
 pfq_omatic_ver,pfq_kcompat,pfq_symvers,proc_cpuinfo :: String    
 
 pfq_omatic_ver  = "1.1"
-pfq_kcompat     = "/usr/local/include/pfq/pfq_kcompat.h"
+pfq_kcompat     = "/usr/include/linux/pf_q-kcompat.h"
 pfq_symvers     = "/lib/modules/" ++ uname_r ++ "/kernel/net/pfq/Module.symvers"
 proc_cpuinfo    = "/proc/cpuinfo"
 
