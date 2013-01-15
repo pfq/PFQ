@@ -71,6 +71,7 @@ static int sniff_loopback = 0;
 static int queue_slots  = 131072; // slots per queue
 static int cap_len      = 1514;
 static int prefetch_len = 1;
+static int recycle_len  = 1024;
 static int flow_control = 0;
 
 MODULE_LICENSE("GPL");
@@ -88,6 +89,7 @@ module_param(sniff_loopback,  int, 0644);
 module_param(cap_len,         int, 0644);
 module_param(queue_slots,     int, 0644);
 module_param(prefetch_len,    int, 0644);
+module_param(recycle_len,     int, 0644);
 module_param(flow_control,    int, 0644);
 
 MODULE_PARM_DESC(direct_capture," Direct capture packets: (0 default)");
@@ -98,6 +100,7 @@ MODULE_PARM_DESC(sniff_loopback," Sniff lookback packets: (0 default)");
 MODULE_PARM_DESC(cap_len,       " Default capture length (bytes)");
 MODULE_PARM_DESC(queue_slots,   " Queue slots (default=131072)");
 MODULE_PARM_DESC(prefetch_len,  " Prefetch queue length");
+MODULE_PARM_DESC(recycle_len,   " Recycle skb list (default=1024)");
 MODULE_PARM_DESC(flow_control,  " Flow control value (default=0)");
 
 /* vector of pointers to pfq_opt */
@@ -117,6 +120,7 @@ struct local_data
         int                     sock_cnt;
         int 			flowctrl;
         struct pfq_queue_skb    prefetch_queue;
+        struct sk_buff_head     recycle_list;     
 };
 
 struct local_data __percpu    * cpu_data;
@@ -195,6 +199,133 @@ bool pfq_copy_to_user_skbs(struct pfq_opt *pq, int cpu, unsigned long batch_queu
 		}
         }
         return true;
+}
+
+
+/* static inline ... */
+
+
+struct sk_buff * __pfq_alloc_skb(unsigned int size, gfp_t priority, int fclone, int node);
+struct sk_buff * pfq_dev_alloc_skb(unsigned int length);
+struct sk_buff * __pfq_netdev_alloc_skb(struct net_device *dev, unsigned int length, gfp_t gfp);
+
+
+static inline void
+pfq_kfree_skb_list(struct sk_buff *skb, struct sk_buff_head *list)
+{
+        if (likely(skb_queue_len(list) <= recycle_len))
+        {
+                __skb_queue_head(list, skb);
+                return;
+        }
+        
+	__kfree_skb(skb);     
+}
+
+
+static inline void
+pfq_kfree_skb(struct sk_buff *skb)
+{
+        struct local_data * local_data = __this_cpu_ptr(cpu_data);
+        struct sk_buff_head * list = &local_data->recycle_list;
+	return pfq_kfree_skb_list(skb, list);
+}
+
+
+static inline 
+struct sk_buff *
+pfq_skb_recycle(struct sk_buff *skb)
+{
+        skb_recycle(skb);
+        return skb;
+}
+
+
+static inline 
+struct sk_buff *
+pfq_netdev_alloc_skb(struct net_device *dev, unsigned int length)
+{
+        return __pfq_netdev_alloc_skb(dev, length, GFP_ATOMIC);
+}
+
+
+static inline
+struct sk_buff *
+__pfq_netdev_alloc_skb_ip_align(struct net_device *dev, unsigned int length, gfp_t gfp)
+{
+        struct sk_buff *skb = __pfq_netdev_alloc_skb(dev, length + NET_IP_ALIGN, gfp);
+        if (NET_IP_ALIGN && likely(skb)) 
+                skb_reserve(skb, NET_IP_ALIGN);
+        return skb;
+}
+
+
+static inline
+struct sk_buff *
+pfq_netdev_alloc_skb_ip_align(struct net_device *dev, unsigned int length)
+{
+        return __pfq_netdev_alloc_skb_ip_align(dev, length, GFP_ATOMIC);
+}
+
+
+static inline
+struct sk_buff *
+pfq_alloc_skb(unsigned int size, gfp_t priority)
+{
+        struct local_data * local_data = __this_cpu_ptr(cpu_data);
+        struct sk_buff *skb;
+
+        skb = __skb_dequeue(&local_data->recycle_list);
+        if (skb) 
+                return pfq_skb_recycle(skb);
+
+        return alloc_skb(size, priority);
+}
+
+
+static inline
+struct sk_buff *
+pfq_alloc_skb_fclone(unsigned int size, gfp_t priority)
+{
+        return __pfq_alloc_skb(size, priority, 1, NUMA_NO_NODE);
+}
+
+
+/* exported symbols */
+
+struct sk_buff *
+__pfq_alloc_skb(unsigned int size, gfp_t priority, int fclone, int node)
+{
+        struct local_data * local_data = __this_cpu_ptr(cpu_data);
+        struct sk_buff *skb;
+
+        skb = __skb_dequeue(&local_data->recycle_list);
+        if (skb) 
+                return pfq_skb_recycle(skb);
+        
+        return __alloc_skb(size, priority, fclone, node);
+}
+
+
+struct sk_buff *
+pfq_dev_alloc_skb(unsigned int length)
+{
+        struct sk_buff *skb = pfq_alloc_skb(length + NET_SKB_PAD, GFP_ATOMIC);
+        if (likely(skb))
+                skb_reserve(skb, NET_SKB_PAD);
+        return skb;
+}
+
+
+struct sk_buff *
+__pfq_netdev_alloc_skb(struct net_device *dev, unsigned int length, gfp_t gfp)
+{
+        struct sk_buff *skb = __pfq_alloc_skb(length + NET_SKB_PAD, gfp, 0, NUMA_NO_NODE);
+        if (likely(skb)) {
+                skb_reserve(skb, NET_SKB_PAD);
+                skb->dev = dev;
+        }
+        return skb;
 }
 
 
@@ -328,7 +459,7 @@ struct pfq_skb_cb
 int 
 pfq_receive(struct sk_buff *skb, bool direct)
 {       
-        struct local_data * local_cache = this_cpu_ptr(cpu_data);
+        struct local_data * local_cache = __this_cpu_ptr(cpu_data);
         struct pfq_queue_skb * prefetch_queue = &local_cache->prefetch_queue;
         unsigned long group_mask, global_mask;
         unsigned long batch_queue[sizeof(unsigned long) << 3];
@@ -344,7 +475,7 @@ pfq_receive(struct sk_buff *skb, bool direct)
 	    local_cache->flowctrl--) 
 	{
                 if (direct)
-                        __kfree_skb(skb);
+                        pfq_kfree_skb(skb);
                 else
                         kfree_skb(skb);
 		
@@ -408,7 +539,7 @@ pfq_receive(struct sk_buff *skb, bool direct)
 #ifdef PFQ_STEERING_PROFILE
 	cycles_t a = get_cycles();
 #endif
-
+	
 #ifdef PFQ_STEERING_ENGINE_V1
 #pragma message "[PFQ] using steering engine v1"
 
@@ -565,7 +696,7 @@ pfq_receive(struct sk_buff *skb, bool direct)
                         
 			steering_t ret;
 
-			if ((cb->group_mask & bit) == 0)
+			if (unlikely((cb->group_mask & bit) == 0))
                          	continue;
 
                         /* increment recv counter for this group */
@@ -657,6 +788,7 @@ pfq_receive(struct sk_buff *skb, bool direct)
 		}
                 
 	}
+	
 #else
 #error PFQ_STEERING_ENGINE_Vx not defined!
 #endif
@@ -698,8 +830,12 @@ pfq_receive(struct sk_buff *skb, bool direct)
 		{
 		        if (unlikely(!sniff_incoming && cb->send_to_kernel))
 		                netif_receive_skb(skb);
-                        else
-                                __kfree_skb(skb);
+                        else {
+				cycles_t a = get_cycles();
+
+                                pfq_kfree_skb_list(skb, &local_cache->recycle_list);
+
+        		}
 		}
                 else
                 {
@@ -708,7 +844,7 @@ pfq_receive(struct sk_buff *skb, bool direct)
                 }
         }       
 	
-        pfq_queue_skb_flush(prefetch_queue);
+	pfq_queue_skb_flush(prefetch_queue);
         return 0;
 }
 
@@ -1658,7 +1794,7 @@ void unregister_device_handler(void)
 
 static int __init pfq_init_module(void)
 {
-        int n;
+        int cpu, n;
         printk(KERN_INFO "[PFQ] loading (%s)...\n", Q_VERSION);
 
         pfq_net_proto_family_init();
@@ -1675,6 +1811,13 @@ static int __init pfq_init_module(void)
 	if (!cpu_data) {
                 printk(KERN_WARNING "[PFQ] out of memory!\n");
 		return -ENOMEM;
+        }
+                
+        /* setup skb-recycle list */
+
+        for_each_possible_cpu(cpu) {
+                struct local_data *this_cpu = per_cpu_ptr(cpu_data, cpu);
+                skb_queue_head_init(&this_cpu->recycle_list);
         }
 
         /* register pfq sniffer protocol */    
@@ -1722,6 +1865,7 @@ static void __exit pfq_exit_module(void)
 		
                 struct local_data *local_cache = per_cpu_ptr(cpu_data, cpu);
                 struct pfq_queue_skb *this_queue = &local_cache->prefetch_queue;
+                struct sk_buff_head *list;
                 struct sk_buff *skb;
 		int n = 0;
 		queue_for_each(skb, n, this_queue)
@@ -1733,6 +1877,14 @@ static void __exit pfq_exit_module(void)
                  	kfree_skb(skb);
 		}
        		pfq_queue_skb_flush(this_queue);
+
+       	        /* flush recycle skb list */
+                
+                list = &local_cache->recycle_list;
+                while ((skb = skb_dequeue(list))!= NULL)
+                {         
+                        kfree_skb(skb);
+                }
         }
 
         /* free per-cpu data */
@@ -1820,7 +1972,9 @@ pfq_gro_receive(struct napi_struct *napi, struct sk_buff *skb)
         return napi_gro_receive(napi,skb);
 }
 
-
+EXPORT_SYMBOL_GPL(__pfq_alloc_skb);
+EXPORT_SYMBOL_GPL(__pfq_netdev_alloc_skb);
+EXPORT_SYMBOL_GPL(pfq_dev_alloc_skb);
 
 EXPORT_SYMBOL_GPL(pfq_netif_rx);
 EXPORT_SYMBOL_GPL(pfq_netif_receive_skb);
