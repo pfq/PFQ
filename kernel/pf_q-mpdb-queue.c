@@ -66,6 +66,20 @@ mpdb_queue_free(struct pfq_opt *pq)
 }    
 
 
+static inline
+void *pfq_memcpy(void *to, const void *from, size_t len)
+{
+	switch(len)
+	{
+		case 64 : return __builtin_memcpy(to, from, 64);  
+		case 128: return __builtin_memcpy(to, from, 128);  
+		case 256: return __builtin_memcpy(to, from, 256);  
+		case 512: return __builtin_memcpy(to, from, 512);  
+		default:  return memcpy(to, from, len);         
+	}
+}
+
+
 size_t
 mpdb_enqueue_batch(struct pfq_opt *pq, unsigned long bitqueue, int qlen, struct pfq_queue_skb *skbs)
 {
@@ -134,7 +148,7 @@ mpdb_enqueue_batch(struct pfq_opt *pq, unsigned long bitqueue, int qlen, struct 
 			}
 			else 
 			{ 
-				skb_copy_from_linear_data_offset(skb, (int)pq->q_offset, pkt, bytes);
+				pfq_memcpy(pkt, skb->data + pq->q_offset, bytes);
 			}
 		}
 			
