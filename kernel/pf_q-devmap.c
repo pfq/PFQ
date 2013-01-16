@@ -73,7 +73,7 @@ int pfq_devmap_update(int action, int index, int queue, int gid)
         {
             unsigned long tmp;
 
-            if ( !__pfq_devmap_equal(i,q,index,queue) )
+            if ( !__pfq_devmap_equal(i,q, index & Q_MAX_DEVICE_MASK, queue) )
                 continue;
 
             /* map_set... */
