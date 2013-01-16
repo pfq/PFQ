@@ -87,87 +87,85 @@ mpdb_enqueue_batch(struct pfq_opt *pq, unsigned long bitqueue, int qlen, struct 
 
 	q_len   = DBMP_QUEUE_LEN(data) - qlen; 	
 	q_index = DBMP_QUEUE_INDEX(data);
+	
 	ptr     = (char *)(queue_descr+1) + (q_index&1) * pq->q_slot_size * pq->q_slots + q_len * pq->q_slot_size;
 
 	queue_for_each_mask(skb, bitqueue, n, skbs)
 	{
+		unsigned int bytes = likely(skb->len > (int)pq->q_offset) ? min((int)skb->len - (int)pq->q_offset, (int)pq->q_caplen) : 0;
+		
+		volatile struct pfq_hdr *hdr = (struct pfq_hdr *)ptr;
+		
 		size_t slot_index = q_len + sent;
 		
-		if (likely(slot_index <= pq->q_slots))
+		char *pkt = (char *)(hdr+1);
+		
+		struct timespec ts;
+
+		if (unlikely(slot_index > pq->q_slots))
 		{
-			unsigned int bytes = likely(skb->len > (int)pq->q_offset) ? min((int)skb->len - (int)pq->q_offset, (int)pq->q_caplen) : 0;
-			
-			/* enqueue skb */
-
-			volatile struct pfq_hdr *p_hdr = (struct pfq_hdr *)ptr;
-
-			char *p_pkt = (char *)(p_hdr+1);
-			
-			struct timespec ts;
-			
-			/* copy bytes of packet */
-
-			if (likely(bytes)) 
-			{
-				/* packets might still come from a regular sniffer */
-				
-				if (
-#ifdef PFQ_USE_SKB_LINEARIZE
-				   unlikely(skb_is_nonlinear(skb))
-#else
-				   skb_is_nonlinear(skb)
-#endif
-				   ) 
-				{
-					if (skb_copy_bits(skb, (int)pq->q_offset, p_pkt, bytes) != 0)
-					{
-						printk(KERN_WARNING "[PFQ] BUG! skb_copy_bits failed (bytes=%u, skb_len=%d mac_len=%d q_offset=%lu)!\n", 
-								    bytes, skb->len, skb->mac_len, pq->q_offset);
-						return 0;
-					}
-				}
-				else 
-				{ 
-					skb_copy_from_linear_data_offset(skb, (int)pq->q_offset, p_pkt, bytes);
-				}
-			}
-				
-			/* setup the header */
-			
-			if (pq->q_tstamp != 0)
-			{
-				skb_get_timestampns(skb, &ts); 
-		       		p_hdr->tstamp.tv.sec  = (uint32_t)ts.tv_sec;
-				p_hdr->tstamp.tv.nsec = (uint32_t)ts.tv_nsec;
-			}
-			
-			p_hdr->len         = (uint16_t)skb->len;
-			p_hdr->caplen 	   = (uint16_t)bytes;
-			p_hdr->un.vlan_tci = skb->vlan_tci & ~VLAN_TAG_PRESENT;
-			p_hdr->if_index    = skb->dev->ifindex & 0xff;
-			p_hdr->hw_queue    = (uint8_t)(skb_get_rx_queue(skb) & 0xff);                      
-
-			/* commit the slot (release semantic) */
-
-			smp_wmb();
-
-			p_hdr->commit = (uint8_t)q_index;
-
-			if (unlikely((slot_index & 16383) == 0) && 
-					(slot_index >= (pq->q_slots >> 1)) && 
-						queue_descr->poll_wait) {
-			        wake_up_interruptible(&pq->q_waitqueue);
-			}
-
-			sent++;
-		}
-		else {
 			if ( queue_descr->poll_wait ) {
 				wake_up_interruptible(&pq->q_waitqueue);
 			}
 
 			return sent;
 		}
+
+		/* copy bytes of packet */
+
+		if (likely(bytes)) 
+		{
+			/* packets might still come from a regular sniffer */
+			
+			if (
+#ifdef PFQ_USE_SKB_LINEARIZE
+			   	unlikely(skb_is_nonlinear(skb))
+#else
+		           	skb_is_nonlinear(skb)
+#endif
+			   ) 
+		      	{
+				if (skb_copy_bits(skb, (int)pq->q_offset, pkt, bytes) != 0)
+				{
+					printk(KERN_WARNING "[PFQ] BUG! skb_copy_bits failed (bytes=%u, skb_len=%d mac_len=%d q_offset=%lu)!\n", 
+							    bytes, skb->len, skb->mac_len, pq->q_offset);
+					return 0;
+				}
+			}
+			else 
+			{ 
+				skb_copy_from_linear_data_offset(skb, (int)pq->q_offset, pkt, bytes);
+			}
+		}
+			
+		/* setup the header */
+		
+		if (pq->q_tstamp != 0)
+		{
+			skb_get_timestampns(skb, &ts); 
+			hdr->tstamp.tv.sec  = (uint32_t)ts.tv_sec;
+			hdr->tstamp.tv.nsec = (uint32_t)ts.tv_nsec;
+		}
+		
+		hdr->len         = (uint16_t)skb->len;
+		hdr->caplen 	 = (uint16_t)bytes;
+		hdr->un.vlan_tci = skb->vlan_tci & ~VLAN_TAG_PRESENT;
+		hdr->if_index    = skb->dev->ifindex & 0xff;
+		hdr->hw_queue    = (uint8_t)(skb_get_rx_queue(skb) & 0xff);                      
+
+		/* commit the slot (release semantic) */
+
+		smp_wmb();
+
+		hdr->commit = (uint8_t)q_index;
+
+		if (unlikely((slot_index & 16383) == 0) && 
+				(slot_index >= (pq->q_slots >> 1)) && 
+					queue_descr->poll_wait) {
+		        wake_up_interruptible(&pq->q_waitqueue);
+		}
+
+		sent++;
 		
 		ptr += pq->q_slot_size;
 	}
