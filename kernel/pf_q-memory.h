@@ -83,7 +83,21 @@ static inline
 struct sk_buff *
 pfq_skb_recycle(struct sk_buff *skb)
 {
-        skb_recycle(skb);
+        //  skb_recycle(skb); removed from kernel 3.7!!!
+
+        struct skb_shared_info *shinfo;
+
+        if (skb->destructor)
+            skb->destructor(skb);
+
+        shinfo = skb_shinfo(skb);
+        memset(shinfo, 0, offsetof(struct skb_shared_info, dataref));
+        atomic_set(&shinfo->dataref,1);
+
+        memset(skb, 0, offsetof(struct sk_buff, tail));
+        skb->data = skb->head + NET_SKB_PAD;
+
+        skb_reset_tail_pointer(skb);
         return skb;
 }
 
