@@ -54,12 +54,20 @@ int
 pfq_queue_skb_push(struct pfq_queue_skb *q, struct sk_buff *skb)
 {
 	 if (q->counter < PFQ_QUEUE_MAX_LEN)
-	 {
-     	q->queue[q->counter++] = skb;
-        return 0; 
-	 }
+     	return q->queue[q->counter++] = skb, 0;
 	 return -1;
 }
+
+
+static inline
+struct sk_buff *
+pfq_queue_skb_pop(struct pfq_queue_skb *q)
+{
+    if (q->counter > 0)
+        return q->queue[--q->counter];
+    return NULL;
+}
+
 
 static inline
 void
