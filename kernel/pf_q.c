@@ -737,7 +737,7 @@ pfq_receive(struct sk_buff *skb, bool direct)
 		        if (unlikely(!sniff_incoming && cb->send_to_kernel))
 		                netif_receive_skb(skb);
                         else {
-                                pfq_kfree_skb_list(skb, &local_cache->recycle_list);
+                                pfq_kfree_skb_recycle(skb, &local_cache->recycle_list);
         		}
 		}
                 else
