@@ -370,7 +370,7 @@ pfq_receive(struct sk_buff *skb, bool direct)
 	    local_cache->flowctrl--) 
 	{
                 if (direct)
-                        pfq_kfree_skb(skb);
+                        pfq_kfree_skb_recycle(skb, &local_cache->recycle_list);
                 else
                         kfree_skb(skb);
 		
