@@ -50,6 +50,10 @@ struct sk_buff * pfq_dev_alloc_skb(unsigned int length);
 struct sk_buff * __pfq_netdev_alloc_skb(struct net_device *dev, unsigned int length, gfp_t gfp);
 
 
+#ifdef PFQ_USE_SKB_RECYCLE
+#pragma message "[PFQ] *** using skb recycle ***"
+#endif
+
 static inline void
 pfq_kfree_skb_recycle(struct sk_buff *skb, struct sk_buff_head *list)
 {
@@ -95,6 +99,7 @@ pfq_skb_recycle(struct sk_buff *skb)
         atomic_set(&shinfo->dataref,1);
 
         memset(skb, 0, offsetof(struct sk_buff, tail));
+        
         skb->data = skb->head + NET_SKB_PAD;
 
         skb_reset_tail_pointer(skb);
@@ -142,6 +147,23 @@ pfq_alloc_skb(unsigned int size, gfp_t priority)
                 return pfq_skb_recycle(skb);
 #endif
         return alloc_skb(size, priority);
+}
+
+
+static inline 
+struct sk_buff *
+____pfq_alloc_skb(unsigned int size, gfp_t priority, int fclone, int node)
+{
+#ifdef PFQ_USE_SKB_RECYCLE
+        struct local_data * local_data = __this_cpu_ptr(cpu_data);
+        struct sk_buff *skb;
+
+        skb = __skb_dequeue(&local_data->recycle_list);
+        if (skb) 
+                return pfq_skb_recycle(skb);
+        
+#endif
+        return __alloc_skb(size, priority, fclone, node);
 }
 
 

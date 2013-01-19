@@ -198,18 +198,7 @@ bool pfq_copy_to_user_skbs(struct pfq_opt *pq, int cpu, unsigned long batch_queu
 struct sk_buff *
 __pfq_alloc_skb(unsigned int size, gfp_t priority, int fclone, int node)
 {
-#ifdef PFQ_USE_SKB_RECYCLE
-#pragma message "[PFQ] *** using skb recycle ***"
-
-        struct local_data * local_data = __this_cpu_ptr(cpu_data);
-        struct sk_buff *skb;
-
-        skb = __skb_dequeue(&local_data->recycle_list);
-        if (skb) 
-                return pfq_skb_recycle(skb);
-        
-#endif
-        return __alloc_skb(size, priority, fclone, node);
+        return ____pfq_alloc_skb(size, priority, fclone, node);
 }
 
 
@@ -1885,9 +1874,11 @@ pfq_gro_receive(struct napi_struct *napi, struct sk_buff *skb)
         return napi_gro_receive(napi,skb);
 }
 
+
 EXPORT_SYMBOL_GPL(__pfq_alloc_skb);
 EXPORT_SYMBOL_GPL(__pfq_netdev_alloc_skb);
 EXPORT_SYMBOL_GPL(pfq_dev_alloc_skb);
+
 
 EXPORT_SYMBOL_GPL(pfq_netif_rx);
 EXPORT_SYMBOL_GPL(pfq_netif_receive_skb);
