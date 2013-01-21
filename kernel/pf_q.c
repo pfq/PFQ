@@ -168,7 +168,7 @@ void pfq_release_id(int id)
 
 
 inline
-bool pfq_copy_to_user_skbs(struct pfq_opt *pq, int cpu, unsigned long batch_queue, struct pfq_queue_skb *skbs)
+bool pfq_copy_to_user_skbs(struct pfq_opt *pq, int cpu, unsigned long sock_queue, struct pfq_queue_skb *skbs)
 {
         /* enqueue the sk_buff: it's wait-free. */
 
@@ -179,7 +179,7 @@ bool pfq_copy_to_user_skbs(struct pfq_opt *pq, int cpu, unsigned long batch_queu
         	smp_rmb();
 
                 len  = (int)hweight64(batch_queue); 
-                sent = mpdb_enqueue_batch(pq, batch_queue, len, skbs);
+                sent = mpdb_enqueue_batch(pq, sock_queue, len, skbs);
         	
         	__sparse_add(&pq->q_stat.recv, cpu, sent);
         
@@ -251,13 +251,13 @@ pfq_memoized_call(struct pfq_steering_cache *mem, steering_function_t fun,
 /* send this packet to selected sockets */
 
 inline
-void pfq_enqueue_mask_to_batch(unsigned long j, unsigned long mask, unsigned long *batch_queue)
+void pfq_sock_mask_to_queue(unsigned long j, unsigned long mask, unsigned long *sock_queue)
 {
 	unsigned long bit;
        	bitwise_foreach(mask, bit)
 	{
 	        int index = pfq_ctz(bit);
-                batch_queue[index] |= 1UL << j;
+                sock_queue[index] |= 1UL << j;
         }
 }
 
@@ -357,7 +357,7 @@ pfq_receive(struct sk_buff *skb, bool direct)
         struct local_data * local_cache = __this_cpu_ptr(cpu_data);
         struct pfq_queue_skb * prefetch_queue = &local_cache->prefetch_queue;
         unsigned long group_mask, global_mask;
-        unsigned long batch_queue[sizeof(unsigned long) << 3];
+        unsigned long sock_queue[sizeof(unsigned long) << 3];
         struct pfq_skb_cb *cb; 
         long unsigned n, bit;
         int cpu;
@@ -425,7 +425,7 @@ pfq_receive(struct sk_buff *skb, bool direct)
 
 	/* initialize data */
 	
-        memset(batch_queue, 0, sizeof(batch_queue));
+        memset(sock_queue, 0, sizeof(sock_queue));
 
         global_mask = 0;
 
@@ -455,7 +455,6 @@ pfq_receive(struct sk_buff *skb, bool direct)
 
                 bitwise_foreach(group_mask, bit)
                 {
-                        
 			int gindex = pfq_ctz(bit);
                         struct sk_filter *bpf;
 
@@ -549,7 +548,7 @@ pfq_receive(struct sk_buff *skb, bool direct)
                         }
                 }
                 
-                pfq_enqueue_mask_to_batch(n, sock_mask, batch_queue);
+                pfq_sock_mask_to_queue(n, sock_mask, sock_queue);
                 
 		global_mask |= sock_mask;
         
@@ -677,7 +676,7 @@ pfq_receive(struct sk_buff *skb, bool direct)
                         }
 
 			
-			pfq_enqueue_mask_to_batch(n, sock_mask, batch_queue);
+			pfq_sock_mask_to_queue(n, sock_mask, sock_queue);
 			global_mask |= sock_mask;
 
 		}
@@ -704,10 +703,10 @@ pfq_receive(struct sk_buff *skb, bool direct)
                 if (likely(pq)) 
                 {
 #ifdef PFQ_USE_FLOW_CONTROL
-                        if (!pfq_copy_to_user_skbs(pq, cpu, batch_queue[n], prefetch_queue))
+                        if (!pfq_copy_to_user_skbs(pq, cpu, sock_queue[n], prefetch_queue))
                         	local_cache->flowctrl = flow_control;
 #else
-			pfq_copy_to_user_skbs(pq, cpu, batch_queue[n], prefetch_queue);
+			pfq_copy_to_user_skbs(pq, cpu, sock_queue[n], prefetch_queue);
 #endif
                 }
         }
