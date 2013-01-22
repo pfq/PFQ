@@ -178,7 +178,7 @@ bool pfq_copy_to_user_skbs(struct pfq_opt *pq, int cpu, unsigned long sock_queue
         {
         	smp_rmb();
 
-                len  = (int)pfq_ctz(sock_queue); 
+                len  = (int)hweight64(sock_queue); 
                 sent = mpdb_enqueue_batch(pq, sock_queue, len, skbs);
         	
         	__sparse_add(&pq->q_stat.recv, cpu, sent);
