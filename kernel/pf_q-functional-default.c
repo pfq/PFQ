@@ -140,10 +140,10 @@ steering_sink(const struct sk_buff *skb, const void *state)
 
 struct sk_function_descr default_functions[] = {
         { "steer-vlan-untagged", steering_vlan_untagged },
-	{ "steer-mac-addr",      steering_mac_addr   },
+	{ "steer-mac",           steering_mac_addr   },
         { "steer-vlan-id",       steering_vlan_id    },
-        { "steer-ipv4-addr",     steering_ipv4_addr  },
-        { "steer-ipv6-addr",     steering_ipv6_addr  },
+        { "steer-ipv4",          steering_ipv4_addr  },
+        { "steer-ipv6",          steering_ipv6_addr  },
         { "steer-flow",          steering_flow       },
         { "steer-legacy",        steering_legacy     },
         { "steer-sink",          steering_sink       },
