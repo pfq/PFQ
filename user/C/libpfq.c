@@ -490,11 +490,11 @@ pfq_groups_mask(pfq_t const *q, unsigned long *_mask)
 
 
 int
-pfq_steering_function(pfq_t *q, int gid, const char *fun_name)
+pfq_group_function(pfq_t *q, int gid, const char *fun_name)
 {
-	struct pfq_steering s = { fun_name, gid };
-	if (setsockopt(q->fd, PF_Q, Q_SO_GROUP_STEER_FUN, &s, sizeof(s)) == -1) {
-		return q->error = "PFQ: set steering function error", -1;
+	struct pfq_group_function s = { fun_name, gid };
+	if (setsockopt(q->fd, PF_Q, Q_SO_GROUP_FUN, &s, sizeof(s)) == -1) {
+		return q->error = "PFQ: set function error", -1;
 	}
 	return q->error = NULL, 0;
 }

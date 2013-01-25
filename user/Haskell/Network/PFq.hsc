@@ -65,7 +65,7 @@ module Network.PFq
         dispatch,
         getStats,
         getGroupStats,
-        steeringFunction,
+        groupFunction,
     
         getPackets,
         getHeader,
@@ -589,17 +589,17 @@ makeStats p = do
                             sDropped  = fromIntegral (_drop :: CLong)
                           }
 
--- steeringFunction:
+-- groupFunction:
 --
 
-steeringFunction :: Ptr PFqTag
+groupFunction :: Ptr PFqTag
                  -> Int     -- group id
-                 -> String  -- steering function name
+                 -> String  -- function name
                  -> IO ()
 
-steeringFunction hdl gid name =
+groupFunction hdl gid name =
     withCString name $ \fname -> 
-        pfq_steering_function hdl (fromIntegral gid) fname >>= throwPFqIf_ hdl (== -1) 
+        pfq_group_function hdl (fromIntegral gid) fname >>= throwPFqIf_ hdl (== -1) 
 
 
 -- dispatch:
@@ -667,7 +667,7 @@ foreign import ccall unsafe pfq_leave_group       :: Ptr PFqTag -> CInt -> IO CI
 foreign import ccall unsafe pfq_get_stats         :: Ptr PFqTag -> Ptr Statistics -> IO CInt
 foreign import ccall unsafe pfq_get_group_stats   :: Ptr PFqTag -> CInt -> Ptr Statistics -> IO CInt
 
-foreign import ccall unsafe pfq_steering_function :: Ptr PFqTag -> CInt -> CString -> IO CInt
+foreign import ccall unsafe pfq_group_function    :: Ptr PFqTag -> CInt -> CString -> IO CInt
 
 foreign import ccall pfq_dispatch                 :: Ptr PFqTag -> FunPtr CPFqCallback -> CLong -> Ptr Word8 -> IO CInt
 foreign import ccall "wrapper" make_callback      :: CPFqCallback -> IO (FunPtr CPFqCallback)
@@ -680,11 +680,12 @@ foreign import ccall unsafe pfq_vlan_reset_filter     :: Ptr PFqTag -> CInt -> C
 
 
 -- TODO
+
 -- extern int pfq_get_groups_mask(pfq_t const *q, unsigned long *_mask);
+-- extern int pfq_group_fprog(pfq_t *q, int gid, struct sock_fprog *);
+-- extern int pfq_group_fprog_reset(pfq_t *q, int gid);
 
 -- foreign import ccall unsafe pfq_group_state    :: Ptr PFqTag -> CInt -> Ptr CChar -> CSize -> IO CInt
 -- foreign import ccall unsafe pfq_ifindex        :: Ptr PFqTag -> CString -> IO CInt
 
--- extern int pfq_group_fprog(pfq_t *q, int gid, struct sock_fprog *);
--- extern int pfq_group_fprog_reset(pfq_t *q, int gid);
 

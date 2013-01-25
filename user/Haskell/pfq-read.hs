@@ -41,7 +41,7 @@ dumper dev = do
         Q.vlanFiltersEnabled q gid True
         -- Q.vlanSetFilterId q gid (0)   -- untagged 
         Q.vlanSetFilterId q gid (-1)  -- anyTag 
-        Q.steeringFunction q gid "steer-ipv4-addr"
+        Q.groupFunction q gid "steer-ipv4-addr"
         Q.getSlotSize q >>= \o -> putStrLn $ "slot_size: " ++ show(o)
         recvLoop q
 

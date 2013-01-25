@@ -42,7 +42,7 @@ data Options = Options
                 caplen   :: Int,
                 offset   :: Int,
                 slots    :: Int,
-                steering :: [String],
+                function :: [String],
                 thread   :: [String]
                } deriving (Data, Typeable, Show)
 
@@ -53,7 +53,7 @@ options = cmdArgsMode $ Options {
                                   caplen   = 64,
                                   offset   = 0,
                                   slots    = 262144,
-                                  steering = [] &= typ "FUNCTION"  &= help "Where FUNCTION = function-name[:gid] (ie: steer-ipv4-addr)",
+                                  function = [] &= typ "FUNCTION"  &= help "Where FUNCTION = function-name[:gid] (ie: steer-ipv4-addr)",
                                   thread   = [] &= typ "BINDING" &= help "Where BINDING = eth0:...:ethx[.core[.gid[.queue.queue...]]]"
                                 } &= summary "PFq multi-threaded packet counter." &= program "pfq-counters"
 
@@ -94,7 +94,7 @@ main :: IO ()
 main = do
     op <- cmdArgsRun options
     putStrLn $ "[pfq] " ++ show op
-    cs  <- runThreads op (M.fromList $ map makeFun (steering op)) 
+    cs  <- runThreads op (M.fromList $ map makeFun (function op)) 
     t   <- getClockTime
     dumpStat cs t
 
@@ -132,8 +132,8 @@ runThreads op ms = do
                      forM_ (devs binding) $ \dev ->
                        forM_ (queues binding) $ \queue ->
                          Q.setPromisc q dev True >> Q.bindGroup q (groupId binding) dev queue
-                     when (isJust sf) ((putStrLn $ "[pfq] Using steering " ++ fromJust sf ++ " for gid " ++ show(groupId binding) ++ "!") >>
-                        Q.steeringFunction q (groupId binding) (fromJust sf)) 
+                     when (isJust sf) ((putStrLn $ "[pfq] Using function " ++ fromJust sf ++ " for gid " ++ show(groupId binding) ++ "!") >>
+                        Q.groupFunction q (groupId binding) (fromJust sf)) 
                      Q.enable q 
                      recvLoop q (State c f S.empty) >> return ()  
                  )

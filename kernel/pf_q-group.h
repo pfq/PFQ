@@ -42,8 +42,8 @@ struct pfq_group
 
 	atomic_long_t sock_mask[Q_CLASS_MAX];   /* for class: Q_CLASS_DATA, Q_CLASS_CONTROL, etc... */
 
-	atomic_long_t steering;                 /* steering_function_t */ 
-    atomic_long_t state;                    /* opaque state for the steering function */
+	atomic_long_t function;                 /* sk_function_t */ 
+    atomic_long_t state;                    /* opaque state for the function */
 
     atomic_long_t filter; 					/* struct sk_filter pointer */
 
@@ -104,9 +104,9 @@ void __pfq_set_group_vlan_filter(int gid, bool value, int vid)
 
 
 static inline
-void __pfq_set_group_steering(int gid, steering_function_t fun)
+void __pfq_set_group_function(int gid, sk_function_t fun)
 {
-    atomic_long_set(&pfq_groups[gid].steering, (long)fun);
+    atomic_long_set(&pfq_groups[gid].function, (long)fun);
     
     msleep(GRACE_PERIOD);
 }
@@ -135,18 +135,18 @@ void __pfq_set_group_filter(int gid, struct sk_filter *filter)
 
 
 static inline
-void __pfq_dismiss_steering_function(steering_function_t fun)
+void __pfq_dismiss_function(sk_function_t f)
 {
 	int n;
 	for(n = 0; n < Q_MAX_GROUP; n++)
 	{
-	    steering_function_t steer = (steering_function_t)atomic_long_read(&pfq_groups[n].steering);
-    	if (steer == fun)
+	    sk_function_t fun = (sk_function_t)atomic_long_read(&pfq_groups[n].function);
+    	if (f == fun)
 		{
-      		__pfq_set_group_steering(n, NULL);
+      		__pfq_set_group_function(n, NULL);
 			__pfq_set_group_state(n, NULL);
             
-			printk(KERN_INFO "[PFQ] steering function @%p dismissed.\n", fun);
+			printk(KERN_INFO "[PFQ] function @%p dismissed.\n", fun);
 		}
 	}
 }

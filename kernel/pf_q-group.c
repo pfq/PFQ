@@ -80,7 +80,7 @@ __pfq_group_ctor(int gid)
 		atomic_long_set(&that->sock_mask[i], 0);
 	}
 
-	atomic_long_set(&that->steering, 0L);
+	atomic_long_set(&that->function, 0L);
 	atomic_long_set(&that->state,    0L);
 	atomic_long_set(&that->filter,   0L);
 

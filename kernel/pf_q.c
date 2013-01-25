@@ -228,14 +228,14 @@ __pfq_netdev_alloc_skb(struct net_device *dev, unsigned int length, gfp_t gfp)
 
 struct pfq_steering_cache
 {
-	steering_function_t fun;
+	sk_function_t fun;
 	void * state;
 	funret_t ret;
 };
 
 
 inline funret_t
-pfq_memoized_call(struct pfq_steering_cache *mem, steering_function_t fun, 
+pfq_memoized_call(struct pfq_steering_cache *mem, sk_function_t fun, 
 		  const struct sk_buff *skb, void *state)
 {
 	if (unlikely(mem->fun != fun || mem->state != state)) {
@@ -442,8 +442,6 @@ pfq_receive(struct sk_buff *skb, bool direct)
         
 	queue_for_each(skb, n, prefetch_queue)
         {
-		/* reset steering function in cache */
-
                 /* get the balancing groups bitmap */
 
 		group_mask = __pfq_devmap_get_groups(skb->dev->ifindex, skb_get_rx_queue(skb));   
@@ -459,7 +457,7 @@ pfq_receive(struct sk_buff *skb, bool direct)
                         struct sk_filter *bpf;
 
                         funret_t ret;
-                        steering_function_t steer_fun;
+                        sk_function_t fun;
 
                         /* increment recv counter for this group */
 
@@ -484,13 +482,13 @@ pfq_receive(struct sk_buff *skb, bool direct)
 
                         /* retrieve the steering function for this group */
                         
-                        steer_fun = (steering_function_t) atomic_long_read(&pfq_groups[gindex].steering);
+                        fun = (sk_function_t) atomic_long_read(&pfq_groups[gindex].function);
                         
-			if (steer_fun) 
+			if (fun) 
                         {
-                                /* call the steering function */
+                                /* call the function */
 
-                                ret = steer_fun(skb, (void *)atomic_long_read(&pfq_groups[gindex].state));
+                                ret = fun(skb, (void *)atomic_long_read(&pfq_groups[gindex].state));
 
                                 if (ret.type & action_steal)
                                 {
@@ -578,7 +576,7 @@ pfq_receive(struct sk_buff *skb, bool direct)
                 
                 struct sk_filter *bpf = (struct sk_filter *)atomic_long_read(&pfq_groups[gindex].filter);
 
-                steering_function_t steer_fun = (steering_function_t) atomic_long_read(&pfq_groups[gindex].steering);
+                sk_function_t fun = (sk_function_t) atomic_long_read(&pfq_groups[gindex].function);
 
                 bool vlan_filter_enabled = __pfq_vlan_filters_enabled(gindex);
 
@@ -614,13 +612,13 @@ pfq_receive(struct sk_buff *skb, bool direct)
                                         continue;
                         }
 
-                        /* retrieve the steering function for this group */
+                        /* retrieve the function for this group */
                         
-			if (steer_fun) 
+			if (fun) 
                         {
-                                /* call the steering function */
+                                /* call the function */
 
-                                ret = steer_fun(skb, (void *)atomic_long_read(&pfq_groups[gindex].state));
+                                ret = fun(skb, (void *)atomic_long_read(&pfq_groups[gindex].state));
 
                                 if (ret.type & action_steal)
                                 {
@@ -1303,12 +1301,12 @@ int pfq_setsockopt(struct socket *sock,
 			    return -EFAULT;
 
                     if (s.gid < 0 || s.gid >= Q_MAX_GROUP) {
-                    	    pr_devel("[PFQ|%d] steering error: gid:%d invalid group!\n", pq->q_id, s.gid);
+                    	    pr_devel("[PFQ|%d] state error: gid:%d invalid group!\n", pq->q_id, s.gid);
 			    return -EINVAL;
 		    }
 
 		    if (!__pfq_has_joined_group(s.gid, pq->q_id)) {
-                    	    pr_devel("[PFQ|%d] steering error: gid:%d no permission!\n", pq->q_id, s.gid);
+                    	    pr_devel("[PFQ|%d] state error: gid:%d no permission!\n", pq->q_id, s.gid);
 			    return -EPERM;
 		    }
 
@@ -1335,9 +1333,9 @@ int pfq_setsockopt(struct socket *sock,
 		    }
 	    } break;
 
- 	case Q_SO_GROUP_STEER_FUN:
+ 	case Q_SO_GROUP_FUN:
 	    {
-		    struct pfq_steering s;
+		    struct pfq_group_function s;
 		    
 		    if (optlen != sizeof(s)) 
 			    return -EINVAL;
@@ -1346,37 +1344,37 @@ int pfq_setsockopt(struct socket *sock,
 			    return -EFAULT;
 		    
                     if (s.gid < 0 || s.gid >= Q_MAX_GROUP) {
-                    	    pr_devel("[PFQ|%d] steering error: gid:%d invalid group!\n", pq->q_id, s.gid);
+                    	    pr_devel("[PFQ|%d] function error: gid:%d invalid group!\n", pq->q_id, s.gid);
 			    return -EINVAL;
 		    }
 		    
 		    if (!__pfq_has_joined_group(s.gid, pq->q_id)) {
-                    	    pr_devel("[PFQ|%d] steering error: gid:%d no permission!\n", pq->q_id, s.gid);
+                    	    pr_devel("[PFQ|%d] function error: gid:%d no permission!\n", pq->q_id, s.gid);
 			    return -EPERM;
 		    }
 
 		    if (s.name == NULL) {
-			__pfq_set_group_steering(s.gid, NULL);
-                    	pr_devel("[PFQ|%d] steering: gid:%d (steering NONE)\n", pq->q_id, s.gid);
+			__pfq_set_group_function(s.gid, NULL);
+                    	pr_devel("[PFQ|%d] function: gid:%d (NONE)\n", pq->q_id, s.gid);
 		    }
 		    else {
-                    	char name[Q_STEERING_NAME_LEN]; 
-			steering_function_t fun;
+                    	char name[Q_FUN_NAME_LEN]; 
+			sk_function_t fun;
 
-                    	if (strncpy_from_user(name, s.name, Q_STEERING_NAME_LEN-1) < 0)
+                    	if (strncpy_from_user(name, s.name, Q_FUN_NAME_LEN-1) < 0)
 				return -EFAULT;
 
-			name[Q_STEERING_NAME_LEN-1] = '\0';
+			name[Q_FUN_NAME_LEN-1] = '\0';
                         
-			fun = pfq_get_steering_function(name);
+			fun = pfq_get_function(name);
 			if (fun == NULL) {
-                    		pr_devel("[PFQ|%d] steering error: gid:%d '%s' unknown function!\n", pq->q_id, s.gid, name);
+                    		pr_devel("[PFQ|%d] function error: gid:%d '%s' unknown function!\n", pq->q_id, s.gid, name);
 				return -EINVAL;
 			}
 
-			__pfq_set_group_steering(s.gid, fun);
+			__pfq_set_group_function(s.gid, fun);
                     	
-			pr_devel("[PFQ|%d] steering gid:%d -> function '%s'\n", pq->q_id, s.gid, name);
+			pr_devel("[PFQ|%d] function gid:%d -> function '%s'\n", pq->q_id, s.gid, name);
 		    }
 	    } break;
 
@@ -1728,9 +1726,9 @@ static int __init pfq_init_module(void)
         /* finally register the basic device handler */
         register_device_handler();
 
-	/* register steering functions */
+	/* register functions */
 
-	pfq_steering_factory_init();
+	pfq_function_factory_init();
         
 	printk(KERN_INFO "[PFQ] ready!\n");
         return 0;
@@ -1791,8 +1789,9 @@ static void __exit pfq_exit_module(void)
         /* free per-cpu data */
 	free_percpu(cpu_data);
 
-	/* free steering functions */
-	pfq_steering_factory_free();
+	/* free functions */
+
+	pfq_function_factory_free();
 
         printk(KERN_INFO "[PFQ] unloaded.\n");
 }
@@ -1883,8 +1882,8 @@ EXPORT_SYMBOL_GPL(pfq_netif_rx);
 EXPORT_SYMBOL_GPL(pfq_netif_receive_skb);
 EXPORT_SYMBOL_GPL(pfq_gro_receive);
 
-EXPORT_SYMBOL_GPL(pfq_register_steering_functions);
-EXPORT_SYMBOL_GPL(pfq_unregister_steering_functions);
+EXPORT_SYMBOL_GPL(pfq_register_functions);
+EXPORT_SYMBOL_GPL(pfq_unregister_functions);
 
 module_init(pfq_init_module);
 module_exit(pfq_exit_module);

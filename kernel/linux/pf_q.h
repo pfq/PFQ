@@ -118,7 +118,7 @@ struct pfq_queue_descr
 #define Q_SO_GROUP_JOIN             8
 #define Q_SO_GROUP_LEAVE            9
 #define Q_SO_GROUP_STATE            10
-#define Q_SO_GROUP_STEER_FUN        11
+#define Q_SO_GROUP_FUN              11
 #define Q_SO_GROUP_FPROG            12      /* Berkeley packet filter */
 #define Q_SO_GROUP_VLAN_FILT_TOGGLE 13      /* enable/disable VLAN filters */
 #define Q_SO_GROUP_VLAN_FILT        14      /* enable/disable VLAN ID filters */
@@ -201,9 +201,9 @@ struct pfq_group_join
 
 /* steering functions */
 
-#define Q_STEERING_NAME_LEN        64
+#define Q_FUN_NAME_LEN        64
 
-struct pfq_steering
+struct pfq_group_function
 {
     const char *name;
     int gid;

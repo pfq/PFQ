@@ -30,7 +30,7 @@
 namespace opt {
 
     int sleep_microseconds;
-    std::string steer_function;
+    std::string function;
 
     size_t caplen = 64;
     size_t offset = 0;
@@ -120,9 +120,9 @@ namespace test
                     m_pfq.bind_group(gid, d, q);
                 });
 
-            if (!opt::steer_function.empty() && (m_id == 0))
+            if (!opt::function.empty() && (m_id == 0))
             {
-                m_pfq.set_steering_function(gid, opt::steer_function.c_str());
+                m_pfq.set_group_function(gid, opt::function.c_str());
             }   
 
             m_pfq.timestamp_enabled(false);
@@ -280,11 +280,11 @@ try
             i++;
             if (i == argc)
             {
-                throw std::runtime_error("steer function missing");
+                throw std::runtime_error("group function missing");
             }
-            opt::steer_function.assign(argv[i]);
+            opt::function.assign(argv[i]);
 
-            std::cout << "balancing with [" << opt::steer_function << "]" << std::endl;
+            std::cout << "balancing with [" << opt::function << "]" << std::endl;
             continue;
         }
 

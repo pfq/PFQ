@@ -180,7 +180,7 @@ namespace test
 
             if (!opt::steer_function.empty() && (m_id == 0))
             {
-                m_pfq.set_steering_function(gid, opt::steer_function.c_str());
+                m_pfq.set_group_function(gid, opt::steer_function.c_str());
             }   
 
             m_pfq.timestamp_enabled(false);

@@ -228,7 +228,7 @@ extern int pfq_unbind(pfq_t *q, const char *dev, int queue);
 
 extern int pfq_groups_mask(pfq_t const *q, unsigned long *_mask);
 
-extern int pfq_steering_function(pfq_t *q, int gid, const char *fun_name);
+extern int pfq_group_function(pfq_t *q, int gid, const char *fun_name);
 
 extern int pfq_group_state(pfq_t *q, int gid, const void *state, size_t size);
 

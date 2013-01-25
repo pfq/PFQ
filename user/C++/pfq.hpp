@@ -896,11 +896,11 @@ namespace net {
         }
 
         void
-        set_steering_function(int gid, const char *fun)
+        set_group_function(int gid, const char *fun)
         {
-            struct pfq_steering s { fun, gid };
-            if (::setsockopt(fd_, PF_Q, Q_SO_GROUP_STEER_FUN, &s, sizeof(s)) == -1)
-                throw pfq_error(errno, "PFQ: set steering function error");
+            struct pfq_group_function s { fun, gid };
+            if (::setsockopt(fd_, PF_Q, Q_SO_GROUP_FUN, &s, sizeof(s)) == -1)
+                throw pfq_error(errno, "PFQ: set group function error");
         }
         
         template <typename T>

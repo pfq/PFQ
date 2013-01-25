@@ -17,7 +17,7 @@ main(int argc, char *argv[])
 
     r.timestamp_enabled(true);
     
-    r.set_steering_function(r.group_id(), "steer-dummy");
+    r.set_group_function(r.group_id(), "steer-dummy");
 
     r.enable();
     

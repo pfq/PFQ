@@ -29,14 +29,14 @@
 #include <linux/pf_q-fun.h>
  
 
-extern void pfq_steering_factory_init(void);
-extern void pfq_steering_factory_free(void);
+extern void pfq_function_factory_init(void);
+extern void pfq_function_factory_free(void);
 
-steering_function_t pfq_get_steering_function(const char *name);
+sk_function_t pfq_get_function(const char *name);
 
-extern int  pfq_register_steering_function(const char *module, const char *name, steering_function_t fun);
-extern int  pfq_unregister_steering_function(const char *module, const char *name);
+extern int  pfq_register_function(const char *module, const char *name, sk_function_t fun);
+extern int  pfq_unregister_function(const char *module, const char *name);
 
-extern steering_function_t pfq_get_steering_function(const char *name);
+extern sk_function_t pfq_get_function(const char *name);
 
 #endif /* _PF_Q_STEER_H_ */

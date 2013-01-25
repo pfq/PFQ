@@ -41,6 +41,7 @@ typedef struct
 } funret_t;
 
 
+
 enum action 
 {
     action_drop      = 0x01,
@@ -52,18 +53,18 @@ enum action
 };
 
 
-typedef funret_t (*steering_function_t)(const struct sk_buff *, const void *);    
+typedef funret_t (*sk_function_t)(const struct sk_buff *, const void *);    
 
 
-struct steering_function
+struct sk_function_descr
 {
-    const char *            name;
-    steering_function_t     function;
+    const char *      name;
+    sk_function_t     function;
 };
 
 
-extern int pfq_register_steering_functions  (const char *module, struct steering_function *fun);
-extern int pfq_unregister_steering_functions(const char *module, struct steering_function *fun);
+extern int pfq_register_functions  (const char *module, struct sk_function_descr *fun);
+extern int pfq_unregister_functions(const char *module, struct sk_function_descr *fun);
 
 
 /* none: ignore the packet for the current group */
