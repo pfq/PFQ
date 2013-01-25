@@ -21,7 +21,7 @@
  *
  ****************************************************************/
 
-#include <linux/pf_q-steering.h>
+#include <linux/pf_q-fun.h>
 
 steering_t
 steering_mac_addr(const struct sk_buff *skb, const void *state)

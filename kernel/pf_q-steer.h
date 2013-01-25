@@ -26,7 +26,7 @@
 
 #include <linux/skbuff.h>
 #include <linux/pf_q.h>
-#include <linux/pf_q-steering.h>
+#include <linux/pf_q-fun.h>
  
 
 extern void pfq_steering_factory_init(void);

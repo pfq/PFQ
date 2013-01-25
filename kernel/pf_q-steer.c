@@ -26,7 +26,7 @@
 #include <linux/module.h>
 #include <linux/semaphore.h>
 
-#include <linux/pf_q-steering.h>
+#include <linux/pf_q-fun.h>
 
 #include <pf_q-group.h>
 #include <pf_q-steer.h>
