@@ -21,8 +21,8 @@
  *
  ****************************************************************/
 
-#ifndef _PF_Q_STEER_FUN_H_
-#define _PF_Q_STEER_FUN_H_ 
+#ifndef _PF_Q_FUN_H_
+#define _PF_Q_FUN_H_ 
 
 #include <linux/pf_q.h>
 
@@ -38,7 +38,7 @@ typedef struct
 	unsigned int  hash:24;
 	unsigned int  type:8;
 	unsigned int  class;
-} steering_t;
+} funret_t;
 
 
 enum action 
@@ -52,7 +52,7 @@ enum action
 };
 
 
-typedef steering_t (*steering_function_t)(const struct sk_buff *, const void *);    
+typedef funret_t (*steering_function_t)(const struct sk_buff *, const void *);    
 
 
 struct steering_function
@@ -69,18 +69,18 @@ extern int pfq_unregister_steering_functions(const char *module, struct steering
 /* none: ignore the packet for the current group */
 
 static inline
-steering_t none(void)
+funret_t none(void)
 {
-    steering_t ret = { 0, action_drop, 0};
+    funret_t ret = { 0, action_drop, 0};
     return ret;
 }
 
 /* broadcast: for this group, broadcast the skb to sockets of the given classes */
 
 static inline
-steering_t broadcast(unsigned int cl)
+funret_t broadcast(unsigned int cl)
 {
-    steering_t ret = { 0, action_clone, cl};
+    funret_t ret = { 0, action_clone, cl};
     return ret;
 }
 
@@ -88,9 +88,9 @@ steering_t broadcast(unsigned int cl)
 /* steering skb: for this group, dispatch the skb across sockets of the given classes (by means of hash) */
 
 static inline
-steering_t steering(unsigned int cl, unsigned int hash)
+funret_t steering(unsigned int cl, unsigned int hash)
 {
-    steering_t ret = {hash ^ (hash >> 8), action_dispatch, cl};
+    funret_t ret = {hash ^ (hash >> 8), action_dispatch, cl};
     return ret;
 }
 
@@ -98,9 +98,9 @@ steering_t steering(unsigned int cl, unsigned int hash)
 /* stolen packet: the skb is stolen by the steering function. (i.e. forwarded) */
 
 static inline
-steering_t stolen(void)
+funret_t stolen(void)
 {
-    steering_t ret = { 0, action_steal, 0};
+    funret_t ret = { 0, action_steal, 0};
     return ret;
 }
 
@@ -110,7 +110,7 @@ steering_t stolen(void)
 /* to_kernel: set the skb to be passed to kernel */
 
 static inline
-steering_t to_kernel(steering_t ret)
+funret_t to_kernel(funret_t ret)
 {
     if (unlikely(ret.type & action_steal))
     {
@@ -123,4 +123,4 @@ steering_t to_kernel(steering_t ret)
 }
 
 
-#endif /* _PF_Q_STEER_FUN_H_ */
+#endif /* _PF_Q_FUN_H_ */

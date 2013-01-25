@@ -230,11 +230,11 @@ struct pfq_steering_cache
 {
 	steering_function_t fun;
 	void * state;
-	steering_t ret;
+	funret_t ret;
 };
 
 
-inline steering_t
+inline funret_t
 pfq_memoized_call(struct pfq_steering_cache *mem, steering_function_t fun, 
 		  const struct sk_buff *skb, void *state)
 {
@@ -458,7 +458,7 @@ pfq_receive(struct sk_buff *skb, bool direct)
 			int gindex = pfq_ctz(bit);
                         struct sk_filter *bpf;
 
-                        steering_t ret;
+                        funret_t ret;
                         steering_function_t steer_fun;
 
                         /* increment recv counter for this group */
@@ -588,7 +588,7 @@ pfq_receive(struct sk_buff *skb, bool direct)
                 	
 			unsigned long sock_mask = 0;
                         
-			steering_t ret;
+			funret_t ret;
 
 			if (unlikely((cb->group_mask & bit) == 0))
                          	continue;

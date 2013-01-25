@@ -23,7 +23,7 @@
 
 #include <linux/pf_q-fun.h>
 
-steering_t
+funret_t
 steering_mac_addr(const struct sk_buff *skb, const void *state)
 {
         uint16_t * a = (uint16_t *)eth_hdr(skb);
@@ -31,21 +31,21 @@ steering_mac_addr(const struct sk_buff *skb, const void *state)
 }
 
 
-steering_t
+funret_t
 steering_vlan_untagged(const struct sk_buff *skb, const void *state)
 {
 	return steering(Q_CLASS_DEFAULT, skb->vlan_tci == 0);
 }
 
 
-steering_t
+funret_t
 steering_vlan_id(const struct sk_buff *skb, const void *state)
 {
  	return steering(Q_CLASS_DEFAULT, skb->vlan_tci & VLAN_VID_MASK);
 }
 
 
-steering_t
+funret_t
 steering_ipv4_addr(const struct sk_buff *skb, const void *state)
 {       
 	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP)) 
@@ -64,7 +64,7 @@ steering_ipv4_addr(const struct sk_buff *skb, const void *state)
 }
 
 
-steering_t
+funret_t
 steering_flow(const struct sk_buff *skb, const void *state)
 {       
 	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP)) 
@@ -94,7 +94,7 @@ steering_flow(const struct sk_buff *skb, const void *state)
 }
 
 
-steering_t
+funret_t
 steering_ipv6_addr(const struct sk_buff *skb, const void *state)
 {       
 	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IPV6)) 
@@ -121,14 +121,14 @@ steering_ipv6_addr(const struct sk_buff *skb, const void *state)
 }
 
 
-steering_t
+funret_t
 steering_legacy(const struct sk_buff *skb, const void *state)
 {
         return to_kernel(broadcast(Q_CLASS_ANY));
 }
 
 
-steering_t
+funret_t
 steering_sink(const struct sk_buff *skb, const void *state)
 {
         struct sk_buff * mskb = (struct sk_buff *)skb;
