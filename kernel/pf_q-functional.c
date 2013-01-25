@@ -29,7 +29,7 @@
 #include <linux/pf_q-fun.h>
 
 #include <pf_q-group.h>
-#include <pf_q-steer.h>
+#include <pf_q-functional.h>
 
 
 DEFINE_SEMAPHORE(steering_sem);

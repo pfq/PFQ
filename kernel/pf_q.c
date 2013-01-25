@@ -50,7 +50,7 @@
 #include <pf_q-devmap.h>
 #include <pf_q-group.h>
 #include <pf_q-queue.h>
-#include <pf_q-steer.h>
+#include <pf_q-functional.h>
 #include <pf_q-bits.h>
 #include <pf_q-vlan.h>
 #include <pf_q-bpf.h>

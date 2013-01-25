@@ -32,7 +32,7 @@
 
 #include <pf_q-common.h>
 #include <pf_q-sparse-counter.h>
-#include <pf_q-steer.h>
+#include <pf_q-functional.h>
 #include <pf_q-bpf.h>
 
 struct pfq_group
