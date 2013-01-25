@@ -47,7 +47,8 @@ enum action
     action_clone     = 0x02,
     action_dispatch  = 0x04,
     action_steal     = 0x08,
-    action_pass      = 0x10,
+    action_continue  = 0x10,
+    action_to_kernel = 0x80,
 };
 
 
@@ -117,7 +118,7 @@ steering_t to_kernel(steering_t ret)
  	        pr_devel("[PFQ] to_kernel modifier applied to a stolen packet!\n");
        return ret;
     }
-    ret.type |= action_pass;
+    ret.type |= action_to_kernel;
     return ret;
 }
 

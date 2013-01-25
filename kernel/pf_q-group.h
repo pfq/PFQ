@@ -30,7 +30,6 @@
 #include <linux/pf_q.h>
 #include <linux/filter.h>
 
-
 #include <pf_q-common.h>
 #include <pf_q-sparse-counter.h>
 #include <pf_q-steer.h>

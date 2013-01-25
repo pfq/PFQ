@@ -628,7 +628,7 @@ pfq_receive(struct sk_buff *skb, bool direct)
                                         continue;
                                 }
 
-                                if (ret.type & action_pass)
+                                if (ret.type & action_to_kernel)
                                 {
                                         cb->send_to_kernel = true;
                                 }
