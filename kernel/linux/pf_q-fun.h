@@ -76,6 +76,17 @@ funret_t none(void)
     return ret;
 }
 
+
+/* continuation: pass the skb to the next sk function */
+
+static inline
+funret_t pass(void)
+{
+    funret_t ret = { 0, action_continue, 0};
+    return ret;
+}
+
+
 /* broadcast: for this group, broadcast the skb to sockets of the given classes */
 
 static inline
