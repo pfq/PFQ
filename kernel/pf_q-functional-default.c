@@ -143,12 +143,21 @@ steering_clone(struct sk_buff *skb, ret_t ret)
 
 
 ret_t
-steering_sink(struct sk_buff *skb, ret_t ret)
+fun_sink(struct sk_buff *skb, ret_t ret)
 {
         struct sk_buff * mskb = (struct sk_buff *)skb;
         kfree_skb(mskb);
-
+        
         return stolen();
+}
+
+
+ret_t
+fun_id(struct sk_buff *skb, ret_t ret)
+{
+        sk_function_t fun = get_next_function(skb);
+        
+        return pfq_call(fun, skb, ret); 
 }
 
 
@@ -232,8 +241,9 @@ struct sk_function_descr default_functions[] = {
         { "steer-flow",          steering_flow       },
         { "steer-legacy",        steering_legacy     },
         { "steer-transparent",   steering_transparent},
-        { "steer-sink",          steering_sink       },
         { "steer-clone",         steering_clone      },
+        { "sink",                fun_sink            },
+        { "id",                  fun_id              },
         { "filt-ipv4",           filter_ipv4         },
         { "filt-udp",            filter_udp          },
         { "filt-tcp",            filter_tcp          },
