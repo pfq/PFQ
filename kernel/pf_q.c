@@ -590,7 +590,14 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
                 if (likely(cb->direct_skb))
 		{
 		        if (unlikely(!sniff_incoming && cb->send_to_kernel))
-		                netif_receive_skb(skb);
+                        {        
+                                if (direct == 1)
+                                        netif_rx(skb);
+                                else if (direct == 2)
+                                        netif_receive_skb(skb);
+                                else
+                                        napi_gro_receive(napi, skb);
+                        }
                         else {
                                 pfq_kfree_skb_recycle(skb, &local_cache->recycle_list);
         		}
@@ -641,7 +648,7 @@ pfq_packet_rcv
                         return 0;
         }
 
-        return pfq_receive(skb, false);
+        return pfq_receive(NULL, skb, 0);
 }
 
 
@@ -1740,7 +1747,7 @@ pfq_netif_receive_skb(struct sk_buff *skb)
 		if (pfq_normalize_skb(skb) < 0)
                 	return NET_RX_DROP;
 
-		pfq_receive(skb, true);
+		pfq_receive(NULL, skb, 2);
 		return NET_RX_SUCCESS;
 	}
 
@@ -1756,7 +1763,7 @@ pfq_netif_rx(struct sk_buff *skb)
 		if (pfq_normalize_skb(skb) < 0)
                 	return NET_RX_DROP;
 		
-		pfq_receive(skb, true);
+		pfq_receive(NULL, skb, 1);
 		return NET_RX_SUCCESS;
 	}
 
@@ -1769,11 +1776,10 @@ pfq_gro_receive(struct napi_struct *napi, struct sk_buff *skb)
 {
         if (likely(pfq_direct_capture(skb)))
         {
-
 		if (pfq_normalize_skb(skb) < 0)
                 	return GRO_DROP;
 
-                pfq_receive(skb, true);
+                pfq_receive(napi, skb, 3);
                 return GRO_NORMAL;
         }
 
