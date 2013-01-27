@@ -79,14 +79,16 @@ struct pfq_annotation
 {
     unsigned long group_mask;
 
-    bool direct_skb;
-    bool stolen_skb;
-    bool send_to_kernel;
+    unsigned long state;
+    
+    struct fun_context * functx;
 
     int index;      /* call index */ 
 
-    unsigned long state;
-    struct fun_context * functx;
+    char direct_skb;  
+
+    bool stolen_skb;
+    bool send_to_kernel;
 };
 
 
