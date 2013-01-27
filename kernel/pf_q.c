@@ -591,9 +591,10 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 		{
 		        if (unlikely(!sniff_incoming && cb->send_to_kernel))
                         {        
-                                if (direct == 1)
+                                if (cb->direct_skb == 1)
                                         netif_rx(skb);
-                                else if (direct == 2)
+                                else 
+                                if (cb->direct_skb == 2)
                                         netif_receive_skb(skb);
                                 else
                                         napi_gro_receive(napi, skb);
