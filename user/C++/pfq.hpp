@@ -896,28 +896,27 @@ namespace net {
         }
 
         void
-        set_group_function(int gid, const char *fun)
+        set_group_function(int gid, const char *fun, int level = 0)
         {
-            struct pfq_group_function s { fun, gid };
+            struct pfq_group_function s { fun, gid, level };
             if (::setsockopt(fd_, PF_Q, Q_SO_GROUP_FUN, &s, sizeof(s)) == -1)
                 throw pfq_error(errno, "PFQ: set group function error");
         }
         
         template <typename T>
         void
-        set_group_state(int gid, const T &state)
+        set_group_state(int gid, const T &state, int level = 0)
         {
-            struct pfq_group_state s { &state, sizeof(state), gid };
+            struct pfq_group_state s { &state, sizeof(state), gid, level };
             if (::setsockopt(fd_, PF_Q, Q_SO_GROUP_STATE, &s, sizeof(s)) == -1)
                 throw pfq_error(errno, "PFQ: set group state error");
         }
 
         void
-        reset_group_state(int gid)
+        reset_group(int gid)
         {
-            struct pfq_group_state s { NULL, 0, gid };
-            if (::setsockopt(fd_, PF_Q, Q_SO_GROUP_STATE, &s, sizeof(s)) == -1)
-                throw pfq_error(errno, "PFQ: reset group state error");
+            if (::setsockopt(fd_, PF_Q, Q_SO_GROUP_RESET, &gid, sizeof(gid)) == -1)
+                throw pfq_error(errno, "PFQ: reset group error");
         }
 
         //

@@ -23,30 +23,30 @@
 
 #include <linux/pf_q-fun.h>
 
-funret_t
-steering_mac_addr(const struct sk_buff *skb, const void *state)
+ret_t
+steering_mac_addr(struct sk_buff *skb, ret_t ret)
 {
         uint16_t * a = (uint16_t *)eth_hdr(skb);
 	return steering(Q_CLASS_DEFAULT, a[0] ^ a[1] ^ a[2] ^ a[3] ^ a[4] ^ a[5] );		
 }
 
 
-funret_t
-steering_vlan_untagged(const struct sk_buff *skb, const void *state)
+ret_t
+steering_vlan_untagged(struct sk_buff *skb, ret_t ret)
 {
 	return steering(Q_CLASS_DEFAULT, skb->vlan_tci == 0);
 }
 
 
-funret_t
-steering_vlan_id(const struct sk_buff *skb, const void *state)
+ret_t
+steering_vlan_id(struct sk_buff *skb, ret_t ret)
 {
  	return steering(Q_CLASS_DEFAULT, skb->vlan_tci & VLAN_VID_MASK);
 }
 
 
-funret_t
-steering_ipv4_addr(const struct sk_buff *skb, const void *state)
+ret_t
+steering_ipv4_addr(struct sk_buff *skb, ret_t ret)
 {       
 	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP)) 
 	{ 
@@ -64,8 +64,8 @@ steering_ipv4_addr(const struct sk_buff *skb, const void *state)
 }
 
 
-funret_t
-steering_flow(const struct sk_buff *skb, const void *state)
+ret_t
+steering_flow(struct sk_buff *skb, ret_t ret)
 {       
 	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP)) 
 	{ 
@@ -94,8 +94,8 @@ steering_flow(const struct sk_buff *skb, const void *state)
 }
 
 
-funret_t
-steering_ipv6_addr(const struct sk_buff *skb, const void *state)
+ret_t
+steering_ipv6_addr(struct sk_buff *skb, ret_t ret)
 {       
 	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IPV6)) 
 	{ 
@@ -121,20 +121,105 @@ steering_ipv6_addr(const struct sk_buff *skb, const void *state)
 }
 
 
-funret_t
-steering_legacy(const struct sk_buff *skb, const void *state)
+ret_t
+steering_legacy(struct sk_buff *skb, ret_t ret)
+{
+        return to_kernel(none());
+}
+
+
+ret_t
+steering_transparent(struct sk_buff *skb, ret_t ret)
 {
         return to_kernel(broadcast(Q_CLASS_ANY));
 }
 
 
-funret_t
-steering_sink(const struct sk_buff *skb, const void *state)
+ret_t
+steering_clone(struct sk_buff *skb, ret_t ret)
+{
+        return broadcast(Q_CLASS_ANY);
+}
+
+
+ret_t
+steering_sink(struct sk_buff *skb, ret_t ret)
 {
         struct sk_buff * mskb = (struct sk_buff *)skb;
         kfree_skb(mskb);
 
         return stolen();
+}
+
+
+ret_t
+filter_ipv4(struct sk_buff *skb, ret_t ret)
+{
+	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP)) 
+	{ 
+		struct iphdr _iph;
+    		const struct iphdr *ip;
+
+		ip = skb_header_pointer(skb, skb->mac_len, sizeof(_iph), &_iph);
+ 		if (ip)
+ 			return none(); // TODO
+        }
+
+        return none();
+}
+
+
+ret_t
+filter_udp(struct sk_buff *skb, ret_t ret)
+{
+	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP)) 
+	{ 
+		struct iphdr _iph;
+    		const struct iphdr *ip;
+
+		struct udphdr _udp;
+		const struct udphdr *udp;
+
+		ip = skb_header_pointer(skb, skb->mac_len, sizeof(_iph), &_iph);
+ 		if (ip == NULL)
+ 			return none();
+
+		if (ip->protocol != IPPROTO_UDP) 
+			return none();
+		
+		udp = skb_header_pointer(skb, skb->mac_len + (ip->ihl<<2), sizeof(_udp), &_udp);
+		if (udp) 
+			return none(); // TODO
+	}
+
+	return none();
+}
+
+
+ret_t
+filter_tcp(struct sk_buff *skb, ret_t ret)
+{
+	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP)) 
+	{ 
+		struct iphdr _iph;
+    		const struct iphdr *ip;
+
+		struct tcphdr _tcp;
+		const struct tcphdr *tcp;
+
+		ip = skb_header_pointer(skb, skb->mac_len, sizeof(_iph), &_iph);
+ 		if (ip == NULL)
+ 			return none();
+
+		if (ip->protocol != IPPROTO_TCP) 
+			return none();
+		
+		tcp = skb_header_pointer(skb, skb->mac_len + (ip->ihl<<2), sizeof(_tcp), &_tcp);
+		if (tcp) 
+			return none(); // TODO
+	}
+
+	return none();
 }
 
 
@@ -146,6 +231,11 @@ struct sk_function_descr default_functions[] = {
         { "steer-ipv6",          steering_ipv6_addr  },
         { "steer-flow",          steering_flow       },
         { "steer-legacy",        steering_legacy     },
+        { "steer-transparent",   steering_transparent},
         { "steer-sink",          steering_sink       },
+        { "steer-clone",         steering_clone      },
+        { "filt-ipv4",           filter_ipv4         },
+        { "filt-udp",            filter_udp          },
+        { "filt-tcp",            filter_tcp          },
 	{ NULL, NULL}};
 

@@ -65,7 +65,7 @@ module Network.PFq
         dispatch,
         getStats,
         getGroupStats,
-        groupFunction,
+        groupFunctions,
     
         getPackets,
         getHeader,
@@ -589,17 +589,18 @@ makeStats p = do
                             sDropped  = fromIntegral (_drop :: CLong)
                           }
 
--- groupFunction:
+-- groupFunctions:
 --
 
-groupFunction :: Ptr PFqTag
-                 -> Int     -- group id
-                 -> String  -- function name
+groupFunctions :: Ptr PFqTag
+                 -> Int       -- group id
+                 -> [String]  -- function name(s) in continuation-passing style
                  -> IO ()
 
-groupFunction hdl gid name =
+groupFunctions hdl gid names =
+    forM_ (zip names [0,1..]) $ \(name,ix) ->  
     withCString name $ \fname -> 
-        pfq_group_function hdl (fromIntegral gid) fname >>= throwPFqIf_ hdl (== -1) 
+        pfq_set_group_function hdl (fromIntegral gid) fname ix >>= throwPFqIf_ hdl (== -1) 
 
 
 -- dispatch:
@@ -667,7 +668,8 @@ foreign import ccall unsafe pfq_leave_group       :: Ptr PFqTag -> CInt -> IO CI
 foreign import ccall unsafe pfq_get_stats         :: Ptr PFqTag -> Ptr Statistics -> IO CInt
 foreign import ccall unsafe pfq_get_group_stats   :: Ptr PFqTag -> CInt -> Ptr Statistics -> IO CInt
 
-foreign import ccall unsafe pfq_group_function    :: Ptr PFqTag -> CInt -> CString -> IO CInt
+foreign import ccall unsafe pfq_set_group_function :: Ptr PFqTag -> CInt -> CString -> CInt -> IO CInt
+foreign import ccall unsafe pfq_reset_group        :: Ptr PFqTag -> CInt -> IO CInt
 
 foreign import ccall pfq_dispatch                 :: Ptr PFqTag -> FunPtr CPFqCallback -> CLong -> Ptr Word8 -> IO CInt
 foreign import ccall "wrapper" make_callback      :: CPFqCallback -> IO (FunPtr CPFqCallback)

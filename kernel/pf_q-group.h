@@ -1,7 +1,6 @@
 /***************************************************************
  *                                                
  * (C) 2011-13 Nicola Bonelli <nicola.bonelli@cnit.it>   
- *             Andrea Di Pietro <andrea.dipietro@for.unipi.it>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,20 +29,22 @@
 #include <linux/pf_q.h>
 #include <linux/filter.h>
 
+#include <linux/pf_q-fun.h>
+
 #include <pf_q-common.h>
 #include <pf_q-sparse-counter.h>
 #include <pf_q-functional.h>
 #include <pf_q-bpf.h>
 
+
 struct pfq_group
 {
     int policy;                             /* policy for the group */
-    int pid;	                            /* process id for restricted/private group */;
+    int pid;	                            /* process id for restricted/private group */
 
 	atomic_long_t sock_mask[Q_CLASS_MAX];   /* for class: Q_CLASS_DATA, Q_CLASS_CONTROL, etc... */
 
-	atomic_long_t function;                 /* sk_function_t */ 
-    atomic_long_t state;                    /* opaque state for the function */
+    struct fun_context functx[Q_FUN_MAX+1]; /* sk_function_t, void *state pair */
 
     atomic_long_t filter; 					/* struct sk_filter pointer */
 
@@ -57,7 +58,6 @@ struct pfq_group
 
 
 extern struct pfq_group pfq_groups[Q_MAX_GROUP];
-
 
 unsigned long __pfq_get_all_groups_mask(int gid);
 
@@ -73,6 +73,16 @@ void pfq_leave_all_groups(int id);
 
 unsigned long pfq_get_groups(int id);
 
+int __pfq_set_group_function(int gid, sk_function_t fun, int level);
+
+int __pfq_set_group_state(int gid, void *state, int level);
+
+void __pfq_reset_group_functx(int gid);
+
+void __pfq_set_group_filter(int gid, struct sk_filter *filter);
+
+void __pfq_dismiss_function(sk_function_t f);
+
 
 static inline
 bool __pfq_vlan_filters_enabled(int gid)
@@ -80,11 +90,13 @@ bool __pfq_vlan_filters_enabled(int gid)
     return pfq_groups[gid].vlan_filt;
 }
 
+
 static inline
 bool __pfq_check_group_vlan_filter(int gid, int vid)
 {
     return pfq_groups[gid].vid_filters[vid & 4095];
 }    
+
 
 static inline
 void __pfq_toggle_group_vlan_filters(int gid, bool value)
@@ -95,60 +107,11 @@ void __pfq_toggle_group_vlan_filters(int gid, bool value)
     pfq_groups[gid].vlan_filt = value;
 }
 
+
 static inline
 void __pfq_set_group_vlan_filter(int gid, bool value, int vid)
 {
     pfq_groups[gid].vid_filters[vid & 4095] = value;
-}
-
-
-
-static inline
-void __pfq_set_group_function(int gid, sk_function_t fun)
-{
-    atomic_long_set(&pfq_groups[gid].function, (long)fun);
-    
-    msleep(GRACE_PERIOD);
-}
-
-
-static inline
-void __pfq_set_group_state(int gid, void *state)
-{
-	void * old = (void *)atomic_long_xchg(& pfq_groups[gid].state, (long)state);
-
-    msleep(GRACE_PERIOD);
-
-	kfree(old);
-}
-
-
-static inline
-void __pfq_set_group_filter(int gid, struct sk_filter *filter)
-{
-	struct sk_filter * old_filter = (void *)atomic_long_xchg(& pfq_groups[gid].filter, (long)filter);
-
-    msleep(GRACE_PERIOD);
-                             	
-    pfq_free_sk_filter(old_filter); 
-}
-
-
-static inline
-void __pfq_dismiss_function(sk_function_t f)
-{
-	int n;
-	for(n = 0; n < Q_MAX_GROUP; n++)
-	{
-	    sk_function_t fun = (sk_function_t)atomic_long_read(&pfq_groups[n].function);
-    	if (f == fun)
-		{
-      		__pfq_set_group_function(n, NULL);
-			__pfq_set_group_state(n, NULL);
-            
-			printk(KERN_INFO "[PFQ] function @%p dismissed.\n", fun);
-		}
-	}
 }
 
 

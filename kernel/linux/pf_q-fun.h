@@ -33,13 +33,19 @@
 #include <linux/if_vlan.h>
 
 
+struct sk_function_descr;
+
+extern int pfq_register_functions  (const char *module, struct sk_function_descr *fun);
+
+extern int pfq_unregister_functions(const char *module, struct sk_function_descr *fun);
+
+
 typedef struct
 {
 	unsigned int  hash:24;
 	unsigned int  type:8;
 	unsigned int  class;
-} funret_t;
-
+} ret_t;
 
 
 enum action 
@@ -48,12 +54,11 @@ enum action
     action_clone     = 0x02,
     action_dispatch  = 0x04,
     action_steal     = 0x08,
-    action_continue  = 0x10,
     action_to_kernel = 0x80,
 };
 
 
-typedef funret_t (*sk_function_t)(const struct sk_buff *, const void *);    
+typedef ret_t (*sk_function_t)(struct sk_buff *, ret_t);    
 
 
 struct sk_function_descr
@@ -63,36 +68,92 @@ struct sk_function_descr
 };
 
 
-extern int pfq_register_functions  (const char *module, struct sk_function_descr *fun);
-extern int pfq_unregister_functions(const char *module, struct sk_function_descr *fun);
+struct fun_context
+{
+    atomic_long_t   function;
+    atomic_long_t   state;
+};
+
+
+struct pfq_annotation
+{
+    unsigned long group_mask;
+
+    bool direct_skb;
+    bool stolen_skb;
+    bool send_to_kernel;
+
+    int index;      /* call index */ 
+
+    unsigned long state;
+    struct fun_context * functx;
+};
+
+
+
+static inline struct pfq_annotation *
+pfq_skb_annotation(struct sk_buff *skb)
+{
+        return (struct pfq_annotation *)(skb->cb);
+}
+
+
+/* utility functions */
+
+static inline 
+ret_t pfq_call(sk_function_t fun, struct sk_buff *skb, ret_t ret)
+{
+    pfq_skb_annotation(skb)->index++;
+    return fun ? fun(skb, ret) : ret;
+}
+
+
+static inline
+sk_function_t
+get_next_function(struct sk_buff *skb)
+{
+    int index = pfq_skb_annotation(skb)->index;
+    return (sk_function_t) atomic_long_read(& pfq_skb_annotation(skb)->functx[index+1].function);
+}
+
+
+static inline 
+void * get_state(struct sk_buff *skb)
+{
+    int index = pfq_skb_annotation(skb)->index;
+    return (void *)atomic_long_read(&pfq_skb_annotation(skb)->functx[index].state);
+}
+
+
+static inline 
+unsigned long get_annotation(struct sk_buff *skb)
+{
+    return pfq_skb_annotation(skb)->state;
+}
+
+
+static inline
+void set_annotation(struct sk_buff *skb, unsigned long state)
+{
+    pfq_skb_annotation(skb)->state = state;
+}
 
 
 /* none: ignore the packet for the current group */
 
 static inline
-funret_t none(void)
+ret_t none(void)
 {
-    funret_t ret = { 0, action_drop, 0};
+    ret_t ret = { 0, action_drop, 0 };
     return ret;
 }
-
-
-/* continuation: pass the skb to the next sk function */
-
-static inline
-funret_t pass(void)
-{
-    funret_t ret = { 0, action_continue, 0};
-    return ret;
-}
-
 
 /* broadcast: for this group, broadcast the skb to sockets of the given classes */
 
 static inline
-funret_t broadcast(unsigned int cl)
+ret_t broadcast(unsigned int cl)
 {
-    funret_t ret = { 0, action_clone, cl};
+    ret_t ret = { 0, action_clone, cl };
     return ret;
 }
 
@@ -100,9 +161,9 @@ funret_t broadcast(unsigned int cl)
 /* steering skb: for this group, dispatch the skb across sockets of the given classes (by means of hash) */
 
 static inline
-funret_t steering(unsigned int cl, unsigned int hash)
+ret_t steering(unsigned int cl, unsigned int hash)
 {
-    funret_t ret = {hash ^ (hash >> 8), action_dispatch, cl};
+    ret_t ret = { hash ^ (hash >> 8), action_dispatch, cl };
     return ret;
 }
 
@@ -110,19 +171,20 @@ funret_t steering(unsigned int cl, unsigned int hash)
 /* stolen packet: the skb is stolen by the steering function. (i.e. forwarded) */
 
 static inline
-funret_t stolen(void)
+ret_t stolen(void)
 {
-    funret_t ret = { 0, action_steal, 0};
+    ret_t ret = { 0, action_steal, 0 };
     return ret;
 }
 
 
-/* modifier */
+/*** modifiers ***/
 
 /* to_kernel: set the skb to be passed to kernel */
 
+
 static inline
-funret_t to_kernel(funret_t ret)
+ret_t to_kernel(ret_t ret)
 {
     if (unlikely(ret.type & action_steal))
     {

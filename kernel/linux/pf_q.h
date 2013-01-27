@@ -119,9 +119,11 @@ struct pfq_queue_descr
 #define Q_SO_GROUP_LEAVE            9
 #define Q_SO_GROUP_STATE            10
 #define Q_SO_GROUP_FUN              11
-#define Q_SO_GROUP_FPROG            12      /* Berkeley packet filter */
-#define Q_SO_GROUP_VLAN_FILT_TOGGLE 13      /* enable/disable VLAN filters */
-#define Q_SO_GROUP_VLAN_FILT        14      /* enable/disable VLAN ID filters */
+#define Q_SO_GROUP_RESET            12
+
+#define Q_SO_GROUP_FPROG            13      /* Berkeley packet filter */
+#define Q_SO_GROUP_VLAN_FILT_TOGGLE 14      /* enable/disable VLAN filters */
+#define Q_SO_GROUP_VLAN_FILT        15      /* enable/disable VLAN ID filters */
 
 #define Q_SO_GET_ID                 20
 #define Q_SO_GET_STATUS             21      /* 1 = enabled, 0 = disabled */
@@ -202,11 +204,13 @@ struct pfq_group_join
 /* steering functions */
 
 #define Q_FUN_NAME_LEN        64
+#define Q_FUN_MAX             4     /* max fun binding: f1 >>= f2 >>= f3...*/
 
 struct pfq_group_function
 {
     const char *name;
     int gid;
+    int level;
 };
 
 
@@ -215,6 +219,7 @@ struct pfq_group_state
     const void * state;
     size_t       size;      // sizeof(state)
     int gid;
+    int level;
 };
 
 
