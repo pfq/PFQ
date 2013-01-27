@@ -1836,7 +1836,7 @@ pfq_netif_receive_skb(struct sk_buff *skb)
 		return NET_RX_SUCCESS;
 	}
 
-	return netif_rx(skb);
+	return netif_receive_skb(skb);
 }
 
 
@@ -1852,7 +1852,7 @@ pfq_netif_rx(struct sk_buff *skb)
 		return NET_RX_SUCCESS;
 	}
 
-	return netif_receive_skb(skb);
+	return netif_rx(skb);
 }
 
 
