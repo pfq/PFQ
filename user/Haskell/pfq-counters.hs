@@ -53,7 +53,7 @@ options = cmdArgsMode $ Options {
                                   caplen   = 64,
                                   offset   = 0,
                                   slots    = 262144,
-                                  function = [] &= typ "FUNCTION"  &= help "Where FUNCTION = function-name:[function-name...:gid] (ie: steer-ipv4)",
+                                  function = [] &= typ "FUNCTION"  &= help "Where FUNCTION = function-name[:fun:fun][.gid] (ie: steer-ipv4)",
                                   thread   = [] &= typ "BINDING" &= help "Where BINDING = eth0:...:ethx[.core[.gid[.queue.queue...]]]"
                                 } &= summary "PFq multi-threaded packet counter." &= program "pfq-counters"
 
@@ -82,10 +82,10 @@ makeBinding s = case splitOn "." s of
 
 
 makeFun :: String -> (Gid, [String])
-makeFun s =  case splitOn ":" s of
+makeFun s =  case splitOn "." s of
                 []     -> error "makeFun: empty string"
-                n : [] -> (-1, [n])
-                ns     -> (read $ last ns, init ns)
+                fs : [] -> (-1, splitOn ":" fs)
+                fs : n  -> (read $ head n, splitOn ":" fs)
                 
 -- main function
 --
