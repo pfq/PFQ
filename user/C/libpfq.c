@@ -582,6 +582,9 @@ pfq_leave_group(pfq_t *q, int gid)
 	if (setsockopt(q->fd, PF_Q, Q_SO_GROUP_LEAVE, &gid, sizeof(gid)) == -1) {
 	        return q->error = "PFQ: leave group error", -1;
 	}
+	if (q->gid == gid)
+	        q->gid = -1;
+
 	return q->error = NULL, 0;
 }
 
