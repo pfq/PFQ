@@ -950,6 +950,7 @@ namespace net {
             struct pfq_group_join group { gid, static_cast<int16_t>(pol), mask };
 
             socklen_t size = sizeof(group);
+
             if (::getsockopt(fd_, PF_Q, Q_SO_GROUP_JOIN, &group, &size) == -1)
                 throw pfq_error(errno, "PFQ: join group error");
             
@@ -965,6 +966,9 @@ namespace net {
         {
             if (::setsockopt(fd_, PF_Q, Q_SO_GROUP_LEAVE, &gid, sizeof(gid)) == -1)
                 throw pfq_error(errno, "PFQ: leave group error");
+            
+            if (pdata_->gid == gid)
+                pdata_->gid = -1;
         }
 
 
