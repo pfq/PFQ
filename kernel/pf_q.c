@@ -1007,6 +1007,17 @@ int pfq_getsockopt(struct socket *sock,
 }
 
 
+#define CHECK_GROUP_PERM(gid, msg) \
+        if (gid < 0 || gid >= Q_MAX_GROUP) { \
+        	    pr_devel("[PFQ|%d] " msg " error: gid:%d invalid group!\n", pq->q_id, gid); \
+                return -EINVAL; \
+        } \
+        \
+        if (!__pfq_has_joined_group(gid, pq->q_id)) { \
+        	    pr_devel("[PFQ|%d] " msg " error: gid:%d no permission!\n", pq->q_id, gid); \
+                return -EPERM; \
+        }
+
 static
 int pfq_setsockopt(struct socket *sock,
                    int level, int optname,
@@ -1071,15 +1082,7 @@ int pfq_setsockopt(struct socket *sock,
                     if (copy_from_user(&bind, optval, optlen))
                             return -EFAULT;
                     
-                    if (bind.gid < 0 || bind.gid >= Q_MAX_GROUP) {
-                    	    pr_devel("[PFQ|%d] add binding error: gid:%d invalid group!\n", pq->q_id, bind.gid);
-			    return -EINVAL; 
-		    }
-
-		    if (!__pfq_has_joined_group(bind.gid, pq->q_id)) {
-                    	    pr_devel("[PFQ|%d] add binding error: gid:%d no permission!\n", pq->q_id, bind.gid);
-			    return -EPERM;
-		    }
+                    CHECK_GROUP_PERM(bind.gid, "add binding");
 
                     pfq_devmap_update(map_set, bind.if_index, bind.hw_queue, bind.gid);
             } break;
@@ -1093,15 +1096,7 @@ int pfq_setsockopt(struct socket *sock,
 		    if (copy_from_user(&bind, optval, optlen))
                             return -EFAULT;
 
-                    if (bind.gid < 0 || bind.gid >= Q_MAX_GROUP) {
-                    	    pr_devel("[PFQ|%d] remove binding error: gid:%d invalid group!\n", pq->q_id, bind.gid);
-			    return -EINVAL;
-		    }
-
-		    if (!__pfq_has_joined_group(bind.gid, pq->q_id)) {
-                    	    pr_devel("[PFQ|%d] remove binding error: gid:%d no permission!\n", pq->q_id, bind.gid);
-			    return -EPERM;
-		    }
+                    CHECK_GROUP_PERM(bind.gid, "remove binding");
 
                     pfq_devmap_update(map_reset, bind.if_index, bind.hw_queue, bind.gid);
             } break;
@@ -1111,8 +1106,10 @@ int pfq_setsockopt(struct socket *sock,
                     int tstamp;
                     if (optlen != sizeof(pq->q_tstamp))
                             return -EINVAL;
+                    
                     if (copy_from_user(&tstamp, optval, optlen))
                             return -EFAULT;
+
                     if (tstamp != 0 && tstamp != 1)
                             return -EINVAL;
 
@@ -1128,6 +1125,7 @@ int pfq_setsockopt(struct socket *sock,
                             return -EINVAL;
                     if (copy_from_user(&pq->q_caplen, optval, optlen)) 
                             return -EFAULT;
+                    
                     pq->q_slot_size = DBMP_QUEUE_SLOT_SIZE(pq->q_caplen);
                     pr_devel("[PFQ|%d] caplen:%lu -> slot_size:%lu\n", 
                                     pq->q_id, pq->q_caplen, pq->q_slot_size);
@@ -1139,6 +1137,7 @@ int pfq_setsockopt(struct socket *sock,
                             return -EINVAL;
                     if (copy_from_user(&pq->q_slots, optval, optlen)) 
                             return -EFAULT;
+                    
                     pr_devel("[PFQ|%d] queue_slots:%lu -> slot_size:%lu\n", 
                                     pq->q_id, pq->q_slots, pq->q_slot_size);
             } break;
@@ -1149,6 +1148,7 @@ int pfq_setsockopt(struct socket *sock,
                             return -EINVAL;
                     if (copy_from_user(&pq->q_offset, optval, optlen)) 
                             return -EFAULT;
+                    
                     pr_devel("[PFQ|%d] offset:%lu\n", pq->q_id, pq->q_offset);
             } break;
 
@@ -1177,16 +1177,8 @@ int pfq_setsockopt(struct socket *sock,
                     if (copy_from_user(&gid, optval, optlen)) 
                             return -EFAULT;
                     
-                    if (gid < 0 || gid >= Q_MAX_GROUP) {
-                    	    pr_devel("[PFQ|%d] reset group error: gid:%d invalid group!\n", pq->q_id, gid);
-			    return -EINVAL;
-		    }
+                    CHECK_GROUP_PERM(gid, "reset group");
 
-		    if (!__pfq_has_joined_group(gid, pq->q_id)) {
-                    	    pr_devel("[PFQ|%d] reset group error: gid:%d no permission!\n", pq->q_id, gid);
-			    return -EPERM;
-		    }
-                    
                     __pfq_reset_group_functx(gid);
 
                     pr_devel("[PFQ|%d] reset group gid:%d\n", pq->q_id, gid);
@@ -1201,15 +1193,7 @@ int pfq_setsockopt(struct socket *sock,
 		    if (copy_from_user(&s, optval, optlen)) 
 			    return -EFAULT;
 
-                    if (s.gid < 0 || s.gid >= Q_MAX_GROUP) {
-                    	    pr_devel("[PFQ|%d] state error: gid:%d invalid group!\n", pq->q_id, s.gid);
-			    return -EINVAL;
-		    }
-
-		    if (!__pfq_has_joined_group(s.gid, pq->q_id)) {
-                    	    pr_devel("[PFQ|%d] state error: gid:%d no permission!\n", pq->q_id, s.gid);
-			    return -EPERM;
-		    }
+                    CHECK_GROUP_PERM(s.gid, "group state");
 
 		    if (s.size && s.state) 
 		    {
@@ -1250,15 +1234,7 @@ int pfq_setsockopt(struct socket *sock,
 		    if (copy_from_user(&s, optval, optlen)) 
 			    return -EFAULT;
 		    
-                    if (s.gid < 0 || s.gid >= Q_MAX_GROUP) {
-                    	    pr_devel("[PFQ|%d] function error: gid:%d invalid group!\n", pq->q_id, s.gid);
-			    return -EINVAL;
-		    }
-		    
-		    if (!__pfq_has_joined_group(s.gid, pq->q_id)) {
-                    	    pr_devel("[PFQ|%d] function error: gid:%d no permission!\n", pq->q_id, s.gid);
-			    return -EPERM;
-		    }
+                    CHECK_GROUP_PERM(s.gid, "group function");
 
 		    if (s.name == NULL) {
 
@@ -1302,16 +1278,8 @@ int pfq_setsockopt(struct socket *sock,
 		    
 		    if (copy_from_user(&fprog, optval, optlen)) 
 			    return -EFAULT;
-
-                    if (fprog.gid < 0 || fprog.gid >= Q_MAX_GROUP) {
-                    	    pr_devel("[PFQ|%d] fprog error: gid:%d invalid group!\n", pq->q_id, fprog.gid);
-			    return -EINVAL;
-		    }
-
-		    if (!__pfq_has_joined_group(fprog.gid, pq->q_id)) {
-                    	    pr_devel("[PFQ|%d] fprog error: gid:%d no permission!\n", pq->q_id, fprog.gid);
-			    return -EPERM;
-		    }
+                    
+                    CHECK_GROUP_PERM(fprog.gid, "group fprog");
 
                     if (fprog.fcode.len > 0)  /* set the filter */
 		    {
@@ -1345,15 +1313,7 @@ int pfq_setsockopt(struct socket *sock,
 		    if (copy_from_user(&vlan, optval, optlen)) 
 			    return -EFAULT;
 
-                    if (vlan.gid < 0 || vlan.gid >= Q_MAX_GROUP) {
-                    	    pr_devel("[PFQ|%d] vlan_filt error: gid:%d invalid group!\n", pq->q_id, vlan.gid);
-			    return -EINVAL;
-		    }
-
-		    if (!__pfq_has_joined_group(vlan.gid, pq->q_id)) {
-                    	    pr_devel("[PFQ|%d] vlan_filt error: gid:%d no permission!\n", pq->q_id, vlan.gid);
-			    return -EPERM;
-                    }
+                    CHECK_GROUP_PERM(vlan.gid, "group vlan");
 
 		    __pfq_toggle_group_vlan_filters(vlan.gid, vlan.toggle);
  
@@ -1370,16 +1330,8 @@ int pfq_setsockopt(struct socket *sock,
 		    if (copy_from_user(&filt, optval, optlen)) 
 			    return -EFAULT;
 
-		    if (!__pfq_has_joined_group(filt.gid, pq->q_id)) {
-                    	    pr_devel("[PFQ|%d] vlan_set error: gid:%d no permission!\n", pq->q_id, filt.gid);
-			    return -EPERM;
-		    }
+                    CHECK_GROUP_PERM(filt.gid, "group vlan filt");
                
-                    if (filt.gid < 0 || filt.gid >= Q_MAX_GROUP) {
-                    	    pr_devel("[PFQ|%d] vlan_set error: gid:%d invalid group!\n", pq->q_id, filt.gid);
-			    return -EINVAL;
-		    }
-
                     if (filt.vid < -1 || filt.vid > 4094) {
                     	    pr_devel("[PFQ|%d] vlan_set error: gid:%d invalid vid:%d!\n", pq->q_id, filt.gid, filt.vid);
 			    return -EINVAL;
