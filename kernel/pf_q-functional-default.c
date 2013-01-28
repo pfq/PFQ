@@ -122,21 +122,21 @@ steering_ipv6_addr(struct sk_buff *skb, ret_t ret)
 
 
 ret_t
-steering_legacy(struct sk_buff *skb, ret_t ret)
+fun_legacy(struct sk_buff *skb, ret_t ret)
 {
         return to_kernel(none());
 }
 
 
 ret_t
-steering_transparent(struct sk_buff *skb, ret_t ret)
+fun_transparent(struct sk_buff *skb, ret_t ret)
 {
         return to_kernel(broadcast(Q_CLASS_ANY));
 }
 
 
 ret_t
-steering_clone(struct sk_buff *skb, ret_t ret)
+fun_clone(struct sk_buff *skb, ret_t ret)
 {
         return broadcast(Q_CLASS_ANY);
 }
@@ -169,10 +169,15 @@ filter_ipv4(struct sk_buff *skb, ret_t ret)
 		struct iphdr _iph;
     		const struct iphdr *ip;
 
+                sk_function_t fun;
+		
 		ip = skb_header_pointer(skb, skb->mac_len, sizeof(_iph), &_iph);
  		if (ip)
- 			return none(); // TODO
-        }
+                {
+                        fun = get_next_function(skb);
+                        return pfq_call(fun, skb, ret); 
+                }
+        }       
 
         return none();
 }
@@ -188,6 +193,8 @@ filter_udp(struct sk_buff *skb, ret_t ret)
 
 		struct udphdr _udp;
 		const struct udphdr *udp;
+                
+                sk_function_t fun;
 
 		ip = skb_header_pointer(skb, skb->mac_len, sizeof(_iph), &_iph);
  		if (ip == NULL)
@@ -198,7 +205,10 @@ filter_udp(struct sk_buff *skb, ret_t ret)
 		
 		udp = skb_header_pointer(skb, skb->mac_len + (ip->ihl<<2), sizeof(_udp), &_udp);
 		if (udp) 
-			return none(); // TODO
+		{
+                        fun = get_next_function(skb);
+                        return pfq_call(fun, skb, ret); 
+                }
 	}
 
 	return none();
@@ -215,6 +225,8 @@ filter_tcp(struct sk_buff *skb, ret_t ret)
 
 		struct tcphdr _tcp;
 		const struct tcphdr *tcp;
+                
+                sk_function_t fun;
 
 		ip = skb_header_pointer(skb, skb->mac_len, sizeof(_iph), &_iph);
  		if (ip == NULL)
@@ -224,8 +236,11 @@ filter_tcp(struct sk_buff *skb, ret_t ret)
 			return none();
 		
 		tcp = skb_header_pointer(skb, skb->mac_len + (ip->ihl<<2), sizeof(_tcp), &_tcp);
-		if (tcp) 
-			return none(); // TODO
+		if (tcp)
+                {
+                        fun = get_next_function(skb);
+                        return pfq_call(fun, skb, ret); 
+                }
 	}
 
 	return none();
@@ -239,9 +254,9 @@ struct sk_function_descr default_functions[] = {
         { "steer-ipv4",          steering_ipv4_addr  },
         { "steer-ipv6",          steering_ipv6_addr  },
         { "steer-flow",          steering_flow       },
-        { "steer-legacy",        steering_legacy     },
-        { "steer-transparent",   steering_transparent},
-        { "steer-clone",         steering_clone      },
+        { "legacy",              fun_legacy          },
+        { "transparent",         fun_transparent     },
+        { "clone",               fun_clone           },
         { "sink",                fun_sink            },
         { "id",                  fun_id              },
         { "filt-ipv4",           filter_ipv4         },
