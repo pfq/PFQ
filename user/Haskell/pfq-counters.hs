@@ -15,6 +15,7 @@ import Control.Concurrent
 import Control.Exception
 
 import Data.Maybe
+import Data.List
 import Data.List.Split
 import Data.Data
 -- import Data.Typeable
@@ -132,7 +133,7 @@ runThreads op ms = do
                      forM_ (devs binding) $ \dev ->
                        forM_ (queues binding) $ \queue ->
                          Q.setPromisc q dev True >> Q.bindGroup q (groupId binding) dev queue
-                     when (isJust sf) ((putStrLn $ "[pfq] Using function " ++ show (fromJust sf) ++ " for gid " ++ show(groupId binding) ++ "!") >>
+                     when (isJust sf) ((putStrLn $ "[pfq] Gid " ++ show(groupId binding) ++ " is using function: " ++ (intercalate " >>= " $ fromJust sf)) >>
                         Q.groupFunctions q (groupId binding) (fromJust sf)) 
                      Q.enable q 
                      recvLoop q (State c f S.empty) >> return ()  
