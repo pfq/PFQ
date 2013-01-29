@@ -53,6 +53,7 @@
 #include <cstdint>
 #include <thread>
 #include <vector>
+#include <deque>
 #include <algorithm>
 #include <system_error>
 
@@ -355,7 +356,60 @@ namespace net {
         smp_rmb();
         return &h + 1;
     }
+    
+    //////////////////////////////////////////////////////////////////////
  
+    struct qfun
+    {
+        std::string name;
+        std::pair<std::unique_ptr<char[]>, size_t> state;
+    };
+
+
+    template <typename S = std::nullptr_t>
+    qfun fun(std::string n, S const &state = nullptr)
+    {
+        // note: is_trivially_copyable is still unimplemented in g++-4.7 
+        // static_assert(std::is_trivially_copyable<S>::value, "fun state must be trivially copyable");
+
+        static_assert(std::is_pod<S>::value, "state must be a pod type");
+
+        if (std::is_same<S, std::nullptr_t>::value) {
+            return qfun { std::move(n), std::make_pair(nullptr,0) };
+        }
+        else {
+            auto ptr = new char[sizeof(S)];
+            memcpy(ptr, &state, sizeof(S));
+            return qfun { std::move(n), std::make_pair(std::unique_ptr<char[]>(ptr), sizeof(S)) };
+        }
+    }
+    
+    // binding functions ala Haskell...
+    //
+
+    inline std::deque<qfun>
+    operator>>=(qfun &&lhs, qfun &&rhs)
+    {
+        std::deque<qfun> ret;
+        ret.push_back(std::move(lhs));
+        ret.push_back(std::move(rhs));
+        return ret;
+    }
+
+    inline std::deque<qfun>
+    operator>>=(qfun &&lhs, std::deque<qfun> &&rhs)
+    {
+        rhs.push_front(std::move(lhs));
+        return std::move(rhs);
+    }
+
+    inline std::deque<qfun>
+    operator>>=(std::deque<qfun> &&lhs, qfun &&rhs)
+    {
+        lhs.push_back(std::move(rhs));
+        return std::move(lhs);
+    }
+
     //////////////////////////////////////////////////////////////////////
 
     class pfq_error : public std::system_error
@@ -910,6 +964,23 @@ namespace net {
             struct pfq_group_state s { &state, sizeof(state), gid, level };
             if (::setsockopt(fd_, PF_Q, Q_SO_GROUP_STATE, &s, sizeof(s)) == -1)
                 throw pfq_error(errno, "PFQ: set group state error");
+        }
+
+        template <typename C>
+        void
+        set_group_functional(int gid, C const &cont)
+        {
+            int level = 0;
+            for(auto const & f : cont)
+            {
+                set_group_function(gid, f.name.c_str(), level);
+                if (f.state.first)
+                {
+                    struct pfq_group_state s { f.state.first.get(), f.state.second, gid, level };
+                    if (::setsockopt(fd_, PF_Q, Q_SO_GROUP_STATE, &s, sizeof(s)) == -1)
+                        throw pfq_error(errno, "PFQ: set group state error");
+                }
+            }
         }
 
         void

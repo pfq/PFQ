@@ -120,11 +120,33 @@ namespace test
                     m_pfq.bind_group(gid, d, q);
                 });
 
+            std::deque<net::qfun> fs; 
             if (!opt::function.empty() && (m_id == 0))
             {
-                m_pfq.set_group_function(gid, opt::function.c_str());
+                std::unique_ptr<char> f(strdup(opt::function.c_str()));
+
+                auto p = strtok(f.get(), ":");
+                while (p)
+                {
+                    fs = std::move(fs) >>= net::fun(p);
+                    // fs.push_back(net::fun(p));
+                    p = strtok(nullptr, ":");
+                }
+
             }   
 
+            if (!fs.empty())
+            {
+                std::cout << "fun: " << fs.begin()->name;
+                
+                std::for_each(std::next(fs.begin(),1), fs.end(), [](net::qfun &fun) {
+                    std::cout << " >>= " << fun.name;    
+                });
+                std::cout << std::endl;
+            }
+
+            m_pfq.set_group_functional(gid, fs);
+            
             m_pfq.timestamp_enabled(false);
             
             m_pfq.enable();
