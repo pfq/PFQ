@@ -980,6 +980,8 @@ namespace net {
                     if (::setsockopt(fd_, PF_Q, Q_SO_GROUP_STATE, &s, sizeof(s)) == -1)
                         throw pfq_error(errno, "PFQ: set group state error");
                 }
+
+                level++;
             }
         }
 
