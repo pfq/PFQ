@@ -206,7 +206,7 @@ toPktHdr hdr = do
 
 type Callback  = PktHdr -> Ptr Word8  -> IO ()
 
-type CPFqCallback = Ptr PktHdr -> Ptr Word8 -> Ptr Word8 -> IO ()
+type CPFqCallback = Ptr Word8 -> Ptr PktHdr -> Ptr Word8 -> IO ()
                
 -- error handling 
 --
@@ -620,9 +620,7 @@ dispatch hdl f timeo = do
 
 
 makeCallback :: Callback -> IO (FunPtr CPFqCallback)
-makeCallback fun = make_callback $ \chdr ptr _ -> do
-    hdr <- toPktHdr chdr
-    fun hdr ptr
+makeCallback fun = make_callback $ \_ hdr ptr -> toPktHdr hdr >>= flip fun ptr
 
 
 -- C functions from libpfq.c
