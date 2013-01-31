@@ -120,10 +120,10 @@ get_next_function(struct sk_buff *skb)
 
 
 static inline 
-void * get_state(struct sk_buff *skb)
+const void * get_state(struct sk_buff *skb)
 {
     int index = pfq_skb_annotation(skb)->index;
-    return (void *)atomic_long_read(&pfq_skb_annotation(skb)->functx[index].state);
+    return (const void *)atomic_long_read(&pfq_skb_annotation(skb)->functx[index].state);
 }
 
 
