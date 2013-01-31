@@ -92,7 +92,6 @@ struct pfq_annotation
 };
 
 
-
 static inline struct pfq_annotation *
 pfq_skb_annotation(struct sk_buff *skb)
 {
@@ -128,14 +127,14 @@ const void * get_state(struct sk_buff *skb)
 
 
 static inline 
-unsigned long get_annotation(struct sk_buff *skb)
+unsigned long get_shared_state(struct sk_buff *skb)
 {
     return pfq_skb_annotation(skb)->state;
 }
 
 
 static inline
-void set_annotation(struct sk_buff *skb, unsigned long state)
+void set_shared_state(struct sk_buff *skb, unsigned long state)
 {
     pfq_skb_annotation(skb)->state = state;
 }
