@@ -116,7 +116,9 @@ __pfq_group_dtor(int gid)
 
         for(i = 0; i < Q_FUN_MAX; i++)
         {
-                state[i] = (void *)atomic_long_xchg(&pfq_groups[gid].functx[i].state, 0L);
+		atomic_long_set(&pfq_groups[gid].functx[i].function, 0L);
+                
+		state[i] = (void *)atomic_long_xchg(&pfq_groups[gid].functx[i].state, 0L);
         }
 
         filter = (struct sk_filter *)atomic_long_xchg(&pfq_groups[gid].filter, 0L);
@@ -173,8 +175,8 @@ __pfq_leave_group(int gid, int id)
         unsigned long tmp;
         int i;
 
-        if (!pfq_groups[gid].pid)
-                return -1;
+	if (!pfq_groups[gid].pid)
+		return -1;
 
         for(i = 0; i < Q_CLASS_MAX; ++i)
         {

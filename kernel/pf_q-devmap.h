@@ -49,7 +49,13 @@ void pfq_devmap_monitor_update(void);
 static inline 
 int __pfq_devmap_equal(int i1, int q1, int i2, int q2)
 {
-    return  (i1 == i2 && q1 == q2) ||
+	i1 = i1 > 0 ? i1 & Q_MAX_DEVICE_MASK   : i1;
+    q1 = q1 > 0 ? q1 & Q_MAX_HW_QUEUE_MASK : q1;
+	
+    i2 = i2 > 0 ? i2 & Q_MAX_DEVICE_MASK   : i2;
+    q2 = q2 > 0 ? q2 & Q_MAX_HW_QUEUE_MASK : q2;
+
+	return  (i1 == i2 && q1 == q2) ||
             (i1 == i2 && q2 == -1) ||
             (i2 == -1 && q1 == q2) ||
             (i2 == -1 && q2 == -1);
