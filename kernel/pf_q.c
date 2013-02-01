@@ -499,8 +499,11 @@ int pfq_getsockopt(struct socket *sock,
 
         if (pq == NULL)
                 return -EINVAL;
-        if (get_user(len, optlen) || len < 0)
+
+        if (get_user(len, optlen))
                 return -EFAULT;
+        if (len < 0)
+                return -EINVAL;
 
         switch(optname)
         {
