@@ -1672,22 +1672,13 @@ static void __exit pfq_exit_module(void)
                         struct pfq_annotation *cb = pfq_skb_annotation(skb);
                         if (unlikely(cb->stolen_skb))
                                 continue;
-
                  	kfree_skb(skb);
 		}
+
        		pfq_queue_skb_flush(this_queue);
 
 #ifdef PFQ_USE_SKB_RECYCLE
-                {
-                        /* flush recycle skb list */
-                        
-                        struct sk_buff_head *list = &local_cache->recycle_list;
-                        
-                        while ((skb = skb_dequeue(list))!= NULL)
-                        {         
-                                kfree_skb(skb);
-                        }
-                }
+                skb_queue_purge(&local_cache->recycle_list);
 #endif
         }
 
