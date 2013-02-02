@@ -162,6 +162,21 @@ fun_id(struct sk_buff *skb, ret_t ret)
 
 
 ret_t
+fun_state_id(struct sk_buff *skb, ret_t ret)
+{
+        sk_function_t fun;
+
+        get_state(skb);    
+        
+        fun = get_next_function(skb);
+        
+        put_state(skb);
+
+        return pfq_call(fun, skb, ret); 
+}
+
+
+ret_t
 filter_ipv4(struct sk_buff *skb, ret_t ret)
 {
 	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP)) 
@@ -259,6 +274,7 @@ struct sk_function_descr default_functions[] = {
         { "clone",               fun_clone           },
         { "sink",                fun_sink            },
         { "id",                  fun_id              },
+        { "state",               fun_state_id        },
         { "filt-ipv4",           filter_ipv4         },
         { "filt-udp",            filter_udp          },
         { "filt-tcp",            filter_tcp          },
