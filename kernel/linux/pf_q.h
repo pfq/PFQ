@@ -135,6 +135,7 @@ struct pfq_queue_descr
 #define Q_SO_GET_OFFSET             28
 #define Q_SO_GET_GROUPS             29
 #define Q_SO_GET_GROUP_STATS        30
+#define Q_SO_GET_GROUP_STATE        31
 
 /* general defines */
 
@@ -216,7 +217,7 @@ struct pfq_group_function
 
 struct pfq_group_state
 {
-    const void * state;
+    void       * state;
     size_t       size;      // sizeof(state)
     int gid;
     int level;

@@ -88,6 +88,7 @@ __pfq_group_ctor(int gid)
         {
                 atomic_long_set(&that->functx[i].function, 0L);
                 atomic_long_set(&that->functx[i].state,    0L);
+                spin_lock_init (&that->functx[i].lock);
         }
 
         atomic_long_set(&that->filter,   0L);
@@ -232,6 +233,26 @@ int __pfq_set_group_state(int gid, void *state, int level)
         kfree(old);
 
         return 0;
+}
+
+
+int __pfq_get_group_state(int gid, int level, int size, void __user * dst)
+{
+        int err = 0;
+        void *src;
+
+        if (level < 0 || level >= Q_FUN_MAX)
+                return -EINVAL;
+
+        spin_lock_bh(&pfq_groups[gid].functx[level].lock);
+
+        src = (void *)atomic_long_read(&pfq_groups[gid].functx[level].state);
+
+        err = src ? copy_to_user(dst, src, size) : -EFAULT;
+
+        spin_unlock_bh(&pfq_groups[gid].functx[level].lock);
+
+        return err;
 }
 
 

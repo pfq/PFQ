@@ -72,6 +72,7 @@ struct fun_context
 {
     atomic_long_t   function;
     atomic_long_t   state;
+    spinlock_t      lock;
 };
 
 

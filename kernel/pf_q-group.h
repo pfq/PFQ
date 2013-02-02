@@ -28,6 +28,7 @@
 #include <linux/delay.h>
 #include <linux/pf_q.h>
 #include <linux/filter.h>
+#include <linux/spinlock.h>
 
 #include <linux/pf_q-fun.h>
 
@@ -76,6 +77,8 @@ unsigned long pfq_get_groups(int id);
 int __pfq_set_group_function(int gid, sk_function_t fun, int level);
 
 int __pfq_set_group_state(int gid, void *state, int level);
+
+int __pfq_get_group_state(int gid, int level, int size, void __user *state);
 
 void __pfq_reset_group_functx(int gid);
 

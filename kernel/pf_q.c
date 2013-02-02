@@ -481,15 +481,15 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
                         
 			if (atomic_long_read(&pfq_groups[gid].functx[0].function))
                         {
+                                /* continuation-passing style evaluation */
+
+                                sk_function_t fun = (sk_function_t) atomic_long_read(&pfq_groups[gid].functx[0].function);
+                                
                                 /* reset state, index call and functx ptr */
 
                                 cb->index  = -1;
                                 cb->state  =  0;
                                 cb->functx =  pfq_groups[gid].functx;
-
-                                /* continuation-passing style evaluation */
-
-                                sk_function_t fun = (sk_function_t) atomic_long_read(&pfq_groups[gid].functx[0].function);
 
 
                                 ret = pfq_call(fun, skb, none());
@@ -980,12 +980,14 @@ int pfq_getsockopt(struct socket *sock,
                             return -EFAULT;
                     
 		    gid = (int)stat.recv;
+
                     if (gid < 0  || gid >= Q_MAX_GROUP) {
                     	    pr_devel("[PFQ|%d] group stats error: gid:%d invalid argument!\n", pq->q_id, gid);
 			    return -EINVAL;
 		    }
 
 		    /* check whether the group is joinable.. */
+
 		    if (!__pfq_group_access(gid, pq->q_id, Q_GROUP_UNDEFINED, false)) {   
                     	    pr_devel("[PFQ|%d] group stats error: gid:%d access denied!\n", pq->q_id, gid);
 			    return -EPERM;
@@ -998,6 +1000,40 @@ int pfq_getsockopt(struct socket *sock,
                     if (copy_to_user(optval, &stat, sizeof(stat)))
                             return -EFAULT;
             } break;
+
+	case Q_SO_GET_GROUP_STATE:
+	    {
+		    struct pfq_group_state s;
+		    
+		    if (len != sizeof(s))
+			    return -EINVAL;
+		    
+		    if (copy_from_user(&s, optval, len)) 
+			    return -EFAULT;
+
+                    if (s.gid < 0  || s.gid >= Q_MAX_GROUP) {
+                    	    pr_devel("[PFQ|%d] group state error: gid:%d invalid gid!\n", pq->q_id, s.gid);
+			    return -EINVAL;
+		    }
+                    
+                    if (!s.size || !s.state) {
+                    	    pr_devel("[PFQ|%d] group state error: gid:%d invalid argument!\n", pq->q_id, s.gid);
+                            return -EFAULT;
+                    }
+
+		    /* check whether the group is joinable.. */
+
+		    if (!__pfq_group_access(s.gid, pq->q_id, Q_GROUP_UNDEFINED, false)) {   
+                    	    pr_devel("[PFQ|%d] group state error: gid:%d access denied!\n", pq->q_id, s.gid);
+			    return -EPERM;
+		    }
+
+                    if (__pfq_get_group_state(s.gid, s.level, s.size, s.state) < 0) {
+                    	pr_devel("[PFQ|%d] get state error: gid:%d error!\n", pq->q_id, s.gid);
+                            return -EFAULT;
+                    }
+	    
+	    } break;
 
         default:
             return -EFAULT;
@@ -1017,6 +1053,7 @@ int pfq_getsockopt(struct socket *sock,
         	    pr_devel("[PFQ|%d] " msg " error: gid:%d no permission!\n", pq->q_id, gid); \
                 return -EPERM; \
         }
+
 
 static
 int pfq_setsockopt(struct socket *sock,
