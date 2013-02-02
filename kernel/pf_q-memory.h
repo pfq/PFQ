@@ -59,14 +59,14 @@ pfq_kfree_skb_recycle(struct sk_buff *skb, struct sk_buff_head *list)
 {
 #ifdef PFQ_USE_SKB_RECYCLE
 
-        if (likely(skb_queue_len(list) <= recycle_len))
-        {
-                __skb_queue_head(list, skb);
-                return;
-        }
+    if (likely(skb_queue_len(list) <= recycle_len))
+    {
+            __skb_queue_head(list, skb);
+            return;
+    }
 
 #endif        
-	__kfree_skb(skb);     
+	kfree_skb(skb);     
 }
 
 
@@ -89,20 +89,18 @@ pfq_skb_recycle(struct sk_buff *skb)
 {
         //  skb_recycle(skb); removed from kernel 3.7!!!
 
+        struct skb_shared_info *shinfo;
+        
         if (skb->destructor) {
             skb->destructor(skb);
             skb->destructor = NULL;
         }
         
-#if 0
-        struct skb_shared_info *shinfo;
-
         shinfo = skb_shinfo(skb);
         memset(shinfo, 0, offsetof(struct skb_shared_info, dataref));
         atomic_set(&shinfo->dataref,1);
 
         memset(skb, 0, offsetof(struct sk_buff, tail));
-#endif
 
         skb->data = skb->head + NET_SKB_PAD;
 
@@ -146,11 +144,21 @@ ____pfq_alloc_skb(unsigned int size, gfp_t priority, int fclone, int node)
         
         struct local_data * local_data = __this_cpu_ptr(cpu_data);
         struct sk_buff *skb;
-
-        skb = __skb_dequeue(&local_data->recycle_list);
-        if (skb) 
-                return pfq_skb_recycle(skb);
         
+        // skb = __skb_dequeue(&local_data->recycle_list);
+        // if (skb) 
+        //         return pfq_skb_recycle(skb);
+        
+        skb = skb_peek(&local_data->recycle_list);
+        if (skb)
+        {
+            if (skb->truesize >= SKB_TRUESIZE(SKB_DATA_ALIGN(size) + SKB_DATA_ALIGN(sizeof(struct skb_shared_info))) )
+            {
+                skb_unlink(skb, &local_data->recycle_list);
+                return pfq_skb_recycle(skb);
+            }
+        }
+
 #endif
         return __alloc_skb(size, priority, fclone, node);
 }
