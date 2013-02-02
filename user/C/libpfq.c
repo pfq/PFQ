@@ -503,9 +503,20 @@ pfq_set_group_function(pfq_t *q, int gid, const char *fun_name, int level)
 int
 pfq_set_group_state(pfq_t *q, int gid, const void *state, size_t size, int level)
 {
-	struct pfq_group_state s  = { state, size, gid, level };
+	struct pfq_group_state s  = { (void *)state, size, gid, level };
 	if (setsockopt(q->fd, PF_Q, Q_SO_GROUP_STATE, &s, sizeof(s)) == -1) {
 		return q->error = "PFQ: set group state error", -1;
+	}
+	return q->error = NULL, 0;
+}
+
+
+int
+pfq_get_group_state(pfq_t *q, int gid, void *state, size_t size, int level)
+{
+	struct pfq_group_state s  = { state, size, gid, level };
+	if (setsockopt(q->fd, PF_Q, Q_SO_GET_GROUP_STATE, &s, sizeof(s)) == -1) {
+		return q->error = "PFQ: get group state error", -1;
 	}
 	return q->error = NULL, 0;
 }

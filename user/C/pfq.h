@@ -232,6 +232,8 @@ extern int pfq_set_group_function(pfq_t *q, int gid, const char *fun_name, int l
 
 extern int pfq_set_group_state(pfq_t *q, int gid, const void *state, size_t size, int level);
 
+extern int pfq_get_group_state(pfq_t *q, int gid, void *state, size_t size, int level);
+
 extern int pfq_group_reset(pfq_t *q, int gid);
 
 extern int pfq_group_fprog(pfq_t *q, int gid, struct sock_fprog *);
