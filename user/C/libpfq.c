@@ -515,7 +515,8 @@ int
 pfq_get_group_state(pfq_t *q, int gid, void *state, size_t size, int level)
 {
 	struct pfq_group_state s  = { state, size, gid, level };
-	if (setsockopt(q->fd, PF_Q, Q_SO_GET_GROUP_STATE, &s, sizeof(s)) == -1) {
+        socklen_t len = sizeof(s);
+	if (getsockopt(q->fd, PF_Q, Q_SO_GET_GROUP_STATE, &s, &len) == -1) {
 		return q->error = "PFQ: get group state error", -1;
 	}
 	return q->error = NULL, 0;

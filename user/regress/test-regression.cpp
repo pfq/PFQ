@@ -515,6 +515,19 @@ Context(PFQ)
         AssertNothrow(x.vlan_filters_enabled(x.group_id(), false));
     }
 
+    Test(group_state)
+    {
+        pfq x(group_policy::shared, 64);
+
+        int n = 42;
+        x.set_group_state(x.group_id(), n); 
+
+        int m = 0;
+        x.get_group_state(x.group_id(), m);
+
+        Assert(n, is_equal_to(m));
+    }
+
 }
 
 

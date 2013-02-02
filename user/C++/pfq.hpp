@@ -971,7 +971,8 @@ namespace net {
         get_group_state(int gid, T &state, int level = 0)
         {
             struct pfq_group_state s { &state, sizeof(state), gid, level };
-            if (::getsockopt(fd_, PF_Q, Q_SO_GET_GROUP_STATE, &s, sizeof(s)) == -1)
+            socklen_t len = sizeof(s);
+            if (::getsockopt(fd_, PF_Q, Q_SO_GET_GROUP_STATE, &s, &len) == -1)
                 throw pfq_error(errno, "PFQ: get group state error");
         }
 
