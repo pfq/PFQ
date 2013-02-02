@@ -120,10 +120,27 @@ get_next_function(struct sk_buff *skb)
 
 
 static inline 
-const void * get_state(struct sk_buff *skb)
+void * get_unsafe_state(struct sk_buff *skb)
 {
     int index = pfq_skb_annotation(skb)->index;
-    return (const void *)atomic_long_read(&pfq_skb_annotation(skb)->functx[index].state);
+    return (void *)atomic_long_read(&pfq_skb_annotation(skb)->functx[index].state);
+}
+
+
+static inline 
+void * get_state(struct sk_buff *skb)
+{
+    int index = pfq_skb_annotation(skb)->index;
+    spin_lock(&pfq_skb_annotation(skb)->functx[index].lock);
+    return (void *)atomic_long_read(&pfq_skb_annotation(skb)->functx[index].state);
+}
+
+
+static inline 
+void put_state(struct sk_buff *skb)
+{
+    int index = pfq_skb_annotation(skb)->index;
+    spin_unlock(&pfq_skb_annotation(skb)->functx[index].lock);
 }
 
 
@@ -135,7 +152,7 @@ unsigned long get_shared_state(struct sk_buff *skb)
 
 
 static inline
-void set_shared_state(struct sk_buff *skb, unsigned long state)
+void put_shared_state(struct sk_buff *skb, unsigned long state)
 {
     pfq_skb_annotation(skb)->state = state;
 }
