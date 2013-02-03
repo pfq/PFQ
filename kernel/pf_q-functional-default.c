@@ -382,7 +382,7 @@ ret_t
 filter_tcp(struct sk_buff *skb, ret_t ret)
 {
         sk_function_t fun = get_next_function(skb);
-	
+
 	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP)) 
 	{ 
 		struct iphdr _iph;
@@ -472,6 +472,7 @@ struct sk_function_descr default_functions[] = {
         { "legacy",              fun_legacy          },
         { "transparent",         fun_transparent     },
         { "clone",               fun_clone           },
+        { "broadcast",           fun_clone           },
         { "sink",                fun_sink            },
         { "id",                  fun_id              },
         { "state",               fun_state_id        },
