@@ -442,7 +442,7 @@ filter_flow(struct sk_buff *skb, ret_t ret)
 
 
 ret_t
-comb_not(struct sk_buff *skb, ret_t ret)
+comb_neg(struct sk_buff *skb, ret_t ret)
 {
         sk_function_t fun = get_next_function(skb);
         return pfq_call(fun, skb, ret.type == action_drop ? null() : drop());
@@ -483,7 +483,7 @@ struct sk_function_descr default_functions[] = {
         { "strict-udp",          strict_udp          },
         { "strict-tcp",          strict_tcp          },
         { "strict-flow",         strict_flow         },
-        { "not",                 comb_not            },
+        { "neg",                 comb_neg            },
         { "par",                 comb_par            },
 	{ NULL, NULL}};
 
