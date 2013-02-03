@@ -106,7 +106,6 @@ pfq_skb_annotation(struct sk_buff *skb)
 static inline 
 ret_t pfq_call(sk_function_t fun, struct sk_buff *skb, ret_t ret)
 {
-    pfq_skb_annotation(skb)->index++;
     return fun ? fun(skb, ret) : ret;
 }
 
@@ -115,8 +114,8 @@ static inline
 sk_function_t
 get_next_function(struct sk_buff *skb)
 {
-    int index = pfq_skb_annotation(skb)->index;
-    return (sk_function_t) atomic_long_read(& pfq_skb_annotation(skb)->functx[index+1].function);
+    int index = ++pfq_skb_annotation(skb)->index;
+    return (sk_function_t) atomic_long_read(& pfq_skb_annotation(skb)->functx[index].function);
 }
 
 
