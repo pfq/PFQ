@@ -205,7 +205,7 @@ struct pfq_group_join
 /* steering functions */
 
 #define Q_FUN_NAME_LEN        64
-#define Q_FUN_MAX             4     /* max fun binding: f1 >>= f2 >>= f3...*/
+#define Q_FUN_MAX             8     /* max fun binding: f1 >>= f2 >>= f3...*/
 
 struct pfq_group_function
 {
