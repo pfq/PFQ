@@ -24,9 +24,15 @@
 #include <linux/pf_q-fun.h>
 
 ret_t
-steering_mac_addr(struct sk_buff *skb, ret_t ret)
+steering_mac(struct sk_buff *skb, ret_t ret)
 {
-        uint16_t * a = (uint16_t *)eth_hdr(skb);
+        uint16_t * a; 
+        
+        if (ret.type == action_drop)
+                return drop();
+        
+        a = (uint16_t *)eth_hdr(skb); 
+	
 	return steering(Q_CLASS_DEFAULT, a[0] ^ a[1] ^ a[2] ^ a[3] ^ a[4] ^ a[5] );		
 }
 
@@ -34,6 +40,9 @@ steering_mac_addr(struct sk_buff *skb, ret_t ret)
 ret_t
 steering_vlan_untagged(struct sk_buff *skb, ret_t ret)
 {
+        if (ret.type == action_drop)
+                return drop();
+	
 	return steering(Q_CLASS_DEFAULT, skb->vlan_tci == 0);
 }
 
@@ -41,13 +50,19 @@ steering_vlan_untagged(struct sk_buff *skb, ret_t ret)
 ret_t
 steering_vlan_id(struct sk_buff *skb, ret_t ret)
 {
+        if (ret.type == action_drop)
+                return drop();
+ 	
  	return steering(Q_CLASS_DEFAULT, skb->vlan_tci & VLAN_VID_MASK);
 }
 
 
 ret_t
-steering_ipv4_addr(struct sk_buff *skb, ret_t ret)
+steering_ipv4(struct sk_buff *skb, ret_t ret)
 {       
+        if (ret.type == action_drop)
+                return drop();
+	
 	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP)) 
 	{ 
 		struct iphdr _iph;
@@ -55,18 +70,21 @@ steering_ipv4_addr(struct sk_buff *skb, ret_t ret)
 
 		ip = skb_header_pointer(skb, skb->mac_len, sizeof(_iph), &_iph);
  		if (ip == NULL)
- 			return none();
+ 			return drop();
 
         	return steering(Q_CLASS_DEFAULT, ip->saddr ^ ip->daddr);
 	}
 
-	return none();
+	return drop();
 }
 
 
 ret_t
 steering_flow(struct sk_buff *skb, ret_t ret)
 {       
+        if (ret.type == action_drop)
+                return drop();
+	
 	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP)) 
 	{ 
 		struct iphdr _iph;
@@ -77,26 +95,29 @@ steering_flow(struct sk_buff *skb, ret_t ret)
 
 		ip = skb_header_pointer(skb, skb->mac_len, sizeof(_iph), &_iph);
  		if (ip == NULL)
- 			return none();
+ 			return drop();
 
 		if (ip->protocol != IPPROTO_UDP &&
 		    ip->protocol != IPPROTO_TCP) 
-			return none();
+			return drop();
 		
 		udp = skb_header_pointer(skb, skb->mac_len + (ip->ihl<<2), sizeof(_udp), &_udp);
 		if (udp == NULL) 
-			return none();
+			return drop();
 		
         	return steering(Q_CLASS_DEFAULT, ip->saddr ^ ip->daddr ^ udp->source ^ udp->dest);
 	}
 
-	return none();
+	return drop();
 }
 
 
 ret_t
-steering_ipv6_addr(struct sk_buff *skb, ret_t ret)
+steering_ipv6(struct sk_buff *skb, ret_t ret)
 {       
+        if (ret.type == action_drop)
+                return drop();
+	
 	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IPV6)) 
 	{ 
 		struct ipv6hdr _ip6h;
@@ -104,7 +125,7 @@ steering_ipv6_addr(struct sk_buff *skb, ret_t ret)
 
 		ip6 = skb_header_pointer(skb, skb->mac_len, sizeof(_ip6h), &_ip6h);
  		if (ip6 == NULL)
- 			return none();
+ 			return drop();
 
 		return steering(Q_CLASS_DEFAULT,
 			ip6->saddr.in6_u.u6_addr32[0] ^
@@ -117,20 +138,26 @@ steering_ipv6_addr(struct sk_buff *skb, ret_t ret)
 			ip6->daddr.in6_u.u6_addr32[3] );
 	}
 
-	return none();
+	return drop();
 }
 
 
 ret_t
 fun_legacy(struct sk_buff *skb, ret_t ret)
 {
-        return to_kernel(none());
+        if (ret.type == action_drop)
+                return drop();
+        
+        return to_kernel(drop());
 }
 
 
 ret_t
 fun_transparent(struct sk_buff *skb, ret_t ret)
 {
+        if (ret.type == action_drop)
+                return drop();
+        
         return to_kernel(broadcast(Q_CLASS_ANY));
 }
 
@@ -138,6 +165,9 @@ fun_transparent(struct sk_buff *skb, ret_t ret)
 ret_t
 fun_clone(struct sk_buff *skb, ret_t ret)
 {
+        if (ret.type == action_drop)
+                return drop();
+        
         return broadcast(Q_CLASS_ANY);
 }
 
@@ -175,9 +205,10 @@ fun_state_id(struct sk_buff *skb, ret_t ret)
         return pfq_call(fun, skb, ret); 
 }
 
+/* filters */
 
 ret_t
-filter_ipv4(struct sk_buff *skb, ret_t ret)
+strict_ipv4(struct sk_buff *skb, ret_t ret)
 {
 	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP)) 
 	{ 
@@ -194,12 +225,12 @@ filter_ipv4(struct sk_buff *skb, ret_t ret)
                 }
         }       
 
-        return none();
+        return drop();
 }
 
 
 ret_t
-filter_udp(struct sk_buff *skb, ret_t ret)
+strict_udp(struct sk_buff *skb, ret_t ret)
 {
 	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP)) 
 	{ 
@@ -213,10 +244,10 @@ filter_udp(struct sk_buff *skb, ret_t ret)
 
 		ip = skb_header_pointer(skb, skb->mac_len, sizeof(_iph), &_iph);
  		if (ip == NULL)
- 			return none();
+ 			return drop();
 
 		if (ip->protocol != IPPROTO_UDP) 
-			return none();
+			return drop();
 		
 		udp = skb_header_pointer(skb, skb->mac_len + (ip->ihl<<2), sizeof(_udp), &_udp);
 		if (udp) 
@@ -226,12 +257,12 @@ filter_udp(struct sk_buff *skb, ret_t ret)
                 }
 	}
 
-	return none();
+	return drop();
 }
 
 
 ret_t
-filter_tcp(struct sk_buff *skb, ret_t ret)
+strict_tcp(struct sk_buff *skb, ret_t ret)
 {
 	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP)) 
 	{ 
@@ -245,10 +276,10 @@ filter_tcp(struct sk_buff *skb, ret_t ret)
 
 		ip = skb_header_pointer(skb, skb->mac_len, sizeof(_iph), &_iph);
  		if (ip == NULL)
- 			return none();
+ 			return drop();
 
 		if (ip->protocol != IPPROTO_TCP) 
-			return none();
+			return drop();
 		
 		tcp = skb_header_pointer(skb, skb->mac_len + (ip->ihl<<2), sizeof(_tcp), &_tcp);
 		if (tcp)
@@ -258,12 +289,12 @@ filter_tcp(struct sk_buff *skb, ret_t ret)
                 }
 	}
 
-	return none();
+	return drop();
 }
 
 
 ret_t
-filter_flow(struct sk_buff *skb, ret_t ret)
+strict_flow(struct sk_buff *skb, ret_t ret)
 {
 	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP)) 
 	{ 
@@ -277,11 +308,11 @@ filter_flow(struct sk_buff *skb, ret_t ret)
 
 		ip = skb_header_pointer(skb, skb->mac_len, sizeof(_iph), &_iph);
  		if (ip == NULL)
- 			return none();
+ 			return drop();
 
 		if (ip->protocol != IPPROTO_UDP &&
 		    ip->protocol != IPPROTO_TCP) 
-			return none();
+			return drop();
 		
 		udp = skb_header_pointer(skb, skb->mac_len + (ip->ihl<<2), sizeof(_udp), &_udp);
 		if (udp) 
@@ -291,16 +322,139 @@ filter_flow(struct sk_buff *skb, ret_t ret)
                 }
 	}
 
-	return none();
+	return drop();
+}
+
+
+ret_t
+filter_ipv4(struct sk_buff *skb, ret_t ret)
+{
+        sk_function_t fun = get_next_function(skb);
+	
+	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP)) 
+	{ 
+		struct iphdr _iph;
+    		const struct iphdr *ip;
+
+		ip = skb_header_pointer(skb, skb->mac_len, sizeof(_iph), &_iph);
+ 		if (ip)
+                {
+                        return pfq_call(fun, skb, ret); 
+                }
+        }       
+
+	return pfq_call(fun, skb, drop());
+}
+
+
+ret_t
+filter_udp(struct sk_buff *skb, ret_t ret)
+{
+        sk_function_t fun = get_next_function(skb);
+	
+	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP)) 
+	{ 
+		struct iphdr _iph;
+    		const struct iphdr *ip;
+
+		struct udphdr _udp;
+		const struct udphdr *udp;
+
+		ip = skb_header_pointer(skb, skb->mac_len, sizeof(_iph), &_iph);
+ 		if (ip == NULL)
+	                return pfq_call(fun, skb, drop());
+
+		if (ip->protocol != IPPROTO_UDP) 
+	                return pfq_call(fun, skb, drop());
+		
+		udp = skb_header_pointer(skb, skb->mac_len + (ip->ihl<<2), sizeof(_udp), &_udp);
+		if (udp) 
+		{
+                        return pfq_call(fun, skb, ret); 
+                }
+	}
+
+	return pfq_call(fun, skb, drop());
+}
+
+
+ret_t
+filter_tcp(struct sk_buff *skb, ret_t ret)
+{
+        sk_function_t fun = get_next_function(skb);
+	
+	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP)) 
+	{ 
+		struct iphdr _iph;
+    		const struct iphdr *ip;
+
+		struct tcphdr _tcp;
+		const struct tcphdr *tcp;
+                
+		ip = skb_header_pointer(skb, skb->mac_len, sizeof(_iph), &_iph);
+ 		if (ip == NULL)
+	                return pfq_call(fun, skb, drop());
+
+		if (ip->protocol != IPPROTO_TCP) 
+	                return pfq_call(fun, skb, drop());
+		
+		tcp = skb_header_pointer(skb, skb->mac_len + (ip->ihl<<2), sizeof(_tcp), &_tcp);
+		if (tcp)
+                {
+                        return pfq_call(fun, skb, ret); 
+                }
+	}
+
+	return pfq_call(fun, skb, drop());
+}
+
+
+ret_t
+filter_flow(struct sk_buff *skb, ret_t ret)
+{
+        sk_function_t fun = get_next_function(skb);
+
+	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP)) 
+	{ 
+		struct iphdr _iph;
+    		const struct iphdr *ip;
+
+		struct udphdr _udp;
+		const struct udphdr *udp;
+                
+		ip = skb_header_pointer(skb, skb->mac_len, sizeof(_iph), &_iph);
+ 		if (ip == NULL)
+ 			return pfq_call(fun, skb, drop());
+
+		if (ip->protocol != IPPROTO_UDP &&
+		    ip->protocol != IPPROTO_TCP) 
+			return pfq_call(fun, skb, drop());
+		
+		udp = skb_header_pointer(skb, skb->mac_len + (ip->ihl<<2), sizeof(_udp), &_udp);
+		if (udp) 
+		{
+                        return pfq_call(fun, skb, ret); 
+                }
+	}
+
+	return pfq_call(fun, skb, drop());
+}
+
+
+ret_t
+comb_not(struct sk_buff *skb, ret_t ret)
+{
+        sk_function_t fun = get_next_function(skb);
+        return pfq_call(fun, skb, ret.type == action_drop ? null() : drop() );
 }
 
 
 struct sk_function_descr default_functions[] = {
         { "steer-vlan-untagged", steering_vlan_untagged },
-	{ "steer-mac",           steering_mac_addr   },
+	{ "steer-mac",           steering_mac        },
         { "steer-vlan-id",       steering_vlan_id    },
-        { "steer-ipv4",          steering_ipv4_addr  },
-        { "steer-ipv6",          steering_ipv6_addr  },
+        { "steer-ipv4",          steering_ipv4       },
+        { "steer-ipv6",          steering_ipv6       },
         { "steer-flow",          steering_flow       },
         { "legacy",              fun_legacy          },
         { "transparent",         fun_transparent     },
@@ -308,9 +462,14 @@ struct sk_function_descr default_functions[] = {
         { "sink",                fun_sink            },
         { "id",                  fun_id              },
         { "state",               fun_state_id        },
-        { "filt-ipv4",           filter_ipv4         },
-        { "filt-udp",            filter_udp          },
-        { "filt-tcp",            filter_tcp          },
-        { "filt-flow",           filter_flow         },
+        { "ipv4",                filter_ipv4         },
+        { "udp",                 filter_udp          },
+        { "tcp",                 filter_tcp          },
+        { "flow",                filter_flow         },
+        { "strict-ipv4",         strict_ipv4         },
+        { "strict-udp",          strict_udp          },
+        { "strict-tcp",          strict_tcp          },
+        { "strict-flow",         strict_flow         },
+        { "not",                 comb_not            },
 	{ NULL, NULL}};
 

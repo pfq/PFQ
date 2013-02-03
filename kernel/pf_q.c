@@ -452,7 +452,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
                 	
 			unsigned long sock_mask = 0;
                         
-			ret_t ret = none();
+			ret_t ret;
         
 			if (unlikely((cb->group_mask & bit) == 0))
                          	continue;
@@ -491,8 +491,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
                                 cb->state  =  0;
                                 cb->functx =  pfq_groups[gid].functx;
 
-
-                                ret = pfq_call(fun, skb, none());
+                                ret = pfq_call(fun, skb, null());
 
                                 if (ret.type & action_steal)
                                 {
@@ -505,7 +504,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
                                         cb->send_to_kernel = true;
                                 }
 
-                                if (likely((ret.type & action_drop) == 0)) 
+                                if (likely((ret.type && ret.type & action_drop) == 0)) 
                                 {
                                         unsigned long eligible_mask = 0;
                                         unsigned long cbit;

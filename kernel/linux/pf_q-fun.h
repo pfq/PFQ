@@ -50,6 +50,7 @@ typedef struct
 
 enum action 
 {
+    action_null      = 0x00,
     action_drop      = 0x01,
     action_clone     = 0x02,
     action_dispatch  = 0x04,
@@ -158,10 +159,19 @@ void put_shared_state(struct sk_buff *skb, unsigned long state)
 }
 
 
-/* none: ignore the packet for the current group */
+/* null: no action */
 
 static inline
-ret_t none(void)
+ret_t null(void)
+{
+    ret_t ret = { 0, action_null, 0 };
+    return ret;
+}
+
+/* drop: ignore the packet for the current group */
+
+static inline
+ret_t drop(void)
 {
     ret_t ret = { 0, action_drop, 0 };
     return ret;
