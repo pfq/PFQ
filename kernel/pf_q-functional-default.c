@@ -262,6 +262,39 @@ filter_tcp(struct sk_buff *skb, ret_t ret)
 }
 
 
+ret_t
+filter_flow(struct sk_buff *skb, ret_t ret)
+{
+	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP)) 
+	{ 
+		struct iphdr _iph;
+    		const struct iphdr *ip;
+
+		struct udphdr _udp;
+		const struct udphdr *udp;
+                
+                sk_function_t fun;
+
+		ip = skb_header_pointer(skb, skb->mac_len, sizeof(_iph), &_iph);
+ 		if (ip == NULL)
+ 			return none();
+
+		if (ip->protocol != IPPROTO_UDP &&
+		    ip->protocol != IPPROTO_TCP) 
+			return none();
+		
+		udp = skb_header_pointer(skb, skb->mac_len + (ip->ihl<<2), sizeof(_udp), &_udp);
+		if (udp) 
+		{
+                        fun = get_next_function(skb);
+                        return pfq_call(fun, skb, ret); 
+                }
+	}
+
+	return none();
+}
+
+
 struct sk_function_descr default_functions[] = {
         { "steer-vlan-untagged", steering_vlan_untagged },
 	{ "steer-mac",           steering_mac_addr   },
@@ -278,5 +311,6 @@ struct sk_function_descr default_functions[] = {
         { "filt-ipv4",           filter_ipv4         },
         { "filt-udp",            filter_udp          },
         { "filt-tcp",            filter_tcp          },
+        { "filt-flow",           filter_flow         },
 	{ NULL, NULL}};
 
