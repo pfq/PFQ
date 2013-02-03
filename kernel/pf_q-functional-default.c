@@ -445,7 +445,20 @@ ret_t
 comb_not(struct sk_buff *skb, ret_t ret)
 {
         sk_function_t fun = get_next_function(skb);
-        return pfq_call(fun, skb, ret.type == action_drop ? null() : drop() );
+        return pfq_call(fun, skb, ret.type == action_drop ? null() : drop());
+}
+
+
+ret_t
+comb_par(struct sk_buff *skb, ret_t ret)
+{
+        sk_function_t fun = get_next_function(skb);
+
+        if (ret.type == action_drop)
+                return pfq_call(fun, skb, null());
+
+        fun = get_next_function(skb);
+        return pfq_call(fun, skb, ret);
 }
 
 
@@ -471,5 +484,6 @@ struct sk_function_descr default_functions[] = {
         { "strict-tcp",          strict_tcp          },
         { "strict-flow",         strict_flow         },
         { "not",                 comb_not            },
+        { "par",                 comb_par            },
 	{ NULL, NULL}};
 
