@@ -215,13 +215,10 @@ strict_ipv4(struct sk_buff *skb, ret_t ret)
 		struct iphdr _iph;
     		const struct iphdr *ip;
 
-                sk_function_t fun;
-		
 		ip = skb_header_pointer(skb, skb->mac_len, sizeof(_iph), &_iph);
  		if (ip)
                 {
-                        fun = get_next_function(skb);
-                        return pfq_call(fun, skb, ret); 
+                        return pfq_call(get_next_function(skb), skb, ret); 
                 }
         }       
 
@@ -240,8 +237,6 @@ strict_udp(struct sk_buff *skb, ret_t ret)
 		struct udphdr _udp;
 		const struct udphdr *udp;
                 
-                sk_function_t fun;
-
 		ip = skb_header_pointer(skb, skb->mac_len, sizeof(_iph), &_iph);
  		if (ip == NULL)
  			return drop();
@@ -252,8 +247,7 @@ strict_udp(struct sk_buff *skb, ret_t ret)
 		udp = skb_header_pointer(skb, skb->mac_len + (ip->ihl<<2), sizeof(_udp), &_udp);
 		if (udp) 
 		{
-                        fun = get_next_function(skb);
-                        return pfq_call(fun, skb, ret); 
+                        return pfq_call(get_next_function(skb), skb, ret); 
                 }
 	}
 
@@ -272,8 +266,6 @@ strict_tcp(struct sk_buff *skb, ret_t ret)
 		struct tcphdr _tcp;
 		const struct tcphdr *tcp;
                 
-                sk_function_t fun;
-
 		ip = skb_header_pointer(skb, skb->mac_len, sizeof(_iph), &_iph);
  		if (ip == NULL)
  			return drop();
@@ -284,8 +276,7 @@ strict_tcp(struct sk_buff *skb, ret_t ret)
 		tcp = skb_header_pointer(skb, skb->mac_len + (ip->ihl<<2), sizeof(_tcp), &_tcp);
 		if (tcp)
                 {
-                        fun = get_next_function(skb);
-                        return pfq_call(fun, skb, ret); 
+                        return pfq_call(get_next_function(skb), skb, ret); 
                 }
 	}
 
@@ -304,8 +295,6 @@ strict_flow(struct sk_buff *skb, ret_t ret)
 		struct udphdr _udp;
 		const struct udphdr *udp;
                 
-                sk_function_t fun;
-
 		ip = skb_header_pointer(skb, skb->mac_len, sizeof(_iph), &_iph);
  		if (ip == NULL)
  			return drop();
@@ -317,8 +306,7 @@ strict_flow(struct sk_buff *skb, ret_t ret)
 		udp = skb_header_pointer(skb, skb->mac_len + (ip->ihl<<2), sizeof(_udp), &_udp);
 		if (udp) 
 		{
-                        fun = get_next_function(skb);
-                        return pfq_call(fun, skb, ret); 
+                        return pfq_call(get_next_function(skb), skb, ret); 
                 }
 	}
 
