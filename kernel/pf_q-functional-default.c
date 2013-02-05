@@ -38,16 +38,6 @@ steering_mac(struct sk_buff *skb, ret_t ret)
 
 
 ret_t
-steering_vlan_untagged(struct sk_buff *skb, ret_t ret)
-{
-        if (ret.type == action_drop)
-                return drop();
-	
-	return steering(Q_CLASS_DEFAULT, skb->vlan_tci == 0);
-}
-
-
-ret_t
 steering_vlan_id(struct sk_buff *skb, ret_t ret)
 {
         if (ret.type == action_drop)
@@ -457,7 +447,6 @@ comb_par(struct sk_buff *skb, ret_t ret)
 
 
 struct sk_function_descr default_functions[] = {
-        { "steer-vlan-untagged", steering_vlan_untagged },
 	{ "steer-mac",           steering_mac        },
         { "steer-vlan-id",       steering_vlan_id    },
         { "steer-ipv4",          steering_ipv4       },
