@@ -40,10 +40,15 @@ steering_mac(struct sk_buff *skb, ret_t ret)
 ret_t
 steering_vlan_id(struct sk_buff *skb, ret_t ret)
 {
+        sk_function_t fun = get_next_function(skb);
+                 
         if (ret.type == action_drop)
                 return drop();
- 	
- 	return steering(Q_CLASS_DEFAULT, skb->vlan_tci & VLAN_VID_MASK);
+
+        if (skb->vlan_tci & VLAN_VID_MASK)
+ 	        return steering(Q_CLASS_DEFAULT, skb->vlan_tci & VLAN_VID_MASK);
+        else 
+                return pfq_call(fun, skb, drop()); 
 }
 
 
