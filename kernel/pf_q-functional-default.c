@@ -169,6 +169,16 @@ fun_clone(struct sk_buff *skb, ret_t ret)
         if (ret.type == action_drop)
                 return drop();
         
+        return broadcast(Q_CLASS_DEFAULT);
+}
+
+
+ret_t
+fun_broadcast(struct sk_buff *skb, ret_t ret)
+{
+        if (ret.type == action_drop)
+                return drop();
+        
         return broadcast(Q_CLASS_ANY);
 }
 
@@ -480,7 +490,7 @@ struct sk_function_descr default_functions[] = {
         { "legacy",              fun_legacy          },
         { "transparent",         fun_transparent     },
         { "clone",               fun_clone           },
-        { "broadcast",           fun_clone           },
+        { "broadcast",           fun_broadcast       },
         { "sink",                fun_sink            },
         { "id",                  fun_id              },
         { "state-test",          fun_state_id        },
