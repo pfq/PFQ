@@ -56,7 +56,7 @@ ret_t
 steering_ipv4(struct sk_buff *skb, ret_t ret)
 {       
         sk_function_t fun = get_next_function(skb);
-        
+
         if (ret.type == action_drop)
                 return drop();
 	
@@ -483,7 +483,7 @@ struct sk_function_descr default_functions[] = {
         { "broadcast",           fun_clone           },
         { "sink",                fun_sink            },
         { "id",                  fun_id              },
-        { "state",               fun_state_id        },
+        { "state-test",          fun_state_id        },
         { "vlan",                filter_vlan         },
         { "ipv4",                filter_ipv4         },
         { "udp",                 filter_udp          },

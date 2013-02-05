@@ -174,7 +174,7 @@ pfq_register_function(const char *module, const char *name, sk_function_t fun)
 	r = __pfq_register_function(name, fun);
 	up(&function_sem);
 	if (r == 0)
-		printk(KERN_INFO "[PFQ]%s '%s' function registered.\n", module, name);
+		printk(KERN_INFO "[PFQ]%s '%s' @%p function registered.\n", module, name, fun);
 	return r;
 }
 
