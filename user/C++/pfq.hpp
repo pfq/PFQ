@@ -980,6 +980,18 @@ namespace net {
                 throw pfq_error(errno, "PFQ: get group state error");
         }
 
+        void
+        set_group_functional(int gid, qfun const &f, int level = 0)
+        {
+            set_group_function(gid, f.name.c_str(), level);
+            if (f.state.first)
+            {
+                struct pfq_group_state s { f.state.first.get(), f.state.second, gid, level };
+                if (::setsockopt(fd_, PF_Q, Q_SO_GROUP_STATE, &s, sizeof(s)) == -1)
+                    throw pfq_error(errno, "PFQ: set group state error");
+            }
+        }
+
         template <typename C>
         void
         set_group_functional(int gid, C const &cont)
