@@ -60,6 +60,8 @@ steering_vlan_id(struct sk_buff *skb, ret_t ret)
 ret_t
 steering_ipv4(struct sk_buff *skb, ret_t ret)
 {       
+        sk_function_t fun = get_next_function(skb);
+        
         if (ret.type == action_drop)
                 return drop();
 	
@@ -70,18 +72,20 @@ steering_ipv4(struct sk_buff *skb, ret_t ret)
 
 		ip = skb_header_pointer(skb, skb->mac_len, sizeof(_iph), &_iph);
  		if (ip == NULL)
- 			return drop();
+                        return pfq_call(fun, skb, drop()); 
 
         	return steering(Q_CLASS_DEFAULT, ip->saddr ^ ip->daddr);
 	}
 
-	return drop();
+        return pfq_call(fun, skb, drop()); 
 }
 
 
 ret_t
 steering_flow(struct sk_buff *skb, ret_t ret)
 {       
+        sk_function_t fun = get_next_function(skb);
+        
         if (ret.type == action_drop)
                 return drop();
 	
@@ -95,26 +99,28 @@ steering_flow(struct sk_buff *skb, ret_t ret)
 
 		ip = skb_header_pointer(skb, skb->mac_len, sizeof(_iph), &_iph);
  		if (ip == NULL)
- 			return drop();
+                        return pfq_call(fun, skb, drop());
 
 		if (ip->protocol != IPPROTO_UDP &&
 		    ip->protocol != IPPROTO_TCP) 
-			return drop();
+                        return pfq_call(fun, skb, drop()); 
 		
 		udp = skb_header_pointer(skb, skb->mac_len + (ip->ihl<<2), sizeof(_udp), &_udp);
 		if (udp == NULL) 
-			return drop();
+			return drop();  /* broken */
 		
         	return steering(Q_CLASS_DEFAULT, ip->saddr ^ ip->daddr ^ udp->source ^ udp->dest);
 	}
 
-	return drop();
+        return pfq_call(fun, skb, drop()); 
 }
 
 
 ret_t
 steering_ipv6(struct sk_buff *skb, ret_t ret)
 {       
+        sk_function_t fun = get_next_function(skb);
+        
         if (ret.type == action_drop)
                 return drop();
 	
@@ -125,7 +131,7 @@ steering_ipv6(struct sk_buff *skb, ret_t ret)
 
 		ip6 = skb_header_pointer(skb, skb->mac_len, sizeof(_ip6h), &_ip6h);
  		if (ip6 == NULL)
- 			return drop();
+                        return pfq_call(fun, skb, drop());
 
 		return steering(Q_CLASS_DEFAULT,
 			ip6->saddr.in6_u.u6_addr32[0] ^
@@ -138,7 +144,7 @@ steering_ipv6(struct sk_buff *skb, ret_t ret)
 			ip6->daddr.in6_u.u6_addr32[3] );
 	}
 
-	return drop();
+        return pfq_call(fun, skb, drop());
 }
 
 
