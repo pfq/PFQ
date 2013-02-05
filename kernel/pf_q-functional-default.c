@@ -209,6 +209,16 @@ fun_state_id(struct sk_buff *skb, ret_t ret)
 /* filters */
 
 ret_t
+strict_vlan(struct sk_buff *skb, ret_t ret)
+{
+        if ((skb->vlan_tci & VLAN_VID_MASK) == 0)
+                return drop(); 
+        else
+                return pfq_call(get_next_function(skb), skb, ret);  
+}
+
+
+ret_t
 strict_ipv4(struct sk_buff *skb, ret_t ret)
 {
 	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP)) 
@@ -312,6 +322,16 @@ strict_flow(struct sk_buff *skb, ret_t ret)
 	}
 
 	return drop();
+}
+
+
+ret_t
+filter_vlan(struct sk_buff *skb, ret_t ret)
+{
+        if ((skb->vlan_tci & VLAN_VID_MASK) == 0)
+                return pfq_call(get_next_function(skb), skb, drop()); 
+        else
+                return pfq_call(get_next_function(skb), skb, ret);  
 }
 
 
@@ -464,10 +484,12 @@ struct sk_function_descr default_functions[] = {
         { "sink",                fun_sink            },
         { "id",                  fun_id              },
         { "state",               fun_state_id        },
+        { "vlan",                filter_vlan         },
         { "ipv4",                filter_ipv4         },
         { "udp",                 filter_udp          },
         { "tcp",                 filter_tcp          },
         { "flow",                filter_flow         },
+        { "strict-vlan",         strict_vlan         },
         { "strict-ipv4",         strict_ipv4         },
         { "strict-udp",          strict_udp          },
         { "strict-tcp",          strict_tcp          },
