@@ -476,6 +476,9 @@ comb_par(struct sk_buff *skb, ret_t ret)
         if (ret.type == action_drop)
                 return pfq_call(fun, skb, null());
 
+	/* skip next function */
+	pfq_call(NULL, skb, ret);
+
         fun = get_next_function(skb);
         return pfq_call(fun, skb, ret);
 }

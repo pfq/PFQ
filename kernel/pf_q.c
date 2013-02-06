@@ -487,7 +487,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
                                 
                                 /* reset state, index call and functx ptr */
 
-                                cb->index  =  0;
+                                cb->index  =  -1;
                                 cb->state  =  0;
                                 cb->functx =  pfq_groups[gid].functx;
 
