@@ -23,6 +23,7 @@
  ****************************************************************/
 
 #include <pf_q-mpdb-queue.h>
+#include <linux/pf_q-fun.h>
 
 void *
 mpdb_queue_alloc(struct pfq_opt *pq, size_t queue_mem, size_t *tot_mem)
@@ -166,6 +167,10 @@ mpdb_enqueue_batch(struct pfq_opt *pq, unsigned long bitqueue, int qlen, struct 
 		hdr->un.vlan_tci = skb->vlan_tci & ~VLAN_TAG_PRESENT;
 		hdr->if_index    = skb->dev->ifindex & 0xff;
 		hdr->hw_queue    = (uint8_t)(skb_get_rx_queue(skb) & 0xff);                      
+
+                /* copy state from pfq_annotation */
+
+                hdr->data        = pfq_skb_annotation(skb)->state;
 
 		/* commit the slot (release semantic) */
 

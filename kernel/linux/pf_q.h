@@ -53,11 +53,13 @@
 
 /* Common header */
 
-#define PF_Q    27          /* packet q domain: note it's the same as the old pf_ring */
+#define PF_Q    27          /* packet q domain */
 
 
 struct pfq_hdr
 {
+    unsigned long data;       /* state from pfq_annotation */
+
     union 
     {
         unsigned long long tv64;
