@@ -203,7 +203,7 @@ fun_id(struct sk_buff *skb, ret_t ret)
 
 
 ret_t
-fun_state_id(struct sk_buff *skb, ret_t ret)
+test_state(struct sk_buff *skb, ret_t ret)
 {
         sk_function_t fun;
 
@@ -211,6 +211,8 @@ fun_state_id(struct sk_buff *skb, ret_t ret)
         
         fun = get_next_function(skb);
         
+        set_skb_state(skb, 42);
+
         put_state(skb);
 
         return pfq_call(fun, skb, ret); 
@@ -496,7 +498,7 @@ struct sk_function_descr default_functions[] = {
         { "broadcast",           fun_broadcast       },
         { "sink",                fun_sink            },
         { "id",                  fun_id              },
-        { "state-test",          fun_state_id        },
+        { "test-state",          test_state          },
         { "vlan",                filter_vlan         },
         { "ipv4",                filter_ipv4         },
         { "udp",                 filter_udp          },
