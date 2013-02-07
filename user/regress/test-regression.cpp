@@ -526,6 +526,31 @@ Context(PFQ)
         x.get_group_state(x.group_id(), m);
 
         Assert(n, is_equal_to(m));
+
+        x.bind(DEV.c_str());
+
+        x.set_group_function(x.group_id(), "test-state", 0);
+        x.set_group_function(x.group_id(), "clone",      1);
+
+        x.enable();
+
+        std::cout << "waiting for packets from " << DEV << "..." << std::flush;
+        for(;;)
+        {
+            auto q = x.read(100000);
+            if (q.empty())
+            {
+                std::cout << "." << std::flush;
+                continue;
+            }
+
+            for(auto &hdr : q)
+            {
+                Assert(hdr.data, is_equal_to(42));
+            }
+            break;
+        }
+        std::cout << std::endl;
     }
 
 }
