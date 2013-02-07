@@ -12,6 +12,8 @@ using namespace net;
 
 Context(PFQ)
 {
+    const std::string DEV("eth2");
+
     Test(default_ctor_dtor)
     {
         pfq x;
@@ -192,28 +194,28 @@ Context(PFQ)
     Test(bind_device)
     {
         pfq x;
-        AssertThrow(x.bind("eth0"));
+        AssertThrow(x.bind(DEV.c_str()));
 
         x.open(group_policy::shared, 64);
     
         AssertThrow(x.bind("unknown"));
-        x.bind("eth0");
+        x.bind(DEV.c_str());
 
-        AssertThrow(x.bind_group(11, "eth0"));
+        AssertThrow(x.bind_group(11, DEV.c_str()));
     }
     
 
     Test(unbind_device)
     {
         pfq x;
-        AssertThrow(x.unbind("eth0"));
+        AssertThrow(x.unbind(DEV.c_str()));
 
         x.open(group_policy::shared, 64);
         
         AssertThrow(x.unbind("unknown"));
-        x.unbind("eth0");
+        x.unbind(DEV.c_str());
         
-        AssertThrow(x.unbind_group(11, "eth0"));
+        AssertThrow(x.unbind_group(11, DEV.c_str()));
     }
 
 
