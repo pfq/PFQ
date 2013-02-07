@@ -146,14 +146,14 @@ void put_state(struct sk_buff *skb)
 
 
 static inline 
-unsigned long get_shared_state(struct sk_buff *skb)
+unsigned long get_skb_state(struct sk_buff *skb)
 {
     return pfq_skb_annotation(skb)->state;
 }
 
 
 static inline
-void put_shared_state(struct sk_buff *skb, unsigned long state)
+void set_skb_state(struct sk_buff *skb, unsigned long state)
 {
     pfq_skb_annotation(skb)->state = state;
 }
