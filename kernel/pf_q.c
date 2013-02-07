@@ -347,10 +347,10 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 {       
         struct local_data * local_cache = __this_cpu_ptr(cpu_data);
         struct pfq_queue_skb * prefetch_queue = &local_cache->prefetch_queue;
-        unsigned long group_mask, global_mask;
+        unsigned long group_mask, socket_mask;
         unsigned long sock_queue[sizeof(unsigned long) << 3];
         struct pfq_annotation *cb; 
-        long unsigned n, bit;
+        long unsigned n, bit, lb;
         int cpu;
 
 #ifdef PFQ_USE_FLOW_CONTROL
@@ -418,8 +418,6 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 	
         memset(sock_queue, 0, sizeof(sock_queue));
 
-        global_mask = 0;
-
 	cpu = get_cpu();
 
 #ifdef PFQ_STEERING_PROFILE
@@ -445,6 +443,8 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
                 struct sk_filter *bpf = (struct sk_filter *)atomic_long_read(&pfq_groups[gid].filter);
 
                 bool vlan_filter_enabled = __pfq_vlan_filters_enabled(gid);
+
+                socket_mask = 0;
 
         	queue_for_each(skb, n, prefetch_queue)
 		{
@@ -547,10 +547,25 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
                         }
 
 			pfq_sock_mask_to_queue(n, sock_mask, sock_queue);
-			global_mask |= sock_mask;
-
+			socket_mask |= sock_mask;
 		}
                 
+                /* copy packets of this group to pfq sockets... */
+
+                bitwise_foreach(socket_mask, lb)
+                {
+                        int i = pfq_ctz(lb);
+                        struct pfq_opt * pq = pfq_get_opt(i);
+                        if (likely(pq)) 
+                        {
+#ifdef PFQ_USE_FLOW_CONTROL
+                                if (!pfq_copy_to_user_skbs(pq, cpu, sock_queue[i], prefetch_queue))
+                                        local_cache->flowctrl = flow_control;
+#else
+                                pfq_copy_to_user_skbs(pq, cpu, sock_queue[i], prefetch_queue);
+#endif
+                        }
+                }
 	}
 	
 #ifdef PFQ_STEERING_PROFILE
@@ -559,23 +574,6 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 	if (printk_ratelimit())
 		printk(KERN_INFO "-> %llu\n", (b-a)/prefetch_len);
 #endif
-
-	/* copy packets to pfq sockets... */
-
-	bitwise_foreach(global_mask, bit)
-        {
-                int n = pfq_ctz(bit);
-                struct pfq_opt * pq = pfq_get_opt(n);
-                if (likely(pq)) 
-                {
-#ifdef PFQ_USE_FLOW_CONTROL
-                        if (!pfq_copy_to_user_skbs(pq, cpu, sock_queue[n], prefetch_queue))
-                        	local_cache->flowctrl = flow_control;
-#else
-			pfq_copy_to_user_skbs(pq, cpu, sock_queue[n], prefetch_queue);
-#endif
-                }
-        }
 
         /* free skb, or route them to kernel... */
         
