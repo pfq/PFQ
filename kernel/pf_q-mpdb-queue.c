@@ -82,7 +82,7 @@ void *pfq_memcpy(void *to, const void *from, size_t len)
 
 
 size_t
-mpdb_enqueue_batch(struct pfq_opt *pq, unsigned long bitqueue, int qlen, struct pfq_queue_skb *skbs)
+mpdb_enqueue_batch(struct pfq_opt *pq, unsigned long bitqueue, int qlen, struct pfq_queue_skb *skbs, int gid)
 {
 	struct pfq_queue_descr *queue_descr = (struct pfq_queue_descr *)pq->q_addr;
 	struct sk_buff *skb;
@@ -153,6 +153,10 @@ mpdb_enqueue_batch(struct pfq_opt *pq, unsigned long bitqueue, int qlen, struct 
 			}
 		}
 			
+                /* copy state from pfq_annotation */
+
+                hdr->data        = pfq_skb_annotation(skb)->state;
+
 		/* setup the header */
 		
 		if (pq->q_tstamp != 0)
@@ -162,15 +166,13 @@ mpdb_enqueue_batch(struct pfq_opt *pq, unsigned long bitqueue, int qlen, struct 
 			hdr->tstamp.tv.nsec = (uint32_t)ts.tv_nsec;
 		}
 		
+		hdr->if_index    = skb->dev->ifindex & 0xff;
+		hdr->gid         = gid;
+
 		hdr->len         = (uint16_t)skb->len;
 		hdr->caplen 	 = (uint16_t)bytes;
 		hdr->un.vlan_tci = skb->vlan_tci & ~VLAN_TAG_PRESENT;
-		hdr->if_index    = skb->dev->ifindex & 0xff;
 		hdr->hw_queue    = (uint8_t)(skb_get_rx_queue(skb) & 0xff);                      
-
-                /* copy state from pfq_annotation */
-
-                hdr->data        = pfq_skb_annotation(skb)->state;
 
 		/* commit the slot (release semantic) */
 

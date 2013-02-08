@@ -168,7 +168,7 @@ void pfq_release_id(int id)
 
 
 inline
-bool pfq_copy_to_user_skbs(struct pfq_opt *pq, int cpu, unsigned long sock_queue, struct pfq_queue_skb *skbs)
+bool pfq_copy_to_user_skbs(struct pfq_opt *pq, int cpu, unsigned long sock_queue, struct pfq_queue_skb *skbs, int gid)
 {
         /* enqueue the sk_buff: it's wait-free. */
 
@@ -179,7 +179,7 @@ bool pfq_copy_to_user_skbs(struct pfq_opt *pq, int cpu, unsigned long sock_queue
         	smp_rmb();
 
                 len  = (int)hweight64(sock_queue); 
-                sent = mpdb_enqueue_batch(pq, sock_queue, len, skbs);
+                sent = mpdb_enqueue_batch(pq, sock_queue, len, skbs, gid);
         	
         	__sparse_add(&pq->q_stat.recv, cpu, sent);
         
@@ -559,10 +559,10 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
                         if (likely(pq)) 
                         {
 #ifdef PFQ_USE_FLOW_CONTROL
-                                if (!pfq_copy_to_user_skbs(pq, cpu, sock_queue[i], prefetch_queue))
+                                if (!pfq_copy_to_user_skbs(pq, cpu, sock_queue[i], prefetch_queue, gid))
                                         local_cache->flowctrl = flow_control;
 #else
-                                pfq_copy_to_user_skbs(pq, cpu, sock_queue[i], prefetch_queue);
+                                pfq_copy_to_user_skbs(pq, cpu, sock_queue[i], prefetch_queue, gid);
 #endif
                         }
                 }
