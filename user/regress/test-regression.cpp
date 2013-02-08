@@ -12,7 +12,7 @@ using namespace net;
 
 Context(PFQ)
 {
-    const std::string DEV("eth2");
+    const std::string DEV("eth0");
 
     Test(default_ctor_dtor)
     {
@@ -549,6 +549,7 @@ Context(PFQ)
             for(auto &hdr : q)
             {
                 Assert(hdr.data, is_equal_to(42));
+                Assert(hdr.gid,  is_equal_to(x.group_id()));
             }
             break;
         }
