@@ -54,7 +54,7 @@ options = cmdArgsMode $ Options {
                                   caplen   = 64,
                                   offset   = 0,
                                   slots    = 262144,
-                                  function = [] &= typ "FUNCTION"  &= help "Where FUNCTION = function-name[:fun:fun][.gid] (ie: steer-ipv4)",
+                                  function = [] &= typ "FUNCTION"  &= help "Where FUNCTION = function-name[>=>fun>=>fun][.gid] (ie: steer-ipv4)",
                                   thread   = [] &= typ "BINDING" &= help "Where BINDING = eth0:...:ethx[.core[.gid[.queue.queue...]]]"
                                 } &= summary "PFq multi-threaded packet counter." &= program "pfq-counters"
 
@@ -85,8 +85,8 @@ makeBinding s = case splitOn "." s of
 makeFun :: String -> (Gid, [String])
 makeFun s =  case splitOn "." s of
                 []     -> error "makeFun: empty string"
-                fs : [] -> (-1, splitOn ":" fs)
-                fs : n  -> (read $ head n, splitOn ":" fs)
+                fs : [] -> (-1,             map (filter (/= ' ')) $ splitOn ">=>" fs)
+                fs : n  -> (read $ head n,  map (filter (/= ' ')) $ splitOn ">=>" fs)
                 
 -- main function
 --
@@ -133,7 +133,7 @@ runThreads op ms = do
                      forM_ (devs binding) $ \dev ->
                        forM_ (queues binding) $ \queue ->
                          Q.setPromisc q dev True >> Q.bindGroup q (groupId binding) dev queue
-                     when (isJust sf) ((putStrLn $ "[pfq] Gid " ++ show(groupId binding) ++ " is using function: " ++ (intercalate " >>= " $ fromJust sf)) >>
+                     when (isJust sf) ((putStrLn $ "[pfq] Gid " ++ show(groupId binding) ++ " is using continuation: " ++ (intercalate " >=> " $ fromJust sf)) >>
                         Q.groupFunctions q (groupId binding) (fromJust sf)) 
                      Q.enable q 
                      recvLoop q (State c f S.empty) >> return ()  
