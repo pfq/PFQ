@@ -491,7 +491,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
                                 cb->state  =  0;
                                 cb->functx =  pfq_groups[gid].functx;
 
-                                ret = pfq_call(fun, skb, null());
+                                ret = pfq_call(fun, skb, pass());
 
                                 if (ret.type & action_steal)
                                 {

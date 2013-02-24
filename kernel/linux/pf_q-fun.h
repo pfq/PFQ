@@ -40,6 +40,18 @@ extern int pfq_register_functions  (const char *module, struct sk_function_descr
 extern int pfq_unregister_functions(const char *module, struct sk_function_descr *fun);
 
 
+enum action 
+{
+    action_pass      = 0x00,
+    action_drop      = 0x01,
+    action_clone     = 0x02,
+    action_dispatch  = 0x04,
+    action_steal     = 0x08,
+    action_skip      = 0x10,
+    action_to_kernel = 0x80,
+};
+
+
 typedef struct
 {
 	unsigned int  hash:24;
@@ -48,15 +60,42 @@ typedef struct
 } ret_t;
 
 
-enum action 
+static inline bool
+is_pass(ret_t ret)
 {
-    action_null      = 0x00,
-    action_drop      = 0x01,
-    action_clone     = 0x02,
-    action_dispatch  = 0x04,
-    action_steal     = 0x08,
-    action_to_kernel = 0x80,
-};
+    return ret.type & action_pass;
+}
+
+static inline bool
+is_drop(ret_t ret)
+{
+    return ret.type & action_drop;
+}
+
+static inline bool
+is_clone(ret_t ret)
+{
+    return ret.type & action_clone;
+}
+
+static inline bool
+is_steering(ret_t ret)
+{
+    return ret.type & action_dispatch;
+}
+
+static inline bool
+is_stolen(ret_t ret)
+{
+    return ret.type & action_steal;
+}
+
+static inline bool
+is_skip(ret_t ret)
+{
+    return ret.type & action_skip;
+}
+
 
 
 typedef ret_t (*sk_function_t)(struct sk_buff *, ret_t);    
@@ -159,12 +198,12 @@ void set_skb_state(struct sk_buff *skb, unsigned long state)
 }
 
 
-/* null: no action */
+/* pass: no action */
 
 static inline
-ret_t null(void)
+ret_t pass(void)
 {
-    ret_t ret = { 0, action_null, 0 };
+    ret_t ret = { 0, action_pass, 0 };
     return ret;
 }
 
@@ -208,6 +247,7 @@ ret_t stolen(void)
 
 
 /*** modifiers ***/
+
 
 /* to_kernel: set the skb to be passed to kernel */
 
