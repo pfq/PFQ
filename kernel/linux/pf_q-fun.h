@@ -226,4 +226,20 @@ ret_t to_kernel(ret_t ret)
 }
 
 
+static inline 
+ret_t clear_skip(ret_t ret)
+{
+    ret.type &= ~action_skip;
+    return ret;
+}
+
+
+static inline 
+ret_t skip(ret_t ret)
+{
+    ret.type |= action_skip;
+    return ret;
+}
+
+
 #endif /* _PF_Q_FUN_H_ */
