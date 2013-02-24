@@ -23,6 +23,25 @@
 
 #include <linux/pf_q-fun.h>
 
+/*
+ *      Functional combinator strategy:
+ *
+ *      input           FILTER          PAR comb.       NEG comb.       STEERING        
+ *      -------------------------------------------------------------------------
+ *      PASS            F(p) P/D        SKIP(pass)      DROP            hash(p)/D       
+ *                                                                                
+ *      DROP            DROP/-          PASS            PASS            DROP/-         
+ *                                                                                
+ *      SKIP[ret]       ret             ret             ret             ret                       
+ *                                                                                
+ *      CLONE           F(p) C/D        SKIP(clone)     DROP            hash(p)/D     
+ *                                                                                
+ *      STEERING[n]     F(p) S(n)/D     SKIP(steer[n])  DROP            hash(p)/D 
+ *
+ *      STEAL           -               -               -               -
+ */                                                                               
+
+
 ret_t
 steering_mac(struct sk_buff *skb, ret_t ret)
 {
