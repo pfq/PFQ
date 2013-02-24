@@ -28,9 +28,11 @@ steering_mac(struct sk_buff *skb, ret_t ret)
 {
         uint16_t * a; 
         
-        if (ret.type == action_drop)
-                return drop();
-        
+        if (is_skip(ret))
+                return pfq_call(get_next_function(skb), skb, clear_skip(ret));
+        if (is_drop(ret))
+                return pfq_call(get_next_function(skb), skb, ret);
+
         a = (uint16_t *)eth_hdr(skb); 
 	
 	return steering(Q_CLASS_DEFAULT, a[0] ^ a[1] ^ a[2] ^ a[3] ^ a[4] ^ a[5] );		
@@ -42,8 +44,10 @@ steering_vlan_id(struct sk_buff *skb, ret_t ret)
 {
         sk_function_t fun = get_next_function(skb);
                  
-        if (ret.type == action_drop)
-                return drop();
+        if (is_skip(ret))
+                return pfq_call(get_next_function(skb), skb, clear_skip(ret));
+        if (is_drop(ret))
+                return pfq_call(get_next_function(skb), skb, ret);
 
         if (skb->vlan_tci & VLAN_VID_MASK)
  	        return steering(Q_CLASS_DEFAULT, skb->vlan_tci & VLAN_VID_MASK);
@@ -57,8 +61,10 @@ steering_ipv4(struct sk_buff *skb, ret_t ret)
 {       
         sk_function_t fun = get_next_function(skb);
 
-        if (ret.type == action_drop)
-                return drop();
+        if (is_skip(ret))
+                return pfq_call(get_next_function(skb), skb, clear_skip(ret));
+        if (is_drop(ret))
+                return pfq_call(get_next_function(skb), skb, ret);
 	
 	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP)) 
 	{ 
@@ -81,8 +87,10 @@ steering_flow(struct sk_buff *skb, ret_t ret)
 {       
         sk_function_t fun = get_next_function(skb);
         
-        if (ret.type == action_drop)
-                return drop();
+        if (is_skip(ret))
+                return pfq_call(get_next_function(skb), skb, clear_skip(ret));
+        if (is_drop(ret))
+                return pfq_call(get_next_function(skb), skb, ret);
 	
 	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP)) 
 	{ 
@@ -116,8 +124,10 @@ steering_ipv6(struct sk_buff *skb, ret_t ret)
 {       
         sk_function_t fun = get_next_function(skb);
         
-        if (ret.type == action_drop)
-                return drop();
+        if (is_skip(ret))
+                return pfq_call(get_next_function(skb), skb, clear_skip(ret));
+        if (is_drop(ret))
+                return pfq_call(get_next_function(skb), skb, ret);
 	
 	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IPV6)) 
 	{ 
@@ -146,9 +156,6 @@ steering_ipv6(struct sk_buff *skb, ret_t ret)
 ret_t
 fun_legacy(struct sk_buff *skb, ret_t ret)
 {
-        if (ret.type == action_drop)
-                return drop();
-        
         return to_kernel(drop());
 }
 
@@ -156,20 +163,28 @@ fun_legacy(struct sk_buff *skb, ret_t ret)
 ret_t
 fun_clone(struct sk_buff *skb, ret_t ret)
 {
-        if (ret.type == action_drop)
-                return drop();
+        sk_function_t fun = get_next_function(skb);
         
-        return broadcast(Q_CLASS_DEFAULT);
+        if (is_skip(ret))
+                return pfq_call(get_next_function(skb), skb, clear_skip(ret));
+        if (is_drop(ret))
+                return pfq_call(get_next_function(skb), skb, ret);
+        
+        return pfq_call(fun, skb, broadcast(Q_CLASS_DEFAULT));
 }
 
 
 ret_t
 fun_broadcast(struct sk_buff *skb, ret_t ret)
 {
-        if (ret.type == action_drop)
-                return drop();
+        sk_function_t fun = get_next_function(skb);
         
-        return broadcast(Q_CLASS_ANY);
+        if (is_skip(ret))
+                return pfq_call(get_next_function(skb), skb, clear_skip(ret));
+        if (is_drop(ret))
+                return pfq_call(get_next_function(skb), skb, ret);
+        
+        return pfq_call(fun, skb, broadcast(Q_CLASS_ANY));
 }
 
 
@@ -177,6 +192,7 @@ ret_t
 fun_sink(struct sk_buff *skb, ret_t ret)
 {
         struct sk_buff * mskb = (struct sk_buff *)skb;
+
         kfree_skb(mskb);
         
         return stolen();
@@ -213,6 +229,11 @@ test_state(struct sk_buff *skb, ret_t ret)
 ret_t
 strict_vlan(struct sk_buff *skb, ret_t ret)
 {
+        if (is_skip(ret))
+                return pfq_call(get_next_function(skb), skb, clear_skip(ret));
+        if (is_drop(ret))
+                return drop();
+
         if ((skb->vlan_tci & VLAN_VID_MASK) == 0)
                 return drop(); 
         else
@@ -223,6 +244,11 @@ strict_vlan(struct sk_buff *skb, ret_t ret)
 ret_t
 strict_ipv4(struct sk_buff *skb, ret_t ret)
 {
+        if (is_skip(ret))
+                return pfq_call(get_next_function(skb), skb, clear_skip(ret));
+        if (is_drop(ret))
+                return drop();
+	
 	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP)) 
 	{ 
 		struct iphdr _iph;
@@ -242,6 +268,11 @@ strict_ipv4(struct sk_buff *skb, ret_t ret)
 ret_t
 strict_udp(struct sk_buff *skb, ret_t ret)
 {
+        if (is_skip(ret))
+                return pfq_call(get_next_function(skb), skb, clear_skip(ret));
+        if (is_drop(ret))
+                return drop();
+	
 	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP)) 
 	{ 
 		struct iphdr _iph;
@@ -271,6 +302,11 @@ strict_udp(struct sk_buff *skb, ret_t ret)
 ret_t
 strict_tcp(struct sk_buff *skb, ret_t ret)
 {
+        if (is_skip(ret))
+                return pfq_call(get_next_function(skb), skb, clear_skip(ret));
+        if (is_drop(ret))
+                return drop();
+	
 	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP)) 
 	{ 
 		struct iphdr _iph;
@@ -300,6 +336,11 @@ strict_tcp(struct sk_buff *skb, ret_t ret)
 ret_t
 strict_flow(struct sk_buff *skb, ret_t ret)
 {
+        if (is_skip(ret))
+                return pfq_call(get_next_function(skb), skb, clear_skip(ret));
+        if (is_drop(ret))
+                return drop();
+	
 	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP)) 
 	{ 
 		struct iphdr _iph;
@@ -330,6 +371,11 @@ strict_flow(struct sk_buff *skb, ret_t ret)
 ret_t
 filter_vlan(struct sk_buff *skb, ret_t ret)
 {
+        if (is_skip(ret))
+                return pfq_call(get_next_function(skb), skb, clear_skip(ret));
+        if (is_drop(ret))
+                return pfq_call(get_next_function(skb), skb, drop()); 
+        
         if ((skb->vlan_tci & VLAN_VID_MASK) == 0)
                 return pfq_call(get_next_function(skb), skb, drop()); 
         else
@@ -340,7 +386,14 @@ filter_vlan(struct sk_buff *skb, ret_t ret)
 ret_t
 filter_ipv4(struct sk_buff *skb, ret_t ret)
 {
-        sk_function_t fun = get_next_function(skb);
+        sk_function_t fun;
+        
+        if (is_skip(ret))
+                return pfq_call(get_next_function(skb), skb, clear_skip(ret));
+        if (is_drop(ret))
+                return pfq_call(get_next_function(skb), skb, drop()); 
+        
+        fun = get_next_function(skb);
 	
 	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP)) 
 	{ 
@@ -361,7 +414,14 @@ filter_ipv4(struct sk_buff *skb, ret_t ret)
 ret_t
 filter_udp(struct sk_buff *skb, ret_t ret)
 {
-        sk_function_t fun = get_next_function(skb);
+        sk_function_t fun;
+
+        if (is_skip(ret))
+                return pfq_call(get_next_function(skb), skb, clear_skip(ret));
+        if (is_drop(ret))
+                return pfq_call(get_next_function(skb), skb, drop()); 
+        
+        fun = get_next_function(skb);
 	
 	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP)) 
 	{ 
@@ -392,7 +452,14 @@ filter_udp(struct sk_buff *skb, ret_t ret)
 ret_t
 filter_tcp(struct sk_buff *skb, ret_t ret)
 {
-        sk_function_t fun = get_next_function(skb);
+        sk_function_t fun;
+        
+        if (is_skip(ret))
+                return pfq_call(get_next_function(skb), skb, clear_skip(ret));
+        if (is_drop(ret))
+                return pfq_call(get_next_function(skb), skb, drop()); 
+        
+        fun = get_next_function(skb);
 
 	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP)) 
 	{ 
@@ -423,7 +490,14 @@ filter_tcp(struct sk_buff *skb, ret_t ret)
 ret_t
 filter_flow(struct sk_buff *skb, ret_t ret)
 {
-        sk_function_t fun = get_next_function(skb);
+        sk_function_t fun;
+
+        if (is_skip(ret))
+                return pfq_call(get_next_function(skb), skb, clear_skip(ret));
+        if (is_drop(ret))
+                return pfq_call(get_next_function(skb), skb, drop()); 
+        
+        fun = get_next_function(skb);
 
 	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP)) 
 	{ 
@@ -456,8 +530,13 @@ ret_t
 comb_neg(struct sk_buff *skb, ret_t ret)
 {
         sk_function_t fun = get_next_function(skb);
-        return pfq_call(fun, skb, ret.type == action_drop ? null() : drop());
+        
+        if (is_skip(ret))
+                return pfq_call(get_next_function(skb), skb, clear_skip(ret));
+
+        return pfq_call(fun, skb, is_drop(ret) ? pass() : drop());
 }
+
 
 
 ret_t
@@ -465,14 +544,13 @@ comb_par(struct sk_buff *skb, ret_t ret)
 {
         sk_function_t fun = get_next_function(skb);
 
-        if (ret.type == action_drop)
-                return pfq_call(fun, skb, null());
-
-	/* skip next function */
-	pfq_call(NULL, skb, ret);
-
-        fun = get_next_function(skb);
-        return pfq_call(fun, skb, ret);
+        if (is_skip(ret))
+                return pfq_call(get_next_function(skb), skb, clear_skip(ret));
+        
+        if (is_drop(ret))
+                return pfq_call(fun, skb, pass());
+        else
+                return pfq_call(fun, skb, skip(ret));
 }
 
 
@@ -487,7 +565,6 @@ struct sk_function_descr default_functions[] = {
         { "broadcast",           fun_broadcast       },
         { "sink",                fun_sink            },
         { "id",                  fun_id              },
-        { "test-state",          test_state          },
         { "vlan",                filter_vlan         },
         { "ipv4",                filter_ipv4         },
         { "udp",                 filter_udp          },
@@ -500,5 +577,7 @@ struct sk_function_descr default_functions[] = {
         { "strict-flow",         strict_flow         },
         { "neg",                 comb_neg            },
         { "par",                 comb_par            },
-	{ NULL, NULL}};
+        /* ---------------------------------------- */
+        { "test-state",          test_state          },
+        { NULL, NULL}};
 
