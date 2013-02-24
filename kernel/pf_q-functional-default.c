@@ -154,16 +154,6 @@ fun_legacy(struct sk_buff *skb, ret_t ret)
 
 
 ret_t
-fun_transparent(struct sk_buff *skb, ret_t ret)
-{
-        if (ret.type == action_drop)
-                return drop();
-        
-        return to_kernel(broadcast(Q_CLASS_ANY));
-}
-
-
-ret_t
 fun_clone(struct sk_buff *skb, ret_t ret)
 {
         if (ret.type == action_drop)
@@ -493,7 +483,6 @@ struct sk_function_descr default_functions[] = {
         { "steer-ipv6",          steering_ipv6       },
         { "steer-flow",          steering_flow       },
         { "legacy",              fun_legacy          },
-        { "transparent",         fun_transparent     },
         { "clone",               fun_clone           },
         { "broadcast",           fun_broadcast       },
         { "sink",                fun_sink            },
