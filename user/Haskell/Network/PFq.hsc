@@ -315,7 +315,7 @@ getPackets' index cur end slotSize
 
 isPacketReady :: Packet -> IO Bool
 isPacketReady p = do
-    !_com  <- ((\h -> peekByteOff h 23)) (pHdr p) 
+    !_com  <- ((\h -> peekByteOff h 31)) (pHdr p) 
     return ((_com :: CUChar) == (fromIntegral $ pIndex p))
 
 {-# INLINE isPacketReady #-}
