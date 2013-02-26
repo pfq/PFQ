@@ -76,6 +76,9 @@ module Network.PFq
         vlanSetFilterId,
         vlanResetFilterId,
 
+        putStateFunction,
+        getStateFunction,
+
         --- data
         NetQueue(..),
         Packet(..),
@@ -677,6 +680,33 @@ groupFunctions hdl gid names =
     withCString name $ \fname -> 
         pfq_set_group_function hdl (fromIntegral gid) fname ix >>= throwPFqIf_ hdl (== -1) 
 
+-- putStateFunction:
+-- foreign import calll unsafe pfq_set_group_state   :: Ptr PFqTag -> CInt -> Ptr a -> CSize -> CInt 
+
+putStateFunction :: (Storable s) => 
+                    Ptr PFqTag
+                    -> s        -- state 
+                    -> Int      -- group id
+                    -> Int      -- index in the computation chain
+                    -> IO ()
+
+putStateFunction hdl state gid level = do
+    allocaBytes (sizeOf state) $ \ptr -> do
+        poke ptr state
+        pfq_set_group_function_state hdl (fromIntegral gid) ptr (fromIntegral $ sizeOf state) (fromIntegral level) >>= throwPFqIf_ hdl (== -1)
+
+
+getStateFunction :: (Storable s) => 
+                    Ptr PFqTag
+                    -> Int      -- group id
+                    -> Int      -- index in the computation chain
+                    -> Int      -- size of the state
+                    -> IO s
+
+getStateFunction hdl gid level size = do
+    allocaBytes (size) $ \ptr -> do
+        pfq_get_group_function_state hdl (fromIntegral gid) ptr (fromIntegral size) (fromIntegral level) >>= throwPFqIf_ hdl (== -1)
+        peek ptr
 
 -- dispatch:
 -- 
@@ -744,6 +774,11 @@ foreign import ccall unsafe pfq_get_group_stats   :: Ptr PFqTag -> CInt -> Ptr S
 foreign import ccall unsafe pfq_set_group_function :: Ptr PFqTag -> CInt -> CString -> CInt -> IO CInt
 foreign import ccall unsafe pfq_reset_group        :: Ptr PFqTag -> CInt -> IO CInt
 
+-- Note: Ptr a is void *
+
+foreign import ccall unsafe pfq_set_group_function_state :: Ptr PFqTag -> CInt -> Ptr a -> CSize -> CInt -> IO CInt 
+foreign import ccall unsafe pfq_get_group_function_state :: Ptr PFqTag -> CInt -> Ptr a -> CSize -> CInt -> IO CInt
+
 foreign import ccall pfq_dispatch                 :: Ptr PFqTag -> FunPtr CPFqCallback -> CLong -> Ptr Word8 -> IO CInt
 foreign import ccall "wrapper" make_callback      :: CPFqCallback -> IO (FunPtr CPFqCallback)
 
@@ -759,8 +794,5 @@ foreign import ccall unsafe pfq_vlan_reset_filter     :: Ptr PFqTag -> CInt -> C
 -- extern int pfq_get_groups_mask(pfq_t const *q, unsigned long *_mask);
 -- extern int pfq_group_fprog(pfq_t *q, int gid, struct sock_fprog *);
 -- extern int pfq_group_fprog_reset(pfq_t *q, int gid);
-
--- foreign import ccall unsafe pfq_group_state    :: Ptr PFqTag -> CInt -> Ptr CChar -> CSize -> IO CInt
--- foreign import ccall unsafe pfq_ifindex        :: Ptr PFqTag -> CString -> IO CInt
 
 
