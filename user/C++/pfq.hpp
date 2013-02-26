@@ -949,6 +949,8 @@ namespace net {
             return vec;
         }
 
+        /* functional */
+
         void
         set_group_function(int gid, const char *fun, int level = 0)
         {
@@ -977,11 +979,12 @@ namespace net {
             struct pfq_group_state s { &state, sizeof(state), gid, level };
             socklen_t len = sizeof(s);
             if (::getsockopt(fd_, PF_Q, Q_SO_GET_GROUP_STATE, &s, &len) == -1)
+                throw pfq_error(errno, "PFQ: get group function state error");
         }
 
         template <typename C>
         void
-        set_group_functional(int gid, C const &cont)
+        set_group_computation(int gid, C const &cont)
         {
             int level = 0;
             for(auto const & f : cont)
