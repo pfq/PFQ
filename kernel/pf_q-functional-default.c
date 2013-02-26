@@ -558,39 +558,23 @@ comb_par(struct sk_buff *skb, ret_t ret)
 
 /* regression test */
 
+struct pair { int a; int b; };
+
 
 ret_t
 dummy_state(struct sk_buff *skb, ret_t ret)
 {
         sk_function_t fun = get_next_function(skb);
-        
+
+        struct pair *p = (struct pair *)get_unsafe_state(skb);    
+
+        if (printk_ratelimit())
+                printk(KERN_INFO "[PFQ][dummy_state] -> pair = %d %d\n", p->a, p->b);
+
         set_skb_state(skb, 42);
 
         return pfq_call(fun, skb, ret); 
 }
-
-
-struct pair
-{
-        int a;
-        int b;
-};
-
-
-ret_t
-dummy_kstm(struct sk_buff *skb, ret_t ret)
-{
-        sk_function_t fun = get_next_function(skb);
-
-        struct pair *p = (struct pair *)get_unsafe_state(skb);    
-
-        p->a = 33;
-        p->b = 42;
-
-        return pfq_call(fun, skb, ret); 
-}
-
-
 
 struct sk_function_descr default_functions[] = {
 	{ "steer-mac",           steering_mac        },
@@ -617,6 +601,5 @@ struct sk_function_descr default_functions[] = {
         { "par",                 comb_par            },
         /* ---------------------------------------- */
         { "dummy-state",         dummy_state         },
-        { "dummy-kstm",          dummy_kstm          },
         { NULL, NULL}};
 
