@@ -501,7 +501,7 @@ read :: Ptr PFqTag
      -> IO NetQueue
 
 read hdl msec = 
-    allocaBytes ((24)) $ \queue -> do
+    allocaBytes (32) $ \queue -> do
        pfq_read hdl queue (fromIntegral msec) >>= throwPFqIf_ hdl (== -1) 
        _ptr <- ((\h -> peekByteOff h 0))  queue
        _len <- ((\h -> peekByteOff h (sizeOf _ptr)))  queue
