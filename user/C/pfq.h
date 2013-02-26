@@ -230,9 +230,9 @@ extern int pfq_groups_mask(pfq_t const *q, unsigned long *_mask);
 
 extern int pfq_set_group_function(pfq_t *q, int gid, const char *fun_name, int level);
 
-extern int pfq_set_group_state(pfq_t *q, int gid, const void *state, size_t size, int level);
+extern int pfq_set_group_function_state(pfq_t *q, int gid, const void *state, size_t size, int level);
 
-extern int pfq_get_group_state(pfq_t *q, int gid, void *state, size_t size, int level);
+extern int pfq_get_group_function_state(pfq_t *q, int gid, void *state, size_t size, int level);
 
 extern int pfq_group_reset(pfq_t *q, int gid);
 

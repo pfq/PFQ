@@ -501,7 +501,7 @@ pfq_set_group_function(pfq_t *q, int gid, const char *fun_name, int level)
 
 
 int
-pfq_set_group_state(pfq_t *q, int gid, const void *state, size_t size, int level)
+pfq_set_group_function_state(pfq_t *q, int gid, const void *state, size_t size, int level)
 {
 	struct pfq_group_state s  = { (void *)state, size, gid, level };
 	if (setsockopt(q->fd, PF_Q, Q_SO_GROUP_STATE, &s, sizeof(s)) == -1) {
@@ -512,7 +512,7 @@ pfq_set_group_state(pfq_t *q, int gid, const void *state, size_t size, int level
 
 
 int
-pfq_get_group_state(pfq_t *q, int gid, void *state, size_t size, int level)
+pfq_get_group_function_state(pfq_t *q, int gid, void *state, size_t size, int level)
 {
 	struct pfq_group_state s  = { state, size, gid, level };
         socklen_t len = sizeof(s);
