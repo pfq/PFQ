@@ -119,7 +119,7 @@ namespace test
             {
                 struct stm_state { int value; } x = {0};
                 
-                m_pfq.set_group_state(gid, x);
+                m_pfq.set_group_function_state(gid, x);
             }
 
             std::for_each(m_queues.begin(), m_queues.end(),[&](int q) {
@@ -129,7 +129,7 @@ namespace test
 
             if (!opt::function.empty() && (m_id == 0))
             {
-                m_pfq.set_group_function(gid, opt::function.c_str());
+                m_pfq.set_group_function(gid, opt::function.c_str(), 0);
             }   
 
             m_pfq.timestamp_enabled(false);
@@ -459,7 +459,7 @@ try
         auto end = std::chrono::system_clock::now();
 
         std::cout << "capture: " << vt100::BOLD << 
-                ((sum-old)*1000000)/std::chrono::microseconds(end-begin).count() 
+                ((sum-old)*1000000)/std::chrono::duration_cast<std::chrono::microseconds>(end-begin).count() 
                     << vt100::RESET << " pkt/sec"; 
         
         if (flow) {

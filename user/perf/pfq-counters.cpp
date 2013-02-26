@@ -145,7 +145,7 @@ namespace test
                 std::cout << std::endl;
             }
 
-            m_pfq.set_group_functional(gid, fs);
+            m_pfq.set_group_computation(gid, fs);
             
             m_pfq.timestamp_enabled(false);
             
@@ -474,7 +474,7 @@ try
         auto end = std::chrono::system_clock::now();
 
         std::cout << "capture: " << vt100::BOLD << 
-                ((sum-old)*1000000)/std::chrono::microseconds(end-begin).count() 
+                ((sum-old)*1000000)/std::chrono::duration_cast<std::chrono::microseconds>(end-begin).count() 
                     << vt100::RESET << " pkt/sec"; 
         
         if (flow) {

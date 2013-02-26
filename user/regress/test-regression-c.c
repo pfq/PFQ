@@ -535,11 +535,11 @@ void test_group_state()
 
         int n = 42;
 
-        assert(pfq_set_group_state(q, pfq_group_id(q), &n, sizeof(n), 0) == 0);
+        assert(pfq_set_group_function_state(q, pfq_group_id(q), &n, sizeof(n), 0) == 0);
 
         int m = 0;
 
-        assert(pfq_get_group_state(q, pfq_group_id(q), &m, sizeof(m), 0) == 0);
+        assert(pfq_get_group_function_state(q, pfq_group_id(q), &m, sizeof(m), 0) == 0);
 
         assert(n == m);
 }

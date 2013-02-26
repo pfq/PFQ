@@ -180,7 +180,7 @@ namespace test
 
             if (!opt::steer_function.empty() && (m_id == 0))
             {
-                m_pfq.set_group_function(gid, opt::steer_function.c_str());
+                m_pfq.set_group_function(gid, opt::steer_function.c_str(), 0);
             }   
 
             m_pfq.timestamp_enabled(false);
@@ -593,7 +593,7 @@ try
         auto end = std::chrono::system_clock::now();
 
         std::cout << "capture: " << vt100::BOLD << 
-        ((sum-old)*1000000)/std::chrono::microseconds(end-begin).count() 
+        ((sum-old)*1000000)/std::chrono::duration_cast<std::chrono::microseconds>(end-begin).count() 
         << vt100::RESET << " pkt/sec" << std::endl;
 
         old = sum, begin = end;

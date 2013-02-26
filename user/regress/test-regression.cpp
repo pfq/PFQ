@@ -522,16 +522,16 @@ Context(PFQ)
         pfq x(group_policy::shared, 64);
 
         int n = 42;
-        x.set_group_state(x.group_id(), n); 
+        x.set_group_function_state(x.group_id(), n); 
 
         int m = 0;
-        x.get_group_state(x.group_id(), m);
+        x.get_group_function_state(x.group_id(), m);
 
         Assert(n, is_equal_to(m));
 
         x.bind(DEV.c_str());
 
-        x.set_group_function(x.group_id(), "test-state", 0);
+        x.set_group_function(x.group_id(), "dummy-state", 0);
         x.set_group_function(x.group_id(), "clone",      1);
 
         x.enable();
