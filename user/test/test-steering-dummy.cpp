@@ -27,7 +27,7 @@ main(int argc, char *argv[])
     }
     
     int state = 42;
-    r.set_group_state(r.group_id(), state); 
+    r.set_group_function_state(r.group_id(), state); 
 
     for(int i = 0; i < 5;++i)
     {
