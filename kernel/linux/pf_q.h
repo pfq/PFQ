@@ -58,7 +58,7 @@
 
 struct pfq_hdr
 {
-    unsigned long data;       /* state from pfq_annotation */
+    uint64_t data;          /* state from pfq_annotation */
 
     union 
     {
