@@ -195,10 +195,11 @@ data NetQueue = NetQueue {
 --
 
 data PktHdr = PktHdr {
-      hSec      :: {-# UNPACK #-} !Word32
+      hData     :: {-# UNPACK #-} !Word64
+    , hSec      :: {-# UNPACK #-} !Word32
     , hNsec     :: {-# UNPACK #-} !Word32
-    , hGid      :: {-# UNPACK #-} !Word32
     , hIfIndex  :: {-# UNPACK #-} !Word32
+    , hGid      :: {-# UNPACK #-} !Word32
     , hLen      :: {-# UNPACK #-} !Word16
     , hCapLen   :: {-# UNPACK #-} !Word16
     , hTci      :: {-# UNPACK #-} !Word16
@@ -253,18 +254,20 @@ combineClassMasks = ClassMask . foldr ((.|.) . unClassMask) 0
 
 toPktHdr :: Ptr PktHdr -> IO PktHdr
 toPktHdr hdr = do
-    _sec  <- ((\h -> peekByteOff h 0))  hdr
-    _nsec <- ((\h -> peekByteOff h 4))  hdr
-    _ifid <- ((\h -> peekByteOff h 8))  hdr
-    _gid  <- ((\h -> peekByteOff h 12)) hdr
-    _len  <- ((\h -> peekByteOff h 16)) hdr
-    _cap  <- ((\h -> peekByteOff h 18)) hdr
-    _tci  <- ((\h -> peekByteOff h 20)) hdr
-    _hwq  <- ((\h -> peekByteOff h 22)) hdr
-    _com  <- ((\h -> peekByteOff h 23)) hdr
-    return PktHdr { 
-                    hSec      = fromIntegral (_sec  :: CUInt),
-                    hNsec     = fromIntegral (_nsec :: CUInt),
+    _data <- ((\h -> peekByteOff h 0))  hdr
+    _sec  <- ((\h -> peekByteOff h 8))  hdr
+    _nsec <- ((\h -> peekByteOff h 12)) hdr
+    _ifid <- ((\h -> peekByteOff h 16)) hdr
+    _gid  <- ((\h -> peekByteOff h 20)) hdr
+    _len  <- ((\h -> peekByteOff h 24)) hdr
+    _cap  <- ((\h -> peekByteOff h 26)) hdr
+    _tci  <- ((\h -> peekByteOff h 28)) hdr
+    _hwq  <- ((\h -> peekByteOff h 30)) hdr
+    _com  <- ((\h -> peekByteOff h 31)) hdr
+    return PktHdr {
+                    hData     = fromIntegral (_data :: Word64),
+                    hSec      = fromIntegral (_sec  :: Word32),
+                    hNsec     = fromIntegral (_nsec :: Word32),
                     hIfIndex  = fromIntegral (_ifid :: CInt),
                     hGid      = fromIntegral (_gid  :: CInt),
                     hLen      = fromIntegral (_len  :: CUShort),
