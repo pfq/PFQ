@@ -959,27 +959,24 @@ namespace net {
         
         template <typename T>
         void
-        set_group_state(int gid, const T &state, int level = 0)
+        set_group_function_state(int gid, const T &state, int level = 0)
         {
             static_assert(std::is_pod<T>::value, "state must be a pod type");
 
             struct pfq_group_state s { const_cast<T *>(&state), sizeof(state), gid, level };
             if (::setsockopt(fd_, PF_Q, Q_SO_GROUP_STATE, &s, sizeof(s)) == -1)
-                throw pfq_error(errno, "PFQ: set group state error");
+                throw pfq_error(errno, "PFQ: set group function state error");
         }
         
         template <typename T>
         void
-        get_group_state(int gid, T &state, int level = 0)
+        get_group_function_state(int gid, T &state, int level = 0)
         {
             static_assert(std::is_pod<T>::value, "state must be a pod type");
             
             struct pfq_group_state s { &state, sizeof(state), gid, level };
             socklen_t len = sizeof(s);
             if (::getsockopt(fd_, PF_Q, Q_SO_GET_GROUP_STATE, &s, &len) == -1)
-                throw pfq_error(errno, "PFQ: get group state error");
-        }
-
         void
         set_group_functional(int gid, qfun const &f, int level = 0)
         {
