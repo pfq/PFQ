@@ -226,23 +226,6 @@ fun_id(struct sk_buff *skb, ret_t ret)
         return pfq_call(fun, skb, ret); 
 }
 
-
-ret_t
-test_state(struct sk_buff *skb, ret_t ret)
-{
-        sk_function_t fun;
-
-        get_state(skb);    
-        
-        fun = get_next_function(skb);
-        
-        set_skb_state(skb, 42);
-
-        put_state(skb);
-
-        return pfq_call(fun, skb, ret); 
-}
-
 /* filters */
 
 ret_t
@@ -573,6 +556,42 @@ comb_par(struct sk_buff *skb, ret_t ret)
 }
 
 
+/* regression test */
+
+
+ret_t
+dummy_state(struct sk_buff *skb, ret_t ret)
+{
+        sk_function_t fun = get_next_function(skb);
+        
+        set_skb_state(skb, 42);
+
+        return pfq_call(fun, skb, ret); 
+}
+
+
+struct pair
+{
+        int a;
+        int b;
+};
+
+
+ret_t
+dummy_kstm(struct sk_buff *skb, ret_t ret)
+{
+        sk_function_t fun = get_next_function(skb);
+
+        struct pair *p = (struct pair *)get_unsafe_state(skb);    
+
+        p->a = 33;
+        p->b = 42;
+
+        return pfq_call(fun, skb, ret); 
+}
+
+
+
 struct sk_function_descr default_functions[] = {
 	{ "steer-mac",           steering_mac        },
         { "steer-vlan-id",       steering_vlan_id    },
@@ -597,6 +616,7 @@ struct sk_function_descr default_functions[] = {
         { "neg",                 comb_neg            },
         { "par",                 comb_par            },
         /* ---------------------------------------- */
-        { "test-state",          test_state          },
+        { "dummy-state",         dummy_state         },
+        { "dummy-kstm",          dummy_kstm          },
         { NULL, NULL}};
 
