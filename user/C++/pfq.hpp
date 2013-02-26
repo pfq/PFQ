@@ -977,16 +977,6 @@ namespace net {
             struct pfq_group_state s { &state, sizeof(state), gid, level };
             socklen_t len = sizeof(s);
             if (::getsockopt(fd_, PF_Q, Q_SO_GET_GROUP_STATE, &s, &len) == -1)
-        void
-        set_group_functional(int gid, qfun const &f, int level = 0)
-        {
-            set_group_function(gid, f.name.c_str(), level);
-            if (f.state.first)
-            {
-                struct pfq_group_state s { f.state.first.get(), f.state.second, gid, level };
-                if (::setsockopt(fd_, PF_Q, Q_SO_GROUP_STATE, &s, sizeof(s)) == -1)
-                    throw pfq_error(errno, "PFQ: set group state error");
-            }
         }
 
         template <typename C>
