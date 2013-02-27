@@ -26,19 +26,19 @@
 /*
  *      Functional combinator strategy:
  *
- *      input           FILTER          PAR comb.       NEG comb.       STEERING        
- *      -------------------------------------------------------------------------
- *      PASS            F(p) P/D        SKIP(pass)      DROP            hash(p)/D       
- *                                                                                
- *      DROP            DROP/-          PASS            PASS            DROP/-         
- *                                                                                
- *      SKIP[ret]       ret             ret             ret             ret                       
- *                                                                                
- *      CLONE           F(p) C/D        SKIP(clone)     DROP            hash(p)/D     
- *                                                                                
- *      STEERING[n]     F(p) S(n)/D     SKIP(steer[n])  DROP            hash(p)/D 
+ *      input           FILTER          PAR comb.       PEND        NEG comb.       STEERING        
+ *      -----------------------------------------------------------------------------------------
+ *      PASS            F(p) P/D        SKIP(pass)      PASS        DROP            hash(p)/D       
+ *                                                                                                
+ *      DROP            DROP/-          PASS            DROP        PASS            DROP/-         
+ *                                                                                                
+ *      SKIP[ret]       SKIP[ret]       SKIP[ret]       ret         SKIP[ret]       SKIP[ret]                      
+ *                                                                                                
+ *      CLONE           F(p) C/D        SKIP(clone)     CLONE       DROP            hash(p)/D     
+ *                                                                                                
+ *      STEERING[n]     F(p) S(n)/D     SKIP(steer[n])  S(n)        DROP            hash(p)/D 
  *
- *      STEAL           -               -               -               -
+ *      STEAL           -               -               -           -               -
  */                                                                               
 
 
@@ -47,9 +47,7 @@ steering_mac(struct sk_buff *skb, ret_t ret)
 {
         uint16_t * a; 
         
-        if (is_skip(ret))
-                return pfq_call(get_next_function(skb), skb, clear_skip(ret));
-        if (is_drop(ret))
+        if (is_skip(ret) || is_drop(ret))
                 return pfq_call(get_next_function(skb), skb, ret);
 
         a = (uint16_t *)eth_hdr(skb); 
@@ -63,9 +61,7 @@ steering_vlan_id(struct sk_buff *skb, ret_t ret)
 {
         sk_function_t fun = get_next_function(skb);
                  
-        if (is_skip(ret))
-                return pfq_call(get_next_function(skb), skb, clear_skip(ret));
-        if (is_drop(ret))
+        if (is_skip(ret) || is_drop(ret))
                 return pfq_call(get_next_function(skb), skb, ret);
 
         if (skb->vlan_tci & VLAN_VID_MASK)
@@ -80,9 +76,7 @@ steering_ipv4(struct sk_buff *skb, ret_t ret)
 {       
         sk_function_t fun = get_next_function(skb);
 
-        if (is_skip(ret))
-                return pfq_call(get_next_function(skb), skb, clear_skip(ret));
-        if (is_drop(ret))
+        if (is_skip(ret) || is_drop(ret))
                 return pfq_call(get_next_function(skb), skb, ret);
 	
 	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP)) 
@@ -106,9 +100,7 @@ steering_flow(struct sk_buff *skb, ret_t ret)
 {       
         sk_function_t fun = get_next_function(skb);
         
-        if (is_skip(ret))
-                return pfq_call(get_next_function(skb), skb, clear_skip(ret));
-        if (is_drop(ret))
+        if (is_skip(ret) || is_drop(ret))
                 return pfq_call(get_next_function(skb), skb, ret);
 	
 	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP)) 
@@ -143,9 +135,7 @@ steering_ipv6(struct sk_buff *skb, ret_t ret)
 {       
         sk_function_t fun = get_next_function(skb);
         
-        if (is_skip(ret))
-                return pfq_call(get_next_function(skb), skb, clear_skip(ret));
-        if (is_drop(ret))
+        if (is_skip(ret) || is_drop(ret))
                 return pfq_call(get_next_function(skb), skb, ret);
 	
 	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IPV6)) 
@@ -184,9 +174,7 @@ fun_clone(struct sk_buff *skb, ret_t ret)
 {
         sk_function_t fun = get_next_function(skb);
         
-        if (is_skip(ret))
-                return pfq_call(get_next_function(skb), skb, clear_skip(ret));
-        if (is_drop(ret))
+        if (is_skip(ret) || is_drop(ret))
                 return pfq_call(get_next_function(skb), skb, ret);
         
         return pfq_call(fun, skb, broadcast(Q_CLASS_DEFAULT));
@@ -198,9 +186,7 @@ fun_broadcast(struct sk_buff *skb, ret_t ret)
 {
         sk_function_t fun = get_next_function(skb);
         
-        if (is_skip(ret))
-                return pfq_call(get_next_function(skb), skb, clear_skip(ret));
-        if (is_drop(ret))
+        if (is_skip(ret) || is_drop(ret))
                 return pfq_call(get_next_function(skb), skb, ret);
         
         return pfq_call(fun, skb, broadcast(Q_CLASS_ANY));
@@ -232,7 +218,7 @@ ret_t
 strict_vlan(struct sk_buff *skb, ret_t ret)
 {
         if (is_skip(ret))
-                return pfq_call(get_next_function(skb), skb, clear_skip(ret));
+                return pfq_call(get_next_function(skb), skb, ret);
         if (is_drop(ret))
                 return drop();
 
@@ -247,7 +233,7 @@ ret_t
 strict_ipv4(struct sk_buff *skb, ret_t ret)
 {
         if (is_skip(ret))
-                return pfq_call(get_next_function(skb), skb, clear_skip(ret));
+                return pfq_call(get_next_function(skb), skb, ret);
         if (is_drop(ret))
                 return drop();
 	
@@ -271,7 +257,7 @@ ret_t
 strict_udp(struct sk_buff *skb, ret_t ret)
 {
         if (is_skip(ret))
-                return pfq_call(get_next_function(skb), skb, clear_skip(ret));
+                return pfq_call(get_next_function(skb), skb, ret);
         if (is_drop(ret))
                 return drop();
 	
@@ -305,7 +291,7 @@ ret_t
 strict_tcp(struct sk_buff *skb, ret_t ret)
 {
         if (is_skip(ret))
-                return pfq_call(get_next_function(skb), skb, clear_skip(ret));
+                return pfq_call(get_next_function(skb), skb, ret);
         if (is_drop(ret))
                 return drop();
 	
@@ -339,7 +325,7 @@ ret_t
 strict_flow(struct sk_buff *skb, ret_t ret)
 {
         if (is_skip(ret))
-                return pfq_call(get_next_function(skb), skb, clear_skip(ret));
+                return pfq_call(get_next_function(skb), skb, ret);
         if (is_drop(ret))
                 return drop();
 	
@@ -373,10 +359,8 @@ strict_flow(struct sk_buff *skb, ret_t ret)
 ret_t
 filter_vlan(struct sk_buff *skb, ret_t ret)
 {
-        if (is_skip(ret))
-                return pfq_call(get_next_function(skb), skb, clear_skip(ret));
-        if (is_drop(ret))
-                return pfq_call(get_next_function(skb), skb, drop()); 
+        if (is_skip(ret) || is_drop(ret))
+                return pfq_call(get_next_function(skb), skb, ret);
         
         if ((skb->vlan_tci & VLAN_VID_MASK) == 0)
                 return pfq_call(get_next_function(skb), skb, drop()); 
@@ -390,10 +374,8 @@ filter_ipv4(struct sk_buff *skb, ret_t ret)
 {
         sk_function_t fun;
         
-        if (is_skip(ret))
-                return pfq_call(get_next_function(skb), skb, clear_skip(ret));
-        if (is_drop(ret))
-                return pfq_call(get_next_function(skb), skb, drop()); 
+        if (is_skip(ret) || is_drop(ret))
+                return pfq_call(get_next_function(skb), skb, ret);
         
         fun = get_next_function(skb);
 	
@@ -418,10 +400,8 @@ filter_udp(struct sk_buff *skb, ret_t ret)
 {
         sk_function_t fun;
 
-        if (is_skip(ret))
-                return pfq_call(get_next_function(skb), skb, clear_skip(ret));
-        if (is_drop(ret))
-                return pfq_call(get_next_function(skb), skb, drop()); 
+        if (is_skip(ret) || is_drop(ret))
+                return pfq_call(get_next_function(skb), skb, ret);
         
         fun = get_next_function(skb);
 	
@@ -456,10 +436,8 @@ filter_tcp(struct sk_buff *skb, ret_t ret)
 {
         sk_function_t fun;
         
-        if (is_skip(ret))
-                return pfq_call(get_next_function(skb), skb, clear_skip(ret));
-        if (is_drop(ret))
-                return pfq_call(get_next_function(skb), skb, drop()); 
+        if (is_skip(ret) || is_drop(ret))
+                return pfq_call(get_next_function(skb), skb, ret);
         
         fun = get_next_function(skb);
 
@@ -494,10 +472,8 @@ filter_flow(struct sk_buff *skb, ret_t ret)
 {
         sk_function_t fun;
 
-        if (is_skip(ret))
-                return pfq_call(get_next_function(skb), skb, clear_skip(ret));
-        if (is_drop(ret))
-                return pfq_call(get_next_function(skb), skb, drop()); 
+        if (is_skip(ret) || is_drop(ret))
+                return pfq_call(get_next_function(skb), skb, ret);
         
         fun = get_next_function(skb);
 
@@ -534,7 +510,7 @@ comb_neg(struct sk_buff *skb, ret_t ret)
         sk_function_t fun = get_next_function(skb);
         
         if (is_skip(ret))
-                return pfq_call(get_next_function(skb), skb, clear_skip(ret));
+                return pfq_call(get_next_function(skb), skb, ret);
 
         return pfq_call(fun, skb, is_drop(ret) ? pass() : drop());
 }
@@ -547,12 +523,19 @@ comb_par(struct sk_buff *skb, ret_t ret)
         sk_function_t fun = get_next_function(skb);
 
         if (is_skip(ret))
-                return pfq_call(get_next_function(skb), skb, clear_skip(ret));
+                return pfq_call(get_next_function(skb), skb, ret);
         
         if (is_drop(ret))
                 return pfq_call(fun, skb, pass());
         else
                 return pfq_call(fun, skb, skip(ret));
+}
+
+
+ret_t
+comb_pend(struct sk_buff *skb, ret_t ret)
+{
+        return pfq_call(get_next_function(skb), skb, clear_skip(ret));
 }
 
 
@@ -599,6 +582,7 @@ struct sk_function_descr default_functions[] = {
         { "strict-flow",         strict_flow         },
         { "neg",                 comb_neg            },
         { "par",                 comb_par            },
+        { "pend",                comb_pend           },
         /* ---------------------------------------- */
         { "dummy-state",         dummy_state         },
         { NULL, NULL}};
