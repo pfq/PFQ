@@ -322,6 +322,40 @@ strict_tcp(struct sk_buff *skb, ret_t ret)
 
 
 ret_t
+strict_icmp(struct sk_buff *skb, ret_t ret)
+{
+        if (is_skip(ret))
+                return pfq_call(get_next_function(skb), skb, ret);
+        if (is_drop(ret))
+                return drop();
+	
+	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP)) 
+	{ 
+		struct iphdr _iph;
+    		const struct iphdr *ip;
+
+		struct icmphdr _icmp;
+		const struct icmphdr *icmp;
+                
+		ip = skb_header_pointer(skb, skb->mac_len, sizeof(_iph), &_iph);
+ 		if (ip == NULL)
+ 			return drop();
+
+		if (ip->protocol != IPPROTO_ICMP) 
+			return drop();
+		
+		icmp = skb_header_pointer(skb, skb->mac_len + (ip->ihl<<2), sizeof(_icmp), &_icmp);
+		if (icmp) 
+		{
+                        return pfq_call(get_next_function(skb), skb, ret); 
+                }
+	}
+
+	return drop();
+}
+
+
+ret_t
 strict_flow(struct sk_buff *skb, ret_t ret)
 {
         if (is_skip(ret))
@@ -468,6 +502,41 @@ filter_tcp(struct sk_buff *skb, ret_t ret)
 
 
 ret_t
+filter_icmp(struct sk_buff *skb, ret_t ret)
+{
+        sk_function_t fun;
+
+        if (is_skip(ret) || is_drop(ret))
+                return pfq_call(get_next_function(skb), skb, ret);
+        
+        fun = get_next_function(skb);
+	
+	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP)) 
+	{ 
+		struct iphdr _iph;
+    		const struct iphdr *ip;
+
+		struct icmphdr _icmp;
+		const struct icmphdr *icmp;
+
+		ip = skb_header_pointer(skb, skb->mac_len, sizeof(_iph), &_iph);
+ 		if (ip == NULL)
+	                return pfq_call(fun, skb, drop());
+
+		if (ip->protocol != IPPROTO_ICMP) 
+	                return pfq_call(fun, skb, drop());
+		
+		icmp = skb_header_pointer(skb, skb->mac_len + (ip->ihl<<2), sizeof(_icmp), &_icmp);
+		if (icmp) 
+		{
+                        return pfq_call(fun, skb, ret); 
+                }
+	}
+
+	return pfq_call(fun, skb, drop());
+}
+
+ret_t
 filter_flow(struct sk_buff *skb, ret_t ret)
 {
         sk_function_t fun;
@@ -574,11 +643,13 @@ struct sk_function_descr default_functions[] = {
         { "ipv4",                filter_ipv4         },
         { "udp",                 filter_udp          },
         { "tcp",                 filter_tcp          },
+        { "icmp",                filter_icmp         },
         { "flow",                filter_flow         },
         { "strict-vlan",         strict_vlan         },
         { "strict-ipv4",         strict_ipv4         },
         { "strict-udp",          strict_udp          },
         { "strict-tcp",          strict_tcp          },
+        { "strict-icmp",         strict_icmp         },
         { "strict-flow",         strict_flow         },
         { "neg",                 comb_neg            },
         { "par",                 comb_par            },
