@@ -98,10 +98,10 @@ import Data.Bits
 -- import Debug.Trace 
 
 import Control.Monad 
-import Control.Monad.Cont 
 import Control.Concurrent
 
-import Control.Monad.State.Lazy
+-- import Control.Monad.Cont 
+-- import Control.Monad.State.Lazy
 -- import Control.Monad.Trans.Cont
 
 import Foreign.Ptr 
@@ -116,70 +116,6 @@ import Foreign.ForeignPtr (ForeignPtr)
 --
 
 newtype PFqTag = PFqTag ()
-
-
--- sk_buff defined in Linux kernel
---
-newtype SkBuff = SkBuff ()
-
-
--- Action defined in pfq kernel module
---
-
-newtype Action = Action ()
-
-
--- State used in continuation-passing style 
---
-
-data ActionState a = ActionState SkBuff a
-
-
--- prototype for in-kernel continuation-passing style functions...
---
-
-action ::  Action  -> ContT Action (State (ActionState a)) Action  
-action _ = undefined
-
-
--- Packet Function computation
---
-
-data PacketFunction fun = PacketFunction { name :: [String], run :: fun }
-
-(>->) :: Monad m => PacketFunction (a -> m b) -> PacketFunction (b -> m c) -> PacketFunction (a -> m c)
-(PacketFunction x1 f1) >-> (PacketFunction x2 f2) = PacketFunction (x1 ++ x2) (f1 >=> f2) 
-
-
-instance Show (PacketFunction fun) where
-    show (PacketFunction xs _) = show xs
-
--- Predefined Packet functions
---
-
-steer_mac    = PacketFunction ["steer-mac"] action
-steer_vlan   = PacketFunction ["steer-vlan-id"] action
-steer_ipv4   = PacketFunction ["steer-ipv4"] action
-steer_ipv6   = PacketFunction ["steer-ipv6"] action
-steer_flow   = PacketFunction ["steer-flow"] action
-
-clone        = PacketFunction ["clone"] action
-broadcast    = PacketFunction ["broadcast"] action
-
-vlan         = PacketFunction ["vlan"] action
-ipv4         = PacketFunction ["ipv4"] action
-udp          = PacketFunction ["udp"] action
-tcp          = PacketFunction ["tcp"] action
-flow         = PacketFunction ["flow"] action
-
-strict_vlan  = PacketFunction ["strict-vlan"] action
-strict_ipv4  = PacketFunction ["strict-ipv4"] action
-strict_udp   = PacketFunction ["strict-udp"] action
-strict_tcp   = PacketFunction ["strict-tcp"] action
-strict_flow  = PacketFunction ["strict-flow"] action
-
-neg          = PacketFunction ["neg"] action
-par          = PacketFunction ["par"] action
 
 
 #include <pfq/pfq.h>
