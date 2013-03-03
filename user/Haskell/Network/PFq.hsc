@@ -65,7 +65,6 @@ module Network.PFq
         dispatch,
         getStats,
         getGroupStats,
-        groupFunctions,
     
         getPackets,
         getHeader,
@@ -76,9 +75,12 @@ module Network.PFq
         vlanSetFilterId,
         vlanResetFilterId,
 
+        groupFunction,
         putStateFunction,
         getStateFunction,
 
+        -- groupComputation,
+        
         --- data
         NetQueue(..),
         Packet(..),
@@ -95,6 +97,8 @@ module Network.PFq
 
 import Data.Word
 import Data.Bits
+import Data.Maybe
+
 -- import Debug.Trace 
 
 import Control.Monad 
@@ -111,6 +115,8 @@ import Foreign.Marshal.Alloc
 import Foreign.Storable
 import Foreign.Concurrent as C (newForeignPtr) 
 import Foreign.ForeignPtr (ForeignPtr)
+
+import Network.PFlang as K
 
 -- Placeholders
 --
@@ -603,18 +609,24 @@ makeStats p = do
                             sDropped  = fromIntegral (_drop :: CLong)
                           }
 
--- groupFunctions:
+-- groupComputation:
 --
 
-groupFunctions :: Ptr PFqTag
-                 -> Int       -- group id
-                 -> [String]  -- function name(s) in continuation-passing style
-                 -> IO ()
-
-groupFunctions hdl gid names =
-    forM_ (zip names [0,1..]) $ \(name,ix) ->  
-    withCString name $ \fname -> 
-        pfq_set_group_function hdl (fromIntegral gid) fname ix >>= throwPFqIf_ hdl (== -1) 
+-- groupComputation :: Ptr PFqTag
+--                  -> Int            -- group id
+--                  -> Computation a  -- computation from (PFlang) 
+--                  -> IO ()
+-- 
+-- groupComputation hdl gid (Computation _ name ctx) =
+--     withCString name $ \fname -> do
+--         pfq_set_group_function hdl (fromIntegral gid) fname (fromIntegral 0) >>= throwPFqIf_ hdl (== -1) 
+--         when (isJust ctx) $ putStateFunction hdl ((\(StorableContext c) -> c) . fromJust $ ctx) gid 0 
+-- 
+-- groupComputation hdl gid (Composition _ ns cs) =
+--     forM_ (zip3 ns cs [0,1..]) $ \(name,ctx,ix) ->  
+--     withCString name $ \fname -> do
+--         pfq_set_group_function hdl (fromIntegral gid) fname ix >>= throwPFqIf_ hdl (== -1) 
+--         when (isJust ctx) $ putStateFunction hdl ((\(StorableContext c) -> c) . fromJust $ ctx) gid 0 
 
 
 -- groupFunction:
