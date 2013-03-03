@@ -31,11 +31,20 @@
 {-# LANGUAGE ExistentialQuantification #-} 
 {-# LANGUAGE NoMonomorphismRestriction #-}
 
+{-# OPTIONS_GHC -fno-warn-unused-binds #-}
+     
+module Network.PFlang
+    (
+        StorableContext(..),
+        Computation(..)
+    ) where
+
 import Control.Monad
 import Control.Monad.State.Lazy
 import Control.Monad.Cont
 import Control.Concurrent.STM
 import Foreign.Storable
+
 
 -- Placeholder types: sk_buff and Action, defined in the kernel
 --
@@ -60,10 +69,10 @@ comp_type (skb,a) = return (skb,a)
 -- Packet Function computation
 --
 
-data Context = forall c. (Storable c) => Context c
+data StorableContext = forall c. (Storable c) => StorableContext c
 
-data Computation a = Computation a String (Maybe Context) |
-                     Composition a [String] [Maybe Context]
+data Computation a = Computation a String (Maybe StorableContext) |
+                     Composition a [String] [Maybe StorableContext]
 
 
 instance Show (Computation a) where
@@ -77,6 +86,8 @@ instance Show (Computation a) where
 (>->) :: (Monad m) => Computation (a -> m b) -> Computation (b -> m c) -> Computation (a -> m c) 
 (Computation f1 n1 c1) >-> (Computation f2 n2 c2) = Composition (f1 >=> f2) [n1, n2] [c1, c2]  
 (Composition f1 ns cs) >-> (Computation f2 n2 c2) = Composition (f1 >=> f2) (ns ++ [n2]) (cs ++ [c2])  
+(Computation f1 n1 c1) >-> (Composition f2 n2 c2) = Composition (f1 >=> f2) (n1 : n2) (c1 : c2)  
+(Composition f1 n1 c1) >-> (Composition f2 n2 c2) = Composition (f1 >=> f2) (n1 ++ n2) (c1 ++ c2)  
 
 
 -- Predefined in-kernel computations
@@ -107,5 +118,4 @@ neg          = Computation comp_type "neg"           Nothing
 par          = Computation comp_type "par"           Nothing  
 
 -- ctx       = Computation comp_type "example"       -- udp >-> (ctx 0) >-> steer-ipv4
-
 
