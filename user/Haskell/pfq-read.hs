@@ -67,7 +67,8 @@ dumper dev = do
 
         -- Test state (requires dummy-state comptuation)!
 
-        Q.groupFunctions q gid ["dummy-state", "clone"]
+        Q.groupFunction q gid 0 "dummy-state"  
+        Q.groupFunction q gid 1 "clone"  
 
         -- set state
         Q.putStateFunction q (Pair 10 42) gid 0
