@@ -616,8 +616,20 @@ groupFunctions hdl gid names =
     withCString name $ \fname -> 
         pfq_set_group_function hdl (fromIntegral gid) fname ix >>= throwPFqIf_ hdl (== -1) 
 
+
+-- groupFunction:
+
+groupFunction :: Ptr PFqTag
+                 -> Int     -- group id
+                 -> Int     -- index in the computation chain
+                 -> String  -- function name(s) in continuation-passing style
+                 -> IO ()
+groupFunction hdl gid ix name =
+    withCString name $ \fname -> 
+        pfq_set_group_function hdl (fromIntegral gid) fname (fromIntegral ix) >>= throwPFqIf_ hdl (== -1) 
+
+
 -- putStateFunction:
--- foreign import calll unsafe pfq_set_group_state   :: Ptr PFqTag -> CInt -> Ptr a -> CSize -> CInt 
 
 putStateFunction :: (Storable s) => 
                     Ptr PFqTag
@@ -631,6 +643,8 @@ putStateFunction hdl state gid level = do
         poke ptr state
         pfq_set_group_function_state hdl (fromIntegral gid) ptr (fromIntegral $ sizeOf state) (fromIntegral level) >>= throwPFqIf_ hdl (== -1)
 
+
+-- getStateFunction:
 
 getStateFunction :: (Storable s) => 
                     Ptr PFqTag
