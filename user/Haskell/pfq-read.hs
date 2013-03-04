@@ -33,7 +33,7 @@ recvLoop q = do
             recvLoop q
 
 
--- State shared as Storable Pair
+-- Context shared as Storable Pair
 --
 
 data Pair = Pair Int Int 
@@ -71,10 +71,10 @@ dumper dev = do
         Q.groupFunction q gid 1 "clone"  
 
         -- set state
-        Q.putStateFunction q (Pair 10 42) gid 0
+        Q.putContextFunction q (Pair 10 42) gid 0
         
         -- read state of 8 bytes...
-        kp :: Pair <- Q.getStateFunction q gid 0 8 
+        kp :: Pair <- Q.getContextFunction q gid 0 8 
         print kp
 
         Q.getSlotSize q >>= \o -> putStrLn $ "slot_size: " ++ show(o)

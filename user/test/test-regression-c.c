@@ -529,17 +529,17 @@ void test_vlan()
 }
 
 
-void test_group_state()
+void test_group_context()
 {
         pfq_t * q = pfq_open(64, 0, 1024);
 
         int n = 42;
 
-        assert(pfq_set_group_function_state(q, pfq_group_id(q), &n, sizeof(n), 0) == 0);
+        assert(pfq_set_group_function_context(q, pfq_group_id(q), &n, sizeof(n), 0) == 0);
 
         int m = 0;
 
-        assert(pfq_get_group_function_state(q, pfq_group_id(q), &m, sizeof(m), 0) == 0);
+        assert(pfq_get_group_function_context(q, pfq_group_id(q), &m, sizeof(m), 0) == 0);
 
         assert(n == m);
 }
@@ -587,7 +587,7 @@ main(int argc __attribute__((unused)), char *argv[]__attribute__((unused)))
 
         test_vlan();
 
-        test_group_state();
+        test_group_context();
 
         printf("Tests successfully passed.\n");
     	return 0;    

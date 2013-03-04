@@ -119,7 +119,7 @@ struct pfq_queue_descr
 #define Q_SO_SET_OFFSET             7
 #define Q_SO_GROUP_JOIN             8
 #define Q_SO_GROUP_LEAVE            9
-#define Q_SO_GROUP_STATE            10
+#define Q_SO_GROUP_CONTEXT          10
 #define Q_SO_GROUP_FUN              11
 #define Q_SO_GROUP_RESET            12
 
@@ -137,7 +137,7 @@ struct pfq_queue_descr
 #define Q_SO_GET_OFFSET             28
 #define Q_SO_GET_GROUPS             29
 #define Q_SO_GET_GROUP_STATS        30
-#define Q_SO_GET_GROUP_STATE        31
+#define Q_SO_GET_GROUP_CONTEXT      31
 
 /* general defines */
 
@@ -217,10 +217,10 @@ struct pfq_group_function
 };
 
 
-struct pfq_group_state
+struct pfq_group_context
 {
-    void       * state;
-    size_t       size;      // sizeof(state)
+    void       * context;
+    size_t       size;      // sizeof(context)
     int gid;
     int level;
 };

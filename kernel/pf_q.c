@@ -224,30 +224,6 @@ __pfq_netdev_alloc_skb(struct net_device *dev, unsigned int length, gfp_t gfp)
 }
 
 
-#if 0
-
-struct pfq_steering_cache
-{
-	sk_function_t fun;
-	void * state;
-	ret_t ret;
-};
-
-
-inline ret_t
-pfq_memoized_call(struct pfq_steering_cache *mem, sk_function_t fun, 
-		  const struct sk_buff *skb, void *state)
-{
-	if (unlikely(mem->fun != fun || mem->state != state)) {
-		mem->state = state;
-		mem->fun = fun;
-		mem->ret = fun(skb, state);
-	} 
-	return mem->ret; 
-}
-
-#endif
-
 /* send this packet to selected sockets */
 
 inline
@@ -998,9 +974,9 @@ int pfq_getsockopt(struct socket *sock,
                             return -EFAULT;
             } break;
 
-	case Q_SO_GET_GROUP_STATE:
+	case Q_SO_GET_GROUP_CONTEXT:
 	    {
-		    struct pfq_group_state s;
+		    struct pfq_group_context s;
 		    
 		    if (len != sizeof(s))
 			    return -EINVAL;
@@ -1009,24 +985,24 @@ int pfq_getsockopt(struct socket *sock,
 			    return -EFAULT;
 
                     if (s.gid < 0  || s.gid >= Q_MAX_GROUP) {
-                    	    pr_devel("[PFQ|%d] group state error: gid:%d invalid gid!\n", pq->q_id, s.gid);
+                    	    pr_devel("[PFQ|%d] group context error: gid:%d invalid gid!\n", pq->q_id, s.gid);
 			    return -EINVAL;
 		    }
                     
-                    if (!s.size || !s.state) {
-                    	    pr_devel("[PFQ|%d] group state error: gid:%d invalid argument!\n", pq->q_id, s.gid);
+                    if (!s.size || !s.context) {
+                    	    pr_devel("[PFQ|%d] group context error: gid:%d invalid argument!\n", pq->q_id, s.gid);
                             return -EFAULT;
                     }
 
 		    /* check whether the group is joinable.. */
 
 		    if (!__pfq_group_access(s.gid, pq->q_id, Q_GROUP_UNDEFINED, false)) {   
-                    	    pr_devel("[PFQ|%d] group state error: gid:%d access denied!\n", pq->q_id, s.gid);
+                    	    pr_devel("[PFQ|%d] group context error: gid:%d access denied!\n", pq->q_id, s.gid);
 			    return -EPERM;
 		    }
 
-                    if (__pfq_get_group_state(s.gid, s.level, s.size, s.state) < 0) {
-                    	pr_devel("[PFQ|%d] get state error: gid:%d error!\n", pq->q_id, s.gid);
+                    if (__pfq_get_group_context(s.gid, s.level, s.size, s.context) < 0) {
+                    	pr_devel("[PFQ|%d] get context error: gid:%d error!\n", pq->q_id, s.gid);
                             return -EFAULT;
                     }
 	    
@@ -1218,43 +1194,43 @@ int pfq_setsockopt(struct socket *sock,
                     pr_devel("[PFQ|%d] reset group gid:%d\n", pq->q_id, gid);
             } break;
 
-	case Q_SO_GROUP_STATE:
+	case Q_SO_GROUP_CONTEXT:
 	    {
-		    struct pfq_group_state s;
+		    struct pfq_group_context s;
 		    if (optlen != sizeof(s))
 			    return -EINVAL;
 		    
 		    if (copy_from_user(&s, optval, optlen)) 
 			    return -EFAULT;
 
-                    CHECK_GROUP_PERM(s.gid, "group state");
+                    CHECK_GROUP_PERM(s.gid, "group context");
 
-		    if (s.size && s.state) 
+		    if (s.size && s.context) 
 		    {
-                    	void * state = kmalloc(s.size, GFP_KERNEL);
-			if (state == NULL) 
+                    	void * context = kmalloc(s.size, GFP_KERNEL);
+			if (context == NULL) 
 				return -ENOMEM;
 
-			if(copy_from_user(state, s.state, s.size)) {
-                         	kfree(state);
+			if(copy_from_user(context, s.context, s.size)) {
+                         	kfree(context);
 				return -EFAULT;
 			}
 			
-			if (__pfq_set_group_state(s.gid, state, s.level) < 0) {
-                    		pr_devel("[PFQ|%d] state error: gid:%d invalid level (%d)!\n", pq->q_id, s.gid, s.level);
+			if (__pfq_set_group_context(s.gid, context, s.level) < 0) {
+                    		pr_devel("[PFQ|%d] context error: gid:%d invalid level (%d)!\n", pq->q_id, s.gid, s.level);
 			        return -EINVAL;
                         }
                     	    
-			pr_devel("[PFQ|%d] state: gid:%d (state of %zu bytes set)\n", pq->q_id, s.gid, s.size);
+			pr_devel("[PFQ|%d] context: gid:%d (context of %zu bytes set)\n", pq->q_id, s.gid, s.size);
 		    }
-		    else { /* empty state */
+		    else { /* empty context */
 			   
-			if (__pfq_set_group_state(s.gid, NULL, s.level) < 0) {
-                    		pr_devel("[PFQ|%d] state error: gid:%d invalid level (%d)!\n", pq->q_id, s.gid, s.level);
+			if (__pfq_set_group_context(s.gid, NULL, s.level) < 0) {
+                    		pr_devel("[PFQ|%d] context error: gid:%d invalid level (%d)!\n", pq->q_id, s.gid, s.level);
 			        return -EINVAL;
                         }
 			
-			pr_devel("[PFQ|%d] state: gid:%d (empty state set)\n", pq->q_id, s.gid);
+			pr_devel("[PFQ|%d] context: gid:%d (empty context set)\n", pq->q_id, s.gid);
 		    }
 	    } break;
 

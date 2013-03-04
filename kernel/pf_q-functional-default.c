@@ -614,16 +614,16 @@ struct pair { int a; int b; };
 
 
 ret_t
-dummy_state(struct sk_buff *skb, ret_t ret)
+dummy_state_context(struct sk_buff *skb, ret_t ret)
 {
         sk_function_t fun = get_next_function(skb);
 
-        struct pair *p = (struct pair *)get_unsafe_state(skb);    
+        struct pair *p = (struct pair *)get_unsafe_context(skb);    
 
         if (printk_ratelimit())
-                printk(KERN_INFO "[PFQ][dummy_state] -> pair = %d %d\n", p->a, p->b);
+                printk(KERN_INFO "[PFQ][dummy_context] -> pair = %d %d\n", p->a, p->b);
 
-        set_skb_state(skb, 42);
+        set_state(skb, 42);
 
         return pfq_call(fun, skb, ret); 
 }
@@ -655,6 +655,6 @@ struct sk_function_descr default_functions[] = {
         { "par",                 comb_par            },
         { "pend",                comb_pend           },
         /* ---------------------------------------- */
-        { "dummy-state",         dummy_state         },
+        { "dummy-state",         dummy_state_context },
         { NULL, NULL}};
 

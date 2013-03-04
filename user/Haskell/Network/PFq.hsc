@@ -76,8 +76,8 @@ module Network.PFq
         vlanResetFilterId,
 
         groupFunction,
-        putStateFunction,
-        getStateFunction,
+        putContextFunction,
+        getContextFunction,
 
         -- groupComputation,
         
@@ -620,13 +620,13 @@ makeStats p = do
 -- groupComputation hdl gid (Computation _ name ctx) =
 --     withCString name $ \fname -> do
 --         pfq_set_group_function hdl (fromIntegral gid) fname (fromIntegral 0) >>= throwPFqIf_ hdl (== -1) 
---         when (isJust ctx) $ putStateFunction hdl ((\(StorableContext c) -> c) . fromJust $ ctx) gid 0 
+--         when (isJust ctx) $ putContextFunction hdl ((\(StorableContext c) -> c) . fromJust $ ctx) gid 0 
 -- 
 -- groupComputation hdl gid (Composition _ ns cs) =
 --     forM_ (zip3 ns cs [0,1..]) $ \(name,ctx,ix) ->  
 --     withCString name $ \fname -> do
 --         pfq_set_group_function hdl (fromIntegral gid) fname ix >>= throwPFqIf_ hdl (== -1) 
---         when (isJust ctx) $ putStateFunction hdl ((\(StorableContext c) -> c) . fromJust $ ctx) gid 0 
+--         when (isJust ctx) $ putContextFunction hdl ((\(StorableContext c) -> c) . fromJust $ ctx) gid 0 
 
 
 -- groupFunction:
@@ -641,33 +641,33 @@ groupFunction hdl gid ix name =
         pfq_set_group_function hdl (fromIntegral gid) fname (fromIntegral ix) >>= throwPFqIf_ hdl (== -1) 
 
 
--- putStateFunction:
+-- putContextFunction:
 
-putStateFunction :: (Storable s) => 
+putContextFunction :: (Storable s) => 
                     Ptr PFqTag
-                    -> s        -- state 
+                    -> s        -- context 
                     -> Int      -- group id
                     -> Int      -- index in the computation chain
                     -> IO ()
 
-putStateFunction hdl state gid level = do
-    allocaBytes (sizeOf state) $ \ptr -> do
-        poke ptr state
-        pfq_set_group_function_state hdl (fromIntegral gid) ptr (fromIntegral $ sizeOf state) (fromIntegral level) >>= throwPFqIf_ hdl (== -1)
+putContextFunction hdl ctx gid level = do
+    allocaBytes (sizeOf ctx) $ \ptr -> do
+        poke ptr ctx
+        pfq_set_group_function_context hdl (fromIntegral gid) ptr (fromIntegral $ sizeOf ctx) (fromIntegral level) >>= throwPFqIf_ hdl (== -1)
 
 
--- getStateFunction:
+-- getContextFunction:
 
-getStateFunction :: (Storable s) => 
+getContextFunction :: (Storable s) => 
                     Ptr PFqTag
                     -> Int      -- group id
                     -> Int      -- index in the computation chain
-                    -> Int      -- size of the state
+                    -> Int      -- size of the context
                     -> IO s
 
-getStateFunction hdl gid level size = do
+getContextFunction hdl gid level size = do
     allocaBytes (size) $ \ptr -> do
-        pfq_get_group_function_state hdl (fromIntegral gid) ptr (fromIntegral size) (fromIntegral level) >>= throwPFqIf_ hdl (== -1)
+        pfq_get_group_function_context hdl (fromIntegral gid) ptr (fromIntegral size) (fromIntegral level) >>= throwPFqIf_ hdl (== -1)
         peek ptr
 
 -- dispatch:
@@ -738,8 +738,8 @@ foreign import ccall unsafe pfq_reset_group        :: Ptr PFqTag -> CInt -> IO C
 
 -- Note: Ptr a is void *
 
-foreign import ccall unsafe pfq_set_group_function_state :: Ptr PFqTag -> CInt -> Ptr a -> CSize -> CInt -> IO CInt 
-foreign import ccall unsafe pfq_get_group_function_state :: Ptr PFqTag -> CInt -> Ptr a -> CSize -> CInt -> IO CInt
+foreign import ccall unsafe pfq_set_group_function_context :: Ptr PFqTag -> CInt -> Ptr a -> CSize -> CInt -> IO CInt 
+foreign import ccall unsafe pfq_get_group_function_context :: Ptr PFqTag -> CInt -> Ptr a -> CSize -> CInt -> IO CInt
 
 foreign import ccall pfq_dispatch                 :: Ptr PFqTag -> FunPtr CPFqCallback -> CLong -> Ptr Word8 -> IO CInt
 foreign import ccall "wrapper" make_callback      :: CPFqCallback -> IO (FunPtr CPFqCallback)

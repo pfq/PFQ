@@ -45,7 +45,7 @@ struct pfq_group
 
 	atomic_long_t sock_mask[Q_CLASS_MAX];   /* for class: Q_CLASS_DATA, Q_CLASS_CONTROL, etc... */
 
-    struct fun_context functx[Q_FUN_MAX+1]; /* sk_function_t, void *state pair */
+    struct fun_context functx[Q_FUN_MAX+1]; /* sk_function_t, void *context pair */
 
     atomic_long_t filter; 					/* struct sk_filter pointer */
 
@@ -76,9 +76,9 @@ unsigned long pfq_get_groups(int id);
 
 int __pfq_set_group_function(int gid, sk_function_t fun, int level);
 
-int __pfq_set_group_state(int gid, void *state, int level);
+int __pfq_set_group_context(int gid, void *context, int level);
 
-int __pfq_get_group_state(int gid, int level, int size, void __user *state);
+int __pfq_get_group_context(int gid, int level, int size, void __user *context);
 
 void __pfq_reset_group_functx(int gid);
 

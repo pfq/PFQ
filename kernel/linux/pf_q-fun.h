@@ -112,7 +112,7 @@ struct sk_function_descr
 struct fun_context
 {
     atomic_long_t   function;
-    atomic_long_t   state;
+    atomic_long_t   context;
     spinlock_t      lock;
 };
 
@@ -161,24 +161,24 @@ get_next_function(struct sk_buff *skb)
 
 
 static inline 
-void * get_unsafe_state(struct sk_buff *skb)
+void * get_unsafe_context(struct sk_buff *skb)
 {
     int index = pfq_skb_annotation(skb)->index;
-    return (void *)atomic_long_read(&pfq_skb_annotation(skb)->functx[index].state);
+    return (void *)atomic_long_read(&pfq_skb_annotation(skb)->functx[index].context);
 }
 
 
 static inline 
-void * get_state(struct sk_buff *skb)
+void * get_context(struct sk_buff *skb)
 {
     int index = pfq_skb_annotation(skb)->index;
     spin_lock(&pfq_skb_annotation(skb)->functx[index].lock);
-    return (void *)atomic_long_read(&pfq_skb_annotation(skb)->functx[index].state);
+    return (void *)atomic_long_read(&pfq_skb_annotation(skb)->functx[index].context);
 }
 
 
 static inline 
-void put_state(struct sk_buff *skb)
+void put_context(struct sk_buff *skb)
 {
     int index = pfq_skb_annotation(skb)->index;
     spin_unlock(&pfq_skb_annotation(skb)->functx[index].lock);
@@ -186,14 +186,14 @@ void put_state(struct sk_buff *skb)
 
 
 static inline 
-unsigned long get_skb_state(struct sk_buff *skb)
+unsigned long get_state(struct sk_buff *skb)
 {
     return pfq_skb_annotation(skb)->state;
 }
 
 
 static inline
-void set_skb_state(struct sk_buff *skb, unsigned long state)
+void set_state(struct sk_buff *skb, unsigned long state)
 {
     pfq_skb_annotation(skb)->state = state;
 }

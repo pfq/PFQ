@@ -117,9 +117,9 @@ namespace test
             
             if (id == 0) 
             {
-                struct stm_state { int value; } x = {0};
+                struct stm_context { int value; } x = {0};
                 
-                m_pfq.set_group_function_state(gid, x);
+                m_pfq.set_group_function_context(gid, x);
             }
 
             std::for_each(m_queues.begin(), m_queues.end(),[&](int q) {

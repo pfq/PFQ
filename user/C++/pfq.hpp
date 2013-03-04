@@ -362,24 +362,24 @@ namespace net {
     struct qfun
     {
         std::string name;
-        std::pair<std::unique_ptr<char[]>, size_t> state;
+        std::pair<std::unique_ptr<char[]>, size_t> context;
     };
 
 
     template <typename S = std::nullptr_t>
-    qfun fun(std::string n, S const &state = nullptr)
+    qfun fun(std::string n, S const &context = nullptr)
     {
         // note: is_trivially_copyable is still unimplemented in g++-4.7 
-        // static_assert(std::is_trivially_copyable<S>::value, "fun state must be trivially copyable");
+        // static_assert(std::is_trivially_copyable<S>::value, "fun context must be trivially copyable");
 
-        static_assert(std::is_pod<S>::value, "state must be a pod type");
+        static_assert(std::is_pod<S>::value, "context must be a pod type");
 
         if (std::is_same<S, std::nullptr_t>::value) {
             return qfun { std::move(n), std::make_pair(nullptr,0) };
         }
         else {
             auto ptr = new char[sizeof(S)];
-            memcpy(ptr, &state, sizeof(S));
+            memcpy(ptr, &context, sizeof(S));
             return qfun { std::move(n), std::make_pair(std::unique_ptr<char[]>(ptr), sizeof(S)) };
         }
     }
@@ -961,25 +961,25 @@ namespace net {
         
         template <typename T>
         void
-        set_group_function_state(int gid, const T &state, int level = 0)
+        set_group_function_context(int gid, const T &context, int level = 0)
         {
-            static_assert(std::is_pod<T>::value, "state must be a pod type");
+            static_assert(std::is_pod<T>::value, "context must be a pod type");
 
-            struct pfq_group_state s { const_cast<T *>(&state), sizeof(state), gid, level };
-            if (::setsockopt(fd_, PF_Q, Q_SO_GROUP_STATE, &s, sizeof(s)) == -1)
-                throw pfq_error(errno, "PFQ: set group function state error");
+            struct pfq_group_context s { const_cast<T *>(&context), sizeof(context), gid, level };
+            if (::setsockopt(fd_, PF_Q, Q_SO_GROUP_CONTEXT, &s, sizeof(s)) == -1)
+                throw pfq_error(errno, "PFQ: set group function context error");
         }
         
         template <typename T>
         void
-        get_group_function_state(int gid, T &state, int level = 0)
+        get_group_function_context(int gid, T &context, int level = 0)
         {
-            static_assert(std::is_pod<T>::value, "state must be a pod type");
+            static_assert(std::is_pod<T>::value, "context must be a pod type");
             
-            struct pfq_group_state s { &state, sizeof(state), gid, level };
+            struct pfq_group_context s { &context, sizeof(context), gid, level };
             socklen_t len = sizeof(s);
-            if (::getsockopt(fd_, PF_Q, Q_SO_GET_GROUP_STATE, &s, &len) == -1)
-                throw pfq_error(errno, "PFQ: get group function state error");
+            if (::getsockopt(fd_, PF_Q, Q_SO_GET_GROUP_CONTEXT, &s, &len) == -1)
+                throw pfq_error(errno, "PFQ: get group function context error");
         }
 
         template <typename C>
@@ -990,11 +990,11 @@ namespace net {
             for(auto const & f : cont)
             {
                 set_group_function(gid, f.name.c_str(), level);
-                if (f.state.first)
+                if (f.context.first)
                 {
-                    struct pfq_group_state s { f.state.first.get(), f.state.second, gid, level };
-                    if (::setsockopt(fd_, PF_Q, Q_SO_GROUP_STATE, &s, sizeof(s)) == -1)
-                        throw pfq_error(errno, "PFQ: set group state error");
+                    struct pfq_group_context s { f.context.first.get(), f.context.second, gid, level };
+                    if (::setsockopt(fd_, PF_Q, Q_SO_GROUP_CONTEXT, &s, sizeof(s)) == -1)
+                        throw pfq_error(errno, "PFQ: set group context error");
                 }
 
                 level++;

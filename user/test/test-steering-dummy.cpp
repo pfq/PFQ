@@ -26,8 +26,8 @@ main(int argc, char *argv[])
             r.read( 1000000 /* timeout: micro */);
     }
     
-    int state = 42;
-    r.set_group_function_state(r.group_id(), state); 
+    int context = 42;
+    r.set_group_function_context(r.group_id(), context); 
 
     for(int i = 0; i < 5;++i)
     {

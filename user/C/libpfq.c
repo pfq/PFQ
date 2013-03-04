@@ -501,23 +501,23 @@ pfq_set_group_function(pfq_t *q, int gid, const char *fun_name, int level)
 
 
 int
-pfq_set_group_function_state(pfq_t *q, int gid, const void *state, size_t size, int level)
+pfq_set_group_function_context(pfq_t *q, int gid, const void *context, size_t size, int level)
 {
-	struct pfq_group_state s  = { (void *)state, size, gid, level };
-	if (setsockopt(q->fd, PF_Q, Q_SO_GROUP_STATE, &s, sizeof(s)) == -1) {
-		return q->error = "PFQ: set group state error", -1;
+	struct pfq_group_context s  = { (void *)context, size, gid, level };
+	if (setsockopt(q->fd, PF_Q, Q_SO_GROUP_CONTEXT, &s, sizeof(s)) == -1) {
+		return q->error = "PFQ: set group context error", -1;
 	}
 	return q->error = NULL, 0;
 }
 
 
 int
-pfq_get_group_function_state(pfq_t *q, int gid, void *state, size_t size, int level)
+pfq_get_group_function_context(pfq_t *q, int gid, void *context, size_t size, int level)
 {
-	struct pfq_group_state s  = { state, size, gid, level };
+	struct pfq_group_context s  = { context, size, gid, level };
         socklen_t len = sizeof(s);
-	if (getsockopt(q->fd, PF_Q, Q_SO_GET_GROUP_STATE, &s, &len) == -1) {
-		return q->error = "PFQ: get group state error", -1;
+	if (getsockopt(q->fd, PF_Q, Q_SO_GET_GROUP_CONTEXT, &s, &len) == -1) {
+		return q->error = "PFQ: get group context error", -1;
 	}
 	return q->error = NULL, 0;
 }
