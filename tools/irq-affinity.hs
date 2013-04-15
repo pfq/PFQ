@@ -96,7 +96,7 @@ makeAlg ["round-robin"]   _ = Alg (-1)  1 none
 makeAlg ["even"]          _ = Alg (-1)  1 even    
 makeAlg ["odd"]           _ = Alg (-1)  1 odd    
 makeAlg ["all-in", n]     _ = Alg (read n) 0 none  
-makeAlg ["comb", s]       n = Alg (n) (read s) none   
+makeAlg ["comb", s]       n = Alg n (read s) none   
 makeAlg _ _                 = error "Unknown algorithm"   
 
 
@@ -110,13 +110,13 @@ none _ = True
 main :: IO ()
 main = cmdArgsRun options >>= \ops -> do
     let apply = forM_ (devices ops) $ \dev -> dispatch (algorithm ops) dev
-    evalStateT apply (ops, (firstcore ops))  
+    evalStateT apply (ops, firstcore ops)  
 
 
 -- dispatch command:
 --
 
-dispatch :: String -> (String -> BindState IO ())
+dispatch :: String -> String -> BindState IO ()
 dispatch "" = showBinding 
 dispatch _  = makeBinding 
 
@@ -150,7 +150,7 @@ showBinding dev = do
     lift $ putStrLn $ "Binding for device " ++ dev ++ 
         case msi of { None -> ":";  _ -> " (" ++ show msi ++ "):" }
     lift $ when (null irq) $ error $ "irq vector not found for dev " ++ dev ++ "!"
-    lift $ forM_ irq $ \n -> do
+    lift $ forM_ irq $ \n -> 
             getIrqAffinity n >>= \cs -> putStrLn $ "   irq " ++ show n ++ " -> core " ++ show cs
 
 
@@ -182,7 +182,7 @@ getCpusFromMask mask  = [ n | n <- [0 .. 127], let p2 = 1 `shiftL` n, mask .&. p
 
 mkBinding :: Device -> [Int] -> Int -> Alg -> MSI -> [Int]
 mkBinding dev excl f (Alg f' s filt) msi = 
-    take nq [ n | let f''= if (f' == -1) then f else f', 
+    take nq [ n | let f''= if f' == -1 then f else f', 
                       x <- [f'', f''+s .. 64], 
                       let n = x `mod` getNumberOfPhyCores, 
                       filt n, 

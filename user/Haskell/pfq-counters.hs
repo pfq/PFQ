@@ -9,7 +9,7 @@ import Foreign
 import System.Time
 import System.Exit
 
-import Control.Monad
+import Control.Monad as M
 import Control.Applicative
 import Control.Concurrent
 import Control.Exception
@@ -104,12 +104,11 @@ dumpStat :: (RealFrac a) => [MVar a] -> ClockTime -> IO ()
 dumpStat cs t0 = do
     threadDelay 1000000
     t <- getClockTime
-    cs' <- mapM (\v -> swapMVar v 0) cs
-    when ((-1) `elem` cs') $ do
-        exitFailure >> return ()
+    cs' <- mapM (`swapMVar` 0) cs
+    M.void( when ((-1) `elem` cs') exitFailure)
     let delta = diffUSec t t0
     let rate = (sum cs' * 1000000) / fromIntegral delta  
-    putStrLn $ "Total rate pkt/sec: " ++ show ((truncate rate) :: Integer)
+    putStrLn $ "Total rate pkt/sec: " ++ show (truncate rate :: Integer)
     dumpStat cs t
 
 
@@ -119,24 +118,25 @@ diffUSec t1 t0 = (tdSec delta * 1000000) + truncate ((fromIntegral(tdPicosec del
 
 
 runThreads :: (Num a) => Options -> M.Map Gid [String] -> IO [MVar a]
-runThreads op ms = do
+runThreads op ms = 
     forM (thread op) $ \tb -> do
         let binding = makeBinding tb
             sf = M.lookup (groupId binding) ms <|> M.lookup (-1) ms 
         c <- newMVar 0
         f <- newMVar 0
         _ <- forkOn (coreNum binding) ( 
-                 handle ((\e ->  (putStrLn $ "[pfq] Exception: " ++ show e) >> swapMVar c (-1) >> return ()) :: SomeException -> IO ()) $ do 
+                 handle ((\e ->  M.void (putStrLn ("[pfq] Exception: " ++ show e) >> swapMVar c (-1))) :: SomeException -> IO ()) $ do 
                  fp <- Q.openNoGroup (caplen op) (offset op) (slots op)
                  withForeignPtr fp  $ \q -> do
                      Q.joinGroup q (groupId binding) [Q.class_default] Q.policy_shared
                      forM_ (devs binding) $ \dev ->
                        forM_ (queues binding) $ \queue ->
                          Q.setPromisc q dev True >> Q.bindGroup q (groupId binding) dev queue
-                     when (isJust sf) ((putStrLn $ "[pfq] Gid " ++ show(groupId binding) ++ " is using continuation: " ++ (intercalate " >=> " $ fromJust sf)) >>
-                         (forM_ (zip (fromJust sf) [0,1..]) $ \(name,ix) -> Q.groupFunction q (groupId binding) ix name)) 
+                     when (isJust sf) $ putStrLn ("[pfq] Gid " ++ show (groupId binding) ++ " is using continuation: " ++ intercalate " >=> " (fromJust sf)) >>
+                                        forM_ (zip (fromJust sf) [0,1..]) 
+                                            (\(name,ix) -> Q.groupFunction q (groupId binding) ix name) 
                      Q.enable q 
-                     recvLoop q (State c f S.empty) >> return ()  
+                     M.void (recvLoop q (State c f S.empty)) 
                  )
         putStrLn $ "[pfq] " ++ show binding ++ " @core " ++ show (coreNum binding) ++ " started!"
         return c 
@@ -145,7 +145,7 @@ runThreads op ms = do
 recvLoop :: (Num a) => Ptr Q.PFqTag -> State a -> IO Int
 recvLoop q state = do 
     netQueue <- Q.read q 20000
-    case (Q.qLen netQueue) of 
+    case Q.qLen netQueue of 
         0 ->  recvLoop q state
         _ ->  do
               modifyMVar_ (sCounter state) $ \c -> return (c + fromIntegral (Q.qLen netQueue))

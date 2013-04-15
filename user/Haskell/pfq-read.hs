@@ -18,12 +18,12 @@ dumpPacket :: Q.Packet -> IO ()
 dumpPacket p = do
                 Q.waitForPacket p
                 bytes <- peekByteOff (Q.pData p) 0 :: IO Word64
-                putStrLn $ "[" ++ (showHex bytes "") ++ "]"
+                putStrLn $ "[" ++ showHex bytes "" ++ "]"
 
 recvLoop :: Ptr PFqTag -> IO ()
 recvLoop q = do 
     queue <- Q.read q 100000000
-    if ( Q.qLen(queue) == 0 ) 
+    if Q.qLen queue == 0 
        then recvLoop q 
        else do
             ps <- Q.getPackets queue
@@ -42,11 +42,11 @@ data Pair = Pair Int Int
 instance Storable Pair where
     alignment _ = alignment (undefined :: CInt)
     sizeOf    _ = 8
-    peek p      = Pair <$> fmap fromIntegral ((\ptr -> do {peekByteOff ptr 0 ::IO CInt}) p) 
-                       <*> fmap fromIntegral ((\ptr -> do {peekByteOff ptr 4 ::IO CInt}) p)
+    peek p      = Pair <$> fmap fromIntegral ((\ptr -> peekByteOff ptr 0 ::IO CInt) p) 
+                       <*> fmap fromIntegral ((\ptr -> peekByteOff ptr 4 ::IO CInt) p)
     poke p (Pair a b) = do
-        (\ptr val -> do {pokeByteOff ptr 0 (val::CInt)}) p (fromIntegral a)
-        (\ptr val -> do {pokeByteOff ptr 4 (val::CInt)}) p (fromIntegral b)
+        (\ptr val -> pokeByteOff ptr 0 (val::CInt)) p (fromIntegral a)
+        (\ptr val -> pokeByteOff ptr 4 (val::CInt)) p (fromIntegral b)
 
 
 dumper :: String -> IO ()
@@ -77,12 +77,12 @@ dumper dev = do
         kp :: Pair <- Q.getContextFunction q gid 0 8 
         print kp
 
-        Q.getSlotSize q >>= \o -> putStrLn $ "slot_size: " ++ show(o)
+        Q.getSlotSize q >>= \o -> putStrLn $ "slot_size: " ++ show o
         recvLoop q
 
 main :: IO ()
 main = do
     args <- getArgs
-    case (length args) of
+    case length args of
         0   -> error "usage: pfq-read dev"
-        _   -> dumper (args !! 0)
+        _   -> dumper (head args)

@@ -49,7 +49,7 @@ main = do
     copyFile pfq_symvers "Module.symvers"
     let cmd = "make -j" ++ show getNumberOfPhyCores
     putStrLn $ "[PFQ] compiling: " ++ cmd ++ "..."
-    _ <- system $ cmd
+    _ <- system cmd
     putStrLn "[PFQ] done."
                                        
 
@@ -61,9 +61,9 @@ regexFunCall fun n = fun ++ "[[:space:]]*" ++ "\\(" ++ args n  ++ "\\)"
 
 
 tryPatch :: FilePath -> IO ()
-tryPatch file = do
+tryPatch file = 
     readFile file >>= \c ->
-        when (c =~ ((regexFunCall "netif_rx" 1) ++ "|" ++ (regexFunCall "netif_receive_skb" 1) ++ "|" ++ (regexFunCall "napi_gro_receive" 2))) $ do
+        when (c =~ (regexFunCall "netif_rx" 1 ++ "|" ++ regexFunCall "netif_receive_skb" 1 ++ "|" ++ regexFunCall "napi_gro_receive" 2)) $ 
             doesFileExist (file ++ ".orig") >>= \orig -> 
                 if orig 
                 then putStrLn $ "[PFQ] " ++ file ++ " is already patched :)"
@@ -80,9 +80,12 @@ makePatch file = do
 
 sanityCheck :: IO ()
 sanityCheck = do
-    doesFileExist pfq_kcompat >>= \kc -> (unless kc $ error "error: could not locate pfq-kcompat header!")
-    doesFileExist pfq_symvers >>= \sv -> (unless sv $ error "error: could not locate pfq Module.symvers!") 
-    doesFileExist "Makefile"  >>= \mf -> (unless mf $ error "error: Makefile not found!") 
+    doesFileExist pfq_kcompat >>= \kc -> 
+        unless kc $ error "error: could not locate pfq-kcompat header!"
+    doesFileExist pfq_symvers >>= \sv -> 
+        unless sv $ error "error: could not locate pfq Module.symvers!" 
+    doesFileExist "Makefile"  >>= \mf -> 
+        unless mf $ error "error: Makefile not found!" 
 
 
 type Ext = String
@@ -97,7 +100,7 @@ getRecursiveContents topdir ext = do
     isDirectory <- doesDirectoryExist path
     if isDirectory
       then getRecursiveContents path ext
-      else if (takeExtensions path == ext) 
+      else if takeExtensions path == ext 
             then return [path]
             else return []
   return (concat paths)
