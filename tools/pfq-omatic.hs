@@ -100,9 +100,9 @@ getRecursiveContents topdir ext = do
     isDirectory <- doesDirectoryExist path
     if isDirectory
       then getRecursiveContents path ext
-      else if takeExtensions path == ext 
-            then return [path]
-            else return []
+      else return $ if takeExtensions path == ext 
+                    then [path]
+                    else []
   return (concat paths)
  
 
