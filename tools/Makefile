@@ -1,7 +1,7 @@
 # (C) 2011-13 Nicola Bonelli <nicola.bonelli@cnit.it>
 #
 
-GHCFLAGS= --make -O2 -Wall -hide-package=monads-tf
+GHCFLAGS= --make -O2 -Wall 
 
 INSTDIR=/usr/local
 
