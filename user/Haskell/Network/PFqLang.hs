@@ -98,6 +98,7 @@ steer_vlan   = Computation comp_type "steer-vlan-id" Nothing
 steer_ipv4   = Computation comp_type "steer-ipv4"    Nothing  
 steer_ipv6   = Computation comp_type "steer-ipv6"    Nothing  
 steer_flow   = Computation comp_type "steer-flow"    Nothing  
+steer_rtp    = Computation comp_type "steer-rtp"     Nothing  
                                     
 clone        = Computation comp_type "clone"         Nothing  
 broadcast    = Computation comp_type "broadcast"     Nothing  

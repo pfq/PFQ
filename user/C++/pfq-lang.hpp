@@ -110,6 +110,7 @@ namespace pfq_lang
     PFQ_GEN_FUN(steer_ipv4   , "steer-ipv4"   )  
     PFQ_GEN_FUN(steer_ipv6   , "steer-ipv6"   )  
     PFQ_GEN_FUN(steer_flow   , "steer-flow"   )  
+    PFQ_GEN_FUN(steer_rtp    , "steer-rtp"    )  
 
     PFQ_GEN_FUN(clone        , "clone"        )  
     PFQ_GEN_FUN(broadcast    , "broadcast"    )  
