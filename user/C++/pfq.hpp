@@ -357,58 +357,6 @@ namespace net {
         return &h + 1;
     }
     
-    //////////////////////////////////////////////////////////////////////
- 
-    struct qfun
-    {
-        std::string name;
-        std::pair<std::unique_ptr<char[]>, size_t> context;
-    };
-
-
-    template <typename S = std::nullptr_t>
-    qfun fun(std::string n, S const &context = nullptr)
-    {
-        // note: is_trivially_copyable is still unimplemented in g++-4.7 
-        // static_assert(std::is_trivially_copyable<S>::value, "fun context must be trivially copyable");
-
-        static_assert(std::is_pod<S>::value, "context must be a pod type");
-
-        if (std::is_same<S, std::nullptr_t>::value) {
-            return qfun { std::move(n), std::make_pair(nullptr,0) };
-        }
-        else {
-            auto ptr = new char[sizeof(S)];
-            memcpy(ptr, &context, sizeof(S));
-            return qfun { std::move(n), std::make_pair(std::unique_ptr<char[]>(ptr), sizeof(S)) };
-        }
-    }
-    
-    // binding functions ala Haskell...
-    //
-
-    inline std::deque<qfun>
-    operator>>=(qfun &&lhs, qfun &&rhs)
-    {
-        std::deque<qfun> ret;
-        ret.push_back(std::move(lhs));
-        ret.push_back(std::move(rhs));
-        return ret;
-    }
-
-    inline std::deque<qfun>
-    operator>>=(qfun &&lhs, std::deque<qfun> &&rhs)
-    {
-        rhs.push_front(std::move(lhs));
-        return std::move(rhs);
-    }
-
-    inline std::deque<qfun>
-    operator>>=(std::deque<qfun> &&lhs, qfun &&rhs)
-    {
-        lhs.push_back(std::move(rhs));
-        return std::move(lhs);
-    }
 
     //////////////////////////////////////////////////////////////////////
 

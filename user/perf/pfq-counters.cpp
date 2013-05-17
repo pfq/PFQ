@@ -23,6 +23,7 @@
 #include <unordered_set>
 
 #include <pfq.hpp>
+#include <pfq-lang.hpp>
 
 #include <netinet/ip.h>
 #include <netinet/udp.h>
@@ -47,6 +48,7 @@ namespace opt {
 typedef std::tuple<std::string, int, std::vector<int>> binding_type;
 
 using namespace net;
+using namespace pfq_lang;
 
 typedef std::tuple<uint32_t, uint32_t, uint16_t, uint16_t> Tuple;
 
@@ -120,7 +122,7 @@ namespace test
                     m_pfq.bind_group(gid, d, q);
                 });
 
-            std::deque<net::qfun> fs; 
+            std::deque<qfun> fs; 
             if (!opt::function.empty() && (m_id == 0))
             {
                 std::unique_ptr<char> f(strdup(opt::function.c_str()));
@@ -128,8 +130,8 @@ namespace test
                 auto p = strtok(f.get(), ":");
                 while (p)
                 {
-                    fs = std::move(fs) >>= net::fun(p);
-                    // fs.push_back(net::fun(p));
+                    fs = std::move(fs) >>= fun(p);
+                    // fs.push_back(fun(p));
                     p = strtok(nullptr, ":");
                 }
 
@@ -139,7 +141,7 @@ namespace test
             {
                 std::cout << "fun: " << fs.begin()->name;
                 
-                std::for_each(std::next(fs.begin(),1), fs.end(), [](net::qfun &fun) {
+                std::for_each(std::next(fs.begin(),1), fs.end(), [](qfun &fun) {
                     std::cout << " >>= " << fun.name;    
                 });
                 std::cout << std::endl;
