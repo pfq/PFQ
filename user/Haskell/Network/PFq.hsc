@@ -97,8 +97,7 @@ module Network.PFq
 
 import Data.Word
 import Data.Bits
-import Data.Maybe
-
+-- import Data.Maybe
 -- import Debug.Trace 
 
 import Control.Monad 
@@ -115,8 +114,6 @@ import Foreign.Marshal.Alloc
 import Foreign.Storable
 import Foreign.Concurrent as C (newForeignPtr) 
 import Foreign.ForeignPtr (ForeignPtr)
-
-import Network.PFqLang as L
 
 -- Placeholders
 --
