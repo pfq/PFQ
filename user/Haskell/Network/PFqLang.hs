@@ -108,6 +108,7 @@ ipv4         = Computation comp_type "ipv4"          Nothing
 udp          = Computation comp_type "udp"           Nothing  
 tcp          = Computation comp_type "tcp"           Nothing  
 flow         = Computation comp_type "flow"          Nothing  
+rtp          = Computation comp_type "rtp"           Nothing  
                                     
 strict_vlan  = Computation comp_type "strict-vlan"   Nothing  
 strict_ipv4  = Computation comp_type "strict-ipv4"   Nothing  

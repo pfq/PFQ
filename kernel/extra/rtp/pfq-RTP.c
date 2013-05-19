@@ -55,7 +55,7 @@ bool valid_codec(uint8_t c)
 
 
 ret_t
-steering_rtp(struct sk_buff *skb, ret_t ret)
+heuristic_rtp(struct sk_buff *skb, ret_t ret, bool steer)
 {       
 	sk_function_t fun = get_next_function(skb);
 
@@ -106,13 +106,30 @@ steering_rtp(struct sk_buff *skb, ret_t ret)
         			return pfq_call(fun, skb, drop()); 
 		}
 
-		return steering(Q_CLASS_DEFAULT, ip->saddr ^ ip->daddr ^ ((uint32_t)(hdr->udp.source & 0xfffe) << 16) ^ (hdr->udp.dest & 0xfffe));
+		return steer ? steering(Q_CLASS_DEFAULT, ip->saddr ^ ip->daddr ^ ((uint32_t)(hdr->udp.source & 0xfffe) << 16) ^ (hdr->udp.dest & 0xfffe)) :
+		               pfq_call(fun, skb, ret);
+
 	}
 
         return pfq_call(fun, skb, drop()); 
 }
 
+
+ret_t
+filter_rtp(struct sk_buff *skb, ret_t ret)
+{
+        return heuristic_rtp(skb, ret, false);
+}
+
+ret_t
+steering_rtp(struct sk_buff *skb, ret_t ret)
+{
+        return heuristic_rtp(skb, ret, true);
+}
+
+
 struct sk_function_descr hooks[] = {
+	{ "rtp",       filter_rtp },
 	{ "steer-rtp", steering_rtp },
 	{ NULL, NULL}};
 

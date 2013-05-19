@@ -120,6 +120,7 @@ namespace pfq_lang
     PFQ_GEN_FUN(udp          , "udp"          )  
     PFQ_GEN_FUN(tcp          , "tcp"          )  
     PFQ_GEN_FUN(flow         , "flow"         )  
+    PFQ_GEN_FUN(rtp          , "rtp"          )  
 
     PFQ_GEN_FUN(strict_vlan  , "strict-vlan"  )  
     PFQ_GEN_FUN(strict_ipv4  , "strict-ipv4"  )  
