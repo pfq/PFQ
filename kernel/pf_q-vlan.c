@@ -22,6 +22,7 @@
  ****************************************************************/
 
 #include <linux/if_vlan.h> 
+#include <linux/version.h>
 
 /* inspired to linux kernel vlan_untag */
 
@@ -89,8 +90,12 @@ struct sk_buff *pfq_vlan_untag(struct sk_buff *skb)
 
         vhdr = (struct vlan_hdr *) skb->data;
         vlan_tci = ntohs(vhdr->h_vlan_TCI);
-
-        __vlan_hwaccel_put_tag(skb, vlan_tci);
+         
+#if(LINUX_VERSION_CODE >= KERNEL_VERSION(3,10,0))
+        vlan_put_tag(skb, htons(ETH_P_8021Q), vlan_tci);
+#else
+        vlan_put_tag(skb, vlan_tci);
+#endif
 
         skb_pull_rcsum(skb, VLAN_HLEN);
         pfq_vlan_set_encap_proto(skb, vhdr);
