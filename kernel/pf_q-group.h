@@ -45,7 +45,7 @@ struct pfq_group
 
 	atomic_long_t sock_mask[Q_CLASS_MAX];   /* for class: Q_CLASS_DATA, Q_CLASS_CONTROL, etc... */
 
-    struct fun_context functx[Q_FUN_MAX+1]; /* sk_function_t, void *context pair */
+    struct fun_context fun_ctx[Q_FUN_MAX+1]; /* sk_function_t, void *context pair */
 
     atomic_long_t filter; 					/* struct sk_filter pointer */
 

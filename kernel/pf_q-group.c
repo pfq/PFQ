@@ -86,9 +86,9 @@ __pfq_group_ctor(int gid)
 
         for(i = 0; i <= Q_FUN_MAX; i++)
         {
-                atomic_long_set(&that->functx[i].function, 0L);
-                atomic_long_set(&that->functx[i].context,    0L);
-                spin_lock_init (&that->functx[i].lock);
+                atomic_long_set(&that->fun_ctx[i].function, 0L);
+                atomic_long_set(&that->fun_ctx[i].context,    0L);
+                spin_lock_init (&that->fun_ctx[i].lock);
         }
 
         atomic_long_set(&that->filter,   0L);
@@ -117,9 +117,9 @@ __pfq_group_dtor(int gid)
 
         for(i = 0; i < Q_FUN_MAX; i++)
         {
-		atomic_long_set(&pfq_groups[gid].functx[i].function, 0L);
+		atomic_long_set(&pfq_groups[gid].fun_ctx[i].function, 0L);
                 
-		context[i] = (void *)atomic_long_xchg(&pfq_groups[gid].functx[i].context, 0L);
+		context[i] = (void *)atomic_long_xchg(&pfq_groups[gid].fun_ctx[i].context, 0L);
         }
 
         filter = (struct sk_filter *)atomic_long_xchg(&pfq_groups[gid].filter, 0L);
@@ -211,7 +211,7 @@ int __pfq_set_group_function(int gid, sk_function_t fun, int level)
         if (level < 0 || level >= Q_FUN_MAX)
                 return -EINVAL;
 
-        atomic_long_set(&pfq_groups[gid].functx[level].function, (long)fun);
+        atomic_long_set(&pfq_groups[gid].fun_ctx[level].function, (long)fun);
 
         msleep(GRACE_PERIOD);
 
@@ -226,7 +226,7 @@ int __pfq_set_group_context(int gid, void *context, int level)
         if (level < 0 || level >= Q_FUN_MAX)
                 return -EINVAL;
 
-        old = (void *)atomic_long_xchg(& pfq_groups[gid].functx[level].context, (long)context);
+        old = (void *)atomic_long_xchg(& pfq_groups[gid].fun_ctx[level].context, (long)context);
 
         msleep(GRACE_PERIOD);
 
@@ -244,13 +244,13 @@ int __pfq_get_group_context(int gid, int level, int size, void __user * dst)
         if (level < 0 || level >= Q_FUN_MAX)
                 return -EINVAL;
 
-        spin_lock_bh(&pfq_groups[gid].functx[level].lock);
+        spin_lock_bh(&pfq_groups[gid].fun_ctx[level].lock);
 
-        src = (void *)atomic_long_read(&pfq_groups[gid].functx[level].context);
+        src = (void *)atomic_long_read(&pfq_groups[gid].fun_ctx[level].context);
 
         err = src ? copy_to_user(dst, src, size) : -EFAULT;
 
-        spin_unlock_bh(&pfq_groups[gid].functx[level].lock);
+        spin_unlock_bh(&pfq_groups[gid].fun_ctx[level].lock);
 
         return err;
 }
@@ -262,9 +262,9 @@ void __pfq_reset_group_functx(int gid)
 
         for(i = 0; i < Q_FUN_MAX; i++)
         {
-                void *old = (void *)atomic_long_xchg(& pfq_groups[gid].functx[i].context, 0L);
+                void *old = (void *)atomic_long_xchg(& pfq_groups[gid].fun_ctx[i].context, 0L);
 
-                atomic_long_set(& pfq_groups[gid].functx[i].function, 0L);
+                atomic_long_set(& pfq_groups[gid].fun_ctx[i].function, 0L);
 
                 msleep(GRACE_PERIOD);
 
@@ -290,7 +290,7 @@ void __pfq_dismiss_function(sk_function_t f)
         {
                 for(i = 0; i < Q_FUN_MAX; i++)
                 {
-                        sk_function_t fun = (sk_function_t)atomic_long_read(&pfq_groups[n].functx[i].function);
+                        sk_function_t fun = (sk_function_t)atomic_long_read(&pfq_groups[n].fun_ctx[i].function);
                         if (f == fun)
                         {
                                 __pfq_set_group_function(n, NULL, i);

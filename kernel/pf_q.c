@@ -454,17 +454,17 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 
                         /* retrieve the function for this group */
                         
-			if (atomic_long_read(&pfq_groups[gid].functx[0].function))
+			if (atomic_long_read(&pfq_groups[gid].fun_ctx[0].function))
                         {
                                 /* continuation-passing style evaluation */
 
-                                sk_function_t fun = (sk_function_t) atomic_long_read(&pfq_groups[gid].functx[0].function);
+                                sk_function_t fun = (sk_function_t) atomic_long_read(&pfq_groups[gid].fun_ctx[0].function);
                                 
-                                /* reset state, index call and functx ptr */
+                                /* reset state, index call and fun_ctx ptr */
 
                                 cb->index  =  -1;
                                 cb->state  =  0;
-                                cb->functx =  pfq_groups[gid].functx;
+                                cb->fun_ctx =  pfq_groups[gid].fun_ctx;
 
                                 ret = pfq_call(fun, skb, pass());
 
