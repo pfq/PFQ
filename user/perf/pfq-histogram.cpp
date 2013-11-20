@@ -21,6 +21,7 @@ using namespace net;
 
 int
 main(int argc, char *argv[])
+try
 {
     if (argc < 5)
        throw std::runtime_error(std::string("usage: ").append(argv[0]).append(" dev heap-size n-bin bin-size(ns)"));
@@ -119,5 +120,9 @@ main(int argc, char *argv[])
     }
 
     return 0;
+}
+catch(std::exception &e)
+{
+    std::cerr << e.what() << std::endl;
 }
  
