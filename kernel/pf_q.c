@@ -52,7 +52,6 @@
 #include <pf_q-queue.h>
 #include <pf_q-functional.h>
 #include <pf_q-bits.h>
-#include <pf_q-vlan.h>
 #include <pf_q-bpf.h>
 #include <pf_q-memory.h>
 
@@ -351,7 +350,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
         
         /* if vlan header is present, remove it */
         if (skb->protocol == cpu_to_be16(ETH_P_8021Q)) {
-                skb = pfq_vlan_untag(skb);
+                skb = vlan_untag(skb);
                 if (unlikely(!skb))
                         return -1;
         }
