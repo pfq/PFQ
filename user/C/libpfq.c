@@ -1,30 +1,30 @@
 /***************************************************************
 
-  Copyright (c) 2011-2013, Nicola Bonelli 
-  All rights reserved. 
+  Copyright (c) 2011-2013, Nicola Bonelli
+  All rights reserved.
 
-  Redistribution and use in source and binary forms, with or without 
-  modification, are permitted provided that the following conditions are met: 
+  Redistribution and use in source and binary forms, with or without
+  modification, are permitted provided that the following conditions are met:
 
- * Redistributions of source code must retain the above copyright notice, 
- this list of conditions and the following disclaimer. 
- * Redistributions in binary form must reproduce the above copyright 
- notice, this list of conditions and the following disclaimer in the 
- documentation and/or other materials provided with the distribution. 
- * Neither the name of University of Pisa nor the names of its contributors 
- may be used to endorse or promote products derived from this software 
- without specific prior written permission. 
+ * Redistributions of source code must retain the above copyright notice,
+ this list of conditions and the following disclaimer.
+ * Redistributions in binary form must reproduce the above copyright
+ notice, this list of conditions and the following disclaimer in the
+ documentation and/or other materials provided with the distribution.
+ * Neither the name of University of Pisa nor the names of its contributors
+ may be used to endorse or promote products derived from this software
+ without specific prior written permission.
 
- THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
- AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
- IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
- ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE 
- LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
- CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
- SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
- INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
- CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
- ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
+ THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+ AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+ IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+ ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+ LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+ CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+ SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+ INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+ CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+ ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
  POSSIBILITY OF SUCH DAMAGE.
 
  ***************************************************************/
@@ -55,20 +55,20 @@
 typedef char * pfq_iterator_t;
 
 struct pfq_net_queue
-{	
+{
 	pfq_iterator_t queue; 	  		/* net queue */
 	size_t         len;       		/* number of packets in the queue */
     	size_t         slot_size;
-	unsigned int   index; 	  		/* current queue index */ 
+	unsigned int   index; 	  		/* current queue index */
 };
 
 
-typedef struct 
+typedef struct
 {
 	void * queue_addr;
 
 	size_t queue_tot_mem;
-	size_t queue_slots; 
+	size_t queue_slots;
 	size_t queue_caplen;
 	size_t queue_offset;
 	size_t slot_size;
@@ -83,7 +83,7 @@ typedef struct
 } pfq_t;
 
 
-#define PFQ_LIBRARY 
+#define PFQ_LIBRARY
 #include <pfq.h>
 
 #define  ALIGN8(value) ((value + 7) & ~(__typeof__(value))7)
@@ -112,16 +112,16 @@ const char *pfq_error(pfq_t *q)
 /* costructor */
 
 pfq_t *
-pfq_open(size_t caplen, size_t offset, size_t slots)        
+pfq_open(size_t caplen, size_t offset, size_t slots)
 {
-	return pfq_open_group(Q_CLASS_DEFAULT, Q_GROUP_PRIVATE, caplen, offset, slots); 
+	return pfq_open_group(Q_CLASS_DEFAULT, Q_GROUP_PRIVATE, caplen, offset, slots);
 }
 
 
 pfq_t *
 pfq_open_nogroup(size_t caplen, size_t offset, size_t slots)
 {
-	return pfq_open_group(Q_CLASS_DEFAULT, Q_GROUP_UNDEFINED, caplen, offset, slots); 
+	return pfq_open_group(Q_CLASS_DEFAULT, Q_GROUP_UNDEFINED, caplen, offset, slots);
 }
 
 
@@ -140,7 +140,7 @@ pfq_open_group(unsigned int class_mask, int group_policy, size_t caplen, size_t 
 		return __error = "PFQ: out of memory", NULL;
 	}
 
-	q->fd 	= fd;  
+	q->fd 	= fd;
 	q->id 	= -1;
 	q->gid 	= -1;
 
@@ -179,7 +179,7 @@ pfq_open_group(unsigned int class_mask, int group_policy, size_t caplen, size_t 
 	}
 
 	q->slot_size = ALIGN8(sizeof(struct pfq_hdr) + q->queue_caplen);
-	
+
 	if (group_policy != Q_GROUP_UNDEFINED)
 	{
 		q->gid = pfq_join_group(q, Q_ANY_GROUP, class_mask, group_policy);
@@ -187,24 +187,24 @@ pfq_open_group(unsigned int class_mask, int group_policy, size_t caplen, size_t 
 			return __error = q->error, free(q), NULL;
 		}
 	}
-	
+
 	return __error = NULL, q;
 }
 
 
 int pfq_close(pfq_t *q)
 {
-	if (q->fd != -1) 
+	if (q->fd != -1)
 	{
-		if (q->queue_addr) 
+		if (q->queue_addr)
 			pfq_disable(q);
-		
+
 		if (close(q->fd) < 0)
 			return q->error = "PFQ: close error", -1;
 
 		free(q);
 		return 0;
-	}               
+	}
 	else
 	{
 		free(q);
@@ -230,14 +230,14 @@ pfq_enable(pfq_t *q)
 
 	q->queue_tot_mem = tot_mem;
 
-	if ((q->queue_addr = mmap(NULL, tot_mem, PROT_READ|PROT_WRITE, MAP_SHARED, q->fd, 0)) == MAP_FAILED) { 
+	if ((q->queue_addr = mmap(NULL, tot_mem, PROT_READ|PROT_WRITE, MAP_SHARED, q->fd, 0)) == MAP_FAILED) {
 		return q->error = "PFQ: mmap error", -1;
 	}
         return q->error = NULL, 0;
 }
 
 
-int 
+int
 pfq_disable(pfq_t *q)
 {
 	if (munmap(q->queue_addr,q->queue_tot_mem) == -1) {
@@ -287,7 +287,7 @@ pfq_is_timestamp_enabled(pfq_t const *q)
 {
 	pfq_t * mutable = (pfq_t *)q;
 	int ret; socklen_t size = sizeof(int);
-	
+
 	if (getsockopt(q->fd, PF_Q, Q_SO_GET_TSTAMP, &ret, &size) == -1) {
 	        return mutable->error = "PFQ: get timestamp mode", -1;
 	}
@@ -300,7 +300,7 @@ pfq_ifindex(pfq_t const *q, const char *dev)
 {
 	struct ifreq ifreq_io;
 	pfq_t * mutable = (pfq_t *)q;
-	
+
 	memset(&ifreq_io, 0, sizeof(struct ifreq));
 	strncpy(ifreq_io.ifr_name, dev, IFNAMSIZ);
 	if (ioctl(q->fd, SIOCGIFINDEX, &ifreq_io) == -1) {
@@ -310,7 +310,7 @@ pfq_ifindex(pfq_t const *q, const char *dev)
 }
 
 
-int 
+int
 pfq_set_promisc(pfq_t const *q, const char *dev, int value)
 {
 	struct ifreq ifreq_io;
@@ -319,13 +319,13 @@ pfq_set_promisc(pfq_t const *q, const char *dev, int value)
 	memset(&ifreq_io, 0, sizeof(struct ifreq));
 	strncpy(ifreq_io.ifr_name, dev, IFNAMSIZ);
 
-	if(ioctl(q->fd, SIOCGIFFLAGS, &ifreq_io) == -1) { 
+	if(ioctl(q->fd, SIOCGIFFLAGS, &ifreq_io) == -1) {
 		return mutable->error = "PFQ: ioctl getflags error", -1;
 	}
 
 	if (value)
 		ifreq_io.ifr_flags |= IFF_PROMISC;
-	else 
+	else
 		ifreq_io.ifr_flags &= ~IFF_PROMISC;
 
 	if(ioctl(q->fd, SIOCSIFFLAGS, &ifreq_io) == -1) {
@@ -335,7 +335,7 @@ pfq_set_promisc(pfq_t const *q, const char *dev, int value)
 }
 
 
-int 
+int
 pfq_set_caplen(pfq_t *q, size_t value)
 {
 	int enabled = pfq_is_enabled(q);
@@ -357,7 +357,7 @@ pfq_get_caplen(pfq_t const *q)
 {
 	size_t ret; socklen_t size = sizeof(ret);
 	pfq_t * mutable = (pfq_t *)q;
-	
+
 	if (getsockopt(q->fd, PF_Q, Q_SO_GET_CAPLEN, &ret, &size) == -1) {
 		return mutable->error = "PFQ: get caplen error", -1;
 	}
@@ -385,7 +385,7 @@ pfq_get_offset(pfq_t const *q)
 {
 	pfq_t * mutable = (pfq_t *)q;
 	size_t ret; socklen_t size = sizeof(ret);
-	
+
 	if (getsockopt(q->fd, PF_Q, Q_SO_GET_OFFSET, &ret, &size) == -1) {
 		return mutable->error = "PFQ: get offset error", -1;
 	}
@@ -394,8 +394,8 @@ pfq_get_offset(pfq_t const *q)
 
 
 int
-pfq_set_slots(pfq_t *q, size_t value) 
-{             
+pfq_set_slots(pfq_t *q, size_t value)
+{
 	int enabled = pfq_is_enabled(q);
 	if (enabled == 1) {
 		return q->error =  "PFQ: enabled (slots could not be set)", -1;
@@ -409,15 +409,15 @@ pfq_set_slots(pfq_t *q, size_t value)
 }
 
 size_t
-pfq_get_slots(pfq_t const *q) 
-{   
+pfq_get_slots(pfq_t const *q)
+{
 	return q->queue_slots;
 }
 
 
 size_t
-pfq_get_slot_size(pfq_t const *q) 
-{   
+pfq_get_slot_size(pfq_t const *q)
+{
 	return q->slot_size;
 }
 
@@ -438,7 +438,7 @@ pfq_bind_group(pfq_t *q, int gid, const char *dev, int queue)
 }
 
 
-int 
+int
 pfq_bind(pfq_t *q, const char *dev, int queue)
 {
 	int gid = q->gid;
@@ -446,7 +446,7 @@ pfq_bind(pfq_t *q, const char *dev, int queue)
 		return q->error = "PFQ: default group undefined", -1;
 	}
 	return pfq_bind_group(q, gid, dev, queue);
-}                              
+}
 
 
 int
@@ -472,15 +472,15 @@ pfq_unbind(pfq_t *q, const char *dev, int queue)
 		return q->error = "PFQ: default group undefined", -1;
 	}
 	return pfq_unbind_group(q, gid, dev, queue);
-}  
+}
 
 
-int 
-pfq_groups_mask(pfq_t const *q, unsigned long *_mask) 
+int
+pfq_groups_mask(pfq_t const *q, unsigned long *_mask)
 {
 	unsigned long mask; socklen_t size = sizeof(mask);
 	pfq_t * mutable = (pfq_t *)q;
-	
+
 	if (getsockopt(q->fd, PF_Q, Q_SO_GET_GROUPS, &mask, &size) == -1) {
 		return mutable->error = "PFQ: get groups error", -1;
 	}
@@ -533,11 +533,11 @@ pfq_group_reset(pfq_t *q, int gid)
 }
 
 
-int 
+int
 pfq_group_fprog(pfq_t *q, int gid, struct sock_fprog *f)
-{                                                      
+{
 	struct pfq_fprog fprog;
-	
+
 	fprog.gid = gid;
 	if (f != NULL)
 	{
@@ -558,9 +558,9 @@ pfq_group_fprog(pfq_t *q, int gid, struct sock_fprog *f)
 }
 
 
-int 
+int
 pfq_group_fprog_reset(pfq_t *q, int gid)
-{                                      
+{
 	struct sock_fprog null = { 0, NULL };
 
 	return pfq_group_fprog(q, gid, &null);
@@ -580,16 +580,16 @@ pfq_join_group(pfq_t *q, int gid, unsigned int class_mask, int group_policy)
 	if (getsockopt(q->fd, PF_Q, Q_SO_GROUP_JOIN, &group, &size) == -1) {
 	        return q->error = "PFQ: join group error", -1;
 	}
-            
+
         if (q->gid == -1)
                 q->gid = group.gid;
-	
+
 	return q->error = NULL, group.gid;
 }
 
 
 int
-pfq_leave_group(pfq_t *q, int gid)                  
+pfq_leave_group(pfq_t *q, int gid)
 {
 	if (setsockopt(q->fd, PF_Q, Q_SO_GROUP_LEAVE, &gid, sizeof(gid)) == -1) {
 	        return q->error = "PFQ: leave group error", -1;
@@ -600,8 +600,8 @@ pfq_leave_group(pfq_t *q, int gid)
 	return q->error = NULL, 0;
 }
 
-        
-int 
+
+int
 pfq_poll(pfq_t *q, long int microseconds /* = -1 -> infinite */)
 {
 	if (q->fd == -1) {
@@ -610,18 +610,18 @@ pfq_poll(pfq_t *q, long int microseconds /* = -1 -> infinite */)
 
 	struct pollfd fd = {q->fd, POLLIN, 0 };
 	struct timespec timeout = { microseconds/1000000, (microseconds%1000000) * 1000};
-	
+
 	int ret = ppoll(&fd, 1, microseconds < 0 ? NULL : &timeout, NULL);
 	if (ret < 0 &&
 	    	errno != EINTR) {
 	    return q->error = "PFQ: ppoll error", -1;
 	}
-	return q->error = NULL, 0; 
+	return q->error = NULL, 0;
 }
 
 
 int
-pfq_get_stats(pfq_t const *q, struct pfq_stats *stats) 
+pfq_get_stats(pfq_t const *q, struct pfq_stats *stats)
 {
 	pfq_t *mutable = (pfq_t *)q;
 	socklen_t size = sizeof(struct pfq_stats);
@@ -632,21 +632,21 @@ pfq_get_stats(pfq_t const *q, struct pfq_stats *stats)
 }
 
 
-int 
-pfq_get_group_stats(pfq_t const *q, int gid, struct pfq_stats *stats) 
+int
+pfq_get_group_stats(pfq_t const *q, int gid, struct pfq_stats *stats)
 {
 	pfq_t *mutable = (pfq_t *)q;
 	socklen_t size = sizeof(struct pfq_stats);
-	
+
 	stats->recv = (unsigned int)gid;
 	if (getsockopt(q->fd, PF_Q, Q_SO_GET_GROUP_STATS, stats, &size) == -1) {
 		return mutable->error = "PFQ: get group stats error", -1;
 	}
 	return mutable->error = NULL, 0;
 }
- 
 
-int 
+
+int
 pfq_vlan_filters_enabled(pfq_t *q, int gid, int toggle)
 {
         struct pfq_vlan_toggle value = { gid, 0, toggle };
@@ -658,7 +658,7 @@ pfq_vlan_filters_enabled(pfq_t *q, int gid, int toggle)
         return q->error = NULL, 0;
 }
 
-int 
+int
 pfq_vlan_set_filter(pfq_t *q, int gid, int vid)
 {
         struct pfq_vlan_toggle value = { gid, vid, 1 };
@@ -677,13 +677,13 @@ int pfq_vlan_reset_filter(pfq_t *q, int gid, int vid)
         if (setsockopt(q->fd, PF_Q, Q_SO_GROUP_VLAN_FILT, &value, sizeof(value)) == -1) {
 	        return q->error = "PFQ: vlan reset filter", -1;
         }
-        
+
         return q->error = NULL, 0;
 }
 
 
 int
-pfq_read(pfq_t *q, struct pfq_net_queue *nq, long int microseconds) 
+pfq_read(pfq_t *q, struct pfq_net_queue *nq, long int microseconds)
 {
 	size_t q_size = q->queue_slots * q->slot_size;
 	struct pfq_queue_descr * qd;
@@ -712,18 +712,18 @@ pfq_read(pfq_t *q, struct pfq_net_queue *nq, long int microseconds)
 
 	size_t queue_len = min(DBMP_QUEUE_LEN(data), q->queue_slots);
 
-	nq->queue = (char *)(q->queue_addr) + 
-			    sizeof(struct pfq_queue_descr) + 
+	nq->queue = (char *)(q->queue_addr) +
+			    sizeof(struct pfq_queue_descr) +
 			    (index & 1) * q_size;
 	nq->index = index;
 	nq->len   = queue_len;
-        nq->slot_size = q->slot_size; 
+        nq->slot_size = q->slot_size;
 
 	return q->error = NULL, (int)queue_len;
 }
 
 
-int 
+int
 pfq_recv(pfq_t *q, void *buf, size_t buflen, struct pfq_net_queue *nq, long int microseconds)
 {
        	if (pfq_read(q, nq, microseconds) < 0)
@@ -748,10 +748,10 @@ pfq_dispatch(pfq_t *q, pfq_handler_t cb, long int microseconds, char *user)
 	{
 		return -1;
 	}
-	
+
 	it = pfq_net_queue_begin(&q->netq);
 	it_end = pfq_net_queue_end(&q->netq);
-	
+
 	for(; it != it_end; it = pfq_net_queue_next(&q->netq, it))
 	{
 		while (!pfq_iterator_ready(&q->netq, it))
@@ -765,14 +765,14 @@ pfq_dispatch(pfq_t *q, pfq_handler_t cb, long int microseconds, char *user)
 
 
 size_t
-pfq_mem_size(pfq_t const *q) 
+pfq_mem_size(pfq_t const *q)
 {
 	return q->queue_tot_mem;
 }
 
 
 const void *
-pfq_mem_addr(pfq_t const *q) 
+pfq_mem_addr(pfq_t const *q)
 {
 	return q->queue_addr;
 }

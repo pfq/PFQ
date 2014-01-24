@@ -1,6 +1,6 @@
 /***************************************************************
- *                                                
- * (C) 2011-13 Nicola Bonelli <nicola.bonelli@cnit.it>   
+ *
+ * (C) 2011-13 Nicola Bonelli <nicola.bonelli@cnit.it>
  *             Andrea Di Pietro <andrea.dipietro@for.unipi.it>
  *
  * This program is free software; you can redistribute it and/or modify
@@ -23,7 +23,7 @@
  ****************************************************************/
 
 #ifndef _PF_COMMON_H_
-#define _PF_COMMON_H_ 
+#define _PF_COMMON_H_
 
 #include <linux/kernel.h>
 #include <linux/poll.h>
@@ -40,7 +40,7 @@
 
 typedef struct pfq_kstats
 {
-    sparse_counter_t  recv;    // received by the queue    
+    sparse_counter_t  recv;    // received by the queue
     sparse_counter_t  lost;    // queue is full, packet is lost
     sparse_counter_t  drop;    // filter
 
@@ -52,13 +52,13 @@ struct pfq_opt
         int             q_id;
 
         int             q_tstamp;
-        
+
         void *          q_addr;
         size_t          q_queue_mem;  /* > sizeof(pfq_queue_descr) + q_slots * sizeof(slots) * 2 */
 
         size_t          q_slots;      /* number of slots per queue */
         size_t          q_caplen;
-        size_t          q_offset;    
+        size_t          q_offset;
         size_t          q_slot_size;
 
         wait_queue_head_t q_waitqueue;
@@ -73,7 +73,7 @@ struct pfq_opt
 struct pfq_sock
 {
         struct sock sk;
-        struct pfq_opt *opt;    
+        struct pfq_opt *opt;
 };
 
 

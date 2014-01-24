@@ -1,6 +1,6 @@
 /***************************************************************
- *                                                
- * (C) 2011-13 Nicola Bonelli <nicola.bonelli@cnit.it>   
+ *
+ * (C) 2011-13 Nicola Bonelli <nicola.bonelli@cnit.it>
  *             Loris Gazzarrini <loris.gazzarrini@iet.unipi.it>
  *
  * This program is free software; you can redistribute it and/or modify
@@ -21,10 +21,10 @@
  * the file called "COPYING".
  *
  ****************************************************************/
-                                
+
 #include <linux/filter.h>
- 
-struct sk_filter * 
+
+struct sk_filter *
 pfq_alloc_sk_filter(struct sock_fprog *fprog);
 
 int pfq_free_sk_filter(struct sk_filter *filter);

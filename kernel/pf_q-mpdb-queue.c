@@ -1,6 +1,6 @@
 /***************************************************************
- *                                                
- * (C) 2011-13 Nicola Bonelli <nicola.bonelli@cnit.it>   
+ *
+ * (C) 2011-13 Nicola Bonelli <nicola.bonelli@cnit.it>
  *             Andrea Di Pietro <andrea.dipietro@for.unipi.it>
  *
  * This program is free software; you can redistribute it and/or modify
@@ -30,7 +30,7 @@ mpdb_queue_alloc(struct pfq_opt *pq, size_t queue_mem, size_t *tot_mem)
 {
 	/* calculate the size of the buffer */
 
-	size_t tm = PAGE_ALIGN(queue_mem); 
+	size_t tm = PAGE_ALIGN(queue_mem);
 
 	/* align bufflen to page size */
 
@@ -49,7 +49,7 @@ mpdb_queue_alloc(struct pfq_opt *pq, size_t queue_mem, size_t *tot_mem)
 		return NULL;
 	}
 
-	pr_devel("[PFQ|%d] queue caplen:%lu mem:%lu\n", pq->q_id, pq->q_caplen, *tot_mem); 
+	pr_devel("[PFQ|%d] queue caplen:%lu mem:%lu\n", pq->q_id, pq->q_caplen, *tot_mem);
 	return addr;
 }
 
@@ -58,13 +58,13 @@ void
 mpdb_queue_free(struct pfq_opt *pq)
 {
 	if (pq->q_addr) {
-		pr_devel("[PFQ|%d] queue freed.\n", pq->q_id); 
+		pr_devel("[PFQ|%d] queue freed.\n", pq->q_id);
 		vfree(pq->q_addr);
 
 		pq->q_addr = NULL;
 		pq->q_queue_mem = 0;
 	}
-}    
+}
 
 
 static inline
@@ -72,11 +72,11 @@ void *pfq_memcpy(void *to, const void *from, size_t len)
 {
 	switch(len)
 	{
-		case 64 : return __builtin_memcpy(to, from, 64);  
-		case 128: return __builtin_memcpy(to, from, 128);  
-		case 256: return __builtin_memcpy(to, from, 256);  
-		case 512: return __builtin_memcpy(to, from, 512);  
-		default:  return memcpy(to, from, len);         
+		case 64 : return __builtin_memcpy(to, from, 64);
+		case 128: return __builtin_memcpy(to, from, 128);
+		case 256: return __builtin_memcpy(to, from, 256);
+		case 512: return __builtin_memcpy(to, from, 512);
+		default:  return memcpy(to, from, len);
 	}
 }
 
@@ -92,29 +92,29 @@ mpdb_enqueue_batch(struct pfq_opt *pq, unsigned long bitqueue, int qlen, struct 
 	char *ptr;
 
 	data = atomic_read((atomic_t *)&queue_descr->data);
-	
+
 	if (unlikely(DBMP_QUEUE_LEN(data) > pq->q_slots))
 	{
 		return 0;
 	}
-	
+
 	data = atomic_add_return(qlen, (atomic_t *)&queue_descr->data);
 
-	q_len   = DBMP_QUEUE_LEN(data) - qlen; 	
+	q_len   = DBMP_QUEUE_LEN(data) - qlen;
 	q_index = DBMP_QUEUE_INDEX(data);
-	
+
 	ptr     = (char *)(queue_descr+1) + (q_index&1) * pq->q_slot_size * pq->q_slots + q_len * pq->q_slot_size;
 
 	queue_for_each_mask(skb, bitqueue, n, skbs)
 	{
 		unsigned int bytes = likely(skb->len > (int)pq->q_offset) ? min((int)skb->len - (int)pq->q_offset, (int)pq->q_caplen) : 0;
-		
+
 		volatile struct pfq_hdr *hdr = (struct pfq_hdr *)ptr;
-		
+
 		size_t slot_index = q_len + sent;
-		
+
 		char *pkt = (char *)(hdr+1);
-		
+
 		struct timespec ts;
 
 		if (unlikely(slot_index > pq->q_slots))
@@ -128,51 +128,51 @@ mpdb_enqueue_batch(struct pfq_opt *pq, unsigned long bitqueue, int qlen, struct 
 
 		/* copy bytes of packet */
 
-		if (likely(bytes)) 
+		if (likely(bytes))
 		{
 			/* packets might still come from a regular sniffer */
-			
+
 			if (
 #ifdef PFQ_USE_SKB_LINEARIZE
 			   	unlikely(skb_is_nonlinear(skb))
 #else
 		           	skb_is_nonlinear(skb)
 #endif
-			   ) 
+			   )
 		      	{
 				if (skb_copy_bits(skb, (int)pq->q_offset, pkt, bytes) != 0)
 				{
-					printk(KERN_WARNING "[PFQ] BUG! skb_copy_bits failed (bytes=%u, skb_len=%d mac_len=%d q_offset=%lu)!\n", 
+					printk(KERN_WARNING "[PFQ] BUG! skb_copy_bits failed (bytes=%u, skb_len=%d mac_len=%d q_offset=%lu)!\n",
 							    bytes, skb->len, skb->mac_len, pq->q_offset);
 					return 0;
 				}
 			}
-			else 
-			{ 
+			else
+			{
 				pfq_memcpy(pkt, skb->data + pq->q_offset, bytes);
 			}
 		}
-			
+
                 /* copy state from pfq_annotation */
 
                 hdr->data        = pfq_skb_annotation(skb)->state;
 
 		/* setup the header */
-		
+
 		if (pq->q_tstamp != 0)
 		{
-			skb_get_timestampns(skb, &ts); 
+			skb_get_timestampns(skb, &ts);
 			hdr->tstamp.tv.sec  = (uint32_t)ts.tv_sec;
 			hdr->tstamp.tv.nsec = (uint32_t)ts.tv_nsec;
 		}
-		
+
 		hdr->if_index    = skb->dev->ifindex & 0xff;
 		hdr->gid         = gid;
 
 		hdr->len         = (uint16_t)skb->len;
 		hdr->caplen 	 = (uint16_t)bytes;
 		hdr->un.vlan_tci = skb->vlan_tci & ~VLAN_TAG_PRESENT;
-		hdr->hw_queue    = (uint8_t)(skb_get_rx_queue(skb) & 0xff);                      
+		hdr->hw_queue    = (uint8_t)(skb_get_rx_queue(skb) & 0xff);
 
 		/* commit the slot (release semantic) */
 
@@ -180,14 +180,14 @@ mpdb_enqueue_batch(struct pfq_opt *pq, unsigned long bitqueue, int qlen, struct 
 
 		hdr->commit = (uint8_t)q_index;
 
-		if (unlikely((slot_index & 16383) == 0) && 
-				(slot_index >= (pq->q_slots >> 1)) && 
+		if (unlikely((slot_index & 16383) == 0) &&
+				(slot_index >= (pq->q_slots >> 1)) &&
 					queue_descr->poll_wait) {
 		        wake_up_interruptible(&pq->q_waitqueue);
 		}
 
 		sent++;
-		
+
 		ptr += pq->q_slot_size;
 	}
 

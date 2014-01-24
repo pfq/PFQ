@@ -1,6 +1,6 @@
 /***************************************************************
- *                                                
- * (C) 2011-13 Nicola Bonelli <nicola.bonelli@cnit.it>   
+ *
+ * (C) 2011-13 Nicola Bonelli <nicola.bonelli@cnit.it>
  *             Andrea Di Pietro <andrea.dipietro@for.unipi.it>
  *
  * This program is free software; you can redistribute it and/or modify
@@ -39,7 +39,7 @@ struct pfq_group pfq_groups[Q_MAX_GROUP];
 /* precondition: gid must be valid */
 
 
-bool 
+bool
 __pfq_group_access(int gid, int id, int policy, bool join)
 {
         struct pfq_group * that = &pfq_groups[gid];
@@ -66,7 +66,7 @@ __pfq_group_access(int gid, int id, int policy, bool join)
 }
 
 
-static void 
+static void
 __pfq_group_ctor(int gid)
 {
         struct pfq_group * that = &pfq_groups[gid];
@@ -79,7 +79,7 @@ __pfq_group_ctor(int gid)
         {
                 atomic_long_set(&that->sock_mask[i], 0);
         }
-                        
+
         /* note the = is for setting the limit to the function composition:
          * the last function pointer is always set to NULL
          * */
@@ -99,7 +99,7 @@ __pfq_group_ctor(int gid)
 }
 
 
-static void 
+static void
 __pfq_group_dtor(int gid)
 {
         struct pfq_group * that = &pfq_groups[gid];
@@ -118,7 +118,7 @@ __pfq_group_dtor(int gid)
         for(i = 0; i < Q_FUN_MAX; i++)
         {
 		atomic_long_set(&pfq_groups[gid].fun_ctx[i].function, 0L);
-                
+
 		context[i] = (void *)atomic_long_xchg(&pfq_groups[gid].fun_ctx[i].context, 0L);
         }
 
@@ -131,7 +131,7 @@ __pfq_group_dtor(int gid)
                 kfree(context[i]);
         }
 
-        pfq_free_sk_filter(filter); 
+        pfq_free_sk_filter(filter);
 
         that->vlan_filt = false;
 
@@ -279,7 +279,7 @@ void __pfq_set_group_filter(int gid, struct sk_filter *filter)
 
         msleep(GRACE_PERIOD);
 
-        pfq_free_sk_filter(old_filter); 
+        pfq_free_sk_filter(old_filter);
 }
 
 
@@ -316,13 +316,13 @@ pfq_join_group(int gid, int id, unsigned long class_mask, int policy)
 }
 
 
-int 
+int
 pfq_join_free_group(int id, unsigned long class_mask, int policy)
 {
         int n = 0;
         down(&group_sem);
         for(; n < Q_MAX_ID; n++)
-        {            
+        {
                 if(!pfq_groups[n].pid)
                 {
                         __pfq_join_group(n, id, class_mask, policy);
@@ -352,7 +352,7 @@ pfq_leave_all_groups(int id)
         int n = 0;
         down(&group_sem);
         for(; n < Q_MAX_ID; n++)
-        {            
+        {
                 __pfq_leave_group(n, id);
         }
         up(&group_sem);
@@ -366,7 +366,7 @@ pfq_get_groups(int id)
         int n = 0;
         down(&group_sem);
         for(; n < Q_MAX_ID; n++)
-        {       
+        {
                 unsigned long mask = __pfq_get_all_groups_mask(n);
                 if(mask & (1L << id))
                 {

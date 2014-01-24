@@ -1,6 +1,6 @@
 /***************************************************************
- *                                                
- * (C) 2011-13 Nicola Bonelli <nicola.bonelli@cnit.it>   
+ *
+ * (C) 2011-13 Nicola Bonelli <nicola.bonelli@cnit.it>
  *             Andrea Di Pietro <andrea.dipietro@for.unipi.it>
  *
  * This program is free software; you can redistribute it and/or modify
@@ -23,7 +23,7 @@
  ****************************************************************/
 
 #ifndef _MPSC_SKBUFF_H_
-#define _MPSC_SKBUFF_H_ 
+#define _MPSC_SKBUFF_H_
 
 #include <linux/kernel.h>
 #include <linux/skbuff.h>
@@ -36,7 +36,7 @@ typedef struct mpsc_queue
 } mpsc_queue_t;
 
 
-static inline 
+static inline
 int mpsc_queue_ctor(mpsc_queue_t * self)
 {
     struct sk_buff * stub = dev_alloc_skb(1);
@@ -49,11 +49,11 @@ int mpsc_queue_ctor(mpsc_queue_t * self)
     else {
         printk(KERN_WARNING "[PFQ] mpsc_skbuff_queue_ctor: memory problem!\n");
         return -ENOMEM;
-    }   
+    }
     return 0;
 };
 
-static inline 
+static inline
 void mpsc_queue_dtor(mpsc_queue_t *self)
 {
     struct sk_buff * skb = self->tail;
@@ -62,13 +62,13 @@ void mpsc_queue_dtor(mpsc_queue_t *self)
         struct sk_buff * next = skb->next;
         kfree_skb(skb);
         skb = next;
-    } 
+    }
 
     atomic_long_set(&self->head, (long)0);
-    self->tail = (struct sk_buff *)0;  
+    self->tail = (struct sk_buff *)0;
 }
 
-static inline 
+static inline
 void mpsc_queue_push(mpsc_queue_t *self, struct sk_buff *skb)
 {
     struct sk_buff *prev;
@@ -76,10 +76,10 @@ void mpsc_queue_push(mpsc_queue_t *self, struct sk_buff *skb)
     skb->next = 0;
     prev = (struct sk_buff *) atomic_long_xchg(&self->head, (long)skb);
     prev->next = skb;
-    
+
 }
 
-static inline 
+static inline
 struct sk_buff * mpsc_queue_pop(mpsc_queue_t *self)
 {
     struct sk_buff * tail = self->tail;
@@ -95,7 +95,7 @@ struct sk_buff * mpsc_queue_pop(mpsc_queue_t *self)
     return NULL;
 }
 
-static inline 
+static inline
 const struct sk_buff * mpsc_queue_next(mpsc_queue_t *self)
 {
     if (self->tail)

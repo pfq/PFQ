@@ -1,15 +1,15 @@
 #ifndef _AFFINITY_HPP_
-#define _AFFINITY_HPP_ 
+#define _AFFINITY_HPP_
 
 #include <thread>
 #include <pthread.h> // pthread_setaffinity_np
 
 #include <stdexcept>
 
-namespace extra { 
+namespace extra {
 
-    static inline void 
-    set_affinity(std::thread &t, int n) 
+    static inline void
+    set_affinity(std::thread &t, int n)
     {
         if(t.get_id() == std::thread::id())
             throw std::runtime_error("thread not running");

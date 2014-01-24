@@ -31,14 +31,14 @@ data Key = Key Word32 Word32 Word16 Word16
 
 
 data State a = State { sCounter :: MVar a,
-                       sFlow    :: MVar a, 
+                       sFlow    :: MVar a,
                        sSet     :: S.Set Key
                      }
 
 
--- Command line options 
+-- Command line options
 --
-data Options = Options 
+data Options = Options
                {
                 caplen   :: Int,
                 offset   :: Int,
@@ -50,7 +50,7 @@ data Options = Options
 
 -- default options
 --
-options = cmdArgsMode $ Options { 
+options = cmdArgsMode $ Options {
                                   caplen   = 64,
                                   offset   = 0,
                                   slots    = 262144,
@@ -61,15 +61,15 @@ options = cmdArgsMode $ Options {
 
 -- Group Options
 --
-        
-type Queue = Int                                 
+
+type Queue = Int
 type Gid   = Int
 
-data Binding = Binding { 
+data Binding = Binding {
                          devs      :: [String],
                          coreNum   :: Int,
                          groupId   :: Int,
-                         queues    :: [Queue] 
+                         queues    :: [Queue]
                        } deriving (Eq, Show)
 
 
@@ -87,7 +87,7 @@ makeFun s =  case splitOn "." s of
                 []     -> error "makeFun: empty string"
                 fs : [] -> (-1,             map (filter (/= ' ')) $ splitOn ">=>" fs)
                 fs : n  -> (read $ head n,  map (filter (/= ' ')) $ splitOn ">=>" fs)
-                
+
 -- main function
 --
 
@@ -95,7 +95,7 @@ main :: IO ()
 main = do
     op <- cmdArgsRun options
     putStrLn $ "[pfq] " ++ show op
-    cs  <- runThreads op (M.fromList $ map makeFun (function op)) 
+    cs  <- runThreads op (M.fromList $ map makeFun (function op))
     t   <- getClockTime
     dumpStat cs t
 
@@ -107,7 +107,7 @@ dumpStat cs t0 = do
     cs' <- mapM (`swapMVar` 0) cs
     M.void( when ((-1) `elem` cs') exitFailure)
     let delta = diffUSec t t0
-    let rate = (sum cs' * 1000000) / fromIntegral delta  
+    let rate = (sum cs' * 1000000) / fromIntegral delta
     putStrLn $ "Total rate pkt/sec: " ++ show (truncate rate :: Integer)
     dumpStat cs t
 
@@ -118,14 +118,14 @@ diffUSec t1 t0 = (tdSec delta * 1000000) + truncate ((fromIntegral(tdPicosec del
 
 
 runThreads :: (Num a) => Options -> M.Map Gid [String] -> IO [MVar a]
-runThreads op ms = 
+runThreads op ms =
     forM (thread op) $ \tb -> do
         let binding = makeBinding tb
-            sf = M.lookup (groupId binding) ms <|> M.lookup (-1) ms 
+            sf = M.lookup (groupId binding) ms <|> M.lookup (-1) ms
         c <- newMVar 0
         f <- newMVar 0
-        _ <- forkOn (coreNum binding) ( 
-                 handle ((\e ->  M.void (putStrLn ("[pfq] Exception: " ++ show e) >> swapMVar c (-1))) :: SomeException -> IO ()) $ do 
+        _ <- forkOn (coreNum binding) (
+                 handle ((\e ->  M.void (putStrLn ("[pfq] Exception: " ++ show e) >> swapMVar c (-1))) :: SomeException -> IO ()) $ do
                  fp <- Q.openNoGroup (caplen op) (offset op) (slots op)
                  withForeignPtr fp  $ \q -> do
                      Q.joinGroup q (groupId binding) [Q.class_default] Q.policy_shared
@@ -133,19 +133,19 @@ runThreads op ms =
                        forM_ (queues binding) $ \queue ->
                          Q.setPromisc q dev True >> Q.bindGroup q (groupId binding) dev queue
                      when (isJust sf) $ putStrLn ("[pfq] Gid " ++ show (groupId binding) ++ " is using continuation: " ++ intercalate " >=> " (fromJust sf)) >>
-                                        forM_ (zip (fromJust sf) [0,1..]) 
-                                            (\(name,ix) -> Q.groupFunction q (groupId binding) ix name) 
-                     Q.enable q 
-                     M.void (recvLoop q (State c f S.empty)) 
+                                        forM_ (zip (fromJust sf) [0,1..])
+                                            (\(name,ix) -> Q.groupFunction q (groupId binding) ix name)
+                     Q.enable q
+                     M.void (recvLoop q (State c f S.empty))
                  )
         putStrLn $ "[pfq] " ++ show binding ++ " @core " ++ show (coreNum binding) ++ " started!"
-        return c 
+        return c
 
 
 recvLoop :: (Num a) => Ptr Q.PFqTag -> State a -> IO Int
-recvLoop q state = do 
+recvLoop q state = do
     netQueue <- Q.read q 20000
-    case Q.qLen netQueue of 
+    case Q.qLen netQueue of
         0 ->  recvLoop q state
         _ ->  do
               modifyMVar_ (sCounter state) $ \c -> return (c + fromIntegral (Q.qLen netQueue))

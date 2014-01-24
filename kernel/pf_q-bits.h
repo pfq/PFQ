@@ -1,6 +1,6 @@
 /***************************************************************
- *                                                
- * (C) 2011-13 Nicola Bonelli <nicola.bonelli@cnit.it>   
+ *
+ * (C) 2011-13 Nicola Bonelli <nicola.bonelli@cnit.it>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,8 +22,8 @@
  ****************************************************************/
 
 #ifndef _PF_Q_BITS_H_
-#define _PF_Q_BITS_H_ 
- 
+#define _PF_Q_BITS_H_
+
 
 #define pfq_ctz(n) \
 	 __builtin_choose_expr(__builtin_types_compatible_p(typeof(n),unsigned int),            (unsigned int)__builtin_ctz(n), \

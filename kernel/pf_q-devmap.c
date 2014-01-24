@@ -1,6 +1,6 @@
 /***************************************************************
- *                                                
- * (C) 2011-13 Nicola Bonelli <nicola.bonelli@cnit.it>   
+ *
+ * (C) 2011-13 Nicola Bonelli <nicola.bonelli@cnit.it>
  *             Andrea Di Pietro <andrea.dipietro@for.unipi.it>
  *
  * This program is free software; you can redistribute it and/or modify
@@ -43,7 +43,7 @@ void pfq_devmap_monitor_update(void)
 {
     int i,j;
     for(i=0; i < Q_MAX_DEVICE; ++i)
-    {   
+    {
         unsigned long val = 0;
         for(j=0; j < Q_MAX_HW_QUEUE; ++j)
         {
@@ -58,11 +58,11 @@ void pfq_devmap_monitor_update(void)
 int pfq_devmap_update(int action, int index, int queue, int gid)
 {
     int n = 0, i,q;
-    
+
     if (unlikely(gid >= 64 || gid < 0))
     {
         pr_devel("[PF_Q] devmap_update: bad gid(%u)\n",gid);
-        return 0; 
+        return 0;
     }
 
     down(&devmap_sem);
@@ -77,11 +77,11 @@ int pfq_devmap_update(int action, int index, int queue, int gid)
                 continue;
 
             /* map_set... */
-            if (action == map_set) 
+            if (action == map_set)
             {
                 tmp = atomic_long_read(&pfq_devmap[i][q]);
                 tmp |= 1L << gid;
-                atomic_long_set(&pfq_devmap[i][q], tmp); 
+                atomic_long_set(&pfq_devmap[i][q], tmp);
                 n++;
                 continue;
             }
@@ -91,15 +91,15 @@ int pfq_devmap_update(int action, int index, int queue, int gid)
             if (tmp & (1L<<gid))
             {
                 tmp &= ~(1L<<gid);
-                atomic_long_set(&pfq_devmap[i][q], tmp); 
+                atomic_long_set(&pfq_devmap[i][q], tmp);
                 n++;
                 continue;
             }
         }
     }
-    
+
     /* update capture monitor filter... */
-    
+
     pfq_devmap_monitor_update();
 
     up(&devmap_sem);

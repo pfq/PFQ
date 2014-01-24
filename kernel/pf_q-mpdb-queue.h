@@ -1,6 +1,6 @@
 /***************************************************************
- *                                                
- * (C) 2011-13 Nicola Bonelli <nicola.bonelli@cnit.it>   
+ *
+ * (C) 2011-13 Nicola Bonelli <nicola.bonelli@cnit.it>
  *             Andrea Di Pietro <andrea.dipietro@for.unipi.it>
  *
  * This program is free software; you can redistribute it and/or modify
@@ -23,7 +23,7 @@
  ****************************************************************/
 
 #ifndef _MPDB_QUEUE_H_
-#define _MPDB_QUEUE_H_ 
+#define _MPDB_QUEUE_H_
 
 #include <linux/skbuff.h>
 #include <linux/pf_q.h>
@@ -32,11 +32,11 @@
 #include <pf_q-queue.h>
 #include <pf_q-common.h>
 
-extern bool 
+extern bool
 mpdb_enqueue(struct pfq_opt *pq, struct sk_buff *skb);
 
 
-extern size_t 
+extern size_t
 mpdb_enqueue_batch(struct pfq_opt *pq, unsigned long queue_mask, int len, struct pfq_queue_skb *skbs, int gid);
 
 
@@ -68,7 +68,7 @@ static inline
 size_t
 mpdb_queue_size(struct pfq_opt *pq)
 {
-    return pq->q_slot_size * pq->q_slots; 
+    return pq->q_slot_size * pq->q_slots;
 }
 
 
@@ -76,7 +76,7 @@ static inline
 size_t
 mpdb_queue_tot_mem(struct pfq_opt *pq)
 {
-    return sizeof(struct pfq_queue_descr) + mpdb_queue_size(pq) * 2; 
+    return sizeof(struct pfq_queue_descr) + mpdb_queue_size(pq) * 2;
 }
 
 #endif /* _MPDB_QUEUE_H_ */

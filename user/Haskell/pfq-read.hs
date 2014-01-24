@@ -21,10 +21,10 @@ dumpPacket p = do
                 putStrLn $ "[" ++ showHex bytes "" ++ "]"
 
 recvLoop :: Ptr PFqTag -> IO ()
-recvLoop q = do 
+recvLoop q = do
     queue <- Q.read q 100000000
-    if Q.qLen queue == 0 
-       then recvLoop q 
+    if Q.qLen queue == 0
+       then recvLoop q
        else do
             ps <- Q.getPackets queue
             mapM_ (getHeader >=> print) ps
@@ -36,13 +36,13 @@ recvLoop q = do
 -- Context shared as Storable Pair
 --
 
-data Pair = Pair Int Int 
+data Pair = Pair Int Int
     deriving (Show, Eq)
 
 instance Storable Pair where
     alignment _ = alignment (undefined :: CInt)
     sizeOf    _ = 8
-    peek p      = Pair <$> fmap fromIntegral ((\ptr -> peekByteOff ptr 0 ::IO CInt) p) 
+    peek p      = Pair <$> fmap fromIntegral ((\ptr -> peekByteOff ptr 0 ::IO CInt) p)
                        <*> fmap fromIntegral ((\ptr -> peekByteOff ptr 4 ::IO CInt) p)
     poke p (Pair a b) = do
         (\ptr val -> pokeByteOff ptr 0 (val::CInt)) p (fromIntegral a)
@@ -55,26 +55,26 @@ dumper dev = do
     fp <- Q.open 64 0 4096
     withForeignPtr fp  $ \q -> do
         Q.setTimestamp q True
-        
+
         gid <- Q.getGroupId q
         Q.bindGroup q gid dev (-1)
-        Q.enable q 
-        
+        Q.enable q
+
         -- Q.vlanFiltersEnabled q gid True
-        -- Q.vlanSetFilterId q gid (0)   -- untagged 
-        -- Q.vlanSetFilterId q gid (-1)  -- anyTag 
+        -- Q.vlanSetFilterId q gid (0)   -- untagged
+        -- Q.vlanSetFilterId q gid (-1)  -- anyTag
         -- Q.groupFunctions q gid ["steer-ipv4"]
 
         -- Test state (requires dummy-state comptuation)!
 
-        Q.groupFunction q gid 0 "dummy-state"  
-        Q.groupFunction q gid 1 "clone"  
+        Q.groupFunction q gid 0 "dummy-state"
+        Q.groupFunction q gid 1 "clone"
 
         -- set state
         Q.putContextFunction q (Pair 10 42) gid 0
-        
+
         -- read state of 8 bytes...
-        kp :: Pair <- Q.getContextFunction q gid 0 8 
+        kp :: Pair <- Q.getContextFunction q gid 0 8
         print kp
 
         Q.getSlotSize q >>= \o -> putStrLn $ "slot_size: " ++ show o

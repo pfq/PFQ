@@ -1,6 +1,6 @@
 /***************************************************************
- *                                                
- * (C) 2011-13 Nicola Bonelli <nicola.bonelli@cnit.it>   
+ *
+ * (C) 2011-13 Nicola Bonelli <nicola.bonelli@cnit.it>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,12 +22,12 @@
  ****************************************************************/
 
 #ifndef _PF_Q_STEER_H_
-#define _PF_Q_STEER_H_ 
+#define _PF_Q_STEER_H_
 
 #include <linux/skbuff.h>
 #include <linux/pf_q.h>
 #include <linux/pf_q-fun.h>
- 
+
 
 extern void pfq_function_factory_init(void);
 extern void pfq_function_factory_free(void);

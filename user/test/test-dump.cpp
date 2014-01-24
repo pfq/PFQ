@@ -10,13 +10,13 @@ main(int argc, char *argv[])
 {
     if (argc < 2)
         throw std::runtime_error(std::string("usage: ").append(argv[0]).append(" dev"));
-    
+
     pfq q(128);
 
     q.bind(argv[1], pfq::any_queue);
 
     q.timestamp_enabled(true);
-    
+
     q.enable();
 
     for(;;)
@@ -32,9 +32,9 @@ main(int argc, char *argv[])
                         std::this_thread::yield();
                     }
 
-                    printf("vlan:%d caplen:%d len:%d ifindex:%d hw_queue:%d -> ", 
+                    printf("vlan:%d caplen:%d len:%d ifindex:%d hw_queue:%d -> ",
                            it->un.vlan.vlan_vid, it->caplen, it->len, it->if_index, it->hw_queue);
-                    
+
                     char *buff = static_cast<char *>(it.data());
 
                     for(int x=0; x < std::min<int>(it->caplen, 34); x++)
@@ -47,4 +47,4 @@ main(int argc, char *argv[])
 
     return 0;
 }
- 
+

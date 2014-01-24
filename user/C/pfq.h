@@ -1,36 +1,36 @@
 /***************************************************************
-   
-   Copyright (c) 2011-2013, Nicola Bonelli 
-   All rights reserved. 
 
-   Redistribution and use in source and binary forms, with or without 
-   modification, are permitted provided that the following conditions are met: 
+   Copyright (c) 2011-2013, Nicola Bonelli
+   All rights reserved.
 
-   * Redistributions of source code must retain the above copyright notice, 
-     this list of conditions and the following disclaimer. 
-   * Redistributions in binary form must reproduce the above copyright 
-     notice, this list of conditions and the following disclaimer in the 
-     documentation and/or other materials provided with the distribution. 
-   * Neither the name of University of Pisa nor the names of its contributors 
-     may be used to endorse or promote products derived from this software 
-     without specific prior written permission. 
+   Redistribution and use in source and binary forms, with or without
+   modification, are permitted provided that the following conditions are met:
 
-   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
-   AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
-   IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
-   ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE 
-   LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
-   CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
-   SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
-   INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
-   CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
-   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
+   * Redistributions of source code must retain the above copyright notice,
+     this list of conditions and the following disclaimer.
+   * Redistributions in binary form must reproduce the above copyright
+     notice, this list of conditions and the following disclaimer in the
+     documentation and/or other materials provided with the distribution.
+   * Neither the name of University of Pisa nor the names of its contributors
+     may be used to endorse or promote products derived from this software
+     without specific prior written permission.
+
+   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+   AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+   IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+   ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+   LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+   CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+   SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+   INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+   CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
    POSSIBILITY OF SUCH DAMAGE.
- 
+
  ***************************************************************/
 
 #ifndef _PFQ_H_
-#define _PFQ_H_ 
+#define _PFQ_H_
 
 #include <stddef.h>
 #include <linux/pf_q.h>
@@ -81,16 +81,16 @@ typedef void *pfq_t;   /* pfq descritor */
 typedef char * pfq_iterator_t;
 
 struct pfq_net_queue
-{	
+{
 	pfq_iterator_t queue; 	  		/* net queue */
 	size_t         len;       		/* number of packets in the queue */
     size_t         slot_size;
-	unsigned int   index; 	  		/* current queue index */ 
+	unsigned int   index; 	  		/* current queue index */
 };
 #endif
 
 
-static inline 
+static inline
 pfq_iterator_t
 pfq_net_queue_begin(struct pfq_net_queue const *nq)
 {
@@ -98,7 +98,7 @@ pfq_net_queue_begin(struct pfq_net_queue const *nq)
 }
 
 
-static inline 
+static inline
 pfq_iterator_t
 pfq_net_queue_end(struct pfq_net_queue const *nq)
 {
@@ -106,7 +106,7 @@ pfq_net_queue_end(struct pfq_net_queue const *nq)
 }
 
 
-static inline 
+static inline
 pfq_iterator_t
 pfq_net_queue_next(struct pfq_net_queue const *nq, pfq_iterator_t iter)
 {
@@ -114,7 +114,7 @@ pfq_net_queue_next(struct pfq_net_queue const *nq, pfq_iterator_t iter)
 }
 
 
-static inline 
+static inline
 pfq_iterator_t
 pfq_net_queue_prev(struct pfq_net_queue const *nq, pfq_iterator_t iter)
 {
@@ -154,7 +154,7 @@ static inline
 int
 pfq_yield()
 {
-    return 
+    return
 #ifdef _REENTRANT
     pthread_yield();
 #else
@@ -164,7 +164,7 @@ pfq_yield()
 
 /* pfq handler */
 
-typedef void (*pfq_handler_t)(char *user, const struct pfq_hdr *h, const char *data); 
+typedef void (*pfq_handler_t)(char *user, const struct pfq_hdr *h, const char *data);
 
 
 /* ************************************** *
@@ -182,8 +182,8 @@ extern pfq_t* pfq_open(size_t calpen, size_t offset, size_t slots);
 
 extern pfq_t * pfq_open_nogroup(size_t caplen, size_t offset, size_t slots);
 
-extern pfq_t* pfq_open_group(unsigned int class_mask, 
-							 int group_policy, 
+extern pfq_t* pfq_open_group(unsigned int class_mask,
+							 int group_policy,
 							 size_t calpen, size_t offset, size_t slots);
 
 extern int pfq_close(pfq_t *);
@@ -216,7 +216,7 @@ extern int pfq_set_slots(pfq_t *q, size_t value);
 
 extern size_t pfq_get_slots(pfq_t const *q);
 
-extern size_t pfq_get_slot_size(pfq_t const *q); 
+extern size_t pfq_get_slot_size(pfq_t const *q);
 
 extern int pfq_bind_group(pfq_t *q, int gid, const char *dev, int queue);
 
@@ -249,29 +249,29 @@ extern int pfq_vlan_reset_filter(pfq_t *q, int gid, int vid);
 extern int pfq_join_group(pfq_t *q, int gid, unsigned int class_mask, int group_policy);
 
 extern int pfq_leave_group(pfq_t *q, int gid);
-        
+
 extern int pfq_poll(pfq_t *q, long int microseconds /* = -1 -> infinite */);
 
-extern int pfq_read(pfq_t *q, struct pfq_net_queue *nq, long int microseconds); 
+extern int pfq_read(pfq_t *q, struct pfq_net_queue *nq, long int microseconds);
 
-extern int pfq_recv(pfq_t *q, void *buf, size_t buflen, 
+extern int pfq_recv(pfq_t *q, void *buf, size_t buflen,
 					struct pfq_net_queue *nq, long int microseconds);
 
 extern int pfq_dispatch(pfq_t *q, pfq_handler_t cb, long int microseconds, char *user);
 
 extern size_t pfq_mem_size(pfq_t const *q);
 
-extern const void * pfq_mem_addr(pfq_t const *q); 
+extern const void * pfq_mem_addr(pfq_t const *q);
 
 extern int pfq_id(pfq_t *q);
 
 extern int pfq_group_id(pfq_t *q);
- 
+
 extern int pfq_get_fd(pfq_t *q);
 
-extern int pfq_get_stats(pfq_t const *q, struct pfq_stats *stats); 
+extern int pfq_get_stats(pfq_t const *q, struct pfq_stats *stats);
 
-extern int pfq_get_group_stats(pfq_t const *q, int gid, struct pfq_stats *stats); 
+extern int pfq_get_group_stats(pfq_t const *q, int gid, struct pfq_stats *stats);
 
 
 #endif /* _PFQ_H_ */

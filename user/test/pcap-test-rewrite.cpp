@@ -39,14 +39,14 @@ void handler(u_char *, const struct pcap_pkthdr *h, const u_char *bytes)
 
 int
 main(int argc, char *argv[])
-{ 
+{
     char errbuf[PCAP_ERRBUF_SIZE];
 
     if (argc < 3) {
         std::cerr << "usage: in.pcap out.pcap" << std::endl;
         return -1;
     }
-    
+
     char *file_in = argv[1], *file_out = argv[2];
 
     std::cout << "pfq_test: opening " << file_in << " for reading..." << std::endl;
@@ -66,5 +66,5 @@ main(int argc, char *argv[])
     std::cout << counter << " IP packets written." << std::endl;
     return 0;
 }
- 
+
 

@@ -1,6 +1,6 @@
 /***************************************************************
- *                                                
- * (C) 2011-13 Nicola Bonelli <nicola.bonelli@cnit.it>   
+ *
+ * (C) 2011-13 Nicola Bonelli <nicola.bonelli@cnit.it>
  *             Andrea Di Pietro <andrea.dipietro@for.unipi.it>
  *
  * This program is free software; you can redistribute it and/or modify
@@ -23,61 +23,61 @@
  ****************************************************************/
 
 #ifndef _SPARSE_COUNTER_H_
-#define _SPARSE_COUNTER_H_ 
+#define _SPARSE_COUNTER_H_
 
 #include <linux/smp.h> /* get_cpu */
 
 #define MAX_CPU_CTX     64
 
-typedef struct { long value; } __attribute__((aligned(128))) __counter_t; 
+typedef struct { long value; } __attribute__((aligned(128))) __counter_t;
 
 typedef struct { __counter_t ctx[MAX_CPU_CTX]; } sparse_counter_t;
 
 
-static inline 
+static inline
 void __sparse_inc(sparse_counter_t *sc, int cpu)
 {
     sc->ctx[cpu].value++;
 }
 
-static inline 
+static inline
 void __sparse_dec(sparse_counter_t *sc, int cpu)
 {
     sc->ctx[cpu].value--;
 }
 
-static inline 
-void __sparse_add(sparse_counter_t *sc, int cpu, long n) 
+static inline
+void __sparse_add(sparse_counter_t *sc, int cpu, long n)
 {
     sc->ctx[cpu].value += n;
 }
 
-static inline 
+static inline
 void __sparse_sub(sparse_counter_t *sc, int cpu, long n)
 {
     sc->ctx[cpu].value -= n;
 }
 
 
-static inline 
+static inline
 void sparse_inc(sparse_counter_t *sc)
 {
     sc->ctx[get_cpu() % MAX_CPU_CTX].value++;
 }
 
-static inline 
+static inline
 void sparse_dec(sparse_counter_t *sc)
 {
     sc->ctx[get_cpu() % MAX_CPU_CTX].value--;
 }
 
-static inline 
-void sparse_add(sparse_counter_t *sc, long n) 
+static inline
+void sparse_add(sparse_counter_t *sc, long n)
 {
     sc->ctx[get_cpu() % MAX_CPU_CTX].value += n;
 }
 
-static inline 
+static inline
 void sparse_sub(sparse_counter_t *sc, long n)
 {
     sc->ctx[get_cpu() % MAX_CPU_CTX].value -= n;
@@ -93,12 +93,12 @@ void sparse_set(sparse_counter_t *sc, long n)
     }
 }
 
-static inline 
-long sparse_read(sparse_counter_t *sc) 
+static inline
+long sparse_read(sparse_counter_t *sc)
 {
     long ret = 0; int i;
     for(i=0; i < MAX_CPU_CTX; i++) {
-        ret += ((volatile __counter_t *)&sc->ctx[i])->value;    
+        ret += ((volatile __counter_t *)&sc->ctx[i])->value;
     }
     return ret;
 }

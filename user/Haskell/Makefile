@@ -15,21 +15,21 @@ HSC=hsc2hs
 
 all: Network/PFq.hs pfq-read pfq-counters pfq-dispatch
 
-Network/PFq.hs: 
-		$(HSC) Network/PFq.hsc 
+Network/PFq.hs:
+		$(HSC) Network/PFq.hsc
 
-pfq-read: Network/PFq.hs pfq-read.hs  
+pfq-read: Network/PFq.hs pfq-read.hs
 		$(HC) $(GHCFLAGS) $(LIBS) pfq-read.hs -o $@
 
 pfq-counters: Network/PFq.hs pfq-counters.hs
 		$(HC) $(GHCFLAGS) $(LIBS) pfq-counters.hs -o $@
 
-pfq-dispatch: Network/PFq.hs pfq-dispatch.hs 
+pfq-dispatch: Network/PFq.hs pfq-dispatch.hs
 		$(HC) $(GHCFLAGS) $(LIBS) pfq-dispatch.hs -o $@
 
 install: all
 		cp pfq-counters  ${INSTDIR}/bin/
-        
+
 clean:
 	   @rm -f pfq-read pfq-counters pfq-dispatch
 	   @rm -f *.o *.hi Network/*.o Network/*.hi Network/PFq.hs Network/PFq_stub.h

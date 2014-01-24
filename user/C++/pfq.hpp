@@ -1,36 +1,36 @@
 /***************************************************************
-   
-   Copyright (c) 2011-2013, Nicola Bonelli 
-   All rights reserved. 
 
-   Redistribution and use in source and binary forms, with or without 
-   modification, are permitted provided that the following conditions are met: 
+   Copyright (c) 2011-2013, Nicola Bonelli
+   All rights reserved.
 
-   * Redistributions of source code must retain the above copyright notice, 
-     this list of conditions and the following disclaimer. 
-   * Redistributions in binary form must reproduce the above copyright 
-     notice, this list of conditions and the following disclaimer in the 
-     documentation and/or other materials provided with the distribution. 
-   * Neither the name of University of Pisa nor the names of its contributors 
-     may be used to endorse or promote products derived from this software 
-     without specific prior written permission. 
+   Redistribution and use in source and binary forms, with or without
+   modification, are permitted provided that the following conditions are met:
 
-   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" 
-   AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE 
-   IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE 
-   ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE 
-   LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR 
-   CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF 
-   SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS 
-   INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN 
-   CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) 
-   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE 
+   * Redistributions of source code must retain the above copyright notice,
+     this list of conditions and the following disclaimer.
+   * Redistributions in binary form must reproduce the above copyright
+     notice, this list of conditions and the following disclaimer in the
+     documentation and/or other materials provided with the distribution.
+   * Neither the name of University of Pisa nor the names of its contributors
+     may be used to endorse or promote products derived from this software
+     without specific prior written permission.
+
+   THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
+   AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
+   IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
+   ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT OWNER OR CONTRIBUTORS BE
+   LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR
+   CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF
+   SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS
+   INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN
+   CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE)
+   ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
    POSSIBILITY OF SUCH DAMAGE.
- 
+
  ***************************************************************/
 
 #ifndef _PFQ_HPP_
-#define _PFQ_HPP_ 
+#define _PFQ_HPP_
 
 #include <linux/if_ether.h>
 #include <linux/pf_q.h>
@@ -57,7 +57,7 @@
 #include <algorithm>
 #include <system_error>
 
-namespace 
+namespace
 {
 
 #if defined(__GNUG__)
@@ -87,7 +87,7 @@ namespace
 #endif
 }
 
-namespace net { 
+namespace net {
 
     typedef std::pair<char *, size_t> mutable_buffer;
     typedef std::pair<const char *, const size_t> const_buffer;
@@ -99,10 +99,10 @@ namespace net {
         return (value + (N-1)) & ~(N-1);
     }
 
-    class queue 
+    class queue
     {
     public:
-         
+
         struct const_iterator;
 
         /* simple forward iterator over frames */
@@ -115,20 +115,20 @@ namespace net {
             {}
 
             ~iterator() = default;
-            
+
             iterator(const iterator &other)
             : hdr_(other.hdr_), slot_size_(other.slot_size_), index_(other.index_)
             {}
 
-            iterator & 
+            iterator &
             operator++()
             {
                 hdr_ = reinterpret_cast<pfq_hdr *>(
                         reinterpret_cast<char *>(hdr_) + slot_size_);
                 return *this;
             }
-            
-            iterator 
+
+            iterator
             operator++(int)
             {
                 iterator ret(*this);
@@ -143,7 +143,7 @@ namespace net {
             }
 
             pfq_hdr &
-            operator*() const                                  
+            operator*() const
             {
                 return *hdr_;
             }
@@ -157,12 +157,12 @@ namespace net {
             bool
             ready() const
             {
-                auto b = const_cast<volatile uint8_t &>(hdr_->commit) == index_; 
+                auto b = const_cast<volatile uint8_t &>(hdr_->commit) == index_;
                 smp_rmb();
                 return b;
             }
 
-            bool 
+            bool
             operator==(const iterator &other) const
             {
                 return hdr_ == other.hdr_;
@@ -197,15 +197,15 @@ namespace net {
 
             ~const_iterator() = default;
 
-            const_iterator & 
+            const_iterator &
             operator++()
             {
                 hdr_ = reinterpret_cast<pfq_hdr *>(
                         reinterpret_cast<char *>(hdr_) + slot_size_);
                 return *this;
             }
-            
-            const_iterator 
+
+            const_iterator
             operator++(int)
             {
                 const_iterator ret(*this);
@@ -234,12 +234,12 @@ namespace net {
             bool
             ready() const
             {
-                auto b = const_cast<volatile uint8_t &>(hdr_->commit) == index_; 
+                auto b = const_cast<volatile uint8_t &>(hdr_->commit) == index_;
                 smp_rmb();
                 return b;
             }
 
-            bool 
+            bool
             operator==(const const_iterator &other) const
             {
                 return hdr_ == other.hdr_;
@@ -277,7 +277,7 @@ namespace net {
             return queue_len_ == 0;
         }
 
-        size_t 
+        size_t
         index() const
         {
             return index_;
@@ -296,26 +296,26 @@ namespace net {
         }
 
         iterator
-        begin()  
+        begin()
         {
             return iterator(reinterpret_cast<pfq_hdr *>(addr_), slot_size_, index_);
         }
 
         const_iterator
-        begin() const  
+        begin() const
         {
             return const_iterator(reinterpret_cast<pfq_hdr *>(addr_), slot_size_, index_);
         }
 
         iterator
-        end()  
+        end()
         {
             return iterator(reinterpret_cast<pfq_hdr *>(
                         static_cast<char *>(addr_) + queue_len_ * slot_size_), slot_size_, index_);
         }
 
         const_iterator
-        end() const 
+        end() const
         {
             return const_iterator(reinterpret_cast<pfq_hdr *>(
                         static_cast<char *>(addr_) + queue_len_ * slot_size_), slot_size_, index_);
@@ -328,7 +328,7 @@ namespace net {
         }
 
         const_iterator
-        cend() const 
+        cend() const
         {
             return const_iterator(reinterpret_cast<pfq_hdr *>(
                         static_cast<char *>(addr_) + queue_len_ * slot_size_), slot_size_, index_);
@@ -356,14 +356,14 @@ namespace net {
         smp_rmb();
         return &h + 1;
     }
-    
+
 
     //////////////////////////////////////////////////////////////////////
 
     class pfq_error : public std::system_error
     {
     public:
-    
+
         pfq_error(int ev, const char * reason)
         : std::system_error(ev, std::generic_category(), reason)
         {}
@@ -376,14 +376,14 @@ namespace net {
         {}
     };
 
-    
+
     //////////////////////////////////////////////////////////////////////
     // utility functions...
-    
-    namespace 
+
+    namespace
     {
-        inline int 
-        ifindex(int fd, const char *dev) 
+        inline int
+        ifindex(int fd, const char *dev)
         {
             struct ifreq ifreq_io;
             memset(&ifreq_io, 0, sizeof(struct ifreq));
@@ -402,12 +402,12 @@ namespace net {
             memset(&ifreq_io, 0, sizeof(struct ifreq));
             strncpy(ifreq_io.ifr_name, dev, IFNAMSIZ);
 
-            if(::ioctl(fd, SIOCGIFFLAGS, &ifreq_io) == -1) 
+            if(::ioctl(fd, SIOCGIFFLAGS, &ifreq_io) == -1)
                 throw pfq_error(errno, "PFQ: ioctl getflags");
 
             if (value)
                 ifreq_io.ifr_flags |= IFF_PROMISC;
-            else 
+            else
                 ifreq_io.ifr_flags &= ~IFF_PROMISC;
 
             if(::ioctl(fd, SIOCSIFFLAGS, &ifreq_io) == -1)
@@ -425,7 +425,7 @@ namespace net {
             return i;
         }
 
-        
+
         inline
         std::string
         indextoname(int i)
@@ -440,11 +440,11 @@ namespace net {
     //////////////////////////////////////////////////////////////////////
 
     // group policies
-    // 
-    
+    //
+
     enum class group_policy : int16_t
     {
-        undefined  = Q_GROUP_UNDEFINED, 
+        undefined  = Q_GROUP_UNDEFINED,
         priv       = Q_GROUP_PRIVATE,
         restricted = Q_GROUP_RESTRICTED,
         shared     = Q_GROUP_SHARED
@@ -452,10 +452,10 @@ namespace net {
 
     // class mask
     //
-    
+
     typedef unsigned int class_mask;
 
-    namespace 
+    namespace
     {
         const class_mask  class_default = Q_CLASS_DEFAULT;
         const class_mask  class_any     = Q_CLASS_ANY;
@@ -483,14 +483,14 @@ namespace net {
 
             void * queue_addr;
             size_t queue_tot_mem;
-            size_t queue_slots; 
+            size_t queue_slots;
             size_t queue_caplen;
             size_t queue_offset;
             size_t slot_size;
         };
 
         int fd_;
-        
+
         std::unique_ptr<pfq_data> pdata_;
 
     public:
@@ -509,9 +509,9 @@ namespace net {
         : fd_(-1)
         , pdata_()
         {
-            this->open(class_default, group_policy::priv, caplen, offset, slots); 
+            this->open(class_default, group_policy::priv, caplen, offset, slots);
         }
-    
+
         pfq(group_policy policy, size_t caplen, size_t offset = 0, size_t slots = 131072)
         : fd_(-1)
         , pdata_()
@@ -532,7 +532,7 @@ namespace net {
         }
 
         /* pfq object is non copyable */
-        
+
         pfq(const pfq&) = delete;
         pfq& operator=(const pfq&) = delete;
 
@@ -547,8 +547,8 @@ namespace net {
         }
 
         /* move assignment operator */
-        
-        pfq& 
+
+        pfq&
         operator=(pfq &&other)
         {
             if (this != &other)
@@ -559,17 +559,17 @@ namespace net {
             }
             return *this;
         }
-        
-        /* swap */ 
-        
-        void 
+
+        /* swap */
+
+        void
         swap(pfq &other)
         {
             std::swap(fd_,    other.fd_);
             std::swap(pdata_, other.pdata_);
-        }                           
+        }
 
-        int 
+        int
         id() const
         {
             if (pdata_)
@@ -577,7 +577,7 @@ namespace net {
             return -1;
         }
 
-        int 
+        int
         group_id() const
         {
             if (pdata_)
@@ -585,7 +585,7 @@ namespace net {
             return -1;
         }
 
-        int 
+        int
         fd() const
         {
             return fd_;
@@ -595,18 +595,18 @@ namespace net {
         open(group_policy policy, size_t caplen, size_t offset = 0, size_t slots = 131072)
         {
             this->open(caplen, offset, slots);
-            
+
             if (policy != group_policy::undefined)
             {
                 pdata_->gid = this->join_group(any_group, policy, class_default);
             }
         }
-        
+
         void
         open(class_mask mask, group_policy policy, size_t caplen, size_t offset = 0, size_t slots = 131072)
         {
             this->open(caplen, offset, slots);
-            
+
             if (policy != group_policy::undefined)
             {
                 pdata_->gid = this->join_group(any_group, policy, mask);
@@ -624,7 +624,7 @@ namespace net {
             fd_ = ::socket(PF_Q, SOCK_RAW, htons(ETH_P_ALL));
             if (fd_ == -1)
                 throw pfq_error("PFQ: module not loaded");
-            
+
             /* allocate pdata */
             pdata_.reset(new pfq_data { -1, -1, nullptr, 0, 0, 0, offset, 0 });
 
@@ -637,39 +637,39 @@ namespace net {
             if (::setsockopt(fd_, PF_Q, Q_SO_SET_SLOTS, &slots, sizeof(slots)) == -1)
                 throw pfq_error(errno, "PFQ: set slots error");
             pdata_->queue_slots = slots;
-            
+
             /* set caplen */
             if (::setsockopt(fd_, PF_Q, Q_SO_SET_CAPLEN, &caplen, sizeof(caplen)) == -1)
                 throw pfq_error(errno, "PFQ: set caplen error");
             pdata_->queue_caplen = caplen;
-            
+
             /* set offset */
             if (::setsockopt(fd_, PF_Q, Q_SO_SET_OFFSET, &offset, sizeof(offset)) == -1)
                 throw pfq_error(errno, "PFQ: set offset error");
-            
+
             pdata_->slot_size = align<8>(sizeof(pfq_hdr) + pdata_->queue_caplen);
         }
 
     public:
 
-        void 
+        void
         close()
         {
             if (fd_ != -1)
             {
                 if (pdata_ && pdata_->queue_addr)
                     this->disable();
-                
+
                 pdata_.reset(nullptr);
-                
+
                 if (::close(fd_) < 0)
                     throw pfq_error("FPQ: close");
                 fd_ = -1;
             }
         }
-        
-        
-        void 
+
+
+        void
         enable()
         {
             int one = 1;
@@ -679,19 +679,19 @@ namespace net {
             }
 
             size_t tot_mem; socklen_t size = sizeof(tot_mem);
-            
+
             if (::getsockopt(fd_, PF_Q, Q_SO_GET_QUEUE_MEM, &tot_mem, &size) == -1)
                 throw pfq_error(errno, "PFQ: queue memory error");
-            
+
             pdata_->queue_tot_mem = tot_mem;
 
-            if ((pdata_->queue_addr = mmap(nullptr, tot_mem, PROT_READ|PROT_WRITE, MAP_SHARED, fd_, 0)) == MAP_FAILED) 
+            if ((pdata_->queue_addr = mmap(nullptr, tot_mem, PROT_READ|PROT_WRITE, MAP_SHARED, fd_, 0)) == MAP_FAILED)
                 throw pfq_error(errno, "PFQ: mmap error");
-            
+
         }
 
-        
-        void 
+
+        void
         disable()
         {
             if (fd_ == -1)
@@ -699,17 +699,17 @@ namespace net {
 
             if (munmap(pdata_->queue_addr, pdata_->queue_tot_mem) == -1)
                 throw pfq_error(errno, "PFQ: munmap error");
-            
+
             pdata_->queue_addr = nullptr;
             pdata_->queue_tot_mem = 0;
-            
+
             int zero = 0;
             if(::setsockopt(fd_, PF_Q, Q_SO_TOGGLE_QUEUE, &zero, sizeof(zero)) == -1)
                 throw pfq_error(errno, "PFQ: queue cleanup error");
         }
 
-        
-        bool 
+
+        bool
         enabled() const
         {
             if (fd_ != -1)
@@ -724,7 +724,7 @@ namespace net {
         }
 
 
-        void 
+        void
         timestamp_enabled(bool value)
         {
             int ts = static_cast<int>(value);
@@ -733,7 +733,7 @@ namespace net {
         }
 
 
-        bool 
+        bool
         timestamp_enabled() const
         {
            int ret; socklen_t size = sizeof(int);
@@ -743,21 +743,21 @@ namespace net {
         }
 
 
-        void 
+        void
         caplen(size_t value)
         {
-            if (enabled()) 
+            if (enabled())
                 throw pfq_error("PFQ: enabled (caplen could not be set)");
-            
+
             if (::setsockopt(fd_, PF_Q, Q_SO_SET_CAPLEN, &value, sizeof(value)) == -1) {
                 throw pfq_error(errno, "PFQ: set caplen error");
             }
 
             pdata_->slot_size = align<8>(sizeof(pfq_hdr)+ value);
         }
-        
 
-        size_t 
+
+        size_t
         caplen() const
         {
            size_t ret; socklen_t size = sizeof(ret);
@@ -767,19 +767,19 @@ namespace net {
         }
 
 
-        void 
+        void
         offset(size_t value)
         {
-            if (enabled()) 
+            if (enabled())
                 throw pfq_error("PFQ: enabled (offset could not be set)");
-            
+
             if (::setsockopt(fd_, PF_Q, Q_SO_SET_OFFSET, &value, sizeof(value)) == -1) {
                 throw pfq_error(errno, "PFQ: set offset error");
             }
         }
 
 
-        size_t 
+        size_t
         offset() const
         {
            size_t ret; socklen_t size = sizeof(ret);
@@ -789,12 +789,12 @@ namespace net {
         }
 
 
-        void 
-        slots(size_t value) 
-        {             
-            if (enabled()) 
+        void
+        slots(size_t value)
+        {
+            if (enabled())
                 throw pfq_error("PFQ: enabled (slots could not be set)");
-                      
+
             if (::setsockopt(fd_, PF_Q, Q_SO_SET_SLOTS, &value, sizeof(value)) == -1) {
                 throw pfq_error(errno, "PFQ: set slots error");
             }
@@ -803,9 +803,9 @@ namespace net {
         }
 
 
-        size_t 
+        size_t
         slots() const
-        {   
+        {
             if (!pdata_)
                 throw pfq_error("PFQ: socket not open");
 
@@ -813,17 +813,17 @@ namespace net {
         }
 
 
-        size_t 
+        size_t
         slot_size() const
         {
             if (!pdata_)
                 throw pfq_error("PFQ: socket not open");
-            
+
             return pdata_->slot_size;
         }
 
 
-        void 
+        void
         bind(const char *dev, int queue = any_queue)
         {
             auto gid = group_id();
@@ -831,7 +831,7 @@ namespace net {
                 throw pfq_error("PFQ: default group undefined");
 
             bind_group(gid, dev, queue);
-        }                              
+        }
 
 
         void
@@ -847,24 +847,24 @@ namespace net {
         }
 
 
-        void 
+        void
         unbind(const char *dev, int queue = any_queue)
         {
             auto gid = group_id();
             if (gid < 0)
                 throw pfq_error("PFQ: default group undefined");
-        
+
             unbind_group(gid, dev, queue);
-        }  
+        }
 
 
-        void 
+        void
         unbind_group(int gid, const char *dev, int queue = any_queue)
         {
             auto index = ifindex(this->fd(), dev);
             if (index == -1)
                 throw pfq_error("PFQ: device not found");
-        
+
             struct pfq_binding b = { gid, index, queue };
             if (::setsockopt(fd_, PF_Q, Q_SO_REMOVE_BINDING, &b, sizeof(b)) == -1)
                 throw pfq_error(errno, "PFQ: remove binding error");
@@ -893,7 +893,7 @@ namespace net {
                     grps &= ~(1L << n);
                 }
             }
-            
+
             return vec;
         }
 
@@ -906,7 +906,7 @@ namespace net {
             if (::setsockopt(fd_, PF_Q, Q_SO_GROUP_FUN, &s, sizeof(s)) == -1)
                 throw pfq_error(errno, "PFQ: set group function error");
         }
-        
+
         template <typename T>
         void
         set_group_function_context(int gid, const T &context, int level = 0)
@@ -917,13 +917,13 @@ namespace net {
             if (::setsockopt(fd_, PF_Q, Q_SO_GROUP_CONTEXT, &s, sizeof(s)) == -1)
                 throw pfq_error(errno, "PFQ: set group function context error");
         }
-        
+
         template <typename T>
         void
         get_group_function_context(int gid, T &context, int level = 0)
         {
             static_assert(std::is_pod<T>::value, "context must be a pod type");
-            
+
             struct pfq_group_context s { &context, sizeof(context), gid, level };
             socklen_t len = sizeof(s);
             if (::getsockopt(fd_, PF_Q, Q_SO_GET_GROUP_CONTEXT, &s, &len) == -1)
@@ -959,7 +959,7 @@ namespace net {
         //
         // BPF filters: pass in-kernel sock_fprog structure
         //
-        
+
         void
         set_group_fprog(int gid, const sock_fprog &f)
         {
@@ -968,7 +968,7 @@ namespace net {
             if (::setsockopt(fd_, PF_Q, Q_SO_GROUP_FPROG, &fprog, sizeof(fprog)) == -1)
                 throw pfq_error(errno, "PFQ: set group fprog error");
         }
-        
+
         void
         reset_group_fprog(int gid)
         {
@@ -990,26 +990,26 @@ namespace net {
 
             if (::getsockopt(fd_, PF_Q, Q_SO_GROUP_JOIN, &group, &size) == -1)
                 throw pfq_error(errno, "PFQ: join group error");
-            
+
             if (pdata_->gid == -1)
                 pdata_->gid = group.gid;
 
             return group.gid;
         }
-        
+
 
         void
         leave_group(int gid)
         {
             if (::setsockopt(fd_, PF_Q, Q_SO_GROUP_LEAVE, &gid, sizeof(gid)) == -1)
                 throw pfq_error(errno, "PFQ: leave group error");
-            
+
             if (pdata_->gid == gid)
                 pdata_->gid = -1;
         }
 
 
-        int 
+        int
         poll(long int microseconds = -1 /* infinite */)
         {
             if (fd_ == -1)
@@ -1022,36 +1022,36 @@ namespace net {
             if (ret < 0 &&
             	errno != EINTR)
                throw pfq_error(errno, "PFQ: ppoll");
-            return 0; 
+            return 0;
         }
 
         queue
-        read(long int microseconds = -1) 
+        read(long int microseconds = -1)
         {
             if (!pdata_ || !pdata_->queue_addr)
                 throw pfq_error("PFQ: not enabled");
 
             auto q = static_cast<struct pfq_queue_descr *>(pdata_->queue_addr);
-            
+
             size_t data = q->data;
             size_t index = DBMP_QUEUE_INDEX(data);
             size_t q_size = pdata_->queue_slots * pdata_->slot_size;
 
             //  watermark for polling...
-            
+
             if( DBMP_QUEUE_LEN(data) < (pdata_->queue_slots >> 1) ) {
                 this->poll(microseconds);
             }
 
             // reset the next buffer...
-            
+
             data = __sync_lock_test_and_set(&q->data, (unsigned int)((index+1) << 24));
-            
+
             auto queue_len =  std::min(static_cast<size_t>(DBMP_QUEUE_LEN(data)), pdata_->queue_slots);
 
-            return queue(static_cast<char *>(pdata_->queue_addr) + 
-						 sizeof(pfq_queue_descr) + 
-						 (index & 1) * q_size, 
+            return queue(static_cast<char *>(pdata_->queue_addr) +
+						 sizeof(pfq_queue_descr) +
+						 (index & 1) * q_size,
                          pdata_->slot_size, queue_len, index);
         }
 
@@ -1065,13 +1065,13 @@ namespace net {
 
 
         queue
-        recv(const mutable_buffer &buff, long int microseconds = -1) 
+        recv(const mutable_buffer &buff, long int microseconds = -1)
         {
             if (fd_ == -1)
                 throw pfq_error("PFQ: socket not open");
-            
+
             auto this_queue = this->read(microseconds);
-            
+
             if (buff.second < pdata_->queue_slots * pdata_->slot_size)
                 throw pfq_error("PFQ: buffer too small");
 
@@ -1079,13 +1079,13 @@ namespace net {
             return queue(buff.first, this_queue.slot_size(), this_queue.size(), this_queue.index());
         }
 
-        // typedef void (*pfq_handler)(char *user, const struct pfq_hdr *h, const char *data); 
+        // typedef void (*pfq_handler)(char *user, const struct pfq_hdr *h, const char *data);
 
         template <typename Fun>
         size_t dispatch(Fun callback, long int microseconds = -1, char *user = nullptr)
         {
-            auto many = this->read(microseconds); 
-            
+            auto many = this->read(microseconds);
+
             auto it = std::begin(many),
                  it_e = std::end(many);
             size_t n = 0;
@@ -1107,7 +1107,7 @@ namespace net {
         void vlan_filters_enabled(int gid, bool toggle)
         {
             pfq_vlan_toggle value { gid, 0, toggle};
-    
+
             if (::setsockopt(fd_, PF_Q, Q_SO_GROUP_VLAN_FILT_TOGGLE, &value, sizeof(value)) == -1)
                 throw pfq_error(errno, "PFQ: vlan filters");
         }
@@ -1115,7 +1115,7 @@ namespace net {
         void vlan_set_filter(int gid, int vid)
         {
             pfq_vlan_toggle value { gid, vid, true};
-    
+
             if (::setsockopt(fd_, PF_Q, Q_SO_GROUP_VLAN_FILT, &value, sizeof(value)) == -1)
                 throw pfq_error(errno, "PFQ: vlan set filter");
         }
@@ -1131,11 +1131,11 @@ namespace net {
         void vlan_reset_filter(int gid, int vid)
         {
             pfq_vlan_toggle value { gid, vid, false};
-    
+
             if (::setsockopt(fd_, PF_Q, Q_SO_GROUP_VLAN_FILT, &value, sizeof(value)) == -1)
                 throw pfq_error(errno, "PFQ: vlan reset filter");
         }
-        
+
         template <typename Iter>
         void vlan_reset_filter(int gid, Iter beg, Iter end)
         {
@@ -1202,7 +1202,7 @@ namespace net {
         lhs.drop += rhs.drop;
         return lhs;
     }
-    
+
     inline pfq_stats&
     operator-=(pfq_stats &lhs, const pfq_stats &rhs)
     {

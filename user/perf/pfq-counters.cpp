@@ -1,6 +1,6 @@
 /***************************************************************
- *                                                
- * (C) 2011 - Nicola Bonelli <nicola.bonelli@cnit.it>   
+ *
+ * (C) 2011 - Nicola Bonelli <nicola.bonelli@cnit.it>
  *            Andrea Di Pietro <andrea.dipietro@for.unipi.it>
  *
  ****************************************************************/
@@ -79,7 +79,7 @@ namespace vt100
 }
 
 
-binding_type 
+binding_type
 binding_parser(const char *arg)
 {
     int core, q; char sep;
@@ -95,14 +95,14 @@ binding_parser(const char *arg)
 
     std::string dev(arg, sc);
 
-    std::istringstream i(std::string(sc+1, arg+strlen(arg)));  
+    std::istringstream i(std::string(sc+1, arg+strlen(arg)));
 
     if(!(i >> core))
         throw std::runtime_error("arg: parse error");
 
     while((i >> sep >> q))
         queues.push_back(q);
-    
+
     return std::make_tuple(dev, core, queues);
 }
 
@@ -116,13 +116,13 @@ namespace test
             int gid = opt::group_id != -1 ? opt::group_id : id;
 
             m_pfq.join_group(gid, group_policy::shared);
-            
+
             std::for_each(m_queues.begin(), m_queues.end(),[&](int q) {
-                          std::cout << "adding bind to " << d << "@" << q << std::endl;       
+                          std::cout << "adding bind to " << d << "@" << q << std::endl;
                     m_pfq.bind_group(gid, d, q);
                 });
 
-            std::deque<qfun> fs; 
+            std::deque<qfun> fs;
             if (!opt::function.empty() && (m_id == 0))
             {
                 std::unique_ptr<char> f(strdup(opt::function.c_str()));
@@ -135,32 +135,32 @@ namespace test
                     p = strtok(nullptr, ":");
                 }
 
-            }   
+            }
 
             if (!fs.empty())
             {
                 std::cout << "fun: " << fs.begin()->name;
-                
+
                 std::for_each(std::next(fs.begin(),1), fs.end(), [](qfun &fun) {
-                    std::cout << " >>= " << fun.name;    
+                    std::cout << " >>= " << fun.name;
                 });
                 std::cout << std::endl;
             }
 
             m_pfq.set_group_computation(gid, fs);
-            
+
             m_pfq.timestamp_enabled(false);
-            
+
             m_pfq.enable();
 
             std::cout << "ctx: queue_slots: " << m_pfq.slots() << " pfq_id:" << m_pfq.id() << std::endl;
         }
-        
+
         ctx(const ctx &) = delete;
         ctx& operator=(const ctx &) = delete;
 
         ctx(ctx && other)
-        : m_id(other.m_id), m_dev(other.m_dev), m_queues(other.m_queues), m_stop(other.m_stop.load()), 
+        : m_id(other.m_id), m_dev(other.m_dev), m_queues(other.m_queues), m_stop(other.m_stop.load()),
           m_pfq(std::move(other.m_pfq)), m_read()
         {
         }
@@ -177,7 +177,7 @@ namespace test
             return *this;
         }
 
-        void operator()() 
+        void operator()()
         {
             for(;;)
             {
@@ -190,7 +190,7 @@ namespace test
                 if (m_stop.load(std::memory_order_relaxed))
                     return;
 
-                if (opt::flow) 
+                if (opt::flow)
                 {
                     auto it = many.begin();
                     auto it_e = many.end();
@@ -204,7 +204,7 @@ namespace test
                             ip->protocol == IPPROTO_UDP)
                         {
                             udphdr * udp = reinterpret_cast<udphdr *>(static_cast<char *>(it.data()) + (ip->ihl<<2));
-                     
+
                             if (m_set.insert(std::make_tuple(ip->saddr, ip->daddr, udp->source, udp->dest)).second)
                                 m_flow++;
                         }
@@ -224,19 +224,19 @@ namespace test
             return m_pfq.stats();
         }
 
-        unsigned long long 
+        unsigned long long
         read() const
         {
             return m_read;
         }
 
-        unsigned long 
+        unsigned long
         flow() const
         {
             return m_flow;
         }
 
-        size_t 
+        size_t
         batch() const
         {
             return m_batch;
@@ -249,8 +249,8 @@ namespace test
         std::vector<int> m_queues;
 
         std::atomic_bool m_stop;
-        
-        pfq m_pfq;        
+
+        pfq m_pfq;
 
         unsigned long long m_read;
         size_t m_batch;
@@ -271,7 +271,7 @@ unsigned int hardware_concurrency()
                           std::istream_iterator<std::string>(),
                           std::string("processor"));
     };
-   
+
     return std::thread::hardware_concurrency() ? : proc();
 }
 
@@ -377,23 +377,23 @@ try
 
         vbinding.push_back(binding_parser(argv[i]));
     }
-    
+
     std::cout << "caplen: " << opt::caplen << std::endl;
     std::cout << "slots : " << opt::slots << std::endl;
-    
+
     if (opt::slots < 1024)
     {
         std::cout << "too few slots may affet the performance!" << std::endl;
-        _Exit(0); 
+        _Exit(0);
     }
 
     if (opt::flow) {
         std::cout << "forcing offset to 14 bytes..." << std::endl;
         opt::offset = 14;
     }
-    
+
     std::cout << "offset: " << opt::offset << std::endl;
-    
+
     // create threads' context:
     //
     for(unsigned int i = 0; i < vbinding.size(); ++i)
@@ -403,8 +403,8 @@ try
             qs.push_back(-1);
 
         std::cout << "pushing a context: " << std::get<0>(vbinding[i]) << ' ' << std::get<1>(vbinding[i]) << std::endl;
-        
-        ctx.push_back(test::ctx(i, std::get<0>(vbinding[i]).c_str(), std::get<2>(vbinding[i])));        
+
+        ctx.push_back(test::ctx(i, std::get<0>(vbinding[i]).c_str(), std::get<2>(vbinding[i])));
     }
 
     opt::sleep_microseconds = 50000 * ctx.size();
@@ -438,7 +438,7 @@ try
     for(int y=0; y < opt::seconds; y++)
     {
         std::this_thread::sleep_for(std::chrono::seconds(1));
-        
+
         sum = 0;
         flow = 0;
         sum_stats = {0,0,0};
@@ -448,7 +448,7 @@ try
                         flow += c.flow();
                         sum_stats += c.stats();
                       });
-    
+
         std::cout << "recv: ";
         std::for_each(ctx.begin(), ctx.end(), [&](const test::ctx &c) {
             std::cout << c.stats().recv << ' ';
@@ -475,15 +475,15 @@ try
 
         auto end = std::chrono::system_clock::now();
 
-        std::cout << "capture: " << vt100::BOLD << 
-                ((sum-old)*1000000)/std::chrono::duration_cast<std::chrono::microseconds>(end-begin).count() 
-                    << vt100::RESET << " pkt/sec"; 
-        
+        std::cout << "capture: " << vt100::BOLD <<
+                ((sum-old)*1000000)/std::chrono::duration_cast<std::chrono::microseconds>(end-begin).count()
+                    << vt100::RESET << " pkt/sec";
+
         if (flow) {
-            std::cout << " flow: " << flow;    
+            std::cout << " flow: " << flow;
         }
 
-        std::cout << std::endl; 
+        std::cout << std::endl;
 
         old = sum, begin = end;
         old_stats = sum_stats;

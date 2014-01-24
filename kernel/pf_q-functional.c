@@ -1,6 +1,6 @@
 /***************************************************************
- *                                                
- * (C) 2011-13 Nicola Bonelli <nicola.bonelli@cnit.it>   
+ *
+ * (C) 2011-13 Nicola Bonelli <nicola.bonelli@cnit.it>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,7 +35,7 @@
 DEFINE_SEMAPHORE(function_sem);
 
 
-struct function_factory_elem 
+struct function_factory_elem
 {
 	struct list_head 	function_list;
 	char 			name[Q_FUN_NAME_LEN];
@@ -58,7 +58,7 @@ pfq_register_functions(const char *module, struct sk_function_descr *fun)
 	int i = 0;
 	for(; fun[i].name != NULL; i++)
 	{
-		pfq_register_function(module, fun[i].name, fun[i].function); 
+		pfq_register_function(module, fun[i].name, fun[i].function);
 	}
 	return 0;
 }
@@ -70,7 +70,7 @@ pfq_unregister_functions(const char *module, struct sk_function_descr *fun)
 	int i = 0;
 	for(; fun[i].name != NULL; i++)
 	{
-		pfq_unregister_function(module, fun[i].name); 
+		pfq_unregister_function(module, fun[i].name);
 	}
 	return 0;
 }
@@ -80,12 +80,12 @@ pfq_unregister_functions(const char *module, struct sk_function_descr *fun)
  * register the default funcitons here!
  */
 
-void 
-pfq_function_factory_init(void) 
+void
+pfq_function_factory_init(void)
 {
 	int i = 0;
 	for(; default_functions[i].name != NULL ; i++)
-	{          
+	{
         	pfq_register_function("[core]", default_functions[i].name, default_functions[i].function);
 	}
 
@@ -93,7 +93,7 @@ pfq_function_factory_init(void)
 }
 
 
-void 
+void
 pfq_function_factory_free(void)
 {
 	struct list_head *pos = NULL, *q;
@@ -120,7 +120,7 @@ __pfq_get_function(const char *name)
 	list_for_each(pos, &function_factory)
 	{
     		this = list_entry(pos, struct function_factory_elem, function_list);
-        	if (!strcmp(this->name, name)) 
+        	if (!strcmp(this->name, name))
 			return this->function;
 	}
 	return NULL;
@@ -138,7 +138,7 @@ pfq_get_function(const char *name)
 }
 
 
-int 
+int
 __pfq_register_function(const char *name, sk_function_t fun)
 {
 	struct function_factory_elem * elem;
@@ -157,16 +157,16 @@ __pfq_register_function(const char *name, sk_function_t fun)
 	INIT_LIST_HEAD(&elem->function_list);
 
 	elem->function = fun;
-	
+
 	strncpy(elem->name, name, Q_FUN_NAME_LEN-1);
         elem->name[Q_FUN_NAME_LEN-1] = '\0';
 	list_add(&elem->function_list, &function_factory);
-	
+
 	return 0;
 }
 
 
-int 
+int
 pfq_register_function(const char *module, const char *name, sk_function_t fun)
 {
 	int r;
@@ -179,12 +179,12 @@ pfq_register_function(const char *module, const char *name, sk_function_t fun)
 }
 
 
-int 
+int
 __pfq_unregister_function(const char *name)
 {
 	struct list_head *pos = NULL, *q;
 	struct function_factory_elem *this;
-	
+
 	list_for_each_safe(pos, q, &function_factory)
 	{
     		this = list_entry(pos, struct function_factory_elem, function_list);
@@ -200,11 +200,11 @@ __pfq_unregister_function(const char *name)
 }
 
 
-int 
+int
 pfq_unregister_function(const char *module, const char *name)
 {
 	sk_function_t fun;
-	
+
 	down(&function_sem);
 
 	fun = __pfq_get_function(name);
@@ -214,7 +214,7 @@ pfq_unregister_function(const char *module, const char *name)
 
 	__pfq_dismiss_function(fun);
         __pfq_unregister_function(name);
-	
+
 	printk(KERN_INFO "[PFQ]%s '%s' function unregistered.\n", module, name);
 	up(&function_sem);
 

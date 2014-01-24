@@ -1,6 +1,6 @@
 /***************************************************************
- *                                                
- * (C) 2011-13 Nicola Bonelli <nicola.bonelli@cnit.it>   
+ *
+ * (C) 2011-13 Nicola Bonelli <nicola.bonelli@cnit.it>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -26,33 +26,33 @@
 /*
  *      Functional combinator strategy:
  *
- *      input           FILTER          PAR comb.       PEND        NEG comb.       STEERING        
+ *      input           FILTER          PAR comb.       PEND        NEG comb.       STEERING
  *      -----------------------------------------------------------------------------------------
- *      PASS            F(p) P/D        SKIP(pass)      PASS        DROP            hash(p)/D       
- *                                                                                                
- *      DROP            DROP/-          PASS            DROP        PASS            DROP/-         
- *                                                                                                
- *      SKIP[ret]       SKIP[ret]       SKIP[ret]       ret         SKIP[ret]       SKIP[ret]                      
- *                                                                                                
- *      CLONE           F(p) C/D        SKIP(clone)     CLONE       DROP            hash(p)/D     
- *                                                                                                
- *      STEERING[n]     F(p) S(n)/D     SKIP(steer[n])  S(n)        DROP            hash(p)/D 
+ *      PASS            F(p) P/D        SKIP(pass)      PASS        DROP            hash(p)/D
+ *
+ *      DROP            DROP/-          PASS            DROP        PASS            DROP/-
+ *
+ *      SKIP[ret]       SKIP[ret]       SKIP[ret]       ret         SKIP[ret]       SKIP[ret]
+ *
+ *      CLONE           F(p) C/D        SKIP(clone)     CLONE       DROP            hash(p)/D
+ *
+ *      STEERING[n]     F(p) S(n)/D     SKIP(steer[n])  S(n)        DROP            hash(p)/D
  *
  *      STEAL           -               -               -           -               -
- */                                                                               
+ */
 
 
 ret_t
 steering_mac(struct sk_buff *skb, ret_t ret)
 {
-        uint16_t * a; 
-        
+        uint16_t * a;
+
         if (is_skip(ret) || is_drop(ret))
                 return pfq_call(get_next_function(skb), skb, ret);
 
-        a = (uint16_t *)eth_hdr(skb); 
-	
-	return steering(Q_CLASS_DEFAULT, a[0] ^ a[1] ^ a[2] ^ a[3] ^ a[4] ^ a[5] );		
+        a = (uint16_t *)eth_hdr(skb);
+
+	return steering(Q_CLASS_DEFAULT, a[0] ^ a[1] ^ a[2] ^ a[3] ^ a[4] ^ a[5] );
 }
 
 
@@ -60,51 +60,51 @@ ret_t
 steering_vlan_id(struct sk_buff *skb, ret_t ret)
 {
         sk_function_t fun = get_next_function(skb);
-                 
+
         if (is_skip(ret) || is_drop(ret))
                 return pfq_call(get_next_function(skb), skb, ret);
 
         if (skb->vlan_tci & VLAN_VID_MASK)
  	        return steering(Q_CLASS_DEFAULT, skb->vlan_tci & VLAN_VID_MASK);
-        else 
-                return pfq_call(fun, skb, drop()); 
+        else
+                return pfq_call(fun, skb, drop());
 }
 
 
 ret_t
 steering_ipv4(struct sk_buff *skb, ret_t ret)
-{       
+{
         sk_function_t fun = get_next_function(skb);
 
         if (is_skip(ret) || is_drop(ret))
                 return pfq_call(get_next_function(skb), skb, ret);
-	
-	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP)) 
-	{ 
+
+	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP))
+	{
 		struct iphdr _iph;
     		const struct iphdr *ip;
 
 		ip = skb_header_pointer(skb, skb->mac_len, sizeof(_iph), &_iph);
  		if (ip == NULL)
-                        return pfq_call(fun, skb, drop()); 
+                        return pfq_call(fun, skb, drop());
 
         	return steering(Q_CLASS_DEFAULT, ip->saddr ^ ip->daddr);
 	}
 
-        return pfq_call(fun, skb, drop()); 
+        return pfq_call(fun, skb, drop());
 }
 
 
 ret_t
 steering_flow(struct sk_buff *skb, ret_t ret)
-{       
+{
         sk_function_t fun = get_next_function(skb);
-        
+
         if (is_skip(ret) || is_drop(ret))
                 return pfq_call(get_next_function(skb), skb, ret);
-	
-	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP)) 
-	{ 
+
+	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP))
+	{
 		struct iphdr _iph;
     		const struct iphdr *ip;
 
@@ -116,30 +116,30 @@ steering_flow(struct sk_buff *skb, ret_t ret)
                         return pfq_call(fun, skb, drop());
 
 		if (ip->protocol != IPPROTO_UDP &&
-		    ip->protocol != IPPROTO_TCP) 
-                        return pfq_call(fun, skb, drop()); 
-		
+		    ip->protocol != IPPROTO_TCP)
+                        return pfq_call(fun, skb, drop());
+
 		udp = skb_header_pointer(skb, skb->mac_len + (ip->ihl<<2), sizeof(_udp), &_udp);
-		if (udp == NULL) 
+		if (udp == NULL)
 			return drop();  /* broken */
-		
+
         	return steering(Q_CLASS_DEFAULT, ip->saddr ^ ip->daddr ^ udp->source ^ udp->dest);
 	}
 
-        return pfq_call(fun, skb, drop()); 
+        return pfq_call(fun, skb, drop());
 }
 
 
 ret_t
 steering_ipv6(struct sk_buff *skb, ret_t ret)
-{       
+{
         sk_function_t fun = get_next_function(skb);
-        
+
         if (is_skip(ret) || is_drop(ret))
                 return pfq_call(get_next_function(skb), skb, ret);
-	
-	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IPV6)) 
-	{ 
+
+	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IPV6))
+	{
 		struct ipv6hdr _ip6h;
     		const struct ipv6hdr *ip6;
 
@@ -173,10 +173,10 @@ ret_t
 fun_clone(struct sk_buff *skb, ret_t ret)
 {
         sk_function_t fun = get_next_function(skb);
-        
+
         if (is_skip(ret) || is_drop(ret))
                 return pfq_call(get_next_function(skb), skb, ret);
-        
+
         return pfq_call(fun, skb, broadcast(Q_CLASS_DEFAULT));
 }
 
@@ -185,10 +185,10 @@ ret_t
 fun_broadcast(struct sk_buff *skb, ret_t ret)
 {
         sk_function_t fun = get_next_function(skb);
-        
+
         if (is_skip(ret) || is_drop(ret))
                 return pfq_call(get_next_function(skb), skb, ret);
-        
+
         return pfq_call(fun, skb, broadcast(Q_CLASS_ANY));
 }
 
@@ -199,7 +199,7 @@ fun_sink(struct sk_buff *skb, ret_t ret)
         struct sk_buff * mskb = (struct sk_buff *)skb;
 
         kfree_skb(mskb);
-        
+
         return stolen();
 }
 
@@ -208,8 +208,8 @@ ret_t
 fun_id(struct sk_buff *skb, ret_t ret)
 {
         sk_function_t fun = get_next_function(skb);
-        
-        return pfq_call(fun, skb, ret); 
+
+        return pfq_call(fun, skb, ret);
 }
 
 /* filters */
@@ -223,9 +223,9 @@ strict_vlan(struct sk_buff *skb, ret_t ret)
                 return drop();
 
         if ((skb->vlan_tci & VLAN_VID_MASK) == 0)
-                return drop(); 
+                return drop();
         else
-                return pfq_call(get_next_function(skb), skb, ret);  
+                return pfq_call(get_next_function(skb), skb, ret);
 }
 
 
@@ -236,18 +236,18 @@ strict_ipv4(struct sk_buff *skb, ret_t ret)
                 return pfq_call(get_next_function(skb), skb, ret);
         if (is_drop(ret))
                 return drop();
-	
-	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP)) 
-	{ 
+
+	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP))
+	{
 		struct iphdr _iph;
     		const struct iphdr *ip;
 
 		ip = skb_header_pointer(skb, skb->mac_len, sizeof(_iph), &_iph);
  		if (ip)
                 {
-                        return pfq_call(get_next_function(skb), skb, ret); 
+                        return pfq_call(get_next_function(skb), skb, ret);
                 }
-        }       
+        }
 
         return drop();
 }
@@ -260,26 +260,26 @@ strict_udp(struct sk_buff *skb, ret_t ret)
                 return pfq_call(get_next_function(skb), skb, ret);
         if (is_drop(ret))
                 return drop();
-	
-	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP)) 
-	{ 
+
+	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP))
+	{
 		struct iphdr _iph;
     		const struct iphdr *ip;
 
 		struct udphdr _udp;
 		const struct udphdr *udp;
-                
+
 		ip = skb_header_pointer(skb, skb->mac_len, sizeof(_iph), &_iph);
  		if (ip == NULL)
  			return drop();
 
-		if (ip->protocol != IPPROTO_UDP) 
+		if (ip->protocol != IPPROTO_UDP)
 			return drop();
-		
+
 		udp = skb_header_pointer(skb, skb->mac_len + (ip->ihl<<2), sizeof(_udp), &_udp);
-		if (udp) 
+		if (udp)
 		{
-                        return pfq_call(get_next_function(skb), skb, ret); 
+                        return pfq_call(get_next_function(skb), skb, ret);
                 }
 	}
 
@@ -294,26 +294,26 @@ strict_tcp(struct sk_buff *skb, ret_t ret)
                 return pfq_call(get_next_function(skb), skb, ret);
         if (is_drop(ret))
                 return drop();
-	
-	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP)) 
-	{ 
+
+	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP))
+	{
 		struct iphdr _iph;
     		const struct iphdr *ip;
 
 		struct tcphdr _tcp;
 		const struct tcphdr *tcp;
-                
+
 		ip = skb_header_pointer(skb, skb->mac_len, sizeof(_iph), &_iph);
  		if (ip == NULL)
  			return drop();
 
-		if (ip->protocol != IPPROTO_TCP) 
+		if (ip->protocol != IPPROTO_TCP)
 			return drop();
-		
+
 		tcp = skb_header_pointer(skb, skb->mac_len + (ip->ihl<<2), sizeof(_tcp), &_tcp);
 		if (tcp)
                 {
-                        return pfq_call(get_next_function(skb), skb, ret); 
+                        return pfq_call(get_next_function(skb), skb, ret);
                 }
 	}
 
@@ -328,26 +328,26 @@ strict_icmp(struct sk_buff *skb, ret_t ret)
                 return pfq_call(get_next_function(skb), skb, ret);
         if (is_drop(ret))
                 return drop();
-	
-	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP)) 
-	{ 
+
+	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP))
+	{
 		struct iphdr _iph;
     		const struct iphdr *ip;
 
 		struct icmphdr _icmp;
 		const struct icmphdr *icmp;
-                
+
 		ip = skb_header_pointer(skb, skb->mac_len, sizeof(_iph), &_iph);
  		if (ip == NULL)
  			return drop();
 
-		if (ip->protocol != IPPROTO_ICMP) 
+		if (ip->protocol != IPPROTO_ICMP)
 			return drop();
-		
+
 		icmp = skb_header_pointer(skb, skb->mac_len + (ip->ihl<<2), sizeof(_icmp), &_icmp);
-		if (icmp) 
+		if (icmp)
 		{
-                        return pfq_call(get_next_function(skb), skb, ret); 
+                        return pfq_call(get_next_function(skb), skb, ret);
                 }
 	}
 
@@ -362,27 +362,27 @@ strict_flow(struct sk_buff *skb, ret_t ret)
                 return pfq_call(get_next_function(skb), skb, ret);
         if (is_drop(ret))
                 return drop();
-	
-	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP)) 
-	{ 
+
+	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP))
+	{
 		struct iphdr _iph;
     		const struct iphdr *ip;
 
 		struct udphdr _udp;
 		const struct udphdr *udp;
-                
+
 		ip = skb_header_pointer(skb, skb->mac_len, sizeof(_iph), &_iph);
  		if (ip == NULL)
  			return drop();
 
 		if (ip->protocol != IPPROTO_UDP &&
-		    ip->protocol != IPPROTO_TCP) 
+		    ip->protocol != IPPROTO_TCP)
 			return drop();
-		
+
 		udp = skb_header_pointer(skb, skb->mac_len + (ip->ihl<<2), sizeof(_udp), &_udp);
-		if (udp) 
+		if (udp)
 		{
-                        return pfq_call(get_next_function(skb), skb, ret); 
+                        return pfq_call(get_next_function(skb), skb, ret);
                 }
 	}
 
@@ -395,11 +395,11 @@ filter_vlan(struct sk_buff *skb, ret_t ret)
 {
         if (is_skip(ret) || is_drop(ret))
                 return pfq_call(get_next_function(skb), skb, ret);
-        
+
         if ((skb->vlan_tci & VLAN_VID_MASK) == 0)
-                return pfq_call(get_next_function(skb), skb, drop()); 
+                return pfq_call(get_next_function(skb), skb, drop());
         else
-                return pfq_call(get_next_function(skb), skb, ret);  
+                return pfq_call(get_next_function(skb), skb, ret);
 }
 
 
@@ -407,23 +407,23 @@ ret_t
 filter_ipv4(struct sk_buff *skb, ret_t ret)
 {
         sk_function_t fun;
-        
+
         if (is_skip(ret) || is_drop(ret))
                 return pfq_call(get_next_function(skb), skb, ret);
-        
+
         fun = get_next_function(skb);
-	
-	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP)) 
-	{ 
+
+	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP))
+	{
 		struct iphdr _iph;
     		const struct iphdr *ip;
 
 		ip = skb_header_pointer(skb, skb->mac_len, sizeof(_iph), &_iph);
  		if (ip)
                 {
-                        return pfq_call(fun, skb, ret); 
+                        return pfq_call(fun, skb, ret);
                 }
-        }       
+        }
 
 	return pfq_call(fun, skb, drop());
 }
@@ -436,11 +436,11 @@ filter_udp(struct sk_buff *skb, ret_t ret)
 
         if (is_skip(ret) || is_drop(ret))
                 return pfq_call(get_next_function(skb), skb, ret);
-        
+
         fun = get_next_function(skb);
-	
-	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP)) 
-	{ 
+
+	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP))
+	{
 		struct iphdr _iph;
     		const struct iphdr *ip;
 
@@ -451,13 +451,13 @@ filter_udp(struct sk_buff *skb, ret_t ret)
  		if (ip == NULL)
 	                return pfq_call(fun, skb, drop());
 
-		if (ip->protocol != IPPROTO_UDP) 
+		if (ip->protocol != IPPROTO_UDP)
 	                return pfq_call(fun, skb, drop());
-		
+
 		udp = skb_header_pointer(skb, skb->mac_len + (ip->ihl<<2), sizeof(_udp), &_udp);
-		if (udp) 
+		if (udp)
 		{
-                        return pfq_call(fun, skb, ret); 
+                        return pfq_call(fun, skb, ret);
                 }
 	}
 
@@ -469,31 +469,31 @@ ret_t
 filter_tcp(struct sk_buff *skb, ret_t ret)
 {
         sk_function_t fun;
-        
+
         if (is_skip(ret) || is_drop(ret))
                 return pfq_call(get_next_function(skb), skb, ret);
-        
+
         fun = get_next_function(skb);
 
-	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP)) 
-	{ 
+	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP))
+	{
 		struct iphdr _iph;
     		const struct iphdr *ip;
 
 		struct tcphdr _tcp;
 		const struct tcphdr *tcp;
-                
+
 		ip = skb_header_pointer(skb, skb->mac_len, sizeof(_iph), &_iph);
  		if (ip == NULL)
 	                return pfq_call(fun, skb, drop());
 
-		if (ip->protocol != IPPROTO_TCP) 
+		if (ip->protocol != IPPROTO_TCP)
 	                return pfq_call(fun, skb, drop());
-		
+
 		tcp = skb_header_pointer(skb, skb->mac_len + (ip->ihl<<2), sizeof(_tcp), &_tcp);
 		if (tcp)
                 {
-                        return pfq_call(fun, skb, ret); 
+                        return pfq_call(fun, skb, ret);
                 }
 	}
 
@@ -508,11 +508,11 @@ filter_icmp(struct sk_buff *skb, ret_t ret)
 
         if (is_skip(ret) || is_drop(ret))
                 return pfq_call(get_next_function(skb), skb, ret);
-        
+
         fun = get_next_function(skb);
-	
-	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP)) 
-	{ 
+
+	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP))
+	{
 		struct iphdr _iph;
     		const struct iphdr *ip;
 
@@ -523,13 +523,13 @@ filter_icmp(struct sk_buff *skb, ret_t ret)
  		if (ip == NULL)
 	                return pfq_call(fun, skb, drop());
 
-		if (ip->protocol != IPPROTO_ICMP) 
+		if (ip->protocol != IPPROTO_ICMP)
 	                return pfq_call(fun, skb, drop());
-		
+
 		icmp = skb_header_pointer(skb, skb->mac_len + (ip->ihl<<2), sizeof(_icmp), &_icmp);
-		if (icmp) 
+		if (icmp)
 		{
-                        return pfq_call(fun, skb, ret); 
+                        return pfq_call(fun, skb, ret);
                 }
 	}
 
@@ -543,29 +543,29 @@ filter_flow(struct sk_buff *skb, ret_t ret)
 
         if (is_skip(ret) || is_drop(ret))
                 return pfq_call(get_next_function(skb), skb, ret);
-        
+
         fun = get_next_function(skb);
 
-	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP)) 
-	{ 
+	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP))
+	{
 		struct iphdr _iph;
     		const struct iphdr *ip;
 
 		struct udphdr _udp;
 		const struct udphdr *udp;
-                
+
 		ip = skb_header_pointer(skb, skb->mac_len, sizeof(_iph), &_iph);
  		if (ip == NULL)
  			return pfq_call(fun, skb, drop());
 
 		if (ip->protocol != IPPROTO_UDP &&
-		    ip->protocol != IPPROTO_TCP) 
+		    ip->protocol != IPPROTO_TCP)
 			return pfq_call(fun, skb, drop());
-		
+
 		udp = skb_header_pointer(skb, skb->mac_len + (ip->ihl<<2), sizeof(_udp), &_udp);
-		if (udp) 
+		if (udp)
 		{
-                        return pfq_call(fun, skb, ret); 
+                        return pfq_call(fun, skb, ret);
                 }
 	}
 
@@ -577,7 +577,7 @@ ret_t
 comb_neg(struct sk_buff *skb, ret_t ret)
 {
         sk_function_t fun = get_next_function(skb);
-        
+
         if (is_skip(ret))
                 return pfq_call(get_next_function(skb), skb, ret);
 
@@ -593,7 +593,7 @@ comb_par(struct sk_buff *skb, ret_t ret)
 
         if (is_skip(ret))
                 return pfq_call(get_next_function(skb), skb, ret);
-        
+
         if (is_drop(ret))
                 return pfq_call(fun, skb, pass());
         else
@@ -618,14 +618,14 @@ dummy_state_context(struct sk_buff *skb, ret_t ret)
 {
         sk_function_t fun = get_next_function(skb);
 
-        struct pair *p = (struct pair *)get_unsafe_context(skb);    
+        struct pair *p = (struct pair *)get_unsafe_context(skb);
 
         if (printk_ratelimit())
                 printk(KERN_INFO "[PFQ][dummy_context] -> pair = %d %d\n", p->a, p->b);
 
         set_state(skb, 42);
 
-        return pfq_call(fun, skb, ret); 
+        return pfq_call(fun, skb, ret);
 }
 
 struct sk_function_descr default_functions[] = {

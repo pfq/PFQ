@@ -1,6 +1,6 @@
 /***************************************************************
- *                                                
- * (C) 2011-13 Nicola Bonelli <nicola.bonelli@cnit.it>   
+ *
+ * (C) 2011-13 Nicola Bonelli <nicola.bonelli@cnit.it>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@
  ****************************************************************/
 
 #ifndef _PF_Q_GROUP_H_
-#define _PF_Q_GROUP_H_ 
+#define _PF_Q_GROUP_H_
 
 #include <linux/kernel.h>
 #include <linux/delay.h>
@@ -98,7 +98,7 @@ static inline
 bool __pfq_check_group_vlan_filter(int gid, int vid)
 {
     return pfq_groups[gid].vid_filters[vid & 4095];
-}    
+}
 
 
 static inline

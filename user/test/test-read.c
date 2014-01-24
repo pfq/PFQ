@@ -36,19 +36,19 @@ main(int argc, char *argv[])
 	}
 
 	printf("reading from %s...\n", argv[1]);
-        
-	
+
+
 	for(n = 0; n < 100; n++) {
 
                 struct pfq_net_queue nq;
 		pfq_iterator_t it, it_e;
-		
+
 		int many = pfq_read(p, &nq, 1000000);
 		if (many < 0) {
                 	printf("error: %s\n", pfq_error(p));
 			break;
 		}
-                 
+
 		printf("queue size: %zd\n", nq.len);
 
 		it = pfq_net_queue_begin(&nq);
@@ -63,11 +63,11 @@ main(int argc, char *argv[])
 
 			const struct pfq_hdr *h = pfq_iterator_header(it);
 
-                    	printf("caplen:%d len:%d ifindex:%d hw_queue:%d tstamp: %u:%u -> ", 
+                    	printf("caplen:%d len:%d ifindex:%d hw_queue:%d tstamp: %u:%u -> ",
 					h->caplen, h->len, h->if_index, h->hw_queue,
                                         h->tstamp.tv.sec, h->tstamp.tv.nsec);
-                    	
-			const char *buff = pfq_iterator_data(it); 
+
+			const char *buff = pfq_iterator_data(it);
 
 			for(x=0; x < MIN(h->caplen, 34); x++)
 			{

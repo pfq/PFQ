@@ -1,7 +1,7 @@
 /***************************************************************
- *                                                
+ *
  * (C) 2011 - Giacomo Volpi <volpozzo@gmail.com>
- *            Nicola Bonelli <nicola.bonelli@cnit.it>   
+ *            Nicola Bonelli <nicola.bonelli@cnit.it>
  *
  ****************************************************************/
 
@@ -90,7 +90,7 @@ public:
         free(buff_);
     }
 
-    // non copyable, not assignable 
+    // non copyable, not assignable
     buffer(const buffer &other) = delete;
     buffer &operator=(const buffer &other) = delete;
 
@@ -135,7 +135,7 @@ unmap_caplen map_cap;
 std::atomic_bool stop(false);
 
 
-binding_type 
+binding_type
 binding_parser(const char *arg)
 {
     int core, q; char sep;
@@ -174,14 +174,14 @@ namespace test
             m_pfq.join_group(gid, group_policy::shared);
 
             std::for_each(m_queues.begin(), m_queues.end(),[&](int q) {
-                          std::cout << "adding bind to " << d << "@" << q << std::endl;       
+                          std::cout << "adding bind to " << d << "@" << q << std::endl;
                           m_pfq.bind_group(gid, d, q);
                           });
 
             if (!opt::steer_function.empty() && (m_id == 0))
             {
                 m_pfq.set_group_function(gid, opt::steer_function.c_str(), 0);
-            }   
+            }
 
             m_pfq.timestamp_enabled(false);
 
@@ -195,7 +195,7 @@ namespace test
         ctx& operator=(const ctx &) = delete;
 
         ctx(ctx && other)
-        : m_id(other.m_id), m_dev(other.m_dev), m_queues(other.m_queues), m_stop(other.m_stop.load()), 
+        : m_id(other.m_id), m_dev(other.m_dev), m_queues(other.m_queues), m_stop(other.m_stop.load()),
         m_pfq(std::move(other.m_pfq)), m_read()
         {
         }
@@ -216,20 +216,20 @@ namespace test
         umap_counter_type map_counter;
 
 
-        auto umap_begin() const 
+        auto umap_begin() const
         -> decltype(std::begin(map_counter))
         {
             return std::begin(map_counter);
         }
 
         auto umap_end() const
-        -> decltype(std::end(map_counter)) 
+        -> decltype(std::end(map_counter))
         {
             return std::end(map_counter);
         }
 
         void parse_packet (uint16_t cap_pfq, const char *data)
-        {	
+        {
             struct ether_header *eth;
             struct iphdr *ip;
 
@@ -288,13 +288,13 @@ namespace test
             return m_pfq.stats();
         }
 
-        unsigned long long 
+        unsigned long long
         read() const
         {
             return m_read;
         }
 
-        size_t 
+        size_t
         batch() const
         {
             return m_batch;
@@ -308,7 +308,7 @@ namespace test
 
         std::atomic_bool m_stop;
 
-        pfq m_pfq;        
+        pfq m_pfq;
 
         unsigned long long m_read;
         size_t m_batch;
@@ -367,7 +367,7 @@ try
     std::vector<binding_type> vbinding;
 
     // load vbinding vector:
-    
+
     for(int i = 1; i < argc; ++i)
     {
         if ( strcmp(argv[i], "-b") == 0 ||
@@ -406,7 +406,7 @@ try
 
             opt::caplen = std::atoi(argv[i]);
 
-            if (opt::caplen < 30 || opt::caplen > 1525) 
+            if (opt::caplen < 30 || opt::caplen > 1525)
             {
                 throw std::runtime_error("caplen < 26: can't find source ip || caplen > 1525: MTU exceeded");
             }
@@ -468,33 +468,33 @@ try
     }
 
     if (opt::caplen < opt::offset )
-        throw std::runtime_error ("CAPLEN < OFFSET"); 
+        throw std::runtime_error ("CAPLEN < OFFSET");
 
     std::cout << "Caplen: " << opt::caplen << std::endl;
     std::cout << "Slots : " << opt::slots << std::endl;
 
     char errbuf[PCAP_ERRBUF_SIZE];
 
-    pcap_t *handler = pcap_open_offline (opt::pcap_file.c_str(), errbuf);    
+    pcap_t *handler = pcap_open_offline (opt::pcap_file.c_str(), errbuf);
 
     if (pcap_dispatch(handler, -1, packet_handler, nullptr) == -1)
-    {    
+    {
         std::cout << "pcap_dispatch error" << std::endl;
     }
 
     // ignore signals:
     //
-   
+
     sigset_t set;
     sigfillset(&set);
     sigprocmask(SIG_BLOCK, &set, nullptr);
-    
+
     std::thread sighandler([]
     {
         sigset_t set;
         int sig;
         sigfillset(&set);
-        
+
         for(;;)
         {
             if(sigwait(&set, &sig) !=0)
@@ -519,11 +519,11 @@ try
 
     // create threads' context:
     //
-    
+
     for(unsigned int i = 0; i < vbinding.size(); ++i)
     {
         std::cout << "pushing a context: " << std::get<0>(vbinding[i]) << ' ' << std::get<1>(vbinding[i]) << std::endl;
-        ctx.push_back(test::ctx(i, std::get<0>(vbinding[i]).c_str(), std::get<2>(vbinding[i])));        
+        ctx.push_back(test::ctx(i, std::get<0>(vbinding[i]).c_str(), std::get<2>(vbinding[i])));
     }
 
     opt::sleep_microseconds = 40000 * ctx.size();
@@ -532,7 +532,7 @@ try
     // create threads:
 
     int i = 0;
-    std::for_each(vbinding.begin(), vbinding.end(), [&](const binding_type &b) { 
+    std::for_each(vbinding.begin(), vbinding.end(), [&](const binding_type &b) {
                   std::thread t(std::ref(ctx[i++]));
                   std::cout << "thread on core " << std::get<1>(b) << " -> queues [";
 
@@ -592,8 +592,8 @@ try
 
         auto end = std::chrono::system_clock::now();
 
-        std::cout << "capture: " << vt100::BOLD << 
-        ((sum-old)*1000000)/std::chrono::duration_cast<std::chrono::microseconds>(end-begin).count() 
+        std::cout << "capture: " << vt100::BOLD <<
+        ((sum-old)*1000000)/std::chrono::duration_cast<std::chrono::microseconds>(end-begin).count()
         << vt100::RESET << " pkt/sec" << std::endl;
 
         old = sum, begin = end;
@@ -602,17 +602,17 @@ try
 
     // stopping threads...
     std::for_each(ctx.begin(), ctx.end(), std::mem_fn(&test::ctx::stop));
-    
+
     std::for_each(vt.begin(), vt.end(), std::mem_fn(&std::thread::join));
 
-    test::ctx::umap_counter_type map_tot; 
+    test::ctx::umap_counter_type map_tot;
     int thread = 1;
 
     std::for_each(ctx.begin(), ctx.end(), [&](const test::ctx &c)
-    {	
+    {
          std::cout << std::endl;
          std::cout << "\t ///// \tPKT ON THREAD #" << thread << " /////" <<std::endl;
-         
+
          thread++;
 
          auto it = c.umap_begin();
@@ -621,18 +621,18 @@ try
          for (; it != it_e; ++it)
          {
              char ip_addr[INET_ADDRSTRLEN];
-             auto y = it->first; 
+             auto y = it->first;
 
              inet_ntop(AF_INET, &(y), ip_addr, sizeof(ip_addr));
 
              std::cout << "ip: " << ip_addr << "\tpkt_arr: "<< it->second.first << "\tpkt_match: " << it->second.second <<std::endl;
-                 
+
              map_tot[it->first].first  += it->second.first;
              map_tot[it->first].second += it->second.second;
          }
-    
+
          std::cout << std::endl;
-    });	
+    });
 
     std::cout << std::endl;
     std::cout << "\t ////////// \t GLOBAL STATISTICS \t//////////" << std::endl;
@@ -649,7 +649,7 @@ try
         std::cout << "ip: " << ip_ << "\tpkt_arr: " << it_tot->second.first << "\tpkt_match: " << it_tot->second.second << std::endl;
     }
     std::cout << std::endl;
-    
+
     return 0;
 }
 catch(std::exception &e)

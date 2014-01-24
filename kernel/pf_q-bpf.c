@@ -1,6 +1,6 @@
 /***************************************************************
- *                                                
- * (C) 2011-13 Nicola Bonelli <nicola.bonelli@cnit.it>   
+ *
+ * (C) 2011-13 Nicola Bonelli <nicola.bonelli@cnit.it>
  *             Loris Gazzarrini <loris.gazzarrini@iet.unipi.it>
  *
  * This program is free software; you can redistribute it and/or modify
@@ -29,7 +29,7 @@
 #include <linux/uaccess.h>
 
 
-struct sk_filter * 
+struct sk_filter *
 pfq_alloc_sk_filter(struct sock_fprog *fprog)
 {
         struct sk_filter *fp;
@@ -50,7 +50,7 @@ pfq_alloc_sk_filter(struct sock_fprog *fprog)
 
         fp->len = fprog->len;
         fp->bpf_func = sk_run_filter;
-        
+
 	err = sk_chk_filter(fp->insns, fp->len);
 	if (err)
 	{
@@ -68,7 +68,7 @@ pfq_alloc_sk_filter(struct sock_fprog *fprog)
 void pfq_free_sk_filter(struct sk_filter *filter)
 {
         pr_devel("[PFQ] %s: %p\n", __FUNCTION__, filter);
-        
+
         if (filter)
 	{
 		/* bpf_jit_free(fp); */
