@@ -198,7 +198,7 @@ extern int pfq_disable(pfq_t *q);
 
 extern int pfq_is_enabled(pfq_t const *q);
 
-extern int pfq_timestamp_enabled(pfq_t *q, int value);
+extern int pfq_timestamp_enable(pfq_t *q, int value);
 
 extern int pfq_is_timestamp_enabled(pfq_t const *q);
 
@@ -240,7 +240,7 @@ extern int pfq_group_fprog(pfq_t *q, int gid, struct sock_fprog *);
 
 extern int pfq_group_fprog_reset(pfq_t *q, int gid);
 
-extern int pfq_vlan_filters_enabled(pfq_t *q, int gid, int toggle);
+extern int pfq_vlan_filters_enable(pfq_t *q, int gid, int toggle);
 
 extern int pfq_vlan_set_filter(pfq_t *q, int gid, int vid);
 

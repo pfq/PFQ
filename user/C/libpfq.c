@@ -272,7 +272,7 @@ pfq_is_enabled(pfq_t const *q)
 
 
 int
-pfq_timestamp_enabled(pfq_t *q, int value)
+pfq_timestamp_enable(pfq_t *q, int value)
 {
 	int ts = value;
 	if (setsockopt(q->fd, PF_Q, Q_SO_SET_TSTAMP, &ts, sizeof(ts)) == -1) {
@@ -647,7 +647,7 @@ pfq_get_group_stats(pfq_t const *q, int gid, struct pfq_stats *stats)
 
 
 int
-pfq_vlan_filters_enabled(pfq_t *q, int gid, int toggle)
+pfq_vlan_filters_enable(pfq_t *q, int gid, int toggle)
 {
         struct pfq_vlan_toggle value = { gid, 0, toggle };
 

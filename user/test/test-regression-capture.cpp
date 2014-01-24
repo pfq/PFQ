@@ -183,7 +183,7 @@ namespace test
                 m_pfq.set_group_function(gid, opt::steer_function.c_str(), 0);
             }
 
-            m_pfq.timestamp_enabled(false);
+            m_pfq.timestamp_enable(false);
 
             m_pfq.enable();
 

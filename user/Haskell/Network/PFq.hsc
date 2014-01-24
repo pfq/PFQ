@@ -463,7 +463,7 @@ setTimestamp :: Ptr PFqTag -> Bool -> IO ()
 
 setTimestamp hdl toggle = do
     let value = if (toggle) then 1 else 0
-    pfq_timestamp_enabled hdl value >>= throwPFqIf_ hdl (== -1)
+    pfq_timestamp_enable hdl value >>= throwPFqIf_ hdl (== -1)
 
 
 -- getTimestamp:
@@ -543,7 +543,7 @@ vlanFiltersEnabled :: Ptr PFqTag ->
                       Bool       -> -- toggle
                       IO ()
 vlanFiltersEnabled hdl gid value =
-    pfq_vlan_filters_enabled hdl (fromIntegral gid) (fromIntegral $ if value then 1 else 0)
+    pfq_vlan_filters_enable hdl (fromIntegral gid) (fromIntegral $ if value then 1 else 0)
         >>= throwPFqIf_ hdl (== -1)
 
 
@@ -705,7 +705,7 @@ foreign import ccall unsafe pfq_disable           :: Ptr PFqTag -> IO CInt
 foreign import ccall unsafe pfq_is_enabled        :: Ptr PFqTag -> IO CInt
 
 foreign import ccall unsafe pfq_set_promisc       :: Ptr PFqTag -> CString -> CInt -> IO CInt
-foreign import ccall unsafe pfq_timestamp_enabled :: Ptr PFqTag -> CInt -> IO CInt
+foreign import ccall unsafe pfq_timestamp_enable  :: Ptr PFqTag -> CInt -> IO CInt
 foreign import ccall unsafe pfq_is_timestamp_enabled :: Ptr PFqTag -> IO CInt
 
 foreign import ccall unsafe pfq_set_caplen        :: Ptr PFqTag -> CSize -> IO CInt
@@ -743,9 +743,9 @@ foreign import ccall "wrapper" make_callback      :: CPFqCallback -> IO (FunPtr 
 
 foreign import ccall unsafe pfq_read              :: Ptr PFqTag -> Ptr NetQueue -> CLong -> IO CInt
 
-foreign import ccall unsafe pfq_vlan_filters_enabled  :: Ptr PFqTag -> CInt -> CInt -> IO CInt
-foreign import ccall unsafe pfq_vlan_set_filter       :: Ptr PFqTag -> CInt -> CInt -> IO CInt
-foreign import ccall unsafe pfq_vlan_reset_filter     :: Ptr PFqTag -> CInt -> CInt -> IO CInt
+foreign import ccall unsafe pfq_vlan_filters_enable  :: Ptr PFqTag -> CInt -> CInt -> IO CInt
+foreign import ccall unsafe pfq_vlan_set_filter      :: Ptr PFqTag -> CInt -> CInt -> IO CInt
+foreign import ccall unsafe pfq_vlan_reset_filter    :: Ptr PFqTag -> CInt -> CInt -> IO CInt
 
 
 -- TODO

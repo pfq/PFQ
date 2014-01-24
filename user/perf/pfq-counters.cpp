@@ -149,7 +149,7 @@ namespace test
 
             m_pfq.set_group_computation(gid, fs);
 
-            m_pfq.timestamp_enabled(false);
+            m_pfq.timestamp_enable(false);
 
             m_pfq.enable();
 

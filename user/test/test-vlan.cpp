@@ -15,11 +15,11 @@ main(int argc, char *argv[])
 
     q.bind(argv[1], pfq::any_queue);
 
-    q.timestamp_enabled(true);
+    q.timestamp_enable(true);
 
     q.enable();
 
-    q.vlan_filters_enabled(q.group_id(), true);
+    q.vlan_filters_enable(q.group_id(), true);
     q.vlan_set_filter(q.group_id(), vlan_anytag);
 
     for(;;)

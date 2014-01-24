@@ -53,9 +53,9 @@ void test_timestamp()
         assert(q);
 
 	assert(pfq_is_timestamp_enabled(q) == 0);
-	assert(pfq_timestamp_enabled(q, 1) == 0);
+	assert(pfq_timestamp_enable(q, 1) == 0);
 	assert(pfq_is_timestamp_enabled(q) == 1);
-	assert(pfq_timestamp_enabled(q, 0) == 0);
+	assert(pfq_timestamp_enable(q, 0) == 0);
 	assert(pfq_is_timestamp_enabled(q) == 0);
 
 	pfq_close(q);
@@ -514,13 +514,13 @@ void test_vlan()
 
         gid = pfq_group_id(q);
 
-	assert(pfq_vlan_filters_enabled(q, gid, 1) == 0);
-	assert(pfq_vlan_filters_enabled(q, gid, 0) == 0);
+	assert(pfq_vlan_filters_enable(q, gid, 1) == 0);
+	assert(pfq_vlan_filters_enable(q, gid, 0) == 0);
 
 	assert(pfq_vlan_set_filter(q, gid, 42) == -1);
 	assert(pfq_vlan_reset_filter(q, gid, 42) == -1);
 
-	assert(pfq_vlan_filters_enabled(q, gid, 1) == 0);
+	assert(pfq_vlan_filters_enable(q, gid, 1) == 0);
 
 	assert(pfq_vlan_set_filter(q, gid, 42) == 0);
 	assert(pfq_vlan_reset_filter(q, gid, 42) == 0);

@@ -725,7 +725,7 @@ namespace net {
 
 
         void
-        timestamp_enabled(bool value)
+        timestamp_enable(bool value)
         {
             int ts = static_cast<int>(value);
             if (::setsockopt(fd_, PF_Q, Q_SO_SET_TSTAMP, &ts, sizeof(ts)) == -1)
@@ -1104,7 +1104,7 @@ namespace net {
         // vlan filters
         //
 
-        void vlan_filters_enabled(int gid, bool toggle)
+        void vlan_filters_enable(int gid, bool toggle)
         {
             pfq_vlan_toggle value { gid, 0, toggle};
 
