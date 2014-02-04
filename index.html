@@ -1,34 +1,38 @@
 <!DOCTYPE html>
 <html>
+
   <head>
-    <meta charset='utf-8'>
-    <meta http-equiv="X-UA-Compatible" content="chrome=1">
-    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <link href='https://fonts.googleapis.com/css?family=Architects+Daughter' rel='stylesheet' type='text/css'>
-    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen" />
-    <link rel="stylesheet" type="text/css" href="stylesheets/pygment_trac.css" media="screen" />
-    <link rel="stylesheet" type="text/css" href="stylesheets/print.css" media="print" />
+    <meta charset='utf-8' />
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
+    <meta name="description" content="PFQ : PFQ: Accelerated Packet Capture Engine for Multi-core Architectures" />
 
-    <!--[if lt IE 9]>
-    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
-    <![endif]-->
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
 
-    <title>PFQ by pfq</title>
+    <title>PFQ</title>
   </head>
 
   <body>
-    <header>
-      <div class="inner">
-        <h1>PFQ</h1>
-        <h2>PFQ: Accelerated Packet Capture Engine for Multi-core Architectures</h2>
-        <a href="https://github.com/pfq/PFQ" class="button"><small>View project on</small>GitHub</a>
-      </div>
-    </header>
 
-    <div id="content-wrapper">
-      <div class="inner clearfix">
-        <section id="main-content">
-          <h3>What is PFQ?</h3>
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/pfq/PFQ">View on GitHub</a>
+
+          <h1 id="project_title">PFQ</h1>
+          <h2 id="project_tagline">PFQ: Accelerated Packet Capture Engine for Multi-core Architectures</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/pfq/PFQ/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/pfq/PFQ/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <h3>
+<a name="what-is-pfq" class="anchor" href="#what-is-pfq"><span class="octicon octicon-link"></span></a>What is PFQ?</h3>
 
 <p>PFQ is a novel network-capture engine designed for the Linux Kernel 3.x and modern 64-bit architectures.
 It is highly optimized for multi-core processors, as well as for network devices supporting multiple hardware queues. </p>
@@ -41,46 +45,48 @@ It is highly optimized for multi-core processors, as well as for network devices
 <li>wait-free queuing mechanisms to handle packet dispatching in a ultra-efficient manner.</li>
 <li>cache-friendly handling for memory allocations/deallocations.</li>
 <li>hashing algorithms for packets steering across a variable number of user-space sockets (under development).</li>
-</ul><h3>Performance</h3>
+</ul><h3>
+<a name="performance" class="anchor" href="#performance"><span class="octicon octicon-link"></span></a>Performance</h3>
 
 <p>PFQ performance is highly dependent on the hardware used. </p>
 
-<p>For instance, running on top of the 2.66Ghz 6-core Xeon equipped and the Intel 82599 10G controller, PFQ can steer to user-space about 13 Million packets per second deploying 12 threads with CPUs load well under 10% each (~40Mpps with full copies).</p>
+<p>For instance, running on top of the 2.66Ghz 6-core Xeon equipped and the Intel 82599 10G controller, PFQ can steer to user-space about 14,8 Million packets per second deploying 3 threads with CPUs load well under 10% each (~120Mpps with full copies).</p>
 
-<p>Details of performance comparison are available here: <a href="http://netgroup.iet.unipi.it/software/pfq/performance.html">http://netgroup.iet.unipi.it/software/pfq/performance.html</a></p>
+<p>Details of performance comparison are available here (old version): <a href="http://netgroup.iet.unipi.it/software/pfq/performance.html">http://netgroup.iet.unipi.it/software/pfq/performance.html</a></p>
 
-<h3>Source code</h3>
+<h3>
+<a name="source-code" class="anchor" href="#source-code"><span class="octicon octicon-link"></span></a>Source code</h3>
 
-<p>The package provides the source code of the Linux Kernel module, some optimized drivers for Intel 82599 NICs, user-space libraries for both C++11 and C language and a set of diagnostic tools. </p>
+<p>The package provides the source code of the PFQ kernel module, user-space libraries for C, C++11 and Haskell languages and a set of diagnostic tools.</p>
 
-<p>Gcc/g++ 4.6 (or higher) and cmake are required for the compilation.</p>
+<p>Gcc/g++ 4.6 (or higher), the Haskell platfrom and cmake are required for the compilation.</p>
 
-<h3>Licenses</h3>
+<h3>
+<a name="licenses" class="anchor" href="#licenses"><span class="octicon octicon-link"></span></a>Licenses</h3>
 
-<p>The PFQ kernel module is distributed under the GPL licence; the user-space libraries are distributed under the less restrictive BSD license.</p>
+<p>The PFQ kernel module and user-space libraries are distributed under the GPL licence.</p>
 
-<h3>Authors and Contributors</h3>
+<h3>
+<a name="author" class="anchor" href="#author"><span class="octicon octicon-link"></span></a>Author</h3>
 
-<p>Nicola Bonelli <a href="mailto:nicola.bonelli@cnit.it">nicola.bonelli@cnit.it</a>, Andrea Di Pietro <a href="mailto:andrea.dipietro@for.unipi.it">andrea.dipietro@for.unipi.it</a> and Gregorio Procissi <a href="mailto:gregorio.procissi@iet.unipi.it">gregorio.procissi@iet.unipi.it</a></p>
-        </section>
+<p>Nicola Bonelli <a href="mailto:nicola.bonelli@cnit.it">nicola.bonelli@cnit.it</a></p>
 
-        <aside id="sidebar">
-          <a href="https://github.com/pfq/PFQ/zipball/master" class="button">
-            <small>Download</small>
-            .zip file
-          </a>
-          <a href="https://github.com/pfq/PFQ/tarball/master" class="button">
-            <small>Download</small>
-            .tar.gz file
-          </a>
+<h3>
+<a name="contributors" class="anchor" href="#contributors"><span class="octicon octicon-link"></span></a>Contributors</h3>
 
-          <p class="repo-owner"><a href="https://github.com/pfq/PFQ"></a> is maintained by <a href="https://github.com/pfq">pfq</a>.</p>
-
-          <p>This page was generated by <a href="pages.github.com">GitHub Pages</a> using the Architect theme by <a href="http://twitter.com/jasonlong">Jason Long</a>.</p>
-        </aside>
-      </div>
+<p>Andrea Di Pietro <a href="mailto:andrea.dipietro@for.unipi.it">andrea.dipietro@for.unipi.it</a>, Loris Gazzarrini <a href="mailto:loris.gazzarrini@iet.unipi.it">loris.gazzarrini@iet.unipi.it</a> and Gregorio Procissi <a href="mailto:gregorio.procissi@iet.unipi.it">gregorio.procissi@iet.unipi.it</a></p>
+      </section>
     </div>
 
-  
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">PFQ maintained by <a href="https://github.com/pfq">pfq</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
   </body>
 </html>
