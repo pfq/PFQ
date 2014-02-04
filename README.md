@@ -9,11 +9,11 @@ packet capturing, in-kernel aggregation, functional processing and packet steeri
 across sockets. 
 
 PFQ is highly optimized for multi-core architecture, as well as for network 
-devices supporting multiple hardware queues. It works with vanilla 
-drivers and provides a script (pfq-omatic) that allows to recompiles them 
-and obtain accelerated versions.
+devices supporting multiple hardware queues. It works with any binary
+driver (the one shipped with the Linux distribution) and provides a script (pfq-omatic) 
+that patches and compiles the source codes to obtain accelerated drivers.
 
-The package provides the source code of the kernel module, user-space 
+The package provides the source code of the PFQ kernel module, user-space 
 libraries for C, C++11 and Haskell languages and a set of diagnostic tools.
 
 
