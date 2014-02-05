@@ -64,9 +64,9 @@ struct proto_ops         pfq_ops;
 
 static int direct_capture = 0;
 
-static int sniff_incoming = 1;
-static int sniff_outgoing = 0;
-static int sniff_loopback = 0;
+static int capture_incoming = 1;
+static int capture_outgoing = 0;
+static int capture_loopback = 0;
 
 static int queue_slots  = 131072; // slots per queue
 static int cap_len      = 1514;
@@ -83,9 +83,9 @@ MODULE_AUTHOR("Nicola Bonelli <nicola.bonelli@cnit.it>");
 MODULE_DESCRIPTION("Packet capture system for 64bit multi-core architectures");
 
 module_param(direct_capture,  int, 0644);
-module_param(sniff_incoming,  int, 0644);
-module_param(sniff_outgoing,  int, 0644);
-module_param(sniff_loopback,  int, 0644);
+module_param(capture_incoming,  int, 0644);
+module_param(capture_outgoing,  int, 0644);
+module_param(capture_loopback,  int, 0644);
 
 
 module_param(cap_len,         int, 0644);
@@ -96,9 +96,9 @@ module_param(flow_control,    int, 0644);
 module_param(vl_untag,        int, 0644);
 
 MODULE_PARM_DESC(direct_capture," Direct capture packets: (0 default)");
-MODULE_PARM_DESC(sniff_incoming," Sniff incoming packets: (1 default)");
-MODULE_PARM_DESC(sniff_outgoing," Sniff outgoing packets: (0 default)");
-MODULE_PARM_DESC(sniff_loopback," Sniff lookback packets: (0 default)");
+MODULE_PARM_DESC(capture_incoming," Sniff incoming packets: (1 default)");
+MODULE_PARM_DESC(capture_outgoing," Sniff outgoing packets: (0 default)");
+MODULE_PARM_DESC(capture_loopback," Sniff lookback packets: (0 default)");
 
 MODULE_PARM_DESC(cap_len,       " Default capture length (bytes)");
 MODULE_PARM_DESC(queue_slots,   " Queue slots (default=131072)");
@@ -559,7 +559,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 
                 if (likely(cb->direct_skb))
 		{
-		        if (unlikely(!sniff_incoming && cb->send_to_kernel))
+		        if (unlikely(!capture_incoming && cb->send_to_kernel))
                         {
                                 if (cb->direct_skb == 1)
                                         netif_rx(skb);
@@ -604,18 +604,18 @@ pfq_packet_rcv
         switch(skb->pkt_type)
         {
             case PACKET_OUTGOING: {
-                if (!sniff_outgoing)
+                if (!capture_outgoing)
                         return 0;
                 skb->mac_len = ETH_HLEN;
             } break;
 
             case PACKET_LOOPBACK: {
-                if (!sniff_loopback)
+                if (!capture_loopback)
                         return 0;
             } break;
 
             default: /* PACKET_INCOMING */
-                if (!sniff_incoming)
+                if (!capture_incoming)
                         return 0;
         }
 
@@ -1537,7 +1537,7 @@ void pfq_net_proto_family_init(void)
 static
 void register_device_handler(void)
 {
-        if (sniff_incoming || sniff_outgoing || sniff_loopback)
+        if (capture_incoming || capture_outgoing || capture_loopback)
         {
                 pfq_prot_hook.func = pfq_packet_rcv;
                 pfq_prot_hook.type = __constant_htons(ETH_P_ALL);
@@ -1549,7 +1549,7 @@ void register_device_handler(void)
 static
 void unregister_device_handler(void)
 {
-        if (sniff_incoming || sniff_outgoing || sniff_loopback)
+        if (capture_incoming || capture_outgoing || capture_loopback)
         {
                 dev_remove_pack(&pfq_prot_hook); /* Remove protocol hook */
         }
