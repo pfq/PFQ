@@ -3,21 +3,22 @@
 
 TARGET = pfq
 
-EXTRA_CFLAGS += -I$(obj) 
-EXTRA_CFLAGS += -DEXPORT_SYMTAB  
-EXTRA_CFLAGS += -DPFQ_USE_SKB_LINEARIZE -DPFQ_USE_VLAN_UNTAGGING -DPFQ_USE_SKB_RECYCLE
-EXTRA_CFLAGS += -Ofast -march=native 
+EXTRA_CFLAGS += -I$(obj)
+EXTRA_CFLAGS += -Ofast -march=native
+EXTRA_CFLAGS += -DEXPORT_SYMTAB
+EXTRA_CFLAGS += -DPFQ_USE_SKB_LINEARIZE
+#EXTRA_CFLAGS += -DPFQ_USE_SKB_RECYCLE
 #EXTRA_CFLAGS += -DDEBUG
 
-obj-m := $(TARGET).o 
+obj-m := $(TARGET).o
 
-pfq-objs := pf_q.o pf_q-devmap.o pf_q-group.o pf_q-functional.o pf_q-functional-default.o  pf_q-mpdb-queue.o pf_q-bpf.o 
+pfq-objs := pf_q.o pf_q-devmap.o pf_q-group.o pf_q-functional.o pf_q-functional-default.o  pf_q-mpdb-queue.o pf_q-bpf.o
 
 KERNELVERSION := $(shell uname -r)
 
 INSTDIR := $(DESTDIR)/lib/modules/${KERNELVERSION}/kernel/net/pfq
 
-all: 
+all:
 		make -C /lib/modules/${KERNELVERSION}/build M=$(PWD) modules
 
 clean:

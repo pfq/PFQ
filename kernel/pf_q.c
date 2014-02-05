@@ -72,6 +72,7 @@ static int queue_slots  = 131072; // slots per queue
 static int cap_len      = 1514;
 static int prefetch_len = 1;
 static int flow_control = 0;
+static int vl_untag     = 0;
 
 int recycle_len  = 1024;
 
@@ -92,6 +93,7 @@ module_param(queue_slots,     int, 0644);
 module_param(prefetch_len,    int, 0644);
 module_param(recycle_len,     int, 0644);
 module_param(flow_control,    int, 0644);
+module_param(vl_untag,        int, 0644);
 
 MODULE_PARM_DESC(direct_capture," Direct capture packets: (0 default)");
 MODULE_PARM_DESC(sniff_incoming," Sniff incoming packets: (1 default)");
@@ -103,6 +105,7 @@ MODULE_PARM_DESC(queue_slots,   " Queue slots (default=131072)");
 MODULE_PARM_DESC(prefetch_len,  " Prefetch queue length");
 MODULE_PARM_DESC(recycle_len,   " Recycle skb list (default=1024)");
 MODULE_PARM_DESC(flow_control,  " Flow control value (default=0)");
+MODULE_PARM_DESC(vl_untag,      " Enable vlan untagging (default=0)");
 
 /* vector of pointers to pfq_opt */
 
@@ -344,17 +347,12 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 	}
 #endif
 
-
-#ifdef PFQ_USE_VLAN_UNTAGGING
-#pragma message "[PFQ] using vlan untagging!"
-
         /* if vlan header is present, remove it */
-        if (skb->protocol == cpu_to_be16(ETH_P_8021Q)) {
+        if (vl_untag && skb->protocol == cpu_to_be16(ETH_P_8021Q)) {
                 skb = vlan_untag(skb);
                 if (unlikely(!skb))
                         return -1;
         }
-#endif
 
         /* reset mac len */
 
