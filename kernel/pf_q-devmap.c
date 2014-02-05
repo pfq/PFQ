@@ -103,6 +103,7 @@ int pfq_devmap_update(int action, int index, int queue, int gid)
     pfq_devmap_monitor_update();
 
     up(&devmap_sem);
+
     return n;
 }
 

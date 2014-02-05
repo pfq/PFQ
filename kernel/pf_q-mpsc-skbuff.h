@@ -53,6 +53,7 @@ int mpsc_queue_ctor(mpsc_queue_t * self)
     return 0;
 };
 
+
 static inline
 void mpsc_queue_dtor(mpsc_queue_t *self)
 {
@@ -68,6 +69,7 @@ void mpsc_queue_dtor(mpsc_queue_t *self)
     self->tail = (struct sk_buff *)0;
 }
 
+
 static inline
 void mpsc_queue_push(mpsc_queue_t *self, struct sk_buff *skb)
 {
@@ -78,6 +80,7 @@ void mpsc_queue_push(mpsc_queue_t *self, struct sk_buff *skb)
     prev->next = skb;
 
 }
+
 
 static inline
 struct sk_buff * mpsc_queue_pop(mpsc_queue_t *self)
@@ -94,6 +97,7 @@ struct sk_buff * mpsc_queue_pop(mpsc_queue_t *self)
 
     return NULL;
 }
+
 
 static inline
 const struct sk_buff * mpsc_queue_next(mpsc_queue_t *self)

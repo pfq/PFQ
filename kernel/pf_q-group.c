@@ -139,7 +139,6 @@ __pfq_group_dtor(int gid)
 }
 
 
-
 static int
 __pfq_join_group(int gid, int id, unsigned long class_mask, int policy)
 {

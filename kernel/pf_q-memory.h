@@ -44,7 +44,6 @@ extern int recycle_len;
 
 extern struct local_data __percpu    * cpu_data;
 
-
 struct sk_buff * __pfq_alloc_skb(unsigned int size, gfp_t priority, int fclone, int node);
 struct sk_buff * pfq_dev_alloc_skb(unsigned int length);
 struct sk_buff * __pfq_netdev_alloc_skb(struct net_device *dev, unsigned int length, gfp_t gfp);
@@ -55,12 +54,14 @@ struct sk_buff * __pfq_netdev_alloc_skb(struct net_device *dev, unsigned int len
 #endif
 
 #ifdef NET_SKBUFF_DATA_USES_OFFSET
-static inline unsigned int pfq_skb_end_offset(const struct sk_buff *skb)
+static inline
+unsigned int pfq_skb_end_offset(const struct sk_buff *skb)
 {
     return skb->end;
 }
 #else
-static inline unsigned int pfq_skb_end_offset(const struct sk_buff *skb)
+static inline
+unsigned int pfq_skb_end_offset(const struct sk_buff *skb)
 {
     return skb->end - skb->head;
 }
@@ -68,8 +69,7 @@ static inline unsigned int pfq_skb_end_offset(const struct sk_buff *skb)
 
 
 static inline
-bool
-pfq_skb_is_recycleable(const struct sk_buff *skb)
+bool pfq_skb_is_recycleable(const struct sk_buff *skb)
 {
     // if (irqs_disabled())
     //    return false;
@@ -91,8 +91,8 @@ pfq_skb_is_recycleable(const struct sk_buff *skb)
 }
 
 
-static inline void
-pfq_kfree_skb_recycle(struct sk_buff *skb, struct sk_buff_head *list)
+static inline
+void pfq_kfree_skb_recycle(struct sk_buff *skb, struct sk_buff_head *list)
 {
 #ifdef PFQ_USE_SKB_RECYCLE
     if (pfq_skb_is_recycleable(skb)
@@ -106,8 +106,8 @@ pfq_kfree_skb_recycle(struct sk_buff *skb, struct sk_buff_head *list)
 }
 
 
-static inline void
-pfq_kfree_skb(struct sk_buff *skb)
+static inline
+void pfq_kfree_skb(struct sk_buff *skb)
 {
 #ifdef PFQ_USE_SKB_RECYCLE
         struct local_data * local_data = __this_cpu_ptr(cpu_data);
@@ -120,8 +120,7 @@ pfq_kfree_skb(struct sk_buff *skb)
 
 
 static inline
-struct sk_buff *
-pfq_skb_recycle(struct sk_buff *skb)
+struct sk_buff * pfq_skb_recycle(struct sk_buff *skb)
 {
         //  skb_recycle(skb); removed from kernel 3.7!!!
 
@@ -145,16 +144,14 @@ pfq_skb_recycle(struct sk_buff *skb)
 
 
 static inline
-struct sk_buff *
-pfq_netdev_alloc_skb(struct net_device *dev, unsigned int length)
+struct sk_buff * pfq_netdev_alloc_skb(struct net_device *dev, unsigned int length)
 {
         return __pfq_netdev_alloc_skb(dev, length, GFP_ATOMIC);
 }
 
 
 static inline
-struct sk_buff *
-__pfq_netdev_alloc_skb_ip_align(struct net_device *dev, unsigned int length, gfp_t gfp)
+struct sk_buff * __pfq_netdev_alloc_skb_ip_align(struct net_device *dev, unsigned int length, gfp_t gfp)
 {
         struct sk_buff *skb = __pfq_netdev_alloc_skb(dev, length + NET_IP_ALIGN, gfp);
         if (NET_IP_ALIGN && likely(skb))
@@ -164,16 +161,14 @@ __pfq_netdev_alloc_skb_ip_align(struct net_device *dev, unsigned int length, gfp
 
 
 static inline
-struct sk_buff *
-pfq_netdev_alloc_skb_ip_align(struct net_device *dev, unsigned int length)
+struct sk_buff * pfq_netdev_alloc_skb_ip_align(struct net_device *dev, unsigned int length)
 {
         return __pfq_netdev_alloc_skb_ip_align(dev, length, GFP_ATOMIC);
 }
 
 
 static inline
-struct sk_buff *
-____pfq_alloc_skb(unsigned int size, gfp_t priority, int fclone, int node)
+struct sk_buff * ____pfq_alloc_skb(unsigned int size, gfp_t priority, int fclone, int node)
 {
 
 #ifdef PFQ_USE_SKB_RECYCLE
@@ -200,16 +195,14 @@ ____pfq_alloc_skb(unsigned int size, gfp_t priority, int fclone, int node)
 
 
 static inline
-struct sk_buff *
-pfq_alloc_skb(unsigned int size, gfp_t priority)
+struct sk_buff * pfq_alloc_skb(unsigned int size, gfp_t priority)
 {
         return ____pfq_alloc_skb(size, priority, 0, NUMA_NO_NODE);
 }
 
 
 static inline
-struct sk_buff *
-pfq_alloc_skb_fclone(unsigned int size, gfp_t priority)
+struct sk_buff * pfq_alloc_skb_fclone(unsigned int size, gfp_t priority)
 {
         return __pfq_alloc_skb(size, priority, 1, NUMA_NO_NODE);
 }

@@ -24,8 +24,7 @@
 
 #include <linux/filter.h>
 
-struct sk_filter *
-pfq_alloc_sk_filter(struct sock_fprog *fprog);
+struct sk_filter * pfq_alloc_sk_filter(struct sock_fprog *fprog);
 
 int pfq_free_sk_filter(struct sk_filter *filter);
 

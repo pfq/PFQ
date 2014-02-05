@@ -50,8 +50,7 @@ struct pfq_queue_skb
 
 
 static inline
-int
-pfq_queue_skb_push(struct pfq_queue_skb *q, struct sk_buff *skb)
+int pfq_queue_skb_push(struct pfq_queue_skb *q, struct sk_buff *skb)
 {
 	 if (q->counter < PFQ_QUEUE_MAX_LEN)
      	return q->queue[q->counter++] = skb, 0;
@@ -60,8 +59,7 @@ pfq_queue_skb_push(struct pfq_queue_skb *q, struct sk_buff *skb)
 
 
 static inline
-struct sk_buff *
-pfq_queue_skb_pop(struct pfq_queue_skb *q)
+struct sk_buff * pfq_queue_skb_pop(struct pfq_queue_skb *q)
 {
     if (q->counter > 0)
         return q->queue[--q->counter];
@@ -70,15 +68,13 @@ pfq_queue_skb_pop(struct pfq_queue_skb *q)
 
 
 static inline
-void
-pfq_queue_skb_flush(struct pfq_queue_skb *q)
+void pfq_queue_skb_flush(struct pfq_queue_skb *q)
 {
  	q->counter = 0;
 }
 
 static inline
-size_t
-pfq_queue_skb_size(struct pfq_queue_skb *q)
+size_t pfq_queue_skb_size(struct pfq_queue_skb *q)
 {
 	return q->counter;
 }

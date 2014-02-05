@@ -32,11 +32,12 @@
 extern void pfq_function_factory_init(void);
 extern void pfq_function_factory_free(void);
 
-sk_function_t pfq_get_function(const char *name);
 
 extern int  pfq_register_function(const char *module, const char *name, sk_function_t fun);
 extern int  pfq_unregister_function(const char *module, const char *name);
 
-extern sk_function_t pfq_get_function(const char *name);
+extern 		sk_function_t pfq_get_function(const char *name);
+
+sk_function_t pfq_get_function(const char *name);
 
 #endif /* _PF_Q_STEER_H_ */

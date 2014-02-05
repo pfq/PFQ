@@ -32,32 +32,23 @@
 #include <pf_q-queue.h>
 #include <pf_q-common.h>
 
-extern bool
-mpdb_enqueue(struct pfq_opt *pq, struct sk_buff *skb);
+
+extern bool   mpdb_enqueue(struct pfq_opt *pq, struct sk_buff *skb);
+extern size_t mpdb_enqueue_batch(struct pfq_opt *pq, unsigned long queue_mask, int len, struct pfq_queue_skb *skbs, int gid);
+extern void * mpdb_queue_alloc(struct pfq_opt *pq, size_t queue_mem, size_t * tot_mem);
+extern void   mpdb_queue_free(struct pfq_opt *pq);
 
 
-extern size_t
-mpdb_enqueue_batch(struct pfq_opt *pq, unsigned long queue_mask, int len, struct pfq_queue_skb *skbs, int gid);
-
-
-extern void *
-mpdb_queue_alloc(struct pfq_opt *pq, size_t queue_mem, size_t * tot_mem);
-
-
-extern void
-mpdb_queue_free(struct pfq_opt *pq);
-
-
-static inline size_t
-mpdb_queue_len(struct pfq_opt *p)
+static inline
+size_t mpdb_queue_len(struct pfq_opt *p)
 {
     struct pfq_queue_descr *qd = (struct pfq_queue_descr *)p->q_addr;
     return DBMP_QUEUE_LEN(qd->data);
 }
 
 
-static inline int
-mpdb_queue_index(struct pfq_opt *p)
+static inline
+int mpdb_queue_index(struct pfq_opt *p)
 {
     struct pfq_queue_descr *qd = (struct pfq_queue_descr *)p->q_addr;
     return DBMP_QUEUE_INDEX(qd->data) & 1;
@@ -65,16 +56,14 @@ mpdb_queue_index(struct pfq_opt *p)
 
 
 static inline
-size_t
-mpdb_queue_size(struct pfq_opt *pq)
+size_t mpdb_queue_size(struct pfq_opt *pq)
 {
     return pq->q_slot_size * pq->q_slots;
 }
 
 
 static inline
-size_t
-mpdb_queue_tot_mem(struct pfq_opt *pq)
+size_t mpdb_queue_tot_mem(struct pfq_opt *pq)
 {
     return sizeof(struct pfq_queue_descr) + mpdb_queue_size(pq) * 2;
 }

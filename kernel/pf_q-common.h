@@ -50,7 +50,6 @@ typedef struct pfq_kstats
 struct pfq_opt
 {
         int             q_id;
-
         int             q_tstamp;
 
         void *          q_addr;

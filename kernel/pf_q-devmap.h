@@ -36,14 +36,11 @@ enum { map_reset, map_set };
 extern atomic_long_t pfq_devmap [Q_MAX_DEVICE][Q_MAX_HW_QUEUE];
 extern atomic_t pfq_devmap_monitor [Q_MAX_DEVICE];
 
-// called from u-context
-//
+/* called from u-context
+*/
 
-extern
-int pfq_devmap_update(int action, int index, int queue, int gid);
-
-extern
-void pfq_devmap_monitor_update(void);
+extern int  pfq_devmap_update(int action, int index, int queue, int gid);
+extern void pfq_devmap_monitor_update(void);
 
 
 static inline

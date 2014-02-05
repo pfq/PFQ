@@ -60,30 +60,20 @@ struct pfq_group
 
 extern struct pfq_group pfq_groups[Q_MAX_GROUP];
 
-unsigned long __pfq_get_all_groups_mask(int gid);
-
-bool __pfq_group_access(int gid, int id, int policy, bool join);
-
-int pfq_join_free_group(int id, unsigned long class_mask, int policy);
-
-int pfq_join_group(int gid, int id, unsigned long class_mask, int policy);
-
-int pfq_leave_group(int gid, int id);
-
+int  pfq_join_free_group(int id, unsigned long class_mask, int policy);
+int  pfq_join_group(int gid, int id, unsigned long class_mask, int policy);
+int  pfq_leave_group(int gid, int id);
 void pfq_leave_all_groups(int id);
 
 unsigned long pfq_get_groups(int id);
+unsigned long __pfq_get_all_groups_mask(int gid);
 
-int __pfq_set_group_function(int gid, sk_function_t fun, int level);
-
-int __pfq_set_group_context(int gid, void *context, int level);
-
-int __pfq_get_group_context(int gid, int level, int size, void __user *context);
-
+bool __pfq_group_access(int gid, int id, int policy, bool join);
+int  __pfq_set_group_function(int gid, sk_function_t fun, int level);
+int  __pfq_set_group_context(int gid, void *context, int level);
+int  __pfq_get_group_context(int gid, int level, int size, void __user *context);
 void __pfq_reset_group_functx(int gid);
-
 void __pfq_set_group_filter(int gid, struct sk_filter *filter);
-
 void __pfq_dismiss_function(sk_function_t f);
 
 
