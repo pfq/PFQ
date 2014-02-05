@@ -1,15 +1,4 @@
-Debian Packages required:
+In addition to the Haskell platform, the following Debian Packages required:
 
-ii  libghc-cmdargs-dev                0.9.5-1+b1            amd64                 command-line argument processing
-ii  libghc-mtl-dev                    2.1.1-1               amd64                 Haskell monad transformer library for GHC
-ii  libghc-readline-dev               1.0.1.0-3+b1          amd64                 Interface to the GNU readline library
-ii  libghc-regex-base-dev             0.93.2-2+b2           amd64                 GHC library providing an API for regular expressions
-ii  libghc-regex-posix-dev            0.95.1-2+b1           amd64                 GHC library of the POSIX regex backend for regex-base
-ii  libghc-split-dev                  0.1.4.2-2             amd64                 Haskell library for splitting lists - GHC libraries
-ii  libghc-stm-dev                    2.3-1                 amd64                 Haskell Software Transactional Memory library for GHC
-ii  libghc-transformers-dev           0.3.0.0-1             amd64                 Haskell monad transformer library
-ii  libghc6-regex-base-dev            1:8                   all                   transitional dummy package
-ii  libghc6-regex-posix-dev           1:8                   all                   transitional dummy package
-ii  libghc6-split-dev                 1:8                   all                   transitional dummy package
-ii  libghc6-stm-dev                   1:8                   all                   transitional dummy package
+libghc-cmdargs-dev, libghc-mtl-dev, libghc-readline-dev, libghc-regex-base-dev, libghc-regex-posix-dev, libghc-split-dev, libghc-stm-dev, libghc-transformers-dev, libghc6-regex-base-dev, libghc6-regex-posix-dev, libghc6-split-dev, libghc6-stm-dev         
 
