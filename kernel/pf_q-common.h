@@ -71,7 +71,7 @@ struct pfq_rx_opt
 struct pfq_sock
 {
         struct sock sk;
-        struct pfq_rx_opt *opt;
+        struct pfq_rx_opt *rx_opt;
 };
 
 

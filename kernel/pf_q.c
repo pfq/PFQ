@@ -739,7 +739,7 @@ pfq_create(
 
         /* store the pq */
         psk = pfq_sk(sk);
-	psk->opt = pq;
+	psk->rx_opt = pq;
         return 0;
 
 ctor_err:
@@ -761,7 +761,7 @@ pfq_release(struct socket *sock)
 	if (!sk)
 		return 0;
 
-	pq = pfq_sk(sk)->opt;
+	pq = pfq_sk(sk)->rx_opt;
 	if (pq) {
 
                	id = pq->id;
@@ -805,7 +805,7 @@ int pfq_getsockopt(struct socket *sock,
                    char __user * optval, int __user * optlen)
 {
         int len;
-        struct pfq_rx_opt *pq = pfq_sk(sock->sk)->opt;
+        struct pfq_rx_opt *pq = pfq_sk(sock->sk)->rx_opt;
 
         if (pq == NULL)
                 return -EFAULT;
@@ -1034,7 +1034,7 @@ int pfq_setsockopt(struct socket *sock,
 #endif
                    int optlen)
 {
-        struct pfq_rx_opt *pq = pfq_sk(sock->sk)->opt;
+        struct pfq_rx_opt *pq = pfq_sk(sock->sk)->rx_opt;
         bool found = true;
 
         if (pq == NULL)
@@ -1393,7 +1393,7 @@ pfq_memory_mmap(struct vm_area_struct *vma,
 static int
 pfq_mmap(struct file *file, struct socket *sock, struct vm_area_struct *vma)
 {
-        struct pfq_rx_opt *pq = pfq_sk(sock->sk)->opt;
+        struct pfq_rx_opt *pq = pfq_sk(sock->sk)->rx_opt;
         unsigned long size = (unsigned long)(vma->vm_end - vma->vm_start);
         int ret;
 
@@ -1423,7 +1423,7 @@ pfq_poll(struct file *file, struct socket *sock, poll_table * wait)
         struct pfq_queue_descr * q;
         unsigned int mask = 0;
 
-        pq = po->opt;
+        pq = po->rx_opt;
         if (pq == NULL)
                 return mask;
         q = (struct pfq_queue_descr *)pq->addr;
