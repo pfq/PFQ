@@ -32,12 +32,11 @@
 
 #include <pf_q-sparse-counter.h>
 
-
 #define GRACE_PERIOD 10     /* msec */
 
-#define PFQ_TX_RING_SIZE  (8192)
-#define PFQ_TX_RING_MASK  (PFQ_TX_RING_SIZE-1)
-
+#define PFQ_TX_RING_SIZE        (8192)
+#define PFQ_TX_RING_MASK        (PFQ_TX_RING_SIZE-1)
+#define PFQ_SLOT_ALIGN(s, n)    ((s+(n-1)) & ~(n-1))
 
 /* sparse_counter_t stats */
 
@@ -68,7 +67,7 @@ struct pfq_rx_opt
 
         int                 active;
 
-} __attribute__((aligned(128)));
+} __attribute__((aligned(64)));
 
 
 struct pfq_tx_opt
@@ -90,7 +89,7 @@ struct pfq_tx_opt
         struct task_struct  *thread;
         bool                thread_running;
 
-} __attribute__((aligned(128)));
+} __attribute__((aligned(64)));
 
 
 struct pfq_sock

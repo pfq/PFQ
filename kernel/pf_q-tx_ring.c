@@ -29,8 +29,6 @@ int pfq_tx_ring_alloc(struct pfq_tx_opt *tq)
 {
         int n;
 
-        memset(tq->skb_slot, 0, sizeof(tq->skb_slot));
-
         for(n = 0; n < PFQ_TX_RING_SIZE; n++)
         {
                 struct sk_buff  *skb;
