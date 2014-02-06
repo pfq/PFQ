@@ -54,6 +54,7 @@
 #include <pf_q-bits.h>
 #include <pf_q-bpf.h>
 #include <pf_q-memory.h>
+#include <pf_q-tx_ring.h>
 
 #include <pf_q-mpdb-queue.h>
 
@@ -664,15 +665,6 @@ pfq_rx_ctor(struct pfq_rx_opt *rq)
         return 0;
 }
 
-static int
-pfq_tx_ctor(struct pfq_tx_opt *rq)
-{
-        /* TODO */
-        memset(rq, 0, sizeof(struct pfq_tx_opt));
-
-        return 0;
-}
-
 static void
 pfq_rx_dtor(struct pfq_rx_opt *rq)
 {
@@ -681,10 +673,35 @@ pfq_rx_dtor(struct pfq_rx_opt *rq)
         mpdb_queue_free(rq);
 }
 
-static void
-pfq_tx_dtor(struct pfq_tx_opt *rq)
+static int
+pfq_tx_ctor(struct pfq_tx_opt *tq)
 {
-        /* TODO */
+        memset(tq, 0, sizeof(struct pfq_tx_opt));
+
+        if (pfq_tx_ring_alloc(tq) < 0)
+        {
+                pfq_tx_ring_free(tq);
+                return -ENOMEM;
+        }
+
+        tq->skb_index           = 0;
+        tq->counter             = 0;
+        tq->dev                 = NULL;
+        tq->txq                 = NULL;
+        tq->hardware_queue      = 0;
+        tq->cpu_index           = -1;
+        tq->q_mem               = NULL;
+        tq->q_tot_mem           = 0;
+        tq->thread              = NULL;
+        tq->thread_running      = false;
+
+        return 0;
+}
+
+static void
+pfq_tx_dtor(struct pfq_tx_opt *tq)
+{
+        pfq_tx_ring_free(tq);
 }
 
 
