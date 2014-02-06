@@ -33,10 +33,10 @@
 #include <pf_q-common.h>
 
 
-extern bool   mpdb_enqueue(struct pfq_rx_opt *pq, struct sk_buff *skb);
-extern size_t mpdb_enqueue_batch(struct pfq_rx_opt *pq, unsigned long queue_mask, int len, struct pfq_queue_skb *skbs, int gid);
-extern void * mpdb_queue_alloc(struct pfq_rx_opt *pq, size_t queue_mem, size_t * tot_mem);
-extern void   mpdb_queue_free(struct pfq_rx_opt *pq);
+extern bool   mpdb_enqueue(struct pfq_rx_opt *rq, struct sk_buff *skb);
+extern size_t mpdb_enqueue_batch(struct pfq_rx_opt *rq, unsigned long queue_mask, int len, struct pfq_queue_skb *skbs, int gid);
+extern void * mpdb_queue_alloc(struct pfq_rx_opt *rq, size_t queue_mem, size_t * tot_mem);
+extern void   mpdb_queue_free(struct pfq_rx_opt *rq);
 
 
 static inline
@@ -56,16 +56,16 @@ int mpdb_queue_index(struct pfq_rx_opt *p)
 
 
 static inline
-size_t mpdb_queue_size(struct pfq_rx_opt *pq)
+size_t mpdb_queue_size(struct pfq_rx_opt *rq)
 {
-    return pq->slot_size * pq->slots;
+    return rq->slot_size * rq->slots;
 }
 
 
 static inline
-size_t mpdb_queue_tot_mem(struct pfq_rx_opt *pq)
+size_t mpdb_queue_tot_mem(struct pfq_rx_opt *rq)
 {
-    return sizeof(struct pfq_queue_descr) + mpdb_queue_size(pq) * 2;
+    return sizeof(struct pfq_queue_descr) + mpdb_queue_size(rq) * 2;
 }
 
 #endif /* _MPDB_QUEUE_H_ */

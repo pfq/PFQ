@@ -38,6 +38,7 @@
 #define PFQ_TX_RING_SIZE  (8192)
 #define PFQ_TX_RING_MASK  (PFQ_TX_RING_SIZE-1)
 
+
 /* sparse_counter_t stats */
 
 typedef struct pfq_kstats
@@ -90,8 +91,6 @@ struct pfq_tx_opt
         bool                thread_running;
 
 } __attribute__((aligned(128)));
-
-
 
 
 struct pfq_sock
