@@ -622,9 +622,8 @@ pfq_packet_rcv
         return pfq_receive(NULL, skb, 0);
 }
 
-
 static int
-pfq_ctor(struct pfq_rx_opt *rq)
+pfq_rx_ctor(struct pfq_rx_opt *rq)
 {
         /* set to 0 by default */
         memset(rq, 0, sizeof(struct pfq_rx_opt));
@@ -667,7 +666,7 @@ pfq_ctor(struct pfq_rx_opt *rq)
 
 
 static void
-pfq_dtor(struct pfq_rx_opt *rq)
+pfq_rx_dtor(struct pfq_rx_opt *rq)
 {
         pfq_release_id(rq->id);
 
@@ -686,7 +685,7 @@ pfq_create(
 #endif
     )
 {
-        struct pfq_rx_opt *rq;
+        struct pfq_rx_opt *rq = NULL;
         struct sock *sk;
         struct pfq_sock *psk;
         int err = -ENOMEM;
@@ -719,7 +718,7 @@ pfq_create(
 #if(LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,11))
         sk_set_owner(sk, THIS_MODULE);
 #endif
-        /* alloc memory for this rq */
+        /* alloc memory for rx opt */
 
         rq = (struct pfq_rx_opt *)kmalloc(sizeof(struct pfq_rx_opt), GFP_KERNEL);
         if (!rq)
@@ -728,8 +727,10 @@ pfq_create(
                 goto pq_err;
         }
 
-        /* construct pfq_rx_opt */
-        if (pfq_ctor(rq) != 0)
+
+        /* construct both rx_opt and tx_opt */
+
+        if (pfq_rx_ctor(rq) != 0)
         {
                 err = -ENOMEM;
                 goto ctor_err;
