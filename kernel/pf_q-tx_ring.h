@@ -26,8 +26,8 @@
 
 #include <pf_q-common.h>
 
-extern int pfq_tx_ring_skb_alloc(struct pfq_tx_opt *tq, size_t n);
-extern void pfq_tx_ring_skb_free(struct pfq_tx_opt *tq, size_t n);
+extern int pfq_tx_ring_alloc(struct pfq_tx_opt *tq);
+extern void pfq_tx_ring_free(struct pfq_tx_opt *tq);
 
 inline
 struct sk_buff *

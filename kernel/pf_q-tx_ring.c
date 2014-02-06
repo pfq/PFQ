@@ -23,29 +23,40 @@
 
 #include <pf_q-common.h>
 
-int pfq_tx_ring_skb_alloc(struct pfq_tx_opt *tq, size_t n)
+#include <linux/skbuff.h>
+
+int pfq_tx_ring_alloc(struct pfq_tx_opt *tq)
 {
-        struct sk_buff * skb;
+        int n;
 
-        skb = __dev_alloc_skb(1518, GFP_KERNEL);
-        if (skb == NULL)
-                return -ENOMEM;
+        memset(tq->skb_slot, 0, sizeof(tq->skb_slot));
 
-        /* save the skb in the ring */
-        tq->skb_slot[n & PFQ_TX_RING_MASK] = skb;
+        for(n = 0; n < PFQ_TX_RING_SIZE; n++)
+        {
+                struct sk_buff  *skb;
+
+                skb = dev_alloc_skb(1518);
+                if (skb == NULL)
+                        return -ENOMEM;
+
+                tq->skb_slot[n] = skb;
+        }
         return 0;
 }
 
-void pfq_tx_ring_skb_free(struct pfq_tx_opt *tq, size_t n)
+
+void pfq_tx_ring_free(struct pfq_tx_opt *tq)
 {
-        struct sk_buff *skb = tq->skb_slot[n & PFQ_TX_RING_MASK];
-        if(skb)
+        int n;
+
+        for(n = 0; n < PFQ_TX_RING_SIZE; ++n)
         {
+                struct sk_buff *skb = tq->skb_slot[n];
                 while(skb_shared(skb))
                         msleep(1);
 
                 kfree_skb(skb);
-                tq->skb_slot[n & PFQ_TX_RING_MASK] = NULL;
+                tq->skb_slot[n] = NULL;
         }
 }
 
