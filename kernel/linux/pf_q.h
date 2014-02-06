@@ -1,6 +1,6 @@
 /***************************************************************
- *                                                
- * (C) 2011-13 Nicola Bonelli <nicola.bonelli@cnit.it>   
+ *
+ * (C) 2011-13 Nicola Bonelli <nicola.bonelli@cnit.it>
  *             Andrea Di Pietro <andrea.dipietro@for.unipi.it>
  *
  * This program is free software; you can redistribute it and/or modify
@@ -16,14 +16,14 @@
  * You should have received a copy of the GNU General Public License
  * along with this program; if not, write to the Free Software Foundation,
  * Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
- * 
+ *
  * The full GNU General Public License is included in this distribution in
  * the file called "COPYING".
  *
  ****************************************************************/
 
 #ifndef _PF_Q_H_
-#define _PF_Q_H_ 
+#define _PF_Q_H_
 
 #ifdef __KERNEL__
 
@@ -60,7 +60,7 @@ struct pfq_hdr
 {
     uint64_t data;          /* state from pfq_annotation */
 
-    union 
+    union
     {
         unsigned long long tv64;
         struct {
@@ -68,20 +68,20 @@ struct pfq_hdr
             uint32_t    nsec;
         } tv;               /* note: struct timespec is badly defined for 64 bits arch. */
     } tstamp;
-    
-    int         if_index;   /* interface index */    
+
+    int         if_index;   /* interface index */
     int         gid;        /* gruop id */
 
     uint16_t    len;        /* length of the packet (off wire) */
     uint16_t    caplen;     /* bytes captured */
-    
+
     union
     {
-        struct 
+        struct
         {
             uint16_t vlan_vid:12,   /* 8021q vlan id */
                      reserved:1,    /* 8021q reserved bit */
-                     vlan_prio:3;   /* 8021q vlan priority */   
+                     vlan_prio:3;   /* 8021q vlan priority */
         } vlan;
 
         uint16_t     vlan_tci;
@@ -92,7 +92,7 @@ struct pfq_hdr
 
 }; /* __attribute__((packed)); */
 
-/* 
+/*
     [pfq_queue_descr][ ... queue .... ][ ... queue ... ]
  */
 
@@ -188,9 +188,9 @@ struct pfq_binding
 /* class type */
 
 #define Q_CLASS(n)              (1U<<n)
-#define Q_CLASS_MAX             sizeof(unsigned int)<<3 
+#define Q_CLASS_MAX             sizeof(unsigned int)<<3
 
-#define Q_CLASS_DEFAULT         Q_CLASS(0)  
+#define Q_CLASS_DEFAULT         Q_CLASS(0)
 #define Q_CLASS_DATA            Q_CLASS_DEFAULT
 #define Q_CLASS_CONTROL         Q_CLASS(1)
 #define Q_CLASS_ANY             -1

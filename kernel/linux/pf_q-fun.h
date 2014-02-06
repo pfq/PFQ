@@ -1,6 +1,6 @@
 /***************************************************************
- *                                                
- * (C) 2011-13 Nicola Bonelli <nicola.bonelli@cnit.it>   
+ *
+ * (C) 2011-13 Nicola Bonelli <nicola.bonelli@cnit.it>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@
  ****************************************************************/
 
 #ifndef _PF_Q_FUN_H_
-#define _PF_Q_FUN_H_ 
+#define _PF_Q_FUN_H_
 
 #include <linux/pf_q.h>
 
@@ -41,7 +41,7 @@ extern int pfq_register_functions  (const char *module, struct sk_function_descr
 extern int pfq_unregister_functions(const char *module, struct sk_function_descr *fun);
 
 
-enum action 
+enum action
 {
     action_pass      = 0x00,
     action_drop      = 0x01,
@@ -99,7 +99,7 @@ is_skip(ret_t ret)
 
 
 
-typedef ret_t (*sk_function_t)(struct sk_buff *, ret_t);    
+typedef ret_t (*sk_function_t)(struct sk_buff *, ret_t);
 
 
 struct sk_function_descr
@@ -122,12 +122,12 @@ struct pfq_annotation
     unsigned long group_mask;
 
     unsigned long state;
-    
+
     struct fun_context * fun_ctx;
 
-    int index;      /* call index */ 
+    int index;      /* call index */
 
-    char direct_skb;  
+    char direct_skb;
 
     bool stolen_skb;
     bool send_to_kernel;
@@ -143,7 +143,7 @@ pfq_skb_annotation(struct sk_buff *skb)
 
 /* utility functions */
 
-static inline 
+static inline
 ret_t pfq_call(sk_function_t fun, struct sk_buff *skb, ret_t ret)
 {
     pfq_skb_annotation(skb)->index++;
@@ -160,7 +160,7 @@ get_next_function(struct sk_buff *skb)
 }
 
 
-static inline 
+static inline
 void * get_unsafe_context(struct sk_buff *skb)
 {
     int index = pfq_skb_annotation(skb)->index;
@@ -168,7 +168,7 @@ void * get_unsafe_context(struct sk_buff *skb)
 }
 
 
-static inline 
+static inline
 void * get_context(struct sk_buff *skb)
 {
     int index = pfq_skb_annotation(skb)->index;
@@ -177,7 +177,7 @@ void * get_context(struct sk_buff *skb)
 }
 
 
-static inline 
+static inline
 void put_context(struct sk_buff *skb)
 {
     int index = pfq_skb_annotation(skb)->index;
@@ -185,7 +185,7 @@ void put_context(struct sk_buff *skb)
 }
 
 
-static inline 
+static inline
 unsigned long get_state(struct sk_buff *skb)
 {
     return pfq_skb_annotation(skb)->state;
@@ -267,7 +267,7 @@ ret_t to_kernel(ret_t ret)
 }
 
 
-static inline 
+static inline
 ret_t clear_skip(ret_t ret)
 {
     ret.type &= ~action_skip;
@@ -275,7 +275,7 @@ ret_t clear_skip(ret_t ret)
 }
 
 
-static inline 
+static inline
 ret_t skip(ret_t ret)
 {
     ret.type |= action_skip;

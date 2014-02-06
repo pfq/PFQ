@@ -24,8 +24,8 @@ main(int argc, char *argv[])
             auto many = r.read( 1000000 /* timeout: micro */);
 
             std::cout << "batch size: " << many.size() << " ===>" << std::endl;
- 
-#if __GNUC__ == 4 &&  __GNUC_MINOR__ >= 6 
+
+#if __GNUC__ == 4 &&  __GNUC_MINOR__ >= 6
 
             for(auto & packet : many)
             {

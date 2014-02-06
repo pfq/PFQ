@@ -1,6 +1,6 @@
 /***************************************************************
- *                                                
- * (C) 2011-13 Nicola Bonelli <nicola.bonelli@cnit.it>   
+ *
+ * (C) 2011-13 Nicola Bonelli <nicola.bonelli@cnit.it>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,7 +22,7 @@
  ****************************************************************/
 
 #ifndef _PFQ_KCOMPAT_H_
-#define _PFQ_KCOMPAT_H_ 
+#define _PFQ_KCOMPAT_H_
 
 #include <linux/netdevice.h>
 #include <linux/skbuff.h>
@@ -35,7 +35,7 @@ extern struct sk_buff * __pfq_alloc_skb(unsigned int size, gfp_t priority, int f
 extern struct sk_buff * pfq_dev_alloc_skb(unsigned int length);
 extern struct sk_buff * __pfq_netdev_alloc_skb(struct net_device *dev, unsigned int length, gfp_t gfp);
 
-static inline 
+static inline
 struct sk_buff *
 pfq_netdev_alloc_skb(struct net_device *dev, unsigned int length)
 {
@@ -48,7 +48,7 @@ struct sk_buff *
 __pfq_netdev_alloc_skb_ip_align(struct net_device *dev, unsigned int length, gfp_t gfp)
 {
 	struct sk_buff *skb = __pfq_netdev_alloc_skb(dev, length + NET_IP_ALIGN, gfp);
-    if (NET_IP_ALIGN && likely(skb)) 
+    if (NET_IP_ALIGN && likely(skb))
 		skb_reserve(skb, NET_IP_ALIGN);
 	return skb;
 }
@@ -86,9 +86,9 @@ pfq_alloc_skb_fclone(unsigned int size, gfp_t priority)
 #define   netdev_alloc_skb_ip_align(dev,len) 	      pfq_netdev_alloc_skb_ip_align(dev,len)
 #define alloc_skb(size, prio)						pfq_alloc_skb(size, prio)
 #define alloc_skb_fclone(size,prio)					pfq_alloc_skb_fclone(size, prio)
-                                                                       
-#define __alloc_skb(size,prio,fclone,node)          __pfq_alloc_skb(size,prio,fclone,node)       
+
+#define __alloc_skb(size,prio,fclone,node)          __pfq_alloc_skb(size,prio,fclone,node)
 #define __netdev_alloc_skb(dev,len,gfp)        		__pfq_netdev_alloc_skb(dev,len,gfp)
-#define dev_alloc_skb(len)             				pfq_dev_alloc_skb(len)     
+#define dev_alloc_skb(len)             				pfq_dev_alloc_skb(len)
 
 #endif /* _PFQ_KCOMPAT_H_ */

@@ -4,7 +4,7 @@
 
 #include <linux/pf_q.h>
 #include <linux/pf_q-fun.h>
- 
+
 MODULE_LICENSE("GPL");
 
 ret_t
@@ -34,10 +34,10 @@ static int __init usr_init_module(void)
 
 
 static void __exit usr_exit_module(void)
-{                 
+{
 	pfq_unregister_functions("[dummy]", hooks);
 }
-	
+
 
 module_init(usr_init_module);
 module_exit(usr_exit_module);
