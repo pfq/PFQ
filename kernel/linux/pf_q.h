@@ -251,5 +251,35 @@ struct pfq_stats
     unsigned long int drop;   /* by filter                     */
 };
 
+/* pfq TX capabilities... */
+
+struct pfq_tx_queue_hdr
+{
+    struct
+    {
+        volatile unsigned long index;
+        unsigned long cache;
+    } producer __attribute__((aligned(64)));
+
+    struct
+    {
+        volatile unsigned long index;
+        unsigned long cache;
+    } consumer __attribute__((aligned(64)));
+
+    unsigned long size;             /* number of slots (power of two) */
+    unsigned long size_mask;        /* number of slots */
+    unsigned long max_len;          /* max length of packets = 1520 */
+    unsigned long slot_size;        /* sizeof(pfq_tx_packet_hdr) + max_len + sizeof(skb_shinfo) */
+
+} __attribute__((aligned(64)));
+
+
+struct pfq_tx_packet_hdr
+{
+    volatile unsigned long long tstamp;   /* tstamp packet in tsc */
+    volatile unsigned long len;           /* packet len */
+};
+
 
 #endif /* _PF_Q_H_ */
