@@ -664,6 +664,14 @@ pfq_rx_ctor(struct pfq_rx_opt *rq)
         return 0;
 }
 
+static int
+pfq_tx_ctor(struct pfq_tx_opt *rq)
+{
+        /* TODO */
+        memset(rq, 0, sizeof(struct pfq_tx_opt));
+
+        return 0;
+}
 
 static void
 pfq_rx_dtor(struct pfq_rx_opt *rq)
@@ -671,6 +679,12 @@ pfq_rx_dtor(struct pfq_rx_opt *rq)
         pfq_release_id(rq->id);
 
         mpdb_queue_free(rq);
+}
+
+static void
+pfq_tx_dtor(struct pfq_tx_opt *rq)
+{
+        /* TODO */
 }
 
 
@@ -686,6 +700,8 @@ pfq_create(
     )
 {
         struct pfq_rx_opt *rq = NULL;
+        struct pfq_tx_opt *tq = NULL;
+
         struct sock *sk;
         struct pfq_sock *psk;
         int err = -ENOMEM;
@@ -727,6 +743,12 @@ pfq_create(
                 goto pq_err;
         }
 
+        tq = (struct pfq_tx_opt *)kmalloc(sizeof(struct pfq_tx_opt), GFP_KERNEL);
+        if (!tq)
+        {
+                err = -ENOMEM;
+                goto ctor_err;
+        }
 
         /* construct both rx_opt and tx_opt */
 
@@ -736,15 +758,25 @@ pfq_create(
                 goto ctor_err;
         }
 
+        if (pfq_tx_ctor(tq) != 0)
+        {
+                err = -ENOMEM;
+                goto ctor_err;
+        }
+
 	smp_wmb();
 
         /* store the rq */
+
         psk = pfq_sk(sk);
 	psk->rx_opt = rq;
+	psk->tx_opt = tq;
+
         return 0;
 
 ctor_err:
         kfree(rq);
+        kfree(tq);
 pq_err:
         sk_free(sk);
 out:
@@ -784,10 +816,28 @@ pfq_rx_release(struct pfq_rx_opt *rq)
 
 
 static int
+pfq_tx_release(struct pfq_tx_opt *tq)
+{
+        /* TODO */
+
+        msleep(GRACE_PERIOD);
+
+        pfq_tx_dtor(tq);
+
+        msleep(GRACE_PERIOD);
+
+        kfree(tq);
+
+        return 0;
+}
+
+
+static int
 pfq_release(struct socket *sock)
 {
         struct sock * sk = sock->sk;
         struct pfq_rx_opt * rq;
+        struct pfq_tx_opt * tq;
 
 	int id = -1;
 
@@ -797,6 +847,10 @@ pfq_release(struct socket *sock)
 	rq = pfq_sk(sk)->rx_opt;
 	if (rq)
                 id = pfq_rx_release(rq);
+
+        tq = pfq_sk(sk)->tx_opt;
+        if (tq)
+                id = pfq_tx_release(tq);
 
         sock_orphan(sk);
 	sock->sk = NULL;
