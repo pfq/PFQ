@@ -698,10 +698,22 @@ pfq_tx_ctor(struct pfq_tx_opt *tq)
         return 0;
 }
 
+
 static void
 pfq_tx_dtor(struct pfq_tx_opt *tq)
 {
         pfq_tx_ring_free(tq);
+}
+
+
+static void pfq_sock_destruct(struct sock *sk)
+{
+        skb_queue_purge(&sk->sk_error_queue);
+
+        WARN_ON(atomic_read(&sk->sk_rmem_alloc));
+        WARN_ON(atomic_read(&sk->sk_wmem_alloc));
+
+        sk_refcnt_debug_dec(sk);
 }
 
 
@@ -719,8 +731,9 @@ pfq_create(
         struct pfq_rx_opt *rq = NULL;
         struct pfq_tx_opt *tq = NULL;
 
-        struct sock *sk;
         struct pfq_sock *psk;
+        struct sock *sk;
+
         int err = -ENOMEM;
 
         /* security and sanity check */
@@ -731,36 +744,28 @@ pfq_create(
         if (protocol != __constant_htons(ETH_P_ALL))
                 return -EPROTONOSUPPORT;
 
-#if(LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,11))
-        sk = sk_alloc(PF_Q, GFP_KERNEL, 1, NULL);
-#else
-#if(LINUX_VERSION_CODE < KERNEL_VERSION(2,6,24))
-        // BD: API changed in 2.6.12, ref:
-        // http://svn.clkao.org/svnweb/linux/revision/?rev=28201
-        sk = sk_alloc(PF_Q, GFP_ATOMIC, &q_proto, 1);
-#else
+        sock->state = SS_UNCONNECTED;
+
         sk = sk_alloc(net, PF_INET, GFP_KERNEL, &pfq_proto);
-#endif
-#endif
         if (sk == NULL)
                 goto out;
 
         sock->ops = &pfq_ops;
+
+        /* initialize the socket */
+
         sock_init_data(sock,sk);
 
-#if(LINUX_VERSION_CODE <= KERNEL_VERSION(2,6,11))
-        sk_set_owner(sk, THIS_MODULE);
-#endif
         /* alloc memory for rx opt */
 
-        rq = (struct pfq_rx_opt *)kmalloc(sizeof(struct pfq_rx_opt), GFP_KERNEL);
+        rq = (struct pfq_rx_opt *)kzalloc(sizeof(struct pfq_rx_opt), GFP_KERNEL);
         if (!rq)
         {
                 err = -ENOMEM;
                 goto pq_err;
         }
 
-        tq = (struct pfq_tx_opt *)kmalloc(sizeof(struct pfq_tx_opt), GFP_KERNEL);
+        tq = (struct pfq_tx_opt *)kzalloc(sizeof(struct pfq_tx_opt), GFP_KERNEL);
         if (!tq)
         {
                 err = -ENOMEM;
@@ -769,13 +774,7 @@ pfq_create(
 
         /* construct both rx_opt and tx_opt */
 
-        if (pfq_rx_ctor(rq) != 0)
-        {
-                err = -ENOMEM;
-                goto ctor_err;
-        }
-
-        if (pfq_tx_ctor(tq) != 0)
+        if (pfq_rx_ctor(rq) != 0 || pfq_tx_ctor(tq) != 0)
         {
                 err = -ENOMEM;
                 goto ctor_err;
@@ -786,8 +785,14 @@ pfq_create(
         /* store the rq */
 
         psk = pfq_sk(sk);
+
 	psk->rx_opt = rq;
 	psk->tx_opt = tq;
+
+        sk->sk_family   = PF_Q;
+        sk->sk_destruct = pfq_sock_destruct;
+
+        sk_refcnt_debug_inc(sk);
 
         return 0;
 
