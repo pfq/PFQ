@@ -42,7 +42,7 @@ extern void   mpdb_queue_free(struct pfq_opt *pq);
 static inline
 size_t mpdb_queue_len(struct pfq_opt *p)
 {
-    struct pfq_queue_descr *qd = (struct pfq_queue_descr *)p->q_addr;
+    struct pfq_queue_descr *qd = (struct pfq_queue_descr *)p->addr;
     return MPDB_QUEUE_LEN(qd->data);
 }
 
@@ -50,7 +50,7 @@ size_t mpdb_queue_len(struct pfq_opt *p)
 static inline
 int mpdb_queue_index(struct pfq_opt *p)
 {
-    struct pfq_queue_descr *qd = (struct pfq_queue_descr *)p->q_addr;
+    struct pfq_queue_descr *qd = (struct pfq_queue_descr *)p->addr;
     return MPDB_QUEUE_INDEX(qd->data) & 1;
 }
 
@@ -58,7 +58,7 @@ int mpdb_queue_index(struct pfq_opt *p)
 static inline
 size_t mpdb_queue_size(struct pfq_opt *pq)
 {
-    return pq->q_slot_size * pq->q_slots;
+    return pq->slot_size * pq->slots;
 }
 
 

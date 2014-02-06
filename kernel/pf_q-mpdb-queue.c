@@ -43,24 +43,24 @@ void * mpdb_queue_alloc(struct pfq_opt *pq, size_t queue_mem, size_t *tot_mem)
         addr = vmalloc_user(*tot_mem);
 	if (addr == NULL)
 	{
-		printk(KERN_WARNING "[PFQ|%d] pfq_queue_alloc: out of memory!", pq->q_id);
+		printk(KERN_WARNING "[PFQ|%d] pfq_queue_alloc: out of memory!", pq->id);
 		*tot_mem = 0;
 		return NULL;
 	}
 
-	pr_devel("[PFQ|%d] queue caplen:%lu mem:%lu\n", pq->q_id, pq->q_caplen, *tot_mem);
+	pr_devel("[PFQ|%d] queue caplen:%lu mem:%lu\n", pq->id, pq->caplen, *tot_mem);
 	return addr;
 }
 
 
 void mpdb_queue_free(struct pfq_opt *pq)
 {
-	if (pq->q_addr) {
-		pr_devel("[PFQ|%d] queue freed.\n", pq->q_id);
-		vfree(pq->q_addr);
+	if (pq->addr) {
+		pr_devel("[PFQ|%d] queue freed.\n", pq->id);
+		vfree(pq->addr);
 
-		pq->q_addr = NULL;
-		pq->q_queue_mem = 0;
+		pq->addr = NULL;
+		pq->queue_mem = 0;
 	}
 }
 
@@ -81,30 +81,28 @@ void *pfq_memcpy(void *to, const void *from, size_t len)
 
 size_t mpdb_enqueue_batch(struct pfq_opt *pq, unsigned long bitqueue, int qlen, struct pfq_queue_skb *skbs, int gid)
 {
-	struct pfq_queue_descr *queue_descr = (struct pfq_queue_descr *)pq->q_addr;
-	struct sk_buff *skb;
+	struct pfq_queue_descr *queue_descr = (struct pfq_queue_descr *)pq->addr;
 	int data, q_len, q_index;
+	struct sk_buff *skb;
 	size_t sent = 0;
 	unsigned int n;
 	char *ptr;
 
 	data = atomic_read((atomic_t *)&queue_descr->data);
 
-	if (unlikely(MPDB_QUEUE_LEN(data) > pq->q_slots))
-	{
+        if (unlikely(MPDB_QUEUE_LEN(data) > pq->slots))
 		return 0;
-	}
 
-	data = atomic_add_return(qlen, (atomic_t *)&queue_descr->data);
+	data    = atomic_add_return(qlen, (atomic_t *)&queue_descr->data);
 
 	q_len   = MPDB_QUEUE_LEN(data) - qlen;
 	q_index = MPDB_QUEUE_INDEX(data);
 
-	ptr     = (char *)(queue_descr+1) + (q_index&1) * pq->q_slot_size * pq->q_slots + q_len * pq->q_slot_size;
+	ptr     = (char *)(queue_descr+1) + (q_index&1) * pq->slot_size * pq->slots + q_len * pq->slot_size;
 
 	queue_for_each_mask(skb, bitqueue, n, skbs)
 	{
-		unsigned int bytes = likely(skb->len > (int)pq->q_offset) ? min((int)skb->len - (int)pq->q_offset, (int)pq->q_caplen) : 0;
+		unsigned int bytes = likely(skb->len > (int)pq->offset) ? min((int)skb->len - (int)pq->offset, (int)pq->caplen) : 0;
 
 		volatile struct pfq_hdr *hdr = (struct pfq_hdr *)ptr;
 
@@ -114,10 +112,10 @@ size_t mpdb_enqueue_batch(struct pfq_opt *pq, unsigned long bitqueue, int qlen, 
 
 		struct timespec ts;
 
-		if (unlikely(slot_index > pq->q_slots))
+		if (unlikely(slot_index > pq->slots))
 		{
 			if ( queue_descr->poll_wait ) {
-				wake_up_interruptible(&pq->q_waitqueue);
+				wake_up_interruptible(&pq->waitqueue);
 			}
 
 			return sent;
@@ -137,16 +135,16 @@ size_t mpdb_enqueue_batch(struct pfq_opt *pq, unsigned long bitqueue, int qlen, 
 #endif
 			   )
 		      	{
-				if (skb_copy_bits(skb, (int)pq->q_offset, pkt, bytes) != 0)
+				if (skb_copy_bits(skb, (int)pq->offset, pkt, bytes) != 0)
 				{
 					printk(KERN_WARNING "[PFQ] BUG! skb_copy_bits failed (bytes=%u, skb_len=%d mac_len=%d q_offset=%lu)!\n",
-							    bytes, skb->len, skb->mac_len, pq->q_offset);
+							    bytes, skb->len, skb->mac_len, pq->offset);
 					return 0;
 				}
 			}
 			else
 			{
-				pfq_memcpy(pkt, skb->data + pq->q_offset, bytes);
+				pfq_memcpy(pkt, skb->data + pq->offset, bytes);
 			}
 		}
 
@@ -156,7 +154,7 @@ size_t mpdb_enqueue_batch(struct pfq_opt *pq, unsigned long bitqueue, int qlen, 
 
 		/* setup the header */
 
-		if (pq->q_tstamp != 0)
+		if (pq->tstamp != 0)
 		{
 			skb_get_timestampns(skb, &ts);
 			hdr->tstamp.tv.sec  = (uint32_t)ts.tv_sec;
@@ -178,14 +176,14 @@ size_t mpdb_enqueue_batch(struct pfq_opt *pq, unsigned long bitqueue, int qlen, 
 		hdr->commit = (uint8_t)q_index;
 
 		if (unlikely((slot_index & 16383) == 0) &&
-				(slot_index >= (pq->q_slots >> 1)) &&
+				(slot_index >= (pq->slots >> 1)) &&
 					queue_descr->poll_wait) {
-		        wake_up_interruptible(&pq->q_waitqueue);
+		        wake_up_interruptible(&pq->waitqueue);
 		}
 
 		sent++;
 
-		ptr += pq->q_slot_size;
+		ptr += pq->slot_size;
 	}
 
 	return sent;

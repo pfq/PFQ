@@ -49,22 +49,21 @@ typedef struct pfq_kstats
 
 struct pfq_opt
 {
-        int             q_id;
-        int             q_tstamp;
+        int                 id;
+        int                 tstamp;
 
-        void *          q_addr;
-        size_t          q_queue_mem;  /* > sizeof(pfq_queue_descr) + q_slots * sizeof(slots) * 2 */
+        void *              addr;
+        size_t              queue_mem;  /* > sizeof(pfq_queue_descr) + q_slots * sizeof(slots) * 2 */
 
-        size_t          q_slots;      /* number of slots per queue */
-        size_t          q_caplen;
-        size_t          q_offset;
-        size_t          q_slot_size;
+        size_t              slots;      /* number of slots per queue */
+        size_t              caplen;
+        size_t              offset;
+        size_t              slot_size;
 
-        wait_queue_head_t q_waitqueue;
+        wait_queue_head_t   waitqueue;
+        pfq_kstat_t         stat;
 
-        pfq_kstat_t     q_stat;
-
-        int             q_active;
+        int                 active;
 
 } __attribute__((aligned(128)));
 

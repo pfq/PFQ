@@ -176,18 +176,18 @@ bool pfq_copy_to_user_skbs(struct pfq_opt *pq, int cpu, unsigned long sock_queue
 
         int len = 0; size_t sent = 0;
 
-        if (likely(pq->q_active))
+        if (likely(pq->active))
         {
         	smp_rmb();
 
                 len  = (int)hweight64(sock_queue);
                 sent = mpdb_enqueue_batch(pq, sock_queue, len, skbs, gid);
 
-        	__sparse_add(&pq->q_stat.recv, cpu, sent);
+        	__sparse_add(&pq->stat.recv, cpu, sent);
 
 		if (len > sent)
 		{
-			__sparse_add(&pq->q_stat.lost, cpu, len - sent);
+			__sparse_add(&pq->stat.lost, cpu, len - sent);
 			return false;
 		}
         }
@@ -630,37 +630,37 @@ pfq_ctor(struct pfq_opt *pq)
         memset(pq, 0, sizeof(struct pfq_opt));
 
         /* get a unique id for this queue */
-        pq->q_id = pfq_get_free_id(pq);
-        if (pq->q_id == -1)
+        pq->id = pfq_get_free_id(pq);
+        if (pq->id == -1)
         {
                 printk(KERN_WARNING "[PFQ] no queue available!\n");
                 return -EBUSY;
         }
 
         /* disable tiemstamping by default */
-        pq->q_tstamp = false;
+        pq->tstamp = false;
 
         /* queue is alloc when the socket is enabled */
-        pq->q_addr = NULL;
-        pq->q_queue_mem = 0;
+        pq->addr = NULL;
+        pq->queue_mem = 0;
 
         /* set q_slots and q_caplen default values */
 
-        pq->q_caplen    = cap_len;
-        pq->q_offset    = 0;
-        pq->q_slot_size = MPDB_QUEUE_SLOT_SIZE(cap_len);
-        pq->q_slots     = queue_slots;
+        pq->caplen    = cap_len;
+        pq->offset    = 0;
+        pq->slot_size = MPDB_QUEUE_SLOT_SIZE(cap_len);
+        pq->slots     = queue_slots;
 
         /* disabled by default */
-        pq->q_active = false;
+        pq->active = false;
 
         /* initialize waitqueue */
-        init_waitqueue_head(&pq->q_waitqueue);
+        init_waitqueue_head(&pq->waitqueue);
 
         /* reset stats */
-        sparse_set(&pq->q_stat.recv, 0);
-        sparse_set(&pq->q_stat.lost, 0);
-        sparse_set(&pq->q_stat.drop, 0);
+        sparse_set(&pq->stat.recv, 0);
+        sparse_set(&pq->stat.lost, 0);
+        sparse_set(&pq->stat.drop, 0);
 
         return 0;
 }
@@ -669,7 +669,7 @@ pfq_ctor(struct pfq_opt *pq)
 static void
 pfq_dtor(struct pfq_opt *pq)
 {
-        pfq_release_id(pq->q_id);
+        pfq_release_id(pq->id);
 
         mpdb_queue_free(pq);
 }
@@ -764,17 +764,17 @@ pfq_release(struct socket *sock)
 	pq = pfq_sk(sk)->opt;
 	if (pq) {
 
-               	id = pq->q_id;
+               	id = pq->id;
 
 		/* decrease the timestamp_toggle counter */
-		if (pq->q_tstamp) {
+		if (pq->tstamp) {
 			atomic_dec(&timestamp_toggle);
-			pr_devel("[PFQ|%d] timestamp_toggle => %d\n", pq->q_id, atomic_read(&timestamp_toggle));
+			pr_devel("[PFQ|%d] timestamp_toggle => %d\n", pq->id, atomic_read(&timestamp_toggle));
 		}
 
-		pq->q_active = false;
+		pq->active = false;
 
-        	pfq_leave_all_groups(pq->q_id);
+        	pfq_leave_all_groups(pq->id);
 
                 msleep(GRACE_PERIOD);
 
@@ -830,46 +830,46 @@ int pfq_getsockopt(struct socket *sock,
                             return -EFAULT;
 
 		    if (group.gid < Q_ANY_GROUP || group.gid >= Q_MAX_GROUP) {
-			    pr_devel("[PFQ|%d] join error: bad gid:%d!\n", pq->q_id, group.gid);
+			    pr_devel("[PFQ|%d] join error: bad gid:%d!\n", pq->id, group.gid);
 			    return -EINVAL;
 		    }
 
 		    if (group.class_mask == 0) {
-			    pr_devel("[PFQ|%d] join error: bad class_mask(%x)!\n", pq->q_id, group.class_mask);
+			    pr_devel("[PFQ|%d] join error: bad class_mask(%x)!\n", pq->id, group.class_mask);
 			    return -EINVAL;
 		    }
 
                     if (group.gid == Q_ANY_GROUP) {
 
-                            group.gid = pfq_join_free_group(pq->q_id, group.class_mask, group.policy);
+                            group.gid = pfq_join_free_group(pq->id, group.class_mask, group.policy);
                             if (group.gid < 0)
                                     return -EFAULT;
                             if (copy_to_user(optval, &group, len))
                                     return -EFAULT;
                     }
                     else {
-			    if (pfq_join_group(group.gid, pq->q_id, group.class_mask, group.policy) < 0) {
-				    pr_devel("[PFQ|%d] join error: gid:%d no permission!\n", pq->q_id, group.gid);
+			    if (pfq_join_group(group.gid, pq->id, group.class_mask, group.policy) < 0) {
+				    pr_devel("[PFQ|%d] join error: gid:%d no permission!\n", pq->id, group.gid);
 				    return -EPERM;
 			    }
 		    }
-		    pr_devel("[PFQ|%d] join -> gid:%d class_mask:%x\n", pq->q_id, group.gid, group.class_mask);
+		    pr_devel("[PFQ|%d] join -> gid:%d class_mask:%x\n", pq->id, group.gid, group.class_mask);
             } break;
 
         case Q_SO_GET_ID:
             {
-                    if (len != sizeof(pq->q_id))
+                    if (len != sizeof(pq->id))
                             return -EINVAL;
-                    if (copy_to_user(optval, &pq->q_id, sizeof(pq->q_id)))
+                    if (copy_to_user(optval, &pq->id, sizeof(pq->id)))
                             return -EFAULT;
             } break;
 
         case Q_SO_GET_STATUS:
             {
-                    if (len != sizeof(pq->q_active))
+                    if (len != sizeof(pq->active))
                             return -EINVAL;
 
-                    if (copy_to_user(optval, &pq->q_active, sizeof(pq->q_active)))
+                    if (copy_to_user(optval, &pq->active, sizeof(pq->active)))
                             return -EFAULT;
 
             } break;
@@ -880,9 +880,9 @@ int pfq_getsockopt(struct socket *sock,
                     if (len != sizeof(struct pfq_stats))
                             return -EINVAL;
 
-                    stat.recv = sparse_read(&pq->q_stat.recv);
-                    stat.lost = sparse_read(&pq->q_stat.lost);
-                    stat.drop = sparse_read(&pq->q_stat.drop);
+                    stat.recv = sparse_read(&pq->stat.recv);
+                    stat.lost = sparse_read(&pq->stat.lost);
+                    stat.drop = sparse_read(&pq->stat.drop);
 
                     if (copy_to_user(optval, &stat, sizeof(stat)))
                             return -EFAULT;
@@ -890,41 +890,41 @@ int pfq_getsockopt(struct socket *sock,
 
         case Q_SO_GET_TSTAMP:
             {
-                    if (len != sizeof(pq->q_tstamp))
+                    if (len != sizeof(pq->tstamp))
                             return -EINVAL;
-                    if (copy_to_user(optval, &pq->q_tstamp, sizeof(pq->q_tstamp)))
+                    if (copy_to_user(optval, &pq->tstamp, sizeof(pq->tstamp)))
                             return -EFAULT;
             } break;
 
         case Q_SO_GET_QUEUE_MEM:
             {
-                    if (len != sizeof(pq->q_queue_mem))
+                    if (len != sizeof(pq->queue_mem))
                             return -EINVAL;
-                    if (copy_to_user(optval, &pq->q_queue_mem, sizeof(pq->q_queue_mem)))
+                    if (copy_to_user(optval, &pq->queue_mem, sizeof(pq->queue_mem)))
                             return -EFAULT;
             } break;
 
         case Q_SO_GET_CAPLEN:
             {
-                    if (len != sizeof(pq->q_caplen))
+                    if (len != sizeof(pq->caplen))
                             return -EINVAL;
-                    if (copy_to_user(optval, &pq->q_caplen, sizeof(pq->q_caplen)))
+                    if (copy_to_user(optval, &pq->caplen, sizeof(pq->caplen)))
                             return -EFAULT;
             } break;
 
         case Q_SO_GET_SLOTS:
             {
-                    if (len != sizeof(pq->q_slots))
+                    if (len != sizeof(pq->slots))
                             return -EINVAL;
-                    if (copy_to_user(optval, &pq->q_slots, sizeof(pq->q_slots)))
+                    if (copy_to_user(optval, &pq->slots, sizeof(pq->slots)))
                             return -EFAULT;
             } break;
 
         case Q_SO_GET_OFFSET:
             {
-                    if (len != sizeof(pq->q_offset))
+                    if (len != sizeof(pq->offset))
                             return -EINVAL;
-                    if (copy_to_user(optval, &pq->q_offset, sizeof(pq->q_offset)))
+                    if (copy_to_user(optval, &pq->offset, sizeof(pq->offset)))
                             return -EFAULT;
             } break;
 
@@ -933,7 +933,7 @@ int pfq_getsockopt(struct socket *sock,
                     unsigned long grps;
                     if(len != sizeof(unsigned long))
                             return -EINVAL;
-                    grps = pfq_get_groups(pq->q_id);
+                    grps = pfq_get_groups(pq->id);
                     if (copy_to_user(optval, &grps, sizeof(grps)))
                             return -EFAULT;
             } break;
@@ -952,14 +952,14 @@ int pfq_getsockopt(struct socket *sock,
 		    gid = (int)stat.recv;
 
                     if (gid < 0  || gid >= Q_MAX_GROUP) {
-                    	    pr_devel("[PFQ|%d] group stats error: gid:%d invalid argument!\n", pq->q_id, gid);
+                    	    pr_devel("[PFQ|%d] group stats error: gid:%d invalid argument!\n", pq->id, gid);
 			    return -EINVAL;
 		    }
 
 		    /* check whether the group is joinable.. */
 
-		    if (!__pfq_group_access(gid, pq->q_id, Q_GROUP_UNDEFINED, false)) {
-                    	    pr_devel("[PFQ|%d] group stats error: gid:%d access denied!\n", pq->q_id, gid);
+		    if (!__pfq_group_access(gid, pq->id, Q_GROUP_UNDEFINED, false)) {
+                    	    pr_devel("[PFQ|%d] group stats error: gid:%d access denied!\n", pq->id, gid);
 			    return -EPERM;
 		    }
 
@@ -982,24 +982,24 @@ int pfq_getsockopt(struct socket *sock,
 			    return -EFAULT;
 
                     if (s.gid < 0  || s.gid >= Q_MAX_GROUP) {
-                    	    pr_devel("[PFQ|%d] group context error: gid:%d invalid gid!\n", pq->q_id, s.gid);
+                    	    pr_devel("[PFQ|%d] group context error: gid:%d invalid gid!\n", pq->id, s.gid);
 			    return -EINVAL;
 		    }
 
                     if (!s.size || !s.context) {
-                    	    pr_devel("[PFQ|%d] group context error: gid:%d invalid argument!\n", pq->q_id, s.gid);
+                    	    pr_devel("[PFQ|%d] group context error: gid:%d invalid argument!\n", pq->id, s.gid);
                             return -EFAULT;
                     }
 
 		    /* check whether the group is joinable.. */
 
-		    if (!__pfq_group_access(s.gid, pq->q_id, Q_GROUP_UNDEFINED, false)) {
-                    	    pr_devel("[PFQ|%d] group context error: gid:%d access denied!\n", pq->q_id, s.gid);
+		    if (!__pfq_group_access(s.gid, pq->id, Q_GROUP_UNDEFINED, false)) {
+                    	    pr_devel("[PFQ|%d] group context error: gid:%d access denied!\n", pq->id, s.gid);
 			    return -EPERM;
 		    }
 
                     if (__pfq_get_group_context(s.gid, s.level, s.size, s.context) < 0) {
-                    	pr_devel("[PFQ|%d] get context error: gid:%d error!\n", pq->q_id, s.gid);
+                    	pr_devel("[PFQ|%d] get context error: gid:%d error!\n", pq->id, s.gid);
                             return -EFAULT;
                     }
 
@@ -1015,12 +1015,12 @@ int pfq_getsockopt(struct socket *sock,
 
 #define CHECK_GROUP_PERM(gid, msg) \
         if (gid < 0 || gid >= Q_MAX_GROUP) { \
-        	    pr_devel("[PFQ|%d] " msg " error: gid:%d invalid group!\n", pq->q_id, gid); \
+        	    pr_devel("[PFQ|%d] " msg " error: gid:%d invalid group!\n", pq->id, gid); \
                 return -EINVAL; \
         } \
         \
-        if (!__pfq_has_joined_group(gid, pq->q_id)) { \
-        	    pr_devel("[PFQ|%d] " msg " error: gid:%d no permission!\n", pq->q_id, gid); \
+        if (!__pfq_has_joined_group(gid, pq->id)) { \
+        	    pr_devel("[PFQ|%d] " msg " error: gid:%d no permission!\n", pq->id, gid); \
                 return -EPERM; \
         }
 
@@ -1052,26 +1052,26 @@ int pfq_setsockopt(struct socket *sock,
 
                     if (active)
                     {
-                            if (!pq->q_addr)
+                            if (!pq->addr)
                             {
                                     struct pfq_queue_descr *sq;
 
                                     /* alloc queue memory */
-                                    pq->q_addr = mpdb_queue_alloc(pq, mpdb_queue_tot_mem(pq), &pq->q_queue_mem);
-                                    if (pq->q_addr == NULL) {
+                                    pq->addr = mpdb_queue_alloc(pq, mpdb_queue_tot_mem(pq), &pq->queue_mem);
+                                    if (pq->addr == NULL) {
                                             return -ENOMEM;
                                     }
-                                    sq = (struct pfq_queue_descr *)pq->q_addr;
+                                    sq = (struct pfq_queue_descr *)pq->addr;
                                     sq->data      = (1L << 24);
                                     sq->poll_wait = 0;
 
 				    smp_wmb();
 
-                                    pq->q_active = true;
+                                    pq->active = true;
                             }
                     }
                     else {
-                        pq->q_active = false;
+                        pq->active = false;
 
                         msleep(GRACE_PERIOD);
 
@@ -1111,7 +1111,7 @@ int pfq_setsockopt(struct socket *sock,
 	case Q_SO_SET_TSTAMP:
             {
                     int tstamp;
-                    if (optlen != sizeof(pq->q_tstamp))
+                    if (optlen != sizeof(pq->tstamp))
                             return -EINVAL;
 
                     if (copy_from_user(&tstamp, optval, optlen))
@@ -1121,42 +1121,42 @@ int pfq_setsockopt(struct socket *sock,
                             return -EINVAL;
 
                     /* update the timestamp_toggle counter */
-                    atomic_add(tstamp - pq->q_tstamp, &timestamp_toggle);
-                    pq->q_tstamp = tstamp;
-                    pr_devel("[PFQ|%d] timestamp_toggle => %d\n", pq->q_id, atomic_read(&timestamp_toggle));
+                    atomic_add(tstamp - pq->tstamp, &timestamp_toggle);
+                    pq->tstamp = tstamp;
+                    pr_devel("[PFQ|%d] timestamp_toggle => %d\n", pq->id, atomic_read(&timestamp_toggle));
             } break;
 
         case Q_SO_SET_CAPLEN:
             {
-                    if (optlen != sizeof(pq->q_caplen))
+                    if (optlen != sizeof(pq->caplen))
                             return -EINVAL;
-                    if (copy_from_user(&pq->q_caplen, optval, optlen))
+                    if (copy_from_user(&pq->caplen, optval, optlen))
                             return -EFAULT;
 
-                    pq->q_slot_size = MPDB_QUEUE_SLOT_SIZE(pq->q_caplen);
+                    pq->slot_size = MPDB_QUEUE_SLOT_SIZE(pq->caplen);
                     pr_devel("[PFQ|%d] caplen:%lu -> slot_size:%lu\n",
-                                    pq->q_id, pq->q_caplen, pq->q_slot_size);
+                                    pq->id, pq->caplen, pq->slot_size);
             } break;
 
         case Q_SO_SET_SLOTS:
             {
-                    if (optlen != sizeof(pq->q_slots))
+                    if (optlen != sizeof(pq->slots))
                             return -EINVAL;
-                    if (copy_from_user(&pq->q_slots, optval, optlen))
+                    if (copy_from_user(&pq->slots, optval, optlen))
                             return -EFAULT;
 
                     pr_devel("[PFQ|%d] queue_slots:%lu -> slot_size:%lu\n",
-                                    pq->q_id, pq->q_slots, pq->q_slot_size);
+                                    pq->id, pq->slots, pq->slot_size);
             } break;
 
         case Q_SO_SET_OFFSET:
             {
-                    if (optlen != sizeof(pq->q_offset))
+                    if (optlen != sizeof(pq->offset))
                             return -EINVAL;
-                    if (copy_from_user(&pq->q_offset, optval, optlen))
+                    if (copy_from_user(&pq->offset, optval, optlen))
                             return -EFAULT;
 
-                    pr_devel("[PFQ|%d] offset:%lu\n", pq->q_id, pq->q_offset);
+                    pr_devel("[PFQ|%d] offset:%lu\n", pq->id, pq->offset);
             } break;
 
         case Q_SO_GROUP_LEAVE:
@@ -1168,11 +1168,11 @@ int pfq_setsockopt(struct socket *sock,
                     if (copy_from_user(&gid, optval, optlen))
                             return -EFAULT;
 
-                    if (pfq_leave_group(gid, pq->q_id) < 0) {
+                    if (pfq_leave_group(gid, pq->id) < 0) {
                             return -EFAULT;
                     }
 
-                    pr_devel("[PFQ|%d] leave: gid:%d\n", pq->q_id, gid);
+                    pr_devel("[PFQ|%d] leave: gid:%d\n", pq->id, gid);
             } break;
 
         case Q_SO_GROUP_RESET: /* functional */
@@ -1188,7 +1188,7 @@ int pfq_setsockopt(struct socket *sock,
 
                     __pfq_reset_group_functx(gid);
 
-                    pr_devel("[PFQ|%d] reset group gid:%d\n", pq->q_id, gid);
+                    pr_devel("[PFQ|%d] reset group gid:%d\n", pq->id, gid);
             } break;
 
 	case Q_SO_GROUP_CONTEXT:
@@ -1214,20 +1214,20 @@ int pfq_setsockopt(struct socket *sock,
 			}
 
 			if (__pfq_set_group_context(s.gid, context, s.level) < 0) {
-                    		pr_devel("[PFQ|%d] context error: gid:%d invalid level (%d)!\n", pq->q_id, s.gid, s.level);
+                    		pr_devel("[PFQ|%d] context error: gid:%d invalid level (%d)!\n", pq->id, s.gid, s.level);
 			        return -EINVAL;
                         }
 
-			pr_devel("[PFQ|%d] context: gid:%d (context of %zu bytes set)\n", pq->q_id, s.gid, s.size);
+			pr_devel("[PFQ|%d] context: gid:%d (context of %zu bytes set)\n", pq->id, s.gid, s.size);
 		    }
 		    else { /* empty context */
 
 			if (__pfq_set_group_context(s.gid, NULL, s.level) < 0) {
-                    		pr_devel("[PFQ|%d] context error: gid:%d invalid level (%d)!\n", pq->q_id, s.gid, s.level);
+                    		pr_devel("[PFQ|%d] context error: gid:%d invalid level (%d)!\n", pq->id, s.gid, s.level);
 			        return -EINVAL;
                         }
 
-			pr_devel("[PFQ|%d] context: gid:%d (empty context set)\n", pq->q_id, s.gid);
+			pr_devel("[PFQ|%d] context: gid:%d (empty context set)\n", pq->id, s.gid);
 		    }
 	    } break;
 
@@ -1246,11 +1246,11 @@ int pfq_setsockopt(struct socket *sock,
 		    if (s.name == NULL) {
 
 			if (__pfq_set_group_function(s.gid, NULL, s.level) < 0) {
-                    		pr_devel("[PFQ|%d] function error: gid:%d invalid level (%d)!\n", pq->q_id, s.gid, s.level);
+                    		pr_devel("[PFQ|%d] function error: gid:%d invalid level (%d)!\n", pq->id, s.gid, s.level);
 			        return -EINVAL;
                         }
 
-                    	pr_devel("[PFQ|%d] function: gid:%d (NONE)\n", pq->q_id, s.gid);
+                    	pr_devel("[PFQ|%d] function: gid:%d (NONE)\n", pq->id, s.gid);
 		    }
 		    else {
 
@@ -1264,16 +1264,16 @@ int pfq_setsockopt(struct socket *sock,
 
 			fun = pfq_get_function(name);
 			if (fun == NULL) {
-                    		pr_devel("[PFQ|%d] function error: gid:%d '%s' unknown function!\n", pq->q_id, s.gid, name);
+                    		pr_devel("[PFQ|%d] function error: gid:%d '%s' unknown function!\n", pq->id, s.gid, name);
 				return -EINVAL;
 			}
 
 			if (__pfq_set_group_function(s.gid, fun, s.level) < 0) {
-                    		pr_devel("[PFQ|%d] function error: gid:%d invalid level (%d)!\n", pq->q_id, s.gid, s.level);
+                    		pr_devel("[PFQ|%d] function error: gid:%d invalid level (%d)!\n", pq->id, s.gid, s.level);
 			        return -EINVAL;
                         }
 
-			pr_devel("[PFQ|%d] function gid:%d -> function '%s'\n", pq->q_id, s.gid, name);
+			pr_devel("[PFQ|%d] function gid:%d -> function '%s'\n", pq->id, s.gid, name);
 		    }
 	    } break;
 
@@ -1293,19 +1293,19 @@ int pfq_setsockopt(struct socket *sock,
 			struct sk_filter *filter = pfq_alloc_sk_filter(&fprog.fcode);
 		 	if (filter == NULL)
 			{
-                    	    pr_devel("[PFQ|%d] fprog error: prepare_sk_filter for gid:%d\n", pq->q_id, fprog.gid);
+                    	    pr_devel("[PFQ|%d] fprog error: prepare_sk_filter for gid:%d\n", pq->id, fprog.gid);
 			    return -EINVAL;
 			}
 
 			__pfq_set_group_filter(fprog.gid, filter);
 
-			pr_devel("[PFQ|%d] fprog: gid:%d (fprog len %d bytes)\n", pq->q_id, fprog.gid, fprog.fcode.len);
+			pr_devel("[PFQ|%d] fprog: gid:%d (fprog len %d bytes)\n", pq->id, fprog.gid, fprog.fcode.len);
 		    }
 		    else 	/* reset the filter */
 		    {
 			__pfq_set_group_filter(fprog.gid, NULL);
 
-			pr_devel("[PFQ|%d] fprog: gid:%d (resetting filter)\n", pq->q_id, fprog.gid);
+			pr_devel("[PFQ|%d] fprog: gid:%d (resetting filter)\n", pq->id, fprog.gid);
 		    }
 
 	    } break;
@@ -1324,7 +1324,7 @@ int pfq_setsockopt(struct socket *sock,
 
 		    __pfq_toggle_group_vlan_filters(vlan.gid, vlan.toggle);
 
-                    pr_devel("[PFQ|%d] vlan filters %s for gid:%d\n", pq->q_id, (vlan.toggle ? "enabled" : "disabled"), vlan.gid);
+                    pr_devel("[PFQ|%d] vlan filters %s for gid:%d\n", pq->id, (vlan.toggle ? "enabled" : "disabled"), vlan.gid);
             } break;
 
         case Q_SO_GROUP_VLAN_FILT:
@@ -1340,12 +1340,12 @@ int pfq_setsockopt(struct socket *sock,
                     CHECK_GROUP_PERM(filt.gid, "group vlan filt");
 
                     if (filt.vid < -1 || filt.vid > 4094) {
-                    	    pr_devel("[PFQ|%d] vlan_set error: gid:%d invalid vid:%d!\n", pq->q_id, filt.gid, filt.vid);
+                    	    pr_devel("[PFQ|%d] vlan_set error: gid:%d invalid vid:%d!\n", pq->id, filt.gid, filt.vid);
 			    return -EINVAL;
                     }
 
                     if (!__pfq_vlan_filters_enabled(filt.gid)) {
-                    	    pr_devel("[PFQ|%d] vlan_set error: vlan filters disabled for gid:%d!\n", pq->q_id, filt.gid);
+                    	    pr_devel("[PFQ|%d] vlan_set error: vlan filters disabled for gid:%d!\n", pq->id, filt.gid);
 			    return -EINVAL;
                     }
 
@@ -1360,7 +1360,7 @@ int pfq_setsockopt(struct socket *sock,
                         __pfq_set_group_vlan_filter(filt.gid, filt.toggle, filt.vid);
                     }
 
-                    pr_devel("[PFQ|%d] vlan_set filter vid %d for gid:%d\n", pq->q_id, filt.vid, filt.gid);
+                    pr_devel("[PFQ|%d] vlan_set filter vid %d for gid:%d\n", pq->id, filt.vid, filt.gid);
             } break;
 
         default:
@@ -1402,12 +1402,12 @@ pfq_mmap(struct file *file, struct socket *sock, struct vm_area_struct *vma)
                 return -EINVAL;
         }
 
-        if(size > pq->q_queue_mem) {
+        if(size > pq->queue_mem) {
                 printk(KERN_WARNING "[PFQ] pfq_mmap: area too large!\n");
                 return -EINVAL;
         }
 
-        if((ret = pfq_memory_mmap(vma, size, pq->q_addr, VM_LOCKED)) < 0)
+        if((ret = pfq_memory_mmap(vma, size, pq->addr, VM_LOCKED)) < 0)
                 return ret;
 
         return 0;
@@ -1426,17 +1426,17 @@ pfq_poll(struct file *file, struct socket *sock, poll_table * wait)
         pq = po->opt;
         if (pq == NULL)
                 return mask;
-        q = (struct pfq_queue_descr *)pq->q_addr;
+        q = (struct pfq_queue_descr *)pq->addr;
         if (q == NULL)
                 return mask;
 
-        if (mpdb_queue_len(pq) >= (pq->q_slots>>1)) {
+        if (mpdb_queue_len(pq) >= (pq->slots>>1)) {
                 q->poll_wait = 0;
                 mask |= POLLIN | POLLRDNORM;
         }
         else if (!q->poll_wait) {
                 q->poll_wait = 1;
-                poll_wait(file, &pq->q_waitqueue, wait);
+                poll_wait(file, &pq->waitqueue, wait);
         }
 
         return mask;
