@@ -35,6 +35,8 @@
 
 #define GRACE_PERIOD 10     /* msec */
 
+#define PFQ_TX_RING_SIZE  (8192)
+#define PFQ_TX_RING_MASK  (PFQ_TX_RING_SIZE-1)
 
 /* sparse_counter_t stats */
 
@@ -68,10 +70,35 @@ struct pfq_rx_opt
 } __attribute__((aligned(128)));
 
 
+struct pfq_tx_opt
+{
+        struct sk_buff     *skb_slot[PFQ_TX_RING_SIZE];  /* preallocated skbuff ring */
+
+        unsigned int        skb_index;
+        uint64_t            counter;
+
+        struct net_device   *dev;
+        struct netdev_queue *txq;
+
+        int                 hardware_queue;
+        int                 cpu_index;
+
+        void *              q_mem;
+        size_t              q_tot_mem;
+
+        struct task_struct  *thread;
+        bool                thread_running;
+
+} __attribute__((aligned(128)));
+
+
+
+
 struct pfq_sock
 {
         struct sock sk;
         struct pfq_rx_opt *rx_opt;
+        struct pfq_tx_opt *tx_opt;
 };
 
 
