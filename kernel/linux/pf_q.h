@@ -94,16 +94,16 @@ struct pfq_hdr
 
 
 /*
-    +-----------------+------------------+          +------------------+
-    | pfq_queue_descr | pfq_hdr | packet | ...      | pfq_hdr | packet | ...
-    +-----------------+------------------+          +------------------+
-                      +                             +
-                      | <------+ queue 1  +-------> |  <----+ queue 2 +-------->
-                      +                             +
+    +---------------------+------------------+          +------------------+
+    | pfq_rx_queue_hdr | pfq_hdr | packet | ...      | pfq_hdr | packet | ...
+    +---------------------+------------------+          +------------------+
+                          +                             +
+                          | <------+ queue 1  +-------> |  <----+ queue 2 +-------->
+                          +                             +
  */
 
 
-struct pfq_queue_descr
+struct pfq_rx_queue_hdr
 {
     volatile unsigned int   data;
     volatile int            poll_wait;

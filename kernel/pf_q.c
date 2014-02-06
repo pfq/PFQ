@@ -1134,14 +1134,14 @@ int pfq_setsockopt(struct socket *sock,
                     {
                             if (!rq->addr)
                             {
-                                    struct pfq_queue_descr *sq;
+                                    struct pfq_rx_queue_hdr *sq;
 
                                     /* alloc queue memory */
                                     rq->addr = mpdb_queue_alloc(rq, mpdb_queue_tot_mem(rq), &rq->queue_mem);
                                     if (rq->addr == NULL) {
                                             return -ENOMEM;
                                     }
-                                    sq = (struct pfq_queue_descr *)rq->addr;
+                                    sq = (struct pfq_rx_queue_hdr *)rq->addr;
                                     sq->data      = (1L << 24);
                                     sq->poll_wait = 0;
 
@@ -1500,13 +1500,13 @@ pfq_poll(struct file *file, struct socket *sock, poll_table * wait)
         struct sock *sk = sock->sk;
         struct pfq_sock *po = pfq_sk(sk);
         struct pfq_rx_opt *rq;
-        struct pfq_queue_descr * q;
+        struct pfq_rx_queue_hdr * q;
         unsigned int mask = 0;
 
         rq = po->rx_opt;
         if (rq == NULL)
                 return mask;
-        q = (struct pfq_queue_descr *)rq->addr;
+        q = (struct pfq_rx_queue_hdr *)rq->addr;
         if (q == NULL)
                 return mask;
 

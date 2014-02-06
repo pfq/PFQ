@@ -80,7 +80,7 @@ void *pfq_memcpy(void *to, const void *from, size_t len)
 
 
 inline
-char *mpdb_slot_ptr(struct pfq_rx_opt *rq, struct pfq_queue_descr *qd, int index, int slot)
+char *mpdb_slot_ptr(struct pfq_rx_opt *rq, struct pfq_rx_queue_hdr *qd, int index, int slot)
 {
 	return (char *)(qd+1) + ((index&1) * rq->slots + slot) * rq->slot_size;
 }
@@ -88,7 +88,7 @@ char *mpdb_slot_ptr(struct pfq_rx_opt *rq, struct pfq_queue_descr *qd, int index
 
 size_t mpdb_enqueue_batch(struct pfq_rx_opt *rq, unsigned long bitqueue, int burst_len, struct pfq_queue_skb *skbs, int gid)
 {
-	struct pfq_queue_descr *queue_descr = (struct pfq_queue_descr *)rq->addr;
+	struct pfq_rx_queue_hdr *queue_descr = (struct pfq_rx_queue_hdr *)rq->addr;
 	int data, q_len, q_index;
 	struct sk_buff *skb;
 	size_t sent = 0;
