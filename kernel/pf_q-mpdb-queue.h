@@ -22,8 +22,8 @@
  *
  ****************************************************************/
 
-#ifndef _MPDB_QUEUE_H_
-#define _MPDB_QUEUE_H_
+#ifndef _PF_Q_MPDB_QUEUE_H_
+#define _PF_Q_MPDB_QUEUE_H_
 
 #include <linux/skbuff.h>
 #include <linux/pf_q.h>
@@ -68,4 +68,4 @@ size_t mpdb_queue_tot_mem(struct pfq_rx_opt *rq)
     return sizeof(struct pfq_queue_descr) + mpdb_queue_size(rq) * 2;
 }
 
-#endif /* _MPDB_QUEUE_H_ */
+#endif /* _PF_Q_MPDB_QUEUE_H_ */

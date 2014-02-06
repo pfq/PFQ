@@ -22,9 +22,13 @@
  *
  ****************************************************************/
 
+#ifndef _PF_Q_BPF_H_
+#define _PF_Q_BPF_H_
+
 #include <linux/filter.h>
 
 struct sk_filter * pfq_alloc_sk_filter(struct sock_fprog *fprog);
 
 int pfq_free_sk_filter(struct sk_filter *filter);
 
+#endif /* _PF_Q_BPF_H_ */

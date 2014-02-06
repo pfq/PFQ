@@ -22,8 +22,8 @@
  *
  ****************************************************************/
 
-#ifndef _PFQ_MEMORY_H_
-#define _PFQ_MEMORY_H_
+#ifndef _PF_Q_MEMORY_H_
+#define _PF_Q_MEMORY_H_
 
 #include <linux/skbuff.h>
 
@@ -208,4 +208,4 @@ struct sk_buff * pfq_alloc_skb_fclone(unsigned int size, gfp_t priority)
 }
 
 
-#endif /* _PFQ_MEMORY_H_ */
+#endif /* _PF_Q_MEMORY_H_ */
