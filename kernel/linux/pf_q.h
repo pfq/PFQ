@@ -92,14 +92,21 @@ struct pfq_hdr
 
 }; /* __attribute__((packed)); */
 
+
 /*
-    [pfq_queue_descr][ ... queue .... ][ ... queue ... ]
+    +-----------------+------------------+          +------------------+
+    | pfq_queue_descr | pfq_hdr | packet | ...      | pfq_hdr | packet | ...
+    +-----------------+------------------+          +------------------+
+                      +                             +
+                      | <------+ queue 1  +-------> |  <----+ queue 2 +-------->
+                      +                             +
  */
+
 
 struct pfq_queue_descr
 {
     volatile unsigned int   data;
-    volatile int   poll_wait;
+    volatile int            poll_wait;
 
 } __attribute__((aligned(8)));
 
