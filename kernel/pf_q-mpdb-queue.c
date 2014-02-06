@@ -100,7 +100,7 @@ size_t mpdb_enqueue_batch(struct pfq_opt *pq, unsigned long bitqueue, int qlen, 
 
 	ptr     = (char *)(queue_descr+1) + (q_index&1) * pq->slot_size * pq->slots + q_len * pq->slot_size;
 
-	queue_for_each_mask(skb, bitqueue, n, skbs)
+	queue_for_each_bitmask(skb, bitqueue, n, skbs)
 	{
 		unsigned int bytes = likely(skb->len > (int)pq->offset) ? min((int)skb->len - (int)pq->offset, (int)pq->caplen) : 0;
 
