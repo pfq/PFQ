@@ -753,42 +753,50 @@ out:
 
 
 static int
+pfq_rx_release(struct pfq_rx_opt *rq)
+{
+        int id = rq->id;
+
+        /* decrease the timestamp_toggle counter */
+        if (rq->tstamp) {
+                atomic_dec(&timestamp_toggle);
+                pr_devel("[PFQ|%d] timestamp_toggle => %d\n", rq->id, atomic_read(&timestamp_toggle));
+        }
+
+        rq->active = false;
+
+        pfq_leave_all_groups(rq->id);
+
+        msleep(GRACE_PERIOD);
+
+        pfq_rx_dtor(rq);
+
+        /* Convenient way to avoid a race condition,
+         * without using expensive rw-mutexes
+         */
+
+        msleep(GRACE_PERIOD);
+
+        kfree(rq);
+
+        return id;
+}
+
+
+static int
 pfq_release(struct socket *sock)
 {
         struct sock * sk = sock->sk;
         struct pfq_rx_opt * rq;
+
 	int id = -1;
 
 	if (!sk)
 		return 0;
 
 	rq = pfq_sk(sk)->rx_opt;
-	if (rq) {
-
-               	id = rq->id;
-
-		/* decrease the timestamp_toggle counter */
-		if (rq->tstamp) {
-			atomic_dec(&timestamp_toggle);
-			pr_devel("[PFQ|%d] timestamp_toggle => %d\n", rq->id, atomic_read(&timestamp_toggle));
-		}
-
-		rq->active = false;
-
-        	pfq_leave_all_groups(rq->id);
-
-                msleep(GRACE_PERIOD);
-
-		pfq_dtor(rq);
-
-		/* Convenient way to avoid a race condition,
-		 * without using expensive rw-mutexes
-		 */
-
-                msleep(GRACE_PERIOD);
-
-		kfree(rq);
-	}
+	if (rq)
+                id = pfq_rx_release(rq);
 
         sock_orphan(sk);
 	sock->sk = NULL;
