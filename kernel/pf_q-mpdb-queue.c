@@ -25,7 +25,7 @@
 #include <pf_q-mpdb-queue.h>
 #include <linux/pf_q-fun.h>
 
-void * mpdb_queue_alloc(struct pfq_opt *pq, size_t queue_mem, size_t *tot_mem)
+void * mpdb_queue_alloc(struct pfq_rx_opt *pq, size_t queue_mem, size_t *tot_mem)
 {
 	/* calculate the size of the buffer */
 
@@ -53,7 +53,7 @@ void * mpdb_queue_alloc(struct pfq_opt *pq, size_t queue_mem, size_t *tot_mem)
 }
 
 
-void mpdb_queue_free(struct pfq_opt *pq)
+void mpdb_queue_free(struct pfq_rx_opt *pq)
 {
 	if (pq->addr) {
 		pr_devel("[PFQ|%d] queue freed.\n", pq->id);
@@ -80,13 +80,13 @@ void *pfq_memcpy(void *to, const void *from, size_t len)
 
 
 inline
-char *mpdb_slot_ptr(struct pfq_opt *pq, struct pfq_queue_descr *qd, int index, int slot)
+char *mpdb_slot_ptr(struct pfq_rx_opt *pq, struct pfq_queue_descr *qd, int index, int slot)
 {
 	return (char *)(qd+1) + ((index&1) * pq->slots + slot) * pq->slot_size;
 }
 
 
-size_t mpdb_enqueue_batch(struct pfq_opt *pq, unsigned long bitqueue, int burst_len, struct pfq_queue_skb *skbs, int gid)
+size_t mpdb_enqueue_batch(struct pfq_rx_opt *pq, unsigned long bitqueue, int burst_len, struct pfq_queue_skb *skbs, int gid)
 {
 	struct pfq_queue_descr *queue_descr = (struct pfq_queue_descr *)pq->addr;
 	int data, q_len, q_index;

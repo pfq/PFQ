@@ -47,7 +47,7 @@ typedef struct pfq_kstats
 } pfq_kstat_t;
 
 
-struct pfq_opt
+struct pfq_rx_opt
 {
         int                 id;
         int                 tstamp;
@@ -71,7 +71,7 @@ struct pfq_opt
 struct pfq_sock
 {
         struct sock sk;
-        struct pfq_opt *opt;
+        struct pfq_rx_opt *opt;
 };
 
 

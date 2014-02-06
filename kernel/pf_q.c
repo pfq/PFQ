@@ -107,7 +107,7 @@ MODULE_PARM_DESC(recycle_len,   " Recycle skb list (default=1024)");
 MODULE_PARM_DESC(flow_control,  " Flow control value (default=0)");
 MODULE_PARM_DESC(vl_untag,      " Enable vlan untagging (default=0)");
 
-/* vector of pointers to pfq_opt */
+/* vector of pointers to pfq_rx_opt */
 
 atomic_long_t pfq_vector[Q_MAX_ID];
 
@@ -129,7 +129,7 @@ pfq_sk(struct sock *sk)
 
 
 inline
-int pfq_get_free_id(struct pfq_opt * pq)
+int pfq_get_free_id(struct pfq_rx_opt * pq)
 {
         int n = 0;
         for(; n < Q_MAX_ID; n++)
@@ -142,16 +142,16 @@ int pfq_get_free_id(struct pfq_opt * pq)
 
 
 inline
-struct pfq_opt *
+struct pfq_rx_opt *
 pfq_get_opt(size_t id)
 {
-        struct pfq_opt * opt;
+        struct pfq_rx_opt * opt;
         if (unlikely(id >= Q_MAX_ID))
         {
                 pr_devel("[PFQ] pfq_devmap_freeid: bad id=%zd!\n", id);
                 return NULL;
         }
-	opt = (struct pfq_opt *)atomic_long_read(&pfq_vector[id]);
+	opt = (struct pfq_rx_opt *)atomic_long_read(&pfq_vector[id]);
 	smp_read_barrier_depends();
 	return opt;
 }
@@ -170,7 +170,7 @@ void pfq_release_id(int id)
 
 
 inline
-bool pfq_copy_to_user_skbs(struct pfq_opt *pq, int cpu, unsigned long sock_queue, struct pfq_queue_skb *skbs, int gid)
+bool pfq_copy_to_user_skbs(struct pfq_rx_opt *pq, int cpu, unsigned long sock_queue, struct pfq_queue_skb *skbs, int gid)
 {
         /* enqueue the sk_buff: it's wait-free. */
 
@@ -528,7 +528,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
                 bitwise_foreach(socket_mask, lb)
                 {
                         int i = pfq_ctz(lb);
-                        struct pfq_opt * pq = pfq_get_opt(i);
+                        struct pfq_rx_opt * pq = pfq_get_opt(i);
                         if (likely(pq))
                         {
 #ifdef PFQ_USE_FLOW_CONTROL
@@ -624,10 +624,10 @@ pfq_packet_rcv
 
 
 static int
-pfq_ctor(struct pfq_opt *pq)
+pfq_ctor(struct pfq_rx_opt *pq)
 {
         /* set to 0 by default */
-        memset(pq, 0, sizeof(struct pfq_opt));
+        memset(pq, 0, sizeof(struct pfq_rx_opt));
 
         /* get a unique id for this queue */
         pq->id = pfq_get_free_id(pq);
@@ -667,7 +667,7 @@ pfq_ctor(struct pfq_opt *pq)
 
 
 static void
-pfq_dtor(struct pfq_opt *pq)
+pfq_dtor(struct pfq_rx_opt *pq)
 {
         pfq_release_id(pq->id);
 
@@ -686,7 +686,7 @@ pfq_create(
 #endif
     )
 {
-        struct pfq_opt *pq;
+        struct pfq_rx_opt *pq;
         struct sock *sk;
         struct pfq_sock *psk;
         int err = -ENOMEM;
@@ -721,14 +721,14 @@ pfq_create(
 #endif
         /* alloc memory for this pq */
 
-        pq = (struct pfq_opt *)kmalloc(sizeof(struct pfq_opt), GFP_KERNEL);
+        pq = (struct pfq_rx_opt *)kmalloc(sizeof(struct pfq_rx_opt), GFP_KERNEL);
         if (!pq)
         {
                 err = -ENOMEM;
                 goto pq_err;
         }
 
-        /* construct pfq_opt */
+        /* construct pfq_rx_opt */
         if (pfq_ctor(pq) != 0)
         {
                 err = -ENOMEM;
@@ -755,7 +755,7 @@ static int
 pfq_release(struct socket *sock)
 {
         struct sock * sk = sock->sk;
-        struct pfq_opt * pq;
+        struct pfq_rx_opt * pq;
 	int id = -1;
 
 	if (!sk)
@@ -805,7 +805,7 @@ int pfq_getsockopt(struct socket *sock,
                    char __user * optval, int __user * optlen)
 {
         int len;
-        struct pfq_opt *pq = pfq_sk(sock->sk)->opt;
+        struct pfq_rx_opt *pq = pfq_sk(sock->sk)->opt;
 
         if (pq == NULL)
                 return -EFAULT;
@@ -1034,7 +1034,7 @@ int pfq_setsockopt(struct socket *sock,
 #endif
                    int optlen)
 {
-        struct pfq_opt *pq = pfq_sk(sock->sk)->opt;
+        struct pfq_rx_opt *pq = pfq_sk(sock->sk)->opt;
         bool found = true;
 
         if (pq == NULL)
@@ -1393,7 +1393,7 @@ pfq_memory_mmap(struct vm_area_struct *vma,
 static int
 pfq_mmap(struct file *file, struct socket *sock, struct vm_area_struct *vma)
 {
-        struct pfq_opt *pq = pfq_sk(sock->sk)->opt;
+        struct pfq_rx_opt *pq = pfq_sk(sock->sk)->opt;
         unsigned long size = (unsigned long)(vma->vm_end - vma->vm_start);
         int ret;
 
@@ -1419,7 +1419,7 @@ pfq_poll(struct file *file, struct socket *sock, poll_table * wait)
 {
         struct sock *sk = sock->sk;
         struct pfq_sock *po = pfq_sk(sk);
-        struct pfq_opt *pq;
+        struct pfq_rx_opt *pq;
         struct pfq_queue_descr * q;
         unsigned int mask = 0;
 
