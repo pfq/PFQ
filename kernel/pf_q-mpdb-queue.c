@@ -90,15 +90,15 @@ size_t mpdb_enqueue_batch(struct pfq_opt *pq, unsigned long bitqueue, int qlen, 
 
 	data = atomic_read((atomic_t *)&queue_descr->data);
 
-	if (unlikely(DBMP_QUEUE_LEN(data) > pq->q_slots))
+	if (unlikely(MPDB_QUEUE_LEN(data) > pq->q_slots))
 	{
 		return 0;
 	}
 
 	data = atomic_add_return(qlen, (atomic_t *)&queue_descr->data);
 
-	q_len   = DBMP_QUEUE_LEN(data) - qlen;
-	q_index = DBMP_QUEUE_INDEX(data);
+	q_len   = MPDB_QUEUE_LEN(data) - qlen;
+	q_index = MPDB_QUEUE_INDEX(data);
 
 	ptr     = (char *)(queue_descr+1) + (q_index&1) * pq->q_slot_size * pq->q_slots + q_len * pq->q_slot_size;
 

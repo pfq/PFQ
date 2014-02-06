@@ -43,7 +43,7 @@ static inline
 size_t mpdb_queue_len(struct pfq_opt *p)
 {
     struct pfq_queue_descr *qd = (struct pfq_queue_descr *)p->q_addr;
-    return DBMP_QUEUE_LEN(qd->data);
+    return MPDB_QUEUE_LEN(qd->data);
 }
 
 
@@ -51,7 +51,7 @@ static inline
 int mpdb_queue_index(struct pfq_opt *p)
 {
     struct pfq_queue_descr *qd = (struct pfq_queue_descr *)p->q_addr;
-    return DBMP_QUEUE_INDEX(qd->data) & 1;
+    return MPDB_QUEUE_INDEX(qd->data) & 1;
 }
 
 

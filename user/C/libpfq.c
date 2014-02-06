@@ -687,11 +687,11 @@ pfq_read(pfq_t *q, struct pfq_net_queue *nq, long int microseconds)
 
 	qd = (struct pfq_queue_descr *)(q->queue_addr);
 	data   = qd->data;
-	index  = DBMP_QUEUE_INDEX(data);
+	index  = MPDB_QUEUE_INDEX(data);
 
 	/*  watermark for polling... */
 
-	if( DBMP_QUEUE_LEN(data) < (q->queue_slots >> 1) ) {
+	if( MPDB_QUEUE_LEN(data) < (q->queue_slots >> 1) ) {
 		if (pfq_poll(q, microseconds) < 0)
 		{
 			return -1;
@@ -702,7 +702,7 @@ pfq_read(pfq_t *q, struct pfq_net_queue *nq, long int microseconds)
 
 	data = __sync_lock_test_and_set(&qd->data, ((index+1) << 24));
 
-	size_t queue_len = min(DBMP_QUEUE_LEN(data), q->queue_slots);
+	size_t queue_len = min(MPDB_QUEUE_LEN(data), q->queue_slots);
 
 	nq->queue = (char *)(q->queue_addr) +
 			    sizeof(struct pfq_queue_descr) +

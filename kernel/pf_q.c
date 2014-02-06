@@ -648,7 +648,7 @@ pfq_ctor(struct pfq_opt *pq)
 
         pq->q_caplen    = cap_len;
         pq->q_offset    = 0;
-        pq->q_slot_size = DBMP_QUEUE_SLOT_SIZE(cap_len);
+        pq->q_slot_size = MPDB_QUEUE_SLOT_SIZE(cap_len);
         pq->q_slots     = queue_slots;
 
         /* disabled by default */
@@ -1133,7 +1133,7 @@ int pfq_setsockopt(struct socket *sock,
                     if (copy_from_user(&pq->q_caplen, optval, optlen))
                             return -EFAULT;
 
-                    pq->q_slot_size = DBMP_QUEUE_SLOT_SIZE(pq->q_caplen);
+                    pq->q_slot_size = MPDB_QUEUE_SLOT_SIZE(pq->q_caplen);
                     pr_devel("[PFQ|%d] caplen:%lu -> slot_size:%lu\n",
                                     pq->q_id, pq->q_caplen, pq->q_slot_size);
             } break;

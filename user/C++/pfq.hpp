@@ -1026,12 +1026,12 @@ namespace net {
             auto q = static_cast<struct pfq_queue_descr *>(pdata_->queue_addr);
 
             size_t data = q->data;
-            size_t index = DBMP_QUEUE_INDEX(data);
+            size_t index = MPDB_QUEUE_INDEX(data);
             size_t q_size = pdata_->queue_slots * pdata_->slot_size;
 
             //  watermark for polling...
 
-            if( DBMP_QUEUE_LEN(data) < (pdata_->queue_slots >> 1) ) {
+            if( MPDB_QUEUE_LEN(data) < (pdata_->queue_slots >> 1) ) {
                 this->poll(microseconds);
             }
 
@@ -1039,7 +1039,7 @@ namespace net {
 
             data = __sync_lock_test_and_set(&q->data, (unsigned int)((index+1) << 24));
 
-            auto queue_len =  std::min(static_cast<size_t>(DBMP_QUEUE_LEN(data)), pdata_->queue_slots);
+            auto queue_len =  std::min(static_cast<size_t>(MPDB_QUEUE_LEN(data)), pdata_->queue_slots);
 
             return queue(static_cast<char *>(pdata_->queue_addr) +
 						 sizeof(pfq_queue_descr) +
@@ -1052,7 +1052,7 @@ namespace net {
         current_commit() const
         {
             auto q = static_cast<struct pfq_queue_descr *>(pdata_->queue_addr);
-            return DBMP_QUEUE_INDEX(q->data);
+            return MPDB_QUEUE_INDEX(q->data);
         }
 
 

@@ -104,9 +104,9 @@ struct pfq_queue_descr
 } __attribute__((aligned(8)));
 
 
-#define DBMP_QUEUE_SLOT_SIZE(x)    ALIGN(sizeof(struct pfq_hdr) + x, 8)
-#define DBMP_QUEUE_INDEX(data)     (((data) & 0xff000000U) >> 24)
-#define DBMP_QUEUE_LEN(data)       ((data) & 0x00ffffffU)
+#define MPDB_QUEUE_SLOT_SIZE(x)    ALIGN(sizeof(struct pfq_hdr) + x, 8)
+#define MPDB_QUEUE_INDEX(data)     (((data) & 0xff000000U) >> 24)
+#define MPDB_QUEUE_LEN(data)       ((data) & 0x00ffffffU)
 
 /* PFQ socket options */
 
