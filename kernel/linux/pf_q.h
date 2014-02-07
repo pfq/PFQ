@@ -84,20 +84,34 @@ struct pfq_hdr
 }; /* __attribute__((packed)); */
 
 
-/*
-    +---------------------+------------------+          +------------------+
-    | pfq_rx_queue_hdr | pfq_hdr | packet | ...      | pfq_hdr | packet | ...
-    +---------------------+------------------+          +------------------+
-                          +                             +
-                          | <------+ queue 1  +-------> |  <----+ queue 2 +-------->
-                          +                             +
- */
+struct pfq_tx_queue_hdr
+{
+    struct
+    {
+        volatile unsigned long index;
+        unsigned long cache;
+    } producer __attribute__((aligned(64)));
+
+    struct
+    {
+        volatile unsigned long index;
+        unsigned long cache;
+    } consumer __attribute__((aligned(64)));
+
+    unsigned int size_mask;        /* number of slots */
+    unsigned int max_len;          /* max length of packets = 1520 */
+    unsigned int size;             /* number of slots (power of two) */
+    unsigned int slot_size;        /* sizeof(pfq_hdr) + max_len + sizeof(skb_shinfo) */
+
+} __attribute__((aligned(64)));
 
 
 struct pfq_rx_queue_hdr
 {
     volatile unsigned int   data;
     volatile int            poll_wait;
+    unsigned int            size;       /* number of slots */
+    unsigned int            slot_size;  /* sizeof(pfq_hdr) + max_len + sizeof(skb_shinfo) */
 
 } __attribute__((aligned(8)));
 
@@ -105,6 +119,23 @@ struct pfq_rx_queue_hdr
 #define MPDB_QUEUE_SLOT_SIZE(x)    ALIGN(sizeof(struct pfq_hdr) + x, 8)
 #define MPDB_QUEUE_INDEX(data)     (((data) & 0xff000000U) >> 24)
 #define MPDB_QUEUE_LEN(data)       ((data) & 0x00ffffffU)
+
+
+struct pfq_queue_hdr
+{
+    struct pfq_rx_queue_hdr rx;
+    struct pfq_tx_queue_hdr tx;
+};
+
+/*
+    +------------------+------------------+          +------------------+          +------------------+
+    | pfq_queue_hdr    | pfq_hdr | packet | ...      | pfq_hdr | packet |...       | pfq_hdr | packet | ...
+    +------------------+------------------+          +------------------+          +------------------+
+                       +                             +                             +
+                       | <------+ queue rx  +------> |  <----+ queue rx +------>   |  <----+ queue tx +------>
+                       +                             +                             +
+ */
+
 
 /* PFQ socket options */
 
@@ -240,36 +271,6 @@ struct pfq_stats
     unsigned long int recv;   /* received by the queue         */
     unsigned long int lost;   /* queue is full, packet lost... */
     unsigned long int drop;   /* by filter                     */
-};
-
-/* pfq TX capabilities... */
-
-struct pfq_tx_queue_hdr
-{
-    struct
-    {
-        volatile unsigned long index;
-        unsigned long cache;
-    } producer __attribute__((aligned(64)));
-
-    struct
-    {
-        volatile unsigned long index;
-        unsigned long cache;
-    } consumer __attribute__((aligned(64)));
-
-    unsigned long size;             /* number of slots (power of two) */
-    unsigned long size_mask;        /* number of slots */
-    unsigned long max_len;          /* max length of packets = 1520 */
-    unsigned long slot_size;        /* sizeof(pfq_tx_packet_hdr) + max_len + sizeof(skb_shinfo) */
-
-} __attribute__((aligned(64)));
-
-
-struct pfq_tx_packet_hdr
-{
-    volatile unsigned long long tstamp;   /* tstamp packet in tsc */
-    volatile unsigned long len;           /* packet len */
 };
 
 

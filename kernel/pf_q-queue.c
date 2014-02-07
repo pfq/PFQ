@@ -29,7 +29,7 @@
 #include <pf_q-sock.h>
 
 
-void * pfq_queue_alloc(struct pfq_rx_opt *rq, size_t queue_mem, size_t *tot_mem)
+void * pfq_queue_alloc(struct pfq_sock *so, size_t queue_mem, size_t *tot_mem)
 {
 	/* calculate the size of the buffer */
 
@@ -47,24 +47,26 @@ void * pfq_queue_alloc(struct pfq_rx_opt *rq, size_t queue_mem, size_t *tot_mem)
         addr = vmalloc_user(*tot_mem);
 	if (addr == NULL)
 	{
-		printk(KERN_WARNING "[PFQ|%d] pfq_queue_alloc: out of memory!", rq->id);
+		printk(KERN_WARNING "[PFQ|%d] pfq_queue_alloc: out of memory!", so->id);
 		*tot_mem = 0;
 		return NULL;
 	}
 
-	pr_devel("[PFQ|%d] queue caplen:%lu mem:%lu\n", rq->id, rq->caplen, *tot_mem);
+	pr_devel("[PFQ|%d] queue caplen:%lu mem:%lu\n", so->id, so->rx_opt.caplen, *tot_mem);
 	return addr;
 }
 
 
-void pfq_queue_free(struct pfq_rx_opt *rq)
+void pfq_queue_free(struct pfq_sock *so)
 {
-	if (rq->addr) {
-		pr_devel("[PFQ|%d] queue freed.\n", rq->id);
-		vfree(rq->addr);
+	if (so->mem_addr) {
 
-		rq->addr = NULL;
-		rq->queue_mem = 0;
+		vfree(so->mem_addr);
+
+		so->mem_addr = NULL;
+		so->mem_size = 0;
+
+		pr_devel("[PFQ|%d] queue freed.\n", so->id);
 	}
 }
 

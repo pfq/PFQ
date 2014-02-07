@@ -42,15 +42,15 @@ void *pfq_memcpy(void *to, const void *from, size_t len)
 
 
 inline
-char *mpdb_slot_ptr(struct pfq_rx_opt *rq, struct pfq_rx_queue_hdr *qd, int index, int slot)
+char *mpdb_slot_ptr(struct pfq_rx_opt *ro, struct pfq_rx_queue_hdr *qd, int index, int slot)
 {
-	return (char *)(qd+1) + ((index&1) * rq->slots + slot) * rq->slot_size;
+	return (char *)(qd+1) + ((index&1) * ro->queue_info->size + slot) * ro->queue_info->slot_size;
 }
 
 
-size_t mpdb_enqueue_batch(struct pfq_rx_opt *rq, unsigned long bitqueue, int burst_len, struct pfq_queue_skb *skbs, int gid)
+size_t mpdb_enqueue_batch(struct pfq_rx_opt *ro, unsigned long bitqueue, int burst_len, struct pfq_queue_skb *skbs, int gid)
 {
-	struct pfq_rx_queue_hdr *queue_descr = (struct pfq_rx_queue_hdr *)rq->addr;
+	struct pfq_rx_queue_hdr *queue_descr = (struct pfq_rx_queue_hdr *)ro->queue_addr;
 	int data, q_len, q_index;
 	struct sk_buff *skb;
 	size_t sent = 0;
@@ -59,18 +59,18 @@ size_t mpdb_enqueue_batch(struct pfq_rx_opt *rq, unsigned long bitqueue, int bur
 
 	data = atomic_read((atomic_t *)&queue_descr->data);
 
-        if (unlikely(MPDB_QUEUE_LEN(data) > rq->slots))
+        if (unlikely(MPDB_QUEUE_LEN(data) > ro->queue_info->size))
 		return 0;
 
 	data = atomic_add_return(burst_len, (atomic_t *)&queue_descr->data);
 
 	q_len     = MPDB_QUEUE_LEN(data) - burst_len;
 	q_index   = MPDB_QUEUE_INDEX(data);
-        this_slot = mpdb_slot_ptr(rq, queue_descr, q_index, q_len);
+        this_slot = mpdb_slot_ptr(ro, queue_descr, q_index, q_len);
 
 	queue_for_each_bitmask(skb, bitqueue, n, skbs)
 	{
-		unsigned int bytes = likely (skb->len > (int)rq->offset) ? min((int)skb->len - (int)rq->offset, (int)rq->caplen) : 0;
+		unsigned int bytes = likely (skb->len > (int)ro->offset) ? min((int)skb->len - (int)ro->offset, (int)ro->caplen) : 0;
 
 		size_t slot_index = q_len + sent;
 
@@ -79,10 +79,10 @@ size_t mpdb_enqueue_batch(struct pfq_rx_opt *rq, unsigned long bitqueue, int bur
 
 		struct timespec ts;
 
-		if (unlikely(slot_index > rq->slots))
+		if (unlikely(slot_index > ro->queue_info->size))
 		{
 			if ( queue_descr->poll_wait ) {
-				wake_up_interruptible(&rq->waitqueue);
+				wake_up_interruptible(&ro->waitqueue);
 			}
 			return sent;
 		}
@@ -101,16 +101,16 @@ size_t mpdb_enqueue_batch(struct pfq_rx_opt *rq, unsigned long bitqueue, int bur
 #endif
 			   )
 		      	{
-				if (skb_copy_bits(skb, (int)rq->offset, pkt, bytes) != 0)
+				if (skb_copy_bits(skb, (int)ro->offset, pkt, bytes) != 0)
 				{
 					printk(KERN_WARNING "[PFQ] BUG! skb_copy_bits failed (bytes=%u, skb_len=%d mac_len=%d q_offset=%lu)!\n",
-							    bytes, skb->len, skb->mac_len, rq->offset);
+							    bytes, skb->len, skb->mac_len, ro->offset);
 					return 0;
 				}
 			}
 			else
 			{
-				pfq_memcpy(pkt, skb->data + rq->offset, bytes);
+				pfq_memcpy(pkt, skb->data + ro->offset, bytes);
 			}
 		}
 
@@ -120,7 +120,7 @@ size_t mpdb_enqueue_batch(struct pfq_rx_opt *rq, unsigned long bitqueue, int bur
 
 		/* setup the header */
 
-		if (rq->tstamp != 0)
+		if (ro->tstamp != 0)
 		{
 			skb_get_timestampns(skb, &ts);
 			hdr->tstamp.tv.sec  = (uint32_t)ts.tv_sec;
@@ -142,15 +142,15 @@ size_t mpdb_enqueue_batch(struct pfq_rx_opt *rq, unsigned long bitqueue, int bur
 		hdr->commit = (uint8_t)q_index;
 
 		if (unlikely((slot_index & 16383) == 0) &&
-			     (slot_index >= (rq->slots >> 1)) &&
+			     (slot_index >= (ro->queue_info->size >> 1)) &&
 			     queue_descr->poll_wait)
 		{
-		        wake_up_interruptible(&rq->waitqueue);
+		        wake_up_interruptible(&ro->waitqueue);
 		}
 
 		sent++;
 
-		this_slot += rq->slot_size;
+		this_slot += ro->queue_info->slot_size;
 	}
 
 	return sent;

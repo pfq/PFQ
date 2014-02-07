@@ -21,5 +21,17 @@
  *
  ****************************************************************/
 
-void * pfq_queue_alloc(struct pfq_rx_opt *rq, size_t queue_mem, size_t *tot_mem);
-void   pfq_queue_free (struct pfq_rx_opt *rq);
+#include <linux/pf_q.h>
+
+#include <pf_q-sock.h>
+
+void * pfq_queue_alloc(struct pfq_sock *p, size_t queue_mem, size_t *tot_mem);
+void   pfq_queue_free (struct pfq_sock *p);
+
+inline size_t queue_tot_mem(struct pfq_sock *p)
+{
+    /* TODO */
+    return sizeof(struct pfq_queue_hdr);
+}
+
+

@@ -39,32 +39,24 @@ extern size_t mpdb_enqueue_batch(struct pfq_rx_opt *rq, unsigned long queue_mask
 
 
 static inline
-size_t mpdb_queue_len(struct pfq_rx_opt *p)
+size_t mpdb_queue_len(struct pfq_sock *p)
 {
-    struct pfq_rx_queue_hdr *qd = (struct pfq_rx_queue_hdr *)p->addr;
-    return MPDB_QUEUE_LEN(qd->data);
+    return MPDB_QUEUE_LEN(get_pfq_queue_hdr(p)->rx.data);
 }
 
 
 static inline
-int mpdb_queue_index(struct pfq_rx_opt *p)
+int mpdb_queue_index(struct pfq_sock *p)
 {
-    struct pfq_rx_queue_hdr *qd = (struct pfq_rx_queue_hdr *)p->addr;
-    return MPDB_QUEUE_INDEX(qd->data) & 1;
+    return MPDB_QUEUE_INDEX(get_pfq_queue_hdr(p)->rx.data) & 1;
 }
 
 
 static inline
-size_t mpdb_queue_size(struct pfq_rx_opt *rq)
+size_t mpdb_queue_size(struct pfq_sock *p)
 {
-    return rq->slot_size * rq->slots;
-}
-
-
-static inline
-size_t mpdb_queue_tot_mem(struct pfq_rx_opt *rq)
-{
-    return sizeof(struct pfq_rx_queue_hdr) + mpdb_queue_size(rq) * 2;
+    struct pfq_rx_queue_hdr *rx = & get_pfq_queue_hdr(p)->rx;
+    return rx->size * rx->slot_size;
 }
 
 #endif /* _PF_Q_MPDB_QUEUE_H_ */
