@@ -29,31 +29,34 @@
 #include <pf_q-sock.h>
 
 
-void * pfq_queue_alloc(struct pfq_sock *so, size_t queue_mem, size_t *tot_mem)
+int pfq_queue_alloc(struct pfq_sock *so, size_t queue_mem)
 {
-	/* calculate the size of the buffer */
+        /* calculate the size of the buffer */
 
 	size_t tm = PAGE_ALIGN(queue_mem);
+        size_t tot_mem;
 
 	/* align bufflen to page size */
 
 	size_t num_pages = tm / PAGE_SIZE; void *addr;
 
 	num_pages += (num_pages + (PAGE_SIZE-1)) & (PAGE_SIZE-1);
-	*tot_mem = num_pages*PAGE_SIZE;
+	tot_mem = num_pages*PAGE_SIZE;
 
 	/* Memory is already zeroed */
 
-        addr = vmalloc_user(*tot_mem);
+        addr = vmalloc_user(tot_mem);
 	if (addr == NULL)
 	{
 		printk(KERN_WARNING "[PFQ|%d] pfq_queue_alloc: out of memory!", so->id);
-		*tot_mem = 0;
-		return NULL;
+		return -ENOMEM;
 	}
 
-	pr_devel("[PFQ|%d] queue caplen:%lu mem:%lu\n", so->id, so->rx_opt.caplen, *tot_mem);
-	return addr;
+        so->mem_addr = addr;
+        so->mem_size = tot_mem;
+
+	pr_devel("[PFQ|%d] queue caplen:%lu memory:%lu\n", so->id, so->rx_opt.caplen, tot_mem);
+	return 0;
 }
 
 

@@ -996,9 +996,10 @@ int pfq_setsockopt(struct socket *sock,
                             if (!so->mem_addr)
                             {
                                     /* alloc queue memory */
-                                    so->mem_addr = pfq_queue_alloc(so, queue_tot_mem(so), &so->mem_size);
-                                    if (so->mem_addr == NULL) {
-                                            return -ENOMEM;
+
+                                    if (pfq_queue_alloc(so, queue_tot_mem(so)) < 0)
+                                    {
+                                        return -ENOMEM;
                                     }
 
                                     // TODO: setup queue headers (rx and tx)

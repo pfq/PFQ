@@ -25,8 +25,8 @@
 
 #include <pf_q-sock.h>
 
-void * pfq_queue_alloc(struct pfq_sock *p, size_t queue_mem, size_t *tot_mem);
-void   pfq_queue_free (struct pfq_sock *p);
+int   pfq_queue_alloc(struct pfq_sock *p, size_t queue_mem);
+void  pfq_queue_free (struct pfq_sock *p);
 
 inline size_t queue_tot_mem(struct pfq_sock *p)
 {
