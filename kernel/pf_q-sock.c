@@ -32,12 +32,12 @@
 atomic_long_t pfq_sock_vector[Q_MAX_ID];
 
 
-int pfq_get_free_sock_id(struct pfq_sock * ro)
+int pfq_get_free_sock_id(struct pfq_sock * so)
 {
         int n = 0;
         for(; n < Q_MAX_ID; n++)
         {
-                if (!atomic_long_cmpxchg(pfq_sock_vector + n, 0, (long)ro))
+                if (!atomic_long_cmpxchg(pfq_sock_vector + n, 0, (long)so))
                         return n;
         }
         return -1;

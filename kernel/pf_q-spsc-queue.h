@@ -26,7 +26,7 @@
 
 #include <pf_q-common.h>
 
-int  pfq_spsc_queue_alloc(struct pfq_tx_opt *tq);
-void pfq_spsc_queue_free(struct pfq_tx_opt *tq);
+int  pfq_spsc_queue_alloc(struct pfq_tx_opt *to);
+void pfq_spsc_queue_free(struct pfq_tx_opt *to);
 
 #endif /* _PF_Q_SPSC_QUEUE_H_ */

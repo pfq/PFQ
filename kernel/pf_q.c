@@ -684,7 +684,7 @@ pfq_rx_release(struct pfq_rx_opt *ro)
 
 
 static void
-pfq_tx_release(struct pfq_tx_opt *tq)
+pfq_tx_release(struct pfq_tx_opt *to)
 {
         /* TODO */
 }
@@ -994,7 +994,7 @@ int pfq_setsockopt(struct socket *sock,
 
                                     /* alloc queue memory */
 
-                                    if (pfq_queue_alloc(so, queue_tot_mem(so)) < 0)
+                                    if (pfq_queue_alloc(so, pfq_queue_total_mem(so)) < 0)
                                     {
                                         return -ENOMEM;
                                     }

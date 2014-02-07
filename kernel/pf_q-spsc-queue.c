@@ -29,7 +29,7 @@
 
 #if 0
 int
-pfq_spsc_queue_alloc(struct pfq_tx_opt *tq)
+pfq_spsc_queue_alloc(struct pfq_tx_opt *to)
 {
         /* calculate the size of the buffer */
 
@@ -45,24 +45,24 @@ pfq_spsc_queue_alloc(struct pfq_tx_opt *tq)
         tot_mem = num_pages*PAGE_SIZE;
 
         /* Memory is already zeroed */
-        tq->q_mem = vmalloc_user(tot_mem);
-        if (tq->q_mem == NULL)
+        to->q_mem = vmalloc_user(tot_mem);
+        if (to->q_mem == NULL)
         {
                 printk(KERN_INFO "[PFQ] spsc_queue_alloc: out of memory");
                 return -1;
         }
 
         printk(KERN_INFO "[PFQ] tx slot_size: %d\n", slot_size);
-        tq->q_tot_mem = tot_mem;
+        to->q_tot_mem = tot_mem;
         return 0;
 }
 
 
 void
-pfq_spsc_queue_free(struct pfq_tx_opt *tq)
+pfq_spsc_queue_free(struct pfq_tx_opt *to)
 {
-        vfree(tq->q_mem);
-        tq->q_mem = NULL;
+        vfree(to->q_mem);
+        to->q_mem = NULL;
 }
 
 #endif

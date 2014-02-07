@@ -28,7 +28,7 @@
 int   pfq_queue_alloc(struct pfq_sock *p, size_t queue_mem);
 void  pfq_queue_free (struct pfq_sock *p);
 
-inline size_t queue_tot_mem(struct pfq_sock *p)
+inline size_t pfq_queue_total_mem(struct pfq_sock *p)
 {
     /* TODO */
     return sizeof(struct pfq_queue_hdr);
