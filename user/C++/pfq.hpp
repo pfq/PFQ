@@ -626,17 +626,17 @@ namespace net {
                 throw pfq_error(errno, "PFQ: get id error");
 
             /* set queue slots */
-            if (::setsockopt(fd_, PF_Q, Q_SO_SET_SLOTS, &slots, sizeof(slots)) == -1)
+            if (::setsockopt(fd_, PF_Q, Q_SO_SET_RX_SLOTS, &slots, sizeof(slots)) == -1)
                 throw pfq_error(errno, "PFQ: set slots error");
             pdata_->queue_slots = slots;
 
             /* set caplen */
-            if (::setsockopt(fd_, PF_Q, Q_SO_SET_CAPLEN, &caplen, sizeof(caplen)) == -1)
+            if (::setsockopt(fd_, PF_Q, Q_SO_SET_RX_CAPLEN, &caplen, sizeof(caplen)) == -1)
                 throw pfq_error(errno, "PFQ: set caplen error");
             pdata_->queue_caplen = caplen;
 
             /* set offset */
-            if (::setsockopt(fd_, PF_Q, Q_SO_SET_OFFSET, &offset, sizeof(offset)) == -1)
+            if (::setsockopt(fd_, PF_Q, Q_SO_SET_RX_OFFSET, &offset, sizeof(offset)) == -1)
                 throw pfq_error(errno, "PFQ: set offset error");
 
             pdata_->slot_size = align<8>(sizeof(pfq_hdr) + pdata_->queue_caplen);
@@ -720,7 +720,7 @@ namespace net {
         timestamp_enable(bool value)
         {
             int ts = static_cast<int>(value);
-            if (::setsockopt(fd_, PF_Q, Q_SO_SET_TSTAMP, &ts, sizeof(ts)) == -1)
+            if (::setsockopt(fd_, PF_Q, Q_SO_SET_RX_TSTAMP, &ts, sizeof(ts)) == -1)
                 throw pfq_error(errno, "PFQ: set timestamp mode");
         }
 
@@ -729,7 +729,7 @@ namespace net {
         timestamp_enabled() const
         {
            int ret; socklen_t size = sizeof(int);
-           if (::getsockopt(fd_, PF_Q, Q_SO_GET_TSTAMP, &ret, &size) == -1)
+           if (::getsockopt(fd_, PF_Q, Q_SO_GET_RX_TSTAMP, &ret, &size) == -1)
                 throw pfq_error(errno, "PFQ: get timestamp mode");
            return ret;
         }
@@ -741,7 +741,7 @@ namespace net {
             if (enabled())
                 throw pfq_error("PFQ: enabled (caplen could not be set)");
 
-            if (::setsockopt(fd_, PF_Q, Q_SO_SET_CAPLEN, &value, sizeof(value)) == -1) {
+            if (::setsockopt(fd_, PF_Q, Q_SO_SET_RX_CAPLEN, &value, sizeof(value)) == -1) {
                 throw pfq_error(errno, "PFQ: set caplen error");
             }
 
@@ -753,7 +753,7 @@ namespace net {
         caplen() const
         {
            size_t ret; socklen_t size = sizeof(ret);
-           if (::getsockopt(fd_, PF_Q, Q_SO_GET_CAPLEN, &ret, &size) == -1)
+           if (::getsockopt(fd_, PF_Q, Q_SO_GET_RX_CAPLEN, &ret, &size) == -1)
                 throw pfq_error(errno, "PFQ: get caplen error");
            return ret;
         }
@@ -765,7 +765,7 @@ namespace net {
             if (enabled())
                 throw pfq_error("PFQ: enabled (offset could not be set)");
 
-            if (::setsockopt(fd_, PF_Q, Q_SO_SET_OFFSET, &value, sizeof(value)) == -1) {
+            if (::setsockopt(fd_, PF_Q, Q_SO_SET_RX_OFFSET, &value, sizeof(value)) == -1) {
                 throw pfq_error(errno, "PFQ: set offset error");
             }
         }
@@ -775,7 +775,7 @@ namespace net {
         offset() const
         {
            size_t ret; socklen_t size = sizeof(ret);
-           if (::getsockopt(fd_, PF_Q, Q_SO_GET_OFFSET, &ret, &size) == -1)
+           if (::getsockopt(fd_, PF_Q, Q_SO_GET_RX_OFFSET, &ret, &size) == -1)
                 throw pfq_error(errno, "PFQ: get offset error");
            return ret;
         }
@@ -787,7 +787,7 @@ namespace net {
             if (enabled())
                 throw pfq_error("PFQ: enabled (slots could not be set)");
 
-            if (::setsockopt(fd_, PF_Q, Q_SO_SET_SLOTS, &value, sizeof(value)) == -1) {
+            if (::setsockopt(fd_, PF_Q, Q_SO_SET_RX_SLOTS, &value, sizeof(value)) == -1) {
                 throw pfq_error(errno, "PFQ: set slots error");
             }
 
@@ -1023,9 +1023,9 @@ namespace net {
             if (!pdata_ || !pdata_->queue_addr)
                 throw pfq_error("PFQ: not enabled");
 
-            auto q = static_cast<struct pfq_queue_descr *>(pdata_->queue_addr);
+            auto q = static_cast<struct pfq_queue_hdr *>(pdata_->queue_addr);
 
-            size_t data = q->data;
+            size_t data = q->rx.data;
             size_t index = MPDB_QUEUE_INDEX(data);
             size_t q_size = pdata_->queue_slots * pdata_->slot_size;
 
@@ -1037,22 +1037,22 @@ namespace net {
 
             // reset the next buffer...
 
-            data = __sync_lock_test_and_set(&q->data, (unsigned int)((index+1) << 24));
+            data = __sync_lock_test_and_set(&q->rx.data, (unsigned int)((index+1) << 24));
 
             auto queue_len =  std::min(static_cast<size_t>(MPDB_QUEUE_LEN(data)), pdata_->queue_slots);
 
             return queue(static_cast<char *>(pdata_->queue_addr) +
-						 sizeof(pfq_queue_descr) +
-						 (index & 1) * q_size,
-                         pdata_->slot_size, queue_len, index);
+						    sizeof(pfq_queue_hdr) +
+						    (index & 1) * q_size,
+                            pdata_->slot_size, queue_len, index);
         }
 
 
         uint8_t
         current_commit() const
         {
-            auto q = static_cast<struct pfq_queue_descr *>(pdata_->queue_addr);
-            return MPDB_QUEUE_INDEX(q->data);
+            auto q = static_cast<struct pfq_queue_hdr *>(pdata_->queue_addr);
+            return MPDB_QUEUE_INDEX(q->rx.data);
         }
 
 

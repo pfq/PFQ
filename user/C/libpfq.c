@@ -152,21 +152,21 @@ pfq_open_group(unsigned int class_mask, int group_policy, size_t caplen, size_t 
 	}
 
 	/* set queue slots */
-	if (setsockopt(fd, PF_Q, Q_SO_SET_SLOTS, &slots, sizeof(slots)) == -1) {
+	if (setsockopt(fd, PF_Q, Q_SO_SET_RX_SLOTS, &slots, sizeof(slots)) == -1) {
 		return __error = "PFQ: set slots error", free(q), NULL;
 	}
 
 	q->queue_slots = slots;
 
 	/* set caplen */
-	if (setsockopt(fd, PF_Q, Q_SO_SET_CAPLEN, &caplen, sizeof(caplen)) == -1) {
+	if (setsockopt(fd, PF_Q, Q_SO_SET_RX_CAPLEN, &caplen, sizeof(caplen)) == -1) {
 		return __error = "PFQ: set caplen error", free(q), NULL;
 	}
 
 	q->queue_caplen = caplen;
 
 	/* set offset */
-	if (setsockopt(fd, PF_Q, Q_SO_SET_OFFSET, &offset, sizeof(offset)) == -1) {
+	if (setsockopt(fd, PF_Q, Q_SO_SET_RX_OFFSET, &offset, sizeof(offset)) == -1) {
 		return __error = "PFQ: set offset error", free(q), NULL;
 	}
 
@@ -267,7 +267,7 @@ int
 pfq_timestamp_enable(pfq_t *q, int value)
 {
 	int ts = value;
-	if (setsockopt(q->fd, PF_Q, Q_SO_SET_TSTAMP, &ts, sizeof(ts)) == -1) {
+	if (setsockopt(q->fd, PF_Q, Q_SO_SET_RX_TSTAMP, &ts, sizeof(ts)) == -1) {
 		return q->error = "PFQ: set timestamp mode", -1;
 	}
 	return q->error = NULL, 0;
@@ -280,7 +280,7 @@ pfq_is_timestamp_enabled(pfq_t const *q)
 	pfq_t * mutable = (pfq_t *)q;
 	int ret; socklen_t size = sizeof(int);
 
-	if (getsockopt(q->fd, PF_Q, Q_SO_GET_TSTAMP, &ret, &size) == -1) {
+	if (getsockopt(q->fd, PF_Q, Q_SO_GET_RX_TSTAMP, &ret, &size) == -1) {
 	        return mutable->error = "PFQ: get timestamp mode", -1;
 	}
 	return mutable->error = NULL, ret;
@@ -335,7 +335,7 @@ pfq_set_caplen(pfq_t *q, size_t value)
 		return q->error =  "PFQ: enabled (caplen could not be set)", -1;
 	}
 
-	if (setsockopt(q->fd, PF_Q, Q_SO_SET_CAPLEN, &value, sizeof(value)) == -1) {
+	if (setsockopt(q->fd, PF_Q, Q_SO_SET_RX_CAPLEN, &value, sizeof(value)) == -1) {
 		return q->error = "PFQ: set caplen error", -1;
 	}
 
@@ -350,7 +350,7 @@ pfq_get_caplen(pfq_t const *q)
 	size_t ret; socklen_t size = sizeof(ret);
 	pfq_t * mutable = (pfq_t *)q;
 
-	if (getsockopt(q->fd, PF_Q, Q_SO_GET_CAPLEN, &ret, &size) == -1) {
+	if (getsockopt(q->fd, PF_Q, Q_SO_GET_RX_CAPLEN, &ret, &size) == -1) {
 		return mutable->error = "PFQ: get caplen error", -1;
 	}
 	return mutable->error = NULL, (ssize_t)ret;
@@ -365,7 +365,7 @@ pfq_set_offset(pfq_t *q, size_t value)
 		return q->error =  "PFQ: enabled (offset could not be set)", -1;
 	}
 
-	if (setsockopt(q->fd, PF_Q, Q_SO_SET_OFFSET, &value, sizeof(value)) == -1) {
+	if (setsockopt(q->fd, PF_Q, Q_SO_SET_RX_OFFSET, &value, sizeof(value)) == -1) {
 		return q->error = "PFQ: set offset error", -1;
 	}
 	return q->error = NULL, 0;
@@ -378,7 +378,7 @@ pfq_get_offset(pfq_t const *q)
 	pfq_t * mutable = (pfq_t *)q;
 	size_t ret; socklen_t size = sizeof(ret);
 
-	if (getsockopt(q->fd, PF_Q, Q_SO_GET_OFFSET, &ret, &size) == -1) {
+	if (getsockopt(q->fd, PF_Q, Q_SO_GET_RX_OFFSET, &ret, &size) == -1) {
 		return mutable->error = "PFQ: get offset error", -1;
 	}
 	return mutable->error = NULL, (ssize_t)ret;
@@ -392,7 +392,7 @@ pfq_set_slots(pfq_t *q, size_t value)
 	if (enabled == 1) {
 		return q->error =  "PFQ: enabled (slots could not be set)", -1;
 	}
-	if (setsockopt(q->fd, PF_Q, Q_SO_SET_SLOTS, &value, sizeof(value)) == -1) {
+	if (setsockopt(q->fd, PF_Q, Q_SO_SET_RX_SLOTS, &value, sizeof(value)) == -1) {
 		return q->error = "PFQ: set slots error", -1;
 	}
 
@@ -678,15 +678,15 @@ int
 pfq_read(pfq_t *q, struct pfq_net_queue *nq, long int microseconds)
 {
 	size_t q_size = q->queue_slots * q->slot_size;
-	struct pfq_queue_descr * qd;
+	struct pfq_queue_hdr * qd;
 	unsigned int index, data;
 
         if (q->queue_addr == NULL) {
          	return q->error = "PFQ: read on pfq socket not enabled", -1;
 	}
 
-	qd = (struct pfq_queue_descr *)(q->queue_addr);
-	data   = qd->data;
+	qd = (struct pfq_queue_hdr *)(q->queue_addr);
+	data   = qd->rx.data;
 	index  = MPDB_QUEUE_INDEX(data);
 
 	/*  watermark for polling... */
@@ -700,12 +700,12 @@ pfq_read(pfq_t *q, struct pfq_net_queue *nq, long int microseconds)
 
 	/* reset the next buffer... */
 
-	data = __sync_lock_test_and_set(&qd->data, ((index+1) << 24));
+	data = __sync_lock_test_and_set(&qd->rx.data, ((index+1) << 24));
 
 	size_t queue_len = min(MPDB_QUEUE_LEN(data), q->queue_slots);
 
 	nq->queue = (char *)(q->queue_addr) +
-			    sizeof(struct pfq_queue_descr) +
+			    sizeof(struct pfq_queue_hdr) +
 			    (index & 1) * q_size;
 	nq->index = index;
 	nq->len   = queue_len;
