@@ -1,7 +1,6 @@
 /***************************************************************
  *
  * (C) 2011-13 Nicola Bonelli <nicola.bonelli@cnit.it>
- *             Andrea Di Pietro <andrea.dipietro@for.unipi.it>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,49 +21,51 @@
  *
  ****************************************************************/
 
-#ifndef _PF_Q_MPDB_QUEUE_H_
-#define _PF_Q_MPDB_QUEUE_H_
+#include <linux/kernel.h>
+#include <linux/version.h>
+#include <linux/types.h>
 
-#include <linux/skbuff.h>
-#include <linux/pf_q.h>
-#include <linux/if_vlan.h>
-
-#include <pf_q-skb-queue.h>
-#include <pf_q-common.h>
 #include <pf_q-sock.h>
 
+/* vector of pointers to pfq_sock */
 
-extern bool   mpdb_enqueue(struct pfq_rx_opt *rq, struct sk_buff *skb);
-extern size_t mpdb_enqueue_batch(struct pfq_rx_opt *rq, unsigned long queue_mask, int len, struct pfq_queue_skb *skbs, int gid);
+atomic_long_t pfq_sock_vector[Q_MAX_ID];
 
 
-static inline
-size_t mpdb_queue_len(struct pfq_rx_opt *p)
+int pfq_get_free_sock_id(struct pfq_sock * ro)
 {
-    struct pfq_rx_queue_hdr *qd = (struct pfq_rx_queue_hdr *)p->addr;
-    return MPDB_QUEUE_LEN(qd->data);
+        int n = 0;
+        for(; n < Q_MAX_ID; n++)
+        {
+                if (!atomic_long_cmpxchg(pfq_sock_vector + n, 0, (long)ro))
+                        return n;
+        }
+        return -1;
 }
 
 
-static inline
-int mpdb_queue_index(struct pfq_rx_opt *p)
+struct pfq_sock * pfq_get_sock_by_id(size_t id)
 {
-    struct pfq_rx_queue_hdr *qd = (struct pfq_rx_queue_hdr *)p->addr;
-    return MPDB_QUEUE_INDEX(qd->data) & 1;
+        struct pfq_sock * so;
+        if (unlikely(id >= Q_MAX_ID))
+        {
+                pr_devel("[PFQ] pfq_devmap_freeid: bad id=%zd!\n", id);
+                return NULL;
+        }
+	so = (struct pfq_sock *)atomic_long_read(&pfq_sock_vector[id]);
+	smp_read_barrier_depends();
+	return so;
 }
 
 
-static inline
-size_t mpdb_queue_size(struct pfq_rx_opt *rq)
+void pfq_release_sock_id(int id)
 {
-    return rq->slot_size * rq->slots;
+        if (unlikely(id >= Q_MAX_ID || id < 0))
+        {
+                pr_devel("[PFQ] pfq_devmap_freeid: bad id=%d!\n", id);
+                return;
+        }
+        atomic_long_set(pfq_sock_vector + id, 0);
 }
 
 
-static inline
-size_t mpdb_queue_tot_mem(struct pfq_rx_opt *rq)
-{
-    return sizeof(struct pfq_rx_queue_hdr) + mpdb_queue_size(rq) * 2;
-}
-
-#endif /* _PF_Q_MPDB_QUEUE_H_ */

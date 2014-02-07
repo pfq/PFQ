@@ -26,9 +26,7 @@
 #define _PF_COMMON_H_
 
 #include <linux/kernel.h>
-#include <linux/poll.h>
-
-#include <net/sock.h>
+#include <linux/pf_q.h>
 
 #include <pf_q-sparse-counter.h>
 
@@ -56,57 +54,6 @@ typedef struct pfq_kstats
     sparse_counter_t  drop;    // filter
 
 } pfq_kstat_t;
-
-
-struct pfq_rx_opt
-{
-        int                 id;
-        int                 tstamp;
-
-        void *              addr;
-        size_t              queue_mem;  /* > sizeof(pfq_queue_descr) + q_slots * sizeof(slots) * 2 */
-
-        size_t              slots;      /* number of slots per queue */
-        size_t              caplen;
-        size_t              offset;
-        size_t              slot_size;
-
-        wait_queue_head_t   waitqueue;
-        pfq_kstat_t         stat;
-
-        int                 active;
-
-} __attribute__((aligned(64)));
-
-
-struct pfq_tx_opt
-{
-        struct sk_buff     *skb_slot[PFQ_TX_RING_SIZE];  /* preallocated skbuff ring */
-
-        unsigned int        skb_index;
-        uint64_t            counter;
-
-        struct net_device   *dev;
-        struct netdev_queue *txq;
-
-        int                 hardware_queue;
-        int                 cpu_index;
-
-        void *              q_mem;
-        size_t              q_tot_mem;
-
-        struct task_struct  *thread;
-        bool                thread_running;
-
-} __attribute__((aligned(64)));
-
-
-struct pfq_sock
-{
-        struct sock sk;
-        struct pfq_rx_opt *rx_opt;
-        struct pfq_tx_opt *tx_opt;
-};
 
 
 #endif /* _PF_COMMON_H_ */

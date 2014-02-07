@@ -55,6 +55,7 @@
 #include <pf_q-bpf.h>
 #include <pf_q-memory.h>
 #include <pf_q-queue.h>
+#include <pf_q-sock.h>
 
 #include <pf_q-mpdb-queue.h>
 
@@ -108,9 +109,6 @@ MODULE_PARM_DESC(recycle_len,   " Recycle skb list (default=1024)");
 MODULE_PARM_DESC(flow_control,  " Flow control value (default=0)");
 MODULE_PARM_DESC(vl_untag,      " Enable vlan untagging (default=0)");
 
-/* vector of pointers to pfq_rx_opt */
-
-atomic_long_t pfq_vector[Q_MAX_ID];
 
 /* timestamp toggle */
 
@@ -120,55 +118,7 @@ atomic_t timestamp_toggle;
 struct local_data __percpu    * cpu_data;
 
 
-/* uhm okay, this is a legit form of static polymorphism */
-
-static inline struct pfq_sock *
-pfq_sk(struct sock *sk)
-{
-        return (struct pfq_sock *)(sk);
-}
-
-
 inline
-int pfq_get_free_id(struct pfq_rx_opt * rq)
-{
-        int n = 0;
-        for(; n < Q_MAX_ID; n++)
-        {
-                if (!atomic_long_cmpxchg(pfq_vector + n, 0, (long)rq))
-                        return n;
-        }
-        return -1;
-}
-
-
-inline
-struct pfq_rx_opt *
-pfq_get_opt(size_t id)
-{
-        struct pfq_rx_opt * opt;
-        if (unlikely(id >= Q_MAX_ID))
-        {
-                pr_devel("[PFQ] pfq_devmap_freeid: bad id=%zd!\n", id);
-                return NULL;
-        }
-	opt = (struct pfq_rx_opt *)atomic_long_read(&pfq_vector[id]);
-	smp_read_barrier_depends();
-	return opt;
-}
-
-
-inline
-void pfq_release_id(int id)
-{
-        if (unlikely(id >= Q_MAX_ID || id < 0))
-        {
-                pr_devel("[PFQ] pfq_devmap_freeid: bad id=%d!\n", id);
-                return;
-        }
-        atomic_long_set(pfq_vector + id, 0);
-}
-
 
 inline
 bool pfq_copy_to_user_skbs(struct pfq_rx_opt *rq, int cpu, unsigned long sock_queue, struct pfq_queue_skb *skbs, int gid)

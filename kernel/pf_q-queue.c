@@ -26,7 +26,7 @@
 #include <linux/mm.h>
 
 #include <linux/pf_q.h>
-#include <pf_q-common.h>
+#include <pf_q-sock.h>
 
 
 void * pfq_queue_alloc(struct pfq_rx_opt *rq, size_t queue_mem, size_t *tot_mem)
