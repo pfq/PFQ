@@ -538,57 +538,53 @@ pfq_packet_rcv
         return pfq_receive(NULL, skb, 0);
 }
 
-static int
-pfq_rx_opt_ctor(struct pfq_rx_opt *ro)
+
+void
+pfq_rx_opt_init(struct pfq_rx_opt *ro)
 {
-        /* set to 0 by default */
-        memset(ro, 0, sizeof(struct pfq_rx_opt));
+        /* the queue is allocate later, when the socket is enabled */
+
+        ro->queue_info = NULL;
+        ro->queue_addr = NULL;
+        ro->queue_size = 0;
 
         /* disable tiemstamping by default */
         ro->tstamp = false;
-
-        /* queue is alloc when the socket is enabled */
-
-        ro->queue_addr = NULL;
-        ro->queue_size = 0;
 
         /* set q_slots and q_caplen default values */
 
         ro->caplen    = cap_len;
         ro->offset    = 0;
 
-        // TODO
-        // ro->slot_size = MPDB_QUEUE_SLOT_SIZE(cap_len);
-        // ro->slots     = queue_slots;
-
         /* initialize waitqueue */
+
         init_waitqueue_head(&ro->waitqueue);
 
         /* reset stats */
         sparse_set(&ro->stat.recv, 0);
         sparse_set(&ro->stat.lost, 0);
         sparse_set(&ro->stat.drop, 0);
-
-        return 0;
 }
 
 
-static int
-pfq_tx_opt_ctor(struct pfq_tx_opt *tq)
+void
+pfq_tx_opt_init(struct pfq_tx_opt *to)
 {
-        memset(tq, 0, sizeof(struct pfq_tx_opt));
+        /* the queue is allocate later, when the socket is enabled */
 
-        tq->counter             = 0;
-        tq->dev                 = NULL;
-        tq->txq                 = NULL;
-        tq->hardware_queue      = 0;
-        tq->cpu_index           = -1;
-        tq->queue_addr          = NULL;
-        tq->queue_size          = 0;
-        tq->thread              = NULL;
-        tq->thread_stop         = false;
+        to->queue_info          = NULL;
+        to->queue_addr          = NULL;
+        to->queue_size          = 0;
 
-        return 0;
+        to->counter             = 0;
+        to->dev                 = NULL;
+        to->txq                 = NULL;
+        to->hardware_queue      = 0;
+        to->cpu_index           = -1;
+        to->queue_addr          = NULL;
+        to->queue_size          = 0;
+        to->thread              = NULL;
+        to->thread_stop         = false;
 }
 
 
@@ -617,8 +613,6 @@ pfq_create(
         struct pfq_sock *so;
         struct sock *sk;
 
-        int err = -ENOMEM;
-
         /* security and sanity check */
         if (!capable(CAP_NET_ADMIN))
                 return -EPERM;
@@ -631,7 +625,10 @@ pfq_create(
 
         sk = sk_alloc(net, PF_INET, GFP_KERNEL, &pfq_proto);
         if (sk == NULL)
-                goto out;
+        {
+                printk(KERN_WARNING "[PFQ] error: could not allocate a socket\n");
+                return -ENOMEM;
+        }
 
         sock->ops = &pfq_ops;
 
@@ -641,22 +638,28 @@ pfq_create(
 
         so = pfq_sk(sk);
 
-        /* construct both rx_opt and tx_opt */
-
-        if (pfq_rx_opt_ctor(&so->rx_opt) != 0 || pfq_tx_opt_ctor(&so->tx_opt) != 0)
-        {
-                err = -ENOMEM;
-                goto pq_err;
-        }
-
-        /* get a unique id for this queue */
+        /* get a unique id for this sock */
 
         so->id = pfq_get_free_sock_id(so);
         if (so->id == -1)
         {
-                printk(KERN_WARNING "[PFQ] no queue available!\n");
+                printk(KERN_WARNING "[PFQ] error: resource exhausted\n");
+                sk_free(sk);
                 return -EBUSY;
         }
+
+        /* memory mapped queues are allocated later, when the socket is enabled */
+
+        so->mem_addr = NULL;
+        so->mem_size = 0;
+
+        /* initialize both rx_opt and tx_opt */
+
+        pfq_rx_opt_init(&so->rx_opt);
+
+        pfq_tx_opt_init(&so->tx_opt);
+
+        /* initialize socket */
 
         sk->sk_family   = PF_Q;
         sk->sk_destruct = pfq_sock_destruct;
@@ -664,11 +667,6 @@ pfq_create(
         sk_refcnt_debug_inc(sk);
 
         return 0;
-
-pq_err:
-        sk_free(sk);
-out:
-        return err;
 }
 
 
