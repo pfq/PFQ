@@ -779,7 +779,7 @@ pfq_rx_release(struct pfq_rx_opt *rq)
          * without using expensive rw-mutexes
          */
 
-        msleep(GRACE_PERIOD);
+        msleep(Q_GRACE_PERIOD);
 
         kfree(rq);
 
@@ -1108,7 +1108,7 @@ int pfq_setsockopt(struct socket *sock,
                     else {
                         rq->active = false;
 
-                        msleep(GRACE_PERIOD);
+                        msleep(Q_GRACE_PERIOD);
 
                         pfq_queue_free(rq);
                     }
@@ -1662,7 +1662,7 @@ static void __exit pfq_exit_module(void)
         __pfq_devmap_monitor_reset();
 
         /* wait grace period */
-        msleep(GRACE_PERIOD);
+        msleep(Q_GRACE_PERIOD);
 
         /* destroy pipeline queues (of each cpu) */
 

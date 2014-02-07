@@ -124,7 +124,7 @@ __pfq_group_dtor(int gid)
 
         filter = (struct sk_filter *)atomic_long_xchg(&pfq_groups[gid].filter, 0L);
 
-        msleep(GRACE_PERIOD);   /* sleeping is possible here: user-context */
+        msleep(Q_GRACE_PERIOD);   /* sleeping is possible here: user-context */
 
         for(i = 0; i < Q_FUN_MAX; i++)
         {
@@ -212,7 +212,7 @@ int __pfq_set_group_function(int gid, sk_function_t fun, int level)
 
         atomic_long_set(&pfq_groups[gid].fun_ctx[level].function, (long)fun);
 
-        msleep(GRACE_PERIOD);
+        msleep(Q_GRACE_PERIOD);
 
         return 0;
 }
@@ -227,10 +227,9 @@ int __pfq_set_group_context(int gid, void *context, int level)
 
         old = (void *)atomic_long_xchg(& pfq_groups[gid].fun_ctx[level].context, (long)context);
 
-        msleep(GRACE_PERIOD);
+        msleep(Q_GRACE_PERIOD);
 
         kfree(old);
-
         return 0;
 }
 
@@ -265,7 +264,7 @@ void __pfq_reset_group_functx(int gid)
 
                 atomic_long_set(& pfq_groups[gid].fun_ctx[i].function, 0L);
 
-                msleep(GRACE_PERIOD);
+                msleep(Q_GRACE_PERIOD);
 
                 kfree(old);
         }
@@ -276,7 +275,7 @@ void __pfq_set_group_filter(int gid, struct sk_filter *filter)
 {
         struct sk_filter * old_filter = (void *)atomic_long_xchg(& pfq_groups[gid].filter, (long)filter);
 
-        msleep(GRACE_PERIOD);
+        msleep(Q_GRACE_PERIOD);
 
         pfq_free_sk_filter(old_filter);
 }
