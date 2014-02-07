@@ -32,6 +32,15 @@
 
 #include <pf_q-sparse-counter.h>
 
+#define Q_MAX_CPU               64
+#define Q_MAX_ID                64
+#define Q_MAX_GROUP             64
+
+#define Q_MAX_DEVICE            256
+#define Q_MAX_DEVICE_MASK       (Q_MAX_DEVICE-1)
+#define Q_MAX_HW_QUEUE          256
+#define Q_MAX_HW_QUEUE_MASK     (Q_MAX_HW_QUEUE-1)
+
 #define GRACE_PERIOD 10     /* msec */
 
 #define PFQ_TX_RING_SIZE        (8192)

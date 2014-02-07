@@ -32,15 +32,6 @@
 
 #define Q_VERSION               "2.0"
 
-#define Q_MAX_CPU               64
-#define Q_MAX_ID                64
-#define Q_MAX_GROUP             64
-
-#define Q_MAX_DEVICE            256
-#define Q_MAX_DEVICE_MASK       (Q_MAX_DEVICE-1)
-#define Q_MAX_HW_QUEUE          256
-#define Q_MAX_HW_QUEUE_MASK     (Q_MAX_HW_QUEUE-1)
-
 #else  /* user space */
 
 #include <linux/filter.h>
