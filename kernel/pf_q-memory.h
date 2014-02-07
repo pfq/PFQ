@@ -27,6 +27,8 @@
 
 #include <linux/skbuff.h>
 
+#include <pf_q-common.h>
+
 /* per-cpu data... */
 
 struct local_data

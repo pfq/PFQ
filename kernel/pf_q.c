@@ -144,37 +144,6 @@ bool pfq_copy_to_user_skbs(struct pfq_rx_opt *ro, int cpu, unsigned long sock_qu
 }
 
 
-/* exported symbols */
-
-struct sk_buff *
-__pfq_alloc_skb(unsigned int size, gfp_t priority, int fclone, int node)
-{
-        return ____pfq_alloc_skb(size, priority, fclone, node);
-}
-
-
-struct sk_buff *
-pfq_dev_alloc_skb(unsigned int length)
-{
-        struct sk_buff *skb = pfq_alloc_skb(length + NET_SKB_PAD, GFP_ATOMIC);
-        if (likely(skb))
-                skb_reserve(skb, NET_SKB_PAD);
-        return skb;
-}
-
-
-struct sk_buff *
-__pfq_netdev_alloc_skb(struct net_device *dev, unsigned int length, gfp_t gfp)
-{
-        struct sk_buff *skb = __pfq_alloc_skb(length + NET_SKB_PAD, gfp, 0, NUMA_NO_NODE);
-        if (likely(skb)) {
-                skb_reserve(skb, NET_SKB_PAD);
-                skb->dev = dev;
-        }
-        return skb;
-}
-
-
 /* send this packet to selected sockets */
 
 inline
@@ -1708,10 +1677,6 @@ pfq_gro_receive(struct napi_struct *napi, struct sk_buff *skb)
         return napi_gro_receive(napi,skb);
 }
 
-
-EXPORT_SYMBOL_GPL(__pfq_alloc_skb);
-EXPORT_SYMBOL_GPL(__pfq_netdev_alloc_skb);
-EXPORT_SYMBOL_GPL(pfq_dev_alloc_skb);
 
 
 EXPORT_SYMBOL_GPL(pfq_netif_rx);
