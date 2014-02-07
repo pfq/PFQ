@@ -717,7 +717,7 @@ pfq_release(struct socket *sock)
 
         msleep(Q_GRACE_PERIOD);
 
-        pfq_queue_free(so->mem_addr);
+        pfq_queue_free(so);
 
         sock_orphan(sk);
 	sock->sk = NULL;
