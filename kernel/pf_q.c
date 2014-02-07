@@ -54,7 +54,6 @@
 #include <pf_q-bits.h>
 #include <pf_q-bpf.h>
 #include <pf_q-memory.h>
-#include <pf_q-tx_ring.h>
 #include <pf_q-queue.h>
 
 #include <pf_q-mpdb-queue.h>
