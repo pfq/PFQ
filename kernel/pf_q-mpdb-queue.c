@@ -44,29 +44,29 @@ void *pfq_memcpy(void *to, const void *from, size_t len)
 inline
 char *mpdb_slot_ptr(struct pfq_rx_opt *ro, struct pfq_rx_queue_hdr *qd, int index, int slot)
 {
-	return (char *)(qd+1) + ((index&1) * ro->queue_info->size + slot) * ro->queue_info->slot_size;
+	return (char *)(qd+1) + ((index&1) * ro->size + slot) * ro->slot_size;
 }
 
 
 size_t mpdb_enqueue_batch(struct pfq_rx_opt *ro, unsigned long bitqueue, int burst_len, struct pfq_queue_skb *skbs, int gid)
 {
-	struct pfq_rx_queue_hdr *queue_descr = (struct pfq_rx_queue_hdr *)ro->queue_addr;
+	struct pfq_rx_queue_hdr *rx = ro->queue_info;
 	int data, q_len, q_index;
 	struct sk_buff *skb;
 	size_t sent = 0;
 	unsigned int n;
 	char *this_slot;
 
-	data = atomic_read((atomic_t *)&queue_descr->data);
+	data = atomic_read((atomic_t *)&rx->data);
 
-        if (unlikely(MPDB_QUEUE_LEN(data) > ro->queue_info->size))
+        if (unlikely(MPDB_QUEUE_LEN(data) > ro->size))
 		return 0;
 
-	data = atomic_add_return(burst_len, (atomic_t *)&queue_descr->data);
+	data = atomic_add_return(burst_len, (atomic_t *)&rx->data);
 
 	q_len     = MPDB_QUEUE_LEN(data) - burst_len;
 	q_index   = MPDB_QUEUE_INDEX(data);
-        this_slot = mpdb_slot_ptr(ro, queue_descr, q_index, q_len);
+        this_slot = mpdb_slot_ptr(ro, rx, q_index, q_len);
 
 	queue_for_each_bitmask(skb, bitqueue, n, skbs)
 	{
@@ -79,9 +79,9 @@ size_t mpdb_enqueue_batch(struct pfq_rx_opt *ro, unsigned long bitqueue, int bur
 
 		struct timespec ts;
 
-		if (unlikely(slot_index > ro->queue_info->size))
+		if (unlikely(slot_index > ro->size))
 		{
-			if ( queue_descr->poll_wait ) {
+			if ( rx->poll_wait ) {
 				wake_up_interruptible(&ro->waitqueue);
 			}
 			return sent;
@@ -142,15 +142,15 @@ size_t mpdb_enqueue_batch(struct pfq_rx_opt *ro, unsigned long bitqueue, int bur
 		hdr->commit = (uint8_t)q_index;
 
 		if (unlikely((slot_index & 16383) == 0) &&
-			     (slot_index >= (ro->queue_info->size >> 1)) &&
-			     queue_descr->poll_wait)
+			     (slot_index >= (ro->size >> 1)) &&
+			     rx->poll_wait)
 		{
 		        wake_up_interruptible(&ro->waitqueue);
 		}
 
 		sent++;
 
-		this_slot += ro->queue_info->slot_size;
+		this_slot += ro->slot_size;
 	}
 
 	return sent;

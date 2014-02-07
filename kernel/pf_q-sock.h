@@ -39,13 +39,13 @@ struct pfq_rx_opt
 {
         struct pfq_rx_queue_hdr *queue_info;
 
-        void *                  queue_addr;
-        size_t                  queue_size;
-
         int                     tstamp;
 
         size_t                  caplen;
         size_t                  offset;
+
+        size_t                  size;
+        size_t                  slot_size;
 
         wait_queue_head_t       waitqueue;
         pfq_kstat_t             stat;
@@ -57,10 +57,10 @@ struct pfq_tx_opt
 {
         struct pfq_tx_queue_hdr *queue_info;
 
-        void *                  queue_addr;
-        size_t                  queue_size;
-
         uint64_t                counter;
+
+        size_t                  size;
+        size_t                  slot_size;
 
         struct net_device       *dev;
         struct netdev_queue     *txq;

@@ -125,7 +125,7 @@ bool pfq_copy_to_user_skbs(struct pfq_rx_opt *ro, int cpu, unsigned long sock_qu
 
         int len = 0; size_t sent = 0;
 
-        if (likely(ro->queue_addr))
+        if (likely(ro->queue_info))
         {
         	smp_rmb();
 
@@ -545,8 +545,6 @@ pfq_rx_opt_init(struct pfq_rx_opt *ro)
         /* the queue is allocate later, when the socket is enabled */
 
         ro->queue_info = NULL;
-        ro->queue_addr = NULL;
-        ro->queue_size = 0;
 
         /* disable tiemstamping by default */
         ro->tstamp = false;
@@ -573,16 +571,13 @@ pfq_tx_opt_init(struct pfq_tx_opt *to)
         /* the queue is allocate later, when the socket is enabled */
 
         to->queue_info          = NULL;
-        to->queue_addr          = NULL;
-        to->queue_size          = 0;
 
         to->counter             = 0;
         to->dev                 = NULL;
         to->txq                 = NULL;
+
         to->hardware_queue      = 0;
         to->cpu_index           = -1;
-        to->queue_addr          = NULL;
-        to->queue_size          = 0;
         to->thread              = NULL;
         to->thread_stop         = false;
 }
@@ -678,8 +673,7 @@ pfq_rx_release(struct pfq_rx_opt *ro)
         if (ro->tstamp)
                 atomic_dec(&timestamp_toggle);
 
-        ro->queue_addr = NULL;
-        ro->queue_size = 0;
+        ro->queue_info = NULL;
 
         /* Convenient way to avoid a race condition,
          * without using expensive rw-mutexes
@@ -838,9 +832,10 @@ int pfq_getsockopt(struct socket *sock,
 
         case Q_SO_GET_QUEUE_MEM:
             {
-                    if (len != sizeof(ro->queue_size))
+                    if (len != sizeof(so->mem_size))
                             return -EINVAL;
-                    if (copy_to_user(optval, &ro->queue_size, sizeof(ro->queue_size)))
+
+                    if (copy_to_user(optval, &so->mem_size, sizeof(so->mem_size)))
                             return -EFAULT;
             } break;
 
@@ -854,9 +849,9 @@ int pfq_getsockopt(struct socket *sock,
 
         case Q_SO_GET_RX_SLOTS:
             {
-                    if (len != sizeof(ro->queue_info->size))
+                    if (len != sizeof(ro->size))
                             return -EINVAL;
-                    if (copy_to_user(optval, &ro->queue_info->size, sizeof(ro->queue_info->size)))
+                    if (copy_to_user(optval, &ro->size, sizeof(ro->size)))
                             return -EFAULT;
             } break;
 
@@ -995,6 +990,8 @@ int pfq_setsockopt(struct socket *sock,
                     {
                             if (!so->mem_addr)
                             {
+                                    struct pfq_queue_hdr * queue;
+
                                     /* alloc queue memory */
 
                                     if (pfq_queue_alloc(so, queue_tot_mem(so)) < 0)
@@ -1004,16 +1001,28 @@ int pfq_setsockopt(struct socket *sock,
 
                                     /* so->mem_addr and so->mem_size are correctly configured */
 
-                                    /* initialize queues header */
+                                    /* initialize queues headers */
 
+                                    queue = (struct pfq_queue_hdr *)so->mem_addr;
 
+                                    /* initialize rx queue header */
 
+                                    queue->rx.data              = (1L << 24);
+                                    queue->rx.poll_wait         = 0;
+                                    queue->rx.size              = so->rx_opt.size;
+                                    queue->rx.slot_size         = so->rx_opt.slot_size;
 
-                                    // TODO: setup queue headers (rx and tx)
+                                    /* TODO: initialize tx queue header */
 
-                                    /* sq = (struct pfq_rx_queue_hdr *)so->mem_addr; */
-                                    /* sq->data      = (1L << 24); */
-                                    /* sq->poll_wait = 0; */
+                                    queue->tx.producer.index    = 0;
+                                    queue->tx.producer.cache    = 0;
+                                    queue->tx.consumer.index    = 0;
+                                    queue->tx.consumer.cache    = 0;
+
+                                    queue->tx.size_mask         = 0;
+                                    queue->tx.max_len           = 0;
+                                    queue->tx.size              = 0;
+                                    queue->tx.slot_size         = 0;
 
 				    smp_wmb();
 
@@ -1082,20 +1091,20 @@ int pfq_setsockopt(struct socket *sock,
                     if (copy_from_user(&so->rx_opt.caplen, optval, optlen))
                             return -EFAULT;
 
-                    so->rx_opt.queue_info->slot_size = MPDB_QUEUE_SLOT_SIZE(so->rx_opt.caplen);
-                    pr_devel("[PFQ|%d] caplen:%lu -> slot_size:%u\n",
-                                    so->id, so->rx_opt.caplen, so->rx_opt.queue_info->slot_size);
+                    so->rx_opt.slot_size = MPDB_QUEUE_SLOT_SIZE(so->rx_opt.caplen);
+                    pr_devel("[PFQ|%d] caplen:%lu -> slot_size:%lu\n",
+                                    so->id, so->rx_opt.caplen, so->rx_opt.slot_size);
             } break;
 
         case Q_SO_SET_RX_SLOTS:
             {
-                    if (optlen != sizeof(so->rx_opt.queue_info->size))
+                    if (optlen != sizeof(so->rx_opt.size))
                             return -EINVAL;
-                    if (copy_from_user(&so->rx_opt.queue_info->size, optval, optlen))
+                    if (copy_from_user(&so->rx_opt.size, optval, optlen))
                             return -EFAULT;
 
-                    pr_devel("[PFQ|%d] queue_slots:%u -> slot_size:%u\n",
-                                    so->id, so->rx_opt.queue_info->size, so->rx_opt.queue_info->slot_size);
+                    pr_devel("[PFQ|%d] queue_slots:%lu -> slot_size:%lu\n",
+                                    so->id, so->rx_opt.size, so->rx_opt.slot_size);
             } break;
 
         case Q_SO_SET_RX_OFFSET:
@@ -1369,19 +1378,19 @@ pfq_poll(struct file *file, struct socket *sock, poll_table * wait)
 {
         struct sock *sk = sock->sk;
         struct pfq_sock *so = pfq_sk(sk);
-        struct pfq_rx_queue_hdr * q;
+        struct pfq_rx_queue_hdr * rx;
         unsigned int mask = 0;
 
-        q = (struct pfq_rx_queue_hdr *)so->rx_opt.queue_addr;
-        if (q == NULL)
+        rx = (struct pfq_rx_queue_hdr *)so->rx_opt.queue_info;
+        if (rx == NULL)
                 return mask;
 
-        if (mpdb_queue_len(so) >= (so->rx_opt.queue_info->size >> 1)) {
-                q->poll_wait = 0;
+        if (mpdb_queue_len(so) >= (so->rx_opt.size >> 1)) {
+                rx->poll_wait = 0;
                 mask |= POLLIN | POLLRDNORM;
         }
-        else if (!q->poll_wait) {
-                q->poll_wait = 1;
+        else if (!rx->poll_wait) {
+                rx->poll_wait = 1;
                 poll_wait(file, &so->rx_opt.waitqueue, wait);
         }
 
