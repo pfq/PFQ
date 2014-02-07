@@ -29,7 +29,7 @@
 #include <linux/pf_q.h>
 #include <linux/if_vlan.h>
 
-#include <pf_q-queue.h>
+#include <pf_q-skb-queue.h>
 #include <pf_q-common.h>
 
 

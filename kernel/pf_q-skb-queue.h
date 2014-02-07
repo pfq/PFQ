@@ -22,8 +22,8 @@
  ****************************************************************/
 
 
-#ifndef _PF_Q_QUEUE_H_
-#define _PF_Q_QUEUE_H_
+#ifndef _PF_Q_SKB_QUEUE_H_
+#define _PF_Q_SKB_QUEUE_H_
 
 #include <pf_q-bits.h>
 
@@ -80,4 +80,4 @@ size_t pfq_queue_skb_size(struct pfq_queue_skb *q)
 }
 
 
-#endif /* _PF_Q_QUEUE_H_ */
+#endif /* _PF_Q_SKB_QUEUE_H_ */

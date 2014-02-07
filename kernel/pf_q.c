@@ -49,7 +49,7 @@
 #include <pf_q-common.h>
 #include <pf_q-devmap.h>
 #include <pf_q-group.h>
-#include <pf_q-queue.h>
+#include <pf_q-skb-queue.h>
 #include <pf_q-functional.h>
 #include <pf_q-bits.h>
 #include <pf_q-bpf.h>
