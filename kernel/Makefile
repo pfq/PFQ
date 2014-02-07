@@ -12,7 +12,7 @@ EXTRA_CFLAGS += -DPFQ_USE_SKB_LINEARIZE
 
 obj-m := $(TARGET).o
 
-pfq-objs := pf_q.o pf_q-devmap.o pf_q-group.o pf_q-functional.o pf_q-functional-default.o pf_q-spsc-queue.o pf_q-mpdb-queue.o pf_q-bpf.o pf_q-tx_ring.o
+pfq-objs := pf_q.o pf_q-devmap.o pf_q-queue.o pf_q-group.o pf_q-functional.o pf_q-functional-default.o pf_q-spsc-queue.o pf_q-mpdb-queue.o pf_q-bpf.o pf_q-tx_ring.o
 
 KERNELVERSION := $(shell uname -r)
 

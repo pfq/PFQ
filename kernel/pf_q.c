@@ -55,6 +55,7 @@
 #include <pf_q-bpf.h>
 #include <pf_q-memory.h>
 #include <pf_q-tx_ring.h>
+#include <pf_q-queue.h>
 
 #include <pf_q-mpdb-queue.h>
 
@@ -670,7 +671,7 @@ pfq_rx_dtor(struct pfq_rx_opt *rq)
 {
         pfq_release_id(rq->id);
 
-        mpdb_queue_free(rq);
+        pfq_queue_free(rq);
 }
 
 static int
@@ -1142,7 +1143,7 @@ int pfq_setsockopt(struct socket *sock,
                                     struct pfq_rx_queue_hdr *sq;
 
                                     /* alloc queue memory */
-                                    rq->addr = mpdb_queue_alloc(rq, mpdb_queue_tot_mem(rq), &rq->queue_mem);
+                                    rq->addr = pfq_queue_alloc(rq, mpdb_queue_tot_mem(rq), &rq->queue_mem);
                                     if (rq->addr == NULL) {
                                             return -ENOMEM;
                                     }
@@ -1160,7 +1161,7 @@ int pfq_setsockopt(struct socket *sock,
 
                         msleep(GRACE_PERIOD);
 
-                        mpdb_queue_free(rq);
+                        pfq_queue_free(rq);
                     }
 
             } break;

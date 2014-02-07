@@ -35,8 +35,6 @@
 
 extern bool   mpdb_enqueue(struct pfq_rx_opt *rq, struct sk_buff *skb);
 extern size_t mpdb_enqueue_batch(struct pfq_rx_opt *rq, unsigned long queue_mask, int len, struct pfq_queue_skb *skbs, int gid);
-extern void * mpdb_queue_alloc(struct pfq_rx_opt *rq, size_t queue_mem, size_t * tot_mem);
-extern void   mpdb_queue_free(struct pfq_rx_opt *rq);
 
 
 static inline

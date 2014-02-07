@@ -23,47 +23,9 @@
  ****************************************************************/
 
 #include <pf_q-mpdb-queue.h>
+#include <pf_q-spsc-queue.h>
+
 #include <linux/pf_q-fun.h>
-
-void * mpdb_queue_alloc(struct pfq_rx_opt *rq, size_t queue_mem, size_t *tot_mem)
-{
-	/* calculate the size of the buffer */
-
-	size_t tm = PAGE_ALIGN(queue_mem);
-
-	/* align bufflen to page size */
-
-	size_t num_pages = tm / PAGE_SIZE; void *addr;
-
-	num_pages += (num_pages + (PAGE_SIZE-1)) & (PAGE_SIZE-1);
-	*tot_mem = num_pages*PAGE_SIZE;
-
-	/* Memory is already zeroed */
-
-        addr = vmalloc_user(*tot_mem);
-	if (addr == NULL)
-	{
-		printk(KERN_WARNING "[PFQ|%d] pfq_queue_alloc: out of memory!", rq->id);
-		*tot_mem = 0;
-		return NULL;
-	}
-
-	pr_devel("[PFQ|%d] queue caplen:%lu mem:%lu\n", rq->id, rq->caplen, *tot_mem);
-	return addr;
-}
-
-
-void mpdb_queue_free(struct pfq_rx_opt *rq)
-{
-	if (rq->addr) {
-		pr_devel("[PFQ|%d] queue freed.\n", rq->id);
-		vfree(rq->addr);
-
-		rq->addr = NULL;
-		rq->queue_mem = 0;
-	}
-}
-
 
 static inline
 void *pfq_memcpy(void *to, const void *from, size_t len)
