@@ -142,10 +142,12 @@ struct pfq_queue_hdr
 #define Q_SO_TOGGLE_QUEUE           1       /* enable = 1, disable = 0 */
 #define Q_SO_ADD_BINDING            2
 #define Q_SO_REMOVE_BINDING         3
-#define Q_SO_SET_TSTAMP             4
-#define Q_SO_SET_CAPLEN             5
-#define Q_SO_SET_SLOTS              6
-#define Q_SO_SET_OFFSET             7
+
+#define Q_SO_SET_RX_TSTAMP          4
+#define Q_SO_SET_RX_CAPLEN          5
+#define Q_SO_SET_RX_SLOTS           6
+#define Q_SO_SET_RX_OFFSET          7
+
 #define Q_SO_GROUP_JOIN             8
 #define Q_SO_GROUP_LEAVE            9
 #define Q_SO_GROUP_CONTEXT          10
@@ -159,11 +161,13 @@ struct pfq_queue_hdr
 #define Q_SO_GET_ID                 20
 #define Q_SO_GET_STATUS             21      /* 1 = enabled, 0 = disabled */
 #define Q_SO_GET_STATS              23
-#define Q_SO_GET_TSTAMP             24
-#define Q_SO_GET_QUEUE_MEM          25      /* size of the whole dbmp queue (bytes) */
-#define Q_SO_GET_CAPLEN             26
-#define Q_SO_GET_SLOTS              27
-#define Q_SO_GET_OFFSET             28
+#define Q_SO_GET_QUEUE_MEM          24      /* size of the whole dbmp queue (bytes) */
+
+#define Q_SO_GET_RX_TSTAMP          25
+#define Q_SO_GET_RX_CAPLEN          26
+#define Q_SO_GET_RX_SLOTS           27
+#define Q_SO_GET_RX_OFFSET          28
+
 #define Q_SO_GET_GROUPS             29
 #define Q_SO_GET_GROUP_STATS        30
 #define Q_SO_GET_GROUP_CONTEXT      31

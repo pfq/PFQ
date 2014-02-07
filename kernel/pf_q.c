@@ -828,7 +828,7 @@ int pfq_getsockopt(struct socket *sock,
                             return -EFAULT;
             } break;
 
-        case Q_SO_GET_TSTAMP:
+        case Q_SO_GET_RX_TSTAMP:
             {
                     if (len != sizeof(ro->tstamp))
                             return -EINVAL;
@@ -844,7 +844,7 @@ int pfq_getsockopt(struct socket *sock,
                             return -EFAULT;
             } break;
 
-        case Q_SO_GET_CAPLEN:
+        case Q_SO_GET_RX_CAPLEN:
             {
                     if (len != sizeof(ro->caplen))
                             return -EINVAL;
@@ -852,7 +852,7 @@ int pfq_getsockopt(struct socket *sock,
                             return -EFAULT;
             } break;
 
-        case Q_SO_GET_SLOTS:
+        case Q_SO_GET_RX_SLOTS:
             {
                     if (len != sizeof(ro->queue_info->size))
                             return -EINVAL;
@@ -860,7 +860,7 @@ int pfq_getsockopt(struct socket *sock,
                             return -EFAULT;
             } break;
 
-        case Q_SO_GET_OFFSET:
+        case Q_SO_GET_RX_OFFSET:
             {
                     if (len != sizeof(ro->offset))
                             return -EINVAL;
@@ -1002,6 +1002,13 @@ int pfq_setsockopt(struct socket *sock,
                                         return -ENOMEM;
                                     }
 
+                                    /* so->mem_addr and so->mem_size are correctly configured */
+
+                                    /* initialize queues header */
+
+
+
+
                                     // TODO: setup queue headers (rx and tx)
 
                                     /* sq = (struct pfq_rx_queue_hdr *)so->mem_addr; */
@@ -1050,7 +1057,7 @@ int pfq_setsockopt(struct socket *sock,
                     pfq_devmap_update(map_reset, bind.if_index, bind.hw_queue, bind.gid);
             } break;
 
-	case Q_SO_SET_TSTAMP:
+	case Q_SO_SET_RX_TSTAMP:
             {
                     int tstamp;
                     if (optlen != sizeof(so->rx_opt.tstamp))
@@ -1068,7 +1075,7 @@ int pfq_setsockopt(struct socket *sock,
                     pr_devel("[PFQ|%d] timestamp_toggle => %d\n", so->id, atomic_read(&timestamp_toggle));
             } break;
 
-        case Q_SO_SET_CAPLEN:
+        case Q_SO_SET_RX_CAPLEN:
             {
                     if (optlen != sizeof(so->rx_opt.caplen))
                             return -EINVAL;
@@ -1080,7 +1087,7 @@ int pfq_setsockopt(struct socket *sock,
                                     so->id, so->rx_opt.caplen, so->rx_opt.queue_info->slot_size);
             } break;
 
-        case Q_SO_SET_SLOTS:
+        case Q_SO_SET_RX_SLOTS:
             {
                     if (optlen != sizeof(so->rx_opt.queue_info->size))
                             return -EINVAL;
@@ -1091,7 +1098,7 @@ int pfq_setsockopt(struct socket *sock,
                                     so->id, so->rx_opt.queue_info->size, so->rx_opt.queue_info->slot_size);
             } break;
 
-        case Q_SO_SET_OFFSET:
+        case Q_SO_SET_RX_OFFSET:
             {
                     if (optlen != sizeof(so->rx_opt.offset))
                             return -EINVAL;
