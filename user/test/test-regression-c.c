@@ -2,6 +2,7 @@
 #include <sys/wait.h>
 
 #include <stdio.h>
+#include <stdlib.h>
 #include <assert.h>
 #include <pfq.h>
 
@@ -549,6 +550,7 @@ int
 main(int argc __attribute__((unused)), char *argv[]__attribute__((unused)))
 {
 	test_enable_disable();
+
 	test_is_enabled();
 	test_ifindex();
 	test_timestamp();

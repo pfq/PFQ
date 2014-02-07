@@ -517,6 +517,7 @@ Context(PFQ)
         AssertNothrow(x.vlan_filters_enable(x.group_id(), false));
     }
 
+#if 0
     Test(group_context)
     {
         pfq x(group_policy::shared, 64);
@@ -555,6 +556,8 @@ Context(PFQ)
         }
         std::cout << std::endl;
     }
+
+#endif
 
 }
 

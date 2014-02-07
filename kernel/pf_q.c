@@ -1114,8 +1114,7 @@ int pfq_setsockopt(struct socket *sock,
                     if (copy_from_user(&so->rx_opt.size, optval, optlen))
                             return -EFAULT;
 
-                    pr_devel("[PFQ|%d] queue_slots:%lu -> slot_size:%lu\n",
-                                    so->id, so->rx_opt.size, so->rx_opt.slot_size);
+                    pr_devel("[PFQ|%d] queue_slots:%lu\n", so->id, so->rx_opt.size);
             } break;
 
         case Q_SO_SET_RX_OFFSET:
