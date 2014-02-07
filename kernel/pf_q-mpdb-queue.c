@@ -44,7 +44,7 @@ void *pfq_memcpy(void *to, const void *from, size_t len)
 inline
 char *mpdb_slot_ptr(struct pfq_rx_opt *ro, struct pfq_rx_queue_hdr *qd, int index, int slot)
 {
-	return (char *)(qd+1) + ((index&1) * ro->size + slot) * ro->slot_size;
+	return (char *)(ro->base_addr) + ( (index&1 ? ro->size : 0 ) + slot) * ro->slot_size;
 }
 
 

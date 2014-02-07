@@ -545,6 +545,7 @@ pfq_rx_opt_init(struct pfq_rx_opt *ro)
         /* the queue is allocate later, when the socket is enabled */
 
         ro->queue_info = NULL;
+        ro->base_addr  = NULL;
 
         /* disable tiemstamping by default */
         ro->tstamp = false;
@@ -686,6 +687,8 @@ pfq_rx_release(struct pfq_rx_opt *ro)
 static void
 pfq_tx_release(struct pfq_tx_opt *to)
 {
+        to->queue_info = NULL;
+
         /* TODO */
 }
 
@@ -1024,9 +1027,17 @@ int pfq_setsockopt(struct socket *sock,
                                     queue->tx.size              = 0;
                                     queue->tx.slot_size         = 0;
 
+                                    /* update the queues base_addr */
+
+                                    so->rx_opt.base_addr = so->mem_addr + sizeof(struct pfq_queue_hdr);
+                                    so->tx_opt.base_addr = so->mem_addr + sizeof(struct pfq_queue_hdr) + pfq_queue_mpdb_mem(so);
+
+                                    /* commit the queues */
+
 				    smp_wmb();
 
-				    // TODO: setup queues in rx and tx opt...
+                                    so->rx_opt.queue_info = &queue->rx;
+                                    so->tx_opt.queue_info = &queue->tx;
                             }
                     }
                     else {

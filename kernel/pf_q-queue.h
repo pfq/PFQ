@@ -28,10 +28,18 @@
 int   pfq_queue_alloc(struct pfq_sock *p, size_t queue_mem);
 void  pfq_queue_free (struct pfq_sock *p);
 
-inline size_t pfq_queue_total_mem(struct pfq_sock *p)
+inline size_t pfq_queue_mpdb_mem(struct pfq_sock *so)
 {
-    /* TODO */
-    return sizeof(struct pfq_queue_hdr);
+    return so->rx_opt.size * so->rx_opt.slot_size * 2;
 }
 
+inline size_t pfq_queue_spsc_mem(struct pfq_sock *so)
+{
+    return so->tx_opt.size * so->tx_opt.slot_size;
+}
+
+inline size_t pfq_queue_total_mem(struct pfq_sock *so)
+{
+    return sizeof(struct pfq_queue_hdr) + pfq_queue_mpdb_mem(so) + pfq_queue_spsc_mem(so);
+}
 

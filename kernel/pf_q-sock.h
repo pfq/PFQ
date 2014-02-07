@@ -35,9 +35,11 @@
 
 extern atomic_long_t pfq_sock_vector[Q_MAX_ID];
 
+
 struct pfq_rx_opt
 {
         struct pfq_rx_queue_hdr *queue_info;
+        void *                  base_addr;
 
         int                     tstamp;
 
@@ -56,6 +58,7 @@ struct pfq_rx_opt
 struct pfq_tx_opt
 {
         struct pfq_tx_queue_hdr *queue_info;
+        void *                  base_addr;
 
         uint64_t                counter;
 
