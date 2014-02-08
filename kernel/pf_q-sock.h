@@ -101,7 +101,6 @@ struct pfq_tx_opt
         int                     cpu_index;
 
         struct task_struct      *thread;
-        bool                    thread_stop;
 
 } __attribute__((aligned(64)));
 
@@ -125,7 +124,6 @@ void pfq_tx_opt_init(struct pfq_tx_opt *that)
         that->cpu_index         = -1;
 
         that->thread            = NULL;
-        that->thread_stop       = false;
 }
 
 
