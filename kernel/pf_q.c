@@ -36,6 +36,7 @@
 #include <linux/ip.h>
 #include <linux/poll.h>
 #include <linux/etherdevice.h>
+#include <linux/kthread.h>
 
 #include <linux/percpu.h>
 
@@ -929,11 +930,16 @@ int pfq_setsockopt(struct socket *sock,
                    int optlen)
 {
         struct pfq_sock *so = pfq_sk(sock->sk);
+        struct pfq_rx_opt * ro;
+        struct pfq_tx_opt * to;
 
         bool found = true;
 
         if (so == NULL)
                 return -EINVAL;
+
+        ro = &so->rx_opt;
+        to = &so->tx_opt;
 
         switch(optname)
         {
@@ -1287,10 +1293,65 @@ int pfq_setsockopt(struct socket *sock,
                     pr_devel("[PFQ|%d] vlan_set filter vid %d for gid:%d\n", so->id, filt.vid, filt.gid);
             } break;
 
+
+        case Q_SO_TX_THREAD_START:
+        {
+                if (to->thread)
+                {
+                        pr_devel("[PFQ|%d] TX thread already created on node %d\n", so->id, to->cpu_index);
+                        return -EINVAL;
+                }
+
+                if (optlen != sizeof(to->cpu_index))
+                        return -EINVAL;
+
+                if (copy_from_user(&to->cpu_index, optval, optlen))
+                        return -EFAULT;
+
+                pr_devel("[PFQ|%d] creating TX thread on node %d\n",so->id,to->cpu_index);
+
+                to->thread = kthread_create_on_node(pfq_tx_thread,
+                                to,
+                                cpu_to_node(to->cpu_index),
+                                "pfq_tx_%d", to->cpu_index);
+                if (IS_ERR(to->thread)) {
+                        printk(KERN_INFO "[PFQ] kernel_thread() create failed on node %d\n", to->cpu_index);
+                        return PTR_ERR(to->thread);
+                }
+
+                kthread_bind(to->thread, to->cpu_index);
+
+        } break;
+
+        case Q_SO_TX_THREAD_STOP:
+        {
+                if (!to->thread)
+                {
+                        pr_devel("[PFQ|%d] TX thread not running\n", so->id);
+                        return -EINVAL;
+                }
+
+                kthread_stop(to->thread);
+                to->thread = NULL;
+        } break;
+
+        case Q_SO_TX_THREAD_WAKEUP:
+        {
+                if (!to->thread)
+                {
+                        pr_devel("[PFQ|%d] TX thread not running\n", so->id);
+                        return -EINVAL;
+                }
+
+                wake_up_process(to->thread);
+
+        } break;
+
         default:
-            {
-                    found = false;
-            } break;
+        {
+                found = false;
+        } break;
+
         }
 
         return found ? 0 : sock_setsockopt(sock, level, optname, optval, optlen);
