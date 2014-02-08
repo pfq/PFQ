@@ -30,10 +30,14 @@
 #include <linux/version.h>
 #include <linux/kthread.h>
 
+#include <pf_q-sock.h>
+
 int
 pfq_tx_thread(void *data)
 {
-        printk(KERN_INFO "[PFQ] tx-thread started.\n");
+        struct pfq_tx_opt *to = (struct pfq_tx_opt *)data;
+
+        printk(KERN_INFO "[PFQ] tx-thread started on node %d\n", to->cpu_index);
 
         while(!kthread_should_stop())
         {

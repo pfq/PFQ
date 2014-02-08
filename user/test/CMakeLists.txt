@@ -19,6 +19,7 @@ add_executable(test-vlan test-vlan.cpp)
 add_executable(test-for-range test-for-range.cpp)
 add_executable(test-steering-dummy test-steering-dummy.cpp)
 add_executable(test-filter test-filter.cpp)
+add_executable(test-tx test-tx-thread.cpp)
 
 add_executable(test-regression test-regression.cpp)
 add_executable(test-regression-capture test-regression-capture.cpp)
