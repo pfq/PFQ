@@ -172,6 +172,10 @@ struct pfq_queue_hdr
 #define Q_SO_GET_GROUP_STATS        30
 #define Q_SO_GET_GROUP_CONTEXT      31
 
+#define Q_SO_TX_THREAD_START        32
+#define Q_SO_TX_THREAD_STOP         33
+#define Q_SO_TX_THREAD_WAKEUP       34
+
 /* general defines */
 
 #define Q_ANY_DEVICE         -1
