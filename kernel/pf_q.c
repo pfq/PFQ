@@ -56,6 +56,7 @@
 #include <pf_q-memory.h>
 #include <pf_q-queue.h>
 #include <pf_q-sock.h>
+#include <pf_q-thread.h>
 
 #include <pf_q-mpdb-queue.h>
 
