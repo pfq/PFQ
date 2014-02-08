@@ -1047,14 +1047,12 @@ namespace net {
                             pdata_->slot_size, queue_len, index);
         }
 
-
         uint8_t
         current_commit() const
         {
             auto q = static_cast<struct pfq_queue_hdr *>(pdata_->queue_addr);
             return MPDB_QUEUE_INDEX(q->rx.data);
         }
-
 
         queue
         recv(const mutable_buffer &buff, long int microseconds = -1)
@@ -1174,6 +1172,26 @@ namespace net {
             if (pdata_)
                 return pdata_->queue_addr;
             return nullptr;
+        }
+
+        /// TO BE REMOVED: added dummy experimental API
+
+        void start_tx(int node)
+        {
+            if (::setsockopt(fd_, PF_Q, Q_SO_TX_THREAD_START, &node, sizeof(node)) == -1)
+                throw pfq_error(errno, "PFQ: start TX thread");
+        }
+
+        void stop_tx()
+        {
+            if (::setsockopt(fd_, PF_Q, Q_SO_TX_THREAD_STOP, NULL, 0) == -1)
+                throw pfq_error(errno, "PFQ: stop TX thread");
+        }
+
+        void wakeup_tx()
+        {
+            if (::setsockopt(fd_, PF_Q, Q_SO_TX_THREAD_WAKEUP, NULL, 0) == -1)
+                throw pfq_error(errno, "PFQ: wakeup TX thread");
         }
 
     };
