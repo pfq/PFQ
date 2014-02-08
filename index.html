@@ -37,20 +37,32 @@
 <p>PFQ is a novel network-capture engine designed for the Linux Kernel 3.x and modern 64-bit architectures.
 It is highly optimized for multi-core processors, as well as for network devices supporting multiple hardware queues. </p>
 
-<p>PFQ works with both vanilla and PFQ-aware drivers (distributed with the package).</p>
+<p>PFQ works with vanilla drivers and provides a script (pfq-omatic) that patches and compiles source codes on-the-fly to obtain accelerated drivers.</p>
 
 <p>Its light weight lock-less architecture is based on the following features:</p>
 
 <ul>
-<li>wait-free queuing mechanisms to handle packet dispatching in a ultra-efficient manner.</li>
+<li>wait-free queuing mechanisms to handle packet dispatching in an ultra-efficient manner.</li>
 <li>cache-friendly handling for memory allocations/deallocations.</li>
-<li>hashing algorithms for packets steering across a variable number of user-space sockets (under development).</li>
+<li>hashing algorithms for packets steering across a variable number of user-space sockets.</li>
+</ul><h3>
+<a name="features" class="anchor" href="#features"><span class="octicon octicon-link"></span></a>Features</h3>
+
+<ul>
+<li>10-Gbit Line-rate (14,8Mpps) with Intel ixgbe vanilla driver.</li>
+<li>Socket groups allow for concurrent monitoring of multi-threaded applications.</li>
+<li>Classification by classes allow for fine-control over packet-steering within groups.</li>
+<li>Per-group Berkeley filters and per-group vlan filters.</li>
+<li>Extensible framework engine for in-kernel functional monitoring (continuation passing style).</li>
+<li>Native bindings for C, C++11 and Haskell languages.</li>
+<li>PFQ-omatic, a script that allows to compile drivers and get the accelerated versions.</li>
+<li>Accelerated pcap library.</li>
 </ul><h3>
 <a name="performance" class="anchor" href="#performance"><span class="octicon octicon-link"></span></a>Performance</h3>
 
 <p>PFQ performance is highly dependent on the hardware used. </p>
 
-<p>For instance, running on top of the 2.66Ghz 6-core Xeon equipped and the Intel 82599 10G controller, PFQ can steer to user-space about 14,8 Million packets per second deploying 3 thread (~120Mpps with full copies).</p>
+<p>Running on top of the 2.66Ghz 6-core Xeon equipped and the Intel 82599 10G controller, PFQ can steer to user-space about 14,8 Million packets per second deploying 3 kernel threads.</p>
 
 <p>Details of performance comparison are available here (old version): <a href="http://netgroup.iet.unipi.it/software/pfq/performance.html">http://netgroup.iet.unipi.it/software/pfq/performance.html</a></p>
 
@@ -59,12 +71,12 @@ It is highly optimized for multi-core processors, as well as for network devices
 
 <p>The package provides the source code of the PFQ kernel module, user-space libraries for C, C++11 and Haskell languages and a set of diagnostic tools.</p>
 
-<p>Gcc/g++ 4.6 (or higher), the Haskell platfrom and cmake are required for the compilation.</p>
+<p>Gcc/g++ 4.6 (or higher), the Haskell platform, Cmake and make are required for the compilation.</p>
 
 <h3>
 <a name="licenses" class="anchor" href="#licenses"><span class="octicon octicon-link"></span></a>Licenses</h3>
 
-<p>The PFQ kernel module and user-space libraries are distributed under the GPL licence.</p>
+<p>The PFQ kernel module and user-space libraries are distributed under the GPL license.</p>
 
 <h3>
 <a name="author" class="anchor" href="#author"><span class="octicon octicon-link"></span></a>Author</h3>
