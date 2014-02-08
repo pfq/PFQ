@@ -54,6 +54,35 @@ struct pfq_rx_opt
 
 } __attribute__((aligned(64)));
 
+static inline
+void pfq_rx_opt_init(struct pfq_rx_opt *that, size_t caplen)
+{
+        /* the queue is allocate later, when the socket is enabled */
+
+        that->queue_info = NULL;
+        that->base_addr  = NULL;
+
+        /* disable tiemstamping by default */
+        that->tstamp    = false;
+
+        /* set q_slots and q_caplen default values */
+
+        that->caplen    = caplen;
+        that->offset    = 0;
+
+        that->size      = 0;
+        that->slot_size = 0;
+
+        /* initialize waitqueue */
+
+        init_waitqueue_head(&that->waitqueue);
+
+        /* reset stats */
+        sparse_set(&that->stat.recv, 0);
+        sparse_set(&that->stat.lost, 0);
+        sparse_set(&that->stat.drop, 0);
+}
+
 
 struct pfq_tx_opt
 {
@@ -76,6 +105,29 @@ struct pfq_tx_opt
 
 } __attribute__((aligned(64)));
 
+static inline
+void pfq_tx_opt_init(struct pfq_tx_opt *that)
+{
+        /* the queue is allocate later, when the socket is enabled */
+
+        that->queue_info        = NULL;
+        that->base_addr         = NULL;
+
+        that->counter           = 0;
+
+        that->size              = 0;
+        that->slot_size         = 0;
+
+        that->dev               = NULL;
+        that->txq               = NULL;
+
+        that->hardware_queue    = 0;
+        that->cpu_index         = -1;
+
+        that->thread            = NULL;
+        that->thread_stop       = false;
+}
+
 
 struct pfq_sock
 {
@@ -89,7 +141,6 @@ struct pfq_sock
         struct pfq_rx_opt   rx_opt;
         struct pfq_tx_opt   tx_opt;
 };
-
 
 static inline
 struct pfq_queue_hdr *

@@ -70,7 +70,7 @@ static int capture_incoming = 1;
 static int capture_outgoing = 0;
 static int capture_loopback = 0;
 
-static int queue_slots  = 131072; // slots per queue
+static int queue_slots  = 131072;       // slots per queue (both rx and tx)
 static int cap_len      = 1514;
 static int prefetch_len = 1;
 static int flow_control = 0;
@@ -539,51 +539,6 @@ pfq_packet_rcv
 }
 
 
-void
-pfq_rx_opt_init(struct pfq_rx_opt *ro)
-{
-        /* the queue is allocate later, when the socket is enabled */
-
-        ro->queue_info = NULL;
-        ro->base_addr  = NULL;
-
-        /* disable tiemstamping by default */
-        ro->tstamp = false;
-
-        /* set q_slots and q_caplen default values */
-
-        ro->caplen    = cap_len;
-        ro->offset    = 0;
-
-        /* initialize waitqueue */
-
-        init_waitqueue_head(&ro->waitqueue);
-
-        /* reset stats */
-        sparse_set(&ro->stat.recv, 0);
-        sparse_set(&ro->stat.lost, 0);
-        sparse_set(&ro->stat.drop, 0);
-}
-
-
-void
-pfq_tx_opt_init(struct pfq_tx_opt *to)
-{
-        /* the queue is allocate later, when the socket is enabled */
-
-        to->queue_info          = NULL;
-
-        to->counter             = 0;
-        to->dev                 = NULL;
-        to->txq                 = NULL;
-
-        to->hardware_queue      = 0;
-        to->cpu_index           = -1;
-        to->thread              = NULL;
-        to->thread_stop         = false;
-}
-
-
 static void pfq_sock_destruct(struct sock *sk)
 {
         skb_queue_purge(&sk->sk_error_queue);
@@ -651,7 +606,7 @@ pfq_create(
 
         /* initialize both rx_opt and tx_opt */
 
-        pfq_rx_opt_init(&so->rx_opt);
+        pfq_rx_opt_init(&so->rx_opt, cap_len);
 
         pfq_tx_opt_init(&so->tx_opt);
 
