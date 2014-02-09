@@ -39,20 +39,14 @@ It is highly optimized for multi-core processors, as well as for network devices
 
 <p>PFQ works with vanilla drivers and provides a script (pfq-omatic) that patches and compiles source codes on-the-fly to obtain accelerated drivers.</p>
 
-<p>Its light weight lock-less architecture is based on the following features:</p>
-
-<ul>
-<li>wait-free queuing mechanisms to handle packet dispatching in an ultra-efficient manner.</li>
-<li>cache-friendly handling for memory allocations/deallocations.</li>
-<li>hashing algorithms for packets steering across a variable number of user-space sockets.</li>
-</ul><h3>
+<h3>
 <a name="features" class="anchor" href="#features"><span class="octicon octicon-link"></span></a>Features</h3>
 
 <ul>
 <li>10-Gbit Line-rate (14,8Mpps) with Intel ixgbe vanilla driver.</li>
 <li>Socket groups allow for concurrent monitoring of multi-threaded applications.</li>
 <li>Per-group packet steering through randomized hashing algorithms or deterministic packet classifications.</li>
-<li>Per-group Berkeley filters and per-group vlan filters.</li>
+<li>Per-group Berkeley filters and per-group VLAN filters.</li>
 <li>Extensible framework for in-kernel functional monitoring (continuation passing style).</li>
 <li>User-space native bindings for C, C++11 and Haskell languages.</li>
 <li>PFQ-omatic, a script that allows to compile drivers and get the accelerated versions.</li>
@@ -65,6 +59,11 @@ It is highly optimized for multi-core processors, as well as for network devices
 <p>Running on top of the 2.66Ghz 6-core Xeon equipped and the Intel 82599 10G controller, PFQ can steer to user-space about 14,8 Million packets per second deploying 3 kernel threads.</p>
 
 <p>Details of performance comparison are available here (old version): <a href="http://netgroup.iet.unipi.it/software/pfq/performance.html">http://netgroup.iet.unipi.it/software/pfq/performance.html</a></p>
+
+<h3>
+<a name="publication" class="anchor" href="#publication"><span class="octicon octicon-link"></span></a>Publication</h3>
+
+<p>We received the <strong>Best-Paper-Award</strong> at PAM2012 in Vienna for the paper <em>"PFQ: a Novel Engine for Multi-Gigabit Packet Capturing With Multi-Core Commodity Hardware"</em>.</p>
 
 <h3>
 <a name="source-code" class="anchor" href="#source-code"><span class="octicon octicon-link"></span></a>Source code</h3>
