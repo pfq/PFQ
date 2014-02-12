@@ -129,6 +129,8 @@ struct pfq_queue_hdr
 
 /* SPSC circular queue handling... */
 
+#define SPSC_QUEUE_SLOT_SIZE(x)    ALIGN(sizeof(struct pfq_pkt_hdr) + x, 8)
+
 static inline
 int pfq_spsc_write_index(struct pfq_tx_queue_hdr *q)
 {
@@ -200,33 +202,40 @@ void pfq_spsc_read_commit(struct pfq_tx_queue_hdr *q)
 #define Q_SO_SET_RX_SLOTS           6
 #define Q_SO_SET_RX_OFFSET          7
 
-#define Q_SO_GROUP_JOIN             8
-#define Q_SO_GROUP_LEAVE            9
-#define Q_SO_GROUP_CONTEXT          10
-#define Q_SO_GROUP_FUN              11
-#define Q_SO_GROUP_RESET            12
+#define Q_SO_SET_TX_MAXLEN          8
+#define Q_SO_SET_TX_SLOTS           9
 
-#define Q_SO_GROUP_FPROG            13      /* Berkeley packet filter */
-#define Q_SO_GROUP_VLAN_FILT_TOGGLE 14      /* enable/disable VLAN filters */
-#define Q_SO_GROUP_VLAN_FILT        15      /* enable/disable VLAN ID filters */
+#define Q_SO_GROUP_JOIN             10
+#define Q_SO_GROUP_LEAVE            11
+#define Q_SO_GROUP_CONTEXT          12
+#define Q_SO_GROUP_FUN              13
+#define Q_SO_GROUP_RESET            14
 
-#define Q_SO_GET_ID                 20
-#define Q_SO_GET_STATUS             21      /* 1 = enabled, 0 = disabled */
-#define Q_SO_GET_STATS              23
-#define Q_SO_GET_QUEUE_MEM          24      /* size of the whole dbmp queue (bytes) */
+#define Q_SO_GROUP_FPROG            15      /* Berkeley packet filter */
+#define Q_SO_GROUP_VLAN_FILT_TOGGLE 16      /* enable/disable VLAN filters */
+#define Q_SO_GROUP_VLAN_FILT        17      /* enable/disable VLAN ID filters */
 
-#define Q_SO_GET_RX_TSTAMP          25
-#define Q_SO_GET_RX_CAPLEN          26
-#define Q_SO_GET_RX_SLOTS           27
-#define Q_SO_GET_RX_OFFSET          28
+#define Q_SO_GET_ID                 18
+#define Q_SO_GET_STATUS             19      /* 1 = enabled, 0 = disabled */
+#define Q_SO_GET_STATS              20
+#define Q_SO_GET_QUEUE_MEM          21      /* size of the whole dbmp queue (bytes) */
 
-#define Q_SO_GET_GROUPS             29
-#define Q_SO_GET_GROUP_STATS        30
-#define Q_SO_GET_GROUP_CONTEXT      31
+#define Q_SO_GET_RX_TSTAMP          22
+#define Q_SO_GET_RX_CAPLEN          23
+#define Q_SO_GET_RX_SLOTS           24
+#define Q_SO_GET_RX_OFFSET          25
 
-#define Q_SO_TX_THREAD_START        32
-#define Q_SO_TX_THREAD_STOP         33
-#define Q_SO_TX_THREAD_WAKEUP       34
+#define Q_SO_GET_TX_MAXLEN          26
+#define Q_SO_GET_TX_SLOTS           27
+
+#define Q_SO_GET_GROUPS             28
+#define Q_SO_GET_GROUP_STATS        29
+#define Q_SO_GET_GROUP_CONTEXT      30
+
+#define Q_SO_TX_THREAD_START        31
+#define Q_SO_TX_THREAD_STOP         32
+#define Q_SO_TX_THREAD_WAKEUP       33
+
 
 /* general defines */
 

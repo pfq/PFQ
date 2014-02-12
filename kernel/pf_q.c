@@ -72,8 +72,11 @@ static int capture_incoming = 1;
 static int capture_outgoing = 0;
 static int capture_loopback = 0;
 
-static int queue_slots  = 131072;       // slots per queue (both rx and tx)
+static int tx_queue_slots  = 131072;       // slots per queue (both rx and tx)
+static int rx_queue_slots  = 131072;       // slots per queue (both rx and tx)
+
 static int cap_len      = 1514;
+static int max_len      = 1514;
 static int prefetch_len = 1;
 static int flow_control = 0;
 static int vl_untag     = 0;
@@ -93,19 +96,26 @@ module_param(capture_loopback,  int, 0644);
 
 
 module_param(cap_len,         int, 0644);
-module_param(queue_slots,     int, 0644);
+module_param(max_len,         int, 0644);
+module_param(rx_queue_slots,  int, 0644);
+module_param(tx_queue_slots,  int, 0644);
 module_param(prefetch_len,    int, 0644);
 module_param(recycle_len,     int, 0644);
 module_param(flow_control,    int, 0644);
 module_param(vl_untag,        int, 0644);
 
 MODULE_PARM_DESC(direct_capture," Direct capture packets: (0 default)");
-MODULE_PARM_DESC(capture_incoming," Sniff incoming packets: (1 default)");
-MODULE_PARM_DESC(capture_outgoing," Sniff outgoing packets: (0 default)");
-MODULE_PARM_DESC(capture_loopback," Sniff lookback packets: (0 default)");
 
-MODULE_PARM_DESC(cap_len,       " Default capture length (bytes)");
-MODULE_PARM_DESC(queue_slots,   " Queue slots (default=131072)");
+MODULE_PARM_DESC(capture_incoming," Capture incoming packets: (1 default)");
+MODULE_PARM_DESC(capture_outgoing," Capture outgoing packets: (0 default)");
+MODULE_PARM_DESC(capture_loopback," Capture lookback packets: (0 default)");
+
+MODULE_PARM_DESC(cap_len, " Default capture length (bytes)");
+MODULE_PARM_DESC(max_len, " Maximum transmission length (bytes)");
+
+MODULE_PARM_DESC(rx_queue_slots, " Rx Queue slots (default=131072)");
+MODULE_PARM_DESC(tx_queue_slots, " Tx Queue slots (default=131072)");
+
 MODULE_PARM_DESC(prefetch_len,  " Prefetch queue length");
 MODULE_PARM_DESC(recycle_len,   " Recycle skb list (default=1024)");
 MODULE_PARM_DESC(flow_control,  " Flow control value (default=0)");
@@ -994,7 +1004,7 @@ int pfq_setsockopt(struct socket *sock,
                                     so->rx_opt.base_addr = so->mem_addr + sizeof(struct pfq_queue_hdr);
                                     so->tx_opt.base_addr = so->mem_addr + sizeof(struct pfq_queue_hdr) + pfq_queue_mpdb_mem(so);
 
-                                    /* commit the queues */
+                                    /* commit both the queues */
 
 				    smp_wmb();
 
@@ -1054,29 +1064,71 @@ int pfq_setsockopt(struct socket *sock,
                     /* update the timestamp_toggle counter */
                     atomic_add(tstamp - so->rx_opt.tstamp, &timestamp_toggle);
                     so->rx_opt.tstamp = tstamp;
+
                     pr_devel("[PFQ|%d] timestamp_toggle => %d\n", so->id, atomic_read(&timestamp_toggle));
             } break;
 
         case Q_SO_SET_RX_CAPLEN:
             {
-                    if (optlen != sizeof(so->rx_opt.caplen))
+                    size_t caplen;
+
+                    if (optlen != sizeof(caplen))
                             return -EINVAL;
-                    if (copy_from_user(&so->rx_opt.caplen, optval, optlen))
+                    if (copy_from_user(&caplen, optval, optlen))
                             return -EFAULT;
 
+                    so->rx_opt.caplen = min(caplen, (size_t)cap_len); /* cap_len: max capture length */
+
                     so->rx_opt.slot_size = MPDB_QUEUE_SLOT_SIZE(so->rx_opt.caplen);
+
                     pr_devel("[PFQ|%d] caplen:%lu -> slot_size:%lu\n",
                                     so->id, so->rx_opt.caplen, so->rx_opt.slot_size);
             } break;
 
         case Q_SO_SET_RX_SLOTS:
             {
-                    if (optlen != sizeof(so->rx_opt.size))
+                    size_t slots;
+
+                    if (optlen != sizeof(slots))
                             return -EINVAL;
-                    if (copy_from_user(&so->rx_opt.size, optval, optlen))
+                    if (copy_from_user(&slots, optval, optlen))
                             return -EFAULT;
 
-                    pr_devel("[PFQ|%d] queue_slots:%lu\n", so->id, so->rx_opt.size);
+                    so->rx_opt.size = min(slots, (size_t)rx_queue_slots);
+
+                    pr_devel("[PFQ|%d] rx_queue_slots:%lu\n", so->id, so->rx_opt.size);
+            } break;
+
+
+        case Q_SO_SET_TX_MAXLEN:
+            {
+                    size_t maxlen;
+
+                    if (optlen != sizeof(maxlen))
+                            return -EINVAL;
+                    if (copy_from_user(&maxlen, optval, optlen))
+                            return -EFAULT;
+
+                    so->tx_opt.maxlen = min(maxlen, (size_t)max_len); /* cap_len: max capture length */
+
+                    so->tx_opt.slot_size = SPSC_QUEUE_SLOT_SIZE(so->tx_opt.maxlen); /* max_len: max length */
+
+                    pr_devel("[PFQ|%d] tx_slot_size:%lu\n", so->id, so->rx_opt.slot_size);
+            } break;
+
+
+        case Q_SO_SET_TX_SLOTS:
+            {
+                    size_t slots;
+
+                    if (optlen != sizeof(slots))
+                            return -EINVAL;
+                    if (copy_from_user(&slots, optval, optlen))
+                            return -EFAULT;
+
+                    so->rx_opt.size = min(slots,(size_t)tx_queue_slots);
+
+                    pr_devel("[PFQ|%d] tx_queue_slots:%lu\n", so->id, so->tx_opt.size);
             } break;
 
         case Q_SO_SET_RX_OFFSET:
