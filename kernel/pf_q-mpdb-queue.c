@@ -74,7 +74,7 @@ size_t mpdb_enqueue_batch(struct pfq_rx_opt *ro, unsigned long bitqueue, int bur
 
 		size_t slot_index = q_len + sent;
 
-		volatile struct pfq_hdr *hdr = (struct pfq_hdr *)this_slot;
+		volatile struct pfq_pkt_hdr *hdr = (struct pfq_pkt_hdr *)this_slot;
 		char                    *pkt = (char *)(hdr+1);
 
 		struct timespec ts;

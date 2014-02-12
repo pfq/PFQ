@@ -98,11 +98,11 @@ namespace net {
         struct const_iterator;
 
         /* simple forward iterator over frames */
-        struct iterator : public std::iterator<std::forward_iterator_tag, pfq_hdr>
+        struct iterator : public std::iterator<std::forward_iterator_tag, pfq_pkt_hdr>
         {
             friend struct queue::const_iterator;
 
-            iterator(pfq_hdr *h, size_t slot_size, size_t index)
+            iterator(pfq_pkt_hdr *h, size_t slot_size, size_t index)
             : hdr_(h), slot_size_(slot_size), index_(index)
             {}
 
@@ -115,7 +115,7 @@ namespace net {
             iterator &
             operator++()
             {
-                hdr_ = reinterpret_cast<pfq_hdr *>(
+                hdr_ = reinterpret_cast<pfq_pkt_hdr *>(
                         reinterpret_cast<char *>(hdr_) + slot_size_);
                 return *this;
             }
@@ -128,13 +128,13 @@ namespace net {
                 return ret;
             }
 
-            pfq_hdr *
+            pfq_pkt_hdr *
             operator->() const
             {
                 return hdr_;
             }
 
-            pfq_hdr &
+            pfq_pkt_hdr &
             operator*() const
             {
                 return *hdr_;
@@ -167,15 +167,15 @@ namespace net {
             }
 
         private:
-            pfq_hdr *hdr_;
+            pfq_pkt_hdr *hdr_;
             size_t   slot_size_;
             size_t   index_;
         };
 
         /* simple forward const_iterator over frames */
-        struct const_iterator : public std::iterator<std::forward_iterator_tag, pfq_hdr>
+        struct const_iterator : public std::iterator<std::forward_iterator_tag, pfq_pkt_hdr>
         {
-            const_iterator(pfq_hdr *h, size_t slot_size, size_t index)
+            const_iterator(pfq_pkt_hdr *h, size_t slot_size, size_t index)
             : hdr_(h), slot_size_(slot_size), index_(index)
             {}
 
@@ -192,7 +192,7 @@ namespace net {
             const_iterator &
             operator++()
             {
-                hdr_ = reinterpret_cast<pfq_hdr *>(
+                hdr_ = reinterpret_cast<pfq_pkt_hdr *>(
                         reinterpret_cast<char *>(hdr_) + slot_size_);
                 return *this;
             }
@@ -205,13 +205,13 @@ namespace net {
                 return ret;
             }
 
-            const pfq_hdr *
+            const pfq_pkt_hdr *
             operator->() const
             {
                 return hdr_;
             }
 
-            const pfq_hdr &
+            const pfq_pkt_hdr &
             operator*() const
             {
                 return *hdr_;
@@ -244,7 +244,7 @@ namespace net {
             }
 
         private:
-            pfq_hdr *hdr_;
+            pfq_pkt_hdr *hdr_;
             size_t  slot_size_;
             size_t  index_;
         };
@@ -290,39 +290,39 @@ namespace net {
         iterator
         begin()
         {
-            return iterator(reinterpret_cast<pfq_hdr *>(addr_), slot_size_, index_);
+            return iterator(reinterpret_cast<pfq_pkt_hdr *>(addr_), slot_size_, index_);
         }
 
         const_iterator
         begin() const
         {
-            return const_iterator(reinterpret_cast<pfq_hdr *>(addr_), slot_size_, index_);
+            return const_iterator(reinterpret_cast<pfq_pkt_hdr *>(addr_), slot_size_, index_);
         }
 
         iterator
         end()
         {
-            return iterator(reinterpret_cast<pfq_hdr *>(
+            return iterator(reinterpret_cast<pfq_pkt_hdr *>(
                         static_cast<char *>(addr_) + queue_len_ * slot_size_), slot_size_, index_);
         }
 
         const_iterator
         end() const
         {
-            return const_iterator(reinterpret_cast<pfq_hdr *>(
+            return const_iterator(reinterpret_cast<pfq_pkt_hdr *>(
                         static_cast<char *>(addr_) + queue_len_ * slot_size_), slot_size_, index_);
         }
 
         const_iterator
         cbegin() const
         {
-            return const_iterator(reinterpret_cast<pfq_hdr *>(addr_), slot_size_, index_);
+            return const_iterator(reinterpret_cast<pfq_pkt_hdr *>(addr_), slot_size_, index_);
         }
 
         const_iterator
         cend() const
         {
-            return const_iterator(reinterpret_cast<pfq_hdr *>(
+            return const_iterator(reinterpret_cast<pfq_pkt_hdr *>(
                         static_cast<char *>(addr_) + queue_len_ * slot_size_), slot_size_, index_);
         }
 
@@ -333,7 +333,7 @@ namespace net {
         size_t  index_;
     };
 
-    static inline void * data_ready(pfq_hdr &h, uint8_t current_commit)
+    static inline void * data_ready(pfq_pkt_hdr &h, uint8_t current_commit)
     {
         if (const_cast<volatile uint8_t &>(h.commit) != current_commit)
             return nullptr;
@@ -341,7 +341,7 @@ namespace net {
         return &h + 1;
     }
 
-    static inline const void * data_ready(pfq_hdr const &h, uint8_t current_commit)
+    static inline const void * data_ready(pfq_pkt_hdr const &h, uint8_t current_commit)
     {
         if (const_cast<volatile uint8_t &>(h.commit) != current_commit)
             return nullptr;
@@ -639,7 +639,7 @@ namespace net {
             if (::setsockopt(fd_, PF_Q, Q_SO_SET_RX_OFFSET, &offset, sizeof(offset)) == -1)
                 throw pfq_error(errno, "PFQ: set offset error");
 
-            pdata_->slot_size = align<8>(sizeof(pfq_hdr) + pdata_->queue_caplen);
+            pdata_->slot_size = align<8>(sizeof(pfq_pkt_hdr) + pdata_->queue_caplen);
         }
 
     public:
@@ -745,7 +745,7 @@ namespace net {
                 throw pfq_error(errno, "PFQ: set caplen error");
             }
 
-            pdata_->slot_size = align<8>(sizeof(pfq_hdr)+ value);
+            pdata_->slot_size = align<8>(sizeof(pfq_pkt_hdr)+ value);
         }
 
 
@@ -1069,7 +1069,7 @@ namespace net {
             return queue(buff.first, this_queue.slot_size(), this_queue.size(), this_queue.index());
         }
 
-        // typedef void (*pfq_handler)(char *user, const struct pfq_hdr *h, const char *data);
+        // typedef void (*pfq_handler)(char *user, const struct pfq_pkt_hdr *h, const char *data);
 
         template <typename Fun>
         size_t dispatch(Fun callback, long int microseconds = -1, char *user = nullptr)

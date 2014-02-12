@@ -186,7 +186,7 @@ Context(PFQ)
 
         x.open(group_policy::undefined, 64);
 
-        auto size = 64 + sizeof(pfq_hdr);
+        auto size = 64 + sizeof(pfq_pkt_hdr);
         Assert(x.slot_size(), is_equal_to( size + (size % 8) ));
     }
 

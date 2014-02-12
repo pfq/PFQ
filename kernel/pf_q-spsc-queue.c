@@ -33,7 +33,7 @@ pfq_spsc_queue_alloc(struct pfq_tx_opt *to)
 {
         /* calculate the size of the buffer */
 
-        int slot_size = PFQ_SLOT_ALIGN( sizeof(struct pfq_hdr) + SKB_DATA_ALIGN(1520), 64);
+        int slot_size = PFQ_SLOT_ALIGN( sizeof(struct pfq_pkt_hdr) + SKB_DATA_ALIGN(1520), 64);
 
         int tot_mem = PAGE_ALIGN(sizeof(struct pfq_tx_queue_hdr) + PFQ_TX_RING_SIZE * slot_size);
 

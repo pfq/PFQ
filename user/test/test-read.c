@@ -61,7 +61,7 @@ main(int argc, char *argv[])
 			while (!pfq_iterator_ready(&nq, it))
 				pfq_yield();
 
-			const struct pfq_hdr *h = pfq_iterator_header(it);
+			const struct pfq_pkt_hdr *h = pfq_iterator_header(it);
 
                     	printf("caplen:%d len:%d ifindex:%d hw_queue:%d tstamp: %u:%u -> ",
 					h->caplen, h->len, h->if_index, h->hw_queue,

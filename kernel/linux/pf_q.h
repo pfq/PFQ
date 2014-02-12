@@ -47,7 +47,7 @@
 #define PF_Q    27          /* packet q domain */
 
 
-struct pfq_hdr
+struct pfq_pkt_hdr
 {
     uint64_t data;          /* state from pfq_annotation */
 
@@ -101,7 +101,7 @@ struct pfq_tx_queue_hdr
     unsigned int size_mask;        /* number of slots */
     unsigned int max_len;          /* max length of packets = 1520 */
     unsigned int size;             /* number of slots (power of two) */
-    unsigned int slot_size;        /* sizeof(pfq_hdr) + max_len + sizeof(skb_shinfo) */
+    unsigned int slot_size;        /* sizeof(pfq_pkt_hdr) + max_len + sizeof(skb_shinfo) */
 
 } __attribute__((aligned(64)));
 
@@ -111,12 +111,12 @@ struct pfq_rx_queue_hdr
     volatile unsigned int   data;
     volatile int            poll_wait;
     unsigned int            size;       /* number of slots */
-    unsigned int            slot_size;  /* sizeof(pfq_hdr) + max_len + sizeof(skb_shinfo) */
+    unsigned int            slot_size;  /* sizeof(pfq_pkt_hdr) + max_len + sizeof(skb_shinfo) */
 
 } __attribute__((aligned(8)));
 
 
-#define MPDB_QUEUE_SLOT_SIZE(x)    ALIGN(sizeof(struct pfq_hdr) + x, 8)
+#define MPDB_QUEUE_SLOT_SIZE(x)    ALIGN(sizeof(struct pfq_pkt_hdr) + x, 8)
 #define MPDB_QUEUE_INDEX(data)     (((data) & 0xff000000U) >> 24)
 #define MPDB_QUEUE_LEN(data)       ((data) & 0x00ffffffU)
 
@@ -128,9 +128,9 @@ struct pfq_queue_hdr
 };
 
 /*
-    +------------------+------------------+          +------------------+          +------------------+
-    | pfq_queue_hdr    | pfq_hdr | packet | ...      | pfq_hdr | packet |...       | pfq_hdr | packet | ...
-    +------------------+------------------+          +------------------+          +------------------+
+    +------------------+----------------------+          +----------------------+          +----------------------+
+    | pfq_queue_hdr    | pfq_pkt_hdr | packet | ...      | pfq_pkt_hdr | packet |...       | pfq_pkt_hdr | packet | ...
+    +------------------+----------------------+          +----------------------+          +----------------------+
                        +                             +                             +
                        | <------+ queue rx  +------> |  <----+ queue rx +------>   |  <----+ queue tx +------>
                        +                             +                             +

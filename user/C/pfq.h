@@ -115,10 +115,10 @@ pfq_net_queue_prev(struct pfq_net_queue const *nq, pfq_iterator_t iter)
 
 
 static inline
-const struct pfq_hdr *
+const struct pfq_pkt_hdr *
 pfq_iterator_header(pfq_iterator_t iter)
 {
-    return (const struct pfq_hdr *)iter;
+    return (const struct pfq_pkt_hdr *)iter;
 }
 
 
@@ -126,7 +126,7 @@ static inline
 const char *
 pfq_iterator_data(pfq_iterator_t iter)
 {
-    return (const char *)(iter + sizeof(struct pfq_hdr));
+    return (const char *)(iter + sizeof(struct pfq_pkt_hdr));
 }
 
 
@@ -156,7 +156,7 @@ pfq_yield()
 
 /* pfq handler */
 
-typedef void (*pfq_handler_t)(char *user, const struct pfq_hdr *h, const char *data);
+typedef void (*pfq_handler_t)(char *user, const struct pfq_pkt_hdr *h, const char *data);
 
 
 /* ************************************** *

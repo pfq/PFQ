@@ -170,7 +170,7 @@ pfq_open_group(unsigned int class_mask, int group_policy, size_t caplen, size_t 
 		return __error = "PFQ: set offset error", free(q), NULL;
 	}
 
-	q->slot_size = ALIGN8(sizeof(struct pfq_hdr) + q->queue_caplen);
+	q->slot_size = ALIGN8(sizeof(struct pfq_pkt_hdr) + q->queue_caplen);
 
 	if (group_policy != Q_GROUP_UNDEFINED)
 	{
@@ -339,7 +339,7 @@ pfq_set_caplen(pfq_t *q, size_t value)
 		return q->error = "PFQ: set caplen error", -1;
 	}
 
-	q->slot_size = ALIGN8(sizeof(struct pfq_hdr)+ value);
+	q->slot_size = ALIGN8(sizeof(struct pfq_pkt_hdr)+ value);
 	return q->error = NULL, 0;
 }
 
