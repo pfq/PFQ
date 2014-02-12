@@ -368,4 +368,14 @@ struct pfq_stats
 };
 
 
+/* tx info */
+
+struct pfq_tx_info
+{
+    int node;
+    int if_index;
+    int hw_queue;
+};
+
+
 #endif /* _PF_Q_H_ */
