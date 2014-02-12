@@ -1,8 +1,8 @@
 # PFQ Makefile (c) 2011-2013 Nicola Bonelli <nicola.bonelli@cnit.it>
 #
 
-MAKE_DIRECTORIES = C C++ test perf regress
-INST_DIRECTORIES = C C++ 
+MAKE_DIRECTORIES = C C++ test tools
+INST_DIRECTORIES = C C++
 
 .PHONY: all install clean
 
