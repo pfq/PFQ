@@ -703,12 +703,14 @@ int pfq_getsockopt(struct socket *sock,
 {
         struct pfq_sock *so = pfq_sk(sock->sk);
         struct pfq_rx_opt * ro;
+        struct pfq_tx_opt * to;
         int len;
 
         if (so == NULL)
                 return -EFAULT;
 
         ro = &so->rx_opt;
+        to = &so->tx_opt;
 
 	if (get_user(len, optlen))
                 return -EFAULT;
@@ -817,11 +819,27 @@ int pfq_getsockopt(struct socket *sock,
                             return -EFAULT;
             } break;
 
+        case Q_SO_GET_TX_MAXLEN:
+            {
+                    if (len != sizeof(to->maxlen))
+                            return -EINVAL;
+                    if (copy_to_user(optval, &to->maxlen, sizeof(to->maxlen)))
+                            return -EFAULT;
+            } break;
+
         case Q_SO_GET_RX_SLOTS:
             {
                     if (len != sizeof(ro->size))
                             return -EINVAL;
                     if (copy_to_user(optval, &ro->size, sizeof(ro->size)))
+                            return -EFAULT;
+            } break;
+
+        case Q_SO_GET_TX_SLOTS:
+            {
+                    if (len != sizeof(to->size))
+                            return -EINVAL;
+                    if (copy_to_user(optval, &to->size, sizeof(to->size)))
                             return -EFAULT;
             } break;
 
