@@ -162,32 +162,32 @@ Context(PFQ)
     Test(slots)
     {
         pfq x;
-        AssertThrow(x.slots(14));
-        AssertThrow(x.slots());
+        AssertThrow(x.rx_slots(14));
+        AssertThrow(x.rx_slots());
 
         x.open(group_policy::undefined, 64);
-        x.slots(1024);
+        x.rx_slots(1024);
 
-        Assert(x.slots(), is_equal_to(1024));
+        Assert(x.rx_slots(), is_equal_to(1024));
 
         x.enable();
-        AssertThrow(x.slots(4096));
+        AssertThrow(x.rx_slots(4096));
         x.disable();
 
-        x.slots(4096);
-        Assert(x.slots(), is_equal_to(4096));
+        x.rx_slots(4096);
+        Assert(x.rx_slots(), is_equal_to(4096));
     }
 
 
     Test(slot_size)
     {
         pfq x;
-        AssertThrow(x.slot_size());
+        AssertThrow(x.rx_slot_size());
 
         x.open(group_policy::undefined, 64);
 
         auto size = 64 + sizeof(pfq_pkt_hdr);
-        Assert(x.slot_size(), is_equal_to( size + (size % 8) ));
+        Assert(x.rx_slot_size(), is_equal_to( size + (size % 8) ));
     }
 
 

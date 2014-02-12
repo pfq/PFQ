@@ -187,7 +187,7 @@ namespace test
 
             m_pfq.enable();
 
-            std::cout << "ctx: queue_slots: " << m_pfq.slots() << " pfq_id:" << m_pfq.id() << std::endl;
+            std::cout << "ctx: queue_slots: " << m_pfq.rx_slots() << " pfq_id:" << m_pfq.id() << std::endl;
 
         }
 

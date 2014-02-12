@@ -446,10 +446,10 @@ namespace net {
 
             void * queue_addr;
             size_t queue_tot_mem;
-            size_t queue_slots;
-            size_t queue_caplen;
-            size_t queue_offset;
-            size_t slot_size;
+            size_t rx_caplen;
+            size_t rx_offset;
+            size_t rx_slots;
+            size_t rx_slot_size;
         };
 
         int fd_;
@@ -589,7 +589,15 @@ namespace net {
                 throw pfq_error("PFQ: module not loaded");
 
             /* allocate pdata */
-            pdata_.reset(new pfq_data { -1, -1, nullptr, 0, 0, 0, offset, 0 });
+            pdata_.reset(new pfq_data { -1,
+                                        -1,
+                                        nullptr,
+                                        0,
+                                        0,
+                                        offset,
+                                        0,
+                                        0
+                                       });
 
             /* get id */
             socklen_t size = sizeof(pdata_->id);
@@ -599,18 +607,18 @@ namespace net {
             /* set queue slots */
             if (::setsockopt(fd_, PF_Q, Q_SO_SET_RX_SLOTS, &slots, sizeof(slots)) == -1)
                 throw pfq_error(errno, "PFQ: set slots error");
-            pdata_->queue_slots = slots;
+            pdata_->rx_slots = slots;
 
-            /* set caplen */
+            /* set caplen/maxlen */
             if (::setsockopt(fd_, PF_Q, Q_SO_SET_RX_CAPLEN, &caplen, sizeof(caplen)) == -1)
                 throw pfq_error(errno, "PFQ: set caplen error");
-            pdata_->queue_caplen = caplen;
+            pdata_->rx_caplen = caplen;
 
             /* set offset */
             if (::setsockopt(fd_, PF_Q, Q_SO_SET_RX_OFFSET, &offset, sizeof(offset)) == -1)
                 throw pfq_error(errno, "PFQ: set offset error");
 
-            pdata_->slot_size = align<8>(sizeof(pfq_pkt_hdr) + pdata_->queue_caplen);
+            pdata_->rx_slot_size = align<8>(sizeof(pfq_pkt_hdr) + pdata_->rx_caplen);
         }
 
     public:
@@ -716,7 +724,7 @@ namespace net {
                 throw pfq_error(errno, "PFQ: set caplen error");
             }
 
-            pdata_->slot_size = align<8>(sizeof(pfq_pkt_hdr)+ value);
+            pdata_->rx_slot_size = align<8>(sizeof(pfq_pkt_hdr)+ value);
         }
 
 
@@ -753,36 +761,38 @@ namespace net {
 
 
         void
-        slots(size_t value)
+        rx_slots(size_t value)
         {
             if (enabled())
-                throw pfq_error("PFQ: enabled (slots could not be set)");
+                throw pfq_error("PFQ: enabled (rx slots could not be set)");
 
             if (::setsockopt(fd_, PF_Q, Q_SO_SET_RX_SLOTS, &value, sizeof(value)) == -1) {
-                throw pfq_error(errno, "PFQ: set slots error");
+                throw pfq_error(errno, "PFQ: set rx slots error");
             }
 
-            pdata_->queue_slots = value;
+            pdata_->rx_slots = value;
         }
 
 
         size_t
-        slots() const
+        rx_slots() const
         {
             if (!pdata_)
                 throw pfq_error("PFQ: socket not open");
 
-            return pdata_->queue_slots;
+            return pdata_->rx_slots;
+        }
+
         }
 
 
         size_t
-        slot_size() const
+        rx_slot_size() const
         {
             if (!pdata_)
                 throw pfq_error("PFQ: socket not open");
 
-            return pdata_->slot_size;
+            return pdata_->rx_slot_size;
         }
 
 
@@ -998,11 +1008,11 @@ namespace net {
 
             size_t data = q->rx.data;
             size_t index = MPDB_QUEUE_INDEX(data);
-            size_t q_size = pdata_->queue_slots * pdata_->slot_size;
+            size_t q_size = pdata_->rx_slots * pdata_->rx_slot_size;
 
             //  watermark for polling...
 
-            if( MPDB_QUEUE_LEN(data) < (pdata_->queue_slots >> 1) ) {
+            if( MPDB_QUEUE_LEN(data) < (pdata_->rx_slots >> 1) ) {
                 this->poll(microseconds);
             }
 
@@ -1010,12 +1020,12 @@ namespace net {
 
             data = __sync_lock_test_and_set(&q->rx.data, (unsigned int)((index+1) << 24));
 
-            auto queue_len =  std::min(static_cast<size_t>(MPDB_QUEUE_LEN(data)), pdata_->queue_slots);
+            auto queue_len =  std::min(static_cast<size_t>(MPDB_QUEUE_LEN(data)), pdata_->rx_slots);
 
             return queue(static_cast<char *>(pdata_->queue_addr) +
 						    sizeof(pfq_queue_hdr) +
 						    (index & 1) * q_size,
-                            pdata_->slot_size, queue_len, index);
+                            pdata_->rx_slot_size, queue_len, index);
         }
 
         uint8_t
@@ -1033,7 +1043,7 @@ namespace net {
 
             auto this_queue = this->read(microseconds);
 
-            if (buff.second < pdata_->queue_slots * pdata_->slot_size)
+            if (buff.second < pdata_->rx_slots * pdata_->rx_slot_size)
                 throw pfq_error("PFQ: buffer too small");
 
             memcpy(buff.first, this_queue.data(), this_queue.slot_size() * this_queue.size());
