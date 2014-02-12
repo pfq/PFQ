@@ -52,8 +52,8 @@
 
 namespace net {
 
-    typedef std::pair<char *, size_t> mutable_buffer;
-    typedef std::pair<const char *, const size_t> const_buffer;
+    using mutable_buffer = std::pair<char *, size_t>;
+    using const_buffer   = std::pair<const char *, const size_t>;
 
     template<size_t N, typename T>
     inline T align(T value)
@@ -1209,9 +1209,36 @@ namespace net {
 
         /// TO BE REMOVED: added dummy experimental API
 
-        void start_tx(int node)
+        bool
+        sendto(const_buffer pkt, int ifindex, int queue = -1)
         {
-            if (::setsockopt(fd_, PF_Q, Q_SO_TX_THREAD_START, &node, sizeof(node)) == -1)
+            auto q  = static_cast<struct pfq_queue_hdr *>(pdata_->queue_addr);
+            auto tx = &q->tx;
+
+            int index = pfq_spsc_write_index(tx);
+            if (index == -1)
+                return false;
+
+            auto h    = reinterpret_cast<pfq_pkt_hdr *>(reinterpret_cast<char *>(q + 1) + pdata_->rx_slots * pdata_->rx_slot_size * 2  + index * tx->slot_size);
+            auto addr = reinterpret_cast<char *>(h + 1);
+
+            h->len = std::min(pkt.second, static_cast<size_t>(tx->max_len));
+
+            h->if_index = ifindex;
+            h->hw_queue = queue;
+
+            memcpy(addr, pkt.first, h->len);
+
+            pfq_spsc_write_commit(tx);
+            return true;
+        }
+
+
+        void start_tx(int node, int ifindex, int txq)
+        {
+            pfq_tx_info info{ node, ifindex, txq };
+
+            if (::setsockopt(fd_, PF_Q, Q_SO_TX_THREAD_START, &info, sizeof(info)) == -1)
                 throw pfq_error(errno, "PFQ: start TX thread");
         }
 
@@ -1225,6 +1252,17 @@ namespace net {
         {
             if (::setsockopt(fd_, PF_Q, Q_SO_TX_THREAD_WAKEUP, NULL, 0) == -1)
                 throw pfq_error(errno, "PFQ: wakeup TX thread");
+        }
+
+        void test_()
+        {
+            auto q = static_cast<struct pfq_queue_hdr *>(pdata_->queue_addr);
+
+            std::cout << "size_mask: " << q->tx.size_mask << std::endl;
+            std::cout << "max_len  : " << q->tx.max_len   << std::endl;
+            std::cout << "size     : " << q->tx.size << std::endl;
+            std::cout << "slot_size: " << q->tx.slot_size << std::endl;
+
         }
 
     };
