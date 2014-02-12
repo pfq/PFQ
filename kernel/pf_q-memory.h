@@ -28,6 +28,7 @@
 #include <linux/skbuff.h>
 
 #include <pf_q-common.h>
+#include <pf_q-skb-queue.h>
 
 /* per-cpu data... */
 
