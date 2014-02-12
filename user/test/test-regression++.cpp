@@ -139,6 +139,25 @@ Context(PFQ)
     }
 
 
+    Test(maxlen)
+    {
+        pfq x;
+        AssertThrow(x.maxlen(64));
+        AssertThrow(x.maxlen());
+
+        x.open(group_policy::undefined, 64);
+        x.maxlen(128);
+
+        Assert(x.maxlen(), is_equal_to(128));
+
+        x.enable();
+        AssertThrow(x.maxlen(64));
+        x.disable();
+
+        x.maxlen(64);
+        Assert(x.maxlen(), is_equal_to(64));
+    }
+
     Test(offset)
     {
         pfq x;
@@ -159,7 +178,7 @@ Context(PFQ)
     }
 
 
-    Test(slots)
+    Test(rx_slots)
     {
         pfq x;
         AssertThrow(x.rx_slots(14));
@@ -179,7 +198,7 @@ Context(PFQ)
     }
 
 
-    Test(slot_size)
+    Test(rx_slot_size)
     {
         pfq x;
         AssertThrow(x.rx_slot_size());
@@ -190,6 +209,24 @@ Context(PFQ)
         Assert(x.rx_slot_size(), is_equal_to( size + (size % 8) ));
     }
 
+    Test(tx_slots)
+    {
+        pfq x;
+        AssertThrow(x.tx_slots(14));
+        AssertThrow(x.tx_slots());
+
+        x.open(group_policy::undefined, 64);
+        x.tx_slots(1024);
+
+        Assert(x.tx_slots(), is_equal_to(1024));
+
+        x.enable();
+        AssertThrow(x.tx_slots(4096));
+        x.disable();
+
+        x.tx_slots(4096);
+        Assert(x.tx_slots(), is_equal_to(4096));
+    }
 
     Test(bind_device)
     {
