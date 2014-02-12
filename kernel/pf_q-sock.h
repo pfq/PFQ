@@ -99,7 +99,8 @@ struct pfq_tx_opt
         struct net_device       *dev;
         struct netdev_queue     *txq;
 
-        int                     hardware_queue;
+        int                     if_index;
+        int                     hw_queue;
         int                     cpu_index;
 
         struct task_struct      *thread;
@@ -123,7 +124,8 @@ void pfq_tx_opt_init(struct pfq_tx_opt *that, size_t maxlen)
         that->dev               = NULL;
         that->txq               = NULL;
 
-        that->hardware_queue    = 0;
+        that->if_index          = 0;
+        that->hw_queue          = 0;
         that->cpu_index         = -1;
 
         that->thread            = NULL;
