@@ -37,36 +37,6 @@
 typedef void *pfq_t;   /* pfq descritor */
 #endif
 
-
-/* memory barriers */
-
-#if defined(__GNUC__)
-        static inline void barrier() { asm volatile ("" ::: "memory"); }
-#else
-#error "Compiler not supported"
-#endif
-
-#if defined(__i386__) && !defined(__LP64__)
-#error "32-bit architecture is not supported"
-#endif
-
-#if defined(__LP64__)
-        static inline void mb()  { asm volatile ("mfence" ::: "memory"); }
-        static inline void rmb() { asm volatile ("lfence" ::: "memory"); }
-        static inline void wmb() { asm volatile ("sfence" ::: "memory"); }
-#endif
-
-#ifdef CONFIG_SMP
-        static inline void smp_mb()  { mb(); }
-        static inline void smp_rmb() { barrier(); }
-        static inline void smp_wmb() { barrier(); }
-#else
-        static inline void smp_mb()  { barrier(); }
-        static inline void smp_rmb() { barrier(); }
-        static inline void smp_wmb() { barrier(); }
-#endif
-
-
 #ifndef PFQ_LIBRARY
 /* pfq_net_queue */
 

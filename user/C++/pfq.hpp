@@ -49,35 +49,6 @@
 #include <algorithm>
 #include <system_error>
 
-namespace
-{
-
-#if defined(__GNUG__)
-        inline void barrier() { asm volatile ("" ::: "memory"); }
-#else
-#error "Compiler not supported"
-#endif
-
-#if defined(__i386__) && !defined(__LP64__)
-#error "32-bit architecture is not supported"
-#endif
-
-#if defined(__LP64__)
-        inline void mb()  { asm volatile ("mfence" ::: "memory"); }
-        inline void rmb() { asm volatile ("lfence" ::: "memory"); }
-        inline void wmb() { asm volatile ("sfence" ::: "memory"); }
-#endif
-
-#ifdef CONFIG_SMP
-        inline void smp_mb()  { mb(); }
-        inline void smp_rmb() { barrier(); }
-        inline void smp_wmb() { barrier(); }
-#else
-        inline void smp_mb()  { barrier(); }
-        inline void smp_rmb() { barrier(); }
-        inline void smp_wmb() { barrier(); }
-#endif
-}
 
 namespace net {
 
