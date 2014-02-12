@@ -30,18 +30,79 @@
 #include <linux/version.h>
 #include <linux/kthread.h>
 
+#include <pf_q-memory.h>
 #include <pf_q-sock.h>
+#include <pf_q-transmit.h>
+
+#include <pf_q-common.h>
 
 int
 pfq_tx_thread(void *data)
 {
-        struct pfq_tx_opt *to = (struct pfq_tx_opt *)data;
+        struct pfq_sock *so = (struct pfq_sock *)data;
+        struct pfq_tx_opt *to = &so->tx_opt;
 
         printk(KERN_INFO "[PFQ] tx-thread started on node %d\n", to->cpu_index);
 
         while(!kthread_should_stop())
         {
-                printk(KERN_WARNING "[PFQ] TX THREAD!\n");
+                struct pfq_pkt_hdr * h;
+                struct sk_buff *skb;
+                struct net_device *dev;
+                size_t len;
+                int index;
+
+                index = pfq_spsc_read_index(to->queue_info);
+
+                dev = dev_get_by_index(sock_net(&so->sk), to->if_index);
+
+                for(; likely(index != -1); index = pfq_spsc_read_index(to->queue_info))
+                {
+
+                        if (unlikely(index >= to->size))
+                        {
+                                if(printk_ratelimit())
+                                        printk(KERN_WARNING "[PFQ] bogus spsc index! q->size=%lu index=%d\n", to->size, index);
+                                goto out;
+                        }
+
+                        h = (struct pfq_pkt_hdr *) (to->base_addr + index * to->queue_info->slot_size);
+
+                        skb = pfq_alloc_skb(to->maxlen, GFP_KERNEL);
+                        if (skb == NULL) {
+                                goto out;
+                        }
+
+                        skb->dev = dev;
+
+                        /* copy packet to this skb: */
+
+                        len =  min_t(size_t, h->len, to->queue_info->max_len);
+
+                        memcpy(skb->data, h+1, len);
+
+                        /* release the slot */
+
+                        pfq_spsc_read_commit(to->queue_info);
+
+                        /* set the tail */
+
+                        skb_reset_tail_pointer(skb);
+
+                        skb->len = 0;
+
+                        skb_put(skb, len);
+
+                        /* send the packet... */
+
+                        dev_queue_xmit(skb);
+
+                        // TODO:
+                        // pfq_queue_xmit(skb, to->if_index, to->hw_queue);
+
+                }
+        out:
+                dev_put(dev);
                 set_current_state(TASK_INTERRUPTIBLE);
                 schedule();
         }
