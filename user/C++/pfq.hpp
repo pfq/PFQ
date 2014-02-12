@@ -502,7 +502,7 @@ namespace net {
 
         /* pfq object is moveable */
 
-        pfq(pfq &&other)
+        pfq(pfq &&other) noexcept
         : fd_(other.fd_)
         , pdata_(std::move(other.pdata_))
         {
@@ -512,7 +512,7 @@ namespace net {
         /* move assignment operator */
 
         pfq&
-        operator=(pfq &&other)
+        operator=(pfq &&other) noexcept
         {
             if (this != &other)
             {
