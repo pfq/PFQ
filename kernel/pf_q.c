@@ -610,7 +610,7 @@ pfq_create(
 
         pfq_rx_opt_init(&so->rx_opt, cap_len);
 
-        pfq_tx_opt_init(&so->tx_opt);
+        pfq_tx_opt_init(&so->tx_opt, max_len);
 
         /* initialize socket */
 

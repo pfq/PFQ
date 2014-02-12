@@ -91,6 +91,8 @@ struct pfq_tx_opt
 
         uint64_t                counter;
 
+        size_t                  maxlen;
+
         size_t                  size;
         size_t                  slot_size;
 
@@ -105,7 +107,7 @@ struct pfq_tx_opt
 } __attribute__((aligned(64)));
 
 static inline
-void pfq_tx_opt_init(struct pfq_tx_opt *that)
+void pfq_tx_opt_init(struct pfq_tx_opt *that, size_t maxlen)
 {
         /* the queue is allocate later, when the socket is enabled */
 
@@ -114,6 +116,7 @@ void pfq_tx_opt_init(struct pfq_tx_opt *that)
 
         that->counter           = 0;
 
+        that->maxlen            = maxlen;
         that->size              = 0;
         that->slot_size         = 0;
 
