@@ -604,21 +604,31 @@ namespace net {
             if (::getsockopt(fd_, PF_Q, Q_SO_GET_ID, &pdata_->id, &size) == -1)
                 throw pfq_error(errno, "PFQ: get id error");
 
-            /* set queue slots */
+            /* set RX queue slots */
             if (::setsockopt(fd_, PF_Q, Q_SO_SET_RX_SLOTS, &slots, sizeof(slots)) == -1)
-                throw pfq_error(errno, "PFQ: set slots error");
+                throw pfq_error(errno, "PFQ: set RX slots error");
+
             pdata_->rx_slots = slots;
 
-            /* set caplen/maxlen */
+            /* set caplen */
             if (::setsockopt(fd_, PF_Q, Q_SO_SET_RX_CAPLEN, &caplen, sizeof(caplen)) == -1)
                 throw pfq_error(errno, "PFQ: set caplen error");
+
             pdata_->rx_caplen = caplen;
 
             /* set offset */
             if (::setsockopt(fd_, PF_Q, Q_SO_SET_RX_OFFSET, &offset, sizeof(offset)) == -1)
-                throw pfq_error(errno, "PFQ: set offset error");
+                throw pfq_error(errno, "PFQ: set RX offset error");
 
             pdata_->rx_slot_size = align<8>(sizeof(pfq_pkt_hdr) + pdata_->rx_caplen);
+
+            /* set TX queue slots */
+            if (::setsockopt(fd_, PF_Q, Q_SO_SET_TX_SLOTS, &slots, sizeof(slots)) == -1)
+                throw pfq_error(errno, "PFQ: set TX slots error");
+
+            /* set maxlen */
+            if (::setsockopt(fd_, PF_Q, Q_SO_SET_TX_MAXLEN, &caplen, sizeof(caplen)) == -1)
+                throw pfq_error(errno, "PFQ: set maxlen error");
         }
 
     public:
