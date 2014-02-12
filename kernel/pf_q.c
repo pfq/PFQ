@@ -1145,7 +1145,7 @@ int pfq_setsockopt(struct socket *sock,
                     if (copy_from_user(&slots, optval, optlen))
                             return -EFAULT;
 
-                    so->rx_opt.size = min(slots,(size_t)tx_queue_slots);
+                    so->tx_opt.size = min(slots,(size_t)tx_queue_slots);
 
                     pr_devel("[PFQ|%d] tx_queue_slots:%lu\n", so->id, so->tx_opt.size);
             } break;
