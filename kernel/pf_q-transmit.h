@@ -29,4 +29,4 @@
 #include <linux/skbuff.h>
 
 
-extern int pfq_queue_xmit(struct sk_buff *skb);
+extern int pfq_queue_xmit(struct sk_buff *skb, int ifindex, int txq);

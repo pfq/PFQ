@@ -37,7 +37,7 @@ struct netdev_queue *pfq_pick_tx(struct net_device *dev, struct sk_buff *skb, in
 {
         if (dev->real_num_tx_queues != 1)
         {
-                if (skb_get_queue_mapping(skb) == -1)
+                if (queue_index == -1)
                 {
                         const struct net_device_ops *ops = dev->netdev_ops;
 
@@ -57,51 +57,103 @@ struct netdev_queue *pfq_pick_tx(struct net_device *dev, struct sk_buff *skb, in
 }
 
 
-
-int pfq_queue_xmit(struct sk_buff *skb)
+int pfq_queue_xmit(struct sk_buff *skb, int ifindex, int queue_index)
 {
-        struct net_device *dev = skb->dev;
-        const struct net_device_ops * ops = skb->dev->netdev_ops;
-        struct netdev_queue *txq;
-        int rc = -ENOMEM;
+         struct net_device *dev = skb->dev;
+         struct netdev_queue *txq;
+         struct Qdisc *q;
+         int rc = -ENOMEM;
 
-        skb_reset_mac_header(skb);
+         skb_reset_mac_header(skb);
 
-        /* Disable soft irqs for various locks below. Also
-         * stops preemption for RCU.
-         */
+         /* Disable soft irqs for various locks below. Also
+          * stops preemption for RCU.
+          */
+         rcu_read_lock_bh();
 
-        rcu_read_lock_bh();
+         // skb_update_prio(skb);
 
-        txq = pfq_pick_tx(dev, skb, skb_get_queue_mapping(skb));
+         // txq = netdev_pick_tx(dev, skb);
+         //
 
-        if (dev->flags & IFF_UP) {
-                int cpu = smp_processor_id(); /* ok because BHs are off */
+         // txq = pfq_pick_tx(dev, skb, queue_index);
+         txq = __netdev_pick_tx(dev, skb);
 
-                if (txq->xmit_lock_owner != cpu) {
+         if (txq == NULL)
+         {
+                printk(KERN_WARNING "MERDA!\n");
+                goto out;
+         }
 
-                        HARD_TX_LOCK(dev, txq, cpu);
+         // q = rcu_dereference_bh(txq->qdisc);
 
-                        if (!netif_xmit_stopped(txq)) {
+         // trace_net_dev_queue(skb);
+         //
+         // if (q->enqueue) {
+         //         rc = __dev_xmit_skb(skb, q, dev, txq);
+         //         goto out;
+         // }
 
-                                rc = ops->ndo_start_xmit(skb, dev);
+         /* The device has no queue. Common case for software devices:
+            loopback, all the sorts of tunnels...
 
-                                if (dev_xmit_complete(rc)) {
-                                        HARD_TX_UNLOCK(dev, txq);
-                                        goto out;
-                                }
-                        }
-                        HARD_TX_UNLOCK(dev, txq);
-                }
-        }
+            Really, it is unlikely that netif_tx_lock protection is necessary
+            here.  (f.e. loopback and IP tunnels are clean ignoring statistics
+            counters.)
+            However, it is possible, that they rely on protection
+            made by us here.
 
-        rc = -ENETDOWN;
-        rcu_read_unlock_bh();
+            Check this and shot the lock. It is not prone from deadlocks.
+            Either shot noqueue qdisc, it is even simpler 8)
+          */
+         if (dev->flags & IFF_UP) {
+                 int cpu = smp_processor_id(); /* ok because BHs are off */
 
-        pfq_kfree_skb(skb);
-        return rc;
-out:
-        rcu_read_unlock_bh();
-        return rc;
+                 if (txq->xmit_lock_owner != cpu) {
+
+                         // if (__this_cpu_read(xmit_recursion) > RECURSION_LIMIT)
+                         //         goto recursion_alert;
+
+                         HARD_TX_LOCK(dev, txq, cpu);
+
+                         if (!netif_xmit_stopped(txq)) {
+
+                                 // __this_cpu_inc(xmit_recursion);
+
+                                 // rc = dev_hard_start_xmit(skb, dev, txq);
+
+                                 rc = 0;
+                                 pfq_kfree_skb(skb);
+
+                                 // __this_cpu_dec(xmit_recursion);
+
+
+                                 if (dev_xmit_complete(rc)) {
+                                         HARD_TX_UNLOCK(dev, txq);
+                                         goto out;
+                                 }
+                         }
+                         HARD_TX_UNLOCK(dev, txq);
+                         // net_crit_ratelimited("Virtual device %s asks to queue packet!\n",
+                         //                      dev->name);
+                 } else {
+                         /* Recursion is detected! It is possible,
+                          * unfortunately
+                          */
+//  recursion_alert:
+                         // net_crit_ratelimited("Dead loop on virtual device %s, fix it urgently!\n",
+                         //                      dev->name);
+                 }
+         }
+
+         rc = -ENETDOWN;
+         rcu_read_unlock_bh();
+
+         kfree_skb(skb);
+         return rc;
+ out:
+         rcu_read_unlock_bh();
+         return rc;
+
 }
 
