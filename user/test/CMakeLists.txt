@@ -21,21 +21,22 @@ add_executable(test-steering-dummy test-steering-dummy.cpp)
 add_executable(test-filter test-filter.cpp)
 add_executable(test-tx test-tx-thread.cpp)
 
-add_executable(test-regression test-regression.cpp)
+add_executable(test-regression++ test-regression++.cpp)
 add_executable(test-regression-capture test-regression-capture.cpp)
-add_executable(pcap-test-rewrite pcap-test-rewrite.cpp)
+add_executable(test-regression-pcap-rewrite test-regression-pcap-rewrite.cpp)
 
 # C tests
 
 add_executable(test-read test-read.c)
 add_executable(test-dispatch test-dispatch.c)
-add_executable(test-regression-c test-regression-c.c)
+add_executable(test-regression test-regression.c)
 
 target_link_libraries(test-read -lpfq)
 target_link_libraries(test-dispatch -lpfq)
 
-target_link_libraries(test-regression -pthread)
+target_link_libraries(test-regression -lpfq -pthread)      
+target_link_libraries(test-regression++ -pthread)
 target_link_libraries(test-regression-capture -pthread -lpcap)
-target_link_libraries(test-regression-c -lpfq -pthread)      
-target_link_libraries(pcap-test-rewrite -lpcap)
+
+target_link_libraries(test-regression-pcap-rewrite -lpcap)
 
