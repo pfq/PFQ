@@ -1144,6 +1144,8 @@ int pfq_setsockopt(struct socket *sock,
                             return -EINVAL;
                     if (copy_from_user(&slots, optval, optlen))
                             return -EFAULT;
+                    if (slots & (slots-1))
+                            return -EINVAL;
 
                     so->tx_opt.size = min(slots,(size_t)tx_queue_slots);
 
@@ -1613,6 +1615,11 @@ static int __init pfq_init_module(void)
 {
         int n;
         printk(KERN_INFO "[PFQ] loading (%s)...\n", Q_VERSION);
+
+        if (tx_queue_slots & (tx_queue_slots-1))
+        {
+                printk(KERN_INFO "[PFQ] tx_queue_slots (%d) not a power of 2!\n", tx_queue_slots);
+        }
 
         pfq_net_proto_family_init();
         pfq_proto_ops_init();
