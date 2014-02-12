@@ -671,6 +671,7 @@ pfq_release(struct socket *sock)
 		return 0;
 
 	so = pfq_sk(sk);
+        id = so->id;
 
         pfq_rx_release(&so->rx_opt);
         pfq_tx_release(&so->tx_opt);
