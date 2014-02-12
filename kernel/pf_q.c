@@ -1015,8 +1015,8 @@ int pfq_setsockopt(struct socket *sock,
 
                                     queue->tx.size_mask         = 0;
                                     queue->tx.max_len           = 0;
-                                    queue->tx.size              = 0;
-                                    queue->tx.slot_size         = 0;
+                                    queue->tx.size              = so->tx_opt.size;
+                                    queue->tx.slot_size         = so->tx_opt.slot_size;
 
                                     /* update the queues base_addr */
 
@@ -1029,6 +1029,11 @@ int pfq_setsockopt(struct socket *sock,
 
                                     so->rx_opt.queue_info = &queue->rx;
                                     so->tx_opt.queue_info = &queue->tx;
+
+                                    pr_devel("[PFQ|%d] queue: rx_size:%d rx_slot_size:%d tx_size:%d tx_slot_size:%d\n", so->id, queue->rx.size,
+                                                                                                                                queue->rx.slot_size,
+                                                                                                                                queue->tx.size,
+                                                                                                                                queue->tx.slot_size);
                             }
                     }
                     else {
