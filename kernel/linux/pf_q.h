@@ -127,6 +127,58 @@ struct pfq_queue_hdr
     struct pfq_tx_queue_hdr tx;
 };
 
+/* SPSC circular queue handling... */
+
+static inline
+int pfq_spsc_write_index(struct pfq_tx_queue_hdr *q)
+{
+    if (unlikely(q->producer.cache == 0)) {
+        // consumer - producer - 1 + size
+        q->producer.cache = (q->consumer.index - q->producer.index + q->size_mask) & q->size_mask;
+    }
+    if (unlikely(q->producer.cache == 0)) {
+        return -1;
+    }
+    return q->producer.index;
+}
+
+static inline
+void pfq_spsc_write_commit(struct pfq_tx_queue_hdr *q)
+{
+    wmb();
+    if (likely(q->producer.cache != 0)) {
+        q->producer.index = (q->producer.index + 1) & q->size_mask;
+        q->producer.cache--;
+    }
+    wmb();
+}
+
+/* consumer */
+
+static inline
+int pfq_spsc_read_index(struct pfq_tx_queue_hdr *q)
+{
+    if(unlikely(q->consumer.cache == 0)) {
+        q->consumer.cache = (q->producer.index - q->consumer.index + q->size) & q->size_mask;
+    }
+    if(unlikely(q->consumer.cache == 0)) {
+        return -1;
+    }
+
+    return q->consumer.index;
+}
+
+static inline
+void pfq_spsc_read_commit(struct pfq_tx_queue_hdr *q)
+{
+    wmb();
+    if (likely(q->consumer.cache != 0)) {
+        q->consumer.index = (q->consumer.index + 1) & q->size_mask;
+        q->consumer.cache--;
+    }
+    wmb();
+}
+
 /*
     +------------------+----------------------+          +----------------------+          +----------------------+
     | pfq_queue_hdr    | pfq_pkt_hdr | packet | ...      | pfq_pkt_hdr | packet |...       | pfq_pkt_hdr | packet | ...
