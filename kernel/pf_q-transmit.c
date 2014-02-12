@@ -31,6 +31,8 @@
 
 #include <linux/netdevice.h>
 
+#include <pf_q-memory.h>
+
 struct netdev_queue *pfq_pick_tx(struct net_device *dev, struct sk_buff *skb, int queue_index)
 {
         if (dev->real_num_tx_queues != 1)
@@ -96,7 +98,7 @@ int pfq_queue_xmit(struct sk_buff *skb)
         rc = -ENETDOWN;
         rcu_read_unlock_bh();
 
-        kfree_skb(skb);
+        pfq_kfree_skb(skb);
         return rc;
 out:
         rcu_read_unlock_bh();
