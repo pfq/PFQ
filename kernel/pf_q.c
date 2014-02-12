@@ -1013,8 +1013,8 @@ int pfq_setsockopt(struct socket *sock,
                                     queue->tx.consumer.index    = 0;
                                     queue->tx.consumer.cache    = 0;
 
-                                    queue->tx.size_mask         = 0;
-                                    queue->tx.max_len           = 0;
+                                    queue->tx.size_mask         = so->tx_opt.size - 1;
+                                    queue->tx.max_len           = so->tx_opt.maxlen;
                                     queue->tx.size              = so->tx_opt.size;
                                     queue->tx.slot_size         = so->tx_opt.slot_size;
 
@@ -1374,24 +1374,31 @@ int pfq_setsockopt(struct socket *sock,
 
         case Q_SO_TX_THREAD_START:
         {
+                struct pfq_tx_info info;
+
                 if (to->thread)
                 {
                         pr_devel("[PFQ|%d] TX thread already created on node %d\n", so->id, to->cpu_index);
                         return -EINVAL;
                 }
 
-                if (optlen != sizeof(to->cpu_index))
+                if (optlen != sizeof(info))
                         return -EINVAL;
 
-                if (copy_from_user(&to->cpu_index, optval, optlen))
+                if (copy_from_user(&info, optval, optlen))
                         return -EFAULT;
 
-                pr_devel("[PFQ|%d] creating TX thread on node %d\n",so->id,to->cpu_index);
+                to->cpu_index = info.node;
+                to->if_index  = info.if_index;
+                to->hw_queue  = info.hw_queue;
+
+                pr_devel("[PFQ|%d] creating TX thread on node %d -> ifindex:%d txq:%d\n",so->id, to->cpu_index, to->if_index, to->hw_queue);
 
                 to->thread = kthread_create_on_node(pfq_tx_thread,
-                                to,
-                                cpu_to_node(to->cpu_index),
-                                "pfq_tx_%d", to->cpu_index);
+                                                    so,
+                                                    cpu_to_node(to->cpu_index),
+                                                    "pfq_tx_%d", to->cpu_index);
+
                 if (IS_ERR(to->thread)) {
                         printk(KERN_INFO "[PFQ] kernel_thread() create failed on node %d\n", to->cpu_index);
                         return PTR_ERR(to->thread);
