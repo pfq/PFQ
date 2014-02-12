@@ -739,6 +739,28 @@ namespace net {
 
 
         void
+        maxlen(size_t value)
+        {
+            if (enabled())
+                throw pfq_error("PFQ: enabled (maxlen could not be set)");
+
+            if (::setsockopt(fd_, PF_Q, Q_SO_SET_TX_MAXLEN, &value, sizeof(value)) == -1) {
+                throw pfq_error(errno, "PFQ: set maxlen error");
+            }
+        }
+
+
+        size_t
+        maxlen() const
+        {
+           size_t ret; socklen_t size = sizeof(ret);
+           if (::getsockopt(fd_, PF_Q, Q_SO_GET_TX_MAXLEN, &ret, &size) == -1)
+                throw pfq_error(errno, "PFQ: get maxlen error");
+           return ret;
+        }
+
+
+        void
         offset(size_t value)
         {
             if (enabled())
@@ -783,6 +805,26 @@ namespace net {
             return pdata_->rx_slots;
         }
 
+
+        void
+        tx_slots(size_t value)
+        {
+            if (enabled())
+                throw pfq_error("PFQ: enabled (tx slots could not be set)");
+
+            if (::setsockopt(fd_, PF_Q, Q_SO_SET_TX_SLOTS, &value, sizeof(value)) == -1) {
+                throw pfq_error(errno, "PFQ: set tx slots error");
+            }
+        }
+
+
+        size_t
+        tx_slots() const
+        {
+           size_t ret; socklen_t size = sizeof(ret);
+           if (::getsockopt(fd_, PF_Q, Q_SO_GET_TX_SLOTS, &ret, &size) == -1)
+                throw pfq_error(errno, "PFQ: get tx slots error");
+           return ret;
         }
 
 
