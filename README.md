@@ -31,8 +31,8 @@ Features
 Publication
 -----------
 
-We received the Best-Paper-Award at PAM2012 in Vienna for the paper _"PFQ: a Novel Engine for Multi-Gigabit Packet Capturing With Multi-Core Commodity Hardware"_.
-
+We received the Best-Paper-Award at PAM2012 in Vienna for the paper _"PFQ: a Novel Engine for Multi-Gigabit Packet Capturing With Multi-Core Commodity Hardware"_":
+http://tma2012.ftw.at/papers/PAM2012paper12.pdf
 
 Author
 ------
