@@ -434,8 +434,10 @@ namespace net {
     }
 
     //////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////
     // PFQ class
-
+    //////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////
 
     class pfq
     {
@@ -450,6 +452,8 @@ namespace net {
             size_t rx_offset;
             size_t rx_slots;
             size_t rx_slot_size;
+
+            size_t tx_slots;
         };
 
         int fd_;
@@ -596,6 +600,7 @@ namespace net {
                                         0,
                                         offset,
                                         0,
+                                        0,
                                         0
                                        });
 
@@ -625,6 +630,8 @@ namespace net {
             /* set TX queue slots */
             if (::setsockopt(fd_, PF_Q, Q_SO_SET_TX_SLOTS, &slots, sizeof(slots)) == -1)
                 throw pfq_error(errno, "PFQ: set TX slots error");
+
+            pdata_->tx_slots = slots;
 
             /* set maxlen */
             if (::setsockopt(fd_, PF_Q, Q_SO_SET_TX_MAXLEN, &caplen, sizeof(caplen)) == -1)
@@ -825,16 +832,22 @@ namespace net {
             if (::setsockopt(fd_, PF_Q, Q_SO_SET_TX_SLOTS, &value, sizeof(value)) == -1) {
                 throw pfq_error(errno, "PFQ: set tx slots error");
             }
+
+            pdata_->tx_slots = value;
         }
 
 
         size_t
         tx_slots() const
         {
-           size_t ret; socklen_t size = sizeof(ret);
-           if (::getsockopt(fd_, PF_Q, Q_SO_GET_TX_SLOTS, &ret, &size) == -1)
-                throw pfq_error(errno, "PFQ: get tx slots error");
-           return ret;
+           // size_t ret; socklen_t size = sizeof(ret);
+           // if (::getsockopt(fd_, PF_Q, Q_SO_GET_TX_SLOTS, &ret, &size) == -1)
+           //      throw pfq_error(errno, "PFQ: get tx slots error");
+
+           if (!pdata_)
+                throw pfq_error("PFQ: socket not open");
+
+           return pdata_->tx_slots;
         }
 
 
@@ -1207,7 +1220,7 @@ namespace net {
             return nullptr;
         }
 
-        /// TO BE REMOVED: added dummy experimental API
+        /// TX API...
 
         void
         bind_tx(const char *dev, int queue = any_queue)
@@ -1221,6 +1234,31 @@ namespace net {
             if (::setsockopt(fd_, PF_Q, Q_SO_TX_THREAD_BIND, &b, sizeof(b)) == -1)
                 throw pfq_error(errno, "PFQ: TX bind error");
         }
+
+        bool
+        send(const_buffer pkt)
+        {
+            if (!inject(pkt))
+                return false;
+
+            tx_queue_flush();
+            return true;
+        }
+
+        bool
+        send_async(const_buffer pkt)
+        {
+            if (!inject(pkt))
+                return false;
+
+            auto q  = static_cast<struct pfq_queue_hdr *>(pdata_->queue_addr);
+
+            if (pfq_spsc_write_avail(&q->tx) < static_cast<int>(tx_slots()/2) )
+                wakeup_tx_thread();
+
+            return true;
+        }
+
 
         bool
         inject(const_buffer pkt)
@@ -1242,7 +1280,6 @@ namespace net {
             pfq_spsc_write_commit(tx);
             return true;
         }
-
 
         void start_tx_thread(int node)
         {

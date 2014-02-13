@@ -7,13 +7,55 @@ char packet[] = "\x01\x02\x04\x04\x05\x06\x07\x08\x09\x0a\x0b\x0c\x08\x00"
                 "\x45\x02\x03\x06\x05\x06\x03\x08\x03\x0a\x01\x0c"
                 "\x45\x02\x04\x04\x05\x06\x05\x08\x02\x0a\x03\x0c";
 
+void mode_0(pfq &q)
+{
+    for(int n = 0; n < 1000; ++n)
+    {
+        q.inject(net::const_buffer(packet, sizeof(packet)));
+
+        q.tx_queue_flush();
+    }
+}
+
+void mode_1(pfq &q)
+{
+    for(int n = 0; n < 1000; ++n)
+    {
+        q.inject(net::const_buffer(packet, sizeof(packet)));
+
+        q.wakeup_tx_thread();
+    }
+}
+
+void mode_2(pfq &q)
+{
+    for(int n = 0; n < 1000; ++n)
+    {
+        q.send_async(net::const_buffer(packet, sizeof(packet)));
+    }
+
+    q.wakeup_tx_thread();
+}
+
+
+void mode_3(pfq &q)
+{
+    for(int n = 0; n < 1000; ++n)
+    {
+        q.send(net::const_buffer(packet, sizeof(packet)));
+    }
+}
+
+
 int
 main(int argc, char *argv[])
 {
-    if (argc < 2)
-        throw std::runtime_error(std::string("usage: ").append(argv[0]).append(" dev"));
+    if (argc < 3)
+        throw std::runtime_error(std::string("usage: ").append(argv[0]).append(" dev int"));
 
     const char *dev = argv[1];
+
+    int mode = atoi(argv[2]);
 
     pfq q(128);
 
@@ -23,12 +65,14 @@ main(int argc, char *argv[])
 
     q.start_tx_thread(0);
 
-    for(int n = 0; n < 1000; ++n)
+    switch(mode)
     {
-        q.inject(net::const_buffer(packet, sizeof(packet)));
-
-        // q.wakeup_tx_thread();
-        q.tx_queue_flush();
+    case 0: mode_0(q); break;
+    case 1: mode_1(q); break;
+    case 2: mode_2(q); break;
+    case 3: mode_3(q); break;
+    default:
+            throw std::runtime_error("unknown mode " + std::to_string(mode));
     }
 
     q.stop_tx_thread();
