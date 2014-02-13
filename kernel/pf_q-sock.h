@@ -124,8 +124,8 @@ void pfq_tx_opt_init(struct pfq_tx_opt *that, size_t maxlen)
         that->dev               = NULL;
         that->txq               = NULL;
 
-        that->if_index          = 0;
-        that->hw_queue          = 0;
+        that->if_index          = -1;
+        that->hw_queue          = -1;
         that->cpu_index         = -1;
 
         that->thread            = NULL;
