@@ -23,7 +23,6 @@
  ****************************************************************/
 
 #include <pf_q-mpdb-queue.h>
-#include <pf_q-spsc-queue.h>
 
 #include <linux/pf_q-fun.h>
 
