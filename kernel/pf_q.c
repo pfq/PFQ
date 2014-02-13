@@ -1456,6 +1456,11 @@ int pfq_setsockopt(struct socket *sock,
 
         case Q_SO_TX_THREAD_WAKEUP:
         {
+                if (to->if_index == -1)
+                {
+                        pr_devel("[PFQ|%d] socket TX not bound to any device!\n", so->id);
+                        return -EINVAL;
+                }
                 if (!to->thread)
                 {
                         pr_devel("[PFQ|%d] TX thread not running!\n", so->id);
@@ -1468,6 +1473,12 @@ int pfq_setsockopt(struct socket *sock,
         case Q_SO_TX_QUEUE_FLUSH:
         {
                 struct net_device *dev;
+
+                if (to->if_index == -1)
+                {
+                        pr_devel("[PFQ|%d] socket TX not bound to any device!\n", so->id);
+                        return -EINVAL;
+                }
 
                 if (!to->thread && to->thread->state == TASK_RUNNING)
                 {
