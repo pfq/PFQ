@@ -17,28 +17,22 @@ main(int argc, char *argv[])
 
     pfq q(128);
 
-    q.bind(argv[1], pfq::any_queue);
-
-    q.timestamp_enable(true);
-
     q.enable();
 
     q.test_();
 
-    auto idx = net::nametoindex(dev);
+    q.bind_tx(dev, -1);
 
-    q.start_tx(0, idx, -1);
+    q.start_tx(0);
 
-
-    for(int n = 0; n < 100000; ++n)
+    for(int n = 0; n < 2; ++n)
     {
-        if (!q.sendto(net::const_buffer(packet, sizeof(packet)), idx))
-            std::cout << "queue full!" << std::endl;
+        q.inject(net::const_buffer(packet, sizeof(packet)));
 
         q.wakeup_tx();
     }
 
-    q.stop_tx();
+    // q.stop_tx();
 
     return 0;
 }

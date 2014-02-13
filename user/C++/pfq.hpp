@@ -1209,8 +1209,21 @@ namespace net {
 
         /// TO BE REMOVED: added dummy experimental API
 
+        void
+        bind_tx(const char *dev, int queue = any_queue)
+        {
+            auto index = ifindex(this->fd(), dev);
+            if (index == -1)
+                throw pfq_error("PFQ: device not found");
+
+            struct pfq_binding b = { 0, index, queue };
+
+            if (::setsockopt(fd_, PF_Q, Q_SO_TX_THREAD_BIND, &b, sizeof(b)) == -1)
+                throw pfq_error(errno, "PFQ: TX bind error");
+        }
+
         bool
-        sendto(const_buffer pkt, int ifindex, int queue = -1)
+        inject(const_buffer pkt)
         {
             auto q  = static_cast<struct pfq_queue_hdr *>(pdata_->queue_addr);
             auto tx = &q->tx;
@@ -1224,9 +1237,6 @@ namespace net {
 
             h->len = std::min(pkt.second, static_cast<size_t>(tx->max_len));
 
-            h->if_index = ifindex;
-            h->hw_queue = queue;
-
             memcpy(addr, pkt.first, h->len);
 
             pfq_spsc_write_commit(tx);
@@ -1234,11 +1244,9 @@ namespace net {
         }
 
 
-        void start_tx(int node, int ifindex, int txq)
+        void start_tx(int node)
         {
-            pfq_tx_info info{ node, ifindex, txq };
-
-            if (::setsockopt(fd_, PF_Q, Q_SO_TX_THREAD_START, &info, sizeof(info)) == -1)
+            if (::setsockopt(fd_, PF_Q, Q_SO_TX_THREAD_START, &node, sizeof(node)) == -1)
                 throw pfq_error(errno, "PFQ: start TX thread");
         }
 
