@@ -39,7 +39,7 @@
 #define Q_MAX_HW_QUEUE          256
 #define Q_MAX_HW_QUEUE_MASK     (Q_MAX_HW_QUEUE-1)
 
-#define Q_GRACE_PERIOD 10       /* msec */
+#define Q_GRACE_PERIOD 100      /* msec */
 
 #define Q_TX_RING_SIZE        (8192)
 #define Q_TX_RING_MASK        (PFQ_TX_RING_SIZE-1)
