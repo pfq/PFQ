@@ -1465,6 +1465,28 @@ int pfq_setsockopt(struct socket *sock,
                 wake_up_process(to->thread);
         } break;
 
+        case Q_SO_TX_QUEUE_FLUSH:
+        {
+                struct net_device *dev;
+
+                if (!to->thread && to->thread->state == TASK_RUNNING)
+                {
+                        pr_devel("[PFQ|%d] TX thread is running!\n", so->id);
+                        return -EINVAL;
+                }
+
+                dev = dev_get_by_index(sock_net(&so->sk), to->if_index);
+                if (!dev)
+                {
+                        pr_devel("[PFQ|%d] No such device (if_index = %d)\n", so->id, to->if_index);
+                        return -EINVAL;
+                }
+
+                pfq_tx_queue_flush(to, dev);
+
+                dev_put(dev);
+        } break;
+
         default:
         {
                 found = false;

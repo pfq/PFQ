@@ -274,6 +274,7 @@ int pfq_spsc_read_avail(struct pfq_tx_queue_hdr *q)
 #define Q_SO_TX_THREAD_START        32
 #define Q_SO_TX_THREAD_STOP         33
 #define Q_SO_TX_THREAD_WAKEUP       34
+#define Q_SO_TX_QUEUE_FLUSH         35
 
 
 /* general defines */
