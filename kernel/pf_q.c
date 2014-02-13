@@ -1409,6 +1409,16 @@ int pfq_setsockopt(struct socket *sock,
                         pr_devel("[PFQ|%d] TX thread already created on node %d!\n", so->id, to->cpu_index);
                         return -EINVAL;
                 }
+                if (to->if_index == -1)
+                {
+                        pr_devel("[PFQ|%d] socket TX not bound to any device!\n", so->id);
+                        return -EINVAL;
+                }
+                if (to->queue_info == NULL)
+                {
+                        pr_devel("[PFQ|%d] socket not enabled!\n", so->id);
+                        return -EINVAL;
+                }
 
                 if (optlen != sizeof(node))
                         return -EINVAL;
@@ -1450,6 +1460,7 @@ int pfq_setsockopt(struct socket *sock,
                         kthread_stop(to->thread);
                         to->thread = NULL;
                 }
+
                 pr_devel("[PFQ|%d] stop TX thread: done.\n", so->id);
 
         } break;
@@ -1480,9 +1491,14 @@ int pfq_setsockopt(struct socket *sock,
                         return -EINVAL;
                 }
 
-                if (!to->thread && to->thread->state == TASK_RUNNING)
+                if (to->thread && to->thread->state == TASK_RUNNING)
                 {
                         pr_devel("[PFQ|%d] TX thread is running!\n", so->id);
+                        return -EINVAL;
+                }
+                if (to->queue_info == NULL)
+                {
+                        pr_devel("[PFQ|%d] socket not enabled!\n", so->id);
                         return -EINVAL;
                 }
 
@@ -1494,7 +1510,6 @@ int pfq_setsockopt(struct socket *sock,
                 }
 
                 pfq_tx_queue_flush(to, dev);
-
                 dev_put(dev);
         } break;
 
