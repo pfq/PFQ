@@ -84,10 +84,9 @@ pfq_tx_queue_flush(struct pfq_tx_opt *to, struct net_device *dev)
 
                 /* send the packet... */
 
-                dev_queue_xmit(skb);
+                // dev_queue_xmit(skb);
 
-                // TODO:
-                // pfq_queue_xmit(skb, to->if_index, to->hw_queue);
+                pfq_queue_xmit(skb, to->hw_queue);
 
                 // get next index...
                 //
