@@ -679,6 +679,15 @@ pfq_release(struct socket *sock)
         pfq_leave_all_groups(so->id);
         pfq_release_sock_id(so->id);
 
+        /* stop tx thread (if running) */
+
+        if (so->tx_opt.thread)
+        {
+                pr_devel("[PFQ|%d] stopping TX thread...\n", id);
+                kthread_stop(so->tx_opt.thread);
+                so->tx_opt.thread = NULL;
+        }
+
         /* Convenient way to avoid a race condition,
          * without using expensive rw-mutexes
          */
@@ -1416,8 +1425,11 @@ int pfq_setsockopt(struct socket *sock,
                         return -EINVAL;
                 }
 
-                kthread_stop(to->thread);
-                to->thread = NULL;
+                if (to->thread)
+                {
+                        kthread_stop(to->thread);
+                        to->thread = NULL;
+                }
         } break;
 
         case Q_SO_TX_THREAD_WAKEUP:
