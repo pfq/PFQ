@@ -108,14 +108,6 @@ MODULE_PARM_DESC(flow_control,  " Flow control value (default=0)");
 MODULE_PARM_DESC(vl_untag,      " Enable vlan untagging (default=0)");
 
 
-/* timestamp toggle */
-
-atomic_t timestamp_toggle;
-
-
-struct local_data __percpu    * cpu_data;
-
-
 inline
 bool pfq_copy_to_user_skbs(struct pfq_rx_opt *ro, int cpu, unsigned long sock_queue, struct pfq_queue_skb *skbs, int gid)
 {
@@ -233,8 +225,6 @@ unsigned int pfq_fold(unsigned int a, unsigned int b)
                 return a & c;
         }
 }
-
-
 
 int
 pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)

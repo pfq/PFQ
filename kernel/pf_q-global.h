@@ -21,6 +21,12 @@
  *
  ****************************************************************/
 
+#include <linux/types.h>
+
+extern atomic_t timestamp_toggle;
+
+extern struct local_data __percpu    * cpu_data;
+
 extern int direct_capture;
 
 extern int capture_incoming;

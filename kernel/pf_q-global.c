@@ -22,6 +22,12 @@
  ****************************************************************/
 
 
+#include <linux/types.h>
+
+atomic_t timestamp_toggle;
+
+struct local_data __percpu    * cpu_data;
+
 int direct_capture = 0;
 
 int capture_incoming = 1;
