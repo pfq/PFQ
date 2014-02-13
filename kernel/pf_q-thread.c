@@ -37,6 +37,71 @@
 #include <pf_q-common.h>
 
 int
+pfq_tx_queue_flush(struct pfq_tx_opt *to, struct net_device *dev)
+{
+        struct pfq_pkt_hdr * h;
+        struct sk_buff *skb;
+        int n, index, avail;
+        size_t len;
+
+        index = pfq_spsc_read_index(to->queue_info);
+        avail = pfq_spsc_read_avail(to->queue_info);
+
+        for(n = 0; n < avail; n++)
+        {
+                if (unlikely(index >= to->size))
+                {
+                        if(printk_ratelimit())
+                                printk(KERN_WARNING "[PFQ] bogus spsc index! q->size=%lu index=%d\n", to->size, index);
+                        return n;
+                }
+
+                h = (struct pfq_pkt_hdr *) (to->base_addr + index * to->queue_info->slot_size);
+
+                skb = pfq_alloc_skb(to->maxlen, GFP_KERNEL);
+                if (skb == NULL)
+                        return n;
+
+                skb->dev = dev;
+
+                /* copy packet to this skb: */
+
+                len =  min_t(size_t, h->len, to->queue_info->max_len);
+
+                memcpy(skb->data, h+1, len);
+
+                /* release the slot */
+
+                pfq_spsc_read_commit(to->queue_info);
+
+                /* set the tail */
+
+                skb_reset_tail_pointer(skb);
+
+                skb->len = 0;
+
+                skb_put(skb, len);
+
+                /* send the packet... */
+
+                dev_queue_xmit(skb);
+
+                // TODO:
+                // pfq_queue_xmit(skb, to->if_index, to->hw_queue);
+
+                // get next index...
+                //
+
+                index = pfq_spsc_read_index(to->queue_info);
+                if (index == -1)
+                        break;
+        }
+
+        return n;
+}
+
+
+int
 pfq_tx_thread(void *data)
 {
         struct pfq_sock *so = (struct pfq_sock *)data;
@@ -49,66 +114,7 @@ pfq_tx_thread(void *data)
 
         while(!kthread_should_stop())
         {
-                struct pfq_pkt_hdr * h;
-                struct sk_buff *skb;
-                int n, index, avail;
-                size_t len;
-
-                index = pfq_spsc_read_index(to->queue_info);
-                avail = pfq_spsc_read_avail(to->queue_info);
-
-                for(n = 0; n < avail; n++)
-                {
-                         if (unlikely(index >= to->size))
-                         {
-                                 if(printk_ratelimit())
-                                         printk(KERN_WARNING "[PFQ] bogus spsc index! q->size=%lu index=%d\n", to->size, index);
-                                 goto resched;
-                         }
-
-                         h = (struct pfq_pkt_hdr *) (to->base_addr + index * to->queue_info->slot_size);
-
-                         skb = pfq_alloc_skb(to->maxlen, GFP_KERNEL);
-                         if (skb == NULL) {
-                                 goto resched;
-                         }
-
-                         skb->dev = dev;
-
-                         /* copy packet to this skb: */
-
-                         len =  min_t(size_t, h->len, to->queue_info->max_len);
-
-                         memcpy(skb->data, h+1, len);
-
-                         /* release the slot */
-
-                         pfq_spsc_read_commit(to->queue_info);
-
-                         /* set the tail */
-
-                         skb_reset_tail_pointer(skb);
-
-                         skb->len = 0;
-
-                         skb_put(skb, len);
-
-                         /* send the packet... */
-
-                         dev_queue_xmit(skb);
-
-                         // TODO:
-                         // pfq_queue_xmit(skb, to->if_index, to->hw_queue);
-
-                         // get next index...
-                         //
-
-                         index = pfq_spsc_read_index(to->queue_info);
-                         if (index == -1)
-                                 break;
-                }
-
-        resched:
+                pfq_tx_queue_flush(to, dev);
                 set_current_state(TASK_INTERRUPTIBLE);
                 schedule();
         }
