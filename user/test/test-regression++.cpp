@@ -554,6 +554,68 @@ Context(PFQ)
         AssertNothrow(x.vlan_filters_enable(x.group_id(), false));
     }
 
+
+    Test(bind_tx)
+    {
+        pfq q(128);
+        AssertNothrow(q.bind_tx("lo", -1));
+        AssertThrow(q.bind_tx("unknown", -1));
+    }
+
+
+    Test(start_tx_thread)
+    {
+        pfq q(128);
+        AssertThrow(q.start_tx_thread(0));
+
+        q.bind_tx("lo", -1);
+
+        q.enable();
+
+        AssertNothrow(q.start_tx_thread(0));
+    }
+
+
+    Test(stop_tx_thread)
+    {
+        pfq q(128);
+        AssertThrow(q.stop_tx_thread());
+
+        q.bind_tx("lo", -1);
+
+        q.enable();
+        q.start_tx_thread(0);
+
+        AssertNothrow(q.stop_tx_thread());
+    }
+
+    Test(wakeup_tx_thread)
+    {
+        pfq q(128);
+        AssertThrow(q.wakeup_tx_thread());
+
+        q.bind_tx("lo", -1);
+
+        q.enable();
+
+        q.start_tx_thread(0);
+
+        AssertNothrow(q.wakeup_tx_thread());
+    }
+
+    Test(tx_queue_flush)
+    {
+        pfq q(128);
+        AssertThrow(q.tx_queue_flush());
+
+        q.bind_tx("lo", -1);
+
+        q.enable();
+
+        AssertNothrow(q.tx_queue_flush());
+    }
+
+
 #if 0
     Test(group_context)
     {
