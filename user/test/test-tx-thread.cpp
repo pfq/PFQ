@@ -19,20 +19,19 @@ main(int argc, char *argv[])
 
     q.enable();
 
-    q.test_();
-
     q.bind_tx(dev, -1);
 
-    q.start_tx(0);
+    q.start_tx_thread(0);
 
-    for(int n = 0; n < 2; ++n)
+    for(int n = 0; n < 1000; ++n)
     {
         q.inject(net::const_buffer(packet, sizeof(packet)));
 
-        q.wakeup_tx();
+        // q.wakeup_tx_thread();
+        q.tx_queue_flush();
     }
 
-    // q.stop_tx();
+    q.stop_tx_thread();
 
     return 0;
 }

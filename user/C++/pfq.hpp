@@ -1244,33 +1244,28 @@ namespace net {
         }
 
 
-        void start_tx(int node)
+        void start_tx_thread(int node)
         {
             if (::setsockopt(fd_, PF_Q, Q_SO_TX_THREAD_START, &node, sizeof(node)) == -1)
                 throw pfq_error(errno, "PFQ: start TX thread");
         }
 
-        void stop_tx()
+        void stop_tx_thread()
         {
             if (::setsockopt(fd_, PF_Q, Q_SO_TX_THREAD_STOP, NULL, 0) == -1)
                 throw pfq_error(errno, "PFQ: stop TX thread");
         }
 
-        void wakeup_tx()
+        void wakeup_tx_thread()
         {
             if (::setsockopt(fd_, PF_Q, Q_SO_TX_THREAD_WAKEUP, NULL, 0) == -1)
                 throw pfq_error(errno, "PFQ: wakeup TX thread");
         }
 
-        void test_()
+        void tx_queue_flush()
         {
-            auto q = static_cast<struct pfq_queue_hdr *>(pdata_->queue_addr);
-
-            std::cout << "size_mask: " << q->tx.size_mask << std::endl;
-            std::cout << "max_len  : " << q->tx.max_len   << std::endl;
-            std::cout << "size     : " << q->tx.size << std::endl;
-            std::cout << "slot_size: " << q->tx.slot_size << std::endl;
-
+            if (::setsockopt(fd_, PF_Q, Q_SO_TX_QUEUE_FLUSH, NULL, 0) == -1)
+                throw pfq_error(errno, "PFQ: TX queue flush");
         }
 
     };
