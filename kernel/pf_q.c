@@ -670,8 +670,10 @@ pfq_release(struct socket *sock)
 	if (!sk)
 		return 0;
 
-	so = pfq_sk(sk);
+        so = pfq_sk(sk);
         id = so->id;
+
+        pr_devel("[PFQ|%d] releasing socket...\n", id);
 
         pfq_rx_release(&so->rx_opt);
         pfq_tx_release(&so->tx_opt);
@@ -1385,9 +1387,11 @@ int pfq_setsockopt(struct socket *sock,
         {
                 struct pfq_tx_info info;
 
+                pr_devel("[PFQ|%d] starting TX thread...\n", so->id);
+
                 if (to->thread)
                 {
-                        pr_devel("[PFQ|%d] TX thread already created on node %d\n", so->id, to->cpu_index);
+                        pr_devel("[PFQ|%d] TX thread already created on node %d!\n", so->id, to->cpu_index);
                         return -EINVAL;
                 }
 
@@ -1409,19 +1413,23 @@ int pfq_setsockopt(struct socket *sock,
                                                     "pfq_tx_%d", to->cpu_index);
 
                 if (IS_ERR(to->thread)) {
-                        printk(KERN_INFO "[PFQ] kernel_thread() create failed on node %d\n", to->cpu_index);
+                        printk(KERN_INFO "[PFQ] kernel_thread() create failed on node %d!\n", to->cpu_index);
                         return PTR_ERR(to->thread);
                 }
 
                 kthread_bind(to->thread, to->cpu_index);
 
+                pr_devel("[PFQ|%d] starting TX thread: done.\n", so->id);
+
         } break;
 
         case Q_SO_TX_THREAD_STOP:
         {
+                pr_devel("[PFQ|%d] stopping TX thread...\n", so->id);
+
                 if (!to->thread)
                 {
-                        pr_devel("[PFQ|%d] TX thread not running\n", so->id);
+                        pr_devel("[PFQ|%d] TX thread not running!\n", so->id);
                         return -EINVAL;
                 }
 
@@ -1430,18 +1438,19 @@ int pfq_setsockopt(struct socket *sock,
                         kthread_stop(to->thread);
                         to->thread = NULL;
                 }
+                pr_devel("[PFQ|%d] stop TX thread: done.\n", so->id);
+
         } break;
 
         case Q_SO_TX_THREAD_WAKEUP:
         {
                 if (!to->thread)
                 {
-                        pr_devel("[PFQ|%d] TX thread not running\n", so->id);
+                        pr_devel("[PFQ|%d] TX thread not running!\n", so->id);
                         return -EINVAL;
                 }
 
                 wake_up_process(to->thread);
-
         } break;
 
         default:
