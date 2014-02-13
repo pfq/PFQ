@@ -41,72 +41,80 @@ pfq_tx_thread(void *data)
 {
         struct pfq_sock *so = (struct pfq_sock *)data;
         struct pfq_tx_opt *to = &so->tx_opt;
+        struct net_device *dev;
 
-        printk(KERN_INFO "[PFQ] tx-thread started on node %d\n", to->cpu_index);
+        printk(KERN_INFO "[PFQ] TX thread started on node %d\n", to->cpu_index);
+
+        dev = dev_get_by_index(sock_net(&so->sk), to->if_index);
 
         while(!kthread_should_stop())
         {
                 struct pfq_pkt_hdr * h;
                 struct sk_buff *skb;
-                struct net_device *dev;
+                int n, index, avail;
                 size_t len;
-                int index;
 
                 index = pfq_spsc_read_index(to->queue_info);
+                avail = pfq_spsc_read_avail(to->queue_info);
 
-                dev = dev_get_by_index(sock_net(&so->sk), to->if_index);
-
-                for(; likely(index != -1); index = pfq_spsc_read_index(to->queue_info))
+                for(n = 0; n < avail; n++)
                 {
+                         if (unlikely(index >= to->size))
+                         {
+                                 if(printk_ratelimit())
+                                         printk(KERN_WARNING "[PFQ] bogus spsc index! q->size=%lu index=%d\n", to->size, index);
+                                 goto resched;
+                         }
 
-                        if (unlikely(index >= to->size))
-                        {
-                                if(printk_ratelimit())
-                                        printk(KERN_WARNING "[PFQ] bogus spsc index! q->size=%lu index=%d\n", to->size, index);
-                                goto out;
-                        }
+                         h = (struct pfq_pkt_hdr *) (to->base_addr + index * to->queue_info->slot_size);
 
-                        h = (struct pfq_pkt_hdr *) (to->base_addr + index * to->queue_info->slot_size);
+                         skb = pfq_alloc_skb(to->maxlen, GFP_KERNEL);
+                         if (skb == NULL) {
+                                 goto resched;
+                         }
 
-                        skb = pfq_alloc_skb(to->maxlen, GFP_KERNEL);
-                        if (skb == NULL) {
-                                goto out;
-                        }
+                         skb->dev = dev;
 
-                        skb->dev = dev;
+                         /* copy packet to this skb: */
 
-                        /* copy packet to this skb: */
+                         len =  min_t(size_t, h->len, to->queue_info->max_len);
 
-                        len =  min_t(size_t, h->len, to->queue_info->max_len);
+                         memcpy(skb->data, h+1, len);
 
-                        memcpy(skb->data, h+1, len);
+                         /* release the slot */
 
-                        /* release the slot */
+                         pfq_spsc_read_commit(to->queue_info);
 
-                        pfq_spsc_read_commit(to->queue_info);
+                         /* set the tail */
 
-                        /* set the tail */
+                         skb_reset_tail_pointer(skb);
 
-                        skb_reset_tail_pointer(skb);
+                         skb->len = 0;
 
-                        skb->len = 0;
+                         skb_put(skb, len);
 
-                        skb_put(skb, len);
+                         /* send the packet... */
 
-                        /* send the packet... */
+                         dev_queue_xmit(skb);
 
-                        dev_queue_xmit(skb);
+                         // TODO:
+                         // pfq_queue_xmit(skb, to->if_index, to->hw_queue);
 
-                        // TODO:
-                        // pfq_queue_xmit(skb, to->if_index, to->hw_queue);
+                         // get next index...
+                         //
 
+                         index = pfq_spsc_read_index(to->queue_info);
+                         if (index == -1)
+                                 break;
                 }
-        out:
-                dev_put(dev);
+
+        resched:
                 set_current_state(TASK_INTERRUPTIBLE);
                 schedule();
         }
 
-        printk(KERN_INFO "[PFQ] tx-thread stopped.\n");
+        dev_put(dev);
+
+        printk(KERN_INFO "[PFQ] TX thread stopped.\n");
         return 0;
 }
