@@ -124,7 +124,7 @@ struct pfq_tx_queue_hdr
     } consumer __attribute__((aligned(64)));
 
     unsigned int size_mask;        /* number of slots */
-    unsigned int max_len;          /* max length of packets = 1520 */
+    unsigned int max_len;          /* max length of packet */
     unsigned int size;             /* number of slots (power of two) */
     unsigned int slot_size;        /* sizeof(pfq_pkt_hdr) + max_len + sizeof(skb_shinfo) */
 
@@ -270,9 +270,10 @@ int pfq_spsc_read_avail(struct pfq_tx_queue_hdr *q)
 #define Q_SO_GET_GROUP_STATS        29
 #define Q_SO_GET_GROUP_CONTEXT      30
 
-#define Q_SO_TX_THREAD_START        31
-#define Q_SO_TX_THREAD_STOP         32
-#define Q_SO_TX_THREAD_WAKEUP       33
+#define Q_SO_TX_THREAD_BIND         31
+#define Q_SO_TX_THREAD_START        32
+#define Q_SO_TX_THREAD_STOP         33
+#define Q_SO_TX_THREAD_WAKEUP       34
 
 
 /* general defines */
@@ -379,16 +380,5 @@ struct pfq_stats
     unsigned long int lost;   /* queue is full, packet lost... */
     unsigned long int drop;   /* by filter                     */
 };
-
-
-/* tx info */
-
-struct pfq_tx_info
-{
-    int node;
-    int if_index;
-    int hw_queue;
-};
-
 
 #endif /* _PF_Q_H_ */

@@ -1382,10 +1382,25 @@ int pfq_setsockopt(struct socket *sock,
                     pr_devel("[PFQ|%d] vlan_set filter vid %d for gid:%d\n", so->id, filt.vid, filt.gid);
             } break;
 
+        case Q_SO_TX_THREAD_BIND:
+        {
+                struct pfq_binding info;
+
+                if (optlen != sizeof(info))
+                        return -EINVAL;
+                if (copy_from_user(&info, optval, optlen))
+                        return -EFAULT;
+
+                to->if_index = info.if_index;
+                to->hw_queue = info.hw_queue;
+
+                pr_devel("[PFQ|%d] TX bind: if_index:%d hw_queue:%d\n", so->id, to->if_index, to->hw_queue);
+
+        } break;
 
         case Q_SO_TX_THREAD_START:
         {
-                struct pfq_tx_info info;
+                int node;
 
                 pr_devel("[PFQ|%d] starting TX thread...\n", so->id);
 
@@ -1395,17 +1410,14 @@ int pfq_setsockopt(struct socket *sock,
                         return -EINVAL;
                 }
 
-                if (optlen != sizeof(info))
+                if (optlen != sizeof(node))
                         return -EINVAL;
-
-                if (copy_from_user(&info, optval, optlen))
+                if (copy_from_user(&node, optval, optlen))
                         return -EFAULT;
 
-                to->cpu_index = info.node;
-                to->if_index  = info.if_index;
-                to->hw_queue  = info.hw_queue;
+                to->cpu_index = node;
 
-                pr_devel("[PFQ|%d] creating TX thread on node %d -> ifindex:%d txq:%d\n",so->id, to->cpu_index, to->if_index, to->hw_queue);
+                pr_devel("[PFQ|%d] creating TX thread on node %d -> if_index:%d hw_queue:%d\n", so->id, to->cpu_index, to->if_index, to->hw_queue);
 
                 to->thread = kthread_create_on_node(pfq_tx_thread,
                                                     so,
