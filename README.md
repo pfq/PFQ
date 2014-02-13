@@ -1,5 +1,5 @@
-PFQ: a Linux kernel module for packet capturing on multi-core architectures
-===========================================================================
+PFQ 
+===
 
 Introduction
 ------------
@@ -15,6 +15,23 @@ that patches and compiles source codes on-the-fly to obtain accelerated drivers.
 
 The package provides the source code of the PFQ kernel module, user-space 
 libraries for C, C++11 and Haskell languages and a set of diagnostic tools.
+
+Features
+--------
+
+* 10-Gbit Line-rate (14,8Mpps) with Intel ixgbe vanilla driver.
+* Socket groups allow for concurrent monitoring of multi-threaded applications.
+* Per-group packet steering through randomized hashing algorithms or deterministic packet classifications.
+* Per-group Berkeley filters and per-group VLAN filters.
+* Extensible framework for in-kernel functional monitoring (continuation passing style).
+* User-space native bindings for C, C++11 and Haskell languages.
+* PFQ-omatic, a script that allows to compile drivers and get the accelerated versions.
+* Accelerated pcap library.
+
+Publication
+-----------
+
+We received the Best-Paper-Award at PAM2012 in Vienna for the paper _"PFQ: a Novel Engine for Multi-Gigabit Packet Capturing With Multi-Core Commodity Hardware"_.
 
 
 Author
