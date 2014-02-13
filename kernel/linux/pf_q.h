@@ -180,6 +180,13 @@ void pfq_spsc_write_commit(struct pfq_tx_queue_hdr *q)
     wmb();
 }
 
+static inline
+int pfq_spsc_write_avail(struct pfq_tx_queue_hdr *q)
+{
+    return q->producer.cache;
+}
+
+
 /* consumer */
 
 static inline
@@ -204,6 +211,12 @@ void pfq_spsc_read_commit(struct pfq_tx_queue_hdr *q)
         q->consumer.cache--;
     }
     wmb();
+}
+
+static inline
+int pfq_spsc_read_avail(struct pfq_tx_queue_hdr *q)
+{
+    return q->consumer.cache;
 }
 
 /*
