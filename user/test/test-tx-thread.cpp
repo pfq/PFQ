@@ -75,6 +75,7 @@ main(int argc, char *argv[])
             throw std::runtime_error("unknown mode " + std::to_string(mode));
     }
 
+    std::this_thread::sleep_for(std::chrono::seconds(1));
     q.stop_tx_thread();
 
     return 0;
