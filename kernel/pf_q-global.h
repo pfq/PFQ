@@ -1,6 +1,6 @@
 /***************************************************************
  *
- * (C) 2011-14 Nicola Bonelli <nicola.bonelli@cnit.it>
+ * (C) 2011-13 Nicola Bonelli <nicola.bonelli@cnit.it>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,25 +21,19 @@
  *
  ****************************************************************/
 
-#include <linux/pf_q.h>
+extern int direct_capture;
 
-#include <pf_q-sock.h>
+extern int capture_incoming;
+extern int capture_outgoing;
+extern int capture_loopback;
 
-int   pfq_queue_alloc(struct pfq_sock *p, size_t queue_mem);
-void  pfq_queue_free (struct pfq_sock *p);
+extern int tx_queue_slots;
+extern int rx_queue_slots;
 
-static inline size_t pfq_queue_mpdb_mem(struct pfq_sock *so)
-{
-    return so->rx_opt.size * so->rx_opt.slot_size * 2;
-}
+extern int cap_len;
+extern int max_len;
+extern int prefetch_len;
+extern int flow_control;
+extern int vl_untag;
 
-static inline size_t pfq_queue_spsc_mem(struct pfq_sock *so)
-{
-    return so->tx_opt.size * so->tx_opt.slot_size;
-}
-
-static inline size_t pfq_queue_total_mem(struct pfq_sock *so)
-{
-    return sizeof(struct pfq_queue_hdr) + pfq_queue_mpdb_mem(so) + pfq_queue_spsc_mem(so);
-}
-
+extern int recycle_len;

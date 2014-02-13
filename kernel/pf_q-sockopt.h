@@ -21,25 +21,16 @@
  *
  ****************************************************************/
 
-#include <linux/pf_q.h>
+#include <linux/socket.h>
 
-#include <pf_q-sock.h>
+extern int pfq_getsockopt(struct socket *sock,
+                          int level, int optname,
+                          char __user * optval, int __user * optlen);
 
-int   pfq_queue_alloc(struct pfq_sock *p, size_t queue_mem);
-void  pfq_queue_free (struct pfq_sock *p);
-
-static inline size_t pfq_queue_mpdb_mem(struct pfq_sock *so)
-{
-    return so->rx_opt.size * so->rx_opt.slot_size * 2;
-}
-
-static inline size_t pfq_queue_spsc_mem(struct pfq_sock *so)
-{
-    return so->tx_opt.size * so->tx_opt.slot_size;
-}
-
-static inline size_t pfq_queue_total_mem(struct pfq_sock *so)
-{
-    return sizeof(struct pfq_queue_hdr) + pfq_queue_mpdb_mem(so) + pfq_queue_spsc_mem(so);
-}
-
+extern int pfq_setsockopt(struct socket *sock,
+                         int level, int optname,
+                         char __user * optval,
+#if(LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,31))
+                         unsigned
+#endif
+                         int optlen);
