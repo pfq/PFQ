@@ -55,7 +55,7 @@ pfq_tx_queue_flush(struct pfq_tx_opt *to, struct net_device *dev)
                 if (unlikely(index >= to->size))
                 {
                         if(printk_ratelimit())
-                                printk(KERN_WARNING "[PFQ] bogus spsc index! q->size=%lu index=%d\n", to->size, index);
+                                printk(KERN_WARNING "[PFQ] bogus spsc index! q->size=%zu index=%d\n", to->size, index);
                         return n;
                 }
 

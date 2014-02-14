@@ -879,7 +879,7 @@ static int __init pfq_init_module(void)
         pfq_proto_init();
 
         if (prefetch_len > PFQ_QUEUE_MAX_LEN) {
-                printk(KERN_INFO "[PFQ] prefetch_len=%d not allowed (max=%lu)!\n", prefetch_len, (sizeof(unsigned long) << 3)-1);
+                printk(KERN_INFO "[PFQ] prefetch_len=%d not allowed (max=%zu)!\n", prefetch_len, (sizeof(unsigned long) << 3)-1);
                 return -EFAULT;
         }
 

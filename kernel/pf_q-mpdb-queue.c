@@ -102,7 +102,7 @@ size_t mpdb_enqueue_batch(struct pfq_rx_opt *ro, unsigned long bitqueue, int bur
 		      	{
 				if (skb_copy_bits(skb, (int)ro->offset, pkt, bytes) != 0)
 				{
-					printk(KERN_WARNING "[PFQ] BUG! skb_copy_bits failed (bytes=%u, skb_len=%d mac_len=%d q_offset=%lu)!\n",
+					printk(KERN_WARNING "[PFQ] BUG! skb_copy_bits failed (bytes=%u, skb_len=%d mac_len=%d q_offset=%zu)!\n",
 							    bytes, skb->len, skb->mac_len, ro->offset);
 					return 0;
 				}

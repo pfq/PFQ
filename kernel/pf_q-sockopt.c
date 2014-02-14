@@ -438,7 +438,7 @@ int pfq_setsockopt(struct socket *sock,
 
                     so->rx_opt.slot_size = MPDB_QUEUE_SLOT_SIZE(so->rx_opt.caplen);
 
-                    pr_devel("[PFQ|%d] caplen:%lu -> slot_size:%lu\n",
+                    pr_devel("[PFQ|%d] caplen:%zu -> slot_size:%zu\n",
                                     so->id, so->rx_opt.caplen, so->rx_opt.slot_size);
             } break;
 
@@ -453,7 +453,7 @@ int pfq_setsockopt(struct socket *sock,
 
                     so->rx_opt.size = min(slots, (size_t)rx_queue_slots);
 
-                    pr_devel("[PFQ|%d] rx_queue_slots:%lu\n", so->id, so->rx_opt.size);
+                    pr_devel("[PFQ|%d] rx_queue_slots:%zu\n", so->id, so->rx_opt.size);
             } break;
 
 
@@ -470,7 +470,7 @@ int pfq_setsockopt(struct socket *sock,
 
                     so->tx_opt.slot_size = SPSC_QUEUE_SLOT_SIZE(so->tx_opt.maxlen); /* max_len: max length */
 
-                    pr_devel("[PFQ|%d] tx_slot_size:%lu\n", so->id, so->rx_opt.slot_size);
+                    pr_devel("[PFQ|%d] tx_slot_size:%zu\n", so->id, so->rx_opt.slot_size);
             } break;
 
 
@@ -488,7 +488,7 @@ int pfq_setsockopt(struct socket *sock,
 
                     so->tx_opt.size = min(slots,(size_t)tx_queue_slots);
 
-                    pr_devel("[PFQ|%d] tx_queue_slots:%lu\n", so->id, so->tx_opt.size);
+                    pr_devel("[PFQ|%d] tx_queue_slots:%zu\n", so->id, so->tx_opt.size);
             } break;
 
         case Q_SO_SET_RX_OFFSET:
@@ -498,7 +498,7 @@ int pfq_setsockopt(struct socket *sock,
                     if (copy_from_user(&so->rx_opt.offset, optval, optlen))
                             return -EFAULT;
 
-                    pr_devel("[PFQ|%d] offset:%lu\n", so->id, so->rx_opt.offset);
+                    pr_devel("[PFQ|%d] offset:%zu\n", so->id, so->rx_opt.offset);
             } break;
 
         case Q_SO_GROUP_LEAVE:

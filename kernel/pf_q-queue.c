@@ -55,7 +55,7 @@ int pfq_queue_alloc(struct pfq_sock *so, size_t queue_mem)
         so->mem_addr = addr;
         so->mem_size = tot_mem;
 
-	pr_devel("[PFQ|%d] queue caplen:%lu memory:%lu\n", so->id, so->rx_opt.caplen, tot_mem);
+	pr_devel("[PFQ|%d] queue caplen:%zu memory:%zu\n", so->id, so->rx_opt.caplen, tot_mem);
 	return 0;
 }
 
