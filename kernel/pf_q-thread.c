@@ -42,10 +42,13 @@ pfq_tx_queue_flush(struct pfq_tx_opt *to, struct net_device *dev)
         struct pfq_pkt_hdr * h;
         struct sk_buff *skb;
         int n, index, avail;
+        struct local_data *local_cpu;
         size_t len;
 
         index = pfq_spsc_read_index(to->queue_info);
         avail = pfq_spsc_read_avail(to->queue_info);
+
+        local_cpu = __this_cpu_ptr(cpu_data);
 
         for(n = 0; n < avail; n++)
         {
@@ -82,14 +85,21 @@ pfq_tx_queue_flush(struct pfq_tx_opt *to, struct net_device *dev)
 
                 skb_put(skb, len);
 
+                /* take this skb */
+
+                skb_get(skb);
+
                 /* send the packet... */
-
-                // dev_queue_xmit(skb);
-
+#if 1
                 pfq_queue_xmit(skb, to->hw_queue);
+#else
+                dev_queue_xmit(skb);
+#endif
+                /* free it now */
 
-                // get next index...
-                //
+                pfq_kfree_skb_recycle(skb, &local_cpu->recycle_list);
+
+                /* get the next index... */
 
                 index = pfq_spsc_read_index(to->queue_info);
                 if (index == -1)

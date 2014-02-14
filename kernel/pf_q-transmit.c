@@ -68,7 +68,6 @@ int pfq_queue_xmit(struct sk_buff *skb, int queue_index)
 {
         struct net_device *dev = skb->dev;
         struct netdev_queue *txq;
-        struct local_data * cpu_data = NULL;
         int rc = -ENOMEM;
 
         skb_reset_mac_header(skb);
@@ -78,8 +77,6 @@ int pfq_queue_xmit(struct sk_buff *skb, int queue_index)
          */
 
         rcu_read_lock_bh();
-
-        cpu_data = __this_cpu_ptr(cpu_data);
 
         txq = pfq_pick_tx(dev, skb, queue_index);
 
@@ -109,7 +106,7 @@ int pfq_queue_xmit(struct sk_buff *skb, int queue_index)
         rc = -ENETDOWN;
         rcu_read_unlock_bh();
 
-        pfq_kfree_skb_recycle(skb, &cpu_data->recycle_list);
+        kfree_skb(skb);
         return rc;
 out:
         rcu_read_unlock_bh();
