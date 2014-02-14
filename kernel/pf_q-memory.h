@@ -77,18 +77,13 @@ bool pfq_skb_is_recycleable(const struct sk_buff *skb)
     // if (irqs_disabled())
     //    return false;
 
-    // if (skb_shinfo(skb)->tx_flags & SKBTX_DEV_ZEROCOPY)
-    //    return false;
-
-    // size = SKB_DATA_ALIGN(size + NET_SKB_PAD);
-    // if (pfq_skb_end_offset(skb) < size)
-    //     return false;
+    if (skb_shinfo(skb)->tx_flags & SKBTX_DEV_ZEROCOPY)
+        return false;
 
     if (skb_is_nonlinear(skb) || skb->fclone != SKB_FCLONE_UNAVAILABLE)
         return false;
 
-    if (skb_shared(skb) || skb_cloned(skb))
-        return false;
+    // skb_shared() and skb_cloned() are tested later...
 
     return true;
 }
@@ -180,14 +175,20 @@ struct sk_buff * ____pfq_alloc_skb(unsigned int size, gfp_t priority, int fclone
 
         if (!fclone)
         {
-            skb = __skb_dequeue(&local->recycle_list);
+            skb = skb_peek_tail(&local->recycle_list);
+
             if (skb != NULL)
             {
-                if (pfq_skb_end_offset(skb) >= SKB_DATA_ALIGN(size + NET_SKB_PAD)) {
-                    return pfq_skb_recycle(skb);
-                }
-                else {
-                    kfree_skb(skb);
+                if (!skb_shared(skb) && !skb_cloned(skb))
+                {
+                    skb = __skb_dequeue_tail(&local->recycle_list);
+
+                    if (pfq_skb_end_offset(skb) >= SKB_DATA_ALIGN(size + NET_SKB_PAD)) {
+                        return pfq_skb_recycle(skb);
+                    }
+                    else {
+                        kfree_skb(skb);
+                    }
                 }
             }
         }

@@ -80,9 +80,7 @@ pfq_tx_queue_flush(struct pfq_tx_opt *to, struct net_device *dev)
                 /* set the tail */
 
                 skb_reset_tail_pointer(skb);
-
                 skb->len = 0;
-
                 skb_put(skb, len);
 
                 /* take this skb */
