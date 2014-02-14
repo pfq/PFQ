@@ -113,8 +113,8 @@ static inline
 void pfq_kfree_skb(struct sk_buff *skb)
 {
 #ifdef PFQ_USE_SKB_RECYCLE
-        struct local_data * local_data = __this_cpu_ptr(cpu_data);
-        struct sk_buff_head * list = &local_data->recycle_list;
+        struct local_data * local = __this_cpu_ptr(cpu_data);
+        struct sk_buff_head * list = &local->recycle_list;
 	    return pfq_kfree_skb_recycle(skb, list);
 #else
         return pfq_kfree_skb_recycle(skb, NULL);
@@ -175,12 +175,12 @@ struct sk_buff * ____pfq_alloc_skb(unsigned int size, gfp_t priority, int fclone
 {
 
 #ifdef PFQ_USE_SKB_RECYCLE
-        struct local_data * local_data = __this_cpu_ptr(cpu_data);
+        struct local_data * local = __this_cpu_ptr(cpu_data);
         struct sk_buff *skb;
 
         if (!fclone)
         {
-            skb = __skb_dequeue(&local_data->recycle_list);
+            skb = __skb_dequeue(&local->recycle_list);
             if (skb != NULL)
             {
                 if (pfq_skb_end_offset(skb) >= SKB_DATA_ALIGN(size + NET_SKB_PAD)) {

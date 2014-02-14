@@ -229,8 +229,8 @@ unsigned int pfq_fold(unsigned int a, unsigned int b)
 int
 pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 {
-        struct local_data * local_cache = __this_cpu_ptr(cpu_data);
-        struct pfq_queue_skb * prefetch_queue = &local_cache->prefetch_queue;
+        struct local_data * local = __this_cpu_ptr(cpu_data);
+        struct pfq_queue_skb * prefetch_queue = &local->prefetch_queue;
         unsigned long group_mask, socket_mask;
         unsigned long sock_queue[sizeof(unsigned long) << 3];
         struct pfq_annotation *cb;
@@ -240,11 +240,11 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 #ifdef PFQ_USE_FLOW_CONTROL
 	/* flow control */
 
-	if (local_cache->flowctrl &&
-	    local_cache->flowctrl--)
+	if (local->flowctrl &&
+	    local->flowctrl--)
 	{
                 if (direct)
-                        pfq_kfree_skb_recycle(skb, &local_cache->recycle_list);
+                        pfq_kfree_skb_recycle(skb, &local->recycle_list);
                 else
                         kfree_skb(skb);
 
@@ -397,23 +397,23 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
                                                 sock_mask |= eligible_mask;
                                         }
                                         else {
-                                                if (unlikely(eligible_mask != local_cache->eligible_mask)) {
+                                                if (unlikely(eligible_mask != local->eligible_mask)) {
 
                                                         unsigned long ebit;
 
-                                                        local_cache->eligible_mask = eligible_mask;
-                                                        local_cache->sock_cnt = 0;
+                                                        local->eligible_mask = eligible_mask;
+                                                        local->sock_cnt = 0;
 
                                                         bitwise_foreach(eligible_mask, ebit)
                                                         {
-                                                                local_cache->sock_mask[local_cache->sock_cnt++] = ebit;
+                                                                local->sock_mask[local->sock_cnt++] = ebit;
                                                         }
                                                 }
 
-                                                if (likely(local_cache->sock_cnt))
+                                                if (likely(local->sock_cnt))
                                                 {
                                                         unsigned int h = ret.hash ^ (ret.hash >> 8) ^ (ret.hash >> 16);
-                                                        sock_mask |= local_cache->sock_mask[pfq_fold(h, local_cache->sock_cnt)];
+                                                        sock_mask |= local->sock_mask[pfq_fold(h, local->sock_cnt)];
                                                 }
                                         }
                                 }
@@ -437,7 +437,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
                         {
 #ifdef PFQ_USE_FLOW_CONTROL
                                 if (!pfq_copy_to_user_skbs(ro, cpu, sock_queue[i], prefetch_queue, gid))
-                                        local_cache->flowctrl = flow_control;
+                                        local->flowctrl = flow_control;
 #else
                                 pfq_copy_to_user_skbs(ro, cpu, sock_queue[i], prefetch_queue, gid);
 #endif
@@ -474,7 +474,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
                                         napi_gro_receive(napi, skb);
                         }
                         else {
-                                pfq_kfree_skb_recycle(skb, &local_cache->recycle_list);
+                                pfq_kfree_skb_recycle(skb, &local->recycle_list);
         		}
 		}
                 else
@@ -946,8 +946,8 @@ static void __exit pfq_exit_module(void)
 
         for_each_possible_cpu(cpu) {
 
-                struct local_data *local_cache = per_cpu_ptr(cpu_data, cpu);
-                struct pfq_queue_skb *this_queue = &local_cache->prefetch_queue;
+                struct local_data *local = per_cpu_ptr(cpu_data, cpu);
+                struct pfq_queue_skb *this_queue = &local->prefetch_queue;
                 struct sk_buff *skb;
 		int n = 0;
 		queue_for_each(skb, n, this_queue)
@@ -961,7 +961,7 @@ static void __exit pfq_exit_module(void)
        		pfq_queue_skb_flush(this_queue);
 
 #ifdef PFQ_USE_SKB_RECYCLE
-                skb_queue_purge(&local_cache->recycle_list);
+                skb_queue_purge(&local->recycle_list);
 #endif
         }
 
