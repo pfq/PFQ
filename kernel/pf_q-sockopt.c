@@ -40,6 +40,19 @@
 
 extern atomic_t timestamp_toggle;
 
+
+#define CHECK_GROUP_PERM(gid, msg) \
+        if (gid < 0 || gid >= Q_MAX_GROUP) { \
+        	    pr_devel("[PFQ|%d] " msg " error: invalid group (gid:%d)!\n", so->id, gid); \
+                return -EINVAL; \
+        } \
+        \
+        if (!__pfq_has_joined_group(gid, so->id)) { \
+        	    pr_devel("[PFQ|%d] " msg " error: permission denied (git:%d)!\n", so->id, gid); \
+                return -EACCES; \
+        }
+
+
 int pfq_getsockopt(struct socket *sock,
                    int level, int optname,
                    char __user * optval, int __user * optlen)
@@ -57,7 +70,6 @@ int pfq_getsockopt(struct socket *sock,
 
 	if (get_user(len, optlen))
                 return -EFAULT;
-
 	if (len < 0)
 		return -EINVAL;
 
@@ -94,7 +106,7 @@ int pfq_getsockopt(struct socket *sock,
                     }
                     else {
 			    if (pfq_join_group(group.gid, so->id, group.class_mask, group.policy) < 0) {
-				    pr_devel("[PFQ|%d] join error: gid:%d no permission!\n", so->id, group.gid);
+				    pr_devel("[PFQ|%d] join error: permission denied (gid:%d)!\n", so->id, group.gid);
 				    return -EACCES;
 			    }
 		    }
@@ -112,7 +124,6 @@ int pfq_getsockopt(struct socket *sock,
         case Q_SO_GET_STATUS:
             {
                     int enabled;
-
                     if (len != sizeof(int))
                             return -EINVAL;
 
@@ -225,7 +236,7 @@ int pfq_getsockopt(struct socket *sock,
 		    /* check whether the group is joinable.. */
 
 		    if (!__pfq_group_access(gid, so->id, Q_GROUP_UNDEFINED, false)) {
-                    	    pr_devel("[PFQ|%d] group stats error: gid:%d access denied!\n", so->id, gid);
+                    	    pr_devel("[PFQ|%d] group stats error: permission denied (gid:%d)!\n", so->id, gid);
 			    return -EACCES;
 		    }
 
@@ -260,7 +271,7 @@ int pfq_getsockopt(struct socket *sock,
 		    /* check whether the group is joinable.. */
 
 		    if (!__pfq_group_access(s.gid, so->id, Q_GROUP_UNDEFINED, false)) {
-                    	    pr_devel("[PFQ|%d] group context error: gid:%d access denied!\n", so->id, s.gid);
+                    	    pr_devel("[PFQ|%d] group context error: permission denied (gid:%d)!\n", so->id, s.gid);
 			    return -EACCES;
 		    }
 
@@ -278,17 +289,6 @@ int pfq_getsockopt(struct socket *sock,
         return 0;
 }
 
-
-#define CHECK_GROUP_PERM(gid, msg) \
-        if (gid < 0 || gid >= Q_MAX_GROUP) { \
-        	    pr_devel("[PFQ|%d] " msg " error: gid:%d invalid group!\n", so->id, gid); \
-                return -EINVAL; \
-        } \
-        \
-        if (!__pfq_has_joined_group(gid, so->id)) { \
-        	    pr_devel("[PFQ|%d] " msg " error: gid:%d no permission!\n", so->id, gid); \
-                return -EPERM; \
-        }
 
 
 int pfq_setsockopt(struct socket *sock,
@@ -422,7 +422,6 @@ int pfq_setsockopt(struct socket *sock,
 
                     if (copy_from_user(&tstamp, optval, optlen))
                             return -EFAULT;
-
                     if (tstamp != 0 && tstamp != 1)
                             return -EINVAL;
 
@@ -490,6 +489,7 @@ int pfq_setsockopt(struct socket *sock,
                             return -EINVAL;
                     if (copy_from_user(&slots, optval, optlen))
                             return -EFAULT;
+
                     if (slots & (slots-1))
                             return -EINVAL;
 
@@ -642,7 +642,7 @@ int pfq_setsockopt(struct socket *sock,
 			struct sk_filter *filter = pfq_alloc_sk_filter(&fprog.fcode);
 		 	if (filter == NULL)
 			{
-                    	    pr_devel("[PFQ|%d] fprog error: prepare_sk_filter for gid:%d\n", so->id, fprog.gid);
+                    	    pr_devel("[PFQ|%d] fprog error: alloc_sk_filter for gid:%d\n", so->id, fprog.gid);
 			    return -EINVAL;
 			}
 

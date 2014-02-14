@@ -60,7 +60,6 @@ pfq_alloc_sk_filter(struct sock_fprog *fprog)
 	}
 
         pr_devel("[PFQ] %s: %p\n", __FUNCTION__,fp);
-
         return fp;
 }
 
