@@ -95,7 +95,7 @@ int pfq_getsockopt(struct socket *sock,
                     else {
 			    if (pfq_join_group(group.gid, so->id, group.class_mask, group.policy) < 0) {
 				    pr_devel("[PFQ|%d] join error: gid:%d no permission!\n", so->id, group.gid);
-				    return -EPERM;
+				    return -EACCES;
 			    }
 		    }
 		    pr_devel("[PFQ|%d] join -> gid:%d class_mask:%x\n", so->id, group.gid, group.class_mask);
@@ -226,7 +226,7 @@ int pfq_getsockopt(struct socket *sock,
 
 		    if (!__pfq_group_access(gid, so->id, Q_GROUP_UNDEFINED, false)) {
                     	    pr_devel("[PFQ|%d] group stats error: gid:%d access denied!\n", so->id, gid);
-			    return -EPERM;
+			    return -EACCES;
 		    }
 
                     stat.recv = sparse_read(&pfq_groups[gid].recv);
@@ -261,7 +261,7 @@ int pfq_getsockopt(struct socket *sock,
 
 		    if (!__pfq_group_access(s.gid, so->id, Q_GROUP_UNDEFINED, false)) {
                     	    pr_devel("[PFQ|%d] group context error: gid:%d access denied!\n", so->id, s.gid);
-			    return -EPERM;
+			    return -EACCES;
 		    }
 
                     if (__pfq_get_group_context(s.gid, s.level, s.size, s.context) < 0) {
@@ -695,7 +695,7 @@ int pfq_setsockopt(struct socket *sock,
 
                     if (!__pfq_vlan_filters_enabled(filt.gid)) {
                     	    pr_devel("[PFQ|%d] vlan_set error: vlan filters disabled for gid:%d!\n", so->id, filt.gid);
-			    return -EINVAL;
+			    return -EPERM;
                     }
 
                     if (filt.vid  == -1) // any
@@ -737,21 +737,22 @@ int pfq_setsockopt(struct socket *sock,
                 if (to->thread)
                 {
                         pr_devel("[PFQ|%d] TX thread already created on node %d!\n", so->id, to->cpu_index);
-                        return -EINVAL;
+                        return -EPERM;
                 }
                 if (to->if_index == -1)
                 {
                         pr_devel("[PFQ|%d] socket TX not bound to any device!\n", so->id);
-                        return -EINVAL;
+                        return -EPERM;
                 }
                 if (to->queue_info == NULL)
                 {
                         pr_devel("[PFQ|%d] socket not enabled!\n", so->id);
-                        return -EINVAL;
+                        return -EPERM;
                 }
 
                 if (optlen != sizeof(node))
                         return -EINVAL;
+
                 if (copy_from_user(&node, optval, optlen))
                         return -EFAULT;
 
@@ -782,7 +783,7 @@ int pfq_setsockopt(struct socket *sock,
                 if (!to->thread)
                 {
                         pr_devel("[PFQ|%d] TX thread not running!\n", so->id);
-                        return -EINVAL;
+                        return -EPERM;
                 }
 
                 if (to->thread)
@@ -800,12 +801,12 @@ int pfq_setsockopt(struct socket *sock,
                 if (to->if_index == -1)
                 {
                         pr_devel("[PFQ|%d] socket TX not bound to any device!\n", so->id);
-                        return -EINVAL;
+                        return -EPERM;
                 }
                 if (!to->thread)
                 {
                         pr_devel("[PFQ|%d] TX thread not running!\n", so->id);
-                        return -EINVAL;
+                        return -EPERM;
                 }
 
                 wake_up_process(to->thread);
@@ -818,25 +819,26 @@ int pfq_setsockopt(struct socket *sock,
                 if (to->if_index == -1)
                 {
                         pr_devel("[PFQ|%d] socket TX not bound to any device!\n", so->id);
-                        return -EINVAL;
+                        return -EPERM;
                 }
 
                 if (to->thread && to->thread->state == TASK_RUNNING)
                 {
                         pr_devel("[PFQ|%d] TX thread is running!\n", so->id);
-                        return -EINVAL;
+                        return -EPERM;
                 }
+
                 if (to->queue_info == NULL)
                 {
                         pr_devel("[PFQ|%d] socket not enabled!\n", so->id);
-                        return -EINVAL;
+                        return -EPERM;
                 }
 
                 dev = dev_get_by_index(sock_net(&so->sk), to->if_index);
                 if (!dev)
                 {
                         pr_devel("[PFQ|%d] No such device (if_index = %d)\n", so->id, to->if_index);
-                        return -EINVAL;
+                        return -EPERM;
                 }
 
                 pfq_tx_queue_flush(to, dev);
