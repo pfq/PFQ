@@ -691,7 +691,7 @@ int pfq_setsockopt(struct socket *sock,
 			    return -EPERM;
                     }
 
-                    if (filt.vid  == -1) // any
+                    if (filt.vid  == -1) /* any */
                     {
                         int i;
                         for(i = 1; i < 4095; i++)

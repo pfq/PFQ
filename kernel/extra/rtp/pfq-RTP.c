@@ -94,9 +94,9 @@ heuristic_rtp(struct sk_buff *skb, ret_t ret, bool steer)
 		if (dest < 1024 || source < 1024)
         		return pfq_call(fun, skb, drop());
 
-		if ((dest & 1) && (source & 1))  // rtcp
+		if ((dest & 1) && (source & 1))  /* rtcp */
 		{
-                	if (hdr->un.rtcp.rh_type != 200)  // SR
+                	if (hdr->un.rtcp.rh_type != 200)  /* SR  */
         			return pfq_call(fun, skb, drop());
 		}
 		else if (!((dest & 1) || (source & 1)))

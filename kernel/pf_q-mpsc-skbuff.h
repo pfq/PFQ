@@ -91,7 +91,7 @@ struct sk_buff * mpsc_queue_pop(mpsc_queue_t *self)
     if (next)
     {
         self->tail = next;
-        tail->prev = next;   // data in this case is the skb itself: tail->data = next->data;
+        tail->prev = next;   /* data in this case is the skb itself: tail->data = next->data; */
         return tail;
     }
 

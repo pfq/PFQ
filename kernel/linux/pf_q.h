@@ -160,7 +160,7 @@ static inline
 int pfq_spsc_write_index(struct pfq_tx_queue_hdr *q)
 {
     if (unlikely(q->producer.cache == 0)) {
-        // consumer - producer - 1 + size
+        /* consumer - producer - 1 + size */
         q->producer.cache = (q->consumer.index - q->producer.index + q->size_mask) & q->size_mask;
     }
     if (unlikely(q->producer.cache == 0)) {
@@ -358,7 +358,7 @@ struct pfq_group_function
 struct pfq_group_context
 {
     void       * context;
-    size_t       size;      // sizeof(context)
+    size_t       size;      /* sizeof(context) */
     int gid;
     int level;
 };
