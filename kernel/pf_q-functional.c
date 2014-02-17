@@ -77,7 +77,7 @@ pfq_unregister_functions(const char *module, struct sk_function_descr *fun)
 
 
 /*
- * register the default funcitons here!
+ * register the default functions here!
  */
 
 void

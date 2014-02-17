@@ -13,8 +13,8 @@ EXTRA_CFLAGS += -DPFQ_USE_SKB_LINEARIZE
 obj-m := $(TARGET).o
 
 pfq-objs := pf_q.o pf_q-sockopt.o pf_q-global.o pf_q-devmap.o pf_q-queue.o pf_q-sock.o pf_q-memory.o pf_q-group.o \
-		    pf_q-functional.o pf_q-functional-default.o pf_q-mpdb-queue.o pf_q-bpf.o \
-		    pf_q-thread.o pf_q-transmit.o
+		    pf_q-functional.o pf_q-mpdb-queue.o pf_q-bpf.o \
+		    pf_q-thread.o pf_q-transmit.o functional/default.o
 
 KERNELVERSION := $(shell uname -r)
 
