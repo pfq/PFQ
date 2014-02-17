@@ -71,17 +71,24 @@ pfq_tx_queue_flush(struct pfq_tx_opt *to, struct net_device *dev)
 
                 len =  min_t(size_t, h->len, to->queue_info->max_len);
 
-                memcpy(skb->data, h+1, len);
-
-                /* release the slot */
-
-                pfq_spsc_read_commit(to->queue_info);
-
                 /* set the tail */
 
                 skb_reset_tail_pointer(skb);
                 skb->len = 0;
                 skb_put(skb, len);
+
+
+                /* copy the packet in the socket buffer */
+
+                if (skb_store_bits(skb, 0, h+1, len) < 0)
+                {
+                        pfq_kfree_skb_recycle(skb, &local->recycle_list);
+                        return n;
+                }
+
+                /* release the slot */
+
+                pfq_spsc_read_commit(to->queue_info);
 
                 /* take this skb */
 
@@ -93,7 +100,7 @@ pfq_tx_queue_flush(struct pfq_tx_opt *to, struct net_device *dev)
 #else
                 dev_queue_xmit(skb);
 #endif
-                /* free it now */
+                /* free/recycle the packet now... */
 
                 pfq_kfree_skb_recycle(skb, &local->recycle_list);
 
