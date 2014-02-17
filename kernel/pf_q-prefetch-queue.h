@@ -26,12 +26,12 @@
 #define _PF_Q_SKB_QUEUE_H_
 
 #include <pf_q-bits.h>
+#include <pf_q-common.h>
 
-#define PFQ_QUEUE_MAX_LEN  64
 
-struct pfq_queue_skb
+struct pfq_prefetch_skb
 {
-    struct sk_buff *queue[PFQ_QUEUE_MAX_LEN];  /* sk_buff */
+    struct sk_buff *queue[Q_PREFETCH_MAX_LEN];  /* sk_buff */
     size_t counter;
 };
 
@@ -50,16 +50,16 @@ struct pfq_queue_skb
 
 
 static inline
-int pfq_queue_skb_push(struct pfq_queue_skb *q, struct sk_buff *skb)
+int pfq_prefetch_skb_push(struct pfq_prefetch_skb *q, struct sk_buff *skb)
 {
-	 if (q->counter < PFQ_QUEUE_MAX_LEN)
+	 if (q->counter < Q_PREFETCH_MAX_LEN)
      	return q->queue[q->counter++] = skb, 0;
 	 return -1;
 }
 
 
 static inline
-struct sk_buff * pfq_queue_skb_pop(struct pfq_queue_skb *q)
+struct sk_buff * pfq_prefetch_skb_pop(struct pfq_prefetch_skb *q)
 {
     if (q->counter > 0)
         return q->queue[--q->counter];
@@ -68,13 +68,13 @@ struct sk_buff * pfq_queue_skb_pop(struct pfq_queue_skb *q)
 
 
 static inline
-void pfq_queue_skb_flush(struct pfq_queue_skb *q)
+void pfq_prefetch_skb_flush(struct pfq_prefetch_skb *q)
 {
  	q->counter = 0;
 }
 
 static inline
-size_t pfq_queue_skb_size(struct pfq_queue_skb *q)
+size_t pfq_prefetch_skb_size(struct pfq_prefetch_skb *q)
 {
 	return q->counter;
 }

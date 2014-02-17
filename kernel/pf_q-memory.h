@@ -28,7 +28,7 @@
 #include <linux/skbuff.h>
 
 #include <pf_q-common.h>
-#include <pf_q-skb-queue.h>
+#include <pf_q-prefetch-queue.h>
 
 /* per-cpu data... */
 
@@ -38,7 +38,7 @@ struct local_data
         unsigned long           sock_mask [Q_MAX_ID];
         int                     sock_cnt;
         int 			        flowctrl;
-        struct pfq_queue_skb    prefetch_queue;
+        struct pfq_prefetch_skb    prefetch_queue;
         struct sk_buff_head     recycle_list;
 };
 

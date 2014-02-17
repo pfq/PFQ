@@ -51,7 +51,7 @@
 #include <pf_q-sockopt.h>
 #include <pf_q-devmap.h>
 #include <pf_q-group.h>
-#include <pf_q-skb-queue.h>
+#include <pf_q-prefetch-queue.h>
 #include <pf_q-functional.h>
 #include <pf_q-bits.h>
 #include <pf_q-bpf.h>
@@ -109,7 +109,7 @@ MODULE_PARM_DESC(vl_untag,      " Enable vlan untagging (default=0)");
 
 
 inline
-bool pfq_copy_to_user_skbs(struct pfq_rx_opt *ro, int cpu, unsigned long sock_queue, struct pfq_queue_skb *skbs, int gid)
+bool pfq_copy_to_user_skbs(struct pfq_rx_opt *ro, int cpu, unsigned long sock_queue, struct pfq_prefetch_skb *skbs, int gid)
 {
         /* enqueue the sk_buff: it's wait-free. */
 
@@ -230,7 +230,7 @@ int
 pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 {
         struct local_data * local = __this_cpu_ptr(cpu_data);
-        struct pfq_queue_skb * prefetch_queue = &local->prefetch_queue;
+        struct pfq_prefetch_skb * prefetch_queue = &local->prefetch_queue;
         unsigned long group_mask, socket_mask;
         unsigned long sock_queue[sizeof(unsigned long) << 3];
         struct pfq_annotation *cb;
@@ -286,9 +286,9 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 
         /* enqueue this skb ... */
 
-        pfq_queue_skb_push(prefetch_queue, skb);
+        pfq_prefetch_skb_push(prefetch_queue, skb);
 
-        if (pfq_queue_skb_size(prefetch_queue) < prefetch_len) {
+        if (pfq_prefetch_skb_size(prefetch_queue) < prefetch_len) {
                 return 0;
 	}
 
@@ -484,7 +484,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
                 }
         }
 
-	pfq_queue_skb_flush(prefetch_queue);
+	pfq_prefetch_skb_flush(prefetch_queue);
         return 0;
 }
 
@@ -878,7 +878,7 @@ static int __init pfq_init_module(void)
         pfq_proto_ops_init();
         pfq_proto_init();
 
-        if (prefetch_len > PFQ_QUEUE_MAX_LEN) {
+        if (prefetch_len > Q_PREFETCH_MAX_LEN) {
                 printk(KERN_INFO "[PFQ] prefetch_len=%d not allowed (max=%zu)!\n", prefetch_len, (sizeof(unsigned long) << 3)-1);
                 return -EFAULT;
         }
@@ -947,7 +947,7 @@ static void __exit pfq_exit_module(void)
         for_each_possible_cpu(cpu) {
 
                 struct local_data *local = per_cpu_ptr(cpu_data, cpu);
-                struct pfq_queue_skb *this_queue = &local->prefetch_queue;
+                struct pfq_prefetch_skb *this_queue = &local->prefetch_queue;
                 struct sk_buff *skb;
 		int n = 0;
 		queue_for_each(skb, n, this_queue)
@@ -958,7 +958,7 @@ static void __exit pfq_exit_module(void)
                  	kfree_skb(skb);
 		}
 
-       		pfq_queue_skb_flush(this_queue);
+       		pfq_prefetch_skb_flush(this_queue);
 
 #ifdef PFQ_USE_SKB_RECYCLE
                 skb_queue_purge(&local->recycle_list);

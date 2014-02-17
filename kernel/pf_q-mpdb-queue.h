@@ -29,13 +29,13 @@
 #include <linux/pf_q.h>
 #include <linux/if_vlan.h>
 
-#include <pf_q-skb-queue.h>
+#include <pf_q-prefetch-queue.h>
 #include <pf_q-common.h>
 #include <pf_q-sock.h>
 
 
 extern bool   mpdb_enqueue(struct pfq_rx_opt *ro, struct sk_buff *skb);
-extern size_t mpdb_enqueue_batch(struct pfq_rx_opt *ro, unsigned long queue_mask, int len, struct pfq_queue_skb *skbs, int gid);
+extern size_t mpdb_enqueue_batch(struct pfq_rx_opt *ro, unsigned long queue_mask, int len, struct pfq_prefetch_skb *skbs, int gid);
 
 
 static inline

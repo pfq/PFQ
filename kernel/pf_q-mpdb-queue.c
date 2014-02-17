@@ -47,7 +47,7 @@ char *mpdb_slot_ptr(struct pfq_rx_opt *ro, struct pfq_rx_queue_hdr *qd, int inde
 }
 
 
-size_t mpdb_enqueue_batch(struct pfq_rx_opt *ro, unsigned long bitqueue, int burst_len, struct pfq_queue_skb *skbs, int gid)
+size_t mpdb_enqueue_batch(struct pfq_rx_opt *ro, unsigned long bitqueue, int burst_len, struct pfq_prefetch_skb *skbs, int gid)
 {
 	struct pfq_rx_queue_hdr *rx = ro->queue_info;
 	int data, q_len, q_index;

@@ -26,7 +26,7 @@
 #include <linux/module.h>
 #include <linux/skbuff.h>
 
-#include <pf_q-skb-queue.h>
+#include <pf_q-prefetch-queue.h>
 #include <pf_q-memory.h>
 
 /* exported symbols */

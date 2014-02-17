@@ -33,6 +33,7 @@
 #define Q_MAX_CPU               (sizeof(long)<<3)
 #define Q_MAX_ID                (sizeof(long)<<3)
 #define Q_MAX_GROUP             (sizeof(long)<<3)
+#define Q_PREFETCH_MAX_LEN      (sizeof(long)<<3)
 
 #define Q_MAX_DEVICE            256
 #define Q_MAX_DEVICE_MASK       (Q_MAX_DEVICE-1)
