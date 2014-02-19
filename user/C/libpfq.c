@@ -853,6 +853,7 @@ pfq_inject(pfq_t *q, const void *ptr, size_t len)
         struct pfq_tx_queue_hdr *tx = &qh->tx;
 
         int index = pfq_spsc_write_index(tx);
+
         if (index == -1)
                 return -1;
 
@@ -864,6 +865,7 @@ pfq_inject(pfq_t *q, const void *ptr, size_t len)
         memcpy(addr, ptr, h->len);
 
         pfq_spsc_write_commit(tx);
+
         return 0;
 }
 
@@ -901,7 +903,7 @@ int pfq_tx_queue_flush(pfq_t *q)
 int
 pfq_send(pfq_t *q, const void *ptr, size_t len)
 {
-        if (!pfq_inject(q, ptr, len))
+        if (pfq_inject(q, ptr, len) < 0)
                 return -1;
 
         pfq_tx_queue_flush(q);
@@ -913,7 +915,7 @@ pfq_send(pfq_t *q, const void *ptr, size_t len)
 int
 pfq_send_async(pfq_t *q, const void *ptr, size_t len)
 {
-        if (!pfq_inject(q, ptr, len))
+        if (pfq_inject(q, ptr, len) < 0)
                 return -1;
 
         struct pfq_queue_hdr *qh  = (struct pfq_queue_hdr *)(q->queue_addr);
