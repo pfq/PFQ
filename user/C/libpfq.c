@@ -466,7 +466,7 @@ pfq_set_tx_slots(pfq_t *q, size_t value)
 		return q->error = "PFQ: set TX slots error", -1;
 	}
 
-	q->rx_slots = value;
+	q->tx_slots = value;
 	return q->error = NULL, 0;
 }
 
