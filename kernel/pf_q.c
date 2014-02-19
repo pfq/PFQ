@@ -595,7 +595,6 @@ pfq_create(
         /* initialize both rx_opt and tx_opt */
 
         pfq_rx_opt_init(&so->rx_opt, cap_len);
-
         pfq_tx_opt_init(&so->tx_opt, max_len);
 
         /* initialize socket */
@@ -618,12 +617,6 @@ pfq_rx_release(struct pfq_rx_opt *ro)
                 atomic_dec(&timestamp_toggle);
 
         ro->queue_info = NULL;
-
-        /* Convenient way to avoid a race condition,
-         * without using expensive rw-mutexes
-         */
-
-        msleep(Q_GRACE_PERIOD);
 }
 
 
@@ -631,8 +624,6 @@ static void
 pfq_tx_release(struct pfq_tx_opt *to)
 {
         to->queue_info = NULL;
-
-        /* TODO */
 }
 
 
@@ -657,7 +648,7 @@ pfq_release(struct socket *sock)
         pfq_leave_all_groups(so->id);
         pfq_release_sock_id(so->id);
 
-        /* stop tx thread (if running) */
+        /* stop TX thread (if running) */
 
         if (so->tx_opt.thread)
         {
@@ -666,7 +657,8 @@ pfq_release(struct socket *sock)
                 so->tx_opt.thread = NULL;
         }
 
-        /* Convenient way to avoid a race condition,
+
+        /* Convenient way to avoid a race condition with NAPI threads,
          * without using expensive rw-mutexes
          */
 
