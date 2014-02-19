@@ -546,50 +546,52 @@ void test_group_context()
 }
 
 
+#define TEST(test)   fprintf(stdout, "running '%s'...\n", #test); test();
+
 int
 main(int argc __attribute__((unused)), char *argv[]__attribute__((unused)))
 {
-	test_enable_disable();
+        TEST(test_enable_disable);
 
-	test_is_enabled();
-	test_ifindex();
-	test_timestamp();
-	test_caplen();
-        test_offset();
-	test_rx_slots();
-	test_rx_slot_size();
+	TEST(test_is_enabled);
+	TEST(test_ifindex);
+	TEST(test_timestamp);
+	TEST(test_caplen);
+        TEST(test_offset);
+	TEST(test_rx_slots);
+	TEST(test_rx_slot_size);
 
-	test_bind_device();
-	test_unbind_device();
+	TEST(test_bind_device);
+	TEST(test_unbind_device);
 
-	test_poll();
+	TEST(test_poll);
 
-	test_read();
+	TEST(test_read);
 
-	test_stats();
-	test_group_stats();
+	TEST(test_stats);
+	TEST(test_group_stats);
 
-        test_my_group_stats_priv();
-	test_my_group_stats_restricted();
-	test_my_group_stats_shared();
+        TEST(test_my_group_stats_priv);
+	TEST(test_my_group_stats_restricted);
+	TEST(test_my_group_stats_shared);
 
-	test_groups_mask();
+	TEST(test_groups_mask);
 
-	test_join_private_();
-	test_join_restricted_();
-	test_join_shared_();
+	TEST(test_join_private_);
+	TEST(test_join_restricted_);
+	TEST(test_join_shared_);
 
-	test_join_deferred();
-	test_join_restricted();
-	test_join_restricted_thread();
-	test_join_restricted_process();
+	TEST(test_join_deferred);
+	TEST(test_join_restricted);
+	TEST(test_join_restricted_thread);
+	TEST(test_join_restricted_process);
 
-	test_join_group();
-	test_leave_group();
+	TEST(test_join_group);
+	TEST(test_leave_group);
 
-        test_vlan();
+        TEST(test_vlan);
 
-        test_group_context();
+        TEST(test_group_context);
 
         printf("Tests successfully passed.\n");
     	return 0;
