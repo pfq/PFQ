@@ -100,29 +100,29 @@ void test_offset()
 	pfq_close(q);
 }
 
-void test_slots()
+void test_rx_slots()
 {
 	pfq_t * q = pfq_open(64, 0, 1024);
         assert(q);
 
-	assert(pfq_get_slots(q) == 1024);
+	assert(pfq_get_rx_slots(q) == 1024);
 
 	assert(pfq_enable(q) == 0);
-	assert(pfq_set_slots(q, 4096) == -1);
+	assert(pfq_set_rx_slots(q, 4096) == -1);
 	assert(pfq_disable(q) == 0);
 
-	assert(pfq_set_slots(q, 4096) == 0);
-	assert(pfq_get_slots(q) == 4096);
+	assert(pfq_set_rx_slots(q, 4096) == 0);
+	assert(pfq_get_rx_slots(q) == 4096);
 
 	pfq_close(q);
 }
 
-void test_slot_size()
+void test_rx_slot_size()
 {
 	pfq_t * q = pfq_open(64, 0, 1024);
         assert(q);
         size_t size = 64 + sizeof(struct pfq_pkt_hdr);
-	assert(pfq_get_slot_size(q) == (size + (size % 8)));
+	assert(pfq_get_rx_slot_size(q) == (size + (size % 8)));
 	pfq_close(q);
 
 }
@@ -556,8 +556,8 @@ main(int argc __attribute__((unused)), char *argv[]__attribute__((unused)))
 	test_timestamp();
 	test_caplen();
         test_offset();
-	test_slots();
-	test_slot_size();
+	test_rx_slots();
+	test_rx_slot_size();
 
 	test_bind_device();
 	test_unbind_device();
