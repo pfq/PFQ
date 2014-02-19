@@ -827,10 +827,10 @@ namespace net {
         tx_slots(size_t value)
         {
             if (enabled())
-                throw pfq_error("PFQ: enabled (tx slots could not be set)");
+                throw pfq_error("PFQ: enabled (TX slots could not be set)");
 
             if (::setsockopt(fd_, PF_Q, Q_SO_SET_TX_SLOTS, &value, sizeof(value)) == -1) {
-                throw pfq_error(errno, "PFQ: set tx slots error");
+                throw pfq_error(errno, "PFQ: set TX slots error");
             }
 
             pdata_->tx_slots = value;
@@ -842,7 +842,7 @@ namespace net {
         {
            // size_t ret; socklen_t size = sizeof(ret);
            // if (::getsockopt(fd_, PF_Q, Q_SO_GET_TX_SLOTS, &ret, &size) == -1)
-           //      throw pfq_error(errno, "PFQ: get tx slots error");
+           //      throw pfq_error(errno, "PFQ: get TX slots error");
 
            if (!pdata_)
                 throw pfq_error("PFQ: socket not open");
