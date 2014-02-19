@@ -687,7 +687,7 @@ makeCallback :: Callback -> IO (FunPtr CPFqCallback)
 makeCallback fun = make_callback $ \_ hdr ptr -> toPktHdr hdr >>= flip fun ptr
 
 
--- C functions from libpfq.c
+-- C functions from libpfq
 --
 
 foreign import ccall unsafe pfq_open              :: CSize -> CSize -> CSize -> IO (Ptr PFqTag)
@@ -748,7 +748,7 @@ foreign import ccall unsafe pfq_vlan_set_filter      :: Ptr PFqTag -> CInt -> CI
 foreign import ccall unsafe pfq_vlan_reset_filter    :: Ptr PFqTag -> CInt -> CInt -> IO CInt
 
 
--- TODO
+-- Missing
 
 -- extern int pfq_get_groups_mask(pfq_t const *q, unsigned long *_mask);
 -- extern int pfq_group_fprog(pfq_t *q, int gid, struct sock_fprog *);

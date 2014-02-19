@@ -247,8 +247,6 @@ extern int pfq_get_group_stats(pfq_t const *q, int gid, struct pfq_stats *stats)
 
 extern int pfq_bind_tx(pfq_t *q, const char *dev, int queue);
 
-extern int pfq_inject(pfq_t *q, const void *ptr, size_t len);
-
 extern int pfq_start_tx_thread(pfq_t *q, int node);
 
 extern int pfq_stop_tx_thread(pfq_t *q);
@@ -256,6 +254,8 @@ extern int pfq_stop_tx_thread(pfq_t *q);
 extern int pfq_wakeup_tx_thread(pfq_t *q);
 
 extern int pfq_tx_queue_flush(pfq_t *q);
+
+extern int pfq_inject(pfq_t *q, const void *ptr, size_t len);
 
 extern int pfq_send(pfq_t *q, const void *ptr, size_t len);
 

@@ -1259,7 +1259,6 @@ namespace net {
             return true;
         }
 
-
         bool
         inject(const_buffer pkt)
         {
