@@ -1,5 +1,4 @@
 --
---
 --    Copyright (c) 2011-2013, Nicola Bonelli
 --    All rights reserved.
 --
@@ -40,6 +39,7 @@ module Network.PFq
         open,
         openNoGroup,
         openGroup,
+        close,
         enable,
         disable,
         getId,
@@ -54,13 +54,21 @@ module Network.PFq
         setTimestamp,
         getTimestamp,
         setPromisc,
+
         getCaplen,
         setCaplen,
+        getMaxlen,
+        setMaxlen,
         getOffset,
         setOffset,
+
+        getTxSlots,
+        setTxSlots,
+
         getRxSlots,
         setRxSlots,
         getRxSlotSize,
+
         Network.PFq.read,
         dispatch,
         getStats,
@@ -79,9 +87,20 @@ module Network.PFq
         putContextFunction,
         getContextFunction,
 
+        bindTx,
+        startTxThread,
+        stopTxThread,
+        wakeupTxThread,
+        txQueueFlush,
+
+        inject,
+        send,
+        send_async,
+
         -- groupComputation,
 
         --- data
+
         NetQueue(..),
         Packet(..),
         Callback,
@@ -97,15 +116,14 @@ module Network.PFq
 
 import Data.Word
 import Data.Bits
+import qualified Data.ByteString.Char8 as C
+import Data.ByteString.Unsafe
+
 -- import Data.Maybe
 -- import Debug.Trace
 
 import Control.Monad
 import Control.Concurrent
-
--- import Control.Monad.Cont
--- import Control.Monad.State.Lazy
--- import Control.Monad.Trans.Cont
 
 import Foreign.Ptr
 import Foreign.C.String (CString, peekCString, withCString)
@@ -288,7 +306,13 @@ open :: Int  --
 open caplen offset slots =
         pfq_open (fromIntegral caplen) (fromIntegral offset) (fromIntegral slots) >>=
             throwPFqIf nullPtr (== nullPtr) >>= \ptr ->
-                C.newForeignPtr ptr (pfq_close ptr)
+                C.newForeignPtr ptr (void $ pfq_close ptr)
+
+
+close :: Ptr PFqTag -> IO ()
+close hdl =
+    pfq_close hdl >>= throwPFqIf_ hdl (== -1)
+
 
 -- openNoGroup:
 --
@@ -300,7 +324,7 @@ openNoGroup:: Int  --
 openNoGroup caplen offset slots =
         pfq_open_nogroup (fromIntegral caplen) (fromIntegral offset) (fromIntegral slots) >>=
             throwPFqIf nullPtr (== nullPtr) >>= \ptr ->
-                C.newForeignPtr ptr (pfq_close ptr)
+                C.newForeignPtr ptr (void $ pfq_close ptr)
 
 -- openGroup:
 --
@@ -314,7 +338,7 @@ openGroup :: [ClassMask]  --
 openGroup ms policy caplen offset slots =
         pfq_open_group (unClassMask $ combineClassMasks ms) (unGroupPolicy policy) (fromIntegral caplen) (fromIntegral offset) (fromIntegral slots) >>=
             throwPFqIf nullPtr (== nullPtr) >>= \ptr ->
-                C.newForeignPtr ptr (pfq_close ptr)
+                C.newForeignPtr ptr (void $ pfq_close ptr)
 
 -- bind:
 --
@@ -493,6 +517,24 @@ getCaplen hdl =
         >>= return . fromIntegral
 
 
+-- setMaxlen:
+--
+setMaxlen:: Ptr PFqTag -> Int -> IO ()
+
+setMaxlen hdl value =
+    pfq_set_maxlen hdl (fromIntegral value)
+        >>= throwPFqIf_ hdl (== -1)
+
+
+-- getMaxlen:
+--
+getMaxlen :: Ptr PFqTag -> IO Int
+
+getMaxlen hdl =
+    pfq_get_maxlen hdl >>= throwPFqIf hdl (== -1)
+        >>= return . fromIntegral
+
+
 -- setOffset:
 --
 setOffset:: Ptr PFqTag -> Int -> IO ()
@@ -533,6 +575,22 @@ getRxSlotSize :: Ptr PFqTag -> IO Int
 
 getRxSlotSize hdl =
     pfq_get_rx_slot_size hdl >>= throwPFqIf hdl (== -1)
+        >>= return . fromIntegral
+
+-- setTxSlots:
+--
+setTxSlots:: Ptr PFqTag -> Int -> IO ()
+
+setTxSlots hdl value =
+    pfq_set_tx_slots hdl (fromIntegral value)
+    >>= throwPFqIf_ hdl (== -1)
+
+-- getTxSlots:
+--
+getTxSlots :: Ptr PFqTag -> IO Int
+
+getTxSlots hdl =
+    pfq_get_tx_slots hdl >>= throwPFqIf hdl (== -1)
         >>= return . fromIntegral
 
 -- vlanFiltersEnabled:
@@ -675,7 +733,6 @@ dispatch :: Ptr PFqTag  -- packet capture descriptor
          -> Int         -- ^ timeout
          -> IO ()       --
 
-
 dispatch hdl f timeo = do
     cback <- makeCallback f
     ret  <- pfq_dispatch hdl cback (fromIntegral timeo) nullPtr
@@ -686,6 +743,68 @@ dispatch hdl f timeo = do
 makeCallback :: Callback -> IO (FunPtr CPFqCallback)
 makeCallback fun = make_callback $ \_ hdr ptr -> toPktHdr hdr >>= flip fun ptr
 
+-- Transmission:
+--
+
+bindTx :: Ptr PFqTag
+       -> String      -- device name
+       -> Int         -- queue index
+       -> IO ()
+
+bindTx hdl name queue =
+    withCString name $ \dev ->
+        pfq_bind_tx hdl dev (fromIntegral queue) >>= throwPFqIf_ hdl (== -1)
+
+
+startTxThread :: Ptr PFqTag
+              -> Int
+              -> IO ()
+
+startTxThread hdl node = do
+    pfq_start_tx_thread hdl (fromIntegral node) >>= throwPFqIf_ hdl (== -1)
+
+
+stopTxThread :: Ptr PFqTag
+             -> IO ()
+stopTxThread hdl = do
+    pfq_stop_tx_thread hdl >>= throwPFqIf_ hdl (== -1)
+
+
+wakeupTxThread :: Ptr PFqTag
+               -> IO ()
+wakeupTxThread hdl = do
+    pfq_wakeup_tx_thread hdl >>= throwPFqIf_ hdl (== -1)
+
+
+txQueueFlush :: Ptr PFqTag
+             -> IO ()
+txQueueFlush hdl = do
+    pfq_tx_queue_flush hdl >>= throwPFqIf_ hdl (== -1)
+
+
+inject :: Ptr PFqTag
+       -> C.ByteString
+       -> IO ()
+inject hdl xs = do
+    unsafeUseAsCStringLen xs $ \(p, l) ->
+        pfq_inject hdl p (fromIntegral l) >>= throwPFqIf_ hdl (== -1)
+
+
+send :: Ptr PFqTag
+     -> C.ByteString
+     -> IO ()
+send hdl xs = do
+    unsafeUseAsCStringLen xs $ \(p, l) ->
+        pfq_send hdl p (fromIntegral l) >>= throwPFqIf_ hdl (== -1)
+
+
+send_async :: Ptr PFqTag
+           -> C.ByteString
+           -> IO ()
+send_async hdl xs = do
+    unsafeUseAsCStringLen xs $ \(p, l) ->
+        pfq_send_async hdl p (fromIntegral l) >>= throwPFqIf_ hdl (== -1)
+
 
 -- C functions from libpfq
 --
@@ -694,7 +813,7 @@ foreign import ccall unsafe pfq_open              :: CSize -> CSize -> CSize -> 
 foreign import ccall unsafe pfq_open_nogroup      :: CSize -> CSize -> CSize -> IO (Ptr PFqTag)
 foreign import ccall unsafe pfq_open_group        :: CUInt -> CInt -> CSize -> CSize -> CSize -> IO (Ptr PFqTag)
 
-foreign import ccall unsafe pfq_close             :: Ptr PFqTag -> IO ()
+foreign import ccall unsafe pfq_close             :: Ptr PFqTag -> IO CInt
 foreign import ccall unsafe pfq_error             :: Ptr PFqTag -> IO CString
 
 foreign import ccall unsafe pfq_id                :: Ptr PFqTag -> IO CInt
@@ -711,8 +830,14 @@ foreign import ccall unsafe pfq_is_timestamp_enabled :: Ptr PFqTag -> IO CInt
 foreign import ccall unsafe pfq_set_caplen        :: Ptr PFqTag -> CSize -> IO CInt
 foreign import ccall unsafe pfq_get_caplen        :: Ptr PFqTag -> IO CPtrdiff
 
+foreign import ccall unsafe pfq_set_maxlen        :: Ptr PFqTag -> CSize -> IO CInt
+foreign import ccall unsafe pfq_get_maxlen        :: Ptr PFqTag -> IO CPtrdiff
+
 foreign import ccall unsafe pfq_set_offset        :: Ptr PFqTag -> CSize -> IO CInt
 foreign import ccall unsafe pfq_get_offset        :: Ptr PFqTag -> IO CPtrdiff
+
+foreign import ccall unsafe pfq_set_tx_slots      :: Ptr PFqTag -> CSize -> IO CInt
+foreign import ccall unsafe pfq_get_tx_slots      :: Ptr PFqTag -> IO CSize
 
 foreign import ccall unsafe pfq_set_rx_slots      :: Ptr PFqTag -> CSize -> IO CInt
 foreign import ccall unsafe pfq_get_rx_slots      :: Ptr PFqTag -> IO CSize
@@ -747,6 +872,17 @@ foreign import ccall unsafe pfq_vlan_filters_enable  :: Ptr PFqTag -> CInt -> CI
 foreign import ccall unsafe pfq_vlan_set_filter      :: Ptr PFqTag -> CInt -> CInt -> IO CInt
 foreign import ccall unsafe pfq_vlan_reset_filter    :: Ptr PFqTag -> CInt -> CInt -> IO CInt
 
+-- Tx APIs
+
+foreign import ccall unsafe pfq_bind_tx             :: Ptr PFqTag -> CString -> CInt -> IO CInt
+foreign import ccall unsafe pfq_start_tx_thread     :: Ptr PFqTag -> CInt -> IO CInt
+foreign import ccall unsafe pfq_stop_tx_thread      :: Ptr PFqTag -> IO CInt
+foreign import ccall unsafe pfq_wakeup_tx_thread    :: Ptr PFqTag -> IO CInt
+foreign import ccall unsafe pfq_tx_queue_flush      :: Ptr PFqTag -> IO CInt
+
+foreign import ccall unsafe pfq_inject              :: Ptr PFqTag -> Ptr CChar -> CSize -> IO CInt
+foreign import ccall unsafe pfq_send                :: Ptr PFqTag -> Ptr CChar -> CSize -> IO CInt
+foreign import ccall unsafe pfq_send_async          :: Ptr PFqTag -> Ptr CChar -> CSize -> IO CInt
 
 -- Missing
 
