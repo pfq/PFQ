@@ -19,6 +19,8 @@ add_executable(test-vlan test-vlan.cpp)
 add_executable(test-for-range test-for-range.cpp)
 add_executable(test-steering-dummy test-steering-dummy.cpp)
 add_executable(test-filter test-filter.cpp)
+
+add_executable(test-send   test-send.c)
 add_executable(test-send++ test-send++.cpp)
 
 add_executable(test-regression++ test-regression++.cpp)
@@ -32,6 +34,7 @@ add_executable(test-dispatch test-dispatch.c)
 add_executable(test-regression test-regression.c)
 
 target_link_libraries(test-read -lpfq)
+target_link_libraries(test-send -lpfq)
 target_link_libraries(test-dispatch -lpfq)
 
 target_link_libraries(test-regression -lpfq -pthread)      
