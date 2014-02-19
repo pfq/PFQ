@@ -370,7 +370,14 @@ int pfq_setsockopt(struct socket *sock,
                                                                                                                                 queue->tx.slot_size);
                             }
                     }
-                    else {
+                    else
+                    {
+                        if (so->tx_opt.thread)
+                        {
+                                pr_devel("[PFQ|%d] stopping TX thread...\n", so->id);
+                                kthread_stop(so->tx_opt.thread);
+                                so->tx_opt.thread = NULL;
+                        }
 
                         msleep(Q_GRACE_PERIOD);
 
