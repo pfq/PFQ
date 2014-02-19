@@ -43,7 +43,7 @@ dumper dev = do
         Q.bindGroup q gid dev (-1)
         Q.enable q
         Q.groupFunction q gid 0 "steer-ipv4"
-        Q.getSlotSize q >>= \o -> putStrLn $ "slot_size: " ++ show o
+        Q.getRxSlotSize q >>= \o -> putStrLn $ "slot_size: " ++ show o
         recvDispatch q
 
 main :: IO ()

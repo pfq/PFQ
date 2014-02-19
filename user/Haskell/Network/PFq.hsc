@@ -58,9 +58,9 @@ module Network.PFq
         setCaplen,
         getOffset,
         setOffset,
-        getSlots,
-        setSlots,
-        getSlotSize,
+        getRxSlots,
+        setRxSlots,
+        getRxSlotSize,
         Network.PFq.read,
         dispatch,
         getStats,
@@ -511,28 +511,28 @@ getOffset hdl =
     return . fromIntegral
 
 
--- setSlots:
+-- setRxSlots:
 --
-setSlots:: Ptr PFqTag -> Int -> IO ()
+setRxSlots:: Ptr PFqTag -> Int -> IO ()
 
-setSlots hdl value =
-    pfq_set_slots hdl (fromIntegral value)
+setRxSlots hdl value =
+    pfq_set_rx_slots hdl (fromIntegral value)
     >>= throwPFqIf_ hdl (== -1)
 
--- getSlots:
+-- getRxSlots:
 --
-getSlots :: Ptr PFqTag -> IO Int
+getRxSlots :: Ptr PFqTag -> IO Int
 
-getSlots hdl =
-    pfq_get_slots hdl >>= throwPFqIf hdl (== -1)
+getRxSlots hdl =
+    pfq_get_rx_slots hdl >>= throwPFqIf hdl (== -1)
         >>= return . fromIntegral
 
--- getSlotSize:
+-- getRxSlotSize:
 --
-getSlotSize :: Ptr PFqTag -> IO Int
+getRxSlotSize :: Ptr PFqTag -> IO Int
 
-getSlotSize hdl =
-    pfq_get_slot_size hdl >>= throwPFqIf hdl (== -1)
+getRxSlotSize hdl =
+    pfq_get_rx_slot_size hdl >>= throwPFqIf hdl (== -1)
         >>= return . fromIntegral
 
 -- vlanFiltersEnabled:
@@ -714,9 +714,9 @@ foreign import ccall unsafe pfq_get_caplen        :: Ptr PFqTag -> IO CPtrdiff
 foreign import ccall unsafe pfq_set_offset        :: Ptr PFqTag -> CSize -> IO CInt
 foreign import ccall unsafe pfq_get_offset        :: Ptr PFqTag -> IO CPtrdiff
 
-foreign import ccall unsafe pfq_set_slots         :: Ptr PFqTag -> CSize -> IO CInt
-foreign import ccall unsafe pfq_get_slots         :: Ptr PFqTag -> IO CSize
-foreign import ccall unsafe pfq_get_slot_size     :: Ptr PFqTag -> IO CSize
+foreign import ccall unsafe pfq_set_rx_slots      :: Ptr PFqTag -> CSize -> IO CInt
+foreign import ccall unsafe pfq_get_rx_slots      :: Ptr PFqTag -> IO CSize
+foreign import ccall unsafe pfq_get_rx_slot_size  :: Ptr PFqTag -> IO CSize
 
 foreign import ccall unsafe pfq_bind              :: Ptr PFqTag -> CString -> CInt -> IO CInt
 foreign import ccall unsafe pfq_bind_group        :: Ptr PFqTag -> CInt -> CString -> CInt -> IO CInt

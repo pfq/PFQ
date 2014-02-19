@@ -98,7 +98,7 @@ dumper dev = do
         kp :: Pair <- Q.getContextFunction q gid 0 8
         print kp
 
-        Q.getSlotSize q >>= \o -> putStrLn $ "slot_size: " ++ show o
+        Q.getRxSlotSize q >>= \o -> putStrLn $ "slot_size: " ++ show o
         recvLoop q
 
 main :: IO ()
