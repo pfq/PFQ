@@ -46,6 +46,7 @@
 
 typedef char * pfq_iterator_t;
 
+
 struct pfq_net_queue
 {
 	pfq_iterator_t queue; 	  		/* net queue */
@@ -60,10 +61,12 @@ typedef struct
 	void * queue_addr;
 
 	size_t queue_tot_mem;
-	size_t queue_slots;
-	size_t queue_caplen;
-	size_t queue_offset;
-	size_t slot_size;
+
+	size_t rx_slots;
+	size_t rx_caplen;
+	size_t rx_offset;
+	size_t rx_slot_size;
+        size_t tx_slots;
 
 	const char * error;
 
@@ -138,11 +141,12 @@ pfq_open_group(unsigned int class_mask, int group_policy, size_t caplen, size_t 
 
 	q->queue_addr 	 = NULL;
 	q->queue_tot_mem = 0;
-	q->queue_slots   = 0;
-	q->queue_caplen  = 0;
-	q->queue_offset  = offset;
-	q->slot_size     = 0;
+	q->rx_slots      = 0;
+	q->rx_caplen     = 0;
+	q->rx_offset     = offset;
+	q->rx_slot_size  = 0;
 	q->error 	 = NULL;
+
         memset(&q->netq, 0, sizeof(q->netq));
 
 	/* get id */
@@ -153,24 +157,37 @@ pfq_open_group(unsigned int class_mask, int group_policy, size_t caplen, size_t 
 
 	/* set queue slots */
 	if (setsockopt(fd, PF_Q, Q_SO_SET_RX_SLOTS, &slots, sizeof(slots)) == -1) {
-		return __error = "PFQ: set slots error", free(q), NULL;
+		return __error = "PFQ: set RX slots error", free(q), NULL;
 	}
 
-	q->queue_slots = slots;
+	q->rx_slots = slots;
 
 	/* set caplen */
 	if (setsockopt(fd, PF_Q, Q_SO_SET_RX_CAPLEN, &caplen, sizeof(caplen)) == -1) {
-		return __error = "PFQ: set caplen error", free(q), NULL;
+		return __error = "PFQ: set RX caplen error", free(q), NULL;
 	}
 
-	q->queue_caplen = caplen;
+	q->rx_caplen = caplen;
 
 	/* set offset */
 	if (setsockopt(fd, PF_Q, Q_SO_SET_RX_OFFSET, &offset, sizeof(offset)) == -1) {
-		return __error = "PFQ: set offset error", free(q), NULL;
+		return __error = "PFQ: set RX offset error", free(q), NULL;
 	}
 
-	q->slot_size = ALIGN8(sizeof(struct pfq_pkt_hdr) + q->queue_caplen);
+	q->rx_slot_size = ALIGN8(sizeof(struct pfq_pkt_hdr) + q->rx_caplen);
+
+	/* set TX queue slots */
+	if (setsockopt(fd, PF_Q, Q_SO_SET_TX_SLOTS, &slots, sizeof(slots)) == -1) {
+		return __error = "PFQ: set TX slots error", free(q), NULL;
+	}
+
+	q->tx_slots = slots;
+
+        /* set maxlen */
+        if (setsockopt(fd, PF_Q, Q_SO_SET_TX_MAXLEN, &caplen, sizeof(caplen)) == -1)
+        {
+		return __error = "PFQ: set maxlen error", free(q), NULL;
+        }
 
 	if (group_policy != Q_GROUP_UNDEFINED)
 	{
@@ -339,7 +356,7 @@ pfq_set_caplen(pfq_t *q, size_t value)
 		return q->error = "PFQ: set caplen error", -1;
 	}
 
-	q->slot_size = ALIGN8(sizeof(struct pfq_pkt_hdr)+ value);
+	q->rx_slot_size = ALIGN8(sizeof(struct pfq_pkt_hdr)+ value);
 	return q->error = NULL, 0;
 }
 
@@ -352,6 +369,36 @@ pfq_get_caplen(pfq_t const *q)
 
 	if (getsockopt(q->fd, PF_Q, Q_SO_GET_RX_CAPLEN, &ret, &size) == -1) {
 		return mutable->error = "PFQ: get caplen error", -1;
+	}
+	return mutable->error = NULL, (ssize_t)ret;
+}
+
+
+int
+pfq_set_maxlen(pfq_t *q, size_t value)
+{
+	int enabled = pfq_is_enabled(q);
+	if (enabled == 1) {
+		return q->error =  "PFQ: enabled (maxlen could not be set)", -1;
+	}
+
+	if (setsockopt(q->fd, PF_Q, Q_SO_SET_TX_MAXLEN, &value, sizeof(value)) == -1) {
+		return q->error = "PFQ: set maxlen error", -1;
+	}
+
+	q->rx_slot_size = ALIGN8(sizeof(struct pfq_pkt_hdr)+ value);
+	return q->error = NULL, 0;
+}
+
+
+ssize_t
+pfq_get_maxlen(pfq_t const *q)
+{
+	size_t ret; socklen_t size = sizeof(ret);
+	pfq_t * mutable = (pfq_t *)q;
+
+	if (getsockopt(q->fd, PF_Q, Q_SO_GET_TX_MAXLEN, &ret, &size) == -1) {
+		return mutable->error = "PFQ: get maxlen error", -1;
 	}
 	return mutable->error = NULL, (ssize_t)ret;
 }
@@ -386,7 +433,7 @@ pfq_get_offset(pfq_t const *q)
 
 
 int
-pfq_set_slots(pfq_t *q, size_t value)
+pfq_set_rx_slots(pfq_t *q, size_t value)
 {
 	int enabled = pfq_is_enabled(q);
 	if (enabled == 1) {
@@ -396,21 +443,44 @@ pfq_set_slots(pfq_t *q, size_t value)
 		return q->error = "PFQ: set slots error", -1;
 	}
 
-	q->queue_slots = value;
+	q->rx_slots = value;
 	return q->error = NULL, 0;
 }
 
+
 size_t
-pfq_get_slots(pfq_t const *q)
+pfq_get_rx_slots(pfq_t const *q)
 {
-	return q->queue_slots;
+	return q->rx_slots;
+}
+
+
+int
+pfq_set_tx_slots(pfq_t *q, size_t value)
+{
+	int enabled = pfq_is_enabled(q);
+	if (enabled == 1) {
+		return q->error =  "PFQ: enabled (TX slots could not be set)", -1;
+	}
+	if (setsockopt(q->fd, PF_Q, Q_SO_SET_TX_SLOTS, &value, sizeof(value)) == -1) {
+		return q->error = "PFQ: set TX slots error", -1;
+	}
+
+	q->rx_slots = value;
+	return q->error = NULL, 0;
 }
 
 
 size_t
-pfq_get_slot_size(pfq_t const *q)
+pfq_get_tx_slots(pfq_t const *q)
 {
-	return q->slot_size;
+	return q->tx_slots;
+}
+
+size_t
+pfq_get_rx_slot_size(pfq_t const *q)
+{
+	return q->rx_slot_size;
 }
 
 
@@ -679,7 +749,7 @@ int pfq_vlan_reset_filter(pfq_t *q, int gid, int vid)
 int
 pfq_read(pfq_t *q, struct pfq_net_queue *nq, long int microseconds)
 {
-	size_t q_size = q->queue_slots * q->slot_size;
+	size_t q_size = q->rx_slots * q->rx_slot_size;
 	struct pfq_queue_hdr * qd;
 	unsigned int index, data;
 
@@ -693,7 +763,7 @@ pfq_read(pfq_t *q, struct pfq_net_queue *nq, long int microseconds)
 
 	/*  watermark for polling... */
 
-	if( MPDB_QUEUE_LEN(data) < (q->queue_slots >> 1) ) {
+	if( MPDB_QUEUE_LEN(data) < (q->rx_slots >> 1) ) {
 		if (pfq_poll(q, microseconds) < 0)
 		{
 			return -1;
@@ -704,14 +774,14 @@ pfq_read(pfq_t *q, struct pfq_net_queue *nq, long int microseconds)
 
 	data = __sync_lock_test_and_set(&qd->rx.data, ((index+1) << 24));
 
-	size_t queue_len = min(MPDB_QUEUE_LEN(data), q->queue_slots);
+	size_t queue_len = min(MPDB_QUEUE_LEN(data), q->rx_slots);
 
 	nq->queue = (char *)(q->queue_addr) +
 			    sizeof(struct pfq_queue_hdr) +
 			    (index & 1) * q_size;
 	nq->index = index;
 	nq->len   = queue_len;
-        nq->slot_size = q->slot_size;
+        nq->slot_size = q->rx_slot_size;
 
 	return q->error = NULL, (int)queue_len;
 }
@@ -723,11 +793,11 @@ pfq_recv(pfq_t *q, void *buf, size_t buflen, struct pfq_net_queue *nq, long int 
        	if (pfq_read(q, nq, microseconds) < 0)
 		return -1;
 
-	if (buflen < (q->queue_slots * q->slot_size)) {
+	if (buflen < (q->rx_slots * q->rx_slot_size)) {
 		return q->error = "PFQ: buffer too small", -1;
 	}
 
-	memcpy(buf, nq->queue, q->slot_size * nq->len);
+	memcpy(buf, nq->queue, q->rx_slot_size * nq->len);
 	return q->error = NULL, 0;
 }
 
@@ -755,6 +825,103 @@ pfq_dispatch(pfq_t *q, pfq_handler_t cb, long int microseconds, char *user)
 		n++;
 	}
         return n;
+}
+
+
+/* TX APIs */
+
+int
+pfq_bind_tx(pfq_t *q, const char *dev, int queue)
+{
+        int index = pfq_ifindex(q, dev);
+        if (index == -1)
+		return q->error = "PFQ: device not found", -1;
+
+        struct pfq_binding b = { 0, index, queue };
+
+        if (setsockopt(q->fd, PF_Q, Q_SO_TX_THREAD_BIND, &b, sizeof(b)) == -1)
+		return q->error = "PFQ: TX bind error", -1;
+
+	return 0;
+}
+
+
+int
+pfq_inject(pfq_t *q, const void *ptr, size_t len)
+{
+        struct pfq_queue_hdr *qh  = (struct pfq_queue_hdr *)(q->queue_addr);
+        struct pfq_tx_queue_hdr *tx = &qh->tx;
+
+        int index = pfq_spsc_write_index(tx);
+        if (index == -1)
+                return -1;
+
+        struct pfq_pkt_hdr *h = (struct pfq_pkt_hdr *)((char *)(qh + 1) + q->rx_slots * q->rx_slot_size * 2  + index * tx->slot_size);
+        char *addr = (char *)(h + 1);
+
+        h->len = min(len, (size_t)(tx->max_len));
+
+        memcpy(addr, ptr, h->len);
+
+        pfq_spsc_write_commit(tx);
+        return 0;
+}
+
+
+int pfq_start_tx_thread(pfq_t *q, int node)
+{
+        if (setsockopt(q->fd, PF_Q, Q_SO_TX_THREAD_START, &node, sizeof(node)) == -1)
+		return q->error = "PFQ: start TX thread", -1;
+
+        return 0;
+}
+
+int pfq_stop_tx_thread(pfq_t *q)
+{
+        if (setsockopt(q->fd, PF_Q, Q_SO_TX_THREAD_STOP, NULL, 0) == -1)
+		return q->error = "PFQ: stop TX thread", -1;
+        return 0;
+}
+
+int pfq_wakeup_tx_thread(pfq_t *q)
+{
+        if (setsockopt(q->fd, PF_Q, Q_SO_TX_THREAD_WAKEUP, NULL, 0) == -1)
+		return q->error = "PFQ: wakeup TX thread", -1;
+        return 0;
+}
+
+int pfq_tx_queue_flush(pfq_t *q)
+{
+        if (setsockopt(q->fd, PF_Q, Q_SO_TX_QUEUE_FLUSH, NULL, 0) == -1)
+		return q->error = "PFQ: TX queue flush", -1;
+        return 0;
+}
+
+
+int
+pfq_send(pfq_t *q, const void *ptr, size_t len)
+{
+        if (!pfq_inject(q, ptr, len))
+                return -1;
+
+        pfq_tx_queue_flush(q);
+
+        return 0;
+}
+
+
+int
+pfq_send_async(pfq_t *q, const void *ptr, size_t len)
+{
+        if (!pfq_inject(q, ptr, len))
+                return -1;
+
+        struct pfq_queue_hdr *qh  = (struct pfq_queue_hdr *)(q->queue_addr);
+
+        if (pfq_spsc_write_avail(&qh->tx) < (int)(pfq_get_tx_slots(q)/2) )
+                pfq_wakeup_tx_thread(q);
+
+        return 0;
 }
 
 
