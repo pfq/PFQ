@@ -119,17 +119,18 @@ int
 pfq_tx_thread(void *data)
 {
         struct pfq_sock *so = (struct pfq_sock *)data;
-        struct pfq_tx_opt *to = &so->tx_opt;
         struct net_device *dev;
 
         printk(KERN_INFO "[PFQ] TX thread started on node %d\n", to->cpu_index);
 
-        dev = dev_get_by_index(sock_net(&so->sk), to->if_index);
+        dev = dev_get_by_index(sock_net(&so->sk), so->tx_opt.if_index);
 
-        while(!kthread_should_stop())
+        for(;;)
         {
-                pfq_tx_queue_flush(to, dev);
+                pfq_tx_queue_flush(&so->tx_opt, dev);
                 set_current_state(TASK_INTERRUPTIBLE);
+                if (kthread_should_stop())
+                        break;
                 schedule();
         }
 
