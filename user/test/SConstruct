@@ -6,6 +6,8 @@ env = Environment(CPPPATH=['.', '../extra', '../C++', '../C', '../../kernel'],
 env.Append(LIBPATH='../C')
 
 env.Program(target = "test-dump",       source = ["test-dump.cpp"])
+env.Program(target = "test-read",       source = ["test-read.c"], LIBS=['pfq'])
+env.Program(target = "test-send++",     source = ["test-send++.cpp"])
 env.Program(target = "test-vlan",       source = ["test-vlan.cpp"])
 env.Program(target = "test-for-range",  source = ["test-for-range.cpp"])
 env.Program(target = "test-dispatch",   source = ["test-dispatch.c"], LIBS=['pfq', 'pthread', 'stdc++'])
