@@ -194,7 +194,7 @@ extern int pfq_set_group_function(pfq_t *q, int gid, const char *fun_name, int l
 
 extern int pfq_set_group_function_context(pfq_t *q, int gid, const void *context, size_t size, int level);
 
-extern int pfq_get_group_function_context(pfq_t *q, int gid, void *context, size_t size, int level);
+extern int pfq_get_group_function_context(pfq_t const *q, int gid, void *context, size_t size, int level);
 
 extern int pfq_group_reset(pfq_t *q, int gid);
 
@@ -229,7 +229,7 @@ extern int pfq_id(pfq_t *q);
 
 extern int pfq_group_id(pfq_t *q);
 
-extern int pfq_get_fd(pfq_t *q);
+extern int pfq_get_fd(pfq_t const *q);
 
 extern int pfq_get_stats(pfq_t const *q, struct pfq_stats *stats);
 

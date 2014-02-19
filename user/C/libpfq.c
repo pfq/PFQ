@@ -504,14 +504,16 @@ pfq_set_group_function_context(pfq_t *q, int gid, const void *context, size_t si
 
 
 int
-pfq_get_group_function_context(pfq_t *q, int gid, void *context, size_t size, int level)
+pfq_get_group_function_context(pfq_t const *q, int gid, void *context, size_t size, int level)
 {
 	struct pfq_group_context s  = { context, size, gid, level };
         socklen_t len = sizeof(s);
+	pfq_t * mutable = (pfq_t *)q;
+
 	if (getsockopt(q->fd, PF_Q, Q_SO_GET_GROUP_CONTEXT, &s, &len) == -1) {
-		return q->error = "PFQ: get group context error", -1;
+		return mutable->error = "PFQ: get group context error", -1;
 	}
-	return q->error = NULL, 0;
+	return mutable->error = NULL, 0;
 }
 
 
@@ -784,7 +786,7 @@ pfq_group_id(pfq_t *q)
 }
 
 
-int pfq_get_fd(pfq_t *q)
+int pfq_get_fd(pfq_t const *q)
 {
 	return q->fd;
 }
