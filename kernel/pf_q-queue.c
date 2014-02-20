@@ -21,11 +21,14 @@
  *
  ****************************************************************/
 
+#include <linux/kernel.h>
+#include <linux/module.h>
+
 #include <linux/vmalloc.h>
 #include <linux/printk.h>
 #include <linux/mm.h>
-
 #include <linux/pf_q.h>
+
 #include <pf_q-sock.h>
 
 

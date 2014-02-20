@@ -22,10 +22,10 @@
  ****************************************************************/
 
 #include <linux/kernel.h>
-#include <linux/version.h>
 #include <linux/module.h>
-#include <linux/kthread.h>
+#include <linux/version.h>
 
+#include <linux/kthread.h>
 #include <linux/pf_q.h>
 
 #include <pf_q-thread.h>

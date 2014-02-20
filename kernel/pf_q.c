@@ -37,6 +37,7 @@
 #include <linux/poll.h>
 #include <linux/etherdevice.h>
 #include <linux/kthread.h>
+#include <linux/vmalloc.h>
 
 #include <linux/percpu.h>
 

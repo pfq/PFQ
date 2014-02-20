@@ -21,9 +21,11 @@
  *
  ****************************************************************/
 
+#include <linux/kernel.h>
+#include <linux/module.h>
+
 #include <linux/list.h>
 #include <linux/string.h>
-#include <linux/module.h>
 #include <linux/semaphore.h>
 
 #include <linux/pf_q-fun.h>

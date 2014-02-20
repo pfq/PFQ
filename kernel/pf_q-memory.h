@@ -25,6 +25,7 @@
 #ifndef _PF_Q_MEMORY_H_
 #define _PF_Q_MEMORY_H_
 
+#include <linux/version.h>
 #include <linux/skbuff.h>
 
 #include <pf_q-common.h>

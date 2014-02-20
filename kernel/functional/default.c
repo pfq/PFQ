@@ -22,7 +22,8 @@
  ****************************************************************/
 
 #include <linux/kernel.h>
-#include <asm/barrier.h>
+#include <linux/module.h>
+
 
 #include <linux/pf_q-fun.h>
 

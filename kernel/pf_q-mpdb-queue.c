@@ -22,9 +22,12 @@
  *
  ****************************************************************/
 
+#include <linux/kernel.h>
+#include <linux/module.h>
+#include <linux/pf_q-fun.h>
+
 #include <pf_q-mpdb-queue.h>
 
-#include <linux/pf_q-fun.h>
 
 static inline
 void *pfq_memcpy(void *to, const void *from, size_t len)
