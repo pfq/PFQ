@@ -36,12 +36,9 @@
 
 static inline u16 pfq_dev_cap_txqueue(struct net_device *dev, u16 queue_index)
 {
-        if (unlikely(queue_index >= dev->real_num_tx_queues)) {
-                /* net_warn_ratelimited("%s selects TX queue %d, but real number of TX queues is %d\n", */
-                /*                      dev->name, queue_index, */
-                /*                      dev->real_num_tx_queues); */
+        if (unlikely(queue_index >= dev->real_num_tx_queues))
                 return 0;
-        }
+
         return queue_index;
 }
 
@@ -51,10 +48,14 @@ struct netdev_queue *pfq_pick_tx(struct net_device *dev, struct sk_buff *skb, in
         if (dev->real_num_tx_queues != 1 && queue_index == -1)
         {
                 const struct net_device_ops *ops = dev->netdev_ops;
-                if (ops->ndo_select_queue)
-                        queue_index = ops->ndo_select_queue(dev, skb);
-                else
-                        queue_index = __netdev_pick_tx(dev, skb);
+                queue_index = ops->ndo_select_queue
+                                ?
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,13,0))
+                                ops->ndo_select_queue(dev, skb)
+#else
+                                ops->ndo_select_queue(dev, skb, NULL)
+#endif
+                                : 0;
         }
 
         queue_index = pfq_dev_cap_txqueue(dev, queue_index);
@@ -88,7 +89,11 @@ int pfq_queue_xmit(struct sk_buff *skb, int queue_index)
 
                         HARD_TX_LOCK(dev, txq, cpu);
 
+#if (LINUX_VERSION_CODE <= KERNEL_VERSION(3,2,0))
+                        if (!netif_tx_queue_stopped(txq)) {
+#else
                         if (!netif_xmit_stopped(txq)) {
+#endif
 
                                 // rc = hard_start_xmit(skb, dev, txq);
 
