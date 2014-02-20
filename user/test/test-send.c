@@ -70,22 +70,23 @@ void mode_3(pfq_t *q, int num)
 int
 main(int argc, char *argv[])
 {
-        if (argc < 4)
+        if (argc < 5)
         {
-                fprintf(stderr, "usage: %s dev num mode\n", argv[0]);
+                fprintf(stderr, "usage: %s dev queue num mode\n", argv[0]);
                 return -1;
         }
 
         const char *dev = argv[1];
 
-        int num  = atoi(argv[2]);
-        int mode = atoi(argv[3]);
+        int queue  = atoi(argv[2]);
+        int num    = atoi(argv[3]);
+        int mode   = atoi(argv[4]);
 
         pfq_t * q= pfq_open(128, 0, 4096);
 
         pfq_enable(q);
 
-        pfq_bind_tx(q, dev, -1);
+        pfq_bind_tx(q, dev, queue);
 
         pfq_start_tx_thread(q, 0);
 

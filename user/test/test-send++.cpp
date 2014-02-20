@@ -66,19 +66,20 @@ void mode_3(pfq &q, int num)
 int
 main(int argc, char *argv[])
 {
-    if (argc < 4)
-        throw std::runtime_error(std::string("usage: ").append(argv[0]).append(" dev num mode"));
+    if (argc < 5)
+        throw std::runtime_error(std::string("usage: ").append(argv[0]).append(" dev queue num mode"));
 
     const char *dev = argv[1];
 
-    int num  = atoi(argv[2]);
-    int mode = atoi(argv[3]);
+    int queue  = atoi(argv[2]);
+    int num    = atoi(argv[3]);
+    int mode   = atoi(argv[4]);
 
-    pfq q(128);
+    pfq q(64);
 
     q.enable();
 
-    q.bind_tx(dev, -1);
+    q.bind_tx(dev, queue);
 
     q.start_tx_thread(0);
 
