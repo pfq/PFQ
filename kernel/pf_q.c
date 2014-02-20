@@ -642,14 +642,6 @@ pfq_release(struct socket *sock)
         so = pfq_sk(sk);
         id = so->id;
 
-        pr_devel("[PFQ|%d] releasing socket...\n", id);
-
-        pfq_rx_release(&so->rx_opt);
-        pfq_tx_release(&so->tx_opt);
-
-        pfq_leave_all_groups(so->id);
-        pfq_release_sock_id(so->id);
-
         /* stop TX thread (if running) */
 
         if (so->tx_opt.thread)
@@ -659,6 +651,14 @@ pfq_release(struct socket *sock)
                 so->tx_opt.thread = NULL;
         }
 
+        pr_devel("[PFQ|%d] releasing socket...\n", id);
+
+        pfq_rx_release(&so->rx_opt);
+        pfq_tx_release(&so->tx_opt);
+
+        pfq_leave_all_groups(so->id);
+
+        pfq_release_sock_id(so->id);
 
         /* Convenient way to avoid a race condition with NAPI threads,
          * without using expensive rw-mutexes
