@@ -1,6 +1,6 @@
 /***************************************************************
- *                                                
- * (C) 2011-13 Nicola Bonelli <nicola.bonelli@cnit.it>   
+ *
+ * (C) 2011-13 Nicola Bonelli <nicola.bonelli@cnit.it>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,12 +21,14 @@
  *
  ****************************************************************/
 
-#include <linux/if_vlan.h> 
+#include <linux/if_vlan.h>
+#include <linux/version.h>
 
 /* inspired to linux kernel vlan_untag */
 
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,9,0))
 
-static inline 
+static inline
 void pfq_vlan_set_encap_proto(struct sk_buff *skb, struct vlan_hdr *vhdr)
 {
         __be16 proto;
@@ -61,7 +63,7 @@ void pfq_vlan_set_encap_proto(struct sk_buff *skb, struct vlan_hdr *vhdr)
 }
 
 
-static inline 
+static inline
 struct sk_buff *
 pfq_vlan_reorder_header(struct sk_buff *skb)
 {
@@ -107,3 +109,9 @@ err_free:
         kfree_skb(skb);
         return NULL;
 }
+
+
+#endif
+
+
+

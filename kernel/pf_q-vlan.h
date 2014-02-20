@@ -1,6 +1,6 @@
 /***************************************************************
- *                                                
- * (C) 2011-13 Nicola Bonelli <nicola.bonelli@cnit.it>   
+ *
+ * (C) 2011-13 Nicola Bonelli <nicola.bonelli@cnit.it>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,5 +21,18 @@
  *
  ****************************************************************/
 
+#include <linux/if_vlan.h>
+
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,9,0))
 
 extern struct sk_buff *pfq_vlan_untag(struct sk_buff *skb);
+
+#else
+
+static inline
+struct sk_buff *pfq_vlan_untag(struct sk_buff *skb)
+{
+        return vlan_untag(skb);
+}
+
+#endif
