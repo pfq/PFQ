@@ -30,19 +30,19 @@ atomic_t timestamp_toggle;
 
 struct local_data __percpu    * cpu_data;
 
-int direct_capture = 0;
+int direct_capture 	= 0;
 
-int capture_incoming = 1;
-int capture_outgoing = 0;
-int capture_loopback = 0;
+int capture_incoming 	= 1;
+int capture_outgoing 	= 0;
+int capture_loopback 	= 0;
 
-int tx_queue_slots  = 131072;       /* slots per queue (both rx and tx) */
-int rx_queue_slots  = 131072;       /* slots per queue (both rx and tx) */
+int tx_queue_slots  	= 131072;       /* slots per queue (both rx and tx) */
+int rx_queue_slots  	= 131072;       /* slots per queue (both rx and tx) */
 
-int cap_len      = 1514;
-int max_len      = 1514;
-int prefetch_len = 1;
-int flow_control = 0;
-int vl_untag     = 0;
+int cap_len      	= 1514;
+int max_len      	= 1514;
+int prefetch_len 	= 1;
+int flow_control 	= 0;
+int vl_untag     	= 0;
 
 int recycle_len  	= 16384;

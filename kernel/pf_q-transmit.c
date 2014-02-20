@@ -169,7 +169,7 @@ int pfq_queue_xmit(struct sk_buff *skb, int queue_index)
                 int cpu = smp_processor_id(); /* ok because BHs are off */
 
                 if (txq->xmit_lock_owner != cpu) {
-
+ 
                         HARD_TX_LOCK(dev, txq, cpu);
 
 #if (LINUX_VERSION_CODE <= KERNEL_VERSION(3,2,0))
@@ -193,7 +193,8 @@ int pfq_queue_xmit(struct sk_buff *skb, int queue_index)
         }
 
         rc = -ENETDOWN;
-        rcu_read_unlock_bh();
+        
+	rcu_read_unlock_bh();
 
         kfree_skb(skb);
         return rc;
