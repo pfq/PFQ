@@ -27,6 +27,9 @@
 
 
 #include <linux/skbuff.h>
+#include <linux/netdevice.h>
+ 
+#include <pf_q-sock.h>
 
-
+extern int pfq_tx_queue_flush(struct pfq_tx_opt *to, struct net_device *dev);
 extern int pfq_queue_xmit(struct sk_buff *skb, int txq);

@@ -28,8 +28,8 @@
 #include <linux/kthread.h>
 #include <linux/pf_q.h>
 
+#include <pf_q-transmit.h>
 #include <pf_q-thread.h>
-#include <pf_q-common.h>
 #include <pf_q-global.h>
 #include <pf_q-sock.h>
 #include <pf_q-group.h>

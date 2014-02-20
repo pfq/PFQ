@@ -33,6 +33,9 @@
 #include <linux/netdevice.h>
 
 #include <pf_q-memory.h>
+#include <pf_q-sock.h>
+#include <pf_q-transmit.h>
+#include <pf_q-common.h>
 
 static inline u16 pfq_dev_cap_txqueue(struct net_device *dev, u16 queue_index)
 {
@@ -62,6 +65,86 @@ struct netdev_queue *pfq_pick_tx(struct net_device *dev, struct sk_buff *skb, in
 
         skb_set_queue_mapping(skb, queue_index);
         return netdev_get_tx_queue(dev, queue_index);
+}
+ 
+
+int pfq_tx_queue_flush(struct pfq_tx_opt *to, struct net_device *dev)
+{
+        struct pfq_pkt_hdr * h;
+        struct sk_buff *skb;
+        int n, index, avail;
+        struct local_data *local;
+        size_t len;
+
+        index = pfq_spsc_read_index(to->queue_info);
+        avail = pfq_spsc_read_avail(to->queue_info);
+
+        local = __this_cpu_ptr(cpu_data);
+ 
+        for(n = 0; n < avail; n++)
+        {
+                if (unlikely(index >= to->size))
+                {
+                        if(printk_ratelimit())
+                                printk(KERN_WARNING "[PFQ] bogus spsc index! q->size=%zu index=%d\n", to->size, index);
+                        return n;
+                }
+
+                h = (struct pfq_pkt_hdr *) (to->base_addr + index * to->queue_info->slot_size);
+
+                skb = pfq_alloc_skb(to->maxlen, GFP_KERNEL);
+                if (skb == NULL)
+		{
+                        return n;
+		}
+
+                skb->dev = dev;
+
+                /* copy packet to this skb: */
+
+                len =  min_t(size_t, h->len, to->queue_info->max_len);
+
+                /* set the tail */
+
+                skb_reset_tail_pointer(skb);
+                skb->len = 0;
+                skb_put(skb, len);
+
+
+                /* copy the packet in the socket buffer */
+
+                if (skb_store_bits(skb, 0, h+1, len) < 0)
+                {
+                        pfq_kfree_skb_recycle(skb, &local->recycle_list);
+                        return n;
+                }
+
+                /* release the slot */
+
+                pfq_spsc_read_commit(to->queue_info);
+
+                /* take this skb */
+
+                skb_get(skb);
+
+                /* send the packet... */
+#if 1
+                pfq_queue_xmit(skb, to->hw_queue);
+#else
+                dev_queue_xmit(skb);
+#endif
+                /* free/recycle the packet now... */
+
+                pfq_kfree_skb_recycle(skb, &local->recycle_list);
+
+                /* get the next index... */
+
+                index = pfq_spsc_read_index(to->queue_info);
+                if (index == -1)
+                        break;
+        }
+			
+        return n;
 }
 
 
