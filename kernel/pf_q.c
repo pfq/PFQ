@@ -105,7 +105,7 @@ MODULE_PARM_DESC(rx_queue_slots, " Rx Queue slots (default=131072)");
 MODULE_PARM_DESC(tx_queue_slots, " Tx Queue slots (default=131072)");
 
 MODULE_PARM_DESC(prefetch_len,  " Prefetch queue length");
-MODULE_PARM_DESC(recycle_len,   " Recycle skb list (default=1024)");
+MODULE_PARM_DESC(recycle_len,   " Recycle skb list (default=16384)");
 MODULE_PARM_DESC(flow_control,  " Flow control value (default=0)");
 MODULE_PARM_DESC(vl_untag,      " Enable vlan untagging (default=0)");
 
