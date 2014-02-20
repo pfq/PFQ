@@ -66,14 +66,15 @@ void mode_3(pfq &q, int num)
 int
 main(int argc, char *argv[])
 {
-    if (argc < 5)
-        throw std::runtime_error(std::string("usage: ").append(argv[0]).append(" dev queue num mode"));
+    if (argc < 6)
+        throw std::runtime_error(std::string("usage: ").append(argv[0]).append(" dev queue node num mode"));
 
     const char *dev = argv[1];
 
     int queue  = atoi(argv[2]);
-    int num    = atoi(argv[3]);
-    int mode   = atoi(argv[4]);
+    int node   = atoi(argv[3]);
+    int num    = atoi(argv[4]);
+    int mode   = atoi(argv[5]);
 
     pfq q(64);
 
@@ -81,7 +82,7 @@ main(int argc, char *argv[])
 
     q.bind_tx(dev, queue);
 
-    q.start_tx_thread(0);
+    q.start_tx_thread(node);
 
     switch(mode)
     {
