@@ -21,6 +21,10 @@
  *
  ****************************************************************/
 
+
+#ifndef _PF_Q_VLAN_H_
+#define _PF_Q_VLAN_H_
+
 #include <linux/if_vlan.h>
 
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(3,9,0))
@@ -36,3 +40,5 @@ struct sk_buff *pfq_vlan_untag(struct sk_buff *skb)
 }
 
 #endif
+
+#endif /* _PF_Q_VLAN_H_ */

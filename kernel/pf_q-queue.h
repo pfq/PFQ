@@ -21,6 +21,9 @@
  *
  ****************************************************************/
 
+#ifndef _PF_Q_QUEUE_H_
+#define _PF_Q_QUEUE_H_ 
+
 #include <linux/pf_q.h>
 
 #include <pf_q-sock.h>
@@ -43,3 +46,4 @@ static inline size_t pfq_queue_total_mem(struct pfq_sock *so)
     return sizeof(struct pfq_queue_hdr) + pfq_queue_mpdb_mem(so) + pfq_queue_spsc_mem(so);
 }
 
+#endif /* _PF_Q_QUEUE_H_ */

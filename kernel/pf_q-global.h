@@ -21,6 +21,9 @@
  *
  ****************************************************************/
 
+#ifndef _PF_Q_GLOBAL_H_
+#define _PF_Q_GLOBAL_H_
+
 #include <linux/types.h>
 
 extern atomic_t timestamp_toggle;
@@ -43,3 +46,5 @@ extern int flow_control;
 extern int vl_untag;
 
 extern int recycle_len;
+
+#endif /* _PF_Q_GLOBAL_H_ */
