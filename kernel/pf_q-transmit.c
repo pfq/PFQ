@@ -160,45 +160,35 @@ int pfq_queue_xmit(struct sk_buff *skb, int queue_index)
         /* Disable soft irqs for various locks below. Also
          * stops preemption for RCU.
          */
+        
+	txq = pfq_pick_tx(dev, skb, queue_index);
 
-        rcu_read_lock_bh();
-
-        txq = pfq_pick_tx(dev, skb, queue_index);
+        __netif_tx_lock_bh(txq);
 
         if (dev->flags & IFF_UP) {
 
-                int cpu = smp_processor_id(); /* ok because BHs are off */
-
-                if (txq->xmit_lock_owner != cpu) {
- 
-                        HARD_TX_LOCK(dev, txq, cpu);
-
 #if (LINUX_VERSION_CODE <= KERNEL_VERSION(3,2,0))
-                        if (!netif_tx_queue_stopped(txq)) {
+		if (!netif_tx_queue_stopped(txq)) {
 #else
-                        if (!netif_xmit_stopped(txq)) {
+			if (!netif_xmit_stopped(txq)) {
 #endif
 
-                                rc = dev->netdev_ops->ndo_start_xmit(skb, dev);
+				rc = dev->netdev_ops->ndo_start_xmit(skb, dev);
 
-                                if (dev_xmit_complete(rc)) {
-                                         HARD_TX_UNLOCK(dev, txq);
-                                         goto out;
-                                }
-                        }
+				if (dev_xmit_complete(rc)) {
+					goto out;
+				}
+			}
+		}
 
-                        HARD_TX_UNLOCK(dev, txq);
-                }
-        }
-
-        rc = -ENETDOWN;
-        
-	rcu_read_unlock_bh();
+	__netif_tx_unlock_bh(txq);
 
         kfree_skb(skb);
+
+	rc = -ENETDOWN;
         return rc;
 out:
-        rcu_read_unlock_bh();
+        __netif_tx_unlock_bh(txq);
         return rc;
 }
 
