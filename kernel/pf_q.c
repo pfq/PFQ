@@ -109,6 +109,10 @@ MODULE_PARM_DESC(recycle_len,   " Recycle skb list (default=16384)");
 MODULE_PARM_DESC(flow_control,  " Flow control value (default=0)");
 MODULE_PARM_DESC(vl_untag,      " Enable vlan untagging (default=0)");
 
+ 
+#ifdef PFQ_USE_SKB_RECYCLE
+#pragma message "[PFQ] *** using skb recycle ***"
+#endif
 
 inline
 bool pfq_copy_to_user_skbs(struct pfq_rx_opt *ro, int cpu, unsigned long sock_queue, struct pfq_prefetch_skb *skbs, int gid)

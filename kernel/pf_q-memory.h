@@ -52,11 +52,6 @@ struct sk_buff * __pfq_alloc_skb(unsigned int size, gfp_t priority, int fclone, 
 struct sk_buff * pfq_dev_alloc_skb(unsigned int length);
 struct sk_buff * __pfq_netdev_alloc_skb(struct net_device *dev, unsigned int length, gfp_t gfp);
 
-
-#ifdef PFQ_USE_SKB_RECYCLE
-#pragma message "[PFQ] *** using skb recycle ***"
-#endif
-
 #ifdef NET_SKBUFF_DATA_USES_OFFSET
 static inline
 unsigned int pfq_skb_end_offset(const struct sk_buff *skb)
