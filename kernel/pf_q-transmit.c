@@ -108,10 +108,10 @@ int pfq_tx_queue_flush(struct pfq_tx_opt *to, struct net_device *dev)
 
                 skb_reset_tail_pointer(skb);
                 skb->len = 0;
+
                 skb_put(skb, len);
 
-
-                /* copy the packet in the socket buffer */
+                /* copy bytes in the socket buffer */
 
                 if (skb_store_bits(skb, 0, h+1, len) < 0)
                 {
@@ -166,6 +166,7 @@ int pfq_queue_xmit(struct sk_buff *skb, int queue_index)
         txq = pfq_pick_tx(dev, skb, queue_index);
 
         if (dev->flags & IFF_UP) {
+
                 int cpu = smp_processor_id(); /* ok because BHs are off */
 
                 if (txq->xmit_lock_owner != cpu) {
@@ -177,8 +178,6 @@ int pfq_queue_xmit(struct sk_buff *skb, int queue_index)
 #else
                         if (!netif_xmit_stopped(txq)) {
 #endif
-
-                                // rc = hard_start_xmit(skb, dev, txq);
 
                                 rc = dev->netdev_ops->ndo_start_xmit(skb, dev);
 

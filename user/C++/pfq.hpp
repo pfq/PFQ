@@ -1180,6 +1180,10 @@ namespace net {
             });
         }
 
+        //
+        // stats
+        //
+        
         pfq_stats
         stats() const
         {
@@ -1220,8 +1224,10 @@ namespace net {
             return nullptr;
         }
 
-        /// TX API...
-
+        //
+        // TX API...
+        //
+        
         void
         bind_tx(const char *dev, int queue = any_queue)
         {
@@ -1259,6 +1265,7 @@ namespace net {
 			return ret;
         }
 
+
         bool
         inject(const_buffer pkt)
         {
@@ -1279,6 +1286,7 @@ namespace net {
             pfq_spsc_write_commit(tx);
             return true;
         }
+
 
         void start_tx_thread(int node)
         {
