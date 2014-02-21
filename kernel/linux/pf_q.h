@@ -40,25 +40,25 @@
 #include <unistd.h>
 #include <stdint.h>
 
-inline void barrier() { asm volatile ("" ::: "memory"); }
+static inline void barrier() { asm volatile ("" ::: "memory"); }
 
 #if defined(__LP64__) /* 64 bit */
 
-inline void mb()  { asm volatile ("mfence" ::: "memory"); }
-inline void rmb() { asm volatile ("lfence" ::: "memory"); }
-inline void wmb() { asm volatile ("sfence" ::: "memory"); }
+static inline void mb()  { asm volatile ("mfence" ::: "memory"); }
+static inline void rmb() { asm volatile ("lfence" ::: "memory"); }
+static inline void wmb() { asm volatile ("sfence" ::: "memory"); }
 
 #else /* 32-bit */
 
-inline void mb()  { asm volatile ("lock; addl $0,0(%%esp)" ::: "memory"); } 
-inline void rmb() { asm volatile ("lock; addl $0,0(%%esp)" ::: "memory"); } 
-inline void wmb() { asm volatile ("lock; addl $0,0(%%esp)" ::: "memory"); } 
+static inline void mb()  { asm volatile ("lock; addl $0,0(%%esp)" ::: "memory"); } 
+static inline void rmb() { asm volatile ("lock; addl $0,0(%%esp)" ::: "memory"); } 
+static inline void wmb() { asm volatile ("lock; addl $0,0(%%esp)" ::: "memory"); } 
 
 #endif
 
-inline void smp_mb()  { mb();      }
-inline void smp_rmb() { barrier(); }
-inline void smp_wmb() { barrier(); }
+static inline void smp_mb()  { mb();      }
+static inline void smp_rmb() { barrier(); }
+static inline void smp_wmb() { barrier(); }
 
 
 #define likely(x)       __builtin_expect((x),1)
@@ -171,12 +171,12 @@ int pfq_spsc_write_index(struct pfq_tx_queue_hdr *q)
 static inline
 void pfq_spsc_write_commit(struct pfq_tx_queue_hdr *q)
 {
-    wmb();
+    smp_wmb();
     if (likely(q->producer.cache != 0)) {
         q->producer.index = (q->producer.index + 1) & q->size_mask;
         q->producer.cache--;
     }
-    wmb();
+    smp_wmb();
 }
 
 static inline
@@ -204,12 +204,12 @@ int pfq_spsc_read_index(struct pfq_tx_queue_hdr *q)
 static inline
 void pfq_spsc_read_commit(struct pfq_tx_queue_hdr *q)
 {
-    wmb();
+    smp_wmb();
     if (likely(q->consumer.cache != 0)) {
         q->consumer.index = (q->consumer.index + 1) & q->size_mask;
         q->consumer.cache--;
     }
-    wmb();
+    smp_wmb();
 }
 
 static inline
