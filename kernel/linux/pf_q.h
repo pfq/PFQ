@@ -42,25 +42,24 @@
 
 inline void barrier() { asm volatile ("" ::: "memory"); }
 
-#if defined(__i386__) && !defined(__LP64__)
-#error "32-bit architecture is not supported"
-#endif
+#if defined(__LP64__) /* 64 bit */
 
-#if defined(__LP64__)
 inline void mb()  { asm volatile ("mfence" ::: "memory"); }
 inline void rmb() { asm volatile ("lfence" ::: "memory"); }
 inline void wmb() { asm volatile ("sfence" ::: "memory"); }
+
+#else /* 32-bit */
+
+inline void mb()  { asm volatile ("lock; addl $0,0(%%esp)" ::: "memory"); } 
+inline void rmb() { asm volatile ("lock; addl $0,0(%%esp)" ::: "memory"); } 
+inline void wmb() { asm volatile ("lock; addl $0,0(%%esp)" ::: "memory"); } 
+
 #endif
 
-#ifdef CONFIG_SMP
-inline void smp_mb()  { mb(); }
+inline void smp_mb()  { mb();      }
 inline void smp_rmb() { barrier(); }
 inline void smp_wmb() { barrier(); }
-#else
-inline void smp_mb()  { barrier(); }
-inline void smp_rmb() { barrier(); }
-inline void smp_wmb() { barrier(); }
-#endif
+
 
 #define likely(x)       __builtin_expect((x),1)
 #define unlikely(x)     __builtin_expect((x),0)
