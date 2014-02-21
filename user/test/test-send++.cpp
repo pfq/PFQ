@@ -25,9 +25,10 @@ static const unsigned char ping[98] =
 
 void mode_0(pfq &q, uint64_t num)
 {
-    for(uint64_t n = 0; n < num; ++n)
+    for(uint64_t n = 0; n < num;)
     {
-        q.inject(net::const_buffer(reinterpret_cast<const char *>(ping), sizeof(ping)));
+        if (q.inject(net::const_buffer(reinterpret_cast<const char *>(ping), sizeof(ping))))
+            n++;
 
         if ((n % 128) == 0)
             q.tx_queue_flush();
@@ -36,9 +37,10 @@ void mode_0(pfq &q, uint64_t num)
 
 void mode_1(pfq &q, uint64_t num)
 {
-    for(uint64_t n = 0; n < num; ++n)
+    for(uint64_t n = 0; n < num;)
     {
-        q.inject(net::const_buffer(reinterpret_cast<const char *>(ping), sizeof(ping)));
+        if (q.inject(net::const_buffer(reinterpret_cast<const char *>(ping), sizeof(ping))))
+            n++;
 
         if ((n % 128) == 0)
             q.wakeup_tx_thread();
@@ -47,9 +49,10 @@ void mode_1(pfq &q, uint64_t num)
 
 void mode_2(pfq &q, uint64_t num)
 {
-    for(uint64_t n = 0; n < num; ++n)
+    for(uint64_t n = 0; n < num;)
     {
-        q.send_async(net::const_buffer(reinterpret_cast<const char *>(ping), sizeof(ping)));
+        if (q.send_async(net::const_buffer(reinterpret_cast<const char *>(ping), sizeof(ping))))
+            n++;
     }
 
     q.wakeup_tx_thread();
@@ -58,9 +61,10 @@ void mode_2(pfq &q, uint64_t num)
 
 void mode_3(pfq &q, uint64_t num)
 {
-    for(uint64_t n = 0; n < num; ++n)
+    for(uint64_t n = 0; n < num;)
     {
-        q.send(net::const_buffer(reinterpret_cast<const char *>(ping), sizeof(ping)));
+        if (q.send(net::const_buffer(reinterpret_cast<const char *>(ping), sizeof(ping))))
+            n++;
     }
 }
 
