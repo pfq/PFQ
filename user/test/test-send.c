@@ -23,9 +23,9 @@ static const unsigned char ping[98] =
 };
 
 
-void mode_0(pfq_t *q, int num)
+void mode_0(pfq_t *q, unsigned long long num)
 {
-        int n;
+        unsigned long long n;
         for(n = 0; n < num; ++n)
         {
                 pfq_inject(q, ping, sizeof(ping));
@@ -34,9 +34,9 @@ void mode_0(pfq_t *q, int num)
         }
 }
 
-void mode_1(pfq_t *q, int num)
+void mode_1(pfq_t *q, unsigned long long num)
 {
-        int n;
+        unsigned long long n;
         for(n = 0; n < num; ++n)
         {
                 pfq_inject(q, ping, sizeof(ping));
@@ -45,9 +45,9 @@ void mode_1(pfq_t *q, int num)
         }
 }
 
-void mode_2(pfq_t *q, int num)
+void mode_2(pfq_t *q, unsigned long long num)
 {
-        int n;
+        unsigned long long n;
         for(n = 0; n < num; ++n)
         {
                 pfq_send_async(q, ping, sizeof(ping));
@@ -57,9 +57,9 @@ void mode_2(pfq_t *q, int num)
 }
 
 
-void mode_3(pfq_t *q, int num)
+void mode_3(pfq_t *q, unsigned long long num)
 {
-        int n;
+        unsigned long long n;
         for(n = 0; n < num; ++n)
         {
                 pfq_send(q, ping, sizeof(ping));
@@ -80,7 +80,7 @@ main(int argc, char *argv[])
 
         int queue  = atoi(argv[2]);
         int node   = atoi(argv[3]);
-        int num    = atoi(argv[4]);
+        unsigned long long num = atoll(argv[4]);
         int mode   = atoi(argv[5]);
 
         pfq_t * q= pfq_open(128, 0, 4096);
