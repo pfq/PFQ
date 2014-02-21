@@ -96,7 +96,8 @@ void __pfq_toggle_group_vlan_filters(int gid, bool value)
 {
     if (value)
         memset(pfq_groups[gid].vid_filters, 0, 4096);
-    wmb();
+
+    smp_wmb();
     pfq_groups[gid].vlan_filt = value;
 }
 
