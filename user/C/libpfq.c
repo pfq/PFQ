@@ -915,15 +915,14 @@ pfq_send(pfq_t *q, const void *ptr, size_t len)
 int
 pfq_send_async(pfq_t *q, const void *ptr, size_t len)
 {
-        if (pfq_inject(q, ptr, len) < 0)
-                return -1;
+        static __thread int cnt;
 
-        struct pfq_queue_hdr *qh  = (struct pfq_queue_hdr *)(q->queue_addr);
+	int ret = pfq_inject(q, ptr, len);
 
-        if (pfq_spsc_write_avail(&qh->tx) < (int)(pfq_get_tx_slots(q)/2) )
-                pfq_wakeup_tx_thread(q);
+        if ((cnt++ % 64) == 0)
+        	pfq_wakeup_tx_thread(q);
 
-        return 0;
+        return ret;
 }
 
 

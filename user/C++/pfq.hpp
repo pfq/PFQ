@@ -1245,18 +1245,18 @@ namespace net {
             return true;
         }
 
+        
         bool
         send_async(const_buffer pkt)
         {
-            if (!inject(pkt))
-                return false;
+            static __thread int cnt;
 
-            auto q  = static_cast<struct pfq_queue_hdr *>(pdata_->queue_addr);
+			auto ret = inject(pkt);
 
-            if (pfq_spsc_write_avail(&q->tx) < static_cast<int>(tx_slots()/2) )
-                wakeup_tx_thread();
+            if ((cnt++ % 64) == 0)
+            	wakeup_tx_thread();
 
-            return true;
+			return ret;
         }
 
         bool
