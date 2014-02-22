@@ -88,10 +88,10 @@ pfq_function_factory_init(void)
 	int i = 0;
 	for(; default_functions[i].name != NULL ; i++)
 	{
-        	pfq_register_function("[core]", default_functions[i].name, default_functions[i].function);
+        	pfq_register_function(NULL, default_functions[i].name, default_functions[i].function);
 	}
 
-	printk(KERN_INFO "[PFQ] function factory initialized.\n");
+	printk(KERN_INFO "[PFQ] function-factory initialized (%d entries).\n", i);
 }
 
 
@@ -175,8 +175,9 @@ pfq_register_function(const char *module, const char *name, sk_function_t fun)
 	down(&function_sem);
 	r = __pfq_register_function(name, fun);
 	up(&function_sem);
-	if (r == 0)
+	if (r == 0 && module)
 		printk(KERN_INFO "[PFQ]%s '%s' @%p function registered.\n", module, name, fun);
+
 	return r;
 }
 
