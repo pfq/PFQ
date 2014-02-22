@@ -74,7 +74,7 @@ void pfq_prefetch_skb_flush(struct pfq_prefetch_skb *q)
 }
 
 static inline
-size_t pfq_prefetch_skb_size(struct pfq_prefetch_skb *q)
+size_t pfq_prefetch_skb_len(struct pfq_prefetch_skb *q)
 {
 	return q->counter;
 }

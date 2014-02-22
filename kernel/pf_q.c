@@ -295,7 +295,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 
         pfq_prefetch_skb_push(prefetch_queue, skb);
 
-        if (pfq_prefetch_skb_size(prefetch_queue) < prefetch_len) {
+        if (pfq_prefetch_skb_len(prefetch_queue) < prefetch_len) {
                 return 0;
 	}
 
