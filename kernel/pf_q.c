@@ -114,6 +114,10 @@ MODULE_PARM_DESC(vl_untag,      " Enable vlan untagging (default=0)");
 #pragma message "[PFQ] *** using skb recycle ***"
 #endif
 
+
+DEFINE_SEMAPHORE(sock_sem);
+
+
 inline
 bool pfq_copy_to_user_skbs(struct pfq_rx_opt *ro, int cpu, unsigned long sock_queue, struct pfq_prefetch_skb *skbs, int gid)
 {
@@ -601,6 +605,10 @@ pfq_create(
         so->mem_addr = NULL;
         so->mem_size = 0;
 
+        /* to protect pfq_prefetch_skb_purge_all() */
+
+        down(&sock_sem);
+
         /* initialize both rx_opt and tx_opt */
 
         pfq_rx_opt_init(&so->rx_opt, cap_len);
@@ -613,6 +621,7 @@ pfq_create(
 
         sk_refcnt_debug_inc(sk);
 
+        up (&sock_sem);
         return 0;
 }
 
@@ -667,12 +676,15 @@ pfq_release(struct socket *sock)
 
         pfq_release_sock_id(so->id);
 
+
+        down(&sock_sem);
         /* Convenient way to avoid a race condition with NAPI threads,
          * without using expensive rw-mutexes
          */
 
         msleep(Q_GRACE_PERIOD);
 
+        up (&sock_sem);
         pfq_shared_queue_free(so);
 
         sock_orphan(sk);
