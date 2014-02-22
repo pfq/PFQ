@@ -51,9 +51,9 @@
 
 typedef struct pfq_kstats
 {
-    sparse_counter_t  recv;    /* received by the queue */
-    sparse_counter_t  lost;    /* packets lost due to queue congestion */
-    sparse_counter_t  drop;    /* dropped by filters */
+        sparse_counter_t  recv;    /* received by the queue */
+        sparse_counter_t  lost;    /* packets lost due to queue congestion */
+        sparse_counter_t  drop;    /* dropped by filters */
 
 } pfq_kstat_t;
 

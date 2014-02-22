@@ -34,17 +34,17 @@ void  pfq_shared_queue_free (struct pfq_sock *p);
 
 static inline size_t pfq_queue_mpdb_mem(struct pfq_sock *so)
 {
-    return so->rx_opt.size * so->rx_opt.slot_size * 2;
+        return so->rx_opt.size * so->rx_opt.slot_size * 2;
 }
 
 static inline size_t pfq_queue_spsc_mem(struct pfq_sock *so)
 {
-    return so->tx_opt.size * so->tx_opt.slot_size;
+        return so->tx_opt.size * so->tx_opt.slot_size;
 }
 
 static inline size_t pfq_queue_total_mem(struct pfq_sock *so)
 {
-    return sizeof(struct pfq_queue_hdr) + pfq_queue_mpdb_mem(so) + pfq_queue_spsc_mem(so);
+        return sizeof(struct pfq_queue_hdr) + pfq_queue_mpdb_mem(so) + pfq_queue_spsc_mem(so);
 }
 
 #endif /* _PF_Q_QUEUE_H_ */

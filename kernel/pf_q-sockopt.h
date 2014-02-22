@@ -27,15 +27,15 @@
 #include <linux/socket.h>
 
 extern int pfq_getsockopt(struct socket *sock,
-                          int level, int optname,
-                          char __user * optval, int __user * optlen);
+                int level, int optname,
+                char __user * optval, int __user * optlen);
 
 extern int pfq_setsockopt(struct socket *sock,
-                         int level, int optname,
-                         char __user * optval,
+                int level, int optname,
+                char __user * optval,
 #if(LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,31))
-                         unsigned
+                unsigned
 #endif
-                         int optlen);
+                int optlen);
 
 #endif /* _PF_Q_SOCKOPT_H_ */

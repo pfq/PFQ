@@ -31,22 +31,22 @@
 
 struct pfq_prefetch_skb
 {
-    struct sk_buff *queue[Q_PREFETCH_MAX_LEN];  /* sk_buff */
-    size_t counter;
+        struct sk_buff *queue[Q_PREFETCH_MAX_LEN];  /* sk_buff */
+        size_t counter;
 };
 
 
 #define pfq_prefetch_skb_for_each(skb, n, q) \
-	for(n = 0; (n != (q)->counter) && (skb = (q)->queue[n]); \
-        __builtin_prefetch((q)->queue[n+1], 0, 1), n++)
+        for(n = 0; (n != (q)->counter) && (skb = (q)->queue[n]); \
+                __builtin_prefetch((q)->queue[n+1], 0, 1), n++)
 
 #define pfq_prefetch_skb_for_each_backward(skb, n, q) \
-	for(n = (q)->counter; (n > 0) && (skb = (q)->queue[n-1]); \
-        __builtin_prefetch((q)->queue[n-2], 0, 1), n--)
+        for(n = (q)->counter; (n > 0) && (skb = (q)->queue[n-1]); \
+                __builtin_prefetch((q)->queue[n-2], 0, 1), n--)
 
 #define pfq_prefetch_skb_for_each_bitmask(skb, mask, n, q) \
-	for(n = pfq_ctz(mask); mask && ((skb = (q)->queue[n]), true); \
-            mask ^=(1UL << n), n = pfq_ctz(mask))
+        for(n = pfq_ctz(mask); mask && ((skb = (q)->queue[n]), true); \
+                mask ^=(1UL << n), n = pfq_ctz(mask))
 
 
 extern int pfq_prefetch_skb_purge_all(void);
@@ -54,31 +54,31 @@ extern int pfq_prefetch_skb_purge_all(void);
 static inline
 int pfq_prefetch_skb_push(struct pfq_prefetch_skb *q, struct sk_buff *skb)
 {
-	 if (q->counter < Q_PREFETCH_MAX_LEN)
-     	return q->queue[q->counter++] = skb, 0;
-	 return -1;
+        if (q->counter < Q_PREFETCH_MAX_LEN)
+                return q->queue[q->counter++] = skb, 0;
+        return -1;
 }
 
 
 static inline
 struct sk_buff * pfq_prefetch_skb_pop(struct pfq_prefetch_skb *q)
 {
-    if (q->counter > 0)
-        return q->queue[--q->counter];
-    return NULL;
+        if (q->counter > 0)
+                return q->queue[--q->counter];
+        return NULL;
 }
 
 
 static inline
 void pfq_prefetch_skb_flush(struct pfq_prefetch_skb *q)
 {
- 	q->counter = 0;
+        q->counter = 0;
 }
 
 static inline
 size_t pfq_prefetch_skb_len(struct pfq_prefetch_skb *q)
 {
-	return q->counter;
+        return q->counter;
 }
 
 

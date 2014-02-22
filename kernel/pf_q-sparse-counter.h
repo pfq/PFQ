@@ -37,70 +37,70 @@ typedef struct { __counter_t ctx[MAX_CPU_CTX]; } sparse_counter_t;
 static inline
 void __sparse_inc(sparse_counter_t *sc, int cpu)
 {
-    sc->ctx[cpu].value++;
+        sc->ctx[cpu].value++;
 }
 
 static inline
 void __sparse_dec(sparse_counter_t *sc, int cpu)
 {
-    sc->ctx[cpu].value--;
+        sc->ctx[cpu].value--;
 }
 
 static inline
 void __sparse_add(sparse_counter_t *sc, int cpu, long n)
 {
-    sc->ctx[cpu].value += n;
+        sc->ctx[cpu].value += n;
 }
 
 static inline
 void __sparse_sub(sparse_counter_t *sc, int cpu, long n)
 {
-    sc->ctx[cpu].value -= n;
+        sc->ctx[cpu].value -= n;
 }
 
 
 static inline
 void sparse_inc(sparse_counter_t *sc)
 {
-    sc->ctx[get_cpu() % MAX_CPU_CTX].value++;
+        sc->ctx[get_cpu() % MAX_CPU_CTX].value++;
 }
 
 static inline
 void sparse_dec(sparse_counter_t *sc)
 {
-    sc->ctx[get_cpu() % MAX_CPU_CTX].value--;
+        sc->ctx[get_cpu() % MAX_CPU_CTX].value--;
 }
 
 static inline
 void sparse_add(sparse_counter_t *sc, long n)
 {
-    sc->ctx[get_cpu() % MAX_CPU_CTX].value += n;
+        sc->ctx[get_cpu() % MAX_CPU_CTX].value += n;
 }
 
 static inline
 void sparse_sub(sparse_counter_t *sc, long n)
 {
-    sc->ctx[get_cpu() % MAX_CPU_CTX].value -= n;
+        sc->ctx[get_cpu() % MAX_CPU_CTX].value -= n;
 }
 
 
 static inline
 void sparse_set(sparse_counter_t *sc, long n)
 {
-    unsigned int i, me = get_cpu();
-    for(i = 0; i < MAX_CPU_CTX; i++) {
-        ((volatile __counter_t *)&sc->ctx[i])->value = (i == me ? n : 0);
-    }
+        unsigned int i, me = get_cpu();
+        for(i = 0; i < MAX_CPU_CTX; i++) {
+                ((volatile __counter_t *)&sc->ctx[i])->value = (i == me ? n : 0);
+        }
 }
 
 static inline
 long sparse_read(sparse_counter_t *sc)
 {
-    long ret = 0; int i;
-    for(i=0; i < MAX_CPU_CTX; i++) {
-        ret += ((volatile __counter_t *)&sc->ctx[i])->value;
-    }
-    return ret;
+        long ret = 0; int i;
+        for(i=0; i < MAX_CPU_CTX; i++) {
+                ret += ((volatile __counter_t *)&sc->ctx[i])->value;
+        }
+        return ret;
 }
 
 #endif /* _SPARSE_COUNTER_H_ */

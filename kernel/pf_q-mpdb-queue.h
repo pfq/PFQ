@@ -41,22 +41,22 @@ extern size_t mpdb_enqueue_batch(struct pfq_rx_opt *ro, unsigned long queue_mask
 static inline
 size_t mpdb_queue_len(struct pfq_sock *p)
 {
-    return MPDB_QUEUE_LEN(get_pfq_queue_hdr(p)->rx.data);
+        return MPDB_QUEUE_LEN(get_pfq_queue_hdr(p)->rx.data);
 }
 
 
 static inline
 int mpdb_queue_index(struct pfq_sock *p)
 {
-    return MPDB_QUEUE_INDEX(get_pfq_queue_hdr(p)->rx.data) & 1;
+        return MPDB_QUEUE_INDEX(get_pfq_queue_hdr(p)->rx.data) & 1;
 }
 
 
 static inline
 size_t mpdb_queue_size(struct pfq_sock *p)
 {
-    struct pfq_rx_queue_hdr *rx = & get_pfq_queue_hdr(p)->rx;
-    return rx->size * rx->slot_size;
+        struct pfq_rx_queue_hdr *rx = & get_pfq_queue_hdr(p)->rx;
+        return rx->size * rx->slot_size;
 }
 
 #endif /* _PF_Q_MPDB_QUEUE_H_ */

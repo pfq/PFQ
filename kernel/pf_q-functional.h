@@ -32,11 +32,10 @@
 extern void pfq_function_factory_init(void);
 extern void pfq_function_factory_free(void);
 
-
 extern int  pfq_register_function(const char *module, const char *name, sk_function_t fun);
 extern int  pfq_unregister_function(const char *module, const char *name);
 
-extern 		sk_function_t pfq_get_function(const char *name);
+extern sk_function_t pfq_get_function(const char *name);
 
 sk_function_t pfq_get_function(const char *name);
 

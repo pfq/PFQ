@@ -40,21 +40,21 @@
 
 struct pfq_group
 {
-    int policy;                             /* policy for the group */
-    int pid;	                            /* process id for restricted/private group */
+        int policy;                                     /* policy for the group */
+        int pid;	                                /* process id for restricted/private group */
 
-	atomic_long_t sock_mask[Q_CLASS_MAX];   /* for class: Q_CLASS_DATA, Q_CLASS_CONTROL, etc... */
+        atomic_long_t sock_mask[Q_CLASS_MAX];           /* for class: Q_CLASS_DATA, Q_CLASS_CONTROL, etc... */
 
-    struct fun_context fun_ctx[Q_FUN_MAX+1]; /* sk_function_t, void *context pair */
+        struct fun_context fun_ctx[Q_FUN_MAX+1];        /* sk_function_t, void *context pair */
 
-    atomic_long_t filter; 					/* struct sk_filter pointer */
+        atomic_long_t filter; 				/* struct sk_filter pointer */
 
-    bool   vlan_filt;                       /* enable/disable vlan filtering */
-    char   vid_filters[4096];               /* vlan filters */
+        bool   vlan_filt;                               /* enable/disable vlan filtering */
+        char   vid_filters[4096];                       /* vlan filters */
 
-	sparse_counter_t recv;
-	sparse_counter_t lost;
-	sparse_counter_t drop;
+        sparse_counter_t recv;
+        sparse_counter_t lost;
+        sparse_counter_t drop;
 };
 
 
@@ -80,46 +80,46 @@ void __pfq_dismiss_function(sk_function_t f);
 static inline
 bool __pfq_vlan_filters_enabled(int gid)
 {
-    return pfq_groups[gid].vlan_filt;
+        return pfq_groups[gid].vlan_filt;
 }
 
 
 static inline
 bool __pfq_check_group_vlan_filter(int gid, int vid)
 {
-    return pfq_groups[gid].vid_filters[vid & 4095];
+        return pfq_groups[gid].vid_filters[vid & 4095];
 }
 
 
 static inline
 void __pfq_toggle_group_vlan_filters(int gid, bool value)
 {
-    if (value)
-        memset(pfq_groups[gid].vid_filters, 0, 4096);
+        if (value)
+                memset(pfq_groups[gid].vid_filters, 0, 4096);
 
-    smp_wmb();
-    pfq_groups[gid].vlan_filt = value;
+        smp_wmb();
+        pfq_groups[gid].vlan_filt = value;
 }
 
 
 static inline
 void __pfq_set_group_vlan_filter(int gid, bool value, int vid)
 {
-    pfq_groups[gid].vid_filters[vid & 4095] = value;
+        pfq_groups[gid].vid_filters[vid & 4095] = value;
 }
 
 
 static inline
 bool __pfq_group_is_empty(int gid)
 {
-	return __pfq_get_all_groups_mask(gid) == 0;
+        return __pfq_get_all_groups_mask(gid) == 0;
 }
 
 
 static inline
 bool __pfq_has_joined_group(int gid, int id)
 {
-	return __pfq_get_all_groups_mask(gid) & (1L << id);
+        return __pfq_get_all_groups_mask(gid) & (1L << id);
 }
 
 #endif /* _PF_Q_GROUP_H_ */

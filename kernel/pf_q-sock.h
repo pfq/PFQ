@@ -149,7 +149,7 @@ static inline
 struct pfq_queue_hdr *
 get_pfq_queue_hdr(struct pfq_sock *p)
 {
-    return (struct pfq_queue_hdr *) p->mem_addr;
+        return (struct pfq_queue_hdr *) p->mem_addr;
 }
 
 
