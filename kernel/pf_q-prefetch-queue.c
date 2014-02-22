@@ -1,6 +1,6 @@
 /***************************************************************
  *
- * (C) 2011-14 Nicola Bonelli <nicola.bonelli@cnit.it>
+ * (C) 2014 Nicola Bonelli <nicola.bonelli@cnit.it>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,61 +23,41 @@
 
 #include <linux/kernel.h>
 #include <linux/module.h>
-
-#include <linux/vmalloc.h>
-#include <linux/printk.h>
-#include <linux/mm.h>
+#include <linux/cpumask.h>
 
 #include <linux/pf_q.h>
 #include <linux/pf_q-fun.h>
 
-#include <pf_q-sock.h>
-#include <pf_q-global.h>
 #include <pf_q-memory.h>
 
-
-int pfq_shared_queue_alloc(struct pfq_sock *so, size_t queue_mem)
+int pfq_prefetch_skb_purge_all(void)
 {
-        /* calculate the size of the buffer */
+        int cpu;
+        int total = 0;
 
-	size_t tm = PAGE_ALIGN(queue_mem);
-        size_t tot_mem;
+        /* destroy prefetch queues (of each cpu) */
 
-	/* align bufflen to page size */
+        for_each_possible_cpu(cpu) {
 
-	size_t num_pages = tm / PAGE_SIZE; void *addr;
+                struct local_data *local = per_cpu_ptr(cpu_data, cpu);
+                struct pfq_prefetch_skb *this_queue = &local->prefetch_queue;
+                struct sk_buff *skb;
+		int n = 0;
 
-	num_pages += (num_pages + (PAGE_SIZE-1)) & (PAGE_SIZE-1);
-	tot_mem = num_pages*PAGE_SIZE;
+		pfq_prefetch_skb_for_each(skb, n, this_queue)
+		{
+                        struct pfq_annotation *cb = pfq_skb_annotation(skb);
+                        if (unlikely(cb->stolen_skb))
+                                continue;
+                 	kfree_skb(skb);
+		}
 
-	/* Memory is already zeroed */
+                total += pfq_prefetch_skb_len(this_queue);
 
-        addr = vmalloc_user(tot_mem);
-	if (addr == NULL)
-	{
-		printk(KERN_WARNING "[PFQ|%d] pfq_queue_alloc: out of memory!", so->id);
-		return -ENOMEM;
-	}
+       		pfq_prefetch_skb_flush(this_queue);
+        }
 
-        so->mem_addr = addr;
-        so->mem_size = tot_mem;
-
-	pr_devel("[PFQ|%d] queue caplen:%zu memory:%zu\n", so->id, so->rx_opt.caplen, tot_mem);
-	return 0;
-}
-
-
-void pfq_shared_queue_free(struct pfq_sock *so)
-{
-	if (so->mem_addr) {
-
-		vfree(so->mem_addr);
-
-		so->mem_addr = NULL;
-		so->mem_size = 0;
-
-		pr_devel("[PFQ|%d] queue freed.\n", so->id);
-	}
+        return total;
 }
 
 

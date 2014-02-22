@@ -49,6 +49,8 @@ struct pfq_prefetch_skb
             mask ^=(1UL << n), n = pfq_ctz(mask))
 
 
+extern int pfq_prefetch_skb_purge_all(void);
+
 static inline
 int pfq_prefetch_skb_push(struct pfq_prefetch_skb *q, struct sk_buff *skb)
 {
