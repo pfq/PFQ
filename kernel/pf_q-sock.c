@@ -29,9 +29,12 @@
 
 #include <pf_q-sock.h>
 
+
 /* vector of pointers to pfq_sock */
 
 atomic_long_t pfq_sock_vector[Q_MAX_ID];
+atomic_t      pfq_sock_count;
+
 
 
 int pfq_get_free_sock_id(struct pfq_sock * so)
@@ -40,9 +43,17 @@ int pfq_get_free_sock_id(struct pfq_sock * so)
         for(; n < Q_MAX_ID; n++)
         {
                 if (!atomic_long_cmpxchg(pfq_sock_vector + n, 0, (long)so))
+                {
+                        atomic_inc(&pfq_sock_count);
                         return n;
+                }
         }
         return -1;
+}
+
+int pfq_get_sock_count(void)
+{
+        return atomic_read(&pfq_sock_count);
 }
 
 
@@ -67,7 +78,9 @@ void pfq_release_sock_id(int id)
                 pr_devel("[PFQ] pfq_devmap_freeid: bad id=%d!\n", id);
                 return;
         }
+
         atomic_long_set(pfq_sock_vector + id, 0);
+        atomic_dec(&pfq_sock_count);
 }
 
 
