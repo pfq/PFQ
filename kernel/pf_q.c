@@ -375,8 +375,8 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 
                                 /* reset state, index call and fun_ctx ptr */
 
-                                cb->index  =  -1;
-                                cb->state  =  0;
+                                cb->index   = -1;
+                                cb->state   =  0;
                                 cb->fun_ctx =  pfq_groups[gid].fun_ctx;
 
                                 ret = pfq_call(fun, skb, pass());
@@ -687,6 +687,7 @@ pfq_release(struct socket *sock)
                 pfq_skb_recycle_enable(false);
         }
 #endif
+
         /* Convenient way to avoid a race condition with NAPI threads,
          * without using expensive rw-mutexes
          */

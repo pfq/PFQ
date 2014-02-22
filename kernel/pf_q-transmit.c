@@ -66,7 +66,7 @@ struct netdev_queue *pfq_pick_tx(struct net_device *dev, struct sk_buff *skb, in
         skb_set_queue_mapping(skb, queue_index);
         return netdev_get_tx_queue(dev, queue_index);
 }
- 
+
 
 int pfq_tx_queue_flush(struct pfq_tx_opt *to, struct net_device *dev)
 {
@@ -80,7 +80,7 @@ int pfq_tx_queue_flush(struct pfq_tx_opt *to, struct net_device *dev)
         avail = pfq_spsc_read_avail(to->queue_info);
 
         local = __this_cpu_ptr(cpu_data);
- 
+
         for(n = 0; n < avail; n++)
         {
                 if (unlikely(index >= to->size))
@@ -160,7 +160,7 @@ int pfq_queue_xmit(struct sk_buff *skb, int queue_index)
         /* Disable soft irqs for various locks below. Also
          * stops preemption for RCU.
          */
-        
+
 	txq = pfq_pick_tx(dev, skb, queue_index);
 
         __netif_tx_lock_bh(txq);
