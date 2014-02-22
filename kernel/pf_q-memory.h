@@ -37,9 +37,13 @@ struct local_data
 {
         unsigned long           eligible_mask;
         unsigned long           sock_mask [Q_MAX_ID];
+
         int                     sock_cnt;
         int 			        flowctrl;
-        struct pfq_prefetch_skb    prefetch_queue;
+
+        struct pfq_prefetch_skb prefetch_queue;
+
+        atomic_t                enable_recycle;
         struct sk_buff_head     tx_recycle_list;
         struct sk_buff_head     rx_recycle_list;
 };
@@ -159,7 +163,7 @@ struct sk_buff * ____pfq_alloc_skb(unsigned int size, gfp_t priority, int fclone
         struct local_data * local = __this_cpu_ptr(cpu_data);
         struct sk_buff *skb;
 
-        if (!fclone)
+        if (!fclone && atomic_read(&local->enable_recycle))
         {
             skb = skb_peek_tail(&local->rx_recycle_list);
 
@@ -181,6 +185,54 @@ struct sk_buff * ____pfq_alloc_skb(unsigned int size, gfp_t priority, int fclone
 #endif
 
         return __alloc_skb(size, priority, fclone, node);
+}
+
+
+static inline
+void pfq_skb_recycle_init(void)
+{
+        int cpu;
+        for_each_possible_cpu(cpu)
+        {
+                struct local_data *this_cpu = per_cpu_ptr(cpu_data, cpu);
+
+                skb_queue_head_init(&this_cpu->tx_recycle_list);
+                skb_queue_head_init(&this_cpu->rx_recycle_list);
+        }
+}
+
+
+static inline
+void pfq_skb_recycle_enable(bool value)
+{
+        int cpu;
+
+        smp_wmb();
+        for_each_possible_cpu(cpu)
+        {
+                struct local_data *this_cpu = per_cpu_ptr(cpu_data, cpu);
+                atomic_set(&this_cpu->enable_recycle, value);
+        }
+        smp_wmb();
+}
+
+
+static inline
+int pfq_skb_recycle_purge(void)
+{
+        int cpu, total = 0;
+        for_each_possible_cpu(cpu)
+        {
+                struct local_data *local = per_cpu_ptr(cpu_data, cpu);
+
+                total += skb_queue_len(&local->rx_recycle_list);
+                total += skb_queue_len(&local->tx_recycle_list);
+
+                skb_queue_purge(&local->rx_recycle_list);
+                skb_queue_purge(&local->tx_recycle_list);
+        }
+
+        return total;
 }
 
 
