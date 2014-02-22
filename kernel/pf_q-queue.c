@@ -54,14 +54,18 @@ int pfq_skb_queues_purge(void)
                         if (unlikely(cb->stolen_skb))
                                 continue;
                  	kfree_skb(skb);
-                 	total++;
 		}
+
+                total += pfq_prefetch_skb_len(this_queue);
 
        		pfq_prefetch_skb_flush(this_queue);
 
 #ifdef PFQ_USE_SKB_RECYCLE
-                total += skb_queue_size(&local->recycle_list);
-                skb_queue_purge(&local->recycle_list);
+                skb_queue_purge(&local->rx_recycle_list);
+                skb_queue_purge(&local->tx_recycle_list);
+
+                total += skb_queue_len(&local->rx_recycle_list);
+                total += skb_queue_len(&local->tx_recycle_list);
 #endif
         }
 

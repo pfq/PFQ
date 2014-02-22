@@ -40,7 +40,8 @@ struct local_data
         int                     sock_cnt;
         int 			        flowctrl;
         struct pfq_prefetch_skb    prefetch_queue;
-        struct sk_buff_head     recycle_list;
+        struct sk_buff_head     tx_recycle_list;
+        struct sk_buff_head     rx_recycle_list;
 };
 
 
@@ -160,13 +161,13 @@ struct sk_buff * ____pfq_alloc_skb(unsigned int size, gfp_t priority, int fclone
 
         if (!fclone)
         {
-            skb = skb_peek_tail(&local->recycle_list);
+            skb = skb_peek_tail(&local->rx_recycle_list);
 
             if (skb != NULL)
             {
                 if (!skb_shared(skb) && !skb_cloned(skb))
                 {
-                    skb = __skb_dequeue_tail(&local->recycle_list);
+                    skb = __skb_dequeue_tail(&local->rx_recycle_list);
 
                     if (pfq_skb_end_offset(skb) >= SKB_DATA_ALIGN(size + NET_SKB_PAD)) {
                         return pfq_skb_recycle(skb);
