@@ -103,19 +103,6 @@ void pfq_kfree_skb_recycle(struct sk_buff *skb, struct sk_buff_head *list)
 
 
 static inline
-void pfq_kfree_skb(struct sk_buff *skb)
-{
-#ifdef PFQ_USE_SKB_RECYCLE
-        struct local_data * local = __this_cpu_ptr(cpu_data);
-        struct sk_buff_head * list = &local->recycle_list;
-	    return pfq_kfree_skb_recycle(skb, list);
-#else
-        return pfq_kfree_skb_recycle(skb, NULL);
-#endif
-}
-
-
-static inline
 struct sk_buff * pfq_skb_recycle(struct sk_buff *skb)
 {
         //  skb_recycle(skb); removed from kernel 3.7!!!
