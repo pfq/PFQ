@@ -27,12 +27,14 @@
 #include <linux/vmalloc.h>
 #include <linux/printk.h>
 #include <linux/mm.h>
+
 #include <linux/pf_q.h>
+#include <linux/pf_q-fun.h>
 
 #include <pf_q-sock.h>
 
 
-int pfq_queue_alloc(struct pfq_sock *so, size_t queue_mem)
+int pfq_shared_queue_alloc(struct pfq_sock *so, size_t queue_mem)
 {
         /* calculate the size of the buffer */
 
@@ -63,7 +65,7 @@ int pfq_queue_alloc(struct pfq_sock *so, size_t queue_mem)
 }
 
 
-void pfq_queue_free(struct pfq_sock *so)
+void pfq_shared_queue_free(struct pfq_sock *so)
 {
 	if (so->mem_addr) {
 

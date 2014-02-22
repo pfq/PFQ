@@ -28,8 +28,8 @@
 
 #include <pf_q-sock.h>
 
-int   pfq_queue_alloc(struct pfq_sock *p, size_t queue_mem);
-void  pfq_queue_free (struct pfq_sock *p);
+int   pfq_shared_queue_alloc(struct pfq_sock *p, size_t queue_mem);
+void  pfq_shared_queue_free (struct pfq_sock *p);
 
 static inline size_t pfq_queue_mpdb_mem(struct pfq_sock *so)
 {
