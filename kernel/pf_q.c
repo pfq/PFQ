@@ -132,11 +132,11 @@ bool pfq_copy_to_user_skbs(struct pfq_rx_opt *ro, int cpu, unsigned long sock_qu
                 len  = (int)pfq_popcount(sock_queue);
                 sent = mpdb_enqueue_batch(ro, sock_queue, len, skbs, gid);
 
-        	__sparse_add(&ro->stat.recv, cpu, sent);
+        	__sparse_add(&ro->stat.recv, sent, cpu);
 
 		if (len > sent)
 		{
-			__sparse_add(&ro->stat.lost, cpu, len - sent);
+			__sparse_add(&ro->stat.lost, len - sent, cpu);
 			return false;
 		}
         }
