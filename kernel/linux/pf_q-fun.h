@@ -98,7 +98,6 @@ is_skip(ret_t ret)
 }
 
 
-
 typedef ret_t (*sk_function_t)(struct sk_buff *, ret_t);
 
 

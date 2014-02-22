@@ -109,7 +109,7 @@ MODULE_PARM_DESC(recycle_len,   " Recycle skb list (default=16384)");
 MODULE_PARM_DESC(flow_control,  " Flow control value (default=0)");
 MODULE_PARM_DESC(vl_untag,      " Enable vlan untagging (default=0)");
 
- 
+
 #ifdef PFQ_USE_SKB_RECYCLE
 #pragma message "[PFQ] *** using skb recycle ***"
 #endif
@@ -231,6 +231,7 @@ unsigned int pfq_fold(unsigned int a, unsigned int b)
                 return a & c;
         }
 }
+
 
 int
 pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
@@ -559,6 +560,7 @@ pfq_create(
         struct sock *sk;
 
         /* security and sanity check */
+
         if (!capable(CAP_NET_ADMIN))
                 return -EPERM;
         if (sock->type != SOCK_RAW)
