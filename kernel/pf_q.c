@@ -650,7 +650,7 @@ pfq_release(struct socket *sock)
 {
         struct sock * sk = sock->sk;
         struct pfq_sock * so;
-        int id;
+        int id, total = 0;
 
 	if (!sk)
 		return 0;
@@ -678,13 +678,39 @@ pfq_release(struct socket *sock)
 
 
         down(&sock_sem);
+
+        /* disable skb recycler if no sockets are open */
+
+#ifdef PFQ_USE_SKB_RECYCLE
+        if (pfq_get_sock_count() == 0)
+        {
+                pfq_skb_recycle_enable(false);
+        }
+#endif
         /* Convenient way to avoid a race condition with NAPI threads,
          * without using expensive rw-mutexes
          */
 
         msleep(Q_GRACE_PERIOD);
 
+        /* purge the queues if no sockets are open */
+
+        if (pfq_get_sock_count() == 0)
+        {
+                total += pfq_prefetch_skb_purge_all();
+
+#ifdef PFQ_USE_SKB_RECYCLE
+                total += pfq_skb_recycle_purge();
+
+                pfq_skb_recycle_enable(true);
+#endif
+        }
+
         up (&sock_sem);
+
+        if (total)
+                printk(KERN_INFO "[PFQ] %d skb purged.\n", total);
+
         pfq_shared_queue_free(so);
 
         sock_orphan(sk);
@@ -904,16 +930,8 @@ static int __init pfq_init_module(void)
         }
 
 #ifdef PFQ_USE_SKB_RECYCLE
-        {
-                int cpu;
-
-                /* setup skb-recycle list */
-
-                for_each_possible_cpu(cpu) {
-                        struct local_data *this_cpu = per_cpu_ptr(cpu_data, cpu);
-                        skb_queue_head_init(&this_cpu->recycle_list);
-                }
-        }
+        pfq_skb_recycle_init();
+        pfq_skb_recycle_enable(true);
 #endif
 
         /* register pfq sniffer protocol */
@@ -938,7 +956,7 @@ static int __init pfq_init_module(void)
 
 static void __exit pfq_exit_module(void)
 {
-        int total;
+        int total = 0;
 
         /* unregister the basic device handler */
         unregister_device_handler();
@@ -955,10 +973,13 @@ static void __exit pfq_exit_module(void)
         /* wait grace period */
         msleep(Q_GRACE_PERIOD);
 
-        /* purge both prefetch and recycles queues */
+        /* purge both pre-fetch and recycles queues */
 
-        total = pfq_skb_queues_purge();
+        total += pfq_prefetch_skb_purge_all();
 
+#ifdef PFQ_USE_SKB_RECYCLE
+        total += pfq_skb_recycle_purge();
+#endif
         printk(KERN_INFO "[PFQ] %d skbuff freed.\n", total);
 
         /* free per-cpu data */
