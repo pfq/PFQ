@@ -32,6 +32,41 @@
 #include <linux/pf_q-fun.h>
 
 #include <pf_q-sock.h>
+#include <pf_q-global.h>
+#include <pf_q-memory.h>
+
+int pfq_skb_queues_purge(void)
+{
+        int cpu;
+        int total = 0;
+
+        /* destroy prefetch queues (of each cpu) */
+
+        for_each_possible_cpu(cpu) {
+
+                struct local_data *local = per_cpu_ptr(cpu_data, cpu);
+                struct pfq_prefetch_skb *this_queue = &local->prefetch_queue;
+                struct sk_buff *skb;
+		int n = 0;
+		queue_for_each(skb, n, this_queue)
+		{
+                        struct pfq_annotation *cb = pfq_skb_annotation(skb);
+                        if (unlikely(cb->stolen_skb))
+                                continue;
+                 	kfree_skb(skb);
+                 	total++;
+		}
+
+       		pfq_prefetch_skb_flush(this_queue);
+
+#ifdef PFQ_USE_SKB_RECYCLE
+                total += skb_queue_size(&local->recycle_list);
+                skb_queue_purge(&local->recycle_list);
+#endif
+        }
+
+        return total;
+}
 
 
 int pfq_shared_queue_alloc(struct pfq_sock *so, size_t queue_mem)

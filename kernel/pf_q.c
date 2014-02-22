@@ -923,7 +923,7 @@ static int __init pfq_init_module(void)
 
 static void __exit pfq_exit_module(void)
 {
-        int cpu;
+        int total;
 
         /* unregister the basic device handler */
         unregister_device_handler();
@@ -940,28 +940,11 @@ static void __exit pfq_exit_module(void)
         /* wait grace period */
         msleep(Q_GRACE_PERIOD);
 
-        /* destroy pipeline queues (of each cpu) */
+        /* purge both prefetch and recycles queues */
 
-        for_each_possible_cpu(cpu) {
+        total = pfq_skb_queues_purge();
 
-                struct local_data *local = per_cpu_ptr(cpu_data, cpu);
-                struct pfq_prefetch_skb *this_queue = &local->prefetch_queue;
-                struct sk_buff *skb;
-		int n = 0;
-		queue_for_each(skb, n, this_queue)
-		{
-                        struct pfq_annotation *cb = pfq_skb_annotation(skb);
-                        if (unlikely(cb->stolen_skb))
-                                continue;
-                 	kfree_skb(skb);
-		}
-
-       		pfq_prefetch_skb_flush(this_queue);
-
-#ifdef PFQ_USE_SKB_RECYCLE
-                skb_queue_purge(&local->recycle_list);
-#endif
-        }
+        printk(KERN_INFO "[PFQ] %d skbuff freed.\n", total);
 
         /* free per-cpu data */
 	free_percpu(cpu_data);

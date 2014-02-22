@@ -22,12 +22,13 @@
  ****************************************************************/
 
 #ifndef _PF_Q_QUEUE_H_
-#define _PF_Q_QUEUE_H_ 
+#define _PF_Q_QUEUE_H_
 
 #include <linux/pf_q.h>
 
 #include <pf_q-sock.h>
 
+int   pfq_skb_queues_purge(void);
 int   pfq_shared_queue_alloc(struct pfq_sock *p, size_t queue_mem);
 void  pfq_shared_queue_free (struct pfq_sock *p);
 
