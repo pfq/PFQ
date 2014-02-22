@@ -115,7 +115,7 @@ int pfq_tx_queue_flush(struct pfq_tx_opt *to, struct net_device *dev)
 
                 if (skb_store_bits(skb, 0, h+1, len) < 0)
                 {
-                        pfq_kfree_skb_recycle(skb, &local->recycle_list);
+                        pfq_kfree_skb_recycle(skb, &local->tx_recycle_list);
                         return n;
                 }
 
@@ -135,7 +135,7 @@ int pfq_tx_queue_flush(struct pfq_tx_opt *to, struct net_device *dev)
 #endif
                 /* free/recycle the packet now... */
 
-                pfq_kfree_skb_recycle(skb, &local->recycle_list);
+                pfq_kfree_skb_recycle(skb, &local->tx_recycle_list);
 
                 /* get the next index... */
 
@@ -143,7 +143,7 @@ int pfq_tx_queue_flush(struct pfq_tx_opt *to, struct net_device *dev)
                 if (index == -1)
                         break;
         }
-			
+
         return n;
 }
 

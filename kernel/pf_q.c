@@ -480,8 +480,9 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
                                 else
                                         napi_gro_receive(napi, skb);
                         }
-                        else {
-                                pfq_kfree_skb_recycle(skb, &local->recycle_list);
+                        else
+                        {
+                                pfq_kfree_skb_recycle(skb, &local->rx_recycle_list);
         		}
 		}
                 else
