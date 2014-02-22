@@ -48,7 +48,7 @@ int pfq_skb_queues_purge(void)
                 struct pfq_prefetch_skb *this_queue = &local->prefetch_queue;
                 struct sk_buff *skb;
 		int n = 0;
-		queue_for_each(skb, n, this_queue)
+		pfq_prefetch_skb_for_each(skb, n, this_queue)
 		{
                         struct pfq_annotation *cb = pfq_skb_annotation(skb);
                         if (unlikely(cb->stolen_skb))

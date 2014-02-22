@@ -146,7 +146,7 @@ inline
 void pfq_sock_mask_to_queue(unsigned long j, unsigned long mask, unsigned long *sock_queue)
 {
 	unsigned long bit;
-       	bitwise_foreach(mask, bit)
+       	pfq_bitwise_foreach(mask, bit)
 	{
 	        int index = pfq_ctz(bit);
                 sock_queue[index] |= 1UL << j;
@@ -311,7 +311,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 
         group_mask = 0;
 
-        queue_for_each(skb, n, prefetch_queue)
+        pfq_prefetch_skb_for_each(skb, n, prefetch_queue)
         {
                 struct pfq_annotation *cb = pfq_skb_annotation(skb);
 		unsigned long local_group_mask = __pfq_devmap_get_groups(skb->dev->ifindex, skb_get_rx_queue(skb));
@@ -321,7 +321,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 		cb->group_mask = local_group_mask;
 	}
 
-        bitwise_foreach(group_mask, bit)
+        pfq_bitwise_foreach(group_mask, bit)
         {
 		int gid = pfq_ctz(bit);
 
@@ -331,7 +331,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 
                 socket_mask = 0;
 
-        	queue_for_each(skb, n, prefetch_queue)
+        	pfq_prefetch_skb_for_each(skb, n, prefetch_queue)
 		{
                 	struct pfq_annotation *cb = pfq_skb_annotation(skb);
 
@@ -393,7 +393,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
                                         unsigned long eligible_mask = 0;
                                         unsigned long cbit;
 
-                                        bitwise_foreach(ret.class, cbit)
+                                        pfq_bitwise_foreach(ret.class, cbit)
                                         {
                                                 int cindex = pfq_ctz(cbit);
                                                 eligible_mask |= atomic_long_read(&pfq_groups[gid].sock_mask[cindex]);
@@ -411,7 +411,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
                                                         local->eligible_mask = eligible_mask;
                                                         local->sock_cnt = 0;
 
-                                                        bitwise_foreach(eligible_mask, ebit)
+                                                        pfq_bitwise_foreach(eligible_mask, ebit)
                                                         {
                                                                 local->sock_mask[local->sock_cnt++] = ebit;
                                                         }
@@ -436,7 +436,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 
                 /* copy packets of this group to pfq sockets... */
 
-                bitwise_foreach(socket_mask, lb)
+                pfq_bitwise_foreach(socket_mask, lb)
                 {
                         int i = pfq_ctz(lb);
                         struct pfq_rx_opt * ro = &pfq_get_sock_by_id(i)->rx_opt;
@@ -461,7 +461,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 
         /* free skb, or route them to kernel... */
 
-        queue_for_each(skb, n, prefetch_queue)
+        pfq_prefetch_skb_for_each(skb, n, prefetch_queue)
         {
                 cb = pfq_skb_annotation(skb);
 

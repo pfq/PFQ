@@ -36,15 +36,15 @@ struct pfq_prefetch_skb
 };
 
 
-#define queue_for_each(skb, n, q) \
+#define pfq_prefetch_skb_for_each(skb, n, q) \
 	for(n = 0; (n != (q)->counter) && (skb = (q)->queue[n]); \
         __builtin_prefetch((q)->queue[n+1], 0, 1), n++)
 
-#define queue_for_each_backward(skb, n, q) \
+#define pfq_prefetch_skb_for_each_backward(skb, n, q) \
 	for(n = (q)->counter; (n > 0) && (skb = (q)->queue[n-1]); \
         __builtin_prefetch((q)->queue[n-2], 0, 1), n--)
 
-#define queue_for_each_bitmask(skb, mask, n, q) \
+#define pfq_prefetch_skb_for_each_bitmask(skb, mask, n, q) \
 	for(n = pfq_ctz(mask); mask && ((skb = (q)->queue[n]), true); \
             mask ^=(1UL << n), n = pfq_ctz(mask))
 

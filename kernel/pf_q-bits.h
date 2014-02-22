@@ -36,7 +36,7 @@
          __builtin_choose_expr(__builtin_types_compatible_p(typeof(n),unsigned long long),  (unsigned int)__builtin_popcountll(n), (void)0 )))
 
 
-#define bitwise_foreach(mask, n) \
+#define pfq_bitwise_foreach(mask, n) \
 	for(; n = mask & -mask, mask ; mask^=n)
 
 
