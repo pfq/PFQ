@@ -676,7 +676,6 @@ pfq_release(struct socket *sock)
 
         pfq_release_sock_id(so->id);
 
-
         down(&sock_sem);
 
         /* disable skb recycler if no sockets are open */
@@ -930,11 +929,6 @@ static int __init pfq_init_module(void)
 		return -ENOMEM;
         }
 
-#ifdef PFQ_USE_SKB_RECYCLE
-        pfq_skb_recycle_init();
-        pfq_skb_recycle_enable(true);
-#endif
-
         /* register pfq sniffer protocol */
         n = proto_register(&pfq_proto, 0);
         if (n != 0)
@@ -949,6 +943,12 @@ static int __init pfq_init_module(void)
 	/* register functions */
 
 	pfq_function_factory_init();
+
+#ifdef PFQ_USE_SKB_RECYCLE
+        pfq_skb_recycle_init();
+        pfq_skb_recycle_enable(true);
+        printk(KERN_INFO "[PFQ] skb recycle initialized.\n");
+#endif
 
 	printk(KERN_INFO "[PFQ] ready!\n");
         return 0;
@@ -981,7 +981,8 @@ static void __exit pfq_exit_module(void)
 #ifdef PFQ_USE_SKB_RECYCLE
         total += pfq_skb_recycle_purge();
 #endif
-        printk(KERN_INFO "[PFQ] %d skbuff freed.\n", total);
+        if (total)
+                printk(KERN_INFO "[PFQ] %d skbuff freed.\n", total);
 
         /* free per-cpu data */
 	free_percpu(cpu_data);
