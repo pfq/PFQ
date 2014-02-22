@@ -50,9 +50,9 @@ static inline void wmb() { asm volatile ("sfence" ::: "memory"); }
 
 #else /* 32-bit */
 
-static inline void mb()  { asm volatile ("lock; addl $0,0(%%esp)" ::: "memory"); } 
-static inline void rmb() { asm volatile ("lock; addl $0,0(%%esp)" ::: "memory"); } 
-static inline void wmb() { asm volatile ("lock; addl $0,0(%%esp)" ::: "memory"); } 
+static inline void mb()  { asm volatile ("lock; addl $0,0(%%esp)" ::: "memory"); }
+static inline void rmb() { asm volatile ("lock; addl $0,0(%%esp)" ::: "memory"); }
+static inline void wmb() { asm volatile ("lock; addl $0,0(%%esp)" ::: "memory"); }
 
 #endif
 
@@ -73,69 +73,69 @@ static inline void smp_wmb() { barrier(); }
 
 struct pfq_pkt_hdr
 {
-    uint64_t data;          /* state from pfq_annotation */
+        uint64_t data;          /* state from pfq_annotation */
 
-    union
-    {
-        unsigned long long tv64;
-        struct {
-            uint32_t    sec;
-            uint32_t    nsec;
-        } tv;               /* note: struct timespec is badly defined for 64 bits arch. */
-    } tstamp;
-
-    int         if_index;   /* interface index */
-    int         gid;        /* gruop id */
-
-    uint16_t    len;        /* length of the packet (off wire) */
-    uint16_t    caplen;     /* bytes captured */
-
-    union
-    {
-        struct
+        union
         {
-            uint16_t vlan_vid:12,   /* 8021q vlan id */
-                     reserved:1,    /* 8021q reserved bit */
-                     vlan_prio:3;   /* 8021q vlan priority */
-        } vlan;
+                unsigned long long tv64;
+                struct {
+                        uint32_t    sec;
+                        uint32_t    nsec;
+                } tv;               /* note: struct timespec is badly defined for 64 bits arch. */
+        } tstamp;
 
-        uint16_t     vlan_tci;
-    } un;
+        int         if_index;   /* interface index */
+        int         gid;        /* gruop id */
 
-    uint8_t     hw_queue;   /* 256 queues per device */
-    uint8_t     commit;
+        uint16_t    len;        /* length of the packet (off wire) */
+        uint16_t    caplen;     /* bytes captured */
+
+        union
+        {
+                struct
+                {
+                        uint16_t vlan_vid:12,   /* 8021q vlan id */
+                                 reserved:1,    /* 8021q reserved bit */
+                                 vlan_prio:3;   /* 8021q vlan priority */
+                } vlan;
+
+                uint16_t     vlan_tci;
+        } un;
+
+        uint8_t     hw_queue;   /* 256 queues per device */
+        uint8_t     commit;
 
 }; /* __attribute__((packed)); */
 
 
 struct pfq_tx_queue_hdr
 {
-    struct
-    {
-        volatile unsigned long index;
-        unsigned long cache;
-    } producer __attribute__((aligned(64)));
+        struct
+        {
+                volatile unsigned long index;
+                unsigned long cache;
+        } producer __attribute__((aligned(64)));
 
-    struct
-    {
-        volatile unsigned long index;
-        unsigned long cache;
-    } consumer __attribute__((aligned(64)));
+        struct
+        {
+                volatile unsigned long index;
+                unsigned long cache;
+        } consumer __attribute__((aligned(64)));
 
-    unsigned int size_mask;        /* number of slots */
-    unsigned int max_len;          /* max length of packet */
-    unsigned int size;             /* number of slots (power of two) */
-    unsigned int slot_size;        /* sizeof(pfq_pkt_hdr) + max_len + sizeof(skb_shinfo) */
+        unsigned int size_mask;        /* number of slots */
+        unsigned int max_len;          /* max length of packet */
+        unsigned int size;             /* number of slots (power of two) */
+        unsigned int slot_size;        /* sizeof(pfq_pkt_hdr) + max_len + sizeof(skb_shinfo) */
 
 } __attribute__((aligned(64)));
 
 
 struct pfq_rx_queue_hdr
 {
-    volatile unsigned int   data;
-    volatile int            poll_wait;
-    unsigned int            size;       /* number of slots */
-    unsigned int            slot_size;  /* sizeof(pfq_pkt_hdr) + max_len + sizeof(skb_shinfo) */
+        volatile unsigned int   data;
+        volatile int            poll_wait;
+        unsigned int            size;       /* number of slots */
+        unsigned int            slot_size;  /* sizeof(pfq_pkt_hdr) + max_len + sizeof(skb_shinfo) */
 
 } __attribute__((aligned(8)));
 
@@ -147,8 +147,8 @@ struct pfq_rx_queue_hdr
 
 struct pfq_queue_hdr
 {
-    struct pfq_rx_queue_hdr rx;
-    struct pfq_tx_queue_hdr tx;
+        struct pfq_rx_queue_hdr rx;
+        struct pfq_tx_queue_hdr tx;
 };
 
 /* SPSC circular queue handling... */
@@ -158,31 +158,31 @@ struct pfq_queue_hdr
 static inline
 int pfq_spsc_write_index(struct pfq_tx_queue_hdr *q)
 {
-    if (unlikely(q->producer.cache == 0)) {
-        /* consumer - producer - 1 + size */
-        q->producer.cache = (q->consumer.index - q->producer.index + q->size_mask) & q->size_mask;
-    }
-    if (unlikely(q->producer.cache == 0)) {
-        return -1;
-    }
-    return q->producer.index;
+        if (unlikely(q->producer.cache == 0)) {
+                /* consumer - producer - 1 + size */
+                q->producer.cache = (q->consumer.index - q->producer.index + q->size_mask) & q->size_mask;
+        }
+        if (unlikely(q->producer.cache == 0)) {
+                return -1;
+        }
+        return q->producer.index;
 }
 
 static inline
 void pfq_spsc_write_commit(struct pfq_tx_queue_hdr *q)
 {
-    smp_wmb();
-    if (likely(q->producer.cache != 0)) {
-        q->producer.index = (q->producer.index + 1) & q->size_mask;
-        q->producer.cache--;
-    }
-    smp_wmb();
+        smp_wmb();
+        if (likely(q->producer.cache != 0)) {
+                q->producer.index = (q->producer.index + 1) & q->size_mask;
+                q->producer.cache--;
+        }
+        smp_wmb();
 }
 
 static inline
 int pfq_spsc_write_avail(struct pfq_tx_queue_hdr *q)
 {
-    return q->producer.cache;
+        return q->producer.cache;
 }
 
 
@@ -191,41 +191,41 @@ int pfq_spsc_write_avail(struct pfq_tx_queue_hdr *q)
 static inline
 int pfq_spsc_read_index(struct pfq_tx_queue_hdr *q)
 {
-    if(unlikely(q->consumer.cache == 0)) {
-        q->consumer.cache = (q->producer.index - q->consumer.index + q->size) & q->size_mask;
-    }
-    if(unlikely(q->consumer.cache == 0)) {
-        return -1;
-    }
+        if(unlikely(q->consumer.cache == 0)) {
+                q->consumer.cache = (q->producer.index - q->consumer.index + q->size) & q->size_mask;
+        }
+        if(unlikely(q->consumer.cache == 0)) {
+                return -1;
+        }
 
-    return q->consumer.index;
+        return q->consumer.index;
 }
 
 static inline
 void pfq_spsc_read_commit(struct pfq_tx_queue_hdr *q)
 {
-    smp_wmb();
-    if (likely(q->consumer.cache != 0)) {
-        q->consumer.index = (q->consumer.index + 1) & q->size_mask;
-        q->consumer.cache--;
-    }
-    smp_wmb();
+        smp_wmb();
+        if (likely(q->consumer.cache != 0)) {
+                q->consumer.index = (q->consumer.index + 1) & q->size_mask;
+                q->consumer.cache--;
+        }
+        smp_wmb();
 }
 
 static inline
 int pfq_spsc_read_avail(struct pfq_tx_queue_hdr *q)
 {
-    return q->consumer.cache;
+        return q->consumer.cache;
 }
 
 /*
-    +------------------+----------------------+          +----------------------+          +----------------------+
-    | pfq_queue_hdr    | pfq_pkt_hdr | packet | ...      | pfq_pkt_hdr | packet |...       | pfq_pkt_hdr | packet | ...
-    +------------------+----------------------+          +----------------------+          +----------------------+
-                       +                             +                             +
-                       | <------+ queue rx  +------> |  <----+ queue rx +------>   |  <----+ queue tx +------>
-                       +                             +                             +
- */
+   +------------------+----------------------+          +----------------------+          +----------------------+
+   | pfq_queue_hdr    | pfq_pkt_hdr | packet | ...      | pfq_pkt_hdr | packet |...       | pfq_pkt_hdr | packet | ...
+   +------------------+----------------------+          +----------------------+          +----------------------+
+   +                             +                             +
+   | <------+ queue rx  +------> |  <----+ queue rx +------>   |  <----+ queue tx +------>
+   +                             +                             +
+   */
 
 
 /* PFQ socket options */
@@ -299,9 +299,9 @@ int pfq_spsc_read_avail(struct pfq_tx_queue_hdr *q)
 
 struct pfq_vlan_toggle
 {
-    int gid;
-    int vid;
-    int toggle;
+        int gid;
+        int vid;
+        int toggle;
 };
 
 
@@ -310,9 +310,9 @@ struct pfq_vlan_toggle
 
 struct pfq_binding
 {
-    int gid;
-    int if_index;
-    int hw_queue;
+        int gid;
+        int if_index;
+        int hw_queue;
 };
 
 /* group policies */
@@ -335,9 +335,9 @@ struct pfq_binding
 
 struct pfq_group_join
 {
-    int gid;
-    int policy;
-    unsigned int class_mask;
+        int gid;
+        int policy;
+        unsigned int class_mask;
 };
 
 
@@ -348,18 +348,18 @@ struct pfq_group_join
 
 struct pfq_group_function
 {
-    const char *name;
-    int gid;
-    int level;
+        const char *name;
+        int gid;
+        int level;
 };
 
 
 struct pfq_group_context
 {
-    void       * context;
-    size_t       size;      /* sizeof(context) */
-    int gid;
-    int level;
+        void       * context;
+        size_t       size;      /* sizeof(context) */
+        int gid;
+        int level;
 };
 
 
@@ -367,8 +367,8 @@ struct pfq_group_context
 
 struct pfq_fprog
 {
-    int gid;
-    struct sock_fprog fcode;
+        int gid;
+        struct sock_fprog fcode;
 };
 
 
@@ -376,9 +376,9 @@ struct pfq_fprog
 
 struct pfq_stats
 {
-    unsigned long int recv;   /* received by the queue         */
-    unsigned long int lost;   /* queue is full, packet lost... */
-    unsigned long int drop;   /* by filter                     */
+        unsigned long int recv;   /* received by the queue         */
+        unsigned long int lost;   /* queue is full, packet lost... */
+        unsigned long int drop;   /* by filter                     */
 };
 
 #endif /* _PF_Q_H_ */

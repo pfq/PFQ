@@ -39,7 +39,7 @@ static inline
 struct sk_buff *
 pfq_netdev_alloc_skb(struct net_device *dev, unsigned int length)
 {
-	return __pfq_netdev_alloc_skb(dev, length, GFP_ATOMIC);
+        return __pfq_netdev_alloc_skb(dev, length, GFP_ATOMIC);
 }
 
 
@@ -47,10 +47,10 @@ static inline
 struct sk_buff *
 __pfq_netdev_alloc_skb_ip_align(struct net_device *dev, unsigned int length, gfp_t gfp)
 {
-	struct sk_buff *skb = __pfq_netdev_alloc_skb(dev, length + NET_IP_ALIGN, gfp);
-    if (NET_IP_ALIGN && likely(skb))
-		skb_reserve(skb, NET_IP_ALIGN);
-	return skb;
+        struct sk_buff *skb = __pfq_netdev_alloc_skb(dev, length + NET_IP_ALIGN, gfp);
+        if (NET_IP_ALIGN && likely(skb))
+                skb_reserve(skb, NET_IP_ALIGN);
+        return skb;
 }
 
 
@@ -58,7 +58,7 @@ static inline
 struct sk_buff *
 pfq_netdev_alloc_skb_ip_align(struct net_device *dev, unsigned int length)
 {
-	return __pfq_netdev_alloc_skb_ip_align(dev, length, GFP_ATOMIC);
+        return __pfq_netdev_alloc_skb_ip_align(dev, length, GFP_ATOMIC);
 }
 
 
@@ -66,7 +66,7 @@ static inline
 struct sk_buff *
 pfq_alloc_skb(unsigned int size, gfp_t priority)
 {
-	return __pfq_alloc_skb(size, priority, 0, NUMA_NO_NODE);
+        return __pfq_alloc_skb(size, priority, 0, NUMA_NO_NODE);
 }
 
 
@@ -74,21 +74,22 @@ static inline
 struct sk_buff *
 pfq_alloc_skb_fclone(unsigned int size, gfp_t priority)
 {
-	return __pfq_alloc_skb(size, priority, 1, NUMA_NO_NODE);
+        return __pfq_alloc_skb(size, priority, 1, NUMA_NO_NODE);
 }
 
-#define netif_receive_skb(_skb)       pfq_netif_receive_skb(_skb)
-#define netif_rx(_skb)                pfq_netif_rx(_skb)
-#define napi_gro_receive(_napi, _skb) pfq_gro_receive(_napi, _skb)
+#define netif_receive_skb(_skb)                         pfq_netif_receive_skb(_skb)
+#define netif_rx(_skb)                                  pfq_netif_rx(_skb)
+#define napi_gro_receive(_napi, _skb)                   pfq_gro_receive(_napi, _skb)
 
-#define netdev_alloc_skb(dev,len)	  				pfq_netdev_alloc_skb(dev,len)
+#define netdev_alloc_skb(dev,len)	  		pfq_netdev_alloc_skb(dev,len)
 #define __netdev_alloc_skb_ip_align(dev,len, gfp)	__pfq_netdev_alloc_skb_ip_align(dev,len, gfp)
-#define   netdev_alloc_skb_ip_align(dev,len) 	      pfq_netdev_alloc_skb_ip_align(dev,len)
-#define alloc_skb(size, prio)						pfq_alloc_skb(size, prio)
-#define alloc_skb_fclone(size,prio)					pfq_alloc_skb_fclone(size, prio)
+#define   netdev_alloc_skb_ip_align(dev,len) 	        pfq_netdev_alloc_skb_ip_align(dev,len)
+#define alloc_skb(size, prio)				pfq_alloc_skb(size, prio)
+#define alloc_skb_fclone(size,prio)			pfq_alloc_skb_fclone(size, prio)
 
-#define __alloc_skb(size,prio,fclone,node)          __pfq_alloc_skb(size,prio,fclone,node)
+#define __alloc_skb(size,prio,fclone,node)              __pfq_alloc_skb(size,prio,fclone,node)
 #define __netdev_alloc_skb(dev,len,gfp)        		__pfq_netdev_alloc_skb(dev,len,gfp)
-#define dev_alloc_skb(len)             				pfq_dev_alloc_skb(len)
+#define dev_alloc_skb(len)             			pfq_dev_alloc_skb(len)
+
 
 #endif /* _PFQ_KCOMPAT_H_ */
