@@ -1,7 +1,7 @@
 /***************************************************************
  *
  * (C) 2011-13 Nicola Bonelli <nicola.bonelli@cnit.it>
- * 	           Loris Gazzarrini <loris.gazzarrini@iet.unipi.it>
+ * 	       Loris Gazzarrini <loris.gazzarrini@iet.unipi.it>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,6 +30,17 @@
 
 #include <pf_q-common.h>
 #include <pf_q-prefetch-queue.h>
+#include <pf_q-sparse-counter.h>
+
+extern int recycle_len;
+extern struct local_data __percpu * cpu_data;
+
+
+extern sparse_counter_t os_alloc;
+extern sparse_counter_t os_free;
+extern sparse_counter_t rc_alloc;
+extern sparse_counter_t rc_free;
+
 
 /* per-cpu data... */
 
@@ -39,7 +50,7 @@ struct local_data
         unsigned long           sock_mask [Q_MAX_ID];
 
         int                     sock_cnt;
-        int 			        flowctrl;
+        int 			flowctrl;
 
         struct pfq_prefetch_skb prefetch_queue;
 
@@ -49,13 +60,22 @@ struct local_data
 };
 
 
-extern int recycle_len;
+struct pfq_recycle_stat
+{
+        uint64_t        os_alloc;
+        uint64_t        os_free;
+        uint64_t        rc_alloc;
+        uint64_t        rc_free;
+};
 
-extern struct local_data __percpu    * cpu_data;
 
-struct sk_buff * __pfq_alloc_skb(unsigned int size, gfp_t priority, int fclone, int node);
-struct sk_buff * pfq_dev_alloc_skb(unsigned int length);
-struct sk_buff * __pfq_netdev_alloc_skb(struct net_device *dev, unsigned int length, gfp_t gfp);
+extern struct pfq_recycle_stat pfq_get_recycle_stats(void);
+extern void pfq_reset_recycle_stats(void);
+
+extern struct sk_buff * __pfq_alloc_skb(unsigned int size, gfp_t priority, int fclone, int node);
+extern struct sk_buff * pfq_dev_alloc_skb(unsigned int length);
+extern struct sk_buff * __pfq_netdev_alloc_skb(struct net_device *dev, unsigned int length, gfp_t gfp);
+
 
 #ifdef NET_SKBUFF_DATA_USES_OFFSET
 static inline
@@ -99,9 +119,15 @@ void pfq_kfree_skb_recycle(struct sk_buff *skb, struct sk_buff_head *list)
         if (pfq_skb_is_recycleable(skb)
                         && skb_queue_len(list) <= recycle_len)
         {
+#ifdef PFQ_USE_SKB_RECYCLE_STAT
+                sparse_inc(&rc_free);
+#endif
                 __skb_queue_head(list, skb);
                 return;
         }
+#endif
+#ifdef PFQ_USE_SKB_RECYCLE_STAT
+        sparse_inc(&os_free);
 #endif
         kfree_skb(skb);
 }
@@ -120,6 +146,7 @@ struct sk_buff * pfq_skb_recycle(struct sk_buff *skb)
         }
 
         shinfo = skb_shinfo(skb);
+
         // memset(shinfo, 0, offsetof(struct skb_shared_info, dataref));
         atomic_set(&shinfo->dataref,1);
 
@@ -174,9 +201,16 @@ struct sk_buff * ____pfq_alloc_skb(unsigned int size, gfp_t priority, int fclone
                                 skb = __skb_dequeue_tail(&local->rx_recycle_list);
 
                                 if (pfq_skb_end_offset(skb) >= SKB_DATA_ALIGN(size + NET_SKB_PAD)) {
+
+#ifdef PFQ_USE_SKB_RECYCLE_STAT
+                                        sparse_inc(&rc_alloc);
+#endif
                                         return pfq_skb_recycle(skb);
                                 }
                                 else {
+#ifdef PFQ_USE_SKB_RECYCLE_STAT
+                                        sparse_inc(&os_free);
+#endif
                                         kfree_skb(skb);
                                 }
                         }
@@ -184,6 +218,9 @@ struct sk_buff * ____pfq_alloc_skb(unsigned int size, gfp_t priority, int fclone
         }
 #endif
 
+#ifdef PFQ_USE_SKB_RECYCLE_STAT
+        sparse_inc(&os_alloc);
+#endif
         return __alloc_skb(size, priority, fclone, node);
 }
 

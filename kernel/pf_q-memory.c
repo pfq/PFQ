@@ -29,6 +29,34 @@
 #include <pf_q-prefetch-queue.h>
 #include <pf_q-memory.h>
 
+
+sparse_counter_t os_alloc;
+sparse_counter_t os_free;
+sparse_counter_t rc_alloc;
+sparse_counter_t rc_free;
+
+
+struct pfq_recycle_stat
+pfq_get_recycle_stats(void)
+{
+        struct pfq_recycle_stat ret = { sparse_read(&os_alloc),
+                                        sparse_read(&os_free),
+                                        sparse_read(&rc_alloc),
+                                        sparse_read(&rc_free) };
+        return ret;
+}
+
+
+void
+pfq_reset_recycle_stats(void)
+{
+        sparse_set(&os_alloc, 0);
+        sparse_set(&os_free, 0);
+        sparse_set(&rc_alloc, 0);
+        sparse_set(&rc_free, 0);
+}
+
+
 /* exported symbols */
 
 struct sk_buff *
