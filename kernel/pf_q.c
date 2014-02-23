@@ -249,6 +249,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
         int cpu;
 
 #ifdef PFQ_USE_FLOW_CONTROL
+
 	/* flow control */
 
 	if (local->flowctrl &&
@@ -687,7 +688,7 @@ pfq_release(struct socket *sock)
         }
 #endif
 
-        /* Convenient way to avoid a race condition with NAPI threads,
+        /* Convenient way to avoid a race condition with NAPI soft-irq,
          * without using expensive rw-mutexes
          */
 
