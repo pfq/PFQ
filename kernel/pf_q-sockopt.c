@@ -841,7 +841,7 @@ int pfq_setsockopt(struct socket *sock,
                         return -EPERM;
                 }
 
-                pfq_tx_queue_flush(to, dev);
+                pfq_tx_queue_flush(to, dev, NUMA_NO_NODE);
                 dev_put(dev);
         } break;
 

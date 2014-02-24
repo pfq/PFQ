@@ -68,12 +68,12 @@ struct netdev_queue *pfq_pick_tx(struct net_device *dev, struct sk_buff *skb, in
 }
 
 
-int pfq_tx_queue_flush(struct pfq_tx_opt *to, struct net_device *dev)
+int pfq_tx_queue_flush(struct pfq_tx_opt *to, struct net_device *dev, int node)
 {
-        struct pfq_pkt_hdr * h;
-        struct sk_buff *skb;
-        int n, index, avail;
         struct local_data *local;
+        struct pfq_pkt_hdr * h;
+        int n, index, avail;
+        struct sk_buff *skb;
         size_t len;
 
         index = pfq_spsc_read_index(to->queue_info);
@@ -92,7 +92,7 @@ int pfq_tx_queue_flush(struct pfq_tx_opt *to, struct net_device *dev)
 
                 h = (struct pfq_pkt_hdr *) (to->base_addr + index * to->queue_info->slot_size);
 
-                skb = pfq_tx_alloc_skb(to->maxlen, GFP_KERNEL);
+                skb = pfq_tx_alloc_skb(to->maxlen, GFP_KERNEL, node);
                 if (skb == NULL)
 		{
                         return n;
