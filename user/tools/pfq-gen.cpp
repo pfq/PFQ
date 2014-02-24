@@ -100,7 +100,6 @@ struct binding
 {
     std::vector<std::string>    dev;
     std::vector<int>            queue;
-    int                         gid;
     int                         core;
 };
 
@@ -128,7 +127,7 @@ show_binding(const binding &b)
             ret += ", ";
         ret += std::to_string(q);
     }
-    ret += "] gid:" + std::to_string(b.gid) + " core:" + std::to_string (b.core);
+    ret += "] core:" + std::to_string (b.core);
 
     return ret + " }";
 }
@@ -137,7 +136,7 @@ show_binding(const binding &b)
 binding
 make_binding(const char *value)
 {
-    binding ret { {}, {}, -1, -1 };
+    binding ret { {}, {}, -1 };
 
     auto vec = split(value, '.');
 
@@ -147,11 +146,8 @@ make_binding(const char *value)
         ret.core = std::atoi(vec[1].c_str());
 
     if (vec.size() > 2)
-        ret.gid = std::atoi(vec[2].c_str());
-
-    if (vec.size() > 3)
     {
-        unsigned int n = 3;
+        unsigned int n = 2;
         for(; n != vec.size(); n++)
         {
             ret.queue.push_back(std::atoi(vec[n].c_str()));
@@ -188,9 +184,9 @@ namespace test
         context(int id, const binding &b)
         : m_id(id)
         , m_bind(b)
-        , m_stop(std::unique_ptr<std::atomic_bool>(new std::atomic_bool(false)))
         , m_pfq(opt::len)
-        , m_sent(std::unique_ptr<std::atomic_int>(new std::atomic_int(0)))
+        // , m_sent(std::unique_ptr<std::atomic_int>(new std::atomic_int(0)))
+        , m_sent()
         {
             if (m_bind.dev.empty())
                 throw std::runtime_error("context: device unspecified");
@@ -210,46 +206,38 @@ namespace test
 
         void operator()()
         {
-            for(;;)
+            if (opt::async)
             {
-                if (m_stop->load(std::memory_order_relaxed))
-                    return;
-
-                if (opt::async)
+                for(;;)
                 {
                     if (m_pfq.send_async(net::const_buffer(reinterpret_cast<const char *>(packet), opt::len)))
-                        m_sent->fetch_add(1, std::memory_order_relaxed);
+                        // m_sent->fetch_add(1, std::memory_order_relaxed);
+                        m_sent++;
                 }
-                else
+            }
+            else
+            {
+                for(;;)
                 {
                     if (m_pfq.send(net::const_buffer(reinterpret_cast<const char *>(packet), opt::len)))
-                        m_sent->fetch_add(1, std::memory_order_relaxed);
-
+                        m_sent++; // m_sent->fetch_add(1, std::memory_order_relaxed);
                 }
             }
         }
 
-        void stop()
-        {
-            m_stop->store(true, std::memory_order_release);
-        }
-
-
         unsigned long long
         sent() const
         {
-            return m_sent->load(std::memory_order_relaxed);
+            return m_sent; // m_sent->load(std::memory_order_relaxed);
         }
 
     private:
         int m_id;
         binding m_bind;
 
-        std::unique_ptr<std::atomic_bool> m_stop;
-
         pfq m_pfq;
 
-        std::unique_ptr<std::atomic_int> m_sent;
+        uint64_t m_sent;
     };
 
 }
@@ -313,7 +301,8 @@ try
         thread_binding.push_back(make_binding(argv[i]));
     }
 
-    std::cout << "len: "    << opt::len << std::endl;
+    std::cout << "async: "  << std::boolalpha << opt::async << std::endl;
+    std::cout << "len  : "  << opt::len << std::endl;
 
     packet = make_packet(opt::len);;
 
@@ -333,11 +322,8 @@ try
 
                   std::cout << "thread: " << show_binding(b) << std::endl;
 
-                  if (b.core != -1)
-                  extra::set_affinity(t, b.core);
-
                   vt.push_back(std::move(t));
-                  });
+    });
 
     unsigned long long sum, old = 0;
 
@@ -359,12 +345,11 @@ try
 
         std::cout << "sent: " << vt100::BOLD <<
         ((sum-old)*1000000)/std::chrono::duration_cast<std::chrono::microseconds>(end-begin).count()
-        << vt100::RESET << " pkt/sec" << std::endl;
+            << vt100::RESET << " pkt/sec" << std::endl;
 
         old = sum, begin = end;
     }
 
-    std::for_each(ctx.begin(), ctx.end(), std::mem_fn(&test::context::stop));
     std::for_each(vt.begin(), vt.end(), std::mem_fn(&std::thread::join));
 
     return 0;
