@@ -710,7 +710,7 @@ pfq_release(struct socket *sock)
         up (&sock_sem);
 
         if (total)
-                printk(KERN_INFO "[PFQ] %d skb purged.\n", total);
+                printk(KERN_INFO "[PFQ] cleanup: %d skb purged.\n", total);
 
 #ifdef PFQ_USE_SKB_RECYCLE_STAT
         {

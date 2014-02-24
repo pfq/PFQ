@@ -87,7 +87,7 @@ int pfq_tx_queue_flush(struct pfq_tx_opt *to, struct net_device *dev, int node)
                 {
                         if(printk_ratelimit())
                                 printk(KERN_WARNING "[PFQ] bogus spsc index! q->size=%zu index=%d\n", to->size, index);
-                        return n;
+                        break;
                 }
 
                 h = (struct pfq_pkt_hdr *) (to->base_addr + index * to->queue_info->slot_size);
@@ -95,7 +95,7 @@ int pfq_tx_queue_flush(struct pfq_tx_opt *to, struct net_device *dev, int node)
                 skb = pfq_tx_alloc_skb(to->maxlen, GFP_KERNEL, node);
                 if (skb == NULL)
 		{
-                        return n;
+		        break;
 		}
 
                 skb->dev = dev;
@@ -116,7 +116,7 @@ int pfq_tx_queue_flush(struct pfq_tx_opt *to, struct net_device *dev, int node)
                 if (skb_store_bits(skb, 0, h+1, len) < 0)
                 {
                         pfq_kfree_skb_recycle(skb, &local->tx_recycle_list);
-                        return n;
+                        break;
                 }
 
                 /* release the slot */
@@ -128,11 +128,9 @@ int pfq_tx_queue_flush(struct pfq_tx_opt *to, struct net_device *dev, int node)
                 skb_get(skb);
 
                 /* send the packet... */
-#if 1
+
                 pfq_queue_xmit(skb, to->hw_queue);
-#else
-                dev_queue_xmit(skb);
-#endif
+
                 /* free/recycle the packet now... */
 
                 pfq_kfree_skb_recycle(skb, &local->tx_recycle_list);
@@ -168,18 +166,18 @@ int pfq_queue_xmit(struct sk_buff *skb, int queue_index)
         if (dev->flags & IFF_UP) {
 
 #if (LINUX_VERSION_CODE <= KERNEL_VERSION(3,2,0))
-		if (!netif_tx_queue_stopped(txq)) {
+		if (!netif_tx_queue_stopped(txq))
 #else
-			if (!netif_xmit_stopped(txq)) {
+		if (!netif_xmit_stopped(txq))
 #endif
+                {
+		        rc = dev->netdev_ops->ndo_start_xmit(skb, dev);
 
-				rc = dev->netdev_ops->ndo_start_xmit(skb, dev);
-
-				if (dev_xmit_complete(rc)) {
-					goto out;
-				}
+			if (dev_xmit_complete(rc)) {
+			        goto out;
 			}
 		}
+	}
 
 	__netif_tx_unlock_bh(txq);
 

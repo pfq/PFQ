@@ -325,7 +325,7 @@ try
 
     unsigned long long sum, old = 0;
 
-    std::cout << "----------- gen started ------------\n";
+    std::cout << "------------ gen started ------------\n";
 
     auto begin = std::chrono::system_clock::now();
 
