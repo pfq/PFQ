@@ -184,17 +184,29 @@ namespace test
         context(int id, const binding &b)
         : m_id(id)
         , m_bind(b)
-        , m_pfq(opt::len)
+        , m_pfq()
         , m_sent(std::unique_ptr<std::atomic_ullong>(new std::atomic_ullong(0)))
         {
             if (m_bind.dev.empty())
                 throw std::runtime_error("context: device unspecified");
 
-            m_pfq.bind_tx (m_bind.dev.at(0).c_str(), m_bind.queue.empty() ? -1 : m_bind.queue.at(0));
+            if (m_bind.queue.empty())
+                m_bind.queue.push_back(-1);
 
-            m_pfq.enable();
+            for(unsigned int n = 0; n < m_bind.queue.size(); n++)
+            {
+                auto q = pfq(opt::len);
 
-            m_pfq.start_tx_thread(m_bind.core);
+                q.bind_tx (m_bind.dev.at(0).c_str(), m_bind.queue[n]);
+
+                q.enable();
+
+                q.start_tx_thread(m_bind.core);
+
+                m_pfq.push_back(std::move(q));
+
+                std::cout << "thread: " << id << " -> gen "  << m_bind.dev.at(0) << "." << m_bind.queue[n] << std::endl;
+            }
         }
 
         context(const context &) = delete;
@@ -209,16 +221,18 @@ namespace test
             {
                 for(;;)
                 {
-                    if (m_pfq.send_async(net::const_buffer(reinterpret_cast<const char *>(packet), opt::len)))
-                         m_sent->fetch_add(1, std::memory_order_relaxed);
+                    for(unsigned int n = 0; n < m_pfq.size(); n++)
+                        if (m_pfq[n].send_async(net::const_buffer(reinterpret_cast<const char *>(packet), opt::len)))
+                            m_sent->fetch_add(1, std::memory_order_relaxed);
                 }
             }
             else
             {
                 for(;;)
                 {
-                    if (m_pfq.send(net::const_buffer(reinterpret_cast<const char *>(packet), opt::len)))
-                        m_sent->fetch_add(1, std::memory_order_relaxed);
+                    for(unsigned int n = 0; n < m_pfq.size(); n++)
+                        if (m_pfq[n].send(net::const_buffer(reinterpret_cast<const char *>(packet), opt::len)))
+                            m_sent->fetch_add(1, std::memory_order_relaxed);
                 }
             }
         }
@@ -233,7 +247,7 @@ namespace test
         int m_id;
         binding m_bind;
 
-        pfq m_pfq;
+        std::vector<pfq> m_pfq;
 
         std::unique_ptr<std::atomic_ullong> m_sent;
     };
