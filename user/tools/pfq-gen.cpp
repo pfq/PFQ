@@ -185,8 +185,7 @@ namespace test
         : m_id(id)
         , m_bind(b)
         , m_pfq(opt::len)
-        // , m_sent(std::unique_ptr<std::atomic_int>(new std::atomic_int(0)))
-        , m_sent()
+        , m_sent(std::unique_ptr<std::atomic_ullong>(new std::atomic_ullong(0)))
         {
             if (m_bind.dev.empty())
                 throw std::runtime_error("context: device unspecified");
@@ -211,8 +210,7 @@ namespace test
                 for(;;)
                 {
                     if (m_pfq.send_async(net::const_buffer(reinterpret_cast<const char *>(packet), opt::len)))
-                        // m_sent->fetch_add(1, std::memory_order_relaxed);
-                        m_sent++;
+                         m_sent->fetch_add(1, std::memory_order_relaxed);
                 }
             }
             else
@@ -220,7 +218,7 @@ namespace test
                 for(;;)
                 {
                     if (m_pfq.send(net::const_buffer(reinterpret_cast<const char *>(packet), opt::len)))
-                        m_sent++; // m_sent->fetch_add(1, std::memory_order_relaxed);
+                        m_sent->fetch_add(1, std::memory_order_relaxed);
                 }
             }
         }
@@ -228,7 +226,7 @@ namespace test
         unsigned long long
         sent() const
         {
-            return m_sent; // m_sent->load(std::memory_order_relaxed);
+            return m_sent->load(std::memory_order_relaxed);
         }
 
     private:
@@ -237,7 +235,7 @@ namespace test
 
         pfq m_pfq;
 
-        uint64_t m_sent;
+        std::unique_ptr<std::atomic_ullong> m_sent;
     };
 
 }
