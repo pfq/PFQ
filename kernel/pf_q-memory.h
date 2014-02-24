@@ -40,6 +40,7 @@ extern sparse_counter_t os_alloc;
 extern sparse_counter_t os_free;
 extern sparse_counter_t rc_alloc;
 extern sparse_counter_t rc_free;
+extern sparse_counter_t rc_error;
 
 
 /* per-cpu data... */
@@ -66,6 +67,7 @@ struct pfq_recycle_stat
         uint64_t        os_free;
         uint64_t        rc_alloc;
         uint64_t        rc_free;
+        uint64_t        rc_error;
 };
 
 
@@ -116,16 +118,20 @@ static inline
 void pfq_kfree_skb_recycle(struct sk_buff *skb, struct sk_buff_head *list)
 {
 #ifdef PFQ_USE_SKB_RECYCLE
-        if (pfq_skb_is_recycleable(skb)
-                        && skb_queue_len(list) <= recycle_len)
+
+        if (pfq_skb_is_recycleable(skb))
         {
+                if (skb_queue_len(list) <= recycle_len)
+                {
 #ifdef PFQ_USE_SKB_RECYCLE_STAT
-                sparse_inc(&rc_free);
+                        sparse_inc(&rc_free);
 #endif
-                __skb_queue_head(list, skb);
-                return;
+                        __skb_queue_head(list, skb);
+                        return;
+                }
         }
 #endif
+
 #ifdef PFQ_USE_SKB_RECYCLE_STAT
         sparse_inc(&os_free);
 #endif
@@ -183,22 +189,21 @@ struct sk_buff * pfq_netdev_alloc_skb_ip_align(struct net_device *dev, unsigned 
 
 
 static inline
-struct sk_buff * ____pfq_alloc_skb(unsigned int size, gfp_t priority, int fclone, int node)
+struct sk_buff * ____pfq_alloc_skb_recycle(unsigned int size, gfp_t priority, int fclone, int node, struct sk_buff_head *recycle_list)
 {
 
 #ifdef PFQ_USE_SKB_RECYCLE
-        struct local_data * local = __this_cpu_ptr(cpu_data);
         struct sk_buff *skb;
 
-        if (!fclone && atomic_read(&local->enable_recycle))
+        if (!fclone)
         {
-                skb = skb_peek_tail(&local->rx_recycle_list);
+                skb = skb_peek_tail(recycle_list);
 
                 if (skb != NULL)
                 {
                         if (!skb_shared(skb) && !skb_cloned(skb))
                         {
-                                skb = __skb_dequeue_tail(&local->rx_recycle_list);
+                                skb = __skb_dequeue_tail(recycle_list);
 
                                 if (pfq_skb_end_offset(skb) >= SKB_DATA_ALIGN(size + NET_SKB_PAD)) {
 
@@ -215,6 +220,7 @@ struct sk_buff * ____pfq_alloc_skb(unsigned int size, gfp_t priority, int fclone
                                 }
                         }
                 }
+
         }
 #endif
 
@@ -269,6 +275,9 @@ int pfq_skb_recycle_purge(void)
                 skb_queue_purge(&local->tx_recycle_list);
         }
 
+#ifdef PFQ_USE_SKB_RECYCLE_STAT
+        sparse_add(&os_free, total);
+#endif
         return total;
 }
 
@@ -276,7 +285,30 @@ int pfq_skb_recycle_purge(void)
 static inline
 struct sk_buff * pfq_alloc_skb(unsigned int size, gfp_t priority)
 {
-        return ____pfq_alloc_skb(size, priority, 0, NUMA_NO_NODE);
+#ifdef PFQ_USE_SKB_RECYCLE
+        struct local_data *this_cpu = __this_cpu_ptr(cpu_data);
+
+        if (atomic_read(&this_cpu->enable_recycle))
+        {
+                return ____pfq_alloc_skb_recycle(size, priority, 0, NUMA_NO_NODE, &this_cpu->rx_recycle_list);
+        }
+#endif
+        return __alloc_skb(size, priority, 0, NUMA_NO_NODE);
+}
+
+
+static inline
+struct sk_buff * pfq_tx_alloc_skb(unsigned int size, gfp_t priority)
+{
+#ifdef PFQ_USE_SKB_RECYCLE
+        struct local_data *this_cpu = __this_cpu_ptr(cpu_data);
+
+        if (atomic_read(&this_cpu->enable_recycle))
+        {
+                return ____pfq_alloc_skb_recycle(size, priority, 0, NUMA_NO_NODE, &this_cpu->tx_recycle_list);
+        }
+#endif
+        return __alloc_skb(size, priority, 0, NUMA_NO_NODE);
 }
 
 

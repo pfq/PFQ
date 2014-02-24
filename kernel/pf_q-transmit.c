@@ -92,7 +92,7 @@ int pfq_tx_queue_flush(struct pfq_tx_opt *to, struct net_device *dev)
 
                 h = (struct pfq_pkt_hdr *) (to->base_addr + index * to->queue_info->slot_size);
 
-                skb = pfq_alloc_skb(to->maxlen, GFP_KERNEL);
+                skb = pfq_tx_alloc_skb(to->maxlen, GFP_KERNEL);
                 if (skb == NULL)
 		{
                         return n;
