@@ -43,16 +43,17 @@ pfq_tx_thread(void *data)
         struct net_device *dev;
 	int node;
 
-        printk(KERN_INFO "[PFQ|T] TX thread started on node %d\n", so->tx_opt.cpu_index);
-
         dev = dev_get_by_index(sock_net(&so->sk), so->tx_opt.if_index);
 
 	node = cpu_to_node(get_cpu());
+
+        printk(KERN_INFO "[PFQ|T] TX thread started on cpu %d:%d...\n", so->tx_opt.cpu, node);
 
         for(;;)
         {
                 pfq_tx_queue_flush(&so->tx_opt, dev, node);
                 set_current_state(TASK_INTERRUPTIBLE);
+
                 if (kthread_should_stop())
                         break;
                 schedule();
@@ -60,6 +61,6 @@ pfq_tx_thread(void *data)
 
         dev_put(dev);
 
-        printk(KERN_INFO "[PFQ|T] TX thread stopped.\n");
+        printk(KERN_INFO "[PFQ|T] TX thread stopped (cpu %d:%d)\n", so->tx_opt.cpu, node);
         return 0;
 }

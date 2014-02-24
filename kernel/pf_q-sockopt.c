@@ -730,13 +730,13 @@ int pfq_setsockopt(struct socket *sock,
 
         case Q_SO_TX_THREAD_START:
         {
-                int node;
+                int cpu;
 
                 pr_devel("[PFQ|%d] starting TX thread...\n", so->id);
 
                 if (to->thread)
                 {
-                        pr_devel("[PFQ|%d] TX thread already created on node %d!\n", so->id, to->cpu_index);
+                        pr_devel("[PFQ|%d] TX thread already created on cpu %d:%d!\n", so->id, to->cpu, cpu_to_node(to->cpu));
                         return -EPERM;
                 }
                 if (to->if_index == -1)
@@ -750,27 +750,27 @@ int pfq_setsockopt(struct socket *sock,
                         return -EPERM;
                 }
 
-                if (optlen != sizeof(node))
+                if (optlen != sizeof(cpu))
                         return -EINVAL;
 
-                if (copy_from_user(&node, optval, optlen))
+                if (copy_from_user(&cpu, optval, optlen))
                         return -EFAULT;
 
-                to->cpu_index = node;
+                to->cpu = cpu;
 
-                pr_devel("[PFQ|%d] creating TX thread on node %d -> if_index:%d hw_queue:%d\n", so->id, to->cpu_index, to->if_index, to->hw_queue);
+                pr_devel("[PFQ|%d] creating TX thread on cpu %d:%d if_index:%d hw_queue:%d\n", so->id, to->cpu, cpu_to_node(to->cpu), to->if_index, to->hw_queue);
 
                 to->thread = kthread_create_on_node(pfq_tx_thread,
                                                     so,
-                                                    cpu_to_node(to->cpu_index),
-                                                    "pfq_tx_%d", to->cpu_index);
+                                                    cpu_to_node(to->cpu),
+                                                    "pfq_tx_%d", to->cpu);
 
                 if (IS_ERR(to->thread)) {
-                        printk(KERN_INFO "[PFQ] kernel_thread() create failed on node %d!\n", to->cpu_index);
+                        printk(KERN_INFO "[PFQ] kernel_thread() create failed on cpu %d:%d!\n", to->cpu, cpu_to_node(to->cpu));
                         return PTR_ERR(to->thread);
                 }
 
-                kthread_bind(to->thread, to->cpu_index);
+                kthread_bind(to->thread, to->cpu);
 
                 pr_devel("[PFQ|%d] starting TX thread: done.\n", so->id);
 

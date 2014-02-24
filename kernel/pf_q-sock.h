@@ -101,7 +101,7 @@ struct pfq_tx_opt
 
         int                     if_index;
         int                     hw_queue;
-        int                     cpu_index;
+        int                     cpu;
 
         struct task_struct      *thread;
 
@@ -126,7 +126,7 @@ void pfq_tx_opt_init(struct pfq_tx_opt *that, size_t maxlen)
 
         that->if_index          = -1;
         that->hw_queue          = -1;
-        that->cpu_index         = -1;
+        that->cpu               = -1;
 
         that->thread            = NULL;
 }
