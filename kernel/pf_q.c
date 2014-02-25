@@ -498,6 +498,9 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
         }
 
 	pfq_prefetch_skb_flush(prefetch_queue);
+
+	put_cpu();
+
         return 0;
 }
 

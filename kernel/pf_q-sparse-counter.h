@@ -66,6 +66,7 @@ static inline
 void sparse_inc(sparse_counter_t *sc)
 {
         __sparse_inc(sc, get_cpu());
+        put_cpu();
 }
 
 
@@ -73,18 +74,21 @@ static inline
 void sparse_dec(sparse_counter_t *sc)
 {
         __sparse_dec(sc, get_cpu());
+        put_cpu();
 }
 
 static inline
 void sparse_add(sparse_counter_t *sc, long n)
 {
         __sparse_add(sc, n, get_cpu());
+        put_cpu();
 }
 
 static inline
 void sparse_sub(sparse_counter_t *sc, long n)
 {
         __sparse_sub(sc, n, get_cpu());
+        put_cpu();
 }
 
 
@@ -94,6 +98,7 @@ void sparse_set(sparse_counter_t *sc, long n)
         unsigned int i, me = get_cpu();
         for(i = 0; i < MAX_CPU_CTX; i++)
                 local_set(&sc->ctx[i].value, i == me ? n : 0);
+        put_cpu();
 }
 
 static inline
