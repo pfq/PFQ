@@ -54,7 +54,7 @@
 #include <pf_q-group.h>
 #include <pf_q-prefetch-queue.h>
 #include <pf_q-functional.h>
-#include <pf_q-bits.h>
+#include <pf_q-bitops.h>
 #include <pf_q-bpf.h>
 #include <pf_q-memory.h>
 #include <pf_q-queue.h>

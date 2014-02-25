@@ -28,7 +28,7 @@
 
 #include <pf_q-group.h>
 #include <pf_q-devmap.h>
-#include <pf_q-bits.h>
+#include <pf_q-bitops.h>
 
 
 DEFINE_SEMAPHORE(group_sem);

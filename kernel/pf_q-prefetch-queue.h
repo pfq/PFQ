@@ -25,7 +25,7 @@
 #ifndef _PF_Q_PREFETCH_QUEUE_H_
 #define _PF_Q_PREFETCH_QUEUE_H_
 
-#include <pf_q-bits.h>
+#include <pf_q-bitops.h>
 #include <pf_q-common.h>
 
 
