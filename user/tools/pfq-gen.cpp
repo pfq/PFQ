@@ -21,6 +21,7 @@
 #include <cmath>
 #include <tuple>
 #include <unordered_set>
+#include <random>
 
 #include <pfq.hpp>
 #include <pfq-lang.hpp>
@@ -29,10 +30,9 @@
 #include <netinet/udp.h>
 
 
-const char *packet = nullptr;
+char *packet = nullptr;
 
-
-const char *make_packet(size_t n)
+char *make_packet(size_t n)
 {
     auto p = new char[n];
 
@@ -69,6 +69,7 @@ namespace opt
     int seconds   = 10;
     size_t len    = 64;
     bool  async   = false;
+    bool  rand_ip = false;
 }
 
 
@@ -182,6 +183,7 @@ namespace test
         , m_bind(b)
         , m_pfq()
         , m_sent(std::unique_ptr<std::atomic_ullong>(new std::atomic_ullong(0)))
+        , m_gen()
         {
             if (m_bind.dev.empty())
                 throw std::runtime_error("context: device unspecified");
@@ -197,7 +199,6 @@ namespace test
 
                 q.enable();
 
-                std::cout << "starting thread on core: " << m_bind.queue[n] << std::endl;
                 q.start_tx_thread(m_bind.queue[n]);
 
                 m_pfq.push_back(std::move(q));
@@ -214,13 +215,23 @@ namespace test
 
         void operator()()
         {
+            auto ip = reinterpret_cast<iphdr *>(packet + 14);
+
             if (opt::async)
             {
                 for(;;)
                 {
                     for(unsigned int n = 0; n < m_pfq.size(); n++)
+                    {
+                        if (opt::rand_ip)
+                        {
+                            ip->saddr = m_gen();
+                            ip->daddr = m_gen();
+                        }
+
                         if (m_pfq[n].send_async(net::const_buffer(reinterpret_cast<const char *>(packet), opt::len)))
                             m_sent->fetch_add(1, std::memory_order_relaxed);
+                    }
                 }
             }
             else
@@ -228,8 +239,16 @@ namespace test
                 for(;;)
                 {
                     for(unsigned int n = 0; n < m_pfq.size(); n++)
+                    {
+                        if (opt::rand_ip)
+                        {
+                            ip->saddr = m_gen();
+                            ip->daddr = m_gen();
+                        }
+
                         if (m_pfq[n].send(net::const_buffer(reinterpret_cast<const char *>(packet), opt::len)))
                             m_sent->fetch_add(1, std::memory_order_relaxed);
+                    }
                 }
             }
         }
@@ -247,6 +266,8 @@ namespace test
         std::vector<pfq> m_pfq;
 
         std::unique_ptr<std::atomic_ullong> m_sent;
+
+        std::mt19937 m_gen;
     };
 
 }
@@ -267,7 +288,7 @@ unsigned int hardware_concurrency()
 
 void usage(const char *name)
 {
-    throw std::runtime_error(std::string("usage: ") + name + " [-a|--async] [-h|--help] [-l|--len]\n\t| T = dev[.queue.queue..]");
+    throw std::runtime_error(std::string("usage: ") + name + " [-h|--help] [-r|--rand-ip] [-a|--async] [-l|--len] T1 T2... \n\t| T = dev[.queue.queue..]");
 }
 
 
@@ -300,6 +321,13 @@ try
              strcmp(argv[i], "--async") == 0) {
 
             opt::async = true;
+            continue;
+        }
+
+        if ( strcmp(argv[i], "-r") == 0 ||
+             strcmp(argv[i], "--rand-ip") == 0) {
+
+            opt::rand_ip = true;
             continue;
         }
 
