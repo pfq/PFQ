@@ -136,7 +136,7 @@ __pfq_group_dtor(int gid)
 
         that->vlan_filt = false;
 
-        pr_devel("[PFQ] group gid:%d destroyed.\n", gid);
+        pr_devel("[PFQ] group id:%d destroyed.\n", gid);
 }
 
 

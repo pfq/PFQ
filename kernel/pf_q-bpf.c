@@ -59,15 +59,12 @@ pfq_alloc_sk_filter(struct sock_fprog *fprog)
 		return NULL;
 	}
 
-        pr_devel("[PFQ] %s: %p\n", __FUNCTION__,fp);
         return fp;
 }
 
 
 void pfq_free_sk_filter(struct sk_filter *filter)
 {
-        pr_devel("[PFQ] %s: %p\n", __FUNCTION__, filter);
-
         if (filter)
 	{
 		/* bpf_jit_free(fp); */
