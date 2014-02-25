@@ -453,7 +453,8 @@ namespace net {
             size_t rx_slots;
             size_t rx_slot_size;
 
-            size_t tx_slots;
+            size_t   tx_slots;
+            uint64_t tx_counter;
         };
 
         int fd_;
@@ -599,6 +600,7 @@ namespace net {
                                         0,
                                         0,
                                         offset,
+                                        0,
                                         0,
                                         0,
                                         0
@@ -1255,11 +1257,9 @@ namespace net {
         bool
         send_async(const_buffer pkt)
         {
-            static __thread int cnt;
-
 			auto ret = inject(pkt);
 
-            if ((cnt++ % 64) == 0)
+            if ((pdata_->tx_counter ++ % 128) == 0)
             	wakeup_tx_thread();
 
 			return ret;

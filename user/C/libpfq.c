@@ -67,6 +67,7 @@ typedef struct
 	size_t rx_offset;
 	size_t rx_slot_size;
         size_t tx_slots;
+	uint64_t tx_counter; 
 
 	const char * error;
 
@@ -145,6 +146,8 @@ pfq_open_group(unsigned int class_mask, int group_policy, size_t caplen, size_t 
 	q->rx_caplen     = 0;
 	q->rx_offset     = offset;
 	q->rx_slot_size  = 0;
+	q->tx_slots 	 = 0; 
+	q->tx_counter    = 0; 
 	q->error 	 = NULL;
 
         memset(&q->netq, 0, sizeof(q->netq));
@@ -915,11 +918,9 @@ pfq_send(pfq_t *q, const void *ptr, size_t len)
 int
 pfq_send_async(pfq_t *q, const void *ptr, size_t len)
 {
-        static __thread int cnt;
-
 	int ret = pfq_inject(q, ptr, len);
 
-        if ((cnt++ % 64) == 0)
+        if ((q->tx_counter++ % 128) == 0)
         	pfq_wakeup_tx_thread(q);
 
         return ret;
