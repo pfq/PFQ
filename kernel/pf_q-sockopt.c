@@ -732,8 +732,6 @@ int pfq_setsockopt(struct socket *sock,
         {
                 int cpu;
 
-                pr_devel("[PFQ|%d] starting TX thread...\n", so->id);
-
                 if (to->thread)
                 {
                         pr_devel("[PFQ|%d] TX thread already created on cpu %d:%d!\n", so->id, to->cpu, cpu_to_node(to->cpu));
@@ -771,8 +769,6 @@ int pfq_setsockopt(struct socket *sock,
                 }
 
                 kthread_bind(to->thread, to->cpu);
-
-                pr_devel("[PFQ|%d] starting TX thread: done.\n", so->id);
 
         } break;
 
