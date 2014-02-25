@@ -45,7 +45,7 @@ pfq_tx_thread(void *data)
 
         dev = dev_get_by_index(sock_net(&so->sk), so->tx_opt.if_index);
 
-	node = cpu_to_node(get_cpu());
+	node = cpu_to_node(smp_processor_id());
 
         printk(KERN_INFO "[PFQ|T] TX thread started on cpu %d:%d...\n", so->tx_opt.cpu, node);
 
