@@ -61,6 +61,6 @@ pfq_tx_thread(void *data)
 
         dev_put(dev);
 
-        printk(KERN_INFO "[PFQ|T] TX thread stopped (cpu %d:%d)\n", so->tx_opt.cpu, node);
+        printk(KERN_INFO "[PFQ|T] TX thread stopped on cpu %d:%d.\n", so->tx_opt.cpu, node);
         return 0;
 }
