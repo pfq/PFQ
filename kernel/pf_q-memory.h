@@ -292,6 +292,10 @@ struct sk_buff * pfq_alloc_skb(unsigned int size, gfp_t priority)
         {
                 return ____pfq_alloc_skb_recycle(size, priority, 0, NUMA_NO_NODE, &this_cpu->rx_recycle_list);
         }
+
+#ifdef PFQ_USE_SKB_RECYCLE_STAT
+        sparse_inc(&os_alloc);
+#endif
 #endif
         return __alloc_skb(size, priority, 0, NUMA_NO_NODE);
 }
@@ -307,6 +311,10 @@ struct sk_buff * pfq_tx_alloc_skb(unsigned int size, gfp_t priority, int node)
         {
                 return ____pfq_alloc_skb_recycle(size, priority, 0, node, &this_cpu->tx_recycle_list);
         }
+
+#ifdef PFQ_USE_SKB_RECYCLE_STAT
+        sparse_inc(&os_alloc);
+#endif
 #endif
         return __alloc_skb(size, priority, 0, NUMA_NO_NODE);
 }
