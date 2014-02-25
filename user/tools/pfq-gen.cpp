@@ -100,7 +100,6 @@ struct binding
 {
     std::vector<std::string>    dev;
     std::vector<int>            queue;
-    int                         core;
 };
 
 
@@ -127,7 +126,7 @@ show_binding(const binding &b)
             ret += ", ";
         ret += std::to_string(q);
     }
-    ret += "] core:" + std::to_string (b.core);
+    ret += "]";
 
     return ret + " }";
 }
@@ -136,18 +135,15 @@ show_binding(const binding &b)
 binding
 make_binding(const char *value)
 {
-    binding ret { {}, {}, -1 };
+    binding ret { {}, {} };
 
     auto vec = split(value, '.');
 
     ret.dev = split(vec[0].c_str(), ':');
 
     if (vec.size() > 1)
-        ret.core = std::atoi(vec[1].c_str());
-
-    if (vec.size() > 2)
     {
-        unsigned int n = 2;
+        unsigned int n = 1;
         for(; n != vec.size(); n++)
         {
             ret.queue.push_back(std::atoi(vec[n].c_str()));
@@ -201,7 +197,8 @@ namespace test
 
                 q.enable();
 
-                q.start_tx_thread(m_bind.core);
+                std::cout << "starting thread on core: " << m_bind.queue[n] << std::endl;
+                q.start_tx_thread(m_bind.queue[n]);
 
                 m_pfq.push_back(std::move(q));
 
@@ -270,7 +267,7 @@ unsigned int hardware_concurrency()
 
 void usage(const char *name)
 {
-    throw std::runtime_error(std::string("usage: ") + name + " [-a|--async] [-h|--help] [-l|--len]\n\t| T = dev.core[.queue]");
+    throw std::runtime_error(std::string("usage: ") + name + " [-a|--async] [-h|--help] [-l|--len]\n\t| T = dev[.queue.queue..]");
 }
 
 
