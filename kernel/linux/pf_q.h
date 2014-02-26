@@ -154,69 +154,107 @@ struct pfq_queue_hdr
 /* SPSC circular queue handling... */
 
 #define SPSC_QUEUE_SLOT_SIZE(x)    ALIGN(sizeof(struct pfq_pkt_hdr) + x, 8)
+ 
+static inline
+int pfq_spsc_next_index(struct pfq_tx_queue_hdr *q, unsigned int n)
+{
+        return (n + 1) & q->size_mask;
+}
+
+/* producer */
 
 static inline
-int pfq_spsc_write_index(struct pfq_tx_queue_hdr *q)
+int pfq_spsc_write_avail(struct pfq_tx_queue_hdr *q)
 {
         if (unlikely(q->producer.cache == 0)) {
                 /* consumer - producer - 1 + size */
                 q->producer.cache = (q->consumer.index - q->producer.index + q->size_mask) & q->size_mask;
         }
-        if (unlikely(q->producer.cache == 0)) {
+
+        return q->producer.cache;
+}
+
+
+static inline
+int pfq_spsc_write_index(struct pfq_tx_queue_hdr *q)
+{
+        if (pfq_spsc_write_avail(q) == 0) {
                 return -1;
         }
+
         return q->producer.index;
 }
+
+
+static inline
+void pfq_spsc_write_commit_n(struct pfq_tx_queue_hdr *q, unsigned int n)
+{
+        smp_wmb();
+
+        if (unlikely(n > q->producer.cache))
+            n = q->producer.cache;
+
+        q->producer.index = (q->producer.index + n) & q->size_mask;
+        q->producer.cache -= n;
+        
+        smp_wmb();
+}
+
 
 static inline
 void pfq_spsc_write_commit(struct pfq_tx_queue_hdr *q)
 {
-        smp_wmb();
-        if (likely(q->producer.cache != 0)) {
-                q->producer.index = (q->producer.index + 1) & q->size_mask;
-                q->producer.cache--;
-        }
-        smp_wmb();
+    pfq_spsc_write_commit_n(q,1);
 }
 
-static inline
-int pfq_spsc_write_avail(struct pfq_tx_queue_hdr *q)
-{
-        return q->producer.cache;
-}
 
 
 /* consumer */
 
 static inline
-int pfq_spsc_read_index(struct pfq_tx_queue_hdr *q)
+int pfq_spsc_read_avail(struct pfq_tx_queue_hdr *q)
 {
         if(unlikely(q->consumer.cache == 0)) {
                 q->consumer.cache = (q->producer.index - q->consumer.index + q->size) & q->size_mask;
         }
-        if(unlikely(q->consumer.cache == 0)) {
-                return -1;
+
+        return q->consumer.cache;
+}
+
+
+static inline
+int pfq_spsc_read_index(struct pfq_tx_queue_hdr *q)
+{
+        if (pfq_spsc_read_avail(q) == 0) {
+            return -1;
         }
 
         return q->consumer.index;
 }
 
+
 static inline
-void pfq_spsc_read_commit(struct pfq_tx_queue_hdr *q)
+void pfq_spsc_read_commit_n(struct pfq_tx_queue_hdr *q, unsigned int n)
 {
         smp_wmb();
-        if (likely(q->consumer.cache != 0)) {
-                q->consumer.index = (q->consumer.index + 1) & q->size_mask;
-                q->consumer.cache--;
-        }
+
+        if (unlikely(n > q->consumer.cache)) 
+            n = q->consumer.cache;
+
+        q->consumer.index  = (q->consumer.index + n) & q->size_mask;
+        q->consumer.cache -= n;
+
         smp_wmb();
 }
 
+
 static inline
-int pfq_spsc_read_avail(struct pfq_tx_queue_hdr *q)
+void pfq_spsc_read_commit(struct pfq_tx_queue_hdr *q)
 {
-        return q->consumer.cache;
+    pfq_spsc_read_commit_n(q,1);
 }
+
+
 
 /*
    +------------------+----------------------+          +----------------------+          +----------------------+
