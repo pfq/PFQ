@@ -74,17 +74,40 @@ int pfq_tx_queue_flush(struct pfq_tx_opt *to, struct net_device *dev, int node)
         struct local_data *local;
         struct pfq_pkt_hdr * h;
         struct sk_buff *skb, *skbs[Q_BATCH_MAX_LEN];
-        int i, n, index, avail;
+        int n, index, avail;
         size_t len, qlen = 0;
 
 #ifdef PFQ_TX_PROFILE
 	static int pkt_counter;
 #endif
         
+	/* transmit the batch queue... */
+
+	void pfq_tx_batch_queue(void)
+	{              
+        	int s = pfq_queue_xmit(skbs, qlen, dev, to->hw_queue);
+		int i;
+			
+		/* free/recycle the packets now... */
+		
+		for(i = 0; i < qlen; ++i)
+			pfq_kfree_skb_recycle(skbs[i], &local->tx_recycle_list);
+			
+
+		for(i = 0; i < s; ++i)
+		{
+			/* release this slot */
+			pfq_spsc_read_commit(to->queue_info);
+		}
+
+		qlen = 0;
+	}
+
+
 	index = pfq_spsc_read_index(to->queue_info);
         avail = pfq_spsc_read_avail(to->queue_info);
-
         local = __this_cpu_ptr(cpu_data);
+
 
         for(n = 0; n < avail; ++n)
         {
@@ -139,23 +162,9 @@ int pfq_tx_queue_flush(struct pfq_tx_opt *to, struct net_device *dev, int node)
                 /* send the packets... */
                 
 		skbs[qlen++] = skb;
-		if (qlen == batch_len)
-		{
-                        int s = pfq_queue_xmit(skbs, qlen, dev, to->hw_queue);
-			
-			/* free/recycle the packets now... */
-			
-			for(i = 0; i < qlen; ++i)
-				pfq_kfree_skb_recycle(skbs[i], &local->tx_recycle_list);
-			
+		if (qlen == batch_len) {
 
-			for(i = 0; i < s; ++i)
-			{
-				/* release this slot */
-				pfq_spsc_read_commit(to->queue_info);
-			}
-
-			qlen = 0;
+			pfq_tx_batch_queue();
 		}
 
 		/* get the next index... */
@@ -174,23 +183,10 @@ int pfq_tx_queue_flush(struct pfq_tx_opt *to, struct net_device *dev, int node)
         }
 
 	if (qlen) {
-
-       		int s = pfq_queue_xmit(skbs, qlen, dev, to->hw_queue);
-			
-		/* free/recycle the packets now... */
-			
-		for(i = 0; i < qlen; ++i)
-			pfq_kfree_skb_recycle(skbs[i], &local->tx_recycle_list);
-			
-
-		for(i = 0; i < s; ++i)
-		{
-			/* release this slot */
-			pfq_spsc_read_commit(to->queue_info);
-		}
+                
+		pfq_tx_batch_queue();
 	}
 
-			
         return n;
 }
 
