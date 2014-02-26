@@ -22,64 +22,72 @@
  ****************************************************************/
 
 
-#ifndef _PF_Q_PREFETCH_QUEUE_H_
-#define _PF_Q_PREFETCH_QUEUE_H_
+#ifndef _PF_Q_NON_INTRUSIVE_H_
+#define _PF_Q_NON_INTRUSIVE_H_
+
 
 #include <pf_q-bitops.h>
 #include <pf_q-common.h>
 
 
-struct pfq_prefetch_skb
+struct pfq_non_intrusive_skb
 {
-        struct sk_buff *queue[Q_PREFETCH_MAX_LEN];  /* sk_buff */
-        size_t counter;
+        size_t len;
+        struct sk_buff *queue[Q_NON_INTRUSIVE_MAX_LEN];  /* sk_buff */
 };
 
 
-#define pfq_prefetch_skb_for_each(skb, n, q) \
-        for(n = 0; (n != (q)->counter) && (skb = (q)->queue[n]); \
+#define pfq_non_intrusive_for_each(skb, n, q) \
+        for(n = 0; (n != (q)->len) && (skb = (q)->queue[n]); \
                 __builtin_prefetch((q)->queue[n+1], 0, 1), n++)
 
-#define pfq_prefetch_skb_for_each_backward(skb, n, q) \
-        for(n = (q)->counter; (n > 0) && (skb = (q)->queue[n-1]); \
+
+#define pfq_non_intrusive_for_each_backward(skb, n, q) \
+        for(n = (q)->len; (n > 0) && (skb = (q)->queue[n-1]); \
                 __builtin_prefetch((q)->queue[n-2], 0, 1), n--)
 
-#define pfq_prefetch_skb_for_each_bitmask(skb, mask, n, q) \
+
+#define pfq_non_intrusive_for_each_bitmask(skb, mask, n, q) \
         for(n = pfq_ctz(mask); mask && ((skb = (q)->queue[n]), true); \
                 mask ^=(1UL << n), n = pfq_ctz(mask))
 
-
-extern int pfq_prefetch_skb_purge_all(void);
+        
+static inline
+void pfq_non_intrusive_init(struct pfq_non_intrusive_skb *q)
+{
+    q->len = 0;
+}
 
 static inline
-int pfq_prefetch_skb_push(struct pfq_prefetch_skb *q, struct sk_buff *skb)
+int pfq_non_intrusive_push(struct pfq_non_intrusive_skb *q, struct sk_buff *skb)
 {
-        if (q->counter < Q_PREFETCH_MAX_LEN)
-                return q->queue[q->counter++] = skb, 0;
+        if (q->len < Q_NON_INTRUSIVE_MAX_LEN)
+                return q->queue[q->len++] = skb, 0;
         return -1;
 }
 
 
 static inline
-struct sk_buff * pfq_prefetch_skb_pop(struct pfq_prefetch_skb *q)
+struct sk_buff * pfq_non_intrusive_pop(struct pfq_non_intrusive_skb *q)
 {
-        if (q->counter > 0)
-                return q->queue[--q->counter];
+        if (q->len > 0)
+                return q->queue[--q->len];
         return NULL;
 }
 
 
 static inline
-void pfq_prefetch_skb_flush(struct pfq_prefetch_skb *q)
+void pfq_non_intrusive_flush(struct pfq_non_intrusive_skb *q)
 {
-        q->counter = 0;
+        q->len = 0;
 }
+
 
 static inline
-size_t pfq_prefetch_skb_len(struct pfq_prefetch_skb *q)
+size_t pfq_non_intrusive_len(struct pfq_non_intrusive_skb *q)
 {
-        return q->counter;
+        return q->len;
 }
 
 
-#endif /* _PF_Q_PREFETCH_QUEUE_H_ */
+#endif /* _PF_Q_NON_INTRUSIVE_H_ */

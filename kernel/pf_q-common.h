@@ -30,14 +30,16 @@
 
 #include <pf_q-sparse-counter.h>
 
-#define Q_MAX_CPU               (sizeof(long)<<3)
-#define Q_MAX_ID                (sizeof(long)<<3)
-#define Q_MAX_GROUP             (sizeof(long)<<3)
-#define Q_PREFETCH_MAX_LEN      (sizeof(long)<<3)
-#define Q_BATCH_MAX_LEN         (sizeof(long)<<3)
+#define Q_MAX_CPU                (sizeof(long)<<3)
+#define Q_MAX_ID                 (sizeof(long)<<3)
+#define Q_MAX_GROUP              (sizeof(long)<<3)
+
+#define Q_NON_INTRUSIVE_MAX_LEN  (sizeof(long)<<3)
+#define Q_BATCH_MAX_LEN          (sizeof(long)<<3)
 
 #define Q_MAX_DEVICE            256
 #define Q_MAX_DEVICE_MASK       (Q_MAX_DEVICE-1)
+
 #define Q_MAX_HW_QUEUE          256
 #define Q_MAX_HW_QUEUE_MASK     (Q_MAX_HW_QUEUE-1)
 
@@ -45,6 +47,7 @@
 
 #define Q_TX_RING_SIZE          (8192)
 #define Q_TX_RING_MASK          (PFQ_TX_RING_SIZE-1)
+
 #define Q_SLOT_ALIGN(s, n)      ((s+(n-1)) & ~(n-1))
 
 

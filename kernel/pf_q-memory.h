@@ -29,7 +29,7 @@
 #include <linux/skbuff.h>
 
 #include <pf_q-common.h>
-#include <pf_q-prefetch-queue.h>
+#include <pf_q-non-intrusive.h>
 #include <pf_q-sparse-counter.h>
 
 extern int recycle_len;
@@ -53,7 +53,7 @@ struct local_data
         int                     sock_cnt;
         int 			flowctrl;
 
-        struct pfq_prefetch_skb prefetch_queue;
+        struct pfq_non_intrusive_skb prefetch_queue;
 
         atomic_t                enable_recycle;
         struct sk_buff_head     tx_recycle_list;

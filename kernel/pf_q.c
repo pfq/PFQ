@@ -52,7 +52,7 @@
 #include <pf_q-sockopt.h>
 #include <pf_q-devmap.h>
 #include <pf_q-group.h>
-#include <pf_q-prefetch-queue.h>
+#include <pf_q-prefetch.h>
 #include <pf_q-functional.h>
 #include <pf_q-bitops.h>
 #include <pf_q-bpf.h>
@@ -124,7 +124,7 @@ DEFINE_SEMAPHORE(sock_sem);
 
 
 inline
-bool pfq_copy_to_user_skbs(struct pfq_rx_opt *ro, int cpu, unsigned long sock_queue, struct pfq_prefetch_skb *skbs, int gid)
+bool pfq_copy_to_user_skbs(struct pfq_rx_opt *ro, int cpu, unsigned long sock_queue, struct pfq_non_intrusive_skb *skbs, int gid)
 {
         /* enqueue the sk_buff: it's wait-free. */
 
@@ -246,7 +246,7 @@ int
 pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 {
         struct local_data * local = __this_cpu_ptr(cpu_data);
-        struct pfq_prefetch_skb * prefetch_queue = &local->prefetch_queue;
+        struct pfq_non_intrusive_skb * prefetch_queue = &local->prefetch_queue;
         unsigned long group_mask, socket_mask;
         unsigned long sock_queue[sizeof(unsigned long) << 3];
         struct pfq_annotation *cb;
@@ -303,9 +303,9 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 
         /* enqueue this skb ... */
 
-        pfq_prefetch_skb_push(prefetch_queue, skb);
+        pfq_non_intrusive_push(prefetch_queue, skb);
 
-        if (pfq_prefetch_skb_len(prefetch_queue) < prefetch_len) {
+        if (pfq_non_intrusive_len(prefetch_queue) < prefetch_len) {
                 return 0;
 	}
 
@@ -321,7 +321,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 
         group_mask = 0;
 
-        pfq_prefetch_skb_for_each(skb, n, prefetch_queue)
+        pfq_non_intrusive_for_each(skb, n, prefetch_queue)
         {
                 struct pfq_annotation *cb = pfq_skb_annotation(skb);
 		unsigned long local_group_mask = __pfq_devmap_get_groups(skb->dev->ifindex, skb_get_rx_queue(skb));
@@ -341,7 +341,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 
                 socket_mask = 0;
 
-        	pfq_prefetch_skb_for_each(skb, n, prefetch_queue)
+        	pfq_non_intrusive_for_each(skb, n, prefetch_queue)
 		{
                 	struct pfq_annotation *cb = pfq_skb_annotation(skb);
 
@@ -471,7 +471,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 
         /* free skb, or route them to kernel... */
 
-        pfq_prefetch_skb_for_each(skb, n, prefetch_queue)
+        pfq_non_intrusive_for_each(skb, n, prefetch_queue)
         {
                 cb = pfq_skb_annotation(skb);
 
@@ -502,7 +502,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
                 }
         }
 
-	pfq_prefetch_skb_flush(prefetch_queue);
+	pfq_non_intrusive_flush(prefetch_queue);
 
 	put_cpu();
 
@@ -614,7 +614,7 @@ pfq_create(
         so->mem_addr = NULL;
         so->mem_size = 0;
 
-        /* to protect pfq_prefetch_skb_purge_all() */
+        /* to protect pfq_prefetch_purge_all() */
 
         down(&sock_sem);
 
@@ -706,7 +706,7 @@ pfq_release(struct socket *sock)
 
         if (pfq_get_sock_count() == 0)
         {
-                total += pfq_prefetch_skb_purge_all();
+                total += pfq_prefetch_purge_all();
 
 #ifdef PFQ_USE_SKB_RECYCLE
                 total += pfq_skb_recycle_purge();
@@ -941,8 +941,8 @@ static int __init pfq_init_module(void)
         pfq_proto_ops_init();
         pfq_proto_init();
 
-        if (prefetch_len > Q_PREFETCH_MAX_LEN || prefetch_len == 0) {
-                printk(KERN_INFO "[PFQ] prefetch_len=%d not allowed (0,%zu)!\n", prefetch_len, Q_PREFETCH_MAX_LEN);
+        if (prefetch_len > Q_NON_INTRUSIVE_MAX_LEN || prefetch_len == 0) {
+                printk(KERN_INFO "[PFQ] prefetch_len=%d not allowed (0,%zu)!\n", prefetch_len, Q_NON_INTRUSIVE_MAX_LEN);
                 return -EFAULT;
         }
         
@@ -1006,7 +1006,7 @@ static void __exit pfq_exit_module(void)
 
         /* purge both pre-fetch and recycles queues */
 
-        total += pfq_prefetch_skb_purge_all();
+        total += pfq_prefetch_purge_all();
 
 #ifdef PFQ_USE_SKB_RECYCLE
         total += pfq_skb_recycle_purge();

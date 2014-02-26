@@ -26,6 +26,7 @@
 #include <linux/module.h>
 #include <linux/pf_q-fun.h>
 
+#include <pf_q-non-intrusive.h>
 #include <pf_q-mpdb-queue.h>
 
 
@@ -50,7 +51,7 @@ char *mpdb_slot_ptr(struct pfq_rx_opt *ro, struct pfq_rx_queue_hdr *qd, int inde
 }
 
 
-size_t mpdb_enqueue_batch(struct pfq_rx_opt *ro, unsigned long bitqueue, int burst_len, struct pfq_prefetch_skb *skbs, int gid)
+size_t mpdb_enqueue_batch(struct pfq_rx_opt *ro, unsigned long bitqueue, int burst_len, struct pfq_non_intrusive_skb *skbs, int gid)
 {
 	struct pfq_rx_queue_hdr *rx = ro->queue_info;
 	int data, q_len, q_index;
@@ -70,7 +71,7 @@ size_t mpdb_enqueue_batch(struct pfq_rx_opt *ro, unsigned long bitqueue, int bur
 	q_index   = MPDB_QUEUE_INDEX(data);
         this_slot = mpdb_slot_ptr(ro, rx, q_index, q_len);
 
-	pfq_prefetch_skb_for_each_bitmask(skb, bitqueue, n, skbs)
+	pfq_non_intrusive_for_each_bitmask(skb, bitqueue, n, skbs)
 	{
 		unsigned int bytes = likely (skb->len > (int)ro->offset) ? min((int)skb->len - (int)ro->offset, (int)ro->caplen) : 0;
 

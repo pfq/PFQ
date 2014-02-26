@@ -30,7 +30,7 @@
 
 #include <pf_q-memory.h>
 
-int pfq_prefetch_skb_purge_all(void)
+int pfq_prefetch_purge_all(void)
 {
         int cpu;
         int total = 0;
@@ -40,11 +40,11 @@ int pfq_prefetch_skb_purge_all(void)
         for_each_possible_cpu(cpu) {
 
                 struct local_data *local = per_cpu_ptr(cpu_data, cpu);
-                struct pfq_prefetch_skb *this_queue = &local->prefetch_queue;
+                struct pfq_non_intrusive_skb *this_queue = &local->prefetch_queue;
                 struct sk_buff *skb;
 		int n = 0;
 
-		pfq_prefetch_skb_for_each(skb, n, this_queue)
+		pfq_non_intrusive_for_each(skb, n, this_queue)
 		{
                         struct pfq_annotation *cb = pfq_skb_annotation(skb);
                         if (unlikely(cb->stolen_skb))
@@ -52,9 +52,9 @@ int pfq_prefetch_skb_purge_all(void)
                  	kfree_skb(skb);
 		}
 
-                total += pfq_prefetch_skb_len(this_queue);
+                total += pfq_non_intrusive_len(this_queue);
 
-       		pfq_prefetch_skb_flush(this_queue);
+       		pfq_non_intrusive_flush(this_queue);
         }
 
         return total;
