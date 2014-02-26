@@ -87,7 +87,10 @@ module_param(cap_len,         int, 0644);
 module_param(max_len,         int, 0644);
 module_param(rx_queue_slots,  int, 0644);
 module_param(tx_queue_slots,  int, 0644);
+
 module_param(prefetch_len,    int, 0644);
+module_param(batch_len,       int, 0644);
+
 module_param(recycle_len,     int, 0644);
 module_param(flow_control,    int, 0644);
 module_param(vl_untag,        int, 0644);
@@ -104,7 +107,9 @@ MODULE_PARM_DESC(max_len, " Maximum transmission length (bytes)");
 MODULE_PARM_DESC(rx_queue_slots, " Rx Queue slots (default=131072)");
 MODULE_PARM_DESC(tx_queue_slots, " Tx Queue slots (default=131072)");
 
-MODULE_PARM_DESC(prefetch_len,  " Prefetch queue length");
+MODULE_PARM_DESC(prefetch_len,  " Rx prefetch queue length");
+MODULE_PARM_DESC(batch_len,     " Tx batch queue length");
+
 MODULE_PARM_DESC(recycle_len,   " Recycle skb list (default=16384)");
 MODULE_PARM_DESC(flow_control,  " Flow control value (default=0)");
 MODULE_PARM_DESC(vl_untag,      " Enable vlan untagging (default=0)");
@@ -936,10 +941,16 @@ static int __init pfq_init_module(void)
         pfq_proto_ops_init();
         pfq_proto_init();
 
-        if (prefetch_len > Q_PREFETCH_MAX_LEN) {
-                printk(KERN_INFO "[PFQ] prefetch_len=%d not allowed (max=%zu)!\n", prefetch_len, (sizeof(unsigned long) << 3)-1);
+        if (prefetch_len > Q_PREFETCH_MAX_LEN || prefetch_len == 0) {
+                printk(KERN_INFO "[PFQ] prefetch_len=%d not allowed (0,%zu)!\n", prefetch_len, Q_PREFETCH_MAX_LEN);
                 return -EFAULT;
         }
+        
+	if (batch_len > Q_BATCH_MAX_LEN || batch_len == 0) { 
+                printk(KERN_INFO "[PFQ] batch_len=%d not allowed (0,%zu)!\n", batch_len, Q_BATCH_MAX_LEN);
+                return -EFAULT;
+        }
+
 
 	/* create a per-cpu context */
 	cpu_data = alloc_percpu(struct local_data);

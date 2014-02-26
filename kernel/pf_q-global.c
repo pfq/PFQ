@@ -41,7 +41,10 @@ int rx_queue_slots  	= 131072;       /* slots per queue (both rx and tx) */
 
 int cap_len      	= 1514;
 int max_len      	= 1514;
+
 int prefetch_len 	= 1;
+int batch_len 		= 1;
+
 int flow_control 	= 0;
 int vl_untag     	= 0;
 
