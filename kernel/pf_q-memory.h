@@ -157,6 +157,7 @@ struct sk_buff * pfq_skb_recycle(struct sk_buff *skb)
         atomic_set(&shinfo->dataref,1);
 
         memset(skb, 0, offsetof(struct sk_buff, tail));
+
         skb->data = skb->head + NET_SKB_PAD;
 
         skb_reset_tail_pointer(skb);
@@ -199,11 +200,11 @@ struct sk_buff * ____pfq_alloc_skb_recycle(unsigned int size, gfp_t priority, in
         {
                 skb = skb_peek_tail(recycle_list);
 
-                if (skb != NULL)
+                if (likely(skb != NULL))
                 {
                         if (!skb_shared(skb) && !skb_cloned(skb))
                         {
-                                skb = __skb_dequeue_tail(recycle_list);
+                                __skb_unlink(skb, recycle_list);
 
                                 if (pfq_skb_end_offset(skb) >= SKB_DATA_ALIGN(size + NET_SKB_PAD)) {
 
