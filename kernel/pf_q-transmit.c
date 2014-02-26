@@ -72,18 +72,27 @@ int pfq_tx_queue_flush(struct pfq_tx_opt *to, struct net_device *dev, int node)
 {
         struct local_data *local;
         struct pfq_pkt_hdr * h;
-        int n, index, avail;
         struct sk_buff *skb;
+        int n, rc, index, avail;
         size_t len;
 
-        index = pfq_spsc_read_index(to->queue_info);
+#ifdef PFQ_TX_PROFILE
+	static int pkt_counter;
+#endif
+        
+	index = pfq_spsc_read_index(to->queue_info);
         avail = pfq_spsc_read_avail(to->queue_info);
 
         local = __this_cpu_ptr(cpu_data);
 
         for(n = 0; n < avail; n++)
         {
-                if (unlikely(index >= to->size))
+
+#ifdef PFQ_TX_PROFILE
+		cycles_t start = get_cycles();
+#endif
+
+		if (unlikely(index >= to->size))
                 {
                         if(printk_ratelimit())
                                 printk(KERN_WARNING "[PFQ] bogus spsc index! q->size=%zu index=%d\n", to->size, index);
@@ -93,55 +102,69 @@ int pfq_tx_queue_flush(struct pfq_tx_opt *to, struct net_device *dev, int node)
                 h = (struct pfq_pkt_hdr *) (to->base_addr + index * to->queue_info->slot_size);
 
                 skb = pfq_tx_alloc_skb(to->maxlen, GFP_KERNEL, node);
-                if (skb == NULL)
-		{
+                if (unlikely(skb == NULL))
 		        break;
-		}
 
                 skb->dev = dev;
 
                 /* copy packet to this skb: */
 
-                len =  min_t(size_t, h->len, to->queue_info->max_len);
+                len = min_t(size_t, h->len, to->queue_info->max_len);
 
                 /* set the tail */
 
                 skb_reset_tail_pointer(skb);
+
                 skb->len = 0;
 
                 skb_put(skb, len);
 
                 /* copy bytes in the socket buffer */
 
+#if 1
+                skb_copy_to_linear_data_offset(skb, 0, h+1, len);
+#else
                 if (skb_store_bits(skb, 0, h+1, len) < 0)
                 {
                         pfq_kfree_skb_recycle(skb, &local->tx_recycle_list);
                         break;
                 }
+#endif
 
-                /* release the slot */
+                /* take this skb: skb_get */
 
-                pfq_spsc_read_commit(to->queue_info);
-
-                /* take this skb */
-
-                skb_get(skb);
+		atomic_set(&skb->users, 2);
 
                 /* send the packet... */
-
-                pfq_queue_xmit(skb, to->hw_queue);
-
+                
+                rc = pfq_queue_xmit(skb, to->hw_queue);
+		
                 /* free/recycle the packet now... */
+                		
+		pfq_kfree_skb_recycle(skb, &local->tx_recycle_list);
+		
+		if (rc == NETDEV_TX_OK)
+               	{
+			/* release this slot */
 
-                pfq_kfree_skb_recycle(skb, &local->tx_recycle_list);
-
-                /* get the next index... */
+                	pfq_spsc_read_commit(to->queue_info);
+		}
+                
+		/* get the next index... */
 
                 index = pfq_spsc_read_index(to->queue_info);
                 if (index == -1)
                         break;
+		
+#ifdef PFQ_TX_PROFILE
+		if ((pkt_counter++ % 1048576) == 0)
+		{	
+			cycles_t stop = get_cycles();
+			printk(KERN_INFO "[PFQ] TX cpu-cycle: %llu\n", (stop - start));
+		}
+#endif
         }
-
+			
         return n;
 }
 
@@ -173,20 +196,20 @@ int pfq_queue_xmit(struct sk_buff *skb, int queue_index)
                 {
 		        rc = dev->netdev_ops->ndo_start_xmit(skb, dev);
 
-			if (dev_xmit_complete(rc)) {
-			        goto out;
+			if (dev_xmit_complete(rc)) 
+			{
+				goto out;
 			}
 		}
 	}
-
+	
 	__netif_tx_unlock_bh(txq);
 
-        kfree_skb(skb);
+	kfree_skb(skb);
+	return -ENETDOWN;
 
-	rc = -ENETDOWN;
-        return rc;
 out:
-        __netif_tx_unlock_bh(txq);
-        return rc;
+	__netif_tx_unlock_bh(txq);
+	return rc;
 }
 
