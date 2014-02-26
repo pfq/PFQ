@@ -72,7 +72,7 @@ struct netdev_queue *pfq_pick_tx(struct net_device *dev, struct sk_buff *skb, in
 int pfq_tx_queue_flush(struct pfq_tx_opt *to, struct net_device *dev, int node)
 {
 	struct pfq_non_intrusive_skb skbs;
-        
+
 	struct local_data *local;
         struct pfq_pkt_hdr * h;
         struct sk_buff *skb;
@@ -82,44 +82,36 @@ int pfq_tx_queue_flush(struct pfq_tx_opt *to, struct net_device *dev, int node)
 #ifdef PFQ_TX_PROFILE
 	static int pkt_counter;
 #endif
-        
+
 	/* transmit the batch queue... */
 
 	void pfq_tx_batch_queue(void)
-	{            
+	{
 		struct sk_buff *skb;
-        	int s, i; 
-		
+        	int s, i;
+
 		s = pfq_queue_xmit(&skbs, dev, to->hw_queue);
-			
+
 		/* free/recycle the packets now... */
-		
 
 		pfq_non_intrusive_for_each(skb, i, &skbs)
 		{
 			pfq_kfree_skb_recycle(skb, &local->tx_recycle_list);
-		}	
-
-		pfq_non_intrusive_for_each(skb, i, &skbs)
-		{
-			if (i == s)
-				break;
-
-			/* release this slot */
-			pfq_spsc_read_commit(to->queue_info);
 		}
+
+		pfq_spsc_read_commit_n(to->queue_info, pfq_non_intrusive_len(&skbs));
 
 		pfq_non_intrusive_flush(&skbs);
 	}
 
-	
+
 	pfq_non_intrusive_init(&skbs);
 
 
-	index = pfq_spsc_read_index(to->queue_info);
-        avail = pfq_spsc_read_avail(to->queue_info);
         local = __this_cpu_ptr(cpu_data);
 
+        avail = pfq_spsc_read_avail(to->queue_info);
+	index = pfq_spsc_read_index(to->queue_info);
 
         for(n = 0; n < avail; ++n)
         {
@@ -171,7 +163,7 @@ int pfq_tx_queue_flush(struct pfq_tx_opt *to, struct net_device *dev, int node)
 		atomic_set(&skb->users, 2);
 
                 /* send the packets... */
-                
+
 		pfq_non_intrusive_push(&skbs, skb);
 
 		if (pfq_non_intrusive_len(&skbs) == batch_len)
@@ -181,13 +173,11 @@ int pfq_tx_queue_flush(struct pfq_tx_opt *to, struct net_device *dev, int node)
 
 		/* get the next index... */
 
-                index = pfq_spsc_read_index(to->queue_info);
-                if (index == -1)
-                        break;
-		
+                index = pfq_spsc_next_index(to->queue_info, index);
+
 #ifdef PFQ_TX_PROFILE
 		if ((pkt_counter++ % 1048576) == 0)
-		{	
+		{
 			cycles_t stop = get_cycles();
 			printk(KERN_INFO "[PFQ] TX cpu-cycle: %llu\n", (stop - start));
 		}
@@ -195,7 +185,7 @@ int pfq_tx_queue_flush(struct pfq_tx_opt *to, struct net_device *dev, int node)
         }
 
 	if (pfq_non_intrusive_len(&skbs)) {
-                
+
 		pfq_tx_batch_queue();
 	}
 
@@ -226,13 +216,13 @@ int __pfq_queue_xmit(struct sk_buff *skb, struct net_device *dev, struct netdev_
                 {
 		        rc = dev->netdev_ops->ndo_start_xmit(skb, dev);
 
-			if (dev_xmit_complete(rc)) 
+			if (dev_xmit_complete(rc))
 			{
 				goto out;
 			}
 		}
 	}
-	
+
 	kfree_skb(skb);
 	return -ENETDOWN;
 
@@ -243,7 +233,7 @@ out:
 
 int pfq_queue_xmit(struct pfq_non_intrusive_skb *skbs, struct net_device *dev, int queue_index)
 {
-       	struct netdev_queue *txq; 
+       	struct netdev_queue *txq;
 	struct sk_buff *skb;
 	int i, n = 0;
 
@@ -264,4 +254,4 @@ int pfq_queue_xmit(struct pfq_non_intrusive_skb *skbs, struct net_device *dev, i
 	return n;
 }
 
-	
+
