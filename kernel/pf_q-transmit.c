@@ -36,6 +36,7 @@
 #include <pf_q-sock.h>
 #include <pf_q-transmit.h>
 #include <pf_q-common.h>
+#include <pf_q-global.h>
 
 static inline u16 pfq_dev_cap_txqueue(struct net_device *dev, u16 queue_index)
 {
@@ -72,9 +73,9 @@ int pfq_tx_queue_flush(struct pfq_tx_opt *to, struct net_device *dev, int node)
 {
         struct local_data *local;
         struct pfq_pkt_hdr * h;
-        struct sk_buff *skb;
-        int n, rc, index, avail;
-        size_t len;
+        struct sk_buff *skb, *skbs[Q_BATCH_MAX_LEN];
+        int i, n, index, avail;
+        size_t len, qlen = 0;
 
 #ifdef PFQ_TX_PROFILE
 	static int pkt_counter;
@@ -85,7 +86,7 @@ int pfq_tx_queue_flush(struct pfq_tx_opt *to, struct net_device *dev, int node)
 
         local = __this_cpu_ptr(cpu_data);
 
-        for(n = 0; n < avail; n++)
+        for(n = 0; n < avail; ++n)
         {
 
 #ifdef PFQ_TX_PROFILE
@@ -135,21 +136,28 @@ int pfq_tx_queue_flush(struct pfq_tx_opt *to, struct net_device *dev, int node)
 
 		atomic_set(&skb->users, 2);
 
-                /* send the packet... */
+                /* send the packets... */
                 
-                rc = pfq_queue_xmit(skb, to->hw_queue);
-		
-                /* free/recycle the packet now... */
-                		
-		pfq_kfree_skb_recycle(skb, &local->tx_recycle_list);
-		
-		if (rc == NETDEV_TX_OK)
-               	{
-			/* release this slot */
+		skbs[qlen++] = skb;
+		if (qlen == batch_len)
+		{
+                        int s = pfq_queue_xmit(skbs, qlen, dev, to->hw_queue);
+			
+			/* free/recycle the packets now... */
+			
+			for(i = 0; i < qlen; ++i)
+				pfq_kfree_skb_recycle(skbs[i], &local->tx_recycle_list);
+			
 
-                	pfq_spsc_read_commit(to->queue_info);
+			for(i = 0; i < s; ++i)
+			{
+				/* release this slot */
+				pfq_spsc_read_commit(to->queue_info);
+			}
+
+			qlen = 0;
 		}
-                
+
 		/* get the next index... */
 
                 index = pfq_spsc_read_index(to->queue_info);
@@ -164,27 +172,41 @@ int pfq_tx_queue_flush(struct pfq_tx_opt *to, struct net_device *dev, int node)
 		}
 #endif
         }
+
+	if (qlen) {
+
+       		int s = pfq_queue_xmit(skbs, qlen, dev, to->hw_queue);
+			
+		/* free/recycle the packets now... */
+			
+		for(i = 0; i < qlen; ++i)
+			pfq_kfree_skb_recycle(skbs[i], &local->tx_recycle_list);
+			
+
+		for(i = 0; i < s; ++i)
+		{
+			/* release this slot */
+			pfq_spsc_read_commit(to->queue_info);
+		}
+	}
+
 			
         return n;
 }
 
 
 
-int pfq_queue_xmit(struct sk_buff *skb, int queue_index)
+int __pfq_queue_xmit(struct sk_buff *skb, struct net_device *dev, struct netdev_queue *txq, int queue_index)
 {
-        struct net_device *dev = skb->dev;
-        struct netdev_queue *txq;
         int rc = -ENOMEM;
 
         skb_reset_mac_header(skb);
 
+        skb_set_queue_mapping(skb, queue_index);
+
         /* Disable soft irqs for various locks below. Also
          * stops preemption for RCU.
          */
-
-	txq = pfq_pick_tx(dev, skb, queue_index);
-
-        __netif_tx_lock_bh(txq);
 
         if (dev->flags & IFF_UP) {
 
@@ -203,13 +225,35 @@ int pfq_queue_xmit(struct sk_buff *skb, int queue_index)
 		}
 	}
 	
-	__netif_tx_unlock_bh(txq);
-
 	kfree_skb(skb);
 	return -ENETDOWN;
 
 out:
-	__netif_tx_unlock_bh(txq);
 	return rc;
 }
 
+
+int pfq_queue_xmit(struct sk_buff *skbs[], size_t qlen, struct net_device *dev, int queue_index)
+{
+       	struct netdev_queue *txq; 
+	int n, i;
+
+        queue_index = pfq_dev_cap_txqueue(dev, queue_index);
+
+        txq = netdev_get_tx_queue(dev, queue_index);
+
+	__netif_tx_lock_bh(txq);
+
+	n = 0;
+	for(i = 0; i < qlen; ++i)
+	{
+		if (__pfq_queue_xmit(skbs[i], dev, txq, queue_index) == NETDEV_TX_OK)
+			++n;
+	}
+
+	__netif_tx_unlock_bh(txq);
+
+	return n;
+}
+
+	
