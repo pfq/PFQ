@@ -946,8 +946,8 @@ static int __init pfq_init_module(void)
                 return -EFAULT;
         }
         
-	if (batch_len > Q_BATCH_MAX_LEN || batch_len == 0) { 
-                printk(KERN_INFO "[PFQ] batch_len=%d not allowed (0,%zu)!\n", batch_len, Q_BATCH_MAX_LEN);
+	if (batch_len > Q_NON_INTRUSIVE_MAX_LEN || batch_len == 0) { 
+                printk(KERN_INFO "[PFQ] batch_len=%d not allowed (0,%zu)!\n", batch_len, Q_NON_INTRUSIVE_MAX_LEN);
                 return -EFAULT;
         }
 

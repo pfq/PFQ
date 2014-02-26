@@ -35,7 +35,6 @@
 #define Q_MAX_GROUP              (sizeof(long)<<3)
 
 #define Q_NON_INTRUSIVE_MAX_LEN  (sizeof(long)<<3)
-#define Q_BATCH_MAX_LEN          (sizeof(long)<<3)
 
 #define Q_MAX_DEVICE            256
 #define Q_MAX_DEVICE_MASK       (Q_MAX_DEVICE-1)
