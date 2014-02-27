@@ -69,7 +69,7 @@ struct netdev_queue *pfq_pick_tx(struct net_device *dev, struct sk_buff *skb, in
 }
 
 
-int pfq_tx_queue_flush(struct pfq_tx_opt *to, struct net_device *dev, int node)
+int pfq_tx_queue_flush(struct pfq_tx_opt *to, struct net_device *dev, int cpu, int node)
 {
 	struct pfq_non_intrusive_skb skbs;
 
@@ -88,9 +88,14 @@ int pfq_tx_queue_flush(struct pfq_tx_opt *to, struct net_device *dev, int node)
 	void pfq_tx_batch_queue(void)
 	{
 		struct sk_buff *skb;
-        	int s, i;
+        	int sent, i;
 
-		s = pfq_queue_xmit(&skbs, dev, to->hw_queue);
+		sent = pfq_queue_xmit(&skbs, dev, to->hw_queue);
+
+                /* update stats */
+
+                __sparse_add(&to->stat.sent, sent, cpu);
+                __sparse_add(&to->stat.disc, pfq_non_intrusive_len(&skbs) - sent, cpu);
 
 		/* free/recycle the packets now... */
 
@@ -106,7 +111,6 @@ int pfq_tx_queue_flush(struct pfq_tx_opt *to, struct net_device *dev, int node)
 
 
 	pfq_non_intrusive_init(&skbs);
-
 
         local = __this_cpu_ptr(cpu_data);
 

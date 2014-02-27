@@ -110,6 +110,11 @@ main(int argc, char *argv[])
 
         pfq_stop_tx_thread(q);
 
+        struct pfq_stats stat;
+        pfq_get_stats(q, &stat);
+
+        fprintf(stdout, "sent: %lu - disc: %lu\n", stat.sent, stat.disc);
+
         pfq_close(q);
 
         return 0;

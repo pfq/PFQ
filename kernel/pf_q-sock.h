@@ -50,7 +50,7 @@ struct pfq_rx_opt
         size_t                  slot_size;
 
         wait_queue_head_t       waitqueue;
-        pfq_kstat_t             stat;
+        pfq_rx_stat_t           stat;
 
 } __attribute__((aligned(64)));
 
@@ -81,6 +81,7 @@ void pfq_rx_opt_init(struct pfq_rx_opt *that, size_t caplen)
         sparse_set(&that->stat.recv, 0);
         sparse_set(&that->stat.lost, 0);
         sparse_set(&that->stat.drop, 0);
+
 }
 
 
@@ -104,6 +105,8 @@ struct pfq_tx_opt
         int                     cpu;
 
         struct task_struct      *thread;
+
+        pfq_tx_stat_t           stat;
 
 } __attribute__((aligned(64)));
 
@@ -129,6 +132,9 @@ void pfq_tx_opt_init(struct pfq_tx_opt *that, size_t maxlen)
         that->cpu               = -1;
 
         that->thread            = NULL;
+
+        sparse_set(&that->stat.sent, 0);
+        sparse_set(&that->stat.disc, 0);
 }
 
 

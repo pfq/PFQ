@@ -143,6 +143,9 @@ int pfq_getsockopt(struct socket *sock,
                     stat.lost = sparse_read(&ro->stat.lost);
                     stat.drop = sparse_read(&ro->stat.drop);
 
+                    stat.sent = sparse_read(&to->stat.sent);
+                    stat.disc = sparse_read(&to->stat.disc);
+
                     if (copy_to_user(optval, &stat, sizeof(stat)))
                             return -EFAULT;
             } break;
@@ -239,6 +242,9 @@ int pfq_getsockopt(struct socket *sock,
                     stat.recv = sparse_read(&pfq_groups[gid].recv);
                     stat.lost = sparse_read(&pfq_groups[gid].lost);
                     stat.drop = sparse_read(&pfq_groups[gid].drop);
+
+                    stat.sent = 0;
+                    stat.disc = 0;
 
                     if (copy_to_user(optval, &stat, sizeof(stat)))
                             return -EFAULT;
@@ -837,7 +843,9 @@ int pfq_setsockopt(struct socket *sock,
                         return -EPERM;
                 }
 
-                pfq_tx_queue_flush(to, dev, NUMA_NO_NODE);
+                pfq_tx_queue_flush(to, dev, get_cpu(), NUMA_NO_NODE);
+                put_cpu();
+
                 dev_put(dev);
         } break;
 

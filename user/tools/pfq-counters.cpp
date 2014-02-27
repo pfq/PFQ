@@ -461,7 +461,7 @@ try
                   });
 
     unsigned long long sum, flow, old = 0;
-    pfq_stats sum_stats, old_stats = {0,0,0};
+    pfq_stats sum_stats, old_stats = {0,0,0,0,0};
 
     std::cout << "----------- capture started ------------\n";
 
@@ -473,7 +473,7 @@ try
 
         sum = 0;
         flow = 0;
-        sum_stats = {0,0,0};
+        sum_stats = {0,0,0,0,0};
 
         std::for_each(ctx.begin(), ctx.end(), [&](const test::context &c) {
                       sum += c.read();

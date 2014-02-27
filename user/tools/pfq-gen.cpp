@@ -253,10 +253,17 @@ namespace test
             }
         }
 
-        unsigned long long
-        sent() const
+        pfq_stats
+        stats() const
         {
-            return m_sent->load(std::memory_order_relaxed);
+            pfq_stats ret = {0, 0, 0 ,0 ,0};
+
+            for(auto & q : m_pfq)
+            {
+                ret +=  q.stats();
+            }
+
+            return ret;
         }
 
     private:
@@ -362,7 +369,8 @@ try
                   vt.push_back(std::move(t));
     });
 
-    unsigned long long sum, old = 0;
+    pfq_stats cur  = {0, 0, 0, 0, 0},
+              prec = {0, 0, 0, 0, 0};
 
     std::cout << "------------ gen started ------------\n";
 
@@ -372,19 +380,18 @@ try
     {
         std::this_thread::sleep_for(std::chrono::seconds(1));
 
-        sum = 0;
-
-        std::for_each(ctx.begin(), ctx.end(), [&](const test::context &c) {
-                      sum += c.sent();
-                      });
+        std::for_each(ctx.begin(), ctx.end(), [&](const test::context &c)
+        {
+            cur = c.stats();
+        });
 
         auto end = std::chrono::system_clock::now();
+        auto delta = std::chrono::duration_cast<std::chrono::microseconds>(end-begin).count();
 
-        std::cout << "sent: " << vt100::BOLD <<
-        ((sum-old)*1000000)/std::chrono::duration_cast<std::chrono::microseconds>(end-begin).count()
-            << vt100::RESET << " pkt/sec" << std::endl;
+        std::cout << "sent: " << vt100::BOLD << ((cur.sent-prec.sent)*1000000)/delta << vt100::RESET << " pkt/sec - "
+                  << "disc: " << vt100::BOLD << ((cur.disc-prec.disc)*1000000)/delta << vt100::RESET << " pkt/sec" << std::endl;
 
-        old = sum, begin = end;
+        prec = cur, begin = end;
     }
 
     std::for_each(vt.begin(), vt.end(), std::mem_fn(&std::thread::join));

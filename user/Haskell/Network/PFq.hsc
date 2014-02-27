@@ -170,9 +170,11 @@ data PktHdr = PktHdr {
 -- Statistics:
 
 data Statistics = Statistics {
-      sReceived     :: {-# UNPACK #-} !Word32    -- packets received
-    , sLost         :: {-# UNPACK #-} !Word32    -- packets lost
-    , sDropped      :: {-# UNPACK #-} !Word32    -- packets dropped
+      sReceived   ::  Int  -- packets received
+    , sLost       ::  Int  -- packets lost
+    , sDropped    ::  Int  -- packets dropped
+    , sSent       ::  Int  -- packets sent
+    , sDiscard    ::  Int  -- packets discarded
     } deriving (Eq, Show)
 
 
@@ -636,7 +638,7 @@ getStats :: Ptr PFqTag
          -> IO Statistics
 
 getStats hdl =
-    allocaBytes ((sizeOf (0 :: CLong)) * 3) $ \sp -> do
+    allocaBytes ((sizeOf (0 :: CLong)) * 5) $ \sp -> do
         pfq_get_stats hdl sp >>= throwPFqIf_ hdl (== -1)
         makeStats sp
 
@@ -658,10 +660,14 @@ makeStats p = do
         _recv <- ((\ptr -> peekByteOff ptr 0 )) p
         _lost <- ((\ptr -> peekByteOff ptr (sizeOf _recv) )) p
         _drop <- ((\ptr -> peekByteOff ptr (sizeOf _recv + sizeOf _lost))) p
+        _sent <- ((\ptr -> peekByteOff ptr (sizeOf _recv + sizeOf _lost + sizeOf _drop ))) p
+        _disc <- ((\ptr -> peekByteOff ptr (sizeOf _recv + sizeOf _lost + sizeOf _drop + sizeOf _sent ))) p
         return Statistics {
-                            sReceived = fromIntegral (_recv :: CLong),
-                            sLost     = fromIntegral (_lost :: CLong),
-                            sDropped  = fromIntegral (_drop :: CLong)
+                            sReceived = fromIntegral (_recv :: CULong),
+                            sLost     = fromIntegral (_lost :: CULong),
+                            sDropped  = fromIntegral (_drop :: CULong),
+                            sSent     = fromIntegral (_sent :: CULong),
+                            sDiscard  = fromIntegral (_disc :: CULong)
                           }
 
 -- groupComputation:

@@ -23,7 +23,7 @@
 
 module Main where
 
-import Network.PFq as Q
+import qualified Network.PFq as Q
 import Foreign
 import System.Environment
 
@@ -53,31 +53,37 @@ ping = C.pack [
 
 -- import Debug.Trace
 
-sender :: String -> IO ()
-sender dev = do
+sender :: [String] -> IO ()
+sender []       = undefined
+sender (dev:xs) = do
+
+    let numb = read (head xs) :: Int
 
     fp <- Q.open 128 0 4096
 
-    putStrLn  $ "sending packets to dev " ++ dev  ++ "..."
+    putStrLn  $ "sending " ++ show numb ++ " packets to dev " ++ dev  ++ "..."
 
     withForeignPtr fp  $ \q -> do
             Q.enable q
             Q.bindTx q dev (-1)
             Q.startTxThread q 0
 
-            replicateM_ 1 $ do
+            replicateM_ numb $ do
                 Q.send_async q ping
-                -- Q.inject q ping
-                -- Q.txQueueFlush q
-                -- Q.wakeupTxThread q
+                threadDelay 1
 
-            threadDelay 10
+            threadDelay 1000000
+
+            stat <- Q.getStats q
+            print $ stat
+
             Q.close q
-
 
 main :: IO ()
 main = do
     args <- getArgs
     case length args of
-        0   -> error "usage: pfq-read dev"
-        _   -> sender (head args)
+        0  -> error "usage: pfq-send dev numb"
+        1  -> error "usage: pfq-send dev numb"
+        _  -> sender args
+

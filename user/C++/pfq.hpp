@@ -1185,7 +1185,7 @@ namespace net {
         //
         // stats
         //
-        
+
         pfq_stats
         stats() const
         {
@@ -1229,7 +1229,7 @@ namespace net {
         //
         // TX API...
         //
-        
+
         void
         bind_tx(const char *dev, int queue = any_queue)
         {
@@ -1253,7 +1253,7 @@ namespace net {
             return true;
         }
 
-        
+
         bool
         send_async(const_buffer pkt)
         {
@@ -1319,7 +1319,7 @@ namespace net {
     typename std::basic_ostream<CharT, Traits> &
     operator<<(std::basic_ostream<CharT,Traits> &out, const pfq_stats& rhs)
     {
-        return out << rhs.recv << ' ' << rhs.lost << ' ' << rhs.drop;
+        return out << rhs.recv << ' ' << rhs.lost << ' ' << rhs.drop << ' ' << rhs.sent << ' ' << rhs.disc;
     }
 
     inline pfq_stats&
@@ -1328,6 +1328,10 @@ namespace net {
         lhs.recv += rhs.recv;
         lhs.lost += rhs.lost;
         lhs.drop += rhs.drop;
+
+        lhs.sent += rhs.sent;
+        lhs.disc += rhs.disc;
+
         return lhs;
     }
 
@@ -1337,6 +1341,10 @@ namespace net {
         lhs.recv -= rhs.recv;
         lhs.lost -= rhs.lost;
         lhs.drop -= rhs.drop;
+
+        lhs.sent -= rhs.sent;
+        lhs.disc -= rhs.disc;
+
         return lhs;
     }
 

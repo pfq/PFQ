@@ -154,7 +154,7 @@ struct pfq_queue_hdr
 /* SPSC circular queue handling... */
 
 #define SPSC_QUEUE_SLOT_SIZE(x)    ALIGN(sizeof(struct pfq_pkt_hdr) + x, 8)
- 
+
 static inline
 int pfq_spsc_next_index(struct pfq_tx_queue_hdr *q, unsigned int n)
 {
@@ -196,7 +196,7 @@ void pfq_spsc_write_commit_n(struct pfq_tx_queue_hdr *q, unsigned int n)
 
         q->producer.index = (q->producer.index + n) & q->size_mask;
         q->producer.cache -= n;
-        
+
         smp_wmb();
 }
 
@@ -238,7 +238,7 @@ void pfq_spsc_read_commit_n(struct pfq_tx_queue_hdr *q, unsigned int n)
 {
         smp_wmb();
 
-        if (unlikely(n > q->consumer.cache)) 
+        if (unlikely(n > q->consumer.cache))
             n = q->consumer.cache;
 
         q->consumer.index  = (q->consumer.index + n) & q->size_mask;
@@ -409,7 +409,6 @@ struct pfq_fprog
         struct sock_fprog fcode;
 };
 
-
 /* pfq statistics for socket and groups */
 
 struct pfq_stats
@@ -417,6 +416,9 @@ struct pfq_stats
         unsigned long int recv;   /* received by the queue         */
         unsigned long int lost;   /* queue is full, packet lost... */
         unsigned long int drop;   /* by filter                     */
+
+        unsigned long int sent;   /* sent by the driver */
+        unsigned long int disc;   /* discarded by the driver */
 };
 
 #endif /* _PF_Q_H_ */

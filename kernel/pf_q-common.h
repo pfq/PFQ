@@ -52,13 +52,20 @@
 
 /* sparse_counter_t stats */
 
-typedef struct pfq_kstats
+typedef struct pfq_rx_stats
 {
-        sparse_counter_t  recv;    /* received by the queue */
-        sparse_counter_t  lost;    /* packets lost due to queue congestion */
-        sparse_counter_t  drop;    /* dropped by filters */
+        sparse_counter_t  recv;         /* received by the queue */
+        sparse_counter_t  lost;         /* packets lost due to queue congestion */
+        sparse_counter_t  drop;         /* dropped by filters */
+} pfq_rx_stat_t;
 
-} pfq_kstat_t;
+
+typedef struct pfq_tx_stats
+{
+        sparse_counter_t  sent;         /* sent by the driver */
+        sparse_counter_t  disc;         /* discarded by the driver */
+
+} pfq_tx_stat_t;
 
 
 #endif /* _PF_COMMON_H_ */
