@@ -1259,10 +1259,8 @@ namespace net {
         {
 			auto ret = inject(pkt);
 
-            if (ret) {
-                if ((pdata_->tx_counter ++ % 128) == 0)
-            	    wakeup_tx_thread();
-            }
+            if ((pdata_->tx_counter ++ % 128) == 0)
+                wakeup_tx_thread();
 
 			return ret;
         }

@@ -101,7 +101,8 @@ static __thread const char * __error;
 
 const char *pfq_error(pfq_t *q)
 {
-	return q == NULL ? __error : q->error;
+        const char * p = q == NULL ? __error : q->error;
+	return p == NULL ? "NULL" : p;
 }
 
 
@@ -919,11 +920,9 @@ pfq_send_async(pfq_t *q, const void *ptr, size_t len)
 {
         int rc = pfq_inject(q, ptr, len);
 
-        if (rc != 0) {
-                if ((q->tx_counter++ % 128) == 0)
-        	        pfq_wakeup_tx_thread(q);
-        }
-
+        if ((q->tx_counter++ % 128) == 0)
+        	pfq_wakeup_tx_thread(q);
+        
         return rc;
 }
 
