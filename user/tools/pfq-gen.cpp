@@ -66,7 +66,6 @@ char *make_packet(size_t n)
 
 namespace opt
 {
-    int seconds   = 10;
     size_t len    = 64;
     bool  async   = false;
     bool  rand_ip = false;
@@ -369,20 +368,20 @@ try
                   vt.push_back(std::move(t));
     });
 
-    pfq_stats cur  = {0, 0, 0, 0, 0},
-              prec = {0, 0, 0, 0, 0};
+    pfq_stats cur, prec = {0, 0, 0, 0, 0};
 
     std::cout << "------------ gen started ------------\n";
 
     auto begin = std::chrono::system_clock::now();
 
-    for(int y=0; y < opt::seconds; y++)
+    for(int y=0; true; y++)
     {
         std::this_thread::sleep_for(std::chrono::seconds(1));
 
+        cur = {0,0,0,0,0};
         std::for_each(ctx.begin(), ctx.end(), [&](const test::context &c)
         {
-            cur = c.stats();
+            cur += c.stats();
         });
 
         auto end = std::chrono::system_clock::now();
