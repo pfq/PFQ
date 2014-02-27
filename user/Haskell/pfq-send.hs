@@ -59,20 +59,25 @@ sender (dev:xs) = do
 
     let numb = read (head xs) :: Int
 
-    fp <- Q.open 128 0 4096
+    fp <- Q.open 128 0 1024
 
     putStrLn  $ "sending " ++ show numb ++ " packets to dev " ++ dev  ++ "..."
 
     withForeignPtr fp  $ \q -> do
             Q.enable q
             Q.bindTx q dev (-1)
+
             Q.startTxThread q 0
 
             replicateM_ numb $ do
-                Q.send_async q ping
-                threadDelay 1
+               Q.send_async q ping
+               threadDelay 1
+
+            Q.wakeupTxThread q
 
             threadDelay 1000000
+
+            Q.stopTxThread q
 
             stat <- Q.getStats q
             print $ stat
