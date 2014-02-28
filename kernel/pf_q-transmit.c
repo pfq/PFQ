@@ -38,7 +38,7 @@
 #include <pf_q-common.h>
 #include <pf_q-global.h>
 
-static inline u16 pfq_dev_cap_txqueue(struct net_device *dev, u16 queue_index)
+static inline u16 __pfq_dev_cap_txqueue(struct net_device *dev, u16 queue_index)
 {
         if (unlikely(queue_index >= dev->real_num_tx_queues))
                 return 0;
@@ -46,13 +46,14 @@ static inline u16 pfq_dev_cap_txqueue(struct net_device *dev, u16 queue_index)
         return queue_index;
 }
 
+/* select the right tx queue, and fix queue_index (-1 means any queue) */
 
-struct netdev_queue *pfq_pick_tx(struct net_device *dev, struct sk_buff *skb, int queue_index)
+struct netdev_queue *pfq_pick_tx(struct net_device *dev, struct sk_buff *skb, int *queue_index)
 {
-        if (dev->real_num_tx_queues != 1 && queue_index == -1)
+        if (dev->real_num_tx_queues != 1 && *queue_index == -1)
         {
                 const struct net_device_ops *ops = dev->netdev_ops;
-                queue_index = ops->ndo_select_queue
+                *queue_index = ops->ndo_select_queue
                                 ?
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(3,13,0))
                                 ops->ndo_select_queue(dev, skb)
@@ -62,10 +63,9 @@ struct netdev_queue *pfq_pick_tx(struct net_device *dev, struct sk_buff *skb, in
                                 : 0;
         }
 
-        queue_index = pfq_dev_cap_txqueue(dev, queue_index);
+        *queue_index = __pfq_dev_cap_txqueue(dev, *queue_index);
 
-        skb_set_queue_mapping(skb, queue_index);
-        return netdev_get_tx_queue(dev, queue_index);
+        return netdev_get_tx_queue(dev, *queue_index);
 }
 
 
@@ -198,13 +198,11 @@ int pfq_tx_queue_flush(struct pfq_tx_opt *to, struct net_device *dev, int cpu, i
 
 
 
-int __pfq_queue_xmit(struct sk_buff *skb, struct net_device *dev, struct netdev_queue *txq, int queue_index)
+int __pfq_queue_xmit(struct sk_buff *skb, struct net_device *dev, struct netdev_queue *txq)
 {
         int rc = -ENOMEM;
 
         skb_reset_mac_header(skb);
-
-        skb_set_queue_mapping(skb, queue_index);
 
         /* Disable soft irqs for various locks below. Also
          * stops preemption for RCU.
@@ -241,15 +239,20 @@ int pfq_queue_xmit(struct pfq_non_intrusive_skb *skbs, struct net_device *dev, i
 	struct sk_buff *skb;
 	int i, n = 0;
 
-        queue_index = pfq_dev_cap_txqueue(dev, queue_index);
+        /* get txq and fix the queue_index for this batch.
+         *
+         * note: in case the queue_index is set to any-queue (-1), the driver along the first skb
+         * select the queue */
 
-        txq = netdev_get_tx_queue(dev, queue_index);
+        txq = pfq_pick_tx(dev, skbs->queue[0], &queue_index);
 
 	__netif_tx_lock_bh(txq);
 
 	pfq_non_intrusive_for_each(skb, i, skbs)
 	{
-		if (__pfq_queue_xmit(skb, dev, txq, queue_index) == NETDEV_TX_OK)
+                skb_set_queue_mapping(skb, queue_index);
+
+		if (__pfq_queue_xmit(skb, dev, txq) == NETDEV_TX_OK)
 			++n;
 	}
 
