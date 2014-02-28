@@ -760,21 +760,28 @@ int pfq_setsockopt(struct socket *sock,
                 if (copy_from_user(&cpu, optval, optlen))
                         return -EFAULT;
 
+                if (cpu != -1 && !cpu_online(cpu))
+                {
+                        pr_devel("[PFQ|%d] invalid cpu!\n", so->id);
+                        return -EPERM;
+                }
+
                 to->cpu = cpu;
 
                 pr_devel("[PFQ|%d] creating TX thread on cpu %d:%d if_index:%d hw_queue:%d\n", so->id, to->cpu, cpu_to_node(to->cpu), to->if_index, to->hw_queue);
 
                 to->thread = kthread_create_on_node(pfq_tx_thread,
                                                     so,
-                                                    cpu_to_node(to->cpu),
-                                                    "pfq_tx_%d", to->cpu);
+                                                    to->cpu == -1 ? -1 : cpu_to_node(to->cpu),
+                                                    "pfq_tx_%d", so->id);
 
                 if (IS_ERR(to->thread)) {
                         printk(KERN_INFO "[PFQ] kernel_thread() create failed on cpu %d:%d!\n", to->cpu, cpu_to_node(to->cpu));
                         return PTR_ERR(to->thread);
                 }
 
-                kthread_bind(to->thread, to->cpu);
+                if (to->cpu != -1)
+                        kthread_bind(to->thread, to->cpu);
 
         } break;
 
