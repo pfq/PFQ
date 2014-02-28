@@ -527,12 +527,12 @@ void test_leave_group()
     	pfq_t * q = pfq_open_group(Q_CLASS_DEFAULT, Q_GROUP_UNDEFINED, 64, 0, 1024);
     	assert(q);
 
-	int gid = pfq_join_group(q, 42, Q_CLASS_DEFAULT, Q_GROUP_SHARED);
-	assert(gid == 42);
+	int gid = pfq_join_group(q, 22, Q_CLASS_DEFAULT, Q_GROUP_SHARED);
+	assert(gid == 22);
 
-	assert(pfq_leave_group(q, 41) == -1);
+	assert(pfq_leave_group(q, 21) == -1);
 
-	assert(pfq_leave_group(q, 42) == 0);
+	assert(pfq_leave_group(q, 22) == 0);
 
 	assert(pfq_group_id(q) == -1);
 
@@ -555,13 +555,13 @@ void test_vlan()
 	assert(pfq_vlan_filters_enable(q, gid, 1) == 0);
 	assert(pfq_vlan_filters_enable(q, gid, 0) == 0);
 
-	assert(pfq_vlan_set_filter(q, gid, 42) == -1);
-	assert(pfq_vlan_reset_filter(q, gid, 42) == -1);
+	assert(pfq_vlan_set_filter(q, gid, 22) == -1);
+	assert(pfq_vlan_reset_filter(q, gid, 22) == -1);
 
 	assert(pfq_vlan_filters_enable(q, gid, 1) == 0);
 
-	assert(pfq_vlan_set_filter(q, gid, 42) == 0);
-	assert(pfq_vlan_reset_filter(q, gid, 42) == 0);
+	assert(pfq_vlan_set_filter(q, gid, 22) == 0);
+	assert(pfq_vlan_reset_filter(q, gid, 22) == 0);
 
 	pfq_close(q);
 }
@@ -571,7 +571,7 @@ void test_group_context()
 {
         pfq_t * q = pfq_open(64, 0, 1024);
 
-        int n = 42;
+        int n = 22;
 
         assert(pfq_set_group_function_context(q, pfq_group_id(q), &n, sizeof(n), 0) == 0);
 
