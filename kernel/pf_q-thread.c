@@ -48,7 +48,7 @@ pfq_tx_thread(void *data)
         cpu  = smp_processor_id();
 	node = cpu_to_node(cpu);
 
-        printk(KERN_INFO "[PFQ|T] TX thread started on cpu %d:%d...\n", so->tx_opt.cpu, node);
+        printk(KERN_INFO "[PFQ|T] TX thread started on cpu %d...\n", so->tx_opt.cpu);
 
         for(;;)
         {
@@ -62,6 +62,6 @@ pfq_tx_thread(void *data)
 
         dev_put(dev);
 
-        printk(KERN_INFO "[PFQ|T] TX thread stopped on cpu %d:%d.\n", so->tx_opt.cpu, node);
+        printk(KERN_INFO "[PFQ|T] TX thread stopped on cpu %d.\n", so->tx_opt.cpu);
         return 0;
 }
