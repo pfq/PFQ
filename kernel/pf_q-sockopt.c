@@ -428,10 +428,11 @@ int pfq_setsockopt(struct socket *sock,
 
                     if (copy_from_user(&tstamp, optval, optlen))
                             return -EFAULT;
-                    if (tstamp != 0 && tstamp != 1)
-                            return -EINVAL;
+
+                    tstamp = tstamp ? 1 : 0;
 
                     /* update the timestamp_toggle counter */
+
                     atomic_add(tstamp - so->rx_opt.tstamp, &timestamp_toggle);
                     so->rx_opt.tstamp = tstamp;
 
@@ -440,14 +441,19 @@ int pfq_setsockopt(struct socket *sock,
 
         case Q_SO_SET_RX_CAPLEN:
             {
-                    size_t caplen;
+                    typeof(so->rx_opt.caplen) caplen;
 
                     if (optlen != sizeof(caplen))
                             return -EINVAL;
                     if (copy_from_user(&caplen, optval, optlen))
                             return -EFAULT;
 
-                    so->rx_opt.caplen = min(caplen, (size_t)cap_len); /* cap_len: max capture length */
+                    if (caplen > (size_t)cap_len) {
+                        pr_devel("[PFQ|%d] invalid caplen:%zu (max: %d)\n", so->id, caplen, cap_len);
+                        return -EPERM;
+                    }
+
+                    so->rx_opt.caplen = caplen;
 
                     so->rx_opt.slot_size = MPDB_QUEUE_SLOT_SIZE(so->rx_opt.caplen);
 
@@ -457,14 +463,19 @@ int pfq_setsockopt(struct socket *sock,
 
         case Q_SO_SET_RX_SLOTS:
             {
-                    size_t slots;
+                    typeof(so->rx_opt.size) slots;
 
                     if (optlen != sizeof(slots))
                             return -EINVAL;
                     if (copy_from_user(&slots, optval, optlen))
                             return -EFAULT;
 
-                    so->rx_opt.size = min(slots, (size_t)rx_queue_slots);
+                    if (slots > (size_t)rx_queue_slots) {
+                        pr_devel("[PFQ|%d] invalid rx slots:%zu (max: %d)\n", so->id, slots, rx_queue_slots);
+                        return -EPERM;
+                    }
+
+                    so->rx_opt.size = slots;
 
                     pr_devel("[PFQ|%d] rx_queue_slots:%zu\n", so->id, so->rx_opt.size);
             } break;
@@ -472,14 +483,18 @@ int pfq_setsockopt(struct socket *sock,
 
         case Q_SO_SET_TX_MAXLEN:
             {
-                    size_t maxlen;
-
+                    typeof (so->tx_opt.maxlen) maxlen;
                     if (optlen != sizeof(maxlen))
                             return -EINVAL;
                     if (copy_from_user(&maxlen, optval, optlen))
                             return -EFAULT;
 
-                    so->tx_opt.maxlen = min(maxlen, (size_t)max_len); /* cap_len: max capture length */
+                    if (maxlen > (size_t)max_len) {
+                        pr_devel("[PFQ|%d] invalid maxlen:%zu (max: %d)\n", so->id, maxlen, max_len);
+                        return -EPERM;
+                    }
+
+                    so->tx_opt.maxlen = maxlen;
 
                     so->tx_opt.slot_size = SPSC_QUEUE_SLOT_SIZE(so->tx_opt.maxlen); /* max_len: max length */
 
@@ -489,7 +504,7 @@ int pfq_setsockopt(struct socket *sock,
 
         case Q_SO_SET_TX_SLOTS:
             {
-                    size_t slots;
+                    typeof (so->tx_opt.size) slots;
 
                     if (optlen != sizeof(slots))
                             return -EINVAL;
@@ -497,19 +512,37 @@ int pfq_setsockopt(struct socket *sock,
                             return -EFAULT;
 
                     if (slots & (slots-1))
+                    {
+                            pr_devel("[PFQ|%d] tx slots must be a power of two.\n", so->id);
                             return -EINVAL;
+                    }
 
-                    so->tx_opt.size = min(slots,(size_t)tx_queue_slots);
+                    if (slots > (size_t)tx_queue_slots) {
+                        pr_devel("[PFQ|%d] invalid tx slots:%zu (max: %d)\n", so->id, slots, tx_queue_slots);
+                        return -EPERM;
+                    }
+
+                    so->tx_opt.size = slots;
 
                     pr_devel("[PFQ|%d] tx_queue_slots:%zu\n", so->id, so->tx_opt.size);
             } break;
 
         case Q_SO_SET_RX_OFFSET:
             {
-                    if (optlen != sizeof(so->rx_opt.offset))
+                    typeof(so->rx_opt.offset) offset;
+
+                    if (optlen != sizeof(offset))
                             return -EINVAL;
-                    if (copy_from_user(&so->rx_opt.offset, optval, optlen))
+                    if (copy_from_user(&offset, optval, optlen))
                             return -EFAULT;
+
+                    if (offset > 1500)
+                    {
+                            pr_devel("[PFQ|%d] invalid offset:%zu.\n", so->id, offset);
+                            return -EINVAL;
+                    }
+
+                    so->rx_opt.offset = offset;
 
                     pr_devel("[PFQ|%d] offset:%zu\n", so->id, so->rx_opt.offset);
             } break;
@@ -519,7 +552,6 @@ int pfq_setsockopt(struct socket *sock,
                     int gid;
                     if (optlen != sizeof(gid))
                             return -EINVAL;
-
                     if (copy_from_user(&gid, optval, optlen))
                             return -EFAULT;
 
@@ -549,9 +581,9 @@ int pfq_setsockopt(struct socket *sock,
 	case Q_SO_GROUP_CONTEXT:
 	    {
 		    struct pfq_group_context s;
+
 		    if (optlen != sizeof(s))
 			    return -EINVAL;
-
 		    if (copy_from_user(&s, optval, optlen))
 			    return -EFAULT;
 
@@ -592,7 +624,6 @@ int pfq_setsockopt(struct socket *sock,
 
 		    if (optlen != sizeof(s))
 			    return -EINVAL;
-
 		    if (copy_from_user(&s, optval, optlen))
 			    return -EFAULT;
 
@@ -671,7 +702,6 @@ int pfq_setsockopt(struct socket *sock,
 
 		    if (optlen != sizeof(vlan))
 			    return -EINVAL;
-
 		    if (copy_from_user(&vlan, optval, optlen))
 			    return -EFAULT;
 
@@ -727,6 +757,20 @@ int pfq_setsockopt(struct socket *sock,
                 if (copy_from_user(&info, optval, optlen))
                         return -EFAULT;
 
+                rcu_read_lock();
+                if (!dev_get_by_index_rcu(sock_net(&so->sk), info.if_index))
+                {
+                        rcu_read_unlock();
+                        pr_devel("[PFQ|%d] TX bind: invalid if_index:%d\n", so->id, to->if_index);
+                        return -EPERM;
+                }
+                rcu_read_unlock();
+
+                if (info.hw_queue < -1)
+                {
+                        pr_devel("[PFQ|%d] TX bind: invalid queue:%d\n", so->id, to->hw_queue);
+                }
+
                 to->if_index = info.if_index;
                 to->hw_queue = info.hw_queue;
 
@@ -760,9 +804,9 @@ int pfq_setsockopt(struct socket *sock,
                 if (copy_from_user(&cpu, optval, optlen))
                         return -EFAULT;
 
-                if (cpu != -1 && !cpu_online(cpu))
+                if (cpu < -1 || (cpu > -1  && !cpu_online(cpu)))
                 {
-                        pr_devel("[PFQ|%d] invalid cpu!\n", so->id);
+                        pr_devel("[PFQ|%d] invalid cpu (%d)!\n", so->id, cpu);
                         return -EPERM;
                 }
 
@@ -795,11 +839,8 @@ int pfq_setsockopt(struct socket *sock,
                         return -EPERM;
                 }
 
-                if (to->thread)
-                {
-                        kthread_stop(to->thread);
-                        to->thread = NULL;
-                }
+                kthread_stop(to->thread);
+                to->thread = NULL;
 
                 pr_devel("[PFQ|%d] stop TX thread: done.\n", so->id);
 
