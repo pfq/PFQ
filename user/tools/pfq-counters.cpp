@@ -508,7 +508,7 @@ try
         auto end = std::chrono::system_clock::now();
 
         std::cout << "capture: " << vt100::BOLD <<
-        ((sum-old)*1000000)/std::chrono::duration_cast<std::chrono::microseconds>(end-begin).count()
+        (static_cast<uint64_t>(sum-old)*1000000)/std::chrono::duration_cast<std::chrono::microseconds>(end-begin).count()
         << vt100::RESET << " pkt/sec";
 
         if (flow) {

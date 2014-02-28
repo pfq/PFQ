@@ -385,13 +385,13 @@ Context(PFQ)
     {
         pfq x(group_policy::undefined, 64);
 
-        x.join_group(42);
-        x.join_group(42);
+        x.join_group(22);
+        x.join_group(22);
 
         auto task = std::async(std::launch::async,
                     [&] {
                         pfq y(group_policy::undefined, 64);
-                        Assert(y.join_group(42), is_equal_to(42));
+                        Assert(y.join_group(22), is_equal_to(22));
                     });
 
         task.wait();
@@ -517,10 +517,10 @@ Context(PFQ)
         AssertThrow(x.leave_group(12));
 
         x.open(group_policy::shared, 64);
-        int gid = x.join_group(42);
-        Assert(gid, is_equal_to(42));
+        int gid = x.join_group(22);
+        Assert(gid, is_equal_to(22));
 
-        x.leave_group(42);
+        x.leave_group(22);
 
         Assert(x.group_id(), is_equal_to(0));
         Assert(x.groups() == std::vector<int>{ 0 });
@@ -544,12 +544,12 @@ Context(PFQ)
     Test(vlan_filt)
     {
         pfq x(64);
-        AssertThrow(x.vlan_set_filter(x.group_id(), 42));
-        AssertThrow(x.vlan_reset_filter(x.group_id(), 42));
+        AssertThrow(x.vlan_set_filter(x.group_id(), 22));
+        AssertThrow(x.vlan_reset_filter(x.group_id(), 22));
 
         AssertNothrow(x.vlan_filters_enable(x.group_id(), true));
-        AssertNothrow(x.vlan_set_filter(x.group_id(), 42));
-        AssertNothrow(x.vlan_reset_filter(x.group_id(), 42));
+        AssertNothrow(x.vlan_set_filter(x.group_id(), 22));
+        AssertNothrow(x.vlan_reset_filter(x.group_id(), 22));
 
         AssertNothrow(x.vlan_filters_enable(x.group_id(), false));
     }
@@ -621,7 +621,7 @@ Context(PFQ)
     {
         pfq x(group_policy::shared, 64);
 
-        int n = 42;
+        int n = 22;
         x.set_group_function_context(x.group_id(), n);
 
         int m = 0;
@@ -648,7 +648,7 @@ Context(PFQ)
 
             for(auto &hdr : q)
             {
-                Assert(hdr.data, is_equal_to(42));
+                Assert(hdr.data, is_equal_to(22));
                 Assert(hdr.gid,  is_equal_to(x.group_id()));
             }
             break;
