@@ -740,7 +740,7 @@ int pfq_setsockopt(struct socket *sock,
 
                 if (to->thread)
                 {
-                        pr_devel("[PFQ|%d] TX thread already created on cpu %d:%d!\n", so->id, to->cpu, cpu_to_node(to->cpu));
+                        pr_devel("[PFQ|%d] TX thread already created on cpu %d!\n", so->id, to->cpu);
                         return -EPERM;
                 }
                 if (to->if_index == -1)
@@ -768,7 +768,7 @@ int pfq_setsockopt(struct socket *sock,
 
                 to->cpu = cpu;
 
-                pr_devel("[PFQ|%d] creating TX thread on cpu %d:%d if_index:%d hw_queue:%d\n", so->id, to->cpu, cpu_to_node(to->cpu), to->if_index, to->hw_queue);
+                pr_devel("[PFQ|%d] creating TX thread on cpu %d -> if_index:%d hw_queue:%d\n", so->id, to->cpu, to->if_index, to->hw_queue);
 
                 to->thread = kthread_create_on_node(pfq_tx_thread,
                                                     so,
@@ -776,7 +776,7 @@ int pfq_setsockopt(struct socket *sock,
                                                     "pfq_tx_%d", so->id);
 
                 if (IS_ERR(to->thread)) {
-                        printk(KERN_INFO "[PFQ] kernel_thread() create failed on cpu %d:%d!\n", to->cpu, cpu_to_node(to->cpu));
+                        printk(KERN_INFO "[PFQ] kernel_thread() create failed on cpu %d!\n", to->cpu);
                         return PTR_ERR(to->thread);
                 }
 
