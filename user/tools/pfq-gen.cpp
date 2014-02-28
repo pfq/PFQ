@@ -387,8 +387,8 @@ try
         auto end = std::chrono::system_clock::now();
         auto delta = std::chrono::duration_cast<std::chrono::microseconds>(end-begin).count();
 
-        std::cout << "stats: { " << cur << " } -> sent: " << vt100::BOLD << ((cur.sent-prec.sent)*1000000)/delta << vt100::RESET << " pkt/sec - "
-                  << "disc: " << vt100::BOLD << ((cur.disc-prec.disc)*1000000)/delta << vt100::RESET << " pkt/sec" << std::endl;
+        std::cout << "stats: { " << cur << " } -> sent: " << vt100::BOLD << (static_cast<uint64_t>(cur.sent-prec.sent)*1000000)/delta << vt100::RESET << " pkt/sec - "
+                  << "disc: " << vt100::BOLD << (static_cast<uint64_t>(cur.disc-prec.disc)*1000000)/delta << vt100::RESET << " pkt/sec" << std::endl;
 
         prec = cur, begin = end;
     }
