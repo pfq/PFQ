@@ -100,6 +100,10 @@ main(int argc, char *argv[])
     }
 
     std::this_thread::sleep_for(std::chrono::seconds(1));
+
+    auto stat = q.stats();
+
+    std::cout << "sent: " << stat.sent << " - disc: " << stat.disc << std::endl;
     q.stop_tx_thread();
 
     return 0;
