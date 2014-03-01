@@ -253,6 +253,10 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
         long unsigned n, bit, lb;
         int cpu;
 
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,9,0))
+	BUILD_BUG_ON_MSG(Q_NON_INTRUSIVE_MAX_LEN > 64, "sock_queue overflow");
+#endif
+
 #ifdef PFQ_USE_FLOW_CONTROL
 
 	/* flow control */
