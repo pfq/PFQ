@@ -416,24 +416,80 @@ namespace net {
     // class mask
     //
 
-    typedef unsigned int class_mask;
-
-    namespace
+    enum class class_mask : unsigned int
     {
-        const class_mask  class_default = Q_CLASS_DEFAULT;
-        const class_mask  class_any     = Q_CLASS_ANY;
-    }
+        default_ = Q_CLASS_DEFAULT,
+        any      = Q_CLASS_ANY
+    };
 
     // vlan
     //
 
-    namespace
+    struct vlan_opt
     {
-        const int   vlan_untag  = Q_VLAN_UNTAG;
-        const int   vlan_anytag = Q_VLAN_ANYTAG;
-    }
+        static constexpr int untag  = Q_VLAN_UNTAG;
+        static constexpr int anytag = Q_VLAN_ANYTAG;
+    };
 
     //////////////////////////////////////////////////////////////////////
+    // PFQ open params:
+    //////////////////////////////////////////////////////////////////////
+
+    namespace param
+    {
+        template <typename ... Ts> struct type_index;
+        template <typename T, typename ... Ts>
+        struct type_index<T, T, Ts...>
+        {
+            enum { value = 0 }; // stop recursion here
+        };
+        template <typename T, typename T0, typename ... Ts>
+        struct type_index<T, T0, Ts...>
+        {
+            enum { value = 1 + type_index<T, Ts...>::value };
+        };
+        template <typename Tp>
+        struct type_index<Tp>
+        {
+            enum { value = 1 };
+        };
+
+        template <typename T, typename ...Ts>
+        auto get_type(std::tuple<Ts...> &tup)
+        -> decltype (std::get<type_index<T, Ts...>::value>(tup))
+        {
+            return std::get<type_index<T, Ts...>::value>(tup);
+        }
+
+        template <typename ...Ts>
+        void sink(Ts && ... ) { }
+
+        template <typename Tup, typename ...Ts>
+        void
+        fill(Tup &tup, Ts&& ... arg)
+        {
+            sink((get_type<Ts>(tup)= std::forward<Ts>(arg))...);
+        }
+
+        ///////////////////////////////////////////////////////////
+
+        struct class_   { class_mask value;   };
+        struct policy   { group_policy value; };
+
+        struct caplen   { size_t value; };
+        struct offset   { size_t value; };
+        struct rx_slots { size_t value; };
+        struct maxlen   { size_t value; };
+        struct tx_slots { size_t value; };
+
+        using types = std::tuple<class_, policy, caplen, offset, rx_slots, maxlen, tx_slots>;
+
+        namespace
+        {
+            struct list_t {} constexpr list = list_t {};
+        }
+    }
+
     //////////////////////////////////////////////////////////////////////
     // PFQ class
     //////////////////////////////////////////////////////////////////////
@@ -472,18 +528,42 @@ namespace net {
         , pdata_()
         {}
 
+        template <typename ...Ts>
+        pfq(param::list_t, Ts&& ...args)
+        : fd_(-1)
+        , pdata_()
+        {
+            auto def = std::make_tuple(param::class_ {class_mask::default_},
+                                       param::policy {group_policy::priv},
+                                       param::caplen {64},
+                                       param::offset {0},
+                                       param::rx_slots {1024},
+                                       param::maxlen   {64},
+                                       param::tx_slots {1024});
+
+            param::fill(def, std::forward<Ts>(args)...);
+
+            this->open(param::get_type<param::class_>(def).value,
+                       param::get_type<param::policy>(def).value,
+                       param::get_type<param::caplen>(def).value,
+                       param::get_type<param::offset>(def).value,
+                       param::get_type<param::rx_slots>(def).value,
+                       param::get_type<param::maxlen>(def).value,
+                       param::get_type<param::tx_slots>(def).value);
+        }
+
         pfq(size_t caplen, size_t offset = 0, size_t rx_slots = 65536, size_t maxlen = 64, size_t tx_slots = 4096)
         : fd_(-1)
         , pdata_()
         {
-            this->open(class_default, group_policy::priv, caplen, offset, rx_slots, maxlen, tx_slots);
+            this->open(class_mask::default_, group_policy::priv, caplen, offset, rx_slots, maxlen, tx_slots);
         }
 
         pfq(group_policy policy, size_t caplen, size_t offset = 0, size_t rx_slots = 65536, size_t maxlen = 64, size_t tx_slots = 4096)
         : fd_(-1)
         , pdata_()
         {
-            this->open(class_default, policy, caplen, offset, rx_slots, maxlen, tx_slots);
+            this->open(class_mask::default_, policy, caplen, offset, rx_slots, maxlen, tx_slots);
         }
 
         pfq(class_mask mask, group_policy policy, size_t caplen, size_t offset = 0, size_t rx_slots = 65536, size_t maxlen = 64, size_t tx_slots = 4096)
@@ -545,7 +625,7 @@ namespace net {
 
             if (policy != group_policy::undefined)
             {
-                pdata_->gid = this->join_group(any_group, policy, class_default);
+                pdata_->gid = this->join_group(any_group, policy, class_mask::default_);
             }
         }
 
@@ -558,6 +638,28 @@ namespace net {
             {
                 pdata_->gid = this->join_group(any_group, policy, mask);
             }
+        }
+
+        template <typename ...Ts>
+        void open(param::list_t, Ts&& ...args)
+        {
+            auto def = std::make_tuple(param::class_ {class_mask::default_},
+                                       param::policy {group_policy::priv},
+                                       param::caplen {64},
+                                       param::offset {0},
+                                       param::rx_slots {1024},
+                                       param::maxlen   {64},
+                                       param::tx_slots {1024});
+
+            param::fill(def, std::forward<Ts>(args)...);
+
+            this->open(param::get_type<param::class_>(def).value,
+                       param::get_type<param::policy>(def).value,
+                       param::get_type<param::caplen>(def).value,
+                       param::get_type<param::offset>(def).value,
+                       param::get_type<param::rx_slots>(def).value,
+                       param::get_type<param::maxlen>(def).value,
+                       param::get_type<param::tx_slots>(def).value);
         }
 
         /* id */
@@ -1023,12 +1125,12 @@ namespace net {
         }
 
         int
-        join_group(int gid, group_policy pol = group_policy::shared, class_mask mask = class_default)
+        join_group(int gid, group_policy pol = group_policy::shared, class_mask mask = class_mask::default_)
         {
             if (pol == group_policy::undefined)
                 throw pfq_error("PFQ: join with undefined policy!");
 
-            struct pfq_group_join group { gid, static_cast<int16_t>(pol), mask };
+            struct pfq_group_join group { gid, static_cast<int16_t>(pol), static_cast<unsigned int>(mask) };
 
             socklen_t size = sizeof(group);
 

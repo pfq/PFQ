@@ -368,7 +368,7 @@ struct pfq_binding
 #define Q_CLASS_DEFAULT         Q_CLASS(0)
 #define Q_CLASS_DATA            Q_CLASS_DEFAULT
 #define Q_CLASS_CONTROL         Q_CLASS(1)
-#define Q_CLASS_ANY             -1
+#define Q_CLASS_ANY             (unsigned int)-1
 
 
 struct pfq_group_join
