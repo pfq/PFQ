@@ -970,12 +970,12 @@ namespace net {
         bool
         send_async(const_buffer pkt)
         {
-			auto ret = inject(pkt);
+            auto ret = inject(pkt);
 
             if ((pdata_->tx_counter ++ % 128) == 0)
                 wakeup_tx_thread();
 
-			return ret;
+            return ret;
         }
 
 
