@@ -55,14 +55,14 @@ int pfq_shared_queue_alloc(struct pfq_sock *so, size_t queue_mem)
         addr = vmalloc_user(tot_mem);
 	if (addr == NULL)
 	{
-		printk(KERN_WARNING "[PFQ|%d] pfq_queue_alloc: out of memory!", so->id);
+		printk(KERN_WARNING "[PFQ|%d] pfq_queue_alloc: out of memory (vmalloc %zu bytes)!", so->id, tot_mem);
 		return -ENOMEM;
 	}
 
         so->mem_addr = addr;
         so->mem_size = tot_mem;
 
-	pr_devel("[PFQ|%d] queue caplen:%zu memory:%zu\n", so->id, so->rx_opt.caplen, tot_mem);
+	pr_devel("[PFQ|%d] pfq_queue_alloc: caplen:%zu maxlen:%zu memory:%zu bytes.\n", so->id, so->rx_opt.caplen, so->tx_opt.maxlen, tot_mem);
 	return 0;
 }
 

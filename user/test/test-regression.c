@@ -703,7 +703,9 @@ main(int argc __attribute__((unused)), char *argv[]__attribute__((unused)))
         TEST(test_group_context);
 
         TEST(test_bind_tx);
+
         TEST(test_start_tx_thread);
+
         TEST(test_stop_tx_thread);
         TEST(test_wakeup_tx_thread);
         TEST(test_tx_queue_flush);

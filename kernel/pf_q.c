@@ -954,7 +954,6 @@ static int __init pfq_init_module(void)
                 return -EFAULT;
         }
 
-
 	/* create a per-cpu context */
 	cpu_data = alloc_percpu(struct local_data);
 	if (!cpu_data) {
