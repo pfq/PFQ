@@ -29,7 +29,6 @@
 #include <netinet/ip.h>
 #include <netinet/udp.h>
 
-
 char *packet = nullptr;
 
 char *make_packet(size_t n)
@@ -193,7 +192,12 @@ namespace test
 
             for(unsigned int n = 0; n < m_bind.queue.size(); n++)
             {
-                auto q = pfq(opt::len, 0, 64, opt::len, opt::slots);
+                //
+                // auto q = pfq(opt::len, 0, 64, opt::len, opt::slots);
+                //
+
+                auto q = pfq(param::list, param::maxlen{opt::len},
+                                          param::tx_slots{opt::slots});
 
                 q.bind_tx (m_bind.dev.at(0).c_str(), m_bind.queue[n]);
 
