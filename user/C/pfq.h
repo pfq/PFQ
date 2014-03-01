@@ -144,9 +144,9 @@ extern pfq_t* pfq_open(size_t calpen, size_t offset, size_t slots);
 
 extern pfq_t * pfq_open_nogroup(size_t caplen, size_t offset, size_t slots);
 
-extern pfq_t* pfq_open_group(unsigned int class_mask,
-							 int group_policy,
-							 size_t calpen, size_t offset, size_t slots);
+extern pfq_t* pfq_open_group(unsigned int class_mask, int group_policy,
+			     size_t calpen, size_t offset, size_t rx_slots,
+			     size_t maxlen, size_t tx_slots);
 
 extern int pfq_close(pfq_t *);
 

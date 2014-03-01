@@ -111,19 +111,20 @@ const char *pfq_error(pfq_t *q)
 pfq_t *
 pfq_open(size_t caplen, size_t offset, size_t slots)
 {
-	return pfq_open_group(Q_CLASS_DEFAULT, Q_GROUP_PRIVATE, caplen, offset, slots);
+	return pfq_open_group(Q_CLASS_DEFAULT, Q_GROUP_PRIVATE, caplen, offset, slots, 64, 4096);
+}
 }
 
 
 pfq_t *
 pfq_open_nogroup(size_t caplen, size_t offset, size_t slots)
 {
-	return pfq_open_group(Q_CLASS_DEFAULT, Q_GROUP_UNDEFINED, caplen, offset, slots);
+	return pfq_open_group(Q_CLASS_DEFAULT, Q_GROUP_UNDEFINED, caplen, offset, slots, 64, 4096);
 }
 
 
 pfq_t *
-pfq_open_group(unsigned int class_mask, int group_policy, size_t caplen, size_t offset, size_t slots)
+pfq_open_group(unsigned int class_mask, int group_policy, size_t caplen, size_t offset, size_t rx_slots, size_t maxlen, size_t tx_slots)
 {
 	int fd = socket(PF_Q, SOCK_RAW, htons(ETH_P_ALL));
 	pfq_t * q;
@@ -159,12 +160,12 @@ pfq_open_group(unsigned int class_mask, int group_policy, size_t caplen, size_t 
 		return __error = "PFQ: get id error", free(q), NULL;
 	}
 
-	/* set queue slots */
-	if (setsockopt(fd, PF_Q, Q_SO_SET_RX_SLOTS, &slots, sizeof(slots)) == -1) {
+	/* set rx queue slots */
+	if (setsockopt(fd, PF_Q, Q_SO_SET_RX_SLOTS, &rx_slots, sizeof(rx_slots)) == -1) {
 		return __error = "PFQ: set RX slots error", free(q), NULL;
 	}
 
-	q->rx_slots = slots;
+	q->rx_slots = rx_slots;
 
 	/* set caplen */
 	if (setsockopt(fd, PF_Q, Q_SO_SET_RX_CAPLEN, &caplen, sizeof(caplen)) == -1) {
@@ -181,14 +182,14 @@ pfq_open_group(unsigned int class_mask, int group_policy, size_t caplen, size_t 
 	q->rx_slot_size = ALIGN8(sizeof(struct pfq_pkt_hdr) + q->rx_caplen);
 
 	/* set TX queue slots */
-	if (setsockopt(fd, PF_Q, Q_SO_SET_TX_SLOTS, &slots, sizeof(slots)) == -1) {
+	if (setsockopt(fd, PF_Q, Q_SO_SET_TX_SLOTS, &tx_slots, sizeof(tx_slots)) == -1) {
 		return __error = "PFQ: set TX slots error", free(q), NULL;
 	}
 
-	q->tx_slots = slots;
+	q->tx_slots = tx_slots;
 
         /* set maxlen */
-        if (setsockopt(fd, PF_Q, Q_SO_SET_TX_MAXLEN, &caplen, sizeof(caplen)) == -1)
+        if (setsockopt(fd, PF_Q, Q_SO_SET_TX_MAXLEN, &maxlen, sizeof(maxlen)) == -1)
         {
 		return __error = "PFQ: set maxlen error", free(q), NULL;
         }
@@ -922,7 +923,7 @@ pfq_send_async(pfq_t *q, const void *ptr, size_t len)
 
         if ((q->tx_counter++ % 128) == 0)
         	pfq_wakeup_tx_thread(q);
-        
+
         return rc;
 }
 

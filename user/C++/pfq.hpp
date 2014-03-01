@@ -472,26 +472,25 @@ namespace net {
         , pdata_()
         {}
 
-
-        pfq(size_t caplen, size_t offset = 0, size_t slots = 65536)
+        pfq(size_t caplen, size_t offset = 0, size_t rx_slots = 65536, size_t maxlen = 64, size_t tx_slots = 4096)
         : fd_(-1)
         , pdata_()
         {
-            this->open(class_default, group_policy::priv, caplen, offset, slots);
+            this->open(class_default, group_policy::priv, caplen, offset, rx_slots, maxlen, tx_slots);
         }
 
-        pfq(group_policy policy, size_t caplen, size_t offset = 0, size_t slots = 65536)
+        pfq(group_policy policy, size_t caplen, size_t offset = 0, size_t rx_slots = 65536, size_t maxlen = 64, size_t tx_slots = 4096)
         : fd_(-1)
         , pdata_()
         {
-            this->open(class_default, policy, caplen, offset, slots);
+            this->open(class_default, policy, caplen, offset, rx_slots, maxlen, tx_slots);
         }
 
-        pfq(class_mask mask, group_policy policy, size_t caplen, size_t offset = 0, size_t slots = 65536)
+        pfq(class_mask mask, group_policy policy, size_t caplen, size_t offset = 0, size_t rx_slots = 65536, size_t maxlen = 64, size_t tx_slots = 4096)
         : fd_(-1)
         , pdata_()
         {
-            this->open(mask, policy, caplen, offset, slots);
+            this->open(mask, policy, caplen, offset, rx_slots, maxlen, tx_slots);
         }
 
         ~pfq()
@@ -537,6 +536,32 @@ namespace net {
             std::swap(pdata_, other.pdata_);
         }
 
+        /* open */
+
+        void
+        open(group_policy policy, size_t caplen, size_t offset = 0, size_t rx_slots = 65536, size_t maxlen = 64, size_t tx_slots = 4096)
+        {
+            this->open(caplen, offset, rx_slots, maxlen, tx_slots);
+
+            if (policy != group_policy::undefined)
+            {
+                pdata_->gid = this->join_group(any_group, policy, class_default);
+            }
+        }
+
+        void
+        open(class_mask mask, group_policy policy, size_t caplen, size_t offset = 0, size_t rx_slots = 65536, size_t maxlen = 64, size_t tx_slots = 4096)
+        {
+            this->open(caplen, offset, rx_slots, maxlen, tx_slots);
+
+            if (policy != group_policy::undefined)
+            {
+                pdata_->gid = this->join_group(any_group, policy, mask);
+            }
+        }
+
+        /* id */
+
         int
         id() const
         {
@@ -559,32 +584,11 @@ namespace net {
             return fd_;
         }
 
-        void
-        open(group_policy policy, size_t caplen, size_t offset = 0, size_t slots = 65536)
-        {
-            this->open(caplen, offset, slots);
-
-            if (policy != group_policy::undefined)
-            {
-                pdata_->gid = this->join_group(any_group, policy, class_default);
-            }
-        }
-
-        void
-        open(class_mask mask, group_policy policy, size_t caplen, size_t offset = 0, size_t slots = 65536)
-        {
-            this->open(caplen, offset, slots);
-
-            if (policy != group_policy::undefined)
-            {
-                pdata_->gid = this->join_group(any_group, policy, mask);
-            }
-        }
 
     private:
 
         void
-        open(size_t caplen, size_t offset = 0, size_t slots = 65536)
+        open(size_t caplen, size_t offset, size_t rx_slots, size_t maxlen, size_t tx_slots)
         {
             if (fd_ != -1)
                 throw pfq_error("PFQ: socket already open");
@@ -612,10 +616,10 @@ namespace net {
                 throw pfq_error(errno, "PFQ: get id error");
 
             /* set RX queue slots */
-            if (::setsockopt(fd_, PF_Q, Q_SO_SET_RX_SLOTS, &slots, sizeof(slots)) == -1)
+            if (::setsockopt(fd_, PF_Q, Q_SO_SET_RX_SLOTS, &rx_slots, sizeof(rx_slots)) == -1)
                 throw pfq_error(errno, "PFQ: set RX slots error");
 
-            pdata_->rx_slots = slots;
+            pdata_->rx_slots = rx_slots;
 
             /* set caplen */
             if (::setsockopt(fd_, PF_Q, Q_SO_SET_RX_CAPLEN, &caplen, sizeof(caplen)) == -1)
@@ -630,13 +634,13 @@ namespace net {
             pdata_->rx_slot_size = align<8>(sizeof(pfq_pkt_hdr) + pdata_->rx_caplen);
 
             /* set TX queue slots */
-            if (::setsockopt(fd_, PF_Q, Q_SO_SET_TX_SLOTS, &slots, sizeof(slots)) == -1)
+            if (::setsockopt(fd_, PF_Q, Q_SO_SET_TX_SLOTS, &tx_slots, sizeof(tx_slots)) == -1)
                 throw pfq_error(errno, "PFQ: set TX slots error");
 
-            pdata_->tx_slots = slots;
+            pdata_->tx_slots = tx_slots;
 
             /* set maxlen */
-            if (::setsockopt(fd_, PF_Q, Q_SO_SET_TX_MAXLEN, &caplen, sizeof(caplen)) == -1)
+            if (::setsockopt(fd_, PF_Q, Q_SO_SET_TX_MAXLEN, &maxlen, sizeof(maxlen)) == -1)
                 throw pfq_error(errno, "PFQ: set maxlen error");
         }
 
