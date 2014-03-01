@@ -31,9 +31,19 @@
         __builtin_choose_expr(__builtin_types_compatible_p(typeof(n),unsigned long),       (unsigned int)__builtin_ctzl(n), \
         __builtin_choose_expr(__builtin_types_compatible_p(typeof(n),unsigned long long),  (unsigned int)__builtin_ctzll(n), (void)0 )))
 
+
+
+#ifdef __LP64__ 
 #define pfq_popcount(n) \
-        __builtin_choose_expr(sizeof(n) == sizeof(int),        (unsigned int)hweight32(n), \
-        __builtin_choose_expr(sizeof(n) == sizeof(long long),  (unsigned int)hweight64(n), (void)0 ))
+        __builtin_choose_expr(__builtin_types_compatible_p(typeof(n),unsigned int),        (unsigned int)hweight32(n), \
+        __builtin_choose_expr(__builtin_types_compatible_p(typeof(n),unsigned long),       (unsigned int)hweight64(n), \
+        __builtin_choose_expr(__builtin_types_compatible_p(typeof(n),unsigned long long),  (unsigned int)hweight64(n), (void)0)))
+#else
+#define pfq_popcount(n) \
+        __builtin_choose_expr(__builtin_types_compatible_p(typeof(n),unsigned int),        (unsigned int)hweight32(n), \
+        __builtin_choose_expr(__builtin_types_compatible_p(typeof(n),unsigned long),       (unsigned int)hweight32(n), \
+        __builtin_choose_expr(__builtin_types_compatible_p(typeof(n),unsigned long long),  (unsigned int)hweight64(n), (void)0)))
+#endif
 
 
 #define pfq_bitwise_foreach(mask, n) \

@@ -85,7 +85,7 @@ int pfq_getsockopt(struct socket *sock,
                     if (len != sizeof(group))
                             return -EINVAL;
 
-		    if (copy_from_user(&group, optval, len))
+		    if (copy_from_user(&group, optval, sizeof(group)))
                             return -EFAULT;
 
 		    if (group.class_mask == 0) {
@@ -225,7 +225,7 @@ int pfq_getsockopt(struct socket *sock,
 		    if (len != sizeof(stat))
                             return -EINVAL;
 
-                    if (copy_from_user(&stat, optval, len))
+                    if (copy_from_user(&stat, optval, sizeof(stat)))
                             return -EFAULT;
 
 		    gid = (int)stat.recv;
@@ -257,7 +257,7 @@ int pfq_getsockopt(struct socket *sock,
 		    if (len != sizeof(s))
 			    return -EINVAL;
 
-		    if (copy_from_user(&s, optval, len))
+		    if (copy_from_user(&s, optval, sizeof(s)))
 			    return -EFAULT;
 
                     CHECK_GROUP(s.gid, "group context");

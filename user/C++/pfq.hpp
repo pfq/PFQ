@@ -473,21 +473,21 @@ namespace net {
         {}
 
 
-        pfq(size_t caplen, size_t offset = 0, size_t slots = 131072)
+        pfq(size_t caplen, size_t offset = 0, size_t slots = 65536)
         : fd_(-1)
         , pdata_()
         {
             this->open(class_default, group_policy::priv, caplen, offset, slots);
         }
 
-        pfq(group_policy policy, size_t caplen, size_t offset = 0, size_t slots = 131072)
+        pfq(group_policy policy, size_t caplen, size_t offset = 0, size_t slots = 65536)
         : fd_(-1)
         , pdata_()
         {
             this->open(class_default, policy, caplen, offset, slots);
         }
 
-        pfq(class_mask mask, group_policy policy, size_t caplen, size_t offset = 0, size_t slots = 131072)
+        pfq(class_mask mask, group_policy policy, size_t caplen, size_t offset = 0, size_t slots = 65536)
         : fd_(-1)
         , pdata_()
         {
@@ -560,7 +560,7 @@ namespace net {
         }
 
         void
-        open(group_policy policy, size_t caplen, size_t offset = 0, size_t slots = 131072)
+        open(group_policy policy, size_t caplen, size_t offset = 0, size_t slots = 65536)
         {
             this->open(caplen, offset, slots);
 
@@ -571,7 +571,7 @@ namespace net {
         }
 
         void
-        open(class_mask mask, group_policy policy, size_t caplen, size_t offset = 0, size_t slots = 131072)
+        open(class_mask mask, group_policy policy, size_t caplen, size_t offset = 0, size_t slots = 65536)
         {
             this->open(caplen, offset, slots);
 
@@ -584,7 +584,7 @@ namespace net {
     private:
 
         void
-        open(size_t caplen, size_t offset = 0, size_t slots = 131072)
+        open(size_t caplen, size_t offset = 0, size_t slots = 65536)
         {
             if (fd_ != -1)
                 throw pfq_error("PFQ: socket already open");

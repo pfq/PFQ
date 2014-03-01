@@ -557,7 +557,7 @@ Context(PFQ)
 
     Test(bind_tx)
     {
-        pfq q(128);
+        pfq q(64);
         AssertNothrow(q.bind_tx("lo", -1));
         AssertThrow(q.bind_tx("unknown", -1));
     }
@@ -565,7 +565,7 @@ Context(PFQ)
 
     Test(start_tx_thread)
     {
-        pfq q(128);
+        pfq q(64);
         AssertThrow(q.start_tx_thread(0));
 
         q.bind_tx("lo", -1);
@@ -578,7 +578,7 @@ Context(PFQ)
 
     Test(stop_tx_thread)
     {
-        pfq q(128);
+        pfq q(64);
         AssertThrow(q.stop_tx_thread());
 
         q.bind_tx("lo", -1);
@@ -591,7 +591,7 @@ Context(PFQ)
 
     Test(wakeup_tx_thread)
     {
-        pfq q(128);
+        pfq q(64);
         AssertThrow(q.wakeup_tx_thread());
 
         q.bind_tx("lo", -1);
@@ -605,7 +605,7 @@ Context(PFQ)
 
     Test(tx_queue_flush)
     {
-        pfq q(128);
+        pfq q(64);
         AssertThrow(q.tx_queue_flush());
 
         q.bind_tx("lo", -1);

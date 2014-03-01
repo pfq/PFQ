@@ -38,8 +38,8 @@
 #include <linux/etherdevice.h>
 #include <linux/kthread.h>
 #include <linux/vmalloc.h>
-
 #include <linux/percpu.h>
+#include <linux/bug.h>
 
 #include <net/sock.h>
 #ifdef CONFIG_INET
@@ -124,7 +124,7 @@ DEFINE_SEMAPHORE(sock_sem);
 
 
 inline
-bool pfq_copy_to_user_skbs(struct pfq_rx_opt *ro, int cpu, unsigned long sock_queue, struct pfq_non_intrusive_skb *skbs, int gid)
+bool pfq_copy_to_user_skbs(struct pfq_rx_opt *ro, int cpu, unsigned long long sock_queue, struct pfq_non_intrusive_skb *skbs, int gid)
 {
         /* enqueue the sk_buff: it's wait-free. */
 
@@ -152,13 +152,13 @@ bool pfq_copy_to_user_skbs(struct pfq_rx_opt *ro, int cpu, unsigned long sock_qu
 /* send this packet to selected sockets */
 
 inline
-void pfq_sock_mask_to_queue(unsigned long j, unsigned long mask, unsigned long *sock_queue)
+void pfq_mask_to_sock_queue(unsigned long n, unsigned long mask, unsigned long long *sock_queue)
 {
 	unsigned long bit;
        	pfq_bitwise_foreach(mask, bit)
 	{
 	        int index = pfq_ctz(bit);
-                sock_queue[index] |= 1UL << j;
+                sock_queue[index] |= 1UL << n;
         }
 }
 
@@ -241,17 +241,20 @@ unsigned int pfq_fold(unsigned int a, unsigned int b)
         }
 }
 
-
 int
 pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 {
         struct local_data * local = __this_cpu_ptr(cpu_data);
         struct pfq_non_intrusive_skb * prefetch_queue = &local->prefetch_queue;
+        unsigned long long sock_queue[Q_NON_INTRUSIVE_MAX_LEN];
         unsigned long group_mask, socket_mask;
-        unsigned long sock_queue[sizeof(unsigned long) << 3];
         struct pfq_annotation *cb;
         long unsigned n, bit, lb;
         int cpu;
+
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,9,0))
+	BUILD_BUG_ON_MSG(Q_NON_INTRUSIVE_MAX_LEN > 64, "sock_queue overflow");
+#endif
 
 #ifdef PFQ_USE_FLOW_CONTROL
 
@@ -440,7 +443,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
                                 sock_mask |= atomic_long_read(&pfq_groups[gid].sock_mask[0]);
                         }
 
-			pfq_sock_mask_to_queue(n, sock_mask, sock_queue);
+			pfq_mask_to_sock_queue(n, sock_mask, sock_queue);
 			socket_mask |= sock_mask;
 		}
 
@@ -950,7 +953,6 @@ static int __init pfq_init_module(void)
                 printk(KERN_INFO "[PFQ] batch_len=%d not allowed (0,%zu)!\n", batch_len, Q_NON_INTRUSIVE_MAX_LEN);
                 return -EFAULT;
         }
-
 
 	/* create a per-cpu context */
 	cpu_data = alloc_percpu(struct local_data);
