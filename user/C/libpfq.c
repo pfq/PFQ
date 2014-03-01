@@ -113,6 +113,12 @@ pfq_open(size_t caplen, size_t offset, size_t slots)
 {
 	return pfq_open_group(Q_CLASS_DEFAULT, Q_GROUP_PRIVATE, caplen, offset, slots, 64, 4096);
 }
+
+
+pfq_t *
+pfq_open_tx(size_t maxlen, size_t slots)
+{
+	return pfq_open_group(Q_CLASS_DEFAULT, Q_GROUP_UNDEFINED, 64, 0, 4096, maxlen, slots);
 }
 
 
