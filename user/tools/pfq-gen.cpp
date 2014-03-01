@@ -66,9 +66,10 @@ char *make_packet(size_t n)
 
 namespace opt
 {
-    size_t len    = 64;
-    bool  async   = false;
-    bool  rand_ip = false;
+    size_t len     = 64;
+    size_t slots   = 4096;
+    bool   async   = false;
+    bool   rand_ip = false;
 }
 
 
@@ -192,7 +193,7 @@ namespace test
 
             for(unsigned int n = 0; n < m_bind.queue.size(); n++)
             {
-                auto q = pfq(opt::len);
+                auto q = pfq(opt::len, 0, 64, opt::len, opt::slots);
 
                 q.bind_tx (m_bind.dev.at(0).c_str(), m_bind.queue[n]);
 
@@ -294,7 +295,7 @@ unsigned int hardware_concurrency()
 
 void usage(const char *name)
 {
-    throw std::runtime_error(std::string("usage: ") + name + " [-h|--help] [-r|--rand-ip] [-a|--async] [-l|--len] T1 T2... \n\t| T = dev[.queue.queue..]");
+    throw std::runtime_error(std::string("usage: ") + name + " [-h|--help] [-r|--rand-ip] [-a|--async] [-l|--len N] [-s|--slot N] T1 T2... \n\t| T = dev[.queue.queue..]");
 }
 
 
@@ -320,6 +321,18 @@ try
             }
 
             opt::len = std::atoi(argv[i]);
+            continue;
+        }
+
+        if ( strcmp(argv[i], "-s") == 0 ||
+             strcmp(argv[i], "--slots") == 0) {
+            i++;
+            if (i == argc)
+            {
+                throw std::runtime_error("slots missing");
+            }
+
+            opt::slots = std::atoi(argv[i]);
             continue;
         }
 

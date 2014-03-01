@@ -37,6 +37,7 @@ module Network.PFq
     (
         PFqTag,
         open,
+        openTx,
         openNoGroup,
         openGroup,
         close,
@@ -299,10 +300,9 @@ getHeader p = waitForPacket p >> toPktHdr (pHdr p)
 
 -- open:
 --
-
-open :: Int  --
-     -> Int  --
-     -> Int  --
+open :: Int  -- caplen
+     -> Int  -- offset
+     -> Int  -- rx_slots
      -> IO (ForeignPtr PFqTag)
 
 open caplen offset slots =
@@ -311,17 +311,24 @@ open caplen offset slots =
                 C.newForeignPtr ptr (void $ pfq_close ptr)
 
 
-close :: Ptr PFqTag -> IO ()
-close hdl =
-    pfq_close hdl >>= throwPFqIf_ hdl (== -1)
+-- openTx:
+--
+openTx :: Int  -- maxlen
+       -> Int  -- rx_slots
+       -> IO (ForeignPtr PFqTag)
+
+openTx maxlen tx_slots =
+        pfq_open_tx (fromIntegral maxlen) (fromIntegral tx_slots) >>=
+            throwPFqIf nullPtr (== nullPtr) >>= \ptr ->
+                C.newForeignPtr ptr (void $ pfq_close ptr)
 
 
 -- openNoGroup:
 --
-openNoGroup:: Int  --
-     -> Int  --
-     -> Int  --
-     -> IO (ForeignPtr PFqTag)
+openNoGroup:: Int  -- caplen
+           -> Int  -- offset
+           -> Int  -- rx_slots
+           -> IO (ForeignPtr PFqTag)
 
 openNoGroup caplen offset slots =
         pfq_open_nogroup (fromIntegral caplen) (fromIntegral offset) (fromIntegral slots) >>=
@@ -332,15 +339,26 @@ openNoGroup caplen offset slots =
 --
 openGroup :: [ClassMask]  --
           -> GroupPolicy  --
-          -> Int  --
-          -> Int  --
-          -> Int  --
+          -> Int  -- caplen
+          -> Int  -- offset
+          -> Int  -- rx_slots
+          -> Int  -- maxlen
+          -> Int  -- tx_slots
           -> IO (ForeignPtr PFqTag)
 
-openGroup ms policy caplen offset slots =
-        pfq_open_group (unClassMask $ combineClassMasks ms) (unGroupPolicy policy) (fromIntegral caplen) (fromIntegral offset) (fromIntegral slots) >>=
+openGroup ms policy caplen offset rx_slots maxlen tx_slots =
+        pfq_open_group (unClassMask $ combineClassMasks ms) (unGroupPolicy policy)
+            (fromIntegral caplen) (fromIntegral offset) (fromIntegral rx_slots)
+            (fromIntegral maxlen) (fromIntegral tx_slots) >>=
             throwPFqIf nullPtr (== nullPtr) >>= \ptr ->
                 C.newForeignPtr ptr (void $ pfq_close ptr)
+
+-- close:
+--
+close :: Ptr PFqTag -> IO ()
+close hdl =
+    pfq_close hdl >>= throwPFqIf_ hdl (== -1)
+
 
 -- bind:
 --
@@ -816,8 +834,9 @@ send_async hdl xs = do
 --
 
 foreign import ccall unsafe pfq_open              :: CSize -> CSize -> CSize -> IO (Ptr PFqTag)
+foreign import ccall unsafe pfq_open_tx           :: CSize -> CSize -> IO (Ptr PFqTag)
 foreign import ccall unsafe pfq_open_nogroup      :: CSize -> CSize -> CSize -> IO (Ptr PFqTag)
-foreign import ccall unsafe pfq_open_group        :: CUInt -> CInt -> CSize -> CSize -> CSize -> IO (Ptr PFqTag)
+foreign import ccall unsafe pfq_open_group        :: CUInt -> CInt  -> CSize -> CSize -> CSize -> CSize -> CSize -> IO (Ptr PFqTag)
 
 foreign import ccall unsafe pfq_close             :: Ptr PFqTag -> IO CInt
 foreign import ccall unsafe pfq_error             :: Ptr PFqTag -> IO CString

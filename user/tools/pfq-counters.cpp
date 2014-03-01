@@ -35,7 +35,7 @@ namespace opt {
 
     size_t caplen = 64;
     size_t offset = 0;
-    size_t slots  = 262144;
+    size_t slots  = 131072;
 
     bool flow     = false;
 
