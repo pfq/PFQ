@@ -38,6 +38,8 @@
 #include <memory>
 #include <vector>
 #include <type_traits>
+#include <algorithm>
+#include <thread>
 
 #include <pfq-util.hpp>
 #include <pfq-queue.hpp>
