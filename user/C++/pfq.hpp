@@ -21,8 +21,7 @@
  *
  ****************************************************************/
 
-#ifndef _PFQ_HPP_
-#define _PFQ_HPP_
+#pragma once
 
 #include <linux/if_ether.h>
 #include <linux/pf_q.h>
@@ -35,370 +34,16 @@
 #include <sys/mman.h>
 #include <poll.h>
 
-#include <iostream>
-#include <sstream>
-#include <stdexcept>
-#include <iterator>
-#include <cstring>
-#include <cassert>
-#include <cerrno>
-#include <cstdint>
-#include <thread>
+#include <tuple>
+#include <memory>
 #include <vector>
-#include <deque>
-#include <algorithm>
-#include <system_error>
+#include <type_traits>
+
+#include <pfq-util.hpp>
+#include <pfq-queue.hpp>
 
 
 namespace net {
-
-    using mutable_buffer = std::pair<char *, size_t>;
-    using const_buffer   = std::pair<const char *, const size_t>;
-
-    template<size_t N, typename T>
-    inline T align(T value)
-    {
-        static_assert((N & (N-1)) == 0, "align: N not a power of two");
-        return (value + (N-1)) & ~(N-1);
-    }
-
-    class queue
-    {
-    public:
-
-        struct const_iterator;
-
-        /* simple forward iterator over frames */
-        struct iterator : public std::iterator<std::forward_iterator_tag, pfq_pkt_hdr>
-        {
-            friend struct queue::const_iterator;
-
-            iterator(pfq_pkt_hdr *h, size_t slot_size, size_t index)
-            : hdr_(h), slot_size_(slot_size), index_(index)
-            {}
-
-            ~iterator() = default;
-
-            iterator(const iterator &other)
-            : hdr_(other.hdr_), slot_size_(other.slot_size_), index_(other.index_)
-            {}
-
-            iterator &
-            operator++()
-            {
-                hdr_ = reinterpret_cast<pfq_pkt_hdr *>(
-                        reinterpret_cast<char *>(hdr_) + slot_size_);
-                return *this;
-            }
-
-            iterator
-            operator++(int)
-            {
-                iterator ret(*this);
-                ++(*this);
-                return ret;
-            }
-
-            pfq_pkt_hdr *
-            operator->() const
-            {
-                return hdr_;
-            }
-
-            pfq_pkt_hdr &
-            operator*() const
-            {
-                return *hdr_;
-            }
-
-            void *
-            data() const
-            {
-                return hdr_+1;
-            }
-
-            bool
-            ready() const
-            {
-                auto b = const_cast<volatile uint8_t &>(hdr_->commit) == index_;
-                smp_rmb();
-                return b;
-            }
-
-            bool
-            operator==(const iterator &other) const
-            {
-                return hdr_ == other.hdr_;
-            }
-
-            bool
-            operator!=(const iterator &other) const
-            {
-                return !(*this == other);
-            }
-
-        private:
-            pfq_pkt_hdr *hdr_;
-            size_t   slot_size_;
-            size_t   index_;
-        };
-
-        /* simple forward const_iterator over frames */
-        struct const_iterator : public std::iterator<std::forward_iterator_tag, pfq_pkt_hdr>
-        {
-            const_iterator(pfq_pkt_hdr *h, size_t slot_size, size_t index)
-            : hdr_(h), slot_size_(slot_size), index_(index)
-            {}
-
-            const_iterator(const const_iterator &other)
-            : hdr_(other.hdr_), slot_size_(other.slot_size_), index_(other.index_)
-            {}
-
-            const_iterator(const queue::iterator &other)
-            : hdr_(other.hdr_), slot_size_(other.slot_size_), index_(other.index_)
-            {}
-
-            ~const_iterator() = default;
-
-            const_iterator &
-            operator++()
-            {
-                hdr_ = reinterpret_cast<pfq_pkt_hdr *>(
-                        reinterpret_cast<char *>(hdr_) + slot_size_);
-                return *this;
-            }
-
-            const_iterator
-            operator++(int)
-            {
-                const_iterator ret(*this);
-                ++(*this);
-                return ret;
-            }
-
-            const pfq_pkt_hdr *
-            operator->() const
-            {
-                return hdr_;
-            }
-
-            const pfq_pkt_hdr &
-            operator*() const
-            {
-                return *hdr_;
-            }
-
-            const void *
-            data() const
-            {
-                return hdr_+1;
-            }
-
-            bool
-            ready() const
-            {
-                auto b = const_cast<volatile uint8_t &>(hdr_->commit) == index_;
-                smp_rmb();
-                return b;
-            }
-
-            bool
-            operator==(const const_iterator &other) const
-            {
-                return hdr_ == other.hdr_;
-            }
-
-            bool
-            operator!=(const const_iterator &other) const
-            {
-                return !(*this == other);
-            }
-
-        private:
-            pfq_pkt_hdr *hdr_;
-            size_t  slot_size_;
-            size_t  index_;
-        };
-
-    public:
-        queue(void *addr, size_t slot_size, size_t queue_len, size_t index)
-        : addr_(addr), slot_size_(slot_size), queue_len_(queue_len), index_(index)
-        {}
-
-        ~queue() = default;
-
-        size_t
-        size() const
-        {
-            // return the number of packets in this queue.
-            return queue_len_;
-        }
-
-        bool
-        empty() const
-        {
-            return queue_len_ == 0;
-        }
-
-        size_t
-        index() const
-        {
-            return index_;
-        }
-
-        size_t
-        slot_size() const
-        {
-            return slot_size_;
-        }
-
-        const void *
-        data() const
-        {
-            return addr_;
-        }
-
-        iterator
-        begin()
-        {
-            return iterator(reinterpret_cast<pfq_pkt_hdr *>(addr_), slot_size_, index_);
-        }
-
-        const_iterator
-        begin() const
-        {
-            return const_iterator(reinterpret_cast<pfq_pkt_hdr *>(addr_), slot_size_, index_);
-        }
-
-        iterator
-        end()
-        {
-            return iterator(reinterpret_cast<pfq_pkt_hdr *>(
-                        static_cast<char *>(addr_) + queue_len_ * slot_size_), slot_size_, index_);
-        }
-
-        const_iterator
-        end() const
-        {
-            return const_iterator(reinterpret_cast<pfq_pkt_hdr *>(
-                        static_cast<char *>(addr_) + queue_len_ * slot_size_), slot_size_, index_);
-        }
-
-        const_iterator
-        cbegin() const
-        {
-            return const_iterator(reinterpret_cast<pfq_pkt_hdr *>(addr_), slot_size_, index_);
-        }
-
-        const_iterator
-        cend() const
-        {
-            return const_iterator(reinterpret_cast<pfq_pkt_hdr *>(
-                        static_cast<char *>(addr_) + queue_len_ * slot_size_), slot_size_, index_);
-        }
-
-    private:
-        void    *addr_;
-        size_t  slot_size_;
-        size_t  queue_len_;
-        size_t  index_;
-    };
-
-    static inline void * data_ready(pfq_pkt_hdr &h, uint8_t current_commit)
-    {
-        if (const_cast<volatile uint8_t &>(h.commit) != current_commit)
-            return nullptr;
-        smp_rmb();
-        return &h + 1;
-    }
-
-    static inline const void * data_ready(pfq_pkt_hdr const &h, uint8_t current_commit)
-    {
-        if (const_cast<volatile uint8_t &>(h.commit) != current_commit)
-            return nullptr;
-        smp_rmb();
-        return &h + 1;
-    }
-
-
-    //////////////////////////////////////////////////////////////////////
-
-    class pfq_error : public std::system_error
-    {
-    public:
-
-        pfq_error(int ev, const char * reason)
-        : std::system_error(ev, std::generic_category(), reason)
-        {}
-
-        pfq_error(const char *reason)
-        : std::system_error(0, std::generic_category(), reason)
-        {}
-
-        virtual ~pfq_error() noexcept
-        {}
-    };
-
-
-    //////////////////////////////////////////////////////////////////////
-    // utility functions...
-
-    namespace
-    {
-        inline int
-        ifindex(int fd, const char *dev)
-        {
-            struct ifreq ifreq_io;
-            memset(&ifreq_io, 0, sizeof(struct ifreq));
-            strncpy(ifreq_io.ifr_name, dev, IFNAMSIZ);
-            if (::ioctl(fd, SIOCGIFINDEX, &ifreq_io) == -1)
-                throw pfq_error(errno, "PFQ: ioctl get ifindex");
-            return ifreq_io.ifr_ifindex;
-        }
-
-
-        inline
-        void set_promisc(int fd, const char *dev, bool value)
-        {
-            struct ifreq ifreq_io;
-
-            memset(&ifreq_io, 0, sizeof(struct ifreq));
-            strncpy(ifreq_io.ifr_name, dev, IFNAMSIZ);
-
-            if(::ioctl(fd, SIOCGIFFLAGS, &ifreq_io) == -1)
-                throw pfq_error(errno, "PFQ: ioctl getflags");
-
-            if (value)
-                ifreq_io.ifr_flags |= IFF_PROMISC;
-            else
-                ifreq_io.ifr_flags &= ~IFF_PROMISC;
-
-            if(::ioctl(fd, SIOCSIFFLAGS, &ifreq_io) == -1)
-                throw pfq_error(errno, "PFQ: ioctl setflags");
-
-        }
-
-
-        inline
-        int nametoindex(const char *dev)
-        {
-            auto i = ::if_nametoindex(dev);
-            if (i == 0)
-                throw pfq_error("PFQ: unknown device");
-            return i;
-        }
-
-
-        inline
-        std::string
-        indextoname(int i)
-        {
-            char buf[IF_NAMESIZE];
-            if (::if_indextoname(i, buf) == nullptr)
-                throw pfq_error("PFQ: index not available");
-            return buf;
-        }
-    }
 
     //////////////////////////////////////////////////////////////////////
 
@@ -432,47 +77,10 @@ namespace net {
     };
 
     //////////////////////////////////////////////////////////////////////
-    // PFQ open params:
-    //////////////////////////////////////////////////////////////////////
+    // open params:
 
     namespace param
     {
-        template <typename ... Ts> struct type_index;
-        template <typename T, typename ... Ts>
-        struct type_index<T, T, Ts...>
-        {
-            enum { value = 0 }; // stop recursion here
-        };
-        template <typename T, typename T0, typename ... Ts>
-        struct type_index<T, T0, Ts...>
-        {
-            enum { value = 1 + type_index<T, Ts...>::value };
-        };
-        template <typename Tp>
-        struct type_index<Tp>
-        {
-            enum { value = 1 };
-        };
-
-        template <typename T, typename ...Ts>
-        auto get_type(std::tuple<Ts...> &tup)
-        -> decltype (std::get<type_index<T, Ts...>::value>(tup))
-        {
-            return std::get<type_index<T, Ts...>::value>(tup);
-        }
-
-        template <typename ...Ts>
-        void sink(Ts && ... ) { }
-
-        template <typename Tup, typename ...Ts>
-        void
-        fill(Tup &tup, Ts&& ... arg)
-        {
-            sink((get_type<Ts>(tup)= std::forward<Ts>(arg))...);
-        }
-
-        ///////////////////////////////////////////////////////////
-
         struct class_   { class_mask value;   };
         struct policy   { group_policy value; };
 
@@ -492,7 +100,6 @@ namespace net {
 
     //////////////////////////////////////////////////////////////////////
     // PFQ class
-    //////////////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////////////
 
     class pfq
@@ -543,13 +150,13 @@ namespace net {
 
             param::fill(def, std::forward<Ts>(args)...);
 
-            this->open(param::get_type<param::class_>(def).value,
-                       param::get_type<param::policy>(def).value,
-                       param::get_type<param::caplen>(def).value,
-                       param::get_type<param::offset>(def).value,
-                       param::get_type<param::rx_slots>(def).value,
-                       param::get_type<param::maxlen>(def).value,
-                       param::get_type<param::tx_slots>(def).value);
+            this->open(get<param::class_>(def).value,
+                       get<param::policy>(def).value,
+                       get<param::caplen>(def).value,
+                       get<param::offset>(def).value,
+                       get<param::rx_slots>(def).value,
+                       get<param::maxlen>(def).value,
+                       get<param::tx_slots>(def).value);
         }
 
         pfq(size_t caplen, size_t offset = 0, size_t rx_slots = 65536, size_t maxlen = 64, size_t tx_slots = 4096)
@@ -653,13 +260,13 @@ namespace net {
 
             param::fill(def, std::forward<Ts>(args)...);
 
-            this->open(param::get_type<param::class_>(def).value,
-                       param::get_type<param::policy>(def).value,
-                       param::get_type<param::caplen>(def).value,
-                       param::get_type<param::offset>(def).value,
-                       param::get_type<param::rx_slots>(def).value,
-                       param::get_type<param::maxlen>(def).value,
-                       param::get_type<param::tx_slots>(def).value);
+            this->open(get<param::class_>(def).value,
+                       get<param::policy>(def).value,
+                       get<param::caplen>(def).value,
+                       get<param::offset>(def).value,
+                       get<param::rx_slots>(def).value,
+                       get<param::maxlen>(def).value,
+                       get<param::tx_slots>(def).value);
         }
 
         /* id */
@@ -1470,4 +1077,3 @@ namespace net {
 
 } // namespace net
 
-#endif /* _PFQ_HPP_ */
