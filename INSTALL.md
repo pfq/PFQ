@@ -7,8 +7,7 @@ Requirements
 
 To install PFQ, the following requisites must be present:
 
-* A 32/64-bit Linux operating system (Intel/AMD architectures 
-  are currently available) 
+* A 32/64-bit Linux operating system (Intel/AMD architectures are currently supported).
 
 * A modern Linux kernel: suggested Linux 3.0 or higher.  
 
