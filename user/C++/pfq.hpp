@@ -83,6 +83,11 @@ namespace net {
 
     namespace param
     {
+        namespace
+        {
+            struct list_t {} constexpr list = list_t {};
+        }
+
         struct class_   { class_mask value;   };
         struct policy   { group_policy value; };
 
@@ -94,9 +99,16 @@ namespace net {
 
         using types = std::tuple<class_, policy, caplen, offset, rx_slots, maxlen, tx_slots>;
 
-        namespace
+        inline
+        types make_default()
         {
-            struct list_t {} constexpr list = list_t {};
+            return std::make_tuple(param::class_   {class_mask::default_},
+                                   param::policy   {group_policy::priv},
+                                   param::caplen   {64},
+                                   param::offset   {0},
+                                   param::rx_slots {1024},
+                                   param::maxlen   {64},
+                                   param::tx_slots {1024});
         }
     }
 
@@ -142,15 +154,9 @@ namespace net {
         : fd_(-1)
         , pdata_()
         {
-            auto def = std::make_tuple(param::class_ {class_mask::default_},
-                                       param::policy {group_policy::priv},
-                                       param::caplen {64},
-                                       param::offset {0},
-                                       param::rx_slots {1024},
-                                       param::maxlen   {64},
-                                       param::tx_slots {1024});
+            auto def = param::make_default();
 
-            param::fill(def, std::forward<Ts>(args)...);
+            param::load(def, std::forward<Ts>(args)...);
 
             this->open(get<param::class_>(def).value,
                        get<param::policy>(def).value,
@@ -252,15 +258,9 @@ namespace net {
         template <typename ...Ts>
         void open(param::list_t, Ts&& ...args)
         {
-            auto def = std::make_tuple(param::class_ {class_mask::default_},
-                                       param::policy {group_policy::priv},
-                                       param::caplen {64},
-                                       param::offset {0},
-                                       param::rx_slots {1024},
-                                       param::maxlen   {64},
-                                       param::tx_slots {1024});
+            auto def = param::make_default();
 
-            param::fill(def, std::forward<Ts>(args)...);
+            param::load(def, std::forward<Ts>(args)...);
 
             this->open(get<param::class_>(def).value,
                        get<param::policy>(def).value,

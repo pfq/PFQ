@@ -139,7 +139,7 @@ namespace net {
 
         template <typename Tup, typename ...Ts>
         void
-        fill(Tup &tup, Ts&& ... arg)
+        load(Tup &tup, Ts&& ... arg)
         {
             sink((get<Ts>(tup)= std::forward<Ts>(arg))...);
         }
