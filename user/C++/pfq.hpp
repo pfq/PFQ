@@ -26,7 +26,7 @@
 #include <linux/if_ether.h>
 #include <linux/pf_q.h>
 
-#include <sys/types.h>          /* See NOTES */
+#include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/ioctl.h>
 #include <arpa/inet.h>
@@ -47,8 +47,7 @@
 
 namespace net {
 
-    //////////////////////////////////////////////////////////////////////
-
+    //
     // group policies
     //
 
@@ -60,6 +59,7 @@ namespace net {
         shared     = Q_GROUP_SHARED
     };
 
+    //
     // class mask
     //
 
@@ -69,6 +69,7 @@ namespace net {
         any      = Q_CLASS_ANY
     };
 
+    //
     // vlan
     //
 
@@ -80,6 +81,7 @@ namespace net {
 
     //////////////////////////////////////////////////////////////////////
     // open params:
+    //////////////////////////////////////////////////////////////////////
 
     namespace param
     {
@@ -193,13 +195,13 @@ namespace net {
             this->close();
         }
 
-        /* pfq object is non copyable */
+        // pfq object is non copyable
 
         pfq(const pfq&) = delete;
         pfq& operator=(const pfq&) = delete;
 
 
-        /* pfq object is moveable */
+        // pfq object is moveable
 
         pfq(pfq &&other) noexcept
         : fd_(other.fd_)
@@ -208,7 +210,7 @@ namespace net {
             other.fd_ = -1;
         }
 
-        /* move assignment operator */
+        // move assignment operator
 
         pfq&
         operator=(pfq &&other) noexcept
@@ -222,8 +224,6 @@ namespace net {
             return *this;
         }
 
-        /* swap */
-
         void
         swap(pfq &other)
         {
@@ -231,7 +231,6 @@ namespace net {
             std::swap(pdata_, other.pdata_);
         }
 
-        /* open */
 
         void
         open(group_policy policy, size_t caplen, size_t offset = 0, size_t rx_slots = 65536, size_t maxlen = 64, size_t tx_slots = 4096)
@@ -271,8 +270,6 @@ namespace net {
                        get<param::tx_slots>(def).value);
         }
 
-        /* id */
-
         int
         id() const
         {
@@ -308,7 +305,8 @@ namespace net {
             if (fd_ == -1)
                 throw pfq_error("PFQ: module not loaded");
 
-            /* allocate pdata */
+            // allocate pdata
+
             pdata_.reset(new pfq_data { -1,
                                         -1,
                                         nullptr,
@@ -321,36 +319,42 @@ namespace net {
                                         0
                                        });
 
-            /* get id */
+            // get id
+
             socklen_t size = sizeof(pdata_->id);
             if (::getsockopt(fd_, PF_Q, Q_SO_GET_ID, &pdata_->id, &size) == -1)
                 throw pfq_error(errno, "PFQ: get id error");
 
-            /* set RX queue slots */
+            // set RX queue slots
+
             if (::setsockopt(fd_, PF_Q, Q_SO_SET_RX_SLOTS, &rx_slots, sizeof(rx_slots)) == -1)
                 throw pfq_error(errno, "PFQ: set RX slots error");
 
             pdata_->rx_slots = rx_slots;
 
-            /* set caplen */
+            // set caplen
+
             if (::setsockopt(fd_, PF_Q, Q_SO_SET_RX_CAPLEN, &caplen, sizeof(caplen)) == -1)
                 throw pfq_error(errno, "PFQ: set caplen error");
 
             pdata_->rx_caplen = caplen;
 
-            /* set offset */
+            // set offset
+
             if (::setsockopt(fd_, PF_Q, Q_SO_SET_RX_OFFSET, &offset, sizeof(offset)) == -1)
                 throw pfq_error(errno, "PFQ: set RX offset error");
 
             pdata_->rx_slot_size = align<8>(sizeof(pfq_pkt_hdr) + pdata_->rx_caplen);
 
-            /* set TX queue slots */
+            // set TX queue slots
+
             if (::setsockopt(fd_, PF_Q, Q_SO_SET_TX_SLOTS, &tx_slots, sizeof(tx_slots)) == -1)
                 throw pfq_error(errno, "PFQ: set TX slots error");
 
             pdata_->tx_slots = tx_slots;
 
-            /* set maxlen */
+            // set maxlen
+
             if (::setsockopt(fd_, PF_Q, Q_SO_SET_TX_MAXLEN, &maxlen, sizeof(maxlen)) == -1)
                 throw pfq_error(errno, "PFQ: set maxlen error");
         }
@@ -557,10 +561,6 @@ namespace net {
         size_t
         tx_slots() const
         {
-           // size_t ret; socklen_t size = sizeof(ret);
-           // if (::getsockopt(fd_, PF_Q, Q_SO_GET_TX_SLOTS, &ret, &size) == -1)
-           //      throw pfq_error(errno, "PFQ: get TX slots error");
-
            if (!pdata_)
                 throw pfq_error("PFQ: socket not open");
 
@@ -652,7 +652,9 @@ namespace net {
             return vec;
         }
 
-        /* functional */
+        //
+        // functional
+        //
 
         void
         set_group_function(int gid, const char *fun, int level = 0)
@@ -991,7 +993,8 @@ namespace net {
             if (index == -1)
                 return false;
 
-            auto h    = reinterpret_cast<pfq_pkt_hdr *>(reinterpret_cast<char *>(q + 1) + pdata_->rx_slots * pdata_->rx_slot_size * 2  + index * tx->slot_size);
+            auto h    = reinterpret_cast<pfq_pkt_hdr *>(reinterpret_cast<char *>(q + 1) +
+                            pdata_->rx_slots * pdata_->rx_slot_size * 2  + index * tx->slot_size);
             auto addr = reinterpret_cast<char *>(h + 1);
 
             h->len = std::min(pkt.second, static_cast<size_t>(tx->max_len));

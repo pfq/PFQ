@@ -103,8 +103,6 @@ namespace net {
         return buf;
     }
 
-    /////////////////
-
     namespace details
     {
         template <typename ... Ts> struct type_index;
