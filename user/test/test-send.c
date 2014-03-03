@@ -23,27 +23,13 @@ static const unsigned char ping[98] =
 };
 
 
-void mode_0(pfq_t *q, unsigned long long num)
-{
-        unsigned long long n;
-        for(n = 0; n < num;)
-        {
-                if (pfq_inject(q, ping, sizeof(ping)))
-			n++;
-
-                pfq_tx_queue_flush(q);
-        }
-}
-
 void mode_1(pfq_t *q, unsigned long long num)
 {
         unsigned long long n;
         for(n = 0; n < num;)
         {
-                if (pfq_inject(q, ping, sizeof(ping)))
+                if (pfq_send(q, ping, sizeof(ping)))
 			n++;
-
-                pfq_wakeup_tx_thread(q);
         }
 }
 
@@ -52,11 +38,11 @@ void mode_2(pfq_t *q, unsigned long long num)
         unsigned long long n;
         for(n = 0; n < num;)
         {
-                if (pfq_send_async(q, ping, sizeof(ping)))
+                if (pfq_send_sync(q, ping, sizeof(ping), 128))
 			n++;
         }
 
-        pfq_wakeup_tx_thread(q);
+        pfq_tx_queue_flush(q);
 }
 
 
@@ -65,9 +51,23 @@ void mode_3(pfq_t *q, unsigned long long num)
         unsigned long long n;
         for(n = 0; n < num;)
         {
-                if (pfq_send(q, ping, sizeof(ping)))
+                if (pfq_send_async(q, ping, sizeof(ping), 1))
 			n++;
         }
+
+        pfq_wakeup_tx_thread(q);
+}
+
+void mode_4(pfq_t *q, unsigned long long num)
+{
+        unsigned long long n;
+        for(n = 0; n < num;)
+        {
+                if (pfq_send_async(q, ping, sizeof(ping), 128))
+			n++;
+        }
+
+        pfq_wakeup_tx_thread(q);
 }
 
 
@@ -97,10 +97,10 @@ main(int argc, char *argv[])
 
         switch(mode)
         {
-        case 0: mode_0(q, num); break;
         case 1: mode_1(q, num); break;
         case 2: mode_2(q, num); break;
         case 3: mode_3(q, num); break;
+        case 4: mode_4(q, num); break;
         default:
                 fprintf(stderr, "error: unknown mode\n");
                 return -1;

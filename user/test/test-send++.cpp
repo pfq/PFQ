@@ -24,31 +24,29 @@ static const unsigned char ping[98] =
 };
 
 
-void mode_0(pfq &q, uint64_t num)
-{
-    for(uint64_t n = 0; n < num;)
-    {
-        if (q.inject(net::const_buffer(reinterpret_cast<const char *>(ping), sizeof(ping))))
-            n++;
-
-        if ((n % 128) == 0)
-            q.tx_queue_flush();
-    }
-}
-
 void mode_1(pfq &q, uint64_t num)
 {
     for(uint64_t n = 0; n < num;)
     {
-        if (q.inject(net::const_buffer(reinterpret_cast<const char *>(ping), sizeof(ping))))
+        if (q.send(net::const_buffer(reinterpret_cast<const char *>(ping), sizeof(ping))))
             n++;
-
-        if ((n % 128) == 0)
-            q.wakeup_tx_thread();
     }
 }
 
+
 void mode_2(pfq &q, uint64_t num)
+{
+    for(uint64_t n = 0; n < num;)
+    {
+        if (q.send_sync(net::const_buffer(reinterpret_cast<const char *>(ping), sizeof(ping)), 128))
+            n++;
+    }
+
+    q.tx_queue_flush();
+
+}
+
+void mode_3(pfq &q, uint64_t num)
 {
     for(uint64_t n = 0; n < num;)
     {
@@ -60,13 +58,15 @@ void mode_2(pfq &q, uint64_t num)
 }
 
 
-void mode_3(pfq &q, uint64_t num)
+void mode_4(pfq &q, uint64_t num)
 {
     for(uint64_t n = 0; n < num;)
     {
-        if (q.send(net::const_buffer(reinterpret_cast<const char *>(ping), sizeof(ping))))
+        if (q.send_async(net::const_buffer(reinterpret_cast<const char *>(ping), sizeof(ping)), 128))
             n++;
     }
+
+    q.wakeup_tx_thread();
 }
 
 
@@ -92,10 +92,10 @@ main(int argc, char *argv[])
 
     switch(mode)
     {
-    case 0: mode_0(q, num); break;
     case 1: mode_1(q, num); break;
     case 2: mode_2(q, num); break;
     case 3: mode_3(q, num); break;
+    case 4: mode_4(q, num); break;
     default:
             throw std::runtime_error("unknown mode " + std::to_string(mode));
     }

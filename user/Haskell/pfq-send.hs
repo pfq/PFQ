@@ -70,7 +70,9 @@ sender (dev:xs) = do
             Q.startTxThread q 0
 
             replicateM_ numb $ do
-               Q.send_async q ping
+               Q.send q ping
+               -- Q.sendSync q ping 128
+               -- Q.sendAsync q ping 128
                threadDelay 1
 
             Q.wakeupTxThread q
