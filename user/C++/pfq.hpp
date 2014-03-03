@@ -972,7 +972,7 @@ namespace net {
         }
 
         bool
-        send_sync(const_buffer pkt, size_t n = 1)
+        send_sync(const_buffer pkt, size_t n = 128)
         {
             auto ret = inject(pkt);
 
@@ -983,7 +983,7 @@ namespace net {
         }
 
         bool
-        send_async(const_buffer pkt, size_t n = 1)
+        send_async(const_buffer pkt, size_t n = 128)
         {
             auto ret = inject(pkt);
 
