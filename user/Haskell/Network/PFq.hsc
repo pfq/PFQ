@@ -96,7 +96,8 @@ module Network.PFq
 
         inject,
         send,
-        send_async,
+        sendSync,
+        sendAsync,
 
         -- groupComputation,
 
@@ -822,12 +823,21 @@ send hdl xs = do
         pfq_send hdl p (fromIntegral l) >>= throwPFqIf_ hdl (== -1)
 
 
-send_async :: Ptr PFqTag
+sendSync :: Ptr PFqTag
            -> C.ByteString
+           -> Int           -- batch len
            -> IO ()
-send_async hdl xs = do
+sendSync hdl xs blen = do
     unsafeUseAsCStringLen xs $ \(p, l) ->
-        pfq_send_async hdl p (fromIntegral l) >>= throwPFqIf_ hdl (== -1)
+        pfq_send_sync hdl p (fromIntegral l) (fromIntegral blen) >>= throwPFqIf_ hdl (== -1)
+
+sendAsync :: Ptr PFqTag
+           -> C.ByteString
+           -> Int           -- batch len
+           -> IO ()
+sendAsync hdl xs blen = do
+    unsafeUseAsCStringLen xs $ \(p, l) ->
+        pfq_send_async hdl p (fromIntegral l) (fromIntegral blen) >>= throwPFqIf_ hdl (== -1)
 
 
 -- C functions from libpfq
@@ -907,7 +917,8 @@ foreign import ccall unsafe pfq_tx_queue_flush      :: Ptr PFqTag -> IO CInt
 
 foreign import ccall unsafe pfq_inject              :: Ptr PFqTag -> Ptr CChar -> CSize -> IO CInt
 foreign import ccall unsafe pfq_send                :: Ptr PFqTag -> Ptr CChar -> CSize -> IO CInt
-foreign import ccall unsafe pfq_send_async          :: Ptr PFqTag -> Ptr CChar -> CSize -> IO CInt
+foreign import ccall unsafe pfq_send_sync           :: Ptr PFqTag -> Ptr CChar -> CSize -> CSize -> IO CInt
+foreign import ccall unsafe pfq_send_async          :: Ptr PFqTag -> Ptr CChar -> CSize -> CSize -> IO CInt
 
 -- Missing
 

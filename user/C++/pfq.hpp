@@ -963,25 +963,35 @@ namespace net {
         bool
         send(const_buffer pkt)
         {
-            if (!inject(pkt))
-                return false;
-
-            tx_queue_flush();
-            return true;
-        }
-
-
-        bool
-        send_async(const_buffer pkt)
-        {
             auto ret = inject(pkt);
 
-            if ((pdata_->tx_counter ++ % 128) == 0)
-                wakeup_tx_thread();
+            if (ret)
+                tx_queue_flush();
 
             return ret;
         }
 
+        bool
+        send_sync(const_buffer pkt, size_t n = 1)
+        {
+            auto ret = inject(pkt);
+
+            if ((pdata_->tx_counter ++ % n) == 0)
+                tx_queue_flush();
+
+            return ret;
+        }
+
+        bool
+        send_async(const_buffer pkt, size_t n = 1)
+        {
+            auto ret = inject(pkt);
+
+            if ((pdata_->tx_counter ++ % n) == 0)
+                wakeup_tx_thread();
+
+            return ret;
+        }
 
         bool
         inject(const_buffer pkt)

@@ -65,6 +65,7 @@ char *make_packet(size_t n)
 
 namespace opt
 {
+    size_t batch   = 64;
     size_t len     = 64;
     size_t slots   = 4096;
     bool   async   = false;
@@ -233,7 +234,7 @@ namespace test
                             ip->daddr = m_gen();
                         }
 
-                        if (m_pfq[n].send_async(net::const_buffer(reinterpret_cast<const char *>(packet), opt::len)))
+                        if (m_pfq[n].send_async(net::const_buffer(reinterpret_cast<const char *>(packet), opt::len), opt::batch))
                             m_sent->fetch_add(1, std::memory_order_relaxed);
                     }
                 }
@@ -250,7 +251,7 @@ namespace test
                             ip->daddr = m_gen();
                         }
 
-                        if (m_pfq[n].send(net::const_buffer(reinterpret_cast<const char *>(packet), opt::len)))
+                        if (m_pfq[n].send_sync(net::const_buffer(reinterpret_cast<const char *>(packet), opt::len), opt::batch))
                             m_sent->fetch_add(1, std::memory_order_relaxed);
                     }
                 }
@@ -299,7 +300,7 @@ unsigned int hardware_concurrency()
 
 void usage(const char *name)
 {
-    throw std::runtime_error(std::string("usage: ") + name + " [-h|--help] [-r|--rand-ip] [-a|--async] [-l|--len N] [-s|--slot N] T1 T2... \n\t| T = dev[.queue.queue..]");
+    throw std::runtime_error(std::string("usage: ") + name + " [-h|--help] [-r|--rand-ip] [-a|--async] [-b|--batch N] [-l|--len N] [-s|--slot N] T1 T2... \n\t| T = dev[.queue.queue..]");
 }
 
 
@@ -316,6 +317,18 @@ try
 
     for(int i = 1; i < argc; ++i)
     {
+        if ( strcmp(argv[i], "-b") == 0 ||
+             strcmp(argv[i], "--batch") == 0) {
+            i++;
+            if (i == argc)
+            {
+                throw std::runtime_error("batch len missing");
+            }
+
+            opt::batch = std::atoi(argv[i]);
+            continue;
+        }
+
         if ( strcmp(argv[i], "-l") == 0 ||
              strcmp(argv[i], "--len") == 0) {
             i++;
