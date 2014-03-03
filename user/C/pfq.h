@@ -261,7 +261,9 @@ extern int pfq_inject(pfq_t *q, const void *ptr, size_t len);
 
 extern int pfq_send(pfq_t *q, const void *ptr, size_t len);
 
-extern int pfq_send_async(pfq_t *q, const void *ptr, size_t len);
+extern int pfq_send_sync (pfq_t *q, const void *ptr, size_t len, size_t batch_len);
+
+extern int pfq_send_async(pfq_t *q, const void *ptr, size_t len, size_t batch_len);
 
 
 #endif /* _PFQ_H_ */

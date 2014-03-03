@@ -921,13 +921,23 @@ pfq_send(pfq_t *q, const void *ptr, size_t len)
         return rc;
 }
 
-
 int
-pfq_send_async(pfq_t *q, const void *ptr, size_t len)
+pfq_send_sync(pfq_t *q, const void *ptr, size_t len, size_t batch_len)
 {
         int rc = pfq_inject(q, ptr, len);
 
-        if ((q->tx_counter++ % 128) == 0)
+        if ((q->tx_counter++ % batch_len) == 0)
+        	pfq_tx_queue_flush(q);
+
+        return rc;
+}
+
+int
+pfq_send_async(pfq_t *q, const void *ptr, size_t len, size_t batch_len)
+{
+        int rc = pfq_inject(q, ptr, len);
+
+        if ((q->tx_counter++ % batch_len) == 0)
         	pfq_wakeup_tx_thread(q);
 
         return rc;
