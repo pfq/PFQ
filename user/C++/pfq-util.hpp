@@ -132,14 +132,11 @@ namespace net {
 
     namespace param
     {
-        template <typename ...Ts>
-        void sink(Ts && ... ) { }
-
         template <typename Tup, typename ...Ts>
         void
         load(Tup &tup, Ts&& ... arg)
         {
-            sink((get<Ts>(tup)= std::forward<Ts>(arg))...);
+            auto eval __attribute__((unused)) = { ((get<Ts>(tup) = std::forward<Ts>(arg)),0)... };
         }
 
     } // namespace param
