@@ -103,35 +103,35 @@ namespace net {
         return buf;
     }
 
-    namespace details
-    {
-        template <typename ... Ts> struct type_index;
-        template <typename T, typename ... Ts>
-        struct type_index<T, T, Ts...>
-        {
-            enum { value = 0 }; // stop recursion here
-        };
-        template <typename T, typename T0, typename ... Ts>
-        struct type_index<T, T0, Ts...>
-        {
-            enum { value = 1 + type_index<T, Ts...>::value };
-        };
-        template <typename Tp>
-        struct type_index<Tp>
-        {
-            enum { value = 1 };
-        };
-    }
-
-    template <typename T, typename ...Ts>
-    auto get(std::tuple<Ts...> &tup)
-    -> decltype (std::get<details::type_index<T, Ts...>::value>(tup))
-    {
-        return std::get<details::type_index<T, Ts...>::value>(tup);
-    }
-
     namespace param
     {
+        namespace details
+        {
+            template <typename ... Ts> struct type_index;
+            template <typename T, typename ... Ts>
+            struct type_index<T, T, Ts...>
+            {
+                enum { value = 0 }; // stop recursion here
+            };
+            template <typename T, typename T0, typename ... Ts>
+            struct type_index<T, T0, Ts...>
+            {
+                enum { value = 1 + type_index<T, Ts...>::value };
+            };
+            template <typename Tp>
+            struct type_index<Tp>
+            {
+                enum { value = 1 };
+            };
+        }
+
+        template <typename T, typename ...Ts>
+        auto get(std::tuple<Ts...> &tup)
+        -> decltype (std::get<details::type_index<T, Ts...>::value>(tup))
+        {
+            return std::get<details::type_index<T, Ts...>::value>(tup);
+        }
+
         template <typename Tup, typename ...Ts>
         void
         load(Tup &tup, Ts&& ... arg)
