@@ -136,7 +136,8 @@ namespace net {
         void
         load(Tup &tup, Ts&& ... arg)
         {
-            auto eval __attribute__((unused)) = { ((get<Ts>(tup) = std::forward<Ts>(arg)),0)... };
+            typedef int eval[];
+            (void)eval { ((get<Ts>(tup) = std::forward<Ts>(arg)),0)... };
         }
 
     } // namespace param
