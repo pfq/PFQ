@@ -117,9 +117,9 @@ size_t mpdb_enqueue_batch(struct pfq_rx_opt *ro, unsigned long bitqueue, int bur
 			}
 		}
 
-                /* copy state from pfq_annotation */
+                /* copy state from pfq_cb (annotation) */
 
-                hdr->data = pfq_skb_annotation(skb)->state;
+                hdr->data = PFQ_CB(skb)->state;
 
 		/* setup the header */
 

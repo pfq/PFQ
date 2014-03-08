@@ -52,6 +52,7 @@
 
 /* sparse_counter_t stats */
 
+
 typedef struct pfq_rx_stats
 {
         sparse_counter_t  recv;         /* received by the queue */
