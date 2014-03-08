@@ -248,7 +248,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
         struct pfq_non_intrusive_skb * prefetch_queue = &local->prefetch_queue;
         unsigned long long sock_queue[Q_NON_INTRUSIVE_MAX_LEN];
         unsigned long group_mask, socket_mask;
-        struct pfq_annotation *cb;
+        struct pfq_cb *cb;
         long unsigned n, bit, lb;
         int cpu;
 
@@ -298,7 +298,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 
 	/* enqueue the packet to the prefetch queue */
 
-        cb = pfq_skb_annotation(skb);
+        cb = PFQ_CB(skb);
 
         cb->direct_skb      = direct;
         cb->stolen_skb      = false;
@@ -326,7 +326,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 
         pfq_non_intrusive_for_each(skb, n, prefetch_queue)
         {
-                struct pfq_annotation *cb = pfq_skb_annotation(skb);
+                struct pfq_cb *cb = PFQ_CB(skb);
 		unsigned long local_group_mask = __pfq_devmap_get_groups(skb->dev->ifindex, skb_get_rx_queue(skb));
 
 		group_mask |= local_group_mask;
@@ -346,7 +346,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 
         	pfq_non_intrusive_for_each(skb, n, prefetch_queue)
 		{
-                	struct pfq_annotation *cb = pfq_skb_annotation(skb);
+                	struct pfq_cb *cb = PFQ_CB(skb);
 
 			unsigned long sock_mask = 0;
 
@@ -476,7 +476,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 
         pfq_non_intrusive_for_each(skb, n, prefetch_queue)
         {
-                cb = pfq_skb_annotation(skb);
+                cb = PFQ_CB(skb);
 
                 if (unlikely(cb->stolen_skb))
                         continue;
@@ -948,8 +948,8 @@ static int __init pfq_init_module(void)
                 printk(KERN_INFO "[PFQ] prefetch_len=%d not allowed (0,%zu)!\n", prefetch_len, Q_NON_INTRUSIVE_MAX_LEN);
                 return -EFAULT;
         }
-        
-	if (batch_len > Q_NON_INTRUSIVE_MAX_LEN || batch_len == 0) { 
+
+	if (batch_len > Q_NON_INTRUSIVE_MAX_LEN || batch_len == 0) {
                 printk(KERN_INFO "[PFQ] batch_len=%d not allowed (0,%zu)!\n", batch_len, Q_NON_INTRUSIVE_MAX_LEN);
                 return -EFAULT;
         }

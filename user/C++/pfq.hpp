@@ -160,13 +160,13 @@ namespace net {
 
             param::load(def, std::forward<Ts>(args)...);
 
-            this->open(get<param::class_>(def).value,
-                       get<param::policy>(def).value,
-                       get<param::caplen>(def).value,
-                       get<param::offset>(def).value,
-                       get<param::rx_slots>(def).value,
-                       get<param::maxlen>(def).value,
-                       get<param::tx_slots>(def).value);
+            this->open(param::get<param::class_>(def).value,
+                       param::get<param::policy>(def).value,
+                       param::get<param::caplen>(def).value,
+                       param::get<param::offset>(def).value,
+                       param::get<param::rx_slots>(def).value,
+                       param::get<param::maxlen>(def).value,
+                       param::get<param::tx_slots>(def).value);
         }
 
         pfq(size_t caplen, size_t offset = 0, size_t rx_slots = 65536, size_t maxlen = 64, size_t tx_slots = 4096)
@@ -261,13 +261,13 @@ namespace net {
 
             param::load(def, std::forward<Ts>(args)...);
 
-            this->open(get<param::class_>(def).value,
-                       get<param::policy>(def).value,
-                       get<param::caplen>(def).value,
-                       get<param::offset>(def).value,
-                       get<param::rx_slots>(def).value,
-                       get<param::maxlen>(def).value,
-                       get<param::tx_slots>(def).value);
+            this->open(param::get<param::class_>(def).value,
+                       param::get<param::policy>(def).value,
+                       param::get<param::caplen>(def).value,
+                       param::get<param::offset>(def).value,
+                       param::get<param::rx_slots>(def).value,
+                       param::get<param::maxlen>(def).value,
+                       param::get<param::tx_slots>(def).value);
         }
 
         int
@@ -972,7 +972,7 @@ namespace net {
         }
 
         bool
-        send_sync(const_buffer pkt, size_t n = 1)
+        send_sync(const_buffer pkt, size_t n = 128)
         {
             auto ret = inject(pkt);
 
@@ -983,7 +983,7 @@ namespace net {
         }
 
         bool
-        send_async(const_buffer pkt, size_t n = 1)
+        send_async(const_buffer pkt, size_t n = 128)
         {
             auto ret = inject(pkt);
 

@@ -116,36 +116,12 @@ struct fun_context
 };
 
 
-struct pfq_annotation
-{
-        unsigned long group_mask;
-
-        unsigned long state;
-
-        struct fun_context * fun_ctx;
-
-        int index;      /* call index */
-
-        char direct_skb;
-
-        bool stolen_skb;
-        bool send_to_kernel;
-};
-
-
-static inline struct pfq_annotation *
-pfq_skb_annotation(struct sk_buff *skb)
-{
-        return (struct pfq_annotation *)(skb->cb);
-}
-
-
 /* utility functions */
 
 static inline
 ret_t pfq_call(sk_function_t fun, struct sk_buff *skb, ret_t ret)
 {
-        pfq_skb_annotation(skb)->index++;
+        PFQ_CB(skb)->index++;
         return fun ? fun(skb, ret) : ret;
 }
 
@@ -154,47 +130,47 @@ static inline
 sk_function_t
 get_next_function(struct sk_buff *skb)
 {
-        int index = pfq_skb_annotation(skb)->index;
-        return (sk_function_t) atomic_long_read(& pfq_skb_annotation(skb)->fun_ctx[index+1].function);
+        int index = PFQ_CB(skb)->index;
+        return (sk_function_t) atomic_long_read(& PFQ_CB(skb)->fun_ctx[index+1].function);
 }
 
 
 static inline
 void * get_unsafe_context(struct sk_buff *skb)
 {
-        int index = pfq_skb_annotation(skb)->index;
-        return (void *)atomic_long_read(&pfq_skb_annotation(skb)->fun_ctx[index].context);
+        int index = PFQ_CB(skb)->index;
+        return (void *)atomic_long_read(&PFQ_CB(skb)->fun_ctx[index].context);
 }
 
 
 static inline
 void * get_context(struct sk_buff *skb)
 {
-        int index = pfq_skb_annotation(skb)->index;
-        spin_lock(&pfq_skb_annotation(skb)->fun_ctx[index].lock);
-        return (void *)atomic_long_read(&pfq_skb_annotation(skb)->fun_ctx[index].context);
+        int index = PFQ_CB(skb)->index;
+        spin_lock(&PFQ_CB(skb)->fun_ctx[index].lock);
+        return (void *)atomic_long_read(&PFQ_CB(skb)->fun_ctx[index].context);
 }
 
 
 static inline
 void put_context(struct sk_buff *skb)
 {
-        int index = pfq_skb_annotation(skb)->index;
-        spin_unlock(&pfq_skb_annotation(skb)->fun_ctx[index].lock);
+        int index = PFQ_CB(skb)->index;
+        spin_unlock(&PFQ_CB(skb)->fun_ctx[index].lock);
 }
 
 
 static inline
 unsigned long get_state(struct sk_buff *skb)
 {
-        return pfq_skb_annotation(skb)->state;
+        return PFQ_CB(skb)->state;
 }
 
 
 static inline
 void set_state(struct sk_buff *skb, unsigned long state)
 {
-        pfq_skb_annotation(skb)->state = state;
+        PFQ_CB(skb)->state = state;
 }
 
 

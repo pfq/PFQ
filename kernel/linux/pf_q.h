@@ -29,8 +29,26 @@
 
 #include <linux/types.h>
 #include <linux/filter.h>
+#include <linux/skbuff.h>
 
-#define Q_VERSION               "2.0"
+#define Q_VERSION               "2.1"
+
+struct pfq_cb
+{
+        unsigned long group_mask;
+        unsigned long state;
+
+        struct fun_context * fun_ctx;
+
+        int index;      /* call index */
+
+        char direct_skb;
+
+        bool stolen_skb;
+        bool send_to_kernel;
+};
+
+#define PFQ_CB(skb) ((struct pfq_cb *)(skb)->cb)
 
 #else  /* user space */
 
@@ -64,12 +82,12 @@ static inline void smp_wmb() { barrier(); }
 #define likely(x)       __builtin_expect((x),1)
 #define unlikely(x)     __builtin_expect((x),0)
 
+
 #endif /* __KERNEL__ */
 
 /* Common header */
 
 #define PF_Q    27          /* packet q domain */
-
 
 struct pfq_pkt_hdr
 {
@@ -208,8 +226,8 @@ void pfq_spsc_write_commit(struct pfq_tx_queue_hdr *q)
 }
 
 
-
 /* consumer */
+
 
 static inline
 int pfq_spsc_read_avail(struct pfq_tx_queue_hdr *q)
@@ -253,7 +271,6 @@ void pfq_spsc_read_commit(struct pfq_tx_queue_hdr *q)
 {
     pfq_spsc_read_commit_n(q,1);
 }
-
 
 
 /*
@@ -313,8 +330,7 @@ void pfq_spsc_read_commit(struct pfq_tx_queue_hdr *q)
 #define Q_SO_TX_THREAD_WAKEUP       34
 #define Q_SO_TX_QUEUE_FLUSH         35
 
-
-/* general defines */
+/* general placeholders */
 
 #define Q_ANY_DEVICE         -1
 #define Q_ANY_QUEUE          -1
@@ -334,7 +350,6 @@ void pfq_spsc_read_commit(struct pfq_tx_queue_hdr *q)
 #define Q_VLAN_UNTAG         0
 #define Q_VLAN_ANYTAG       -1
 
-
 struct pfq_vlan_toggle
 {
         int gid;
@@ -343,8 +358,7 @@ struct pfq_vlan_toggle
 };
 
 
-/* struct used for binding */
-
+/* binding data */
 
 struct pfq_binding
 {
@@ -370,14 +384,12 @@ struct pfq_binding
 #define Q_CLASS_CONTROL         Q_CLASS(1)
 #define Q_CLASS_ANY             (unsigned int)-1
 
-
 struct pfq_group_join
 {
         int gid;
         int policy;
         unsigned int class_mask;
 };
-
 
 /* steering functions */
 
