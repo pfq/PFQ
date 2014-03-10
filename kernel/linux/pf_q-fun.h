@@ -98,13 +98,13 @@ is_skip(ret_t ret)
 }
 
 
-typedef ret_t (*sk_function_t)(struct sk_buff *, ret_t);
+typedef ret_t (*pfq_function_t)(struct sk_buff *, ret_t);
 
 
 struct pfq_function_descr
 {
         const char *      name;
-        sk_function_t     function;
+        pfq_function_t     function;
 };
 
 
@@ -119,7 +119,7 @@ struct fun_context
 /* utility functions */
 
 static inline
-ret_t pfq_call(sk_function_t fun, struct sk_buff *skb, ret_t ret)
+ret_t pfq_call(pfq_function_t fun, struct sk_buff *skb, ret_t ret)
 {
         PFQ_CB(skb)->index++;
         return fun ? fun(skb, ret) : ret;
@@ -127,11 +127,11 @@ ret_t pfq_call(sk_function_t fun, struct sk_buff *skb, ret_t ret)
 
 
 static inline
-sk_function_t
+pfq_function_t
 get_next_function(struct sk_buff *skb)
 {
         int index = PFQ_CB(skb)->index;
-        return (sk_function_t) atomic_long_read(& PFQ_CB(skb)->fun_ctx[index+1].function);
+        return (pfq_function_t) atomic_long_read(& PFQ_CB(skb)->fun_ctx[index+1].function);
 }
 
 

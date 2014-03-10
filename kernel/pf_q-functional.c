@@ -41,7 +41,7 @@ struct function_factory_elem
 {
 	struct list_head 	function_list;
 	char 			name[Q_FUN_NAME_LEN];
-	sk_function_t 	function;
+	pfq_function_t 	function;
 };
 
 
@@ -77,9 +77,8 @@ pfq_unregister_functions(const char *module, struct pfq_function_descr *fun)
 	return 0;
 }
 
-
 /*
- * register the default functions here!
+ * register the default functions!
  */
 
 void
@@ -113,7 +112,7 @@ pfq_function_factory_free(void)
 }
 
 
-sk_function_t
+pfq_function_t
 __pfq_get_function(const char *name)
 {
 	struct list_head *pos = NULL;
@@ -129,10 +128,10 @@ __pfq_get_function(const char *name)
 }
 
 
-sk_function_t
+pfq_function_t
 pfq_get_function(const char *name)
 {
-	sk_function_t ret;
+	pfq_function_t ret;
 	down(&function_sem);
 	ret = __pfq_get_function(name);
 	up(&function_sem);
@@ -141,7 +140,7 @@ pfq_get_function(const char *name)
 
 
 int
-__pfq_register_function(const char *name, sk_function_t fun)
+__pfq_register_function(const char *name, pfq_function_t fun)
 {
 	struct function_factory_elem * elem;
 
@@ -169,7 +168,7 @@ __pfq_register_function(const char *name, sk_function_t fun)
 
 
 int
-pfq_register_function(const char *module, const char *name, sk_function_t fun)
+pfq_register_function(const char *module, const char *name, pfq_function_t fun)
 {
 	int r;
 	down(&function_sem);
@@ -206,7 +205,7 @@ __pfq_unregister_function(const char *name)
 int
 pfq_unregister_function(const char *module, const char *name)
 {
-	sk_function_t fun;
+	pfq_function_t fun;
 
 	down(&function_sem);
 

@@ -63,7 +63,7 @@ steering_mac(struct sk_buff *skb, ret_t ret)
 ret_t
 steering_vlan_id(struct sk_buff *skb, ret_t ret)
 {
-        sk_function_t fun = get_next_function(skb);
+        pfq_function_t fun = get_next_function(skb);
 
         if (is_skip(ret) || is_drop(ret))
                 return pfq_call(get_next_function(skb), skb, ret);
@@ -78,7 +78,7 @@ steering_vlan_id(struct sk_buff *skb, ret_t ret)
 ret_t
 steering_ipv4(struct sk_buff *skb, ret_t ret)
 {
-        sk_function_t fun = get_next_function(skb);
+        pfq_function_t fun = get_next_function(skb);
 
         if (is_skip(ret) || is_drop(ret))
                 return pfq_call(get_next_function(skb), skb, ret);
@@ -102,7 +102,7 @@ steering_ipv4(struct sk_buff *skb, ret_t ret)
 ret_t
 steering_flow(struct sk_buff *skb, ret_t ret)
 {
-        sk_function_t fun = get_next_function(skb);
+        pfq_function_t fun = get_next_function(skb);
 
         if (is_skip(ret) || is_drop(ret))
                 return pfq_call(get_next_function(skb), skb, ret);
@@ -137,7 +137,7 @@ steering_flow(struct sk_buff *skb, ret_t ret)
 ret_t
 steering_ipv6(struct sk_buff *skb, ret_t ret)
 {
-        sk_function_t fun = get_next_function(skb);
+        pfq_function_t fun = get_next_function(skb);
 
         if (is_skip(ret) || is_drop(ret))
                 return pfq_call(get_next_function(skb), skb, ret);
@@ -176,7 +176,7 @@ fun_legacy(struct sk_buff *skb, ret_t ret)
 ret_t
 fun_clone(struct sk_buff *skb, ret_t ret)
 {
-        sk_function_t fun = get_next_function(skb);
+        pfq_function_t fun = get_next_function(skb);
 
         if (is_skip(ret) || is_drop(ret))
                 return pfq_call(get_next_function(skb), skb, ret);
@@ -188,7 +188,7 @@ fun_clone(struct sk_buff *skb, ret_t ret)
 ret_t
 fun_broadcast(struct sk_buff *skb, ret_t ret)
 {
-        sk_function_t fun = get_next_function(skb);
+        pfq_function_t fun = get_next_function(skb);
 
         if (is_skip(ret) || is_drop(ret))
                 return pfq_call(get_next_function(skb), skb, ret);
@@ -211,7 +211,7 @@ fun_sink(struct sk_buff *skb, ret_t ret)
 ret_t
 fun_id(struct sk_buff *skb, ret_t ret)
 {
-        sk_function_t fun = get_next_function(skb);
+        pfq_function_t fun = get_next_function(skb);
 
         return pfq_call(fun, skb, ret);
 }
@@ -410,7 +410,7 @@ filter_vlan(struct sk_buff *skb, ret_t ret)
 ret_t
 filter_ipv4(struct sk_buff *skb, ret_t ret)
 {
-        sk_function_t fun;
+        pfq_function_t fun;
 
         if (is_skip(ret) || is_drop(ret))
                 return pfq_call(get_next_function(skb), skb, ret);
@@ -436,7 +436,7 @@ filter_ipv4(struct sk_buff *skb, ret_t ret)
 ret_t
 filter_udp(struct sk_buff *skb, ret_t ret)
 {
-        sk_function_t fun;
+        pfq_function_t fun;
 
         if (is_skip(ret) || is_drop(ret))
                 return pfq_call(get_next_function(skb), skb, ret);
@@ -472,7 +472,7 @@ filter_udp(struct sk_buff *skb, ret_t ret)
 ret_t
 filter_tcp(struct sk_buff *skb, ret_t ret)
 {
-        sk_function_t fun;
+        pfq_function_t fun;
 
         if (is_skip(ret) || is_drop(ret))
                 return pfq_call(get_next_function(skb), skb, ret);
@@ -508,7 +508,7 @@ filter_tcp(struct sk_buff *skb, ret_t ret)
 ret_t
 filter_icmp(struct sk_buff *skb, ret_t ret)
 {
-        sk_function_t fun;
+        pfq_function_t fun;
 
         if (is_skip(ret) || is_drop(ret))
                 return pfq_call(get_next_function(skb), skb, ret);
@@ -543,7 +543,7 @@ filter_icmp(struct sk_buff *skb, ret_t ret)
 ret_t
 filter_flow(struct sk_buff *skb, ret_t ret)
 {
-        sk_function_t fun;
+        pfq_function_t fun;
 
         if (is_skip(ret) || is_drop(ret))
                 return pfq_call(get_next_function(skb), skb, ret);
@@ -580,7 +580,7 @@ filter_flow(struct sk_buff *skb, ret_t ret)
 ret_t
 comb_neg(struct sk_buff *skb, ret_t ret)
 {
-        sk_function_t fun = get_next_function(skb);
+        pfq_function_t fun = get_next_function(skb);
 
         if (is_skip(ret))
                 return pfq_call(get_next_function(skb), skb, ret);
@@ -593,7 +593,7 @@ comb_neg(struct sk_buff *skb, ret_t ret)
 ret_t
 comb_par(struct sk_buff *skb, ret_t ret)
 {
-        sk_function_t fun = get_next_function(skb);
+        pfq_function_t fun = get_next_function(skb);
 
         if (is_skip(ret))
                 return pfq_call(get_next_function(skb), skb, ret);
@@ -620,7 +620,7 @@ struct pair { int a; int b; };
 ret_t
 dummy_state_context(struct sk_buff *skb, ret_t ret)
 {
-        sk_function_t fun = get_next_function(skb);
+        pfq_function_t fun = get_next_function(skb);
 
         struct pair *p = (struct pair *)get_unsafe_context(skb);
 

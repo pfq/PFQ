@@ -10,7 +10,7 @@ MODULE_LICENSE("GPL");
 ret_t
 steering_dummy(struct sk_buff *skb, ret_t ret)
 {
-	sk_function_t fun = get_next_function(skb);
+	pfq_function_t fun = get_next_function(skb);
 
         if (is_skip(ret) || is_drop(ret))
                 return pfq_call(fun, skb, ret);

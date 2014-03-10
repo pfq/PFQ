@@ -391,10 +391,7 @@ struct pfq_group_join
         unsigned int class_mask;
 };
 
-/* monadic functions */
-
-#define Q_FUN_NAME_LEN        64
-#define Q_FUN_MAX             8     /* max fun binding: f1 >>= f2 >>= f3...*/
+/* functional program descriptor */
 
 typedef struct pfq_fun
 {
@@ -413,6 +410,12 @@ struct pfq_fun_prog
         int size;
         pfq_fun_t fun[];
 };
+
+
+/* OLD API monadic functions (TO BE REMOVED) */
+
+#define Q_FUN_NAME_LEN        64
+#define Q_FUN_MAX             8     /* max fun binding: f1 >>= f2 >>= f3...*/
 
 
 struct pfq_group_function

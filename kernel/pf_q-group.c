@@ -88,7 +88,7 @@ __pfq_group_ctor(int gid)
         for(i = 0; i <= Q_FUN_MAX; i++)
         {
                 atomic_long_set(&that->fun_ctx[i].function, 0L);
-                atomic_long_set(&that->fun_ctx[i].context,    0L);
+                atomic_long_set(&that->fun_ctx[i].context,  0L);
                 spin_lock_init (&that->fun_ctx[i].lock);
         }
 
@@ -206,7 +206,7 @@ __pfq_get_all_groups_mask(int gid)
 }
 
 
-int __pfq_set_group_function(int gid, sk_function_t fun, int level)
+int __pfq_set_group_function(int gid, pfq_function_t fun, int level)
 {
         if (level < 0 || level >= Q_FUN_MAX)
                 return -EINVAL;
@@ -282,14 +282,14 @@ void __pfq_set_group_filter(int gid, struct sk_filter *filter)
 }
 
 
-void __pfq_dismiss_function(sk_function_t f)
+void __pfq_dismiss_function(pfq_function_t f)
 {
         int i, n;
         for(n = 0; n < Q_MAX_GROUP; n++)
         {
                 for(i = 0; i < Q_FUN_MAX; i++)
                 {
-                        sk_function_t fun = (sk_function_t)atomic_long_read(&pfq_groups[n].fun_ctx[i].function);
+                        pfq_function_t fun = (pfq_function_t)atomic_long_read(&pfq_groups[n].fun_ctx[i].function);
                         if (f == fun)
                         {
                                 __pfq_set_group_function(n, NULL, i);

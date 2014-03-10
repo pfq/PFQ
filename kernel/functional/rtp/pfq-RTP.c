@@ -57,7 +57,7 @@ bool valid_codec(uint8_t c)
 ret_t
 heuristic_rtp(struct sk_buff *skb, ret_t ret, bool steer)
 {
-	sk_function_t fun = get_next_function(skb);
+	pfq_function_t fun = get_next_function(skb);
 
         if (is_skip(ret) || is_drop(ret))
                 return pfq_call(get_next_function(skb), skb, ret);

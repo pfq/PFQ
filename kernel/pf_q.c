@@ -380,7 +380,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
                         {
                                 /* continuation-passing style evaluation */
 
-                                sk_function_t fun = (sk_function_t) atomic_long_read(&pfq_groups[gid].fun_ctx[0].function);
+                                pfq_function_t fun = (pfq_function_t) atomic_long_read(&pfq_groups[gid].fun_ctx[0].function);
 
                                 /* reset state, index call and fun_ctx ptr */
 

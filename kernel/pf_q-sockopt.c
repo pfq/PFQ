@@ -641,7 +641,7 @@ int pfq_setsockopt(struct socket *sock,
 		    else {
 
                         char name[Q_FUN_NAME_LEN];
-			sk_function_t fun;
+			pfq_function_t fun;
 
                     	if (strncpy_from_user(name, s.name, Q_FUN_NAME_LEN-1) < 0)
 				return -EFAULT;
