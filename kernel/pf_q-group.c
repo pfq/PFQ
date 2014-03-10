@@ -68,7 +68,7 @@ __pfq_group_access(int gid, int id, int policy, bool join)
 
 
 static void
-__pfq_group_ctor(int gid)
+__pfq_group_init(int gid)
 {
         struct pfq_group * that = &pfq_groups[gid];
         int i;
@@ -101,7 +101,7 @@ __pfq_group_ctor(int gid)
 
 
 static void
-__pfq_group_dtor(int gid)
+__pfq_group_free(int gid)
 {
         struct pfq_group * that = &pfq_groups[gid];
         void *context[Q_FUN_MAX];
@@ -147,7 +147,7 @@ __pfq_join_group(int gid, int id, unsigned long class_mask, int policy)
         unsigned long bit;
 
         if (!pfq_groups[gid].pid) {
-                __pfq_group_ctor(gid);
+                __pfq_group_init(gid);
         }
 
         if (!__pfq_group_access(gid, id, policy, true)) {
@@ -187,7 +187,7 @@ __pfq_leave_group(int gid, int id)
         }
 
         if (__pfq_group_is_empty(gid)) {
-                __pfq_group_dtor(gid);
+                __pfq_group_free(gid);
         }
 
         return 0;
