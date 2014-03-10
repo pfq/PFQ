@@ -1,6 +1,6 @@
 /***************************************************************
  *
- * (C) 2011-13 Nicola Bonelli <nicola.bonelli@cnit.it>
+ * (C) 2014 Nicola Bonelli <nicola.bonelli@cnit.it>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,30 +21,16 @@
  *
  ****************************************************************/
 
-#ifndef _PF_Q_FUNCTIONAL_H_
-#define _PF_Q_FUNCTIONAL_H_
-
-#include <linux/skbuff.h>
-
 #include <linux/pf_q.h>
 #include <linux/pf_q-fun.h>
 
-typedef struct pfq_exec_fun
+struct pfq_exec_prog * pfq_fun_prog_compile(const struct pfq_fun_prog *source)
 {
-        void *  ptr_fun;
-        void *  ptr_ctx;
-        long    lock_ctx;
+        return NULL;
+}
 
-} pfq_exec_fun_t;
 
-struct pfq_exec_fun_prog
+void pfq_print_fun_prog_t(const struct pfq_fun_prog *source)
 {
-        int size;
-        pfq_exec_fun_t step[];
-};
 
-extern struct pfq_exec_prog * pfq_fun_prog_compile(const struct pfq_fun_prog *source);
-extern void   pfq_print_fun_prog_t(const struct pfq_fun_prog *source);
-
-
-#endif /* _PF_Q_FUNCTIONAL_H_ */
+}
