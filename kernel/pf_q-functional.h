@@ -25,9 +25,44 @@
 #define _PF_Q_STEER_H_
 
 #include <linux/skbuff.h>
+
 #include <linux/pf_q.h>
 #include <linux/pf_q-fun.h>
 
+
+typedef struct pfq_fun
+{
+        const char *name;
+        struct context_t
+        {
+                void *addr;
+                int  size;
+
+        } context;
+
+} pfq_fun_t;
+
+struct pfq_fun_prog
+{
+        int size;
+        pfq_fun_t fun[];
+};
+
+
+typedef struct pfq_exec_fun
+{
+        void *  ptr_fun;
+        void *  ptr_ctx;
+        long    lock_ctx;
+
+} pfq_exec_fun_t;
+
+
+struct pfq_exec_fun_prog
+{
+        int size;
+        pfq_exec_fun_t step[];
+};
 
 extern void pfq_function_factory_init(void);
 extern void pfq_function_factory_free(void);
