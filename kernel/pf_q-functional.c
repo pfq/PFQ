@@ -45,7 +45,7 @@ struct function_factory_elem
 };
 
 
-extern struct sk_function_descr default_functions[];
+extern struct pfq_function_descr default_functions[];
 
 
 LIST_HEAD(function_factory);
@@ -55,7 +55,7 @@ LIST_HEAD(function_factory);
  */
 
 int
-pfq_register_functions(const char *module, struct sk_function_descr *fun)
+pfq_register_functions(const char *module, struct pfq_function_descr *fun)
 {
 	int i = 0;
 	for(; fun[i].name != NULL; i++)
@@ -67,7 +67,7 @@ pfq_register_functions(const char *module, struct sk_function_descr *fun)
 
 
 int
-pfq_unregister_functions(const char *module, struct sk_function_descr *fun)
+pfq_unregister_functions(const char *module, struct pfq_function_descr *fun)
 {
 	int i = 0;
 	for(; fun[i].name != NULL; i++)

@@ -21,7 +21,7 @@ steering_dummy(struct sk_buff *skb, ret_t ret)
 }
 
 
-struct sk_function_descr hooks[] = {
+struct pfq_function_descr hooks[] = {
 	{ "steer-dummy", steering_dummy },
 	{ NULL, NULL}};
 

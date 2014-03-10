@@ -632,7 +632,7 @@ dummy_state_context(struct sk_buff *skb, ret_t ret)
         return pfq_call(fun, skb, ret);
 }
 
-struct sk_function_descr default_functions[] = {
+struct pfq_function_descr default_functions[] = {
 	{ "steer-mac",           steering_mac        },
         { "steer-vlan-id",       steering_vlan_id    },
         { "steer-ipv4",          steering_ipv4       },

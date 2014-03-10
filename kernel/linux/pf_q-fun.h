@@ -34,11 +34,11 @@
 #include <linux/if_vlan.h>
 
 
-struct sk_function_descr;
+struct pfq_function_descr;
 
-extern int pfq_register_functions  (const char *module, struct sk_function_descr *fun);
+extern int pfq_register_functions  (const char *module, struct pfq_function_descr *fun);
 
-extern int pfq_unregister_functions(const char *module, struct sk_function_descr *fun);
+extern int pfq_unregister_functions(const char *module, struct pfq_function_descr *fun);
 
 
 enum action
@@ -101,7 +101,7 @@ is_skip(ret_t ret)
 typedef ret_t (*sk_function_t)(struct sk_buff *, ret_t);
 
 
-struct sk_function_descr
+struct pfq_function_descr
 {
         const char *      name;
         sk_function_t     function;
