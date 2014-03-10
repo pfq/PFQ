@@ -391,10 +391,29 @@ struct pfq_group_join
         unsigned int class_mask;
 };
 
-/* steering functions */
+/* monadic functions */
 
 #define Q_FUN_NAME_LEN        64
 #define Q_FUN_MAX             8     /* max fun binding: f1 >>= f2 >>= f3...*/
+
+typedef struct pfq_fun
+{
+        const char *name;
+        struct context_t
+        {
+                void *addr;
+                int  size;
+
+        } context;
+
+} pfq_fun_t;
+
+struct pfq_fun_prog
+{
+        int size;
+        pfq_fun_t fun[];
+};
+
 
 struct pfq_group_function
 {

@@ -30,25 +30,6 @@
 #include <linux/pf_q-fun.h>
 
 
-typedef struct pfq_fun
-{
-        const char *name;
-        struct context_t
-        {
-                void *addr;
-                int  size;
-
-        } context;
-
-} pfq_fun_t;
-
-struct pfq_fun_prog
-{
-        int size;
-        pfq_fun_t fun[];
-};
-
-
 typedef struct pfq_exec_fun
 {
         void *  ptr_fun;
