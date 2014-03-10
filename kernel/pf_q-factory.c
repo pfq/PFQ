@@ -31,10 +31,10 @@
 #include <linux/pf_q-fun.h>
 
 #include <pf_q-group.h>
-#include <pf_q-functional.h>
+#include <pf_q-factory.h>
 
 
-DEFINE_SEMAPHORE(function_sem);
+DEFINE_SEMAPHORE(funfactory_sem);
 
 
 struct function_factory_elem
@@ -43,7 +43,6 @@ struct function_factory_elem
 	char 			name[Q_FUN_NAME_LEN];
 	pfq_function_t 	function;
 };
-
 
 extern struct pfq_function_descr default_functions[];
 
@@ -64,7 +63,6 @@ pfq_register_functions(const char *module, struct pfq_function_descr *fun)
 	}
 	return 0;
 }
-
 
 int
 pfq_unregister_functions(const char *module, struct pfq_function_descr *fun)
@@ -100,14 +98,14 @@ pfq_function_factory_free(void)
 	struct list_head *pos = NULL, *q;
 	struct function_factory_elem *this;
 
-	down(&function_sem);
+	down(&funfactory_sem);
 	list_for_each_safe(pos, q, &function_factory)
 	{
     		this = list_entry(pos, struct function_factory_elem, function_list);
 		list_del(pos);
 		kfree(this);
 	}
-	up(&function_sem);
+	up(&funfactory_sem);
 	printk(KERN_INFO "[PFQ] function factory freed.\n");
 }
 
@@ -132,9 +130,9 @@ pfq_function_t
 pfq_get_function(const char *name)
 {
 	pfq_function_t ret;
-	down(&function_sem);
+	down(&funfactory_sem);
 	ret = __pfq_get_function(name);
-	up(&function_sem);
+	up(&funfactory_sem);
 	return ret;
 }
 
@@ -171,9 +169,9 @@ int
 pfq_register_function(const char *module, const char *name, pfq_function_t fun)
 {
 	int r;
-	down(&function_sem);
+	down(&funfactory_sem);
 	r = __pfq_register_function(name, fun);
-	up(&function_sem);
+	up(&funfactory_sem);
 	if (r == 0 && module)
 		printk(KERN_INFO "[PFQ]%s '%s' @%p function registered.\n", module, name, fun);
 
@@ -207,7 +205,7 @@ pfq_unregister_function(const char *module, const char *name)
 {
 	pfq_function_t fun;
 
-	down(&function_sem);
+	down(&funfactory_sem);
 
 	fun = __pfq_get_function(name);
 	if (fun == NULL) {
@@ -218,7 +216,7 @@ pfq_unregister_function(const char *module, const char *name)
         __pfq_unregister_function(name);
 
 	printk(KERN_INFO "[PFQ]%s '%s' function unregistered.\n", module, name);
-	up(&function_sem);
+	up(&funfactory_sem);
 
 	return 0;
 }
