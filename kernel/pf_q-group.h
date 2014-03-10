@@ -52,13 +52,16 @@ struct pfq_group
         bool   vlan_filt;                               /* enable/disable vlan filtering */
         char   vid_filters[4096];                       /* vlan filters */
 
+        atomic_long_t prog;                             /* struct pfq_exec_prog *  (new functional program) */
+        atomic_long_t context;                          /* void *: storage context (new functional program) */
+
         sparse_counter_t recv;
         sparse_counter_t lost;
         sparse_counter_t drop;
 };
 
-
 extern struct pfq_group pfq_groups[Q_MAX_GROUP];
+
 
 int  pfq_join_free_group(int id, unsigned long class_mask, int policy);
 int  pfq_join_group(int gid, int id, unsigned long class_mask, int policy);

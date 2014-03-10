@@ -92,7 +92,9 @@ __pfq_group_init(int gid)
                 spin_lock_init (&that->fun_ctx[i].lock);
         }
 
-        atomic_long_set(&that->filter,   0L);
+        atomic_long_set(&that->filter,  0L);
+        atomic_long_set(&that->prog,    0L);
+        atomic_long_set(&that->context, 0L);
 
         sparse_set(&that->recv, 0);
         sparse_set(&that->lost, 0);
