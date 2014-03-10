@@ -281,6 +281,13 @@ int pfq_getsockopt(struct socket *sock,
 
         } break;
 
+        case Q_SO_GROUP_GET_FUN_CONTEXT:
+        {
+                /* TODO */
+                return -EFAULT;
+
+        } break;
+
         default:
                 return -EFAULT;
         }
@@ -345,8 +352,6 @@ int pfq_setsockopt(struct socket *sock,
                                 queue->rx.poll_wait         = 0;
                                 queue->rx.size              = so->rx_opt.size;
                                 queue->rx.slot_size         = so->rx_opt.slot_size;
-
-                                /* TODO: initialize tx queue header */
 
                                 queue->tx.producer.index    = 0;
                                 queue->tx.producer.cache    = 0;
@@ -894,12 +899,19 @@ int pfq_setsockopt(struct socket *sock,
                 dev_put(dev);
         } break;
 
-default:
+        case Q_SO_GROUP_FUN_PROG:
+        {
+                /* TODO */
+                return -EFAULT;
+
+        } break;
+
+        default:
         {
                 found = false;
         } break;
 
-}
+        }
 
         return found ? 0 : sock_setsockopt(sock, level, optname, optval, optlen);
 }
