@@ -210,7 +210,7 @@ void pfq_spsc_write_commit_n(struct pfq_tx_queue_hdr *q, unsigned int n)
         smp_wmb();
 
         if (unlikely(n > q->producer.cache))
-            n = q->producer.cache;
+                n = q->producer.cache;
 
         q->producer.index = (q->producer.index + n) & q->size_mask;
         q->producer.cache -= n;
@@ -222,7 +222,7 @@ void pfq_spsc_write_commit_n(struct pfq_tx_queue_hdr *q, unsigned int n)
 static inline
 void pfq_spsc_write_commit(struct pfq_tx_queue_hdr *q)
 {
-    pfq_spsc_write_commit_n(q,1);
+        pfq_spsc_write_commit_n(q,1);
 }
 
 
@@ -244,7 +244,7 @@ static inline
 int pfq_spsc_read_index(struct pfq_tx_queue_hdr *q)
 {
         if (pfq_spsc_read_avail(q) == 0) {
-            return -1;
+                return -1;
         }
 
         return q->consumer.index;
@@ -257,7 +257,7 @@ void pfq_spsc_read_commit_n(struct pfq_tx_queue_hdr *q, unsigned int n)
         smp_wmb();
 
         if (unlikely(n > q->consumer.cache))
-            n = q->consumer.cache;
+                n = q->consumer.cache;
 
         q->consumer.index  = (q->consumer.index + n) & q->size_mask;
         q->consumer.cache -= n;
@@ -269,7 +269,7 @@ void pfq_spsc_read_commit_n(struct pfq_tx_queue_hdr *q, unsigned int n)
 static inline
 void pfq_spsc_read_commit(struct pfq_tx_queue_hdr *q)
 {
-    pfq_spsc_read_commit_n(q,1);
+        pfq_spsc_read_commit_n(q,1);
 }
 
 
