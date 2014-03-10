@@ -24,27 +24,29 @@
 #ifndef _PF_Q_FUNCTIONAL_H_
 #define _PF_Q_FUNCTIONAL_H_
 
-#include <linux/skbuff.h>
-
 #include <linux/pf_q.h>
 #include <linux/pf_q-fun.h>
 
-typedef struct pfq_exec_fun
+
+typedef struct pfq_exec
 {
         void *  ptr_fun;
         void *  ptr_ctx;
         long    lock_ctx;
 
-} pfq_exec_fun_t;
+} pfq_exec_t;
 
-struct pfq_exec_fun_prog
+
+struct pfq_exec_prog
 {
         int size;
-        pfq_exec_fun_t step[];
+        pfq_exec_t step[];
 };
 
 extern struct pfq_exec_prog * pfq_fun_prog_compile(const struct pfq_fun_prog *source);
-extern void   pfq_print_fun_prog_t(const struct pfq_fun_prog *source);
+
+extern void   pfq_fun_prog_print(const struct pfq_fun_prog *source);
+extern void   pfq_exec_prog_print(const struct pfq_exec_prog *source);
 
 
 #endif /* _PF_Q_FUNCTIONAL_H_ */

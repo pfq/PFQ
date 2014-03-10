@@ -21,16 +21,32 @@
  *
  ****************************************************************/
 
+#include <linux/printk.h>
+
 #include <linux/pf_q.h>
 #include <linux/pf_q-fun.h>
+
+#include <pf_q-functional.h>
 
 struct pfq_exec_prog * pfq_fun_prog_compile(const struct pfq_fun_prog *source)
 {
         return NULL;
 }
 
-
-void pfq_print_fun_prog_t(const struct pfq_fun_prog *source)
+void pfq_fun_prog_print(const struct pfq_fun_prog *source)
 {
+        int n;
+        for(n = 0; n < source->size; n++)
+        {
+                pr_devel("    %d: %s (%p,%d)\n", n, source->fun[n].name, source->fun[n].context.addr, source->fun[n].context.size);
+        }
+}
 
+void pfq_exec_prog_print(const struct pfq_exec_prog *source)
+{
+        int n;
+        for(n = 0; n < source->size; n++)
+        {
+                pr_devel("    %d: f:%p c:%p\n", n, source->step[n].ptr_fun, source->step[n].ptr_ctx);
+        }
 }
