@@ -66,6 +66,8 @@ extern int  pfq_join_free_group(int id, unsigned long class_mask, int policy);
 extern int  pfq_join_group(int gid, int id, unsigned long class_mask, int policy);
 extern int  pfq_leave_group(int gid, int id);
 extern void pfq_leave_all_groups(int id);
+extern int  pfq_set_group_prog(int gid, struct pfq_exec_prog *prog, void *ctx);
+
 extern unsigned long pfq_get_groups(int id);
 extern unsigned long __pfq_get_all_groups_mask(int gid);
 

@@ -312,6 +312,31 @@ void __pfq_dismiss_function(pfq_function_t f)
 }
 
 
+int pfq_set_group_prog(int gid, struct pfq_exec_prog *prog, void *ctx)
+{
+        down(&group_sem);
+
+        if (atomic_long_read(&pfq_groups[gid].prog))
+        {
+                struct pfq_exec_prog *prg = (struct pfq_exec_prog *)atomic_long_xchg(& pfq_groups[gid].prog, 0UL);
+                void *ctx = (struct pfq_exec_prog *)atomic_long_xchg(& pfq_groups[gid].prog_ctx, 0UL);
+
+                msleep(Q_GRACE_PERIOD);   /* sleeping is possible here: user-context */
+
+                kfree(prg);
+                kfree(ctx);
+        }
+
+        /* setup the new program */
+
+        atomic_long_set(&pfq_groups[gid].prog_ctx, (long)ctx);
+        atomic_long_set(&pfq_groups[gid].prog,     (long)prog);
+
+        up(&group_sem);
+        return 0;
+}
+
+
 int
 pfq_join_group(int gid, int id, unsigned long class_mask, int policy)
 {
