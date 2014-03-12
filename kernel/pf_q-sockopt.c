@@ -88,7 +88,7 @@ int pfq_getsockopt(struct socket *sock,
                                 return -EFAULT;
                 }
                 else {
-                        CHECK_GROUP(group.gid, "group join");
+                        CHECK_GROUP(so->id, group.gid, "group join");
 
                         if (pfq_join_group(group.gid, so->id, group.class_mask, group.policy) < 0) {
                                 pr_devel("[PFQ|%d] join error: permission denied (gid:%d)!\n", so->id, group.gid);
@@ -216,7 +216,7 @@ int pfq_getsockopt(struct socket *sock,
 
                 gid = (int)stat.recv;
 
-                CHECK_GROUP(gid, "group stat");
+                CHECK_GROUP(so->id, gid, "group stat");
 
                 /* check whether the group is joinable.. */
 
@@ -246,7 +246,7 @@ int pfq_getsockopt(struct socket *sock,
                 if (copy_from_user(&s, optval, sizeof(s)))
                         return -EFAULT;
 
-                CHECK_GROUP(s.gid, "group context");
+                CHECK_GROUP(so->id, s.gid, "group context");
 
                 if (!s.size || !s.context) {
                         pr_devel("[PFQ|%d] group context error: gid:%d invalid argument!\n", so->id, s.gid);
@@ -392,7 +392,7 @@ int pfq_setsockopt(struct socket *sock,
                 if (copy_from_user(&bind, optval, optlen))
                         return -EFAULT;
 
-                CHECK_GROUP_ACCES(bind.gid, "add binding");
+                CHECK_GROUP_ACCES(so->id, bind.gid, "add binding");
 
                 pfq_devmap_update(map_set, bind.if_index, bind.hw_queue, bind.gid);
         } break;
@@ -406,7 +406,7 @@ int pfq_setsockopt(struct socket *sock,
                 if (copy_from_user(&bind, optval, optlen))
                         return -EFAULT;
 
-                CHECK_GROUP_ACCES(bind.gid, "remove binding");
+                CHECK_GROUP_ACCES(so->id, bind.gid, "remove binding");
 
                 pfq_devmap_update(map_reset, bind.if_index, bind.hw_queue, bind.gid);
         } break;
@@ -560,7 +560,7 @@ int pfq_setsockopt(struct socket *sock,
                 if (copy_from_user(&gid, optval, optlen))
                         return -EFAULT;
 
-                CHECK_GROUP_ACCES(gid, "reset group");
+                CHECK_GROUP_ACCES(so->id, gid, "reset group");
 
                 __pfq_reset_group_functx(gid);
 
@@ -576,7 +576,7 @@ int pfq_setsockopt(struct socket *sock,
                 if (copy_from_user(&s, optval, optlen))
                         return -EFAULT;
 
-                CHECK_GROUP_ACCES(s.gid, "group context");
+                CHECK_GROUP_ACCES(so->id, s.gid, "group context");
 
                 if (s.size && s.context)
                 {
@@ -616,7 +616,7 @@ int pfq_setsockopt(struct socket *sock,
                 if (copy_from_user(&s, optval, optlen))
                         return -EFAULT;
 
-                CHECK_GROUP_ACCES(s.gid, "group function");
+                CHECK_GROUP_ACCES(so->id, s.gid, "group function");
 
                 if (s.name == NULL) {
 
@@ -660,7 +660,7 @@ int pfq_setsockopt(struct socket *sock,
                 if (copy_from_user(&fprog, optval, optlen))
                         return -EFAULT;
 
-                CHECK_GROUP_ACCES(fprog.gid, "group fprog");
+                CHECK_GROUP_ACCES(so->id, fprog.gid, "group fprog");
 
                 if (fprog.fcode.len > 0)  /* set the filter */
                 {
@@ -693,7 +693,7 @@ int pfq_setsockopt(struct socket *sock,
                 if (copy_from_user(&vlan, optval, optlen))
                         return -EFAULT;
 
-                CHECK_GROUP_ACCES(vlan.gid, "group vlan filt toggle");
+                CHECK_GROUP_ACCES(so->id, vlan.gid, "group vlan filt toggle");
 
                 __pfq_toggle_group_vlan_filters(vlan.gid, vlan.toggle);
 
@@ -710,7 +710,7 @@ int pfq_setsockopt(struct socket *sock,
                 if (copy_from_user(&filt, optval, optlen))
                         return -EFAULT;
 
-                CHECK_GROUP_ACCES(filt.gid, "group vlan filt");
+                CHECK_GROUP_ACCES(so->id, filt.gid, "group vlan filt");
 
                 if (filt.vid < -1 || filt.vid > 4094) {
                         pr_devel("[PFQ|%d] vlan_set error: gid:%d invalid vid:%d!\n", so->id, filt.gid, filt.vid);
@@ -901,7 +901,7 @@ int pfq_setsockopt(struct socket *sock,
                 if (copy_from_user(&tmp, optval, optlen))
                         return -EFAULT;
 
-                CHECK_GROUP_ACCES(tmp.gid, "group fun-prog");
+                CHECK_GROUP_ACCES(so->id, tmp.gid, "group fun-prog");
 
                 if (copy_from_user(&psize, tmp.prog, sizeof(int)))
                         return -EFAULT;
