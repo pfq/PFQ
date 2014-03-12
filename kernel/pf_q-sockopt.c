@@ -41,20 +41,6 @@
 extern atomic_t timestamp_toggle;
 
 
-#define CHECK_GROUP(gid, msg) \
-        if (gid < 0 || gid >= Q_MAX_GROUP) { \
-                pr_devel("[PFQ|%d] " msg " error: invalid group (gid:%d)!\n", so->id, gid); \
-                return -EINVAL; \
-        } \
-
-#define CHECK_GROUP_ACCES(gid, msg) \
-        CHECK_GROUP(gid,msg); \
-if (!__pfq_has_joined_group(gid, so->id)) { \
-        pr_devel("[PFQ|%d] " msg " error: permission denied (git:%d)!\n", so->id, gid); \
-        return -EACCES; \
-}
-
-
 int pfq_getsockopt(struct socket *sock,
                 int level, int optname,
                 char __user * optval, int __user * optlen)
