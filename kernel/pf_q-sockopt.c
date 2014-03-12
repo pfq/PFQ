@@ -205,6 +205,7 @@ int pfq_getsockopt(struct socket *sock,
 
         case Q_SO_GET_GROUP_STATS:
         {
+                struct pfq_group *g;
                 struct pfq_stats stat;
                 int gid;
 
@@ -218,6 +219,12 @@ int pfq_getsockopt(struct socket *sock,
 
                 CHECK_GROUP(so->id, gid, "group stat");
 
+                g = pfq_get_group(gid);
+                if (!g) {
+                        pr_devel("[PFQ|%d] group error: invalid group id %d!\n", so->id, gid);
+                        return -EFAULT;
+                }
+
                 /* check whether the group is joinable.. */
 
                 if (!__pfq_group_access(gid, so->id, Q_GROUP_UNDEFINED, false)) {
@@ -225,9 +232,9 @@ int pfq_getsockopt(struct socket *sock,
                         return -EACCES;
                 }
 
-                stat.recv = sparse_read(&pfq_groups[gid].recv);
-                stat.lost = sparse_read(&pfq_groups[gid].lost);
-                stat.drop = sparse_read(&pfq_groups[gid].drop);
+                stat.recv = sparse_read(&g->recv);
+                stat.lost = sparse_read(&g->lost);
+                stat.drop = sparse_read(&g->drop);
 
                 stat.sent = 0;
                 stat.disc = 0;

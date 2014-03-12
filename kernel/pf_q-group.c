@@ -43,18 +43,22 @@ struct pfq_group pfq_groups[Q_MAX_GROUP];
 bool
 __pfq_group_access(int gid, int id, int policy, bool join)
 {
-        struct pfq_group * that = &pfq_groups[gid];
+        struct pfq_group * g = pfq_get_group(gid);
+        if (!g) {
+                pr_devel("[PFQ] get_group: invalid group id %d!\n", gid);
+                return false;
+        }
 
         if (__pfq_has_joined_group(gid,id))
                 return true;
 
-        switch(that->policy)
+        switch(g->policy)
         {
         case Q_GROUP_PRIVATE:
                 return false;
 
         case Q_GROUP_RESTRICTED:
-                return (join == false || policy == Q_GROUP_RESTRICTED) && that->pid == current->tgid;
+                return (join == false || policy == Q_GROUP_RESTRICTED) && g->pid == current->tgid;
 
         case Q_GROUP_SHARED:
                 return join == false || policy == Q_GROUP_SHARED;
@@ -70,15 +74,20 @@ __pfq_group_access(int gid, int id, int policy, bool join)
 static void
 __pfq_group_init(int gid)
 {
-        struct pfq_group * that = &pfq_groups[gid];
+        struct pfq_group * g = pfq_get_group(gid);
         int i;
 
-        that->pid = -1;
-        that->policy = Q_GROUP_UNDEFINED;
+        if (!g) {
+                pr_devel("[PFQ] get_group: invalid group id %d!\n", gid);
+                return;
+        }
+
+        g->pid = -1;
+        g->policy = Q_GROUP_UNDEFINED;
 
         for(i = 0; i < Q_CLASS_MAX; i++)
         {
-                atomic_long_set(&that->sock_mask[i], 0);
+                atomic_long_set(&g->sock_mask[i], 0);
         }
 
         /* note the = is for setting the limit to the function composition:
@@ -87,50 +96,53 @@ __pfq_group_init(int gid)
 
         for(i = 0; i <= Q_FUN_MAX; i++)
         {
-                atomic_long_set(&that->fun_ctx[i].function, 0L);
-                atomic_long_set(&that->fun_ctx[i].context,  0L);
-                spin_lock_init (&that->fun_ctx[i].lock);
+                atomic_long_set(&g->fun_ctx[i].function, 0L);
+                atomic_long_set(&g->fun_ctx[i].context,  0L);
+                spin_lock_init (&g->fun_ctx[i].lock);
         }
 
-        atomic_long_set(&that->filter,   0L);
-        atomic_long_set(&that->prog,     0L);
-        atomic_long_set(&that->prog_ctx, 0L);
+        atomic_long_set(&g->filter,   0L);
+        atomic_long_set(&g->prog,     0L);
+        atomic_long_set(&g->prog_ctx, 0L);
 
-        sparse_set(&that->recv, 0);
-        sparse_set(&that->lost, 0);
-        sparse_set(&that->drop, 0);
+        sparse_set(&g->recv, 0);
+        sparse_set(&g->lost, 0);
+        sparse_set(&g->drop, 0);
 }
 
 
 static void
 __pfq_group_free(int gid)
 {
-        struct pfq_group * that = &pfq_groups[gid];
         void *context[Q_FUN_MAX];
-
+        struct pfq_group * g = pfq_get_group(gid);
         struct sk_filter *filter;
         struct pfq_exec_prog *prg;
         void *prg_ctx;
-
         int i;
+
+        if (!g) {
+                pr_devel("[PFQ] get_group: invalid group id %d!\n", gid);
+                return;
+        }
 
         /* remove this gid from demux matrix */
 
         pfq_devmap_update(map_reset, Q_ANY_DEVICE, Q_ANY_QUEUE, gid);
 
-        that->pid = 0;
-        that->policy = Q_GROUP_UNDEFINED;
+        g->pid = 0;
+        g->policy = Q_GROUP_UNDEFINED;
 
         for(i = 0; i < Q_FUN_MAX; i++)
         {
-		atomic_long_set(&pfq_groups[gid].fun_ctx[i].function, 0L);
+		atomic_long_set(&g->fun_ctx[i].function, 0L);
 
-		context[i] = (void *)atomic_long_xchg(&pfq_groups[gid].fun_ctx[i].context, 0L);
+		context[i] = (void *)atomic_long_xchg(&g->fun_ctx[i].context, 0L);
         }
 
-        filter  = (struct sk_filter *)atomic_long_xchg(&pfq_groups[gid].filter, 0L);
-        prg     = (struct pfq_exec_prog *)atomic_long_xchg(&pfq_groups[gid].prog, 0L);
-        prg_ctx = (void *)atomic_long_xchg(&pfq_groups[gid].prog_ctx, 0L);
+        filter  = (struct sk_filter *)atomic_long_xchg(&g->filter, 0L);
+        prg     = (struct pfq_exec_prog *)atomic_long_xchg(&g->prog, 0L);
+        prg_ctx = (void *)atomic_long_xchg(&g->prog_ctx, 0L);
 
         msleep(Q_GRACE_PERIOD);   /* sleeping is possible here: user-context */
 
@@ -144,7 +156,7 @@ __pfq_group_free(int gid)
 
         pfq_free_sk_filter(filter);
 
-        that->vlan_filt = false;
+        g->vlan_filt = false;
 
         pr_devel("[PFQ] group id:%d destroyed.\n", gid);
 }
@@ -153,10 +165,16 @@ __pfq_group_free(int gid)
 static int
 __pfq_join_group(int gid, int id, unsigned long class_mask, int policy)
 {
+        struct pfq_group * g = pfq_get_group(gid);
         unsigned long tmp = 0;
         unsigned long bit;
 
-        if (!pfq_groups[gid].pid) {
+        if (!g) {
+                pr_devel("[PFQ] get_group: invalid group id %d!\n", gid);
+                return -EINVAL;
+        }
+
+        if (!g->pid) {
                 __pfq_group_init(gid);
         }
 
@@ -168,13 +186,13 @@ __pfq_join_group(int gid, int id, unsigned long class_mask, int policy)
         pfq_bitwise_foreach(class_mask, bit)
         {
                 int class = pfq_ctz(bit);
-                tmp = atomic_long_read(&pfq_groups[gid].sock_mask[class]);
+                tmp = atomic_long_read(&g->sock_mask[class]);
                 tmp |= 1L << id;
-                atomic_long_set(&pfq_groups[gid].sock_mask[class], tmp);
+                atomic_long_set(&g->sock_mask[class], tmp);
         }
 
-        pfq_groups[gid].policy = pfq_groups[gid].policy == Q_GROUP_UNDEFINED ?  policy : pfq_groups[gid].policy;
-        pfq_groups[gid].pid    = policy == Q_GROUP_RESTRICTED ? current->tgid : -1;
+        g->policy = g->policy == Q_GROUP_UNDEFINED ?  policy : g->policy;
+        g->pid    = policy == Q_GROUP_RESTRICTED ? current->tgid : -1;
 
         return 0;
 }
@@ -183,17 +201,23 @@ __pfq_join_group(int gid, int id, unsigned long class_mask, int policy)
 static int
 __pfq_leave_group(int gid, int id)
 {
+        struct pfq_group * g = pfq_get_group(gid);
         unsigned long tmp;
         int i;
 
-	if (!pfq_groups[gid].pid)
+        if (!g) {
+                pr_devel("[PFQ] get_group: invalid group id %d!\n", gid);
+                return -EINVAL;
+        }
+
+	if (!g->pid)
 		return -1;
 
         for(i = 0; i < Q_CLASS_MAX; ++i)
         {
-                tmp = atomic_long_read(&pfq_groups[gid].sock_mask[i]);
+                tmp = atomic_long_read(&g->sock_mask[i]);
                 tmp &= ~(1L << id);
-                atomic_long_set(&pfq_groups[gid].sock_mask[i], tmp);
+                atomic_long_set(&g->sock_mask[i], tmp);
         }
 
         if (__pfq_group_is_empty(gid)) {
@@ -206,11 +230,18 @@ __pfq_leave_group(int gid, int id)
 unsigned long
 __pfq_get_all_groups_mask(int gid)
 {
+        struct pfq_group * g = pfq_get_group(gid);
         unsigned long mask = 0;
         int i;
+
+        if (!g) {
+                pr_devel("[PFQ] get_group: invalid group id %d!\n", gid);
+                return mask;
+        }
+
         for(i = 0; i < Q_CLASS_MAX; ++i)
         {
-                mask |= atomic_long_read(&pfq_groups[gid].sock_mask[i]);
+                mask |= atomic_long_read(&g->sock_mask[i]);
         }
         return mask;
 }
@@ -218,10 +249,16 @@ __pfq_get_all_groups_mask(int gid)
 
 int __pfq_set_group_function(int gid, pfq_function_t fun, int level)
 {
+        struct pfq_group * g = pfq_get_group(gid);
+        if (!g) {
+                pr_devel("[PFQ] get_group: invalid group id %d!\n", gid);
+                return -EINVAL;
+        }
+
         if (level < 0 || level >= Q_FUN_MAX)
                 return -EINVAL;
 
-        atomic_long_set(&pfq_groups[gid].fun_ctx[level].function, (long)fun);
+        atomic_long_set(&g->fun_ctx[level].function, (long)fun);
 
         msleep(Q_GRACE_PERIOD);
 
@@ -231,12 +268,18 @@ int __pfq_set_group_function(int gid, pfq_function_t fun, int level)
 
 int __pfq_set_group_context(int gid, void *context, int level)
 {
+        struct pfq_group * g = pfq_get_group(gid);
         void *old;
+
+        if (!g) {
+                pr_devel("[PFQ] get_group: invalid group id %d!\n", gid);
+                return -EINVAL;
+        }
 
         if (level < 0 || level >= Q_FUN_MAX)
                 return -EINVAL;
 
-        old = (void *)atomic_long_xchg(& pfq_groups[gid].fun_ctx[level].context, (long)context);
+        old = (void *)atomic_long_xchg(& g->fun_ctx[level].context, (long)context);
 
         msleep(Q_GRACE_PERIOD);
 
@@ -247,19 +290,25 @@ int __pfq_set_group_context(int gid, void *context, int level)
 
 int __pfq_get_group_context(int gid, int level, int size, void __user * dst)
 {
+        struct pfq_group * g = pfq_get_group(gid);
         int err = 0;
         void *src;
+
+        if (!g) {
+                pr_devel("[PFQ] get_group: invalid group id %d!\n", gid);
+                return -EINVAL;
+        }
 
         if (level < 0 || level >= Q_FUN_MAX)
                 return -EINVAL;
 
-        spin_lock_bh(&pfq_groups[gid].fun_ctx[level].lock);
+        spin_lock_bh(&g->fun_ctx[level].lock);
 
-        src = (void *)atomic_long_read(&pfq_groups[gid].fun_ctx[level].context);
+        src = (void *)atomic_long_read(&g->fun_ctx[level].context);
 
         err = src ? copy_to_user(dst, src, size) : -EFAULT;
 
-        spin_unlock_bh(&pfq_groups[gid].fun_ctx[level].lock);
+        spin_unlock_bh(&g->fun_ctx[level].lock);
 
         return err;
 }
@@ -267,13 +316,19 @@ int __pfq_get_group_context(int gid, int level, int size, void __user * dst)
 
 void __pfq_reset_group_functx(int gid)
 {
+        struct pfq_group * g = pfq_get_group(gid);
         int i;
+
+        if (!g) {
+                pr_devel("[PFQ] get_group: invalid group id %d!\n", gid);
+                return;
+        }
 
         for(i = 0; i < Q_FUN_MAX; i++)
         {
-                void *old = (void *)atomic_long_xchg(& pfq_groups[gid].fun_ctx[i].context, 0L);
+                void *old = (void *)atomic_long_xchg(& g->fun_ctx[i].context, 0L);
 
-                atomic_long_set(& pfq_groups[gid].fun_ctx[i].function, 0L);
+                atomic_long_set(& g->fun_ctx[i].function, 0L);
 
                 msleep(Q_GRACE_PERIOD);
 
@@ -284,7 +339,16 @@ void __pfq_reset_group_functx(int gid)
 
 void __pfq_set_group_filter(int gid, struct sk_filter *filter)
 {
-        struct sk_filter * old_filter = (void *)atomic_long_xchg(& pfq_groups[gid].filter, (long)filter);
+        struct pfq_group * g = pfq_get_group(gid);
+        struct sk_filter * old_filter;
+
+        if (!g) {
+                pr_devel("[PFQ] get_group: invalid group id %d!\n", gid);
+                pfq_free_sk_filter(filter);
+                return;
+        }
+
+        old_filter = (void *)atomic_long_xchg(& g->filter, (long)filter);
 
         msleep(Q_GRACE_PERIOD);
 
@@ -295,11 +359,12 @@ void __pfq_set_group_filter(int gid, struct sk_filter *filter)
 void __pfq_dismiss_function(pfq_function_t f)
 {
         int i, n;
+
         for(n = 0; n < Q_MAX_GROUP; n++)
         {
                 for(i = 0; i < Q_FUN_MAX; i++)
                 {
-                        pfq_function_t fun = (pfq_function_t)atomic_long_read(&pfq_groups[n].fun_ctx[i].function);
+                        pfq_function_t fun = (pfq_function_t)atomic_long_read(&pfq_get_group(n)->fun_ctx[i].function);
                         if (f == fun)
                         {
                                 __pfq_set_group_function(n, NULL, i);
@@ -314,12 +379,18 @@ void __pfq_dismiss_function(pfq_function_t f)
 
 int pfq_set_group_prog(int gid, struct pfq_exec_prog *prog, void *ctx)
 {
+        struct pfq_group * g = pfq_get_group(gid);
+        if (!g) {
+                pr_devel("[PFQ] get_group: invalid group id %d!\n", gid);
+                return -EINVAL;
+        }
+
         down(&group_sem);
 
-        if (atomic_long_read(&pfq_groups[gid].prog))
+        if (atomic_long_read(&g->prog))
         {
-                struct pfq_exec_prog *prg = (struct pfq_exec_prog *)atomic_long_xchg(& pfq_groups[gid].prog, 0UL);
-                void *ctx = (struct pfq_exec_prog *)atomic_long_xchg(& pfq_groups[gid].prog_ctx, 0UL);
+                struct pfq_exec_prog *prg = (struct pfq_exec_prog *)atomic_long_xchg(& g->prog, 0UL);
+                void *ctx = (struct pfq_exec_prog *)atomic_long_xchg(& g->prog_ctx, 0UL);
 
                 msleep(Q_GRACE_PERIOD);   /* sleeping is possible here: user-context */
 
@@ -329,8 +400,8 @@ int pfq_set_group_prog(int gid, struct pfq_exec_prog *prog, void *ctx)
 
         /* setup the new program */
 
-        atomic_long_set(&pfq_groups[gid].prog_ctx, (long)ctx);
-        atomic_long_set(&pfq_groups[gid].prog,     (long)prog);
+        atomic_long_set(&g->prog_ctx, (long)ctx);
+        atomic_long_set(&g->prog,     (long)prog);
 
         up(&group_sem);
         return 0;
@@ -340,7 +411,14 @@ int pfq_set_group_prog(int gid, struct pfq_exec_prog *prog, void *ctx)
 int
 pfq_join_group(int gid, int id, unsigned long class_mask, int policy)
 {
+        struct pfq_group * g = pfq_get_group(gid);
         int ret;
+
+        if (!g) {
+                pr_devel("[PFQ] get_group: invalid group id %d!\n", gid);
+                return -EINVAL;
+        }
+
         down(&group_sem);
 
         ret = __pfq_join_group(gid, id, class_mask, policy);
@@ -354,10 +432,11 @@ int
 pfq_join_free_group(int id, unsigned long class_mask, int policy)
 {
         int n = 0;
+
         down(&group_sem);
         for(; n < Q_MAX_ID; n++)
         {
-                if(!pfq_groups[n].pid)
+                if(!pfq_get_group(n)->pid)
                 {
                         __pfq_join_group(n, id, class_mask, policy);
                         up(&group_sem);
@@ -372,7 +451,14 @@ pfq_join_free_group(int id, unsigned long class_mask, int policy)
 int
 pfq_leave_group(int gid, int id)
 {
+        struct pfq_group * g = pfq_get_group(gid);
         int ret;
+
+        if (!g) {
+                pr_devel("[PFQ] get_group: invalid group id %d!\n", gid);
+                return -EINVAL;
+        }
+
         down(&group_sem);
         ret = __pfq_leave_group(gid,id);
         up(&group_sem);
