@@ -53,7 +53,7 @@ struct pfq_group
         char   vid_filters[4096];                       /* vlan filters */
 
         atomic_long_t prog;                             /* struct pfq_exec_prog *  (new functional program) */
-        atomic_long_t context;                          /* void *: storage context (new functional program) */
+        atomic_long_t prog_ctx;                         /* void *: storage context (new functional program) */
 
         sparse_counter_t recv;
         sparse_counter_t lost;

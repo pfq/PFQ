@@ -92,9 +92,9 @@ __pfq_group_init(int gid)
                 spin_lock_init (&that->fun_ctx[i].lock);
         }
 
-        atomic_long_set(&that->filter,  0L);
-        atomic_long_set(&that->prog,    0L);
-        atomic_long_set(&that->context, 0L);
+        atomic_long_set(&that->filter,   0L);
+        atomic_long_set(&that->prog,     0L);
+        atomic_long_set(&that->prog_ctx, 0L);
 
         sparse_set(&that->recv, 0);
         sparse_set(&that->lost, 0);
@@ -109,6 +109,9 @@ __pfq_group_free(int gid)
         void *context[Q_FUN_MAX];
 
         struct sk_filter *filter;
+        struct pfq_exec_prog *prg;
+        void *prg_ctx;
+
         int i;
 
         /* remove this gid from demux matrix */
@@ -125,9 +128,14 @@ __pfq_group_free(int gid)
 		context[i] = (void *)atomic_long_xchg(&pfq_groups[gid].fun_ctx[i].context, 0L);
         }
 
-        filter = (struct sk_filter *)atomic_long_xchg(&pfq_groups[gid].filter, 0L);
+        filter  = (struct sk_filter *)atomic_long_xchg(&pfq_groups[gid].filter, 0L);
+        prg     = (struct pfq_exec_prog *)atomic_long_xchg(&pfq_groups[gid].prog, 0L);
+        prg_ctx = (void *)atomic_long_xchg(&pfq_groups[gid].prog_ctx, 0L);
 
         msleep(Q_GRACE_PERIOD);   /* sleeping is possible here: user-context */
+
+        kfree(prg);
+        kfree(prg_ctx);
 
         for(i = 0; i < Q_FUN_MAX; i++)
         {
