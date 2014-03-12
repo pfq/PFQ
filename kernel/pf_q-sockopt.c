@@ -901,9 +901,83 @@ int pfq_setsockopt(struct socket *sock,
 
         case Q_SO_GROUP_FUN_PROG:
         {
-                /* TODO */
-                return -EFAULT;
+                struct pfq_group_meta_prog tmp;
 
+                struct pfq_user_meta_prog *user;
+                struct pfq_meta_prog *meta;
+                struct pfq_exec_prog *exec = NULL;
+                void *ctx = NULL;
+
+                int psize = 0;
+
+                if (optlen != sizeof(tmp))
+                        return -EINVAL;
+                if (copy_from_user(&tmp, optval, optlen))
+                        return -EFAULT;
+
+                CHECK_GROUP_ACCES(tmp.gid, "group fun-prog");
+
+                if (copy_from_user(&psize, tmp.prog, sizeof(int)))
+                        return -EFAULT;
+
+                pr_devel("[PFQ|%d] fun-prog size: %d\n", so->id, psize);
+
+                user = (struct pfq_user_meta_prog *)kzalloc_meta_prog(psize);
+                if (!user) {
+                        pr_devel("[PFQ|%d] user fun-prog: no memory: %zu bytes required!\n", so->id, pfq_meta_prog_memsize(psize));
+                        return -ENOMEM;
+                }
+
+                if (copy_from_user(user, tmp.prog, pfq_meta_prog_memsize(psize))) {
+                        kfree(user);
+                        return -EFAULT;
+                }
+
+                /* get meta-program from user */
+
+                meta = kzalloc_meta_prog(psize);
+                if (!meta) {
+                        pr_devel("[PFQ|%d] fun-prog: no memory: %zu bytes required!\n", so->id, pfq_meta_prog_memsize(psize));
+                        kfree(user);
+                        return -ENOMEM;
+                }
+
+                if (copy_meta_prog_from_user(meta, user)) {
+                        kfree(meta);
+                        kfree(user);
+                        return -EFAULT;
+                }
+
+                kfree(user);
+
+                /* show meta-program */
+
+                pfq_meta_prog_pr_devel(meta);
+
+                /* compile meta-program */
+
+                if (pfq_meta_prog_compile(meta, &exec, &ctx) < 0) {
+                        pr_devel("[PFQ|%d] meta-program compiler error!\n", so->id);
+                        kfree(meta);
+                        return -EPERM;
+                }
+
+                kfree(meta);
+
+                /* show exec program */
+
+                pfq_exec_prog_pr_devel(exec, ctx);
+
+                /* store the new program */
+
+                if (pfq_set_group_prog(tmp.gid, exec, ctx) < 0) {
+                        pr_devel("[PFQ|%d] set group program error!\n", so->id);
+                        kfree(exec);
+                        kfree(ctx);
+                        return -EPERM;
+                }
+
+                return 0;
         } break;
 
         default:
