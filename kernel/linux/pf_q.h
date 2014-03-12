@@ -410,10 +410,38 @@ typedef struct pfq_fun
 
 } pfq_fun_t;
 
-struct pfq_fun_prog
+
+struct pfq_meta_prog
 {
         int size;
         pfq_fun_t fun[];
+};
+
+
+struct pfq_group_meta_prog
+{
+        int gid;
+        struct pfq_meta_prog __user *prog;
+};
+
+
+typedef struct pfq_user_fun
+{
+        const char __user *name;
+        struct user_context_t
+        {
+                void __user *addr;
+                int  size;
+
+        } context;
+
+} pfq_user_fun_t;
+
+
+struct pfq_user_meta_prog
+{
+        int size;
+        pfq_user_fun_t fun[];
 };
 
 
