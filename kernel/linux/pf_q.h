@@ -52,6 +52,8 @@ struct pfq_cb
 
 #else  /* user space */
 
+#define __user
+
 #include <linux/filter.h>
 #include <linux/types.h>
 #include <sys/time.h>
@@ -423,7 +425,7 @@ struct pfq_fun_prog
 
 struct pfq_group_function
 {
-        const char *name;
+        const char __user *name;
         int gid;
         int level;
 };
@@ -431,7 +433,7 @@ struct pfq_group_function
 
 struct pfq_group_context
 {
-        void       * context;
+        void __user *context;
         size_t       size;      /* sizeof(context) */
         int gid;
         int level;
