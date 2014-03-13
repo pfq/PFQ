@@ -28,12 +28,28 @@
 #include <linux/pf_q-fun.h>
 
 
+static inline
+struct sk_buff *
+pfq_bind(struct sk_buff *skb, pfq_exec_t *data)
+{
+        pfq_function_t fun = (pfq_function_t)data->fun_ptr;
+        context_t ctx;
+
+        if (fun == NULL)
+                return skb;
+
+        ctx.data = data;
+        return fun(ctx, skb);
+}
+
+
 static inline size_t
 pfq_meta_prog_memsize(size_t size)
 {
         return sizeof(int) + sizeof(pfq_fun_t) * size;
 }
 
+extern struct sk_buff *pfq_run(struct pfq_exec_prog *prg, struct sk_buff *skb);
 
 extern struct pfq_meta_prog * kzalloc_meta_prog(size_t size);
 void  kfree_meta_prog(struct pfq_meta_prog *prog);

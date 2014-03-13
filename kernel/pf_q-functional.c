@@ -33,6 +33,33 @@
 #include <pf_q-factory.h>
 
 
+struct sk_buff *
+pfq_run(struct pfq_exec_prog *prg, struct sk_buff *skb)
+{
+        action_t * a = & PFQ_CB(skb)->action;
+        int n = 0;
+
+        a->type  = action_continue;
+        a->step  = 0;
+
+        for(;n >= 0 && n < prg->size;)
+        {
+                skb = pfq_bind(skb, &prg->fun[n]);
+                if (skb == NULL)
+                        return NULL;
+
+                a = &PFQ_CB(skb)->action;
+
+                if (a->type == action_drop || a->attr & attr_break)
+                        return skb;
+
+                n += a->step;
+        }
+
+        return skb;
+}
+
+
 size_t pfq_full_context_size(const struct pfq_meta_prog *prog)
 {
         size_t size = 0, n = 0;
