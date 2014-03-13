@@ -102,7 +102,6 @@ typedef struct
 
 } action_t;
 
-
 struct pfq_cb
 {
         unsigned long group_mask;
@@ -172,6 +171,16 @@ cont(struct sk_buff *skb)
         return skb;
 }
 
+static inline
+struct sk_buff *
+jump(struct sk_buff *skb, int step)
+{
+        action_t * a = & PFQ_CB(skb)->action;
+        a->type = action_continue;
+        a->step = step;
+        return skb;
+}
+
 /* drop: ignore this packet for the current group */
 
 static inline
@@ -184,7 +193,6 @@ drop(struct sk_buff *skb)
 }
 
 /* broadcast: for this group, broadcast the skb to sockets of the given classes */
-
 
 static inline
 struct sk_buff *
@@ -240,16 +248,6 @@ to_kernel(struct sk_buff *skb)
 }
 
 
-static inline
-struct sk_buff *
-jump(struct sk_buff *skb, int step)
-{
-        action_t * a = & PFQ_CB(skb)->action;
-        a->type = action_continue;
-        a->step = step;
-        return skb;
-}
-
 /* utility functions */
 
 static inline
@@ -291,8 +289,6 @@ void set_state(struct sk_buff *skb, unsigned long state)
 {
         PFQ_CB(skb)->state = state;
 }
-
-
 
 
 #endif /* _PF_Q_FUN_H_ */
