@@ -301,9 +301,6 @@ void pfq_spsc_read_commit(struct pfq_tx_queue_hdr *q)
 
 #define Q_SO_GROUP_JOIN             10
 #define Q_SO_GROUP_LEAVE            11
-#define Q_SO_GROUP_CONTEXT          12
-#define Q_SO_GROUP_FUN              13
-#define Q_SO_GROUP_RESET            14
 
 #define Q_SO_GROUP_FPROG            15      /* Berkeley packet filter */
 #define Q_SO_GROUP_VLAN_FILT_TOGGLE 16      /* enable/disable VLAN filters */
@@ -324,7 +321,7 @@ void pfq_spsc_read_commit(struct pfq_tx_queue_hdr *q)
 
 #define Q_SO_GET_GROUPS             28
 #define Q_SO_GET_GROUP_STATS        29
-#define Q_SO_GET_GROUP_CONTEXT      30
+#define Q_SO_GET_GROUP_FUN_CONTEXT  30          /* replace PFQ_SO_GET_GROUP_CONTEXT */
 
 #define Q_SO_TX_THREAD_BIND         31
 #define Q_SO_TX_THREAD_START        32
@@ -332,8 +329,7 @@ void pfq_spsc_read_commit(struct pfq_tx_queue_hdr *q)
 #define Q_SO_TX_THREAD_WAKEUP       34
 #define Q_SO_TX_QUEUE_FLUSH         35
 
-#define Q_SO_GROUP_FUN_PROG         36          /* deprecate PFQ_SO_GROUP_FUN and PFQ_SO_GROUP_CONTEXT */
-#define Q_SO_GROUP_GET_FUN_CONTEXT  37          /* deprecate PFQ_SO_GET_GROUP_CONTEXT */
+#define Q_SO_GROUP_FUN_PROG         36          /* deprecate PFQ_SO_GROUP_FUN */
 
 /* general placeholders */
 
@@ -355,23 +351,6 @@ void pfq_spsc_read_commit(struct pfq_tx_queue_hdr *q)
 #define Q_VLAN_UNTAG         0
 #define Q_VLAN_ANYTAG       -1
 
-struct pfq_vlan_toggle
-{
-        int gid;
-        int vid;
-        int toggle;
-};
-
-
-/* binding data */
-
-struct pfq_binding
-{
-        int gid;
-        int if_index;
-        int hw_queue;
-};
-
 /* group policies */
 
 #define Q_GROUP_UNDEFINED       0
@@ -389,14 +368,7 @@ struct pfq_binding
 #define Q_CLASS_CONTROL         Q_CLASS(1)
 #define Q_CLASS_ANY             (unsigned int)-1
 
-struct pfq_group_join
-{
-        int gid;
-        int policy;
-        unsigned int class_mask;
-};
-
-/* functional program descriptor */
+/* functional */
 
 typedef struct pfq_fun
 {
@@ -416,14 +388,6 @@ struct pfq_meta_prog
         int size;
         pfq_fun_t fun[];
 };
-
-
-struct pfq_group_meta_prog
-{
-        int gid;
-        struct pfq_meta_prog __user *prog;
-};
-
 
 typedef struct pfq_user_fun
 {
@@ -445,17 +409,34 @@ struct pfq_user_meta_prog
 };
 
 
-/* OLD API monadic functions (TO BE REMOVED) */
-
-#define Q_FUN_NAME_LEN        64
-#define Q_FUN_MAX             8     /* max fun binding: f1 >>= f2 >>= f3...*/
+/*  sock options helper structures */
 
 
-struct pfq_group_function
+struct pfq_vlan_toggle
 {
-        const char __user *name;
         int gid;
-        int level;
+        int vid;
+        int toggle;
+};
+
+struct pfq_binding
+{
+        int gid;
+        int if_index;
+        int hw_queue;
+};
+
+struct pfq_group_join
+{
+        int gid;
+        int policy;
+        unsigned int class_mask;
+};
+
+struct pfq_group_meta_prog
+{
+        int gid;
+        struct pfq_meta_prog __user *prog;
 };
 
 
@@ -466,7 +447,6 @@ struct pfq_group_context
         int gid;
         int level;
 };
-
 
 /* pfq_fprog: per-group sock_fprog */
 
