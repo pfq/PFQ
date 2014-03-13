@@ -347,10 +347,9 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
         	pfq_non_intrusive_for_each(skb, n, prefetch_queue)
 		{
                 	struct pfq_cb *cb = PFQ_CB(skb);
+                        struct pfq_exec_prog *prg;
 
 			unsigned long sock_mask = 0;
-
-			ret_t ret;
 
 			if (unlikely((cb->group_mask & bit) == 0))
                          	continue;
@@ -376,43 +375,34 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 
                         /* retrieve the function for this group */
 
-			if (atomic_long_read(&pfq_groups[gid].fun_ctx[0].function))
-                        {
-                                /* continuation-passing style evaluation */
+                        prg = (struct pfq_exec_prog *)atomic_long_read(&pfq_groups[gid].prog);
 
-                                pfq_function_t fun = (pfq_function_t) atomic_long_read(&pfq_groups[gid].fun_ctx[0].function);
+                        if (prg) { /* run the functional program */
 
-                                /* reset state, index call and fun_ctx ptr */
+                                cb->state = 0;
 
-                                cb->index   = -1;
-                                cb->state   =  0;
-                                cb->fun_ctx =  pfq_groups[gid].fun_ctx;
+                                skb = pfq_run(prg, skb);
+                                if (skb == NULL)
+                                        continue;
 
-                                ret = pfq_call(fun, skb, pass());
+                                cb = PFQ_CB(skb);
 
-                                if (ret.type & action_steal)
-                                {
-                                        cb->stolen_skb = true;
+                                if (has_stolen(cb->action)) {
                                         continue;
                                 }
 
-                                if (ret.type & action_to_kernel)
-                                {
-                                        cb->send_to_kernel = true;
-                                }
+                                if (likely(!is_drop(cb->action))) {
 
-                                if (likely((ret.type && ret.type & action_drop) == 0))
-                                {
                                         unsigned long eligible_mask = 0;
                                         unsigned long cbit;
 
-                                        pfq_bitwise_foreach(ret.class, cbit)
+                                        pfq_bitwise_foreach(cb->action.class, cbit)
                                         {
                                                 int cindex = pfq_ctz(cbit);
                                                 eligible_mask |= atomic_long_read(&pfq_groups[gid].sock_mask[cindex]);
                                         }
 
-                                        if (unlikely(ret.type & action_clone)) {
+                                        if (unlikely(is_clone(cb->action))) {
 
                                                 sock_mask |= eligible_mask;
                                         }
@@ -430,9 +420,8 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
                                                         }
                                                 }
 
-                                                if (likely(local->sock_cnt))
-                                                {
-                                                        unsigned int h = ret.hash ^ (ret.hash >> 8) ^ (ret.hash >> 16);
+                                                if (likely(local->sock_cnt)) {
+                                                        unsigned int h = cb->action.hash ^ (cb->action.hash >> 8) ^ (cb->action.hash >> 16);
                                                         sock_mask |= local->sock_mask[pfq_fold(h, local->sock_cnt)];
                                                 }
                                         }
@@ -478,13 +467,12 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
         {
                 cb = PFQ_CB(skb);
 
-                if (unlikely(cb->stolen_skb))
+                if (unlikely(has_stolen(cb->action)))
                         continue;
 
-                if (likely(cb->direct_skb))
-		{
-		        if (unlikely(!capture_incoming && cb->send_to_kernel))
-                        {
+                if (likely(cb->direct_skb)) {
+
+		        if (unlikely(!capture_incoming && has_ret_to_kernel(cb->action))) {
                                 if (cb->direct_skb == 1)
                                         netif_rx(skb);
                                 else
