@@ -301,9 +301,8 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 
         cb = PFQ_CB(skb);
 
-        cb->direct_skb      = direct;
-        cb->stolen_skb      = false;
-        cb->send_to_kernel  = false;
+        cb->direct_skb  = direct;
+        cb->action.attr = 0;
 
         /* enqueue this skb ... */
 

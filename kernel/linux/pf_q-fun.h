@@ -75,20 +75,30 @@ struct pfq_function_descr
 
 enum action
 {
-        action_continue  = 0x00,
-        action_drop      = 0x01,
-        action_clone     = 0x02,
-        action_dispatch  = 0x04,
-        action_steal     = 0x08,
-        action_to_kernel = 0x80,
+        action_drop      = 0,
+        action_continue  = 1,
+        action_clone     = 2,
+        action_dispatch  = 3
 };
+
+/* action attributes */
+
+enum action_attr
+{
+        attr_break             = 0x1,
+        attr_stolen            = 0x2,
+        attr_ret_to_kernel     = 0x4
+};
+
+/* action */
 
 typedef struct
 {
-        unsigned int  hash;
-        unsigned int  class:16;
-        unsigned int  step:8;
-        unsigned int  type:8;
+        int      step;
+        uint32_t hash;
+        uint16_t class;
+        uint8_t  type;
+        uint8_t  attr;
 
 } action_t;
 
@@ -98,45 +108,56 @@ struct pfq_cb
         unsigned long group_mask;
         unsigned long state;
 
-        action_t      action;
+        action_t action;
 
         char direct_skb;
-
-        bool stolen_skb;
-        bool send_to_kernel;
 };
 
+
 #define PFQ_CB(skb) ((struct pfq_cb *)(skb)->cb)
-
-
-static inline bool
-is_continue(action_t a)
-{
-        return a.type & action_continue;
-}
 
 static inline bool
 is_drop(action_t a)
 {
-        return a.type & action_drop;
+        return a.type == action_drop;
+}
+
+static inline bool
+is_continue(action_t a)
+{
+        return a.type == action_continue;
 }
 
 static inline bool
 is_clone(action_t a)
 {
-        return a.type & action_clone;
+        return a.type == action_clone;
 }
 
 static inline bool
 is_steering(action_t a)
 {
-        return a.type & action_dispatch;
+        return a.type == action_dispatch;
+}
+
+/* attributes */
+
+static inline bool
+has_stolen(action_t a)
+{
+        return a.attr & attr_stolen;
 }
 
 static inline bool
-is_stolen(action_t a)
+has_break(action_t a)
 {
-        return a.type & action_steal;
+        return a.attr & attr_break;
+}
+
+static inline bool
+has_ret_to_kernel(action_t a)
+{
+        return a.attr & attr_ret_to_kernel;
 }
 
 /* action: pass */
@@ -188,14 +209,14 @@ steering(struct sk_buff *skb, unsigned int class, unsigned int hash)
         return skb;
 }
 
-/* stolen packet: the skb is stolen by the function. (i.e. forwarded) */
+/* steal packet: the skb is stolen by the function. (i.e. forwarded) */
 
 static inline
 struct sk_buff *
 steal(struct sk_buff *skb)
 {
         action_t * a = & PFQ_CB(skb)->action;
-        a->type = action_steal;
+        a->attr |= attr_stolen;
         return skb;
 }
 
@@ -208,13 +229,13 @@ struct sk_buff *
 to_kernel(struct sk_buff *skb)
 {
         action_t * a = & PFQ_CB(skb)->action;
-        if (unlikely(a->type & action_steal))
+        if (unlikely(a->attr & attr_stolen))
         {
                 if (printk_ratelimit())
                         pr_devel("[PFQ] to_kernel modifier applied to a stolen packet!\n");
                 return skb;
         }
-        a->type |= action_to_kernel;
+        a->attr |= attr_ret_to_kernel;
         return skb;
 }
 
