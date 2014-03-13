@@ -562,50 +562,30 @@ pfq_groups_mask(pfq_t const *q, unsigned long *_mask)
 	return mutable->error = NULL, 0;
 }
 
-
 int
-pfq_set_group_function(pfq_t *q, int gid, const char *fun_name, int level)
+pfq_set_group_program(pfq_t *q, int gid, struct pfq_meta_prog *prg)
 {
-	struct pfq_group_function s = { fun_name, gid, level };
-	if (setsockopt(q->fd, PF_Q, Q_SO_GROUP_FUN, &s, sizeof(s)) == -1) {
-		return q->error = "PFQ: set function error", -1;
-	}
+        struct pfq_group_meta_prog p = { gid, prg };
+
+        if (setsockopt(q->fd, PF_Q, Q_SO_GROUP_FUN_PROG, &p, sizeof(p)) == -1) {
+		return q->error = "PFQ: group program error", -1;
+        }
+
 	return q->error = NULL, 0;
 }
-
-
-int
-pfq_set_group_function_context(pfq_t *q, int gid, const void *context, size_t size, int level)
-{
-	struct pfq_group_context s  = { (void *)context, size, gid, level };
-	if (setsockopt(q->fd, PF_Q, Q_SO_GROUP_CONTEXT, &s, sizeof(s)) == -1) {
-		return q->error = "PFQ: set group context error", -1;
-	}
-	return q->error = NULL, 0;
-}
-
 
 int
 pfq_get_group_function_context(pfq_t const *q, int gid, void *context, size_t size, int level)
 {
+        pfq_t * mutable = (pfq_t *)q;
 	struct pfq_group_context s  = { context, size, gid, level };
-        socklen_t len = sizeof(s);
-	pfq_t * mutable = (pfq_t *)q;
 
-	if (getsockopt(q->fd, PF_Q, Q_SO_GET_GROUP_CONTEXT, &s, &len) == -1) {
-		return mutable->error = "PFQ: get group context error", -1;
+        socklen_t len = sizeof(s);
+
+	if (getsockopt(q->fd, PF_Q, Q_SO_GET_GROUP_FUN_CONTEXT, &s, &len) == -1) {
+		return mutable->error = "PFQ: get group function context error", -1;
 	}
 	return mutable->error = NULL, 0;
-}
-
-
-int
-pfq_group_reset(pfq_t *q, int gid)
-{
-	if (setsockopt(q->fd, PF_Q, Q_SO_GROUP_RESET, &gid, sizeof(gid)) == -1) {
-		return q->error = "PFQ: reset group error", -1;
-	}
-	return q->error = NULL, 0;
 }
 
 

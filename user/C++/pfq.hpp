@@ -653,26 +653,15 @@ namespace net {
         }
 
         //
-        // functional
+        // new functional program
         //
 
         void
-        set_group_function(int gid, const char *fun, int level = 0)
+        set_group_program(int gid, pfq_meta_prog *prog)
         {
-            struct pfq_group_function s { fun, gid, level };
-            if (::setsockopt(fd_, PF_Q, Q_SO_GROUP_FUN, &s, sizeof(s)) == -1)
-                throw pfq_error(errno, "PFQ: set group function error");
-        }
-
-        template <typename T>
-        void
-        set_group_function_context(int gid, const T &context, int level = 0)
-        {
-            static_assert(std::is_pod<T>::value, "context must be a pod type");
-
-            struct pfq_group_context s { const_cast<T *>(&context), sizeof(context), gid, level };
-            if (::setsockopt(fd_, PF_Q, Q_SO_GROUP_CONTEXT, &s, sizeof(s)) == -1)
-                throw pfq_error(errno, "PFQ: set group function context error");
+            struct pfq_group_meta_prog p { gid, prog };
+            if (::setsockopt(fd_, PF_Q, Q_SO_GROUP_FUN_PROG, &p, sizeof(p)) == -1)
+                throw pfq_error(errno, "PFQ: group program error");
         }
 
         template <typename T>
@@ -683,35 +672,28 @@ namespace net {
 
             struct pfq_group_context s { &context, sizeof(context), gid, level };
             socklen_t len = sizeof(s);
-            if (::getsockopt(fd_, PF_Q, Q_SO_GET_GROUP_CONTEXT, &s, &len) == -1)
-                throw pfq_error(errno, "PFQ: get group function context error");
+            if (::getsockopt(fd_, PF_Q, Q_SO_GET_GROUP_FUN_CONTEXT, &s, &len) == -1)
+                throw pfq_error(errno, "PFQ: group function context error");
         }
 
-        template <typename C>
-        void
-        set_group_computation(int gid, C const &cont)
-        {
-            int level = 0;
-            for(auto const & f : cont)
-            {
-                set_group_function(gid, f.name.c_str(), level);
-                if (f.context.first)
-                {
-                    struct pfq_group_context s { f.context.first.get(), f.context.second, gid, level };
-                    if (::setsockopt(fd_, PF_Q, Q_SO_GROUP_CONTEXT, &s, sizeof(s)) == -1)
-                        throw pfq_error(errno, "PFQ: set group context error");
-                }
+        // template <typename C>
+        // void
+        // set_group_computation(int gid, C const &cont)
+        // {
+        //     int level = 0;
+        //     for(auto const & f : cont)
+        //     {
+        //         set_group_function(gid, f.name.c_str(), level);
+        //         if (f.context.first)
+        //         {
+        //             struct pfq_group_context s { f.context.first.get(), f.context.second, gid, level };
+        //             if (::setsockopt(fd_, PF_Q, Q_SO_GROUP_CONTEXT, &s, sizeof(s)) == -1)
+        //                 throw pfq_error(errno, "PFQ: set group context error");
+        //         }
 
-                level++;
-            }
-        }
-
-        void
-        reset_group(int gid)
-        {
-            if (::setsockopt(fd_, PF_Q, Q_SO_GROUP_RESET, &gid, sizeof(gid)) == -1)
-                throw pfq_error(errno, "PFQ: reset group error");
-        }
+        //         level++;
+        //     }
+        // }
 
         //
         // BPF filters: pass in-kernel sock_fprog structure

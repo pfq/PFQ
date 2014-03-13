@@ -84,8 +84,7 @@ module Network.PFq
         vlanSetFilterId,
         vlanResetFilterId,
 
-        groupFunction,
-        putContextFunction,
+        groupProgram,
         getContextFunction,
 
         bindTx,
@@ -711,29 +710,14 @@ makeStats p = do
 
 -- groupFunction:
 
-groupFunction :: Ptr PFqTag
-                 -> Int     -- group id
-                 -> Int     -- index in the computation chain
-                 -> String  -- function name(s) in continuation-passing style
-                 -> IO ()
-groupFunction hdl gid ix name =
-    withCString name $ \fname ->
-        pfq_set_group_function hdl (fromIntegral gid) fname (fromIntegral ix) >>= throwPFqIf_ hdl (== -1)
+groupProgram :: Ptr PFqTag
+             -> Int     -- group id
+             -> a       -- program
+             -> IO ()
+groupProgram _hdl _gid _prg = undefined
 
-
--- putContextFunction:
-
-putContextFunction :: (Storable s) =>
-                    Ptr PFqTag
-                    -> s        -- context
-                    -> Int      -- group id
-                    -> Int      -- index in the computation chain
-                    -> IO ()
-
-putContextFunction hdl ctx gid level = do
-    allocaBytes (sizeOf ctx) $ \ptr -> do
-        poke ptr ctx
-        pfq_set_group_function_context hdl (fromIntegral gid) ptr (fromIntegral $ sizeOf ctx) (fromIntegral level) >>= throwPFqIf_ hdl (== -1)
+    -- withCString name $ \fname ->
+    --    pfq_set_group_function hdl (fromIntegral gid) fname (fromIntegral ix) >>= throwPFqIf_ hdl (== -1)
 
 
 -- getContextFunction:
@@ -890,12 +874,9 @@ foreign import ccall unsafe pfq_leave_group       :: Ptr PFqTag -> CInt -> IO CI
 foreign import ccall unsafe pfq_get_stats         :: Ptr PFqTag -> Ptr Statistics -> IO CInt
 foreign import ccall unsafe pfq_get_group_stats   :: Ptr PFqTag -> CInt -> Ptr Statistics -> IO CInt
 
-foreign import ccall unsafe pfq_set_group_function :: Ptr PFqTag -> CInt -> CString -> CInt -> IO CInt
-foreign import ccall unsafe pfq_reset_group        :: Ptr PFqTag -> CInt -> IO CInt
-
 -- Note: Ptr a is void *
 
-foreign import ccall unsafe pfq_set_group_function_context :: Ptr PFqTag -> CInt -> Ptr a -> CSize -> CInt -> IO CInt
+foreign import ccall unsafe pfq_set_group_program  :: Ptr PFqTag -> CInt -> Ptr a -> IO CInt
 foreign import ccall unsafe pfq_get_group_function_context :: Ptr PFqTag -> CInt -> Ptr a -> CSize -> CInt -> IO CInt
 
 foreign import ccall pfq_dispatch                 :: Ptr PFqTag -> FunPtr CPFqCallback -> CLong -> Ptr Word8 -> IO CInt
