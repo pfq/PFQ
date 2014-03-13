@@ -51,15 +51,12 @@
                 return -EACCES; \
         }
 
-
 struct pfq_group
 {
         int policy;                                     /* policy for the group */
         int pid;	                                /* process id for restricted/private group */
 
         atomic_long_t sock_mask[Q_CLASS_MAX];           /* for class: Q_CLASS_DATA, Q_CLASS_CONTROL, etc... */
-
-        struct fun_context fun_ctx[Q_FUN_MAX+1];        /* pfq_function_t, void *context pair */
 
         atomic_long_t filter; 				/* struct sk_filter pointer */
 
@@ -88,10 +85,8 @@ extern unsigned long pfq_get_groups(int id);
 extern unsigned long __pfq_get_all_groups_mask(int gid);
 
 extern bool __pfq_group_access(int gid, int id, int policy, bool join);
-extern int  __pfq_set_group_function(int gid, pfq_function_t fun, int level);
-extern int  __pfq_set_group_context(int gid, void *context, int level);
+
 extern int  __pfq_get_group_context(int gid, int level, int size, void __user *context);
-extern void __pfq_reset_group_functx(int gid);
 extern void __pfq_set_group_filter(int gid, struct sk_filter *filter);
 extern void __pfq_dismiss_function(pfq_function_t f);
 

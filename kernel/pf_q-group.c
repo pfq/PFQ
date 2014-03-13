@@ -90,17 +90,6 @@ __pfq_group_init(int gid)
                 atomic_long_set(&g->sock_mask[i], 0);
         }
 
-        /* note the = is for setting the limit to the function composition:
-         * the last function pointer is always set to NULL
-         * */
-
-        for(i = 0; i <= Q_FUN_MAX; i++)
-        {
-                atomic_long_set(&g->fun_ctx[i].function, 0L);
-                atomic_long_set(&g->fun_ctx[i].context,  0L);
-                spin_lock_init (&g->fun_ctx[i].lock);
-        }
-
         atomic_long_set(&g->filter,   0L);
         atomic_long_set(&g->prog,     0L);
         atomic_long_set(&g->prog_ctx, 0L);
@@ -114,12 +103,10 @@ __pfq_group_init(int gid)
 static void
 __pfq_group_free(int gid)
 {
-        void *context[Q_FUN_MAX];
         struct pfq_group * g = pfq_get_group(gid);
         struct sk_filter *filter;
         struct pfq_exec_prog *prg;
         void *prg_ctx;
-        int i;
 
         if (!g) {
                 pr_devel("[PFQ] get_group: invalid group id %d!\n", gid);
@@ -133,13 +120,6 @@ __pfq_group_free(int gid)
         g->pid = 0;
         g->policy = Q_GROUP_UNDEFINED;
 
-        for(i = 0; i < Q_FUN_MAX; i++)
-        {
-		atomic_long_set(&g->fun_ctx[i].function, 0L);
-
-		context[i] = (void *)atomic_long_xchg(&g->fun_ctx[i].context, 0L);
-        }
-
         filter  = (struct sk_filter *)atomic_long_xchg(&g->filter, 0L);
         prg     = (struct pfq_exec_prog *)atomic_long_xchg(&g->prog, 0L);
         prg_ctx = (void *)atomic_long_xchg(&g->prog_ctx, 0L);
@@ -148,11 +128,6 @@ __pfq_group_free(int gid)
 
         kfree(prg);
         kfree(prg_ctx);
-
-        for(i = 0; i < Q_FUN_MAX; i++)
-        {
-                kfree(context[i]);
-        }
 
         pfq_free_sk_filter(filter);
 
@@ -247,50 +222,10 @@ __pfq_get_all_groups_mask(int gid)
 }
 
 
-int __pfq_set_group_function(int gid, pfq_function_t fun, int level)
-{
-        struct pfq_group * g = pfq_get_group(gid);
-        if (!g) {
-                pr_devel("[PFQ] get_group: invalid group id %d!\n", gid);
-                return -EINVAL;
-        }
-
-        if (level < 0 || level >= Q_FUN_MAX)
-                return -EINVAL;
-
-        atomic_long_set(&g->fun_ctx[level].function, (long)fun);
-
-        msleep(Q_GRACE_PERIOD);
-
-        return 0;
-}
-
-
-int __pfq_set_group_context(int gid, void *context, int level)
-{
-        struct pfq_group * g = pfq_get_group(gid);
-        void *old;
-
-        if (!g) {
-                pr_devel("[PFQ] get_group: invalid group id %d!\n", gid);
-                return -EINVAL;
-        }
-
-        if (level < 0 || level >= Q_FUN_MAX)
-                return -EINVAL;
-
-        old = (void *)atomic_long_xchg(& g->fun_ctx[level].context, (long)context);
-
-        msleep(Q_GRACE_PERIOD);
-
-        kfree(old);
-        return 0;
-}
-
-
 int __pfq_get_group_context(int gid, int level, int size, void __user * dst)
 {
         struct pfq_group * g = pfq_get_group(gid);
+        struct pfq_exec_prog *prg;
         int err = 0;
         void *src;
 
@@ -299,41 +234,35 @@ int __pfq_get_group_context(int gid, int level, int size, void __user * dst)
                 return -EINVAL;
         }
 
-        if (level < 0 || level >= Q_FUN_MAX)
+        prg = (struct pfq_exec_prog *)atomic_long_read(&g->prog);
+        if (!prg) {
+                pr_devel("[PFQ] get_group_context: no such program!\n");
+                return -EFAULT;
+        }
+
+        if (level < 0 || level >= prg->size) {
+                pr_devel("[PFQ] get_group_context: invalid index %d!\n", level);
                 return -EINVAL;
+        }
 
-        spin_lock_bh(&g->fun_ctx[level].lock);
+        spin_lock_bh(&prg->fun[level].ctx_lock);
 
-        src = (void *)atomic_long_read(&g->fun_ctx[level].context);
+        src = prg->fun[level].ctx_ptr;
 
-        err = src ? copy_to_user(dst, src, size) : -EFAULT;
+        if (src) {
+                if (copy_to_user(dst, src, size)) {
+                        pr_devel("[PFQ] copy_to_user: error!\n");
+                        err = -EFAULT;
+                }
+        }
+        else {
+                pr_devel("[PFQ] get_group_context: no context @ index %d!\n", level);
+                err = -EFAULT;
+        }
 
-        spin_unlock_bh(&g->fun_ctx[level].lock);
+        spin_unlock_bh(&prg->fun[level].ctx_lock);
 
         return err;
-}
-
-
-void __pfq_reset_group_functx(int gid)
-{
-        struct pfq_group * g = pfq_get_group(gid);
-        int i;
-
-        if (!g) {
-                pr_devel("[PFQ] get_group: invalid group id %d!\n", gid);
-                return;
-        }
-
-        for(i = 0; i < Q_FUN_MAX; i++)
-        {
-                void *old = (void *)atomic_long_xchg(& g->fun_ctx[i].context, 0L);
-
-                atomic_long_set(& g->fun_ctx[i].function, 0L);
-
-                msleep(Q_GRACE_PERIOD);
-
-                kfree(old);
-        }
 }
 
 
@@ -358,28 +287,38 @@ void __pfq_set_group_filter(int gid, struct sk_filter *filter)
 
 void __pfq_dismiss_function(pfq_function_t f)
 {
-        int i, n;
+        int n;
 
         for(n = 0; n < Q_MAX_GROUP; n++)
         {
-                for(i = 0; i < Q_FUN_MAX; i++)
-                {
-                        pfq_function_t fun = (pfq_function_t)atomic_long_read(&pfq_get_group(n)->fun_ctx[i].function);
-                        if (f == fun)
-                        {
-                                __pfq_set_group_function(n, NULL, i);
-                                __pfq_set_group_context(n, NULL, i);
+                struct pfq_exec_prog *prg;
 
-                                printk(KERN_INFO "[PFQ] function @%p dismissed.\n", fun);
+                prg = (struct pfq_exec_prog *)atomic_long_read(&pfq_get_group(n)->prog);
+
+                if (prg) {
+                        int n = 0;
+                        for(; n < prg->size; n++)
+                        {
+                                if (prg->fun[n].fun_ptr == f)
+                                {
+                                        // FIXME: race condition, fun_ptr should be atomic
+
+                                        prg->fun[n].fun_ptr = NULL;
+                                }
                         }
                 }
         }
+
+        printk(KERN_INFO "[PFQ] function @%p dismissed.\n", f);
 }
 
 
 int pfq_set_group_prog(int gid, struct pfq_exec_prog *prog, void *ctx)
 {
         struct pfq_group * g = pfq_get_group(gid);
+        struct pfq_exec_prog *old_prg;
+        void *old_ctx;
+
         if (!g) {
                 pr_devel("[PFQ] get_group: invalid group id %d!\n", gid);
                 return -EINVAL;
@@ -387,21 +326,15 @@ int pfq_set_group_prog(int gid, struct pfq_exec_prog *prog, void *ctx)
 
         down(&group_sem);
 
-        if (atomic_long_read(&g->prog))
-        {
-                struct pfq_exec_prog *prg = (struct pfq_exec_prog *)atomic_long_xchg(& g->prog, 0UL);
-                void *ctx = (struct pfq_exec_prog *)atomic_long_xchg(& g->prog_ctx, 0UL);
+        old_prg = (struct pfq_exec_prog *)atomic_long_xchg(& g->prog,     (long)prog);
+        old_ctx = (struct pfq_exec_prog *)atomic_long_xchg(& g->prog_ctx, (long)ctx);
 
-                msleep(Q_GRACE_PERIOD);   /* sleeping is possible here: user-context */
+        msleep(Q_GRACE_PERIOD);   /* sleeping is possible here: user-context */
 
-                kfree(prg);
-                kfree(ctx);
-        }
+        /* free the old program */
 
-        /* setup the new program */
-
-        atomic_long_set(&g->prog_ctx, (long)ctx);
-        atomic_long_set(&g->prog,     (long)prog);
+        kfree(old_prg);
+        kfree(old_ctx);
 
         up(&group_sem);
         return 0;

@@ -243,7 +243,7 @@ int pfq_getsockopt(struct socket *sock,
                         return -EFAULT;
         } break;
 
-        case Q_SO_GET_GROUP_CONTEXT:
+        case Q_SO_GET_GROUP_FUN_CONTEXT:
         {
                 struct pfq_group_context s;
 
@@ -267,17 +267,12 @@ int pfq_getsockopt(struct socket *sock,
                         return -EACCES;
                 }
 
+                /* get a copy of the function context */
+
                 if (__pfq_get_group_context(s.gid, s.level, s.size, s.context) < 0) {
                         pr_devel("[PFQ|%d] get context error: gid:%d error!\n", so->id, s.gid);
                         return -EFAULT;
                 }
-
-        } break;
-
-        case Q_SO_GROUP_GET_FUN_CONTEXT:
-        {
-                /* TODO */
-                return -EFAULT;
 
         } break;
 
@@ -556,106 +551,6 @@ int pfq_setsockopt(struct socket *sock,
                 }
 
                 pr_devel("[PFQ|%d] leave: gid:%d\n", so->id, gid);
-        } break;
-
-        case Q_SO_GROUP_RESET: /* functional */
-        {
-                int gid;
-                if (optlen != sizeof(gid))
-                        return -EINVAL;
-
-                if (copy_from_user(&gid, optval, optlen))
-                        return -EFAULT;
-
-                CHECK_GROUP_ACCES(so->id, gid, "reset group");
-
-                __pfq_reset_group_functx(gid);
-
-                pr_devel("[PFQ|%d] reset group gid:%d\n", so->id, gid);
-        } break;
-
-        case Q_SO_GROUP_CONTEXT:
-        {
-                struct pfq_group_context s;
-
-                if (optlen != sizeof(s))
-                        return -EINVAL;
-                if (copy_from_user(&s, optval, optlen))
-                        return -EFAULT;
-
-                CHECK_GROUP_ACCES(so->id, s.gid, "group context");
-
-                if (s.size && s.context)
-                {
-                        void * context = kmalloc(s.size, GFP_KERNEL);
-                        if (context == NULL)
-                                return -ENOMEM;
-
-                        if(copy_from_user(context, s.context, s.size)) {
-                                kfree(context);
-                                return -EFAULT;
-                        }
-
-                        if (__pfq_set_group_context(s.gid, context, s.level) < 0) {
-                                pr_devel("[PFQ|%d] context error: gid:%d invalid level (%d)!\n", so->id, s.gid, s.level);
-                                return -EINVAL;
-                        }
-
-                        pr_devel("[PFQ|%d] context: gid:%d (context of %zu bytes set)\n", so->id, s.gid, s.size);
-                }
-                else { /* empty context */
-
-                        if (__pfq_set_group_context(s.gid, NULL, s.level) < 0) {
-                                pr_devel("[PFQ|%d] context error: gid:%d invalid level (%d)!\n", so->id, s.gid, s.level);
-                                return -EINVAL;
-                        }
-
-                        pr_devel("[PFQ|%d] context: gid:%d (empty context set)\n", so->id, s.gid);
-                }
-        } break;
-
-        case Q_SO_GROUP_FUN:
-        {
-                struct pfq_group_function s;
-
-                if (optlen != sizeof(s))
-                        return -EINVAL;
-                if (copy_from_user(&s, optval, optlen))
-                        return -EFAULT;
-
-                CHECK_GROUP_ACCES(so->id, s.gid, "group function");
-
-                if (s.name == NULL) {
-
-                        if (__pfq_set_group_function(s.gid, NULL, s.level) < 0) {
-                                pr_devel("[PFQ|%d] function error: gid:%d invalid level (%d)!\n", so->id, s.gid, s.level);
-                                return -EINVAL;
-                        }
-
-                        pr_devel("[PFQ|%d] function: gid:%d (NONE)\n", so->id, s.gid);
-                }
-                else {
-                        char name[Q_FUN_NAME_LEN];
-                        pfq_function_t fun;
-
-                        if (strncpy_from_user(name, s.name, Q_FUN_NAME_LEN-1) < 0)
-                                return -EFAULT;
-
-                        name[Q_FUN_NAME_LEN-1] = '\0';
-
-                        fun = pfq_get_function(name);
-                        if (fun == NULL) {
-                                pr_devel("[PFQ|%d] function error: gid:%d '%s' unknown function!\n", so->id, s.gid, name);
-                                return -EINVAL;
-                        }
-
-                        if (__pfq_set_group_function(s.gid, fun, s.level) < 0) {
-                                pr_devel("[PFQ|%d] function error: gid:%d invalid level (%d)!\n", so->id, s.gid, s.level);
-                                return -EINVAL;
-                        }
-
-                        pr_devel("[PFQ|%d] function gid:%d -> function '%s'\n", so->id, s.gid, name);
-                }
         } break;
 
         case Q_SO_GROUP_FPROG:
