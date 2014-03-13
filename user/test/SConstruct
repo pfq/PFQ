@@ -5,16 +5,18 @@ env = Environment(CPPPATH=['.', '../extra', '../C++', '../C', '../../kernel'],
 
 env.Append(LIBPATH='../C')
 
-env.Program(target = "test-dump",       source = ["test-dump.cpp"])
-env.Program(target = "test-read",       source = ["test-read.c"], LIBS=['pfq'])
-env.Program(target = "test-send",       source = ["test-send.c"], LIBS=['pfq'])
+env.Program(target = "test-read",       source = ["test-read.c"],       LIBS=['pfq'])
+env.Program(target = "test-send",       source = ["test-send.c"],       LIBS=['pfq'])
+env.Program(target = "test-dispatch",   source = ["test-dispatch.c"],   LIBS=['pfq', 'pthread'])
+env.Program(target = "test-regression", source = ["test-regression.c"], LIBS=['pfq', 'pthread'])
 
+env.Program(target = "test-dump",       source = ["test-dump.cpp"])
 env.Program(target = "test-send++",     source = ["test-send++.cpp"])
+env.Program(target = "test-bpf",        source = ["test-bpf.cpp"])
 env.Program(target = "test-vlan",       source = ["test-vlan.cpp"])
 env.Program(target = "test-for-range",  source = ["test-for-range.cpp"])
-env.Program(target = "test-dispatch",   source = ["test-dispatch.c"], LIBS=['pfq', 'pthread', 'stdc++'])
+env.Program(target = "test-fun-prog",   source = ["test-fun-prog.cpp"])
 
-env.Program(target = "test-regression",             source = ["test-regression.c"],     LIBS = ['pthread', 'pfq'])
 env.Program(target = "test-regression++",           source = ["test-regression++.cpp"],   LIBS = ['pthread'])
 env.Program(target = "test-regression-capture",     source = ["test-regression-capture.cpp"], LIBS = ['pthread', 'pcap'])
 env.Program(target = 'test-regression-pcap-rewrite',source = ['test-regression-pcap-rewrite.cpp'], LIBS=['pcap'])

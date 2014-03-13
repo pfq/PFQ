@@ -571,9 +571,17 @@ void test_group_context()
 {
         pfq_t * q = pfq_open(64, 0, 1024);
 
+        struct pfq_meta_prog * prg  = (struct pfq_meta_prog *) (malloc(sizeof(int) + sizeof(pfq_fun_t) * 1));
+
+        prg->size = 1;
+
         int n = 22;
 
-        assert(pfq_set_group_function_context(q, pfq_group_id(q), &n, sizeof(n), 0) == 0);
+        prg->fun[0].name = "id";
+        prg->fun[0].context.addr = &n;
+        prg->fun[0].context.size = sizeof(n);
+
+        assert(pfq_set_group_program(q, pfq_group_id(q), prg) == 0);
 
         int m = 0;
 

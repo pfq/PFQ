@@ -88,11 +88,9 @@ dumper dev = do
 
         -- Test state (requires dummy-state comptuation)!
 
-        Q.groupFunction q gid 0 "dummy-state"
-        Q.groupFunction q gid 1 "clone"
-
-        -- set state
-        Q.putContextFunction q (Pair 10 42) gid 0
+        -- TODO
+        -- Q.groupFunction q gid 0 "dummy-state"
+        -- Q.groupFunction q gid 1 "clone"
 
         -- read state of 8 bytes...
         kp :: Pair <- Q.getContextFunction q gid 0 8

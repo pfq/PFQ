@@ -153,9 +153,10 @@ runThreads op ms =
                      forM_ (devs binding) $ \dev ->
                        forM_ (queues binding) $ \queue ->
                          Q.setPromisc q dev True >> Q.bindGroup q (groupId binding) dev queue
-                     when (isJust sf) $ putStrLn ("[pfq] Gid " ++ show (groupId binding) ++ " is using continuation: " ++ intercalate " >=> " (fromJust sf)) >>
-                                        forM_ (zip (fromJust sf) [0,1..])
-                                            (\(name,ix) -> Q.groupFunction q (groupId binding) ix name)
+                     -- TODO
+                     -- when (isJust sf) $ putStrLn ("[pfq] Gid " ++ show (groupId binding) ++ " is using continuation: " ++ intercalate " >=> " (fromJust sf)) >>
+                     --                   forM_ (zip (fromJust sf) [0,1..])
+                     --                       (\(name,ix) -> Q.groupFunction q (groupId binding) ix name)
                      Q.enable q
                      M.void (recvLoop q (State c f S.empty))
                  )
