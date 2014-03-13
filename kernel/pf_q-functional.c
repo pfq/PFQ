@@ -60,7 +60,8 @@ pfq_run(struct pfq_exec_prog *prg, struct sk_buff *skb)
 }
 
 
-size_t pfq_full_context_size(const struct pfq_meta_prog *prog)
+size_t
+pfq_full_context_size(const struct pfq_meta_prog *prog)
 {
         size_t size = 0, n = 0;
 
@@ -72,7 +73,9 @@ size_t pfq_full_context_size(const struct pfq_meta_prog *prog)
         return size;
 }
 
-int pfq_meta_prog_compile(const struct pfq_meta_prog *prog, struct pfq_exec_prog **exec, void **ctx)
+
+int
+pfq_meta_prog_compile(const struct pfq_meta_prog *prog, struct pfq_exec_prog **exec, void **ctx)
 {
         size_t mem = sizeof(int) + sizeof(pfq_exec_t) * prog->size;
         size_t cs  = pfq_full_context_size(prog);
@@ -194,7 +197,8 @@ copy_meta_prog_from_user(struct pfq_meta_prog *to, struct pfq_user_meta_prog *fr
 }
 
 
-void pfq_exec_prog_pr_devel(const struct pfq_exec_prog *prog, const void *ctx)
+void
+pfq_exec_prog_pr_devel(const struct pfq_exec_prog *prog, const void *ctx)
 {
         int n;
         pr_devel("[PFQ] exec program @%p, context@%p:\n", prog, ctx);
@@ -205,7 +209,8 @@ void pfq_exec_prog_pr_devel(const struct pfq_exec_prog *prog, const void *ctx)
 }
 
 
-void pfq_meta_prog_pr_devel(const struct pfq_meta_prog *prog)
+void
+pfq_meta_prog_pr_devel(const struct pfq_meta_prog *prog)
 {
         int n;
         pr_devel("[PFQ] meta program @%p:\n", prog);

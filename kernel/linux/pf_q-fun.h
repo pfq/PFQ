@@ -39,16 +39,16 @@ struct pfq_function_descr;
 extern int pfq_register_functions  (const char *module, struct pfq_function_descr *fun);
 extern int pfq_unregister_functions(const char *module, struct pfq_function_descr *fun);
 
+
 /* exec function */
 
 typedef struct pfq_exec
 {
-        void *  fun_ptr;
+        void *  fun_ptr;        /* pfq_function_t */
         void *  ctx_ptr;
         spinlock_t ctx_lock;
 
 } pfq_exec_t;
-
 
 struct pfq_exec_prog
 {
@@ -59,7 +59,6 @@ struct pfq_exec_prog
 /* function context */
 
 typedef struct { pfq_exec_t *data; } context_t;
-
 
 /* monadic function */
 
@@ -72,7 +71,7 @@ struct pfq_function_descr
         pfq_function_t  function;
 };
 
-/* action */
+/* actions types */
 
 enum action
 {

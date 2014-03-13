@@ -52,12 +52,11 @@ pfq_meta_prog_memsize(size_t size)
 extern struct sk_buff *pfq_run(struct pfq_exec_prog *prg, struct sk_buff *skb);
 
 extern struct pfq_meta_prog * kzalloc_meta_prog(size_t size);
-void  kfree_meta_prog(struct pfq_meta_prog *prog);
 
 extern int copy_meta_prog_from_user(struct pfq_meta_prog *to, struct pfq_user_meta_prog *from);
-
 extern int pfq_meta_prog_compile(const struct pfq_meta_prog *prog, struct pfq_exec_prog **exec, void **ctx);
 
+extern void  kfree_meta_prog(struct pfq_meta_prog *prog);
 extern void  pfq_exec_prog_pr_devel(const struct pfq_exec_prog *prog, const void *ctx);
 extern void  pfq_meta_prog_pr_devel(const struct pfq_meta_prog *prog);
 
