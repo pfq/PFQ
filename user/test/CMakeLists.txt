@@ -18,7 +18,7 @@ add_executable(test-dump test-dump.cpp)
 add_executable(test-vlan test-vlan.cpp)
 add_executable(test-for-range test-for-range.cpp)
 add_executable(test-steering-dummy test-steering-dummy.cpp)
-add_executable(test-filter test-filter.cpp)
+add_executable(test-bpf test-bpf.cpp)
 
 add_executable(test-send   test-send.c)
 add_executable(test-send++ test-send++.cpp)
