@@ -27,24 +27,6 @@
 
 #include <linux/pf_q-fun.h>
 
-/*
- *      Functional combinator strategy:
- *
- *      input           FILTER          PAR comb.       PEND        NEG comb.       STEERING
- *      -----------------------------------------------------------------------------------------
- *      PASS            F(p) P/D        SKIP(pass)      PASS        DROP            hash(p)/D
- *
- *      DROP            DROP/-          PASS            DROP        PASS            DROP/-
- *
- *      SKIP[ret]       SKIP[ret]       SKIP[ret]       ret         SKIP[ret]       SKIP[ret]
- *
- *      CLONE           F(p) C/D        SKIP(clone)     CLONE       DROP            hash(p)/D
- *
- *      STEERING[n]     F(p) S(n)/D     SKIP(steer[n])  S(n)        DROP            hash(p)/D
- *
- *      STEAL           -               -               -           -               -
- */
-
 
 static struct sk_buff *
 id(context_t ctx, struct sk_buff *skb)
@@ -226,7 +208,7 @@ steering_vlan_id(context_t ctx, struct sk_buff *skb)
 
 
 static struct sk_buff *
-steering_ipv4(context_t ctx, struct sk_buff *skb)
+steering_ip(context_t ctx, struct sk_buff *skb)
 {
 	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP))
 	{
@@ -344,7 +326,7 @@ struct pfq_function_descr default_functions[] = {
 
 	{ "steer-mac",          steering_mac            },
         { "steer-vlan-id",      steering_vlan_id        },
-        { "steer-ipv4",         steering_ipv4           },
+        { "steer-ip",           steering_ip             },
         { "steer-ipv6",         steering_ipv6           },
         { "steer-flow",         steering_flow           },
 
