@@ -33,23 +33,6 @@
 
 #define Q_VERSION               "2.1"
 
-struct pfq_cb
-{
-        unsigned long group_mask;
-        unsigned long state;
-
-        struct fun_context * fun_ctx;
-
-        int index;      /* call index */
-
-        char direct_skb;
-
-        bool stolen_skb;
-        bool send_to_kernel;
-};
-
-#define PFQ_CB(skb) ((struct pfq_cb *)(skb)->cb)
-
 #else  /* user space */
 
 #define __user

@@ -28,22 +28,6 @@
 #include <linux/pf_q-fun.h>
 
 
-typedef struct pfq_exec
-{
-        void *  fun_ptr;
-        void *  ctx_ptr;
-        spinlock_t ctx_lock;
-
-} pfq_exec_t;
-
-
-struct pfq_exec_prog
-{
-        int size;
-        pfq_exec_t fun[];
-};
-
-
 static inline size_t
 pfq_meta_prog_memsize(size_t size)
 {

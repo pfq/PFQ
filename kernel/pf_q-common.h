@@ -27,6 +27,7 @@
 
 #include <linux/kernel.h>
 #include <linux/pf_q.h>
+#include <linux/pf_q-fun.h>
 
 #include <pf_q-sparse-counter.h>
 
@@ -51,6 +52,7 @@
 
 #define Q_FUN_NAME_LEN          64
 
+
 /* sparse_counter_t stats */
 
 
@@ -59,6 +61,7 @@ typedef struct pfq_rx_stats
         sparse_counter_t  recv;         /* received by the queue */
         sparse_counter_t  lost;         /* packets lost due to queue congestion */
         sparse_counter_t  drop;         /* dropped by filters */
+
 } pfq_rx_stat_t;
 
 
