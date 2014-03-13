@@ -39,8 +39,10 @@ pfq_run(struct pfq_exec_prog *prg, struct sk_buff *skb)
         action_t * a = & PFQ_CB(skb)->action;
         int n = 0;
 
+        a->step  = 1;
+        a->class = Q_CLASS_DEFAULT;
         a->type  = action_continue;
-        a->step  = 0;
+        a->attr  = 0;
 
         for(;n >= 0 && n < prg->size;)
         {
