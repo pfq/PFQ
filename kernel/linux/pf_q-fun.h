@@ -85,9 +85,9 @@ enum action
 
 enum action_attr
 {
-        attr_break             = 0x1,
-        attr_stolen            = 0x2,
-        attr_ret_to_kernel     = 0x4
+        attr_break         = 0x1,
+        attr_stolen        = 0x2,
+        attr_ret_to_kernel = 0x4
 };
 
 /* action */
@@ -184,7 +184,7 @@ drop(struct sk_buff *skb)
 
 static inline
 struct sk_buff *
-broadcast(struct sk_buff *skb, unsigned int class)
+broadcast(struct sk_buff *skb, uint16_t class)
 {
         action_t * a = & PFQ_CB(skb)->action;
         a->type  = action_clone;
@@ -196,7 +196,7 @@ broadcast(struct sk_buff *skb, unsigned int class)
 
 static inline
 struct sk_buff *
-steering(struct sk_buff *skb, unsigned int class, unsigned int hash)
+steering(struct sk_buff *skb, uint16_t class, uint32_t hash)
 {
         action_t * a = & PFQ_CB(skb)->action;
         a->type  = action_dispatch;

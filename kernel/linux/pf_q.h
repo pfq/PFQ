@@ -348,7 +348,7 @@ void pfq_spsc_read_commit(struct pfq_tx_queue_hdr *q)
 #define Q_CLASS_DEFAULT         Q_CLASS(0)
 #define Q_CLASS_DATA            Q_CLASS_DEFAULT
 #define Q_CLASS_CONTROL         Q_CLASS(1)
-#define Q_CLASS_ANY             (unsigned int)-1
+#define Q_CLASS_ANY             (unsigned short)-1
 
 /* functional */
 
