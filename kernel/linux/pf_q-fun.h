@@ -35,30 +35,15 @@
 
 
 struct pfq_function_descr;
+struct pfq_exec;
 
 extern int pfq_register_functions  (const char *module, struct pfq_function_descr *fun);
 extern int pfq_unregister_functions(const char *module, struct pfq_function_descr *fun);
 
-
-/* exec function */
-
-typedef struct pfq_exec
-{
-        void *  fun_ptr;        /* pfq_function_t */
-        void *  ctx_ptr;
-        size_t  ctx_size;
-
-} pfq_exec_t;
-
-struct pfq_exec_prog
-{
-        size_t size;
-        pfq_exec_t fun[];
-};
-
 /* function context */
 
-typedef struct { pfq_exec_t *data; } context_t;
+typedef struct { struct pfq_exec *data; } context_t;
+
 
 /* monadic function */
 
@@ -70,6 +55,25 @@ struct pfq_function_descr
         const char *    name;
         pfq_function_t  function;
 };
+
+
+/* exec function */
+
+typedef struct pfq_exec
+{
+        pfq_function_t fun_ptr;
+        void *  ctx_ptr;
+        size_t  ctx_size;
+
+} pfq_exec_t;
+
+
+struct pfq_exec_prog
+{
+        size_t size;
+        pfq_exec_t fun[];
+};
+
 
 /* actions types */
 
@@ -216,8 +220,6 @@ steal(struct sk_buff *skb)
         return skb;
 }
 
-/*** modifiers ***/
-
 /* to_kernel: set the skb to be passed to kernel */
 
 static inline
@@ -256,7 +258,6 @@ unsigned long get_state(struct sk_buff *skb)
 {
         return PFQ_CB(skb)->state;
 }
-
 
 static inline
 void set_state(struct sk_buff *skb, unsigned long state)

@@ -37,13 +37,13 @@ struct sk_buff *
 pfq_run(struct pfq_exec_prog *prg, struct sk_buff *skb)
 {
         action_t * a = & PFQ_CB(skb)->action;
-        int n = 0;
+        int n;
 
         a->class = Q_CLASS_DEFAULT;
         a->type  = action_continue;
         a->attr  = 0;
 
-        for(;n >= 0 && n < prg->size;)
+        for(n = 0; n < prg->size; n++)
         {
                 skb = pfq_bind(skb, &prg->fun[n]);
                 if (skb == NULL)
@@ -53,8 +53,6 @@ pfq_run(struct pfq_exec_prog *prg, struct sk_buff *skb)
 
                 if (a->type == action_drop || a->attr & attr_break)
                         return skb;
-
-                n += 1;
         }
 
         return skb;
