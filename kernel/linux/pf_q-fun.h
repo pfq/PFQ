@@ -94,7 +94,6 @@ enum action_attr
 
 typedef struct
 {
-        int      step;
         uint32_t hash;
         uint16_t class;
         uint8_t  type;
@@ -167,17 +166,6 @@ cont(struct sk_buff *skb)
 {
         action_t * a = & PFQ_CB(skb)->action;
         a->type = action_continue;
-        a->step = 1;
-        return skb;
-}
-
-static inline
-struct sk_buff *
-jump(struct sk_buff *skb, int step)
-{
-        action_t * a = & PFQ_CB(skb)->action;
-        a->type = action_continue;
-        a->step = step;
         return skb;
 }
 
