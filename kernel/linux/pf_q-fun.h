@@ -46,7 +46,7 @@ typedef struct pfq_exec
 {
         void *  fun_ptr;        /* pfq_function_t */
         void *  ctx_ptr;
-        spinlock_t ctx_lock;
+        size_t  ctx_size;
 
 } pfq_exec_t;
 
@@ -251,29 +251,15 @@ to_kernel(struct sk_buff *skb)
 /* utility functions */
 
 static inline
-const void * immutable_context(context_t ctx)
+const void * context(context_t ctx)
 {
         return ctx.data->ctx_ptr;
 }
 
 static inline
-void * unsafe_context(context_t ctx)
+size_t context_size(context_t ctx)
 {
-        return ctx.data->ctx_ptr;
-}
-
-static inline
-void * get_context(context_t ctx)
-{
-        spin_lock(&ctx.data->ctx_lock);
-        return ctx.data->ctx_ptr;
-}
-
-
-static inline
-void put_context(context_t ctx)
-{
-        spin_unlock(&ctx.data->ctx_lock);
+        return ctx.data->ctx_size;
 }
 
 

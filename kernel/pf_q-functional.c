@@ -110,14 +110,16 @@ pfq_meta_prog_compile(const struct pfq_meta_prog *prog, struct pfq_exec_prog **e
 
                 if (prog->fun[n].context.size) {
                         (*exec)->fun[n].ctx_ptr = ptr;
+                        (*exec)->fun[n].ctx_size = prog->fun[n].context.size;
+
                         memcpy(ptr, prog->fun[n].context.addr, prog->fun[n].context.size);
                         ptr += ALIGN(prog->fun[n].context.size, 8);
                 }
                 else {
-                        (*exec)->fun[n].ctx_ptr = NULL;
+                        (*exec)->fun[n].ctx_ptr  = NULL;
+                        (*exec)->fun[n].ctx_size = 0;
                 }
 
-                spin_lock_init(&(*exec)->fun[n].ctx_lock);
 
                 if ((*exec)->fun[n].fun_ptr == NULL) {
                         pr_devel("[PFQ function error: '%s' unknown function!\n", prog->fun[n].name);

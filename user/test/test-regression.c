@@ -583,12 +583,6 @@ void test_group_context()
 
         assert(pfq_set_group_program(q, pfq_group_id(q), prg) == 0);
 
-        int m = 0;
-
-        assert(pfq_get_group_function_context(q, pfq_group_id(q), &m, sizeof(m), 0) == 0);
-
-        assert(n == m);
-
 	pfq_close(q);
 }
 

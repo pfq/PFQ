@@ -93,8 +93,8 @@ dumper dev = do
         -- Q.groupFunction q gid 1 "clone"
 
         -- read state of 8 bytes...
-        kp :: Pair <- Q.getContextFunction q gid 0 8
-        print kp
+        -- kp :: Pair <- Q.getContextFunction q gid 0 8
+        -- print kp
 
         Q.getRxSlotSize q >>= \o -> putStrLn $ "slot_size: " ++ show o
         recvLoop q

@@ -664,18 +664,6 @@ namespace net {
                 throw pfq_error(errno, "PFQ: group program error");
         }
 
-        template <typename T>
-        void
-        get_group_function_context(int gid, T &context, int level = 0)
-        {
-            static_assert(std::is_pod<T>::value, "context must be a pod type");
-
-            struct pfq_group_context s { &context, sizeof(context), gid, level };
-            socklen_t len = sizeof(s);
-            if (::getsockopt(fd_, PF_Q, Q_SO_GET_GROUP_FUN_CONTEXT, &s, &len) == -1)
-                throw pfq_error(errno, "PFQ: group function context error");
-        }
-
         // template <typename C>
         // void
         // set_group_computation(int gid, C const &cont)

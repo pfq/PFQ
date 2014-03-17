@@ -243,6 +243,7 @@ int pfq_getsockopt(struct socket *sock,
                         return -EFAULT;
         } break;
 
+#if 0
         case Q_SO_GET_GROUP_FUN_CONTEXT:
         {
                 struct pfq_group_context s;
@@ -275,6 +276,7 @@ int pfq_getsockopt(struct socket *sock,
                 }
 
         } break;
+#endif
 
         default:
                 return -EFAULT;

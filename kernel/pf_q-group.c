@@ -222,6 +222,7 @@ __pfq_get_all_groups_mask(int gid)
 }
 
 
+#if 0
 int __pfq_get_group_context(int gid, int level, int size, void __user * dst)
 {
         struct pfq_group * g = pfq_get_group(gid);
@@ -264,6 +265,7 @@ int __pfq_get_group_context(int gid, int level, int size, void __user * dst)
 
         return err;
 }
+#endif
 
 
 void __pfq_set_group_filter(int gid, struct sk_filter *filter)
