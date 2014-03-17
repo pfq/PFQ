@@ -195,6 +195,10 @@ copy_meta_prog_from_user(struct pfq_meta_prog *to, struct pfq_user_meta_prog *fr
                         if (copy_from_user(to->fun[n].context.addr, from->fun[n].context.addr, csize))
                                 return -EFAULT;
                 }
+                else {
+                        to->fun[n].context.size = 0;
+                        to->fun[n].context.addr = NULL;
+                }
         }
 
         return 0;
