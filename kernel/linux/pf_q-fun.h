@@ -52,7 +52,7 @@ typedef struct pfq_exec
 
 struct pfq_exec_prog
 {
-        int size;
+        size_t size;
         pfq_exec_t fun[];
 };
 

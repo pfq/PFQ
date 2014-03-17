@@ -357,8 +357,8 @@ typedef struct pfq_fun
         const char *name;
         struct context_t
         {
-                void *addr;
-                int  size;
+                void   *addr;
+                size_t  size;
 
         } context;
 
@@ -367,7 +367,7 @@ typedef struct pfq_fun
 
 struct pfq_meta_prog
 {
-        int size;
+        size_t size;
         pfq_fun_t fun[];
 };
 
@@ -377,7 +377,7 @@ typedef struct pfq_user_fun
         struct user_context_t
         {
                 void __user *addr;
-                int  size;
+                size_t  size;
 
         } context;
 
@@ -386,7 +386,7 @@ typedef struct pfq_user_fun
 
 struct pfq_user_meta_prog
 {
-        int size;
+        size_t size;
         pfq_user_fun_t fun[];
 };
 

@@ -182,7 +182,7 @@ copy_meta_prog_from_user(struct pfq_meta_prog *to, struct pfq_user_meta_prog *fr
         to->size = from->size;
         for(n = 0; n < to->size; n++)
         {
-                int csize;
+                size_t csize;
 
                 to->fun[n].name = strcat_user(from->fun[n].name);
                 if (!to->fun[n].name)
@@ -220,7 +220,7 @@ pfq_meta_prog_pr_devel(const struct pfq_meta_prog *prog)
         pr_devel("[PFQ] meta program @%p:\n", prog);
         for(n = 0; n < prog->size; n++)
         {
-                pr_devel("   %d: %s (%p,%d)\n", n, prog->fun[n].name, prog->fun[n].context.addr, prog->fun[n].context.size);
+                pr_devel("   %d: %s (%p,%zu)\n", n, prog->fun[n].name, prog->fun[n].context.addr, prog->fun[n].context.size);
         }
 }
 
