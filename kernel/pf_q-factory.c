@@ -44,7 +44,9 @@ struct function_factory_elem
 	pfq_function_t 	function;
 };
 
-extern struct pfq_function_descr default_functions[];
+extern struct pfq_function_descr filter_functions[];
+extern struct pfq_function_descr forward_functions[];
+extern struct pfq_function_descr steering_functions[];
 
 
 LIST_HEAD(function_factory);
@@ -82,13 +84,11 @@ pfq_unregister_functions(const char *module, struct pfq_function_descr *fun)
 void
 pfq_function_factory_init(void)
 {
-	int i = 0;
-	for(; default_functions[i].name != NULL ; i++)
-	{
-        	pfq_register_function(NULL, default_functions[i].name, default_functions[i].function);
-	}
+        pfq_register_functions(NULL, filter_functions);
+        pfq_register_functions(NULL, forward_functions);
+        pfq_register_functions(NULL, steering_functions);
 
-	printk(KERN_INFO "[PFQ] function-factory initialized (%d entries).\n", i);
+	printk(KERN_INFO "[PFQ] function-factory initialized.\n");
 }
 
 
