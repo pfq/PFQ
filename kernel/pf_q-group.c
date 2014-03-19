@@ -97,6 +97,11 @@ __pfq_group_init(int gid)
         sparse_set(&g->recv, 0);
         sparse_set(&g->lost, 0);
         sparse_set(&g->drop, 0);
+
+        for(i = 0; i < Q_MAX_COUNTERS; i++)
+        {
+                sparse_set(&g->ctx.counter[i], 0);
+        }
 }
 
 

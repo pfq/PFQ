@@ -32,6 +32,7 @@
 #include <linux/skbuff.h>
 
 #define Q_VERSION               "2.1"
+#define Q_MAX_COUNTERS           8
 
 #else  /* user space */
 

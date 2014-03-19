@@ -25,6 +25,7 @@
 #define _PF_Q_MODULE_H_
 
 #include <linux/pf_q.h>
+#include <linux/pf_q-sparse.h>
 
 #include <linux/skbuff.h>
 #include <linux/ip.h>
@@ -32,7 +33,6 @@
 #include <linux/ipv6.h>
 #include <linux/if_ether.h>
 #include <linux/if_vlan.h>
-
 
 struct pfq_function_descr;
 struct pfq_exec;
@@ -104,6 +104,11 @@ typedef struct
         uint8_t  attr;
 
 } action_t;
+
+struct pfq_pergroup_context
+{
+        sparse_counter_t counter[Q_MAX_COUNTERS];
+};
 
 struct pfq_cb
 {

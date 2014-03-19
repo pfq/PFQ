@@ -69,6 +69,8 @@ struct pfq_group
         sparse_counter_t recv;
         sparse_counter_t lost;
         sparse_counter_t drop;
+
+        struct pfq_pergroup_context ctx;
 };
 
 

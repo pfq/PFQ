@@ -29,6 +29,7 @@
 #include <linux/pf_q.h>
 #include <linux/pf_q-module.h>
 
+#include <pf_q-group.h>
 #include <pf_q-functional.h>
 #include <pf_q-factory.h>
 
