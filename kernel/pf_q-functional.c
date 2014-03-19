@@ -35,10 +35,17 @@
 
 
 struct sk_buff *
-pfq_run(struct pfq_exec_prog *prg, struct sk_buff *skb)
+pfq_run(int gid, struct pfq_exec_prog *prg, struct sk_buff *skb)
 {
-        action_t * a = & PFQ_CB(skb)->action;
+        struct pfq_cb *cb = PFQ_CB(skb);
+        struct pfq_group * g = pfq_get_group(gid);
+        action_t *a = &cb->action;
         int n;
+
+        if (g == NULL)
+                return NULL;
+
+        cb->ctx  = &g->ctx;
 
         a->class = Q_CLASS_DEFAULT;
         a->type  = action_continue;

@@ -116,6 +116,7 @@ struct pfq_cb
         unsigned long state;
 
         action_t action;
+        struct pfq_pergroup_context *ctx;
 
         char direct_skb;
 };
@@ -243,7 +244,16 @@ to_kernel(struct sk_buff *skb)
 }
 
 
-/* utility functions */
+/* utility function: counter */
+
+static inline
+sparse_counter_t * get_counter(struct sk_buff *skb, int n)
+{
+        struct pfq_cb *cb = PFQ_CB(skb);
+        if (n < 0 || n >= Q_MAX_COUNTERS)
+                return NULL;
+
+        return & cb->ctx->counter[n];
 
 static inline
 const void * context(context_t ctx)

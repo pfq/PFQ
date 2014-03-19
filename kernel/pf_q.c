@@ -373,7 +373,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 
                                 cb->state = 0;
 
-                                skb = pfq_run(prg, skb);
+                                skb = pfq_run(gid, prg, skb);
                                 if (skb == NULL)
                                         continue;
 

@@ -48,7 +48,7 @@ pfq_meta_prog_memsize(size_t size)
         return sizeof(int) + sizeof(pfq_fun_t) * size;
 }
 
-extern struct sk_buff *pfq_run(struct pfq_exec_prog *prg, struct sk_buff *skb);
+extern struct sk_buff *pfq_run(int gid, struct pfq_exec_prog *prg, struct sk_buff *skb);
 
 extern struct pfq_meta_prog * kzalloc_meta_prog(size_t size);
 
