@@ -1,3 +1,4 @@
+#include <iostream>
 #include <cstdio>
 #include <string>
 #include <stdexcept>
@@ -43,6 +44,17 @@ main(int argc, char *argv[])
                     }
                     printf("\n");
             }
+
+            auto cs = q.group_counters(q.group_id());
+
+            std::cout << "counters: ";
+            for(auto i = 0; i < Q_MAX_COUNTERS; ++i)
+            {
+                std::cout << cs.counter[i] << ' ';
+            }
+
+            std::cout << std::endl;
+
     }
 
     return 0;

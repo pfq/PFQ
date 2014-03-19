@@ -44,13 +44,14 @@ dumpPacket p = do
 recvLoop :: Ptr PFqTag -> IO ()
 recvLoop q = do
     queue <- Q.read q 100000000
+    gid   <- Q.getGroupId q
     if Q.qLen queue == 0
        then recvLoop q
        else do
             ps <- Q.getPackets queue
             mapM_ (getHeader >=> print) ps
             mapM_ dumpPacket ps
-            Q.getStats q >>= print
+            Q.getGroupCounters q gid >>= print
             recvLoop q
 
 

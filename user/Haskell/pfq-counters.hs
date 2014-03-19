@@ -35,11 +35,11 @@ import Control.Applicative
 import Control.Concurrent
 import Control.Exception
 
-import Data.Maybe
-import Data.List
 import Data.List.Split
 import Data.Data
 -- import Data.Typeable
+-- import Data.Maybe
+-- import Data.List
 
 import qualified Data.Set as S
 import qualified Data.Map as M
