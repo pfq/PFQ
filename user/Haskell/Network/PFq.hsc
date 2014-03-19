@@ -139,7 +139,6 @@ import Foreign.ForeignPtr (ForeignPtr)
 
 newtype PFqTag = PFqTag ()
 
-
 #include <pfq/pfq.h>
 
 -- NetQueue:
@@ -209,11 +208,6 @@ newtype GroupConstant = GroupConstant { unGroupConstant :: Int }
     , class_any     = Q_CLASS_ANY
 }
 
-
-combineClassMasks :: [ClassMask] -> ClassMask
-combineClassMasks = ClassMask . foldr ((.|.) . unClassMask) 0
-
-
 #{enum GroupPolicy, GroupPolicy
     , policy_undefined  = Q_GROUP_UNDEFINED
     , policy_priv       = Q_GROUP_PRIVATE
@@ -224,6 +218,11 @@ combineClassMasks = ClassMask . foldr ((.|.) . unClassMask) 0
 #{enum GroupConstant, GroupConstant
     , group_max_counters = Q_MAX_COUNTERS
 }
+
+
+combineClassMasks :: [ClassMask] -> ClassMask
+combineClassMasks = ClassMask . foldr ((.|.) . unClassMask) 0
+
 
 --
 
