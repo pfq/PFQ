@@ -28,8 +28,7 @@
 #include <linux/kernel.h>
 #include <linux/pf_q.h>
 #include <linux/pf_q-module.h>
-
-#include <pf_q-sparse-counter.h>
+#include <linux/pf_q-sparse.h>
 
 #define Q_MAX_ID                 (sizeof(long)<<3)
 #define Q_MAX_GROUP              (sizeof(long)<<3)

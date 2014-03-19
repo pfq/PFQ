@@ -31,9 +31,9 @@
 #include <linux/spinlock.h>
 
 #include <linux/pf_q-module.h>
+#include <linux/pf_q-sparse.h>
 
 #include <pf_q-common.h>
-#include <pf_q-sparse-counter.h>
 #include <pf_q-functional.h>
 #include <pf_q-bpf.h>
 

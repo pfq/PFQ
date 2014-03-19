@@ -22,12 +22,11 @@
  *
  ****************************************************************/
 
-#ifndef _SPARSE_COUNTER_H_
-#define _SPARSE_COUNTER_H_
+#ifndef _PF_Q_SPARSE_H_
+#define _PF_Q_SPARSE_H_
 
 #include <linux/smp.h>  /* get_cpu */
 #include <asm/local.h>
-
 
 
 #define Q_MAX_CPU                16
@@ -113,4 +112,4 @@ long sparse_read(sparse_counter_t *sc)
         return ret;
 }
 
-#endif /* _SPARSE_COUNTER_H_ */
+#endif /* _PF_Q_SPARSE_H_ */
