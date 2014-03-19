@@ -74,6 +74,7 @@ module Network.PFq
         dispatch,
         getStats,
         getGroupStats,
+        getGroupCounters,
 
         getPackets,
         getHeader,
@@ -175,6 +176,12 @@ data Statistics = Statistics {
     , sDropped    ::  Int  -- packets dropped
     , sSent       ::  Int  -- packets sent
     , sDiscard    ::  Int  -- packets discarded
+    } deriving (Eq, Show)
+
+-- Counters:
+
+data Counters = Counters {
+      counter     ::  [Int] -- per-group counter
     } deriving (Eq, Show)
 
 
@@ -687,6 +694,24 @@ makeStats p = do
                             sDiscard  = fromIntegral (_disc :: CULong)
                           }
 
+-- getGroupCounters:
+--
+
+getGroupCounters :: Ptr PFqTag
+                 -> Int            -- gid
+                 -> IO Counters
+
+getGroupCounters hdl gid =
+    allocaBytes ((sizeOf (0 :: CLong)) * 8) $ \sp -> do
+        pfq_get_group_counters hdl (fromIntegral gid) sp >>= throwPFqIf_ hdl (== -1)
+        makeCounters sp
+
+makeCounters :: Ptr a -> IO Counters
+makeCounters ptr = do
+    cs <- forM [0..7] $ \ n -> peekByteOff ptr (sizeOf (0 :: CULong) * n)
+    return $ Counters cs
+
+
 -- groupComputation:
 --
 
@@ -856,8 +881,9 @@ foreign import ccall unsafe pfq_unbind_group      :: Ptr PFqTag -> CInt -> CStri
 foreign import ccall unsafe pfq_join_group        :: Ptr PFqTag -> CInt -> CUInt -> CInt -> IO CInt
 foreign import ccall unsafe pfq_leave_group       :: Ptr PFqTag -> CInt -> IO CInt
 
-foreign import ccall unsafe pfq_get_stats         :: Ptr PFqTag -> Ptr Statistics -> IO CInt
-foreign import ccall unsafe pfq_get_group_stats   :: Ptr PFqTag -> CInt -> Ptr Statistics -> IO CInt
+foreign import ccall unsafe pfq_get_stats          :: Ptr PFqTag -> Ptr Statistics -> IO CInt
+foreign import ccall unsafe pfq_get_group_stats    :: Ptr PFqTag -> CInt -> Ptr Statistics -> IO CInt
+foreign import ccall unsafe pfq_get_group_counters :: Ptr PFqTag -> CInt -> Ptr Counters -> IO CInt
 
 -- Note: Ptr a is void *
 

@@ -241,6 +241,8 @@ extern int pfq_get_stats(pfq_t const *q, struct pfq_stats *stats);
 
 extern int pfq_get_group_stats(pfq_t const *q, int gid, struct pfq_stats *stats);
 
+extern int pfq_get_group_counters(pfq_t const *q, int gid, struct pfq_counters *cs);
+
 /* TX APIs */
 
 extern int pfq_bind_tx(pfq_t *q, const char *dev, int queue);

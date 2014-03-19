@@ -689,6 +689,21 @@ pfq_get_group_stats(pfq_t const *q, int gid, struct pfq_stats *stats)
 
 
 int
+pfq_get_group_counters(pfq_t const *q, int gid, struct pfq_counters *cs)
+{
+	pfq_t *mutable = (pfq_t *)q;
+	socklen_t size = sizeof(struct pfq_counters);
+
+	cs->counter[0] = (unsigned int)gid;
+
+	if (getsockopt(q->fd, PF_Q, Q_SO_GET_GROUP_COUNTERS, cs, &size) == -1) {
+		return mutable->error = "PFQ: get group counters error", -1;
+	}
+	return mutable->error = NULL, 0;
+}
+
+
+int
 pfq_vlan_filters_enable(pfq_t *q, int gid, int toggle)
 {
         struct pfq_vlan_toggle value = { gid, 0, toggle };

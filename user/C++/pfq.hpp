@@ -896,6 +896,18 @@ namespace net {
         }
 
 
+        pfq_counters
+        group_counters(int gid) const
+        {
+            pfq_counters cs;
+            cs.counter[0] = static_cast<unsigned long>(gid);
+            socklen_t size = sizeof(struct pfq_counters);
+            if (::getsockopt(fd_, PF_Q, Q_SO_GET_GROUP_COUNTERS, &cs, &size) == -1)
+                throw pfq_error(errno, "PFQ: get group counters error");
+            return cs;
+        }
+
+
         size_t
         mem_size() const
         {
