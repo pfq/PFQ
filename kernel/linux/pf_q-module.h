@@ -21,8 +21,8 @@
  *
  ****************************************************************/
 
-#ifndef _PF_Q_FUN_H_
-#define _PF_Q_FUN_H_
+#ifndef _PF_Q_MODULE_H_
+#define _PF_Q_MODULE_H_
 
 #include <linux/pf_q.h>
 
@@ -266,4 +266,4 @@ void set_state(struct sk_buff *skb, unsigned long state)
 }
 
 
-#endif /* _PF_Q_FUN_H_ */
+#endif /* _PF_Q_MODULE_H_ */
