@@ -32,7 +32,6 @@
 #include <linux/skbuff.h>
 
 #define Q_VERSION               "2.1"
-#define Q_MAX_COUNTERS           8
 
 #else  /* user space */
 
@@ -68,8 +67,11 @@ static inline void smp_wmb() { barrier(); }
 #define likely(x)       __builtin_expect((x),1)
 #define unlikely(x)     __builtin_expect((x),0)
 
-
 #endif /* __KERNEL__ */
+
+
+#define Q_MAX_COUNTERS           8
+
 
 /* Common header */
 
