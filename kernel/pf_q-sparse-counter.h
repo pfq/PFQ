@@ -29,7 +29,8 @@
 #include <asm/local.h>
 
 
-#define Q_MAX_CPU     16
+
+#define Q_MAX_CPU                16
 
 
 typedef struct { local_t value; } __attribute__((aligned(64))) counter_t;
