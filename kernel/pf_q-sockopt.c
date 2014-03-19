@@ -243,6 +243,44 @@ int pfq_getsockopt(struct socket *sock,
                         return -EFAULT;
         } break;
 
+        case Q_SO_GET_GROUP_COUNTERS:
+        {
+                struct pfq_group *g;
+                struct pfq_counters cs;
+                int i, gid;
+
+                if (len != sizeof(cs))
+                        return -EINVAL;
+
+                if (copy_from_user(&cs, optval, sizeof(cs)))
+                        return -EFAULT;
+
+                gid = (int)cs.counter[0];
+
+                CHECK_GROUP(so->id, gid, "group stat");
+
+                g = pfq_get_group(gid);
+                if (!g) {
+                        pr_devel("[PFQ|%d] group error: invalid group id %d!\n", so->id, gid);
+                        return -EFAULT;
+                }
+
+                /* check whether the group is joinable.. */
+
+                if (!__pfq_group_access(gid, so->id, Q_GROUP_UNDEFINED, false)) {
+                        pr_devel("[PFQ|%d] group error: permission denied (gid:%d)!\n", so->id, gid);
+                        return -EACCES;
+                }
+
+                for(i = 0; i < Q_MAX_COUNTERS; i++)
+                {
+                        cs.counter[i] = sparse_read(&g->ctx.counter[i]);
+                }
+
+                if (copy_to_user(optval, &cs, sizeof(cs)))
+                        return -EFAULT;
+        } break;
+
 #if 0
         case Q_SO_GET_GROUP_FUN_CONTEXT:
         {

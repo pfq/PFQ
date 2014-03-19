@@ -305,6 +305,7 @@ void pfq_spsc_read_commit(struct pfq_tx_queue_hdr *q)
 
 #define Q_SO_GET_GROUPS             28
 #define Q_SO_GET_GROUP_STATS        29
+#define Q_SO_GET_GROUP_COUNTERS     30
 
 #define Q_SO_TX_THREAD_BIND         31
 #define Q_SO_TX_THREAD_START        32
@@ -449,6 +450,13 @@ struct pfq_stats
 
         unsigned long int sent;   /* sent by the driver */
         unsigned long int disc;   /* discarded by the driver */
+};
+
+/* pfq counters for groups */
+
+struct pfq_counters
+{
+        unsigned long int counter[Q_MAX_COUNTERS];
 };
 
 #endif /* _PF_Q_H_ */
