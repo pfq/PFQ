@@ -121,8 +121,9 @@ struct pfq_cb
         char direct_skb;
 };
 
-
 #define PFQ_CB(skb) ((struct pfq_cb *)(skb)->cb)
+
+/* predicates */
 
 static inline bool
 is_drop(action_t a)
@@ -254,6 +255,9 @@ sparse_counter_t * get_counter(struct sk_buff *skb, int n)
                 return NULL;
 
         return & cb->ctx->counter[n];
+}
+
+/* utility function: context */
 
 static inline
 const void * context(context_t ctx)
@@ -267,6 +271,7 @@ size_t context_size(context_t ctx)
         return ctx.data->ctx_size;
 }
 
+/* utility function: state */
 
 static inline
 unsigned long get_state(struct sk_buff *skb)
