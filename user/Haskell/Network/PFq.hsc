@@ -171,17 +171,17 @@ data PktHdr = PktHdr {
 -- Statistics:
 
 data Statistics = Statistics {
-      sReceived   ::  Int  -- packets received
-    , sLost       ::  Int  -- packets lost
-    , sDropped    ::  Int  -- packets dropped
-    , sSent       ::  Int  -- packets sent
-    , sDiscard    ::  Int  -- packets discarded
+      sReceived   ::  Integer  -- packets received
+    , sLost       ::  Integer  -- packets lost
+    , sDropped    ::  Integer  -- packets dropped
+    , sSent       ::  Integer  -- packets sent
+    , sDiscard    ::  Integer  -- packets discarded
     } deriving (Eq, Show)
 
 -- Counters:
 
 data Counters = Counters {
-      counter     ::  [Int] -- per-group counter
+      counter     ::  [Integer] -- per-group counter
     } deriving (Eq, Show)
 
 
@@ -706,10 +706,11 @@ getGroupCounters hdl gid =
         pfq_get_group_counters hdl (fromIntegral gid) sp >>= throwPFqIf_ hdl (== -1)
         makeCounters sp
 
+
 makeCounters :: Ptr a -> IO Counters
 makeCounters ptr = do
     cs <- forM [0..7] $ \ n -> peekByteOff ptr (sizeOf (0 :: CULong) * n)
-    return $ Counters cs
+    return $ Counters $ map fromIntegral (cs :: [CULong])
 
 
 -- groupComputation:
