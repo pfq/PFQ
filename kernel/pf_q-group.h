@@ -30,7 +30,7 @@
 #include <linux/filter.h>
 #include <linux/spinlock.h>
 
-#include <linux/pf_q-fun.h>
+#include <linux/pf_q-module.h>
 
 #include <pf_q-common.h>
 #include <pf_q-sparse-counter.h>

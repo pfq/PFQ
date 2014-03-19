@@ -25,7 +25,7 @@
 #include <linux/module.h>
 
 
-#include <linux/pf_q-fun.h>
+#include <linux/pf_q-module.h>
 
 
 static struct sk_buff *

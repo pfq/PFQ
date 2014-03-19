@@ -3,7 +3,7 @@
 #include <linux/init.h>
 
 #include <linux/pf_q.h>
-#include <linux/pf_q-fun.h>
+#include <linux/pf_q-module.h>
 
 MODULE_LICENSE("GPL");
 

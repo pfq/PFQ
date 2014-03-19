@@ -28,7 +28,7 @@
 #include <linux/string.h>
 #include <linux/semaphore.h>
 
-#include <linux/pf_q-fun.h>
+#include <linux/pf_q-module.h>
 
 #include <pf_q-group.h>
 #include <pf_q-factory.h>

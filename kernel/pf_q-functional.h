@@ -25,7 +25,7 @@
 #define _PF_Q_FUNCTIONAL_H_
 
 #include <linux/pf_q.h>
-#include <linux/pf_q-fun.h>
+#include <linux/pf_q-module.h>
 
 
 static inline

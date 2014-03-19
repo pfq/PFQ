@@ -27,7 +27,7 @@
 #include <linux/skbuff.h>
 
 #include <linux/pf_q.h>
-#include <linux/pf_q-fun.h>
+#include <linux/pf_q-module.h>
 
 /* factory */
 
