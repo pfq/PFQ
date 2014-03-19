@@ -200,6 +200,9 @@ newtype ClassMask = ClassMask { unClassMask :: CUInt }
 newtype GroupPolicy = GroupPolicy { unGroupPolicy :: CInt }
                         deriving (Eq, Show)
 
+newtype GroupConstant = GroupConstant { unGroupConstant :: Int }
+                        deriving (Eq, Show)
+
 
 #{enum ClassMask, ClassMask
     , class_default = Q_CLASS_DEFAULT
@@ -218,6 +221,9 @@ combineClassMasks = ClassMask . foldr ((.|.) . unClassMask) 0
     , policy_shared     = Q_GROUP_SHARED
 }
 
+#{enum GroupConstant, GroupConstant
+    , group_max_counters = Q_MAX_COUNTERS
+}
 
 --
 
@@ -702,7 +708,7 @@ getGroupCounters :: Ptr PFqTag
                  -> IO Counters
 
 getGroupCounters hdl gid =
-    allocaBytes ((sizeOf (0 :: CLong)) * 8) $ \sp -> do
+    allocaBytes ((sizeOf (0 :: CLong)) * (unGroupConstant group_max_counters) )  $ \sp -> do
         pfq_get_group_counters hdl (fromIntegral gid) sp >>= throwPFqIf_ hdl (== -1)
         makeCounters sp
 
