@@ -55,6 +55,23 @@ filter_ip(context_t ctx, struct sk_buff *skb)
 
 
 static struct sk_buff *
+filter_ipv6(context_t ctx, struct sk_buff *skb)
+{
+	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IPV6))
+	{
+		struct ipv6hdr _ip6h;
+    		const struct ipv6hdr *ip6;
+
+		ip6 = skb_header_pointer(skb, skb->mac_len, sizeof(_ip6h), &_ip6h);
+ 		if (ip6)
+                        return cont(skb);
+	}
+
+        return drop(skb);
+}
+
+
+static struct sk_buff *
 filter_udp(context_t ctx, struct sk_buff *skb)
 {
 	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP))
@@ -185,6 +202,7 @@ struct pfq_function_descr filter_functions[] = {
 
         { "id",                 id                      },
         { "ip",                 filter_ip               },
+        { "ipv6",               filter_ipv6             },
         { "udp",                filter_udp              },
         { "tcp",                filter_tcp              },
         { "icmp",               filter_icmp             },
