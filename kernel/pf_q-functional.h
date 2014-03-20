@@ -33,7 +33,8 @@ struct sk_buff *
 pfq_bind(struct sk_buff *skb, pfq_exec_t *data)
 {
         pfq_function_t fun = (pfq_function_t)data->fun_ptr;
-        context_t ctx = {data};
+
+        context_t ctx = {data->ctx_ptr, data->ctx_size };
 
         if (fun == NULL)
                 return skb;

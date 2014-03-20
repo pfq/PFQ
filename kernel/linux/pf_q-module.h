@@ -42,8 +42,12 @@ extern int pfq_unregister_functions(const char *module, struct pfq_function_desc
 
 /* function context */
 
-typedef struct { struct pfq_exec *data; } context_t;
+typedef struct
+{
+        const void *data;
+        size_t size;
 
+} context_t;
 
 /* monadic function */
 
@@ -260,15 +264,15 @@ sparse_counter_t * get_counter(struct sk_buff *skb, int n)
 /* utility function: context */
 
 static inline
-const void * context(context_t ctx)
+const void * context_addr(context_t ctx)
 {
-        return ctx.data->ctx_ptr;
+        return ctx.data;
 }
 
 static inline
 size_t context_size(context_t ctx)
 {
-        return ctx.data->ctx_size;
+        return ctx.size;
 }
 
 /* utility function: state */
