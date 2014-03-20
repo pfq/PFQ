@@ -16,6 +16,7 @@ env.Program(target = "test-bpf",        source = ["test-bpf.cpp"])
 env.Program(target = "test-vlan",       source = ["test-vlan.cpp"])
 env.Program(target = "test-for-range",  source = ["test-for-range.cpp"])
 env.Program(target = "test-fun-prog",   source = ["test-fun-prog.cpp"])
+env.Program(target = "test-fun-lang",   source = ["test-fun-lang.cpp"])
 
 env.Program(target = "test-regression++",           source = ["test-regression++.cpp"],   LIBS = ['pthread'])
 env.Program(target = "test-regression-capture",     source = ["test-regression-capture.cpp"], LIBS = ['pthread', 'pcap'])

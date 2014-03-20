@@ -15,6 +15,7 @@ set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O0 -g2 -Wall -Wextra")
 
 add_executable(test-dump test-dump.cpp)
 add_executable(test-fun-prog test-fun-prog.cpp)
+add_executable(test-fun-lang test-fun-lang.cpp)
 add_executable(test-vlan test-vlan.cpp)
 add_executable(test-for-range test-for-range.cpp)
 add_executable(test-bpf test-bpf.cpp)
