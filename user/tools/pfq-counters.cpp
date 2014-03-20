@@ -200,7 +200,7 @@ namespace test
                     }
             }
 
-            std::deque<qfun> fs;
+            std::vector<qFunction> fs;
             if (!opt::function.empty() && (m_id == 0))
             {
                 std::unique_ptr<char> f(strdup(opt::function.c_str()));
@@ -208,8 +208,8 @@ namespace test
                 auto p = strtok(f.get(), ":");
                 while (p)
                 {
-                    fs = std::move(fs) >>= fun(p);
-                    // fs.push_back(fun(p));
+                    // fs = std::move(fs) >>= fun(p);
+                    fs.push_back(fun(p));
                     p = strtok(nullptr, ":");
                 }
             }
@@ -218,14 +218,13 @@ namespace test
             {
                 std::cout << "fun: " << fs.begin()->name;
 
-                std::for_each(std::next(fs.begin(),1), fs.end(), [](qfun &fun) {
+                std::for_each(std::next(fs.begin(),1), fs.end(), [](qFunction &fun) {
                               std::cout << " >>= " << fun.name;
                               });
                 std::cout << std::endl;
             }
 
-            // TODO
-            // m_pfq.set_group_computation(m_bind.gid, fs);
+            m_pfq.set_group_computation(m_bind.gid, fs);
 
             m_pfq.timestamp_enable(false);
 
