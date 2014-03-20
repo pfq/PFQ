@@ -56,12 +56,20 @@ forward_sink(context_t ctx, struct sk_buff *skb)
         return steal(skb);
 }
 
+static struct sk_buff *
+forward_drop(context_t ctx, struct sk_buff *skb)
+{
+        return drop(skb);
+}
+
+
 struct pfq_function_descr forward_functions[] = {
 
         { "legacy",             forward_legacy          },
         { "clone",              forward_clone           },
         { "broadcast",          forward_broadcast       },
         { "sink",               forward_sink            },
+        { "drop",               forward_drop            },
 
         { NULL, NULL}};
 
