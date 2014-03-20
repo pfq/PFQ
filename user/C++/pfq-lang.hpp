@@ -98,16 +98,14 @@ namespace pfq_lang
     // evaluate a computation, producing a pfq_meta_prog.
     //
 
-    template <typename Comp>
     std::unique_ptr<pfq_meta_prog>
-    eval(Comp &comp)
+    eval(std::vector<qFunction> const &vec)
     {
-        auto vec = comp();
         auto prg = reinterpret_cast<pfq_meta_prog *>(std::malloc(sizeof(pfq_meta_prog) + sizeof(pfq_fun_t) * sizeof(vec)));
 
         prg->size = vec.size();
 
-        for(auto i = 0; i < prg->size; ++i)
+        for(unsigned int i = 0; i < prg->size; ++i)
         {
             prg->fun[i].name = vec[i].name.c_str();
             prg->fun[i].context.addr = vec[i].context.first.get();
@@ -115,6 +113,13 @@ namespace pfq_lang
         }
 
         return std::unique_ptr<pfq_meta_prog>(prg);
+    }
+
+    template <typename Comp>
+    std::unique_ptr<pfq_meta_prog>
+    eval(Comp &comp)
+    {
+        return eval(comp());
     }
 
     //
