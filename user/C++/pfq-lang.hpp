@@ -23,105 +23,177 @@
 
 #pragma once
 
+#include <sstream>
 #include <string>
-#include <deque>
-#include <memory>
 #include <cstring>
+#include <vector>
+#include <memory>
+
+#include <linux/pf_q.h>
 
 namespace pfq_lang
 {
-    // qfunction
+    //
+    // qFunction
     //
 
-    struct qfun
+    struct qFunction
     {
         std::string name;
-        std::pair<std::unique_ptr<char[]>, size_t> context;
+        std::pair<std::shared_ptr<char>, size_t> context;
+
+        std::vector<qFunction>
+        operator()() const
+        {
+            return std::vector<qFunction> { *this };
+        }
     };
 
-
-    // generic function
+    //
+    // qComputation
     //
 
-    template <typename S = std::nullptr_t>
-    qfun fun(std::string n, S const &context = nullptr)
+    template <typename Comp>
+    struct qComputation
     {
-        // note: is_trivially_copyable is still unimplemented in g++-4.7
-        // static_assert(std::is_trivially_copyable<S>::value, "fun context must be trivially copyable");
+        Comp left;
+        qFunction right;
 
-        static_assert(std::is_pod<S>::value, "context must be a pod type");
+        std::vector<qFunction>
+        operator()() const
+        {
+            auto l = left();
+            auto r = right();
 
-        if (std::is_same<S, std::nullptr_t>::value) {
-            return qfun { std::move(n), std::make_pair(nullptr,0) };
+            std::vector<qFunction> ret;
+            ret.reserve(l.size() + r.size());
+
+            ret.insert(std::end(ret), std::make_move_iterator(l.begin()), std::make_move_iterator(l.end()));
+            ret.insert(std::end(ret), std::make_move_iterator(r.begin()), std::make_move_iterator(r.end()));
+
+            return ret;
         }
-        else {
-            auto ptr = new char[sizeof(S)];
-            memcpy(ptr, &context, sizeof(S));
-            return qfun { std::move(n), std::make_pair(std::unique_ptr<char[]>(ptr), sizeof(S)) };
-        }
+    };
+
+    inline std::string
+    show(qFunction const &fun)
+    {
+        std::stringstream out;
+
+        out << fun.name;
+        if (fun.context.first)
+            out << ' ' << fun.context.second << "@" << (void *)fun.context.first.get();
+
+        return out.str();
     }
 
+    template <typename Tp>
+    inline std::string
+    show(qComputation<Tp> const &comp)
+    {
+        return show(comp.left) + " >>= " + show(comp.right);
+    }
+
+    //
+    // evaluate a computation, producing a pfq_meta_prog.
+    //
+
+    template <typename Comp>
+    std::unique_ptr<pfq_meta_prog>
+    eval(Comp &comp)
+    {
+        auto vec = comp();
+        auto prg = reinterpret_cast<pfq_meta_prog *>(std::malloc(sizeof(pfq_meta_prog) + sizeof(pfq_fun_t) * sizeof(vec)));
+
+        prg->size = vec.size();
+
+        for(auto i = 0; i < prg->size; ++i)
+        {
+            prg->fun[i].name = vec[i].name.c_str();
+            prg->fun[i].context.addr = vec[i].context.first.get();
+            prg->fun[i].context.size = vec[i].context.second;
+        }
+
+        return std::unique_ptr<pfq_meta_prog>(prg);
+    }
+
+    //
+    // generic function constructor
+    //
+
+    template <typename Tp = std::nullptr_t>
+    qFunction fun(std::string n, Tp const &context = nullptr)
+    {
+        // note: is_trivially_copyable is still unimplemented in g++-4.7
+#if 0
+        static_assert(std::is_trivially_copyable<Tp>::value, "context must be trivially copyable");
+#else
+        static_assert(std::is_pod<Tp>::value, "context must be a pod type");
+#endif
+        std::shared_ptr<char> ptr;
+        size_t size = 0;
+
+        if (!std::is_same<Tp, std::nullptr_t>::value)
+        {
+            ptr  = std::shared_ptr<char>(new char[sizeof(Tp)], [](char *addr) { delete[] addr; });
+            size = sizeof(Tp);
+            memcpy(ptr.get(), &context, sizeof(Tp));
+        }
+
+        return qFunction { std::move(n), std::make_pair(std::move(ptr), size) };
+    }
+
+    //
     // binding functions ala Haskell...
     //
 
-    inline std::deque<qfun>
-    operator>>=(qfun &&lhs, qfun &&rhs)
+    template <typename Fun>
+    inline qComputation<qFunction>
+    operator>>=(qFunction lhs, Fun &&rhs)
     {
-        std::deque<qfun> ret;
-        ret.push_back(std::move(lhs));
-        ret.push_back(std::move(rhs));
-        return ret;
+        return { std::move(lhs), std::forward<Fun>(rhs) };
     }
 
-    inline std::deque<qfun>
-    operator>>=(qfun &&lhs, std::deque<qfun> &&rhs)
+    template <typename Tp, typename Fun>
+    inline qComputation<qComputation<Tp>>
+    operator>>=(qComputation<Tp> lhs, Fun &&rhs)
     {
-        rhs.push_front(std::move(lhs));
-        return std::move(rhs);
+        return { std::move(lhs), std::forward<Fun>(rhs) };
     }
 
-    inline std::deque<qfun>
-    operator>>=(std::deque<qfun> &&lhs, qfun &&rhs)
-    {
-        lhs.push_back(std::move(rhs));
-        return std::move(lhs);
-    }
-
+    //
     // default in-kernel PFQ functions...
     //
 
-#define PFQ_GEN_FUN(fn,name) \
-    template <typename S = std::nullptr_t> \
-    qfun fn(S const &context = nullptr) \
+#define PFQ_MAKE_FUN(fn,name) \
+    template <typename Tp = std::nullptr_t> \
+    qFunction fn(Tp const &context = nullptr) \
     { \
         return fun(name, context); \
     }
 
-    PFQ_GEN_FUN(steer_mac    , "steer-mac"    )
-    PFQ_GEN_FUN(steer_vlan   , "steer-vlan-id")
-    PFQ_GEN_FUN(steer_ipv4   , "steer-ipv4"   )
-    PFQ_GEN_FUN(steer_ipv6   , "steer-ipv6"   )
-    PFQ_GEN_FUN(steer_flow   , "steer-flow"   )
-    PFQ_GEN_FUN(steer_rtp    , "steer-rtp"    )
+    PFQ_MAKE_FUN(steer_mac    , "steer-mac"    )
+    PFQ_MAKE_FUN(steer_vlan   , "steer-vlan-id")
+    PFQ_MAKE_FUN(steer_ip     , "steer-ip"     )
+    PFQ_MAKE_FUN(steer_ipv6   , "steer-ipv6"   )
+    PFQ_MAKE_FUN(steer_flow   , "steer-flow"   )
 
-    PFQ_GEN_FUN(clone        , "clone"        )
-    PFQ_GEN_FUN(broadcast    , "broadcast"    )
+    PFQ_MAKE_FUN(legacy       , "legacy"       )
+    PFQ_MAKE_FUN(clone        , "clone"        )
+    PFQ_MAKE_FUN(broadcast    , "broadcast"    )
+    PFQ_MAKE_FUN(sink         , "sink"         )
+    PFQ_MAKE_FUN(drop         , "drop"         )
 
-    PFQ_GEN_FUN(vlan         , "vlan"         )
-    PFQ_GEN_FUN(ipv4         , "ipv4"         )
-    PFQ_GEN_FUN(udp          , "udp"          )
-    PFQ_GEN_FUN(tcp          , "tcp"          )
-    PFQ_GEN_FUN(flow         , "flow"         )
-    PFQ_GEN_FUN(rtp          , "rtp"          )
+    PFQ_MAKE_FUN(id           , "id"           )
+    PFQ_MAKE_FUN(ip           , "ip"           )
+    PFQ_MAKE_FUN(ipv6         , "ipv6"         )
+    PFQ_MAKE_FUN(udp          , "udp"          )
+    PFQ_MAKE_FUN(tcp          , "tcp"          )
+    PFQ_MAKE_FUN(vlan         , "vlan"         )
+    PFQ_MAKE_FUN(icmp         , "icmp"         )
+    PFQ_MAKE_FUN(flow         , "flow"         )
 
-    PFQ_GEN_FUN(strict_vlan  , "strict-vlan"  )
-    PFQ_GEN_FUN(strict_ipv4  , "strict-ipv4"  )
-    PFQ_GEN_FUN(strict_udp   , "strict-udp"   )
-    PFQ_GEN_FUN(strict_tcp   , "strict-tcp"   )
-    PFQ_GEN_FUN(strict_flow  , "strict-flow"  )
-
-    PFQ_GEN_FUN(neg          , "neg"          )
-    PFQ_GEN_FUN(par          , "par"          )
-
+    PFQ_MAKE_FUN(rtp          , "rtp"          )
+    PFQ_MAKE_FUN(steer_rtp    , "steer-rtp"    )
 
 } // namespace pfq_lang

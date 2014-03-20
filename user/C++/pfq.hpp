@@ -664,24 +664,13 @@ namespace net {
                 throw pfq_error(errno, "PFQ: group program error");
         }
 
-        // template <typename C>
-        // void
-        // set_group_computation(int gid, C const &cont)
-        // {
-        //     int level = 0;
-        //     for(auto const & f : cont)
-        //     {
-        //         set_group_function(gid, f.name.c_str(), level);
-        //         if (f.context.first)
-        //         {
-        //             struct pfq_group_context s { f.context.first.get(), f.context.second, gid, level };
-        //             if (::setsockopt(fd_, PF_Q, Q_SO_GROUP_CONTEXT, &s, sizeof(s)) == -1)
-        //                 throw pfq_error(errno, "PFQ: set group context error");
-        //         }
-
-        //         level++;
-        //     }
-        // }
+        template <typename Comp>
+        void
+        set_group_computation(int gid, Comp const &comp)
+        {
+            auto prg = eval(comp);
+            set_group_program(gid, prg.get());
+        }
 
         //
         // BPF filters: pass in-kernel sock_fprog structure
