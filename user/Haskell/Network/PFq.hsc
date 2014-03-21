@@ -29,6 +29,8 @@
 --
 
 {-# LANGUAGE ForeignFunctionInterface #-}
+{-# LANGUAGE ImpredicativeTypes #-}
+
 {-# LANGUAGE BangPatterns #-}
 
 {-# OPTIONS_GHC -fno-warn-unused-binds #-}
@@ -85,8 +87,6 @@ module Network.PFq
         vlanSetFilterId,
         vlanResetFilterId,
 
-        groupProgram,
-
         bindTx,
         startTxThread,
         stopTxThread,
@@ -98,7 +98,7 @@ module Network.PFq
         sendSync,
         sendAsync,
 
-        -- groupComputation,
+        groupComputation,
 
         --- data
 
@@ -130,9 +130,12 @@ import Foreign.Ptr
 import Foreign.C.String (CString, peekCString, withCString)
 import Foreign.C.Types
 import Foreign.Marshal.Alloc
+import Foreign.Marshal.Utils
 import Foreign.Storable
 import Foreign.Concurrent as C (newForeignPtr)
 import Foreign.ForeignPtr (ForeignPtr)
+
+import Network.PFqLang
 
 -- Placeholders
 --
@@ -199,7 +202,7 @@ newtype ClassMask = ClassMask { unClassMask :: CUInt }
 newtype GroupPolicy = GroupPolicy { unGroupPolicy :: CInt }
                         deriving (Eq, Show)
 
-newtype GroupConstant = GroupConstant { unGroupConstant :: Int }
+newtype PFqConstant = PFqConstant { getConstant :: Int }
                         deriving (Eq, Show)
 
 
@@ -215,14 +218,15 @@ newtype GroupConstant = GroupConstant { unGroupConstant :: Int }
     , policy_shared     = Q_GROUP_SHARED
 }
 
-#{enum GroupConstant, GroupConstant
+
+#{enum PFqConstant, PFqConstant
     , group_max_counters = Q_MAX_COUNTERS
+    , group_fun_size     = sizeof(pfq_fun_t)
 }
 
 
 combineClassMasks :: [ClassMask] -> ClassMask
 combineClassMasks = ClassMask . foldr ((.|.) . unClassMask) 0
-
 
 --
 
@@ -667,7 +671,7 @@ getStats :: Ptr PFqTag
          -> IO Statistics
 
 getStats hdl =
-    allocaBytes ((sizeOf (0 :: CLong)) * 5) $ \sp -> do
+    allocaBytes ((sizeOf (undefined :: CLong)) * 5) $ \sp -> do
         pfq_get_stats hdl sp >>= throwPFqIf_ hdl (== -1)
         makeStats sp
 
@@ -679,7 +683,7 @@ getGroupStats :: Ptr PFqTag
               -> IO Statistics
 
 getGroupStats hdl gid =
-    allocaBytes ((sizeOf (0 :: CLong)) * 3) $ \sp -> do
+    allocaBytes ((sizeOf (undefined :: CLong)) * 3) $ \sp -> do
         pfq_get_group_stats hdl (fromIntegral gid) sp >>= throwPFqIf_ hdl (== -1)
         makeStats sp
 
@@ -703,52 +707,44 @@ makeStats p = do
 --
 
 getGroupCounters :: Ptr PFqTag
-                 -> Int            -- gid
+                 -> Int            -- group id
                  -> IO Counters
 
 getGroupCounters hdl gid =
-    allocaBytes ((sizeOf (0 :: CLong)) * (unGroupConstant group_max_counters) )  $ \sp -> do
+    allocaBytes ((sizeOf (undefined :: CLong)) * (getConstant group_max_counters) )  $ \sp -> do
         pfq_get_group_counters hdl (fromIntegral gid) sp >>= throwPFqIf_ hdl (== -1)
         makeCounters sp
 
 
 makeCounters :: Ptr a -> IO Counters
 makeCounters ptr = do
-    cs <- forM [0..7] $ \ n -> peekByteOff ptr (sizeOf (0 :: CULong) * n)
+    cs <- forM [0..(getConstant group_max_counters)-1] $ \ n -> peekByteOff ptr (sizeOf (undefined :: CULong) * n)
     return $ Counters $ map fromIntegral (cs :: [CULong])
 
 
 -- groupComputation:
 --
 
--- groupComputation :: Ptr PFqTag
---                  -> Int            -- group id
---                  -> Computation a  -- computation from (PFlang)
---                  -> IO ()
---
--- groupComputation hdl gid (Computation _ name ctx) =
---     withCString name $ \fname -> do
---         pfq_set_group_function hdl (fromIntegral gid) fname (fromIntegral 0) >>= throwPFqIf_ hdl (== -1)
---         when (isJust ctx) $ putContextFunction hdl ((\(StorableContext c) -> c) . fromJust $ ctx) gid 0
---
--- groupComputation hdl gid (Composition _ ns cs) =
---     forM_ (zip3 ns cs [0,1..]) $ \(name,ctx,ix) ->
---     withCString name $ \fname -> do
---         pfq_set_group_function hdl (fromIntegral gid) fname ix >>= throwPFqIf_ hdl (== -1)
---         when (isJust ctx) $ putContextFunction hdl ((\(StorableContext c) -> c) . fromJust $ ctx) gid 0
-
-
--- groupFunction:
-
-groupProgram :: Ptr PFqTag
-             -> Int     -- group id
-             -> a       -- program
-             -> IO ()
-groupProgram _hdl _gid _prg = undefined
-
-    -- withCString name $ \fname ->
-    --    pfq_set_group_function hdl (fromIntegral gid) fname (fromIntegral ix) >>= throwPFqIf_ hdl (== -1)
-
+groupComputation :: Ptr PFqTag
+                 -> Int                 -- group id
+                 -> Computation Qfun    -- computation from (PFqLang)
+                 -> IO ()
+groupComputation hdl gid comp = do
+    let meta = eval comp
+    allocaBytes (sizeOf (undefined :: CSize) + (getConstant group_fun_size) * length meta)  $ \ ptr -> do
+        pokeByteOff ptr 0 (fromIntegral (length meta) :: CSize)
+        forM_ (zip [0..] meta) $ \(n, f) -> do
+            case f of
+                (name, Nothing)  -> withCString name $ \ name' -> do
+                    pokeByteOff ptr (sizeOf(undefined :: CSize) + (getConstant group_fun_size) * n) name'
+                    pokeByteOff ptr (sizeOf(undefined :: CSize) + (getConstant group_fun_size) * n + sizeOf(undefined :: Ptr CChar)) nullPtr
+                    pokeByteOff ptr (sizeOf(undefined :: CSize) + (getConstant group_fun_size) * n + sizeOf(undefined :: Ptr CChar) + sizeOf(nullPtr)) (0 :: CSize)
+                (name, Just (StorableContext ctx)) ->  withCString name $ \ name' -> do
+                    pokeByteOff ptr (sizeOf(undefined :: CSize) + (getConstant group_fun_size) * n) name'
+                    with ctx $ \addr ->
+                        pokeByteOff ptr (sizeOf(undefined :: CSize) + (getConstant group_fun_size) * n + sizeOf(undefined :: Ptr CChar)) addr
+                    pokeByteOff ptr (sizeOf(undefined :: CSize) + (getConstant group_fun_size) * n + sizeOf(undefined :: Ptr CChar) + sizeOf(nullPtr)) (fromIntegral (sizeOf (ctx)) :: CSize)
+        pfq_set_group_program hdl (fromIntegral gid) ptr >>= throwPFqIf_ hdl (== -1)
 
 -- dispatch:
 --
