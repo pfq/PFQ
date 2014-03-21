@@ -18,7 +18,7 @@ main(int argc, char *argv[])
 
     auto gid = q.group_id();
 
-    auto prog = reinterpret_cast<pfq_meta_prog *>(malloc(sizeof(int) + sizeof(pfq_fun_t) * 3));
+    auto prog = reinterpret_cast<pfq_meta_prog *>(malloc(sizeof(int) + sizeof(pfq_fun_t) * 2));
 
     prog->size = 2;
 
