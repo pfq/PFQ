@@ -13,7 +13,7 @@ HSC=hsc2hs
 
 .PHONY: all clean
 
-all: Network/PFq.hs pfq-read pfq-counters pfq-dispatch pfq-send
+all: Network/PFq.hs pfq-read pfq-counters pfq-dispatch pfq-send test-lang
 
 Network/PFq.hs:
 		$(HSC) Network/PFq.hsc
@@ -30,9 +30,12 @@ pfq-counters: Network/PFq.hs pfq-counters.hs
 pfq-dispatch: Network/PFq.hs pfq-dispatch.hs
 		$(HC) $(GHCFLAGS) $(LIBS) pfq-dispatch.hs -o $@
 
+test-lang: test-lang.hs
+		$(HC) $(GHCFLAGS) $(LIBS) test-lang.hs -o $@
+
 install: all
 		cp pfq-counters  ${INSTDIR}/bin/
 
 clean:
-	   @rm -f pfq-read pfq-send pfq-counters pfq-dispatch
+	   @rm -f pfq-read pfq-send pfq-counters pfq-dispatch test-lang
 	   @rm -f *.o *.hi Network/*.o Network/*.hi Network/PFq.hs Network/PFq_stub.h
