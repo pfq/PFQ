@@ -97,13 +97,13 @@ namespace pfq_lang
     //
 
     template <typename Comp>
-    std::unique_ptr<pfq_meta_prog>
+    inline std::unique_ptr<pfq_meta_prog>
     eval(Comp &comp)
     {
         return eval(comp());
     }
 
-    std::unique_ptr<pfq_meta_prog>
+    inline std::unique_ptr<pfq_meta_prog>
     eval(std::vector<qFunction> const &vec)
     {
         auto prg = reinterpret_cast<pfq_meta_prog *>(std::malloc(sizeof(pfq_meta_prog) + sizeof(pfq_fun_t) * sizeof(vec)));
@@ -124,8 +124,15 @@ namespace pfq_lang
     // generic function constructor
     //
 
-    template <typename Tp = std::nullptr_t>
-    qFunction fun(std::string n, Tp const &context = nullptr)
+    inline qFunction
+    fun(std::string n)
+    {
+        return qFunction { std::move(n), std::make_pair(std::shared_ptr<char>(), 0) };
+    }
+
+    template <typename Tp>
+    inline qFunction
+    fun(std::string n, Tp const &context)
     {
         // note: is_trivially_copyable is still unimplemented in g++-4.7
 #if 0
@@ -133,21 +140,15 @@ namespace pfq_lang
 #else
         static_assert(std::is_pod<Tp>::value, "context must be a pod type");
 #endif
-        std::shared_ptr<char> ptr;
-        size_t size = 0;
+        auto ptr  = std::shared_ptr<char>(new char[sizeof(Tp)], [](char *addr) { delete[] addr; });
+        auto size = sizeof(Tp);
 
-        if (!std::is_same<Tp, std::nullptr_t>::value)
-        {
-            ptr  = std::shared_ptr<char>(new char[sizeof(Tp)], [](char *addr) { delete[] addr; });
-            size = sizeof(Tp);
-            memcpy(ptr.get(), &context, sizeof(Tp));
-        }
-
+        memcpy(ptr.get(), &context, sizeof(Tp));
         return qFunction { std::move(n), std::make_pair(std::move(ptr), size) };
     }
 
     //
-    // kleisli composition...
+    // Kleisli composition: >->
     //
 
     template <typename Fun>
@@ -168,35 +169,45 @@ namespace pfq_lang
     // default in-kernel PFQ functions...
     //
 
-#define PFQ_MAKE_FUN(fn,name) \
+#define PFQ_MAKE_FUN(fn, name) \
     template <typename Tp = std::nullptr_t> \
-    qFunction fn(Tp const &context = nullptr) \
+    qFunction fn() \
+    { \
+        return fun(name); \
+    }
+
+#define PFQ_MAKE_FUN1(fn,name) \
+    template <typename Tp = std::nullptr_t> \
+    qFunction fn(Tp const &context) \
     { \
         return fun(name, context); \
     }
 
-    PFQ_MAKE_FUN(steer_mac    , "steer-mac"    )
-    PFQ_MAKE_FUN(steer_vlan   , "steer-vlan-id")
-    PFQ_MAKE_FUN(steer_ip     , "steer-ip"     )
-    PFQ_MAKE_FUN(steer_ipv6   , "steer-ipv6"   )
-    PFQ_MAKE_FUN(steer_flow   , "steer-flow"   )
+    namespace
+    {
+        PFQ_MAKE_FUN(steer_mac    , "steer-mac"    )
+        PFQ_MAKE_FUN(steer_vlan   , "steer-vlan-id")
+        PFQ_MAKE_FUN(steer_ip     , "steer-ip"     )
+        PFQ_MAKE_FUN(steer_ipv6   , "steer-ipv6"   )
+        PFQ_MAKE_FUN(steer_flow   , "steer-flow"   )
 
-    PFQ_MAKE_FUN(legacy       , "legacy"       )
-    PFQ_MAKE_FUN(clone        , "clone"        )
-    PFQ_MAKE_FUN(broadcast    , "broadcast"    )
-    PFQ_MAKE_FUN(sink         , "sink"         )
-    PFQ_MAKE_FUN(drop         , "drop"         )
+        PFQ_MAKE_FUN(legacy       , "legacy"       )
+        PFQ_MAKE_FUN(clone        , "clone"        )
+        PFQ_MAKE_FUN(broadcast    , "broadcast"    )
+        PFQ_MAKE_FUN(sink         , "sink"         )
+        PFQ_MAKE_FUN(drop         , "drop"         )
 
-    PFQ_MAKE_FUN(id           , "id"           )
-    PFQ_MAKE_FUN(ip           , "ip"           )
-    PFQ_MAKE_FUN(ipv6         , "ipv6"         )
-    PFQ_MAKE_FUN(udp          , "udp"          )
-    PFQ_MAKE_FUN(tcp          , "tcp"          )
-    PFQ_MAKE_FUN(vlan         , "vlan"         )
-    PFQ_MAKE_FUN(icmp         , "icmp"         )
-    PFQ_MAKE_FUN(flow         , "flow"         )
+        PFQ_MAKE_FUN(id           , "id"           )
+        PFQ_MAKE_FUN(ip           , "ip"           )
+        PFQ_MAKE_FUN(ipv6         , "ipv6"         )
+        PFQ_MAKE_FUN(udp          , "udp"          )
+        PFQ_MAKE_FUN(tcp          , "tcp"          )
+        PFQ_MAKE_FUN(vlan         , "vlan"         )
+        PFQ_MAKE_FUN(icmp         , "icmp"         )
+        PFQ_MAKE_FUN(flow         , "flow"         )
 
-    PFQ_MAKE_FUN(rtp          , "rtp"          )
-    PFQ_MAKE_FUN(steer_rtp    , "steer-rtp"    )
+        PFQ_MAKE_FUN(rtp          , "rtp"          )
+        PFQ_MAKE_FUN(steer_rtp    , "steer-rtp"    )
+    }
 
 } // namespace pfq_lang

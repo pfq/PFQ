@@ -9,7 +9,7 @@ main()
 {
      int value = 42;
 
-     auto comp = ip(value) >> tcp() >> udp();
+     auto comp = ip() >> tcp() >> udp();
 
      std::cout << "computation: " << show(comp) << std::endl;
 
