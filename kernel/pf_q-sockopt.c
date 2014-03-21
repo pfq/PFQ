@@ -852,11 +852,12 @@ int pfq_setsockopt(struct socket *sock,
 
                 user = (struct pfq_user_meta_prog *)kzalloc_meta_prog(psize);
                 if (!user) {
-                        pr_devel("[PFQ|%d] user fun-prog: no memory: %zu bytes required!\n", so->id, pfq_meta_prog_memsize(psize));
+                        pr_devel("[PFQ|%d] fun-prog: no memory: %zu bytes required!\n", so->id, pfq_meta_prog_memsize(psize));
                         return -ENOMEM;
                 }
 
                 if (copy_from_user(user, tmp.prog, pfq_meta_prog_memsize(psize))) {
+                        pr_devel("[PFQ|%d] fun-prog: copy_from_user error!\n", so->id);
                         kfree(user);
                         return -EFAULT;
                 }
@@ -871,6 +872,7 @@ int pfq_setsockopt(struct socket *sock,
                 }
 
                 if (copy_meta_prog_from_user(meta, user)) {
+                        pr_devel("[PFQ|%d] fun-prog: copy_meta_prog_from_user error!\n", so->id);
                         kfree(meta);
                         kfree(user);
                         return -EFAULT;

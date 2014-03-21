@@ -116,6 +116,9 @@ __pfq_get_function(const char *name)
 	struct list_head *pos = NULL;
 	struct function_factory_elem *this;
 
+        if (name == NULL)
+                return NULL;
+
 	list_for_each(pos, &function_factory)
 	{
     		this = list_entry(pos, struct function_factory_elem, function_list);

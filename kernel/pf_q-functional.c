@@ -111,7 +111,17 @@ pfq_meta_prog_compile(const struct pfq_meta_prog *prog, struct pfq_exec_prog **e
 
         for(n = 0; n < prog->size; n++)
         {
+                if (prog->fun[n].name == NULL) {
+                        pr_devel("[PFQ function error: NULL function!\n");
+                        return -EINVAL;
+                }
+
                 (*exec)->fun[n].fun_ptr = pfq_get_function(prog->fun[n].name);
+
+                if ((*exec)->fun[n].fun_ptr == NULL) {
+                        pr_devel("[PFQ function error: '%s' unknown function!\n", prog->fun[n].name);
+                        return -EINVAL;
+                }
 
                 if (prog->fun[n].context.size) {
                         (*exec)->fun[n].ctx_ptr = ptr;
@@ -123,12 +133,6 @@ pfq_meta_prog_compile(const struct pfq_meta_prog *prog, struct pfq_exec_prog **e
                 else {
                         (*exec)->fun[n].ctx_ptr  = NULL;
                         (*exec)->fun[n].ctx_size = 0;
-                }
-
-
-                if ((*exec)->fun[n].fun_ptr == NULL) {
-                        pr_devel("[PFQ function error: '%s' unknown function!\n", prog->fun[n].name);
-                        return -EINVAL;
                 }
         }
 
@@ -191,14 +195,20 @@ copy_meta_prog_from_user(struct pfq_meta_prog *to, struct pfq_user_meta_prog *fr
 
                 to->fun[n].name = strcat_user(from->fun[n].name);
                 if (!to->fun[n].name)
+                {
+                        pr_devel("[PFQ] strcat_user error!\n");
                         return -ENOMEM;
+                }
 
                 csize = from->fun[n].context.size;
                 if (csize) {
                         to->fun[n].context.size = csize;
                         to->fun[n].context.addr = kmalloc(csize, GFP_KERNEL);
                         if (copy_from_user(to->fun[n].context.addr, from->fun[n].context.addr, csize))
+                        {
+                                pr_devel("[PFQ] copy_from_user: address %p not accessible!\n", from->fun[n].context.addr);
                                 return -EFAULT;
+                        }
                 }
                 else {
                         to->fun[n].context.size = 0;
