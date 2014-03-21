@@ -198,6 +198,8 @@ namespace pfq_lang
         PFQ_MAKE_FUN(drop         , "drop"         )
 
         PFQ_MAKE_FUN(id           , "id"           )
+        PFQ_MAKE_FUN1(dummy       , "dummy"        )
+
         PFQ_MAKE_FUN(ip           , "ip"           )
         PFQ_MAKE_FUN(ipv6         , "ipv6"         )
         PFQ_MAKE_FUN(udp          , "udp"          )

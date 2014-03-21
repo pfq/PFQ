@@ -36,6 +36,20 @@ id(context_t ctx, struct sk_buff *skb)
 
 
 static struct sk_buff *
+dummy(context_t ctx, struct sk_buff *skb)
+{
+        const int *ptr = context_addr(ctx);
+
+        if (printk_ratelimit())
+        {
+                printk(KERN_INFO "[PFQ] dummy context: %d\n", ptr ? *ptr : 0);
+        }
+
+        return cont(skb);
+}
+
+
+static struct sk_buff *
 filter_ip(context_t ctx, struct sk_buff *skb)
 {
 	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP))
@@ -201,6 +215,7 @@ filter_vlan(context_t ctx, struct sk_buff *skb)
 struct pfq_function_descr filter_functions[] = {
 
         { "id",                 id                      },
+        { "dummy",              dummy                   },
         { "ip",                 filter_ip               },
         { "ipv6",               filter_ipv6             },
         { "udp",                filter_udp              },
