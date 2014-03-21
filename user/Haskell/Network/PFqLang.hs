@@ -39,8 +39,11 @@
 module Network.PFqLang
     (
         Computation(..),
+        StorableContext(..),
         Qfun,
         (>->),
+        eval,
+
         --
         steer_mac  ,
         steer_vlan ,
@@ -74,22 +77,31 @@ import Foreign.Storable
 -- Functional computation
 --
 
+data StorableContext = forall a. (Show a, Storable a) => StorableContext a
+
+instance Show StorableContext where
+        show (StorableContext c) = show c
+
+
 -- Computation is a phantom type: f is signature of the in-kernel monadic functions.
 
-type Qfun       = forall ctx. (Storable ctx) => ctx -> SkBuff -> Action SkBuff
+type Qfun       = forall ctx. (Show ctx, Storable ctx) => ctx -> SkBuff -> Action SkBuff
+type Qmeta      = (String, Maybe StorableContext)
+
 type Action     = Identity
 newtype SkBuff  = SkBuff ()
+
 
 -- Computation:
 
 data Computation f where
         Fun  :: String -> Computation f
-        FunC :: forall a f. (Storable a) => String -> a -> Computation f
+        FunC :: forall a f. (Show a, Storable a) => String -> a -> Computation f
         Comp :: Computation f -> Computation f -> Computation f
 
 instance Show (Computation f) where
     show (Fun name)  = name
-    show (FunC name ctx) = name ++ " (size:" ++ show (sizeOf ctx) ++ ")"
+    show (FunC name ctx) = name ++ " (" ++ show ctx ++ ")"
     show (Comp c1 c2) = show c1 ++ " >-> " ++ show c2
 
 -- operator: >->
@@ -105,6 +117,13 @@ instance Show (Computation f) where
 (Fun  n)     >-> (Comp c1 c2) = Comp (Fun n) (Comp c1 c2)
 (FunC n x)   >-> (Comp c1 c2) = Comp (FunC n x) (Comp c1 c2)
 (Comp c1 c2) >-> (Comp c3 c4) = Comp (Comp c1 c2) (Comp c3 c4)
+
+-- eval: convert a computation in a list of Qmeta data.
+
+eval :: Computation Qfun -> [Qmeta]
+eval (Fun n)      = [(n, Nothing)]
+eval (FunC n x)   = [(n, Just (StorableContext x))]
+eval (Comp c1 c2) = eval c1 ++ eval c2
 
 
 -- Predefined in-kernel computations:
