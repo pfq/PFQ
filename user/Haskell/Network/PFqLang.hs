@@ -30,94 +30,107 @@
 
 {-# LANGUAGE ExistentialQuantification #-}
 {-# LANGUAGE NoMonomorphismRestriction #-}
+{-# LANGUAGE ImpredicativeTypes #-}
+{-# LANGUAGE Rank2Types #-}
+{-# LANGUAGE GADTs #-}
 
 {-# OPTIONS_GHC -fno-warn-unused-binds #-}
 
 module Network.PFqLang
     (
-        StorableContext(..),
-        Computation(..)
+        Computation(..),
+        FunType,
+        (>->),
+        --
+        steer_mac  ,
+        steer_vlan ,
+        steer_ip   ,
+        steer_ipv6 ,
+        steer_flow ,
+        steer_rtp  ,
+
+        ip         ,
+        ipv6       ,
+        udp        ,
+        tcp        ,
+        vlan       ,
+        icmp       ,
+        flow       ,
+        rtp        ,
+
+        legacy     ,
+        clone      ,
+        broadcast  ,
+        sink       ,
+        drop       ,
+
+        ident      ,
+        dummy
     ) where
 
-import Control.Monad
-import Control.Monad.State.Lazy
-import Control.Monad.Cont
-import Control.Concurrent.STM
+import Control.Monad.Identity
 import Foreign.Storable
 
-
--- Placeholder types: sk_buff and Action, defined in the kernel
+-- Functional computation
 --
 
-newtype SkBuff = SkBuff ()
+-- Computation is a phantom type: f is signature of the in-kernel monadic functions.
 
-newtype Action = Action ()
+type FunType    = forall a. (Storable a) => a -> SkBuff -> Action SkBuff
+type Action     = Identity
+newtype SkBuff  = SkBuff ()
 
--- Placeholder for in-kernel monads:
---
+-- Computation:
 
-type Monitor action state = ContT action (StateT state STM)
+data Computation f where
+        Fun  :: String -> Computation f
+        FunC :: forall a f. (Storable a) => String -> a -> Computation f
+        Comp :: Computation f -> Computation f -> Computation f
 
-
--- prototype for in-kernel Monitor style functions...
---
-
-comp_type :: (SkBuff, Action) -> Monitor Action a (SkBuff,Action)
-comp_type (skb,a) = return (skb,a)
-
-
--- Packet Function computation
---
-
-data StorableContext = forall c. (Storable c) => StorableContext c
-
-data Computation a = Computation a String (Maybe StorableContext) |
-                     Composition a [String] [Maybe StorableContext]
-
-
-instance Show (Computation a) where
-    show (Computation _  n _) = show n
-    show (Composition _ ns _) = show ns
-
+instance Show (Computation f) where
+    show (Fun name)  = name
+    show (FunC name ctx) = name ++ " (size:" ++ show (sizeOf ctx) ++ ")"
+    show (Comp c1 c2) = show c1 ++ " >-> " ++ show c2
 
 -- operator: >->
---
 
-(>->) :: (Monad m) => Computation (a -> m b) -> Computation (b -> m c) -> Computation (a -> m c)
-(Computation f1 n1 c1) >-> (Computation f2 n2 c2) = Composition (f1 >=> f2) [n1, n2] [c1, c2]
-(Composition f1 ns cs) >-> (Computation f2 n2 c2) = Composition (f1 >=> f2) (ns ++ [n2]) (cs ++ [c2])
-(Computation f1 n1 c1) >-> (Composition f2 n2 c2) = Composition (f1 >=> f2) (n1 : n2) (c1 : c2)
-(Composition f1 n1 c1) >-> (Composition f2 n2 c2) = Composition (f1 >=> f2) (n1 ++ n2) (c1 ++ c2)
+(>->) :: Computation FunType -> Computation FunType -> Computation FunType
+(Fun  n)     >-> (Fun n')     = Comp (Fun n)      (Fun n')
+(FunC n x)   >-> (Fun n')     = Comp (FunC n x)   (Fun n')
+(FunC n x)   >-> (FunC n' x') = Comp (FunC n x)   (FunC n' x')
+(Fun  n)     >-> (FunC n' x') = Comp (Fun n)      (FunC n' x')
+(Comp c1 c2) >-> (Fun n)      = Comp (Comp c1 c2) (Fun n)
+(Comp c1 c2) >-> (FunC n c)   = Comp (Comp c1 c2) (FunC n c)
 
+(Fun  n)     >-> (Comp c1 c2) = Comp (Fun n) (Comp c1 c2)
+(FunC n x)   >-> (Comp c1 c2) = Comp (FunC n x) (Comp c1 c2)
+(Comp c1 c2) >-> (Comp c3 c4) = Comp (Comp c1 c2) (Comp c3 c4)
 
 -- Predefined in-kernel computations
 --
 
-steer_mac    = Computation comp_type "steer-mac"     Nothing
-steer_vlan   = Computation comp_type "steer-vlan-id" Nothing
-steer_ipv4   = Computation comp_type "steer-ipv4"    Nothing
-steer_ipv6   = Computation comp_type "steer-ipv6"    Nothing
-steer_flow   = Computation comp_type "steer-flow"    Nothing
-steer_rtp    = Computation comp_type "steer-rtp"     Nothing
+steer_mac   = Fun "steer-mac"       :: Computation FunType
+steer_vlan  = Fun "steer-vlan-id"   :: Computation FunType
+steer_ip    = Fun "steer-ip"        :: Computation FunType
+steer_ipv6  = Fun "steer-ipv6"      :: Computation FunType
+steer_flow  = Fun "steer-flow"      :: Computation FunType
+steer_rtp   = Fun "steer-rtp"       :: Computation FunType
 
-clone        = Computation comp_type "clone"         Nothing
-broadcast    = Computation comp_type "broadcast"     Nothing
+ip          = Fun "ip"              :: Computation FunType
+ipv6        = Fun "ipv6"            :: Computation FunType
+udp         = Fun "udp"             :: Computation FunType
+tcp         = Fun "tcp"             :: Computation FunType
+vlan        = Fun "vlan"            :: Computation FunType
+icmp        = Fun "icmp"            :: Computation FunType
+flow        = Fun "flow"            :: Computation FunType
+rtp         = Fun "rtp"             :: Computation FunType
 
-vlan         = Computation comp_type "vlan"          Nothing
-ipv4         = Computation comp_type "ipv4"          Nothing
-udp          = Computation comp_type "udp"           Nothing
-tcp          = Computation comp_type "tcp"           Nothing
-flow         = Computation comp_type "flow"          Nothing
-rtp          = Computation comp_type "rtp"           Nothing
+legacy      = Fun "legacy"          :: Computation FunType
+clone       = Fun "clone"           :: Computation FunType
+broadcast   = Fun "broadcast"       :: Computation FunType
+sink        = Fun "sink"            :: Computation FunType
+drop'       = Fun "drop"            :: Computation FunType
 
-strict_vlan  = Computation comp_type "strict-vlan"   Nothing
-strict_ipv4  = Computation comp_type "strict-ipv4"   Nothing
-strict_udp   = Computation comp_type "strict-udp"    Nothing
-strict_tcp   = Computation comp_type "strict-tcp"    Nothing
-strict_flow  = Computation comp_type "strict-flow"   Nothing
-
-neg          = Computation comp_type "neg"           Nothing
-par          = Computation comp_type "par"           Nothing
-
--- ctx       = Computation comp_type "example"       -- udp >-> (ctx 0) >-> steer-ipv4
+ident       = Fun  "id"             :: Computation FunType
+dummy       = FunC "dummy"          :: Int -> Computation FunType
 
