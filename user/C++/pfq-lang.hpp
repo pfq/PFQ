@@ -170,15 +170,14 @@ namespace pfq_lang
     //
 
 #define PFQ_MAKE_FUN(fn, name) \
-    template <typename Tp = std::nullptr_t> \
-    qFunction fn() \
+    inline qFunction fn() \
     { \
         return fun(name); \
     }
 
 #define PFQ_MAKE_FUN1(fn,name) \
-    template <typename Tp = std::nullptr_t> \
-    qFunction fn(Tp const &context) \
+    template <typename Tp> \
+    inline qFunction fn(Tp const &context) \
     { \
         return fun(name, context); \
     }
