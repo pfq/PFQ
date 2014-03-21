@@ -208,7 +208,7 @@ namespace test
                 auto p = strtok(f.get(), ":");
                 while (p)
                 {
-                    // fs = std::move(fs) >>= fun(p);
+                    // fs = std::move(fs) >> fun(p);
                     fs.push_back(fun(p));
                     p = strtok(nullptr, ":");
                 }

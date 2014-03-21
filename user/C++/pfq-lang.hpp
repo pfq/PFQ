@@ -91,7 +91,7 @@ namespace pfq_lang
     inline std::string
     show(qComputation<Tp> const &comp)
     {
-        return show(comp.left) + " >>= " + show(comp.right);
+        return show(comp.left) + " >-> " + show(comp.right);
     }
 
     //
@@ -149,19 +149,19 @@ namespace pfq_lang
     }
 
     //
-    // binding functions ala Haskell...
+    // kleisli composition...
     //
 
     template <typename Fun>
     inline qComputation<qFunction>
-    operator>>=(qFunction lhs, Fun &&rhs)
+    operator>>(qFunction lhs, Fun &&rhs)
     {
         return { std::move(lhs), std::forward<Fun>(rhs) };
     }
 
     template <typename Tp, typename Fun>
     inline qComputation<qComputation<Tp>>
-    operator>>=(qComputation<Tp> lhs, Fun &&rhs)
+    operator>>(qComputation<Tp> lhs, Fun &&rhs)
     {
         return { std::move(lhs), std::forward<Fun>(rhs) };
     }
