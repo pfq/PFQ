@@ -39,7 +39,7 @@
 module Network.PFqLang
     (
         Computation(..),
-        FunType,
+        Qfun,
         (>->),
         --
         steer_mac  ,
@@ -76,7 +76,7 @@ import Foreign.Storable
 
 -- Computation is a phantom type: f is signature of the in-kernel monadic functions.
 
-type FunType    = forall a. (Storable a) => a -> SkBuff -> Action SkBuff
+type Qfun       = forall ctx. (Storable ctx) => ctx -> SkBuff -> Action SkBuff
 type Action     = Identity
 newtype SkBuff  = SkBuff ()
 
@@ -94,7 +94,7 @@ instance Show (Computation f) where
 
 -- operator: >->
 
-(>->) :: Computation FunType -> Computation FunType -> Computation FunType
+(>->) :: Computation Qfun -> Computation Qfun -> Computation Qfun
 (Fun  n)     >-> (Fun n')     = Comp (Fun n)      (Fun n')
 (FunC n x)   >-> (Fun n')     = Comp (FunC n x)   (Fun n')
 (FunC n x)   >-> (FunC n' x') = Comp (FunC n x)   (FunC n' x')
@@ -106,31 +106,32 @@ instance Show (Computation f) where
 (FunC n x)   >-> (Comp c1 c2) = Comp (FunC n x) (Comp c1 c2)
 (Comp c1 c2) >-> (Comp c3 c4) = Comp (Comp c1 c2) (Comp c3 c4)
 
--- Predefined in-kernel computations
+
+-- Predefined in-kernel computations:
 --
 
-steer_mac   = Fun "steer-mac"       :: Computation FunType
-steer_vlan  = Fun "steer-vlan-id"   :: Computation FunType
-steer_ip    = Fun "steer-ip"        :: Computation FunType
-steer_ipv6  = Fun "steer-ipv6"      :: Computation FunType
-steer_flow  = Fun "steer-flow"      :: Computation FunType
-steer_rtp   = Fun "steer-rtp"       :: Computation FunType
+steer_mac   = Fun "steer-mac"       :: Computation Qfun
+steer_vlan  = Fun "steer-vlan-id"   :: Computation Qfun
+steer_ip    = Fun "steer-ip"        :: Computation Qfun
+steer_ipv6  = Fun "steer-ipv6"      :: Computation Qfun
+steer_flow  = Fun "steer-flow"      :: Computation Qfun
+steer_rtp   = Fun "steer-rtp"       :: Computation Qfun
 
-ip          = Fun "ip"              :: Computation FunType
-ipv6        = Fun "ipv6"            :: Computation FunType
-udp         = Fun "udp"             :: Computation FunType
-tcp         = Fun "tcp"             :: Computation FunType
-vlan        = Fun "vlan"            :: Computation FunType
-icmp        = Fun "icmp"            :: Computation FunType
-flow        = Fun "flow"            :: Computation FunType
-rtp         = Fun "rtp"             :: Computation FunType
+ip          = Fun "ip"              :: Computation Qfun
+ipv6        = Fun "ipv6"            :: Computation Qfun
+udp         = Fun "udp"             :: Computation Qfun
+tcp         = Fun "tcp"             :: Computation Qfun
+vlan        = Fun "vlan"            :: Computation Qfun
+icmp        = Fun "icmp"            :: Computation Qfun
+flow        = Fun "flow"            :: Computation Qfun
+rtp         = Fun "rtp"             :: Computation Qfun
 
-legacy      = Fun "legacy"          :: Computation FunType
-clone       = Fun "clone"           :: Computation FunType
-broadcast   = Fun "broadcast"       :: Computation FunType
-sink        = Fun "sink"            :: Computation FunType
-drop'       = Fun "drop"            :: Computation FunType
+legacy      = Fun "legacy"          :: Computation Qfun
+clone       = Fun "clone"           :: Computation Qfun
+broadcast   = Fun "broadcast"       :: Computation Qfun
+sink        = Fun "sink"            :: Computation Qfun
+drop'       = Fun "drop"            :: Computation Qfun
 
-ident       = Fun  "id"             :: Computation FunType
-dummy       = FunC "dummy"          :: Int -> Computation FunType
+ident       = Fun  "id"             :: Computation Qfun
+dummy       = FunC "dummy"          :: Int -> Computation Qfun
 
