@@ -28,6 +28,7 @@
 #include <cstring>
 #include <vector>
 #include <memory>
+#include <algorithm>
 
 #include <linux/pf_q.h>
 
@@ -65,13 +66,10 @@ namespace pfq_lang
             auto l = left();
             auto r = right();
 
-            std::vector<qFunction> ret;
-            ret.reserve(l.size() + r.size());
+            l.reserve(l.size() + r.size());
+            std::move(std::begin(r), std::end(r), std::back_inserter(l));
 
-            ret.insert(std::end(ret), std::make_move_iterator(l.begin()), std::make_move_iterator(l.end()));
-            ret.insert(std::end(ret), std::make_move_iterator(r.begin()), std::make_move_iterator(r.end()));
-
-            return ret;
+            return l;
         }
     };
 
@@ -95,8 +93,15 @@ namespace pfq_lang
     }
 
     //
-    // evaluate a computation, producing a pfq_meta_prog.
+    // evaluate a computation, creating a pfq_meta_prog.
     //
+
+    template <typename Comp>
+    std::unique_ptr<pfq_meta_prog>
+    eval(Comp &comp)
+    {
+        return eval(comp());
+    }
 
     std::unique_ptr<pfq_meta_prog>
     eval(std::vector<qFunction> const &vec)
@@ -107,19 +112,12 @@ namespace pfq_lang
 
         for(unsigned int i = 0; i < prg->size; ++i)
         {
-            prg->fun[i].name = vec[i].name.c_str();
+            prg->fun[i].name         = vec[i].name.c_str();
             prg->fun[i].context.addr = vec[i].context.first.get();
             prg->fun[i].context.size = vec[i].context.second;
         }
 
         return std::unique_ptr<pfq_meta_prog>(prg);
-    }
-
-    template <typename Comp>
-    std::unique_ptr<pfq_meta_prog>
-    eval(Comp &comp)
-    {
-        return eval(comp());
     }
 
     //
