@@ -25,6 +25,8 @@ import Network.PFq as Q
 import Foreign
 import System.Environment
 
+import Network.PFqLang
+
 handler :: Q.Callback
 handler h _ = print h
 
@@ -43,9 +45,8 @@ dumper dev = do
         Q.bindGroup q gid dev (-1)
         Q.enable q
 
-        -- TODO
-        -- Q.groupFunction q gid 0 "steer-ip"
-        --
+        Q.groupComputation q gid (ip >-> steer_ip >-> dummy 42)
+
         Q.getRxSlotSize q >>= \o -> putStrLn $ "slot_size: " ++ show o
         recvDispatch q
 

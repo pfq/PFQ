@@ -1,4 +1,8 @@
+import Control.Monad
 import Network.PFqLang
 
-main = print $ ip >-> udp >-> dummy 10
+main = do
+        let comp = ip >-> udp >-> dummy 42
+        print $ comp
+        print $ eval comp
 

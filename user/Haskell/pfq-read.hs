@@ -33,6 +33,8 @@ import Foreign.C.Types
 
 import Control.Applicative
 
+import Network.PFqLang
+
 -- import Debug.Trace
 
 dumpPacket :: Q.Packet -> IO ()
@@ -40,6 +42,7 @@ dumpPacket p = do
                 Q.waitForPacket p
                 bytes <- peekByteOff (Q.pData p) 0 :: IO Word64
                 putStrLn $ "[" ++ showHex bytes "" ++ "]"
+
 
 recvLoop :: Ptr PFqTag -> IO ()
 recvLoop q = do
@@ -81,17 +84,11 @@ dumper dev = do
         gid <- Q.getGroupId q
         Q.bindGroup q gid dev (-1)
         Q.enable q
+        Q.groupComputation q gid (ip >-> steer_ip)
 
         -- Q.vlanFiltersEnabled q gid True
         -- Q.vlanSetFilterId q gid (0)   -- untagged
         -- Q.vlanSetFilterId q gid (-1)  -- anyTag
-        -- Q.groupFunctions q gid ["steer-ipv4"]
-
-        -- Test state (requires dummy-state comptuation)!
-
-        -- TODO
-        -- Q.groupFunction q gid 0 "dummy-state"
-        -- Q.groupFunction q gid 1 "clone"
 
         -- read state of 8 bytes...
         -- kp :: Pair <- Q.getContextFunction q gid 0 8
