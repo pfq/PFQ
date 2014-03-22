@@ -37,13 +37,15 @@
 
 module Network.PFqLang
     (
-        Computation(..),
         StorableContext(..),
+        Computation(),
         QFun,
         QMetaFun,
 
         (>->),
         eval,
+        qfun,
+        qfunWith,
 
         --
         steer_mac  ,
@@ -86,12 +88,12 @@ instance Show StorableContext where
 
 data Computation f where
         Fun  :: String -> Computation f
-        FunC :: forall a f. (Show a, Storable a) => String -> a -> Computation f
+        FunWith :: forall a f. (Show a, Storable a) => String -> a -> Computation f
         Comp :: Computation f -> Computation f -> Computation f
 
 instance Show (Computation f) where
     show (Fun name)  = name
-    show (FunC name ctx) = name ++ " (" ++ show ctx ++ ")"
+    show (FunWith name ctx) = name ++ " (" ++ show ctx ++ ")"
     show (Comp c1 c2) = show c1 ++ " >-> " ++ show c2
 
 -- QFun: signature of the in-kernel monadic functions.
@@ -106,14 +108,14 @@ newtype SkBuff  = SkBuff ()
 
 (>->) :: Computation QFun -> Computation QFun -> Computation QFun
 (Fun  n)     >-> (Fun n')     = Comp (Fun n)      (Fun n')
-(FunC n x)   >-> (Fun n')     = Comp (FunC n x)   (Fun n')
-(FunC n x)   >-> (FunC n' x') = Comp (FunC n x)   (FunC n' x')
-(Fun  n)     >-> (FunC n' x') = Comp (Fun n)      (FunC n' x')
+(FunWith n x)   >-> (Fun n')     = Comp (FunWith n x)   (Fun n')
+(FunWith n x)   >-> (FunWith n' x') = Comp (FunWith n x)   (FunWith n' x')
+(Fun  n)     >-> (FunWith n' x') = Comp (Fun n)      (FunWith n' x')
 (Comp c1 c2) >-> (Fun n)      = Comp (Comp c1 c2) (Fun n)
-(Comp c1 c2) >-> (FunC n c)   = Comp (Comp c1 c2) (FunC n c)
+(Comp c1 c2) >-> (FunWith n c)   = Comp (Comp c1 c2) (FunWith n c)
 
 (Fun  n)     >-> (Comp c1 c2) = Comp (Fun n) (Comp c1 c2)
-(FunC n x)   >-> (Comp c1 c2) = Comp (FunC n x) (Comp c1 c2)
+(FunWith n x)   >-> (Comp c1 c2) = Comp (FunWith n x) (Comp c1 c2)
 (Comp c1 c2) >-> (Comp c3 c4) = Comp (Comp c1 c2) (Comp c3 c4)
 
 
@@ -121,35 +123,44 @@ newtype SkBuff  = SkBuff ()
 
 eval :: Computation QFun -> [QMetaFun]
 eval (Fun n)      = [(n, Nothing)]
-eval (FunC n x)   = [(n, Just (StorableContext x))]
+eval (FunWith n x)   = [(n, Just (StorableContext x))]
 eval (Comp c1 c2) = eval c1 ++ eval c2
+
+
+-- qfun, qfunWith: Computation QFun constructors
+
+qfun :: String -> Computation QFun
+qfun = Fun
+
+qfunWith :: (Show a, Storable a) => String -> a -> Computation QFun
+qfunWith name = FunWith name
 
 
 -- Predefined in-kernel computations:
 --
 
-steer_mac   = Fun "steer-mac"       :: Computation QFun
-steer_vlan  = Fun "steer-vlan-id"   :: Computation QFun
-steer_ip    = Fun "steer-ip"        :: Computation QFun
-steer_ipv6  = Fun "steer-ipv6"      :: Computation QFun
-steer_flow  = Fun "steer-flow"      :: Computation QFun
-steer_rtp   = Fun "steer-rtp"       :: Computation QFun
+steer_mac   = qfun "steer-mac"
+steer_vlan  = qfun "steer-vlan-id"
+steer_ip    = qfun "steer-ip"
+steer_ipv6  = qfun "steer-ipv6"
+steer_flow  = qfun "steer-flow"
+steer_rtp   = qfun "steer-rtp"
 
-ip          = Fun "ip"              :: Computation QFun
-ipv6        = Fun "ipv6"            :: Computation QFun
-udp         = Fun "udp"             :: Computation QFun
-tcp         = Fun "tcp"             :: Computation QFun
-vlan        = Fun "vlan"            :: Computation QFun
-icmp        = Fun "icmp"            :: Computation QFun
-flow        = Fun "flow"            :: Computation QFun
-rtp         = Fun "rtp"             :: Computation QFun
+ip          = qfun "ip"
+ipv6        = qfun "ipv6"
+udp         = qfun "udp"
+tcp         = qfun "tcp"
+vlan        = qfun "vlan"
+icmp        = qfun "icmp"
+flow        = qfun "flow"
+rtp         = qfun "rtp"
 
-legacy      = Fun "legacy"          :: Computation QFun
-clone       = Fun "clone"           :: Computation QFun
-broadcast   = Fun "broadcast"       :: Computation QFun
-sink        = Fun "sink"            :: Computation QFun
-drop'       = Fun "drop"            :: Computation QFun
+legacy      = qfun "legacy"
+clone       = qfun "clone"
+broadcast   = qfun "broadcast"
+sink        = qfun "sink"
+drop'       = qfun "drop"
 
-ident       = Fun  "id"             :: Computation QFun
-dummy       = FunC "dummy"          :: Int -> Computation QFun
+ident       = qfun  "id"
+dummy       = qfunWith "dummy"  :: Int -> Computation QFun
 
