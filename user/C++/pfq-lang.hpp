@@ -125,14 +125,14 @@ namespace pfq_lang
     //
 
     inline qFunction
-    fun(std::string n)
+    qfun(std::string n)
     {
         return qFunction { std::move(n), std::make_pair(std::shared_ptr<char>(), 0) };
     }
 
     template <typename Tp>
     inline qFunction
-    fun(std::string n, Tp const &context)
+    qfun(std::string n, Tp const &context)
     {
         // note: is_trivially_copyable is still unimplemented in g++-4.7
 #if 0
@@ -172,14 +172,14 @@ namespace pfq_lang
 #define PFQ_MAKE_FUN(fn, name) \
     inline qFunction fn() \
     { \
-        return fun(name); \
+        return qfun(name); \
     }
 
 #define PFQ_MAKE_FUN1(fn,name) \
     template <typename Tp> \
     inline qFunction fn(Tp const &context) \
     { \
-        return fun(name, context); \
+        return qfun(name, context); \
     }
 
     namespace
