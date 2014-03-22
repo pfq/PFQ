@@ -82,7 +82,7 @@ sender (dev:xs) = do
             Q.stopTxThread q
 
             stat <- Q.getStats q
-            print $ stat
+            print stat
 
             Q.close q
 
