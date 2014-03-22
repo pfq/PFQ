@@ -200,7 +200,7 @@ namespace test
                     }
             }
 
-            std::deque<qfun> fs;
+            std::vector<qFunction> fs;
             if (!opt::function.empty() && (m_id == 0))
             {
                 std::unique_ptr<char> f(strdup(opt::function.c_str()));
@@ -208,8 +208,8 @@ namespace test
                 auto p = strtok(f.get(), ":");
                 while (p)
                 {
-                    fs = std::move(fs) >>= fun(p);
-                    // fs.push_back(fun(p));
+                    // fs = std::move(fs) >> fun(p);
+                    fs.push_back(qfun(p));
                     p = strtok(nullptr, ":");
                 }
             }
@@ -218,8 +218,8 @@ namespace test
             {
                 std::cout << "fun: " << fs.begin()->name;
 
-                std::for_each(std::next(fs.begin(),1), fs.end(), [](qfun &fun) {
-                              std::cout << " >>= " << fun.name;
+                std::for_each(std::next(fs.begin(),1), fs.end(), [](qFunction &fun) {
+                                std::cout << " >-> " << fun.name;
                               });
                 std::cout << std::endl;
             }
@@ -338,7 +338,7 @@ void usage(const char *name)
 {
     throw std::runtime_error(std::string("usage: ")
                              .append(name)
-                             .append("[-h|--help] [-c caplen] [-o offset] [-f | --flow] [-s slots] [-g gid ] [-x|--steer function-name] T1 T2... \n\t| T = dev1:dev2...:dev[.core[.queue.queue...]]"));
+                             .append("[-h|--help] [-c caplen] [-o offset] [-w | --flow] [-s slots] [-g gid ] [-f|--fun computation] T1 T2... \n\t| T = dev1:dev2...:dev[.core[.queue.queue...]]"));
 }
 
 
@@ -356,16 +356,14 @@ try
 
     for(int i = 1; i < argc; ++i)
     {
-        if ( strcmp(argv[i], "-x") == 0 ||
-             strcmp(argv[i], "--steer") == 0) {
+        if ( strcmp(argv[i], "-f") == 0 ||
+             strcmp(argv[i], "--fun") == 0) {
             i++;
             if (i == argc)
             {
                 throw std::runtime_error("group function missing");
             }
             opt::function.assign(argv[i]);
-
-            std::cout << "balancing with [" << opt::function << "]" << std::endl;
             continue;
         }
 
@@ -405,7 +403,7 @@ try
             continue;
         }
 
-        if ( strcmp(argv[i], "-f") == 0 ||
+        if ( strcmp(argv[i], "-w") == 0 ||
              strcmp(argv[i], "--flow") == 0)
         {
             opt::flow = true;

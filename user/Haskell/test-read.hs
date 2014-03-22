@@ -33,6 +33,8 @@ import Foreign.C.Types
 
 import Control.Applicative
 
+import Network.PFqLang
+
 -- import Debug.Trace
 
 dumpPacket :: Q.Packet -> IO ()
@@ -41,16 +43,18 @@ dumpPacket p = do
                 bytes <- peekByteOff (Q.pData p) 0 :: IO Word64
                 putStrLn $ "[" ++ showHex bytes "" ++ "]"
 
+
 recvLoop :: Ptr PFqTag -> IO ()
 recvLoop q = do
     queue <- Q.read q 100000000
+    gid   <- Q.getGroupId q
     if Q.qLen queue == 0
        then recvLoop q
        else do
             ps <- Q.getPackets queue
             mapM_ (getHeader >=> print) ps
             mapM_ dumpPacket ps
-            Q.getStats q >>= print
+            Q.getGroupCounters q gid >>= print
             recvLoop q
 
 
@@ -80,23 +84,15 @@ dumper dev = do
         gid <- Q.getGroupId q
         Q.bindGroup q gid dev (-1)
         Q.enable q
+        Q.groupComputation q gid (ip >-> steer_ip)
 
         -- Q.vlanFiltersEnabled q gid True
         -- Q.vlanSetFilterId q gid (0)   -- untagged
         -- Q.vlanSetFilterId q gid (-1)  -- anyTag
-        -- Q.groupFunctions q gid ["steer-ipv4"]
-
-        -- Test state (requires dummy-state comptuation)!
-
-        Q.groupFunction q gid 0 "dummy-state"
-        Q.groupFunction q gid 1 "clone"
-
-        -- set state
-        Q.putContextFunction q (Pair 10 42) gid 0
 
         -- read state of 8 bytes...
-        kp :: Pair <- Q.getContextFunction q gid 0 8
-        print kp
+        -- kp :: Pair <- Q.getContextFunction q gid 0 8
+        -- print kp
 
         Q.getRxSlotSize q >>= \o -> putStrLn $ "slot_size: " ++ show o
         recvLoop q

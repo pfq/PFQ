@@ -1,6 +1,6 @@
 /***************************************************************
  *
- * (C) 2014 Nicola Bonelli <nicola.bonelli@cnit.it>
+ * (C) 2011-13 Nicola Bonelli <nicola.bonelli@cnit.it>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -23,41 +23,53 @@
 
 #include <linux/kernel.h>
 #include <linux/module.h>
-#include <linux/cpumask.h>
 
-#include <linux/pf_q.h>
+
 #include <linux/pf_q-module.h>
 
-#include <pf_q-memory.h>
 
-int pfq_prefetch_purge_all(void)
+static struct sk_buff *
+forward_legacy(context_t ctx, struct sk_buff *skb)
 {
-        int cpu;
-        int total = 0;
-
-        /* destroy prefetch queues (of each cpu) */
-
-        for_each_possible_cpu(cpu) {
-
-                struct local_data *local = per_cpu_ptr(cpu_data, cpu);
-                struct pfq_non_intrusive_skb *this_queue = &local->prefetch_queue;
-                struct sk_buff *skb;
-		int n = 0;
-
-		pfq_non_intrusive_for_each(skb, n, this_queue)
-		{
-                        struct pfq_cb *cb = PFQ_CB(skb);
-                        if (unlikely(has_stolen(cb->action)))
-                                continue;
-                 	kfree_skb(skb);
-		}
-
-                total += pfq_non_intrusive_len(this_queue);
-
-       		pfq_non_intrusive_flush(this_queue);
-        }
-
-        return total;
+        return to_kernel(drop(skb));
 }
 
+
+static struct sk_buff *
+forward_clone(context_t ctx, struct sk_buff *skb)
+{
+        return broadcast(skb, Q_CLASS_DEFAULT);
+}
+
+
+static struct sk_buff *
+forward_broadcast(context_t ctx, struct sk_buff *skb)
+{
+        return broadcast(skb, Q_CLASS_ANY);
+}
+
+
+static struct sk_buff *
+forward_sink(context_t ctx, struct sk_buff *skb)
+{
+        kfree_skb(skb);
+        return steal(skb);
+}
+
+static struct sk_buff *
+forward_drop(context_t ctx, struct sk_buff *skb)
+{
+        return drop(skb);
+}
+
+
+struct pfq_function_descr forward_functions[] = {
+
+        { "legacy",             forward_legacy          },
+        { "clone",              forward_clone           },
+        { "broadcast",          forward_broadcast       },
+        { "sink",               forward_sink            },
+        { "drop",               forward_drop            },
+
+        { NULL, NULL}};
 

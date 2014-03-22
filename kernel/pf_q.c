@@ -54,6 +54,7 @@
 #include <pf_q-group.h>
 #include <pf_q-prefetch.h>
 #include <pf_q-functional.h>
+#include <pf_q-factory.h>
 #include <pf_q-bitops.h>
 #include <pf_q-bpf.h>
 #include <pf_q-memory.h>
@@ -130,8 +131,7 @@ bool pfq_copy_to_user_skbs(struct pfq_rx_opt *ro, int cpu, unsigned long long so
 
         int len = 0; size_t sent = 0;
 
-        if (likely(ro->queue_info))
-        {
+        if (likely(ro->queue_info)) {
         	smp_rmb();
 
                 len  = (int)pfq_popcount(sock_queue);
@@ -139,8 +139,7 @@ bool pfq_copy_to_user_skbs(struct pfq_rx_opt *ro, int cpu, unsigned long long so
 
         	__sparse_add(&ro->stat.recv, sent, cpu);
 
-		if (len > sent)
-		{
+		if (len > sent) {
 			__sparse_add(&ro->stat.lost, len - sent, cpu);
 			return false;
 		}
@@ -212,8 +211,8 @@ inline
 unsigned int pfq_fold(unsigned int a, unsigned int b)
 {
         const unsigned int c = b - 1;
-        if (b & c)
-        {
+        if (b & c) {
+
                 switch(b)
                 {
                 case 3:  return a % 3;
@@ -235,8 +234,7 @@ unsigned int pfq_fold(unsigned int a, unsigned int b)
                     }
                 }
         }
-        else
-        {
+        else {
                 return a & c;
         }
 }
@@ -260,9 +258,8 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 
 	/* flow control */
 
-	if (local->flowctrl &&
-	    local->flowctrl--)
-	{
+	if (local->flowctrl && local->flowctrl--) {
+
                 if (direct)
                         pfq_kfree_skb_recycle(skb, &local->recycle_list);
                 else
@@ -285,8 +282,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 
         /* push the mac header: reset skb->data to the beginning of the packet */
 
-        if (likely(skb->pkt_type != PACKET_OUTGOING))
-        {
+        if (likely(skb->pkt_type != PACKET_OUTGOING)) {
             skb_push(skb, skb->mac_len);
         }
 
@@ -300,9 +296,8 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 
         cb = PFQ_CB(skb);
 
-        cb->direct_skb      = direct;
-        cb->stolen_skb      = false;
-        cb->send_to_kernel  = false;
+        cb->direct_skb  = direct;
+        cb->action.attr = 0;
 
         /* enqueue this skb ... */
 
@@ -347,10 +342,9 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
         	pfq_non_intrusive_for_each(skb, n, prefetch_queue)
 		{
                 	struct pfq_cb *cb = PFQ_CB(skb);
+                        struct pfq_exec_prog *prg;
 
 			unsigned long sock_mask = 0;
-
-			ret_t ret;
 
 			if (unlikely((cb->group_mask & bit) == 0))
                          	continue;
@@ -362,61 +356,48 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
                         /* check bpf filter */
 
                         if (bpf && !sk_run_filter(skb, bpf->insns))
-                        {
                                 continue;
-                        }
 
                         /* check vlan filter */
 
-                        if (vlan_filter_enabled)
-                        {
+                        if (vlan_filter_enabled) {
                                 if (!__pfq_check_group_vlan_filter(gid, skb->vlan_tci & ~VLAN_TAG_PRESENT))
                                         continue;
                         }
 
-                        /* retrieve the function for this group */
+                        /* check where a functional program is available for this group */
 
-			if (atomic_long_read(&pfq_groups[gid].fun_ctx[0].function))
-                        {
-                                /* continuation-passing style evaluation */
+                        prg = (struct pfq_exec_prog *)atomic_long_read(&pfq_groups[gid].prog);
 
-                                sk_function_t fun = (sk_function_t) atomic_long_read(&pfq_groups[gid].fun_ctx[0].function);
+                        if (prg) { /* run the functional program */
 
-                                /* reset state, index call and fun_ctx ptr */
+                                cb->state = 0;
 
-                                cb->index   = -1;
-                                cb->state   =  0;
-                                cb->fun_ctx =  pfq_groups[gid].fun_ctx;
+                                skb = pfq_run(gid, prg, skb);
+                                if (skb == NULL)
+                                        continue;
 
-                                ret = pfq_call(fun, skb, pass());
+                                cb = PFQ_CB(skb);
 
-                                if (ret.type & action_steal)
-                                {
-                                        cb->stolen_skb = true;
+                                if (has_stolen(cb->action)) {
                                         continue;
                                 }
 
-                                if (ret.type & action_to_kernel)
-                                {
-                                        cb->send_to_kernel = true;
-                                }
+                                if (likely(!is_drop(cb->action))) {
 
-                                if (likely((ret.type && ret.type & action_drop) == 0))
-                                {
                                         unsigned long eligible_mask = 0;
                                         unsigned long cbit;
 
-                                        pfq_bitwise_foreach(ret.class, cbit)
+                                        /* load the eligible mask */
+
+                                        pfq_bitwise_foreach(cb->action.class, cbit)
                                         {
                                                 int cindex = pfq_ctz(cbit);
                                                 eligible_mask |= atomic_long_read(&pfq_groups[gid].sock_mask[cindex]);
                                         }
 
-                                        if (unlikely(ret.type & action_clone)) {
+                                        if (is_steering(cb->action)) {
 
-                                                sock_mask |= eligible_mask;
-                                        }
-                                        else {
                                                 if (unlikely(eligible_mask != local->eligible_mask)) {
 
                                                         unsigned long ebit;
@@ -430,16 +411,18 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
                                                         }
                                                 }
 
-                                                if (likely(local->sock_cnt))
-                                                {
-                                                        unsigned int h = ret.hash ^ (ret.hash >> 8) ^ (ret.hash >> 16);
+                                                if (likely(local->sock_cnt)) {
+                                                        unsigned int h = cb->action.hash ^ (cb->action.hash >> 8) ^ (cb->action.hash >> 16);
                                                         sock_mask |= local->sock_mask[pfq_fold(h, local->sock_cnt)];
                                                 }
                                         }
+                                        else {  /* clone or continue ... */
+
+                                                sock_mask |= eligible_mask;
+                                        }
                                 }
                         }
-                        else
-                        {
+                        else {
                                 sock_mask |= atomic_long_read(&pfq_groups[gid].sock_mask[0]);
                         }
 
@@ -453,8 +436,8 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
                 {
                         int i = pfq_ctz(lb);
                         struct pfq_rx_opt * ro = &pfq_get_sock_by_id(i)->rx_opt;
-                        if (likely(ro))
-                        {
+                        if (likely(ro)) {
+
 #ifdef PFQ_USE_FLOW_CONTROL
                                 if (!pfq_copy_to_user_skbs(ro, cpu, sock_queue[i], prefetch_queue, gid))
                                         local->flowctrl = flow_control;
@@ -478,13 +461,12 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
         {
                 cb = PFQ_CB(skb);
 
-                if (unlikely(cb->stolen_skb))
+                if (unlikely(has_stolen(cb->action)))
                         continue;
 
-                if (likely(cb->direct_skb))
-		{
-		        if (unlikely(!capture_incoming && cb->send_to_kernel))
-                        {
+                if (likely(cb->direct_skb)) {
+
+		        if (unlikely(!capture_incoming && has_ret_to_kernel(cb->action))) {
                                 if (cb->direct_skb == 1)
                                         netif_rx(skb);
                                 else
@@ -493,13 +475,11 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
                                 else
                                         napi_gro_receive(napi, skb);
                         }
-                        else
-                        {
+                        else {
                                 pfq_kfree_skb_recycle(skb, &local->rx_recycle_list);
         		}
 		}
-                else
-                {
+                else {
                         /* to avoid loops, sniffed packets are not passed back to kernel */
                         kfree_skb(skb);
                 }
@@ -672,8 +652,8 @@ pfq_release(struct socket *sock)
 
         /* stop TX thread (if running) */
 
-        if (so->tx_opt.thread)
-        {
+        if (so->tx_opt.thread) {
+
                 pr_devel("[PFQ|%d] stopping TX thread...\n", id);
                 kthread_stop(so->tx_opt.thread);
                 so->tx_opt.thread = NULL;
@@ -693,8 +673,8 @@ pfq_release(struct socket *sock)
         /* disable skb recycler if no sockets are open */
 
 #ifdef PFQ_USE_SKB_RECYCLE
-        if (pfq_get_sock_count() == 0)
-        {
+        if (pfq_get_sock_count() == 0) {
+
                 pfq_skb_recycle_enable(false);
         }
 #endif
@@ -707,8 +687,8 @@ pfq_release(struct socket *sock)
 
         /* purge the queues if no sockets are open */
 
-        if (pfq_get_sock_count() == 0)
-        {
+        if (pfq_get_sock_count() == 0) {
+
                 total += pfq_prefetch_purge_all();
 
 #ifdef PFQ_USE_SKB_RECYCLE
@@ -720,8 +700,8 @@ pfq_release(struct socket *sock)
 
         up (&sock_sem);
 
-        if (total)
-	{
+        if (total) {
+
 #ifdef PFQ_USE_SKB_RECYCLE_STAT
 
                 struct pfq_recycle_stat stat = pfq_get_recycle_stats();
@@ -757,8 +737,8 @@ pfq_memory_mmap(struct vm_area_struct *vma,
 {
         vma->vm_flags |= flags;
 
-        if (remap_vmalloc_range(vma, ptr, 0) != 0)
-        {
+        if (remap_vmalloc_range(vma, ptr, 0) != 0) {
+
                 printk(KERN_WARNING "[PFQ] remap_vmalloc_range!\n");
                 return -EAGAIN;
         }
@@ -872,7 +852,7 @@ void pfq_proto_ops_init(void)
 
                 /* Now the operations that really occur. */
                 .release    = pfq_release,
-                .bind       = sock_no_bind,         // pfq_bind,
+                .bind       = sock_no_bind,         //
                 .mmap       = pfq_mmap,             // pfq_mmap,
                 .poll       = pfq_poll,             // pfq_poll,
                 .setsockopt = pfq_setsockopt,       // pfq_setsockopt,
@@ -911,8 +891,7 @@ void pfq_net_proto_family_init(void)
 static
 void register_device_handler(void)
 {
-        if (capture_incoming || capture_outgoing || capture_loopback)
-        {
+        if (capture_incoming || capture_outgoing || capture_loopback) {
                 pfq_prot_hook.func = pfq_packet_rcv;
                 pfq_prot_hook.type = __constant_htons(ETH_P_ALL);
                 dev_add_pack(&pfq_prot_hook);
@@ -923,8 +902,8 @@ void register_device_handler(void)
 static
 void unregister_device_handler(void)
 {
-        if (capture_incoming || capture_outgoing || capture_loopback)
-        {
+        if (capture_incoming || capture_outgoing || capture_loopback) {
+
                 dev_remove_pack(&pfq_prot_hook); /* Remove protocol hook */
         }
 }
@@ -935,8 +914,8 @@ static int __init pfq_init_module(void)
         int n;
         printk(KERN_INFO "[PFQ] loading (%s)...\n", Q_VERSION);
 
-        if (tx_queue_slots & (tx_queue_slots-1))
-        {
+        if (tx_queue_slots & (tx_queue_slots-1)) {
+
                 printk(KERN_INFO "[PFQ] tx_queue_slots (%d) not a power of 2!\n", tx_queue_slots);
         }
 
@@ -1043,8 +1022,7 @@ int pfq_normalize_skb(struct sk_buff *skb)
 	skb_reset_transport_header(skb);
 
 #ifdef PFQ_USE_SKB_LINEARIZE
-	if(skb_linearize(skb) < 0)
-	{
+	if(skb_linearize(skb) < 0) {
 		__kfree_skb(skb);
 		return -1;
 	}
@@ -1056,8 +1034,8 @@ int pfq_normalize_skb(struct sk_buff *skb)
 int
 pfq_netif_receive_skb(struct sk_buff *skb)
 {
-        if (likely(pfq_direct_capture(skb)))
-        {
+        if (likely(pfq_direct_capture(skb))) {
+
 		if (pfq_normalize_skb(skb) < 0)
                 	return NET_RX_DROP;
 
@@ -1072,8 +1050,8 @@ pfq_netif_receive_skb(struct sk_buff *skb)
 int
 pfq_netif_rx(struct sk_buff *skb)
 {
-        if (likely(pfq_direct_capture(skb)))
-        {
+        if (likely(pfq_direct_capture(skb))) {
+
 		if (pfq_normalize_skb(skb) < 0)
                 	return NET_RX_DROP;
 
@@ -1088,8 +1066,8 @@ pfq_netif_rx(struct sk_buff *skb)
 gro_result_t
 pfq_gro_receive(struct napi_struct *napi, struct sk_buff *skb)
 {
-        if (likely(pfq_direct_capture(skb)))
-        {
+        if (likely(pfq_direct_capture(skb))) {
+
 		if (pfq_normalize_skb(skb) < 0)
                 	return GRO_DROP;
 

@@ -21,22 +21,43 @@
  *
  ****************************************************************/
 
-#ifndef _PF_Q_STEER_H_
-#define _PF_Q_STEER_H_
+#ifndef _PF_Q_FUNCTIONAL_H_
+#define _PF_Q_FUNCTIONAL_H_
 
-#include <linux/skbuff.h>
 #include <linux/pf_q.h>
-#include <linux/pf_q-fun.h>
+#include <linux/pf_q-module.h>
 
 
-extern void pfq_function_factory_init(void);
-extern void pfq_function_factory_free(void);
+static inline
+struct sk_buff *
+pfq_bind(struct sk_buff *skb, pfq_exec_t *data)
+{
+        pfq_function_t fun = (pfq_function_t)data->fun_ptr;
 
-extern int  pfq_register_function(const char *module, const char *name, sk_function_t fun);
-extern int  pfq_unregister_function(const char *module, const char *name);
+        context_t ctx = {data->ctx_ptr, data->ctx_size };
 
-extern sk_function_t pfq_get_function(const char *name);
+        if (fun == NULL)
+                return skb;
 
-sk_function_t pfq_get_function(const char *name);
+        return fun(ctx, skb);
+}
 
-#endif /* _PF_Q_STEER_H_ */
+
+static inline size_t
+pfq_meta_prog_memsize(size_t size)
+{
+        return sizeof(int) + sizeof(pfq_fun_t) * size;
+}
+
+extern struct sk_buff *pfq_run(int gid, struct pfq_exec_prog *prg, struct sk_buff *skb);
+
+extern struct pfq_meta_prog * kzalloc_meta_prog(size_t size);
+
+extern int copy_meta_prog_from_user(struct pfq_meta_prog *to, struct pfq_user_meta_prog *from);
+extern int pfq_meta_prog_compile(const struct pfq_meta_prog *prog, struct pfq_exec_prog **exec, void **ctx);
+
+extern void  kfree_meta_prog(struct pfq_meta_prog *prog);
+extern void  pfq_exec_prog_pr_devel(const struct pfq_exec_prog *prog, const void *ctx);
+extern void  pfq_meta_prog_pr_devel(const struct pfq_meta_prog *prog);
+
+#endif /* _PF_Q_FUNCTIONAL_H_ */

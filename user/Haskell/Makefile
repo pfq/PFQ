@@ -13,26 +13,29 @@ HSC=hsc2hs
 
 .PHONY: all clean
 
-all: Network/PFq.hs pfq-read pfq-counters pfq-dispatch pfq-send
+all: Network/PFq.hs pfq-counters test-read test-dispatch test-send test-lang
 
 Network/PFq.hs:
 		$(HSC) Network/PFq.hsc
 
-pfq-read: Network/PFq.hs pfq-read.hs
-		$(HC) $(GHCFLAGS) $(LIBS) pfq-read.hs -o $@
+test-read: Network/PFq.hs test-read.hs
+		$(HC) $(GHCFLAGS) $(LIBS) test-read.hs -o $@
 
-pfq-send: Network/PFq.hs pfq-send.hs
-		$(HC) $(GHCFLAGS) $(LIBS) pfq-send.hs -o $@
+test-send: Network/PFq.hs test-send.hs
+		$(HC) $(GHCFLAGS) $(LIBS) test-send.hs -o $@
 
 pfq-counters: Network/PFq.hs pfq-counters.hs
 		$(HC) $(GHCFLAGS) $(LIBS) pfq-counters.hs -o $@
 
-pfq-dispatch: Network/PFq.hs pfq-dispatch.hs
-		$(HC) $(GHCFLAGS) $(LIBS) pfq-dispatch.hs -o $@
+test-dispatch: Network/PFq.hs test-dispatch.hs
+		$(HC) $(GHCFLAGS) $(LIBS) test-dispatch.hs -o $@
+
+test-lang: test-lang.hs
+		$(HC) $(GHCFLAGS) $(LIBS) test-lang.hs -o $@
 
 install: all
 		cp pfq-counters  ${INSTDIR}/bin/
 
 clean:
-	   @rm -f pfq-read pfq-send pfq-counters pfq-dispatch
+	   @rm -f pfq_counters test-read test-send test-dispatch test-lang
 	   @rm -f *.o *.hi Network/*.o Network/*.hi Network/PFq.hs Network/PFq_stub.h

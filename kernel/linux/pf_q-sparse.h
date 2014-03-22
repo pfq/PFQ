@@ -22,19 +22,20 @@
  *
  ****************************************************************/
 
-#ifndef _SPARSE_COUNTER_H_
-#define _SPARSE_COUNTER_H_
+#ifndef _PF_Q_SPARSE_H_
+#define _PF_Q_SPARSE_H_
 
 #include <linux/smp.h>  /* get_cpu */
 #include <asm/local.h>
 
-#define MAX_CPU_CTX     64
+
+#define Q_MAX_CPU                16
 
 
 typedef struct { local_t value; } __attribute__((aligned(64))) counter_t;
 
 
-typedef struct { counter_t ctx[MAX_CPU_CTX]; } sparse_counter_t;
+typedef struct { counter_t ctx[Q_MAX_CPU]; } sparse_counter_t;
 
 
 static inline
@@ -96,7 +97,7 @@ static inline
 void sparse_set(sparse_counter_t *sc, long n)
 {
         unsigned int i, me = get_cpu();
-        for(i = 0; i < MAX_CPU_CTX; i++)
+        for(i = 0; i < Q_MAX_CPU; i++)
                 local_set(&sc->ctx[i].value, i == me ? n : 0);
         put_cpu();
 }
@@ -105,10 +106,10 @@ static inline
 long sparse_read(sparse_counter_t *sc)
 {
         long ret = 0; int i;
-        for(i=0; i < MAX_CPU_CTX; i++)
+        for(i=0; i < Q_MAX_CPU; i++)
                 ret += local_read(&sc->ctx[i].value);
 
         return ret;
 }
 
-#endif /* _SPARSE_COUNTER_H_ */
+#endif /* _PF_Q_SPARSE_H_ */

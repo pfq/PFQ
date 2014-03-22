@@ -1,7 +1,7 @@
 #include <iostream>
-#include <cstdio>
 #include <string>
 #include <stdexcept>
+#include <chrono>
 
 #include <pfq.hpp>
 using namespace net;
@@ -16,7 +16,21 @@ main(int argc, char *argv[])
 
     q.bind(argv[1], pfq::any_queue);
 
-    q.timestamp_enable(true);
+    auto gid = q.group_id();
+
+    auto prog = reinterpret_cast<pfq_meta_prog *>(malloc(sizeof(int) + sizeof(pfq_fun_t) * 2));
+
+    prog->size = 2;
+
+    prog->fun[0].name = "icmp";
+    prog->fun[0].context.addr = NULL;
+    prog->fun[0].context.size = 0;
+
+    prog->fun[1].name = "steer-ip";
+    prog->fun[1].context.addr = NULL;
+    prog->fun[1].context.size = 0;
+
+    q.set_group_program(gid, prog);
 
     q.enable();
 
@@ -44,17 +58,6 @@ main(int argc, char *argv[])
                     }
                     printf("\n");
             }
-
-            auto cs = q.group_counters(q.group_id());
-
-            std::cout << "counters: ";
-            for(auto i = 0; i < Q_MAX_COUNTERS; ++i)
-            {
-                std::cout << cs.counter[i] << ' ';
-            }
-
-            std::cout << std::endl;
-
     }
 
     return 0;

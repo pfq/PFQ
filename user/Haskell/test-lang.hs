@@ -1,6 +1,4 @@
---
---
---  (C) 2011-13 Nicola Bonelli <nicola.bonelli@cnit.it>
+--  (C) 2011-14 Nicola Bonelli <nicola.bonelli@cnit.it>
 --
 --  This program is free software; you can redistribute it and/or modify
 --  it under the terms of the GNU General Public License as published by
@@ -19,36 +17,10 @@
 --  The full GNU General Public License is included in this distribution in
 --  the file called "COPYING".
 
-module Main where
+import Network.PFqLang
 
-import Network.PFq as Q
-import Foreign
-import System.Environment
-
-handler :: Q.Callback
-handler h _ = print h
-
-recvDispatch :: Ptr PFqTag -> IO()
-recvDispatch q = do
-        Q.dispatch q handler 1000
-        recvDispatch q
-
-dumper :: String -> IO ()
-dumper dev = do
-    putStrLn  $ "dumping " ++ dev  ++ "..."
-    fp <- Q.open 64 14 4096
-    withForeignPtr fp  $ \q -> do
-        Q.setTimestamp q True
-        gid <- Q.getGroupId q
-        Q.bindGroup q gid dev (-1)
-        Q.enable q
-        Q.groupFunction q gid 0 "steer-ipv4"
-        Q.getRxSlotSize q >>= \o -> putStrLn $ "slot_size: " ++ show o
-        recvDispatch q
-
-main :: IO ()
 main = do
-    args <- getArgs
-    case length args of
-        0   -> error "usage: pfq-dispatch dev"
-        _   -> dumper (head args)
+        let comp = ip >-> udp >-> dummy 42
+        print comp
+        print $ eval comp
+

@@ -3,26 +3,20 @@
 #include <linux/init.h>
 
 #include <linux/pf_q.h>
-#include <linux/pf_q-fun.h>
+#include <linux/pf_q-module.h>
 
 MODULE_LICENSE("GPL");
 
-ret_t
-steering_dummy(struct sk_buff *skb, ret_t ret)
+struct sk_buff *
+fun_dummy(context_t ctx, struct sk_buff *skb)
 {
-	sk_function_t fun = get_next_function(skb);
-
-        if (is_skip(ret) || is_drop(ret))
-                return pfq_call(fun, skb, ret);
-
 	/* perform action here */
-
-        return pfq_call(fun, skb, ret);
+        return cont(skb);
 }
 
 
-struct sk_function_descr hooks[] = {
-	{ "steer-dummy", steering_dummy },
+struct pfq_function_descr hooks[] = {
+	{ "dummy", fun_dummy },
 	{ NULL, NULL}};
 
 

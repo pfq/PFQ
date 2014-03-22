@@ -1,10 +1,13 @@
 #include <iostream>
-#include <cstdio>
 #include <string>
 #include <stdexcept>
+#include <chrono>
 
 #include <pfq.hpp>
+#include <pfq-lang.hpp>
+
 using namespace net;
+using namespace pfq_lang;
 
 int
 main(int argc, char *argv[])
@@ -16,7 +19,9 @@ main(int argc, char *argv[])
 
     q.bind(argv[1], pfq::any_queue);
 
-    q.timestamp_enable(true);
+    auto gid = q.group_id();
+
+    q.set_group_computation(gid, icmp() >> steer_ip());
 
     q.enable();
 
@@ -44,17 +49,6 @@ main(int argc, char *argv[])
                     }
                     printf("\n");
             }
-
-            auto cs = q.group_counters(q.group_id());
-
-            std::cout << "counters: ";
-            for(auto i = 0; i < Q_MAX_COUNTERS; ++i)
-            {
-                std::cout << cs.counter[i] << ' ';
-            }
-
-            std::cout << std::endl;
-
     }
 
     return 0;

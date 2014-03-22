@@ -1,6 +1,6 @@
 /***************************************************************
  *
- * (C) 2014 Nicola Bonelli <nicola.bonelli@cnit.it>
+ * (C) 2011-13 Nicola Bonelli <nicola.bonelli@cnit.it>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,43 +21,24 @@
  *
  ****************************************************************/
 
-#include <linux/kernel.h>
-#include <linux/module.h>
-#include <linux/cpumask.h>
+#ifndef _PF_Q_FACTORY_H_
+#define _PF_Q_FACTORY_H_
+
+#include <linux/skbuff.h>
 
 #include <linux/pf_q.h>
 #include <linux/pf_q-module.h>
 
-#include <pf_q-memory.h>
+/* factory */
 
-int pfq_prefetch_purge_all(void)
-{
-        int cpu;
-        int total = 0;
+extern void pfq_function_factory_init(void);
+extern void pfq_function_factory_free(void);
 
-        /* destroy prefetch queues (of each cpu) */
+extern int  pfq_register_function(const char *module, const char *name, pfq_function_t fun);
+extern int  pfq_unregister_function(const char *module, const char *name);
 
-        for_each_possible_cpu(cpu) {
+extern pfq_function_t pfq_get_function(const char *name);
 
-                struct local_data *local = per_cpu_ptr(cpu_data, cpu);
-                struct pfq_non_intrusive_skb *this_queue = &local->prefetch_queue;
-                struct sk_buff *skb;
-		int n = 0;
+pfq_function_t pfq_get_function(const char *name);
 
-		pfq_non_intrusive_for_each(skb, n, this_queue)
-		{
-                        struct pfq_cb *cb = PFQ_CB(skb);
-                        if (unlikely(has_stolen(cb->action)))
-                                continue;
-                 	kfree_skb(skb);
-		}
-
-                total += pfq_non_intrusive_len(this_queue);
-
-       		pfq_non_intrusive_flush(this_queue);
-        }
-
-        return total;
-}
-
-
+#endif /* _PF_Q_FACTORY_H_ */

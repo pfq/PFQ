@@ -1,4 +1,3 @@
---
 --    Copyright (c) 2011-2013, Nicola Bonelli
 --    All rights reserved.
 --
@@ -30,94 +29,138 @@
 
 {-# LANGUAGE ExistentialQuantification #-}
 {-# LANGUAGE NoMonomorphismRestriction #-}
+{-# LANGUAGE ImpredicativeTypes #-}
+{-# LANGUAGE Rank2Types #-}
+{-# LANGUAGE GADTs #-}
 
 {-# OPTIONS_GHC -fno-warn-unused-binds #-}
 
 module Network.PFqLang
     (
         StorableContext(..),
-        Computation(..)
+        Computation(),
+        QFun,
+        QMetaFun,
+
+        (>->),
+        eval,
+        qfun,
+        qfunWith,
+
+        --
+        steer_mac  ,
+        steer_vlan ,
+        steer_ip   ,
+        steer_ipv6 ,
+        steer_flow ,
+        steer_rtp  ,
+
+        ip         ,
+        ipv6       ,
+        udp        ,
+        tcp        ,
+        vlan       ,
+        icmp       ,
+        flow       ,
+        rtp        ,
+
+        legacy     ,
+        clone      ,
+        broadcast  ,
+        sink       ,
+        drop       ,
+
+        ident      ,
+        dummy
     ) where
 
-import Control.Monad
-import Control.Monad.State.Lazy
-import Control.Monad.Cont
-import Control.Concurrent.STM
+import Control.Monad.Identity
 import Foreign.Storable
 
+-- Functional computation
 
--- Placeholder types: sk_buff and Action, defined in the kernel
---
+data StorableContext = forall a. (Show a, Storable a) => StorableContext a
 
-newtype SkBuff = SkBuff ()
+instance Show StorableContext where
+        show (StorableContext c) = show c
 
-newtype Action = Action ()
+-- Computation (phantom type)
 
--- Placeholder for in-kernel monads:
---
+data Computation f where
+        Fun  :: String -> Computation f
+        FunWith :: forall a f. (Show a, Storable a) => String -> a -> Computation f
+        Comp :: Computation f -> Computation f -> Computation f
 
-type Monitor action state = ContT action (StateT state STM)
+instance Show (Computation f) where
+    show (Fun name)  = name
+    show (FunWith name ctx) = name ++ " (" ++ show ctx ++ ")"
+    show (Comp c1 c2) = show c1 ++ " >-> " ++ show c2
 
+-- QFun: signature of the in-kernel monadic functions.
 
--- prototype for in-kernel Monitor style functions...
---
+type QFun       = forall ctx. (Show ctx, Storable ctx) => ctx -> SkBuff -> Action SkBuff
+type QMetaFun   = (String, Maybe StorableContext)
 
-comp_type :: (SkBuff, Action) -> Monitor Action a (SkBuff,Action)
-comp_type (skb,a) = return (skb,a)
-
-
--- Packet Function computation
---
-
-data StorableContext = forall c. (Storable c) => StorableContext c
-
-data Computation a = Computation a String (Maybe StorableContext) |
-                     Composition a [String] [Maybe StorableContext]
-
-
-instance Show (Computation a) where
-    show (Computation _  n _) = show n
-    show (Composition _ ns _) = show ns
-
+type Action     = Identity
+newtype SkBuff  = SkBuff ()
 
 -- operator: >->
+
+(>->) :: Computation QFun -> Computation QFun -> Computation QFun
+(Fun  n)     >-> (Fun n')     = Comp (Fun n)      (Fun n')
+(FunWith n x)   >-> (Fun n')     = Comp (FunWith n x)   (Fun n')
+(FunWith n x)   >-> (FunWith n' x') = Comp (FunWith n x)   (FunWith n' x')
+(Fun  n)     >-> (FunWith n' x') = Comp (Fun n)      (FunWith n' x')
+(Comp c1 c2) >-> (Fun n)      = Comp (Comp c1 c2) (Fun n)
+(Comp c1 c2) >-> (FunWith n c)   = Comp (Comp c1 c2) (FunWith n c)
+
+(Fun  n)     >-> (Comp c1 c2) = Comp (Fun n) (Comp c1 c2)
+(FunWith n x)   >-> (Comp c1 c2) = Comp (FunWith n x) (Comp c1 c2)
+(Comp c1 c2) >-> (Comp c3 c4) = Comp (Comp c1 c2) (Comp c3 c4)
+
+
+-- eval: convert a computation of QFun to a list of QMetaFun.
+
+eval :: Computation QFun -> [QMetaFun]
+eval (Fun n)      = [(n, Nothing)]
+eval (FunWith n x)   = [(n, Just (StorableContext x))]
+eval (Comp c1 c2) = eval c1 ++ eval c2
+
+
+-- qfun, qfunWith: Computation QFun constructors
+
+qfun :: String -> Computation QFun
+qfun = Fun
+
+qfunWith :: (Show a, Storable a) => String -> a -> Computation QFun
+qfunWith name = FunWith name
+
+
+-- Predefined in-kernel computations:
 --
 
-(>->) :: (Monad m) => Computation (a -> m b) -> Computation (b -> m c) -> Computation (a -> m c)
-(Computation f1 n1 c1) >-> (Computation f2 n2 c2) = Composition (f1 >=> f2) [n1, n2] [c1, c2]
-(Composition f1 ns cs) >-> (Computation f2 n2 c2) = Composition (f1 >=> f2) (ns ++ [n2]) (cs ++ [c2])
-(Computation f1 n1 c1) >-> (Composition f2 n2 c2) = Composition (f1 >=> f2) (n1 : n2) (c1 : c2)
-(Composition f1 n1 c1) >-> (Composition f2 n2 c2) = Composition (f1 >=> f2) (n1 ++ n2) (c1 ++ c2)
+steer_mac   = qfun "steer-mac"
+steer_vlan  = qfun "steer-vlan-id"
+steer_ip    = qfun "steer-ip"
+steer_ipv6  = qfun "steer-ipv6"
+steer_flow  = qfun "steer-flow"
+steer_rtp   = qfun "steer-rtp"
 
+ip          = qfun "ip"
+ipv6        = qfun "ipv6"
+udp         = qfun "udp"
+tcp         = qfun "tcp"
+vlan        = qfun "vlan"
+icmp        = qfun "icmp"
+flow        = qfun "flow"
+rtp         = qfun "rtp"
 
--- Predefined in-kernel computations
---
+legacy      = qfun "legacy"
+clone       = qfun "clone"
+broadcast   = qfun "broadcast"
+sink        = qfun "sink"
+drop'       = qfun "drop"
 
-steer_mac    = Computation comp_type "steer-mac"     Nothing
-steer_vlan   = Computation comp_type "steer-vlan-id" Nothing
-steer_ipv4   = Computation comp_type "steer-ipv4"    Nothing
-steer_ipv6   = Computation comp_type "steer-ipv6"    Nothing
-steer_flow   = Computation comp_type "steer-flow"    Nothing
-steer_rtp    = Computation comp_type "steer-rtp"     Nothing
-
-clone        = Computation comp_type "clone"         Nothing
-broadcast    = Computation comp_type "broadcast"     Nothing
-
-vlan         = Computation comp_type "vlan"          Nothing
-ipv4         = Computation comp_type "ipv4"          Nothing
-udp          = Computation comp_type "udp"           Nothing
-tcp          = Computation comp_type "tcp"           Nothing
-flow         = Computation comp_type "flow"          Nothing
-rtp          = Computation comp_type "rtp"           Nothing
-
-strict_vlan  = Computation comp_type "strict-vlan"   Nothing
-strict_ipv4  = Computation comp_type "strict-ipv4"   Nothing
-strict_udp   = Computation comp_type "strict-udp"    Nothing
-strict_tcp   = Computation comp_type "strict-tcp"    Nothing
-strict_flow  = Computation comp_type "strict-flow"   Nothing
-
-neg          = Computation comp_type "neg"           Nothing
-par          = Computation comp_type "par"           Nothing
-
--- ctx       = Computation comp_type "example"       -- udp >-> (ctx 0) >-> steer-ipv4
+ident       = qfun  "id"
+dummy       = qfunWith "dummy"  :: Int -> Computation QFun
 

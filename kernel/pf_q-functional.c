@@ -1,6 +1,6 @@
 /***************************************************************
  *
- * (C) 2011-13 Nicola Bonelli <nicola.bonelli@cnit.it>
+ * (C) 2014 Nicola Bonelli <nicola.bonelli@cnit.it>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,206 +22,225 @@
  ****************************************************************/
 
 #include <linux/kernel.h>
-#include <linux/module.h>
+#include <linux/printk.h>
 
-#include <linux/list.h>
-#include <linux/string.h>
-#include <linux/semaphore.h>
+#include <asm/uaccess.h>
 
-#include <linux/pf_q-fun.h>
+#include <linux/pf_q.h>
+#include <linux/pf_q-module.h>
 
 #include <pf_q-group.h>
 #include <pf_q-functional.h>
+#include <pf_q-factory.h>
 
 
-DEFINE_SEMAPHORE(function_sem);
-
-
-struct function_factory_elem
+struct sk_buff *
+pfq_run(int gid, struct pfq_exec_prog *prg, struct sk_buff *skb)
 {
-	struct list_head 	function_list;
-	char 			name[Q_FUN_NAME_LEN];
-	sk_function_t 	function;
-};
+        struct pfq_cb *cb = PFQ_CB(skb);
+        struct pfq_group * g = pfq_get_group(gid);
+        action_t *a = &cb->action;
+        int n;
+
+        if (g == NULL)
+                return NULL;
+
+        cb->ctx  = &g->ctx;
+
+        a->class = Q_CLASS_DEFAULT;
+        a->type  = action_continue;
+        a->attr  = 0;
+
+        for(n = 0; n < prg->size; n++)
+        {
+                skb = pfq_bind(skb, &prg->fun[n]);
+                if (skb == NULL)
+                        return NULL;
+
+                a = &PFQ_CB(skb)->action;
+
+                if (a->type == action_drop || a->attr & attr_break)
+                        return skb;
+        }
+
+        return skb;
+}
 
 
-extern struct sk_function_descr default_functions[];
-
-
-LIST_HEAD(function_factory);
-
-/*
- * register the funcitons here!
- */
-
-int
-pfq_register_functions(const char *module, struct sk_function_descr *fun)
+size_t
+pfq_full_context_size(const struct pfq_meta_prog *prog)
 {
-	int i = 0;
-	for(; fun[i].name != NULL; i++)
-	{
-		pfq_register_function(module, fun[i].name, fun[i].function);
-	}
-	return 0;
+        size_t size = 0, n = 0;
+
+        for(; n < prog->size; n++)
+        {
+                size += ALIGN(prog->fun[n].context.size, 8);
+        }
+
+        return size;
 }
 
 
 int
-pfq_unregister_functions(const char *module, struct sk_function_descr *fun)
+pfq_meta_prog_compile(const struct pfq_meta_prog *prog, struct pfq_exec_prog **exec, void **ctx)
 {
-	int i = 0;
-	for(; fun[i].name != NULL; i++)
-	{
-		pfq_unregister_function(module, fun[i].name);
-	}
-	return 0;
+        size_t mem = sizeof(int) + sizeof(pfq_exec_t) * prog->size;
+        size_t cs  = pfq_full_context_size(prog);
+        char * ptr;
+        int n;
+
+        *exec = (struct pfq_exec_prog *)kzalloc(mem, GFP_KERNEL);
+
+        if (!*exec) {
+                printk(KERN_INFO "[PFQ] meta_prog_compile: no memory (%zu bytes)\n", mem);
+                return -ENOMEM;
+        }
+
+        *ctx = NULL;
+        if (cs) {
+                *ctx  = kmalloc(cs, GFP_KERNEL);
+                if (!*ctx) {
+                        printk(KERN_INFO "[PFQ] meta_prog_compile: no memory (%zu bytes)\n", mem);
+                        return -ENOMEM;
+                }
+        }
+
+        ptr = *ctx;
+
+        (*exec)->size = prog->size;
+
+        for(n = 0; n < prog->size; n++)
+        {
+                if (prog->fun[n].name == NULL) {
+                        pr_devel("[PFQ function error: NULL function!\n");
+                        return -EINVAL;
+                }
+
+                (*exec)->fun[n].fun_ptr = pfq_get_function(prog->fun[n].name);
+
+                if ((*exec)->fun[n].fun_ptr == NULL) {
+                        pr_devel("[PFQ function error: '%s' unknown function!\n", prog->fun[n].name);
+                        return -EINVAL;
+                }
+
+                if (prog->fun[n].context.size) {
+                        (*exec)->fun[n].ctx_ptr = ptr;
+                        (*exec)->fun[n].ctx_size = prog->fun[n].context.size;
+
+                        memcpy(ptr, prog->fun[n].context.addr, prog->fun[n].context.size);
+                        ptr += ALIGN(prog->fun[n].context.size, 8);
+                }
+                else {
+                        (*exec)->fun[n].ctx_ptr  = NULL;
+                        (*exec)->fun[n].ctx_size = 0;
+                }
+        }
+
+        return 0;
 }
 
 
-/*
- * register the default functions here!
- */
+struct pfq_meta_prog *
+kzalloc_meta_prog(size_t size)
+{
+        size_t mem = sizeof(int) + sizeof(pfq_fun_t) * size;
+        struct pfq_meta_prog *prog = (struct pfq_meta_prog *)kzalloc(mem, GFP_KERNEL);
+
+        if (!prog) {
+                printk(KERN_INFO "[PFQ] kmalloc_meta_prog: no memory (%zu bytes)\n", mem);
+                return NULL;
+        }
+
+        prog->size = size;
+        return prog;
+}
+
 
 void
-pfq_function_factory_init(void)
+kfree_meta_prog(struct pfq_meta_prog *prog)
 {
-	int i = 0;
-	for(; default_functions[i].name != NULL ; i++)
-	{
-        	pfq_register_function(NULL, default_functions[i].name, default_functions[i].function);
-	}
+        int n;
+        for(n = 0; n < prog->size; n++)
+        {
+                kfree(prog->fun[n].name);
+                kfree(prog->fun[n].context.addr);
+        }
+        kfree(prog);
+}
 
-	printk(KERN_INFO "[PFQ] function-factory initialized (%d entries).\n", i);
+
+char *strcat_user(const char __user *str)
+{
+        size_t len = strlen_user(str);
+        char * ret = (char *)kmalloc(len, GFP_KERNEL);
+        if (!ret)
+                return NULL;
+        if (copy_from_user(ret, str, len)) {
+                kfree(ret);
+                return NULL;
+        }
+        return ret;
+}
+
+
+int
+copy_meta_prog_from_user(struct pfq_meta_prog *to, struct pfq_user_meta_prog *from)
+{
+        int n;
+
+        to->size = from->size;
+        for(n = 0; n < to->size; n++)
+        {
+                size_t csize;
+
+                to->fun[n].name = strcat_user(from->fun[n].name);
+                if (!to->fun[n].name)
+                {
+                        pr_devel("[PFQ] strcat_user error!\n");
+                        return -ENOMEM;
+                }
+
+                csize = from->fun[n].context.size;
+                if (csize) {
+                        to->fun[n].context.size = csize;
+                        to->fun[n].context.addr = kmalloc(csize, GFP_KERNEL);
+                        if (copy_from_user(to->fun[n].context.addr, from->fun[n].context.addr, csize))
+                        {
+                                pr_devel("[PFQ] copy_from_user: address %p not accessible!\n", from->fun[n].context.addr);
+                                return -EFAULT;
+                        }
+                }
+                else {
+                        to->fun[n].context.size = 0;
+                        to->fun[n].context.addr = NULL;
+                }
+        }
+
+        return 0;
 }
 
 
 void
-pfq_function_factory_free(void)
+pfq_exec_prog_pr_devel(const struct pfq_exec_prog *prog, const void *ctx)
 {
-	struct list_head *pos = NULL, *q;
-	struct function_factory_elem *this;
-
-	down(&function_sem);
-	list_for_each_safe(pos, q, &function_factory)
-	{
-    		this = list_entry(pos, struct function_factory_elem, function_list);
-		list_del(pos);
-		kfree(this);
-	}
-	up(&function_sem);
-	printk(KERN_INFO "[PFQ] function factory freed.\n");
+        int n;
+        pr_devel("[PFQ] exec program @%p, context@%p:\n", prog, ctx);
+        for(n = 0; n < prog->size; n++)
+        {
+                pr_devel("   %d: f:%p c:%p\n", n, prog->fun[n].fun_ptr, prog->fun[n].ctx_ptr);
+        }
 }
 
 
-sk_function_t
-__pfq_get_function(const char *name)
+void
+pfq_meta_prog_pr_devel(const struct pfq_meta_prog *prog)
 {
-	struct list_head *pos = NULL;
-	struct function_factory_elem *this;
-
-	list_for_each(pos, &function_factory)
-	{
-    		this = list_entry(pos, struct function_factory_elem, function_list);
-        	if (!strcmp(this->name, name))
-			return this->function;
-	}
-	return NULL;
-}
-
-
-sk_function_t
-pfq_get_function(const char *name)
-{
-	sk_function_t ret;
-	down(&function_sem);
-	ret = __pfq_get_function(name);
-	up(&function_sem);
-	return ret;
-}
-
-
-int
-__pfq_register_function(const char *name, sk_function_t fun)
-{
-	struct function_factory_elem * elem;
-
-	if (__pfq_get_function(name) != NULL) {
-		pr_devel("[PFQ] function factory error: name %s already in use!\n", name);
-		return -1;
-	}
-
-	elem = kmalloc(sizeof(struct function_factory_elem), GFP_KERNEL);
-	if (elem == NULL) {
-		printk(KERN_WARNING "[PFQ] function factory error: out of memory!\n");
-		return -1;
-	}
-
-	INIT_LIST_HEAD(&elem->function_list);
-
-	elem->function = fun;
-
-	strncpy(elem->name, name, Q_FUN_NAME_LEN-1);
-        elem->name[Q_FUN_NAME_LEN-1] = '\0';
-	list_add(&elem->function_list, &function_factory);
-
-	return 0;
-}
-
-
-int
-pfq_register_function(const char *module, const char *name, sk_function_t fun)
-{
-	int r;
-	down(&function_sem);
-	r = __pfq_register_function(name, fun);
-	up(&function_sem);
-	if (r == 0 && module)
-		printk(KERN_INFO "[PFQ]%s '%s' @%p function registered.\n", module, name, fun);
-
-	return r;
-}
-
-
-int
-__pfq_unregister_function(const char *name)
-{
-	struct list_head *pos = NULL, *q;
-	struct function_factory_elem *this;
-
-	list_for_each_safe(pos, q, &function_factory)
-	{
-    		this = list_entry(pos, struct function_factory_elem, function_list);
-		if (!strcmp(this->name, name))
-		{
-			list_del(pos);
-	       		kfree(this);
-			return 0;
-		}
-	}
-	pr_devel("[PFQ] function factory error: %s no such function\n", name);
-	return -1;
-}
-
-
-int
-pfq_unregister_function(const char *module, const char *name)
-{
-	sk_function_t fun;
-
-	down(&function_sem);
-
-	fun = __pfq_get_function(name);
-	if (fun == NULL) {
-        	return -1;
-	}
-
-	__pfq_dismiss_function(fun);
-        __pfq_unregister_function(name);
-
-	printk(KERN_INFO "[PFQ]%s '%s' function unregistered.\n", module, name);
-	up(&function_sem);
-
-	return 0;
+        int n;
+        pr_devel("[PFQ] meta program @%p:\n", prog);
+        for(n = 0; n < prog->size; n++)
+        {
+                pr_devel("   %d: %s (%p,%zu)\n", n, prog->fun[n].name, prog->fun[n].context.addr, prog->fun[n].context.size);
+        }
 }
 
 

@@ -3,7 +3,7 @@
 #include <linux/init.h>
 
 #include <linux/pf_q.h>
-#include <linux/pf_q-fun.h>
+#include <linux/pf_q-module.h>
 
 
 MODULE_LICENSE("GPL");
@@ -54,14 +54,9 @@ bool valid_codec(uint8_t c)
 }
 
 
-ret_t
-heuristic_rtp(struct sk_buff *skb, ret_t ret, bool steer)
+struct sk_buff *
+heuristic_rtp(context_t ctx, struct sk_buff *skb, bool steer)
 {
-	sk_function_t fun = get_next_function(skb);
-
-        if (is_skip(ret) || is_drop(ret))
-                return pfq_call(get_next_function(skb), skb, ret);
-
 	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP))
 	{
 		struct iphdr _iph;
@@ -74,62 +69,63 @@ heuristic_rtp(struct sk_buff *skb, ret_t ret, bool steer)
 
 		ip = skb_header_pointer(skb, skb->mac_len, sizeof(_iph), &_iph);
  		if (ip == NULL)
-        		return pfq_call(fun, skb, drop());
+        		return drop(skb);
 
 		if (ip->protocol != IPPROTO_UDP)
-        		return pfq_call(fun, skb, drop());
+        		return drop(skb);
 
 		hdr = skb_header_pointer(skb, skb->mac_len + (ip->ihl<<2), sizeof(_hdr), &_hdr);
 		if (hdr == NULL)
-        		return pfq_call(fun, skb, drop());
+        		return drop(skb);
 
 		/* version => 2 */
 
 		if (!((ntohs(hdr->un.rtp.rh_flags) & 0xc000) == 0x8000))
-        		return pfq_call(fun, skb, drop());
+        		return drop(skb);
 
 		dest   = ntohs(hdr->udp.dest);
 		source = ntohs(hdr->udp.source);
 
 		if (dest < 1024 || source < 1024)
-        		return pfq_call(fun, skb, drop());
+        		return drop(skb);
 
 		if ((dest & 1) && (source & 1))  /* rtcp */
 		{
                 	if (hdr->un.rtcp.rh_type != 200)  /* SR  */
-        			return pfq_call(fun, skb, drop());
+        			return drop(skb);
 		}
 		else if (!((dest & 1) || (source & 1)))
 		{
                 	uint8_t pt = hdr->un.rtp.rh_pt;
                  	if (!valid_codec(pt))
-        			return pfq_call(fun, skb, drop());
+        			return drop(skb);
 		}
 
-		return steer ? steering(Q_CLASS_DEFAULT, ip->saddr ^ ip->daddr ^ ((uint32_t)(hdr->udp.source & 0xfffe) << 16) ^ (hdr->udp.dest & 0xfffe)) :
-		               pfq_call(fun, skb, ret);
+		return steer ? steering(skb, Q_CLASS_DEFAULT, ip->saddr ^ ip->daddr ^ ((uint32_t)(hdr->udp.source & 0xfffe) << 16) ^ (hdr->udp.dest & 0xfffe)) : cont(skb);
 
 	}
 
-        return pfq_call(fun, skb, drop());
+        return drop(skb);
 }
 
 
-ret_t
-filter_rtp(struct sk_buff *skb, ret_t ret)
+struct sk_buff *
+filter_rtp(context_t ctx, struct sk_buff *skb)
 {
-        return heuristic_rtp(skb, ret, false);
+        return heuristic_rtp(ctx, skb, false);
 }
 
-ret_t
-steering_rtp(struct sk_buff *skb, ret_t ret)
+
+struct sk_buff *
+steering_rtp(context_t ctx, struct sk_buff *skb)
 {
-        return heuristic_rtp(skb, ret, true);
+        return heuristic_rtp(ctx, skb, true);
 }
 
 
-struct sk_function_descr hooks[] = {
-	{ "rtp",       filter_rtp },
+struct pfq_function_descr hooks[] = {
+
+	{ "rtp",       filter_rtp   },
 	{ "steer-rtp", steering_rtp },
 	{ NULL, NULL}};
 

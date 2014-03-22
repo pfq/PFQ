@@ -33,24 +33,9 @@
 
 #define Q_VERSION               "2.1"
 
-struct pfq_cb
-{
-        unsigned long group_mask;
-        unsigned long state;
-
-        struct fun_context * fun_ctx;
-
-        int index;      /* call index */
-
-        char direct_skb;
-
-        bool stolen_skb;
-        bool send_to_kernel;
-};
-
-#define PFQ_CB(skb) ((struct pfq_cb *)(skb)->cb)
-
 #else  /* user space */
+
+#define __user
 
 #include <linux/filter.h>
 #include <linux/types.h>
@@ -82,8 +67,11 @@ static inline void smp_wmb() { barrier(); }
 #define likely(x)       __builtin_expect((x),1)
 #define unlikely(x)     __builtin_expect((x),0)
 
-
 #endif /* __KERNEL__ */
+
+
+#define Q_MAX_COUNTERS           8
+
 
 /* Common header */
 
@@ -210,7 +198,7 @@ void pfq_spsc_write_commit_n(struct pfq_tx_queue_hdr *q, unsigned int n)
         smp_wmb();
 
         if (unlikely(n > q->producer.cache))
-            n = q->producer.cache;
+                n = q->producer.cache;
 
         q->producer.index = (q->producer.index + n) & q->size_mask;
         q->producer.cache -= n;
@@ -222,7 +210,7 @@ void pfq_spsc_write_commit_n(struct pfq_tx_queue_hdr *q, unsigned int n)
 static inline
 void pfq_spsc_write_commit(struct pfq_tx_queue_hdr *q)
 {
-    pfq_spsc_write_commit_n(q,1);
+        pfq_spsc_write_commit_n(q,1);
 }
 
 
@@ -244,7 +232,7 @@ static inline
 int pfq_spsc_read_index(struct pfq_tx_queue_hdr *q)
 {
         if (pfq_spsc_read_avail(q) == 0) {
-            return -1;
+                return -1;
         }
 
         return q->consumer.index;
@@ -257,7 +245,7 @@ void pfq_spsc_read_commit_n(struct pfq_tx_queue_hdr *q, unsigned int n)
         smp_wmb();
 
         if (unlikely(n > q->consumer.cache))
-            n = q->consumer.cache;
+                n = q->consumer.cache;
 
         q->consumer.index  = (q->consumer.index + n) & q->size_mask;
         q->consumer.cache -= n;
@@ -269,7 +257,7 @@ void pfq_spsc_read_commit_n(struct pfq_tx_queue_hdr *q, unsigned int n)
 static inline
 void pfq_spsc_read_commit(struct pfq_tx_queue_hdr *q)
 {
-    pfq_spsc_read_commit_n(q,1);
+        pfq_spsc_read_commit_n(q,1);
 }
 
 
@@ -299,9 +287,6 @@ void pfq_spsc_read_commit(struct pfq_tx_queue_hdr *q)
 
 #define Q_SO_GROUP_JOIN             10
 #define Q_SO_GROUP_LEAVE            11
-#define Q_SO_GROUP_CONTEXT          12
-#define Q_SO_GROUP_FUN              13
-#define Q_SO_GROUP_RESET            14
 
 #define Q_SO_GROUP_FPROG            15      /* Berkeley packet filter */
 #define Q_SO_GROUP_VLAN_FILT_TOGGLE 16      /* enable/disable VLAN filters */
@@ -322,13 +307,15 @@ void pfq_spsc_read_commit(struct pfq_tx_queue_hdr *q)
 
 #define Q_SO_GET_GROUPS             28
 #define Q_SO_GET_GROUP_STATS        29
-#define Q_SO_GET_GROUP_CONTEXT      30
+#define Q_SO_GET_GROUP_COUNTERS     30
 
 #define Q_SO_TX_THREAD_BIND         31
 #define Q_SO_TX_THREAD_START        32
 #define Q_SO_TX_THREAD_STOP         33
 #define Q_SO_TX_THREAD_WAKEUP       34
 #define Q_SO_TX_QUEUE_FLUSH         35
+
+#define Q_SO_GROUP_FUN_PROG         36      /* deprecate PFQ_SO_GROUP_FUN */
 
 /* general placeholders */
 
@@ -350,23 +337,6 @@ void pfq_spsc_read_commit(struct pfq_tx_queue_hdr *q)
 #define Q_VLAN_UNTAG         0
 #define Q_VLAN_ANYTAG       -1
 
-struct pfq_vlan_toggle
-{
-        int gid;
-        int vid;
-        int toggle;
-};
-
-
-/* binding data */
-
-struct pfq_binding
-{
-        int gid;
-        int if_index;
-        int hw_queue;
-};
-
 /* group policies */
 
 #define Q_GROUP_UNDEFINED       0
@@ -382,7 +352,65 @@ struct pfq_binding
 #define Q_CLASS_DEFAULT         Q_CLASS(0)
 #define Q_CLASS_DATA            Q_CLASS_DEFAULT
 #define Q_CLASS_CONTROL         Q_CLASS(1)
-#define Q_CLASS_ANY             (unsigned int)-1
+#define Q_CLASS_ANY             (unsigned short)-1
+
+/* functional */
+
+typedef struct pfq_fun
+{
+        const char *name;
+        struct context_t
+        {
+                void   *addr;
+                size_t  size;
+
+        } context;
+
+} pfq_fun_t;
+
+
+struct pfq_meta_prog
+{
+        size_t size;
+        pfq_fun_t fun[];
+};
+
+typedef struct pfq_user_fun
+{
+        const char __user *name;
+        struct user_context_t
+        {
+                void __user *addr;
+                size_t  size;
+
+        } context;
+
+} pfq_user_fun_t;
+
+
+struct pfq_user_meta_prog
+{
+        size_t size;
+        pfq_user_fun_t fun[];
+};
+
+
+/*  sock options helper structures */
+
+
+struct pfq_vlan_toggle
+{
+        int gid;
+        int vid;
+        int toggle;
+};
+
+struct pfq_binding
+{
+        int gid;
+        int if_index;
+        int hw_queue;
+};
 
 struct pfq_group_join
 {
@@ -391,27 +419,20 @@ struct pfq_group_join
         unsigned int class_mask;
 };
 
-/* steering functions */
-
-#define Q_FUN_NAME_LEN        64
-#define Q_FUN_MAX             8     /* max fun binding: f1 >>= f2 >>= f3...*/
-
-struct pfq_group_function
+struct pfq_group_meta_prog
 {
-        const char *name;
         int gid;
-        int level;
+        struct pfq_meta_prog __user *prog;
 };
 
 
 struct pfq_group_context
 {
-        void       * context;
+        void __user *context;
         size_t       size;      /* sizeof(context) */
         int gid;
         int level;
 };
-
 
 /* pfq_fprog: per-group sock_fprog */
 
@@ -431,6 +452,13 @@ struct pfq_stats
 
         unsigned long int sent;   /* sent by the driver */
         unsigned long int disc;   /* discarded by the driver */
+};
+
+/* pfq counters for groups */
+
+struct pfq_counters
+{
+        unsigned long int counter[Q_MAX_COUNTERS];
 };
 
 #endif /* _PF_Q_H_ */
