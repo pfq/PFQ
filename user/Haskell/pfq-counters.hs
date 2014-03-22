@@ -24,6 +24,7 @@
 module Main where
 
 import qualified Network.PFq as Q
+import Network.PFqLang
 
 import Foreign
 -- import System.Environment
@@ -37,9 +38,8 @@ import Control.Exception
 
 import Data.List.Split
 import Data.Data
--- import Data.Typeable
--- import Data.Maybe
--- import Data.List
+import Data.Maybe
+import Data.List
 
 import qualified Data.Set as S
 import qualified Data.Map as M
@@ -71,13 +71,14 @@ data Options = Options
 
 -- default options
 --
-options = cmdArgsMode $ Options {
-                                  caplen   = 64,
-                                  offset   = 0,
-                                  slots    = 262144,
-                                  function = [] &= typ "FUNCTION"  &= help "Where FUNCTION = function-name[>=>fun>=>fun][.gid] (ie: steer-ipv4)",
-                                  thread   = [] &= typ "BINDING" &= help "Where BINDING = eth0:...:ethx[.core[.gid[.queue.queue...]]]"
-                                } &= summary "PFq multi-threaded packet counter." &= program "pfq-counters"
+options = cmdArgsMode $
+    Options {
+        caplen   = 64,
+        offset   = 0,
+        slots    = 131072,
+        function = [] &= typ "FUNCTION"  &= help "Where FUNCTION = function-name[>-> fun >-> fun][.gid] (ie: steer-ipv4)",
+        thread   = [] &= typ "BINDING" &= help "Where BINDING = eth0:...:ethx[.core[.gid[.queue.queue...]]]"
+    } &= summary "PFq multi-threaded packet counter." &= program "pfq-counters"
 
 
 -- Group Options
@@ -106,8 +107,8 @@ makeBinding s = case splitOn "." s of
 makeFun :: String -> (Gid, [String])
 makeFun s =  case splitOn "." s of
                 []     -> error "makeFun: empty string"
-                fs : [] -> (-1,             map (filter (/= ' ')) $ splitOn ">=>" fs)
-                fs : n  -> (read $ head n,  map (filter (/= ' ')) $ splitOn ">=>" fs)
+                fs : [] -> (-1,             map (filter (/= ' ')) $ splitOn ">->" fs)
+                fs : n  -> (read $ head n,  map (filter (/= ' ')) $ splitOn ">->" fs)
 
 -- main function
 --
@@ -146,17 +147,18 @@ runThreads op ms =
         c <- newMVar 0
         f <- newMVar 0
         _ <- forkOn (coreNum binding) (
-                 handle ((\e ->  M.void (putStrLn ("[pfq] Exception: " ++ show e) >> swapMVar c (-1))) :: SomeException -> IO ()) $ do
+                 handle ((\e -> M.void (putStrLn ("[pfq] Exception: " ++ show e) >> swapMVar c (-1))) :: SomeException -> IO ()) $ do
                  fp <- Q.openNoGroup (caplen op) (offset op) (slots op)
                  withForeignPtr fp  $ \q -> do
                      Q.joinGroup q (groupId binding) [Q.class_default] Q.policy_shared
                      forM_ (devs binding) $ \dev ->
-                       forM_ (queues binding) $ \queue ->
-                         Q.setPromisc q dev True >> Q.bindGroup q (groupId binding) dev queue
-                     -- TODO
-                     -- when (isJust sf) $ putStrLn ("[pfq] Gid " ++ show (groupId binding) ++ " is using continuation: " ++ intercalate " >=> " (fromJust sf)) >>
-                     --                   forM_ (zip (fromJust sf) [0,1..])
-                     --                       (\(name,ix) -> Q.groupFunction q (groupId binding) ix name)
+                       forM_ (queues binding) $ \queue -> do
+                         Q.setPromisc q dev True
+                         Q.bindGroup q (groupId binding) dev queue
+                         when (isJust sf) $ do
+                             let fs = map qfun (fromJust sf)
+                             putStrLn ("[pfq] Gid " ++ show (groupId binding) ++ " is using computation: " ++ intercalate " >-> " (fromJust sf))
+                             Q.groupComputation q (groupId binding) (foldl1 (>->) fs)
                      Q.enable q
                      M.void (recvLoop q (State c f S.empty))
                  )
