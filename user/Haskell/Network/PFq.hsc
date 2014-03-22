@@ -742,14 +742,15 @@ makeCounters ptr = do
 withMetaFun :: QMetaFun
             -> ((CString,IntPtr,Int) -> IO b)
             -> IO b
-withMetaFun (name, Nothing) f =
-    withCString name $ \name' -> f (name', ptrToIntPtr nullPtr, 0)
-withMetaFun (name, Just (StorableContext val)) f  =
+withMetaFun (name, ctx) f =
     withCString name $ \ name' ->
-        alloca $ \ptr -> do
-             poke ptr val
-             res <- f (name', ptrToIntPtr ptr, sizeOf val)
-             return res
+        case ctx of
+            Just (StorableContext val) ->
+                alloca $ \ptr -> do
+                    poke ptr val
+                    res <- f (name', ptrToIntPtr ptr, sizeOf val)
+                    return res
+            Nothing  -> f (name', ptrToIntPtr nullPtr, 0)
 
 groupComputation :: Ptr PFqTag
                  -> Int                 -- group id
