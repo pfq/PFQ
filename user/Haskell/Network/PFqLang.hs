@@ -1,4 +1,3 @@
---
 --    Copyright (c) 2011-2013, Nicola Bonelli
 --    All rights reserved.
 --
@@ -40,7 +39,9 @@ module Network.PFqLang
     (
         Computation(..),
         StorableContext(..),
-        Qfun,
+        QFun,
+        QMetaFun,
+
         (>->),
         eval,
 
@@ -85,8 +86,8 @@ instance Show StorableContext where
 
 -- Computation is a phantom type: f is signature of the in-kernel monadic functions.
 
-type Qfun       = forall ctx. (Show ctx, Storable ctx) => ctx -> SkBuff -> Action SkBuff
-type Qmeta      = (String, Maybe StorableContext)
+type QFun       = forall ctx. (Show ctx, Storable ctx) => ctx -> SkBuff -> Action SkBuff
+type QMetaFun   = (String, Maybe StorableContext)
 
 type Action     = Identity
 newtype SkBuff  = SkBuff ()
@@ -106,7 +107,7 @@ instance Show (Computation f) where
 
 -- operator: >->
 
-(>->) :: Computation Qfun -> Computation Qfun -> Computation Qfun
+(>->) :: Computation QFun -> Computation QFun -> Computation QFun
 (Fun  n)     >-> (Fun n')     = Comp (Fun n)      (Fun n')
 (FunC n x)   >-> (Fun n')     = Comp (FunC n x)   (Fun n')
 (FunC n x)   >-> (FunC n' x') = Comp (FunC n x)   (FunC n' x')
@@ -118,9 +119,9 @@ instance Show (Computation f) where
 (FunC n x)   >-> (Comp c1 c2) = Comp (FunC n x) (Comp c1 c2)
 (Comp c1 c2) >-> (Comp c3 c4) = Comp (Comp c1 c2) (Comp c3 c4)
 
--- eval: convert a computation in a list of Qmeta data.
+-- eval: convert a computation in a list of QMetaFun data.
 
-eval :: Computation Qfun -> [Qmeta]
+eval :: Computation QFun -> [QMetaFun]
 eval (Fun n)      = [(n, Nothing)]
 eval (FunC n x)   = [(n, Just (StorableContext x))]
 eval (Comp c1 c2) = eval c1 ++ eval c2
@@ -129,28 +130,28 @@ eval (Comp c1 c2) = eval c1 ++ eval c2
 -- Predefined in-kernel computations:
 --
 
-steer_mac   = Fun "steer-mac"       :: Computation Qfun
-steer_vlan  = Fun "steer-vlan-id"   :: Computation Qfun
-steer_ip    = Fun "steer-ip"        :: Computation Qfun
-steer_ipv6  = Fun "steer-ipv6"      :: Computation Qfun
-steer_flow  = Fun "steer-flow"      :: Computation Qfun
-steer_rtp   = Fun "steer-rtp"       :: Computation Qfun
+steer_mac   = Fun "steer-mac"       :: Computation QFun
+steer_vlan  = Fun "steer-vlan-id"   :: Computation QFun
+steer_ip    = Fun "steer-ip"        :: Computation QFun
+steer_ipv6  = Fun "steer-ipv6"      :: Computation QFun
+steer_flow  = Fun "steer-flow"      :: Computation QFun
+steer_rtp   = Fun "steer-rtp"       :: Computation QFun
 
-ip          = Fun "ip"              :: Computation Qfun
-ipv6        = Fun "ipv6"            :: Computation Qfun
-udp         = Fun "udp"             :: Computation Qfun
-tcp         = Fun "tcp"             :: Computation Qfun
-vlan        = Fun "vlan"            :: Computation Qfun
-icmp        = Fun "icmp"            :: Computation Qfun
-flow        = Fun "flow"            :: Computation Qfun
-rtp         = Fun "rtp"             :: Computation Qfun
+ip          = Fun "ip"              :: Computation QFun
+ipv6        = Fun "ipv6"            :: Computation QFun
+udp         = Fun "udp"             :: Computation QFun
+tcp         = Fun "tcp"             :: Computation QFun
+vlan        = Fun "vlan"            :: Computation QFun
+icmp        = Fun "icmp"            :: Computation QFun
+flow        = Fun "flow"            :: Computation QFun
+rtp         = Fun "rtp"             :: Computation QFun
 
-legacy      = Fun "legacy"          :: Computation Qfun
-clone       = Fun "clone"           :: Computation Qfun
-broadcast   = Fun "broadcast"       :: Computation Qfun
-sink        = Fun "sink"            :: Computation Qfun
-drop'       = Fun "drop"            :: Computation Qfun
+legacy      = Fun "legacy"          :: Computation QFun
+clone       = Fun "clone"           :: Computation QFun
+broadcast   = Fun "broadcast"       :: Computation QFun
+sink        = Fun "sink"            :: Computation QFun
+drop'       = Fun "drop"            :: Computation QFun
 
-ident       = Fun  "id"             :: Computation Qfun
-dummy       = FunC "dummy"          :: Int -> Computation Qfun
+ident       = Fun  "id"             :: Computation QFun
+dummy       = FunC "dummy"          :: Int -> Computation QFun
 
