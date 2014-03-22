@@ -725,26 +725,30 @@ makeCounters ptr = do
 -- groupComputation:
 --
 
+withMetaFun :: QMetaFun -> ((CString,IntPtr,Int) -> IO b) -> IO b
+withMetaFun (name, Nothing) f =
+    withCString name $ \name' -> f (name', ptrToIntPtr nullPtr, 0)
+withMetaFun (name, Just (StorableContext val)) f  =
+    withCString name $ \ name' -> do
+        alloca $ \ptr -> do
+             poke ptr val
+             res <- f $ (name',ptrToIntPtr ptr, sizeOf(val))
+             return res
+
 groupComputation :: Ptr PFqTag
                  -> Int                 -- group id
-                 -> Computation Qfun    -- computation from (PFqLang)
+                 -> Computation QFun    -- computation from (PFqLang)
                  -> IO ()
 groupComputation hdl gid comp = do
     let meta = eval comp
     allocaBytes (sizeOf (undefined :: CSize) + (getConstant group_fun_size) * length meta)  $ \ ptr -> do
         pokeByteOff ptr 0 (fromIntegral (length meta) :: CSize)
-        forM_ (zip [0..] meta) $ \(n, f) -> do
-            case f of
-                (name, Nothing)  -> withCString name $ \ name' -> do
-                    pokeByteOff ptr (sizeOf(undefined :: CSize) + (getConstant group_fun_size) * n) name'
-                    pokeByteOff ptr (sizeOf(undefined :: CSize) + (getConstant group_fun_size) * n + sizeOf(undefined :: Ptr CChar)) nullPtr
-                    pokeByteOff ptr (sizeOf(undefined :: CSize) + (getConstant group_fun_size) * n + sizeOf(undefined :: Ptr CChar) + sizeOf(nullPtr)) (0 :: CSize)
-                (name, Just (StorableContext ctx)) ->  withCString name $ \ name' -> do
-                    pokeByteOff ptr (sizeOf(undefined :: CSize) + (getConstant group_fun_size) * n) name'
-                    with ctx $ \addr ->
-                        pokeByteOff ptr (sizeOf(undefined :: CSize) + (getConstant group_fun_size) * n + sizeOf(undefined :: Ptr CChar)) addr
-                    pokeByteOff ptr (sizeOf(undefined :: CSize) + (getConstant group_fun_size) * n + sizeOf(undefined :: Ptr CChar) + sizeOf(nullPtr)) (fromIntegral (sizeOf (ctx)) :: CSize)
-        pfq_set_group_program hdl (fromIntegral gid) ptr >>= throwPFqIf_ hdl (== -1)
+        withMany withMetaFun meta $ \tmps -> do
+            forM_ (zip [0..] tmps) $ \(n, (fn, fp, fs)) -> do
+                pokeByteOff ptr (sizeOf(undefined :: CSize) + (getConstant group_fun_size) * n) fn
+                pokeByteOff ptr (sizeOf(undefined :: CSize) + (getConstant group_fun_size) * n + sizeOf(undefined :: Ptr CChar)) fp
+                pokeByteOff ptr (sizeOf(undefined :: CSize) + (getConstant group_fun_size) * n + sizeOf(undefined :: Ptr CChar) + sizeOf(nullPtr)) ((fromIntegral fs) :: CSize)
+            pfq_set_group_program hdl (fromIntegral gid) ptr >>= throwPFqIf_ hdl (== -1)
 
 -- dispatch:
 --
