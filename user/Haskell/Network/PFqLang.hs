@@ -76,24 +76,13 @@ import Control.Monad.Identity
 import Foreign.Storable
 
 -- Functional computation
---
 
 data StorableContext = forall a. (Show a, Storable a) => StorableContext a
 
 instance Show StorableContext where
         show (StorableContext c) = show c
 
-
--- Computation is a phantom type: f is signature of the in-kernel monadic functions.
-
-type QFun       = forall ctx. (Show ctx, Storable ctx) => ctx -> SkBuff -> Action SkBuff
-type QMetaFun   = (String, Maybe StorableContext)
-
-type Action     = Identity
-newtype SkBuff  = SkBuff ()
-
-
--- Computation:
+-- Computation (phantom type)
 
 data Computation f where
         Fun  :: String -> Computation f
@@ -104,6 +93,14 @@ instance Show (Computation f) where
     show (Fun name)  = name
     show (FunC name ctx) = name ++ " (" ++ show ctx ++ ")"
     show (Comp c1 c2) = show c1 ++ " >-> " ++ show c2
+
+-- QFun: signature of the in-kernel monadic functions.
+
+type QFun       = forall ctx. (Show ctx, Storable ctx) => ctx -> SkBuff -> Action SkBuff
+type QMetaFun   = (String, Maybe StorableContext)
+
+type Action     = Identity
+newtype SkBuff  = SkBuff ()
 
 -- operator: >->
 
@@ -119,7 +116,8 @@ instance Show (Computation f) where
 (FunC n x)   >-> (Comp c1 c2) = Comp (FunC n x) (Comp c1 c2)
 (Comp c1 c2) >-> (Comp c3 c4) = Comp (Comp c1 c2) (Comp c3 c4)
 
--- eval: convert a computation in a list of QMetaFun data.
+
+-- eval: convert a computation of QFun to a list of QMetaFun.
 
 eval :: Computation QFun -> [QMetaFun]
 eval (Fun n)      = [(n, Nothing)]
