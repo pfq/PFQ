@@ -173,6 +173,15 @@ has_ret_to_kernel(action_t a)
         return a.attr & attr_ret_to_kernel;
 }
 
+/* packet predicates */
+
+static inline bool
+is_stolen(struct sk_buff *skb)
+{
+        struct pfq_cb * cb = PFQ_CB(skb);
+        return has_stolen(cb->action);
+}
+
 /* action: pass */
 
 static inline
