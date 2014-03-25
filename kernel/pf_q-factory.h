@@ -25,20 +25,23 @@
 #define _PF_Q_FACTORY_H_
 
 #include <linux/skbuff.h>
+#include <linux/list.h>
 
 #include <linux/pf_q.h>
 #include <linux/pf_q-module.h>
 
+/* categories */
+
+extern struct list_head monadic_fun;
+
 /* factory */
 
-extern void pfq_function_factory_init(void);
-extern void pfq_function_factory_free(void);
+extern void pfq_factory_init(void);
+extern void pfq_factory_free(void);
 
-extern int  pfq_register_function(const char *module, const char *name, pfq_function_t fun);
-extern int  pfq_unregister_function(const char *module, const char *name);
+extern int  pfq_register_function(const char *module, struct list_head *category, const char *symbol, pfq_function_t fun);
+extern int  pfq_unregister_function(const char *module, struct list_head *category, const char *symbol);
 
-extern pfq_function_t pfq_get_function(const char *name);
-
-pfq_function_t pfq_get_function(const char *name);
+extern pfq_function_t pfq_get_function(struct list_head *category, const char *symbol);
 
 #endif /* _PF_Q_FACTORY_H_ */

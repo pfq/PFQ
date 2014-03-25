@@ -358,7 +358,7 @@ void pfq_spsc_read_commit(struct pfq_tx_queue_hdr *q)
 
 typedef struct pfq_fun
 {
-        const char *name;
+        const char *symbol;
         struct context_t
         {
                 void   *addr;
@@ -377,7 +377,7 @@ struct pfq_meta_prog
 
 typedef struct pfq_user_fun
 {
-        const char __user *name;
+        const char __user *symbol;
         struct user_context_t
         {
                 void __user *addr;

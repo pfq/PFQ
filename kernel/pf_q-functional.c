@@ -111,15 +111,15 @@ pfq_meta_prog_compile(const struct pfq_meta_prog *prog, struct pfq_exec_prog **e
 
         for(n = 0; n < prog->size; n++)
         {
-                if (prog->fun[n].name == NULL) {
+                if (prog->fun[n].symbol == NULL) {
                         pr_devel("[PFQ function error: NULL function!\n");
                         return -EINVAL;
                 }
 
-                (*exec)->fun[n].fun_ptr = pfq_get_function(prog->fun[n].name);
+                (*exec)->fun[n].fun_ptr = pfq_get_function(&monadic_fun, prog->fun[n].symbol);
 
                 if ((*exec)->fun[n].fun_ptr == NULL) {
-                        pr_devel("[PFQ function error: '%s' unknown function!\n", prog->fun[n].name);
+                        pr_devel("[PFQ function error: '%s' unknown function!\n", prog->fun[n].symbol);
                         return -EINVAL;
                 }
 
@@ -162,7 +162,7 @@ kfree_meta_prog(struct pfq_meta_prog *prog)
         int n;
         for(n = 0; n < prog->size; n++)
         {
-                kfree(prog->fun[n].name);
+                kfree(prog->fun[n].symbol);
                 kfree(prog->fun[n].context.addr);
         }
         kfree(prog);
@@ -193,8 +193,8 @@ copy_meta_prog_from_user(struct pfq_meta_prog *to, struct pfq_user_meta_prog *fr
         {
                 size_t csize;
 
-                to->fun[n].name = strcat_user(from->fun[n].name);
-                if (!to->fun[n].name)
+                to->fun[n].symbol = strcat_user(from->fun[n].symbol);
+                if (!to->fun[n].symbol)
                 {
                         pr_devel("[PFQ] strcat_user error!\n");
                         return -ENOMEM;
@@ -239,7 +239,7 @@ pfq_meta_prog_pr_devel(const struct pfq_meta_prog *prog)
         pr_devel("[PFQ] meta program @%p:\n", prog);
         for(n = 0; n < prog->size; n++)
         {
-                pr_devel("   %d: %s (%p,%zu)\n", n, prog->fun[n].name, prog->fun[n].context.addr, prog->fun[n].context.size);
+                pr_devel("   %d: %s (%p,%zu)\n", n, prog->fun[n].symbol, prog->fun[n].context.addr, prog->fun[n].context.size);
         }
 }
 

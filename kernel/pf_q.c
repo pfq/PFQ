@@ -953,7 +953,7 @@ static int __init pfq_init_module(void)
 
 	/* register functions */
 
-	pfq_function_factory_init();
+	pfq_factory_init();
 
 #ifdef PFQ_USE_SKB_RECYCLE
         pfq_skb_recycle_init();
@@ -1000,7 +1000,7 @@ static void __exit pfq_exit_module(void)
 
 	/* free functions */
 
-	pfq_function_factory_free();
+	pfq_factory_free();
 
         printk(KERN_INFO "[PFQ] unloaded.\n");
 }

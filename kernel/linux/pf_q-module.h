@@ -37,8 +37,8 @@
 struct pfq_function_descr;
 struct pfq_exec;
 
-extern int pfq_register_functions  (const char *module, struct pfq_function_descr *fun);
-extern int pfq_unregister_functions(const char *module, struct pfq_function_descr *fun);
+extern int pfq_register_functions  (const char *module, struct list_head *category, struct pfq_function_descr *fun);
+extern int pfq_unregister_functions(const char *module, struct list_head *category, struct pfq_function_descr *fun);
 
 /* function context */
 
@@ -56,7 +56,7 @@ typedef struct sk_buff *(*pfq_function_t)(context_t, struct sk_buff *);
 
 struct pfq_function_descr
 {
-        const char *    name;
+        const char *    symbol;
         pfq_function_t  function;
 };
 

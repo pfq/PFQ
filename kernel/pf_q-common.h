@@ -48,7 +48,7 @@
 
 #define Q_SLOT_ALIGN(s, n)      ((s+(n-1)) & ~(n-1))
 
-#define Q_FUN_NAME_LEN          64
+#define Q_FUN_SYMB_LEN          256
 
 
 /* sparse_counter_t stats */

@@ -34,97 +34,96 @@
 #include <pf_q-factory.h>
 
 
-DEFINE_SEMAPHORE(funfactory_sem);
+DEFINE_SEMAPHORE(factory_sem);
+
+LIST_HEAD(monadic_fun);
 
 
-struct function_factory_elem
+struct factory_entry
 {
-	struct list_head 	function_list;
-	char 			name[Q_FUN_NAME_LEN];
-	pfq_function_t 	function;
+	struct list_head 	list;
+	char 			symbol[Q_FUN_SYMB_LEN];
+	void *                  function;
 };
+
+
+int
+pfq_register_functions(const char *module, struct list_head *category, struct pfq_function_descr *fun)
+{
+	int i = 0;
+	for(; fun[i].symbol != NULL; i++)
+	{
+		pfq_register_function(module, category, fun[i].symbol, fun[i].function);
+	}
+	return 0;
+}
+
+int
+pfq_unregister_functions(const char *module, struct list_head *category, struct pfq_function_descr *fun)
+{
+	int i = 0;
+	for(; fun[i].symbol != NULL; i++)
+	{
+		pfq_unregister_function(module, category, fun[i].symbol);
+	}
+	return 0;
+}
+
+/* register all functions available by default */
 
 extern struct pfq_function_descr filter_functions[];
 extern struct pfq_function_descr forward_functions[];
 extern struct pfq_function_descr steering_functions[];
 extern struct pfq_function_descr misc_functions[];
 
-
-LIST_HEAD(function_factory);
-
-/*
- * register the funcitons here!
- */
-
-int
-pfq_register_functions(const char *module, struct pfq_function_descr *fun)
-{
-	int i = 0;
-	for(; fun[i].name != NULL; i++)
-	{
-		pfq_register_function(module, fun[i].name, fun[i].function);
-	}
-	return 0;
-}
-
-int
-pfq_unregister_functions(const char *module, struct pfq_function_descr *fun)
-{
-	int i = 0;
-	for(; fun[i].name != NULL; i++)
-	{
-		pfq_unregister_function(module, fun[i].name);
-	}
-	return 0;
-}
-
-/*
- * register the default functions!
- */
-
 void
-pfq_function_factory_init(void)
+pfq_factory_init(void)
 {
-        pfq_register_functions(NULL, filter_functions);
-        pfq_register_functions(NULL, forward_functions);
-        pfq_register_functions(NULL, steering_functions);
-        pfq_register_functions(NULL, misc_functions);
+        pfq_register_functions(NULL, &monadic_fun, filter_functions);
+        pfq_register_functions(NULL, &monadic_fun, forward_functions);
+        pfq_register_functions(NULL, &monadic_fun, steering_functions);
+        pfq_register_functions(NULL, &monadic_fun, misc_functions);
 
 	printk(KERN_INFO "[PFQ] function-factory initialized.\n");
 }
 
-
 void
-pfq_function_factory_free(void)
+__pfq_factory_free(struct list_head *category)
 {
 	struct list_head *pos = NULL, *q;
-	struct function_factory_elem *this;
+	struct factory_entry *this;
 
-	down(&funfactory_sem);
-	list_for_each_safe(pos, q, &function_factory)
+	list_for_each_safe(pos, q, category)
 	{
-    		this = list_entry(pos, struct function_factory_elem, function_list);
+    		this = list_entry(pos, struct factory_entry, list);
 		list_del(pos);
 		kfree(this);
 	}
-	up(&funfactory_sem);
+}
+
+void
+pfq_factory_free(void)
+{
+	down(&factory_sem);
+	__pfq_factory_free(&monadic_fun);
+	up(&factory_sem);
 	printk(KERN_INFO "[PFQ] function factory freed.\n");
 }
 
 
 pfq_function_t
-__pfq_get_function(const char *name)
+__pfq_get_function(struct list_head *category, const char *symbol)
 {
 	struct list_head *pos = NULL;
-	struct function_factory_elem *this;
+	struct factory_entry *this;
 
-        if (name == NULL)
+        if (symbol == NULL)
                 return NULL;
 
-	list_for_each(pos, &function_factory)
+	list_for_each(pos, category)
 	{
-    		this = list_entry(pos, struct function_factory_elem, function_list);
-        	if (!strcmp(this->name, name))
+    		this = list_entry(pos, struct factory_entry, list);
+        	if (!strcmp(this->symbol, symbol))
 			return this->function;
 	}
 	return NULL;
@@ -132,96 +131,96 @@ __pfq_get_function(const char *name)
 
 
 pfq_function_t
-pfq_get_function(const char *name)
+pfq_get_function(struct list_head *category, const char *symbol)
 {
 	pfq_function_t ret;
-	down(&funfactory_sem);
-	ret = __pfq_get_function(name);
-	up(&funfactory_sem);
+	down(&factory_sem);
+	ret = __pfq_get_function(category, symbol);
+	up(&factory_sem);
 	return ret;
 }
 
 
 int
-__pfq_register_function(const char *name, pfq_function_t fun)
+__pfq_register_function(struct list_head *category, const char *symbol, pfq_function_t fun)
 {
-	struct function_factory_elem * elem;
+	struct factory_entry * elem;
 
-	if (__pfq_get_function(name) != NULL) {
-		pr_devel("[PFQ] function factory error: name %s already in use!\n", name);
+	if (__pfq_get_function(category, symbol) != NULL) {
+		pr_devel("[PFQ] function factory error: symbol %s already in use!\n", symbol);
 		return -1;
 	}
 
-	elem = kmalloc(sizeof(struct function_factory_elem), GFP_KERNEL);
+	elem = kmalloc(sizeof(struct factory_entry), GFP_KERNEL);
 	if (elem == NULL) {
 		printk(KERN_WARNING "[PFQ] function factory error: out of memory!\n");
 		return -1;
 	}
 
-	INIT_LIST_HEAD(&elem->function_list);
+	INIT_LIST_HEAD(&elem->list);
 
 	elem->function = fun;
 
-	strncpy(elem->name, name, Q_FUN_NAME_LEN-1);
-        elem->name[Q_FUN_NAME_LEN-1] = '\0';
-	list_add(&elem->function_list, &function_factory);
+	strncpy(elem->symbol, symbol, Q_FUN_SYMB_LEN-1);
+        elem->symbol[Q_FUN_SYMB_LEN-1] = '\0';
+	list_add(&elem->list, category);
 
 	return 0;
 }
 
 
 int
-pfq_register_function(const char *module, const char *name, pfq_function_t fun)
+pfq_register_function(const char *module, struct list_head *category, const char *symbol, pfq_function_t fun)
 {
 	int r;
-	down(&funfactory_sem);
-	r = __pfq_register_function(name, fun);
-	up(&funfactory_sem);
+	down(&factory_sem);
+	r = __pfq_register_function(category, symbol, fun);
+	up(&factory_sem);
 	if (r == 0 && module)
-		printk(KERN_INFO "[PFQ]%s '%s' @%p function registered.\n", module, name, fun);
+		printk(KERN_INFO "[PFQ]%s '%s' @%p function registered.\n", module, symbol, fun);
 
 	return r;
 }
 
 
 int
-__pfq_unregister_function(const char *name)
+__pfq_unregister_function(struct list_head *category, const char *symbol)
 {
 	struct list_head *pos = NULL, *q;
-	struct function_factory_elem *this;
+	struct factory_entry *this;
 
-	list_for_each_safe(pos, q, &function_factory)
+	list_for_each_safe(pos, q, category)
 	{
-    		this = list_entry(pos, struct function_factory_elem, function_list);
-		if (!strcmp(this->name, name))
+    		this = list_entry(pos, struct factory_entry, list);
+		if (!strcmp(this->symbol, symbol))
 		{
 			list_del(pos);
 	       		kfree(this);
 			return 0;
 		}
 	}
-	pr_devel("[PFQ] function factory error: %s no such function\n", name);
+	pr_devel("[PFQ] function factory error: %s no such function\n", symbol);
 	return -1;
 }
 
 
 int
-pfq_unregister_function(const char *module, const char *name)
+pfq_unregister_function(const char *module, struct list_head *category, const char *symbol)
 {
 	pfq_function_t fun;
 
-	down(&funfactory_sem);
+	down(&factory_sem);
 
-	fun = __pfq_get_function(name);
+	fun = __pfq_get_function(category, symbol);
 	if (fun == NULL) {
         	return -1;
 	}
 
 	__pfq_dismiss_function(fun);
-        __pfq_unregister_function(name);
+        __pfq_unregister_function(category, symbol);
 
-	printk(KERN_INFO "[PFQ]%s '%s' function unregistered.\n", module, name);
-	up(&funfactory_sem);
+	printk(KERN_INFO "[PFQ]%s '%s' function unregistered.\n", module, symbol);
+	up(&factory_sem);
 
 	return 0;
 }
