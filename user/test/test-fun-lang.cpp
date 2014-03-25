@@ -21,7 +21,7 @@ main(int argc, char *argv[])
 
     auto gid = q.group_id();
 
-    q.set_group_computation(gid, icmp() >> counter(0) >> steer_ip());
+    q.set_group_computation(gid, icmp() >> counter(0) >> class_(0) >> steer_ip());
 
     q.enable();
 
