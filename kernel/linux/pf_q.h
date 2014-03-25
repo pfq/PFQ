@@ -347,7 +347,7 @@ void pfq_spsc_read_commit(struct pfq_tx_queue_hdr *q)
 /* class type */
 
 #define Q_CLASS(n)              (1U<<n)
-#define Q_CLASS_MAX             sizeof(unsigned int)<<3
+#define Q_CLASS_MAX             64
 
 #define Q_CLASS_DEFAULT         Q_CLASS(0)
 #define Q_CLASS_DATA            Q_CLASS_DEFAULT
