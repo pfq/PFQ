@@ -21,7 +21,7 @@ main(int argc, char *argv[])
 
     auto gid = q.group_id();
 
-    q.set_group_computation(gid, icmp() >> steer_ip());
+    q.set_group_computation(gid, icmp() >> counter(0) >> steer_ip());
 
     q.enable();
 
@@ -48,6 +48,14 @@ main(int argc, char *argv[])
                         printf("%2x ", (unsigned char)buff[x]);
                     }
                     printf("\n");
+
+                    auto cs = q.group_counters(gid);
+
+                    printf("counters: { ");
+                    for(auto c : cs)
+                        printf("%lu ", c);
+
+                    printf("}\n");
             }
     }
 

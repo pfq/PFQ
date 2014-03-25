@@ -48,13 +48,12 @@ main(int argc, char *argv[])
             auto cs = q.group_counters(q.group_id());
 
             std::cout << "counters: ";
-            for(auto i = 0; i < Q_MAX_COUNTERS; ++i)
+            for(auto c : cs)
             {
-                std::cout << cs.counter[i] << ' ';
+                std::cout << c << ' ';
             }
 
             std::cout << std::endl;
-
     }
 
     return 0;
