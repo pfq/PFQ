@@ -23,172 +23,62 @@
 
 #include <linux/kernel.h>
 #include <linux/module.h>
-
+#include <pf_q-predicate.h>
 
 #include <linux/pf_q-module.h>
 
-
-bool
-is_ip(context_t ctx, struct sk_buff *skb)
+static bool
+__is_ip(context_t ctx, struct sk_buff const *skb)
 {
-	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP))
-	{
-		struct iphdr _iph;
-    		const struct iphdr *ip;
-
-		ip = skb_header_pointer(skb, skb->mac_len, sizeof(_iph), &_iph);
- 		if (ip)
-                        return true;
-        }
-
-        return false;
+        return  is_ip(skb);
 }
 
-
-bool
-is_ipv6(context_t ctx, struct sk_buff *skb)
+static bool
+__is_ipv6(context_t ctx, struct sk_buff const *skb)
 {
-	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IPV6))
-	{
-		struct ipv6hdr _ip6h;
-    		const struct ipv6hdr *ip6;
-
-		ip6 = skb_header_pointer(skb, skb->mac_len, sizeof(_ip6h), &_ip6h);
- 		if (ip6)
-                        return true;
-	}
-
-        return false;
+        return  is_ipv6(skb);
 }
 
-
-bool
-is_udp(context_t ctx, struct sk_buff *skb)
+static bool
+__is_udp(context_t ctx, struct sk_buff const *skb)
 {
-	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP))
-	{
-		struct iphdr _iph;
-    		const struct iphdr *ip;
-
-		struct udphdr _udp;
-		const struct udphdr *udp;
-
-		ip = skb_header_pointer(skb, skb->mac_len, sizeof(_iph), &_iph);
- 		if (ip == NULL)
-                        return false;
-
-		if (ip->protocol != IPPROTO_UDP)
-                        return false;
-
-		udp = skb_header_pointer(skb, skb->mac_len + (ip->ihl<<2), sizeof(_udp), &_udp);
-		if (udp)
-		        return true;
-	}
-
-        return false;
+        return  is_udp(skb);
 }
 
-bool
-is_tcp(context_t ctx, struct sk_buff *skb)
+static bool
+__is_tcp(context_t ctx, struct sk_buff const *skb)
 {
-	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP))
-	{
-		struct iphdr _iph;
-    		const struct iphdr *ip;
-
-		struct tcphdr _tcp;
-		const struct tcphdr *tcp;
-
-		ip = skb_header_pointer(skb, skb->mac_len, sizeof(_iph), &_iph);
- 		if (ip == NULL)
-                        return false;
-
-		if (ip->protocol != IPPROTO_TCP)
-                        return false;
-
-		tcp = skb_header_pointer(skb, skb->mac_len + (ip->ihl<<2), sizeof(_tcp), &_tcp);
-		if (tcp)
-		        return true;
-	}
-
-        return false;
+        return  is_tcp(skb);
 }
 
-
-bool
-is_icmp(context_t ctx, struct sk_buff *skb)
+static bool
+__is_icmp(context_t ctx, struct sk_buff const *skb)
 {
-	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP))
-	{
-		struct iphdr _iph;
-    		const struct iphdr *ip;
-
-		struct icmphdr _icmp;
-		const struct icmphdr *icmp;
-
-		ip = skb_header_pointer(skb, skb->mac_len, sizeof(_iph), &_iph);
- 		if (ip == NULL)
-                        return false;
-
-		if (ip->protocol != IPPROTO_ICMP)
-                        return false;
-
-		icmp = skb_header_pointer(skb, skb->mac_len + (ip->ihl<<2), sizeof(_icmp), &_icmp);
-		if (icmp)
-		        return true;
-	}
-
-        return false;
+        return  is_icmp(skb);
 }
 
-
-bool
-has_flow(context_t ctx, struct sk_buff *skb)
+static bool
+__has_flow(context_t ctx, struct sk_buff const *skb)
 {
-	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP))
-	{
-		struct iphdr _iph;
-    		const struct iphdr *ip;
-
-		struct udphdr _udp;
-		const struct udphdr *udp;
-
-		ip = skb_header_pointer(skb, skb->mac_len, sizeof(_iph), &_iph);
- 		if (ip == NULL)
-                        return false;
-
-		if (ip->protocol != IPPROTO_UDP &&
-		    ip->protocol != IPPROTO_TCP)
-                        return false;
-
-		udp = skb_header_pointer(skb, skb->mac_len + (ip->ihl<<2), sizeof(_udp), &_udp);
-		if (udp)
-		        return true;
-	}
-
-        return false;
+        return  has_flow(skb);
 }
 
-
-bool
-has_vlan(context_t ctx, struct sk_buff *skb)
+static bool
+__has_vlan(context_t ctx, struct sk_buff const *skb)
 {
-        if ((skb->vlan_tci & VLAN_VID_MASK) == 0)
-                return false;
-        else
-                return true;
+        return  has_vlan(skb);
 }
 
 
 struct pfq_predicate_fun_descr predicate_functions[] = {
 
-        { "is_ip",                 is_ip                },
-        { "is_ipv6",               is_ipv6              },
-        { "is_udp",                is_udp               },
-        { "is_tcp",                is_tcp               },
-        { "is_icmp",               is_icmp              },
-        { "has_flow",              has_flow             },
-        { "has_vlan",              has_vlan             },
+        { "is_ip",                 __is_ip             },
+        { "is_ipv6",               __is_ipv6           },
+        { "is_udp",                __is_udp            },
+        { "is_tcp",                __is_tcp            },
+        { "is_icmp",               __is_icmp           },
+        { "has_flow",              __has_flow          },
+        { "has_vlan",              __has_vlan          },
 
         { NULL, NULL}};
 

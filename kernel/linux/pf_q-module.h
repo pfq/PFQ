@@ -53,7 +53,7 @@ typedef struct
 /* monadic function */
 
 typedef struct sk_buff *(*pfq_function_t)(context_t, struct sk_buff *);
-typedef bool           (*pfq_predicate_t)(context_t, struct sk_buff *);
+typedef bool           (*pfq_predicate_t)(context_t, struct sk_buff const *);
 
 
 struct pfq_function_descr
