@@ -392,8 +392,8 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 
                                         pfq_bitwise_foreach(cb->action.class, cbit)
                                         {
-                                                int cindex = pfq_ctz(cbit);
-                                                eligible_mask |= atomic_long_read(&pfq_groups[gid].sock_mask[cindex]);
+                                                int class = pfq_ctz(cbit);
+                                                eligible_mask |= atomic_long_read(&pfq_groups[gid].sock_mask[class]);
                                         }
 
                                         if (is_steering(cb->action)) {
