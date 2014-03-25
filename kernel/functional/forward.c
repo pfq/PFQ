@@ -50,6 +50,19 @@ forward_broadcast(context_t ctx, struct sk_buff *skb)
 
 
 static struct sk_buff *
+forward_class(context_t ctx, struct sk_buff *skb)
+{
+        const uint16_t *c = context_addr(ctx);
+        if (!c) {
+                if (printk_ratelimit())
+                        printk(KERN_INFO "[PFQ] fun/class: internal error!\n");
+                return skb;
+        }
+        return broadcast(skb, (1 << *c));
+}
+
+
+static struct sk_buff *
 forward_sink(context_t ctx, struct sk_buff *skb)
 {
         if (!is_stolen(skb))
@@ -71,6 +84,7 @@ struct pfq_function_descr forward_functions[] = {
         { "legacy",             forward_legacy          },
         { "clone",              forward_clone           },
         { "broadcast",          forward_broadcast       },
+        { "class",              forward_class           },
         { "sink",               forward_sink            },
         { "drop",               forward_drop            },
 
