@@ -31,6 +31,8 @@ handler h _ = print h
 recvDispatch :: Ptr PFqTag -> IO()
 recvDispatch q = do
         Q.dispatch q handler 1000
+        -- cs <- Q.getGroupId q >>= Q.getGroupCounters q
+        -- print cs
         recvDispatch q
 
 dumper :: String -> IO ()
@@ -43,7 +45,7 @@ dumper dev = do
         Q.bindGroup q gid dev (-1)
         Q.enable q
 
-        Q.groupComputation q gid (ip >-> steer_ip >-> dummy 42)
+        Q.groupComputation q gid (icmp >-> steer_ip >-> counter 0)
 
         Q.getRxSlotSize q >>= \o -> putStrLn $ "slot_size: " ++ show o
         recvDispatch q

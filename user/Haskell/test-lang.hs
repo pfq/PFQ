@@ -20,7 +20,7 @@
 import Network.PFqLang
 
 main = do
-        let comp = ip >-> udp >-> dummy 42
+        let comp = ip >-> udp >-> counter 0 >-> dummy 42
         print comp
         print $ eval comp
 

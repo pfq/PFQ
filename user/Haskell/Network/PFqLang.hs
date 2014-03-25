@@ -71,7 +71,8 @@ module Network.PFqLang
         drop       ,
 
         ident      ,
-        dummy
+        dummy      ,
+        counter
     ) where
 
 import Control.Monad.Identity
@@ -135,7 +136,6 @@ qfun = Fun
 qfunWith :: (Show a, Storable a) => String -> a -> Computation QFun
 qfunWith name = FunWith name
 
-
 -- Predefined in-kernel computations:
 --
 
@@ -162,5 +162,6 @@ sink        = qfun "sink"
 drop'       = qfun "drop"
 
 ident       = qfun  "id"
-dummy       = qfunWith "dummy"  :: Int -> Computation QFun
+dummy       = qfunWith "dummy"    :: Int -> Computation QFun
+counter     = qfunWith "counter"  :: Int -> Computation QFun
 
