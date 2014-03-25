@@ -47,6 +47,7 @@ struct function_factory_elem
 extern struct pfq_function_descr filter_functions[];
 extern struct pfq_function_descr forward_functions[];
 extern struct pfq_function_descr steering_functions[];
+extern struct pfq_function_descr misc_functions[];
 
 
 LIST_HEAD(function_factory);
@@ -87,6 +88,7 @@ pfq_function_factory_init(void)
         pfq_register_functions(NULL, filter_functions);
         pfq_register_functions(NULL, forward_functions);
         pfq_register_functions(NULL, steering_functions);
+        pfq_register_functions(NULL, misc_functions);
 
 	printk(KERN_INFO "[PFQ] function-factory initialized.\n");
 }
