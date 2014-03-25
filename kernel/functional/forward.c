@@ -52,8 +52,11 @@ forward_broadcast(context_t ctx, struct sk_buff *skb)
 static struct sk_buff *
 forward_sink(context_t ctx, struct sk_buff *skb)
 {
-        kfree_skb(skb);
-        return steal(skb);
+        if (!is_stolen(skb))
+        {
+                kfree_skb(skb);
+        }
+        return NULL;
 }
 
 static struct sk_buff *
