@@ -885,7 +885,7 @@ namespace net {
         }
 
 
-        pfq_counters
+        std::vector<unsigned long>
         group_counters(int gid) const
         {
             pfq_counters cs;
@@ -893,7 +893,8 @@ namespace net {
             socklen_t size = sizeof(struct pfq_counters);
             if (::getsockopt(fd_, PF_Q, Q_SO_GET_GROUP_COUNTERS, &cs, &size) == -1)
                 throw pfq_error(errno, "PFQ: get group counters error");
-            return cs;
+
+            return std::vector<unsigned long>(std::begin(cs.counter), std::end(cs.counter));
         }
 
 
