@@ -204,6 +204,17 @@ drop(struct sk_buff *skb)
         return skb;
 }
 
+/* class skb: for this packet specifies only the class */
+
+static inline
+struct sk_buff *
+class(struct sk_buff *skb, uint16_t class)
+{
+        action_t * a = & PFQ_CB(skb)->action;
+        a->class = class;
+        return skb;
+}
+
 /* broadcast: for this group, broadcast the skb to sockets of the given classes */
 
 static inline
@@ -216,11 +227,24 @@ broadcast(struct sk_buff *skb, uint16_t class)
         return skb;
 }
 
-/* steering skb: for this group, dispatch the skb across sockets of the given classes (by means of hash) */
+/* steering skb: for this group, dispatch the skb across sockets (by means of hash) */
 
 static inline
 struct sk_buff *
-steering(struct sk_buff *skb, uint16_t class, uint32_t hash)
+steering(struct sk_buff *skb, uint32_t hash)
+{
+        action_t * a = & PFQ_CB(skb)->action;
+        a->type  = action_dispatch;
+        a->hash  = hash;
+        return skb;
+}
+
+
+/* class + steering: for this group, dispatch the skb across sockets of the given classes (by means of hash) */
+
+static inline
+struct sk_buff *
+class_steering(struct sk_buff *skb, uint16_t class, uint32_t hash)
 {
         action_t * a = & PFQ_CB(skb)->action;
         a->type  = action_dispatch;
@@ -228,6 +252,7 @@ steering(struct sk_buff *skb, uint16_t class, uint32_t hash)
         a->hash  = hash;
         return skb;
 }
+
 
 /* steal packet: the skb is stolen by the function. (i.e. forwarded) */
 

@@ -58,7 +58,7 @@ forward_class(context_t ctx, struct sk_buff *skb)
                         printk(KERN_INFO "[PFQ] fun/class: internal error!\n");
                 return skb;
         }
-        return broadcast(skb, (1 << *c));
+        return class(skb, (1 << *c));
 }
 
 

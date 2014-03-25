@@ -35,7 +35,7 @@ steering_mac(context_t ctx, struct sk_buff *skb)
 
         a = (uint16_t *)eth_hdr(skb);
 
-	return steering(skb, Q_CLASS_DEFAULT, a[0] ^ a[1] ^ a[2] ^ a[3] ^ a[4] ^ a[5] );
+	return steering(skb, a[0] ^ a[1] ^ a[2] ^ a[3] ^ a[4] ^ a[5] );
 }
 
 
@@ -44,7 +44,7 @@ static struct sk_buff *
 steering_vlan_id(context_t ctx, struct sk_buff *skb)
 {
         if (skb->vlan_tci & VLAN_VID_MASK)
- 	        return steering(skb, Q_CLASS_DEFAULT, skb->vlan_tci & VLAN_VID_MASK);
+ 	        return steering(skb, skb->vlan_tci & VLAN_VID_MASK);
         else
                 return drop(skb);
 }
@@ -62,7 +62,7 @@ steering_ip(context_t ctx, struct sk_buff *skb)
  		if (ip == NULL)
                         return drop(skb);
 
-        	return steering(skb, Q_CLASS_DEFAULT, ip->saddr ^ ip->daddr);
+        	return steering(skb, ip->saddr ^ ip->daddr);
 	}
 
         return drop(skb);
@@ -92,7 +92,7 @@ steering_flow(context_t ctx, struct sk_buff *skb)
 		if (udp == NULL)
 			return drop(skb);  /* broken */
 
-        	return steering(skb, Q_CLASS_DEFAULT, ip->saddr ^ ip->daddr ^ udp->source ^ udp->dest);
+        	return steering(skb, ip->saddr ^ ip->daddr ^ udp->source ^ udp->dest);
 	}
 
         return drop(skb);
@@ -111,7 +111,7 @@ steering_ipv6(context_t ctx, struct sk_buff *skb)
  		if (ip6 == NULL)
                         return drop(skb);
 
-		return steering(skb, Q_CLASS_DEFAULT,
+		return steering(skb,
 			ip6->saddr.in6_u.u6_addr32[0] ^
 			ip6->saddr.in6_u.u6_addr32[1] ^
 			ip6->saddr.in6_u.u6_addr32[2] ^
