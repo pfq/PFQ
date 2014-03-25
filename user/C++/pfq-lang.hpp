@@ -208,8 +208,9 @@ namespace pfq_lang
         PFQ_MAKE_FUN(rtp          , "rtp"          )
         PFQ_MAKE_FUN(steer_rtp    , "steer-rtp"    )
 
-        PFQ_MAKE_FUN1(dummy       , "dummy",   int   )
-        PFQ_MAKE_FUN1(counter     , "counter", int   )
+        PFQ_MAKE_FUN1(dummy       , "dummy",   int      )
+        PFQ_MAKE_FUN1(counter     , "counter", int      )
+        PFQ_MAKE_FUN1(class_      , "class",   uint16_t )
     }
 
 } // namespace pfq_lang

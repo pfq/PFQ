@@ -72,7 +72,8 @@ module Network.PFqLang
 
         ident      ,
         dummy      ,
-        counter
+        counter    ,
+        class'
     ) where
 
 import Control.Monad.Identity
@@ -164,4 +165,5 @@ drop'       = qfun "drop"
 ident       = qfun  "id"
 dummy       = qfunWith "dummy"    :: Int -> Computation QFun
 counter     = qfunWith "counter"  :: Int -> Computation QFun
+class'      = qfunWith "class"    :: Int -> Computation QFun
 
