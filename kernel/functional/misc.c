@@ -33,9 +33,8 @@ dummy(context_t ctx, struct sk_buff *skb)
 {
         const int *ptr = context_addr(ctx);
 
-        if (printk_ratelimit())
-        {
-                printk(KERN_INFO "[PFQ] dummy context: %d\n", ptr ? *ptr : 0);
+        if (printk_ratelimit()) {
+                printk(KERN_INFO "[PFQ] fun/dummy context: %d\n", ptr ? *ptr : 0);
         }
 
         return cont(skb);
@@ -50,7 +49,7 @@ counter(context_t ctx, struct sk_buff *skb)
 
         if (idx == NULL) {
                 if (printk_ratelimit())
-                        printk(KERN_INFO "[PFQ] counter: internal error!\n");
+                        printk(KERN_INFO "[PFQ] fun/counter: internal error!\n");
                 return skb;
         }
 
@@ -60,7 +59,7 @@ counter(context_t ctx, struct sk_buff *skb)
         }
         else {
                 if (printk_ratelimit())
-                        printk(KERN_INFO "[PFQ] count(%d): bad index!\n", *idx);
+                        printk(KERN_INFO "[PFQ] fun/count(%d): bad index!\n", *idx);
         }
 
         return skb;
