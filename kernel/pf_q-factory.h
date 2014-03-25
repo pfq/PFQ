@@ -32,7 +32,8 @@
 
 /* categories */
 
-extern struct list_head monadic_fun;
+extern struct list_head monadic_cat;
+extern struct list_head predicate_cat;
 
 /* factory */
 

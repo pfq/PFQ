@@ -36,7 +36,8 @@
 
 DEFINE_SEMAPHORE(factory_sem);
 
-LIST_HEAD(monadic_fun);
+LIST_HEAD(monadic_cat);
+LIST_HEAD(predicate_cat);
 
 
 struct factory_entry
@@ -76,13 +77,17 @@ extern struct pfq_function_descr forward_functions[];
 extern struct pfq_function_descr steering_functions[];
 extern struct pfq_function_descr misc_functions[];
 
+extern struct pfq_function_descr predicate_functions[];
+
 void
 pfq_factory_init(void)
 {
-        pfq_register_functions(NULL, &monadic_fun, filter_functions);
-        pfq_register_functions(NULL, &monadic_fun, forward_functions);
-        pfq_register_functions(NULL, &monadic_fun, steering_functions);
-        pfq_register_functions(NULL, &monadic_fun, misc_functions);
+        pfq_register_functions(NULL, &monadic_cat, filter_functions);
+        pfq_register_functions(NULL, &monadic_cat, forward_functions);
+        pfq_register_functions(NULL, &monadic_cat, steering_functions);
+        pfq_register_functions(NULL, &monadic_cat, misc_functions);
+
+        pfq_register_functions(NULL, &predicate_cat, predicate_functions);
 
 	printk(KERN_INFO "[PFQ] function-factory initialized.\n");
 }
@@ -105,7 +110,8 @@ void
 pfq_factory_free(void)
 {
 	down(&factory_sem);
-	__pfq_factory_free(&monadic_fun);
+	__pfq_factory_free(&monadic_cat);
+	__pfq_factory_free(&predicate_cat);
 	up(&factory_sem);
 	printk(KERN_INFO "[PFQ] function factory freed.\n");
 }

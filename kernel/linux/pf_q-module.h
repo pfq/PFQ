@@ -49,17 +49,31 @@ typedef struct
 
 } context_t;
 
+
 /* monadic function */
 
 typedef struct sk_buff *(*pfq_function_t)(context_t, struct sk_buff *);
+typedef bool           (*pfq_predicate_t)(context_t, struct sk_buff *);
 
 
 struct pfq_function_descr
 {
         const char *    symbol;
+        void *          function; /* pfq_function_t, pfq_predicate_t etc.. */
+};
+
+
+struct pfq_monadic_fun_descr
+{
+        const char *    symbol;
         pfq_function_t  function;
 };
 
+struct pfq_predicate_fun_descr
+{
+        const char *    symbol;
+        pfq_predicate_t  function;
+};
 
 /* exec function */
 

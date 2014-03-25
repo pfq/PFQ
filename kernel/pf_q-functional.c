@@ -116,7 +116,7 @@ pfq_meta_prog_compile(const struct pfq_meta_prog *prog, struct pfq_exec_prog **e
                         return -EINVAL;
                 }
 
-                (*exec)->fun[n].fun_ptr = pfq_get_function(&monadic_fun, prog->fun[n].symbol);
+                (*exec)->fun[n].fun_ptr = pfq_get_function(&monadic_cat, prog->fun[n].symbol);
 
                 if ((*exec)->fun[n].fun_ptr == NULL) {
                         pr_devel("[PFQ function error: '%s' unknown function!\n", prog->fun[n].symbol);
