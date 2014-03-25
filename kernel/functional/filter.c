@@ -31,7 +31,7 @@
 static struct sk_buff *
 id(context_t ctx, struct sk_buff *skb)
 {
-        return cont(skb);
+        return skb;
 }
 
 
