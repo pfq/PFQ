@@ -175,9 +175,8 @@ namespace pfq_lang
         return qfun(name); \
     }
 
-#define PFQ_MAKE_FUN1(fn,name) \
-    template <typename Tp> \
-    inline qFunction fn(Tp const &context) \
+#define PFQ_MAKE_FUN1(fn,name, typ) \
+    inline qFunction fn(typ const &context) \
     { \
         return qfun(name, context); \
     }
@@ -197,7 +196,6 @@ namespace pfq_lang
         PFQ_MAKE_FUN(drop         , "drop"         )
 
         PFQ_MAKE_FUN(id           , "id"           )
-        PFQ_MAKE_FUN1(dummy       , "dummy"        )
 
         PFQ_MAKE_FUN(ip           , "ip"           )
         PFQ_MAKE_FUN(ipv6         , "ipv6"         )
@@ -209,6 +207,9 @@ namespace pfq_lang
 
         PFQ_MAKE_FUN(rtp          , "rtp"          )
         PFQ_MAKE_FUN(steer_rtp    , "steer-rtp"    )
+
+        PFQ_MAKE_FUN1(dummy       , "dummy",   int   )
+        PFQ_MAKE_FUN1(counter     , "counter", int   )
     }
 
 } // namespace pfq_lang
