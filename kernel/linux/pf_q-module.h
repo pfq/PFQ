@@ -116,8 +116,8 @@ enum action_attr
 
 typedef struct
 {
+        uint64_t class_mask;
         uint32_t hash;
-        uint16_t class;
         uint8_t  type;
         uint8_t  attr;
 
@@ -218,14 +218,14 @@ drop(struct sk_buff *skb)
         return skb;
 }
 
-/* class skb: for this packet specifies only the class */
+/* class skb: specifies only the class for the packet */
 
 static inline
 struct sk_buff *
 class(struct sk_buff *skb, uint16_t class)
 {
         action_t * a = & PFQ_CB(skb)->action;
-        a->class = class;
+        a->class_mask = 1ULL << class;
         return skb;
 }
 
@@ -237,7 +237,7 @@ broadcast(struct sk_buff *skb, uint16_t class)
 {
         action_t * a = & PFQ_CB(skb)->action;
         a->type  = action_clone;
-        a->class = class;
+        a->class_mask = 1ULL << class;
         return skb;
 }
 
@@ -262,7 +262,7 @@ class_steering(struct sk_buff *skb, uint16_t class, uint32_t hash)
 {
         action_t * a = & PFQ_CB(skb)->action;
         a->type  = action_dispatch;
-        a->class = class;
+        a->class_mask = 1ULL << class;
         a->hash  = hash;
         return skb;
 }
