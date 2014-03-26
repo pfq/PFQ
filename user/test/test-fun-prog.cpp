@@ -22,11 +22,11 @@ main(int argc, char *argv[])
 
     prog->size = 2;
 
-    prog->fun[0].name = "icmp";
+    prog->fun[0].symbol = "icmp";
     prog->fun[0].context.addr = NULL;
     prog->fun[0].context.size = 0;
 
-    prog->fun[1].name = "steer-ip";
+    prog->fun[1].symbol = "steer-ip";
     prog->fun[1].context.addr = NULL;
     prog->fun[1].context.size = 0;
 

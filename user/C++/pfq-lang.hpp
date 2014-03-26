@@ -112,7 +112,7 @@ namespace pfq_lang
 
         for(unsigned int i = 0; i < prg->size; ++i)
         {
-            prg->fun[i].name         = vec[i].name.c_str();
+            prg->fun[i].symbol       = vec[i].name.c_str();
             prg->fun[i].context.addr = vec[i].context.first.get();
             prg->fun[i].context.size = vec[i].context.second;
         }

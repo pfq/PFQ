@@ -17,7 +17,7 @@ main()
 
      for(unsigned int i = 0; i < ptr->size; i++)
      {
-        std::cout << "fun: " << ptr->fun[i].name;
+        std::cout << "fun: " << ptr->fun[i].symbol;
         if (ptr->fun[i].context.size)
         {
             std::cout << " context@" << (void *)ptr->fun[i].context.addr << " size:" << ptr->fun[i].context.size;

@@ -577,7 +577,7 @@ void test_group_context()
 
         int n = 22;
 
-        prg->fun[0].name = "id";
+        prg->fun[0].symbol = "id";
         prg->fun[0].context.addr = &n;
         prg->fun[0].context.size = sizeof(n);
 
