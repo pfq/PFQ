@@ -65,7 +65,6 @@ module Network.PFqLang
         rtp        ,
 
         legacy     ,
-        clone      ,
         broadcast  ,
         sink       ,
         drop       ,
@@ -157,7 +156,6 @@ flow        = qfun "flow"
 rtp         = qfun "rtp"
 
 legacy      = qfun "legacy"
-clone       = qfun "clone"
 broadcast   = qfun "broadcast"
 sink        = qfun "sink"
 drop'       = qfun "drop"

@@ -190,7 +190,6 @@ namespace pfq_lang
         PFQ_MAKE_FUN(steer_flow   , "steer-flow"   )
 
         PFQ_MAKE_FUN(legacy       , "legacy"       )
-        PFQ_MAKE_FUN(clone        , "clone"        )
         PFQ_MAKE_FUN(broadcast    , "broadcast"    )
         PFQ_MAKE_FUN(sink         , "sink"         )
         PFQ_MAKE_FUN(drop         , "drop"         )

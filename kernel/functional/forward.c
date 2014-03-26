@@ -36,11 +36,6 @@ forward_legacy(context_t ctx, struct sk_buff *skb)
 
 
 static struct sk_buff *
-forward_clone(context_t ctx, struct sk_buff *skb)
-{
-        return broadcast(skb, Q_CLASS_DEFAULT);
-}
-
 
 static struct sk_buff *
 forward_broadcast(context_t ctx, struct sk_buff *skb)
@@ -82,7 +77,6 @@ forward_drop(context_t ctx, struct sk_buff *skb)
 struct pfq_function_descr forward_functions[] = {
 
         { "legacy",             forward_legacy          },
-        { "clone",              forward_clone           },
         { "broadcast",          forward_broadcast       },
         { "class",              forward_class           },
         { "sink",               forward_sink            },
