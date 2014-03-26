@@ -198,8 +198,7 @@ __pfq_unregister_function(struct list_head *category, const char *symbol)
 	list_for_each_safe(pos, q, category)
 	{
     		this = list_entry(pos, struct factory_entry, list);
-		if (!strcmp(this->symbol, symbol))
-		{
+		if (!strcmp(this->symbol, symbol)) {
 			list_del(pos);
 	       		kfree(this);
 			return 0;
@@ -218,9 +217,8 @@ pfq_unregister_function(const char *module, struct list_head *category, const ch
 	down(&factory_sem);
 
 	fun = __pfq_get_function(category, symbol);
-	if (fun == NULL) {
+	if (fun == NULL)
         	return -1;
-	}
 
 	__pfq_dismiss_function(fun);
         __pfq_unregister_function(category, symbol);
