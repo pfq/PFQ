@@ -163,12 +163,13 @@ __pfq_join_group(int gid, int id, unsigned long class_mask, int policy)
                 return -1;
         }
 
-        pfq_bitwise_foreach(class_mask, bit)
-        {
-                int class = pfq_ctz(bit);
-                tmp = atomic_long_read(&g->sock_mask[class]);
-                tmp |= 1L << id;
-                atomic_long_set(&g->sock_mask[class], tmp);
+        {       pfq_bitwise_foreach(class_mask, bit)
+                {
+                        int class = pfq_ctz(bit);
+                        tmp = atomic_long_read(&g->sock_mask[class]);
+                        tmp |= 1L << id;
+                        atomic_long_set(&g->sock_mask[class], tmp);
+                }
         }
 
         g->policy = g->policy == Q_GROUP_UNDEFINED ?  policy : g->policy;
