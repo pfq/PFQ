@@ -37,5 +37,5 @@ install: all
 		cp pfq-counters  ${INSTDIR}/bin/
 
 clean:
-	   @rm -f pfq_counters test-read test-send test-dispatch test-lang
+	   @rm -f pfq-counters test-read test-send test-dispatch test-lang
 	   @rm -f *.o *.hi Network/*.o Network/*.hi Network/PFq.hs Network/PFq_stub.h
