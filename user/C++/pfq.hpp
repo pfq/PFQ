@@ -63,7 +63,7 @@ namespace net {
     // class mask
     //
 
-    enum class class_mask : unsigned int
+    enum class class_mask : unsigned long
     {
         default_ = Q_CLASS_DEFAULT,
         any      = Q_CLASS_ANY

@@ -130,7 +130,7 @@ pfq_open_nogroup(size_t caplen, size_t offset, size_t slots)
 
 
 pfq_t *
-pfq_open_group(unsigned int class_mask, int group_policy, size_t caplen, size_t offset, size_t rx_slots, size_t maxlen, size_t tx_slots)
+pfq_open_group(unsigned long class_mask, int group_policy, size_t caplen, size_t offset, size_t rx_slots, size_t maxlen, size_t tx_slots)
 {
 	int fd = socket(PF_Q, SOCK_RAW, htons(ETH_P_ALL));
 	pfq_t * q;
@@ -610,7 +610,7 @@ pfq_group_fprog_reset(pfq_t *q, int gid)
 
 
 int
-pfq_join_group(pfq_t *q, int gid, unsigned int class_mask, int group_policy)
+pfq_join_group(pfq_t *q, int gid, unsigned long class_mask, int group_policy)
 {
 	if (group_policy == Q_GROUP_UNDEFINED) {
          	return q->error = "PFQ: join with undefined policy!", -1;

@@ -146,7 +146,7 @@ extern pfq_t* pfq_open_tx(size_t maxlen, size_t slots);
 
 extern pfq_t* pfq_open_nogroup(size_t caplen, size_t offset, size_t slots);
 
-extern pfq_t* pfq_open_group(unsigned int class_mask, int group_policy,
+extern pfq_t* pfq_open_group(unsigned long class_mask, int group_policy,
 			     size_t calpen, size_t offset, size_t rx_slots,
 			     size_t maxlen, size_t tx_slots);
 
@@ -214,7 +214,7 @@ extern int pfq_vlan_set_filter(pfq_t *q, int gid, int vid);
 
 extern int pfq_vlan_reset_filter(pfq_t *q, int gid, int vid);
 
-extern int pfq_join_group(pfq_t *q, int gid, unsigned int class_mask, int group_policy);
+extern int pfq_join_group(pfq_t *q, int gid, unsigned long class_mask, int group_policy);
 
 extern int pfq_leave_group(pfq_t *q, int gid);
 

@@ -75,7 +75,7 @@ int pfq_getsockopt(struct socket *sock,
                         return -EFAULT;
 
                 if (group.class_mask == 0) {
-                        pr_devel("[PFQ|%d] join error: bad class_mask(%x)!\n", so->id, group.class_mask);
+                        pr_devel("[PFQ|%d] join error: bad class_mask(%lx)!\n", so->id, group.class_mask);
                         return -EINVAL;
                 }
 
@@ -95,7 +95,7 @@ int pfq_getsockopt(struct socket *sock,
                                 return -EACCES;
                         }
                 }
-                pr_devel("[PFQ|%d] join -> gid:%d class_mask:%x\n", so->id, group.gid, group.class_mask);
+                pr_devel("[PFQ|%d] join -> gid:%d class_mask:%lx\n", so->id, group.gid, group.class_mask);
         } break;
 
         case Q_SO_GET_ID:

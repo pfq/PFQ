@@ -115,7 +115,7 @@ enum action_attr
 
 typedef struct
 {
-        uint64_t class_mask;
+        unsigned long class_mask;
         uint32_t hash;
         uint8_t  type;
         uint8_t  attr;

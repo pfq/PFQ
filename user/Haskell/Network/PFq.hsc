@@ -195,7 +195,7 @@ data Packet = Packet {
    } deriving (Eq, Show)
 
 
-newtype ClassMask = ClassMask { unClassMask :: CUInt }
+newtype ClassMask = ClassMask { unClassMask :: CULong }
                         deriving (Eq, Show)
 
 newtype GroupPolicy = GroupPolicy { unGroupPolicy :: CInt }
@@ -861,7 +861,7 @@ sendAsync hdl xs blen =
 foreign import ccall unsafe pfq_open                :: CSize -> CSize -> CSize -> IO (Ptr PFqTag)
 foreign import ccall unsafe pfq_open_tx             :: CSize -> CSize -> IO (Ptr PFqTag)
 foreign import ccall unsafe pfq_open_nogroup        :: CSize -> CSize -> CSize -> IO (Ptr PFqTag)
-foreign import ccall unsafe pfq_open_group          :: CUInt -> CInt  -> CSize -> CSize -> CSize -> CSize -> CSize -> IO (Ptr PFqTag)
+foreign import ccall unsafe pfq_open_group          :: CULong -> CInt  -> CSize -> CSize -> CSize -> CSize -> CSize -> IO (Ptr PFqTag)
 
 foreign import ccall unsafe pfq_close               :: Ptr PFqTag -> IO CInt
 foreign import ccall unsafe pfq_error               :: Ptr PFqTag -> IO CString
@@ -899,7 +899,7 @@ foreign import ccall unsafe pfq_bind_group          :: Ptr PFqTag -> CInt -> CSt
 foreign import ccall unsafe pfq_unbind              :: Ptr PFqTag -> CString -> CInt -> IO CInt
 foreign import ccall unsafe pfq_unbind_group        :: Ptr PFqTag -> CInt -> CString -> CInt -> IO CInt
 
-foreign import ccall unsafe pfq_join_group          :: Ptr PFqTag -> CInt -> CUInt -> CInt -> IO CInt
+foreign import ccall unsafe pfq_join_group          :: Ptr PFqTag -> CInt -> CULong -> CInt -> IO CInt
 foreign import ccall unsafe pfq_leave_group         :: Ptr PFqTag -> CInt -> IO CInt
 
 foreign import ccall unsafe pfq_get_stats           :: Ptr PFqTag -> Ptr Statistics -> IO CInt
