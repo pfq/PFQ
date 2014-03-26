@@ -97,17 +97,16 @@ struct pfq_exec_prog
 
 enum action
 {
-        action_drop      = 0,
-        action_continue  = 1,
-        action_clone     = 2,
-        action_dispatch  = 3
+        action_drop  = 0,
+        action_copy  = 1,
+        action_steer = 2
 };
 
 /* action attributes */
 
 enum action_attr
 {
-        attr_break         = 0x1,
+        attr_stop          = 0x1,
         attr_stolen        = 0x2,
         attr_ret_to_kernel = 0x4
 };
@@ -141,7 +140,7 @@ struct pfq_cb
 
 #define PFQ_CB(skb) ((struct pfq_cb *)(skb)->cb)
 
-/* predicates */
+/* class predicates */
 
 static inline bool
 is_drop(action_t a)
@@ -150,21 +149,15 @@ is_drop(action_t a)
 }
 
 static inline bool
-is_continue(action_t a)
+is_copy(action_t a)
 {
-        return a.type == action_continue;
-}
-
-static inline bool
-is_clone(action_t a)
-{
-        return a.type == action_clone;
+        return a.type == action_copy;
 }
 
 static inline bool
 is_steering(action_t a)
 {
-        return a.type == action_dispatch;
+        return a.type == action_steer;
 }
 
 /* attributes */
@@ -176,9 +169,9 @@ has_stolen(action_t a)
 }
 
 static inline bool
-has_break(action_t a)
+has_stop(action_t a)
 {
-        return a.attr & attr_break;
+        return a.attr & attr_stop;
 }
 
 static inline bool
@@ -200,10 +193,10 @@ is_stolen(struct sk_buff *skb)
 
 static inline
 struct sk_buff *
-cont(struct sk_buff *skb)
+copy(struct sk_buff *skb)
 {
         action_t * a = & PFQ_CB(skb)->action;
-        a->type = action_continue;
+        a->type = action_copy;
         return skb;
 }
 
@@ -241,34 +234,33 @@ broadcast(struct sk_buff *skb, uint16_t class)
         return skb;
 }
 
-/* steering skb: for this group, dispatch the skb across sockets (by means of hash) */
+/* steering skb: for this group, steer the skb across sockets (by means of hash) */
 
 static inline
 struct sk_buff *
 steering(struct sk_buff *skb, uint32_t hash)
 {
         action_t * a = & PFQ_CB(skb)->action;
-        a->type  = action_dispatch;
+        a->type  = action_steer;
         a->hash  = hash;
         return skb;
 }
 
-
-/* class + steering: for this group, dispatch the skb across sockets of the given classes (by means of hash) */
+/* class + steering: for this group, steer the skb across sockets of the given classes (by means of hash) */
 
 static inline
 struct sk_buff *
 class_steering(struct sk_buff *skb, uint16_t class, uint32_t hash)
 {
         action_t * a = & PFQ_CB(skb)->action;
-        a->type  = action_dispatch;
+        a->type  = action_steer;
         a->class_mask = 1ULL << class;
         a->hash  = hash;
         return skb;
 }
 
 
-/* steal packet: the skb is stolen by the function. (i.e. forwarded) */
+/* steal packet: skb is stolen by the function. (i.e. forwarded) */
 
 static inline
 struct sk_buff *
@@ -278,6 +270,18 @@ steal(struct sk_buff *skb)
         a->attr |= attr_stolen;
         return skb;
 }
+
+/* stop the computation, without overriding the current action on packet */
+
+static inline
+struct sk_buff *
+stop(struct sk_buff *skb)
+{
+        action_t * a = & PFQ_CB(skb)->action;
+        a->attr |= attr_stop;
+        return skb;
+}
+
 
 /* to_kernel: set the skb to be passed to kernel */
 

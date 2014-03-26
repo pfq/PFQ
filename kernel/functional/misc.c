@@ -37,7 +37,7 @@ dummy(context_t ctx, struct sk_buff *skb)
                 printk(KERN_INFO "[PFQ] fun/dummy context: %d\n", ptr ? *ptr : 0);
         }
 
-        return cont(skb);
+        return copy(skb);
 }
 
 

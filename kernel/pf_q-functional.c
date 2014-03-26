@@ -47,8 +47,8 @@ pfq_run(int gid, struct pfq_exec_prog *prg, struct sk_buff *skb)
 
         cb->ctx  = &g->ctx;
 
-        a->class = Q_CLASS_DEFAULT;
-        a->type  = action_continue;
+        a->class_mask = Q_CLASS_DEFAULT;
+        a->type  = action_copy;
         a->attr  = 0;
 
         for(n = 0; n < prg->size; n++)
@@ -59,7 +59,7 @@ pfq_run(int gid, struct pfq_exec_prog *prg, struct sk_buff *skb)
 
                 a = &PFQ_CB(skb)->action;
 
-                if (a->type == action_drop || a->attr & attr_break)
+                if (is_drop(*a) || has_stop(*a))
                         return skb;
         }
 
