@@ -42,21 +42,26 @@
 
 #include <poll.h>
 
+#include <pfq.h>
+
+/* macros */
+
+#define  ALIGN8(value) ((value + 7) & ~(__typeof__(value))7)
+
+#define max(a,b) \
+	({ __typeof__ (a) _a = (a); \
+	   __typeof__ (b) _b = (b); \
+	  _a > _b ? _a : _b; })
+
+#define min(a,b) \
+	({ __typeof__ (a) _a = (a); \
+	   __typeof__ (b) _b = (b); \
+	  _a < _b ? _a : _b; })
+
+
 /* pfq descriptor */
 
-typedef char * pfq_iterator_t;
-
-
-struct pfq_net_queue
-{
-	pfq_iterator_t queue; 	  		/* net queue */
-	size_t         len;       		/* number of packets in the queue */
-    	size_t         slot_size;
-	unsigned int   index; 	  		/* current queue index */
-};
-
-
-typedef struct
+typedef struct pfq
 {
 	void * queue_addr;
 
@@ -77,23 +82,6 @@ typedef struct
 
 	struct pfq_net_queue netq;
 } pfq_t;
-
-
-#define PFQ_LIBRARY
-#include <pfq.h>
-
-#define  ALIGN8(value) ((value + 7) & ~(__typeof__(value))7)
-
-#define max(a,b) \
-	({ __typeof__ (a) _a = (a); \
-	   __typeof__ (b) _b = (b); \
-	  _a > _b ? _a : _b; })
-
-#define min(a,b) \
-	({ __typeof__ (a) _a = (a); \
-	   __typeof__ (b) _b = (b); \
-	  _a < _b ? _a : _b; })
-
 
 /* return the string error */
 

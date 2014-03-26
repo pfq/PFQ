@@ -33,30 +33,28 @@
 #include <sched.h>
 #endif
 
-#ifndef PFQ_LIBRARY
-typedef void *pfq_t;   /* pfq descritor */
-#endif
+/* pfq descriptor */
 
-#ifndef PFQ_LIBRARY
+typedef struct pfq pfq_t;
+
 /* pfq_net_queue */
 
 typedef char * pfq_iterator_t;
 
 struct pfq_net_queue
 {
-	pfq_iterator_t queue; 	  		/* net queue */
-	size_t         len;       		/* number of packets in the queue */
-    size_t         slot_size;
-	unsigned int   index; 	  		/* current queue index */
+        pfq_iterator_t queue; 	  		/* net queue */
+        size_t         len;       		/* number of packets in the queue */
+        size_t         slot_size;
+        unsigned int   index; 	  		/* current queue index */
 };
-#endif
 
 
 static inline
 pfq_iterator_t
 pfq_net_queue_begin(struct pfq_net_queue const *nq)
 {
-    return nq->queue;
+        return nq->queue;
 }
 
 
@@ -64,7 +62,7 @@ static inline
 pfq_iterator_t
 pfq_net_queue_end(struct pfq_net_queue const *nq)
 {
-    return nq->queue + nq->len * nq->slot_size;
+        return nq->queue + nq->len * nq->slot_size;
 }
 
 
@@ -72,7 +70,7 @@ static inline
 pfq_iterator_t
 pfq_net_queue_next(struct pfq_net_queue const *nq, pfq_iterator_t iter)
 {
-    return iter + nq->slot_size;
+        return iter + nq->slot_size;
 }
 
 
@@ -80,7 +78,7 @@ static inline
 pfq_iterator_t
 pfq_net_queue_prev(struct pfq_net_queue const *nq, pfq_iterator_t iter)
 {
-    return iter - nq->slot_size;
+        return iter - nq->slot_size;
 }
 
 
@@ -88,7 +86,7 @@ static inline
 const struct pfq_pkt_hdr *
 pfq_iterator_header(pfq_iterator_t iter)
 {
-    return (const struct pfq_pkt_hdr *)iter;
+        return (const struct pfq_pkt_hdr *)iter;
 }
 
 
@@ -96,7 +94,7 @@ static inline
 const char *
 pfq_iterator_data(pfq_iterator_t iter)
 {
-    return (const char *)(iter + sizeof(struct pfq_pkt_hdr));
+        return (const char *)(iter + sizeof(struct pfq_pkt_hdr));
 }
 
 
@@ -104,11 +102,11 @@ static inline
 int
 pfq_iterator_ready(struct pfq_net_queue const *nq, pfq_iterator_t iter)
 {
-	if (pfq_iterator_header(iter)->commit != nq->index) {
-        return 0;
-    }
-	smp_rmb();
-	return 1;
+        if (pfq_iterator_header(iter)->commit != nq->index) {
+                return 0;
+        }
+        smp_rmb();
+        return 1;
 }
 
 
@@ -116,11 +114,11 @@ static inline
 int
 pfq_yield()
 {
-    return
+        return
 #ifdef _REENTRANT
-    pthread_yield();
+                pthread_yield();
 #else
-    sched_yield();
+        sched_yield();
 #endif
 }
 
@@ -136,8 +134,8 @@ typedef void (*pfq_handler_t)(char *user, const struct pfq_pkt_hdr *h, const cha
 
 /*
  * group_policy: Q_GROUP_RESTRICTED, Q_GROUP_SHARED, Q_GROUP_UNDEFINED...
-   class_mask  : Q_CLASS_DEFAULT| .... = Q_CLASS_ANY
- */
+class_mask  : Q_CLASS_DEFAULT| .... = Q_CLASS_ANY
+*/
 
 
 extern pfq_t* pfq_open(size_t calpen, size_t offset, size_t slots);
@@ -147,8 +145,8 @@ extern pfq_t* pfq_open_tx(size_t maxlen, size_t slots);
 extern pfq_t* pfq_open_nogroup(size_t caplen, size_t offset, size_t slots);
 
 extern pfq_t* pfq_open_group(unsigned long class_mask, int group_policy,
-			     size_t calpen, size_t offset, size_t rx_slots,
-			     size_t maxlen, size_t tx_slots);
+                size_t calpen, size_t offset, size_t rx_slots,
+                size_t maxlen, size_t tx_slots);
 
 extern int pfq_close(pfq_t *);
 
@@ -222,8 +220,7 @@ extern int pfq_poll(pfq_t *q, long int microseconds /* = -1 -> infinite */);
 
 extern int pfq_read(pfq_t *q, struct pfq_net_queue *nq, long int microseconds);
 
-extern int pfq_recv(pfq_t *q, void *buf, size_t buflen,
-					struct pfq_net_queue *nq, long int microseconds);
+extern int pfq_recv(pfq_t *q, void *buf, size_t buflen, struct pfq_net_queue *nq, long int microseconds);
 
 extern int pfq_dispatch(pfq_t *q, pfq_handler_t cb, long int microseconds, char *user);
 
