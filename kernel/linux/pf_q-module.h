@@ -266,6 +266,12 @@ struct sk_buff *
 steal(struct sk_buff *skb)
 {
         action_t * a = & PFQ_CB(skb)->action;
+        if (unlikely(a->attr & attr_ret_to_kernel))
+        {
+                if (printk_ratelimit())
+                        pr_devel("[PFQ] steal modifier applied to a packet returning to kernel!\n");
+                return skb;
+        }
         a->attr |= attr_stolen;
         return skb;
 }
