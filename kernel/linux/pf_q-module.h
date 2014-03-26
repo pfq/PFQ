@@ -92,7 +92,6 @@ struct pfq_exec_prog
         pfq_exec_t fun[];
 };
 
-
 /* actions types */
 
 enum action
@@ -222,15 +221,15 @@ class(struct sk_buff *skb, uint16_t class)
         return skb;
 }
 
-/* broadcast: for this group, broadcast the skb to sockets of the given classes */
+/* broadcast: broadcast the skb all the classes */
 
 static inline
 struct sk_buff *
-broadcast(struct sk_buff *skb, uint16_t class)
+broadcast(struct sk_buff *skb)
 {
         action_t * a = & PFQ_CB(skb)->action;
-        a->type  = action_clone;
-        a->class_mask = 1ULL << class;
+        a->type  = action_copy;
+        a->class_mask = Q_CLASS_ANY;
         return skb;
 }
 

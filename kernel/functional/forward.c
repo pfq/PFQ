@@ -36,11 +36,9 @@ forward_legacy(context_t ctx, struct sk_buff *skb)
 
 
 static struct sk_buff *
-
-static struct sk_buff *
 forward_broadcast(context_t ctx, struct sk_buff *skb)
 {
-        return broadcast(skb, Q_CLASS_ANY);
+        return broadcast(skb);
 }
 
 
