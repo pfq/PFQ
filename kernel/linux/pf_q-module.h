@@ -214,10 +214,10 @@ drop(struct sk_buff *skb)
 
 static inline
 struct sk_buff *
-class(struct sk_buff *skb, uint16_t class)
+class(struct sk_buff *skb, uint64_t class_mask)
 {
         action_t * a = & PFQ_CB(skb)->action;
-        a->class_mask = 1ULL << class;
+        a->class_mask = class_mask;
         return skb;
 }
 
@@ -249,11 +249,11 @@ steering(struct sk_buff *skb, uint32_t hash)
 
 static inline
 struct sk_buff *
-class_steering(struct sk_buff *skb, uint16_t class, uint32_t hash)
+class_steering(struct sk_buff *skb, unsigned long class_mask, uint32_t hash)
 {
         action_t * a = & PFQ_CB(skb)->action;
         a->type  = action_steer;
-        a->class_mask = 1ULL << class;
+        a->class_mask = class_mask;
         a->hash  = hash;
         return skb;
 }
