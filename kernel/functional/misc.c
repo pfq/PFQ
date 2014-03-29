@@ -28,6 +28,7 @@
 #include <linux/pf_q-module.h>
 #include <linux/pf_q-sparse.h>
 
+
 static struct sk_buff *
 dummy(context_t ctx, struct sk_buff *skb)
 {
@@ -68,7 +69,7 @@ counter(context_t ctx, struct sk_buff *skb)
 
 struct pfq_function_descr misc_functions[] = {
 
-        { "dummy",              dummy                   },
+        { "dummy-ctx",          dummy                   },
         { "counter",            counter                 },
 
         { NULL, NULL}};
