@@ -30,6 +30,11 @@
 #include <linux/pf_q.h>
 #include <linux/pf_q-module.h>
 
+
+/* semaphore */
+
+extern struct semaphore factory_sem;
+
 /* categories */
 
 extern struct list_head pfq_monadic_cat;

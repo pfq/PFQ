@@ -620,6 +620,8 @@ pfq_create(
         sk_refcnt_debug_inc(sk);
 
         up (&sock_sem);
+
+        down(&factory_sem);
         return 0;
 }
 
@@ -730,8 +732,9 @@ pfq_release(struct socket *sock)
 	sock->sk = NULL;
 	sock_put(sk);
 
-	pr_devel("[PFQ|%d] socket closed.\n", id);
+        up(&factory_sem);
 
+	pr_devel("[PFQ|%d] socket closed.\n", id);
         return 0;
 }
 
