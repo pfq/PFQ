@@ -101,7 +101,7 @@ heuristic_rtp(context_t ctx, struct sk_buff *skb, bool steer)
         			return drop(skb);
 		}
 
-		return steer ? steering(skb, Q_CLASS_DEFAULT, ip->saddr ^ ip->daddr ^ ((uint32_t)(hdr->udp.source & 0xfffe) << 16) ^ (hdr->udp.dest & 0xfffe)) : cont(skb);
+		return steer ? steering(skb, ip->saddr ^ ip->daddr ^ ((uint32_t)(hdr->udp.source & 0xfffe) << 16) ^ (hdr->udp.dest & 0xfffe)) : skb;
 
 	}
 
@@ -132,13 +132,13 @@ struct pfq_function_descr hooks[] = {
 
 static int __init usr_init_module(void)
 {
-	return pfq_register_functions("[RTP]", hooks);
+	return pfq_register_functions("[RTP]", &pfq_monadic_cat, hooks);
 }
 
 
 static void __exit usr_exit_module(void)
 {
-	pfq_unregister_functions("[RTP]", hooks);
+	pfq_unregister_functions("[RTP]", &pfq_monadic_cat, hooks);
 }
 
 

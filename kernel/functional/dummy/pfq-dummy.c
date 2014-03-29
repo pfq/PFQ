@@ -11,25 +11,27 @@ struct sk_buff *
 fun_dummy(context_t ctx, struct sk_buff *skb)
 {
 	/* perform action here */
-        return cont(skb);
+        return skb;
 }
 
 
 struct pfq_function_descr hooks[] = {
+
 	{ "dummy", fun_dummy },
-	{ NULL, NULL}};
+	{ NULL, NULL}
+};
 
 
 
 static int __init usr_init_module(void)
 {
-	return pfq_register_functions("[dummy]", hooks);
+	return pfq_register_functions("[dummy]", &pfq_monadic_cat, hooks);
 }
 
 
 static void __exit usr_exit_module(void)
 {
-	pfq_unregister_functions("[dummy]", hooks);
+	pfq_unregister_functions("[dummy]", &pfq_monadic_cat, hooks);
 }
 
 
