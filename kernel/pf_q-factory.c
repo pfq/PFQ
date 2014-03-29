@@ -166,7 +166,7 @@ __pfq_register_function(struct list_head *category, const char *symbol, pfq_func
 	struct factory_entry * elem;
 
 	if (__pfq_get_function(category, symbol) != NULL) {
-		pr_devel("[PFQ] function factory error: symbol %s already in use!\n", symbol);
+		pr_devel("[PFQ] function factory error: symbol '%s' already in use!\n", symbol);
 		return -1;
 	}
 
@@ -192,9 +192,11 @@ int
 pfq_register_function(const char *module, struct list_head *category, const char *symbol, pfq_function_t fun)
 {
 	int r;
-	down(&factory_sem);
+
+        down(&factory_sem);
 	r = __pfq_register_function(category, symbol, fun);
 	up(&factory_sem);
+
 	if (r == 0 && module)
 		printk(KERN_INFO "[PFQ]%s '%s' @%p function registered.\n", module, symbol, fun);
 
@@ -217,7 +219,7 @@ __pfq_unregister_function(struct list_head *category, const char *symbol)
 			return 0;
 		}
 	}
-	pr_devel("[PFQ] function factory error: %s no such function\n", symbol);
+	pr_devel("[PFQ] function factory error: '%s' no such function\n", symbol);
 	return -1;
 }
 
