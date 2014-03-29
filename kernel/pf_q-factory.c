@@ -52,23 +52,33 @@ struct factory_entry
 
 
 int
-pfq_register_functions(const char *module, struct list_head *category, struct pfq_function_descr *fun)
-{
-	int i = 0;
-	for(; fun[i].symbol != NULL; i++)
-	{
-		pfq_register_function(module, category, fun[i].symbol, fun[i].function);
-	}
-	return 0;
-}
-
-int
 pfq_unregister_functions(const char *module, struct list_head *category, struct pfq_function_descr *fun)
 {
 	int i = 0;
 	for(; fun[i].symbol != NULL; i++)
 	{
 		pfq_unregister_function(module, category, fun[i].symbol);
+	}
+	return 0;
+}
+
+
+int
+pfq_register_functions(const char *module, struct list_head *category, struct pfq_function_descr *fun)
+{
+	int i = 0;
+	for(; fun[i].symbol != NULL; i++)
+	{
+		if (pfq_register_function(module, category, fun[i].symbol, fun[i].function) < 0)
+                {
+                        /* unregister all functions */
+                        int j = 0;
+
+                        for(; j < i; j++)
+                                pfq_unregister_function(module, category, fun[j].symbol);
+
+                        return -1;
+                }
 	}
 	return 0;
 }
