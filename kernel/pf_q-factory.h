@@ -32,8 +32,8 @@
 
 /* categories */
 
-extern struct list_head monadic_cat;
-extern struct list_head predicate_cat;
+extern struct list_head pfq_monadic_cat;
+extern struct list_head pfq_predicate_cat;
 
 /* factory */
 

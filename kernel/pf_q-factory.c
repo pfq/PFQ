@@ -36,8 +36,11 @@
 
 DEFINE_SEMAPHORE(factory_sem);
 
-LIST_HEAD(monadic_cat);
-LIST_HEAD(predicate_cat);
+LIST_HEAD(pfq_monadic_cat);
+LIST_HEAD(pfq_predicate_cat);
+
+EXPORT_SYMBOL_GPL(pfq_monadic_cat);
+EXPORT_SYMBOL_GPL(pfq_predicate_cat);
 
 
 struct factory_entry
@@ -82,12 +85,12 @@ extern struct pfq_function_descr predicate_functions[];
 void
 pfq_factory_init(void)
 {
-        pfq_register_functions(NULL, &monadic_cat, filter_functions);
-        pfq_register_functions(NULL, &monadic_cat, forward_functions);
-        pfq_register_functions(NULL, &monadic_cat, steering_functions);
-        pfq_register_functions(NULL, &monadic_cat, misc_functions);
+        pfq_register_functions(NULL, &pfq_monadic_cat, filter_functions);
+        pfq_register_functions(NULL, &pfq_monadic_cat, forward_functions);
+        pfq_register_functions(NULL, &pfq_monadic_cat, steering_functions);
+        pfq_register_functions(NULL, &pfq_monadic_cat, misc_functions);
 
-        pfq_register_functions(NULL, &predicate_cat, predicate_functions);
+        pfq_register_functions(NULL, &pfq_predicate_cat, predicate_functions);
 
 	printk(KERN_INFO "[PFQ] function-factory initialized.\n");
 }
@@ -102,7 +105,7 @@ __pfq_factory_free(struct list_head *category)
 	{
     		this = list_entry(pos, struct factory_entry, list);
 		list_del(pos);
-		kfree(this);
+                kfree(this);
 	}
 }
 
@@ -110,8 +113,8 @@ void
 pfq_factory_free(void)
 {
 	down(&factory_sem);
-	__pfq_factory_free(&monadic_cat);
-	__pfq_factory_free(&predicate_cat);
+	__pfq_factory_free(&pfq_monadic_cat);
+	__pfq_factory_free(&pfq_predicate_cat);
 	up(&factory_sem);
 	printk(KERN_INFO "[PFQ] function factory freed.\n");
 }

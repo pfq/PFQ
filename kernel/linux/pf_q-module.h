@@ -37,8 +37,12 @@
 struct pfq_function_descr;
 struct pfq_exec;
 
+extern struct list_head pfq_monadic_cat;
+extern struct list_head pfq_predicate_cat;
+
 extern int pfq_register_functions  (const char *module, struct list_head *category, struct pfq_function_descr *fun);
 extern int pfq_unregister_functions(const char *module, struct list_head *category, struct pfq_function_descr *fun);
+
 
 /* function context */
 
