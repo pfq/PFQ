@@ -169,7 +169,7 @@ kfree_meta_prog(struct pfq_meta_prog *prog)
 }
 
 
-char *strcat_user(const char __user *str)
+char *strdup_user(const char __user *str)
 {
         size_t len = strlen_user(str);
         char * ret = (char *)kmalloc(len, GFP_KERNEL);
@@ -193,10 +193,10 @@ copy_meta_prog_from_user(struct pfq_meta_prog *to, struct pfq_user_meta_prog *fr
         {
                 size_t csize;
 
-                to->fun[n].symbol = strcat_user(from->fun[n].symbol);
+                to->fun[n].symbol = strdup_user(from->fun[n].symbol);
                 if (!to->fun[n].symbol)
                 {
-                        pr_devel("[PFQ] strcat_user error!\n");
+                        pr_devel("[PFQ] strdup_user error!\n");
                         return -ENOMEM;
                 }
 
