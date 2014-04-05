@@ -198,7 +198,8 @@ int pfq_tx_queue_flush(struct pfq_tx_opt *to, struct net_device *dev, int cpu, i
 
 
 
-int __pfq_queue_xmit(struct sk_buff *skb, struct net_device *dev, struct netdev_queue *txq)
+static int
+__pfq_queue_xmit(struct sk_buff *skb, struct net_device *dev, struct netdev_queue *txq)
 {
         int rc = -ENOMEM;
 

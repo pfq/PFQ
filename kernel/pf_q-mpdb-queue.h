@@ -35,8 +35,7 @@
 #include <pf_q-sock.h>
 
 
-extern bool   mpdb_enqueue(struct pfq_rx_opt *ro, struct sk_buff *skb);
-extern size_t mpdb_enqueue_batch(struct pfq_rx_opt *ro, unsigned long queue_mask, int len, struct pfq_non_intrusive_skb *skbs, int gid);
+extern size_t pfq_mpdb_enqueue_batch(struct pfq_rx_opt *ro, unsigned long queue_mask, int len, struct pfq_non_intrusive_skb *skbs, int gid);
 
 
 static inline

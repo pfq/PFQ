@@ -44,14 +44,14 @@ void *pfq_memcpy(void *to, const void *from, size_t len)
 }
 
 
-inline
+static inline
 char *mpdb_slot_ptr(struct pfq_rx_opt *ro, struct pfq_rx_queue_hdr *qd, int index, int slot)
 {
 	return (char *)(ro->base_addr) + ( (index&1 ? ro->size : 0 ) + slot) * ro->slot_size;
 }
 
 
-size_t mpdb_enqueue_batch(struct pfq_rx_opt *ro, unsigned long bitqueue, int burst_len, struct pfq_non_intrusive_skb *skbs, int gid)
+size_t pfq_mpdb_enqueue_batch(struct pfq_rx_opt *ro, unsigned long bitqueue, int burst_len, struct pfq_non_intrusive_skb *skbs, int gid)
 {
 	struct pfq_rx_queue_hdr *rx = ro->queue_info;
 	int data, q_len, q_index;

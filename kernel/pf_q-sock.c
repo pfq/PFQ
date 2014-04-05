@@ -36,7 +36,6 @@ atomic_long_t pfq_sock_vector[Q_MAX_ID];
 atomic_t      pfq_sock_count;
 
 
-
 int pfq_get_free_sock_id(struct pfq_sock * so)
 {
         int n = 0;

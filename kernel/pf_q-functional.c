@@ -34,6 +34,34 @@
 #include <pf_q-factory.h>
 
 
+static size_t
+full_context_size(const struct pfq_meta_prog *prog)
+{
+        size_t size = 0, n = 0;
+
+        for(; n < prog->size; n++)
+        {
+                size += ALIGN(prog->fun[n].context.size, 8);
+        }
+
+        return size;
+}
+
+static char *
+strdup_user(const char __user *str)
+{
+        size_t len = strlen_user(str);
+        char * ret = (char *)kmalloc(len, GFP_KERNEL);
+        if (!ret)
+                return NULL;
+        if (copy_from_user(ret, str, len)) {
+                kfree(ret);
+                return NULL;
+        }
+        return ret;
+}
+
+
 struct sk_buff *
 pfq_run(int gid, struct pfq_exec_prog *prg, struct sk_buff *skb)
 {
@@ -67,25 +95,11 @@ pfq_run(int gid, struct pfq_exec_prog *prg, struct sk_buff *skb)
 }
 
 
-size_t
-pfq_full_context_size(const struct pfq_meta_prog *prog)
-{
-        size_t size = 0, n = 0;
-
-        for(; n < prog->size; n++)
-        {
-                size += ALIGN(prog->fun[n].context.size, 8);
-        }
-
-        return size;
-}
-
-
 int
 pfq_meta_prog_compile(const struct pfq_meta_prog *prog, struct pfq_exec_prog **exec, void **ctx)
 {
         size_t mem = sizeof(int) + sizeof(pfq_exec_t) * prog->size;
-        size_t cs  = pfq_full_context_size(prog);
+        size_t cs  = full_context_size(prog);
         char * ptr;
         int n;
 
@@ -167,21 +181,6 @@ kfree_meta_prog(struct pfq_meta_prog *prog)
         }
         kfree(prog);
 }
-
-
-char *strdup_user(const char __user *str)
-{
-        size_t len = strlen_user(str);
-        char * ret = (char *)kmalloc(len, GFP_KERNEL);
-        if (!ret)
-                return NULL;
-        if (copy_from_user(ret, str, len)) {
-                kfree(ret);
-                return NULL;
-        }
-        return ret;
-}
-
 
 int
 copy_meta_prog_from_user(struct pfq_meta_prog *to, struct pfq_user_meta_prog *from)
