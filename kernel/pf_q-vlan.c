@@ -76,7 +76,8 @@ pfq_vlan_reorder_header(struct sk_buff *skb)
 }
 
 
-struct sk_buff *pfq_vlan_untag(struct sk_buff *skb)
+struct sk_buff *
+pfq_vlan_untag(struct sk_buff *skb)
 {
         struct vlan_hdr *vhdr;
         u16 vlan_tci;

@@ -56,7 +56,8 @@ int pfq_get_sock_count(void)
 }
 
 
-struct pfq_sock * pfq_get_sock_by_id(size_t id)
+struct pfq_sock *
+pfq_get_sock_by_id(size_t id)
 {
         struct pfq_sock * so;
         if (unlikely(id >= Q_MAX_ID))

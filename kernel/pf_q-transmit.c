@@ -38,7 +38,8 @@
 #include <pf_q-common.h>
 #include <pf_q-global.h>
 
-static inline u16 __pfq_dev_cap_txqueue(struct net_device *dev, u16 queue_index)
+static inline u16
+__pfq_dev_cap_txqueue(struct net_device *dev, u16 queue_index)
 {
         if (unlikely(queue_index >= dev->real_num_tx_queues))
                 return 0;
@@ -48,7 +49,8 @@ static inline u16 __pfq_dev_cap_txqueue(struct net_device *dev, u16 queue_index)
 
 /* select the right tx queue, and fix queue_index (-1 means any queue) */
 
-struct netdev_queue *pfq_pick_tx(struct net_device *dev, struct sk_buff *skb, int *queue_index)
+struct netdev_queue *
+pfq_pick_tx(struct net_device *dev, struct sk_buff *skb, int *queue_index)
 {
         if (dev->real_num_tx_queues != 1 && *queue_index == -1)
         {
