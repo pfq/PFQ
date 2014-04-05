@@ -170,18 +170,6 @@ kzalloc_meta_prog(size_t size)
 }
 
 
-void
-kfree_meta_prog(struct pfq_meta_prog *prog)
-{
-        int n;
-        for(n = 0; n < prog->size; n++)
-        {
-                kfree(prog->fun[n].symbol);
-                kfree(prog->fun[n].context.addr);
-        }
-        kfree(prog);
-}
-
 int
 copy_meta_prog_from_user(struct pfq_meta_prog *to, struct pfq_user_meta_prog *from)
 {
