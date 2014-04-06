@@ -124,8 +124,8 @@ MODULE_PARM_DESC(vl_untag,      " Enable vlan untagging (default=0)");
 DEFINE_SEMAPHORE(sock_sem);
 
 
-inline
-bool pfq_copy_to_user_skbs(struct pfq_rx_opt *ro, int cpu, unsigned long long sock_queue, struct pfq_non_intrusive_skb *skbs, int gid)
+static inline
+bool copy_to_user_skbs(struct pfq_rx_opt *ro, int cpu, unsigned long long sock_queue, struct pfq_non_intrusive_skb *skbs, int gid)
 {
         /* enqueue the sk_buff: it's wait-free. */
 
@@ -150,8 +150,8 @@ bool pfq_copy_to_user_skbs(struct pfq_rx_opt *ro, int cpu, unsigned long long so
 
 /* send this packet to selected sockets */
 
-inline
-void pfq_mask_to_sock_queue(unsigned long n, unsigned long mask, unsigned long long *sock_queue)
+static inline
+void mask_to_sock_queue(unsigned long n, unsigned long mask, unsigned long long *sock_queue)
 {
 	unsigned long bit;
        	pfq_bitwise_foreach(mask, bit)
@@ -162,8 +162,9 @@ void pfq_mask_to_sock_queue(unsigned long n, unsigned long mask, unsigned long l
 }
 
 
-void
-pfq_dump_skb(struct sk_buff const *skb)
+#if 0
+static void
+dump_skb(struct sk_buff const *skb)
 {
         unsigned char * p;
 
@@ -184,6 +185,7 @@ pfq_dump_skb(struct sk_buff const *skb)
                        p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8], p[9], p[10], p[11], p[12], p[13], p[14], p[15],
                        p[16], p[17], p[18], p[19], p[20], p[21], p[22], p[23], p[24], p[25], p[26], p[27], p[28], p[29]);
 }
+#endif
 
 /*
  * Find the next power of two.
@@ -429,7 +431,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
                                         sock_mask |= atomic_long_read(&pfq_groups[gid].sock_mask[0]);
                                 }
 
-                                pfq_mask_to_sock_queue(n, sock_mask, sock_queue);
+                                mask_to_sock_queue(n, sock_mask, sock_queue);
                                 socket_mask |= sock_mask;
                         }
 
@@ -443,10 +445,10 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
                                         if (likely(ro)) {
 
 #ifdef PFQ_USE_FLOW_CONTROL
-                                                if (!pfq_copy_to_user_skbs(ro, cpu, sock_queue[i], prefetch_queue, gid))
+                                                if (!copy_to_user_skbs(ro, cpu, sock_queue[i], prefetch_queue, gid))
                                                         local->flowctrl = flow_control;
 #else
-                                                pfq_copy_to_user_skbs(ro, cpu, sock_queue[i], prefetch_queue, gid);
+                                                copy_to_user_skbs(ro, cpu, sock_queue[i], prefetch_queue, gid);
 #endif
                                         }
                                 }
