@@ -138,8 +138,12 @@ struct pfq_cb
         action_t action;
         struct pfq_pergroup_context *ctx;
 
+        void * next_fun;
+
         char direct_skb;
+        bool right;
 };
+
 
 #define PFQ_CB(skb) ((struct pfq_cb *)(skb)->cb)
 
