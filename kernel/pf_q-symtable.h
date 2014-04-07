@@ -21,8 +21,8 @@
  *
  ****************************************************************/
 
-#ifndef _PF_Q_FACTORY_H_
-#define _PF_Q_FACTORY_H_
+#ifndef _PF_Q_SYMTABLE_H_
+#define _PF_Q_SYMTBALE_H_
 
 #include <linux/skbuff.h>
 #include <linux/list.h>
@@ -33,21 +33,22 @@
 
 /* semaphore */
 
-extern struct semaphore factory_sem;
+extern struct semaphore symtable_sem;
 
 /* categories */
 
 extern struct list_head pfq_monadic_cat;
 extern struct list_head pfq_predicate_cat;
 
-/* factory */
+/* symtable */
 
-extern void pfq_factory_init(void);
-extern void pfq_factory_free(void);
+extern void pfq_symtable_init(void);
+extern void pfq_symtable_free(void);
 
-extern int  pfq_register_function(const char *module, struct list_head *category, const char *symbol, pfq_function_t fun);
-extern int  pfq_unregister_function(const char *module, struct list_head *category, const char *symbol);
+extern int  pfq_symtable_register_function(const char *module, struct list_head *category, const char *symbol, void * fun);
+extern int  pfq_symtable_unregister_function(const char *module, struct list_head *category, const char *symbol);
 
-extern pfq_function_t pfq_get_function(struct list_head *category, const char *symbol);
+extern void * pfq_symtable_resolve(struct list_head *category, const char *symbol);
 
-#endif /* _PF_Q_FACTORY_H_ */
+
+#endif /* _PF_Q_SYMTABLE_H_ */

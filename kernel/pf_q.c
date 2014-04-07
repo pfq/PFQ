@@ -54,7 +54,7 @@
 #include <pf_q-group.h>
 #include <pf_q-prefetch.h>
 #include <pf_q-functional.h>
-#include <pf_q-factory.h>
+#include <pf_q-symtable.h>
 #include <pf_q-bitops.h>
 #include <pf_q-bpf.h>
 #include <pf_q-memory.h>
@@ -623,7 +623,7 @@ pfq_create(
 
         up (&sock_sem);
 
-        down(&factory_sem);
+        down(&symtable_sem);
         return 0;
 }
 
@@ -734,7 +734,7 @@ pfq_release(struct socket *sock)
 	sock->sk = NULL;
 	sock_put(sk);
 
-        up(&factory_sem);
+        up(&symtable_sem);
 
 	pr_devel("[PFQ|%d] socket closed.\n", id);
         return 0;
@@ -964,7 +964,7 @@ static int __init pfq_init_module(void)
 
 	/* register functions */
 
-	pfq_factory_init();
+	pfq_symtable_init();
 
 #ifdef PFQ_USE_SKB_RECYCLE
         pfq_skb_recycle_init();
@@ -1011,7 +1011,7 @@ static void __exit pfq_exit_module(void)
 
 	/* free functions */
 
-	pfq_factory_free();
+	pfq_symtable_free();
 
         printk(KERN_INFO "[PFQ] unloaded.\n");
 }
@@ -1095,8 +1095,8 @@ EXPORT_SYMBOL_GPL(pfq_netif_rx);
 EXPORT_SYMBOL_GPL(pfq_netif_receive_skb);
 EXPORT_SYMBOL_GPL(pfq_gro_receive);
 
-EXPORT_SYMBOL_GPL(pfq_register_functions);
-EXPORT_SYMBOL_GPL(pfq_unregister_functions);
+EXPORT_SYMBOL_GPL(pfq_symtable_register_functions);
+EXPORT_SYMBOL_GPL(pfq_symtable_unregister_functions);
 
 module_init(pfq_init_module);
 module_exit(pfq_exit_module);

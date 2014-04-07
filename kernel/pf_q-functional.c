@@ -31,7 +31,7 @@
 
 #include <pf_q-group.h>
 #include <pf_q-functional.h>
-#include <pf_q-factory.h>
+#include <pf_q-symtable.h>
 
 
 static size_t
@@ -130,7 +130,7 @@ pfq_meta_prog_compile(const struct pfq_meta_prog *prog, struct pfq_exec_prog **e
                         return -EINVAL;
                 }
 
-                (*exec)->fun[n].fun_ptr = pfq_get_function(&pfq_monadic_cat, prog->fun[n].symbol);
+                (*exec)->fun[n].fun_ptr = pfq_symtable_resolve(&pfq_monadic_cat, prog->fun[n].symbol);
 
                 if ((*exec)->fun[n].fun_ptr == NULL) {
                         pr_devel("[PFQ function error: '%s' unknown function!\n", prog->fun[n].symbol);

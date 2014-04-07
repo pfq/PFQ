@@ -31,10 +31,10 @@
 #include <linux/pf_q-module.h>
 
 #include <pf_q-group.h>
-#include <pf_q-factory.h>
+#include <pf_q-symtable.h>
 
 
-DEFINE_SEMAPHORE(factory_sem);
+DEFINE_SEMAPHORE(symtable_sem);
 
 LIST_HEAD(pfq_monadic_cat);
 LIST_HEAD(pfq_predicate_cat);
@@ -43,7 +43,7 @@ EXPORT_SYMBOL_GPL(pfq_monadic_cat);
 EXPORT_SYMBOL_GPL(pfq_predicate_cat);
 
 
-struct factory_entry
+struct symtable_entry
 {
 	struct list_head 	list;
 	char 			symbol[Q_FUN_SYMB_LEN];
@@ -52,30 +52,30 @@ struct factory_entry
 
 
 int
-pfq_unregister_functions(const char *module, struct list_head *category, struct pfq_function_descr *fun)
+pfq_symtable_unregister_functions(const char *module, struct list_head *category, struct pfq_function_descr *fun)
 {
 	int i = 0;
 	for(; fun[i].symbol != NULL; i++)
 	{
-		pfq_unregister_function(module, category, fun[i].symbol);
+		pfq_symtable_unregister_function(module, category, fun[i].symbol);
 	}
 	return 0;
 }
 
 
 int
-pfq_register_functions(const char *module, struct list_head *category, struct pfq_function_descr *fun)
+pfq_symtable_register_functions(const char *module, struct list_head *category, struct pfq_function_descr *fun)
 {
 	int i = 0;
 	for(; fun[i].symbol != NULL; i++)
 	{
-		if (pfq_register_function(module, category, fun[i].symbol, fun[i].function) < 0)
+		if (pfq_symtable_register_function(module, category, fun[i].symbol, fun[i].function) < 0)
                 {
                         /* unregister all functions */
                         int j = 0;
 
                         for(; j < i; j++)
-                                pfq_unregister_function(module, category, fun[j].symbol);
+                                pfq_symtable_unregister_function(module, category, fun[j].symbol);
 
                         return -1;
                 }
@@ -89,59 +89,58 @@ extern struct pfq_function_descr filter_functions[];
 extern struct pfq_function_descr forward_functions[];
 extern struct pfq_function_descr steering_functions[];
 extern struct pfq_function_descr misc_functions[];
-
 extern struct pfq_function_descr predicate_functions[];
 
 void
-pfq_factory_init(void)
+pfq_symtable_init(void)
 {
-        pfq_register_functions(NULL, &pfq_monadic_cat, filter_functions);
-        pfq_register_functions(NULL, &pfq_monadic_cat, forward_functions);
-        pfq_register_functions(NULL, &pfq_monadic_cat, steering_functions);
-        pfq_register_functions(NULL, &pfq_monadic_cat, misc_functions);
+        pfq_symtable_register_functions(NULL, &pfq_monadic_cat, filter_functions);
+        pfq_symtable_register_functions(NULL, &pfq_monadic_cat, forward_functions);
+        pfq_symtable_register_functions(NULL, &pfq_monadic_cat, steering_functions);
+        pfq_symtable_register_functions(NULL, &pfq_monadic_cat, misc_functions);
 
-        pfq_register_functions(NULL, &pfq_predicate_cat, predicate_functions);
+        pfq_symtable_register_functions(NULL, &pfq_predicate_cat, predicate_functions);
 
-	printk(KERN_INFO "[PFQ] function-factory initialized.\n");
+	printk(KERN_INFO "[PFQ] function-symtable initialized.\n");
 }
 
 void
-__pfq_factory_free(struct list_head *category)
+__pfq_symtable_free(struct list_head *category)
 {
 	struct list_head *pos = NULL, *q;
-	struct factory_entry *this;
+	struct symtable_entry *this;
 
 	list_for_each_safe(pos, q, category)
 	{
-    		this = list_entry(pos, struct factory_entry, list);
+    		this = list_entry(pos, struct symtable_entry, list);
 		list_del(pos);
                 kfree(this);
 	}
 }
 
 void
-pfq_factory_free(void)
+pfq_symtable_free(void)
 {
-	down(&factory_sem);
-	__pfq_factory_free(&pfq_monadic_cat);
-	__pfq_factory_free(&pfq_predicate_cat);
-	up(&factory_sem);
-	printk(KERN_INFO "[PFQ] function factory freed.\n");
+	down(&symtable_sem);
+	__pfq_symtable_free(&pfq_monadic_cat);
+	__pfq_symtable_free(&pfq_predicate_cat);
+	up(&symtable_sem);
+	printk(KERN_INFO "[PFQ] function symtable freed.\n");
 }
 
 
-pfq_function_t
-__pfq_get_function(struct list_head *category, const char *symbol)
+void *
+__pfq_symtable_resolve(struct list_head *category, const char *symbol)
 {
 	struct list_head *pos = NULL;
-	struct factory_entry *this;
+	struct symtable_entry *this;
 
         if (symbol == NULL)
                 return NULL;
 
 	list_for_each(pos, category)
 	{
-    		this = list_entry(pos, struct factory_entry, list);
+    		this = list_entry(pos, struct symtable_entry, list);
         	if (!strcmp(this->symbol, symbol))
 			return this->function;
 	}
@@ -149,30 +148,30 @@ __pfq_get_function(struct list_head *category, const char *symbol)
 }
 
 
-pfq_function_t
-pfq_get_function(struct list_head *category, const char *symbol)
+void *
+pfq_symtable_resolve(struct list_head *category, const char *symbol)
 {
 	pfq_function_t ret;
-	down(&factory_sem);
-	ret = __pfq_get_function(category, symbol);
-	up(&factory_sem);
+	down(&symtable_sem);
+	ret = __pfq_symtable_resolve(category, symbol);
+	up(&symtable_sem);
 	return ret;
 }
 
 
 int
-__pfq_register_function(struct list_head *category, const char *symbol, pfq_function_t fun)
+__pfq_symtable_register_function(struct list_head *category, const char *symbol, pfq_function_t fun)
 {
-	struct factory_entry * elem;
+	struct symtable_entry * elem;
 
-	if (__pfq_get_function(category, symbol) != NULL) {
-		pr_devel("[PFQ] function factory error: symbol '%s' already in use!\n", symbol);
+	if (__pfq_symtable_resolve(category, symbol) != NULL) {
+		pr_devel("[PFQ] function symtable error: symbol '%s' already in use!\n", symbol);
 		return -1;
 	}
 
-	elem = kmalloc(sizeof(struct factory_entry), GFP_KERNEL);
+	elem = kmalloc(sizeof(struct symtable_entry), GFP_KERNEL);
 	if (elem == NULL) {
-		printk(KERN_WARNING "[PFQ] function factory error: out of memory!\n");
+		printk(KERN_WARNING "[PFQ] function symtable error: out of memory!\n");
 		return -1;
 	}
 
@@ -189,13 +188,13 @@ __pfq_register_function(struct list_head *category, const char *symbol, pfq_func
 
 
 int
-pfq_register_function(const char *module, struct list_head *category, const char *symbol, pfq_function_t fun)
+pfq_symtable_register_function(const char *module, struct list_head *category, const char *symbol, void *fun)
 {
 	int r;
 
-        down(&factory_sem);
-	r = __pfq_register_function(category, symbol, fun);
-	up(&factory_sem);
+        down(&symtable_sem);
+	r = __pfq_symtable_register_function(category, symbol, fun);
+	up(&symtable_sem);
 
 	if (r == 0 && module)
 		printk(KERN_INFO "[PFQ]%s '%s' @%p function registered.\n", module, symbol, fun);
@@ -205,41 +204,41 @@ pfq_register_function(const char *module, struct list_head *category, const char
 
 
 int
-__pfq_unregister_function(struct list_head *category, const char *symbol)
+__pfq_symtable_unregister_function(struct list_head *category, const char *symbol)
 {
 	struct list_head *pos = NULL, *q;
-	struct factory_entry *this;
+	struct symtable_entry *this;
 
 	list_for_each_safe(pos, q, category)
 	{
-    		this = list_entry(pos, struct factory_entry, list);
+    		this = list_entry(pos, struct symtable_entry, list);
 		if (!strcmp(this->symbol, symbol)) {
 			list_del(pos);
 	       		kfree(this);
 			return 0;
 		}
 	}
-	pr_devel("[PFQ] function factory error: '%s' no such function\n", symbol);
+	pr_devel("[PFQ] function symtable error: '%s' no such function\n", symbol);
 	return -1;
 }
 
 
 int
-pfq_unregister_function(const char *module, struct list_head *category, const char *symbol)
+pfq_symtable_unregister_function(const char *module, struct list_head *category, const char *symbol)
 {
 	pfq_function_t fun;
 
-	down(&factory_sem);
+	down(&symtable_sem);
 
-	fun = __pfq_get_function(category, symbol);
+	fun = __pfq_symtable_resolve(category, symbol);
 	if (fun == NULL)
         	return -1;
 
 	__pfq_dismiss_function(fun);
-        __pfq_unregister_function(category, symbol);
+        __pfq_symtable_unregister_function(category, symbol);
 
 	printk(KERN_INFO "[PFQ]%s '%s' function unregistered.\n", module, symbol);
-	up(&factory_sem);
+	up(&symtable_sem);
 
 	return 0;
 }

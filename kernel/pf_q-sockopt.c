@@ -36,7 +36,7 @@
 #include <pf_q-memory.h>
 #include <pf_q-queue.h>
 #include <pf_q-devmap.h>
-#include <pf_q-factory.h>
+#include <pf_q-symtable.h>
 
 extern atomic_t timestamp_toggle;
 
