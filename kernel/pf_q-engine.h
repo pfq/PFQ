@@ -37,7 +37,6 @@
         __builtin_choose_expr(__builtin_types_compatible_p(typeof(ptr), boolean_expr_t *), (expression_t *)ptr, \
         (void)0)))
 
-
 /**** functional engine ****/
 
 typedef struct sk_buff *(*function_ptr_t)(struct sk_buff *, ...);
@@ -197,23 +196,9 @@ typedef struct pfq_computation
 
 /**** pfq_bind :: Action skb -> (skb -> Action skb) -> Action skb *****/
 
+extern struct sk_buff *pfq_bind(struct sk_buff *skb, callable_t *call);
 
-static inline
-struct sk_buff *pfq_bind(struct sk_buff *skb, callable_t *call)
-{
-        struct pfq_cb * cb = PFQ_CB(skb), *ncb;
-        struct sk_buff *nskb;
 
-        cb->right = true;
-
-        nskb = call->fun.eval(skb, call->fun.un);
-
-        ncb = PFQ_CB(nskb);
-
-        nskb->next = (void *)(ncb->right ? call->right : call->left);
-
-        return nskb;
-}
 
 
 #endif /* _PF_Q_ENGINE_H_ */
