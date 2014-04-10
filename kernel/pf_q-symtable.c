@@ -100,13 +100,13 @@ __pfq_symtable_register_function(struct list_head *category, const char *symbol,
 	struct symtable_entry * elem;
 
 	if (__pfq_symtable_resolve(category, symbol) != NULL) {
-		pr_devel("[PFQ] function symtable error: symbol '%s' already in use!\n", symbol);
+		pr_devel("[PFQ] symtable error: symbol '%s' already in use!\n", symbol);
 		return -1;
 	}
 
 	elem = kmalloc(sizeof(struct symtable_entry), GFP_KERNEL);
 	if (elem == NULL) {
-		printk(KERN_WARNING "[PFQ] function symtable error: out of memory!\n");
+		printk(KERN_WARNING "[PFQ] symtable error: out of memory!\n");
 		return -1;
 	}
 
@@ -137,7 +137,7 @@ __pfq_symtable_unregister_function(struct list_head *category, const char *symbo
 			return 0;
 		}
 	}
-	pr_devel("[PFQ] function symtable error: '%s' no such function\n", symbol);
+	pr_devel("[PFQ] symtable error: '%s' no such function\n", symbol);
 	return -1;
 }
 
@@ -185,7 +185,7 @@ pfq_symtable_init(void)
 
         pfq_symtable_register_functions(NULL, &pfq_predicate_cat, predicate_functions);
 
-	printk(KERN_INFO "[PFQ] function-symtable initialized.\n");
+	printk(KERN_INFO "[PFQ] symtable initialized.\n");
 }
 
 
@@ -196,7 +196,7 @@ pfq_symtable_free(void)
 	__pfq_symtable_free(&pfq_monadic_cat);
 	__pfq_symtable_free(&pfq_predicate_cat);
 	up(&symtable_sem);
-	printk(KERN_INFO "[PFQ] function symtable freed.\n");
+	printk(KERN_INFO "[PFQ] symtable freed.\n");
 }
 
 
