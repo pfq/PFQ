@@ -34,13 +34,14 @@
 #include <pf_q-symtable.h>
 
 
-void pfq_functional_pr_devel(struct pfq_functional_descr const *descr)
+void pfq_functional_pr_devel(struct pfq_functional_descr const *descr, int index)
 {
-        static char *fun_type[] = { "     fun", "    hfun", "   hfun2", "    pred", "    comb" };
+        static char *fun_type[] = { "fun", "hfun", "hfun2", "pred", "comb" };
 
         char *name = strdup_user(descr->symbol);
 
-        pr_devel("%s:%s arg:%zu l_idx:%d r_idx:%d\n"
+        pr_devel("%d: %s { %s arg:%zu l_idx:%d r_idx:%d }\n"
+                        , index
                         , fun_type[descr->type % 5]
                         , name
                         , descr->arg_size
@@ -54,10 +55,10 @@ void pfq_functional_pr_devel(struct pfq_functional_descr const *descr)
 void pfq_computation_pr_devel(struct pfq_computation_descr const *descr)
 {
         int n;
-        pr_devel("computation:\n");
+        pr_devel("computation size:%zu entry_point:%zu\n", descr->size, descr->entry_point);
         for(n = 0; n < descr->size; n++)
         {
-                pfq_functional_pr_devel(&descr->fun[n]);
+                pfq_functional_pr_devel(&descr->fun[n], n);
         }
 }
 

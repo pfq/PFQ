@@ -35,7 +35,7 @@ extern void * pfq_context_alloc(struct pfq_computation_descr const *);
 
 extern int pfq_computation_compile (struct pfq_computation_descr const *descr, computation_t *comp, void *context);
 
-extern void pfq_functional_pr_devel(struct pfq_functional_descr const *);
+extern void pfq_functional_pr_devel(struct pfq_functional_descr const *, int);
 
 extern void pfq_computation_pr_devel(struct pfq_computation_descr const *);
 
