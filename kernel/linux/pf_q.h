@@ -383,6 +383,7 @@ struct pfq_functional_descr
 struct pfq_computation_descr
 {
         size_t  size;
+        int entry_point;
         struct pfq_functional_descr fun[];
 };
 
