@@ -165,7 +165,7 @@ typedef struct pfq_callable
 typedef struct pfq_computation
 {
         size_t          size;
-        int             entry_point;
+        size_t          entry_point;
         functional_t    fun[];
 
 } computation_t;

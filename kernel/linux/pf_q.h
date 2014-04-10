@@ -368,10 +368,9 @@ enum pfq_functional_type {
 
 struct pfq_functional_descr
 {
-        enum pfq_functional_type  type;
+        enum pfq_functional_type type;
 
         const char __user *     symbol;
-
         const void __user *     arg_ptr;
         size_t                  arg_size;
 
@@ -382,9 +381,9 @@ struct pfq_functional_descr
 
 struct pfq_computation_descr
 {
-        size_t  size;
-        int entry_point;
-        struct pfq_functional_descr fun[];
+        size_t                          size;
+        size_t                          entry_point;
+        struct pfq_functional_descr     fun[];
 };
 
 
