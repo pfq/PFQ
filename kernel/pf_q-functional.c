@@ -151,9 +151,10 @@ pfq_context_alloc(struct pfq_computation_descr const *descr)
         }
 
         r = kmalloc(size, GFP_KERNEL);
-        if (r == NULL)
+        if (r == NULL) {
+                pr_devel("[PFQ] context_alloc: could not allocate %zu bytes!\n", size);
                 return NULL;
-
+        }
         s = (size_t *)r;
 
         for(n = 0; n < descr->size; n++)

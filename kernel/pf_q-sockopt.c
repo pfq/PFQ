@@ -836,7 +836,7 @@ int pfq_setsockopt(struct socket *sock,
 
                 context = pfq_context_alloc(descr);
                 if (context == NULL) {
-                        pr_devel("[PFQ|%d] context alloc!\n", so->id);
+                        pr_devel("[PFQ|%d] context: alloc error!\n", so->id);
                         kfree(descr);
                         return -EFAULT;
                 }
@@ -845,7 +845,7 @@ int pfq_setsockopt(struct socket *sock,
 
                 comp = pfq_computation_alloc(descr);
                 if (comp == NULL) {
-                        pr_devel("[PFQ|%d] computation alloc!\n", so->id);
+                        pr_devel("[PFQ|%d] computation: alloc error!\n", so->id);
                         kfree(context);
                         kfree(descr);
                         return -EFAULT;
