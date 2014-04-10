@@ -18,19 +18,27 @@ main(int argc, char *argv[])
 
     auto gid = q.group_id();
 
-    auto prog = reinterpret_cast<pfq_meta_prog *>(malloc(sizeof(int) + sizeof(pfq_fun_t) * 2));
+    auto prog = reinterpret_cast<pfq_computation_descr *>(malloc(sizeof(size_t) * 2 + sizeof(pfq_functional_descr) * 2));
 
     prog->size = 2;
+    prog->entry_point = 0;
 
+    prog->fun[0].type = pfq_monadic_fun;
     prog->fun[0].symbol = "icmp";
-    prog->fun[0].context.addr = NULL;
-    prog->fun[0].context.size = 0;
+    prog->fun[0].arg_ptr  = NULL;
+    prog->fun[0].arg_size = 0;
+    prog->fun[0].l_index = 1;
+    prog->fun[0].r_index = 1;
 
+    prog->fun[1].type = pfq_monadic_fun;
     prog->fun[1].symbol = "steer-ip";
-    prog->fun[1].context.addr = NULL;
-    prog->fun[1].context.size = 0;
+    prog->fun[1].arg_ptr  = NULL;
+    prog->fun[1].arg_size = 0;
 
-    q.set_group_program(gid, prog);
+    prog->fun[1].l_index = 0;
+    prog->fun[1].r_index = 0;
+
+    q.set_group_computation(gid, prog);
 
     q.enable();
 
