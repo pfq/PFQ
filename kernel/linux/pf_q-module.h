@@ -24,6 +24,9 @@
 #ifndef _PF_Q_MODULE_H_
 #define _PF_Q_MODULE_H_
 
+#include <linux/kernel.h>
+#include <linux/version.h>
+
 #include <linux/pf_q.h>
 #include <linux/pf_q-sparse.h>
 
@@ -132,18 +135,17 @@ struct pfq_pergroup_context
 
 struct pfq_cb
 {
+        action_t action;
+
         unsigned long group_mask;
         unsigned long state;
 
-        action_t action;
         struct pfq_pergroup_context *ctx;
-
-        void * next_fun;
 
         char direct_skb;
         bool right;
-};
 
+} __attribute__((packed));
 
 #define PFQ_CB(skb) ((struct pfq_cb *)(skb)->cb)
 
@@ -152,6 +154,11 @@ struct pfq_cb
 static inline bool
 is_drop(action_t a)
 {
+        struct sk_buff *skb;
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,9,0))
+        BUILD_BUG_ON_MSG(sizeof(struct pfq_cb) > sizeof(skb->cb), "pfq_cb overflow");
+#endif
+
         return a.type == action_drop;
 }
 
