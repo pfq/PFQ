@@ -23,6 +23,7 @@
  ****************************************************************/
 
 #include <linux/kernel.h>
+#include <linux/bug.h>
 #include <linux/module.h>
 #include <linux/semaphore.h>
 
@@ -91,8 +92,8 @@ __pfq_group_init(int gid)
         }
 
         atomic_long_set(&g->filter,   0L);
-        atomic_long_set(&g->prog,     0L);
-        atomic_long_set(&g->prog_ctx, 0L);
+        atomic_long_set(&g->comp,     0L);
+        atomic_long_set(&g->comp_ctx, 0L);
 
         sparse_set(&g->recv, 0);
         sparse_set(&g->lost, 0);
@@ -110,8 +111,8 @@ __pfq_group_free(int gid)
 {
         struct pfq_group * g = pfq_get_group(gid);
         struct sk_filter *filter;
-        struct pfq_exec_prog *prg;
-        void *prg_ctx;
+        computation_t *comp;
+        void *comp_ctx;
 
         if (!g) {
                 pr_devel("[PFQ] get_group: invalid group id %d!\n", gid);
@@ -125,14 +126,14 @@ __pfq_group_free(int gid)
         g->pid = 0;
         g->policy = Q_GROUP_UNDEFINED;
 
-        filter  = (struct sk_filter *)atomic_long_xchg(&g->filter, 0L);
-        prg     = (struct pfq_exec_prog *)atomic_long_xchg(&g->prog, 0L);
-        prg_ctx = (void *)atomic_long_xchg(&g->prog_ctx, 0L);
+        filter   = (struct sk_filter *)atomic_long_xchg(&g->filter, 0L);
+        comp     = (computation_t *)atomic_long_xchg(&g->comp, 0L);
+        comp_ctx = (void *)atomic_long_xchg(&g->comp_ctx, 0L);
 
         msleep(Q_GRACE_PERIOD);   /* sleeping is possible here: user-context */
 
-        kfree(prg);
-        kfree(prg_ctx);
+        kfree(comp);
+        kfree(comp_ctx);
 
         pfq_free_sk_filter(filter);
 
@@ -228,52 +229,6 @@ __pfq_get_all_groups_mask(int gid)
 }
 
 
-#if 0
-int __pfq_get_group_context(int gid, int level, int size, void __user * dst)
-{
-        struct pfq_group * g = pfq_get_group(gid);
-        struct pfq_exec_prog *prg;
-        int err = 0;
-        void *src;
-
-        if (!g) {
-                pr_devel("[PFQ] get_group: invalid group id %d!\n", gid);
-                return -EINVAL;
-        }
-
-        prg = (struct pfq_exec_prog *)atomic_long_read(&g->prog);
-        if (!prg) {
-                pr_devel("[PFQ] get_group_context: no such program!\n");
-                return -EFAULT;
-        }
-
-        if (level < 0 || level >= prg->size) {
-                pr_devel("[PFQ] get_group_context: invalid index %d!\n", level);
-                return -EINVAL;
-        }
-
-        spin_lock_bh(&prg->fun[level].ctx_lock);
-
-        src = prg->fun[level].ctx_ptr;
-
-        if (src) {
-                if (copy_to_user(dst, src, size)) {
-                        pr_devel("[PFQ] copy_to_user: error!\n");
-                        err = -EFAULT;
-                }
-        }
-        else {
-                pr_devel("[PFQ] get_group_context: no context @ index %d!\n", level);
-                err = -EFAULT;
-        }
-
-        spin_unlock_bh(&prg->fun[level].ctx_lock);
-
-        return err;
-}
-#endif
-
-
 void __pfq_set_group_filter(int gid, struct sk_filter *filter)
 {
         struct pfq_group * g = pfq_get_group(gid);
@@ -293,38 +248,39 @@ void __pfq_set_group_filter(int gid, struct sk_filter *filter)
 }
 
 
-void __pfq_dismiss_function(pfq_function_t f)
+void __pfq_dismiss_function(void *f)
 {
         int n;
 
         for(n = 0; n < Q_MAX_GROUP; n++)
         {
-                struct pfq_exec_prog *prg;
+                computation_t *comp = (computation_t *)atomic_long_read(&pfq_get_group(n)->comp);
 
-                prg = (struct pfq_exec_prog *)atomic_long_read(&pfq_get_group(n)->prog);
+                BUG_ON(comp != NULL);
 
-                if (prg) {
+#if 0
+                if (comp) {
                         int n = 0;
-                        for(; n < prg->size; n++)
+                        for(; n < comp->size; n++)
                         {
-                                if (prg->fun[n].fun_ptr == f)
+                                if (comp->fun[n].fun.eval == f)
                                 {
-                                        // FIXME: race condition, fun_ptr should be atomic
-
-                                        prg->fun[n].fun_ptr = NULL;
+                                        comp->fun[n].fun.eval = NULL;
                                 }
                         }
                 }
+#endif
+
         }
 
         printk(KERN_INFO "[PFQ] function @%p dismissed.\n", f);
 }
 
 
-int pfq_set_group_prog(int gid, struct pfq_exec_prog *prog, void *ctx)
+int pfq_set_group_prog(int gid, computation_t *comp, void *ctx)
 {
         struct pfq_group * g = pfq_get_group(gid);
-        struct pfq_exec_prog *old_prg;
+        computation_t *old_comp;
         void *old_ctx;
 
         if (!g) {
@@ -334,14 +290,14 @@ int pfq_set_group_prog(int gid, struct pfq_exec_prog *prog, void *ctx)
 
         down(&group_sem);
 
-        old_prg = (struct pfq_exec_prog *)atomic_long_xchg(& g->prog,     (long)prog);
-        old_ctx = (struct pfq_exec_prog *)atomic_long_xchg(& g->prog_ctx, (long)ctx);
+        old_comp = (computation_t *)atomic_long_xchg(&g->comp, (long)comp);
+        old_ctx  = (void *)atomic_long_xchg(&g->comp_ctx, (long)ctx);
 
         msleep(Q_GRACE_PERIOD);   /* sleeping is possible here: user-context */
 
-        /* free the old program */
+        /* free the old computation/context */
 
-        kfree(old_prg);
+        kfree(old_comp);
         kfree(old_ctx);
 
         up(&group_sem);

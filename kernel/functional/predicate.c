@@ -28,43 +28,43 @@
 #include <linux/pf_q-module.h>
 
 static bool
-__is_ip(context_t ctx, struct sk_buff const *skb)
+__is_ip(struct sk_buff const *skb, argument_t a)
 {
         return  is_ip(skb);
 }
 
 static bool
-__is_ipv6(context_t ctx, struct sk_buff const *skb)
+__is_ipv6(struct sk_buff const *skb, argument_t a)
 {
         return  is_ipv6(skb);
 }
 
 static bool
-__is_udp(context_t ctx, struct sk_buff const *skb)
+__is_udp(struct sk_buff const *skb, argument_t a)
 {
         return  is_udp(skb);
 }
 
 static bool
-__is_tcp(context_t ctx, struct sk_buff const *skb)
+__is_tcp(struct sk_buff const *skb, argument_t a)
 {
         return  is_tcp(skb);
 }
 
 static bool
-__is_icmp(context_t ctx, struct sk_buff const *skb)
+__is_icmp(struct sk_buff const *skb, argument_t a)
 {
         return  is_icmp(skb);
 }
 
 static bool
-__has_flow(context_t ctx, struct sk_buff const *skb)
+__has_flow(struct sk_buff const *skb, argument_t a)
 {
         return  has_flow(skb);
 }
 
 static bool
-__has_vlan(context_t ctx, struct sk_buff const *skb)
+__has_vlan(struct sk_buff const *skb, argument_t a)
 {
         return  has_vlan(skb);
 }
@@ -72,13 +72,13 @@ __has_vlan(context_t ctx, struct sk_buff const *skb)
 
 struct pfq_predicate_fun_descr predicate_functions[] = {
 
-        { "is_ip",                 __is_ip             },
-        { "is_ipv6",               __is_ipv6           },
-        { "is_udp",                __is_udp            },
-        { "is_tcp",                __is_tcp            },
-        { "is_icmp",               __is_icmp           },
-        { "has_flow",              __has_flow          },
-        { "has_vlan",              __has_vlan          },
+        { "is_ip",      __is_ip         },
+        { "is_ipv6",    __is_ipv6       },
+        { "is_udp",     __is_udp        },
+        { "is_tcp",     __is_tcp        },
+        { "is_icmp",    __is_icmp       },
+        { "has_flow",   __has_flow      },
+        { "has_vlan",   __has_vlan      },
 
         { NULL, NULL}};
 

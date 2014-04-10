@@ -47,56 +47,53 @@ extern int pfq_symtable_register_functions  (const char *module, struct list_hea
 extern int pfq_symtable_unregister_functions(const char *module, struct list_head *category, struct pfq_function_descr *fun);
 
 
-/* function context */
+/**** argument_t: note, the size of the arg is @ (size_t *)addr - 1; ****/
 
-typedef struct
+typedef union
 {
-        const void *data;
-        size_t size;
+        void const              *arg;
+        struct _expression      *expr;
 
-} context_t;
+} argument_t;
+
+
+#define argument_as(type, a)   __builtin_choose_expr(__builtin_types_compatible_p(argument_t, typeof(a)), (type *)a.arg,  (void)0)
+#define expression(a)          __builtin_choose_expr(__builtin_types_compatible_p(argument_t, typeof(a)), a.expr, (void)0)
+
+
+/**** functional engine ****/
+
+typedef struct sk_buff *(*function_ptr_t)(struct sk_buff *, argument_t );
+typedef bool            (*predicate_ptr_t)(struct sk_buff const *, argument_t );
+typedef bool            (*combinator_ptr_t)(struct sk_buff const *, void *expr1, void *expr2);
 
 
 /* monadic function */
 
-typedef struct sk_buff *(*pfq_function_t)(context_t, struct sk_buff *);
-typedef bool           (*pfq_predicate_t)(context_t, struct sk_buff const *);
-
-
 struct pfq_function_descr
 {
         const char *    symbol;
-        void *          function; /* pfq_function_t, pfq_predicate_t etc.. */
+        function_ptr_t ptr;
 };
 
 
 struct pfq_monadic_fun_descr
 {
-        const char *    symbol;
-        pfq_function_t  function;
+        const char * symbol;
+        function_ptr_t ptr;
 };
 
 struct pfq_predicate_fun_descr
 {
-        const char *    symbol;
-        pfq_predicate_t  function;
+        const char * symbol;
+        predicate_ptr_t ptr;
 };
 
-/* exec function */
 
-typedef struct pfq_exec
+struct pfq_combinator_fun_descr
 {
-        pfq_function_t fun_ptr;
-        void *  ctx_ptr;
-        size_t  ctx_size;
-
-} pfq_exec_t;
-
-
-struct pfq_exec_prog
-{
-        size_t size;
-        pfq_exec_t fun[];
+        const char * symbol;
+        combinator_ptr_t ptr;
 };
 
 /* actions types */
@@ -331,20 +328,6 @@ sparse_counter_t * get_counter(struct sk_buff *skb, int n)
                 return NULL;
 
         return & cb->ctx->counter[n];
-}
-
-/* utility function: context */
-
-static inline
-const void * context_addr(context_t ctx)
-{
-        return ctx.data;
-}
-
-static inline
-size_t context_size(context_t ctx)
-{
-        return ctx.size;
 }
 
 /* utility function: state */

@@ -198,9 +198,7 @@ extern int pfq_unbind(pfq_t *q, const char *dev, int queue);
 
 extern int pfq_groups_mask(pfq_t const *q, unsigned long *_mask);
 
-extern int pfq_set_group_program(pfq_t *q, int gid, struct pfq_meta_prog *prg);
-
-extern int pfq_get_group_function_context(pfq_t const *q, int gid, void *context, size_t size, int level);
+extern int pfq_set_group_computation(pfq_t *q, int gid, struct pfq_computation_descr *prg);
 
 extern int pfq_group_fprog(pfq_t *q, int gid, struct sock_fprog *);
 

@@ -63,8 +63,8 @@ struct pfq_group
         bool   vlan_filt;                               /* enable/disable vlan filtering */
         char   vid_filters[4096];                       /* vlan filters */
 
-        atomic_long_t prog;                             /* struct pfq_exec_prog *  (new functional program) */
-        atomic_long_t prog_ctx;                         /* void *: storage context (new functional program) */
+        atomic_long_t comp;                             /* computation_t *  (new functional program) */
+        atomic_long_t comp_ctx;                         /* void *: storage context (new functional program) */
 
         sparse_counter_t recv;
         sparse_counter_t lost;
@@ -81,7 +81,7 @@ extern int  pfq_join_free_group(int id, unsigned long class_mask, int policy);
 extern int  pfq_join_group(int gid, int id, unsigned long class_mask, int policy);
 extern int  pfq_leave_group(int gid, int id);
 extern void pfq_leave_all_groups(int id);
-extern int  pfq_set_group_prog(int gid, struct pfq_exec_prog *prog, void *ctx);
+extern int  pfq_set_group_prog(int gid, computation_t *prog, void *ctx);
 
 extern unsigned long pfq_get_groups(int id);
 extern unsigned long __pfq_get_all_groups_mask(int gid);
@@ -90,7 +90,8 @@ extern bool __pfq_group_access(int gid, int id, int policy, bool join);
 
 extern int  __pfq_get_group_context(int gid, int level, int size, void __user *context);
 extern void __pfq_set_group_filter(int gid, struct sk_filter *filter);
-extern void __pfq_dismiss_function(pfq_function_t f);
+
+extern void __pfq_dismiss_function(void *f);
 
 
 static inline

@@ -551,12 +551,12 @@ pfq_groups_mask(pfq_t const *q, unsigned long *_mask)
 }
 
 int
-pfq_set_group_program(pfq_t *q, int gid, struct pfq_meta_prog *prg)
+pfq_set_group_computation(pfq_t *q, int gid, struct pfq_computation_descr *comp)
 {
-        struct pfq_group_meta_prog p = { gid, prg };
+        struct pfq_group_computation p = { gid, comp };
 
         if (setsockopt(q->fd, PF_Q, Q_SO_GROUP_FUN_PROG, &p, sizeof(p)) == -1) {
-		return q->error = "PFQ: group program error", -1;
+		return q->error = "PFQ: group computation error", -1;
         }
 
 	return q->error = NULL, 0;

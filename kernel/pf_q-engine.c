@@ -34,19 +34,3 @@ bool combinator_eval(struct sk_buff *skb, combinator_t *this)
         return this->fun(skb, this->left, this->right);
 }
 
-struct sk_buff *pfq_bind(struct sk_buff *skb, callable_t *call)
-{
-        struct pfq_cb * cb = PFQ_CB(skb), *ncb;
-        struct sk_buff *nskb;
-
-        cb->right = true;
-
-        nskb = call->fun.eval(skb, call->fun.un);
-
-        ncb = PFQ_CB(nskb);
-
-        nskb->next = (void *)(ncb->right ? call->right : call->left);
-
-        return nskb;
-}
-

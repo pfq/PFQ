@@ -37,6 +37,7 @@
 #include <pf_q-queue.h>
 #include <pf_q-devmap.h>
 #include <pf_q-symtable.h>
+#include <pf_q-functional.h>
 
 extern atomic_t timestamp_toggle;
 
@@ -280,41 +281,6 @@ int pfq_getsockopt(struct socket *sock,
                 if (copy_to_user(optval, &cs, sizeof(cs)))
                         return -EFAULT;
         } break;
-
-#if 0
-        case Q_SO_GET_GROUP_FUN_CONTEXT:
-        {
-                struct pfq_group_context s;
-
-                if (len != sizeof(s))
-                        return -EINVAL;
-
-                if (copy_from_user(&s, optval, sizeof(s)))
-                        return -EFAULT;
-
-                CHECK_GROUP(so->id, s.gid, "group context");
-
-                if (!s.size || !s.context) {
-                        pr_devel("[PFQ|%d] group context error: gid:%d invalid argument!\n", so->id, s.gid);
-                        return -EFAULT;
-                }
-
-                /* check whether the group is joinable.. */
-
-                if (!__pfq_group_access(s.gid, so->id, Q_GROUP_UNDEFINED, false)) {
-                        pr_devel("[PFQ|%d] group context error: permission denied (gid:%d)!\n", so->id, s.gid);
-                        return -EACCES;
-                }
-
-                /* get a copy of the function context */
-
-                if (__pfq_get_group_context(s.gid, s.level, s.size, s.context) < 0) {
-                        pr_devel("[PFQ|%d] get context error: gid:%d error!\n", so->id, s.gid);
-                        return -EFAULT;
-                }
-
-        } break;
-#endif
 
         default:
                 return -EFAULT;
@@ -829,85 +795,97 @@ int pfq_setsockopt(struct socket *sock,
 
         case Q_SO_GROUP_FUN_PROG:
         {
-                struct pfq_group_meta_prog tmp;
+                struct pfq_group_computation tmp;
+                struct pfq_computation_descr *descr;
+                size_t psize, ucsize;
 
-                struct pfq_user_meta_prog *user;
-                struct pfq_meta_prog *meta;
-                struct pfq_exec_prog *exec = NULL;
-                void *ctx = NULL;
-
-                int psize = 0;
+                computation_t *comp;
+                void *context;
 
                 if (optlen != sizeof(tmp))
                         return -EINVAL;
                 if (copy_from_user(&tmp, optval, optlen))
                         return -EFAULT;
 
-                CHECK_GROUP_ACCES(so->id, tmp.gid, "group fun-prog");
+                CHECK_GROUP_ACCES(so->id, tmp.gid, "group computation");
 
-                if (copy_from_user(&psize, tmp.prog, sizeof(int)))
+                if (copy_from_user(&psize, tmp.prog, sizeof(size_t)))
                         return -EFAULT;
 
-                pr_devel("[PFQ|%d] fun-prog size: %d\n", so->id, psize);
+                pr_devel("[PFQ|%d] computation size: %zu\n", so->id, psize);
 
-                user = (struct pfq_user_meta_prog *)kzalloc_meta_prog(psize);
-                if (!user) {
-                        pr_devel("[PFQ|%d] fun-prog: no memory: %zu bytes required!\n", so->id, pfq_meta_prog_memsize(psize));
+                ucsize = sizeof(size_t) + psize * sizeof(struct pfq_functional_descr);
+
+                descr = kmalloc(ucsize, GFP_KERNEL);
+                if (descr == NULL) {
+                        pr_devel("[PFQ|%d] computation: out of memory!\n", so->id);
                         return -ENOMEM;
                 }
 
-                if (copy_from_user(user, tmp.prog, pfq_meta_prog_memsize(psize))) {
-                        pr_devel("[PFQ|%d] fun-prog: copy_from_user error!\n", so->id);
-                        kfree(user);
+                if (copy_from_user(descr, tmp.prog, ucsize)) {
+                        pr_devel("[PFQ|%d] computation: copy_from_user error!\n", so->id);
+                        kfree(descr);
                         return -EFAULT;
                 }
 
-                /* get meta-program from user */
+                /* print user computation */
 
-                meta = kzalloc_meta_prog(psize);
-                if (!meta) {
-                        pr_devel("[PFQ|%d] fun-prog: no memory: %zu bytes required!\n", so->id, pfq_meta_prog_memsize(psize));
-                        kfree(user);
-                        return -ENOMEM;
-                }
+                pfq_computation_pr_devel(descr);
 
-                if (copy_meta_prog_from_user(meta, user)) {
-                        pr_devel("[PFQ|%d] fun-prog: copy_meta_prog_from_user error!\n", so->id);
-                        kfree(meta);
-                        kfree(user);
+                /* allocate context */
+
+                context = pfq_context_alloc(descr);
+                if (context == NULL) {
+                        pr_devel("[PFQ|%d] context alloc!\n", so->id);
+                        kfree(descr);
                         return -EFAULT;
                 }
 
-                kfree(user);
+                /* allocate computation_t */
 
-                /* show meta-program */
-
-                pfq_meta_prog_pr_devel(meta);
-
-                /* compile meta-program */
-
-                if (pfq_meta_prog_compile(meta, &exec, &ctx) < 0) {
-                        pr_devel("[PFQ|%d] meta-program compiler error!\n", so->id);
-                        kfree(meta);
-                        return -EPERM;
+                comp = pfq_computation_alloc(descr);
+                if (comp == NULL) {
+                        pr_devel("[PFQ|%d] computation alloc!\n", so->id);
+                        kfree(context);
+                        kfree(descr);
+                        return -EFAULT;
                 }
 
-                kfree(meta);
+                /* compile the computation */
 
-                /* show exec program */
+                // TODO
 
-                pfq_exec_prog_pr_devel(exec, ctx);
+                kfree(descr);
+
+                /* show computation */
+
+                // TODO
 
                 /* store the new program */
 
-                if (pfq_set_group_prog(tmp.gid, exec, ctx) < 0) {
+                if (pfq_set_group_prog(tmp.gid, comp, context) < 0) {
                         pr_devel("[PFQ|%d] set group program error!\n", so->id);
-                        kfree(exec);
-                        kfree(ctx);
+                        kfree(comp);
+                        kfree(context);
                         return -EPERM;
                 }
 
                 return 0;
+
+                // /* compile meta-program */
+
+                // if (pfq_meta_prog_compile(meta, &exec, &ctx) < 0) {
+                //         pr_devel("[PFQ|%d] meta-program compiler error!\n", so->id);
+                //         kfree(meta);
+                //         return -EPERM;
+                // }
+
+                // kfree(meta);
+
+                // /* show exec program */
+
+                // pfq_exec_prog_pr_devel(exec, ctx);
+
         } break;
 
         default:

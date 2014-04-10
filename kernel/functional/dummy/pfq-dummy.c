@@ -7,8 +7,9 @@
 
 MODULE_LICENSE("GPL");
 
+
 struct sk_buff *
-fun_dummy(context_t ctx, struct sk_buff *skb)
+fun_dummy(struct sk_buff *skb, argument_t a)
 {
 	/* perform action here */
         return skb;
@@ -25,13 +26,13 @@ struct pfq_function_descr hooks[] = {
 
 static int __init usr_init_module(void)
 {
-	return pfq_register_functions("[dummy]", &pfq_monadic_cat, hooks);
+	return pfq_symtable_register_functions("[dummy]", &pfq_monadic_cat, hooks);
 }
 
 
 static void __exit usr_exit_module(void)
 {
-	pfq_unregister_functions("[dummy]", &pfq_monadic_cat, hooks);
+	pfq_symtable_unregister_functions("[dummy]", &pfq_monadic_cat, hooks);
 }
 
 

@@ -95,7 +95,7 @@ __pfq_symtable_resolve(struct list_head *category, const char *symbol)
 
 
 static int
-__pfq_symtable_register_function(struct list_head *category, const char *symbol, pfq_function_t fun)
+__pfq_symtable_register_function(struct list_head *category, const char *symbol, void *fun)
 {
 	struct symtable_entry * elem;
 
@@ -160,7 +160,7 @@ pfq_symtable_register_functions(const char *module, struct list_head *category, 
 	int i = 0;
 	for(; fun[i].symbol != NULL; i++)
 	{
-		if (pfq_symtable_register_function(module, category, fun[i].symbol, fun[i].function) < 0)
+		if (pfq_symtable_register_function(module, category, fun[i].symbol, fun[i].ptr) < 0)
                 {
                         /* unregister all functions */
                         int j = 0;
@@ -203,7 +203,7 @@ pfq_symtable_free(void)
 void *
 pfq_symtable_resolve(struct list_head *category, const char *symbol)
 {
-	pfq_function_t ret;
+	void *ret;
 	down(&symtable_sem);
 	ret = __pfq_symtable_resolve(category, symbol);
 	up(&symtable_sem);
@@ -231,7 +231,7 @@ pfq_symtable_register_function(const char *module, struct list_head *category, c
 int
 pfq_symtable_unregister_function(const char *module, struct list_head *category, const char *symbol)
 {
-	pfq_function_t fun;
+	void *fun;
 
 	down(&symtable_sem);
 
@@ -240,6 +240,7 @@ pfq_symtable_unregister_function(const char *module, struct list_head *category,
         	return -1;
 
 	__pfq_dismiss_function(fun);
+
         __pfq_symtable_unregister_function(category, symbol);
 
 	printk(KERN_INFO "[PFQ]%s '%s' function unregistered.\n", module, symbol);

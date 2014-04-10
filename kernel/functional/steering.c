@@ -29,19 +29,19 @@
 
 
 static struct sk_buff *
-steering_mac(context_t ctx, struct sk_buff *skb)
+steering_mac(struct sk_buff *skb, argument_t a)
 {
-        uint16_t * a;
+        uint16_t * b;
 
-        a = (uint16_t *)eth_hdr(skb);
+        b = (uint16_t *)eth_hdr(skb);
 
-	return steering(skb, a[0] ^ a[1] ^ a[2] ^ a[3] ^ a[4] ^ a[5] );
+	return steering(skb, b[0] ^ b[1] ^ b[2] ^ b[3] ^ b[4] ^ b[5] );
 }
 
 
 
 static struct sk_buff *
-steering_vlan_id(context_t ctx, struct sk_buff *skb)
+steering_vlan_id(struct sk_buff *skb, argument_t a)
 {
         if (skb->vlan_tci & VLAN_VID_MASK)
  	        return steering(skb, skb->vlan_tci & VLAN_VID_MASK);
@@ -51,7 +51,7 @@ steering_vlan_id(context_t ctx, struct sk_buff *skb)
 
 
 static struct sk_buff *
-steering_ip(context_t ctx, struct sk_buff *skb)
+steering_ip(struct sk_buff *skb, argument_t a)
 {
 	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP))
 	{
@@ -70,7 +70,7 @@ steering_ip(context_t ctx, struct sk_buff *skb)
 
 
 static struct sk_buff *
-steering_flow(context_t ctx, struct sk_buff *skb)
+steering_flow(struct sk_buff *skb, argument_t a)
 {
 	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP))
 	{
@@ -100,7 +100,7 @@ steering_flow(context_t ctx, struct sk_buff *skb)
 
 
 static struct sk_buff *
-steering_ipv6(context_t ctx, struct sk_buff *skb)
+steering_ipv6(struct sk_buff *skb, argument_t a)
 {
 	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IPV6))
 	{

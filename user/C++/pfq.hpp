@@ -657,11 +657,11 @@ namespace net {
         //
 
         void
-        set_group_program(int gid, pfq_meta_prog *prog)
+        set_group_computation(int gid, pfq_computation_descr *prog)
         {
-            struct pfq_group_meta_prog p { gid, prog };
+            struct pfq_group_computation p { gid, prog };
             if (::setsockopt(fd_, PF_Q, Q_SO_GROUP_FUN_PROG, &p, sizeof(p)) == -1)
-                throw pfq_error(errno, "PFQ: group program error");
+                throw pfq_error(errno, "PFQ: group computation error");
         }
 
         template <typename Comp>

@@ -30,9 +30,9 @@
 
 
 static struct sk_buff *
-dummy(context_t ctx, struct sk_buff *skb)
+dummy(struct sk_buff *skb, argument_t arg)
 {
-        const int *ptr = context_addr(ctx);
+        const int *ptr = argument_as(int,arg);
 
         if (printk_ratelimit()) {
                 printk(KERN_INFO "[PFQ] fun/dummy context: %d\n", ptr ? *ptr : 0);
@@ -43,9 +43,10 @@ dummy(context_t ctx, struct sk_buff *skb)
 
 
 static struct sk_buff *
-counter(context_t ctx, struct sk_buff *skb)
+counter(struct sk_buff *skb, argument_t arg)
 {
-        const int *idx = context_addr(ctx);
+        const int *idx = argument_as(int,arg);
+
         sparse_counter_t * ctr;
 
         if (idx == NULL) {

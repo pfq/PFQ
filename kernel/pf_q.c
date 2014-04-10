@@ -256,22 +256,14 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 	BUILD_BUG_ON_MSG(Q_NON_INTRUSIVE_MAX_LEN > 64, "sock_queue overflow");
 #endif
 
-#ifdef PFQ_USE_FLOW_CONTROL
+	/* if required, timestamp this packet now */
 
-	/* flow control */
-
-	if (local->flowctrl && local->flowctrl--) {
-
-                if (direct)
-                        pfq_kfree_skb_recycle(skb, &local->recycle_list);
-                else
-                        kfree_skb(skb);
-
-		return 0;
-	}
-#endif
+        if (atomic_read(&timestamp_toggle) && skb->tstamp.tv64 == 0) {
+                __net_timestamp(skb);
+        }
 
         /* if vlan header is present, remove it */
+
         if (vl_untag && skb->protocol == cpu_to_be16(ETH_P_8021Q)) {
                 skb = pfq_vlan_untag(skb);
                 if (unlikely(!skb))
@@ -286,12 +278,6 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 
         if (likely(skb->pkt_type != PACKET_OUTGOING)) {
             skb_push(skb, skb->mac_len);
-        }
-
-	/* if required, timestamp this packet now */
-
-        if (atomic_read(&timestamp_toggle) && skb->tstamp.tv64 == 0) {
-                __net_timestamp(skb);
         }
 
 	/* enqueue the packet to the prefetch queue */
@@ -331,6 +317,8 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 		cb->group_mask = local_group_mask;
 	}
 
+        /* capture/dispatch packets */
+
         {
                 pfq_bitwise_foreach(group_mask, bit)
                 {
@@ -345,7 +333,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
                         pfq_non_intrusive_for_each(skb, n, prefetch_queue)
                         {
                                 struct pfq_cb *cb = PFQ_CB(skb);
-                                struct pfq_exec_prog *prg;
+                                computation_t *prg;
 
                                 unsigned long sock_mask = 0;
 
@@ -368,15 +356,20 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
                                                 continue;
                                 }
 
+                                /* setup CB for this skb */
+
+                                cb->state = 0;
+
                                 /* check where a functional program is available for this group */
 
-                                prg = (struct pfq_exec_prog *)atomic_long_read(&pfq_groups[gid].prog);
+                                prg = (computation_t *)atomic_long_read(&pfq_groups[gid].comp);
 
-                                if (prg) { /* run the functional program */
-
-                                        cb->state = 0;
+                                // FIXME
+                                // if (prg) { /* run the functional program */
+                                if (0) { /* run the functional program */
 
                                         skb = pfq_run(gid, prg, skb);
+
                                         if (skb == NULL)
                                                 continue;
 
@@ -443,13 +436,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
                                         int i = pfq_ctz(lb);
                                         struct pfq_rx_opt * ro = &pfq_get_sock_by_id(i)->rx_opt;
                                         if (likely(ro)) {
-
-#ifdef PFQ_USE_FLOW_CONTROL
-                                                if (!copy_to_user_skbs(ro, cpu, sock_queue[i], prefetch_queue, gid))
-                                                        local->flowctrl = flow_control;
-#else
                                                 copy_to_user_skbs(ro, cpu, sock_queue[i], prefetch_queue, gid);
-#endif
                                         }
                                 }
                         }
@@ -475,6 +462,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
                 if (likely(cb->direct_skb)) {
 
 		        if (unlikely(!capture_incoming && has_ret_to_kernel(cb->action))) {
+
                                 if (cb->direct_skb == 1)
                                         netif_rx(skb);
                                 else
@@ -496,7 +484,6 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 	pfq_non_intrusive_flush(prefetch_queue);
 
 	put_cpu();
-
         return 0;
 }
 

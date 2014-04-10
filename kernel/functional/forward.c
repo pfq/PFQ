@@ -29,23 +29,24 @@
 
 
 static struct sk_buff *
-forward_legacy(context_t ctx, struct sk_buff *skb)
+forward_legacy(struct sk_buff *skb, argument_t a)
 {
         return to_kernel(drop(skb));
 }
 
 
 static struct sk_buff *
-forward_broadcast(context_t ctx, struct sk_buff *skb)
+forward_broadcast(struct sk_buff *skb, argument_t a)
 {
         return broadcast(skb);
 }
 
 
 static struct sk_buff *
-forward_class(context_t ctx, struct sk_buff *skb)
+forward_class(struct sk_buff *skb, argument_t a)
 {
-        const uint16_t *c = context_addr(ctx);
+        int *c = argument_as(int, a);
+
         if (!c) {
                 if (printk_ratelimit())
                         printk(KERN_INFO "[PFQ] fun/class: internal error!\n");
@@ -56,7 +57,7 @@ forward_class(context_t ctx, struct sk_buff *skb)
 
 
 static struct sk_buff *
-forward_sink(context_t ctx, struct sk_buff *skb)
+forward_sink(struct sk_buff *skb, argument_t a)
 {
         if (!is_stolen(skb))
         {
@@ -66,7 +67,7 @@ forward_sink(context_t ctx, struct sk_buff *skb)
 }
 
 static struct sk_buff *
-forward_drop(context_t ctx, struct sk_buff *skb)
+forward_drop(struct sk_buff *skb, argument_t a)
 {
         return drop(skb);
 }

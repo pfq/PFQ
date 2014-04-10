@@ -27,37 +27,21 @@
 #include <linux/pf_q.h>
 #include <linux/pf_q-module.h>
 
+#include <pf_q-engine.h>
 
-static inline
-struct sk_buff *
-pfq_bind(struct sk_buff *skb, pfq_exec_t *data)
-{
-        pfq_function_t fun = (pfq_function_t)data->fun_ptr;
+extern computation_t * pfq_computation_alloc(struct pfq_computation_descr const *);
 
-        context_t ctx = {data->ctx_ptr, data->ctx_size };
+extern void * pfq_context_alloc(struct pfq_computation_descr const *);
 
-        if (fun == NULL)
-                return skb;
+extern int pfq_computation_compile (struct pfq_computation_descr const *descr, computation_t *comp, void *context);
 
-        return fun(ctx, skb);
-}
+extern void pfq_functional_pr_devel(struct pfq_functional_descr const *);
 
+extern void pfq_computation_pr_devel(struct pfq_computation_descr const *);
 
-static inline size_t
-pfq_meta_prog_memsize(size_t size)
-{
-        return sizeof(int) + sizeof(pfq_fun_t) * size;
-}
+extern char * strdup_user(const char __user *str);
 
-extern struct sk_buff *pfq_run(int gid, struct pfq_exec_prog *prg, struct sk_buff *skb);
+extern struct sk_buff *pfq_run(int gid, computation_t *prg, struct sk_buff *skb);
 
-extern struct pfq_meta_prog * kzalloc_meta_prog(size_t size);
-
-extern int copy_meta_prog_from_user(struct pfq_meta_prog *to, struct pfq_user_meta_prog *from);
-extern int pfq_meta_prog_compile(const struct pfq_meta_prog *prog, struct pfq_exec_prog **exec, void **ctx);
-
-extern void  kfree_meta_prog(struct pfq_meta_prog *prog);
-extern void  pfq_exec_prog_pr_devel(const struct pfq_exec_prog *prog, const void *ctx);
-extern void  pfq_meta_prog_pr_devel(const struct pfq_meta_prog *prog);
 
 #endif /* _PF_Q_FUNCTIONAL_H_ */

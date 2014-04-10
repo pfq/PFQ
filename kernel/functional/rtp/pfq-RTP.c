@@ -55,7 +55,7 @@ bool valid_codec(uint8_t c)
 
 
 struct sk_buff *
-heuristic_rtp(context_t ctx, struct sk_buff *skb, bool steer)
+heuristic_rtp(struct sk_buff *skb, argument_t a, bool steer)
 {
 	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP))
 	{
@@ -110,16 +110,16 @@ heuristic_rtp(context_t ctx, struct sk_buff *skb, bool steer)
 
 
 struct sk_buff *
-filter_rtp(context_t ctx, struct sk_buff *skb)
+filter_rtp(struct sk_buff *skb, argument_t a)
 {
-        return heuristic_rtp(ctx, skb, false);
+        return heuristic_rtp(skb, a, false);
 }
 
 
 struct sk_buff *
-steering_rtp(context_t ctx, struct sk_buff *skb)
+steering_rtp(struct sk_buff *skb, argument_t a)
 {
-        return heuristic_rtp(ctx, skb, true);
+        return heuristic_rtp(skb, a, true);
 }
 
 
@@ -132,13 +132,13 @@ struct pfq_function_descr hooks[] = {
 
 static int __init usr_init_module(void)
 {
-	return pfq_register_functions("[RTP]", &pfq_monadic_cat, hooks);
+	return pfq_symtable_register_functions("[RTP]", &pfq_monadic_cat, hooks);
 }
 
 
 static void __exit usr_exit_module(void)
 {
-	pfq_unregister_functions("[RTP]", &pfq_monadic_cat, hooks);
+	pfq_symtable_unregister_functions("[RTP]", &pfq_monadic_cat, hooks);
 }
 
 

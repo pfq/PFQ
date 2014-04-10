@@ -354,44 +354,36 @@ void pfq_spsc_read_commit(struct pfq_tx_queue_hdr *q)
 #define Q_CLASS_CONTROL         Q_CLASS(1)
 #define Q_CLASS_ANY             (unsigned long)-1
 
-/* functional */
 
-typedef struct pfq_fun
-{
-        const char *symbol;
-        struct context_t
-        {
-                void   *addr;
-                size_t  size;
+/* functional: descriptor */
 
-        } context;
+enum pfq_functional_type {
 
-} pfq_fun_t;
+        pfq_monadic_fun,
+        pfq_high_order_fun,
+        pfq_predicate_fun,
+        pfq_combinator_fun
 
-
-struct pfq_meta_prog
-{
-        size_t size;
-        pfq_fun_t fun[];
 };
 
-typedef struct pfq_user_fun
+struct pfq_functional_descr
 {
-        const char __user *symbol;
-        struct user_context_t
-        {
-                void __user *addr;
-                size_t  size;
+        enum pfq_functional_type  type;
 
-        } context;
+        const char __user *     symbol;
 
-} pfq_user_fun_t;
+        const void __user *     arg_ptr;
+        size_t                  arg_size;
+
+        int                     l_index;
+        int                     r_index;
+};
 
 
-struct pfq_user_meta_prog
+struct pfq_computation_descr
 {
-        size_t size;
-        pfq_user_fun_t fun[];
+        size_t  size;
+        struct pfq_functional_descr fun[];
 };
 
 
@@ -419,10 +411,10 @@ struct pfq_group_join
         unsigned long class_mask;
 };
 
-struct pfq_group_meta_prog
+struct pfq_group_computation
 {
         int gid;
-        struct pfq_meta_prog __user *prog;
+        struct pfq_computation_descr __user *prog;
 };
 
 

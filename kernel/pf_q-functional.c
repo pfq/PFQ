@@ -24,30 +24,45 @@
 #include <linux/kernel.h>
 #include <linux/printk.h>
 
-#include <asm/uaccess.h>
-
 #include <linux/pf_q.h>
 #include <linux/pf_q-module.h>
+
+#include <asm/uaccess.h>
 
 #include <pf_q-group.h>
 #include <pf_q-functional.h>
 #include <pf_q-symtable.h>
 
 
-static size_t
-full_context_size(const struct pfq_meta_prog *prog)
+void pfq_functional_pr_devel(struct pfq_functional_descr const *descr)
 {
-        size_t size = 0, n = 0;
+        static char *fun_type[] = { "     fun", "    hfun", "   hfun2", "    pred", "    comb" };
 
-        for(; n < prog->size; n++)
-        {
-                size += ALIGN(prog->fun[n].context.size, 8);
-        }
+        char *name = strdup_user(descr->symbol);
 
-        return size;
+        pr_devel("%s:%s arg:%zu l_idx:%d r_idx:%d\n"
+                        , fun_type[descr->type % 5]
+                        , name
+                        , descr->arg_size
+                        , descr->l_index
+                        , descr->r_index);
+
+        kfree(name);
 }
 
-static char *
+
+void pfq_computation_pr_devel(struct pfq_computation_descr const *descr)
+{
+        int n;
+        pr_devel("computation:\n");
+        for(n = 0; n < descr->size; n++)
+        {
+                pfq_functional_pr_devel(&descr->fun[n]);
+        }
+}
+
+
+char *
 strdup_user(const char __user *str)
 {
         size_t len = strlen_user(str);
@@ -62,26 +77,24 @@ strdup_user(const char __user *str)
 }
 
 
-struct sk_buff *
-pfq_run(int gid, struct pfq_exec_prog *prg, struct sk_buff *skb)
+static inline struct sk_buff *
+pfq_apply(functional_t *call, struct sk_buff *skb)
 {
-        struct pfq_cb *cb = PFQ_CB(skb);
-        struct pfq_group * g = pfq_get_group(gid);
-        action_t *a = &cb->action;
-        int n;
+        PFQ_CB(skb)->right = true;
+        return call->fun.eval(skb, call->fun.arg);
+}
 
-        if (g == NULL)
-                return NULL;
 
-        cb->ctx  = &g->ctx;
+static inline struct sk_buff *
+pfq_bind(struct sk_buff *skb, computation_t *prg)
+{
+        functional_t *fun = &prg->fun[prg->entry_point];
 
-        a->class_mask = Q_CLASS_DEFAULT;
-        a->type  = action_copy;
-        a->attr  = 0;
-
-        for(n = 0; n < prg->size; n++)
+        while (fun)
         {
-                skb = pfq_bind(skb, &prg->fun[n]);
+                action_t *a;
+
+                skb = pfq_apply(fun, skb);
                 if (skb == NULL)
                         return NULL;
 
@@ -89,145 +102,135 @@ pfq_run(int gid, struct pfq_exec_prog *prg, struct sk_buff *skb)
 
                 if (is_drop(*a) || has_stop(*a))
                         return skb;
+
+                fun = PFQ_CB(skb)->right ? fun->right : fun->left;
         }
 
         return skb;
 }
 
 
-int
-pfq_meta_prog_compile(const struct pfq_meta_prog *prog, struct pfq_exec_prog **exec, void **ctx)
+struct sk_buff *
+pfq_run(int gid, computation_t *prg, struct sk_buff *skb)
 {
-        size_t mem = sizeof(int) + sizeof(pfq_exec_t) * prog->size;
-        size_t cs  = full_context_size(prog);
-        char * ptr;
-        int n;
+        struct pfq_group * g = pfq_get_group(gid);
+        struct pfq_cb *cb = PFQ_CB(skb);
 
-        *exec = (struct pfq_exec_prog *)kzalloc(mem, GFP_KERNEL);
-
-        if (!*exec) {
-                printk(KERN_INFO "[PFQ] meta_prog_compile: no memory (%zu bytes)\n", mem);
-                return -ENOMEM;
-        }
-
-        *ctx = NULL;
-        if (cs) {
-                *ctx  = kmalloc(cs, GFP_KERNEL);
-                if (!*ctx) {
-                        printk(KERN_INFO "[PFQ] meta_prog_compile: no memory (%zu bytes)\n", mem);
-                        return -ENOMEM;
-                }
-        }
-
-        ptr = *ctx;
-
-        (*exec)->size = prog->size;
-
-        for(n = 0; n < prog->size; n++)
-        {
-                if (prog->fun[n].symbol == NULL) {
-                        pr_devel("[PFQ function error: NULL function!\n");
-                        return -EINVAL;
-                }
-
-                (*exec)->fun[n].fun_ptr = pfq_symtable_resolve(&pfq_monadic_cat, prog->fun[n].symbol);
-
-                if ((*exec)->fun[n].fun_ptr == NULL) {
-                        pr_devel("[PFQ function error: '%s' unknown function!\n", prog->fun[n].symbol);
-                        return -EINVAL;
-                }
-
-                if (prog->fun[n].context.size) {
-                        (*exec)->fun[n].ctx_ptr = ptr;
-                        (*exec)->fun[n].ctx_size = prog->fun[n].context.size;
-
-                        memcpy(ptr, prog->fun[n].context.addr, prog->fun[n].context.size);
-                        ptr += ALIGN(prog->fun[n].context.size, 8);
-                }
-                else {
-                        (*exec)->fun[n].ctx_ptr  = NULL;
-                        (*exec)->fun[n].ctx_size = 0;
-                }
-        }
-
-        return 0;
-}
-
-
-struct pfq_meta_prog *
-kzalloc_meta_prog(size_t size)
-{
-        size_t mem = sizeof(int) + sizeof(pfq_fun_t) * size;
-        struct pfq_meta_prog *prog = (struct pfq_meta_prog *)kzalloc(mem, GFP_KERNEL);
-
-        if (!prog) {
-                printk(KERN_INFO "[PFQ] kmalloc_meta_prog: no memory (%zu bytes)\n", mem);
+        if (g == NULL)
                 return NULL;
+
+        cb->ctx = &g->ctx;
+
+        cb->action.class_mask = Q_CLASS_DEFAULT;
+        cb->action.type       = action_copy;
+        cb->action.attr       = 0;
+
+        return pfq_bind(skb, prg);
+}
+
+
+computation_t *
+pfq_computation_alloc (struct pfq_computation_descr const *descr)
+{
+        computation_t * c = kmalloc(sizeof(size_t) + descr->size * sizeof(functional_t), GFP_KERNEL);
+        c->size = descr->size;
+        return c;
+}
+
+
+void *
+pfq_context_alloc(struct pfq_computation_descr const *descr)
+{
+        size_t size = 0, n = 0, *s;
+        void *r;
+
+        for(; n < descr->size; n++)
+        {
+                size += sizeof(size_t) + ALIGN(descr->fun[n].arg_size, 8);
         }
 
-        prog->size = size;
-        return prog;
+        r = kmalloc(size, GFP_KERNEL);
+        if (r == NULL)
+                return NULL;
+
+        s = (size_t *)r;
+
+        for(n = 0; n < descr->size; n++)
+        {
+                *s = descr->fun[n].arg_size;
+                s = (size_t *)((char *)(s+1) + ALIGN(descr->fun[n].arg_size, 8));
+        }
+
+        return r;
+}
+
+
+static void *
+pfq_context_get(void **ctxptr, size_t size)
+{
+        size_t *s = *(size_t **)ctxptr;
+
+        *ctxptr = (char *)(s+1) + ALIGN(size, 8);
+
+        if (*s != size || size == 0)
+                return NULL;
+
+        return s+1;
 }
 
 
 int
-copy_meta_prog_from_user(struct pfq_meta_prog *to, struct pfq_user_meta_prog *from)
+pfq_computation_compile (struct pfq_computation_descr const *descr, computation_t *comp, void *context)
 {
-        int n;
+        size_t n = 0;
 
-        to->size = from->size;
-        for(n = 0; n < to->size; n++)
+        comp->size = descr->size;
+
+        for(; n < descr->size; n++)
         {
-                size_t csize;
-
-                to->fun[n].symbol = strdup_user(from->fun[n].symbol);
-                if (!to->fun[n].symbol)
+                switch(descr->fun[n].type)
                 {
-                        pr_devel("[PFQ] strdup_user error!\n");
-                        return -ENOMEM;
-                }
+                        case pfq_monadic_fun: {
 
-                csize = from->fun[n].context.size;
-                if (csize) {
-                        to->fun[n].context.size = csize;
-                        to->fun[n].context.addr = kmalloc(csize, GFP_KERNEL);
-                        if (copy_from_user(to->fun[n].context.addr, from->fun[n].context.addr, csize))
-                        {
-                                pr_devel("[PFQ] copy_from_user: address %p not accessible!\n", from->fun[n].context.addr);
-                                return -EFAULT;
-                        }
-                }
-                else {
-                        to->fun[n].context.size = 0;
-                        to->fun[n].context.addr = NULL;
+                                void * arg = pfq_context_get(&context, descr->fun[n].arg_size);
+                                if (descr->fun[n].arg_size != 0 && arg == NULL)
+                                        return -1;
+
+                                comp->fun[n].fun = make_function(NULL, arg);
+
+                        } break;
+
+
+                        case pfq_high_order_fun: {
+
+                                pfq_context_get(&context, 0);
+
+                                comp->fun[n].fun = make_high_order_function(NULL, NULL);
+
+                        } break;
+
+
+                        case pfq_predicate_fun: {
+
+                                void * arg = pfq_context_get(&context, descr->fun[n].arg_size);
+                                if (descr->fun[n].arg_size != 0 && arg == NULL)
+                                        return -1;
+
+                                comp->fun[n].expr.pred = make_predicate(NULL, arg);
+
+                        } break;
+
+
+                        case pfq_combinator_fun: {
+
+                                pfq_context_get(&context, 0);
+
+                                comp->fun[n].expr.comb = make_combinator(NULL, NULL, NULL);
+
+                        } break;
                 }
         }
 
         return 0;
 }
-
-
-void
-pfq_exec_prog_pr_devel(const struct pfq_exec_prog *prog, const void *ctx)
-{
-        int n;
-        pr_devel("[PFQ] exec program @%p, context@%p:\n", prog, ctx);
-        for(n = 0; n < prog->size; n++)
-        {
-                pr_devel("   %d: f:%p c:%p\n", n, prog->fun[n].fun_ptr, prog->fun[n].ctx_ptr);
-        }
-}
-
-
-void
-pfq_meta_prog_pr_devel(const struct pfq_meta_prog *prog)
-{
-        int n;
-        pr_devel("[PFQ] meta program @%p:\n", prog);
-        for(n = 0; n < prog->size; n++)
-        {
-                pr_devel("   %d: %s (%p,%zu)\n", n, prog->fun[n].symbol, prog->fun[n].context.addr, prog->fun[n].context.size);
-        }
-}
-
 

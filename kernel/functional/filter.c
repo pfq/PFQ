@@ -30,56 +30,56 @@
 
 
 static struct sk_buff *
-id(context_t ctx, struct sk_buff *skb)
+id(struct sk_buff *skb, argument_t a)
 {
         return skb;
 }
 
 
 static struct sk_buff *
-filter_ip(context_t ctx, struct sk_buff *skb)
+filter_ip(struct sk_buff *skb, argument_t a)
 {
         return is_ip(skb) ? skb : drop(skb);
 }
 
 
 static struct sk_buff *
-filter_ipv6(context_t ctx, struct sk_buff *skb)
+filter_ipv6(struct sk_buff *skb, argument_t a)
 {
         return is_ipv6(skb) ? skb : drop(skb);
 }
 
 
 static struct sk_buff *
-filter_udp(context_t ctx, struct sk_buff *skb)
+filter_udp(struct sk_buff *skb, argument_t a)
 {
         return is_udp(skb) ? skb : drop(skb);
 }
 
 
 static struct sk_buff *
-filter_tcp(context_t ctx, struct sk_buff *skb)
+filter_tcp(struct sk_buff *skb, argument_t a)
 {
         return is_tcp(skb) ? skb : drop(skb);
 }
 
 
 static struct sk_buff *
-filter_icmp(context_t ctx, struct sk_buff *skb)
+filter_icmp(struct sk_buff *skb, argument_t a)
 {
         return is_icmp(skb) ? skb : drop(skb);
 }
 
 
 static struct sk_buff *
-filter_flow(context_t ctx, struct sk_buff *skb)
+filter_flow(struct sk_buff *skb, argument_t a)
 {
         return has_flow(skb) ? skb : drop(skb);
 }
 
 
 static struct sk_buff *
-filter_vlan(context_t ctx, struct sk_buff *skb)
+filter_vlan(struct sk_buff *skb, argument_t a)
 {
         return has_vlan(skb) ? skb : drop(skb);
 }
