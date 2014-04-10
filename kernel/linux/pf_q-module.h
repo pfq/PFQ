@@ -151,11 +151,9 @@ struct pfq_cb
 static inline bool
 is_drop(action_t a)
 {
-        struct sk_buff *skb;
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,9,0))
-        BUILD_BUG_ON_MSG(sizeof(struct pfq_cb) > sizeof(skb->cb), "pfq_cb overflow");
+        BUILD_BUG_ON_MSG(sizeof(struct pfq_cb) > sizeof(((struct sk_buff *)0)->cb), "pfq control buffer overflow");
 #endif
-
         return a.type == action_drop;
 }
 
