@@ -390,10 +390,9 @@ pfq_computation_compile (struct pfq_computation_descr const *descr, computation_
                         if (descr->fun[n].arg_size) {
 
                                 arg = pod_user(&context, descr->fun[n].arg_ptr, descr->fun[n].arg_size);
-
                                 if (arg == NULL) {
                                         pr_devel("[PFQ] %zu: fun internal error!\n", n);
-                                        return -EFAULT;
+                                        return -EPERM;
                                 }
                         }
 
@@ -407,7 +406,7 @@ pfq_computation_compile (struct pfq_computation_descr const *descr, computation_
                         if (ptr == NULL) {
                                 printk(KERN_INFO "[PFQ] %zu: '%s' no such function!\n", n, symbol);
                                 kfree(symbol);
-                                return -EFAULT;
+                                return -EPERM;
                         }
 
                         kfree(symbol);
@@ -418,7 +417,7 @@ pfq_computation_compile (struct pfq_computation_descr const *descr, computation_
                                 size_t r = descr->fun[n].r_index;
                                 if (!is_monadic_function(descr->fun[r].type)) {
                                         pr_devel("[PFQ] %zu: right path link to non monadic function!\n", n);
-                                        return -EFAULT;
+                                        return -EPERM;
                                 }
                                 comp->fun[n].right = &comp->fun[r];
                         }
@@ -430,7 +429,7 @@ pfq_computation_compile (struct pfq_computation_descr const *descr, computation_
                                 size_t l = descr->fun[n].l_index;
                                 if (!is_monadic_function(descr->fun[l].type)) {
                                         pr_devel("[PFQ] %zu: left path link to non monadic function!\n", n);
-                                        return -EFAULT;
+                                        return -EPERM;
                                 }
                                 comp->fun[n].left  = &comp->fun[l];
                         }
@@ -459,7 +458,7 @@ pfq_computation_compile (struct pfq_computation_descr const *descr, computation_
                         if (ptr == NULL) {
                                 printk(KERN_INFO "[PFQ] %zu: '%s' no such function!\n", n, symbol);
                                 kfree(symbol);
-                                return -EFAULT;
+                                return -EPERM;
                         }
 
                         kfree(symbol);
@@ -470,7 +469,7 @@ pfq_computation_compile (struct pfq_computation_descr const *descr, computation_
                                 size_t r = descr->fun[n].r_index;
                                 if (!is_monadic_function(descr->fun[r].type)) {
                                         pr_devel("[PFQ] %zu: right path link to non monadic function!\n", n);
-                                        return -EFAULT;
+                                        return -EPERM;
                                 }
                                 comp->fun[n].right = &comp->fun[r];
                         }
@@ -482,7 +481,7 @@ pfq_computation_compile (struct pfq_computation_descr const *descr, computation_
                                 size_t l = descr->fun[n].l_index;
                                 if (!is_monadic_function(descr->fun[l].type)) {
                                         pr_devel("[PFQ] %zu: left path link to non monadic function!\n", n);
-                                        return -EFAULT;
+                                        return -EPERM;
                                 }
                                 comp->fun[n].left  = &comp->fun[l];
                         }
@@ -501,10 +500,9 @@ pfq_computation_compile (struct pfq_computation_descr const *descr, computation_
                         if (descr->fun[n].arg_size) {
 
                                 arg = pod_user(&context, descr->fun[n].arg_ptr, descr->fun[n].arg_size);
-
                                 if (arg == NULL) {
                                         pr_devel("[PFQ] %zu: pred internal error!\n", n);
-                                        return -EFAULT;
+                                        return -EPERM;
                                 }
                         }
 
@@ -518,7 +516,7 @@ pfq_computation_compile (struct pfq_computation_descr const *descr, computation_
                         if (ptr == NULL) {
                                 printk(KERN_INFO "[PFQ] %zu: '%s' no such predicate!\n", n, symbol);
                                 kfree(symbol);
-                                return -EFAULT;
+                                return -EPERM;
                         }
 
                         kfree(symbol);
