@@ -85,7 +85,7 @@ static struct sk_buff *unless(struct sk_buff *skb, argument_t arg)
 
 struct pfq_function_descr misc_functions[] = {
 
-        { "dummy-ctx",          dummy           },
+        { "dummy",              dummy           },
         { "counter",            counter         },
         { "conditional",        conditional     },
         { "unless",             unless          },
