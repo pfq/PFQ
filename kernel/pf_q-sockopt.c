@@ -814,7 +814,7 @@ int pfq_setsockopt(struct socket *sock,
 
                 pr_devel("[PFQ|%d] computation size: %zu\n", so->id, psize);
 
-                ucsize = sizeof(size_t) + psize * sizeof(struct pfq_functional_descr);
+                ucsize = sizeof(size_t) * 2 + psize * sizeof(struct pfq_functional_descr);
 
                 descr = kmalloc(ucsize, GFP_KERNEL);
                 if (descr == NULL) {
