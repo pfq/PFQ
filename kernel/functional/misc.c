@@ -28,6 +28,7 @@
 #include <linux/pf_q-module.h>
 #include <linux/pf_q-sparse.h>
 
+#include <pf_q-engine.h>
 
 static struct sk_buff *
 dummy(struct sk_buff *skb, argument_t arg)
@@ -68,10 +69,29 @@ counter(struct sk_buff *skb, argument_t arg)
 }
 
 
+static struct sk_buff *conditional(struct sk_buff *skb, argument_t arg)
+{
+        expression_t * expr = expression(arg);
+        PFQ_CB(skb)->right = expr->ptr(skb, expr);
+        return skb;
+}
+
+
+static struct sk_buff *unless(struct sk_buff *skb, argument_t arg)
+{
+        expression_t * expr = expression(arg);
+        PFQ_CB(skb)->right = !expr->ptr(skb, expr);
+        return skb;
+}
+
+
 struct pfq_function_descr misc_functions[] = {
 
-        { "dummy-ctx",          dummy                   },
-        { "counter",            counter                 },
+        { "dummy-ctx",          dummy           },
+        { "counter",            counter         },
+        { "conditional",        conditional     },
+        { "unless",             unless          },
 
         { NULL, NULL}};
+
 
