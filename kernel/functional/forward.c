@@ -29,21 +29,21 @@
 
 
 static struct sk_buff *
-forward_legacy(struct sk_buff *skb, argument_t a)
+forward_legacy(argument_t a, struct sk_buff *skb)
 {
         return to_kernel(drop(skb));
 }
 
 
 static struct sk_buff *
-forward_broadcast(struct sk_buff *skb, argument_t a)
+forward_broadcast(argument_t a, struct sk_buff *skb)
 {
         return broadcast(skb);
 }
 
 
 static struct sk_buff *
-forward_class(struct sk_buff *skb, argument_t a)
+forward_class(argument_t a, struct sk_buff *skb)
 {
         int *c = argument_as(int, a);
 
@@ -57,7 +57,7 @@ forward_class(struct sk_buff *skb, argument_t a)
 
 
 static struct sk_buff *
-forward_sink(struct sk_buff *skb, argument_t a)
+forward_sink(argument_t a, struct sk_buff *skb)
 {
         if (!is_stolen(skb))
         {
@@ -67,7 +67,7 @@ forward_sink(struct sk_buff *skb, argument_t a)
 }
 
 static struct sk_buff *
-forward_drop(struct sk_buff *skb, argument_t a)
+forward_drop(argument_t a, struct sk_buff *skb)
 {
         return drop(skb);
 }

@@ -74,9 +74,9 @@ typedef bool (*expression_ptr_t)(struct sk_buff const *skb, struct _expression *
 
 /**** functional engine ****/
 
-typedef struct sk_buff *(*function_ptr_t)(struct sk_buff *, argument_t );
-typedef bool (*predicate_ptr_t)(struct sk_buff const *, argument_t );
-typedef bool (*combinator_ptr_t)(struct sk_buff const *, expression_t *expr1, expression_t *expr2);
+typedef struct sk_buff *(*function_ptr_t)(argument_t, struct sk_buff *);
+typedef bool (*predicate_ptr_t)(argument_t, struct sk_buff const *);
+typedef bool (*combinator_ptr_t)(expression_t *expr1, expression_t *expr2, struct sk_buff const *);
 
 
 /* monadic function */

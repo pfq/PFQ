@@ -29,9 +29,9 @@
 
 
 static struct sk_buff *
-dummy(struct sk_buff *skb, argument_t arg)
+dummy(argument_t a, struct sk_buff *skb)
 {
-        const int *ptr = argument_as(int,arg);
+        const int *ptr = argument_as(int,a);
 
         if (printk_ratelimit()) {
                 printk(KERN_INFO "[PFQ] fun/dummy context: %d\n", ptr ? *ptr : 0);
@@ -42,9 +42,9 @@ dummy(struct sk_buff *skb, argument_t arg)
 
 
 static struct sk_buff *
-counter(struct sk_buff *skb, argument_t arg)
+counter(argument_t a, struct sk_buff *skb)
 {
-        const int *idx = argument_as(int,arg);
+        const int *idx = argument_as(int,a);
 
         sparse_counter_t * ctr;
 
@@ -67,17 +67,19 @@ counter(struct sk_buff *skb, argument_t arg)
 }
 
 
-static struct sk_buff *conditional(struct sk_buff *skb, argument_t arg)
+static struct sk_buff *
+conditional(argument_t a, struct sk_buff *skb)
 {
-        expression_t * expr = expression(arg);
+        expression_t * expr = expression(a);
         PFQ_CB(skb)->right = expr->ptr(skb, expr);
         return skb;
 }
 
 
-static struct sk_buff *unless(struct sk_buff *skb, argument_t arg)
+static struct sk_buff *
+unless(argument_t a, struct sk_buff *skb)
 {
-        expression_t * expr = expression(arg);
+        expression_t * expr = expression(a);
         PFQ_CB(skb)->right = !expr->ptr(skb, expr);
         return skb;
 }

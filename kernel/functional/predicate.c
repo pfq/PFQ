@@ -28,43 +28,43 @@
 #include <linux/pf_q-module.h>
 
 static bool
-__is_ip(struct sk_buff const *skb, argument_t a)
+__is_ip(argument_t a, struct sk_buff const *skb)
 {
         return  is_ip(skb);
 }
 
 static bool
-__is_ipv6(struct sk_buff const *skb, argument_t a)
+__is_ipv6(argument_t a, struct sk_buff const *skb)
 {
         return  is_ipv6(skb);
 }
 
 static bool
-__is_udp(struct sk_buff const *skb, argument_t a)
+__is_udp(argument_t a, struct sk_buff const *skb)
 {
         return  is_udp(skb);
 }
 
 static bool
-__is_tcp(struct sk_buff const *skb, argument_t a)
+__is_tcp(argument_t a, struct sk_buff const *skb)
 {
         return  is_tcp(skb);
 }
 
 static bool
-__is_icmp(struct sk_buff const *skb, argument_t a)
+__is_icmp(argument_t a, struct sk_buff const *skb)
 {
         return  is_icmp(skb);
 }
 
 static bool
-__has_flow(struct sk_buff const *skb, argument_t a)
+__has_flow(argument_t a, struct sk_buff const *skb)
 {
         return  has_flow(skb);
 }
 
 static bool
-__has_vlan(struct sk_buff const *skb, argument_t a)
+__has_vlan(argument_t a, struct sk_buff const *skb)
 {
         return  has_vlan(skb);
 }

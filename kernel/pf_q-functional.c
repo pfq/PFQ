@@ -147,7 +147,7 @@ static inline struct sk_buff *
 pfq_apply(functional_t *call, struct sk_buff *skb)
 {
         PFQ_CB(skb)->right = true;
-        return call->fun.eval(skb, call->fun.arg);
+        return call->fun.eval(call->fun.arg,skb);
 }
 
 

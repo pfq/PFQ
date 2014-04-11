@@ -26,11 +26,11 @@
 
 bool predicate_eval(struct sk_buff *skb, predicate_t *this)
 {
-        return this->fun(skb, this->arg);
+        return this->fun(this->arg, skb);
 }
 
 bool combinator_eval(struct sk_buff *skb, combinator_t *this)
 {
-        return this->fun(skb, this->left, this->right);
+        return this->fun(this->left, this->right, skb);
 }
 
