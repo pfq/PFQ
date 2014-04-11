@@ -71,7 +71,7 @@ pod_user(void **ctxptr, void const __user *arg, size_t size)
 
 void pr_devel_functional_descr(struct pfq_functional_descr const *descr, int index)
 {
-        static char *fun_type[] = { "fun", "hfun", "hfun2", "pred", "comb" };
+        static char *fun_type[] = { "fun", "hfun", "pred", "comb" };
 
         char *name = strdup_user(descr->symbol);
 
