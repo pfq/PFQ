@@ -77,24 +77,18 @@ struct pfq_function_descr
 };
 
 
-struct pfq_monadic_fun_descr
-{
-        const char * symbol;
-        function_ptr_t ptr;
-};
-
 struct pfq_predicate_fun_descr
 {
         const char * symbol;
         predicate_ptr_t ptr;
 };
 
-
 struct pfq_combinator_fun_descr
 {
         const char * symbol;
         combinator_ptr_t ptr;
 };
+
 
 /* actions types */
 
