@@ -209,8 +209,7 @@ pfq_context_alloc(struct pfq_computation_descr const *descr)
 static inline
 bool is_monadic_function(enum pfq_functional_type type)
 {
-        return type == pfq_monadic_fun ||
-               type == pfq_high_order_fun;
+        return type == pfq_monadic_fun || type == pfq_high_order_fun;
 }
 
 
@@ -245,7 +244,7 @@ validate_computation_descr(struct pfq_computation_descr const *descr)
 
         if (descr->fun[ep].type != pfq_monadic_fun &&
             descr->fun[ep].type != pfq_high_order_fun) {
-                pr_devel("[PFQ] computation: invalid entry!\n");
+                pr_devel("[PFQ] %zu: invalid entry_point!\n", ep);
                 return -EPERM;
         }
 
@@ -255,16 +254,14 @@ validate_computation_descr(struct pfq_computation_descr const *descr)
                         return -EPERM;
 
                 if (descr->fun[n].symbol == NULL) {
-                        printk(KERN_INFO "[PFQ] computation: NULL symbol!\n");
+                        printk(KERN_INFO "[PFQ] %zu: NULL symbol!\n", n);
                         return -EPERM;
                 }
 
-                if ((size_t)descr->fun[n].arg_ptr == descr->fun[n].arg_size) {
-                        pr_devel("[PFQ] computation: argument ptr/size mismatch!\n");
+                if ((descr->fun[n].arg_ptr == NULL) != (descr->fun[n].arg_size == 0)) {
+                        pr_devel("[PFQ] %zu: argument ptr/size mismatch!\n", n);
                         return -EPERM;
                 }
-
-                /* out-of-range l_index and r_index mark the function as leaf */
         }
 
         return 0;
@@ -274,7 +271,7 @@ validate_computation_descr(struct pfq_computation_descr const *descr)
 int
 pfq_computation_compile (struct pfq_computation_descr const *descr, computation_t *comp, void *context)
 {
-        size_t n = 0;
+        size_t n;
 
         /* validate the computation descriptors */
 
@@ -307,20 +304,20 @@ pfq_computation_compile (struct pfq_computation_descr const *descr, computation_
                                         arg = pod_user(&context, descr->fun[n].arg_ptr, descr->fun[n].arg_size);
 
                                         if (arg == NULL) {
-                                                pr_devel("[PFQ] computation: internal error!\n");
+                                                pr_devel("[PFQ] %zu: fun internal error!\n", n);
                                                 return -EFAULT;
                                         }
                                 }
 
                                 symbol = strdup_user(descr->fun[n].symbol);
                                 if (symbol == NULL) {
-                                        pr_devel("[PFQ] computation: strdup!\n");
+                                        pr_devel("[PFQ] %zu: fun strdup!\n", n);
                                         return -EFAULT;
                                 }
 
                                 ptr = pfq_symtable_resolve(&pfq_monadic_cat, symbol);
                                 if (ptr == NULL) {
-                                        printk(KERN_INFO "[PFQ] computation: '%s' no such function!\n", symbol);
+                                        printk(KERN_INFO "[PFQ] %zu: '%s' no such function!\n", n, symbol);
                                         kfree(symbol);
                                         return -EFAULT;
                                 }
@@ -332,10 +329,9 @@ pfq_computation_compile (struct pfq_computation_descr const *descr, computation_
                                 if (descr->fun[n].r_index < descr->size) {
                                         size_t r = descr->fun[n].r_index;
                                         if (!is_monadic_function(descr->fun[r].type)) {
-                                                pr_devel("[PFQ] computation: right path link to non monadic function!\n");
+                                                pr_devel("[PFQ] %zu: right path link to non monadic function!\n", n);
                                                 return -EFAULT;
                                         }
-
                                         comp->fun[n].right = &comp->fun[r];
                                 }
                                 else {
@@ -345,10 +341,9 @@ pfq_computation_compile (struct pfq_computation_descr const *descr, computation_
                                 if (descr->fun[n].l_index < descr->size) {
                                         size_t l = descr->fun[n].l_index;
                                         if (!is_monadic_function(descr->fun[l].type)) {
-                                                pr_devel("[PFQ] computation: left path link to non monadic function!\n");
+                                                pr_devel("[PFQ] %zu: left path link to non monadic function!\n", n);
                                                 return -EFAULT;
                                         }
-
                                         comp->fun[n].left  = &comp->fun[l];
                                 }
                                 else {
