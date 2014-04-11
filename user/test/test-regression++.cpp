@@ -615,6 +615,7 @@ Context(PFQ)
         AssertNothrow(q.tx_queue_flush());
     }
 
+// TODO
 
 #if 0
     Test(group_context)
@@ -631,8 +632,8 @@ Context(PFQ)
 
         x.bind(DEV.c_str());
 
-        x.set_group_function(x.group_id(), "dummy-context", 0);
-        x.set_group_function(x.group_id(), "clone",      1);
+        x.set_group_function(x.group_id(), "dummy",  0);
+        x.set_group_function(x.group_id(), "clone",  1);
 
         x.enable();
 

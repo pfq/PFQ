@@ -568,6 +568,7 @@ void test_vlan()
 
 void test_group_context()
 {
+        /* TODO */
 #if 0
         pfq_t * q = pfq_open(64, 0, 1024);
 

@@ -860,10 +860,6 @@ int pfq_setsockopt(struct socket *sock,
 
                 kfree(descr);
 
-                /* show computation */
-
-                // TODO
-
                 /* store the new program */
 
                 if (pfq_set_group_prog(tmp.gid, comp, context) < 0) {
