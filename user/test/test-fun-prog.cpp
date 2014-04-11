@@ -18,9 +18,9 @@ main(int argc, char *argv[])
 
     auto gid = q.group_id();
 
-    auto prog = reinterpret_cast<pfq_computation_descr *>(malloc(sizeof(size_t) * 2 + sizeof(pfq_functional_descr) * 2));
+    auto prog = reinterpret_cast<pfq_computation_descr *>(malloc(sizeof(size_t) * 2 + sizeof(pfq_functional_descr) * 4));
 
-    prog->size = 2;
+    prog->size = 4;
     prog->entry_point = 0;
 
     prog->fun[0].type = pfq_monadic_fun;
@@ -30,13 +30,27 @@ main(int argc, char *argv[])
     prog->fun[0].l_index = 1;
     prog->fun[0].r_index = 1;
 
-    prog->fun[1].type = pfq_monadic_fun;
-    prog->fun[1].symbol = "steer-ip";
+    prog->fun[1].type = pfq_high_order_fun;
+    prog->fun[1].symbol = "conditional";
     prog->fun[1].arg_ptr  = NULL;
-    prog->fun[1].arg_size = 0;
+    prog->fun[1].arg_size = 2;
+    prog->fun[1].l_index = 1000;
+    prog->fun[1].r_index = 1000;
 
-    prog->fun[1].l_index = 0;
-    prog->fun[1].r_index = 0;
+    prog->fun[2].type = pfq_predicate_fun;
+    prog->fun[2].symbol = "is_ip";
+    prog->fun[2].arg_ptr  = NULL;
+    prog->fun[2].arg_size = 0;
+    prog->fun[2].l_index  = 42;
+    prog->fun[2].r_index  = 42;
+
+    prog->fun[3].type = pfq_combinator_fun;
+    prog->fun[3].symbol = "or";
+    prog->fun[3].arg_ptr  = NULL;
+    prog->fun[3].arg_size = 0;
+    prog->fun[3].l_index  = 2;
+    prog->fun[3].r_index  = 3;
+
 
     q.set_group_computation(gid, prog);
 

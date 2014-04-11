@@ -566,9 +566,9 @@ void test_vlan()
 	pfq_close(q);
 }
 
-
 void test_group_context()
 {
+#if 0
         pfq_t * q = pfq_open(64, 0, 1024);
 
         struct pfq_meta_prog * prg  = (struct pfq_meta_prog *) (malloc(sizeof(int) + sizeof(pfq_fun_t) * 1));
@@ -584,6 +584,7 @@ void test_group_context()
         assert(pfq_set_group_program(q, pfq_group_id(q), prg) == 0);
 
 	pfq_close(q);
+#endif
 }
 
 
