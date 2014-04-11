@@ -42,6 +42,7 @@ DEFINE_SEMAPHORE(symtable_sem);
 LIST_HEAD(pfq_monadic_cat);
 LIST_HEAD(pfq_predicate_cat);
 
+
 EXPORT_SYMBOL_GPL(pfq_monadic_cat);
 EXPORT_SYMBOL_GPL(pfq_predicate_cat);
 
@@ -53,6 +54,7 @@ extern struct pfq_function_descr forward_functions[];
 extern struct pfq_function_descr steering_functions[];
 extern struct pfq_function_descr misc_functions[];
 extern struct pfq_function_descr predicate_functions[];
+extern struct pfq_function_descr combinator_functions[];
 
 
 struct symtable_entry
@@ -187,6 +189,7 @@ pfq_symtable_init(void)
         pfq_symtable_register_functions(NULL, &pfq_monadic_cat, misc_functions);
 
         pfq_symtable_register_functions(NULL, &pfq_predicate_cat, predicate_functions);
+        pfq_symtable_register_functions(NULL, &pfq_predicate_cat, combinator_functions);
 
 	printk(KERN_INFO "[PFQ] symtable initialized.\n");
 }
