@@ -830,7 +830,7 @@ int pfq_setsockopt(struct socket *sock,
 
                 /* print user computation */
 
-                pfq_computation_pr_devel(descr);
+                pr_devel_computation_descr(descr);
 
                 /* allocate context */
 

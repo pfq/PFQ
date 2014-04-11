@@ -371,6 +371,7 @@ struct pfq_functional_descr
         enum pfq_functional_type type;
 
         const char __user *     symbol;
+
         const void __user *     arg_ptr;
         size_t                  arg_size;
 

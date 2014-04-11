@@ -35,13 +35,11 @@ extern void * pfq_context_alloc(struct pfq_computation_descr const *);
 
 extern int pfq_computation_compile (struct pfq_computation_descr const *descr, computation_t *comp, void *context);
 
-extern void pfq_functional_pr_devel(struct pfq_functional_descr const *, int);
-
-extern void pfq_computation_pr_devel(struct pfq_computation_descr const *);
-
 extern char * strdup_user(const char __user *str);
 
 extern struct sk_buff *pfq_run(int gid, computation_t *prg, struct sk_buff *skb);
 
+extern void pr_devel_functional_descr(struct pfq_functional_descr const *, int);
+extern void pr_devel_computation_descr(struct pfq_computation_descr const *);
 
 #endif /* _PF_Q_FUNCTIONAL_H_ */

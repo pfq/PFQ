@@ -148,7 +148,7 @@ make_high_order_function(function_ptr_t fun, expression_t *expr)
 
 /***** functional_t *****/
 
-typedef struct pfq_callable
+typedef struct pfq_functional
 {
         union
         {
@@ -156,8 +156,8 @@ typedef struct pfq_callable
                 boolean_expr_t          expr;
         };
 
-        struct pfq_callable *left;
-        struct pfq_callable *right;
+        struct pfq_functional *left;
+        struct pfq_functional *right;
 
 } functional_t;
 
@@ -165,7 +165,7 @@ typedef struct pfq_callable
 typedef struct pfq_computation
 {
         size_t          size;
-        size_t          entry_point;
+        functional_t    *entry_point;
         functional_t    fun[];
 
 } computation_t;
