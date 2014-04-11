@@ -26,14 +26,16 @@
 
 #include <linux/skbuff.h>
 #include <linux/list.h>
+#include <linux/semaphore.h>
+#include <linux/rwsem.h>
 
 #include <linux/pf_q.h>
 #include <linux/pf_q-module.h>
 
-
 /* semaphore */
 
-extern struct semaphore symtable_sem;
+extern struct semaphore         symtable_sem;
+extern struct rw_semaphore      symtable_rw_sem;
 
 /* categories */
 

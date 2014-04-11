@@ -27,6 +27,7 @@
 #include <linux/list.h>
 #include <linux/string.h>
 #include <linux/semaphore.h>
+#include <linux/rwsem.h>
 
 #include <linux/pf_q-module.h>
 
@@ -34,7 +35,9 @@
 #include <pf_q-symtable.h>
 
 
+DECLARE_RWSEM(symtable_rw_sem);
 DEFINE_SEMAPHORE(symtable_sem);
+
 
 LIST_HEAD(pfq_monadic_cat);
 LIST_HEAD(pfq_predicate_cat);
@@ -192,10 +195,15 @@ pfq_symtable_init(void)
 void
 pfq_symtable_free(void)
 {
+        down_write(&symtable_rw_sem);
 	down(&symtable_sem);
-	__pfq_symtable_free(&pfq_monadic_cat);
+
+        __pfq_symtable_free(&pfq_monadic_cat);
 	__pfq_symtable_free(&pfq_predicate_cat);
-	up(&symtable_sem);
+
+        up(&symtable_sem);
+        up_write(&symtable_rw_sem);
+
 	printk(KERN_INFO "[PFQ] symtable freed.\n");
 }
 
@@ -203,28 +211,33 @@ pfq_symtable_free(void)
 void *
 pfq_symtable_resolve(struct list_head *category, const char *symbol)
 {
-	void *ret;
-	down(&symtable_sem);
-	ret = __pfq_symtable_resolve(category, symbol);
-	up(&symtable_sem);
-	return ret;
-}
+	void *ptr;
 
+        down(&symtable_sem);
+
+	ptr = __pfq_symtable_resolve(category, symbol);
+
+	up(&symtable_sem);
+
+        return ptr;
+}
 
 
 int
 pfq_symtable_register_function(const char *module, struct list_head *category, const char *symbol, void *fun)
 {
-	int r;
+	int rc;
 
         down(&symtable_sem);
-	r = __pfq_symtable_register_function(category, symbol, fun);
+
+	rc = __pfq_symtable_register_function(category, symbol, fun);
+
 	up(&symtable_sem);
 
-	if (r == 0 && module)
+	if (rc == 0 && module)
 		printk(KERN_INFO "[PFQ]%s '%s' @%p function registered.\n", module, symbol, fun);
 
-	return r;
+	return rc;
 }
 
 
@@ -233,6 +246,7 @@ pfq_symtable_unregister_function(const char *module, struct list_head *category,
 {
 	void *fun;
 
+        down_write(&symtable_rw_sem);
 	down(&symtable_sem);
 
 	fun = __pfq_symtable_resolve(category, symbol);
@@ -240,11 +254,12 @@ pfq_symtable_unregister_function(const char *module, struct list_head *category,
         	return -1;
 
 	__pfq_dismiss_function(fun);
-
         __pfq_symtable_unregister_function(category, symbol);
 
-	printk(KERN_INFO "[PFQ]%s '%s' function unregistered.\n", module, symbol);
 	up(&symtable_sem);
+        up_write(&symtable_rw_sem);
+
+	printk(KERN_INFO "[PFQ]%s '%s' function unregistered.\n", module, symbol);
 
 	return 0;
 }

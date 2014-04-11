@@ -28,6 +28,7 @@
 #include <linux/module.h>
 #include <linux/moduleparam.h>
 #include <linux/semaphore.h>
+#include <linux/rwsem.h>
 #include <linux/socket.h>
 #include <linux/types.h>
 #include <linux/skbuff.h>
@@ -610,7 +611,7 @@ pfq_create(
 
         up (&sock_sem);
 
-        down(&symtable_sem);
+        down_read(&symtable_rw_sem);
         return 0;
 }
 
@@ -721,7 +722,7 @@ pfq_release(struct socket *sock)
 	sock->sk = NULL;
 	sock_put(sk);
 
-        up(&symtable_sem);
+        up_read(&symtable_rw_sem);
 
 	pr_devel("[PFQ|%d] socket closed.\n", id);
         return 0;
