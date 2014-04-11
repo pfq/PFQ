@@ -853,7 +853,10 @@ int pfq_setsockopt(struct socket *sock,
 
                 /* compile the computation */
 
-                // TODO
+                if (pfq_computation_compile(descr, comp, context) < 0) {
+                        kfree (descr);
+                        return -EPERM;
+                }
 
                 kfree(descr);
 
@@ -871,20 +874,6 @@ int pfq_setsockopt(struct socket *sock,
                 }
 
                 return 0;
-
-                // /* compile meta-program */
-
-                // if (pfq_meta_prog_compile(meta, &exec, &ctx) < 0) {
-                //         pr_devel("[PFQ|%d] meta-program compiler error!\n", so->id);
-                //         kfree(meta);
-                //         return -EPERM;
-                // }
-
-                // kfree(meta);
-
-                // /* show exec program */
-
-                // pfq_exec_prog_pr_devel(exec, ctx);
 
         } break;
 
