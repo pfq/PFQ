@@ -61,11 +61,22 @@ typedef union
 #define expression(a)          __builtin_choose_expr(__builtin_types_compatible_p(argument_t, typeof(a)), a.expr, (void)0)
 
 
+/**** expression_t: polymorphic expression *****/
+
+typedef struct _expression
+{
+        bool (*ptr)(struct sk_buff const *skb, struct _expression *this);
+
+} expression_t;
+
+typedef bool (*expression_ptr_t)(struct sk_buff const *skb, struct _expression *);
+
+
 /**** functional engine ****/
 
 typedef struct sk_buff *(*function_ptr_t)(struct sk_buff *, argument_t );
-typedef bool            (*predicate_ptr_t)(struct sk_buff const *, argument_t );
-typedef bool            (*combinator_ptr_t)(struct sk_buff const *, void *expr1, void *expr2);
+typedef bool (*predicate_ptr_t)(struct sk_buff const *, argument_t );
+typedef bool (*combinator_ptr_t)(struct sk_buff const *, expression_t *expr1, expression_t *expr2);
 
 
 /* monadic function */

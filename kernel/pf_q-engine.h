@@ -38,18 +38,6 @@
         (void)0)))
 
 
-/**** expression_t: polymorphic expression *****/
-
-typedef struct _expression
-{
-        bool (*ptr)(struct sk_buff *skb, struct _expression *this);
-
-} expression_t;
-
-typedef bool (*expression_ptr_t)(struct sk_buff *skb, struct _expression *);
-
-
-
 /**** expression argument: expression + argument *****/
 
 typedef struct expression_arg
@@ -169,7 +157,6 @@ typedef struct pfq_computation
         functional_t    fun[];
 
 } computation_t;
-
 
 
 #endif /* _PF_Q_ENGINE_H_ */

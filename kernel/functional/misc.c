@@ -24,11 +24,9 @@
 #include <linux/kernel.h>
 #include <linux/module.h>
 
-
 #include <linux/pf_q-module.h>
 #include <linux/pf_q-sparse.h>
 
-#include <pf_q-engine.h>
 
 static struct sk_buff *
 dummy(struct sk_buff *skb, argument_t arg)
