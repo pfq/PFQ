@@ -302,7 +302,7 @@ validate_computation_descr(struct pfq_computation_descr const *descr)
                         }
 
                         if (descr->fun[pindex].type != pfq_predicate_fun &&
-                                        descr->fun[pindex].type != pfq_combinator_fun ) {
+                            descr->fun[pindex].type != pfq_combinator_fun ) {
                                 pr_devel("[PFQ] %zu: high-order function: bad predicate!\n", n);
                                 return -EPERM;
                         }
@@ -383,7 +383,8 @@ resolve_user_symbol(struct list_head *cat, const char __user *symb)
 static functional_t *
 get_functional_by_index(struct pfq_computation_descr const *descr, computation_t *comp, int index)
 {
-        if (index < descr->size) {
+        if (index >= 0 && index < descr->size) {
+
                 if (!is_monadic_function(descr->fun[index].type))
                         return (functional_t *)0xdeadbeef;
 

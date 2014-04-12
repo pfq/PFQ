@@ -41,22 +41,22 @@ main(int argc, char *argv[])
     prog->fun[2].symbol = "is_icmp";
     prog->fun[2].arg_ptr  = NULL;
     prog->fun[2].arg_size = 0;
-    prog->fun[2].l_index  = 42;
-    prog->fun[2].r_index  = 42;
+    prog->fun[2].l_index  = -1;
+    prog->fun[2].r_index  = -1;
 
     prog->fun[3].type = pfq_monadic_fun;
     prog->fun[3].symbol = "steer-ip";
     prog->fun[3].arg_ptr  = NULL;
     prog->fun[3].arg_size = 0;
-    prog->fun[3].l_index  = 1000;
-    prog->fun[3].r_index  = 1000;
+    prog->fun[3].l_index  = -1;
+    prog->fun[3].r_index  = -1;
 
     prog->fun[4].type = pfq_monadic_fun;
     prog->fun[4].symbol = "drop";
     prog->fun[4].arg_ptr  = NULL;
     prog->fun[4].arg_size = 0;
-    prog->fun[4].l_index  = 1000;
-    prog->fun[4].r_index  = 1000;
+    prog->fun[4].l_index  = -1;
+    prog->fun[4].r_index  = -1;
 
     q.set_group_computation(gid, prog);
 
