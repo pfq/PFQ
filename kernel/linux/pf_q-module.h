@@ -84,9 +84,14 @@ typedef bool (*combinator_ptr_t)(expression_t *expr1, expression_t *expr2, struc
 struct pfq_function_descr
 {
         const char *    symbol;
-        function_ptr_t ptr;
+        void * 	ptr;
 };
 
+struct pfq_monadic_fun_descr
+{
+        const char *    symbol;
+        function_ptr_t ptr;
+};
 
 struct pfq_predicate_fun_descr
 {

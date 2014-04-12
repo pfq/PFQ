@@ -85,7 +85,7 @@ filter_vlan(argument_t a, struct sk_buff *skb)
 }
 
 
-struct pfq_function_descr filter_functions[] = {
+struct pfq_monadic_fun_descr filter_functions[] = {
 
         { "id",                 id                      },
         { "ip",                 filter_ip               },

@@ -125,7 +125,7 @@ steering_ipv6(argument_t a, struct sk_buff *skb)
 }
 
 
-struct pfq_function_descr steering_functions[] = {
+struct pfq_monadic_fun_descr steering_functions[] = {
 
 	{ "steer-mac",          steering_mac            },
         { "steer-vlan-id",      steering_vlan_id        },

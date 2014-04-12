@@ -50,6 +50,9 @@ extern void pfq_symtable_free(void);
 extern int  pfq_symtable_register_function(const char *module, struct list_head *category, const char *symbol, void * fun);
 extern int  pfq_symtable_unregister_function(const char *module, struct list_head *category, const char *symbol);
 
+extern int pfq_symtable_register_functions  (const char *module, struct list_head *category, struct pfq_function_descr *fun);
+extern int pfq_symtable_unregister_functions(const char *module, struct list_head *category, struct pfq_function_descr *fun);
+
 extern void * pfq_symtable_resolve(struct list_head *category, const char *symbol);
 
 

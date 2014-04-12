@@ -49,13 +49,13 @@ EXPORT_SYMBOL_GPL(pfq_predicate_cat);
 
 /* register all functions available */
 
-extern struct pfq_function_descr filter_functions[];
-extern struct pfq_function_descr forward_functions[];
-extern struct pfq_function_descr steering_functions[];
-extern struct pfq_function_descr misc_functions[];
-extern struct pfq_function_descr predicate_functions[];
-extern struct pfq_function_descr combinator_functions[];
+extern struct pfq_monadic_fun_descr filter_functions[];
+extern struct pfq_monadic_fun_descr forward_functions[];
+extern struct pfq_monadic_fun_descr steering_functions[];
+extern struct pfq_predicate_fun_descr predicate_functions[];
+extern struct pfq_combinator_fun_descr combinator_functions[];
 
+extern struct pfq_function_descr misc_functions[];
 
 struct symtable_entry
 {
@@ -183,13 +183,13 @@ pfq_symtable_register_functions(const char *module, struct list_head *category, 
 void
 pfq_symtable_init(void)
 {
-        pfq_symtable_register_functions(NULL, &pfq_monadic_cat, filter_functions);
-        pfq_symtable_register_functions(NULL, &pfq_monadic_cat, forward_functions);
-        pfq_symtable_register_functions(NULL, &pfq_monadic_cat, steering_functions);
-        pfq_symtable_register_functions(NULL, &pfq_monadic_cat, misc_functions);
+        pfq_symtable_register_functions(NULL, &pfq_monadic_cat, (struct pfq_function_descr *)filter_functions);
+        pfq_symtable_register_functions(NULL, &pfq_monadic_cat, (struct pfq_function_descr *)forward_functions);
+        pfq_symtable_register_functions(NULL, &pfq_monadic_cat, (struct pfq_function_descr *)steering_functions);
+        pfq_symtable_register_functions(NULL, &pfq_monadic_cat, (struct pfq_function_descr *)misc_functions);
 
-        pfq_symtable_register_functions(NULL, &pfq_predicate_cat, predicate_functions);
-        pfq_symtable_register_functions(NULL, &pfq_predicate_cat, combinator_functions);
+        pfq_symtable_register_functions(NULL, &pfq_predicate_cat, (struct pfq_function_descr *)predicate_functions);
+        pfq_symtable_register_functions(NULL, &pfq_predicate_cat, (struct pfq_function_descr *)combinator_functions);
 
 	printk(KERN_INFO "[PFQ] symtable initialized.\n");
 }

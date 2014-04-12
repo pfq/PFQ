@@ -73,7 +73,7 @@ forward_drop(argument_t a, struct sk_buff *skb)
 }
 
 
-struct pfq_function_descr forward_functions[] = {
+struct pfq_monadic_fun_descr forward_functions[] = {
 
         { "legacy",             forward_legacy          },
         { "broadcast",          forward_broadcast       },
