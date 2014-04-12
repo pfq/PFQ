@@ -76,7 +76,7 @@ void pr_devel_functional_descr(struct pfq_functional_descr const *descr, int ind
         switch (descr->type)
         {
         case pfq_monadic_fun:
-                pr_devel("fun  %d | %s :: arg(%zu) left:%d right:%d\n"
+                pr_devel("fun  %d | %s :: asize:%zu left:%d right:%d\n"
                                 , index
                                 , name
                                 , descr->arg_size
@@ -84,7 +84,7 @@ void pr_devel_functional_descr(struct pfq_functional_descr const *descr, int ind
                                 , descr->r_index);
                 break;
         case pfq_high_order_fun:
-                pr_devel("hfun %d | %s :: arg(%zu) left:%d right:%d\n"
+                pr_devel("hfun %d | %s :: asize:%zu left:%d right:%d\n"
                                 , index
                                 , name
                                 , descr->arg_size
@@ -92,7 +92,7 @@ void pr_devel_functional_descr(struct pfq_functional_descr const *descr, int ind
                                 , descr->r_index);
                 break;
         case pfq_predicate_fun:
-                pr_devel("pred %d | %s :: arg(%zu) left:%d right:%d\n"
+                pr_devel("pred %d | %s :: asize:%zu left:%d right:%d\n"
                                 , index
                                 , name
                                 , descr->arg_size
@@ -100,7 +100,7 @@ void pr_devel_functional_descr(struct pfq_functional_descr const *descr, int ind
                                 , descr->r_index);
                 break;
         case pfq_combinator_fun:
-                pr_devel("comb %d | %s :: arg(%zu) left:%d right:%d\n"
+                pr_devel("comb %d | %s :: asize:%zu left:%d right:%d\n"
                                 , index
                                 , name
                                 , descr->arg_size
@@ -333,13 +333,13 @@ validate_computation_descr(struct pfq_computation_descr const *descr)
                         }
 
                         if (descr->fun[left].type != pfq_predicate_fun &&
-                                        descr->fun[left].type != pfq_combinator_fun ) {
+                            descr->fun[left].type != pfq_combinator_fun ) {
                                 pr_devel("[PFQ] %zu: combinator: bad left predicate!\n", n);
                                 return -EPERM;
                         }
 
                         if (descr->fun[right].type != pfq_predicate_fun &&
-                                        descr->fun[right].type != pfq_combinator_fun ) {
+                            descr->fun[right].type != pfq_combinator_fun ) {
                                 pr_devel("[PFQ] %zu: combinator: bad right predicate!\n", n);
                                 return -EPERM;
                         }
@@ -363,9 +363,8 @@ pfq_computation_compile (struct pfq_computation_descr const *descr, computation_
 
         /* validate the computation descriptors */
 
-        if (validate_computation_descr(descr) < 0) {
+        if (validate_computation_descr(descr) < 0)
                 return -EPERM;
-        }
 
         /* size */
 
