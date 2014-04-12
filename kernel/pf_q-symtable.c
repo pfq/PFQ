@@ -38,24 +38,14 @@
 DECLARE_RWSEM(symtable_rw_sem);
 DEFINE_SEMAPHORE(symtable_sem);
 
-
 LIST_HEAD(pfq_monadic_cat);
 LIST_HEAD(pfq_predicate_cat);
-
 
 EXPORT_SYMBOL_GPL(pfq_monadic_cat);
 EXPORT_SYMBOL_GPL(pfq_predicate_cat);
 
 
 /* register all functions available */
-
-extern struct pfq_monadic_fun_descr filter_functions[];
-extern struct pfq_monadic_fun_descr forward_functions[];
-extern struct pfq_monadic_fun_descr steering_functions[];
-extern struct pfq_predicate_fun_descr predicate_functions[];
-extern struct pfq_combinator_fun_descr combinator_functions[];
-
-extern struct pfq_function_descr misc_functions[];
 
 struct symtable_entry
 {
@@ -183,6 +173,13 @@ pfq_symtable_register_functions(const char *module, struct list_head *category, 
 void
 pfq_symtable_init(void)
 {
+	extern struct pfq_monadic_fun_descr filter_functions[];
+	extern struct pfq_monadic_fun_descr forward_functions[];
+	extern struct pfq_monadic_fun_descr steering_functions[];
+	extern struct pfq_predicate_fun_descr predicate_functions[];
+	extern struct pfq_combinator_fun_descr combinator_functions[];
+	extern struct pfq_function_descr misc_functions[];
+
         pfq_symtable_register_functions(NULL, &pfq_monadic_cat, (struct pfq_function_descr *)filter_functions);
         pfq_symtable_register_functions(NULL, &pfq_monadic_cat, (struct pfq_function_descr *)forward_functions);
         pfq_symtable_register_functions(NULL, &pfq_monadic_cat, (struct pfq_function_descr *)steering_functions);
