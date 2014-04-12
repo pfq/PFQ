@@ -365,9 +365,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 
                                 prg = (computation_t *)atomic_long_read(&pfq_groups[gid].comp);
 
-                                // FIXME
-                                // if (prg) { /* run the functional program */
-                                if (0) { /* run the functional program */
+                                if (prg) { /* run the functional program */
 
                                         skb = pfq_run(gid, prg, skb);
 
