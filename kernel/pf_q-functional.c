@@ -444,12 +444,12 @@ pfq_computation_compile (struct pfq_computation_descr const *descr, computation_
                         comp->fun[n].left  = get_functional_by_index(descr, comp, descr->fun[n].l_index);
 
                         if (comp->fun[n].right == (functional_t *)0xdeadbeef) {
-                                pr_devel("[PFQ] %zu: right path link to non monadic function!\n", n);
+                                pr_devel("[PFQ] %zu: right path link to pure function!\n", n);
                                 return -EPERM;
                         }
 
                         if (comp->fun[n].left == (functional_t *)0xdeadbeef) {
-                                pr_devel("[PFQ] %zu: left path link to non monadic function!\n", n);
+                                pr_devel("[PFQ] %zu: left path link to pure function!\n", n);
                                 return -EPERM;
                         }
 
@@ -475,12 +475,12 @@ pfq_computation_compile (struct pfq_computation_descr const *descr, computation_
                         comp->fun[n].left  = get_functional_by_index(descr, comp, descr->fun[n].l_index);
 
                         if (comp->fun[n].right == (functional_t *)0xdeadbeef) {
-                                pr_devel("[PFQ] %zu: right path link to non monadic function!\n", n);
+                                pr_devel("[PFQ] %zu: right path link to pure function!\n", n);
                                 return -EPERM;
                         }
 
                         if (comp->fun[n].left == (functional_t *)0xdeadbeef) {
-                                pr_devel("[PFQ] %zu: left path link to non monadic function!\n", n);
+                                pr_devel("[PFQ] %zu: left path link to pure function!\n", n);
                                 return -EPERM;
                         }
                 } break;
