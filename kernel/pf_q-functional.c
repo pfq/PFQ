@@ -356,6 +356,44 @@ validate_computation_descr(struct pfq_computation_descr const *descr)
 }
 
 
+static void *
+resolve_user_symbol(struct list_head *cat, const char __user *symb)
+{
+        const char *symbol;
+        void *addr;
+
+        symbol = strdup_user(symb);
+        if (symbol == NULL) {
+                pr_devel("[PFQ] resove_symbol: strdup!\n");
+                return NULL;
+        }
+
+        addr = pfq_symtable_resolve(cat, symbol);
+        if (addr == NULL) {
+                pr_devel("[PFQ] resolve_symbol: '%s' no such function!\n", symbol);
+                return NULL;
+        }
+
+        kfree(symbol);
+        return addr;
+}
+
+
+
+static functional_t *
+get_functional_by_index(struct pfq_computation_descr const *descr, computation_t *comp, int index)
+{
+        if (index < descr->size) {
+                if (!is_monadic_function(descr->fun[index].type))
+                        return (functional_t *)0xdeadbeef;
+
+                return &comp->fun[index];
+        }
+        else
+                return NULL;
+}
+
+
 int
 pfq_computation_compile (struct pfq_computation_descr const *descr, computation_t *comp, void *context)
 {
@@ -383,7 +421,6 @@ pfq_computation_compile (struct pfq_computation_descr const *descr, computation_
                 case pfq_monadic_fun: {
 
                         function_ptr_t ptr;
-                        char * symbol;
                         void * arg = NULL;
 
                         if (descr->fun[n].arg_size) {
@@ -395,45 +432,25 @@ pfq_computation_compile (struct pfq_computation_descr const *descr, computation_
                                 }
                         }
 
-                        symbol = strdup_user(descr->fun[n].symbol);
-                        if (symbol == NULL) {
-                                pr_devel("[PFQ] %zu: fun strdup!\n", n);
-                                return -EFAULT;
-                        }
-
-                        ptr = pfq_symtable_resolve(&pfq_monadic_cat, symbol);
+                        ptr = resolve_user_symbol(&pfq_monadic_cat, descr->fun[n].symbol);
                         if (ptr == NULL) {
-                                printk(KERN_INFO "[PFQ] %zu: '%s' no such function!\n", n, symbol);
-                                kfree(symbol);
+                                printk(KERN_INFO "[PFQ] %zu: bad descriptor!\n", n);
                                 return -EPERM;
                         }
 
-                        kfree(symbol);
-
                         comp->fun[n].fun = make_function(ptr, arg);
 
-                        if (descr->fun[n].r_index < descr->size) {
-                                size_t r = descr->fun[n].r_index;
-                                if (!is_monadic_function(descr->fun[r].type)) {
-                                        pr_devel("[PFQ] %zu: right path link to non monadic function!\n", n);
-                                        return -EPERM;
-                                }
-                                comp->fun[n].right = &comp->fun[r];
-                        }
-                        else {
-                                comp->fun[n].right = NULL;
+                        comp->fun[n].right = get_functional_by_index(descr, comp, descr->fun[n].r_index);
+                        comp->fun[n].left  = get_functional_by_index(descr, comp, descr->fun[n].l_index);
+
+                        if (comp->fun[n].right == (functional_t *)0xdeadbeef) {
+                                pr_devel("[PFQ] %zu: right path link to non monadic function!\n", n);
+                                return -EPERM;
                         }
 
-                        if (descr->fun[n].l_index < descr->size) {
-                                size_t l = descr->fun[n].l_index;
-                                if (!is_monadic_function(descr->fun[l].type)) {
-                                        pr_devel("[PFQ] %zu: left path link to non monadic function!\n", n);
-                                        return -EPERM;
-                                }
-                                comp->fun[n].left  = &comp->fun[l];
-                        }
-                        else {
-                                comp->fun[n].left  = NULL;
+                        if (comp->fun[n].left == (functional_t *)0xdeadbeef) {
+                                pr_devel("[PFQ] %zu: left path link to non monadic function!\n", n);
+                                return -EPERM;
                         }
 
                 } break;
@@ -443,49 +460,28 @@ pfq_computation_compile (struct pfq_computation_descr const *descr, computation_
 
                         function_ptr_t ptr;
                         size_t pindex;
-                        char * symbol;
 
                         pindex = descr->fun[n].arg_size;
 
-                        symbol = strdup_user(descr->fun[n].symbol);
-                        if (symbol == NULL) {
-                                pr_devel("[PFQ] %zu: high-order fun strdup!\n", n);
-                                return -EFAULT;
-                        }
-
-                        ptr = pfq_symtable_resolve(&pfq_monadic_cat, symbol);
+                        ptr = resolve_user_symbol(&pfq_monadic_cat, descr->fun[n].symbol);
                         if (ptr == NULL) {
-                                printk(KERN_INFO "[PFQ] %zu: '%s' no such function!\n", n, symbol);
-                                kfree(symbol);
+                                printk(KERN_INFO "[PFQ] %zu: bad descriptor!\n", n);
                                 return -EPERM;
                         }
 
-                        kfree(symbol);
-
                         comp->fun[n].fun = make_high_order_function(ptr, EXPR_CAST(&comp->fun[pindex].expr));
 
-                        if (descr->fun[n].r_index < descr->size) {
-                                size_t r = descr->fun[n].r_index;
-                                if (!is_monadic_function(descr->fun[r].type)) {
-                                        pr_devel("[PFQ] %zu: right path link to non monadic function!\n", n);
-                                        return -EPERM;
-                                }
-                                comp->fun[n].right = &comp->fun[r];
-                        }
-                        else {
-                                comp->fun[n].right = NULL;
+                        comp->fun[n].right = get_functional_by_index(descr, comp, descr->fun[n].r_index);
+                        comp->fun[n].left  = get_functional_by_index(descr, comp, descr->fun[n].l_index);
+
+                        if (comp->fun[n].right == (functional_t *)0xdeadbeef) {
+                                pr_devel("[PFQ] %zu: right path link to non monadic function!\n", n);
+                                return -EPERM;
                         }
 
-                        if (descr->fun[n].l_index < descr->size) {
-                                size_t l = descr->fun[n].l_index;
-                                if (!is_monadic_function(descr->fun[l].type)) {
-                                        pr_devel("[PFQ] %zu: left path link to non monadic function!\n", n);
-                                        return -EPERM;
-                                }
-                                comp->fun[n].left  = &comp->fun[l];
-                        }
-                        else {
-                                comp->fun[n].left  = NULL;
+                        if (comp->fun[n].left == (functional_t *)0xdeadbeef) {
+                                pr_devel("[PFQ] %zu: left path link to non monadic function!\n", n);
+                                return -EPERM;
                         }
                 } break;
 
@@ -493,7 +489,6 @@ pfq_computation_compile (struct pfq_computation_descr const *descr, computation_
                 case pfq_predicate_fun: {
 
                         predicate_ptr_t ptr;
-                        char * symbol;
                         void * arg = NULL;
 
                         if (descr->fun[n].arg_size) {
@@ -505,20 +500,11 @@ pfq_computation_compile (struct pfq_computation_descr const *descr, computation_
                                 }
                         }
 
-                        symbol = strdup_user(descr->fun[n].symbol);
-                        if (symbol == NULL) {
-                                pr_devel("[PFQ] %zu: pred strdup!\n", n);
-                                return -EFAULT;
-                        }
-
-                        ptr = pfq_symtable_resolve(&pfq_predicate_cat, symbol);
+                        ptr = resolve_user_symbol(&pfq_predicate_cat, descr->fun[n].symbol);
                         if (ptr == NULL) {
-                                printk(KERN_INFO "[PFQ] %zu: '%s' no such predicate!\n", n, symbol);
-                                kfree(symbol);
+                                printk(KERN_INFO "[PFQ] %zu: bad descriptor!\n", n);
                                 return -EPERM;
                         }
-
-                        kfree(symbol);
 
                         comp->fun[n].expr.pred = make_predicate(ptr, arg);
 
@@ -531,22 +517,12 @@ pfq_computation_compile (struct pfq_computation_descr const *descr, computation_
 
                         combinator_ptr_t ptr;
                         size_t left, right;
-                        char * symbol;
 
-                        symbol = strdup_user(descr->fun[n].symbol);
-                        if (symbol == NULL) {
-                                pr_devel("[PFQ] %zu: combinator strdup!\n", n);
-                                return -EFAULT;
-                        }
-
-                        ptr = pfq_symtable_resolve(&pfq_predicate_cat, symbol);
+                        ptr = resolve_user_symbol(&pfq_predicate_cat, descr->fun[n].symbol);
                         if (ptr == NULL) {
-                                printk(KERN_INFO "[PFQ] %zu: '%s' no such combinator!\n", n, symbol);
-                                kfree(symbol);
+                                printk(KERN_INFO "[PFQ] %zu: bad descriptor!\n", n);
                                 return -EPERM;
                         }
-
-                        kfree(symbol);
 
                         left  = descr->fun[n].l_index;
                         right = descr->fun[n].r_index;
