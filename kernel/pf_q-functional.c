@@ -380,18 +380,21 @@ resolve_user_symbol(struct list_head *cat, const char __user *symb)
 
 
 
-static functional_t *
-get_functional_by_index(struct pfq_computation_descr const *descr, computation_t *comp, int index)
+static int
+get_functional_by_index(struct pfq_computation_descr const *descr, computation_t *comp, int index, functional_t **ret)
 {
         if (index >= 0 && index < descr->size) {
 
                 if (!is_monadic_function(descr->fun[index].type))
-                        return (functional_t *)0xdeadbeef;
+                        return -EINVAL;
 
-                return &comp->fun[index];
+                *ret = &comp->fun[index];
         }
-        else
-                return NULL;
+        else {
+        	*ret = NULL;
+	}
+
+	return 0;
 }
 
 
@@ -441,18 +444,18 @@ pfq_computation_compile (struct pfq_computation_descr const *descr, computation_
 
                         comp->fun[n].fun = make_function(ptr, arg);
 
-                        comp->fun[n].right = get_functional_by_index(descr, comp, descr->fun[n].r_index);
-                        comp->fun[n].left  = get_functional_by_index(descr, comp, descr->fun[n].l_index);
+			if (get_functional_by_index(descr, comp, descr->fun[n].r_index, &comp->fun[n].right) < 0) {
 
-                        if (comp->fun[n].right == (functional_t *)0xdeadbeef) {
                                 pr_devel("[PFQ] %zu: right path link to pure function!\n", n);
-                                return -EPERM;
+                                return -EINVAL;
+			}
+
+                        if (get_functional_by_index(descr, comp, descr->fun[n].l_index, &comp->fun[n].left) < 0) {
+
+                                pr_devel("[PFQ] %zu: left path link to pure function!\n", n);
+                                return -EINVAL;
                         }
 
-                        if (comp->fun[n].left == (functional_t *)0xdeadbeef) {
-                                pr_devel("[PFQ] %zu: left path link to pure function!\n", n);
-                                return -EPERM;
-                        }
 
                 } break;
 
@@ -472,18 +475,18 @@ pfq_computation_compile (struct pfq_computation_descr const *descr, computation_
 
                         comp->fun[n].fun = make_high_order_function(ptr, EXPR_CAST(&comp->fun[pindex].expr));
 
-                        comp->fun[n].right = get_functional_by_index(descr, comp, descr->fun[n].r_index);
-                        comp->fun[n].left  = get_functional_by_index(descr, comp, descr->fun[n].l_index);
+			if (get_functional_by_index(descr, comp, descr->fun[n].r_index, &comp->fun[n].right) < 0) {
 
-                        if (comp->fun[n].right == (functional_t *)0xdeadbeef) {
                                 pr_devel("[PFQ] %zu: right path link to pure function!\n", n);
-                                return -EPERM;
-                        }
+                                return -EINVAL;
+			}
 
-                        if (comp->fun[n].left == (functional_t *)0xdeadbeef) {
+                        if (get_functional_by_index(descr, comp, descr->fun[n].l_index, &comp->fun[n].left) < 0) {
+
                                 pr_devel("[PFQ] %zu: left path link to pure function!\n", n);
-                                return -EPERM;
-                        }
+                                return -EINVAL;
+			}
+
                 } break;
 
 
