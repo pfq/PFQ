@@ -71,7 +71,12 @@ pod_user(void **ctxptr, void const __user *arg, size_t size)
 
 void pr_devel_functional_descr(struct pfq_functional_descr const *descr, int index)
 {
-        char *name = strdup_user(descr->symbol);
+        char *name;
+
+       	if (descr->symbol == NULL)
+       		return ;
+
+        name = strdup_user(descr->symbol);
 
         switch (descr->type)
         {
@@ -220,6 +225,7 @@ pfq_context_alloc(struct pfq_computation_descr const *descr)
                 pr_devel("[PFQ] context_alloc: could not allocate %zu bytes!\n", size);
                 return NULL;
         }
+
         s = (size_t *)r;
 
         for(n = 0; n < descr->size; n++)
