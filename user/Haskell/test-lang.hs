@@ -18,9 +18,29 @@
 --  the file called "COPYING".
 
 import Network.PFqLang
+import Control.Monad
+
+dump (xs,_) =  forM_ (zip [0..] xs) $ \(n, x) -> putStrLn $ show n ++ ": " ++ show x
 
 main = do
-        let comp = ip >-> udp >-> counter 0 >-> class' 1 >-> dummy 42
+        let mycond = is_ip .&. (is_tcp .|. is_udp)
+        let mycond1 = is_udp
+
+        let comp = steer_rtp >-> dummy 24
+                    >-> (conditional (mycond  .|. mycond1)
+                                        steer_ip
+                                        (counter 1 >-> drop')
+                        ) >-> when' is_tcp (counter 2)  >-> dummy 11
+
         print comp
-        print $ eval comp
+
+        -- let test = serialize 0 ( ((is_ip .|. is_udp) .&. (is_ip .|. is_tcp)) .|. mycond)
+        --
+        let test = serialize 0 comp
+
+        dump test
+
+
+
+
 
