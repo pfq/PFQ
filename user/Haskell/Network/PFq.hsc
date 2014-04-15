@@ -220,7 +220,7 @@ newtype PFqConstant = PFqConstant { getConstant :: Int }
 
 #{enum PFqConstant, PFqConstant
     , group_max_counters = Q_MAX_COUNTERS
-    , group_fun_size     = sizeof(pfq_fun_t)
+    , group_fun_descr_size = sizeof(struct pfq_functional_descr)
 }
 
 
@@ -739,32 +739,55 @@ makeCounters ptr = do
 -- groupComputation:
 --
 
-withMetaFun :: QMetaFun
-            -> ((CString,IntPtr,Int) -> IO b)
+withMetaFun :: FunDescr
+            -> ((FunDescr, CString, IntPtr, Int) -> IO b)
             -> IO b
-withMetaFun (name, ctx) f =
+withMetaFun descr@(FunDescr _ name arg _ _) fun =
     withCString name $ \ name' ->
-        case ctx of
-            Just (StorableContext val) ->
+        case arg of
+            Empty -> fun (descr, name', ptrToIntPtr nullPtr, 0)
+            PredicateArg n -> fun (descr, name', ptrToIntPtr nullPtr, n)
+            Arg (StorableContext val) ->
                 alloca $ \ptr -> do
                     poke ptr val
-                    res <- f (name', ptrToIntPtr ptr, sizeOf val)
-                    return res
-            Nothing  -> f (name', ptrToIntPtr nullPtr, 0)
+                    fun (descr, name', ptrToIntPtr ptr, sizeOf val)
+
+data StorableFunDescr = StorableFunDescr CInt CString IntPtr CSize CInt CInt
+
+instance Storable StorableFunDescr where
+        sizeOf _  = getConstant group_fun_descr_size
+        alignment _ = undefined
+        poke ptr (StorableFunDescr tp name arg size left right) = do
+            pokeByteOff ptr 0 tp
+            pokeByteOff ptr  (sizeOf nullPtr) name
+            pokeByteOff ptr ((sizeOf nullPtr) * 2) arg
+            pokeByteOff ptr ((sizeOf nullPtr) * 3) size
+            pokeByteOff ptr ((sizeOf nullPtr) * 4) left
+            pokeByteOff ptr ((sizeOf nullPtr) * 4  + (sizeOf (undefined :: CInt))) right
 
 groupComputation :: Ptr PFqTag
-                 -> Int                 -- group id
-                 -> Computation QFun    -- computation from (PFqLang)
+                 -> Int                        -- group id
+                 -> Computation InKernelFun    -- computation from (PFqLang)
                  -> IO ()
+
 groupComputation hdl gid comp = do
-    let meta = eval comp
-    allocaBytes (sizeOf (undefined :: CSize) + getConstant group_fun_size * length meta)  $ \ ptr -> do
-        pokeByteOff ptr 0 (fromIntegral (length meta) :: CSize)
+    let (meta,_) = serialize 0 comp
+    allocaBytes (sizeOf (undefined :: CSize) * 2 + getConstant group_fun_descr_size * length meta)  $ \ ptr -> do
+        pokeByteOff ptr 0                            (fromIntegral (length meta) :: CSize)  -- size
+        pokeByteOff ptr (sizeOf(undefined :: CSize)) (0 :: CSize)                           -- entry_point
         withMany withMetaFun meta $ \tmps -> do
-            forM_ (zip [0..] tmps) $ \(n, (fn, fp, fs)) -> do
-                pokeByteOff ptr (sizeOf(undefined :: CSize) + getConstant group_fun_size * n) fn
-                pokeByteOff ptr (sizeOf(undefined :: CSize) + getConstant group_fun_size * n + sizeOf(undefined :: Ptr CChar)) fp
-                pokeByteOff ptr (sizeOf(undefined :: CSize) + getConstant group_fun_size * n + sizeOf(undefined :: Ptr CChar) + sizeOf nullPtr) (fromIntegral fs :: CSize)
+            let offset n = sizeOf(undefined :: CSize) * 2 + getConstant group_fun_descr_size * n
+            forM_ (zip [0..] tmps) $ \(n, (des, fname, aptr, asize)) -> do
+                let ftype = case des of
+                                FunDescr MonadicFun _ _ _ _     -> 0
+                                FunDescr HighOrderFun _ _ _ _   -> 1
+                                FunDescr PredicateFun _ _ _ _   -> 2
+                                FunDescr CombinatorFun _ _ _ _  -> 3
+                    left  = functionalLeft des
+                    right = functionalRight des
+
+                pokeByteOff ptr (offset n) (StorableFunDescr ftype fname aptr (fromIntegral asize) (fromIntegral left) (fromIntegral right))
+
             pfq_set_group_program hdl (fromIntegral gid) ptr >>= throwPFqIf_ hdl (== -1)
 
 -- dispatch:
