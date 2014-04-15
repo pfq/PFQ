@@ -33,21 +33,41 @@
 {-# LANGUAGE Rank2Types #-}
 {-# LANGUAGE GADTs #-}
 
+
 {-# OPTIONS_GHC -fno-warn-unused-binds #-}
 
 module Network.PFqLang
     (
         StorableContext(..),
+        Predicate(),
         Computation(),
-        QFun,
-        QMetaFun,
+
+        Fun,
+        FunDescr,
+        serialize,
 
         (>->),
-        eval,
-        qfun,
-        qfunWith,
 
-        --
+        qfun,
+        qfun1,
+        hfun,
+        hfun1,
+        hfun2,
+
+        -- combinators
+
+        (.|.),
+        (.&.),
+        (.^.),
+
+        -- predicates
+
+        is_ip,
+        is_udp,
+        is_tcp,
+
+        -- monadic functions
+
         steer_mac  ,
         steer_vlan ,
         steer_ip   ,
@@ -67,74 +87,222 @@ module Network.PFqLang
         legacy     ,
         broadcast  ,
         sink       ,
-        drop       ,
+        drop'      ,
 
-        ident      ,
+        id'        ,
         dummy      ,
         counter    ,
-        class'
+        class'     ,
+
+        -- high order functions
+
+        hdummy,
+        conditional,
+        when',
+        unless',
+
     ) where
+
 
 import Control.Monad.Identity
 import Foreign.Storable
 
--- Functional computation
+-- StorableContext
 
 data StorableContext = forall a. (Show a, Storable a) => StorableContext a
 
 instance Show StorableContext where
         show (StorableContext c) = show c
 
--- Computation (phantom type)
+
+data Argument = Empty | Predicate Int | Arg StorableContext
+                    deriving Show
+
+-- Functional descriptor
+
+data FunType = MonadicFun | HighOrderFun | PredicateFun | CombinatorFun
+                deriving (Show, Enum)
+
+
+data FunDescr = FunDescr
+                {
+                    functionalType  :: FunType,
+                    functionalSymb  :: String,
+                    functionalArg   :: Argument,
+                    functionalLeft  :: Int,
+                    functionalRight :: Int
+                }
+                deriving (Show)
+
+
+relinkFunDescr :: Int -> Int -> FunDescr -> FunDescr
+relinkFunDescr n1 n2 (FunDescr t name arg l r) = FunDescr t name arg (if l == n1 then n2 else l) (if r == n1 then n2 else r)
+
+
+-- Serialize class
+
+class Serialize a where
+    serialize :: Int -> a -> ([FunDescr], Int)
+
+
+-- Predicates and combinators
+
+newtype Combinator = Combinator String
+
+instance Show Combinator where
+        show (Combinator "or")  = "|"
+        show (Combinator "and") = "&"
+        show (Combinator "xor") = "^"
+        show (Combinator _)     = undefined
+
+instance Serialize Combinator where
+        serialize n (Combinator name) = ([FunDescr { functionalType  = CombinatorFun,
+                                                     functionalSymb  = name,
+                                                     functionalArg   = Empty,
+                                                     functionalLeft  = -1,
+                                                     functionalRight = -1 }], n+1)
+
+data Predicate where
+        Pred  :: String -> Predicate
+        Pred1 :: forall a. (Show a, Storable a) => String -> a -> Predicate
+        Comb  :: Combinator -> Predicate -> Predicate -> Predicate
+
+
+instance Show Predicate where
+        show (Pred name)        = name
+        show (Pred1 name a1)    = "(" ++ name ++ " " ++ show a1 ++ ")"
+        show (Comb comb p1 p2)  = "(" ++ show p1 ++ " " ++ show comb ++ " " ++ show p2 ++ ")"
+
+instance Serialize Predicate where
+        serialize n (Pred name)   = ([FunDescr { functionalType  = PredicateFun,
+                                                 functionalSymb  = name,
+                                                 functionalArg   = Empty,
+                                                 functionalLeft  = -1,
+                                                 functionalRight = -1 }], n+1)
+
+        serialize n (Pred1 name x) = ([FunDescr { functionalType  = PredicateFun,
+                                                  functionalSymb  = name,
+                                                  functionalArg   = Arg $ StorableContext x,
+                                                  functionalLeft  = -1,
+                                                  functionalRight = -1 }], n+1)
+
+        serialize n (Comb comb p1 p2) = let ([g'], n')   = serialize n comb
+                                            (f'',  n'')  = serialize n' p1
+                                            (f''', n''') = serialize n'' p2
+                                        in ( [g'{ functionalLeft = n', functionalRight = n''}] ++ f'' ++ f''', n''')
+
+-- Computation
 
 data Computation f where
         Fun  :: String -> Computation f
-        FunWith :: forall a f. (Show a, Storable a) => String -> a -> Computation f
+        Fun1 :: forall a f. (Show a, Storable a) => String -> a -> Computation f
+        HFun  :: String -> Predicate -> Computation f
+        HFun1 :: String -> Predicate -> Computation f -> Computation f
+        HFun2 :: String -> Predicate -> Computation f -> Computation f -> Computation f
         Comp :: Computation f -> Computation f -> Computation f
 
+
 instance Show (Computation f) where
-    show (Fun name)  = name
-    show (FunWith name ctx) = name ++ " (" ++ show ctx ++ ")"
-    show (Comp c1 c2) = show c1 ++ " >-> " ++ show c2
+        show (Fun name) = name
+        show (Fun1 name a) = "(" ++ name ++ " " ++ show a ++ ")"
+        show (HFun  name pred) = "(" ++ name ++ " " ++ show pred ++ ")"
+        show (HFun1 name pred a) = "(" ++ name ++ " " ++ show pred ++ " (" ++ show a ++ "))"
+        show (HFun2 name pred a1 a2)  = "(" ++ name ++ " " ++ show pred ++ " (" ++ show a1 ++ ") (" ++ show a2 ++ "))"
+        show (Comp c1 c2) = show c1 ++ " >-> " ++ show c2
 
--- QFun: signature of the in-kernel monadic functions.
 
-type QFun       = forall ctx. (Show ctx, Storable ctx) => ctx -> SkBuff -> Action SkBuff
-type QMetaFun   = (String, Maybe StorableContext)
+
+instance Serialize (Computation f) where
+        serialize n (Fun name) = ([FunDescr { functionalType  = MonadicFun,
+                                              functionalSymb  = name,
+                                              functionalArg   = Empty,
+                                              functionalLeft  = n+1,
+                                              functionalRight = n+1 }], n+1)
+
+        serialize n (Fun1 name x) = ([FunDescr { functionalType  = MonadicFun,
+                                                 functionalSymb  = name,
+                                                 functionalArg   = Arg $ StorableContext x,
+                                                 functionalLeft  = n+1,
+                                                 functionalRight = n+1 }], n+1)
+
+        serialize n (HFun name p) = let (s', n') = ([FunDescr { functionalType  = HighOrderFun,
+                                                                functionalSymb  = name,
+                                                                functionalArg   = Predicate n',
+                                                                functionalLeft  = n'',
+                                                                functionalRight = n'' }], n+1)
+                                        (p', n'') = serialize n' p
+                                    in (s' ++ p', n'')
+
+        serialize n (HFun1 name p c) = let (f', n') = (FunDescr { functionalType  = HighOrderFun,
+                                                                  functionalSymb  = name,
+                                                                  functionalArg   = Predicate n',
+                                                                  functionalLeft  = -1,
+                                                                  functionalRight = -1 }, n+1)
+                                           (p', n'') = serialize n' p
+                                           (c', n''') = serialize n'' c
+                                        in ( [f'{ functionalLeft = n''', functionalRight = n''}] ++ p' ++ c', n''')
+
+        serialize n (HFun2 name p c1 c2) = let (f', n') = (FunDescr { functionalType  = HighOrderFun,
+                                                                      functionalSymb  = name,
+                                                                      functionalArg   = Predicate n',
+                                                                      functionalLeft  = -1,
+                                                                      functionalRight = -1 }, n+1)
+                                               (p',  n'') = serialize n' p
+                                               (c1', n''') = serialize n'' c1
+                                               (c2', n'''') = serialize n''' c2
+                                            in ( [f'{ functionalLeft = n''', functionalRight = n''}] ++ p' ++ (map (relinkFunDescr n''' n'''') c1') ++ c2', n'''')
+
+        serialize n (Comp c1 c2) = let (s1, n') = serialize n c1
+                                       (s2, n'') = serialize n' c2
+                                   in (s1 ++ s2, n'')
+
+
+-- Fun: signature of the in-kernel monadic functions.
 
 type Action     = Identity
 newtype SkBuff  = SkBuff ()
 
+type Fun = forall a. (Show a, Storable a) => a -> SkBuff -> Action SkBuff
+
+type QMetaFun = (String, Maybe StorableContext)
+
 -- operator: >->
 
-(>->) :: Computation QFun -> Computation QFun -> Computation QFun
-(Fun  n)     >-> (Fun n')     = Comp (Fun n)      (Fun n')
-(FunWith n x)   >-> (Fun n')     = Comp (FunWith n x)   (Fun n')
-(FunWith n x)   >-> (FunWith n' x') = Comp (FunWith n x)   (FunWith n' x')
-(Fun  n)     >-> (FunWith n' x') = Comp (Fun n)      (FunWith n' x')
-(Comp c1 c2) >-> (Fun n)      = Comp (Comp c1 c2) (Fun n)
-(Comp c1 c2) >-> (FunWith n c)   = Comp (Comp c1 c2) (FunWith n c)
-
-(Fun  n)     >-> (Comp c1 c2) = Comp (Fun n) (Comp c1 c2)
-(FunWith n x)   >-> (Comp c1 c2) = Comp (FunWith n x) (Comp c1 c2)
-(Comp c1 c2) >-> (Comp c3 c4) = Comp (Comp c1 c2) (Comp c3 c4)
+(>->) :: Computation Fun -> Computation Fun -> Computation Fun
+f1 >-> f2 = Comp f1 f2
 
 
--- eval: convert a computation of QFun to a list of QMetaFun.
-
-eval :: Computation QFun -> [QMetaFun]
-eval (Fun n)      = [(n, Nothing)]
-eval (FunWith n x)   = [(n, Just (StorableContext x))]
-eval (Comp c1 c2) = eval c1 ++ eval c2
-
-
--- qfun, qfunWith: Computation QFun constructors
-
-qfun :: String -> Computation QFun
+qfun :: String -> Computation Fun
 qfun = Fun
 
-qfunWith :: (Show a, Storable a) => String -> a -> Computation QFun
-qfunWith name = FunWith name
+qfun1 :: (Show a, Storable a) => String -> a -> Computation Fun
+qfun1 = Fun1
+
+
+hfun :: String -> Predicate -> Computation Fun
+hfun = HFun
+
+hfun1 :: String -> Predicate -> Computation Fun -> Computation Fun
+hfun1 = HFun1
+
+hfun2 :: String -> Predicate -> Computation Fun -> Computation Fun -> Computation Fun
+hfun2 = HFun2
+
+
+-- Predefined predicates:
+
+is_ip  = Pred "is_ip"
+is_udp = Pred "is_udp"
+is_tcp = Pred "is_tcp"
+
+-- Predefined combinators:
+
+(.|.), (.&.), (.^.) :: Predicate -> Predicate -> Predicate
+
+p1 .|. p2 = Comb (Combinator "or" ) p1 p2
+p1 .&. p2 = Comb (Combinator "and") p1 p2
+p1 .^. p2 = Comb (Combinator "xor") p1 p2
+
 
 -- Predefined in-kernel computations:
 --
@@ -160,8 +328,14 @@ broadcast   = qfun "broadcast"
 sink        = qfun "sink"
 drop'       = qfun "drop"
 
-ident       = qfun  "id"
-dummy       = qfunWith "dummy"    :: Int -> Computation QFun
-counter     = qfunWith "counter"  :: Int -> Computation QFun
-class'      = qfunWith "class"    :: Int -> Computation QFun
+id'         = qfun  "id"
+
+dummy       = qfun1 "dummy"    :: Int -> Computation Fun
+counter     = qfun1 "counter"  :: Int -> Computation Fun
+class'      = qfun1 "class"    :: Int -> Computation Fun
+
+hdummy      = hfun "hdummy"       :: Predicate -> Computation Fun
+when'       = hfun1 "when"        :: Predicate -> Computation Fun -> Computation Fun
+unless'     = hfun1 "unless"      :: Predicate -> Computation Fun -> Computation Fun
+conditional = hfun2 "conditional" :: Predicate -> Computation Fun -> Computation Fun -> Computation Fun
 
