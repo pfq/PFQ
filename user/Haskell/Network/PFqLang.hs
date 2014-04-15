@@ -41,6 +41,7 @@ module Network.PFqLang
         StorableContext(..),
         Predicate(),
         Computation(),
+        Serializable,
 
         Fun,
         FunDescr,
@@ -123,7 +124,6 @@ data Argument = Empty | Predicate Int | Arg StorableContext
 data FunType = MonadicFun | HighOrderFun | PredicateFun | CombinatorFun
                 deriving (Show, Enum)
 
-
 data FunDescr = FunDescr
                 {
                     functionalType  :: FunType,
@@ -136,12 +136,13 @@ data FunDescr = FunDescr
 
 
 relinkFunDescr :: Int -> Int -> FunDescr -> FunDescr
-relinkFunDescr n1 n2 (FunDescr t name arg l r) = FunDescr t name arg (if l == n1 then n2 else l) (if r == n1 then n2 else r)
+relinkFunDescr n1 n2 (FunDescr t name arg l r) =
+        FunDescr t name arg (update n1 n2 l) (update n1 n2 r)
+            where update n1 n2 x = if x == n1 then n2 else x
 
+-- Serializable class
 
--- Serialize class
-
-class Serialize a where
+class Serializable a where
     serialize :: Int -> a -> ([FunDescr], Int)
 
 
@@ -155,7 +156,7 @@ instance Show Combinator where
         show (Combinator "xor") = "^"
         show (Combinator _)     = undefined
 
-instance Serialize Combinator where
+instance Serializable Combinator where
         serialize n (Combinator name) = ([FunDescr { functionalType  = CombinatorFun,
                                                      functionalSymb  = name,
                                                      functionalArg   = Empty,
@@ -173,7 +174,7 @@ instance Show Predicate where
         show (Pred1 name a1)    = "(" ++ name ++ " " ++ show a1 ++ ")"
         show (Comb comb p1 p2)  = "(" ++ show p1 ++ " " ++ show comb ++ " " ++ show p2 ++ ")"
 
-instance Serialize Predicate where
+instance Serializable Predicate where
         serialize n (Pred name)   = ([FunDescr { functionalType  = PredicateFun,
                                                  functionalSymb  = name,
                                                  functionalArg   = Empty,
@@ -212,7 +213,7 @@ instance Show (Computation f) where
 
 
 
-instance Serialize (Computation f) where
+instance Serializable (Computation f) where
         serialize n (Fun name) = ([FunDescr { functionalType  = MonadicFun,
                                               functionalSymb  = name,
                                               functionalArg   = Empty,
@@ -255,7 +256,6 @@ instance Serialize (Computation f) where
         serialize n (Comp c1 c2) = let (s1, n') = serialize n c1
                                        (s2, n'') = serialize n' c2
                                    in (s1 ++ s2, n'')
-
 
 -- Fun: signature of the in-kernel monadic functions.
 

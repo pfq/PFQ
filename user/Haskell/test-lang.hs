@@ -20,7 +20,11 @@
 import Network.PFqLang
 import Control.Monad
 
-dump (xs,_) =  forM_ (zip [0..] xs) $ \(n, x) -> putStrLn $ show n ++ ": " ++ show x
+-- printLang (debug):
+
+prettyPrint :: Serializable a => a -> IO ()
+prettyPrint comp = let (xs,_) = serialize 0 comp
+                 in forM_ (zip [0..] xs) $ \(n, x) -> putStrLn $ "    " ++ show n ++ ": " ++ show x
 
 main = do
         let mycond = is_ip .&. (is_tcp .|. is_udp)
@@ -32,15 +36,8 @@ main = do
                                         (counter 1 >-> drop')
                         ) >-> when' is_tcp (counter 2)  >-> dummy 11
 
+        putStrLn "computation:"
         print comp
-
-        -- let test = serialize 0 ( ((is_ip .|. is_udp) .&. (is_ip .|. is_tcp)) .|. mycond)
-        --
-        let test = serialize 0 comp
-
-        dump test
-
-
-
-
+        putStrLn "serialized AST:"
+        prettyPrint comp
 
