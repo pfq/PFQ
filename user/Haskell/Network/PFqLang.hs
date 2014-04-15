@@ -42,9 +42,8 @@ module Network.PFqLang
         Predicate(..),
         Computation(..),
         Serializable(..),
-        Fun,
+        InKernelFun,
         FunDescr,
-        serialize,
         (>->),
 
     ) where
@@ -140,12 +139,12 @@ instance Serializable Predicate where
 -- Computation
 
 data Computation f where
-        Fun  :: String -> Computation f
-        Fun1 :: forall a f. (Show a, Storable a) => String -> a -> Computation f
+        Fun   :: String -> Computation f
+        Fun1  :: forall a f. (Show a, Storable a) => String -> a -> Computation f
         HFun  :: String -> Predicate -> Computation f
         HFun1 :: String -> Predicate -> Computation f -> Computation f
         HFun2 :: String -> Predicate -> Computation f -> Computation f -> Computation f
-        Comp :: Computation f -> Computation f -> Computation f
+        Comp  :: forall f1 f2 f. Computation f1 -> Computation f2 -> Computation f
 
 
 instance Show (Computation f) where
@@ -155,7 +154,6 @@ instance Show (Computation f) where
         show (HFun1 name pred a) = "(" ++ name ++ " " ++ show pred ++ " (" ++ show a ++ "))"
         show (HFun2 name pred a1 a2)  = "(" ++ name ++ " " ++ show pred ++ " (" ++ show a1 ++ ") (" ++ show a2 ++ "))"
         show (Comp c1 c2) = show c1 ++ " >-> " ++ show c2
-
 
 
 instance Serializable (Computation f) where
@@ -203,15 +201,15 @@ instance Serializable (Computation f) where
                                    in (s1 ++ s2, n'')
 
 
--- Fun: signature of the in-kernel monadic functions.
+-- InKernelFun: signature of basic in-kernel monadic function.
 
-type Action     = Identity
-newtype SkBuff  = SkBuff ()
-
-type Fun = forall a. (Show a, Storable a) => a -> SkBuff -> Action SkBuff
+type Action      = Identity
+newtype SkBuff   = SkBuff ()
+type InKernelFun = SkBuff -> Action SkBuff
 
 -- operator: >->
 
-(>->) :: Computation Fun -> Computation Fun -> Computation Fun
+(>->) :: Computation (a -> m b) -> Computation (b -> m c) -> Computation (a -> m c)
 f1 >-> f2 = Comp f1 f2
+
 

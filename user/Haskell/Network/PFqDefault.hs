@@ -128,12 +128,12 @@ drop'       = Fun "drop"
 
 id'         = Fun  "id"
 
-dummy       = Fun1 "dummy"    :: Int -> Computation Fun
-counter     = Fun1 "counter"  :: Int -> Computation Fun
-class'      = Fun1 "class"    :: Int -> Computation Fun
+dummy       = Fun1 "dummy"    :: Int -> Computation InKernelFun
+counter     = Fun1 "counter"  :: Int -> Computation InKernelFun
+class'      = Fun1 "class"    :: Int -> Computation InKernelFun
 
-hdummy      = HFun "hdummy"       :: Predicate -> Computation Fun
-when'       = HFun1 "when"        :: Predicate -> Computation Fun -> Computation Fun
-unless'     = HFun1 "unless"      :: Predicate -> Computation Fun -> Computation Fun
-conditional = HFun2 "conditional" :: Predicate -> Computation Fun -> Computation Fun -> Computation Fun
+hdummy      = HFun "hdummy"       :: Predicate -> Computation InKernelFun
+when'       = HFun1 "when"        :: Predicate -> Computation InKernelFun -> Computation InKernelFun
+unless'     = HFun1 "unless"      :: Predicate -> Computation InKernelFun -> Computation InKernelFun
+conditional = HFun2 "conditional" :: Predicate -> Computation InKernelFun -> Computation InKernelFun -> Computation InKernelFun
 
