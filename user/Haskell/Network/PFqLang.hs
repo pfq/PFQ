@@ -33,80 +33,26 @@
 {-# LANGUAGE Rank2Types #-}
 {-# LANGUAGE GADTs #-}
 
-
 {-# OPTIONS_GHC -fno-warn-unused-binds #-}
 
 module Network.PFqLang
     (
         StorableContext(..),
-        Predicate(),
-        Computation(),
-        Serializable,
-
+        Combinator(..),
+        Predicate(..),
+        Computation(..),
+        Serializable(..),
         Fun,
         FunDescr,
         serialize,
-
         (>->),
-
-        qfun,
-        qfun1,
-        hfun,
-        hfun1,
-        hfun2,
-
-        -- combinators
-
-        (.|.),
-        (.&.),
-        (.^.),
-
-        -- predicates
-
-        is_ip,
-        is_udp,
-        is_tcp,
-
-        -- monadic functions
-
-        steer_mac  ,
-        steer_vlan ,
-        steer_ip   ,
-        steer_ipv6 ,
-        steer_flow ,
-        steer_rtp  ,
-
-        ip         ,
-        ipv6       ,
-        udp        ,
-        tcp        ,
-        vlan       ,
-        icmp       ,
-        flow       ,
-        rtp        ,
-
-        legacy     ,
-        broadcast  ,
-        sink       ,
-        drop'      ,
-
-        id'        ,
-        dummy      ,
-        counter    ,
-        class'     ,
-
-        -- high order functions
-
-        hdummy,
-        conditional,
-        when',
-        unless',
 
     ) where
 
 
 import Control.Monad.Identity
 import Foreign.Storable
+
 
 -- StorableContext
 
@@ -144,7 +90,6 @@ relinkFunDescr n1 n2 (FunDescr t name arg l r) =
 
 class Serializable a where
     serialize :: Int -> a -> ([FunDescr], Int)
-
 
 -- Predicates and combinators
 
@@ -257,6 +202,7 @@ instance Serializable (Computation f) where
                                        (s2, n'') = serialize n' c2
                                    in (s1 ++ s2, n'')
 
+
 -- Fun: signature of the in-kernel monadic functions.
 
 type Action     = Identity
@@ -264,78 +210,8 @@ newtype SkBuff  = SkBuff ()
 
 type Fun = forall a. (Show a, Storable a) => a -> SkBuff -> Action SkBuff
 
-type QMetaFun = (String, Maybe StorableContext)
-
 -- operator: >->
 
 (>->) :: Computation Fun -> Computation Fun -> Computation Fun
 f1 >-> f2 = Comp f1 f2
-
-
-qfun :: String -> Computation Fun
-qfun = Fun
-
-qfun1 :: (Show a, Storable a) => String -> a -> Computation Fun
-qfun1 = Fun1
-
-
-hfun :: String -> Predicate -> Computation Fun
-hfun = HFun
-
-hfun1 :: String -> Predicate -> Computation Fun -> Computation Fun
-hfun1 = HFun1
-
-hfun2 :: String -> Predicate -> Computation Fun -> Computation Fun -> Computation Fun
-hfun2 = HFun2
-
-
--- Predefined predicates:
-
-is_ip  = Pred "is_ip"
-is_udp = Pred "is_udp"
-is_tcp = Pred "is_tcp"
-
--- Predefined combinators:
-
-(.|.), (.&.), (.^.) :: Predicate -> Predicate -> Predicate
-
-p1 .|. p2 = Comb (Combinator "or" ) p1 p2
-p1 .&. p2 = Comb (Combinator "and") p1 p2
-p1 .^. p2 = Comb (Combinator "xor") p1 p2
-
-
--- Predefined in-kernel computations:
---
-
-steer_mac   = qfun "steer-mac"
-steer_vlan  = qfun "steer-vlan-id"
-steer_ip    = qfun "steer-ip"
-steer_ipv6  = qfun "steer-ipv6"
-steer_flow  = qfun "steer-flow"
-steer_rtp   = qfun "steer-rtp"
-
-ip          = qfun "ip"
-ipv6        = qfun "ipv6"
-udp         = qfun "udp"
-tcp         = qfun "tcp"
-vlan        = qfun "vlan"
-icmp        = qfun "icmp"
-flow        = qfun "flow"
-rtp         = qfun "rtp"
-
-legacy      = qfun "legacy"
-broadcast   = qfun "broadcast"
-sink        = qfun "sink"
-drop'       = qfun "drop"
-
-id'         = qfun  "id"
-
-dummy       = qfun1 "dummy"    :: Int -> Computation Fun
-counter     = qfun1 "counter"  :: Int -> Computation Fun
-class'      = qfun1 "class"    :: Int -> Computation Fun
-
-hdummy      = hfun "hdummy"       :: Predicate -> Computation Fun
-when'       = hfun1 "when"        :: Predicate -> Computation Fun -> Computation Fun
-unless'     = hfun1 "unless"      :: Predicate -> Computation Fun -> Computation Fun
-conditional = hfun2 "conditional" :: Predicate -> Computation Fun -> Computation Fun -> Computation Fun
 

@@ -17,7 +17,9 @@
 --  The full GNU General Public License is included in this distribution in
 --  the file called "COPYING".
 
+import Network.PFqDefault
 import Network.PFqLang
+
 import Control.Monad
 
 -- printLang (debug):
