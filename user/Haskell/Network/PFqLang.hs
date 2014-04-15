@@ -61,7 +61,7 @@ instance Show StorableContext where
         show (StorableContext c) = show c
 
 
-data Argument = Empty | Predicate Int | Arg StorableContext
+data Argument = Empty | Arg StorableContext | PredicateArg Int
                     deriving Show
 
 -- Functional descriptor
@@ -171,7 +171,7 @@ instance Serializable (Computation f) where
 
         serialize n (HFun name p) = let (s', n') = ([FunDescr { functionalType  = HighOrderFun,
                                                                 functionalSymb  = name,
-                                                                functionalArg   = Predicate n',
+                                                                functionalArg   = PredicateArg n',
                                                                 functionalLeft  = n'',
                                                                 functionalRight = n'' }], n+1)
                                         (p', n'') = serialize n' p
@@ -179,7 +179,7 @@ instance Serializable (Computation f) where
 
         serialize n (HFun1 name p c) = let (f', n') = (FunDescr { functionalType  = HighOrderFun,
                                                                   functionalSymb  = name,
-                                                                  functionalArg   = Predicate n',
+                                                                  functionalArg   = PredicateArg n',
                                                                   functionalLeft  = -1,
                                                                   functionalRight = -1 }, n+1)
                                            (p', n'') = serialize n' p
@@ -188,7 +188,7 @@ instance Serializable (Computation f) where
 
         serialize n (HFun2 name p c1 c2) = let (f', n') = (FunDescr { functionalType  = HighOrderFun,
                                                                       functionalSymb  = name,
-                                                                      functionalArg   = Predicate n',
+                                                                      functionalArg   = PredicateArg n',
                                                                       functionalLeft  = -1,
                                                                       functionalRight = -1 }, n+1)
                                                (p',  n'') = serialize n' p
