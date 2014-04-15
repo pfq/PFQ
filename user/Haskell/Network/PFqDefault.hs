@@ -42,6 +42,7 @@ module Network.PFqDefault
         is_ip,
         is_udp,
         is_tcp,
+        is_icmp,
 
         -- monadic functions
 
@@ -97,10 +98,10 @@ p1 .^. p2 = Comb (Combinator "xor") p1 p2
 -- Default predicates:
 --
 
-is_ip  = Pred "is_ip"
-is_udp = Pred "is_udp"
-is_tcp = Pred "is_tcp"
-
+is_ip   = Pred "is_ip"
+is_udp  = Pred "is_udp"
+is_tcp  = Pred "is_tcp"
+is_icmp = Pred "is_icmp"
 
 -- Predefined in-kernel computations:
 --
