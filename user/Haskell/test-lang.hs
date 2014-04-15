@@ -22,7 +22,7 @@ import Network.PFqLang
 
 import Control.Monad
 
--- printLang (debug):
+-- prettyPrint (debug):
 
 prettyPrint :: Serializable a => a -> IO ()
 prettyPrint comp = let (xs,_) = serialize 0 comp
