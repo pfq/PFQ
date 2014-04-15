@@ -38,12 +38,14 @@
 module Network.PFqLang
     (
         StorableContext(..),
+        Argument(..),
         Combinator(..),
         Predicate(..),
         Computation(..),
         Serializable(..),
+        FunDescr(..),
+        FunType(..),
         InKernelFun,
-        FunDescr,
         (>->),
 
     ) where
