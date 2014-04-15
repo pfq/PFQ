@@ -24,6 +24,9 @@
 module Main where
 
 import Network.PFq as Q
+import Network.PFqDefault
+import Network.PFqLang
+
 import Foreign
 import System.Environment
 import Numeric
@@ -33,7 +36,6 @@ import Foreign.C.Types
 
 import Control.Applicative
 
-import Network.PFqLang
 
 -- import Debug.Trace
 
@@ -84,7 +86,8 @@ dumper dev = do
         gid <- Q.getGroupId q
         Q.bindGroup q gid dev (-1)
         Q.enable q
-        Q.groupComputation q gid (ip >-> steer_ip)
+
+        Q.groupComputation q gid (ip >-> conditional is_icmp steer_ip drop')
 
         -- Q.vlanFiltersEnabled q gid True
         -- Q.vlanSetFilterId q gid (0)   -- untagged

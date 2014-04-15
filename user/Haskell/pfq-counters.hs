@@ -156,7 +156,7 @@ runThreads op ms =
                          Q.setPromisc q dev True
                          Q.bindGroup q (groupId binding) dev queue
                          when (isJust sf) $ do
-                             let fs = map qfun (fromJust sf)
+                             let fs = map Fun (fromJust sf)
                              putStrLn ("[pfq] Gid " ++ show (groupId binding) ++ " is using computation: " ++ intercalate " >-> " (fromJust sf))
                              Q.groupComputation q (groupId binding) (foldl1 (>->) fs)
                      Q.enable q
