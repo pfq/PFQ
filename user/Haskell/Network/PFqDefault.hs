@@ -83,7 +83,7 @@ module Network.PFqDefault
 
 
 import Network.PFqLang
-
+import Foreign.C.Types
 
 -- Default combinators:
 --
@@ -129,9 +129,9 @@ drop'       = Fun "drop"
 
 id'         = Fun  "id"
 
-dummy       = Fun1 "dummy"    :: Int -> Computation InKernelFun
-counter     = Fun1 "counter"  :: Int -> Computation InKernelFun
-class'      = Fun1 "class"    :: Int -> Computation InKernelFun
+dummy       = Fun1 "dummy"    :: CInt -> Computation InKernelFun
+counter     = Fun1 "counter"  :: CInt -> Computation InKernelFun
+class'      = Fun1 "class"    :: CInt -> Computation InKernelFun
 
 hdummy      = HFun "hdummy"       :: Predicate -> Computation InKernelFun
 when'       = HFun1 "when"        :: Predicate -> Computation InKernelFun -> Computation InKernelFun
