@@ -341,7 +341,7 @@ sparse_counter_t * get_counter(struct sk_buff *skb, int n)
 /* utility function: state */
 
 static inline
-unsigned long get_state(struct sk_buff *skb)
+unsigned long get_state(struct sk_buff const *skb)
 {
         return PFQ_CB(skb)->state;
 }
