@@ -87,7 +87,7 @@ dumper dev = do
         Q.bindGroup q gid dev (-1)
         Q.enable q
 
-        Q.groupComputation q gid (ip >-> conditional is_icmp steer_ip drop')
+        Q.groupComputation q gid (ip >-> counter 0 >-> conditional is_icmp (counter 1 >-> steer_ip) drop')
 
         -- Q.vlanFiltersEnabled q gid True
         -- Q.vlanSetFilterId q gid (0)   -- untagged
