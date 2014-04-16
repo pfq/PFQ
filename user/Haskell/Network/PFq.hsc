@@ -767,7 +767,7 @@ instance Storable StorableFunDescr where
 
 groupComputation :: Ptr PFqTag
                  -> Int                        -- group id
-                 -> Computation InKernelFun    -- computation from (PFqLang)
+                 -> Computation QFunction      -- computation from (PFqLang)
                  -> IO ()
 
 groupComputation hdl gid comp = do

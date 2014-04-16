@@ -98,43 +98,42 @@ p1 .^. p2 = Comb (Combinator "xor") p1 p2
 -- Default predicates:
 --
 
-is_ip   = Pred "is_ip"
-is_udp  = Pred "is_udp"
-is_tcp  = Pred "is_tcp"
-is_icmp = Pred "is_icmp"
+is_ip   = Pred "is_ip"              :: Predicate
+is_udp  = Pred "is_udp"             :: Predicate
+is_tcp  = Pred "is_tcp"             :: Predicate
+is_icmp = Pred "is_icmp"            :: Predicate
 
 -- Predefined in-kernel computations:
 --
 
-steer_mac   = Fun "steer-mac"
-steer_vlan  = Fun "steer-vlan-id"
-steer_ip    = Fun "steer-ip"
-steer_ipv6  = Fun "steer-ipv6"
-steer_flow  = Fun "steer-flow"
-steer_rtp   = Fun "steer-rtp"
+steer_mac   = Fun "steer-mac"       :: Computation QFunction
+steer_vlan  = Fun "steer-vlan-id"   :: Computation QFunction
+steer_ip    = Fun "steer-ip"        :: Computation QFunction
+steer_ipv6  = Fun "steer-ipv6"      :: Computation QFunction
+steer_flow  = Fun "steer-flow"      :: Computation QFunction
+steer_rtp   = Fun "steer-rtp"       :: Computation QFunction
 
-ip          = Fun "ip"
-ipv6        = Fun "ipv6"
-udp         = Fun "udp"
-tcp         = Fun "tcp"
-vlan        = Fun "vlan"
-icmp        = Fun "icmp"
-flow        = Fun "flow"
-rtp         = Fun "rtp"
+ip          = Fun "ip"              :: Computation QFunction
+ipv6        = Fun "ipv6"            :: Computation QFunction
+udp         = Fun "udp"             :: Computation QFunction
+tcp         = Fun "tcp"             :: Computation QFunction
+vlan        = Fun "vlan"            :: Computation QFunction
+icmp        = Fun "icmp"            :: Computation QFunction
+flow        = Fun "flow"            :: Computation QFunction
+rtp         = Fun "rtp"             :: Computation QFunction
 
-legacy      = Fun "legacy"
-broadcast   = Fun "broadcast"
-sink        = Fun "sink"
-drop'       = Fun "drop"
+legacy      = Fun "legacy"          :: Computation QFunction
+broadcast   = Fun "broadcast"       :: Computation QFunction
+sink        = Fun "sink"            :: Computation QFunction
+drop'       = Fun "drop"            :: Computation QFunction
+id'         = Fun  "id"             :: Computation QFunction
 
-id'         = Fun  "id"
+dummy       = Fun1 "dummy"          :: CInt -> Computation QFunction
+counter     = Fun1 "counter"        :: CInt -> Computation QFunction
+class'      = Fun1 "class"          :: CInt -> Computation QFunction
 
-dummy       = Fun1 "dummy"    :: CInt -> Computation InKernelFun
-counter     = Fun1 "counter"  :: CInt -> Computation InKernelFun
-class'      = Fun1 "class"    :: CInt -> Computation InKernelFun
-
-hdummy      = HFun "hdummy"       :: Predicate -> Computation InKernelFun
-when'       = HFun1 "when"        :: Predicate -> Computation InKernelFun -> Computation InKernelFun
-unless'     = HFun1 "unless"      :: Predicate -> Computation InKernelFun -> Computation InKernelFun
-conditional = HFun2 "conditional" :: Predicate -> Computation InKernelFun -> Computation InKernelFun -> Computation InKernelFun
+hdummy      = HFun "hdummy"         :: Predicate -> Computation QFunction
+when'       = HFun1 "when"          :: Predicate -> Computation QFunction -> Computation QFunction
+unless'     = HFun1 "unless"        :: Predicate -> Computation QFunction -> Computation QFunction
+conditional = HFun2 "conditional"   :: Predicate -> Computation QFunction -> Computation QFunction -> Computation QFunction
 

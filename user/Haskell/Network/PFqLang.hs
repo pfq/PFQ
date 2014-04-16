@@ -45,7 +45,7 @@ module Network.PFqLang
         Serializable(..),
         FunDescr(..),
         FunType(..),
-        InKernelFun,
+        QFunction,
         (>->),
 
     ) where
@@ -205,9 +205,9 @@ instance Serializable (Computation f) where
 
 -- InKernelFun: signature of basic in-kernel monadic function.
 
-type Action      = Identity
 newtype SkBuff   = SkBuff ()
-type InKernelFun = SkBuff -> Action SkBuff
+type Action      = Identity
+type QFunction   = SkBuff -> Action SkBuff
 
 -- operator: >->
 
