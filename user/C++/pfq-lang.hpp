@@ -183,11 +183,11 @@ namespace pfq_lang
 
     namespace
     {
-        PFQ_MAKE_FUN(steer_mac    , "steer-mac"    )
-        PFQ_MAKE_FUN(steer_vlan   , "steer-vlan-id")
-        PFQ_MAKE_FUN(steer_ip     , "steer-ip"     )
-        PFQ_MAKE_FUN(steer_ipv6   , "steer-ipv6"   )
-        PFQ_MAKE_FUN(steer_flow   , "steer-flow"   )
+        PFQ_MAKE_FUN(steer_mac    , "steer_mac"    )
+        PFQ_MAKE_FUN(steer_vlan   , "steer_vlan"   )
+        PFQ_MAKE_FUN(steer_ip     , "steer_ip"     )
+        PFQ_MAKE_FUN(steer_ipv6   , "steer_ipv6"   )
+        PFQ_MAKE_FUN(steer_flow   , "steer_flow"   )
 
         PFQ_MAKE_FUN(legacy       , "legacy"       )
         PFQ_MAKE_FUN(broadcast    , "broadcast"    )
@@ -205,7 +205,7 @@ namespace pfq_lang
         PFQ_MAKE_FUN(flow         , "flow"         )
 
         PFQ_MAKE_FUN(rtp          , "rtp"          )
-        PFQ_MAKE_FUN(steer_rtp    , "steer-rtp"    )
+        PFQ_MAKE_FUN(steer_rtp    , "steer_rtp"    )
 
         PFQ_MAKE_FUN1(dummy       , "dummy",   int      )
         PFQ_MAKE_FUN1(counter     , "counter", int      )

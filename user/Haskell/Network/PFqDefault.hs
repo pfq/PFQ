@@ -106,12 +106,12 @@ is_icmp = Pred "is_icmp"            :: Predicate
 -- Predefined in-kernel computations:
 --
 
-steer_mac   = Fun "steer-mac"       :: Computation QFunction
-steer_vlan  = Fun "steer-vlan-id"   :: Computation QFunction
-steer_ip    = Fun "steer-ip"        :: Computation QFunction
-steer_ipv6  = Fun "steer-ipv6"      :: Computation QFunction
-steer_flow  = Fun "steer-flow"      :: Computation QFunction
-steer_rtp   = Fun "steer-rtp"       :: Computation QFunction
+steer_mac   = Fun "steer_mac"       :: Computation QFunction
+steer_vlan  = Fun "steer_vid"       :: Computation QFunction
+steer_ip    = Fun "steer_ip"        :: Computation QFunction
+steer_ipv6  = Fun "steer_ipv6"      :: Computation QFunction
+steer_flow  = Fun "steer_flow"      :: Computation QFunction
+steer_rtp   = Fun "steer_rtp"       :: Computation QFunction
 
 ip          = Fun "ip"              :: Computation QFunction
 ipv6        = Fun "ipv6"            :: Computation QFunction

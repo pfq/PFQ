@@ -76,7 +76,7 @@ options = cmdArgsMode $
         caplen   = 64,
         offset   = 0,
         slots    = 131072,
-        function = [] &= typ "FUNCTION"  &= help "Where FUNCTION = function-name[>-> fun >-> fun][.gid] (ie: steer-ipv4)",
+        function = [] &= typ "FUNCTION"  &= help "Where FUNCTION = function-name[>-> fun >-> fun][.gid] (ie: steer_ip)",
         thread   = [] &= typ "BINDING" &= help "Where BINDING = eth0:...:ethx[.core[.gid[.queue.queue...]]]"
     } &= summary "PFq multi-threaded packet counter." &= program "pfq-counters"
 
