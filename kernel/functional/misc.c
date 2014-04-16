@@ -68,6 +68,14 @@ counter(argument_t a, struct sk_buff *skb)
 
 
 static struct sk_buff *
+mark(argument_t a, struct sk_buff *skb)
+{
+	const unsigned long *value = argument_as(unsigned long, a);
+	set_state(skb, *value);
+	return skb;
+}
+
+static struct sk_buff *
 conditional(argument_t a, struct sk_buff *skb)
 {
         expression_t * expr = expression(a);
@@ -87,8 +95,9 @@ unless(argument_t a, struct sk_buff *skb)
 
 struct pfq_function_descr misc_functions[] = {
 
-        { "dummy",              dummy           },
         { "counter",            counter         },
+	{ "mark", 		mark 		},
+        { "dummy",              dummy           },
         { "conditional",        conditional     },
         { "unless",             unless          },
 
