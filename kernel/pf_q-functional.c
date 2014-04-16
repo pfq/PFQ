@@ -35,30 +35,41 @@
 
 
 static void *
-context_get(void **ctxptr, size_t size)
+pod_memory_get(void **ptr, size_t size)
 {
-        size_t *s = *(size_t **)ctxptr;
+        size_t *s;
 
-        *ctxptr = (char *)(s+1) + ALIGN(size, 8);
+       	if (size == 0)
+       		return NULL;
 
-        if (*s != size || size == 0)
+        s = *(size_t **)ptr;
+
+        if (*s != size) {
+                pr_devel("[PFQ] pod_user: memory slot is %zu!\n", *s);
                 return NULL;
+	}
+
+        *ptr = (char *)(s+1) + ALIGN(size, 8);
 
         return s+1;
 }
 
 
 static void *
-pod_user(void **ctxptr, void const __user *arg, size_t size)
+pod_user(void **ptr, void const __user *arg, size_t size)
 {
         void *ret;
 
-        if (arg == NULL)
+        if (arg == NULL || size == 0) {
+                pr_devel("[PFQ] pod_user: __user ptr/size error!\n");
                 return NULL;
+	}
 
-        ret = context_get(ctxptr, size);
-        if (ret == NULL)
+        ret = pod_memory_get(ptr, size);
+        if (ret == NULL) {
+                pr_devel("[PFQ] pod_user: could not get memory (%zu)!\n", size);
                 return NULL;
+	}
 
         if (copy_from_user(ret, arg, size)) {
                 pr_devel("[PFQ] pod_user error!\n");
@@ -217,7 +228,8 @@ pfq_context_alloc(struct pfq_computation_descr const *descr)
 
         for(; n < descr->size; n++)
         {
-                size += sizeof(size_t) + ALIGN(descr->fun[n].arg_size, 8);
+        	if (descr->fun[n].arg_ptr && descr->fun[n].arg_size)
+                	size += sizeof(size_t) + ALIGN(descr->fun[n].arg_size, 8);
         }
 
         r = kmalloc(size, GFP_KERNEL);
@@ -230,8 +242,10 @@ pfq_context_alloc(struct pfq_computation_descr const *descr)
 
         for(n = 0; n < descr->size; n++)
         {
-                *s = descr->fun[n].arg_size;
-                s = (size_t *)((char *)(s+1) + ALIGN(descr->fun[n].arg_size, 8));
+        	if (descr->fun[n].arg_ptr && descr->fun[n].arg_size) {
+                	*s = descr->fun[n].arg_size;
+                	s = (size_t *)((char *)(s+1) + ALIGN(descr->fun[n].arg_size, 8));
+		}
         }
 
         return r;
