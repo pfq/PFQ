@@ -43,6 +43,7 @@ module Network.PFq.Default
         is_udp,
         is_tcp,
         is_icmp,
+        has_mark,
 
         -- monadic functions
 
@@ -103,6 +104,8 @@ is_ip   = Pred "is_ip"              :: Predicate
 is_udp  = Pred "is_udp"             :: Predicate
 is_tcp  = Pred "is_tcp"             :: Predicate
 is_icmp = Pred "is_icmp"            :: Predicate
+
+has_mark = Pred1 "has_mark"         :: CULong -> Predicate
 
 -- Predefined in-kernel computations:
 --
