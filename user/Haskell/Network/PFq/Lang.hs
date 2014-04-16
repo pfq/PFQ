@@ -35,7 +35,7 @@
 
 {-# OPTIONS_GHC -fno-warn-unused-binds #-}
 
-module Network.PFqLang
+module Network.PFq.Lang
     (
         StorableContext(..),
         Argument(..),

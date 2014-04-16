@@ -29,7 +29,7 @@
 
 {-# LANGUAGE ImpredicativeTypes #-}
 
-module Network.PFqDefault
+module Network.PFq.Default
     (
         -- combinators
 
@@ -67,9 +67,10 @@ module Network.PFqDefault
         sink       ,
         drop'      ,
 
+        counter    ,
+        mark       ,
         id'        ,
         dummy      ,
-        counter    ,
         class'     ,
 
         -- high order functions
@@ -82,7 +83,7 @@ module Network.PFqDefault
     ) where
 
 
-import Network.PFqLang
+import Network.PFq.Lang
 import Foreign.C.Types
 
 -- Default combinators:
@@ -128,8 +129,9 @@ sink        = Fun "sink"            :: Computation QFunction
 drop'       = Fun "drop"            :: Computation QFunction
 id'         = Fun  "id"             :: Computation QFunction
 
-dummy       = Fun1 "dummy"          :: CInt -> Computation QFunction
 counter     = Fun1 "counter"        :: CInt -> Computation QFunction
+mark        = Fun1 "mark"           :: CULong -> Computation QFunction
+dummy       = Fun1 "dummy"          :: CInt -> Computation QFunction
 class'      = Fun1 "class"          :: CInt -> Computation QFunction
 
 hdummy      = HFun "hdummy"         :: Predicate -> Computation QFunction

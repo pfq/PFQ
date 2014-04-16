@@ -23,8 +23,8 @@ import Network.PFq as Q
 import Foreign
 import System.Environment
 
-import Network.PFqLang
-import Network.PFqDefault
+import Network.PFq.Lang
+import Network.PFq.Default
 
 handler :: Q.Callback
 handler h _ = print h

@@ -24,8 +24,8 @@
 module Main where
 
 import Network.PFq as Q
-import Network.PFqDefault
-import Network.PFqLang
+import Network.PFq.Lang
+import Network.PFq.Default
 
 import Foreign
 import System.Environment

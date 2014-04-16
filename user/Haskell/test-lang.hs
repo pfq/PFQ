@@ -17,8 +17,8 @@
 --  The full GNU General Public License is included in this distribution in
 --  the file called "COPYING".
 
-import Network.PFqDefault
-import Network.PFqLang
+import Network.PFq.Default
+import Network.PFq.Lang
 
 import Control.Monad
 

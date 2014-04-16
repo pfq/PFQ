@@ -134,7 +134,7 @@ import Foreign.Storable
 import Foreign.Concurrent as C (newForeignPtr)
 import Foreign.ForeignPtr (ForeignPtr)
 
-import Network.PFqLang
+import Network.PFq.Lang
 
 -- Placeholders
 --
