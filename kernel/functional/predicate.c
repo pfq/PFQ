@@ -69,6 +69,12 @@ __has_vlan(argument_t a, struct sk_buff const *skb)
         return  has_vlan(skb);
 }
 
+static bool
+__has_mark(argument_t a, struct sk_buff const *skb)
+{
+	const unsigned long *value = argument_as(unsigned long, a);
+	return get_state(skb) == *value;
+}
 
 struct pfq_predicate_fun_descr predicate_functions[] = {
 
@@ -79,6 +85,7 @@ struct pfq_predicate_fun_descr predicate_functions[] = {
         { "is_icmp",    __is_icmp       },
         { "has_flow",   __has_flow      },
         { "has_vlan",   __has_vlan      },
+        { "has_mark",   __has_mark      },
 
         { NULL, NULL}};
 
