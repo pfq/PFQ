@@ -92,33 +92,37 @@ void pr_devel_functional_descr(struct pfq_functional_descr const *descr, int ind
         switch (descr->type)
         {
         case pfq_monadic_fun:
-                pr_devel("fun  %d | %s :: asize:%zu left:%d right:%d\n"
+                pr_devel("%d  fun: %s aptr:%p asize:%zu left:%d right:%d\n"
                                 , index
                                 , name
+                                , descr->arg_ptr
                                 , descr->arg_size
                                 , descr->l_index
                                 , descr->r_index);
                 break;
         case pfq_high_order_fun:
-                pr_devel("hfun %d | %s :: asize:%zu left:%d right:%d\n"
+                pr_devel("%d hfun: %s aptr:%p asize:%zu left:%d right:%d\n"
                                 , index
                                 , name
+                                , descr->arg_ptr
                                 , descr->arg_size
                                 , descr->l_index
                                 , descr->r_index);
                 break;
         case pfq_predicate_fun:
-                pr_devel("pred %d | %s :: asize:%zu left:%d right:%d\n"
+                pr_devel("%d pred: %s pred aptr:%p asize:%zu left:%d right:%d\n"
                                 , index
                                 , name
+                                , descr->arg_ptr
                                 , descr->arg_size
                                 , descr->l_index
                                 , descr->r_index);
                 break;
         case pfq_combinator_fun:
-                pr_devel("comb %d | %s :: asize:%zu left:%d right:%d\n"
+                pr_devel("%d comb: %s comb aptr:%p asize:%zu left:%d right:%d\n"
                                 , index
                                 , name
+                                , descr->arg_ptr
                                 , descr->arg_size
                                 , descr->l_index
                                 , descr->r_index);
@@ -132,7 +136,7 @@ void pr_devel_functional_descr(struct pfq_functional_descr const *descr, int ind
 void pr_devel_computation_descr(struct pfq_computation_descr const *descr)
 {
         int n;
-        pr_devel("computation size:%zu entry_point:%zu\n", descr->size, descr->entry_point);
+        pr_devel("[PFQ] computation size:%zu entry_point:%zu\n", descr->size, descr->entry_point);
         for(n = 0; n < descr->size; n++)
         {
                 pr_devel_functional_descr(&descr->fun[n], n);
