@@ -92,9 +92,9 @@ import Foreign.C.Types
 
 (.|.), (.&.), (.^.) :: Predicate -> Predicate -> Predicate
 
-p1 .|. p2 = Comb (Combinator "or" ) p1 p2
-p1 .&. p2 = Comb (Combinator "and") p1 p2
-p1 .^. p2 = Comb (Combinator "xor") p1 p2
+p1 .|. p2 = Pred2 (Combinator "or" ) p1 p2
+p1 .&. p2 = Pred2 (Combinator "and") p1 p2
+p1 .^. p2 = Pred2 (Combinator "xor") p1 p2
 
 
 -- Default predicates:

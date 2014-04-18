@@ -112,13 +112,13 @@ instance Serializable Combinator where
 data Predicate where
         Pred  :: String -> Predicate
         Pred1 :: forall a. (Show a, Storable a) => String -> a -> Predicate
-        Comb  :: Combinator -> Predicate -> Predicate -> Predicate
+        Pred2 :: Combinator -> Predicate -> Predicate -> Predicate
 
 
 instance Show Predicate where
         show (Pred name)        = name
         show (Pred1 name a1)    = "(" ++ name ++ " " ++ show a1 ++ ")"
-        show (Comb comb p1 p2)  = "(" ++ show p1 ++ " " ++ show comb ++ " " ++ show p2 ++ ")"
+        show (Pred2 comb p1 p2) = "(" ++ show p1 ++ " " ++ show comb ++ " " ++ show p2 ++ ")"
 
 instance Serializable Predicate where
         serialize n (Pred name)   = ([FunDescr { functionalType  = PredicateFun,
@@ -133,10 +133,10 @@ instance Serializable Predicate where
                                                   functionalLeft  = -1,
                                                   functionalRight = -1 }], n+1)
 
-        serialize n (Comb comb p1 p2) = let ([g'], n')   = serialize n comb
-                                            (f'',  n'')  = serialize n' p1
-                                            (f''', n''') = serialize n'' p2
-                                        in ( [g'{ functionalLeft = n', functionalRight = n''}] ++ f'' ++ f''', n''')
+        serialize n (Pred2 comb p1 p2) = let ([g'], n')   = serialize n comb
+                                             (f'',  n'')  = serialize n' p1
+                                             (f''', n''') = serialize n'' p2
+                                         in ( [g'{ functionalLeft = n', functionalRight = n''}] ++ f'' ++ f''', n''')
 
 -- Computation
 
