@@ -111,7 +111,7 @@ has_mark = Pred1 "has_mark"         :: CULong -> Predicate
 --
 
 steer_mac   = Fun "steer_mac"       :: Computation QFunction
-steer_vlan  = Fun "steer_vid"       :: Computation QFunction
+steer_vlan  = Fun "steer_vlan"      :: Computation QFunction
 steer_ip    = Fun "steer_ip"        :: Computation QFunction
 steer_ipv6  = Fun "steer_ipv6"      :: Computation QFunction
 steer_flow  = Fun "steer_flow"      :: Computation QFunction

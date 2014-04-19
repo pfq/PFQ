@@ -100,7 +100,7 @@ namespace pfq_lang
         // default computations:
 
         auto steer_mac  = computation("steer_mac");
-        auto steer_vlan = computation("steer_vid");
+        auto steer_vlan = computation("steer_vlan");
         auto steer_ip   = computation("steer_ip");
         auto steer_ip6  = computation("steer_ip6");
         auto steer_flow = computation("steer_flow");
