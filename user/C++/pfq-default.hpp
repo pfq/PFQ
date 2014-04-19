@@ -96,6 +96,8 @@ namespace pfq_lang
         auto is_tcp     = predicate ("is_tcp");
         auto is_icmp    = predicate ("is_icmp");
         auto is_flow    = predicate ("is_flow");
+        auto has_vlan   = predicate ("has_vlan");
+
         auto has_mark   = [] (unsigned long value) { return predicate1("has_mark", value); };
 
         // default computations:
