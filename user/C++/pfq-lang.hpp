@@ -335,6 +335,50 @@ namespace pfq_lang
                 is_same_template<Tp, Comp>::value>
         { };
 
+        ///// show computations:
+
+        static inline std::string
+        show(Fun const &descr)
+        {
+            return descr.name_;
+        }
+
+        static inline std::string
+        show(Fun1 const &descr)
+        {
+            std::ostringstream out;
+            out << '(' << descr.name_ << ' ' << descr.ptr_.get() << ':' << std::to_string(descr.size_) << ')';
+            return out.str();
+        }
+
+        template <typename P>
+        static inline std::string
+        show(HFun<P> const &descr)
+        {
+            return '(' + descr.name_ + ' ' + show(descr.pred_) + ')';
+        }
+
+        template <typename P, typename C>
+        static inline std::string
+        show(HFun1<P,C> const &descr)
+        {
+            return '(' + descr.name_ + ' ' + show(descr.pred_) + ' ' + show(descr.comp_) + ')';
+        }
+
+        template <typename P, typename C1, typename C2>
+        static inline std::string
+        show(HFun2<P,C1,C2> const &descr)
+        {
+            return '(' + descr.name_ + ' ' + show(descr.pred_) + ' ' + show(descr.comp1_) + ' ' + show(descr.comp2_) + ')';
+        }
+
+        template <typename C1, typename C2>
+        static inline std::string
+        show(Comp<C1,C2> const &descr)
+        {
+            return show(descr.comp1_) + " >-> " + show(descr.comp2_);
+        }
+
     } // namespace term
 
 
