@@ -104,6 +104,7 @@ is_ip   = Pred "is_ip"              :: Predicate
 is_udp  = Pred "is_udp"             :: Predicate
 is_tcp  = Pred "is_tcp"             :: Predicate
 is_icmp = Pred "is_icmp"            :: Predicate
+is_flow = Pred "is_flow"            :: Predicate
 
 has_mark = Pred1 "has_mark"         :: CULong -> Predicate
 

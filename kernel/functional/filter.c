@@ -74,7 +74,7 @@ filter_icmp(argument_t a, struct sk_buff *skb)
 static struct sk_buff *
 filter_flow(argument_t a, struct sk_buff *skb)
 {
-        return has_flow(skb) ? skb : drop(skb);
+        return is_flow(skb) ? skb : drop(skb);
 }
 
 

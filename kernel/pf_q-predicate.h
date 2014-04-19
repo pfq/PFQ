@@ -127,7 +127,7 @@ is_icmp(struct sk_buff const *skb)
 }
 
 static inline bool
-has_flow(struct sk_buff const *skb)
+is_flow(struct sk_buff const *skb)
 {
 	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP))
 	{
