@@ -24,9 +24,12 @@
 #pragma once
 
 #include <pfq-lang.hpp>
+#include <functional>
 
 namespace pfq_lang
 {
+    using namespace std::placeholders;
+
     // default combinators:
 
     template <typename P1, typename P2>
@@ -50,54 +53,36 @@ namespace pfq_lang
         return predicate2(combinator("xor"), p1, p2);
     }
 
-    // polymorphic lambdaassssss.... waiting for C++14! In the meanwhile...
+    // polymorphic lambda are available starting from C++14! In the meanwhile...
     //
 
-    struct hpred
+    struct hcomp
     {
-        hpred(std::string name)
-        : name_(std::move(name))
-        {}
-
-        std::string name_;
-
         template <typename P>
-        auto operator()(P const &p)
-        -> decltype(hcomputation(name_, p))
+        auto operator()(std::string name, P const &p)
+        -> decltype(hcomputation(std::move(name), p))
         {
-            return hcomputation(name_, p);
+            return hcomputation(std::move(name), p);
         }
     };
 
-    struct hpred1
+    struct hcomp1
     {
-        hpred1(std::string name)
-        : name_(std::move(name))
-        {}
-
-        std::string name_;
-
         template <typename P, typename C>
-        auto operator()(P const &p, C const &c)
-        -> decltype(hcomputation1(name_, p, c))
+        auto operator()(std::string name, P const &p, C const &c)
+        -> decltype(hcomputation1(std::move(name), p, c))
         {
-            return hcomputation1(name_, p, c);
+            return hcomputation1(std::move(name), p, c);
         }
     };
 
-    struct hpred2
+    struct hcomp2
     {
-        hpred2(std::string name)
-        : name_(std::move(name))
-        {}
-
-        std::string name_;
-
         template <typename P, typename C1, typename C2>
-        auto operator()(P const &p, C1 const &c1, C2 const &c2)
-        -> decltype(hcomputation2(name_, p, c1, c2))
+        auto operator()(std::string name, P const &p, C1 const &c1, C2 const &c2)
+        -> decltype(hcomputation2(std::move(name), p, c1, c2))
         {
-            return hcomputation2(name_, p, c1, c2);
+            return hcomputation2(std::move(name), p, c1, c2);
         }
     };
 
@@ -105,12 +90,12 @@ namespace pfq_lang
     {
         // default predicates:
 
-        auto is_ip    = predicate ("is_ip");
-        auto is_ip6   = predicate ("is_ip6");
-        auto is_udp   = predicate ("is_udp");
-        auto is_tcp   = predicate ("is_tcp");
-        auto is_icmp  = predicate ("is_icmp");
-        auto has_mark = [] (unsigned long value) { return predicate1("has_mark", value); };
+        auto is_ip      = predicate ("is_ip");
+        auto is_ip6     = predicate ("is_ip6");
+        auto is_udp     = predicate ("is_udp");
+        auto is_tcp     = predicate ("is_tcp");
+        auto is_icmp    = predicate ("is_icmp");
+        auto has_mark   = [] (unsigned long value) { return predicate1("has_mark", value); };
 
         // default computations:
 
@@ -123,14 +108,14 @@ namespace pfq_lang
 
         // others:
 
-        auto ip   = computation("ip");
-        auto ip6  = computation("ip6");
-        auto udp  = computation("udp");
-        auto tcp  = computation("tcp");
-        auto vlan = computation("vlan");
-        auto icmp = computation("icmp");
-        auto flow = computation("flow");
-        auto rtp  = computation("rtp");
+        auto ip         = computation("ip");
+        auto ip6        = computation("ip6");
+        auto udp        = computation("udp");
+        auto tcp        = computation("tcp");
+        auto vlan       = computation("vlan");
+        auto icmp       = computation("icmp");
+        auto flow       = computation("flow");
+        auto rtp        = computation("rtp");
 
         auto broadcast  = computation("broadcast");
         auto legacy     = computation("legacy");
@@ -143,9 +128,10 @@ namespace pfq_lang
         auto counter    = [] (int value) { return computation1("counter", value); };
         auto class_     = [] (int value) { return computation1("class", value); };
 
-        auto hdummy      = hpred("hdummy");
-        auto when        = hpred1("when");
-        auto unless      = hpred1("unless");
-        auto conditional = hpred2("conditional");
+        auto hdummy      = std::bind(hcomp(),  "hdummy", _1);
+        auto when        = std::bind(hcomp1(), "when", _1, _2);
+        auto unless      = std::bind(hcomp1(), "unless", _1, _2);
+        auto conditional = std::bind(hcomp2(), "conditional", _1, _2, _3);
+
     }
 }
