@@ -43,7 +43,7 @@
 
 #include <pfq-util.hpp>
 #include <pfq-queue.hpp>
-
+#include <pfq-lang.hpp>
 
 namespace net {
 
@@ -668,8 +668,28 @@ namespace net {
         void
         set_group_computation(int gid, Comp const &comp)
         {
-            auto prg = eval(comp);
-            set_group_program(gid, prg.get());
+            auto ser = serialize(0, comp).first;
+
+            std::unique_ptr<pfq_computation_descr> prg (
+                reinterpret_cast<pfq_computation_descr *>(malloc(sizeof(size_t) * 2 + sizeof(pfq_functional_descr) * ser.size())));
+
+            prg->size = ser.size();
+            prg->entry_point = 0;
+
+            int n = 0;
+            for(auto & descr : ser)
+            {
+                prg->fun[n].type     = descr.type;
+                prg->fun[n].symbol   = descr.symbol.c_str();
+                prg->fun[n].arg_ptr  = descr.arg_ptr.get();
+                prg->fun[n].arg_size = descr.arg_size;
+                prg->fun[n].l_index  = descr.left;
+                prg->fun[n].r_index  = descr.right;
+
+                n++;
+            }
+
+            set_group_computation(gid, prg.get());
         }
 
         //
