@@ -55,7 +55,7 @@ is_ip(struct sk_buff const *skb)
 }
 
 static inline bool
-is_ipv6(struct sk_buff const *skb)
+is_ip6(struct sk_buff const *skb)
 {
 	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IPV6))
                 return skb_header_available(skb, skb->mac_len, sizeof(struct ipv6hdr));

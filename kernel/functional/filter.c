@@ -44,9 +44,9 @@ filter_ip(argument_t a, struct sk_buff *skb)
 
 
 static struct sk_buff *
-filter_ipv6(argument_t a, struct sk_buff *skb)
+filter_ip6(argument_t a, struct sk_buff *skb)
 {
-        return is_ipv6(skb) ? skb : drop(skb);
+        return is_ip6(skb) ? skb : drop(skb);
 }
 
 
@@ -87,14 +87,14 @@ filter_vlan(argument_t a, struct sk_buff *skb)
 
 struct pfq_monadic_fun_descr filter_functions[] = {
 
-        { "id",                 id                      },
-        { "ip",                 filter_ip               },
-        { "ipv6",               filter_ipv6             },
-        { "udp",                filter_udp              },
-        { "tcp",                filter_tcp              },
-        { "icmp",               filter_icmp             },
-        { "flow",               filter_flow             },
-        { "vlan",               filter_vlan             },
+        { "id",		id                      },
+        { "ip",         filter_ip               },
+        { "ip6",        filter_ip6              },
+        { "udp",        filter_udp              },
+        { "tcp",        filter_tcp              },
+        { "icmp",       filter_icmp             },
+        { "flow",       filter_flow             },
+        { "vlan",       filter_vlan             },
 
         { NULL, NULL}};
 

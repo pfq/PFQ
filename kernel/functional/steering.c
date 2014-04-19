@@ -99,7 +99,7 @@ steering_flow(argument_t a, struct sk_buff *skb)
 
 
 static struct sk_buff *
-steering_ipv6(argument_t a, struct sk_buff *skb)
+steering_ip6(argument_t a, struct sk_buff *skb)
 {
 	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IPV6))
 	{
@@ -130,7 +130,7 @@ struct pfq_monadic_fun_descr steering_functions[] = {
 	{ "steer_mac",          steering_mac            },
         { "steer_vlan",      	steering_vlan_id        },
         { "steer_ip",           steering_ip             },
-        { "steer_ipv6",         steering_ipv6           },
+        { "steer_ip6",         	steering_ip6            },
         { "steer_flow",         steering_flow           },
 
         { NULL, NULL}};

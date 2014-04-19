@@ -50,12 +50,12 @@ module Network.PFq.Default
         steer_mac  ,
         steer_vlan ,
         steer_ip   ,
-        steer_ipv6 ,
+        steer_ip6  ,
         steer_flow ,
         steer_rtp  ,
 
         ip         ,
-        ipv6       ,
+        ip6        ,
         udp        ,
         tcp        ,
         vlan       ,
@@ -113,12 +113,12 @@ has_mark = Pred1 "has_mark"         :: CULong -> Predicate
 steer_mac   = Fun "steer_mac"       :: Computation QFunction
 steer_vlan  = Fun "steer_vlan"      :: Computation QFunction
 steer_ip    = Fun "steer_ip"        :: Computation QFunction
-steer_ipv6  = Fun "steer_ipv6"      :: Computation QFunction
+steer_ip6   = Fun "steer_ip6"       :: Computation QFunction
 steer_flow  = Fun "steer_flow"      :: Computation QFunction
 steer_rtp   = Fun "steer_rtp"       :: Computation QFunction
 
 ip          = Fun "ip"              :: Computation QFunction
-ipv6        = Fun "ipv6"            :: Computation QFunction
+ip6         = Fun "ip6"             :: Computation QFunction
 udp         = Fun "udp"             :: Computation QFunction
 tcp         = Fun "tcp"             :: Computation QFunction
 vlan        = Fun "vlan"            :: Computation QFunction
