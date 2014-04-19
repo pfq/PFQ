@@ -253,20 +253,17 @@ namespace pfq_lang
         static inline std::pair<std::vector<FunDescr>, int>
         serialize(int n, Pred2<P1,P2> const &p)
         {
-            std::vector<FunDescr> ret, left, right;
+            std::vector<FunDescr> comb, left, right;
             int n1, n2, n3;
 
-            std::tie(ret, n1)   = serialize(n, p.comb_);
+            std::tie(comb, n1)  = serialize(n, p.comb_);
             std::tie(left, n2)  = serialize(n1, p.left_);
             std::tie(right, n3) = serialize(n2, p.left_);
 
-            ret[0].left = n1;
-            ret[0].right = n2;
+            comb.front().left = n1;
+            comb.front().right = n2;
 
-            std::move(left.begin(), left.end(),   std::back_inserter(ret));
-            std::move(right.begin(), right.end(), std::back_inserter(ret));
-
-            return std::make_pair(ret, n3);
+            return std::make_pair(std::move(comb) + std::move(left) + std::move(right), n3);
         }
 
         //
