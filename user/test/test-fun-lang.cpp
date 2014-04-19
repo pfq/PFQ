@@ -5,6 +5,7 @@
 
 #include <pfq.hpp>
 #include <pfq-lang.hpp>
+#include <pfq-default.hpp>
 
 using namespace net;
 using namespace pfq_lang;
@@ -21,7 +22,17 @@ main(int argc, char *argv[])
 
     auto gid = q.group_id();
 
-    q.set_group_computation(gid, icmp() >> counter(0) >> class_(0) >> steer_ip());
+    // ip >-> counter 0
+    // >-> conditional is_icmp
+    //     (counter 1 >-> mark 1 >-> steer_ip >-> when' (has_mark 1) (counter 2))
+    //     drop'
+
+    auto comp = ip >> counter (0) >>
+                    conditional (is_icmp,
+                                 (counter (1) >> mark (1) >> steer_ip >> when (has_mark (1), counter (2))),
+                                  drop);
+
+    q.set_group_computation(gid, comp);
 
     q.enable();
 
