@@ -95,13 +95,15 @@ namespace pfq_lang
                              + std::to_string(descr.right) + " }";
     }
 
-    static inline void
-    relinkFunDescr(int n, int m, FunDescr &descr)
+    template <typename C>
+    inline void
+    relinkFunDescr(int n, int m, C &ds)
     {
-        if (descr.left == n)
-            descr.left = m;
-        if (descr.right == n)
-            descr.right = m;
+        for (auto & d : ds)
+        {
+            d.left  = d.left  == n ? m : d.left;
+            d.right = d.right == n ? m : d.right;
+        }
     }
 
     ///////////////////////////////////////////////////
@@ -125,7 +127,7 @@ namespace pfq_lang
         operator+(std::vector<Tp> v1, std::vector<Tp> &&v2)
         {
             v1.insert(v1.end(), std::make_move_iterator(v2.begin()),
-                      std::make_move_iterator(v2.end()));
+                                std::make_move_iterator(v2.end()));
             return v1;
         }
 
