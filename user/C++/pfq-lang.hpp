@@ -376,8 +376,100 @@ namespace pfq_lang
             return show(descr.comp1_) + " >-> " + show(descr.comp2_);
         }
 
+        ///// serialize computations:
+
+        static inline std::pair<std::vector<FunDescr>, int>
+        serialize(int n, Fun const &f)
+        {
+            return std::make_pair(std::vector<FunDescr>
+            {
+                FunDescr { pfq_monadic_fun, f.name_, std::shared_ptr<void>(), 0, n+1, n+1 }
+            }, n+1);
+        }
+
+        static inline std::pair<std::vector<FunDescr>, int>
+        serialize(int n, Fun1 const &f)
+        {
+            return std::make_pair(std::vector<FunDescr>
+            {
+                FunDescr { pfq_monadic_fun, f.name_, f.ptr_, f.size_, n+1, n+1 }
+            }, n+1);
+        }
+
+        template <typename P>
+        static inline std::pair<std::vector<FunDescr>, int>
+        serialize(int n, HFun<P> const &f)
+        {
+            std::vector<FunDescr> p1, v1;
+            int n1;
+
+            std::tie(p1, n1) = serialize(n+1, f.pred_);
+
+            v1 = std::vector<FunDescr>
+            {
+                FunDescr { pfq_high_order_fun, f.name_, std::shared_ptr<void>(), static_cast<size_t>(n+1), n1, n1 }
+            };
+
+            return std::make_pair(std::move(v1) + std::move(p1), n1);
+        }
+
+
+        template <typename P, typename C>
+        static inline std::pair<std::vector<FunDescr>, int>
+        serialize(int n, HFun1<P, C> const &f)
+        {
+            std::vector<FunDescr> p1, v1, c1;
+            int n1, n2;
+
+            std::tie(p1, n1) = serialize(n+1, f.pred_);
+            std::tie(c1, n2) = serialize(n1,  f.comp_);
+
+            v1 = std::vector<FunDescr>
+            {
+                FunDescr { pfq_high_order_fun, f.name_, std::shared_ptr<void>(), static_cast<size_t>(n+1), n2, n1 }
+            };
+
+            return std::make_pair(std::move(v1) + std::move(p1) + std::move(c1), n2);
+        }
+
+        template <typename P, typename C1, typename C2>
+        static inline std::pair<std::vector<FunDescr>, int>
+        serialize(int n, HFun2<P, C1, C2> const &f)
+        {
+            std::vector<FunDescr> p1, v1, c1, c2;
+            int n1, n2, n3;
+
+            std::tie(p1, n1) = serialize(n+1, f.pred_);
+            std::tie(c1, n2) = serialize(n1,  f.comp1_);
+            std::tie(c2, n3) = serialize(n2,  f.comp2_);
+
+            v1 = std::vector<FunDescr>
+            {
+                FunDescr { pfq_high_order_fun, f.name_, std::shared_ptr<void>(), static_cast<size_t>(n+1), n2, n1 }
+            };
+
+            relinkFunDescr(n2, n3, c1);
+
+            return std::make_pair(std::move(v1) + std::move(p1) + std::move(c1) + std::move(c2), n3);
+        }
+
+        template <typename C1, typename C2>
+        static inline std::pair<std::vector<FunDescr>, int>
+        serialize(int n, Comp<C1, C2> const &f)
+        {
+            std::vector<FunDescr> v1, v2;
+            int n1, n2;
+
+            std::tie(v1, n1) = serialize(n, f.comp1_);
+            std::tie(v2, n2) = serialize(n1, f.comp2_);
+
+            return std::make_pair(std::move(v1) + std::move(v2), n2);
+        }
+
     } // namespace term
 
+
+    ////// public functions:
 
     inline term::Combinator
     combinator(std::string name)
