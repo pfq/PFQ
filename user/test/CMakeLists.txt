@@ -14,8 +14,10 @@ set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O0 -g2 -Wall -Wextra")
 # C++11 tests
 
 add_executable(test-fun-prog test-fun-prog.cpp)
+add_executable(test-lang test-lang.cpp)
+add_executable(test-lang-default test-lang-default.cpp)
+
 # add_executable(test-fun-lang test-fun-lang.cpp)
-# add_executable(test-lang test-lang.cpp)
 
 add_executable(test-dump test-dump.cpp)
 add_executable(test-vlan test-vlan.cpp)
