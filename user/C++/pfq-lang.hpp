@@ -141,20 +141,20 @@ namespace pfq_lang
 
         struct Combinator
         {
-            std::string name;
+            std::string name_;
         };
 
         static inline std::string
         show(Combinator const &comb)
         {
-            if (comb.name == "or")
+            if (comb.name_ == "or")
                 return "|";
-            if (comb.name == "and")
+            if (comb.name_ == "and")
                 return "&";
-            if (comb.name == "xor")
+            if (comb.name_ == "xor")
                 return "^";
 
-            throw std::logic_error("unknown");
+            throw std::logic_error("combinator: internal error");
         }
 
         static inline std::pair<std::vector<FunDescr>, int>
@@ -162,7 +162,7 @@ namespace pfq_lang
         {
             return std::make_pair(std::vector<FunDescr>
             {
-                FunDescr { pfq_combinator_fun, comb.name, std::shared_ptr<void>(), 0, -1, -1 }
+                FunDescr { pfq_combinator_fun, comb.name_, std::shared_ptr<void>(), 0, -1, -1 }
             }, n+1);
         }
 
