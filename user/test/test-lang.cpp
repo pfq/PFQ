@@ -53,7 +53,7 @@ main()
 
      auto c50 = c0 >> c1;
      auto c51 = c1 >> c20 >> c21;
-     auto c52 = c30 >> c31 >> c32;
+     auto c52 = c30 >> c40;
 
      std::cout << show(p0) << std::endl;
      std::cout << show(p1) << std::endl;
@@ -98,6 +98,15 @@ main()
      show_descr (c1);
      std::cout << "---" << std::endl;
      show_descr (c20);
+
+     std::cout << "---" << std::endl;
+     show_descr (c30);
+
+     std::cout << "---" << std::endl;
+     show_descr (c41);
+
+     std::cout << "---" << std::endl;
+     show_descr (c52);
 
      return 0;
 }
