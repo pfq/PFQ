@@ -151,10 +151,14 @@ is_flow(struct sk_buff const *skb)
 static inline bool
 has_vlan(struct sk_buff const *skb)
 {
-        if ((skb->vlan_tci & VLAN_VID_MASK) == 0)
-                return false;
-        else
-                return true;
+	return (skb->vlan_tci & VLAN_VID_MASK);
 }
+
+static inline bool
+has_vid(struct sk_buff const *skb, int vid)
+{
+	return (skb->vlan_tci & VLAN_VID_MASK) == vid;
+}
+
 
 #endif /* _PF_Q_PREDICATE_H */

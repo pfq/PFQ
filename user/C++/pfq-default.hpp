@@ -98,6 +98,7 @@ namespace pfq_lang
         auto is_flow    = predicate ("is_flow");
         auto has_vlan   = predicate ("has_vlan");
 
+        auto has_vid    = [] (int value) { return predicate1 ("has_vid", value); };
         auto has_mark   = [] (unsigned long value) { return predicate1("has_mark", value); };
 
         // default computations:

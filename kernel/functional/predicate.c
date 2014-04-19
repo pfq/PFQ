@@ -70,6 +70,13 @@ __has_vlan(argument_t a, struct sk_buff const *skb)
 }
 
 static bool
+__has_vid(argument_t a, struct sk_buff const *skb)
+{
+	const int *id = argument_as(int, a);
+        return  has_vid(skb, *id);
+}
+
+static bool
 __has_mark(argument_t a, struct sk_buff const *skb)
 {
 	const unsigned long *value = argument_as(unsigned long, a);
@@ -85,6 +92,7 @@ struct pfq_predicate_fun_descr predicate_functions[] = {
         { "is_icmp",    __is_icmp       },
         { "is_flow",    __is_flow 	},
         { "has_vlan",   __has_vlan      },
+        { "has_vid",    __has_vid	},
         { "has_mark",   __has_mark      },
 
         { NULL, NULL}};

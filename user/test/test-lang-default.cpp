@@ -23,7 +23,7 @@ main()
     std::cout << show ( hdummy (is_ip) ) << std::endl;
     std::cout << show ( hdummy (is_ip) ) << std::endl;
 
-    std::cout << show ( when   (is_ip, ip >> steer_ip) ) << std::endl;
+    std::cout << show ( when   (has_vid(1), ip >> steer_ip) ) << std::endl;
     std::cout << show ( unless (is_ip, ip >> steer_ip) ) << std::endl;
     std::cout << show ( conditional (is_ip, steer_ip, drop  ) ) << std::endl;
 

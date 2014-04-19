@@ -108,6 +108,7 @@ is_icmp = Pred "is_icmp"            :: Predicate
 is_flow = Pred "is_flow"            :: Predicate
 has_vlan = Pred "has_vlan"          :: Predicate
 
+has_vid  = Pred1 "has_vid"          :: CInt -> Predicate
 has_mark = Pred1 "has_mark"         :: CULong -> Predicate
 
 -- Predefined in-kernel computations:
