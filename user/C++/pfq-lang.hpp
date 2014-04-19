@@ -413,129 +413,64 @@ namespace pfq_lang
         return term::Pred2<P1,P2>{ c, left, right };
     }
 
+    inline term::Fun
+    computation(std::string name)
+    {
+        return term::Fun{ std::move(name) };
+    }
+
+    template <typename T>
+    inline typename std::enable_if<
+          std::is_pod<T>::value,
+    term::Fun1>::type
+    computation(std::string name, const T &arg)
+    {
+        return term::Fun1{ std::move(name), arg };
+    }
+
+    template <typename P>
+    inline typename std::enable_if<
+          term::is_predicate<P>::value,
+    term::HFun<P>>::type
+    computation(std::string name, P const &p)
+    {
+        return term::HFun<P>{ std::move(name), p };
+    }
+
+    template <typename P, typename C>
+    inline typename std::enable_if<
+          term::is_predicate<P>::value &&
+          term::is_computation<C>::value,
+    term::HFun1<P,C>>::type
+    computation(std::string name, P const &p, C const &c)
+    {
+        return term::HFun1<P,C>{ std::move(name), p, c};
+    }
+
+    template <typename P, typename C1, typename C2>
+    inline typename std::enable_if<
+          term::is_predicate<P>::value &&
+          term::is_computation<C1>::value &&
+          term::is_computation<C2>::value,
+    term::HFun2<P,C1, C2>>::type
+    computation(std::string name, P const &p, C1 const &c1, C2 const &c2)
+    {
+        return term::HFun2<P,C1,C2>{ std::move(name), p, c1, c2};
+    }
+
     //
-    // TODO
+    // Kleisli composition: >->
     //
 
-    // struct QFunction
-    // {
-    //     std::string name;
-    //     std::pair<std::shared_ptr<char>, size_t> arg;
-
-    //     std::vector<QFunction>
-    //     operator()() const
-    //     {
-    //         return std::vector<QFunction> { *this };
-    //     }
-    // };
-
-   //  //
-   //  // Computation
-   //  //
-
-   //  template <typename Comp>
-   //  struct Computation
-   //  {
-   //      Comp left;
-   //      QFunction right;
-
-   //      std::vector<QFunction>
-   //      operator()() const
-   //      {
-   //          auto l = left();
-   //          auto r = right();
-
-   //          l.reserve(l.size() + r.size());
-   //          std::move(std::begin(r), std::end(r), std::back_inserter(l));
-
-   //          return l;
-   //      }
-   //  };
-
-   //  inline std::string
-   //  show(QFunction const &fun)
-   //  {
-   //      std::stringstream out;
-
-   //      out << fun.name;
-   //      if (fun..first)
-   //          out << ' ' << fun..second << "@" << (void *)fun.context.first.get();
-
-   //      return out.str();
-   //  }
-
-   //  template <typename Tp>
-   //  inline std::string
-   //  show(Computation<Tp> const &comp)
-   //  {
-   //      return show(comp.left) + " >-> " + show(comp.right);
-   //  }
-
-   //  //
-   //  // evaluate a computation, creating a pfq_meta_prog.
-   //  //
-
-   //  template <typename Comp>
-   //  inline std::unique_ptr<pfq_meta_prog>
-   //  eval(Comp &comp)
-   //  {
-   //      return eval(comp());
-   //  }
-
-   //  inline std::unique_ptr<pfq_meta_prog>
-   //  eval(std::vector<QFunction> const &vec)
-   //  {
-   //      auto prg = reinterpret_cast<pfq_meta_prog *>(std::malloc(sizeof(pfq_meta_prog) + sizeof(pfq_fun_t) * sizeof(vec)));
-
-   //      prg->size = vec.size();
-
-   //      for(unsigned int i = 0; i < prg->size; ++i)
-   //      {
-   //          prg->fun[i].symbol       = vec[i].name.c_str();
-   //          prg->fun[i]..addr = vec[i].context.first.get();
-   //          prg->fun[i]..size = vec[i].context.second;
-   //      }
-
-   //      return std::unique_ptr<pfq_meta_prog>(prg);
-   //  }
-
-   //  //
-   //  // generic function constructor
-   //  //
-
-   //  inline QFunction
-   //  qfun(std::string n)
-   //  {
-   //      return QFunction { std::move(n), std::make_pair(std::shared_ptr<char>(), 0) };
-   //  }
-
-   //  template <typename Tp>
-   //  inline QFunction
-   //  qfun(std::string n, Tp const &)
-   //  {
-   //      // note: is_trivially_copyable is still unimplemented in g++-4.7
-#if  0
-   //      static_assert(std::is_trivially_copyable<Tp>::value, " must be trivially copyable");
-#else
-   //      static_assert(std::is_pod<Tp>::value, " must be a pod type");
-#endif
-   //      auto ptr  = std::shared_ptr<char>(new char[sizeof(Tp)], [](char *addr) { delete[] addr; });
-   //      auto size = sizeof(Tp);
-
-   //      memcpy(ptr.get(), &, sizeof(Tp));
-   //      return QFunction { std::move(n), std::make_pair(std::move(ptr), size) };
-   //  }
-
-   //  //
-   //  // Kleisli composition: >->
-   //  //
-
-   //  template <typename Fun>
-   //  inline Computation<QFunction>
-   //  operator>>(QFunction lhs, Fun &&rhs)
-   //  {
-   //      return { std::move(lhs), std::forward<Fun>(rhs) };
-   //  }
+    template <typename C1, typename C2>
+    inline typename std::enable_if<
+          term::is_computation<C1>::value &&
+          term::is_computation<C2>::value,
+    term::Comp<C1, C2>>::type
+    operator>>(C1 c1, C2 c2)
+    {
+        return { std::move(c1), std::move(c2) };
+    }
 
    //  template <typename Tp, typename Fun>
    //  inline Computation<Computation<Tp>>
