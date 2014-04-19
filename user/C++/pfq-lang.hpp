@@ -269,6 +269,72 @@ namespace pfq_lang
             return std::make_pair(ret, n3);
         }
 
+        //
+        // Computations:
+        //
+
+        struct Fun
+        {
+            std::string  name_;
+        };
+
+        struct Fun1
+        {
+            template <typename T>
+            Fun1(std::string name, T const &arg)
+            : name_(std::move(name))
+            , ptr_(std::shared_ptr<void>{ new T(arg) })
+            , size_(sizeof(T))
+            {
+            }
+
+            std::string           name_;
+            std::shared_ptr<void> ptr_;
+            size_t                size_;
+        };
+
+        template <typename P>
+        struct HFun
+        {
+            std::string  name_;
+            P           pred_;
+        };
+
+        template <typename P, typename C>
+        struct HFun1
+        {
+            std::string  name_;
+            P           pred_;
+            C           comp_;
+        };
+
+        template <typename P, typename C1, typename C2>
+        struct HFun2
+        {
+            std::string  name_;
+            P           pred_;
+            C1          comp1_;
+            C2          comp2_;
+        };
+
+        template <typename C1, typename C2>
+        struct Comp
+        {
+            C1 comp1_;
+            C2 comp2_;
+        };
+
+        template <typename Tp>
+        struct is_computation :
+            std::integral_constant<bool,
+                std::is_same<Tp, Fun>::value  ||
+                std::is_same<Tp, Fun1>::value ||
+                is_same_template<Tp, HFun>::value ||
+                is_same_template<Tp, HFun1>::value ||
+                is_same_template<Tp, HFun2>::value ||
+                is_same_template<Tp, Comp>::value>
+        { };
+
     } // namespace term
 
 
