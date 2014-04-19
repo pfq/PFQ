@@ -101,6 +101,7 @@ p1 .^. p2 = Pred2 (Combinator "xor") p1 p2
 --
 
 is_ip   = Pred "is_ip"              :: Predicate
+is_ip6  = Pred "is_ip6"             :: Predicate
 is_udp  = Pred "is_udp"             :: Predicate
 is_tcp  = Pred "is_tcp"             :: Predicate
 is_icmp = Pred "is_icmp"            :: Predicate
