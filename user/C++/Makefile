@@ -8,3 +8,4 @@ install:
 		cp pfq-queue.hpp ${INSTDIR}
 		cp pfq-util.hpp ${INSTDIR}
 		cp pfq-lang.hpp ${INSTDIR}
+		cp pfq-default.hpp ${INSTDIR}
