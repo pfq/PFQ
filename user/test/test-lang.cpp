@@ -25,31 +25,31 @@ main()
      auto and_ = combinator("and");
 
      auto p0 = predicate("is_ip");
-     auto p1 = predicate("has_value", 42);
-     auto p2 = predicate(or_, p0, p1);
-     auto p3 = predicate(and_, p2, p2);
+     auto p1 = predicate1("has_value", 42);
+     auto p2 = predicate2(or_, p0, p1);
+     auto p3 = predicate2(and_, p2, p2);
 
      //////// computations:
 
      auto c0  = computation("fun");
-     auto c1  = computation("fun1", 42);
+     auto c1  = computation1("fun1", 42);
 
-     auto c20 = computation("hfun", p0);
-     auto c21 = computation("hfun", p1);
-     auto c22 = computation("hfun", p2);
-     auto c23 = computation("hfun", p3);
+     auto c20 = hcomputation("hfun", p0);
+     auto c21 = hcomputation("hfun", p1);
+     auto c22 = hcomputation("hfun", p2);
+     auto c23 = hcomputation("hfun", p3);
 
-     auto c30 = computation("hfun1", p0, c0);
-     auto c31 = computation("hfun1", p1, c0);
-     auto c32 = computation("hfun1", p0, c1);
-     auto c33 = computation("hfun1", p1, c1);
-     auto c34 = computation("hfun1", p0, c20);
-     auto c35 = computation("hfun1", p1, c21);
+     auto c30 = hcomputation1("hfun1", p0, c0);
+     auto c31 = hcomputation1("hfun1", p1, c0);
+     auto c32 = hcomputation1("hfun1", p0, c1);
+     auto c33 = hcomputation1("hfun1", p1, c1);
+     auto c34 = hcomputation1("hfun1", p0, c20);
+     auto c35 = hcomputation1("hfun1", p1, c21);
 
-     auto c40 = computation("hfun2", p0, c0, c1);
-     auto c41 = computation("hfun2", p1, c0, c1);
-     auto c42 = computation("hfun2", p0, c20, c21);
-     auto c43 = computation("hfun2", p1, c20, c21);
+     auto c40 = hcomputation2("hfun2", p0, c0, c1);
+     auto c41 = hcomputation2("hfun2", p1, c0, c1);
+     auto c42 = hcomputation2("hfun2", p0, c20, c21);
+     auto c43 = hcomputation2("hfun2", p1, c20, c21);
 
      auto c50 = c0 >> c1;
      auto c51 = c1 >> c20 >> c21;

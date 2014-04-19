@@ -1,6 +1,6 @@
 /***************************************************************
  *
- * (C) 2011-13 Nicola Bonelli <nicola.bonelli@cnit.it>
+ * (C) 2014 Nicola Bonelli <nicola.bonelli@cnit.it>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -93,17 +93,6 @@ namespace pfq_lang
                              + std::to_string(descr.arg_size) + ' '
                              + std::to_string(descr.left) + ' '
                              + std::to_string(descr.right) + " }";
-    }
-
-    template <typename C>
-    inline void
-    relinkFunDescr(int n, int m, C &ds)
-    {
-        for (auto & d : ds)
-        {
-            d.left  = d.left  == n ? m : d.left;
-            d.right = d.right == n ? m : d.right;
-        }
     }
 
     ///////////////////////////////////////////////////
@@ -368,7 +357,7 @@ namespace pfq_lang
         static inline std::string
         show(HFun2<P,C1,C2> const &descr)
         {
-            return '(' + descr.name_ + ' ' + show(descr.pred_) + ' ' + show(descr.comp1_) + ' ' + show(descr.comp2_) + ')';
+            return '(' + descr.name_ + ' ' + show(descr.pred_) + " (" + show(descr.comp1_) + ") (" + show(descr.comp2_) + "))";
         }
 
         template <typename C1, typename C2>
@@ -450,7 +439,11 @@ namespace pfq_lang
                 FunDescr { pfq_high_order_fun, f.name_, std::shared_ptr<void>(), static_cast<size_t>(n+1), n2, n1 }
             };
 
-            relinkFunDescr(n2, n3, c1);
+            for(auto & d : c1)
+            {
+                d.left  = d.left  == n2 ? n3 : d.left;
+                d.right = d.right == n2 ? n3 : d.right;
+            }
 
             return std::make_pair(std::move(v1) + std::move(p1) + std::move(c1) + std::move(c2), n3);
         }
@@ -470,7 +463,6 @@ namespace pfq_lang
 
     } // namespace term
 
-
     ////// public functions:
 
     inline term::Combinator
@@ -489,7 +481,7 @@ namespace pfq_lang
     inline typename std::enable_if<
           std::is_pod<T>::value,
     term::Pred1>::type
-    predicate(std::string name, const T &arg)
+    predicate1(std::string name, const T &arg)
     {
         return term::Pred1{ std::move(name), arg };
     }
@@ -499,7 +491,7 @@ namespace pfq_lang
         term::is_predicate<P1>::value &&
         term::is_predicate<P2>::value,
     term::Pred2<P1,P2>>::type
-    predicate(term::Combinator c, P1 const &left, P2 const &right)
+    predicate2(term::Combinator c, P1 const &left, P2 const &right)
     {
         return term::Pred2<P1,P2>{ c, left, right };
     }
@@ -514,7 +506,7 @@ namespace pfq_lang
     inline typename std::enable_if<
           std::is_pod<T>::value,
     term::Fun1>::type
-    computation(std::string name, const T &arg)
+    computation1(std::string name, const T &arg)
     {
         return term::Fun1{ std::move(name), arg };
     }
@@ -523,7 +515,7 @@ namespace pfq_lang
     inline typename std::enable_if<
           term::is_predicate<P>::value,
     term::HFun<P>>::type
-    computation(std::string name, P const &p)
+    hcomputation(std::string name, P const &p)
     {
         return term::HFun<P>{ std::move(name), p };
     }
@@ -533,7 +525,7 @@ namespace pfq_lang
           term::is_predicate<P>::value &&
           term::is_computation<C>::value,
     term::HFun1<P,C>>::type
-    computation(std::string name, P const &p, C const &c)
+    hcomputation1(std::string name, P const &p, C const &c)
     {
         return term::HFun1<P,C>{ std::move(name), p, c};
     }
@@ -544,7 +536,7 @@ namespace pfq_lang
           term::is_computation<C1>::value &&
           term::is_computation<C2>::value,
     term::HFun2<P,C1, C2>>::type
-    computation(std::string name, P const &p, C1 const &c1, C2 const &c2)
+    hcomputation2(std::string name, P const &p, C1 const &c1, C2 const &c2)
     {
         return term::HFun2<P,C1,C2>{ std::move(name), p, c1, c2};
     }
@@ -563,58 +555,5 @@ namespace pfq_lang
         return { std::move(c1), std::move(c2) };
     }
 
-   //  template <typename Tp, typename Fun>
-   //  inline Computation<Computation<Tp>>
-   //  operator>>(Computation<Tp> lhs, Fun &&rhs)
-   //  {
-   //      return { std::move(lhs), std::forward<Fun>(rhs) };
-   //  }
-
-    //
-    // default in-kernel PFQ functions...
-    //
-
-#define PFQ_MAKE_FUN(fn, name) \
-    inline QFunction fn() \
-    { \
-        return qfun(name); \
-    }
-
-#define PFQ_MAKE_FUN1(fn,name, typ) \
-    inline QFunction fn(typ const &) \
-    { \
-        return qfun(name, ); \
-    }
-//
-//     namespace
-//     {
-//         PFQ_MAKE_FUN(steer_mac    , "steer_mac"    )
-//         PFQ_MAKE_FUN(steer_vlan   , "steer_vlan"   )
-//         PFQ_MAKE_FUN(steer_ip     , "steer_ip"     )
-//         PFQ_MAKE_FUN(steer_ipv6   , "steer_ipv6"   )
-//         PFQ_MAKE_FUN(steer_flow   , "steer_flow"   )
-//
-//         PFQ_MAKE_FUN(legacy       , "legacy"       )
-//         PFQ_MAKE_FUN(broadcast    , "broadcast"    )
-//         PFQ_MAKE_FUN(sink         , "sink"         )
-//         PFQ_MAKE_FUN(drop         , "drop"         )
-//
-//         PFQ_MAKE_FUN(id           , "id"           )
-//
-//         PFQ_MAKE_FUN(ip           , "ip"           )
-//         PFQ_MAKE_FUN(ipv6         , "ipv6"         )
-//         PFQ_MAKE_FUN(udp          , "udp"          )
-//         PFQ_MAKE_FUN(tcp          , "tcp"          )
-//         PFQ_MAKE_FUN(vlan         , "vlan"         )
-//         PFQ_MAKE_FUN(icmp         , "icmp"         )
-//         PFQ_MAKE_FUN(flow         , "flow"         )
-//
-//         PFQ_MAKE_FUN(rtp          , "rtp"          )
-//         PFQ_MAKE_FUN(steer_rtp    , "steer_rtp"    )
-//
-//         PFQ_MAKE_FUN1(dummy       , "dummy",   int      )
-//         PFQ_MAKE_FUN1(counter     , "counter", int      )
-//         PFQ_MAKE_FUN1(class_      , "class",   uint16_t )
-//     }
 
 } // namespace pfq_lang
