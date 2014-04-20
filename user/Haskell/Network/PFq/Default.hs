@@ -63,7 +63,7 @@ module Network.PFq.Default
         flow       ,
         rtp        ,
 
-        legacy     ,
+        kernel     ,
         broadcast  ,
         sink       ,
         drop'      ,
@@ -130,7 +130,7 @@ icmp        = Fun "icmp"            :: Computation QFunction
 flow        = Fun "flow"            :: Computation QFunction
 rtp         = Fun "rtp"             :: Computation QFunction
 
-legacy      = Fun "legacy"          :: Computation QFunction
+kernel      = Fun "kernel"          :: Computation QFunction
 broadcast   = Fun "broadcast"       :: Computation QFunction
 sink        = Fun "sink"            :: Computation QFunction
 drop'       = Fun "drop"            :: Computation QFunction

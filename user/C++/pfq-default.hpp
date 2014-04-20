@@ -122,7 +122,7 @@ namespace pfq_lang
         auto rtp        = computation("rtp");
 
         auto broadcast  = computation("broadcast");
-        auto legacy     = computation("legacy");
+        auto kernel     = computation("kernel");
         auto sink       = computation("sink");
         auto drop       = computation("drop");
         auto id         = computation("id");
