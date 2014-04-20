@@ -22,21 +22,29 @@
  ****************************************************************/
 
 #include <pf_q-engine.h>
+#include <pf_q-predicate.h>
+
+/* high order functions */
+
+#define INLINE_mark 		1
+#define INLINE_conditional 	2
+#define INLINE_when 		3
+#define INLINE_unless 		4
 
 
-#define INLINE_MARK 		1
-#define INLINE_COND		2
-#define INLINE_WHEN 		3
-#define INLINE_UNLESS 		4
+
+#define CASE(f, call, skb) \
+	case INLINE_ ## f: 	return f(call->fun.arg, skb)
 
 
 #define APPLY_INLINE(call, skb) \
 	switch((ptrdiff_t)call->fun.eval) \
-	{ \
-	case INLINE_MARK:   return mark(call->fun.arg, skb); \
-	case INLINE_COND:   return conditional(call->fun.arg, skb); \
-	case INLINE_WHEN:   return when(call->fun.arg, skb); \
-	case INLINE_UNLESS: return unless(call->fun.arg,skb); \
+	{ 	\
+		CASE(mark, call, skb);\
+		CASE(conditional, call, skb);\
+		CASE(when, call, skb);\
+		CASE(unless, call, skb);\
+		CASE(id, call, skb);\
 	}
 
 static inline struct sk_buff *

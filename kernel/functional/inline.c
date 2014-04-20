@@ -25,10 +25,10 @@
 
 struct pfq_function_descr inline_functions[] = {
 
-        { "conditional",        (void *)INLINE_COND 	},
-	{ "mark", 		(void *)INLINE_MARK	},
-        { "when",             	(void *)INLINE_WHEN	},
-        { "unless",             (void *)INLINE_UNLESS 	},
+        { "conditional",(void *)INLINE_conditional 	},
+	{ "mark", 	(void *)INLINE_mark 		},
+        { "when",       (void *)INLINE_when 		},
+        { "unless",     (void *)INLINE_unless 		},
 
         { NULL, NULL}};
 
