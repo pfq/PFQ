@@ -29,6 +29,8 @@
 
 #include <asm/uaccess.h>
 
+#include <functional/inline.h>
+
 #include <pf_q-group.h>
 #include <pf_q-functional.h>
 #include <pf_q-symtable.h>
@@ -166,8 +168,18 @@ strdup_user(const char __user *str)
 static inline struct sk_buff *
 pfq_apply(functional_t *call, struct sk_buff *skb)
 {
+	ptrdiff_t infun = (ptrdiff_t)call->fun.eval;
+
         PFQ_CB(skb)->right = true;
-        return call->fun.eval(call->fun.arg,skb);
+
+	APPLY_INLINE(call, skb);
+
+	if ((size_t)infun < 1000) {
+		pr_devel("[PFQ] internal error: inline function %td ???\n", infun);
+		return skb;
+	}
+
+	return call->fun.eval(call->fun.arg, skb);
 }
 
 

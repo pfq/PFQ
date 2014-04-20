@@ -66,48 +66,10 @@ counter(argument_t a, struct sk_buff *skb)
         return skb;
 }
 
-
-static struct sk_buff *
-mark(argument_t a, struct sk_buff *skb)
-{
-	const unsigned long *value = argument_as(unsigned long, a);
-	set_state(skb, *value);
-	return skb;
-}
-
-static struct sk_buff *
-conditional(argument_t a, struct sk_buff *skb)
-{
-        expression_t * expr = expression(a);
-        PFQ_CB(skb)->right = expr->ptr(skb, expr);
-        return skb;
-}
-
-static struct sk_buff *
-when(argument_t a, struct sk_buff *skb)
-{
-        expression_t * expr = expression(a);
-        PFQ_CB(skb)->right = expr->ptr(skb, expr);
-        return skb;
-}
-
-static struct sk_buff *
-unless(argument_t a, struct sk_buff *skb)
-{
-        expression_t * expr = expression(a);
-        PFQ_CB(skb)->right = !expr->ptr(skb, expr);
-        return skb;
-}
-
-
 struct pfq_function_descr misc_functions[] = {
 
         { "counter",            counter         },
-	{ "mark", 		mark 		},
         { "dummy",              dummy           },
-        { "conditional",        conditional     },
-        { "when",             	when 		},
-        { "unless",             unless          },
 
         { NULL, NULL}};
 
