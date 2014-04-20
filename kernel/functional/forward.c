@@ -24,22 +24,7 @@
 #include <linux/kernel.h>
 #include <linux/module.h>
 
-
 #include <linux/pf_q-module.h>
-
-
-static struct sk_buff *
-forward_legacy(argument_t a, struct sk_buff *skb)
-{
-        return to_kernel(drop(skb));
-}
-
-
-static struct sk_buff *
-forward_broadcast(argument_t a, struct sk_buff *skb)
-{
-        return broadcast(skb);
-}
 
 
 static struct sk_buff *
@@ -66,20 +51,11 @@ forward_sink(argument_t a, struct sk_buff *skb)
         return NULL;
 }
 
-static struct sk_buff *
-forward_drop(argument_t a, struct sk_buff *skb)
-{
-        return drop(skb);
-}
-
 
 struct pfq_monadic_fun_descr forward_functions[] = {
 
-        { "legacy",             forward_legacy          },
-        { "broadcast",          forward_broadcast       },
         { "class",              forward_class           },
         { "sink",               forward_sink            },
-        { "drop",               forward_drop            },
 
         { NULL, NULL}};
 

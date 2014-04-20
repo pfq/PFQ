@@ -31,6 +31,22 @@
 #define INLINE_when 		3
 #define INLINE_unless 		4
 
+/* filter functions */
+
+#define INLINE_id 		5
+#define INLINE_filter_ip        6
+#define INLINE_filter_ip6       7
+#define INLINE_filter_udp       8
+#define INLINE_filter_tcp       9
+#define INLINE_filter_icmp      10
+#define INLINE_filter_flow      11
+#define INLINE_filter_vlan      12
+
+/* forward functions */
+
+#define INLINE_forward_drop            13
+#define INLINE_forward_broadcast       14
+#define INLINE_forward_kernel 	       15
 
 
 #define CASE(f, call, skb) \
@@ -45,7 +61,21 @@
 		CASE(when, call, skb);\
 		CASE(unless, call, skb);\
 		CASE(id, call, skb);\
+		\
+		CASE(filter_ip, call, skb);\
+		CASE(filter_ip6, call, skb);\
+		CASE(filter_udp, call, skb);\
+		CASE(filter_tcp, call, skb);\
+		CASE(filter_icmp, call, skb);\
+		CASE(filter_flow, call, skb);\
+		CASE(filter_vlan, call, skb);\
+		\
+		CASE(forward_drop, call, skb);\
+		CASE(forward_broadcast, call, skb);\
+		CASE(forward_kernel, call, skb);\
 	}
+
+/* high order functions */
 
 static inline struct sk_buff *
 mark(argument_t a, struct sk_buff *skb)
@@ -77,5 +107,81 @@ unless(argument_t a, struct sk_buff *skb)
         expression_t * expr = expression(a);
         PFQ_CB(skb)->right = !expr->ptr(skb, expr);
         return skb;
+}
+
+static inline struct sk_buff *
+id(argument_t a, struct sk_buff *skb)
+{
+        return skb;
+}
+
+/* filter functions */
+
+static inline struct sk_buff *
+filter_ip(argument_t a, struct sk_buff *skb)
+{
+        return is_ip(skb) ? skb : drop(skb);
+}
+
+
+static inline struct sk_buff *
+filter_ip6(argument_t a, struct sk_buff *skb)
+{
+        return is_ip6(skb) ? skb : drop(skb);
+}
+
+
+static inline struct sk_buff *
+filter_udp(argument_t a, struct sk_buff *skb)
+{
+        return is_udp(skb) ? skb : drop(skb);
+}
+
+
+static inline struct sk_buff *
+filter_tcp(argument_t a, struct sk_buff *skb)
+{
+        return is_tcp(skb) ? skb : drop(skb);
+}
+
+
+static inline struct sk_buff *
+filter_icmp(argument_t a, struct sk_buff *skb)
+{
+        return is_icmp(skb) ? skb : drop(skb);
+}
+
+
+static inline struct sk_buff *
+filter_flow(argument_t a, struct sk_buff *skb)
+{
+        return is_flow(skb) ? skb : drop(skb);
+}
+
+
+static inline struct sk_buff *
+filter_vlan(argument_t a, struct sk_buff *skb)
+{
+        return has_vlan(skb) ? skb : drop(skb);
+}
+
+/* forward functions */
+
+static inline struct sk_buff *
+forward_drop(argument_t a, struct sk_buff *skb)
+{
+        return drop(skb);
+}
+
+static inline struct sk_buff *
+forward_broadcast(argument_t a, struct sk_buff *skb)
+{
+        return broadcast(skb);
+}
+
+static inline struct sk_buff *
+forward_kernel(argument_t a, struct sk_buff *skb)
+{
+        return to_kernel(drop(skb));
 }
 

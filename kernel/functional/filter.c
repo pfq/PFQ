@@ -29,72 +29,7 @@
 #include <linux/pf_q-module.h>
 
 
-static struct sk_buff *
-id(argument_t a, struct sk_buff *skb)
-{
-        return skb;
-}
-
-
-static struct sk_buff *
-filter_ip(argument_t a, struct sk_buff *skb)
-{
-        return is_ip(skb) ? skb : drop(skb);
-}
-
-
-static struct sk_buff *
-filter_ip6(argument_t a, struct sk_buff *skb)
-{
-        return is_ip6(skb) ? skb : drop(skb);
-}
-
-
-static struct sk_buff *
-filter_udp(argument_t a, struct sk_buff *skb)
-{
-        return is_udp(skb) ? skb : drop(skb);
-}
-
-
-static struct sk_buff *
-filter_tcp(argument_t a, struct sk_buff *skb)
-{
-        return is_tcp(skb) ? skb : drop(skb);
-}
-
-
-static struct sk_buff *
-filter_icmp(argument_t a, struct sk_buff *skb)
-{
-        return is_icmp(skb) ? skb : drop(skb);
-}
-
-
-static struct sk_buff *
-filter_flow(argument_t a, struct sk_buff *skb)
-{
-        return is_flow(skb) ? skb : drop(skb);
-}
-
-
-static struct sk_buff *
-filter_vlan(argument_t a, struct sk_buff *skb)
-{
-        return has_vlan(skb) ? skb : drop(skb);
-}
-
-
 struct pfq_monadic_fun_descr filter_functions[] = {
-
-        { "id",		id                      },
-        { "ip",         filter_ip               },
-        { "ip6",        filter_ip6              },
-        { "udp",        filter_udp              },
-        { "tcp",        filter_tcp              },
-        { "icmp",       filter_icmp             },
-        { "flow",       filter_flow             },
-        { "vlan",       filter_vlan             },
 
         { NULL, NULL}};
 

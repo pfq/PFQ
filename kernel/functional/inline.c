@@ -30,6 +30,19 @@ struct pfq_function_descr inline_functions[] = {
         { "when",       (void *)INLINE_when 		},
         { "unless",     (void *)INLINE_unless 		},
 
+        { "id",		(void *)INLINE_id       	},
+        { "ip",         (void *)INLINE_filter_ip       	},
+        { "ip6",        (void *)INLINE_filter_ip6      	},
+        { "udp",        (void *)INLINE_filter_udp      	},
+        { "tcp",        (void *)INLINE_filter_tcp      	},
+        { "icmp",       (void *)INLINE_filter_icmp     	},
+        { "flow",       (void *)INLINE_filter_flow     	},
+        { "vlan",       (void *)INLINE_filter_vlan     	},
+
+        { "drop",       (void *)INLINE_forward_drop 	   },
+        { "broadcast",  (void *)INLINE_forward_broadcast   },
+        { "kernel",     (void *)INLINE_forward_kernel 	   },
+
         { NULL, NULL}};
 
 
