@@ -47,9 +47,21 @@ __is_udp(argument_t a, struct sk_buff const *skb)
 }
 
 static bool
+__is_udp6(argument_t a, struct sk_buff const *skb)
+{
+        return  is_udp6(skb);
+}
+
+static bool
 __is_tcp(argument_t a, struct sk_buff const *skb)
 {
         return  is_tcp(skb);
+}
+
+static bool
+__is_tcp6(argument_t a, struct sk_buff const *skb)
+{
+        return  is_tcp6(skb);
 }
 
 static bool
@@ -87,10 +99,12 @@ __has_mark(argument_t a, struct sk_buff const *skb)
 struct pfq_predicate_fun_descr predicate_functions[] = {
 
         { "is_ip",      __is_ip         },
-        { "is_ip6",    	__is_ip6       	},
-        { "is_udp",     __is_udp        },
         { "is_tcp",     __is_tcp        },
+        { "is_udp",     __is_udp        },
         { "is_icmp",    __is_icmp       },
+        { "is_ip6",    	__is_ip6       	},
+        { "is_udp6",    __is_udp6       },
+        { "is_tcp6",    __is_tcp6       },
         { "is_flow",    __is_flow 	},
         { "has_vlan",   __has_vlan      },
         { "has_vid",    __has_vid	},

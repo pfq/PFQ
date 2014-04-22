@@ -32,27 +32,29 @@
 
 /* high order functions */
 
-#define INLINE_mark 			1
-#define INLINE_conditional 		2
-#define INLINE_when 			3
-#define INLINE_unless 			4
+#define INLINE_mark 			__COUNTER__
+#define INLINE_conditional 		__COUNTER__
+#define INLINE_when 			__COUNTER__
+#define INLINE_unless 			__COUNTER__
 
 /* filter functions */
 
-#define INLINE_id 			5
-#define INLINE_filter_ip        	6
-#define INLINE_filter_ip6       	7
-#define INLINE_filter_udp       	8
-#define INLINE_filter_tcp       	9
-#define INLINE_filter_icmp      	10
-#define INLINE_filter_flow      	11
-#define INLINE_filter_vlan      	12
+#define INLINE_id 			__COUNTER__
+#define INLINE_filter_ip        	__COUNTER__
+#define INLINE_filter_ip6       	__COUNTER__
+#define INLINE_filter_udp       	__COUNTER__
+#define INLINE_filter_tcp       	__COUNTER__
+#define INLINE_filter_udp6       	__COUNTER__
+#define INLINE_filter_tcp6       	__COUNTER__
+#define INLINE_filter_icmp      	__COUNTER__
+#define INLINE_filter_flow      	__COUNTER__
+#define INLINE_filter_vlan      	__COUNTER__
 
 /* forward functions */
 
-#define INLINE_forward_drop            	13
-#define INLINE_forward_broadcast       	14
-#define INLINE_forward_kernel 	       	15
+#define INLINE_forward_drop            	__COUNTER__
+#define INLINE_forward_broadcast       	__COUNTER__
+#define INLINE_forward_kernel 	       	__COUNTER__
 
 #define CASE_APPLY(f, call, skb) \
 	case INLINE_ ## f: return f(call->fun.arg, skb)
@@ -70,6 +72,8 @@
 		CASE_APPLY(filter_ip6, call, skb);\
 		CASE_APPLY(filter_udp, call, skb);\
 		CASE_APPLY(filter_tcp, call, skb);\
+		CASE_APPLY(filter_udp6, call, skb);\
+		CASE_APPLY(filter_tcp6, call, skb);\
 		CASE_APPLY(filter_icmp, call, skb);\
 		CASE_APPLY(filter_flow, call, skb);\
 		CASE_APPLY(filter_vlan, call, skb);\
@@ -134,13 +138,11 @@ filter_ip(argument_t a, struct sk_buff *skb)
         return is_ip(skb) ? skb : drop(skb);
 }
 
-
 static inline struct sk_buff *
 filter_ip6(argument_t a, struct sk_buff *skb)
 {
         return is_ip6(skb) ? skb : drop(skb);
 }
-
 
 static inline struct sk_buff *
 filter_udp(argument_t a, struct sk_buff *skb)
@@ -148,6 +150,11 @@ filter_udp(argument_t a, struct sk_buff *skb)
         return is_udp(skb) ? skb : drop(skb);
 }
 
+static inline struct sk_buff *
+filter_udp6(argument_t a, struct sk_buff *skb)
+{
+        return is_udp6(skb) ? skb : drop(skb);
+}
 
 static inline struct sk_buff *
 filter_tcp(argument_t a, struct sk_buff *skb)
@@ -155,6 +162,11 @@ filter_tcp(argument_t a, struct sk_buff *skb)
         return is_tcp(skb) ? skb : drop(skb);
 }
 
+static inline struct sk_buff *
+filter_tcp6(argument_t a, struct sk_buff *skb)
+{
+        return is_tcp6(skb) ? skb : drop(skb);
+}
 
 static inline struct sk_buff *
 filter_icmp(argument_t a, struct sk_buff *skb)
@@ -162,19 +174,18 @@ filter_icmp(argument_t a, struct sk_buff *skb)
         return is_icmp(skb) ? skb : drop(skb);
 }
 
-
 static inline struct sk_buff *
 filter_flow(argument_t a, struct sk_buff *skb)
 {
         return is_flow(skb) ? skb : drop(skb);
 }
 
-
 static inline struct sk_buff *
 filter_vlan(argument_t a, struct sk_buff *skb)
 {
         return has_vlan(skb) ? skb : drop(skb);
 }
+
 
 /* forward functions */
 
