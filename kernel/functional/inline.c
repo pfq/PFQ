@@ -25,23 +25,23 @@
 
 struct pfq_function_descr inline_functions[] = {
 
-        { "conditional",(void *)INLINE_conditional 	},
-	{ "mark", 	(void *)INLINE_mark 		},
-        { "when",       (void *)INLINE_when 		},
-        { "unless",     (void *)INLINE_unless 		},
+        { "conditional",	INLINE_FUN_ADDR(conditional) 		},
+	{ "mark", 		INLINE_FUN_ADDR(mark) 			},
+        { "when",       	INLINE_FUN_ADDR(when) 			},
+        { "unless",     	INLINE_FUN_ADDR(unless) 		},
 
-        { "id",		(void *)INLINE_id       	},
-        { "ip",         (void *)INLINE_filter_ip       	},
-        { "ip6",        (void *)INLINE_filter_ip6      	},
-        { "udp",        (void *)INLINE_filter_udp      	},
-        { "tcp",        (void *)INLINE_filter_tcp      	},
-        { "icmp",       (void *)INLINE_filter_icmp     	},
-        { "flow",       (void *)INLINE_filter_flow     	},
-        { "vlan",       (void *)INLINE_filter_vlan     	},
+        { "id",			INLINE_FUN_ADDR(id)       		},
+        { "ip",         	INLINE_FUN_ADDR(filter_ip)       	},
+        { "ip6",        	INLINE_FUN_ADDR(filter_ip6)      	},
+        { "udp",        	INLINE_FUN_ADDR(filter_udp)      	},
+        { "tcp",        	INLINE_FUN_ADDR(filter_tcp)      	},
+        { "icmp",       	INLINE_FUN_ADDR(filter_icmp)     	},
+        { "flow",       	INLINE_FUN_ADDR(filter_flow)     	},
+        { "vlan",       	INLINE_FUN_ADDR(filter_vlan)     	},
 
-        { "drop",       (void *)INLINE_forward_drop 	   },
-        { "broadcast",  (void *)INLINE_forward_broadcast   },
-        { "kernel",     (void *)INLINE_forward_kernel 	   },
+        { "drop",       	INLINE_FUN_ADDR(forward_drop) 		},
+        { "broadcast",  	INLINE_FUN_ADDR(forward_broadcast)   	},
+        { "kernel",     	INLINE_FUN_ADDR(forward_kernel) 	},
 
         { NULL, NULL}};
 

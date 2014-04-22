@@ -21,59 +21,69 @@
  *
  ****************************************************************/
 
+#ifndef _FUNCTIONAL_INLINE_H_
+#define _FUNCTIONAL_INLINE_H_
+
 #include <pf_q-engine.h>
 #include <pf_q-predicate.h>
 
+#ifdef PFQ_USE_INLINE_FUN
+
 /* high order functions */
 
-#define INLINE_mark 		1
-#define INLINE_conditional 	2
-#define INLINE_when 		3
-#define INLINE_unless 		4
+#define INLINE_mark 			1
+#define INLINE_conditional 		2
+#define INLINE_when 			3
+#define INLINE_unless 			4
 
 /* filter functions */
 
-#define INLINE_id 		5
-#define INLINE_filter_ip        6
-#define INLINE_filter_ip6       7
-#define INLINE_filter_udp       8
-#define INLINE_filter_tcp       9
-#define INLINE_filter_icmp      10
-#define INLINE_filter_flow      11
-#define INLINE_filter_vlan      12
+#define INLINE_id 			5
+#define INLINE_filter_ip        	6
+#define INLINE_filter_ip6       	7
+#define INLINE_filter_udp       	8
+#define INLINE_filter_tcp       	9
+#define INLINE_filter_icmp      	10
+#define INLINE_filter_flow      	11
+#define INLINE_filter_vlan      	12
 
 /* forward functions */
 
-#define INLINE_forward_drop            13
-#define INLINE_forward_broadcast       14
-#define INLINE_forward_kernel 	       15
+#define INLINE_forward_drop            	13
+#define INLINE_forward_broadcast       	14
+#define INLINE_forward_kernel 	       	15
 
+#define CASE_APPLY(f, call, skb) \
+	case INLINE_ ## f: return f(call->fun.arg, skb)
 
-#define CASE(f, call, skb) \
-	case INLINE_ ## f: 	return f(call->fun.arg, skb)
-
-
-#define APPLY_INLINE(call, skb) \
+#define IF_INLINED_RETURN(call, skb) \
 	switch((ptrdiff_t)call->fun.eval) \
 	{ 	\
-		CASE(mark, call, skb);\
-		CASE(conditional, call, skb);\
-		CASE(when, call, skb);\
-		CASE(unless, call, skb);\
-		CASE(id, call, skb);\
+		CASE_APPLY(mark, call, skb);\
+		CASE_APPLY(conditional, call, skb);\
+		CASE_APPLY(when, call, skb);\
+		CASE_APPLY(unless, call, skb);\
+		CASE_APPLY(id, call, skb);\
 		\
-		CASE(filter_ip, call, skb);\
-		CASE(filter_ip6, call, skb);\
-		CASE(filter_udp, call, skb);\
-		CASE(filter_tcp, call, skb);\
-		CASE(filter_icmp, call, skb);\
-		CASE(filter_flow, call, skb);\
-		CASE(filter_vlan, call, skb);\
+		CASE_APPLY(filter_ip, call, skb);\
+		CASE_APPLY(filter_ip6, call, skb);\
+		CASE_APPLY(filter_udp, call, skb);\
+		CASE_APPLY(filter_tcp, call, skb);\
+		CASE_APPLY(filter_icmp, call, skb);\
+		CASE_APPLY(filter_flow, call, skb);\
+		CASE_APPLY(filter_vlan, call, skb);\
 		\
-		CASE(forward_drop, call, skb);\
-		CASE(forward_broadcast, call, skb);\
-		CASE(forward_kernel, call, skb);\
+		CASE_APPLY(forward_drop, call, skb);\
+		CASE_APPLY(forward_broadcast, call, skb);\
+		CASE_APPLY(forward_kernel, call, skb);\
 	}
+
+
+#define INLINE_FUN_ADDR(fun) 	(void *)INLINE_ ## fun
+#else
+#define INLINE_FUN_ADDR(fun) 	&fun
+#endif
+
 
 /* high order functions */
 
@@ -185,3 +195,4 @@ forward_kernel(argument_t a, struct sk_buff *skb)
         return to_kernel(drop(skb));
 }
 
+#endif /* _FUNCTIONAL_INLINE_H_ */

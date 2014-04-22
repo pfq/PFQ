@@ -172,12 +172,17 @@ pfq_apply(functional_t *call, struct sk_buff *skb)
 
         PFQ_CB(skb)->right = true;
 
-	APPLY_INLINE(call, skb);
+#ifdef PFQ_USE_INLINE_FUN
+
+	IF_INLINED_RETURN(call, skb);
 
 	if ((size_t)infun < 1000) {
 		pr_devel("[PFQ] internal error: inline function %td ???\n", infun);
 		return skb;
 	}
+#else
+	(void)infun;
+#endif
 
 	return call->fun.eval(call->fun.arg, skb);
 }
