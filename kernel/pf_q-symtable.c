@@ -95,7 +95,7 @@ __pfq_symtable_register_function(struct list_head *category, const char *symbol,
 	struct symtable_entry * elem;
 
 	if (__pfq_symtable_resolve(category, symbol) != NULL) {
-		pr_devel("[PFQ] symtable error: symbol '%s' already in use!\n", symbol);
+		printk(KERN_INFO "[PFQ] symtable error: symbol '%s' already in use!\n", symbol);
 		return -1;
 	}
 
@@ -132,7 +132,7 @@ __pfq_symtable_unregister_function(struct list_head *category, const char *symbo
 			return 0;
 		}
 	}
-	pr_devel("[PFQ] symtable error: '%s' no such function\n", symbol);
+	printk(KERN_INFO "[PFQ] symtable error: '%s' no such function\n", symbol);
 	return -1;
 }
 
@@ -166,7 +166,28 @@ pfq_symtable_register_functions(const char *module, struct list_head *category, 
                         return -1;
                 }
 	}
+
 	return 0;
+}
+
+
+static void
+pfq_symtable_pr_devel(const char *hdr, struct list_head *category)
+{
+	struct list_head *pos = NULL;
+	struct symtable_entry *this;
+
+        down(&symtable_sem);
+
+	pr_devel("[PFQ] %s:\n", hdr);
+
+	list_for_each(pos, category)
+	{
+    		this = list_entry(pos, struct symtable_entry, list);
+    		pr_devel("      %s %p\n", this->symbol, this->function);
+	}
+
+        up(&symtable_sem);
 }
 
 
@@ -176,8 +197,10 @@ pfq_symtable_init(void)
 	extern struct pfq_monadic_fun_descr 	filter_functions[];
 	extern struct pfq_monadic_fun_descr 	forward_functions[];
 	extern struct pfq_monadic_fun_descr 	steering_functions[];
+
 	extern struct pfq_predicate_fun_descr 	predicate_functions[];
 	extern struct pfq_combinator_fun_descr 	combinator_functions[];
+
 	extern struct pfq_function_descr 	inline_functions[];
 	extern struct pfq_function_descr 	misc_functions[];
 
@@ -189,6 +212,9 @@ pfq_symtable_init(void)
 
         pfq_symtable_register_functions(NULL, &pfq_predicate_cat, (struct pfq_function_descr *)predicate_functions);
         pfq_symtable_register_functions(NULL, &pfq_predicate_cat, (struct pfq_function_descr *)combinator_functions);
+
+	pfq_symtable_pr_devel("monadic functions: ", &pfq_monadic_cat);
+	pfq_symtable_pr_devel("predicate  functions: ", &pfq_predicate_cat);
 
 	printk(KERN_INFO "[PFQ] symtable initialized.\n");
 }
