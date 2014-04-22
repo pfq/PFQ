@@ -51,6 +51,10 @@ module Network.PFq.Default
         is_l3_proto,
         is_l4_proto,
 
+        has_port,
+        has_src_port,
+        has_dst_port,
+
         has_vlan,
         has_vid,
         has_mark,
@@ -77,6 +81,10 @@ module Network.PFq.Default
         l4_proto   ,
         flow       ,
         rtp        ,
+
+        port       ,
+        src_port   ,
+        dst_port   ,
 
         kernel     ,
         broadcast  ,
@@ -133,6 +141,10 @@ has_mark = Pred1 "has_mark"         :: CULong -> Predicate
 is_l3_proto = Pred1 "is_l3_proto"   :: Int16 -> Predicate
 is_l4_proto = Pred1 "is_l4_proto"   :: Int8 -> Predicate
 
+has_port     = Pred1 "has_port"         :: Int16 -> Predicate
+has_src_port = Pred1 "has_src_port"     :: Int16 -> Predicate
+has_dst_port = Pred1 "has_dst_port"     :: Int16 -> Predicate
+
 -- Predefined in-kernel computations:
 --
 
@@ -166,8 +178,12 @@ mark        = Fun1 "mark"           :: CULong -> Computation QFunction
 dummy       = Fun1 "dummy"          :: CInt -> Computation QFunction
 class'      = Fun1 "class"          :: CInt -> Computation QFunction
 
-l3_proto    = Fun1 "l3_proto"        :: Int16 -> Computation QFunction
-l4_proto    = Fun1 "l4_proto"        :: Int8 -> Computation QFunction
+l3_proto    = Fun1 "l3_proto"       :: Int16 -> Computation QFunction
+l4_proto    = Fun1 "l4_proto"       :: Int8 -> Computation QFunction
+
+port        = Fun1 "has_port"       :: Int16 -> Computation QFunction
+src_port    = Fun1 "has_src_port"   :: Int16 -> Computation QFunction
+dst_port    = Fun1 "has_dst_port"   :: Int16 -> Computation QFunction
 
 hdummy      = HFun "hdummy"         :: Predicate -> Computation QFunction
 when'       = HFun1 "when"          :: Predicate -> Computation QFunction -> Computation QFunction

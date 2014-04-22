@@ -102,6 +102,10 @@ namespace pfq_lang
         auto is_l3_proto = [] (uint16_t type) { return predicate1 ("is_l3_proto", type); };
         auto is_l4_proto = [] (uint8_t proto) { return predicate1 ("is_l4_proto", proto); };
 
+        auto has_port     = [] (uint16_t port) { return predicate1 ("is_port", port); };
+        auto has_src_port = [] (uint16_t port) { return predicate1 ("is_src_port", port); };
+        auto has_dst_port = [] (uint16_t port) { return predicate1 ("is_dst_port", port); };
+
         auto is_flow    = predicate ("is_flow");
         auto has_vlan   = predicate ("has_vlan");
 
@@ -143,6 +147,10 @@ namespace pfq_lang
         auto class_     = [] (int value) { return computation1("class", value); };
         auto l3_proto   = [] (uint16_t type) { return computation1 ("l3_proto", type); };
         auto l4_proto   = [] (uint8_t proto) { return computation1 ("l4_proto", proto); };
+
+        auto port       = [] (uint16_t port) { return computation1 ("port", port); };
+        auto src_port   = [] (uint16_t port) { return computation1 ("src_port", port); };
+        auto dst_port   = [] (uint16_t port) { return computation1 ("dst_port", port); };
 
         auto hdummy      = std::bind(hcomp(),  "hdummy", _1);
         auto when        = std::bind(hcomp1(), "when", _1, _2);
