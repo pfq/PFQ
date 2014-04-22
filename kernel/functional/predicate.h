@@ -21,8 +21,8 @@
  *
  ****************************************************************/
 
-#ifndef _PF_Q_PREDICATE_H
-#define _PF_Q_PREDICATE_H
+#ifndef _FUNCTIONAL_PREDICATE_H
+#define _FUNCTIOANL_PREDICATE_H
 
 #include <linux/kernel.h>
 #include <linux/module.h>
@@ -205,4 +205,4 @@ has_vid(struct sk_buff const *skb, int vid)
 }
 
 
-#endif /* _PF_Q_PREDICATE_H */
+#endif /* _FUNCTIONAL_PREDICATE_H */

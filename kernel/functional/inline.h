@@ -25,7 +25,8 @@
 #define _FUNCTIONAL_INLINE_H_
 
 #include <pf_q-engine.h>
-#include <pf_q-predicate.h>
+
+#include "predicate.h"
 
 #ifdef PFQ_USE_INLINE_FUN
 

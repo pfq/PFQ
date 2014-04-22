@@ -23,11 +23,9 @@
 
 #include <linux/kernel.h>
 #include <linux/module.h>
-
-#include <pf_q-predicate.h>
-
 #include <linux/pf_q-module.h>
 
+#include "predicate.h"
 
 struct pfq_monadic_fun_descr filter_functions[] = {
 

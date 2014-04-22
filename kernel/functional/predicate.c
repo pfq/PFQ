@@ -23,9 +23,10 @@
 
 #include <linux/kernel.h>
 #include <linux/module.h>
-#include <pf_q-predicate.h>
-
 #include <linux/pf_q-module.h>
+
+#include "predicate.h"
+
 
 static bool
 __is_ip(argument_t a, struct sk_buff const *skb)
