@@ -104,14 +104,15 @@ p1 .^. p2 = Pred2 (Combinator "xor") p1 p2
 -- Default predicates:
 --
 
-is_ip   = Pred "is_ip"              :: Predicate
-is_ip6  = Pred "is_ip6"             :: Predicate
-is_udp  = Pred "is_udp"             :: Predicate
-is_tcp  = Pred "is_tcp"             :: Predicate
-is_udp6 = Pred "is_udp6"            :: Predicate
-is_tcp6 = Pred "is_tcp6"            :: Predicate
-is_icmp = Pred "is_icmp"            :: Predicate
-is_flow = Pred "is_flow"            :: Predicate
+is_ip    = Pred "is_ip"             :: Predicate
+is_ip6   = Pred "is_ip6"            :: Predicate
+is_udp   = Pred "is_udp"            :: Predicate
+is_tcp   = Pred "is_tcp"            :: Predicate
+is_icmp  = Pred "is_icmp"           :: Predicate
+is_udp6  = Pred "is_udp6"           :: Predicate
+is_tcp6  = Pred "is_tcp6"           :: Predicate
+is_icmp6 = Pred "is_icmp6"          :: Predicate
+is_flow  = Pred "is_flow"           :: Predicate
 has_vlan = Pred "has_vlan"          :: Predicate
 
 has_vid  = Pred1 "has_vid"          :: CInt -> Predicate
@@ -131,10 +132,11 @@ ip          = Fun "ip"              :: Computation QFunction
 ip6         = Fun "ip6"             :: Computation QFunction
 udp         = Fun "udp"             :: Computation QFunction
 tcp         = Fun "tcp"             :: Computation QFunction
+icmp        = Fun "icmp"            :: Computation QFunction
 udp6        = Fun "udp6"            :: Computation QFunction
 tcp6        = Fun "tcp6"            :: Computation QFunction
+icmp6       = Fun "icmp6"           :: Computation QFunction
 vlan        = Fun "vlan"            :: Computation QFunction
-icmp        = Fun "icmp"            :: Computation QFunction
 flow        = Fun "flow"            :: Computation QFunction
 rtp         = Fun "rtp"             :: Computation QFunction
 
