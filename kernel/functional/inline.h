@@ -32,30 +32,32 @@
 
 /* high order functions */
 
-#define INLINE_mark 			__COUNTER__
-#define INLINE_conditional 		__COUNTER__
-#define INLINE_when 			__COUNTER__
-#define INLINE_unless 			__COUNTER__
+
+#define INLINE_conditional 		1
+#define INLINE_mark 			2
+#define INLINE_when 			3
+#define INLINE_unless 			4
 
 /* filter functions */
 
-#define INLINE_id 			__COUNTER__
-#define INLINE_filter_ip        	__COUNTER__
-#define INLINE_filter_ip6       	__COUNTER__
-#define INLINE_filter_udp       	__COUNTER__
-#define INLINE_filter_icmp      	__COUNTER__
-#define INLINE_filter_tcp       	__COUNTER__
-#define INLINE_filter_udp6       	__COUNTER__
-#define INLINE_filter_tcp6       	__COUNTER__
-#define INLINE_filter_icmp6      	__COUNTER__
-#define INLINE_filter_flow      	__COUNTER__
-#define INLINE_filter_vlan      	__COUNTER__
+#define INLINE_id 			5
+#define INLINE_filter_ip        	6
+#define INLINE_filter_ip6       	7
+#define INLINE_filter_udp       	8
+#define INLINE_filter_icmp      	9
+#define INLINE_filter_tcp       	10
+#define INLINE_filter_udp6       	11
+#define INLINE_filter_tcp6       	12
+#define INLINE_filter_icmp6      	13
+#define INLINE_filter_flow      	14
+#define INLINE_filter_vlan      	15
 
 /* forward functions */
 
-#define INLINE_forward_drop            	__COUNTER__
-#define INLINE_forward_broadcast       	__COUNTER__
-#define INLINE_forward_kernel 	       	__COUNTER__
+#define INLINE_forward_drop            	16
+#define INLINE_forward_broadcast       	17
+#define INLINE_forward_kernel 	       	18
+
 
 #define CASE_APPLY(f, call, skb) \
 	case INLINE_ ## f: return f(call->fun.arg, skb)
@@ -70,12 +72,13 @@
 		CASE_APPLY(id, call, skb);\
 		\
 		CASE_APPLY(filter_ip, call, skb);\
-		CASE_APPLY(filter_ip6, call, skb);\
 		CASE_APPLY(filter_udp, call, skb);\
 		CASE_APPLY(filter_tcp, call, skb);\
+		CASE_APPLY(filter_icmp, call, skb);\
+		CASE_APPLY(filter_ip6, call, skb);\
 		CASE_APPLY(filter_udp6, call, skb);\
 		CASE_APPLY(filter_tcp6, call, skb);\
-		CASE_APPLY(filter_icmp, call, skb);\
+		CASE_APPLY(filter_icmp6, call, skb);\
 		CASE_APPLY(filter_flow, call, skb);\
 		CASE_APPLY(filter_vlan, call, skb);\
 		\
@@ -86,6 +89,7 @@
 
 
 #define INLINE_FUN_ADDR(fun) 	(void *)INLINE_ ## fun
+
 #else
 #define INLINE_FUN_ADDR(fun) 	&fun
 #endif

@@ -411,7 +411,7 @@ resolve_user_symbol(struct list_head *cat, const char __user *symb)
 
         addr = pfq_symtable_resolve(cat, symbol);
         if (addr == NULL) {
-                pr_devel("[PFQ] resolve_symbol: '%s' no such function!\n", symbol);
+                printk(KERN_INFO "[PFQ] resolve_symbol: '%s' no such function!\n", symbol);
                 return NULL;
         }
 

@@ -31,7 +31,6 @@ static inline struct sk_buff *
 filter_l3_proto(argument_t a, struct sk_buff *skb)
 {
 	const u16 *type = argument_as(u16, a);
-
         return is_l3_proto(skb, *type) ? skb : drop(skb);
 }
 
