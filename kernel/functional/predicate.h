@@ -216,6 +216,34 @@ is_flow(struct sk_buff const *skb)
         return false;
 }
 
+
+static inline bool
+is_l3_proto(struct sk_buff const *skb, u16 type)
+{
+	return eth_hdr(skb)->h_proto == __constant_htons(type);
+}
+
+
+static inline bool
+is_l4_proto(struct sk_buff const *skb, u8 protocol)
+{
+
+	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP))
+	{
+		struct iphdr _iph;
+    		const struct iphdr *ip;
+
+		ip = skb_header_pointer(skb, skb->mac_len, sizeof(_iph), &_iph);
+ 		if (ip == NULL)
+                        return false;
+
+                return ip->protocol == protocol;
+	}
+
+	return false;
+}
+
+
 static inline bool
 has_vlan(struct sk_buff const *skb)
 {

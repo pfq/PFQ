@@ -27,7 +27,25 @@
 
 #include "predicate.h"
 
+static inline struct sk_buff *
+filter_l3_proto(argument_t a, struct sk_buff *skb)
+{
+	const u16 *type = argument_as(u16, a);
+
+        return is_l3_proto(skb, *type) ? skb : drop(skb);
+}
+
+static inline struct sk_buff *
+filter_l4_proto(argument_t a, struct sk_buff *skb)
+{
+	const u8 *proto = argument_as(u8, a);
+        return is_l4_proto(skb, *proto) ? skb : drop(skb);
+}
+
+
 struct pfq_monadic_fun_descr filter_functions[] = {
+ 	{ "l3_proto",      filter_l3_proto    	},
+        { "l4_proto",      filter_l4_proto     	},
 
         { NULL, NULL}};
 

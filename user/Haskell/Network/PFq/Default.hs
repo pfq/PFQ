@@ -45,6 +45,8 @@ module Network.PFq.Default
         is_udp6,
         is_tcp6,
         is_icmp,
+        is_l3_proto,
+        is_l4_proto,
         has_mark,
 
         -- monadic functions
@@ -63,6 +65,8 @@ module Network.PFq.Default
         udp6       ,
         tcp6       ,
         vlan       ,
+        l3_proto   ,
+        l4_proto   ,
         icmp       ,
         flow       ,
         rtp        ,
@@ -90,6 +94,7 @@ module Network.PFq.Default
 
 import Network.PFq.Lang
 import Foreign.C.Types
+import Data.Int
 
 -- Default combinators:
 --
@@ -117,6 +122,9 @@ has_vlan = Pred "has_vlan"          :: Predicate
 
 has_vid  = Pred1 "has_vid"          :: CInt -> Predicate
 has_mark = Pred1 "has_mark"         :: CULong -> Predicate
+
+is_l3_proto = Pred1 "is_l3_proto"   :: Int16 -> Predicate
+is_l4_proto = Pred1 "is_l4_proto"   :: Int8 -> Predicate
 
 -- Predefined in-kernel computations:
 --
@@ -150,6 +158,9 @@ counter     = Fun1 "counter"        :: CInt -> Computation QFunction
 mark        = Fun1 "mark"           :: CULong -> Computation QFunction
 dummy       = Fun1 "dummy"          :: CInt -> Computation QFunction
 class'      = Fun1 "class"          :: CInt -> Computation QFunction
+
+l3_proto    = Fun1 "l3_proto"        :: Int16 -> Computation QFunction
+l4_proto    = Fun1 "l4_proto"        :: Int8 -> Computation QFunction
 
 hdummy      = HFun "hdummy"         :: Predicate -> Computation QFunction
 when'       = HFun1 "when"          :: Predicate -> Computation QFunction -> Computation QFunction

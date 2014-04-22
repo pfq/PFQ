@@ -83,6 +83,20 @@ __is_flow(argument_t a, struct sk_buff const *skb)
 }
 
 static bool
+__is_l3_proto(argument_t a, struct sk_buff const *skb)
+{
+	const u16 *type = argument_as(u16, a);
+	return is_l3_proto(skb, *type);
+}
+
+static bool
+__is_l4_proto(argument_t a, struct sk_buff const *skb)
+{
+	const u8 *protocol = argument_as(u8, a);
+	return is_l4_proto(skb, *protocol);
+}
+
+static bool
 __has_vlan(argument_t a, struct sk_buff const *skb)
 {
         return  has_vlan(skb);
@@ -112,6 +126,9 @@ struct pfq_predicate_fun_descr predicate_functions[] = {
         { "is_udp6",    __is_udp6       },
         { "is_tcp6",    __is_tcp6       },
         { "is_icmp6",   __is_icmp6      },
+        { "is_flow",    __is_flow 	},
+        { "is_l3_proto",__is_l3_proto 	},
+        { "is_l4_proto",__is_l4_proto	},
         { "is_flow",    __is_flow 	},
         { "has_vlan",   __has_vlan      },
         { "has_vid",    __has_vid	},

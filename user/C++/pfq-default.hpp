@@ -98,6 +98,10 @@ namespace pfq_lang
         auto is_udp6    = predicate ("is_udp6");
         auto is_tcp6    = predicate ("is_tcp6");
         auto is_icmp6   = predicate ("is_icmp6");
+
+        auto is_l3_proto = [] (uint16_t type) { return predicate1 ("is_l3_proto", type); };
+        auto is_l4_proto = [] (uint8_t proto) { return predicate1 ("is_l4_proto", proto); };
+
         auto is_flow    = predicate ("is_flow");
         auto has_vlan   = predicate ("has_vlan");
 
@@ -137,6 +141,8 @@ namespace pfq_lang
         auto dummy      = [] (int value) { return computation1("dummy", value); };
         auto counter    = [] (int value) { return computation1("counter", value); };
         auto class_     = [] (int value) { return computation1("class", value); };
+        auto l3_proto   = [] (uint16_t type) { return computation1 ("l3_proto", type); };
+        auto l4_proto   = [] (uint8_t proto) { return computation1 ("l4_proto", proto); };
 
         auto hdummy      = std::bind(hcomp(),  "hdummy", _1);
         auto when        = std::bind(hcomp1(), "when", _1, _2);
