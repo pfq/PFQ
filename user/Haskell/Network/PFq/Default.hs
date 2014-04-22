@@ -42,11 +42,17 @@ module Network.PFq.Default
         is_ip,
         is_udp,
         is_tcp,
+        is_icmp,
+        is_ip6,
         is_udp6,
         is_tcp6,
-        is_icmp,
+        is_icmp6,
+        is_flow,
         is_l3_proto,
         is_l4_proto,
+
+        has_vlan,
+        has_vid,
         has_mark,
 
         -- monadic functions
@@ -62,12 +68,13 @@ module Network.PFq.Default
         ip6        ,
         udp        ,
         tcp        ,
+        icmp       ,
         udp6       ,
         tcp6       ,
+        icmp6      ,
         vlan       ,
         l3_proto   ,
         l4_proto   ,
-        icmp       ,
         flow       ,
         rtp        ,
 
