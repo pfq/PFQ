@@ -84,6 +84,28 @@ is_udp(struct sk_buff const *skb)
         return false;
 }
 
+
+static inline bool
+is_udp6(struct sk_buff const *skb)
+{
+	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IPV6))
+	{
+		struct ipv6hdr _iph6;
+    		const struct ipv6hdr *ip6;
+
+		ip6 = skb_header_pointer(skb, skb->mac_len, sizeof(_iph6), &_iph6);
+ 		if (ip6 == NULL)
+                        return false;
+
+		if (ip6->nexthdr != IPPROTO_UDP)
+                        return false;
+
+                return skb_header_available(skb, skb->mac_len  + sizeof(struct ipv6hdr), sizeof(struct udphdr));
+	}
+
+        return false;
+}
+
 static inline bool
 is_tcp(struct sk_buff const *skb)
 {
@@ -100,6 +122,28 @@ is_tcp(struct sk_buff const *skb)
                         return false;
 
 		return skb_header_available(skb, skb->mac_len + (ip->ihl<<2), sizeof(struct tcphdr));
+	}
+
+        return false;
+}
+
+
+static inline bool
+is_tcp6(struct sk_buff const *skb)
+{
+	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IPV6))
+	{
+		struct ipv6hdr _iph6;
+    		const struct ipv6hdr *ip6;
+
+		ip6 = skb_header_pointer(skb, skb->mac_len, sizeof(_iph6), &_iph6);
+ 		if (ip6 == NULL)
+                        return false;
+
+		if (ip6->nexthdr != IPPROTO_TCP)
+                        return false;
+
+                return skb_header_available(skb, skb->mac_len  + sizeof(struct ipv6hdr), sizeof(struct tcphdr));
 	}
 
         return false;
