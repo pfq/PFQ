@@ -71,6 +71,12 @@ __is_icmp(argument_t a, struct sk_buff const *skb)
 }
 
 static bool
+__is_icmp6(argument_t a, struct sk_buff const *skb)
+{
+        return  is_icmp6(skb);
+}
+
+static bool
 __is_flow(argument_t a, struct sk_buff const *skb)
 {
         return  is_flow(skb);
@@ -105,6 +111,7 @@ struct pfq_predicate_fun_descr predicate_functions[] = {
         { "is_ip6",    	__is_ip6       	},
         { "is_udp6",    __is_udp6       },
         { "is_tcp6",    __is_tcp6       },
+        { "is_icmp6",   __is_icmp6      },
         { "is_flow",    __is_flow 	},
         { "has_vlan",   __has_vlan      },
         { "has_vid",    __has_vid	},

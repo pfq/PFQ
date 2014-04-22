@@ -43,10 +43,11 @@
 #define INLINE_filter_ip        	__COUNTER__
 #define INLINE_filter_ip6       	__COUNTER__
 #define INLINE_filter_udp       	__COUNTER__
+#define INLINE_filter_icmp      	__COUNTER__
 #define INLINE_filter_tcp       	__COUNTER__
 #define INLINE_filter_udp6       	__COUNTER__
 #define INLINE_filter_tcp6       	__COUNTER__
-#define INLINE_filter_icmp      	__COUNTER__
+#define INLINE_filter_icmp6      	__COUNTER__
 #define INLINE_filter_flow      	__COUNTER__
 #define INLINE_filter_vlan      	__COUNTER__
 
@@ -172,6 +173,12 @@ static inline struct sk_buff *
 filter_icmp(argument_t a, struct sk_buff *skb)
 {
         return is_icmp(skb) ? skb : drop(skb);
+}
+
+static inline struct sk_buff *
+filter_icmp6(argument_t a, struct sk_buff *skb)
+{
+        return is_icmp6(skb) ? skb : drop(skb);
 }
 
 static inline struct sk_buff *

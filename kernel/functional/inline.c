@@ -38,6 +38,7 @@ struct pfq_function_descr inline_functions[] = {
         { "icmp",       	INLINE_FUN_ADDR(filter_icmp)     	},
         { "udp6",        	INLINE_FUN_ADDR(filter_udp6)      	},
         { "tcp6",        	INLINE_FUN_ADDR(filter_tcp6)      	},
+        { "icmp6",       	INLINE_FUN_ADDR(filter_icmp6)     	},
         { "flow",       	INLINE_FUN_ADDR(filter_flow)     	},
         { "vlan",       	INLINE_FUN_ADDR(filter_vlan)     	},
 
