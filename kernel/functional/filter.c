@@ -41,10 +41,34 @@ filter_l4_proto(argument_t a, struct sk_buff *skb)
         return is_l4_proto(skb, *proto) ? skb : drop(skb);
 }
 
+static inline struct sk_buff *
+filter_port(argument_t a, struct sk_buff *skb)
+{
+	const u16 *port = argument_as(u16, a);
+        return has_port(skb, *port) ? skb : drop(skb);
+}
+
+static inline struct sk_buff *
+filter_src_port(argument_t a, struct sk_buff *skb)
+{
+	const u16 *port = argument_as(u16, a);
+        return has_src_port(skb, *port) ? skb : drop(skb);
+}
+
+static inline struct sk_buff *
+filter_dst_port(argument_t a, struct sk_buff *skb)
+{
+	const u16 *port = argument_as(u16, a);
+        return has_dst_port(skb, *port) ? skb : drop(skb);
+}
+
 
 struct pfq_monadic_fun_descr filter_functions[] = {
- 	{ "l3_proto",      filter_l3_proto    	},
-        { "l4_proto",      filter_l4_proto     	},
+ 	{ "l3_proto", 	filter_l3_proto    	},
+        { "l4_proto",   filter_l4_proto     	},
+        { "port",      	filter_port 		},
+        { "src_port",	filter_src_port 	},
+        { "dst_port",   filter_dst_port 	},
 
         { NULL, NULL}};
 

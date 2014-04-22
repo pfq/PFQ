@@ -97,6 +97,27 @@ __is_l4_proto(argument_t a, struct sk_buff const *skb)
 }
 
 static bool
+__has_port(argument_t a, struct sk_buff const *skb)
+{
+	const u16 *port = argument_as(u16, a);
+	return has_port(skb, *port);
+}
+
+static bool
+__has_src_port(argument_t a, struct sk_buff const *skb)
+{
+	const u16 *port = argument_as(u16, a);
+	return has_src_port(skb, *port);
+}
+
+static bool
+__has_dst_port(argument_t a, struct sk_buff const *skb)
+{
+	const u16 *port = argument_as(u16, a);
+	return has_dst_port(skb, *port);
+}
+
+static bool
 __has_vlan(argument_t a, struct sk_buff const *skb)
 {
         return  has_vlan(skb);
@@ -129,6 +150,9 @@ struct pfq_predicate_fun_descr predicate_functions[] = {
         { "is_flow",     __is_flow 	 },
         { "is_l3_proto", __is_l3_proto 	 },
         { "is_l4_proto", __is_l4_proto	 },
+        { "has_port",    __has_port      },
+        { "has_src_port",__has_src_port  },
+        { "has_dst_port",__has_dst_port  },
         { "has_vlan",    __has_vlan      },
         { "has_vid",     __has_vid	 },
         { "has_mark",    __has_mark      },

@@ -227,7 +227,6 @@ is_l3_proto(struct sk_buff const *skb, u16 type)
 static inline bool
 is_l4_proto(struct sk_buff const *skb, u8 protocol)
 {
-
 	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP))
 	{
 		struct iphdr _iph;
@@ -241,6 +240,92 @@ is_l4_proto(struct sk_buff const *skb, u8 protocol)
 	}
 
 	return false;
+}
+
+
+static inline bool
+has_src_port(struct sk_buff const *skb, uint16_t port)
+{
+	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP))
+	{
+		struct iphdr _iph;
+    		const struct iphdr *ip;
+
+		ip = skb_header_pointer(skb, skb->mac_len, sizeof(_iph), &_iph);
+ 		if (ip == NULL)
+                        return false;
+
+		switch(ip->protocol)
+		{
+                case IPPROTO_UDP: {
+                	struct udphdr _udph; const struct udphdr *udp;
+			udp = skb_header_pointer(skb, skb->mac_len + (ip->ihl<<2), sizeof(struct udphdr), &_udph);
+			if (udp == NULL)
+				return false;
+
+			return udp->source == htons(port);
+		}
+		case IPPROTO_TCP: {
+                	struct tcphdr _tcph; const struct tcphdr *tcp;
+			tcp = skb_header_pointer(skb, skb->mac_len + (ip->ihl<<2), sizeof(struct tcphdr), &_tcph);
+			if (tcp == NULL)
+				return false;
+
+			return tcp->source == htons(port);
+		}
+
+		default:
+			return false;
+		}
+	}
+
+	return false;
+}
+
+static inline bool
+has_dst_port(struct sk_buff const *skb, uint16_t port)
+{
+	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP))
+	{
+		struct iphdr _iph;
+    		const struct iphdr *ip;
+
+		ip = skb_header_pointer(skb, skb->mac_len, sizeof(_iph), &_iph);
+ 		if (ip == NULL)
+                        return false;
+
+		switch(ip->protocol)
+		{
+                case IPPROTO_UDP: {
+                	struct udphdr _udph; const struct udphdr *udp;
+			udp = skb_header_pointer(skb, skb->mac_len + (ip->ihl<<2), sizeof(struct udphdr), &_udph);
+			if (udp == NULL)
+				return false;
+
+			return udp->dest == htons(port);
+		}
+		case IPPROTO_TCP: {
+                	struct tcphdr _tcph; const struct tcphdr *tcp;
+			tcp = skb_header_pointer(skb, skb->mac_len + (ip->ihl<<2), sizeof(struct tcphdr), &_tcph);
+			if (tcp == NULL)
+				return false;
+
+			return tcp->dest == htons(port);
+		}
+
+		default:
+			return false;
+		}
+	}
+
+	return false;
+}
+
+
+static inline bool
+has_port(struct sk_buff const *skb, uint16_t port)
+{
+	return has_src_port(skb, port) || has_dst_port(skb, port);
 }
 
 
