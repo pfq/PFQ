@@ -94,6 +94,8 @@ namespace pfq_lang
         auto is_ip6     = predicate ("is_ip6");
         auto is_udp     = predicate ("is_udp");
         auto is_tcp     = predicate ("is_tcp");
+        auto is_udp6    = predicate ("is_udp6");
+        auto is_tcp6    = predicate ("is_tcp6");
         auto is_icmp    = predicate ("is_icmp");
         auto is_flow    = predicate ("is_flow");
         auto has_vlan   = predicate ("has_vlan");
@@ -116,6 +118,8 @@ namespace pfq_lang
         auto ip6        = computation("ip6");
         auto udp        = computation("udp");
         auto tcp        = computation("tcp");
+        auto udp6       = computation("udp6");
+        auto tcp6       = computation("tcp6");
         auto vlan       = computation("vlan");
         auto icmp       = computation("icmp");
         auto flow       = computation("flow");

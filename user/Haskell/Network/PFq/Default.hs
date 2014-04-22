@@ -42,6 +42,8 @@ module Network.PFq.Default
         is_ip,
         is_udp,
         is_tcp,
+        is_udp6,
+        is_tcp6,
         is_icmp,
         has_mark,
 
@@ -58,6 +60,8 @@ module Network.PFq.Default
         ip6        ,
         udp        ,
         tcp        ,
+        udp6       ,
+        tcp6       ,
         vlan       ,
         icmp       ,
         flow       ,
@@ -104,6 +108,8 @@ is_ip   = Pred "is_ip"              :: Predicate
 is_ip6  = Pred "is_ip6"             :: Predicate
 is_udp  = Pred "is_udp"             :: Predicate
 is_tcp  = Pred "is_tcp"             :: Predicate
+is_udp6 = Pred "is_udp6"            :: Predicate
+is_tcp6 = Pred "is_tcp6"            :: Predicate
 is_icmp = Pred "is_icmp"            :: Predicate
 is_flow = Pred "is_flow"            :: Predicate
 has_vlan = Pred "has_vlan"          :: Predicate
@@ -125,6 +131,8 @@ ip          = Fun "ip"              :: Computation QFunction
 ip6         = Fun "ip6"             :: Computation QFunction
 udp         = Fun "udp"             :: Computation QFunction
 tcp         = Fun "tcp"             :: Computation QFunction
+udp6        = Fun "udp6"            :: Computation QFunction
+tcp6        = Fun "tcp6"            :: Computation QFunction
 vlan        = Fun "vlan"            :: Computation QFunction
 icmp        = Fun "icmp"            :: Computation QFunction
 flow        = Fun "flow"            :: Computation QFunction
