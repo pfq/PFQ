@@ -119,7 +119,6 @@ enum action
 
 enum action_attr
 {
-        attr_stop          = 0x1,
         attr_stolen        = 0x2,
         attr_ret_to_kernel = 0x4
 };
@@ -185,12 +184,6 @@ static inline bool
 has_stolen(action_t a)
 {
         return a.attr & attr_stolen;
-}
-
-static inline bool
-has_stop(action_t a)
-{
-        return a.attr & attr_stop;
 }
 
 static inline bool
@@ -295,18 +288,6 @@ steal(struct sk_buff *skb)
         a->attr |= attr_stolen;
         return skb;
 }
-
-/* stop the computation, without overriding the current action on packet */
-
-static inline
-struct sk_buff *
-stop(struct sk_buff *skb)
-{
-        action_t * a = & PFQ_CB(skb)->action;
-        a->attr |= attr_stop;
-        return skb;
-}
-
 
 /* to_kernel: set the skb to be passed to kernel */
 

@@ -203,7 +203,7 @@ pfq_bind(struct sk_buff *skb, computation_t *prg)
 
                 a = &PFQ_CB(skb)->action;
 
-                if (is_drop(*a) || has_stop(*a))
+                if (is_drop(*a))
                         return skb;
 
                 fun = PFQ_CB(skb)->right ? fun->right : fun->left;
