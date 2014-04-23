@@ -28,19 +28,6 @@
 
 #include <pf_q-transmit.h>
 
-static struct sk_buff *
-steer_class(argument_t a, struct sk_buff *skb)
-{
-        int *c = argument_as(int, a);
-
-        if (!c) {
-                if (printk_ratelimit())
-                        printk(KERN_INFO "[PFQ] fun/class: internal error!\n");
-                return skb;
-        }
-        return class(skb, (1ULL << *c));
-}
-
 
 static struct sk_buff *
 sink(argument_t a, struct sk_buff *skb)
@@ -78,7 +65,6 @@ forward(argument_t a, struct sk_buff *skb)
 
 struct pfq_monadic_fun_descr forward_functions[] = {
 
-        { "class",              steer_class 	},
         { "sink",               sink 		},
 	{ "forward", 		forward 	},
 

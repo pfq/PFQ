@@ -45,6 +45,7 @@ struct pfq_function_descr inline_functions[] = {
         { "drop",       	INLINE_FUN_ADDR(forward_drop) 		},
         { "broadcast",  	INLINE_FUN_ADDR(forward_broadcast)   	},
         { "kernel",     	INLINE_FUN_ADDR(forward_kernel) 	},
+        { "class",     		INLINE_FUN_ADDR(forward_class) 		},
 
         { NULL, NULL}};
 

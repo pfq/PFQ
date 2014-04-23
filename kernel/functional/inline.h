@@ -57,6 +57,7 @@
 #define INLINE_forward_drop            	16
 #define INLINE_forward_broadcast       	17
 #define INLINE_forward_kernel 	       	18
+#define INLINE_forward_class 		19
 
 
 #define CASE_APPLY(f, call, skb) \
@@ -85,6 +86,7 @@
 		CASE_APPLY(forward_drop, call, skb);\
 		CASE_APPLY(forward_broadcast, call, skb);\
 		CASE_APPLY(forward_kernel, call, skb);\
+		CASE_APPLY(forward_class, call, skb);\
 	}
 
 
@@ -217,5 +219,20 @@ forward_kernel(argument_t a, struct sk_buff *skb)
 {
         return to_kernel(drop(skb));
 }
+
+static inline struct sk_buff *
+forward_class(argument_t a, struct sk_buff *skb)
+{
+        int *c = argument_as(int, a);
+
+        if (!c) {
+                if (printk_ratelimit())
+                        printk(KERN_INFO "[PFQ] forward class: internal error!\n");
+                return skb;
+        }
+
+        return class(skb, (1ULL << *c));
+}
+
 
 #endif /* _FUNCTIONAL_INLINE_H_ */
