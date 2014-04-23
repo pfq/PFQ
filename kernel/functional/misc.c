@@ -34,7 +34,7 @@ dummy(argument_t a, struct sk_buff *skb)
         const int *ptr = argument_as(int,a);
 
         if (printk_ratelimit()) {
-                printk(KERN_INFO "[PFQ] fun/dummy context: %d\n", ptr ? *ptr : 0);
+                printk(KERN_INFO "[PFQ] dummy context: %d\n", ptr ? *ptr : 0);
         }
 
         return copy(skb);

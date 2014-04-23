@@ -54,11 +54,12 @@ forward(argument_t a, struct sk_buff *skb)
 
 	atomic_inc(&skb->users);
 
-	if (pfq_xmit(skb, dev, skb->queue_mapping) < 0) {
+	if (pfq_xmit(skb, dev, skb->queue_mapping) != 1) {
                 if (printk_ratelimit())
                         printk(KERN_INFO "[PFQ] forward: pfq_xmit error!\n");
 	}
 
+	dev_put(dev);
 	return skb;
 }
 
