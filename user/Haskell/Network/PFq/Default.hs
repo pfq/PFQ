@@ -93,6 +93,7 @@ module Network.PFq.Default
 
         counter    ,
         mark       ,
+        forward    ,
         id'        ,
         dummy      ,
         class'     ,
@@ -175,6 +176,7 @@ id'         = Fun  "id"             :: Computation QFunction
 
 counter     = Fun1 "counter"        :: CInt -> Computation QFunction
 mark        = Fun1 "mark"           :: CULong -> Computation QFunction
+forward     = Fun1 "forward"        :: CInt -> Computation QFunction
 dummy       = Fun1 "dummy"          :: CInt -> Computation QFunction
 class'      = Fun1 "class"          :: CInt -> Computation QFunction
 

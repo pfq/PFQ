@@ -141,6 +141,7 @@ namespace pfq_lang
         auto drop       = computation("drop");
         auto id         = computation("id");
 
+        auto forward    = [] (int index) { return computation1("forward", index); };
         auto mark       = [] (unsigned long value) { return computation1("mark", value); };
         auto dummy      = [] (int value) { return computation1("dummy", value); };
         auto counter    = [] (int value) { return computation1("counter", value); };
