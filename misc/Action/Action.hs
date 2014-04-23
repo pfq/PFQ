@@ -82,30 +82,42 @@ main = do
 
     quickCheck ((return skb >>= drop' ) == Drop)
     quickCheck ((return skb >>= Pass ) == Pass skb)
+    quickCheck ((return skb >>= Copy ) == Copy skb)
     quickCheck ((return skb >>= Steer 1) == Steer 1 skb)
     quickCheck ((return skb >>= Class 1) == Class 1 skb)
 
     quickCheck (( Drop        >>= return)  == Drop)
     quickCheck (( Pass skb    >>= return ) == Pass skb)
+    quickCheck (( Copy skb    >>= return ) == Copy skb)
     quickCheck (( Steer 1 skb >>= return ) == Steer 1 skb)
     quickCheck (( Class 1 skb >>= return ) == Class 1 skb)
 
     quickCheck ((return skb >>= drop' >>= Pass   ) == (return skb >>= (\x -> drop' x >>= Pass )))
+    quickCheck ((return skb >>= drop' >>= Copy   ) == (return skb >>= (\x -> drop' x >>= Copy )))
     quickCheck ((return skb >>= drop' >>= drop'  ) == (return skb >>= (\x -> drop' x >>= drop' )))
     quickCheck ((return skb >>= drop' >>= Class 1) == (return skb >>= (\x -> drop' x >>= Class 1)))
     quickCheck ((return skb >>= drop' >>= Steer 1) == (return skb >>= (\x -> drop' x >>= Steer 1)))
 
     quickCheck ((return skb >>= Pass >>= Pass   ) == (return skb >>= (\x -> Pass x >>= Pass   )))
+    quickCheck ((return skb >>= Pass >>= Copy   ) == (return skb >>= (\x -> Pass x >>= Copy   )))
     quickCheck ((return skb >>= Pass >>= drop'  ) == (return skb >>= (\x -> Pass x >>= drop'  )))
     quickCheck ((return skb >>= Pass >>= Class 1) == (return skb >>= (\x -> Pass x >>= Class 1)))
     quickCheck ((return skb >>= Pass >>= Steer 1) == (return skb >>= (\x -> Pass x >>= Steer 1)))
 
+    quickCheck ((return skb >>= Copy >>= Pass   ) == (return skb >>= (\x -> Copy x >>= Pass   )))
+    quickCheck ((return skb >>= Copy >>= Copy   ) == (return skb >>= (\x -> Copy x >>= Copy   )))
+    quickCheck ((return skb >>= Copy >>= drop'  ) == (return skb >>= (\x -> Copy x >>= drop'  )))
+    quickCheck ((return skb >>= Copy >>= Class 1) == (return skb >>= (\x -> Copy x >>= Class 1)))
+    quickCheck ((return skb >>= Copy >>= Steer 1) == (return skb >>= (\x -> Copy x >>= Steer 1)))
+
     quickCheck ((return skb >>= Steer 1 >>= Pass   ) == (return skb >>= (\x -> Steer 1 x >>= Pass   )))
+    quickCheck ((return skb >>= Steer 1 >>= Copy   ) == (return skb >>= (\x -> Steer 1 x >>= Copy   )))
     quickCheck ((return skb >>= Steer 1 >>= drop'  ) == (return skb >>= (\x -> Steer 1 x >>= drop'  )))
     quickCheck ((return skb >>= Steer 1 >>= Class 1) == (return skb >>= (\x -> Steer 1 x >>= Class 1)))
     quickCheck ((return skb >>= Steer 1 >>= Steer 1) == (return skb >>= (\x -> Steer 1 x >>= Steer 1)))
 
     quickCheck ((return skb >>= Class 1 >>= Pass   ) == (return skb >>= (\x -> Class 1 x >>= Pass   )))
+    quickCheck ((return skb >>= Class 1 >>= Copy   ) == (return skb >>= (\x -> Class 1 x >>= Copy   )))
     quickCheck ((return skb >>= Class 1 >>= drop'  ) == (return skb >>= (\x -> Class 1 x >>= drop'  )))
     quickCheck ((return skb >>= Class 1 >>= Class 1) == (return skb >>= (\x -> Class 1 x >>= Class 1)))
     quickCheck ((return skb >>= Class 1 >>= Steer 1) == (return skb >>= (\x -> Class 1 x >>= Steer 1)))
