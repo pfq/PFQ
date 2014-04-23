@@ -26,9 +26,10 @@
 
 #include <linux/pf_q-module.h>
 
+#include <pf_q-transmit.h>
 
 static struct sk_buff *
-forward_class(argument_t a, struct sk_buff *skb)
+steer_class(argument_t a, struct sk_buff *skb)
 {
         int *c = argument_as(int, a);
 
@@ -42,7 +43,7 @@ forward_class(argument_t a, struct sk_buff *skb)
 
 
 static struct sk_buff *
-forward_sink(argument_t a, struct sk_buff *skb)
+sink(argument_t a, struct sk_buff *skb)
 {
         if (!is_stolen(skb))
         {
@@ -52,10 +53,34 @@ forward_sink(argument_t a, struct sk_buff *skb)
 }
 
 
+static struct sk_buff *
+forward(argument_t a, struct sk_buff *skb)
+{
+        int *index = argument_as(int, a);
+
+	struct net_device *dev = dev_get_by_index(&init_net, *index);
+	if (dev == NULL) {
+                if (printk_ratelimit())
+                        printk(KERN_INFO "[PFQ] forward: device error!\n");
+                return skb;
+	}
+
+	atomic_inc(&skb->users);
+
+	if (pfq_xmit(skb, dev, skb->queue_mapping) < 0) {
+                if (printk_ratelimit())
+                        printk(KERN_INFO "[PFQ] forward: pfq_xmit error!\n");
+	}
+
+	return skb;
+}
+
+
 struct pfq_monadic_fun_descr forward_functions[] = {
 
-        { "class",              forward_class           },
-        { "sink",               forward_sink            },
+        { "class",              steer_class 	},
+        { "sink",               sink 		},
+	{ "forward", 		forward 	},
 
         { NULL, NULL}};
 
