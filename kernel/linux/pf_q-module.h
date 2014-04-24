@@ -317,7 +317,9 @@ sparse_counter_t * get_counter(struct sk_buff *skb, int n)
         return & cb->ctx->counter[n];
 }
 
-/* utility function: state */
+
+/* utility function: volatile state, persistent state */
+
 
 static inline
 unsigned long get_state(struct sk_buff const *skb)
@@ -329,6 +331,23 @@ static inline
 void set_state(struct sk_buff *skb, unsigned long state)
 {
         PFQ_CB(skb)->state = state;
+}
+
+static inline void *
+__get_persistent(struct sk_buff const *skb, int n)
+{
+	struct pergroup_context *ctx = PFQ_CB(skb)->ctx;
+	spin_lock(&ctx->persistent[n].lock);
+	return ctx->persistent[n].memory;
+}
+
+#define get_persistent(type, skb, n) __builtin_choose_expr(sizeof(type) <= 64, __get_persistent(skb, n) , (void)0)
+
+static inline
+void put_persistent(struct sk_buff const *skb, int n)
+{
+	struct pergroup_context *ctx = PFQ_CB(skb)->ctx;
+	spin_unlock(&ctx->persistent[n].lock);
 }
 
 
