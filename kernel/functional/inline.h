@@ -111,7 +111,7 @@ static inline struct sk_buff *
 conditional(argument_t a, struct sk_buff *skb)
 {
         expression_t * expr = expression(a);
-        PFQ_CB(skb)->right = expr->ptr(skb, expr);
+        PFQ_CB(skb)->action.right = expr->ptr(skb, expr);
         return skb;
 }
 
@@ -119,7 +119,7 @@ static inline struct sk_buff *
 when(argument_t a, struct sk_buff *skb)
 {
         expression_t * expr = expression(a);
-        PFQ_CB(skb)->right = expr->ptr(skb, expr);
+        PFQ_CB(skb)->action.right = expr->ptr(skb, expr);
         return skb;
 }
 
@@ -127,7 +127,7 @@ static inline struct sk_buff *
 unless(argument_t a, struct sk_buff *skb)
 {
         expression_t * expr = expression(a);
-        PFQ_CB(skb)->right = !expr->ptr(skb, expr);
+        PFQ_CB(skb)->action.right = !expr->ptr(skb, expr);
         return skb;
 }
 

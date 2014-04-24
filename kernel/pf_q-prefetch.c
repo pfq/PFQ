@@ -47,7 +47,7 @@ int pfq_prefetch_purge_all(void)
 		pfq_non_intrusive_for_each(skb, n, this_queue)
 		{
                         struct pfq_cb *cb = PFQ_CB(skb);
-                        if (unlikely(has_stolen(cb->action)))
+                        if (unlikely(cb->action.attr & attr_stolen))
                                 continue;
                  	kfree_skb(skb);
 		}

@@ -285,7 +285,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 
         cb = PFQ_CB(skb);
 
-        cb->direct_skb  = direct;
+	cb->direct_skb = direct;
         cb->action.attr = 0;
 
         /* enqueue this skb ... */
@@ -374,7 +374,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 
                                         cb = PFQ_CB(skb);
 
-                                        if (has_stolen(cb->action)) {
+                                        if (cb->action.attr & attr_stolen) {
                                                 continue;
                                         }
 
@@ -455,12 +455,12 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
         {
                 cb = PFQ_CB(skb);
 
-                if (unlikely(has_stolen(cb->action)))
+                if (unlikely(cb->action.attr & attr_stolen))
                         continue;
 
                 if (likely(cb->direct_skb)) {
 
-		        if (unlikely(!capture_incoming && has_ret_to_kernel(cb->action))) {
+		        if (unlikely(!capture_incoming && (cb->action.attr & attr_ret_to_kernel))) {
 
                                 if (cb->direct_skb == 1)
                                         netif_rx(skb);

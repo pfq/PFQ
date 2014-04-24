@@ -170,7 +170,7 @@ pfq_apply(functional_t *call, struct sk_buff *skb)
 {
 	ptrdiff_t infun = (ptrdiff_t)call->fun.eval;
 
-        PFQ_CB(skb)->right = true;
+        PFQ_CB(skb)->action.right = true;
 
 #ifdef PFQ_USE_INLINE_FUN
 
@@ -206,7 +206,7 @@ pfq_bind(struct sk_buff *skb, computation_t *prg)
                 if (is_drop(*a))
                         return skb;
 
-                fun = PFQ_CB(skb)->right ? fun->right : fun->left;
+                fun = PFQ_CB(skb)->action.right ? fun->right : fun->left;
         }
 
         return skb;

@@ -119,8 +119,8 @@ enum action
 
 enum action_attr
 {
-        attr_stolen        = 0x2,
-        attr_ret_to_kernel = 0x4
+        attr_stolen        = 0x1,
+        attr_ret_to_kernel = 0x2
 };
 
 /* action */
@@ -131,6 +131,7 @@ typedef struct
         uint32_t hash;
         uint8_t  type;
         uint8_t  attr;
+	bool right;
 
 } action_t;
 
@@ -143,13 +144,12 @@ struct pfq_cb
 {
         action_t action;
 
+        uint8_t  direct_skb;
+
         unsigned long group_mask;
         unsigned long state;
 
         struct pfq_pergroup_context *ctx;
-
-        char direct_skb;
-        bool right;
 
 } __attribute__((packed));
 
@@ -178,27 +178,13 @@ is_steering(action_t a)
         return a.type == action_steer;
 }
 
-/* attributes */
-
-static inline bool
-has_stolen(action_t a)
-{
-        return a.attr & attr_stolen;
-}
-
-static inline bool
-has_ret_to_kernel(action_t a)
-{
-        return a.attr & attr_ret_to_kernel;
-}
-
 /* packet predicates */
 
 static inline bool
 is_stolen(struct sk_buff *skb)
 {
         struct pfq_cb * cb = PFQ_CB(skb);
-        return has_stolen(cb->action);
+        return cb->action.attr & attr_stolen;
 }
 
 /* action: pass */
