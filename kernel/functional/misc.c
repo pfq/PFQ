@@ -31,7 +31,7 @@
 static struct sk_buff *
 dummy(argument_t a, struct sk_buff *skb)
 {
-        const int *ptr = argument_as(int,a);
+        const int *ptr = get_argument(int,a);
 
         if (printk_ratelimit()) {
                 printk(KERN_INFO "[PFQ] dummy context: %d\n", ptr ? *ptr : 0);
@@ -44,7 +44,7 @@ dummy(argument_t a, struct sk_buff *skb)
 static struct sk_buff *
 counter(argument_t a, struct sk_buff *skb)
 {
-        const int *idx = argument_as(int,a);
+        const int *idx = get_argument(int,a);
 
         sparse_counter_t * ctr;
 

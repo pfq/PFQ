@@ -85,35 +85,35 @@ __is_flow(argument_t a, struct sk_buff const *skb)
 static bool
 __is_l3_proto(argument_t a, struct sk_buff const *skb)
 {
-	const u16 *type = argument_as(u16, a);
+	const u16 *type = get_argument(u16, a);
 	return is_l3_proto(skb, *type);
 }
 
 static bool
 __is_l4_proto(argument_t a, struct sk_buff const *skb)
 {
-	const u8 *protocol = argument_as(u8, a);
+	const u8 *protocol = get_argument(u8, a);
 	return is_l4_proto(skb, *protocol);
 }
 
 static bool
 __has_port(argument_t a, struct sk_buff const *skb)
 {
-	const u16 *port = argument_as(u16, a);
+	const u16 *port = get_argument(u16, a);
 	return has_port(skb, *port);
 }
 
 static bool
 __has_src_port(argument_t a, struct sk_buff const *skb)
 {
-	const u16 *port = argument_as(u16, a);
+	const u16 *port = get_argument(u16, a);
 	return has_src_port(skb, *port);
 }
 
 static bool
 __has_dst_port(argument_t a, struct sk_buff const *skb)
 {
-	const u16 *port = argument_as(u16, a);
+	const u16 *port = get_argument(u16, a);
 	return has_dst_port(skb, *port);
 }
 
@@ -126,14 +126,14 @@ __has_vlan(argument_t a, struct sk_buff const *skb)
 static bool
 __has_vid(argument_t a, struct sk_buff const *skb)
 {
-	const int *id = argument_as(int, a);
+	const int *id = get_argument(int, a);
         return  has_vid(skb, *id);
 }
 
 static bool
 __has_mark(argument_t a, struct sk_buff const *skb)
 {
-	const unsigned long *value = argument_as(unsigned long, a);
+	const unsigned long *value = get_argument(unsigned long, a);
 	return get_state(skb) == *value;
 }
 

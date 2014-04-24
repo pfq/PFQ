@@ -30,35 +30,35 @@
 static inline struct sk_buff *
 filter_l3_proto(argument_t a, struct sk_buff *skb)
 {
-	const u16 *type = argument_as(u16, a);
+	const u16 *type = get_argument(u16, a);
         return is_l3_proto(skb, *type) ? skb : drop(skb);
 }
 
 static inline struct sk_buff *
 filter_l4_proto(argument_t a, struct sk_buff *skb)
 {
-	const u8 *proto = argument_as(u8, a);
+	const u8 *proto = get_argument(u8, a);
         return is_l4_proto(skb, *proto) ? skb : drop(skb);
 }
 
 static inline struct sk_buff *
 filter_port(argument_t a, struct sk_buff *skb)
 {
-	const u16 *port = argument_as(u16, a);
+	const u16 *port = get_argument(u16, a);
         return has_port(skb, *port) ? skb : drop(skb);
 }
 
 static inline struct sk_buff *
 filter_src_port(argument_t a, struct sk_buff *skb)
 {
-	const u16 *port = argument_as(u16, a);
+	const u16 *port = get_argument(u16, a);
         return has_src_port(skb, *port) ? skb : drop(skb);
 }
 
 static inline struct sk_buff *
 filter_dst_port(argument_t a, struct sk_buff *skb)
 {
-	const u16 *port = argument_as(u16, a);
+	const u16 *port = get_argument(u16, a);
         return has_dst_port(skb, *port) ? skb : drop(skb);
 }
 

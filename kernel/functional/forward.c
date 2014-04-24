@@ -43,7 +43,7 @@ sink(argument_t a, struct sk_buff *skb)
 static struct sk_buff *
 forward(argument_t a, struct sk_buff *skb)
 {
-        int *index = argument_as(int, a);
+        int *index = get_argument(int, a);
 
 	struct net_device *dev = dev_get_by_index(&init_net, *index);
 	if (dev == NULL) {

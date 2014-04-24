@@ -102,7 +102,7 @@
 static inline struct sk_buff *
 mark(argument_t a, struct sk_buff *skb)
 {
-	const unsigned long *value = argument_as(unsigned long, a);
+	const unsigned long *value = get_argument(unsigned long, a);
 	set_state(skb, *value);
 	return skb;
 }
@@ -223,7 +223,7 @@ forward_kernel(argument_t a, struct sk_buff *skb)
 static inline struct sk_buff *
 forward_class(argument_t a, struct sk_buff *skb)
 {
-        int *c = argument_as(int, a);
+        int *c = get_argument(int, a);
 
         if (!c) {
                 if (printk_ratelimit())
