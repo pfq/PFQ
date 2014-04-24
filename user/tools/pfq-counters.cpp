@@ -200,26 +200,35 @@ namespace test
                     }
             }
 
-            std::vector<qFunction> fs;
+            std::vector<FunDescr> fs;
             if (!opt::function.empty() && (m_id == 0))
             {
                 std::unique_ptr<char> f(strdup(opt::function.c_str()));
 
                 auto p = strtok(f.get(), ":");
+                int n = 0;
                 while (p)
                 {
-                    // fs = std::move(fs) >> fun(p);
-                    fs.push_back(qfun(p));
+                    fs.push_back(FunDescr{ pfq_monadic_fun,
+                                           std::string(p),
+                                           std::shared_ptr<void>(),
+                                           0,
+                                           0,
+                                           n+1
+                                           }
+                                 );
                     p = strtok(nullptr, ":");
+
+                    n++;
                 }
             }
 
             if (!fs.empty())
             {
-                std::cout << "fun: " << fs.begin()->name;
+                std::cout << "fun: " << fs.begin()->symbol;
 
-                std::for_each(std::next(fs.begin(),1), fs.end(), [](qFunction &fun) {
-                                std::cout << " >-> " << fun.name;
+                std::for_each(std::next(fs.begin(),1), fs.end(), [](FunDescr &fun) {
+                                std::cout << " >-> " << fun.symbol;
                               });
                 std::cout << std::endl;
             }
