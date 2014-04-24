@@ -656,20 +656,16 @@ namespace net {
         // new functional program
         //
 
-        void
-        set_group_computation(int gid, pfq_computation_descr *prog)
+        template <typename Comp>
+        void set_group_computation(int gid, Comp const &comp)
         {
-            struct pfq_group_computation p { gid, prog };
-            if (::setsockopt(fd_, PF_Q, Q_SO_GROUP_FUN_PROG, &p, sizeof(p)) == -1)
-                throw pfq_error(errno, "PFQ: group computation error");
+            auto descr = serialize(0, comp).first;
+            set_group_computation(gid, descr);
         }
 
-        template <typename Comp>
         void
-        set_group_computation(int gid, Comp const &comp)
+        set_group_computation(int gid, std::vector<pfq_lang::FunDescr> const &ser)
         {
-            auto ser = serialize(0, comp).first;
-
             std::unique_ptr<pfq_computation_descr> prg (
                 reinterpret_cast<pfq_computation_descr *>(malloc(sizeof(size_t) * 2 + sizeof(pfq_functional_descr) * ser.size())));
 
@@ -690,6 +686,14 @@ namespace net {
             }
 
             set_group_computation(gid, prg.get());
+        }
+
+        void
+        set_group_computation(int gid, pfq_computation_descr *prog)
+        {
+            struct pfq_group_computation p { gid, prog };
+            if (::setsockopt(fd_, PF_Q, Q_SO_GROUP_FUN_PROG, &p, sizeof(p)) == -1)
+                throw pfq_error(errno, "PFQ: group computation error");
         }
 
         //
