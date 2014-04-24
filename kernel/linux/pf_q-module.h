@@ -46,6 +46,15 @@ extern struct list_head pfq_predicate_cat;
 extern int pfq_symtable_register_functions  (const char *module, struct list_head *category, struct pfq_function_descr *fun);
 extern int pfq_symtable_unregister_functions(const char *module, struct list_head *category, struct pfq_function_descr *fun);
 
+/**** function properties ****/
+
+#define FUN_PREDICATE 		       	(1ULL<<0)
+#define FUN_COMBINATOR 			(1ULL<<1)
+#define FUN_ACTION 			(1ULL<<2)
+
+#define FUN_WITH_ARG			(1ULL<<10)
+#define FUN_WITH_PREDICATE 		(1ULL<<11)
+
 
 /**** argument_t: note, the size of the arg is @ (size_t *)addr - 1; ****/
 
@@ -57,8 +66,8 @@ typedef union
 } argument_t;
 
 
-#define get_argument(type, a)   __builtin_choose_expr(__builtin_types_compatible_p(argument_t, typeof(a)), (type *)a.arg,  (void)0)
-#define expression(a)          __builtin_choose_expr(__builtin_types_compatible_p(argument_t, typeof(a)), a.expr, (void)0)
+#define get_argument(type, a)  __builtin_choose_expr(__builtin_types_compatible_p(argument_t, typeof(a)), (type *)a.arg,  (void)0)
+#define expression(a)  __builtin_choose_expr(__builtin_types_compatible_p(argument_t, typeof(a)), a.expr, (void)0)
 
 
 /**** expression_t: polymorphic expression *****/
@@ -84,25 +93,29 @@ typedef bool (*combinator_ptr_t)(expression_t *expr1, expression_t *expr2, struc
 struct pfq_function_descr
 {
         const char *    symbol;
-        void * 	ptr;
+        void * 		ptr;
+        uint64_t	properties;
 };
 
 struct pfq_monadic_fun_descr
 {
         const char *    symbol;
-        function_ptr_t ptr;
+        function_ptr_t 	ptr;
+        uint64_t	properties;
 };
 
 struct pfq_predicate_fun_descr
 {
-        const char * symbol;
+        const char * 	symbol;
         predicate_ptr_t ptr;
+        uint64_t	properties;
 };
 
 struct pfq_combinator_fun_descr
 {
-        const char * symbol;
+        const char * 	 symbol;
         combinator_ptr_t ptr;
+        uint64_t	 properties;
 };
 
 

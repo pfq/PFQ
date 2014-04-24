@@ -49,9 +49,9 @@ bool xor(expression_t *p1, expression_t *p2, struct sk_buff const *skb)
 
 struct pfq_combinator_fun_descr combinator_functions[] = {
 
-        { "or",         or  },
-        { "and",        and },
-        { "xor",        xor },
+        { "or",   	or  , 	FUN_COMBINATOR },
+        { "and",        and , 	FUN_COMBINATOR },
+        { "xor",        xor , 	FUN_COMBINATOR },
 
         { NULL, NULL}};
 

@@ -64,11 +64,11 @@ filter_dst_port(argument_t a, struct sk_buff *skb)
 
 
 struct pfq_monadic_fun_descr filter_functions[] = {
- 	{ "l3_proto", 	filter_l3_proto    	},
-        { "l4_proto",   filter_l4_proto     	},
-        { "port",      	filter_port 		},
-        { "src_port",	filter_src_port 	},
-        { "dst_port",   filter_dst_port 	},
+        { "port",      	filter_port 	 , FUN_ACTION | FUN_WITH_ARG   },
+        { "src_port",	filter_src_port  , FUN_ACTION | FUN_WITH_ARG   },
+        { "dst_port",   filter_dst_port  , FUN_ACTION | FUN_WITH_ARG   },
+ 	{ "l3_proto", 	filter_l3_proto  , FUN_ACTION | FUN_WITH_ARG   },
+        { "l4_proto",   filter_l4_proto  , FUN_ACTION | FUN_WITH_ARG   },
 
         { NULL, NULL}};
 

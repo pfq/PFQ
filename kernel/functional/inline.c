@@ -25,27 +25,27 @@
 
 struct pfq_function_descr inline_functions[] = {
 
-        { "conditional",	INLINE_FUN_ADDR(conditional) 		},
-	{ "mark", 		INLINE_FUN_ADDR(mark) 			},
-        { "when",       	INLINE_FUN_ADDR(when) 			},
-        { "unless",     	INLINE_FUN_ADDR(unless) 		},
+        { "conditional",	INLINE_FUN_ADDR(conditional) 	, FUN_ACTION | FUN_WITH_PREDICATE 	},
+        { "when",       	INLINE_FUN_ADDR(when) 		, FUN_ACTION | FUN_WITH_PREDICATE	},
+        { "unless",     	INLINE_FUN_ADDR(unless) 	, FUN_ACTION | FUN_WITH_PREDICATE	},
 
-        { "id",			INLINE_FUN_ADDR(id)       		},
-        { "ip",         	INLINE_FUN_ADDR(filter_ip)       	},
-        { "ip6",        	INLINE_FUN_ADDR(filter_ip6)      	},
-        { "udp",        	INLINE_FUN_ADDR(filter_udp)      	},
-        { "tcp",        	INLINE_FUN_ADDR(filter_tcp)      	},
-        { "icmp",       	INLINE_FUN_ADDR(filter_icmp)     	},
-        { "udp6",        	INLINE_FUN_ADDR(filter_udp6)      	},
-        { "tcp6",        	INLINE_FUN_ADDR(filter_tcp6)      	},
-        { "icmp6",       	INLINE_FUN_ADDR(filter_icmp6)     	},
-        { "flow",       	INLINE_FUN_ADDR(filter_flow)     	},
-        { "vlan",       	INLINE_FUN_ADDR(filter_vlan)     	},
+        { "id",			INLINE_FUN_ADDR(id)           	, FUN_ACTION  	},
+        { "ip",         	INLINE_FUN_ADDR(filter_ip)    	, FUN_ACTION   	},
+        { "ip6",        	INLINE_FUN_ADDR(filter_ip6)   	, FUN_ACTION   	},
+        { "udp",        	INLINE_FUN_ADDR(filter_udp)   	, FUN_ACTION   	},
+        { "tcp",        	INLINE_FUN_ADDR(filter_tcp)   	, FUN_ACTION   	},
+        { "icmp",       	INLINE_FUN_ADDR(filter_icmp)  	, FUN_ACTION   	},
+        { "udp6",        	INLINE_FUN_ADDR(filter_udp6)  	, FUN_ACTION    },
+        { "tcp6",        	INLINE_FUN_ADDR(filter_tcp6)  	, FUN_ACTION   	},
+        { "icmp6",       	INLINE_FUN_ADDR(filter_icmp6) 	, FUN_ACTION    },
+        { "flow",       	INLINE_FUN_ADDR(filter_flow)  	, FUN_ACTION   	},
+        { "vlan",       	INLINE_FUN_ADDR(filter_vlan)  	, FUN_ACTION   	},
 
-        { "drop",       	INLINE_FUN_ADDR(forward_drop) 		},
-        { "broadcast",  	INLINE_FUN_ADDR(forward_broadcast)   	},
-        { "kernel",     	INLINE_FUN_ADDR(forward_kernel) 	},
-        { "class",     		INLINE_FUN_ADDR(forward_class) 		},
+        { "drop",       	INLINE_FUN_ADDR(forward_drop) 	  , FUN_ACTION  },
+        { "broadcast",  	INLINE_FUN_ADDR(forward_broadcast), FUN_ACTION  },
+        { "kernel",     	INLINE_FUN_ADDR(forward_kernel)   , FUN_ACTION  },
+        { "class",		INLINE_FUN_ADDR(forward_class) 	  , FUN_ACTION | FUN_WITH_ARG },
+	{ "mark", 		INLINE_FUN_ADDR(mark) 		  , FUN_ACTION | FUN_WITH_ARG },
 
         { NULL, NULL}};
 

@@ -37,7 +37,7 @@ dummy(argument_t a, struct sk_buff *skb)
                 printk(KERN_INFO "[PFQ] dummy context: %d\n", ptr ? *ptr : 0);
         }
 
-        return copy(skb);
+        return skb;
 }
 
 
@@ -68,8 +68,8 @@ counter(argument_t a, struct sk_buff *skb)
 
 struct pfq_function_descr misc_functions[] = {
 
-        { "counter",            counter         },
-        { "dummy",              dummy           },
+        { "counter",            counter , FUN_ACTION | FUN_WITH_ARG 	},
+        { "dummy",              dummy   , FUN_ACTION | FUN_WITH_ARG 	},
 
         { NULL, NULL}};
 

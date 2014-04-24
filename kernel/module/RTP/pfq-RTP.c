@@ -134,14 +134,14 @@ steering_rtp(argument_t a, struct sk_buff *skb)
 
 struct pfq_function_descr hooks_f[] = {
 
-	{ "rtp",       filter_rtp   	},
-	{ "steer_rtp", steering_rtp 	},
+	{ "rtp",       filter_rtp  , 	FUN_ACTION 	},
+	{ "steer_rtp", steering_rtp, 	FUN_ACTION 	},
 	{ NULL, NULL}};
 
 
 struct pfq_predicate_fun_descr hooks_p[] = {
 
-	{ "is_rtp",     is_rtp 		},
+	{ "is_rtp",     is_rtp, 	FUN_PREDICATE 	},
 	{ NULL, NULL}};
 
 
