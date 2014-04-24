@@ -70,7 +70,8 @@ static inline void smp_wmb() { barrier(); }
 #endif /* __KERNEL__ */
 
 
-#define Q_MAX_COUNTERS           8
+#define Q_MAX_COUNTERS           	64
+#define Q_MAX_PERSISTENT 		1024
 
 
 /* Common header */

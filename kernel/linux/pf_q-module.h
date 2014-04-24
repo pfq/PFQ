@@ -123,7 +123,22 @@ enum action_attr
         attr_ret_to_kernel = 0x2
 };
 
+
 /* action */
+
+#define Q_PERSISTENT_MEM 	64
+
+struct pergroup_context
+{
+        sparse_counter_t counter[Q_MAX_COUNTERS];
+
+	struct _persistent {
+
+		spinlock_t 	lock;
+		char 		memory[Q_PERSISTENT_MEM];
+
+	} persistent [Q_MAX_PERSISTENT];
+};
 
 typedef struct
 {
@@ -135,10 +150,6 @@ typedef struct
 
 } action_t;
 
-struct pfq_pergroup_context
-{
-        sparse_counter_t counter[Q_MAX_COUNTERS];
-};
 
 struct pfq_cb
 {
@@ -149,9 +160,10 @@ struct pfq_cb
         unsigned long group_mask;
         unsigned long state;
 
-        struct pfq_pergroup_context *ctx;
+        struct pergroup_context *ctx;
 
 } __attribute__((packed));
+
 
 #define PFQ_CB(skb) ((struct pfq_cb *)(skb)->cb)
 

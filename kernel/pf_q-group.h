@@ -51,6 +51,7 @@
                 return -EACCES; \
         }
 
+
 struct pfq_group
 {
         int policy;                                     /* policy for the group */
@@ -70,7 +71,7 @@ struct pfq_group
         sparse_counter_t lost;
         sparse_counter_t drop;
 
-        struct pfq_pergroup_context ctx;
+        struct pergroup_context ctx;
 };
 
 

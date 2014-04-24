@@ -103,6 +103,12 @@ __pfq_group_init(int gid)
         {
                 sparse_set(&g->ctx.counter[i], 0);
         }
+
+	for(i = 0; i < Q_MAX_PERSISTENT; i++)
+	{
+		spin_lock_init(&g->ctx.persistent[i].lock);
+		memset(g->ctx.persistent[i].memory, 0, sizeof(g->ctx.persistent[i].memory));
+	}
 }
 
 
