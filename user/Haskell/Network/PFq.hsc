@@ -773,8 +773,8 @@ groupComputation :: Ptr PFqTag
 groupComputation hdl gid comp = do
     let (meta,_) = serialize 0 comp
     allocaBytes (sizeOf (undefined :: CSize) * 2 + getConstant group_fun_descr_size * length meta)  $ \ ptr -> do
-        pokeByteOff ptr 0                            (fromIntegral (length meta) :: CSize)  -- size
-        pokeByteOff ptr (sizeOf(undefined :: CSize)) (0 :: CSize)                           -- entry_point
+        pokeByteOff ptr 0 (fromIntegral (length meta) :: CSize)     -- size
+        pokeByteOff ptr (sizeOf(undefined :: CSize)) (0 :: CSize)   -- entry_point
         withMany withMetaFun meta $ \tmps -> do
             let offset n = sizeOf(undefined :: CSize) * 2 + getConstant group_fun_descr_size * n
             forM_ (zip [0..] tmps) $ \(n, (des, fname, aptr, asize)) -> do
@@ -788,7 +788,7 @@ groupComputation hdl gid comp = do
 
                 pokeByteOff ptr (offset n) (StorableFunDescr ftype fname aptr (fromIntegral asize) (fromIntegral left) (fromIntegral right))
 
-            pfq_set_group_program hdl (fromIntegral gid) ptr >>= throwPFqIf_ hdl (== -1)
+            pfq_set_group_computation hdl (fromIntegral gid) ptr >>= throwPFqIf_ hdl (== -1)
 
 -- dispatch:
 --
@@ -929,7 +929,7 @@ foreign import ccall unsafe pfq_get_stats           :: Ptr PFqTag -> Ptr Statist
 foreign import ccall unsafe pfq_get_group_stats     :: Ptr PFqTag -> CInt -> Ptr Statistics -> IO CInt
 foreign import ccall unsafe pfq_get_group_counters  :: Ptr PFqTag -> CInt -> Ptr Counters -> IO CInt
 
-foreign import ccall unsafe pfq_set_group_program   :: Ptr PFqTag -> CInt -> Ptr a -> IO CInt
+foreign import ccall unsafe pfq_set_group_computation :: Ptr PFqTag -> CInt -> Ptr a -> IO CInt
 
 foreign import ccall pfq_dispatch                   :: Ptr PFqTag -> FunPtr CPFqCallback -> CLong -> Ptr Word8 -> IO CInt
 foreign import ccall "wrapper" make_callback        :: CPFqCallback -> IO (FunPtr CPFqCallback)
