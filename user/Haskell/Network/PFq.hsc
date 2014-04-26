@@ -772,15 +772,6 @@ groupComputation :: Ptr PFqTag
 
 groupComputation hdl gid comp = do
     let (meta,_) = serialize 0 comp
-    groupFunDescr hdl gid meta
-
-
-groupFunDescr :: Ptr PFqTag
-              -> Int                        -- group id
-              -> [FunDescr]                 -- computation from (PFqLang)
-              -> IO ()
-
-groupFunDescr hdl gid meta = do
     allocaBytes (sizeOf (undefined :: CSize) * 2 + getConstant group_fun_descr_size * length meta)  $ \ ptr -> do
         pokeByteOff ptr 0 (fromIntegral (length meta) :: CSize)     -- size
         pokeByteOff ptr (sizeOf(undefined :: CSize)) (0 :: CSize)   -- entry_point

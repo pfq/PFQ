@@ -659,13 +659,8 @@ namespace net {
         template <typename Comp>
         void set_group_computation(int gid, Comp const &comp)
         {
-            auto descr = serialize(0, comp).first;
-            set_group_computation(gid, descr);
-        }
+            auto ser = pfq_lang::term::serialize(0, comp).first;
 
-        void
-        set_group_computation(int gid, std::vector<pfq_lang::FunDescr> const &ser)
-        {
             std::unique_ptr<pfq_computation_descr> prg (
                 reinterpret_cast<pfq_computation_descr *>(malloc(sizeof(size_t) * 2 + sizeof(pfq_functional_descr) * ser.size())));
 
