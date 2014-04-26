@@ -461,6 +461,24 @@ namespace pfq_lang
             return std::make_pair(std::move(v1) + std::move(v2), n2);
         }
 
+        // serialize a vector of simple Fun
+        //
+
+        static inline std::pair<std::vector<FunDescr>, int>
+        serialize (int n, std::vector<Fun> const &cont)
+        {
+            std::vector<FunDescr> ret, v;
+            int n1 = n;
+
+            for(auto & f : cont)
+            {
+                std::tie(v, n1) = serialize(n1, f);
+                ret = std::move(ret) + v;
+            }
+
+            return std::make_pair(ret, n1);
+        }
+
     } // namespace term
 
     ////// public functions:
