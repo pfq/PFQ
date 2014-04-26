@@ -87,8 +87,8 @@ dumper dev = do
         Q.bindGroup q gid dev (-1)
         Q.enable q
 
-        Q.groupComputation q gid (ip >-> counter 0
-                                    >-> conditional is_icmp
+        Q.groupComputation q gid (ip >-> addr "192.168.0.0" 16 >-> counter 0
+                                    >-> conditional (is_icmp .&&. has_addr "192.168.0.0" 16)
                                         (counter 1 >-> mark 1 >-> steer_ip >-> when' (has_mark 1) (counter 2))
                                         drop')
 

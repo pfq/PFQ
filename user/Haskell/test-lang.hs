@@ -29,11 +29,11 @@ prettyPrint comp = let (xs,_) = serialize 0 comp
                  in forM_ (zip [0..] xs) $ \(n, x) -> putStrLn $ "    " ++ show n ++ ": " ++ show x
 
 main = do
-        let mycond = is_ip .&. (is_tcp .|. is_udp)
+        let mycond = is_ip .&&. (is_tcp .||. is_udp)
         let mycond1 = is_udp
 
         let comp = steer_rtp >-> dummy 24
-                    >-> (conditional (mycond  .|. mycond1)
+                    >-> (conditional (mycond  .||. mycond1)
                                         steer_ip
                                         (counter 1 >-> drop')
                         ) >-> when' is_tcp (counter 2)  >-> dummy 11
