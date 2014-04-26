@@ -26,6 +26,8 @@
 #include <pfq-lang.hpp>
 #include <functional>
 
+#include <arpa/inet.h>
+
 namespace pfq_lang
 {
     using namespace std::placeholders;
@@ -86,6 +88,15 @@ namespace pfq_lang
         }
     };
 
+    // utility function
+    //
+
+    static inline uint32_t
+    prefix2mask(size_t n)
+    {
+        return htonl(~((1ULL << (32-n)) - 1));
+    };
+
     namespace
     {
         // default predicates:
@@ -105,6 +116,33 @@ namespace pfq_lang
         auto has_port     = [] (uint16_t port) { return predicate1 ("is_port", port); };
         auto has_src_port = [] (uint16_t port) { return predicate1 ("is_src_port", port); };
         auto has_dst_port = [] (uint16_t port) { return predicate1 ("is_dst_port", port); };
+
+        auto has_addr = [] (const char *net, int prefix)
+        {
+            struct in_addr addr;
+            if (inet_pton(AF_INET, net, &addr) <= 0)
+                throw std::runtime_error("pfq_lang::net");
+
+            return predicate1("has_addr", static_cast<uint64_t>(addr.s_addr) << 32 | prefix2mask(prefix));
+        };
+
+        auto has_src_addr = [] (const char *net, int prefix)
+        {
+            struct in_addr addr;
+            if (inet_pton(AF_INET, net, &addr) <= 0)
+                throw std::runtime_error("pfq_lang::net");
+
+            return predicate1("has_src_addr", static_cast<uint64_t>(addr.s_addr) << 32 | prefix2mask(prefix));
+        };
+
+        auto has_dst_addr = [] (const char *net, int prefix)
+        {
+            struct in_addr addr;
+            if (inet_pton(AF_INET, net, &addr) <= 0)
+                throw std::runtime_error("pfq_lang::net");
+
+            return predicate1("has_dst_addr", static_cast<uint64_t>(addr.s_addr) << 32 | prefix2mask(prefix));
+        };
 
         auto is_flow    = predicate ("is_flow");
         auto has_vlan   = predicate ("has_vlan");
@@ -152,6 +190,33 @@ namespace pfq_lang
         auto port       = [] (uint16_t port) { return computation1 ("port", port); };
         auto src_port   = [] (uint16_t port) { return computation1 ("src_port", port); };
         auto dst_port   = [] (uint16_t port) { return computation1 ("dst_port", port); };
+
+        auto addr = [] (const char *net, int prefix)
+        {
+            struct in_addr addr;
+            if (inet_pton(AF_INET, net, &addr) <= 0)
+                throw std::runtime_error("pfq_lang::net");
+
+            return computation1("addr", static_cast<uint64_t>(addr.s_addr) << 32 | prefix2mask(prefix));
+        };
+
+        auto src_addr = [] (const char *net, int prefix)
+        {
+            struct in_addr addr;
+            if (inet_pton(AF_INET, net, &addr) <= 0)
+                throw std::runtime_error("pfq_lang::net");
+
+            return computation1("src_addr", static_cast<uint64_t>(addr.s_addr) << 32 | prefix2mask(prefix));
+        };
+
+        auto dst_addr = [] (const char *net, int prefix)
+        {
+            struct in_addr addr;
+            if (inet_pton(AF_INET, net, &addr) <= 0)
+                throw std::runtime_error("pfq_lang::net");
+
+            return computation1("dst_addr", static_cast<uint64_t>(addr.s_addr) << 32 | prefix2mask(prefix));
+        };
 
         auto hdummy      = std::bind(hcomp(),  "hdummy", _1);
         auto when        = std::bind(hcomp1(), "when", _1, _2);
