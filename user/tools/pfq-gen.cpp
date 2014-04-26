@@ -29,6 +29,9 @@
 #include <netinet/ip.h>
 #include <netinet/udp.h>
 
+#include "string.hpp"
+
+
 char *packet = nullptr;
 
 char *make_packet(size_t n)
@@ -70,29 +73,6 @@ namespace opt
     size_t slots   = 4096;
     bool   async   = false;
     bool   rand_ip = false;
-}
-
-
-std::vector<std::string>
-split(const char *value, char c)
-{
-    const char * p   = value;
-    const char * end = value + strlen(value);
-
-    const char * q;
-
-    std::vector<std::string> ret;
-
-    for(; (q = std::find(p, end, c)) != end; )
-    {
-        ret.emplace_back(std::string(p, q));
-        p = q + 1;
-    }
-
-    if (p != end)
-        ret.emplace_back(p);
-
-    return ret;
 }
 
 // eth0:...:ethx[.core.gid.queue]]
@@ -138,9 +118,9 @@ make_binding(const char *value)
 {
     binding ret { {}, {} };
 
-    auto vec = split(value, '.');
+    auto vec = split(value, ".");
 
-    ret.dev = split(vec[0].c_str(), ':');
+    ret.dev = split(vec[0].c_str(), ":");
 
     if (vec.size() > 1)
     {

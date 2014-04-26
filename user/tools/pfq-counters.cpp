@@ -28,6 +28,8 @@
 #include <netinet/ip.h>
 #include <netinet/udp.h>
 
+#include "string.hpp"
+
 namespace opt {
 
     int sleep_microseconds;
@@ -42,28 +44,6 @@ namespace opt {
     static const int seconds = 600;
 }
 
-
-std::vector<std::string>
-split(const char *value, char c)
-{
-    const char * p   = value;
-    const char * end = value + strlen(value);
-
-    const char * q;
-
-    std::vector<std::string> ret;
-
-    for(; (q = std::find(p, end, c)) != end; )
-    {
-        ret.emplace_back(std::string(p, q));
-        p = q + 1;
-    }
-
-    if (p != end)
-        ret.emplace_back(p);
-
-    return ret;
-}
 
 // eth0:...:ethx[.core[.gid[.queue.queue...]]]
 
@@ -110,9 +90,9 @@ make_binding(const char *value)
 {
     binding ret { {}, {}, -1, -1 };
 
-    auto vec = split(value, '.');
+    auto vec = split(value, ".");
 
-    ret.dev = split(vec[0].c_str(), ':');
+    ret.dev = split(vec[0].c_str(), ":");
 
     if (vec.size() > 1)
         ret.core = std::atoi(vec[1].c_str());
@@ -200,35 +180,23 @@ namespace test
                     }
             }
 
-            std::vector<FunDescr> fs;
+            std::vector<pfq_lang::term::Fun> fs;
+
             if (!opt::function.empty() && (m_id == 0))
             {
-                std::unique_ptr<char> f(strdup(opt::function.c_str()));
-
-                auto p = strtok(f.get(), ":");
-                int n = 0;
-                while (p)
+                auto comp = split(opt::function, ">->");
+                for(auto & f : comp)
                 {
-                    fs.push_back(FunDescr{ pfq_monadic_fun,
-                                           std::string(p),
-                                           std::shared_ptr<void>(),
-                                           0,
-                                           0,
-                                           n+1
-                                           }
-                                 );
-                    p = strtok(nullptr, ":");
-
-                    n++;
+                    fs.push_back(computation(trim(f)));
                 }
             }
 
             if (!fs.empty())
             {
-                std::cout << "fun: " << fs.begin()->symbol;
+                std::cout << "fun: " << fs.front().name_;
 
-                std::for_each(std::next(fs.begin(),1), fs.end(), [](FunDescr &fun) {
-                                std::cout << " >-> " << fun.symbol;
+                std::for_each(std::next(fs.begin(),1), fs.end(), [](pfq_lang::term::Fun &fun) {
+                                std::cout << " >-> " << fun.name_;
                               });
                 std::cout << std::endl;
             }
