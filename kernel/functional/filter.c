@@ -62,11 +62,51 @@ filter_dst_port(argument_t a, struct sk_buff *skb)
         return has_dst_port(skb, *port) ? skb : drop(skb);
 }
 
+static inline struct sk_buff *
+filter_addr(argument_t a, struct sk_buff *skb)
+{
+	const u64 *data = get_argument(u64, a);
+	uint32_t addr = *data >> 32;
+	uint32_t mask = *data & 0xffffffff;
+
+	pr_devel("[PFQ] filter_net: %pI4 %pI4\n", &addr, &mask);
+
+	return has_addr(skb, addr, mask) ? skb : drop(skb);
+}
+
+static inline struct sk_buff *
+filter_src_addr(argument_t a, struct sk_buff *skb)
+{
+	const u64 *data = get_argument(u64, a);
+	uint32_t addr = *data >> 32;
+	uint32_t mask = *data & 0xffffffff;
+
+	pr_devel("[PFQ] filter_net: %pI4 %pI4\n", &addr, &mask);
+
+	return has_src_addr(skb, addr, mask) ? skb : drop(skb);
+}
+
+static inline struct sk_buff *
+filter_dst_addr(argument_t a, struct sk_buff *skb)
+{
+	const u64 *data = get_argument(u64, a);
+	uint32_t addr = *data >> 32;
+	uint32_t mask = *data & 0xffffffff;
+
+	pr_devel("[PFQ] filter_net: %pI4 %pI4\n", &addr, &mask);
+
+	return has_dst_addr(skb, addr, mask) ? skb : drop(skb);
+}
+
 
 struct pfq_monadic_fun_descr filter_functions[] = {
+
         { "port",      	filter_port 	 , FUN_ACTION | FUN_WITH_ARG   },
         { "src_port",	filter_src_port  , FUN_ACTION | FUN_WITH_ARG   },
         { "dst_port",   filter_dst_port  , FUN_ACTION | FUN_WITH_ARG   },
+        { "addr",      	filter_addr	 , FUN_ACTION | FUN_WITH_ARG   },
+        { "src_addr",   filter_src_addr	 , FUN_ACTION | FUN_WITH_ARG   },
+        { "dst_addr",   filter_dst_addr	 , FUN_ACTION | FUN_WITH_ARG   },
  	{ "l3_proto", 	filter_l3_proto  , FUN_ACTION | FUN_WITH_ARG   },
         { "l4_proto",   filter_l4_proto  , FUN_ACTION | FUN_WITH_ARG   },
 
