@@ -137,6 +137,38 @@ __has_mark(argument_t a, struct sk_buff const *skb)
 	return get_state(skb) == *value;
 }
 
+static bool
+__has_addr(argument_t a, struct sk_buff const *skb)
+{
+	const u64 *data = get_argument(u64, a);
+	uint32_t addr = *data >> 32;
+	uint32_t mask = *data & 0xffffffff;
+
+	return has_addr(skb, addr, mask);
+}
+
+
+static bool
+__has_src_addr(argument_t a, struct sk_buff const *skb)
+{
+	const u64 *data = get_argument(u64, a);
+	uint32_t addr = *data >> 32;
+	uint32_t mask = *data & 0xffffffff;
+
+	return has_src_addr(skb, addr, mask);
+}
+
+static bool
+__has_dst_addr(argument_t a, struct sk_buff const *skb)
+{
+	const u64 *data = get_argument(u64, a);
+	uint32_t addr = *data >> 32;
+	uint32_t mask = *data & 0xffffffff;
+
+	return has_dst_addr(skb, addr, mask);
+}
+
+
 struct pfq_predicate_fun_descr predicate_functions[] = {
 
         { "is_ip", 	 __is_ip        , FUN_PREDICATE },
@@ -156,6 +188,9 @@ struct pfq_predicate_fun_descr predicate_functions[] = {
         { "has_dst_port",__has_dst_port , FUN_PREDICATE | FUN_WITH_ARG },
         { "has_vid",     __has_vid	, FUN_PREDICATE | FUN_WITH_ARG },
         { "has_mark",    __has_mark     , FUN_PREDICATE | FUN_WITH_ARG },
+        { "has_addr",    __has_addr     , FUN_PREDICATE | FUN_WITH_ARG },
+        { "has_src_addr",__has_src_addr , FUN_PREDICATE | FUN_WITH_ARG },
+        { "has_dst_addr",__has_dst_addr , FUN_PREDICATE | FUN_WITH_ARG },
 
         { NULL, NULL}};
 
