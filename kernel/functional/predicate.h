@@ -194,6 +194,67 @@ is_icmp6(struct sk_buff const *skb)
         return false;
 }
 
+
+static inline bool
+has_addr(struct sk_buff const *skb, uint32_t addr, uint32_t mask)
+{
+	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP))
+	{
+		struct iphdr _iph;
+    		const struct iphdr *ip;
+
+		ip = skb_header_pointer(skb, skb->mac_len, sizeof(_iph), &_iph);
+ 		if (ip == NULL)
+                        return false;
+
+		if ((ip->saddr & mask) == (addr & mask) ||
+		    (ip->daddr & mask) == (addr & mask))
+			return true;
+	}
+
+        return false;
+}
+
+
+static inline bool
+has_src_addr(struct sk_buff const *skb, uint32_t addr, uint32_t mask)
+{
+	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP))
+	{
+		struct iphdr _iph;
+    		const struct iphdr *ip;
+
+		ip = skb_header_pointer(skb, skb->mac_len, sizeof(_iph), &_iph);
+ 		if (ip == NULL)
+                        return false;
+
+		if ((ip->saddr & mask) == (addr & mask))
+			return true;
+	}
+
+        return false;
+}
+
+static inline bool
+has_dst_addr(struct sk_buff const *skb, uint32_t addr, uint32_t mask)
+{
+	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP))
+	{
+		struct iphdr _iph;
+    		const struct iphdr *ip;
+
+		ip = skb_header_pointer(skb, skb->mac_len, sizeof(_iph), &_iph);
+ 		if (ip == NULL)
+                        return false;
+
+		if ((ip->daddr & mask) == (addr & mask))
+			return true;
+	}
+
+        return false;
+}
+
+
 static inline bool
 is_flow(struct sk_buff const *skb)
 {
