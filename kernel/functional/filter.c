@@ -69,7 +69,7 @@ filter_addr(argument_t a, struct sk_buff *skb)
 	uint32_t addr = *data >> 32;
 	uint32_t mask = *data & 0xffffffff;
 
-	pr_devel("[PFQ] filter_net: %pI4 %pI4\n", &addr, &mask);
+	// pr_devel("[PFQ] filter_addr: %pI4/%pI4\n", &addr, &mask);
 
 	return has_addr(skb, addr, mask) ? skb : drop(skb);
 }
@@ -81,8 +81,6 @@ filter_src_addr(argument_t a, struct sk_buff *skb)
 	uint32_t addr = *data >> 32;
 	uint32_t mask = *data & 0xffffffff;
 
-	pr_devel("[PFQ] filter_net: %pI4 %pI4\n", &addr, &mask);
-
 	return has_src_addr(skb, addr, mask) ? skb : drop(skb);
 }
 
@@ -92,8 +90,6 @@ filter_dst_addr(argument_t a, struct sk_buff *skb)
 	const u64 *data = get_argument(u64, a);
 	uint32_t addr = *data >> 32;
 	uint32_t mask = *data & 0xffffffff;
-
-	pr_devel("[PFQ] filter_net: %pI4 %pI4\n", &addr, &mask);
 
 	return has_dst_addr(skb, addr, mask) ? skb : drop(skb);
 }
