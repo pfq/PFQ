@@ -55,6 +55,10 @@ module Network.PFq.Default
         has_src_port,
         has_dst_port,
 
+        has_addr,
+        has_src_addr,
+        has_dst_addr,
+
         has_vlan,
         has_vid,
         has_mark,
@@ -86,6 +90,10 @@ module Network.PFq.Default
         src_port   ,
         dst_port   ,
 
+        addr       ,
+        src_addr   ,
+        dst_addr   ,
+
         kernel     ,
         broadcast  ,
         sink       ,
@@ -111,6 +119,23 @@ module Network.PFq.Default
 import Network.PFq.Lang
 import Foreign.C.Types
 import Data.Int
+
+import Data.Bits
+import Data.Word
+import Data.Endian
+import Network.Socket
+import System.IO.Unsafe
+
+-- Utilities
+--
+
+prefix2mask :: Int -> Word32
+prefix2mask p =  toBigEndian $ fromIntegral $ complement (shiftL (1 :: Word64) (32 - p) - 1)
+
+mkNetAddr :: String -> Int -> Word64
+mkNetAddr net p = let a = unsafePerformIO (inet_addr net)
+                      b = prefix2mask p
+                  in  (shiftL (fromIntegral a :: Word64) 32) .|.  (fromIntegral b :: Word64)
 
 -- Default combinators:
 --
@@ -142,9 +167,15 @@ has_mark = Pred1 "has_mark"         :: CULong -> Predicate
 is_l3_proto = Pred1 "is_l3_proto"   :: Int16 -> Predicate
 is_l4_proto = Pred1 "is_l4_proto"   :: Int8 -> Predicate
 
-has_port     = Pred1 "has_port"         :: Int16 -> Predicate
-has_src_port = Pred1 "has_src_port"     :: Int16 -> Predicate
-has_dst_port = Pred1 "has_dst_port"     :: Int16 -> Predicate
+has_port     = Pred1 "has_port"     :: Int16 -> Predicate
+has_src_port = Pred1 "has_src_port" :: Int16 -> Predicate
+has_dst_port = Pred1 "has_dst_port" :: Int16 -> Predicate
+
+has_addr, has_src_addr, has_dst_addr :: String -> Int -> Predicate
+
+has_addr net p     = Pred1 "has_addr" (mkNetAddr net p)
+has_src_addr net p = Pred1 "has_src_addr" (mkNetAddr net p)
+has_dst_addr net p = Pred1 "has_dst_addr" (mkNetAddr net p)
 
 -- Predefined in-kernel computations:
 --
@@ -186,6 +217,13 @@ l4_proto    = Fun1 "l4_proto"       :: Int8 -> Computation QFunction
 port        = Fun1 "has_port"       :: Int16 -> Computation QFunction
 src_port    = Fun1 "has_src_port"   :: Int16 -> Computation QFunction
 dst_port    = Fun1 "has_dst_port"   :: Int16 -> Computation QFunction
+
+
+addr, src_addr, dst_addr :: String -> Int -> Computation QFunction
+
+addr net p     = Fun1 "addr" (mkNetAddr net p )
+src_addr net p = Fun1 "src_addr" (mkNetAddr net p )
+dst_addr net p = Fun1 "dst_addr" (mkNetAddr net p )
 
 hdummy      = HFun "hdummy"         :: Predicate -> Computation QFunction
 when'       = HFun1 "when"          :: Predicate -> Computation QFunction -> Computation QFunction
