@@ -55,6 +55,56 @@ namespace pfq_lang
         return predicate2(combinator("xor"), p1, p2);
     }
 
+    // default comparators:
+
+    template <typename P>
+    auto inline
+    operator<(P const &prop, uint64_t arg)
+    -> decltype(predicate4(std::string(nullptr), prop, arg))
+    {
+        return predicate4("less", prop, arg);
+    }
+
+    template <typename P>
+    auto inline
+    operator<=(P const &prop, uint64_t arg)
+    -> decltype(predicate4(std::string(nullptr), prop, arg))
+    {
+        return predicate4("less_eq", prop, arg);
+    }
+
+    template <typename P>
+    auto inline
+    operator>(P const &prop, uint64_t arg)
+    -> decltype(predicate4(std::string(nullptr), prop, arg))
+    {
+        return predicate4("greater", prop, arg);
+    }
+
+    template <typename P>
+    auto inline
+    operator>=(P const &prop, uint64_t arg)
+    -> decltype(predicate4(std::string(nullptr), prop, arg))
+    {
+        return predicate4("greater_eq", prop, arg);
+    }
+
+    template <typename P>
+    auto inline
+    operator==(P const &prop, uint64_t arg)
+    -> decltype(predicate4(std::string(nullptr), prop, arg))
+    {
+        return predicate4("equal", prop, arg);
+    }
+
+    template <typename P>
+    auto inline
+    operator!=(P const &prop, uint64_t arg)
+    -> decltype(predicate4(std::string(nullptr), prop, arg))
+    {
+        return predicate4("not_equal", prop, arg);
+    }
+
     // polymorphic lambda are available starting from C++14! In the meanwhile...
     //
 
