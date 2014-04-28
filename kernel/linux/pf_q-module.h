@@ -56,7 +56,7 @@ extern int pfq_symtable_unregister_functions(const char *module, struct list_hea
 #define FUN_WITH_PREDICATE 		(1ULL<<11)
 
 
-/**** arguments_t: note, the size of the arg is @ (size_t *)addr - 1; ****/
+/**** arguments_t: note, the size of data is @ (size_t *)data - 1; ****/
 
 typedef struct
 {
