@@ -25,9 +25,9 @@
 
 struct pfq_function_descr high_order_functions[] = {
 
-        { "conditional",	INLINE_FUN(conditional) , FUN_ACTION | FUN_WITH_PREDICATE 	},
-        { "when",       	INLINE_FUN(when) 	, FUN_ACTION | FUN_WITH_PREDICATE	},
-        { "unless",     	INLINE_FUN(unless)  	, FUN_ACTION | FUN_WITH_PREDICATE	},
+        { "conditional",	INLINE_FUN(conditional) , FUN_ACTION | FUN_ARG_FUN 	},
+        { "when",       	INLINE_FUN(when) 	, FUN_ACTION | FUN_ARG_FUN	},
+        { "unless",     	INLINE_FUN(unless)  	, FUN_ACTION | FUN_ARG_FUN	},
 
         { NULL, NULL}};
 

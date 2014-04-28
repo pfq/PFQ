@@ -110,14 +110,14 @@ struct pfq_monadic_fun_descr filter_functions[] = {
         { "flow",       	INLINE_FUN(filter_flow)  	, FUN_ACTION   	},
         { "vlan",       	INLINE_FUN(filter_vlan)  	, FUN_ACTION   	},
 
-        { "port",      		filter_port 	 		, FUN_ACTION | FUN_WITH_ARG   },
-        { "src_port",		filter_src_port  		, FUN_ACTION | FUN_WITH_ARG   },
-        { "dst_port",   	filter_dst_port  		, FUN_ACTION | FUN_WITH_ARG   },
-        { "addr",      		filter_addr	 		, FUN_ACTION | FUN_WITH_ARG   },
-        { "src_addr",   	filter_src_addr	 		, FUN_ACTION | FUN_WITH_ARG   },
-        { "dst_addr",   	filter_dst_addr	 		, FUN_ACTION | FUN_WITH_ARG   },
- 	{ "l3_proto", 		filter_l3_proto  		, FUN_ACTION | FUN_WITH_ARG   },
-        { "l4_proto",   	filter_l4_proto  		, FUN_ACTION | FUN_WITH_ARG   },
+        { "port",      		filter_port 	 		, FUN_ACTION | FUN_ARG_DATA   },
+        { "src_port",		filter_src_port  		, FUN_ACTION | FUN_ARG_DATA   },
+        { "dst_port",   	filter_dst_port  		, FUN_ACTION | FUN_ARG_DATA   },
+        { "addr",      		filter_addr	 		, FUN_ACTION | FUN_ARG_DATA   },
+        { "src_addr",   	filter_src_addr	 		, FUN_ACTION | FUN_ARG_DATA   },
+        { "dst_addr",   	filter_dst_addr	 		, FUN_ACTION | FUN_ARG_DATA   },
+ 	{ "l3_proto", 		filter_l3_proto  		, FUN_ACTION | FUN_ARG_DATA   },
+        { "l4_proto",   	filter_l4_proto  		, FUN_ACTION | FUN_ARG_DATA   },
 
         { NULL, NULL}};
 

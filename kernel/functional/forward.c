@@ -67,7 +67,7 @@ forward(arguments_t * a, struct sk_buff *skb)
 struct pfq_monadic_fun_descr forward_functions[] = {
 
         { "sink",               sink 	, FUN_ACTION			},
-	{ "forward", 		forward , FUN_ACTION | FUN_WITH_ARG	},
+	{ "forward", 		forward , FUN_ACTION | FUN_ARG_DATA	},
 
         { NULL, NULL}};
 

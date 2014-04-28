@@ -487,8 +487,8 @@ pfq_computation_compile (struct pfq_computation_descr const *descr, computation_
                         ptr = resolve_user_symbol(&pfq_monadic_cat, descr->fun[n].symbol, &properties);
                         if (ptr == NULL ||
                 		(properties & FUN_ACTION) == 0 ||
-                                ( (properties & FUN_WITH_ARG) && descr->fun[n].arg_ptr == NULL) ||
-                                (!(properties & FUN_WITH_ARG) && descr->fun[n].arg_ptr != NULL)
+                                ( (properties & FUN_ARG_DATA) && descr->fun[n].arg_ptr == NULL) ||
+                                (!(properties & FUN_ARG_DATA) && descr->fun[n].arg_ptr != NULL)
                         		) {
                                 printk(KERN_INFO "[PFQ] %zu: bad descriptor!\n", n);
                                 return -EPERM;
@@ -522,7 +522,7 @@ pfq_computation_compile (struct pfq_computation_descr const *descr, computation_
                         ptr = resolve_user_symbol(&pfq_monadic_cat, descr->fun[n].symbol, &properties);
                         if (ptr == NULL ||
                 	    	(properties & FUN_ACTION) == 0 ||
-                                (properties & FUN_WITH_PREDICATE) == 0 )
+                                (properties & FUN_ARG_FUN) == 0 )
 			{
                                 printk(KERN_INFO "[PFQ] %zu: bad descriptor!\n", n);
                                 return -EPERM;
@@ -563,8 +563,8 @@ pfq_computation_compile (struct pfq_computation_descr const *descr, computation_
                         ptr = resolve_user_symbol(&pfq_predicate_cat, descr->fun[n].symbol, &properties);
                         if (ptr == NULL ||
                 	    	(properties & FUN_PREDICATE) == 0 ||
-                                ( (properties & FUN_WITH_ARG) && descr->fun[n].arg_ptr == NULL) ||
-                                (!(properties & FUN_WITH_ARG) && descr->fun[n].arg_ptr != NULL))
+                                ( (properties & FUN_ARG_DATA) && descr->fun[n].arg_ptr == NULL) ||
+                                (!(properties & FUN_ARG_DATA) && descr->fun[n].arg_ptr != NULL))
 			{
                                 printk(KERN_INFO "[PFQ] %zu: bad descriptor!\n", n);
                                 return -EPERM;

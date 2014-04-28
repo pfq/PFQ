@@ -72,11 +72,11 @@ struct pfq_function_descr misc_functions[] = {
         { "drop",       	INLINE_FUN(forward_drop)   	, FUN_ACTION  },
         { "broadcast",  	INLINE_FUN(forward_broadcast)	, FUN_ACTION  },
         { "kernel",     	INLINE_FUN(forward_kernel)   	, FUN_ACTION  },
-        { "class",		INLINE_FUN(forward_class) 	, FUN_ACTION | FUN_WITH_ARG },
-	{ "mark", 		INLINE_FUN(mark) 		, FUN_ACTION | FUN_WITH_ARG },
+        { "class",		INLINE_FUN(forward_class) 	, FUN_ACTION | FUN_ARG_DATA },
+	{ "mark", 		INLINE_FUN(mark) 		, FUN_ACTION | FUN_ARG_DATA },
 
-        { "counter",            counter 			, FUN_ACTION | FUN_WITH_ARG 	},
-        { "dummy",              dummy   			, FUN_ACTION | FUN_WITH_ARG 	},
+        { "counter",            counter 			, FUN_ACTION | FUN_ARG_DATA },
+        { "dummy",              dummy   			, FUN_ACTION | FUN_ARG_DATA },
 
         { NULL, NULL}};
 

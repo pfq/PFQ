@@ -53,8 +53,9 @@ extern int pfq_symtable_unregister_functions(const char *module, struct list_hea
 #define FUN_ACTION 			(1ULL<<2)
 #define FUN_PROPERTY 			(1ULL<<3)
 
-#define FUN_WITH_ARG			(1ULL<<10)
-#define FUN_WITH_PREDICATE 		(1ULL<<11)
+#define FUN_ARG_DATA			(1ULL<<10)
+#define FUN_ARG_FUN 			(1ULL<<11)
+#define FUN_ARG_DATA_FUN 		(1ULL<<12)
 
 /**** property macros ****/
 
