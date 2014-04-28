@@ -38,7 +38,7 @@
 module Network.PFq.Lang
     (
         StorableContext(..),
-        Argument(..),
+        Arguments(..),
         Combinator(..),
         Predicate(..),
         Computation(..),
@@ -63,7 +63,7 @@ instance Show StorableContext where
         show (StorableContext c) = show c
 
 
-data Argument = Empty | Arg StorableContext | PredicateArg Int
+data Arguments = Empty | ArgData StorableContext | ArgFun Int | ArgDataFun StorableContext Int
                     deriving Show
 
 -- Functional descriptor
@@ -75,7 +75,7 @@ data FunDescr = FunDescr
                 {
                     functionalType  :: FunType,
                     functionalSymb  :: String,
-                    functionalArg   :: Argument,
+                    functionalArg   :: Arguments,
                     functionalLeft  :: Int,
                     functionalRight :: Int
                 }
@@ -129,7 +129,7 @@ instance Serializable Predicate where
 
         serialize n (Pred1 name x) = ([FunDescr { functionalType  = PredicateFun,
                                                   functionalSymb  = name,
-                                                  functionalArg   = Arg $ StorableContext x,
+                                                  functionalArg   = ArgData $ StorableContext x,
                                                   functionalLeft  = -1,
                                                   functionalRight = -1 }], n+1)
 
@@ -167,13 +167,13 @@ instance Serializable (Computation f) where
 
         serialize n (Fun1 name x) = ([FunDescr { functionalType  = MonadicFun,
                                                  functionalSymb  = name,
-                                                 functionalArg   = Arg $ StorableContext x,
+                                                 functionalArg   = ArgData $ StorableContext x,
                                                  functionalLeft  = n+1,
                                                  functionalRight = n+1 }], n+1)
 
         serialize n (HFun name p) = let (s', n') = ([FunDescr { functionalType  = HighOrderFun,
                                                                 functionalSymb  = name,
-                                                                functionalArg   = PredicateArg n',
+                                                                functionalArg   = ArgFun n',
                                                                 functionalLeft  = n'',
                                                                 functionalRight = n'' }], n+1)
                                         (p', n'') = serialize n' p
@@ -181,7 +181,7 @@ instance Serializable (Computation f) where
 
         serialize n (HFun1 name p c) = let (f', n') = (FunDescr { functionalType  = HighOrderFun,
                                                                   functionalSymb  = name,
-                                                                  functionalArg   = PredicateArg n',
+                                                                  functionalArg   = ArgFun n',
                                                                   functionalLeft  = -1,
                                                                   functionalRight = -1 }, n+1)
                                            (p', n'') = serialize n' p
@@ -190,7 +190,7 @@ instance Serializable (Computation f) where
 
         serialize n (HFun2 name p c1 c2) = let (f', n') = (FunDescr { functionalType  = HighOrderFun,
                                                                       functionalSymb  = name,
-                                                                      functionalArg   = PredicateArg n',
+                                                                      functionalArg   = ArgFun n',
                                                                       functionalLeft  = -1,
                                                                       functionalRight = -1 }, n+1)
                                                (p',  n'') = serialize n' p
