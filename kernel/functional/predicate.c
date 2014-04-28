@@ -25,7 +25,87 @@
 #include <linux/module.h>
 #include <linux/pf_q-module.h>
 
+
 #include "predicate.h"
+#include "../pf_q-engine.h"
+
+static bool
+less(arguments_t *a, struct sk_buff const *skb)
+{
+	property_expression_t * p = get_property(a);
+	const uint64_t * data = get_data(uint64_t, a);
+	uint64_t ret = eval_property((property_t *)p, skb);
+
+	if (IS_JUST(ret))
+		return FROM_JUST(ret) < *data;
+
+	return false;
+}
+
+static bool
+less_eq(arguments_t *a, struct sk_buff const *skb)
+{
+	property_expression_t * p = get_property(a);
+	const uint64_t * data = get_data(uint64_t, a);
+	uint64_t ret = eval_property((property_t *)p, skb);
+
+	if (IS_JUST(ret))
+		return FROM_JUST(ret) <= *data;
+
+	return false;
+}
+
+static bool
+greater(arguments_t *a, struct sk_buff const *skb)
+{
+	property_expression_t * p = get_property(a);
+	const uint64_t * data = get_data(uint64_t, a);
+	uint64_t ret = eval_property((property_t *)p, skb);
+
+	if (IS_JUST(ret))
+		return FROM_JUST(ret) > *data;
+
+	return false;
+}
+
+static bool
+greater_eq(arguments_t *a, struct sk_buff const *skb)
+{
+	property_expression_t * p = get_property(a);
+	const uint64_t * data = get_data(uint64_t, a);
+	uint64_t ret = eval_property((property_t *)p, skb);
+
+	if (IS_JUST(ret))
+		return FROM_JUST(ret) >= *data;
+
+	return false;
+}
+
+static bool
+equal(arguments_t *a, struct sk_buff const *skb)
+{
+	property_expression_t * p = get_property(a);
+	const uint64_t * data = get_data(uint64_t, a);
+	uint64_t ret = eval_property((property_t *)p, skb);
+
+	if (IS_JUST(ret))
+		return FROM_JUST(ret) == *data;
+
+	return false;
+}
+
+static bool
+not_equal(arguments_t *a, struct sk_buff const *skb)
+{
+	property_expression_t * p = get_property(a);
+	const uint64_t * data = get_data(uint64_t, a);
+	uint64_t ret = eval_property((property_t *)p, skb);
+
+	if (IS_JUST(ret))
+		return FROM_JUST(ret) != *data;
+
+	return false;
+}
 
 
 static bool
@@ -171,6 +251,13 @@ __has_dst_addr(arguments_t * a, struct sk_buff const *skb)
 
 struct pfq_predicate_fun_descr predicate_functions[] = {
 
+        { "less", 	 less		, FUN_PREDICATE | FUN_ARG_DATA | FUN_ARG_FUN },
+        { "less_eq", 	 less_eq	, FUN_PREDICATE | FUN_ARG_DATA | FUN_ARG_FUN },
+        { "greater", 	 greater 	, FUN_PREDICATE | FUN_ARG_DATA | FUN_ARG_FUN },
+        { "greater_eq",  greater_eq	, FUN_PREDICATE | FUN_ARG_DATA | FUN_ARG_FUN },
+        { "equal",  	 equal		, FUN_PREDICATE | FUN_ARG_DATA | FUN_ARG_FUN },
+        { "not_equal",   not_equal	, FUN_PREDICATE | FUN_ARG_DATA | FUN_ARG_FUN },
+
         { "is_ip", 	 __is_ip        , FUN_PREDICATE },
         { "is_tcp",      __is_tcp       , FUN_PREDICATE },
         { "is_udp",      __is_udp       , FUN_PREDICATE },
@@ -181,6 +268,7 @@ struct pfq_predicate_fun_descr predicate_functions[] = {
         { "is_icmp6",    __is_icmp6     , FUN_PREDICATE },
         { "is_flow",     __is_flow 	, FUN_PREDICATE },
         { "has_vlan",    __has_vlan     , FUN_PREDICATE },
+
         { "is_l3_proto", __is_l3_proto 	, FUN_PREDICATE | FUN_ARG_DATA },
         { "is_l4_proto", __is_l4_proto	, FUN_PREDICATE | FUN_ARG_DATA },
         { "has_port",    __has_port     , FUN_PREDICATE | FUN_ARG_DATA },
