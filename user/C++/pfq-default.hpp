@@ -200,6 +200,12 @@ namespace pfq_lang
         auto has_vid    = [] (int value) { return predicate1 ("has_vid", value); };
         auto has_mark   = [] (unsigned long value) { return predicate1("has_mark", value); };
 
+        // default properties:
+
+        auto ip_id      = property("ip_id");
+        auto ip_tos     = property("ip_tos");
+        auto ip_tot_len = property("ip_tot_len");
+
         // default computations:
 
         auto steer_mac  = computation("steer_mac");
