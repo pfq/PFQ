@@ -1016,19 +1016,19 @@ namespace net {
 
         void stop_tx_thread()
         {
-            if (::setsockopt(fd_, PF_Q, Q_SO_TX_THREAD_STOP, NULL, 0) == -1)
+            if (::setsockopt(fd_, PF_Q, Q_SO_TX_THREAD_STOP, nullptr, 0) == -1)
                 throw pfq_error(errno, "PFQ: stop TX thread");
         }
 
         void wakeup_tx_thread()
         {
-            if (::setsockopt(fd_, PF_Q, Q_SO_TX_THREAD_WAKEUP, NULL, 0) == -1)
+            if (::setsockopt(fd_, PF_Q, Q_SO_TX_THREAD_WAKEUP, nullptr, 0) == -1)
                 throw pfq_error(errno, "PFQ: wakeup TX thread");
         }
 
         void tx_queue_flush()
         {
-            if (::setsockopt(fd_, PF_Q, Q_SO_TX_QUEUE_FLUSH, NULL, 0) == -1)
+            if (::setsockopt(fd_, PF_Q, Q_SO_TX_QUEUE_FLUSH, nullptr, 0) == -1)
                 throw pfq_error(errno, "PFQ: TX queue flush");
         }
 
