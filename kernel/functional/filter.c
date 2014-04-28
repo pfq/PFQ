@@ -26,6 +26,7 @@
 #include <linux/pf_q-module.h>
 
 #include "predicate.h"
+#include "inline.h"
 
 static inline struct sk_buff *
 filter_l3_proto(arguments_t * a, struct sk_buff *skb)
@@ -97,14 +98,26 @@ filter_dst_addr(arguments_t * a, struct sk_buff *skb)
 
 struct pfq_monadic_fun_descr filter_functions[] = {
 
-        { "port",      	filter_port 	 , FUN_ACTION | FUN_WITH_ARG   },
-        { "src_port",	filter_src_port  , FUN_ACTION | FUN_WITH_ARG   },
-        { "dst_port",   filter_dst_port  , FUN_ACTION | FUN_WITH_ARG   },
-        { "addr",      	filter_addr	 , FUN_ACTION | FUN_WITH_ARG   },
-        { "src_addr",   filter_src_addr	 , FUN_ACTION | FUN_WITH_ARG   },
-        { "dst_addr",   filter_dst_addr	 , FUN_ACTION | FUN_WITH_ARG   },
- 	{ "l3_proto", 	filter_l3_proto  , FUN_ACTION | FUN_WITH_ARG   },
-        { "l4_proto",   filter_l4_proto  , FUN_ACTION | FUN_WITH_ARG   },
+        { "id",			INLINE_FUN(id)          	, FUN_ACTION  	},
+        { "ip",         	INLINE_FUN(filter_ip)    	, FUN_ACTION   	},
+        { "ip6",        	INLINE_FUN(filter_ip6)   	, FUN_ACTION   	},
+        { "udp",        	INLINE_FUN(filter_udp)   	, FUN_ACTION   	},
+        { "tcp",        	INLINE_FUN(filter_tcp)   	, FUN_ACTION   	},
+        { "icmp",       	INLINE_FUN(filter_icmp)  	, FUN_ACTION   	},
+        { "udp6",        	INLINE_FUN(filter_udp6)  	, FUN_ACTION    },
+        { "tcp6",        	INLINE_FUN(filter_tcp6)  	, FUN_ACTION   	},
+        { "icmp6",       	INLINE_FUN(filter_icmp6)	, FUN_ACTION    },
+        { "flow",       	INLINE_FUN(filter_flow)  	, FUN_ACTION   	},
+        { "vlan",       	INLINE_FUN(filter_vlan)  	, FUN_ACTION   	},
+
+        { "port",      		filter_port 	 		, FUN_ACTION | FUN_WITH_ARG   },
+        { "src_port",		filter_src_port  		, FUN_ACTION | FUN_WITH_ARG   },
+        { "dst_port",   	filter_dst_port  		, FUN_ACTION | FUN_WITH_ARG   },
+        { "addr",      		filter_addr	 		, FUN_ACTION | FUN_WITH_ARG   },
+        { "src_addr",   	filter_src_addr	 		, FUN_ACTION | FUN_WITH_ARG   },
+        { "dst_addr",   	filter_dst_addr	 		, FUN_ACTION | FUN_WITH_ARG   },
+ 	{ "l3_proto", 		filter_l3_proto  		, FUN_ACTION | FUN_WITH_ARG   },
+        { "l4_proto",   	filter_l4_proto  		, FUN_ACTION | FUN_WITH_ARG   },
 
         { NULL, NULL}};
 

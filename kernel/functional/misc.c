@@ -27,6 +27,7 @@
 #include <linux/pf_q-module.h>
 #include <linux/pf_q-sparse.h>
 
+#include "inline.h"
 
 static struct sk_buff *
 dummy(arguments_t * a, struct sk_buff *skb)
@@ -68,8 +69,14 @@ counter(arguments_t * a, struct sk_buff *skb)
 
 struct pfq_function_descr misc_functions[] = {
 
-        { "counter",            counter , FUN_ACTION | FUN_WITH_ARG 	},
-        { "dummy",              dummy   , FUN_ACTION | FUN_WITH_ARG 	},
+        { "drop",       	INLINE_FUN(forward_drop)   	, FUN_ACTION  },
+        { "broadcast",  	INLINE_FUN(forward_broadcast)	, FUN_ACTION  },
+        { "kernel",     	INLINE_FUN(forward_kernel)   	, FUN_ACTION  },
+        { "class",		INLINE_FUN(forward_class) 	, FUN_ACTION | FUN_WITH_ARG },
+	{ "mark", 		INLINE_FUN(mark) 		, FUN_ACTION | FUN_WITH_ARG },
+
+        { "counter",            counter 			, FUN_ACTION | FUN_WITH_ARG 	},
+        { "dummy",              dummy   			, FUN_ACTION | FUN_WITH_ARG 	},
 
         { NULL, NULL}};
 

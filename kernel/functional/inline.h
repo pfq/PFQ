@@ -90,10 +90,10 @@
 	}
 
 
-#define INLINE_FUN_ADDR(fun) 	(void *)INLINE_ ## fun
+#define INLINE_FUN(fun) 	(void *)INLINE_ ## fun
 
 #else
-#define INLINE_FUN_ADDR(fun) 	&fun
+#define INLINE_FUN(fun) 	&fun
 #endif
 
 

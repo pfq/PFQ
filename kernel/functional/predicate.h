@@ -22,7 +22,7 @@
  ****************************************************************/
 
 #ifndef _FUNCTIONAL_PREDICATE_H
-#define _FUNCTIOANL_PREDICATE_H
+#define _FUNCTIONAL_PREDICATE_H
 
 #include <linux/kernel.h>
 #include <linux/module.h>
