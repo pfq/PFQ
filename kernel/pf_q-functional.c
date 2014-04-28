@@ -268,13 +268,6 @@ pfq_context_alloc(struct pfq_computation_descr const *descr)
 
 
 static inline
-bool is_monadic_function(enum pfq_functional_type type)
-{
-        return type == pfq_monadic_fun || type == pfq_high_order_fun;
-}
-
-
-static inline
 int validate_function_type(enum pfq_functional_type type)
 {
         if (type != pfq_monadic_fun &&
@@ -422,10 +415,6 @@ static int
 get_functional_by_index(struct pfq_computation_descr const *descr, computation_t *comp, int index, functional_t **ret)
 {
         if (index >= 0 && index < descr->size) {
-
-                if (!is_monadic_function(descr->fun[index].type))
-                        return -EINVAL;
-
                 *ret = &comp->fun[index];
         }
         else {
