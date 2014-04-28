@@ -41,6 +41,8 @@ extern struct rw_semaphore      symtable_rw_sem;
 
 extern struct list_head pfq_monadic_cat;
 extern struct list_head pfq_predicate_cat;
+extern struct list_head pfq_property_cat;
+
 
 /* symtable */
 

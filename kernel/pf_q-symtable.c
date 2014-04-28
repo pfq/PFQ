@@ -40,9 +40,11 @@ DEFINE_SEMAPHORE(symtable_sem);
 
 LIST_HEAD(pfq_monadic_cat);
 LIST_HEAD(pfq_predicate_cat);
+LIST_HEAD(pfq_property_cat);
 
 EXPORT_SYMBOL_GPL(pfq_monadic_cat);
 EXPORT_SYMBOL_GPL(pfq_predicate_cat);
+EXPORT_SYMBOL_GPL(pfq_property_cat);
 
 
 struct symtable_entry
@@ -221,6 +223,8 @@ pfq_symtable_init(void)
 	extern struct pfq_predicate_fun_descr 	predicate_functions[];
 	extern struct pfq_combinator_fun_descr 	combinator_functions[];
 
+	extern struct pfq_property_fun_descr 	property_functions[];
+
 	extern struct pfq_function_descr 	high_order_functions[];
 	extern struct pfq_function_descr 	misc_functions[];
 
@@ -233,8 +237,11 @@ pfq_symtable_init(void)
         pfq_symtable_register_functions(NULL, &pfq_predicate_cat, (struct pfq_function_descr *)predicate_functions);
         pfq_symtable_register_functions(NULL, &pfq_predicate_cat, (struct pfq_function_descr *)combinator_functions);
 
-	pfq_symtable_pr_devel("monadic functions: ", &pfq_monadic_cat);
-	pfq_symtable_pr_devel("predicate  functions: ", &pfq_predicate_cat);
+        pfq_symtable_register_functions(NULL, &pfq_property_cat, (struct pfq_function_descr *)property_functions);
+
+	pfq_symtable_pr_devel("monadic functions: ",   &pfq_monadic_cat);
+	pfq_symtable_pr_devel("predicate functions: ", &pfq_predicate_cat);
+	pfq_symtable_pr_devel("property functions: ",  &pfq_property_cat);
 
 	printk(KERN_INFO "[PFQ] symtable initialized.\n");
 }
@@ -248,6 +255,7 @@ pfq_symtable_free(void)
 
         __pfq_symtable_free(&pfq_monadic_cat);
 	__pfq_symtable_free(&pfq_predicate_cat);
+	__pfq_symtable_free(&pfq_property_cat);
 
         up(&symtable_sem);
         up_write(&symtable_rw_sem);
