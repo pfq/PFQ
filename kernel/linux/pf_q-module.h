@@ -56,6 +56,12 @@ extern int pfq_symtable_unregister_functions(const char *module, struct list_hea
 #define FUN_WITH_ARG			(1ULL<<10)
 #define FUN_WITH_PREDICATE 		(1ULL<<11)
 
+/**** property macros ****/
+
+
+#define JUST(x) 	((1ULL<<31) | x)
+#define IS_JUST(x)	((1ULL<<31) & x)
+#define NOTHING 	0
 
 /**** arguments_t: note, the size of data is @ (size_t *)data - 1; ****/
 
@@ -129,7 +135,7 @@ struct pfq_combinator_fun_descr
 struct pfq_property_fun_descr
 {
         const char * 	 symbol;
-        property_ptr_t ptr;
+        property_ptr_t 	 ptr;
         uint64_t	 properties;
 };
 
