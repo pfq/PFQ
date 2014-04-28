@@ -47,6 +47,7 @@ namespace pfq_lang
             case pfq_high_order_fun: return "hfun";
             case pfq_predicate_fun:  return "pred";
             case pfq_combinator_fun: return "comb";
+            case pfq_property_fun:   return "prop";
         }
 
         throw std::logic_error("unknown type");
@@ -162,13 +163,15 @@ namespace pfq_lang
 
         //////// Predicates:
 
-        struct Pred
-        {
-            std::string name_;
-        };
-
         struct Pred1
         {
+            Pred1(std::string name)
+            : name_(std::move(name))
+            , ptr_(std::shared_ptr<void>())
+            , size_(0)
+            {
+            }
+
             template <typename T>
             Pred1(std::string name, T const &arg)
             : name_(std::move(name))
@@ -190,23 +193,51 @@ namespace pfq_lang
             P2              right_;
         };
 
+        template <typename Prop>
+        struct Pred3
+        {
+            Pred3(std::string name, Prop p)
+            : name_(std::move(name))
+            , prop_(std::move(p))
+            {
+            }
+
+            std::string             name_;
+            Prop                    prop_;
+        };
+
+        template <typename Prop>
+        struct Pred4
+        {
+            template <typename T>
+            Pred4(std::string name, Prop p, T const &arg)
+            : name_(std::move(name))
+            , ptr_(std::shared_ptr<void>{ new T(arg) })
+            , size_(sizeof(T))
+            , prop_(std::move(p))
+            {
+            }
+
+            std::string             name_;
+            std::shared_ptr<void>   ptr_;
+            size_t                  size_;
+
+            Prop                    prop_;
+        };
+
+
         //////// is_predicate:
 
         template <typename Tp>
         struct is_predicate :
             std::integral_constant<bool,
-                std::is_same<Tp, term::Pred>::value  ||
                 std::is_same<Tp, term::Pred1>::value ||
-                is_same_template<Tp, term::Pred2>::value>
+                is_same_template<Tp, term::Pred2>::value ||
+                is_same_template<Tp, term::Pred3>::value ||
+                is_same_template<Tp, term::Pred4>::value>
         { };
 
         ///////// show predicates:
-
-        static inline std::string
-        show(Pred const &descr)
-        {
-            return descr.name_;
-        }
 
         static inline std::string
         show(Pred1 const &descr)
@@ -223,16 +254,30 @@ namespace pfq_lang
             return '(' + show(descr.left_) + ' ' + show(descr.comb_) + ' ' + show(descr.right_) + ')';
         }
 
+        template <typename P>
+        static inline std::string
+        show(Pred3<P> const &descr)
+        {
+            std::ostringstream out;
+
+            out << '(' << descr.name_ << ' ' << show(descr.prop_) << ')';
+
+            return out.str();
+        }
+
+        template <typename P>
+        static inline std::string
+        show(Pred4<P> const &descr)
+        {
+            std::ostringstream out;
+
+            out << '(' << descr.name_ << ' ' << show(descr.prop_) << ' ' << descr.ptr_.get() << ':' << std::to_string(descr.size_) << ')';
+
+            return out.str();
+        }
+
         //////// serialize predicates:
 
-        static inline std::pair<std::vector<FunDescr>, int>
-        serialize(int n, Pred const &p)
-        {
-            return std::make_pair(std::vector<FunDescr>
-            {
-                FunDescr { pfq_predicate_fun, p.name_, std::shared_ptr<void>(), 0, -1, -1, -1 }
-            }, n+1);
-        }
 
         static inline std::pair<std::vector<FunDescr>, int>
         serialize(int n, Pred1 const &p)
@@ -252,12 +297,113 @@ namespace pfq_lang
 
             std::tie(comb, n1)  = serialize(n, p.comb_);
             std::tie(left, n2)  = serialize(n1, p.left_);
-            std::tie(right, n3) = serialize(n2, p.left_);
+            std::tie(right, n3) = serialize(n2, p.right_);
 
             comb.front().left = n1;
             comb.front().right = n2;
 
             return std::make_pair(std::move(comb) + std::move(left) + std::move(right), n3);
+        }
+
+        template <typename  P>
+        static inline std::pair<std::vector<FunDescr>, int>
+        serialize(int n, Pred3<P> const &p)
+        {
+            std::vector<FunDescr> prop, pred =
+            {
+                FunDescr { pfq_predicate_fun, p.name_, std::shared_ptr<void>(), 0, n+1, -1, -1 }
+            };
+
+            int n1;
+
+            std::tie(prop, n1) = serialize(n+1, p.prop_);
+
+            return std::make_pair(std::move(pred) + std::move(prop), n1);
+        }
+
+        template <typename  P>
+        static inline std::pair<std::vector<FunDescr>, int>
+        serialize(int n, Pred4<P> const &p)
+        {
+            std::vector<FunDescr> prop, pred =
+            {
+                FunDescr { pfq_predicate_fun, p.name_, p.ptr_, p.size_, n+1, -1, -1 }
+            };
+
+            int n1;
+
+            std::tie(prop, n1) = serialize(n+1, p.prop_);
+
+            return std::make_pair(std::move(pred) + std::move(prop), n1);
+        }
+
+        //
+        // Property
+        //
+
+        struct Prop
+        {
+            std::string name_;
+        };
+
+        struct Prop1
+        {
+            template <typename T>
+            Prop1(std::string name, T const &arg)
+            : name_(std::move(name))
+            , ptr_(std::shared_ptr<void>{ new T(arg) })
+            , size_(sizeof(T))
+            {
+            }
+
+            std::string           name_;
+            std::shared_ptr<void> ptr_;
+            size_t                size_;
+        };
+
+        //////// is_:
+
+        template <typename Tp>
+        struct is_property :
+            std::integral_constant<bool,
+                std::is_same<Tp, term::Prop>::value  ||
+                std::is_same<Tp, term::Prop1>::value >
+        { };
+
+        ///////// show property:
+
+        static inline std::string
+        show(Prop const &descr)
+        {
+            return descr.name_;
+        }
+
+        static inline std::string
+        show(Prop1 const &descr)
+        {
+            std::ostringstream out;
+            out << '(' << descr.name_ << ' ' << descr.ptr_.get() << ':' << std::to_string(descr.size_) << ')';
+            return out.str();
+        }
+
+        //////// serialize property:
+
+        static inline std::pair<std::vector<FunDescr>, int>
+        serialize(int n, Prop const &p)
+        {
+            return std::make_pair(std::vector<FunDescr>
+            {
+                FunDescr { pfq_property_fun, p.name_, std::shared_ptr<void>(), 0, -1, -1, -1 }
+            }, n+1);
+        }
+
+        static inline std::pair<std::vector<FunDescr>, int>
+        serialize(int n, Prop1 const &p)
+        {
+            return std::make_pair(std::vector<FunDescr>
+            {
+                FunDescr { pfq_property_fun, p.name_, p.ptr_, p.size_, -1, -1, -1 }
+            }, n+1);
         }
 
         //
@@ -492,10 +638,10 @@ namespace pfq_lang
         return term::Combinator{ std::move(name) };
     }
 
-    inline term::Pred
+    inline term::Pred1
     predicate(std::string name)
     {
-        return term::Pred{ std::move(name) };
+        return term::Pred1 (std::move(name));
     }
 
     template <typename T>
@@ -515,6 +661,40 @@ namespace pfq_lang
     predicate2(term::Combinator c, P1 const &left, P2 const &right)
     {
         return term::Pred2<P1,P2>{ c, left, right };
+    }
+
+    template <typename P>
+    inline typename std::enable_if<
+        term::is_property<P>::value,
+    term::Pred3<P>>::type
+    predicate3(std::string name, P p)
+    {
+        return term::Pred3<P> { std::move(name), std::move(p) };
+    }
+
+    template <typename T, typename P>
+    inline typename std::enable_if<
+        term::is_property<P>::value &&
+        std::is_pod<T>::value,
+    term::Pred4<P>>::type
+    predicate4(std::string name, P p, const T &arg)
+    {
+        return term::Pred4<P> { std::move(name), std::move(p), arg};
+    }
+
+    inline term::Prop
+    property(std::string name)
+    {
+        return term::Prop{ std::move(name) };
+    }
+
+    template <typename T>
+    inline typename std::enable_if<
+          std::is_pod<T>::value,
+    term::Prop1>::type
+    property1(std::string name, const T &arg)
+    {
+        return term::Prop1{ std::move(name), arg };
     }
 
     inline term::Fun
