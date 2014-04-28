@@ -61,7 +61,7 @@
 
 
 #define CASE_APPLY(f, call, skb) \
-	case INLINE_ ## f: return f(call->fun.arg, skb)
+	case INLINE_ ## f: return f(&call->fun.args, skb)
 
 #define IF_INLINED_RETURN(call, skb) \
 	switch((ptrdiff_t)call->fun.eval) \
@@ -100,39 +100,39 @@
 /* high order functions */
 
 static inline struct sk_buff *
-mark(argument_t a, struct sk_buff *skb)
+mark(arguments_t *a, struct sk_buff *skb)
 {
-	const unsigned long *value = get_argument(unsigned long, a);
+	const unsigned long *value = get_data(unsigned long, a);
 	set_state(skb, *value);
 	return skb;
 }
 
 static inline struct sk_buff *
-conditional(argument_t a, struct sk_buff *skb)
+conditional(arguments_t *a, struct sk_buff *skb)
 {
-        expression_t * expr = expression(a);
+        boolean_expression_t * expr = get_predicate(a);
         PFQ_CB(skb)->action.right = expr->ptr(skb, expr);
         return skb;
 }
 
 static inline struct sk_buff *
-when(argument_t a, struct sk_buff *skb)
+when(arguments_t *a, struct sk_buff *skb)
 {
-        expression_t * expr = expression(a);
+        boolean_expression_t * expr = get_predicate(a);
         PFQ_CB(skb)->action.right = expr->ptr(skb, expr);
         return skb;
 }
 
 static inline struct sk_buff *
-unless(argument_t a, struct sk_buff *skb)
+unless(arguments_t *a, struct sk_buff *skb)
 {
-        expression_t * expr = expression(a);
+        boolean_expression_t * expr = get_predicate(a);
         PFQ_CB(skb)->action.right = !expr->ptr(skb, expr);
         return skb;
 }
 
 static inline struct sk_buff *
-id(argument_t a, struct sk_buff *skb)
+id(arguments_t *a, struct sk_buff *skb)
 {
         return skb;
 }
@@ -140,61 +140,61 @@ id(argument_t a, struct sk_buff *skb)
 /* filter functions */
 
 static inline struct sk_buff *
-filter_ip(argument_t a, struct sk_buff *skb)
+filter_ip(arguments_t *a, struct sk_buff *skb)
 {
         return is_ip(skb) ? skb : drop(skb);
 }
 
 static inline struct sk_buff *
-filter_ip6(argument_t a, struct sk_buff *skb)
+filter_ip6(arguments_t *a, struct sk_buff *skb)
 {
         return is_ip6(skb) ? skb : drop(skb);
 }
 
 static inline struct sk_buff *
-filter_udp(argument_t a, struct sk_buff *skb)
+filter_udp(arguments_t *a, struct sk_buff *skb)
 {
         return is_udp(skb) ? skb : drop(skb);
 }
 
 static inline struct sk_buff *
-filter_udp6(argument_t a, struct sk_buff *skb)
+filter_udp6(arguments_t *a, struct sk_buff *skb)
 {
         return is_udp6(skb) ? skb : drop(skb);
 }
 
 static inline struct sk_buff *
-filter_tcp(argument_t a, struct sk_buff *skb)
+filter_tcp(arguments_t *a, struct sk_buff *skb)
 {
         return is_tcp(skb) ? skb : drop(skb);
 }
 
 static inline struct sk_buff *
-filter_tcp6(argument_t a, struct sk_buff *skb)
+filter_tcp6(arguments_t *a, struct sk_buff *skb)
 {
         return is_tcp6(skb) ? skb : drop(skb);
 }
 
 static inline struct sk_buff *
-filter_icmp(argument_t a, struct sk_buff *skb)
+filter_icmp(arguments_t *a, struct sk_buff *skb)
 {
         return is_icmp(skb) ? skb : drop(skb);
 }
 
 static inline struct sk_buff *
-filter_icmp6(argument_t a, struct sk_buff *skb)
+filter_icmp6(arguments_t *a, struct sk_buff *skb)
 {
         return is_icmp6(skb) ? skb : drop(skb);
 }
 
 static inline struct sk_buff *
-filter_flow(argument_t a, struct sk_buff *skb)
+filter_flow(arguments_t *a, struct sk_buff *skb)
 {
         return is_flow(skb) ? skb : drop(skb);
 }
 
 static inline struct sk_buff *
-filter_vlan(argument_t a, struct sk_buff *skb)
+filter_vlan(arguments_t *a, struct sk_buff *skb)
 {
         return has_vlan(skb) ? skb : drop(skb);
 }
@@ -203,27 +203,27 @@ filter_vlan(argument_t a, struct sk_buff *skb)
 /* forward functions */
 
 static inline struct sk_buff *
-forward_drop(argument_t a, struct sk_buff *skb)
+forward_drop(arguments_t *a, struct sk_buff *skb)
 {
         return drop(skb);
 }
 
 static inline struct sk_buff *
-forward_broadcast(argument_t a, struct sk_buff *skb)
+forward_broadcast(arguments_t *a, struct sk_buff *skb)
 {
         return broadcast(skb);
 }
 
 static inline struct sk_buff *
-forward_kernel(argument_t a, struct sk_buff *skb)
+forward_kernel(arguments_t *a, struct sk_buff *skb)
 {
         return to_kernel(drop(skb));
 }
 
 static inline struct sk_buff *
-forward_class(argument_t a, struct sk_buff *skb)
+forward_class(arguments_t *a, struct sk_buff *skb)
 {
-        int *c = get_argument(int, a);
+        const int *c = get_data(int, a);
 
         if (!c) {
                 if (printk_ratelimit())

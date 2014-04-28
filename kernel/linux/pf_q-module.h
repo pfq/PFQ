@@ -56,36 +56,43 @@ extern int pfq_symtable_unregister_functions(const char *module, struct list_hea
 #define FUN_WITH_PREDICATE 		(1ULL<<11)
 
 
-/**** argument_t: note, the size of the arg is @ (size_t *)addr - 1; ****/
+/**** arguments_t: note, the size of the arg is @ (size_t *)addr - 1; ****/
 
-typedef union
+typedef struct
 {
-        void const              *arg;
-        struct _expression      *expr;
+        void const              	*data;
+        union
+	{
+        	struct _boolean_expression      *pred;
+        	struct _property_expression     *prop;
+	};
 
-} argument_t;
+} arguments_t;
 
 
-#define get_argument(type, a)  __builtin_choose_expr(__builtin_types_compatible_p(argument_t, typeof(a)), (type *)a.arg,  (void)0)
-#define expression(a)  __builtin_choose_expr(__builtin_types_compatible_p(argument_t, typeof(a)), a.expr, (void)0)
+#define get_data(type, a)  __builtin_choose_expr(__builtin_types_compatible_p(arguments_t *, typeof(a)), (const type *)a->data,  (void)0)
+#define get_predicate(a)   __builtin_choose_expr(__builtin_types_compatible_p(arguments_t *, typeof(a)), a->pred, (void)0)
+#define get_property(a)    __builtin_choose_expr(__builtin_types_compatible_p(arguments_t *, typeof(a)), a->prop, (void)0)
 
 
-/**** expression_t: polymorphic expression *****/
+/**** expression_t: polymorphic boolean expression *****/
 
-typedef struct _expression
+typedef struct _boolean_expression
 {
-        bool (*ptr)(struct sk_buff const *skb, struct _expression *this);
+        bool (*ptr)(struct sk_buff const *skb, struct _boolean_expression *this);
 
-} expression_t;
-
-typedef bool (*expression_ptr_t)(struct sk_buff const *skb, struct _expression *);
+} boolean_expression_t;
 
 
-/**** functional engine ****/
+typedef bool (*expression_ptr_t)(struct sk_buff const *skb, struct _boolean_expression *);
 
-typedef struct sk_buff *(*function_ptr_t)(argument_t, struct sk_buff *);
-typedef bool (*predicate_ptr_t)(argument_t, struct sk_buff const *);
-typedef bool (*combinator_ptr_t)(expression_t *expr1, expression_t *expr2, struct sk_buff const *);
+
+/**** functional prototypes ****/
+
+typedef struct sk_buff *(*function_ptr_t)(arguments_t *, struct sk_buff *);
+typedef bool (*predicate_ptr_t)	 (arguments_t *, struct sk_buff const *);
+typedef bool (*combinator_ptr_t)(boolean_expression_t *expr1, boolean_expression_t *expr2, struct sk_buff const *);
+typedef uint64_t (*property_ptr_t)(arguments_t *, struct sk_buff const *);
 
 
 /* monadic function */

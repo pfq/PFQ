@@ -31,31 +31,21 @@
 #include <linux/pf_q-module.h>
 
 
-#define EXPR_CAST(ptr)  \
-        __builtin_choose_expr(__builtin_types_compatible_p(typeof(ptr), predicate_t *),    (expression_t *)ptr, \
-        __builtin_choose_expr(__builtin_types_compatible_p(typeof(ptr), combinator_t *),   (expression_t *)ptr, \
-        __builtin_choose_expr(__builtin_types_compatible_p(typeof(ptr), boolean_expr_t *), (expression_t *)ptr, \
+#define BOOLEAN_EXPR_CAST(ptr)  \
+        __builtin_choose_expr(__builtin_types_compatible_p(typeof(ptr), predicate_t *),    (boolean_expression_t *)ptr, \
+        __builtin_choose_expr(__builtin_types_compatible_p(typeof(ptr), combinator_t *),   (boolean_expression_t *)ptr, \
+        __builtin_choose_expr(__builtin_types_compatible_p(typeof(ptr), boolean_expr_t *), (boolean_expression_t *)ptr, \
         (void)0)))
-
-
-/**** expression argument: expression + argument *****/
-
-typedef struct expression_arg
-{
-        argument_t   arg;
-        expression_t *expr;
-
-} expression_arg_t;
 
 
 /**** predicate_t : expession_t *****/
 
 typedef struct predicate
 {
-        expression_t     _eval;
+        boolean_expression_t  	_eval;
 
-        predicate_ptr_t  fun;
-        argument_t       arg;
+        predicate_ptr_t  	fun;
+        arguments_t      	args;
 
 } predicate_t;
 
@@ -67,7 +57,7 @@ make_predicate(predicate_ptr_t fun, const void *arg)
 {
         predicate_t p = { ._eval = { .ptr = (expression_ptr_t)predicate_eval },
                           .fun   = fun,
-                          .arg   = { .arg = arg }
+                          .args  = { .data = arg, .pred = NULL }
                         };
         return p;
 }
@@ -76,18 +66,19 @@ make_predicate(predicate_ptr_t fun, const void *arg)
 
 typedef struct combinator
 {
-        expression_t            _eval;
+        boolean_expression_t    _eval;
 
         combinator_ptr_t        fun;
-        expression_t *          left;
-        expression_t *          right;
+
+        boolean_expression_t *  left;
+        boolean_expression_t *  right;
 
 } combinator_t;
 
 bool combinator_eval(struct sk_buff *skb, combinator_t *this);
 
 static inline combinator_t
-make_combinator(combinator_ptr_t fun, expression_t *p1, expression_t *p2)
+make_combinator(combinator_ptr_t fun, boolean_expression_t *p1, boolean_expression_t *p2)
 {
         combinator_t p = {
                            ._eval = { .ptr = (expression_ptr_t)combinator_eval },
@@ -113,7 +104,7 @@ typedef union
 typedef struct
 {
         function_ptr_t  eval;
-        argument_t      arg;
+        arguments_t     args;
 
 } function_t;
 
@@ -121,15 +112,15 @@ typedef struct
 static inline function_t
 make_function(function_ptr_t fun, const void *arg)
 {
-        function_t f = { .eval = fun, .arg = { .arg = arg }  };
+        function_t f = { .eval = fun, .args = { .data = arg, .pred = NULL }  };
         return f;
 }
 
 
 static inline function_t
-make_high_order_function(function_ptr_t fun, expression_t *expr)
+make_high_order_function(function_ptr_t fun, boolean_expression_t *expr)
 {
-        function_t f = { .eval = fun, .arg = { .expr = expr } };
+        function_t f = { .eval = fun, .args = { .data = NULL, .pred = expr } };
         return f;
 }
 

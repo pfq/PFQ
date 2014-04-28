@@ -184,7 +184,7 @@ pfq_apply(functional_t *call, struct sk_buff *skb)
 	(void)infun;
 #endif
 
-	return call->fun.eval(call->fun.arg, skb);
+	return call->fun.eval(&call->fun.args, skb);
 }
 
 
@@ -525,7 +525,7 @@ pfq_computation_compile (struct pfq_computation_descr const *descr, computation_
                                 return -EPERM;
                         }
 
-                        comp->fun[n].fun = make_high_order_function(ptr, EXPR_CAST(&comp->fun[pindex].expr));
+                        comp->fun[n].fun = make_high_order_function(ptr, BOOLEAN_EXPR_CAST(&comp->fun[pindex].expr));
 
 			if (get_functional_by_index(descr, comp, descr->fun[n].r_index, &comp->fun[n].right) < 0) {
 
@@ -591,8 +591,8 @@ pfq_computation_compile (struct pfq_computation_descr const *descr, computation_
                         left  = descr->fun[n].l_index;
                         right = descr->fun[n].r_index;
 
-                        comp->fun[n].expr.comb = make_combinator(ptr, EXPR_CAST(&comp->fun[left].expr),
-                                                                      EXPR_CAST(&comp->fun[right].expr));
+                        comp->fun[n].expr.comb = make_combinator(ptr, BOOLEAN_EXPR_CAST(&comp->fun[left].expr),
+                                                                      BOOLEAN_EXPR_CAST(&comp->fun[right].expr));
 
                         comp->fun[n].right = NULL;
                         comp->fun[n].left  = NULL;

@@ -27,21 +27,21 @@
 #include <linux/pf_q-module.h>
 
 static
-bool or(expression_t *p1, expression_t *p2, struct sk_buff const *skb)
+bool or(boolean_expression_t *p1, boolean_expression_t *p2, struct sk_buff const *skb)
 {
         return p1->ptr(skb, p1) || p2->ptr(skb, p2);
 }
 
 
 static
-bool and(expression_t *p1, expression_t *p2, struct sk_buff const *skb)
+bool and(boolean_expression_t *p1, boolean_expression_t *p2, struct sk_buff const *skb)
 {
         return p1->ptr(skb, p1) && p2->ptr(skb, p2);
 }
 
 
 static
-bool xor(expression_t *p1, expression_t *p2, struct sk_buff const *skb)
+bool xor(boolean_expression_t *p1, boolean_expression_t *p2, struct sk_buff const *skb)
 {
         return p1->ptr(skb, p1) != p2->ptr(skb, p2);
 }

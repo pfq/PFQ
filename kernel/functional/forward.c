@@ -30,7 +30,7 @@
 
 
 static struct sk_buff *
-sink(argument_t a, struct sk_buff *skb)
+sink(arguments_t * a, struct sk_buff *skb)
 {
         if (!is_stolen(skb))
         {
@@ -41,9 +41,9 @@ sink(argument_t a, struct sk_buff *skb)
 
 
 static struct sk_buff *
-forward(argument_t a, struct sk_buff *skb)
+forward(arguments_t * a, struct sk_buff *skb)
 {
-        int *index = get_argument(int, a);
+        const int *index = get_data(int, a);
 
 	struct net_device *dev = dev_get_by_index(&init_net, *index);
 	if (dev == NULL) {
