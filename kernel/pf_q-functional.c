@@ -84,6 +84,15 @@ pod_user(void **ptr, void const __user *arg, size_t size)
 
 void pr_devel_functional_descr(struct pfq_functional_descr const *descr, int index)
 {
+	const char *fun_name[] =
+	{
+		[pfq_monadic_fun] 	= "fun",
+		[pfq_high_order_fun] 	= "hfun",
+		[pfq_predicate_fun] 	= "pred",
+		[pfq_combinator_fun] 	= "comb",
+		[pfq_property_fun] 	= "prop"
+	};
+
         char *name;
 
        	if (descr->symbol == NULL)
@@ -91,49 +100,28 @@ void pr_devel_functional_descr(struct pfq_functional_descr const *descr, int ind
 
         name = strdup_user(descr->symbol);
 
-        switch (descr->type)
-        {
-        case pfq_monadic_fun:
-                pr_devel("%d  fun: %s aptr:%p asize:%zu fun:%d left:%d right:%d\n"
-                                , index
-                                , name
-                                , descr->arg_ptr
-                                , descr->arg_size
-                                , descr->fun
-                                , descr->left
-                                , descr->right);
-                break;
-        case pfq_high_order_fun:
-                pr_devel("%d hfun: %s aptr:%p asize:%zu fun:%d left:%d right:%d\n"
-                                , index
-                                , name
-                                , descr->arg_ptr
-                                , descr->arg_size
-                                , descr->fun
-                                , descr->left
-                                , descr->right);
-                break;
-        case pfq_predicate_fun:
-                pr_devel("%d pred: %s aptr:%p asize:%zu fun:%d left:%d right:%d\n"
-                                , index
-                                , name
-                                , descr->arg_ptr
-                                , descr->arg_size
-                                , descr->fun
-                                , descr->left
-                                , descr->right);
-                break;
-        case pfq_combinator_fun:
-                pr_devel("%d comb: %s aptr:%p asize:%zu fun:%d left:%d right:%d\n"
-                                , index
-                                , name
-                                , descr->arg_ptr
-                                , descr->arg_size
-                                , descr->fun
-                                , descr->left
-                                , descr->right);
-                break;
-        }
+	if (descr->arg_ptr)
+	{
+		pr_devel("%d  %s:%s aptr:%p asize:%zu fun:%d left:%d right:%d\n"
+				, index
+				, fun_name[descr->type % (sizeof(fun_name)/sizeof(fun_name[0]))]
+				, name
+				, descr->arg_ptr
+				, descr->arg_size
+				, descr->fun
+				, descr->left
+				, descr->right);
+	}
+	else
+	{
+		pr_devel("%d  %s:%s fun:%d left:%d right:%d\n"
+				, index
+				, fun_name[descr->type % (sizeof(fun_name)/sizeof(fun_name[0]))]
+				, name
+				, descr->fun
+				, descr->left
+				, descr->right);
+	}
 
         kfree(name);
 }
