@@ -188,7 +188,7 @@ pfq_apply(functional_t *call, struct sk_buff *skb)
 	(void)infun;
 #endif
 
-	return call->fun.eval(&call->fun.args, skb);
+	return function_eval(&call->fun, skb);
 }
 
 

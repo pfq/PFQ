@@ -111,7 +111,7 @@ static inline struct sk_buff *
 conditional(arguments_t *a, struct sk_buff *skb)
 {
         boolean_expression_t * expr = get_predicate(a);
-        PFQ_CB(skb)->action.right = expr->ptr(skb, expr);
+        PFQ_CB(skb)->action.right = expr->ptr(expr, skb);
         return skb;
 }
 
@@ -119,7 +119,7 @@ static inline struct sk_buff *
 when(arguments_t *a, struct sk_buff *skb)
 {
         boolean_expression_t * expr = get_predicate(a);
-        PFQ_CB(skb)->action.right = expr->ptr(skb, expr);
+        PFQ_CB(skb)->action.right = expr->ptr(expr, skb);
         return skb;
 }
 
@@ -127,7 +127,7 @@ static inline struct sk_buff *
 unless(arguments_t *a, struct sk_buff *skb)
 {
         boolean_expression_t * expr = get_predicate(a);
-        PFQ_CB(skb)->action.right = !expr->ptr(skb, expr);
+        PFQ_CB(skb)->action.right = !expr->ptr(expr, skb);
         return skb;
 }
 

@@ -50,7 +50,7 @@ typedef struct predicate
 } predicate_t;
 
 
-extern bool predicate_eval(struct sk_buff *skb, predicate_t *this);
+extern bool predicate_eval(predicate_t *this, struct sk_buff *skb);
 
 static inline predicate_t
 make_predicate(predicate_ptr_t fun, const void *arg)
@@ -75,7 +75,7 @@ typedef struct combinator
 
 } combinator_t;
 
-bool combinator_eval(struct sk_buff *skb, combinator_t *this);
+bool combinator_eval(combinator_t *this, struct sk_buff *skb);
 
 static inline combinator_t
 make_combinator(combinator_ptr_t fun, boolean_expression_t *p1, boolean_expression_t *p2)
@@ -124,6 +124,11 @@ make_high_order_function(function_ptr_t fun, boolean_expression_t *expr)
         return f;
 }
 
+static inline struct sk_buff *
+function_eval(function_t *this, struct sk_buff *skb)
+{
+	return this->eval(&this->args, skb);
+}
 
 /***** functional_t *****/
 

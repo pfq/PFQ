@@ -85,7 +85,7 @@ typedef struct
 
 /**** expression_t: polymorphic boolean expression *****/
 
-typedef bool (*boolean_eval_ptr_t)(struct sk_buff const *skb, struct _boolean_expression *);
+typedef bool (*boolean_eval_ptr_t)(struct _boolean_expression *, struct sk_buff const *skb);
 
 typedef struct _boolean_expression
 {
