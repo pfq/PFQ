@@ -854,6 +854,7 @@ int pfq_setsockopt(struct socket *sock,
                 /* compile the computation */
 
                 if (pfq_computation_compile(descr, comp, context) < 0) {
+                        pr_devel("[PFQ|%d] computation aborted!", so->id);
                         kfree (descr);
                         return -EPERM;
                 }

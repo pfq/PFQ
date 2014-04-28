@@ -470,7 +470,7 @@ pfq_computation_compile (struct pfq_computation_descr const *descr, computation_
                                 ( (properties & FUN_ARG_DATA) && descr->fun[n].arg_ptr == NULL) ||
                                 (!(properties & FUN_ARG_DATA) && descr->fun[n].arg_ptr != NULL)
                         		) {
-                                printk(KERN_INFO "[PFQ] %zu: bad descriptor!\n", n);
+                                printk(KERN_INFO "[PFQ] %zu: nad descriptor!\n", n);
                                 return -EPERM;
                         }
 
@@ -478,13 +478,13 @@ pfq_computation_compile (struct pfq_computation_descr const *descr, computation_
 
 			if (get_functional_by_index(descr, comp, descr->fun[n].right, &comp->fun[n].right) < 0) {
 
-                                pr_devel("[PFQ] %zu: right path link to pure function!\n", n);
+                                pr_devel("[PFQ] %zu: right path out of range!\n", n);
                                 return -EINVAL;
 			}
 
                         if (get_functional_by_index(descr, comp, descr->fun[n].left, &comp->fun[n].left) < 0) {
 
-                                pr_devel("[PFQ] %zu: left path link to pure function!\n", n);
+                                pr_devel("[PFQ] %zu: left path out of range!\n", n);
                                 return -EINVAL;
                         }
 
@@ -512,13 +512,13 @@ pfq_computation_compile (struct pfq_computation_descr const *descr, computation_
 
 			if (get_functional_by_index(descr, comp, descr->fun[n].right, &comp->fun[n].right) < 0) {
 
-                                pr_devel("[PFQ] %zu: right path link to pure function!\n", n);
+                                pr_devel("[PFQ] %zu: right path out of range!\n", n);
                                 return -EINVAL;
 			}
 
                         if (get_functional_by_index(descr, comp, descr->fun[n].left, &comp->fun[n].left) < 0) {
 
-                                pr_devel("[PFQ] %zu: left path link to pure function!\n", n);
+                                pr_devel("[PFQ] %zu: left path out of range!\n", n);
                                 return -EINVAL;
 			}
 
@@ -528,6 +528,7 @@ pfq_computation_compile (struct pfq_computation_descr const *descr, computation_
                 case pfq_predicate_fun: {
 
                         uint64_t properties;
+
                         predicate_ptr_t ptr;
                         void * arg = NULL;
 
