@@ -79,6 +79,7 @@ typedef struct
 
 
 #define get_data(type, a)  __builtin_choose_expr(__builtin_types_compatible_p(arguments_t *, typeof(a)), (const type *)a->data,  (void)0)
+#define get_data_size(a)   *((size_t *)a->data - 1)
 #define get_predicate(a)   __builtin_choose_expr(__builtin_types_compatible_p(arguments_t *, typeof(a)), a->pred, (void)0)
 #define get_property(a)    __builtin_choose_expr(__builtin_types_compatible_p(arguments_t *, typeof(a)), a->prop, (void)0)
 
