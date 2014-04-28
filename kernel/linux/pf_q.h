@@ -376,8 +376,9 @@ struct pfq_functional_descr
         const void __user *     arg_ptr;
         size_t                  arg_size;
 
-        int                     l_index;
-        int                     r_index;
+	int 			fun;
+        int                     left;
+        int                     right;
 };
 
 

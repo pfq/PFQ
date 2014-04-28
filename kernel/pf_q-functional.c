@@ -94,40 +94,44 @@ void pr_devel_functional_descr(struct pfq_functional_descr const *descr, int ind
         switch (descr->type)
         {
         case pfq_monadic_fun:
-                pr_devel("%d  fun: %s aptr:%p asize:%zu left:%d right:%d\n"
+                pr_devel("%d  fun: %s aptr:%p asize:%zu fun:%d left:%d right:%d\n"
                                 , index
                                 , name
                                 , descr->arg_ptr
                                 , descr->arg_size
-                                , descr->l_index
-                                , descr->r_index);
+                                , descr->fun
+                                , descr->left
+                                , descr->right);
                 break;
         case pfq_high_order_fun:
-                pr_devel("%d hfun: %s aptr:%p asize:%zu left:%d right:%d\n"
+                pr_devel("%d hfun: %s aptr:%p asize:%zu fun:%d left:%d right:%d\n"
                                 , index
                                 , name
                                 , descr->arg_ptr
                                 , descr->arg_size
-                                , descr->l_index
-                                , descr->r_index);
+                                , descr->fun
+                                , descr->left
+                                , descr->right);
                 break;
         case pfq_predicate_fun:
-                pr_devel("%d pred: %s pred aptr:%p asize:%zu left:%d right:%d\n"
+                pr_devel("%d pred: %s aptr:%p asize:%zu fun:%d left:%d right:%d\n"
                                 , index
                                 , name
                                 , descr->arg_ptr
                                 , descr->arg_size
-                                , descr->l_index
-                                , descr->r_index);
+                                , descr->fun
+                                , descr->left
+                                , descr->right);
                 break;
         case pfq_combinator_fun:
-                pr_devel("%d comb: %s comb aptr:%p asize:%zu left:%d right:%d\n"
+                pr_devel("%d comb: %s aptr:%p asize:%zu fun:%d left:%d right:%d\n"
                                 , index
                                 , name
                                 , descr->arg_ptr
                                 , descr->arg_size
-                                , descr->l_index
-                                , descr->r_index);
+                                , descr->fun
+                                , descr->left
+                                , descr->right);
                 break;
         }
 
@@ -335,7 +339,7 @@ validate_computation_descr(struct pfq_computation_descr const *descr)
 
                 case pfq_high_order_fun: {
 
-                        size_t pindex = descr->fun[n].arg_size;
+                        size_t pindex = descr->fun[n].fun;
 
                         if (pindex >= descr->size) {
                                 pr_devel("[PFQ] %zu: high-order function: predicate out-of-range!\n", n);
@@ -361,8 +365,8 @@ validate_computation_descr(struct pfq_computation_descr const *descr)
 
                 case pfq_combinator_fun: {
 
-                        size_t left  = descr->fun[n].l_index;
-                        size_t right = descr->fun[n].r_index;
+                        size_t left  = descr->fun[n].left;
+                        size_t right = descr->fun[n].right;
 
                         if (left >= descr->size) {
                                 pr_devel("[PFQ] %zu: combinator: left predicate out-of-range!\n", n);
@@ -492,13 +496,13 @@ pfq_computation_compile (struct pfq_computation_descr const *descr, computation_
 
                         comp->fun[n].fun = make_function(ptr, arg);
 
-			if (get_functional_by_index(descr, comp, descr->fun[n].r_index, &comp->fun[n].right) < 0) {
+			if (get_functional_by_index(descr, comp, descr->fun[n].right, &comp->fun[n].right) < 0) {
 
                                 pr_devel("[PFQ] %zu: right path link to pure function!\n", n);
                                 return -EINVAL;
 			}
 
-                        if (get_functional_by_index(descr, comp, descr->fun[n].l_index, &comp->fun[n].left) < 0) {
+                        if (get_functional_by_index(descr, comp, descr->fun[n].left, &comp->fun[n].left) < 0) {
 
                                 pr_devel("[PFQ] %zu: left path link to pure function!\n", n);
                                 return -EINVAL;
@@ -512,9 +516,8 @@ pfq_computation_compile (struct pfq_computation_descr const *descr, computation_
 
                         uint64_t properties;
                         function_ptr_t ptr;
-                        size_t pindex;
 
-                        pindex = descr->fun[n].arg_size;
+                        size_t pindex = descr->fun[n].fun;
 
                         ptr = resolve_user_symbol(&pfq_monadic_cat, descr->fun[n].symbol, &properties);
                         if (ptr == NULL ||
@@ -527,13 +530,13 @@ pfq_computation_compile (struct pfq_computation_descr const *descr, computation_
 
                         comp->fun[n].fun = make_high_order_function(ptr, BOOLEAN_EXPR_CAST(&comp->fun[pindex].expr));
 
-			if (get_functional_by_index(descr, comp, descr->fun[n].r_index, &comp->fun[n].right) < 0) {
+			if (get_functional_by_index(descr, comp, descr->fun[n].right, &comp->fun[n].right) < 0) {
 
                                 pr_devel("[PFQ] %zu: right path link to pure function!\n", n);
                                 return -EINVAL;
 			}
 
-                        if (get_functional_by_index(descr, comp, descr->fun[n].l_index, &comp->fun[n].left) < 0) {
+                        if (get_functional_by_index(descr, comp, descr->fun[n].left, &comp->fun[n].left) < 0) {
 
                                 pr_devel("[PFQ] %zu: left path link to pure function!\n", n);
                                 return -EINVAL;
@@ -588,8 +591,8 @@ pfq_computation_compile (struct pfq_computation_descr const *descr, computation_
                                 return -EPERM;
                         }
 
-                        left  = descr->fun[n].l_index;
-                        right = descr->fun[n].r_index;
+                        left  = descr->fun[n].left;
+                        right = descr->fun[n].right;
 
                         comp->fun[n].expr.comb = make_combinator(ptr, BOOLEAN_EXPR_CAST(&comp->fun[left].expr),
                                                                       BOOLEAN_EXPR_CAST(&comp->fun[right].expr));
