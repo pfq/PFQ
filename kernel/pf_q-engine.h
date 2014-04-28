@@ -55,7 +55,7 @@ extern bool predicate_eval(struct sk_buff *skb, predicate_t *this);
 static inline predicate_t
 make_predicate(predicate_ptr_t fun, const void *arg)
 {
-        predicate_t p = { ._eval = { .ptr = (boolean_expression_ptr_t)predicate_eval },
+        predicate_t p = { ._eval = { .ptr = (boolean_eval_ptr_t)predicate_eval },
                           .fun   = fun,
                           .args  = { .data = arg, .pred = NULL }
                         };
@@ -81,7 +81,7 @@ static inline combinator_t
 make_combinator(combinator_ptr_t fun, boolean_expression_t *p1, boolean_expression_t *p2)
 {
         combinator_t p = {
-                           ._eval = { .ptr = (boolean_expression_ptr_t)combinator_eval },
+                           ._eval = { .ptr = (boolean_eval_ptr_t)combinator_eval },
                            .fun   = fun,
                            .left  = p1,
                            .right = p2
