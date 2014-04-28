@@ -84,14 +84,13 @@ typedef struct
 
 /**** expression_t: polymorphic boolean expression *****/
 
+typedef bool (*boolean_expression_ptr_t)(struct sk_buff const *skb, struct _boolean_expression *);
+
 typedef struct _boolean_expression
 {
-        bool (*ptr)(struct sk_buff const *skb, struct _boolean_expression *this);
+        boolean_expression_ptr_t ptr;
 
 } boolean_expression_t;
-
-
-typedef bool (*expression_ptr_t)(struct sk_buff const *skb, struct _boolean_expression *);
 
 
 /**** functional prototypes ****/
