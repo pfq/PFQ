@@ -102,7 +102,7 @@ typedef bool (*combinator_ptr_t)(boolean_expression_t *expr1, boolean_expression
 typedef uint64_t (*property_ptr_t)(arguments_t *, struct sk_buff const *);
 
 
-/* monadic function */
+/**** function descriptors ****/
 
 struct pfq_function_descr
 {

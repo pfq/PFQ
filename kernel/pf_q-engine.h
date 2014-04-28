@@ -108,14 +108,12 @@ typedef struct
 
 } function_t;
 
-
 static inline function_t
 make_function(function_ptr_t fun, const void *arg)
 {
         function_t f = { .eval = fun, .args = { .data = arg, .pred = NULL }  };
         return f;
 }
-
 
 static inline function_t
 make_high_order_function(function_ptr_t fun, boolean_expression_t *expr)
