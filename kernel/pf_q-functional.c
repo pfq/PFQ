@@ -551,7 +551,14 @@ pfq_computation_compile (struct pfq_computation_descr const *descr, computation_
                                 return -EPERM;
                         }
 
-                        comp->fun[n].expr.pred = make_predicate(ptr, arg);
+                        if (descr->fun[n].fun != -1) {
+
+				size_t pindex = descr->fun[n].fun;
+		     		comp->fun[n].expr.pred = make_predicate1(ptr, arg, PROPERTY_EXPR_CAST(&comp->fun[pindex].prop));
+			}
+			else {
+                        	comp->fun[n].expr.pred = make_predicate(ptr, arg);
+			}
 
                         comp->fun[n].right = NULL;
                         comp->fun[n].left  = NULL;
