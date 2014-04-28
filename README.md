@@ -4,7 +4,7 @@ PFQ
 Introduction
 ------------
 
-PFQ is a capturing engine designed for the Linux kernel that allows efficient 
+PFQ is a network monitoring framework designed for the Linux kernel that allows efficient 
 packet capturing, in-kernel aggregation, functional processing and packet steering 
 across sockets. 
 
