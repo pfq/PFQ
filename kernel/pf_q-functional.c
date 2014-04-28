@@ -566,7 +566,7 @@ pfq_computation_compile (struct pfq_computation_descr const *descr, computation_
 
                         ptr = resolve_user_symbol(&pfq_predicate_cat, descr->fun[n].symbol, &properties);
                         if (ptr == NULL ||
-                	    	(properties & FUN_COMBINATOR) == 0)
+                	    (properties & FUN_COMBINATOR) == 0)
 			{
                                 printk(KERN_INFO "[PFQ] %zu: bad descriptor!\n", n);
                                 return -EPERM;
@@ -577,6 +577,39 @@ pfq_computation_compile (struct pfq_computation_descr const *descr, computation_
 
                         comp->fun[n].expr.comb = make_combinator(ptr, BOOLEAN_EXPR_CAST(&comp->fun[left].expr),
                                                                       BOOLEAN_EXPR_CAST(&comp->fun[right].expr));
+
+                        comp->fun[n].right = NULL;
+                        comp->fun[n].left  = NULL;
+
+                } break;
+
+                case pfq_property_fun: {
+
+                        uint64_t properties;
+                        property_ptr_t ptr;
+
+                        void * arg = NULL;
+
+                        if (descr->fun[n].arg_size) {
+
+                                arg = pod_user(&context, descr->fun[n].arg_ptr, descr->fun[n].arg_size);
+                                if (arg == NULL) {
+                                        pr_devel("[PFQ] %zu: pred internal error!\n", n);
+                                        return -EPERM;
+                                }
+                        }
+
+                        ptr = resolve_user_symbol(&pfq_property_cat, descr->fun[n].symbol, &properties);
+                        if (ptr == NULL ||
+                	    	(properties & FUN_PROPERTY) == 0 ||
+                                ( (properties & FUN_ARG_DATA) && descr->fun[n].arg_ptr == NULL) ||
+                                (!(properties & FUN_ARG_DATA) && descr->fun[n].arg_ptr != NULL))
+			{
+                                printk(KERN_INFO "[PFQ] %zu: bad descriptor!\n", n);
+                                return -EPERM;
+                        }
+
+                        comp->fun[n].prop = make_property(ptr, arg);
 
                         comp->fun[n].right = NULL;
                         comp->fun[n].left  = NULL;
