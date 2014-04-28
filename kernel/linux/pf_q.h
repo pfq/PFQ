@@ -358,13 +358,13 @@ void pfq_spsc_read_commit(struct pfq_tx_queue_hdr *q)
 
 /* functional: descriptor */
 
-enum pfq_functional_type {
-
+enum pfq_functional_type
+{
         pfq_monadic_fun,
         pfq_high_order_fun,
         pfq_predicate_fun,
-        pfq_combinator_fun
-
+        pfq_combinator_fun,
+        pfq_property_fun
 };
 
 struct pfq_functional_descr
