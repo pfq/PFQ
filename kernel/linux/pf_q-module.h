@@ -55,13 +55,13 @@ extern int pfq_symtable_unregister_functions(const char *module, struct list_hea
 
 #define FUN_ARG_DATA			(1ULL<<10)
 #define FUN_ARG_FUN 			(1ULL<<11)
-#define FUN_ARG_DATA_FUN 		(1ULL<<12)
 
 /**** property macros ****/
 
 
 #define JUST(x) 	((1ULL<<31) | x)
 #define IS_JUST(x)	((1ULL<<31) & x)
+#define FROM_JUST(x)	(~(1ULL<<31) & x)
 #define NOTHING 	0
 
 /**** arguments_t: note, the size of data is @ (size_t *)data - 1; ****/
@@ -92,6 +92,17 @@ typedef struct _boolean_expression
         boolean_eval_ptr_t ptr;
 
 } boolean_expression_t;
+
+
+/**** property *****/
+
+typedef uint64_t (*property_eval_ptr_t)(struct _property_expression *, struct sk_buff const *skb);
+
+typedef struct _property_expression
+{
+        property_eval_ptr_t ptr;
+
+} property_expression_t;
 
 
 /**** functional prototypes ****/

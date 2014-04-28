@@ -24,12 +24,12 @@
 #include <pf_q-engine.h>
 
 
-bool predicate_eval(predicate_t *this, struct sk_buff *skb)
+bool eval_predicate(predicate_t *this, struct sk_buff *skb)
 {
         return this->fun(&this->args, skb);
 }
 
-bool combinator_eval(combinator_t *this, struct sk_buff *skb)
+bool eval_combinator(combinator_t *this, struct sk_buff *skb)
 {
         return this->fun(this->left, this->right, skb);
 }

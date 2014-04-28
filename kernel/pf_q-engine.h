@@ -37,6 +37,33 @@
         __builtin_choose_expr(__builtin_types_compatible_p(typeof(ptr), boolean_expr_t *), (boolean_expression_t *)ptr, \
         (void)0)))
 
+#define PROPERTY_EXPR_CAST(ptr) \
+        __builtin_choose_expr(__builtin_types_compatible_p(typeof(ptr), property_t *),     (property_expression_t *)ptr, \
+        (void)0)
+
+/**** property_t ****/
+
+typedef struct property
+{
+	property_ptr_t 		eval;
+	arguments_t		args;
+
+} property_t;
+
+
+static inline property_t
+make_property(property_ptr_t fun, const void *arg)
+{
+        property_t f = { .eval = fun, .args = { .data = arg, .pred = NULL }  };
+        return f;
+}
+
+static inline uint64_t
+eval_property(property_t *this, struct sk_buff const *skb)
+{
+	return this->eval(&this->args, skb);
+}
+
 
 /**** predicate_t : expession_t *****/
 
@@ -50,14 +77,24 @@ typedef struct predicate
 } predicate_t;
 
 
-extern bool predicate_eval(predicate_t *this, struct sk_buff *skb);
+extern bool eval_predicate(predicate_t *this, struct sk_buff *skb);
 
 static inline predicate_t
 make_predicate(predicate_ptr_t fun, const void *arg)
 {
-        predicate_t p = { ._eval = { .ptr = (boolean_eval_ptr_t)predicate_eval },
+        predicate_t p = { ._eval = { .ptr = (boolean_eval_ptr_t)eval_predicate },
                           .fun   = fun,
                           .args  = { .data = arg, .pred = NULL }
+                        };
+        return p;
+}
+
+static inline predicate_t
+make_predicate1(predicate_ptr_t fun, const void *arg, property_expression_t *pr)
+{
+        predicate_t p = { ._eval = { .ptr = (boolean_eval_ptr_t)eval_predicate },
+                          .fun   = fun,
+                          .args  = { .data = arg, .prop = pr }
                         };
         return p;
 }
@@ -75,13 +112,13 @@ typedef struct combinator
 
 } combinator_t;
 
-bool combinator_eval(combinator_t *this, struct sk_buff *skb);
+bool eval_combinator(combinator_t *this, struct sk_buff *skb);
 
 static inline combinator_t
 make_combinator(combinator_ptr_t fun, boolean_expression_t *p1, boolean_expression_t *p2)
 {
         combinator_t p = {
-                           ._eval = { .ptr = (boolean_eval_ptr_t)combinator_eval },
+                           ._eval = { .ptr = (boolean_eval_ptr_t)eval_combinator },
                            .fun   = fun,
                            .left  = p1,
                            .right = p2
@@ -123,7 +160,7 @@ make_high_order_function(function_ptr_t fun, boolean_expression_t *expr)
 }
 
 static inline struct sk_buff *
-function_eval(function_t *this, struct sk_buff *skb)
+eval_function(function_t *this, struct sk_buff *skb)
 {
 	return this->eval(&this->args, skb);
 }
@@ -135,6 +172,7 @@ typedef struct pfq_functional
         union
         {
                 function_t              fun;
+                property_t 		prop;
                 boolean_expr_t          expr;
         };
 
