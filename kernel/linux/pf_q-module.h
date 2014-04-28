@@ -125,6 +125,13 @@ struct pfq_combinator_fun_descr
         uint64_t	 properties;
 };
 
+struct pfq_property_fun_descr
+{
+        const char * 	 symbol;
+        property_ptr_t ptr;
+        uint64_t	 properties;
+};
+
 
 /* actions types */
 
