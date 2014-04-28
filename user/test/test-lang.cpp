@@ -24,10 +24,16 @@ main()
      auto or_  = combinator("or");
      auto and_ = combinator("and");
 
+     auto q0 = property("ip_tos");
+     auto q1 = property1("ip_tot_len", 42);
+
      auto p0 = predicate("is_ip");
      auto p1 = predicate1("has_value", 42);
      auto p2 = predicate2(or_, p0, p1);
      auto p3 = predicate2(and_, p2, p2);
+
+     auto p4 = predicate3("pred3", q0);
+     auto p5 = predicate4("pred3-arg", q1, 3);
 
      //////// computations:
 
@@ -59,6 +65,11 @@ main()
      std::cout << show(p1) << std::endl;
      std::cout << show(p2) << std::endl;
      std::cout << show(p3) << std::endl;
+     std::cout << show(p4) << std::endl;
+     std::cout << show(p5) << std::endl;
+
+     std::cout << show(q0) << std::endl;
+     std::cout << show(q1) << std::endl;
 
      std::cout << show(c0) << std::endl;
      std::cout << show(c1) << std::endl;
@@ -91,6 +102,16 @@ main()
      show_descr (p2);
      std::cout << "---" << std::endl;
      show_descr (p3);
+
+     std::cout << "---" << std::endl;
+     show_descr (p4);
+     std::cout << "---" << std::endl;
+     show_descr (p5);
+
+     std::cout << "---" << std::endl;
+     show_descr (q0);
+     std::cout << "---" << std::endl;
+     show_descr (q1);
 
      std::cout << "---" << std::endl;
      show_descr (c0);
