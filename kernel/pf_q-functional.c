@@ -339,8 +339,25 @@ validate_computation_descr(struct pfq_computation_descr const *descr)
 
                 case pfq_predicate_fun: {
 
+                        size_t pindex = descr->fun[n].fun;
+
                         if ((descr->fun[n].arg_ptr == NULL) != (descr->fun[n].arg_size == 0)) {
                                 pr_devel("[PFQ] %zu: argument ptr/size mismatch!\n", n);
+                                return -EPERM;
+                        }
+
+                        if (pindex == (size_t)-1)
+                        	return 0;
+
+                        if (pindex >= descr->size) {
+                                pr_devel("[PFQ] %zu: high-order predicate: function out-of-range!\n", n);
+                                return -EPERM;
+                        }
+
+                        if (descr->fun[pindex].type != pfq_predicate_fun &&
+                            descr->fun[pindex].type != pfq_combinator_fun &&
+                            descr->fun[pindex].type != pfq_property_fun) {
+                                pr_devel("[PFQ] %zu: high-order predicate: bad function!\n", n);
                                 return -EPERM;
                         }
 
@@ -373,6 +390,15 @@ validate_computation_descr(struct pfq_computation_descr const *descr)
                         }
 
                 }break;
+
+                case pfq_property_fun: {
+
+                        if ((descr->fun[n].arg_ptr == NULL) != (descr->fun[n].arg_size == 0)) {
+                                pr_devel("[PFQ] %zu: argument ptr/size mismatch!\n", n);
+                                return -EPERM;
+                        }
+
+		}; break;
 
                 default: {
                         pr_devel("[PFQ] %zu: unsupported function type!\n", n);
