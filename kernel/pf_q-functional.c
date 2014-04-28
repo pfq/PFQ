@@ -251,6 +251,8 @@ pfq_context_alloc(struct pfq_computation_descr const *descr)
                 return NULL;
         }
 
+        pr_devel("[PFQ] context_alloc: %zu bytes allocated.\n", size);
+
         s = (size_t *)r;
 
         for(n = 0; n < descr->size; n++)
@@ -380,6 +382,7 @@ validate_computation_descr(struct pfq_computation_descr const *descr)
                 }break;
 
                 default: {
+                        pr_devel("[PFQ] %zu: unsupported function type!\n", n);
                         return -EPERM;
                 }
                 }
