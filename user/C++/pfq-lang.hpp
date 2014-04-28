@@ -361,7 +361,7 @@ namespace pfq_lang
             size_t                size_;
         };
 
-        //////// is_:
+        //////// is_property:
 
         template <typename Tp>
         struct is_property :
