@@ -555,7 +555,7 @@ pfq_set_group_computation(pfq_t *q, int gid, struct pfq_computation_descr *comp)
 {
         struct pfq_group_computation p = { gid, comp };
 
-        if (setsockopt(q->fd, PF_Q, Q_SO_GROUP_FUN_PROG, &p, sizeof(p)) == -1) {
+        if (setsockopt(q->fd, PF_Q, Q_SO_GROUP_COMP, &p, sizeof(p)) == -1) {
 		return q->error = "PFQ: group computation error", -1;
         }
 

@@ -793,7 +793,7 @@ int pfq_setsockopt(struct socket *sock,
                 dev_put(dev);
         } break;
 
-        case Q_SO_GROUP_FUN_PROG:
+        case Q_SO_GROUP_COMP:
         {
                 struct pfq_group_computation tmp;
                 struct pfq_computation_descr *descr;

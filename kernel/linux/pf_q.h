@@ -316,7 +316,7 @@ void pfq_spsc_read_commit(struct pfq_tx_queue_hdr *q)
 #define Q_SO_TX_THREAD_WAKEUP       34
 #define Q_SO_TX_QUEUE_FLUSH         35
 
-#define Q_SO_GROUP_FUN_PROG         36      /* deprecate PFQ_SO_GROUP_FUN */
+#define Q_SO_GROUP_COMP		    36
 
 /* general placeholders */
 
