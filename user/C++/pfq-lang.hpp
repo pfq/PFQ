@@ -62,8 +62,9 @@ namespace pfq_lang
             << "symbol:"    << descr.symbol     << ' '
             << "arg_ptr:"   << descr.arg_ptr    << ' '
             << "arg_size:"  << descr.arg_size   << ' '
-            << "left:"      << descr.l_index    << ' '
-            << "right:"     << descr.r_index;
+            << "fun:"       << descr.fun        << ' '
+            << "left:"      << descr.left       << ' '
+            << "right:"     << descr.right;
 
         return out.str();
     }
@@ -80,6 +81,7 @@ namespace pfq_lang
         std::shared_ptr<void>       arg_ptr;
         size_t                      arg_size;
 
+        int                         fun;
         int                         left;
         int                         right;
     };
@@ -91,6 +93,7 @@ namespace pfq_lang
                              + descr.symbol + ' '
                              + std::to_string((unsigned long)descr.arg_ptr.get()) + ' '
                              + std::to_string(descr.arg_size) + ' '
+                             + std::to_string(descr.fun) + ' '
                              + std::to_string(descr.left) + ' '
                              + std::to_string(descr.right) + " }";
     }
@@ -153,7 +156,7 @@ namespace pfq_lang
         {
             return std::make_pair(std::vector<FunDescr>
             {
-                FunDescr { pfq_combinator_fun, comb.name_, std::shared_ptr<void>(), 0, -1, -1 }
+                FunDescr { pfq_combinator_fun, comb.name_, std::shared_ptr<void>(), 0, -1, -1, -1 }
             }, n+1);
         }
 
@@ -227,7 +230,7 @@ namespace pfq_lang
         {
             return std::make_pair(std::vector<FunDescr>
             {
-                FunDescr { pfq_predicate_fun, p.name_, std::shared_ptr<void>(), 0, -1, -1 }
+                FunDescr { pfq_predicate_fun, p.name_, std::shared_ptr<void>(), 0, -1, -1, -1 }
             }, n+1);
         }
 
@@ -236,7 +239,7 @@ namespace pfq_lang
         {
             return std::make_pair(std::vector<FunDescr>
             {
-                FunDescr { pfq_predicate_fun, p.name_, p.ptr_, p.size_, -1, -1 }
+                FunDescr { pfq_predicate_fun, p.name_, p.ptr_, p.size_, -1, -1, -1 }
             }, n+1);
         }
 
@@ -374,7 +377,7 @@ namespace pfq_lang
         {
             return std::make_pair(std::vector<FunDescr>
             {
-                FunDescr { pfq_monadic_fun, f.name_, std::shared_ptr<void>(), 0, n+1, n+1 }
+                FunDescr { pfq_monadic_fun, f.name_, std::shared_ptr<void>(), 0, -1, n+1, n+1 }
             }, n+1);
         }
 
@@ -383,7 +386,7 @@ namespace pfq_lang
         {
             return std::make_pair(std::vector<FunDescr>
             {
-                FunDescr { pfq_monadic_fun, f.name_, f.ptr_, f.size_, n+1, n+1 }
+                FunDescr { pfq_monadic_fun, f.name_, f.ptr_, f.size_, -1, n+1, n+1 }
             }, n+1);
         }
 
@@ -398,7 +401,7 @@ namespace pfq_lang
 
             v1 = std::vector<FunDescr>
             {
-                FunDescr { pfq_high_order_fun, f.name_, std::shared_ptr<void>(), static_cast<size_t>(n+1), n1, n1 }
+                FunDescr { pfq_high_order_fun, f.name_, std::shared_ptr<void>(), 0, n+1, n1, n1 }
             };
 
             return std::make_pair(std::move(v1) + std::move(p1), n1);
@@ -417,7 +420,7 @@ namespace pfq_lang
 
             v1 = std::vector<FunDescr>
             {
-                FunDescr { pfq_high_order_fun, f.name_, std::shared_ptr<void>(), static_cast<size_t>(n+1), n2, n1 }
+                FunDescr { pfq_high_order_fun, f.name_, std::shared_ptr<void>(), 0, n+1, n2, n1 }
             };
 
             return std::make_pair(std::move(v1) + std::move(p1) + std::move(c1), n2);
@@ -436,7 +439,7 @@ namespace pfq_lang
 
             v1 = std::vector<FunDescr>
             {
-                FunDescr { pfq_high_order_fun, f.name_, std::shared_ptr<void>(), static_cast<size_t>(n+1), n2, n1 }
+                FunDescr { pfq_high_order_fun, f.name_, std::shared_ptr<void>(), 0, n+1, n2, n1 }
             };
 
             for(auto & d : c1)
