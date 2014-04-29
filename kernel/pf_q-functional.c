@@ -266,19 +266,68 @@ pfq_context_alloc(struct pfq_computation_descr const *descr)
         return r;
 }
 
+/*** function checks... ***/
 
-static inline
-int validate_function_type(enum pfq_functional_type type)
+static
+bool check_pure_function(struct pfq_computation_descr const *descr, int index)
 {
-        if (type != pfq_monadic_fun &&
-                        type != pfq_high_order_fun &&
-                        type != pfq_predicate_fun &&
-                        type != pfq_combinator_fun) {
-                pr_devel("[PFQ] computation: unknown function type!\n");
-                return -EPERM;
+        if (index >= descr->size) {
+                pr_devel("[PFQ] %d: pure_function check: invalid entry_point!\n", index);
+                return false;
         }
 
-        return 0;
+	if (descr->fun[index].type == pfq_predicate_fun  ||
+	    descr->fun[index].type == pfq_combinator_fun ||
+	    descr->fun[index].type == pfq_property_fun)
+	    	return true;
+
+	return false;
+}
+
+static
+bool check_monadic_function(struct pfq_computation_descr const *descr, int index)
+{
+        if (index >= descr->size) {
+                pr_devel("[PFQ] %d: monadic_function check: invalid entry_point!\n", index);
+                return false;
+        }
+
+	if (descr->fun[index].type == pfq_monadic_fun ||
+	    descr->fun[index].type == pfq_high_order_fun)
+	    	return true;
+
+	return false;
+}
+
+static
+bool check_predicate_function(struct pfq_computation_descr const *descr, int index)
+{
+        if (index >= descr->size) {
+                pr_devel("[PFQ] %d: predicate_function check: invalid entry_point!\n", index);
+                return false;
+        }
+
+	if (descr->fun[index].type == pfq_predicate_fun ||
+	    descr->fun[index].type == pfq_combinator_fun)
+	    	return true;
+
+	return false;
+}
+
+static
+bool check_argument(struct pfq_computation_descr const *descr, int index)
+{
+        if (index >= descr->size) {
+                pr_devel("[PFQ] %d: argument check: invalid entry_point!\n", index);
+                return false;
+        }
+
+	if ((descr->fun[index].arg_ptr == NULL) != (descr->fun[index].arg_size == 0)) {
+		pr_devel("[PFQ] %d: argument ptr/size mismatch!\n", index);
+		return false;
+	}
+
+	return true;
 }
 
 
@@ -287,25 +336,17 @@ validate_computation_descr(struct pfq_computation_descr const *descr)
 {
         /* entry point */
 
-        size_t ep, n;
+        int n;
 
-        ep = descr->entry_point;
-
-        if (ep >= descr->size) {
-                pr_devel("[PFQ] computation: invalid entry_point!\n");
-                return -EPERM;
-        }
-
-        if (descr->fun[ep].type != pfq_monadic_fun &&
-                        descr->fun[ep].type != pfq_high_order_fun) {
-                pr_devel("[PFQ] %zu: invalid entry_point!\n", ep);
+	if (!check_monadic_function(descr, descr->entry_point)) {
+                pr_devel("[PFQ] %d: computation: invalid entry_point!\n", (int)descr->entry_point);
                 return -EPERM;
         }
 
         for(n = 0; n < descr->size; n++)
         {
                 if (descr->fun[n].symbol == NULL) {
-                        printk(KERN_INFO "[PFQ] %zu: NULL symbol!\n", n);
+                        printk(KERN_INFO "[PFQ] %d: NULL symbol!\n", n);
                         return -EPERM;
                 }
 
@@ -313,97 +354,81 @@ validate_computation_descr(struct pfq_computation_descr const *descr)
                 {
                 case pfq_monadic_fun: {
 
-                        if ((descr->fun[n].arg_ptr == NULL) != (descr->fun[n].arg_size == 0)) {
-                                pr_devel("[PFQ] %zu: argument ptr/size mismatch!\n", n);
-                                return -EPERM;
-                        }
+			if (!check_argument(descr, n)) {
+                                pr_devel("[PFQ] %d: monadic function error!\n", n);
+				return -EPERM;
+			}
 
                 } break;
 
                 case pfq_high_order_fun: {
 
-                        size_t pindex = descr->fun[n].fun;
+                        int pindex = descr->fun[n].fun;
 
-                        if (pindex >= descr->size) {
-                                pr_devel("[PFQ] %zu: high-order function: predicate out-of-range!\n", n);
-                                return -EPERM;
-                        }
-
-                        if (descr->fun[pindex].type != pfq_predicate_fun &&
-                            descr->fun[pindex].type != pfq_combinator_fun ) {
-                                pr_devel("[PFQ] %zu: high-order function: bad predicate!\n", n);
-                                return -EPERM;
-                        }
+			if (!check_predicate_function(descr, pindex)) {
+                                pr_devel("[PFQ] %d: high-order function error!\n", n);
+				return -EPERM;
+			}
 
                 } break;
 
                 case pfq_predicate_fun: {
 
-                        size_t pindex = descr->fun[n].fun;
+                        int pindex = descr->fun[n].fun;
 
-                        if ((descr->fun[n].arg_ptr == NULL) != (descr->fun[n].arg_size == 0)) {
-                                pr_devel("[PFQ] %zu: argument ptr/size mismatch!\n", n);
-                                return -EPERM;
-                        }
+			if (!check_argument(descr, n)) {
+                                pr_devel("[PFQ] %d: predicate function error!\n", n);
+				return -EPERM;
+			}
 
-                        if (pindex == (size_t)-1)
+                        if (pindex == -1)
                         	return 0;
 
-                        if (pindex >= descr->size) {
-                                pr_devel("[PFQ] %zu: high-order predicate: function out-of-range!\n", n);
+			if (!check_pure_function(descr, pindex)) {
+                                pr_devel("[PFQ] %d: predicate function error!\n", n);
                                 return -EPERM;
-                        }
-
-                        if (descr->fun[pindex].type != pfq_predicate_fun &&
-                            descr->fun[pindex].type != pfq_combinator_fun &&
-                            descr->fun[pindex].type != pfq_property_fun) {
-                                pr_devel("[PFQ] %zu: high-order predicate: bad function!\n", n);
-                                return -EPERM;
-                        }
+			}
 
                 } break;
 
                 case pfq_combinator_fun: {
 
-                        size_t left  = descr->fun[n].left;
-                        size_t right = descr->fun[n].right;
+                        int left  = descr->fun[n].left;
+                        int right = descr->fun[n].right;
 
-                        if (left >= descr->size) {
-                                pr_devel("[PFQ] %zu: combinator: left predicate out-of-range!\n", n);
+			if (!check_predicate_function(descr, left)) {
+                                pr_devel("[PFQ] %d: combinator function error!\n", n);
                                 return -EPERM;
-                        }
-                        if (right >= descr->size) {
-                                pr_devel("[PFQ] %zu: combinator: right predicate out-of-range!\n", n);
-                                return -EPERM;
-                        }
+			}
 
-                        if (descr->fun[left].type != pfq_predicate_fun &&
-                            descr->fun[left].type != pfq_combinator_fun ) {
-                                pr_devel("[PFQ] %zu: combinator: bad left predicate!\n", n);
+			if (!check_predicate_function(descr, right)) {
+                                pr_devel("[PFQ] %d: combinator function error!\n", n);
                                 return -EPERM;
-                        }
-
-                        if (descr->fun[right].type != pfq_predicate_fun &&
-                            descr->fun[right].type != pfq_combinator_fun ) {
-                                pr_devel("[PFQ] %zu: combinator: bad right predicate!\n", n);
-                                return -EPERM;
-                        }
-
+			}
                 }break;
 
                 case pfq_property_fun: {
 
-                        if ((descr->fun[n].arg_ptr == NULL) != (descr->fun[n].arg_size == 0)) {
-                                pr_devel("[PFQ] %zu: argument ptr/size mismatch!\n", n);
+                        int pindex = descr->fun[n].fun;
+
+			if (!check_argument(descr, n)) {
+                                pr_devel("[PFQ] %d: property function error!\n", n);
+				return -EPERM;
+			}
+
+                        if (pindex == -1)
+                        	return 0;
+
+			if (!check_pure_function(descr, pindex)) {
+                                pr_devel("[PFQ] %d: property function error!\n", n);
                                 return -EPERM;
-                        }
+			}
 
 		}; break;
 
-                default: {
-                        pr_devel("[PFQ] %zu: unsupported function type!\n", n);
+                default:
+                        pr_devel("[PFQ] %d: unsupported function type!\n", n);
                         return -EPERM;
-                }
                 }
         }
 
