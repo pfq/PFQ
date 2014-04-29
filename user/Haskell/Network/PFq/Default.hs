@@ -176,6 +176,9 @@ p1 .||. p2 = Pred2 (Combinator "or" ) p1 p2
 p1 .&&. p2 = Pred2 (Combinator "and") p1 p2
 p1 .^^. p2 = Pred2 (Combinator "xor") p1 p2
 
+infixl 7 .&&.
+infixl 6 .^^.
+infixl 5 .||.
 
 -- Default comparators:
 --
@@ -187,6 +190,14 @@ p .==. x = Pred4 "equal" p x
 p ./=. x = Pred4 "not_equal" p x
 p .>.  x = Pred4 "greater" p x
 p .>=. x = Pred4 "greater_eq" p x
+
+infix 4 .<.
+infix 4 .<=.
+infix 4 .>.
+infix 4 .>=.
+infix 4 .==.
+infix 4 ./=.
+
 
 any_bit, all_bit :: Property -> Word64 -> Predicate
 p `any_bit` x = Pred4 "any_bit" p x
