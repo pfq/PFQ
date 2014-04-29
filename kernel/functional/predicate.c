@@ -25,116 +25,9 @@
 #include <linux/module.h>
 #include <linux/pf_q-module.h>
 
-
+#include "inline.h"
 #include "predicate.h"
-#include "../pf_q-engine.h"
 
-static bool
-less(arguments_t *a, struct sk_buff const *skb)
-{
-	property_expression_t * p = get_property(a);
-	const uint64_t * data = get_data(uint64_t, a);
-	uint64_t ret = eval_property((property_t *)p, skb);
-
-	if (IS_JUST(ret))
-		return FROM_JUST(ret) < *data;
-
-	return false;
-}
-
-static bool
-less_eq(arguments_t *a, struct sk_buff const *skb)
-{
-	property_expression_t * p = get_property(a);
-	const uint64_t * data = get_data(uint64_t, a);
-	uint64_t ret = eval_property((property_t *)p, skb);
-
-	if (IS_JUST(ret))
-		return FROM_JUST(ret) <= *data;
-
-	return false;
-}
-
-static bool
-greater(arguments_t *a, struct sk_buff const *skb)
-{
-	property_expression_t * p = get_property(a);
-	const uint64_t * data = get_data(uint64_t, a);
-	uint64_t ret = eval_property((property_t *)p, skb);
-
-	if (IS_JUST(ret))
-		return FROM_JUST(ret) > *data;
-
-	return false;
-}
-
-static bool
-greater_eq(arguments_t *a, struct sk_buff const *skb)
-{
-	property_expression_t * p = get_property(a);
-	const uint64_t * data = get_data(uint64_t, a);
-	uint64_t ret = eval_property((property_t *)p, skb);
-
-	if (IS_JUST(ret))
-		return FROM_JUST(ret) >= *data;
-
-	return false;
-}
-
-static bool
-equal(arguments_t *a, struct sk_buff const *skb)
-{
-	property_expression_t * p = get_property(a);
-	const uint64_t * data = get_data(uint64_t, a);
-	uint64_t ret = eval_property((property_t *)p, skb);
-
-	if (IS_JUST(ret))
-		return FROM_JUST(ret) == *data;
-
-	return false;
-}
-
-static bool
-not_equal(arguments_t *a, struct sk_buff const *skb)
-{
-	property_expression_t * p = get_property(a);
-	const uint64_t * data = get_data(uint64_t, a);
-	uint64_t ret = eval_property((property_t *)p, skb);
-
-	if (IS_JUST(ret))
-		return FROM_JUST(ret) != *data;
-
-	return false;
-}
-
-
-static bool
-any_bit(arguments_t *a, struct sk_buff const *skb)
-{
-	property_expression_t * p = get_property(a);
-
-	const uint64_t * data = get_data(uint64_t, a);
-	uint64_t ret = eval_property((property_t *)p, skb);
-
-	if (IS_JUST(ret))
-		return (FROM_JUST(ret) & *data) != 0;
-
-	return false;
-}
-
-static bool
-all_bit(arguments_t *a, struct sk_buff const *skb)
-{
-	property_expression_t * p = get_property(a);
-
-	const uint64_t * data = get_data(uint64_t, a);
-	uint64_t ret = eval_property((property_t *)p, skb);
-
-	if (IS_JUST(ret))
-		return (FROM_JUST(ret) & *data) == *data;
-
-	return false;
-}
 
 static bool
 __is_ip(arguments_t * a, struct sk_buff const *skb)
@@ -279,12 +172,12 @@ __has_dst_addr(arguments_t * a, struct sk_buff const *skb)
 
 struct pfq_predicate_fun_descr predicate_functions[] = {
 
-        { "less", 	 less		, FUN_PREDICATE | FUN_ARG_DATA | FUN_ARG_FUN },
-        { "less_eq", 	 less_eq	, FUN_PREDICATE | FUN_ARG_DATA | FUN_ARG_FUN },
-        { "greater", 	 greater 	, FUN_PREDICATE | FUN_ARG_DATA | FUN_ARG_FUN },
-        { "greater_eq",  greater_eq	, FUN_PREDICATE | FUN_ARG_DATA | FUN_ARG_FUN },
-        { "equal",  	 equal		, FUN_PREDICATE | FUN_ARG_DATA | FUN_ARG_FUN },
-        { "not_equal",   not_equal	, FUN_PREDICATE | FUN_ARG_DATA | FUN_ARG_FUN },
+        { "less", 	 INLINE_FUN(less)		, FUN_PREDICATE | FUN_ARG_DATA | FUN_ARG_FUN },
+        { "less_eq", 	 INLINE_FUN(less_eq)		, FUN_PREDICATE | FUN_ARG_DATA | FUN_ARG_FUN },
+        { "greater", 	 INLINE_FUN(greater) 		, FUN_PREDICATE | FUN_ARG_DATA | FUN_ARG_FUN },
+        { "greater_eq",  INLINE_FUN(greater_eq)		, FUN_PREDICATE | FUN_ARG_DATA | FUN_ARG_FUN },
+        { "equal",  	 INLINE_FUN(equal)		, FUN_PREDICATE | FUN_ARG_DATA | FUN_ARG_FUN },
+        { "not_equal",   INLINE_FUN(not_equal)		, FUN_PREDICATE | FUN_ARG_DATA | FUN_ARG_FUN },
 
         { "any_bit", 	 any_bit	, FUN_PREDICATE | FUN_ARG_DATA | FUN_ARG_FUN },
         { "all_bit", 	 all_bit	, FUN_PREDICATE | FUN_ARG_DATA | FUN_ARG_FUN },

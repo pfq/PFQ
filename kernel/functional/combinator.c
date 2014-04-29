@@ -26,32 +26,13 @@
 
 #include <linux/pf_q-module.h>
 
-static
-bool or(boolean_expression_t *p1, boolean_expression_t *p2, struct sk_buff const *skb)
-{
-        return p1->ptr(p1, skb) || p2->ptr(p2, skb);
-}
-
-
-static
-bool and(boolean_expression_t *p1, boolean_expression_t *p2, struct sk_buff const *skb)
-{
-        return p1->ptr(p1, skb) && p2->ptr(p2, skb);
-}
-
-
-static
-bool xor(boolean_expression_t *p1, boolean_expression_t *p2, struct sk_buff const *skb)
-{
-        return p1->ptr(p1, skb) != p2->ptr(p2, skb);
-}
-
+#include "combinator.h"
 
 struct pfq_combinator_fun_descr combinator_functions[] = {
 
-        { "or",   	or  , 	FUN_COMBINATOR },
-        { "and",        and , 	FUN_COMBINATOR },
-        { "xor",        xor , 	FUN_COMBINATOR },
+        { "or",   	INLINE_FUN(or)  , 	FUN_COMBINATOR },
+        { "and",        INLINE_FUN(and) , 	FUN_COMBINATOR },
+        { "xor",        INLINE_FUN(xor) , 	FUN_COMBINATOR },
 
         { NULL, NULL}};
 

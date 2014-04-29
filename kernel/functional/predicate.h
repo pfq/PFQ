@@ -35,6 +35,149 @@
 #include <linux/icmp.h>
 #include <linux/if_vlan.h>
 
+#include <pf_q-engine.h>
+
+
+#ifdef PFQ_USE_INLINE_FUN
+
+/* predicate functions */
+
+#define INLINE_less 			200
+#define INLINE_less_eq 			201
+#define INLINE_equal			202
+#define INLINE_not_equal	       	203
+#define INLINE_greater 			204
+#define INLINE_greater_eq  		205
+#define INLINE_any_bit 			206
+#define INLINE_all_bit			207
+
+
+#define CASE_PREDICATE(f, call, skb) \
+	case INLINE_ ## f: return f(&call->args, skb)
+
+
+#define RETURN_EVAL_PREDICATE(call, skb) \
+	switch((ptrdiff_t)call->fun) \
+	{ 	\
+		CASE_PREDICATE(less,  call, skb);\
+		CASE_PREDICATE(less_eq, call, skb);\
+		CASE_PREDICATE(equal, call, skb);\
+		CASE_PREDICATE(not_equal, call, skb);\
+		CASE_PREDICATE(greater, call, skb);\
+		CASE_PREDICATE(greater_eq, call, skb);\
+		CASE_PREDICATE(any_bit, call, skb);\
+		CASE_PREDICATE(all_bit, call, skb);\
+	}
+
+#endif
+
+static inline bool
+less(arguments_t *a, struct sk_buff const *skb)
+{
+	property_expression_t * p = get_property(a);
+	const uint64_t * data = get_data(uint64_t, a);
+	uint64_t ret = eval_property((property_t *)p, skb);
+
+	if (IS_JUST(ret))
+		return FROM_JUST(ret) < *data;
+
+	return false;
+}
+
+static inline bool
+less_eq(arguments_t *a, struct sk_buff const *skb)
+{
+	property_expression_t * p = get_property(a);
+	const uint64_t * data = get_data(uint64_t, a);
+	uint64_t ret = eval_property((property_t *)p, skb);
+
+	if (IS_JUST(ret))
+		return FROM_JUST(ret) <= *data;
+
+	return false;
+}
+
+static inline bool
+greater(arguments_t *a, struct sk_buff const *skb)
+{
+	property_expression_t * p = get_property(a);
+	const uint64_t * data = get_data(uint64_t, a);
+	uint64_t ret = eval_property((property_t *)p, skb);
+
+	if (IS_JUST(ret))
+		return FROM_JUST(ret) > *data;
+
+	return false;
+}
+
+static inline bool
+greater_eq(arguments_t *a, struct sk_buff const *skb)
+{
+	property_expression_t * p = get_property(a);
+	const uint64_t * data = get_data(uint64_t, a);
+	uint64_t ret = eval_property((property_t *)p, skb);
+
+	if (IS_JUST(ret))
+		return FROM_JUST(ret) >= *data;
+
+	return false;
+}
+
+static inline bool
+equal(arguments_t *a, struct sk_buff const *skb)
+{
+	property_expression_t * p = get_property(a);
+	const uint64_t * data = get_data(uint64_t, a);
+	uint64_t ret = eval_property((property_t *)p, skb);
+
+	if (IS_JUST(ret))
+		return FROM_JUST(ret) == *data;
+
+	return false;
+}
+
+static inline bool
+not_equal(arguments_t *a, struct sk_buff const *skb)
+{
+	property_expression_t * p = get_property(a);
+	const uint64_t * data = get_data(uint64_t, a);
+	uint64_t ret = eval_property((property_t *)p, skb);
+
+	if (IS_JUST(ret))
+		return FROM_JUST(ret) != *data;
+
+	return false;
+}
+
+static inline bool
+any_bit(arguments_t *a, struct sk_buff const *skb)
+{
+	property_expression_t * p = get_property(a);
+
+	const uint64_t * data = get_data(uint64_t, a);
+	uint64_t ret = eval_property((property_t *)p, skb);
+
+	if (IS_JUST(ret))
+		return (FROM_JUST(ret) & *data) != 0;
+
+	return false;
+}
+
+static inline bool
+all_bit(arguments_t *a, struct sk_buff const *skb)
+{
+	property_expression_t * p = get_property(a);
+
+	const uint64_t * data = get_data(uint64_t, a);
+	uint64_t ret = eval_property((property_t *)p, skb);
+
+	if (IS_JUST(ret))
+		return (FROM_JUST(ret) & *data) == *data;
+
+	return false;
+}
+
+/* basic predicates ... */
 
 static inline bool
 skb_header_available(const struct sk_buff *skb, int offset, int len)

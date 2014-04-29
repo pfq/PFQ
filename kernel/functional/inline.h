@@ -32,7 +32,6 @@
 
 /* high order functions */
 
-
 #define INLINE_conditional 		1
 #define INLINE_mark 			2
 #define INLINE_when 			3

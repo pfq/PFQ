@@ -23,14 +23,23 @@
 
 #include <pf_q-engine.h>
 
+#include <functional/combinator.h>
+#include <functional/predicate.h>
 
 bool eval_predicate(predicate_t *this, struct sk_buff *skb)
 {
+#ifdef PFQ_USE_INLINE_FUN
+	RETURN_EVAL_PREDICATE(this, skb);
+#endif
         return this->fun(&this->args, skb);
 }
 
 bool eval_combinator(combinator_t *this, struct sk_buff *skb)
 {
+#ifdef PFQ_USE_INLINE_FUN
+	RETURN_EVAL_COMBINATOR(this, skb);
+#endif
+
         return this->fun(this->left, this->right, skb);
 }
 
