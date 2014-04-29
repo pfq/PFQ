@@ -202,9 +202,22 @@ namespace pfq_lang
 
         // default properties:
 
-        auto ip_id      = property("ip_id");
         auto ip_tos     = property("ip_tos");
         auto ip_tot_len = property("ip_tot_len");
+        auto ip_id      = property("ip_id");
+        auto ip_frag    = property("ip_frag");
+        auto ip_ttl     = property("ip_ttl");
+
+        auto tcp_source   = property("tcp_source");
+        auto tcp_dest     = property("tcp_dest");
+        auto tcp_hdrlen   = property("tcp_hdrlen");
+
+        auto udp_source   = property("udp_source");
+        auto udp_dest     = property("udp_dest");
+        auto udp_len      = property("udp_len");
+
+        auto icmp_type    = property("icmp_type");
+        auto icmp_code    = property("icmp_code");
 
         // default computations:
 
