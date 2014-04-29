@@ -163,7 +163,7 @@ prefix2mask p =  toBigEndian $ fromIntegral $ complement (shiftL (1 :: Word64) (
 mkNetAddr :: String -> Int -> Word64
 mkNetAddr net p = let a = unsafePerformIO (inet_addr net)
                       b = prefix2mask p
-                  in  (shiftL (fromIntegral a :: Word64) 32) .|.  (fromIntegral b :: Word64)
+                  in  shiftL (fromIntegral a :: Word64) 32 .|. (fromIntegral b :: Word64)
 
 -- Default combinators:
 --
@@ -282,9 +282,9 @@ dst_port    = Fun1 "dst_port"       :: Int16 -> Computation QFunction
 
 addr, src_addr, dst_addr :: String -> Int -> Computation QFunction
 
-addr net p     = Fun1 "addr" (mkNetAddr net p )
-src_addr net p = Fun1 "src_addr" (mkNetAddr net p )
-dst_addr net p = Fun1 "dst_addr" (mkNetAddr net p )
+addr net p     = Fun1 "addr"     (mkNetAddr net p)
+src_addr net p = Fun1 "src_addr" (mkNetAddr net p)
+dst_addr net p = Fun1 "dst_addr" (mkNetAddr net p)
 
 hdummy      = HFun "hdummy"         :: Predicate -> Computation QFunction
 when'       = HFun1 "when"          :: Predicate -> Computation QFunction -> Computation QFunction

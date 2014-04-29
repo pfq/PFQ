@@ -236,7 +236,7 @@ instance Serializable (Computation f) where
                                                (p',  n'') = serialize n' p
                                                (c1', n''') = serialize n'' c1
                                                (c2', n'''') = serialize n''' c2
-                                            in ( [f'{ functionalLeft = n''', functionalRight = n''}] ++ p' ++ (map (relinkFunDescr n''' n'''') c1') ++ c2', n'''')
+                                            in ( [f'{ functionalLeft = n''', functionalRight = n''}] ++ p' ++ map (relinkFunDescr n''' n'''') c1' ++ c2', n'''')
 
         serialize n (Comp c1 c2) = let (s1, n') = serialize n c1
                                        (s2, n'') = serialize n' c2

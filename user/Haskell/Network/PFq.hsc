@@ -766,11 +766,11 @@ instance Storable StorableFunDescr where
         poke ptr (StorableFunDescr tp name arg size fun left right) = do
             pokeByteOff ptr 0 tp
             pokeByteOff ptr  (sizeOf nullPtr) name
-            pokeByteOff ptr ((sizeOf nullPtr) * 2) arg
-            pokeByteOff ptr ((sizeOf nullPtr) * 3) size
-            pokeByteOff ptr ((sizeOf nullPtr) * 4) fun
-            pokeByteOff ptr ((sizeOf nullPtr) * 4  + (sizeOf (undefined :: CInt))) left
-            pokeByteOff ptr ((sizeOf nullPtr) * 4  + (sizeOf (undefined :: CInt)) * 2) right
+            pokeByteOff ptr (sizeOf nullPtr * 2) arg
+            pokeByteOff ptr (sizeOf nullPtr * 3) size
+            pokeByteOff ptr (sizeOf nullPtr * 4) fun
+            pokeByteOff ptr (sizeOf nullPtr * 4  + sizeOf (undefined :: CInt)) left
+            pokeByteOff ptr (sizeOf nullPtr * 4  + sizeOf (undefined :: CInt) * 2) right
 
 groupComputation :: Ptr PFqTag
                  -> Int                        -- group id
