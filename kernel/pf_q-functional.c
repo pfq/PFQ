@@ -160,22 +160,11 @@ strdup_user(const char __user *str)
 static inline struct sk_buff *
 pfq_apply(functional_t *call, struct sk_buff *skb)
 {
-	ptrdiff_t infun = (ptrdiff_t)call->fun.eval;
-
         PFQ_CB(skb)->action.right = true;
 
 #ifdef PFQ_USE_INLINE_FUN
-
 	IF_INLINED_RETURN(call, skb);
-
-	if ((size_t)infun < 1000) {
-		pr_devel("[PFQ] internal error: inline function %td ???\n", infun);
-		return skb;
-	}
-#else
-	(void)infun;
 #endif
-
 	return eval_function(&call->fun, skb);
 }
 
