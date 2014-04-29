@@ -790,6 +790,7 @@ groupComputation hdl gid comp = do
                                 FunDescr HighOrderFun _ _ _ _   -> 1
                                 FunDescr PredicateFun _ _ _ _   -> 2
                                 FunDescr CombinatorFun _ _ _ _  -> 3
+                                FunDescr PropertyFun _ _ _ _    -> 4
                     fun   = f
                     left  = functionalLeft des
                     right = functionalRight des

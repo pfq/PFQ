@@ -41,6 +41,7 @@ module Network.PFq.Lang
         Arguments(..),
         Combinator(..),
         Predicate(..),
+        Property(..),
         Computation(..),
         Serializable(..),
         FunDescr(..),
@@ -68,7 +69,7 @@ data Arguments = Empty | ArgData StorableContext | ArgFun Int | ArgDataFun Stora
 
 -- Functional descriptor
 
-data FunType = MonadicFun | HighOrderFun | PredicateFun | CombinatorFun
+data FunType = MonadicFun | HighOrderFun | PredicateFun | CombinatorFun | PropertyFun
                 deriving (Show, Enum)
 
 data FunDescr = FunDescr
@@ -109,16 +110,39 @@ instance Serializable Combinator where
                                                      functionalLeft  = -1,
                                                      functionalRight = -1 }], n+1)
 
+data Property where
+        Prop  :: String -> Property
+        Prop1 :: forall a. (Show a, Storable a) => String -> a -> Property
+
+instance Show Property where
+        show (Prop  name)       = name
+        show (Prop1 name a1)    = "(" ++ name ++ " " ++ show a1 ++ ")"
+
+instance Serializable Property where
+        serialize n (Prop name)   = ([FunDescr { functionalType  = PropertyFun,
+                                                 functionalSymb  = name,
+                                                 functionalArg   = Empty,
+                                                 functionalLeft  = -1,
+                                                 functionalRight = -1 }], n+1)
+
+        serialize n (Prop1 name x) = ([FunDescr { functionalType  = PropertyFun,
+                                                  functionalSymb  = name,
+                                                  functionalArg   = ArgData $ StorableContext x,
+                                                  functionalLeft  = -1,
+                                                  functionalRight = -1 }], n+1)
 data Predicate where
         Pred  :: String -> Predicate
         Pred1 :: forall a. (Show a, Storable a) => String -> a -> Predicate
         Pred2 :: Combinator -> Predicate -> Predicate -> Predicate
-
+        Pred3 :: String -> Property -> Predicate
+        Pred4 :: forall a. (Show a, Storable a) => String -> Property -> a -> Predicate
 
 instance Show Predicate where
         show (Pred name)        = name
         show (Pred1 name a1)    = "(" ++ name ++ " " ++ show a1 ++ ")"
         show (Pred2 comb p1 p2) = "(" ++ show p1 ++ " " ++ show comb ++ " " ++ show p2 ++ ")"
+        show (Pred3 name p)     = "(" ++ name ++ " " ++ show p ++ ")"
+        show (Pred4 name p a)   = "(" ++ name ++ " " ++ show p ++ " " ++ show a ++ ")"
 
 instance Serializable Predicate where
         serialize n (Pred name)   = ([FunDescr { functionalType  = PredicateFun,
@@ -137,6 +161,22 @@ instance Serializable Predicate where
                                              (f'',  n'')  = serialize n' p1
                                              (f''', n''') = serialize n'' p2
                                          in ( [g'{ functionalLeft = n', functionalRight = n''}] ++ f'' ++ f''', n''')
+
+        serialize n (Pred3 name p ) = let (f', n') = ([FunDescr { functionalType  = PredicateFun,
+                                                 functionalSymb  = name,
+                                                 functionalArg   = ArgFun (n+1),
+                                                 functionalLeft  = -1,
+                                                 functionalRight = -1 }], n+1)
+                                          (f'', n'') = serialize n' p
+                                      in (f' ++ f'', n'')
+
+        serialize n (Pred4 name p x) = let (f', n') = ([FunDescr { functionalType  = PredicateFun,
+                                                 functionalSymb  = name,
+                                                 functionalArg   = ArgDataFun (StorableContext x) (n+1),
+                                                 functionalLeft  = -1,
+                                                 functionalRight = -1 }], n+1)
+                                           (f'', n'') = serialize n' p
+                                       in (f' ++ f'', n'')
 
 -- Computation
 

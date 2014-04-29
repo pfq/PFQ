@@ -37,6 +37,15 @@ module Network.PFq.Default
         (.&&.),
         (.^^.),
 
+        -- comparators
+
+        (.<.),
+        (.<=.),
+        (.==.),
+        (./=.),
+        (.>.),
+        (.>=.),
+
         -- predicates
 
         is_ip,
@@ -62,6 +71,25 @@ module Network.PFq.Default
         has_vlan,
         has_vid,
         has_mark,
+
+        -- properties
+
+        ip_tos      ,
+        ip_tot_len  ,
+        ip_id       ,
+        ip_frag     ,
+        ip_ttl      ,
+
+        tcp_source  ,
+        tcp_dest    ,
+        tcp_hdrlen  ,
+
+        udp_source  ,
+        udp_dest    ,
+        udp_len     ,
+
+        icmp_type   ,
+        icmp_code   ,
 
         -- monadic functions
 
@@ -147,6 +175,18 @@ p1 .&&. p2 = Pred2 (Combinator "and") p1 p2
 p1 .^^. p2 = Pred2 (Combinator "xor") p1 p2
 
 
+-- Default comparators:
+--
+
+(.<.), (.<=.), (.==.), (./=.), (.>.), (.>=.) :: Property -> Word64 -> Predicate
+p .<.  x = Pred4 "less" p x
+p .<=. x = Pred4 "less_eq" p x
+p .==. x = Pred4 "equal" p x
+p ./=. x = Pred4 "not_equal" p x
+p .>.  x = Pred4 "greater" p x
+p .>=. x = Pred4 "greater_eq" p x
+
+
 -- Default predicates:
 --
 
@@ -176,6 +216,27 @@ has_addr, has_src_addr, has_dst_addr :: String -> Int -> Predicate
 has_addr net p     = Pred1 "has_addr" (mkNetAddr net p)
 has_src_addr net p = Pred1 "has_src_addr" (mkNetAddr net p)
 has_dst_addr net p = Pred1 "has_dst_addr" (mkNetAddr net p)
+
+
+-- Default properties:
+--
+--
+ip_tos          = Prop "ip_tos"
+ip_tot_len      = Prop "ip_tot_len"
+ip_id           = Prop "ip_id"
+ip_frag         = Prop "ip_frag"
+ip_ttl          = Prop "ip_ttl"
+
+tcp_source      = Prop "tcp_source"
+tcp_dest        = Prop "tcp_dest"
+tcp_hdrlen      = Prop "tcp_hdrlen"
+
+udp_source      = Prop "udp_source"
+udp_dest        = Prop "udp_dest"
+udp_len         = Prop "udp_len"
+
+icmp_type       = Prop "icmp_type"
+icmp_code       = Prop "icmp_code"
 
 -- Predefined in-kernel computations:
 --
@@ -214,9 +275,9 @@ class'      = Fun1 "class"          :: CInt -> Computation QFunction
 l3_proto    = Fun1 "l3_proto"       :: Int16 -> Computation QFunction
 l4_proto    = Fun1 "l4_proto"       :: Int8 -> Computation QFunction
 
-port        = Fun1 "has_port"       :: Int16 -> Computation QFunction
-src_port    = Fun1 "has_src_port"   :: Int16 -> Computation QFunction
-dst_port    = Fun1 "has_dst_port"   :: Int16 -> Computation QFunction
+port        = Fun1 "port"           :: Int16 -> Computation QFunction
+src_port    = Fun1 "src_port"       :: Int16 -> Computation QFunction
+dst_port    = Fun1 "dst_port"       :: Int16 -> Computation QFunction
 
 
 addr, src_addr, dst_addr :: String -> Int -> Computation QFunction
