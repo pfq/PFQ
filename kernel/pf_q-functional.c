@@ -200,6 +200,10 @@ pfq_run(int gid, computation_t *prg, struct sk_buff *skb)
         struct pfq_group * g = pfq_get_group(gid);
         struct pfq_cb *cb = PFQ_CB(skb);
 
+#ifdef PFQ_LANG_PROFILE
+	static uint64_t nrun, total;
+	uint64_t stop, start;
+#endif
         if (g == NULL)
                 return NULL;
 
@@ -209,7 +213,27 @@ pfq_run(int gid, computation_t *prg, struct sk_buff *skb)
         cb->action.type       = action_copy;
         cb->action.attr       = 0;
 
-        return pfq_bind(skb, prg);
+#ifdef PFQ_LANG_PROFILE
+	start = get_cycles();
+
+	skb =
+#else
+	return
+#endif
+
+	pfq_bind(skb, prg);
+
+#ifdef PFQ_LANG_PROFILE
+
+	stop = get_cycles();
+	total += (stop-start);
+
+	if ((nrun++ % 16) == 0)
+		printk(KERN_INFO "[PFQ] run: %llu\n", total/nrun);
+
+	return skb;
+#endif
+
 }
 
 
