@@ -43,7 +43,7 @@ main(int argc, char *argv[])
     prog->fun[2].symbol = "is_icmp";
     prog->fun[2].arg_ptr  = nullptr;
     prog->fun[2].arg_size = 0;
-    prog->fun[2].fun      = 0;
+    prog->fun[2].fun      = -1;
     prog->fun[2].left     = -1;
     prog->fun[2].right    = -1;
 
@@ -51,7 +51,7 @@ main(int argc, char *argv[])
     prog->fun[3].symbol = "steer_ip";
     prog->fun[3].arg_ptr  = nullptr;
     prog->fun[3].arg_size = 0;
-    prog->fun[3].fun      = 0;
+    prog->fun[3].fun      = -1;
     prog->fun[3].left     = -1;
     prog->fun[3].right    = -1;
 
@@ -59,7 +59,7 @@ main(int argc, char *argv[])
     prog->fun[4].symbol = "drop";
     prog->fun[4].arg_ptr  = nullptr;
     prog->fun[4].arg_size = 0;
-    prog->fun[4].fun      = 0;
+    prog->fun[4].fun      = -1;
     prog->fun[4].left     = -1;
     prog->fun[4].right    = -1;
 
