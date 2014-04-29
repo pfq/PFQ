@@ -45,6 +45,8 @@ module Network.PFq.Default
         (./=.),
         (.>.),
         (.>=.),
+        any_bit,
+        all_bit,
 
         -- predicates
 
@@ -185,6 +187,10 @@ p .==. x = Pred4 "equal" p x
 p ./=. x = Pred4 "not_equal" p x
 p .>.  x = Pred4 "greater" p x
 p .>=. x = Pred4 "greater_eq" p x
+
+any_bit, all_bit :: Property -> Word64 -> Predicate
+p `any_bit` x = Pred4 "any_bit" p x
+p `all_bit` x = Pred4 "all_bit" p x
 
 
 -- Default predicates:

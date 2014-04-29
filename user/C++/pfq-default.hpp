@@ -105,6 +105,20 @@ namespace pfq_lang
         return predicate4("not_equal", prop, arg);
     }
 
+    template <typename P>
+    auto inline any_bit(P const &prop, uint64_t mask)
+    -> decltype(predicate4("any_bit", prop, mask))
+    {
+        return predicate4("any_bit", prop, mask);
+    }
+
+    template <typename P>
+    auto inline all_bit(P const &prop, uint64_t mask)
+    -> decltype(predicate4("all_bit", prop, mask))
+    {
+        return predicate4("all_bit", prop, mask);
+    }
+
     // polymorphic lambda are available starting from C++14! In the meanwhile...
     //
 
