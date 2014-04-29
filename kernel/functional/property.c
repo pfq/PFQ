@@ -27,6 +27,9 @@
 
 #include "inline.h"
 
+/****************************************************************
+ * 			ip properties
+ ****************************************************************/
 
 static uint64_t
 ip_tos(arguments_t *a, struct sk_buff const *skb)
@@ -85,11 +88,236 @@ ip_id(arguments_t *a, struct sk_buff const *skb)
 }
 
 
+static uint64_t
+ip_ttl(arguments_t *a, struct sk_buff const *skb)
+{
+	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP))
+	{
+		struct iphdr _iph;
+    		const struct iphdr *ip;
+
+		ip = skb_header_pointer(skb, skb->mac_len, sizeof(_iph), &_iph);
+ 		if (ip == NULL)
+                        return NOTHING;
+
+		return JUST(ip->ttl);
+	}
+
+        return NOTHING;
+}
+
+static uint64_t
+ip_frag(arguments_t *a, struct sk_buff const *skb)
+{
+	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP))
+	{
+		struct iphdr _iph;
+    		const struct iphdr *ip;
+
+		ip = skb_header_pointer(skb, skb->mac_len, sizeof(_iph), &_iph);
+ 		if (ip == NULL)
+                        return NOTHING;
+
+		return JUST(ntohs(ip->frag_off));
+	}
+
+        return NOTHING;
+}
+
+
+/****************************************************************
+ * 			tcp properties
+ ****************************************************************/
+
+static uint64_t
+tcp_src_port(arguments_t *a, struct sk_buff const *skb)
+{
+	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP))
+	{
+		struct iphdr _iph;
+    		const struct iphdr *ip;
+
+		struct tcphdr _tcp;
+		const struct tcphdr *tcp;
+
+		ip = skb_header_pointer(skb, skb->mac_len, sizeof(_iph), &_iph);
+ 		if (ip == NULL)
+                        return NOTHING;
+
+		if (ip->protocol != IPPROTO_TCP)
+                        return NOTHING;
+
+		tcp = skb_header_pointer(skb, skb->mac_len + (ip->ihl<<2), sizeof(_tcp), &_tcp);
+		if (tcp == NULL)
+			return NOTHING;
+
+		return JUST(ntohs(tcp->source));
+	}
+
+        return NOTHING;
+}
+
+
+static uint64_t
+tcp_dst_port(arguments_t *a, struct sk_buff const *skb)
+{
+	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP))
+	{
+		struct iphdr _iph;
+    		const struct iphdr *ip;
+
+		struct tcphdr _tcp;
+		const struct tcphdr *tcp;
+
+		ip = skb_header_pointer(skb, skb->mac_len, sizeof(_iph), &_iph);
+ 		if (ip == NULL)
+                        return NOTHING;
+
+		if (ip->protocol != IPPROTO_TCP)
+                        return NOTHING;
+
+		tcp = skb_header_pointer(skb, skb->mac_len + (ip->ihl<<2), sizeof(_tcp), &_tcp);
+		if (tcp == NULL)
+			return NOTHING;
+
+		return JUST(ntohs(tcp->dest));
+	}
+
+        return NOTHING;
+}
+
+static uint64_t
+tcp_hdrlen_(arguments_t *a, struct sk_buff const *skb)
+{
+	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP))
+	{
+		struct iphdr _iph;
+    		const struct iphdr *ip;
+
+		struct tcphdr _tcp;
+		const struct tcphdr *tcp;
+
+		ip = skb_header_pointer(skb, skb->mac_len, sizeof(_iph), &_iph);
+ 		if (ip == NULL)
+                        return NOTHING;
+
+		if (ip->protocol != IPPROTO_TCP)
+                        return NOTHING;
+
+		tcp = skb_header_pointer(skb, skb->mac_len + (ip->ihl<<2), sizeof(_tcp), &_tcp);
+		if (tcp == NULL)
+			return NOTHING;
+
+		return JUST(tcp->doff * 4);
+	}
+
+        return NOTHING;
+}
+
+/****************************************************************
+ * 			udp properties
+ ****************************************************************/
+
+static uint64_t
+udp_src_port(arguments_t *a, struct sk_buff const *skb)
+{
+	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP))
+	{
+		struct iphdr _iph;
+    		const struct iphdr *ip;
+
+		struct udphdr _udp;
+		const struct udphdr *udp;
+
+		ip = skb_header_pointer(skb, skb->mac_len, sizeof(_iph), &_iph);
+ 		if (ip == NULL)
+                        return NOTHING;
+
+		if (ip->protocol != IPPROTO_TCP)
+                        return NOTHING;
+
+		udp = skb_header_pointer(skb, skb->mac_len + (ip->ihl<<2), sizeof(_udp), &_udp);
+		if (udp == NULL)
+			return NOTHING;
+
+		return JUST(ntohs(udp->source));
+	}
+
+        return NOTHING;
+}
+
+
+static uint64_t
+udp_dst_port(arguments_t *a, struct sk_buff const *skb)
+{
+	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP))
+	{
+		struct iphdr _iph;
+    		const struct iphdr *ip;
+
+		struct udphdr _udp;
+		const struct udphdr *udp;
+
+		ip = skb_header_pointer(skb, skb->mac_len, sizeof(_iph), &_iph);
+ 		if (ip == NULL)
+                        return NOTHING;
+
+		if (ip->protocol != IPPROTO_TCP)
+                        return NOTHING;
+
+		udp = skb_header_pointer(skb, skb->mac_len + (ip->ihl<<2), sizeof(_udp), &_udp);
+		if (udp == NULL)
+			return NOTHING;
+
+		return JUST(ntohs(udp->dest));
+	}
+
+        return NOTHING;
+}
+
+static uint64_t
+udp_len(arguments_t *a, struct sk_buff const *skb)
+{
+	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP))
+	{
+		struct iphdr _iph;
+    		const struct iphdr *ip;
+
+		struct udphdr _udp;
+		const struct udphdr *udp;
+
+		ip = skb_header_pointer(skb, skb->mac_len, sizeof(_iph), &_iph);
+ 		if (ip == NULL)
+                        return NOTHING;
+
+		if (ip->protocol != IPPROTO_TCP)
+                        return NOTHING;
+
+		udp = skb_header_pointer(skb, skb->mac_len + (ip->ihl<<2), sizeof(_udp), &_udp);
+		if (udp == NULL)
+			return NOTHING;
+
+		return JUST(ntohs(udp->len));
+	}
+
+        return NOTHING;
+}
+
 struct pfq_property_fun_descr property_functions[] = {
 
         { "ip_tos", 	ip_tos 	  	, FUN_PROPERTY },
         { "ip_tot_len", ip_tot_len	, FUN_PROPERTY },
         { "ip_id",  	ip_id 	  	, FUN_PROPERTY },
+        { "ip_frag",	ip_frag 	, FUN_PROPERTY },
+        { "ip_ttl", 	ip_ttl 	  	, FUN_PROPERTY },
+
+        { "tcp_src_port", tcp_src_port	, FUN_PROPERTY },
+        { "tcp_dst_port", tcp_dst_port	, FUN_PROPERTY },
+        { "tcp_hdrlen",   tcp_hdrlen_	, FUN_PROPERTY },
+
+        { "udp_src_port", udp_src_port	, FUN_PROPERTY },
+        { "udp_dst_port", udp_dst_port	, FUN_PROPERTY },
+        { "udp_hdrlen",   udp_len	, FUN_PROPERTY },
 
         { NULL, NULL}};
 
