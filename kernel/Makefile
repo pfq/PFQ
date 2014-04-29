@@ -20,7 +20,7 @@ pfq-objs := pf_q.o pf_q-sockopt.o pf_q-global.o pf_q-devmap.o pf_q-queue.o pf_q-
 		    pf_q-symtable.o pf_q-functional.o pf_q-engine.o pf_q-mpdb-queue.o pf_q-prefetch.o pf_q-bpf.o pf_q-vlan.o \
 		    pf_q-thread.o pf_q-transmit.o \
 		    functional/filter.o functional/steering.o functional/forward.o \
-		    functional/predicate.o functional/combinator.o functional/high_order.o \
+		    functional/predicate.o functional/combinator.o functional/conditional.o \
 		    functional/property.o functional/misc.o
 
 KERNELVERSION := $(shell uname -r)
