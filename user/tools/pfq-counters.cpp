@@ -199,9 +199,9 @@ namespace test
                                 std::cout << " >-> " << fun.name_;
                               });
                 std::cout << std::endl;
-            }
 
-            m_pfq.set_group_computation(m_bind.gid, fs);
+                m_pfq.set_group_computation(m_bind.gid, fs);
+            }
 
             m_pfq.timestamp_enable(false);
 
