@@ -245,12 +245,13 @@ unsigned int pfq_fold(unsigned int a, unsigned int b)
 int
 pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 {
-        struct local_data * local = __this_cpu_ptr(cpu_data);
-        struct pfq_non_intrusive_skb * prefetch_queue = &local->prefetch_queue;
         unsigned long long sock_queue[Q_NON_INTRUSIVE_MAX_LEN];
+
+        struct pfq_non_intrusive_skb * prefetch_queue;
         unsigned long group_mask, socket_mask;
-        struct pfq_cb *cb;
+        struct local_data * local;
         long unsigned n, bit, lb;
+        struct pfq_cb *cb;
         int cpu;
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,9,0))
@@ -281,26 +282,30 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
             skb_push(skb, skb->mac_len);
         }
 
-	/* enqueue the packet to the prefetch queue */
-
         cb = PFQ_CB(skb);
 
 	cb->direct_skb = direct;
         cb->action.attr = 0;
 
-        /* enqueue this skb ... */
+	/* enqueue the packet to the local prefetch queue */
+
+        cpu = get_cpu();
+
+	local = per_cpu_ptr(cpu_data, cpu);
+
+	prefetch_queue = &local->prefetch_queue;
 
         pfq_non_intrusive_push(prefetch_queue, skb);
 
         if (pfq_non_intrusive_len(prefetch_queue) < prefetch_len) {
+
+        	put_cpu();
                 return 0;
 	}
 
 	/* initialize data */
 
         memset(sock_queue, 0, sizeof(sock_queue));
-
-	cpu = get_cpu();
 
 #ifdef PFQ_STEERING_PROFILE
 	cycles_t a = get_cycles();
