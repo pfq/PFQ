@@ -260,7 +260,7 @@ namespace pfq_lang
         auto kernel     = computation("kernel");
         auto sink       = computation("sink");
         auto drop       = computation("drop");
-        auto id         = computation("id");
+        auto unit       = computation("unit");
 
         auto forward    = [] (int index) { return computation1("forward", index); };
         auto mark       = [] (unsigned long value) { return computation1("mark", value); };

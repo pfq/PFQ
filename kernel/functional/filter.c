@@ -98,7 +98,7 @@ filter_dst_addr(arguments_t * a, struct sk_buff *skb)
 
 struct pfq_monadic_fun_descr filter_functions[] = {
 
-        { "id",			INLINE_FUN(id)          	, FUN_ACTION  	},
+        { "unit",		INLINE_FUN(unit)          	, FUN_ACTION  	},
         { "ip",         	INLINE_FUN(filter_ip)    	, FUN_ACTION   	},
         { "ip6",        	INLINE_FUN(filter_ip6)   	, FUN_ACTION   	},
         { "udp",        	INLINE_FUN(filter_udp)   	, FUN_ACTION   	},

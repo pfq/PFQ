@@ -132,7 +132,7 @@ module Network.PFq.Default
         counter    ,
         mark       ,
         forward    ,
-        id'        ,
+        unit       ,
         dummy      ,
         class'     ,
 
@@ -281,7 +281,7 @@ kernel      = Fun "kernel"          :: Computation QFunction
 broadcast   = Fun "broadcast"       :: Computation QFunction
 sink        = Fun "sink"            :: Computation QFunction
 drop'       = Fun "drop"            :: Computation QFunction
-id'         = Fun  "id"             :: Computation QFunction
+unit        = Fun "unit"            :: Computation QFunction
 
 counter     = Fun1 "counter"        :: CInt -> Computation QFunction
 mark        = Fun1 "mark"           :: CULong -> Computation QFunction

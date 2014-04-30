@@ -32,14 +32,14 @@
 
 /* high order functions */
 
-#define INLINE_conditional 		1
-#define INLINE_mark 			2
-#define INLINE_when 			3
-#define INLINE_unless 			4
+#define INLINE_unit 			1
+#define INLINE_conditional 		2
+#define INLINE_mark 			3
+#define INLINE_when 			4
+#define INLINE_unless 			5
 
 /* filter functions */
 
-#define INLINE_id 			5
 #define INLINE_filter_ip        	6
 #define INLINE_filter_ip6       	7
 #define INLINE_filter_udp       	8
@@ -65,11 +65,11 @@
 #define IF_INLINED_RETURN(call, skb) \
 	switch((ptrdiff_t)call->fun.eval) \
 	{ 	\
+		CASE_APPLY(unit, call, skb);\
 		CASE_APPLY(mark, call, skb);\
 		CASE_APPLY(conditional, call, skb);\
 		CASE_APPLY(when, call, skb);\
 		CASE_APPLY(unless, call, skb);\
-		CASE_APPLY(id, call, skb);\
 		\
 		CASE_APPLY(filter_ip, call, skb);\
 		CASE_APPLY(filter_udp, call, skb);\
@@ -131,7 +131,7 @@ unless(arguments_t *a, struct sk_buff *skb)
 }
 
 static inline struct sk_buff *
-id(arguments_t *a, struct sk_buff *skb)
+unit(arguments_t *a, struct sk_buff *skb)
 {
         return skb;
 }
