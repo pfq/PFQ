@@ -222,16 +222,16 @@ namespace pfq_lang
         auto ip_frag    = property("ip_frag");
         auto ip_ttl     = property("ip_ttl");
 
-        auto tcp_source   = property("tcp_source");
-        auto tcp_dest     = property("tcp_dest");
-        auto tcp_hdrlen   = property("tcp_hdrlen");
+        auto tcp_source = property("tcp_source");
+        auto tcp_dest   = property("tcp_dest");
+        auto tcp_hdrlen = property("tcp_hdrlen");
 
-        auto udp_source   = property("udp_source");
-        auto udp_dest     = property("udp_dest");
-        auto udp_len      = property("udp_len");
+        auto udp_source = property("udp_source");
+        auto udp_dest   = property("udp_dest");
+        auto udp_len    = property("udp_len");
 
-        auto icmp_type    = property("icmp_type");
-        auto icmp_code    = property("icmp_code");
+        auto icmp_type  = property("icmp_type");
+        auto icmp_code  = property("icmp_code");
 
         // default computations:
 

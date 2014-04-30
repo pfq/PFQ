@@ -1,7 +1,7 @@
 # PFQ Makefile (c) 2011-2013 Nicola Bonelli <nicola.bonelli@cnit.it>
 #
 
-MAKE_DIRECTORIES = C C++ test tools
+MAKE_DIRECTORIES = C C++ test tools Haskell
 INST_DIRECTORIES = C C++
 
 .PHONY: all install clean
