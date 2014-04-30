@@ -254,6 +254,10 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
         struct pfq_cb *cb;
         int cpu;
 
+#ifdef PFQ_RX_PROFILE
+	cycles_t start, stop;
+#endif
+
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,9,0))
 	BUILD_BUG_ON_MSG(Q_NON_INTRUSIVE_MAX_LEN > 64, "sock_queue overflow");
 #endif
@@ -307,8 +311,8 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 
         memset(sock_queue, 0, sizeof(sock_queue));
 
-#ifdef PFQ_STEERING_PROFILE
-	cycles_t a = get_cycles();
+#ifdef PFQ_RX_PROFILE
+	start = get_cycles();
 #endif
 
         group_mask = 0;
@@ -447,13 +451,6 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
                 }
         }
 
-#ifdef PFQ_STEERING_PROFILE
-	cycles_t b = get_cycles();
-
-	if (printk_ratelimit())
-		printk(KERN_INFO "-> %llu\n", (b-a)/prefetch_len);
-#endif
-
         /* free skb, or route them to kernel... */
 
         pfq_non_intrusive_for_each(skb, n, prefetch_queue)
@@ -488,6 +485,13 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 	pfq_non_intrusive_flush(prefetch_queue);
 
 	put_cpu();
+
+#ifdef PFQ_RX_PROFILE
+	stop = get_cycles();
+
+	if (printk_ratelimit())
+		printk(KERN_INFO "[PFQ] RX profile -> %llu tsc.\n", (stop-start)/prefetch_len);
+#endif
         return 0;
 }
 
