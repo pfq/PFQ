@@ -60,7 +60,7 @@ namespace pfq_lang
     template <typename P>
     auto inline
     operator<(P const &prop, uint64_t arg)
-    -> decltype(predicate4(std::string(nullptr), prop, arg))
+    -> decltype(predicate4(nullptr, prop, arg))
     {
         return predicate4("less", prop, arg);
     }
@@ -68,7 +68,7 @@ namespace pfq_lang
     template <typename P>
     auto inline
     operator<=(P const &prop, uint64_t arg)
-    -> decltype(predicate4(std::string(nullptr), prop, arg))
+    -> decltype(predicate4(nullptr, prop, arg))
     {
         return predicate4("less_eq", prop, arg);
     }
@@ -76,7 +76,7 @@ namespace pfq_lang
     template <typename P>
     auto inline
     operator>(P const &prop, uint64_t arg)
-    -> decltype(predicate4(std::string(nullptr), prop, arg))
+    -> decltype(predicate4(nullptr, prop, arg))
     {
         return predicate4("greater", prop, arg);
     }
@@ -84,7 +84,7 @@ namespace pfq_lang
     template <typename P>
     auto inline
     operator>=(P const &prop, uint64_t arg)
-    -> decltype(predicate4(std::string(nullptr), prop, arg))
+    -> decltype(predicate4(nullptr, prop, arg))
     {
         return predicate4("greater_eq", prop, arg);
     }
@@ -92,7 +92,7 @@ namespace pfq_lang
     template <typename P>
     auto inline
     operator==(P const &prop, uint64_t arg)
-    -> decltype(predicate4(std::string(nullptr), prop, arg))
+    -> decltype(predicate4(nullptr, prop, arg))
     {
         return predicate4("equal", prop, arg);
     }
@@ -100,21 +100,21 @@ namespace pfq_lang
     template <typename P>
     auto inline
     operator!=(P const &prop, uint64_t arg)
-    -> decltype(predicate4(std::string(nullptr), prop, arg))
+    -> decltype(predicate4(nullptr, prop, arg))
     {
         return predicate4("not_equal", prop, arg);
     }
 
     template <typename P>
     auto inline any_bit(P const &prop, uint64_t mask)
-    -> decltype(predicate4("any_bit", prop, mask))
+    -> decltype(predicate4(nullptr, prop, mask))
     {
         return predicate4("any_bit", prop, mask);
     }
 
     template <typename P>
     auto inline all_bit(P const &prop, uint64_t mask)
-    -> decltype(predicate4("all_bit", prop, mask))
+    -> decltype(predicate4(nullptr, prop, mask))
     {
         return predicate4("all_bit", prop, mask);
     }
