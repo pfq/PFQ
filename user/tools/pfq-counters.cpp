@@ -38,12 +38,10 @@ namespace opt {
     size_t caplen = 64;
     size_t offset = 0;
     size_t slots  = 131072;
-
     bool flow     = false;
 
     static const int seconds = 600;
 }
-
 
 // eth0:...:ethx[.core[.gid[.queue.queue...]]]
 
@@ -311,11 +309,21 @@ unsigned int hardware_concurrency()
 }
 
 
-void usage(const char *name)
+void usage(std::string name)
 {
-    throw std::runtime_error(std::string("usage: ")
-                             .append(name)
-                             .append("[-h|--help] [-c caplen] [-o offset] [-w | --flow] [-s slots] [-g gid ] [-f|--fun computation] T1 T2... \n\t| T = dev1:dev2...:dev[.core[.queue.queue...]]"));
+    throw std::runtime_error
+    (
+        "usage: " + std::move(name) + " [OPTIONS]\n\n"
+        " -h --help                     Display this help\n"
+        " -c --caplen=INT               Set caplen\n"
+        " -o --offset=INT               Set capture offset\n"
+        " -w --flow                     Enable flow counter\n"
+        " -s --slot=INT                 Set slots\n"
+        " -f --function=FUNCTION\n"
+        " -t --thread=BINDING\n\n"
+        "      BINDING = eth0:...:ethx[.core[.gid[.queue.queue...]]]\n"
+        "      FUNCTION = fun[ >-> fun >-> fun]"
+    );
 }
 
 
@@ -387,11 +395,25 @@ try
             continue;
         }
 
+        if ( strcmp(argv[i], "-t") == 0 ||
+             strcmp(argv[i], "--thread") == 0) {
+            i++;
+            if (i == argc)
+            {
+                throw std::runtime_error("descriptor missing");
+            }
+
+            thread_binding.push_back(make_binding(argv[i]));
+            continue;
+        }
+
         if ( strcmp(argv[i], "-h") == 0 ||
-             strcmp(argv[i], "--help") == 0)
+             strcmp(argv[i], "-?") == 0 ||
+             strcmp(argv[i], "--help") == 0
+             )
             usage(argv[0]);
 
-        thread_binding.push_back(make_binding(argv[i]));
+        throw std::runtime_error(std::string(argv[i]) + " unknown option!");
     }
 
     std::cout << "caplen: " << opt::caplen << std::endl;
