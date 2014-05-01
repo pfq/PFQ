@@ -156,11 +156,11 @@ static inline
 void mask_to_sock_queue(unsigned long n, unsigned long mask, unsigned long long *sock_queue)
 {
 	unsigned long bit;
-       	pfq_bitwise_foreach(mask, bit)
+       	pfq_bitwise_foreach(mask, bit,
 	{
 	        int index = pfq_ctz(bit);
                 sock_queue[index] |= 1UL << n;
-        }
+        })
 }
 
 
@@ -329,126 +329,120 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 
         /* capture/dispatch packets */
 
-        {
-                pfq_bitwise_foreach(group_mask, bit)
-                {
-                        int gid = pfq_ctz(bit);
+	pfq_bitwise_foreach(group_mask, bit,
+	{
+		int gid = pfq_ctz(bit);
 
-                        struct sk_filter *bpf = (struct sk_filter *)atomic_long_read(&pfq_groups[gid].filter);
+		struct sk_filter *bpf = (struct sk_filter *)atomic_long_read(&pfq_groups[gid].filter);
 
-                        bool vlan_filter_enabled = __pfq_vlan_filters_enabled(gid);
+		bool vlan_filter_enabled = __pfq_vlan_filters_enabled(gid);
 
-                        socket_mask = 0;
+		socket_mask = 0;
 
-                        pfq_non_intrusive_for_each(skb, n, prefetch_queue)
-                        {
-                                struct pfq_cb *cb = PFQ_CB(skb);
-                                unsigned long sock_mask = 0;
-                                computation_t *prg;
+		pfq_non_intrusive_for_each(skb, n, prefetch_queue)
+		{
+			struct pfq_cb *cb = PFQ_CB(skb);
+			unsigned long sock_mask = 0;
+			computation_t *prg;
 
-                                if (unlikely((cb->group_mask & bit) == 0))
-                                        continue;
+			if (unlikely((cb->group_mask & bit) == 0))
+				continue;
 
-                                /* increment recv counter for this group */
+			/* increment recv counter for this group */
 
-                                __sparse_inc(&pfq_groups[gid].recv, cpu);
+			__sparse_inc(&pfq_groups[gid].recv, cpu);
 
-                                /* check bpf filter */
+			/* check bpf filter */
 
-                                if (bpf && !sk_run_filter(skb, bpf->insns))
-                                        continue;
+			if (bpf && !sk_run_filter(skb, bpf->insns))
+				continue;
 
-                                /* check vlan filter */
+			/* check vlan filter */
 
-                                if (vlan_filter_enabled) {
-                                        if (!__pfq_check_group_vlan_filter(gid, skb->vlan_tci & ~VLAN_TAG_PRESENT))
-                                                continue;
-                                }
+			if (vlan_filter_enabled) {
+				if (!__pfq_check_group_vlan_filter(gid, skb->vlan_tci & ~VLAN_TAG_PRESENT))
+					continue;
+			}
 
-                                /* setup CB for this skb */
+			/* setup CB for this skb */
 
-                                cb->state = 0;
+			cb->state = 0;
 
-                                /* check where a functional program is available for this group */
+			/* check where a functional program is available for this group */
 
-                                prg = (computation_t *)atomic_long_read(&pfq_groups[gid].comp);
+			prg = (computation_t *)atomic_long_read(&pfq_groups[gid].comp);
 
-                                if (prg) { /* run the functional program */
+			if (prg) { /* run the functional program */
 
-                                        skb = pfq_run(gid, prg, skb);
+				skb = pfq_run(gid, prg, skb);
 
-                                        if (skb == NULL)
-                                                continue;
+				if (skb == NULL)
+					continue;
 
-                                        cb = PFQ_CB(skb);
+				cb = PFQ_CB(skb);
 
-                                        if (cb->action.attr & attr_stolen) {
-                                                continue;
-                                        }
+				if (cb->action.attr & attr_stolen) {
+					continue;
+				}
 
-                                        if (likely(!is_drop(cb->action))) {
+				if (likely(!is_drop(cb->action))) {
 
-                                                unsigned long eligible_mask = 0;
-                                                unsigned long cbit;
+					unsigned long eligible_mask = 0;
+					unsigned long cbit;
 
-                                                /* load the eligible mask */
+					/* load the eligible mask */
 
-                                                pfq_bitwise_foreach(cb->action.class_mask, cbit)
-                                                {
-                                                        int class = pfq_ctz(cbit);
-                                                        eligible_mask |= atomic_long_read(&pfq_groups[gid].sock_mask[class]);
-                                                }
+					pfq_bitwise_foreach(cb->action.class_mask, cbit,
+					{
+						int class = pfq_ctz(cbit);
+						eligible_mask |= atomic_long_read(&pfq_groups[gid].sock_mask[class]);
+					})
 
-                                                if (is_steering(cb->action)) {
+					if (is_steering(cb->action)) {
 
-                                                        if (unlikely(eligible_mask != local->eligible_mask)) {
+						if (unlikely(eligible_mask != local->eligible_mask)) {
 
-                                                                unsigned long ebit;
+							unsigned long ebit;
 
-                                                                local->eligible_mask = eligible_mask;
-                                                                local->sock_cnt = 0;
+							local->eligible_mask = eligible_mask;
+							local->sock_cnt = 0;
 
-                                                                {
-                                                                        pfq_bitwise_foreach(eligible_mask, ebit)
-                                                                        {
-                                                                                local->sock_mask[local->sock_cnt++] = ebit;
-                                                                        }
-                                                                }
-                                                        }
+							pfq_bitwise_foreach(eligible_mask, ebit,
+							{
+								local->sock_mask[local->sock_cnt++] = ebit;
+							})
+						}
 
-                                                        if (likely(local->sock_cnt)) {
-                                                                unsigned int h = cb->action.hash ^ (cb->action.hash >> 8) ^ (cb->action.hash >> 16);
-                                                                sock_mask |= local->sock_mask[pfq_fold(h, local->sock_cnt)];
-                                                        }
-                                                }
-                                                else {  /* clone or continue ... */
+						if (likely(local->sock_cnt)) {
+							unsigned int h = cb->action.hash ^ (cb->action.hash >> 8) ^ (cb->action.hash >> 16);
+							sock_mask |= local->sock_mask[pfq_fold(h, local->sock_cnt)];
+						}
+					}
+					else {  /* clone or continue ... */
 
-                                                        sock_mask |= eligible_mask;
-                                                }
-                                        }
-                                }
-                                else {
-                                        sock_mask |= atomic_long_read(&pfq_groups[gid].sock_mask[0]);
-                                }
+						sock_mask |= eligible_mask;
+					}
+				}
+			}
+			else {
+				sock_mask |= atomic_long_read(&pfq_groups[gid].sock_mask[0]);
+			}
 
-                                mask_to_sock_queue(n, sock_mask, sock_queue);
-                                socket_mask |= sock_mask;
-                        }
+			mask_to_sock_queue(n, sock_mask, sock_queue);
+			socket_mask |= sock_mask;
+		}
 
-                        /* copy packets of this group to pfq sockets... */
+		/* copy packets of this group to pfq sockets... */
 
-                        {
-                                pfq_bitwise_foreach(socket_mask, lb)
-                                {
-                                        int i = pfq_ctz(lb);
-                                        struct pfq_rx_opt * ro = &pfq_get_sock_by_id(i)->rx_opt;
-                                        if (likely(ro)) {
-                                                copy_to_user_skbs(ro, cpu, sock_queue[i], prefetch_queue, gid);
-                                        }
-                                }
-                        }
-                }
-        }
+		pfq_bitwise_foreach(socket_mask, lb,
+		{
+			int i = pfq_ctz(lb);
+			struct pfq_rx_opt * ro = &pfq_get_sock_by_id(i)->rx_opt;
+			if (likely(ro)) {
+				copy_to_user_skbs(ro, cpu, sock_queue[i], prefetch_queue, gid);
+			}
+		})
+	})
 
         /* free skb, or route them to kernel... */
 

@@ -45,9 +45,12 @@
 #endif
 
 
-#define pfq_bitwise_foreach(m, n) \
+#define pfq_bitwise_foreach(m, n, ...) \
+{ \
         typeof(m) _mask = (m); \
-	for(; n = _mask & -_mask, _mask ; _mask^=n)
+	for(; n = _mask & -_mask, _mask ; _mask^=n) \
+	__VA_ARGS__ \
+}
 
 
 #endif /* _PF_Q_BITOPS_H_ */
