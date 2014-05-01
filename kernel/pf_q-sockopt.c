@@ -39,7 +39,8 @@
 #include <pf_q-symtable.h>
 #include <pf_q-functional.h>
 
-extern atomic_t timestamp_toggle;
+
+extern atomic_t timestamp_enabled;
 
 
 int pfq_getsockopt(struct socket *sock,
@@ -366,8 +367,8 @@ int pfq_setsockopt(struct socket *sock,
 
                                 smp_wmb();
 
-                                so->rx_opt.queue_info = &queue->rx;
-                                so->tx_opt.queue_info = &queue->tx;
+                                so->rx_opt.queue_ptr = &queue->rx;
+                                so->tx_opt.queue_ptr = &queue->tx;
 
                                 pr_devel("[PFQ|%d] queue: rx_size:%d rx_slot_size:%d tx_size:%d tx_slot_size:%d\n", so->id, queue->rx.size,
                                                 queue->rx.slot_size,
@@ -430,12 +431,12 @@ int pfq_setsockopt(struct socket *sock,
 
                 tstamp = tstamp ? 1 : 0;
 
-                /* update the timestamp_toggle counter */
+                /* update the timestamp_enabled counter */
 
-                atomic_add(tstamp - so->rx_opt.tstamp, &timestamp_toggle);
+                atomic_add(tstamp - so->rx_opt.tstamp, &timestamp_enabled);
                 so->rx_opt.tstamp = tstamp;
 
-                pr_devel("[PFQ|%d] timestamp_toggle => %d\n", so->id, atomic_read(&timestamp_toggle));
+                pr_devel("[PFQ|%d] timestamp_enabled counter: %d\n", so->id, atomic_read(&timestamp_enabled));
         } break;
 
         case Q_SO_SET_RX_CAPLEN:
@@ -688,7 +689,7 @@ int pfq_setsockopt(struct socket *sock,
                         pr_devel("[PFQ|%d] socket TX not bound to any device!\n", so->id);
                         return -EPERM;
                 }
-                if (to->queue_info == NULL)
+                if (to->queue_ptr == NULL)
                 {
                         pr_devel("[PFQ|%d] socket not enabled!\n", so->id);
                         return -EPERM;
@@ -774,7 +775,7 @@ int pfq_setsockopt(struct socket *sock,
                         return -EPERM;
                 }
 
-                if (to->queue_info == NULL)
+                if (to->queue_ptr == NULL)
                 {
                         pr_devel("[PFQ|%d] socket not enabled!\n", so->id);
                         return -EPERM;

@@ -26,7 +26,7 @@
 
 #include <linux/types.h>
 
-atomic_t timestamp_toggle;
+atomic_t timestamp_enabled;
 
 struct local_data __percpu    * cpu_data;
 

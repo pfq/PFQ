@@ -158,7 +158,9 @@ struct pfq_queue_hdr
         struct pfq_tx_queue_hdr tx;
 };
 
-/* SPSC circular queue handling... */
+
+/* SPSC queue handling... */
+
 
 #define SPSC_QUEUE_SLOT_SIZE(x)    ALIGN(sizeof(struct pfq_pkt_hdr) + x, 8)
 
@@ -214,9 +216,7 @@ void pfq_spsc_write_commit(struct pfq_tx_queue_hdr *q)
         pfq_spsc_write_commit_n(q,1);
 }
 
-
 /* consumer */
-
 
 static inline
 int pfq_spsc_read_avail(struct pfq_tx_queue_hdr *q)

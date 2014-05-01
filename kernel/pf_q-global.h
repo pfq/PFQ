@@ -26,7 +26,7 @@
 
 #include <linux/types.h>
 
-extern atomic_t timestamp_toggle;
+extern atomic_t timestamp_enabled;
 
 extern struct local_data __percpu * cpu_data;
 

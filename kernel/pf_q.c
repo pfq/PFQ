@@ -79,7 +79,7 @@ MODULE_AUTHOR("Nicola Bonelli <nicola.bonelli@cnit.it>");
 
 MODULE_DESCRIPTION("Packet capture system for 64bit multi-core architectures");
 
-module_param(direct_capture,  int, 0644);
+module_param(direct_capture,    int, 0644);
 module_param(capture_incoming,  int, 0644);
 module_param(capture_outgoing,  int, 0644);
 module_param(capture_loopback,  int, 0644);
@@ -128,11 +128,12 @@ DEFINE_SEMAPHORE(sock_sem);
 static inline
 bool copy_to_user_skbs(struct pfq_rx_opt *ro, int cpu, unsigned long long sock_queue, struct pfq_non_intrusive_skb *skbs, int gid)
 {
-        /* enqueue the sk_buff: it's wait-free. */
+        /* enqueue the sk_buffs: it's wait-free. */
 
         int len = 0; size_t sent = 0;
 
-        if (likely(ro->queue_info)) {
+        if (likely(ro->queue_ptr)) {
+
         	smp_rmb();
 
                 len  = (int)pfq_popcount(sock_queue);
@@ -264,7 +265,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 
 	/* if required, timestamp this packet now */
 
-        if (atomic_read(&timestamp_toggle) && skb->tstamp.tv64 == 0) {
+        if (atomic_read(&timestamp_enabled) && skb->tstamp.tv64 == 0) {
                 __net_timestamp(skb);
         }
 
@@ -319,12 +320,11 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 
         pfq_non_intrusive_for_each(skb, n, prefetch_queue)
         {
-                struct pfq_cb *cb = PFQ_CB(skb);
 		unsigned long local_group_mask = __pfq_devmap_get_groups(skb->dev->ifindex, skb_get_rx_queue(skb));
 
 		group_mask |= local_group_mask;
 
-		cb->group_mask = local_group_mask;
+		PFQ_CB(skb)->group_mask = local_group_mask;
 	}
 
         /* capture/dispatch packets */
@@ -343,9 +343,8 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
                         pfq_non_intrusive_for_each(skb, n, prefetch_queue)
                         {
                                 struct pfq_cb *cb = PFQ_CB(skb);
-                                computation_t *prg;
-
                                 unsigned long sock_mask = 0;
+                                computation_t *prg;
 
                                 if (unlikely((cb->group_mask & bit) == 0))
                                         continue;
@@ -626,19 +625,19 @@ pfq_create(
 static void
 pfq_rx_release(struct pfq_rx_opt *ro)
 {
-        /* decrease the timestamp_toggle counter */
+        /* decrease the timestamp_enabled counter */
 
         if (ro->tstamp)
-                atomic_dec(&timestamp_toggle);
+                atomic_dec(&timestamp_enabled);
 
-        ro->queue_info = NULL;
+        ro->queue_ptr = NULL;
 }
 
 
 static void
 pfq_tx_release(struct pfq_tx_opt *to)
 {
-        to->queue_info = NULL;
+        to->queue_ptr = NULL;
 }
 
 
@@ -670,12 +669,11 @@ pfq_release(struct socket *sock)
         pfq_tx_release(&so->tx_opt);
 
         pfq_leave_all_groups(so->id);
-
         pfq_release_sock_id(so->id);
 
         down(&sock_sem);
 
-        /* disable skb recycler if no sockets are open */
+        /* disable skb recycler if no socket is open */
 
 #ifdef PFQ_USE_SKB_RECYCLE
         if (pfq_get_sock_count() == 0) {
@@ -690,7 +688,7 @@ pfq_release(struct socket *sock)
 
         msleep(Q_GRACE_PERIOD);
 
-        /* purge the queues if no sockets are open */
+        /* purge both prefetch and recycle queues if no socket is open */
 
         if (pfq_get_sock_count() == 0) {
 
@@ -786,7 +784,7 @@ pfq_poll(struct file *file, struct socket *sock, poll_table * wait)
         struct pfq_rx_queue_hdr * rx;
         unsigned int mask = 0;
 
-        rx = (struct pfq_rx_queue_hdr *)so->rx_opt.queue_info;
+        rx = (struct pfq_rx_queue_hdr *)so->rx_opt.queue_ptr;
         if (rx == NULL)
                 return mask;
 

@@ -38,7 +38,7 @@ extern atomic_long_t pfq_sock_vector[Q_MAX_ID];
 
 struct pfq_rx_opt
 {
-        struct pfq_rx_queue_hdr *queue_info;
+        struct pfq_rx_queue_hdr *queue_ptr;
         void *                  base_addr;
 
         int                     tstamp;
@@ -54,13 +54,14 @@ struct pfq_rx_opt
 
 } __attribute__((aligned(64)));
 
+
 static inline
 void pfq_rx_opt_init(struct pfq_rx_opt *that, size_t caplen)
 {
         /* the queue is allocate later, when the socket is enabled */
 
-        that->queue_info = NULL;
-        that->base_addr  = NULL;
+        that->queue_ptr = NULL;
+        that->base_addr = NULL;
 
         /* disable tiemstamping by default */
         that->tstamp    = false;
@@ -87,7 +88,7 @@ void pfq_rx_opt_init(struct pfq_rx_opt *that, size_t caplen)
 
 struct pfq_tx_opt
 {
-        struct pfq_tx_queue_hdr *queue_info;
+        struct pfq_tx_queue_hdr *queue_ptr;
         void *                  base_addr;
 
         uint64_t                counter;
@@ -115,7 +116,7 @@ void pfq_tx_opt_init(struct pfq_tx_opt *that, size_t maxlen)
 {
         /* the queue is allocate later, when the socket is enabled */
 
-        that->queue_info        = NULL;
+        that->queue_ptr 	= NULL;
         that->base_addr         = NULL;
 
         that->counter           = 0;
