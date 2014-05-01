@@ -24,26 +24,40 @@ import System.IO.Unsafe
 import System.Process
 import System.Directory
 import System.FilePath
-import Control.Monad(when,unless,forM)
+import Control.Monad(when,unless,liftM,forM,filterM)
 import Control.Applicative
 import Text.Regex.Posix
 
 import Data.List
+import Data.Maybe
+import Data.Function(on)
 
-pfq_omatic_ver,pfq_kcompat,pfq_symvers,proc_cpuinfo :: String
+pfq_omatic_ver,pfq_kcompat,proc_cpuinfo :: String
+pfq_symvers :: [String]
 
-pfq_omatic_ver  = "1.1"
-pfq_kcompat     = "/usr/include/linux/pf_q-kcompat.h"
-pfq_symvers     = "/lib/modules/" ++ uname_r ++ "/kernel/net/pfq/Module.symvers"
+pfq_omatic_ver  = "3.0"
 proc_cpuinfo    = "/proc/cpuinfo"
+pfq_kcompat     = "/usr/include/linux/pf_q-kcompat.h"
+pfq_symvers     = [ "/lib/modules/" ++ uname_r ++ "/kernel/net/pfq/Module.symvers",
+                    home_dir ++ "/PFQ/kernel/Module.symvers",
+                    "/opt/PFQ/kernel/Module.symvers"
+                  ]
 
+
+getMostRecentFile :: [FilePath] -> IO (Maybe FilePath)
+getMostRecentFile xs = do
+    xs' <- filterM doesFileExist xs >>=
+             mapM (\f -> liftM (\m -> (f,m)) $ getModificationTime f) >>= \x ->
+               return $ sortBy (flip (compare `on` snd)) x
+    return $ if null xs' then Nothing
+                         else Just (fst $ head xs')
 
 main :: IO ()
 main = do
     putStrLn $ "[PFQ] pfq-omatic: v" ++ pfq_omatic_ver
     sanityCheck
     getRecursiveContents "." [".c"] >>= mapM_ tryPatch
-    copyFile pfq_symvers "Module.symvers"
+    copyFile (head pfq_symvers) "Module.symvers"
     let cmd = "make -j" ++ show getNumberOfPhyCores
     putStrLn $ "[PFQ] compiling: " ++ cmd ++ "..."
     _ <- system cmd
@@ -53,6 +67,10 @@ main = do
 uname_r :: String
 uname_r = unsafePerformIO $
     head . lines <$> readProcess "/bin/uname" ["-r"] ""
+
+
+home_dir :: String
+home_dir = unsafePerformIO getHomeDirectory
 
 
 regexFunCall :: String -> Int -> String
@@ -85,8 +103,9 @@ sanityCheck :: IO ()
 sanityCheck = do
     doesFileExist pfq_kcompat >>= \kc ->
         unless kc $ error "error: could not locate pfq-kcompat header!"
-    doesFileExist pfq_symvers >>= \sv ->
-        unless sv $ error "error: could not locate pfq Module.symvers!"
+    symver <- getMostRecentFile pfq_symvers
+    unless (isJust symver) $ error "error: could not locate pfq Module.symvers!"
+    putStrLn $ "[PFQ] using " ++ fromJust symver ++ " file (most recent)"
     doesFileExist "Makefile"  >>= \mf ->
         unless mf $ error "error: Makefile not found!"
 
@@ -102,13 +121,11 @@ getRecursiveContents topdir ext = do
     isDirectory <- doesDirectoryExist path
     if isDirectory
       then getRecursiveContents path ext
-      else return $ if takeExtensions path `elem` ext
-                    then [path]
-                    else []
+      else return [path | takeExtensions path `elem` ext]
   return (concat paths)
 
 
 getNumberOfPhyCores :: Int
 getNumberOfPhyCores = unsafePerformIO $
-    length . (filter (isInfixOf "processor")) . lines <$> readFile proc_cpuinfo
+    length . filter (isInfixOf "processor") . lines <$> readFile proc_cpuinfo
 
