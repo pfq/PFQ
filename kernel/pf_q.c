@@ -667,15 +667,6 @@ pfq_release(struct socket *sock)
 
         down(&sock_sem);
 
-        /* disable skb recycler if no socket is open */
-
-#ifdef PFQ_USE_SKB_RECYCLE
-        if (pfq_get_sock_count() == 0) {
-
-                pfq_skb_recycle_enable(false);
-        }
-#endif
-
         /* Convenient way to avoid a race condition with NAPI soft-irq,
          * without using expensive rw-mutexes
          */
@@ -687,12 +678,6 @@ pfq_release(struct socket *sock)
         if (pfq_get_sock_count() == 0) {
 
                 total += pfq_prefetch_purge_all();
-
-#ifdef PFQ_USE_SKB_RECYCLE
-                total += pfq_skb_recycle_purge();
-
-                pfq_skb_recycle_enable(true);
-#endif
         }
 
         up (&sock_sem);
@@ -850,7 +835,7 @@ void pfq_proto_ops_init(void)
 
                 /* Now the operations that really occur. */
                 .release    = pfq_release,
-                .bind       = sock_no_bind,         //
+                .bind       = sock_no_bind,
                 .mmap       = pfq_mmap,             // pfq_mmap,
                 .poll       = pfq_poll,             // pfq_poll,
                 .setsockopt = pfq_setsockopt,       // pfq_setsockopt,
@@ -968,6 +953,9 @@ static void __exit pfq_exit_module(void)
 {
         int total = 0;
 
+#ifdef PFQ_USE_SKB_RECYCLE
+        pfq_skb_recycle_enable(false);
+#endif
         /* unregister the basic device handler */
         unregister_device_handler();
 
@@ -984,7 +972,6 @@ static void __exit pfq_exit_module(void)
         msleep(Q_GRACE_PERIOD);
 
         /* purge both pre-fetch and recycles queues */
-
         total += pfq_prefetch_purge_all();
 
 #ifdef PFQ_USE_SKB_RECYCLE
@@ -1075,7 +1062,6 @@ pfq_gro_receive(struct napi_struct *napi, struct sk_buff *skb)
 
         return napi_gro_receive(napi,skb);
 }
-
 
 
 EXPORT_SYMBOL_GPL(pfq_netif_rx);
