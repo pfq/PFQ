@@ -263,7 +263,14 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 	BUILD_BUG_ON_MSG(Q_NON_INTRUSIVE_MAX_LEN > 64, "sock_queue overflow");
 #endif
 
-	/* if required, timestamp this packet now */
+	/* if no socket is open, drop the packet now */
+
+        if (pfq_get_sock_count() == 0) {
+        	kfree_skb(skb);
+               	return 0;
+	}
+
+	/* if required, timestamp the packet now */
 
         if (atomic_read(&timestamp_enabled) && skb->tstamp.tv64 == 0) {
                 __net_timestamp(skb);
