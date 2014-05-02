@@ -22,8 +22,8 @@
  *
  ****************************************************************/
 
-#ifndef _PF_Q_H_
-#define _PF_Q_H_
+#ifndef _PF_Q_LINUX_H_
+#define _PF_Q_LINUX_H_
 
 #ifdef __KERNEL__
 
@@ -456,4 +456,4 @@ struct pfq_counters
         unsigned long int counter[Q_MAX_COUNTERS];
 };
 
-#endif /* _PF_Q_H_ */
+#endif /* _PF_Q_LINUX_H_ */
