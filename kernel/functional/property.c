@@ -32,7 +32,7 @@
  ****************************************************************/
 
 static uint64_t
-ip_tos(arguments_t *a, struct sk_buff const *skb)
+ip_tos(arguments_t args, struct sk_buff const *skb)
 {
 	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP))
 	{
@@ -51,7 +51,7 @@ ip_tos(arguments_t *a, struct sk_buff const *skb)
 
 
 static uint64_t
-ip_tot_len(arguments_t *a, struct sk_buff const *skb)
+ip_tot_len(arguments_t args, struct sk_buff const *skb)
 {
 	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP))
 	{
@@ -70,7 +70,7 @@ ip_tot_len(arguments_t *a, struct sk_buff const *skb)
 
 
 static uint64_t
-ip_id(arguments_t *a, struct sk_buff const *skb)
+ip_id(arguments_t args, struct sk_buff const *skb)
 {
 	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP))
 	{
@@ -89,7 +89,7 @@ ip_id(arguments_t *a, struct sk_buff const *skb)
 
 
 static uint64_t
-ip_ttl(arguments_t *a, struct sk_buff const *skb)
+ip_ttl(arguments_t args, struct sk_buff const *skb)
 {
 	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP))
 	{
@@ -107,7 +107,7 @@ ip_ttl(arguments_t *a, struct sk_buff const *skb)
 }
 
 static uint64_t
-ip_frag(arguments_t *a, struct sk_buff const *skb)
+ip_frag(arguments_t args, struct sk_buff const *skb)
 {
 	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP))
 	{
@@ -130,7 +130,7 @@ ip_frag(arguments_t *a, struct sk_buff const *skb)
  ****************************************************************/
 
 static uint64_t
-tcp_source(arguments_t *a, struct sk_buff const *skb)
+tcp_source(arguments_t args, struct sk_buff const *skb)
 {
 	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP))
 	{
@@ -159,7 +159,7 @@ tcp_source(arguments_t *a, struct sk_buff const *skb)
 
 
 static uint64_t
-tcp_dest(arguments_t *a, struct sk_buff const *skb)
+tcp_dest(arguments_t args, struct sk_buff const *skb)
 {
 	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP))
 	{
@@ -187,7 +187,7 @@ tcp_dest(arguments_t *a, struct sk_buff const *skb)
 }
 
 static uint64_t
-tcp_hdrlen_(arguments_t *a, struct sk_buff const *skb)
+tcp_hdrlen_(arguments_t args, struct sk_buff const *skb)
 {
 	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP))
 	{
@@ -219,7 +219,7 @@ tcp_hdrlen_(arguments_t *a, struct sk_buff const *skb)
  ****************************************************************/
 
 static uint64_t
-udp_source(arguments_t *a, struct sk_buff const *skb)
+udp_source(arguments_t args, struct sk_buff const *skb)
 {
 	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP))
 	{
@@ -248,7 +248,7 @@ udp_source(arguments_t *a, struct sk_buff const *skb)
 
 
 static uint64_t
-udp_dest(arguments_t *a, struct sk_buff const *skb)
+udp_dest(arguments_t args, struct sk_buff const *skb)
 {
 	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP))
 	{
@@ -276,7 +276,7 @@ udp_dest(arguments_t *a, struct sk_buff const *skb)
 }
 
 static uint64_t
-udp_len(arguments_t *a, struct sk_buff const *skb)
+udp_len(arguments_t args, struct sk_buff const *skb)
 {
 	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP))
 	{
@@ -305,7 +305,7 @@ udp_len(arguments_t *a, struct sk_buff const *skb)
 
 
 static uint64_t
-icmp_type(arguments_t *a, struct sk_buff const *skb)
+icmp_type(arguments_t args, struct sk_buff const *skb)
 {
 	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP))
 	{
@@ -334,7 +334,7 @@ icmp_type(arguments_t *a, struct sk_buff const *skb)
 
 
 static uint64_t
-icmp_code(arguments_t *a, struct sk_buff const *skb)
+icmp_code(arguments_t args, struct sk_buff const *skb)
 {
 	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP))
 	{

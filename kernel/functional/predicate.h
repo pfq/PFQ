@@ -35,7 +35,7 @@
 #include <linux/icmp.h>
 #include <linux/if_vlan.h>
 
-#include <pf_q-fp-engine.h>
+#include <linux/pf_q-functional.h>
 
 
 #ifdef PFQ_USE_INLINE_FUN
@@ -72,107 +72,110 @@
 #endif
 
 static inline bool
-less(arguments_t *a, struct sk_buff const *skb)
+less(arguments_t args, struct sk_buff const *skb)
 {
-	property_expression_t * p = get_property(a);
-	const uint64_t * data = get_data(uint64_t, a);
-	uint64_t ret = eval_property((property_t *)p, skb);
+	property_t p = get_property(args);
+
+	const uint64_t data = get_data(uint64_t, args);
+
+	uint64_t ret = eval_property(p, skb);
 
 	if (IS_JUST(ret))
-		return FROM_JUST(ret) < *data;
+		return FROM_JUST(ret) < data;
 
 	return false;
 }
 
 static inline bool
-less_eq(arguments_t *a, struct sk_buff const *skb)
+less_eq(arguments_t args, struct sk_buff const *skb)
 {
-	property_expression_t * p = get_property(a);
-	const uint64_t * data = get_data(uint64_t, a);
-	uint64_t ret = eval_property((property_t *)p, skb);
+	property_t p = get_property(args);
+	const uint64_t data = get_data(uint64_t, args);
+
+	uint64_t ret = eval_property(p, skb);
 
 	if (IS_JUST(ret))
-		return FROM_JUST(ret) <= *data;
+		return FROM_JUST(ret) <= data;
 
 	return false;
 }
 
 static inline bool
-greater(arguments_t *a, struct sk_buff const *skb)
+greater(arguments_t args, struct sk_buff const *skb)
 {
-	property_expression_t * p = get_property(a);
-	const uint64_t * data = get_data(uint64_t, a);
-	uint64_t ret = eval_property((property_t *)p, skb);
+	property_t p = get_property(args);
+	const uint64_t data = get_data(uint64_t, args);
+	uint64_t ret = eval_property(p, skb);
 
 	if (IS_JUST(ret))
-		return FROM_JUST(ret) > *data;
+		return FROM_JUST(ret) > data;
 
 	return false;
 }
 
 static inline bool
-greater_eq(arguments_t *a, struct sk_buff const *skb)
+greater_eq(arguments_t args, struct sk_buff const *skb)
 {
-	property_expression_t * p = get_property(a);
-	const uint64_t * data = get_data(uint64_t, a);
-	uint64_t ret = eval_property((property_t *)p, skb);
+	property_t p = get_property(args);
+	const uint64_t data = get_data(uint64_t, args);
+	uint64_t ret = eval_property(p, skb);
 
 	if (IS_JUST(ret))
-		return FROM_JUST(ret) >= *data;
+		return FROM_JUST(ret) >= data;
 
 	return false;
 }
 
 static inline bool
-equal(arguments_t *a, struct sk_buff const *skb)
+equal(arguments_t args, struct sk_buff const *skb)
 {
-	property_expression_t * p = get_property(a);
-	const uint64_t * data = get_data(uint64_t, a);
-	uint64_t ret = eval_property((property_t *)p, skb);
+	property_t p = get_property(args);
+	const uint64_t data = get_data(uint64_t, args);
+	uint64_t ret = eval_property(p, skb);
 
 	if (IS_JUST(ret))
-		return FROM_JUST(ret) == *data;
+		return FROM_JUST(ret) == data;
 
 	return false;
 }
 
 static inline bool
-not_equal(arguments_t *a, struct sk_buff const *skb)
+not_equal(arguments_t args, struct sk_buff const *skb)
 {
-	property_expression_t * p = get_property(a);
-	const uint64_t * data = get_data(uint64_t, a);
-	uint64_t ret = eval_property((property_t *)p, skb);
+	property_t p = get_property(args);
+	const uint64_t data = get_data(uint64_t, args);
+	uint64_t ret = eval_property(p, skb);
 
 	if (IS_JUST(ret))
-		return FROM_JUST(ret) != *data;
+		return FROM_JUST(ret) != data;
 
 	return false;
 }
 
 static inline bool
-any_bit(arguments_t *a, struct sk_buff const *skb)
+any_bit(arguments_t args, struct sk_buff const *skb)
 {
-	property_expression_t * p = get_property(a);
+	property_t p = get_property(args);
 
-	const uint64_t * data = get_data(uint64_t, a);
-	uint64_t ret = eval_property((property_t *)p, skb);
+	const uint64_t data = get_data(uint64_t, args);
+	uint64_t ret = eval_property(p, skb);
 
 	if (IS_JUST(ret))
-		return (FROM_JUST(ret) & *data) != 0;
+		return (FROM_JUST(ret) & data) != 0;
 
 	return false;
 }
 
 static inline bool
-all_bit(arguments_t *a, struct sk_buff const *skb)
+all_bit(arguments_t args, struct sk_buff const *skb)
 {
-	property_expression_t * p = get_property(a);
+	property_t p = get_property(args);
 
-	const uint64_t * data = get_data(uint64_t, a);
-	uint64_t ret = eval_property((property_t *)p, skb);
+	const uint64_t data = get_data(uint64_t, args);
+	uint64_t ret = eval_property(p, skb);
 
 	if (IS_JUST(ret))
-		return (FROM_JUST(ret) & *data) == *data;
+		return (FROM_JUST(ret) & data) == data;
 
 	return false;
 }

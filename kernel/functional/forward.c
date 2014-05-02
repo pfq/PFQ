@@ -25,12 +25,13 @@
 #include <linux/module.h>
 
 #include <linux/pf_q-module.h>
+#include <linux/pf_q-functional.h>
 
 #include <pf_q-transmit.h>
 
 
 static struct sk_buff *
-sink(arguments_t * a, struct sk_buff *skb)
+sink(arguments_t args, struct sk_buff *skb)
 {
         if (!is_stolen(skb))
         {
@@ -41,11 +42,11 @@ sink(arguments_t * a, struct sk_buff *skb)
 
 
 static struct sk_buff *
-forward(arguments_t * a, struct sk_buff *skb)
+forward(arguments_t args, struct sk_buff *skb)
 {
-        const int *index = get_data(int, a);
+        const int index = get_data(int, args);
 
-	struct net_device *dev = dev_get_by_index(&init_net, *index);
+	struct net_device *dev = dev_get_by_index(&init_net, index);
 	if (dev == NULL) {
                 if (printk_ratelimit())
                         printk(KERN_INFO "[PFQ] forward: device error!\n");

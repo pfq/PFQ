@@ -29,46 +29,46 @@
 #include "inline.h"
 
 static inline struct sk_buff *
-filter_l3_proto(arguments_t * a, struct sk_buff *skb)
+filter_l3_proto(arguments_t args, struct sk_buff *skb)
 {
-	const u16 *type = get_data(u16, a);
-        return is_l3_proto(skb, *type) ? skb : drop(skb);
+	const u16 type = get_data(u16, args);
+        return is_l3_proto(skb, type) ? skb : drop(skb);
 }
 
 static inline struct sk_buff *
-filter_l4_proto(arguments_t * a, struct sk_buff *skb)
+filter_l4_proto(arguments_t args, struct sk_buff *skb)
 {
-	const u8 *proto = get_data(u8, a);
-        return is_l4_proto(skb, *proto) ? skb : drop(skb);
+	const u8 proto = get_data(u8, args);
+        return is_l4_proto(skb, proto) ? skb : drop(skb);
 }
 
 static inline struct sk_buff *
-filter_port(arguments_t * a, struct sk_buff *skb)
+filter_port(arguments_t args, struct sk_buff *skb)
 {
-	const u16 *port = get_data(u16, a);
-        return has_port(skb, *port) ? skb : drop(skb);
+	const u16 port = get_data(u16, args);
+        return has_port(skb, port) ? skb : drop(skb);
 }
 
 static inline struct sk_buff *
-filter_src_port(arguments_t * a, struct sk_buff *skb)
+filter_src_port(arguments_t args, struct sk_buff *skb)
 {
-	const u16 *port = get_data(u16, a);
-        return has_src_port(skb, *port) ? skb : drop(skb);
+	const u16 port = get_data(u16, args);
+        return has_src_port(skb, port) ? skb : drop(skb);
 }
 
 static inline struct sk_buff *
-filter_dst_port(arguments_t * a, struct sk_buff *skb)
+filter_dst_port(arguments_t args, struct sk_buff *skb)
 {
-	const u16 *port = get_data(u16, a);
-        return has_dst_port(skb, *port) ? skb : drop(skb);
+	const u16 port = get_data(u16, args);
+        return has_dst_port(skb, port) ? skb : drop(skb);
 }
 
 static inline struct sk_buff *
-filter_addr(arguments_t * a, struct sk_buff *skb)
+filter_addr(arguments_t args, struct sk_buff *skb)
 {
-	const u64 *data = get_data(u64, a);
-	uint32_t addr = *data >> 32;
-	uint32_t mask = *data & 0xffffffff;
+	const u64 data = get_data(u64, args);
+	uint32_t addr = data >> 32;
+	uint32_t mask = data & 0xffffffff;
 
 	// pr_devel("[PFQ] filter_addr: %pI4/%pI4\n", &addr, &mask);
 
@@ -76,21 +76,21 @@ filter_addr(arguments_t * a, struct sk_buff *skb)
 }
 
 static inline struct sk_buff *
-filter_src_addr(arguments_t * a, struct sk_buff *skb)
+filter_src_addr(arguments_t args, struct sk_buff *skb)
 {
-	const u64 *data = get_data(u64, a);
-	uint32_t addr = *data >> 32;
-	uint32_t mask = *data & 0xffffffff;
+	const u64 data = get_data(u64, args);
+	uint32_t addr = data >> 32;
+	uint32_t mask = data & 0xffffffff;
 
 	return has_src_addr(skb, addr, mask) ? skb : drop(skb);
 }
 
 static inline struct sk_buff *
-filter_dst_addr(arguments_t * a, struct sk_buff *skb)
+filter_dst_addr(arguments_t args, struct sk_buff *skb)
 {
-	const u64 *data = get_data(u64, a);
-	uint32_t addr = *data >> 32;
-	uint32_t mask = *data & 0xffffffff;
+	const u64 data = get_data(u64, args);
+	uint32_t addr = data >> 32;
+	uint32_t mask = data & 0xffffffff;
 
 	return has_dst_addr(skb, addr, mask) ? skb : drop(skb);
 }

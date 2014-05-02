@@ -24,11 +24,11 @@
 #ifndef _FUNCTIONAL_COMBINATOR_H_
 #define _FUNCTIONAL_COMBINATOR_H_
 
-
-#include <pf_q-fp-engine.h>
+#include <linux/pf_q-functional.h>
 
 #include "predicate.h"
 #include "inline.h"
+
 
 #ifdef PFQ_USE_INLINE_FUN
 
@@ -54,23 +54,23 @@
 #endif
 
 static inline
-bool or(boolean_expression_t *p1, boolean_expression_t *p2, struct sk_buff const *skb)
+bool or(predicate_t p1, predicate_t p2, struct sk_buff const *skb)
 {
-        return p1->ptr(p1, skb) || p2->ptr(p2, skb);
+        return eval_predicate(p1,skb) || eval_predicate(p2, skb);
 }
 
 
 static inline
-bool and(boolean_expression_t *p1, boolean_expression_t *p2, struct sk_buff const *skb)
+bool and(predicate_t p1, predicate_t p2, struct sk_buff const *skb)
 {
-        return p1->ptr(p1, skb) && p2->ptr(p2, skb);
+        return eval_predicate(p1, skb) && eval_predicate(p2, skb);
 }
 
 
 static inline
-bool xor(boolean_expression_t *p1, boolean_expression_t *p2, struct sk_buff const *skb)
+bool xor(predicate_t p1, predicate_t p2, struct sk_buff const *skb)
 {
-        return p1->ptr(p1, skb) != p2->ptr(p2, skb);
+        return eval_predicate(p1, skb) != eval_predicate(p2, skb);
 }
 
 

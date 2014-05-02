@@ -30,141 +30,141 @@
 
 
 static bool
-__is_ip(arguments_t * a, struct sk_buff const *skb)
+__is_ip(arguments_t args, struct sk_buff const *skb)
 {
         return  is_ip(skb);
 }
 
 static bool
-__is_ip6(arguments_t * a, struct sk_buff const *skb)
+__is_ip6(arguments_t args, struct sk_buff const *skb)
 {
         return  is_ip6(skb);
 }
 
 static bool
-__is_udp(arguments_t * a, struct sk_buff const *skb)
+__is_udp(arguments_t args, struct sk_buff const *skb)
 {
         return  is_udp(skb);
 }
 
 static bool
-__is_udp6(arguments_t * a, struct sk_buff const *skb)
+__is_udp6(arguments_t args, struct sk_buff const *skb)
 {
         return  is_udp6(skb);
 }
 
 static bool
-__is_tcp(arguments_t * a, struct sk_buff const *skb)
+__is_tcp(arguments_t args, struct sk_buff const *skb)
 {
         return  is_tcp(skb);
 }
 
 static bool
-__is_tcp6(arguments_t * a, struct sk_buff const *skb)
+__is_tcp6(arguments_t args, struct sk_buff const *skb)
 {
         return  is_tcp6(skb);
 }
 
 static bool
-__is_icmp(arguments_t * a, struct sk_buff const *skb)
+__is_icmp(arguments_t args, struct sk_buff const *skb)
 {
         return  is_icmp(skb);
 }
 
 static bool
-__is_icmp6(arguments_t * a, struct sk_buff const *skb)
+__is_icmp6(arguments_t args, struct sk_buff const *skb)
 {
         return  is_icmp6(skb);
 }
 
 static bool
-__is_flow(arguments_t * a, struct sk_buff const *skb)
+__is_flow(arguments_t args, struct sk_buff const *skb)
 {
         return  is_flow(skb);
 }
 
 static bool
-__is_l3_proto(arguments_t * a, struct sk_buff const *skb)
+__is_l3_proto(arguments_t args, struct sk_buff const *skb)
 {
-	const u16 *type = get_data(u16, a);
-	return is_l3_proto(skb, *type);
+	const u16 type = get_data(u16, args);
+	return is_l3_proto(skb, type);
 }
 
 static bool
-__is_l4_proto(arguments_t * a, struct sk_buff const *skb)
+__is_l4_proto(arguments_t args, struct sk_buff const *skb)
 {
-	const u8 *protocol = get_data(u8, a);
-	return is_l4_proto(skb, *protocol);
+	const u8 protocol = get_data(u8, args);
+	return is_l4_proto(skb, protocol);
 }
 
 static bool
-__has_port(arguments_t * a, struct sk_buff const *skb)
+__has_port(arguments_t args, struct sk_buff const *skb)
 {
-	const u16 *port = get_data(u16, a);
-	return has_port(skb, *port);
+	const u16 port = get_data(u16, args);
+	return has_port(skb, port);
 }
 
 static bool
-__has_src_port(arguments_t * a, struct sk_buff const *skb)
+__has_src_port(arguments_t args, struct sk_buff const *skb)
 {
-	const u16 *port = get_data(u16, a);
-	return has_src_port(skb, *port);
+	const u16 port = get_data(u16, args);
+	return has_src_port(skb, port);
 }
 
 static bool
-__has_dst_port(arguments_t * a, struct sk_buff const *skb)
+__has_dst_port(arguments_t args, struct sk_buff const *skb)
 {
-	const u16 *port = get_data(u16, a);
-	return has_dst_port(skb, *port);
+	const u16 port = get_data(u16, args);
+	return has_dst_port(skb, port);
 }
 
 static bool
-__has_vlan(arguments_t * a, struct sk_buff const *skb)
+__has_vlan(arguments_t args, struct sk_buff const *skb)
 {
         return  has_vlan(skb);
 }
 
 static bool
-__has_vid(arguments_t * a, struct sk_buff const *skb)
+__has_vid(arguments_t args, struct sk_buff const *skb)
 {
-	const int *id = get_data(int, a);
-        return  has_vid(skb, *id);
+	const int id = get_data(int, args);
+        return  has_vid(skb, id);
 }
 
 static bool
-__has_mark(arguments_t * a, struct sk_buff const *skb)
+__has_mark(arguments_t args, struct sk_buff const *skb)
 {
-	const unsigned long *value = get_data(unsigned long, a);
-	return get_state(skb) == *value;
+	const unsigned long value = get_data(unsigned long, args);
+	return get_state(skb) == value;
 }
 
 static bool
-__has_addr(arguments_t * a, struct sk_buff const *skb)
+__has_addr(arguments_t args, struct sk_buff const *skb)
 {
-	const u64 *data = get_data(u64, a);
-	uint32_t addr = *data >> 32;
-	uint32_t mask = *data & 0xffffffff;
+	const u64 data = get_data(u64, args);
+	uint32_t addr = data >> 32;
+	uint32_t mask = data & 0xffffffff;
 
 	return has_addr(skb, addr, mask);
 }
 
 
 static bool
-__has_src_addr(arguments_t * a, struct sk_buff const *skb)
+__has_src_addr(arguments_t args, struct sk_buff const *skb)
 {
-	const u64 *data = get_data(u64, a);
-	uint32_t addr = *data >> 32;
-	uint32_t mask = *data & 0xffffffff;
+	const u64 data = get_data(u64, args);
+	uint32_t addr = data >> 32;
+	uint32_t mask = data & 0xffffffff;
 
 	return has_src_addr(skb, addr, mask);
 }
 
 static bool
-__has_dst_addr(arguments_t * a, struct sk_buff const *skb)
+__has_dst_addr(arguments_t args, struct sk_buff const *skb)
 {
-	const u64 *data = get_data(u64, a);
-	uint32_t addr = *data >> 32;
-	uint32_t mask = *data & 0xffffffff;
+	const u64 data = get_data(u64, args);
+	uint32_t addr = data >> 32;
+	uint32_t mask = data & 0xffffffff;
 
 	return has_dst_addr(skb, addr, mask);
 }

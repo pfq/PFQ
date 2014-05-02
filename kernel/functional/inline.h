@@ -24,9 +24,10 @@
 #ifndef _FUNCTIONAL_INLINE_H_
 #define _FUNCTIONAL_INLINE_H_
 
-#include <pf_q-fp-engine.h>
+#include <linux/pf_q-functional.h>
 
 #include "predicate.h"
+
 
 #ifdef PFQ_USE_INLINE_FUN
 
@@ -60,10 +61,10 @@
 
 
 #define CASE_APPLY(f, call, skb) \
-	case INLINE_ ## f: return f(&call->fun.args, skb)
+	case INLINE_ ## f: return f(call,skb)
 
 #define IF_INLINED_RETURN(call, skb) \
-	switch((ptrdiff_t)call->fun.eval) \
+	switch((ptrdiff_t)call->fun) \
 	{ 	\
 		CASE_APPLY(unit, call, skb);\
 		CASE_APPLY(mark, call, skb);\
@@ -99,101 +100,103 @@
 /* high order functions */
 
 static inline struct sk_buff *
-mark(arguments_t *a, struct sk_buff *skb)
+mark(arguments_t args, struct sk_buff *skb)
 {
-	const unsigned long *value = get_data(unsigned long, a);
-	set_state(skb, *value);
+	const unsigned long value = get_data(unsigned long, args);
+	set_state(skb, value);
 	return skb;
 }
 
 static inline struct sk_buff *
-conditional(arguments_t *a, struct sk_buff *skb)
+conditional(arguments_t args, struct sk_buff *skb)
 {
-        boolean_expression_t * expr = get_predicate(a);
-        PFQ_CB(skb)->action.right = expr->ptr(expr, skb);
+        predicate_t expr = get_predicate(args);
+        PFQ_CB(skb)->action.right = eval_predicate(expr, skb);
+
         return skb;
 }
 
 static inline struct sk_buff *
-when(arguments_t *a, struct sk_buff *skb)
+when(arguments_t args, struct sk_buff *skb)
 {
-        boolean_expression_t * expr = get_predicate(a);
-        PFQ_CB(skb)->action.right = expr->ptr(expr, skb);
+        predicate_t expr = get_predicate(args);
+        PFQ_CB(skb)->action.right = eval_predicate(expr, skb);
         return skb;
 }
 
 static inline struct sk_buff *
-unless(arguments_t *a, struct sk_buff *skb)
+unless(arguments_t args, struct sk_buff *skb)
 {
-        boolean_expression_t * expr = get_predicate(a);
-        PFQ_CB(skb)->action.right = !expr->ptr(expr, skb);
+        predicate_t expr = get_predicate(args);
+        PFQ_CB(skb)->action.right = !eval_predicate(expr, skb);
         return skb;
 }
 
 static inline struct sk_buff *
-unit(arguments_t *a, struct sk_buff *skb)
+unit(arguments_t args, struct sk_buff *skb)
 {
         return skb;
 }
+
 
 /* filter functions */
 
 static inline struct sk_buff *
-filter_ip(arguments_t *a, struct sk_buff *skb)
+filter_ip(arguments_t args, struct sk_buff *skb)
 {
         return is_ip(skb) ? skb : drop(skb);
 }
 
 static inline struct sk_buff *
-filter_ip6(arguments_t *a, struct sk_buff *skb)
+filter_ip6(arguments_t args, struct sk_buff *skb)
 {
         return is_ip6(skb) ? skb : drop(skb);
 }
 
 static inline struct sk_buff *
-filter_udp(arguments_t *a, struct sk_buff *skb)
+filter_udp(arguments_t args, struct sk_buff *skb)
 {
         return is_udp(skb) ? skb : drop(skb);
 }
 
 static inline struct sk_buff *
-filter_udp6(arguments_t *a, struct sk_buff *skb)
+filter_udp6(arguments_t args, struct sk_buff *skb)
 {
         return is_udp6(skb) ? skb : drop(skb);
 }
 
 static inline struct sk_buff *
-filter_tcp(arguments_t *a, struct sk_buff *skb)
+filter_tcp(arguments_t args, struct sk_buff *skb)
 {
         return is_tcp(skb) ? skb : drop(skb);
 }
 
 static inline struct sk_buff *
-filter_tcp6(arguments_t *a, struct sk_buff *skb)
+filter_tcp6(arguments_t args, struct sk_buff *skb)
 {
         return is_tcp6(skb) ? skb : drop(skb);
 }
 
 static inline struct sk_buff *
-filter_icmp(arguments_t *a, struct sk_buff *skb)
+filter_icmp(arguments_t args, struct sk_buff *skb)
 {
         return is_icmp(skb) ? skb : drop(skb);
 }
 
 static inline struct sk_buff *
-filter_icmp6(arguments_t *a, struct sk_buff *skb)
+filter_icmp6(arguments_t args, struct sk_buff *skb)
 {
         return is_icmp6(skb) ? skb : drop(skb);
 }
 
 static inline struct sk_buff *
-filter_flow(arguments_t *a, struct sk_buff *skb)
+filter_flow(arguments_t args, struct sk_buff *skb)
 {
         return is_flow(skb) ? skb : drop(skb);
 }
 
 static inline struct sk_buff *
-filter_vlan(arguments_t *a, struct sk_buff *skb)
+filter_vlan(arguments_t args, struct sk_buff *skb)
 {
         return has_vlan(skb) ? skb : drop(skb);
 }
@@ -202,27 +205,27 @@ filter_vlan(arguments_t *a, struct sk_buff *skb)
 /* forward functions */
 
 static inline struct sk_buff *
-forward_drop(arguments_t *a, struct sk_buff *skb)
+forward_drop(arguments_t args, struct sk_buff *skb)
 {
         return drop(skb);
 }
 
 static inline struct sk_buff *
-forward_broadcast(arguments_t *a, struct sk_buff *skb)
+forward_broadcast(arguments_t args, struct sk_buff *skb)
 {
         return broadcast(skb);
 }
 
 static inline struct sk_buff *
-forward_kernel(arguments_t *a, struct sk_buff *skb)
+forward_kernel(arguments_t args, struct sk_buff *skb)
 {
         return to_kernel(drop(skb));
 }
 
 static inline struct sk_buff *
-forward_class(arguments_t *a, struct sk_buff *skb)
+forward_class(arguments_t args, struct sk_buff *skb)
 {
-        const int *c = get_data(int, a);
+        const int c = get_data(int, args);
 
         if (!c) {
                 if (printk_ratelimit())
@@ -230,7 +233,7 @@ forward_class(arguments_t *a, struct sk_buff *skb)
                 return skb;
         }
 
-        return class(skb, (1ULL << *c));
+        return class(skb, (1ULL << c));
 }
 
 
