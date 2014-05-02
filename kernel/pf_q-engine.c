@@ -166,9 +166,6 @@ pfq_apply(struct pfq_functional *call, struct sk_buff *skb)
 	function_t fun = { call };
         PFQ_CB(skb)->action.right = true;
 
-#ifdef PFQ_USE_INLINE_FUN
-	IF_INLINED_RETURN(call, skb);
-#endif
 	return eval_function(fun, skb);
 }
 
@@ -665,7 +662,7 @@ pfq_computation_compile (struct pfq_computation_descr const *descr, computation_
                 case pfq_combinator_fun: {
 
                         uint64_t properties;
-                        combinator_ptr_t ptr;
+                        predicate_ptr_t ptr;
 
                         size_t left, right;
 

@@ -54,22 +54,31 @@
 #endif
 
 static inline
-bool or(predicate_t p1, predicate_t p2, struct sk_buff const *skb)
+bool or(arguments_t args, struct sk_buff const *skb)
 {
+	predicate_t p1 = get_predicate(args);
+	predicate_t p2 = get_predicate2(args);
+
         return eval_predicate(p1,skb) || eval_predicate(p2, skb);
 }
 
 
 static inline
-bool and(predicate_t p1, predicate_t p2, struct sk_buff const *skb)
+bool and(arguments_t args, struct sk_buff const *skb)
 {
+	predicate_t p1 = get_predicate(args);
+	predicate_t p2 = get_predicate2(args);
+
         return eval_predicate(p1, skb) && eval_predicate(p2, skb);
 }
 
 
 static inline
-bool xor(predicate_t p1, predicate_t p2, struct sk_buff const *skb)
+bool xor(arguments_t args, struct sk_buff const *skb)
 {
+	predicate_t p1 = get_predicate(args);
+	predicate_t p2 = get_predicate2(args);
+
         return eval_predicate(p1, skb) != eval_predicate(p2, skb);
 }
 

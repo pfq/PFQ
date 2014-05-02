@@ -31,7 +31,7 @@
 #define OF_TYPE(type,a)  	__builtin_choose_expr(__builtin_types_compatible_p(type, typeof(a)), a, (void)0)
 
 #define ARGS_TYPE(a)  		__builtin_choose_expr(__builtin_types_compatible_p(arguments_t, typeof(a)), a, (void)0)
-#define FUNCTIONAL_TYPE(a)  		__builtin_choose_expr(__builtin_types_compatible_p(struct pfq_functional *, typeof(a)), a, (void)0)
+#define FUNCTIONAL_TYPE(a)  	__builtin_choose_expr(__builtin_types_compatible_p(struct pfq_functional *, typeof(a)), a, (void)0)
 
 #define ARG_CAST(arg)  		__builtin_choose_expr(sizeof(arg)  <= sizeof(void *), (ptrdiff_t)arg, (void)0)
 
@@ -95,9 +95,9 @@ eval_property(property_t p, struct sk_buff const *skb)
         f; \
 })
 
-#define make_combinator(predicate, pred1, pred2) \
+#define make_combinator(comb, pred1, pred2) \
 ({\
-        struct pfq_functional f = { .fun = OF_TYPE(combinator_ptr_t, predicate), .arg1 = 0, .arg2 = ARG_CAST(FUNCTIONAL_TYPE(pred1)), .arg3 = ARG_CAST(FUNCTIONAL_TYPE(pred2)) }; \
+        struct pfq_functional f = { .fun = OF_TYPE(predicate_ptr_t, comb), .arg1 = 0, .arg2 = ARG_CAST(FUNCTIONAL_TYPE(pred1)), .arg3 = ARG_CAST(FUNCTIONAL_TYPE(pred2)) }; \
         f; \
 })
 

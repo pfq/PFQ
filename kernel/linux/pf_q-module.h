@@ -103,9 +103,8 @@ typedef struct pfq_computation
 /**** function prototypes ****/
 
 typedef struct sk_buff *(*function_ptr_t)(arguments_t, struct sk_buff *);
-typedef bool (*predicate_ptr_t)	  	 (arguments_t, struct sk_buff const *);
 typedef uint64_t (*property_ptr_t)	 (arguments_t, struct sk_buff const *);
-typedef bool (*combinator_ptr_t)  	 (predicate_t p1, predicate_t p2, struct sk_buff const *);
+typedef bool (*predicate_ptr_t)	  	 (arguments_t, struct sk_buff const *);
 
 
 /**** function properties ****/
@@ -153,7 +152,7 @@ struct pfq_predicate_fun_descr
 struct pfq_combinator_fun_descr
 {
         const char * 	 symbol;
-        combinator_ptr_t ptr;
+        predicate_ptr_t  ptr;
         uint64_t	 properties;
 };
 
