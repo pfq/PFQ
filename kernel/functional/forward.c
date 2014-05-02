@@ -24,10 +24,9 @@
 #include <linux/kernel.h>
 #include <linux/module.h>
 
-#include <linux/pf_q-module.h>
-#include <linux/pf_q-functional.h>
-
+#include <pf_q-engine.h>
 #include <pf_q-transmit.h>
+#include <pf_q-module.h>
 
 
 static struct sk_buff *

@@ -28,9 +28,9 @@
 #include <linux/list.h>
 #include <linux/semaphore.h>
 #include <linux/rwsem.h>
-
 #include <linux/pf_q.h>
-#include <linux/pf_q-module.h>
+
+#include <pf_q-module.h>
 
 /* semaphore */
 

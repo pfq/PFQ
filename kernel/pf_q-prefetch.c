@@ -24,11 +24,10 @@
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/cpumask.h>
-
 #include <linux/pf_q.h>
-#include <linux/pf_q-module.h>
 
 #include <pf_q-memory.h>
+#include <pf_q-module.h>
 
 int pfq_prefetch_purge_all(void)
 {

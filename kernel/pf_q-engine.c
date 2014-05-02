@@ -23,16 +23,14 @@
 
 #include <linux/kernel.h>
 #include <linux/printk.h>
-
 #include <linux/pf_q.h>
-#include <linux/pf_q-module.h>
-#include <linux/pf_q-functional.h>
 
 #include <asm/uaccess.h>
 
 #include <pf_q-group.h>
 #include <pf_q-engine.h>
 #include <pf_q-symtable.h>
+#include <pf_q-module.h>
 
 #include <functional/inline.h>
 #include <functional/combinator.h>

@@ -29,8 +29,7 @@
 #include <linux/semaphore.h>
 #include <linux/rwsem.h>
 
-#include <linux/pf_q-module.h>
-
+#include <pf_q-module.h>
 #include <pf_q-group.h>
 #include <pf_q-symtable.h>
 

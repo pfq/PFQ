@@ -3,7 +3,8 @@
 #include <linux/init.h>
 
 #include <linux/pf_q.h>
-#include <linux/pf_q-module.h>
+
+#include "../../pf_q-module.h"
 
 
 MODULE_LICENSE("GPL");
@@ -110,14 +111,14 @@ heuristic_rtp(struct sk_buff *skb, bool steer)
 
 
 bool
-is_rtp(argument_t a, struct sk_buff const *skb)
+is_rtp(arguments_t arg, struct sk_buff const *skb)
 {
 	return heuristic_rtp((struct sk_buff *)skb, false) != NULL;
 }
 
 
 struct sk_buff *
-filter_rtp(argument_t a, struct sk_buff *skb)
+filter_rtp(arguments_t arg, struct sk_buff *skb)
 {
 	struct sk_buff *ret = heuristic_rtp(skb, false);
 	return ret != NULL ? skb : drop(skb);
@@ -125,7 +126,7 @@ filter_rtp(argument_t a, struct sk_buff *skb)
 
 
 struct sk_buff *
-steering_rtp(argument_t a, struct sk_buff *skb)
+steering_rtp(arguments_t arg, struct sk_buff *skb)
 {
 	struct sk_buff *ret = heuristic_rtp(skb, true);
 	return ret != NULL ? skb : drop(skb);

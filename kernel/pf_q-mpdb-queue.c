@@ -24,10 +24,10 @@
 
 #include <linux/kernel.h>
 #include <linux/module.h>
-#include <linux/pf_q-module.h>
 
 #include <pf_q-non-intrusive.h>
 #include <pf_q-mpdb-queue.h>
+#include <pf_q-module.h>
 
 
 static inline

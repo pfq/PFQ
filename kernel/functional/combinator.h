@@ -24,7 +24,7 @@
 #ifndef _FUNCTIONAL_COMBINATOR_H_
 #define _FUNCTIONAL_COMBINATOR_H_
 
-#include <linux/pf_q-functional.h>
+#include <pf_q-engine.h>
 
 #include "predicate.h"
 #include "inline.h"

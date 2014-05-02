@@ -21,14 +21,13 @@
  *
  ****************************************************************/
 
-#ifndef _PF_Q_LINUX_MODULE_H_
-#define _PF_Q_LINUX_MODULE_H_
+#ifndef _PF_Q_MODULE_H_
+#define _PF_Q_MODULE_H_
 
 #include <linux/kernel.h>
 #include <linux/version.h>
 
 #include <linux/pf_q.h>
-#include <linux/pf_q-sparse.h>
 
 #include <linux/skbuff.h>
 #include <linux/ip.h>
@@ -36,6 +35,8 @@
 #include <linux/ipv6.h>
 #include <linux/if_ether.h>
 #include <linux/if_vlan.h>
+
+#include "pf_q-sparse.h"
 
 struct pfq_function_descr;
 struct pfq_exec;
@@ -409,4 +410,4 @@ void put_persistent(struct sk_buff const *skb, int n)
 }
 
 
-#endif /* _PF_Q_LINUX_MODULE_H_ */
+#endif /* _PF_Q_MODULE_H_ */

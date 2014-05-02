@@ -35,7 +35,7 @@
 #include <linux/icmp.h>
 #include <linux/if_vlan.h>
 
-#include <linux/pf_q-functional.h>
+#include <pf_q-engine.h>
 
 
 #ifdef PFQ_USE_INLINE_FUN
