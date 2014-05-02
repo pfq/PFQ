@@ -54,7 +54,7 @@
 #include <pf_q-devmap.h>
 #include <pf_q-group.h>
 #include <pf_q-prefetch.h>
-#include <pf_q-functional.h>
+#include <pf_q-fp-engine.h>
 #include <pf_q-symtable.h>
 #include <pf_q-bitops.h>
 #include <pf_q-bpf.h>

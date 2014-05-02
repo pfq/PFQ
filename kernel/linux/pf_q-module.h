@@ -46,6 +46,7 @@ extern struct list_head pfq_predicate_cat;
 extern int pfq_symtable_register_functions  (const char *module, struct list_head *category, struct pfq_function_descr *fun);
 extern int pfq_symtable_unregister_functions(const char *module, struct list_head *category, struct pfq_function_descr *fun);
 
+
 /**** function properties ****/
 
 #define FUN_PREDICATE 		       	(1ULL<<0)
@@ -56,13 +57,14 @@ extern int pfq_symtable_unregister_functions(const char *module, struct list_hea
 #define FUN_ARG_DATA			(1ULL<<10)
 #define FUN_ARG_FUN 			(1ULL<<11)
 
-/**** property macros ****/
 
+/**** MAYBE macros ****/
 
 #define JUST(x) 	((1ULL<<31) | x)
 #define IS_JUST(x)	((1ULL<<31) & x)
 #define FROM_JUST(x)	(~(1ULL<<31) & x)
 #define NOTHING 	0
+
 
 /**** arguments_t: note, the size of data is @ (size_t *)data - 1; ****/
 

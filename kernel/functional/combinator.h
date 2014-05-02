@@ -25,7 +25,7 @@
 #define _FUNCTIONAL_COMBINATOR_H_
 
 
-#include <pf_q-engine.h>
+#include <pf_q-fp-engine.h>
 
 #include "predicate.h"
 #include "inline.h"

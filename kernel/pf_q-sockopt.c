@@ -37,7 +37,7 @@
 #include <pf_q-queue.h>
 #include <pf_q-devmap.h>
 #include <pf_q-symtable.h>
-#include <pf_q-functional.h>
+#include <pf_q-fp-engine.h>
 
 
 extern atomic_t timestamp_enabled;
