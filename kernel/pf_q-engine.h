@@ -21,6 +21,7 @@
  *
  ****************************************************************/
 
+
 #ifndef _PF_Q_ENGINE_H_
 #define _PF_Q_ENGINE_H_
 
@@ -101,26 +102,6 @@
         f; \
 })
 
-
-static inline struct sk_buff *
-eval_function(function_t f, struct sk_buff *skb)
-{
-	return ((function_ptr_t)f.ptr->fun)(f.ptr,skb);
-}
-
-
-static inline bool
-eval_predicate(predicate_t p, struct sk_buff const *skb)
-{
-	return ((predicate_ptr_t)p.ptr->fun)(p.ptr,skb);
-}
-
-
-static inline uint64_t
-eval_property(property_t p, struct sk_buff const *skb)
-{
-	return ((property_ptr_t)p.ptr->fun)(p.ptr,skb);
-}
 
 
 extern int pfq_computation_compile (struct pfq_computation_descr const *descr, computation_t *comp, void *context);
