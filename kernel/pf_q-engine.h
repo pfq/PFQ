@@ -21,174 +21,16 @@
  *
  ****************************************************************/
 
-#ifndef _PF_Q_FUNCTIONAL_H_
-#define _PF_Q_FUNCTIONAL_H_
+#ifndef _PF_Q_ENGINE_H_
+#define _PF_Q_ENGINE_H_
 
 #include <linux/kernel.h>
 #include <linux/skbuff.h>
 
 #include <linux/pf_q.h>
+
 #include <linux/pf_q-module.h>
-
-#define BOOLEAN_EXPR_CAST(ptr)  \
-        __builtin_choose_expr(__builtin_types_compatible_p(typeof(ptr), predicate_t *),    (boolean_expression_t *)ptr, \
-        __builtin_choose_expr(__builtin_types_compatible_p(typeof(ptr), combinator_t *),   (boolean_expression_t *)ptr, \
-        __builtin_choose_expr(__builtin_types_compatible_p(typeof(ptr), boolean_expr_t *), (boolean_expression_t *)ptr, \
-        (void)0)))
-
-#define PROPERTY_EXPR_CAST(ptr) \
-        __builtin_choose_expr(__builtin_types_compatible_p(typeof(ptr), property_t *),     (property_expression_t *)ptr, \
-        (void)0)
-
-/**** property_t ****/
-
-typedef struct property
-{
-	property_ptr_t 		eval;
-	arguments_t		args;
-
-} property_t;
-
-
-static inline property_t
-make_property(property_ptr_t fun, const void *arg)
-{
-        property_t f = { .eval = fun, .args = { .data = arg, .pred = NULL }  };
-        return f;
-}
-
-static inline uint64_t
-eval_property(property_t *this, struct sk_buff const *skb)
-{
-	return this->eval(&this->args, skb);
-}
-
-
-/**** predicate_t : expession_t *****/
-
-typedef struct predicate
-{
-        boolean_expression_t  	_eval;
-
-        predicate_ptr_t  	fun;
-        arguments_t      	args;
-
-} predicate_t;
-
-
-extern bool eval_predicate(predicate_t *this, struct sk_buff *skb);
-
-static inline predicate_t
-make_predicate(predicate_ptr_t fun, const void *arg)
-{
-        predicate_t p = { ._eval = { .ptr = (boolean_eval_ptr_t)eval_predicate },
-                          .fun   = fun,
-                          .args  = { .data = arg, .pred = NULL }
-                        };
-        return p;
-}
-
-static inline predicate_t
-make_predicate1(predicate_ptr_t fun, const void *arg, property_expression_t *pr)
-{
-        predicate_t p = { ._eval = { .ptr = (boolean_eval_ptr_t)eval_predicate },
-                          .fun   = fun,
-                          .args  = { .data = arg, .prop = pr }
-                        };
-        return p;
-}
-
-/**** combinator_t : expession_t *****/
-
-typedef struct combinator
-{
-        boolean_expression_t    _eval;
-
-        combinator_ptr_t        fun;
-
-        boolean_expression_t *  left;
-        boolean_expression_t *  right;
-
-} combinator_t;
-
-bool eval_combinator(combinator_t *this, struct sk_buff *skb);
-
-static inline combinator_t
-make_combinator(combinator_ptr_t fun, boolean_expression_t *p1, boolean_expression_t *p2)
-{
-        combinator_t p = {
-                           ._eval = { .ptr = (boolean_eval_ptr_t)eval_combinator },
-                           .fun   = fun,
-                           .left  = p1,
-                           .right = p2
-                        };
-        return p;
-}
-
-/**** boolean expression: predicate or combinator *****/
-
-typedef union
-{
-        predicate_t     pred;
-        combinator_t    comb;
-
-} boolean_expr_t;
-
-
-/**** function_t  *****/
-
-typedef struct
-{
-        function_ptr_t  eval;
-        arguments_t     args;
-
-} function_t;
-
-static inline function_t
-make_function(function_ptr_t fun, const void *arg)
-{
-        function_t f = { .eval = fun, .args = { .data = arg, .pred = NULL }  };
-        return f;
-}
-
-static inline function_t
-make_high_order_function(function_ptr_t fun, boolean_expression_t *expr)
-{
-        function_t f = { .eval = fun, .args = { .data = NULL, .pred = expr } };
-        return f;
-}
-
-static inline struct sk_buff *
-eval_function(function_t *this, struct sk_buff *skb)
-{
-	return this->eval(&this->args, skb);
-}
-
-/***** functional_t *****/
-
-typedef struct pfq_functional
-{
-        union
-        {
-                function_t              fun;
-                property_t 		prop;
-                boolean_expr_t          expr;
-        };
-
-        struct pfq_functional *left;
-        struct pfq_functional *right;
-
-} functional_t;
-
-
-typedef struct pfq_computation
-{
-        size_t          size;
-        functional_t    *entry_point;
-        functional_t    fun[];
-
-} computation_t;
-
+#include <linux/pf_q-functional.h>
 
 extern computation_t * pfq_computation_alloc(struct pfq_computation_descr const *);
 
@@ -204,4 +46,4 @@ extern void pr_devel_functional_descr(struct pfq_functional_descr const *, int);
 extern void pr_devel_computation_descr(struct pfq_computation_descr const *);
 
 
-#endif /* _PF_Q_FUNCTIONAL_H_ */
+#endif /* _PF_Q_ENGINE_H_ */

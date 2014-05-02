@@ -21,8 +21,8 @@
  *
  ****************************************************************/
 
-#ifndef _PF_Q_MODULE_H_
-#define _PF_Q_MODULE_H_
+#ifndef _PF_Q_LINUX_MODULE_H_
+#define _PF_Q_LINUX_MODULE_H_
 
 #include <linux/kernel.h>
 #include <linux/version.h>
@@ -47,6 +47,67 @@ extern int pfq_symtable_register_functions  (const char *module, struct list_hea
 extern int pfq_symtable_unregister_functions(const char *module, struct list_head *category, struct pfq_function_descr *fun);
 
 
+/**** generic functional type ****/
+
+struct pfq_functional
+{
+	const void *  fun;
+        ptrdiff_t     arg1;
+	ptrdiff_t     arg2;
+	ptrdiff_t     arg3;
+
+};
+
+typedef struct pfq_functional *  arguments_t;
+
+
+typedef struct
+{
+	struct pfq_functional * ptr;
+
+} function_t;
+
+
+typedef struct
+{
+	struct pfq_functional * ptr;
+
+} predicate_t;
+
+
+typedef struct
+{
+	struct pfq_functional * ptr;
+
+} property_t;
+
+
+struct pfq_functional_node
+{
+ 	struct pfq_functional fun;
+
+	struct pfq_functional_node *left;
+	struct pfq_functional_node *right;
+};
+
+
+typedef struct pfq_computation
+{
+        size_t size;
+        struct pfq_functional_node *entry_point;
+        struct pfq_functional_node fun[];
+
+} computation_t;
+
+
+/**** function prototypes ****/
+
+typedef struct sk_buff *(*function_ptr_t)(arguments_t, struct sk_buff *);
+typedef bool (*predicate_ptr_t)	  	 (arguments_t, struct sk_buff const *);
+typedef uint64_t (*property_ptr_t)	 (arguments_t, struct sk_buff const *);
+typedef bool (*combinator_ptr_t)  	 (predicate_t p1, predicate_t p2, struct sk_buff const *);
+
+
 /**** function properties ****/
 
 #define FUN_PREDICATE 		       	(1ULL<<0)
@@ -64,56 +125,6 @@ extern int pfq_symtable_unregister_functions(const char *module, struct list_hea
 #define IS_JUST(x)	((1ULL<<31) & x)
 #define FROM_JUST(x)	(~(1ULL<<31) & x)
 #define NOTHING 	0
-
-
-/**** arguments_t: note, the size of data is @ (size_t *)data - 1; ****/
-
-typedef struct
-{
-        void const              	*data;
-        union
-	{
-        	struct _boolean_expression      *pred;
-        	struct _property_expression     *prop;
-	};
-
-} arguments_t;
-
-
-#define get_data(type, a)  __builtin_choose_expr(__builtin_types_compatible_p(arguments_t *, typeof(a)), (const type *)a->data,  (void)0)
-#define get_data_size(a)   *((size_t *)a->data - 1)
-#define get_predicate(a)   __builtin_choose_expr(__builtin_types_compatible_p(arguments_t *, typeof(a)), a->pred, (void)0)
-#define get_property(a)    __builtin_choose_expr(__builtin_types_compatible_p(arguments_t *, typeof(a)), a->prop, (void)0)
-
-
-/**** expression_t: polymorphic boolean expression *****/
-
-typedef bool (*boolean_eval_ptr_t)(struct _boolean_expression *, struct sk_buff const *skb);
-
-typedef struct _boolean_expression
-{
-        boolean_eval_ptr_t ptr;
-
-} boolean_expression_t;
-
-
-/**** property *****/
-
-typedef uint64_t (*property_eval_ptr_t)(struct _property_expression *, struct sk_buff const *skb);
-
-typedef struct _property_expression
-{
-        property_eval_ptr_t ptr;
-
-} property_expression_t;
-
-
-/**** functional prototypes ****/
-
-typedef struct sk_buff *(*function_ptr_t)(arguments_t *, struct sk_buff *);
-typedef bool (*predicate_ptr_t)	 (arguments_t *, struct sk_buff const *);
-typedef bool (*combinator_ptr_t)(boolean_expression_t *expr1, boolean_expression_t *expr2, struct sk_buff const *);
-typedef uint64_t (*property_ptr_t)(arguments_t *, struct sk_buff const *);
 
 
 /**** function descriptors ****/
@@ -399,4 +410,4 @@ void put_persistent(struct sk_buff const *skb, int n)
 }
 
 
-#endif /* _PF_Q_MODULE_H_ */
+#endif /* _PF_Q_LINUX_MODULE_H_ */

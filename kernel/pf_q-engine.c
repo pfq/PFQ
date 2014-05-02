@@ -26,36 +26,17 @@
 
 #include <linux/pf_q.h>
 #include <linux/pf_q-module.h>
+#include <linux/pf_q-functional.h>
 
 #include <asm/uaccess.h>
 
 #include <pf_q-group.h>
-#include <pf_q-fp-engine.h>
+#include <pf_q-engine.h>
 #include <pf_q-symtable.h>
 
 #include <functional/inline.h>
 #include <functional/combinator.h>
 #include <functional/predicate.h>
-
-
-bool eval_predicate(predicate_t *this, struct sk_buff *skb)
-{
-#ifdef PFQ_USE_INLINE_FUN
-	RETURN_EVAL_PREDICATE(this, skb);
-#endif
-        return this->fun(&this->args, skb);
-}
-
-bool eval_combinator(combinator_t *this, struct sk_buff *skb)
-{
-#ifdef PFQ_USE_INLINE_FUN
-	RETURN_EVAL_COMBINATOR(this, skb);
-#endif
-
-        return this->fun(this->left, this->right, skb);
-}
-
-
 
 
 static void *
@@ -180,27 +161,28 @@ strdup_user(const char __user *str)
 
 
 static inline struct sk_buff *
-pfq_apply(functional_t *call, struct sk_buff *skb)
+pfq_apply(struct pfq_functional *call, struct sk_buff *skb)
 {
+	function_t fun = { call };
         PFQ_CB(skb)->action.right = true;
 
 #ifdef PFQ_USE_INLINE_FUN
 	IF_INLINED_RETURN(call, skb);
 #endif
-	return eval_function(&call->fun, skb);
+	return eval_function(fun, skb);
 }
 
 
 static inline struct sk_buff *
 pfq_bind(struct sk_buff *skb, computation_t *prg)
 {
-        functional_t *fun = prg->entry_point;
+        struct pfq_functional_node *node = prg->entry_point;
 
-        while (fun)
+        while (node)
         {
                 action_t *a;
 
-                skb = pfq_apply(fun, skb);
+                skb = pfq_apply(&node->fun, skb);
                 if (skb == NULL)
                         return NULL;
 
@@ -209,7 +191,7 @@ pfq_bind(struct sk_buff *skb, computation_t *prg)
                 if (is_drop(*a))
                         return skb;
 
-                fun = PFQ_CB(skb)->action.right ? fun->right : fun->left;
+                node = PFQ_CB(skb)->action.right ? node->right : node->left;
         }
 
         return skb;
@@ -262,7 +244,7 @@ pfq_run(int gid, computation_t *prg, struct sk_buff *skb)
 computation_t *
 pfq_computation_alloc (struct pfq_computation_descr const *descr)
 {
-        computation_t * c = kmalloc(sizeof(size_t) + descr->size * sizeof(functional_t), GFP_KERNEL);
+        computation_t * c = kmalloc(sizeof(size_t) + descr->size * sizeof(struct pfq_functional_node), GFP_KERNEL);
         c->size = descr->size;
         return c;
 }
@@ -276,7 +258,7 @@ pfq_context_alloc(struct pfq_computation_descr const *descr)
 
         for(; n < descr->size; n++)
         {
-        	if (descr->fun[n].arg_ptr && descr->fun[n].arg_size)
+        	if (descr->fun[n].arg_ptr && (descr->fun[n].arg_size > 8))
                 	size += sizeof(size_t) + ALIGN(descr->fun[n].arg_size, 8);
         }
 
@@ -292,7 +274,7 @@ pfq_context_alloc(struct pfq_computation_descr const *descr)
 
         for(n = 0; n < descr->size; n++)
         {
-        	if (descr->fun[n].arg_ptr && descr->fun[n].arg_size) {
+        	if (descr->fun[n].arg_ptr && (descr->fun[n].arg_size > 8)) {
                 	*s = descr->fun[n].arg_size;
                 	s = (size_t *)((char *)(s+1) + ALIGN(descr->fun[n].arg_size, 8));
 		}
@@ -498,7 +480,7 @@ resolve_user_symbol(struct list_head *cat, const char __user *symb, uint64_t *pr
 
 
 static int
-get_functional_by_index(struct pfq_computation_descr const *descr, computation_t *comp, int index, functional_t **ret)
+get_functional_by_index(struct pfq_computation_descr const *descr, computation_t *comp, int index, struct pfq_functional_node **ret)
 {
         if (index >= 0 && index < descr->size) {
                 *ret = &comp->fun[index];
@@ -529,7 +511,6 @@ pfq_computation_compile (struct pfq_computation_descr const *descr, computation_
 
         comp->entry_point = &comp->fun[descr->entry_point];
 
-        /* functional_t */
 
         for(n = 0; n < descr->size; n++)
         {
@@ -539,16 +520,6 @@ pfq_computation_compile (struct pfq_computation_descr const *descr, computation_
 
                         uint64_t properties;
                         function_ptr_t ptr;
-                        void * arg = NULL;
-
-                        if (descr->fun[n].arg_size) {
-
-                                arg = pod_user(&context, descr->fun[n].arg_ptr, descr->fun[n].arg_size);
-                                if (arg == NULL) {
-                                        pr_devel("[PFQ] %zu: fun internal error!\n", n);
-                                        return -EPERM;
-                                }
-                        }
 
                         ptr = resolve_user_symbol(&pfq_monadic_cat, descr->fun[n].symbol, &properties);
                         if (ptr == NULL ||
@@ -560,7 +531,27 @@ pfq_computation_compile (struct pfq_computation_descr const *descr, computation_
                                 return -EPERM;
                         }
 
-                        comp->fun[n].fun = make_function(ptr, arg);
+                        if (descr->fun[n].arg_size > 8) {
+
+				void *arg  = pod_user(&context, descr->fun[n].arg_ptr, descr->fun[n].arg_size);
+                                if (arg == NULL) {
+                                        pr_devel("[PFQ] %zu: fun internal error!\n", n);
+                                        return -EPERM;
+                                }
+
+                        	comp->fun[n].fun = make_function(ptr, arg);
+                        }
+			else {
+				ptrdiff_t arg;
+
+        			if (copy_from_user(&arg, descr->fun[n].arg_ptr, descr->fun[n].arg_size)) {
+                                        pr_devel("[PFQ] %zu: fun internal error!\n", n);
+                			return -EPERM;
+        			}
+
+                        	comp->fun[n].fun = make_function(ptr, arg);
+			}
+
 
 			if (get_functional_by_index(descr, comp, descr->fun[n].right, &comp->fun[n].right) < 0) {
 
@@ -594,7 +585,7 @@ pfq_computation_compile (struct pfq_computation_descr const *descr, computation_
                                 return -EPERM;
                         }
 
-                        comp->fun[n].fun = make_high_order_function(ptr, BOOLEAN_EXPR_CAST(&comp->fun[pindex].expr));
+                        comp->fun[n].fun = make_high_order_function(ptr, &comp->fun[pindex].fun);
 
 			if (get_functional_by_index(descr, comp, descr->fun[n].right, &comp->fun[n].right) < 0) {
 
@@ -616,16 +607,7 @@ pfq_computation_compile (struct pfq_computation_descr const *descr, computation_
                         uint64_t properties;
 
                         predicate_ptr_t ptr;
-                        void * arg = NULL;
 
-                        if (descr->fun[n].arg_size) {
-
-                                arg = pod_user(&context, descr->fun[n].arg_ptr, descr->fun[n].arg_size);
-                                if (arg == NULL) {
-                                        pr_devel("[PFQ] %zu: pred internal error!\n", n);
-                                        return -EPERM;
-                                }
-                        }
 
                         ptr = resolve_user_symbol(&pfq_predicate_cat, descr->fun[n].symbol, &properties);
                         if (ptr == NULL ||
@@ -637,14 +619,43 @@ pfq_computation_compile (struct pfq_computation_descr const *descr, computation_
                                 return -EPERM;
                         }
 
-                        if (descr->fun[n].fun != -1) {
+                        if (descr->fun[n].arg_size > 8) {
 
-				size_t pindex = descr->fun[n].fun;
-		     		comp->fun[n].expr.pred = make_predicate1(ptr, arg, PROPERTY_EXPR_CAST(&comp->fun[pindex].prop));
+                        	void * arg =  pod_user(&context, descr->fun[n].arg_ptr, descr->fun[n].arg_size);
+                                if (arg == NULL) {
+                                        pr_devel("[PFQ] %zu: pred internal error!\n", n);
+                                        return -EPERM;
+                                }
+
+				if (descr->fun[n].fun != -1) {
+
+					size_t pindex = descr->fun[n].fun;
+					comp->fun[n].fun = make_high_order_predicate(ptr, arg, &comp->fun[pindex].fun);
+				}
+				else {
+					comp->fun[n].fun = make_predicate(ptr, arg);
+				}
+
+
+                        } else {
+
+				ptrdiff_t arg;
+
+        			if (copy_from_user(&arg, descr->fun[n].arg_ptr, descr->fun[n].arg_size)) {
+                                        pr_devel("[PFQ] %zu: fun internal error!\n", n);
+                			return -EPERM;
+        			}
+
+				if (descr->fun[n].fun != -1) {
+
+					size_t pindex = descr->fun[n].fun;
+					comp->fun[n].fun = make_high_order_predicate(ptr, arg, &comp->fun[pindex].fun);
+				}
+				else {
+					comp->fun[n].fun = make_predicate(ptr, arg);
+				}
 			}
-			else {
-                        	comp->fun[n].expr.pred = make_predicate(ptr, arg);
-			}
+
 
                         comp->fun[n].right = NULL;
                         comp->fun[n].left  = NULL;
@@ -655,6 +666,7 @@ pfq_computation_compile (struct pfq_computation_descr const *descr, computation_
 
                         uint64_t properties;
                         combinator_ptr_t ptr;
+
                         size_t left, right;
 
                         ptr = resolve_user_symbol(&pfq_predicate_cat, descr->fun[n].symbol, &properties);
@@ -668,8 +680,7 @@ pfq_computation_compile (struct pfq_computation_descr const *descr, computation_
                         left  = descr->fun[n].left;
                         right = descr->fun[n].right;
 
-                        comp->fun[n].expr.comb = make_combinator(ptr, BOOLEAN_EXPR_CAST(&comp->fun[left].expr),
-                                                                      BOOLEAN_EXPR_CAST(&comp->fun[right].expr));
+                        comp->fun[n].fun = make_combinator(ptr, &comp->fun[left].fun, &comp->fun[right].fun);
 
                         comp->fun[n].right = NULL;
                         comp->fun[n].left  = NULL;
@@ -681,16 +692,7 @@ pfq_computation_compile (struct pfq_computation_descr const *descr, computation_
                         uint64_t properties;
                         property_ptr_t ptr;
 
-                        void * arg = NULL;
 
-                        if (descr->fun[n].arg_size) {
-
-                                arg = pod_user(&context, descr->fun[n].arg_ptr, descr->fun[n].arg_size);
-                                if (arg == NULL) {
-                                        pr_devel("[PFQ] %zu: pred internal error!\n", n);
-                                        return -EPERM;
-                                }
-                        }
 
                         ptr = resolve_user_symbol(&pfq_property_cat, descr->fun[n].symbol, &properties);
                         if (ptr == NULL ||
@@ -702,7 +704,27 @@ pfq_computation_compile (struct pfq_computation_descr const *descr, computation_
                                 return -EPERM;
                         }
 
-                        comp->fun[n].prop = make_property(ptr, arg);
+                        if (descr->fun[n].arg_size > 8) {
+
+                        	void * arg = pod_user(&context, descr->fun[n].arg_ptr, descr->fun[n].arg_size);
+                                if (arg == NULL) {
+                                        pr_devel("[PFQ] %zu: pred internal error!\n", n);
+                                        return -EPERM;
+                                }
+
+                        	comp->fun[n].fun = make_property(ptr, arg);
+                        } else {
+
+				ptrdiff_t arg;
+
+        			if (copy_from_user(&arg, descr->fun[n].arg_ptr, descr->fun[n].arg_size)) {
+                                        pr_devel("[PFQ] %zu: fun internal error!\n", n);
+                			return -EPERM;
+        			}
+
+                        	comp->fun[n].fun = make_property(ptr, arg);
+			}
+
 
                         comp->fun[n].right = NULL;
                         comp->fun[n].left  = NULL;
