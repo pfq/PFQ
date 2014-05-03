@@ -26,12 +26,6 @@
 
 #include <pf_q-engine.h>
 
-#include "predicate.h"
-#include "combinator.h"
-#include "conditional.h"
-#include "filter.h"
-#include "forward.h"
-
 /* INLINE_FUN macro */
 
 #ifdef PFQ_USE_INLINE_FUN
@@ -89,11 +83,11 @@
 
 
 
-#define CASE_INLINE(f, call, skb) \
-	case INLINE_ ## f: ret = f(call,skb); break;
+#define CASE_INLINE(name, f, skb) \
+	case INLINE_ ## name: ret = name(f.ptr, skb); break;
 
-#define EVAL_FUNCTION(call, skb) ({\
-	typeof(call->fun(skb)) ret; \
+#define EVAL_FUNCTION(f, skb) ({\
+	typeof(f.ptr->fun(f.ptr, skb)) ret; \
 	switch((ptrdiff_t)call->fun) \
 	{ 	\
 		CASE_INLINE(unit, call, skb);\
@@ -117,7 +111,7 @@
 		CASE_INLINE(forward_broadcast, call, skb);\
 		CASE_INLINE(forward_kernel, call, skb);\
 		CASE_INLINE(forward_class, call, skb);\
-		default: ret = call->fun(skb); \
+		default: ret = f.ptr->fun(f.ptr, skb); \
 	} \
 	ret; })
 
@@ -139,7 +133,7 @@
 	ret; })
 
 
-#define RETURN_EVAL_COMBINATOR(call, skb) ({ \
+#define EVAL_COMBINATOR(call, skb) ({ \
 	typeof(call->fun(skb)) ret; \
 	switch((ptrdiff_t)call->fun) \
 	{ 	\
@@ -148,6 +142,10 @@
 		CASE_INLINE(xor, call, skb);\
 	} \
 	ret; })
+
+#else
+
+#define EVAL_FUNCTION(f, skb) 	((function_ptr_t)f.fun->ptr)(f.fun, skb)
 
 #endif
 
@@ -172,4 +170,6 @@ eval_property(property_t p, struct sk_buff const *skb)
 {
 	return ((property_ptr_t)p.fun->ptr)(p.fun,skb);
 }
+
+
 #endif /* _FUNCTIONAL_INLINE_H_ */

@@ -61,16 +61,21 @@ counter(arguments_t args, struct sk_buff *skb)
         return skb;
 }
 
+
+static inline struct sk_buff *
+mark(arguments_t args, struct sk_buff *skb)
+{
+	const unsigned long value = get_data(unsigned long, args);
+	set_state(skb, value);
+	return skb;
+}
+
+
 struct pfq_function_descr misc_functions[] = {
 
-        { "drop",       	INLINE_FUN(forward_drop)   	, FUN_ACTION  },
-        { "broadcast",  	INLINE_FUN(forward_broadcast)	, FUN_ACTION  },
-        { "kernel",     	INLINE_FUN(forward_kernel)   	, FUN_ACTION  },
-        { "class",		INLINE_FUN(forward_class) 	, FUN_ACTION | FUN_ARG_DATA },
-	{ "mark", 		INLINE_FUN(mark) 		, FUN_ACTION | FUN_ARG_DATA },
-
-        { "counter",            counter 			, FUN_ACTION | FUN_ARG_DATA },
-        { "dummy",              dummy   			, FUN_ACTION | FUN_ARG_DATA },
+        { "counter", 	counter 	, FUN_ACTION | FUN_ARG_DATA },
+        { "dummy",      dummy   	, FUN_ACTION | FUN_ARG_DATA },
+ 	{ "mark", 	mark		, FUN_ACTION | FUN_ARG_DATA },
 
         { NULL, NULL}};
 

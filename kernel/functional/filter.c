@@ -26,8 +26,8 @@
 
 #include <pf_q-module.h>
 
-#include "predicate.h"
-#include "inline.h"
+#include "filter.h"
+
 
 static inline struct sk_buff *
 filter_l3_proto(arguments_t args, struct sk_buff *skb)

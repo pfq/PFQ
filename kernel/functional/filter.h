@@ -89,5 +89,10 @@ filter_vlan(arguments_t args, struct sk_buff *skb)
         return has_vlan(skb) ? skb : drop(skb);
 }
 
+static inline struct sk_buff *
+unit(arguments_t args, struct sk_buff *skb)
+{
+        return skb;
+}
 
 #endif /* _FUNCTIONAL_FILTER_H_ */

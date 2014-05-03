@@ -27,6 +27,7 @@
 #include <pf_q-module.h>
 
 #include "combinator.h"
+#include "inline.h"
 
 struct pfq_combinator_fun_descr combinator_functions[] = {
 

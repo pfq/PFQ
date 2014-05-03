@@ -24,11 +24,7 @@
 #ifndef _FUNCTIONAL_COMBINATOR_H_
 #define _FUNCTIONAL_COMBINATOR_H_
 
-#include <pf_q-engine.h>
-
 #include "predicate.h"
-#include "inline.h"
-
 
 static inline
 bool or(arguments_t args, struct sk_buff const *skb)

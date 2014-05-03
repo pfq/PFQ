@@ -28,6 +28,7 @@
 #include <pf_q-transmit.h>
 #include <pf_q-module.h>
 
+#include "forward.h"
 
 static struct sk_buff *
 sink(arguments_t args, struct sk_buff *skb)
@@ -65,6 +66,11 @@ forward(arguments_t args, struct sk_buff *skb)
 
 
 struct pfq_monadic_fun_descr forward_functions[] = {
+
+        { "drop",       	INLINE_FUN(forward_drop)   	, FUN_ACTION  },
+        { "broadcast",  	INLINE_FUN(forward_broadcast)	, FUN_ACTION  },
+        { "kernel",     	INLINE_FUN(forward_kernel)   	, FUN_ACTION  },
+        { "class",		INLINE_FUN(forward_class) 	, FUN_ACTION | FUN_ARG_DATA },
 
         { "sink",               sink 	, FUN_ACTION			},
 	{ "forward", 		forward , FUN_ACTION | FUN_ARG_DATA	},

@@ -21,7 +21,7 @@
  *
  ****************************************************************/
 
-#include "inline.h"
+#include "conditional.h"
 
 struct pfq_function_descr high_order_functions[] = {
 
