@@ -1,4 +1,4 @@
-# (C) 2011-13 Nicola Bonelli <nicola.bonelli@cnit.it>
+# (C) 2011-14 Nicola Bonelli <nicola.bonelli@cnit.it>
 #
 
 GHCFLAGS= --make -O2 -Wall 

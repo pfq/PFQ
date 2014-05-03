@@ -1,4 +1,4 @@
-# PFQ Makefile (c) 2011-2013 Nicola Bonelli <nicola.bonelli@cnit.it>
+# PFQ Makefile (c) 2011-14 Nicola Bonelli <nicola.bonelli@cnit.it>
 #
 
 MAKE_DIRECTORIES = C C++ test tools Haskell

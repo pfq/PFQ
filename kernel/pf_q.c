@@ -1,6 +1,6 @@
 /***************************************************************
  *
- * (C) 2011-13 Nicola Bonelli <nicola.bonelli@cnit.it>
+ * (C) 2011-14 Nicola Bonelli <nicola.bonelli@cnit.it>
  *             Andrea Di Pietro <andrea.dipietro@for.unipi.it>
  * 	       Loris Gazzarrini <loris.gazzarrini@iet.unipi.it>
  *
