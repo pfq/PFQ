@@ -84,34 +84,34 @@
 
 
 #define CASE_INLINE(name, f, skb) \
-	case INLINE_ ## name: ret = name(f.ptr, skb); break;
+	case INLINE_ ## name: ret = name(f.fun, skb); break;
 
 #define EVAL_FUNCTION(f, skb) ({\
-	typeof(f.ptr->fun(f.ptr, skb)) ret; \
-	switch((ptrdiff_t)call->fun) \
+	typeof(((function_ptr_t)f.fun->ptr)(f.fun, skb)) ret; \
+	switch((ptrdiff_t)f.fun->ptr) \
 	{ 	\
-		CASE_INLINE(unit, call, skb);\
-		CASE_INLINE(mark, call, skb);\
-		CASE_INLINE(conditional, call, skb);\
-		CASE_INLINE(when, call, skb);\
-		CASE_INLINE(unless, call, skb);\
+		CASE_INLINE(unit, f, skb);\
+		CASE_INLINE(mark, f, skb);\
+		CASE_INLINE(conditional, f, skb);\
+		CASE_INLINE(when, f, skb);\
+		CASE_INLINE(unless, f, skb);\
 		\
-		CASE_INLINE(filter_ip, call, skb);\
-		CASE_INLINE(filter_udp, call, skb);\
-		CASE_INLINE(filter_tcp, call, skb);\
-		CASE_INLINE(filter_icmp, call, skb);\
-		CASE_INLINE(filter_ip6, call, skb);\
-		CASE_INLINE(filter_udp6, call, skb);\
-		CASE_INLINE(filter_tcp6, call, skb);\
-		CASE_INLINE(filter_icmp6, call, skb);\
-		CASE_INLINE(filter_flow, call, skb);\
-		CASE_INLINE(filter_vlan, call, skb);\
+		CASE_INLINE(filter_ip, f, skb);\
+		CASE_INLINE(filter_udp, f, skb);\
+		CASE_INLINE(filter_tcp, f, skb);\
+		CASE_INLINE(filter_icmp, f, skb);\
+		CASE_INLINE(filter_ip6, f, skb);\
+		CASE_INLINE(filter_udp6, f, skb);\
+		CASE_INLINE(filter_tcp6, f, skb);\
+		CASE_INLINE(filter_icmp6, f, skb);\
+		CASE_INLINE(filter_flow, f, skb);\
+		CASE_INLINE(filter_vlan, f, skb);\
 		\
-		CASE_INLINE(forward_drop, call, skb);\
-		CASE_INLINE(forward_broadcast, call, skb);\
-		CASE_INLINE(forward_kernel, call, skb);\
-		CASE_INLINE(forward_class, call, skb);\
-		default: ret = f.ptr->fun(f.ptr, skb); \
+		CASE_INLINE(forward_drop, f, skb);\
+		CASE_INLINE(forward_broadcast, f, skb);\
+		CASE_INLINE(forward_kernel, f, skb);\
+		CASE_INLINE(forward_class, f, skb);\
+		default: ret = ((function_ptr_t)f.fun->ptr)(f.fun, skb); \
 	} \
 	ret; })
 
@@ -149,13 +149,13 @@
 
 #endif
 
-static inline struct sk_buff *
-eval_function(function_t f, struct sk_buff *skb)
-{
-	// return ((function_ptr_t)f.fun->ptr)(f.fun,skb);
-
-	return EVAL_FUNCTION(f, skb);
-}
+// static inline struct sk_buff *
+// eval_function(function_t f, struct sk_buff *skb)
+// {
+// 	// return ((function_ptr_t)f.fun->ptr)(f.fun,skb);
+//
+// 	return EVAL_FUNCTION(f, skb);
+// }
 
 
 static inline bool

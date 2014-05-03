@@ -33,9 +33,7 @@
 #include <pf_q-module.h>
 
 #include <functional/inline.h>
-#include <functional/combinator.h>
-#include <functional/predicate.h>
-
+#include <functional/headers.h>
 
 static void *
 pod_memory_get(void **ptr, size_t size)
@@ -164,7 +162,7 @@ pfq_apply(struct pfq_functional *call, struct sk_buff *skb)
 	function_t fun = { call };
         PFQ_CB(skb)->action.right = true;
 
-	return eval_function(fun, skb);
+	return EVAL_FUNCTION(fun, skb);
 }
 
 
