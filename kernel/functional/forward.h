@@ -21,43 +21,45 @@
  *
  ****************************************************************/
 
-#ifndef _FUNCTIONAL_COMBINATOR_H_
-#define _FUNCTIONAL_COMBINATOR_H_
+#ifndef _FUNCTIONAL_FORWARD_H_
+#define _FUNCTIONAL_FORWARD_H_
 
 #include <pf_q-engine.h>
 
 #include "predicate.h"
-#include "inline.h"
 
 
-static inline
-bool or(arguments_t args, struct sk_buff const *skb)
+static inline struct sk_buff *
+forward_drop(arguments_t args, struct sk_buff *skb)
 {
-	predicate_t p1 = get_predicate(args);
-	predicate_t p2 = get_predicate2(args);
+        return drop(skb);
+}
 
-        return eval_predicate(p1,skb) || eval_predicate(p2, skb);
+static inline struct sk_buff *
+forward_broadcast(arguments_t args, struct sk_buff *skb)
+{
+        return broadcast(skb);
+}
+
+static inline struct sk_buff *
+forward_kernel(arguments_t args, struct sk_buff *skb)
+{
+        return to_kernel(drop(skb));
+}
+
+static inline struct sk_buff *
+forward_class(arguments_t args, struct sk_buff *skb)
+{
+        const int c = get_data(int, args);
+
+        if (!c) {
+                if (printk_ratelimit())
+                        printk(KERN_INFO "[PFQ] forward class: internal error!\n");
+                return skb;
+        }
+
+        return class(skb, (1ULL << c));
 }
 
 
-static inline
-bool and(arguments_t args, struct sk_buff const *skb)
-{
-	predicate_t p1 = get_predicate(args);
-	predicate_t p2 = get_predicate2(args);
-
-        return eval_predicate(p1, skb) && eval_predicate(p2, skb);
-}
-
-
-static inline
-bool xor(arguments_t args, struct sk_buff const *skb)
-{
-	predicate_t p1 = get_predicate(args);
-	predicate_t p2 = get_predicate2(args);
-
-        return eval_predicate(p1, skb) != eval_predicate(p2, skb);
-}
-
-
-#endif /* _FUNCTIONAL_COMBINATOR_H_ */
+#endif /* _FUNCTIONAL_FORWARD_H_ */

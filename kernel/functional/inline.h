@@ -27,7 +27,18 @@
 #include <pf_q-engine.h>
 
 #include "predicate.h"
+#include "combinator.h"
+#include "conditional.h"
+#include "filter.h"
+#include "forward.h"
 
+/* INLINE_FUN macro */
+
+#ifdef PFQ_USE_INLINE_FUN
+#define INLINE_FUN(fun) 	(void *)INLINE_ ## fun
+#else
+#define INLINE_FUN(fun) 	&fun
+#endif
 
 #ifdef PFQ_USE_INLINE_FUN
 
@@ -59,182 +70,85 @@
 #define INLINE_forward_kernel 	       	18
 #define INLINE_forward_class 		19
 
+/* combinator functions */
 
-#define CASE_APPLY(f, call, skb) \
-	case INLINE_ ## f: return f(call,skb)
+#define INLINE_or 			100
+#define INLINE_and 			101
+#define INLINE_xor 			102
 
-#define IF_INLINED_RETURN(call, skb) \
+/* predicate functions */
+
+#define INLINE_less 			200
+#define INLINE_less_eq 			201
+#define INLINE_equal			202
+#define INLINE_not_equal	       	203
+#define INLINE_greater 			204
+#define INLINE_greater_eq  		205
+#define INLINE_any_bit 			206
+#define INLINE_all_bit			207
+
+
+
+#define CASE_INLINE(f, call, skb) \
+	case INLINE_ ## f: ret = f(call,skb); break;
+
+#define EVAL_FUNCTION(call, skb) ({\
+	typeof(call->fun(skb)) ret; \
 	switch((ptrdiff_t)call->fun) \
 	{ 	\
-		CASE_APPLY(unit, call, skb);\
-		CASE_APPLY(mark, call, skb);\
-		CASE_APPLY(conditional, call, skb);\
-		CASE_APPLY(when, call, skb);\
-		CASE_APPLY(unless, call, skb);\
+		CASE_INLINE(unit, call, skb);\
+		CASE_INLINE(mark, call, skb);\
+		CASE_INLINE(conditional, call, skb);\
+		CASE_INLINE(when, call, skb);\
+		CASE_INLINE(unless, call, skb);\
 		\
-		CASE_APPLY(filter_ip, call, skb);\
-		CASE_APPLY(filter_udp, call, skb);\
-		CASE_APPLY(filter_tcp, call, skb);\
-		CASE_APPLY(filter_icmp, call, skb);\
-		CASE_APPLY(filter_ip6, call, skb);\
-		CASE_APPLY(filter_udp6, call, skb);\
-		CASE_APPLY(filter_tcp6, call, skb);\
-		CASE_APPLY(filter_icmp6, call, skb);\
-		CASE_APPLY(filter_flow, call, skb);\
-		CASE_APPLY(filter_vlan, call, skb);\
+		CASE_INLINE(filter_ip, call, skb);\
+		CASE_INLINE(filter_udp, call, skb);\
+		CASE_INLINE(filter_tcp, call, skb);\
+		CASE_INLINE(filter_icmp, call, skb);\
+		CASE_INLINE(filter_ip6, call, skb);\
+		CASE_INLINE(filter_udp6, call, skb);\
+		CASE_INLINE(filter_tcp6, call, skb);\
+		CASE_INLINE(filter_icmp6, call, skb);\
+		CASE_INLINE(filter_flow, call, skb);\
+		CASE_INLINE(filter_vlan, call, skb);\
 		\
-		CASE_APPLY(forward_drop, call, skb);\
-		CASE_APPLY(forward_broadcast, call, skb);\
-		CASE_APPLY(forward_kernel, call, skb);\
-		CASE_APPLY(forward_class, call, skb);\
-	}
+		CASE_INLINE(forward_drop, call, skb);\
+		CASE_INLINE(forward_broadcast, call, skb);\
+		CASE_INLINE(forward_kernel, call, skb);\
+		CASE_INLINE(forward_class, call, skb);\
+		default: ret = call->fun(skb); \
+	} \
+	ret; })
 
 
-#define INLINE_FUN(fun) 	(void *)INLINE_ ## fun
+#define EVAL_PREDICATE(call, skb) ({ \
+	typeof(call->fun(skb)) ret; \
+	switch((ptrdiff_t)call->fun) \
+	{ 	\
+		CASE_INLINE(less,  call, skb);\
+		CASE_INLINE(less_eq, call, skb);\
+		CASE_INLINE(equal, call, skb);\
+		CASE_INLINE(not_equal, call, skb);\
+		CASE_INLINE(greater, call, skb);\
+		CASE_INLINE(greater_eq, call, skb);\
+		CASE_INLINE(any_bit, call, skb);\
+		CASE_INLINE(all_bit, call, skb);\
+		default: ret = call->fun(skb); \
+	} \
+	ret; })
 
-#else
-#define INLINE_FUN(fun) 	&fun
+
+#define RETURN_EVAL_COMBINATOR(call, skb) ({ \
+	typeof(call->fun(skb)) ret; \
+	switch((ptrdiff_t)call->fun) \
+	{ 	\
+		CASE_INLINE(or,  call, skb);\
+		CASE_INLINE(and, call, skb);\
+		CASE_INLINE(xor, call, skb);\
+	} \
+	ret; })
+
 #endif
-
-
-/* high order functions */
-
-static inline struct sk_buff *
-mark(arguments_t args, struct sk_buff *skb)
-{
-	const unsigned long value = get_data(unsigned long, args);
-	set_state(skb, value);
-	return skb;
-}
-
-static inline struct sk_buff *
-conditional(arguments_t args, struct sk_buff *skb)
-{
-        predicate_t expr = get_predicate(args);
-        PFQ_CB(skb)->action.right = eval_predicate(expr, skb);
-
-        return skb;
-}
-
-static inline struct sk_buff *
-when(arguments_t args, struct sk_buff *skb)
-{
-        predicate_t expr = get_predicate(args);
-        PFQ_CB(skb)->action.right = eval_predicate(expr, skb);
-        return skb;
-}
-
-static inline struct sk_buff *
-unless(arguments_t args, struct sk_buff *skb)
-{
-        predicate_t expr = get_predicate(args);
-        PFQ_CB(skb)->action.right = !eval_predicate(expr, skb);
-        return skb;
-}
-
-static inline struct sk_buff *
-unit(arguments_t args, struct sk_buff *skb)
-{
-        return skb;
-}
-
-
-/* filter functions */
-
-static inline struct sk_buff *
-filter_ip(arguments_t args, struct sk_buff *skb)
-{
-        return is_ip(skb) ? skb : drop(skb);
-}
-
-static inline struct sk_buff *
-filter_ip6(arguments_t args, struct sk_buff *skb)
-{
-        return is_ip6(skb) ? skb : drop(skb);
-}
-
-static inline struct sk_buff *
-filter_udp(arguments_t args, struct sk_buff *skb)
-{
-        return is_udp(skb) ? skb : drop(skb);
-}
-
-static inline struct sk_buff *
-filter_udp6(arguments_t args, struct sk_buff *skb)
-{
-        return is_udp6(skb) ? skb : drop(skb);
-}
-
-static inline struct sk_buff *
-filter_tcp(arguments_t args, struct sk_buff *skb)
-{
-        return is_tcp(skb) ? skb : drop(skb);
-}
-
-static inline struct sk_buff *
-filter_tcp6(arguments_t args, struct sk_buff *skb)
-{
-        return is_tcp6(skb) ? skb : drop(skb);
-}
-
-static inline struct sk_buff *
-filter_icmp(arguments_t args, struct sk_buff *skb)
-{
-        return is_icmp(skb) ? skb : drop(skb);
-}
-
-static inline struct sk_buff *
-filter_icmp6(arguments_t args, struct sk_buff *skb)
-{
-        return is_icmp6(skb) ? skb : drop(skb);
-}
-
-static inline struct sk_buff *
-filter_flow(arguments_t args, struct sk_buff *skb)
-{
-        return is_flow(skb) ? skb : drop(skb);
-}
-
-static inline struct sk_buff *
-filter_vlan(arguments_t args, struct sk_buff *skb)
-{
-        return has_vlan(skb) ? skb : drop(skb);
-}
-
-
-/* forward functions */
-
-static inline struct sk_buff *
-forward_drop(arguments_t args, struct sk_buff *skb)
-{
-        return drop(skb);
-}
-
-static inline struct sk_buff *
-forward_broadcast(arguments_t args, struct sk_buff *skb)
-{
-        return broadcast(skb);
-}
-
-static inline struct sk_buff *
-forward_kernel(arguments_t args, struct sk_buff *skb)
-{
-        return to_kernel(drop(skb));
-}
-
-static inline struct sk_buff *
-forward_class(arguments_t args, struct sk_buff *skb)
-{
-        const int c = get_data(int, args);
-
-        if (!c) {
-                if (printk_ratelimit())
-                        printk(KERN_INFO "[PFQ] forward class: internal error!\n");
-                return skb;
-        }
-
-        return class(skb, (1ULL << c));
-}
-
 
 #endif /* _FUNCTIONAL_INLINE_H_ */
