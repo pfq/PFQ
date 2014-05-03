@@ -151,4 +151,25 @@
 
 #endif
 
+static inline struct sk_buff *
+eval_function(function_t f, struct sk_buff *skb)
+{
+	// return ((function_ptr_t)f.fun->ptr)(f.fun,skb);
+
+	return EVAL_FUNCTION(f, skb);
+}
+
+
+static inline bool
+eval_predicate(predicate_t p, struct sk_buff const *skb)
+{
+	return ((predicate_ptr_t)p.fun->ptr)(p.fun,skb);
+}
+
+
+static inline uint64_t
+eval_property(property_t p, struct sk_buff const *skb)
+{
+	return ((property_ptr_t)p.fun->ptr)(p.fun,skb);
+}
 #endif /* _FUNCTIONAL_INLINE_H_ */

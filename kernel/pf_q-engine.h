@@ -50,7 +50,7 @@
 
 #define make_function(function, argument) \
 ({\
-        struct pfq_functional f = { .fun  = OF_TYPE(function_ptr_t, function), \
+        struct pfq_functional f = { .ptr  = OF_TYPE(function_ptr_t, function), \
  				    .arg1 = ARG_CAST(argument), \
  				    .arg2 = 0, \
  				    .arg3 = 0 }; \
@@ -59,7 +59,7 @@
 
 #define make_high_order_function(function, pred) \
 ({\
-        struct pfq_functional f = { .fun  = OF_TYPE(function_ptr_t, function), \
+        struct pfq_functional f = { .ptr  = OF_TYPE(function_ptr_t, function), \
  				    .arg1 = 0, \
  				    .arg2 = ARG_CAST(FUNCTIONAL_TYPE(pred)),\
  				    .arg3 = 0 }; \
@@ -68,7 +68,7 @@
 
 #define make_property(property, argument) \
 ({\
-        struct pfq_functional f = { .fun  = OF_TYPE(property_ptr_t, property), \
+        struct pfq_functional f = { .ptr  = OF_TYPE(property_ptr_t, property), \
  				    .arg1 = ARG_CAST(argument), \
  				    .arg2 = 0, \
  				    .arg3 = 0 }; \
@@ -77,7 +77,7 @@
 
 #define make_predicate(predicate, argument) \
 ({\
-        struct pfq_functional f = { .fun  = OF_TYPE(predicate_ptr_t, predicate), \
+        struct pfq_functional f = { .ptr  = OF_TYPE(predicate_ptr_t, predicate), \
  				    .arg1 = ARG_CAST(argument), \
  				    .arg2 = 0, \
  				    .arg3 = 0 }; \
@@ -86,7 +86,7 @@
 
 #define make_high_order_predicate(predicate, argument, property) \
 ({\
-        struct pfq_functional f = { .fun  = OF_TYPE(predicate_ptr_t, predicate), \
+        struct pfq_functional f = { .ptr  = OF_TYPE(predicate_ptr_t, predicate), \
  				    .arg1 = ARG_CAST(argument), \
  				    .arg2 = ARG_CAST(FUNCTIONAL_TYPE(property)), \
  				    .arg3 = 0 }; \
@@ -95,7 +95,7 @@
 
 #define make_combinator(comb, pred1, pred2) \
 ({\
-        struct pfq_functional f = { .fun  = OF_TYPE(predicate_ptr_t, comb), \
+        struct pfq_functional f = { .ptr  = OF_TYPE(predicate_ptr_t, comb), \
  				    .arg1 = 0, \
  				    .arg2 = ARG_CAST(FUNCTIONAL_TYPE(pred1)),\
  				    .arg3 = ARG_CAST(FUNCTIONAL_TYPE(pred2)) }; \

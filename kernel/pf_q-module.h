@@ -52,7 +52,7 @@ extern int pfq_symtable_unregister_functions(const char *module, struct list_hea
 
 struct pfq_functional
 {
-	const void *  fun;
+	const void *  ptr; 	// pointer to function
         ptrdiff_t     arg1;
 	ptrdiff_t     arg2;
 	ptrdiff_t     arg3;
@@ -64,21 +64,21 @@ typedef struct pfq_functional *  arguments_t;
 
 typedef struct
 {
-	struct pfq_functional * ptr;
+	struct pfq_functional * fun;
 
 } function_t;
 
 
 typedef struct
 {
-	struct pfq_functional * ptr;
+	struct pfq_functional * fun;
 
 } predicate_t;
 
 
 typedef struct
 {
-	struct pfq_functional * ptr;
+	struct pfq_functional * fun;
 
 } property_t;
 
