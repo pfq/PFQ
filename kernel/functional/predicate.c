@@ -173,12 +173,12 @@ __has_dst_addr(arguments_t args, struct sk_buff const *skb)
 
 struct pfq_predicate_fun_descr predicate_functions[] = {
 
-        { "less", 	 INLINE_FUN(less)		, FUN_PREDICATE | FUN_ARG_DATA | FUN_ARG_FUN },
-        { "less_eq", 	 INLINE_FUN(less_eq)		, FUN_PREDICATE | FUN_ARG_DATA | FUN_ARG_FUN },
-        { "greater", 	 INLINE_FUN(greater) 		, FUN_PREDICATE | FUN_ARG_DATA | FUN_ARG_FUN },
-        { "greater_eq",  INLINE_FUN(greater_eq)		, FUN_PREDICATE | FUN_ARG_DATA | FUN_ARG_FUN },
-        { "equal",  	 INLINE_FUN(equal)		, FUN_PREDICATE | FUN_ARG_DATA | FUN_ARG_FUN },
-        { "not_equal",   INLINE_FUN(not_equal)		, FUN_PREDICATE | FUN_ARG_DATA | FUN_ARG_FUN },
+        { "less", 	 less		, FUN_PREDICATE | FUN_ARG_DATA | FUN_ARG_FUN },
+        { "less_eq", 	 less_eq	, FUN_PREDICATE | FUN_ARG_DATA | FUN_ARG_FUN },
+        { "greater", 	 greater 	, FUN_PREDICATE | FUN_ARG_DATA | FUN_ARG_FUN },
+        { "greater_eq",  greater_eq	, FUN_PREDICATE | FUN_ARG_DATA | FUN_ARG_FUN },
+        { "equal",  	 equal		, FUN_PREDICATE | FUN_ARG_DATA | FUN_ARG_FUN },
+        { "not_equal",   not_equal	, FUN_PREDICATE | FUN_ARG_DATA | FUN_ARG_FUN },
 
         { "any_bit", 	 any_bit	, FUN_PREDICATE | FUN_ARG_DATA | FUN_ARG_FUN },
         { "all_bit", 	 all_bit	, FUN_PREDICATE | FUN_ARG_DATA | FUN_ARG_FUN },

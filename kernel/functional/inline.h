@@ -64,23 +64,19 @@
 #define INLINE_forward_kernel 	       	18
 #define INLINE_forward_class 		19
 
-/* combinator functions */
 
-#define INLINE_or 			100
-#define INLINE_and 			101
-#define INLINE_xor 			102
-
-/* predicate functions */
-
-#define INLINE_less 			200
-#define INLINE_less_eq 			201
-#define INLINE_equal			202
-#define INLINE_not_equal	       	203
-#define INLINE_greater 			204
-#define INLINE_greater_eq  		205
-#define INLINE_any_bit 			206
-#define INLINE_all_bit			207
-
+#define APPLY(f, skb) ({ \
+	typeof(((function_ptr_t)f.fun->ptr)(f.fun, skb)) ret; \
+	if ((size_t)f.fun->ptr < 1000) { \
+		ret = 0; \
+		if (printk_ratelimit()) \
+			printk(KERN_INFO "[PFQ] inline function: internal error! (vaddr = %p)\n", f.fun->ptr); \
+	} \
+	else { \
+        	ret = ((function_ptr_t)f.fun->ptr)(f.fun, skb); \
+	} \
+        ret; \
+	})
 
 
 #define CASE_INLINE(name, f, skb) \
@@ -111,35 +107,7 @@
 		CASE_INLINE(forward_broadcast, f, skb);\
 		CASE_INLINE(forward_kernel, f, skb);\
 		CASE_INLINE(forward_class, f, skb);\
-		default: ret = ((function_ptr_t)f.fun->ptr)(f.fun, skb); \
-	} \
-	ret; })
-
-
-#define EVAL_PREDICATE(call, skb) ({ \
-	typeof(call->fun(skb)) ret; \
-	switch((ptrdiff_t)call->fun) \
-	{ 	\
-		CASE_INLINE(less,  call, skb);\
-		CASE_INLINE(less_eq, call, skb);\
-		CASE_INLINE(equal, call, skb);\
-		CASE_INLINE(not_equal, call, skb);\
-		CASE_INLINE(greater, call, skb);\
-		CASE_INLINE(greater_eq, call, skb);\
-		CASE_INLINE(any_bit, call, skb);\
-		CASE_INLINE(all_bit, call, skb);\
-		default: ret = call->fun(skb); \
-	} \
-	ret; })
-
-
-#define EVAL_COMBINATOR(call, skb) ({ \
-	typeof(call->fun(skb)) ret; \
-	switch((ptrdiff_t)call->fun) \
-	{ 	\
-		CASE_INLINE(or,  call, skb);\
-		CASE_INLINE(and, call, skb);\
-		CASE_INLINE(xor, call, skb);\
+		default: ret = APPLY(f, skb); \
 	} \
 	ret; })
 
@@ -148,14 +116,6 @@
 #define EVAL_FUNCTION(f, skb) 	((function_ptr_t)f.fun->ptr)(f.fun, skb)
 
 #endif
-
-// static inline struct sk_buff *
-// eval_function(function_t f, struct sk_buff *skb)
-// {
-// 	// return ((function_ptr_t)f.fun->ptr)(f.fun,skb);
-//
-// 	return EVAL_FUNCTION(f, skb);
-// }
 
 
 static inline bool
