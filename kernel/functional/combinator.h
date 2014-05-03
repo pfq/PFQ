@@ -32,7 +32,7 @@ bool or(arguments_t args, struct sk_buff const *skb)
 	predicate_t p1 = get_predicate(args);
 	predicate_t p2 = get_predicate2(args);
 
-        return eval_predicate(p1,skb) || eval_predicate(p2, skb);
+        return EVAL_PREDICATE(p1,skb) || EVAL_PREDICATE(p2, skb);
 }
 
 
@@ -42,7 +42,7 @@ bool and(arguments_t args, struct sk_buff const *skb)
 	predicate_t p1 = get_predicate(args);
 	predicate_t p2 = get_predicate2(args);
 
-        return eval_predicate(p1, skb) && eval_predicate(p2, skb);
+        return EVAL_PREDICATE(p1, skb) && EVAL_PREDICATE(p2, skb);
 }
 
 
@@ -52,7 +52,7 @@ bool xor(arguments_t args, struct sk_buff const *skb)
 	predicate_t p1 = get_predicate(args);
 	predicate_t p2 = get_predicate2(args);
 
-        return eval_predicate(p1, skb) != eval_predicate(p2, skb);
+        return EVAL_PREDICATE(p1, skb) != EVAL_PREDICATE(p2, skb);
 }
 
 

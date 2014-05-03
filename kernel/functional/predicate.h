@@ -46,7 +46,7 @@ less(arguments_t args, struct sk_buff const *skb)
 
 	const uint64_t data = get_data(uint64_t, args);
 
-	uint64_t ret = eval_property(p, skb);
+	uint64_t ret = EVAL_PROPERTY(p, skb);
 
 	if (IS_JUST(ret))
 		return FROM_JUST(ret) < data;
@@ -60,7 +60,7 @@ less_eq(arguments_t args, struct sk_buff const *skb)
 	property_t p = get_property(args);
 	const uint64_t data = get_data(uint64_t, args);
 
-	uint64_t ret = eval_property(p, skb);
+	uint64_t ret = EVAL_PROPERTY(p, skb);
 
 	if (IS_JUST(ret))
 		return FROM_JUST(ret) <= data;
@@ -73,7 +73,8 @@ greater(arguments_t args, struct sk_buff const *skb)
 {
 	property_t p = get_property(args);
 	const uint64_t data = get_data(uint64_t, args);
-	uint64_t ret = eval_property(p, skb);
+
+	uint64_t ret = EVAL_PROPERTY(p, skb);
 
 	if (IS_JUST(ret))
 		return FROM_JUST(ret) > data;
@@ -86,7 +87,7 @@ greater_eq(arguments_t args, struct sk_buff const *skb)
 {
 	property_t p = get_property(args);
 	const uint64_t data = get_data(uint64_t, args);
-	uint64_t ret = eval_property(p, skb);
+	uint64_t ret = EVAL_PROPERTY(p, skb);
 
 	if (IS_JUST(ret))
 		return FROM_JUST(ret) >= data;
@@ -99,7 +100,8 @@ equal(arguments_t args, struct sk_buff const *skb)
 {
 	property_t p = get_property(args);
 	const uint64_t data = get_data(uint64_t, args);
-	uint64_t ret = eval_property(p, skb);
+
+	uint64_t ret = EVAL_PROPERTY(p, skb);
 
 	if (IS_JUST(ret))
 		return FROM_JUST(ret) == data;
@@ -112,7 +114,8 @@ not_equal(arguments_t args, struct sk_buff const *skb)
 {
 	property_t p = get_property(args);
 	const uint64_t data = get_data(uint64_t, args);
-	uint64_t ret = eval_property(p, skb);
+
+	uint64_t ret = EVAL_PROPERTY(p, skb);
 
 	if (IS_JUST(ret))
 		return FROM_JUST(ret) != data;
@@ -124,9 +127,9 @@ static inline bool
 any_bit(arguments_t args, struct sk_buff const *skb)
 {
 	property_t p = get_property(args);
-
 	const uint64_t data = get_data(uint64_t, args);
-	uint64_t ret = eval_property(p, skb);
+
+	uint64_t ret = EVAL_PROPERTY(p, skb);
 
 	if (IS_JUST(ret))
 		return (FROM_JUST(ret) & data) != 0;
@@ -138,9 +141,9 @@ static inline bool
 all_bit(arguments_t args, struct sk_buff const *skb)
 {
 	property_t p = get_property(args);
-
 	const uint64_t data = get_data(uint64_t, args);
-	uint64_t ret = eval_property(p, skb);
+
+	uint64_t ret = EVAL_PROPERTY(p, skb);
 
 	if (IS_JUST(ret))
 		return (FROM_JUST(ret) & data) == data;
