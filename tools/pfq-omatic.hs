@@ -56,7 +56,8 @@ main = do
     putStrLn $ "[PFQ] pfq-omatic: v" ++ pfq_omatic_ver
     sanityCheck
     getRecursiveContents "." [".c"] >>= mapM_ tryPatch
-    copyFile (head pfq_symvers) "Module.symvers"
+    symver <- getMostRecentFile pfq_symvers
+    copyFile (fromJust symver) "Module.symvers"
     let cmd = "make -j" ++ show getNumberOfPhyCores
     putStrLn $ "[PFQ] compiling: " ++ cmd ++ "..."
     _ <- system cmd
