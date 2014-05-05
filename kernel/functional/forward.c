@@ -56,8 +56,10 @@ forward(arguments_t args, struct sk_buff *skb)
 	atomic_inc(&skb->users);
 
 	if (pfq_xmit(skb, dev, skb->queue_mapping) != 1) {
+#ifdef DEBUG
                 if (printk_ratelimit())
-                        printk(KERN_INFO "[PFQ] forward: pfq_xmit error!\n");
+                        printk(KERN_INFO "[PFQ] forward pfq_xmit: error on device %s!\n", dev->name);
+#endif
 	}
 
 	dev_put(dev);

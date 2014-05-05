@@ -225,7 +225,7 @@ pfq_run(int gid, computation_t *prg, struct sk_buff *skb)
 	stop = get_cycles();
 	total += (stop-start);
 
-	if ((nrun++ % 16) == 0)
+	if ((nrun++ % 1048576) == 0)
 		printk(KERN_INFO "[PFQ] run: %llu\n", total/nrun);
 
 	return skb;

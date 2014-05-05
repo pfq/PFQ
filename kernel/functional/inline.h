@@ -38,7 +38,7 @@
 
 /* high order functions */
 
-#define INLINE_unit 			1
+#define INLINE_unit 	       		1
 #define INLINE_conditional 		2
 #define INLINE_mark 			3
 #define INLINE_when 			4
@@ -59,9 +59,9 @@
 
 /* forward functions */
 
-#define INLINE_forward_drop            	16
-#define INLINE_forward_broadcast       	17
-#define INLINE_forward_kernel 	       	18
+#define INLINE_forward_drop         	16
+#define INLINE_forward_broadcast    	17
+#define INLINE_forward_kernel 	    	18
 #define INLINE_forward_class 		19
 
 
@@ -77,7 +77,6 @@
 	} \
         ret; \
 	})
-
 
 #define CASE_INLINE(name, f, skb) \
 	case INLINE_ ## name: ret = name(f.fun, skb); break;
