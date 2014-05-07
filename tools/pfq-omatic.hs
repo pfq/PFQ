@@ -47,7 +47,7 @@ getMostRecentFile :: [FilePath] -> IO (Maybe FilePath)
 getMostRecentFile xs = do
     xs' <- filterM doesFileExist xs >>=
              mapM (\f -> liftM (\m -> (f,m)) $ getModificationTime f) >>= \x ->
-               return $ sortBy (flip (compare `on` snd)) x
+               return $ sortBy (flip compare `on` snd) x
     return $ if null xs' then Nothing
                          else Just (fst $ head xs')
 
