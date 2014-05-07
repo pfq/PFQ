@@ -15,11 +15,11 @@ mkdir -p api/haskell
 
 echo "Generating C library docs"
 
-cat cpp-api.doxy | doxygen -
+cd ../user && cat ../docs/cpp-api.doxy | doxygen -
 
 echo "Generating C++ library docs"
 
-cat c-api.doxy | doxygen -
+cd ../user && cat ../docs/c-api.doxy | doxygen -
 
 echo "Generating Haskell library docs"
 
