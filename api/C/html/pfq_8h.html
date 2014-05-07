@@ -115,12 +115,12 @@ Typedefs</h2></td></tr>
 Functions</h2></td></tr>
 <tr class="memitem:afae973f6344b12c6ff4d2c4fa4493da2"><td class="memItemLeft" align="right" valign="top"><a class="el" href="pfq_8h.html#a596619fe99a5c899525c16657c75f1d0">pfq_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pfq_8h.html#afae973f6344b12c6ff4d2c4fa4493da2">pfq_open</a> (size_t calpen, size_t offset, size_t slots)</td></tr>
 <tr class="separator:afae973f6344b12c6ff4d2c4fa4493da2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a08a52f9cef79de0500087d3454289b00"><td class="memItemLeft" align="right" valign="top"><a class="el" href="pfq_8h.html#a596619fe99a5c899525c16657c75f1d0">pfq_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pfq_8h.html#a08a52f9cef79de0500087d3454289b00">pfq_open_tx</a> (size_t maxlen, size_t slots)</td></tr>
-<tr class="separator:a08a52f9cef79de0500087d3454289b00"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ab86a1cc6172420a3fed4a76e02e15e5e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="pfq_8h.html#a596619fe99a5c899525c16657c75f1d0">pfq_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pfq_8h.html#ab86a1cc6172420a3fed4a76e02e15e5e">pfq_open_nogroup</a> (size_t caplen, size_t offset, size_t slots)</td></tr>
 <tr class="separator:ab86a1cc6172420a3fed4a76e02e15e5e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad249ceb68208c1755b48131867dc84b3"><td class="memItemLeft" align="right" valign="top"><a class="el" href="pfq_8h.html#a596619fe99a5c899525c16657c75f1d0">pfq_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pfq_8h.html#ad249ceb68208c1755b48131867dc84b3">pfq_open_group</a> (unsigned long class_mask, int group_policy, size_t calpen, size_t offset, size_t rx_slots, size_t maxlen, size_t tx_slots)</td></tr>
 <tr class="separator:ad249ceb68208c1755b48131867dc84b3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a08a52f9cef79de0500087d3454289b00"><td class="memItemLeft" align="right" valign="top"><a class="el" href="pfq_8h.html#a596619fe99a5c899525c16657c75f1d0">pfq_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pfq_8h.html#a08a52f9cef79de0500087d3454289b00">pfq_open_tx</a> (size_t maxlen, size_t slots)</td></tr>
+<tr class="separator:a08a52f9cef79de0500087d3454289b00"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6c69fd7fecfa6e15a356e93395efe7e6"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pfq_8h.html#a6c69fd7fecfa6e15a356e93395efe7e6">pfq_close</a> (<a class="el" href="pfq_8h.html#a596619fe99a5c899525c16657c75f1d0">pfq_t</a> *)</td></tr>
 <tr class="separator:a6c69fd7fecfa6e15a356e93395efe7e6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a85fc4d99ed1ae9d304fcf0471ed59231"><td class="memItemLeft" align="right" valign="top">const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pfq_8h.html#a85fc4d99ed1ae9d304fcf0471ed59231">pfq_error</a> (<a class="el" href="pfq_8h.html#a596619fe99a5c899525c16657c75f1d0">pfq_t</a> *)</td></tr>
@@ -161,10 +161,10 @@ Functions</h2></td></tr>
 <tr class="separator:a4ba7ed06f84cb9e12b9b8a0d693a9a3e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a36f38c6de7397d1c3a8e010309656def"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pfq_8h.html#a36f38c6de7397d1c3a8e010309656def">pfq_get_rx_slot_size</a> (<a class="el" href="pfq_8h.html#a596619fe99a5c899525c16657c75f1d0">pfq_t</a> const *q)</td></tr>
 <tr class="separator:a36f38c6de7397d1c3a8e010309656def"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac6a80d8d3fceea2313f08cc18069f792"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pfq_8h.html#ac6a80d8d3fceea2313f08cc18069f792">pfq_bind_group</a> (<a class="el" href="pfq_8h.html#a596619fe99a5c899525c16657c75f1d0">pfq_t</a> *q, int gid, const char *dev, int queue)</td></tr>
-<tr class="separator:ac6a80d8d3fceea2313f08cc18069f792"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9e77c4cd59828b7408876a1e761b276e"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pfq_8h.html#a9e77c4cd59828b7408876a1e761b276e">pfq_bind</a> (<a class="el" href="pfq_8h.html#a596619fe99a5c899525c16657c75f1d0">pfq_t</a> *q, const char *dev, int queue)</td></tr>
 <tr class="separator:a9e77c4cd59828b7408876a1e761b276e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac6a80d8d3fceea2313f08cc18069f792"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pfq_8h.html#ac6a80d8d3fceea2313f08cc18069f792">pfq_bind_group</a> (<a class="el" href="pfq_8h.html#a596619fe99a5c899525c16657c75f1d0">pfq_t</a> *q, int gid, const char *dev, int queue)</td></tr>
+<tr class="separator:ac6a80d8d3fceea2313f08cc18069f792"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0bd9c9f2d6df1811297e99a1b3800c05"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pfq_8h.html#a0bd9c9f2d6df1811297e99a1b3800c05">pfq_unbind_group</a> (<a class="el" href="pfq_8h.html#a596619fe99a5c899525c16657c75f1d0">pfq_t</a> *q, int gid, const char *dev, int queue)</td></tr>
 <tr class="separator:a0bd9c9f2d6df1811297e99a1b3800c05"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7cda443097bf879cf0202fbcf0a243c1"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pfq_8h.html#a7cda443097bf879cf0202fbcf0a243c1">pfq_unbind</a> (<a class="el" href="pfq_8h.html#a596619fe99a5c899525c16657c75f1d0">pfq_t</a> *q, const char *dev, int queue)</td></tr>
@@ -240,6 +240,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>pfq handler: function prototype. </p>
 
 </div>
 </div>
@@ -252,6 +253,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>PFQ iterator type. </p>
 
 </div>
 </div>
@@ -264,6 +266,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>PFQ descriptor. </p>
 
 </div>
 </div>
@@ -297,6 +300,8 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Bind the group of the socket to the given device/queue.</p>
+<p>The first argument is the name of the device; the second argument is the queue number or any_queue. </p>
 
 </div>
 </div>
@@ -335,6 +340,8 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Bind the given group to the given device/queue.</p>
+<p>The first argument is the name of the device; the second argument is the queue number or any_queue. </p>
 
 </div>
 </div>
@@ -367,6 +374,8 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Bind the socket for transmission to the given device name and queue.</p>
+<p>A socket for transmission can be bound to a given device/queue at time. </p>
 
 </div>
 </div>
@@ -383,6 +392,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Close the socket. </p>
 
 </div>
 </div>
@@ -399,6 +409,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Disable the packet capture. </p>
 
 </div>
 </div>
@@ -437,6 +448,9 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>This function takes a function pointer as callback, which is invoked on each packet captured.</p>
+<p>The callback is to be called with the following signature:</p>
+<p>typedef void (*pfq_handler)(char *user, const struct pfq_pkt_hdr *h, const char *data); </p>
 
 </div>
 </div>
@@ -453,6 +467,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Enable the socket for packet capture. </p>
 
 </div>
 </div>
@@ -469,6 +484,8 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Return the string error.</p>
+<p>Return a string of the most recent error. </p>
 
 </div>
 </div>
@@ -485,6 +502,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Get the capture length of packets, in bytes. </p>
 
 </div>
 </div>
@@ -501,6 +519,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Return the underlying file descriptor. </p>
 
 </div>
 </div>
@@ -533,6 +552,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Get the counters of the given group. </p>
 
 </div>
 </div>
@@ -565,6 +585,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Get the stats of the given group. </p>
 
 </div>
 </div>
@@ -581,6 +602,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Get the max transmission length of packets, in bytes. </p>
 
 </div>
 </div>
@@ -597,6 +619,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Get the capture offset of packets. </p>
 
 </div>
 </div>
@@ -613,6 +636,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Get the length of a RX slot, in bytes. </p>
 
 </div>
 </div>
@@ -629,6 +653,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Get the length of the RX queue, in number of packets. </p>
 
 </div>
 </div>
@@ -655,6 +680,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Get the socket stats. </p>
 
 </div>
 </div>
@@ -671,6 +697,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Get the length of the TX queue, in number of packets. </p>
 
 </div>
 </div>
@@ -703,6 +730,8 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Specify a BPF program for the given group.</p>
+<p>This function can be used to set a specific BPF filter for the group. It is used by the pfq pcap library. </p>
 
 </div>
 </div>
@@ -729,6 +758,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Reset the BPF program fro the given group. </p>
 
 </div>
 </div>
@@ -745,6 +775,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Return the group-id for the socket. </p>
 
 </div>
 </div>
@@ -771,6 +802,8 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Get the mask of the joined groups.</p>
+<p>Each socket can bind to multiple groups. Each bit of the mask represents a joined group. </p>
 
 </div>
 </div>
@@ -787,6 +820,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Return the id for the socket. </p>
 
 </div>
 </div>
@@ -813,6 +847,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Given a device name, return the interface index. </p>
 
 </div>
 </div>
@@ -845,6 +880,8 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Schedule the packet for transmission.</p>
+<p>The packet is copied to the TX queue and later sent when the tx_queue_flush or wakeup_tx_thread function are invoked. </p>
 
 </div>
 </div>
@@ -861,6 +898,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Check whether the packet capture is enabled. </p>
 
 </div>
 </div>
@@ -877,6 +915,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Check whether the timestamp is enabled for packets. </p>
 
 </div>
 </div>
@@ -915,6 +954,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Join the given group with the given class mask and group policy </p>
 
 </div>
 </div>
@@ -941,6 +981,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Leave the given group. </p>
 
 </div>
 </div>
@@ -957,6 +998,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Get the address of the RX queue. </p>
 
 </div>
 </div>
@@ -973,6 +1015,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Get the memory size of the RX queue. </p>
 
 </div>
 </div>
@@ -1005,6 +1048,10 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>group_policy: Q_GROUP_PRIVATE, Q_GROUP_RESTRICTED, Q_GROUP_SHARED, Q_GROUP_UNDEFINED...</p>
+<p>class_mask : Q_CLASS_DEFAULT| .... = Q_CLASS_ANY</p>
+<p>Open the PFQ socket.</p>
+<p>The default class mask is Q_CLASS_DEFAULT, the group policy is Q_GROUP_PRIVATE.. </p>
 
 </div>
 </div>
@@ -1061,6 +1108,8 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Open the PFQ socket.</p>
+<p>Both class mask and group policy are specifiable. </p>
 
 </div>
 </div>
@@ -1093,6 +1142,8 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Open the PFQ socket.</p>
+<p>The group policy is Q_GROUP_UNDEFINED, no group is joined. A group can be later joined by means of join function. </p>
 
 </div>
 </div>
@@ -1119,6 +1170,8 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Open the PFQ socket for transmission.</p>
+<p>The group is undefined, no group is joined. </p>
 
 </div>
 </div>
@@ -1145,6 +1198,8 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Wait for packets.</p>
+<p>Wait for packets available to read. A timeout in microseconds can be specified. </p>
 
 </div>
 </div>
@@ -1177,6 +1232,8 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Read packets in place.</p>
+<p>Wait for packets and return the number of packets available in the queue. Packets are stored in the memory mapped queue of the socket. The timeout is specified in microseconds. </p>
 
 </div>
 </div>
@@ -1221,6 +1278,8 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Receive packets in the given mutable buffer.</p>
+<p>Wait for packets and return the number of packets available. Packets are stored in the given buffer. It is possible to specify a timeout in microseconds. </p>
 
 </div>
 </div>
@@ -1253,6 +1312,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Transmit the packet stored in the given buffer. </p>
 
 </div>
 </div>
@@ -1291,6 +1351,8 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Store the packet and possibly transmit the packets in the queue, asynchronously.</p>
+<p>The transmission is invoked in the kernel thread, every n packets enqueued. </p>
 
 </div>
 </div>
@@ -1329,6 +1391,8 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Store the packet and possibly transmit the packets in the queue, synchronously.</p>
+<p>The transmission is invoked every n packets enqueued. </p>
 
 </div>
 </div>
@@ -1355,6 +1419,8 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Set the capture length of packets, in bytes.</p>
+<p>Capture length must be set before the socket is enabled to capture. </p>
 
 </div>
 </div>
@@ -1387,6 +1453,8 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Specify a functional computation for the given group.</p>
+<p>The functional computation is specified by a pfq_computation_descriptor. </p>
 
 </div>
 </div>
@@ -1413,6 +1481,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Set the max transmission length of packets, in bytes. </p>
 
 </div>
 </div>
@@ -1439,6 +1508,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Set the capture offset of packets, in bytes. </p>
 
 </div>
 </div>
@@ -1471,6 +1541,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Set/unset the promiscuous mode for the given device. </p>
 
 </div>
 </div>
@@ -1497,6 +1568,8 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Specify the length of the RX queue, in number of packets.</p>
+<p>The number of RX slots can't exceed the max value specified by the rx_queue_slot kernel module parameter. </p>
 
 </div>
 </div>
@@ -1523,6 +1596,8 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Specify the length of the TX queue, in number of packets.</p>
+<p>The number of TX slots can't exceed the max value specified by the tx_queue_slot kernel module parameter. </p>
 
 </div>
 </div>
@@ -1549,6 +1624,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Start the TX kernel thread. </p>
 
 </div>
 </div>
@@ -1565,6 +1641,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Stop the TX kernel thread. </p>
 
 </div>
 </div>
@@ -1591,6 +1668,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Turn on/off the timestamp for packets. </p>
 
 </div>
 </div>
@@ -1607,6 +1685,8 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Flush the TX queue, in the context of the calling thread.</p>
+<p>To invoke this function, no TX kernel thread is required. </p>
 
 </div>
 </div>
@@ -1639,6 +1719,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Unbind the group of the socket from the given device/queue. </p>
 
 </div>
 </div>
@@ -1677,6 +1758,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Unbind the given group from the given device/queue. </p>
 
 </div>
 </div>
@@ -1709,6 +1791,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Turn on/off vlan filters for the given group. </p>
 
 </div>
 </div>
@@ -1741,6 +1824,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Reset all vlan filters. </p>
 
 </div>
 </div>
@@ -1773,6 +1857,8 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Set a capture filter for the given group and vlan id.</p>
+<p>In addition to standard vlan ids, valid ids are also Q_VLAN_UNTAG and Q_VLAN_ANYTAG. </p>
 
 </div>
 </div>
@@ -1789,13 +1875,15 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+<p>Wakeup the TX kernel thread.</p>
+<p>Wake up the TX kernel thread which transmit the packets in the Tx queue. The kernel thread must be started. </p>
 
 </div>
 </div>
 </div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>
-Generated on Wed May 7 2014 17:21:11 for PFQ C library by &#160;<a href="http://www.doxygen.org/index.html">
+Generated on Wed May 7 2014 18:51:12 for PFQ C library by &#160;<a href="http://www.doxygen.org/index.html">
 <img class="footer" src="doxygen.png" alt="doxygen"/>
 </a> 1.8.6
 </small></address>
