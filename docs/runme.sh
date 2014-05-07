@@ -9,9 +9,9 @@ echo "Creating folders..."
 
 rm -rf api
 
-mkdir -p api/C
-mkdir -p api/C++
-mkdir -p api/Haskell
+mkdir -p api/c
+mkdir -p api/cpp
+mkdir -p api/haskell
 
 echo "Generating C library docs"
 
@@ -23,4 +23,4 @@ cat c-api.doxy | doxygen -
 
 echo "Generating Haskell library docs"
 
-cd ../user/Haskell && haddock -h -o ../../docs/api/Haskell Network/PFq.hs 
+cd ../user/Haskell && haddock -h -o ../../docs/api/haskell Network/PFq.hs 
