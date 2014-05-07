@@ -41,6 +41,8 @@ namespace net {
     using mutable_buffer = std::pair<char *, size_t>;
     using const_buffer   = std::pair<const char *, const size_t>;
 
+    //! Return the value aligned to the next power of two.
+
     template<size_t N, typename T>
     inline T align(T value)
     {
@@ -48,6 +50,7 @@ namespace net {
         return (value + (N-1)) & ~(N-1);
     }
 
+    //! Given a device name, return the interface index.
 
     inline int
     ifindex(int fd, const char *dev)
@@ -60,6 +63,7 @@ namespace net {
         return ifreq_io.ifr_ifindex;
     }
 
+    //! Set/unset the PROMISC mode for the given device.
 
     inline
     void set_promisc(int fd, const char *dev, bool value)
@@ -82,6 +86,7 @@ namespace net {
 
     }
 
+    //! Given the device name return the related index.
 
     inline
     int nametoindex(const char *dev)
@@ -92,6 +97,7 @@ namespace net {
         return i;
     }
 
+    //! Given the index return the related device name.
 
     inline
     std::string

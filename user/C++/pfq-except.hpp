@@ -27,6 +27,10 @@
 
 namespace net {
 
+    /** pfq_error represent problems related to the PFQ system.
+     *  @brief Subclass of std::system_error.
+     */
+
     class pfq_error : public std::system_error
     {
     public:

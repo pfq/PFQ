@@ -30,13 +30,19 @@
 
 namespace net {
 
+    //! This class represent a queue of packets.
+    /*!
+     * The memory where packets are stored is not owned by this class.
+     */
+
     class queue
     {
     public:
 
         struct const_iterator;
 
-        /* simple forward iterator over frames */
+        //! Forward iterator over packets.
+
         struct iterator : public std::iterator<std::forward_iterator_tag, pfq_pkt_hdr>
         {
             friend struct queue::const_iterator;
@@ -111,7 +117,8 @@ namespace net {
             size_t   index_;
         };
 
-        /* simple forward const_iterator over frames */
+        //! Constant forward iterator over packets.
+
         struct const_iterator : public std::iterator<std::forward_iterator_tag, pfq_pkt_hdr>
         {
             const_iterator(pfq_pkt_hdr *h, size_t slot_size, size_t index)
@@ -189,18 +196,27 @@ namespace net {
         };
 
     public:
+
+        //! Constructor
+        /*!
+         * Construct a queue descriptor, stored at the given address.
+         */
+
         queue(void *addr, size_t slot_size, size_t queue_len, size_t index)
         : addr_(addr), slot_size_(slot_size), queue_len_(queue_len), index_(index)
         {}
 
         ~queue() = default;
 
+        //! Return the number of packets stored in this queue.
+
         size_t
         size() const
         {
-            // return the number of packets in this queue.
             return queue_len_;
         }
+
+        //! Check whether the queue is empty.
 
         bool
         empty() const
@@ -208,11 +224,15 @@ namespace net {
             return queue_len_ == 0;
         }
 
+        //! Return the index position.
+
         size_t
         index() const
         {
             return index_;
         }
+
+        //! Return the size of the queue slot, in bytes.
 
         size_t
         slot_size() const
@@ -220,11 +240,18 @@ namespace net {
             return slot_size_;
         }
 
+        //! Return the pointer to the packet.
+
         const void *
         data() const
         {
             return addr_;
         }
+
+        //! Return an iterator to the first slot of a non-empty queue.
+        /*!
+         * Return end() in case of empty queue.
+         */
 
         iterator
         begin()
@@ -232,11 +259,18 @@ namespace net {
             return iterator(reinterpret_cast<pfq_pkt_hdr *>(addr_), slot_size_, index_);
         }
 
+        //! Return a constant iterator to the first slot of a non-empty queue.
+        /*!
+         * Return end() in case of empty queue.
+         */
+
         const_iterator
         begin() const
         {
             return const_iterator(reinterpret_cast<pfq_pkt_hdr *>(addr_), slot_size_, index_);
         }
+
+        //! Return an iterator past to the end of the queue.
 
         iterator
         end()
@@ -245,6 +279,8 @@ namespace net {
                         static_cast<char *>(addr_) + queue_len_ * slot_size_), slot_size_, index_);
         }
 
+        //! Return a constant iterator past to the end of the queue.
+
         const_iterator
         end() const
         {
@@ -252,11 +288,18 @@ namespace net {
                         static_cast<char *>(addr_) + queue_len_ * slot_size_), slot_size_, index_);
         }
 
+        //! Return a constant iterator to the first slot of an non-empty queue.
+        /*!
+         * Return cend() in case of empty queue.
+         */
+
         const_iterator
         cbegin() const
         {
             return const_iterator(reinterpret_cast<pfq_pkt_hdr *>(addr_), slot_size_, index_);
         }
+
+        //! Return a constant iterator past to the end of the queue.
 
         const_iterator
         cend() const
@@ -272,6 +315,11 @@ namespace net {
         size_t  index_;
     };
 
+    //! Return the pointer to the packet.
+    /*!
+     * Return the pointer to the packet, if the data is available to read;
+     * return a nullptr otherwise.
+     */
 
     static inline void * data_ready(pfq_pkt_hdr &h, uint8_t current_commit)
     {
@@ -281,6 +329,11 @@ namespace net {
         return &h + 1;
     }
 
+    //! Return a constant pointer to the packet.
+    /*!
+     * Return a constant pointer to the packet, if the data is available to read;
+     * return a nullptr otherwise.
+     */
 
     static inline const void * data_ready(pfq_pkt_hdr const &h, uint8_t current_commit)
     {

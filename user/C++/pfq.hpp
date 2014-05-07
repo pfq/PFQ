@@ -48,9 +48,12 @@
 
 namespace net {
 
-    //
-    // group policies
-    //
+    //! group policies.
+    /*!
+     * Each group can be specified with the following policies:
+     * undefined (not specified), priv (private group), restricted
+     * (group shared among threads), shared (shared among threads/processes).
+     */
 
     enum class group_policy : int16_t
     {
@@ -60,9 +63,10 @@ namespace net {
         shared     = Q_GROUP_SHARED
     };
 
-    //
-    // class mask
-    //
+    //! class mask.
+    /*!
+     * The default classes are class::default_ and class::any.
+     */
 
     enum class class_mask : unsigned long
     {
@@ -70,19 +74,20 @@ namespace net {
         any      = Q_CLASS_ANY
     };
 
-    //
-    // vlan
-    //
+    //! vlan options.
+    /*!
+     * Special vlan ids are untag (matches with untagged vlans) and anytag.
+     */
 
-    struct vlan_opt
+    struct vlan_id
     {
         static constexpr int untag  = Q_VLAN_UNTAG;
         static constexpr int anytag = Q_VLAN_ANYTAG;
     };
 
     //////////////////////////////////////////////////////////////////////
-    // open params:
-    //////////////////////////////////////////////////////////////////////
+
+    //! open parameters.
 
     namespace param
     {
@@ -116,8 +121,13 @@ namespace net {
     }
 
     //////////////////////////////////////////////////////////////////////
-    // PFQ class
-    //////////////////////////////////////////////////////////////////////
+
+    //! PFQ: the class
+    /*!
+     * This class is the main interface to the PFQ kernel module.
+     * Each instance handles a socket that can be used to receive from and transmit
+     * packets to the network.
+     */
 
     class pfq
     {
@@ -147,10 +157,14 @@ namespace net {
         static constexpr int any_queue   = Q_ANY_QUEUE;
         static constexpr int any_group   = Q_ANY_GROUP;
 
+        //! Default constructor
+
         pfq()
         : fd_(-1)
         , pdata_()
         {}
+
+        //! Constructor with named-parameter idiom (param::get is the C++14 std::get)
 
         template <typename ...Ts>
         pfq(param::list_t, Ts&& ...args)
@@ -170,12 +184,22 @@ namespace net {
                        param::get<param::tx_slots>(def).value);
         }
 
+        //! Constructor
+        /*!
+         * Create a PFQ socket which joins a new private group.
+         */
+
         pfq(size_t caplen, size_t offset = 0, size_t rx_slots = 65536, size_t maxlen = 64, size_t tx_slots = 4096)
         : fd_(-1)
         , pdata_()
         {
             this->open(class_mask::default_, group_policy::priv, caplen, offset, rx_slots, maxlen, tx_slots);
         }
+
+        //! Constructor
+        /*!
+         * Create a PFQ socket with the given group policy (default class).
+         */
 
         pfq(group_policy policy, size_t caplen, size_t offset = 0, size_t rx_slots = 65536, size_t maxlen = 64, size_t tx_slots = 4096)
         : fd_(-1)
@@ -184,6 +208,11 @@ namespace net {
             this->open(class_mask::default_, policy, caplen, offset, rx_slots, maxlen, tx_slots);
         }
 
+        //! Constructor
+        /*!
+         * Create a PFQ socket with the given class mask and group policy.
+         */
+
         pfq(class_mask mask, group_policy policy, size_t caplen, size_t offset = 0, size_t rx_slots = 65536, size_t maxlen = 64, size_t tx_slots = 4096)
         : fd_(-1)
         , pdata_()
@@ -191,18 +220,23 @@ namespace net {
             this->open(mask, policy, caplen, offset, rx_slots, maxlen, tx_slots);
         }
 
+        //! Destructor: close the socket
+
         ~pfq()
         {
             this->close();
         }
 
-        // pfq object is non copyable
+        //! PFQ socket is a non-copyable resource.
 
         pfq(const pfq&) = delete;
+
+        //! PFQ socket is a non-copy assignable resource.
+
         pfq& operator=(const pfq&) = delete;
 
 
-        // pfq object is moveable
+        //! Move constructor.
 
         pfq(pfq &&other) noexcept
         : fd_(other.fd_)
@@ -211,7 +245,7 @@ namespace net {
             other.fd_ = -1;
         }
 
-        // move assignment operator
+        //! Move assignment operator.
 
         pfq&
         operator=(pfq &&other) noexcept
@@ -225,6 +259,8 @@ namespace net {
             return *this;
         }
 
+        //! Swap two PFQ sockets.
+
         void
         swap(pfq &other)
         {
@@ -232,6 +268,11 @@ namespace net {
             std::swap(pdata_, other.pdata_);
         }
 
+        //! Open the PFQ socket with the given group policy.
+        /*!
+         * If the policy is not group_policy::undefined, also join a
+         * new group with class_mask::default_ and the given policy.
+         */
 
         void
         open(group_policy policy, size_t caplen, size_t offset = 0, size_t rx_slots = 65536, size_t maxlen = 64, size_t tx_slots = 4096)
@@ -244,6 +285,12 @@ namespace net {
             }
         }
 
+        //! Open the PFQ socket with the given class mask and group policy.
+        /*!
+         * If the policy is not group_policy::undefined, also join a
+         * new group with the specified class mask and group policy.
+         */
+
         void
         open(class_mask mask, group_policy policy, size_t caplen, size_t offset = 0, size_t rx_slots = 65536, size_t maxlen = 64, size_t tx_slots = 4096)
         {
@@ -254,6 +301,8 @@ namespace net {
                 pdata_->gid = this->join_group(any_group, policy, mask);
             }
         }
+
+        //! Open the socket with named-parameter idiom.
 
         template <typename ...Ts>
         void open(param::list_t, Ts&& ...args)
@@ -271,6 +320,8 @@ namespace net {
                        param::get<param::tx_slots>(def).value);
         }
 
+        //! Return the id for the socket.
+
         int
         id() const
         {
@@ -279,6 +330,8 @@ namespace net {
             return -1;
         }
 
+        //! Return the group-id for the socket.
+
         int
         group_id() const
         {
@@ -286,6 +339,8 @@ namespace net {
                 return pdata_->gid;
             return -1;
         }
+
+        //! Return the underlying file descriptor.
 
         int
         fd() const
@@ -362,6 +417,8 @@ namespace net {
 
     public:
 
+        //! Close the socket.
+
         void
         close()
         {
@@ -378,6 +435,7 @@ namespace net {
             }
         }
 
+        //! Enable the socket for packet capture.
 
         void
         enable()
@@ -400,6 +458,7 @@ namespace net {
 
         }
 
+        //! Disable the packet capture.
 
         void
         disable()
@@ -418,6 +477,7 @@ namespace net {
                 throw pfq_error(errno, "PFQ: queue cleanup error");
         }
 
+        //! Check whether the packet capture is enabled.
 
         bool
         enabled() const
@@ -433,6 +493,7 @@ namespace net {
             return false;
         }
 
+        //! Turn on/off the timestamp for packets.
 
         void
         timestamp_enable(bool value)
@@ -442,6 +503,7 @@ namespace net {
                 throw pfq_error(errno, "PFQ: set timestamp mode");
         }
 
+        //! Check whether the timestamp is enabled for packets.
 
         bool
         timestamp_enabled() const
@@ -452,6 +514,10 @@ namespace net {
            return ret;
         }
 
+        //! Set the capture length of packets in bytes.
+        /*!
+         * Capture length must be set before the socket is enabled to capture.
+         */
 
         void
         caplen(size_t value)
@@ -466,6 +532,7 @@ namespace net {
             pdata_->rx_slot_size = align<8>(sizeof(pfq_pkt_hdr)+ value);
         }
 
+        //! Get the capture length of packets.
 
         size_t
         caplen() const
@@ -476,6 +543,7 @@ namespace net {
            return ret;
         }
 
+        //! Set the max transmission length of packets in bytes.
 
         void
         maxlen(size_t value)
@@ -488,6 +556,7 @@ namespace net {
             }
         }
 
+        //! Get the max transmission length of packets.
 
         size_t
         maxlen() const
@@ -498,6 +567,7 @@ namespace net {
            return ret;
         }
 
+        //! Set the capture offset of packets, in bytes.
 
         void
         offset(size_t value)
@@ -510,6 +580,7 @@ namespace net {
             }
         }
 
+        //! Get the capture offset of packets.
 
         size_t
         offset() const
@@ -520,20 +591,26 @@ namespace net {
            return ret;
         }
 
+        //! Specify the length of the RX queue, in number of packets.
+        /*
+         * The number of RX slots can't exceed the max value specified by
+         * the rx_queue_slot kernel module parameter.
+         */
 
         void
         rx_slots(size_t value)
         {
             if (enabled())
-                throw pfq_error("PFQ: enabled (rx slots could not be set)");
+                throw pfq_error("PFQ: enabled (RX slots could not be set)");
 
             if (::setsockopt(fd_, PF_Q, Q_SO_SET_RX_SLOTS, &value, sizeof(value)) == -1) {
-                throw pfq_error(errno, "PFQ: set rx slots error");
+                throw pfq_error(errno, "PFQ: set RX slots error");
             }
 
             pdata_->rx_slots = value;
         }
 
+        //! Get the length of the RX queue, in number of packets.
 
         size_t
         rx_slots() const
@@ -544,6 +621,11 @@ namespace net {
             return pdata_->rx_slots;
         }
 
+        //! Specify the length of the TX queue, in number of packets.
+        /*
+         * The number of TX slots can't exceed the max value specified by
+         * the tx_queue_slot kernel module parameter.
+         */
 
         void
         tx_slots(size_t value)
@@ -558,6 +640,7 @@ namespace net {
             pdata_->tx_slots = value;
         }
 
+        //! Get the length of the TX queue, in number of packets.
 
         size_t
         tx_slots() const
@@ -568,6 +651,7 @@ namespace net {
            return pdata_->tx_slots;
         }
 
+        //! Get the length of a RX slot, in bytes.
 
         size_t
         rx_slot_size() const
@@ -578,6 +662,11 @@ namespace net {
             return pdata_->rx_slot_size;
         }
 
+        //! Bind the group of the socket to the given device/queue.
+        /*!
+         * The first argument is the name of the device;
+         * the second argument is the queue number or any_queue.
+         */
 
         void
         bind(const char *dev, int queue = any_queue)
@@ -589,6 +678,11 @@ namespace net {
             bind_group(gid, dev, queue);
         }
 
+        //! Bind the group to the given device/queue.
+        /*!
+         * The first argument is the name of the device;
+         * the second argument is the queue number or any_queue.
+         */
 
         void
         bind_group(int gid, const char *dev, int queue = any_queue)
@@ -602,6 +696,7 @@ namespace net {
                 throw pfq_error(errno, "PFQ: add binding error");
         }
 
+        //! Unbind the group of the socket from the given device/queue.
 
         void
         unbind(const char *dev, int queue = any_queue)
@@ -613,6 +708,7 @@ namespace net {
             unbind_group(gid, dev, queue);
         }
 
+        //! Unbind the group from the given device/queue.
 
         void
         unbind_group(int gid, const char *dev, int queue = any_queue)
@@ -626,6 +722,11 @@ namespace net {
                 throw pfq_error(errno, "PFQ: remove binding error");
         }
 
+        //! Obtain the mask of the joined groups.
+        /*!
+         * Each socket can bind to multiple groups. Each bit of the mask represents
+         * a joined group.
+         */
 
         unsigned long
         groups_mask() const
@@ -636,6 +737,7 @@ namespace net {
             return mask;
         }
 
+        //! Obtain the list of the joined groups.
 
         std::vector<int>
         groups() const
@@ -653,9 +755,10 @@ namespace net {
             return vec;
         }
 
-        //
-        // new functional program
-        //
+        //! Specify a functional computation for the given group.
+        /*!
+         * The functional computation is specified by the eDSL pfq-lang.
+         */
 
         template <typename Comp>
         void set_group_computation(int gid, Comp const &comp)
@@ -685,6 +788,12 @@ namespace net {
             set_group_computation(gid, prg.get());
         }
 
+        //! Specify a functional computation for the given group.
+        /*!
+         * The functional computation is specified by a pfq_computation_descriptor.
+         * This function should not be used; use the pfq-lang eDSL instead.
+         */
+
         void
         set_group_computation(int gid, pfq_computation_descr *prog)
         {
@@ -693,9 +802,11 @@ namespace net {
                 throw pfq_error(errno, "PFQ: group computation error");
         }
 
-        //
-        // BPF filters: pass in-kernel sock_fprog structure
-        //
+        //! Specify a BPF program for the given group.
+        /*!
+         * This function can be used to set a specific BPF filter for the group.
+         * It is used by the pfq pcap library.
+         */
 
         void
         set_group_fprog(int gid, const sock_fprog &f)
@@ -706,6 +817,8 @@ namespace net {
                 throw pfq_error(errno, "PFQ: set group fprog error");
         }
 
+        //! Reset the BPF program fro the given group.
+
         void
         reset_group_fprog(int gid)
         {
@@ -714,6 +827,12 @@ namespace net {
             if (::setsockopt(fd_, PF_Q, Q_SO_GROUP_FPROG, &fprog, sizeof(fprog)) == -1)
                 throw pfq_error(errno, "PFQ: reset group fprog error");
         }
+
+        //! Join the given group.
+        /*!
+         * If the policy is not specified, use group_policy::shared by default.
+         * If the class mask is not specified, use the class_mask::default_.
+         */
 
         int
         join_group(int gid, group_policy pol = group_policy::shared, class_mask mask = class_mask::default_)
@@ -734,6 +853,7 @@ namespace net {
             return group.gid;
         }
 
+        //! Leave the given group.
 
         void
         leave_group(int gid)
@@ -745,6 +865,10 @@ namespace net {
                 pdata_->gid = -1;
         }
 
+        //! Wait for packets.
+        /*!
+         * Wait for packets available to read. A timeout in microseconds can be specified.
+         */
 
         int
         poll(long int microseconds = -1 /* infinite */)
@@ -761,6 +885,13 @@ namespace net {
                throw pfq_error(errno, "PFQ: ppoll");
             return 0;
         }
+
+        //! read packets in place.
+        /*!
+         * Wait for packets to read and return a queue descriptor.
+         * Packets are stored in the memory mapped queue of the socket.
+         * It is possible to specify a timeout in microseconds.
+         */
 
         queue
         read(long int microseconds = -1)
@@ -792,12 +923,20 @@ namespace net {
                             pdata_->rx_slot_size, queue_len, index);
         }
 
+        //! Return the current commit version (used internally by the memory mapped queue).
+
         uint8_t
         current_commit() const
         {
             auto q = static_cast<struct pfq_queue_hdr *>(pdata_->queue_addr);
             return MPDB_QUEUE_INDEX(q->rx.data);
         }
+
+        //! Receive packets in the given mutable buffer.
+        /*!
+         * Wait for packets and return a queue descriptor. Packets are stored in the given mutable buffer.
+         * It is possible to specify a timeout in microseconds.
+         */
 
         queue
         recv(const mutable_buffer &buff, long int microseconds = -1)
@@ -814,7 +953,12 @@ namespace net {
             return queue(buff.first, this_queue.slot_size(), this_queue.size(), this_queue.index());
         }
 
-        // typedef void (*pfq_handler)(char *user, const struct pfq_pkt_hdr *h, const char *data);
+        //! This function takes an instance of a callable type which is invoked on each packet captured.
+        /*!
+         * The object must provide the following callable signature:
+         *
+         * typedef void (*pfq_handler)(char *user, const struct pfq_pkt_hdr *h, const char *data);
+         */
 
         template <typename Fun>
         size_t dispatch(Fun callback, long int microseconds = -1, char *user = nullptr)
@@ -835,9 +979,7 @@ namespace net {
             return n;
         }
 
-        //
-        // vlan filters
-        //
+        //! Turn on/off vlan filters for the given group.
 
         void vlan_filters_enable(int gid, bool toggle)
         {
@@ -847,6 +989,11 @@ namespace net {
                 throw pfq_error(errno, "PFQ: vlan filters");
         }
 
+        //! Set a capture filter for the given group and vlan id.
+        /*!
+         *  vlan_id::untag and vlan_id::anytag are valid id.
+         */
+
         void vlan_set_filter(int gid, int vid)
         {
             pfq_vlan_toggle value { gid, vid, true};
@@ -854,6 +1001,8 @@ namespace net {
             if (::setsockopt(fd_, PF_Q, Q_SO_GROUP_VLAN_FILT, &value, sizeof(value)) == -1)
                 throw pfq_error(errno, "PFQ: vlan set filter");
         }
+
+        //! Set the vlan capture filters specified in the given range.
 
         template <typename Iter>
         void vlan_set_filter(int gid, Iter beg, Iter end)
@@ -863,6 +1012,8 @@ namespace net {
             });
         }
 
+        //! Reset all vlan filters.
+
         void vlan_reset_filter(int gid, int vid)
         {
             pfq_vlan_toggle value { gid, vid, false};
@@ -870,6 +1021,8 @@ namespace net {
             if (::setsockopt(fd_, PF_Q, Q_SO_GROUP_VLAN_FILT, &value, sizeof(value)) == -1)
                 throw pfq_error(errno, "PFQ: vlan reset filter");
         }
+
+        //! Reset the vlan id filters specified in the given range.
 
         template <typename Iter>
         void vlan_reset_filter(int gid, Iter beg, Iter end)
@@ -879,9 +1032,7 @@ namespace net {
             });
         }
 
-        //
-        // stats
-        //
+        //! Get the socket stats.
 
         pfq_stats
         stats() const
@@ -893,6 +1044,7 @@ namespace net {
             return stat;
         }
 
+        //! Get the stats of the given group.
 
         pfq_stats
         group_stats(int gid) const
@@ -905,6 +1057,7 @@ namespace net {
             return stat;
         }
 
+        //! Get the counters of the given group.
 
         std::vector<unsigned long>
         group_counters(int gid) const
@@ -918,6 +1071,7 @@ namespace net {
             return std::vector<unsigned long>(std::begin(cs.counter), std::end(cs.counter));
         }
 
+        //! Get the memory size of the RX queue.
 
         size_t
         mem_size() const
@@ -927,6 +1081,7 @@ namespace net {
             return 0;
         }
 
+        //! Get the address of the RX queue.
 
         const void *
         mem_addr() const
@@ -936,9 +1091,10 @@ namespace net {
             return nullptr;
         }
 
-        //
-        // TX API...
-        //
+        //! Bind the socket for transmission to the given device name and queue.
+        /*!
+         * A socket for transmission can be bound to a given device/queue at time.
+         */
 
         void
         bind_tx(const char *dev, int queue = any_queue)
@@ -953,6 +1109,8 @@ namespace net {
                 throw pfq_error(errno, "PFQ: TX bind error");
         }
 
+        //! Transmit the packet stored in the given buffer.
+
         bool
         send(const_buffer pkt)
         {
@@ -963,6 +1121,11 @@ namespace net {
 
             return ret;
         }
+
+        //! Store the packet and possibly transmit the packets in the queue, synchronously.
+        /*!
+         * The transmission is invoked every n packets enqueued.
+         */
 
         bool
         send_sync(const_buffer pkt, size_t n = 128)
@@ -975,6 +1138,11 @@ namespace net {
             return ret;
         }
 
+        //! Store the packet and possibly transmit the packets in the queue, asynchronously.
+        /*!
+         * The transmission is invoked in the kernel thread, every n packets enqueued.
+         */
+
         bool
         send_async(const_buffer pkt, size_t n = 128)
         {
@@ -986,6 +1154,12 @@ namespace net {
             return ret;
         }
 
+        //! Schedule the packet for transmission.
+        /*!
+         * The packet is copied to the TX queue and later sent when
+         * the tx_queue_flush or wakeup_tx_thread function are invoked.
+         */
+
         bool
         inject(const_buffer pkt)
         {
@@ -996,8 +1170,9 @@ namespace net {
             if (index == -1)
                 return false;
 
-            auto h    = reinterpret_cast<pfq_pkt_hdr *>(reinterpret_cast<char *>(q + 1) +
-                            pdata_->rx_slots * pdata_->rx_slot_size * 2  + index * tx->slot_size);
+            auto h = reinterpret_cast<pfq_pkt_hdr *>(reinterpret_cast<char *>(q + 1) +
+                        pdata_->rx_slots * pdata_->rx_slot_size * 2  + index * tx->slot_size);
+
             auto addr = reinterpret_cast<char *>(h + 1);
 
             h->len = std::min(pkt.second, static_cast<size_t>(tx->max_len));
@@ -1008,6 +1183,7 @@ namespace net {
             return true;
         }
 
+        //! Start the TX kernel thread.
 
         void start_tx_thread(int node)
         {
@@ -1015,11 +1191,19 @@ namespace net {
                 throw pfq_error(errno, "PFQ: start TX thread");
         }
 
+        //! Stop the TX kernel thread.
+
         void stop_tx_thread()
         {
             if (::setsockopt(fd_, PF_Q, Q_SO_TX_THREAD_STOP, nullptr, 0) == -1)
                 throw pfq_error(errno, "PFQ: stop TX thread");
         }
+
+        //! Wakeup the TX kernel thread.
+        /*!
+         * Wake up the TX kernel thread which transmit the packets in the Tx queue.
+         * The kernel thread must be started.
+         */
 
         void wakeup_tx_thread()
         {
@@ -1027,12 +1211,16 @@ namespace net {
                 throw pfq_error(errno, "PFQ: wakeup TX thread");
         }
 
+        //! Flush the TX queue, in the context of the calling thread.
+        /*!
+         * To invoke this function, no TX kernel thread is required.
+         */
+
         void tx_queue_flush()
         {
             if (::setsockopt(fd_, PF_Q, Q_SO_TX_QUEUE_FLUSH, nullptr, 0) == -1)
                 throw pfq_error(errno, "PFQ: TX queue flush");
         }
-
     };
 
 
