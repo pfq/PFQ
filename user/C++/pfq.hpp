@@ -43,7 +43,8 @@
 
 #include <pfq-util.hpp>
 #include <pfq-queue.hpp>
-#include <pfq-lang.hpp>
+
+#include <pfq-lang/lang.hpp>
 
 namespace net {
 

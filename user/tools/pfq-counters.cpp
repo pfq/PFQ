@@ -23,7 +23,7 @@
 #include <unordered_set>
 
 #include <pfq.hpp>
-#include <pfq-lang.hpp>
+#include <pfq-lang/lang.hpp>
 
 #include <netinet/ip.h>
 #include <netinet/udp.h>

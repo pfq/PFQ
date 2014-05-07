@@ -23,7 +23,7 @@
 
 #pragma once
 
-#include <pfq-lang.hpp>
+#include <pfq-lang/lang.hpp>
 #include <functional>
 
 #include <arpa/inet.h>

@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "pfq-default.hpp"
+#include "pfq-lang/default.hpp"
 
 using namespace pfq_lang;
 

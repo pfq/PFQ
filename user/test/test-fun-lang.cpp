@@ -4,8 +4,8 @@
 #include <chrono>
 
 #include <pfq.hpp>
-#include <pfq-lang.hpp>
-#include <pfq-default.hpp>
+#include <pfq-lang/lang.hpp>
+#include <pfq-lang/default.hpp>
 
 using namespace net;
 using namespace pfq_lang;
