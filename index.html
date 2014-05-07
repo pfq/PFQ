@@ -42,21 +42,19 @@
 
 <ul>
 <li>10-Gbit Line-rate (14,8Mpps) with Intel ixgbe vanilla driver.</li>
-<li>Socket groups allow for concurrent monitoring of multi-threaded applications.</li>
+<li>Socket groups allow for concurrent monitoring of multiple multi-threaded applications.</li>
 <li>Per-group packet steering through randomized hashing algorithms or deterministic packet classifications.</li>
 <li>Per-group Berkeley and VLAN filters.</li>
-<li>Extensible framework for in-kernel functional monitoring (continuation passing style).</li>
+<li>Extensible framework for in-kernel pure functional monitoring: q-lang.</li>
 <li>User-space native bindings for the C, C++11 and Haskell languages.</li>
-<li>PFQ-omatic, a script that allows to compile drivers and get accelerated versions.</li>
+<li>pfq-omatic, a script that allows to compile drivers and get accelerated versions.</li>
 <li>Accelerated pcap library.</li>
 </ul><h3>
 <a name="performance" class="anchor" href="#performance"><span class="octicon octicon-link"></span></a>Performance</h3>
 
 <p>PFQ performance is highly dependent on the hardware in use. </p>
 
-<p>Running on top of the 2.66Ghz 6-core Xeon equipped and the Intel 82599 10G controller, PFQ can steer to user-space about 14,8 Million packets per second deploying 3 kernel threads.</p>
-
-<p>Details of performance comparison are available here (old version): <a href="http://netgroup.iet.unipi.it/software/pfq/performance.html">http://netgroup.iet.unipi.it/software/pfq/performance.html</a></p>
+<p>Running on top of a Xeon processor equipped and the Intel 82599 10G controller, PFQ can steer to user-space the line speed (~14,8 Million packets per second) deploying 2 or 3 kernel threads.</p>
 
 <h3>
 <a name="publication" class="anchor" href="#publication"><span class="octicon octicon-link"></span></a>Publication</h3>
