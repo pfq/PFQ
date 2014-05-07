@@ -514,7 +514,7 @@ namespace net {
            return ret;
         }
 
-        //! Set the capture length of packets in bytes.
+        //! Set the capture length of packets, in bytes.
         /*!
          * Capture length must be set before the socket is enabled to capture.
          */
@@ -532,7 +532,7 @@ namespace net {
             pdata_->rx_slot_size = align<8>(sizeof(pfq_pkt_hdr)+ value);
         }
 
-        //! Get the capture length of packets.
+        //! Get the capture length of packets, in bytes.
 
         size_t
         caplen() const
@@ -543,7 +543,7 @@ namespace net {
            return ret;
         }
 
-        //! Set the max transmission length of packets in bytes.
+        //! Set the max transmission length of packets, in bytes.
 
         void
         maxlen(size_t value)
@@ -556,7 +556,7 @@ namespace net {
             }
         }
 
-        //! Get the max transmission length of packets.
+        //! Get the max transmission length of packets, in bytes.
 
         size_t
         maxlen() const
@@ -592,7 +592,7 @@ namespace net {
         }
 
         //! Specify the length of the RX queue, in number of packets.
-        /*
+        /*!
          * The number of RX slots can't exceed the max value specified by
          * the rx_queue_slot kernel module parameter.
          */
@@ -622,7 +622,7 @@ namespace net {
         }
 
         //! Specify the length of the TX queue, in number of packets.
-        /*
+        /*!
          * The number of TX slots can't exceed the max value specified by
          * the tx_queue_slot kernel module parameter.
          */
@@ -678,7 +678,7 @@ namespace net {
             bind_group(gid, dev, queue);
         }
 
-        //! Bind the group to the given device/queue.
+        //! Bind the given group to the given device/queue.
         /*!
          * The first argument is the name of the device;
          * the second argument is the queue number or any_queue.
@@ -708,7 +708,7 @@ namespace net {
             unbind_group(gid, dev, queue);
         }
 
-        //! Unbind the group from the given device/queue.
+        //! Unbind the given group from the given device/queue.
 
         void
         unbind_group(int gid, const char *dev, int queue = any_queue)
@@ -722,7 +722,7 @@ namespace net {
                 throw pfq_error(errno, "PFQ: remove binding error");
         }
 
-        //! Obtain the mask of the joined groups.
+        //! Get the mask of the joined groups.
         /*!
          * Each socket can bind to multiple groups. Each bit of the mask represents
          * a joined group.
@@ -886,11 +886,11 @@ namespace net {
             return 0;
         }
 
-        //! read packets in place.
+        //! Read packets in place.
         /*!
          * Wait for packets to read and return a queue descriptor.
          * Packets are stored in the memory mapped queue of the socket.
-         * It is possible to specify a timeout in microseconds.
+         * The timeout is specified in microseconds.
          */
 
         queue
@@ -991,7 +991,7 @@ namespace net {
 
         //! Set a capture filter for the given group and vlan id.
         /*!
-         *  vlan_id::untag and vlan_id::anytag are valid id.
+         *  In addition to standard vlan ids, valid ids are also vlan_id::untag and vlan_id::anytag.
          */
 
         void vlan_set_filter(int gid, int vid)

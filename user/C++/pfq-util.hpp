@@ -63,7 +63,7 @@ namespace net {
         return ifreq_io.ifr_ifindex;
     }
 
-    //! Set/unset the PROMISC mode for the given device.
+    //! Set/unset the promiscuous mode for the given device.
 
     inline
     void set_promisc(int fd, const char *dev, bool value)
