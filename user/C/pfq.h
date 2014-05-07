@@ -144,6 +144,7 @@ typedef void (*pfq_handler_t)(char *user, const struct pfq_pkt_hdr *h, const cha
 
 /*!
  * group_policy: Q_GROUP_PRIVATE, Q_GROUP_RESTRICTED, Q_GROUP_SHARED, Q_GROUP_UNDEFINED...
+ *
  * class_mask  : Q_CLASS_DEFAULT| .... = Q_CLASS_ANY
  */
 
