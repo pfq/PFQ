@@ -23,4 +23,4 @@ cd ../user && cat ../docs/c-api.doxy | doxygen -
 
 echo "Generating Haskell library docs"
 
-cd ../user/Haskell && haddock -h -o ../../docs/api/haskell Network/PFq.hs 
+cd ../user/Haskell && haddock -h -o ../../docs/api/haskell Network/PFq.hs -t "PFQ Library v3.0" -p ../../docs/prologue.haddock
