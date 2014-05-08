@@ -73,13 +73,14 @@ module Network.PFq
 
         PFqConstant(..),
 
-        -- * Functions
+        -- * Socket and Groups
 
         open,
         openTx,
         openNoGroup,
         openGroup,
         close,
+
         enable,
         disable,
         getId,
@@ -93,36 +94,33 @@ module Network.PFq
         leaveGroup,
         setTimestamp,
         getTimestamp,
+
         setPromisc,
 
-        getCaplen,
-        setCaplen,
-        getMaxlen,
-        setMaxlen,
-        getOffset,
-        setOffset,
-
-        getTxSlots,
-        setTxSlots,
-
-        getRxSlots,
-        setRxSlots,
-        getRxSlotSize,
+        -- * Packet capture
 
         Network.PFq.read,
         dispatch,
-        getStats,
-        getGroupStats,
-        getGroupCounters,
 
         getPackets,
         getPacketHeader,
         isPacketReady,
         waitForPacket,
 
+        getCaplen,
+        setCaplen,
+        getOffset,
+        setOffset,
+
+        getRxSlots,
+        setRxSlots,
+        getRxSlotSize,
+
         vlanFiltersEnabled,
         vlanSetFilterId,
         vlanResetFilterId,
+
+        -- * Packet transmission
 
         bindTx,
         startTxThread,
@@ -135,7 +133,21 @@ module Network.PFq
         sendSync,
         sendAsync,
 
+        getTxSlots,
+        setTxSlots,
+
+        getMaxlen,
+        setMaxlen,
+
+        -- * Q-lang
+
         groupComputation,
+
+        -- * Statistics and counters
+
+        getStats,
+        getGroupStats,
+        getGroupCounters,
 
     ) where
 
