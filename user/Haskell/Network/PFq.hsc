@@ -78,7 +78,7 @@ module Network.PFq
         getGroupCounters,
 
         getPackets,
-        getHeader,
+        getPacketHeader,
         isPacketReady,
         waitForPacket,
 
@@ -319,9 +319,9 @@ waitForPacket p = do
 
 {-# INLINE waitForPacket #-}
 
-getHeader :: Packet
+getPacketHeader :: Packet
           -> IO PktHdr
-getHeader p = waitForPacket p >> toPktHdr (pHdr p)
+getPacketHeader p = waitForPacket p >> toPktHdr (pHdr p)
 
 {-# INLINE getHeader #-}
 

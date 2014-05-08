@@ -54,7 +54,7 @@ recvLoop q = do
        then recvLoop q
        else do
             ps <- Q.getPackets queue
-            mapM_ (getHeader >=> print) ps
+            mapM_ (getPacketHeader >=> print) ps
             mapM_ dumpPacket ps
             Q.getGroupCounters q gid >>= print
             recvLoop q
