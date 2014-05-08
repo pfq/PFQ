@@ -1,66 +1,60 @@
-<!DOCTYPE html>
+<!doctype html>
 <html>
-
   <head>
-    <meta charset='utf-8' />
-    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
-    <meta name="description" content="PFQ : Network Monitoring Framework for Multi-core Architectures" />
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <title>PFQ v3.0 by pfq</title>
 
-    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
-
-    <title>PFQ</title>
+    <link rel="stylesheet" href="stylesheets/styles.css">
+    <link rel="stylesheet" href="stylesheets/pygment_trac.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <!--[if lt IE 9]>
+    <script src="//html5shiv.googlecode.com/svn/trunk/html5.js"></script>
+    <![endif]-->
   </head>
-
   <body>
+    <div class="wrapper">
+      <header>
+        <h1>PFQ v3.0</h1>
+        <p>Network Monitoring Framework for Multi-core Architectures</p>
 
-    <!-- HEADER -->
-    <div id="header_wrap" class="outer">
-        <header class="inner">
-          <a id="forkme_banner" href="https://github.com/pfq/PFQ">View on GitHub</a>
+        <p class="view"><a href="https://github.com/pfq/PFQ">View the Project on GitHub <small>pfq/PFQ</small></a></p>
 
-          <h1 id="project_title">PFQ</h1>
-          <h2 id="project_tagline">Network Monitoring Framework for Multi-core Architectures</h2>
 
-            <section id="downloads">
-              <a class="zip_download_link" href="https://github.com/pfq/PFQ/zipball/master">Download this project as a .zip file</a>
-              <a class="tar_download_link" href="https://github.com/pfq/PFQ/tarball/master">Download this project as a tar.gz file</a>
-            </section>
-        </header>
-    </div>
-
-    <!-- MAIN CONTENT -->
-    <div id="main_content_wrap" class="outer">
-      <section id="main_content" class="inner">
+        <ul>
+          <li><a href="https://github.com/pfq/PFQ/zipball/master">Download <strong>ZIP File</strong></a></li>
+          <li><a href="https://github.com/pfq/PFQ/tarball/master">Download <strong>TAR Ball</strong></a></li>
+          <li><a href="https://github.com/pfq/PFQ">View On <strong>GitHub</strong></a></li>
+        </ul>
+      </header>
+      <section>
         <h3>
 <a name="what-is-pfq" class="anchor" href="#what-is-pfq"><span class="octicon octicon-link"></span></a>What is PFQ?</h3>
 
-<p>PFQ is a multi-language network monitoring framework designed for the Linux Kernel 3.x.
-It is highly optimized for multi-core processors, as well as for network devices equipped with multiple hardware queues (i.e. Intel 82599 10G). </p>
+<p>PFQ is a multi-language network monitoring framework designed for the Linux kernel that allows efficient packet capturing, in-kernel aggregation, functional processing and packet steering across sockets.</p>
 
-<p>PFQ consists in a Linux Kernel module and user-space libraries, for the C, C++11 and Haskell languages. </p>
+<p>PFQ is highly optimized for multi-core architecture, as well as for network devices supporting multiple hardware queues. It works with any device driver (the ones shipped with the Linux Kernel) and provides a script (pfq-omatic) that patches and compiles source codes on-the-fly to obtain accelerated drivers.</p>
 
-<p>It works with vanilla drivers and provides a script (pfq-omatic) designed to obtain accelerated versions of the drivers away from their source codes.</p>
+<p>The package provides the source code of the PFQ kernel module, user-space libraries for C, C++11 and Haskell languages and a set of diagnostic tools.</p>
 
 <h3>
 <a name="features" class="anchor" href="#features"><span class="octicon octicon-link"></span></a>Features</h3>
 
 <ul>
 <li>10-Gbit Line-rate (14,8Mpps) with Intel ixgbe vanilla driver.</li>
-<li>Socket groups allow for concurrent monitoring of multi-threaded applications.</li>
+<li>Socket groups allow for concurrent monitoring of multiple multi-threaded applications.</li>
 <li>Per-group packet steering through randomized hashing algorithms or deterministic packet classifications.</li>
 <li>Per-group Berkeley and VLAN filters.</li>
-<li>Extensible framework for in-kernel functional monitoring (continuation passing style).</li>
+<li>Extensible framework for in-kernel pure functional monitoring: q-lang.</li>
 <li>User-space native bindings for the C, C++11 and Haskell languages.</li>
-<li>PFQ-omatic, a script that allows to compile drivers and get accelerated versions.</li>
+<li>pfq-omatic, a script that allows to compile drivers and get accelerated versions.</li>
 <li>Accelerated pcap library.</li>
 </ul><h3>
 <a name="performance" class="anchor" href="#performance"><span class="octicon octicon-link"></span></a>Performance</h3>
 
 <p>PFQ performance is highly dependent on the hardware in use. </p>
 
-<p>Running on top of the 2.66Ghz 6-core Xeon equipped and the Intel 82599 10G controller, PFQ can steer to user-space about 14,8 Million packets per second deploying 3 kernel threads.</p>
-
-<p>Details of performance comparison are available here (old version): <a href="http://netgroup.iet.unipi.it/software/pfq/performance.html">http://netgroup.iet.unipi.it/software/pfq/performance.html</a></p>
+<p>Running on top of a Xeon processor equipped and the Intel 82599 10G controller, PFQ can steer to user-space the line speed (~14,8 Million packets per second) deploying 2 or 3 kernel threads.</p>
 
 <h3>
 <a name="publication" class="anchor" href="#publication"><span class="octicon octicon-link"></span></a>Publication</h3>
@@ -73,6 +67,11 @@ It is highly optimized for multi-core processors, as well as for network devices
 <p>The package provides the source code of the PFQ kernel module, user-space libraries for the C, C++11 and Haskell languages and a set of diagnostic tools.</p>
 
 <p>Gcc/g++ 4.7 (or higher), the Haskell platform, Cmake and make are required for the compilation.</p>
+
+<h3>
+<a name="wiki" class="anchor" href="#wiki"><span class="octicon octicon-link"></span></a>Wiki</h3>
+
+<p>New to PFQ programming? The <a href="https://github.com/pfq/PFQ/wiki">wiki pages</a> can get you started quickly.</p>
 
 <h3>
 <a name="licenses" class="anchor" href="#licenses"><span class="octicon octicon-link"></span></a>Licenses</h3>
@@ -89,17 +88,12 @@ It is highly optimized for multi-core processors, as well as for network devices
 
 <p>Andrea Di Pietro <a href="mailto:andrea.dipietro@for.unipi.it">andrea.dipietro@for.unipi.it</a>, Loris Gazzarrini <a href="mailto:loris.gazzarrini@iet.unipi.it">loris.gazzarrini@iet.unipi.it</a> and Gregorio Procissi <a href="mailto:gregorio.procissi@iet.unipi.it">gregorio.procissi@iet.unipi.it</a></p>
       </section>
-    </div>
-
-    <!-- FOOTER  -->
-    <div id="footer_wrap" class="outer">
-      <footer class="inner">
-        <p class="copyright">PFQ maintained by <a href="https://github.com/pfq">pfq</a></p>
-        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      <footer>
+        <p>This project is maintained by <a href="https://github.com/pfq">pfq</a></p>
+        <p><small>Hosted on GitHub Pages &mdash; Theme by <a href="https://github.com/orderedlist">orderedlist</a></small></p>
       </footer>
     </div>
-
+    <script src="javascripts/scale.fix.js"></script>
     
-
   </body>
 </html>
