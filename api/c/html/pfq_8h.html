@@ -413,7 +413,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Disable the packet capture. </p>
+<p>Disable the socket for packet capture. </p>
 
 </div>
 </div>
@@ -779,7 +779,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Return the group-id for the socket. </p>
+<p>Return the group-id of the socket. </p>
 
 </div>
 </div>
@@ -824,7 +824,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Return the id for the socket. </p>
+<p>Return the id of the socket. </p>
 
 </div>
 </div>
@@ -919,7 +919,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Check whether the timestamp is enabled for packets. </p>
+<p>Check whether the timestamping is enabled for packets. </p>
 
 </div>
 </div>
@@ -958,7 +958,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Join the given group with the given class mask and group policy </p>
+<p>Join the group with the given class mask and group policy </p>
 
 </div>
 </div>
@@ -1054,8 +1054,8 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>group_policy: Q_GROUP_PRIVATE, Q_GROUP_RESTRICTED, Q_GROUP_SHARED, Q_GROUP_UNDEFINED...</p>
 <p>class_mask : Q_CLASS_DEFAULT| .... = Q_CLASS_ANY</p>
-<p>Open the PFQ socket.</p>
-<p>The default class mask is Q_CLASS_DEFAULT, the group policy is Q_GROUP_PRIVATE.. </p>
+<p>Open a socket and join a new group.</p>
+<p>The default values for class mask and group policy are Q_CLASS_DEFAULT and Q_GROUP_PRIVATE, respectively. </p>
 
 </div>
 </div>
@@ -1112,7 +1112,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Open the PFQ socket.</p>
+<p>Open the socket.</p>
 <p>Both class mask and group policy are specifiable. </p>
 
 </div>
@@ -1146,8 +1146,8 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Open the PFQ socket.</p>
-<p>The group policy is Q_GROUP_UNDEFINED, no group is joined. A group can be later joined by means of join function. </p>
+<p>Open a socket; join no group.</p>
+<p>Groups can be later joined by means of the join function. </p>
 
 </div>
 </div>
@@ -1174,7 +1174,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Open the PFQ socket for transmission.</p>
+<p>Open the socket for transmission.</p>
 <p>The group is undefined, no group is joined. </p>
 
 </div>
@@ -1424,7 +1424,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <p>Set the capture length of packets, in bytes.</p>
-<p>Capture length must be set before the socket is enabled to capture. </p>
+<p>Capture length must be set before the socket is enabled for capture. </p>
 
 </div>
 </div>
@@ -1672,7 +1672,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Turn on/off the timestamp for packets. </p>
+<p>Turn on/off timestamping for packets. </p>
 
 </div>
 </div>
@@ -1828,7 +1828,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Reset all vlan filters. </p>
+<p>Reset vlan filter for the given group. </p>
 
 </div>
 </div>
@@ -1880,7 +1880,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <p>Wakeup the TX kernel thread.</p>
-<p>Wake up the TX kernel thread which transmit the packets in the Tx queue. The kernel thread must be started. </p>
+<p>Wake up the TX kernel thread which transmits the packets in the Tx queue. The kernel thread must be aldready started. </p>
 
 </div>
 </div>
@@ -1890,7 +1890,7 @@ Functions</h2></td></tr>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="dir_af99bb3c152a306abd27951285ad1127.html">C</a></li><li class="navelem"><a class="el" href="pfq_8h.html">pfq.h</a></li>
-    <li class="footer">Generated on Wed May 7 2014 23:58:42 for PFQ C library by
+    <li class="footer">Generated on Thu May 8 2014 15:53:26 for PFQ C library by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.6 </li>
   </ul>

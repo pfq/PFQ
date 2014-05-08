@@ -200,7 +200,7 @@ Close the socket. \hypertarget{pfq_8h_a1de26a48a872051cbfc86f825f400ab6}{\index{
 \item[{{\bf pfq\-\_\-t} $\ast$}]{q}
 \end{DoxyParamCaption}
 )}}\label{pfq_8h_a1de26a48a872051cbfc86f825f400ab6}
-Disable the packet capture. \hypertarget{pfq_8h_adc6f535c8d042639ea9b0dbb6e9c8fae}{\index{pfq.\-h@{pfq.\-h}!pfq\-\_\-dispatch@{pfq\-\_\-dispatch}}
+Disable the socket for packet capture. \hypertarget{pfq_8h_adc6f535c8d042639ea9b0dbb6e9c8fae}{\index{pfq.\-h@{pfq.\-h}!pfq\-\_\-dispatch@{pfq\-\_\-dispatch}}
 \index{pfq\-\_\-dispatch@{pfq\-\_\-dispatch}!pfq.h@{pfq.\-h}}
 \subsubsection[{pfq\-\_\-dispatch}]{\setlength{\rightskip}{0pt plus 5cm}int pfq\-\_\-dispatch (
 \begin{DoxyParamCaption}
@@ -331,7 +331,7 @@ Reset the B\-P\-F program fro the given group. \hypertarget{pfq_8h_a3cf11d0765db
 \item[{{\bf pfq\-\_\-t} $\ast$}]{q}
 \end{DoxyParamCaption}
 )}}\label{pfq_8h_a3cf11d0765db26cf22352c015f56d64b}
-Return the group-\/id for the socket. \hypertarget{pfq_8h_a801637019645491f44219a33317ce735}{\index{pfq.\-h@{pfq.\-h}!pfq\-\_\-groups\-\_\-mask@{pfq\-\_\-groups\-\_\-mask}}
+Return the group-\/id of the socket. \hypertarget{pfq_8h_a801637019645491f44219a33317ce735}{\index{pfq.\-h@{pfq.\-h}!pfq\-\_\-groups\-\_\-mask@{pfq\-\_\-groups\-\_\-mask}}
 \index{pfq\-\_\-groups\-\_\-mask@{pfq\-\_\-groups\-\_\-mask}!pfq.h@{pfq.\-h}}
 \subsubsection[{pfq\-\_\-groups\-\_\-mask}]{\setlength{\rightskip}{0pt plus 5cm}int pfq\-\_\-groups\-\_\-mask (
 \begin{DoxyParamCaption}
@@ -348,7 +348,7 @@ Each socket can bind to multiple groups. Each bit of the mask represents a joine
 \item[{{\bf pfq\-\_\-t} $\ast$}]{q}
 \end{DoxyParamCaption}
 )}}\label{pfq_8h_ac0b5855c75f81f92730f1fd04751ec88}
-Return the id for the socket. \hypertarget{pfq_8h_abe14da05a5618684ef2896ff4497ae4b}{\index{pfq.\-h@{pfq.\-h}!pfq\-\_\-ifindex@{pfq\-\_\-ifindex}}
+Return the id of the socket. \hypertarget{pfq_8h_abe14da05a5618684ef2896ff4497ae4b}{\index{pfq.\-h@{pfq.\-h}!pfq\-\_\-ifindex@{pfq\-\_\-ifindex}}
 \index{pfq\-\_\-ifindex@{pfq\-\_\-ifindex}!pfq.h@{pfq.\-h}}
 \subsubsection[{pfq\-\_\-ifindex}]{\setlength{\rightskip}{0pt plus 5cm}int pfq\-\_\-ifindex (
 \begin{DoxyParamCaption}
@@ -381,7 +381,7 @@ Check whether the packet capture is enabled. \hypertarget{pfq_8h_a400ec0d41910d1
 \item[{{\bf pfq\-\_\-t} const $\ast$}]{q}
 \end{DoxyParamCaption}
 )}}\label{pfq_8h_a400ec0d41910d17b07efca4b90e85764}
-Check whether the timestamp is enabled for packets. \hypertarget{pfq_8h_a1130e49c84b3179e501969c9747989d6}{\index{pfq.\-h@{pfq.\-h}!pfq\-\_\-join\-\_\-group@{pfq\-\_\-join\-\_\-group}}
+Check whether the timestamping is enabled for packets. \hypertarget{pfq_8h_a1130e49c84b3179e501969c9747989d6}{\index{pfq.\-h@{pfq.\-h}!pfq\-\_\-join\-\_\-group@{pfq\-\_\-join\-\_\-group}}
 \index{pfq\-\_\-join\-\_\-group@{pfq\-\_\-join\-\_\-group}!pfq.h@{pfq.\-h}}
 \subsubsection[{pfq\-\_\-join\-\_\-group}]{\setlength{\rightskip}{0pt plus 5cm}int pfq\-\_\-join\-\_\-group (
 \begin{DoxyParamCaption}
@@ -391,7 +391,7 @@ Check whether the timestamp is enabled for packets. \hypertarget{pfq_8h_a1130e49
 \item[{int}]{group\-\_\-policy}
 \end{DoxyParamCaption}
 )}}\label{pfq_8h_a1130e49c84b3179e501969c9747989d6}
-Join the given group with the given class mask and group policy \hypertarget{pfq_8h_af99c219e40110d4395b98294677f7b1b}{\index{pfq.\-h@{pfq.\-h}!pfq\-\_\-leave\-\_\-group@{pfq\-\_\-leave\-\_\-group}}
+Join the group with the given class mask and group policy \hypertarget{pfq_8h_af99c219e40110d4395b98294677f7b1b}{\index{pfq.\-h@{pfq.\-h}!pfq\-\_\-leave\-\_\-group@{pfq\-\_\-leave\-\_\-group}}
 \index{pfq\-\_\-leave\-\_\-group@{pfq\-\_\-leave\-\_\-group}!pfq.h@{pfq.\-h}}
 \subsubsection[{pfq\-\_\-leave\-\_\-group}]{\setlength{\rightskip}{0pt plus 5cm}int pfq\-\_\-leave\-\_\-group (
 \begin{DoxyParamCaption}
@@ -426,9 +426,9 @@ group\-\_\-policy\-: Q\-\_\-\-G\-R\-O\-U\-P\-\_\-\-P\-R\-I\-V\-A\-T\-E, Q\-\_\-\
 
 class\-\_\-mask \-: Q\-\_\-\-C\-L\-A\-S\-S\-\_\-\-D\-E\-F\-A\-U\-L\-T$\vert$ .... = Q\-\_\-\-C\-L\-A\-S\-S\-\_\-\-A\-N\-Y
 
-Open the P\-F\-Q socket.
+Open a socket and join a new group.
 
-The default class mask is Q\-\_\-\-C\-L\-A\-S\-S\-\_\-\-D\-E\-F\-A\-U\-L\-T, the group policy is Q\-\_\-\-G\-R\-O\-U\-P\-\_\-\-P\-R\-I\-V\-A\-T\-E.. \hypertarget{pfq_8h_ad249ceb68208c1755b48131867dc84b3}{\index{pfq.\-h@{pfq.\-h}!pfq\-\_\-open\-\_\-group@{pfq\-\_\-open\-\_\-group}}
+The default values for class mask and group policy are Q\-\_\-\-C\-L\-A\-S\-S\-\_\-\-D\-E\-F\-A\-U\-L\-T and Q\-\_\-\-G\-R\-O\-U\-P\-\_\-\-P\-R\-I\-V\-A\-T\-E, respectively. \hypertarget{pfq_8h_ad249ceb68208c1755b48131867dc84b3}{\index{pfq.\-h@{pfq.\-h}!pfq\-\_\-open\-\_\-group@{pfq\-\_\-open\-\_\-group}}
 \index{pfq\-\_\-open\-\_\-group@{pfq\-\_\-open\-\_\-group}!pfq.h@{pfq.\-h}}
 \subsubsection[{pfq\-\_\-open\-\_\-group}]{\setlength{\rightskip}{0pt plus 5cm}{\bf pfq\-\_\-t}$\ast$ pfq\-\_\-open\-\_\-group (
 \begin{DoxyParamCaption}
@@ -441,7 +441,7 @@ The default class mask is Q\-\_\-\-C\-L\-A\-S\-S\-\_\-\-D\-E\-F\-A\-U\-L\-T, the
 \item[{size\-\_\-t}]{tx\-\_\-slots}
 \end{DoxyParamCaption}
 )}}\label{pfq_8h_ad249ceb68208c1755b48131867dc84b3}
-Open the P\-F\-Q socket.
+Open the socket.
 
 Both class mask and group policy are specifiable. \hypertarget{pfq_8h_ab86a1cc6172420a3fed4a76e02e15e5e}{\index{pfq.\-h@{pfq.\-h}!pfq\-\_\-open\-\_\-nogroup@{pfq\-\_\-open\-\_\-nogroup}}
 \index{pfq\-\_\-open\-\_\-nogroup@{pfq\-\_\-open\-\_\-nogroup}!pfq.h@{pfq.\-h}}
@@ -452,9 +452,9 @@ Both class mask and group policy are specifiable. \hypertarget{pfq_8h_ab86a1cc61
 \item[{size\-\_\-t}]{slots}
 \end{DoxyParamCaption}
 )}}\label{pfq_8h_ab86a1cc6172420a3fed4a76e02e15e5e}
-Open the P\-F\-Q socket.
+Open a socket; join no group.
 
-The group policy is Q\-\_\-\-G\-R\-O\-U\-P\-\_\-\-U\-N\-D\-E\-F\-I\-N\-E\-D, no group is joined. A group can be later joined by means of join function. \hypertarget{pfq_8h_a08a52f9cef79de0500087d3454289b00}{\index{pfq.\-h@{pfq.\-h}!pfq\-\_\-open\-\_\-tx@{pfq\-\_\-open\-\_\-tx}}
+Groups can be later joined by means of the join function. \hypertarget{pfq_8h_a08a52f9cef79de0500087d3454289b00}{\index{pfq.\-h@{pfq.\-h}!pfq\-\_\-open\-\_\-tx@{pfq\-\_\-open\-\_\-tx}}
 \index{pfq\-\_\-open\-\_\-tx@{pfq\-\_\-open\-\_\-tx}!pfq.h@{pfq.\-h}}
 \subsubsection[{pfq\-\_\-open\-\_\-tx}]{\setlength{\rightskip}{0pt plus 5cm}{\bf pfq\-\_\-t}$\ast$ pfq\-\_\-open\-\_\-tx (
 \begin{DoxyParamCaption}
@@ -462,7 +462,7 @@ The group policy is Q\-\_\-\-G\-R\-O\-U\-P\-\_\-\-U\-N\-D\-E\-F\-I\-N\-E\-D, no 
 \item[{size\-\_\-t}]{slots}
 \end{DoxyParamCaption}
 )}}\label{pfq_8h_a08a52f9cef79de0500087d3454289b00}
-Open the P\-F\-Q socket for transmission.
+Open the socket for transmission.
 
 The group is undefined, no group is joined. \hypertarget{pfq_8h_af1c79c9d73cd04f6731ed497314dc175}{\index{pfq.\-h@{pfq.\-h}!pfq\-\_\-poll@{pfq\-\_\-poll}}
 \index{pfq\-\_\-poll@{pfq\-\_\-poll}!pfq.h@{pfq.\-h}}
@@ -541,7 +541,7 @@ The transmission is invoked every n packets enqueued. \hypertarget{pfq_8h_ac726d
 )}}\label{pfq_8h_ac726d1da4c6aecfa1dcb1544c036cdc4}
 Set the capture length of packets, in bytes.
 
-Capture length must be set before the socket is enabled to capture. \hypertarget{pfq_8h_a63b881aa62dc2c45b44fdb9810f7a07f}{\index{pfq.\-h@{pfq.\-h}!pfq\-\_\-set\-\_\-group\-\_\-computation@{pfq\-\_\-set\-\_\-group\-\_\-computation}}
+Capture length must be set before the socket is enabled for capture. \hypertarget{pfq_8h_a63b881aa62dc2c45b44fdb9810f7a07f}{\index{pfq.\-h@{pfq.\-h}!pfq\-\_\-set\-\_\-group\-\_\-computation@{pfq\-\_\-set\-\_\-group\-\_\-computation}}
 \index{pfq\-\_\-set\-\_\-group\-\_\-computation@{pfq\-\_\-set\-\_\-group\-\_\-computation}!pfq.h@{pfq.\-h}}
 \subsubsection[{pfq\-\_\-set\-\_\-group\-\_\-computation}]{\setlength{\rightskip}{0pt plus 5cm}int pfq\-\_\-set\-\_\-group\-\_\-computation (
 \begin{DoxyParamCaption}
@@ -620,7 +620,7 @@ Stop the T\-X kernel thread. \hypertarget{pfq_8h_a5ec98387ef0f5586f4ce4d6cca867a
 \item[{int}]{value}
 \end{DoxyParamCaption}
 )}}\label{pfq_8h_a5ec98387ef0f5586f4ce4d6cca867a5c}
-Turn on/off the timestamp for packets. \hypertarget{pfq_8h_ae7686de0d08fa835f01c68d7a2c8ce60}{\index{pfq.\-h@{pfq.\-h}!pfq\-\_\-tx\-\_\-queue\-\_\-flush@{pfq\-\_\-tx\-\_\-queue\-\_\-flush}}
+Turn on/off timestamping for packets. \hypertarget{pfq_8h_ae7686de0d08fa835f01c68d7a2c8ce60}{\index{pfq.\-h@{pfq.\-h}!pfq\-\_\-tx\-\_\-queue\-\_\-flush@{pfq\-\_\-tx\-\_\-queue\-\_\-flush}}
 \index{pfq\-\_\-tx\-\_\-queue\-\_\-flush@{pfq\-\_\-tx\-\_\-queue\-\_\-flush}!pfq.h@{pfq.\-h}}
 \subsubsection[{pfq\-\_\-tx\-\_\-queue\-\_\-flush}]{\setlength{\rightskip}{0pt plus 5cm}int pfq\-\_\-tx\-\_\-queue\-\_\-flush (
 \begin{DoxyParamCaption}
@@ -666,7 +666,7 @@ Turn on/off vlan filters for the given group. \hypertarget{pfq_8h_a5917ca4fb7191
 \item[{int}]{vid}
 \end{DoxyParamCaption}
 )}}\label{pfq_8h_a5917ca4fb7191169139aeab0075e5374}
-Reset all vlan filters. \hypertarget{pfq_8h_a5bccd205709594bc50a5c37184f35d9e}{\index{pfq.\-h@{pfq.\-h}!pfq\-\_\-vlan\-\_\-set\-\_\-filter@{pfq\-\_\-vlan\-\_\-set\-\_\-filter}}
+Reset vlan filter for the given group. \hypertarget{pfq_8h_a5bccd205709594bc50a5c37184f35d9e}{\index{pfq.\-h@{pfq.\-h}!pfq\-\_\-vlan\-\_\-set\-\_\-filter@{pfq\-\_\-vlan\-\_\-set\-\_\-filter}}
 \index{pfq\-\_\-vlan\-\_\-set\-\_\-filter@{pfq\-\_\-vlan\-\_\-set\-\_\-filter}!pfq.h@{pfq.\-h}}
 \subsubsection[{pfq\-\_\-vlan\-\_\-set\-\_\-filter}]{\setlength{\rightskip}{0pt plus 5cm}int pfq\-\_\-vlan\-\_\-set\-\_\-filter (
 \begin{DoxyParamCaption}
@@ -686,4 +686,4 @@ In addition to standard vlan ids, valid ids are also Q\-\_\-\-V\-L\-A\-N\-\_\-\-
 )}}\label{pfq_8h_ace54ac4b8297d33f4f9d6c3463b75ca3}
 Wakeup the T\-X kernel thread.
 
-Wake up the T\-X kernel thread which transmit the packets in the Tx queue. The kernel thread must be started. 
+Wake up the T\-X kernel thread which transmits the packets in the Tx queue. The kernel thread must be aldready started. 
