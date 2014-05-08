@@ -186,7 +186,7 @@ namespace net {
 
         //! Constructor
         /*!
-         * Create a PFQ socket which joins a new private group.
+         * Create a PFQ socket and join a new group.
          */
 
         pfq(size_t caplen, size_t offset = 0, size_t rx_slots = 65536, size_t maxlen = 64, size_t tx_slots = 4096)
@@ -493,7 +493,7 @@ namespace net {
             return false;
         }
 
-        //! Turn on/off the timestamp for packets.
+        //! Set the timestamping for packets.
 
         void
         timestamp_enable(bool value)
@@ -503,7 +503,7 @@ namespace net {
                 throw pfq_error(errno, "PFQ: set timestamp mode");
         }
 
-        //! Check whether the timestamp is enabled for packets.
+        //! Check whether the timestamping is enabled for packets.
 
         bool
         timestamp_enabled() const
@@ -514,7 +514,7 @@ namespace net {
            return ret;
         }
 
-        //! Set the capture length of packets, in bytes.
+        //! Specify the capture length of packets, in bytes.
         /*!
          * Capture length must be set before the socket is enabled to capture.
          */
@@ -532,7 +532,7 @@ namespace net {
             pdata_->rx_slot_size = align<8>(sizeof(pfq_pkt_hdr)+ value);
         }
 
-        //! Get the capture length of packets, in bytes.
+        //! Return the capture length of packets, in bytes.
 
         size_t
         caplen() const
@@ -543,7 +543,7 @@ namespace net {
            return ret;
         }
 
-        //! Set the max transmission length of packets, in bytes.
+        //! Specify the max transmission length of packets, in bytes.
 
         void
         maxlen(size_t value)
@@ -556,7 +556,7 @@ namespace net {
             }
         }
 
-        //! Get the max transmission length of packets, in bytes.
+        //! Return the max transmission length of packets, in bytes.
 
         size_t
         maxlen() const
@@ -567,7 +567,7 @@ namespace net {
            return ret;
         }
 
-        //! Set the capture offset of packets, in bytes.
+        //! Specify the capture offset of packets, in bytes.
 
         void
         offset(size_t value)
@@ -580,7 +580,7 @@ namespace net {
             }
         }
 
-        //! Get the capture offset of packets.
+        //! Return the capture offset of packets.
 
         size_t
         offset() const
@@ -610,7 +610,7 @@ namespace net {
             pdata_->rx_slots = value;
         }
 
-        //! Get the length of the RX queue, in number of packets.
+        //! Return the length of the RX queue, in number of packets.
 
         size_t
         rx_slots() const
@@ -640,7 +640,7 @@ namespace net {
             pdata_->tx_slots = value;
         }
 
-        //! Get the length of the TX queue, in number of packets.
+        //! Return the length of the TX queue, in number of packets.
 
         size_t
         tx_slots() const
@@ -651,7 +651,7 @@ namespace net {
            return pdata_->tx_slots;
         }
 
-        //! Get the length of a RX slot, in bytes.
+        //! Return the length of a RX slot, in bytes.
 
         size_t
         rx_slot_size() const
@@ -662,7 +662,7 @@ namespace net {
             return pdata_->rx_slot_size;
         }
 
-        //! Bind the group of the socket to the given device/queue.
+        //! Bind the main group of the socket to the given device/queue.
         /*!
          * The first argument is the name of the device;
          * the second argument is the queue number or any_queue.
@@ -696,7 +696,7 @@ namespace net {
                 throw pfq_error(errno, "PFQ: add binding error");
         }
 
-        //! Unbind the group of the socket from the given device/queue.
+        //! Unbind the main group of the socket from the given device/queue.
 
         void
         unbind(const char *dev, int queue = any_queue)
@@ -722,7 +722,7 @@ namespace net {
                 throw pfq_error(errno, "PFQ: remove binding error");
         }
 
-        //! Get the mask of the joined groups.
+        //! Return the mask of the joined groups.
         /*!
          * Each socket can bind to multiple groups. Each bit of the mask represents
          * a joined group.
@@ -979,7 +979,7 @@ namespace net {
             return n;
         }
 
-        //! Turn on/off vlan filters for the given group.
+        //! Set vlan filtering for the given group.
 
         void vlan_filters_enable(int gid, bool toggle)
         {
@@ -989,7 +989,7 @@ namespace net {
                 throw pfq_error(errno, "PFQ: vlan filters");
         }
 
-        //! Set a capture filter for the given group and vlan id.
+        //! Specify a capture filter for the given group and vlan id.
         /*!
          *  In addition to standard vlan ids, valid ids are also vlan_id::untag and vlan_id::anytag.
          */
@@ -1002,7 +1002,7 @@ namespace net {
                 throw pfq_error(errno, "PFQ: vlan set filter");
         }
 
-        //! Set the vlan capture filters specified in the given range.
+        //! Specify the vlan capture filters in the given range.
 
         template <typename Iter>
         void vlan_set_filter(int gid, Iter beg, Iter end)
@@ -1032,7 +1032,7 @@ namespace net {
             });
         }
 
-        //! Get the socket stats.
+        //! Return the socket stats.
 
         pfq_stats
         stats() const
@@ -1044,7 +1044,7 @@ namespace net {
             return stat;
         }
 
-        //! Get the stats of the given group.
+        //! Return the stats of the given group.
 
         pfq_stats
         group_stats(int gid) const
@@ -1057,7 +1057,7 @@ namespace net {
             return stat;
         }
 
-        //! Get the counters of the given group.
+        //! Return the counters of the given group.
 
         std::vector<unsigned long>
         group_counters(int gid) const
@@ -1071,7 +1071,7 @@ namespace net {
             return std::vector<unsigned long>(std::begin(cs.counter), std::end(cs.counter));
         }
 
-        //! Get the memory size of the RX queue.
+        //! Return the memory size of the RX queue.
 
         size_t
         mem_size() const
@@ -1081,7 +1081,7 @@ namespace net {
             return 0;
         }
 
-        //! Get the address of the RX queue.
+        //! Return the address of the RX queue.
 
         const void *
         mem_addr() const

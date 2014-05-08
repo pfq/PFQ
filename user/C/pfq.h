@@ -148,22 +148,22 @@ typedef void (*pfq_handler_t)(char *user, const struct pfq_pkt_hdr *h, const cha
  * class_mask  : Q_CLASS_DEFAULT| .... = Q_CLASS_ANY
  */
 
-/*! Open the PFQ socket. */
+/*! Open a socket and join a new group. */
 /*!
- * The default class mask is Q_CLASS_DEFAULT, the group policy is Q_GROUP_PRIVATE..
+ * The default values for class mask and group policy are Q_CLASS_DEFAULT and
+ * Q_GROUP_PRIVATE, respectively.
  */
 
 extern pfq_t* pfq_open(size_t calpen, size_t offset, size_t slots);
 
-/*! Open the PFQ socket. */
+/*! Open a socket; join no group. */
 /*!
- * The group policy is Q_GROUP_UNDEFINED, no group is joined. A group can be later joined
- * by means of join function.
+ * Groups can be later joined by means of the join function.
  */
 
 extern pfq_t* pfq_open_nogroup(size_t caplen, size_t offset, size_t slots);
 
-/*! Open the PFQ socket. */
+/*! Open the socket. */
 /*!
  * Both class mask and group policy are specifiable.
  */
@@ -172,7 +172,7 @@ extern pfq_t* pfq_open_group(unsigned long class_mask, int group_policy,
                 size_t calpen, size_t offset, size_t rx_slots,
                 size_t maxlen, size_t tx_slots);
 
-/*! Open the PFQ socket for transmission. */
+/*! Open the socket for transmission. */
 /*!
  * The group is undefined, no group is joined.
  */
@@ -194,7 +194,7 @@ extern const char *pfq_error(pfq_t *);
 
 extern int pfq_ifindex(pfq_t const *q, const char *dev);
 
-/*! Set/unset the promiscuous mode for the given device. */
+/*! Set the promiscuous mode for the given device. */
 
 extern int pfq_set_promisc(pfq_t const *q, const char *dev, int value);
 
@@ -202,7 +202,7 @@ extern int pfq_set_promisc(pfq_t const *q, const char *dev, int value);
 
 extern int pfq_enable(pfq_t *q);
 
-/*! Disable the packet capture. */
+/*! Disable the socket for packet capture. */
 
 extern int pfq_disable(pfq_t *q);
 
@@ -210,38 +210,38 @@ extern int pfq_disable(pfq_t *q);
 
 extern int pfq_is_enabled(pfq_t const *q);
 
-/*! Turn on/off the timestamp for packets. */
+/*! Set the timestamping for packets. */
 
 extern int pfq_timestamp_enable(pfq_t *q, int value);
 
-/*! Check whether the timestamp is enabled for packets. */
+/*! Check whether the timestamping is enabled for packets. */
 
 extern int pfq_is_timestamp_enabled(pfq_t const *q);
 
-/*! Set the capture length of packets, in bytes. */
+/*! Specify the capture length of packets, in bytes. */
 /*!
- * Capture length must be set before the socket is enabled to capture.
+ * Capture length must be set before the socket is enabled for capture.
  */
 
 extern int pfq_set_caplen(pfq_t *q, size_t value);
 
-/*! Get the capture length of packets, in bytes. */
+/*! Return the capture length of packets, in bytes. */
 
 extern ssize_t pfq_get_caplen(pfq_t const *q);
 
-/*! Set the max transmission length of packets, in bytes. */
+/*! Specify the max transmission length of packets, in bytes. */
 
 extern int pfq_set_maxlen(pfq_t *q, size_t value);
 
-/*! Get the max transmission length of packets, in bytes. */
+/*! Return the max transmission length of packets, in bytes. */
 
 extern ssize_t pfq_get_maxlen(pfq_t const *q);
 
-/*! Set the capture offset of packets, in bytes. */
+/*! Specify the capture offset of packets, in bytes. */
 
 extern int pfq_set_offset(pfq_t *q, size_t value);
 
-/*! Get the capture offset of packets. */
+/*! Return the capture offset of packets. */
 
 extern ssize_t pfq_get_offset(pfq_t const *q);
 
@@ -253,7 +253,7 @@ extern ssize_t pfq_get_offset(pfq_t const *q);
 
 extern int pfq_set_rx_slots(pfq_t *q, size_t value);
 
-/*! Get the length of the RX queue, in number of packets. */
+/*! Return the length of the RX queue, in number of packets. */
 
 extern size_t pfq_get_rx_slots(pfq_t const *q);
 
@@ -265,15 +265,15 @@ extern size_t pfq_get_rx_slots(pfq_t const *q);
 
 extern int pfq_set_tx_slots(pfq_t *q, size_t value);
 
-/*! Get the length of the TX queue, in number of packets. */
+/*! Return the length of the TX queue, in number of packets. */
 
 extern size_t pfq_get_tx_slots(pfq_t const *q);
 
-/*! Get the length of a RX slot, in bytes. */
+/*! Return the length of a RX slot, in bytes. */
 
 extern size_t pfq_get_rx_slot_size(pfq_t const *q);
 
-/*! Bind the group of the socket to the given device/queue. */
+/*! Bind the main group of the socket to the given device/queue. */
 /*!
  * The first argument is the name of the device;
  * the second argument is the queue number or any_queue.
@@ -293,11 +293,11 @@ extern int pfq_bind_group(pfq_t *q, int gid, const char *dev, int queue);
 
 extern int pfq_unbind_group(pfq_t *q, int gid, const char *dev, int queue); /* Q_ANY_QUEUE */
 
-/*! Unbind the group of the socket from the given device/queue. */
+/*! Unbind the main group of the socket from the given device/queue. */
 
 extern int pfq_unbind(pfq_t *q, const char *dev, int queue);
 
-/*! Get the mask of the joined groups. */
+/*! Return the mask of the joined groups. */
 /*!
  * Each socket can bind to multiple groups. Each bit of the mask represents
  * a joined group.
@@ -324,22 +324,22 @@ extern int pfq_group_fprog(pfq_t *q, int gid, struct sock_fprog *);
 
 extern int pfq_group_fprog_reset(pfq_t *q, int gid);
 
-/*! Turn on/off vlan filters for the given group. */
+/*! Set vlan filtering for the given group. */
 
 extern int pfq_vlan_filters_enable(pfq_t *q, int gid, int toggle);
 
-/*! Set a capture filter for the given group and vlan id. */
+/*! Specify a capture filter for the given group and vlan id. */
 /*!
  *  In addition to standard vlan ids, valid ids are also Q_VLAN_UNTAG and Q_VLAN_ANYTAG.
  */
 
 extern int pfq_vlan_set_filter(pfq_t *q, int gid, int vid);
 
-/*! Reset all vlan filters. */
+/*! Reset vlan filter for the given group. */
 
 extern int pfq_vlan_reset_filter(pfq_t *q, int gid, int vid);
 
-/*! Join the given group with the given class mask and group policy */
+/*! Join the group with the given class mask and group policy */
 
 extern int pfq_join_group(pfq_t *q, int gid, unsigned long class_mask, int group_policy);
 
@@ -380,19 +380,19 @@ extern int pfq_recv(pfq_t *q, void *buf, size_t buflen, struct pfq_net_queue *nq
 
 extern int pfq_dispatch(pfq_t *q, pfq_handler_t cb, long int microseconds, char *user);
 
-/*! Get the memory size of the RX queue. */
+/*! Return the memory size of the RX queue. */
 
 extern size_t pfq_mem_size(pfq_t const *q);
 
-/*! Get the address of the RX queue. */
+/*! Return the address of the RX queue. */
 
 extern const void * pfq_mem_addr(pfq_t const *q);
 
-/*! Return the id for the socket. */
+/*! Return the id of the socket. */
 
 extern int pfq_id(pfq_t *q);
 
-/*! Return the group-id for the socket. */
+/*! Return the group-id of the socket. */
 
 extern int pfq_group_id(pfq_t *q);
 
@@ -400,15 +400,15 @@ extern int pfq_group_id(pfq_t *q);
 
 extern int pfq_get_fd(pfq_t const *q);
 
-/*! Get the socket stats. */
+/*! Return the socket stats. */
 
 extern int pfq_get_stats(pfq_t const *q, struct pfq_stats *stats);
 
-/*! Get the stats of the given group. */
+/*! Return the stats of the given group. */
 
 extern int pfq_get_group_stats(pfq_t const *q, int gid, struct pfq_stats *stats);
 
-/*! Get the counters of the given group. */
+/*! Return the counters of the given group. */
 
 extern int pfq_get_group_counters(pfq_t const *q, int gid, struct pfq_counters *cs);
 
@@ -429,8 +429,8 @@ extern int pfq_stop_tx_thread(pfq_t *q);
 
 /*! Wakeup the TX kernel thread. */
 /*!
- * Wake up the TX kernel thread which transmit the packets in the Tx queue.
- * The kernel thread must be started.
+ * Wake up the TX kernel thread which transmits the packets in the Tx queue.
+ * The kernel thread must be aldready started.
  */
 
 extern int pfq_wakeup_tx_thread(pfq_t *q);
