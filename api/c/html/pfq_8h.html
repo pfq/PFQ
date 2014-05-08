@@ -304,7 +304,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Bind the group of the socket to the given device/queue.</p>
+<p>Bind the main group of the socket to the given device/queue.</p>
 <p>The first argument is the name of the device; the second argument is the queue number or any_queue. </p>
 
 </div>
@@ -506,7 +506,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Get the capture length of packets, in bytes. </p>
+<p>Return the capture length of packets, in bytes. </p>
 
 </div>
 </div>
@@ -556,7 +556,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Get the counters of the given group. </p>
+<p>Return the counters of the given group. </p>
 
 </div>
 </div>
@@ -589,7 +589,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Get the stats of the given group. </p>
+<p>Return the stats of the given group. </p>
 
 </div>
 </div>
@@ -606,7 +606,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Get the max transmission length of packets, in bytes. </p>
+<p>Return the max transmission length of packets, in bytes. </p>
 
 </div>
 </div>
@@ -623,7 +623,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Get the capture offset of packets. </p>
+<p>Return the capture offset of packets. </p>
 
 </div>
 </div>
@@ -640,7 +640,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Get the length of a RX slot, in bytes. </p>
+<p>Return the length of a RX slot, in bytes. </p>
 
 </div>
 </div>
@@ -657,7 +657,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Get the length of the RX queue, in number of packets. </p>
+<p>Return the length of the RX queue, in number of packets. </p>
 
 </div>
 </div>
@@ -684,7 +684,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Get the socket stats. </p>
+<p>Return the socket stats. </p>
 
 </div>
 </div>
@@ -701,7 +701,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Get the length of the TX queue, in number of packets. </p>
+<p>Return the length of the TX queue, in number of packets. </p>
 
 </div>
 </div>
@@ -806,7 +806,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Get the mask of the joined groups.</p>
+<p>Return the mask of the joined groups.</p>
 <p>Each socket can bind to multiple groups. Each bit of the mask represents a joined group. </p>
 
 </div>
@@ -1002,7 +1002,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Get the address of the RX queue. </p>
+<p>Return the address of the RX queue. </p>
 
 </div>
 </div>
@@ -1019,7 +1019,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Get the memory size of the RX queue. </p>
+<p>Return the memory size of the RX queue. </p>
 
 </div>
 </div>
@@ -1423,7 +1423,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Set the capture length of packets, in bytes.</p>
+<p>Specify the capture length of packets, in bytes.</p>
 <p>Capture length must be set before the socket is enabled for capture. </p>
 
 </div>
@@ -1485,7 +1485,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Set the max transmission length of packets, in bytes. </p>
+<p>Specify the max transmission length of packets, in bytes. </p>
 
 </div>
 </div>
@@ -1512,7 +1512,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Set the capture offset of packets, in bytes. </p>
+<p>Specify the capture offset of packets, in bytes. </p>
 
 </div>
 </div>
@@ -1545,7 +1545,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Set/unset the promiscuous mode for the given device. </p>
+<p>Set the promiscuous mode for the given device. </p>
 
 </div>
 </div>
@@ -1672,7 +1672,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Turn on/off timestamping for packets. </p>
+<p>Set the timestamping for packets. </p>
 
 </div>
 </div>
@@ -1723,7 +1723,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Unbind the group of the socket from the given device/queue. </p>
+<p>Unbind the main group of the socket from the given device/queue. </p>
 
 </div>
 </div>
@@ -1861,7 +1861,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Set a capture filter for the given group and vlan id.</p>
+<p>Specify a capture filter for the given group and vlan id.</p>
 <p>In addition to standard vlan ids, valid ids are also Q_VLAN_UNTAG and Q_VLAN_ANYTAG. </p>
 
 </div>
@@ -1890,7 +1890,7 @@ Functions</h2></td></tr>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="dir_af99bb3c152a306abd27951285ad1127.html">C</a></li><li class="navelem"><a class="el" href="pfq_8h.html">pfq.h</a></li>
-    <li class="footer">Generated on Thu May 8 2014 15:53:26 for PFQ C library by
+    <li class="footer">Generated on Thu May 8 2014 16:00:45 for PFQ C library by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.6 </li>
   </ul>
