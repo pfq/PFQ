@@ -44,7 +44,7 @@ forward_broadcast(arguments_t args, struct sk_buff *skb)
 static inline struct sk_buff *
 forward_kernel(arguments_t args, struct sk_buff *skb)
 {
-        return to_kernel(drop(skb));
+        return to_kernel(skb);
 }
 
 static inline struct sk_buff *
