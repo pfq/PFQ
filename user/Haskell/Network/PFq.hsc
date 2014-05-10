@@ -616,7 +616,7 @@ getCaplen hdl =
 -- |Specify the max transmission length of packets, in bytes.
 
 setMaxlen :: Ptr PFqTag
-          -> Int
+          -> Int        -- ^ maxlen (bytes)
           -> IO ()
 setMaxlen hdl value =
     pfq_set_maxlen hdl (fromIntegral value)
