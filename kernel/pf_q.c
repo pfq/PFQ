@@ -77,7 +77,7 @@ MODULE_LICENSE("GPL");
 
 MODULE_AUTHOR("Nicola Bonelli <nicola.bonelli@cnit.it>");
 
-MODULE_DESCRIPTION("Packet capture system for 64bit multi-core architectures");
+MODULE_DESCRIPTION("Network Monitoring Framework for Multi-core Architectures");
 
 module_param(direct_capture,    int, 0644);
 module_param(capture_incoming,  int, 0644);
@@ -101,7 +101,7 @@ MODULE_PARM_DESC(direct_capture," Direct capture packets: (0 default)");
 
 MODULE_PARM_DESC(capture_incoming," Capture incoming packets: (1 default)");
 MODULE_PARM_DESC(capture_outgoing," Capture outgoing packets: (0 default)");
-MODULE_PARM_DESC(capture_loopback," Capture lookback packets: (0 default)");
+MODULE_PARM_DESC(capture_loopback," Capture loopback packets: (0 default)");
 
 MODULE_PARM_DESC(cap_len, " Default capture length (bytes)");
 MODULE_PARM_DESC(max_len, " Maximum transmission length (bytes)");
@@ -109,7 +109,7 @@ MODULE_PARM_DESC(max_len, " Maximum transmission length (bytes)");
 MODULE_PARM_DESC(rx_queue_slots, " Rx Queue slots (default=131072)");
 MODULE_PARM_DESC(tx_queue_slots, " Tx Queue slots (default=131072)");
 
-MODULE_PARM_DESC(prefetch_len,  " Rx prefetch queue length");
+MODULE_PARM_DESC(prefetch_len,  " Rx pre-fetch queue length");
 MODULE_PARM_DESC(batch_len,     " Tx batch queue length");
 
 MODULE_PARM_DESC(recycle_len,   " Recycle skb list (default=16384)");
