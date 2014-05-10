@@ -166,7 +166,8 @@ window.onload = function () {pageLoad();setSynopsis("mini_Network-PFq.html");};
 </p><p>The number of TX slots can't exceed the max value specified by
  the tx_queue_slot kernel module parameter.
 </p></div></div><div class="top"><p class="src"><a name="v:getMaxlen" class="def">getMaxlen</a> :: Ptr <a href="Network-PFq.html#t:PFqTag">PFqTag</a> -&gt; IO Int</p><div class="doc"><p>Return the max transmission length of packets, in bytes.
-</p></div></div><div class="top"><p class="src"><a name="v:setMaxlen" class="def">setMaxlen</a> :: Ptr <a href="Network-PFq.html#t:PFqTag">PFqTag</a> -&gt; Int -&gt; IO ()</p><div class="doc"><p>Specify the max transmission length of packets, in bytes.
+</p></div></div><div class="top"><p class="src"><a name="v:setMaxlen" class="def">setMaxlen</a></p><div class="subs arguments"><p class="caption">Arguments</p><table><tr><td class="src">:: Ptr <a href="Network-PFq.html#t:PFqTag">PFqTag</a></td><td class="doc empty">&nbsp;</td></tr><tr><td class="src">-&gt; Int</td><td class="doc"><p>maxlen (bytes)
+</p></td></tr><tr><td class="src">-&gt; IO ()</td><td class="doc empty">&nbsp;</td></tr></table></div><div class="doc"><p>Specify the max transmission length of packets, in bytes.
 </p></div></div><h1 id="g:5">Q-lang
 </h1><div class="top"><p class="src"><a name="v:groupComputation" class="def">groupComputation</a></p><div class="subs arguments"><p class="caption">Arguments</p><table><tr><td class="src">:: Ptr <a href="Network-PFq.html#t:PFqTag">PFqTag</a></td><td class="doc empty">&nbsp;</td></tr><tr><td class="src">-&gt; Int</td><td class="doc"><p>group id
 </p></td></tr><tr><td class="src">-&gt; <a href="Network-PFq-Lang.html#t:Computation">Computation</a> <a href="Network-PFq-Lang.html#t:QFunction">QFunction</a></td><td class="doc"><p>computation (PFqLang)
