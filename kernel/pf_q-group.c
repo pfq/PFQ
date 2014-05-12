@@ -117,8 +117,8 @@ __pfq_group_free(int gid)
 {
         struct pfq_group * g = pfq_get_group(gid);
         struct sk_filter *filter;
-        computation_t *comp;
-        void *comp_ctx;
+        computation_t *old_comp;
+        void *old_ctx;
 
         if (!g) {
                 pr_devel("[PFQ] get_group: invalid group id %d!\n", gid);
@@ -133,13 +133,18 @@ __pfq_group_free(int gid)
         g->policy = Q_GROUP_UNDEFINED;
 
         filter   = (struct sk_filter *)atomic_long_xchg(&g->filter, 0L);
-        comp     = (computation_t *)atomic_long_xchg(&g->comp, 0L);
-        comp_ctx = (void *)atomic_long_xchg(&g->comp_ctx, 0L);
+        old_comp = (computation_t *)atomic_long_xchg(&g->comp, 0L);
+        old_ctx  = (void *)atomic_long_xchg(&g->comp_ctx, 0L);
 
         msleep(Q_GRACE_PERIOD);   /* sleeping is possible here: user-context */
 
-        kfree(comp);
-        kfree(comp_ctx);
+	/* call fini on old computation */
+
+	if (old_comp)
+ 		pfq_computation_fini(old_comp);
+
+        kfree(old_comp);
+        kfree(old_ctx);
 
         pfq_free_sk_filter(filter);
 
@@ -299,6 +304,11 @@ int pfq_set_group_prog(int gid, computation_t *comp, void *ctx)
         old_ctx  = (void *)atomic_long_xchg(&g->comp_ctx, (long)ctx);
 
         msleep(Q_GRACE_PERIOD);   /* sleeping is possible here: user-context */
+
+	/* call fini on old computation */
+
+	if (old_comp)
+ 		pfq_computation_fini(old_comp);
 
         /* free the old computation/context */
 

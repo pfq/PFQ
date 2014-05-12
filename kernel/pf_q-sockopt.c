@@ -862,7 +862,16 @@ int pfq_setsockopt(struct socket *sock,
 
                 kfree(descr);
 
-                /* store the new program */
+		/* exec init functions */
+
+		if (pfq_computation_init(comp) < 0) {
+                        pr_devel("[PFQ|%d] computation initialization aborted!", so->id);
+                        kfree(comp);
+                        kfree(context);
+                        return -EPERM;
+		}
+
+                /* set the new program */
 
                 if (pfq_set_group_prog(tmp.gid, comp, context) < 0) {
                         pr_devel("[PFQ|%d] set group program error!\n", so->id);
