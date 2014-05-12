@@ -1,6 +1,13 @@
 var searchData=
 [
-  ['pred_5f',['pred_',['../structpfq__lang_1_1term_1_1HFun.html#a21b242e11fd7818e6e7c1242433951db',1,'pfq_lang::term::HFun::pred_()'],['../structpfq__lang_1_1term_1_1HFun1.html#ac15b6e2665e60ad7f1700797c7677ea6',1,'pfq_lang::term::HFun1::pred_()'],['../structpfq__lang_1_1term_1_1HFun2.html#aa33f80727f25efed1112901cbcf1098a',1,'pfq_lang::term::HFun2::pred_()']]],
-  ['prop_5f',['prop_',['../structpfq__lang_1_1term_1_1Pred3.html#aa6450a183d05751a2d9cbfcf3b01a1dd',1,'pfq_lang::term::Pred3::prop_()'],['../structpfq__lang_1_1term_1_1Pred4.html#ab5f3d36392d98a2549b8e517f8919163',1,'pfq_lang::term::Pred4::prop_()']]],
-  ['ptr_5f',['ptr_',['../structpfq__lang_1_1term_1_1Pred1.html#aab8272102e260db367460682dc3f51c5',1,'pfq_lang::term::Pred1::ptr_()'],['../structpfq__lang_1_1term_1_1Pred4.html#abb2d1d1471c132aa44cb302ff97cb5d3',1,'pfq_lang::term::Pred4::ptr_()'],['../structpfq__lang_1_1term_1_1Prop1.html#a7f21a83de8fd325aba8850994ed92350',1,'pfq_lang::term::Prop1::ptr_()'],['../structpfq__lang_1_1term_1_1Fun1.html#a150724b8abe6251cfe55c5b1c41db965',1,'pfq_lang::term::Fun1::ptr_()']]]
+  ['has_5faddr',['has_addr',['../namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03.html#ac3ef3eefe441b183db012637b4459836',1,'pfq_lang::anonymous_namespace{default.hpp}']]],
+  ['has_5fdst_5faddr',['has_dst_addr',['../namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03.html#af223a0513ceffa69c0b8535a7cca12da',1,'pfq_lang::anonymous_namespace{default.hpp}']]],
+  ['has_5fdst_5fport',['has_dst_port',['../namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03.html#accc3aed36db0c762dd6c95f3706c8741',1,'pfq_lang::anonymous_namespace{default.hpp}']]],
+  ['has_5fmark',['has_mark',['../namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03.html#a0f9dc3f39bf9793e766b6312718483f1',1,'pfq_lang::anonymous_namespace{default.hpp}']]],
+  ['has_5fport',['has_port',['../namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03.html#ad2840696177c5f4f6f2072bcaae7407e',1,'pfq_lang::anonymous_namespace{default.hpp}']]],
+  ['has_5fsrc_5faddr',['has_src_addr',['../namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03.html#aabc75799de679df702f4179ead82114c',1,'pfq_lang::anonymous_namespace{default.hpp}']]],
+  ['has_5fsrc_5fport',['has_src_port',['../namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03.html#ad6d8ed8e08a448b3bf5d23a929d887f9',1,'pfq_lang::anonymous_namespace{default.hpp}']]],
+  ['has_5fvid',['has_vid',['../namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03.html#adddd2dea56164719f2853af158911a80',1,'pfq_lang::anonymous_namespace{default.hpp}']]],
+  ['has_5fvlan',['has_vlan',['../namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03.html#a30a0c8d9bcd28cd17c6c1699c3339c3f',1,'pfq_lang::anonymous_namespace{default.hpp}']]],
+  ['hdummy',['hdummy',['../namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03.html#a4e7cf4874b42c5722f420fc54f360242',1,'pfq_lang::anonymous_namespace{default.hpp}']]]
 ];
