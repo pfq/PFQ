@@ -24,6 +24,8 @@
 #pragma once
 
 #include <pfq-lang/lang.hpp>
+#include <pfq-lang/details.hpp>
+
 #include <functional>
 
 #include <arpa/inet.h>
@@ -119,48 +121,6 @@ namespace pfq_lang
         return predicate4("all_bit", prop, mask);
     }
 
-    // polymorphic lambda are available starting from C++14! In the meanwhile...
-    //
-
-    struct hcomp
-    {
-        template <typename P>
-        auto operator()(std::string name, P const &p)
-        -> decltype(hcomputation(std::move(name), p))
-        {
-            return hcomputation(std::move(name), p);
-        }
-    };
-
-    struct hcomp1
-    {
-        template <typename P, typename C>
-        auto operator()(std::string name, P const &p, C const &c)
-        -> decltype(hcomputation1(std::move(name), p, c))
-        {
-            return hcomputation1(std::move(name), p, c);
-        }
-    };
-
-    struct hcomp2
-    {
-        template <typename P, typename C1, typename C2>
-        auto operator()(std::string name, P const &p, C1 const &c1, C2 const &c2)
-        -> decltype(hcomputation2(std::move(name), p, c1, c2))
-        {
-            return hcomputation2(std::move(name), p, c1, c2);
-        }
-    };
-
-    // utility function
-    //
-
-    static inline uint32_t
-    prefix2mask(size_t n)
-    {
-        return htonl(~((1ULL << (32-n)) - 1));
-    };
-
     namespace
     {
         // default predicates:
@@ -187,7 +147,7 @@ namespace pfq_lang
             if (inet_pton(AF_INET, net, &addr) <= 0)
                 throw std::runtime_error("pfq_lang::net");
 
-            return predicate1("has_addr", static_cast<uint64_t>(addr.s_addr) << 32 | prefix2mask(prefix));
+            return predicate1("has_addr", static_cast<uint64_t>(addr.s_addr) << 32 | details::prefix2mask(prefix));
         };
 
         auto has_src_addr = [] (const char *net, int prefix)
@@ -196,7 +156,7 @@ namespace pfq_lang
             if (inet_pton(AF_INET, net, &addr) <= 0)
                 throw std::runtime_error("pfq_lang::net");
 
-            return predicate1("has_src_addr", static_cast<uint64_t>(addr.s_addr) << 32 | prefix2mask(prefix));
+            return predicate1("has_src_addr", static_cast<uint64_t>(addr.s_addr) << 32 | details::prefix2mask(prefix));
         };
 
         auto has_dst_addr = [] (const char *net, int prefix)
@@ -205,7 +165,7 @@ namespace pfq_lang
             if (inet_pton(AF_INET, net, &addr) <= 0)
                 throw std::runtime_error("pfq_lang::net");
 
-            return predicate1("has_dst_addr", static_cast<uint64_t>(addr.s_addr) << 32 | prefix2mask(prefix));
+            return predicate1("has_dst_addr", static_cast<uint64_t>(addr.s_addr) << 32 | details::prefix2mask(prefix));
         };
 
         auto is_flow    = predicate ("is_flow");
@@ -280,7 +240,7 @@ namespace pfq_lang
             if (inet_pton(AF_INET, net, &addr) <= 0)
                 throw std::runtime_error("pfq_lang::net");
 
-            return computation1("addr", static_cast<uint64_t>(addr.s_addr) << 32 | prefix2mask(prefix));
+            return computation1("addr", static_cast<uint64_t>(addr.s_addr) << 32 | details::prefix2mask(prefix));
         };
 
         auto src_addr = [] (const char *net, int prefix)
@@ -289,7 +249,7 @@ namespace pfq_lang
             if (inet_pton(AF_INET, net, &addr) <= 0)
                 throw std::runtime_error("pfq_lang::net");
 
-            return computation1("src_addr", static_cast<uint64_t>(addr.s_addr) << 32 | prefix2mask(prefix));
+            return computation1("src_addr", static_cast<uint64_t>(addr.s_addr) << 32 | details::prefix2mask(prefix));
         };
 
         auto dst_addr = [] (const char *net, int prefix)
@@ -298,13 +258,13 @@ namespace pfq_lang
             if (inet_pton(AF_INET, net, &addr) <= 0)
                 throw std::runtime_error("pfq_lang::net");
 
-            return computation1("dst_addr", static_cast<uint64_t>(addr.s_addr) << 32 | prefix2mask(prefix));
+            return computation1("dst_addr", static_cast<uint64_t>(addr.s_addr) << 32 | details::prefix2mask(prefix));
         };
 
-        auto hdummy      = std::bind(hcomp(),  "hdummy", _1);
-        auto when        = std::bind(hcomp1(), "when", _1, _2);
-        auto unless      = std::bind(hcomp1(), "unless", _1, _2);
-        auto conditional = std::bind(hcomp2(), "conditional", _1, _2, _3);
+        auto hdummy      = std::bind(details::hcomp(),  "hdummy", _1);
+        auto when        = std::bind(details::hcomp1(), "when", _1, _2);
+        auto unless      = std::bind(details::hcomp1(), "unless", _1, _2);
+        auto conditional = std::bind(details::hcomp2(), "conditional", _1, _2, _3);
 
     }
 }
