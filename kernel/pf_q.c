@@ -121,6 +121,9 @@ MODULE_PARM_DESC(vl_untag,      " Enable vlan untagging (default=0)");
 #pragma message "[PFQ] *** using skb recycle ***"
 #endif
 
+#ifdef DEBUG
+#pragma message "[PFQ] *** DEBUG mode ***"
+#endif
 
 DEFINE_SEMAPHORE(sock_sem);
 
