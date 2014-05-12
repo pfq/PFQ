@@ -8,19 +8,30 @@ set -e
 echo "Creating folders..."
 
 rm -rf api
+rm -rf lang
 
 mkdir -p api/c
 mkdir -p api/cpp
 mkdir -p api/haskell
 
-echo "Generating C library docs"
+mkdir -p lang/cpp
+mkdir -p lang/haskell
 
-cd ../user && cat ../docs/cpp-api.doxy | doxygen -
-
-echo "Generating C++ library docs"
+echo "C: library docs"
 
 cd ../user && cat ../docs/c-api.doxy | doxygen -
 
-echo "Generating Haskell library docs"
+echo "C++: library docs"
 
-cd ../user/Haskell && haddock -h -o ../../docs/api/haskell Network/PFq.hs -t "PFQ Library v3.0" -p ../../docs/prologue.haddock
+cd ../user && cat ../docs/cpp-api.doxy | doxygen -
+
+echo "C++: Q-Lang docs"
+
+cd ../user && cat ../docs/cpp-lang.doxy | doxygen -
+
+echo "Haskell: library docs" 
+cd ../user/Haskell && haddock -h -o ../../docs/api/haskell  -t "PFQ Library v3.0" -p ../../docs/library.haddock Network/PFq.hs
+cd -
+
+echo "Haskell: Q-Lang docs" 
+cd ../user/Haskell && haddock -h -o ../../docs/lang/haskell -t "Q-Lang v3.0" -p ../../docs/lang.haddock Network/PFq/Default.hs
