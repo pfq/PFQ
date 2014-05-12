@@ -42,6 +42,20 @@ dummy(arguments_t args, struct sk_buff *skb)
         return skb;
 }
 
+static int
+dummy_init(arguments_t args)
+{
+	printk(KERN_INFO "[PFQ] %s :)\n", __PRETTY_FUNCTION__);
+	return 0;
+}
+
+static int
+dummy_fini(arguments_t args)
+{
+	printk(KERN_INFO "[PFQ] %s :(\n", __PRETTY_FUNCTION__);
+	return 0;
+}
+
 
 static struct sk_buff *
 counter(arguments_t args, struct sk_buff *skb)
@@ -67,7 +81,7 @@ counter(arguments_t args, struct sk_buff *skb)
 struct pfq_function_descr misc_functions[] = {
 
         { "counter", 	counter 		, FUN_ACTION | FUN_ARG_DATA },
-        { "dummy",      dummy   		, FUN_ACTION | FUN_ARG_DATA },
+        { "dummy",      dummy   		, FUN_ACTION | FUN_ARG_DATA , dummy_init,  dummy_fini },
  	{ "mark", 	INLINE_FUN(mark)	, FUN_ACTION | FUN_ARG_DATA },
 
         { NULL, NULL}};
