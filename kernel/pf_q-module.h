@@ -48,6 +48,25 @@ extern int pfq_symtable_register_functions  (const char *module, struct list_hea
 extern int pfq_symtable_unregister_functions(const char *module, struct list_head *category, struct pfq_function_descr *fun);
 
 
+/**** function properties ****/
+
+#define FUN_PREDICATE 		       	(1ULL<<0)
+#define FUN_COMBINATOR 			(1ULL<<1)
+#define FUN_ACTION 			(1ULL<<2)
+#define FUN_PROPERTY 			(1ULL<<3)
+
+#define FUN_ARG_DATA			(1ULL<<10)
+#define FUN_ARG_FUN 			(1ULL<<11)
+
+
+/**** MAYBE macros ****/
+
+#define JUST(x) 	((1ULL<<31) | x)
+#define IS_JUST(x)	((1ULL<<31) & x)
+#define FROM_JUST(x)	(~(1ULL<<31) & x)
+#define NOTHING 	0
+
+
 /**** generic functional type ****/
 
 struct pfq_functional
@@ -61,6 +80,13 @@ struct pfq_functional
 
 typedef struct pfq_functional *  arguments_t;
 
+/**** function prototypes ****/
+
+typedef struct sk_buff *(*function_ptr_t)(arguments_t, struct sk_buff *);
+typedef uint64_t (*property_ptr_t) (arguments_t, struct sk_buff const *);
+typedef bool (*predicate_ptr_t)	(arguments_t, struct sk_buff const *);
+typedef int (*init_ptr_t) (arguments_t);
+typedef int (*fini_ptr_t) (arguments_t);
 
 typedef struct
 {
@@ -87,6 +113,9 @@ struct pfq_functional_node
 {
  	struct pfq_functional fun;
 
+ 	init_ptr_t 	      init;
+ 	init_ptr_t 	      fini;
+
 	struct pfq_functional_node *left;
 	struct pfq_functional_node *right;
 };
@@ -101,31 +130,6 @@ typedef struct pfq_computation
 } computation_t;
 
 
-/**** function prototypes ****/
-
-typedef struct sk_buff *(*function_ptr_t)(arguments_t, struct sk_buff *);
-typedef uint64_t (*property_ptr_t)	 (arguments_t, struct sk_buff const *);
-typedef bool (*predicate_ptr_t)	  	 (arguments_t, struct sk_buff const *);
-
-
-/**** function properties ****/
-
-#define FUN_PREDICATE 		       	(1ULL<<0)
-#define FUN_COMBINATOR 			(1ULL<<1)
-#define FUN_ACTION 			(1ULL<<2)
-#define FUN_PROPERTY 			(1ULL<<3)
-
-#define FUN_ARG_DATA			(1ULL<<10)
-#define FUN_ARG_FUN 			(1ULL<<11)
-
-
-/**** MAYBE macros ****/
-
-#define JUST(x) 	((1ULL<<31) | x)
-#define IS_JUST(x)	((1ULL<<31) & x)
-#define FROM_JUST(x)	(~(1ULL<<31) & x)
-#define NOTHING 	0
-
 
 /**** function descriptors ****/
 
@@ -134,6 +138,8 @@ struct pfq_function_descr
         const char *    symbol;
         void * 		ptr;
         uint64_t	properties;
+        init_ptr_t 	init;
+        fini_ptr_t 	fini;
 };
 
 struct pfq_monadic_fun_descr
@@ -141,6 +147,8 @@ struct pfq_monadic_fun_descr
         const char *    symbol;
         function_ptr_t 	ptr;
         uint64_t	properties;
+        init_ptr_t 	init;
+        fini_ptr_t 	fini;
 };
 
 struct pfq_predicate_fun_descr
@@ -148,20 +156,26 @@ struct pfq_predicate_fun_descr
         const char * 	symbol;
         predicate_ptr_t ptr;
         uint64_t	properties;
+        init_ptr_t 	init;
+        fini_ptr_t 	fini;
 };
 
 struct pfq_combinator_fun_descr
 {
-        const char * 	 symbol;
-        predicate_ptr_t  ptr;
-        uint64_t	 properties;
+        const char * 	symbol;
+        predicate_ptr_t ptr;
+        uint64_t	properties;
+        init_ptr_t 	init;
+        fini_ptr_t 	fini;
 };
 
 struct pfq_property_fun_descr
 {
-        const char * 	 symbol;
-        property_ptr_t 	 ptr;
-        uint64_t	 properties;
+        const char * 	symbol;
+        property_ptr_t 	ptr;
+        uint64_t	properties;
+        init_ptr_t 	init;
+        fini_ptr_t 	fini;
 };
 
 

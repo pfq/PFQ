@@ -447,7 +447,7 @@ validate_computation_descr(struct pfq_computation_descr const *descr)
 
 
 static void *
-resolve_user_symbol(struct list_head *cat, const char __user *symb, uint64_t *prop)
+resolve_user_symbol(struct list_head *cat, const char __user *symb, uint64_t *prop, init_ptr_t *init, fini_ptr_t *fini)
 {
 	struct symtable_entry *entry;
         const char *symbol;
@@ -465,6 +465,8 @@ resolve_user_symbol(struct list_head *cat, const char __user *symb, uint64_t *pr
         }
 
         *prop = entry->properties;
+	*init = entry->init;
+	*fini = entry->fini;
 
         kfree(symbol);
         return entry->function;
@@ -485,6 +487,37 @@ get_functional_by_index(struct pfq_computation_descr const *descr, computation_t
 	return 0;
 }
 
+int
+pfq_computation_init(computation_t *comp)
+{
+	size_t n;
+	for (n = 0; n < comp->size; n++)
+	{
+		if (comp->fun[n].init) {
+			if (comp->fun[n].init( &comp->fun[n].fun ) < 0) {
+				printk(KERN_INFO "[PFQ] computation_init: error in function (%zu)!\n", n);
+				return -EPERM;
+			}
+		}
+	}
+ 	return 0;
+}
+
+int
+pfq_computation_fini(computation_t *comp)
+{
+	size_t n;
+	for (n = 0; n < comp->size; n++)
+	{
+		if (comp->fun[n].fini) {
+			if (comp->fun[n].fini( &comp->fun[n].fun ) < 0) {
+				printk(KERN_INFO "[PFQ] computation_fini: error in function (%zu)!\n", n);
+				return -EPERM;
+			}
+		}
+	}
+	return 0;
+}
 
 int
 pfq_computation_rtlink(struct pfq_computation_descr const *descr, computation_t *comp, void *context)
@@ -507,6 +540,9 @@ pfq_computation_rtlink(struct pfq_computation_descr const *descr, computation_t 
 
         for(n = 0; n < descr->size; n++)
         {
+        	init_ptr_t init;
+        	fini_ptr_t fini;
+
                 switch(descr->fun[n].type)
                 {
                 case pfq_monadic_fun: {
@@ -514,7 +550,7 @@ pfq_computation_rtlink(struct pfq_computation_descr const *descr, computation_t 
                         uint64_t properties;
                         function_ptr_t ptr;
 
-                        ptr = resolve_user_symbol(&pfq_monadic_cat, descr->fun[n].symbol, &properties);
+                        ptr = resolve_user_symbol(&pfq_monadic_cat, descr->fun[n].symbol, &properties, &init, &fini);
                         if (ptr == NULL ||
                 		(properties & FUN_ACTION) == 0 ||
                                 ( (properties & FUN_ARG_DATA) && descr->fun[n].arg_ptr == NULL) ||
@@ -532,7 +568,9 @@ pfq_computation_rtlink(struct pfq_computation_descr const *descr, computation_t 
                                         return -EPERM;
                                 }
 
-                        	comp->fun[n].fun = make_function(ptr, arg);
+                        	comp->fun[n].fun  = make_function(ptr, arg);
+                        	comp->fun[n].init = init;
+                        	comp->fun[n].fini = fini;
                         }
 			else {
 				ptrdiff_t arg;
@@ -543,6 +581,8 @@ pfq_computation_rtlink(struct pfq_computation_descr const *descr, computation_t 
         			}
 
                         	comp->fun[n].fun = make_function(ptr, arg);
+                        	comp->fun[n].init = init;
+                        	comp->fun[n].fini = fini;
 			}
 
 
@@ -569,7 +609,7 @@ pfq_computation_rtlink(struct pfq_computation_descr const *descr, computation_t 
 
                         size_t pindex = descr->fun[n].fun;
 
-                        ptr = resolve_user_symbol(&pfq_monadic_cat, descr->fun[n].symbol, &properties);
+                        ptr = resolve_user_symbol(&pfq_monadic_cat, descr->fun[n].symbol, &properties, &init, &fini);
                         if (ptr == NULL ||
                 	    	(properties & FUN_ACTION) == 0 ||
                                 (properties & FUN_ARG_FUN) == 0 )
@@ -579,6 +619,8 @@ pfq_computation_rtlink(struct pfq_computation_descr const *descr, computation_t 
                         }
 
                         comp->fun[n].fun = make_high_order_function(ptr, &comp->fun[pindex].fun);
+                        comp->fun[n].init = init;
+                        comp->fun[n].fini = fini;
 
 			if (get_functional_by_index(descr, comp, descr->fun[n].right, &comp->fun[n].right) < 0) {
 
@@ -602,7 +644,7 @@ pfq_computation_rtlink(struct pfq_computation_descr const *descr, computation_t 
                         predicate_ptr_t ptr;
 
 
-                        ptr = resolve_user_symbol(&pfq_predicate_cat, descr->fun[n].symbol, &properties);
+                        ptr = resolve_user_symbol(&pfq_predicate_cat, descr->fun[n].symbol, &properties, &init, &fini);
                         if (ptr == NULL ||
                 	    	(properties & FUN_PREDICATE) == 0 ||
                                 ( (properties & FUN_ARG_DATA) && descr->fun[n].arg_ptr == NULL) ||
@@ -623,10 +665,14 @@ pfq_computation_rtlink(struct pfq_computation_descr const *descr, computation_t 
 				if (descr->fun[n].fun != -1) {
 
 					size_t pindex = descr->fun[n].fun;
-					comp->fun[n].fun = make_high_order_predicate(ptr, arg, &comp->fun[pindex].fun);
+					comp->fun[n].fun  = make_high_order_predicate(ptr, arg, &comp->fun[pindex].fun);
+ 					comp->fun[n].init = init;
+ 					comp->fun[n].fini = fini;
 				}
 				else {
 					comp->fun[n].fun = make_predicate(ptr, arg);
+ 					comp->fun[n].init = init;
+ 					comp->fun[n].fini = fini;
 				}
 
 
@@ -643,9 +689,13 @@ pfq_computation_rtlink(struct pfq_computation_descr const *descr, computation_t 
 
 					size_t pindex = descr->fun[n].fun;
 					comp->fun[n].fun = make_high_order_predicate(ptr, arg, &comp->fun[pindex].fun);
+ 					comp->fun[n].init = init;
+ 					comp->fun[n].fini = fini;
 				}
 				else {
 					comp->fun[n].fun = make_predicate(ptr, arg);
+ 					comp->fun[n].init = init;
+ 					comp->fun[n].fini = fini;
 				}
 			}
 
@@ -662,7 +712,7 @@ pfq_computation_rtlink(struct pfq_computation_descr const *descr, computation_t 
 
                         size_t left, right;
 
-                        ptr = resolve_user_symbol(&pfq_predicate_cat, descr->fun[n].symbol, &properties);
+                        ptr = resolve_user_symbol(&pfq_predicate_cat, descr->fun[n].symbol, &properties, &init, &fini);
                         if (ptr == NULL ||
                 	    (properties & FUN_COMBINATOR) == 0)
 			{
@@ -674,6 +724,8 @@ pfq_computation_rtlink(struct pfq_computation_descr const *descr, computation_t 
                         right = descr->fun[n].right;
 
                         comp->fun[n].fun = make_combinator(ptr, &comp->fun[left].fun, &comp->fun[right].fun);
+ 			comp->fun[n].init = init;
+ 			comp->fun[n].fini = fini;
 
                         comp->fun[n].right = NULL;
                         comp->fun[n].left  = NULL;
@@ -687,7 +739,7 @@ pfq_computation_rtlink(struct pfq_computation_descr const *descr, computation_t 
 
 
 
-                        ptr = resolve_user_symbol(&pfq_property_cat, descr->fun[n].symbol, &properties);
+                        ptr = resolve_user_symbol(&pfq_property_cat, descr->fun[n].symbol, &properties, &init, &fini);
                         if (ptr == NULL ||
                 	    	(properties & FUN_PROPERTY) == 0 ||
                                 ( (properties & FUN_ARG_DATA) && descr->fun[n].arg_ptr == NULL) ||
@@ -706,6 +758,9 @@ pfq_computation_rtlink(struct pfq_computation_descr const *descr, computation_t 
                                 }
 
                         	comp->fun[n].fun = make_property(ptr, arg);
+ 				comp->fun[n].init = init;
+ 				comp->fun[n].fini = fini;
+
                         } else {
 
 				ptrdiff_t arg;
@@ -716,6 +771,8 @@ pfq_computation_rtlink(struct pfq_computation_descr const *descr, computation_t 
         			}
 
                         	comp->fun[n].fun = make_property(ptr, arg);
+ 				comp->fun[n].init = init;
+ 				comp->fun[n].fini = fini;
 			}
 
 
