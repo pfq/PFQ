@@ -127,11 +127,11 @@ steering_ip6(arguments_t args, struct sk_buff *skb)
 
 struct pfq_monadic_fun_descr steering_functions[] = {
 
-	{ "steer_mac",          steering_mac     , FUN_ACTION  	},
-        { "steer_vlan",      	steering_vlan_id , FUN_ACTION   },
-        { "steer_ip",           steering_ip      , FUN_ACTION   },
-        { "steer_ip6",		steering_ip6     , FUN_ACTION   },
-        { "steer_flow",         steering_flow    , FUN_ACTION   },
+	{ "steer_mac",   FUN_ACTION, steering_mac     },
+        { "steer_vlan",  FUN_ACTION, steering_vlan_id },
+        { "steer_ip",    FUN_ACTION, steering_ip      },
+        { "steer_ip6",	 FUN_ACTION, steering_ip6     },
+        { "steer_flow",  FUN_ACTION, steering_flow    },
 
-        { NULL, NULL}};
+        { NULL }};
 

@@ -25,10 +25,10 @@
 
 struct pfq_function_descr high_order_functions[] = {
 
-        { "conditional",	INLINE_FUN(conditional) , FUN_ACTION | FUN_ARG_FUN 	},
-        { "when",       	INLINE_FUN(when) 	, FUN_ACTION | FUN_ARG_FUN	},
-        { "unless",     	INLINE_FUN(unless)  	, FUN_ACTION | FUN_ARG_FUN	},
+        { "conditional", FUN_ACTION | FUN_ARG_FUN, INLINE_FUN(conditional) },
+        { "when",        FUN_ACTION | FUN_ARG_FUN, INLINE_FUN(when) 	   },
+        { "unless",      FUN_ACTION | FUN_ARG_FUN, INLINE_FUN(unless)  	   },
 
-        { NULL, NULL}};
+        { NULL }};
 
 

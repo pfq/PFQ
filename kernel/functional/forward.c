@@ -83,13 +83,13 @@ forward_fini(arguments_t args)
 
 struct pfq_monadic_fun_descr forward_functions[] = {
 
-        { "drop",       	INLINE_FUN(forward_drop)   	, FUN_ACTION  },
-        { "broadcast",  	INLINE_FUN(forward_broadcast)	, FUN_ACTION  },
-        { "kernel",     	INLINE_FUN(forward_kernel)   	, FUN_ACTION  },
-        { "class",		INLINE_FUN(forward_class) 	, FUN_ACTION | FUN_ARG_DATA },
+        { "drop",       FUN_ACTION, 			INLINE_FUN(forward_drop)   	},
+        { "broadcast",  FUN_ACTION, 			INLINE_FUN(forward_broadcast)	},
+        { "kernel",     FUN_ACTION, 			INLINE_FUN(forward_kernel)   	},
+        { "class",	FUN_ACTION | FUN_ARG_DATA, 	INLINE_FUN(forward_class) 	},
 
-        { "sink",               sink 	, FUN_ACTION			},
-	{ "forward", 		forward , FUN_ACTION | FUN_ARG_DATA, forward_init, forward_fini },
+        { "sink",       FUN_ACTION, 			sink },
+	{ "forward",    FUN_ACTION | FUN_ARG_DATA, 	forward, forward_init, forward_fini },
 
         { NULL }};
 

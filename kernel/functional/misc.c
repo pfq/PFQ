@@ -80,10 +80,10 @@ counter(arguments_t args, struct sk_buff *skb)
 
 struct pfq_function_descr misc_functions[] = {
 
-        { "counter", 	counter 		, FUN_ACTION | FUN_ARG_DATA },
-        { "dummy",      dummy   		, FUN_ACTION | FUN_ARG_DATA , dummy_init,  dummy_fini },
- 	{ "mark", 	INLINE_FUN(mark)	, FUN_ACTION | FUN_ARG_DATA },
+        { "counter", 	FUN_ACTION | FUN_ARG_DATA , counter },
+        { "dummy",      FUN_ACTION | FUN_ARG_DATA , dummy, dummy_init,  dummy_fini },
+ 	{ "mark", 	FUN_ACTION | FUN_ARG_DATA , INLINE_FUN(mark) },
 
-        { NULL, NULL}};
+        { NULL }};
 
 

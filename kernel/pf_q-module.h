@@ -136,8 +136,8 @@ typedef struct pfq_computation
 struct pfq_function_descr
 {
         const char *    symbol;
-        void * 		ptr;
         uint64_t	properties;
+        void * 		ptr;
         init_ptr_t 	init;
         fini_ptr_t 	fini;
 };
@@ -145,8 +145,8 @@ struct pfq_function_descr
 struct pfq_monadic_fun_descr
 {
         const char *    symbol;
-        function_ptr_t 	ptr;
         uint64_t	properties;
+        function_ptr_t 	ptr;
         init_ptr_t 	init;
         fini_ptr_t 	fini;
 };
@@ -154,8 +154,8 @@ struct pfq_monadic_fun_descr
 struct pfq_predicate_fun_descr
 {
         const char * 	symbol;
-        predicate_ptr_t ptr;
         uint64_t	properties;
+        predicate_ptr_t ptr;
         init_ptr_t 	init;
         fini_ptr_t 	fini;
 };
@@ -163,8 +163,8 @@ struct pfq_predicate_fun_descr
 struct pfq_combinator_fun_descr
 {
         const char * 	symbol;
-        predicate_ptr_t ptr;
         uint64_t	properties;
+        predicate_ptr_t ptr;
         init_ptr_t 	init;
         fini_ptr_t 	fini;
 };
@@ -172,8 +172,8 @@ struct pfq_combinator_fun_descr
 struct pfq_property_fun_descr
 {
         const char * 	symbol;
-        property_ptr_t 	ptr;
         uint64_t	properties;
+        property_ptr_t 	ptr;
         init_ptr_t 	init;
         fini_ptr_t 	fini;
 };

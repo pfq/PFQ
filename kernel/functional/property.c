@@ -364,22 +364,22 @@ icmp_code(arguments_t args, struct sk_buff const *skb)
 
 struct pfq_property_fun_descr property_functions[] = {
 
-        { "ip_tos", 	ip_tos 	  	, FUN_PROPERTY },
-        { "ip_tot_len", ip_tot_len	, FUN_PROPERTY },
-        { "ip_id",  	ip_id 	  	, FUN_PROPERTY },
-        { "ip_frag",	ip_frag 	, FUN_PROPERTY },
-        { "ip_ttl", 	ip_ttl 	  	, FUN_PROPERTY },
+        { "ip_tos", 	 FUN_PROPERTY, ip_tos 	   },
+        { "ip_tot_len",  FUN_PROPERTY, ip_tot_len  },
+        { "ip_id",  	 FUN_PROPERTY, ip_id 	   },
+        { "ip_frag",	 FUN_PROPERTY, ip_frag 	   },
+        { "ip_ttl", 	 FUN_PROPERTY, ip_ttl 	   },
 
-        { "tcp_source",  tcp_source	, FUN_PROPERTY },
-        { "tcp_dest", 	 tcp_dest 	, FUN_PROPERTY },
-        { "tcp_hdrlen",  tcp_hdrlen_	, FUN_PROPERTY },
+        { "tcp_source",  FUN_PROPERTY, tcp_source  },
+        { "tcp_dest", 	 FUN_PROPERTY, tcp_dest    },
+        { "tcp_hdrlen",  FUN_PROPERTY, tcp_hdrlen_ },
 
-        { "udp_source",  udp_source	, FUN_PROPERTY },
-        { "udp_dest", 	 udp_dest 	, FUN_PROPERTY },
-        { "udp_len",  	 udp_len	, FUN_PROPERTY },
+        { "udp_source",  FUN_PROPERTY, udp_source  },
+        { "udp_dest", 	 FUN_PROPERTY, udp_dest    },
+        { "udp_len",  	 FUN_PROPERTY, udp_len	   },
 
-        { "icmp_type",   icmp_type      , FUN_PROPERTY },
-        { "icmp_code",   icmp_code	, FUN_PROPERTY },
+        { "icmp_type",   FUN_PROPERTY, icmp_type   },
+        { "icmp_code",   FUN_PROPERTY, icmp_code   },
 
-        { NULL, NULL}};
+        { NULL }};
 
