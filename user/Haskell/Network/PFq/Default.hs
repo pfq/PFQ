@@ -31,13 +31,13 @@
 
 module Network.PFq.Default
     (
-        -- combinators
+        -- * Combinators
 
         (.||.),
         (.&&.),
         (.^^.),
 
-        -- comparators
+        -- * Predicates
 
         (.<.),
         (.<=.),
@@ -47,8 +47,6 @@ module Network.PFq.Default
         (.>=.),
         any_bit,
         all_bit,
-
-        -- predicates
 
         is_ip,
         is_udp,
@@ -74,7 +72,7 @@ module Network.PFq.Default
         has_vid,
         has_mark,
 
-        -- properties
+        -- * Properties
 
         ip_tos      ,
         ip_tot_len  ,
@@ -93,14 +91,7 @@ module Network.PFq.Default
         icmp_type   ,
         icmp_code   ,
 
-        -- monadic functions
-
-        steer_mac  ,
-        steer_vlan ,
-        steer_ip   ,
-        steer_ip6  ,
-        steer_flow ,
-        steer_rtp  ,
+        -- * Filters
 
         ip         ,
         ip6        ,
@@ -124,24 +115,37 @@ module Network.PFq.Default
         src_addr   ,
         dst_addr   ,
 
+        -- * Steering functions
+
+        steer_mac  ,
+        steer_vlan ,
+        steer_ip   ,
+        steer_ip6  ,
+        steer_flow ,
+        steer_rtp  ,
+
+        -- * Forwarders
+
         kernel     ,
         broadcast  ,
         sink       ,
         drop'      ,
+        forward    ,
+
+        -- * Conditionals
+
+        conditional ,
+        when'       ,
+        unless'     ,
+
+        -- * Miscellaneous
 
         counter    ,
         mark       ,
-        forward    ,
         unit       ,
-        dummy      ,
         class'     ,
-
-        -- high order functions
-
-        hdummy,
-        conditional,
-        when',
-        unless',
+        dummy      ,
+        hdummy     ,
 
     ) where
 
@@ -157,7 +161,6 @@ import Network.Socket
 import System.IO.Unsafe
 
 -- Utilities
---
 
 prefix2mask :: Int -> Word32
 prefix2mask p =  toBigEndian $ fromIntegral $ complement (shiftL (1 :: Word64) (32 - p) - 1)
@@ -167,8 +170,7 @@ mkNetAddr net p = let a = unsafePerformIO (inet_addr net)
                       b = prefix2mask p
                   in  shiftL (fromIntegral a :: Word64) 32 .|. (fromIntegral b :: Word64)
 
--- Default combinators:
---
+-- Default combinators
 
 (.||.), (.&&.), (.^^.) :: Predicate -> Predicate -> Predicate
 
@@ -180,8 +182,7 @@ infixl 7 .&&.
 infixl 6 .^^.
 infixl 5 .||.
 
--- Default comparators:
---
+-- Default comparators
 
 (.<.), (.<=.), (.==.), (./=.), (.>.), (.>=.) :: Property -> Word64 -> Predicate
 p .<.  x = Pred4 "less" p x
@@ -204,59 +205,55 @@ p `any_bit` x = Pred4 "any_bit" p x
 p `all_bit` x = Pred4 "all_bit" p x
 
 
--- Default predicates:
---
+-- Default predicates
 
-is_ip    = Pred "is_ip"             :: Predicate
-is_ip6   = Pred "is_ip6"            :: Predicate
-is_udp   = Pred "is_udp"            :: Predicate
-is_tcp   = Pred "is_tcp"            :: Predicate
-is_icmp  = Pred "is_icmp"           :: Predicate
-is_udp6  = Pred "is_udp6"           :: Predicate
-is_tcp6  = Pred "is_tcp6"           :: Predicate
-is_icmp6 = Pred "is_icmp6"          :: Predicate
-is_flow  = Pred "is_flow"           :: Predicate
-has_vlan = Pred "has_vlan"          :: Predicate
+is_ip       = Pred "is_ip"              :: Predicate
+is_ip6      = Pred "is_ip6"             :: Predicate
+is_udp      = Pred "is_udp"             :: Predicate
+is_tcp      = Pred "is_tcp"             :: Predicate
+is_icmp     = Pred "is_icmp"            :: Predicate
+is_udp6     = Pred "is_udp6"            :: Predicate
+is_tcp6     = Pred "is_tcp6"            :: Predicate
+is_icmp6    = Pred "is_icmp6"           :: Predicate
+is_flow     = Pred "is_flow"            :: Predicate
+has_vlan    = Pred "has_vlan"           :: Predicate
 
-has_vid  = Pred1 "has_vid"          :: CInt -> Predicate
-has_mark = Pred1 "has_mark"         :: CULong -> Predicate
+has_vid     = Pred1 "has_vid"           :: CInt -> Predicate
+has_mark    = Pred1 "has_mark"          :: CULong -> Predicate
 
-is_l3_proto = Pred1 "is_l3_proto"   :: Int16 -> Predicate
-is_l4_proto = Pred1 "is_l4_proto"   :: Int8 -> Predicate
+is_l3_proto = Pred1 "is_l3_proto"       :: Int16 -> Predicate
+is_l4_proto = Pred1 "is_l4_proto"       :: Int8 -> Predicate
 
-has_port     = Pred1 "has_port"     :: Int16 -> Predicate
-has_src_port = Pred1 "has_src_port" :: Int16 -> Predicate
-has_dst_port = Pred1 "has_dst_port" :: Int16 -> Predicate
+has_port     = Pred1 "has_port"         :: Int16 -> Predicate
+has_src_port = Pred1 "has_src_port"     :: Int16 -> Predicate
+has_dst_port = Pred1 "has_dst_port"     :: Int16 -> Predicate
 
-has_addr, has_src_addr, has_dst_addr :: String -> Int -> Predicate
+has_addr, has_src_addr, has_dst_addr    :: String -> Int -> Predicate
 
 has_addr net p     = Pred1 "has_addr" (mkNetAddr net p)
 has_src_addr net p = Pred1 "has_src_addr" (mkNetAddr net p)
 has_dst_addr net p = Pred1 "has_dst_addr" (mkNetAddr net p)
 
+-- Default properties
 
--- Default properties:
---
---
-ip_tos          = Prop "ip_tos"
-ip_tot_len      = Prop "ip_tot_len"
-ip_id           = Prop "ip_id"
-ip_frag         = Prop "ip_frag"
-ip_ttl          = Prop "ip_ttl"
+ip_tos      = Prop "ip_tos"
+ip_tot_len  = Prop "ip_tot_len"
+ip_id       = Prop "ip_id"
+ip_frag     = Prop "ip_frag"
+ip_ttl      = Prop "ip_ttl"
 
-tcp_source      = Prop "tcp_source"
-tcp_dest        = Prop "tcp_dest"
-tcp_hdrlen      = Prop "tcp_hdrlen"
+tcp_source  = Prop "tcp_source"
+tcp_dest    = Prop "tcp_dest"
+tcp_hdrlen  = Prop "tcp_hdrlen"
 
-udp_source      = Prop "udp_source"
-udp_dest        = Prop "udp_dest"
-udp_len         = Prop "udp_len"
+udp_source  = Prop "udp_source"
+udp_dest    = Prop "udp_dest"
+udp_len     = Prop "udp_len"
 
-icmp_type       = Prop "icmp_type"
-icmp_code       = Prop "icmp_code"
+icmp_type   = Prop "icmp_type"
+icmp_code   = Prop "icmp_code"
 
--- Predefined in-kernel computations:
---
+-- Predefined in-kernel computations
 
 steer_mac   = Fun "steer_mac"       :: Computation QFunction
 steer_vlan  = Fun "steer_vlan"      :: Computation QFunction
