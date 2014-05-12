@@ -852,9 +852,9 @@ int pfq_setsockopt(struct socket *sock,
                         return -EFAULT;
                 }
 
-                /* compile the computation */
+                /* link the computation */
 
-                if (pfq_computation_compile(descr, comp, context) < 0) {
+                if (pfq_computation_rtlink(descr, comp, context) < 0) {
                         pr_devel("[PFQ|%d] computation aborted!", so->id);
                         kfree (descr);
                         return -EPERM;

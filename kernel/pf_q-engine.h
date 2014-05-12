@@ -104,7 +104,7 @@
 
 
 
-extern int pfq_computation_compile (struct pfq_computation_descr const *descr, computation_t *comp, void *context);
+extern int pfq_computation_rtlink(struct pfq_computation_descr const *descr, computation_t *comp, void *context);
 
 extern computation_t * pfq_computation_alloc(struct pfq_computation_descr const *);
 extern void * pfq_context_alloc(struct pfq_computation_descr const *);

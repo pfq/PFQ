@@ -487,7 +487,7 @@ get_functional_by_index(struct pfq_computation_descr const *descr, computation_t
 
 
 int
-pfq_computation_compile (struct pfq_computation_descr const *descr, computation_t *comp, void *context)
+pfq_computation_rtlink(struct pfq_computation_descr const *descr, computation_t *comp, void *context)
 {
         size_t n;
 
@@ -725,7 +725,7 @@ pfq_computation_compile (struct pfq_computation_descr const *descr, computation_
                 } break;
 
                 default: {
-                        pr_debug("[PFQ] computation_compile: invalid function!\n");
+                        pr_debug("[PFQ] computation_rtlink: invalid function!\n");
                         return -EPERM;
                 }
                 }
