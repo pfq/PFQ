@@ -66,6 +66,20 @@ forward(arguments_t args, struct sk_buff *skb)
 	return skb;
 }
 
+static int
+forward_init(arguments_t args)
+{
+	printk(KERN_INFO "[PFQ] %s\n", __PRETTY_FUNCTION__);
+	return 0;
+}
+
+static int
+forward_fini(arguments_t args)
+{
+	printk(KERN_INFO "[PFQ] %s\n", __PRETTY_FUNCTION__);
+	return 0;
+}
+
 
 struct pfq_monadic_fun_descr forward_functions[] = {
 
@@ -75,7 +89,7 @@ struct pfq_monadic_fun_descr forward_functions[] = {
         { "class",		INLINE_FUN(forward_class) 	, FUN_ACTION | FUN_ARG_DATA },
 
         { "sink",               sink 	, FUN_ACTION			},
-	{ "forward", 		forward , FUN_ACTION | FUN_ARG_DATA	},
+	{ "forward", 		forward , FUN_ACTION | FUN_ARG_DATA, forward_init, forward_fini },
 
-        { NULL, NULL}};
+        { NULL }};
 
