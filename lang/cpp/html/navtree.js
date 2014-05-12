@@ -1,6 +1,6 @@
 var NAVTREE =
 [
-  [ "Q-Lang C++ library", "index.html", [
+  [ "Q-Lang C++ eDLS", "index.html", [
     [ "Namespaces", null, [
       [ "Namespace List", "namespaces.html", "namespaces" ],
       [ "Namespace Members", "namespacemembers.html", [
