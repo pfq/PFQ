@@ -21,7 +21,7 @@ main(int argc, char *argv[])
     q.enable();
 
     q.vlan_filters_enable(q.group_id(), true);
-    q.vlan_set_filter(q.group_id(), vlan_opt::anytag);
+    q.vlan_set_filter(q.group_id(), vlan_id::anytag);
 
     for(;;)
     {

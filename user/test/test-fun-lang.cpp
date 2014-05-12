@@ -27,7 +27,9 @@ main(int argc, char *argv[])
     //     (counter 1 >-> mark 1 >-> steer_ip >-> when' (has_mark 1) (counter 2))
     //     drop'
 
-    auto comp = ip >> addr("192.168.0.0", 16) >> unit >> counter (0) >>
+    auto lo = net::nametoindex("lo");
+
+    auto comp = ip >> forward (lo) >> addr("192.168.0.0", 16) >> unit >> counter (0) >>
                     conditional (is_icmp & has_addr("192.168.0.0", 16) & any_bit(ip_id, 0xffffff),
                                  (counter (1) >> mark (1) >> steer_ip >> when (has_mark (1), counter (2))),
                                   drop);
