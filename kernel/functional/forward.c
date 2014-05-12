@@ -44,9 +44,7 @@ sink(arguments_t args, struct sk_buff *skb)
 static struct sk_buff *
 forward(arguments_t args, struct sk_buff *skb)
 {
-        const int index = get_data(int, args);
-
-	struct net_device *dev = dev_get_by_index(&init_net, index);
+	struct net_device *dev = get_data(struct net_device *, args);
 	if (dev == NULL) {
                 if (printk_ratelimit())
                         printk(KERN_INFO "[PFQ] forward: device error!\n");
@@ -62,21 +60,33 @@ forward(arguments_t args, struct sk_buff *skb)
 #endif
 	}
 
-	dev_put(dev);
 	return skb;
 }
 
 static int
 forward_init(arguments_t args)
 {
-	printk(KERN_INFO "[PFQ] %s\n", __PRETTY_FUNCTION__);
+	const int index = get_data(int, args);
+
+	struct net_device *dev = dev_get_by_index(&init_net, index);
+	if (dev == NULL) {
+                printk(KERN_INFO "[PFQ] forward_init: device not found!\n");
+                return -1;
+	}
+
+	set_data(args, dev);
+	printk(KERN_INFO "[PFQ] forward_init: device %s locked.\n", dev->name);
+
 	return 0;
 }
 
 static int
 forward_fini(arguments_t args)
 {
-	printk(KERN_INFO "[PFQ] %s\n", __PRETTY_FUNCTION__);
+	struct net_device *dev = get_data(struct net_device *, args);
+	printk(KERN_INFO "[PFQ] forward_fini: device %s released.\n", dev->name);
+	dev_put(dev);
+
 	return 0;
 }
 
