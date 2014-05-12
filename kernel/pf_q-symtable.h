@@ -32,6 +32,19 @@
 
 #include <pf_q-module.h>
 
+
+/* symtable_entry */
+
+struct symtable_entry
+{
+	struct list_head 	list;
+	char 			symbol[Q_FUN_SYMB_LEN];
+	void *                  function;
+	void *			init;
+	void *			fini;
+	uint64_t 		properties;
+};
+
 /* semaphore */
 
 extern struct semaphore         symtable_sem;
@@ -55,8 +68,7 @@ extern int  pfq_symtable_unregister_function(const char *module, struct list_hea
 extern int pfq_symtable_register_functions  (const char *module, struct list_head *category, struct pfq_function_descr *fun);
 extern int pfq_symtable_unregister_functions(const char *module, struct list_head *category, struct pfq_function_descr *fun);
 
-extern void * pfq_symtable_resolve(struct list_head *category, const char *symbol);
-extern uint64_t pfq_symtable_get_properties(struct list_head *category, const char *symbol);
+extern struct symtable_entry *pfq_symtable_search(struct list_head *category, const char *symbol);
 
 
 #endif /* _PF_Q_SYMTABLE_H_ */

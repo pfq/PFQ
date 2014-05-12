@@ -449,8 +449,8 @@ validate_computation_descr(struct pfq_computation_descr const *descr)
 static void *
 resolve_user_symbol(struct list_head *cat, const char __user *symb, uint64_t *prop)
 {
+	struct symtable_entry *entry;
         const char *symbol;
-        void *addr;
 
         symbol = strdup_user(symb);
         if (symbol == NULL) {
@@ -458,16 +458,16 @@ resolve_user_symbol(struct list_head *cat, const char __user *symb, uint64_t *pr
                 return NULL;
         }
 
-        addr = pfq_symtable_resolve(cat, symbol);
-        if (addr == NULL) {
+        entry = pfq_symtable_search(cat, symbol);
+        if (entry == NULL) {
                 printk(KERN_INFO "[PFQ] resolve_symbol: '%s' no such function!\n", symbol);
                 return NULL;
         }
 
-        *prop = pfq_symtable_get_properties(cat, symbol);
+        *prop = entry->properties;
 
         kfree(symbol);
-        return addr;
+        return entry->function;
 }
 
 
