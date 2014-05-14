@@ -225,7 +225,8 @@ namespace pfq_lang
         auto forward    = [] (int index) { return computation1("forward", index); };
         auto mark       = [] (unsigned long value) { return computation1("mark", value); };
         auto dummy      = [] (int value) { return computation1("dummy", value); };
-        auto counter    = [] (int value) { return computation1("counter", value); };
+        auto inc        = [] (int value) { return computation1("inc", value); };
+        auto dec        = [] (int value) { return computation1("dec", value); };
         auto class_     = [] (int value) { return computation1("class", value); };
         auto l3_proto   = [] (uint16_t type) { return computation1 ("l3_proto", type); };
         auto l4_proto   = [] (uint8_t proto) { return computation1 ("l4_proto", proto); };

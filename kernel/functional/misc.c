@@ -58,7 +58,7 @@ dummy_fini(arguments_t args)
 
 
 static struct sk_buff *
-counter(arguments_t args, struct sk_buff *skb)
+inc_counter(arguments_t args, struct sk_buff *skb)
 {
         const int idx = get_data(int,args);
 
@@ -76,11 +76,32 @@ counter(arguments_t args, struct sk_buff *skb)
         return skb;
 }
 
+static struct sk_buff *
+dec_counter(arguments_t args, struct sk_buff *skb)
+{
+        const int idx = get_data(int,args);
+
+        sparse_counter_t * ctr;
+
+        ctr = get_counter(skb, idx);
+        if (ctr)  {
+                sparse_dec(ctr);
+        }
+        else {
+                if (printk_ratelimit())
+                        printk(KERN_INFO "[PFQ] fun/count(%d): bad index!\n", idx);
+        }
+
+        return skb;
+}
+
 
 
 struct pfq_function_descr misc_functions[] = {
 
-        { "counter", 	FUN_ACTION | FUN_ARG_DATA , counter },
+        { "inc", 	FUN_ACTION | FUN_ARG_DATA , inc_counter },
+        { "dec", 	FUN_ACTION | FUN_ARG_DATA , dec_counter },
+
         { "dummy",      FUN_ACTION | FUN_ARG_DATA , dummy, dummy_init,  dummy_fini },
  	{ "mark", 	FUN_ACTION | FUN_ARG_DATA , INLINE_FUN(mark) },
 

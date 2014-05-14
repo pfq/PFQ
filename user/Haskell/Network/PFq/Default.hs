@@ -140,7 +140,8 @@ module Network.PFq.Default
 
         -- * Miscellaneous
 
-        counter    ,
+        inc        ,
+        dec        ,
         mark       ,
         unit       ,
         class'     ,
@@ -280,7 +281,8 @@ sink        = Fun "sink"            :: Computation QFunction
 drop'       = Fun "drop"            :: Computation QFunction
 unit        = Fun "unit"            :: Computation QFunction
 
-counter     = Fun1 "counter"        :: CInt -> Computation QFunction
+inc         = Fun1 "inc"            :: CInt -> Computation QFunction
+dec         = Fun1 "dec"            :: CInt -> Computation QFunction
 mark        = Fun1 "mark"           :: CULong -> Computation QFunction
 forward     = Fun1 "forward"        :: CInt -> Computation QFunction
 dummy       = Fun1 "dummy"          :: CInt -> Computation QFunction
