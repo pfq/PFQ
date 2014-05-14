@@ -46,7 +46,7 @@ dumper dev = do
         Q.bindGroup q gid dev (-1)
         Q.enable q
 
-        Q.groupComputation q gid (icmp >-> steer_ip >-> counter 0)
+        Q.groupComputation q gid (icmp >-> steer_ip >-> inc 0)
 
         Q.getRxSlotSize q >>= \o -> putStrLn $ "slot_size: " ++ show o
         recvDispatch q

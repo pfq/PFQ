@@ -87,9 +87,9 @@ dumper dev = do
         Q.bindGroup q gid dev (-1)
         Q.enable q
 
-        Q.groupComputation q gid (ip >-> addr "192.168.0.0" 16 >-> counter 0 >-> unit
+        Q.groupComputation q gid (ip >-> addr "192.168.0.0" 16 >-> inc 0 >-> unit
                                     >-> conditional (is_icmp .&&. has_addr "192.168.0.0" 16 .&&. (ip_tot_len .<. 1000) .&&. ip_id `any_bit` 0xffffffff )
-                                        (counter 1 >-> mark 1 >-> steer_ip >-> when' (has_mark 1) (counter 2))
+                                        (inc 1 >-> mark 1 >-> steer_ip >-> when' (has_mark 1) (inc 2))
                                         drop')
 
         -- Q.vlanFiltersEnabled q gid True

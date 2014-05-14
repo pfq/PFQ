@@ -18,7 +18,7 @@ main()
 
     // computations:
 
-    std::cout << show ( ip >> udp >> steer_rtp >> counter(2) ) << std::endl;
+    std::cout << show ( ip >> udp >> steer_rtp >> inc(2) ) << std::endl;
 
     std::cout << show ( hdummy (is_ip) ) << std::endl;
     std::cout << show ( hdummy (is_ip) ) << std::endl;

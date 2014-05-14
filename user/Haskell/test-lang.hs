@@ -35,8 +35,8 @@ main = do
         let comp = steer_rtp >-> dummy 24
                     >-> (conditional (mycond  .||. mycond1)
                                         steer_ip
-                                        (counter 1 >-> drop')
-                        ) >-> when' is_tcp (counter 2)  >-> dummy 11
+                                        (inc 1 >-> drop')
+                        ) >-> when' is_tcp (inc 2)  >-> dummy 11
 
         putStrLn "computation:"
         print comp
