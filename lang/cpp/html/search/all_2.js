@@ -10,6 +10,5 @@ var searchData=
   ['comp_5f',['comp_',['../structpfq__lang_1_1term_1_1HFun1.html#a16b8c06ef73b339272e21dbfd5be962c',1,'pfq_lang::term::HFun1']]],
   ['computation',['computation',['../namespacepfq__lang.html#ac0c16097c968653e72c609890dfb4c44',1,'pfq_lang']]],
   ['computation1',['computation1',['../namespacepfq__lang.html#a58e7e358fc7c95121f74d56c094b1627',1,'pfq_lang']]],
-  ['conditional',['conditional',['../namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03.html#a022d0075edf2fff575b93377aec0c228',1,'pfq_lang::anonymous_namespace{default.hpp}']]],
-  ['counter',['counter',['../namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03.html#a36fc8422d88371c2415438222a71ed11',1,'pfq_lang::anonymous_namespace{default.hpp}']]]
+  ['conditional',['conditional',['../namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03.html#a022d0075edf2fff575b93377aec0c228',1,'pfq_lang::anonymous_namespace{default.hpp}']]]
 ];
