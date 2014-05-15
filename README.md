@@ -4,9 +4,9 @@ PFQ v3.0
 Introduction
 ------------
 
-PFQ is a network monitoring framework designed for the Linux kernel that allows 
-efficient packet capturing, in-kernel functional processing and packet steering 
-across sockets. 
+PFQ is a network monitoring framework designed for the Linux operating system 
+that allows efficient packet capturing, in-kernel functional processing and packet 
+steering across sockets. 
 
 PFQ is highly optimized for multi-core architecture, as well as for network 
 devices supporting multiple hardware queues. It works with any device
@@ -21,7 +21,7 @@ Features
 
 * 10-Gbit Line-rate (14,8Mpps) with Intel ixgbe vanilla driver.
 * Socket groups allow for concurrent monitoring of multi-threaded applications.
-* Per-group packet steering through randomized hashing algorithms or deterministic packet classifications.
+* Per-group packet steering through randomized hashing algorithms or deterministic classifications.
 * Per-group Berkeley filters and per-group VLAN filters.
 * Extensible framework for in-kernel functional monitoring: Q-Lang. 
 * User-space native bindings for C, C++11 and Haskell languages.
