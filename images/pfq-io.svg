@@ -26,14 +26,14 @@
      inkscape:pageshadow="2"
      inkscape:zoom="7.5866721"
      inkscape:cx="214.80819"
-     inkscape:cy="896.54955"
+     inkscape:cy="900.60844"
      inkscape:document-units="px"
      inkscape:current-layer="layer1"
      showgrid="false"
      inkscape:window-width="1363"
      inkscape:window-height="700"
-     inkscape:window-x="466"
-     inkscape:window-y="467"
+     inkscape:window-x="155"
+     inkscape:window-y="101"
      inkscape:window-maximized="0" />
   <metadata
      id="metadata7">
@@ -43,7 +43,7 @@
         <dc:format>image/svg+xml</dc:format>
         <dc:type
            rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
-        <dc:title></dc:title>
+        <dc:title />
       </cc:Work>
     </rdf:RDF>
   </metadata>
@@ -65,7 +65,7 @@
          x="117.66569"
          y="174.01263"
          style="font-size:56px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:start;line-height:100%;writing-mode:lr-tb;text-anchor:start;font-family:Cantarell;-inkscape-font-specification:Cantarell Bold">PF<tspan
-   style="font-size:56px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:start;line-height:100%;writing-mode:lr-tb;text-anchor:start;fill:#008080;font-family:Cantarell;-inkscape-font-specification:Cantarell Bold"
+   style="font-size:56px;font-style:normal;font-variant:normal;font-weight:bold;font-stretch:normal;text-align:start;line-height:100%;writing-mode:lr-tb;text-anchor:start;fill:#3465a4;font-family:Cantarell;-inkscape-font-specification:Cantarell Bold"
    id="tspan3142">Q</tspan> i/o</tspan></text>
   </g>
 </svg>
