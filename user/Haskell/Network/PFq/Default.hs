@@ -145,6 +145,7 @@ module Network.PFq.Default
         mark       ,
         unit       ,
         class'     ,
+        crc16      ,
         dummy      ,
         hdummy     ,
 
@@ -281,6 +282,7 @@ sink        = Fun "sink"            :: Computation QFunction
 drop'       = Fun "drop"            :: Computation QFunction
 unit        = Fun "unit"            :: Computation QFunction
 
+crc16       = Fun "crc16"           :: Computation QFunction
 inc         = Fun1 "inc"            :: CInt -> Computation QFunction
 dec         = Fun1 "dec"            :: CInt -> Computation QFunction
 mark        = Fun1 "mark"           :: CULong -> Computation QFunction

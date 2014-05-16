@@ -23,6 +23,7 @@
 
 #include <linux/kernel.h>
 #include <linux/module.h>
+#include <linux/crc16.h>
 
 #include <pf_q-module.h>
 #include <pf_q-sparse.h>
@@ -96,6 +97,16 @@ dec_counter(arguments_t args, struct sk_buff *skb)
 }
 
 
+static struct sk_buff *
+crc16_sum(arguments_t args, struct sk_buff *skb)
+{
+	u16 crc = crc16(0, (u8 const *)eth_hdr(skb), skb->len);
+	set_state(skb, crc);
+
+        return skb;
+}
+
+
 
 struct pfq_function_descr misc_functions[] = {
 
@@ -104,6 +115,8 @@ struct pfq_function_descr misc_functions[] = {
 
         { "dummy",      FUN_ACTION | FUN_ARG_DATA , dummy, dummy_init,  dummy_fini },
  	{ "mark", 	FUN_ACTION | FUN_ARG_DATA , INLINE_FUN(mark) },
+
+        { "crc16", 	FUN_ACTION, crc16_sum},
 
         { NULL }};
 

@@ -267,5 +267,6 @@ namespace pfq_lang
         auto unless      = std::bind(details::hcomp1(), "unless", _1, _2);
         auto conditional = std::bind(details::hcomp2(), "conditional", _1, _2, _3);
 
+        auto crc16       = computation("crc16");
     }
 }
