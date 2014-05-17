@@ -573,7 +573,7 @@ pfq_computation_rtlink(struct pfq_computation_descr const *descr, computation_t 
                         	comp->fun[n].fini = fini;
                         }
 			else {
-				ptrdiff_t arg;
+				ptrdiff_t arg = 0;
 
         			if (copy_from_user(&arg, descr->fun[n].arg_ptr, descr->fun[n].arg_size)) {
                                         pr_devel("[PFQ] %zu: fun internal error!\n", n);
@@ -678,7 +678,7 @@ pfq_computation_rtlink(struct pfq_computation_descr const *descr, computation_t 
 
                         } else {
 
-				ptrdiff_t arg;
+				ptrdiff_t arg = 0;
 
         			if (copy_from_user(&arg, descr->fun[n].arg_ptr, descr->fun[n].arg_size)) {
                                         pr_devel("[PFQ] %zu: fun internal error!\n", n);
@@ -763,7 +763,7 @@ pfq_computation_rtlink(struct pfq_computation_descr const *descr, computation_t 
 
                         } else {
 
-				ptrdiff_t arg;
+				ptrdiff_t arg = 0;
 
         			if (copy_from_user(&arg, descr->fun[n].arg_ptr, descr->fun[n].arg_size)) {
                                         pr_devel("[PFQ] %zu: fun internal error!\n", n);
