@@ -117,7 +117,7 @@ module Network.PFq.Default
 
         -- * Steering functions
 
-        steer_mac  ,
+        steer_link ,
         steer_vlan ,
         steer_ip   ,
         steer_ip6  ,
@@ -257,7 +257,7 @@ icmp_code   = Prop "icmp_code"
 
 -- Predefined in-kernel computations
 
-steer_mac   = Fun "steer_mac"       :: Computation QFunction
+steer_link  = Fun "steer_link"      :: Computation QFunction
 steer_vlan  = Fun "steer_vlan"      :: Computation QFunction
 steer_ip    = Fun "steer_ip"        :: Computation QFunction
 steer_ip6   = Fun "steer_ip6"       :: Computation QFunction

@@ -29,13 +29,13 @@
 
 
 static struct sk_buff *
-steering_mac(arguments_t args, struct sk_buff *skb)
+steering_link(arguments_t args, struct sk_buff *skb)
 {
-        uint16_t * b;
+        uint32_t * w;
 
-        b = (uint16_t *)eth_hdr(skb);
+        w = (uint32_t *)eth_hdr(skb);
 
-	return steering(skb, b[0] ^ b[1] ^ b[2] ^ b[3] ^ b[4] ^ b[5] );
+	return steering(skb, w[0] ^ w[1] ^ w[2]); // 3 * sizeof(uint32_t) = 12 bytes.
 }
 
 
@@ -127,7 +127,7 @@ steering_ip6(arguments_t args, struct sk_buff *skb)
 
 struct pfq_monadic_fun_descr steering_functions[] = {
 
-	{ "steer_mac",   FUN_ACTION, steering_mac     },
+	{ "steer_link",  FUN_ACTION, steering_link    },
         { "steer_vlan",  FUN_ACTION, steering_vlan_id },
         { "steer_ip",    FUN_ACTION, steering_ip      },
         { "steer_ip6",	 FUN_ACTION, steering_ip6     },
