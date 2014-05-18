@@ -47,7 +47,7 @@ struct \hyperlink{structpfq__lang_1_1term_1_1HFun2}{pfq\-\_\-lang\-::term\-::\-H
 \item 
 struct \hyperlink{structpfq__lang_1_1term_1_1Comp}{pfq\-\_\-lang\-::term\-::\-Comp$<$ C1, C2 $>$}
 \item 
-struct \hyperlink{structpfq__lang_1_1term_1_1is__computation}{pfq\-\_\-lang\-::term\-::is\-\_\-computation$<$ Tp $>$}
+struct \hyperlink{structpfq__lang_1_1term_1_1is__netfunction}{pfq\-\_\-lang\-::term\-::is\-\_\-netfunction$<$ Tp $>$}
 \end{DoxyCompactItemize}
 \subsection*{Namespaces}
 \begin{DoxyCompactItemize}
@@ -166,33 +166,33 @@ term\-::\-Prop \hyperlink{namespacepfq__lang_ad70b40071ed0fd32c05ab8e82bbfec61}{
 {\footnotesize template$<$typename T $>$ }\\std\-::enable\-\_\-if$<$ std\-::is\-\_\-pod$<$ T $>$\\*
 \-::value, term\-::\-Prop1 $>$\-::type \hyperlink{namespacepfq__lang_a3a4768b9f4e03b86943d332254cca27e}{pfq\-\_\-lang\-::property1} (std\-::string name, const T \&arg)
 \item 
-term\-::\-Fun \hyperlink{namespacepfq__lang_ac0c16097c968653e72c609890dfb4c44}{pfq\-\_\-lang\-::computation} (std\-::string name)
+term\-::\-Fun \hyperlink{namespacepfq__lang_a9f546a4602872df5ca74050ecb68a6b3}{pfq\-\_\-lang\-::netfunction} (std\-::string name)
 \item 
 {\footnotesize template$<$typename T $>$ }\\std\-::enable\-\_\-if$<$ std\-::is\-\_\-pod$<$ T $>$\\*
-\-::value, term\-::\-Fun1 $>$\-::type \hyperlink{namespacepfq__lang_a58e7e358fc7c95121f74d56c094b1627}{pfq\-\_\-lang\-::computation1} (std\-::string name, const T \&arg)
+\-::value, term\-::\-Fun1 $>$\-::type \hyperlink{namespacepfq__lang_af215f25fa7ebd61fdc90cf0ef78a3164}{pfq\-\_\-lang\-::netfunction1} (std\-::string name, const T \&arg)
 \item 
 {\footnotesize template$<$typename P $>$ }\\std\-::enable\-\_\-if\\*
 $<$ term\-::is\-\_\-predicate$<$ P $>$\\*
 \-::value, term\-::\-H\-Fun$<$ P $>$\\*
- $>$\-::type \hyperlink{namespacepfq__lang_aabfd9ddf8afda95bb20b5668024eff31}{pfq\-\_\-lang\-::hcomputation} (std\-::string name, P const \&p)
+ $>$\-::type \hyperlink{namespacepfq__lang_a78972807ac46884d5cd0719795946936}{pfq\-\_\-lang\-::hnetfunction} (std\-::string name, P const \&p)
 \item 
 {\footnotesize template$<$typename P , typename C $>$ }\\std\-::enable\-\_\-if\\*
 $<$ term\-::is\-\_\-predicate$<$ P $>$\\*
-\-::value \&\&term\-::is\-\_\-computation\\*
+\-::value \&\&term\-::is\-\_\-netfunction\\*
 $<$ C $>$\-::value, term\-::\-H\-Fun1$<$ P, \\*
-C $>$ $>$\-::type \hyperlink{namespacepfq__lang_a778ddb4e54e9a8f8c31af25ab08fa131}{pfq\-\_\-lang\-::hcomputation1} (std\-::string name, P const \&p, C const \&c)
+C $>$ $>$\-::type \hyperlink{namespacepfq__lang_a71df0d0d66c45c40ad348a35a1781c71}{pfq\-\_\-lang\-::hnetfunction1} (std\-::string name, P const \&p, C const \&c)
 \item 
 {\footnotesize template$<$typename P , typename C1 , typename C2 $>$ }\\std\-::enable\-\_\-if\\*
 $<$ term\-::is\-\_\-predicate$<$ P $>$\\*
-\-::value \&\&term\-::is\-\_\-computation\\*
+\-::value \&\&term\-::is\-\_\-netfunction\\*
 $<$ C1 $>$\-::value \\*
-\&\&term\-::is\-\_\-computation$<$ C2 $>$\\*
+\&\&term\-::is\-\_\-netfunction$<$ C2 $>$\\*
 \-::value, term\-::\-H\-Fun2$<$ P, C1, \\*
-C2 $>$ $>$\-::type \hyperlink{namespacepfq__lang_a0f3e7007ec3c6cbec92fda3f6e0de6bf}{pfq\-\_\-lang\-::hcomputation2} (std\-::string name, P const \&p, C1 const \&c1, C2 const \&c2)
+C2 $>$ $>$\-::type \hyperlink{namespacepfq__lang_a0899ef1c7c1872d3d2da51cf5704ab84}{pfq\-\_\-lang\-::hnetfunction2} (std\-::string name, P const \&p, C1 const \&c1, C2 const \&c2)
 \item 
 {\footnotesize template$<$typename C1 , typename C2 $>$ }\\std\-::enable\-\_\-if\\*
-$<$ term\-::is\-\_\-computation$<$ C1 $>$\\*
-\-::value \&\&term\-::is\-\_\-computation\\*
+$<$ term\-::is\-\_\-netfunction$<$ C1 $>$\\*
+\-::value \&\&term\-::is\-\_\-netfunction\\*
 $<$ C2 $>$\-::value, term\-::\-Comp$<$ C1, \\*
-C2 $>$ $>$\-::type \hyperlink{namespacepfq__lang_a906ef152d395b1870a16c204571684cb}{pfq\-\_\-lang\-::operator$>$$>$} (C1 c1, C2 c2)
+C2 $>$ $>$\-::type \hyperlink{namespacepfq__lang_a4c0690ecb14af669a41969a5de14acad}{pfq\-\_\-lang\-::operator$>$$>$} (C1 c1, C2 c2)
 \end{DoxyCompactItemize}

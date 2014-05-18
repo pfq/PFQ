@@ -12,7 +12,7 @@ var hierarchy =
     [ "pfq_lang::term::HFun1< P, C >", "structpfq__lang_1_1term_1_1HFun1.html", null ],
     [ "pfq_lang::term::HFun2< P, C1, C2 >", "structpfq__lang_1_1term_1_1HFun2.html", null ],
     [ "integral_constant", null, [
-      [ "pfq_lang::term::is_computation< Tp >", "structpfq__lang_1_1term_1_1is__computation.html", null ],
+      [ "pfq_lang::term::is_netfunction< Tp >", "structpfq__lang_1_1term_1_1is__netfunction.html", null ],
       [ "pfq_lang::term::is_predicate< Tp >", "structpfq__lang_1_1term_1_1is__predicate.html", null ],
       [ "pfq_lang::term::is_property< Tp >", "structpfq__lang_1_1term_1_1is__property.html", null ]
     ] ],

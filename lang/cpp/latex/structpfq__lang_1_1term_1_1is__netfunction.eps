@@ -173,7 +173,7 @@
 
 boxfont setfont
 1 boundaspect scale
-(pfq_lang::term::is_computation< Tp >) cw
+(pfq_lang::term::is_netfunction< Tp >) cw
 (std::integral_constant< bool, std::is_same< Tp, Fun >::value||std::is_same< Tp, Fun1 >::value||is_same_template< Tp, HFun >::value||is_same_template< Tp, HFun1 >::value||is_same_template< Tp, HFun2 >::value||is_same_template< Tp, Comp >::value >) cw
 /boxwidth boxwidth marginwidth 2 mul add def
 /xspacing boxwidth distx add def
@@ -186,7 +186,7 @@ boundx scalefactor div boundy scalefactor div scale
 
 % ----- classes -----
 
- (pfq_lang::term::is_computation< Tp >) 0.000000 0.000000 box
+ (pfq_lang::term::is_netfunction< Tp >) 0.000000 0.000000 box
  (std::integral_constant< bool, std::is_same< Tp, Fun >::value||std::is_same< Tp, Fun1 >::value||is_same_template< Tp, HFun >::value||is_same_template< Tp, HFun1 >::value||is_same_template< Tp, HFun2 >::value||is_same_template< Tp, Comp >::value >) 0.000000 1.000000 box
 
 % ----- relations -----

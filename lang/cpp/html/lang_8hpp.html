@@ -143,7 +143,7 @@ Classes</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpfq__lang_1_1term_1_1Comp.html">pfq_lang::term::Comp&lt; C1, C2 &gt;</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpfq__lang_1_1term_1_1is__computation.html">pfq_lang::term::is_computation&lt; Tp &gt;</a></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpfq__lang_1_1term_1_1is__netfunction.html">pfq_lang::term::is_netfunction&lt; Tp &gt;</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="namespaces"></a>
@@ -283,41 +283,41 @@ P2 &gt; &gt;::type&#160;</td><td class="memTemplItemRight" valign="bottom"><a cl
 <tr class="memitem:a3a4768b9f4e03b86943d332254cca27e"><td class="memTemplItemLeft" align="right" valign="top">std::enable_if&lt; std::is_pod&lt; T &gt;<br class="typebreak"/>
 ::value, term::Prop1 &gt;::type&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#a3a4768b9f4e03b86943d332254cca27e">pfq_lang::property1</a> (std::string name, const T &amp;arg)</td></tr>
 <tr class="separator:a3a4768b9f4e03b86943d332254cca27e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac0c16097c968653e72c609890dfb4c44"><td class="memItemLeft" align="right" valign="top">term::Fun&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#ac0c16097c968653e72c609890dfb4c44">pfq_lang::computation</a> (std::string name)</td></tr>
-<tr class="separator:ac0c16097c968653e72c609890dfb4c44"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a58e7e358fc7c95121f74d56c094b1627"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
-<tr class="memitem:a58e7e358fc7c95121f74d56c094b1627"><td class="memTemplItemLeft" align="right" valign="top">std::enable_if&lt; std::is_pod&lt; T &gt;<br class="typebreak"/>
-::value, term::Fun1 &gt;::type&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#a58e7e358fc7c95121f74d56c094b1627">pfq_lang::computation1</a> (std::string name, const T &amp;arg)</td></tr>
-<tr class="separator:a58e7e358fc7c95121f74d56c094b1627"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aabfd9ddf8afda95bb20b5668024eff31"><td class="memTemplParams" colspan="2">template&lt;typename P &gt; </td></tr>
-<tr class="memitem:aabfd9ddf8afda95bb20b5668024eff31"><td class="memTemplItemLeft" align="right" valign="top">std::enable_if<br class="typebreak"/>
+<tr class="memitem:a9f546a4602872df5ca74050ecb68a6b3"><td class="memItemLeft" align="right" valign="top">term::Fun&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#a9f546a4602872df5ca74050ecb68a6b3">pfq_lang::netfunction</a> (std::string name)</td></tr>
+<tr class="separator:a9f546a4602872df5ca74050ecb68a6b3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af215f25fa7ebd61fdc90cf0ef78a3164"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
+<tr class="memitem:af215f25fa7ebd61fdc90cf0ef78a3164"><td class="memTemplItemLeft" align="right" valign="top">std::enable_if&lt; std::is_pod&lt; T &gt;<br class="typebreak"/>
+::value, term::Fun1 &gt;::type&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#af215f25fa7ebd61fdc90cf0ef78a3164">pfq_lang::netfunction1</a> (std::string name, const T &amp;arg)</td></tr>
+<tr class="separator:af215f25fa7ebd61fdc90cf0ef78a3164"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a78972807ac46884d5cd0719795946936"><td class="memTemplParams" colspan="2">template&lt;typename P &gt; </td></tr>
+<tr class="memitem:a78972807ac46884d5cd0719795946936"><td class="memTemplItemLeft" align="right" valign="top">std::enable_if<br class="typebreak"/>
 &lt; term::is_predicate&lt; P &gt;<br class="typebreak"/>
 ::value, term::HFun&lt; P &gt;<br class="typebreak"/>
- &gt;::type&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#aabfd9ddf8afda95bb20b5668024eff31">pfq_lang::hcomputation</a> (std::string name, P const &amp;p)</td></tr>
-<tr class="separator:aabfd9ddf8afda95bb20b5668024eff31"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a778ddb4e54e9a8f8c31af25ab08fa131"><td class="memTemplParams" colspan="2">template&lt;typename P , typename C &gt; </td></tr>
-<tr class="memitem:a778ddb4e54e9a8f8c31af25ab08fa131"><td class="memTemplItemLeft" align="right" valign="top">std::enable_if<br class="typebreak"/>
+ &gt;::type&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#a78972807ac46884d5cd0719795946936">pfq_lang::hnetfunction</a> (std::string name, P const &amp;p)</td></tr>
+<tr class="separator:a78972807ac46884d5cd0719795946936"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a71df0d0d66c45c40ad348a35a1781c71"><td class="memTemplParams" colspan="2">template&lt;typename P , typename C &gt; </td></tr>
+<tr class="memitem:a71df0d0d66c45c40ad348a35a1781c71"><td class="memTemplItemLeft" align="right" valign="top">std::enable_if<br class="typebreak"/>
 &lt; term::is_predicate&lt; P &gt;<br class="typebreak"/>
-::value &amp;&amp;term::is_computation<br class="typebreak"/>
+::value &amp;&amp;term::is_netfunction<br class="typebreak"/>
 &lt; C &gt;::value, term::HFun1&lt; P, <br class="typebreak"/>
-C &gt; &gt;::type&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#a778ddb4e54e9a8f8c31af25ab08fa131">pfq_lang::hcomputation1</a> (std::string name, P const &amp;p, C const &amp;c)</td></tr>
-<tr class="separator:a778ddb4e54e9a8f8c31af25ab08fa131"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0f3e7007ec3c6cbec92fda3f6e0de6bf"><td class="memTemplParams" colspan="2">template&lt;typename P , typename C1 , typename C2 &gt; </td></tr>
-<tr class="memitem:a0f3e7007ec3c6cbec92fda3f6e0de6bf"><td class="memTemplItemLeft" align="right" valign="top">std::enable_if<br class="typebreak"/>
+C &gt; &gt;::type&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#a71df0d0d66c45c40ad348a35a1781c71">pfq_lang::hnetfunction1</a> (std::string name, P const &amp;p, C const &amp;c)</td></tr>
+<tr class="separator:a71df0d0d66c45c40ad348a35a1781c71"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0899ef1c7c1872d3d2da51cf5704ab84"><td class="memTemplParams" colspan="2">template&lt;typename P , typename C1 , typename C2 &gt; </td></tr>
+<tr class="memitem:a0899ef1c7c1872d3d2da51cf5704ab84"><td class="memTemplItemLeft" align="right" valign="top">std::enable_if<br class="typebreak"/>
 &lt; term::is_predicate&lt; P &gt;<br class="typebreak"/>
-::value &amp;&amp;term::is_computation<br class="typebreak"/>
+::value &amp;&amp;term::is_netfunction<br class="typebreak"/>
 &lt; C1 &gt;::value <br class="typebreak"/>
-&amp;&amp;term::is_computation&lt; C2 &gt;<br class="typebreak"/>
+&amp;&amp;term::is_netfunction&lt; C2 &gt;<br class="typebreak"/>
 ::value, term::HFun2&lt; P, C1, <br class="typebreak"/>
-C2 &gt; &gt;::type&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#a0f3e7007ec3c6cbec92fda3f6e0de6bf">pfq_lang::hcomputation2</a> (std::string name, P const &amp;p, C1 const &amp;c1, C2 const &amp;c2)</td></tr>
-<tr class="separator:a0f3e7007ec3c6cbec92fda3f6e0de6bf"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a906ef152d395b1870a16c204571684cb"><td class="memTemplParams" colspan="2">template&lt;typename C1 , typename C2 &gt; </td></tr>
-<tr class="memitem:a906ef152d395b1870a16c204571684cb"><td class="memTemplItemLeft" align="right" valign="top">std::enable_if<br class="typebreak"/>
-&lt; term::is_computation&lt; C1 &gt;<br class="typebreak"/>
-::value &amp;&amp;term::is_computation<br class="typebreak"/>
+C2 &gt; &gt;::type&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#a0899ef1c7c1872d3d2da51cf5704ab84">pfq_lang::hnetfunction2</a> (std::string name, P const &amp;p, C1 const &amp;c1, C2 const &amp;c2)</td></tr>
+<tr class="separator:a0899ef1c7c1872d3d2da51cf5704ab84"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4c0690ecb14af669a41969a5de14acad"><td class="memTemplParams" colspan="2">template&lt;typename C1 , typename C2 &gt; </td></tr>
+<tr class="memitem:a4c0690ecb14af669a41969a5de14acad"><td class="memTemplItemLeft" align="right" valign="top">std::enable_if<br class="typebreak"/>
+&lt; term::is_netfunction&lt; C1 &gt;<br class="typebreak"/>
+::value &amp;&amp;term::is_netfunction<br class="typebreak"/>
 &lt; C2 &gt;::value, term::Comp&lt; C1, <br class="typebreak"/>
-C2 &gt; &gt;::type&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#a906ef152d395b1870a16c204571684cb">pfq_lang::operator&gt;&gt;</a> (C1 c1, C2 c2)</td></tr>
-<tr class="separator:a906ef152d395b1870a16c204571684cb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+C2 &gt; &gt;::type&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#a4c0690ecb14af669a41969a5de14acad">pfq_lang::operator&gt;&gt;</a> (C1 c1, C2 c2)</td></tr>
+<tr class="separator:a4c0690ecb14af669a41969a5de14acad"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 </div><!-- contents -->
 </div><!-- doc-content -->
@@ -325,7 +325,7 @@ C2 &gt; &gt;::type&#160;</td><td class="memTemplItemRight" valign="bottom"><a cl
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="dir_2916f9fbcacdf2e5f0583aa159c707b6.html">C++</a></li><li class="navelem"><a class="el" href="dir_a17becaccb2832a17d9695e88ab48c38.html">pfq-lang</a></li><li class="navelem"><a class="el" href="lang_8hpp.html">lang.hpp</a></li>
-    <li class="footer">Generated on Sun May 18 2014 11:40:44 for Q-Lang C++ eDLS by
+    <li class="footer">Generated on Sun May 18 2014 12:05:10 for Q-Lang C++ eDLS by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.6 </li>
   </ul>

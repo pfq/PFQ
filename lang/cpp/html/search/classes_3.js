@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['is_5fcomputation',['is_computation',['../structpfq__lang_1_1term_1_1is__computation.html',1,'pfq_lang::term']]],
+  ['is_5fnetfunction',['is_netfunction',['../structpfq__lang_1_1term_1_1is__netfunction.html',1,'pfq_lang::term']]],
   ['is_5fpredicate',['is_predicate',['../structpfq__lang_1_1term_1_1is__predicate.html',1,'pfq_lang::term']]],
   ['is_5fproperty',['is_property',['../structpfq__lang_1_1term_1_1is__property.html',1,'pfq_lang::term']]],
   ['is_5fsame_5ftemplate',['is_same_template',['../structpfq__lang_1_1term_1_1is__same__template.html',1,'pfq_lang::term']]],

@@ -17,5 +17,5 @@ var namespacepfq__lang_1_1term =
     [ "HFun1", "structpfq__lang_1_1term_1_1HFun1.html", "structpfq__lang_1_1term_1_1HFun1" ],
     [ "HFun2", "structpfq__lang_1_1term_1_1HFun2.html", "structpfq__lang_1_1term_1_1HFun2" ],
     [ "Comp", "structpfq__lang_1_1term_1_1Comp.html", "structpfq__lang_1_1term_1_1Comp" ],
-    [ "is_computation", "structpfq__lang_1_1term_1_1is__computation.html", null ]
+    [ "is_netfunction", "structpfq__lang_1_1term_1_1is__netfunction.html", null ]
 ];
