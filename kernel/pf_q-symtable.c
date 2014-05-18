@@ -180,7 +180,7 @@ pfq_symtable_pr_devel(const char *hdr, struct list_head *category)
 	list_for_each(pos, category)
 	{
     		this = list_entry(pos, struct symtable_entry, list);
-    		pr_devel("      %s %p\n", this->symbol, this->function);
+    		pr_devel("      %s %pF\n", this->symbol, this->function);
 	}
 
         up(&symtable_sem);
