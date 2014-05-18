@@ -139,12 +139,30 @@ __has_mark(arguments_t args, struct sk_buff const *skb)
 	return get_state(skb) == value;
 }
 
+
+static int pred_addr_init(arguments_t args)
+{
+	struct network_addr {
+	 	uint32_t addr;
+	 	int 	 prefix;
+	} data = get_data(struct network_addr, args);
+
+	uint32_t ipv4 = data.addr;
+	uint32_t mask = make_mask(data.prefix);
+
+	set_data (args, ipv4);
+	set_data2(args, mask);
+
+	pr_devel("[PFQ|init] predicate: addr:%pI4 mask:%pI4\n", &ipv4, &mask);
+
+	return 0;
+}
+
 static bool
 __has_addr(arguments_t args, struct sk_buff const *skb)
 {
-	const u64 data = get_data(u64, args);
-	uint32_t addr = data >> 32;
-	uint32_t mask = data & 0xffffffff;
+	uint32_t addr = get_data(uint32_t, args);
+	uint32_t mask = get_data2(uint32_t, args);
 
 	return has_addr(skb, addr, mask);
 }
@@ -153,9 +171,8 @@ __has_addr(arguments_t args, struct sk_buff const *skb)
 static bool
 __has_src_addr(arguments_t args, struct sk_buff const *skb)
 {
-	const u64 data = get_data(u64, args);
-	uint32_t addr = data >> 32;
-	uint32_t mask = data & 0xffffffff;
+	uint32_t addr = get_data(uint32_t, args);
+	uint32_t mask = get_data2(uint32_t, args);
 
 	return has_src_addr(skb, addr, mask);
 }
@@ -163,9 +180,8 @@ __has_src_addr(arguments_t args, struct sk_buff const *skb)
 static bool
 __has_dst_addr(arguments_t args, struct sk_buff const *skb)
 {
-	const u64 data = get_data(u64, args);
-	uint32_t addr = data >> 32;
-	uint32_t mask = data & 0xffffffff;
+	uint32_t addr = get_data(uint32_t, args);
+	uint32_t mask = get_data2(uint32_t, args);
 
 	return has_dst_addr(skb, addr, mask);
 }
