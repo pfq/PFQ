@@ -44,11 +44,15 @@
 
 #define set_data(a, v)		__builtin_choose_expr(sizeof(typeof(v)) <= sizeof(ptrdiff_t), *(typeof(v) *)(&ARGS_TYPE(a)->arg1) = v, (void)0)
 #define set_data2(a, v)		__builtin_choose_expr(sizeof(typeof(v)) <= sizeof(ptrdiff_t), *(typeof(v) *)(&ARGS_TYPE(a)->arg2) = v, (void)0)
+#define set_data3(a, v)		__builtin_choose_expr(sizeof(typeof(v)) <= sizeof(ptrdiff_t), *(typeof(v) *)(&ARGS_TYPE(a)->arg3) = v, (void)0)
 
 #define get_predicate(a) 	({ predicate_t p = { (struct pfq_functional *)ARGS_TYPE(a)->arg2 }; p; })
 #define get_predicate2(a) 	({ predicate_t p = { (struct pfq_functional *)ARGS_TYPE(a)->arg3 }; p; })
 #define get_property(a) 	({ property_t  p = { (struct pfq_functional *)ARGS_TYPE(a)->arg2 }; p; })
 #define get_property2(a) 	({ property_t  p = { (struct pfq_functional *)ARGS_TYPE(a)->arg3 }; p; })
+
+
+#define make_mask(prefix)       htonl(~((1ULL << (32-prefix)) - 1))
 
 
 #define make_function(function, argument) \
@@ -104,7 +108,6 @@
  				    .arg3 = ARG_CAST(FUNCTIONAL_TYPE(pred2)) }; \
         f; \
 })
-
 
 
 extern int pfq_computation_rtlink(struct pfq_computation_descr const *descr, computation_t *comp, void *context);
