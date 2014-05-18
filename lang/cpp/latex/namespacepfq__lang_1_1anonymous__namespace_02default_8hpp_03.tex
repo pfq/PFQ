@@ -70,7 +70,7 @@ auto \hyperlink{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_a4a
 \item 
 auto \hyperlink{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_aad0f666aca065f5aaf283857e5c933ce}{icmp\-\_\-code} = \hyperlink{namespacepfq__lang_ad70b40071ed0fd32c05ab8e82bbfec61}{property}(\char`\"{}icmp\-\_\-code\char`\"{})
 \item 
-auto \hyperlink{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_ae7da9a6b9dc131b2c6c5c3044067eddf}{steer\-\_\-mac} = \hyperlink{namespacepfq__lang_ac0c16097c968653e72c609890dfb4c44}{computation}(\char`\"{}steer\-\_\-mac\char`\"{})
+auto \hyperlink{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_af339132b49ec24313a1b3d33cefb1628}{steer\-\_\-link} = \hyperlink{namespacepfq__lang_ac0c16097c968653e72c609890dfb4c44}{computation}(\char`\"{}steer\-\_\-link\char`\"{})
 \item 
 auto \hyperlink{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_ad32804252244d5b572b9f5fe0cdda675}{steer\-\_\-vlan} = \hyperlink{namespacepfq__lang_ac0c16097c968653e72c609890dfb4c44}{computation}(\char`\"{}steer\-\_\-vlan\char`\"{})
 \item 
@@ -81,6 +81,8 @@ auto \hyperlink{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_a01
 auto \hyperlink{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_aee7b4eb8c316f9c0cd6ee7bc22b517ef}{steer\-\_\-flow} = \hyperlink{namespacepfq__lang_ac0c16097c968653e72c609890dfb4c44}{computation}(\char`\"{}steer\-\_\-flow\char`\"{})
 \item 
 auto \hyperlink{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_a16b18fdc10f8dd8c0974d9f0d6c13af9}{steer\-\_\-rtp} = \hyperlink{namespacepfq__lang_ac0c16097c968653e72c609890dfb4c44}{computation}(\char`\"{}steer\-\_\-rtp\char`\"{})
+\item 
+auto \hyperlink{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_a2c53e95204f3841919f780940b607d68}{steer\-\_\-net}
 \item 
 auto \hyperlink{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_a27d30e7744c84a7cdc41a710ee16b885}{ip} = \hyperlink{namespacepfq__lang_ac0c16097c968653e72c609890dfb4c44}{computation}(\char`\"{}ip\char`\"{})
 \item 
@@ -149,6 +151,8 @@ auto \hyperlink{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_a10
 auto \hyperlink{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_af01f3831a7b0294b6ffef87a09b481d7}{unless} = std\-::bind(details\-::hcomp1(), \char`\"{}unless\char`\"{}, \-\_\-1, \-\_\-2)
 \item 
 auto \hyperlink{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_a022d0075edf2fff575b93377aec0c228}{conditional} = std\-::bind(details\-::hcomp2(), \char`\"{}conditional\char`\"{}, \-\_\-1, \-\_\-2, \-\_\-3)
+\item 
+auto \hyperlink{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_aaa12e1daf6bd2719a3b8592e673acf84}{crc16} = \hyperlink{namespacepfq__lang_ac0c16097c968653e72c609890dfb4c44}{computation}(\char`\"{}crc16\char`\"{})
 \end{DoxyCompactItemize}
 
 
@@ -160,12 +164,8 @@ auto \hyperlink{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_a02
 \begin{DoxyCode}
 = [] (\textcolor{keyword}{const} \textcolor{keywordtype}{char} *net, \textcolor{keywordtype}{int} prefix)
         \{
-            \textcolor{keyword}{struct }in\_addr \hyperlink{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_aafce8334d1be83bff9a2115439c8c453}{addr};
-            \textcolor{keywordflow}{if} (inet\_pton(AF\_INET, net, &\hyperlink{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_aafce8334d1be83bff9a2115439c8c453}{addr}) <= 0)
-                \textcolor{keywordflow}{throw} std::runtime\_error(\textcolor{stringliteral}{"pfq\_lang::net"});
-
-            \textcolor{keywordflow}{return} \hyperlink{namespacepfq__lang_a58e7e358fc7c95121f74d56c094b1627}{computation1}(\textcolor{stringliteral}{"addr"}, static\_cast<uint64\_t>(\hyperlink{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_aafce8334d1be83bff9a2115439c8c453}{addr}.s\_addr) << 32 | 
-      details::prefix2mask(prefix));
+            \textcolor{keyword}{auto} \hyperlink{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_aafce8334d1be83bff9a2115439c8c453}{addr} = details::make\_netaddr(net, prefix);
+            \textcolor{keywordflow}{return} \hyperlink{namespacepfq__lang_a58e7e358fc7c95121f74d56c094b1627}{computation1}(\textcolor{stringliteral}{"addr"}, \hyperlink{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_aafce8334d1be83bff9a2115439c8c453}{addr});
         \}
 \end{DoxyCode}
 \hypertarget{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_a3b7dd001dfb2302c93212313c0bfa82a}{\index{pfq\-\_\-lang\-::anonymous\-\_\-namespace\{default.\-hpp\}@{pfq\-\_\-lang\-::anonymous\-\_\-namespace\{default.\-hpp\}}!broadcast@{broadcast}}
@@ -177,6 +177,9 @@ auto \hyperlink{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_a02
 \hypertarget{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_a022d0075edf2fff575b93377aec0c228}{\index{pfq\-\_\-lang\-::anonymous\-\_\-namespace\{default.\-hpp\}@{pfq\-\_\-lang\-::anonymous\-\_\-namespace\{default.\-hpp\}}!conditional@{conditional}}
 \index{conditional@{conditional}!pfq_lang::anonymous_namespace{default.hpp}@{pfq\-\_\-lang\-::anonymous\-\_\-namespace\{default.\-hpp\}}}
 \subsubsection[{conditional}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\-\_\-lang\-::anonymous\-\_\-namespace\{default.\-hpp\}\-::conditional = std\-::bind(details\-::hcomp2(), \char`\"{}conditional\char`\"{}, \-\_\-1, \-\_\-2, \-\_\-3)}}\label{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_a022d0075edf2fff575b93377aec0c228}
+\hypertarget{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_aaa12e1daf6bd2719a3b8592e673acf84}{\index{pfq\-\_\-lang\-::anonymous\-\_\-namespace\{default.\-hpp\}@{pfq\-\_\-lang\-::anonymous\-\_\-namespace\{default.\-hpp\}}!crc16@{crc16}}
+\index{crc16@{crc16}!pfq_lang::anonymous_namespace{default.hpp}@{pfq\-\_\-lang\-::anonymous\-\_\-namespace\{default.\-hpp\}}}
+\subsubsection[{crc16}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\-\_\-lang\-::anonymous\-\_\-namespace\{default.\-hpp\}\-::crc16 = {\bf computation}(\char`\"{}crc16\char`\"{})}}\label{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_aaa12e1daf6bd2719a3b8592e673acf84}
 \hypertarget{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_a6e71e558e459e950a4e9beeaaaf12cf6}{\index{pfq\-\_\-lang\-::anonymous\-\_\-namespace\{default.\-hpp\}@{pfq\-\_\-lang\-::anonymous\-\_\-namespace\{default.\-hpp\}}!dec@{dec}}
 \index{dec@{dec}!pfq_lang::anonymous_namespace{default.hpp}@{pfq\-\_\-lang\-::anonymous\-\_\-namespace\{default.\-hpp\}}}
 \subsubsection[{dec}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\-\_\-lang\-::anonymous\-\_\-namespace\{default.\-hpp\}\-::dec = \mbox{[}$\,$\mbox{]} (int value) \{ return {\bf computation1}(\char`\"{}dec\char`\"{}, value); \}}}\label{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_a6e71e558e459e950a4e9beeaaaf12cf6}
@@ -190,12 +193,8 @@ auto \hyperlink{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_a02
 \begin{DoxyCode}
 = [] (\textcolor{keyword}{const} \textcolor{keywordtype}{char} *net, \textcolor{keywordtype}{int} prefix)
         \{
-            \textcolor{keyword}{struct }in\_addr \hyperlink{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_aafce8334d1be83bff9a2115439c8c453}{addr};
-            \textcolor{keywordflow}{if} (inet\_pton(AF\_INET, net, &\hyperlink{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_aafce8334d1be83bff9a2115439c8c453}{addr}) <= 0)
-                \textcolor{keywordflow}{throw} std::runtime\_error(\textcolor{stringliteral}{"pfq\_lang::net"});
-
-            \textcolor{keywordflow}{return} \hyperlink{namespacepfq__lang_a58e7e358fc7c95121f74d56c094b1627}{computation1}(\textcolor{stringliteral}{"dst\_addr"}, static\_cast<uint64\_t>(
-      \hyperlink{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_aafce8334d1be83bff9a2115439c8c453}{addr}.s\_addr) << 32 | details::prefix2mask(prefix));
+            \textcolor{keyword}{auto} \hyperlink{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_aafce8334d1be83bff9a2115439c8c453}{addr} = details::make\_netaddr(net, prefix);
+            \textcolor{keywordflow}{return} \hyperlink{namespacepfq__lang_a58e7e358fc7c95121f74d56c094b1627}{computation1}(\textcolor{stringliteral}{"dst\_addr"}, \hyperlink{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_aafce8334d1be83bff9a2115439c8c453}{addr});
         \}
 \end{DoxyCode}
 \hypertarget{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_aceccbe6ec912638fb8d5d3d9e0372a09}{\index{pfq\-\_\-lang\-::anonymous\-\_\-namespace\{default.\-hpp\}@{pfq\-\_\-lang\-::anonymous\-\_\-namespace\{default.\-hpp\}}!dst\-\_\-port@{dst\-\_\-port}}
@@ -217,12 +216,8 @@ auto \hyperlink{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_a02
 \begin{DoxyCode}
 = [] (\textcolor{keyword}{const} \textcolor{keywordtype}{char} *net, \textcolor{keywordtype}{int} prefix)
         \{
-            \textcolor{keyword}{struct }in\_addr \hyperlink{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_aafce8334d1be83bff9a2115439c8c453}{addr};
-            \textcolor{keywordflow}{if} (inet\_pton(AF\_INET, net, &\hyperlink{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_aafce8334d1be83bff9a2115439c8c453}{addr}) <= 0)
-                \textcolor{keywordflow}{throw} std::runtime\_error(\textcolor{stringliteral}{"pfq\_lang::net"});
-
-            \textcolor{keywordflow}{return} \hyperlink{namespacepfq__lang_ae23a03cee94b5ddfde4a8d2e5c521f0e}{predicate1}(\textcolor{stringliteral}{"has\_addr"}, static\_cast<uint64\_t>(\hyperlink{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_aafce8334d1be83bff9a2115439c8c453}{addr}.s\_addr) << 32 | 
-      details::prefix2mask(prefix));
+            \textcolor{keyword}{auto} \hyperlink{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_aafce8334d1be83bff9a2115439c8c453}{addr} = details::make\_netaddr(net, prefix);
+            \textcolor{keywordflow}{return} \hyperlink{namespacepfq__lang_ae23a03cee94b5ddfde4a8d2e5c521f0e}{predicate1}(\textcolor{stringliteral}{"has\_addr"}, \hyperlink{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_aafce8334d1be83bff9a2115439c8c453}{addr});
         \}
 \end{DoxyCode}
 \hypertarget{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_af223a0513ceffa69c0b8535a7cca12da}{\index{pfq\-\_\-lang\-::anonymous\-\_\-namespace\{default.\-hpp\}@{pfq\-\_\-lang\-::anonymous\-\_\-namespace\{default.\-hpp\}}!has\-\_\-dst\-\_\-addr@{has\-\_\-dst\-\_\-addr}}
@@ -232,12 +227,8 @@ auto \hyperlink{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_a02
 \begin{DoxyCode}
 = [] (\textcolor{keyword}{const} \textcolor{keywordtype}{char} *net, \textcolor{keywordtype}{int} prefix)
         \{
-            \textcolor{keyword}{struct }in\_addr \hyperlink{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_aafce8334d1be83bff9a2115439c8c453}{addr};
-            \textcolor{keywordflow}{if} (inet\_pton(AF\_INET, net, &\hyperlink{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_aafce8334d1be83bff9a2115439c8c453}{addr}) <= 0)
-                \textcolor{keywordflow}{throw} std::runtime\_error(\textcolor{stringliteral}{"pfq\_lang::net"});
-
-            \textcolor{keywordflow}{return} \hyperlink{namespacepfq__lang_ae23a03cee94b5ddfde4a8d2e5c521f0e}{predicate1}(\textcolor{stringliteral}{"has\_dst\_addr"}, static\_cast<uint64\_t>(
-      \hyperlink{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_aafce8334d1be83bff9a2115439c8c453}{addr}.s\_addr) << 32 | details::prefix2mask(prefix));
+            \textcolor{keyword}{auto} \hyperlink{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_aafce8334d1be83bff9a2115439c8c453}{addr} = details::make\_netaddr(net, prefix);
+            \textcolor{keywordflow}{return} \hyperlink{namespacepfq__lang_ae23a03cee94b5ddfde4a8d2e5c521f0e}{predicate1}(\textcolor{stringliteral}{"has\_dst\_addr"}, \hyperlink{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_aafce8334d1be83bff9a2115439c8c453}{addr});
         \}
 \end{DoxyCode}
 \hypertarget{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_accc3aed36db0c762dd6c95f3706c8741}{\index{pfq\-\_\-lang\-::anonymous\-\_\-namespace\{default.\-hpp\}@{pfq\-\_\-lang\-::anonymous\-\_\-namespace\{default.\-hpp\}}!has\-\_\-dst\-\_\-port@{has\-\_\-dst\-\_\-port}}
@@ -256,12 +247,8 @@ auto \hyperlink{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_a02
 \begin{DoxyCode}
 = [] (\textcolor{keyword}{const} \textcolor{keywordtype}{char} *net, \textcolor{keywordtype}{int} prefix)
         \{
-            \textcolor{keyword}{struct }in\_addr \hyperlink{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_aafce8334d1be83bff9a2115439c8c453}{addr};
-            \textcolor{keywordflow}{if} (inet\_pton(AF\_INET, net, &\hyperlink{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_aafce8334d1be83bff9a2115439c8c453}{addr}) <= 0)
-                \textcolor{keywordflow}{throw} std::runtime\_error(\textcolor{stringliteral}{"pfq\_lang::net"});
-
-            \textcolor{keywordflow}{return} \hyperlink{namespacepfq__lang_ae23a03cee94b5ddfde4a8d2e5c521f0e}{predicate1}(\textcolor{stringliteral}{"has\_src\_addr"}, static\_cast<uint64\_t>(
-      \hyperlink{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_aafce8334d1be83bff9a2115439c8c453}{addr}.s\_addr) << 32 | details::prefix2mask(prefix));
+            \textcolor{keyword}{auto} \hyperlink{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_aafce8334d1be83bff9a2115439c8c453}{addr} = details::make\_netaddr(net, prefix);
+            \textcolor{keywordflow}{return} \hyperlink{namespacepfq__lang_ae23a03cee94b5ddfde4a8d2e5c521f0e}{predicate1}(\textcolor{stringliteral}{"has\_src\_addr"}, \hyperlink{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_aafce8334d1be83bff9a2115439c8c453}{addr});
         \}
 \end{DoxyCode}
 \hypertarget{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_ad6d8ed8e08a448b3bf5d23a929d887f9}{\index{pfq\-\_\-lang\-::anonymous\-\_\-namespace\{default.\-hpp\}@{pfq\-\_\-lang\-::anonymous\-\_\-namespace\{default.\-hpp\}}!has\-\_\-src\-\_\-port@{has\-\_\-src\-\_\-port}}
@@ -373,12 +360,8 @@ auto \hyperlink{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_a02
 \begin{DoxyCode}
 = [] (\textcolor{keyword}{const} \textcolor{keywordtype}{char} *net, \textcolor{keywordtype}{int} prefix)
         \{
-            \textcolor{keyword}{struct }in\_addr \hyperlink{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_aafce8334d1be83bff9a2115439c8c453}{addr};
-            \textcolor{keywordflow}{if} (inet\_pton(AF\_INET, net, &\hyperlink{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_aafce8334d1be83bff9a2115439c8c453}{addr}) <= 0)
-                \textcolor{keywordflow}{throw} std::runtime\_error(\textcolor{stringliteral}{"pfq\_lang::net"});
-
-            \textcolor{keywordflow}{return} \hyperlink{namespacepfq__lang_a58e7e358fc7c95121f74d56c094b1627}{computation1}(\textcolor{stringliteral}{"src\_addr"}, static\_cast<uint64\_t>(
-      \hyperlink{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_aafce8334d1be83bff9a2115439c8c453}{addr}.s\_addr) << 32 | details::prefix2mask(prefix));
+            \textcolor{keyword}{auto} \hyperlink{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_aafce8334d1be83bff9a2115439c8c453}{addr} = details::make\_netaddr(net, prefix);
+            \textcolor{keywordflow}{return} \hyperlink{namespacepfq__lang_a58e7e358fc7c95121f74d56c094b1627}{computation1}(\textcolor{stringliteral}{"src\_addr"}, \hyperlink{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_aafce8334d1be83bff9a2115439c8c453}{addr});
         \}
 \end{DoxyCode}
 \hypertarget{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_ad4d03d1e69ba9608a2d87ac91a2b521f}{\index{pfq\-\_\-lang\-::anonymous\-\_\-namespace\{default.\-hpp\}@{pfq\-\_\-lang\-::anonymous\-\_\-namespace\{default.\-hpp\}}!src\-\_\-port@{src\-\_\-port}}
@@ -393,9 +376,28 @@ auto \hyperlink{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_a02
 \hypertarget{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_a011de504f63578469615a302f823d238}{\index{pfq\-\_\-lang\-::anonymous\-\_\-namespace\{default.\-hpp\}@{pfq\-\_\-lang\-::anonymous\-\_\-namespace\{default.\-hpp\}}!steer\-\_\-ip6@{steer\-\_\-ip6}}
 \index{steer\-\_\-ip6@{steer\-\_\-ip6}!pfq_lang::anonymous_namespace{default.hpp}@{pfq\-\_\-lang\-::anonymous\-\_\-namespace\{default.\-hpp\}}}
 \subsubsection[{steer\-\_\-ip6}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\-\_\-lang\-::anonymous\-\_\-namespace\{default.\-hpp\}\-::steer\-\_\-ip6 = {\bf computation}(\char`\"{}steer\-\_\-ip6\char`\"{})}}\label{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_a011de504f63578469615a302f823d238}
-\hypertarget{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_ae7da9a6b9dc131b2c6c5c3044067eddf}{\index{pfq\-\_\-lang\-::anonymous\-\_\-namespace\{default.\-hpp\}@{pfq\-\_\-lang\-::anonymous\-\_\-namespace\{default.\-hpp\}}!steer\-\_\-mac@{steer\-\_\-mac}}
-\index{steer\-\_\-mac@{steer\-\_\-mac}!pfq_lang::anonymous_namespace{default.hpp}@{pfq\-\_\-lang\-::anonymous\-\_\-namespace\{default.\-hpp\}}}
-\subsubsection[{steer\-\_\-mac}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\-\_\-lang\-::anonymous\-\_\-namespace\{default.\-hpp\}\-::steer\-\_\-mac = {\bf computation}(\char`\"{}steer\-\_\-mac\char`\"{})}}\label{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_ae7da9a6b9dc131b2c6c5c3044067eddf}
+\hypertarget{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_af339132b49ec24313a1b3d33cefb1628}{\index{pfq\-\_\-lang\-::anonymous\-\_\-namespace\{default.\-hpp\}@{pfq\-\_\-lang\-::anonymous\-\_\-namespace\{default.\-hpp\}}!steer\-\_\-link@{steer\-\_\-link}}
+\index{steer\-\_\-link@{steer\-\_\-link}!pfq_lang::anonymous_namespace{default.hpp}@{pfq\-\_\-lang\-::anonymous\-\_\-namespace\{default.\-hpp\}}}
+\subsubsection[{steer\-\_\-link}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\-\_\-lang\-::anonymous\-\_\-namespace\{default.\-hpp\}\-::steer\-\_\-link = {\bf computation}(\char`\"{}steer\-\_\-link\char`\"{})}}\label{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_af339132b49ec24313a1b3d33cefb1628}
+\hypertarget{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_a2c53e95204f3841919f780940b607d68}{\index{pfq\-\_\-lang\-::anonymous\-\_\-namespace\{default.\-hpp\}@{pfq\-\_\-lang\-::anonymous\-\_\-namespace\{default.\-hpp\}}!steer\-\_\-net@{steer\-\_\-net}}
+\index{steer\-\_\-net@{steer\-\_\-net}!pfq_lang::anonymous_namespace{default.hpp}@{pfq\-\_\-lang\-::anonymous\-\_\-namespace\{default.\-hpp\}}}
+\subsubsection[{steer\-\_\-net}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\-\_\-lang\-::anonymous\-\_\-namespace\{default.\-hpp\}\-::steer\-\_\-net}}\label{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_a2c53e95204f3841919f780940b607d68}
+{\bfseries Initial value\-:}
+\begin{DoxyCode}
+= [] (\textcolor{keyword}{const} \textcolor{keywordtype}{char} *net, \textcolor{keywordtype}{int} prefix, \textcolor{keywordtype}{int} subprefix) \{
+
+                                \textcolor{keyword}{struct }supernet \{
+                                    uint32\_t \hyperlink{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_aafce8334d1be83bff9a2115439c8c453}{addr};
+                                    \textcolor{keywordtype}{int}      prefix;
+                                    \textcolor{keywordtype}{int}      subprefix;
+                                \} na = \{ 0, prefix, subprefix \};
+
+                                \textcolor{keywordflow}{if} (inet\_pton(AF\_INET, net, &na.addr) <= 0)
+                                    \textcolor{keywordflow}{throw} std::runtime\_error(\textcolor{stringliteral}{"pfq\_lang::steer\_net"});
+
+                                \textcolor{keywordflow}{return} \hyperlink{namespacepfq__lang_a58e7e358fc7c95121f74d56c094b1627}{computation1}(\textcolor{stringliteral}{"steer\_net"}, na);
+                             \}
+\end{DoxyCode}
 \hypertarget{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_a16b18fdc10f8dd8c0974d9f0d6c13af9}{\index{pfq\-\_\-lang\-::anonymous\-\_\-namespace\{default.\-hpp\}@{pfq\-\_\-lang\-::anonymous\-\_\-namespace\{default.\-hpp\}}!steer\-\_\-rtp@{steer\-\_\-rtp}}
 \index{steer\-\_\-rtp@{steer\-\_\-rtp}!pfq_lang::anonymous_namespace{default.hpp}@{pfq\-\_\-lang\-::anonymous\-\_\-namespace\{default.\-hpp\}}}
 \subsubsection[{steer\-\_\-rtp}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\-\_\-lang\-::anonymous\-\_\-namespace\{default.\-hpp\}\-::steer\-\_\-rtp = {\bf computation}(\char`\"{}steer\-\_\-rtp\char`\"{})}}\label{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_a16b18fdc10f8dd8c0974d9f0d6c13af9}
