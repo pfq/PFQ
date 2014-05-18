@@ -141,10 +141,10 @@ module Network.PFq.Default
 
         -- * Miscellaneous
 
+        unit       ,
         inc        ,
         dec        ,
         mark       ,
-        unit       ,
         class'     ,
         crc16      ,
         dummy      ,
