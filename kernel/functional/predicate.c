@@ -31,109 +31,109 @@
 
 
 static bool
-__is_ip(arguments_t args, struct sk_buff const *skb)
+pred_is_ip(arguments_t args, struct sk_buff const *skb)
 {
         return  is_ip(skb);
 }
 
 static bool
-__is_ip6(arguments_t args, struct sk_buff const *skb)
+pred_is_ip6(arguments_t args, struct sk_buff const *skb)
 {
         return  is_ip6(skb);
 }
 
 static bool
-__is_udp(arguments_t args, struct sk_buff const *skb)
+pred_is_udp(arguments_t args, struct sk_buff const *skb)
 {
         return  is_udp(skb);
 }
 
 static bool
-__is_udp6(arguments_t args, struct sk_buff const *skb)
+pred_is_udp6(arguments_t args, struct sk_buff const *skb)
 {
         return  is_udp6(skb);
 }
 
 static bool
-__is_tcp(arguments_t args, struct sk_buff const *skb)
+pred_is_tcp(arguments_t args, struct sk_buff const *skb)
 {
         return  is_tcp(skb);
 }
 
 static bool
-__is_tcp6(arguments_t args, struct sk_buff const *skb)
+pred_is_tcp6(arguments_t args, struct sk_buff const *skb)
 {
         return  is_tcp6(skb);
 }
 
 static bool
-__is_icmp(arguments_t args, struct sk_buff const *skb)
+pred_is_icmp(arguments_t args, struct sk_buff const *skb)
 {
         return  is_icmp(skb);
 }
 
 static bool
-__is_icmp6(arguments_t args, struct sk_buff const *skb)
+pred_is_icmp6(arguments_t args, struct sk_buff const *skb)
 {
         return  is_icmp6(skb);
 }
 
 static bool
-__is_flow(arguments_t args, struct sk_buff const *skb)
+pred_is_flow(arguments_t args, struct sk_buff const *skb)
 {
         return  is_flow(skb);
 }
 
 static bool
-__is_l3_proto(arguments_t args, struct sk_buff const *skb)
+pred_is_l3_proto(arguments_t args, struct sk_buff const *skb)
 {
 	const u16 type = get_data(u16, args);
 	return is_l3_proto(skb, type);
 }
 
 static bool
-__is_l4_proto(arguments_t args, struct sk_buff const *skb)
+pred_is_l4_proto(arguments_t args, struct sk_buff const *skb)
 {
 	const u8 protocol = get_data(u8, args);
 	return is_l4_proto(skb, protocol);
 }
 
 static bool
-__has_port(arguments_t args, struct sk_buff const *skb)
+pred_has_port(arguments_t args, struct sk_buff const *skb)
 {
 	const u16 port = get_data(u16, args);
 	return has_port(skb, port);
 }
 
 static bool
-__has_src_port(arguments_t args, struct sk_buff const *skb)
+pred_has_src_port(arguments_t args, struct sk_buff const *skb)
 {
 	const u16 port = get_data(u16, args);
 	return has_src_port(skb, port);
 }
 
 static bool
-__has_dst_port(arguments_t args, struct sk_buff const *skb)
+pred_has_dst_port(arguments_t args, struct sk_buff const *skb)
 {
 	const u16 port = get_data(u16, args);
 	return has_dst_port(skb, port);
 }
 
 static bool
-__has_vlan(arguments_t args, struct sk_buff const *skb)
+pred_has_vlan(arguments_t args, struct sk_buff const *skb)
 {
         return  has_vlan(skb);
 }
 
 static bool
-__has_vid(arguments_t args, struct sk_buff const *skb)
+pred_has_vid(arguments_t args, struct sk_buff const *skb)
 {
 	const int id = get_data(int, args);
         return  has_vid(skb, id);
 }
 
 static bool
-__has_mark(arguments_t args, struct sk_buff const *skb)
+pred_has_mark(arguments_t args, struct sk_buff const *skb)
 {
 	const unsigned long value = get_data(unsigned long, args);
 	return get_state(skb) == value;
@@ -158,8 +158,9 @@ static int pred_addr_init(arguments_t args)
 	return 0;
 }
 
+
 static bool
-__has_addr(arguments_t args, struct sk_buff const *skb)
+pred_has_addr(arguments_t args, struct sk_buff const *skb)
 {
 	uint32_t addr = get_data(uint32_t, args);
 	uint32_t mask = get_data2(uint32_t, args);
@@ -169,7 +170,7 @@ __has_addr(arguments_t args, struct sk_buff const *skb)
 
 
 static bool
-__has_src_addr(arguments_t args, struct sk_buff const *skb)
+pred_has_src_addr(arguments_t args, struct sk_buff const *skb)
 {
 	uint32_t addr = get_data(uint32_t, args);
 	uint32_t mask = get_data2(uint32_t, args);
@@ -178,7 +179,7 @@ __has_src_addr(arguments_t args, struct sk_buff const *skb)
 }
 
 static bool
-__has_dst_addr(arguments_t args, struct sk_buff const *skb)
+pred_has_dst_addr(arguments_t args, struct sk_buff const *skb)
 {
 	uint32_t addr = get_data(uint32_t, args);
 	uint32_t mask = get_data2(uint32_t, args);
@@ -198,27 +199,27 @@ struct pfq_predicate_fun_descr predicate_functions[] = {
         { "any_bit", 	 FUN_PREDICATE | FUN_ARG_DATA | FUN_ARG_FUN , any_bit	 },
         { "all_bit", 	 FUN_PREDICATE | FUN_ARG_DATA | FUN_ARG_FUN , all_bit	 },
 
-        { "is_ip", 	 FUN_PREDICATE, __is_ip    },
-        { "is_tcp",      FUN_PREDICATE, __is_tcp   },
-        { "is_udp",      FUN_PREDICATE, __is_udp   },
-        { "is_icmp",     FUN_PREDICATE, __is_icmp  },
-        { "is_ip6",	 FUN_PREDICATE, __is_ip6   },
-        { "is_udp6",	 FUN_PREDICATE, __is_udp6  },
-        { "is_tcp6",     FUN_PREDICATE, __is_tcp6  },
-        { "is_icmp6",    FUN_PREDICATE, __is_icmp6 },
-        { "is_flow",     FUN_PREDICATE, __is_flow  },
-        { "has_vlan",    FUN_PREDICATE, __has_vlan },
+        { "is_ip", 	 FUN_PREDICATE, pred_is_ip    },
+        { "is_tcp",      FUN_PREDICATE, pred_is_tcp   },
+        { "is_udp",      FUN_PREDICATE, pred_is_udp   },
+        { "is_icmp",     FUN_PREDICATE, pred_is_icmp  },
+        { "is_ip6",	 FUN_PREDICATE, pred_is_ip6   },
+        { "is_udp6",	 FUN_PREDICATE, pred_is_udp6  },
+        { "is_tcp6",     FUN_PREDICATE, pred_is_tcp6  },
+        { "is_icmp6",    FUN_PREDICATE, pred_is_icmp6 },
+        { "is_flow",     FUN_PREDICATE, pred_is_flow  },
+        { "has_vlan",    FUN_PREDICATE, pred_has_vlan },
 
-        { "is_l3_proto", FUN_PREDICATE | FUN_ARG_DATA, __is_l3_proto  },
-        { "is_l4_proto", FUN_PREDICATE | FUN_ARG_DATA, __is_l4_proto  },
-        { "has_port",    FUN_PREDICATE | FUN_ARG_DATA, __has_port     },
-        { "has_src_port",FUN_PREDICATE | FUN_ARG_DATA, __has_src_port },
-        { "has_dst_port",FUN_PREDICATE | FUN_ARG_DATA, __has_dst_port },
-        { "has_vid",     FUN_PREDICATE | FUN_ARG_DATA, __has_vid      },
-        { "has_mark",    FUN_PREDICATE | FUN_ARG_DATA, __has_mark     },
-        { "has_addr",    FUN_PREDICATE | FUN_ARG_DATA, __has_addr     },
-        { "has_src_addr",FUN_PREDICATE | FUN_ARG_DATA, __has_src_addr },
-        { "has_dst_addr",FUN_PREDICATE | FUN_ARG_DATA, __has_dst_addr },
+        { "is_l3_proto", FUN_PREDICATE | FUN_ARG_DATA, pred_is_l3_proto  },
+        { "is_l4_proto", FUN_PREDICATE | FUN_ARG_DATA, pred_is_l4_proto  },
+        { "has_port",    FUN_PREDICATE | FUN_ARG_DATA, pred_has_port     },
+        { "has_src_port",FUN_PREDICATE | FUN_ARG_DATA, pred_has_src_port },
+        { "has_dst_port",FUN_PREDICATE | FUN_ARG_DATA, pred_has_dst_port },
+        { "has_vid",     FUN_PREDICATE | FUN_ARG_DATA, pred_has_vid      },
+        { "has_mark",    FUN_PREDICATE | FUN_ARG_DATA, pred_has_mark     },
+        { "has_addr",    FUN_PREDICATE | FUN_ARG_DATA, pred_has_addr     , pred_addr_init },
+        { "has_src_addr",FUN_PREDICATE | FUN_ARG_DATA, pred_has_src_addr , pred_addr_init },
+        { "has_dst_addr",FUN_PREDICATE | FUN_ARG_DATA, pred_has_dst_addr , pred_addr_init },
 
         { NULL }};
 
