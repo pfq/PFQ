@@ -74,6 +74,29 @@ namespace pfq_lang
             return htonl(~((1ULL << (32-n)) - 1));
         };
 
+
+        struct network_addr
+        {
+            uint32_t    addr;
+            int         prefix;
+        };
+
+
+        static inline
+        struct network_addr
+        make_netaddr(const char *net, int prefix)
+        {
+            network_addr netaddr;
+
+            if (inet_pton(AF_INET, net, &netaddr.addr) <= 0)
+                throw std::runtime_error("pfq_lang::net");
+
+            netaddr.prefix = prefix;
+
+            return netaddr;
+        }
+
+
     } // namespace details
 
 } // namespace pfq_lang

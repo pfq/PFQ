@@ -143,29 +143,20 @@ namespace pfq_lang
 
         auto has_addr = [] (const char *net, int prefix)
         {
-            struct in_addr addr;
-            if (inet_pton(AF_INET, net, &addr) <= 0)
-                throw std::runtime_error("pfq_lang::net");
-
-            return predicate1("has_addr", static_cast<uint64_t>(addr.s_addr) << 32 | details::prefix2mask(prefix));
+            auto addr = details::make_netaddr(net, prefix);
+            return predicate1("has_addr", addr);
         };
 
         auto has_src_addr = [] (const char *net, int prefix)
         {
-            struct in_addr addr;
-            if (inet_pton(AF_INET, net, &addr) <= 0)
-                throw std::runtime_error("pfq_lang::net");
-
-            return predicate1("has_src_addr", static_cast<uint64_t>(addr.s_addr) << 32 | details::prefix2mask(prefix));
+            auto addr = details::make_netaddr(net, prefix);
+            return predicate1("has_src_addr", addr);
         };
 
         auto has_dst_addr = [] (const char *net, int prefix)
         {
-            struct in_addr addr;
-            if (inet_pton(AF_INET, net, &addr) <= 0)
-                throw std::runtime_error("pfq_lang::net");
-
-            return predicate1("has_dst_addr", static_cast<uint64_t>(addr.s_addr) << 32 | details::prefix2mask(prefix));
+            auto addr = details::make_netaddr(net, prefix);
+            return predicate1("has_dst_addr", addr);
         };
 
         auto is_flow    = predicate ("is_flow");
@@ -237,29 +228,20 @@ namespace pfq_lang
 
         auto addr = [] (const char *net, int prefix)
         {
-            struct in_addr addr;
-            if (inet_pton(AF_INET, net, &addr) <= 0)
-                throw std::runtime_error("pfq_lang::net");
-
-            return computation1("addr", static_cast<uint64_t>(addr.s_addr) << 32 | details::prefix2mask(prefix));
+            auto addr = details::make_netaddr(net, prefix);
+            return computation1("addr", addr);
         };
 
         auto src_addr = [] (const char *net, int prefix)
         {
-            struct in_addr addr;
-            if (inet_pton(AF_INET, net, &addr) <= 0)
-                throw std::runtime_error("pfq_lang::net");
-
-            return computation1("src_addr", static_cast<uint64_t>(addr.s_addr) << 32 | details::prefix2mask(prefix));
+            auto addr = details::make_netaddr(net, prefix);
+            return computation1("src_addr", addr);
         };
 
         auto dst_addr = [] (const char *net, int prefix)
         {
-            struct in_addr addr;
-            if (inet_pton(AF_INET, net, &addr) <= 0)
-                throw std::runtime_error("pfq_lang::net");
-
-            return computation1("dst_addr", static_cast<uint64_t>(addr.s_addr) << 32 | details::prefix2mask(prefix));
+            auto addr = details::make_netaddr(net, prefix);
+            return computation1("dst_addr", addr);
         };
 
         auto hdummy      = std::bind(details::hcomp(),  "hdummy", _1);

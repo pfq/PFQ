@@ -156,21 +156,29 @@ import Network.PFq.Lang
 import Foreign.C.Types
 import Data.Int
 
-import Data.Bits
 import Data.Word
-import Data.Endian
 import Network.Socket
 import System.IO.Unsafe
 
--- Utilities
+import Foreign.Storable.Tuple()
 
-prefix2mask :: Int -> Word32
-prefix2mask p =  toBigEndian $ fromIntegral $ complement (shiftL (1 :: Word64) (32 - p) - 1)
+-- import Data.Bits
+-- import Data.Endian
 
-mkNetAddr :: String -> Int -> Word64
+
+-- prefix2mask :: Int -> Word32
+-- prefix2mask p =  toBigEndian $ fromIntegral $ complement (shiftL (1 :: Word64) (32 - p) - 1)
+
+-- mkNetAddr :: String -> Int -> Word64
+-- mkNetAddr net p = let a = unsafePerformIO (inet_addr net)
+--                       b = prefix2mask p
+--                   in  shiftL (fromIntegral a :: Word64) 32 .|. (fromIntegral b :: Word64)
+
+
+mkNetAddr :: String -> Int -> (Word32, CInt)
 mkNetAddr net p = let a = unsafePerformIO (inet_addr net)
-                      b = prefix2mask p
-                  in  shiftL (fromIntegral a :: Word64) 32 .|. (fromIntegral b :: Word64)
+                  in (fromIntegral a, fromIntegral p)
+
 
 -- Default combinators
 
@@ -232,7 +240,7 @@ has_dst_port = Pred1 "has_dst_port"     :: Int16 -> Predicate
 
 has_addr, has_src_addr, has_dst_addr    :: String -> Int -> Predicate
 
-has_addr net p     = Pred1 "has_addr" (mkNetAddr net p)
+has_addr net p     = Pred1 "has_addr"     (mkNetAddr net p)
 has_src_addr net p = Pred1 "has_src_addr" (mkNetAddr net p)
 has_dst_addr net p = Pred1 "has_dst_addr" (mkNetAddr net p)
 
