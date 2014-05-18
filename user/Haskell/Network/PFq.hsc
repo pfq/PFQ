@@ -823,15 +823,14 @@ instance Storable StorableFunDescr where
             pokeByteOff ptr (sizeOf nullPtr * 4  + sizeOf (undefined :: CInt) * 2) right
 
 
-
 -- |Specify a functional computation for the given group.
 --
 -- The functional computation is specified by the q-lan eDLS.
 --
 
 groupComputation :: Ptr PFqTag
-                 -> Int                        -- ^ group id
-                 -> Computation QFunction      -- ^ computation (PFqLang)
+                 -> Int                                     -- ^ group id
+                 -> NetFunction (SkBuff -> Action SkBuff)   -- ^ computation (PFqLang)
                  -> IO ()
 
 groupComputation hdl gid comp = do

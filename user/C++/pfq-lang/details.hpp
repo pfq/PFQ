@@ -39,9 +39,9 @@ namespace pfq_lang
         {
             template <typename P>
             auto operator()(std::string name, P const &p)
-            -> decltype(hcomputation(std::move(name), p))
+            -> decltype(hnetfunction(std::move(name), p))
             {
-                return hcomputation(std::move(name), p);
+                return hnetfunction(std::move(name), p);
             }
         };
 
@@ -49,9 +49,9 @@ namespace pfq_lang
         {
             template <typename P, typename C>
             auto operator()(std::string name, P const &p, C const &c)
-            -> decltype(hcomputation1(std::move(name), p, c))
+            -> decltype(hnetfunction1(std::move(name), p, c))
             {
-                return hcomputation1(std::move(name), p, c);
+                return hnetfunction1(std::move(name), p, c);
             }
         };
 
@@ -59,9 +59,9 @@ namespace pfq_lang
         {
             template <typename P, typename C1, typename C2>
             auto operator()(std::string name, P const &p, C1 const &c1, C2 const &c2)
-            -> decltype(hcomputation2(std::move(name), p, c1, c2))
+            -> decltype(hnetfunction2(std::move(name), p, c1, c2))
             {
-                return hcomputation2(std::move(name), p, c1, c2);
+                return hnetfunction2(std::move(name), p, c1, c2);
             }
         };
 

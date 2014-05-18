@@ -407,7 +407,7 @@ namespace pfq_lang
         }
 
         //
-        // Computations:
+        // NetFunction:
         //
 
         struct Fun
@@ -462,7 +462,7 @@ namespace pfq_lang
         };
 
         template <typename Tp>
-        struct is_computation :
+        struct is_netfunction :
             std::integral_constant<bool,
                 std::is_same<Tp, Fun>::value  ||
                 std::is_same<Tp, Fun1>::value ||
@@ -472,7 +472,7 @@ namespace pfq_lang
                 is_same_template<Tp, Comp>::value>
         { };
 
-        ///// show computations:
+        ///// show NetFunction:
 
         static inline std::string
         show(Fun const &descr)
@@ -516,7 +516,7 @@ namespace pfq_lang
             return show(descr.comp1_) + " >-> " + show(descr.comp2_);
         }
 
-        ///// serialize computations:
+        ///// serialize NetFunction:
 
         static inline std::pair<std::vector<FunDescr>, int>
         serialize(int n, Fun const &f)
@@ -698,7 +698,7 @@ namespace pfq_lang
     }
 
     inline term::Fun
-    computation(std::string name)
+    netfunction(std::string name)
     {
         return term::Fun{ std::move(name) };
     }
@@ -707,7 +707,7 @@ namespace pfq_lang
     inline typename std::enable_if<
           std::is_pod<T>::value,
     term::Fun1>::type
-    computation1(std::string name, const T &arg)
+    netfunction1(std::string name, const T &arg)
     {
         return term::Fun1{ std::move(name), arg };
     }
@@ -716,7 +716,7 @@ namespace pfq_lang
     inline typename std::enable_if<
           term::is_predicate<P>::value,
     term::HFun<P>>::type
-    hcomputation(std::string name, P const &p)
+    hnetfunction(std::string name, P const &p)
     {
         return term::HFun<P>{ std::move(name), p };
     }
@@ -724,9 +724,9 @@ namespace pfq_lang
     template <typename P, typename C>
     inline typename std::enable_if<
           term::is_predicate<P>::value &&
-          term::is_computation<C>::value,
+          term::is_netfunction<C>::value,
     term::HFun1<P,C>>::type
-    hcomputation1(std::string name, P const &p, C const &c)
+    hnetfunction1(std::string name, P const &p, C const &c)
     {
         return term::HFun1<P,C>{ std::move(name), p, c};
     }
@@ -734,10 +734,10 @@ namespace pfq_lang
     template <typename P, typename C1, typename C2>
     inline typename std::enable_if<
           term::is_predicate<P>::value &&
-          term::is_computation<C1>::value &&
-          term::is_computation<C2>::value,
+          term::is_netfunction<C1>::value &&
+          term::is_netfunction<C2>::value,
     term::HFun2<P,C1, C2>>::type
-    hcomputation2(std::string name, P const &p, C1 const &c1, C2 const &c2)
+    hnetfunction2(std::string name, P const &p, C1 const &c1, C2 const &c2)
     {
         return term::HFun2<P,C1,C2>{ std::move(name), p, c1, c2};
     }
@@ -748,8 +748,8 @@ namespace pfq_lang
 
     template <typename C1, typename C2>
     inline typename std::enable_if<
-          term::is_computation<C1>::value &&
-          term::is_computation<C2>::value,
+          term::is_netfunction<C1>::value &&
+          term::is_netfunction<C2>::value,
     term::Comp<C1, C2>>::type
     operator>>(C1 c1, C2 c2)
     {

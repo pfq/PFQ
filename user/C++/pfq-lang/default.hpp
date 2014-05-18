@@ -184,14 +184,14 @@ namespace pfq_lang
         auto icmp_type  = property("icmp_type");
         auto icmp_code  = property("icmp_code");
 
-        // default computations:
+        // default netfunctions:
 
-        auto steer_link = computation("steer_link");
-        auto steer_vlan = computation("steer_vlan");
-        auto steer_ip   = computation("steer_ip");
-        auto steer_ip6  = computation("steer_ip6");
-        auto steer_flow = computation("steer_flow");
-        auto steer_rtp  = computation("steer_rtp");
+        auto steer_link = netfunction("steer_link");
+        auto steer_vlan = netfunction("steer_vlan");
+        auto steer_ip   = netfunction("steer_ip");
+        auto steer_ip6  = netfunction("steer_ip6");
+        auto steer_flow = netfunction("steer_flow");
+        auto steer_rtp  = netfunction("steer_rtp");
         auto steer_net  = [] (const char *net, int prefix, int subprefix) {
 
                                 struct supernet {
@@ -203,58 +203,58 @@ namespace pfq_lang
                                 if (inet_pton(AF_INET, net, &na.addr) <= 0)
                                     throw std::runtime_error("pfq_lang::steer_net");
 
-                                return computation1("steer_net", na);
+                                return netfunction1("steer_net", na);
                              };
 
         // others:
 
-        auto ip         = computation("ip");
-        auto ip6        = computation("ip6");
-        auto udp        = computation("udp");
-        auto tcp        = computation("tcp");
-        auto udp6       = computation("udp6");
-        auto tcp6       = computation("tcp6");
-        auto icmp6      = computation("icmp6");
-        auto vlan       = computation("vlan");
-        auto icmp       = computation("icmp");
-        auto flow       = computation("flow");
-        auto rtp        = computation("rtp");
+        auto ip         = netfunction("ip");
+        auto ip6        = netfunction("ip6");
+        auto udp        = netfunction("udp");
+        auto tcp        = netfunction("tcp");
+        auto udp6       = netfunction("udp6");
+        auto tcp6       = netfunction("tcp6");
+        auto icmp6      = netfunction("icmp6");
+        auto vlan       = netfunction("vlan");
+        auto icmp       = netfunction("icmp");
+        auto flow       = netfunction("flow");
+        auto rtp        = netfunction("rtp");
 
-        auto broadcast  = computation("broadcast");
-        auto kernel     = computation("kernel");
-        auto sink       = computation("sink");
-        auto drop       = computation("drop");
-        auto unit       = computation("unit");
+        auto broadcast  = netfunction("broadcast");
+        auto kernel     = netfunction("kernel");
+        auto sink       = netfunction("sink");
+        auto drop       = netfunction("drop");
+        auto unit       = netfunction("unit");
 
-        auto forward    = [] (int index) { return computation1("forward", index); };
-        auto mark       = [] (unsigned long value) { return computation1("mark", value); };
-        auto dummy      = [] (int value) { return computation1("dummy", value); };
-        auto inc        = [] (int value) { return computation1("inc", value); };
-        auto dec        = [] (int value) { return computation1("dec", value); };
-        auto class_     = [] (int value) { return computation1("class", value); };
-        auto l3_proto   = [] (uint16_t type) { return computation1 ("l3_proto", type); };
-        auto l4_proto   = [] (uint8_t proto) { return computation1 ("l4_proto", proto); };
+        auto forward    = [] (int index) { return netfunction1("forward", index); };
+        auto mark       = [] (unsigned long value) { return netfunction1("mark", value); };
+        auto dummy      = [] (int value) { return netfunction1("dummy", value); };
+        auto inc        = [] (int value) { return netfunction1("inc", value); };
+        auto dec        = [] (int value) { return netfunction1("dec", value); };
+        auto class_     = [] (int value) { return netfunction1("class", value); };
+        auto l3_proto   = [] (uint16_t type) { return netfunction1 ("l3_proto", type); };
+        auto l4_proto   = [] (uint8_t proto) { return netfunction1 ("l4_proto", proto); };
 
-        auto port       = [] (uint16_t port) { return computation1 ("port", port); };
-        auto src_port   = [] (uint16_t port) { return computation1 ("src_port", port); };
-        auto dst_port   = [] (uint16_t port) { return computation1 ("dst_port", port); };
+        auto port       = [] (uint16_t port) { return netfunction1 ("port", port); };
+        auto src_port   = [] (uint16_t port) { return netfunction1 ("src_port", port); };
+        auto dst_port   = [] (uint16_t port) { return netfunction1 ("dst_port", port); };
 
         auto addr = [] (const char *net, int prefix)
         {
             auto addr = details::make_netaddr(net, prefix);
-            return computation1("addr", addr);
+            return netfunction1("addr", addr);
         };
 
         auto src_addr = [] (const char *net, int prefix)
         {
             auto addr = details::make_netaddr(net, prefix);
-            return computation1("src_addr", addr);
+            return netfunction1("src_addr", addr);
         };
 
         auto dst_addr = [] (const char *net, int prefix)
         {
             auto addr = details::make_netaddr(net, prefix);
-            return computation1("dst_addr", addr);
+            return netfunction1("dst_addr", addr);
         };
 
         auto hdummy      = std::bind(details::hcomp(),  "hdummy", _1);
@@ -262,6 +262,6 @@ namespace pfq_lang
         auto unless      = std::bind(details::hcomp1(), "unless", _1, _2);
         auto conditional = std::bind(details::hcomp2(), "conditional", _1, _2, _3);
 
-        auto crc16       = computation("crc16");
+        auto crc16       = netfunction("crc16");
     }
 }

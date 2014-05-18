@@ -42,11 +42,12 @@ module Network.PFq.Lang
         Combinator(..),
         Predicate(..),
         Property(..),
-        Computation(..),
+        NetFunction(..),
         Serializable(..),
         FunDescr(..),
         FunType(..),
-        QFunction,
+        Action,
+        SkBuff,
         (>->),
 
     ) where
@@ -178,18 +179,18 @@ instance Serializable Predicate where
                                            (f'', n'') = serialize n' p
                                        in (f' ++ f'', n'')
 
--- Computation
+-- NetFunction
 
-data Computation f where
-        Fun   :: String -> Computation f
-        Fun1  :: forall a f. (Show a, Storable a) => String -> a -> Computation f
-        HFun  :: String -> Predicate -> Computation f
-        HFun1 :: String -> Predicate -> Computation f -> Computation f
-        HFun2 :: String -> Predicate -> Computation f -> Computation f -> Computation f
-        Comp  :: forall f1 f2 f. Computation f1 -> Computation f2 -> Computation f
+data NetFunction f where
+        Fun   :: String -> NetFunction f
+        Fun1  :: forall a f. (Show a, Storable a) => String -> a -> NetFunction f
+        HFun  :: String -> Predicate -> NetFunction f
+        HFun1 :: String -> Predicate -> NetFunction f -> NetFunction f
+        HFun2 :: String -> Predicate -> NetFunction f -> NetFunction f -> NetFunction f
+        Comp  :: forall f1 f2 f. NetFunction f1 -> NetFunction f2 -> NetFunction f
 
 
-instance Show (Computation f) where
+instance Show (NetFunction f) where
         show (Fun name) = name
         show (Fun1 name a) = "(" ++ name ++ " " ++ show a ++ ")"
         show (HFun  name pred) = "(" ++ name ++ " " ++ show pred ++ ")"
@@ -198,7 +199,7 @@ instance Show (Computation f) where
         show (Comp c1 c2) = show c1 ++ " >-> " ++ show c2
 
 
-instance Serializable (Computation f) where
+instance Serializable (NetFunction f) where
         serialize n (Fun name) = ([FunDescr { functionalType  = MonadicFun,
                                               functionalSymb  = name,
                                               functionalArg   = Empty,
@@ -247,11 +248,10 @@ instance Serializable (Computation f) where
 
 newtype SkBuff   = SkBuff ()
 type Action      = Identity
-type QFunction   = SkBuff -> Action SkBuff
 
 -- operator: >->
 
-(>->) :: Computation (a -> m b) -> Computation (b -> m c) -> Computation (a -> m c)
+(>->) :: NetFunction (a -> m b) -> NetFunction (b -> m c) -> NetFunction (a -> m c)
 f1 >-> f2 = Comp f1 f2
 
 

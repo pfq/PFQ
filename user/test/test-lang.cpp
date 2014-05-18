@@ -35,27 +35,27 @@ main()
      auto p4 = predicate3("pred3", q0);
      auto p5 = predicate4("pred3-arg", q1, 3);
 
-     //////// computations:
+     //////// netfunctions:
 
-     auto c0  = computation("fun");
-     auto c1  = computation1("fun1", 42);
+     auto c0  = netfunction("fun");
+     auto c1  = netfunction1("fun1", 42);
 
-     auto c20 = hcomputation("hfun", p0);
-     auto c21 = hcomputation("hfun", p1);
-     auto c22 = hcomputation("hfun", p2);
-     auto c23 = hcomputation("hfun", p3);
+     auto c20 = hnetfunction("hfun", p0);
+     auto c21 = hnetfunction("hfun", p1);
+     auto c22 = hnetfunction("hfun", p2);
+     auto c23 = hnetfunction("hfun", p3);
 
-     auto c30 = hcomputation1("hfun1", p0, c0);
-     auto c31 = hcomputation1("hfun1", p1, c0);
-     auto c32 = hcomputation1("hfun1", p0, c1);
-     auto c33 = hcomputation1("hfun1", p1, c1);
-     auto c34 = hcomputation1("hfun1", p0, c20);
-     auto c35 = hcomputation1("hfun1", p1, c21);
+     auto c30 = hnetfunction1("hfun1", p0, c0);
+     auto c31 = hnetfunction1("hfun1", p1, c0);
+     auto c32 = hnetfunction1("hfun1", p0, c1);
+     auto c33 = hnetfunction1("hfun1", p1, c1);
+     auto c34 = hnetfunction1("hfun1", p0, c20);
+     auto c35 = hnetfunction1("hfun1", p1, c21);
 
-     auto c40 = hcomputation2("hfun2", p0, c0, c1);
-     auto c41 = hcomputation2("hfun2", p1, c0, c1);
-     auto c42 = hcomputation2("hfun2", p0, c20, c21);
-     auto c43 = hcomputation2("hfun2", p1, c20, c21);
+     auto c40 = hnetfunction2("hfun2", p0, c0, c1);
+     auto c41 = hnetfunction2("hfun2", p1, c0, c1);
+     auto c42 = hnetfunction2("hfun2", p0, c20, c21);
+     auto c43 = hnetfunction2("hfun2", p1, c20, c21);
 
      auto c50 = c0 >> c1;
      auto c51 = c1 >> c20 >> c21;

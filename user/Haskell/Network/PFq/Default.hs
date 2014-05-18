@@ -269,58 +269,58 @@ icmp_code   = Prop "icmp_code"
 
 -- Predefined in-kernel computations
 
-steer_link  = Fun "steer_link"      :: Computation QFunction
-steer_vlan  = Fun "steer_vlan"      :: Computation QFunction
-steer_ip    = Fun "steer_ip"        :: Computation QFunction
-steer_ip6   = Fun "steer_ip6"       :: Computation QFunction
-steer_flow  = Fun "steer_flow"      :: Computation QFunction
-steer_rtp   = Fun "steer_rtp"       :: Computation QFunction
+steer_link  = Fun "steer_link"      :: NetFunction (SkBuff -> Action SkBuff)
+steer_vlan  = Fun "steer_vlan"      :: NetFunction (SkBuff -> Action SkBuff)
+steer_ip    = Fun "steer_ip"        :: NetFunction (SkBuff -> Action SkBuff)
+steer_ip6   = Fun "steer_ip6"       :: NetFunction (SkBuff -> Action SkBuff)
+steer_flow  = Fun "steer_flow"      :: NetFunction (SkBuff -> Action SkBuff)
+steer_rtp   = Fun "steer_rtp"       :: NetFunction (SkBuff -> Action SkBuff)
 
-steer_net :: String -> Int -> Int -> Computation QFunction
+steer_net :: String -> Int -> Int -> NetFunction (SkBuff -> Action SkBuff)
 steer_net net p sub = (Fun1 "steer_net" (mkSuperNetAddr net p sub))
 
-ip          = Fun "ip"              :: Computation QFunction
-ip6         = Fun "ip6"             :: Computation QFunction
-udp         = Fun "udp"             :: Computation QFunction
-tcp         = Fun "tcp"             :: Computation QFunction
-icmp        = Fun "icmp"            :: Computation QFunction
-udp6        = Fun "udp6"            :: Computation QFunction
-tcp6        = Fun "tcp6"            :: Computation QFunction
-icmp6       = Fun "icmp6"           :: Computation QFunction
-vlan        = Fun "vlan"            :: Computation QFunction
-flow        = Fun "flow"            :: Computation QFunction
-rtp         = Fun "rtp"             :: Computation QFunction
+ip          = Fun "ip"              :: NetFunction (SkBuff -> Action SkBuff)
+ip6         = Fun "ip6"             :: NetFunction (SkBuff -> Action SkBuff)
+udp         = Fun "udp"             :: NetFunction (SkBuff -> Action SkBuff)
+tcp         = Fun "tcp"             :: NetFunction (SkBuff -> Action SkBuff)
+icmp        = Fun "icmp"            :: NetFunction (SkBuff -> Action SkBuff)
+udp6        = Fun "udp6"            :: NetFunction (SkBuff -> Action SkBuff)
+tcp6        = Fun "tcp6"            :: NetFunction (SkBuff -> Action SkBuff)
+icmp6       = Fun "icmp6"           :: NetFunction (SkBuff -> Action SkBuff)
+vlan        = Fun "vlan"            :: NetFunction (SkBuff -> Action SkBuff)
+flow        = Fun "flow"            :: NetFunction (SkBuff -> Action SkBuff)
+rtp         = Fun "rtp"             :: NetFunction (SkBuff -> Action SkBuff)
 
-kernel      = Fun "kernel"          :: Computation QFunction
-broadcast   = Fun "broadcast"       :: Computation QFunction
-sink        = Fun "sink"            :: Computation QFunction
-drop'       = Fun "drop"            :: Computation QFunction
-unit        = Fun "unit"            :: Computation QFunction
+kernel      = Fun "kernel"          :: NetFunction (SkBuff -> Action SkBuff)
+broadcast   = Fun "broadcast"       :: NetFunction (SkBuff -> Action SkBuff)
+sink        = Fun "sink"            :: NetFunction (SkBuff -> Action SkBuff)
+drop'       = Fun "drop"            :: NetFunction (SkBuff -> Action SkBuff)
+unit        = Fun "unit"            :: NetFunction (SkBuff -> Action SkBuff)
 
-crc16       = Fun "crc16"           :: Computation QFunction
-inc         = Fun1 "inc"            :: CInt -> Computation QFunction
-dec         = Fun1 "dec"            :: CInt -> Computation QFunction
-mark        = Fun1 "mark"           :: CULong -> Computation QFunction
-forward     = Fun1 "forward"        :: CInt -> Computation QFunction
-dummy       = Fun1 "dummy"          :: CInt -> Computation QFunction
-class'      = Fun1 "class"          :: CInt -> Computation QFunction
+crc16       = Fun "crc16"           :: NetFunction (SkBuff -> Action SkBuff)
+inc         = Fun1 "inc"            :: CInt -> NetFunction (SkBuff -> Action SkBuff)
+dec         = Fun1 "dec"            :: CInt -> NetFunction (SkBuff -> Action SkBuff)
+mark        = Fun1 "mark"           :: CULong -> NetFunction (SkBuff -> Action SkBuff)
+forward     = Fun1 "forward"        :: CInt -> NetFunction (SkBuff -> Action SkBuff)
+dummy       = Fun1 "dummy"          :: CInt -> NetFunction (SkBuff -> Action SkBuff)
+class'      = Fun1 "class"          :: CInt -> NetFunction (SkBuff -> Action SkBuff)
 
-l3_proto    = Fun1 "l3_proto"       :: Int16 -> Computation QFunction
-l4_proto    = Fun1 "l4_proto"       :: Int8 -> Computation QFunction
+l3_proto    = Fun1 "l3_proto"       :: Int16 -> NetFunction (SkBuff -> Action SkBuff)
+l4_proto    = Fun1 "l4_proto"       :: Int8 -> NetFunction (SkBuff -> Action SkBuff)
 
-port        = Fun1 "port"           :: Int16 -> Computation QFunction
-src_port    = Fun1 "src_port"       :: Int16 -> Computation QFunction
-dst_port    = Fun1 "dst_port"       :: Int16 -> Computation QFunction
+port        = Fun1 "port"           :: Int16 -> NetFunction (SkBuff -> Action SkBuff)
+src_port    = Fun1 "src_port"       :: Int16 -> NetFunction (SkBuff -> Action SkBuff)
+dst_port    = Fun1 "dst_port"       :: Int16 -> NetFunction (SkBuff -> Action SkBuff)
 
 
-addr, src_addr, dst_addr :: String -> Int -> Computation QFunction
+addr, src_addr, dst_addr :: String -> Int -> NetFunction (SkBuff -> Action SkBuff)
 
 addr net p     = Fun1 "addr"     (mkNetAddr net p)
 src_addr net p = Fun1 "src_addr" (mkNetAddr net p)
 dst_addr net p = Fun1 "dst_addr" (mkNetAddr net p)
 
-hdummy      = HFun "hdummy"         :: Predicate -> Computation QFunction
-when'       = HFun1 "when"          :: Predicate -> Computation QFunction -> Computation QFunction
-unless'     = HFun1 "unless"        :: Predicate -> Computation QFunction -> Computation QFunction
-conditional = HFun2 "conditional"   :: Predicate -> Computation QFunction -> Computation QFunction -> Computation QFunction
+hdummy      = HFun "hdummy"         :: Predicate -> NetFunction (SkBuff -> Action SkBuff)
+when'       = HFun1 "when"          :: Predicate -> NetFunction (SkBuff -> Action SkBuff) -> NetFunction (SkBuff -> Action SkBuff)
+unless'     = HFun1 "unless"        :: Predicate -> NetFunction (SkBuff -> Action SkBuff) -> NetFunction (SkBuff -> Action SkBuff)
+conditional = HFun2 "conditional"   :: Predicate -> NetFunction (SkBuff -> Action SkBuff) -> NetFunction (SkBuff -> Action SkBuff) -> NetFunction (SkBuff -> Action SkBuff)
 
