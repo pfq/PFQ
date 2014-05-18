@@ -70,12 +70,13 @@ forward_init(arguments_t args)
 
 	struct net_device *dev = dev_get_by_index(&init_net, index);
 	if (dev == NULL) {
-                printk(KERN_INFO "[PFQ] forward_init: device not found!\n");
+                printk(KERN_INFO "[PFQ|init] forward: no such device (index=%d)!\n", index);
                 return -1;
 	}
 
 	set_data(args, dev);
-	printk(KERN_INFO "[PFQ] forward_init: device %s locked.\n", dev->name);
+
+	pr_devel("[PFQ|init] forward: device '%s' locked.\n", dev->name);
 
 	return 0;
 }
@@ -84,9 +85,10 @@ static int
 forward_fini(arguments_t args)
 {
 	struct net_device *dev = get_data(struct net_device *, args);
-	printk(KERN_INFO "[PFQ] forward_fini: device %s released.\n", dev->name);
-	dev_put(dev);
 
+	pr_devel("[PFQ|fini] forward: device '%s' released.\n", dev->name);
+
+	dev_put(dev);
 	return 0;
 }
 
