@@ -29,42 +29,42 @@
 #include "filter.h"
 
 
-static inline struct sk_buff *
+static struct sk_buff *
 filter_l3_proto(arguments_t args, struct sk_buff *skb)
 {
 	const u16 type = get_data(u16, args);
         return is_l3_proto(skb, type) ? skb : drop(skb);
 }
 
-static inline struct sk_buff *
+static struct sk_buff *
 filter_l4_proto(arguments_t args, struct sk_buff *skb)
 {
 	const u8 proto = get_data(u8, args);
         return is_l4_proto(skb, proto) ? skb : drop(skb);
 }
 
-static inline struct sk_buff *
+static struct sk_buff *
 filter_port(arguments_t args, struct sk_buff *skb)
 {
 	const u16 port = get_data(u16, args);
         return has_port(skb, port) ? skb : drop(skb);
 }
 
-static inline struct sk_buff *
+static struct sk_buff *
 filter_src_port(arguments_t args, struct sk_buff *skb)
 {
 	const u16 port = get_data(u16, args);
         return has_src_port(skb, port) ? skb : drop(skb);
 }
 
-static inline struct sk_buff *
+static struct sk_buff *
 filter_dst_port(arguments_t args, struct sk_buff *skb)
 {
 	const u16 port = get_data(u16, args);
         return has_dst_port(skb, port) ? skb : drop(skb);
 }
 
-static inline struct sk_buff *
+static struct sk_buff *
 filter_addr(arguments_t args, struct sk_buff *skb)
 {
 	const u64 data = get_data(u64, args);
@@ -76,7 +76,7 @@ filter_addr(arguments_t args, struct sk_buff *skb)
 	return has_addr(skb, addr, mask) ? skb : drop(skb);
 }
 
-static inline struct sk_buff *
+static struct sk_buff *
 filter_src_addr(arguments_t args, struct sk_buff *skb)
 {
 	const u64 data = get_data(u64, args);
@@ -86,7 +86,7 @@ filter_src_addr(arguments_t args, struct sk_buff *skb)
 	return has_src_addr(skb, addr, mask) ? skb : drop(skb);
 }
 
-static inline struct sk_buff *
+static struct sk_buff *
 filter_dst_addr(arguments_t args, struct sk_buff *skb)
 {
 	const u64 data = get_data(u64, args);
@@ -114,9 +114,11 @@ struct pfq_monadic_fun_descr filter_functions[] = {
         { "port",      	FUN_ACTION | FUN_ARG_DATA, filter_port 	   },
         { "src_port",	FUN_ACTION | FUN_ARG_DATA, filter_src_port },
         { "dst_port",   FUN_ACTION | FUN_ARG_DATA, filter_dst_port },
+
         { "addr",      	FUN_ACTION | FUN_ARG_DATA, filter_addr	   },
         { "src_addr",   FUN_ACTION | FUN_ARG_DATA, filter_src_addr },
         { "dst_addr",   FUN_ACTION | FUN_ARG_DATA, filter_dst_addr },
+
  	{ "l3_proto", 	FUN_ACTION | FUN_ARG_DATA, filter_l3_proto },
         { "l4_proto",   FUN_ACTION | FUN_ARG_DATA, filter_l4_proto },
 
