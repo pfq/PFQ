@@ -23,7 +23,7 @@
 
 #include <linux/kernel.h>
 #include <linux/module.h>
-
+#include <linux/swab.h>
 
 #include <pf_q-engine.h>
 
@@ -108,11 +108,11 @@ steering_net(arguments_t args, struct sk_buff *skb)
 
 		if ((ip->saddr & mask) == addr)
 		{
-        		return steering(skb, ip->saddr & submask);
+        		return steering(skb, __swab32(ntohl(ip->saddr & submask)));
 		}
 		if ((ip->daddr & mask) == addr)
 		{
-        		return steering(skb, ip->daddr & submask);
+        		return steering(skb, __swab32(ntohl(ip->daddr & submask)));
 		}
 	}
 
