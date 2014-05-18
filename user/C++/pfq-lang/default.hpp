@@ -192,6 +192,19 @@ namespace pfq_lang
         auto steer_ip6  = computation("steer_ip6");
         auto steer_flow = computation("steer_flow");
         auto steer_rtp  = computation("steer_rtp");
+        auto steer_net  = [] (const char *net, int prefix, int subprefix) {
+
+                                struct supernet {
+                                    uint32_t addr;
+                                    int      prefix;
+                                    int      subprefix;
+                                } na = { 0, prefix, subprefix };
+
+                                if (inet_pton(AF_INET, net, &na.addr) <= 0)
+                                    throw std::runtime_error("pfq_lang::steer_net");
+
+                                return computation1("steer_net", na);
+                             };
 
         // others:
 

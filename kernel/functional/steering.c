@@ -25,8 +25,7 @@
 #include <linux/module.h>
 
 
-#include <pf_q-module.h>
-
+#include <pf_q-engine.h>
 
 static struct sk_buff *
 steering_link(arguments_t args, struct sk_buff *skb)
@@ -62,6 +61,59 @@ steering_ip(arguments_t args, struct sk_buff *skb)
                         return drop(skb);
 
         	return steering(skb, ip->saddr ^ ip->daddr);
+	}
+
+        return drop(skb);
+}
+
+
+int
+steering_net_init(arguments_t args)
+{
+	struct network_addr {
+	 	uint32_t addr;
+	 	int 	 prefix;
+	 	int 	 prefix2;
+	} * data = get_data(struct network_addr, args);
+
+	uint32_t ipv4    = data->addr;
+	uint32_t mask    = make_mask(data->prefix);
+        uint32_t submask = make_mask(data->prefix2);
+
+	set_data (args, ipv4);
+	set_data2(args, mask);
+	set_data3(args, submask);
+
+	pr_devel("[PFQ|init] steer_net: addr=%pI4 mask=%pI4 submask=%pI4\n", &ipv4, &mask, &submask);
+
+	return 0;
+}
+
+
+static struct sk_buff *
+steering_net(arguments_t args, struct sk_buff *skb)
+{
+	uint32_t addr    = get_data (uint32_t, args);
+	uint32_t mask    = get_data2(uint32_t, args);
+	uint32_t submask = get_data3(uint32_t, args);
+
+	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP))
+	{
+		struct iphdr _iph;
+    		const struct iphdr *ip;
+
+		ip = skb_header_pointer(skb, skb->mac_len, sizeof(_iph), &_iph);
+ 		if (ip == NULL)
+                        return drop(skb);
+
+		if ((ip->saddr & mask) == addr)
+		{
+        		return steering(skb, ip->saddr & submask);
+		}
+		if ((ip->daddr & mask) == addr)
+		{
+        		return steering(skb, ip->daddr & submask);
+		}
 	}
 
         return drop(skb);
@@ -132,6 +184,7 @@ struct pfq_monadic_fun_descr steering_functions[] = {
         { "steer_ip",    FUN_ACTION, steering_ip      },
         { "steer_ip6",	 FUN_ACTION, steering_ip6     },
         { "steer_flow",  FUN_ACTION, steering_flow    },
+        { "steer_net",   FUN_ACTION | FUN_ARG_DATA, steering_net, steering_net_init },
 
         { NULL }};
 

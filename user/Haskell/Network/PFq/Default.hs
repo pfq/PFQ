@@ -122,6 +122,7 @@ module Network.PFq.Default
         steer_ip   ,
         steer_ip6  ,
         steer_flow ,
+        steer_net  ,
         steer_rtp  ,
 
         -- * Forwarders
@@ -179,6 +180,9 @@ mkNetAddr :: String -> Int -> (Word32, CInt)
 mkNetAddr net p = let a = unsafePerformIO (inet_addr net)
                   in (fromIntegral a, fromIntegral p)
 
+mkSuperNetAddr :: String -> Int -> Int -> (Word32, CInt, CInt)
+mkSuperNetAddr net p sub = let a = unsafePerformIO (inet_addr net)
+                           in (fromIntegral a, fromIntegral p, fromIntegral sub)
 
 -- Default combinators
 
@@ -271,6 +275,9 @@ steer_ip    = Fun "steer_ip"        :: Computation QFunction
 steer_ip6   = Fun "steer_ip6"       :: Computation QFunction
 steer_flow  = Fun "steer_flow"      :: Computation QFunction
 steer_rtp   = Fun "steer_rtp"       :: Computation QFunction
+
+steer_net :: String -> Int -> Int -> Computation QFunction
+steer_net net p sub = (Fun1 "steer_net" (mkSuperNetAddr net p sub))
 
 ip          = Fun "ip"              :: Computation QFunction
 ip6         = Fun "ip6"             :: Computation QFunction
