@@ -52,7 +52,7 @@ struct pfq_rx_opt
         wait_queue_head_t       waitqueue;
         pfq_rx_stat_t           stat;
 
-} __attribute__((aligned(64)));
+} ____cacheline_aligned_in_smp;
 
 
 static inline
@@ -109,7 +109,8 @@ struct pfq_tx_opt
 
         pfq_tx_stat_t           stat;
 
-} __attribute__((aligned(64)));
+} ____cacheline_aligned_in_smp;
+
 
 static inline
 void pfq_tx_opt_init(struct pfq_tx_opt *that, size_t maxlen)
@@ -150,7 +151,9 @@ struct pfq_sock
 
         struct pfq_rx_opt   rx_opt;
         struct pfq_tx_opt   tx_opt;
-};
+
+} ____cacheline_aligned_in_smp;
+
 
 static inline
 struct pfq_queue_hdr *

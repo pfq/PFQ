@@ -59,7 +59,8 @@ struct local_data
         atomic_t                enable_recycle;
         struct sk_buff_head     tx_recycle_list;
         struct sk_buff_head     rx_recycle_list;
-};
+
+} ____cacheline_aligned;
 
 
 struct pfq_recycle_stat

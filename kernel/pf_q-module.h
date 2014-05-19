@@ -211,6 +211,7 @@ struct pergroup_context
 		char 		memory[Q_PERSISTENT_MEM];
 
 	} persistent [Q_MAX_PERSISTENT];
+
 };
 
 typedef struct

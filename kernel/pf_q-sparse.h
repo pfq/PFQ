@@ -32,7 +32,7 @@
 #define Q_MAX_CPU                16
 
 
-typedef struct { local_t value; } __attribute__((aligned(64))) counter_t;
+typedef struct { local_t value; } ____cacheline_aligned counter_t;
 
 
 typedef struct { counter_t ctx[Q_MAX_CPU]; } sparse_counter_t;

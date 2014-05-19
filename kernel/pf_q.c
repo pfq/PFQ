@@ -649,7 +649,7 @@ static int
 pfq_release(struct socket *sock)
 {
         struct sock * sk = sock->sk;
-        struct pfq_sock * so;
+        struct pfq_sock *so;
         int id, total = 0;
 
 	if (!sk)

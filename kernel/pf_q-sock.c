@@ -59,7 +59,7 @@ int pfq_get_sock_count(void)
 struct pfq_sock *
 pfq_get_sock_by_id(size_t id)
 {
-        struct pfq_sock * so;
+        struct pfq_sock *so;
         if (unlikely(id >= Q_MAX_ID))
         {
                 pr_devel("[PFQ] pfq_devmap_freeid: bad id=%zd!\n", id);
