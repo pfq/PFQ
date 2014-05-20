@@ -334,7 +334,7 @@ steering(struct sk_buff *skb, uint32_t hash)
 
 static inline
 struct sk_buff *
-class_steering(struct sk_buff *skb, unsigned long class_mask, uint32_t hash)
+dispatch(struct sk_buff *skb, unsigned long class_mask, uint32_t hash)
 {
         action_t * a = & PFQ_CB(skb)->action;
         a->type  = action_steer;
