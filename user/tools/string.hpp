@@ -33,7 +33,7 @@ split(std::string str, const char *sep)
 
     for(std::string::size_type n; (n = str.find(sep)) != std::string::npos;)
     {
-        ret.emplace_back(str.substr(0,n));
+        ret.push_back(str.substr(0,n));
         str = str.substr(n + len, std::string::npos);
     }
 
