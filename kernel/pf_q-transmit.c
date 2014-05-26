@@ -59,8 +59,10 @@ pfq_pick_tx(struct net_device *dev, struct sk_buff *skb, int *queue_index)
                                 ?
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(3,13,0))
                                 ops->ndo_select_queue(dev, skb)
-#else
+#elif (LINUX_VERSION_CODE == KERNEL_VERSION(3,13,0))
                                 ops->ndo_select_queue(dev, skb, NULL)
+#else
+                                ops->ndo_select_queue(dev, skb, NULL, NULL)
 #endif
                                 : 0;
         }
