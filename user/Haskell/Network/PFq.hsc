@@ -398,7 +398,7 @@ openNoGroup caplen offset slots =
 --
 -- Both class mask and group policy are specifiable.
 
-openGroup :: [ClassMask]  -- ^ list of ClassMask (i.e. [class_default])
+openGroup :: [ClassMask]  -- ^ list of ClassMask (e.g., [class_default])
           -> GroupPolicy  -- ^ policy for the group
           -> Int          -- ^ caplen
           -> Int          -- ^ offset

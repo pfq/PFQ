@@ -154,7 +154,7 @@ bool copy_to_user_skbs(struct pfq_rx_opt *ro, int cpu, unsigned long long sock_q
 }
 
 
-static inline
+static
 bool copy_to_endpoint_skbs(struct pfq_sock *so, int cpu, unsigned long long sock_queue, struct pfq_non_intrusive_skb *skbs, int gid)
 {
 	if (so->egress_index) {
