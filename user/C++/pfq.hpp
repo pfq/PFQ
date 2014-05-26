@@ -692,7 +692,7 @@ namespace net {
                 throw pfq_error("PFQ: device not found");
 
             struct pfq_binding b = { gid, index, queue };
-            if (::setsockopt(fd_, PF_Q, Q_SO_ADD_BINDING, &b, sizeof(b)) == -1)
+            if (::setsockopt(fd_, PF_Q, Q_SO_GROUP_BIND, &b, sizeof(b)) == -1)
                 throw pfq_error(errno, "PFQ: add binding error");
         }
 
@@ -718,7 +718,7 @@ namespace net {
                 throw pfq_error("PFQ: device not found");
 
             struct pfq_binding b = { gid, index, queue };
-            if (::setsockopt(fd_, PF_Q, Q_SO_REMOVE_BINDING, &b, sizeof(b)) == -1)
+            if (::setsockopt(fd_, PF_Q, Q_SO_GROUP_UNBIND, &b, sizeof(b)) == -1)
                 throw pfq_error(errno, "PFQ: remove binding error");
         }
 
@@ -798,7 +798,7 @@ namespace net {
         set_group_computation(int gid, pfq_computation_descr *prog)
         {
             struct pfq_group_computation p { gid, prog };
-            if (::setsockopt(fd_, PF_Q, Q_SO_GROUP_COMP, &p, sizeof(p)) == -1)
+            if (::setsockopt(fd_, PF_Q, Q_SO_GROUP_FUNCTION, &p, sizeof(p)) == -1)
                 throw pfq_error(errno, "PFQ: group computation error");
         }
 

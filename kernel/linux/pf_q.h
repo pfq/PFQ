@@ -274,49 +274,49 @@ void pfq_spsc_read_commit(struct pfq_tx_queue_hdr *q)
 
 /* PFQ socket options */
 
-#define Q_SO_TOGGLE_QUEUE           1       /* enable = 1, disable = 0 */
-#define Q_SO_ADD_BINDING            2
-#define Q_SO_REMOVE_BINDING         3
+#define Q_SO_TOGGLE_QUEUE           	1       /* enable = 1, disable = 0 */
 
-#define Q_SO_SET_RX_TSTAMP          4
-#define Q_SO_SET_RX_CAPLEN          5
-#define Q_SO_SET_RX_SLOTS           6
-#define Q_SO_SET_RX_OFFSET          7
+#define Q_SO_SET_RX_TSTAMP          	2
+#define Q_SO_SET_RX_CAPLEN          	3
+#define Q_SO_SET_RX_SLOTS           	4
+#define Q_SO_SET_RX_OFFSET          	5
+#define Q_SO_SET_TX_MAXLEN          	6
+#define Q_SO_SET_TX_SLOTS           	7
 
-#define Q_SO_SET_TX_MAXLEN          8
-#define Q_SO_SET_TX_SLOTS           9
+#define Q_SO_GROUP_BIND		    	8
+#define Q_SO_GROUP_UNBIND 	    	9
+#define Q_SO_GROUP_JOIN             	10
+#define Q_SO_GROUP_LEAVE            	11
 
-#define Q_SO_GROUP_JOIN             10
-#define Q_SO_GROUP_LEAVE            11
+#define Q_SO_GROUP_FPROG            	12      /* Berkeley packet filter */
+#define Q_SO_GROUP_VLAN_FILT_TOGGLE 	13      /* enable/disable VLAN filters */
+#define Q_SO_GROUP_VLAN_FILT        	14      /* enable/disable VLAN ID filters */
 
-#define Q_SO_GROUP_FPROG            15      /* Berkeley packet filter */
-#define Q_SO_GROUP_VLAN_FILT_TOGGLE 16      /* enable/disable VLAN filters */
-#define Q_SO_GROUP_VLAN_FILT        17      /* enable/disable VLAN ID filters */
+#define Q_SO_GROUP_FUNCTION     	15
 
-#define Q_SO_GET_ID                 18
-#define Q_SO_GET_STATUS             19      /* 1 = enabled, 0 = disabled */
-#define Q_SO_GET_STATS              20
-#define Q_SO_GET_QUEUE_MEM          21      /* size of the whole dbmp queue (bytes) */
+#define Q_SO_GET_ID                 	20
+#define Q_SO_GET_STATUS             	21      /* 1 = enabled, 0 = disabled */
+#define Q_SO_GET_STATS              	22
+#define Q_SO_GET_QUEUE_MEM          	23      /* size of the whole dbmp queue (bytes) */
 
-#define Q_SO_GET_RX_TSTAMP          22
-#define Q_SO_GET_RX_CAPLEN          23
-#define Q_SO_GET_RX_SLOTS           24
-#define Q_SO_GET_RX_OFFSET          25
+#define Q_SO_GET_RX_TSTAMP          	24
+#define Q_SO_GET_RX_CAPLEN          	25
+#define Q_SO_GET_RX_SLOTS           	26
+#define Q_SO_GET_RX_OFFSET          	27
 
-#define Q_SO_GET_TX_MAXLEN          26
-#define Q_SO_GET_TX_SLOTS           27
+#define Q_SO_GET_TX_MAXLEN          	28
+#define Q_SO_GET_TX_SLOTS           	29
 
-#define Q_SO_GET_GROUPS             28
-#define Q_SO_GET_GROUP_STATS        29
-#define Q_SO_GET_GROUP_COUNTERS     30
+#define Q_SO_GET_GROUPS             	30
+#define Q_SO_GET_GROUP_STATS        	31
+#define Q_SO_GET_GROUP_COUNTERS     	32
 
-#define Q_SO_TX_THREAD_BIND         31
-#define Q_SO_TX_THREAD_START        32
-#define Q_SO_TX_THREAD_STOP         33
-#define Q_SO_TX_THREAD_WAKEUP       34
-#define Q_SO_TX_QUEUE_FLUSH         35
+#define Q_SO_TX_THREAD_BIND         	33
+#define Q_SO_TX_THREAD_START        	34
+#define Q_SO_TX_THREAD_STOP         	35
+#define Q_SO_TX_THREAD_WAKEUP       	36
+#define Q_SO_TX_QUEUE_FLUSH         	37
 
-#define Q_SO_GROUP_COMP		    36
 
 /* general placeholders */
 

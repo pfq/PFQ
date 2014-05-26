@@ -492,7 +492,7 @@ pfq_bind_group(pfq_t *q, int gid, const char *dev, int queue)
 	}
 
 	struct pfq_binding b = { gid, index, queue };
-	if (setsockopt(q->fd, PF_Q, Q_SO_ADD_BINDING, &b, sizeof(b)) == -1) {
+	if (setsockopt(q->fd, PF_Q, Q_SO_GROUP_BIND, &b, sizeof(b)) == -1) {
 		return q->error = "PFQ: add binding error", -1;
 	}
 	return q->error = NULL, 0;
@@ -518,7 +518,7 @@ pfq_unbind_group(pfq_t *q, int gid, const char *dev, int queue) /* Q_ANY_QUEUE *
 		return q->error = "PFQ: device not found", -1;
 	}
 	struct pfq_binding b = { gid, index, queue };
-	if (setsockopt(q->fd, PF_Q, Q_SO_REMOVE_BINDING, &b, sizeof(b)) == -1) {
+	if (setsockopt(q->fd, PF_Q, Q_SO_GROUP_UNBIND, &b, sizeof(b)) == -1) {
 		return q->error = "PFQ: remove binding error", -1;
 	}
 	return q->error = NULL, 0;
@@ -554,7 +554,7 @@ pfq_set_group_computation(pfq_t *q, int gid, struct pfq_computation_descr *comp)
 {
         struct pfq_group_computation p = { gid, comp };
 
-        if (setsockopt(q->fd, PF_Q, Q_SO_GROUP_COMP, &p, sizeof(p)) == -1) {
+        if (setsockopt(q->fd, PF_Q, Q_SO_GROUP_FUNCTION, &p, sizeof(p)) == -1) {
 		return q->error = "PFQ: group computation error", -1;
         }
 

@@ -393,7 +393,7 @@ int pfq_setsockopt(struct socket *sock,
 
         } break;
 
-        case Q_SO_ADD_BINDING:
+        case Q_SO_GROUP_BIND:
         {
                 struct pfq_binding bind;
                 if (optlen != sizeof(struct pfq_binding))
@@ -407,7 +407,7 @@ int pfq_setsockopt(struct socket *sock,
                 pfq_devmap_update(map_set, bind.if_index, bind.hw_queue, bind.gid);
         } break;
 
-        case Q_SO_REMOVE_BINDING:
+        case Q_SO_GROUP_UNBIND:
         {
                 struct pfq_binding bind;
                 if (optlen != sizeof(struct pfq_binding))
@@ -795,7 +795,7 @@ int pfq_setsockopt(struct socket *sock,
                 dev_put(dev);
         } break;
 
-        case Q_SO_GROUP_COMP:
+        case Q_SO_GROUP_FUNCTION:
         {
                 struct pfq_group_computation tmp;
                 struct pfq_computation_descr *descr;
