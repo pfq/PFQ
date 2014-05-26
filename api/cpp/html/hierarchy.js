@@ -7,7 +7,6 @@ var hierarchy =
       [ "net::queue::iterator", "structnet_1_1queue_1_1iterator.html", null ]
     ] ],
     [ "net::param::maxlen", "structnet_1_1param_1_1maxlen.html", null ],
-    [ "net::param::offset", "structnet_1_1param_1_1offset.html", null ],
     [ "net::pfq", "classnet_1_1pfq.html", null ],
     [ "net::param::policy", "structnet_1_1param_1_1policy.html", null ],
     [ "net::queue", "classnet_1_1queue.html", null ],

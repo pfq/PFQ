@@ -9,7 +9,6 @@ var searchData=
   ['predicate3',['predicate3',['../namespacepfq__lang.html#a863e349ba4942bf8a01b61d91859164a',1,'pfq_lang']]],
   ['predicate4',['predicate4',['../namespacepfq__lang.html#a1a9064340f4197e3dd4109a849a224dc',1,'pfq_lang']]],
   ['prop1',['Prop1',['../structpfq__lang_1_1term_1_1Prop1.html#a4df280049cc2f44b461bdc54b51606a3',1,'pfq_lang::term::Prop1']]],
-  ['prop_5f',['prop_',['../structpfq__lang_1_1term_1_1Pred4.html#ae172772d16d3b2bbc2e6c3e4277c6b60',1,'pfq_lang::term::Pred4']]],
   ['property',['property',['../namespacepfq__lang.html#ad70b40071ed0fd32c05ab8e82bbfec61',1,'pfq_lang']]],
   ['property1',['property1',['../namespacepfq__lang.html#a3a4768b9f4e03b86943d332254cca27e',1,'pfq_lang']]]
 ];

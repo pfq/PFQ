@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['queue',['queue',['../classnet_1_1queue.html',1,'net']]]
+  ['rx_5fslots',['rx_slots',['../structnet_1_1param_1_1rx__slots.html',1,'net::param']]]
 ];

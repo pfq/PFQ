@@ -4,12 +4,11 @@ var pfq_8hpp =
     [ "class_", "structnet_1_1param_1_1class__.html", "structnet_1_1param_1_1class__" ],
     [ "policy", "structnet_1_1param_1_1policy.html", "structnet_1_1param_1_1policy" ],
     [ "caplen", "structnet_1_1param_1_1caplen.html", "structnet_1_1param_1_1caplen" ],
-    [ "offset", "structnet_1_1param_1_1offset.html", "structnet_1_1param_1_1offset" ],
     [ "rx_slots", "structnet_1_1param_1_1rx__slots.html", "structnet_1_1param_1_1rx__slots" ],
     [ "maxlen", "structnet_1_1param_1_1maxlen.html", "structnet_1_1param_1_1maxlen" ],
     [ "tx_slots", "structnet_1_1param_1_1tx__slots.html", "structnet_1_1param_1_1tx__slots" ],
     [ "pfq", "classnet_1_1pfq.html", "classnet_1_1pfq" ],
-    [ "types", "pfq_8hpp.html#a08dbec045b170d7c25411fee7a5cc1ce", null ],
+    [ "types", "pfq_8hpp.html#a0d926c5e535309178d47ac5366bfb539", null ],
     [ "class_mask", "pfq_8hpp.html#a1dbd93552dc6ef6fbb0bb79d43ca22fd", [
       [ "default_", "pfq_8hpp.html#a1dbd93552dc6ef6fbb0bb79d43ca22fda172b03053216c6158fe380805998ad6c", null ],
       [ "any", "pfq_8hpp.html#a1dbd93552dc6ef6fbb0bb79d43ca22fda100b8cad7cf2a56f6df78f171f97a1ec", null ]

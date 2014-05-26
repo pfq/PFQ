@@ -1,5 +1,5 @@
-\hypertarget{classnet_1_1queue}{\section{net\-:\-:queue Class Reference}
-\label{classnet_1_1queue}\index{net\-::queue@{net\-::queue}}
+\hypertarget{classnet_1_1queue}{\section{net\+:\+:queue Class Reference}
+\label{classnet_1_1queue}\index{net\+::queue@{net\+::queue}}
 }
 
 
@@ -8,43 +8,43 @@ This class represent a queue of packets.
 
 
 
-{\ttfamily \#include $<$pfq-\/queue.\-hpp$>$}
+{\ttfamily \#include $<$pfq-\/queue.\+hpp$>$}
 
 \subsection*{Classes}
 \begin{DoxyCompactItemize}
 \item 
-struct \hyperlink{structnet_1_1queue_1_1const__iterator}{const\-\_\-iterator}
+struct \hyperlink{structnet_1_1queue_1_1const__iterator}{const\+\_\+iterator}
 \begin{DoxyCompactList}\small\item\em Constant forward iterator over packets. \end{DoxyCompactList}\item 
 struct \hyperlink{structnet_1_1queue_1_1iterator}{iterator}
 \begin{DoxyCompactList}\small\item\em Forward iterator over packets. \end{DoxyCompactList}\end{DoxyCompactItemize}
 \subsection*{Public Member Functions}
 \begin{DoxyCompactItemize}
 \item 
-\hyperlink{classnet_1_1queue_a01a9de73c767d546dcb9a92261043d56}{queue} (void $\ast$addr, size\-\_\-t \hyperlink{classnet_1_1queue_a2c7afc4348eac62342496a735280f265}{slot\-\_\-size}, size\-\_\-t queue\-\_\-len, size\-\_\-t \hyperlink{classnet_1_1queue_a74abf50853b60b5562f12d2294474e59}{index})
+\hyperlink{classnet_1_1queue_a01a9de73c767d546dcb9a92261043d56}{queue} (void $\ast$addr, size\+\_\+t \hyperlink{classnet_1_1queue_a2c7afc4348eac62342496a735280f265}{slot\+\_\+size}, size\+\_\+t queue\+\_\+len, size\+\_\+t \hyperlink{classnet_1_1queue_a74abf50853b60b5562f12d2294474e59}{index})
 \begin{DoxyCompactList}\small\item\em Constructor. \end{DoxyCompactList}\item 
 \hyperlink{classnet_1_1queue_acc80b84e74464ee1b86d09f7b600eb54}{$\sim$queue} ()=default
 \item 
-size\-\_\-t \hyperlink{classnet_1_1queue_a49bbc6d786386012d46b7d2b6b3f2a88}{size} () const 
+size\+\_\+t \hyperlink{classnet_1_1queue_a49bbc6d786386012d46b7d2b6b3f2a88}{size} () const 
 \begin{DoxyCompactList}\small\item\em Return the number of packets stored in this queue. \end{DoxyCompactList}\item 
 bool \hyperlink{classnet_1_1queue_a3ec8373251edb7cdd4be0283ad561a44}{empty} () const 
 \begin{DoxyCompactList}\small\item\em Check whether the queue is empty. \end{DoxyCompactList}\item 
-size\-\_\-t \hyperlink{classnet_1_1queue_a74abf50853b60b5562f12d2294474e59}{index} () const 
+size\+\_\+t \hyperlink{classnet_1_1queue_a74abf50853b60b5562f12d2294474e59}{index} () const 
 \begin{DoxyCompactList}\small\item\em Return the index position. \end{DoxyCompactList}\item 
-size\-\_\-t \hyperlink{classnet_1_1queue_a2c7afc4348eac62342496a735280f265}{slot\-\_\-size} () const 
+size\+\_\+t \hyperlink{classnet_1_1queue_a2c7afc4348eac62342496a735280f265}{slot\+\_\+size} () const 
 \begin{DoxyCompactList}\small\item\em Return the size of the queue slot, in bytes. \end{DoxyCompactList}\item 
 const void $\ast$ \hyperlink{classnet_1_1queue_a3c962730a1bfbff1514319f7ca86cbc2}{data} () const 
 \begin{DoxyCompactList}\small\item\em Return the pointer to the packet. \end{DoxyCompactList}\item 
 \hyperlink{structnet_1_1queue_1_1iterator}{iterator} \hyperlink{classnet_1_1queue_afe83b7428a3a78ba133c7ca2b568b67a}{begin} ()
 \begin{DoxyCompactList}\small\item\em Return an iterator to the first slot of a non-\/empty queue. \end{DoxyCompactList}\item 
-\hyperlink{structnet_1_1queue_1_1const__iterator}{const\-\_\-iterator} \hyperlink{classnet_1_1queue_a2babffc7f46dc271a8b2234970ca9b79}{begin} () const 
+\hyperlink{structnet_1_1queue_1_1const__iterator}{const\+\_\+iterator} \hyperlink{classnet_1_1queue_a2babffc7f46dc271a8b2234970ca9b79}{begin} () const 
 \begin{DoxyCompactList}\small\item\em Return a constant iterator to the first slot of a non-\/empty queue. \end{DoxyCompactList}\item 
 \hyperlink{structnet_1_1queue_1_1iterator}{iterator} \hyperlink{classnet_1_1queue_ab18b037cd983bdbbc8eeb92b7cff12ce}{end} ()
 \begin{DoxyCompactList}\small\item\em Return an iterator past to the end of the queue. \end{DoxyCompactList}\item 
-\hyperlink{structnet_1_1queue_1_1const__iterator}{const\-\_\-iterator} \hyperlink{classnet_1_1queue_ad7d4205997d94ae5ff6e7997ea63976d}{end} () const 
+\hyperlink{structnet_1_1queue_1_1const__iterator}{const\+\_\+iterator} \hyperlink{classnet_1_1queue_ad7d4205997d94ae5ff6e7997ea63976d}{end} () const 
 \begin{DoxyCompactList}\small\item\em Return a constant iterator past to the end of the queue. \end{DoxyCompactList}\item 
-\hyperlink{structnet_1_1queue_1_1const__iterator}{const\-\_\-iterator} \hyperlink{classnet_1_1queue_a7590f2c5b9b48b1ea44104a1bab6d21d}{cbegin} () const 
+\hyperlink{structnet_1_1queue_1_1const__iterator}{const\+\_\+iterator} \hyperlink{classnet_1_1queue_a7590f2c5b9b48b1ea44104a1bab6d21d}{cbegin} () const 
 \begin{DoxyCompactList}\small\item\em Return a constant iterator to the first slot of an non-\/empty queue. \end{DoxyCompactList}\item 
-\hyperlink{structnet_1_1queue_1_1const__iterator}{const\-\_\-iterator} \hyperlink{classnet_1_1queue_a17d5c7e685e6bba36e361a2a4fafeedb}{cend} () const 
+\hyperlink{structnet_1_1queue_1_1const__iterator}{const\+\_\+iterator} \hyperlink{classnet_1_1queue_a17d5c7e685e6bba36e361a2a4fafeedb}{cend} () const 
 \begin{DoxyCompactList}\small\item\em Return a constant iterator past to the end of the queue. \end{DoxyCompactList}\end{DoxyCompactItemize}
 
 
@@ -54,23 +54,23 @@ This class represent a queue of packets.
 The memory where packets are stored is not owned by this class. 
 
 \subsection{Constructor \& Destructor Documentation}
-\hypertarget{classnet_1_1queue_a01a9de73c767d546dcb9a92261043d56}{\index{net\-::queue@{net\-::queue}!queue@{queue}}
-\index{queue@{queue}!net::queue@{net\-::queue}}
-\subsubsection[{queue}]{\setlength{\rightskip}{0pt plus 5cm}net\-::queue\-::queue (
+\hypertarget{classnet_1_1queue_a01a9de73c767d546dcb9a92261043d56}{\index{net\+::queue@{net\+::queue}!queue@{queue}}
+\index{queue@{queue}!net\+::queue@{net\+::queue}}
+\subsubsection[{queue}]{\setlength{\rightskip}{0pt plus 5cm}net\+::queue\+::queue (
 \begin{DoxyParamCaption}
 \item[{void $\ast$}]{addr, }
-\item[{size\-\_\-t}]{slot\-\_\-size, }
-\item[{size\-\_\-t}]{queue\-\_\-len, }
-\item[{size\-\_\-t}]{index}
+\item[{size\+\_\+t}]{slot\+\_\+size, }
+\item[{size\+\_\+t}]{queue\+\_\+len, }
+\item[{size\+\_\+t}]{index}
 \end{DoxyParamCaption}
 )\hspace{0.3cm}{\ttfamily [inline]}}}\label{classnet_1_1queue_a01a9de73c767d546dcb9a92261043d56}
 
 
 Constructor. 
 
-Construct a queue descriptor, stored at the given address. \hypertarget{classnet_1_1queue_acc80b84e74464ee1b86d09f7b600eb54}{\index{net\-::queue@{net\-::queue}!$\sim$queue@{$\sim$queue}}
-\index{$\sim$queue@{$\sim$queue}!net::queue@{net\-::queue}}
-\subsubsection[{$\sim$queue}]{\setlength{\rightskip}{0pt plus 5cm}net\-::queue\-::$\sim$queue (
+Construct a queue descriptor, stored at the given address. \hypertarget{classnet_1_1queue_acc80b84e74464ee1b86d09f7b600eb54}{\index{net\+::queue@{net\+::queue}!````~queue@{$\sim$queue}}
+\index{````~queue@{$\sim$queue}!net\+::queue@{net\+::queue}}
+\subsubsection[{$\sim$queue}]{\setlength{\rightskip}{0pt plus 5cm}net\+::queue\+::$\sim$queue (
 \begin{DoxyParamCaption}
 {}
 \end{DoxyParamCaption}
@@ -78,9 +78,9 @@ Construct a queue descriptor, stored at the given address. \hypertarget{classnet
 
 
 \subsection{Member Function Documentation}
-\hypertarget{classnet_1_1queue_afe83b7428a3a78ba133c7ca2b568b67a}{\index{net\-::queue@{net\-::queue}!begin@{begin}}
-\index{begin@{begin}!net::queue@{net\-::queue}}
-\subsubsection[{begin}]{\setlength{\rightskip}{0pt plus 5cm}{\bf iterator} net\-::queue\-::begin (
+\hypertarget{classnet_1_1queue_afe83b7428a3a78ba133c7ca2b568b67a}{\index{net\+::queue@{net\+::queue}!begin@{begin}}
+\index{begin@{begin}!net\+::queue@{net\+::queue}}
+\subsubsection[{begin}]{\setlength{\rightskip}{0pt plus 5cm}{\bf iterator} net\+::queue\+::begin (
 \begin{DoxyParamCaption}
 {}
 \end{DoxyParamCaption}
@@ -89,9 +89,9 @@ Construct a queue descriptor, stored at the given address. \hypertarget{classnet
 
 Return an iterator to the first slot of a non-\/empty queue. 
 
-Return \hyperlink{classnet_1_1queue_ab18b037cd983bdbbc8eeb92b7cff12ce}{end()} in case of empty queue. \hypertarget{classnet_1_1queue_a2babffc7f46dc271a8b2234970ca9b79}{\index{net\-::queue@{net\-::queue}!begin@{begin}}
-\index{begin@{begin}!net::queue@{net\-::queue}}
-\subsubsection[{begin}]{\setlength{\rightskip}{0pt plus 5cm}{\bf const\-\_\-iterator} net\-::queue\-::begin (
+Return \hyperlink{classnet_1_1queue_ab18b037cd983bdbbc8eeb92b7cff12ce}{end()} in case of empty queue. \hypertarget{classnet_1_1queue_a2babffc7f46dc271a8b2234970ca9b79}{\index{net\+::queue@{net\+::queue}!begin@{begin}}
+\index{begin@{begin}!net\+::queue@{net\+::queue}}
+\subsubsection[{begin}]{\setlength{\rightskip}{0pt plus 5cm}{\bf const\+\_\+iterator} net\+::queue\+::begin (
 \begin{DoxyParamCaption}
 {}
 \end{DoxyParamCaption}
@@ -100,9 +100,9 @@ Return \hyperlink{classnet_1_1queue_ab18b037cd983bdbbc8eeb92b7cff12ce}{end()} in
 
 Return a constant iterator to the first slot of a non-\/empty queue. 
 
-Return \hyperlink{classnet_1_1queue_ab18b037cd983bdbbc8eeb92b7cff12ce}{end()} in case of empty queue. \hypertarget{classnet_1_1queue_a7590f2c5b9b48b1ea44104a1bab6d21d}{\index{net\-::queue@{net\-::queue}!cbegin@{cbegin}}
-\index{cbegin@{cbegin}!net::queue@{net\-::queue}}
-\subsubsection[{cbegin}]{\setlength{\rightskip}{0pt plus 5cm}{\bf const\-\_\-iterator} net\-::queue\-::cbegin (
+Return \hyperlink{classnet_1_1queue_ab18b037cd983bdbbc8eeb92b7cff12ce}{end()} in case of empty queue. \hypertarget{classnet_1_1queue_a7590f2c5b9b48b1ea44104a1bab6d21d}{\index{net\+::queue@{net\+::queue}!cbegin@{cbegin}}
+\index{cbegin@{cbegin}!net\+::queue@{net\+::queue}}
+\subsubsection[{cbegin}]{\setlength{\rightskip}{0pt plus 5cm}{\bf const\+\_\+iterator} net\+::queue\+::cbegin (
 \begin{DoxyParamCaption}
 {}
 \end{DoxyParamCaption}
@@ -111,9 +111,9 @@ Return \hyperlink{classnet_1_1queue_ab18b037cd983bdbbc8eeb92b7cff12ce}{end()} in
 
 Return a constant iterator to the first slot of an non-\/empty queue. 
 
-Return \hyperlink{classnet_1_1queue_a17d5c7e685e6bba36e361a2a4fafeedb}{cend()} in case of empty queue. \hypertarget{classnet_1_1queue_a17d5c7e685e6bba36e361a2a4fafeedb}{\index{net\-::queue@{net\-::queue}!cend@{cend}}
-\index{cend@{cend}!net::queue@{net\-::queue}}
-\subsubsection[{cend}]{\setlength{\rightskip}{0pt plus 5cm}{\bf const\-\_\-iterator} net\-::queue\-::cend (
+Return \hyperlink{classnet_1_1queue_a17d5c7e685e6bba36e361a2a4fafeedb}{cend()} in case of empty queue. \hypertarget{classnet_1_1queue_a17d5c7e685e6bba36e361a2a4fafeedb}{\index{net\+::queue@{net\+::queue}!cend@{cend}}
+\index{cend@{cend}!net\+::queue@{net\+::queue}}
+\subsubsection[{cend}]{\setlength{\rightskip}{0pt plus 5cm}{\bf const\+\_\+iterator} net\+::queue\+::cend (
 \begin{DoxyParamCaption}
 {}
 \end{DoxyParamCaption}
@@ -122,9 +122,9 @@ Return \hyperlink{classnet_1_1queue_a17d5c7e685e6bba36e361a2a4fafeedb}{cend()} i
 
 Return a constant iterator past to the end of the queue. 
 
-\hypertarget{classnet_1_1queue_a3c962730a1bfbff1514319f7ca86cbc2}{\index{net\-::queue@{net\-::queue}!data@{data}}
-\index{data@{data}!net::queue@{net\-::queue}}
-\subsubsection[{data}]{\setlength{\rightskip}{0pt plus 5cm}const void$\ast$ net\-::queue\-::data (
+\hypertarget{classnet_1_1queue_a3c962730a1bfbff1514319f7ca86cbc2}{\index{net\+::queue@{net\+::queue}!data@{data}}
+\index{data@{data}!net\+::queue@{net\+::queue}}
+\subsubsection[{data}]{\setlength{\rightskip}{0pt plus 5cm}const void$\ast$ net\+::queue\+::data (
 \begin{DoxyParamCaption}
 {}
 \end{DoxyParamCaption}
@@ -133,9 +133,9 @@ Return a constant iterator past to the end of the queue.
 
 Return the pointer to the packet. 
 
-\hypertarget{classnet_1_1queue_a3ec8373251edb7cdd4be0283ad561a44}{\index{net\-::queue@{net\-::queue}!empty@{empty}}
-\index{empty@{empty}!net::queue@{net\-::queue}}
-\subsubsection[{empty}]{\setlength{\rightskip}{0pt plus 5cm}bool net\-::queue\-::empty (
+\hypertarget{classnet_1_1queue_a3ec8373251edb7cdd4be0283ad561a44}{\index{net\+::queue@{net\+::queue}!empty@{empty}}
+\index{empty@{empty}!net\+::queue@{net\+::queue}}
+\subsubsection[{empty}]{\setlength{\rightskip}{0pt plus 5cm}bool net\+::queue\+::empty (
 \begin{DoxyParamCaption}
 {}
 \end{DoxyParamCaption}
@@ -144,9 +144,9 @@ Return the pointer to the packet.
 
 Check whether the queue is empty. 
 
-\hypertarget{classnet_1_1queue_ab18b037cd983bdbbc8eeb92b7cff12ce}{\index{net\-::queue@{net\-::queue}!end@{end}}
-\index{end@{end}!net::queue@{net\-::queue}}
-\subsubsection[{end}]{\setlength{\rightskip}{0pt plus 5cm}{\bf iterator} net\-::queue\-::end (
+\hypertarget{classnet_1_1queue_ab18b037cd983bdbbc8eeb92b7cff12ce}{\index{net\+::queue@{net\+::queue}!end@{end}}
+\index{end@{end}!net\+::queue@{net\+::queue}}
+\subsubsection[{end}]{\setlength{\rightskip}{0pt plus 5cm}{\bf iterator} net\+::queue\+::end (
 \begin{DoxyParamCaption}
 {}
 \end{DoxyParamCaption}
@@ -155,9 +155,9 @@ Check whether the queue is empty.
 
 Return an iterator past to the end of the queue. 
 
-\hypertarget{classnet_1_1queue_ad7d4205997d94ae5ff6e7997ea63976d}{\index{net\-::queue@{net\-::queue}!end@{end}}
-\index{end@{end}!net::queue@{net\-::queue}}
-\subsubsection[{end}]{\setlength{\rightskip}{0pt plus 5cm}{\bf const\-\_\-iterator} net\-::queue\-::end (
+\hypertarget{classnet_1_1queue_ad7d4205997d94ae5ff6e7997ea63976d}{\index{net\+::queue@{net\+::queue}!end@{end}}
+\index{end@{end}!net\+::queue@{net\+::queue}}
+\subsubsection[{end}]{\setlength{\rightskip}{0pt plus 5cm}{\bf const\+\_\+iterator} net\+::queue\+::end (
 \begin{DoxyParamCaption}
 {}
 \end{DoxyParamCaption}
@@ -166,9 +166,9 @@ Return an iterator past to the end of the queue.
 
 Return a constant iterator past to the end of the queue. 
 
-\hypertarget{classnet_1_1queue_a74abf50853b60b5562f12d2294474e59}{\index{net\-::queue@{net\-::queue}!index@{index}}
-\index{index@{index}!net::queue@{net\-::queue}}
-\subsubsection[{index}]{\setlength{\rightskip}{0pt plus 5cm}size\-\_\-t net\-::queue\-::index (
+\hypertarget{classnet_1_1queue_a74abf50853b60b5562f12d2294474e59}{\index{net\+::queue@{net\+::queue}!index@{index}}
+\index{index@{index}!net\+::queue@{net\+::queue}}
+\subsubsection[{index}]{\setlength{\rightskip}{0pt plus 5cm}size\+\_\+t net\+::queue\+::index (
 \begin{DoxyParamCaption}
 {}
 \end{DoxyParamCaption}
@@ -177,9 +177,9 @@ Return a constant iterator past to the end of the queue.
 
 Return the index position. 
 
-\hypertarget{classnet_1_1queue_a49bbc6d786386012d46b7d2b6b3f2a88}{\index{net\-::queue@{net\-::queue}!size@{size}}
-\index{size@{size}!net::queue@{net\-::queue}}
-\subsubsection[{size}]{\setlength{\rightskip}{0pt plus 5cm}size\-\_\-t net\-::queue\-::size (
+\hypertarget{classnet_1_1queue_a49bbc6d786386012d46b7d2b6b3f2a88}{\index{net\+::queue@{net\+::queue}!size@{size}}
+\index{size@{size}!net\+::queue@{net\+::queue}}
+\subsubsection[{size}]{\setlength{\rightskip}{0pt plus 5cm}size\+\_\+t net\+::queue\+::size (
 \begin{DoxyParamCaption}
 {}
 \end{DoxyParamCaption}
@@ -188,9 +188,9 @@ Return the index position.
 
 Return the number of packets stored in this queue. 
 
-\hypertarget{classnet_1_1queue_a2c7afc4348eac62342496a735280f265}{\index{net\-::queue@{net\-::queue}!slot\-\_\-size@{slot\-\_\-size}}
-\index{slot\-\_\-size@{slot\-\_\-size}!net::queue@{net\-::queue}}
-\subsubsection[{slot\-\_\-size}]{\setlength{\rightskip}{0pt plus 5cm}size\-\_\-t net\-::queue\-::slot\-\_\-size (
+\hypertarget{classnet_1_1queue_a2c7afc4348eac62342496a735280f265}{\index{net\+::queue@{net\+::queue}!slot\+\_\+size@{slot\+\_\+size}}
+\index{slot\+\_\+size@{slot\+\_\+size}!net\+::queue@{net\+::queue}}
+\subsubsection[{slot\+\_\+size}]{\setlength{\rightskip}{0pt plus 5cm}size\+\_\+t net\+::queue\+::slot\+\_\+size (
 \begin{DoxyParamCaption}
 {}
 \end{DoxyParamCaption}
@@ -201,6 +201,6 @@ Return the size of the queue slot, in bytes.
 
 
 
-The documentation for this class was generated from the following file\-:\begin{DoxyCompactItemize}
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
 \item 
-C++/\hyperlink{pfq-queue_8hpp}{pfq-\/queue.\-hpp}\end{DoxyCompactItemize}
+C++/\hyperlink{pfq-queue_8hpp}{pfq-\/queue.\+hpp}\end{DoxyCompactItemize}
