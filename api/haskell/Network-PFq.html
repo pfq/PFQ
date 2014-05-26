@@ -53,8 +53,8 @@ window.onload = function () {pageLoad();setSynopsis("mini_Network-PFq.html");};
 </p></td></tr><tr><td class="src">-&gt; Int</td><td class="doc"><p>maxlen
 </p></td></tr><tr><td class="src">-&gt; Int</td><td class="doc"><p>number of tx slots
 </p></td></tr><tr><td class="src">-&gt; IO (ForeignPtr <a href="Network-PFq.html#t:PFqTag">PFqTag</a>)</td><td class="doc empty">&nbsp;</td></tr></table></div><div class="doc"><p>Open a socket and join a new private group.
-</p><p>The default values for class mask and group policy are Q_CLASS_DEFAULT and
- Q_GROUP_PRIVATE, respectively.
+</p><p>The default values for class mask and group policy are <code><a href="Network-PFq.html#v:class_default">class_default</a></code> and
+ <code><a href="Network-PFq.html#v:policy_priv">policy_priv</a></code>, respectively.
 </p></div></div><div class="top"><p class="src"><a name="v:openDefault" class="def">openDefault</a> :: IO (ForeignPtr <a href="Network-PFq.html#t:PFqTag">PFqTag</a>)</p><div class="doc"><p>Open the socket.
 </p><p>The default values are used; no group is joined or created.
  The socket open is suitable for egress sockets.
@@ -68,7 +68,7 @@ window.onload = function () {pageLoad();setSynopsis("mini_Network-PFq.html");};
 </p></td></tr><tr><td class="src">-&gt; Int</td><td class="doc"><p>number of rx slots
 </p></td></tr><tr><td class="src">-&gt; Int</td><td class="doc"><p>maxlen
 </p></td></tr><tr><td class="src">-&gt; Int</td><td class="doc"><p>number of tx slots
-</p></td></tr><tr><td class="src">-&gt; IO (ForeignPtr <a href="Network-PFq.html#t:PFqTag">PFqTag</a>)</td><td class="doc empty">&nbsp;</td></tr></table></div><div class="doc"><p>Open the socket and create a new group with the specified class and policy. */
+</p></td></tr><tr><td class="src">-&gt; IO (ForeignPtr <a href="Network-PFq.html#t:PFqTag">PFqTag</a>)</td><td class="doc empty">&nbsp;</td></tr></table></div><div class="doc"><p>Open the socket and create a new group with the specified class and policy.
 </p><p>All the possible parameters are specifiable.
 </p></div></div><div class="top"><p class="src"><a name="v:close" class="def">close</a> :: Ptr <a href="Network-PFq.html#t:PFqTag">PFqTag</a> -&gt; IO ()</p><div class="doc"><p>Close the socket.
 </p></div></div><div class="top"><p class="src"><a name="v:enable" class="def">enable</a> :: Ptr <a href="Network-PFq.html#t:PFqTag">PFqTag</a> -&gt; IO ()</p><div class="doc"><p>Enable the socket for packet capture.
