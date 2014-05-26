@@ -391,8 +391,8 @@ open caplen slots =
 
 -- |Open a socket and join a new private group.
 --
--- The default values for class mask and group policy are Q_CLASS_DEFAULT and
--- Q_GROUP_PRIVATE, respectively.
+-- The default values for class mask and group policy are 'class_default' and
+-- 'policy_priv', respectively.
 
 open' :: Int  -- ^ caplen
       -> Int  -- ^ number of rx slots
@@ -417,7 +417,7 @@ openNoGroup caplen slots =
             throwPFqIf nullPtr (== nullPtr) >>= \ptr ->
                 C.newForeignPtr ptr (void $ pfq_close ptr)
 
--- |Open the socket and create a new group with the specified class and policy. */
+-- |Open the socket and create a new group with the specified class and policy.
 --
 -- All the possible parameters are specifiable.
 
@@ -1062,7 +1062,6 @@ foreign import ccall unsafe pfq_send                :: Ptr PFqTag -> Ptr CChar -
 foreign import ccall unsafe pfq_send_sync           :: Ptr PFqTag -> Ptr CChar -> CSize -> CSize -> IO CInt
 foreign import ccall unsafe pfq_send_async          :: Ptr PFqTag -> Ptr CChar -> CSize -> CSize -> IO CInt
 
--- TODO
 -- extern int pfq_get_groups_mask(pfq_t const *q, unsigned long *_mask);
 -- extern int pfq_group_fprog(pfq_t *q, int gid, struct sock_fprog *);
 -- extern int pfq_group_fprog_reset(pfq_t *q, int gid);
