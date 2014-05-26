@@ -421,6 +421,45 @@ int pfq_setsockopt(struct socket *sock,
                 pfq_devmap_update(map_reset, bind.if_index, bind.hw_queue, bind.gid);
         } break;
 
+        case Q_SO_EGRESS_BIND:
+        {
+                struct pfq_binding info;
+
+                if (optlen != sizeof(info))
+                        return -EINVAL;
+                if (copy_from_user(&info, optval, optlen))
+                        return -EFAULT;
+
+                rcu_read_lock();
+                if (!dev_get_by_index_rcu(sock_net(&so->sk), info.if_index))
+                {
+                        rcu_read_unlock();
+                        pr_devel("[PFQ|%d] TX bind: invalid if_index:%d\n", so->id, info.if_index);
+                        return -EPERM;
+                }
+                rcu_read_unlock();
+
+                if (info.hw_queue < -1)
+                {
+                        pr_devel("[PFQ|%d] TX bind: invalid queue:%d\n", so->id, info.hw_queue);
+                        return -EPERM;
+                }
+
+                so->egress_index = info.if_index;
+                so->egress_queue = info.hw_queue;
+
+                pr_devel("[PFQ|%d] egress bind: if_index:%d hw_queue:%d\n", so->id, so->egress_index, so->egress_queue);
+
+        } break;
+
+        case Q_SO_EGRESS_UNBIND:
+        {
+                so->egress_index = 0;
+                so->egress_queue = 0;
+                pr_devel("[PFQ|%d] egress unbind.\n", so->id);
+
+        } break;
+
         case Q_SO_SET_RX_TSTAMP:
         {
                 int tstamp;

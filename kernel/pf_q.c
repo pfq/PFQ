@@ -600,6 +600,9 @@ pfq_create(
 
         /* memory mapped queues are allocated later, when the socket is enabled */
 
+	so->egress_index = 0;
+	so->egress_queue = 0;
+
         so->mem_addr = NULL;
         so->mem_size = 0;
 

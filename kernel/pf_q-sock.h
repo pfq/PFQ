@@ -146,6 +146,9 @@ struct pfq_sock
 
         int                 id;
 
+        int 		    egress_index;
+        int 		    egress_queue;
+
         void *              mem_addr;         /* global memory mapped area */
         size_t              mem_size;         /* global memory mapped size */
 

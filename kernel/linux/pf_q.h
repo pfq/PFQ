@@ -291,8 +291,10 @@ void pfq_spsc_read_commit(struct pfq_tx_queue_hdr *q)
 #define Q_SO_GROUP_FPROG            	12      /* Berkeley packet filter */
 #define Q_SO_GROUP_VLAN_FILT_TOGGLE 	13      /* enable/disable VLAN filters */
 #define Q_SO_GROUP_VLAN_FILT        	14      /* enable/disable VLAN ID filters */
-
 #define Q_SO_GROUP_FUNCTION     	15
+
+#define Q_SO_EGRESS_BIND         	16
+#define Q_SO_EGRESS_UNBIND         	17
 
 #define Q_SO_GET_ID                 	20
 #define Q_SO_GET_STATUS             	21      /* 1 = enabled, 0 = disabled */
