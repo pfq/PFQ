@@ -226,12 +226,15 @@ namespace pfq_lang
         auto drop       = netfunction("drop");
         auto unit       = netfunction("unit");
 
+        auto class_     = [] (int value) { return netfunction1("class", value); };
+        auto deliver    = [] (int value) { return netfunction1("deliver", value); };
+
         auto forward    = [] (int index) { return netfunction1("forward", index); };
         auto mark       = [] (unsigned long value) { return netfunction1("mark", value); };
         auto dummy      = [] (int value) { return netfunction1("dummy", value); };
         auto inc        = [] (int value) { return netfunction1("inc", value); };
         auto dec        = [] (int value) { return netfunction1("dec", value); };
-        auto class_     = [] (int value) { return netfunction1("class", value); };
+
         auto l3_proto   = [] (uint16_t type) { return netfunction1 ("l3_proto", type); };
         auto l4_proto   = [] (uint8_t proto) { return netfunction1 ("l4_proto", proto); };
 

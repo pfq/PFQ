@@ -146,6 +146,7 @@ module Network.PFq.Default
         dec        ,
         mark       ,
         class'     ,
+        deliver    ,
         crc16      ,
         dummy      ,
         hdummy     ,
@@ -304,6 +305,7 @@ mark        = Fun1 "mark"           :: CULong -> NetFunction (SkBuff -> Action S
 forward     = Fun1 "forward"        :: CInt -> NetFunction (SkBuff -> Action SkBuff)
 dummy       = Fun1 "dummy"          :: CInt -> NetFunction (SkBuff -> Action SkBuff)
 class'      = Fun1 "class"          :: CInt -> NetFunction (SkBuff -> Action SkBuff)
+deliver     = Fun1 "deliver"        :: CInt -> NetFunction (SkBuff -> Action SkBuff)
 
 l3_proto    = Fun1 "l3_proto"       :: Int16 -> NetFunction (SkBuff -> Action SkBuff)
 l4_proto    = Fun1 "l4_proto"       :: Int8 -> NetFunction (SkBuff -> Action SkBuff)
