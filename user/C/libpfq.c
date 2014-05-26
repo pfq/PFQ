@@ -99,21 +99,20 @@ const char *pfq_error(pfq_t *q)
 pfq_t *
 pfq_open(size_t caplen, size_t offset, size_t slots)
 {
-	return pfq_open_group(Q_CLASS_DEFAULT, Q_GROUP_PRIVATE, caplen, offset, slots, 64, 4096);
+	return pfq_open_group(Q_CLASS_DEFAULT, Q_POLICY_GROUP_PRIVATE, caplen, offset, slots, 64, 4096);
 }
 
 
 pfq_t *
 pfq_open_tx(size_t maxlen, size_t slots)
 {
-	return pfq_open_group(Q_CLASS_DEFAULT, Q_GROUP_UNDEFINED, 64, 0, 4096, maxlen, slots);
+	return pfq_open_group(Q_CLASS_DEFAULT, Q_POLICY_GROUP_UNDEFINED, 64, 0, 4096, maxlen, slots);
 }
-
 
 pfq_t *
 pfq_open_nogroup(size_t caplen, size_t offset, size_t slots)
 {
-	return pfq_open_group(Q_CLASS_DEFAULT, Q_GROUP_UNDEFINED, caplen, offset, slots, 64, 4096);
+	return pfq_open_group(Q_CLASS_DEFAULT, Q_POLICY_GROUP_UNDEFINED, caplen, offset, slots, 64, 4096);
 }
 
 
@@ -188,7 +187,7 @@ pfq_open_group(unsigned long class_mask, int group_policy, size_t caplen, size_t
 		return __error = "PFQ: set maxlen error", free(q), NULL;
         }
 
-	if (group_policy != Q_GROUP_UNDEFINED)
+	if (group_policy != Q_POLICY_GROUP_UNDEFINED)
 	{
 		q->gid = pfq_join_group(q, Q_ANY_GROUP, class_mask, group_policy);
 		if (q->gid == -1) {
@@ -600,7 +599,7 @@ pfq_group_fprog_reset(pfq_t *q, int gid)
 int
 pfq_join_group(pfq_t *q, int gid, unsigned long class_mask, int group_policy)
 {
-	if (group_policy == Q_GROUP_UNDEFINED) {
+	if (group_policy == Q_POLICY_GROUP_UNDEFINED) {
          	return q->error = "PFQ: join with undefined policy!", -1;
 	}
 

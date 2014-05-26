@@ -340,12 +340,12 @@ void pfq_spsc_read_commit(struct pfq_tx_queue_hdr *q)
 
 /* group policies */
 
-#define Q_GROUP_UNDEFINED       0
-#define Q_GROUP_PRIVATE         1
-#define Q_GROUP_RESTRICTED      2
-#define Q_GROUP_SHARED          3
+#define Q_POLICY_GROUP_UNDEFINED       0
+#define Q_POLICY_GROUP_PRIVATE         1
+#define Q_POLICY_GROUP_RESTRICTED      2
+#define Q_POLICY_GROUP_SHARED          3
 
-/* class type */
+/* group class type */
 
 #define Q_CLASS(n)              (1U<<n)
 #define Q_CLASS_MAX             (sizeof(unsigned long)<<3)

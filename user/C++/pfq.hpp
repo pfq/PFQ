@@ -57,10 +57,10 @@ namespace net {
 
     enum class group_policy : int16_t
     {
-        undefined  = Q_GROUP_UNDEFINED,
-        priv       = Q_GROUP_PRIVATE,
-        restricted = Q_GROUP_RESTRICTED,
-        shared     = Q_GROUP_SHARED
+        undefined  = Q_POLICY_GROUP_UNDEFINED,
+        priv       = Q_POLICY_GROUP_PRIVATE,
+        restricted = Q_POLICY_GROUP_RESTRICTED,
+        shared     = Q_POLICY_GROUP_SHARED
     };
 
     //! class mask.

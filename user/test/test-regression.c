@@ -245,7 +245,7 @@ void test_group_stats()
 	struct pfq_stats s;
 	assert(pfq_get_group_stats(q, 11, &s) == 0);
 
-	assert(pfq_join_group(q, 11, Q_CLASS_DEFAULT, Q_GROUP_RESTRICTED) == 11);
+	assert(pfq_join_group(q, 11, Q_CLASS_DEFAULT, Q_POLICY_GROUP_RESTRICTED) == 11);
 
 	assert(pfq_get_group_stats(q, 11, &s) == 0);
 
@@ -259,7 +259,7 @@ void test_group_stats()
 
 void test_my_group_stats_priv()
 {
-	pfq_t * q = pfq_open_group(Q_CLASS_DEFAULT, Q_GROUP_PRIVATE, 64, 0, 1024, 64, 1024);
+	pfq_t * q = pfq_open_group(Q_CLASS_DEFAULT, Q_POLICY_GROUP_PRIVATE, 64, 0, 1024, 64, 1024);
         assert(q);
 
 	int gid = pfq_group_id(q);
@@ -278,7 +278,7 @@ void test_my_group_stats_priv()
 
 void test_my_group_stats_restricted()
 {
-	pfq_t * q = pfq_open_group(Q_CLASS_DEFAULT, Q_GROUP_RESTRICTED, 64, 0, 1024, 64, 1024);
+	pfq_t * q = pfq_open_group(Q_CLASS_DEFAULT, Q_POLICY_GROUP_RESTRICTED, 64, 0, 1024, 64, 1024);
         assert(q);
 
 	int gid = pfq_group_id(q);
@@ -297,7 +297,7 @@ void test_my_group_stats_restricted()
 
 void test_my_group_stats_shared()
 {
-	pfq_t * q = pfq_open_group(Q_CLASS_DEFAULT, Q_GROUP_SHARED, 64, 0, 1024, 64, 1024);
+	pfq_t * q = pfq_open_group(Q_CLASS_DEFAULT, Q_POLICY_GROUP_SHARED, 64, 0, 1024, 64, 1024);
         assert(q);
 
 	int gid = pfq_group_id(q);
@@ -329,13 +329,13 @@ void test_groups_mask()
 
 void test_join_restricted()
 {
-	pfq_t * q = pfq_open_group(Q_CLASS_DEFAULT, Q_GROUP_RESTRICTED, 64, 0, 1024, 64, 1024);
+	pfq_t * q = pfq_open_group(Q_CLASS_DEFAULT, Q_POLICY_GROUP_RESTRICTED, 64, 0, 1024, 64, 1024);
         assert(q);
 
-	pfq_t * y = pfq_open_group(Q_CLASS_DEFAULT, Q_GROUP_UNDEFINED, 64, 0, 1024, 64, 1024);
+	pfq_t * y = pfq_open_group(Q_CLASS_DEFAULT, Q_POLICY_GROUP_UNDEFINED, 64, 0, 1024, 64, 1024);
 
 	int gid = pfq_group_id(q);
-	assert( pfq_join_group(y, gid, Q_CLASS_DEFAULT, Q_GROUP_RESTRICTED) == gid);
+	assert( pfq_join_group(y, gid, Q_CLASS_DEFAULT, Q_POLICY_GROUP_RESTRICTED) == gid);
 
 	pfq_close(q);
 	pfq_close(y);
@@ -345,14 +345,14 @@ void test_join_private_()
 {
 	pfq_t * q = pfq_open(64, 0, 1024);
 
-	pfq_t * y = pfq_open_group(Q_CLASS_DEFAULT, Q_GROUP_UNDEFINED, 64, 0, 1024, 64, 1024);
+	pfq_t * y = pfq_open_group(Q_CLASS_DEFAULT, Q_POLICY_GROUP_UNDEFINED, 64, 0, 1024, 64, 1024);
 
 	int gid = pfq_group_id(q);
 
-	assert( pfq_join_group(y, gid, Q_CLASS_DEFAULT, Q_GROUP_PRIVATE) < 0);
-	assert( pfq_join_group(y, gid, Q_CLASS_DEFAULT, Q_GROUP_RESTRICTED) < 0);
-	assert( pfq_join_group(y, gid, Q_CLASS_DEFAULT, Q_GROUP_SHARED) < 0);
-	assert( pfq_join_group(y, gid, Q_CLASS_DEFAULT, Q_GROUP_UNDEFINED) < 0);
+	assert( pfq_join_group(y, gid, Q_CLASS_DEFAULT, Q_POLICY_GROUP_PRIVATE) < 0);
+	assert( pfq_join_group(y, gid, Q_CLASS_DEFAULT, Q_POLICY_GROUP_RESTRICTED) < 0);
+	assert( pfq_join_group(y, gid, Q_CLASS_DEFAULT, Q_POLICY_GROUP_SHARED) < 0);
+	assert( pfq_join_group(y, gid, Q_CLASS_DEFAULT, Q_POLICY_GROUP_UNDEFINED) < 0);
 
 	pfq_close(q);
 	pfq_close(y);
@@ -361,37 +361,37 @@ void test_join_private_()
 void test_join_restricted_()
 {
 	{
-	pfq_t * q = pfq_open_group(Q_CLASS_DEFAULT, Q_GROUP_RESTRICTED, 64, 0, 1024, 64, 1024);
-	pfq_t * y = pfq_open_group(Q_CLASS_DEFAULT, Q_GROUP_UNDEFINED, 64, 0, 1024, 64, 1024);
+	pfq_t * q = pfq_open_group(Q_CLASS_DEFAULT, Q_POLICY_GROUP_RESTRICTED, 64, 0, 1024, 64, 1024);
+	pfq_t * y = pfq_open_group(Q_CLASS_DEFAULT, Q_POLICY_GROUP_UNDEFINED, 64, 0, 1024, 64, 1024);
 
 	int gid = pfq_group_id(q);
 
-	assert( pfq_join_group(y, gid, Q_CLASS_DEFAULT, Q_GROUP_PRIVATE) < 0);
+	assert( pfq_join_group(y, gid, Q_CLASS_DEFAULT, Q_POLICY_GROUP_PRIVATE) < 0);
 
 	pfq_close(q);
 	pfq_close(y);
 	}
 
 	{
-	pfq_t * q = pfq_open_group(Q_CLASS_DEFAULT, Q_GROUP_RESTRICTED, 64, 0, 1024, 64, 1024);
-	pfq_t * y = pfq_open_group(Q_CLASS_DEFAULT, Q_GROUP_UNDEFINED, 64, 0, 1024, 64, 1024);
+	pfq_t * q = pfq_open_group(Q_CLASS_DEFAULT, Q_POLICY_GROUP_RESTRICTED, 64, 0, 1024, 64, 1024);
+	pfq_t * y = pfq_open_group(Q_CLASS_DEFAULT, Q_POLICY_GROUP_UNDEFINED, 64, 0, 1024, 64, 1024);
 
 	int gid = pfq_group_id(q);
 
-	assert( pfq_join_group(y, gid, Q_CLASS_DEFAULT, Q_GROUP_RESTRICTED) >= 0);
+	assert( pfq_join_group(y, gid, Q_CLASS_DEFAULT, Q_POLICY_GROUP_RESTRICTED) >= 0);
 
 	pfq_close(q);
 	pfq_close(y);
 	}
 
 	{
-	pfq_t * q = pfq_open_group(Q_CLASS_DEFAULT, Q_GROUP_RESTRICTED, 64, 0, 1024, 64, 1024);
-	pfq_t * y = pfq_open_group(Q_CLASS_DEFAULT, Q_GROUP_UNDEFINED, 64, 0, 1024, 64, 1024);
+	pfq_t * q = pfq_open_group(Q_CLASS_DEFAULT, Q_POLICY_GROUP_RESTRICTED, 64, 0, 1024, 64, 1024);
+	pfq_t * y = pfq_open_group(Q_CLASS_DEFAULT, Q_POLICY_GROUP_UNDEFINED, 64, 0, 1024, 64, 1024);
 
 	int gid = pfq_group_id(q);
 
-	assert( pfq_join_group(y, gid, Q_CLASS_DEFAULT, Q_GROUP_SHARED) < 0);
-	assert( pfq_join_group(y, gid, Q_CLASS_DEFAULT, Q_GROUP_UNDEFINED) < 0);
+	assert( pfq_join_group(y, gid, Q_CLASS_DEFAULT, Q_POLICY_GROUP_SHARED) < 0);
+	assert( pfq_join_group(y, gid, Q_CLASS_DEFAULT, Q_POLICY_GROUP_UNDEFINED) < 0);
 
 	pfq_close(q);
 	pfq_close(y);
@@ -402,26 +402,26 @@ void test_join_restricted_()
 void test_join_shared_()
 {
 	{
-	pfq_t * q = pfq_open_group(Q_CLASS_DEFAULT, Q_GROUP_SHARED, 64, 0, 1024, 64, 1024);
-	pfq_t * y = pfq_open_group(Q_CLASS_DEFAULT, Q_GROUP_UNDEFINED, 64, 0, 1024, 64, 1024);
+	pfq_t * q = pfq_open_group(Q_CLASS_DEFAULT, Q_POLICY_GROUP_SHARED, 64, 0, 1024, 64, 1024);
+	pfq_t * y = pfq_open_group(Q_CLASS_DEFAULT, Q_POLICY_GROUP_UNDEFINED, 64, 0, 1024, 64, 1024);
 
 	int gid = pfq_group_id(q);
 
-	assert( pfq_join_group(y, gid, Q_CLASS_DEFAULT, Q_GROUP_SHARED) >= 0);
+	assert( pfq_join_group(y, gid, Q_CLASS_DEFAULT, Q_POLICY_GROUP_SHARED) >= 0);
 
 	pfq_close(q);
 	pfq_close(y);
 	}
 
 	{
-	pfq_t * q = pfq_open_group(Q_CLASS_DEFAULT, Q_GROUP_SHARED, 64, 0, 1024, 64, 1024);
-	pfq_t * y = pfq_open_group(Q_CLASS_DEFAULT, Q_GROUP_UNDEFINED, 64, 0, 1024, 64, 1024);
+	pfq_t * q = pfq_open_group(Q_CLASS_DEFAULT, Q_POLICY_GROUP_SHARED, 64, 0, 1024, 64, 1024);
+	pfq_t * y = pfq_open_group(Q_CLASS_DEFAULT, Q_POLICY_GROUP_UNDEFINED, 64, 0, 1024, 64, 1024);
 
 	int gid = pfq_group_id(q);
 
-	assert( pfq_join_group(y, gid, Q_CLASS_DEFAULT, Q_GROUP_PRIVATE) < 0);
-	assert( pfq_join_group(y, gid, Q_CLASS_DEFAULT, Q_GROUP_RESTRICTED) < 0);
-	assert( pfq_join_group(y, gid, Q_CLASS_DEFAULT, Q_GROUP_UNDEFINED) < 0);
+	assert( pfq_join_group(y, gid, Q_CLASS_DEFAULT, Q_POLICY_GROUP_PRIVATE) < 0);
+	assert( pfq_join_group(y, gid, Q_CLASS_DEFAULT, Q_POLICY_GROUP_RESTRICTED) < 0);
+	assert( pfq_join_group(y, gid, Q_CLASS_DEFAULT, Q_POLICY_GROUP_UNDEFINED) < 0);
 
 	pfq_close(q);
 	pfq_close(y);
@@ -430,11 +430,11 @@ void test_join_shared_()
 
 void test_join_deferred()
 {
-	pfq_t * q = pfq_open_group(Q_CLASS_DEFAULT, Q_GROUP_UNDEFINED, 64, 0, 1024, 64, 1024);
+	pfq_t * q = pfq_open_group(Q_CLASS_DEFAULT, Q_POLICY_GROUP_UNDEFINED, 64, 0, 1024, 64, 1024);
         assert(q);
 
-	assert(pfq_join_group(q, 13, Q_CLASS_DEFAULT, Q_GROUP_SHARED) == 13);
-	assert(pfq_join_group(q, 13, Q_CLASS_DEFAULT, Q_GROUP_SHARED) == 13);
+	assert(pfq_join_group(q, 13, Q_CLASS_DEFAULT, Q_POLICY_GROUP_SHARED) == 13);
+	assert(pfq_join_group(q, 13, Q_CLASS_DEFAULT, Q_POLICY_GROUP_SHARED) == 13);
 
 	unsigned long mask;
 
@@ -448,11 +448,11 @@ void test_join_deferred()
 
 void *restricted_thread(void *arg)
 {
-	pfq_t * q = pfq_open_group(Q_CLASS_DEFAULT, Q_GROUP_UNDEFINED, 64, 0, 1024, 64, 1024);
+	pfq_t * q = pfq_open_group(Q_CLASS_DEFAULT, Q_POLICY_GROUP_UNDEFINED, 64, 0, 1024, 64, 1024);
         assert(q);
 
 	long int gid = (long int)arg;
-	long int ngid = pfq_join_group(q, gid, Q_CLASS_DEFAULT, Q_GROUP_RESTRICTED);
+	long int ngid = pfq_join_group(q, gid, Q_CLASS_DEFAULT, Q_POLICY_GROUP_RESTRICTED);
 
 	assert(ngid == gid);
 
@@ -462,7 +462,7 @@ void *restricted_thread(void *arg)
 
 void test_join_restricted_thread()
 {
-	pfq_t * q = pfq_open_group(Q_CLASS_DEFAULT, Q_GROUP_RESTRICTED, 64, 0, 1024, 64, 1024);
+	pfq_t * q = pfq_open_group(Q_CLASS_DEFAULT, Q_POLICY_GROUP_RESTRICTED, 64, 0, 1024, 64, 1024);
         assert(q);
 
 	pthread_t t;
@@ -478,19 +478,19 @@ void test_join_restricted_thread()
 
 void test_join_restricted_process()
 {
-	pfq_t * x = pfq_open_group(Q_CLASS_DEFAULT, Q_GROUP_RESTRICTED, 64, 0, 1024, 64, 1024);
-	pfq_t * z = pfq_open_group(Q_CLASS_DEFAULT, Q_GROUP_SHARED, 64, 0, 1024, 64, 1024);
+	pfq_t * x = pfq_open_group(Q_CLASS_DEFAULT, Q_POLICY_GROUP_RESTRICTED, 64, 0, 1024, 64, 1024);
+	pfq_t * z = pfq_open_group(Q_CLASS_DEFAULT, Q_POLICY_GROUP_SHARED, 64, 0, 1024, 64, 1024);
 
 	assert(x);
 	assert(z);
 
 	int p = fork();
 	if (p == 0) {
-		pfq_t * y = pfq_open_group(Q_CLASS_DEFAULT, Q_GROUP_UNDEFINED, 64, 0, 1024, 64, 1024);
+		pfq_t * y = pfq_open_group(Q_CLASS_DEFAULT, Q_POLICY_GROUP_UNDEFINED, 64, 0, 1024, 64, 1024);
 
 		int gid = pfq_group_id(z);
-		assert( pfq_join_group(y, gid, Q_CLASS_DEFAULT, Q_GROUP_SHARED) == gid);
-		assert( pfq_join_group(y, pfq_group_id(x), Q_CLASS_DEFAULT, Q_GROUP_SHARED) == -1);
+		assert( pfq_join_group(y, gid, Q_CLASS_DEFAULT, Q_POLICY_GROUP_SHARED) == gid);
+		assert( pfq_join_group(y, pfq_group_id(x), Q_CLASS_DEFAULT, Q_POLICY_GROUP_SHARED) == -1);
 
 		pfq_close(y);
 
@@ -505,13 +505,13 @@ void test_join_restricted_process()
 
 void test_join_group()
 {
-    	pfq_t * q = pfq_open_group(Q_CLASS_DEFAULT, Q_GROUP_UNDEFINED, 64, 0, 1024, 64, 1024);
+    	pfq_t * q = pfq_open_group(Q_CLASS_DEFAULT, Q_POLICY_GROUP_UNDEFINED, 64, 0, 1024, 64, 1024);
     	assert(q);
 
-	int gid = pfq_join_group(q, 0, Q_CLASS_DEFAULT, Q_GROUP_SHARED);
+	int gid = pfq_join_group(q, 0, Q_CLASS_DEFAULT, Q_POLICY_GROUP_SHARED);
 	assert(gid == 0);
 
-	gid = pfq_join_group(q, Q_ANY_GROUP, Q_CLASS_DEFAULT, Q_GROUP_SHARED);
+	gid = pfq_join_group(q, Q_ANY_GROUP, Q_CLASS_DEFAULT, Q_POLICY_GROUP_SHARED);
 	assert(gid == 1);
 
 	unsigned long mask;
@@ -524,10 +524,10 @@ void test_join_group()
 
 void test_leave_group()
 {
-    	pfq_t * q = pfq_open_group(Q_CLASS_DEFAULT, Q_GROUP_UNDEFINED, 64, 0, 1024, 64, 1024);
+    	pfq_t * q = pfq_open_group(Q_CLASS_DEFAULT, Q_POLICY_GROUP_UNDEFINED, 64, 0, 1024, 64, 1024);
     	assert(q);
 
-	int gid = pfq_join_group(q, 22, Q_CLASS_DEFAULT, Q_GROUP_SHARED);
+	int gid = pfq_join_group(q, 22, Q_CLASS_DEFAULT, Q_POLICY_GROUP_SHARED);
 	assert(gid == 22);
 
 	assert(pfq_leave_group(q, 21) == -1);

@@ -55,16 +55,16 @@ __pfq_group_access(int gid, int id, int policy, bool join)
 
         switch(g->policy)
         {
-        case Q_GROUP_PRIVATE:
+        case Q_POLICY_GROUP_PRIVATE:
                 return false;
 
-        case Q_GROUP_RESTRICTED:
-                return (join == false || policy == Q_GROUP_RESTRICTED) && g->pid == current->tgid;
+        case Q_POLICY_GROUP_RESTRICTED:
+                return (join == false || policy == Q_POLICY_GROUP_RESTRICTED) && g->pid == current->tgid;
 
-        case Q_GROUP_SHARED:
-                return join == false || policy == Q_GROUP_SHARED;
+        case Q_POLICY_GROUP_SHARED:
+                return join == false || policy == Q_POLICY_GROUP_SHARED;
 
-        case Q_GROUP_UNDEFINED:
+        case Q_POLICY_GROUP_UNDEFINED:
                 return true;
         }
 
@@ -84,7 +84,7 @@ __pfq_group_init(int gid)
         }
 
         g->pid = -1;
-        g->policy = Q_GROUP_UNDEFINED;
+        g->policy = Q_POLICY_GROUP_UNDEFINED;
 
         for(i = 0; i < Q_CLASS_MAX; i++)
         {
@@ -130,7 +130,7 @@ __pfq_group_free(int gid)
         pfq_devmap_update(map_reset, Q_ANY_DEVICE, Q_ANY_QUEUE, gid);
 
         g->pid = 0;
-        g->policy = Q_GROUP_UNDEFINED;
+        g->policy = Q_POLICY_GROUP_UNDEFINED;
 
         filter   = (struct sk_filter *)atomic_long_xchg(&g->filter, 0L);
         old_comp = (computation_t *)atomic_long_xchg(&g->comp, 0L);
@@ -183,8 +183,8 @@ __pfq_join_group(int gid, int id, unsigned long class_mask, int policy)
                  atomic_long_set(&g->sock_mask[class], tmp);
         })
 
-        g->policy = g->policy == Q_GROUP_UNDEFINED ?  policy : g->policy;
-        g->pid    = policy == Q_GROUP_RESTRICTED ? current->tgid : -1;
+        g->policy = g->policy == Q_POLICY_GROUP_UNDEFINED ?  policy : g->policy;
+        g->pid    = policy == Q_POLICY_GROUP_RESTRICTED ? current->tgid : -1;
 
         return 0;
 }

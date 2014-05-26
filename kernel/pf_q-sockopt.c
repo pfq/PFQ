@@ -97,6 +97,7 @@ int pfq_getsockopt(struct socket *sock,
                                 return -EACCES;
                         }
                 }
+
                 pr_devel("[PFQ|%d] join -> gid:%d class_mask:%lx\n", so->id, group.gid, group.class_mask);
         } break;
 
@@ -229,7 +230,7 @@ int pfq_getsockopt(struct socket *sock,
 
                 /* check whether the group is joinable.. */
 
-                if (!__pfq_group_access(gid, so->id, Q_GROUP_UNDEFINED, false)) {
+                if (!__pfq_group_access(gid, so->id, Q_POLICY_GROUP_UNDEFINED, false)) {
                         pr_devel("[PFQ|%d] group stats error: permission denied (gid:%d)!\n", so->id, gid);
                         return -EACCES;
                 }
@@ -269,7 +270,7 @@ int pfq_getsockopt(struct socket *sock,
 
                 /* check whether the group is joinable.. */
 
-                if (!__pfq_group_access(gid, so->id, Q_GROUP_UNDEFINED, false)) {
+                if (!__pfq_group_access(gid, so->id, Q_POLICY_GROUP_UNDEFINED, false)) {
                         pr_devel("[PFQ|%d] group error: permission denied (gid:%d)!\n", so->id, gid);
                         return -EACCES;
                 }

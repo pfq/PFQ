@@ -244,10 +244,10 @@ newtype PFqConstant = PFqConstant { getConstant :: Int }
 }
 
 #{enum GroupPolicy, GroupPolicy
-    , policy_undefined  = Q_GROUP_UNDEFINED
-    , policy_priv       = Q_GROUP_PRIVATE
-    , policy_restricted = Q_GROUP_RESTRICTED
-    , policy_shared     = Q_GROUP_SHARED
+    , policy_undefined  = Q_POLICY_GROUP_UNDEFINED
+    , policy_priv       = Q_POLICY_GROUP_PRIVATE
+    , policy_restricted = Q_POLICY_GROUP_RESTRICTED
+    , policy_shared     = Q_POLICY_GROUP_SHARED
 }
 
 
