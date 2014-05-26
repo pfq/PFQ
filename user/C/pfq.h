@@ -148,36 +148,49 @@ typedef void (*pfq_handler_t)(char *user, const struct pfq_pkt_hdr *h, const cha
  * class_mask  : Q_CLASS_DEFAULT| .... = Q_CLASS_ANY
  */
 
-/*! Open a socket and join a new group. */
+/*! Open the socket. */
+/*!
+ * The default values are used; no group is joined or created.
+ * The socket open is suitable for egress sockets.
+ */
+
+extern pfq_t* pfq_open_default();
+
+
+/*! Open the socket and create a new private group. */
 /*!
  * The default values for class mask and group policy are Q_CLASS_DEFAULT and
  * Q_GROUP_PRIVATE, respectively.
  */
 
-extern pfq_t* pfq_open(size_t calpen, size_t offset, size_t slots);
+extern pfq_t* pfq_open(size_t calpen, size_t slots);
 
-/*! Open a socket; join no group. */
+
+/*! Open the socket and create a new private group. */
+/*!
+ * The default values for class mask and group policy are Q_CLASS_DEFAULT and
+ * Q_GROUP_PRIVATE, respectively.
+ */
+
+extern pfq_t *pfq_open_(size_t caplen, size_t rx_slots, size_t maxlen, size_t tx_slots);
+
+
+/*! Open the socket; no group is joined or created. */
 /*!
  * Groups can be later joined by means of the join function.
  */
 
-extern pfq_t* pfq_open_nogroup(size_t caplen, size_t offset, size_t slots);
+extern pfq_t* pfq_open_nogroup(size_t caplen, size_t slots);
 
-/*! Open the socket. */
+
+/*! Open the socket and create a new group with the specified class and policy. */
 /*!
- * Both class mask and group policy are specifiable.
+ * All the possible parameters are specifiable.
  */
 
 extern pfq_t* pfq_open_group(unsigned long class_mask, int group_policy,
-                size_t calpen, size_t offset, size_t rx_slots,
+                size_t calpen, size_t rx_slots,
                 size_t maxlen, size_t tx_slots);
-
-/*! Open the socket for transmission. */
-/*!
- * The group is undefined, no group is joined.
- */
-
-extern pfq_t* pfq_open_tx(size_t maxlen, size_t slots);
 
 /*! Close the socket. */
 
@@ -236,14 +249,6 @@ extern int pfq_set_maxlen(pfq_t *q, size_t value);
 /*! Return the max transmission length of packets, in bytes. */
 
 extern ssize_t pfq_get_maxlen(pfq_t const *q);
-
-/*! Specify the capture offset of packets, in bytes. */
-
-extern int pfq_set_offset(pfq_t *q, size_t value);
-
-/*! Return the capture offset of packets. */
-
-extern ssize_t pfq_get_offset(pfq_t const *q);
 
 /*! Specify the length of the RX queue, in number of packets. */
 /*!

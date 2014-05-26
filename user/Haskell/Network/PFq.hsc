@@ -76,7 +76,8 @@ module Network.PFq
         -- * Socket and Groups
 
         open,
-        openTx,
+        open',
+        openDefault,
         openNoGroup,
         openGroup,
         close,
@@ -114,8 +115,6 @@ module Network.PFq
 
         getCaplen,
         setCaplen,
-        getOffset,
-        setOffset,
 
         getRxSlots,
         setRxSlots,
@@ -365,66 +364,76 @@ getPacketHeader p = waitForPacket p >> toPktHdr (pHdr p)
 
 {-# INLINE getPacketHeader #-}
 
+-- |Open the socket.
+--
+-- The default values are used; no group is joined or created.
+-- The socket open is suitable for egress sockets.
 
--- |Open a socket and join a new group.
+openDefault :: IO (ForeignPtr PFqTag)
+openDefault = pfq_open_default  >>=
+            throwPFqIf nullPtr (== nullPtr) >>= \ptr ->
+                C.newForeignPtr ptr (void $ pfq_close ptr)
+
+
+-- |Open a socket and join a new private group.
 --
 -- The default values for class mask and group policy are 'class_default' and
 -- 'policy_priv', respectively.
 
 open :: Int  -- ^ caplen
-     -> Int  -- ^ offset
      -> Int  -- ^ number of rx slots
      -> IO (ForeignPtr PFqTag)
-open caplen offset slots =
-        pfq_open (fromIntegral caplen) (fromIntegral offset) (fromIntegral slots) >>=
+open caplen slots =
+        pfq_open (fromIntegral caplen) (fromIntegral slots) >>=
             throwPFqIf nullPtr (== nullPtr) >>= \ptr ->
                 C.newForeignPtr ptr (void $ pfq_close ptr)
 
 
--- |Open a socket. No group is joined.
+-- |Open a socket and join a new private group.
+--
+-- The default values for class mask and group policy are Q_CLASS_DEFAULT and
+-- Q_GROUP_PRIVATE, respectively.
+
+open' :: Int  -- ^ caplen
+      -> Int  -- ^ number of rx slots
+      -> Int  -- ^ maxlen
+      -> Int  -- ^ number of tx slots
+      -> IO (ForeignPtr PFqTag)
+open' caplen rx_slots maxlen tx_slots =
+        pfq_open_ (fromIntegral caplen) (fromIntegral rx_slots) (fromIntegral maxlen) (fromIntegral tx_slots) >>=
+            throwPFqIf nullPtr (== nullPtr) >>= \ptr ->
+                C.newForeignPtr ptr (void $ pfq_close ptr)
+
+
+-- |Open a socket. No group is joined or created.
 --
 -- Groups can later be joined by means of the 'joinGroup' function.
 
 openNoGroup :: Int  -- ^ caplen
-            -> Int  -- ^ offset
             -> Int  -- ^ number of rx slots
             -> IO (ForeignPtr PFqTag)
-openNoGroup caplen offset slots =
-        pfq_open_nogroup (fromIntegral caplen) (fromIntegral offset) (fromIntegral slots) >>=
+openNoGroup caplen slots =
+        pfq_open_nogroup (fromIntegral caplen) (fromIntegral slots) >>=
             throwPFqIf nullPtr (== nullPtr) >>= \ptr ->
                 C.newForeignPtr ptr (void $ pfq_close ptr)
 
--- |Open a socket.
+-- |Open the socket and create a new group with the specified class and policy. */
 --
--- Both class mask and group policy are specifiable.
+-- All the possible parameters are specifiable.
 
 openGroup :: [ClassMask]  -- ^ list of ClassMask (e.g., [class_default])
           -> GroupPolicy  -- ^ policy for the group
           -> Int          -- ^ caplen
-          -> Int          -- ^ offset
           -> Int          -- ^ number of rx slots
           -> Int          -- ^ maxlen
           -> Int          -- ^ number of tx slots
           -> IO (ForeignPtr PFqTag)
-openGroup ms policy caplen offset rx_slots maxlen tx_slots =
+openGroup ms policy caplen rx_slots maxlen tx_slots =
         pfq_open_group (getClassMask $ combineClassMasks ms) (getGroupPolicy policy)
-            (fromIntegral caplen) (fromIntegral offset) (fromIntegral rx_slots)
+            (fromIntegral caplen) (fromIntegral rx_slots)
             (fromIntegral maxlen) (fromIntegral tx_slots) >>=
             throwPFqIf nullPtr (== nullPtr) >>= \ptr ->
                 C.newForeignPtr ptr (void $ pfq_close ptr)
-
--- |Open the socket for transmission. No group is joined.
---
--- The group policy is 'policy_undefined' by default.
-
-openTx :: Int  -- ^ maxlen
-       -> Int  -- ^ number of tx slots
-       -> IO (ForeignPtr PFqTag)
-openTx maxlen tx_slots =
-        pfq_open_tx (fromIntegral maxlen) (fromIntegral tx_slots) >>=
-            throwPFqIf nullPtr (== nullPtr) >>= \ptr ->
-                C.newForeignPtr ptr (void $ pfq_close ptr)
-
 
 -- |Close the socket.
 
@@ -652,26 +661,6 @@ getMaxlen :: Ptr PFqTag
 getMaxlen hdl =
     pfq_get_maxlen hdl >>= throwPFqIf hdl (== -1)
         >>= return . fromIntegral
-
-
--- |Specify the capture offset of packets, in bytes.
-
-setOffset :: Ptr PFqTag
-          -> Int        -- ^ offset
-          -> IO ()
-setOffset hdl value =
-    pfq_set_offset hdl (fromIntegral value) >>=
-    throwPFqIf_ hdl (== -1)
-
-
--- |Return the capture offset of packets.
-
-getOffset :: Ptr PFqTag
-          -> IO Int
-getOffset hdl =
-    pfq_get_offset hdl >>= throwPFqIf hdl (== -1) >>=
-    return . fromIntegral
-
 
 -- |Specify the length of the RX queue, in number of packets./
 --
@@ -1002,10 +991,11 @@ sendAsync hdl xs blen =
 -- C functions from libpfq
 --
 
-foreign import ccall unsafe pfq_open                :: CSize -> CSize -> CSize -> IO (Ptr PFqTag)
-foreign import ccall unsafe pfq_open_tx             :: CSize -> CSize -> IO (Ptr PFqTag)
-foreign import ccall unsafe pfq_open_nogroup        :: CSize -> CSize -> CSize -> IO (Ptr PFqTag)
-foreign import ccall unsafe pfq_open_group          :: CULong -> CInt  -> CSize -> CSize -> CSize -> CSize -> CSize -> IO (Ptr PFqTag)
+foreign import ccall unsafe pfq_open_default        :: IO (Ptr PFqTag)
+foreign import ccall unsafe pfq_open                :: CSize -> CSize -> IO (Ptr PFqTag)
+foreign import ccall unsafe pfq_open_               :: CSize -> CSize -> CSize -> CSize -> IO (Ptr PFqTag)
+foreign import ccall unsafe pfq_open_nogroup        :: CSize -> CSize -> IO (Ptr PFqTag)
+foreign import ccall unsafe pfq_open_group          :: CULong -> CInt  -> CSize -> CSize -> CSize -> CSize -> IO (Ptr PFqTag)
 
 foreign import ccall unsafe pfq_close               :: Ptr PFqTag -> IO CInt
 foreign import ccall unsafe pfq_error               :: Ptr PFqTag -> IO CString
@@ -1026,9 +1016,6 @@ foreign import ccall unsafe pfq_get_caplen          :: Ptr PFqTag -> IO CPtrdiff
 
 foreign import ccall unsafe pfq_set_maxlen          :: Ptr PFqTag -> CSize -> IO CInt
 foreign import ccall unsafe pfq_get_maxlen          :: Ptr PFqTag -> IO CPtrdiff
-
-foreign import ccall unsafe pfq_set_offset          :: Ptr PFqTag -> CSize -> IO CInt
-foreign import ccall unsafe pfq_get_offset          :: Ptr PFqTag -> IO CPtrdiff
 
 foreign import ccall unsafe pfq_set_tx_slots        :: Ptr PFqTag -> CSize -> IO CInt
 foreign import ccall unsafe pfq_get_tx_slots        :: Ptr PFqTag -> IO CSize

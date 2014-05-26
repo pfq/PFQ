@@ -69,7 +69,6 @@ typedef struct pfq
 
 	size_t rx_slots;
 	size_t rx_caplen;
-	size_t rx_offset;
 	size_t rx_slot_size;
         size_t tx_slots;
 	uint64_t tx_counter;
@@ -97,27 +96,35 @@ const char *pfq_error(pfq_t *q)
 /* costructor */
 
 pfq_t *
-pfq_open(size_t caplen, size_t offset, size_t slots)
+pfq_open_default()
 {
-	return pfq_open_group(Q_CLASS_DEFAULT, Q_POLICY_GROUP_PRIVATE, caplen, offset, slots, 64, 4096);
+	return pfq_open_group(Q_CLASS_DEFAULT, Q_POLICY_GROUP_UNDEFINED, 64, 1, 64, 1);
 }
 
 
 pfq_t *
-pfq_open_tx(size_t maxlen, size_t slots)
+pfq_open(size_t length, size_t slots)
 {
-	return pfq_open_group(Q_CLASS_DEFAULT, Q_POLICY_GROUP_UNDEFINED, 64, 0, 4096, maxlen, slots);
-}
-
-pfq_t *
-pfq_open_nogroup(size_t caplen, size_t offset, size_t slots)
-{
-	return pfq_open_group(Q_CLASS_DEFAULT, Q_POLICY_GROUP_UNDEFINED, caplen, offset, slots, 64, 4096);
+	return pfq_open_group(Q_CLASS_DEFAULT, Q_POLICY_GROUP_PRIVATE, length, slots, length, slots);
 }
 
 
 pfq_t *
-pfq_open_group(unsigned long class_mask, int group_policy, size_t caplen, size_t offset, size_t rx_slots, size_t maxlen, size_t tx_slots)
+pfq_open_(size_t caplen, size_t rx_slots, size_t maxlen, size_t tx_slots)
+{
+	return pfq_open_group(Q_CLASS_DEFAULT, Q_POLICY_GROUP_UNDEFINED, caplen, rx_slots, maxlen, tx_slots);
+}
+
+
+pfq_t *
+pfq_open_nogroup(size_t caplen, size_t slots)
+{
+	return pfq_open_group(Q_CLASS_DEFAULT, Q_POLICY_GROUP_UNDEFINED, caplen, slots, 64, 1);
+}
+
+
+pfq_t *
+pfq_open_group(unsigned long class_mask, int group_policy, size_t caplen, size_t rx_slots, size_t maxlen, size_t tx_slots)
 {
 	int fd = socket(PF_Q, SOCK_RAW, htons(ETH_P_ALL));
 	pfq_t * q;
@@ -139,7 +146,6 @@ pfq_open_group(unsigned long class_mask, int group_policy, size_t caplen, size_t
 	q->queue_tot_mem = 0;
 	q->rx_slots      = 0;
 	q->rx_caplen     = 0;
-	q->rx_offset     = offset;
 	q->rx_slot_size  = 0;
 	q->tx_slots 	 = 0;
 	q->tx_counter    = 0;
@@ -166,11 +172,6 @@ pfq_open_group(unsigned long class_mask, int group_policy, size_t caplen, size_t
 	}
 
 	q->rx_caplen = caplen;
-
-	/* set offset */
-	if (setsockopt(fd, PF_Q, Q_SO_SET_RX_OFFSET, &offset, sizeof(offset)) == -1) {
-		return __error = "PFQ: set RX offset error", free(q), NULL;
-	}
 
 	q->rx_slot_size = ALIGN8(sizeof(struct pfq_pkt_hdr) + q->rx_caplen);
 
@@ -398,34 +399,6 @@ pfq_get_maxlen(pfq_t const *q)
 
 	if (getsockopt(q->fd, PF_Q, Q_SO_GET_TX_MAXLEN, &ret, &size) == -1) {
 		return mutable->error = "PFQ: get maxlen error", -1;
-	}
-	return mutable->error = NULL, (ssize_t)ret;
-}
-
-
-int
-pfq_set_offset(pfq_t *q, size_t value)
-{
-	int enabled = pfq_is_enabled(q);
-	if (enabled == 1) {
-		return q->error = "PFQ: enabled (offset could not be set)", -1;
-	}
-
-	if (setsockopt(q->fd, PF_Q, Q_SO_SET_RX_OFFSET, &value, sizeof(value)) == -1) {
-		return q->error = "PFQ: set offset error", -1;
-	}
-	return q->error = NULL, 0;
-}
-
-
-ssize_t
-pfq_get_offset(pfq_t const *q)
-{
-	pfq_t * mutable = (pfq_t *)q;
-	size_t ret; socklen_t size = sizeof(ret);
-
-	if (getsockopt(q->fd, PF_Q, Q_SO_GET_RX_OFFSET, &ret, &size) == -1) {
-		return mutable->error = "PFQ: get offset error", -1;
 	}
 	return mutable->error = NULL, (ssize_t)ret;
 }
