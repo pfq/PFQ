@@ -39,7 +39,7 @@ recvDispatch q = do
 dumper :: String -> IO ()
 dumper dev = do
     putStrLn  $ "dumping " ++ dev  ++ "..."
-    fp <- Q.open 64 14 4096
+    fp <- Q.open 64 4096
     withForeignPtr fp  $ \q -> do
         Q.setTimestamp q True
         gid <- Q.getGroupId q

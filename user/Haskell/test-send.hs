@@ -59,7 +59,7 @@ sender (dev:xs) = do
 
     let numb = read (head xs) :: Int
 
-    fp <- Q.openTx 128 1024
+    fp <- Q.open' 64 1024 128 1024
 
     putStrLn  $ "sending " ++ show numb ++ " packets to dev " ++ dev  ++ "..."
 

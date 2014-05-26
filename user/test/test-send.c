@@ -87,7 +87,7 @@ main(int argc, char *argv[])
         unsigned long long num = atoll(argv[4]);
         int mode   = atoi(argv[5]);
 
-        pfq_t * q= pfq_open_tx(128, 4096);
+        pfq_t * q= pfq_open_(64, 1, 128, 4096);
 
         pfq_enable(q);
 

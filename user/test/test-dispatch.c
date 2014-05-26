@@ -23,7 +23,7 @@ main(int argc, char *argv[])
                 return 0;
         }
 
-        pfq_t *p = pfq_open(64, 0, 4096);
+        pfq_t *p = pfq_open(64, 4096);
         if (p == NULL) {
                 printf("error: %s\n", pfq_error(p));
                 return -1;
@@ -46,14 +46,6 @@ main(int argc, char *argv[])
         }
 
         printf("caplen: %d\n", caplen);
-
-        int offset = pfq_get_offset(p);
-        if (offset < 0) {
-        	printf("error: %s\n", pfq_error(p));
-        	return -1;
-        }
-
-        printf("offset: %d\n", offset);
 
         int id = pfq_id(p);
         if (id < 0) {

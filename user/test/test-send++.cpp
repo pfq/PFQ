@@ -82,7 +82,7 @@ main(int argc, char *argv[])
     uint64_t num    = atoll(argv[4]);
     int mode        = atoi(argv[5]);
 
-    pfq q(64, 0, 4096, 64, 4096);
+    pfq q(64, 4096, 64, 4096);
 
     q.enable();
 

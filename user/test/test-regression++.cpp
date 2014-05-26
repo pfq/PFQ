@@ -158,26 +158,6 @@ Context(PFQ)
         Assert(x.maxlen(), is_equal_to(64));
     }
 
-    Test(offset)
-    {
-        pfq x;
-        AssertThrow(x.offset(14));
-        AssertThrow(x.offset());
-
-        x.open(group_policy::undefined, 64);
-        x.offset(14);
-
-        Assert(x.offset(), is_equal_to(14));
-
-        x.enable();
-        AssertThrow(x.offset(16));
-        x.disable();
-
-        x.offset(16);
-        Assert(x.offset(), is_equal_to(16));
-    }
-
-
     Test(rx_slots)
     {
         pfq x;

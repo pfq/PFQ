@@ -62,7 +62,6 @@ data State a = State { sCounter :: MVar a,
 data Options = Options
                {
                 caplen   :: Int,
-                offset   :: Int,
                 slots    :: Int,
                 function :: [String],
                 thread   :: [String]
@@ -74,7 +73,6 @@ data Options = Options
 options = cmdArgsMode $
     Options {
         caplen   = 64,
-        offset   = 0,
         slots    = 131072,
         function = [] &= typ "FUNCTION"  &= help "Where FUNCTION = fun[ >-> fun >-> fun][.gid] (ie: steer_ip)",
         thread   = [] &= typ "BINDING" &= help "Where BINDING = eth0:...:ethx[.core[.gid[.queue.queue...]]]"
@@ -148,7 +146,7 @@ runThreads op ms =
         f <- newMVar 0
         _ <- forkOn (coreNum binding) (
                  handle ((\e -> M.void (putStrLn ("[pfq] Exception: " ++ show e) >> swapMVar c (-1))) :: SomeException -> IO ()) $ do
-                 fp <- Q.openNoGroup (caplen op) (offset op) (slots op)
+                 fp <- Q.openNoGroup (caplen op) (slots op)
                  withForeignPtr fp  $ \q -> do
                      Q.joinGroup q (groupId binding) [Q.class_default] Q.policy_shared
                      forM_ (devs binding) $ \dev ->

@@ -14,7 +14,7 @@ main(int argc, char *argv[])
                 return 0;
         }
 
-        pfq_t *p = pfq_open(64, 0, 4096);
+        pfq_t *p = pfq_open(64, 4096);
         if (p == NULL) {
                 printf("error: %s\n", pfq_error(p));
                 return -1;
