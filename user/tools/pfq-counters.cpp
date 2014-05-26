@@ -185,7 +185,7 @@ namespace test
                 auto comp = split(opt::function, ">->");
                 for(auto & f : comp)
                 {
-                    fs.push_back(computation(trim(f)));
+                    fs.push_back(netfunction(trim(f)));
                 }
             }
 

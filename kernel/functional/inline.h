@@ -107,6 +107,7 @@
 		CASE_INLINE(forward_broadcast, f, skb);\
 		CASE_INLINE(forward_kernel, f, skb);\
 		CASE_INLINE(forward_class, f, skb);\
+		CASE_INLINE(forward_deliver, f, skb);\
 		default: ret = APPLY(f, skb); \
 	} \
 	ret; })
