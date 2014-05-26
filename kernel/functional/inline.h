@@ -61,9 +61,10 @@
 
 #define INLINE_forward_drop         	16
 #define INLINE_forward_broadcast    	17
-#define INLINE_forward_kernel 	    	18
-#define INLINE_forward_class 		19
-#define INLINE_forward_deliver 		20
+#define INLINE_forward_to_kernel 	18
+#define INLINE_forward_io_kernel 	19
+#define INLINE_forward_class 		20
+#define INLINE_forward_deliver 		21
 
 
 #define APPLY(f, skb) ({ \
@@ -105,7 +106,8 @@
 		\
 		CASE_INLINE(forward_drop, f, skb);\
 		CASE_INLINE(forward_broadcast, f, skb);\
-		CASE_INLINE(forward_kernel, f, skb);\
+		CASE_INLINE(forward_to_kernel, f, skb);\
+		CASE_INLINE(forward_io_kernel, f, skb);\
 		CASE_INLINE(forward_class, f, skb);\
 		CASE_INLINE(forward_deliver, f, skb);\
 		default: ret = APPLY(f, skb); \

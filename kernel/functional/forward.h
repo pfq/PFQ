@@ -42,7 +42,13 @@ forward_broadcast(arguments_t args, struct sk_buff *skb)
 }
 
 static inline struct sk_buff *
-forward_kernel(arguments_t args, struct sk_buff *skb)
+forward_to_kernel(arguments_t args, struct sk_buff *skb)
+{
+        return deliver(skb, 0);
+}
+
+static inline struct sk_buff *
+forward_io_kernel(arguments_t args, struct sk_buff *skb)
 {
         return to_kernel(skb);
 }

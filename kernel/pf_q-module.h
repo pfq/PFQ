@@ -411,6 +411,16 @@ to_kernel(struct sk_buff *skb)
 }
 
 
+static inline
+bool is_for_kernel(struct sk_buff *skb)
+{
+        action_t * a = & PFQ_CB(skb)->action;
+
+        return (a->attr & attr_ret_to_kernel) ||
+               (a->class_mask == 0 && a->type == action_copy);
+}
+
+
 /* utility function: counter */
 
 static inline
