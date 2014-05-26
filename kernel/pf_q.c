@@ -64,6 +64,7 @@
 #include <pf_q-thread.h>
 #include <pf_q-global.h>
 #include <pf_q-vlan.h>
+#include <pf_q-transmit.h>
 
 #include <pf_q-mpdb-queue.h>
 
@@ -150,6 +151,26 @@ bool copy_to_user_skbs(struct pfq_rx_opt *ro, int cpu, unsigned long long sock_q
 		}
         }
         return true;
+}
+
+
+static inline
+bool copy_to_endpoint_skbs(struct pfq_sock *so, int cpu, unsigned long long sock_queue, struct pfq_non_intrusive_skb *skbs, int gid)
+{
+	if (so->egress_index) {
+
+		struct sk_buff *skb;
+		int n;
+
+                pfq_non_intrusive_for_each(skb, n, skbs)
+		{
+ 			atomic_inc(&skb->users);
+               	}
+
+ 		pfq_queue_xmit_by_index(skbs, so->egress_index, so->egress_queue);
+	}
+
+	return copy_to_user_skbs(&so->rx_opt, cpu, sock_queue, skbs, gid);
 }
 
 
@@ -442,15 +463,13 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 			socket_mask |= sock_mask;
 		}
 
-		/* copy packets of this group to pfq sockets... */
+		/* copy packets of this group of endpoints... */
 
 		pfq_bitwise_foreach(socket_mask, lb,
 		{
 			int i = pfq_ctz(lb);
-			struct pfq_rx_opt * ro = &pfq_get_sock_by_id(i)->rx_opt;
-			if (likely(ro)) {
-				copy_to_user_skbs(ro, cpu, sock_queue[i], prefetch_queue, gid);
-			}
+			struct pfq_sock * so = pfq_get_sock_by_id(i);
+			copy_to_endpoint_skbs(so, cpu, sock_queue[i], prefetch_queue, gid);
 		})
 	})
 
