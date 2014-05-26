@@ -615,6 +615,19 @@ Context(PFQ)
         AssertNothrow(q.tx_queue_flush());
     }
 
+    Test(egress_bind)
+    {
+        pfq q(64);
+        AssertNothrow(q.egress_bind("lo", -1));
+        AssertThrow(q.egress_bind("unknown", -1));
+    }
+
+    Test(egress_unbind)
+    {
+        pfq q(64);
+        AssertNothrow(q.egress_unbind());
+    }
+
 // TODO
 
 #if 0

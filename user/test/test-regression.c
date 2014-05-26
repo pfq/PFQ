@@ -657,6 +657,26 @@ void test_tx_queue_flush()
         pfq_close(q);
 }
 
+void test_egress_bind()
+{
+        pfq_t * q = pfq_open(64, 0, 1024);
+
+        assert(pfq_egress_bind(q, "lo", -1) == 0);
+        assert(pfq_egress_bind(q, "unknown", -1) == -1);
+
+        pfq_close(q);
+}
+
+void test_egress_unbind()
+{
+        pfq_t * q = pfq_open(64, 0, 1024);
+
+        assert(pfq_egress_unbind(q) == 0);
+
+        pfq_close(q);
+}
+
+
 #define TEST(test)   fprintf(stdout, "running '%s'...\n", #test); test();
 
 int
@@ -713,6 +733,9 @@ main(int argc __attribute__((unused)), char *argv[]__attribute__((unused)))
         TEST(test_stop_tx_thread);
         TEST(test_wakeup_tx_thread);
         TEST(test_tx_queue_flush);
+
+        TEST(test_egress_bind);
+        TEST(test_egress_unbind);
 
         printf("Tests successfully passed.\n");
     	return 0;
