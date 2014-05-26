@@ -25,7 +25,7 @@
 #include <linux/module.h>
 #include <linux/swab.h>
 
-#include <pf_q-engine.h>
+#include <pf_q-module.h>
 
 static struct sk_buff *
 steering_link(arguments_t args, struct sk_buff *skb)

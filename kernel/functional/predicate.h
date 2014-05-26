@@ -35,7 +35,7 @@
 #include <linux/icmp.h>
 #include <linux/if_vlan.h>
 
-#include <pf_q-engine.h>
+#include <pf_q-module.h>
 
 #include "inline.h"
 

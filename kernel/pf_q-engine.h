@@ -31,30 +31,6 @@
 
 #include <pf_q-module.h>
 
-
-#define ASSERT_TYPE(type,a)  	__builtin_choose_expr(__builtin_types_compatible_p(type, typeof(a)), a, (void)0)
-
-#define ARGS_TYPE(a)  		__builtin_choose_expr(__builtin_types_compatible_p(arguments_t, typeof(a)), a, (void)0)
-#define FUNCTIONAL_TYPE(a)  	__builtin_choose_expr(__builtin_types_compatible_p(struct pfq_functional *, typeof(a)), a, (void)0)
-#define ARG_CAST(arg)  		__builtin_choose_expr(sizeof(arg)  <= sizeof(void *), (ptrdiff_t)arg, (void)0)
-
-#define get_data(type,a) 	__builtin_choose_expr(sizeof(type) <= sizeof(ptrdiff_t), *(type *)&ARGS_TYPE(a)->arg1, (void *)ARGS_TYPE(a)->arg1)
-#define get_data2(type,a) 	__builtin_choose_expr(sizeof(type) <= sizeof(ptrdiff_t), *(type *)&ARGS_TYPE(a)->arg2, (void *)ARGS_TYPE(a)->arg2)
-#define get_data3(type,a) 	__builtin_choose_expr(sizeof(type) <= sizeof(ptrdiff_t), *(type *)&ARGS_TYPE(a)->arg3, (void *)ARGS_TYPE(a)->arg3)
-
-#define set_data(a, v)		__builtin_choose_expr(sizeof(typeof(v)) <= sizeof(ptrdiff_t), *(typeof(v) *)(&ARGS_TYPE(a)->arg1) = v, (void)0)
-#define set_data2(a, v)		__builtin_choose_expr(sizeof(typeof(v)) <= sizeof(ptrdiff_t), *(typeof(v) *)(&ARGS_TYPE(a)->arg2) = v, (void)0)
-#define set_data3(a, v)		__builtin_choose_expr(sizeof(typeof(v)) <= sizeof(ptrdiff_t), *(typeof(v) *)(&ARGS_TYPE(a)->arg3) = v, (void)0)
-
-#define get_predicate(a) 	({ predicate_t p = { (struct pfq_functional *)ARGS_TYPE(a)->arg2 }; p; })
-#define get_predicate2(a) 	({ predicate_t p = { (struct pfq_functional *)ARGS_TYPE(a)->arg3 }; p; })
-#define get_property(a) 	({ property_t  p = { (struct pfq_functional *)ARGS_TYPE(a)->arg2 }; p; })
-#define get_property2(a) 	({ property_t  p = { (struct pfq_functional *)ARGS_TYPE(a)->arg3 }; p; })
-
-
-#define make_mask(prefix)       htonl(~((1ULL << (32-prefix)) - 1))
-
-
 #define make_function(function, argument) \
 ({\
         struct pfq_functional f = { .ptr  = ASSERT_TYPE(function_ptr_t, function), \

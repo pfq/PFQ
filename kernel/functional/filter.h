@@ -24,7 +24,7 @@
 #ifndef _FUNCTIONAL_FILTER_H_
 #define _FUNCTIONAL_FILTER_H_
 
-#include <pf_q-engine.h>
+#include <pf_q-module.h>
 
 #include "predicate.h"
 
