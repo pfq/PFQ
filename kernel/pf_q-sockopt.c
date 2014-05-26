@@ -659,14 +659,15 @@ int pfq_setsockopt(struct socket *sock,
                 if (!dev_get_by_index_rcu(sock_net(&so->sk), info.if_index))
                 {
                         rcu_read_unlock();
-                        pr_devel("[PFQ|%d] TX bind: invalid if_index:%d\n", so->id, to->if_index);
+                        pr_devel("[PFQ|%d] TX bind: invalid if_index:%d\n", so->id, info.if_index);
                         return -EPERM;
                 }
                 rcu_read_unlock();
 
                 if (info.hw_queue < -1)
                 {
-                        pr_devel("[PFQ|%d] TX bind: invalid queue:%d\n", so->id, to->hw_queue);
+                        pr_devel("[PFQ|%d] TX bind: invalid queue:%d\n", so->id, info.hw_queue);
+                        return -EPERM;
                 }
 
                 to->if_index = info.if_index;
