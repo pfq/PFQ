@@ -63,6 +63,7 @@
 #define INLINE_forward_broadcast    	17
 #define INLINE_forward_kernel 	    	18
 #define INLINE_forward_class 		19
+#define INLINE_forward_deliver 		20
 
 
 #define APPLY(f, skb) ({ \

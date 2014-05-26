@@ -192,6 +192,7 @@ struct pfq_monadic_fun_descr forward_functions[] = {
         { "drop",       FUN_ACTION, 			INLINE_FUN(forward_drop)   	},
         { "broadcast",  FUN_ACTION, 			INLINE_FUN(forward_broadcast)	},
         { "class",	FUN_ACTION | FUN_ARG_DATA, 	INLINE_FUN(forward_class) 	},
+        { "deliver",	FUN_ACTION | FUN_ARG_DATA, 	INLINE_FUN(forward_deliver) 	},
         { "sink",       FUN_ACTION, 			sink 				},
 
         { "kernel", 	FUN_ACTION, 			INLINE_FUN(forward_kernel)   	    },

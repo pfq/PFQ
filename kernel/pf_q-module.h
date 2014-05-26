@@ -350,6 +350,18 @@ steering(struct sk_buff *skb, uint32_t hash)
         return skb;
 }
 
+/* deliver: for this group, deliver the skb to the sockets of the given classes */
+
+static inline
+struct sk_buff *
+deliver(struct sk_buff *skb, unsigned long class_mask)
+{
+        action_t * a  = & PFQ_CB(skb)->action;
+        a->type       = action_copy;
+        a->class_mask = class_mask;
+        return skb;
+}
+
 /* class + steering: for this group, steer the skb across sockets of the given classes (by means of hash) */
 
 static inline

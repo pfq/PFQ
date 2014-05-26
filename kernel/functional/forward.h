@@ -61,5 +61,18 @@ forward_class(arguments_t args, struct sk_buff *skb)
         return class(skb, (1ULL << c));
 }
 
+static inline struct sk_buff *
+forward_deliver(arguments_t args, struct sk_buff *skb)
+{
+        const int c = get_data(int, args);
+
+        if (!c) {
+                if (printk_ratelimit())
+                        printk(KERN_INFO "[PFQ] deliver: internal error!\n");
+                return skb;
+        }
+
+        return deliver(skb, (1ULL << c));
+}
 
 #endif /* _FUNCTIONAL_FORWARD_H_ */
