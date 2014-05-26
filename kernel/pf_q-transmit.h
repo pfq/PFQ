@@ -36,7 +36,7 @@
 
 extern int pfq_tx_queue_flush(struct pfq_tx_opt *to, struct net_device *dev, int cpu, int node);
 extern int pfq_queue_xmit(struct pfq_non_intrusive_skb *skbs, struct net_device *dev, int queue_index);
-
+extern int pfq_queue_xmit_by_index(struct pfq_non_intrusive_skb *skbs, int if_index, int queue_index);
 
 static inline int pfq_xmit(struct sk_buff *skb, struct net_device *dev, int queue_index)
 {

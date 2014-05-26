@@ -237,6 +237,21 @@ out:
 	return rc;
 }
 
+int pfq_queue_xmit_by_index(struct pfq_non_intrusive_skb *skbs, int if_index, int queue_index)
+{
+	struct net_device *dev;
+   	int ret;
+
+	dev = dev_get_by_index(&init_net, if_index);
+	if (dev == NULL)
+		return 0;
+
+	ret = pfq_queue_xmit(skbs, dev, queue_index);
+
+	dev_put(dev);
+
+	return ret;
+}
 
 int pfq_queue_xmit(struct pfq_non_intrusive_skb *skbs, struct net_device *dev, int queue_index)
 {
