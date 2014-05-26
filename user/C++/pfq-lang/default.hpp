@@ -220,11 +220,12 @@ namespace pfq_lang
         auto flow       = netfunction("flow");
         auto rtp        = netfunction("rtp");
 
-        auto broadcast  = netfunction("broadcast");
-        auto kernel     = netfunction("kernel");
-        auto sink       = netfunction("sink");
-        auto drop       = netfunction("drop");
-        auto unit       = netfunction("unit");
+        auto broadcast      = netfunction("broadcast");
+        auto kernel         = netfunction("kernel");
+        auto forward_kernel = netfunction("forward_kernel");
+        auto sink           = netfunction("sink");
+        auto drop           = netfunction("drop");
+        auto unit           = netfunction("unit");
 
         auto class_     = [] (int value) { return netfunction1("class", value); };
         auto deliver    = [] (int value) { return netfunction1("deliver", value); };

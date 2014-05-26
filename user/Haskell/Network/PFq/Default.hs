@@ -132,6 +132,7 @@ module Network.PFq.Default
         sink       ,
         drop'      ,
         forward    ,
+        forward_kernel ,
 
         -- * Conditionals
 
@@ -292,6 +293,7 @@ vlan        = Fun "vlan"            :: NetFunction (SkBuff -> Action SkBuff)
 flow        = Fun "flow"            :: NetFunction (SkBuff -> Action SkBuff)
 rtp         = Fun "rtp"             :: NetFunction (SkBuff -> Action SkBuff)
 
+forward_kernel = Fun "forward_kernel" :: NetFunction (SkBuff -> Action SkBuff)
 kernel      = Fun "kernel"          :: NetFunction (SkBuff -> Action SkBuff)
 broadcast   = Fun "broadcast"       :: NetFunction (SkBuff -> Action SkBuff)
 sink        = Fun "sink"            :: NetFunction (SkBuff -> Action SkBuff)
