@@ -74,7 +74,7 @@ size_t pfq_mpdb_enqueue_batch(struct pfq_rx_opt *ro, unsigned long bitqueue, int
 
 	pfq_non_intrusive_for_each_bitmask(skb, bitqueue, n, skbs)
 	{
-		unsigned int bytes = likely (skb->len > (int)ro->offset) ? min((int)skb->len - (int)ro->offset, (int)ro->caplen) : 0;
+		unsigned int bytes = min((int)skb->len, (int)ro->caplen);
 
 		size_t slot_index = q_len + sent;
 
@@ -105,16 +105,16 @@ size_t pfq_mpdb_enqueue_batch(struct pfq_rx_opt *ro, unsigned long bitqueue, int
 #endif
 			   )
 		      	{
-				if (skb_copy_bits(skb, (int)ro->offset, pkt, bytes) != 0)
+				if (skb_copy_bits(skb, 0, pkt, bytes) != 0)
 				{
-					printk(KERN_WARNING "[PFQ] BUG! skb_copy_bits failed (bytes=%u, skb_len=%d mac_len=%d q_offset=%zu)!\n",
-							    bytes, skb->len, skb->mac_len, ro->offset);
+					printk(KERN_WARNING "[PFQ] BUG! skb_copy_bits failed (bytes=%u, skb_len=%d mac_len=%d)!\n",
+							    bytes, skb->len, skb->mac_len);
 					return 0;
 				}
 			}
 			else
 			{
-				pfq_memcpy(pkt, skb->data + ro->offset, bytes);
+				pfq_memcpy(pkt, skb->data, bytes);
 			}
 		}
 

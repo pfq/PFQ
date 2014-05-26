@@ -188,14 +188,6 @@ int pfq_getsockopt(struct socket *sock,
                         return -EFAULT;
         } break;
 
-        case Q_SO_GET_RX_OFFSET:
-        {
-                if (len != sizeof(ro->offset))
-                        return -EINVAL;
-                if (copy_to_user(optval, &ro->offset, sizeof(ro->offset)))
-                        return -EFAULT;
-        } break;
-
         case Q_SO_GET_GROUPS:
         {
                 unsigned long grps;
@@ -563,26 +555,6 @@ int pfq_setsockopt(struct socket *sock,
                 so->tx_opt.size = slots;
 
                 pr_devel("[PFQ|%d] tx_queue_slots:%zu\n", so->id, so->tx_opt.size);
-        } break;
-
-        case Q_SO_SET_RX_OFFSET:
-        {
-                typeof(so->rx_opt.offset) offset;
-
-                if (optlen != sizeof(offset))
-                        return -EINVAL;
-                if (copy_from_user(&offset, optval, optlen))
-                        return -EFAULT;
-
-                if (offset > 1500)
-                {
-                        pr_devel("[PFQ|%d] invalid offset:%zu.\n", so->id, offset);
-                        return -EINVAL;
-                }
-
-                so->rx_opt.offset = offset;
-
-                pr_devel("[PFQ|%d] offset:%zu\n", so->id, so->rx_opt.offset);
         } break;
 
         case Q_SO_GROUP_LEAVE:

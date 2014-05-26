@@ -100,12 +100,11 @@ namespace net {
         struct policy   { group_policy value; };
 
         struct caplen   { size_t value; };
-        struct offset   { size_t value; };
         struct rx_slots { size_t value; };
         struct maxlen   { size_t value; };
         struct tx_slots { size_t value; };
 
-        using types = std::tuple<class_, policy, caplen, offset, rx_slots, maxlen, tx_slots>;
+        using types = std::tuple<class_, policy, caplen, rx_slots, maxlen, tx_slots>;
 
         inline
         types make_default()
@@ -113,7 +112,6 @@ namespace net {
             return std::make_tuple(param::class_   {class_mask::default_},
                                    param::policy   {group_policy::priv},
                                    param::caplen   {64},
-                                   param::offset   {0},
                                    param::rx_slots {1024},
                                    param::maxlen   {64},
                                    param::tx_slots {1024});
@@ -139,7 +137,6 @@ namespace net {
             void * queue_addr;
             size_t queue_tot_mem;
             size_t rx_caplen;
-            size_t rx_offset;
             size_t rx_slots;
             size_t rx_slot_size;
 
@@ -178,7 +175,6 @@ namespace net {
             this->open(param::get<param::class_>(def).value,
                        param::get<param::policy>(def).value,
                        param::get<param::caplen>(def).value,
-                       param::get<param::offset>(def).value,
                        param::get<param::rx_slots>(def).value,
                        param::get<param::maxlen>(def).value,
                        param::get<param::tx_slots>(def).value);
@@ -189,11 +185,11 @@ namespace net {
          * Create a PFQ socket and join a new group.
          */
 
-        pfq(size_t caplen, size_t offset = 0, size_t rx_slots = 65536, size_t maxlen = 64, size_t tx_slots = 4096)
+        pfq(size_t caplen, size_t rx_slots = 65536, size_t maxlen = 64, size_t tx_slots = 4096)
         : fd_(-1)
         , pdata_()
         {
-            this->open(class_mask::default_, group_policy::priv, caplen, offset, rx_slots, maxlen, tx_slots);
+            this->open(class_mask::default_, group_policy::priv, caplen, rx_slots, maxlen, tx_slots);
         }
 
         //! Constructor
@@ -201,11 +197,11 @@ namespace net {
          * Create a PFQ socket with the given group policy (default class).
          */
 
-        pfq(group_policy policy, size_t caplen, size_t offset = 0, size_t rx_slots = 65536, size_t maxlen = 64, size_t tx_slots = 4096)
+        pfq(group_policy policy, size_t caplen, size_t rx_slots = 65536, size_t maxlen = 64, size_t tx_slots = 4096)
         : fd_(-1)
         , pdata_()
         {
-            this->open(class_mask::default_, policy, caplen, offset, rx_slots, maxlen, tx_slots);
+            this->open(class_mask::default_, policy, caplen, rx_slots, maxlen, tx_slots);
         }
 
         //! Constructor
@@ -213,11 +209,11 @@ namespace net {
          * Create a PFQ socket with the given class mask and group policy.
          */
 
-        pfq(class_mask mask, group_policy policy, size_t caplen, size_t offset = 0, size_t rx_slots = 65536, size_t maxlen = 64, size_t tx_slots = 4096)
+        pfq(class_mask mask, group_policy policy, size_t caplen, size_t rx_slots = 65536, size_t maxlen = 64, size_t tx_slots = 4096)
         : fd_(-1)
         , pdata_()
         {
-            this->open(mask, policy, caplen, offset, rx_slots, maxlen, tx_slots);
+            this->open(mask, policy,  caplen, rx_slots, maxlen, tx_slots);
         }
 
         //! Destructor: close the socket
@@ -275,9 +271,9 @@ namespace net {
          */
 
         void
-        open(group_policy policy, size_t caplen, size_t offset = 0, size_t rx_slots = 65536, size_t maxlen = 64, size_t tx_slots = 4096)
+        open(group_policy policy, size_t caplen, size_t rx_slots = 65536, size_t maxlen = 64, size_t tx_slots = 4096)
         {
-            this->open(caplen, offset, rx_slots, maxlen, tx_slots);
+            this->open(caplen, rx_slots, maxlen, tx_slots);
 
             if (policy != group_policy::undefined)
             {
@@ -292,9 +288,9 @@ namespace net {
          */
 
         void
-        open(class_mask mask, group_policy policy, size_t caplen, size_t offset = 0, size_t rx_slots = 65536, size_t maxlen = 64, size_t tx_slots = 4096)
+        open(class_mask mask, group_policy policy, size_t caplen, size_t rx_slots = 65536, size_t maxlen = 64, size_t tx_slots = 4096)
         {
-            this->open(caplen, offset, rx_slots, maxlen, tx_slots);
+            this->open(caplen, rx_slots, maxlen, tx_slots);
 
             if (policy != group_policy::undefined)
             {
@@ -314,7 +310,6 @@ namespace net {
             this->open(param::get<param::class_>(def).value,
                        param::get<param::policy>(def).value,
                        param::get<param::caplen>(def).value,
-                       param::get<param::offset>(def).value,
                        param::get<param::rx_slots>(def).value,
                        param::get<param::maxlen>(def).value,
                        param::get<param::tx_slots>(def).value);
@@ -352,7 +347,7 @@ namespace net {
     private:
 
         void
-        open(size_t caplen, size_t offset, size_t rx_slots, size_t maxlen, size_t tx_slots)
+        open(size_t caplen, size_t rx_slots, size_t maxlen, size_t tx_slots)
         {
             if (fd_ != -1)
                 throw pfq_error("PFQ: socket already open");
@@ -368,7 +363,6 @@ namespace net {
                                         nullptr,
                                         0,
                                         0,
-                                        offset,
                                         0,
                                         0,
                                         0,
@@ -394,11 +388,6 @@ namespace net {
                 throw pfq_error(errno, "PFQ: set caplen error");
 
             pdata_->rx_caplen = caplen;
-
-            // set offset
-
-            if (::setsockopt(fd_, PF_Q, Q_SO_SET_RX_OFFSET, &offset, sizeof(offset)) == -1)
-                throw pfq_error(errno, "PFQ: set RX offset error");
 
             pdata_->rx_slot_size = align<8>(sizeof(pfq_pkt_hdr) + pdata_->rx_caplen);
 
@@ -564,30 +553,6 @@ namespace net {
            size_t ret; socklen_t size = sizeof(ret);
            if (::getsockopt(fd_, PF_Q, Q_SO_GET_TX_MAXLEN, &ret, &size) == -1)
                 throw pfq_error(errno, "PFQ: get maxlen error");
-           return ret;
-        }
-
-        //! Specify the capture offset of packets, in bytes.
-
-        void
-        offset(size_t value)
-        {
-            if (enabled())
-                throw pfq_error("PFQ: enabled (offset could not be set)");
-
-            if (::setsockopt(fd_, PF_Q, Q_SO_SET_RX_OFFSET, &value, sizeof(value)) == -1) {
-                throw pfq_error(errno, "PFQ: set offset error");
-            }
-        }
-
-        //! Return the capture offset of packets.
-
-        size_t
-        offset() const
-        {
-           size_t ret; socklen_t size = sizeof(ret);
-           if (::getsockopt(fd_, PF_Q, Q_SO_GET_RX_OFFSET, &ret, &size) == -1)
-                throw pfq_error(errno, "PFQ: get offset error");
            return ret;
         }
 

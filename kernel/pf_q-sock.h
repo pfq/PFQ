@@ -44,7 +44,6 @@ struct pfq_rx_opt
         int                     tstamp;
 
         size_t                  caplen;
-        size_t                  offset;
 
         size_t                  size;
         size_t                  slot_size;
@@ -69,7 +68,6 @@ void pfq_rx_opt_init(struct pfq_rx_opt *that, size_t caplen)
         /* set q_slots and q_caplen default values */
 
         that->caplen    = caplen;
-        that->offset    = 0;
 
         that->size      = 0;
         that->slot_size = 0;
