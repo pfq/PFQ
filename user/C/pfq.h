@@ -297,6 +297,18 @@ extern int pfq_unbind_group(pfq_t *q, int gid, const char *dev, int queue); /* Q
 
 extern int pfq_unbind(pfq_t *q, const char *dev, int queue);
 
+/*! Mark the socket as egress and bind it to the given device/queue. */
+/*!
+ * The egress socket will be used within the capture groups as forwarder.
+ */
+
+extern int pfq_egress_bind(pfq_t *q, const char *dev, int queue);
+
+/*! Unmark the socket as egress. */
+
+extern int pfq_egress_unbind(pfq_t *q);
+
+
 /*! Return the mask of the joined groups. */
 /*!
  * Each socket can bind to multiple groups. Each bit of the mask represents

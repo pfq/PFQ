@@ -722,6 +722,34 @@ namespace net {
                 throw pfq_error(errno, "PFQ: remove binding error");
         }
 
+        //! Mark the socket as egress and bind it to the given device/queue.
+        /*!
+         * The egress socket will be used within the capture groups as forwarder.
+         */
+
+        void
+        egress_bind(const char *dev, int queue = any_queue)
+        {
+            auto index = ifindex(this->fd(), dev);
+            if (index == -1)
+                throw pfq_error("PFQ: egress: device not found");
+
+            struct pfq_binding b = { 0, index, queue };
+
+            if (::setsockopt(fd_, PF_Q, Q_SO_EGRESS_BIND, &b, sizeof(b)) == -1)
+                throw pfq_error(errno, "PFQ: egress bind error");
+
+        }
+
+        //! Unmark the socket as egress.
+
+        void
+        egress_unbind()
+        {
+            if (::setsockopt(fd_, PF_Q, Q_SO_EGRESS_UNBIND, 0, 0) == -1)
+                throw pfq_error(errno, "PFQ: egress unbind error");
+        }
+
         //! Return the mask of the joined groups.
         /*!
          * Each socket can bind to multiple groups. Each bit of the mask represents

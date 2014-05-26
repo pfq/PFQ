@@ -511,6 +511,31 @@ pfq_bind(pfq_t *q, const char *dev, int queue)
 
 
 int
+pfq_egress_bind(pfq_t *q, const char *dev, int queue)
+{
+        int index = pfq_ifindex(q, dev);
+        if (index == -1)
+		return q->error = "PFQ: egress bind: device not found", -1;
+
+        struct pfq_binding b = { 0, index, queue };
+
+        if (setsockopt(q->fd, PF_Q, Q_SO_EGRESS_BIND, &b, sizeof(b)) == -1)
+		return q->error = "PFQ: egress bind error", -1;
+
+	return q->error = NULL, 0;
+}
+
+int
+pfq_egress_unbind(pfq_t *q)
+{
+        if (setsockopt(q->fd, PF_Q, Q_SO_EGRESS_UNBIND, 0, 0) == -1)
+		return q->error = "PFQ: egress unbind error", -1;
+
+	return q->error = NULL, 0;
+}
+
+
+int
 pfq_unbind_group(pfq_t *q, int gid, const char *dev, int queue) /* Q_ANY_QUEUE */
 {
 	int index = pfq_ifindex(q, dev);

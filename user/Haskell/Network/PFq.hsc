@@ -86,10 +86,15 @@ module Network.PFq
         getId,
         getGroupId,
         isEnabled,
+
         bind,
         bindGroup,
         unbind,
         unbindGroup,
+
+        egressBind,
+        egressUnbind,
+
         joinGroup,
         leaveGroup,
         setTimestamp,
@@ -474,6 +479,23 @@ unbindGroup hdl gid name queue =
     withCString name $ \dev ->
         pfq_unbind_group hdl (fromIntegral gid) dev (fromIntegral queue) >>= throwPFqIf_ hdl (== -1)
 
+-- | Mark the socket as egress and bind it to the given device/queue.
+--
+-- The egress socket will be used within the capture group as forwarder.
+
+egressBind :: Ptr PFqTag
+       -> String      -- device name
+       -> Int         -- queue index
+       -> IO ()
+egressBind hdl name queue =
+    withCString name $ \dev ->
+        pfq_egress_bind hdl dev (fromIntegral queue) >>= throwPFqIf_ hdl (== -1)
+
+-- | Unmark the socket as egress.
+
+egressUnbind :: Ptr PFqTag -> IO ()
+egressUnbind hdl =
+    pfq_egress_unbind hdl >>= throwPFqIf_ hdl (== -1)
 
 -- |Join the group with the given class mask and group policy.
 
@@ -1020,6 +1042,9 @@ foreign import ccall unsafe pfq_bind_group          :: Ptr PFqTag -> CInt -> CSt
 
 foreign import ccall unsafe pfq_unbind              :: Ptr PFqTag -> CString -> CInt -> IO CInt
 foreign import ccall unsafe pfq_unbind_group        :: Ptr PFqTag -> CInt -> CString -> CInt -> IO CInt
+
+foreign import ccall unsafe pfq_egress_bind         :: Ptr PFqTag -> CString -> CInt -> IO CInt
+foreign import ccall unsafe pfq_egress_unbind       :: Ptr PFqTag -> IO CInt
 
 foreign import ccall unsafe pfq_join_group          :: Ptr PFqTag -> CInt -> CULong -> CInt -> IO CInt
 foreign import ccall unsafe pfq_leave_group         :: Ptr PFqTag -> CInt -> IO CInt
