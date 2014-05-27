@@ -228,6 +228,7 @@ namespace pfq_lang
         auto sink           = netfunction("sink");
         auto drop           = netfunction("drop");
         auto unit           = netfunction("unit");
+        auto log_packet     = netfunction("log_packet");
 
         auto class_     = [] (int value) { return netfunction1("class", value); };
         auto deliver    = [] (int value) { return netfunction1("deliver", value); };

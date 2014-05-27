@@ -45,6 +45,7 @@ module Network.PFq.Default
         (./=.),
         (.>.),
         (.>=.),
+
         any_bit,
         all_bit,
 
@@ -150,6 +151,7 @@ module Network.PFq.Default
         class'     ,
         deliver    ,
         crc16      ,
+        log_packet ,
         dummy      ,
         hdummy     ,
 
@@ -302,6 +304,7 @@ broadcast   = Fun "broadcast"       :: NetFunction (SkBuff -> Action SkBuff)
 sink        = Fun "sink"            :: NetFunction (SkBuff -> Action SkBuff)
 drop'       = Fun "drop"            :: NetFunction (SkBuff -> Action SkBuff)
 unit        = Fun "unit"            :: NetFunction (SkBuff -> Action SkBuff)
+log_packet  = Fun "log_packet"      :: NetFunction (SkBuff -> Action SkBuff)
 
 crc16       = Fun "crc16"           :: NetFunction (SkBuff -> Action SkBuff)
 inc         = Fun1 "inc"            :: CInt -> NetFunction (SkBuff -> Action SkBuff)

@@ -43,6 +43,7 @@ dummy(arguments_t args, struct sk_buff *skb)
         return skb;
 }
 
+
 static int
 dummy_init(arguments_t args)
 {
@@ -107,6 +108,65 @@ crc16_sum(arguments_t args, struct sk_buff *skb)
 }
 
 
+static struct sk_buff *
+log_packet(arguments_t args, struct sk_buff *skb)
+{
+	if (!printk_ratelimit())
+		return skb;
+
+	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP))
+	{
+		struct iphdr _iph;
+		const struct iphdr *ip;
+
+		ip = skb_header_pointer(skb, skb->mac_len, sizeof(_iph), &_iph);
+		if (ip == NULL)
+			return false;
+
+		switch(ip->protocol)
+		{
+		case IPPROTO_UDP: {
+			struct udphdr _udph; const struct udphdr *udp;
+			udp = skb_header_pointer(skb, skb->mac_len + (ip->ihl<<2), sizeof(struct udphdr), &_udph);
+			if (udp == NULL)
+				return false;
+
+			printk(KERN_INFO "[PFQ] IP %pI4.%d > %pI4.%d: UDP\n", &ip->saddr, ntohs(udp->source),
+						         		      &ip->daddr, ntohs(udp->dest));
+			return skb;
+		}
+		case IPPROTO_TCP: {
+			struct tcphdr _tcph; const struct tcphdr *tcp;
+			tcp = skb_header_pointer(skb, skb->mac_len + (ip->ihl<<2), sizeof(struct tcphdr), &_tcph);
+			if (tcp == NULL)
+				return false;
+
+			printk(KERN_INFO "[PFQ] IP %pI4.%d > %pI4.%d: TCP\n", &ip->saddr, ntohs(tcp->source),
+									      &ip->daddr, ntohs(tcp->dest));
+			return skb;
+		}
+		case IPPROTO_ICMP: {
+
+			printk(KERN_INFO "[PFQ] IP %pI4 > %pI4: ICMP\n", &ip->saddr, &ip->daddr);
+			return skb;
+		}
+		default: {
+
+			printk(KERN_INFO "[PFQ] IP %pI4 > %pI4: proto %x\n", &ip->saddr, &ip->daddr,
+									     ip->protocol);
+			return skb;
+		}
+
+		}
+
+	} else {
+
+		printk(KERN_INFO "[PFQ] ETH proto %x\n", ntohs(eth_hdr(skb)->h_proto));
+	}
+
+        return skb;
+}
+
 
 struct pfq_function_descr misc_functions[] = {
 
@@ -117,6 +177,7 @@ struct pfq_function_descr misc_functions[] = {
  	{ "mark", 	FUN_ACTION | FUN_ARG_DATA , INLINE_FUN(mark) },
 
         { "crc16", 	FUN_ACTION, crc16_sum},
+        { "log_packet", FUN_ACTION, log_packet},
 
         { NULL }};
 
