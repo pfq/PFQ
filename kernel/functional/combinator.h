@@ -27,6 +27,14 @@
 #include "predicate.h"
 
 static inline
+bool not(arguments_t args, struct sk_buff const *skb)
+{
+	predicate_t p1 = get_predicate(args);
+
+        return !EVAL_PREDICATE(p1,skb);
+}
+
+static inline
 bool or(arguments_t args, struct sk_buff const *skb)
 {
 	predicate_t p1 = get_predicate(args);

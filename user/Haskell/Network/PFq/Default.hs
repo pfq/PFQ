@@ -36,6 +36,7 @@ module Network.PFq.Default
         (.||.),
         (.&&.),
         (.^^.),
+        not',
 
         -- * Predicates
 
@@ -192,10 +193,13 @@ mkSuperNetAddr net p sub = let a = unsafePerformIO (inet_addr net)
 -- Default combinators
 
 (.||.), (.&&.), (.^^.) :: Predicate -> Predicate -> Predicate
+not' :: Predicate -> Predicate
 
 p1 .||. p2 = Pred2 (Combinator "or" ) p1 p2
 p1 .&&. p2 = Pred2 (Combinator "and") p1 p2
 p1 .^^. p2 = Pred2 (Combinator "xor") p1 p2
+not' p     = Pred2 (Combinator "not") p  p
+
 
 infixl 7 .&&.
 infixl 6 .^^.

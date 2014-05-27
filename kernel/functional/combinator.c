@@ -34,6 +34,7 @@ struct pfq_combinator_fun_descr combinator_functions[] = {
         { "or",  	FUN_COMBINATOR,  or  },
         { "and",        FUN_COMBINATOR,  and },
         { "xor",        FUN_COMBINATOR,  xor },
+        { "not",        FUN_COMBINATOR,  not },
 
         { NULL }};
 

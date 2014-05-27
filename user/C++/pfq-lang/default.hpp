@@ -57,6 +57,13 @@ namespace pfq_lang
         return predicate2(combinator("xor"), p1, p2);
     }
 
+    template <typename P>
+    auto inline not_(P const &p)
+    -> decltype(predicate2(combinator(nullptr), p, p))
+    {
+        return predicate2(combinator("not"), p, p);
+    }
+
     // default comparators:
 
     template <typename P>
