@@ -114,6 +114,9 @@ module Network.PFq.Default
         flow       ,
         rtp        ,
 
+        no_frag    ,
+        no_more_frag,
+
         port       ,
         src_port   ,
         dst_port   ,
@@ -309,6 +312,9 @@ icmp6       = Fun "icmp6"           :: NetFunction (SkBuff -> Action SkBuff)
 vlan        = Fun "vlan"            :: NetFunction (SkBuff -> Action SkBuff)
 flow        = Fun "flow"            :: NetFunction (SkBuff -> Action SkBuff)
 rtp         = Fun "rtp"             :: NetFunction (SkBuff -> Action SkBuff)
+
+no_frag         = Fun "no_frag"      :: NetFunction (SkBuff -> Action SkBuff)
+no_more_frag    = Fun "no_more_frag" :: NetFunction (SkBuff -> Action SkBuff)
 
 forward_kernel = Fun "forward_kernel" :: NetFunction (SkBuff -> Action SkBuff)
 kernel      = Fun "kernel"          :: NetFunction (SkBuff -> Action SkBuff)

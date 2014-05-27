@@ -233,6 +233,9 @@ namespace pfq_lang
         auto flow       = netfunction("flow");
         auto rtp        = netfunction("rtp");
 
+        auto no_frag        = netfunction("no_frag");
+        auto no_more_frag   = netfunction("no_more_frag");
+
         auto broadcast      = netfunction("broadcast");
         auto kernel         = netfunction("kernel");
         auto forward_kernel = netfunction("forward_kernel");

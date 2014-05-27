@@ -113,6 +113,18 @@ filter_dst_addr(arguments_t args, struct sk_buff *skb)
 	return has_dst_addr(skb, addr, mask) ? skb : drop(skb);
 }
 
+static struct sk_buff *
+filter_no_frag(arguments_t args, struct sk_buff *skb)
+{
+	return is_frag(skb) ? drop(skb) : skb;
+}
+
+static struct sk_buff *
+filter_no_more_frag(arguments_t args, struct sk_buff *skb)
+{
+	return is_more_frag(skb) ? drop(skb) : skb;
+}
+
 
 struct pfq_monadic_fun_descr filter_functions[] = {
 
@@ -127,6 +139,8 @@ struct pfq_monadic_fun_descr filter_functions[] = {
         { "icmp6",      FUN_ACTION, 	INLINE_FUN(filter_icmp6)  },
         { "flow",       FUN_ACTION,	INLINE_FUN(filter_flow)   },
         { "vlan",       FUN_ACTION,	INLINE_FUN(filter_vlan)   },
+ 	{ "no_frag", 	 FUN_ACTION, 	filter_no_frag 		  },
+ 	{ "no_more_frag",FUN_ACTION, 	filter_no_more_frag       },
 
         { "port",      	FUN_ACTION | FUN_ARG_DATA, filter_port 	   },
         { "src_port",	FUN_ACTION | FUN_ARG_DATA, filter_src_port },
