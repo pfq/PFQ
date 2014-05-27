@@ -132,21 +132,21 @@ namespace pfq_lang
     {
         // default predicates:
 
-        auto is_ip      = predicate ("is_ip");
-        auto is_ip6     = predicate ("is_ip6");
-        auto is_udp     = predicate ("is_udp");
-        auto is_tcp     = predicate ("is_tcp");
-        auto is_icmp    = predicate ("is_icmp");
-        auto is_udp6    = predicate ("is_udp6");
-        auto is_tcp6    = predicate ("is_tcp6");
-        auto is_icmp6   = predicate ("is_icmp6");
+        auto is_ip          = predicate ("is_ip");
+        auto is_ip6         = predicate ("is_ip6");
+        auto is_udp         = predicate ("is_udp");
+        auto is_tcp         = predicate ("is_tcp");
+        auto is_icmp        = predicate ("is_icmp");
+        auto is_udp6        = predicate ("is_udp6");
+        auto is_tcp6        = predicate ("is_tcp6");
+        auto is_icmp6       = predicate ("is_icmp6");
 
-        auto is_l3_proto = [] (uint16_t type) { return predicate1 ("is_l3_proto", type); };
-        auto is_l4_proto = [] (uint8_t proto) { return predicate1 ("is_l4_proto", proto); };
+        auto is_l3_proto    = [] (uint16_t type) { return predicate1 ("is_l3_proto", type); };
+        auto is_l4_proto    = [] (uint8_t proto) { return predicate1 ("is_l4_proto", proto); };
 
-        auto has_port     = [] (uint16_t port) { return predicate1 ("is_port", port); };
-        auto has_src_port = [] (uint16_t port) { return predicate1 ("is_src_port", port); };
-        auto has_dst_port = [] (uint16_t port) { return predicate1 ("is_dst_port", port); };
+        auto has_port       = [] (uint16_t port) { return predicate1 ("is_port", port); };
+        auto has_src_port   = [] (uint16_t port) { return predicate1 ("is_src_port", port); };
+        auto has_dst_port   = [] (uint16_t port) { return predicate1 ("is_dst_port", port); };
 
         auto has_addr = [] (const char *net, int prefix)
         {
@@ -166,11 +166,11 @@ namespace pfq_lang
             return predicate1("has_dst_addr", addr);
         };
 
-        auto is_flow    = predicate ("is_flow");
-        auto has_vlan   = predicate ("has_vlan");
+        auto is_flow        = predicate ("is_flow");
+        auto has_vlan       = predicate ("has_vlan");
 
-        auto has_vid    = [] (int value) { return predicate1 ("has_vid", value); };
-        auto has_mark   = [] (unsigned long value) { return predicate1("has_mark", value); };
+        auto has_vid        = [] (int value) { return predicate1 ("has_vid", value); };
+        auto has_mark       = [] (unsigned long value) { return predicate1("has_mark", value); };
 
         auto is_frag        = predicate ("is_frag");
         auto is_first_frag  = predicate ("is_first_frag");
@@ -205,6 +205,7 @@ namespace pfq_lang
         auto steer_ip6  = netfunction("steer_ip6");
         auto steer_flow = netfunction("steer_flow");
         auto steer_rtp  = netfunction("steer_rtp");
+
         auto steer_net  = [] (const char *net, int prefix, int subprefix) {
 
                                 struct supernet {
@@ -221,17 +222,17 @@ namespace pfq_lang
 
         // others:
 
-        auto ip         = netfunction("ip");
-        auto ip6        = netfunction("ip6");
-        auto udp        = netfunction("udp");
-        auto tcp        = netfunction("tcp");
-        auto udp6       = netfunction("udp6");
-        auto tcp6       = netfunction("tcp6");
-        auto icmp6      = netfunction("icmp6");
-        auto vlan       = netfunction("vlan");
-        auto icmp       = netfunction("icmp");
-        auto flow       = netfunction("flow");
-        auto rtp        = netfunction("rtp");
+        auto ip             = netfunction("ip");
+        auto ip6            = netfunction("ip6");
+        auto udp            = netfunction("udp");
+        auto tcp            = netfunction("tcp");
+        auto udp6           = netfunction("udp6");
+        auto tcp6           = netfunction("tcp6");
+        auto icmp6          = netfunction("icmp6");
+        auto vlan           = netfunction("vlan");
+        auto icmp           = netfunction("icmp");
+        auto flow           = netfunction("flow");
+        auto rtp            = netfunction("rtp");
 
         auto no_frag        = netfunction("no_frag");
         auto no_more_frag   = netfunction("no_more_frag");
@@ -244,21 +245,21 @@ namespace pfq_lang
         auto unit           = netfunction("unit");
         auto log_packet     = netfunction("log_packet");
 
-        auto class_     = [] (int value) { return netfunction1("class", value); };
-        auto deliver    = [] (int value) { return netfunction1("deliver", value); };
+        auto class_         = [] (int value) { return netfunction1("class", value); };
+        auto deliver        = [] (int value) { return netfunction1("deliver", value); };
 
-        auto forward    = [] (int index) { return netfunction1("forward", index); };
-        auto mark       = [] (unsigned long value) { return netfunction1("mark", value); };
-        auto dummy      = [] (int value) { return netfunction1("dummy", value); };
-        auto inc        = [] (int value) { return netfunction1("inc", value); };
-        auto dec        = [] (int value) { return netfunction1("dec", value); };
+        auto forward        = [] (int index) { return netfunction1("forward", index); };
+        auto mark           = [] (unsigned long value) { return netfunction1("mark", value); };
+        auto dummy          = [] (int value) { return netfunction1("dummy", value); };
+        auto inc            = [] (int value) { return netfunction1("inc", value); };
+        auto dec            = [] (int value) { return netfunction1("dec", value); };
 
-        auto l3_proto   = [] (uint16_t type) { return netfunction1 ("l3_proto", type); };
-        auto l4_proto   = [] (uint8_t proto) { return netfunction1 ("l4_proto", proto); };
+        auto l3_proto       = [] (uint16_t type) { return netfunction1 ("l3_proto", type); };
+        auto l4_proto       = [] (uint8_t proto) { return netfunction1 ("l4_proto", proto); };
 
-        auto port       = [] (uint16_t port) { return netfunction1 ("port", port); };
-        auto src_port   = [] (uint16_t port) { return netfunction1 ("src_port", port); };
-        auto dst_port   = [] (uint16_t port) { return netfunction1 ("dst_port", port); };
+        auto port           = [] (uint16_t port) { return netfunction1 ("port", port); };
+        auto src_port       = [] (uint16_t port) { return netfunction1 ("src_port", port); };
+        auto dst_port       = [] (uint16_t port) { return netfunction1 ("dst_port", port); };
 
         auto addr = [] (const char *net, int prefix)
         {
