@@ -69,7 +69,7 @@ bool copy_to_endpoint_skbs(struct pfq_sock *so, struct pfq_non_intrusive_skb *sk
  			atomic_inc(&skb->users);
                	}
 
- 		pfq_queue_xmit_by_index(skbs, so->egress_index, so->egress_queue);
+ 		pfq_queue_xmit_by_index(skbs, skbs_mask, so->egress_index, so->egress_queue);
 	}
 
 	return copy_to_user_skbs(&so->rx_opt, skbs, skbs_mask, cpu, gid);

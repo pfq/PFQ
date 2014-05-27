@@ -237,21 +237,6 @@ out:
 	return rc;
 }
 
-int pfq_queue_xmit_by_index(struct pfq_non_intrusive_skb *skbs, int if_index, int queue_index)
-{
-	struct net_device *dev;
-   	int ret;
-
-	dev = dev_get_by_index(&init_net, if_index);
-	if (dev == NULL)
-		return 0;
-
-	ret = pfq_queue_xmit(skbs, dev, queue_index);
-
-	dev_put(dev);
-
-	return ret;
-}
 
 int pfq_queue_xmit(struct pfq_non_intrusive_skb *skbs, struct net_device *dev, int queue_index)
 {
@@ -280,5 +265,51 @@ int pfq_queue_xmit(struct pfq_non_intrusive_skb *skbs, struct net_device *dev, i
 
 	return n;
 }
+
+
+int pfq_queue_xmit_by_mask(struct pfq_non_intrusive_skb *skbs, unsigned long long skbs_mask, struct net_device *dev, int queue_index)
+{
+       	struct netdev_queue *txq;
+	struct sk_buff *skb;
+	int i, n = 0;
+
+        /* get txq and fix the queue_index for this batch.
+         *
+         * note: in case the queue_index is set to any-queue (-1), the driver along the first skb
+         * select the queue */
+
+        txq = pfq_pick_tx(dev, skbs->queue[0], &queue_index);
+
+	__netif_tx_lock_bh(txq);
+
+	pfq_non_intrusive_for_each_bitmask(skb, skbs_mask, i, skbs)
+	{
+                skb_set_queue_mapping(skb, queue_index);
+
+		if (__pfq_queue_xmit(skb, dev, txq) == NETDEV_TX_OK)
+			++n;
+	}
+
+	__netif_tx_unlock_bh(txq);
+
+	return n;
+}
+
+int pfq_queue_xmit_by_index(struct pfq_non_intrusive_skb *skbs, unsigned long long skbs_mask, int if_index, int queue_index)
+{
+	struct net_device *dev;
+   	int ret;
+
+	dev = dev_get_by_index(&init_net, if_index);
+	if (dev == NULL)
+		return 0;
+
+	ret = pfq_queue_xmit_by_mask(skbs, skbs_mask, dev, queue_index);
+
+	dev_put(dev);
+
+	return ret;
+}
+
 
 
