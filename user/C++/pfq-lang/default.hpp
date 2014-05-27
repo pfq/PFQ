@@ -167,6 +167,8 @@ namespace pfq_lang
 
         // default properties:
 
+        auto get_mark   = property("get_mark");
+
         auto ip_tos     = property("ip_tos");
         auto ip_tot_len = property("ip_tot_len");
         auto ip_id      = property("ip_id");

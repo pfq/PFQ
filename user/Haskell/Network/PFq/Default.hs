@@ -79,6 +79,7 @@ module Network.PFq.Default
         ip_id       ,
         ip_frag     ,
         ip_ttl      ,
+        get_mark    ,
 
         tcp_source  ,
         tcp_dest    ,
@@ -251,6 +252,8 @@ has_src_addr net p = Pred1 "has_src_addr" (mkNetAddr net p)
 has_dst_addr net p = Pred1 "has_dst_addr" (mkNetAddr net p)
 
 -- Default properties
+
+get_mark    = Prop "get_mark"
 
 ip_tos      = Prop "ip_tos"
 ip_tot_len  = Prop "ip_tot_len"

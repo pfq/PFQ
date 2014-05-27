@@ -362,6 +362,14 @@ icmp_code(arguments_t args, struct sk_buff const *skb)
         return NOTHING;
 }
 
+
+static uint64_t
+get_mark(arguments_t args, struct sk_buff const *skb)
+{
+	return JUST(get_state(skb));
+}
+
+
 struct pfq_property_fun_descr property_functions[] = {
 
         { "ip_tos", 	 FUN_PROPERTY, ip_tos 	   },
@@ -380,6 +388,8 @@ struct pfq_property_fun_descr property_functions[] = {
 
         { "icmp_type",   FUN_PROPERTY, icmp_type   },
         { "icmp_code",   FUN_PROPERTY, icmp_code   },
+
+	{ "get_mark", 	 FUN_PROPERTY, get_mark    },
 
         { NULL }};
 
