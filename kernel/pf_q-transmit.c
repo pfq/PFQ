@@ -295,21 +295,4 @@ int pfq_queue_xmit_by_mask(struct pfq_non_intrusive_skb *skbs, unsigned long lon
 	return n;
 }
 
-int pfq_queue_xmit_by_index(struct pfq_non_intrusive_skb *skbs, unsigned long long skbs_mask, int if_index, int queue_index)
-{
-	struct net_device *dev;
-   	int ret;
-
-	dev = dev_get_by_index(&init_net, if_index);
-	if (dev == NULL)
-		return 0;
-
-	ret = pfq_queue_xmit_by_mask(skbs, skbs_mask, dev, queue_index);
-
-	dev_put(dev);
-
-	return ret;
-}
-
-
 

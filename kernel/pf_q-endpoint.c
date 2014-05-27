@@ -61,7 +61,9 @@ bool copy_to_endpoint_skbs(struct pfq_sock *so, struct pfq_non_intrusive_skb *sk
 {
 	if (so->egress_index) {
 
+		struct net_device *dev;
 		struct sk_buff *skb;
+		bool ret;
 		int n;
 
                 pfq_non_intrusive_for_each(skb, n, skbs)
@@ -69,7 +71,18 @@ bool copy_to_endpoint_skbs(struct pfq_sock *so, struct pfq_non_intrusive_skb *sk
  			atomic_inc(&skb->users);
                	}
 
- 		pfq_queue_xmit_by_index(skbs, skbs_mask, so->egress_index, so->egress_queue);
+               	dev = dev_get_by_index(&init_net, so->egress_index);
+               	if (dev == NULL)
+		{
+			if (printk_ratelimit()) {
+                        	printk(KERN_INFO "[PFQ] egress endpoint index (%d)\n", so->egress_index);
+                        	return false;
+			}
+		}
+
+ 		ret = pfq_queue_xmit_by_mask(skbs, skbs_mask, dev, so->egress_queue);
+                dev_put(dev);
+		return ret;
 	}
 
 	return copy_to_user_skbs(&so->rx_opt, skbs, skbs_mask, cpu, gid);
