@@ -87,6 +87,8 @@ C2 $>$ $>$\+::type \hyperlink{namespacepfq__lang_a4c0690ecb14af669a41969a5de14ac
 \item 
 {\footnotesize template$<$typename P1 , typename P2 $>$ }\\auto \hyperlink{namespacepfq__lang_a29166c6bb957d6edd6892b7081f574df}{operator$^\wedge$} (P1 const \&p1, P2 const \&p2) -\/$>$ decltype(\hyperlink{namespacepfq__lang_a89ea436faf8b7f13512e07efbce83b41}{predicate2}(\hyperlink{namespacepfq__lang_a35f3de0a6684c64d0465aa3f263fa8a6}{combinator}(nullptr), p1, p2))
 \item 
+{\footnotesize template$<$typename P $>$ }\\auto \hyperlink{namespacepfq__lang_a3a284611cc2c705d4304ba5e0f45d8b7}{not\+\_\+} (P const \&p) -\/$>$ decltype(\hyperlink{namespacepfq__lang_a89ea436faf8b7f13512e07efbce83b41}{predicate2}(\hyperlink{namespacepfq__lang_a35f3de0a6684c64d0465aa3f263fa8a6}{combinator}(nullptr), p, p))
+\item 
 {\footnotesize template$<$typename P $>$ }\\auto \hyperlink{namespacepfq__lang_a222bd443a88e69ec2b3acd886bb80e37}{operator$<$} (P const \&prop, uint64\+\_\+t arg) -\/$>$ decltype(\hyperlink{namespacepfq__lang_a1a9064340f4197e3dd4109a849a224dc}{predicate4}(nullptr, prop, arg))
 \item 
 {\footnotesize template$<$typename P $>$ }\\auto \hyperlink{namespacepfq__lang_a67b8e80010c51a199869c1c2368b87be}{operator$<$=} (P const \&prop, uint64\+\_\+t arg) -\/$>$ decltype(\hyperlink{namespacepfq__lang_a1a9064340f4197e3dd4109a849a224dc}{predicate4}(nullptr, prop, arg))
@@ -173,6 +175,14 @@ C2 $>$ $>$\+::type \hyperlink{namespacepfq__lang_a4c0690ecb14af669a41969a5de14ac
 \item[{const T \&}]{arg}
 \end{DoxyParamCaption}
 )\hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq__lang_af215f25fa7ebd61fdc90cf0ef78a3164}
+\hypertarget{namespacepfq__lang_a3a284611cc2c705d4304ba5e0f45d8b7}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!not\+\_\+@{not\+\_\+}}
+\index{not\+\_\+@{not\+\_\+}!pfq\+\_\+lang@{pfq\+\_\+lang}}
+\subsubsection[{not\+\_\+}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename P $>$ auto pfq\+\_\+lang\+::not\+\_\+ (
+\begin{DoxyParamCaption}
+\item[{P const \&}]{p}
+\end{DoxyParamCaption}
+) -\/$>$ decltype(predicate2(combinator(nullptr), p, p))
+    \hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq__lang_a3a284611cc2c705d4304ba5e0f45d8b7}
 \hypertarget{namespacepfq__lang_a982f7b6137536d7e75fe9b2c13d581d4}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!operator"!=@{operator"!=}}
 \index{operator"!=@{operator"!=}!pfq\+\_\+lang@{pfq\+\_\+lang}}
 \subsubsection[{operator"!=}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename P $>$ auto pfq\+\_\+lang\+::operator!= (

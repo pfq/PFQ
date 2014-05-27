@@ -21,6 +21,8 @@
 \item 
 {\footnotesize template$<$typename P1 , typename P2 $>$ }\\auto \hyperlink{namespacepfq__lang_a29166c6bb957d6edd6892b7081f574df}{pfq\+\_\+lang\+::operator$^\wedge$} (P1 const \&p1, P2 const \&p2) -\/$>$ decltype(predicate2(combinator(nullptr), p1, p2))
 \item 
+{\footnotesize template$<$typename P $>$ }\\auto \hyperlink{namespacepfq__lang_a3a284611cc2c705d4304ba5e0f45d8b7}{pfq\+\_\+lang\+::not\+\_\+} (P const \&p) -\/$>$ decltype(predicate2(combinator(nullptr), p, p))
+\item 
 {\footnotesize template$<$typename P $>$ }\\auto \hyperlink{namespacepfq__lang_a222bd443a88e69ec2b3acd886bb80e37}{pfq\+\_\+lang\+::operator$<$} (P const \&prop, uint64\+\_\+t arg) -\/$>$ decltype(predicate4(nullptr, prop, arg))
 \item 
 {\footnotesize template$<$typename P $>$ }\\auto \hyperlink{namespacepfq__lang_a67b8e80010c51a199869c1c2368b87be}{pfq\+\_\+lang\+::operator$<$=} (P const \&prop, uint64\+\_\+t arg) -\/$>$ decltype(predicate4(nullptr, prop, arg))
@@ -79,6 +81,14 @@ auto \hyperlink{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_a30
 auto \hyperlink{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_adddd2dea56164719f2853af158911a80}{pfq\+\_\+lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::has\+\_\+vid} = \mbox{[}$\,$\mbox{]} (int value) \{ return predicate1 (\char`\"{}has\+\_\+vid\char`\"{}, value); \}
 \item 
 auto \hyperlink{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_a0f9dc3f39bf9793e766b6312718483f1}{pfq\+\_\+lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::has\+\_\+mark} = \mbox{[}$\,$\mbox{]} (unsigned long value) \{ return predicate1(\char`\"{}has\+\_\+mark\char`\"{}, value); \}
+\item 
+auto \hyperlink{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_a8fa70cc0ae09592136e8e04e60a98ab6}{pfq\+\_\+lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::is\+\_\+frag} = predicate (\char`\"{}is\+\_\+frag\char`\"{})
+\item 
+auto \hyperlink{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_a235bc51b1c287765f0a4bd391ed089a9}{pfq\+\_\+lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::is\+\_\+first\+\_\+frag} = predicate (\char`\"{}is\+\_\+first\+\_\+frag\char`\"{})
+\item 
+auto \hyperlink{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_a2e8c6d9921b25eecb2a880f73f1beb3c}{pfq\+\_\+lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::is\+\_\+more\+\_\+frag} = predicate (\char`\"{}is\+\_\+more\+\_\+frag\char`\"{})
+\item 
+auto \hyperlink{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_a85f5de783fc38d6c0539f1f4afac189b}{pfq\+\_\+lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::get\+\_\+mark} = property(\char`\"{}get\+\_\+mark\char`\"{})
 \item 
 auto \hyperlink{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_afc29e9877341008196788bba2bde3e04}{pfq\+\_\+lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::ip\+\_\+tos} = property(\char`\"{}ip\+\_\+tos\char`\"{})
 \item 
@@ -142,6 +152,10 @@ auto \hyperlink{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_a90
 \item 
 auto \hyperlink{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_a13ac072f4d7f860256ef22d7f5a1a9ac}{pfq\+\_\+lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::rtp} = netfunction(\char`\"{}rtp\char`\"{})
 \item 
+auto \hyperlink{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_a60b130b2b5a08d0c83063ed584b79396}{pfq\+\_\+lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::no\+\_\+frag} = netfunction(\char`\"{}no\+\_\+frag\char`\"{})
+\item 
+auto \hyperlink{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_ac400453f07ca5fc4ef28d20085f149c2}{pfq\+\_\+lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::no\+\_\+more\+\_\+frag} = netfunction(\char`\"{}no\+\_\+more\+\_\+frag\char`\"{})
+\item 
 auto \hyperlink{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_a3b7dd001dfb2302c93212313c0bfa82a}{pfq\+\_\+lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::broadcast} = netfunction(\char`\"{}broadcast\char`\"{})
 \item 
 auto \hyperlink{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_a68a2502f951a2b671a7d0496609f5d2a}{pfq\+\_\+lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::kernel} = netfunction(\char`\"{}kernel\char`\"{})
@@ -153,6 +167,8 @@ auto \hyperlink{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_ad7
 auto \hyperlink{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_abed0412f2864624f755594077d255b1e}{pfq\+\_\+lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::drop} = netfunction(\char`\"{}drop\char`\"{})
 \item 
 auto \hyperlink{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_ae78caafebdc64f9180032a049b7c3b3a}{pfq\+\_\+lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::unit} = netfunction(\char`\"{}unit\char`\"{})
+\item 
+auto \hyperlink{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_a82a9b0e4c53eb28a98e5c34372a5b17b}{pfq\+\_\+lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::log\+\_\+packet} = netfunction(\char`\"{}log\+\_\+packet\char`\"{})
 \item 
 auto \hyperlink{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03_a27a683ef93570a66844e1a0106e6336a}{pfq\+\_\+lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::class\+\_\+} = \mbox{[}$\,$\mbox{]} (int value) \{ return netfunction1(\char`\"{}class\char`\"{}, value); \}
 \item 

@@ -194,6 +194,9 @@ C2 &gt; &gt;::type&#160;</td><td class="memTemplItemRight" valign="bottom"><a cl
 <tr class="memitem:a29166c6bb957d6edd6892b7081f574df"><td class="memTemplParams" colspan="2">template&lt;typename P1 , typename P2 &gt; </td></tr>
 <tr class="memitem:a29166c6bb957d6edd6892b7081f574df"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#a29166c6bb957d6edd6892b7081f574df">operator^</a> (P1 const &amp;p1, P2 const &amp;p2) -&gt; decltype(<a class="el" href="namespacepfq__lang.html#a89ea436faf8b7f13512e07efbce83b41">predicate2</a>(<a class="el" href="namespacepfq__lang.html#a35f3de0a6684c64d0465aa3f263fa8a6">combinator</a>(nullptr), p1, p2))</td></tr>
 <tr class="separator:a29166c6bb957d6edd6892b7081f574df"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3a284611cc2c705d4304ba5e0f45d8b7"><td class="memTemplParams" colspan="2">template&lt;typename P &gt; </td></tr>
+<tr class="memitem:a3a284611cc2c705d4304ba5e0f45d8b7"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#a3a284611cc2c705d4304ba5e0f45d8b7">not_</a> (P const &amp;p) -&gt; decltype(<a class="el" href="namespacepfq__lang.html#a89ea436faf8b7f13512e07efbce83b41">predicate2</a>(<a class="el" href="namespacepfq__lang.html#a35f3de0a6684c64d0465aa3f263fa8a6">combinator</a>(nullptr), p, p))</td></tr>
+<tr class="separator:a3a284611cc2c705d4304ba5e0f45d8b7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a222bd443a88e69ec2b3acd886bb80e37"><td class="memTemplParams" colspan="2">template&lt;typename P &gt; </td></tr>
 <tr class="memitem:a222bd443a88e69ec2b3acd886bb80e37"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#a222bd443a88e69ec2b3acd886bb80e37">operator&lt;</a> (P const &amp;prop, uint64_t arg) -&gt; decltype(<a class="el" href="namespacepfq__lang.html#a1a9064340f4197e3dd4109a849a224dc">predicate4</a>(nullptr, prop, arg))</td></tr>
 <tr class="separator:a222bd443a88e69ec2b3acd886bb80e37"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -493,6 +496,33 @@ template&lt;typename T &gt; </div>
           <td></td>
           <td>)</td>
           <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a3a284611cc2c705d4304ba5e0f45d8b7"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename P &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">auto pfq_lang::not_ </td>
+          <td>(</td>
+          <td class="paramtype">P const &amp;&#160;</td>
+          <td class="paramname"><em>p</em></td><td>)</td>
+          <td> -&gt; decltype(predicate2(combinator(nullptr), p, p))
+    </td>
         </tr>
       </table>
   </td>
@@ -1191,7 +1221,7 @@ template&lt;typename T &gt; </div>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="namespacepfq__lang.html">pfq_lang</a></li>
-    <li class="footer">Generated on Mon May 26 2014 18:49:18 for Q-Lang C++ eDLS by
+    <li class="footer">Generated on Tue May 27 2014 13:45:44 for Q-Lang C++ eDLS by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.7 </li>
   </ul>
