@@ -64,8 +64,7 @@
 #include <pf_q-thread.h>
 #include <pf_q-global.h>
 #include <pf_q-vlan.h>
-#include <pf_q-transmit.h>
-
+#include <pf_q-endpoint.h>
 #include <pf_q-mpdb-queue.h>
 
 struct net_proto_family  pfq_family_ops;
@@ -127,51 +126,6 @@ MODULE_PARM_DESC(vl_untag,      " Enable vlan untagging (default=0)");
 #endif
 
 DEFINE_SEMAPHORE(sock_sem);
-
-
-static inline
-bool copy_to_user_skbs(struct pfq_rx_opt *ro, int cpu, unsigned long long sock_queue, struct pfq_non_intrusive_skb *skbs, int gid)
-{
-        /* enqueue the sk_buffs: it's wait-free. */
-
-        int len = 0; size_t sent = 0;
-
-        if (likely(ro->queue_ptr)) {
-
-        	smp_rmb();
-
-                len  = (int)pfq_popcount(sock_queue);
-                sent = pfq_mpdb_enqueue_batch(ro, sock_queue, len, skbs, gid);
-
-        	__sparse_add(&ro->stat.recv, sent, cpu);
-
-		if (len > sent) {
-			__sparse_add(&ro->stat.lost, len - sent, cpu);
-			return false;
-		}
-        }
-        return true;
-}
-
-
-static
-bool copy_to_endpoint_skbs(struct pfq_sock *so, int cpu, unsigned long long sock_queue, struct pfq_non_intrusive_skb *skbs, int gid)
-{
-	if (so->egress_index) {
-
-		struct sk_buff *skb;
-		int n;
-
-                pfq_non_intrusive_for_each(skb, n, skbs)
-		{
- 			atomic_inc(&skb->users);
-               	}
-
- 		pfq_queue_xmit_by_index(skbs, so->egress_index, so->egress_queue);
-	}
-
-	return copy_to_user_skbs(&so->rx_opt, cpu, sock_queue, skbs, gid);
-}
 
 
 /* send this packet to selected sockets */
@@ -469,7 +423,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 		{
 			int i = pfq_ctz(lb);
 			struct pfq_sock * so = pfq_get_sock_by_id(i);
-			copy_to_endpoint_skbs(so, cpu, sock_queue[i], prefetch_queue, gid);
+			copy_to_endpoint_skbs(so, prefetch_queue, sock_queue[i], cpu, gid);
 		})
 	})
 

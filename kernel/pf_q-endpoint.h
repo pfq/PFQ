@@ -1,7 +1,6 @@
 /***************************************************************
  *
  * (C) 2011-14 Nicola Bonelli <nicola.bonelli@cnit.it>
- *             Andrea Di Pietro <andrea.dipietro@for.unipi.it>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,45 +21,7 @@
  *
  ****************************************************************/
 
-#ifndef _PF_Q_MPDB_QUEUE_H_
-#define _PF_Q_MPDB_QUEUE_H_
+#include "pf_q-sock.h"
+#include "pf_q-non-intrusive.h"
 
-#include <linux/skbuff.h>
-#include <linux/pf_q.h>
-#include <linux/if_vlan.h>
-
-#include <pf_q-non-intrusive.h>
-#include <pf_q-prefetch.h>
-#include <pf_q-common.h>
-#include <pf_q-sock.h>
-
-
-extern size_t pfq_mpdb_enqueue_batch(struct pfq_rx_opt *ro,
-		                     struct pfq_non_intrusive_skb *skbs,
-		                     unsigned long long skbs_mask,
-		                     int burst_len,
-		                     int gid);
-
-
-static inline
-size_t mpdb_queue_len(struct pfq_sock *p)
-{
-        return MPDB_QUEUE_LEN(get_pfq_queue_hdr(p)->rx.data);
-}
-
-
-static inline
-int mpdb_queue_index(struct pfq_sock *p)
-{
-        return MPDB_QUEUE_INDEX(get_pfq_queue_hdr(p)->rx.data) & 1;
-}
-
-
-static inline
-size_t mpdb_queue_size(struct pfq_sock *p)
-{
-        struct pfq_rx_queue_hdr *rx = & get_pfq_queue_hdr(p)->rx;
-        return rx->size * rx->slot_size;
-}
-
-#endif /* _PF_Q_MPDB_QUEUE_H_ */
+extern bool copy_to_endpoint_skbs(struct pfq_sock *so, struct pfq_non_intrusive_skb *skbs, unsigned long long skbs_mask, int cpu, int gid);
