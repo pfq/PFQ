@@ -34,11 +34,7 @@
 
 DEFINE_SEMAPHORE(group_sem);
 
-
 struct pfq_group pfq_groups[Q_MAX_GROUP];
-
-
-/* precondition: gid must be valid */
 
 
 bool
