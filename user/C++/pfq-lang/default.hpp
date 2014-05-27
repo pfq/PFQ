@@ -172,6 +172,10 @@ namespace pfq_lang
         auto has_vid    = [] (int value) { return predicate1 ("has_vid", value); };
         auto has_mark   = [] (unsigned long value) { return predicate1("has_mark", value); };
 
+        auto is_frag        = predicate ("is_frag");
+        auto is_first_frag  = predicate ("is_first_frag");
+        auto is_more_frag   = predicate ("is_more_frag");
+
         // default properties:
 
         auto get_mark   = property("get_mark");

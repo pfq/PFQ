@@ -28,6 +28,7 @@
 #include <linux/module.h>
 #include <linux/skbuff.h>
 
+#include <net/ip.h>
 #include <linux/ip.h>
 #include <linux/ipv6.h>
 #include <linux/udp.h>
@@ -420,6 +421,60 @@ is_l4_proto(struct sk_buff const *skb, u8 protocol)
 	return false;
 }
 
+
+static inline bool
+is_frag(struct sk_buff const *skb)
+{
+	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP))
+	{
+		struct iphdr _iph;
+    		const struct iphdr *ip;
+
+		ip = skb_header_pointer(skb, skb->mac_len, sizeof(_iph), &_iph);
+ 		if (ip == NULL)
+                        return false;
+
+                return ip->frag_off & __constant_htons(IP_MF|IP_OFFSET);
+	}
+
+	return false;
+}
+
+static inline bool
+is_first_frag(struct sk_buff const *skb)
+{
+	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP))
+	{
+		struct iphdr _iph;
+    		const struct iphdr *ip;
+
+		ip = skb_header_pointer(skb, skb->mac_len, sizeof(_iph), &_iph);
+ 		if (ip == NULL)
+                        return false;
+
+                return (ip->frag_off & __constant_htons(IP_MF|IP_OFFSET)) == __constant_htons(IP_MF);
+	}
+
+	return false;
+}
+
+static inline bool
+is_more_frag(struct sk_buff const *skb)
+{
+	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP))
+	{
+		struct iphdr _iph;
+    		const struct iphdr *ip;
+
+		ip = skb_header_pointer(skb, skb->mac_len, sizeof(_iph), &_iph);
+ 		if (ip == NULL)
+                        return false;
+
+                return ip->frag_off & __constant_htons(IP_OFFSET);
+	}
+
+	return false;
+}
 
 static inline bool
 has_src_port(struct sk_buff const *skb, uint16_t port)

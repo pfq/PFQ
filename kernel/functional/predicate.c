@@ -187,6 +187,23 @@ pred_has_dst_addr(arguments_t args, struct sk_buff const *skb)
 	return has_dst_addr(skb, addr, mask);
 }
 
+static bool
+pred_is_frag(arguments_t args, struct sk_buff const *skb)
+{
+        return  is_frag(skb);
+}
+
+static bool
+pred_is_first_frag(arguments_t args, struct sk_buff const *skb)
+{
+        return  is_first_frag(skb);
+}
+
+static bool
+pred_is_more_frag(arguments_t args, struct sk_buff const *skb)
+{
+        return  is_more_frag(skb);
+}
 
 struct pfq_predicate_fun_descr predicate_functions[] = {
 
@@ -209,6 +226,9 @@ struct pfq_predicate_fun_descr predicate_functions[] = {
         { "is_icmp6",    FUN_PREDICATE, pred_is_icmp6 },
         { "is_flow",     FUN_PREDICATE, pred_is_flow  },
         { "has_vlan",    FUN_PREDICATE, pred_has_vlan },
+        { "is_frag", 	 FUN_PREDICATE, pred_is_frag  },
+        { "is_first_frag",FUN_PREDICATE, pred_is_first_frag },
+        { "is_more_frag", FUN_PREDICATE, pred_is_more_frag },
 
         { "is_l3_proto", FUN_PREDICATE | FUN_ARG_DATA, pred_is_l3_proto  },
         { "is_l4_proto", FUN_PREDICATE | FUN_ARG_DATA, pred_is_l4_proto  },

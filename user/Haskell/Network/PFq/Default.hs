@@ -62,6 +62,10 @@ module Network.PFq.Default
         is_l3_proto,
         is_l4_proto,
 
+        is_frag,
+        is_first_frag,
+        is_more_frag,
+
         has_port,
         has_src_port,
         has_dst_port,
@@ -256,6 +260,10 @@ has_addr, has_src_addr, has_dst_addr    :: String -> Int -> Predicate
 has_addr net p     = Pred1 "has_addr"     (mkNetAddr net p)
 has_src_addr net p = Pred1 "has_src_addr" (mkNetAddr net p)
 has_dst_addr net p = Pred1 "has_dst_addr" (mkNetAddr net p)
+
+is_frag       = Pred "is_frag"          :: Predicate
+is_first_frag = Pred "is_first_frag"    :: Predicate
+is_more_frag  = Pred "is_more_frag"     :: Predicate
 
 -- Default properties
 
