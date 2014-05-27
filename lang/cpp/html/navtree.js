@@ -1,6 +1,6 @@
 var NAVTREE =
 [
-  [ "Q-Lang C++ eDLS", "index.html", [
+  [ "PFQ-Lang eDLS", "index.html", [
     [ "Namespaces", null, [
       [ "Namespace List", "namespaces.html", "namespaces" ],
       [ "Namespace Members", "namespacemembers.html", [
