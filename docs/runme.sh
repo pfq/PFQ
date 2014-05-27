@@ -34,4 +34,4 @@ cd ../user/Haskell && haddock -h -o ../../docs/api/haskell  -t "PFQ Library v3.0
 cd -
 
 echo "Haskell: Q-Lang docs" 
-cd ../user/Haskell && haddock -h -o ../../docs/lang/haskell -t "Q-Lang v3.0" -p ../../docs/lang.haddock Network/PFq/Default.hs
+cd ../user/Haskell && haddock -h -o ../../docs/lang/haskell -t "PFQ-Lang v3.0" -p ../../docs/lang.haddock Network/PFq/Default.hs
