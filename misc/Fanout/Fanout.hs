@@ -34,14 +34,14 @@ import Control.Monad
 import Control.Exception
 import Test.QuickCheck
 
-data Action a where
-        Drop  :: forall a.   Action a
-        Pass  :: forall a.   a -> Action a
-        Copy  :: forall a.   a -> Action a
-        Steer :: forall a b. b -> a -> Action a
-        Class :: forall a b. b -> a -> Action a
+data Fanout a where
+        Drop  :: forall a.   Fanout a
+        Pass  :: forall a.   a -> Fanout a
+        Copy  :: forall a.   a -> Fanout a
+        Steer :: forall a b. b -> a -> Fanout a
+        Class :: forall a b. b -> a -> Fanout a
 
-instance Monad Action where
+instance Monad Fanout where
 
         return = Pass
 
@@ -61,7 +61,7 @@ instance Monad Action where
                                   _        -> k x
 
 
-instance Eq (Action a) where
+instance Eq (Fanout a) where
         Drop == Drop = True
         (Pass x1) == (Pass x2) = True
         (Copy x1) == (Copy x2) = True
@@ -72,7 +72,7 @@ instance Eq (Action a) where
 -- simple monadic functions
 --
 
-drop' :: a -> Action a
+drop' :: a -> Fanout a
 drop' _ = Drop
 
 newtype Skb = Skb ()
