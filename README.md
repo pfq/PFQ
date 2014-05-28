@@ -9,7 +9,7 @@ that allows efficient packet capturing, in-kernel functional processing and pack
 steering across sockets. 
 
 PFQ is highly optimized for multi-core architecture, as well as for network 
-devices supporting multiple hardware queues. It works with any device
+devices equipped with multiple hardware queues. It works with any device
 driver (the ones shipped with the Linux Kernel) and provides a script designed 
 to obtain accelerated versions of the drivers from their source codes.
 
