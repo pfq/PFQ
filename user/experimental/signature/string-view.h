@@ -76,7 +76,7 @@ string_view_trim(string_view_t str)
 
 
 static inline char *
-string_view_dup(string_view_t str)
+view_to_string(string_view_t str)
 {
 	size_t len = str.end - str.begin;
 
@@ -92,7 +92,7 @@ string_view_dup(string_view_t str)
 static inline void
 string_view_sprintf(char *buffer, string_view_t str)
 {
-	char * p = string_view_dup(str);
+	char * p = view_to_string(str);
 	sprintf(buffer, "%s", p);
 	free(p);
 }
