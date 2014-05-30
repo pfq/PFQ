@@ -41,7 +41,7 @@ pfq_signature_redundant_brackets(string_view_t str)
 
 		str = string_view_trim(str);
 
-		for(p = str.start; p != str.end; p++)
+		for(p = str.begin; p != str.end; p++)
 		{
 			switch (*p)
 			{
@@ -63,9 +63,9 @@ pfq_signature_redundant_brackets(string_view_t str)
 		if (bracket != 0)
 			return -1;
 
-		if (*str.start == '(')
+		if (*str.begin == '(')
 		{
-			str.start++;
+			str.begin++;
 			str.end--;
 		}
 	}
@@ -82,10 +82,10 @@ pfq_signature_simplify(string_view_t str)
 
 	for(n = 0; n < red; n++)
 	{
-        	while (*str.start++ != '(')
+        	while (*str.begin++ != '(')
         	{ }
 
-        	while (str.end != str.start &&
+        	while (str.end != str.begin &&
         		*--str.end != ')')
         	{ }
 	}
@@ -93,8 +93,8 @@ pfq_signature_simplify(string_view_t str)
 	str = string_view_trim(str);
 
 	if (string_view_length(str) >= 2) {
-		if (*str.start == '-')
-			str.start += 2;
+		if (*str.begin == '-')
+			str.begin += 2;
 	}
 
 	if (string_view_length(str) >= 2) {
@@ -113,7 +113,7 @@ pfq_signature_bind(string_view_t str, int n)
 
  	int state = 0, bracket = 0, arity = 0;
 
-        const char * p = s.start;
+        const char * p = s.begin;
 
  	for(; p != s.end && arity < n; ++p)
  	{
@@ -155,7 +155,7 @@ pfq_signature_bind(string_view_t str, int n)
  		}
  	}
 
-	s.start = p;
+	s.begin = p;
 	return pfq_signature_simplify(s);
 }
 
@@ -167,7 +167,7 @@ pfq_signature_arity(string_view_t str)
 
  	int state = 0, bracket = 0, arity = 0;
 
-        const char * p = s.start;
+        const char * p = s.begin;
 
  	for(; p != s.end; ++p)
  	{
@@ -208,7 +208,7 @@ pfq_signature_arity(string_view_t str)
  		}
  	}
 
- 	if (p == s.start)
+ 	if (p == s.begin)
  		return -1;
 
  	return arity;
@@ -259,8 +259,8 @@ pfq_signature_arg(string_view_t s, int index)
 	string_view_t s1 = pfq_signature_bind(s, index);
 	string_view_t s2 = pfq_signature_bind(s1,1);
 
-	s.start = s1.start;
- 	s.end   = s2.start;
+	s.begin = s1.begin;
+ 	s.end   = s2.begin;
 
 	return pfq_signature_simplify(s);
 }

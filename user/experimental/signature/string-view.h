@@ -31,7 +31,7 @@
 
 typedef struct
 {
- 	const char *start;
+ 	const char *begin;
  	const char *end;
 
 } string_view_t;
@@ -48,7 +48,7 @@ null_view()
 static inline size_t
 string_view_length(string_view_t str)
 {
-	return str.end - str.start;
+	return str.end - str.begin;
 }
 
 
@@ -63,11 +63,11 @@ make_string_view(const char *str)
 static inline string_view_t
 string_view_trim(string_view_t str)
 {
-	while ( isspace(*str.start) &&
-                str.start != str.end )
-                str.start++;
+	while ( isspace(*str.begin) &&
+                str.begin != str.end )
+                str.begin++;
 
-	while ( str.end != str.start &&
+	while ( str.end != str.begin &&
 		isspace(*(str.end-1)) )
                 str.end--;
 
@@ -78,11 +78,11 @@ string_view_trim(string_view_t str)
 static inline char *
 string_view_dup(string_view_t str)
 {
-	size_t len = str.end - str.start;
+	size_t len = str.end - str.begin;
 
 	char * ret = malloc(len + 1);
 	if (ret) {
-		strncpy(ret, str.start, len);
+		strncpy(ret, str.begin, len);
 		ret [len] = '\0';
 	}
 	return ret;
