@@ -238,9 +238,9 @@ struct pfq_predicate_fun_descr predicate_functions[] = {
         { "has_vid",      "Int -> SkBuff -> Bool",     pred_has_vid      },
         { "has_mark",     "CULong -> SkBuff -> Bool",  pred_has_mark     },
 
-        { "has_addr",     "Word32 -> Word32 -> SkBuff -> Bool", pred_has_addr     , pred_addr_init },
-        { "has_src_addr", "Word32 -> Word32 -> SkBuff -> Bool", pred_has_src_addr , pred_addr_init },
-        { "has_dst_addr", "Word32 -> Word32 -> SkBuff -> Bool", pred_has_dst_addr , pred_addr_init },
+        { "has_addr",     "NetworkAddr -> SkBuff -> Bool", pred_has_addr     , pred_addr_init },
+        { "has_src_addr", "NetworkAddr -> SkBuff -> Bool", pred_has_src_addr , pred_addr_init },
+        { "has_dst_addr", "NetworkAddr -> SkBuff -> Bool", pred_has_dst_addr , pred_addr_init },
 
         { NULL }};
 
