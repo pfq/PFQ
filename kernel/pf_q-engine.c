@@ -447,7 +447,7 @@ validate_computation_descr(struct pfq_computation_descr const *descr)
 
 
 static void *
-resolve_user_symbol(struct list_head *cat, const char __user *symb, uint64_t *prop, init_ptr_t *init, fini_ptr_t *fini)
+resolve_user_symbol(struct list_head *cat, const char __user *symb, const char **signature, init_ptr_t *init, fini_ptr_t *fini)
 {
 	struct symtable_entry *entry;
         const char *symbol;
@@ -464,7 +464,7 @@ resolve_user_symbol(struct list_head *cat, const char __user *symb, uint64_t *pr
                 return NULL;
         }
 
-        *prop = entry->properties;
+        *signature = entry->signature;
 	*init = entry->init;
 	*fini = entry->fini;
 
@@ -547,16 +547,12 @@ pfq_computation_rtlink(struct pfq_computation_descr const *descr, computation_t 
                 {
                 case pfq_monadic_fun: {
 
-                        uint64_t properties;
+			const char *signature;
                         function_ptr_t ptr;
 
-                        ptr = resolve_user_symbol(&pfq_monadic_cat, descr->fun[n].symbol, &properties, &init, &fini);
-                        if (ptr == NULL ||
-                		(properties & FUN_ACTION) == 0 ||
-                                ( (properties & FUN_ARG_DATA) && descr->fun[n].arg_ptr == NULL) ||
-                                (!(properties & FUN_ARG_DATA) && descr->fun[n].arg_ptr != NULL)
-                        		) {
-                                printk(KERN_INFO "[PFQ] %zu: nad descriptor!\n", n);
+                        ptr = resolve_user_symbol(&pfq_monadic_cat, descr->fun[n].symbol, &signature, &init, &fini);
+                        if (ptr == NULL) {
+                                printk(KERN_INFO "[PFQ] %zu: bad descriptor!\n", n);
                                 return -EPERM;
                         }
 
@@ -604,15 +600,13 @@ pfq_computation_rtlink(struct pfq_computation_descr const *descr, computation_t 
 
                 case pfq_high_order_fun: {
 
-                        uint64_t properties;
+			const char *signature;
                         function_ptr_t ptr;
 
                         size_t pindex = descr->fun[n].fun;
 
-                        ptr = resolve_user_symbol(&pfq_monadic_cat, descr->fun[n].symbol, &properties, &init, &fini);
-                        if (ptr == NULL ||
-                	    	(properties & FUN_ACTION) == 0 ||
-                                (properties & FUN_ARG_FUN) == 0 )
+                        ptr = resolve_user_symbol(&pfq_monadic_cat, descr->fun[n].symbol, &signature, &init, &fini);
+                        if (ptr == NULL)
 			{
                                 printk(KERN_INFO "[PFQ] %zu: bad descriptor!\n", n);
                                 return -EPERM;
@@ -639,16 +633,11 @@ pfq_computation_rtlink(struct pfq_computation_descr const *descr, computation_t 
 
                 case pfq_predicate_fun: {
 
-                        uint64_t properties;
-
+			const char *signature;
                         predicate_ptr_t ptr;
 
-
-                        ptr = resolve_user_symbol(&pfq_predicate_cat, descr->fun[n].symbol, &properties, &init, &fini);
-                        if (ptr == NULL ||
-                	    	(properties & FUN_PREDICATE) == 0 ||
-                                ( (properties & FUN_ARG_DATA) && descr->fun[n].arg_ptr == NULL) ||
-                                (!(properties & FUN_ARG_DATA) && descr->fun[n].arg_ptr != NULL))
+                        ptr = resolve_user_symbol(&pfq_predicate_cat, descr->fun[n].symbol, &signature, &init, &fini);
+                        if (ptr == NULL)
 			{
                                 printk(KERN_INFO "[PFQ] %zu: bad descriptor!\n", n);
                                 return -EPERM;
@@ -707,14 +696,13 @@ pfq_computation_rtlink(struct pfq_computation_descr const *descr, computation_t 
 
                 case pfq_combinator_fun: {
 
-                        uint64_t properties;
+			const char *signature;
                         predicate_ptr_t ptr;
 
                         size_t left, right;
 
-                        ptr = resolve_user_symbol(&pfq_predicate_cat, descr->fun[n].symbol, &properties, &init, &fini);
-                        if (ptr == NULL ||
-                	    (properties & FUN_COMBINATOR) == 0)
+                        ptr = resolve_user_symbol(&pfq_predicate_cat, descr->fun[n].symbol, &signature, &init, &fini);
+                        if (ptr == NULL)
 			{
                                 printk(KERN_INFO "[PFQ] %zu: bad descriptor!\n", n);
                                 return -EPERM;
@@ -734,16 +722,11 @@ pfq_computation_rtlink(struct pfq_computation_descr const *descr, computation_t 
 
                 case pfq_property_fun: {
 
-                        uint64_t properties;
+                        const char *signature;
                         property_ptr_t ptr;
 
-
-
-                        ptr = resolve_user_symbol(&pfq_property_cat, descr->fun[n].symbol, &properties, &init, &fini);
-                        if (ptr == NULL ||
-                	    	(properties & FUN_PROPERTY) == 0 ||
-                                ( (properties & FUN_ARG_DATA) && descr->fun[n].arg_ptr == NULL) ||
-                                (!(properties & FUN_ARG_DATA) && descr->fun[n].arg_ptr != NULL))
+                        ptr = resolve_user_symbol(&pfq_property_cat, descr->fun[n].symbol, &signature, &init, &fini);
+                        if (ptr == NULL)
 			{
                                 printk(KERN_INFO "[PFQ] %zu: bad descriptor!\n", n);
                                 return -EPERM;

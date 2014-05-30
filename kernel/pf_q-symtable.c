@@ -82,7 +82,7 @@ __pfq_symtable_search(struct list_head *category, const char *symbol)
 }
 
 static int
-__pfq_symtable_register_function(struct list_head *category, const char *symbol, void *fun, init_ptr_t init, fini_ptr_t fini, uint64_t properties)
+__pfq_symtable_register_function(struct list_head *category, const char *symbol, void *fun, init_ptr_t init, fini_ptr_t fini, const char *signature)
 {
 	struct symtable_entry * elem;
 
@@ -107,7 +107,7 @@ __pfq_symtable_register_function(struct list_head *category, const char *symbol,
         elem->symbol[Q_FUN_SYMB_LEN-1] = '\0';
 	list_add(&elem->list, category);
 
-	elem->properties = properties;
+	elem->signature = signature;
 
 	return 0;
 }
@@ -151,7 +151,7 @@ pfq_symtable_register_functions(const char *module, struct list_head *category, 
 	int i = 0;
 	for(; fun[i].symbol != NULL; i++)
 	{
-		if (pfq_symtable_register_function(module, category, fun[i].symbol, fun[i].ptr, fun[i].init, fun[i].fini, fun[i].properties) < 0)
+		if (pfq_symtable_register_function(module, category, fun[i].symbol, fun[i].ptr, fun[i].init, fun[i].fini, fun[i].signature) < 0)
                 {
                         /* unregister all functions */
                         int j = 0;
@@ -254,13 +254,13 @@ pfq_symtable_search(struct list_head *category, const char *symbol)
 
 
 int
-pfq_symtable_register_function(const char *module, struct list_head *category, const char *symbol, void *fun, init_ptr_t init, fini_ptr_t fini, uint64_t properties)
+pfq_symtable_register_function(const char *module, struct list_head *category, const char *symbol, void *fun, init_ptr_t init, fini_ptr_t fini, const char *signature)
 {
 	int rc;
 
         down(&symtable_sem);
 
-	rc = __pfq_symtable_register_function(category, symbol, fun, init, fini, properties);
+	rc = __pfq_symtable_register_function(category, symbol, fun, init, fini, signature);
 
 	up(&symtable_sem);
 

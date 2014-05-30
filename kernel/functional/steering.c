@@ -179,12 +179,12 @@ steering_ip6(arguments_t args, struct sk_buff *skb)
 
 struct pfq_monadic_fun_descr steering_functions[] = {
 
-	{ "steer_link",  "SkBuff -> Action SkBuff", FUN_ACTION, steering_link    },
-        { "steer_vlan",  "SkBuff -> Action SkBuff", FUN_ACTION, steering_vlan_id },
-        { "steer_ip",    "SkBuff -> Action SkBuff", FUN_ACTION, steering_ip      },
-        { "steer_ip6",	 "SkBuff -> Action SkBuff", FUN_ACTION, steering_ip6     },
-        { "steer_flow",  "SkBuff -> Action SkBuff", FUN_ACTION, steering_flow    },
-        { "steer_net",   "Word32 -> Word32 -> Word32 -> SkBuff -> Action SkBuff", FUN_ACTION | FUN_ARG_DATA, steering_net, steering_net_init },
+	{ "steer_link",  "SkBuff -> Action SkBuff", steering_link    },
+        { "steer_vlan",  "SkBuff -> Action SkBuff", steering_vlan_id },
+        { "steer_ip",    "SkBuff -> Action SkBuff", steering_ip      },
+        { "steer_ip6",	 "SkBuff -> Action SkBuff", steering_ip6     },
+        { "steer_flow",  "SkBuff -> Action SkBuff", steering_flow    },
+        { "steer_net",   "Word32 -> Word32 -> Word32 -> SkBuff -> Action SkBuff", steering_net, steering_net_init },
 
         { NULL }};
 

@@ -189,15 +189,15 @@ forward_fini(arguments_t args)
 
 struct pfq_monadic_fun_descr forward_functions[] = {
 
-        { "drop",        "SkBuff -> Action SkBuff",   	   FUN_ACTION, 			INLINE_FUN(forward_drop)   	},
-        { "broadcast",   "SkBuff -> Action SkBuff",   	   FUN_ACTION, 			INLINE_FUN(forward_broadcast)	},
-        { "sink",        "SkBuff -> Action SkBuff",        FUN_ACTION, 			sink 				},
-        { "class",	 "Int -> SkBuff -> Action SkBuff", FUN_ACTION | FUN_ARG_DATA, 	INLINE_FUN(forward_class) 	},
-        { "deliver",	 "Int -> SkBuff -> Action SkBuff", FUN_ACTION | FUN_ARG_DATA, 	INLINE_FUN(forward_deliver) 	},
+        { "drop",        "SkBuff -> Action SkBuff",   	    	INLINE_FUN(forward_drop) 	},
+        { "broadcast",   "SkBuff -> Action SkBuff",   	    	INLINE_FUN(forward_broadcast)	},
+        { "sink",        "SkBuff -> Action SkBuff",         sink 				},
+        { "class",	 "Int -> SkBuff -> Action SkBuff",  	INLINE_FUN(forward_class) 	},
+        { "deliver",	 "Int -> SkBuff -> Action SkBuff",  	INLINE_FUN(forward_deliver) 	},
 
-        { "kernel", 	    "SkBuff -> Action SkBuff",    	FUN_ACTION, 			INLINE_FUN(forward_to_kernel)       },
-        { "forward_kernel", "SkBuff -> Action SkBuff",   	FUN_ACTION, 			INLINE_FUN(forward_io_kernel)       },
-	{ "forward",        "Int -> SkBuff -> Action SkBuff",  	FUN_ACTION | FUN_ARG_DATA, 	forward, forward_init, forward_fini },
+        { "kernel", 	    "SkBuff -> Action SkBuff",    	INLINE_FUN(forward_to_kernel)       },
+        { "forward_kernel", "SkBuff -> Action SkBuff",   	INLINE_FUN(forward_io_kernel)       },
+	{ "forward",        "Int -> SkBuff -> Action SkBuff",  	forward, forward_init, forward_fini },
 
         { NULL }};
 

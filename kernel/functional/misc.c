@@ -170,14 +170,12 @@ log_packet(arguments_t args, struct sk_buff *skb)
 
 struct pfq_function_descr misc_functions[] = {
 
-        { "inc", 	"Int -> SkBuff -> Action SkBuff", FUN_ACTION | FUN_ARG_DATA , inc_counter },
-        { "dec", 	"Int -> SkBuff -> Action SkBuff", FUN_ACTION | FUN_ARG_DATA , dec_counter },
-
-        { "dummy",      "Int -> SkBuff -> Action SkBuff",    FUN_ACTION | FUN_ARG_DATA , dummy, dummy_init,  dummy_fini },
- 	{ "mark", 	"CULong -> SkBuff -> Action SkBuff", FUN_ACTION | FUN_ARG_DATA , INLINE_FUN(mark) },
-
-        { "crc16", 	"SkBuff -> Action SkBuff", FUN_ACTION, crc16_sum},
-        { "log_packet", "SkBuff -> Action SkBuff", FUN_ACTION, log_packet},
+        { "dummy",      "Int -> SkBuff -> Action SkBuff",     	dummy, dummy_init,  dummy_fini },
+        { "inc", 	"Int -> SkBuff -> Action SkBuff",     	inc_counter 	},
+        { "dec", 	"Int -> SkBuff -> Action SkBuff",    	dec_counter 	},
+ 	{ "mark", 	"CULong -> SkBuff -> Action SkBuff",  	INLINE_FUN(mark)},
+        { "crc16", 	"SkBuff -> Action SkBuff", 		crc16_sum	},
+        { "log_packet", "SkBuff -> Action SkBuff", 		log_packet	},
 
         { NULL }};
 

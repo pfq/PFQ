@@ -47,17 +47,6 @@ extern struct list_head pfq_predicate_cat;
 extern int pfq_symtable_register_functions  (const char *module, struct list_head *category, struct pfq_function_descr *fun);
 extern int pfq_symtable_unregister_functions(const char *module, struct list_head *category, struct pfq_function_descr *fun);
 
-/**** function properties ****/
-
-#define FUN_PREDICATE 		       	(1ULL<<0)
-#define FUN_COMBINATOR 			(1ULL<<1)
-#define FUN_ACTION 			(1ULL<<2)
-#define FUN_PROPERTY 			(1ULL<<3)
-
-#define FUN_ARG_DATA			(1ULL<<10)
-#define FUN_ARG_FUN 			(1ULL<<11)
-
-
 /**** macros ****/
 
 #define JUST(x) 		((1ULL<<31) | x)
@@ -157,7 +146,6 @@ struct pfq_function_descr
 {
         const char *    symbol;
         const char *	signature;
-        uint64_t	properties;
         void * 		ptr;
         init_ptr_t 	init;
         fini_ptr_t 	fini;
@@ -167,7 +155,6 @@ struct pfq_monadic_fun_descr
 {
         const char *    symbol;
         const char *	signature;
-        uint64_t	properties;
         function_ptr_t 	ptr;
         init_ptr_t 	init;
         fini_ptr_t 	fini;
@@ -177,7 +164,6 @@ struct pfq_predicate_fun_descr
 {
         const char * 	symbol;
         const char *	signature;
-        uint64_t	properties;
         predicate_ptr_t ptr;
         init_ptr_t 	init;
         fini_ptr_t 	fini;
@@ -187,7 +173,6 @@ struct pfq_combinator_fun_descr
 {
         const char * 	symbol;
         const char *	signature;
-        uint64_t	properties;
         predicate_ptr_t ptr;
         init_ptr_t 	init;
         fini_ptr_t 	fini;
@@ -197,7 +182,6 @@ struct pfq_property_fun_descr
 {
         const char * 	symbol;
         const char *	signature;
-        uint64_t	properties;
         property_ptr_t 	ptr;
         init_ptr_t 	init;
         fini_ptr_t 	fini;

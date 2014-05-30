@@ -128,30 +128,28 @@ filter_no_more_frag(arguments_t args, struct sk_buff *skb)
 
 struct pfq_monadic_fun_descr filter_functions[] = {
 
-        { "unit",	  "SkBuff -> Action SkBuff", 	FUN_ACTION,	INLINE_FUN(unit)          },
-        { "ip",           "SkBuff -> Action SkBuff", 	FUN_ACTION,	INLINE_FUN(filter_ip)     },
-        { "ip6",          "SkBuff -> Action SkBuff", 	FUN_ACTION,	INLINE_FUN(filter_ip6)    },
-        { "udp",          "SkBuff -> Action SkBuff", 	FUN_ACTION,	INLINE_FUN(filter_udp)    },
-        { "tcp",          "SkBuff -> Action SkBuff", 	FUN_ACTION,	INLINE_FUN(filter_tcp)    },
-        { "icmp",         "SkBuff -> Action SkBuff", 	FUN_ACTION,	INLINE_FUN(filter_icmp)   },
-        { "udp6",         "SkBuff -> Action SkBuff", 	FUN_ACTION, 	INLINE_FUN(filter_udp6)   },
-        { "tcp6",         "SkBuff -> Action SkBuff", 	FUN_ACTION, 	INLINE_FUN(filter_tcp6)   },
-        { "icmp6",        "SkBuff -> Action SkBuff", 	FUN_ACTION, 	INLINE_FUN(filter_icmp6)  },
-        { "flow",         "SkBuff -> Action SkBuff", 	FUN_ACTION,	INLINE_FUN(filter_flow)   },
-        { "vlan",         "SkBuff -> Action SkBuff", 	FUN_ACTION,	INLINE_FUN(filter_vlan)   },
- 	{ "no_frag", 	  "SkBuff -> Action SkBuff", 	FUN_ACTION, 	filter_no_frag 		  },
- 	{ "no_more_frag", "SkBuff -> Action SkBuff", 	FUN_ACTION, 	filter_no_more_frag       },
+        { "unit",	  "SkBuff -> Action SkBuff", 	INLINE_FUN(unit)          },
+        { "ip",           "SkBuff -> Action SkBuff", 	INLINE_FUN(filter_ip)     },
+        { "ip6",          "SkBuff -> Action SkBuff", 	INLINE_FUN(filter_ip6)    },
+        { "udp",          "SkBuff -> Action SkBuff", 	INLINE_FUN(filter_udp)    },
+        { "tcp",          "SkBuff -> Action SkBuff", 	INLINE_FUN(filter_tcp)    },
+        { "icmp",         "SkBuff -> Action SkBuff", 	INLINE_FUN(filter_icmp)   },
+        { "udp6",         "SkBuff -> Action SkBuff", 	INLINE_FUN(filter_udp6)   },
+        { "tcp6",         "SkBuff -> Action SkBuff", 	INLINE_FUN(filter_tcp6)   },
+        { "icmp6",        "SkBuff -> Action SkBuff", 	INLINE_FUN(filter_icmp6)  },
+        { "flow",         "SkBuff -> Action SkBuff", 	INLINE_FUN(filter_flow)   },
+        { "vlan",         "SkBuff -> Action SkBuff", 	INLINE_FUN(filter_vlan)   },
+ 	{ "no_frag", 	  "SkBuff -> Action SkBuff", 	filter_no_frag 		  },
+ 	{ "no_more_frag", "SkBuff -> Action SkBuff", 	filter_no_more_frag       },
 
-        { "port",     "Word16 -> SkBuff -> Action SkBuff", FUN_ACTION | FUN_ARG_DATA, filter_port     },
-        { "src_port", "Word16 -> SkBuff -> Action SkBuff", FUN_ACTION | FUN_ARG_DATA, filter_src_port },
-        { "dst_port", "Word16 -> SkBuff -> Action SkBuff", FUN_ACTION | FUN_ARG_DATA, filter_dst_port },
-
-        { "addr",     "Word32 -> Word32 -> SkBuff -> Action SkBuff", FUN_ACTION | FUN_ARG_DATA, filter_addr     , filter_addr_init },
-        { "src_addr", "Word32 -> Word32 -> SkBuff -> Action SkBuff", FUN_ACTION | FUN_ARG_DATA, filter_src_addr , filter_addr_init },
-        { "dst_addr", "Word32 -> Word32 -> SkBuff -> Action SkBuff", FUN_ACTION | FUN_ARG_DATA, filter_dst_addr , filter_addr_init },
-
- 	{ "l3_proto",  "Word16 -> SkBuff -> Action SkBuff", FUN_ACTION | FUN_ARG_DATA, filter_l3_proto },
-        { "l4_proto",  "Word8  -> SkBuff -> Action SkBuff", FUN_ACTION | FUN_ARG_DATA, filter_l4_proto },
+        { "port",     	  "Word16 -> SkBuff -> Action SkBuff", 		 filter_port     },
+        { "src_port", 	  "Word16 -> SkBuff -> Action SkBuff", 		 filter_src_port },
+        { "dst_port", 	  "Word16 -> SkBuff -> Action SkBuff", 		 filter_dst_port },
+        { "addr",     	  "Word32 -> Word32 -> SkBuff -> Action SkBuff", filter_addr     , filter_addr_init },
+        { "src_addr", 	  "Word32 -> Word32 -> SkBuff -> Action SkBuff", filter_src_addr , filter_addr_init },
+        { "dst_addr", 	  "Word32 -> Word32 -> SkBuff -> Action SkBuff", filter_dst_addr , filter_addr_init },
+ 	{ "l3_proto",     "Word16 -> SkBuff -> Action SkBuff",           filter_l3_proto },
+        { "l4_proto",     "Word8  -> SkBuff -> Action SkBuff",           filter_l4_proto },
 
         { NULL }};
 
