@@ -89,13 +89,29 @@ view_to_string(string_view_t str)
 }
 
 
-static inline void
+static inline int
 string_view_sprintf(char *buffer, string_view_t str)
 {
 	char * p = view_to_string(str);
-	sprintf(buffer, "%s", p);
+	int n = sprintf(buffer, "%s", p);
+	free(p);
+	return n;
+}
+
+static inline void
+string_view_put(string_view_t str)
+{
+	char * p = view_to_string(str);
+	printf("%s", p);
 	free(p);
 }
 
+static inline void
+string_view_put_ln(string_view_t str)
+{
+	char * p = view_to_string(str);
+	printf("%s\n", p);
+	free(p);
+}
 
 #endif /* __STRING_VIEW__ */
