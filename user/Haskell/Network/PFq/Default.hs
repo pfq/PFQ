@@ -139,7 +139,6 @@ module Network.PFq.Default
 
         kernel     ,
         broadcast  ,
-        sink       ,
         drop'      ,
         forward    ,
         forward_kernel ,
@@ -319,7 +318,6 @@ no_more_frag    = Fun "no_more_frag" :: NetFunction (SkBuff -> Action SkBuff)
 forward_kernel = Fun "forward_kernel" :: NetFunction (SkBuff -> Action SkBuff)
 kernel      = Fun "kernel"          :: NetFunction (SkBuff -> Action SkBuff)
 broadcast   = Fun "broadcast"       :: NetFunction (SkBuff -> Action SkBuff)
-sink        = Fun "sink"            :: NetFunction (SkBuff -> Action SkBuff)
 drop'       = Fun "drop"            :: NetFunction (SkBuff -> Action SkBuff)
 unit        = Fun "unit"            :: NetFunction (SkBuff -> Action SkBuff)
 log_packet  = Fun "log_packet"      :: NetFunction (SkBuff -> Action SkBuff)

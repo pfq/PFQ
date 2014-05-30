@@ -31,16 +31,6 @@
 
 #include "forward.h"
 
-static struct sk_buff *
-sink(arguments_t args, struct sk_buff *skb)
-{
-        if (!is_stolen(skb))
-        {
-                kfree_skb(skb);
-        }
-        return NULL;
-}
-
 
 struct forward_queue
 {
@@ -191,7 +181,6 @@ struct pfq_monadic_fun_descr forward_functions[] = {
 
         { "drop",        "SkBuff -> Action SkBuff",   	    	INLINE_FUN(forward_drop) 	},
         { "broadcast",   "SkBuff -> Action SkBuff",   	    	INLINE_FUN(forward_broadcast)	},
-        { "sink",        "SkBuff -> Action SkBuff",         sink 				},
         { "class",	 "Int -> SkBuff -> Action SkBuff",  	INLINE_FUN(forward_class) 	},
         { "deliver",	 "Int -> SkBuff -> Action SkBuff",  	INLINE_FUN(forward_deliver) 	},
 

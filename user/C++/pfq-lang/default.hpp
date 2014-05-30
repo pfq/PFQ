@@ -240,7 +240,6 @@ namespace pfq_lang
         auto broadcast      = netfunction("broadcast");
         auto kernel         = netfunction("kernel");
         auto forward_kernel = netfunction("forward_kernel");
-        auto sink           = netfunction("sink");
         auto drop           = netfunction("drop");
         auto unit           = netfunction("unit");
         auto log_packet     = netfunction("log_packet");
