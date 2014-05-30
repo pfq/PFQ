@@ -372,24 +372,24 @@ get_mark(arguments_t args, struct sk_buff const *skb)
 
 struct pfq_property_fun_descr property_functions[] = {
 
-        { "ip_tos", 	 FUN_PROPERTY, ip_tos 	   },
-        { "ip_tot_len",  FUN_PROPERTY, ip_tot_len  },
-        { "ip_id",  	 FUN_PROPERTY, ip_id 	   },
-        { "ip_frag",	 FUN_PROPERTY, ip_frag 	   },
-        { "ip_ttl", 	 FUN_PROPERTY, ip_ttl 	   },
+        { "ip_tos", 	 "SkBuff -> a", FUN_PROPERTY, ip_tos 	   },
+        { "ip_tot_len",  "SkBuff -> a", FUN_PROPERTY, ip_tot_len   },
+        { "ip_id",  	 "SkBuff -> a", FUN_PROPERTY, ip_id 	   },
+        { "ip_frag",	 "SkBuff -> a", FUN_PROPERTY, ip_frag 	   },
+        { "ip_ttl", 	 "SkBuff -> a", FUN_PROPERTY, ip_ttl 	   },
 
-        { "tcp_source",  FUN_PROPERTY, tcp_source  },
-        { "tcp_dest", 	 FUN_PROPERTY, tcp_dest    },
-        { "tcp_hdrlen",  FUN_PROPERTY, tcp_hdrlen_ },
+        { "tcp_source",  "SkBuff -> a", FUN_PROPERTY, tcp_source   },
+        { "tcp_dest", 	 "SkBuff -> a", FUN_PROPERTY, tcp_dest     },
+        { "tcp_hdrlen",  "SkBuff -> a", FUN_PROPERTY, tcp_hdrlen_  },
 
-        { "udp_source",  FUN_PROPERTY, udp_source  },
-        { "udp_dest", 	 FUN_PROPERTY, udp_dest    },
-        { "udp_len",  	 FUN_PROPERTY, udp_len	   },
+        { "udp_source",  "SkBuff -> a", FUN_PROPERTY, udp_source   },
+        { "udp_dest", 	 "SkBuff -> a", FUN_PROPERTY, udp_dest     },
+        { "udp_len",  	 "SkBuff -> a", FUN_PROPERTY, udp_len	   },
 
-        { "icmp_type",   FUN_PROPERTY, icmp_type   },
-        { "icmp_code",   FUN_PROPERTY, icmp_code   },
+        { "icmp_type",   "SkBuff -> a", FUN_PROPERTY, icmp_type    },
+        { "icmp_code",   "SkBuff -> a", FUN_PROPERTY, icmp_code    },
 
-	{ "get_mark", 	 FUN_PROPERTY, get_mark    },
+	{ "get_mark", 	 "SkBuff -> a", FUN_PROPERTY, get_mark     },
 
         { NULL }};
 
