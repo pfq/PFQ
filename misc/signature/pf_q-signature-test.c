@@ -30,21 +30,6 @@
 
 int main()
 {
-	char buffer0[64];
-	char buffer1[64];
-	char buffer2[64];
-	char buffer3[64];
-	char buffer4[64];
-	char buffer5[64];
-	char buffer6[64];
-	char buffer7[64];
-	char buffer8[64];
-	char buffer9[64];
-	char buffer10[64];
-	char buffer11[64];
-	char buffer12[64];
-	char buffer13[64];
-
 	string_view_t f0 =  make_string_view("");
 	string_view_t f1 =  make_string_view("  CInt");
 	string_view_t f2 =  make_string_view("   CInt - Error");
@@ -60,6 +45,9 @@ int main()
 	string_view_t f11 = make_string_view( "  ((CInt -> ( CInt-> CShort )) -> CInt -> SkBuff)");
 	string_view_t f12 = make_string_view( "(  ((CInt -> ( CInt-> CShort )) -> CInt -> SkBuff) )");
 	string_view_t f13 = make_string_view("(    CInt -> ( CInt-> CShort ) -> SkBuff -> Action SkBuff )");
+	string_view_t f14 = make_string_view("(    Action SkBuff )");
+
+  	string_view_t f15 = make_string_view("CInt -> (String) -> ((Maybe   SkBuff )) -> (Action SkBuff)  ");
 
 	assert( pfq_signature_is_function(f0) == false );
 	assert( pfq_signature_is_function(f1) == false );
@@ -75,6 +63,8 @@ int main()
 	assert( pfq_signature_is_function(f11) == true );
 	assert( pfq_signature_is_function(f12) == true );
 	assert( pfq_signature_is_function(f13) == true );
+	assert( pfq_signature_is_function(f14) == false );
+	assert( pfq_signature_is_function(f15) == true );
 
 	assert( pfq_signature_arity(f0) == -1 );
 	assert( pfq_signature_arity(f1) == 0  );
@@ -90,6 +80,8 @@ int main()
 	assert( pfq_signature_arity(f11) == 2  );
 	assert( pfq_signature_arity(f12) == 2  );
 	assert( pfq_signature_arity(f13) == 3  );
+	assert( pfq_signature_arity(f14) == 0  );
+	assert( pfq_signature_arity(f15) == 3  );
 
 	assert( pfq_signature_redundant_brackets(f0)  == 0 );
 	assert( pfq_signature_redundant_brackets(f1)  == 0 );
@@ -105,6 +97,8 @@ int main()
 	assert( pfq_signature_redundant_brackets(f11) == 1 );
 	assert( pfq_signature_redundant_brackets(f12) == 2 );
 	assert( pfq_signature_redundant_brackets(f13) == 1 );
+	assert( pfq_signature_redundant_brackets(f14) == 1 );
+	assert( pfq_signature_redundant_brackets(f15) == 0 );
 
 	string_view_t c0  = pfq_signature_simplify(f0);
 	string_view_t c1  = pfq_signature_simplify(f1);
@@ -120,36 +114,25 @@ int main()
 	string_view_t c11 = pfq_signature_simplify(f11);
 	string_view_t c12 = pfq_signature_simplify(f12);
 	string_view_t c13 = pfq_signature_simplify(f13);
+	string_view_t c14 = pfq_signature_simplify(f14);
+	string_view_t c15 = pfq_signature_simplify(f15);
 
-	string_view_sprintf(buffer0,  c0);
-	string_view_sprintf(buffer1,  c1);
-	string_view_sprintf(buffer2,  c2);
-	string_view_sprintf(buffer3,  c3);
-	string_view_sprintf(buffer4,  c4);
-	string_view_sprintf(buffer5,  c5);
-	string_view_sprintf(buffer6,  c6);
-	string_view_sprintf(buffer7,  c7);
-	string_view_sprintf(buffer8,  c8);
-	string_view_sprintf(buffer9,  c9);
-	string_view_sprintf(buffer10, c10);
-	string_view_sprintf(buffer11, c11);
-	string_view_sprintf(buffer12, c12);
-	string_view_sprintf(buffer13, c13);
-
-	printf("simplified f0 '%s'\n",  buffer0);
-	printf("simplified f1 '%s'\n",  buffer1);
-	printf("simplified f2 '%s'\n",  buffer2);
-	printf("simplified f3 '%s'\n",  buffer3);
-	printf("simplified f4 '%s'\n",  buffer4);
-	printf("simplified f5 '%s'\n",  buffer5);
-	printf("simplified f6 '%s'\n",  buffer6);
-	printf("simplified f7 '%s'\n",  buffer7);
-	printf("simplified f8 '%s'\n",  buffer8);
-	printf("simplified f9 '%s'\n",  buffer9);
-	printf("simplified f10 '%s'\n", buffer10);
-	printf("simplified f11 '%s'\n", buffer11);
-	printf("simplified f12 '%s'\n", buffer12);
-	printf("simplified f13 '%s'\n", buffer13);
+	printf("f0: "); string_view_put(c0);    putchar('\n');
+	printf("f1: "); string_view_put(c1);    putchar('\n');
+	printf("f2: "); string_view_put(c2);    putchar('\n');
+	printf("f3: "); string_view_put(c3);    putchar('\n');
+	printf("f4: "); string_view_put(c4);    putchar('\n');
+	printf("f5: "); string_view_put(c5);    putchar('\n');
+	printf("f6: "); string_view_put(c6);    putchar('\n');
+	printf("f7: "); string_view_put(c7);    putchar('\n');
+	printf("f8: "); string_view_put(c8);    putchar('\n');
+	printf("f9: "); string_view_put(c9);    putchar('\n');
+	printf("f10: "); string_view_put(c10);  putchar('\n');
+	printf("f11: "); string_view_put(c11);  putchar('\n');
+	printf("f12: "); string_view_put(c12);  putchar('\n');
+	printf("f13: "); string_view_put(c13);  putchar('\n');
+	printf("f14: "); string_view_put(c14);  putchar('\n');
+	printf("f15: "); string_view_put(c15);  putchar('\n');
 
 	printf("---\n");
 
@@ -187,41 +170,32 @@ int main()
 	assert(pfq_signature_equal(make_string_view("Maybe CInt"), make_string_view("(MaybeCInt )   ")) == false );
 	assert(pfq_signature_equal(make_string_view("Maybe CInt"), make_string_view("(Maybe -> CInt )   ")) == false );
 
+	assert(pfq_signature_equal(make_string_view("CInt->String -> SkBuff -> Action SkBuff"), make_string_view("(( CInt -> (String) -> SkBuff -> (Action SkBuff)  )   )")) == true );
 
-	string_view_t b0 = pfq_signature_bind(f12, 0);
-	string_view_t b1 = pfq_signature_bind(f12, 1);
-	string_view_t b2 = pfq_signature_bind(f12, 2);
-	string_view_t b3 = pfq_signature_bind(f12, 3);
-	string_view_t b4 = pfq_signature_bind(f12, 4);
 
-	string_view_sprintf(buffer0,  b0);
-	string_view_sprintf(buffer1,  b1);
-	string_view_sprintf(buffer2,  b2);
-	string_view_sprintf(buffer3,  b3);
-	string_view_sprintf(buffer4,  b4);
+	string_view_t b0 = pfq_signature_bind(f15, 0);
+	string_view_t b1 = pfq_signature_bind(f15, 1);
+	string_view_t b2 = pfq_signature_bind(f15, 2);
+	string_view_t b3 = pfq_signature_bind(f15, 3);
+	string_view_t b4 = pfq_signature_bind(f15, 4);
 
-	printf("bind 0 => '%s'\n",  buffer0);
-	printf("bind 1 => '%s'\n",  buffer1);
-	printf("bind 2 => '%s'\n",  buffer2);
-	printf("bind 3 => '%s'\n",  buffer3);
-	printf("bind 4 => '%s'\n",  buffer4);
+	printf("b0: "); string_view_put(b0);  putchar('\n');
+	printf("b1: "); string_view_put(b1);  putchar('\n');
+	printf("b2: "); string_view_put(b2);  putchar('\n');
+	printf("b3: "); string_view_put(b3);  putchar('\n');
+	printf("b4: "); string_view_put(b4);  putchar('\n');
 
-	string_view_t a0 = pfq_signature_arg(f12, 0);
-	string_view_t a1 = pfq_signature_arg(f12, 1);
-	string_view_t a2 = pfq_signature_arg(f12, 2);
-	string_view_t a3 = pfq_signature_arg(f12, 3);
+	string_view_t a0 = pfq_signature_arg(f15, 0);
+	string_view_t a1 = pfq_signature_arg(f15, 1);
+	string_view_t a2 = pfq_signature_arg(f15, 2);
+	string_view_t a3 = pfq_signature_arg(f15, 3);
 
 	printf("---\n");
 
-	string_view_sprintf(buffer0,  a0);
-	string_view_sprintf(buffer1,  a1);
-	string_view_sprintf(buffer2,  a2);
-	string_view_sprintf(buffer3,  a3);
-
-	printf("arg0 => '%s'\n",  buffer0);
-	printf("arg1 => '%s'\n",  buffer1);
-	printf("arg2 => '%s'\n",  buffer2);
-	printf("arg3 => '%s'\n",  buffer3);
+	printf("arg0: "); string_view_put(a0); putchar('\n');
+	printf("arg1: "); string_view_put(a1); putchar('\n');
+	printf("arg2: "); string_view_put(a2); putchar('\n');
+	printf("arg3: "); string_view_put(a3); putchar('\n');
 
 	printf("All test passed.\n");
 	return 0;
