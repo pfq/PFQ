@@ -61,6 +61,7 @@ namespace pfq_lang
         out << "functional_descr "
             << "type:"      << show (descr.type) << ' '
             << "symbol:"    << descr.symbol     << ' '
+            << "nargs:"     << descr.nargs      << ' '
             << "arg_ptr:"   << descr.arg_ptr    << ' '
             << "arg_size:"  << descr.arg_size   << ' '
             << "fun:"       << descr.fun        << ' '
@@ -78,6 +79,7 @@ namespace pfq_lang
     {
         enum pfq_functional_type    type;
         std::string                 symbol;
+        size_t                      nargs;
 
         std::shared_ptr<void>       arg_ptr;
         size_t                      arg_size;
@@ -92,6 +94,7 @@ namespace pfq_lang
     {
         return "FunDescr { " + show(descr.type) + ' '
                              + descr.symbol + ' '
+                             + std::to_string(descr.nargs) + ' '
                              + std::to_string((unsigned long)descr.arg_ptr.get()) + ' '
                              + std::to_string(descr.arg_size) + ' '
                              + std::to_string(descr.fun) + ' '
@@ -157,7 +160,7 @@ namespace pfq_lang
         {
             return std::make_pair(std::vector<FunDescr>
             {
-                FunDescr { pfq_combinator_fun, comb.name_, std::shared_ptr<void>(), 0, -1, -1, -1 }
+                FunDescr { pfq_combinator_fun, comb.name_, 2, std::shared_ptr<void>(), 0, -1, -1, -1 }
             }, n+1);
         }
 
@@ -282,9 +285,10 @@ namespace pfq_lang
         static inline std::pair<std::vector<FunDescr>, int>
         serialize(int n, Pred1 const &p)
         {
+            size_t s = p.ptr_ ? 1 : 0;
             return std::make_pair(std::vector<FunDescr>
             {
-                FunDescr { pfq_predicate_fun, p.name_, p.ptr_, p.size_, -1, -1, -1 }
+                FunDescr { pfq_predicate_fun, p.name_, s, p.ptr_, p.size_, -1, -1, -1 }
             }, n+1);
         }
 
@@ -311,7 +315,7 @@ namespace pfq_lang
         {
             std::vector<FunDescr> prop, pred =
             {
-                FunDescr { pfq_predicate_fun, p.name_, std::shared_ptr<void>(), 0, n+1, -1, -1 }
+                FunDescr { pfq_predicate_fun, p.name_, 1, std::shared_ptr<void>(), 0, n+1, -1, -1 }
             };
 
             int n1;
@@ -327,7 +331,7 @@ namespace pfq_lang
         {
             std::vector<FunDescr> prop, pred =
             {
-                FunDescr { pfq_predicate_fun, p.name_, p.ptr_, p.size_, n+1, -1, -1 }
+                FunDescr { pfq_predicate_fun, p.name_, 2, p.ptr_, p.size_, n+1, -1, -1 }
             };
 
             int n1;
@@ -393,7 +397,7 @@ namespace pfq_lang
         {
             return std::make_pair(std::vector<FunDescr>
             {
-                FunDescr { pfq_property_fun, p.name_, std::shared_ptr<void>(), 0, -1, -1, -1 }
+                FunDescr { pfq_property_fun, p.name_, 0, std::shared_ptr<void>(), 0, -1, -1, -1 }
             }, n+1);
         }
 
@@ -402,7 +406,7 @@ namespace pfq_lang
         {
             return std::make_pair(std::vector<FunDescr>
             {
-                FunDescr { pfq_property_fun, p.name_, p.ptr_, p.size_, -1, -1, -1 }
+                FunDescr { pfq_property_fun, p.name_, 1, p.ptr_, p.size_, -1, -1, -1 }
             }, n+1);
         }
 
@@ -523,7 +527,7 @@ namespace pfq_lang
         {
             return std::make_pair(std::vector<FunDescr>
             {
-                FunDescr { pfq_monadic_fun, f.name_, std::shared_ptr<void>(), 0, -1, n+1, n+1 }
+                FunDescr { pfq_monadic_fun, f.name_, 0, std::shared_ptr<void>(), 0, -1, n+1, n+1 }
             }, n+1);
         }
 
@@ -532,7 +536,7 @@ namespace pfq_lang
         {
             return std::make_pair(std::vector<FunDescr>
             {
-                FunDescr { pfq_monadic_fun, f.name_, f.ptr_, f.size_, -1, n+1, n+1 }
+                FunDescr { pfq_monadic_fun, f.name_, 1, f.ptr_, f.size_, -1, n+1, n+1 }
             }, n+1);
         }
 
@@ -547,7 +551,7 @@ namespace pfq_lang
 
             v1 = std::vector<FunDescr>
             {
-                FunDescr { pfq_high_order_fun, f.name_, std::shared_ptr<void>(), 0, n+1, n1, n1 }
+                FunDescr { pfq_high_order_fun, f.name_, 1, std::shared_ptr<void>(), 0, n+1, n1, n1 }
             };
 
             return std::make_pair(std::move(v1) + std::move(p1), n1);
@@ -566,7 +570,7 @@ namespace pfq_lang
 
             v1 = std::vector<FunDescr>
             {
-                FunDescr { pfq_high_order_fun, f.name_, std::shared_ptr<void>(), 0, n+1, n2, n1 }
+                FunDescr { pfq_high_order_fun, f.name_, 2, std::shared_ptr<void>(), 0, n+1, n2, n1 }
             };
 
             return std::make_pair(std::move(v1) + std::move(p1) + std::move(c1), n2);
@@ -585,7 +589,7 @@ namespace pfq_lang
 
             v1 = std::vector<FunDescr>
             {
-                FunDescr { pfq_high_order_fun, f.name_, std::shared_ptr<void>(), 0, n+1, n2, n1 }
+                FunDescr { pfq_high_order_fun, f.name_, 3, std::shared_ptr<void>(), 0, n+1, n2, n1 }
             };
 
             for(auto & d : c1)

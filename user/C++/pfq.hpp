@@ -769,6 +769,7 @@ namespace net {
             {
                 prg->fun[n].type     = descr.type;
                 prg->fun[n].symbol   = descr.symbol.c_str();
+                prg->fun[n].nargs    = descr.nargs;
                 prg->fun[n].arg_ptr  = descr.arg_ptr.get();
                 prg->fun[n].arg_size = descr.arg_size;
                 prg->fun[n].fun      = descr.fun;

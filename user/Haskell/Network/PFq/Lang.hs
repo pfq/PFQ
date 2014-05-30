@@ -77,6 +77,7 @@ data FunDescr = FunDescr
                 {
                     functionalType  :: FunType,
                     functionalSymb  :: String,
+                    functionalNargs :: Int,
                     functionalArg   :: Arguments,
                     functionalLeft  :: Int,
                     functionalRight :: Int
@@ -85,8 +86,8 @@ data FunDescr = FunDescr
 
 
 relinkFunDescr :: Int -> Int -> FunDescr -> FunDescr
-relinkFunDescr n1 n2 (FunDescr t name arg l r) =
-        FunDescr t name arg (update n1 n2 l) (update n1 n2 r)
+relinkFunDescr n1 n2 (FunDescr t name nargs arg l r) =
+        FunDescr t name nargs arg (update n1 n2 l) (update n1 n2 r)
             where update n1 n2 x = if x == n1 then n2 else x
 
 -- Serializable class
@@ -107,6 +108,7 @@ instance Show Combinator where
 instance Serializable Combinator where
         serialize n (Combinator name) = ([FunDescr { functionalType  = CombinatorFun,
                                                      functionalSymb  = name,
+                                                     functionalNargs = 2,
                                                      functionalArg   = Empty,
                                                      functionalLeft  = -1,
                                                      functionalRight = -1 }], n+1)
@@ -122,12 +124,14 @@ instance Show Property where
 instance Serializable Property where
         serialize n (Prop name)   = ([FunDescr { functionalType  = PropertyFun,
                                                  functionalSymb  = name,
+                                                 functionalNargs = 0,
                                                  functionalArg   = Empty,
                                                  functionalLeft  = -1,
                                                  functionalRight = -1 }], n+1)
 
         serialize n (Prop1 name x) = ([FunDescr { functionalType  = PropertyFun,
                                                   functionalSymb  = name,
+                                                  functionalNargs = 1,
                                                   functionalArg   = ArgData $ StorableContext x,
                                                   functionalLeft  = -1,
                                                   functionalRight = -1 }], n+1)
@@ -148,12 +152,14 @@ instance Show Predicate where
 instance Serializable Predicate where
         serialize n (Pred name)   = ([FunDescr { functionalType  = PredicateFun,
                                                  functionalSymb  = name,
+                                                 functionalNargs = 0,
                                                  functionalArg   = Empty,
                                                  functionalLeft  = -1,
                                                  functionalRight = -1 }], n+1)
 
         serialize n (Pred1 name x) = ([FunDescr { functionalType  = PredicateFun,
                                                   functionalSymb  = name,
+                                                  functionalNargs = 1,
                                                   functionalArg   = ArgData $ StorableContext x,
                                                   functionalLeft  = -1,
                                                   functionalRight = -1 }], n+1)
@@ -165,6 +171,7 @@ instance Serializable Predicate where
 
         serialize n (Pred3 name p ) = let (f', n') = ([FunDescr { functionalType  = PredicateFun,
                                                  functionalSymb  = name,
+                                                 functionalNargs = 1,
                                                  functionalArg   = ArgFun (n+1),
                                                  functionalLeft  = -1,
                                                  functionalRight = -1 }], n+1)
@@ -173,6 +180,7 @@ instance Serializable Predicate where
 
         serialize n (Pred4 name p x) = let (f', n') = ([FunDescr { functionalType  = PredicateFun,
                                                  functionalSymb  = name,
+                                                 functionalNargs = 2,
                                                  functionalArg   = ArgDataFun (StorableContext x) (n+1),
                                                  functionalLeft  = -1,
                                                  functionalRight = -1 }], n+1)
@@ -202,18 +210,21 @@ instance Show (NetFunction f) where
 instance Serializable (NetFunction f) where
         serialize n (Fun name) = ([FunDescr { functionalType  = MonadicFun,
                                               functionalSymb  = name,
+                                              functionalNargs = 0,
                                               functionalArg   = Empty,
                                               functionalLeft  = n+1,
                                               functionalRight = n+1 }], n+1)
 
         serialize n (Fun1 name x) = ([FunDescr { functionalType  = MonadicFun,
                                                  functionalSymb  = name,
+                                                 functionalNargs = 1,
                                                  functionalArg   = ArgData $ StorableContext x,
                                                  functionalLeft  = n+1,
                                                  functionalRight = n+1 }], n+1)
 
         serialize n (HFun name p) = let (s', n') = ([FunDescr { functionalType  = HighOrderFun,
                                                                 functionalSymb  = name,
+                                                                functionalNargs = 1,
                                                                 functionalArg   = ArgFun n',
                                                                 functionalLeft  = n'',
                                                                 functionalRight = n'' }], n+1)
@@ -222,6 +233,7 @@ instance Serializable (NetFunction f) where
 
         serialize n (HFun1 name p c) = let (f', n') = (FunDescr { functionalType  = HighOrderFun,
                                                                   functionalSymb  = name,
+                                                                  functionalNargs = 2,
                                                                   functionalArg   = ArgFun n',
                                                                   functionalLeft  = -1,
                                                                   functionalRight = -1 }, n+1)
@@ -231,6 +243,7 @@ instance Serializable (NetFunction f) where
 
         serialize n (HFun2 name p c1 c2) = let (f', n') = (FunDescr { functionalType  = HighOrderFun,
                                                                       functionalSymb  = name,
+                                                                      functionalNargs = 3,
                                                                       functionalArg   = ArgFun n',
                                                                       functionalLeft  = -1,
                                                                       functionalRight = -1 }, n+1)

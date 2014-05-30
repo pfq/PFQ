@@ -801,37 +801,38 @@ makeCounters ptr = do
 
 
 withMetaFun :: FunDescr
-            -> ((FunDescr, CString, IntPtr, Int, Int) -> IO b)
+            -> ((FunDescr, CString, Int, IntPtr, Int, Int) -> IO b)
             -> IO b
-withMetaFun descr@(FunDescr _ name arg _ _) fun =
+withMetaFun descr@(FunDescr _ name nargs arg _ _) fun =
     withCString name $ \ name' ->
         case arg of
-            Empty    -> fun (descr, name', ptrToIntPtr nullPtr, 0, -1)
-            ArgFun f -> fun (descr, name', ptrToIntPtr nullPtr, 0,  f)
+            Empty    -> fun (descr, name', nargs, ptrToIntPtr nullPtr, 0, -1)
+            ArgFun f -> fun (descr, name', nargs, ptrToIntPtr nullPtr, 0,  f)
             ArgData (StorableContext val) ->
                 alloca $ \ptr -> do
                     poke ptr val
-                    fun (descr, name', ptrToIntPtr ptr, sizeOf val, -1)
+                    fun (descr, name', nargs, ptrToIntPtr ptr, sizeOf val, -1)
             ArgDataFun (StorableContext val) f ->
                 alloca $ \ptr -> do
                     poke ptr val
-                    fun (descr, name', ptrToIntPtr ptr, sizeOf val, f)
+                    fun (descr, name', nargs, ptrToIntPtr ptr, sizeOf val, f)
 
 
-data StorableFunDescr = StorableFunDescr CInt CString IntPtr CSize CInt CInt CInt
+data StorableFunDescr = StorableFunDescr CInt CString CInt IntPtr CSize CInt CInt CInt
 
 
 instance Storable StorableFunDescr where
         sizeOf _  = getConstant group_fun_descr_size
         alignment _ = undefined
-        poke ptr (StorableFunDescr tp name arg size fun left right) = do
+        poke ptr (StorableFunDescr tp name nargs arg size fun left right) = do
             pokeByteOff ptr 0 tp
-            pokeByteOff ptr  (sizeOf nullPtr) name
-            pokeByteOff ptr (sizeOf nullPtr * 2) arg
-            pokeByteOff ptr (sizeOf nullPtr * 3) size
-            pokeByteOff ptr (sizeOf nullPtr * 4) fun
-            pokeByteOff ptr (sizeOf nullPtr * 4  + sizeOf (undefined :: CInt)) left
-            pokeByteOff ptr (sizeOf nullPtr * 4  + sizeOf (undefined :: CInt) * 2) right
+            pokeByteOff ptr (sizeOf nullPtr) name
+            pokeByteOff ptr (sizeOf nullPtr * 2) nargs
+            pokeByteOff ptr (sizeOf nullPtr * 3) arg
+            pokeByteOff ptr (sizeOf nullPtr * 4) size
+            pokeByteOff ptr (sizeOf nullPtr * 5) fun
+            pokeByteOff ptr (sizeOf nullPtr * 5  + sizeOf (undefined :: CInt)) left
+            pokeByteOff ptr (sizeOf nullPtr * 5  + sizeOf (undefined :: CInt) * 2) right
 
 
 -- |Specify a functional computation for the given group.
@@ -851,18 +852,18 @@ groupComputation hdl gid comp = do
         pokeByteOff ptr (sizeOf(undefined :: CSize)) (0 :: CSize)   -- entry_point
         withMany withMetaFun meta $ \tmps -> do
             let offset n = sizeOf(undefined :: CSize) * 2 + getConstant group_fun_descr_size * n
-            forM_ (zip [0..] tmps) $ \(n, (des, fname, aptr, asize, f)) -> do
+            forM_ (zip [0..] tmps) $ \(n, (des, fname, nargs, aptr, asize, f)) -> do
                 let ftype = case des of
-                                FunDescr MonadicFun _ _ _ _     -> 0
-                                FunDescr HighOrderFun _ _ _ _   -> 1
-                                FunDescr PredicateFun _ _ _ _   -> 2
-                                FunDescr CombinatorFun _ _ _ _  -> 3
-                                FunDescr PropertyFun _ _ _ _    -> 4
+                                FunDescr MonadicFun _ _ _ _ _     -> 0
+                                FunDescr HighOrderFun _ _ _ _ _   -> 1
+                                FunDescr PredicateFun _ _ _ _ _   -> 2
+                                FunDescr CombinatorFun _ _ _ _ _  -> 3
+                                FunDescr PropertyFun _ _ _ _ _    -> 4
                     fun   = f
                     left  = functionalLeft des
                     right = functionalRight des
 
-                pokeByteOff ptr (offset n) (StorableFunDescr ftype fname aptr (fromIntegral asize) (fromIntegral fun) (fromIntegral left) (fromIntegral right))
+                pokeByteOff ptr (offset n) (StorableFunDescr ftype fname (fromIntegral nargs) aptr (fromIntegral asize) (fromIntegral fun) (fromIntegral left) (fromIntegral right))
 
             pfq_set_group_computation hdl (fromIntegral gid) ptr >>= throwPFqIf_ hdl (== -1)
 

@@ -101,10 +101,11 @@ void pr_devel_functional_descr(struct pfq_functional_descr const *descr, int ind
 
 	if (descr->arg_ptr)
 	{
-		pr_devel("%d  %s:%s aptr:%p asize:%zu fun:%d left:%d right:%d\n"
+		pr_devel("%d  %s:%s nargs:%zd aptr:%p asize:%zu fun:%d left:%d right:%d\n"
 				, index
 				, fun_name[descr->type % (sizeof(fun_name)/sizeof(fun_name[0]))]
 				, name
+				, descr->nargs
 				, descr->arg_ptr
 				, descr->arg_size
 				, descr->fun
@@ -113,10 +114,11 @@ void pr_devel_functional_descr(struct pfq_functional_descr const *descr, int ind
 	}
 	else
 	{
-		pr_devel("%d  %s:%s fun:%d left:%d right:%d\n"
+		pr_devel("%d  %s:%s nargs:%zd fun:%d left:%d right:%d\n"
 				, index
 				, fun_name[descr->type % (sizeof(fun_name)/sizeof(fun_name[0]))]
 				, name
+				, descr->nargs
 				, descr->fun
 				, descr->left
 				, descr->right);
