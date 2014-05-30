@@ -26,51 +26,48 @@
 #include <stdio.h>
 #include <string.h>
 #include <ctype.h>
+#include <limits.h>
 
 #include "pf_q-signature.h"
+
+
+#define max(a,b) \
+	({ __typeof__ (a) _a = (a); \
+	   __typeof__ (b) _b = (b); \
+	   _a > _b ? _a : _b; })
+
+#define min(a,b) \
+	({ __typeof__ (a) _a = (a); \
+	   __typeof__ (b) _b = (b); \
+	   _a < _b ? _a : _b; })
 
 int
 pfq_signature_redundant_brackets(string_view_t str)
 {
-	int red = 0;
+       	int red = INT_MAX, nest = 0;
+	int bracket = 0;
+        const char *p;
 
-	for(;string_view_length(str) != 0;)
+	for(p = str.begin; p != str.end; p++)
 	{
-		int bracket = 0;
-		const char *p;
+	       	switch(*p) {
+		case '(': {
+			bracket++;
+			nest = max(nest, bracket);
+		} break;
 
-		str = string_view_trim(str);
+		case ')': {
+			--bracket;
+		} break;
 
-		for(p = str.begin; p != str.end; p++)
-		{
-			switch (*p)
-			{
-			case '(': bracket++;
-				  continue;
-			case ')': bracket--;
-				  continue;
-			default:
-				if (*p != '-' &&
-				    *p != '>' &&
-				    !isspace(*p) &&
-				    bracket == 0)
-					return red;
-			}
-		}
+		case '>': {
+                	red = min(red, bracket);
+		} break;
 
-		red++;
-
-		if (bracket != 0)
-			return -1;
-
-		if (*str.begin == '(')
-		{
-			str.begin++;
-			str.end--;
 		}
 	}
 
-	return red;
+	return red != INT_MAX ? red : nest;
 }
 
 
@@ -88,18 +85,6 @@ pfq_signature_simplify(string_view_t str)
         	while (str.end != str.begin &&
         		*--str.end != ')')
         	{ }
-	}
-
-	str = string_view_trim(str);
-
-	if (string_view_length(str) >= 2) {
-		if (*str.begin == '-')
-			str.begin += 2;
-	}
-
-	if (string_view_length(str) >= 2) {
-        	if (*(str.end - 1) == '>')
-        		str.end -= 2;
 	}
 
 	return string_view_trim(str);
@@ -145,8 +130,7 @@ pfq_signature_bind(string_view_t str, int n)
                          	continue;
  			}
  			if (*p == ')') {
-                         	bracket--;
-                         	if (bracket == 0)
+                         	if (--bracket == 0)
                          		state = 0;
  			}
 
@@ -156,6 +140,7 @@ pfq_signature_bind(string_view_t str, int n)
  	}
 
 	s.begin = p;
+
 	return pfq_signature_simplify(s);
 }
 
@@ -225,7 +210,6 @@ skip_white_space(const char *p, bool *done)
 	return p;
 }
 
-
 bool
 pfq_signature_equal(string_view_t sig_a, string_view_t sig_b)
 {
@@ -290,11 +274,34 @@ pfq_signature_is_function(string_view_t sig)
 string_view_t
 pfq_signature_arg(string_view_t s, int index)
 {
-	string_view_t s1 = pfq_signature_bind(s, index);
-	string_view_t s2 = pfq_signature_bind(s1,1);
+	string_view_t s1 = pfq_signature_bind(s,  index);
+
+        const char * p = s1.begin;
+        int bracket = 0;
+
+ 	for(; p != s1.end; ++p)
+ 	{
+		if (bracket == 0) {
+			if (*p == '-')
+				break;
+			if (*p == '(') {
+				bracket++;
+				continue;
+			}
+		} else {
+ 			if (*p == '(') {
+ 				bracket++;
+ 				continue;
+			}
+			if (*p == ')') {
+				--bracket;
+				continue;
+			}
+		}
+	}
 
 	s.begin = s1.begin;
- 	s.end   = s2.begin;
+ 	s.end   = p;
 
 	return pfq_signature_simplify(s);
 }
