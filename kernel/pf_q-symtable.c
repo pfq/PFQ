@@ -37,14 +37,9 @@
 DECLARE_RWSEM(symtable_rw_sem);
 DEFINE_SEMAPHORE(symtable_sem);
 
-LIST_HEAD(pfq_monadic_cat);
-LIST_HEAD(pfq_predicate_cat);
-LIST_HEAD(pfq_property_cat);
+LIST_HEAD(pfq_lang_functions);
 
-EXPORT_SYMBOL_GPL(pfq_monadic_cat);
-EXPORT_SYMBOL_GPL(pfq_predicate_cat);
-EXPORT_SYMBOL_GPL(pfq_property_cat);
-
+EXPORT_SYMBOL_GPL(pfq_lang_functions);
 
 
 static void
@@ -202,20 +197,17 @@ pfq_symtable_init(void)
 	extern struct pfq_function_descr 	high_order_functions[];
 	extern struct pfq_function_descr 	misc_functions[];
 
-        pfq_symtable_register_functions(NULL, &pfq_monadic_cat, (struct pfq_function_descr *)filter_functions);
-        pfq_symtable_register_functions(NULL, &pfq_monadic_cat, (struct pfq_function_descr *)forward_functions);
-        pfq_symtable_register_functions(NULL, &pfq_monadic_cat, (struct pfq_function_descr *)steering_functions);
-        pfq_symtable_register_functions(NULL, &pfq_monadic_cat, (struct pfq_function_descr *)high_order_functions);
-        pfq_symtable_register_functions(NULL, &pfq_monadic_cat, (struct pfq_function_descr *)misc_functions);
+        pfq_symtable_register_functions(NULL, &pfq_lang_functions, (struct pfq_function_descr *)filter_functions);
+        pfq_symtable_register_functions(NULL, &pfq_lang_functions, (struct pfq_function_descr *)forward_functions);
+        pfq_symtable_register_functions(NULL, &pfq_lang_functions, (struct pfq_function_descr *)steering_functions);
+        pfq_symtable_register_functions(NULL, &pfq_lang_functions, (struct pfq_function_descr *)high_order_functions);
+        pfq_symtable_register_functions(NULL, &pfq_lang_functions, (struct pfq_function_descr *)misc_functions);
 
-        pfq_symtable_register_functions(NULL, &pfq_predicate_cat, (struct pfq_function_descr *)predicate_functions);
-        pfq_symtable_register_functions(NULL, &pfq_predicate_cat, (struct pfq_function_descr *)combinator_functions);
+        pfq_symtable_register_functions(NULL, &pfq_lang_functions, (struct pfq_function_descr *)predicate_functions);
+        pfq_symtable_register_functions(NULL, &pfq_lang_functions, (struct pfq_function_descr *)combinator_functions);
+        pfq_symtable_register_functions(NULL, &pfq_lang_functions, (struct pfq_function_descr *)property_functions);
 
-        pfq_symtable_register_functions(NULL, &pfq_property_cat, (struct pfq_function_descr *)property_functions);
-
-	pfq_symtable_pr_devel("monadic functions: ",   &pfq_monadic_cat);
-	pfq_symtable_pr_devel("predicate functions: ", &pfq_predicate_cat);
-	pfq_symtable_pr_devel("property functions: ",  &pfq_property_cat);
+	pfq_symtable_pr_devel("pfq-lang functions: ",   &pfq_lang_functions);
 
 	printk(KERN_INFO "[PFQ] symtable initialized.\n");
 }
@@ -227,9 +219,7 @@ pfq_symtable_free(void)
         down_write(&symtable_rw_sem);
 	down(&symtable_sem);
 
-        __pfq_symtable_free(&pfq_monadic_cat);
-	__pfq_symtable_free(&pfq_predicate_cat);
-	__pfq_symtable_free(&pfq_property_cat);
+        __pfq_symtable_free(&pfq_lang_functions);
 
         up(&symtable_sem);
         up_write(&symtable_rw_sem);
