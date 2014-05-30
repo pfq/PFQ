@@ -83,7 +83,7 @@ pod_user(void **ptr, void const __user *arg, size_t size)
 
 void pr_devel_functional_descr(struct pfq_functional_descr const *descr, int index)
 {
-	const char *fun_name[] =
+	const char *fun_type[] =
 	{
 		[pfq_monadic_fun] 	= "fun",
 		[pfq_high_order_fun] 	= "hfun",
@@ -103,7 +103,7 @@ void pr_devel_functional_descr(struct pfq_functional_descr const *descr, int ind
 	{
 		pr_devel("%d  %s:%s nargs:%zd aptr:%p asize:%zu fun:%d left:%d right:%d\n"
 				, index
-				, fun_name[descr->type % (sizeof(fun_name)/sizeof(fun_name[0]))]
+				, fun_type[descr->type % (sizeof(fun_type)/sizeof(fun_type[0]))]
 				, name
 				, descr->nargs
 				, descr->arg_ptr
@@ -116,7 +116,7 @@ void pr_devel_functional_descr(struct pfq_functional_descr const *descr, int ind
 	{
 		pr_devel("%d  %s:%s nargs:%zd fun:%d left:%d right:%d\n"
 				, index
-				, fun_name[descr->type % (sizeof(fun_name)/sizeof(fun_name[0]))]
+				, fun_type[descr->type % (sizeof(fun_type)/sizeof(fun_type[0]))]
 				, name
 				, descr->nargs
 				, descr->fun

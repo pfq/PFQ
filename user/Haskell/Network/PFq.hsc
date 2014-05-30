@@ -837,7 +837,7 @@ instance Storable StorableFunDescr where
 
 -- |Specify a functional computation for the given group.
 --
--- The functional computation is specified by the q-lan eDLS.
+-- The functional computation is specified by the PFQ-Lang.
 --
 
 groupComputation :: Ptr PFqTag

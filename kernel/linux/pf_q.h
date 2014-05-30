@@ -357,8 +357,7 @@ void pfq_spsc_read_commit(struct pfq_tx_queue_hdr *q)
 #define Q_CLASS_CONTROL         Q_CLASS(1)
 #define Q_CLASS_ANY             (unsigned long)-1
 
-
-/* functional: descriptor */
+/* functional descriptor */
 
 enum pfq_functional_type
 {
@@ -369,9 +368,10 @@ enum pfq_functional_type
         pfq_property_fun
 };
 
+
 struct pfq_functional_descr
 {
-        enum pfq_functional_type type;
+	enum pfq_functional_type type;
 
         const char __user *     symbol;
        	size_t 			nargs;
@@ -379,7 +379,7 @@ struct pfq_functional_descr
         const void __user *     arg_ptr;
         size_t                  arg_size;
 
-	int 			fun;
+	int 		 	fun;
         int                     left;
         int                     right;
 };
