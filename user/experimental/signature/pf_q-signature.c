@@ -216,33 +216,67 @@ pfq_signature_arity(string_view_t str)
 
 
 static inline const char *
-skip_white_space(const char *p)
+skip_white_space(const char *p, bool *done)
 {
-	while (isspace(*p))
+	while (isspace(*p)) {
+		*done = true;
 		p++;
+	}
 	return p;
 }
 
+
 bool
-pfq_signature_equal(string_view_t _a, string_view_t _b)
+pfq_signature_equal(string_view_t sig_a, string_view_t sig_b)
 {
-	string_view_t sig_a = pfq_signature_simplify(_a);
-	string_view_t sig_b = pfq_signature_simplify(_b);
+	bool eq = true;
+	int arity, n;
 
-        const char * a = sig_a.start, * b = sig_b.start;
+	arity = pfq_signature_arity(sig_a);
 
-	while (a != sig_a.end && b != sig_b.end)
-	{
-		a = skip_white_space(a);
-		b = skip_white_space(b);
+	if (arity != pfq_signature_arity(sig_b))
+		return false;
 
-		if (*a != *b)
-        		return false;
-		a++;
-		b++;
+	sig_a = pfq_signature_simplify(sig_a);
+	sig_b = pfq_signature_simplify(sig_b);
+
+	if (arity == 0) {
+
+        	const char *a = sig_a.begin;
+        	const char *b = sig_b.begin;
+
+		while (a != sig_a.end && b != sig_b.end)
+		{
+			bool sa = false, sb = false;
+
+			a = skip_white_space(a, &sa);
+			b = skip_white_space(b, &sb);
+
+			if (sa != sb)
+				return false;
+
+			if (a == sig_a.end || b == sig_b.end)
+			    	break;
+
+			if (*a != *b)
+				return false;
+
+			a++, b++;
+		}
+
+		return a == sig_a.end && b == sig_b.end;
 	}
 
-	return a == sig_a.end && b == sig_b.end;
+	for(n = 0; n < arity; n++)
+	{
+        	eq &= pfq_signature_equal( pfq_signature_arg(sig_a, n),
+        				   pfq_signature_arg(sig_b, n));
+
+        	if (!eq)
+        		return false;
+	}
+
+	return eq;
 }
 
 
