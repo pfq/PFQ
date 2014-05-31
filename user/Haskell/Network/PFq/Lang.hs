@@ -29,6 +29,7 @@
 
 {-# LANGUAGE ExistentialQuantification #-}
 {-# LANGUAGE NoMonomorphismRestriction #-}
+{-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE ImpredicativeTypes #-}
 {-# LANGUAGE Rank2Types #-}
 {-# LANGUAGE GADTs #-}
@@ -38,16 +39,15 @@
 module Network.PFq.Lang
     (
         StorableArgument(..),
-        Arguments(..),
-        Combinator(..),
-        Predicate(..),
-        Property(..),
-        NetFunction(..),
+        Argument(..),
+        Function(..),
         Serializable(..),
-        FunDescr(..),
-        FunType(..),
+        Expr(..),
         Action,
         SkBuff,
+        NetFunction,
+        NetPredicate,
+        NetProperty,
         (>->),
 
     ) where
@@ -55,6 +55,15 @@ module Network.PFq.Lang
 
 import Control.Monad.Identity
 import Foreign.Storable
+import Data.Word
+
+-- Basic types...
+
+newtype SkBuff   = SkBuff ()
+newtype Action a = Identity a
+
+type Symbol      = String
+type Signature   = String
 
 
 -- StorableArgument
@@ -65,206 +74,197 @@ instance Show StorableArgument where
         show (StorableArgument c) = show c
 
 
-data Arguments = Empty | ArgData StorableArgument | ArgFun Int | ArgDataFun StorableArgument Int
+-- AST Expression:
+
+data Argument = ArgData StorableArgument | ArgFun Expr
                     deriving Show
 
--- Functional descriptor
-
-data FunType = MonadicFun | HighOrderFun | PredicateFun | CombinatorFun | PropertyFun
-                deriving (Show, Enum)
-
-data FunDescr = FunDescr
-                {
-                    functionalType  :: FunType,
-                    functionalSymb  :: String,
-                    functionalNargs :: Int,
-                    functionalArg   :: Arguments,
-                    functionalLeft  :: Int,
-                    functionalRight :: Int
-                }
+data Expr = Nil | Expr Symbol Signature [Argument] Expr
                 deriving (Show)
 
-
-relinkFunDescr :: Int -> Int -> FunDescr -> FunDescr
-relinkFunDescr n1 n2 (FunDescr t name nargs arg l r) =
-        FunDescr t name nargs arg (update n1 n2 l) (update n1 n2 r)
-            where update n1 n2 x = if x == n1 then n2 else x
 
 -- Serializable class
 
 class Serializable a where
-    serialize :: Int -> a -> ([FunDescr], Int)
+    serialize :: Int -> a -> (Expr, Int)
 
--- Predicates and combinators
-
-newtype Combinator = Combinator String
-
-instance Show Combinator where
-        show (Combinator "or")  = "|"
-        show (Combinator "and") = "&"
-        show (Combinator "xor") = "^"
-        show (Combinator _)     = undefined
-
-instance Serializable Combinator where
-        serialize n (Combinator name) = ([FunDescr { functionalType  = CombinatorFun,
-                                                     functionalSymb  = name,
-                                                     functionalNargs = 2,
-                                                     functionalArg   = Empty,
-                                                     functionalLeft  = -1,
-                                                     functionalRight = -1 }], n+1)
-
-data Property where
-        Prop  :: String -> Property
-        Prop1 :: forall a. (Show a, Storable a) => String -> a -> Property
-
-instance Show Property where
-        show (Prop  name)       = name
-        show (Prop1 name a1)    = "(" ++ name ++ " " ++ show a1 ++ ")"
-
-instance Serializable Property where
-        serialize n (Prop name)   = ([FunDescr { functionalType  = PropertyFun,
-                                                 functionalSymb  = name,
-                                                 functionalNargs = 0,
-                                                 functionalArg   = Empty,
-                                                 functionalLeft  = -1,
-                                                 functionalRight = -1 }], n+1)
-
-        serialize n (Prop1 name x) = ([FunDescr { functionalType  = PropertyFun,
-                                                  functionalSymb  = name,
-                                                  functionalNargs = 1,
-                                                  functionalArg   = ArgData $ StorableArgument x,
-                                                  functionalLeft  = -1,
-                                                  functionalRight = -1 }], n+1)
-data Predicate where
-        Pred  :: String -> Predicate
-        Pred1 :: forall a. (Show a, Storable a) => String -> a -> Predicate
-        Pred2 :: Combinator -> Predicate -> Predicate -> Predicate
-        Pred3 :: String -> Property -> Predicate
-        Pred4 :: forall a. (Show a, Storable a) => String -> Property -> a -> Predicate
-
-instance Show Predicate where
-        show (Pred name)        = name
-        show (Pred1 name a1)    = "(" ++ name ++ " " ++ show a1 ++ ")"
-        show (Pred2 comb p1 p2) = "(" ++ show p1 ++ " " ++ show comb ++ " " ++ show p2 ++ ")"
-        show (Pred3 name p)     = "(" ++ name ++ " " ++ show p ++ ")"
-        show (Pred4 name p a)   = "(" ++ name ++ " " ++ show p ++ " " ++ show a ++ ")"
-
-instance Serializable Predicate where
-        serialize n (Pred name)   = ([FunDescr { functionalType  = PredicateFun,
-                                                 functionalSymb  = name,
-                                                 functionalNargs = 0,
-                                                 functionalArg   = Empty,
-                                                 functionalLeft  = -1,
-                                                 functionalRight = -1 }], n+1)
-
-        serialize n (Pred1 name x) = ([FunDescr { functionalType  = PredicateFun,
-                                                  functionalSymb  = name,
-                                                  functionalNargs = 1,
-                                                  functionalArg   = ArgData $ StorableArgument x,
-                                                  functionalLeft  = -1,
-                                                  functionalRight = -1 }], n+1)
-
-        serialize n (Pred2 comb p1 p2) = let ([g'], n')   = serialize n comb
-                                             (f'',  n'')  = serialize n' p1
-                                             (f''', n''') = serialize n'' p2
-                                         in ( [g'{ functionalLeft = n', functionalRight = n''}] ++ f'' ++ f''', n''')
-
-        serialize n (Pred3 name p ) = let (f', n') = ([FunDescr { functionalType  = PredicateFun,
-                                                 functionalSymb  = name,
-                                                 functionalNargs = 1,
-                                                 functionalArg   = ArgFun (n+1),
-                                                 functionalLeft  = -1,
-                                                 functionalRight = -1 }], n+1)
-                                          (f'', n'') = serialize n' p
-                                      in (f' ++ f'', n'')
-
-        serialize n (Pred4 name p x) = let (f', n') = ([FunDescr { functionalType  = PredicateFun,
-                                                 functionalSymb  = name,
-                                                 functionalNargs = 2,
-                                                 functionalArg   = ArgDataFun (StorableArgument x) (n+1),
-                                                 functionalLeft  = -1,
-                                                 functionalRight = -1 }], n+1)
-                                           (f'', n'') = serialize n' p
-                                       in (f' ++ f'', n'')
 
 -- NetFunction
 
-data NetFunction f where
-        Fun   :: String -> NetFunction f
-        Fun1  :: forall a f. (Show a, Storable a) => String -> a -> NetFunction f
-        HFun  :: String -> Predicate -> NetFunction f
-        HFun1 :: String -> Predicate -> NetFunction f -> NetFunction f
-        HFun2 :: String -> Predicate -> NetFunction f -> NetFunction f -> NetFunction f
-        Comp  :: forall f1 f2 f. NetFunction f1 -> NetFunction f2 -> NetFunction f
+type NetFunction  = Function (SkBuff -> Action SkBuff)
+type NetPredicate = Function (SkBuff -> Bool)
+type NetProperty  = Function (SkBuff -> Word64)
+
+data Function f where
+    MFunction  :: (Symbol,Signature) -> NetFunction
+    MFunction1 :: forall a. (Show a, Storable a) => (Symbol,Signature) -> a -> NetFunction
+
+    HFunction  :: (Symbol,Signature) -> NetPredicate -> NetFunction
+    HFunction1 :: (Symbol,Signature) -> NetPredicate -> NetFunction -> NetFunction
+    HFunction2 :: (Symbol,Signature) -> NetPredicate -> NetFunction -> NetFunction -> NetFunction
+
+    Predicate  :: (Symbol,Signature) -> NetPredicate
+    Predicate1 :: forall a. (Show a, Storable a) => (Symbol,Signature) -> a -> NetPredicate
+    Predicate2 :: forall a. (Show a, Storable a) => (Symbol,Signature) -> NetProperty -> a -> NetPredicate
+
+    Property   :: (Symbol,Signature) -> NetProperty
+    Property1  :: forall a. (Show a, Storable a) => (Symbol,Signature) -> a -> NetProperty
+
+    Combinator1 :: (Symbol,Signature) -> NetPredicate -> NetPredicate
+    Combinator2 :: (Symbol,Signature) -> NetPredicate -> NetPredicate -> NetPredicate
+
+    Compound   :: forall f1 f2 f. Function f1 -> Function f2 -> Function f
+
+-- Kleisli operator: >->
+
+(>->) :: Function (a -> m b) -> Function (b -> m c) -> Function (a -> m c)
+f1 >-> f2 = Compound f1 f2
 
 
-instance Show (NetFunction f) where
-        show (Fun name) = name
-        show (Fun1 name a) = "(" ++ name ++ " " ++ show a ++ ")"
-        show (HFun  name pred) = "(" ++ name ++ " " ++ show pred ++ ")"
-        show (HFun1 name pred a) = "(" ++ name ++ " " ++ show pred ++ " (" ++ show a ++ "))"
-        show (HFun2 name pred a1 a2)  = "(" ++ name ++ " " ++ show pred ++ " (" ++ show a1 ++ ") (" ++ show a2 ++ "))"
-        show (Comp c1 c2) = show c1 ++ " >-> " ++ show c2
+-- Show instance:
+
+instance Show (Function f) where
+        show (MFunction (symb,_))           = symb
+        show (MFunction1 (symb,_) a)        = "(" ++ symb ++ " " ++ show a ++ ")"
+
+        show (HFunction (symb,_) p)         = "(" ++ symb ++ " " ++ show p  ++ ")"
+        show (HFunction1 (symb,_) p n1)     = "(" ++ symb ++ " " ++ show p  ++ " (" ++ show n1 ++ "))"
+        show (HFunction2 (symb,_) p n1 n2)  = "(" ++ symb ++ " " ++ show p  ++ " (" ++ show n1 ++ ") (" ++ show n2 ++ "))"
+
+        show (Predicate  (symb,_))          = symb
+        show (Predicate1 (symb,_) a)        = "(" ++ symb ++ " " ++ show a ++ ")"
+        show (Predicate2 (symb,_) p a)      = "(" ++ symb ++ " " ++ show p ++ " " ++ show a ++ ")"
+
+        show (Property (symb,_))            = symb
+        show (Property1 (symb,_) a)         = "(" ++ symb ++ " " ++ show a ++ ")"
+
+        show (Combinator1 ("not",_) p)      = "(not " ++ show p ++ ")"
+        show (Combinator2 ("and",_) p1 p2)  = "(" ++ show p1 ++" && " ++ show p2 ++ ")"
+        show (Combinator2 ("or" ,_) p1 p2)  = "(" ++ show p1 ++" || " ++ show p2 ++ ")"
+        show (Combinator2 ("xor",_) p1 p2)  = "(" ++ show p1 ++" ^^ " ++ show p2 ++ ")"
+        show (Combinator1 (_,_) _)          = undefined
+        show (Combinator2 (_,_) _ _)        = undefined
+
+        show (Compound a b) = show a ++ " >-> " ++ show b
 
 
-instance Serializable (NetFunction f) where
-        serialize n (Fun name) = ([FunDescr { functionalType  = MonadicFun,
-                                              functionalSymb  = name,
-                                              functionalNargs = 0,
-                                              functionalArg   = Empty,
-                                              functionalLeft  = n+1,
-                                              functionalRight = n+1 }], n+1)
-
-        serialize n (Fun1 name x) = ([FunDescr { functionalType  = MonadicFun,
-                                                 functionalSymb  = name,
-                                                 functionalNargs = 1,
-                                                 functionalArg   = ArgData $ StorableArgument x,
-                                                 functionalLeft  = n+1,
-                                                 functionalRight = n+1 }], n+1)
-
-        serialize n (HFun name p) = let (s', n') = ([FunDescr { functionalType  = HighOrderFun,
-                                                                functionalSymb  = name,
-                                                                functionalNargs = 1,
-                                                                functionalArg   = ArgFun n',
-                                                                functionalLeft  = n'',
-                                                                functionalRight = n'' }], n+1)
-                                        (p', n'') = serialize n' p
-                                    in (s' ++ p', n'')
-
-        serialize n (HFun1 name p c) = let (f', n') = (FunDescr { functionalType  = HighOrderFun,
-                                                                  functionalSymb  = name,
-                                                                  functionalNargs = 2,
-                                                                  functionalArg   = ArgFun n',
-                                                                  functionalLeft  = -1,
-                                                                  functionalRight = -1 }, n+1)
-                                           (p', n'') = serialize n' p
-                                           (c', n''') = serialize n'' c
-                                        in ( [f'{ functionalLeft = n''', functionalRight = n''}] ++ p' ++ c', n''')
-
-        serialize n (HFun2 name p c1 c2) = let (f', n') = (FunDescr { functionalType  = HighOrderFun,
-                                                                      functionalSymb  = name,
-                                                                      functionalNargs = 3,
-                                                                      functionalArg   = ArgFun n',
-                                                                      functionalLeft  = -1,
-                                                                      functionalRight = -1 }, n+1)
-                                               (p',  n'') = serialize n' p
-                                               (c1', n''') = serialize n'' c1
-                                               (c2', n'''') = serialize n''' c2
-                                            in ( [f'{ functionalLeft = n''', functionalRight = n''}] ++ p' ++ map (relinkFunDescr n''' n'''') c1' ++ c2', n'''')
-
-        serialize n (Comp c1 c2) = let (s1, n') = serialize n c1
-                                       (s2, n'') = serialize n' c2
-                                   in (s1 ++ s2, n'')
+-- relinkFunDescr :: Int -> Int -> FunDescr -> FunDescr
+-- relinkFunDescr n1 n2 (FunDescr t name nargs arg l r) =
+--         FunDescr t name nargs arg (update n1 n2 l) (update n1 n2 r)
+--             where update n1 n2 x = if x == n1 then n2 else x
 
 
--- InKernelFun: signature of basic in-kernel monadic function.
-
-newtype SkBuff   = SkBuff ()
-type Action      = Identity
-
--- operator: >->
-
-(>->) :: NetFunction (a -> m b) -> NetFunction (b -> m c) -> NetFunction (a -> m c)
-f1 >-> f2 = Comp f1 f2
-
+-- instance Serializable Combinator where
+--         serialize n (Combinator name) = ([FunDescr { functionalType  = CombinatorFun,
+--                                                      functionalSymb  = name,
+--                                                      functionalNargs = 2,
+--                                                      functionalArg   = Empty,
+--                                                      functionalLeft  = -1,
+--                                                      functionalRight = -1 }], n+1)
+--
+-- instance Serializable Property where
+--         serialize n (Prop name)   = ([FunDescr { functionalType  = PropertyFun,
+--                                                  functionalSymb  = name,
+--                                                  functionalNargs = 0,
+--                                                  functionalArg   = Empty,
+--                                                  functionalLeft  = -1,
+--                                                  functionalRight = -1 }], n+1)
+--
+--         serialize n (Prop1 name x) = ([FunDescr { functionalType  = PropertyFun,
+--                                                   functionalSymb  = name,
+--                                                   functionalNargs = 1,
+--                                                   functionalArg   = ArgData $ StorableArgument x,
+--                                                   functionalLeft  = -1,
+--                                                   functionalRight = -1 }], n+1)
+--
+--
+-- instance Serializable Predicate where
+--         serialize n (Pred name)   = ([FunDescr { functionalType  = PredicateFun,
+--                                                  functionalSymb  = name,
+--                                                  functionalNargs = 0,
+--                                                  functionalArg   = Empty,
+--                                                  functionalLeft  = -1,
+--                                                  functionalRight = -1 }], n+1)
+--
+--         serialize n (Pred1 name x) = ([FunDescr { functionalType  = PredicateFun,
+--                                                   functionalSymb  = name,
+--                                                   functionalNargs = 1,
+--                                                   functionalArg   = ArgData $ StorableArgument x,
+--                                                   functionalLeft  = -1,
+--                                                   functionalRight = -1 }], n+1)
+--
+--         serialize n (Pred2 comb p1 p2) = let ([g'], n')   = serialize n comb
+--                                              (f'',  n'')  = serialize n' p1
+--                                              (f''', n''') = serialize n'' p2
+--                                          in ( [g'{ functionalLeft = n', functionalRight = n''}] ++ f'' ++ f''', n''')
+--
+--         serialize n (Pred3 name p ) = let (f', n') = ([FunDescr { functionalType  = PredicateFun,
+--                                                  functionalSymb  = name,
+--                                                  functionalNargs = 1,
+--                                                  functionalArg   = ArgFun (n+1),
+--                                                  functionalLeft  = -1,
+--                                                  functionalRight = -1 }], n+1)
+--                                           (f'', n'') = serialize n' p
+--                                       in (f' ++ f'', n'')
+--
+--         serialize n (Pred4 name p x) = let (f', n') = ([FunDescr { functionalType  = PredicateFun,
+--                                                  functionalSymb  = name,
+--                                                  functionalNargs = 2,
+--                                                  functionalArg   = ArgDataFun (StorableArgument x) (n+1),
+--                                                  functionalLeft  = -1,
+--                                                  functionalRight = -1 }], n+1)
+--                                            (f'', n'') = serialize n' p
+--                                        in (f' ++ f'', n'')
+--
+--
+-- instance Serializable (NetFunction f) where
+--         serialize n (Fun name) = ([FunDescr { functionalType  = MonadicFun,
+--                                               functionalSymb  = name,
+--                                               functionalNargs = 0,
+--                                               functionalArg   = Empty,
+--                                               functionalLeft  = n+1,
+--                                               functionalRight = n+1 }], n+1)
+--
+--         serialize n (Fun1 name x) = ([FunDescr { functionalType  = MonadicFun,
+--                                                  functionalSymb  = name,
+--                                                  functionalNargs = 1,
+--                                                  functionalArg   = ArgData $ StorableArgument x,
+--                                                  functionalLeft  = n+1,
+--                                                  functionalRight = n+1 }], n+1)
+--
+--         serialize n (HFun name p) = let (s', n') = ([FunDescr { functionalType  = HighOrderFun,
+--                                                                 functionalSymb  = name,
+--                                                                 functionalNargs = 1,
+--                                                                 functionalArg   = ArgFun n',
+--                                                                 functionalLeft  = n'',
+--                                                                 functionalRight = n'' }], n+1)
+--                                         (p', n'') = serialize n' p
+--                                     in (s' ++ p', n'')
+--
+--         serialize n (HFun1 name p c) = let (f', n') = (FunDescr { functionalType  = HighOrderFun,
+--                                                                   functionalSymb  = name,
+--                                                                   functionalNargs = 2,
+--                                                                   functionalArg   = ArgFun n',
+--                                                                   functionalLeft  = -1,
+--                                                                   functionalRight = -1 }, n+1)
+--                                            (p', n'') = serialize n' p
+--                                            (c', n''') = serialize n'' c
+--                                         in ( [f'{ functionalLeft = n''', functionalRight = n''}] ++ p' ++ c', n''')
+--
+--         serialize n (HFun2 name p c1 c2) = let (f', n') = (FunDescr { functionalType  = HighOrderFun,
+--                                                                       functionalSymb  = name,
+--                                                                       functionalNargs = 3,
+--                                                                       functionalArg   = ArgFun n',
+--                                                                       functionalLeft  = -1,
+--                                                                       functionalRight = -1 }, n+1)
+--                                                (p',  n'') = serialize n' p
+--                                                (c1', n''') = serialize n'' c1
+--                                                (c2', n'''') = serialize n''' c2
+--                                             in ( [f'{ functionalLeft = n''', functionalRight = n''}] ++ p' ++ map (relinkFunDescr n''' n'''') c1' ++ c2', n'''')
+--
+--         serialize n (Comp c1 c2) = let (s1, n') = serialize n c1
+--                                        (s2, n'') = serialize n' c2
+--                                    in (s1 ++ s2, n'')
+--
+--
 
