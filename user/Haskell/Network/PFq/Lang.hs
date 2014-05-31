@@ -115,14 +115,14 @@ data Function f where {
         Combinator1 :: (Symbol,Signature) -> NetPredicate -> NetPredicate;
         Combinator2 :: (Symbol,Signature) -> NetPredicate -> NetPredicate -> NetPredicate;
 
-        Compound   :: forall f1 f2 f. Function f1 -> Function f2 -> Function f;
+        Composition :: forall f1 f2 f. Function f1 -> Function f2 -> Function f;
 
     } deriving (Typeable)
 
 -- Kleisli operator: >->
 
 (>->) :: Function (a -> m b) -> Function (b -> m c) -> Function (a -> m c)
-f1 >-> f2 = Compound f1 f2
+f1 >-> f2 = Composition f1 f2
 
 
 -- typeOf' utility function:
@@ -155,7 +155,7 @@ instance Show (Function f) where
         show (Combinator1 (_,_) _)           = undefined
         show (Combinator2 (_,_) _ _)         = undefined
 
-        show (Compound a b) = show a ++ " >-> " ++ show b
+        show (Composition a b) = show a ++ " >-> " ++ show b
 
 -- Pretty class:
 
@@ -184,7 +184,7 @@ instance Pretty (Function f) where
         prettyPrint (Combinator1 (_,_) _)          = undefined
         prettyPrint (Combinator2 (_,_) _ _)        = undefined
 
-        prettyPrint (Compound a b) = prettyPrint a ++ " >-> " ++ prettyPrint b
+        prettyPrint (Composition a b) = prettyPrint a ++ " >-> " ++ prettyPrint b
 
 -- Serializable class:
 
