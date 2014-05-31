@@ -212,12 +212,12 @@ infixl 5 .||.
 -- Default comparators
 
 (.<.), (.<=.), (.==.), (./=.), (.>.), (.>=.) :: NetProperty -> Word64 -> NetPredicate
-p .<.  x = Predicate2 ("less", typeOf'((.<.))) p x
-p .<=. x = Predicate2 ("less_eq", typeOf'((.<=.))) p x
-p .==. x = Predicate2 ("equal", typeOf'((.==.))) p x
-p ./=. x = Predicate2 ("not_equal", typeOf'((./=.))) p x
-p .>.  x = Predicate2 ("greater", typeOf'((.>.))) p x
-p .>=. x = Predicate2 ("greater_eq", typeOf'((.>=.))) p x
+p .<.  x = Predicate3 ("less", typeOf'((.<.))) p x
+p .<=. x = Predicate3 ("less_eq", typeOf'((.<=.))) p x
+p .==. x = Predicate3 ("equal", typeOf'((.==.))) p x
+p ./=. x = Predicate3 ("not_equal", typeOf'((./=.))) p x
+p .>.  x = Predicate3 ("greater", typeOf'((.>.))) p x
+p .>=. x = Predicate3 ("greater_eq", typeOf'((.>=.))) p x
 
 infix 4 .<.
 infix 4 .<=.
@@ -228,8 +228,8 @@ infix 4 ./=.
 
 
 any_bit, all_bit :: NetProperty -> Word64 -> NetPredicate
-p `any_bit` x = Predicate2 ("any_bit", typeOf'(any_bit)) p x
-p `all_bit` x = Predicate2 ("all_bit", typeOf'(all_bit)) p x
+p `any_bit` x = Predicate3 ("any_bit", typeOf'(any_bit)) p x
+p `all_bit` x = Predicate3 ("all_bit", typeOf'(all_bit)) p x
 
 
 -- Default predicates

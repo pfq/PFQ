@@ -107,7 +107,8 @@ data Function f where {
 
         Predicate  :: (Symbol,Signature) -> NetPredicate;
         Predicate1 :: forall a. (Show a, Storable a) => (Symbol,Signature) -> a -> NetPredicate;
-        Predicate2 :: forall a. (Show a, Storable a) => (Symbol,Signature) -> NetProperty -> a -> NetPredicate;
+        Predicate2 :: (Symbol,Signature) -> NetProperty -> NetPredicate;
+        Predicate3 :: forall a. (Show a, Storable a) => (Symbol,Signature) -> NetProperty -> a -> NetPredicate;
 
         Property   :: (Symbol,Signature) -> NetProperty;
         Property1  :: forall a. (Show a, Storable a) => (Symbol,Signature) -> a -> NetProperty;
@@ -143,7 +144,8 @@ instance Show (Function f) where
 
         show (Predicate  (symb,sig))         = "(" ++ symb ++ " :: " ++ sig ++ ")"
         show (Predicate1 (symb,sig) a)       = "(" ++ symb ++ " " ++ show a ++ " :: " ++ sig ++ ")"
-        show (Predicate2 (symb,sig) p a)     = "(" ++ symb ++ " " ++ show p ++ " " ++ show a ++ " :: " ++ sig ++ ")"
+        show (Predicate2 (symb,sig) p)          = "(" ++ symb ++ " " ++ show p ++ " :: " ++ sig ++ ")"
+        show (Predicate3 (symb,sig) p a)        = "(" ++ symb ++ " " ++ show p ++ " " ++ show a ++ " :: " ++ sig ++ ")"
 
         show (Property (symb,sig))           = "(" ++ symb ++ " :: " ++ sig ++ ")"
         show (Property1 (symb,sig) a)        = "(" ++ symb ++ " " ++ show a ++ " :: " ++ sig ++ ")"
@@ -172,7 +174,8 @@ instance Pretty (Function f) where
 
         prettyPrint (Predicate  (symb,_))          = symb
         prettyPrint (Predicate1 (symb,_) a)        = "(" ++ symb ++ " " ++ show a ++ ")"
-        prettyPrint (Predicate2 (symb,_) p a)      = "(" ++ symb ++ " " ++ prettyPrint p ++ " " ++ show a ++ ")"
+        prettyPrint (Predicate2 (symb,_) p)        = "(" ++ symb ++ " " ++ prettyPrint p ++ ")"
+        prettyPrint (Predicate3 (symb,_) p a)      = "(" ++ symb ++ " " ++ prettyPrint p ++ " " ++ show a ++ ")"
 
         prettyPrint (Property (symb,_))            = symb
         prettyPrint (Property1 (symb,_) a)         = "(" ++ symb ++ " " ++ show a ++ ")"
