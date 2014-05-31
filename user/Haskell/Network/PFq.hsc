@@ -1,4 +1,4 @@
---
+
 --    Copyright (c) 2011-14, Nicola Bonelli
 --    All rights reserved.
 --
@@ -808,11 +808,11 @@ withMetaFun descr@(FunDescr _ name nargs arg _ _) fun =
         case arg of
             Empty    -> fun (descr, name', nargs, ptrToIntPtr nullPtr, 0, -1)
             ArgFun f -> fun (descr, name', nargs, ptrToIntPtr nullPtr, 0,  f)
-            ArgData (StorableContext val) ->
+            ArgData (StorableArgument val) ->
                 alloca $ \ptr -> do
                     poke ptr val
                     fun (descr, name', nargs, ptrToIntPtr ptr, sizeOf val, -1)
-            ArgDataFun (StorableContext val) f ->
+            ArgDataFun (StorableArgument val) f ->
                 alloca $ \ptr -> do
                     poke ptr val
                     fun (descr, name', nargs, ptrToIntPtr ptr, sizeOf val, f)

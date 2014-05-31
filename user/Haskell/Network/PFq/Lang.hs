@@ -37,7 +37,7 @@
 
 module Network.PFq.Lang
     (
-        StorableContext(..),
+        StorableArgument(..),
         Arguments(..),
         Combinator(..),
         Predicate(..),
@@ -57,15 +57,15 @@ import Control.Monad.Identity
 import Foreign.Storable
 
 
--- StorableContext
+-- StorableArgument
 
-data StorableContext = forall a. (Show a, Storable a) => StorableContext a
+data StorableArgument = forall a. (Show a, Storable a) => StorableArgument a
 
-instance Show StorableContext where
-        show (StorableContext c) = show c
+instance Show StorableArgument where
+        show (StorableArgument c) = show c
 
 
-data Arguments = Empty | ArgData StorableContext | ArgFun Int | ArgDataFun StorableContext Int
+data Arguments = Empty | ArgData StorableArgument | ArgFun Int | ArgDataFun StorableArgument Int
                     deriving Show
 
 -- Functional descriptor
@@ -132,7 +132,7 @@ instance Serializable Property where
         serialize n (Prop1 name x) = ([FunDescr { functionalType  = PropertyFun,
                                                   functionalSymb  = name,
                                                   functionalNargs = 1,
-                                                  functionalArg   = ArgData $ StorableContext x,
+                                                  functionalArg   = ArgData $ StorableArgument x,
                                                   functionalLeft  = -1,
                                                   functionalRight = -1 }], n+1)
 data Predicate where
@@ -160,7 +160,7 @@ instance Serializable Predicate where
         serialize n (Pred1 name x) = ([FunDescr { functionalType  = PredicateFun,
                                                   functionalSymb  = name,
                                                   functionalNargs = 1,
-                                                  functionalArg   = ArgData $ StorableContext x,
+                                                  functionalArg   = ArgData $ StorableArgument x,
                                                   functionalLeft  = -1,
                                                   functionalRight = -1 }], n+1)
 
@@ -181,7 +181,7 @@ instance Serializable Predicate where
         serialize n (Pred4 name p x) = let (f', n') = ([FunDescr { functionalType  = PredicateFun,
                                                  functionalSymb  = name,
                                                  functionalNargs = 2,
-                                                 functionalArg   = ArgDataFun (StorableContext x) (n+1),
+                                                 functionalArg   = ArgDataFun (StorableArgument x) (n+1),
                                                  functionalLeft  = -1,
                                                  functionalRight = -1 }], n+1)
                                            (f'', n'') = serialize n' p
@@ -218,7 +218,7 @@ instance Serializable (NetFunction f) where
         serialize n (Fun1 name x) = ([FunDescr { functionalType  = MonadicFun,
                                                  functionalSymb  = name,
                                                  functionalNargs = 1,
-                                                 functionalArg   = ArgData $ StorableContext x,
+                                                 functionalArg   = ArgData $ StorableArgument x,
                                                  functionalLeft  = n+1,
                                                  functionalRight = n+1 }], n+1)
 
