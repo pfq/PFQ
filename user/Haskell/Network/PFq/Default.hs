@@ -178,7 +178,6 @@ import Foreign.Storable.Tuple()
 -- import Data.Bits
 -- import Data.Endian
 
-
 -- prefix2mask :: Int -> Word32
 -- prefix2mask p =  toBigEndian $ fromIntegral $ complement (shiftL (1 :: Word64) (32 - p) - 1)
 
@@ -198,14 +197,13 @@ mkSuperNetAddr net p sub = let a = unsafePerformIO (inet_addr net)
 
 -- Default combinators
 
-(.||.), (.&&.), (.^^.) :: Predicate -> Predicate -> Predicate
-not' :: Predicate -> Predicate
+(.||.), (.&&.), (.^^.) :: NetPredicate -> NetPredicate -> NetPredicate
+not' :: NetPredicate -> NetPredicate
 
-p1 .||. p2 = Pred2 (Combinator "or" ) p1 p2
-p1 .&&. p2 = Pred2 (Combinator "and") p1 p2
-p1 .^^. p2 = Pred2 (Combinator "xor") p1 p2
-not' p     = Pred2 (Combinator "not") p  p
-
+not' p     = Combinator1 ("not", "(SkBuff -> Bool) -> SkBuff -> Bool") p
+p1 .||. p2 = Combinator2 ("or",  "(SkBuff -> Bool) -> (SkBuff -> Bool) -> SkBuff -> Bool") p1 p2
+p1 .&&. p2 = Combinator2 ("and", "(SkBuff -> Bool) -> (SkBuff -> Bool) -> SkBuff -> Bool") p1 p2
+p1 .^^. p2 = Combinator2 ("xor", "(SkBuff -> Bool) -> (SkBuff -> Bool) -> SkBuff -> Bool") p1 p2
 
 infixl 7 .&&.
 infixl 6 .^^.
@@ -213,13 +211,13 @@ infixl 5 .||.
 
 -- Default comparators
 
-(.<.), (.<=.), (.==.), (./=.), (.>.), (.>=.) :: Property -> Word64 -> Predicate
-p .<.  x = Pred4 "less" p x
-p .<=. x = Pred4 "less_eq" p x
-p .==. x = Pred4 "equal" p x
-p ./=. x = Pred4 "not_equal" p x
-p .>.  x = Pred4 "greater" p x
-p .>=. x = Pred4 "greater_eq" p x
+(.<.), (.<=.), (.==.), (./=.), (.>.), (.>=.) :: NetProperty -> Word64 -> NetPredicate
+p .<.  x = Predicate2 ("less", "") p x
+p .<=. x = Predicate2 ("less_eq", "") p x
+p .==. x = Predicate2 ("equal", "") p x
+p ./=. x = Predicate2 ("not_equal", "") p x
+p .>.  x = Predicate2 ("greater", "") p x
+p .>=. x = Predicate2 ("greater_eq", "") p x
 
 infix 4 .<.
 infix 4 .<=.
@@ -229,124 +227,124 @@ infix 4 .==.
 infix 4 ./=.
 
 
-any_bit, all_bit :: Property -> Word64 -> Predicate
-p `any_bit` x = Pred4 "any_bit" p x
-p `all_bit` x = Pred4 "all_bit" p x
+any_bit, all_bit :: NetProperty -> Word64 -> NetPredicate
+p `any_bit` x = Predicate2 ("any_bit", "") p x
+p `all_bit` x = Predicate2 ("all_bit", "") p x
 
 
 -- Default predicates
 
-is_ip       = Pred "is_ip"              :: Predicate
-is_ip6      = Pred "is_ip6"             :: Predicate
-is_udp      = Pred "is_udp"             :: Predicate
-is_tcp      = Pred "is_tcp"             :: Predicate
-is_icmp     = Pred "is_icmp"            :: Predicate
-is_udp6     = Pred "is_udp6"            :: Predicate
-is_tcp6     = Pred "is_tcp6"            :: Predicate
-is_icmp6    = Pred "is_icmp6"           :: Predicate
-is_flow     = Pred "is_flow"            :: Predicate
-has_vlan    = Pred "has_vlan"           :: Predicate
+is_ip         = Predicate ("is_ip","")
+is_ip6        = Predicate ("is_ip6","")
+is_udp        = Predicate ("is_udp","")
+is_tcp        = Predicate ("is_tcp","")
+is_icmp       = Predicate ("is_icmp","")
+is_udp6       = Predicate ("is_udp6","")
+is_tcp6       = Predicate ("is_tcp6","")
+is_icmp6      = Predicate ("is_icmp6","")
+is_flow       = Predicate ("is_flow","")
+has_vlan      = Predicate ("has_vlan","")
+is_frag       = Predicate ("is_frag","")
+is_first_frag = Predicate ("is_first_frag","")
+is_more_frag  = Predicate ("is_more_frag","")
 
-has_vid     = Pred1 "has_vid"           :: CInt -> Predicate
-has_mark    = Pred1 "has_mark"          :: CULong -> Predicate
+has_vid       = Predicate1 ("has_vid","")          :: CInt -> NetPredicate
+has_mark      = Predicate1 ("has_mark","")         :: CULong -> NetPredicate
 
-is_l3_proto = Pred1 "is_l3_proto"       :: Int16 -> Predicate
-is_l4_proto = Pred1 "is_l4_proto"       :: Int8 -> Predicate
+is_l3_proto   = Predicate1 ("is_l3_proto","")      :: Int16 -> NetPredicate
+is_l4_proto   = Predicate1 ("is_l4_proto","")      :: Int8 -> NetPredicate
 
-has_port     = Pred1 "has_port"         :: Int16 -> Predicate
-has_src_port = Pred1 "has_src_port"     :: Int16 -> Predicate
-has_dst_port = Pred1 "has_dst_port"     :: Int16 -> Predicate
+has_port      = Predicate1 ("has_port","")        :: Int16 -> NetPredicate
+has_src_port  = Predicate1 ("has_src_port","")    :: Int16 -> NetPredicate
+has_dst_port  = Predicate1 ("has_dst_port","")    :: Int16 -> NetPredicate
 
-has_addr, has_src_addr, has_dst_addr    :: String -> Int -> Predicate
+has_addr, has_src_addr, has_dst_addr        :: String -> Int -> NetPredicate
 
-has_addr net p     = Pred1 "has_addr"     (mkNetAddr net p)
-has_src_addr net p = Pred1 "has_src_addr" (mkNetAddr net p)
-has_dst_addr net p = Pred1 "has_dst_addr" (mkNetAddr net p)
-
-is_frag       = Pred "is_frag"          :: Predicate
-is_first_frag = Pred "is_first_frag"    :: Predicate
-is_more_frag  = Pred "is_more_frag"     :: Predicate
+has_addr net p     = Predicate1 ("has_addr","")     (mkNetAddr net p)
+has_src_addr net p = Predicate1 ("has_src_addr","") (mkNetAddr net p)
+has_dst_addr net p = Predicate1 ("has_dst_addr","") (mkNetAddr net p)
 
 -- Default properties
 
-get_mark    = Prop "get_mark"
+get_mark    = Property ("get_mark","")
 
-ip_tos      = Prop "ip_tos"
-ip_tot_len  = Prop "ip_tot_len"
-ip_id       = Prop "ip_id"
-ip_frag     = Prop "ip_frag"
-ip_ttl      = Prop "ip_ttl"
+ip_tos      = Property ("ip_tos","")
+ip_tot_len  = Property ("ip_tot_len","")
+ip_id       = Property ("ip_id","")
+ip_frag     = Property ("ip_frag","")
+ip_ttl      = Property ("ip_ttl","")
 
-tcp_source  = Prop "tcp_source"
-tcp_dest    = Prop "tcp_dest"
-tcp_hdrlen  = Prop "tcp_hdrlen"
+tcp_source  = Property ("tcp_source","")
+tcp_dest    = Property ("tcp_dest","")
+tcp_hdrlen  = Property ("tcp_hdrlen","")
 
-udp_source  = Prop "udp_source"
-udp_dest    = Prop "udp_dest"
-udp_len     = Prop "udp_len"
+udp_source  = Property ("udp_source","")
+udp_dest    = Property ("udp_dest","")
+udp_len     = Property ("udp_len","")
 
-icmp_type   = Prop "icmp_type"
-icmp_code   = Prop "icmp_code"
+icmp_type   = Property ("icmp_type","")
+icmp_code   = Property ("icmp_code","")
+
 
 -- Predefined in-kernel computations
 
-steer_link  = Fun "steer_link"      :: NetFunction (SkBuff -> Action SkBuff)
-steer_vlan  = Fun "steer_vlan"      :: NetFunction (SkBuff -> Action SkBuff)
-steer_ip    = Fun "steer_ip"        :: NetFunction (SkBuff -> Action SkBuff)
-steer_ip6   = Fun "steer_ip6"       :: NetFunction (SkBuff -> Action SkBuff)
-steer_flow  = Fun "steer_flow"      :: NetFunction (SkBuff -> Action SkBuff)
-steer_rtp   = Fun "steer_rtp"       :: NetFunction (SkBuff -> Action SkBuff)
+steer_net :: String -> Int -> Int -> NetFunction
+steer_net net p sub = (MFunction1 ("steer_net","") (mkSuperNetAddr net p sub))
 
-steer_net :: String -> Int -> Int -> NetFunction (SkBuff -> Action SkBuff)
-steer_net net p sub = (Fun1 "steer_net" (mkSuperNetAddr net p sub))
+steer_link      = MFunction ("steer_link","")        :: NetFunction
+steer_vlan      = MFunction ("steer_vlan","")        :: NetFunction
+steer_ip        = MFunction ("steer_ip","")          :: NetFunction
+steer_ip6       = MFunction ("steer_ip6","")         :: NetFunction
+steer_flow      = MFunction ("steer_flow","")        :: NetFunction
+steer_rtp       = MFunction ("steer_rtp","")         :: NetFunction
 
-ip          = Fun "ip"              :: NetFunction (SkBuff -> Action SkBuff)
-ip6         = Fun "ip6"             :: NetFunction (SkBuff -> Action SkBuff)
-udp         = Fun "udp"             :: NetFunction (SkBuff -> Action SkBuff)
-tcp         = Fun "tcp"             :: NetFunction (SkBuff -> Action SkBuff)
-icmp        = Fun "icmp"            :: NetFunction (SkBuff -> Action SkBuff)
-udp6        = Fun "udp6"            :: NetFunction (SkBuff -> Action SkBuff)
-tcp6        = Fun "tcp6"            :: NetFunction (SkBuff -> Action SkBuff)
-icmp6       = Fun "icmp6"           :: NetFunction (SkBuff -> Action SkBuff)
-vlan        = Fun "vlan"            :: NetFunction (SkBuff -> Action SkBuff)
-flow        = Fun "flow"            :: NetFunction (SkBuff -> Action SkBuff)
-rtp         = Fun "rtp"             :: NetFunction (SkBuff -> Action SkBuff)
+ip              = MFunction ("ip","")                :: NetFunction
+ip6             = MFunction ("ip6","")               :: NetFunction
+udp             = MFunction ("udp","")               :: NetFunction
+tcp             = MFunction ("tcp","")               :: NetFunction
+icmp            = MFunction ("icmp","")              :: NetFunction
+udp6            = MFunction ("udp6","")              :: NetFunction
+tcp6            = MFunction ("tcp6","")              :: NetFunction
+icmp6           = MFunction ("icmp6","")             :: NetFunction
+vlan            = MFunction ("vlan","")              :: NetFunction
+flow            = MFunction ("flow","")              :: NetFunction
+rtp             = MFunction ("rtp","")               :: NetFunction
 
-no_frag         = Fun "no_frag"      :: NetFunction (SkBuff -> Action SkBuff)
-no_more_frag    = Fun "no_more_frag" :: NetFunction (SkBuff -> Action SkBuff)
+no_frag         = MFunction ("no_frag","")           :: NetFunction
+no_more_frag    = MFunction ("no_more_frag","")      :: NetFunction
 
-forward_kernel = Fun "forward_kernel" :: NetFunction (SkBuff -> Action SkBuff)
-kernel      = Fun "kernel"          :: NetFunction (SkBuff -> Action SkBuff)
-broadcast   = Fun "broadcast"       :: NetFunction (SkBuff -> Action SkBuff)
-drop'       = Fun "drop"            :: NetFunction (SkBuff -> Action SkBuff)
-unit        = Fun "unit"            :: NetFunction (SkBuff -> Action SkBuff)
-log_packet  = Fun "log_packet"      :: NetFunction (SkBuff -> Action SkBuff)
+forward_kernel = MFunction ("forward_kernel","")     :: NetFunction
+kernel         = MFunction ("kernel","")             :: NetFunction
+broadcast      = MFunction ("broadcast","")          :: NetFunction
+drop'          = MFunction ("drop","")               :: NetFunction
+unit           = MFunction ("unit","")               :: NetFunction
+log_packet     = MFunction ("log_packet","")         :: NetFunction
+crc16          = MFunction ("crc16","")              :: NetFunction
 
-crc16       = Fun "crc16"           :: NetFunction (SkBuff -> Action SkBuff)
-inc         = Fun1 "inc"            :: CInt -> NetFunction (SkBuff -> Action SkBuff)
-dec         = Fun1 "dec"            :: CInt -> NetFunction (SkBuff -> Action SkBuff)
-mark        = Fun1 "mark"           :: CULong -> NetFunction (SkBuff -> Action SkBuff)
-forward     = Fun1 "forward"        :: CInt -> NetFunction (SkBuff -> Action SkBuff)
-dummy       = Fun1 "dummy"          :: CInt -> NetFunction (SkBuff -> Action SkBuff)
-class'      = Fun1 "class"          :: CInt -> NetFunction (SkBuff -> Action SkBuff)
-deliver     = Fun1 "deliver"        :: CInt -> NetFunction (SkBuff -> Action SkBuff)
+inc            = MFunction1 ("inc","")               :: CInt     -> NetFunction
+dec            = MFunction1 ("dec","")               :: CInt     -> NetFunction
+mark           = MFunction1 ("mark","")              :: CULong   -> NetFunction
+forward        = MFunction1 ("forward","")           :: CInt     -> NetFunction
+dummy          = MFunction1 ("dummy","")             :: CInt     -> NetFunction
+class'         = MFunction1 ("class","")             :: CInt     -> NetFunction
+deliver        = MFunction1 ("deliver","")           :: CInt     -> NetFunction
 
-l3_proto    = Fun1 "l3_proto"       :: Int16 -> NetFunction (SkBuff -> Action SkBuff)
-l4_proto    = Fun1 "l4_proto"       :: Int8 -> NetFunction (SkBuff -> Action SkBuff)
+l3_proto       = MFunction1 ("l3_proto","")          :: Int16    -> NetFunction
+l4_proto       = MFunction1 ("l4_proto","")          :: Int8     -> NetFunction
 
-port        = Fun1 "port"           :: Int16 -> NetFunction (SkBuff -> Action SkBuff)
-src_port    = Fun1 "src_port"       :: Int16 -> NetFunction (SkBuff -> Action SkBuff)
-dst_port    = Fun1 "dst_port"       :: Int16 -> NetFunction (SkBuff -> Action SkBuff)
+port           = MFunction1 ("port","")              :: Int16    -> NetFunction
+src_port       = MFunction1 ("src_port","")          :: Int16    -> NetFunction
+dst_port       = MFunction1 ("dst_port","")          :: Int16    -> NetFunction
 
 
-addr, src_addr, dst_addr :: String -> Int -> NetFunction (SkBuff -> Action SkBuff)
+addr, src_addr, dst_addr :: String -> Int -> NetFunction
 
-addr net p     = Fun1 "addr"     (mkNetAddr net p)
-src_addr net p = Fun1 "src_addr" (mkNetAddr net p)
-dst_addr net p = Fun1 "dst_addr" (mkNetAddr net p)
+addr net p     = MFunction1 ("addr","")     (mkNetAddr net p)
+src_addr net p = MFunction1 ("src_addr","") (mkNetAddr net p)
+dst_addr net p = MFunction1 ("dst_addr","") (mkNetAddr net p)
 
-hdummy      = HFun "hdummy"         :: Predicate -> NetFunction (SkBuff -> Action SkBuff)
-when'       = HFun1 "when"          :: Predicate -> NetFunction (SkBuff -> Action SkBuff) -> NetFunction (SkBuff -> Action SkBuff)
-unless'     = HFun1 "unless"        :: Predicate -> NetFunction (SkBuff -> Action SkBuff) -> NetFunction (SkBuff -> Action SkBuff)
-conditional = HFun2 "conditional"   :: Predicate -> NetFunction (SkBuff -> Action SkBuff) -> NetFunction (SkBuff -> Action SkBuff) -> NetFunction (SkBuff -> Action SkBuff)
+hdummy         = HFunction ("hdummy","")         :: NetPredicate -> NetFunction
+when'          = HFunction1 ("when","")          :: NetPredicate -> NetFunction  -> NetFunction
+unless'        = HFunction1 ("unless","")        :: NetPredicate -> NetFunction  -> NetFunction
+conditional    = HFunction2 ("conditional","")   :: NetPredicate -> NetFunction  -> NetFunction  -> NetFunction
 
