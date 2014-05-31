@@ -22,11 +22,11 @@ import Network.PFq.Lang
 
 import Control.Monad
 
--- prettyPrint (debug):
+-- prettyPrinter (debug):
 
--- prettyPrint :: Serializable a => a -> IO ()
--- prettyPrint comp = let (xs,_) = serialize 0 comp
---                  in forM_ (zip [0..] xs) $ \(n, x) -> putStrLn $ "    " ++ show n ++ ": " ++ show x
+prettyPrinter :: Serializable a => a -> IO ()
+prettyPrinter comp = let (xs,_) = serialize 0 comp
+                 in forM_ (zip [0..] xs) $ \(n, x) -> putStrLn $ "    " ++ show n ++ ": " ++ show x
 
 main = do
         let mycond = is_ip .&&. (is_tcp .||. is_udp)
@@ -40,6 +40,6 @@ main = do
 
         putStrLn "Functional computation:"
         putStrLn $ prettyPrint comp
-        -- putStrLn "Serialized AST:"
-        -- prettyPrint comp
+        putStrLn "Serialized AST:"
+        prettyPrinter comp
 
