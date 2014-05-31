@@ -24,9 +24,9 @@ import Control.Monad
 
 -- prettyPrint (debug):
 
-prettyPrint :: Serializable a => a -> IO ()
-prettyPrint comp = let (xs,_) = serialize 0 comp
-                 in forM_ (zip [0..] xs) $ \(n, x) -> putStrLn $ "    " ++ show n ++ ": " ++ show x
+-- prettyPrint :: Serializable a => a -> IO ()
+-- prettyPrint comp = let (xs,_) = serialize 0 comp
+--                  in forM_ (zip [0..] xs) $ \(n, x) -> putStrLn $ "    " ++ show n ++ ": " ++ show x
 
 main = do
         let mycond = is_ip .&&. (is_tcp .||. is_udp)
@@ -38,8 +38,8 @@ main = do
                                         (inc 1 >-> drop')
                         ) >-> when' is_tcp (inc 2)  >-> dummy 11
 
-        putStrLn "computation:"
+        putStrLn "Functional computation:"
         print comp
-        putStrLn "serialized AST:"
-        prettyPrint comp
+        -- putStrLn "Serialized AST:"
+        -- prettyPrint comp
 
