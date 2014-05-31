@@ -39,6 +39,7 @@
 module Network.PFq.Lang
     (
         StorableArgument(..),
+        Pretty(..),
         Argument(..),
         Function(..),
         Serializable(..),
@@ -146,6 +147,35 @@ instance Show (Function f) where
         show (Combinator2 (_,_) _ _)        = undefined
 
         show (Compound a b) = show a ++ " >-> " ++ show b
+
+-- Pretty class
+
+class Pretty x where
+        pretty :: x -> String
+
+instance Pretty (Function f) where
+        pretty (MFunction (symb,_))           = symb
+        pretty (MFunction1 (symb,_) a)        = "(" ++ symb ++ " " ++ show a ++ ")"
+
+        pretty (HFunction (symb,_) p)         = "(" ++ symb ++ " " ++ pretty p  ++ ")"
+        pretty (HFunction1 (symb,_) p n1)     = "(" ++ symb ++ " " ++ pretty p  ++ " (" ++ pretty n1 ++ "))"
+        pretty (HFunction2 (symb,_) p n1 n2)  = "(" ++ symb ++ " " ++ pretty p  ++ " (" ++ pretty n1 ++ ") (" ++ pretty n2 ++ "))"
+
+        pretty (Predicate  (symb,_))          = symb
+        pretty (Predicate1 (symb,_) a)        = "(" ++ symb ++ " " ++ show a ++ ")"
+        pretty (Predicate2 (symb,_) p a)      = "(" ++ symb ++ " " ++ pretty p ++ " " ++ show a ++ ")"
+
+        pretty (Property (symb,_))            = symb
+        pretty (Property1 (symb,_) a)         = "(" ++ symb ++ " " ++ show a ++ ")"
+
+        pretty (Combinator1 ("not",_) p)      = "(not " ++ pretty p ++ ")"
+        pretty (Combinator2 ("and",_) p1 p2)  = "(" ++ pretty p1 ++" && " ++ pretty p2 ++ ")"
+        pretty (Combinator2 ("or" ,_) p1 p2)  = "(" ++ pretty p1 ++" || " ++ pretty p2 ++ ")"
+        pretty (Combinator2 ("xor",_) p1 p2)  = "(" ++ pretty p1 ++" ^^ " ++ pretty p2 ++ ")"
+        pretty (Combinator1 (_,_) _)          = undefined
+        pretty (Combinator2 (_,_) _ _)        = undefined
+
+        pretty (Compound a b) = pretty a ++ " >-> " ++ pretty b
 
 
 -- relinkFunDescr :: Int -> Int -> FunDescr -> FunDescr
