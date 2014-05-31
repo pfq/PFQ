@@ -29,6 +29,7 @@
 
 {-# LANGUAGE ExistentialQuantification #-}
 {-# LANGUAGE NoMonomorphismRestriction #-}
+{-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE ImpredicativeTypes #-}
 {-# LANGUAGE Rank2Types #-}
@@ -50,18 +51,23 @@ module Network.PFq.Lang
         NetPredicate,
         NetProperty,
         (>->),
-
+        typeOf',
     ) where
 
 
 import Control.Monad.Identity
 import Foreign.Storable
 import Data.Word
+import Data.Typeable
+import Data.List.Split
 
 -- Basic types...
 
 newtype SkBuff   = SkBuff ()
+                   deriving Typeable
+
 newtype Action a = Identity a
+                    deriving Typeable
 
 type Symbol      = String
 type Signature   = String
@@ -96,55 +102,57 @@ type NetFunction  = Function (SkBuff -> Action SkBuff)
 type NetPredicate = Function (SkBuff -> Bool)
 type NetProperty  = Function (SkBuff -> Word64)
 
-data Function f where
-    MFunction  :: (Symbol,Signature) -> NetFunction
-    MFunction1 :: forall a. (Show a, Storable a) => (Symbol,Signature) -> a -> NetFunction
+data Function f where {
 
-    HFunction  :: (Symbol,Signature) -> NetPredicate -> NetFunction
-    HFunction1 :: (Symbol,Signature) -> NetPredicate -> NetFunction -> NetFunction
-    HFunction2 :: (Symbol,Signature) -> NetPredicate -> NetFunction -> NetFunction -> NetFunction
+        MFunction  :: (Symbol,Signature) -> NetFunction;
+        MFunction1 :: forall a. (Show a, Storable a) => (Symbol,Signature) -> a -> NetFunction;
 
-    Predicate  :: (Symbol,Signature) -> NetPredicate
-    Predicate1 :: forall a. (Show a, Storable a) => (Symbol,Signature) -> a -> NetPredicate
-    Predicate2 :: forall a. (Show a, Storable a) => (Symbol,Signature) -> NetProperty -> a -> NetPredicate
+        HFunction  :: (Symbol,Signature) -> NetPredicate -> NetFunction;
+        HFunction1 :: (Symbol,Signature) -> NetPredicate -> NetFunction -> NetFunction;
+        HFunction2 :: (Symbol,Signature) -> NetPredicate -> NetFunction -> NetFunction -> NetFunction;
 
-    Property   :: (Symbol,Signature) -> NetProperty
-    Property1  :: forall a. (Show a, Storable a) => (Symbol,Signature) -> a -> NetProperty
+        Predicate  :: (Symbol,Signature) -> NetPredicate;
+        Predicate1 :: forall a. (Show a, Storable a) => (Symbol,Signature) -> a -> NetPredicate;
+        Predicate2 :: forall a. (Show a, Storable a) => (Symbol,Signature) -> NetProperty -> a -> NetPredicate;
 
-    Combinator1 :: (Symbol,Signature) -> NetPredicate -> NetPredicate
-    Combinator2 :: (Symbol,Signature) -> NetPredicate -> NetPredicate -> NetPredicate
+        Property   :: (Symbol,Signature) -> NetProperty;
+        Property1  :: forall a. (Show a, Storable a) => (Symbol,Signature) -> a -> NetProperty;
 
-    Compound   :: forall f1 f2 f. Function f1 -> Function f2 -> Function f
+        Combinator1 :: (Symbol,Signature) -> NetPredicate -> NetPredicate;
+        Combinator2 :: (Symbol,Signature) -> NetPredicate -> NetPredicate -> NetPredicate;
+
+        Compound   :: forall f1 f2 f. Function f1 -> Function f2 -> Function f;
+
+    } deriving (Typeable)
 
 -- Kleisli operator: >->
 
 (>->) :: Function (a -> m b) -> Function (b -> m c) -> Function (a -> m c)
 f1 >-> f2 = Compound f1 f2
 
-
 -- Show instance:
 
 instance Show (Function f) where
-        show (MFunction (symb,_))           = symb
-        show (MFunction1 (symb,_) a)        = "(" ++ symb ++ " " ++ show a ++ ")"
+        show (MFunction (symb,sig))          = "(" ++ symb ++ " :: " ++ sig ++ ")"
+        show (MFunction1 (symb,sig) a)       = "(" ++ symb ++ " " ++ show a ++ " :: " ++ sig ++ ")"
 
-        show (HFunction (symb,_) p)         = "(" ++ symb ++ " " ++ show p  ++ ")"
-        show (HFunction1 (symb,_) p n1)     = "(" ++ symb ++ " " ++ show p  ++ " (" ++ show n1 ++ "))"
-        show (HFunction2 (symb,_) p n1 n2)  = "(" ++ symb ++ " " ++ show p  ++ " (" ++ show n1 ++ ") (" ++ show n2 ++ "))"
+        show (HFunction (symb,sig) p)        = "(" ++ symb ++ " " ++ show p  ++ " :: " ++ sig  ++ ")"
+        show (HFunction1 (symb,sig) p n1)    = "(" ++ symb ++ " " ++ show p  ++ " (" ++ show n1 ++ ") :: " ++  sig  ++ ")"
+        show (HFunction2 (symb,sig) p n1 n2) = "(" ++ symb ++ " " ++ show p  ++ " (" ++ show n1 ++ ") (" ++ show n2 ++ ") :: " ++ sig ++ ")"
 
-        show (Predicate  (symb,_))          = symb
-        show (Predicate1 (symb,_) a)        = "(" ++ symb ++ " " ++ show a ++ ")"
-        show (Predicate2 (symb,_) p a)      = "(" ++ symb ++ " " ++ show p ++ " " ++ show a ++ ")"
+        show (Predicate  (symb,sig))         = "(" ++ symb ++ " :: " ++ sig ++ ")"
+        show (Predicate1 (symb,sig) a)       = "(" ++ symb ++ " " ++ show a ++ " :: " ++ sig ++ ")"
+        show (Predicate2 (symb,sig) p a)     = "(" ++ symb ++ " " ++ show p ++ " " ++ show a ++ " :: " ++ sig ++ ")"
 
-        show (Property (symb,_))            = symb
-        show (Property1 (symb,_) a)         = "(" ++ symb ++ " " ++ show a ++ ")"
+        show (Property (symb,sig))           = "(" ++ symb ++ " :: " ++ sig ++ ")"
+        show (Property1 (symb,sig) a)        = "(" ++ symb ++ " " ++ show a ++ " :: " ++ sig ++ ")"
 
-        show (Combinator1 ("not",_) p)      = "(not " ++ show p ++ ")"
-        show (Combinator2 ("and",_) p1 p2)  = "(" ++ show p1 ++" && " ++ show p2 ++ ")"
-        show (Combinator2 ("or" ,_) p1 p2)  = "(" ++ show p1 ++" || " ++ show p2 ++ ")"
-        show (Combinator2 ("xor",_) p1 p2)  = "(" ++ show p1 ++" ^^ " ++ show p2 ++ ")"
-        show (Combinator1 (_,_) _)          = undefined
-        show (Combinator2 (_,_) _ _)        = undefined
+        show (Combinator1 ("not",sig) p)     = "(not " ++ show p ++ " :: " ++ sig ++ ")"
+        show (Combinator2 ("and",sig) p1 p2) = "(" ++ show p1 ++" && " ++ show p2 ++ ") :: " ++ sig ++ ")"
+        show (Combinator2 ("or" ,sig) p1 p2) = "(" ++ show p1 ++" || " ++ show p2 ++ ") :: " ++ sig ++ ")"
+        show (Combinator2 ("xor",sig) p1 p2) = "(" ++ show p1 ++" ^^ " ++ show p2 ++ ") :: " ++ sig ++ ")"
+        show (Combinator1 (_,_) _)           = undefined
+        show (Combinator2 (_,_) _ _)         = undefined
 
         show (Compound a b) = show a ++ " >-> " ++ show b
 
@@ -176,6 +184,11 @@ instance Pretty (Function f) where
         pretty (Combinator2 (_,_) _ _)        = undefined
 
         pretty (Compound a b) = pretty a ++ " >-> " ++ pretty b
+
+-- typeOf' utility function:
+
+typeOf' :: (Typeable a) => a -> String
+typeOf' f = unwords . (splitOn "Function ") $ show $ typeOf f
 
 
 -- relinkFunDescr :: Int -> Int -> FunDescr -> FunDescr
