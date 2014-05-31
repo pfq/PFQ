@@ -63,7 +63,7 @@ import Data.List.Split
 
 -- Basic types...
 
-newtype SkBuff   = SkBuff ()
+newtype SkBuff = SkBuff ()
                    deriving Typeable
 
 newtype Action a = Identity a
@@ -84,16 +84,10 @@ instance Show StorableArgument where
 -- AST Expression:
 
 data Argument = ArgData StorableArgument | ArgFun Expr
-                    deriving Show
+                    deriving (Show)
 
 data Expr = Nil | Expr Symbol Signature [Argument] Expr
                 deriving (Show)
-
-
--- Serializable class
-
-class Serializable a where
-    serialize :: Int -> a -> (Expr, Int)
 
 
 -- NetFunction
@@ -130,6 +124,13 @@ data Function f where {
 (>->) :: Function (a -> m b) -> Function (b -> m c) -> Function (a -> m c)
 f1 >-> f2 = Compound f1 f2
 
+
+-- typeOf' utility function:
+
+typeOf' :: (Typeable a) => a -> String
+typeOf' f = unwords . (splitOn "Function ") $ show $ typeOf f
+
+
 -- Show instance:
 
 instance Show (Function f) where
@@ -156,39 +157,39 @@ instance Show (Function f) where
 
         show (Compound a b) = show a ++ " >-> " ++ show b
 
--- Pretty class
+-- Pretty class:
 
 class Pretty x where
-        pretty :: x -> String
+        prettyPrint :: x -> String
 
 instance Pretty (Function f) where
-        pretty (MFunction (symb,_))           = symb
-        pretty (MFunction1 (symb,_) a)        = "(" ++ symb ++ " " ++ show a ++ ")"
+        prettyPrint (MFunction (symb,_))           = symb
+        prettyPrint (MFunction1 (symb,_) a)        = "(" ++ symb ++ " " ++ show a ++ ")"
 
-        pretty (HFunction (symb,_) p)         = "(" ++ symb ++ " " ++ pretty p  ++ ")"
-        pretty (HFunction1 (symb,_) p n1)     = "(" ++ symb ++ " " ++ pretty p  ++ " (" ++ pretty n1 ++ "))"
-        pretty (HFunction2 (symb,_) p n1 n2)  = "(" ++ symb ++ " " ++ pretty p  ++ " (" ++ pretty n1 ++ ") (" ++ pretty n2 ++ "))"
+        prettyPrint (HFunction (symb,_) p)         = "(" ++ symb ++ " " ++ prettyPrint p  ++ ")"
+        prettyPrint (HFunction1 (symb,_) p n1)     = "(" ++ symb ++ " " ++ prettyPrint p  ++ " (" ++ prettyPrint n1 ++ "))"
+        prettyPrint (HFunction2 (symb,_) p n1 n2)  = "(" ++ symb ++ " " ++ prettyPrint p  ++ " (" ++ prettyPrint n1 ++ ") (" ++ prettyPrint n2 ++ "))"
 
-        pretty (Predicate  (symb,_))          = symb
-        pretty (Predicate1 (symb,_) a)        = "(" ++ symb ++ " " ++ show a ++ ")"
-        pretty (Predicate2 (symb,_) p a)      = "(" ++ symb ++ " " ++ pretty p ++ " " ++ show a ++ ")"
+        prettyPrint (Predicate  (symb,_))          = symb
+        prettyPrint (Predicate1 (symb,_) a)        = "(" ++ symb ++ " " ++ show a ++ ")"
+        prettyPrint (Predicate2 (symb,_) p a)      = "(" ++ symb ++ " " ++ prettyPrint p ++ " " ++ show a ++ ")"
 
-        pretty (Property (symb,_))            = symb
-        pretty (Property1 (symb,_) a)         = "(" ++ symb ++ " " ++ show a ++ ")"
+        prettyPrint (Property (symb,_))            = symb
+        prettyPrint (Property1 (symb,_) a)         = "(" ++ symb ++ " " ++ show a ++ ")"
 
-        pretty (Combinator1 ("not",_) p)      = "(not " ++ pretty p ++ ")"
-        pretty (Combinator2 ("and",_) p1 p2)  = "(" ++ pretty p1 ++" && " ++ pretty p2 ++ ")"
-        pretty (Combinator2 ("or" ,_) p1 p2)  = "(" ++ pretty p1 ++" || " ++ pretty p2 ++ ")"
-        pretty (Combinator2 ("xor",_) p1 p2)  = "(" ++ pretty p1 ++" ^^ " ++ pretty p2 ++ ")"
-        pretty (Combinator1 (_,_) _)          = undefined
-        pretty (Combinator2 (_,_) _ _)        = undefined
+        prettyPrint (Combinator1 ("not",_) p)      = "(not " ++ prettyPrint p ++ ")"
+        prettyPrint (Combinator2 ("and",_) p1 p2)  = "(" ++ prettyPrint p1 ++" && " ++ prettyPrint p2 ++ ")"
+        prettyPrint (Combinator2 ("or" ,_) p1 p2)  = "(" ++ prettyPrint p1 ++" || " ++ prettyPrint p2 ++ ")"
+        prettyPrint (Combinator2 ("xor",_) p1 p2)  = "(" ++ prettyPrint p1 ++" ^^ " ++ prettyPrint p2 ++ ")"
+        prettyPrint (Combinator1 (_,_) _)          = undefined
+        prettyPrint (Combinator2 (_,_) _ _)        = undefined
 
-        pretty (Compound a b) = pretty a ++ " >-> " ++ pretty b
+        prettyPrint (Compound a b) = prettyPrint a ++ " >-> " ++ prettyPrint b
 
--- typeOf' utility function:
+-- Serializable class:
 
-typeOf' :: (Typeable a) => a -> String
-typeOf' f = unwords . (splitOn "Function ") $ show $ typeOf f
+class Serializable a where
+    serialize :: Int -> a -> (Expr, Int)
 
 
 -- relinkFunDescr :: Int -> Int -> FunDescr -> FunDescr
