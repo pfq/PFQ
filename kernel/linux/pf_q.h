@@ -357,31 +357,38 @@ void pfq_spsc_read_commit(struct pfq_tx_queue_hdr *q)
 #define Q_CLASS_CONTROL         Q_CLASS(1)
 #define Q_CLASS_ANY             (unsigned long)-1
 
-/* functional descriptor */
 
-enum pfq_functional_type
+/*
+ * Functional argument:
+ *
+ * pod	  	-> (ptr, size)
+ * String 	-> (ptr, 0)
+ * expression 	-> (0, index)
+ *
+ */
+
+
+typedef struct
 {
-        pfq_monadic_fun,
-        pfq_high_order_fun,
-        pfq_predicate_fun,
-        pfq_combinator_fun,
-        pfq_property_fun
-};
+	const void __user *	ptr;
+	size_t 			size;
 
+} argument_t;
+
+
+/*
+ * Functional descriptor:
+ */
 
 struct pfq_functional_descr
 {
-	enum pfq_functional_type type;
+        const char __user *     	symbol;
+        const char __user *		signature;
 
-        const char __user *     symbol;
-       	size_t 			nargs;
+	argument_t	    		arg[4];
 
-        const void __user *     arg_ptr;
-        size_t                  arg_size;
-
-	int 		 	fun;
-        int                     left;
-        int                     right;
+        size_t 				left;
+        size_t 				right;
 };
 
 
