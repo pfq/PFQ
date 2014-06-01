@@ -800,71 +800,74 @@ makeCounters ptr = do
     return $ Counters $ map fromIntegral (cs :: [CULong])
 
 
-withMetaFun :: FunDescr
-            -> ((FunDescr, CString, Int, IntPtr, Int, Int) -> IO b)
+padArguments :: [Argument] -> [Argument]
+padArguments xs = xs ++ (take (4 - length xs) $ repeat ArgNull)
+
+
+withSingleArg :: Argument -> ((IntPtr, Int) -> IO a) -> IO a
+withSingleArg arg fun = do
+    case arg of
+        ArgNull                         -> fun (ptrToIntPtr nullPtr, 0)
+        ArgFun i                        -> fun (ptrToIntPtr nullPtr, i)
+        ArgData (StorableArgument v)    -> do
+            alloca $ \ptr -> do
+                poke ptr v
+                fun (ptrToIntPtr ptr, sizeOf v)
+
+
+withFunDescr :: FunctionDescr
+            -> ((CString, CString, [(IntPtr, Int)], (Int, Int)) -> IO b)
             -> IO b
-withMetaFun descr@(FunDescr _ name nargs arg _ _) fun =
-    withCString name $ \ name' ->
-        case arg of
-            Empty    -> fun (descr, name', nargs, ptrToIntPtr nullPtr, 0, -1)
-            ArgFun f -> fun (descr, name', nargs, ptrToIntPtr nullPtr, 0,  f)
-            ArgData (StorableArgument val) ->
-                alloca $ \ptr -> do
-                    poke ptr val
-                    fun (descr, name', nargs, ptrToIntPtr ptr, sizeOf val, -1)
-            ArgDataFun (StorableArgument val) f ->
-                alloca $ \ptr -> do
-                    poke ptr val
-                    fun (descr, name', nargs, ptrToIntPtr ptr, sizeOf val, f)
+withFunDescr (FunctionDescr symbol signature args (l,r)) fun =
+    withCString symbol $ \ symbol' ->
+    withCString signature $ \ signature' -> do
+        withMany withSingleArg (padArguments args) $ \args' -> do
+            fun (symbol', signature', args', (l,r))
 
 
-data StorableFunDescr = StorableFunDescr CInt CString CInt IntPtr CSize CInt CInt CInt
+data StorableFunDescr = StorableFunDescr CString CString [(IntPtr,Int)] CInt CInt
 
 
 instance Storable StorableFunDescr where
-        sizeOf _  = getConstant group_fun_descr_size
+        sizeOf _    = getConstant group_fun_descr_size
         alignment _ = undefined
-        poke ptr (StorableFunDescr tp name nargs arg size fun left right) = do
-            pokeByteOff ptr 0 tp
-            pokeByteOff ptr (sizeOf nullPtr) name
-            pokeByteOff ptr (sizeOf nullPtr * 2) nargs
-            pokeByteOff ptr (sizeOf nullPtr * 3) arg
-            pokeByteOff ptr (sizeOf nullPtr * 4) size
-            pokeByteOff ptr (sizeOf nullPtr * 5) fun
-            pokeByteOff ptr (sizeOf nullPtr * 5  + sizeOf (undefined :: CInt)) left
-            pokeByteOff ptr (sizeOf nullPtr * 5  + sizeOf (undefined :: CInt) * 2) right
+        poke ptr (StorableFunDescr symbol signature args left right) = do
+            pokeByteOff ptr (off 0) symbol
+            pokeByteOff ptr (off 1) signature
+            pokeByteOff ptr (off 2) (fst $ args !! 0)
+            pokeByteOff ptr (off 3) (snd $ args !! 0)
+            pokeByteOff ptr (off 4) (fst $ args !! 1)
+            pokeByteOff ptr (off 5) (snd $ args !! 1)
+            pokeByteOff ptr (off 6) (fst $ args !! 2)
+            pokeByteOff ptr (off 7) (snd $ args !! 2)
+            pokeByteOff ptr (off 8) (fst $ args !! 3)
+            pokeByteOff ptr (off 9) (snd $ args !! 3)
+            pokeByteOff ptr (off 10) left
+            pokeByteOff ptr (off 11) right
+         where
+            off n = (sizeOf nullPtr * n)
 
 
 -- |Specify a functional computation for the given group.
 --
--- The functional computation is specified by the PFQ-Lang.
+-- The functional computation is specified as a PFQ-Lang expression.
 --
 
 groupComputation :: Ptr PFqTag
                  -> Int                                     -- ^ group id
-                 -> NetFunction (SkBuff -> Action SkBuff)   -- ^ computation (PFqLang)
+                 -> Function (SkBuff -> Action SkBuff)      -- ^ computation (PFqLang)
                  -> IO ()
 
 groupComputation hdl gid comp = do
-    let (meta,_) = serialize 0 comp
-    allocaBytes (sizeOf (undefined :: CSize) * 2 + getConstant group_fun_descr_size * length meta)  $ \ ptr -> do
-        pokeByteOff ptr 0 (fromIntegral (length meta) :: CSize)     -- size
-        pokeByteOff ptr (sizeOf(undefined :: CSize)) (0 :: CSize)   -- entry_point
-        withMany withMetaFun meta $ \tmps -> do
+    let (descrList, _) = serialize 0 comp
+    allocaBytes (sizeOf (undefined :: CSize) * 2 + getConstant group_fun_descr_size * length descrList) $ \ ptr -> do
+        pokeByteOff ptr 0 (fromIntegral (length descrList) :: CSize)     -- size
+        pokeByteOff ptr (sizeOf(undefined :: CSize)) (0 :: CSize)        -- entry_point: always the first one!
+        withMany withFunDescr descrList $ \fundes -> do
             let offset n = sizeOf(undefined :: CSize) * 2 + getConstant group_fun_descr_size * n
-            forM_ (zip [0..] tmps) $ \(n, (des, fname, nargs, aptr, asize, f)) -> do
-                let ftype = case des of
-                                FunDescr MonadicFun _ _ _ _ _     -> 0
-                                FunDescr HighOrderFun _ _ _ _ _   -> 1
-                                FunDescr PredicateFun _ _ _ _ _   -> 2
-                                FunDescr CombinatorFun _ _ _ _ _  -> 3
-                                FunDescr PropertyFun _ _ _ _ _    -> 4
-                    fun   = f
-                    left  = functionalLeft des
-                    right = functionalRight des
-
-                pokeByteOff ptr (offset n) (StorableFunDescr ftype fname (fromIntegral nargs) aptr (fromIntegral asize) (fromIntegral fun) (fromIntegral left) (fromIntegral right))
-
+            forM_ (zip [0..] fundes) $ \(n, (symbol, signature, ps, (l,r))) -> do
+                pokeByteOff ptr (offset n)
+                    (StorableFunDescr symbol signature ps (fromIntegral l) (fromIntegral r))
             pfq_set_group_computation hdl (fromIntegral gid) ptr >>= throwPFqIf_ hdl (== -1)
 
 
