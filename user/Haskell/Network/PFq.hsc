@@ -804,25 +804,29 @@ padArguments :: [Argument] -> [Argument]
 padArguments xs = xs ++ (take (4 - length xs) $ repeat ArgNull)
 
 
-withSingleArg :: Argument -> ((IntPtr, Int) -> IO a) -> IO a
+withSingleArg :: Argument
+              -> ((IntPtr, Int) -> IO a)
+              -> IO a
 withSingleArg arg fun = do
     case arg of
-        ArgNull                         -> fun (ptrToIntPtr nullPtr, 0)
-        ArgFun i                        -> fun (ptrToIntPtr nullPtr, i)
-        ArgData (StorableArgument v)    -> do
+        ArgNull                      -> fun (ptrToIntPtr nullPtr, 0)
+        ArgFun i                     -> fun (ptrToIntPtr nullPtr, i)
+        ArgData (StorableArgument v) -> do
             alloca $ \ptr -> do
                 poke ptr v
                 fun (ptrToIntPtr ptr, sizeOf v)
 
 
+type MarshalFunctionDescr = (CString, CString, [(IntPtr, Int)], (Int, Int))
+
 withFunDescr :: FunctionDescr
-            -> ((CString, CString, [(IntPtr, Int)], (Int, Int)) -> IO b)
-            -> IO b
-withFunDescr (FunctionDescr symbol signature args (l,r)) fun =
+             -> (MarshalFunctionDescr -> IO a)
+             -> IO a
+withFunDescr (FunctionDescr symbol signature args (l,r)) callback =
     withCString symbol $ \ symbol' ->
     withCString signature $ \ signature' -> do
-        withMany withSingleArg (padArguments args) $ \args' -> do
-            fun (symbol', signature', args', (l,r))
+        withMany withSingleArg (padArguments args) $ \marArgs -> do
+            callback (symbol', signature', marArgs, (l,r))
 
 
 data StorableFunDescr = StorableFunDescr CString CString [(IntPtr,Int)] CInt CInt
@@ -850,12 +854,12 @@ instance Storable StorableFunDescr where
 
 -- |Specify a functional computation for the given group.
 --
--- The functional computation is specified as a PFQ-Lang expression.
+-- The functional computation is specified as a PFq-Lang expression.
 --
 
 groupComputation :: Ptr PFqTag
                  -> Int                                     -- ^ group id
-                 -> Function (SkBuff -> Action SkBuff)      -- ^ computation (PFqLang)
+                 -> Function (SkBuff -> Action SkBuff)      -- ^ expression (PFq-Lang)
                  -> IO ()
 
 groupComputation hdl gid comp = do
@@ -863,9 +867,9 @@ groupComputation hdl gid comp = do
     allocaBytes (sizeOf (undefined :: CSize) * 2 + getConstant group_fun_descr_size * length descrList) $ \ ptr -> do
         pokeByteOff ptr 0 (fromIntegral (length descrList) :: CSize)     -- size
         pokeByteOff ptr (sizeOf(undefined :: CSize)) (0 :: CSize)        -- entry_point: always the first one!
-        withMany withFunDescr descrList $ \fundes -> do
+        withMany withFunDescr descrList $ \marshList -> do
             let offset n = sizeOf(undefined :: CSize) * 2 + getConstant group_fun_descr_size * n
-            forM_ (zip [0..] fundes) $ \(n, (symbol, signature, ps, (l,r))) -> do
+            forM_ (zip [0..] marshList) $ \(n, (symbol, signature, ps, (l,r))) -> do
                 pokeByteOff ptr (offset n)
                     (StorableFunDescr symbol signature ps (fromIntegral l) (fromIntegral r))
             pfq_set_group_computation hdl (fromIntegral gid) ptr >>= throwPFqIf_ hdl (== -1)
