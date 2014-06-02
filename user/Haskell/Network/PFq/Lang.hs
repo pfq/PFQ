@@ -28,12 +28,9 @@
 --
 
 {-# LANGUAGE ExistentialQuantification #-}
-{-# LANGUAGE NoMonomorphismRestriction #-}
 {-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE ImpredicativeTypes #-}
-{-# LANGUAGE Rank2Types #-}
 {-# LANGUAGE GADTs #-}
 
 {-# OPTIONS_GHC -fno-warn-unused-binds #-}
