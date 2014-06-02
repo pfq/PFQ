@@ -807,14 +807,16 @@ padArguments xs = xs ++ (take (4 - length xs) $ repeat ArgNull)
 withSingleArg :: Argument
               -> ((IntPtr, Int) -> IO a)
               -> IO a
-withSingleArg arg fun = do
+withSingleArg arg callback = do
     case arg of
-        ArgNull                      -> fun (ptrToIntPtr nullPtr, 0)
-        ArgFun i                     -> fun (ptrToIntPtr nullPtr, i)
+        ArgNull                      -> callback (ptrToIntPtr nullPtr, 0)
+        ArgFun i                     -> callback (ptrToIntPtr nullPtr, i)
         ArgData (StorableArgument v) -> do
             alloca $ \ptr -> do
                 poke ptr v
-                fun (ptrToIntPtr ptr, sizeOf v)
+                callback (ptrToIntPtr ptr, sizeOf v)
+        ArgString s -> do
+            withCString s $ \s' -> callback (ptrToIntPtr s', 0)
 
 
 type MarshalFunctionDescr = (CString, CString, [(IntPtr, Int)], (Int, Int))

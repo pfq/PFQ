@@ -79,7 +79,7 @@ instance Show StorableArgument where
         show (StorableArgument c) = show c
 
 
-data Argument = ArgNull | ArgData StorableArgument | ArgFun Int
+data Argument = ArgNull | ArgData StorableArgument | ArgString String | ArgFun Int
                     deriving (Show)
 
 
@@ -102,6 +102,7 @@ data Function f where {
 
         MFunction  :: (Symbol,Signature) -> NetFunction;
         MFunction1 :: forall a. (Show a, Storable a) => (Symbol,Signature) -> a -> NetFunction;
+        MFunction2 :: (Symbol,Signature) -> String -> NetFunction;
 
         HFunction  :: (Symbol,Signature) -> NetPredicate -> NetFunction;
         HFunction1 :: (Symbol,Signature) -> NetPredicate -> NetFunction -> NetFunction;
@@ -140,6 +141,7 @@ typeOf' f = unwords . (splitOn "Function ") $ show $ typeOf f
 instance Show (Function f) where
         show (MFunction  (symb,sig))         = "(" ++ symb ++ " :: " ++ sig ++ ")"
         show (MFunction1 (symb,sig) a)       = "(" ++ symb ++ " " ++ show a ++ " :: " ++ sig ++ ")"
+        show (MFunction2 (symb,sig) s)       = "(" ++ symb ++ " \"" ++ s ++ "\" :: " ++ sig ++ ")"
 
         show (HFunction  (symb,sig) p)       = "(" ++ symb ++ " " ++ show p  ++ " :: " ++ sig  ++ ")"
         show (HFunction1 (symb,sig) p n1)    = "(" ++ symb ++ " " ++ show p  ++ " (" ++ show n1 ++ ") :: " ++  sig  ++ ")"
@@ -170,6 +172,8 @@ class Pretty x where
 instance Pretty (Function f) where
         prettyPrint (MFunction (symb,_))           = symb
         prettyPrint (MFunction1 (symb,_) a)        = "(" ++ symb ++ " " ++ show a ++ ")"
+        prettyPrint (MFunction2 (symb,_) s)        = "(" ++ symb ++ " \"" ++ show s ++ "\")"
+
         prettyPrint (HFunction (symb,_) p)         = "(" ++ symb ++ " " ++ prettyPrint p  ++ ")"
         prettyPrint (HFunction1 (symb,_) p n1)     = "(" ++ symb ++ " " ++ prettyPrint p  ++ " (" ++ prettyPrint n1 ++ "))"
         prettyPrint (HFunction2 (symb,_) p n1 n2)  = "(" ++ symb ++ " " ++ prettyPrint p  ++ " (" ++ prettyPrint n1 ++ ") (" ++ prettyPrint n2 ++ "))"
@@ -203,6 +207,8 @@ instance Serializable (Function (a -> m b)) where
 
     serialize n (MFunction  (symb, sig))    = ([FunctionDescr symb sig [] (n+1, n+1)], n+1)
     serialize n (MFunction1 (symb, sig) x)  = ([FunctionDescr symb sig [ArgData $ StorableArgument x] (n+1,n+1) ], n+1)
+    serialize n (MFunction2 (symb, sig) s)  = ([FunctionDescr symb sig [ArgString s] (n+1,n+1) ], n+1)
+
     serialize n (HFunction  (symb, sig) p)  = let (s1, n1) = ([FunctionDescr symb sig [] (n2, n2) ], n+1)
                                                   (s2, n2) =  serialize n1 p
                                               in (s1 ++ s2, n2)
