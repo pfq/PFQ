@@ -318,7 +318,7 @@ kernel         = MFunction ("kernel",typeOf'(kernel))                   :: NetFu
 broadcast      = MFunction ("broadcast",typeOf'(broadcast))             :: NetFunction
 drop'          = MFunction ("drop",typeOf'(drop'))                      :: NetFunction
 unit           = MFunction ("unit",typeOf'(unit))                       :: NetFunction
-log_packet     = MFunction ("log_packet",typeOf'())                     :: NetFunction
+log_packet     = MFunction ("log_packet",typeOf'(log_packet))           :: NetFunction
 log_msg        = MFunction2 ("log_msg",typeOf'(log_msg))                :: String -> NetFunction
 
 crc16          = MFunction ("crc16",typeOf'(crc16))                     :: NetFunction
