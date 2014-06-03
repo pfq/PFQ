@@ -145,9 +145,9 @@ struct pfq_monadic_fun_descr filter_functions[] = {
         { "port",     	  "Word16 -> SkBuff -> Action SkBuff", 		 filter_port     },
         { "src_port", 	  "Word16 -> SkBuff -> Action SkBuff", 		 filter_src_port },
         { "dst_port", 	  "Word16 -> SkBuff -> Action SkBuff", 		 filter_dst_port },
-        { "addr",     	  "a -> SkBuff -> Action SkBuff", 		 filter_addr     , filter_addr_init },
-        { "src_addr", 	  "a -> SkBuff -> Action SkBuff", 		 filter_src_addr , filter_addr_init },
-        { "dst_addr", 	  "a -> SkBuff -> Action SkBuff", 		 filter_dst_addr , filter_addr_init },
+        { "addr",     	  "Word32 -> SkBuff -> Action SkBuff", 		 filter_addr     , filter_addr_init },
+        { "src_addr", 	  "Word32 -> SkBuff -> Action SkBuff", 		 filter_src_addr , filter_addr_init },
+        { "dst_addr", 	  "Word32 -> SkBuff -> Action SkBuff", 		 filter_dst_addr , filter_addr_init },
  	{ "l3_proto",     "Word16 -> SkBuff -> Action SkBuff",           filter_l3_proto },
         { "l4_proto",     "Word8  -> SkBuff -> Action SkBuff",           filter_l4_proto },
 

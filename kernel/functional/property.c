@@ -372,24 +372,24 @@ get_mark(arguments_t args, struct sk_buff const *skb)
 
 struct pfq_property_fun_descr property_functions[] = {
 
-        { "ip_tos", 	 "SkBuff -> a", ip_tos 	     },
-        { "ip_tot_len",  "SkBuff -> a", ip_tot_len   },
-        { "ip_id",  	 "SkBuff -> a", ip_id 	     },
-        { "ip_frag",	 "SkBuff -> a", ip_frag      },
-        { "ip_ttl", 	 "SkBuff -> a", ip_ttl 	     },
+        { "ip_tos", 	 "SkBuff -> Word64", ip_tos 	  	},
+        { "ip_tot_len",  "SkBuff -> Word64", ip_tot_len   	},
+        { "ip_id",  	 "SkBuff -> Word64", ip_id 	     	},
+        { "ip_frag",	 "SkBuff -> Word64", ip_frag      	},
+        { "ip_ttl", 	 "SkBuff -> Word64", ip_ttl 	     	},
 
-        { "tcp_source",  "SkBuff -> a", tcp_source   },
-        { "tcp_dest", 	 "SkBuff -> a", tcp_dest     },
-        { "tcp_hdrlen",  "SkBuff -> a", tcp_hdrlen_  },
+        { "tcp_source",  "SkBuff -> Word64", tcp_source   	},
+        { "tcp_dest", 	 "SkBuff -> Word64", tcp_dest     	},
+        { "tcp_hdrlen",  "SkBuff -> Word64", tcp_hdrlen_  	},
 
-        { "udp_source",  "SkBuff -> a", udp_source   },
-        { "udp_dest", 	 "SkBuff -> a", udp_dest     },
-        { "udp_len",  	 "SkBuff -> a", udp_len	     },
+        { "udp_source",  "SkBuff -> Word64", udp_source   	},
+        { "udp_dest", 	 "SkBuff -> Word64", udp_dest     	},
+        { "udp_len",  	 "SkBuff -> Word64", udp_len	  	},
 
-        { "icmp_type",   "SkBuff -> a", icmp_type    },
-        { "icmp_code",   "SkBuff -> a", icmp_code    },
+        { "icmp_type",   "SkBuff -> Word64", icmp_type    	},
+        { "icmp_code",   "SkBuff -> Word64", icmp_code    	},
 
-	{ "get_mark", 	 "SkBuff -> a", get_mark     },
+	{ "get_mark", 	 "SkBuff -> Word64", get_mark     	},
 
         { NULL }};
 

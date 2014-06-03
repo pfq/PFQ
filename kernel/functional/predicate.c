@@ -207,14 +207,14 @@ pred_is_more_frag(arguments_t args, struct sk_buff const *skb)
 
 struct pfq_predicate_fun_descr predicate_functions[] = {
 
-        { "less", 	   "a -> (SkBuff -> a) -> SkBuff -> Bool", less	 	},
-        { "less_eq", 	   "a -> (SkBuff -> a) -> SkBuff -> Bool", less_eq	},
-        { "greater", 	   "a -> (SkBuff -> a) -> SkBuff -> Bool", greater 	},
-        { "greater_eq",    "a -> (SkBuff -> a) -> SkBuff -> Bool", greater_eq 	},
-        { "equal",  	   "a -> (SkBuff -> a) -> SkBuff -> Bool", equal	},
-        { "not_equal",     "a -> (SkBuff -> a) -> SkBuff -> Bool", not_equal	},
-        { "any_bit", 	   "a -> (SkBuff -> a) -> SkBuff -> Bool", any_bit	},
-        { "all_bit", 	   "a -> (SkBuff -> a) -> SkBuff -> Bool", all_bit	},
+        { "less", 	   "Word64 -> (SkBuff -> Word64) -> SkBuff -> Bool", less	},
+        { "less_eq", 	   "Word64 -> (SkBuff -> Word64) -> SkBuff -> Bool", less_eq	},
+        { "greater", 	   "Word64 -> (SkBuff -> Word64) -> SkBuff -> Bool", greater 	},
+        { "greater_eq",    "Word64 -> (SkBuff -> Word64) -> SkBuff -> Bool", greater_eq },
+        { "equal",  	   "Word64 -> (SkBuff -> Word64) -> SkBuff -> Bool", equal	},
+        { "not_equal",     "Word64 -> (SkBuff -> Word64) -> SkBuff -> Bool", not_equal	},
+        { "any_bit", 	   "Word64 -> (SkBuff -> Word64) -> SkBuff -> Bool", any_bit	},
+        { "all_bit", 	   "Word64 -> (SkBuff -> Word64) -> SkBuff -> Bool", all_bit	},
 
         { "is_ip", 	   "SkBuff -> Bool", pred_is_ip    },
         { "is_tcp",        "SkBuff -> Bool", pred_is_tcp   },
