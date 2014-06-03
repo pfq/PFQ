@@ -43,9 +43,8 @@
 static inline bool
 less(arguments_t args, struct sk_buff const *skb)
 {
-	property_t p = get_property(args);
-
-	const uint64_t data = get_data(uint64_t, args);
+	property_t p = get_data(property_t, args);
+	const uint64_t data = get_data1(uint64_t, args);
 
 	uint64_t ret = EVAL_PROPERTY(p, skb);
 
@@ -58,8 +57,8 @@ less(arguments_t args, struct sk_buff const *skb)
 static inline bool
 less_eq(arguments_t args, struct sk_buff const *skb)
 {
-	property_t p = get_property(args);
-	const uint64_t data = get_data(uint64_t, args);
+	property_t p = get_data(property_t, args);
+	const uint64_t data = get_data1(uint64_t, args);
 
 	uint64_t ret = EVAL_PROPERTY(p, skb);
 
@@ -72,8 +71,8 @@ less_eq(arguments_t args, struct sk_buff const *skb)
 static inline bool
 greater(arguments_t args, struct sk_buff const *skb)
 {
-	property_t p = get_property(args);
-	const uint64_t data = get_data(uint64_t, args);
+	property_t p = get_data(property_t, args);
+	const uint64_t data = get_data1(uint64_t, args);
 
 	uint64_t ret = EVAL_PROPERTY(p, skb);
 
@@ -86,8 +85,9 @@ greater(arguments_t args, struct sk_buff const *skb)
 static inline bool
 greater_eq(arguments_t args, struct sk_buff const *skb)
 {
-	property_t p = get_property(args);
-	const uint64_t data = get_data(uint64_t, args);
+	property_t p = get_data(property_t, args);
+	const uint64_t data = get_data1(uint64_t, args);
+
 	uint64_t ret = EVAL_PROPERTY(p, skb);
 
 	if (IS_JUST(ret))
@@ -99,8 +99,8 @@ greater_eq(arguments_t args, struct sk_buff const *skb)
 static inline bool
 equal(arguments_t args, struct sk_buff const *skb)
 {
-	property_t p = get_property(args);
-	const uint64_t data = get_data(uint64_t, args);
+	property_t p = get_data(property_t, args);
+	const uint64_t data = get_data1(uint64_t, args);
 
 	uint64_t ret = EVAL_PROPERTY(p, skb);
 
@@ -113,8 +113,8 @@ equal(arguments_t args, struct sk_buff const *skb)
 static inline bool
 not_equal(arguments_t args, struct sk_buff const *skb)
 {
-	property_t p = get_property(args);
-	const uint64_t data = get_data(uint64_t, args);
+	property_t p = get_data(property_t, args);
+	const uint64_t data = get_data1(uint64_t, args);
 
 	uint64_t ret = EVAL_PROPERTY(p, skb);
 
@@ -127,8 +127,8 @@ not_equal(arguments_t args, struct sk_buff const *skb)
 static inline bool
 any_bit(arguments_t args, struct sk_buff const *skb)
 {
-	property_t p = get_property(args);
-	const uint64_t data = get_data(uint64_t, args);
+	property_t p = get_data(property_t, args);
+	const uint64_t data = get_data1(uint64_t, args);
 
 	uint64_t ret = EVAL_PROPERTY(p, skb);
 
@@ -141,8 +141,8 @@ any_bit(arguments_t args, struct sk_buff const *skb)
 static inline bool
 all_bit(arguments_t args, struct sk_buff const *skb)
 {
-	property_t p = get_property(args);
-	const uint64_t data = get_data(uint64_t, args);
+	property_t p = get_data(property_t, args);
+	const uint64_t data = get_data1(uint64_t, args);
 
 	uint64_t ret = EVAL_PROPERTY(p, skb);
 

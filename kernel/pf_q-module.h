@@ -51,24 +51,20 @@ extern int pfq_symtable_unregister_functions(const char *module, struct list_hea
 #define FROM_JUST(x)		(~(1ULL<<31) & x)
 #define NOTHING 		0
 
-#define ASSERT_TYPE(type,a)  	__builtin_choose_expr(__builtin_types_compatible_p(type, typeof(a)), a, (void)0)
-
 #define ARGS_TYPE(a)  		__builtin_choose_expr(__builtin_types_compatible_p(arguments_t, typeof(a)), a, (void)0)
-#define FUNCTIONAL_TYPE(a)  	__builtin_choose_expr(__builtin_types_compatible_p(struct pfq_functional *, typeof(a)), a, (void)0)
-#define ARG_CAST(arg)  		__builtin_choose_expr(sizeof(arg)  <= sizeof(void *), (ptrdiff_t)arg, (void)0)
 
-#define get_data(type,a) 	__builtin_choose_expr(sizeof(type) <= sizeof(ptrdiff_t), *(type *)&ARGS_TYPE(a)->arg1, (void *)ARGS_TYPE(a)->arg1)
-#define get_data2(type,a) 	__builtin_choose_expr(sizeof(type) <= sizeof(ptrdiff_t), *(type *)&ARGS_TYPE(a)->arg2, (void *)ARGS_TYPE(a)->arg2)
-#define get_data3(type,a) 	__builtin_choose_expr(sizeof(type) <= sizeof(ptrdiff_t), *(type *)&ARGS_TYPE(a)->arg3, (void *)ARGS_TYPE(a)->arg3)
+#define get_data(type,a) get_data0(type,a)
+#define set_data(type,a) set_data0(type,a)
 
-#define set_data(a, v)		__builtin_choose_expr(sizeof(typeof(v)) <= sizeof(ptrdiff_t), *(typeof(v) *)(&ARGS_TYPE(a)->arg1) = v, (void)0)
-#define set_data2(a, v)		__builtin_choose_expr(sizeof(typeof(v)) <= sizeof(ptrdiff_t), *(typeof(v) *)(&ARGS_TYPE(a)->arg2) = v, (void)0)
-#define set_data3(a, v)		__builtin_choose_expr(sizeof(typeof(v)) <= sizeof(ptrdiff_t), *(typeof(v) *)(&ARGS_TYPE(a)->arg3) = v, (void)0)
+#define get_data0(type,a) 	__builtin_choose_expr(sizeof(type) <= sizeof(ptrdiff_t), *(type *)&ARGS_TYPE(a)->arg[0], (void *)ARGS_TYPE(a)->arg[0])
+#define get_data1(type,a) 	__builtin_choose_expr(sizeof(type) <= sizeof(ptrdiff_t), *(type *)&ARGS_TYPE(a)->arg[1], (void *)ARGS_TYPE(a)->arg[1])
+#define get_data2(type,a) 	__builtin_choose_expr(sizeof(type) <= sizeof(ptrdiff_t), *(type *)&ARGS_TYPE(a)->arg[2], (void *)ARGS_TYPE(a)->arg[2])
+#define get_data3(type,a) 	__builtin_choose_expr(sizeof(type) <= sizeof(ptrdiff_t), *(type *)&ARGS_TYPE(a)->arg[2], (void *)ARGS_TYPE(a)->arg[2])
 
-#define get_predicate(a) 	({ predicate_t p = { (struct pfq_functional *)ARGS_TYPE(a)->arg2 }; p; })
-#define get_predicate2(a) 	({ predicate_t p = { (struct pfq_functional *)ARGS_TYPE(a)->arg3 }; p; })
-#define get_property(a) 	({ property_t  p = { (struct pfq_functional *)ARGS_TYPE(a)->arg2 }; p; })
-#define get_property2(a) 	({ property_t  p = { (struct pfq_functional *)ARGS_TYPE(a)->arg3 }; p; })
+#define set_data0(a, v)		__builtin_choose_expr(sizeof(typeof(v)) <= sizeof(ptrdiff_t), *(typeof(v) *)(&ARGS_TYPE(a)->arg[0]) = v, (void)0)
+#define set_data1(a, v)		__builtin_choose_expr(sizeof(typeof(v)) <= sizeof(ptrdiff_t), *(typeof(v) *)(&ARGS_TYPE(a)->arg[1]) = v, (void)0)
+#define set_data2(a, v)		__builtin_choose_expr(sizeof(typeof(v)) <= sizeof(ptrdiff_t), *(typeof(v) *)(&ARGS_TYPE(a)->arg[2]) = v, (void)0)
+#define set_data3(a, v)		__builtin_choose_expr(sizeof(typeof(v)) <= sizeof(ptrdiff_t), *(typeof(v) *)(&ARGS_TYPE(a)->arg[2]) = v, (void)0)
 
 #define make_mask(prefix)       htonl(~((1ULL << (32-prefix)) - 1))
 
@@ -77,11 +73,8 @@ extern int pfq_symtable_unregister_functions(const char *module, struct list_hea
 
 struct pfq_functional
 {
-	const void *  ptr; 	// pointer to function
-        ptrdiff_t     arg1;
-	ptrdiff_t     arg2;
-	ptrdiff_t     arg3;
-
+	const void *  ptr; 		// pointer to function
+        ptrdiff_t     arg[4];
 };
 
 typedef struct pfq_functional *  arguments_t;
@@ -127,14 +120,13 @@ struct pfq_functional_node
 };
 
 
-typedef struct pfq_computation
+struct pfq_computation_tree
 {
         size_t size;
         struct pfq_functional_node *entry_point;
-        struct pfq_functional_node fun[];
+        struct pfq_functional_node node[];
 
-} computation_t;
-
+};
 
 
 /**** function descriptors ****/

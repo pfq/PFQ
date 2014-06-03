@@ -813,7 +813,7 @@ int pfq_setsockopt(struct socket *sock,
                 struct pfq_computation_descr *descr;
                 size_t psize, ucsize;
 
-                computation_t *comp;
+                struct pfq_computation_tree *comp;
                 void *context;
 
                 if (optlen != sizeof(tmp))
@@ -846,6 +846,13 @@ int pfq_setsockopt(struct socket *sock,
 
                 pr_devel_computation_descr(descr);
 
+		/* ensure the correctness of the specified functional computation */
+
+		if (pfq_validate_computation_descr(descr) < 0) {
+                        pr_devel("[PFQ|%d] invalid expression!\n", so->id);
+                        return -EFAULT;
+		}
+
                 /* allocate context */
 
                 context = pfq_context_alloc(descr);
@@ -855,7 +862,7 @@ int pfq_setsockopt(struct socket *sock,
                         return -EFAULT;
                 }
 
-                /* allocate computation_t */
+                /* allocate struct pfq_computation_tree */
 
                 comp = pfq_computation_alloc(descr);
                 if (comp == NULL) {
@@ -865,22 +872,27 @@ int pfq_setsockopt(struct socket *sock,
                         return -EFAULT;
                 }
 
-                /* link the computation */
+                /* link the functional computation */
 
                 if (pfq_computation_rtlink(descr, comp, context) < 0) {
                         pr_devel("[PFQ|%d] computation aborted!", so->id);
-                        kfree (descr);
+			kfree(context);
+			kfree(descr);
+			kfree(comp);
                         return -EPERM;
                 }
 
-                kfree(descr);
+		/* print executable tree data structure */
+
+		pr_devel_computation_tree(comp);
 
 		/* exec init functions */
 
 		if (pfq_computation_init(comp) < 0) {
                         pr_devel("[PFQ|%d] computation initialization aborted!", so->id);
-                        kfree(comp);
                         kfree(context);
+                        kfree(descr);
+                        kfree(comp);
                         return -EPERM;
 		}
 
@@ -888,11 +900,13 @@ int pfq_setsockopt(struct socket *sock,
 
                 if (pfq_set_group_prog(tmp.gid, comp, context) < 0) {
                         pr_devel("[PFQ|%d] set group program error!\n", so->id);
-                        kfree(comp);
                         kfree(context);
+                        kfree(descr);
+                        kfree(comp);
                         return -EPERM;
                 }
 
+		kfree(descr);
                 return 0;
 
         } break;

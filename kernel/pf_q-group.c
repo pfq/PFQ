@@ -113,7 +113,7 @@ __pfq_group_free(int gid)
 {
         struct pfq_group * g = pfq_get_group(gid);
         struct sk_filter *filter;
-        computation_t *old_comp;
+        struct pfq_computation_tree *old_comp;
         void *old_ctx;
 
         if (!g) {
@@ -129,7 +129,7 @@ __pfq_group_free(int gid)
         g->policy = Q_POLICY_GROUP_UNDEFINED;
 
         filter   = (struct sk_filter *)atomic_long_xchg(&g->filter, 0L);
-        old_comp = (computation_t *)atomic_long_xchg(&g->comp, 0L);
+        old_comp = (struct pfq_computation_tree *)atomic_long_xchg(&g->comp, 0L);
         old_ctx  = (void *)atomic_long_xchg(&g->comp_ctx, 0L);
 
         msleep(Q_GRACE_PERIOD);   /* sleeping is possible here: user-context */
@@ -260,7 +260,7 @@ void __pfq_dismiss_function(void *f)
 
         for(n = 0; n < Q_MAX_GROUP; n++)
         {
-                computation_t *comp = (computation_t *)atomic_long_read(&pfq_get_group(n)->comp);
+                struct pfq_computation_tree *comp = (struct pfq_computation_tree *)atomic_long_read(&pfq_get_group(n)->comp);
 
                 BUG_ON(comp != NULL);
 
@@ -283,10 +283,10 @@ void __pfq_dismiss_function(void *f)
 }
 
 
-int pfq_set_group_prog(int gid, computation_t *comp, void *ctx)
+int pfq_set_group_prog(int gid, struct pfq_computation_tree *comp, void *ctx)
 {
         struct pfq_group * g = pfq_get_group(gid);
-        computation_t *old_comp;
+        struct pfq_computation_tree *old_comp;
         void *old_ctx;
 
         if (!g) {
@@ -296,7 +296,7 @@ int pfq_set_group_prog(int gid, computation_t *comp, void *ctx)
 
         down(&group_sem);
 
-        old_comp = (computation_t *)atomic_long_xchg(&g->comp, (long)comp);
+        old_comp = (struct pfq_computation_tree *)atomic_long_xchg(&g->comp, (long)comp);
         old_ctx  = (void *)atomic_long_xchg(&g->comp_ctx, (long)ctx);
 
         msleep(Q_GRACE_PERIOD);   /* sleeping is possible here: user-context */

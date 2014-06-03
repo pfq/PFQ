@@ -63,7 +63,7 @@ struct pfq_group
         bool   vlan_filt;                               /* enable/disable vlan filtering */
         char   vid_filters[4096];                       /* vlan filters */
 
-        atomic_long_t comp;                             /* computation_t *  (new functional program) */
+        atomic_long_t comp;                             /* struct pfq_computation_tree *  (new functional program) */
         atomic_long_t comp_ctx;                         /* void *: storage context (new functional program) */
 
         sparse_counter_t recv;
@@ -81,7 +81,7 @@ extern int  pfq_join_free_group(int id, unsigned long class_mask, int policy);
 extern int  pfq_join_group(int gid, int id, unsigned long class_mask, int policy);
 extern int  pfq_leave_group(int gid, int id);
 extern void pfq_leave_all_groups(int id);
-extern int  pfq_set_group_prog(int gid, computation_t *prog, void *ctx);
+extern int  pfq_set_group_prog(int gid, struct pfq_computation_tree *prog, void *ctx);
 
 extern unsigned long pfq_get_groups(int id);
 extern unsigned long __pfq_get_all_groups_mask(int gid);

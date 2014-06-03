@@ -176,12 +176,13 @@ pfq_signature_bind(string_view_t str, int n)
 {
 	string_view_t __signature_bind(string_view_t s, int stop)
 	{
-		string_view_t str  = pfq_signature_simplify(s);
+		string_view_t str  = pfq_signature_simplify(s),
+			      tail;
 
 		if (stop == n)
 			return str;
 
-		string_view_t tail = pfq_signature_tail(str);
+		tail = pfq_signature_tail(str);
 
 		if (!string_view_empty(tail))
                 	return __signature_bind(tail, stop + 1);

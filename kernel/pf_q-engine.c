@@ -82,56 +82,91 @@ pod_user(void **ptr, void const __user *arg, size_t size)
 }
 
 
-void pr_devel_functional_descr(struct pfq_functional_descr const *descr, int index)
+void pr_devel_functional_node(struct pfq_functional_node const *node, size_t index)
 {
-	const char *fun_type[] =
+	char buffer[256];
+        size_t n, len = 0;
+
+	len += sprintf(buffer + len, "%zu@%p: %pF [", index, node, node->fun.ptr);
+
+	for(n = 0; n < sizeof(node->fun.arg)/sizeof(node->fun.arg[0]); n++)
 	{
-		[pfq_monadic_fun] 	= "fun",
-		[pfq_high_order_fun] 	= "hfun",
-		[pfq_predicate_fun] 	= "pred",
-		[pfq_combinator_fun] 	= "comb",
-		[pfq_property_fun] 	= "prop"
-	};
-
-        char *name;
-
-       	if (descr->symbol == NULL)
-       		return ;
-
-        name = strdup_user(descr->symbol);
-
-	if (descr->arg_ptr)
-	{
-		pr_devel("%d  %s:%s nargs:%zd aptr:%p asize:%zu fun:%d left:%d right:%d\n"
-				, index
-				, fun_type[descr->type % (sizeof(fun_type)/sizeof(fun_type[0]))]
-				, name
-				, descr->nargs
-				, descr->arg_ptr
-				, descr->arg_size
-				, descr->fun
-				, descr->left
-				, descr->right);
+		if ((node->fun.arg[n] & 0xffffLLU) == (node->fun.arg[n]))
+			len += sprintf(buffer + len, "%lld ",(int64_t)node->fun.arg[n]);
+		else
+			len += sprintf(buffer + len, "%p ",(void *)node->fun.arg[n]);
 	}
+
+	if (node->left || node->right)
+		len += sprintf(buffer + len, "] -> l:%p r:%p", node->left, node->right);
 	else
-	{
-		pr_devel("%d  %s:%s nargs:%zd fun:%d left:%d right:%d\n"
-				, index
-				, fun_type[descr->type % (sizeof(fun_type)/sizeof(fun_type[0]))]
-				, name
-				, descr->nargs
-				, descr->fun
-				, descr->left
-				, descr->right);
+		len += sprintf(buffer + len, "]");
+
+	pr_devel("%s\n", buffer);
+}
+
+
+void pr_devel_computation_tree(struct pfq_computation_tree const *tree)
+{
+        size_t n;
+        pr_devel("[PFQ] computation tree size:%zu entry_point:%p\n", tree->size, tree->entry_point);
+        for(n = 0; n < tree->size; n++)
+        {
+                pr_devel_functional_node(&tree->node[n], n);
+        }
+}
+
+
+void pr_devel_functional_descr(struct pfq_functional_descr const *descr, size_t index)
+{
+	char buffer[256];
+
+        char *symbol, *signature;
+        size_t n, len = 0;
+
+       	if (descr->symbol == NULL) {
+		pr_devel("%zu   NULL :: ???\n", index);
+       		return ;
 	}
 
-        kfree(name);
+        symbol    = strdup_user(descr->symbol);
+	signature = strdup_user(descr->signature);
+
+	len += sprintf(buffer, "%zu   %s :: %s [", index, symbol, signature);
+
+        for(n = 0; n < sizeof(descr->arg)/sizeof(descr->arg[0]); n++)
+	{
+		if (descr->arg[n].ptr)
+		{
+			if (descr->arg[n].size)
+				len += sprintf(buffer + len, "ptr(%zu) ",  descr->arg[n].size);
+			else  {
+				char * tmp = strdup_user(descr->arg[n].ptr);
+				len += sprintf(buffer + len, "'%s' ", tmp);
+				kfree(tmp);
+			}
+		}
+		else
+		{
+			if (descr->arg[n].size)
+				len += sprintf(buffer + len, "link:%zu ",  descr->arg[n].size);
+		}
+
+	}
+
+	if (descr->left != -1 && descr->right != -1)
+		pr_devel("%s] tree:(%zu, %zu)\n", buffer, descr->left, descr->right);
+	else
+		pr_devel("%s] tree:(-,-)\n", buffer);
+
+        kfree(symbol);
+        kfree(signature);
 }
 
 
 void pr_devel_computation_descr(struct pfq_computation_descr const *descr)
 {
-        int n;
+        size_t n;
         pr_devel("[PFQ] computation size:%zu entry_point:%zu\n", descr->size, descr->entry_point);
         for(n = 0; n < descr->size; n++)
         {
@@ -170,7 +205,7 @@ pfq_apply(struct pfq_functional *call, struct sk_buff *skb)
 
 
 static inline struct sk_buff *
-pfq_bind(struct sk_buff *skb, computation_t *prg)
+pfq_bind(struct sk_buff *skb, struct pfq_computation_tree *prg)
 {
         struct pfq_functional_node *node = prg->entry_point;
 
@@ -195,7 +230,7 @@ pfq_bind(struct sk_buff *skb, computation_t *prg)
 
 
 struct sk_buff *
-pfq_run(int gid, computation_t *prg, struct sk_buff *skb)
+pfq_run(int gid, struct pfq_computation_tree *prg, struct sk_buff *skb)
 {
         struct pfq_group * g = pfq_get_group(gid);
         struct pfq_cb *cb = PFQ_CB(skb);
@@ -237,10 +272,10 @@ pfq_run(int gid, computation_t *prg, struct sk_buff *skb)
 }
 
 
-computation_t *
+struct pfq_computation_tree *
 pfq_computation_alloc (struct pfq_computation_descr const *descr)
 {
-        computation_t * c = kmalloc(sizeof(size_t) + descr->size * sizeof(struct pfq_functional_node), GFP_KERNEL);
+        struct pfq_computation_tree * c = kmalloc(sizeof(size_t) + descr->size * sizeof(struct pfq_functional_node), GFP_KERNEL);
         c->size = descr->size;
         return c;
 }
@@ -249,16 +284,30 @@ pfq_computation_alloc (struct pfq_computation_descr const *descr)
 void *
 pfq_context_alloc(struct pfq_computation_descr const *descr)
 {
-        size_t size = 0, n = 0, *s;
+        size_t size = 0, n = 0, *ptr;
         void *r;
 
         for(; n < descr->size; n++)
         {
-        	if (descr->fun[n].arg_ptr && (descr->fun[n].arg_size > 8))
-                	size += sizeof(size_t) + ALIGN(descr->fun[n].arg_size, 8);
+        	struct pfq_functional_descr const * fun = &descr->fun[n];
+
+        	int i;
+        	for(i = 0; i < sizeof(fun->arg)/sizeof(fun->arg[0]); i++)
+		{
+			if (fun->arg[i].ptr) {
+
+				size_t s = fun->arg[i].size == 0 ?  strlen_user(fun->arg[i].ptr)+1 :
+					   fun->arg[i].size >  8 ?  fun->arg[i].size : 0;
+
+				if (s) {
+					size += sizeof(size_t) + ALIGN(s, 8);
+				}
+			}
+		}
         }
 
         r = kmalloc(size, GFP_KERNEL);
+
         if (r == NULL) {
                 pr_devel("[PFQ] context_alloc: could not allocate %zu bytes!\n", size);
                 return NULL;
@@ -266,13 +315,25 @@ pfq_context_alloc(struct pfq_computation_descr const *descr)
 
         pr_devel("[PFQ] context_alloc: %zu bytes allocated.\n", size);
 
-        s = (size_t *)r;
+        ptr = (size_t *)r;
 
         for(n = 0; n < descr->size; n++)
         {
-        	if (descr->fun[n].arg_ptr && (descr->fun[n].arg_size > 8)) {
-                	*s = descr->fun[n].arg_size;
-                	s = (size_t *)((char *)(s+1) + ALIGN(descr->fun[n].arg_size, 8));
+        	struct pfq_functional_descr const * fun = &descr->fun[n];
+
+        	int i;
+        	for(i = 0; i < sizeof(descr->fun[i].arg)/sizeof(descr->fun[i].arg[0]); i++)
+		{
+			if (fun->arg[i].ptr) {
+
+				size_t s = fun->arg[i].size == 0 ?  strlen_user(fun->arg[i].ptr)+1 :
+					   fun->arg[i].size >  8 ?  fun->arg[i].size : 0;
+
+				if (s) {
+					* ptr = s;
+				  	  ptr = (size_t *)((char *)(ptr+1) + ALIGN(s, 8));
+				}
+			}
 		}
         }
 
@@ -280,20 +341,19 @@ pfq_context_alloc(struct pfq_computation_descr const *descr)
 }
 
 
-static
-bool check_argument(struct pfq_computation_descr const *descr, int index)
+size_t
+number_of_arguments(struct pfq_functional_descr const *fun)
 {
-        if (index >= descr->size) {
-                pr_devel("[PFQ] %d: argument check: invalid argument!\n", index);
-                return false;
-        }
+	size_t n = 0;
+	int i;
 
-	if ((descr->fun[index].arg_ptr == NULL) != (descr->fun[index].arg_size == 0)) {
-		pr_devel("[PFQ] %d: argument ptr/size mismatch!\n", index);
-		return false;
+	for(i = 0; i < sizeof(fun->arg)/sizeof(fun->arg[0]); i++)
+	{
+		if (fun->arg[i].ptr || fun->arg[i].size)
+			n++;
 	}
 
-	return true;
+	return n;
 }
 
 
@@ -312,6 +372,7 @@ resolve_signature_by_user_symbol(const char __user *symb)
         entry = pfq_symtable_search(&pfq_lang_functions, symbol);
         if (entry == NULL) {
                 printk(KERN_INFO "[PFQ] resolve_signature_by_symbol: '%s' no such function!\n", symbol);
+                kfree (symbol);
                 return NULL;
         }
 
@@ -320,146 +381,110 @@ resolve_signature_by_user_symbol(const char __user *symb)
 }
 
 
-bool
-check_function_signature(struct pfq_computation_descr const *descr, const char *signature, int index)
+static bool
+function_signature_match(struct pfq_functional_descr const *fun, string_view_t fullsig, size_t index)
 {
-	const char *sig;
-       	string_view_t s;
+	const char *signature = strdup_user(fun->signature);
+	string_view_t sig;
+	size_t nargs;
 
-	sig = resolve_signature_by_user_symbol(descr->fun[index].symbol);
-	if (sig == NULL) {
-		pr_devel("[PFQ] %d: resolve_signature: symbol not found!\n", index);
+	if (!signature) {
+		pr_devel("[PFQ] %zu: signature_matches: strdup_user error!\n", index);
 		return false;
 	}
 
-	s = pfq_signature_bind(make_string_view(sig), descr->fun[index].nargs);
+	nargs = number_of_arguments(fun);
 
-	/* ensure the function is of the given type */
+	sig = pfq_signature_bind(make_string_view(signature), nargs);
 
-	if (!pfq_signature_equal(s, make_string_view(signature)))
+	if (!pfq_signature_equal(sig, fullsig))
 	{
-		pr_devel("[PFQ] %d: invalid function: %s (%zd args bound)!\n", index, signature, descr->fun[index].nargs);
+		pr_devel("[PFQ] %zu: invalid function: %s (%zu args bound)!\n", index, signature, nargs);
+		kfree (signature);
 		return false;
 	}
 
+	kfree(signature);
 	return true;
 }
 
 
-static int
-validate_computation_descr(struct pfq_computation_descr const *descr)
+
+int
+pfq_validate_computation_descr(struct pfq_computation_descr const *descr)
 {
-        int n = descr->entry_point;
+        size_t entry_point = descr->entry_point, n;
 
-	if (n >= descr->size) {
-		pr_devel("[PFQ] %d: entry_point: invalid function!\n", n);
+	if (entry_point >= descr->size) {
+		pr_devel("[PFQ] %zu: entry_point: invalid function!\n", entry_point);
 		return -EPERM;
 	}
 
-	/* check for valid entry_point */
-
-	if (!check_function_signature(descr, "SkBuff -> Action SkBuff", n)) {
-		pr_devel("[PFQ] %d: entry_point: invalid function!\n", n);
-		return -EPERM;
-	}
-
-	/* check for valid functions */
+	/* check if functions are valid */
 
 	for(n = 0; n < descr->size; n++)
 	{
-		if (descr->fun[n].symbol == NULL) {
-			printk(KERN_INFO "[PFQ] %d: NULL symbol!\n", n);
+		struct pfq_functional_descr const * fun = &descr->fun[n];
+		const char *sig;
+		size_t nargs;
+               	int i;
+
+		if (fun->symbol == NULL) {
+			printk(KERN_INFO "[PFQ] %zu: NULL symbol!\n", n);
 			return -EPERM;
 		}
 
-		switch(descr->fun[n].type)
-		{
-		case pfq_monadic_fun: {
+		nargs = number_of_arguments(fun);
 
-			if (!check_function_signature(descr, "SkBuff -> Action SkBuff", n)) {
-				pr_devel("[PFQ] %d: monadic function error!\n", n);
-				return -EPERM;
-			}
+		/* check for valid signature */
 
-		} break;
-
-		case pfq_high_order_fun: {
-
-			int p = descr->fun[n].fun;
-
-			if (!check_function_signature(descr, "SkBuff -> Action SkBuff", n)) {
-				pr_devel("[PFQ] %d: monadic function error!\n", n);
-				return -EPERM;
-			}
-
-			if (!check_function_signature(descr, "SkBuff -> Bool", p)) {
-				pr_devel("[PFQ] %d: monadic function error!\n", n);
-				return -EPERM;
-			}
-
-		} break;
-
-		case pfq_predicate_fun: {
-
-			int p = descr->fun[n].fun;
-
-			if (!check_argument(descr, n)) {
-				pr_devel("[PFQ] %d: predicate function error!\n", n);
-				return -EPERM;
-			}
-
-			if (p == -1)
-				return 0;
-
-			if (!check_function_signature(descr, "SkBuff -> Bool", p)) {
-				pr_devel("[PFQ] %d: predicate function error!\n", n);
-				return -EPERM;
-			}
-
-		} break;
-
-		case pfq_combinator_fun: {
-
-			int left  = descr->fun[n].left;
-			int right = descr->fun[n].right;
-
-			if (!check_function_signature(descr, "SkBuff -> Bool", left)) {
-				pr_devel("[PFQ] %d: combinator function error!\n", n);
-				return -EPERM;
-			}
-			if (!check_function_signature(descr, "SkBuff -> Bool", right)) {
-				pr_devel("[PFQ] %d: combinator function error!\n", n);
-				return -EPERM;
-			}
-
-		}break;
-
-		case pfq_property_fun: {
-
-			int p = descr->fun[n].fun;
-
-			if (!check_argument(descr, n)) {
-				pr_devel("[PFQ] %d: property function error!\n", n);
-				return -EPERM;
-			}
-
-			if (p == -1)
-				return 0;
-
-			if (!check_function_signature(descr, "SkBuff -> a", p)) {
-				pr_devel("[PFQ] %d: property function error!\n", n);
-				return -EPERM;
-			}
-
-		}; break;
-
-		default:
-			pr_devel("[PFQ] %d: unsupported function type!\n", n);
+		sig = resolve_signature_by_user_symbol(fun->symbol);
+		if (!sig)
 			return -EPERM;
+
+		if (!function_signature_match(fun, pfq_signature_bind(make_string_view(sig), nargs), n)) {
+			pr_devel("[PFQ] %zu: %s: invalid signature!\n", n, sig);
+			return -EPERM;
+		}
+
+		/* check for valid entry_point */
+
+		if (n == entry_point) {
+
+			if (!function_signature_match(fun, make_string_view("SkBuff -> Action SkBuff"), n)) {
+				pr_devel("[PFQ] %zu: %s: invalid signature!\n", n, sig);
+				return -EPERM;
+			}
+		}
+
+		/* check for valid function arguments */
+
+        	for(i = 0; i < sizeof(fun->arg)/sizeof(fun->arg[0]); i++)
+       		{
+			if (fun->arg[i].ptr == 0 && fun->arg[i].size != 0) {
+
+				size_t x = fun->arg[i].size;
+
+				/* function argument */
+
+				string_view_t farg = pfq_signature_arg(make_string_view(fun->signature), i);
+
+				if (x >= descr->size) {
+					pr_devel("[PFQ] %zu: %s: invalid argument(%d): -> %zu!\n", n, sig, i, x);
+					return -EPERM;
+				}
+
+				if (!function_signature_match(&descr->fun[x], farg, x)) {
+					const char *expected = view_to_string(farg);
+					pr_devel("[PFQ] %zu: %s: invalid argument(%d): expected signature: %s!\n", n, fun->signature, i, expected);
+					kfree(expected);
+					return -EPERM;
+				}
+			}
 		}
 	}
 
-        return 0;
+	return 0;
 }
 
 static void *
@@ -489,28 +514,14 @@ resolve_user_symbol(struct list_head *cat, const char __user *symb, const char *
 }
 
 
-
-static int
-get_functional_by_index(struct pfq_computation_descr const *descr, computation_t *comp, int index, struct pfq_functional_node **ret)
-{
-        if (index >= 0 && index < descr->size) {
-                *ret = &comp->fun[index];
-        }
-        else {
-        	*ret = NULL;
-	}
-
-	return 0;
-}
-
 int
-pfq_computation_init(computation_t *comp)
+pfq_computation_init(struct pfq_computation_tree *comp)
 {
 	size_t n;
 	for (n = 0; n < comp->size; n++)
 	{
-		if (comp->fun[n].init) {
-			if (comp->fun[n].init( &comp->fun[n].fun ) < 0) {
+		if (comp->node[n].init) {
+			if (comp->node[n].init( &comp->node[n].fun ) < 0) {
 				printk(KERN_INFO "[PFQ] computation_init: error in function (%zu)!\n", n);
 				return -EPERM;
 			}
@@ -520,13 +531,13 @@ pfq_computation_init(computation_t *comp)
 }
 
 int
-pfq_computation_fini(computation_t *comp)
+pfq_computation_fini(struct pfq_computation_tree *comp)
 {
 	size_t n;
 	for (n = 0; n < comp->size; n++)
 	{
-		if (comp->fun[n].fini) {
-			if (comp->fun[n].fini( &comp->fun[n].fun ) < 0) {
+		if (comp->node[n].fini) {
+			if (comp->node[n].fini( &comp->node[n].fun ) < 0) {
 				printk(KERN_INFO "[PFQ] computation_fini: error in function (%zu)!\n", n);
 				return -EPERM;
 			}
@@ -535,15 +546,29 @@ pfq_computation_fini(computation_t *comp)
 	return 0;
 }
 
-int
-pfq_computation_rtlink(struct pfq_computation_descr const *descr, computation_t *comp, void *context)
-{
-        size_t n;
 
+static struct pfq_functional_node *
+get_functional_by_index(struct pfq_computation_descr const *descr, struct pfq_computation_tree *comp, int index)
+{
+        if (index >= 0 && index < descr->size) {
+                return &comp->node[index];
+        }
+
+	return NULL;
+}
+
+
+int
+pfq_computation_rtlink(struct pfq_computation_descr const *descr, struct pfq_computation_tree *comp, void *context)
+{
+	size_t n;
+
+#if 0
         /* validate the computation descriptors */
 
-        if (validate_computation_descr(descr) < 0)
+        if (pfq_validate_computation_descr(descr) < 0)
                 return -EPERM;
+#endif
 
         /* size */
 
@@ -551,242 +576,84 @@ pfq_computation_rtlink(struct pfq_computation_descr const *descr, computation_t 
 
         /* entry point */
 
-        comp->entry_point = &comp->fun[descr->entry_point];
+        comp->entry_point = &comp->node[descr->entry_point];
 
+	/* link functions */
 
         for(n = 0; n < descr->size; n++)
         {
-        	init_ptr_t init;
-        	fini_ptr_t fini;
+        	struct pfq_functional_descr const *fun;
+ 		const char *signature;
+        	init_ptr_t init, fini;
+		void *addr;
+                int i;
 
-                switch(descr->fun[n].type)
-                {
-                case pfq_monadic_fun: {
+                fun = &descr->fun[n];
 
-			const char *signature;
-                        function_ptr_t ptr;
+		addr = resolve_user_symbol(&pfq_lang_functions, fun->symbol, &signature, &init, &fini);
+		if (addr == NULL) {
+        		printk(KERN_INFO "[PFQ] %zu: rtlink: bad descriptor!\n", n);
+        		return -EPERM;
+		}
 
-                        ptr = resolve_user_symbol(&pfq_lang_functions, descr->fun[n].symbol, &signature, &init, &fini);
-                        if (ptr == NULL) {
-                                printk(KERN_INFO "[PFQ] %zu: bad descriptor!\n", n);
-                                return -EPERM;
-                        }
+		comp->node[n].fun.ptr = addr;
+        	comp->node[n].init    = init;
+        	comp->node[n].fini    = fini;
 
-                        if (descr->fun[n].arg_size > 8) {
+		comp->node[n].right = get_functional_by_index(descr, comp, descr->fun[n].right);
+		comp->node[n].left  = get_functional_by_index(descr, comp, descr->fun[n].left);
 
-				void *arg  = pod_user(&context, descr->fun[n].arg_ptr, descr->fun[n].arg_size);
-                                if (arg == NULL) {
-                                        pr_devel("[PFQ] %zu: fun internal error!\n", n);
-                                        return -EPERM;
-                                }
+		comp->node[n].fun.arg[0] = 0;
+		comp->node[n].fun.arg[1] = 0;
+		comp->node[n].fun.arg[2] = 0;
+		comp->node[n].fun.arg[3] = 0;
 
-                        	comp->fun[n].fun  = make_function(ptr, arg);
-                        	comp->fun[n].init = init;
-                        	comp->fun[n].fini = fini;
-                        }
-			else {
-				ptrdiff_t arg = 0;
+        	for(i = 0; i < sizeof(fun->arg)/sizeof(fun->arg[0]); i++)
+		{
+			if (fun->arg[i].ptr) { /* data */
 
-        			if (copy_from_user(&arg, descr->fun[n].arg_ptr, descr->fun[n].arg_size)) {
-                                        pr_devel("[PFQ] %zu: fun internal error!\n", n);
-                			return -EPERM;
-        			}
+				if (fun->arg[i].size == 0) { /* string */
 
-                        	comp->fun[n].fun = make_function(ptr, arg);
-                        	comp->fun[n].init = init;
-                        	comp->fun[n].fini = fini;
-			}
+					char *str = pod_user(&context, fun->arg[i].ptr, strlen_user(fun->arg[i].ptr)+1);
+					if (str == NULL) {
+        					pr_devel("[PFQ] %zu: fun internal error!\n", n);
+						return -EPERM;
+					}
 
+					comp->node[n].fun.arg[i] = (ptrdiff_t)str;
 
-			if (get_functional_by_index(descr, comp, descr->fun[n].right, &comp->fun[n].right) < 0) {
-
-                                pr_devel("[PFQ] %zu: right path out of range!\n", n);
-                                return -EINVAL;
-			}
-
-                        if (get_functional_by_index(descr, comp, descr->fun[n].left, &comp->fun[n].left) < 0) {
-
-                                pr_devel("[PFQ] %zu: left path out of range!\n", n);
-                                return -EINVAL;
-                        }
-
-
-                } break;
-
-
-                case pfq_high_order_fun: {
-
-			const char *signature;
-                        function_ptr_t ptr;
-
-                        size_t pindex = descr->fun[n].fun;
-
-                        ptr = resolve_user_symbol(&pfq_lang_functions, descr->fun[n].symbol, &signature, &init, &fini);
-                        if (ptr == NULL)
-			{
-                                printk(KERN_INFO "[PFQ] %zu: bad descriptor!\n", n);
-                                return -EPERM;
-                        }
-
-                        comp->fun[n].fun = make_high_order_function(ptr, &comp->fun[pindex].fun);
-                        comp->fun[n].init = init;
-                        comp->fun[n].fini = fini;
-
-			if (get_functional_by_index(descr, comp, descr->fun[n].right, &comp->fun[n].right) < 0) {
-
-                                pr_devel("[PFQ] %zu: right path out of range!\n", n);
-                                return -EINVAL;
-			}
-
-                        if (get_functional_by_index(descr, comp, descr->fun[n].left, &comp->fun[n].left) < 0) {
-
-                                pr_devel("[PFQ] %zu: left path out of range!\n", n);
-                                return -EINVAL;
-			}
-
-                } break;
-
-
-                case pfq_predicate_fun: {
-
-			const char *signature;
-                        predicate_ptr_t ptr;
-
-                        ptr = resolve_user_symbol(&pfq_lang_functions, descr->fun[n].symbol, &signature, &init, &fini);
-                        if (ptr == NULL)
-			{
-                                printk(KERN_INFO "[PFQ] %zu: bad descriptor!\n", n);
-                                return -EPERM;
-                        }
-
-                        if (descr->fun[n].arg_size > 8) {
-
-                        	void * arg =  pod_user(&context, descr->fun[n].arg_ptr, descr->fun[n].arg_size);
-                                if (arg == NULL) {
-                                        pr_devel("[PFQ] %zu: pred internal error!\n", n);
-                                        return -EPERM;
-                                }
-
-				if (descr->fun[n].fun != -1) {
-
-					size_t pindex = descr->fun[n].fun;
-					comp->fun[n].fun  = make_high_order_predicate(ptr, arg, &comp->fun[pindex].fun);
- 					comp->fun[n].init = init;
- 					comp->fun[n].fini = fini;
 				}
-				else {
-					comp->fun[n].fun = make_predicate(ptr, arg);
- 					comp->fun[n].init = init;
- 					comp->fun[n].fini = fini;
+				else if (fun->arg[i].size > 8) { /* big pod */
+
+					char *pod = pod_user(&context, fun->arg[i].ptr, fun->arg[i].size);
+					if (pod == NULL) {
+        					pr_devel("[PFQ] %zu: fun internal error!\n", n);
+						return -EPERM;
+					}
+
+					comp->node[n].fun.arg[i] = (ptrdiff_t)pod;
+
 				}
+				else { /* pod */
 
+					ptrdiff_t arg = 0;
 
-                        } else {
+        				if (copy_from_user(&arg, fun->arg[i].ptr, fun->arg[i].size)) {
+						pr_devel("[PFQ] %zu: fun internal error!\n", n);
+						return -EPERM;
+					}
 
-				ptrdiff_t arg = 0;
-
-        			if (copy_from_user(&arg, descr->fun[n].arg_ptr, descr->fun[n].arg_size)) {
-                                        pr_devel("[PFQ] %zu: fun internal error!\n", n);
-                			return -EPERM;
-        			}
-
-				if (descr->fun[n].fun != -1) {
-
-					size_t pindex = descr->fun[n].fun;
-					comp->fun[n].fun = make_high_order_predicate(ptr, arg, &comp->fun[pindex].fun);
- 					comp->fun[n].init = init;
- 					comp->fun[n].fini = fini;
-				}
-				else {
-					comp->fun[n].fun = make_predicate(ptr, arg);
- 					comp->fun[n].init = init;
- 					comp->fun[n].fini = fini;
+        				comp->node[n].fun.arg[i] = arg;
 				}
 			}
+			else if (fun->arg[i].size) {  /* function */
 
-
-                        comp->fun[n].right = NULL;
-                        comp->fun[n].left  = NULL;
-
-                } break;
-
-                case pfq_combinator_fun: {
-
-			const char *signature;
-                        predicate_ptr_t ptr;
-
-                        size_t left, right;
-
-                        ptr = resolve_user_symbol(&pfq_lang_functions, descr->fun[n].symbol, &signature, &init, &fini);
-                        if (ptr == NULL)
-			{
-                                printk(KERN_INFO "[PFQ] %zu: bad descriptor!\n", n);
-                                return -EPERM;
-                        }
-
-                        left  = descr->fun[n].left;
-                        right = descr->fun[n].right;
-
-                        comp->fun[n].fun = make_combinator(ptr, &comp->fun[left].fun, &comp->fun[right].fun);
- 			comp->fun[n].init = init;
- 			comp->fun[n].fini = fini;
-
-                        comp->fun[n].right = NULL;
-                        comp->fun[n].left  = NULL;
-
-                } break;
-
-                case pfq_property_fun: {
-
-                        const char *signature;
-                        property_ptr_t ptr;
-
-                        ptr = resolve_user_symbol(&pfq_lang_functions, descr->fun[n].symbol, &signature, &init, &fini);
-                        if (ptr == NULL)
-			{
-                                printk(KERN_INFO "[PFQ] %zu: bad descriptor!\n", n);
-                                return -EPERM;
-                        }
-
-                        if (descr->fun[n].arg_size > 8) {
-
-                        	void * arg = pod_user(&context, descr->fun[n].arg_ptr, descr->fun[n].arg_size);
-                                if (arg == NULL) {
-                                        pr_devel("[PFQ] %zu: pred internal error!\n", n);
-                                        return -EPERM;
-                                }
-
-                        	comp->fun[n].fun = make_property(ptr, arg);
- 				comp->fun[n].init = init;
- 				comp->fun[n].fini = fini;
-
-                        } else {
-
-				ptrdiff_t arg = 0;
-
-        			if (copy_from_user(&arg, descr->fun[n].arg_ptr, descr->fun[n].arg_size)) {
-                                        pr_devel("[PFQ] %zu: fun internal error!\n", n);
-                			return -EPERM;
-        			}
-
-                        	comp->fun[n].fun = make_property(ptr, arg);
- 				comp->fun[n].init = init;
- 				comp->fun[n].fini = fini;
+				comp->node[n].fun.arg[i] = (ptrdiff_t)get_functional_by_index(descr, comp, fun->arg[i].size);
 			}
+		}
+	}
 
-
-                        comp->fun[n].right = NULL;
-                        comp->fun[n].left  = NULL;
-
-                } break;
-
-                default: {
-                        pr_debug("[PFQ] computation_rtlink: invalid function!\n");
-                        return -EPERM;
-                }
-                }
-        }
-
-        return 0;
+	return 0;
 }
+
 

@@ -29,7 +29,7 @@
 static inline
 bool not(arguments_t args, struct sk_buff const *skb)
 {
-	predicate_t p1 = get_predicate(args);
+	predicate_t p1 = get_data(predicate_t, args);
 
         return !EVAL_PREDICATE(p1,skb);
 }
@@ -37,8 +37,8 @@ bool not(arguments_t args, struct sk_buff const *skb)
 static inline
 bool or(arguments_t args, struct sk_buff const *skb)
 {
-	predicate_t p1 = get_predicate(args);
-	predicate_t p2 = get_predicate2(args);
+	predicate_t p1 = get_data0(predicate_t, args);
+	predicate_t p2 = get_data1(predicate_t, args);
 
         return EVAL_PREDICATE(p1,skb) || EVAL_PREDICATE(p2, skb);
 }
@@ -47,8 +47,8 @@ bool or(arguments_t args, struct sk_buff const *skb)
 static inline
 bool and(arguments_t args, struct sk_buff const *skb)
 {
-	predicate_t p1 = get_predicate(args);
-	predicate_t p2 = get_predicate2(args);
+	predicate_t p1 = get_data0(predicate_t, args);
+	predicate_t p2 = get_data1(predicate_t, args);
 
         return EVAL_PREDICATE(p1, skb) && EVAL_PREDICATE(p2, skb);
 }
@@ -57,8 +57,8 @@ bool and(arguments_t args, struct sk_buff const *skb)
 static inline
 bool xor(arguments_t args, struct sk_buff const *skb)
 {
-	predicate_t p1 = get_predicate(args);
-	predicate_t p2 = get_predicate2(args);
+	predicate_t p1 = get_data0(predicate_t, args);
+	predicate_t p2 = get_data1(predicate_t, args);
 
         return EVAL_PREDICATE(p1, skb) != EVAL_PREDICATE(p2, skb);
 }

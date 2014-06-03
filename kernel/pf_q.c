@@ -328,7 +328,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 		{
 			struct pfq_cb *cb = PFQ_CB(skb);
 			unsigned long sock_mask = 0;
-			computation_t *prg;
+			struct pfq_computation_tree *prg;
 
 			if (unlikely((cb->group_mask & bit) == 0))
 				continue;
@@ -355,7 +355,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 
 			/* check where a functional program is available for this group */
 
-			prg = (computation_t *)atomic_long_read(&pfq_groups[gid].comp);
+			prg = (struct pfq_computation_tree *)atomic_long_read(&pfq_groups[gid].comp);
 
 			if (prg) { /* run the functional program */
 

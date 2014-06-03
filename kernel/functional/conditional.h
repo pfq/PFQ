@@ -32,7 +32,7 @@
 static inline struct sk_buff *
 conditional(arguments_t args, struct sk_buff *skb)
 {
-        predicate_t expr = get_predicate(args);
+        predicate_t expr = get_data(predicate_t, args);
         PFQ_CB(skb)->action.right = EVAL_PREDICATE(expr, skb);
 
         return skb;
@@ -41,7 +41,7 @@ conditional(arguments_t args, struct sk_buff *skb)
 static inline struct sk_buff *
 when(arguments_t args, struct sk_buff *skb)
 {
-        predicate_t expr = get_predicate(args);
+        predicate_t expr = get_data(predicate_t, args);
         PFQ_CB(skb)->action.right = EVAL_PREDICATE(expr, skb);
         return skb;
 }
@@ -49,7 +49,7 @@ when(arguments_t args, struct sk_buff *skb)
 static inline struct sk_buff *
 unless(arguments_t args, struct sk_buff *skb)
 {
-        predicate_t expr = get_predicate(args);
+        predicate_t expr = get_data(predicate_t, args);
         PFQ_CB(skb)->action.right = !EVAL_PREDICATE(expr, skb);
         return skb;
 }
