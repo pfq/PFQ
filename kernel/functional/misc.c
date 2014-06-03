@@ -109,6 +109,19 @@ crc16_sum(arguments_t args, struct sk_buff *skb)
 
 
 static struct sk_buff *
+log_msg(arguments_t args, struct sk_buff *skb)
+{
+	const char *msg = get_data(const char *, args);
+
+	if (!printk_ratelimit())
+		return skb;
+
+	printk(KERN_INFO "[PFQ] log_msg: %s\n", msg);
+	return skb;
+}
+
+
+static struct sk_buff *
 log_packet(arguments_t args, struct sk_buff *skb)
 {
 	if (!printk_ratelimit())
@@ -175,6 +188,8 @@ struct pfq_function_descr misc_functions[] = {
         { "dec", 	"Int -> SkBuff -> Action SkBuff",    	dec_counter 	},
  	{ "mark", 	"CULong -> SkBuff -> Action SkBuff",  	INLINE_FUN(mark)},
         { "crc16", 	"SkBuff -> Action SkBuff", 		crc16_sum	},
+
+        { "log_msg",  	"String -> SkBuff -> Action SkBuff", 	log_msg 	},
         { "log_packet", "SkBuff -> Action SkBuff", 		log_packet	},
 
         { NULL }};

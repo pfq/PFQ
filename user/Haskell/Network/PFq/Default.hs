@@ -159,9 +159,9 @@ module Network.PFq.Default
         deliver    ,
         crc16      ,
         log_packet ,
+        log_msg    ,
         dummy      ,
         hdummy     ,
-
     ) where
 
 
@@ -319,6 +319,8 @@ broadcast      = MFunction ("broadcast",typeOf'(broadcast))             :: NetFu
 drop'          = MFunction ("drop",typeOf'(drop'))                      :: NetFunction
 unit           = MFunction ("unit",typeOf'(unit))                       :: NetFunction
 log_packet     = MFunction ("log_packet",typeOf'())                     :: NetFunction
+log_msg        = MFunction2 ("log_msg",typeOf'(log_msg))                :: String -> NetFunction
+
 crc16          = MFunction ("crc16",typeOf'(crc16))                     :: NetFunction
 
 inc            = MFunction1 ("inc",typeOf'(inc))               :: CInt     -> NetFunction
@@ -343,7 +345,7 @@ addr net p     = MFunction1 ("addr",typeOf'(addr))     (mkNetAddr net p)
 src_addr net p = MFunction1 ("src_addr",typeOf'(src_addr)) (mkNetAddr net p)
 dst_addr net p = MFunction1 ("dst_addr",typeOf'(dst_addr)) (mkNetAddr net p)
 
-hdummy         = HFunction ("hdummy",typeOf'(hdummy))            :: NetPredicate -> NetFunction
+hdummy         = HFunction  ("hdummy",typeOf'(hdummy))            :: NetPredicate -> NetFunction
 when'          = HFunction1 ("when",typeOf'(when'))              :: NetPredicate -> NetFunction  -> NetFunction
 unless'        = HFunction1 ("unless",typeOf'(unless'))          :: NetPredicate -> NetFunction  -> NetFunction
 conditional    = HFunction2 ("conditional",typeOf'(conditional)) :: NetPredicate -> NetFunction  -> NetFunction  -> NetFunction

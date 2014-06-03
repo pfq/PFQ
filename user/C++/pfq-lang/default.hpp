@@ -242,6 +242,8 @@ namespace pfq_lang
         auto forward_kernel = netfunction("forward_kernel");
         auto drop           = netfunction("drop");
         auto unit           = netfunction("unit");
+
+        auto log_msg        = [] (const std::string &msg) { return netfunction("log_msg") };
         auto log_packet     = netfunction("log_packet");
 
         auto class_         = [] (int value) { return netfunction1("class", value); };
