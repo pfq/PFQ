@@ -29,7 +29,7 @@
 #include "pf_q-signature.h"
 
 int
-pfq_signature_redundant_brackets(string_view_t str)
+count_outmost_brackets(string_view_t str)
 {
        	int red = INT_MAX, nest = 0;
 	int bracket = 0;
@@ -58,36 +58,14 @@ pfq_signature_redundant_brackets(string_view_t str)
 }
 
 
-string_view_t
-pfq_signature_simplify(string_view_t str)
+const char *
+find_next_arrow(string_view_t str)
 {
-	int red = pfq_signature_redundant_brackets(str);
-	int n;
+ 	int state = 0, bracket = 0;
 
-	for(n = 0; n < red; n++)
-	{
-        	while (*str.begin++ != '(')
-        	{ }
+        const char * p = str.begin;
 
-        	while (str.end != str.begin &&
-        		*--str.end != ')')
-        	{ }
-	}
-
-	return string_view_trim(str);
-}
-
-
-string_view_t
-pfq_signature_bind(string_view_t str, int n)
-{
-	string_view_t s = pfq_signature_simplify(str);
-
- 	int state = 0, bracket = 0, arity = 0;
-
-        const char * p = s.begin;
-
- 	for(; p != s.end && arity < n; ++p)
+ 	for(; p != str.end; ++p)
  	{
          	switch (state)
  		{
@@ -103,13 +81,9 @@ pfq_signature_bind(string_view_t str, int n)
  			}
  		} break;
  		case 1: {
-                   	if(*p == '>') {
-                         	arity++;
-                         	state = 0;
-                         	continue;
- 			}
-
- 			return null_view();
+                   	if(*p == '>')
+                   		return p;
+			return NULL;
  		} break;
  		case 2: {
  			if (*p == '(') {
@@ -126,170 +100,190 @@ pfq_signature_bind(string_view_t str, int n)
  		}
  	}
 
-	s.begin = p;
-
-	return pfq_signature_simplify(s);
+	return NULL;
 }
 
+
+string_view_t
+pfq_signature_head(string_view_t str)
+{
+	string_view_t head = str;
+
+	const char * p = find_next_arrow(str);
+	if (p != NULL)
+		head.end = p-1;
+
+	return head;
+}
+
+
+
+string_view_t
+pfq_signature_tail(string_view_t str)
+{
+	string_view_t tail = str;
+
+	const char * p = find_next_arrow(str);
+	if (p == NULL)
+		return null_string_view();
+
+	tail.begin = p+1;
+	return tail;
+}
+
+
+string_view_t
+pfq_signature_simplify(string_view_t str)
+{
+	int red = count_outmost_brackets(str);
+	int n;
+
+	for(n = 0; n < red; n++)
+	{
+        	while (*str.begin++ != '(')
+        	{ }
+
+        	while (str.end != str.begin &&
+        		*--str.end != ')')
+        	{ }
+	}
+	return string_view_trim(str);
+}
 
 int
 pfq_signature_arity(string_view_t str)
 {
-	string_view_t s = pfq_signature_simplify(str);
+	int __signature_arity(string_view_t s)
+	{
+		string_view_t str  = pfq_signature_simplify(s);
+		string_view_t head = pfq_signature_head(str);
+		string_view_t tail = pfq_signature_tail(str);
 
- 	int state = 0, bracket = 0, arity = 0;
+		if (!string_view_empty(tail))
+                	return 1 + __signature_arity(tail);
 
-        const char * p = s.begin;
+		if (string_view_empty(head))
+			return 0;
 
- 	for(; p != s.end; ++p)
- 	{
-         	switch (state)
- 		{
- 		case 0: {
-               		if (*p == '-') {
-               			state = 1;
-               			continue;
- 			}
- 			if (*p == '(') {
-                         	bracket++;
-                         	state = 2;
-                         	continue;
- 			}
- 		} break;
- 		case 1: {
-                   	if(*p == '>') {
-                         	arity++;
-                         	state = 0;
-                         	continue;
- 			}
- 			return -1;
- 		} break;
- 		case 2: {
- 			if (*p == '(') {
- 				bracket++;
-                         	continue;
- 			}
- 			if (*p == ')') {
-                         	bracket--;
-                         	if (bracket == 0)
-                         		state = 0;
- 			}
+		return 1;
+	}
 
- 		} break;
+	return -1 + __signature_arity(str);
+}
 
- 		}
- 	}
+string_view_t
+pfq_signature_bind(string_view_t str, int n)
+{
+	string_view_t __signature_bind(string_view_t s, int stop)
+	{
+		string_view_t str  = pfq_signature_simplify(s);
 
- 	if (p == s.begin)
- 		return -1;
+		if (stop == n)
+			return str;
 
- 	return arity;
+		string_view_t tail = pfq_signature_tail(str);
+
+		if (!string_view_empty(tail))
+                	return __signature_bind(tail, stop + 1);
+
+		return tail;
+	}
+
+	return  pfq_signature_simplify(__signature_bind(str, 0));
+}
+
+string_view_t
+pfq_signature_arg(string_view_t str, int index)
+{
+	string_view_t __signature_arg(string_view_t s, int stop)
+	{
+		string_view_t str  = pfq_signature_simplify(s);
+
+		string_view_t head = pfq_signature_head(str);
+		string_view_t tail = pfq_signature_tail(str);
+
+		if (stop == index)
+			return head;
+
+		if (!string_view_empty(tail))
+                	return __signature_arg(tail, stop + 1);
+
+		return tail;
+	}
+
+	return  pfq_signature_simplify(__signature_arg(str, 0));
 }
 
 
 static inline const char *
-skip_white_space(const char *p, bool *done)
+skip_white_space(const char *p, const char *end)
 {
-	while (isspace(*p)) {
-		*done = true;
+	while (isspace(*p) && p != end)
 		p++;
-	}
 	return p;
 }
+
+
+bool
+compare_argument(string_view_t a, string_view_t b)
+{
+	string_view_t str_a = pfq_signature_simplify(a);
+	string_view_t str_b = pfq_signature_simplify(b);
+
+	const char *ap = str_a.begin;
+	const char *bp = str_b.begin;
+
+ 	while (ap != str_a.end && bp != str_b.end)
+ 	{
+ 		if (*ap != *bp)
+ 			return false;
+
+		if (isspace(*ap)) {
+ 			ap = skip_white_space(ap, str_a.end);
+ 			bp = skip_white_space(bp, str_b.end);
+		}
+		else {
+ 			ap++, bp++;
+		}
+ 	}
+
+	return ap == str_a.end && bp == str_b.end;
+}
+
 
 bool
 pfq_signature_equal(string_view_t sig_a, string_view_t sig_b)
 {
-	bool eq = true;
-	int arity, n;
-
-	arity = pfq_signature_arity(sig_a);
-
-	if (arity != pfq_signature_arity(sig_b))
-		return false;
-
-	sig_a = pfq_signature_simplify(sig_a);
-	sig_b = pfq_signature_simplify(sig_b);
-
-	if (arity == 0) {
-
-        	const char *a = sig_a.begin;
-        	const char *b = sig_b.begin;
-
-		while (a != sig_a.end && b != sig_b.end)
-		{
-			bool sa = false, sb = false;
-
-			a = skip_white_space(a, &sa);
-			b = skip_white_space(b, &sb);
-
-			if (sa != sb)
-				return false;
-
-			if (a == sig_a.end || b == sig_b.end)
-			    	break;
-
-			if (*a != *b)
-				return false;
-
-			a++, b++;
-		}
-
-		return a == sig_a.end && b == sig_b.end;
-	}
-
-	for(n = 0; n < arity; n++)
+	bool __signature_equal(string_view_t a, string_view_t b)
 	{
-        	eq &= pfq_signature_equal( pfq_signature_arg(sig_a, n),
-        				   pfq_signature_arg(sig_b, n));
+		string_view_t str_a = pfq_signature_simplify(a),
+			      str_b = pfq_signature_simplify(b);
 
-        	if (!eq)
-        		return false;
+		string_view_t head_a = pfq_signature_head(str_a),
+			      tail_a = pfq_signature_tail(str_a),
+			      head_b = pfq_signature_head(str_b),
+			      tail_b = pfq_signature_tail(str_b);
+
+		if ((string_view_empty(tail_a) && !string_view_empty(tail_b)) ||
+		    (!string_view_empty(tail_a) && string_view_empty(tail_b)))
+		    	return false;
+
+		if (!(pfq_signature_arity(head_a) == 0 ?
+			       compare_argument(head_a, head_b) : pfq_signature_equal(head_a, head_b)))
+			return false;
+
+		if (string_view_empty(tail_a) && string_view_empty(tail_b))
+			return true;
+
+ 		return __signature_equal(tail_a, tail_b);
 	}
 
-	return eq;
+	return __signature_equal(sig_a, sig_b);
 }
-
 
 bool
 pfq_signature_is_function(string_view_t sig)
 {
 	return pfq_signature_arity(sig) > 0;
-}
-
-
-string_view_t
-pfq_signature_arg(string_view_t s, int index)
-{
-	string_view_t s1 = pfq_signature_bind(s,  index);
-
-        const char * p = s1.begin;
-        int bracket = 0;
-
- 	for(; p != s1.end; ++p)
- 	{
-		if (bracket == 0) {
-			if (*p == '-')
-				break;
-			if (*p == '(') {
-				bracket++;
-				continue;
-			}
-		} else {
- 			if (*p == '(') {
- 				bracket++;
- 				continue;
-			}
-			if (*p == ')') {
-				--bracket;
-				continue;
-			}
-		}
-	}
-
-	s.begin = s1.begin;
- 	s.end   = p;
-
-	return pfq_signature_simplify(s);
 }
 

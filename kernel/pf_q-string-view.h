@@ -39,12 +39,17 @@ typedef struct
 
 
 static inline string_view_t
-null_view(void)
+null_string_view(void)
 {
 	string_view_t s = { NULL, NULL };
 	return s;
 }
 
+static inline bool
+string_view_empty(string_view_t str)
+{
+	return (str.end - str.begin) == 0;
+}
 static inline size_t
 string_view_length(string_view_t str)
 {
@@ -63,6 +68,8 @@ make_string_view(const char *str)
 static inline string_view_t
 string_view_trim(string_view_t str)
 {
+	if (!str.begin || !str.end)
+		return str;
 	while ( isspace(*str.begin) &&
                 str.begin != str.end )
                 str.begin++;
