@@ -284,10 +284,8 @@ pfq_signature_equal(string_view_t sig_a, string_view_t sig_b)
 		    !string_view_empty(tail_a) && string_view_empty(tail_b))
 		    	return false;
 
-		bool ret = pfq_signature_arity(head_a) == 0 ?
-			       compare_argument(head_a, head_b) : pfq_signature_equal(head_a, head_b);
-
-		if (!ret)
+		if (!(pfq_signature_arity(head_a) == 0 ?
+			       compare_argument(head_a, head_b) : pfq_signature_equal(head_a, head_b)))
 			return false;
 
 		if (string_view_empty(tail_a) && string_view_empty(tail_b))
