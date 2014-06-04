@@ -32,26 +32,11 @@
 
 #include <linux/pf_q.h>
 
+#include "details.hpp"
 
 namespace pfq_lang
 {
-    using ::pfq_functional_type;
     using ::pfq_functional_descr;
-
-    static inline std::string
-    show(enum pfq_functional_type ft)
-    {
-        switch(ft)
-        {
-            case pfq_monadic_fun:    return "fun";
-            case pfq_high_order_fun: return "hfun";
-            case pfq_predicate_fun:  return "pred";
-            case pfq_combinator_fun: return "comb";
-            case pfq_property_fun:   return "prop";
-        }
-
-        throw std::logic_error("unknown type");
-    }
 
     static inline std::string
     show(pfq_functional_descr const &descr)
@@ -59,705 +44,565 @@ namespace pfq_lang
         std::stringstream out;
 
         out << "functional_descr "
-            << "type:"      << show (descr.type) << ' '
             << "symbol:"    << descr.symbol     << ' '
-            << "nargs:"     << descr.nargs      << ' '
-            << "arg_ptr:"   << descr.arg_ptr    << ' '
-            << "arg_size:"  << descr.arg_size   << ' '
-            << "fun:"       << descr.fun        << ' '
-            << "left:"      << descr.left       << ' '
-            << "right:"     << descr.right;
+            << "signature:" << descr.signature  << ' '
+            << "arg:{ ";
+
+        for(auto const &arg : descr.arg)
+        {
+            out << '(' << arg.ptr << ',' << arg.size << ") ";
+        }
+
+        out << "} " << "left:"  << descr.left << ' '
+                    << "right:" << descr.right;
 
         return out.str();
     }
 
     //
-    // Functional descriptor
+    // Argument and FunctionDescr
     //
 
-    struct FunDescr
+    struct Showbase
     {
-        enum pfq_functional_type    type;
-        std::string                 symbol;
-        size_t                      nargs;
+        virtual std::string forall_show() = 0;
+    };
 
-        std::shared_ptr<void>       arg_ptr;
-        size_t                      arg_size;
+    template <typename Tp>
+    struct Showable : Showbase
+    {
+        Showable(Tp v)
+        : value(std::move(v))
+        {}
 
-        int                         fun;
-        int                         left;
-        int                         right;
+        Tp value;
+
+        Tp *get()
+        {
+            return &value;
+        }
+
+        Tp const *get() const
+        {
+            return &value;
+        }
+
+        std::string forall_show() override
+        {
+            std::stringstream out;
+            out << value;
+            return out.str();
+        }
+    };
+
+    struct Argument
+    {
+        static Argument Null()
+        {
+            return Argument{ std::shared_ptr<Showbase>(), 0};
+        }
+
+        template <typename Tp>
+        static Argument Data(Tp const &pod)
+        {
+            static_assert( std::is_pod<Tp>::value, "Data argument must be a pod type");
+
+            auto ptr = std::make_shared<Showable<Tp>>(pod);
+
+            return Argument{ std::dynamic_pointer_cast<Showbase>(ptr), sizeof(pod) };
+        }
+
+        static Argument String(std::string str)
+        {
+            auto ptr = std::make_shared<Showable<std::string>>(std::move(str));
+            return Argument{ std::dynamic_pointer_cast<Showbase>(ptr), 0 };
+        }
+
+        static Argument Fun(int n)
+        {
+            return Argument{ std::shared_ptr<Showbase>(), static_cast<size_t>(n) };
+        }
+
+        std::shared_ptr<Showbase> ptr;
+        size_t size;
+    };
+
+
+    static inline std::string
+    show(const Argument &arg)
+    {
+        std::stringstream out;
+
+        if (!arg.ptr && arg.size == 0)  {
+            out << "ArgNull";
+        }
+        else if (arg.ptr && arg.size != 0)  {
+            out << "ArgData (" << arg.ptr->forall_show() << "," << arg.size << ")";
+        }
+        else if (arg.ptr && arg.size == 0)  {
+            out << "ArgString '" << arg.ptr->forall_show() << "'";
+        }
+        else {
+            out << "ArgFun " << arg.size;
+        }
+
+        return out.str();
+    }
+
+    static inline std::string
+    pretty(const Argument &arg)
+    {
+        if (arg.ptr)
+            return arg.ptr->forall_show();
+        else if (arg.size)
+            return "f[" + std::to_string(arg.size) + "]";
+
+        return "";
+    }
+
+    //
+    // FunctionDescr
+    //
+
+    struct FunctionDescr
+    {
+        std::string         symbol;
+        std::string         signature;
+        Argument            arg[4];
+        int                 left;
+        int                 right;
     };
 
     static inline std::string
-    show(FunDescr const &descr)
+    show(const FunctionDescr &descr)
     {
-        return "FunDescr { " + show(descr.type) + ' '
-                             + descr.symbol + ' '
-                             + std::to_string(descr.nargs) + ' '
-                             + std::to_string((unsigned long)descr.arg_ptr.get()) + ' '
-                             + std::to_string(descr.arg_size) + ' '
-                             + std::to_string(descr.fun) + ' '
-                             + std::to_string(descr.left) + ' '
-                             + std::to_string(descr.right) + " }";
+        std::string out;
+
+        out = "FunctionDescr " + descr.symbol + ' '
+                               + descr.signature + " [";
+
+        for(auto const &a : descr.arg)
+        {
+            out += show(a) + ", ";
+        }
+        out +=  "] ("
+                + std::to_string(descr.left)  + ", "
+                + std::to_string(descr.right) + ')';
+
+        return out;
     }
 
-    ///////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    namespace term
+    using Symbol    = std::string;
+    using Signature = std::string;
+
+    struct SkBuff { };
+
+    template <typename a>
+    struct Action { };
+
+    template <typename Sig, typename ... Elem>
+    struct Function
     {
-        //////// is_same_template:
+        Symbol                symbol;
+        Signature             signature;
+        std::vector<Argument> arg;
 
-        template <typename T, template <typename ...> class Tp>
-        struct is_same_template : std::false_type
-        { };
+        std::tuple<Elem...>   elem;
+    };
 
-        template <template <typename ...> class Tp, typename ...Ti>
-        struct is_same_template<Tp<Ti...>, Tp> : std::true_type
-        { };
+    //
+    // Aliases...
+    //
 
-        //////// vector concat:
+    template <typename ...Ts>
+    using NetFunction  = Function< Action<SkBuff>(SkBuff), Ts...>;
 
-        template <typename Tp>
-        inline std::vector<Tp>
-        operator+(std::vector<Tp> v1, std::vector<Tp> &&v2)
-        {
-            v1.insert(v1.end(), std::make_move_iterator(v2.begin()),
-                                std::make_move_iterator(v2.end()));
-            return v1;
-        }
+    template <typename ...Ts>
+    using NetPredicate = Function< bool(SkBuff), Ts...>;
 
-        template <typename Tp>
-        inline std::vector<Tp>
-        operator+(std::vector<Tp> v1, std::vector<Tp> const &v2)
-        {
-            v1.insert(v1.end(), v2.begin(), v2.end());
-            return v1;
-        }
+    template <typename ...Ts>
+    using NetProperty  = Function< uint64_t(SkBuff), Ts...>;
 
-        //////// Combinator:
+    //
+    // Constructors:
+    //
 
-        struct Combinator
-        {
-            std::string name_;
-        };
+    // monadic functions:
 
-        static inline std::string
-        show(Combinator const &comb)
-        {
-            if (comb.name_ == "or")
-                return "|";
-            if (comb.name_ == "and")
-                return "&";
-            if (comb.name_ == "xor")
-                return "^";
-
-            throw std::logic_error("combinator: internal error");
-        }
-
-        static inline std::pair<std::vector<FunDescr>, int>
-        serialize(int n, Combinator const &comb)
-        {
-            return std::make_pair(std::vector<FunDescr>
-            {
-                FunDescr { pfq_combinator_fun, comb.name_, 2, std::shared_ptr<void>(), 0, -1, -1, -1 }
-            }, n+1);
-        }
-
-        //////// Predicates:
-
-        struct Pred1
-        {
-            Pred1(std::string name)
-            : name_(std::move(name))
-            , ptr_(std::shared_ptr<void>())
-            , size_(0)
-            {
-            }
-
-            template <typename T>
-            Pred1(std::string name, T const &arg)
-            : name_(std::move(name))
-            , ptr_(std::shared_ptr<void>{ new T(arg) })
-            , size_(sizeof(T))
-            {
-            }
-
-            std::string           name_;
-            std::shared_ptr<void> ptr_;
-            size_t                size_;
-        };
-
-        template <typename P1, typename P2>
-        struct Pred2
-        {
-            Combinator      comb_;
-            P1              left_;
-            P2              right_;
-        };
-
-        template <typename Prop>
-        struct Pred3
-        {
-            Pred3(std::string name, Prop p)
-            : name_(std::move(name))
-            , prop_(std::move(p))
-            {
-            }
-
-            std::string             name_;
-            Prop                    prop_;
-        };
-
-        template <typename Prop>
-        struct Pred4
-        {
-            template <typename T>
-            Pred4(std::string name, Prop p, T const &arg)
-            : name_(std::move(name))
-            , ptr_(std::shared_ptr<void>{ new T(arg) })
-            , size_(sizeof(T))
-            , prop_(std::move(p))
-            {
-            }
-
-            std::string             name_;
-            std::shared_ptr<void>   ptr_;
-            size_t                  size_;
-
-            Prop                    prop_;
-        };
-
-
-        //////// is_predicate:
-
-        template <typename Tp>
-        struct is_predicate :
-            std::integral_constant<bool,
-                std::is_same<Tp, term::Pred1>::value ||
-                is_same_template<Tp, term::Pred2>::value ||
-                is_same_template<Tp, term::Pred3>::value ||
-                is_same_template<Tp, term::Pred4>::value>
-        { };
-
-        ///////// show predicates:
-
-        static inline std::string
-        show(Pred1 const &descr)
-        {
-            std::ostringstream out;
-            out << '(' << descr.name_ << ' ' << descr.ptr_.get() << ':' << std::to_string(descr.size_) << ')';
-            return out.str();
-        }
-
-        template <typename P1, typename P2>
-        static inline std::string
-        show(Pred2<P1,P2> const &descr)
-        {
-            return '(' + show(descr.left_) + ' ' + show(descr.comb_) + ' ' + show(descr.right_) + ')';
-        }
-
-        template <typename P>
-        static inline std::string
-        show(Pred3<P> const &descr)
-        {
-            std::ostringstream out;
-
-            out << '(' << descr.name_ << ' ' << show(descr.prop_) << ')';
-
-            return out.str();
-        }
-
-        template <typename P>
-        static inline std::string
-        show(Pred4<P> const &descr)
-        {
-            std::ostringstream out;
-
-            out << '(' << descr.name_ << ' ' << show(descr.prop_) << ' ' << descr.ptr_.get() << ':' << std::to_string(descr.size_) << ')';
-
-            return out.str();
-        }
-
-        //////// serialize predicates:
-
-
-        static inline std::pair<std::vector<FunDescr>, int>
-        serialize(int n, Pred1 const &p)
-        {
-            size_t s = p.ptr_ ? 1 : 0;
-            return std::make_pair(std::vector<FunDescr>
-            {
-                FunDescr { pfq_predicate_fun, p.name_, s, p.ptr_, p.size_, -1, -1, -1 }
-            }, n+1);
-        }
-
-        template <typename  P1, typename P2>
-        static inline std::pair<std::vector<FunDescr>, int>
-        serialize(int n, Pred2<P1,P2> const &p)
-        {
-            std::vector<FunDescr> comb, left, right;
-            int n1, n2, n3;
-
-            std::tie(comb, n1)  = serialize(n, p.comb_);
-            std::tie(left, n2)  = serialize(n1, p.left_);
-            std::tie(right, n3) = serialize(n2, p.right_);
-
-            comb.front().left = n1;
-            comb.front().right = n2;
-
-            return std::make_pair(std::move(comb) + std::move(left) + std::move(right), n3);
-        }
-
-        template <typename  P>
-        static inline std::pair<std::vector<FunDescr>, int>
-        serialize(int n, Pred3<P> const &p)
-        {
-            std::vector<FunDescr> prop, pred =
-            {
-                FunDescr { pfq_predicate_fun, p.name_, 1, std::shared_ptr<void>(), 0, n+1, -1, -1 }
-            };
-
-            int n1;
-
-            std::tie(prop, n1) = serialize(n+1, p.prop_);
-
-            return std::make_pair(std::move(pred) + std::move(prop), n1);
-        }
-
-        template <typename  P>
-        static inline std::pair<std::vector<FunDescr>, int>
-        serialize(int n, Pred4<P> const &p)
-        {
-            std::vector<FunDescr> prop, pred =
-            {
-                FunDescr { pfq_predicate_fun, p.name_, 2, p.ptr_, p.size_, n+1, -1, -1 }
-            };
-
-            int n1;
-
-            std::tie(prop, n1) = serialize(n+1, p.prop_);
-
-            return std::make_pair(std::move(pred) + std::move(prop), n1);
-        }
-
-        //
-        // Property
-        //
-
-        struct Prop
-        {
-            std::string name_;
-        };
-
-        struct Prop1
-        {
-            template <typename T>
-            Prop1(std::string name, T const &arg)
-            : name_(std::move(name))
-            , ptr_(std::shared_ptr<void>{ new T(arg) })
-            , size_(sizeof(T))
-            {
-            }
-
-            std::string           name_;
-            std::shared_ptr<void> ptr_;
-            size_t                size_;
-        };
-
-        //////// is_property:
-
-        template <typename Tp>
-        struct is_property :
-            std::integral_constant<bool,
-                std::is_same<Tp, term::Prop>::value  ||
-                std::is_same<Tp, term::Prop1>::value >
-        { };
-
-        ///////// show property:
-
-        static inline std::string
-        show(Prop const &descr)
-        {
-            return descr.name_;
-        }
-
-        static inline std::string
-        show(Prop1 const &descr)
-        {
-            std::ostringstream out;
-            out << '(' << descr.name_ << ' ' << descr.ptr_.get() << ':' << std::to_string(descr.size_) << ')';
-            return out.str();
-        }
-
-        //////// serialize property:
-
-        static inline std::pair<std::vector<FunDescr>, int>
-        serialize(int n, Prop const &p)
-        {
-            return std::make_pair(std::vector<FunDescr>
-            {
-                FunDescr { pfq_property_fun, p.name_, 0, std::shared_ptr<void>(), 0, -1, -1, -1 }
-            }, n+1);
-        }
-
-        static inline std::pair<std::vector<FunDescr>, int>
-        serialize(int n, Prop1 const &p)
-        {
-            return std::make_pair(std::vector<FunDescr>
-            {
-                FunDescr { pfq_property_fun, p.name_, 1, p.ptr_, p.size_, -1, -1, -1 }
-            }, n+1);
-        }
-
-        //
-        // NetFunction:
-        //
-
-        struct Fun
-        {
-            std::string  name_;
-        };
-
-        struct Fun1
-        {
-            template <typename T>
-            Fun1(std::string name, T const &arg)
-            : name_(std::move(name))
-            , ptr_(std::shared_ptr<void>{ new T(arg) })
-            , size_(sizeof(T))
-            {
-            }
-
-            std::string           name_;
-            std::shared_ptr<void> ptr_;
-            size_t                size_;
-        };
-
-        template <typename P>
-        struct HFun
-        {
-            std::string  name_;
-            P           pred_;
-        };
-
-        template <typename P, typename C>
-        struct HFun1
-        {
-            std::string  name_;
-            P           pred_;
-            C           comp_;
-        };
-
-        template <typename P, typename C1, typename C2>
-        struct HFun2
-        {
-            std::string  name_;
-            P           pred_;
-            C1          comp1_;
-            C2          comp2_;
-        };
-
-        template <typename C1, typename C2>
-        struct Comp
-        {
-            C1 comp1_;
-            C2 comp2_;
-        };
-
-        template <typename Tp>
-        struct is_netfunction :
-            std::integral_constant<bool,
-                std::is_same<Tp, Fun>::value  ||
-                std::is_same<Tp, Fun1>::value ||
-                is_same_template<Tp, HFun>::value ||
-                is_same_template<Tp, HFun1>::value ||
-                is_same_template<Tp, HFun2>::value ||
-                is_same_template<Tp, Comp>::value>
-        { };
-
-        ///// show NetFunction:
-
-        static inline std::string
-        show(Fun const &descr)
-        {
-            return descr.name_;
-        }
-
-        static inline std::string
-        show(Fun1 const &descr)
-        {
-            std::ostringstream out;
-            out << '(' << descr.name_ << ' ' << descr.ptr_.get() << ':' << std::to_string(descr.size_) << ')';
-            return out.str();
-        }
-
-        template <typename P>
-        static inline std::string
-        show(HFun<P> const &descr)
-        {
-            return '(' + descr.name_ + ' ' + show(descr.pred_) + ')';
-        }
-
-        template <typename P, typename C>
-        static inline std::string
-        show(HFun1<P,C> const &descr)
-        {
-            return '(' + descr.name_ + ' ' + show(descr.pred_) + ' ' + show(descr.comp_) + ')';
-        }
-
-        template <typename P, typename C1, typename C2>
-        static inline std::string
-        show(HFun2<P,C1,C2> const &descr)
-        {
-            return '(' + descr.name_ + ' ' + show(descr.pred_) + " (" + show(descr.comp1_) + ") (" + show(descr.comp2_) + "))";
-        }
-
-        template <typename C1, typename C2>
-        static inline std::string
-        show(Comp<C1,C2> const &descr)
-        {
-            return show(descr.comp1_) + " >-> " + show(descr.comp2_);
-        }
-
-        ///// serialize NetFunction:
-
-        static inline std::pair<std::vector<FunDescr>, int>
-        serialize(int n, Fun const &f)
-        {
-            return std::make_pair(std::vector<FunDescr>
-            {
-                FunDescr { pfq_monadic_fun, f.name_, 0, std::shared_ptr<void>(), 0, -1, n+1, n+1 }
-            }, n+1);
-        }
-
-        static inline std::pair<std::vector<FunDescr>, int>
-        serialize(int n, Fun1 const &f)
-        {
-            return std::make_pair(std::vector<FunDescr>
-            {
-                FunDescr { pfq_monadic_fun, f.name_, 1, f.ptr_, f.size_, -1, n+1, n+1 }
-            }, n+1);
-        }
-
-        template <typename P>
-        static inline std::pair<std::vector<FunDescr>, int>
-        serialize(int n, HFun<P> const &f)
-        {
-            std::vector<FunDescr> p1, v1;
-            int n1;
-
-            std::tie(p1, n1) = serialize(n+1, f.pred_);
-
-            v1 = std::vector<FunDescr>
-            {
-                FunDescr { pfq_high_order_fun, f.name_, 1, std::shared_ptr<void>(), 0, n+1, n1, n1 }
-            };
-
-            return std::make_pair(std::move(v1) + std::move(p1), n1);
-        }
-
-
-        template <typename P, typename C>
-        static inline std::pair<std::vector<FunDescr>, int>
-        serialize(int n, HFun1<P, C> const &f)
-        {
-            std::vector<FunDescr> p1, v1, c1;
-            int n1, n2;
-
-            std::tie(p1, n1) = serialize(n+1, f.pred_);
-            std::tie(c1, n2) = serialize(n1,  f.comp_);
-
-            v1 = std::vector<FunDescr>
-            {
-                FunDescr { pfq_high_order_fun, f.name_, 2, std::shared_ptr<void>(), 0, n+1, n2, n1 }
-            };
-
-            return std::make_pair(std::move(v1) + std::move(p1) + std::move(c1), n2);
-        }
-
-        template <typename P, typename C1, typename C2>
-        static inline std::pair<std::vector<FunDescr>, int>
-        serialize(int n, HFun2<P, C1, C2> const &f)
-        {
-            std::vector<FunDescr> p1, v1, c1, c2;
-            int n1, n2, n3;
-
-            std::tie(p1, n1) = serialize(n+1, f.pred_);
-            std::tie(c1, n2) = serialize(n1,  f.comp1_);
-            std::tie(c2, n3) = serialize(n2,  f.comp2_);
-
-            v1 = std::vector<FunDescr>
-            {
-                FunDescr { pfq_high_order_fun, f.name_, 3, std::shared_ptr<void>(), 0, n+1, n2, n1 }
-            };
-
-            for(auto & d : c1)
-            {
-                d.left  = d.left  == n2 ? n3 : d.left;
-                d.right = d.right == n2 ? n3 : d.right;
-            }
-
-            return std::make_pair(std::move(v1) + std::move(p1) + std::move(c1) + std::move(c2), n3);
-        }
-
-        template <typename C1, typename C2>
-        static inline std::pair<std::vector<FunDescr>, int>
-        serialize(int n, Comp<C1, C2> const &f)
-        {
-            std::vector<FunDescr> v1, v2;
-            int n1, n2;
-
-            std::tie(v1, n1) = serialize(n, f.comp1_);
-            std::tie(v2, n2) = serialize(n1, f.comp2_);
-
-            return std::make_pair(std::move(v1) + std::move(v2), n2);
-        }
-
-        // serialize a vector of simple Fun
-        //
-
-        static inline std::pair<std::vector<FunDescr>, int>
-        serialize (int n, std::vector<Fun> const &cont)
-        {
-            std::vector<FunDescr> ret, v;
-            int n1 = n;
-
-            for(auto & f : cont)
-            {
-                std::tie(v, n1) = serialize(n1, f);
-                ret = std::move(ret) + v;
-            }
-
-            return std::make_pair(ret, n1);
-        }
-
-    } // namespace term
-
-    ////// public functions:
-
-    inline term::Combinator
-    combinator(std::string name)
+    NetFunction<> mfunction(std::string sym, std::string sig)
     {
-        return term::Combinator{ std::move(name) };
-    }
-
-    inline term::Pred1
-    predicate(std::string name)
-    {
-        return term::Pred1 (std::move(name));
+        return NetFunction<> { std::move(sym), std::move(sig), { }, { } };
     }
 
     template <typename T>
-    inline typename std::enable_if<
-          std::is_pod<T>::value,
-    term::Pred1>::type
-    predicate1(std::string name, const T &arg)
+    NetFunction<> mfunction1(std::string sym, std::string sig, T const &arg)
     {
-        return term::Pred1{ std::move(name), arg };
+        return NetFunction<> { std::move(sym), std::move(sig), { Argument::Data(arg) } , { } };
     }
 
-    template <typename P1, typename P2>
-    inline typename std::enable_if<
-        term::is_predicate<P1>::value &&
-        term::is_predicate<P2>::value,
-    term::Pred2<P1,P2>>::type
-    predicate2(term::Combinator c, P1 const &left, P2 const &right)
+    NetFunction<> mfunction2(std::string sym, std::string sig, std::string str)
     {
-        return term::Pred2<P1,P2>{ c, left, right };
+        return NetFunction<> { std::move(sym), std::move(sig), { Argument::String(std::move(str)) } , { } };
     }
 
-    template <typename P>
-    inline typename std::enable_if<
-        term::is_property<P>::value,
-    term::Pred3<P>>::type
-    predicate3(std::string name, P p)
+    template <typename ...Ts>
+    NetFunction<NetPredicate<Ts...>>
+    hfunction(std::string sym, std::string sig, NetPredicate<Ts...> p)
     {
-        return term::Pred3<P> { std::move(name), std::move(p) };
+        return NetFunction<NetPredicate<Ts...>> { std::move(sym), std::move(sig), { }, std::make_tuple(p) };
     }
 
-    template <typename T, typename P>
-    inline typename std::enable_if<
-        term::is_property<P>::value &&
-        std::is_pod<T>::value,
-    term::Pred4<P>>::type
-    predicate4(std::string name, P p, const T &arg)
+    template <typename ...Ts, typename ...Vs>
+    NetFunction<NetPredicate<Ts...>, NetFunction<Vs...>>
+    hfunction1(std::string sym, std::string sig, NetPredicate<Ts...> p, NetFunction<Vs...> f)
     {
-        return term::Pred4<P> { std::move(name), std::move(p), arg};
+        return NetFunction<NetPredicate<Ts...>, NetFunction<Vs...>> { std::move(sym), std::move(sig), { }, std::make_tuple(p, f) };
     }
 
-    inline term::Prop
-    property(std::string name)
+    template <typename ...Ts, typename ...Vs, typename ...Ws>
+    NetFunction<NetPredicate<Ts...>, NetFunction<Vs...>, NetFunction<Ws...>>
+    hfunction2(std::string sym, std::string sig, NetPredicate<Ts...> p, NetFunction<Vs...> f, NetFunction<Ws...> g)
     {
-        return term::Prop{ std::move(name) };
+        return NetFunction<NetPredicate<Ts...>, NetFunction<Vs...>, NetFunction<Ws...>>{ std::move(sym), std::move(sig), { }, std::make_tuple(p, f, g) };
+    }
+
+    // predicates:
+
+    NetPredicate<>
+    predicate(std::string sym, std::string sig)
+    {
+        return NetPredicate<>{ std::move(sym), std::move(sig), { } , { } };
     }
 
     template <typename T>
-    inline typename std::enable_if<
-          std::is_pod<T>::value,
-    term::Prop1>::type
-    property1(std::string name, const T &arg)
+    NetPredicate<>
+    predicate1(std::string sym, std::string sig, const T &arg)
     {
-        return term::Prop1{ std::move(name), arg };
+        return NetPredicate<>{ std::move(sym), std::move(sig), { Argument::Data(arg) }, { } };
     }
 
-    inline term::Fun
-    netfunction(std::string name)
+    template <typename ...Ts>
+    NetPredicate<NetProperty<Ts...>>
+    predicate2(std::string sym, std::string sig, NetProperty<Ts...> p)
     {
-        return term::Fun{ std::move(name) };
+        return NetPredicate<NetProperty<Ts...>>{ std::move(sym), std::move(sig), { } , std::make_tuple(p) };
+    }
+
+    template <typename T, typename ...Ts>
+    NetPredicate<NetProperty<Ts...>>
+    predicate3(std::string sym, std::string sig, NetProperty<Ts...> p, const T &arg)
+    {
+        return NetPredicate<NetProperty<Ts...>>{ std::move(sym), std::move(sig), { Argument::Data(arg) }, std::make_tuple(p) };
+    }
+
+    // properties:
+
+    NetProperty<>
+    property(std::string sym, std::string sig)
+    {
+        return NetProperty<>{ std::move(sym), std::move(sig), { }, { } };
     }
 
     template <typename T>
-    inline typename std::enable_if<
-          std::is_pod<T>::value,
-    term::Fun1>::type
-    netfunction1(std::string name, const T &arg)
+    NetProperty<>
+    property1(std::string sym, std::string sig, const T &arg)
     {
-        return term::Fun1{ std::move(name), arg };
+        return NetProperty<>{ std::move(sym), std::move(sig), { Argument::Data(arg) }, { } };
     }
 
-    template <typename P>
-    inline typename std::enable_if<
-          term::is_predicate<P>::value,
-    term::HFun<P>>::type
-    hnetfunction(std::string name, P const &p)
+    // combinators:
+
+    template <typename ...Ts>
+    NetPredicate<NetPredicate<Ts...>>
+    combinator1(std::string sym, std::string sig, NetPredicate<Ts...> p)
     {
-        return term::HFun<P>{ std::move(name), p };
+        return NetPredicate<NetPredicate<Ts...>>{ std::move(sym), std::move(sig), { }, std::make_tuple(p) };
     }
 
-    template <typename P, typename C>
-    inline typename std::enable_if<
-          term::is_predicate<P>::value &&
-          term::is_netfunction<C>::value,
-    term::HFun1<P,C>>::type
-    hnetfunction1(std::string name, P const &p, C const &c)
+    template <typename ...Ts, typename ...Vs>
+    NetPredicate<NetPredicate<Ts...>, NetPredicate<Vs...>>
+    combinator2(std::string sym, std::string sig, NetPredicate<Ts...> p1, NetPredicate<Vs...> p2)
     {
-        return term::HFun1<P,C>{ std::move(name), p, c};
-    }
-
-    template <typename P, typename C1, typename C2>
-    inline typename std::enable_if<
-          term::is_predicate<P>::value &&
-          term::is_netfunction<C1>::value &&
-          term::is_netfunction<C2>::value,
-    term::HFun2<P,C1, C2>>::type
-    hnetfunction2(std::string name, P const &p, C1 const &c1, C2 const &c2)
-    {
-        return term::HFun2<P,C1,C2>{ std::move(name), p, c1, c2};
+        return NetPredicate<NetPredicate<Ts...>, NetPredicate<Vs...>>{ std::move(sym), std::move(sig), { }, std::make_tuple(p1,p2) };
     }
 
     //
-    // Kleisli composition: >->
+    // polymorphic binders:
     //
 
-    template <typename C1, typename C2>
-    inline typename std::enable_if<
-          term::is_netfunction<C1>::value &&
-          term::is_netfunction<C2>::value,
-    term::Comp<C1, C2>>::type
-    operator>>(C1 c1, C2 c2)
+    using Bind = details::polymorphic_bind<std::string, std::string>;
+
+    struct Mfunction1: Bind
     {
-        return { std::move(c1), std::move(c2) };
+        Mfunction1(std::string sym, std::string sig)
+        : Bind { std::move(sym), std::move(sig) }
+        { }
+
+        template <typename Tp>
+        NetFunction<>
+        operator()(const Tp &arg)
+        {
+            return this->apply(mfunction1<Tp>, arg);
+        }
+    };
+
+    struct Mfunction2: Bind
+    {
+        Mfunction2(std::string sym, std::string sig)
+        : Bind { std::move(sym), std::move(sig) }
+        { }
+
+        NetFunction<>
+        operator()(std::string arg)
+        {
+            return this->apply(mfunction2, std::move(arg));
+        }
+    };
+
+    struct HFunction : Bind
+    {
+        HFunction(std::string sym, std::string sig)
+        : Bind { std::move(sym), std::move(sig) }
+        { }
+
+        template <typename ...Ts>
+        NetFunction<NetPredicate<Ts...>>
+        operator()(NetPredicate<Ts...> p)
+        {
+            return this->apply(hfunction<Ts...>, p);
+        }
+    };
+
+    struct HFunction1 : Bind
+    {
+        HFunction1(std::string sym, std::string sig)
+        : Bind { std::move(sym), std::move(sig) }
+        { }
+
+        template <typename ...Ts, typename ...Vs>
+        NetFunction<NetPredicate<Ts...>, NetFunction<Vs...>>
+        operator()(NetPredicate<Ts...> p, NetFunction<Vs...> f)
+        {
+            return this->apply(hfunction1<Ts..., Vs...>, p, f);
+        }
+    };
+
+    struct HFunction2 : Bind
+    {
+        HFunction2(std::string sym, std::string sig)
+        : Bind { std::move(sym), std::move(sig) }
+        { }
+
+        template <typename ...Ts, typename ...Vs, typename ...Ws>
+        NetFunction<NetPredicate<Ts...>, NetFunction<Vs...>, NetFunction<Ws...>>
+        operator()(NetPredicate<Ts...> p, NetFunction<Vs...> f, NetFunction<Ws...> g)
+        {
+            return this->apply(hfunction2<Ts..., Vs..., Ws...>, p, f, g);
+        }
+    };
+
+    struct Combinator1 : Bind
+    {
+        Combinator1(std::string sym, std::string sig)
+        : Bind { std::move(sym), std::move(sig) }
+        { }
+
+        template <typename ...Ts>
+        NetPredicate<NetPredicate<Ts...>>
+        operator()(NetPredicate<Ts...> p)
+        {
+            return this->apply(combinator1<Ts...>, p);
+        }
+    };
+
+    struct Combinator2 : Bind
+    {
+        Combinator2(std::string sym, std::string sig)
+        : Bind { std::move(sym), std::move(sig) }
+        { }
+
+        template <typename ...Ts, typename ...Vs>
+        NetPredicate<NetPredicate<Ts...>, NetPredicate<Vs...>>
+        operator()(NetPredicate<Ts...> p1, NetPredicate<Vs...> p2)
+        {
+            return apply(combinator2<Ts..., Vs...>, p1, p2);
+        }
+    };
+
+    struct Property1 : Bind
+    {
+        Property1(std::string sym, std::string sig)
+        : Bind { std::move(sym), std::move(sig) }
+        { }
+
+        template <typename Tp>
+        NetProperty<>
+        operator()(const Tp &arg)
+        {
+            return this->apply(property1<Tp>, arg);
+        }
+    };
+
+    struct Predicate1 : Bind
+    {
+        Predicate1(std::string sym, std::string sig)
+        : Bind { std::move(sym), std::move(sig) }
+        { }
+
+        template <typename Tp>
+        NetPredicate<>
+        operator()(const Tp &arg)
+        {
+            return this->apply(predicate1<Tp>, arg);
+        }
+    };
+
+    struct Predicate2 : Bind
+    {
+        Predicate2(std::string sym, std::string sig)
+        : Bind { std::move(sym), std::move(sig) }
+        { }
+
+        template <typename ...Ts>
+        NetPredicate<NetProperty<Ts...>>
+        operator()(NetProperty<Ts...> p)
+        {
+            return this->apply(predicate2<Ts...>, p);
+        }
+    };
+
+    struct Predicate3 : Bind
+    {
+        Predicate3(std::string sym, std::string sig)
+        : Bind { std::move(sym), std::move(sig) }
+        { }
+
+        template <typename Tp, typename ...Ts>
+        NetPredicate<NetProperty<Ts...>>
+        operator()(NetProperty<Ts...> p, const Tp &arg)
+        {
+            return this->apply(predicate3<Tp, Ts...>, p, arg);
+        }
+    };
+
+    //
+    // Kleisli composition:
+    //
+
+    template <template <typename > class M, typename A, typename B, typename C, typename ...Ts, typename ...Vs>
+    auto operator>>(Function< M<B>(A), Ts...> f, Function< M<C>(B), Vs...> g)
+    -> decltype (compose(f, g))
+    {
+        return compose(f,g);
+    }
+
+    template <template <typename > class M, typename A, typename B, typename C, typename ...Ts, typename ...Vs>
+    Function< M<C>(A), Function<M<B>(A), Ts...>,
+                       Function<M<C>(B), Vs...>>
+    compose(Function<M<B>(A), Ts...> f, Function<M<C>(B), Vs...> g)
+    {
+        using F = Function<M<B>(A), Ts...>;
+        using G = Function<M<C>(B), Vs...>;
+
+        return Function< M<C>(A), F, G> { "", "", {}, std::make_tuple(f, g) };
+    }
+
+    //
+    // pretty:
+    //
+
+    static inline std::string
+    pretty(NetFunction<> const &f)
+    {
+        if (f.arg.empty())
+            return f.symbol;
+
+        std::string out = "(" + f.symbol + ' ';
+        for(auto &a : f.arg)
+        {
+            out += pretty(a) + ' ';
+        }
+
+        return out + ')';
+    }
+
+    static inline std::string
+    pretty(NetProperty<> const &p)
+    {
+        if (p.arg.empty())
+            return p.symbol;
+
+        std::string out =  '(' + p.symbol + ' ';
+        for(auto &a : p.arg)
+        {
+            out += pretty(a) + ' ';
+        }
+        return out + ')';
+    }
+
+
+    static inline std::string
+    pretty(NetPredicate<> const &p)
+    {
+        if (p.arg.empty())
+            return p.symbol;
+
+        std::string out =  '(' + p.symbol + ' ';
+        for(auto &a : p.arg)
+        {
+            out += pretty(a) + ' ';
+        }
+        return out + ')';
+    }
+
+    template <typename ...Ts, typename ...Vs>
+    static inline std::string
+    pretty(NetFunction<NetFunction<Ts...>, NetFunction<Vs...>> const &f)
+    {
+        return pretty (std::get<0>(f.elem) ) + " >-> " + pretty (std::get<1>(f.elem));
+    }
+
+    template <typename ...Ts>
+    static inline std::string
+    pretty(NetFunction<NetPredicate<Ts...>> const &f)
+    {
+        return '(' + f.symbol + ' ' + pretty( std::get<0>(f.elem)) + ')';
+    }
+
+    template <typename ...Ts, typename ...Vs>
+    static inline std::string
+    pretty(NetFunction<NetPredicate<Ts...>, NetFunction<Vs...>> const &f)
+    {
+        return '(' + f.symbol + ' ' + pretty(std::get<0>(f.elem)) + ' ' + pretty(std::get<1>(f.elem)) + ')';
+    }
+
+    template <typename ...Ts, typename ...Vs, typename ...Ws>
+    static inline std::string
+    pretty(NetFunction<NetPredicate<Ts...>, NetFunction<Vs...>, NetFunction<Ws...>> const &f)
+    {
+        return '(' + f.symbol + ' ' + pretty(std::get<0>(f.elem)) + ' ' + pretty(std::get<1>(f.elem)) + ' ' + pretty(std::get<2>(f.elem)) + ')';
+    }
+
+    static inline std::string
+    pretty(NetPredicate<NetProperty<>> const &p)
+    {
+        return '(' + p.symbol + ' ' + pretty(std::get<0>(p.elem)) + ')';
+    }
+
+    template <typename ...Ts>
+    static inline std::string
+    pretty(NetPredicate<NetPredicate<Ts...>> const &p)
+    {
+        return '(' + p.symbol + ' ' + pretty(std::get<0>(p.elem)) + ')';
+    }
+
+    template <typename ...Ts, typename ...Vs>
+    static inline std::string
+    pretty(NetPredicate<NetPredicate<Ts...>, NetPredicate<Vs...>> const &p)
+    {
+        return '(' + pretty(std::get<0>(p.elem)) + ' ' + p.symbol + ' ' + pretty(std::get<1>(p.elem)) + ')';
     }
 
 

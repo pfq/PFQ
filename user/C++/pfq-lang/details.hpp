@@ -32,37 +32,44 @@ namespace pfq_lang
 {
     namespace details
     {
-        // polymorphic lambda are available starting from C++14! In the meanwhile...
+        //
+        // polymorphic lambda will be available starting from C++14. In the meanwhile...
         //
 
-        struct hcomp
-        {
-            template <typename P>
-            auto operator()(std::string name, P const &p)
-            -> decltype(hnetfunction(std::move(name), p))
-            {
-                return hnetfunction(std::move(name), p);
-            }
+        template <int ...>
+        struct seq { };
+
+        template <int N, int ...Xs>
+        struct gen_forward : gen_forward<N-1, N-1, Xs...> { };
+
+        template <int ...Xs>
+        struct gen_forward<0, Xs...> {
+            typedef seq<Xs...> type;
         };
 
-        struct hcomp1
+        template <typename ...Ts>
+        struct polymorphic_bind
         {
-            template <typename P, typename C>
-            auto operator()(std::string name, P const &p, C const &c)
-            -> decltype(hnetfunction1(std::move(name), p, c))
-            {
-                return hnetfunction1(std::move(name), p, c);
-            }
-        };
+            template <typename ...Vs>
+            polymorphic_bind(Vs ... args)
+            : args_(std::forward<Vs>(args)...)
+            { }
 
-        struct hcomp2
-        {
-            template <typename P, typename C1, typename C2>
-            auto operator()(std::string name, P const &p, C1 const &c1, C2 const &c2)
-            -> decltype(hnetfunction2(std::move(name), p, c1, c2))
+            template<typename Fun, typename Tuple, typename ...Xs, int ...S>
+            static auto call(seq<S...>, Fun fun, Tuple &&tup, Xs&& ... args)
+            -> decltype (fun(std::get<S>(tup)..., std::forward<Xs>(args)...))
             {
-                return hnetfunction2(std::move(name), p, c1, c2);
+                return fun(std::get<S>(tup)..., std::forward<Xs>(args)...);
             }
+
+            template<typename Fun, typename ...Xs>
+            auto apply(Fun fun, Xs&& ... args)
+            -> decltype(call(typename gen_forward<sizeof...(Ts)>::type{}, fun, std::declval<std::tuple<Ts...>>(), std::forward<Xs>(args)...))
+            {
+                return call(typename gen_forward<sizeof...(Ts)>::type{}, fun, args_, std::forward<Xs>(args)...);
+            }
+
+            std::tuple<Ts...> args_;
         };
 
         // utility function
@@ -73,7 +80,6 @@ namespace pfq_lang
         {
             return htonl(~((1ULL << (32-n)) - 1));
         };
-
 
         struct network_addr
         {
