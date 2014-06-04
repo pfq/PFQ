@@ -98,6 +98,7 @@ type NetFunction  = Function (SkBuff -> Action SkBuff)
 type NetPredicate = Function (SkBuff -> Bool)
 type NetProperty  = Function (SkBuff -> Word64)
 
+
 data Function f where {
 
         MFunction  :: (Symbol,Signature) -> NetFunction;
