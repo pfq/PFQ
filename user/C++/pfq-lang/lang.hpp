@@ -549,8 +549,8 @@ namespace pfq_lang
         out += s.str();
     }
 
-    template <typename Tuple, int ...S>
-    void prettyTuple(std::string &out, details::seq<S...>, Tuple const & t, std::string const &sep = " ")
+    template <typename Tuple, std::size_t ...S>
+    void prettyTuple(std::string &out, index_sequence<S...>, Tuple const & t, std::string const &sep = " ")
     {
         int expand[] = { (prettyArg(out, std::get<S>(t), sep, S != 0),0)... };
         (void)expand;
@@ -564,7 +564,7 @@ namespace pfq_lang
 
         if (sizeof...(Ts) > 0) {
             out = '(' + f.symbol + ' ';
-            prettyTuple(out, typename details::gen_forward<sizeof...(Ts)>::type{}, f.arg);
+            prettyTuple(out, make_index_sequence<sizeof...(Ts)>{}, f.arg);
             out += ')';
         }
         else {
@@ -581,7 +581,7 @@ namespace pfq_lang
 
         if (sizeof...(Ts) > 0) {
             out = '(' + f.symbol + ' ';
-            prettyTuple(out, typename details::gen_forward<sizeof...(Ts)>::type{}, f.arg);
+            prettyTuple(out, make_index_sequence<sizeof...(Ts)>{}, f.arg);
             out += ')';
         }
         else {
@@ -599,11 +599,11 @@ namespace pfq_lang
         if (sizeof...(Ts) > 0) {
             if (f.symbol == ">->")
             {
-                prettyTuple(out, typename details::gen_forward<sizeof...(Ts)>::type{}, f.arg, " >-> ");
+                prettyTuple(out, make_index_sequence<sizeof...(Ts)>{}, f.arg, " >-> ");
             }
             else {
                 out = '(' + f.symbol + ' ';
-                prettyTuple(out, typename details::gen_forward<sizeof...(Ts)>::type{}, f.arg, " ");
+                prettyTuple(out, make_index_sequence<sizeof...(Ts)>{}, f.arg, " ");
                 out += ')';
             }
         }

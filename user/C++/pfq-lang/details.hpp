@@ -23,53 +23,47 @@
 
 #pragma once
 
+#include <stdexcept>
 #include <functional>
+
 #include <arpa/inet.h>
 
 namespace pfq_lang
 {
+
+#if __cplusplus > 201103L
+
+    template <std::size_t... I>
+    using index_sequence = std::index_sequence<I...>;
+
+    template <std::size_t N>
+    using make_index_sequence = std::make_index_sequence<N>;
+
+#else
     namespace details
     {
-        //
-        // polymorphic lambda will be available starting from C++14. In the meanwhile...
-        //
-
-        template <int ...>
+        template <std::size_t ...>
         struct seq { };
 
-        template <int N, int ...Xs>
+        template <std::size_t N, std::size_t ...Xs>
         struct gen_forward : gen_forward<N-1, N-1, Xs...> { };
 
-        template <int ...Xs>
+        template <std::size_t ...Xs>
         struct gen_forward<0, Xs...> {
             typedef seq<Xs...> type;
         };
+    }
 
-        template <typename ...Ts>
-        struct polymorphic_bind
-        {
-            template <typename ...Vs>
-            polymorphic_bind(Vs ... args)
-            : args_(std::forward<Vs>(args)...)
-            { }
+    template <std::size_t ...I>
+    using index_sequence = details::seq<I...>;
 
-            template<typename Fun, typename Tuple, typename ...Xs, int ...S>
-            static auto call(seq<S...>, Fun fun, Tuple &&tup, Xs&& ... args)
-            -> decltype (fun(std::get<S>(tup)..., std::forward<Xs>(args)...))
-            {
-                return fun(std::get<S>(tup)..., std::forward<Xs>(args)...);
-            }
+    template <std::size_t N>
+    using make_index_sequence = typename details::gen_forward<N>::type;
 
-            template<typename Fun, typename ...Xs>
-            auto apply(Fun fun, Xs&& ... args)
-            -> decltype(call(typename gen_forward<sizeof...(Ts)>::type{}, fun, std::declval<std::tuple<Ts...>>(), std::forward<Xs>(args)...))
-            {
-                return call(typename gen_forward<sizeof...(Ts)>::type{}, fun, args_, std::forward<Xs>(args)...);
-            }
+#endif
 
-            std::tuple<Ts...> args_;
-        };
-
+    namespace details
+    {
         // utility function
         //
 
