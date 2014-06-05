@@ -23,9 +23,7 @@
 
 #pragma once
 
-#include <pfq-lang/lang.hpp>
 #include <functional>
-
 #include <arpa/inet.h>
 
 namespace pfq_lang
@@ -87,7 +85,6 @@ namespace pfq_lang
             int         prefix;
         };
 
-
         static inline
         struct network_addr
         make_netaddr(const char *net, int prefix)
@@ -101,7 +98,6 @@ namespace pfq_lang
 
             return netaddr;
         }
-
 
     } // namespace details
 
