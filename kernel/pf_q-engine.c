@@ -455,7 +455,7 @@ pfq_validate_computation_descr(struct pfq_computation_descr const *descr)
 
         	for(i = 0; i < sizeof(fun->arg)/sizeof(fun->arg[0]); i++)
        		{
-			if (fun->arg[i].ptr == 0 && fun->arg[i].size != 0) {
+			if (fun->arg[i].ptr == NULL && fun->arg[i].size != 0) {
 
 				/* function argument */
 

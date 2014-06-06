@@ -134,7 +134,7 @@ log_packet(arguments_t args, struct sk_buff *skb)
 
 		ip = skb_header_pointer(skb, skb->mac_len, sizeof(_iph), &_iph);
 		if (ip == NULL)
-			return false;
+			return skb;
 
 		switch(ip->protocol)
 		{
@@ -142,7 +142,7 @@ log_packet(arguments_t args, struct sk_buff *skb)
 			struct udphdr _udph; const struct udphdr *udp;
 			udp = skb_header_pointer(skb, skb->mac_len + (ip->ihl<<2), sizeof(struct udphdr), &_udph);
 			if (udp == NULL)
-				return false;
+				return skb;
 
 			printk(KERN_INFO "[PFQ] IP %pI4.%d > %pI4.%d: UDP\n", &ip->saddr, ntohs(udp->source),
 						         		      &ip->daddr, ntohs(udp->dest));
@@ -152,7 +152,7 @@ log_packet(arguments_t args, struct sk_buff *skb)
 			struct tcphdr _tcph; const struct tcphdr *tcp;
 			tcp = skb_header_pointer(skb, skb->mac_len + (ip->ihl<<2), sizeof(struct tcphdr), &_tcph);
 			if (tcp == NULL)
-				return false;
+				return skb;
 
 			printk(KERN_INFO "[PFQ] IP %pI4.%d > %pI4.%d: TCP\n", &ip->saddr, ntohs(tcp->source),
 									      &ip->daddr, ntohs(tcp->dest));

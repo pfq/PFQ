@@ -87,7 +87,7 @@ view_to_string(string_view_t str)
 {
 	size_t len = str.end - str.begin;
 
-	char * ret = kmalloc(GFP_KERNEL, len + 1);
+	char * ret = kmalloc(len + 1, GFP_KERNEL);
 	if (ret) {
 		strncpy(ret, str.begin, len);
 		ret [len] = '\0';
