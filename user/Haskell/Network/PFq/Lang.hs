@@ -28,7 +28,6 @@
 --
 
 {-# LANGUAGE ExistentialQuantification #-}
-{-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE GADTs #-}
@@ -49,26 +48,18 @@ module Network.PFq.Lang
         NetPredicate,
         NetProperty,
         (>->),
-        typeOf',
     ) where
 
 
 -- import Control.Monad.Identity
 import Foreign.Storable
 import Data.Word
-import Data.Typeable
-import Data.List.Split
 
 -- Basic types...
 
-newtype SkBuff = SkBuff ()
-                   deriving Typeable
-
+newtype SkBuff   = SkBuff ()
 newtype Action a = Identity a
-                    deriving Typeable
-
 type Symbol      = String
-type Signature   = String
 
 
 -- Expressions:
@@ -83,12 +74,12 @@ data Argument = ArgNull | ArgData StorableArgument | ArgString String | ArgFun I
                     deriving (Show)
 
 
-data FunctionDescr = FunctionDescr Symbol Signature [Argument] (Int, Int)
+data FunctionDescr = FunctionDescr Symbol [Argument] (Int, Int)
                         deriving (Show)
 
 relink :: Int -> Int -> FunctionDescr -> FunctionDescr
-relink n1 n2 (FunctionDescr sym sig args (l,r) ) =
-        FunctionDescr sym sig args (update n1 n2 l, update n1 n2 r)
+relink n1 n2 (FunctionDescr sym args (l,r) ) =
+        FunctionDescr sym args (update n1 n2 l, update n1 n2 r)
             where update n1 n2 x = if x == n1 then n2 else x
 
 
@@ -101,28 +92,28 @@ type NetProperty  = Function (SkBuff -> Word64)
 
 data Function f where {
 
-        MFunction  :: (Symbol,Signature) -> NetFunction;
-        MFunction1 :: forall a. (Show a, Storable a) => (Symbol,Signature) -> a -> NetFunction;
-        MFunction2 :: (Symbol,Signature) -> String -> NetFunction;
+        MFunction  :: Symbol -> NetFunction;
+        MFunction1 :: forall a. (Show a, Storable a) => Symbol -> a -> NetFunction;
+        MFunction2 :: Symbol -> String -> NetFunction;
 
-        HFunction  :: (Symbol,Signature) -> NetPredicate -> NetFunction;
-        HFunction1 :: (Symbol,Signature) -> NetPredicate -> NetFunction -> NetFunction;
-        HFunction2 :: (Symbol,Signature) -> NetPredicate -> NetFunction -> NetFunction -> NetFunction;
+        HFunction  :: Symbol -> NetPredicate -> NetFunction;
+        HFunction1 :: Symbol -> NetPredicate -> NetFunction -> NetFunction;
+        HFunction2 :: Symbol -> NetPredicate -> NetFunction -> NetFunction -> NetFunction;
 
-        Predicate  :: (Symbol,Signature) -> NetPredicate;
-        Predicate1 :: forall a. (Show a, Storable a) => (Symbol,Signature) -> a -> NetPredicate;
-        Predicate2 :: (Symbol,Signature) -> NetProperty -> NetPredicate;
-        Predicate3 :: forall a. (Show a, Storable a) => (Symbol,Signature) -> NetProperty -> a -> NetPredicate;
+        Predicate  :: Symbol -> NetPredicate;
+        Predicate1 :: forall a. (Show a, Storable a) => Symbol -> a -> NetPredicate;
+        Predicate2 :: Symbol -> NetProperty -> NetPredicate;
+        Predicate3 :: forall a. (Show a, Storable a) => Symbol -> NetProperty -> a -> NetPredicate;
 
-        Property   :: (Symbol,Signature) -> NetProperty;
-        Property1  :: forall a. (Show a, Storable a) => (Symbol,Signature) -> a -> NetProperty;
+        Property   :: Symbol -> NetProperty;
+        Property1  :: forall a. (Show a, Storable a) => Symbol -> a -> NetProperty;
 
-        Combinator1 :: (Symbol,Signature) -> NetPredicate -> NetPredicate;
-        Combinator2 :: (Symbol,Signature) -> NetPredicate -> NetPredicate -> NetPredicate;
+        Combinator1 :: Symbol -> NetPredicate -> NetPredicate;
+        Combinator2 :: Symbol -> NetPredicate -> NetPredicate -> NetPredicate;
 
         Composition :: forall f1 f2 f. (Serializable (Function f1), Serializable (Function f2)) => Function f1 -> Function f2 -> Function f;
 
-    } deriving (Typeable)
+    }
 
 
 -- DLS Kleisli operator: >->
@@ -131,70 +122,64 @@ data Function f where {
 f1 >-> f2 = Composition f1 f2
 
 
--- typeOf' utility function:
-
-typeOf' :: (Typeable a) => a -> String
-typeOf' f = unwords . (splitOn "Function ") $ show $ typeOf f
-
-
 -- Show instance:
 
 instance Show (Function f) where
-        show (MFunction  (symb,sig))         = "(" ++ symb ++ " :: " ++ sig ++ ")"
-        show (MFunction1 (symb,sig) a)       = "(" ++ symb ++ " " ++ show a ++ " :: " ++ sig ++ ")"
-        show (MFunction2 (symb,sig) s)       = "(" ++ symb ++ " \"" ++ s ++ "\" :: " ++ sig ++ ")"
 
-        show (HFunction  (symb,sig) p)       = "(" ++ symb ++ " " ++ show p  ++ " :: " ++ sig  ++ ")"
-        show (HFunction1 (symb,sig) p n1)    = "(" ++ symb ++ " " ++ show p  ++ " (" ++ show n1 ++ ") :: " ++  sig  ++ ")"
-        show (HFunction2 (symb,sig) p n1 n2) = "(" ++ symb ++ " " ++ show p  ++ " (" ++ show n1 ++ ") (" ++ show n2 ++ ") :: " ++ sig ++ ")"
+        show (MFunction  symb)          = "(MFunction " ++ symb ++ ")"
+        show (MFunction1 symb a)        = "(MFunction " ++ symb ++ " " ++ show a ++ ")"
+        show (MFunction2 symb s)        = "(MFunction " ++ symb ++ " " ++ show s ++ ")"
 
-        show (Predicate  (symb,sig))         = "(" ++ symb ++ " :: " ++ sig ++ ")"
-        show (Predicate1 (symb,sig) a)       = "(" ++ symb ++ " " ++ show a ++ " :: " ++ sig ++ ")"
-        show (Predicate2 (symb,sig) p)       = "(" ++ symb ++ " " ++ show p ++ " :: " ++ sig ++ ")"
-        show (Predicate3 (symb,sig) p a)     = "(" ++ symb ++ " " ++ show p ++ " " ++ show a ++ " :: " ++ sig ++ ")"
+        show (HFunction  symb p)        = "(HFunction " ++ symb ++ " " ++ show p  ++ ")"
+        show (HFunction1 symb p n1)     = "(HFunction " ++ symb ++ " " ++ show p  ++ " (" ++ show n1 ++ "))"
+        show (HFunction2 symb p n1 n2)  = "(HFunction " ++ symb ++ " " ++ show p  ++ " (" ++ show n1 ++ ") (" ++ show n2 ++ "))"
 
-        show (Property  (symb,sig))          = "(" ++ symb ++ " :: " ++ sig ++ ")"
-        show (Property1 (symb,sig) a)        = "(" ++ symb ++ " " ++ show a ++ " :: " ++ sig ++ ")"
+        show (Predicate  symb)          = "(Predicate " ++ symb ++  ")"
+        show (Predicate1 symb a)        = "(Predicate " ++ symb ++ " " ++ show a ++ ")"
+        show (Predicate2 symb p)        = "(Predicate " ++ symb ++ " " ++ show p ++ ")"
+        show (Predicate3 symb p a)      = "(Predicate " ++ symb ++ " " ++ show p ++ " " ++ show a ++ ")"
 
-        show (Combinator1 ("not",sig) p)     = "(not " ++ show p ++ " :: " ++ sig ++ ")"
-        show (Combinator2 ("and",sig) p1 p2) = "(" ++ show p1 ++" && " ++ show p2 ++ ") :: " ++ sig ++ ")"
-        show (Combinator2 ("or" ,sig) p1 p2) = "(" ++ show p1 ++" || " ++ show p2 ++ ") :: " ++ sig ++ ")"
-        show (Combinator2 ("xor",sig) p1 p2) = "(" ++ show p1 ++" ^^ " ++ show p2 ++ ") :: " ++ sig ++ ")"
-        show (Combinator1 (_,_) _)           = undefined
-        show (Combinator2 (_,_) _ _)         = undefined
+        show (Property  symb)           = "(Property " ++ symb ++ ")"
+        show (Property1 symb a)         = "(Property " ++ symb ++ " " ++ show a ++ ")"
 
-        show (Composition a b)               = show a ++ " >-> " ++ show b
+        show (Combinator1 "not" p)      = "(Combinator not " ++ show p  ++ ")"
+        show (Combinator2 "and" p1 p2)  = "(Combinator and " ++ show p1 ++" " ++ show p2 ++ "))"
+        show (Combinator2 "or"  p1 p2)  = "(Combinator or  " ++ show p1 ++" " ++ show p2 ++ "))"
+        show (Combinator2 "xor" p1 p2)  = "(Combinator xor " ++ show p1 ++" " ++ show p2 ++ "))"
+        show (Combinator1 _ _)          = undefined
+        show (Combinator2 _ _ _)        = undefined
+
+        show (Composition a b)          = "(Composition " ++ show a ++ " " ++ show b ++ ")"
 
 -- Pretty class:
 
 class Pretty x where
-        prettyPrint :: x -> String
+        pretty :: x -> String
 
 instance Pretty (Function f) where
-        prettyPrint (MFunction (symb,_))           = symb
-        prettyPrint (MFunction1 (symb,_) a)        = "(" ++ symb ++ " " ++ show a ++ ")"
-        prettyPrint (MFunction2 (symb,_) s)        = "(" ++ symb ++ " \"" ++ show s ++ "\")"
+        pretty (MFunction symb)           = symb
+        pretty (MFunction1 symb a)        = "(" ++ symb ++ " " ++ show a ++ ")"
+        pretty (MFunction2 symb s)        = "(" ++ symb ++ " \"" ++ show s ++ "\")"
 
-        prettyPrint (HFunction (symb,_) p)         = "(" ++ symb ++ " " ++ prettyPrint p  ++ ")"
-        prettyPrint (HFunction1 (symb,_) p n1)     = "(" ++ symb ++ " " ++ prettyPrint p  ++ " (" ++ prettyPrint n1 ++ "))"
-        prettyPrint (HFunction2 (symb,_) p n1 n2)  = "(" ++ symb ++ " " ++ prettyPrint p  ++ " (" ++ prettyPrint n1 ++ ") (" ++ prettyPrint n2 ++ "))"
+        pretty (HFunction symb p)         = "(" ++ symb ++ " " ++ pretty p  ++ ")"
+        pretty (HFunction1 symb p n1)     = "(" ++ symb ++ " " ++ pretty p  ++ " (" ++ pretty n1 ++ "))"
+        pretty (HFunction2 symb p n1 n2)  = "(" ++ symb ++ " " ++ pretty p  ++ " (" ++ pretty n1 ++ ") (" ++ pretty n2 ++ "))"
 
-        prettyPrint (Predicate  (symb,_))          = symb
-        prettyPrint (Predicate1 (symb,_) a)        = "(" ++ symb ++ " " ++ show a ++ ")"
-        prettyPrint (Predicate2 (symb,_) p)        = "(" ++ symb ++ " " ++ prettyPrint p ++ ")"
-        prettyPrint (Predicate3 (symb,_) p a)      = "(" ++ symb ++ " " ++ prettyPrint p ++ " " ++ show a ++ ")"
+        pretty (Predicate  symb)          = symb
+        pretty (Predicate1 symb a)        = "(" ++ symb ++ " " ++ show a ++ ")"
+        pretty (Predicate2 symb p)        = "(" ++ symb ++ " " ++ pretty p ++ ")"
+        pretty (Predicate3 symb p a)      = "(" ++ symb ++ " " ++ pretty p ++ " " ++ show a ++ ")"
 
-        prettyPrint (Property (symb,_))            = symb
-        prettyPrint (Property1 (symb,_) a)         = "(" ++ symb ++ " " ++ show a ++ ")"
+        pretty (Property symb)            = symb
+        pretty (Property1 symb a)         = "(" ++ symb ++ " " ++ show a ++ ")"
 
-        prettyPrint (Combinator1 ("not",_) p)      = "(not " ++ prettyPrint p ++ ")"
-        prettyPrint (Combinator2 ("and",_) p1 p2)  = "(" ++ prettyPrint p1 ++" && " ++ prettyPrint p2 ++ ")"
-        prettyPrint (Combinator2 ("or" ,_) p1 p2)  = "(" ++ prettyPrint p1 ++" || " ++ prettyPrint p2 ++ ")"
-        prettyPrint (Combinator2 ("xor",_) p1 p2)  = "(" ++ prettyPrint p1 ++" ^^ " ++ prettyPrint p2 ++ ")"
-        prettyPrint (Combinator1 (_,_) _)          = undefined
-        prettyPrint (Combinator2 (_,_) _ _)        = undefined
-
-        prettyPrint (Composition a b)              = prettyPrint a ++ " >-> " ++ prettyPrint b
+        pretty (Combinator1 "not" p)      = "(not " ++ pretty p ++ ")"
+        pretty (Combinator2 "and" p1 p2)  = "(" ++ pretty p1 ++" && " ++ pretty p2 ++ ")"
+        pretty (Combinator2 "or"  p1 p2)  = "(" ++ pretty p1 ++" || " ++ pretty p2 ++ ")"
+        pretty (Combinator2 "xor" p1 p2)  = "(" ++ pretty p1 ++" ^^ " ++ pretty p2 ++ ")"
+        pretty (Combinator1 _ _)          = undefined
+        pretty (Combinator2 _ _ _)        = undefined
+        pretty (Composition a b)          = pretty a ++ " >-> " ++ pretty b
 
 
 -- Serializable class:
@@ -206,24 +191,24 @@ class Serializable a where
 
 instance Serializable (Function (a -> m b)) where
 
-    serialize (MFunction  (symb, sig))    n = ([FunctionDescr symb sig [] (n+1, n+1)], n+1)
-    serialize (MFunction1 (symb, sig) x)  n = ([FunctionDescr symb sig [ArgData $ StorableArgument x] (n+1,n+1) ], n+1)
-    serialize (MFunction2 (symb, sig) s)  n = ([FunctionDescr symb sig [ArgString s] (n+1,n+1) ], n+1)
+    serialize (MFunction  symb)    n = ([FunctionDescr symb [] (n+1, n+1)], n+1)
+    serialize (MFunction1 symb x)  n = ([FunctionDescr symb [ArgData $ StorableArgument x] (n+1,n+1) ], n+1)
+    serialize (MFunction2 symb s)  n = ([FunctionDescr symb [ArgString s] (n+1,n+1) ], n+1)
 
-    serialize (HFunction  (symb, sig) p)  n = let (s1, n1) = ([FunctionDescr symb sig [] (n2, n2) ], n+1)
-                                                  (s2, n2) =  serialize p n1
-                                              in (s1 ++ s2, n2)
+    serialize (HFunction  symb p)  n = let (s1, n1) = ([FunctionDescr symb [] (n2, n2) ], n+1)
+                                           (s2, n2) =  serialize p n1
+                                       in (s1 ++ s2, n2)
 
-    serialize (HFunction1 (symb, sig) p c) n = let (s1, n1) = ([FunctionDescr symb sig [ArgFun n1] (n3, n2) ], n+1)
-                                                   (s2, n2) =  serialize p n1
-                                                   (s3, n3) =  serialize c n2
-                                               in (s1 ++ s2 ++ s3, n3)
+    serialize (HFunction1 symb p c) n = let (s1, n1) = ([FunctionDescr symb [ArgFun n1] (n3, n2) ], n+1)
+                                            (s2, n2) =  serialize p n1
+                                            (s3, n3) =  serialize c n2
+                                         in (s1 ++ s2 ++ s3, n3)
 
-    serialize (HFunction2 (symb, sig) p c1 c2) n = let (s1, n1) = ([FunctionDescr symb sig [ArgFun n1] (n3, n2) ], n+1)
-                                                       (s2, n2) =  serialize p  n1
-                                                       (s3, n3) =  serialize c1 n2
-                                                       (s4, n4) =  serialize c2 n3
-                                                   in (s1 ++ s2 ++ (map (relink n3 n4) s3) ++ s4, n4)
+    serialize (HFunction2 symb p c1 c2) n = let (s1, n1) = ([FunctionDescr symb [ArgFun n1] (n3, n2) ], n+1)
+                                                (s2, n2) =  serialize p  n1
+                                                (s3, n3) =  serialize c1 n2
+                                                (s4, n4) =  serialize c2 n3
+                                             in (s1 ++ s2 ++ (map (relink n3 n4) s3) ++ s4, n4)
 
     serialize (Composition a b) n = let (s1, n1) = serialize a n
                                         (s2, n2) = serialize b n1
@@ -232,30 +217,30 @@ instance Serializable (Function (a -> m b)) where
     serialize _ _ = undefined
 
 instance Serializable NetPredicate where
-    serialize (Predicate  (symb, sig))    n = ([FunctionDescr symb sig [] (-1,-1) ], n+1)
-    serialize (Predicate1 (symb, sig) x)  n = ([FunctionDescr symb sig [ArgData $ StorableArgument x] (-1,-1) ], n+1)
-    serialize (Predicate2 (symb, sig) p)  n = let (s1, n1) = ([FunctionDescr symb sig [ArgFun n1] (-1,-1) ], n+1)
-                                                  (s2, n2) = serialize p n1
-                                              in (s1 ++ s2, n2)
+    serialize (Predicate  symb)    n = ([FunctionDescr symb [] (-1,-1) ], n+1)
+    serialize (Predicate1 symb x)  n = ([FunctionDescr symb [ArgData $ StorableArgument x] (-1,-1) ], n+1)
+    serialize (Predicate2 symb p)  n = let (s1, n1) = ([FunctionDescr symb [ArgFun n1] (-1,-1) ], n+1)
+                                           (s2, n2) = serialize p n1
+                                       in (s1 ++ s2, n2)
 
-    serialize (Predicate3 (symb, sig) p x) n = let (s1, n1) = ([FunctionDescr symb sig [ArgFun n1, ArgData $ StorableArgument x] (-1,-1) ], n+1)
-                                                   (s2, n2) = serialize p n1
-                                               in (s1 ++ s2, n2)
+    serialize (Predicate3 symb p x) n = let (s1, n1) = ([FunctionDescr symb [ArgFun n1, ArgData $ StorableArgument x] (-1,-1) ], n+1)
+                                            (s2, n2) = serialize p n1
+                                        in (s1 ++ s2, n2)
 
-    serialize (Combinator1 (symb, sig) p) n = let (s1, n1) = ([FunctionDescr symb sig [ArgFun n1] (-1,-1) ], n+1)
-                                                  (s2, n2) = serialize p n1
-                                              in (s1 ++ s2, n2)
+    serialize (Combinator1 symb p) n = let (s1, n1) = ([FunctionDescr symb [ArgFun n1] (-1,-1) ], n+1)
+                                           (s2, n2) = serialize p n1
+                                       in (s1 ++ s2, n2)
 
-    serialize (Combinator2 (symb, sig) p1 p2) n = let (s1, n1) = ([FunctionDescr symb sig [ArgFun n1, ArgFun n2] (-1,-1) ], n+1)
-                                                      (s2, n2) = serialize p1 n1
-                                                      (s3, n3) = serialize p2 n2
-                                                  in (s1 ++ s2 ++ s3, n3)
+    serialize (Combinator2 symb p1 p2) n = let (s1, n1) = ([FunctionDescr symb [ArgFun n1, ArgFun n2] (-1,-1) ], n+1)
+                                               (s2, n2) = serialize p1 n1
+                                               (s3, n3) = serialize p2 n2
+                                           in (s1 ++ s2 ++ s3, n3)
     serialize _ _ = undefined
 
 
 instance Serializable NetProperty where
-    serialize (Property  (symb, sig))    n = ([FunctionDescr symb sig [] (-1,-1) ], n+1)
-    serialize (Property1 (symb, sig) x)  n = ([FunctionDescr symb sig [ArgData $ StorableArgument x] (-1,-1) ], n+1)
+    serialize (Property  symb)    n = ([FunctionDescr symb [] (-1,-1) ], n+1)
+    serialize (Property1 symb x)  n = ([FunctionDescr symb [ArgData $ StorableArgument x] (-1,-1) ], n+1)
 
     serialize _ _ = undefined
 

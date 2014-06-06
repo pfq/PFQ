@@ -38,10 +38,10 @@ main = do
                                         (inc 1 >-> drop')
                         ) >-> when' is_tcp (inc 2)  >-> dummy 11
 
-        putStrLn "Functional computation (show):"
+        putStrLn "\nFunctional computation (show):"
         putStrLn $ show comp
-        putStrLn "Functional computation (prettyPrint):"
-        putStrLn $ prettyPrint comp
-        putStrLn "Serialized AST:"
+        putStrLn "\nFunctional computation (prettyPrint):"
+        putStrLn $ pretty comp
+        putStrLn "\nSerialized AST:"
         prettyPrinter comp
 
