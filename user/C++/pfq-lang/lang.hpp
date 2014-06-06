@@ -152,6 +152,21 @@ namespace pfq_lang
         size_t size;
     };
 
+    struct fun_index { std::size_t value; };
+
+    Argument make_argument(std::nullptr_t)
+    { return Argument::Null(); }
+
+    Argument make_argument(std::string s)
+    { return Argument::String(std::move(s)); }
+
+    Argument make_argument(fun_index f)
+    { return Argument::Fun(f.value); }
+
+    template <typename Tp>
+    Argument make_argument(Tp const &pod)
+    { return Argument::Data(pod); }
+
 
     static inline std::string
     show(const Argument &arg)
