@@ -70,7 +70,7 @@
 #define APPLY(f, skb) ({ \
 	typeof(((function_ptr_t)f.fun->ptr)(f.fun, skb)) ret; \
 	if ((size_t)f.fun->ptr < 1000) { \
-		ret = 0; \
+		ret = NULL; \
 		if (printk_ratelimit()) \
 			printk(KERN_INFO "[PFQ] inline function: internal error! (vaddr = %p)\n", f.fun->ptr); \
 	} \
