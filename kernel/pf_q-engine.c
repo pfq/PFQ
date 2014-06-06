@@ -457,31 +457,40 @@ pfq_validate_computation_descr(struct pfq_computation_descr const *descr)
 			}
 		}
 
+		/* get the signature (passed from user-space) */
+
+		signature = strdup_user(fun->signature);
+
 		/* check for valid function arguments */
 
         	for(i = 0; i < sizeof(fun->arg)/sizeof(fun->arg[0]); i++)
        		{
 			if (fun->arg[i].ptr == 0 && fun->arg[i].size != 0) {
 
-				size_t x = fun->arg[i].size;
-
 				/* function argument */
 
+				size_t x = fun->arg[i].size;
 
 				string_view_t farg = pfq_signature_arg(make_string_view(signature), i);
+
 				if (x >= descr->size) {
 					pr_devel("[PFQ] %zu: %s: invalid argument(%d): -> %zu!\n", n, real_signature, i, x);
+					kfree(signature);
 					return -EPERM;
 				}
 
 				if (!function_signature_match(&descr->fun[x], farg, x)) {
 					const char *expected = view_to_string(farg);
 					pr_devel("[PFQ] %zu: %s: invalid argument(%d): expected signature: %s!\n", n, fun->signature, i, expected);
+					kfree(signature);
 					kfree(expected);
 					return -EPERM;
 				}
+
 			}
 		}
+
+		kfree(signature);
 	}
 
 	return 0;
