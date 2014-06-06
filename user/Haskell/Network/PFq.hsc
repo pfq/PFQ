@@ -865,7 +865,7 @@ groupComputation :: Ptr PFqTag
                  -> IO ()
 
 groupComputation hdl gid comp = do
-    let (descrList, _) = serialize 0 comp
+    let (descrList, _) = serialize comp 0
     allocaBytes (sizeOf (undefined :: CSize) * 2 + getConstant group_fun_descr_size * length descrList) $ \ ptr -> do
         pokeByteOff ptr 0 (fromIntegral (length descrList) :: CSize)     -- size
         pokeByteOff ptr (sizeOf(undefined :: CSize)) (0 :: CSize)        -- entry_point: always the first one!

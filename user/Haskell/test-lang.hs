@@ -25,7 +25,7 @@ import Control.Monad
 -- prettyPrinter (debug):
 
 prettyPrinter :: Serializable a => a -> IO ()
-prettyPrinter comp = let (xs,_) = serialize 0 comp
+prettyPrinter comp = let (xs,_) = serialize comp 0
                  in forM_ (zip [0..] xs) $ \(n, x) -> putStrLn $ "    " ++ show n ++ ": " ++ show x
 
 main = do
