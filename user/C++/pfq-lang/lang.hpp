@@ -28,6 +28,7 @@
 #include <cstring>
 #include <vector>
 #include <memory>
+#include <array>
 #include <type_traits>
 
 #include <linux/pf_q.h>
@@ -45,7 +46,6 @@ namespace pfq_lang
 
         out << "functional_descr "
             << "symbol:"    << descr.symbol     << ' '
-            << "signature:" << descr.signature  << ' '
             << "arg:{ ";
 
         for(auto const &arg : descr.arg)
@@ -191,11 +191,10 @@ namespace pfq_lang
 
     struct FunctionDescr
     {
-        std::string         symbol;
-        std::string         signature;
-        Argument            arg[4];
-        int                 left;
-        int                 right;
+        std::string             symbol;
+        std::array<Argument,4>  arg;
+        int                     left;
+        int                     right;
     };
 
     static inline std::string
@@ -203,8 +202,7 @@ namespace pfq_lang
     {
         std::string out;
 
-        out = "FunctionDescr " + descr.symbol + ' '
-                               + descr.signature + " [";
+        out = "FunctionDescr " + descr.symbol + " [";
 
         for(auto const &a : descr.arg)
         {
@@ -219,8 +217,7 @@ namespace pfq_lang
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    using Symbol    = std::string;
-    using Signature = std::string;
+    using Symbol = std::string;
 
     struct SkBuff { };
 
@@ -231,7 +228,6 @@ namespace pfq_lang
     struct Function
     {
         Symbol              symbol;
-        Signature           signature;
         std::tuple<Tp...>   arg;
     };
 
@@ -262,102 +258,102 @@ namespace pfq_lang
 
     // monadic functions:
 
-    inline NetFunction<> mfunction(std::string sym, std::string sig)
+    inline NetFunction<> mfunction(std::string sym)
     {
-        return NetFunction<> { std::move(sym), std::move(sig), { } };
+        return NetFunction<> { std::move(sym), { } };
     }
 
     template <typename T>
-    inline NetFunction<T> mfunction1(std::string sym, std::string sig, T const &arg)
+    inline NetFunction<T> mfunction1(std::string sym, T const &arg)
     {
-        return NetFunction<T> { std::move(sym), std::move(sig), std::make_tuple(arg) };
+        return NetFunction<T> { std::move(sym), std::make_tuple(arg) };
     }
 
-    inline NetFunction<std::string> mfunction2(std::string sym, std::string sig, std::string str)
+    inline NetFunction<std::string> mfunction2(std::string sym, std::string str)
     {
-        return NetFunction<std::string> { std::move(sym), std::move(sig), std::make_tuple(str) };
+        return NetFunction<std::string> { std::move(sym), std::make_tuple(str) };
     }
 
 
     template <typename ...Ts>
     inline NetFunction<NetPredicate<Ts...>>
-    hfunction(std::string sym, std::string sig, NetPredicate<Ts...> p)
+    hfunction(std::string sym, NetPredicate<Ts...> p)
     {
-        return NetFunction<NetPredicate<Ts...>> { std::move(sym), std::move(sig), std::make_tuple(p) };
+        return NetFunction<NetPredicate<Ts...>> { std::move(sym), std::make_tuple(p) };
     }
 
     template <typename ...Ts, typename ...Vs>
     inline NetFunction<NetPredicate<Ts...>, NetFunction<Vs...>>
-    hfunction1(std::string sym, std::string sig, NetPredicate<Ts...> p, NetFunction<Vs...> f)
+    hfunction1(std::string sym, NetPredicate<Ts...> p, NetFunction<Vs...> f)
     {
-        return NetFunction<NetPredicate<Ts...>, NetFunction<Vs...>> { std::move(sym), std::move(sig), std::make_tuple(p, f) };
+        return NetFunction<NetPredicate<Ts...>, NetFunction<Vs...>> { std::move(sym), std::make_tuple(p, f) };
     }
 
     template <typename ...Ts, typename ...Vs, typename ...Ws>
     inline NetFunction<NetPredicate<Ts...>, NetFunction<Vs...>, NetFunction<Ws...>>
-    hfunction2(std::string sym, std::string sig, NetPredicate<Ts...> p, NetFunction<Vs...> f, NetFunction<Ws...> g)
+    hfunction2(std::string sym, NetPredicate<Ts...> p, NetFunction<Vs...> f, NetFunction<Ws...> g)
     {
-        return NetFunction<NetPredicate<Ts...>, NetFunction<Vs...>, NetFunction<Ws...>>{ std::move(sym), std::move(sig), std::make_tuple(p, f, g) };
+        return NetFunction<NetPredicate<Ts...>, NetFunction<Vs...>, NetFunction<Ws...>>{ std::move(sym), std::make_tuple(p, f, g) };
     }
 
     // predicates:
 
     inline NetPredicate<>
-    predicate(std::string sym, std::string sig)
+    predicate(std::string sym)
     {
-        return NetPredicate<>{ std::move(sym), std::move(sig), { } };
+        return NetPredicate<>{ std::move(sym), { } };
     }
 
     template <typename T>
     inline NetPredicate<T>
-    predicate1(std::string sym, std::string sig, const T &arg)
+    predicate1(std::string sym, const T &arg)
     {
-        return NetPredicate<T>{ std::move(sym), std::move(sig), std::make_tuple(arg) };
+        return NetPredicate<T>{ std::move(sym), std::make_tuple(arg) };
     }
 
     template <typename ...Ts>
     inline NetPredicate<NetProperty<Ts...>>
-    predicate2(std::string sym, std::string sig, NetProperty<Ts...> p)
+    predicate2(std::string sym, NetProperty<Ts...> p)
     {
-        return NetPredicate<NetProperty<Ts...>>{ std::move(sym), std::move(sig), std::make_tuple(p) };
+        return NetPredicate<NetProperty<Ts...>>{ std::move(sym), std::make_tuple(p) };
     }
 
     template <typename T, typename ...Ts>
     inline NetPredicate<NetProperty<Ts...>, T>
-    predicate3(std::string sym, std::string sig, NetProperty<Ts...> p, const T &arg)
+    predicate3(std::string sym, NetProperty<Ts...> p, const T &arg)
     {
-        return NetPredicate<NetProperty<Ts...>, T>{ std::move(sym), std::move(sig), std::make_tuple(p, arg) };
+        return NetPredicate<NetProperty<Ts...>, T>{ std::move(sym), std::make_tuple(p, arg) };
     }
 
     // properties:
 
     inline NetProperty<>
-    property(std::string sym, std::string sig)
+    property(std::string sym)
     {
-        return NetProperty<>{ std::move(sym), std::move(sig), { } };
+        return NetProperty<>{ std::move(sym), { } };
     }
 
     template <typename T>
     inline NetProperty<T>
-    property1(std::string sym, std::string sig, const T &arg)
+    property1(std::string sym, const T &arg)
     {
-        return NetProperty<T>{ std::move(sym), std::move(sig), std::make_tuple(arg) };
+        return NetProperty<T>{ std::move(sym), std::make_tuple(arg) };
     }
 
     // combinators:
 
     template <typename ...Ts>
     inline NetPredicate<NetPredicate<Ts...>>
-    combinator1(std::string sym, std::string sig, NetPredicate<Ts...> p)
+    combinator1(std::string sym, NetPredicate<Ts...> p)
     {
-        return NetPredicate<NetPredicate<Ts...>>{ std::move(sym), std::move(sig), std::make_tuple(p) };
+        return NetPredicate<NetPredicate<Ts...>>{ std::move(sym), std::make_tuple(p) };
     }
 
     template <typename ...Ts, typename ...Vs>
     inline NetPredicate<NetPredicate<Ts...>, NetPredicate<Vs...>>
-    combinator2(std::string sym, std::string sig, NetPredicate<Ts...> p1, NetPredicate<Vs...> p2)
+    combinator2(std::string sym, NetPredicate<Ts...> p1, NetPredicate<Vs...> p2)
     {
-        return NetPredicate<NetPredicate<Ts...>, NetPredicate<Vs...>>{ std::move(sym), std::move(sig), std::make_tuple(p1,p2) };
+        return NetPredicate<NetPredicate<Ts...>, NetPredicate<Vs...>>{ std::move(sym), std::make_tuple(p1,p2) };
     }
 
     //
@@ -367,159 +363,158 @@ namespace pfq_lang
     struct FunctionBase
     {
         std::string symbol;
-        std::string signature;
     };
 
     struct Mfunction1 : public FunctionBase
     {
-        Mfunction1(std::string sym, std::string sig)
-        : FunctionBase { std::move(sym), std::move(sig) }
+        Mfunction1(std::string sym)
+        : FunctionBase { std::move(sym) }
         { }
 
         template <typename Tp>
         NetFunction<Tp>
         operator()(const Tp &arg)
         {
-            return mfunction1(symbol, signature, arg);
+            return mfunction1(symbol, arg);
         }
     };
 
     struct Mfunction2: public FunctionBase
     {
-        Mfunction2(std::string sym, std::string sig)
-        : FunctionBase { std::move(sym), std::move(sig) }
+        Mfunction2(std::string sym)
+        : FunctionBase { std::move(sym) }
         { }
 
         NetFunction<std::string>
         operator()(std::string arg)
         {
-            return mfunction2(symbol, signature, std::move(arg));
+            return mfunction2(symbol, std::move(arg));
         }
     };
 
     struct HFunction : public FunctionBase
     {
-        HFunction(std::string sym, std::string sig)
-        : FunctionBase { std::move(sym), std::move(sig) }
+        HFunction(std::string sym)
+        : FunctionBase { std::move(sym) }
         { }
 
         template <typename ...Ts>
         NetFunction<NetPredicate<Ts...>>
         operator()(NetPredicate<Ts...> p)
         {
-            return hfunction(symbol, signature, p);
+            return hfunction(symbol, p);
         }
     };
 
     struct HFunction1 : public FunctionBase
     {
-        HFunction1(std::string sym, std::string sig)
-        : FunctionBase { std::move(sym), std::move(sig) }
+        HFunction1(std::string sym)
+        : FunctionBase { std::move(sym) }
         { }
 
         template <typename ...Ts, typename ...Vs>
         NetFunction<NetPredicate<Ts...>, NetFunction<Vs...>>
         operator()(NetPredicate<Ts...> p, NetFunction<Vs...> f)
         {
-            return hfunction1(symbol, signature, p, f);
+            return hfunction1(symbol, p, f);
         }
     };
 
     struct HFunction2 : public FunctionBase
     {
-        HFunction2(std::string sym, std::string sig)
-        : FunctionBase { std::move(sym), std::move(sig) }
+        HFunction2(std::string sym)
+        : FunctionBase { std::move(sym) }
         { }
 
         template <typename ...Ts, typename ...Vs, typename ...Ws>
         NetFunction<NetPredicate<Ts...>, NetFunction<Vs...>, NetFunction<Ws...>>
         operator()(NetPredicate<Ts...> p, NetFunction<Vs...> f, NetFunction<Ws...> g)
         {
-            return hfunction2(symbol, signature, p, f, g);
+            return hfunction2(symbol, p, f, g);
         }
     };
 
     struct Combinator1 : public FunctionBase
     {
-        Combinator1(std::string sym, std::string sig)
-        : FunctionBase { std::move(sym), std::move(sig) }
+        Combinator1(std::string sym)
+        : FunctionBase { std::move(sym) }
         { }
 
         template <typename ...Ts>
         NetPredicate<NetPredicate<Ts...>>
         operator()(NetPredicate<Ts...> p)
         {
-            return combinator1(symbol, signature, p);
+            return combinator1(symbol, p);
         }
     };
 
     struct Combinator2 : public FunctionBase
     {
-        Combinator2(std::string sym, std::string sig)
-        : FunctionBase { std::move(sym), std::move(sig) }
+        Combinator2(std::string sym)
+        : FunctionBase { std::move(sym) }
         { }
 
         template <typename ...Ts, typename ...Vs>
         NetPredicate<NetPredicate<Ts...>, NetPredicate<Vs...>>
         operator()(NetPredicate<Ts...> p1, NetPredicate<Vs...> p2)
         {
-            return combinator2(symbol, signature, p1, p2);
+            return combinator2(symbol, p1, p2);
         }
     };
 
     struct Property1 : public FunctionBase
     {
-        Property1(std::string sym, std::string sig)
-        : FunctionBase { std::move(sym), std::move(sig) }
+        Property1(std::string sym)
+        : FunctionBase { std::move(sym) }
         { }
 
         template <typename Tp>
         NetProperty<Tp>
         operator()(const Tp &arg)
         {
-            return property1(symbol, signature, arg);
+            return property1(symbol, arg);
         }
     };
 
     struct Predicate1 : public FunctionBase
     {
-        Predicate1(std::string sym, std::string sig)
-        : FunctionBase { std::move(sym), std::move(sig) }
+        Predicate1(std::string sym)
+        : FunctionBase { std::move(sym) }
         { }
 
         template <typename Tp>
         NetPredicate<Tp>
         operator()(const Tp &arg)
         {
-            return predicate1(symbol, signature, arg);
+            return predicate1(symbol, arg);
         }
     };
 
     struct Predicate2 : public FunctionBase
     {
-        Predicate2(std::string sym, std::string sig)
-        : FunctionBase { std::move(sym), std::move(sig) }
+        Predicate2(std::string sym)
+        : FunctionBase { std::move(sym) }
         { }
 
         template <typename ...Ts>
         NetPredicate<NetProperty<Ts...>>
         operator()(NetProperty<Ts...> p)
         {
-            return predicate2(symbol, signature, p);
+            return predicate2(symbol, p);
         }
     };
 
     struct Predicate3 : public FunctionBase
     {
-        Predicate3(std::string sym, std::string sig)
-        : FunctionBase { std::move(sym), std::move(sig) }
+        Predicate3(std::string sym)
+        : FunctionBase { std::move(sym) }
         { }
 
         template <typename Tp, typename ...Ts>
         NetPredicate<NetProperty<Ts...>>
         operator()(NetProperty<Ts...> p, const Tp &arg)
         {
-            return predicate3(symbol, signature, p, arg);
+            return predicate3(symbol, p, arg);
         }
     };
 
@@ -542,7 +537,7 @@ namespace pfq_lang
         using F = Function<M<B>(A), Ts...>;
         using G = Function<M<C>(B), Vs...>;
 
-        return Function< M<C>(A), F, G> { ">->", "", std::make_tuple(f, g) };
+        return Function< M<C>(A), F, G> { ">->", std::make_tuple(f, g) };
     }
 
     //
