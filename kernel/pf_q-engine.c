@@ -36,6 +36,30 @@
 #include <functional/inline.h>
 #include <functional/headers.h>
 
+
+static const char *
+signature_by_user_symbol(const char __user *symb)
+{
+	struct symtable_entry *entry;
+        const char *symbol;
+
+        symbol = strdup_user(symb);
+        if (symbol == NULL) {
+                pr_devel("[PFQ] resolve_signature_by_symbol: strdup!\n");
+                return NULL;
+        }
+
+        entry = pfq_symtable_search(&pfq_lang_functions, symbol);
+        if (entry == NULL) {
+                printk(KERN_INFO "[PFQ] resolve_signature_by_symbol: '%s' no such function!\n", symbol);
+                kfree (symbol);
+                return NULL;
+        }
+
+        kfree(symbol);
+        return entry->signature;
+}
+
 static void *
 pod_memory_get(void **ptr, size_t size)
 {
@@ -121,7 +145,7 @@ void pr_devel_functional_descr(struct pfq_functional_descr const *descr, size_t 
 {
 	char buffer[256];
 
-        char *symbol, *signature;
+        const char *symbol, *signature;
         size_t n, len = 0;
 
        	if (descr->symbol == NULL) {
@@ -130,7 +154,7 @@ void pr_devel_functional_descr(struct pfq_functional_descr const *descr, size_t 
 	}
 
         symbol    = strdup_user(descr->symbol);
-	signature = strdup_user(descr->signature);
+	signature = signature_by_user_symbol(descr->symbol);
 
 	len += sprintf(buffer, "%zu   %s :: %s [", index, symbol, signature);
 
@@ -160,7 +184,6 @@ void pr_devel_functional_descr(struct pfq_functional_descr const *descr, size_t 
 		pr_devel("%s] tree:(-,-)\n", buffer);
 
         kfree(symbol);
-        kfree(signature);
 }
 
 
@@ -357,34 +380,11 @@ number_of_arguments(struct pfq_functional_descr const *fun)
 }
 
 
-static const char *
-resolve_signature_by_user_symbol(const char __user *symb)
-{
-	struct symtable_entry *entry;
-        const char *symbol;
-
-        symbol = strdup_user(symb);
-        if (symbol == NULL) {
-                pr_devel("[PFQ] resolve_signature_by_symbol: strdup!\n");
-                return NULL;
-        }
-
-        entry = pfq_symtable_search(&pfq_lang_functions, symbol);
-        if (entry == NULL) {
-                printk(KERN_INFO "[PFQ] resolve_signature_by_symbol: '%s' no such function!\n", symbol);
-                kfree (symbol);
-                return NULL;
-        }
-
-        kfree(symbol);
-        return entry->signature;
-}
-
 
 static bool
 function_signature_match(struct pfq_functional_descr const *fun, string_view_t fullsig, size_t index)
 {
-	const char *signature = strdup_user(fun->signature);
+	const char *signature = signature_by_user_symbol(fun->symbol);
 	string_view_t sig;
 	size_t nargs;
 
@@ -400,11 +400,9 @@ function_signature_match(struct pfq_functional_descr const *fun, string_view_t f
 	if (!pfq_signature_equal(sig, fullsig))
 	{
 		pr_devel("[PFQ] %zu: invalid function: %s (%zu args bound)!\n", index, signature, nargs);
-		kfree (signature);
 		return false;
 	}
 
-	kfree(signature);
 	return true;
 }
 
@@ -425,7 +423,7 @@ pfq_validate_computation_descr(struct pfq_computation_descr const *descr)
 	for(n = 0; n < descr->size; n++)
 	{
 		struct pfq_functional_descr const * fun = &descr->fun[n];
-		const char *signature, *real_signature;
+		const char *signature;
 		size_t nargs;
                	int i;
 
@@ -438,28 +436,19 @@ pfq_validate_computation_descr(struct pfq_computation_descr const *descr)
 
 		/* check for valid signature */
 
-		real_signature = resolve_signature_by_user_symbol(fun->symbol);
-		if (!real_signature)
+		signature = signature_by_user_symbol(fun->symbol);
+		if (!signature)
 			return -EPERM;
-
-		if (!function_signature_match(fun, pfq_signature_bind(make_string_view(real_signature), nargs), n)) {
-			pr_devel("[PFQ] %zu: %s: invalid signature!\n", n, real_signature);
-			return -EPERM;
-		}
 
 		/* check for valid entry_point */
 
 		if (n == entry_point) {
 
 			if (!function_signature_match(fun, make_string_view("SkBuff -> Action SkBuff"), n)) {
-				pr_devel("[PFQ] %zu: %s: invalid signature!\n", n, real_signature);
+				pr_devel("[PFQ] %zu: %s: invalid signature!\n", n, signature);
 				return -EPERM;
 			}
 		}
-
-		/* get the signature (passed from user-space) */
-
-		signature = strdup_user(fun->signature);
 
 		/* check for valid function arguments */
 
@@ -474,23 +463,19 @@ pfq_validate_computation_descr(struct pfq_computation_descr const *descr)
 				string_view_t farg = pfq_signature_arg(make_string_view(signature), i);
 
 				if (x >= descr->size) {
-					pr_devel("[PFQ] %zu: %s: invalid argument(%d): -> %zu!\n", n, real_signature, i, x);
-					kfree(signature);
+					pr_devel("[PFQ] %zu: %s: invalid argument(%d): -> %zu!\n", n, signature, i, x);
 					return -EPERM;
 				}
 
 				if (!function_signature_match(&descr->fun[x], farg, x)) {
 					const char *expected = view_to_string(farg);
-					pr_devel("[PFQ] %zu: %s: invalid argument(%d): expected signature: %s!\n", n, fun->signature, i, expected);
-					kfree(signature);
+					pr_devel("[PFQ] %zu: %s: invalid argument(%d): expected signature: %s!\n", n, signature, i, expected);
 					kfree(expected);
 					return -EPERM;
 				}
 
 			}
 		}
-
-		kfree(signature);
 	}
 
 	return 0;

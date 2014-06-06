@@ -383,7 +383,6 @@ typedef struct
 struct pfq_functional_descr
 {
         const char __user *     	symbol;
-        const char __user *		signature;
 
 	argument_t	    		arg[4];
 
