@@ -59,8 +59,33 @@ namespace pfq_lang
         return out.str();
     }
 
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    // vector concat (utility):
     //
-    // Argument and FunctionDescr
+
+    template <typename Tp>
+    inline std::vector<Tp>
+    operator+(std::vector<Tp> v1, std::vector<Tp> &&v2)
+    {
+        v1.insert(v1.end(),
+                  std::make_move_iterator(v2.begin()),
+                  std::make_move_iterator(v2.end()));
+        return v1;
+    }
+
+    template <typename Tp>
+    inline std::vector<Tp>
+    operator+(std::vector<Tp> v1, std::vector<Tp> const &v2)
+    {
+        v1.insert(v1.end(), v2.begin(), v2.end());
+        return v1;
+    }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    //
+    // Argument
     //
 
     struct Showbase
