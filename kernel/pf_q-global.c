@@ -26,6 +26,8 @@
 
 #include <linux/types.h>
 
+#include <pf_q-global.h>
+
 atomic_t timestamp_enabled;
 
 struct local_data __percpu    * cpu_data;

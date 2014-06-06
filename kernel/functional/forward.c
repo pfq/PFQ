@@ -23,6 +23,7 @@
 
 #include <linux/kernel.h>
 #include <linux/module.h>
+#include <linux/cache.h>
 
 #include <pf_q-transmit.h>
 #include <pf_q-module.h>
@@ -30,7 +31,6 @@
 #include <pf_q-global.h>
 
 #include "forward.h"
-
 
 struct forward_queue
 {

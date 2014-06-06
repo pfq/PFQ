@@ -33,7 +33,7 @@
 #include <pf_q-module.h>
 #include <pf_q-global.h>
 #include <pf_q-memory.h>
-
+#include <pf_q-queue.h>
 
 int pfq_shared_queue_alloc(struct pfq_sock *so, size_t queue_mem)
 {

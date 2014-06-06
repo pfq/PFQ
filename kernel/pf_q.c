@@ -67,10 +67,10 @@
 #include <pf_q-endpoint.h>
 #include <pf_q-mpdb-queue.h>
 
-struct net_proto_family  pfq_family_ops;
-struct packet_type       pfq_prot_hook;
-struct proto             pfq_proto;
-struct proto_ops         pfq_ops;
+static struct net_proto_family  pfq_family_ops;
+static struct packet_type       pfq_prot_hook;
+static struct proto             pfq_proto;
+static struct proto_ops         pfq_ops;
 
 
 MODULE_LICENSE("GPL");
@@ -125,7 +125,7 @@ MODULE_PARM_DESC(vl_untag,      " Enable vlan untagging (default=0)");
 #pragma message "[PFQ] *** DEBUG mode ***"
 #endif
 
-DEFINE_SEMAPHORE(sock_sem);
+static DEFINE_SEMAPHORE(sock_sem);
 
 
 /* send this packet to selected sockets */
@@ -221,7 +221,8 @@ unsigned int pfq_fold(unsigned int a, unsigned int b)
         }
 }
 
-int
+
+static int
 pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 {
         unsigned long long sock_queue[Q_NON_INTRUSIVE_MAX_LEN];
@@ -474,7 +475,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 
 /* simple packet HANDLER */
 
-int
+static int
 pfq_packet_rcv
 (
     struct sk_buff *skb, struct net_device *dev,
@@ -741,7 +742,7 @@ pfq_mmap(struct file *file, struct socket *sock, struct vm_area_struct *vma)
 }
 
 
-unsigned int
+static unsigned int
 pfq_poll(struct file *file, struct socket *sock, poll_table * wait)
 {
         struct sock *sk = sock->sk;
@@ -767,8 +768,7 @@ pfq_poll(struct file *file, struct socket *sock, poll_table * wait)
 
 
 static
-int
-pfq_ioctl(struct socket *sock, unsigned int cmd, unsigned long arg)
+int pfq_ioctl(struct socket *sock, unsigned int cmd, unsigned long arg)
 {
         switch (cmd) {
 #ifdef CONFIG_INET
@@ -1002,7 +1002,7 @@ int pfq_normalize_skb(struct sk_buff *skb)
 }
 
 
-int
+static int
 pfq_netif_receive_skb(struct sk_buff *skb)
 {
         if (likely(pfq_direct_capture(skb))) {
@@ -1018,7 +1018,7 @@ pfq_netif_receive_skb(struct sk_buff *skb)
 }
 
 
-int
+static int
 pfq_netif_rx(struct sk_buff *skb)
 {
         if (likely(pfq_direct_capture(skb))) {
@@ -1034,7 +1034,7 @@ pfq_netif_rx(struct sk_buff *skb)
 }
 
 
-gro_result_t
+static gro_result_t
 pfq_gro_receive(struct napi_struct *napi, struct sk_buff *skb)
 {
         if (likely(pfq_direct_capture(skb))) {

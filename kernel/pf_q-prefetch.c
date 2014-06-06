@@ -28,6 +28,7 @@
 
 #include <pf_q-memory.h>
 #include <pf_q-module.h>
+#include <pf_q-prefetch.h>
 
 int pfq_prefetch_purge_all(void)
 {

@@ -32,6 +32,7 @@
 #include <pf_q-symtable.h>
 #include <pf_q-module.h>
 #include <pf_q-signature.h>
+#include <pf_q-engine.h>
 
 #include <functional/inline.h>
 #include <functional/headers.h>
@@ -106,7 +107,7 @@ pod_user(void **ptr, void const __user *arg, size_t size)
 }
 
 
-void pr_devel_functional_node(struct pfq_functional_node const *node, size_t index)
+static void pr_devel_functional_node(struct pfq_functional_node const *node, size_t index)
 {
 	char buffer[256];
         size_t n, len = 0;
@@ -141,7 +142,7 @@ void pr_devel_computation_tree(struct pfq_computation_tree const *tree)
 }
 
 
-void pr_devel_functional_descr(struct pfq_functional_descr const *descr, size_t index)
+static void pr_devel_functional_descr(struct pfq_functional_descr const *descr, size_t index)
 {
 	char buffer[256];
 
@@ -156,7 +157,7 @@ void pr_devel_functional_descr(struct pfq_functional_descr const *descr, size_t 
         symbol    = strdup_user(descr->symbol);
 	signature = signature_by_user_symbol(descr->symbol);
 
-	len += sprintf(buffer, "%zu   %s :: %s [", index, symbol, signature);
+	len += sprintf(buffer, "%zu   %s :: %s - [", index, symbol, signature);
 
         for(n = 0; n < sizeof(descr->arg)/sizeof(descr->arg[0]); n++)
 	{
@@ -364,7 +365,7 @@ pfq_context_alloc(struct pfq_computation_descr const *descr)
 }
 
 
-size_t
+static size_t
 number_of_arguments(struct pfq_functional_descr const *fun)
 {
 	size_t n = 0;

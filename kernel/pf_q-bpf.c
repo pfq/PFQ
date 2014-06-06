@@ -28,6 +28,7 @@
 #include <linux/slab.h>
 #include <linux/uaccess.h>
 
+#include <pf_q-bpf.h>
 
 struct sk_filter *
 pfq_alloc_sk_filter(struct sock_fprog *fprog)

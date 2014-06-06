@@ -28,7 +28,7 @@
 
 #include "pf_q-signature.h"
 
-int
+static int
 count_outmost_brackets(string_view_t str)
 {
        	int red = INT_MAX, nest = 0;
@@ -58,7 +58,7 @@ count_outmost_brackets(string_view_t str)
 }
 
 
-const char *
+static const char *
 find_next_arrow(string_view_t str)
 {
  	int state = 0, bracket = 0;
@@ -104,8 +104,8 @@ find_next_arrow(string_view_t str)
 }
 
 
-string_view_t
-pfq_signature_head(string_view_t str)
+static string_view_t
+signature_head(string_view_t str)
 {
 	string_view_t head = str;
 
@@ -118,8 +118,8 @@ pfq_signature_head(string_view_t str)
 
 
 
-string_view_t
-pfq_signature_tail(string_view_t str)
+static string_view_t
+signature_tail(string_view_t str)
 {
 	string_view_t tail = str;
 
@@ -156,8 +156,8 @@ pfq_signature_arity(string_view_t str)
 	int __signature_arity(string_view_t s)
 	{
 		string_view_t str  = pfq_signature_simplify(s);
-		string_view_t head = pfq_signature_head(str);
-		string_view_t tail = pfq_signature_tail(str);
+		string_view_t head = signature_head(str);
+		string_view_t tail = signature_tail(str);
 
 		if (!string_view_empty(tail))
                 	return 1 + __signature_arity(tail);
@@ -182,7 +182,7 @@ pfq_signature_bind(string_view_t str, int n)
 		if (stop == n)
 			return str;
 
-		tail = pfq_signature_tail(str);
+		tail = signature_tail(str);
 
 		if (!string_view_empty(tail))
                 	return __signature_bind(tail, stop + 1);
@@ -200,8 +200,8 @@ pfq_signature_arg(string_view_t str, int index)
 	{
 		string_view_t str  = pfq_signature_simplify(s);
 
-		string_view_t head = pfq_signature_head(str);
-		string_view_t tail = pfq_signature_tail(str);
+		string_view_t head = signature_head(str);
+		string_view_t tail = signature_tail(str);
 
 		if (stop == index)
 			return head;
@@ -225,7 +225,7 @@ skip_white_space(const char *p, const char *end)
 }
 
 
-bool
+static bool
 compare_argument(string_view_t a, string_view_t b)
 {
 	string_view_t str_a = pfq_signature_simplify(a);
@@ -260,10 +260,10 @@ pfq_signature_equal(string_view_t sig_a, string_view_t sig_b)
 		string_view_t str_a = pfq_signature_simplify(a),
 			      str_b = pfq_signature_simplify(b);
 
-		string_view_t head_a = pfq_signature_head(str_a),
-			      tail_a = pfq_signature_tail(str_a),
-			      head_b = pfq_signature_head(str_b),
-			      tail_b = pfq_signature_tail(str_b);
+		string_view_t head_a = signature_head(str_a),
+			      tail_a = signature_tail(str_a),
+			      head_b = signature_head(str_b),
+			      tail_b = signature_tail(str_b);
 
 		if ((string_view_empty(tail_a) && !string_view_empty(tail_b)) ||
 		    (!string_view_empty(tail_a) && string_view_empty(tail_b)))

@@ -29,7 +29,7 @@
 #include <pf_q-devmap.h>
 
 
-DEFINE_SEMAPHORE(devmap_sem);
+static DEFINE_SEMAPHORE(devmap_sem);
 
 atomic_long_t   pfq_devmap [Q_MAX_DEVICE][Q_MAX_HW_QUEUE];
 atomic_t        pfq_devmap_monitor [Q_MAX_DEVICE];

@@ -30,7 +30,7 @@
 #include "pf_q-mpdb-queue.h"
 #include "pf_q-sparse.h"
 #include "pf_q-transmit.h"
-
+#include "pf_q-endpoint.h"
 
 static inline
 bool copy_to_user_skbs(struct pfq_rx_opt *ro, struct pfq_non_intrusive_skb *skbs, unsigned long long skbs_mask, int cpu, int gid)
