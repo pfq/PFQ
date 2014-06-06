@@ -425,7 +425,7 @@ pfq_validate_computation_descr(struct pfq_computation_descr const *descr)
 	for(n = 0; n < descr->size; n++)
 	{
 		struct pfq_functional_descr const * fun = &descr->fun[n];
-		const char *sig;
+		const char *signature, *real_signature;
 		size_t nargs;
                	int i;
 
@@ -438,12 +438,12 @@ pfq_validate_computation_descr(struct pfq_computation_descr const *descr)
 
 		/* check for valid signature */
 
-		sig = resolve_signature_by_user_symbol(fun->symbol);
-		if (!sig)
+		real_signature = resolve_signature_by_user_symbol(fun->symbol);
+		if (!real_signature)
 			return -EPERM;
 
-		if (!function_signature_match(fun, pfq_signature_bind(make_string_view(sig), nargs), n)) {
-			pr_devel("[PFQ] %zu: %s: invalid signature!\n", n, sig);
+		if (!function_signature_match(fun, pfq_signature_bind(make_string_view(real_signature), nargs), n)) {
+			pr_devel("[PFQ] %zu: %s: invalid signature!\n", n, real_signature);
 			return -EPERM;
 		}
 
@@ -452,7 +452,7 @@ pfq_validate_computation_descr(struct pfq_computation_descr const *descr)
 		if (n == entry_point) {
 
 			if (!function_signature_match(fun, make_string_view("SkBuff -> Action SkBuff"), n)) {
-				pr_devel("[PFQ] %zu: %s: invalid signature!\n", n, sig);
+				pr_devel("[PFQ] %zu: %s: invalid signature!\n", n, real_signature);
 				return -EPERM;
 			}
 		}
@@ -467,10 +467,10 @@ pfq_validate_computation_descr(struct pfq_computation_descr const *descr)
 
 				/* function argument */
 
-				string_view_t farg = pfq_signature_arg(make_string_view(fun->signature), i);
 
+				string_view_t farg = pfq_signature_arg(make_string_view(signature), i);
 				if (x >= descr->size) {
-					pr_devel("[PFQ] %zu: %s: invalid argument(%d): -> %zu!\n", n, sig, i, x);
+					pr_devel("[PFQ] %zu: %s: invalid argument(%d): -> %zu!\n", n, real_signature, i, x);
 					return -EPERM;
 				}
 
