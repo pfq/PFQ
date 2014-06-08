@@ -23,45 +23,45 @@ main(int argc, char *argv[])
     prog->size = 5;
     prog->entry_point = 0;
 
-    prog->fun[0].type = pfq_monadic_fun;
     prog->fun[0].symbol = "ip";
-    prog->fun[0].arg_ptr  = nullptr;
-    prog->fun[0].arg_size = 0;
-    prog->fun[0].fun      = 0;
+    prog->fun[0].arg[0] = { nullptr, 0 };
+    prog->fun[0].arg[1] = { nullptr, 0 };
+    prog->fun[0].arg[2] = { nullptr, 0 };
+    prog->fun[0].arg[3] = { nullptr, 0 };
     prog->fun[0].left     = 1;
     prog->fun[0].right    = 1;
 
-    prog->fun[1].type = pfq_high_order_fun;
     prog->fun[1].symbol = "conditional";
-    prog->fun[1].arg_ptr  = nullptr;
-    prog->fun[1].arg_size = 0;
-    prog->fun[1].fun      = 2;
-    prog->fun[1].left     = 3;
-    prog->fun[1].right    = 4;
+    prog->fun[0].arg[0] = { nullptr, 0 };
+    prog->fun[0].arg[1] = { nullptr, 0 };
+    prog->fun[0].arg[2] = { nullptr, 0 };
+    prog->fun[0].arg[3] = { nullptr, 0 };
+    prog->fun[1].left   = 3;
+    prog->fun[1].right  = 4;
 
-    prog->fun[2].type = pfq_predicate_fun;
     prog->fun[2].symbol = "is_icmp";
-    prog->fun[2].arg_ptr  = nullptr;
-    prog->fun[2].arg_size = 0;
-    prog->fun[2].fun      = -1;
-    prog->fun[2].left     = -1;
-    prog->fun[2].right    = -1;
+    prog->fun[0].arg[0] = { nullptr, 0 };
+    prog->fun[0].arg[1] = { nullptr, 0 };
+    prog->fun[0].arg[2] = { nullptr, 0 };
+    prog->fun[0].arg[3] = { nullptr, 0 };
+    prog->fun[2].left   = -1;
+    prog->fun[2].right  = -1;
 
-    prog->fun[3].type = pfq_monadic_fun;
     prog->fun[3].symbol = "steer_ip";
-    prog->fun[3].arg_ptr  = nullptr;
-    prog->fun[3].arg_size = 0;
-    prog->fun[3].fun      = -1;
-    prog->fun[3].left     = -1;
-    prog->fun[3].right    = -1;
+    prog->fun[0].arg[0] = { nullptr, 0 };
+    prog->fun[0].arg[1] = { nullptr, 0 };
+    prog->fun[0].arg[2] = { nullptr, 0 };
+    prog->fun[0].arg[3] = { nullptr, 0 };
+    prog->fun[3].left   = -1;
+    prog->fun[3].right  = -1;
 
-    prog->fun[4].type = pfq_monadic_fun;
     prog->fun[4].symbol = "drop";
-    prog->fun[4].arg_ptr  = nullptr;
-    prog->fun[4].arg_size = 0;
-    prog->fun[4].fun      = -1;
-    prog->fun[4].left     = -1;
-    prog->fun[4].right    = -1;
+    prog->fun[0].arg[0] = { nullptr, 0 };
+    prog->fun[0].arg[1] = { nullptr, 0 };
+    prog->fun[0].arg[2] = { nullptr, 0 };
+    prog->fun[0].arg[3] = { nullptr, 0 };
+    prog->fun[4].left   = -1;
+    prog->fun[4].right  = -1;
 
     q.set_group_computation(gid, prog);
 

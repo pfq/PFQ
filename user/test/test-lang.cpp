@@ -1,134 +1,104 @@
 #include <iostream>
 
 #include "pfq-lang/lang.hpp"
+#include "pfq-lang/default.hpp"
 
 using namespace pfq_lang;
 
 template <typename C>
-void show_descr(C const &c)
+void show_comp(C const &c)
 {
-    auto s = serialize(0, c);
+    auto s = serialize(c, 0);
     int n = 0;
+
+    std::cout << "*** " << pretty (c) << ":\n" << std::endl;
 
     for(auto &term : s.first)
     {
         std::cout << n++ << ' ' << show(term) << std::endl;
     }
+
+    std::cout << std::endl;
 }
+
 
 int
 main()
 {
-     //////// predicates:
+    //////// pfq_functional_descr:
+    {
+        auto fun = pfq_functional_descr { "test", { {(void *)0xdeadbeef, 0}, {0,0}, {0,0}, {0,0}}, 1, 2 };
+        std::cout << show(fun) << std::endl;
+    }
 
-     auto or_  = combinator("or");
-     auto and_ = combinator("and");
+    //////// Argument:
+    {
+        std::string test("test");
+        std::cout << show(Argument::Null()) << std::endl;
+        std::cout << show(Argument::String(test)) << std::endl;
+        std::cout << show(Argument::Fun(42)) << std::endl;
+        std::cout << show(Argument::Data(11)) << std::endl;
+    }
 
-     auto q0 = property("ip_tos");
-     auto q1 = property1("ip_tot_len", 42);
+    //////// FunctionDescr:
+    {
+        std::string test("test");
+        FunctionDescr descr { "fun" , {{ Argument::String(test), Argument::Data(42) }}, 1, 2 };
+        std::cout << show(descr) << std::endl;
+    }
 
-     auto p0 = predicate("is_ip");
-     auto p1 = predicate1("has_value", 42);
-     auto p2 = predicate2(or_, p0, p1);
-     auto p3 = predicate2(and_, p2, p2);
+    //////// predicates:
 
-     auto p4 = predicate3("pred3", q0);
-     auto p5 = predicate4("pred3-arg", q1, 3);
+    auto fun0  = mfunction("fun");
+    auto fun1  = [](int n) { return mfunction1("fun1", n); };
+    auto fun2  = [](std::string s) { return mfunction2("fun", std::move(s)); };
 
-     //////// netfunctions:
+    auto prop0 = property("prop0");
+    auto prop1 = [](int n ) { return property1("prop1", n); };
 
-     auto c0  = netfunction("fun");
-     auto c1  = netfunction1("fun1", 42);
+    auto pred0 = predicate("is_ip");
+    auto pred1 = [] (int n) { return predicate1("has_port", n); };
+    auto pred2 = [] (auto pro) { return predicate2("pred2", pro); };
+    auto pred3 = [] (auto pro, int n) { return predicate3("pred3", pro, n); };
 
-     auto c20 = hnetfunction("hfun", p0);
-     auto c21 = hnetfunction("hfun", p1);
-     auto c22 = hnetfunction("hfun", p2);
-     auto c23 = hnetfunction("hfun", p3);
+    auto not_  = [] (auto pred) { return combinator1("not", pred); };
+    auto or_   = [] (auto p1, auto p2) { return combinator2("or", p1, p2); };
+    auto and_  = [] (auto p1, auto p2) { return combinator2("and", p1, p2); };
 
-     auto c30 = hnetfunction1("hfun1", p0, c0);
-     auto c31 = hnetfunction1("hfun1", p1, c0);
-     auto c32 = hnetfunction1("hfun1", p0, c1);
-     auto c33 = hnetfunction1("hfun1", p1, c1);
-     auto c34 = hnetfunction1("hfun1", p0, c20);
-     auto c35 = hnetfunction1("hfun1", p1, c21);
+    auto hfun  = [] (auto p) { return hfunction("hfun", p); };
 
-     auto c40 = hnetfunction2("hfun2", p0, c0, c1);
-     auto c41 = hnetfunction2("hfun2", p1, c0, c1);
-     auto c42 = hnetfunction2("hfun2", p0, c20, c21);
-     auto c43 = hnetfunction2("hfun2", p1, c20, c21);
+    auto when  = [] (auto p, auto c) { return hfunction1("when", p, c); };
+    auto cond  = [] (auto p, auto c1, auto c2) { return hfunction2("cond", p, c1, c2); };
 
-     auto c50 = c0 >> c1;
-     auto c51 = c1 >> c20 >> c21;
-     auto c52 = c30 >> c40;
+    auto comp  = fun0 >> fun1 (10) >> fun0 >> hfun (pred1(42)) >> when (pred0, fun0) >> cond ( pred1(11), fun0, fun1(12));
 
-     std::cout << show(p0) << std::endl;
-     std::cout << show(p1) << std::endl;
-     std::cout << show(p2) << std::endl;
-     std::cout << show(p3) << std::endl;
-     std::cout << show(p4) << std::endl;
-     std::cout << show(p5) << std::endl;
+    std::cout << "---" << std::endl;
 
-     std::cout << show(q0) << std::endl;
-     std::cout << show(q1) << std::endl;
 
-     std::cout << show(c0) << std::endl;
-     std::cout << show(c1) << std::endl;
-     std::cout << show(c20) << std::endl;
-     std::cout << show(c21) << std::endl;
-     std::cout << show(c22) << std::endl;
-     std::cout << show(c23) << std::endl;
+    std::cout << pretty (comp) << std::endl;
 
-     std::cout << show(c30) << std::endl;
-     std::cout << show(c31) << std::endl;
-     std::cout << show(c32) << std::endl;
-     std::cout << show(c33) << std::endl;
-     std::cout << show(c34) << std::endl;
-     std::cout << show(c35) << std::endl;
+    show_comp (fun0);
+    show_comp (fun1(42));
+    show_comp (fun2("hello"));
+    show_comp (fun0 >> fun1(1) >> fun2 ("test"));
 
-     std::cout << show(c40) << std::endl;
-     std::cout << show(c41) << std::endl;
-     std::cout << show(c42) << std::endl;
-     std::cout << show(c43) << std::endl;
+    show_comp (prop0);
+    show_comp (prop1 (1));
 
-     std::cout << show(c50) << std::endl;
-     std::cout << show(c51) << std::endl;
-     std::cout << show(c52) << std::endl;
+    show_comp (pred0);
+    show_comp (pred1(1));
+    show_comp (pred2(prop0));
+    show_comp (pred3(prop0, 10));
+    show_comp (not_(pred0));
 
-     std::cout << "---" << std::endl;
-     show_descr (p0);
-     std::cout << "---" << std::endl;
-     show_descr (p1);
-     std::cout << "---" << std::endl;
-     show_descr (p2);
-     std::cout << "---" << std::endl;
-     show_descr (p3);
+    show_comp (or_(pred0, pred1(1)));
+    show_comp (and_(pred0, or_(pred1(1), pred1(2)) ));
 
-     std::cout << "---" << std::endl;
-     show_descr (p4);
-     std::cout << "---" << std::endl;
-     show_descr (p5);
+    show_comp (hfun(pred0));
 
-     std::cout << "---" << std::endl;
-     show_descr (q0);
-     std::cout << "---" << std::endl;
-     show_descr (q1);
+    show_comp (when(pred0, fun0) );
+    show_comp (cond(pred0, fun0, fun1(3)));
 
-     std::cout << "---" << std::endl;
-     show_descr (c0);
-     std::cout << "---" << std::endl;
-     show_descr (c1);
-     std::cout << "---" << std::endl;
-     show_descr (c20);
-
-     std::cout << "---" << std::endl;
-     show_descr (c30);
-
-     std::cout << "---" << std::endl;
-     show_descr (c41);
-
-     std::cout << "---" << std::endl;
-     show_descr (c52);
-
-     return 0;
+    return 0;
 }
 
