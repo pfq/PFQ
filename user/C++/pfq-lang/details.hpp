@@ -131,7 +131,7 @@ namespace pfq_lang
         {
             char addr[16];
 
-            if (inet_ntop(AF_INET, &that.addr, addr, sizeof(addr)) <= 0)
+            if (inet_ntop(AF_INET, &that.addr, addr, sizeof(addr)) == nullptr)
                 throw std::runtime_error("pfq_lang::inet_ntop");
 
             return out << std::string(addr) << '/' << std::to_string(that.prefix);
