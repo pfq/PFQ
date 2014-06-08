@@ -104,7 +104,7 @@ main()
     show_comp (when(pred0, fun0) );
     show_comp (cond(pred0, fun0, fun1(3)));
 
-    show_comp (forward(1));
+    show_comp (forward("eth0"));
     return 0;
 }
 

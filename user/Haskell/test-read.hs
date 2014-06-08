@@ -92,7 +92,7 @@ dumper dev = do
         --                                 (inc 1 >-> mark 1 >-> steer_ip >-> when' (has_mark 1) (inc 2))
         --                                 drop')
 
-        Q.groupComputation q gid (no_frag >-> icmp >-> mark 42 >-> when' (not' (get_mark ./=. 42)) (inc 1) >-> log_packet )
+        Q.groupComputation q gid (no_frag >-> forward "eth0" >-> icmp >-> mark 42 >-> when' (not' (get_mark ./=. 42)) (inc 1) >-> log_packet )
 
         -- Q.vlanFiltersEnabled q gid True
         -- Q.vlanSetFilterId q gid (0)   -- untagged
