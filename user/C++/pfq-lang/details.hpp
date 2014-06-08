@@ -64,6 +64,38 @@ namespace pfq_lang
 
     namespace details
     {
+        // polymorphic binders (required for C++ < C++14).
+
+        struct hcomp
+        {
+            template <typename P>
+            auto operator()(std::string name, P const &p)
+            -> decltype(hfunction(std::move(name), p))
+            {
+                return hfunction(std::move(name), p);
+            }
+        };
+
+        struct hcomp1
+        {
+            template <typename P, typename C>
+            auto operator()(std::string name, P const &p, C const &c)
+            -> decltype(hfunction1(std::move(name), p, c))
+            {
+                return hfunction1(std::move(name), p, c);
+            }
+        };
+
+        struct hcomp2
+        {
+            template <typename P, typename C1, typename C2>
+            auto operator()(std::string name, P const &p, C1 const &c1, C2 const &c2)
+            -> decltype(hfunction2(std::move(name), p, c1, c2))
+            {
+                return hfunction2(std::move(name), p, c1, c2);
+            }
+        };
+
         // utility function
         //
 
@@ -86,12 +118,25 @@ namespace pfq_lang
             network_addr netaddr;
 
             if (inet_pton(AF_INET, net, &netaddr.addr) <= 0)
-                throw std::runtime_error("pfq_lang::net");
+                throw std::runtime_error("pfq_lang::inet_pton");
 
             netaddr.prefix = prefix;
 
             return netaddr;
         }
+
+        template <typename CharT, typename Traits>
+        typename std::basic_ostream<CharT, Traits> &
+        operator<<(std::basic_ostream<CharT,Traits>& out, network_addr const&  that)
+        {
+            char addr[16];
+
+            if (inet_ntop(AF_INET, &that.addr, addr, sizeof(addr)) <= 0)
+                throw std::runtime_error("pfq_lang::inet_ntop");
+
+            return out << std::string(addr) << '/' << std::to_string(that.prefix);
+        }
+
 
     } // namespace details
 
