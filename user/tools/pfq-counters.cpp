@@ -178,23 +178,23 @@ namespace test
                     }
             }
 
-            std::vector<pfq_lang::term::Fun> fs;
+            std::vector<pfq_lang::MFunction> fs;
 
             if (!opt::function.empty() && (m_id == 0))
             {
                 auto comp = split(opt::function, ">->");
                 for(auto & f : comp)
                 {
-                    fs.push_back(netfunction(trim(f)));
+                    fs.push_back(mfunction(trim(f)));
                 }
             }
 
             if (!fs.empty())
             {
-                std::cout << "fun: " << fs.front().name_;
+                std::cout << "fun: " << fs.front().symbol_;
 
-                std::for_each(std::next(fs.begin(),1), fs.end(), [](pfq_lang::term::Fun &fun) {
-                                std::cout << " >-> " << fun.name_;
+                std::for_each(std::next(fs.begin(),1), fs.end(), [](pfq_lang::MFunction &fun) {
+                                std::cout << " >-> " << fun.symbol_;
                               });
                 std::cout << std::endl;
 

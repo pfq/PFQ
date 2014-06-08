@@ -27,24 +27,31 @@ main()
 {
     //////// pfq_functional_descr:
     {
+        std::cout << "*** pfq_functional_descr:\n" << std::endl;
         auto fun = pfq_functional_descr { "test", { {(void *)0xdeadbeef, 0}, {0,0}, {0,0}, {0,0}}, 1, 2 };
-        std::cout << show(fun) << std::endl;
+        std::cout << show(fun) << '\n' << std::endl;
     }
 
     //////// Argument:
     {
+        std::cout << "*** Argument:\n" << std::endl;
+
         std::string test("test");
         std::cout << show(Argument::Null()) << std::endl;
         std::cout << show(Argument::String(test)) << std::endl;
         std::cout << show(Argument::Fun(42)) << std::endl;
         std::cout << show(Argument::Data(11)) << std::endl;
+        std::cout << std::endl;
     }
 
     //////// FunctionDescr:
     {
+        std::cout << "*** FunctionDescr:\n" << std::endl;
+
         std::string test("test");
         FunctionDescr descr { "fun" , {{ Argument::String(test), Argument::Data(42) }}, 1, 2 };
         std::cout << show(descr) << std::endl;
+        std::cout << std::endl;
     }
 
     //////// predicates:
@@ -72,8 +79,6 @@ main()
 
     auto comp  = fun0 >> fun1 (10) >> fun0 >> hfun (pred1(42)) >> when (pred0, fun0) >> cond ( pred1(11), fun0, fun1(12));
 
-    std::cout << "---" << std::endl;
-
 
     std::cout << pretty (comp) << std::endl;
 
@@ -99,6 +104,7 @@ main()
     show_comp (when(pred0, fun0) );
     show_comp (cond(pred0, fun0, fun1(3)));
 
+    show_comp (forward(1));
     return 0;
 }
 

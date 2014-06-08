@@ -34,6 +34,8 @@ main(int argc, char *argv[])
                                  (inc (1) >> mark (1) >> steer_ip >> when (has_mark (1), inc (2))),
                                   drop);
 
+    std::cout << pretty (comp) << std::endl;
+
     q.set_group_computation(gid, comp);
 
     q.enable();
