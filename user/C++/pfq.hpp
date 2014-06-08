@@ -756,7 +756,7 @@ namespace net {
         template <typename Comp>
         void set_group_computation(int gid, Comp const &comp)
         {
-            auto ser = pfq_lang::term::serialize(0, comp).first;
+            auto ser = pfq_lang::serialize(comp, 0).first;
 
             std::unique_ptr<pfq_computation_descr> prg (
                 reinterpret_cast<pfq_computation_descr *>(malloc(sizeof(size_t) * 2 + sizeof(pfq_functional_descr) * ser.size())));
@@ -767,12 +767,14 @@ namespace net {
             int n = 0;
             for(auto & descr : ser)
             {
-                prg->fun[n].type     = descr.type;
-                prg->fun[n].symbol   = descr.symbol.c_str();
-                prg->fun[n].nargs    = descr.nargs;
-                prg->fun[n].arg_ptr  = descr.arg_ptr.get();
-                prg->fun[n].arg_size = descr.arg_size;
-                prg->fun[n].fun      = descr.fun;
+                prg->fun[n].symbol = descr.symbol.c_str();
+
+                for(size_t i = 0; i < sizeof(prg->fun[n].arg)/ sizeof(prg->fun[n].arg[0]); i++)
+                {
+                    prg->fun[n].arg[i].ptr  = descr.arg[i].ptr.get();
+                    prg->fun[n].arg[i].size = descr.arg[i].size;
+                }
+
                 prg->fun[n].left     = descr.left;
                 prg->fun[n].right    = descr.right;
 
