@@ -59,13 +59,62 @@ namespace pfq_lang
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+    //////// bool_type:
+
+    template <bool Value>
+    using bool_type = std::integral_constant<bool, Value>;
+
+
+    //////// is_same_type_constructor:
+
+    template <typename T, template <typename ...> class Tp>
+    struct is_same_type_constructor : std::false_type
+    { };
+
+    template <template <typename ...> class Tp, typename ...Ti>
+    struct is_same_type_constructor<Tp<Ti...>, Tp> : std::true_type
+    { };
+
+    //////// vector concat:
+
+    template <typename Tp>
+    inline std::vector<Tp>
+    operator+(std::vector<Tp> v1, std::vector<Tp> &&v2)
+    {
+        v1.insert(v1.end(), std::make_move_iterator(v2.begin()),
+                  std::make_move_iterator(v2.end()));
+        return v1;
+    }
+
+    template <typename Tp>
+    inline std::vector<Tp>
+    operator+(std::vector<Tp> v1, std::vector<Tp> const &v2)
+    {
+        v1.insert(v1.end(), v2.begin(), v2.end());
+        return v1;
+    }
+
+    //////// has_insertion_operator:
+
+    template <typename C> static char  has_insertion_test(typename std::remove_reference< decltype((std::cout << std::declval<C>())) >::type *);
+    template <typename C> static short has_insertion_test(...);
+
+    template <typename T>
+    struct has_insertion_operator : bool_type<sizeof(has_insertion_test<T>(0)) == sizeof(char)> {};
+
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
     struct ShowBase
     {
         virtual std::string forall_show() = 0;
     };
 
+    template <typename Tp,  typename = void> struct Showable;
+
     template <typename Tp>
-    struct Showable : ShowBase
+    struct Showable<Tp, typename std::enable_if<has_insertion_operator<Tp>::value>::type>  : ShowBase
     {
         Showable(Tp v)
         : value(std::move(v))
@@ -88,6 +137,31 @@ namespace pfq_lang
             std::stringstream out;
             out << value;
             return out.str();
+        }
+    };
+
+    template <typename Tp>
+    struct Showable<Tp, typename std::enable_if<!has_insertion_operator<Tp>::value>::type>  : ShowBase
+    {
+        Showable(Tp v)
+        : value(std::move(v))
+        {}
+
+        Tp value;
+
+        Tp *get()
+        {
+            return &value;
+        }
+
+        Tp const *get() const
+        {
+            return &value;
+        }
+
+        std::string forall_show() override
+        {
+            return "[!showable]";
         }
     };
 
@@ -207,38 +281,6 @@ namespace pfq_lang
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
-    //////// is_same_type_constructor:
-
-    template <typename T, template <typename ...> class Tp>
-    struct is_same_type_constructor : std::false_type
-    { };
-
-    template <template <typename ...> class Tp, typename ...Ti>
-    struct is_same_type_constructor<Tp<Ti...>, Tp> : std::true_type
-    { };
-
-    //////// vector concat:
-
-    template <typename Tp>
-    inline std::vector<Tp>
-    operator+(std::vector<Tp> v1, std::vector<Tp> &&v2)
-    {
-        v1.insert(v1.end(), std::make_move_iterator(v2.begin()),
-                  std::make_move_iterator(v2.end()));
-        return v1;
-    }
-
-    template <typename Tp>
-    inline std::vector<Tp>
-    operator+(std::vector<Tp> v1, std::vector<Tp> const &v2)
-    {
-        v1.insert(v1.end(), v2.begin(), v2.end());
-        return v1;
-    }
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-
     struct SkBuff { };
 
     template <typename a>
@@ -265,9 +307,6 @@ namespace pfq_lang
     using NetFunction  = Function< Action<SkBuff>(SkBuff) >;
     using NetPredicate = Function< bool(SkBuff) >;
     using NetProperty  = Function< uint64_t(SkBuff) >;
-
-    template <bool Value>
-    using bool_type = std::integral_constant<bool, Value>;
 
     struct Property;
     struct Property1;
