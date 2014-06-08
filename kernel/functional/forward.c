@@ -105,13 +105,16 @@ forward(arguments_t args, struct sk_buff *skb)
 static int
 forward_init(arguments_t args)
 {
-	const int index = get_data(int, args);
-	struct net_device *dev = dev_get_by_index(&init_net, index);
+	const char *name = get_data(const char *, args);
+
+	struct net_device *dev = dev_get_by_name(&init_net, name);
 
 	if (dev == NULL) {
-                printk(KERN_INFO "[PFQ|init] forward: no such device (index=%d)!\n", index);
+                printk(KERN_INFO "[PFQ|init] forward: %s no such device!\n", name);
                 return -1;
 	}
+
+	/* it is safe to override the address of the string... */
 
 	set_data(args, dev);
 
@@ -179,14 +182,14 @@ forward_fini(arguments_t args)
 
 struct pfq_monadic_fun_descr forward_functions[] = {
 
-        { "drop",        "SkBuff -> Action SkBuff",   	    	INLINE_FUN(forward_drop) 	},
-        { "broadcast",   "SkBuff -> Action SkBuff",   	    	INLINE_FUN(forward_broadcast)	},
-        { "class",	 "Int -> SkBuff -> Action SkBuff",  	INLINE_FUN(forward_class) 	},
-        { "deliver",	 "Int -> SkBuff -> Action SkBuff",  	INLINE_FUN(forward_deliver) 	},
+        { "drop",        "SkBuff -> Action SkBuff",   	    		INLINE_FUN(forward_drop) 	},
+        { "broadcast",   "SkBuff -> Action SkBuff",   	    		INLINE_FUN(forward_broadcast)	},
+        { "class",	 "Int -> SkBuff -> Action SkBuff",  		INLINE_FUN(forward_class) 	},
+        { "deliver",	 "Int -> SkBuff -> Action SkBuff",  		INLINE_FUN(forward_deliver) 	},
 
-        { "kernel", 	    "SkBuff -> Action SkBuff",    	INLINE_FUN(forward_to_kernel)       },
-        { "forward_kernel", "SkBuff -> Action SkBuff",   	INLINE_FUN(forward_io_kernel)       },
-	{ "forward",        "Int -> SkBuff -> Action SkBuff",  	forward, forward_init, forward_fini },
+        { "kernel", 	    "SkBuff -> Action SkBuff",    		INLINE_FUN(forward_to_kernel)       },
+        { "forward_kernel", "SkBuff -> Action SkBuff",   		INLINE_FUN(forward_io_kernel)       },
+	{ "forward",        "String -> SkBuff -> Action SkBuff",  	forward, forward_init, forward_fini },
 
         { NULL }};
 

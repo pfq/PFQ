@@ -249,7 +249,7 @@ namespace pfq_lang
         auto class_         = [] (int value) { return mfunction1("class", value); };
         auto deliver        = [] (int value) { return mfunction1("deliver", value); };
 
-        auto forward        = [] (int index) { return mfunction1("forward", index); };
+        auto forward        = [] (std::string dev) { return mfunction2("forward", std::move(dev)); };
         auto mark           = [] (unsigned long value) { return mfunction1("mark", value); };
         auto dummy          = [] (int value) { return mfunction1("dummy", value); };
         auto inc            = [] (int value) { return mfunction1("inc", value); };
