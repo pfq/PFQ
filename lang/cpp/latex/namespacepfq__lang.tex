@@ -5,336 +5,759 @@
 \begin{DoxyCompactItemize}
 \item 
  \hyperlink{namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03}{anonymous\+\_\+namespace\{default.\+hpp\}}
-\item 
- \hyperlink{namespacepfq__lang_1_1term}{term}
 \end{DoxyCompactItemize}
 \subsection*{Classes}
 \begin{DoxyCompactItemize}
 \item 
-struct \hyperlink{structpfq__lang_1_1FunDescr}{Fun\+Descr}
+struct \hyperlink{structpfq__lang_1_1Action}{Action}
+\item 
+struct \hyperlink{structpfq__lang_1_1Argument}{Argument}
+\item 
+struct \hyperlink{structpfq__lang_1_1Combinator1}{Combinator1}
+\item 
+struct \hyperlink{structpfq__lang_1_1Combinator2}{Combinator2}
+\item 
+struct \hyperlink{structpfq__lang_1_1Composition}{Composition}
+\item 
+struct \hyperlink{structpfq__lang_1_1Function}{Function}
+\item 
+struct \hyperlink{structpfq__lang_1_1FunctionDescr}{Function\+Descr}
+\item 
+struct \hyperlink{structpfq__lang_1_1has__insertion__operator}{has\+\_\+insertion\+\_\+operator}
+\item 
+struct \hyperlink{structpfq__lang_1_1HFunction}{H\+Function}
+\item 
+struct \hyperlink{structpfq__lang_1_1HFunction1}{H\+Function1}
+\item 
+struct \hyperlink{structpfq__lang_1_1HFunction2}{H\+Function2}
+\item 
+struct \hyperlink{structpfq__lang_1_1is__Function}{is\+\_\+\+Function}
+\item 
+struct \hyperlink{structpfq__lang_1_1is__Function_3_01Function_3_01S_01_4_01_4}{is\+\_\+\+Function$<$ Function$<$ S $>$ $>$}
+\item 
+struct \hyperlink{structpfq__lang_1_1is__mfunction}{is\+\_\+mfunction}
+\item 
+struct \hyperlink{structpfq__lang_1_1is__predicate}{is\+\_\+predicate}
+\item 
+struct \hyperlink{structpfq__lang_1_1is__property}{is\+\_\+property}
+\item 
+struct \hyperlink{structpfq__lang_1_1is__same__type__constructor}{is\+\_\+same\+\_\+type\+\_\+constructor}
+\item 
+struct \hyperlink{structpfq__lang_1_1is__same__type__constructor_3_01Tp_3_01Ti_8_8_8_4_00_01Tp_01_4}{is\+\_\+same\+\_\+type\+\_\+constructor$<$ Tp$<$ Ti...$>$, Tp $>$}
+\item 
+struct \hyperlink{structpfq__lang_1_1kleisly}{kleisly}
+\item 
+struct \hyperlink{structpfq__lang_1_1kleisly_3_01Function_3_01M_3_01B_01_4_07A_08_01_4_00_01Composition_3_01F_00_01G_01_4_01_4}{kleisly$<$ Function$<$ M$<$ B $>$(\+A) $>$, Composition$<$ F, G $>$ $>$}
+\item 
+struct \hyperlink{structpfq__lang_1_1kleisly_3_01Function_3_01M_3_01B_01_4_07A_08_01_4_00_01Function_3_01M_3_01C_01_4_07B_08_4_01_4}{kleisly$<$ Function$<$ M$<$ B $>$(\+A) $>$, Function$<$ M$<$ C $>$(\+B)$>$ $>$}
+\item 
+struct \hyperlink{structpfq__lang_1_1MFunction}{M\+Function}
+\item 
+struct \hyperlink{structpfq__lang_1_1MFunction1}{M\+Function1}
+\item 
+struct \hyperlink{structpfq__lang_1_1MFunction2}{M\+Function2}
+\item 
+struct \hyperlink{structpfq__lang_1_1Predicate}{Predicate}
+\item 
+struct \hyperlink{structpfq__lang_1_1Predicate1}{Predicate1}
+\item 
+struct \hyperlink{structpfq__lang_1_1Predicate2}{Predicate2}
+\item 
+struct \hyperlink{structpfq__lang_1_1Predicate3}{Predicate3}
+\item 
+struct \hyperlink{structpfq__lang_1_1Property}{Property}
+\item 
+struct \hyperlink{structpfq__lang_1_1Property1}{Property1}
+\item 
+struct \hyperlink{structpfq__lang_1_1Showable}{Showable}
+\item 
+struct \hyperlink{structpfq__lang_1_1Showable_3_01Tp_00_01typename_01std_1_1enable__if_3_01has__insertion__operato0cfb72d444f463b2d87a78275e86feaa}{Showable$<$ Tp, typename std\+::enable\+\_\+if$<$ has\+\_\+insertion\+\_\+operator$<$\+Tp $>$\+::value $>$\+::type $>$}
+\item 
+struct \hyperlink{structpfq__lang_1_1Showable_3_01Tp_00_01typename_01std_1_1enable__if_3_9has__insertion__operator488b85264b5317ebf7312bb7e4c18409}{Showable$<$ Tp, typename std\+::enable\+\_\+if$<$!has\+\_\+insertion\+\_\+operator$<$\+Tp $>$\+::value $>$\+::type $>$}
+\item 
+struct \hyperlink{structpfq__lang_1_1ShowBase}{Show\+Base}
+\item 
+struct \hyperlink{structpfq__lang_1_1SkBuff}{Sk\+Buff}
+\end{DoxyCompactItemize}
+\subsection*{Typedefs}
+\begin{DoxyCompactItemize}
+\item 
+{\footnotesize template$<$bool Value$>$ }\\using \hyperlink{namespacepfq__lang_a66ac99ea626e7d1994f42ebfa003fbff}{bool\+\_\+type} = std\+::integral\+\_\+constant$<$ bool, Value $>$
+\item 
+using \hyperlink{namespacepfq__lang_a63dfceff54d39223bbfe7dbc9616c643}{Net\+Function} = \hyperlink{structpfq__lang_1_1Function}{Function}$<$ \hyperlink{structpfq__lang_1_1Action}{Action}$<$ \hyperlink{structpfq__lang_1_1SkBuff}{Sk\+Buff} $>$(\hyperlink{structpfq__lang_1_1SkBuff}{Sk\+Buff}) $>$
+\item 
+using \hyperlink{namespacepfq__lang_a7f62267862cd6049344078744cbcde3b}{Net\+Predicate} = \hyperlink{structpfq__lang_1_1Function}{Function}$<$ bool(\hyperlink{structpfq__lang_1_1SkBuff}{Sk\+Buff}) $>$
+\item 
+using \hyperlink{namespacepfq__lang_aedb71fd680cdb670390e8fac13a7cb5e}{Net\+Property} = \hyperlink{structpfq__lang_1_1Function}{Function}$<$ uint64\+\_\+t(\hyperlink{structpfq__lang_1_1SkBuff}{Sk\+Buff}) $>$
 \end{DoxyCompactItemize}
 \subsection*{Functions}
 \begin{DoxyCompactItemize}
 \item 
-static std\+::string \hyperlink{namespacepfq__lang_a8fd413aae51832e7fc7f727dae11129c}{show} (enum pfq\+\_\+functional\+\_\+type ft)
-\item 
 static std\+::string \hyperlink{namespacepfq__lang_a1a60cc110a7a44a7d94775d5d6b1692d}{show} (pfq\+\_\+functional\+\_\+descr const \&descr)
 \item 
-static std\+::string \hyperlink{namespacepfq__lang_a35c9e73911d862b90ecfeb32fbfcfc8f}{show} (\hyperlink{structpfq__lang_1_1FunDescr}{Fun\+Descr} const \&descr)
+{\footnotesize template$<$typename Tp $>$ }\\std\+::vector$<$ Tp $>$ \hyperlink{namespacepfq__lang_a8eb2d24aa20548df55924d37824e46b2}{operator+} (std\+::vector$<$ Tp $>$ v1, std\+::vector$<$ Tp $>$ \&\&v2)
 \item 
-\hyperlink{structpfq__lang_1_1term_1_1Combinator}{term\+::\+Combinator} \hyperlink{namespacepfq__lang_a35f3de0a6684c64d0465aa3f263fa8a6}{combinator} (std\+::string name)
+{\footnotesize template$<$typename Tp $>$ }\\std\+::vector$<$ Tp $>$ \hyperlink{namespacepfq__lang_a607e3c40cd65152da1a8d90ea40f8c33}{operator+} (std\+::vector$<$ Tp $>$ v1, std\+::vector$<$ Tp $>$ const \&v2)
 \item 
-\hyperlink{structpfq__lang_1_1term_1_1Pred1}{term\+::\+Pred1} \hyperlink{namespacepfq__lang_abd58b2244ff8b0775a3b5865bc128872}{predicate} (std\+::string name)
+{\footnotesize template$<$typename C $>$ }\\static char \hyperlink{namespacepfq__lang_a8b5af237a48336a48908f14d16a5e740}{has\+\_\+insertion\+\_\+test} (typename std\+::remove\+\_\+reference$<$ decltype((std\+::cout$<$$<$ std\+::declval$<$ C $>$())) $>$\+::type $\ast$)
 \item 
-{\footnotesize template$<$typename T $>$ }\\std\+::enable\+\_\+if$<$ std\+::is\+\_\+pod$<$ T $>$\\*
-\+::value, \hyperlink{structpfq__lang_1_1term_1_1Pred1}{term\+::\+Pred1} $>$\+::type \hyperlink{namespacepfq__lang_ae23a03cee94b5ddfde4a8d2e5c521f0e}{predicate1} (std\+::string name, const T \&arg)
+{\footnotesize template$<$typename C $>$ }\\static short \hyperlink{namespacepfq__lang_a60380b938a5abdb0c9604837f2a523a7}{has\+\_\+insertion\+\_\+test} (...)
 \item 
-{\footnotesize template$<$typename P1 , typename P2 $>$ }\\std\+::enable\+\_\+if\\*
-$<$ \hyperlink{structpfq__lang_1_1term_1_1is__predicate}{term\+::is\+\_\+predicate}$<$ P1 $>$\\*
-\+::value \&\&\hyperlink{structpfq__lang_1_1term_1_1is__predicate}{term\+::is\+\_\+predicate}\\*
-$<$ P2 $>$\+::value, \hyperlink{structpfq__lang_1_1term_1_1Pred2}{term\+::\+Pred2}$<$ P1, \\*
-P2 $>$ $>$\+::type \hyperlink{namespacepfq__lang_a89ea436faf8b7f13512e07efbce83b41}{predicate2} (\hyperlink{structpfq__lang_1_1term_1_1Combinator}{term\+::\+Combinator} c, P1 const \&left, P2 const \&right)
+static std\+::string \hyperlink{namespacepfq__lang_af1f5c155d6ec60eb25b342aeb430ab7c}{show} (const \hyperlink{structpfq__lang_1_1Argument}{Argument} \&arg)
 \item 
-{\footnotesize template$<$typename P $>$ }\\std\+::enable\+\_\+if\\*
-$<$ \hyperlink{structpfq__lang_1_1term_1_1is__property}{term\+::is\+\_\+property}$<$ P $>$\\*
-\+::value, \hyperlink{structpfq__lang_1_1term_1_1Pred3}{term\+::\+Pred3}$<$ P $>$\\*
- $>$\+::type \hyperlink{namespacepfq__lang_a863e349ba4942bf8a01b61d91859164a}{predicate3} (std\+::string name, P p)
+static std\+::string \hyperlink{namespacepfq__lang_ad57eb73340d285cb26cdb9cb2cc046d4}{pretty} (const \hyperlink{structpfq__lang_1_1Argument}{Argument} \&arg)
 \item 
-{\footnotesize template$<$typename T , typename P $>$ }\\std\+::enable\+\_\+if\\*
-$<$ \hyperlink{structpfq__lang_1_1term_1_1is__property}{term\+::is\+\_\+property}$<$ P $>$\\*
-\+::value \&\&std\+::is\+\_\+pod$<$ T $>$\\*
-\+::value, \hyperlink{structpfq__lang_1_1term_1_1Pred4}{term\+::\+Pred4}$<$ P $>$\\*
- $>$\+::type \hyperlink{namespacepfq__lang_a1a9064340f4197e3dd4109a849a224dc}{predicate4} (std\+::string name, P p, const T \&arg)
+static std\+::string \hyperlink{namespacepfq__lang_a90467c48a84afeb46509ab105ce1f789}{show} (const \hyperlink{structpfq__lang_1_1FunctionDescr}{Function\+Descr} \&descr)
 \item 
-\hyperlink{structpfq__lang_1_1term_1_1Prop}{term\+::\+Prop} \hyperlink{namespacepfq__lang_ad70b40071ed0fd32c05ab8e82bbfec61}{property} (std\+::string name)
+{\footnotesize template$<$typename P $>$ }\\static std\+::string \hyperlink{namespacepfq__lang_a6839c256e31592f52549ac129c9e791a}{pretty} (\hyperlink{structpfq__lang_1_1Combinator1}{Combinator1}$<$ P $>$ const \&comb)
 \item 
-{\footnotesize template$<$typename T $>$ }\\std\+::enable\+\_\+if$<$ std\+::is\+\_\+pod$<$ T $>$\\*
-\+::value, \hyperlink{structpfq__lang_1_1term_1_1Prop1}{term\+::\+Prop1} $>$\+::type \hyperlink{namespacepfq__lang_a3a4768b9f4e03b86943d332254cca27e}{property1} (std\+::string name, const T \&arg)
+{\footnotesize template$<$typename P1 , typename P2 $>$ }\\static std\+::string \hyperlink{namespacepfq__lang_ab21e91fcade9ea5853473400ececd5ce}{pretty} (\hyperlink{structpfq__lang_1_1Combinator2}{Combinator2}$<$ P1, P2 $>$ const \&comb)
 \item 
-\hyperlink{structpfq__lang_1_1term_1_1Fun}{term\+::\+Fun} \hyperlink{namespacepfq__lang_a9f546a4602872df5ca74050ecb68a6b3}{netfunction} (std\+::string name)
+{\footnotesize template$<$typename Pred $>$ }\\static std\+::pair$<$ std\+::vector\\*
+$<$ \hyperlink{structpfq__lang_1_1FunctionDescr}{Function\+Descr} $>$, std\+::size\+\_\+t $>$ \hyperlink{namespacepfq__lang_a5d08325293b0862f15c0751545c29e9d}{serialize} (\hyperlink{structpfq__lang_1_1Combinator1}{Combinator1}$<$ Pred $>$ const \&f, std\+::size\+\_\+t n)
 \item 
-{\footnotesize template$<$typename T $>$ }\\std\+::enable\+\_\+if$<$ std\+::is\+\_\+pod$<$ T $>$\\*
-\+::value, \hyperlink{structpfq__lang_1_1term_1_1Fun1}{term\+::\+Fun1} $>$\+::type \hyperlink{namespacepfq__lang_af215f25fa7ebd61fdc90cf0ef78a3164}{netfunction1} (std\+::string name, const T \&arg)
+{\footnotesize template$<$typename Pred1 , typename Pred2 $>$ }\\static std\+::pair$<$ std\+::vector\\*
+$<$ \hyperlink{structpfq__lang_1_1FunctionDescr}{Function\+Descr} $>$, std\+::size\+\_\+t $>$ \hyperlink{namespacepfq__lang_a8febfef074de7a10301593043303bd7d}{serialize} (\hyperlink{structpfq__lang_1_1Combinator2}{Combinator2}$<$ Pred1, Pred2 $>$ const \&f, std\+::size\+\_\+t n)
 \item 
-{\footnotesize template$<$typename P $>$ }\\std\+::enable\+\_\+if\\*
-$<$ \hyperlink{structpfq__lang_1_1term_1_1is__predicate}{term\+::is\+\_\+predicate}$<$ P $>$\\*
-\+::value, \hyperlink{structpfq__lang_1_1term_1_1HFun}{term\+::\+H\+Fun}$<$ P $>$\\*
- $>$\+::type \hyperlink{namespacepfq__lang_a78972807ac46884d5cd0719795946936}{hnetfunction} (std\+::string name, P const \&p)
+static std\+::string \hyperlink{namespacepfq__lang_a69174e14fc798440d3483a4a50038eee}{pretty} (\hyperlink{structpfq__lang_1_1Property}{Property} const \&descr)
 \item 
-{\footnotesize template$<$typename P , typename C $>$ }\\std\+::enable\+\_\+if\\*
-$<$ \hyperlink{structpfq__lang_1_1term_1_1is__predicate}{term\+::is\+\_\+predicate}$<$ P $>$\\*
-\+::value \&\&\hyperlink{structpfq__lang_1_1term_1_1is__netfunction}{term\+::is\+\_\+netfunction}\\*
-$<$ C $>$\+::value, \hyperlink{structpfq__lang_1_1term_1_1HFun1}{term\+::\+H\+Fun1}$<$ P, \\*
-C $>$ $>$\+::type \hyperlink{namespacepfq__lang_a71df0d0d66c45c40ad348a35a1781c71}{hnetfunction1} (std\+::string name, P const \&p, C const \&c)
+static std\+::string \hyperlink{namespacepfq__lang_a070ec878e374f02e1f1e63d37b0d8098}{pretty} (\hyperlink{structpfq__lang_1_1Property1}{Property1} const \&descr)
 \item 
-{\footnotesize template$<$typename P , typename C1 , typename C2 $>$ }\\std\+::enable\+\_\+if\\*
-$<$ \hyperlink{structpfq__lang_1_1term_1_1is__predicate}{term\+::is\+\_\+predicate}$<$ P $>$\\*
-\+::value \&\&\hyperlink{structpfq__lang_1_1term_1_1is__netfunction}{term\+::is\+\_\+netfunction}\\*
-$<$ C1 $>$\+::value \\*
-\&\&\hyperlink{structpfq__lang_1_1term_1_1is__netfunction}{term\+::is\+\_\+netfunction}$<$ C2 $>$\\*
-\+::value, \hyperlink{structpfq__lang_1_1term_1_1HFun2}{term\+::\+H\+Fun2}$<$ P, C1, \\*
-C2 $>$ $>$\+::type \hyperlink{namespacepfq__lang_a0899ef1c7c1872d3d2da51cf5704ab84}{hnetfunction2} (std\+::string name, P const \&p, C1 const \&c1, C2 const \&c2)
+static std\+::pair$<$ std\+::vector\\*
+$<$ \hyperlink{structpfq__lang_1_1FunctionDescr}{Function\+Descr} $>$, std\+::size\+\_\+t $>$ \hyperlink{namespacepfq__lang_a3758147ecd6b21335a4cc1bcecc77e43}{serialize} (\hyperlink{structpfq__lang_1_1Property}{Property} const \&p, std\+::size\+\_\+t n)
 \item 
-{\footnotesize template$<$typename C1 , typename C2 $>$ }\\std\+::enable\+\_\+if\\*
-$<$ \hyperlink{structpfq__lang_1_1term_1_1is__netfunction}{term\+::is\+\_\+netfunction}$<$ C1 $>$\\*
-\+::value \&\&\hyperlink{structpfq__lang_1_1term_1_1is__netfunction}{term\+::is\+\_\+netfunction}\\*
-$<$ C2 $>$\+::value, \hyperlink{structpfq__lang_1_1term_1_1Comp}{term\+::\+Comp}$<$ C1, \\*
-C2 $>$ $>$\+::type \hyperlink{namespacepfq__lang_a4c0690ecb14af669a41969a5de14acad}{operator$>$$>$} (C1 c1, C2 c2)
+static std\+::pair$<$ std\+::vector\\*
+$<$ \hyperlink{structpfq__lang_1_1FunctionDescr}{Function\+Descr} $>$, std\+::size\+\_\+t $>$ \hyperlink{namespacepfq__lang_ab0eb303b4d7a4dc3abef97f65a525179}{serialize} (\hyperlink{structpfq__lang_1_1Property1}{Property1} const \&p, std\+::size\+\_\+t n)
 \item 
-{\footnotesize template$<$typename P1 , typename P2 $>$ }\\auto \hyperlink{namespacepfq__lang_aa6f7aa80466e4cfd61a341fcf7a2eda4}{operator\&} (P1 const \&p1, P2 const \&p2) -\/$>$ decltype(\hyperlink{namespacepfq__lang_a89ea436faf8b7f13512e07efbce83b41}{predicate2}(\hyperlink{namespacepfq__lang_a35f3de0a6684c64d0465aa3f263fa8a6}{combinator}(nullptr), p1, p2))
+static std\+::string \hyperlink{namespacepfq__lang_a094d43e94d1069d6d1bc9f7b25801bfd}{pretty} (\hyperlink{structpfq__lang_1_1Predicate}{Predicate} const \&descr)
 \item 
-{\footnotesize template$<$typename P1 , typename P2 $>$ }\\auto \hyperlink{namespacepfq__lang_adeec773d44aae2b2f2957e1498c4ce8f}{operator$\vert$} (P1 const \&p1, P2 const \&p2) -\/$>$ decltype(\hyperlink{namespacepfq__lang_a89ea436faf8b7f13512e07efbce83b41}{predicate2}(\hyperlink{namespacepfq__lang_a35f3de0a6684c64d0465aa3f263fa8a6}{combinator}(nullptr), p1, p2))
+static std\+::string \hyperlink{namespacepfq__lang_a180f309e82d8bcccabc9b1d803277dad}{pretty} (\hyperlink{structpfq__lang_1_1Predicate1}{Predicate1} const \&descr)
 \item 
-{\footnotesize template$<$typename P1 , typename P2 $>$ }\\auto \hyperlink{namespacepfq__lang_a29166c6bb957d6edd6892b7081f574df}{operator$^\wedge$} (P1 const \&p1, P2 const \&p2) -\/$>$ decltype(\hyperlink{namespacepfq__lang_a89ea436faf8b7f13512e07efbce83b41}{predicate2}(\hyperlink{namespacepfq__lang_a35f3de0a6684c64d0465aa3f263fa8a6}{combinator}(nullptr), p1, p2))
+{\footnotesize template$<$typename Prop $>$ }\\static std\+::string \hyperlink{namespacepfq__lang_a72ef87d178499fd42421820e39b9d60d}{pretty} (\hyperlink{structpfq__lang_1_1Predicate2}{Predicate2}$<$ Prop $>$ const \&descr)
 \item 
-{\footnotesize template$<$typename P $>$ }\\auto \hyperlink{namespacepfq__lang_a3a284611cc2c705d4304ba5e0f45d8b7}{not\+\_\+} (P const \&p) -\/$>$ decltype(\hyperlink{namespacepfq__lang_a89ea436faf8b7f13512e07efbce83b41}{predicate2}(\hyperlink{namespacepfq__lang_a35f3de0a6684c64d0465aa3f263fa8a6}{combinator}(nullptr), p, p))
+{\footnotesize template$<$typename Prop $>$ }\\static std\+::string \hyperlink{namespacepfq__lang_af343f01d481ce0e15ca6d363b8929e1d}{pretty} (\hyperlink{structpfq__lang_1_1Predicate3}{Predicate3}$<$ Prop $>$ const \&descr)
 \item 
-{\footnotesize template$<$typename P $>$ }\\auto \hyperlink{namespacepfq__lang_a222bd443a88e69ec2b3acd886bb80e37}{operator$<$} (P const \&prop, uint64\+\_\+t arg) -\/$>$ decltype(\hyperlink{namespacepfq__lang_a1a9064340f4197e3dd4109a849a224dc}{predicate4}(nullptr, prop, arg))
+static std\+::pair$<$ std\+::vector\\*
+$<$ \hyperlink{structpfq__lang_1_1FunctionDescr}{Function\+Descr} $>$, std\+::size\+\_\+t $>$ \hyperlink{namespacepfq__lang_a1ad5441974b6c637a9d4316fd29accc6}{serialize} (\hyperlink{structpfq__lang_1_1Predicate}{Predicate} const \&p, std\+::size\+\_\+t n)
 \item 
-{\footnotesize template$<$typename P $>$ }\\auto \hyperlink{namespacepfq__lang_a67b8e80010c51a199869c1c2368b87be}{operator$<$=} (P const \&prop, uint64\+\_\+t arg) -\/$>$ decltype(\hyperlink{namespacepfq__lang_a1a9064340f4197e3dd4109a849a224dc}{predicate4}(nullptr, prop, arg))
+static std\+::pair$<$ std\+::vector\\*
+$<$ \hyperlink{structpfq__lang_1_1FunctionDescr}{Function\+Descr} $>$, std\+::size\+\_\+t $>$ \hyperlink{namespacepfq__lang_a19eb92e30a32c5e94253dc55962a23b4}{serialize} (\hyperlink{structpfq__lang_1_1Predicate1}{Predicate1} const \&p, std\+::size\+\_\+t n)
 \item 
-{\footnotesize template$<$typename P $>$ }\\auto \hyperlink{namespacepfq__lang_ab210ad49979608b563eaa74a0d42b63a}{operator$>$} (P const \&prop, uint64\+\_\+t arg) -\/$>$ decltype(\hyperlink{namespacepfq__lang_a1a9064340f4197e3dd4109a849a224dc}{predicate4}(nullptr, prop, arg))
+{\footnotesize template$<$typename Prop $>$ }\\static std\+::pair$<$ std\+::vector\\*
+$<$ \hyperlink{structpfq__lang_1_1FunctionDescr}{Function\+Descr} $>$, std\+::size\+\_\+t $>$ \hyperlink{namespacepfq__lang_a357fe144a4702263ee38201b6b045bde}{serialize} (\hyperlink{structpfq__lang_1_1Predicate2}{Predicate2}$<$ Prop $>$ const \&p, std\+::size\+\_\+t n)
 \item 
-{\footnotesize template$<$typename P $>$ }\\auto \hyperlink{namespacepfq__lang_ac37c4aac9486ceca12814ccd9b4c3306}{operator$>$=} (P const \&prop, uint64\+\_\+t arg) -\/$>$ decltype(\hyperlink{namespacepfq__lang_a1a9064340f4197e3dd4109a849a224dc}{predicate4}(nullptr, prop, arg))
+{\footnotesize template$<$typename Prop $>$ }\\static std\+::pair$<$ std\+::vector\\*
+$<$ \hyperlink{structpfq__lang_1_1FunctionDescr}{Function\+Descr} $>$, std\+::size\+\_\+t $>$ \hyperlink{namespacepfq__lang_af41eca371317223c73acf1bf84be7e49}{serialize} (\hyperlink{structpfq__lang_1_1Predicate3}{Predicate3}$<$ Prop $>$ const \&p, std\+::size\+\_\+t n)
 \item 
-{\footnotesize template$<$typename P $>$ }\\auto \hyperlink{namespacepfq__lang_ac55d12423490f127fcb57b29535ca791}{operator==} (P const \&prop, uint64\+\_\+t arg) -\/$>$ decltype(\hyperlink{namespacepfq__lang_a1a9064340f4197e3dd4109a849a224dc}{predicate4}(nullptr, prop, arg))
+static std\+::string \hyperlink{namespacepfq__lang_aecd073be957ceaa720f22f147487c94c}{pretty} (\hyperlink{structpfq__lang_1_1MFunction}{M\+Function} const \&descr)
 \item 
-{\footnotesize template$<$typename P $>$ }\\auto \hyperlink{namespacepfq__lang_a982f7b6137536d7e75fe9b2c13d581d4}{operator!=} (P const \&prop, uint64\+\_\+t arg) -\/$>$ decltype(\hyperlink{namespacepfq__lang_a1a9064340f4197e3dd4109a849a224dc}{predicate4}(nullptr, prop, arg))
+static std\+::string \hyperlink{namespacepfq__lang_a17690e7e9e005902ed89b5c6423e26b1}{pretty} (\hyperlink{structpfq__lang_1_1MFunction1}{M\+Function1} const \&descr)
 \item 
-{\footnotesize template$<$typename P $>$ }\\auto \hyperlink{namespacepfq__lang_a9e93958b1fecbd660154947b474ffd05}{any\+\_\+bit} (P const \&prop, uint64\+\_\+t mask) -\/$>$ decltype(\hyperlink{namespacepfq__lang_a1a9064340f4197e3dd4109a849a224dc}{predicate4}(nullptr, prop, mask))
+static std\+::string \hyperlink{namespacepfq__lang_a7afb2e0cc717c669d935d7c924ded8ce}{pretty} (\hyperlink{structpfq__lang_1_1MFunction2}{M\+Function2} const \&descr)
 \item 
-{\footnotesize template$<$typename P $>$ }\\auto \hyperlink{namespacepfq__lang_a424b5bd6563ed52fd84807def8ba2f5f}{all\+\_\+bit} (P const \&prop, uint64\+\_\+t mask) -\/$>$ decltype(\hyperlink{namespacepfq__lang_a1a9064340f4197e3dd4109a849a224dc}{predicate4}(nullptr, prop, mask))
+{\footnotesize template$<$typename P $>$ }\\static std\+::string \hyperlink{namespacepfq__lang_a9ca1592a029867cd5b11e8ba8573c1f2}{pretty} (\hyperlink{structpfq__lang_1_1HFunction}{H\+Function}$<$ P $>$ const \&descr)
+\item 
+{\footnotesize template$<$typename P , typename C $>$ }\\static std\+::string \hyperlink{namespacepfq__lang_a131e2d93c76f8f51bfbe595632067f93}{pretty} (\hyperlink{structpfq__lang_1_1HFunction1}{H\+Function1}$<$ P, C $>$ const \&descr)
+\item 
+{\footnotesize template$<$typename P , typename C1 , typename C2 $>$ }\\static std\+::string \hyperlink{namespacepfq__lang_a02cc423cc439a8c57600f1c9cf5bf0e5}{pretty} (\hyperlink{structpfq__lang_1_1HFunction2}{H\+Function2}$<$ P, C1, C2 $>$ const \&descr)
+\item 
+{\footnotesize template$<$typename C1 , typename C2 $>$ }\\static std\+::string \hyperlink{namespacepfq__lang_a39c7eedfcdc2f4975e6ee404afc92c32}{pretty} (\hyperlink{structpfq__lang_1_1Composition}{Composition}$<$ C1, C2 $>$ const \&descr)
+\item 
+static std\+::pair$<$ std\+::vector\\*
+$<$ \hyperlink{structpfq__lang_1_1FunctionDescr}{Function\+Descr} $>$, std\+::size\+\_\+t $>$ \hyperlink{namespacepfq__lang_ab52a6b94982b1948ce901c529a73d63f}{serialize} (\hyperlink{structpfq__lang_1_1MFunction}{M\+Function} const \&f, std\+::size\+\_\+t n)
+\item 
+static std\+::pair$<$ std\+::vector\\*
+$<$ \hyperlink{structpfq__lang_1_1FunctionDescr}{Function\+Descr} $>$, std\+::size\+\_\+t $>$ \hyperlink{namespacepfq__lang_a838c38891f0176ba0f3ddef7c4191d66}{serialize} (\hyperlink{structpfq__lang_1_1MFunction1}{M\+Function1} const \&f, std\+::size\+\_\+t n)
+\item 
+static std\+::pair$<$ std\+::vector\\*
+$<$ \hyperlink{structpfq__lang_1_1FunctionDescr}{Function\+Descr} $>$, std\+::size\+\_\+t $>$ \hyperlink{namespacepfq__lang_a9e12b05250ef4f72c591b8be8207a390}{serialize} (\hyperlink{structpfq__lang_1_1MFunction2}{M\+Function2} const \&f, std\+::size\+\_\+t n)
+\item 
+{\footnotesize template$<$typename P $>$ }\\static std\+::pair$<$ std\+::vector\\*
+$<$ \hyperlink{structpfq__lang_1_1FunctionDescr}{Function\+Descr} $>$, std\+::size\+\_\+t $>$ \hyperlink{namespacepfq__lang_a0ac1bf1531a624ec955bcd38d75570d0}{serialize} (\hyperlink{structpfq__lang_1_1HFunction}{H\+Function}$<$ P $>$ const \&f, std\+::size\+\_\+t n)
+\item 
+{\footnotesize template$<$typename P , typename C $>$ }\\static std\+::pair$<$ std\+::vector\\*
+$<$ \hyperlink{structpfq__lang_1_1FunctionDescr}{Function\+Descr} $>$, std\+::size\+\_\+t $>$ \hyperlink{namespacepfq__lang_a0b749c5d9c23af96ced98bda19362b03}{serialize} (\hyperlink{structpfq__lang_1_1HFunction1}{H\+Function1}$<$ P, C $>$ const \&f, std\+::size\+\_\+t n)
+\item 
+{\footnotesize template$<$typename P , typename C1 , typename C2 $>$ }\\static std\+::pair$<$ std\+::vector\\*
+$<$ \hyperlink{structpfq__lang_1_1FunctionDescr}{Function\+Descr} $>$, std\+::size\+\_\+t $>$ \hyperlink{namespacepfq__lang_a977a117518db30fb6097f00defa2a78f}{serialize} (\hyperlink{structpfq__lang_1_1HFunction2}{H\+Function2}$<$ P, C1, C2 $>$ const \&f, std\+::size\+\_\+t n)
+\item 
+{\footnotesize template$<$typename C1 , typename C2 $>$ }\\static std\+::pair$<$ std\+::vector\\*
+$<$ \hyperlink{structpfq__lang_1_1FunctionDescr}{Function\+Descr} $>$, std\+::size\+\_\+t $>$ \hyperlink{namespacepfq__lang_a090aa64fa2f91edc7c5697050e5e7568}{serialize} (\hyperlink{structpfq__lang_1_1Composition}{Composition}$<$ C1, C2 $>$ const \&f, std\+::size\+\_\+t n)
+\item 
+static std\+::pair$<$ std\+::vector\\*
+$<$ \hyperlink{structpfq__lang_1_1FunctionDescr}{Function\+Descr} $>$, std\+::size\+\_\+t $>$ \hyperlink{namespacepfq__lang_a0caf0c00c06c7bdfcd64f14ee88d2428}{serialize} (std\+::vector$<$ \hyperlink{structpfq__lang_1_1MFunction}{M\+Function} $>$ const \&cont, std\+::size\+\_\+t n)
+\item 
+{\footnotesize template$<$typename P $>$ }\\\hyperlink{structpfq__lang_1_1Combinator1}{Combinator1}$<$ P $>$ \hyperlink{namespacepfq__lang_a5b3baa9ccc23744ad86c6636bf6549d7}{combinator1} (std\+::string symbol, P const \&pred)
+\item 
+{\footnotesize template$<$typename P1 , typename P2 $>$ }\\\hyperlink{structpfq__lang_1_1Combinator2}{Combinator2}$<$ P1, P2 $>$ \hyperlink{namespacepfq__lang_a821f138300dc39630cae0ca9f46df034}{combinator2} (std\+::string symbol, P1 const \&pred1, P2 const \&pred2)
+\item 
+\hyperlink{structpfq__lang_1_1Predicate}{Predicate} \hyperlink{namespacepfq__lang_a6da898081fae7b71158845508a8d8599}{predicate} (std\+::string symbol)
+\item 
+{\footnotesize template$<$typename Tp $>$ }\\\hyperlink{structpfq__lang_1_1Predicate1}{Predicate1} \hyperlink{namespacepfq__lang_ad4fceab90861beacc0490bd58a72bb05}{predicate1} (std\+::string symbol, Tp const \&arg)
+\item 
+{\footnotesize template$<$typename Prop $>$ }\\\hyperlink{structpfq__lang_1_1Predicate2}{Predicate2}$<$ Prop $>$ \hyperlink{namespacepfq__lang_a193ef4cf8fdc5efc924c8907f52d40a9}{predicate2} (std\+::string symbol, Prop const \&p)
+\item 
+{\footnotesize template$<$typename Prop , typename Tp $>$ }\\\hyperlink{structpfq__lang_1_1Predicate3}{Predicate3}$<$ Prop $>$ \hyperlink{namespacepfq__lang_a8f0e859bcc0ebc8beb7815a98e9a09ec}{predicate3} (std\+::string symbol, Prop const \&p, Tp const \&arg)
+\item 
+\hyperlink{structpfq__lang_1_1Property}{Property} \hyperlink{namespacepfq__lang_a1248b60c38a72d129e582dafe2f1127e}{property} (std\+::string symbol)
+\item 
+{\footnotesize template$<$typename T $>$ }\\\hyperlink{structpfq__lang_1_1Property1}{Property1} \hyperlink{namespacepfq__lang_a8c8b4147d846bfe486ccec193d5691c3}{property1} (std\+::string symbol, const T \&arg)
+\item 
+\hyperlink{structpfq__lang_1_1MFunction}{M\+Function} \hyperlink{namespacepfq__lang_a47d60e7fc6df739692308276b8f6d4e4}{mfunction} (std\+::string symbol)
+\item 
+{\footnotesize template$<$typename T $>$ }\\\hyperlink{structpfq__lang_1_1MFunction1}{M\+Function1} \hyperlink{namespacepfq__lang_a3cc9d61411c0398bb46aa2b33a21f7ed}{mfunction1} (std\+::string symbol, const T \&arg)
+\item 
+\hyperlink{structpfq__lang_1_1MFunction2}{M\+Function2} \hyperlink{namespacepfq__lang_aa817867af6f06d681a8c1a6d3b3bdd50}{mfunction2} (std\+::string symbol, std\+::string msg)
+\item 
+{\footnotesize template$<$typename P $>$ }\\\hyperlink{structpfq__lang_1_1HFunction}{H\+Function}$<$ P $>$ \hyperlink{namespacepfq__lang_a12e516fe9eff54840e5ae5314c0e6bd9}{hfunction} (std\+::string symbol, P const \&p)
+\item 
+{\footnotesize template$<$typename P , typename C $>$ }\\\hyperlink{structpfq__lang_1_1HFunction1}{H\+Function1}$<$ P, C $>$ \hyperlink{namespacepfq__lang_a9b2ad595130a6a3fb46b1c07e06f18de}{hfunction1} (std\+::string symbol, P const \&p, C const \&c)
+\item 
+{\footnotesize template$<$typename P , typename C1 , typename C2 $>$ }\\\hyperlink{structpfq__lang_1_1HFunction2}{H\+Function2}$<$ P, C1, C2 $>$ \hyperlink{namespacepfq__lang_a2bc5bc598d77da49ece66b49655c3bcb}{hfunction2} (std\+::string symbol, P const \&p, C1 const \&c1, C2 const \&c2)
+\item 
+{\footnotesize template$<$typename C1 , typename C2 , typename  = typename kleisly$<$typename C1\+::type, typename C2\+::type$>$\+::type$>$ }\\\hyperlink{structpfq__lang_1_1Composition}{Composition}$<$ C1, C2 $>$ \hyperlink{namespacepfq__lang_a48fd6e016f34f642eb1e69e6f46c2bf5}{operator$>$$>$} (C1 c1, C2 c2)
+\item 
+{\footnotesize template$<$typename P1 , typename P2 $>$ }\\auto \hyperlink{namespacepfq__lang_a29acefdbde9149f233854728e17e2b2b}{operator\&} (P1 const \&p1, P2 const \&p2) -\/$>$ decltype(\hyperlink{namespacepfq__lang_a821f138300dc39630cae0ca9f46df034}{combinator2}(nullptr, p1, p2))
+\item 
+{\footnotesize template$<$typename P1 , typename P2 $>$ }\\auto \hyperlink{namespacepfq__lang_a978d7cd525a526333465ca0f54c9e9a7}{operator$\vert$} (P1 const \&p1, P2 const \&p2) -\/$>$ decltype(\hyperlink{namespacepfq__lang_a821f138300dc39630cae0ca9f46df034}{combinator2}(nullptr, p1, p2))
+\item 
+{\footnotesize template$<$typename P1 , typename P2 $>$ }\\auto \hyperlink{namespacepfq__lang_a73056248dba96e7ef696ca89d6c0e95d}{operator$^\wedge$} (P1 const \&p1, P2 const \&p2) -\/$>$ decltype(\hyperlink{namespacepfq__lang_a821f138300dc39630cae0ca9f46df034}{combinator2}(nullptr, p1, p2))
+\item 
+{\footnotesize template$<$typename P $>$ }\\auto \hyperlink{namespacepfq__lang_acb50cd9437d17253fb1c6f9417165f3b}{not\+\_\+} (P const \&p) -\/$>$ decltype(\hyperlink{namespacepfq__lang_a5b3baa9ccc23744ad86c6636bf6549d7}{combinator1}(nullptr, p))
+\item 
+{\footnotesize template$<$typename P $>$ }\\auto \hyperlink{namespacepfq__lang_ab4400aca22bce972a6a7ed240fa1b287}{operator$<$} (P const \&prop, uint64\+\_\+t arg) -\/$>$ decltype(\hyperlink{namespacepfq__lang_a8f0e859bcc0ebc8beb7815a98e9a09ec}{predicate3}(nullptr, prop, arg))
+\item 
+{\footnotesize template$<$typename P $>$ }\\auto \hyperlink{namespacepfq__lang_af29e294a8bf75eaae693124ff7f60951}{operator$<$=} (P const \&prop, uint64\+\_\+t arg) -\/$>$ decltype(\hyperlink{namespacepfq__lang_a8f0e859bcc0ebc8beb7815a98e9a09ec}{predicate3}(nullptr, prop, arg))
+\item 
+{\footnotesize template$<$typename P $>$ }\\auto \hyperlink{namespacepfq__lang_a36670e4a773cbd703a8e1c82e6276ec7}{operator$>$} (P const \&prop, uint64\+\_\+t arg) -\/$>$ decltype(\hyperlink{namespacepfq__lang_a8f0e859bcc0ebc8beb7815a98e9a09ec}{predicate3}(nullptr, prop, arg))
+\item 
+{\footnotesize template$<$typename P $>$ }\\auto \hyperlink{namespacepfq__lang_a4d890c97a08d7c467c6edaa2c64b157f}{operator$>$=} (P const \&prop, uint64\+\_\+t arg) -\/$>$ decltype(\hyperlink{namespacepfq__lang_a8f0e859bcc0ebc8beb7815a98e9a09ec}{predicate3}(nullptr, prop, arg))
+\item 
+{\footnotesize template$<$typename P $>$ }\\auto \hyperlink{namespacepfq__lang_a68c88d476662d4ca3846780dac2819b8}{operator==} (P const \&prop, uint64\+\_\+t arg) -\/$>$ decltype(\hyperlink{namespacepfq__lang_a8f0e859bcc0ebc8beb7815a98e9a09ec}{predicate3}(nullptr, prop, arg))
+\item 
+{\footnotesize template$<$typename P $>$ }\\auto \hyperlink{namespacepfq__lang_a7f80d9995c06444dc17ac308cf3a5395}{operator!=} (P const \&prop, uint64\+\_\+t arg) -\/$>$ decltype(\hyperlink{namespacepfq__lang_a8f0e859bcc0ebc8beb7815a98e9a09ec}{predicate3}(nullptr, prop, arg))
+\item 
+{\footnotesize template$<$typename P $>$ }\\auto \hyperlink{namespacepfq__lang_a206cf824d1779258d728af5dad3c3be7}{any\+\_\+bit} (P const \&prop, uint64\+\_\+t mask) -\/$>$ decltype(\hyperlink{namespacepfq__lang_a8f0e859bcc0ebc8beb7815a98e9a09ec}{predicate3}(nullptr, prop, mask))
+\item 
+{\footnotesize template$<$typename P $>$ }\\auto \hyperlink{namespacepfq__lang_ab012202caaa4c22955784b17d31a74be}{all\+\_\+bit} (P const \&prop, uint64\+\_\+t mask) -\/$>$ decltype(\hyperlink{namespacepfq__lang_a8f0e859bcc0ebc8beb7815a98e9a09ec}{predicate3}(nullptr, prop, mask))
 \end{DoxyCompactItemize}
 
 
+\subsection{Typedef Documentation}
+\hypertarget{namespacepfq__lang_a66ac99ea626e7d1994f42ebfa003fbff}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!bool\+\_\+type@{bool\+\_\+type}}
+\index{bool\+\_\+type@{bool\+\_\+type}!pfq\+\_\+lang@{pfq\+\_\+lang}}
+\subsubsection[{bool\+\_\+type}]{\setlength{\rightskip}{0pt plus 5cm}template$<$bool Value$>$ using {\bf pfq\+\_\+lang\+::bool\+\_\+type} = typedef std\+::integral\+\_\+constant$<$bool, Value$>$}}\label{namespacepfq__lang_a66ac99ea626e7d1994f42ebfa003fbff}
+\hypertarget{namespacepfq__lang_a63dfceff54d39223bbfe7dbc9616c643}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!Net\+Function@{Net\+Function}}
+\index{Net\+Function@{Net\+Function}!pfq\+\_\+lang@{pfq\+\_\+lang}}
+\subsubsection[{Net\+Function}]{\setlength{\rightskip}{0pt plus 5cm}using {\bf pfq\+\_\+lang\+::\+Net\+Function} = typedef {\bf Function}$<$ {\bf Action}$<${\bf Sk\+Buff}$>$({\bf Sk\+Buff}) $>$}}\label{namespacepfq__lang_a63dfceff54d39223bbfe7dbc9616c643}
+\hypertarget{namespacepfq__lang_a7f62267862cd6049344078744cbcde3b}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!Net\+Predicate@{Net\+Predicate}}
+\index{Net\+Predicate@{Net\+Predicate}!pfq\+\_\+lang@{pfq\+\_\+lang}}
+\subsubsection[{Net\+Predicate}]{\setlength{\rightskip}{0pt plus 5cm}using {\bf pfq\+\_\+lang\+::\+Net\+Predicate} = typedef {\bf Function}$<$ bool({\bf Sk\+Buff}) $>$}}\label{namespacepfq__lang_a7f62267862cd6049344078744cbcde3b}
+\hypertarget{namespacepfq__lang_aedb71fd680cdb670390e8fac13a7cb5e}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!Net\+Property@{Net\+Property}}
+\index{Net\+Property@{Net\+Property}!pfq\+\_\+lang@{pfq\+\_\+lang}}
+\subsubsection[{Net\+Property}]{\setlength{\rightskip}{0pt plus 5cm}using {\bf pfq\+\_\+lang\+::\+Net\+Property} = typedef {\bf Function}$<$ uint64\+\_\+t({\bf Sk\+Buff}) $>$}}\label{namespacepfq__lang_aedb71fd680cdb670390e8fac13a7cb5e}
+
+
 \subsection{Function Documentation}
-\hypertarget{namespacepfq__lang_a424b5bd6563ed52fd84807def8ba2f5f}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!all\+\_\+bit@{all\+\_\+bit}}
+\hypertarget{namespacepfq__lang_ab012202caaa4c22955784b17d31a74be}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!all\+\_\+bit@{all\+\_\+bit}}
 \index{all\+\_\+bit@{all\+\_\+bit}!pfq\+\_\+lang@{pfq\+\_\+lang}}
 \subsubsection[{all\+\_\+bit}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename P $>$ auto pfq\+\_\+lang\+::all\+\_\+bit (
 \begin{DoxyParamCaption}
 \item[{P const \&}]{prop, }
 \item[{uint64\+\_\+t}]{mask}
 \end{DoxyParamCaption}
-) -\/$>$ decltype(predicate4(nullptr, prop, mask))
-    \hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq__lang_a424b5bd6563ed52fd84807def8ba2f5f}
-\hypertarget{namespacepfq__lang_a9e93958b1fecbd660154947b474ffd05}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!any\+\_\+bit@{any\+\_\+bit}}
+) -\/$>$ decltype(predicate3(nullptr, prop, mask))
+    \hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq__lang_ab012202caaa4c22955784b17d31a74be}
+\hypertarget{namespacepfq__lang_a206cf824d1779258d728af5dad3c3be7}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!any\+\_\+bit@{any\+\_\+bit}}
 \index{any\+\_\+bit@{any\+\_\+bit}!pfq\+\_\+lang@{pfq\+\_\+lang}}
 \subsubsection[{any\+\_\+bit}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename P $>$ auto pfq\+\_\+lang\+::any\+\_\+bit (
 \begin{DoxyParamCaption}
 \item[{P const \&}]{prop, }
 \item[{uint64\+\_\+t}]{mask}
 \end{DoxyParamCaption}
-) -\/$>$ decltype(predicate4(nullptr, prop, mask))
-    \hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq__lang_a9e93958b1fecbd660154947b474ffd05}
-\hypertarget{namespacepfq__lang_a35f3de0a6684c64d0465aa3f263fa8a6}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!combinator@{combinator}}
-\index{combinator@{combinator}!pfq\+\_\+lang@{pfq\+\_\+lang}}
-\subsubsection[{combinator}]{\setlength{\rightskip}{0pt plus 5cm}{\bf term\+::\+Combinator} pfq\+\_\+lang\+::combinator (
+) -\/$>$ decltype(predicate3(nullptr, prop, mask))
+    \hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq__lang_a206cf824d1779258d728af5dad3c3be7}
+\hypertarget{namespacepfq__lang_a5b3baa9ccc23744ad86c6636bf6549d7}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!combinator1@{combinator1}}
+\index{combinator1@{combinator1}!pfq\+\_\+lang@{pfq\+\_\+lang}}
+\subsubsection[{combinator1}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename P $>$ {\bf Combinator1}$<$P$>$ pfq\+\_\+lang\+::combinator1 (
 \begin{DoxyParamCaption}
-\item[{std\+::string}]{name}
+\item[{std\+::string}]{symbol, }
+\item[{P const \&}]{pred}
 \end{DoxyParamCaption}
-)\hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq__lang_a35f3de0a6684c64d0465aa3f263fa8a6}
-\hypertarget{namespacepfq__lang_a78972807ac46884d5cd0719795946936}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!hnetfunction@{hnetfunction}}
-\index{hnetfunction@{hnetfunction}!pfq\+\_\+lang@{pfq\+\_\+lang}}
-\subsubsection[{hnetfunction}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename P $>$ std\+::enable\+\_\+if$<$ {\bf term\+::is\+\_\+predicate}$<$P$>$\+::value, {\bf term\+::\+H\+Fun}$<$P$>$ $>$\+::type pfq\+\_\+lang\+::hnetfunction (
+)\hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq__lang_a5b3baa9ccc23744ad86c6636bf6549d7}
+\hypertarget{namespacepfq__lang_a821f138300dc39630cae0ca9f46df034}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!combinator2@{combinator2}}
+\index{combinator2@{combinator2}!pfq\+\_\+lang@{pfq\+\_\+lang}}
+\subsubsection[{combinator2}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename P1 , typename P2 $>$ {\bf Combinator2}$<$P1,P2$>$ pfq\+\_\+lang\+::combinator2 (
 \begin{DoxyParamCaption}
-\item[{std\+::string}]{name, }
+\item[{std\+::string}]{symbol, }
+\item[{P1 const \&}]{pred1, }
+\item[{P2 const \&}]{pred2}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq__lang_a821f138300dc39630cae0ca9f46df034}
+\hypertarget{namespacepfq__lang_a8b5af237a48336a48908f14d16a5e740}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!has\+\_\+insertion\+\_\+test@{has\+\_\+insertion\+\_\+test}}
+\index{has\+\_\+insertion\+\_\+test@{has\+\_\+insertion\+\_\+test}!pfq\+\_\+lang@{pfq\+\_\+lang}}
+\subsubsection[{has\+\_\+insertion\+\_\+test}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename C $>$ static char pfq\+\_\+lang\+::has\+\_\+insertion\+\_\+test (
+\begin{DoxyParamCaption}
+\item[{typename std\+::remove\+\_\+reference$<$ decltype((std\+::cout$<$$<$ std\+::declval$<$ C $>$())) $>$\+::type $\ast$}]{}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [static]}}}\label{namespacepfq__lang_a8b5af237a48336a48908f14d16a5e740}
+\hypertarget{namespacepfq__lang_a60380b938a5abdb0c9604837f2a523a7}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!has\+\_\+insertion\+\_\+test@{has\+\_\+insertion\+\_\+test}}
+\index{has\+\_\+insertion\+\_\+test@{has\+\_\+insertion\+\_\+test}!pfq\+\_\+lang@{pfq\+\_\+lang}}
+\subsubsection[{has\+\_\+insertion\+\_\+test}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename C $>$ static short pfq\+\_\+lang\+::has\+\_\+insertion\+\_\+test (
+\begin{DoxyParamCaption}
+\item[{}]{...}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [static]}}}\label{namespacepfq__lang_a60380b938a5abdb0c9604837f2a523a7}
+\hypertarget{namespacepfq__lang_a12e516fe9eff54840e5ae5314c0e6bd9}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!hfunction@{hfunction}}
+\index{hfunction@{hfunction}!pfq\+\_\+lang@{pfq\+\_\+lang}}
+\subsubsection[{hfunction}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename P $>$ {\bf H\+Function}$<$P$>$ pfq\+\_\+lang\+::hfunction (
+\begin{DoxyParamCaption}
+\item[{std\+::string}]{symbol, }
 \item[{P const \&}]{p}
 \end{DoxyParamCaption}
-)\hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq__lang_a78972807ac46884d5cd0719795946936}
-\hypertarget{namespacepfq__lang_a71df0d0d66c45c40ad348a35a1781c71}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!hnetfunction1@{hnetfunction1}}
-\index{hnetfunction1@{hnetfunction1}!pfq\+\_\+lang@{pfq\+\_\+lang}}
-\subsubsection[{hnetfunction1}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename P , typename C $>$ std\+::enable\+\_\+if$<$ {\bf term\+::is\+\_\+predicate}$<$P$>$\+::value \&\& {\bf term\+::is\+\_\+netfunction}$<$C$>$\+::value, {\bf term\+::\+H\+Fun1}$<$P,C$>$ $>$\+::type pfq\+\_\+lang\+::hnetfunction1 (
+)}}\label{namespacepfq__lang_a12e516fe9eff54840e5ae5314c0e6bd9}
+\hypertarget{namespacepfq__lang_a9b2ad595130a6a3fb46b1c07e06f18de}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!hfunction1@{hfunction1}}
+\index{hfunction1@{hfunction1}!pfq\+\_\+lang@{pfq\+\_\+lang}}
+\subsubsection[{hfunction1}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename P , typename C $>$ {\bf H\+Function1}$<$P,C$>$ pfq\+\_\+lang\+::hfunction1 (
 \begin{DoxyParamCaption}
-\item[{std\+::string}]{name, }
+\item[{std\+::string}]{symbol, }
 \item[{P const \&}]{p, }
 \item[{C const \&}]{c}
 \end{DoxyParamCaption}
-)\hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq__lang_a71df0d0d66c45c40ad348a35a1781c71}
-\hypertarget{namespacepfq__lang_a0899ef1c7c1872d3d2da51cf5704ab84}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!hnetfunction2@{hnetfunction2}}
-\index{hnetfunction2@{hnetfunction2}!pfq\+\_\+lang@{pfq\+\_\+lang}}
-\subsubsection[{hnetfunction2}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename P , typename C1 , typename C2 $>$ std\+::enable\+\_\+if$<$ {\bf term\+::is\+\_\+predicate}$<$P$>$\+::value \&\& {\bf term\+::is\+\_\+netfunction}$<$C1$>$\+::value \&\& {\bf term\+::is\+\_\+netfunction}$<$C2$>$\+::value, {\bf term\+::\+H\+Fun2}$<$P,C1, C2$>$ $>$\+::type pfq\+\_\+lang\+::hnetfunction2 (
+)}}\label{namespacepfq__lang_a9b2ad595130a6a3fb46b1c07e06f18de}
+\hypertarget{namespacepfq__lang_a2bc5bc598d77da49ece66b49655c3bcb}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!hfunction2@{hfunction2}}
+\index{hfunction2@{hfunction2}!pfq\+\_\+lang@{pfq\+\_\+lang}}
+\subsubsection[{hfunction2}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename P , typename C1 , typename C2 $>$ {\bf H\+Function2}$<$P,C1, C2$>$ pfq\+\_\+lang\+::hfunction2 (
 \begin{DoxyParamCaption}
-\item[{std\+::string}]{name, }
+\item[{std\+::string}]{symbol, }
 \item[{P const \&}]{p, }
 \item[{C1 const \&}]{c1, }
 \item[{C2 const \&}]{c2}
 \end{DoxyParamCaption}
-)\hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq__lang_a0899ef1c7c1872d3d2da51cf5704ab84}
-\hypertarget{namespacepfq__lang_a9f546a4602872df5ca74050ecb68a6b3}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!netfunction@{netfunction}}
-\index{netfunction@{netfunction}!pfq\+\_\+lang@{pfq\+\_\+lang}}
-\subsubsection[{netfunction}]{\setlength{\rightskip}{0pt plus 5cm}{\bf term\+::\+Fun} pfq\+\_\+lang\+::netfunction (
+)}}\label{namespacepfq__lang_a2bc5bc598d77da49ece66b49655c3bcb}
+\hypertarget{namespacepfq__lang_a47d60e7fc6df739692308276b8f6d4e4}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!mfunction@{mfunction}}
+\index{mfunction@{mfunction}!pfq\+\_\+lang@{pfq\+\_\+lang}}
+\subsubsection[{mfunction}]{\setlength{\rightskip}{0pt plus 5cm}{\bf M\+Function} pfq\+\_\+lang\+::mfunction (
 \begin{DoxyParamCaption}
-\item[{std\+::string}]{name}
+\item[{std\+::string}]{symbol}
 \end{DoxyParamCaption}
-)\hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq__lang_a9f546a4602872df5ca74050ecb68a6b3}
-\hypertarget{namespacepfq__lang_af215f25fa7ebd61fdc90cf0ef78a3164}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!netfunction1@{netfunction1}}
-\index{netfunction1@{netfunction1}!pfq\+\_\+lang@{pfq\+\_\+lang}}
-\subsubsection[{netfunction1}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename T $>$ std\+::enable\+\_\+if$<$ std\+::is\+\_\+pod$<$T$>$\+::value, {\bf term\+::\+Fun1}$>$\+::type pfq\+\_\+lang\+::netfunction1 (
+)\hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq__lang_a47d60e7fc6df739692308276b8f6d4e4}
+\hypertarget{namespacepfq__lang_a3cc9d61411c0398bb46aa2b33a21f7ed}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!mfunction1@{mfunction1}}
+\index{mfunction1@{mfunction1}!pfq\+\_\+lang@{pfq\+\_\+lang}}
+\subsubsection[{mfunction1}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename T $>$ {\bf M\+Function1} pfq\+\_\+lang\+::mfunction1 (
 \begin{DoxyParamCaption}
-\item[{std\+::string}]{name, }
+\item[{std\+::string}]{symbol, }
 \item[{const T \&}]{arg}
 \end{DoxyParamCaption}
-)\hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq__lang_af215f25fa7ebd61fdc90cf0ef78a3164}
-\hypertarget{namespacepfq__lang_a3a284611cc2c705d4304ba5e0f45d8b7}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!not\+\_\+@{not\+\_\+}}
+)\hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq__lang_a3cc9d61411c0398bb46aa2b33a21f7ed}
+\hypertarget{namespacepfq__lang_aa817867af6f06d681a8c1a6d3b3bdd50}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!mfunction2@{mfunction2}}
+\index{mfunction2@{mfunction2}!pfq\+\_\+lang@{pfq\+\_\+lang}}
+\subsubsection[{mfunction2}]{\setlength{\rightskip}{0pt plus 5cm}{\bf M\+Function2} pfq\+\_\+lang\+::mfunction2 (
+\begin{DoxyParamCaption}
+\item[{std\+::string}]{symbol, }
+\item[{std\+::string}]{msg}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq__lang_aa817867af6f06d681a8c1a6d3b3bdd50}
+\hypertarget{namespacepfq__lang_acb50cd9437d17253fb1c6f9417165f3b}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!not\+\_\+@{not\+\_\+}}
 \index{not\+\_\+@{not\+\_\+}!pfq\+\_\+lang@{pfq\+\_\+lang}}
 \subsubsection[{not\+\_\+}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename P $>$ auto pfq\+\_\+lang\+::not\+\_\+ (
 \begin{DoxyParamCaption}
 \item[{P const \&}]{p}
 \end{DoxyParamCaption}
-) -\/$>$ decltype(predicate2(combinator(nullptr), p, p))
-    \hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq__lang_a3a284611cc2c705d4304ba5e0f45d8b7}
-\hypertarget{namespacepfq__lang_a982f7b6137536d7e75fe9b2c13d581d4}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!operator"!=@{operator"!=}}
+) -\/$>$ decltype(combinator1(nullptr, p))
+    \hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq__lang_acb50cd9437d17253fb1c6f9417165f3b}
+\hypertarget{namespacepfq__lang_a7f80d9995c06444dc17ac308cf3a5395}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!operator"!=@{operator"!=}}
 \index{operator"!=@{operator"!=}!pfq\+\_\+lang@{pfq\+\_\+lang}}
 \subsubsection[{operator"!=}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename P $>$ auto pfq\+\_\+lang\+::operator!= (
 \begin{DoxyParamCaption}
 \item[{P const \&}]{prop, }
 \item[{uint64\+\_\+t}]{arg}
 \end{DoxyParamCaption}
-) -\/$>$ decltype(predicate4(nullptr, prop, arg))
-    \hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq__lang_a982f7b6137536d7e75fe9b2c13d581d4}
-\hypertarget{namespacepfq__lang_aa6f7aa80466e4cfd61a341fcf7a2eda4}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!operator\&@{operator\&}}
+) -\/$>$ decltype(predicate3(nullptr, prop, arg))
+    \hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq__lang_a7f80d9995c06444dc17ac308cf3a5395}
+\hypertarget{namespacepfq__lang_a29acefdbde9149f233854728e17e2b2b}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!operator\&@{operator\&}}
 \index{operator\&@{operator\&}!pfq\+\_\+lang@{pfq\+\_\+lang}}
 \subsubsection[{operator\&}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename P1 , typename P2 $>$ auto pfq\+\_\+lang\+::operator\& (
 \begin{DoxyParamCaption}
 \item[{P1 const \&}]{p1, }
 \item[{P2 const \&}]{p2}
 \end{DoxyParamCaption}
-) -\/$>$ decltype(predicate2(combinator(nullptr), p1, p2))
-    \hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq__lang_aa6f7aa80466e4cfd61a341fcf7a2eda4}
-\hypertarget{namespacepfq__lang_a222bd443a88e69ec2b3acd886bb80e37}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!operator$<$@{operator$<$}}
+) -\/$>$ decltype(combinator2(nullptr, p1, p2))
+    \hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq__lang_a29acefdbde9149f233854728e17e2b2b}
+\hypertarget{namespacepfq__lang_a8eb2d24aa20548df55924d37824e46b2}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!operator+@{operator+}}
+\index{operator+@{operator+}!pfq\+\_\+lang@{pfq\+\_\+lang}}
+\subsubsection[{operator+}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename Tp $>$ std\+::vector$<$Tp$>$ pfq\+\_\+lang\+::operator+ (
+\begin{DoxyParamCaption}
+\item[{std\+::vector$<$ Tp $>$}]{v1, }
+\item[{std\+::vector$<$ Tp $>$ \&\&}]{v2}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq__lang_a8eb2d24aa20548df55924d37824e46b2}
+\hypertarget{namespacepfq__lang_a607e3c40cd65152da1a8d90ea40f8c33}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!operator+@{operator+}}
+\index{operator+@{operator+}!pfq\+\_\+lang@{pfq\+\_\+lang}}
+\subsubsection[{operator+}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename Tp $>$ std\+::vector$<$Tp$>$ pfq\+\_\+lang\+::operator+ (
+\begin{DoxyParamCaption}
+\item[{std\+::vector$<$ Tp $>$}]{v1, }
+\item[{std\+::vector$<$ Tp $>$ const \&}]{v2}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq__lang_a607e3c40cd65152da1a8d90ea40f8c33}
+\hypertarget{namespacepfq__lang_ab4400aca22bce972a6a7ed240fa1b287}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!operator$<$@{operator$<$}}
 \index{operator$<$@{operator$<$}!pfq\+\_\+lang@{pfq\+\_\+lang}}
 \subsubsection[{operator$<$}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename P $>$ auto pfq\+\_\+lang\+::operator$<$ (
 \begin{DoxyParamCaption}
 \item[{P const \&}]{prop, }
 \item[{uint64\+\_\+t}]{arg}
 \end{DoxyParamCaption}
-) -\/$>$ decltype(predicate4(nullptr, prop, arg))
-    \hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq__lang_a222bd443a88e69ec2b3acd886bb80e37}
-\hypertarget{namespacepfq__lang_a67b8e80010c51a199869c1c2368b87be}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!operator$<$=@{operator$<$=}}
+) -\/$>$ decltype(predicate3(nullptr, prop, arg))
+    \hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq__lang_ab4400aca22bce972a6a7ed240fa1b287}
+\hypertarget{namespacepfq__lang_af29e294a8bf75eaae693124ff7f60951}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!operator$<$=@{operator$<$=}}
 \index{operator$<$=@{operator$<$=}!pfq\+\_\+lang@{pfq\+\_\+lang}}
 \subsubsection[{operator$<$=}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename P $>$ auto pfq\+\_\+lang\+::operator$<$= (
 \begin{DoxyParamCaption}
 \item[{P const \&}]{prop, }
 \item[{uint64\+\_\+t}]{arg}
 \end{DoxyParamCaption}
-) -\/$>$ decltype(predicate4(nullptr, prop, arg))
-    \hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq__lang_a67b8e80010c51a199869c1c2368b87be}
-\hypertarget{namespacepfq__lang_ac55d12423490f127fcb57b29535ca791}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!operator==@{operator==}}
+) -\/$>$ decltype(predicate3(nullptr, prop, arg))
+    \hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq__lang_af29e294a8bf75eaae693124ff7f60951}
+\hypertarget{namespacepfq__lang_a68c88d476662d4ca3846780dac2819b8}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!operator==@{operator==}}
 \index{operator==@{operator==}!pfq\+\_\+lang@{pfq\+\_\+lang}}
 \subsubsection[{operator==}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename P $>$ auto pfq\+\_\+lang\+::operator== (
 \begin{DoxyParamCaption}
 \item[{P const \&}]{prop, }
 \item[{uint64\+\_\+t}]{arg}
 \end{DoxyParamCaption}
-) -\/$>$ decltype(predicate4(nullptr, prop, arg))
-    \hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq__lang_ac55d12423490f127fcb57b29535ca791}
-\hypertarget{namespacepfq__lang_ab210ad49979608b563eaa74a0d42b63a}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!operator$>$@{operator$>$}}
+) -\/$>$ decltype(predicate3(nullptr, prop, arg))
+    \hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq__lang_a68c88d476662d4ca3846780dac2819b8}
+\hypertarget{namespacepfq__lang_a36670e4a773cbd703a8e1c82e6276ec7}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!operator$>$@{operator$>$}}
 \index{operator$>$@{operator$>$}!pfq\+\_\+lang@{pfq\+\_\+lang}}
 \subsubsection[{operator$>$}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename P $>$ auto pfq\+\_\+lang\+::operator$>$ (
 \begin{DoxyParamCaption}
 \item[{P const \&}]{prop, }
 \item[{uint64\+\_\+t}]{arg}
 \end{DoxyParamCaption}
-) -\/$>$ decltype(predicate4(nullptr, prop, arg))
-    \hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq__lang_ab210ad49979608b563eaa74a0d42b63a}
-\hypertarget{namespacepfq__lang_ac37c4aac9486ceca12814ccd9b4c3306}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!operator$>$=@{operator$>$=}}
+) -\/$>$ decltype(predicate3(nullptr, prop, arg))
+    \hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq__lang_a36670e4a773cbd703a8e1c82e6276ec7}
+\hypertarget{namespacepfq__lang_a4d890c97a08d7c467c6edaa2c64b157f}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!operator$>$=@{operator$>$=}}
 \index{operator$>$=@{operator$>$=}!pfq\+\_\+lang@{pfq\+\_\+lang}}
 \subsubsection[{operator$>$=}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename P $>$ auto pfq\+\_\+lang\+::operator$>$= (
 \begin{DoxyParamCaption}
 \item[{P const \&}]{prop, }
 \item[{uint64\+\_\+t}]{arg}
 \end{DoxyParamCaption}
-) -\/$>$ decltype(predicate4(nullptr, prop, arg))
-    \hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq__lang_ac37c4aac9486ceca12814ccd9b4c3306}
-\hypertarget{namespacepfq__lang_a4c0690ecb14af669a41969a5de14acad}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!operator$>$$>$@{operator$>$$>$}}
+) -\/$>$ decltype(predicate3(nullptr, prop, arg))
+    \hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq__lang_a4d890c97a08d7c467c6edaa2c64b157f}
+\hypertarget{namespacepfq__lang_a48fd6e016f34f642eb1e69e6f46c2bf5}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!operator$>$$>$@{operator$>$$>$}}
 \index{operator$>$$>$@{operator$>$$>$}!pfq\+\_\+lang@{pfq\+\_\+lang}}
-\subsubsection[{operator$>$$>$}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename C1 , typename C2 $>$ std\+::enable\+\_\+if$<$ {\bf term\+::is\+\_\+netfunction}$<$C1$>$\+::value \&\& {\bf term\+::is\+\_\+netfunction}$<$C2$>$\+::value, {\bf term\+::\+Comp}$<$C1, C2$>$ $>$\+::type pfq\+\_\+lang\+::operator$>$$>$ (
+\subsubsection[{operator$>$$>$}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename C1 , typename C2 , typename  = typename kleisly$<$typename C1\+::type, typename C2\+::type$>$\+::type$>$ {\bf Composition}$<$C1, C2$>$ pfq\+\_\+lang\+::operator$>$$>$ (
 \begin{DoxyParamCaption}
 \item[{C1}]{c1, }
 \item[{C2}]{c2}
 \end{DoxyParamCaption}
-)\hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq__lang_a4c0690ecb14af669a41969a5de14acad}
-\hypertarget{namespacepfq__lang_a29166c6bb957d6edd6892b7081f574df}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!operator$^\wedge$@{operator$^\wedge$}}
+)\hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq__lang_a48fd6e016f34f642eb1e69e6f46c2bf5}
+\hypertarget{namespacepfq__lang_a73056248dba96e7ef696ca89d6c0e95d}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!operator$^\wedge$@{operator$^\wedge$}}
 \index{operator$^\wedge$@{operator$^\wedge$}!pfq\+\_\+lang@{pfq\+\_\+lang}}
 \subsubsection[{operator$^\wedge$}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename P1 , typename P2 $>$ auto pfq\+\_\+lang\+::operator$^\wedge$ (
 \begin{DoxyParamCaption}
 \item[{P1 const \&}]{p1, }
 \item[{P2 const \&}]{p2}
 \end{DoxyParamCaption}
-) -\/$>$ decltype(predicate2(combinator(nullptr), p1, p2))
-    \hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq__lang_a29166c6bb957d6edd6892b7081f574df}
-\hypertarget{namespacepfq__lang_adeec773d44aae2b2f2957e1498c4ce8f}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!operator\texttt{"|}@{operator\texttt{"|}}}
+) -\/$>$ decltype(combinator2(nullptr, p1, p2))
+    \hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq__lang_a73056248dba96e7ef696ca89d6c0e95d}
+\hypertarget{namespacepfq__lang_a978d7cd525a526333465ca0f54c9e9a7}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!operator\texttt{"|}@{operator\texttt{"|}}}
 \index{operator\texttt{"|}@{operator\texttt{"|}}!pfq\+\_\+lang@{pfq\+\_\+lang}}
 \subsubsection[{operator\texttt{"|}}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename P1 , typename P2 $>$ auto pfq\+\_\+lang\+::operator$\vert$ (
 \begin{DoxyParamCaption}
 \item[{P1 const \&}]{p1, }
 \item[{P2 const \&}]{p2}
 \end{DoxyParamCaption}
-) -\/$>$ decltype(predicate2(combinator(nullptr), p1, p2))
-    \hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq__lang_adeec773d44aae2b2f2957e1498c4ce8f}
-\hypertarget{namespacepfq__lang_abd58b2244ff8b0775a3b5865bc128872}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!predicate@{predicate}}
+) -\/$>$ decltype(combinator2(nullptr, p1, p2))
+    \hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq__lang_a978d7cd525a526333465ca0f54c9e9a7}
+\hypertarget{namespacepfq__lang_a6da898081fae7b71158845508a8d8599}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!predicate@{predicate}}
 \index{predicate@{predicate}!pfq\+\_\+lang@{pfq\+\_\+lang}}
-\subsubsection[{predicate}]{\setlength{\rightskip}{0pt plus 5cm}{\bf term\+::\+Pred1} pfq\+\_\+lang\+::predicate (
+\subsubsection[{predicate}]{\setlength{\rightskip}{0pt plus 5cm}{\bf Predicate} pfq\+\_\+lang\+::predicate (
 \begin{DoxyParamCaption}
-\item[{std\+::string}]{name}
+\item[{std\+::string}]{symbol}
 \end{DoxyParamCaption}
-)\hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq__lang_abd58b2244ff8b0775a3b5865bc128872}
-\hypertarget{namespacepfq__lang_ae23a03cee94b5ddfde4a8d2e5c521f0e}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!predicate1@{predicate1}}
+)\hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq__lang_a6da898081fae7b71158845508a8d8599}
+\hypertarget{namespacepfq__lang_ad4fceab90861beacc0490bd58a72bb05}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!predicate1@{predicate1}}
 \index{predicate1@{predicate1}!pfq\+\_\+lang@{pfq\+\_\+lang}}
-\subsubsection[{predicate1}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename T $>$ std\+::enable\+\_\+if$<$ std\+::is\+\_\+pod$<$T$>$\+::value, {\bf term\+::\+Pred1}$>$\+::type pfq\+\_\+lang\+::predicate1 (
+\subsubsection[{predicate1}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename Tp $>$ {\bf Predicate1} pfq\+\_\+lang\+::predicate1 (
 \begin{DoxyParamCaption}
-\item[{std\+::string}]{name, }
-\item[{const T \&}]{arg}
+\item[{std\+::string}]{symbol, }
+\item[{Tp const \&}]{arg}
 \end{DoxyParamCaption}
-)\hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq__lang_ae23a03cee94b5ddfde4a8d2e5c521f0e}
-\hypertarget{namespacepfq__lang_a89ea436faf8b7f13512e07efbce83b41}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!predicate2@{predicate2}}
+)\hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq__lang_ad4fceab90861beacc0490bd58a72bb05}
+\hypertarget{namespacepfq__lang_a193ef4cf8fdc5efc924c8907f52d40a9}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!predicate2@{predicate2}}
 \index{predicate2@{predicate2}!pfq\+\_\+lang@{pfq\+\_\+lang}}
-\subsubsection[{predicate2}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename P1 , typename P2 $>$ std\+::enable\+\_\+if$<$ {\bf term\+::is\+\_\+predicate}$<$P1$>$\+::value \&\& {\bf term\+::is\+\_\+predicate}$<$P2$>$\+::value, {\bf term\+::\+Pred2}$<$P1,P2$>$ $>$\+::type pfq\+\_\+lang\+::predicate2 (
+\subsubsection[{predicate2}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename Prop $>$ {\bf Predicate2}$<$Prop$>$ pfq\+\_\+lang\+::predicate2 (
 \begin{DoxyParamCaption}
-\item[{term\+::\+Combinator}]{c, }
-\item[{P1 const \&}]{left, }
-\item[{P2 const \&}]{right}
+\item[{std\+::string}]{symbol, }
+\item[{Prop const \&}]{p}
 \end{DoxyParamCaption}
-)\hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq__lang_a89ea436faf8b7f13512e07efbce83b41}
-\hypertarget{namespacepfq__lang_a863e349ba4942bf8a01b61d91859164a}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!predicate3@{predicate3}}
+)\hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq__lang_a193ef4cf8fdc5efc924c8907f52d40a9}
+\hypertarget{namespacepfq__lang_a8f0e859bcc0ebc8beb7815a98e9a09ec}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!predicate3@{predicate3}}
 \index{predicate3@{predicate3}!pfq\+\_\+lang@{pfq\+\_\+lang}}
-\subsubsection[{predicate3}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename P $>$ std\+::enable\+\_\+if$<$ {\bf term\+::is\+\_\+property}$<$P$>$\+::value, {\bf term\+::\+Pred3}$<$P$>$ $>$\+::type pfq\+\_\+lang\+::predicate3 (
+\subsubsection[{predicate3}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename Prop , typename Tp $>$ {\bf Predicate3}$<$Prop$>$ pfq\+\_\+lang\+::predicate3 (
 \begin{DoxyParamCaption}
-\item[{std\+::string}]{name, }
-\item[{P}]{p}
+\item[{std\+::string}]{symbol, }
+\item[{Prop const \&}]{p, }
+\item[{Tp const \&}]{arg}
 \end{DoxyParamCaption}
-)\hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq__lang_a863e349ba4942bf8a01b61d91859164a}
-\hypertarget{namespacepfq__lang_a1a9064340f4197e3dd4109a849a224dc}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!predicate4@{predicate4}}
-\index{predicate4@{predicate4}!pfq\+\_\+lang@{pfq\+\_\+lang}}
-\subsubsection[{predicate4}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename T , typename P $>$ std\+::enable\+\_\+if$<$ {\bf term\+::is\+\_\+property}$<$P$>$\+::value \&\& std\+::is\+\_\+pod$<$T$>$\+::value, {\bf term\+::\+Pred4}$<$P$>$ $>$\+::type pfq\+\_\+lang\+::predicate4 (
+)\hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq__lang_a8f0e859bcc0ebc8beb7815a98e9a09ec}
+\hypertarget{namespacepfq__lang_ad57eb73340d285cb26cdb9cb2cc046d4}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!pretty@{pretty}}
+\index{pretty@{pretty}!pfq\+\_\+lang@{pfq\+\_\+lang}}
+\subsubsection[{pretty}]{\setlength{\rightskip}{0pt plus 5cm}static std\+::string pfq\+\_\+lang\+::pretty (
 \begin{DoxyParamCaption}
-\item[{std\+::string}]{name, }
-\item[{P}]{p, }
-\item[{const T \&}]{arg}
+\item[{const Argument \&}]{arg}
 \end{DoxyParamCaption}
-)\hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq__lang_a1a9064340f4197e3dd4109a849a224dc}
-\hypertarget{namespacepfq__lang_ad70b40071ed0fd32c05ab8e82bbfec61}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!property@{property}}
+)\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}}\label{namespacepfq__lang_ad57eb73340d285cb26cdb9cb2cc046d4}
+\hypertarget{namespacepfq__lang_a6839c256e31592f52549ac129c9e791a}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!pretty@{pretty}}
+\index{pretty@{pretty}!pfq\+\_\+lang@{pfq\+\_\+lang}}
+\subsubsection[{pretty}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename P $>$ static std\+::string pfq\+\_\+lang\+::pretty (
+\begin{DoxyParamCaption}
+\item[{Combinator1$<$ P $>$ const \&}]{comb}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}}\label{namespacepfq__lang_a6839c256e31592f52549ac129c9e791a}
+\hypertarget{namespacepfq__lang_ab21e91fcade9ea5853473400ececd5ce}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!pretty@{pretty}}
+\index{pretty@{pretty}!pfq\+\_\+lang@{pfq\+\_\+lang}}
+\subsubsection[{pretty}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename P1 , typename P2 $>$ static std\+::string pfq\+\_\+lang\+::pretty (
+\begin{DoxyParamCaption}
+\item[{Combinator2$<$ P1, P2 $>$ const \&}]{comb}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}}\label{namespacepfq__lang_ab21e91fcade9ea5853473400ececd5ce}
+\hypertarget{namespacepfq__lang_a69174e14fc798440d3483a4a50038eee}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!pretty@{pretty}}
+\index{pretty@{pretty}!pfq\+\_\+lang@{pfq\+\_\+lang}}
+\subsubsection[{pretty}]{\setlength{\rightskip}{0pt plus 5cm}static std\+::string pfq\+\_\+lang\+::pretty (
+\begin{DoxyParamCaption}
+\item[{Property const \&}]{descr}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}}\label{namespacepfq__lang_a69174e14fc798440d3483a4a50038eee}
+\hypertarget{namespacepfq__lang_a070ec878e374f02e1f1e63d37b0d8098}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!pretty@{pretty}}
+\index{pretty@{pretty}!pfq\+\_\+lang@{pfq\+\_\+lang}}
+\subsubsection[{pretty}]{\setlength{\rightskip}{0pt plus 5cm}static std\+::string pfq\+\_\+lang\+::pretty (
+\begin{DoxyParamCaption}
+\item[{Property1 const \&}]{descr}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}}\label{namespacepfq__lang_a070ec878e374f02e1f1e63d37b0d8098}
+\hypertarget{namespacepfq__lang_a094d43e94d1069d6d1bc9f7b25801bfd}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!pretty@{pretty}}
+\index{pretty@{pretty}!pfq\+\_\+lang@{pfq\+\_\+lang}}
+\subsubsection[{pretty}]{\setlength{\rightskip}{0pt plus 5cm}static std\+::string pfq\+\_\+lang\+::pretty (
+\begin{DoxyParamCaption}
+\item[{Predicate const \&}]{descr}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}}\label{namespacepfq__lang_a094d43e94d1069d6d1bc9f7b25801bfd}
+\hypertarget{namespacepfq__lang_a180f309e82d8bcccabc9b1d803277dad}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!pretty@{pretty}}
+\index{pretty@{pretty}!pfq\+\_\+lang@{pfq\+\_\+lang}}
+\subsubsection[{pretty}]{\setlength{\rightskip}{0pt plus 5cm}static std\+::string pfq\+\_\+lang\+::pretty (
+\begin{DoxyParamCaption}
+\item[{Predicate1 const \&}]{descr}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}}\label{namespacepfq__lang_a180f309e82d8bcccabc9b1d803277dad}
+\hypertarget{namespacepfq__lang_a72ef87d178499fd42421820e39b9d60d}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!pretty@{pretty}}
+\index{pretty@{pretty}!pfq\+\_\+lang@{pfq\+\_\+lang}}
+\subsubsection[{pretty}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename Prop $>$ static std\+::string pfq\+\_\+lang\+::pretty (
+\begin{DoxyParamCaption}
+\item[{Predicate2$<$ Prop $>$ const \&}]{descr}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}}\label{namespacepfq__lang_a72ef87d178499fd42421820e39b9d60d}
+\hypertarget{namespacepfq__lang_af343f01d481ce0e15ca6d363b8929e1d}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!pretty@{pretty}}
+\index{pretty@{pretty}!pfq\+\_\+lang@{pfq\+\_\+lang}}
+\subsubsection[{pretty}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename Prop $>$ static std\+::string pfq\+\_\+lang\+::pretty (
+\begin{DoxyParamCaption}
+\item[{Predicate3$<$ Prop $>$ const \&}]{descr}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}}\label{namespacepfq__lang_af343f01d481ce0e15ca6d363b8929e1d}
+\hypertarget{namespacepfq__lang_aecd073be957ceaa720f22f147487c94c}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!pretty@{pretty}}
+\index{pretty@{pretty}!pfq\+\_\+lang@{pfq\+\_\+lang}}
+\subsubsection[{pretty}]{\setlength{\rightskip}{0pt plus 5cm}static std\+::string pfq\+\_\+lang\+::pretty (
+\begin{DoxyParamCaption}
+\item[{M\+Function const \&}]{descr}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}}\label{namespacepfq__lang_aecd073be957ceaa720f22f147487c94c}
+\hypertarget{namespacepfq__lang_a17690e7e9e005902ed89b5c6423e26b1}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!pretty@{pretty}}
+\index{pretty@{pretty}!pfq\+\_\+lang@{pfq\+\_\+lang}}
+\subsubsection[{pretty}]{\setlength{\rightskip}{0pt plus 5cm}static std\+::string pfq\+\_\+lang\+::pretty (
+\begin{DoxyParamCaption}
+\item[{M\+Function1 const \&}]{descr}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}}\label{namespacepfq__lang_a17690e7e9e005902ed89b5c6423e26b1}
+\hypertarget{namespacepfq__lang_a7afb2e0cc717c669d935d7c924ded8ce}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!pretty@{pretty}}
+\index{pretty@{pretty}!pfq\+\_\+lang@{pfq\+\_\+lang}}
+\subsubsection[{pretty}]{\setlength{\rightskip}{0pt plus 5cm}static std\+::string pfq\+\_\+lang\+::pretty (
+\begin{DoxyParamCaption}
+\item[{M\+Function2 const \&}]{descr}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}}\label{namespacepfq__lang_a7afb2e0cc717c669d935d7c924ded8ce}
+\hypertarget{namespacepfq__lang_a9ca1592a029867cd5b11e8ba8573c1f2}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!pretty@{pretty}}
+\index{pretty@{pretty}!pfq\+\_\+lang@{pfq\+\_\+lang}}
+\subsubsection[{pretty}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename P $>$ static std\+::string pfq\+\_\+lang\+::pretty (
+\begin{DoxyParamCaption}
+\item[{H\+Function$<$ P $>$ const \&}]{descr}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}}\label{namespacepfq__lang_a9ca1592a029867cd5b11e8ba8573c1f2}
+\hypertarget{namespacepfq__lang_a131e2d93c76f8f51bfbe595632067f93}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!pretty@{pretty}}
+\index{pretty@{pretty}!pfq\+\_\+lang@{pfq\+\_\+lang}}
+\subsubsection[{pretty}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename P , typename C $>$ static std\+::string pfq\+\_\+lang\+::pretty (
+\begin{DoxyParamCaption}
+\item[{H\+Function1$<$ P, C $>$ const \&}]{descr}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}}\label{namespacepfq__lang_a131e2d93c76f8f51bfbe595632067f93}
+\hypertarget{namespacepfq__lang_a02cc423cc439a8c57600f1c9cf5bf0e5}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!pretty@{pretty}}
+\index{pretty@{pretty}!pfq\+\_\+lang@{pfq\+\_\+lang}}
+\subsubsection[{pretty}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename P , typename C1 , typename C2 $>$ static std\+::string pfq\+\_\+lang\+::pretty (
+\begin{DoxyParamCaption}
+\item[{H\+Function2$<$ P, C1, C2 $>$ const \&}]{descr}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}}\label{namespacepfq__lang_a02cc423cc439a8c57600f1c9cf5bf0e5}
+\hypertarget{namespacepfq__lang_a39c7eedfcdc2f4975e6ee404afc92c32}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!pretty@{pretty}}
+\index{pretty@{pretty}!pfq\+\_\+lang@{pfq\+\_\+lang}}
+\subsubsection[{pretty}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename C1 , typename C2 $>$ static std\+::string pfq\+\_\+lang\+::pretty (
+\begin{DoxyParamCaption}
+\item[{Composition$<$ C1, C2 $>$ const \&}]{descr}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}}\label{namespacepfq__lang_a39c7eedfcdc2f4975e6ee404afc92c32}
+\hypertarget{namespacepfq__lang_a1248b60c38a72d129e582dafe2f1127e}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!property@{property}}
 \index{property@{property}!pfq\+\_\+lang@{pfq\+\_\+lang}}
-\subsubsection[{property}]{\setlength{\rightskip}{0pt plus 5cm}{\bf term\+::\+Prop} pfq\+\_\+lang\+::property (
+\subsubsection[{property}]{\setlength{\rightskip}{0pt plus 5cm}{\bf Property} pfq\+\_\+lang\+::property (
 \begin{DoxyParamCaption}
-\item[{std\+::string}]{name}
+\item[{std\+::string}]{symbol}
 \end{DoxyParamCaption}
-)\hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq__lang_ad70b40071ed0fd32c05ab8e82bbfec61}
-\hypertarget{namespacepfq__lang_a3a4768b9f4e03b86943d332254cca27e}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!property1@{property1}}
+)\hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq__lang_a1248b60c38a72d129e582dafe2f1127e}
+\hypertarget{namespacepfq__lang_a8c8b4147d846bfe486ccec193d5691c3}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!property1@{property1}}
 \index{property1@{property1}!pfq\+\_\+lang@{pfq\+\_\+lang}}
-\subsubsection[{property1}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename T $>$ std\+::enable\+\_\+if$<$ std\+::is\+\_\+pod$<$T$>$\+::value, {\bf term\+::\+Prop1}$>$\+::type pfq\+\_\+lang\+::property1 (
+\subsubsection[{property1}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename T $>$ {\bf Property1} pfq\+\_\+lang\+::property1 (
 \begin{DoxyParamCaption}
-\item[{std\+::string}]{name, }
+\item[{std\+::string}]{symbol, }
 \item[{const T \&}]{arg}
 \end{DoxyParamCaption}
-)\hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq__lang_a3a4768b9f4e03b86943d332254cca27e}
-\hypertarget{namespacepfq__lang_a8fd413aae51832e7fc7f727dae11129c}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!show@{show}}
-\index{show@{show}!pfq\+\_\+lang@{pfq\+\_\+lang}}
-\subsubsection[{show}]{\setlength{\rightskip}{0pt plus 5cm}static std\+::string pfq\+\_\+lang\+::show (
+)}}\label{namespacepfq__lang_a8c8b4147d846bfe486ccec193d5691c3}
+\hypertarget{namespacepfq__lang_a5d08325293b0862f15c0751545c29e9d}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!serialize@{serialize}}
+\index{serialize@{serialize}!pfq\+\_\+lang@{pfq\+\_\+lang}}
+\subsubsection[{serialize}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename Pred $>$ static std\+::pair$<$std\+::vector$<${\bf Function\+Descr}$>$, std\+::size\+\_\+t$>$ pfq\+\_\+lang\+::serialize (
 \begin{DoxyParamCaption}
-\item[{enum pfq\+\_\+functional\+\_\+type}]{ft}
+\item[{Combinator1$<$ Pred $>$ const \&}]{f, }
+\item[{std\+::size\+\_\+t}]{n}
 \end{DoxyParamCaption}
-)\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}}\label{namespacepfq__lang_a8fd413aae51832e7fc7f727dae11129c}
+)\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}}\label{namespacepfq__lang_a5d08325293b0862f15c0751545c29e9d}
+\hypertarget{namespacepfq__lang_a8febfef074de7a10301593043303bd7d}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!serialize@{serialize}}
+\index{serialize@{serialize}!pfq\+\_\+lang@{pfq\+\_\+lang}}
+\subsubsection[{serialize}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename Pred1 , typename Pred2 $>$ static std\+::pair$<$std\+::vector$<${\bf Function\+Descr}$>$, std\+::size\+\_\+t$>$ pfq\+\_\+lang\+::serialize (
+\begin{DoxyParamCaption}
+\item[{Combinator2$<$ Pred1, Pred2 $>$ const \&}]{f, }
+\item[{std\+::size\+\_\+t}]{n}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}}\label{namespacepfq__lang_a8febfef074de7a10301593043303bd7d}
+\hypertarget{namespacepfq__lang_a3758147ecd6b21335a4cc1bcecc77e43}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!serialize@{serialize}}
+\index{serialize@{serialize}!pfq\+\_\+lang@{pfq\+\_\+lang}}
+\subsubsection[{serialize}]{\setlength{\rightskip}{0pt plus 5cm}static std\+::pair$<$std\+::vector$<${\bf Function\+Descr}$>$, std\+::size\+\_\+t$>$ pfq\+\_\+lang\+::serialize (
+\begin{DoxyParamCaption}
+\item[{Property const \&}]{p, }
+\item[{std\+::size\+\_\+t}]{n}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}}\label{namespacepfq__lang_a3758147ecd6b21335a4cc1bcecc77e43}
+\hypertarget{namespacepfq__lang_ab0eb303b4d7a4dc3abef97f65a525179}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!serialize@{serialize}}
+\index{serialize@{serialize}!pfq\+\_\+lang@{pfq\+\_\+lang}}
+\subsubsection[{serialize}]{\setlength{\rightskip}{0pt plus 5cm}static std\+::pair$<$std\+::vector$<${\bf Function\+Descr}$>$, std\+::size\+\_\+t$>$ pfq\+\_\+lang\+::serialize (
+\begin{DoxyParamCaption}
+\item[{Property1 const \&}]{p, }
+\item[{std\+::size\+\_\+t}]{n}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}}\label{namespacepfq__lang_ab0eb303b4d7a4dc3abef97f65a525179}
+\hypertarget{namespacepfq__lang_a1ad5441974b6c637a9d4316fd29accc6}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!serialize@{serialize}}
+\index{serialize@{serialize}!pfq\+\_\+lang@{pfq\+\_\+lang}}
+\subsubsection[{serialize}]{\setlength{\rightskip}{0pt plus 5cm}static std\+::pair$<$std\+::vector$<${\bf Function\+Descr}$>$, std\+::size\+\_\+t$>$ pfq\+\_\+lang\+::serialize (
+\begin{DoxyParamCaption}
+\item[{Predicate const \&}]{p, }
+\item[{std\+::size\+\_\+t}]{n}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}}\label{namespacepfq__lang_a1ad5441974b6c637a9d4316fd29accc6}
+\hypertarget{namespacepfq__lang_a19eb92e30a32c5e94253dc55962a23b4}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!serialize@{serialize}}
+\index{serialize@{serialize}!pfq\+\_\+lang@{pfq\+\_\+lang}}
+\subsubsection[{serialize}]{\setlength{\rightskip}{0pt plus 5cm}static std\+::pair$<$std\+::vector$<${\bf Function\+Descr}$>$, std\+::size\+\_\+t$>$ pfq\+\_\+lang\+::serialize (
+\begin{DoxyParamCaption}
+\item[{Predicate1 const \&}]{p, }
+\item[{std\+::size\+\_\+t}]{n}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}}\label{namespacepfq__lang_a19eb92e30a32c5e94253dc55962a23b4}
+\hypertarget{namespacepfq__lang_a357fe144a4702263ee38201b6b045bde}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!serialize@{serialize}}
+\index{serialize@{serialize}!pfq\+\_\+lang@{pfq\+\_\+lang}}
+\subsubsection[{serialize}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename Prop $>$ static std\+::pair$<$std\+::vector$<${\bf Function\+Descr}$>$, std\+::size\+\_\+t$>$ pfq\+\_\+lang\+::serialize (
+\begin{DoxyParamCaption}
+\item[{Predicate2$<$ Prop $>$ const \&}]{p, }
+\item[{std\+::size\+\_\+t}]{n}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}}\label{namespacepfq__lang_a357fe144a4702263ee38201b6b045bde}
+\hypertarget{namespacepfq__lang_af41eca371317223c73acf1bf84be7e49}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!serialize@{serialize}}
+\index{serialize@{serialize}!pfq\+\_\+lang@{pfq\+\_\+lang}}
+\subsubsection[{serialize}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename Prop $>$ static std\+::pair$<$std\+::vector$<${\bf Function\+Descr}$>$, std\+::size\+\_\+t$>$ pfq\+\_\+lang\+::serialize (
+\begin{DoxyParamCaption}
+\item[{Predicate3$<$ Prop $>$ const \&}]{p, }
+\item[{std\+::size\+\_\+t}]{n}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}}\label{namespacepfq__lang_af41eca371317223c73acf1bf84be7e49}
+\hypertarget{namespacepfq__lang_ab52a6b94982b1948ce901c529a73d63f}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!serialize@{serialize}}
+\index{serialize@{serialize}!pfq\+\_\+lang@{pfq\+\_\+lang}}
+\subsubsection[{serialize}]{\setlength{\rightskip}{0pt plus 5cm}static std\+::pair$<$std\+::vector$<${\bf Function\+Descr}$>$, std\+::size\+\_\+t$>$ pfq\+\_\+lang\+::serialize (
+\begin{DoxyParamCaption}
+\item[{M\+Function const \&}]{f, }
+\item[{std\+::size\+\_\+t}]{n}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}}\label{namespacepfq__lang_ab52a6b94982b1948ce901c529a73d63f}
+\hypertarget{namespacepfq__lang_a838c38891f0176ba0f3ddef7c4191d66}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!serialize@{serialize}}
+\index{serialize@{serialize}!pfq\+\_\+lang@{pfq\+\_\+lang}}
+\subsubsection[{serialize}]{\setlength{\rightskip}{0pt plus 5cm}static std\+::pair$<$std\+::vector$<${\bf Function\+Descr}$>$, std\+::size\+\_\+t$>$ pfq\+\_\+lang\+::serialize (
+\begin{DoxyParamCaption}
+\item[{M\+Function1 const \&}]{f, }
+\item[{std\+::size\+\_\+t}]{n}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}}\label{namespacepfq__lang_a838c38891f0176ba0f3ddef7c4191d66}
+\hypertarget{namespacepfq__lang_a9e12b05250ef4f72c591b8be8207a390}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!serialize@{serialize}}
+\index{serialize@{serialize}!pfq\+\_\+lang@{pfq\+\_\+lang}}
+\subsubsection[{serialize}]{\setlength{\rightskip}{0pt plus 5cm}static std\+::pair$<$std\+::vector$<${\bf Function\+Descr}$>$, std\+::size\+\_\+t$>$ pfq\+\_\+lang\+::serialize (
+\begin{DoxyParamCaption}
+\item[{M\+Function2 const \&}]{f, }
+\item[{std\+::size\+\_\+t}]{n}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}}\label{namespacepfq__lang_a9e12b05250ef4f72c591b8be8207a390}
+\hypertarget{namespacepfq__lang_a0ac1bf1531a624ec955bcd38d75570d0}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!serialize@{serialize}}
+\index{serialize@{serialize}!pfq\+\_\+lang@{pfq\+\_\+lang}}
+\subsubsection[{serialize}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename P $>$ static std\+::pair$<$std\+::vector$<${\bf Function\+Descr}$>$, std\+::size\+\_\+t$>$ pfq\+\_\+lang\+::serialize (
+\begin{DoxyParamCaption}
+\item[{H\+Function$<$ P $>$ const \&}]{f, }
+\item[{std\+::size\+\_\+t}]{n}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}}\label{namespacepfq__lang_a0ac1bf1531a624ec955bcd38d75570d0}
+\hypertarget{namespacepfq__lang_a0b749c5d9c23af96ced98bda19362b03}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!serialize@{serialize}}
+\index{serialize@{serialize}!pfq\+\_\+lang@{pfq\+\_\+lang}}
+\subsubsection[{serialize}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename P , typename C $>$ static std\+::pair$<$std\+::vector$<${\bf Function\+Descr}$>$, std\+::size\+\_\+t$>$ pfq\+\_\+lang\+::serialize (
+\begin{DoxyParamCaption}
+\item[{H\+Function1$<$ P, C $>$ const \&}]{f, }
+\item[{std\+::size\+\_\+t}]{n}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}}\label{namespacepfq__lang_a0b749c5d9c23af96ced98bda19362b03}
+\hypertarget{namespacepfq__lang_a977a117518db30fb6097f00defa2a78f}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!serialize@{serialize}}
+\index{serialize@{serialize}!pfq\+\_\+lang@{pfq\+\_\+lang}}
+\subsubsection[{serialize}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename P , typename C1 , typename C2 $>$ static std\+::pair$<$std\+::vector$<${\bf Function\+Descr}$>$, std\+::size\+\_\+t$>$ pfq\+\_\+lang\+::serialize (
+\begin{DoxyParamCaption}
+\item[{H\+Function2$<$ P, C1, C2 $>$ const \&}]{f, }
+\item[{std\+::size\+\_\+t}]{n}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}}\label{namespacepfq__lang_a977a117518db30fb6097f00defa2a78f}
+\hypertarget{namespacepfq__lang_a090aa64fa2f91edc7c5697050e5e7568}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!serialize@{serialize}}
+\index{serialize@{serialize}!pfq\+\_\+lang@{pfq\+\_\+lang}}
+\subsubsection[{serialize}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename C1 , typename C2 $>$ static std\+::pair$<$std\+::vector$<${\bf Function\+Descr}$>$, std\+::size\+\_\+t$>$ pfq\+\_\+lang\+::serialize (
+\begin{DoxyParamCaption}
+\item[{Composition$<$ C1, C2 $>$ const \&}]{f, }
+\item[{std\+::size\+\_\+t}]{n}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}}\label{namespacepfq__lang_a090aa64fa2f91edc7c5697050e5e7568}
+\hypertarget{namespacepfq__lang_a0caf0c00c06c7bdfcd64f14ee88d2428}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!serialize@{serialize}}
+\index{serialize@{serialize}!pfq\+\_\+lang@{pfq\+\_\+lang}}
+\subsubsection[{serialize}]{\setlength{\rightskip}{0pt plus 5cm}static std\+::pair$<$std\+::vector$<${\bf Function\+Descr}$>$, std\+::size\+\_\+t$>$ pfq\+\_\+lang\+::serialize (
+\begin{DoxyParamCaption}
+\item[{std\+::vector$<$ M\+Function $>$ const \&}]{cont, }
+\item[{std\+::size\+\_\+t}]{n}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}}\label{namespacepfq__lang_a0caf0c00c06c7bdfcd64f14ee88d2428}
 \hypertarget{namespacepfq__lang_a1a60cc110a7a44a7d94775d5d6b1692d}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!show@{show}}
 \index{show@{show}!pfq\+\_\+lang@{pfq\+\_\+lang}}
 \subsubsection[{show}]{\setlength{\rightskip}{0pt plus 5cm}static std\+::string pfq\+\_\+lang\+::show (
@@ -342,10 +765,17 @@ C2 $>$ $>$\+::type \hyperlink{namespacepfq__lang_a4c0690ecb14af669a41969a5de14ac
 \item[{pfq\+\_\+functional\+\_\+descr const \&}]{descr}
 \end{DoxyParamCaption}
 )\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}}\label{namespacepfq__lang_a1a60cc110a7a44a7d94775d5d6b1692d}
-\hypertarget{namespacepfq__lang_a35c9e73911d862b90ecfeb32fbfcfc8f}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!show@{show}}
+\hypertarget{namespacepfq__lang_af1f5c155d6ec60eb25b342aeb430ab7c}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!show@{show}}
 \index{show@{show}!pfq\+\_\+lang@{pfq\+\_\+lang}}
 \subsubsection[{show}]{\setlength{\rightskip}{0pt plus 5cm}static std\+::string pfq\+\_\+lang\+::show (
 \begin{DoxyParamCaption}
-\item[{Fun\+Descr const \&}]{descr}
+\item[{const Argument \&}]{arg}
 \end{DoxyParamCaption}
-)\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}}\label{namespacepfq__lang_a35c9e73911d862b90ecfeb32fbfcfc8f}
+)\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}}\label{namespacepfq__lang_af1f5c155d6ec60eb25b342aeb430ab7c}
+\hypertarget{namespacepfq__lang_a90467c48a84afeb46509ab105ce1f789}{\index{pfq\+\_\+lang@{pfq\+\_\+lang}!show@{show}}
+\index{show@{show}!pfq\+\_\+lang@{pfq\+\_\+lang}}
+\subsubsection[{show}]{\setlength{\rightskip}{0pt plus 5cm}static std\+::string pfq\+\_\+lang\+::show (
+\begin{DoxyParamCaption}
+\item[{const Function\+Descr \&}]{descr}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}}\label{namespacepfq__lang_a90467c48a84afeb46509ab105ce1f789}

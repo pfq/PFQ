@@ -77,7 +77,7 @@ $(document).ready(function(){initNavTree('namespacepfq__lang.html','');});
      onmouseover="return searchBox.OnSearchSelectShow()"
      onmouseout="return searchBox.OnSearchSelectHide()"
      onkeydown="return searchBox.OnSearchSelectKey(event)">
-<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a></div>
+<a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(0)"><span class="SelectionMark">&#160;</span>All</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(1)"><span class="SelectionMark">&#160;</span>Classes</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(2)"><span class="SelectionMark">&#160;</span>Namespaces</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(3)"><span class="SelectionMark">&#160;</span>Files</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(4)"><span class="SelectionMark">&#160;</span>Functions</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(5)"><span class="SelectionMark">&#160;</span>Variables</a><a class="SelectItem" href="javascript:void(0)" onclick="searchBox.OnSelectItem(6)"><span class="SelectionMark">&#160;</span>Typedefs</a></div>
 
 <!-- iframe showing the search results (closed by default) -->
 <div id="MSearchResultsWindow">
@@ -90,6 +90,7 @@ $(document).ready(function(){initNavTree('namespacepfq__lang.html','');});
   <div class="summary">
 <a href="#namespaces">Namespaces</a> &#124;
 <a href="#nested-classes">Classes</a> &#124;
+<a href="#typedef-members">Typedefs</a> &#124;
 <a href="#func-members">Functions</a>  </div>
   <div class="headertitle">
 <div class="title">pfq_lang Namespace Reference</div>  </div>
@@ -100,130 +101,339 @@ $(document).ready(function(){initNavTree('namespacepfq__lang.html','');});
 Namespaces</h2></td></tr>
 <tr class="memitem:namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03.html">anonymous_namespace{default.hpp}</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:namespacepfq__lang_1_1term"><td class="memItemLeft" align="right" valign="top"> &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepfq__lang_1_1term.html">term</a></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
 Classes</h2></td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpfq__lang_1_1FunDescr.html">FunDescr</a></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpfq__lang_1_1Action.html">Action</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpfq__lang_1_1Argument.html">Argument</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpfq__lang_1_1Combinator1.html">Combinator1</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpfq__lang_1_1Combinator2.html">Combinator2</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpfq__lang_1_1Composition.html">Composition</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpfq__lang_1_1Function.html">Function</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpfq__lang_1_1FunctionDescr.html">FunctionDescr</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpfq__lang_1_1has__insertion__operator.html">has_insertion_operator</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpfq__lang_1_1HFunction.html">HFunction</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpfq__lang_1_1HFunction1.html">HFunction1</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpfq__lang_1_1HFunction2.html">HFunction2</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpfq__lang_1_1is__Function.html">is_Function</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpfq__lang_1_1is__Function_3_01Function_3_01S_01_4_01_4.html">is_Function&lt; Function&lt; S &gt; &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpfq__lang_1_1is__mfunction.html">is_mfunction</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpfq__lang_1_1is__predicate.html">is_predicate</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpfq__lang_1_1is__property.html">is_property</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpfq__lang_1_1is__same__type__constructor.html">is_same_type_constructor</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpfq__lang_1_1is__same__type__constructor_3_01Tp_3_01Ti_8_8_8_4_00_01Tp_01_4.html">is_same_type_constructor&lt; Tp&lt; Ti...&gt;, Tp &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpfq__lang_1_1kleisly.html">kleisly</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpfq__lang_1_1kleisly_3_01Function_3_01M_3_01B_01_4_07A_08_01_4_00_01Composition_3_01F_00_01G_01_4_01_4.html">kleisly&lt; Function&lt; M&lt; B &gt;(A) &gt;, Composition&lt; F, G &gt; &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpfq__lang_1_1kleisly_3_01Function_3_01M_3_01B_01_4_07A_08_01_4_00_01Function_3_01M_3_01C_01_4_07B_08_4_01_4.html">kleisly&lt; Function&lt; M&lt; B &gt;(A) &gt;, Function&lt; M&lt; C &gt;(B)&gt; &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpfq__lang_1_1MFunction.html">MFunction</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpfq__lang_1_1MFunction1.html">MFunction1</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpfq__lang_1_1MFunction2.html">MFunction2</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpfq__lang_1_1Predicate.html">Predicate</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpfq__lang_1_1Predicate1.html">Predicate1</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpfq__lang_1_1Predicate2.html">Predicate2</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpfq__lang_1_1Predicate3.html">Predicate3</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpfq__lang_1_1Property.html">Property</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpfq__lang_1_1Property1.html">Property1</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpfq__lang_1_1Showable.html">Showable</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpfq__lang_1_1Showable_3_01Tp_00_01typename_01std_1_1enable__if_3_01has__insertion__operato0cfb72d444f463b2d87a78275e86feaa.html">Showable&lt; Tp, typename std::enable_if&lt; has_insertion_operator&lt;Tp &gt;::value &gt;::type &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpfq__lang_1_1Showable_3_01Tp_00_01typename_01std_1_1enable__if_3_9has__insertion__operator488b85264b5317ebf7312bb7e4c18409.html">Showable&lt; Tp, typename std::enable_if&lt;!has_insertion_operator&lt;Tp &gt;::value &gt;::type &gt;</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpfq__lang_1_1ShowBase.html">ShowBase</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpfq__lang_1_1SkBuff.html">SkBuff</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="typedef-members"></a>
+Typedefs</h2></td></tr>
+<tr class="memitem:a66ac99ea626e7d1994f42ebfa003fbff"><td class="memTemplParams" colspan="2">template&lt;bool Value&gt; </td></tr>
+<tr class="memitem:a66ac99ea626e7d1994f42ebfa003fbff"><td class="memTemplItemLeft" align="right" valign="top">using&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#a66ac99ea626e7d1994f42ebfa003fbff">bool_type</a> = std::integral_constant&lt; bool, Value &gt;</td></tr>
+<tr class="separator:a66ac99ea626e7d1994f42ebfa003fbff"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a63dfceff54d39223bbfe7dbc9616c643"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#a63dfceff54d39223bbfe7dbc9616c643">NetFunction</a> = <a class="el" href="structpfq__lang_1_1Function.html">Function</a>&lt; <a class="el" href="structpfq__lang_1_1Action.html">Action</a>&lt; <a class="el" href="structpfq__lang_1_1SkBuff.html">SkBuff</a> &gt;(<a class="el" href="structpfq__lang_1_1SkBuff.html">SkBuff</a>) &gt;</td></tr>
+<tr class="separator:a63dfceff54d39223bbfe7dbc9616c643"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7f62267862cd6049344078744cbcde3b"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#a7f62267862cd6049344078744cbcde3b">NetPredicate</a> = <a class="el" href="structpfq__lang_1_1Function.html">Function</a>&lt; bool(<a class="el" href="structpfq__lang_1_1SkBuff.html">SkBuff</a>) &gt;</td></tr>
+<tr class="separator:a7f62267862cd6049344078744cbcde3b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aedb71fd680cdb670390e8fac13a7cb5e"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#aedb71fd680cdb670390e8fac13a7cb5e">NetProperty</a> = <a class="el" href="structpfq__lang_1_1Function.html">Function</a>&lt; uint64_t(<a class="el" href="structpfq__lang_1_1SkBuff.html">SkBuff</a>) &gt;</td></tr>
+<tr class="separator:aedb71fd680cdb670390e8fac13a7cb5e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a8fd413aae51832e7fc7f727dae11129c"><td class="memItemLeft" align="right" valign="top">static std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#a8fd413aae51832e7fc7f727dae11129c">show</a> (enum pfq_functional_type ft)</td></tr>
-<tr class="separator:a8fd413aae51832e7fc7f727dae11129c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1a60cc110a7a44a7d94775d5d6b1692d"><td class="memItemLeft" align="right" valign="top">static std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#a1a60cc110a7a44a7d94775d5d6b1692d">show</a> (pfq_functional_descr const &amp;descr)</td></tr>
 <tr class="separator:a1a60cc110a7a44a7d94775d5d6b1692d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a35c9e73911d862b90ecfeb32fbfcfc8f"><td class="memItemLeft" align="right" valign="top">static std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#a35c9e73911d862b90ecfeb32fbfcfc8f">show</a> (<a class="el" href="structpfq__lang_1_1FunDescr.html">FunDescr</a> const &amp;descr)</td></tr>
-<tr class="separator:a35c9e73911d862b90ecfeb32fbfcfc8f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a35f3de0a6684c64d0465aa3f263fa8a6"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structpfq__lang_1_1term_1_1Combinator.html">term::Combinator</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#a35f3de0a6684c64d0465aa3f263fa8a6">combinator</a> (std::string name)</td></tr>
-<tr class="separator:a35f3de0a6684c64d0465aa3f263fa8a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:abd58b2244ff8b0775a3b5865bc128872"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structpfq__lang_1_1term_1_1Pred1.html">term::Pred1</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#abd58b2244ff8b0775a3b5865bc128872">predicate</a> (std::string name)</td></tr>
-<tr class="separator:abd58b2244ff8b0775a3b5865bc128872"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae23a03cee94b5ddfde4a8d2e5c521f0e"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
-<tr class="memitem:ae23a03cee94b5ddfde4a8d2e5c521f0e"><td class="memTemplItemLeft" align="right" valign="top">std::enable_if&lt; std::is_pod&lt; T &gt;<br class="typebreak" />
-::value, <a class="el" href="structpfq__lang_1_1term_1_1Pred1.html">term::Pred1</a> &gt;::type&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#ae23a03cee94b5ddfde4a8d2e5c521f0e">predicate1</a> (std::string name, const T &amp;arg)</td></tr>
-<tr class="separator:ae23a03cee94b5ddfde4a8d2e5c521f0e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a89ea436faf8b7f13512e07efbce83b41"><td class="memTemplParams" colspan="2">template&lt;typename P1 , typename P2 &gt; </td></tr>
-<tr class="memitem:a89ea436faf8b7f13512e07efbce83b41"><td class="memTemplItemLeft" align="right" valign="top">std::enable_if<br class="typebreak" />
-&lt; <a class="el" href="structpfq__lang_1_1term_1_1is__predicate.html">term::is_predicate</a>&lt; P1 &gt;<br class="typebreak" />
-::value &amp;&amp;<a class="el" href="structpfq__lang_1_1term_1_1is__predicate.html">term::is_predicate</a><br class="typebreak" />
-&lt; P2 &gt;::value, <a class="el" href="structpfq__lang_1_1term_1_1Pred2.html">term::Pred2</a>&lt; P1, <br class="typebreak" />
-P2 &gt; &gt;::type&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#a89ea436faf8b7f13512e07efbce83b41">predicate2</a> (<a class="el" href="structpfq__lang_1_1term_1_1Combinator.html">term::Combinator</a> c, P1 const &amp;left, P2 const &amp;right)</td></tr>
-<tr class="separator:a89ea436faf8b7f13512e07efbce83b41"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a863e349ba4942bf8a01b61d91859164a"><td class="memTemplParams" colspan="2">template&lt;typename P &gt; </td></tr>
-<tr class="memitem:a863e349ba4942bf8a01b61d91859164a"><td class="memTemplItemLeft" align="right" valign="top">std::enable_if<br class="typebreak" />
-&lt; <a class="el" href="structpfq__lang_1_1term_1_1is__property.html">term::is_property</a>&lt; P &gt;<br class="typebreak" />
-::value, <a class="el" href="structpfq__lang_1_1term_1_1Pred3.html">term::Pred3</a>&lt; P &gt;<br class="typebreak" />
- &gt;::type&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#a863e349ba4942bf8a01b61d91859164a">predicate3</a> (std::string name, P p)</td></tr>
-<tr class="separator:a863e349ba4942bf8a01b61d91859164a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1a9064340f4197e3dd4109a849a224dc"><td class="memTemplParams" colspan="2">template&lt;typename T , typename P &gt; </td></tr>
-<tr class="memitem:a1a9064340f4197e3dd4109a849a224dc"><td class="memTemplItemLeft" align="right" valign="top">std::enable_if<br class="typebreak" />
-&lt; <a class="el" href="structpfq__lang_1_1term_1_1is__property.html">term::is_property</a>&lt; P &gt;<br class="typebreak" />
-::value &amp;&amp;std::is_pod&lt; T &gt;<br class="typebreak" />
-::value, <a class="el" href="structpfq__lang_1_1term_1_1Pred4.html">term::Pred4</a>&lt; P &gt;<br class="typebreak" />
- &gt;::type&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#a1a9064340f4197e3dd4109a849a224dc">predicate4</a> (std::string name, P p, const T &amp;arg)</td></tr>
-<tr class="separator:a1a9064340f4197e3dd4109a849a224dc"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad70b40071ed0fd32c05ab8e82bbfec61"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structpfq__lang_1_1term_1_1Prop.html">term::Prop</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#ad70b40071ed0fd32c05ab8e82bbfec61">property</a> (std::string name)</td></tr>
-<tr class="separator:ad70b40071ed0fd32c05ab8e82bbfec61"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3a4768b9f4e03b86943d332254cca27e"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
-<tr class="memitem:a3a4768b9f4e03b86943d332254cca27e"><td class="memTemplItemLeft" align="right" valign="top">std::enable_if&lt; std::is_pod&lt; T &gt;<br class="typebreak" />
-::value, <a class="el" href="structpfq__lang_1_1term_1_1Prop1.html">term::Prop1</a> &gt;::type&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#a3a4768b9f4e03b86943d332254cca27e">property1</a> (std::string name, const T &amp;arg)</td></tr>
-<tr class="separator:a3a4768b9f4e03b86943d332254cca27e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9f546a4602872df5ca74050ecb68a6b3"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structpfq__lang_1_1term_1_1Fun.html">term::Fun</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#a9f546a4602872df5ca74050ecb68a6b3">netfunction</a> (std::string name)</td></tr>
-<tr class="separator:a9f546a4602872df5ca74050ecb68a6b3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af215f25fa7ebd61fdc90cf0ef78a3164"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
-<tr class="memitem:af215f25fa7ebd61fdc90cf0ef78a3164"><td class="memTemplItemLeft" align="right" valign="top">std::enable_if&lt; std::is_pod&lt; T &gt;<br class="typebreak" />
-::value, <a class="el" href="structpfq__lang_1_1term_1_1Fun1.html">term::Fun1</a> &gt;::type&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#af215f25fa7ebd61fdc90cf0ef78a3164">netfunction1</a> (std::string name, const T &amp;arg)</td></tr>
-<tr class="separator:af215f25fa7ebd61fdc90cf0ef78a3164"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a78972807ac46884d5cd0719795946936"><td class="memTemplParams" colspan="2">template&lt;typename P &gt; </td></tr>
-<tr class="memitem:a78972807ac46884d5cd0719795946936"><td class="memTemplItemLeft" align="right" valign="top">std::enable_if<br class="typebreak" />
-&lt; <a class="el" href="structpfq__lang_1_1term_1_1is__predicate.html">term::is_predicate</a>&lt; P &gt;<br class="typebreak" />
-::value, <a class="el" href="structpfq__lang_1_1term_1_1HFun.html">term::HFun</a>&lt; P &gt;<br class="typebreak" />
- &gt;::type&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#a78972807ac46884d5cd0719795946936">hnetfunction</a> (std::string name, P const &amp;p)</td></tr>
-<tr class="separator:a78972807ac46884d5cd0719795946936"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a71df0d0d66c45c40ad348a35a1781c71"><td class="memTemplParams" colspan="2">template&lt;typename P , typename C &gt; </td></tr>
-<tr class="memitem:a71df0d0d66c45c40ad348a35a1781c71"><td class="memTemplItemLeft" align="right" valign="top">std::enable_if<br class="typebreak" />
-&lt; <a class="el" href="structpfq__lang_1_1term_1_1is__predicate.html">term::is_predicate</a>&lt; P &gt;<br class="typebreak" />
-::value &amp;&amp;<a class="el" href="structpfq__lang_1_1term_1_1is__netfunction.html">term::is_netfunction</a><br class="typebreak" />
-&lt; C &gt;::value, <a class="el" href="structpfq__lang_1_1term_1_1HFun1.html">term::HFun1</a>&lt; P, <br class="typebreak" />
-C &gt; &gt;::type&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#a71df0d0d66c45c40ad348a35a1781c71">hnetfunction1</a> (std::string name, P const &amp;p, C const &amp;c)</td></tr>
-<tr class="separator:a71df0d0d66c45c40ad348a35a1781c71"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0899ef1c7c1872d3d2da51cf5704ab84"><td class="memTemplParams" colspan="2">template&lt;typename P , typename C1 , typename C2 &gt; </td></tr>
-<tr class="memitem:a0899ef1c7c1872d3d2da51cf5704ab84"><td class="memTemplItemLeft" align="right" valign="top">std::enable_if<br class="typebreak" />
-&lt; <a class="el" href="structpfq__lang_1_1term_1_1is__predicate.html">term::is_predicate</a>&lt; P &gt;<br class="typebreak" />
-::value &amp;&amp;<a class="el" href="structpfq__lang_1_1term_1_1is__netfunction.html">term::is_netfunction</a><br class="typebreak" />
-&lt; C1 &gt;::value <br class="typebreak" />
-&amp;&amp;<a class="el" href="structpfq__lang_1_1term_1_1is__netfunction.html">term::is_netfunction</a>&lt; C2 &gt;<br class="typebreak" />
-::value, <a class="el" href="structpfq__lang_1_1term_1_1HFun2.html">term::HFun2</a>&lt; P, C1, <br class="typebreak" />
-C2 &gt; &gt;::type&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#a0899ef1c7c1872d3d2da51cf5704ab84">hnetfunction2</a> (std::string name, P const &amp;p, C1 const &amp;c1, C2 const &amp;c2)</td></tr>
-<tr class="separator:a0899ef1c7c1872d3d2da51cf5704ab84"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4c0690ecb14af669a41969a5de14acad"><td class="memTemplParams" colspan="2">template&lt;typename C1 , typename C2 &gt; </td></tr>
-<tr class="memitem:a4c0690ecb14af669a41969a5de14acad"><td class="memTemplItemLeft" align="right" valign="top">std::enable_if<br class="typebreak" />
-&lt; <a class="el" href="structpfq__lang_1_1term_1_1is__netfunction.html">term::is_netfunction</a>&lt; C1 &gt;<br class="typebreak" />
-::value &amp;&amp;<a class="el" href="structpfq__lang_1_1term_1_1is__netfunction.html">term::is_netfunction</a><br class="typebreak" />
-&lt; C2 &gt;::value, <a class="el" href="structpfq__lang_1_1term_1_1Comp.html">term::Comp</a>&lt; C1, <br class="typebreak" />
-C2 &gt; &gt;::type&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#a4c0690ecb14af669a41969a5de14acad">operator&gt;&gt;</a> (C1 c1, C2 c2)</td></tr>
-<tr class="separator:a4c0690ecb14af669a41969a5de14acad"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa6f7aa80466e4cfd61a341fcf7a2eda4"><td class="memTemplParams" colspan="2">template&lt;typename P1 , typename P2 &gt; </td></tr>
-<tr class="memitem:aa6f7aa80466e4cfd61a341fcf7a2eda4"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#aa6f7aa80466e4cfd61a341fcf7a2eda4">operator&amp;</a> (P1 const &amp;p1, P2 const &amp;p2) -&gt; decltype(<a class="el" href="namespacepfq__lang.html#a89ea436faf8b7f13512e07efbce83b41">predicate2</a>(<a class="el" href="namespacepfq__lang.html#a35f3de0a6684c64d0465aa3f263fa8a6">combinator</a>(nullptr), p1, p2))</td></tr>
-<tr class="separator:aa6f7aa80466e4cfd61a341fcf7a2eda4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:adeec773d44aae2b2f2957e1498c4ce8f"><td class="memTemplParams" colspan="2">template&lt;typename P1 , typename P2 &gt; </td></tr>
-<tr class="memitem:adeec773d44aae2b2f2957e1498c4ce8f"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#adeec773d44aae2b2f2957e1498c4ce8f">operator|</a> (P1 const &amp;p1, P2 const &amp;p2) -&gt; decltype(<a class="el" href="namespacepfq__lang.html#a89ea436faf8b7f13512e07efbce83b41">predicate2</a>(<a class="el" href="namespacepfq__lang.html#a35f3de0a6684c64d0465aa3f263fa8a6">combinator</a>(nullptr), p1, p2))</td></tr>
-<tr class="separator:adeec773d44aae2b2f2957e1498c4ce8f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a29166c6bb957d6edd6892b7081f574df"><td class="memTemplParams" colspan="2">template&lt;typename P1 , typename P2 &gt; </td></tr>
-<tr class="memitem:a29166c6bb957d6edd6892b7081f574df"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#a29166c6bb957d6edd6892b7081f574df">operator^</a> (P1 const &amp;p1, P2 const &amp;p2) -&gt; decltype(<a class="el" href="namespacepfq__lang.html#a89ea436faf8b7f13512e07efbce83b41">predicate2</a>(<a class="el" href="namespacepfq__lang.html#a35f3de0a6684c64d0465aa3f263fa8a6">combinator</a>(nullptr), p1, p2))</td></tr>
-<tr class="separator:a29166c6bb957d6edd6892b7081f574df"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3a284611cc2c705d4304ba5e0f45d8b7"><td class="memTemplParams" colspan="2">template&lt;typename P &gt; </td></tr>
-<tr class="memitem:a3a284611cc2c705d4304ba5e0f45d8b7"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#a3a284611cc2c705d4304ba5e0f45d8b7">not_</a> (P const &amp;p) -&gt; decltype(<a class="el" href="namespacepfq__lang.html#a89ea436faf8b7f13512e07efbce83b41">predicate2</a>(<a class="el" href="namespacepfq__lang.html#a35f3de0a6684c64d0465aa3f263fa8a6">combinator</a>(nullptr), p, p))</td></tr>
-<tr class="separator:a3a284611cc2c705d4304ba5e0f45d8b7"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a222bd443a88e69ec2b3acd886bb80e37"><td class="memTemplParams" colspan="2">template&lt;typename P &gt; </td></tr>
-<tr class="memitem:a222bd443a88e69ec2b3acd886bb80e37"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#a222bd443a88e69ec2b3acd886bb80e37">operator&lt;</a> (P const &amp;prop, uint64_t arg) -&gt; decltype(<a class="el" href="namespacepfq__lang.html#a1a9064340f4197e3dd4109a849a224dc">predicate4</a>(nullptr, prop, arg))</td></tr>
-<tr class="separator:a222bd443a88e69ec2b3acd886bb80e37"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a67b8e80010c51a199869c1c2368b87be"><td class="memTemplParams" colspan="2">template&lt;typename P &gt; </td></tr>
-<tr class="memitem:a67b8e80010c51a199869c1c2368b87be"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#a67b8e80010c51a199869c1c2368b87be">operator&lt;=</a> (P const &amp;prop, uint64_t arg) -&gt; decltype(<a class="el" href="namespacepfq__lang.html#a1a9064340f4197e3dd4109a849a224dc">predicate4</a>(nullptr, prop, arg))</td></tr>
-<tr class="separator:a67b8e80010c51a199869c1c2368b87be"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab210ad49979608b563eaa74a0d42b63a"><td class="memTemplParams" colspan="2">template&lt;typename P &gt; </td></tr>
-<tr class="memitem:ab210ad49979608b563eaa74a0d42b63a"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#ab210ad49979608b563eaa74a0d42b63a">operator&gt;</a> (P const &amp;prop, uint64_t arg) -&gt; decltype(<a class="el" href="namespacepfq__lang.html#a1a9064340f4197e3dd4109a849a224dc">predicate4</a>(nullptr, prop, arg))</td></tr>
-<tr class="separator:ab210ad49979608b563eaa74a0d42b63a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac37c4aac9486ceca12814ccd9b4c3306"><td class="memTemplParams" colspan="2">template&lt;typename P &gt; </td></tr>
-<tr class="memitem:ac37c4aac9486ceca12814ccd9b4c3306"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#ac37c4aac9486ceca12814ccd9b4c3306">operator&gt;=</a> (P const &amp;prop, uint64_t arg) -&gt; decltype(<a class="el" href="namespacepfq__lang.html#a1a9064340f4197e3dd4109a849a224dc">predicate4</a>(nullptr, prop, arg))</td></tr>
-<tr class="separator:ac37c4aac9486ceca12814ccd9b4c3306"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac55d12423490f127fcb57b29535ca791"><td class="memTemplParams" colspan="2">template&lt;typename P &gt; </td></tr>
-<tr class="memitem:ac55d12423490f127fcb57b29535ca791"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#ac55d12423490f127fcb57b29535ca791">operator==</a> (P const &amp;prop, uint64_t arg) -&gt; decltype(<a class="el" href="namespacepfq__lang.html#a1a9064340f4197e3dd4109a849a224dc">predicate4</a>(nullptr, prop, arg))</td></tr>
-<tr class="separator:ac55d12423490f127fcb57b29535ca791"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a982f7b6137536d7e75fe9b2c13d581d4"><td class="memTemplParams" colspan="2">template&lt;typename P &gt; </td></tr>
-<tr class="memitem:a982f7b6137536d7e75fe9b2c13d581d4"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#a982f7b6137536d7e75fe9b2c13d581d4">operator!=</a> (P const &amp;prop, uint64_t arg) -&gt; decltype(<a class="el" href="namespacepfq__lang.html#a1a9064340f4197e3dd4109a849a224dc">predicate4</a>(nullptr, prop, arg))</td></tr>
-<tr class="separator:a982f7b6137536d7e75fe9b2c13d581d4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9e93958b1fecbd660154947b474ffd05"><td class="memTemplParams" colspan="2">template&lt;typename P &gt; </td></tr>
-<tr class="memitem:a9e93958b1fecbd660154947b474ffd05"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#a9e93958b1fecbd660154947b474ffd05">any_bit</a> (P const &amp;prop, uint64_t mask) -&gt; decltype(<a class="el" href="namespacepfq__lang.html#a1a9064340f4197e3dd4109a849a224dc">predicate4</a>(nullptr, prop, mask))</td></tr>
-<tr class="separator:a9e93958b1fecbd660154947b474ffd05"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a424b5bd6563ed52fd84807def8ba2f5f"><td class="memTemplParams" colspan="2">template&lt;typename P &gt; </td></tr>
-<tr class="memitem:a424b5bd6563ed52fd84807def8ba2f5f"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#a424b5bd6563ed52fd84807def8ba2f5f">all_bit</a> (P const &amp;prop, uint64_t mask) -&gt; decltype(<a class="el" href="namespacepfq__lang.html#a1a9064340f4197e3dd4109a849a224dc">predicate4</a>(nullptr, prop, mask))</td></tr>
-<tr class="separator:a424b5bd6563ed52fd84807def8ba2f5f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8eb2d24aa20548df55924d37824e46b2"><td class="memTemplParams" colspan="2">template&lt;typename Tp &gt; </td></tr>
+<tr class="memitem:a8eb2d24aa20548df55924d37824e46b2"><td class="memTemplItemLeft" align="right" valign="top">std::vector&lt; Tp &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#a8eb2d24aa20548df55924d37824e46b2">operator+</a> (std::vector&lt; Tp &gt; v1, std::vector&lt; Tp &gt; &amp;&amp;v2)</td></tr>
+<tr class="separator:a8eb2d24aa20548df55924d37824e46b2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a607e3c40cd65152da1a8d90ea40f8c33"><td class="memTemplParams" colspan="2">template&lt;typename Tp &gt; </td></tr>
+<tr class="memitem:a607e3c40cd65152da1a8d90ea40f8c33"><td class="memTemplItemLeft" align="right" valign="top">std::vector&lt; Tp &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#a607e3c40cd65152da1a8d90ea40f8c33">operator+</a> (std::vector&lt; Tp &gt; v1, std::vector&lt; Tp &gt; const &amp;v2)</td></tr>
+<tr class="separator:a607e3c40cd65152da1a8d90ea40f8c33"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8b5af237a48336a48908f14d16a5e740"><td class="memTemplParams" colspan="2">template&lt;typename C &gt; </td></tr>
+<tr class="memitem:a8b5af237a48336a48908f14d16a5e740"><td class="memTemplItemLeft" align="right" valign="top">static char&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#a8b5af237a48336a48908f14d16a5e740">has_insertion_test</a> (typename std::remove_reference&lt; decltype((std::cout&lt;&lt; std::declval&lt; C &gt;())) &gt;::type *)</td></tr>
+<tr class="separator:a8b5af237a48336a48908f14d16a5e740"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a60380b938a5abdb0c9604837f2a523a7"><td class="memTemplParams" colspan="2">template&lt;typename C &gt; </td></tr>
+<tr class="memitem:a60380b938a5abdb0c9604837f2a523a7"><td class="memTemplItemLeft" align="right" valign="top">static short&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#a60380b938a5abdb0c9604837f2a523a7">has_insertion_test</a> (...)</td></tr>
+<tr class="separator:a60380b938a5abdb0c9604837f2a523a7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af1f5c155d6ec60eb25b342aeb430ab7c"><td class="memItemLeft" align="right" valign="top">static std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#af1f5c155d6ec60eb25b342aeb430ab7c">show</a> (const <a class="el" href="structpfq__lang_1_1Argument.html">Argument</a> &amp;arg)</td></tr>
+<tr class="separator:af1f5c155d6ec60eb25b342aeb430ab7c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad57eb73340d285cb26cdb9cb2cc046d4"><td class="memItemLeft" align="right" valign="top">static std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#ad57eb73340d285cb26cdb9cb2cc046d4">pretty</a> (const <a class="el" href="structpfq__lang_1_1Argument.html">Argument</a> &amp;arg)</td></tr>
+<tr class="separator:ad57eb73340d285cb26cdb9cb2cc046d4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a90467c48a84afeb46509ab105ce1f789"><td class="memItemLeft" align="right" valign="top">static std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#a90467c48a84afeb46509ab105ce1f789">show</a> (const <a class="el" href="structpfq__lang_1_1FunctionDescr.html">FunctionDescr</a> &amp;descr)</td></tr>
+<tr class="separator:a90467c48a84afeb46509ab105ce1f789"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6839c256e31592f52549ac129c9e791a"><td class="memTemplParams" colspan="2">template&lt;typename P &gt; </td></tr>
+<tr class="memitem:a6839c256e31592f52549ac129c9e791a"><td class="memTemplItemLeft" align="right" valign="top">static std::string&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#a6839c256e31592f52549ac129c9e791a">pretty</a> (<a class="el" href="structpfq__lang_1_1Combinator1.html">Combinator1</a>&lt; P &gt; const &amp;comb)</td></tr>
+<tr class="separator:a6839c256e31592f52549ac129c9e791a"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab21e91fcade9ea5853473400ececd5ce"><td class="memTemplParams" colspan="2">template&lt;typename P1 , typename P2 &gt; </td></tr>
+<tr class="memitem:ab21e91fcade9ea5853473400ececd5ce"><td class="memTemplItemLeft" align="right" valign="top">static std::string&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#ab21e91fcade9ea5853473400ececd5ce">pretty</a> (<a class="el" href="structpfq__lang_1_1Combinator2.html">Combinator2</a>&lt; P1, P2 &gt; const &amp;comb)</td></tr>
+<tr class="separator:ab21e91fcade9ea5853473400ececd5ce"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5d08325293b0862f15c0751545c29e9d"><td class="memTemplParams" colspan="2">template&lt;typename Pred &gt; </td></tr>
+<tr class="memitem:a5d08325293b0862f15c0751545c29e9d"><td class="memTemplItemLeft" align="right" valign="top">static std::pair&lt; std::vector<br class="typebreak" />
+&lt; <a class="el" href="structpfq__lang_1_1FunctionDescr.html">FunctionDescr</a> &gt;, std::size_t &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#a5d08325293b0862f15c0751545c29e9d">serialize</a> (<a class="el" href="structpfq__lang_1_1Combinator1.html">Combinator1</a>&lt; Pred &gt; const &amp;f, std::size_t n)</td></tr>
+<tr class="separator:a5d08325293b0862f15c0751545c29e9d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8febfef074de7a10301593043303bd7d"><td class="memTemplParams" colspan="2">template&lt;typename Pred1 , typename Pred2 &gt; </td></tr>
+<tr class="memitem:a8febfef074de7a10301593043303bd7d"><td class="memTemplItemLeft" align="right" valign="top">static std::pair&lt; std::vector<br class="typebreak" />
+&lt; <a class="el" href="structpfq__lang_1_1FunctionDescr.html">FunctionDescr</a> &gt;, std::size_t &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#a8febfef074de7a10301593043303bd7d">serialize</a> (<a class="el" href="structpfq__lang_1_1Combinator2.html">Combinator2</a>&lt; Pred1, Pred2 &gt; const &amp;f, std::size_t n)</td></tr>
+<tr class="separator:a8febfef074de7a10301593043303bd7d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a69174e14fc798440d3483a4a50038eee"><td class="memItemLeft" align="right" valign="top">static std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#a69174e14fc798440d3483a4a50038eee">pretty</a> (<a class="el" href="structpfq__lang_1_1Property.html">Property</a> const &amp;descr)</td></tr>
+<tr class="separator:a69174e14fc798440d3483a4a50038eee"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a070ec878e374f02e1f1e63d37b0d8098"><td class="memItemLeft" align="right" valign="top">static std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#a070ec878e374f02e1f1e63d37b0d8098">pretty</a> (<a class="el" href="structpfq__lang_1_1Property1.html">Property1</a> const &amp;descr)</td></tr>
+<tr class="separator:a070ec878e374f02e1f1e63d37b0d8098"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3758147ecd6b21335a4cc1bcecc77e43"><td class="memItemLeft" align="right" valign="top">static std::pair&lt; std::vector<br class="typebreak" />
+&lt; <a class="el" href="structpfq__lang_1_1FunctionDescr.html">FunctionDescr</a> &gt;, std::size_t &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#a3758147ecd6b21335a4cc1bcecc77e43">serialize</a> (<a class="el" href="structpfq__lang_1_1Property.html">Property</a> const &amp;p, std::size_t n)</td></tr>
+<tr class="separator:a3758147ecd6b21335a4cc1bcecc77e43"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab0eb303b4d7a4dc3abef97f65a525179"><td class="memItemLeft" align="right" valign="top">static std::pair&lt; std::vector<br class="typebreak" />
+&lt; <a class="el" href="structpfq__lang_1_1FunctionDescr.html">FunctionDescr</a> &gt;, std::size_t &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#ab0eb303b4d7a4dc3abef97f65a525179">serialize</a> (<a class="el" href="structpfq__lang_1_1Property1.html">Property1</a> const &amp;p, std::size_t n)</td></tr>
+<tr class="separator:ab0eb303b4d7a4dc3abef97f65a525179"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a094d43e94d1069d6d1bc9f7b25801bfd"><td class="memItemLeft" align="right" valign="top">static std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#a094d43e94d1069d6d1bc9f7b25801bfd">pretty</a> (<a class="el" href="structpfq__lang_1_1Predicate.html">Predicate</a> const &amp;descr)</td></tr>
+<tr class="separator:a094d43e94d1069d6d1bc9f7b25801bfd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a180f309e82d8bcccabc9b1d803277dad"><td class="memItemLeft" align="right" valign="top">static std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#a180f309e82d8bcccabc9b1d803277dad">pretty</a> (<a class="el" href="structpfq__lang_1_1Predicate1.html">Predicate1</a> const &amp;descr)</td></tr>
+<tr class="separator:a180f309e82d8bcccabc9b1d803277dad"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a72ef87d178499fd42421820e39b9d60d"><td class="memTemplParams" colspan="2">template&lt;typename Prop &gt; </td></tr>
+<tr class="memitem:a72ef87d178499fd42421820e39b9d60d"><td class="memTemplItemLeft" align="right" valign="top">static std::string&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#a72ef87d178499fd42421820e39b9d60d">pretty</a> (<a class="el" href="structpfq__lang_1_1Predicate2.html">Predicate2</a>&lt; Prop &gt; const &amp;descr)</td></tr>
+<tr class="separator:a72ef87d178499fd42421820e39b9d60d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af343f01d481ce0e15ca6d363b8929e1d"><td class="memTemplParams" colspan="2">template&lt;typename Prop &gt; </td></tr>
+<tr class="memitem:af343f01d481ce0e15ca6d363b8929e1d"><td class="memTemplItemLeft" align="right" valign="top">static std::string&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#af343f01d481ce0e15ca6d363b8929e1d">pretty</a> (<a class="el" href="structpfq__lang_1_1Predicate3.html">Predicate3</a>&lt; Prop &gt; const &amp;descr)</td></tr>
+<tr class="separator:af343f01d481ce0e15ca6d363b8929e1d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1ad5441974b6c637a9d4316fd29accc6"><td class="memItemLeft" align="right" valign="top">static std::pair&lt; std::vector<br class="typebreak" />
+&lt; <a class="el" href="structpfq__lang_1_1FunctionDescr.html">FunctionDescr</a> &gt;, std::size_t &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#a1ad5441974b6c637a9d4316fd29accc6">serialize</a> (<a class="el" href="structpfq__lang_1_1Predicate.html">Predicate</a> const &amp;p, std::size_t n)</td></tr>
+<tr class="separator:a1ad5441974b6c637a9d4316fd29accc6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a19eb92e30a32c5e94253dc55962a23b4"><td class="memItemLeft" align="right" valign="top">static std::pair&lt; std::vector<br class="typebreak" />
+&lt; <a class="el" href="structpfq__lang_1_1FunctionDescr.html">FunctionDescr</a> &gt;, std::size_t &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#a19eb92e30a32c5e94253dc55962a23b4">serialize</a> (<a class="el" href="structpfq__lang_1_1Predicate1.html">Predicate1</a> const &amp;p, std::size_t n)</td></tr>
+<tr class="separator:a19eb92e30a32c5e94253dc55962a23b4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a357fe144a4702263ee38201b6b045bde"><td class="memTemplParams" colspan="2">template&lt;typename Prop &gt; </td></tr>
+<tr class="memitem:a357fe144a4702263ee38201b6b045bde"><td class="memTemplItemLeft" align="right" valign="top">static std::pair&lt; std::vector<br class="typebreak" />
+&lt; <a class="el" href="structpfq__lang_1_1FunctionDescr.html">FunctionDescr</a> &gt;, std::size_t &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#a357fe144a4702263ee38201b6b045bde">serialize</a> (<a class="el" href="structpfq__lang_1_1Predicate2.html">Predicate2</a>&lt; Prop &gt; const &amp;p, std::size_t n)</td></tr>
+<tr class="separator:a357fe144a4702263ee38201b6b045bde"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af41eca371317223c73acf1bf84be7e49"><td class="memTemplParams" colspan="2">template&lt;typename Prop &gt; </td></tr>
+<tr class="memitem:af41eca371317223c73acf1bf84be7e49"><td class="memTemplItemLeft" align="right" valign="top">static std::pair&lt; std::vector<br class="typebreak" />
+&lt; <a class="el" href="structpfq__lang_1_1FunctionDescr.html">FunctionDescr</a> &gt;, std::size_t &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#af41eca371317223c73acf1bf84be7e49">serialize</a> (<a class="el" href="structpfq__lang_1_1Predicate3.html">Predicate3</a>&lt; Prop &gt; const &amp;p, std::size_t n)</td></tr>
+<tr class="separator:af41eca371317223c73acf1bf84be7e49"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aecd073be957ceaa720f22f147487c94c"><td class="memItemLeft" align="right" valign="top">static std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#aecd073be957ceaa720f22f147487c94c">pretty</a> (<a class="el" href="structpfq__lang_1_1MFunction.html">MFunction</a> const &amp;descr)</td></tr>
+<tr class="separator:aecd073be957ceaa720f22f147487c94c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a17690e7e9e005902ed89b5c6423e26b1"><td class="memItemLeft" align="right" valign="top">static std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#a17690e7e9e005902ed89b5c6423e26b1">pretty</a> (<a class="el" href="structpfq__lang_1_1MFunction1.html">MFunction1</a> const &amp;descr)</td></tr>
+<tr class="separator:a17690e7e9e005902ed89b5c6423e26b1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7afb2e0cc717c669d935d7c924ded8ce"><td class="memItemLeft" align="right" valign="top">static std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#a7afb2e0cc717c669d935d7c924ded8ce">pretty</a> (<a class="el" href="structpfq__lang_1_1MFunction2.html">MFunction2</a> const &amp;descr)</td></tr>
+<tr class="separator:a7afb2e0cc717c669d935d7c924ded8ce"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9ca1592a029867cd5b11e8ba8573c1f2"><td class="memTemplParams" colspan="2">template&lt;typename P &gt; </td></tr>
+<tr class="memitem:a9ca1592a029867cd5b11e8ba8573c1f2"><td class="memTemplItemLeft" align="right" valign="top">static std::string&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#a9ca1592a029867cd5b11e8ba8573c1f2">pretty</a> (<a class="el" href="structpfq__lang_1_1HFunction.html">HFunction</a>&lt; P &gt; const &amp;descr)</td></tr>
+<tr class="separator:a9ca1592a029867cd5b11e8ba8573c1f2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a131e2d93c76f8f51bfbe595632067f93"><td class="memTemplParams" colspan="2">template&lt;typename P , typename C &gt; </td></tr>
+<tr class="memitem:a131e2d93c76f8f51bfbe595632067f93"><td class="memTemplItemLeft" align="right" valign="top">static std::string&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#a131e2d93c76f8f51bfbe595632067f93">pretty</a> (<a class="el" href="structpfq__lang_1_1HFunction1.html">HFunction1</a>&lt; P, C &gt; const &amp;descr)</td></tr>
+<tr class="separator:a131e2d93c76f8f51bfbe595632067f93"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a02cc423cc439a8c57600f1c9cf5bf0e5"><td class="memTemplParams" colspan="2">template&lt;typename P , typename C1 , typename C2 &gt; </td></tr>
+<tr class="memitem:a02cc423cc439a8c57600f1c9cf5bf0e5"><td class="memTemplItemLeft" align="right" valign="top">static std::string&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#a02cc423cc439a8c57600f1c9cf5bf0e5">pretty</a> (<a class="el" href="structpfq__lang_1_1HFunction2.html">HFunction2</a>&lt; P, C1, C2 &gt; const &amp;descr)</td></tr>
+<tr class="separator:a02cc423cc439a8c57600f1c9cf5bf0e5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a39c7eedfcdc2f4975e6ee404afc92c32"><td class="memTemplParams" colspan="2">template&lt;typename C1 , typename C2 &gt; </td></tr>
+<tr class="memitem:a39c7eedfcdc2f4975e6ee404afc92c32"><td class="memTemplItemLeft" align="right" valign="top">static std::string&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#a39c7eedfcdc2f4975e6ee404afc92c32">pretty</a> (<a class="el" href="structpfq__lang_1_1Composition.html">Composition</a>&lt; C1, C2 &gt; const &amp;descr)</td></tr>
+<tr class="separator:a39c7eedfcdc2f4975e6ee404afc92c32"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab52a6b94982b1948ce901c529a73d63f"><td class="memItemLeft" align="right" valign="top">static std::pair&lt; std::vector<br class="typebreak" />
+&lt; <a class="el" href="structpfq__lang_1_1FunctionDescr.html">FunctionDescr</a> &gt;, std::size_t &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#ab52a6b94982b1948ce901c529a73d63f">serialize</a> (<a class="el" href="structpfq__lang_1_1MFunction.html">MFunction</a> const &amp;f, std::size_t n)</td></tr>
+<tr class="separator:ab52a6b94982b1948ce901c529a73d63f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a838c38891f0176ba0f3ddef7c4191d66"><td class="memItemLeft" align="right" valign="top">static std::pair&lt; std::vector<br class="typebreak" />
+&lt; <a class="el" href="structpfq__lang_1_1FunctionDescr.html">FunctionDescr</a> &gt;, std::size_t &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#a838c38891f0176ba0f3ddef7c4191d66">serialize</a> (<a class="el" href="structpfq__lang_1_1MFunction1.html">MFunction1</a> const &amp;f, std::size_t n)</td></tr>
+<tr class="separator:a838c38891f0176ba0f3ddef7c4191d66"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9e12b05250ef4f72c591b8be8207a390"><td class="memItemLeft" align="right" valign="top">static std::pair&lt; std::vector<br class="typebreak" />
+&lt; <a class="el" href="structpfq__lang_1_1FunctionDescr.html">FunctionDescr</a> &gt;, std::size_t &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#a9e12b05250ef4f72c591b8be8207a390">serialize</a> (<a class="el" href="structpfq__lang_1_1MFunction2.html">MFunction2</a> const &amp;f, std::size_t n)</td></tr>
+<tr class="separator:a9e12b05250ef4f72c591b8be8207a390"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0ac1bf1531a624ec955bcd38d75570d0"><td class="memTemplParams" colspan="2">template&lt;typename P &gt; </td></tr>
+<tr class="memitem:a0ac1bf1531a624ec955bcd38d75570d0"><td class="memTemplItemLeft" align="right" valign="top">static std::pair&lt; std::vector<br class="typebreak" />
+&lt; <a class="el" href="structpfq__lang_1_1FunctionDescr.html">FunctionDescr</a> &gt;, std::size_t &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#a0ac1bf1531a624ec955bcd38d75570d0">serialize</a> (<a class="el" href="structpfq__lang_1_1HFunction.html">HFunction</a>&lt; P &gt; const &amp;f, std::size_t n)</td></tr>
+<tr class="separator:a0ac1bf1531a624ec955bcd38d75570d0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0b749c5d9c23af96ced98bda19362b03"><td class="memTemplParams" colspan="2">template&lt;typename P , typename C &gt; </td></tr>
+<tr class="memitem:a0b749c5d9c23af96ced98bda19362b03"><td class="memTemplItemLeft" align="right" valign="top">static std::pair&lt; std::vector<br class="typebreak" />
+&lt; <a class="el" href="structpfq__lang_1_1FunctionDescr.html">FunctionDescr</a> &gt;, std::size_t &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#a0b749c5d9c23af96ced98bda19362b03">serialize</a> (<a class="el" href="structpfq__lang_1_1HFunction1.html">HFunction1</a>&lt; P, C &gt; const &amp;f, std::size_t n)</td></tr>
+<tr class="separator:a0b749c5d9c23af96ced98bda19362b03"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a977a117518db30fb6097f00defa2a78f"><td class="memTemplParams" colspan="2">template&lt;typename P , typename C1 , typename C2 &gt; </td></tr>
+<tr class="memitem:a977a117518db30fb6097f00defa2a78f"><td class="memTemplItemLeft" align="right" valign="top">static std::pair&lt; std::vector<br class="typebreak" />
+&lt; <a class="el" href="structpfq__lang_1_1FunctionDescr.html">FunctionDescr</a> &gt;, std::size_t &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#a977a117518db30fb6097f00defa2a78f">serialize</a> (<a class="el" href="structpfq__lang_1_1HFunction2.html">HFunction2</a>&lt; P, C1, C2 &gt; const &amp;f, std::size_t n)</td></tr>
+<tr class="separator:a977a117518db30fb6097f00defa2a78f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a090aa64fa2f91edc7c5697050e5e7568"><td class="memTemplParams" colspan="2">template&lt;typename C1 , typename C2 &gt; </td></tr>
+<tr class="memitem:a090aa64fa2f91edc7c5697050e5e7568"><td class="memTemplItemLeft" align="right" valign="top">static std::pair&lt; std::vector<br class="typebreak" />
+&lt; <a class="el" href="structpfq__lang_1_1FunctionDescr.html">FunctionDescr</a> &gt;, std::size_t &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#a090aa64fa2f91edc7c5697050e5e7568">serialize</a> (<a class="el" href="structpfq__lang_1_1Composition.html">Composition</a>&lt; C1, C2 &gt; const &amp;f, std::size_t n)</td></tr>
+<tr class="separator:a090aa64fa2f91edc7c5697050e5e7568"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0caf0c00c06c7bdfcd64f14ee88d2428"><td class="memItemLeft" align="right" valign="top">static std::pair&lt; std::vector<br class="typebreak" />
+&lt; <a class="el" href="structpfq__lang_1_1FunctionDescr.html">FunctionDescr</a> &gt;, std::size_t &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#a0caf0c00c06c7bdfcd64f14ee88d2428">serialize</a> (std::vector&lt; <a class="el" href="structpfq__lang_1_1MFunction.html">MFunction</a> &gt; const &amp;cont, std::size_t n)</td></tr>
+<tr class="separator:a0caf0c00c06c7bdfcd64f14ee88d2428"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5b3baa9ccc23744ad86c6636bf6549d7"><td class="memTemplParams" colspan="2">template&lt;typename P &gt; </td></tr>
+<tr class="memitem:a5b3baa9ccc23744ad86c6636bf6549d7"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="structpfq__lang_1_1Combinator1.html">Combinator1</a>&lt; P &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#a5b3baa9ccc23744ad86c6636bf6549d7">combinator1</a> (std::string symbol, P const &amp;pred)</td></tr>
+<tr class="separator:a5b3baa9ccc23744ad86c6636bf6549d7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a821f138300dc39630cae0ca9f46df034"><td class="memTemplParams" colspan="2">template&lt;typename P1 , typename P2 &gt; </td></tr>
+<tr class="memitem:a821f138300dc39630cae0ca9f46df034"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="structpfq__lang_1_1Combinator2.html">Combinator2</a>&lt; P1, P2 &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#a821f138300dc39630cae0ca9f46df034">combinator2</a> (std::string symbol, P1 const &amp;pred1, P2 const &amp;pred2)</td></tr>
+<tr class="separator:a821f138300dc39630cae0ca9f46df034"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6da898081fae7b71158845508a8d8599"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structpfq__lang_1_1Predicate.html">Predicate</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#a6da898081fae7b71158845508a8d8599">predicate</a> (std::string symbol)</td></tr>
+<tr class="separator:a6da898081fae7b71158845508a8d8599"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad4fceab90861beacc0490bd58a72bb05"><td class="memTemplParams" colspan="2">template&lt;typename Tp &gt; </td></tr>
+<tr class="memitem:ad4fceab90861beacc0490bd58a72bb05"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="structpfq__lang_1_1Predicate1.html">Predicate1</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#ad4fceab90861beacc0490bd58a72bb05">predicate1</a> (std::string symbol, Tp const &amp;arg)</td></tr>
+<tr class="separator:ad4fceab90861beacc0490bd58a72bb05"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a193ef4cf8fdc5efc924c8907f52d40a9"><td class="memTemplParams" colspan="2">template&lt;typename Prop &gt; </td></tr>
+<tr class="memitem:a193ef4cf8fdc5efc924c8907f52d40a9"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="structpfq__lang_1_1Predicate2.html">Predicate2</a>&lt; Prop &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#a193ef4cf8fdc5efc924c8907f52d40a9">predicate2</a> (std::string symbol, Prop const &amp;p)</td></tr>
+<tr class="separator:a193ef4cf8fdc5efc924c8907f52d40a9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8f0e859bcc0ebc8beb7815a98e9a09ec"><td class="memTemplParams" colspan="2">template&lt;typename Prop , typename Tp &gt; </td></tr>
+<tr class="memitem:a8f0e859bcc0ebc8beb7815a98e9a09ec"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="structpfq__lang_1_1Predicate3.html">Predicate3</a>&lt; Prop &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#a8f0e859bcc0ebc8beb7815a98e9a09ec">predicate3</a> (std::string symbol, Prop const &amp;p, Tp const &amp;arg)</td></tr>
+<tr class="separator:a8f0e859bcc0ebc8beb7815a98e9a09ec"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1248b60c38a72d129e582dafe2f1127e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structpfq__lang_1_1Property.html">Property</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#a1248b60c38a72d129e582dafe2f1127e">property</a> (std::string symbol)</td></tr>
+<tr class="separator:a1248b60c38a72d129e582dafe2f1127e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8c8b4147d846bfe486ccec193d5691c3"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
+<tr class="memitem:a8c8b4147d846bfe486ccec193d5691c3"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="structpfq__lang_1_1Property1.html">Property1</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#a8c8b4147d846bfe486ccec193d5691c3">property1</a> (std::string symbol, const T &amp;arg)</td></tr>
+<tr class="separator:a8c8b4147d846bfe486ccec193d5691c3"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a47d60e7fc6df739692308276b8f6d4e4"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structpfq__lang_1_1MFunction.html">MFunction</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#a47d60e7fc6df739692308276b8f6d4e4">mfunction</a> (std::string symbol)</td></tr>
+<tr class="separator:a47d60e7fc6df739692308276b8f6d4e4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a3cc9d61411c0398bb46aa2b33a21f7ed"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
+<tr class="memitem:a3cc9d61411c0398bb46aa2b33a21f7ed"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="structpfq__lang_1_1MFunction1.html">MFunction1</a>&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#a3cc9d61411c0398bb46aa2b33a21f7ed">mfunction1</a> (std::string symbol, const T &amp;arg)</td></tr>
+<tr class="separator:a3cc9d61411c0398bb46aa2b33a21f7ed"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa817867af6f06d681a8c1a6d3b3bdd50"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structpfq__lang_1_1MFunction2.html">MFunction2</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#aa817867af6f06d681a8c1a6d3b3bdd50">mfunction2</a> (std::string symbol, std::string msg)</td></tr>
+<tr class="separator:aa817867af6f06d681a8c1a6d3b3bdd50"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a12e516fe9eff54840e5ae5314c0e6bd9"><td class="memTemplParams" colspan="2">template&lt;typename P &gt; </td></tr>
+<tr class="memitem:a12e516fe9eff54840e5ae5314c0e6bd9"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="structpfq__lang_1_1HFunction.html">HFunction</a>&lt; P &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#a12e516fe9eff54840e5ae5314c0e6bd9">hfunction</a> (std::string symbol, P const &amp;p)</td></tr>
+<tr class="separator:a12e516fe9eff54840e5ae5314c0e6bd9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9b2ad595130a6a3fb46b1c07e06f18de"><td class="memTemplParams" colspan="2">template&lt;typename P , typename C &gt; </td></tr>
+<tr class="memitem:a9b2ad595130a6a3fb46b1c07e06f18de"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="structpfq__lang_1_1HFunction1.html">HFunction1</a>&lt; P, C &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#a9b2ad595130a6a3fb46b1c07e06f18de">hfunction1</a> (std::string symbol, P const &amp;p, C const &amp;c)</td></tr>
+<tr class="separator:a9b2ad595130a6a3fb46b1c07e06f18de"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a2bc5bc598d77da49ece66b49655c3bcb"><td class="memTemplParams" colspan="2">template&lt;typename P , typename C1 , typename C2 &gt; </td></tr>
+<tr class="memitem:a2bc5bc598d77da49ece66b49655c3bcb"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="structpfq__lang_1_1HFunction2.html">HFunction2</a>&lt; P, C1, C2 &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#a2bc5bc598d77da49ece66b49655c3bcb">hfunction2</a> (std::string symbol, P const &amp;p, C1 const &amp;c1, C2 const &amp;c2)</td></tr>
+<tr class="separator:a2bc5bc598d77da49ece66b49655c3bcb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a48fd6e016f34f642eb1e69e6f46c2bf5"><td class="memTemplParams" colspan="2">template&lt;typename C1 , typename C2 , typename  = typename kleisly&lt;typename C1::type, typename C2::type&gt;::type&gt; </td></tr>
+<tr class="memitem:a48fd6e016f34f642eb1e69e6f46c2bf5"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="structpfq__lang_1_1Composition.html">Composition</a>&lt; C1, C2 &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#a48fd6e016f34f642eb1e69e6f46c2bf5">operator&gt;&gt;</a> (C1 c1, C2 c2)</td></tr>
+<tr class="separator:a48fd6e016f34f642eb1e69e6f46c2bf5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a29acefdbde9149f233854728e17e2b2b"><td class="memTemplParams" colspan="2">template&lt;typename P1 , typename P2 &gt; </td></tr>
+<tr class="memitem:a29acefdbde9149f233854728e17e2b2b"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#a29acefdbde9149f233854728e17e2b2b">operator&amp;</a> (P1 const &amp;p1, P2 const &amp;p2) -&gt; decltype(<a class="el" href="namespacepfq__lang.html#a821f138300dc39630cae0ca9f46df034">combinator2</a>(nullptr, p1, p2))</td></tr>
+<tr class="separator:a29acefdbde9149f233854728e17e2b2b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a978d7cd525a526333465ca0f54c9e9a7"><td class="memTemplParams" colspan="2">template&lt;typename P1 , typename P2 &gt; </td></tr>
+<tr class="memitem:a978d7cd525a526333465ca0f54c9e9a7"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#a978d7cd525a526333465ca0f54c9e9a7">operator|</a> (P1 const &amp;p1, P2 const &amp;p2) -&gt; decltype(<a class="el" href="namespacepfq__lang.html#a821f138300dc39630cae0ca9f46df034">combinator2</a>(nullptr, p1, p2))</td></tr>
+<tr class="separator:a978d7cd525a526333465ca0f54c9e9a7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a73056248dba96e7ef696ca89d6c0e95d"><td class="memTemplParams" colspan="2">template&lt;typename P1 , typename P2 &gt; </td></tr>
+<tr class="memitem:a73056248dba96e7ef696ca89d6c0e95d"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#a73056248dba96e7ef696ca89d6c0e95d">operator^</a> (P1 const &amp;p1, P2 const &amp;p2) -&gt; decltype(<a class="el" href="namespacepfq__lang.html#a821f138300dc39630cae0ca9f46df034">combinator2</a>(nullptr, p1, p2))</td></tr>
+<tr class="separator:a73056248dba96e7ef696ca89d6c0e95d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acb50cd9437d17253fb1c6f9417165f3b"><td class="memTemplParams" colspan="2">template&lt;typename P &gt; </td></tr>
+<tr class="memitem:acb50cd9437d17253fb1c6f9417165f3b"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#acb50cd9437d17253fb1c6f9417165f3b">not_</a> (P const &amp;p) -&gt; decltype(<a class="el" href="namespacepfq__lang.html#a5b3baa9ccc23744ad86c6636bf6549d7">combinator1</a>(nullptr, p))</td></tr>
+<tr class="separator:acb50cd9437d17253fb1c6f9417165f3b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab4400aca22bce972a6a7ed240fa1b287"><td class="memTemplParams" colspan="2">template&lt;typename P &gt; </td></tr>
+<tr class="memitem:ab4400aca22bce972a6a7ed240fa1b287"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#ab4400aca22bce972a6a7ed240fa1b287">operator&lt;</a> (P const &amp;prop, uint64_t arg) -&gt; decltype(<a class="el" href="namespacepfq__lang.html#a8f0e859bcc0ebc8beb7815a98e9a09ec">predicate3</a>(nullptr, prop, arg))</td></tr>
+<tr class="separator:ab4400aca22bce972a6a7ed240fa1b287"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af29e294a8bf75eaae693124ff7f60951"><td class="memTemplParams" colspan="2">template&lt;typename P &gt; </td></tr>
+<tr class="memitem:af29e294a8bf75eaae693124ff7f60951"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#af29e294a8bf75eaae693124ff7f60951">operator&lt;=</a> (P const &amp;prop, uint64_t arg) -&gt; decltype(<a class="el" href="namespacepfq__lang.html#a8f0e859bcc0ebc8beb7815a98e9a09ec">predicate3</a>(nullptr, prop, arg))</td></tr>
+<tr class="separator:af29e294a8bf75eaae693124ff7f60951"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a36670e4a773cbd703a8e1c82e6276ec7"><td class="memTemplParams" colspan="2">template&lt;typename P &gt; </td></tr>
+<tr class="memitem:a36670e4a773cbd703a8e1c82e6276ec7"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#a36670e4a773cbd703a8e1c82e6276ec7">operator&gt;</a> (P const &amp;prop, uint64_t arg) -&gt; decltype(<a class="el" href="namespacepfq__lang.html#a8f0e859bcc0ebc8beb7815a98e9a09ec">predicate3</a>(nullptr, prop, arg))</td></tr>
+<tr class="separator:a36670e4a773cbd703a8e1c82e6276ec7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4d890c97a08d7c467c6edaa2c64b157f"><td class="memTemplParams" colspan="2">template&lt;typename P &gt; </td></tr>
+<tr class="memitem:a4d890c97a08d7c467c6edaa2c64b157f"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#a4d890c97a08d7c467c6edaa2c64b157f">operator&gt;=</a> (P const &amp;prop, uint64_t arg) -&gt; decltype(<a class="el" href="namespacepfq__lang.html#a8f0e859bcc0ebc8beb7815a98e9a09ec">predicate3</a>(nullptr, prop, arg))</td></tr>
+<tr class="separator:a4d890c97a08d7c467c6edaa2c64b157f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a68c88d476662d4ca3846780dac2819b8"><td class="memTemplParams" colspan="2">template&lt;typename P &gt; </td></tr>
+<tr class="memitem:a68c88d476662d4ca3846780dac2819b8"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#a68c88d476662d4ca3846780dac2819b8">operator==</a> (P const &amp;prop, uint64_t arg) -&gt; decltype(<a class="el" href="namespacepfq__lang.html#a8f0e859bcc0ebc8beb7815a98e9a09ec">predicate3</a>(nullptr, prop, arg))</td></tr>
+<tr class="separator:a68c88d476662d4ca3846780dac2819b8"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7f80d9995c06444dc17ac308cf3a5395"><td class="memTemplParams" colspan="2">template&lt;typename P &gt; </td></tr>
+<tr class="memitem:a7f80d9995c06444dc17ac308cf3a5395"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#a7f80d9995c06444dc17ac308cf3a5395">operator!=</a> (P const &amp;prop, uint64_t arg) -&gt; decltype(<a class="el" href="namespacepfq__lang.html#a8f0e859bcc0ebc8beb7815a98e9a09ec">predicate3</a>(nullptr, prop, arg))</td></tr>
+<tr class="separator:a7f80d9995c06444dc17ac308cf3a5395"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a206cf824d1779258d728af5dad3c3be7"><td class="memTemplParams" colspan="2">template&lt;typename P &gt; </td></tr>
+<tr class="memitem:a206cf824d1779258d728af5dad3c3be7"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#a206cf824d1779258d728af5dad3c3be7">any_bit</a> (P const &amp;prop, uint64_t mask) -&gt; decltype(<a class="el" href="namespacepfq__lang.html#a8f0e859bcc0ebc8beb7815a98e9a09ec">predicate3</a>(nullptr, prop, mask))</td></tr>
+<tr class="separator:a206cf824d1779258d728af5dad3c3be7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ab012202caaa4c22955784b17d31a74be"><td class="memTemplParams" colspan="2">template&lt;typename P &gt; </td></tr>
+<tr class="memitem:ab012202caaa4c22955784b17d31a74be"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq__lang.html#ab012202caaa4c22955784b17d31a74be">all_bit</a> (P const &amp;prop, uint64_t mask) -&gt; decltype(<a class="el" href="namespacepfq__lang.html#a8f0e859bcc0ebc8beb7815a98e9a09ec">predicate3</a>(nullptr, prop, mask))</td></tr>
+<tr class="separator:ab012202caaa4c22955784b17d31a74be"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
+<h2 class="groupheader">Typedef Documentation</h2>
+<a class="anchor" id="a66ac99ea626e7d1994f42ebfa003fbff"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;bool Value&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="namespacepfq__lang.html#a66ac99ea626e7d1994f42ebfa003fbff">pfq_lang::bool_type</a> = typedef std::integral_constant&lt;bool, Value&gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a63dfceff54d39223bbfe7dbc9616c643"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="namespacepfq__lang.html#a63dfceff54d39223bbfe7dbc9616c643">pfq_lang::NetFunction</a> = typedef <a class="el" href="structpfq__lang_1_1Function.html">Function</a>&lt; <a class="el" href="structpfq__lang_1_1Action.html">Action</a>&lt;<a class="el" href="structpfq__lang_1_1SkBuff.html">SkBuff</a>&gt;(<a class="el" href="structpfq__lang_1_1SkBuff.html">SkBuff</a>) &gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a7f62267862cd6049344078744cbcde3b"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="namespacepfq__lang.html#a7f62267862cd6049344078744cbcde3b">pfq_lang::NetPredicate</a> = typedef <a class="el" href="structpfq__lang_1_1Function.html">Function</a>&lt; bool(<a class="el" href="structpfq__lang_1_1SkBuff.html">SkBuff</a>) &gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="aedb71fd680cdb670390e8fac13a7cb5e"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">using <a class="el" href="namespacepfq__lang.html#aedb71fd680cdb670390e8fac13a7cb5e">pfq_lang::NetProperty</a> = typedef <a class="el" href="structpfq__lang_1_1Function.html">Function</a>&lt; uint64_t(<a class="el" href="structpfq__lang_1_1SkBuff.html">SkBuff</a>) &gt;</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <h2 class="groupheader">Function Documentation</h2>
-<a class="anchor" id="a424b5bd6563ed52fd84807def8ba2f5f"></a>
+<a class="anchor" id="ab012202caaa4c22955784b17d31a74be"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
@@ -247,7 +457,7 @@ template&lt;typename P &gt; </div>
         <tr>
           <td></td>
           <td>)</td>
-          <td></td><td> -&gt; decltype(predicate4(nullptr, prop, mask))
+          <td></td><td> -&gt; decltype(predicate3(nullptr, prop, mask))
     </td>
         </tr>
       </table>
@@ -260,7 +470,7 @@ template&lt;typename P &gt; </div>
 
 </div>
 </div>
-<a class="anchor" id="a9e93958b1fecbd660154947b474ffd05"></a>
+<a class="anchor" id="a206cf824d1779258d728af5dad3c3be7"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
@@ -284,7 +494,7 @@ template&lt;typename P &gt; </div>
         <tr>
           <td></td>
           <td>)</td>
-          <td></td><td> -&gt; decltype(predicate4(nullptr, prop, mask))
+          <td></td><td> -&gt; decltype(predicate3(nullptr, prop, mask))
     </td>
         </tr>
       </table>
@@ -297,31 +507,7 @@ template&lt;typename P &gt; </div>
 
 </div>
 </div>
-<a class="anchor" id="a35f3de0a6684c64d0465aa3f263fa8a6"></a>
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname"><a class="el" href="structpfq__lang_1_1term_1_1Combinator.html">term::Combinator</a> pfq_lang::combinator </td>
-          <td>(</td>
-          <td class="paramtype">std::string&#160;</td>
-          <td class="paramname"><em>name</em></td><td>)</td>
-          <td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a class="anchor" id="a78972807ac46884d5cd0719795946936"></a>
+<a class="anchor" id="a5b3baa9ccc23744ad86c6636bf6549d7"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
@@ -331,16 +517,16 @@ template&lt;typename P &gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">std::enable_if&lt; <a class="el" href="structpfq__lang_1_1term_1_1is__predicate.html">term::is_predicate</a>&lt;P&gt;::value, <a class="el" href="structpfq__lang_1_1term_1_1HFun.html">term::HFun</a>&lt;P&gt; &gt;::type pfq_lang::hnetfunction </td>
+          <td class="memname"><a class="el" href="structpfq__lang_1_1Combinator1.html">Combinator1</a>&lt;P&gt; pfq_lang::combinator1 </td>
           <td>(</td>
           <td class="paramtype">std::string&#160;</td>
-          <td class="paramname"><em>name</em>, </td>
+          <td class="paramname"><em>symbol</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">P const &amp;&#160;</td>
-          <td class="paramname"><em>p</em>&#160;</td>
+          <td class="paramname"><em>pred</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -357,20 +543,139 @@ template&lt;typename P &gt; </div>
 
 </div>
 </div>
-<a class="anchor" id="a71df0d0d66c45c40ad348a35a1781c71"></a>
+<a class="anchor" id="a821f138300dc39630cae0ca9f46df034"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename P , typename C &gt; </div>
+template&lt;typename P1 , typename P2 &gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">std::enable_if&lt; <a class="el" href="structpfq__lang_1_1term_1_1is__predicate.html">term::is_predicate</a>&lt;P&gt;::value &amp;&amp; <a class="el" href="structpfq__lang_1_1term_1_1is__netfunction.html">term::is_netfunction</a>&lt;C&gt;::value, <a class="el" href="structpfq__lang_1_1term_1_1HFun1.html">term::HFun1</a>&lt;P,C&gt; &gt;::type pfq_lang::hnetfunction1 </td>
+          <td class="memname"><a class="el" href="structpfq__lang_1_1Combinator2.html">Combinator2</a>&lt;P1,P2&gt; pfq_lang::combinator2 </td>
           <td>(</td>
           <td class="paramtype">std::string&#160;</td>
-          <td class="paramname"><em>name</em>, </td>
+          <td class="paramname"><em>symbol</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">P1 const &amp;&#160;</td>
+          <td class="paramname"><em>pred1</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">P2 const &amp;&#160;</td>
+          <td class="paramname"><em>pred2</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a8b5af237a48336a48908f14d16a5e740"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename C &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static char pfq_lang::has_insertion_test </td>
+          <td>(</td>
+          <td class="paramtype">typename std::remove_reference&lt; decltype((std::cout&lt;&lt; std::declval&lt; C &gt;())) &gt;::type *&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a60380b938a5abdb0c9604837f2a523a7"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename C &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static short pfq_lang::has_insertion_test </td>
+          <td>(</td>
+          <td class="paramtype">&#160;</td>
+          <td class="paramname"><em>...</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a12e516fe9eff54840e5ae5314c0e6bd9"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename P &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structpfq__lang_1_1HFunction.html">HFunction</a>&lt;P&gt; pfq_lang::hfunction </td>
+          <td>(</td>
+          <td class="paramtype">std::string&#160;</td>
+          <td class="paramname"><em>symbol</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">P const &amp;&#160;</td>
+          <td class="paramname"><em>p</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a9b2ad595130a6a3fb46b1c07e06f18de"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename P , typename C &gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structpfq__lang_1_1HFunction1.html">HFunction1</a>&lt;P,C&gt; pfq_lang::hfunction1 </td>
+          <td>(</td>
+          <td class="paramtype">std::string&#160;</td>
+          <td class="paramname"><em>symbol</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -390,29 +695,21 @@ template&lt;typename P , typename C &gt; </div>
           <td></td><td></td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
 
 </div>
 </div>
-<a class="anchor" id="a0899ef1c7c1872d3d2da51cf5704ab84"></a>
+<a class="anchor" id="a2bc5bc598d77da49ece66b49655c3bcb"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
 template&lt;typename P , typename C1 , typename C2 &gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">std::enable_if&lt; <a class="el" href="structpfq__lang_1_1term_1_1is__predicate.html">term::is_predicate</a>&lt;P&gt;::value &amp;&amp; <a class="el" href="structpfq__lang_1_1term_1_1is__netfunction.html">term::is_netfunction</a>&lt;C1&gt;::value &amp;&amp; <a class="el" href="structpfq__lang_1_1term_1_1is__netfunction.html">term::is_netfunction</a>&lt;C2&gt;::value, <a class="el" href="structpfq__lang_1_1term_1_1HFun2.html">term::HFun2</a>&lt;P,C1, C2&gt; &gt;::type pfq_lang::hnetfunction2 </td>
+          <td class="memname"><a class="el" href="structpfq__lang_1_1HFunction2.html">HFunction2</a>&lt;P,C1, C2&gt; pfq_lang::hfunction2 </td>
           <td>(</td>
           <td class="paramtype">std::string&#160;</td>
-          <td class="paramname"><em>name</em>, </td>
+          <td class="paramname"><em>symbol</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -438,16 +735,11 @@ template&lt;typename P , typename C1 , typename C2 &gt; </div>
           <td></td><td></td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
 
 </div>
 </div>
-<a class="anchor" id="a9f546a4602872df5ca74050ecb68a6b3"></a>
+<a class="anchor" id="a47d60e7fc6df739692308276b8f6d4e4"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -455,10 +747,10 @@ template&lt;typename P , typename C1 , typename C2 &gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structpfq__lang_1_1term_1_1Fun.html">term::Fun</a> pfq_lang::netfunction </td>
+          <td class="memname"><a class="el" href="structpfq__lang_1_1MFunction.html">MFunction</a> pfq_lang::mfunction </td>
           <td>(</td>
           <td class="paramtype">std::string&#160;</td>
-          <td class="paramname"><em>name</em></td><td>)</td>
+          <td class="paramname"><em>symbol</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -471,7 +763,7 @@ template&lt;typename P , typename C1 , typename C2 &gt; </div>
 
 </div>
 </div>
-<a class="anchor" id="af215f25fa7ebd61fdc90cf0ef78a3164"></a>
+<a class="anchor" id="a3cc9d61411c0398bb46aa2b33a21f7ed"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
@@ -481,10 +773,10 @@ template&lt;typename T &gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">std::enable_if&lt; std::is_pod&lt;T&gt;::value, <a class="el" href="structpfq__lang_1_1term_1_1Fun1.html">term::Fun1</a>&gt;::type pfq_lang::netfunction1 </td>
+          <td class="memname"><a class="el" href="structpfq__lang_1_1MFunction1.html">MFunction1</a> pfq_lang::mfunction1 </td>
           <td>(</td>
           <td class="paramtype">std::string&#160;</td>
-          <td class="paramname"><em>name</em>, </td>
+          <td class="paramname"><em>symbol</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -507,7 +799,41 @@ template&lt;typename T &gt; </div>
 
 </div>
 </div>
-<a class="anchor" id="a3a284611cc2c705d4304ba5e0f45d8b7"></a>
+<a class="anchor" id="aa817867af6f06d681a8c1a6d3b3bdd50"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structpfq__lang_1_1MFunction2.html">MFunction2</a> pfq_lang::mfunction2 </td>
+          <td>(</td>
+          <td class="paramtype">std::string&#160;</td>
+          <td class="paramname"><em>symbol</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::string&#160;</td>
+          <td class="paramname"><em>msg</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="acb50cd9437d17253fb1c6f9417165f3b"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
@@ -521,7 +847,7 @@ template&lt;typename P &gt; </div>
           <td>(</td>
           <td class="paramtype">P const &amp;&#160;</td>
           <td class="paramname"><em>p</em></td><td>)</td>
-          <td> -&gt; decltype(predicate2(combinator(nullptr), p, p))
+          <td> -&gt; decltype(combinator1(nullptr, p))
     </td>
         </tr>
       </table>
@@ -534,7 +860,7 @@ template&lt;typename P &gt; </div>
 
 </div>
 </div>
-<a class="anchor" id="a982f7b6137536d7e75fe9b2c13d581d4"></a>
+<a class="anchor" id="a7f80d9995c06444dc17ac308cf3a5395"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
@@ -558,7 +884,7 @@ template&lt;typename P &gt; </div>
         <tr>
           <td></td>
           <td>)</td>
-          <td></td><td> -&gt; decltype(predicate4(nullptr, prop, arg))
+          <td></td><td> -&gt; decltype(predicate3(nullptr, prop, arg))
     </td>
         </tr>
       </table>
@@ -571,7 +897,7 @@ template&lt;typename P &gt; </div>
 
 </div>
 </div>
-<a class="anchor" id="aa6f7aa80466e4cfd61a341fcf7a2eda4"></a>
+<a class="anchor" id="a29acefdbde9149f233854728e17e2b2b"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
@@ -595,7 +921,7 @@ template&lt;typename P1 , typename P2 &gt; </div>
         <tr>
           <td></td>
           <td>)</td>
-          <td></td><td> -&gt; decltype(predicate2(combinator(nullptr), p1, p2))
+          <td></td><td> -&gt; decltype(combinator2(nullptr, p1, p2))
     </td>
         </tr>
       </table>
@@ -608,7 +934,79 @@ template&lt;typename P1 , typename P2 &gt; </div>
 
 </div>
 </div>
-<a class="anchor" id="a222bd443a88e69ec2b3acd886bb80e37"></a>
+<a class="anchor" id="a8eb2d24aa20548df55924d37824e46b2"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Tp &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt;Tp&gt; pfq_lang::operator+ </td>
+          <td>(</td>
+          <td class="paramtype">std::vector&lt; Tp &gt;&#160;</td>
+          <td class="paramname"><em>v1</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::vector&lt; Tp &gt; &amp;&amp;&#160;</td>
+          <td class="paramname"><em>v2</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a607e3c40cd65152da1a8d90ea40f8c33"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Tp &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt;Tp&gt; pfq_lang::operator+ </td>
+          <td>(</td>
+          <td class="paramtype">std::vector&lt; Tp &gt;&#160;</td>
+          <td class="paramname"><em>v1</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::vector&lt; Tp &gt; const &amp;&#160;</td>
+          <td class="paramname"><em>v2</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="ab4400aca22bce972a6a7ed240fa1b287"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
@@ -632,7 +1030,7 @@ template&lt;typename P &gt; </div>
         <tr>
           <td></td>
           <td>)</td>
-          <td></td><td> -&gt; decltype(predicate4(nullptr, prop, arg))
+          <td></td><td> -&gt; decltype(predicate3(nullptr, prop, arg))
     </td>
         </tr>
       </table>
@@ -645,7 +1043,7 @@ template&lt;typename P &gt; </div>
 
 </div>
 </div>
-<a class="anchor" id="a67b8e80010c51a199869c1c2368b87be"></a>
+<a class="anchor" id="af29e294a8bf75eaae693124ff7f60951"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
@@ -669,7 +1067,7 @@ template&lt;typename P &gt; </div>
         <tr>
           <td></td>
           <td>)</td>
-          <td></td><td> -&gt; decltype(predicate4(nullptr, prop, arg))
+          <td></td><td> -&gt; decltype(predicate3(nullptr, prop, arg))
     </td>
         </tr>
       </table>
@@ -682,7 +1080,7 @@ template&lt;typename P &gt; </div>
 
 </div>
 </div>
-<a class="anchor" id="ac55d12423490f127fcb57b29535ca791"></a>
+<a class="anchor" id="a68c88d476662d4ca3846780dac2819b8"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
@@ -706,7 +1104,7 @@ template&lt;typename P &gt; </div>
         <tr>
           <td></td>
           <td>)</td>
-          <td></td><td> -&gt; decltype(predicate4(nullptr, prop, arg))
+          <td></td><td> -&gt; decltype(predicate3(nullptr, prop, arg))
     </td>
         </tr>
       </table>
@@ -719,7 +1117,7 @@ template&lt;typename P &gt; </div>
 
 </div>
 </div>
-<a class="anchor" id="ab210ad49979608b563eaa74a0d42b63a"></a>
+<a class="anchor" id="a36670e4a773cbd703a8e1c82e6276ec7"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
@@ -743,7 +1141,7 @@ template&lt;typename P &gt; </div>
         <tr>
           <td></td>
           <td>)</td>
-          <td></td><td> -&gt; decltype(predicate4(nullptr, prop, arg))
+          <td></td><td> -&gt; decltype(predicate3(nullptr, prop, arg))
     </td>
         </tr>
       </table>
@@ -756,7 +1154,7 @@ template&lt;typename P &gt; </div>
 
 </div>
 </div>
-<a class="anchor" id="ac37c4aac9486ceca12814ccd9b4c3306"></a>
+<a class="anchor" id="a4d890c97a08d7c467c6edaa2c64b157f"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
@@ -780,7 +1178,7 @@ template&lt;typename P &gt; </div>
         <tr>
           <td></td>
           <td>)</td>
-          <td></td><td> -&gt; decltype(predicate4(nullptr, prop, arg))
+          <td></td><td> -&gt; decltype(predicate3(nullptr, prop, arg))
     </td>
         </tr>
       </table>
@@ -793,17 +1191,17 @@ template&lt;typename P &gt; </div>
 
 </div>
 </div>
-<a class="anchor" id="a4c0690ecb14af669a41969a5de14acad"></a>
+<a class="anchor" id="a48fd6e016f34f642eb1e69e6f46c2bf5"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename C1 , typename C2 &gt; </div>
+template&lt;typename C1 , typename C2 , typename  = typename kleisly&lt;typename C1::type, typename C2::type&gt;::type&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">std::enable_if&lt; <a class="el" href="structpfq__lang_1_1term_1_1is__netfunction.html">term::is_netfunction</a>&lt;C1&gt;::value &amp;&amp; <a class="el" href="structpfq__lang_1_1term_1_1is__netfunction.html">term::is_netfunction</a>&lt;C2&gt;::value, <a class="el" href="structpfq__lang_1_1term_1_1Comp.html">term::Comp</a>&lt;C1, C2&gt; &gt;::type pfq_lang::operator&gt;&gt; </td>
+          <td class="memname"><a class="el" href="structpfq__lang_1_1Composition.html">Composition</a>&lt;C1, C2&gt; pfq_lang::operator&gt;&gt; </td>
           <td>(</td>
           <td class="paramtype">C1&#160;</td>
           <td class="paramname"><em>c1</em>, </td>
@@ -829,7 +1227,7 @@ template&lt;typename C1 , typename C2 &gt; </div>
 
 </div>
 </div>
-<a class="anchor" id="a29166c6bb957d6edd6892b7081f574df"></a>
+<a class="anchor" id="a73056248dba96e7ef696ca89d6c0e95d"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
@@ -853,7 +1251,7 @@ template&lt;typename P1 , typename P2 &gt; </div>
         <tr>
           <td></td>
           <td>)</td>
-          <td></td><td> -&gt; decltype(predicate2(combinator(nullptr), p1, p2))
+          <td></td><td> -&gt; decltype(combinator2(nullptr, p1, p2))
     </td>
         </tr>
       </table>
@@ -866,7 +1264,7 @@ template&lt;typename P1 , typename P2 &gt; </div>
 
 </div>
 </div>
-<a class="anchor" id="adeec773d44aae2b2f2957e1498c4ce8f"></a>
+<a class="anchor" id="a978d7cd525a526333465ca0f54c9e9a7"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
@@ -890,7 +1288,7 @@ template&lt;typename P1 , typename P2 &gt; </div>
         <tr>
           <td></td>
           <td>)</td>
-          <td></td><td> -&gt; decltype(predicate2(combinator(nullptr), p1, p2))
+          <td></td><td> -&gt; decltype(combinator2(nullptr, p1, p2))
     </td>
         </tr>
       </table>
@@ -903,7 +1301,7 @@ template&lt;typename P1 , typename P2 &gt; </div>
 
 </div>
 </div>
-<a class="anchor" id="abd58b2244ff8b0775a3b5865bc128872"></a>
+<a class="anchor" id="a6da898081fae7b71158845508a8d8599"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -911,10 +1309,10 @@ template&lt;typename P1 , typename P2 &gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structpfq__lang_1_1term_1_1Pred1.html">term::Pred1</a> pfq_lang::predicate </td>
+          <td class="memname"><a class="el" href="structpfq__lang_1_1Predicate.html">Predicate</a> pfq_lang::predicate </td>
           <td>(</td>
           <td class="paramtype">std::string&#160;</td>
-          <td class="paramname"><em>name</em></td><td>)</td>
+          <td class="paramname"><em>symbol</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -927,25 +1325,25 @@ template&lt;typename P1 , typename P2 &gt; </div>
 
 </div>
 </div>
-<a class="anchor" id="ae23a03cee94b5ddfde4a8d2e5c521f0e"></a>
+<a class="anchor" id="ad4fceab90861beacc0490bd58a72bb05"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename T &gt; </div>
+template&lt;typename Tp &gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">std::enable_if&lt; std::is_pod&lt;T&gt;::value, <a class="el" href="structpfq__lang_1_1term_1_1Pred1.html">term::Pred1</a>&gt;::type pfq_lang::predicate1 </td>
+          <td class="memname"><a class="el" href="structpfq__lang_1_1Predicate1.html">Predicate1</a> pfq_lang::predicate1 </td>
           <td>(</td>
           <td class="paramtype">std::string&#160;</td>
-          <td class="paramname"><em>name</em>, </td>
+          <td class="paramname"><em>symbol</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const T &amp;&#160;</td>
+          <td class="paramtype">Tp const &amp;&#160;</td>
           <td class="paramname"><em>arg</em>&#160;</td>
         </tr>
         <tr>
@@ -963,67 +1361,25 @@ template&lt;typename T &gt; </div>
 
 </div>
 </div>
-<a class="anchor" id="a89ea436faf8b7f13512e07efbce83b41"></a>
+<a class="anchor" id="a193ef4cf8fdc5efc924c8907f52d40a9"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename P1 , typename P2 &gt; </div>
+template&lt;typename Prop &gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">std::enable_if&lt; <a class="el" href="structpfq__lang_1_1term_1_1is__predicate.html">term::is_predicate</a>&lt;P1&gt;::value &amp;&amp; <a class="el" href="structpfq__lang_1_1term_1_1is__predicate.html">term::is_predicate</a>&lt;P2&gt;::value, <a class="el" href="structpfq__lang_1_1term_1_1Pred2.html">term::Pred2</a>&lt;P1,P2&gt; &gt;::type pfq_lang::predicate2 </td>
-          <td>(</td>
-          <td class="paramtype">term::Combinator&#160;</td>
-          <td class="paramname"><em>c</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">P1 const &amp;&#160;</td>
-          <td class="paramname"><em>left</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">P2 const &amp;&#160;</td>
-          <td class="paramname"><em>right</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a class="anchor" id="a863e349ba4942bf8a01b61d91859164a"></a>
-<div class="memitem">
-<div class="memproto">
-<div class="memtemplate">
-template&lt;typename P &gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">std::enable_if&lt; <a class="el" href="structpfq__lang_1_1term_1_1is__property.html">term::is_property</a>&lt;P&gt;::value, <a class="el" href="structpfq__lang_1_1term_1_1Pred3.html">term::Pred3</a>&lt;P&gt; &gt;::type pfq_lang::predicate3 </td>
+          <td class="memname"><a class="el" href="structpfq__lang_1_1Predicate2.html">Predicate2</a>&lt;Prop&gt; pfq_lang::predicate2 </td>
           <td>(</td>
           <td class="paramtype">std::string&#160;</td>
-          <td class="paramname"><em>name</em>, </td>
+          <td class="paramname"><em>symbol</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">P&#160;</td>
+          <td class="paramtype">Prop const &amp;&#160;</td>
           <td class="paramname"><em>p</em>&#160;</td>
         </tr>
         <tr>
@@ -1041,31 +1397,31 @@ template&lt;typename P &gt; </div>
 
 </div>
 </div>
-<a class="anchor" id="a1a9064340f4197e3dd4109a849a224dc"></a>
+<a class="anchor" id="a8f0e859bcc0ebc8beb7815a98e9a09ec"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename T , typename P &gt; </div>
+template&lt;typename Prop , typename Tp &gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">std::enable_if&lt; <a class="el" href="structpfq__lang_1_1term_1_1is__property.html">term::is_property</a>&lt;P&gt;::value &amp;&amp; std::is_pod&lt;T&gt;::value, <a class="el" href="structpfq__lang_1_1term_1_1Pred4.html">term::Pred4</a>&lt;P&gt; &gt;::type pfq_lang::predicate4 </td>
+          <td class="memname"><a class="el" href="structpfq__lang_1_1Predicate3.html">Predicate3</a>&lt;Prop&gt; pfq_lang::predicate3 </td>
           <td>(</td>
           <td class="paramtype">std::string&#160;</td>
-          <td class="paramname"><em>name</em>, </td>
+          <td class="paramname"><em>symbol</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">P&#160;</td>
+          <td class="paramtype">Prop const &amp;&#160;</td>
           <td class="paramname"><em>p</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">const T &amp;&#160;</td>
+          <td class="paramtype">Tp const &amp;&#160;</td>
           <td class="paramname"><em>arg</em>&#160;</td>
         </tr>
         <tr>
@@ -1083,7 +1439,7 @@ template&lt;typename T , typename P &gt; </div>
 
 </div>
 </div>
-<a class="anchor" id="ad70b40071ed0fd32c05ab8e82bbfec61"></a>
+<a class="anchor" id="ad57eb73340d285cb26cdb9cb2cc046d4"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -1091,10 +1447,410 @@ template&lt;typename T , typename P &gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname"><a class="el" href="structpfq__lang_1_1term_1_1Prop.html">term::Prop</a> pfq_lang::property </td>
+          <td class="memname">static std::string pfq_lang::pretty </td>
+          <td>(</td>
+          <td class="paramtype">const Argument &amp;&#160;</td>
+          <td class="paramname"><em>arg</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a6839c256e31592f52549ac129c9e791a"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename P &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static std::string pfq_lang::pretty </td>
+          <td>(</td>
+          <td class="paramtype">Combinator1&lt; P &gt; const &amp;&#160;</td>
+          <td class="paramname"><em>comb</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="ab21e91fcade9ea5853473400ececd5ce"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename P1 , typename P2 &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static std::string pfq_lang::pretty </td>
+          <td>(</td>
+          <td class="paramtype">Combinator2&lt; P1, P2 &gt; const &amp;&#160;</td>
+          <td class="paramname"><em>comb</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a69174e14fc798440d3483a4a50038eee"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static std::string pfq_lang::pretty </td>
+          <td>(</td>
+          <td class="paramtype">Property const &amp;&#160;</td>
+          <td class="paramname"><em>descr</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a070ec878e374f02e1f1e63d37b0d8098"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static std::string pfq_lang::pretty </td>
+          <td>(</td>
+          <td class="paramtype">Property1 const &amp;&#160;</td>
+          <td class="paramname"><em>descr</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a094d43e94d1069d6d1bc9f7b25801bfd"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static std::string pfq_lang::pretty </td>
+          <td>(</td>
+          <td class="paramtype">Predicate const &amp;&#160;</td>
+          <td class="paramname"><em>descr</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a180f309e82d8bcccabc9b1d803277dad"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static std::string pfq_lang::pretty </td>
+          <td>(</td>
+          <td class="paramtype">Predicate1 const &amp;&#160;</td>
+          <td class="paramname"><em>descr</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a72ef87d178499fd42421820e39b9d60d"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Prop &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static std::string pfq_lang::pretty </td>
+          <td>(</td>
+          <td class="paramtype">Predicate2&lt; Prop &gt; const &amp;&#160;</td>
+          <td class="paramname"><em>descr</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="af343f01d481ce0e15ca6d363b8929e1d"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Prop &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static std::string pfq_lang::pretty </td>
+          <td>(</td>
+          <td class="paramtype">Predicate3&lt; Prop &gt; const &amp;&#160;</td>
+          <td class="paramname"><em>descr</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="aecd073be957ceaa720f22f147487c94c"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static std::string pfq_lang::pretty </td>
+          <td>(</td>
+          <td class="paramtype">MFunction const &amp;&#160;</td>
+          <td class="paramname"><em>descr</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a17690e7e9e005902ed89b5c6423e26b1"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static std::string pfq_lang::pretty </td>
+          <td>(</td>
+          <td class="paramtype">MFunction1 const &amp;&#160;</td>
+          <td class="paramname"><em>descr</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a7afb2e0cc717c669d935d7c924ded8ce"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static std::string pfq_lang::pretty </td>
+          <td>(</td>
+          <td class="paramtype">MFunction2 const &amp;&#160;</td>
+          <td class="paramname"><em>descr</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a9ca1592a029867cd5b11e8ba8573c1f2"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename P &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static std::string pfq_lang::pretty </td>
+          <td>(</td>
+          <td class="paramtype">HFunction&lt; P &gt; const &amp;&#160;</td>
+          <td class="paramname"><em>descr</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a131e2d93c76f8f51bfbe595632067f93"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename P , typename C &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static std::string pfq_lang::pretty </td>
+          <td>(</td>
+          <td class="paramtype">HFunction1&lt; P, C &gt; const &amp;&#160;</td>
+          <td class="paramname"><em>descr</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a02cc423cc439a8c57600f1c9cf5bf0e5"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename P , typename C1 , typename C2 &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static std::string pfq_lang::pretty </td>
+          <td>(</td>
+          <td class="paramtype">HFunction2&lt; P, C1, C2 &gt; const &amp;&#160;</td>
+          <td class="paramname"><em>descr</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a39c7eedfcdc2f4975e6ee404afc92c32"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename C1 , typename C2 &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static std::string pfq_lang::pretty </td>
+          <td>(</td>
+          <td class="paramtype">Composition&lt; C1, C2 &gt; const &amp;&#160;</td>
+          <td class="paramname"><em>descr</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a1248b60c38a72d129e582dafe2f1127e"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structpfq__lang_1_1Property.html">Property</a> pfq_lang::property </td>
           <td>(</td>
           <td class="paramtype">std::string&#160;</td>
-          <td class="paramname"><em>name</em></td><td>)</td>
+          <td class="paramname"><em>symbol</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
@@ -1107,20 +1863,17 @@ template&lt;typename T , typename P &gt; </div>
 
 </div>
 </div>
-<a class="anchor" id="a3a4768b9f4e03b86943d332254cca27e"></a>
+<a class="anchor" id="a8c8b4147d846bfe486ccec193d5691c3"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
 template&lt;typename T &gt; </div>
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">std::enable_if&lt; std::is_pod&lt;T&gt;::value, <a class="el" href="structpfq__lang_1_1term_1_1Prop1.html">term::Prop1</a>&gt;::type pfq_lang::property1 </td>
+          <td class="memname"><a class="el" href="structpfq__lang_1_1Property1.html">Property1</a> pfq_lang::property1 </td>
           <td>(</td>
           <td class="paramtype">std::string&#160;</td>
-          <td class="paramname"><em>name</em>, </td>
+          <td class="paramname"><em>symbol</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -1134,16 +1887,83 @@ template&lt;typename T &gt; </div>
           <td></td><td></td>
         </tr>
       </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a5d08325293b0862f15c0751545c29e9d"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Pred &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static std::pair&lt;std::vector&lt;<a class="el" href="structpfq__lang_1_1FunctionDescr.html">FunctionDescr</a>&gt;, std::size_t&gt; pfq_lang::serialize </td>
+          <td>(</td>
+          <td class="paramtype">Combinator1&lt; Pred &gt; const &amp;&#160;</td>
+          <td class="paramname"><em>f</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::size_t&#160;</td>
+          <td class="paramname"><em>n</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
 
 </div>
 </div>
-<a class="anchor" id="a8fd413aae51832e7fc7f727dae11129c"></a>
+<a class="anchor" id="a8febfef074de7a10301593043303bd7d"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Pred1 , typename Pred2 &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static std::pair&lt;std::vector&lt;<a class="el" href="structpfq__lang_1_1FunctionDescr.html">FunctionDescr</a>&gt;, std::size_t&gt; pfq_lang::serialize </td>
+          <td>(</td>
+          <td class="paramtype">Combinator2&lt; Pred1, Pred2 &gt; const &amp;&#160;</td>
+          <td class="paramname"><em>f</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::size_t&#160;</td>
+          <td class="paramname"><em>n</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a3758147ecd6b21335a4cc1bcecc77e43"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -1151,11 +1971,475 @@ template&lt;typename T &gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">static std::string pfq_lang::show </td>
+          <td class="memname">static std::pair&lt;std::vector&lt;<a class="el" href="structpfq__lang_1_1FunctionDescr.html">FunctionDescr</a>&gt;, std::size_t&gt; pfq_lang::serialize </td>
           <td>(</td>
-          <td class="paramtype">enum pfq_functional_type&#160;</td>
-          <td class="paramname"><em>ft</em></td><td>)</td>
+          <td class="paramtype">Property const &amp;&#160;</td>
+          <td class="paramname"><em>p</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">std::size_t&#160;</td>
+          <td class="paramname"><em>n</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="ab0eb303b4d7a4dc3abef97f65a525179"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static std::pair&lt;std::vector&lt;<a class="el" href="structpfq__lang_1_1FunctionDescr.html">FunctionDescr</a>&gt;, std::size_t&gt; pfq_lang::serialize </td>
+          <td>(</td>
+          <td class="paramtype">Property1 const &amp;&#160;</td>
+          <td class="paramname"><em>p</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::size_t&#160;</td>
+          <td class="paramname"><em>n</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a1ad5441974b6c637a9d4316fd29accc6"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static std::pair&lt;std::vector&lt;<a class="el" href="structpfq__lang_1_1FunctionDescr.html">FunctionDescr</a>&gt;, std::size_t&gt; pfq_lang::serialize </td>
+          <td>(</td>
+          <td class="paramtype">Predicate const &amp;&#160;</td>
+          <td class="paramname"><em>p</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::size_t&#160;</td>
+          <td class="paramname"><em>n</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a19eb92e30a32c5e94253dc55962a23b4"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static std::pair&lt;std::vector&lt;<a class="el" href="structpfq__lang_1_1FunctionDescr.html">FunctionDescr</a>&gt;, std::size_t&gt; pfq_lang::serialize </td>
+          <td>(</td>
+          <td class="paramtype">Predicate1 const &amp;&#160;</td>
+          <td class="paramname"><em>p</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::size_t&#160;</td>
+          <td class="paramname"><em>n</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a357fe144a4702263ee38201b6b045bde"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Prop &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static std::pair&lt;std::vector&lt;<a class="el" href="structpfq__lang_1_1FunctionDescr.html">FunctionDescr</a>&gt;, std::size_t&gt; pfq_lang::serialize </td>
+          <td>(</td>
+          <td class="paramtype">Predicate2&lt; Prop &gt; const &amp;&#160;</td>
+          <td class="paramname"><em>p</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::size_t&#160;</td>
+          <td class="paramname"><em>n</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="af41eca371317223c73acf1bf84be7e49"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename Prop &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static std::pair&lt;std::vector&lt;<a class="el" href="structpfq__lang_1_1FunctionDescr.html">FunctionDescr</a>&gt;, std::size_t&gt; pfq_lang::serialize </td>
+          <td>(</td>
+          <td class="paramtype">Predicate3&lt; Prop &gt; const &amp;&#160;</td>
+          <td class="paramname"><em>p</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::size_t&#160;</td>
+          <td class="paramname"><em>n</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="ab52a6b94982b1948ce901c529a73d63f"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static std::pair&lt;std::vector&lt;<a class="el" href="structpfq__lang_1_1FunctionDescr.html">FunctionDescr</a>&gt;, std::size_t&gt; pfq_lang::serialize </td>
+          <td>(</td>
+          <td class="paramtype">MFunction const &amp;&#160;</td>
+          <td class="paramname"><em>f</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::size_t&#160;</td>
+          <td class="paramname"><em>n</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a838c38891f0176ba0f3ddef7c4191d66"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static std::pair&lt;std::vector&lt;<a class="el" href="structpfq__lang_1_1FunctionDescr.html">FunctionDescr</a>&gt;, std::size_t&gt; pfq_lang::serialize </td>
+          <td>(</td>
+          <td class="paramtype">MFunction1 const &amp;&#160;</td>
+          <td class="paramname"><em>f</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::size_t&#160;</td>
+          <td class="paramname"><em>n</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a9e12b05250ef4f72c591b8be8207a390"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static std::pair&lt;std::vector&lt;<a class="el" href="structpfq__lang_1_1FunctionDescr.html">FunctionDescr</a>&gt;, std::size_t&gt; pfq_lang::serialize </td>
+          <td>(</td>
+          <td class="paramtype">MFunction2 const &amp;&#160;</td>
+          <td class="paramname"><em>f</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::size_t&#160;</td>
+          <td class="paramname"><em>n</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a0ac1bf1531a624ec955bcd38d75570d0"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename P &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static std::pair&lt;std::vector&lt;<a class="el" href="structpfq__lang_1_1FunctionDescr.html">FunctionDescr</a>&gt;, std::size_t&gt; pfq_lang::serialize </td>
+          <td>(</td>
+          <td class="paramtype">HFunction&lt; P &gt; const &amp;&#160;</td>
+          <td class="paramname"><em>f</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::size_t&#160;</td>
+          <td class="paramname"><em>n</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a0b749c5d9c23af96ced98bda19362b03"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename P , typename C &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static std::pair&lt;std::vector&lt;<a class="el" href="structpfq__lang_1_1FunctionDescr.html">FunctionDescr</a>&gt;, std::size_t&gt; pfq_lang::serialize </td>
+          <td>(</td>
+          <td class="paramtype">HFunction1&lt; P, C &gt; const &amp;&#160;</td>
+          <td class="paramname"><em>f</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::size_t&#160;</td>
+          <td class="paramname"><em>n</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a977a117518db30fb6097f00defa2a78f"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename P , typename C1 , typename C2 &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static std::pair&lt;std::vector&lt;<a class="el" href="structpfq__lang_1_1FunctionDescr.html">FunctionDescr</a>&gt;, std::size_t&gt; pfq_lang::serialize </td>
+          <td>(</td>
+          <td class="paramtype">HFunction2&lt; P, C1, C2 &gt; const &amp;&#160;</td>
+          <td class="paramname"><em>f</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::size_t&#160;</td>
+          <td class="paramname"><em>n</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a090aa64fa2f91edc7c5697050e5e7568"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename C1 , typename C2 &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static std::pair&lt;std::vector&lt;<a class="el" href="structpfq__lang_1_1FunctionDescr.html">FunctionDescr</a>&gt;, std::size_t&gt; pfq_lang::serialize </td>
+          <td>(</td>
+          <td class="paramtype">Composition&lt; C1, C2 &gt; const &amp;&#160;</td>
+          <td class="paramname"><em>f</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::size_t&#160;</td>
+          <td class="paramname"><em>n</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a0caf0c00c06c7bdfcd64f14ee88d2428"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static std::pair&lt;std::vector&lt;<a class="el" href="structpfq__lang_1_1FunctionDescr.html">FunctionDescr</a>&gt;, std::size_t&gt; pfq_lang::serialize </td>
+          <td>(</td>
+          <td class="paramtype">std::vector&lt; MFunction &gt; const &amp;&#160;</td>
+          <td class="paramname"><em>cont</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::size_t&#160;</td>
+          <td class="paramname"><em>n</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
   </td>
@@ -1191,7 +2475,7 @@ template&lt;typename T &gt; </div>
 
 </div>
 </div>
-<a class="anchor" id="a35c9e73911d862b90ecfeb32fbfcfc8f"></a>
+<a class="anchor" id="af1f5c155d6ec60eb25b342aeb430ab7c"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -1201,7 +2485,31 @@ template&lt;typename T &gt; </div>
         <tr>
           <td class="memname">static std::string pfq_lang::show </td>
           <td>(</td>
-          <td class="paramtype">FunDescr const &amp;&#160;</td>
+          <td class="paramtype">const Argument &amp;&#160;</td>
+          <td class="paramname"><em>arg</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a90467c48a84afeb46509ab105ce1f789"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static std::string pfq_lang::show </td>
+          <td>(</td>
+          <td class="paramtype">const FunctionDescr &amp;&#160;</td>
           <td class="paramname"><em>descr</em></td><td>)</td>
           <td></td>
         </tr>
@@ -1221,7 +2529,7 @@ template&lt;typename T &gt; </div>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="namespacepfq__lang.html">pfq_lang</a></li>
-    <li class="footer">Generated on Tue May 27 2014 15:59:26 for PFQ-Lang eDLS by
+    <li class="footer">Generated on Sun Jun 8 2014 13:30:50 for PFQ-Lang eDLS by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.7 </li>
   </ul>

@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['fun',['Fun',['../structpfq__lang_1_1term_1_1Fun.html',1,'pfq_lang::term']]],
-  ['fun1',['Fun1',['../structpfq__lang_1_1term_1_1Fun1.html',1,'pfq_lang::term']]],
-  ['fundescr',['FunDescr',['../structpfq__lang_1_1FunDescr.html',1,'pfq_lang']]]
+  ['combinator1',['Combinator1',['../structpfq__lang_1_1Combinator1.html',1,'pfq_lang']]],
+  ['combinator2',['Combinator2',['../structpfq__lang_1_1Combinator2.html',1,'pfq_lang']]],
+  ['composition',['Composition',['../structpfq__lang_1_1Composition.html',1,'pfq_lang']]]
 ];

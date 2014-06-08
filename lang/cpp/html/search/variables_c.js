@@ -1,7 +1,9 @@
 var searchData=
 [
   ['port',['port',['../namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03.html#a1b370b44e5eedc364f3bb306d5042738',1,'pfq_lang::anonymous_namespace{default.hpp}']]],
-  ['pred_5f',['pred_',['../structpfq__lang_1_1term_1_1HFun.html#a21b242e11fd7818e6e7c1242433951db',1,'pfq_lang::term::HFun::pred_()'],['../structpfq__lang_1_1term_1_1HFun1.html#ac15b6e2665e60ad7f1700797c7677ea6',1,'pfq_lang::term::HFun1::pred_()'],['../structpfq__lang_1_1term_1_1HFun2.html#aa33f80727f25efed1112901cbcf1098a',1,'pfq_lang::term::HFun2::pred_()']]],
-  ['prop_5f',['prop_',['../structpfq__lang_1_1term_1_1Pred3.html#aa6450a183d05751a2d9cbfcf3b01a1dd',1,'pfq_lang::term::Pred3::prop_()'],['../structpfq__lang_1_1term_1_1Pred4.html#ab5f3d36392d98a2549b8e517f8919163',1,'pfq_lang::term::Pred4::prop_()']]],
-  ['ptr_5f',['ptr_',['../structpfq__lang_1_1term_1_1Pred1.html#aab8272102e260db367460682dc3f51c5',1,'pfq_lang::term::Pred1::ptr_()'],['../structpfq__lang_1_1term_1_1Pred4.html#abb2d1d1471c132aa44cb302ff97cb5d3',1,'pfq_lang::term::Pred4::ptr_()'],['../structpfq__lang_1_1term_1_1Prop1.html#a7f21a83de8fd325aba8850994ed92350',1,'pfq_lang::term::Prop1::ptr_()'],['../structpfq__lang_1_1term_1_1Fun1.html#a150724b8abe6251cfe55c5b1c41db965',1,'pfq_lang::term::Fun1::ptr_()']]]
+  ['pred1_5f',['pred1_',['../structpfq__lang_1_1Combinator2.html#a65f2f5cef67e0525a504529bdb264ab3',1,'pfq_lang::Combinator2']]],
+  ['pred2_5f',['pred2_',['../structpfq__lang_1_1Combinator2.html#a32669787a9dc32693db9813e1e5b7c0d',1,'pfq_lang::Combinator2']]],
+  ['pred_5f',['pred_',['../structpfq__lang_1_1Combinator1.html#ad4a0a97d1435bd35fe25796a88bbdebf',1,'pfq_lang::Combinator1::pred_()'],['../structpfq__lang_1_1HFunction.html#abfe7eeab2caa2997c6abb682bf069b8a',1,'pfq_lang::HFunction::pred_()'],['../structpfq__lang_1_1HFunction1.html#a2b27dcdb7b9183f330438e650a36aa42',1,'pfq_lang::HFunction1::pred_()'],['../structpfq__lang_1_1HFunction2.html#ab1f1307df8a4b1c23cd9e2905b308679',1,'pfq_lang::HFunction2::pred_()']]],
+  ['prop_5f',['prop_',['../structpfq__lang_1_1Predicate2.html#af3f7dcc4db7db8e2b0dc610b21966224',1,'pfq_lang::Predicate2::prop_()'],['../structpfq__lang_1_1Predicate3.html#a3d1b5001e401ee228375eefc72da5d88',1,'pfq_lang::Predicate3::prop_()']]],
+  ['ptr',['ptr',['../structpfq__lang_1_1Argument.html#a06431bd31fa48d87ed7e4d35b27b6dbc',1,'pfq_lang::Argument']]]
 ];

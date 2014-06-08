@@ -1,9 +1,10 @@
 var searchData=
 [
-  ['name_5f',['name_',['../structpfq__lang_1_1term_1_1Combinator.html#a8146794f91b1cb3424dc981ac9313f45',1,'pfq_lang::term::Combinator::name_()'],['../structpfq__lang_1_1term_1_1Pred1.html#a2e8fa633d20f23a5bda4f1d1d2d7c40a',1,'pfq_lang::term::Pred1::name_()'],['../structpfq__lang_1_1term_1_1Pred3.html#ac6c3e6209e74470fe1e97a1c0d7187a7',1,'pfq_lang::term::Pred3::name_()'],['../structpfq__lang_1_1term_1_1Pred4.html#a57f3123042c7ab4bba88d975449624b5',1,'pfq_lang::term::Pred4::name_()'],['../structpfq__lang_1_1term_1_1Prop.html#acd5fa0f8edef688fe2f042557ae0056b',1,'pfq_lang::term::Prop::name_()'],['../structpfq__lang_1_1term_1_1Prop1.html#a6f58d98255a7efcbda41f708e761cdae',1,'pfq_lang::term::Prop1::name_()'],['../structpfq__lang_1_1term_1_1Fun.html#a22db9b575894dc5a7e869ddf410a64b4',1,'pfq_lang::term::Fun::name_()'],['../structpfq__lang_1_1term_1_1Fun1.html#a5ae8141faf641ceecf3f9903495b29d9',1,'pfq_lang::term::Fun1::name_()'],['../structpfq__lang_1_1term_1_1HFun.html#ae20ef1dda67f36ac1d73bde9eb7ffece',1,'pfq_lang::term::HFun::name_()'],['../structpfq__lang_1_1term_1_1HFun1.html#ac37e99de5e6350b504a03f0e03d725c4',1,'pfq_lang::term::HFun1::name_()'],['../structpfq__lang_1_1term_1_1HFun2.html#aa3808dccb93ad00cfd0be7caa80f30b9',1,'pfq_lang::term::HFun2::name_()']]],
-  ['netfunction',['netfunction',['../namespacepfq__lang.html#a9f546a4602872df5ca74050ecb68a6b3',1,'pfq_lang']]],
-  ['netfunction1',['netfunction1',['../namespacepfq__lang.html#af215f25fa7ebd61fdc90cf0ef78a3164',1,'pfq_lang']]],
+  ['netfunction',['NetFunction',['../namespacepfq__lang.html#a63dfceff54d39223bbfe7dbc9616c643',1,'pfq_lang']]],
+  ['netpredicate',['NetPredicate',['../namespacepfq__lang.html#a7f62267862cd6049344078744cbcde3b',1,'pfq_lang']]],
+  ['netproperty',['NetProperty',['../namespacepfq__lang.html#aedb71fd680cdb670390e8fac13a7cb5e',1,'pfq_lang']]],
   ['no_5ffrag',['no_frag',['../namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03.html#a60b130b2b5a08d0c83063ed584b79396',1,'pfq_lang::anonymous_namespace{default.hpp}']]],
   ['no_5fmore_5ffrag',['no_more_frag',['../namespacepfq__lang_1_1anonymous__namespace_02default_8hpp_03.html#ac400453f07ca5fc4ef28d20085f149c2',1,'pfq_lang::anonymous_namespace{default.hpp}']]],
-  ['not_5f',['not_',['../namespacepfq__lang.html#a3a284611cc2c705d4304ba5e0f45d8b7',1,'pfq_lang']]]
+  ['not_5f',['not_',['../namespacepfq__lang.html#acb50cd9437d17253fb1c6f9417165f3b',1,'pfq_lang']]],
+  ['null',['Null',['../structpfq__lang_1_1Argument.html#a8efc5284160dc24e835ed65b40d988fa',1,'pfq_lang::Argument']]]
 ];
