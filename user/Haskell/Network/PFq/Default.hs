@@ -31,14 +31,14 @@
 
 module Network.PFq.Default
     (
-        -- * Combinators :: Predicate -> Predicate -> Predicate
+        -- * Combinators
 
         (.||.),
         (.&&.),
         (.^^.),
         not',
 
-        -- * Predicates :: SkBuff -> Bool
+        -- * Predicates
 
         (.<.),
         (.<=.),
@@ -78,7 +78,7 @@ module Network.PFq.Default
         has_vid,
         has_mark,
 
-        -- * Properties :: SkBuff -> Word64
+        -- * Properties
 
         ip_tos      ,
         ip_tot_len  ,
