@@ -765,18 +765,19 @@ namespace net {
             prg->entry_point = 0;
 
             int n = 0;
+
             for(auto & descr : ser)
             {
                 prg->fun[n].symbol = descr.symbol.c_str();
 
-                for(size_t i = 0; i < sizeof(prg->fun[n].arg)/ sizeof(prg->fun[n].arg[0]); i++)
+                for(size_t i = 0; i < sizeof(prg->fun[0].arg)/sizeof(prg->fun[0].arg[0]); i++)
                 {
-                    prg->fun[n].arg[i].ptr  = descr.arg[i].ptr.get();
+                    prg->fun[n].arg[i].ptr  = descr.arg[i].ptr ? descr.arg[i].ptr->addr() : nullptr;
                     prg->fun[n].arg[i].size = descr.arg[i].size;
                 }
 
-                prg->fun[n].left     = descr.left;
-                prg->fun[n].right    = descr.right;
+                prg->fun[n].left  = descr.left;
+                prg->fun[n].right = descr.right;
 
                 n++;
             }
