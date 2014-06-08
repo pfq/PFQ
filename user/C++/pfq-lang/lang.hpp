@@ -110,6 +110,9 @@ namespace pfq_lang
     struct ShowBase
     {
         virtual std::string forall_show() = 0;
+
+        virtual void *addr() = 0;
+        virtual void const *addr() const = 0;
     };
 
     template <typename Tp,  typename = void> struct Showable;
@@ -123,12 +126,12 @@ namespace pfq_lang
 
         Tp value;
 
-        Tp *get()
+        void *addr() override
         {
             return &value;
         }
 
-        Tp const *get() const
+        void const *addr() const override
         {
             return &value;
         }
@@ -150,12 +153,12 @@ namespace pfq_lang
 
         Tp value;
 
-        Tp *get()
+        void *addr() override
         {
             return &value;
         }
 
-        Tp const *get() const
+        void const *addr() const override
         {
             return &value;
         }
