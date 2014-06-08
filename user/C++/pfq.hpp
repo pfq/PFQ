@@ -213,7 +213,7 @@ namespace net {
         : fd_(-1)
         , pdata_()
         {
-            this->open(mask, policy,  caplen, rx_slots, maxlen, tx_slots);
+            this->open(mask, policy, caplen, rx_slots, maxlen, tx_slots);
         }
 
         //! Destructor: close the socket
