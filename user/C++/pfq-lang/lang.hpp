@@ -59,13 +59,13 @@ namespace pfq_lang
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-    struct Showbase
+    struct ShowBase
     {
         virtual std::string forall_show() = 0;
     };
 
     template <typename Tp>
-    struct Showable : Showbase
+    struct Showable : ShowBase
     {
         Showable(Tp v)
         : value(std::move(v))
@@ -99,9 +99,19 @@ namespace pfq_lang
 
     struct Argument
     {
+        Argument()
+        : ptr()
+        , size()
+        {}
+
+        Argument(std::shared_ptr<ShowBase> p, size_t s)
+        : ptr(std::move(p))
+        , size(s)
+        {}
+
         static Argument Null()
         {
-            return Argument{ std::shared_ptr<Showbase>(), 0};
+            return Argument{ std::shared_ptr<ShowBase>(), 0 };
         }
 
         template <typename Tp>
@@ -111,23 +121,24 @@ namespace pfq_lang
 
             auto ptr = std::make_shared<Showable<Tp>>(pod);
 
-            return Argument{ std::dynamic_pointer_cast<Showbase>(ptr), sizeof(pod) };
+            return Argument{ std::dynamic_pointer_cast<ShowBase>(ptr), sizeof(pod) };
         }
 
         static Argument String(std::string str)
         {
             auto ptr = std::make_shared<Showable<std::string>>(std::move(str));
-            return Argument{ std::dynamic_pointer_cast<Showbase>(ptr), 0 };
+            return Argument{ std::dynamic_pointer_cast<ShowBase>(ptr), 0 };
         }
 
         static Argument Fun(std::size_t n)
         {
-            return Argument{ std::shared_ptr<Showbase>(), n };
+            return Argument{ std::shared_ptr<ShowBase>(), n };
         }
 
-        std::shared_ptr<Showbase> ptr;
+        std::shared_ptr<ShowBase> ptr;
         size_t size;
     };
+
 
     static inline std::string
     show(const Argument &arg)
@@ -374,7 +385,7 @@ namespace pfq_lang
     {
        std::vector<FunctionDescr> pred, comb =
        {
-           { f.symbol_, {Argument::Fun(n+1) }, -1UL, -1UL }
+           { f.symbol_, { { Argument::Fun(n+1) } }, -1UL, -1UL }
        };
 
        std::size_t n1;
@@ -396,7 +407,7 @@ namespace pfq_lang
        std::tie(pred1, n1) = serialize(f.pred1_, n+1);
        std::tie(pred2, n2) = serialize(f.pred2_, n1);
 
-       comb = { { f.symbol_, { Argument::Fun(n+1), Argument::Fun(n1) } , -1UL, -1UL } };
+       comb = { { f.symbol_, { { Argument::Fun(n+1), Argument::Fun(n1) } }, -1UL, -1UL } };
 
        return { std::move(comb) + std::move(pred1) + std::move(pred2), n2 };
     }
@@ -453,7 +464,7 @@ namespace pfq_lang
     static inline std::pair<std::vector<FunctionDescr>, std::size_t>
     serialize(Property1 const &p, std::size_t n)
     {
-        return { {FunctionDescr { p.symbol_, { p.arg_ }, -1UL, -1UL } }, n+1 };
+        return { {FunctionDescr { p.symbol_, {{ p.arg_ }}, -1UL, -1UL } }, n+1 };
     }
 
 
@@ -551,7 +562,7 @@ namespace pfq_lang
     static inline std::pair<std::vector<FunctionDescr>, std::size_t>
     serialize(Predicate1 const &p, std::size_t n)
     {
-        return { { FunctionDescr { p.symbol_,  {p.arg_}, -1UL, -1UL } }, n+1 };
+        return { { FunctionDescr { p.symbol_,  {{ p.arg_}}, -1UL, -1UL } }, n+1 };
     }
 
     template <typename Prop>
@@ -560,7 +571,7 @@ namespace pfq_lang
     {
        std::vector<FunctionDescr> prop, pred =
        {
-           { p.symbol_, {Argument::Fun(n+1) }, -1UL, -1UL }
+           { p.symbol_, { {Argument::Fun(n+1) } }, -1UL, -1UL }
        };
 
        std::size_t n1;
@@ -576,7 +587,7 @@ namespace pfq_lang
     {
        std::vector<FunctionDescr> prop, pred =
        {
-           { p.symbol_, {Argument::Fun(n+1), p.arg_ }, -1UL, -1UL }
+           { p.symbol_, { {Argument::Fun(n+1), p.arg_ } }, -1UL, -1UL }
        };
 
        std::size_t n1;
@@ -768,13 +779,13 @@ namespace pfq_lang
     static inline std::pair<std::vector<FunctionDescr>, std::size_t>
     serialize(MFunction1 const &f, std::size_t n)
     {
-        return { { FunctionDescr { f.symbol_, { f.arg_ }, n+1, n+1 } }, n+1 };
+        return { { FunctionDescr { f.symbol_, {{ f.arg_ }}, n+1, n+1 } }, n+1 };
     }
 
     static inline std::pair<std::vector<FunctionDescr>, std::size_t>
     serialize(MFunction2 const &f, std::size_t n)
     {
-        return { { FunctionDescr { f.symbol_, { f.arg_ }, n+1, n+1 } }, n+1 };
+        return { { FunctionDescr { f.symbol_,  {{ f.arg_ }}, n+1, n+1 } }, n+1 };
     }
 
     template <typename P>
@@ -786,7 +797,7 @@ namespace pfq_lang
 
         std::tie(p1, n1) = serialize(f.pred_, n+1);
 
-        v1 = { { f.symbol_,  { Argument::Fun(n+1) }, n1, n1 } };
+        v1 = { { f.symbol_,  { { Argument::Fun(n+1) } }, n1, n1 } };
 
         return { std::move(v1) + std::move(p1), n1 };
     }
@@ -802,7 +813,7 @@ namespace pfq_lang
         std::tie(p1, n1) = serialize(f.pred_, n+1);
         std::tie(c1, n2) = serialize(f.fun_, n1);
 
-        v1 = { { f.symbol_, { Argument::Fun(n+1) }, n2, n1 } };
+        v1 = { { f.symbol_, { { Argument::Fun(n+1) } }, n2, n1 } };
 
         return { { std::move(v1) + std::move(p1) + std::move(c1) }, n2 };
     }
@@ -819,7 +830,7 @@ namespace pfq_lang
         std::tie(c1, n2) = serialize(f.fun1_ , n1  );
         std::tie(c2, n3) = serialize(f.fun2_ , n2  );
 
-        v1 = { { f.symbol_, { Argument::Fun(n+1) }, n2, n1 } };
+        v1 = { { f.symbol_, { { Argument::Fun(n+1) } }, n2, n1 } };
 
         for(auto & d : c1)
         {
