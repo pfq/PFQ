@@ -36,7 +36,6 @@ namespace opt {
     std::string function;
 
     size_t caplen = 64;
-    size_t offset = 0;
     size_t slots  = 131072;
     bool flow     = false;
 
@@ -152,7 +151,7 @@ namespace test
         : m_id(id)
         , m_bind(b)
         , m_stop(std::unique_ptr<std::atomic_bool>(new std::atomic_bool(false)))
-        , m_pfq(group_policy::undefined, opt::caplen, opt::offset, opt::slots)
+        , m_pfq(group_policy::undefined, opt::caplen, opt::slots)
         , m_read()
         , m_batch()
         , m_set()
@@ -316,7 +315,6 @@ void usage(std::string name)
         "usage: " + std::move(name) + " [OPTIONS]\n\n"
         " -h --help                     Display this help\n"
         " -c --caplen=INT               Set caplen\n"
-        " -o --offset=INT               Set capture offset\n"
         " -w --flow                     Enable flow counter\n"
         " -s --slot=INT                 Set slots\n"
         " -f --function=FUNCTION\n"
@@ -361,18 +359,6 @@ try
             }
 
             opt::caplen = std::atoi(argv[i]);
-            continue;
-        }
-
-        if ( strcmp(argv[i], "-o") == 0 ||
-             strcmp(argv[i], "--offset") == 0) {
-            i++;
-            if (i == argc)
-            {
-                throw std::runtime_error("offset missing");
-            }
-
-            opt::offset = std::atoi(argv[i]);
             continue;
         }
 
@@ -424,13 +410,6 @@ try
         std::cout << "too few slots may affet the performance!" << std::endl;
         _Exit(0);
     }
-
-    if (opt::flow) {
-        std::cout << "forcing offset to 14 bytes..." << std::endl;
-        opt::offset = 14;
-    }
-
-    std::cout << "offset: " << opt::offset << std::endl;
 
     // create thread context:
     //
