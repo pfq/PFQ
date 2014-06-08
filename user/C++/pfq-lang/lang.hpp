@@ -498,7 +498,7 @@ namespace pfq_lang
     static inline std::pair<std::vector<FunctionDescr>, std::size_t>
     serialize(Property const &p, std::size_t n)
     {
-        return { { FunctionDescr {p.symbol_, {}, -1UL, -1UL } }, n+1 };
+        return { { FunctionDescr {p.symbol_, {{}}, -1UL, -1UL } }, n+1 };
     }
 
     static inline std::pair<std::vector<FunctionDescr>, std::size_t>
@@ -596,7 +596,7 @@ namespace pfq_lang
     static inline std::pair<std::vector<FunctionDescr>, std::size_t>
     serialize(Predicate const &p, std::size_t n)
     {
-        return { { FunctionDescr { p.symbol_,  {}, -1UL, -1UL } }, n+1 };
+        return { { FunctionDescr { p.symbol_,  {{}}, -1UL, -1UL } }, n+1 };
     }
 
     static inline std::pair<std::vector<FunctionDescr>, std::size_t>
@@ -813,7 +813,7 @@ namespace pfq_lang
     static inline std::pair<std::vector<FunctionDescr>, std::size_t>
     serialize(MFunction const &f, std::size_t n)
     {
-        return { { FunctionDescr { f.symbol_, { }, n+1, n+1 } }, n+1 };
+        return { { FunctionDescr { f.symbol_, {{}}, n+1, n+1 } }, n+1 };
     }
 
     static inline std::pair<std::vector<FunctionDescr>, std::size_t>
