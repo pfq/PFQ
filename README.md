@@ -54,8 +54,8 @@ Luca Abeni <abeni@dit.unitn.it>
 HomePages
 ---------
 
-PFQ home-page is [pfq.github.io/PFQ][1]. Additional information are available [here][2].
+PFQ home-page is [www.pfq.io][1]. Additional information are available at [netgroup/pfq][2].
 
 
-[1]: http://pfq.github.io/PFQ
+[1]: http://www.pfq.io
 [2]: http://netgroup.iet.unipi.it/software/pfq/
