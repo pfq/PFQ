@@ -10,11 +10,16 @@ steering across sockets.
 
 PFQ is highly optimized for multi-core architecture, as well as for network 
 devices equipped with multiple hardware queues. It works with any device
-driver (the ones shipped with the Linux Kernel) and provides a script designed 
-to obtain accelerated versions of the drivers from their source codes.
+driver and provides a script designed to obtain accelerated versions of the drivers 
+from their source codes.
+
+The framework enables the development of high-performance networking applications 
+with different languages (i.e. C, C++ and Haskell). In addition, a new functional language 
+designed for software defined networking and monitoring is available as eDLS: PFQ-lang.
 
 The package provides the source code of the PFQ kernel module, user-space 
-libraries for C, C++11 and Haskell languages and a set of diagnostic tools.
+libraries for C, C++11 and Haskell languages, PFQ-lang as embedded DLS and a set of 
+diagnostic tools.
 
 Features
 --------
@@ -23,7 +28,7 @@ Features
 * Socket groups allow for concurrent monitoring of multi-threaded applications.
 * Per-group packet steering through randomized hashing algorithms or deterministic classifications.
 * Per-group Berkeley filters and per-group VLAN filters.
-* Extensible framework for in-kernel functional monitoring: Q-Lang. 
+* Extensible framework for in-kernel functional monitoring: PFQ-Lang. 
 * User-space native bindings for C, C++11 and Haskell languages.
 * pfq-omatic, a script that allows to compile drivers and get the accelerated versions.
 * Accelerated pcap library.
