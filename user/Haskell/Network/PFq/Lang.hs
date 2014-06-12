@@ -152,8 +152,8 @@ instance Show (Function f) where
         show (Combinator2 "and" p1 p2)  = "(Combinator and " ++ show p1 ++" " ++ show p2 ++ "))"
         show (Combinator2 "or"  p1 p2)  = "(Combinator or  " ++ show p1 ++" " ++ show p2 ++ "))"
         show (Combinator2 "xor" p1 p2)  = "(Combinator xor " ++ show p1 ++" " ++ show p2 ++ "))"
-        show (Combinator1 _ _)          = undefined
-        show (Combinator2 _ _ _)        = undefined
+        show (Combinator1{})            = undefined
+        show (Combinator2 {})           = undefined
 
         show (Composition a b)          = "(Composition " ++ show a ++ " " ++ show b ++ ")"
 
@@ -184,8 +184,8 @@ instance Pretty (Function f) where
         pretty (Combinator2 "and" p1 p2)  = "(" ++ pretty p1 ++" && " ++ pretty p2 ++ ")"
         pretty (Combinator2 "or"  p1 p2)  = "(" ++ pretty p1 ++" || " ++ pretty p2 ++ ")"
         pretty (Combinator2 "xor" p1 p2)  = "(" ++ pretty p1 ++" ^^ " ++ pretty p2 ++ ")"
-        pretty (Combinator1 _ _)          = undefined
-        pretty (Combinator2 _ _ _)        = undefined
+        pretty (Combinator1{} )           = undefined
+        pretty (Combinator2{})            = undefined
         pretty (Composition a b)          = pretty a ++ " >-> " ++ pretty b
 
 
