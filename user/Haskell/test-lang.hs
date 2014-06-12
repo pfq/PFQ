@@ -32,7 +32,7 @@ main = do
         let mycond = is_ip .&&. (is_tcp .||. is_udp)
         let mycond1 = is_udp
 
-        let comp = steer_rtp >-> dummy 24
+        let comp = par' (ip >-> udp) (ip >-> tcp) >-> steer_rtp >-> dummy 24
                     >-> (conditional (mycond  .||. mycond1)
                                         steer_ip
                                         (inc 1 >-> drop')

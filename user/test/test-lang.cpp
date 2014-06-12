@@ -107,6 +107,7 @@ main()
     show_comp (forward("eth0"));
 
     show_comp (inv(ip >> udp) >> drop);
+    show_comp (par (ip >> tcp, ip >> udp) >> drop );
 
     return 0;
 }
