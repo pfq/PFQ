@@ -177,7 +177,7 @@ steering_ip6(arguments_t args, struct sk_buff *skb)
 }
 
 
-struct pfq_monadic_fun_descr steering_functions[] = {
+struct pfq_function_descr steering_functions[] = {
 
 	{ "steer_link",  "SkBuff -> Action SkBuff", steering_link    },
         { "steer_vlan",  "SkBuff -> Action SkBuff", steering_vlan_id },

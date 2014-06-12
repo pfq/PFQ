@@ -29,7 +29,7 @@
 #include "combinator.h"
 #include "inline.h"
 
-struct pfq_combinator_fun_descr combinator_functions[] = {
+struct pfq_function_descr combinator_functions[] = {
 
         { "or",    "(SkBuff -> Bool) -> (SkBuff -> Bool) -> SkBuff -> Bool",    or  },
         { "and",   "(SkBuff -> Bool) -> (SkBuff -> Bool) -> SkBuff -> Bool",    and },

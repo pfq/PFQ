@@ -129,7 +129,7 @@ struct pfq_computation_tree
 };
 
 
-/**** function descriptors ****/
+/* function descriptors */
 
 struct pfq_function_descr
 {
@@ -139,43 +139,6 @@ struct pfq_function_descr
         init_ptr_t 	init;
         fini_ptr_t 	fini;
 };
-
-struct pfq_monadic_fun_descr
-{
-        const char *    symbol;
-        const char *	signature;
-        function_ptr_t 	ptr;
-        init_ptr_t 	init;
-        fini_ptr_t 	fini;
-};
-
-struct pfq_predicate_fun_descr
-{
-        const char * 	symbol;
-        const char *	signature;
-        predicate_ptr_t ptr;
-        init_ptr_t 	init;
-        fini_ptr_t 	fini;
-};
-
-struct pfq_combinator_fun_descr
-{
-        const char * 	symbol;
-        const char *	signature;
-        predicate_ptr_t ptr;
-        init_ptr_t 	init;
-        fini_ptr_t 	fini;
-};
-
-struct pfq_property_fun_descr
-{
-        const char * 	symbol;
-        const char *	signature;
-        property_ptr_t 	ptr;
-        init_ptr_t 	init;
-        fini_ptr_t 	fini;
-};
-
 
 /* actions types */
 

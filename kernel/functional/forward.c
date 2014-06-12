@@ -180,7 +180,7 @@ forward_fini(arguments_t args)
 }
 
 
-struct pfq_monadic_fun_descr forward_functions[] = {
+struct pfq_function_descr forward_functions[] = {
 
         { "drop",        "SkBuff -> Action SkBuff",   	    		INLINE_FUN(forward_drop) 	},
         { "broadcast",   "SkBuff -> Action SkBuff",   	    		INLINE_FUN(forward_broadcast)	},
