@@ -285,6 +285,7 @@ namespace pfq_lang
         auto when        = std::bind(details::hcomp1(), "when", _1, _2);
         auto unless      = std::bind(details::hcomp1(), "unless", _1, _2);
         auto conditional = std::bind(details::hcomp2(), "conditional", _1, _2, _3);
+        auto inv         = std::bind(details::hcomp3(), "inv", _1);
 
         auto crc16       = mfunction("crc16");
 
