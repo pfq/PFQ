@@ -188,13 +188,26 @@ inv(arguments_t args, struct sk_buff *skb)
 	function_t expr = get_data(function_t, args);
 	struct sk_buff *nskb = EVAL_FUNCTION(expr, skb);
 
-	if (!nskb)
+	if (!nskb || is_drop(PFQ_CB(nskb)->action))
 		return skb;
 
-        if (is_drop(PFQ_CB(skb)->action))
-		return copy(nskb);
-
 	return drop(nskb);
+}
+
+
+static struct sk_buff *
+par(arguments_t args, struct sk_buff *skb)
+{
+	function_t f = get_data0(function_t, args);
+	function_t g = get_data1(function_t, args);
+
+	struct sk_buff *nskb = EVAL_FUNCTION(f, skb);
+
+	if (!nskb || is_drop(PFQ_CB(nskb)->action)) {
+		return EVAL_FUNCTION(g, copy(skb));
+	}
+
+	return nskb;
 }
 
 
@@ -209,7 +222,8 @@ struct pfq_function_descr misc_functions[] = {
         { "log_msg",  	"String -> SkBuff -> Action SkBuff", 		log_msg 	},
         { "log_packet", "SkBuff -> Action SkBuff", 			log_packet	},
 
-        { "inv", 	"(SkBuff -> Action SkBuff) -> SkBuff -> Action SkBuff",     inv },
+        { "inv", 	"(SkBuff -> Action SkBuff) -> SkBuff -> Action SkBuff",     				inv },
+        { "par", 	"(SkBuff -> Action SkBuff) -> (SkBuff -> Action SkBuff) -> SkBuff -> Action SkBuff",    par },
         { NULL }};
 
 
