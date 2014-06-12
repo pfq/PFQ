@@ -43,6 +43,7 @@ static struct sk_buff *
 forward(arguments_t args, struct sk_buff *skb)
 {
 	struct net_device *dev = get_data(struct net_device *, args);
+	struct sk_buff *nskb;
 
 #ifdef PFQ_USE_BATCH_FORWARD
 
@@ -57,14 +58,21 @@ forward(arguments_t args, struct sk_buff *skb)
 
        	queues = get_data2(struct forward_queue *, args);
 
-	atomic_inc(&skb->users);
+#ifdef PFQ_NOCLONE_FORWARD
+	nskb = atomic_inc(&skb->users);
+#else
+	nskb = skb_clone(skb, GFP_ATOMIC);
+	if (!nskb) {
+        	printk(KERN_INFO "[PFQ] forward pfq_xmit %s: no memory!\n", dev->name);
+        	return skb;
+	}
+#endif
 
 	id = smp_processor_id();
 
-	pfq_non_intrusive_push(&queues[id].q, skb);
+	pfq_non_intrusive_push(&queues[id].q, nskb);
 
 	if (pfq_non_intrusive_len(&queues[id].q) < batch_len) {
-
 		return skb;
 	}
 
@@ -75,9 +83,7 @@ forward(arguments_t args, struct sk_buff *skb)
 #endif
 	}
 
-
 	pfq_non_intrusive_flush(&queues[id].q);
-
 
 #else /* PFQ_USE_BATCH_FORWARD */
 
@@ -87,9 +93,17 @@ forward(arguments_t args, struct sk_buff *skb)
                 return skb;
 	}
 
-	atomic_inc(&skb->users);
+#ifdef PFQ_NOCLONE_FORWARD
+	nskb = atomic_inc(&skb->users);
+#else
+	nskb = skb_clone(skb, GFP_ATOMIC);
+	if (!nskb) {
+        	printk(KERN_INFO "[PFQ] forward pfq_xmit %s: no memory!\n", dev->name);
+        	return skb;
+	}
+#endif
 
-	if (pfq_xmit(skb, dev, skb->queue_mapping) != 1) {
+	if (pfq_xmit(nskb, dev, nskb->queue_mapping) != 1) {
 #ifdef DEBUG
                 if (printk_ratelimit())
                         printk(KERN_INFO "[PFQ] forward pfq_xmit: error on device %s!\n", dev->name);
@@ -180,7 +194,7 @@ forward_fini(arguments_t args)
 }
 
 
-struct pfq_monadic_fun_descr forward_functions[] = {
+struct pfq_function_descr forward_functions[] = {
 
         { "drop",        "SkBuff -> Action SkBuff",   	    		INLINE_FUN(forward_drop) 	},
         { "broadcast",   "SkBuff -> Action SkBuff",   	    		INLINE_FUN(forward_broadcast)	},

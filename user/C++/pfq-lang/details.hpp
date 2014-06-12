@@ -96,6 +96,26 @@ namespace pfq_lang
             }
         };
 
+        struct hcomp3
+        {
+            template <typename F>
+            auto operator()(std::string name, F const &fun)
+            -> decltype(hfunction3(std::move(name), fun))
+            {
+                return hfunction3(std::move(name), fun);
+            }
+        };
+
+        struct hcomp4
+        {
+            template <typename F, typename G>
+            auto operator()(std::string name, F const &f, G const &g)
+            -> decltype(hfunction4(std::move(name), f, g))
+            {
+                return hfunction4(std::move(name), f, g);
+            }
+        };
+
         // utility function
         //
 

@@ -126,7 +126,7 @@ filter_no_more_frag(arguments_t args, struct sk_buff *skb)
 }
 
 
-struct pfq_monadic_fun_descr filter_functions[] = {
+struct pfq_function_descr filter_functions[] = {
 
         { "unit",	  "SkBuff -> Action SkBuff", 	INLINE_FUN(unit)          },
         { "ip",           "SkBuff -> Action SkBuff", 	INLINE_FUN(filter_ip)     },

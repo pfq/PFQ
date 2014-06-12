@@ -370,7 +370,7 @@ get_mark(arguments_t args, struct sk_buff const *skb)
 }
 
 
-struct pfq_property_fun_descr property_functions[] = {
+struct pfq_function_descr property_functions[] = {
 
         { "ip_tos", 	 "SkBuff -> Word64", ip_tos 	  	},
         { "ip_tot_len",  "SkBuff -> Word64", ip_tot_len   	},

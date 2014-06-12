@@ -52,6 +52,7 @@ module Network.PFq.Lang
 
 
 -- import Control.Monad.Identity
+
 import Foreign.Storable
 import Data.Word
 
@@ -77,11 +78,15 @@ data Argument = ArgNull | ArgData StorableArgument | ArgString String | ArgFun I
 data FunctionDescr = FunctionDescr Symbol [Argument] (Int, Int)
                         deriving (Show)
 
-relink :: Int -> Int -> FunctionDescr -> FunctionDescr
-relink n1 n2 (FunctionDescr sym args (l,r) ) =
+relinkComp :: Int -> Int -> FunctionDescr -> FunctionDescr
+relinkComp n1 n2 (FunctionDescr sym args (l,r) ) =
         FunctionDescr sym args (update n1 n2 l, update n1 n2 r)
             where update n1 n2 x = if x == n1 then n2 else x
 
+termComp :: Int -> [FunctionDescr] -> [FunctionDescr]
+termComp n xs = map (\(FunctionDescr sym as (l,r)) -> FunctionDescr sym as (cut l, cut r)) xs
+                where
+                    cut x = if x == (n + length xs) then (-1) else x
 
 -- DLS NetFunction
 
@@ -99,6 +104,8 @@ data Function f where {
         HFunction  :: Symbol -> NetPredicate -> NetFunction;
         HFunction1 :: Symbol -> NetPredicate -> NetFunction -> NetFunction;
         HFunction2 :: Symbol -> NetPredicate -> NetFunction -> NetFunction -> NetFunction;
+        HFunction3 :: Symbol -> NetFunction  -> NetFunction;
+        HFunction4 :: Symbol -> NetFunction  -> NetFunction -> NetFunction;
 
         Predicate  :: Symbol -> NetPredicate;
         Predicate1 :: forall a. (Show a, Storable a) => Symbol -> a -> NetPredicate;
@@ -133,6 +140,8 @@ instance Show (Function f) where
         show (HFunction  symb p)        = "(HFunction " ++ symb ++ " " ++ show p  ++ ")"
         show (HFunction1 symb p n1)     = "(HFunction " ++ symb ++ " " ++ show p  ++ " (" ++ show n1 ++ "))"
         show (HFunction2 symb p n1 n2)  = "(HFunction " ++ symb ++ " " ++ show p  ++ " (" ++ show n1 ++ ") (" ++ show n2 ++ "))"
+        show (HFunction3 symb f)        = "(HFunction " ++ symb ++ " " ++ show f  ++ ")"
+        show (HFunction4 symb f g)      = "(HFunction " ++ symb ++ " " ++ show f  ++ " " ++ show g ++ ")"
 
         show (Predicate  symb)          = "(Predicate " ++ symb ++  ")"
         show (Predicate1 symb a)        = "(Predicate " ++ symb ++ " " ++ show a ++ ")"
@@ -146,8 +155,8 @@ instance Show (Function f) where
         show (Combinator2 "and" p1 p2)  = "(Combinator and " ++ show p1 ++" " ++ show p2 ++ "))"
         show (Combinator2 "or"  p1 p2)  = "(Combinator or  " ++ show p1 ++" " ++ show p2 ++ "))"
         show (Combinator2 "xor" p1 p2)  = "(Combinator xor " ++ show p1 ++" " ++ show p2 ++ "))"
-        show (Combinator1 _ _)          = undefined
-        show (Combinator2 _ _ _)        = undefined
+        show (Combinator1{})            = undefined
+        show (Combinator2 {})           = undefined
 
         show (Composition a b)          = "(Composition " ++ show a ++ " " ++ show b ++ ")"
 
@@ -164,6 +173,8 @@ instance Pretty (Function f) where
         pretty (HFunction symb p)         = "(" ++ symb ++ " " ++ pretty p  ++ ")"
         pretty (HFunction1 symb p n1)     = "(" ++ symb ++ " " ++ pretty p  ++ " (" ++ pretty n1 ++ "))"
         pretty (HFunction2 symb p n1 n2)  = "(" ++ symb ++ " " ++ pretty p  ++ " (" ++ pretty n1 ++ ") (" ++ pretty n2 ++ "))"
+        pretty (HFunction3 symb f)        = "(" ++ symb ++ " " ++ pretty f  ++ ")"
+        pretty (HFunction4 symb f g)      = "(" ++ symb ++ " " ++ pretty f  ++ " " ++ pretty g ++ ")"
 
         pretty (Predicate  symb)          = symb
         pretty (Predicate1 symb a)        = "(" ++ symb ++ " " ++ show a ++ ")"
@@ -177,8 +188,8 @@ instance Pretty (Function f) where
         pretty (Combinator2 "and" p1 p2)  = "(" ++ pretty p1 ++" && " ++ pretty p2 ++ ")"
         pretty (Combinator2 "or"  p1 p2)  = "(" ++ pretty p1 ++" || " ++ pretty p2 ++ ")"
         pretty (Combinator2 "xor" p1 p2)  = "(" ++ pretty p1 ++" ^^ " ++ pretty p2 ++ ")"
-        pretty (Combinator1 _ _)          = undefined
-        pretty (Combinator2 _ _ _)        = undefined
+        pretty (Combinator1{} )           = undefined
+        pretty (Combinator2{})            = undefined
         pretty (Composition a b)          = pretty a ++ " >-> " ++ pretty b
 
 
@@ -208,7 +219,16 @@ instance Serializable (Function (a -> m b)) where
                                                 (s2, n2) =  serialize p  n1
                                                 (s3, n3) =  serialize c1 n2
                                                 (s4, n4) =  serialize c2 n3
-                                             in (s1 ++ s2 ++ (map (relink n3 n4) s3) ++ s4, n4)
+                                             in (s1 ++ s2 ++ map (relinkComp n3 n4) s3 ++ s4, n4)
+
+    serialize (HFunction3  symb f)  n = let (s1, n1) = ([FunctionDescr symb [ArgFun n1] (n2, n2) ], n+1)
+                                            (s2, n2) =  serialize f n1
+                                        in (s1 ++ termComp n1 s2, n2)
+
+    serialize (HFunction4  symb f g) n = let (s1, n1) = ([FunctionDescr symb [ArgFun n1, ArgFun n2] (n3, n3) ], n+1)
+                                             (s2, n2) =  serialize f n1
+                                             (s3, n3) =  serialize g n2
+                                         in (s1 ++ termComp n1 s2 ++ termComp n2 s3, n3)
 
     serialize (Composition a b) n = let (s1, n1) = serialize a n
                                         (s2, n2) = serialize b n1

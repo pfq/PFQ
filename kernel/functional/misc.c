@@ -29,6 +29,7 @@
 #include <pf_q-sparse.h>
 
 #include "inline.h"
+#include "headers.h"
 #include "misc.h"
 
 static struct sk_buff *
@@ -181,17 +182,48 @@ log_packet(arguments_t args, struct sk_buff *skb)
 }
 
 
+static struct sk_buff *
+inv(arguments_t args, struct sk_buff *skb)
+{
+	function_t expr = get_data(function_t, args);
+	struct sk_buff *nskb = EVAL_FUNCTION(expr, skb);
+
+	if (!nskb || is_drop(PFQ_CB(nskb)->action))
+		return skb;
+
+	return drop(nskb);
+}
+
+
+static struct sk_buff *
+par(arguments_t args, struct sk_buff *skb)
+{
+	function_t f = get_data0(function_t, args);
+	function_t g = get_data1(function_t, args);
+
+	struct sk_buff *nskb = EVAL_FUNCTION(f, skb);
+
+	if (!nskb || is_drop(PFQ_CB(nskb)->action)) {
+		return EVAL_FUNCTION(g, copy(skb));
+	}
+
+	return nskb;
+}
+
+
 struct pfq_function_descr misc_functions[] = {
 
-        { "dummy",      "Int -> SkBuff -> Action SkBuff",     	dummy, dummy_init,  dummy_fini },
-        { "inc", 	"Int -> SkBuff -> Action SkBuff",     	inc_counter 	},
-        { "dec", 	"Int -> SkBuff -> Action SkBuff",    	dec_counter 	},
- 	{ "mark", 	"CULong -> SkBuff -> Action SkBuff",  	INLINE_FUN(mark)},
-        { "crc16", 	"SkBuff -> Action SkBuff", 		crc16_sum	},
+        { "dummy",      "Int -> SkBuff -> Action SkBuff",     		dummy, dummy_init,  dummy_fini },
+        { "inc", 	"Int -> SkBuff -> Action SkBuff",     		inc_counter 	},
+        { "dec", 	"Int -> SkBuff -> Action SkBuff",    		dec_counter 	},
+ 	{ "mark", 	"CULong -> SkBuff -> Action SkBuff",  		INLINE_FUN(mark)},
+        { "crc16", 	"SkBuff -> Action SkBuff", 			crc16_sum	},
 
-        { "log_msg",  	"String -> SkBuff -> Action SkBuff", 	log_msg 	},
-        { "log_packet", "SkBuff -> Action SkBuff", 		log_packet	},
+        { "log_msg",  	"String -> SkBuff -> Action SkBuff", 		log_msg 	},
+        { "log_packet", "SkBuff -> Action SkBuff", 			log_packet	},
 
+        { "inv", 	"(SkBuff -> Action SkBuff) -> SkBuff -> Action SkBuff",     				inv },
+        { "par", 	"(SkBuff -> Action SkBuff) -> (SkBuff -> Action SkBuff) -> SkBuff -> Action SkBuff",    par },
         { NULL }};
 
 

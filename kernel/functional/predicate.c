@@ -205,7 +205,7 @@ pred_is_more_frag(arguments_t args, struct sk_buff const *skb)
         return  is_more_frag(skb);
 }
 
-struct pfq_predicate_fun_descr predicate_functions[] = {
+struct pfq_function_descr predicate_functions[] = {
 
         { "less", 	   "(SkBuff -> Word64) -> Word64 -> SkBuff -> Bool", less	},
         { "less_eq", 	   "(SkBuff -> Word64) -> Word64 -> SkBuff -> Bool", less_eq	},

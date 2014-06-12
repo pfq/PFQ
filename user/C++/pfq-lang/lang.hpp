@@ -106,11 +106,10 @@ namespace pfq_lang
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
-    struct ShowBase
+    struct StorableShowBase
     {
         virtual std::string forall_show() const = 0;
-        virtual void const *addr() const = 0;
+        virtual void const *forall_addr() const = 0;
 
         static const void *get_addr(std::string const &that)
         {
@@ -124,18 +123,18 @@ namespace pfq_lang
         }
     };
 
-    template <typename Tp,  typename = void> struct Showable;
+    template <typename Tp,  typename = void> struct StorableShow;
 
     template <typename Tp>
-    struct Showable<Tp, typename std::enable_if<has_insertion_operator<Tp>::value>::type>  : ShowBase
+    struct StorableShow<Tp, typename std::enable_if<has_insertion_operator<Tp>::value>::type>  : StorableShowBase
     {
-        Showable(Tp v)
+        StorableShow(Tp v)
         : value(std::move(v))
         {}
 
         Tp value;
 
-        const void *addr() const override
+        const void *forall_addr() const override
         {
             return get_addr(value);
         }
@@ -149,15 +148,15 @@ namespace pfq_lang
     };
 
     template <typename Tp>
-    struct Showable<Tp, typename std::enable_if<!has_insertion_operator<Tp>::value>::type>  : ShowBase
+    struct StorableShow<Tp, typename std::enable_if<!has_insertion_operator<Tp>::value>::type>  : StorableShowBase
     {
-        Showable(Tp v)
+        StorableShow(Tp v)
         : value(std::move(v))
         {}
 
         Tp value;
 
-        const void *addr() const override
+        const void *forall_addr() const override
         {
             return get_addr(value);
         }
@@ -181,14 +180,14 @@ namespace pfq_lang
         , size()
         {}
 
-        Argument(std::shared_ptr<ShowBase> p, size_t s)
+        Argument(std::shared_ptr<StorableShowBase> p, size_t s)
         : ptr(std::move(p))
         , size(s)
         {}
 
         static Argument Null()
         {
-            return Argument{ std::shared_ptr<ShowBase>(), 0 };
+            return Argument{ std::shared_ptr<StorableShowBase>(), 0 };
         }
 
         template <typename Tp>
@@ -196,23 +195,23 @@ namespace pfq_lang
         {
             static_assert( std::is_pod<Tp>::value, "Data argument must be a pod type");
 
-            auto ptr = std::make_shared<Showable<Tp>>(pod);
+            auto ptr = std::make_shared<StorableShow<Tp>>(pod);
 
-            return Argument{ std::dynamic_pointer_cast<ShowBase>(ptr), sizeof(pod) };
+            return Argument{ std::dynamic_pointer_cast<StorableShowBase>(ptr), sizeof(pod) };
         }
 
         static Argument String(std::string str)
         {
-            auto ptr = std::make_shared<Showable<std::string>>(std::move(str));
-            return Argument{ std::dynamic_pointer_cast<ShowBase>(ptr), 0 };
+            auto ptr = std::make_shared<StorableShow<std::string>>(std::move(str));
+            return Argument{ std::dynamic_pointer_cast<StorableShowBase>(ptr), 0 };
         }
 
         static Argument Fun(std::size_t n)
         {
-            return Argument{ std::shared_ptr<ShowBase>(), n };
+            return Argument{ std::shared_ptr<StorableShowBase>(), n };
         }
 
-        std::shared_ptr<ShowBase> ptr;
+        std::shared_ptr<StorableShowBase> ptr;
         size_t size;
     };
 
@@ -328,6 +327,8 @@ namespace pfq_lang
     template <typename P> struct HFunction;
     template <typename P, typename F> struct HFunction1;
     template <typename P, typename F1, typename F2> struct HFunction2;
+    template <typename F> struct HFunction3;
+    template <typename F, typename G> struct HFunction4;
     template <typename F, typename G> struct Composition;
 
     template <typename Tp>
@@ -356,6 +357,8 @@ namespace pfq_lang
                   is_same_type_constructor<Tp, HFunction>::value    ||
                   is_same_type_constructor<Tp, HFunction1>::value   ||
                   is_same_type_constructor<Tp, HFunction2>::value   ||
+                  is_same_type_constructor<Tp, HFunction3>::value   ||
+                  is_same_type_constructor<Tp, HFunction4>::value   ||
                   is_same_type_constructor<Tp, Composition>::value>
     { };
 
@@ -730,6 +733,36 @@ namespace pfq_lang
         G            fun2_;
     };
 
+    template <typename F>
+    struct HFunction3 : NetFunction
+    {
+        static_assert(is_mfunction<F>::value, "HFunction: argument must be a monadic function");
+
+        HFunction3(std::string symbol, F const &fun)
+        : symbol_(std::move(symbol))
+        , fun_(fun)
+        { }
+
+        std::string     symbol_;
+        F               fun_;
+    };
+
+    template <typename F, typename G>
+    struct HFunction4 : NetFunction
+    {
+        static_assert(is_mfunction<F>::value, "HFunction: argument 1 must be a monadic function");
+        static_assert(is_mfunction<G>::value, "HFunction: argument 2 must be a monadic function");
+
+        HFunction4(std::string symbol, F const &f, G const &g)
+        : symbol_(std::move(symbol))
+        , f_(f)
+        , g_(g)
+        { }
+
+        std::string     symbol_;
+        F               f_;
+        G               g_;
+    };
 
     //
     // Composition
@@ -801,6 +834,20 @@ namespace pfq_lang
     pretty(HFunction2<P,C1,C2> const &descr)
     {
         return '(' + descr.symbol_ + ' ' + pretty(descr.pred_) + ' ' + pretty(descr.fun1_) + ' ' + pretty(descr.fun2_) + ')';
+    }
+
+    template <typename F>
+    static inline std::string
+    pretty(HFunction3<F> const &descr)
+    {
+        return '(' + descr.symbol_ + ' ' + pretty(descr.fun_) + ')';
+    }
+
+    template <typename F, typename G>
+    static inline std::string
+    pretty(HFunction4<F, G> const &descr)
+    {
+        return '(' + descr.symbol_ + ' ' + pretty(descr.f_) + ' ' + pretty(descr.g_) + ')';
     }
 
     template <typename C1, typename C2>
@@ -881,6 +928,43 @@ namespace pfq_lang
         }
 
         return { std::move(v1) + std::move(p1) + std::move(c1) + std::move(c2), n3 };
+    }
+
+    template <typename F>
+    static inline std::pair<std::vector<FunctionDescr>, std::size_t>
+    serialize(HFunction3<F> const &f, std::size_t n)
+    {
+        std::vector<FunctionDescr> f1, v1;
+        std::size_t n1;
+
+        std::tie(f1, n1) = serialize(f.fun_, n+1);
+
+        f1.back().left  = -1;
+        f1.back().right = -1;
+
+        v1 = { { f.symbol_,  { { Argument::Fun(n+1) } }, n1, n1 } };
+
+        return { std::move(v1) + std::move(f1), n1 };
+    }
+
+    template <typename F, typename G>
+    static inline std::pair<std::vector<FunctionDescr>, std::size_t>
+    serialize(HFunction4<F,G> const &fun, std::size_t n)
+    {
+        std::vector<FunctionDescr> f1, f2, v1;
+        std::size_t n1, n2;
+
+        std::tie(f1, n1) = serialize(fun.f_, n+1);
+        std::tie(f2, n2) = serialize(fun.g_, n1);
+
+        f1.back().left  = -1;
+        f1.back().right = -1;
+        f2.back().left  = -1;
+        f2.back().right = -1;
+
+        v1 = { { fun.symbol_,  { { Argument::Fun(n+1), Argument::Fun(n1) } }, n2, n2 } };
+
+        return { std::move(v1) + std::move(f1) + std::move(f2), n2 };
     }
 
 
@@ -1016,6 +1100,20 @@ namespace pfq_lang
         return HFunction2<P,C1,C2>{ std::move(symbol), p, c1, c2 };
     }
 
+    template <typename F>
+    HFunction3<F>
+    hfunction3(std::string symbol, F const &fun)
+    {
+        return HFunction3<F>{ std::move(symbol), fun };
+    }
+
+    template <typename F, typename G>
+    HFunction4<F,G>
+    hfunction4(std::string symbol, F const &f, G const &g)
+    {
+        return HFunction4<F, G>{ std::move(symbol), f, g};
+    }
+
     //
     // Kleisli composition: >->
     //
@@ -1031,3 +1129,4 @@ namespace pfq_lang
 
 
 } // namespace pfq_lang
+
