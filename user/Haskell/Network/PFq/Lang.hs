@@ -77,11 +77,15 @@ data Argument = ArgNull | ArgData StorableArgument | ArgString String | ArgFun I
 data FunctionDescr = FunctionDescr Symbol [Argument] (Int, Int)
                         deriving (Show)
 
-relink :: Int -> Int -> FunctionDescr -> FunctionDescr
-relink n1 n2 (FunctionDescr sym args (l,r) ) =
+relinkComp :: Int -> Int -> FunctionDescr -> FunctionDescr
+relinkComp n1 n2 (FunctionDescr sym args (l,r) ) =
         FunctionDescr sym args (update n1 n2 l, update n1 n2 r)
             where update n1 n2 x = if x == n1 then n2 else x
 
+termComp :: Int -> [FunctionDescr] -> [FunctionDescr]
+termComp n xs = map (\(FunctionDescr sym as (l,r)) -> FunctionDescr sym as (cut l, cut r)) xs
+                where
+                    cut x = if x == (n + length xs) then (-1) else x
 
 -- DLS NetFunction
 
@@ -99,6 +103,7 @@ data Function f where {
         HFunction  :: Symbol -> NetPredicate -> NetFunction;
         HFunction1 :: Symbol -> NetPredicate -> NetFunction -> NetFunction;
         HFunction2 :: Symbol -> NetPredicate -> NetFunction -> NetFunction -> NetFunction;
+        HFunction3 :: Symbol -> NetFunction  -> NetFunction;
 
         Predicate  :: Symbol -> NetPredicate;
         Predicate1 :: forall a. (Show a, Storable a) => Symbol -> a -> NetPredicate;
@@ -133,6 +138,7 @@ instance Show (Function f) where
         show (HFunction  symb p)        = "(HFunction " ++ symb ++ " " ++ show p  ++ ")"
         show (HFunction1 symb p n1)     = "(HFunction " ++ symb ++ " " ++ show p  ++ " (" ++ show n1 ++ "))"
         show (HFunction2 symb p n1 n2)  = "(HFunction " ++ symb ++ " " ++ show p  ++ " (" ++ show n1 ++ ") (" ++ show n2 ++ "))"
+        show (HFunction3 symb f)        = "(HFunction " ++ symb ++ " " ++ show f  ++ ")"
 
         show (Predicate  symb)          = "(Predicate " ++ symb ++  ")"
         show (Predicate1 symb a)        = "(Predicate " ++ symb ++ " " ++ show a ++ ")"
@@ -164,6 +170,7 @@ instance Pretty (Function f) where
         pretty (HFunction symb p)         = "(" ++ symb ++ " " ++ pretty p  ++ ")"
         pretty (HFunction1 symb p n1)     = "(" ++ symb ++ " " ++ pretty p  ++ " (" ++ pretty n1 ++ "))"
         pretty (HFunction2 symb p n1 n2)  = "(" ++ symb ++ " " ++ pretty p  ++ " (" ++ pretty n1 ++ ") (" ++ pretty n2 ++ "))"
+        pretty (HFunction3 symb f)        = "(" ++ symb ++ " " ++ pretty f  ++ ")"
 
         pretty (Predicate  symb)          = symb
         pretty (Predicate1 symb a)        = "(" ++ symb ++ " " ++ show a ++ ")"
@@ -208,7 +215,11 @@ instance Serializable (Function (a -> m b)) where
                                                 (s2, n2) =  serialize p  n1
                                                 (s3, n3) =  serialize c1 n2
                                                 (s4, n4) =  serialize c2 n3
-                                             in (s1 ++ s2 ++ (map (relink n3 n4) s3) ++ s4, n4)
+                                             in (s1 ++ s2 ++ map (relinkComp n3 n4) s3 ++ s4, n4)
+
+    serialize (HFunction3  symb f)  n = let (s1, n1) = ([FunctionDescr symb [ArgFun n1] (n2, n2) ], n+1)
+                                            (s2, n2) =  serialize f n1
+                                        in (s1 ++ termComp n1 s2, n2)
 
     serialize (Composition a b) n = let (s1, n1) = serialize a n
                                         (s2, n2) = serialize b n1

@@ -327,6 +327,7 @@ namespace pfq_lang
     template <typename P> struct HFunction;
     template <typename P, typename F> struct HFunction1;
     template <typename P, typename F1, typename F2> struct HFunction2;
+    template <typename F> struct HFunction3;
     template <typename F, typename G> struct Composition;
 
     template <typename Tp>
@@ -355,6 +356,7 @@ namespace pfq_lang
                   is_same_type_constructor<Tp, HFunction>::value    ||
                   is_same_type_constructor<Tp, HFunction1>::value   ||
                   is_same_type_constructor<Tp, HFunction2>::value   ||
+                  is_same_type_constructor<Tp, HFunction3>::value   ||
                   is_same_type_constructor<Tp, Composition>::value>
     { };
 
@@ -729,6 +731,19 @@ namespace pfq_lang
         G            fun2_;
     };
 
+    template <typename F>
+    struct HFunction3 : NetFunction
+    {
+        static_assert(is_mfunction<F>::value, "HFunction: argument must be a monadic function");
+
+        HFunction3(std::string symbol, F const &fun)
+        : symbol_(std::move(symbol))
+        , fun_(fun)
+        { }
+
+        std::string     symbol_;
+        F               fun_;
+    };
 
     //
     // Composition
@@ -800,6 +815,13 @@ namespace pfq_lang
     pretty(HFunction2<P,C1,C2> const &descr)
     {
         return '(' + descr.symbol_ + ' ' + pretty(descr.pred_) + ' ' + pretty(descr.fun1_) + ' ' + pretty(descr.fun2_) + ')';
+    }
+
+    template <typename F>
+    static inline std::string
+    pretty(HFunction3<F> const &descr)
+    {
+        return '(' + descr.symbol_ + ' ' + pretty(descr.fun_) + ')';
     }
 
     template <typename C1, typename C2>
@@ -880,6 +902,23 @@ namespace pfq_lang
         }
 
         return { std::move(v1) + std::move(p1) + std::move(c1) + std::move(c2), n3 };
+    }
+
+    template <typename F>
+    static inline std::pair<std::vector<FunctionDescr>, std::size_t>
+    serialize(HFunction3<F> const &f, std::size_t n)
+    {
+        std::vector<FunctionDescr> f1, v1;
+        std::size_t n1;
+
+        std::tie(f1, n1) = serialize(f.fun_, n+1);
+
+        f1.back().left  = -1;
+        f1.back().right = -1;
+
+        v1 = { { f.symbol_,  { { Argument::Fun(n+1) } }, n1, n1 } };
+
+        return { std::move(v1) + std::move(f1), n1 };
     }
 
 
@@ -1013,6 +1052,13 @@ namespace pfq_lang
     hfunction2(std::string symbol, P const &p, C1 const &c1, C2 const &c2)
     {
         return HFunction2<P,C1,C2>{ std::move(symbol), p, c1, c2 };
+    }
+
+    template <typename F>
+    HFunction3<F>
+    hfunction3(std::string symbol, F const &fun)
+    {
+        return HFunction3<F>{ std::move(symbol), fun };
     }
 
     //
