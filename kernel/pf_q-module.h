@@ -225,15 +225,6 @@ is_steering(action_t a)
         return a.type == action_steer;
 }
 
-/* packet predicates */
-
-static inline bool
-is_stolen(struct sk_buff *skb)
-{
-        struct pfq_cb * cb = PFQ_CB(skb);
-        return cb->action.attr & attr_stolen;
-}
-
 /* action: pass */
 
 static inline

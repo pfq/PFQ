@@ -869,7 +869,7 @@ groupComputation hdl gid comp = do
         pokeByteOff ptr (sizeOf(undefined :: CSize)) (0 :: CSize)        -- entry_point: always the first one!
         withMany withFunDescr descrList $ \marshList -> do
             let offset n = sizeOf(undefined :: CSize) * 2 + getConstant group_fun_descr_size * n
-            forM_ (zip [0..] marshList) $ \(n, (symbol, ps, (l,r))) -> do
+            forM_ (zip [0..] marshList) $ \(n, (symbol, ps, (l,r))) ->
                 pokeByteOff ptr (offset n)
                     (StorableFunDescr symbol ps (fromIntegral l) (fromIntegral r))
             pfq_set_group_computation hdl (fromIntegral gid) ptr >>= throwPFqIf_ hdl (== -1)
