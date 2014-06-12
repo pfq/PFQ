@@ -18,13 +18,13 @@ struct \hyperlink{structpfq__lang_1_1is__same__type__constructor_3_01Tp_3_01Ti_8
 \item 
 struct \hyperlink{structpfq__lang_1_1has__insertion__operator}{pfq\+\_\+lang\+::has\+\_\+insertion\+\_\+operator$<$ T $>$}
 \item 
-struct \hyperlink{structpfq__lang_1_1ShowBase}{pfq\+\_\+lang\+::\+Show\+Base}
+struct \hyperlink{structpfq__lang_1_1StorableShowBase}{pfq\+\_\+lang\+::\+Storable\+Show\+Base}
 \item 
-struct \hyperlink{structpfq__lang_1_1Showable}{pfq\+\_\+lang\+::\+Showable$<$ Tp, typename $>$}
+struct \hyperlink{structpfq__lang_1_1StorableShow}{pfq\+\_\+lang\+::\+Storable\+Show$<$ Tp, typename $>$}
 \item 
-struct \hyperlink{structpfq__lang_1_1Showable_3_01Tp_00_01typename_01std_1_1enable__if_3_01has__insertion__operato0cfb72d444f463b2d87a78275e86feaa}{pfq\+\_\+lang\+::\+Showable$<$ Tp, typename std\+::enable\+\_\+if$<$ has\+\_\+insertion\+\_\+operator$<$\+Tp $>$\+::value $>$\+::type $>$}
+struct \hyperlink{structpfq__lang_1_1StorableShow_3_01Tp_00_01typename_01std_1_1enable__if_3_01has__insertion__ope410294f2cbdf117d0cfbbeb13476ebf1}{pfq\+\_\+lang\+::\+Storable\+Show$<$ Tp, typename std\+::enable\+\_\+if$<$ has\+\_\+insertion\+\_\+operator$<$\+Tp $>$\+::value $>$\+::type $>$}
 \item 
-struct \hyperlink{structpfq__lang_1_1Showable_3_01Tp_00_01typename_01std_1_1enable__if_3_9has__insertion__operator488b85264b5317ebf7312bb7e4c18409}{pfq\+\_\+lang\+::\+Showable$<$ Tp, typename std\+::enable\+\_\+if$<$!has\+\_\+insertion\+\_\+operator$<$\+Tp $>$\+::value $>$\+::type $>$}
+struct \hyperlink{structpfq__lang_1_1StorableShow_3_01Tp_00_01typename_01std_1_1enable__if_3_9has__insertion__operc98e9de6b381c730d9d28da7df10d016}{pfq\+\_\+lang\+::\+Storable\+Show$<$ Tp, typename std\+::enable\+\_\+if$<$!has\+\_\+insertion\+\_\+operator$<$\+Tp $>$\+::value $>$\+::type $>$}
 \item 
 struct \hyperlink{structpfq__lang_1_1Argument}{pfq\+\_\+lang\+::\+Argument}
 \item 
@@ -53,6 +53,10 @@ struct \hyperlink{structpfq__lang_1_1HFunction}{pfq\+\_\+lang\+::\+H\+Function$<
 struct \hyperlink{structpfq__lang_1_1HFunction1}{pfq\+\_\+lang\+::\+H\+Function1$<$ P, F $>$}
 \item 
 struct \hyperlink{structpfq__lang_1_1HFunction2}{pfq\+\_\+lang\+::\+H\+Function2$<$ P, F1, F2 $>$}
+\item 
+struct \hyperlink{structpfq__lang_1_1HFunction3}{pfq\+\_\+lang\+::\+H\+Function3$<$ F $>$}
+\item 
+struct \hyperlink{structpfq__lang_1_1HFunction4}{pfq\+\_\+lang\+::\+H\+Function4$<$ F, G $>$}
 \item 
 struct \hyperlink{structpfq__lang_1_1Composition}{pfq\+\_\+lang\+::\+Composition$<$ F, G $>$}
 \item 
@@ -89,6 +93,10 @@ struct \hyperlink{structpfq__lang_1_1HFunction}{pfq\+\_\+lang\+::\+H\+Function$<
 struct \hyperlink{structpfq__lang_1_1HFunction1}{pfq\+\_\+lang\+::\+H\+Function1$<$ P, F $>$}
 \item 
 struct \hyperlink{structpfq__lang_1_1HFunction2}{pfq\+\_\+lang\+::\+H\+Function2$<$ P, F1, F2 $>$}
+\item 
+struct \hyperlink{structpfq__lang_1_1HFunction3}{pfq\+\_\+lang\+::\+H\+Function3$<$ F $>$}
+\item 
+struct \hyperlink{structpfq__lang_1_1HFunction4}{pfq\+\_\+lang\+::\+H\+Function4$<$ F, G $>$}
 \item 
 struct \hyperlink{structpfq__lang_1_1kleisly}{pfq\+\_\+lang\+::kleisly$<$ F, G $>$}
 \item 
@@ -185,6 +193,10 @@ static std\+::string \hyperlink{namespacepfq__lang_a7afb2e0cc717c669d935d7c924de
 \item 
 {\footnotesize template$<$typename P , typename C1 , typename C2 $>$ }\\static std\+::string \hyperlink{namespacepfq__lang_a02cc423cc439a8c57600f1c9cf5bf0e5}{pfq\+\_\+lang\+::pretty} (H\+Function2$<$ P, C1, C2 $>$ const \&descr)
 \item 
+{\footnotesize template$<$typename F $>$ }\\static std\+::string \hyperlink{namespacepfq__lang_a1d10349f9b5b27c2dadacaec7bbb084d}{pfq\+\_\+lang\+::pretty} (H\+Function3$<$ F $>$ const \&descr)
+\item 
+{\footnotesize template$<$typename F , typename G $>$ }\\static std\+::string \hyperlink{namespacepfq__lang_abce28d32e9ea8f2836de127198a87725}{pfq\+\_\+lang\+::pretty} (H\+Function4$<$ F, G $>$ const \&descr)
+\item 
 {\footnotesize template$<$typename C1 , typename C2 $>$ }\\static std\+::string \hyperlink{namespacepfq__lang_a39c7eedfcdc2f4975e6ee404afc92c32}{pfq\+\_\+lang\+::pretty} (Composition$<$ C1, C2 $>$ const \&descr)
 \item 
 static std\+::pair$<$ std\+::vector\\*
@@ -204,6 +216,12 @@ $<$ Function\+Descr $>$, std\+::size\+\_\+t $>$ \hyperlink{namespacepfq__lang_a0
 \item 
 {\footnotesize template$<$typename P , typename C1 , typename C2 $>$ }\\static std\+::pair$<$ std\+::vector\\*
 $<$ Function\+Descr $>$, std\+::size\+\_\+t $>$ \hyperlink{namespacepfq__lang_a977a117518db30fb6097f00defa2a78f}{pfq\+\_\+lang\+::serialize} (H\+Function2$<$ P, C1, C2 $>$ const \&f, std\+::size\+\_\+t n)
+\item 
+{\footnotesize template$<$typename F $>$ }\\static std\+::pair$<$ std\+::vector\\*
+$<$ Function\+Descr $>$, std\+::size\+\_\+t $>$ \hyperlink{namespacepfq__lang_a6a1eec5d9da4e223738dfbba5b177f38}{pfq\+\_\+lang\+::serialize} (H\+Function3$<$ F $>$ const \&f, std\+::size\+\_\+t n)
+\item 
+{\footnotesize template$<$typename F , typename G $>$ }\\static std\+::pair$<$ std\+::vector\\*
+$<$ Function\+Descr $>$, std\+::size\+\_\+t $>$ \hyperlink{namespacepfq__lang_a15471216f66bd881f4b40afbe3737d65}{pfq\+\_\+lang\+::serialize} (H\+Function4$<$ F, G $>$ const \&fun, std\+::size\+\_\+t n)
 \item 
 {\footnotesize template$<$typename C1 , typename C2 $>$ }\\static std\+::pair$<$ std\+::vector\\*
 $<$ Function\+Descr $>$, std\+::size\+\_\+t $>$ \hyperlink{namespacepfq__lang_a090aa64fa2f91edc7c5697050e5e7568}{pfq\+\_\+lang\+::serialize} (Composition$<$ C1, C2 $>$ const \&f, std\+::size\+\_\+t n)
@@ -238,6 +256,10 @@ M\+Function2 \hyperlink{namespacepfq__lang_aa817867af6f06d681a8c1a6d3b3bdd50}{pf
 {\footnotesize template$<$typename P , typename C $>$ }\\H\+Function1$<$ P, C $>$ \hyperlink{namespacepfq__lang_a9b2ad595130a6a3fb46b1c07e06f18de}{pfq\+\_\+lang\+::hfunction1} (std\+::string symbol, P const \&p, C const \&c)
 \item 
 {\footnotesize template$<$typename P , typename C1 , typename C2 $>$ }\\H\+Function2$<$ P, C1, C2 $>$ \hyperlink{namespacepfq__lang_a2bc5bc598d77da49ece66b49655c3bcb}{pfq\+\_\+lang\+::hfunction2} (std\+::string symbol, P const \&p, C1 const \&c1, C2 const \&c2)
+\item 
+{\footnotesize template$<$typename F $>$ }\\H\+Function3$<$ F $>$ \hyperlink{namespacepfq__lang_afe124c505f09c110df8e89bd08e8c161}{pfq\+\_\+lang\+::hfunction3} (std\+::string symbol, F const \&fun)
+\item 
+{\footnotesize template$<$typename F , typename G $>$ }\\H\+Function4$<$ F, G $>$ \hyperlink{namespacepfq__lang_a60a1b07e951afa04a4f5dbc9c8489725}{pfq\+\_\+lang\+::hfunction4} (std\+::string symbol, F const \&f, G const \&g)
 \item 
 {\footnotesize template$<$typename C1 , typename C2 , typename  = typename kleisly$<$typename C1\+::type, typename C2\+::type$>$\+::type$>$ }\\Composition$<$ C1, C2 $>$ \hyperlink{namespacepfq__lang_a48fd6e016f34f642eb1e69e6f46c2bf5}{pfq\+\_\+lang\+::operator$>$$>$} (C1 c1, C2 c2)
 \end{DoxyCompactItemize}

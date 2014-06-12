@@ -755,7 +755,7 @@ $(document).ready(function(){initNavTree('pfq_8hpp_source.html','');});
 <div class="line"><a name="l00772"></a><span class="lineno">  772</span>&#160;</div>
 <div class="line"><a name="l00773"></a><span class="lineno">  773</span>&#160;                <span class="keywordflow">for</span>(<span class="keywordtype">size_t</span> i = 0; i &lt; <span class="keyword">sizeof</span>(prg-&gt;fun[0].arg)/<span class="keyword">sizeof</span>(prg-&gt;fun[0].arg[0]); i++)</div>
 <div class="line"><a name="l00774"></a><span class="lineno">  774</span>&#160;                {</div>
-<div class="line"><a name="l00775"></a><span class="lineno">  775</span>&#160;                    prg-&gt;fun[n].arg[i].ptr  = descr.arg[i].ptr ? descr.arg[i].ptr-&gt;addr() : <span class="keyword">nullptr</span>;</div>
+<div class="line"><a name="l00775"></a><span class="lineno">  775</span>&#160;                    prg-&gt;fun[n].arg[i].ptr  = descr.arg[i].ptr ? descr.arg[i].ptr-&gt;forall_addr() : <span class="keyword">nullptr</span>;</div>
 <div class="line"><a name="l00776"></a><span class="lineno">  776</span>&#160;                    prg-&gt;fun[n].arg[i].size = descr.arg[i].size;</div>
 <div class="line"><a name="l00777"></a><span class="lineno">  777</span>&#160;                }</div>
 <div class="line"><a name="l00778"></a><span class="lineno">  778</span>&#160;</div>
@@ -1288,7 +1288,7 @@ $(document).ready(function(){initNavTree('pfq_8hpp_source.html','');});
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="dir_2916f9fbcacdf2e5f0583aa159c707b6.html">C++</a></li><li class="navelem"><a class="el" href="pfq_8hpp.html">pfq.hpp</a></li>
-    <li class="footer">Generated on Sun Jun 8 2014 13:40:52 for PFQ C++ library by
+    <li class="footer">Generated on Thu Jun 12 2014 17:03:07 for PFQ C++ library by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.7 </li>
   </ul>

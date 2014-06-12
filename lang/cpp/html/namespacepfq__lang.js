@@ -11,6 +11,8 @@ var namespacepfq__lang =
     [ "HFunction", "structpfq__lang_1_1HFunction.html", "structpfq__lang_1_1HFunction" ],
     [ "HFunction1", "structpfq__lang_1_1HFunction1.html", "structpfq__lang_1_1HFunction1" ],
     [ "HFunction2", "structpfq__lang_1_1HFunction2.html", "structpfq__lang_1_1HFunction2" ],
+    [ "HFunction3", "structpfq__lang_1_1HFunction3.html", "structpfq__lang_1_1HFunction3" ],
+    [ "HFunction4", "structpfq__lang_1_1HFunction4.html", "structpfq__lang_1_1HFunction4" ],
     [ "is_Function", "structpfq__lang_1_1is__Function.html", null ],
     [ "is_Function< Function< S > >", "structpfq__lang_1_1is__Function_3_01Function_3_01S_01_4_01_4.html", null ],
     [ "is_mfunction", "structpfq__lang_1_1is__mfunction.html", null ],
@@ -30,9 +32,9 @@ var namespacepfq__lang =
     [ "Predicate3", "structpfq__lang_1_1Predicate3.html", "structpfq__lang_1_1Predicate3" ],
     [ "Property", "structpfq__lang_1_1Property.html", "structpfq__lang_1_1Property" ],
     [ "Property1", "structpfq__lang_1_1Property1.html", "structpfq__lang_1_1Property1" ],
-    [ "Showable", "structpfq__lang_1_1Showable.html", null ],
-    [ "Showable< Tp, typename std::enable_if< has_insertion_operator<Tp >::value >::type >", "structpfq__lang_1_1Showable_3_01Tp_00_01typename_01std_1_1enable__if_3_01has__insertion__operato0cfb72d444f463b2d87a78275e86feaa.html", "structpfq__lang_1_1Showable_3_01Tp_00_01typename_01std_1_1enable__if_3_01has__insertion__operato0cfb72d444f463b2d87a78275e86feaa" ],
-    [ "Showable< Tp, typename std::enable_if<!has_insertion_operator<Tp >::value >::type >", "structpfq__lang_1_1Showable_3_01Tp_00_01typename_01std_1_1enable__if_3_9has__insertion__operator488b85264b5317ebf7312bb7e4c18409.html", "structpfq__lang_1_1Showable_3_01Tp_00_01typename_01std_1_1enable__if_3_9has__insertion__operator488b85264b5317ebf7312bb7e4c18409" ],
-    [ "ShowBase", "structpfq__lang_1_1ShowBase.html", "structpfq__lang_1_1ShowBase" ],
-    [ "SkBuff", "structpfq__lang_1_1SkBuff.html", null ]
+    [ "SkBuff", "structpfq__lang_1_1SkBuff.html", null ],
+    [ "StorableShow", "structpfq__lang_1_1StorableShow.html", null ],
+    [ "StorableShow< Tp, typename std::enable_if< has_insertion_operator<Tp >::value >::type >", "structpfq__lang_1_1StorableShow_3_01Tp_00_01typename_01std_1_1enable__if_3_01has__insertion__ope410294f2cbdf117d0cfbbeb13476ebf1.html", "structpfq__lang_1_1StorableShow_3_01Tp_00_01typename_01std_1_1enable__if_3_01has__insertion__ope410294f2cbdf117d0cfbbeb13476ebf1" ],
+    [ "StorableShow< Tp, typename std::enable_if<!has_insertion_operator<Tp >::value >::type >", "structpfq__lang_1_1StorableShow_3_01Tp_00_01typename_01std_1_1enable__if_3_9has__insertion__operc98e9de6b381c730d9d28da7df10d016.html", "structpfq__lang_1_1StorableShow_3_01Tp_00_01typename_01std_1_1enable__if_3_9has__insertion__operc98e9de6b381c730d9d28da7df10d016" ],
+    [ "StorableShowBase", "structpfq__lang_1_1StorableShowBase.html", "structpfq__lang_1_1StorableShowBase" ]
 ];
