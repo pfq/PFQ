@@ -106,11 +106,10 @@ namespace pfq_lang
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-
-    struct ShowBase
+    struct StorableShowBase
     {
         virtual std::string forall_show() const = 0;
-        virtual void const *addr() const = 0;
+        virtual void const *forall_addr() const = 0;
 
         static const void *get_addr(std::string const &that)
         {
@@ -124,18 +123,18 @@ namespace pfq_lang
         }
     };
 
-    template <typename Tp,  typename = void> struct Showable;
+    template <typename Tp,  typename = void> struct StorableShow;
 
     template <typename Tp>
-    struct Showable<Tp, typename std::enable_if<has_insertion_operator<Tp>::value>::type>  : ShowBase
+    struct StorableShow<Tp, typename std::enable_if<has_insertion_operator<Tp>::value>::type>  : StorableShowBase
     {
-        Showable(Tp v)
+        StorableShow(Tp v)
         : value(std::move(v))
         {}
 
         Tp value;
 
-        const void *addr() const override
+        const void *forall_addr() const override
         {
             return get_addr(value);
         }
@@ -149,15 +148,15 @@ namespace pfq_lang
     };
 
     template <typename Tp>
-    struct Showable<Tp, typename std::enable_if<!has_insertion_operator<Tp>::value>::type>  : ShowBase
+    struct StorableShow<Tp, typename std::enable_if<!has_insertion_operator<Tp>::value>::type>  : StorableShowBase
     {
-        Showable(Tp v)
+        StorableShow(Tp v)
         : value(std::move(v))
         {}
 
         Tp value;
 
-        const void *addr() const override
+        const void *forall_addr() const override
         {
             return get_addr(value);
         }
@@ -181,14 +180,14 @@ namespace pfq_lang
         , size()
         {}
 
-        Argument(std::shared_ptr<ShowBase> p, size_t s)
+        Argument(std::shared_ptr<StorableShowBase> p, size_t s)
         : ptr(std::move(p))
         , size(s)
         {}
 
         static Argument Null()
         {
-            return Argument{ std::shared_ptr<ShowBase>(), 0 };
+            return Argument{ std::shared_ptr<StorableShowBase>(), 0 };
         }
 
         template <typename Tp>
@@ -196,23 +195,23 @@ namespace pfq_lang
         {
             static_assert( std::is_pod<Tp>::value, "Data argument must be a pod type");
 
-            auto ptr = std::make_shared<Showable<Tp>>(pod);
+            auto ptr = std::make_shared<StorableShow<Tp>>(pod);
 
-            return Argument{ std::dynamic_pointer_cast<ShowBase>(ptr), sizeof(pod) };
+            return Argument{ std::dynamic_pointer_cast<StorableShowBase>(ptr), sizeof(pod) };
         }
 
         static Argument String(std::string str)
         {
-            auto ptr = std::make_shared<Showable<std::string>>(std::move(str));
-            return Argument{ std::dynamic_pointer_cast<ShowBase>(ptr), 0 };
+            auto ptr = std::make_shared<StorableShow<std::string>>(std::move(str));
+            return Argument{ std::dynamic_pointer_cast<StorableShowBase>(ptr), 0 };
         }
 
         static Argument Fun(std::size_t n)
         {
-            return Argument{ std::shared_ptr<ShowBase>(), n };
+            return Argument{ std::shared_ptr<StorableShowBase>(), n };
         }
 
-        std::shared_ptr<ShowBase> ptr;
+        std::shared_ptr<StorableShowBase> ptr;
         size_t size;
     };
 
