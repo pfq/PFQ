@@ -52,6 +52,7 @@ module Network.PFq.Lang
 
 
 -- import Control.Monad.Identity
+
 import Foreign.Storable
 import Data.Word
 
@@ -104,6 +105,7 @@ data Function f where {
         HFunction1 :: Symbol -> NetPredicate -> NetFunction -> NetFunction;
         HFunction2 :: Symbol -> NetPredicate -> NetFunction -> NetFunction -> NetFunction;
         HFunction3 :: Symbol -> NetFunction  -> NetFunction;
+        HFunction4 :: Symbol -> NetFunction  -> NetFunction -> NetFunction;
 
         Predicate  :: Symbol -> NetPredicate;
         Predicate1 :: forall a. (Show a, Storable a) => Symbol -> a -> NetPredicate;
@@ -139,6 +141,7 @@ instance Show (Function f) where
         show (HFunction1 symb p n1)     = "(HFunction " ++ symb ++ " " ++ show p  ++ " (" ++ show n1 ++ "))"
         show (HFunction2 symb p n1 n2)  = "(HFunction " ++ symb ++ " " ++ show p  ++ " (" ++ show n1 ++ ") (" ++ show n2 ++ "))"
         show (HFunction3 symb f)        = "(HFunction " ++ symb ++ " " ++ show f  ++ ")"
+        show (HFunction4 symb f g)      = "(HFunction " ++ symb ++ " " ++ show f  ++ " " ++ show g ++ ")"
 
         show (Predicate  symb)          = "(Predicate " ++ symb ++  ")"
         show (Predicate1 symb a)        = "(Predicate " ++ symb ++ " " ++ show a ++ ")"
@@ -171,6 +174,7 @@ instance Pretty (Function f) where
         pretty (HFunction1 symb p n1)     = "(" ++ symb ++ " " ++ pretty p  ++ " (" ++ pretty n1 ++ "))"
         pretty (HFunction2 symb p n1 n2)  = "(" ++ symb ++ " " ++ pretty p  ++ " (" ++ pretty n1 ++ ") (" ++ pretty n2 ++ "))"
         pretty (HFunction3 symb f)        = "(" ++ symb ++ " " ++ pretty f  ++ ")"
+        pretty (HFunction4 symb f g)      = "(" ++ symb ++ " " ++ pretty f  ++ " " ++ pretty g ++ ")"
 
         pretty (Predicate  symb)          = symb
         pretty (Predicate1 symb a)        = "(" ++ symb ++ " " ++ show a ++ ")"
@@ -220,6 +224,11 @@ instance Serializable (Function (a -> m b)) where
     serialize (HFunction3  symb f)  n = let (s1, n1) = ([FunctionDescr symb [ArgFun n1] (n2, n2) ], n+1)
                                             (s2, n2) =  serialize f n1
                                         in (s1 ++ termComp n1 s2, n2)
+
+    serialize (HFunction4  symb f g) n = let (s1, n1) = ([FunctionDescr symb [ArgFun n1, ArgFun n2] (n3, n3) ], n+1)
+                                             (s2, n2) =  serialize f n1
+                                             (s3, n3) =  serialize g n2
+                                         in (s1 ++ termComp n1 s2 ++ termComp n2 s3, n3)
 
     serialize (Composition a b) n = let (s1, n1) = serialize a n
                                         (s2, n2) = serialize b n1

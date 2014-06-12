@@ -155,6 +155,7 @@ module Network.PFq.Default
         inc        ,
         dec        ,
         inv        ,
+        par'       ,
         mark       ,
         class'     ,
         deliver    ,
@@ -350,4 +351,5 @@ when'          = HFunction1 "when"          :: NetPredicate -> NetFunction  -> N
 unless'        = HFunction1 "unless"        :: NetPredicate -> NetFunction  -> NetFunction
 conditional    = HFunction2 "conditional"   :: NetPredicate -> NetFunction  -> NetFunction  -> NetFunction
 inv            = HFunction3 "inv"           :: NetFunction -> NetFunction
+par'           = HFunction4 "par"           :: NetFunction -> NetFunction -> NetFunction
 
