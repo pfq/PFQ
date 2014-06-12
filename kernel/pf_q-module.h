@@ -225,7 +225,7 @@ is_steering(action_t a)
         return a.type == action_steer;
 }
 
-/* action: pass */
+/* action: copy */
 
 static inline
 struct sk_buff *
