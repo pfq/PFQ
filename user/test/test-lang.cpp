@@ -105,6 +105,9 @@ main()
     show_comp (cond(pred0, fun0, fun1(3)));
 
     show_comp (forward("eth0"));
+
+    show_comp (inv(ip >> udp) >> drop);
+
     return 0;
 }
 
