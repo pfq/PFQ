@@ -15,11 +15,11 @@ from their source codes.
 
 The framework enables the development of high-performance networking applications 
 with different languages (i.e. C, C++ and Haskell). In addition, a new functional language 
-designed for software defined networking and monitoring is available as eDLS: PFQ-lang.
+designed for software defined monitoring and networking is included: PFQ-lang.
 
 The package provides the source code of the PFQ kernel module, user-space 
-libraries for C, C++11 and Haskell languages, PFQ-lang as embedded DLS and a set of 
-diagnostic tools.
+libraries for C, C++11 and Haskell languages, PFQ-lang as eDLS for C++ and Haskell,
+and a set of diagnostic tools.
 
 Features
 --------
