@@ -28,7 +28,7 @@ main()
     //////// pfq_functional_descr:
     {
         std::cout << "*** pfq_functional_descr:\n" << std::endl;
-        auto fun = pfq_functional_descr { "test", { {(void *)0xdeadbeef, 0}, {0,0}, {0,0}, {0,0}}, 1, 2 };
+        auto fun = pfq_functional_descr { "test", { {(void *)0xdeadbeef, 0}, {0,0}, {0,0}, {0,0}}, 1 };
         std::cout << show(fun) << '\n' << std::endl;
     }
 
@@ -49,7 +49,7 @@ main()
         std::cout << "*** FunctionDescr:\n" << std::endl;
 
         std::string test("test");
-        FunctionDescr descr { "fun" , {{ Argument::String(test), Argument::Data(42) }}, 1, 2 };
+        FunctionDescr descr { "fun" , {{ Argument::String(test), Argument::Data(42) }}, 1 };
         std::cout << show(descr) << std::endl;
         std::cout << std::endl;
     }

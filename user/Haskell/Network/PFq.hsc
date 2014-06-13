@@ -805,38 +805,38 @@ padArguments xs = xs ++ (take (4 - length xs) $ repeat ArgNull)
 
 
 withSingleArg :: Argument
-              -> ((IntPtr, Int) -> IO a)
+              -> ((IntPtr, CSize) -> IO a)
               -> IO a
 withSingleArg arg callback = do
     case arg of
-        ArgNull                      -> callback (ptrToIntPtr nullPtr, 0)
-        ArgFun i                     -> callback (ptrToIntPtr nullPtr, i)
+        ArgNull                      -> callback (ptrToIntPtr nullPtr, fromIntegral 0)
+        ArgFun i                     -> callback (ptrToIntPtr nullPtr, fromIntegral i)
         ArgData (StorableArgument v) -> do
             alloca $ \ptr -> do
                 poke ptr v
-                callback (ptrToIntPtr ptr, sizeOf v)
+                callback (ptrToIntPtr ptr, fromIntegral $ sizeOf v)
         ArgString s -> do
             withCString s $ \s' -> callback (ptrToIntPtr s', 0)
 
 
-type MarshalFunctionDescr = (CString, [(IntPtr, Int)], (Int, Int))
+type MarshalFunctionDescr = (CString, [(IntPtr, CSize)], CSize)
 
 withFunDescr :: FunctionDescr
              -> (MarshalFunctionDescr -> IO a)
              -> IO a
-withFunDescr (FunctionDescr symbol args (l,r)) callback =
+withFunDescr (FunctionDescr symbol args next) callback =
     withCString symbol $ \ symbol' ->
         withMany withSingleArg (padArguments args) $ \marArgs -> do
-            callback (symbol', marArgs, (l,r))
+            callback (symbol', marArgs, fromIntegral next)
 
 
-data StorableFunDescr = StorableFunDescr CString [(IntPtr,Int)] CInt CInt
+data StorableFunDescr = StorableFunDescr CString [(IntPtr,CSize)] CSize
 
 
 instance Storable StorableFunDescr where
         sizeOf _    = getConstant group_fun_descr_size
         alignment _ = undefined
-        poke ptr (StorableFunDescr symbol args left right) = do
+        poke ptr (StorableFunDescr symbol args next) = do
             pokeByteOff ptr (off 0) symbol
             pokeByteOff ptr (off 1) (fst $ args !! 0)
             pokeByteOff ptr (off 2) (snd $ args !! 0)
@@ -846,8 +846,7 @@ instance Storable StorableFunDescr where
             pokeByteOff ptr (off 6) (snd $ args !! 2)
             pokeByteOff ptr (off 7) (fst $ args !! 3)
             pokeByteOff ptr (off 8) (snd $ args !! 3)
-            pokeByteOff ptr (off 9) left
-            pokeByteOff ptr (off 10) right
+            pokeByteOff ptr (off 9) next
          where
             off n = (sizeOf nullPtr * n)
 
@@ -869,9 +868,9 @@ groupComputation hdl gid comp = do
         pokeByteOff ptr (sizeOf(undefined :: CSize)) (0 :: CSize)        -- entry_point: always the first one!
         withMany withFunDescr descrList $ \marshList -> do
             let offset n = sizeOf(undefined :: CSize) * 2 + getConstant group_fun_descr_size * n
-            forM_ (zip [0..] marshList) $ \(n, (symbol, ps, (l,r))) ->
+            forM_ (zip [0..] marshList) $ \(n, (symbol, ps, next)) ->
                 pokeByteOff ptr (offset n)
-                    (StorableFunDescr symbol ps (fromIntegral l) (fromIntegral r))
+                    (StorableFunDescr symbol ps (fromIntegral next))
             pfq_set_group_computation hdl (fromIntegral gid) ptr >>= throwPFqIf_ hdl (== -1)
 
 

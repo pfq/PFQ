@@ -25,9 +25,9 @@
 
 struct pfq_function_descr high_order_functions[] = {
 
-        { "conditional", "(SkBuff -> Bool) -> (SkBuff -> Action SkBuff) -> (SkBuff -> Action SkBuff) -> SkBuff -> Action SkBuff ",  INLINE_FUN(conditional) },
-        { "when",        "(SkBuff -> Bool) -> (SkBuff -> Action SkBuff) -> SkBuff -> Action SkBuff", 				    INLINE_FUN(when)        },
-        { "unless",      "(SkBuff -> Bool) -> (SkBuff -> Action SkBuff) -> SkBuff -> Action SkBuff", 				    INLINE_FUN(unless)      },
+        { "conditional", "(SkBuff -> Bool) -> (SkBuff -> Action SkBuff) -> (SkBuff -> Action SkBuff) -> SkBuff -> Action SkBuff ",  conditional  },
+        { "when",        "(SkBuff -> Bool) -> (SkBuff -> Action SkBuff) -> SkBuff -> Action SkBuff", 				    when         },
+        { "unless",      "(SkBuff -> Bool) -> (SkBuff -> Action SkBuff) -> SkBuff -> Action SkBuff", 				    unless       },
 
         { NULL }};
 

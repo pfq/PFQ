@@ -75,16 +75,11 @@ data Argument = ArgNull | ArgData StorableArgument | ArgString String | ArgFun I
                     deriving (Show)
 
 
-data FunctionDescr = FunctionDescr Symbol [Argument] (Int, Int)
+data FunctionDescr = FunctionDescr Symbol [Argument] Int
                         deriving (Show)
 
-relinkComp :: Int -> Int -> FunctionDescr -> FunctionDescr
-relinkComp n1 n2 (FunctionDescr sym args (l,r) ) =
-        FunctionDescr sym args (update n1 n2 l, update n1 n2 r)
-            where update n1 n2 x = if x == n1 then n2 else x
-
 termComp :: Int -> [FunctionDescr] -> [FunctionDescr]
-termComp n xs = map (\(FunctionDescr sym as (l,r)) -> FunctionDescr sym as (cut l, cut r)) xs
+termComp n xs = map (\(FunctionDescr sym as next) -> FunctionDescr sym as (cut next)) xs
                 where
                     cut x = if x == (n + length xs) then (-1) else x
 
@@ -138,8 +133,8 @@ instance Show (Function f) where
         show (MFunction2 symb s)        = "(MFunction " ++ symb ++ " " ++ show s ++ ")"
 
         show (HFunction  symb p)        = "(HFunction " ++ symb ++ " " ++ show p  ++ ")"
-        show (HFunction1 symb p n1)     = "(HFunction " ++ symb ++ " " ++ show p  ++ " (" ++ show n1 ++ "))"
-        show (HFunction2 symb p n1 n2)  = "(HFunction " ++ symb ++ " " ++ show p  ++ " (" ++ show n1 ++ ") (" ++ show n2 ++ "))"
+        show (HFunction1 symb p n1)     = "(HFunction " ++ symb ++ " " ++ show p  ++ " " ++ show n1 ++ ")"
+        show (HFunction2 symb p n1 n2)  = "(HFunction " ++ symb ++ " " ++ show p  ++ " " ++ show n1 ++ " " ++ show n2 ++ ")"
         show (HFunction3 symb f)        = "(HFunction " ++ symb ++ " " ++ show f  ++ ")"
         show (HFunction4 symb f g)      = "(HFunction " ++ symb ++ " " ++ show f  ++ " " ++ show g ++ ")"
 
@@ -152,9 +147,9 @@ instance Show (Function f) where
         show (Property1 symb a)         = "(Property " ++ symb ++ " " ++ show a ++ ")"
 
         show (Combinator1 "not" p)      = "(Combinator not " ++ show p  ++ ")"
-        show (Combinator2 "and" p1 p2)  = "(Combinator and " ++ show p1 ++" " ++ show p2 ++ "))"
-        show (Combinator2 "or"  p1 p2)  = "(Combinator or  " ++ show p1 ++" " ++ show p2 ++ "))"
-        show (Combinator2 "xor" p1 p2)  = "(Combinator xor " ++ show p1 ++" " ++ show p2 ++ "))"
+        show (Combinator2 "and" p1 p2)  = "(Combinator and " ++ show p1 ++" " ++ show p2 ++ ")"
+        show (Combinator2 "or"  p1 p2)  = "(Combinator or  " ++ show p1 ++" " ++ show p2 ++ ")"
+        show (Combinator2 "xor" p1 p2)  = "(Combinator xor " ++ show p1 ++" " ++ show p2 ++ ")"
         show (Combinator1{})            = undefined
         show (Combinator2 {})           = undefined
 
@@ -171,8 +166,8 @@ instance Pretty (Function f) where
         pretty (MFunction2 symb s)        = "(" ++ symb ++ " \"" ++ show s ++ "\")"
 
         pretty (HFunction symb p)         = "(" ++ symb ++ " " ++ pretty p  ++ ")"
-        pretty (HFunction1 symb p n1)     = "(" ++ symb ++ " " ++ pretty p  ++ " (" ++ pretty n1 ++ "))"
-        pretty (HFunction2 symb p n1 n2)  = "(" ++ symb ++ " " ++ pretty p  ++ " (" ++ pretty n1 ++ ") (" ++ pretty n2 ++ "))"
+        pretty (HFunction1 symb p n1)     = "(" ++ symb ++ " " ++ pretty p  ++ " " ++ pretty n1 ++ ")"
+        pretty (HFunction2 symb p n1 n2)  = "(" ++ symb ++ " " ++ pretty p  ++ " " ++ pretty n1 ++ " " ++ pretty n2 ++ ")"
         pretty (HFunction3 symb f)        = "(" ++ symb ++ " " ++ pretty f  ++ ")"
         pretty (HFunction4 symb f g)      = "(" ++ symb ++ " " ++ pretty f  ++ " " ++ pretty g ++ ")"
 
@@ -202,30 +197,30 @@ class Serializable a where
 
 instance Serializable (Function (a -> m b)) where
 
-    serialize (MFunction  symb)    n = ([FunctionDescr symb [] (n+1, n+1)], n+1)
-    serialize (MFunction1 symb x)  n = ([FunctionDescr symb [ArgData $ StorableArgument x] (n+1,n+1) ], n+1)
-    serialize (MFunction2 symb s)  n = ([FunctionDescr symb [ArgString s] (n+1,n+1) ], n+1)
+    serialize (MFunction  symb)    n = ([FunctionDescr symb [] (n+1) ], n+1)
+    serialize (MFunction1 symb x)  n = ([FunctionDescr symb [ArgData $ StorableArgument x] (n+1) ], n+1)
+    serialize (MFunction2 symb s)  n = ([FunctionDescr symb [ArgString s] (n+1) ], n+1)
 
-    serialize (HFunction  symb p)  n = let (s1, n1) = ([FunctionDescr symb [] (n2, n2) ], n+1)
+    serialize (HFunction  symb p)  n = let (s1, n1) = ([FunctionDescr symb [] n2 ], n+1)
                                            (s2, n2) =  serialize p n1
                                        in (s1 ++ s2, n2)
 
-    serialize (HFunction1 symb p c) n = let (s1, n1) = ([FunctionDescr symb [ArgFun n1] (n3, n2) ], n+1)
+    serialize (HFunction1 symb p c) n = let (s1, n1) = ([FunctionDescr symb [ArgFun n1, ArgFun n2] n3 ], n+1)
                                             (s2, n2) =  serialize p n1
                                             (s3, n3) =  serialize c n2
-                                         in (s1 ++ s2 ++ s3, n3)
+                                         in (s1 ++ s2 ++ termComp n2 s3, n3)
 
-    serialize (HFunction2 symb p c1 c2) n = let (s1, n1) = ([FunctionDescr symb [ArgFun n1] (n3, n2) ], n+1)
+    serialize (HFunction2 symb p c1 c2) n = let (s1, n1) = ([FunctionDescr symb [ArgFun n1, ArgFun n2, ArgFun n3] n4 ], n+1)
                                                 (s2, n2) =  serialize p  n1
                                                 (s3, n3) =  serialize c1 n2
                                                 (s4, n4) =  serialize c2 n3
-                                             in (s1 ++ s2 ++ map (relinkComp n3 n4) s3 ++ s4, n4)
+                                             in (s1 ++ s2 ++ termComp n2 s3 ++ termComp n3 s4, n4)
 
-    serialize (HFunction3  symb f)  n = let (s1, n1) = ([FunctionDescr symb [ArgFun n1] (n2, n2) ], n+1)
+    serialize (HFunction3  symb f)  n = let (s1, n1) = ([FunctionDescr symb [ArgFun n1] n2 ], n+1)
                                             (s2, n2) =  serialize f n1
                                         in (s1 ++ termComp n1 s2, n2)
 
-    serialize (HFunction4  symb f g) n = let (s1, n1) = ([FunctionDescr symb [ArgFun n1, ArgFun n2] (n3, n3) ], n+1)
+    serialize (HFunction4  symb f g) n = let (s1, n1) = ([FunctionDescr symb [ArgFun n1, ArgFun n2] n3 ], n+1)
                                              (s2, n2) =  serialize f n1
                                              (s3, n3) =  serialize g n2
                                          in (s1 ++ termComp n1 s2 ++ termComp n2 s3, n3)
@@ -237,21 +232,21 @@ instance Serializable (Function (a -> m b)) where
     serialize _ _ = undefined
 
 instance Serializable NetPredicate where
-    serialize (Predicate  symb)    n = ([FunctionDescr symb [] (-1,-1) ], n+1)
-    serialize (Predicate1 symb x)  n = ([FunctionDescr symb [ArgData $ StorableArgument x] (-1,-1) ], n+1)
-    serialize (Predicate2 symb p)  n = let (s1, n1) = ([FunctionDescr symb [ArgFun n1] (-1,-1) ], n+1)
+    serialize (Predicate  symb)    n = ([FunctionDescr symb [] (-1) ], n+1)
+    serialize (Predicate1 symb x)  n = ([FunctionDescr symb [ArgData $ StorableArgument x] (-1) ], n+1)
+    serialize (Predicate2 symb p)  n = let (s1, n1) = ([FunctionDescr symb [ArgFun n1] (-1) ], n+1)
                                            (s2, n2) = serialize p n1
                                        in (s1 ++ s2, n2)
 
-    serialize (Predicate3 symb p x) n = let (s1, n1) = ([FunctionDescr symb [ArgFun n1, ArgData $ StorableArgument x] (-1,-1) ], n+1)
+    serialize (Predicate3 symb p x) n = let (s1, n1) = ([FunctionDescr symb [ArgFun n1, ArgData $ StorableArgument x] (-1) ], n+1)
                                             (s2, n2) = serialize p n1
                                         in (s1 ++ s2, n2)
 
-    serialize (Combinator1 symb p) n = let (s1, n1) = ([FunctionDescr symb [ArgFun n1] (-1,-1) ], n+1)
+    serialize (Combinator1 symb p) n = let (s1, n1) = ([FunctionDescr symb [ArgFun n1] (-1) ], n+1)
                                            (s2, n2) = serialize p n1
                                        in (s1 ++ s2, n2)
 
-    serialize (Combinator2 symb p1 p2) n = let (s1, n1) = ([FunctionDescr symb [ArgFun n1, ArgFun n2] (-1,-1) ], n+1)
+    serialize (Combinator2 symb p1 p2) n = let (s1, n1) = ([FunctionDescr symb [ArgFun n1, ArgFun n2] (-1) ], n+1)
                                                (s2, n2) = serialize p1 n1
                                                (s3, n3) = serialize p2 n2
                                            in (s1 ++ s2 ++ s3, n3)
@@ -259,8 +254,8 @@ instance Serializable NetPredicate where
 
 
 instance Serializable NetProperty where
-    serialize (Property  symb)    n = ([FunctionDescr symb [] (-1,-1) ], n+1)
-    serialize (Property1 symb x)  n = ([FunctionDescr symb [ArgData $ StorableArgument x] (-1,-1) ], n+1)
+    serialize (Property  symb)    n = ([FunctionDescr symb [] (-1) ], n+1)
+    serialize (Property1 symb x)  n = ([FunctionDescr symb [ArgData $ StorableArgument x] (-1) ], n+1)
 
     serialize _ _ = undefined
 

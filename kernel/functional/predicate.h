@@ -38,7 +38,6 @@
 
 #include <pf_q-module.h>
 
-#include "inline.h"
 
 static inline bool
 less(arguments_t args, struct sk_buff const *skb)

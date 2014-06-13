@@ -53,6 +53,10 @@ extern int pfq_symtable_unregister_functions(const char *module, struct list_hea
 
 #define ARGS_TYPE(a)  		__builtin_choose_expr(__builtin_types_compatible_p(arguments_t, typeof(a)), a, (void)0)
 
+#define EVAL_FUNCTION(f, skb) 	((function_ptr_t)f.fun->ptr)(f.fun, skb)
+#define EVAL_PROPERTY(f, skb) 	((property_ptr_t)f.fun->ptr)(f.fun, skb)
+#define EVAL_PREDICATE(f, skb) 	((predicate_ptr_t)f.fun->ptr)(f.fun, skb)
+
 #define get_data(type,a) get_data0(type,a)
 #define set_data(type,a) set_data0(type,a)
 
@@ -115,8 +119,7 @@ struct pfq_functional_node
  	init_ptr_t 	      init;
  	init_ptr_t 	      fini;
 
-	struct pfq_functional_node *left;
-	struct pfq_functional_node *right;
+	struct pfq_functional_node *next;
 };
 
 
@@ -181,7 +184,6 @@ typedef struct
         uint32_t hash;
         uint8_t  type;
         uint8_t  attr;
-	bool right;
 
 } action_t;
 

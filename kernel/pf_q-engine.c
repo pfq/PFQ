@@ -34,7 +34,6 @@
 #include <pf_q-signature.h>
 #include <pf_q-engine.h>
 
-#include <functional/inline.h>
 #include <functional/headers.h>
 
 
@@ -122,8 +121,8 @@ static void pr_devel_functional_node(struct pfq_functional_node const *node, siz
 			len += sprintf(buffer + len, "%p ",(void *)node->fun.arg[n]);
 	}
 
-	if (node->left || node->right)
-		len += sprintf(buffer + len, "] -> l:%p r:%p", node->left, node->right);
+	if (node->next)
+		len += sprintf(buffer + len, "] -> next:%p", node->next);
 	else
 		len += sprintf(buffer + len, "]");
 
@@ -174,15 +173,15 @@ static void pr_devel_functional_descr(struct pfq_functional_descr const *descr, 
 		else
 		{
 			if (descr->arg[n].size)
-				len += sprintf(buffer + len, "link:%zu ",  descr->arg[n].size);
+				len += sprintf(buffer + len, "fun(%zu) ",  descr->arg[n].size);
 		}
 
 	}
 
-	if (descr->left != -1 && descr->right != -1)
-		pr_devel("%s] tree:(%zu, %zu)\n", buffer, descr->left, descr->right);
+	if (descr->next != -1)
+		pr_devel("%s] next(%zu)\n", buffer, descr->next);
 	else
-		pr_devel("%s] tree:(-,-)\n", buffer);
+		pr_devel("%s] next(-)\n", buffer);
 
         kfree(symbol);
 }
@@ -222,7 +221,6 @@ static inline struct sk_buff *
 pfq_apply(struct pfq_functional *call, struct sk_buff *skb)
 {
 	function_t fun = { call };
-        PFQ_CB(skb)->action.right = true;
 
 	return EVAL_FUNCTION(fun, skb);
 }
@@ -246,7 +244,7 @@ pfq_bind(struct sk_buff *skb, struct pfq_computation_tree *prg)
                 if (is_drop(*a))
                         return skb;
 
-                node = PFQ_CB(skb)->action.right ? node->right : node->left;
+                node = node->next;
         }
 
         return skb;
@@ -594,9 +592,7 @@ pfq_computation_rtlink(struct pfq_computation_descr const *descr, struct pfq_com
 		comp->node[n].fun.ptr = addr;
         	comp->node[n].init    = init;
         	comp->node[n].fini    = fini;
-
-		comp->node[n].right = get_functional_by_index(descr, comp, descr->fun[n].right);
-		comp->node[n].left  = get_functional_by_index(descr, comp, descr->fun[n].left);
+		comp->node[n].next    = get_functional_by_index(descr, comp, descr->fun[n].next);
 
 		comp->node[n].fun.arg[0] = 0;
 		comp->node[n].fun.arg[1] = 0;

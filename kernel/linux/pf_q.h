@@ -383,11 +383,8 @@ typedef struct
 struct pfq_functional_descr
 {
         const char __user *     	symbol;
-
 	argument_t	    		arg[4];
-
-        size_t 				left;
-        size_t 				right;
+        size_t 				next;
 };
 
 

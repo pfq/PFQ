@@ -26,7 +26,6 @@
 
 #include <pf_q-module.h>
 
-#include "inline.h"
 #include "predicate.h"
 
 

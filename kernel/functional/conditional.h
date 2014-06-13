@@ -28,31 +28,43 @@
 
 #include "predicate.h"
 
-
 static inline struct sk_buff *
 conditional(arguments_t args, struct sk_buff *skb)
 {
-        predicate_t expr = get_data(predicate_t, args);
-        PFQ_CB(skb)->action.right = EVAL_PREDICATE(expr, skb);
+        predicate_t pred_ = get_data0(predicate_t, args);
+        function_t  then_ = get_data1(function_t, args);
+        function_t  else_ = get_data2(function_t, args);
 
-        return skb;
+	if (EVAL_PREDICATE(pred_, skb))
+		return EVAL_FUNCTION(then_, skb);
+
+	return EVAL_FUNCTION(else_, skb);
 }
 
 static inline struct sk_buff *
 when(arguments_t args, struct sk_buff *skb)
 {
-        predicate_t expr = get_data(predicate_t, args);
-        PFQ_CB(skb)->action.right = EVAL_PREDICATE(expr, skb);
-        return skb;
+        predicate_t pred_ = get_data0(predicate_t, args);
+        function_t  fun_  = get_data1(function_t, args);
+
+	if (EVAL_PREDICATE(pred_, skb))
+		return EVAL_FUNCTION(fun_, skb);
+
+	return skb;
 }
 
 static inline struct sk_buff *
 unless(arguments_t args, struct sk_buff *skb)
 {
-        predicate_t expr = get_data(predicate_t, args);
-        PFQ_CB(skb)->action.right = !EVAL_PREDICATE(expr, skb);
-        return skb;
+        predicate_t pred_ = get_data0(predicate_t, args);
+        function_t  fun_  = get_data1(function_t, args);
+
+	if (!EVAL_PREDICATE(pred_, skb))
+		return EVAL_FUNCTION(fun_, skb);
+
+	return skb;
 }
+
 
 
 #endif /* _FUNCTIONAL_CONDITIONAL_H_ */

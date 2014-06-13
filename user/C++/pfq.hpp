@@ -776,8 +776,7 @@ namespace net {
                     prg->fun[n].arg[i].size = descr.arg[i].size;
                 }
 
-                prg->fun[n].left  = descr.left;
-                prg->fun[n].right = descr.right;
+                prg->fun[n].next  = descr.next;
 
                 n++;
             }

@@ -196,13 +196,13 @@ forward_fini(arguments_t args)
 
 struct pfq_function_descr forward_functions[] = {
 
-        { "drop",        "SkBuff -> Action SkBuff",   	    		INLINE_FUN(forward_drop) 	},
-        { "broadcast",   "SkBuff -> Action SkBuff",   	    		INLINE_FUN(forward_broadcast)	},
-        { "class",	 "Int -> SkBuff -> Action SkBuff",  		INLINE_FUN(forward_class) 	},
-        { "deliver",	 "Int -> SkBuff -> Action SkBuff",  		INLINE_FUN(forward_deliver) 	},
+        { "drop",        "SkBuff -> Action SkBuff",   	    		forward_drop		},
+        { "broadcast",   "SkBuff -> Action SkBuff",   	    		forward_broadcast	},
+        { "class",	 "Int -> SkBuff -> Action SkBuff",  		forward_class		},
+        { "deliver",	 "Int -> SkBuff -> Action SkBuff",  		forward_deliver		},
 
-        { "kernel", 	    "SkBuff -> Action SkBuff",    		INLINE_FUN(forward_to_kernel)       },
-        { "forward_kernel", "SkBuff -> Action SkBuff",   		INLINE_FUN(forward_io_kernel)       },
+        { "kernel", 	    "SkBuff -> Action SkBuff",    		forward_to_kernel	},
+        { "forward_kernel", "SkBuff -> Action SkBuff",   		forward_io_kernel	},
 	{ "forward",        "String -> SkBuff -> Action SkBuff",  	forward, forward_init, forward_fini },
 
         { NULL }};

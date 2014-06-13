@@ -52,8 +52,7 @@ namespace pfq_lang
             out << '(' << arg.ptr << ',' << arg.size << ") ";
         }
 
-        out << "} " << "left:"  << descr.left << ' '
-        << "right:" << descr.right;
+        out << "} " << "next:"  << descr.next << ' ';
 
         return out.str();
     }
@@ -256,9 +255,7 @@ namespace pfq_lang
     {
         std::string                 symbol;
         std::array<Argument, 4>     arg;
-
-        std::size_t                 left;
-        std::size_t                 right;
+        std::size_t                 next;
     };
 
 
@@ -273,9 +270,7 @@ namespace pfq_lang
         {
             out += show(a) + ", ";
         }
-        out +=  "] ("
-        + std::to_string(descr.left)  + ", "
-        + std::to_string(descr.right) + ')';
+        out +=  "] (" + ((descr.next != -1UL) ? std::to_string(descr.next) : "-")  + ')';
 
         return out;
     }
@@ -430,7 +425,7 @@ namespace pfq_lang
     {
        std::vector<FunctionDescr> pred, comb =
        {
-           { f.symbol_, { { Argument::Fun(n+1) } }, -1UL, -1UL }
+           { f.symbol_, { { Argument::Fun(n+1) } }, -1UL }
        };
 
        std::size_t n1;
@@ -452,7 +447,7 @@ namespace pfq_lang
        std::tie(pred1, n1) = serialize(f.pred1_, n+1);
        std::tie(pred2, n2) = serialize(f.pred2_, n1);
 
-       comb = { { f.symbol_, { { Argument::Fun(n+1), Argument::Fun(n1) } }, -1UL, -1UL } };
+       comb = { { f.symbol_, { { Argument::Fun(n+1), Argument::Fun(n1) } }, -1UL } };
 
        return { std::move(comb) + std::move(pred1) + std::move(pred2), n2 };
     }
@@ -503,13 +498,13 @@ namespace pfq_lang
     static inline std::pair<std::vector<FunctionDescr>, std::size_t>
     serialize(Property const &p, std::size_t n)
     {
-        return { { FunctionDescr {p.symbol_, {{}}, -1UL, -1UL } }, n+1 };
+        return { { FunctionDescr {p.symbol_, {{}}, -1UL } }, n+1 };
     }
 
     static inline std::pair<std::vector<FunctionDescr>, std::size_t>
     serialize(Property1 const &p, std::size_t n)
     {
-        return { {FunctionDescr { p.symbol_, {{ p.arg_ }}, -1UL, -1UL } }, n+1 };
+        return { {FunctionDescr { p.symbol_, {{ p.arg_ }}, -1UL } }, n+1 };
     }
 
 
@@ -601,13 +596,13 @@ namespace pfq_lang
     static inline std::pair<std::vector<FunctionDescr>, std::size_t>
     serialize(Predicate const &p, std::size_t n)
     {
-        return { { FunctionDescr { p.symbol_,  {{}}, -1UL, -1UL } }, n+1 };
+        return { { FunctionDescr { p.symbol_,  {{}}, -1UL } }, n+1 };
     }
 
     static inline std::pair<std::vector<FunctionDescr>, std::size_t>
     serialize(Predicate1 const &p, std::size_t n)
     {
-        return { { FunctionDescr { p.symbol_,  {{ p.arg_}}, -1UL, -1UL } }, n+1 };
+        return { { FunctionDescr { p.symbol_,  {{ p.arg_}}, -1UL } }, n+1 };
     }
 
     template <typename Prop>
@@ -616,7 +611,7 @@ namespace pfq_lang
     {
        std::vector<FunctionDescr> prop, pred =
        {
-           { p.symbol_, { {Argument::Fun(n+1) } }, -1UL, -1UL }
+           { p.symbol_, { {Argument::Fun(n+1) } }, -1UL }
        };
 
        std::size_t n1;
@@ -632,7 +627,7 @@ namespace pfq_lang
     {
        std::vector<FunctionDescr> prop, pred =
        {
-           { p.symbol_, { {Argument::Fun(n+1), p.arg_ } }, -1UL, -1UL }
+           { p.symbol_, { {Argument::Fun(n+1), p.arg_ } }, -1UL }
        };
 
        std::size_t n1;
@@ -862,19 +857,19 @@ namespace pfq_lang
     static inline std::pair<std::vector<FunctionDescr>, std::size_t>
     serialize(MFunction const &f, std::size_t n)
     {
-        return { { FunctionDescr { f.symbol_, {{}}, n+1, n+1 } }, n+1 };
+        return { { FunctionDescr { f.symbol_, {{}}, n+1 } }, n+1 };
     }
 
     static inline std::pair<std::vector<FunctionDescr>, std::size_t>
     serialize(MFunction1 const &f, std::size_t n)
     {
-        return { { FunctionDescr { f.symbol_, {{ f.arg_ }}, n+1, n+1 } }, n+1 };
+        return { { FunctionDescr { f.symbol_, {{ f.arg_ }}, n+1 } }, n+1 };
     }
 
     static inline std::pair<std::vector<FunctionDescr>, std::size_t>
     serialize(MFunction2 const &f, std::size_t n)
     {
-        return { { FunctionDescr { f.symbol_,  {{ f.arg_ }}, n+1, n+1 } }, n+1 };
+        return { { FunctionDescr { f.symbol_,  {{ f.arg_ }}, n+1 } }, n+1 };
     }
 
     template <typename P>
@@ -886,7 +881,7 @@ namespace pfq_lang
 
         std::tie(p1, n1) = serialize(f.pred_, n+1);
 
-        v1 = { { f.symbol_,  { { Argument::Fun(n+1) } }, n1, n1 } };
+        v1 = { { f.symbol_,  { { Argument::Fun(n+1) } }, n1 } };
 
         return { std::move(v1) + std::move(p1), n1 };
     }
@@ -902,7 +897,9 @@ namespace pfq_lang
         std::tie(p1, n1) = serialize(f.pred_, n+1);
         std::tie(c1, n2) = serialize(f.fun_, n1);
 
-        v1 = { { f.symbol_, { { Argument::Fun(n+1) } }, n2, n1 } };
+        c1.back().next = -1;
+
+        v1 = { { f.symbol_, { { Argument::Fun(n+1), Argument::Fun(n1) } }, n2 } };
 
         return { { std::move(v1) + std::move(p1) + std::move(c1) }, n2 };
     }
@@ -919,13 +916,10 @@ namespace pfq_lang
         std::tie(c1, n2) = serialize(f.fun1_ , n1  );
         std::tie(c2, n3) = serialize(f.fun2_ , n2  );
 
-        v1 = { { f.symbol_, { { Argument::Fun(n+1) } }, n2, n1 } };
+        c1.back().next = -1;
+        c2.back().next = -1;
 
-        for(auto & d : c1)
-        {
-            d.left  = d.left  == n2 ? n3 : d.left;
-            d.right = d.right == n2 ? n3 : d.right;
-        }
+        v1 = { { f.symbol_, { { Argument::Fun(n+1), Argument::Fun(n1), Argument::Fun(n2) } }, n3 } };
 
         return { std::move(v1) + std::move(p1) + std::move(c1) + std::move(c2), n3 };
     }
@@ -939,10 +933,9 @@ namespace pfq_lang
 
         std::tie(f1, n1) = serialize(f.fun_, n+1);
 
-        f1.back().left  = -1;
-        f1.back().right = -1;
+        f1.back().next = -1;
 
-        v1 = { { f.symbol_,  { { Argument::Fun(n+1) } }, n1, n1 } };
+        v1 = { { f.symbol_,  { { Argument::Fun(n+1) } }, n1 } };
 
         return { std::move(v1) + std::move(f1), n1 };
     }
@@ -957,12 +950,10 @@ namespace pfq_lang
         std::tie(f1, n1) = serialize(fun.f_, n+1);
         std::tie(f2, n2) = serialize(fun.g_, n1);
 
-        f1.back().left  = -1;
-        f1.back().right = -1;
-        f2.back().left  = -1;
-        f2.back().right = -1;
+        f1.back().next = -1;
+        f2.back().next = -1;
 
-        v1 = { { fun.symbol_,  { { Argument::Fun(n+1), Argument::Fun(n1) } }, n2, n2 } };
+        v1 = { { fun.symbol_,  { { Argument::Fun(n+1), Argument::Fun(n1) } }, n2 } };
 
         return { std::move(v1) + std::move(f1) + std::move(f2), n2 };
     }

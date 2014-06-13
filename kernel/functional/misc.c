@@ -28,7 +28,6 @@
 #include <pf_q-module.h>
 #include <pf_q-sparse.h>
 
-#include "inline.h"
 #include "headers.h"
 #include "misc.h"
 
@@ -216,9 +215,8 @@ struct pfq_function_descr misc_functions[] = {
         { "dummy",      "Int -> SkBuff -> Action SkBuff",     		dummy, dummy_init,  dummy_fini },
         { "inc", 	"Int -> SkBuff -> Action SkBuff",     		inc_counter 	},
         { "dec", 	"Int -> SkBuff -> Action SkBuff",    		dec_counter 	},
- 	{ "mark", 	"CULong -> SkBuff -> Action SkBuff",  		INLINE_FUN(mark)},
+ 	{ "mark", 	"CULong -> SkBuff -> Action SkBuff",  		mark		},
         { "crc16", 	"SkBuff -> Action SkBuff", 			crc16_sum	},
-
         { "log_msg",  	"String -> SkBuff -> Action SkBuff", 		log_msg 	},
         { "log_packet", "SkBuff -> Action SkBuff", 			log_packet	},
 
