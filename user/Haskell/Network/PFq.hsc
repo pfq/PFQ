@@ -146,6 +146,7 @@ module Network.PFq
         -- * Q-lang
 
         groupComputation,
+        groupComputationFromString,
 
         -- * Statistics and counters
 
@@ -874,6 +875,21 @@ groupComputation hdl gid comp = do
             pfq_set_group_computation hdl (fromIntegral gid) ptr >>= throwPFqIf_ hdl (== -1)
 
 
+-- |Specify a simple functional computation for the given group.
+--
+-- The functional computation is specified by the given string as a PFq-Lang expression.
+--
+
+groupComputationFromString :: Ptr PFqTag
+                           -> Int       -- ^ group id
+                           -> String    -- ^ simple expression (PFq-Lang)
+                           -> IO ()
+
+groupComputationFromString hdl gid comp = do
+    withCString comp $ \ptr -> do
+            pfq_set_group_computation_from_string hdl (fromIntegral gid) ptr >>= throwPFqIf_ hdl (== -1)
+
+
 -- |Collect and process packets.
 --
 -- This function is passed a function 'Callback' which is called on each packet.
@@ -1048,6 +1064,7 @@ foreign import ccall unsafe pfq_get_group_stats     :: Ptr PFqTag -> CInt -> Ptr
 foreign import ccall unsafe pfq_get_group_counters  :: Ptr PFqTag -> CInt -> Ptr Counters -> IO CInt
 
 foreign import ccall unsafe pfq_set_group_computation :: Ptr PFqTag -> CInt -> Ptr a -> IO CInt
+foreign import ccall unsafe pfq_set_group_computation_from_string :: Ptr PFqTag -> CInt -> CString -> IO CInt
 
 foreign import ccall pfq_dispatch                   :: Ptr PFqTag -> FunPtr CPFqCallback -> CLong -> Ptr Word8 -> IO CInt
 foreign import ccall "wrapper" make_callback        :: CPFqCallback -> IO (FunPtr CPFqCallback)
