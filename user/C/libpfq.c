@@ -39,6 +39,7 @@
 #include <string.h>
 #include <errno.h>
 #include <signal.h>
+#include <ctype.h>
 
 #include <poll.h>
 
@@ -58,6 +59,61 @@
 	   __typeof__ (b) _b = (b); \
 	  _a < _b ? _a : _b; })
 
+
+/* string utils */
+
+static char *trim_string(char *str)
+{
+	int i = 0, j = strlen (str) - 1;
+
+	while ( isspace ( str[i] ) && str[i] != '\0' )
+		i++;
+	while ( isspace ( str[j] ) && j >= 0 )
+		j--;
+
+	str[j+1] = '\0';
+	return str+i;
+}
+
+static void split_on(const char *str, const char *sep, void (*cb)(char *))
+{
+	const char * p = str, *q;
+	char *x;
+
+	while((q = strstr(p, sep)) != NULL) {
+
+		x = strndup(p, q-p);
+		cb(x);
+		p = q + strlen(sep);
+	}
+
+	x = strdup(p);
+	cb(x);
+}
+
+
+static int with_tokens(const char *str, const char *sep, int (*cb)(char **, int n))
+{
+	char *tokens[64] = { NULL };
+	int n = 0, i, ret;
+
+	void push_back_ptr(char *ptr)
+	{
+		if (n < 64)
+			tokens[n++] = ptr;
+	}
+
+	split_on(str, sep, push_back_ptr);
+
+	ret = cb(tokens, n);
+
+	for(i = 0; i < n; ++i)
+	{
+        	free(tokens[i]);
+	}
+
+	return ret;
+}
 
 /* pfq descriptor */
 
@@ -557,6 +613,46 @@ pfq_set_group_computation(pfq_t *q, int gid, struct pfq_computation_descr *comp)
         }
 
 	return q->error = NULL, 0;
+}
+
+
+int
+pfq_set_group_computation_from_string(pfq_t *q, int gid, const char *comp)
+{
+	int do_set_group_computation(char **fun, int n)
+	{
+		int i = 0, ret;
+
+                struct pfq_computation_descr * prog = malloc(sizeof(size_t) * 2 + sizeof(struct pfq_functional_descr) * n);
+		if (!prog)
+			return q->error = "PFQ: group computation error (no memory)", -1;
+
+		prog->entry_point = 0;
+		prog->size = n;
+
+		for(i = 0; i < n; i++)
+		{
+			prog->fun[i].symbol = trim_string(fun[i]);
+			prog->fun[i].arg[0].ptr = NULL;
+			prog->fun[i].arg[0].size = 0;
+			prog->fun[i].arg[1].ptr = NULL;
+			prog->fun[i].arg[1].size = 0;
+			prog->fun[i].arg[2].ptr = NULL;
+			prog->fun[i].arg[2].size = 0;
+			prog->fun[i].arg[3].ptr = NULL;
+			prog->fun[i].arg[3].size = 0;
+
+			prog->fun[i].next = i+1;
+		}
+
+		ret = pfq_set_group_computation(q, gid, prog);
+
+		free(prog);
+
+		return ret;
+	}
+
+	return with_tokens(comp, ">->", &do_set_group_computation);
 }
 
 

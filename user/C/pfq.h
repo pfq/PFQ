@@ -329,6 +329,16 @@ extern int pfq_groups_mask(pfq_t const *q, unsigned long *_mask);
 
 extern int pfq_set_group_computation(pfq_t *q, int gid, struct pfq_computation_descr *prg);
 
+
+/*! Specify a functional computation for the given group, from string. */
+/*!
+ * This function is experimental and is limited to simple functional computations.
+ * Only compositions of monadic functions without binding arguments are supported.
+ */
+
+extern int pfq_set_group_computation_from_string(pfq_t *q, int gid, const char *prg);
+
+
 /*! Specify a BPF program for the given group. */
 /*!
  * This function can be used to set a specific BPF filter for the group.
