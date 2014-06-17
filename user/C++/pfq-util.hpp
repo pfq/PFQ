@@ -23,6 +23,7 @@
 
 #pragma once
 
+#include <vector>
 #include <tuple>
 #include <string>
 #include <cstring>
@@ -107,6 +108,39 @@ namespace net {
         if (::if_indextoname(i, buf) == nullptr)
             throw pfq_error("PFQ: index not available");
         return buf;
+    }
+
+    //! Trim pending and trailing whitespaces from a string.
+
+    inline std::string
+    trim(std::string str)
+    {
+        auto b = str.find_first_not_of(" \n\r\t");
+        auto e = str.find_last_not_of(" \n\r\t");
+        b = b == std::string::npos ? 0 : b;
+        e = e == std::string::npos ? std::string::npos : (e + 1 - b);
+        return str.substr(b, e);
+    }
+
+    //! Split a string by means of the given separator.
+
+    inline std::vector<std::string>
+    split(std::string str, const char *sep)
+    {
+        std::vector<std::string> ret;
+
+        auto len = std::strlen(sep);
+
+        for(std::string::size_type n; (n = str.find(sep)) != std::string::npos;)
+        {
+            ret.push_back(str.substr(0,n));
+            str = str.substr(n + len, std::string::npos);
+        }
+
+        if (!str.empty())
+            ret.push_back(std::move(str));
+
+        return ret;
     }
 
     namespace param

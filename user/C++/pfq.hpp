@@ -798,6 +798,28 @@ namespace net {
                 throw pfq_error(errno, "PFQ: group computation error");
         }
 
+
+        //! Specify a functional computation for the given group, from string.
+        /*!
+         * This function is experimental and is limited to simple functional computations.
+         * Only the composition of monadic functions without binding arguments are supported.
+         */
+
+        void
+        set_group_computation(int gid, std::string prog)
+        {
+            std::vector<pfq_lang::MFunction> comp;
+            auto fs = split(prog, ">->");
+
+            for (auto & f : fs)
+            {
+                comp.push_back(pfq_lang::mfunction(trim(f)));
+            }
+
+            set_group_computation(gid, comp);
+        }
+
+
         //! Specify a BPF program for the given group.
         /*!
          * This function can be used to set a specific BPF filter for the group.
