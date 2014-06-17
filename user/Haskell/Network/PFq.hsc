@@ -875,10 +875,10 @@ groupComputation hdl gid comp = do
             pfq_set_group_computation hdl (fromIntegral gid) ptr >>= throwPFqIf_ hdl (== -1)
 
 
--- |Specify a simple functional computation for the given group.
+-- |Specify a simple functional computation for the given group, from String.
 --
--- The functional computation is specified by the given string as a PFq-Lang expression.
---
+-- This function is experimental and is limited to simple functional computations.
+-- Only the composition of monadic functions without binding arguments are supported.
 
 groupComputationFromString :: Ptr PFqTag
                            -> Int       -- ^ group id

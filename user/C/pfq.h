@@ -333,7 +333,7 @@ extern int pfq_set_group_computation(pfq_t *q, int gid, struct pfq_computation_d
 /*! Specify a functional computation for the given group, from string. */
 /*!
  * This function is experimental and is limited to simple functional computations.
- * Only compositions of monadic functions without binding arguments are supported.
+ * Only the composition of monadic functions without binding arguments are supported.
  */
 
 extern int pfq_set_group_computation_from_string(pfq_t *q, int gid, const char *prg);
