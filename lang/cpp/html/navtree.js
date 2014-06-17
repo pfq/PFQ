@@ -30,7 +30,7 @@ var NAVTREE =
 var NAVTREEINDEX =
 [
 "annotated.html",
-"structpfq__lang_1_1MFunction2.html#aa0ee0ece97ba1a6b58130f374a9c5f3c"
+"structpfq__lang_1_1Predicate.html"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

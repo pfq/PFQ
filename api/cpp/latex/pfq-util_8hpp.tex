@@ -1,6 +1,7 @@
 \hypertarget{pfq-util_8hpp}{\section{C++/pfq-\/util.hpp File Reference}
 \label{pfq-util_8hpp}\index{C++/pfq-\/util.\+hpp@{C++/pfq-\/util.\+hpp}}
 }
+{\ttfamily \#include $<$vector$>$}\\*
 {\ttfamily \#include $<$tuple$>$}\\*
 {\ttfamily \#include $<$string$>$}\\*
 {\ttfamily \#include $<$cstring$>$}\\*
@@ -50,6 +51,10 @@ int \hyperlink{namespacenet_aa90cbca6e910724bc46d5f4c2b12cddf}{net\+::nametoinde
 \begin{DoxyCompactList}\small\item\em Given the device name return the related index. \end{DoxyCompactList}\item 
 std\+::string \hyperlink{namespacenet_ac7628d7e4c8e89d8ada4d75c292f575f}{net\+::indextoname} (int i)
 \begin{DoxyCompactList}\small\item\em Given the index return the related device name. \end{DoxyCompactList}\item 
+std\+::string \hyperlink{namespacenet_a89ef9cb5b1526b5c5f613a837adc6392}{net\+::trim} (std\+::string str)
+\begin{DoxyCompactList}\small\item\em Trim pending and trailing whitespaces from a string. \end{DoxyCompactList}\item 
+std\+::vector$<$ std\+::string $>$ \hyperlink{namespacenet_af79f3419ccd7c7717d61ecb186f9faba}{net\+::split} (std\+::string str, const char $\ast$sep)
+\begin{DoxyCompactList}\small\item\em Split a string by means of the given separator. \end{DoxyCompactList}\item 
 {\footnotesize template$<$typename T , typename... Ts$>$ }\\auto \hyperlink{namespacenet_1_1param_a9020a1d5f00da972acbea3e809d3c602}{net\+::param\+::get} (std\+::tuple$<$ Ts...$>$ \&tup) -\/$>$ decltype(std\+::get$<$ details\+::type\+\_\+index$<$ T, Ts...$>$\+::value $>$(tup))
 \item 
 {\footnotesize template$<$typename Tup , typename... Ts$>$ }\\void \hyperlink{namespacenet_1_1param_aef5f360e345f5ab876c171a76a0777a2}{net\+::param\+::load} (Tup \&tup, Ts \&\&...arg)

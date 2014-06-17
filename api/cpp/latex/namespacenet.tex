@@ -60,7 +60,11 @@ void \hyperlink{namespacenet_a69de0e47b041dff359c54fe92eb8830a}{set\+\_\+promisc
 int \hyperlink{namespacenet_aa90cbca6e910724bc46d5f4c2b12cddf}{nametoindex} (const char $\ast$dev)
 \begin{DoxyCompactList}\small\item\em Given the device name return the related index. \end{DoxyCompactList}\item 
 std\+::string \hyperlink{namespacenet_ac7628d7e4c8e89d8ada4d75c292f575f}{indextoname} (int i)
-\begin{DoxyCompactList}\small\item\em Given the index return the related device name. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\begin{DoxyCompactList}\small\item\em Given the index return the related device name. \end{DoxyCompactList}\item 
+std\+::string \hyperlink{namespacenet_a89ef9cb5b1526b5c5f613a837adc6392}{trim} (std\+::string str)
+\begin{DoxyCompactList}\small\item\em Trim pending and trailing whitespaces from a string. \end{DoxyCompactList}\item 
+std\+::vector$<$ std\+::string $>$ \hyperlink{namespacenet_af79f3419ccd7c7717d61ecb186f9faba}{split} (std\+::string str, const char $\ast$sep)
+\begin{DoxyCompactList}\small\item\em Split a string by means of the given separator. \end{DoxyCompactList}\end{DoxyCompactItemize}
 
 
 \subsection{Typedef Documentation}
@@ -209,4 +213,27 @@ Given the device name return the related index.
 
 
 Set/unset the promiscuous mode for the given device. 
+
+\hypertarget{namespacenet_af79f3419ccd7c7717d61ecb186f9faba}{\index{net@{net}!split@{split}}
+\index{split@{split}!net@{net}}
+\subsubsection[{split}]{\setlength{\rightskip}{0pt plus 5cm}std\+::vector$<$std\+::string$>$ net\+::split (
+\begin{DoxyParamCaption}
+\item[{std\+::string}]{str, }
+\item[{const char $\ast$}]{sep}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacenet_af79f3419ccd7c7717d61ecb186f9faba}
+
+
+Split a string by means of the given separator. 
+
+\hypertarget{namespacenet_a89ef9cb5b1526b5c5f613a837adc6392}{\index{net@{net}!trim@{trim}}
+\index{trim@{trim}!net@{net}}
+\subsubsection[{trim}]{\setlength{\rightskip}{0pt plus 5cm}std\+::string net\+::trim (
+\begin{DoxyParamCaption}
+\item[{std\+::string}]{str}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacenet_a89ef9cb5b1526b5c5f613a837adc6392}
+
+
+Trim pending and trailing whitespaces from a string. 
 

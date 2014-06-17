@@ -1,6 +1,5 @@
 var NAVTREEINDEX1 =
 {
-"structpfq__lang_1_1MFunction2.html#aa0ee0ece97ba1a6b58130f374a9c5f3c":[1,0,0,25,0],
 "structpfq__lang_1_1Predicate.html":[1,0,0,26],
 "structpfq__lang_1_1Predicate.html#a44004d3c8071b374fe4cd1838deb28a3":[1,0,0,26,1],
 "structpfq__lang_1_1Predicate.html#ab91af9569c514d8ec1f8c5c75d74b0c5":[1,0,0,26,0],

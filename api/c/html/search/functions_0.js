@@ -45,6 +45,7 @@ var searchData=
   ['pfq_5fsend_5fsync',['pfq_send_sync',['../pfq_8h.html#a6e3d7e37b6b90db429afe32d4bb35f89',1,'pfq.h']]],
   ['pfq_5fset_5fcaplen',['pfq_set_caplen',['../pfq_8h.html#ac726d1da4c6aecfa1dcb1544c036cdc4',1,'pfq.h']]],
   ['pfq_5fset_5fgroup_5fcomputation',['pfq_set_group_computation',['../pfq_8h.html#a63b881aa62dc2c45b44fdb9810f7a07f',1,'pfq.h']]],
+  ['pfq_5fset_5fgroup_5fcomputation_5ffrom_5fstring',['pfq_set_group_computation_from_string',['../pfq_8h.html#aa40ff5d2d51467a34f168cbb6b296509',1,'pfq.h']]],
   ['pfq_5fset_5fmaxlen',['pfq_set_maxlen',['../pfq_8h.html#af5a7ee00b2df3e1634b20ca9d7c16fbb',1,'pfq.h']]],
   ['pfq_5fset_5fpromisc',['pfq_set_promisc',['../pfq_8h.html#ab5d185cdfcf8c7dcd2820a9f020415a0',1,'pfq.h']]],
   ['pfq_5fset_5frx_5fslots',['pfq_set_rx_slots',['../pfq_8h.html#a0d09783c6e8a992fa7ac7e47faf3a812',1,'pfq.h']]],

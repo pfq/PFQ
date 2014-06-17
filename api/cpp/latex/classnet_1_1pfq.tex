@@ -97,6 +97,8 @@ std\+::vector$<$ int $>$ \hyperlink{classnet_1_1pfq_af63de1f94a492284cfed78695f2
 \begin{DoxyCompactList}\small\item\em Specify a functional computation for the given group. \end{DoxyCompactList}\item 
 void \hyperlink{classnet_1_1pfq_a50af39653699ccbf9c0b2412a17e01a6}{set\+\_\+group\+\_\+computation} (int gid, pfq\+\_\+computation\+\_\+descr $\ast$prog)
 \begin{DoxyCompactList}\small\item\em Specify a functional computation for the given group. \end{DoxyCompactList}\item 
+void \hyperlink{classnet_1_1pfq_a264d162d6b39d5cddc48ea1cef0b40f8}{set\+\_\+group\+\_\+computation} (int gid, std\+::string prog)
+\begin{DoxyCompactList}\small\item\em Specify a functional computation for the given group, from string. \end{DoxyCompactList}\item 
 void \hyperlink{classnet_1_1pfq_a5290b64ce270cfc46a9fbecc21802cc3}{set\+\_\+group\+\_\+fprog} (int gid, const sock\+\_\+fprog \&f)
 \begin{DoxyCompactList}\small\item\em Specify a B\+P\+F program for the given group. \end{DoxyCompactList}\item 
 void \hyperlink{classnet_1_1pfq_a4d6b1fb7c2b3538bf7b66fb0a92bf87b}{reset\+\_\+group\+\_\+fprog} (int gid)
@@ -784,7 +786,19 @@ The functional computation is specified by the e\+D\+S\+L pfq-\/lang. \hypertarg
 
 Specify a functional computation for the given group. 
 
-The functional computation is specified by a pfq\+\_\+computation\+\_\+descriptor. This function should not be used; use the pfq-\/lang e\+D\+S\+L instead. \hypertarget{classnet_1_1pfq_a5290b64ce270cfc46a9fbecc21802cc3}{\index{net\+::pfq@{net\+::pfq}!set\+\_\+group\+\_\+fprog@{set\+\_\+group\+\_\+fprog}}
+The functional computation is specified by a pfq\+\_\+computation\+\_\+descriptor. This function should not be used; use the pfq-\/lang e\+D\+S\+L instead. \hypertarget{classnet_1_1pfq_a264d162d6b39d5cddc48ea1cef0b40f8}{\index{net\+::pfq@{net\+::pfq}!set\+\_\+group\+\_\+computation@{set\+\_\+group\+\_\+computation}}
+\index{set\+\_\+group\+\_\+computation@{set\+\_\+group\+\_\+computation}!net\+::pfq@{net\+::pfq}}
+\subsubsection[{set\+\_\+group\+\_\+computation}]{\setlength{\rightskip}{0pt plus 5cm}void net\+::pfq\+::set\+\_\+group\+\_\+computation (
+\begin{DoxyParamCaption}
+\item[{int}]{gid, }
+\item[{std\+::string}]{prog}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}}}\label{classnet_1_1pfq_a264d162d6b39d5cddc48ea1cef0b40f8}
+
+
+Specify a functional computation for the given group, from string. 
+
+This function is experimental and is limited to simple functional computations. Only the composition of monadic functions without binding arguments are supported. \hypertarget{classnet_1_1pfq_a5290b64ce270cfc46a9fbecc21802cc3}{\index{net\+::pfq@{net\+::pfq}!set\+\_\+group\+\_\+fprog@{set\+\_\+group\+\_\+fprog}}
 \index{set\+\_\+group\+\_\+fprog@{set\+\_\+group\+\_\+fprog}!net\+::pfq@{net\+::pfq}}
 \subsubsection[{set\+\_\+group\+\_\+fprog}]{\setlength{\rightskip}{0pt plus 5cm}void net\+::pfq\+::set\+\_\+group\+\_\+fprog (
 \begin{DoxyParamCaption}

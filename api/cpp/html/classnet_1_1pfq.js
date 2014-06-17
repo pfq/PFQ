@@ -52,6 +52,7 @@ var classnet_1_1pfq =
     [ "send_sync", "classnet_1_1pfq.html#adfa55afc44e561314349bf5995c06bae", null ],
     [ "set_group_computation", "classnet_1_1pfq.html#af434441b7c824c81e3888f771b70e023", null ],
     [ "set_group_computation", "classnet_1_1pfq.html#a50af39653699ccbf9c0b2412a17e01a6", null ],
+    [ "set_group_computation", "classnet_1_1pfq.html#a264d162d6b39d5cddc48ea1cef0b40f8", null ],
     [ "set_group_fprog", "classnet_1_1pfq.html#a5290b64ce270cfc46a9fbecc21802cc3", null ],
     [ "start_tx_thread", "classnet_1_1pfq.html#a90c4ea400b987ae1f75fb1c1574fefa5", null ],
     [ "stats", "classnet_1_1pfq.html#a4eaca8322c9f3926df19dda2a097fa3c", null ],

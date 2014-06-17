@@ -233,6 +233,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a50af39653699ccbf9c0b2412a17e01a6"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnet_1_1pfq.html#a50af39653699ccbf9c0b2412a17e01a6">set_group_computation</a> (int gid, pfq_computation_descr *prog)</td></tr>
 <tr class="memdesc:a50af39653699ccbf9c0b2412a17e01a6"><td class="mdescLeft">&#160;</td><td class="mdescRight">Specify a functional computation for the given group.  <a href="#a50af39653699ccbf9c0b2412a17e01a6">More...</a><br /></td></tr>
 <tr class="separator:a50af39653699ccbf9c0b2412a17e01a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a264d162d6b39d5cddc48ea1cef0b40f8"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnet_1_1pfq.html#a264d162d6b39d5cddc48ea1cef0b40f8">set_group_computation</a> (int gid, std::string prog)</td></tr>
+<tr class="memdesc:a264d162d6b39d5cddc48ea1cef0b40f8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Specify a functional computation for the given group, from string.  <a href="#a264d162d6b39d5cddc48ea1cef0b40f8">More...</a><br /></td></tr>
+<tr class="separator:a264d162d6b39d5cddc48ea1cef0b40f8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a5290b64ce270cfc46a9fbecc21802cc3"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classnet_1_1pfq.html#a5290b64ce270cfc46a9fbecc21802cc3">set_group_fprog</a> (int gid, const sock_fprog &amp;f)</td></tr>
 <tr class="memdesc:a5290b64ce270cfc46a9fbecc21802cc3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Specify a BPF program for the given group.  <a href="#a5290b64ce270cfc46a9fbecc21802cc3">More...</a><br /></td></tr>
 <tr class="separator:a5290b64ce270cfc46a9fbecc21802cc3"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -1993,6 +1996,43 @@ template&lt;typename Comp &gt; </div>
 
 </div>
 </div>
+<a class="anchor" id="a264d162d6b39d5cddc48ea1cef0b40f8"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void net::pfq::set_group_computation </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>gid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::string&#160;</td>
+          <td class="paramname"><em>prog</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Specify a functional computation for the given group, from string. </p>
+<p>This function is experimental and is limited to simple functional computations. Only the composition of monadic functions without binding arguments are supported. </p>
+
+</div>
+</div>
 <a class="anchor" id="a5290b64ce270cfc46a9fbecc21802cc3"></a>
 <div class="memitem">
 <div class="memproto">
@@ -2632,7 +2672,7 @@ template&lt;typename Iter &gt; </div>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="namespacenet.html">net</a></li><li class="navelem"><a class="el" href="classnet_1_1pfq.html">pfq</a></li>
-    <li class="footer">Generated on Thu Jun 12 2014 17:03:07 for PFQ C++ library by
+    <li class="footer">Generated on Tue Jun 17 2014 10:06:55 for PFQ C++ library by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.7 </li>
   </ul>

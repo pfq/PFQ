@@ -83,6 +83,8 @@ int \hyperlink{pfq_8h_a801637019645491f44219a33317ce735}{pfq\+\_\+groups\+\_\+ma
 \item 
 int \hyperlink{pfq_8h_a63b881aa62dc2c45b44fdb9810f7a07f}{pfq\+\_\+set\+\_\+group\+\_\+computation} (\hyperlink{pfq_8h_a596619fe99a5c899525c16657c75f1d0}{pfq\+\_\+t} $\ast$q, int gid, struct pfq\+\_\+computation\+\_\+descr $\ast$prg)
 \item 
+int \hyperlink{pfq_8h_aa40ff5d2d51467a34f168cbb6b296509}{pfq\+\_\+set\+\_\+group\+\_\+computation\+\_\+from\+\_\+string} (\hyperlink{pfq_8h_a596619fe99a5c899525c16657c75f1d0}{pfq\+\_\+t} $\ast$q, int gid, const char $\ast$prg)
+\item 
 int \hyperlink{pfq_8h_a2f9317c43bc0586ab4909c4216a80ef8}{pfq\+\_\+group\+\_\+fprog} (\hyperlink{pfq_8h_a596619fe99a5c899525c16657c75f1d0}{pfq\+\_\+t} $\ast$q, int gid, struct sock\+\_\+fprog $\ast$)
 \item 
 int \hyperlink{pfq_8h_abd0ffab7bc739d24e66bf92e47d3db82}{pfq\+\_\+group\+\_\+fprog\+\_\+reset} (\hyperlink{pfq_8h_a596619fe99a5c899525c16657c75f1d0}{pfq\+\_\+t} $\ast$q, int gid)
@@ -436,7 +438,7 @@ Return the memory size of the R\+X queue. \hypertarget{pfq_8h_a5911b9b70ee4ee53e
 )}}\label{pfq_8h_a5911b9b70ee4ee53e312a165eb49df34}
 Open the socket and create a new private group.
 
-The default values for class mask and group policy are Q\+\_\+\+C\+L\+A\+S\+S\+\_\+\+D\+E\+F\+A\+U\+L\+T and Q\+\_\+\+G\+R\+O\+U\+P\+\_\+\+P\+R\+I\+V\+A\+T\+E, respectively. \hypertarget{pfq_8h_a4094dfd122eb1edb052eccb9c3b5dc73}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+open\+\_\+@{pfq\+\_\+open\+\_\+}}
+The default values for class mask and group policy are Q\+\_\+\+C\+L\+A\+S\+S\+\_\+\+D\+E\+F\+A\+U\+L\+T and Q\+\_\+\+P\+O\+L\+I\+C\+Y\+\_\+\+G\+R\+O\+U\+P\+\_\+\+P\+R\+I\+V\+A\+T\+E, respectively. \hypertarget{pfq_8h_a4094dfd122eb1edb052eccb9c3b5dc73}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+open\+\_\+@{pfq\+\_\+open\+\_\+}}
 \index{pfq\+\_\+open\+\_\+@{pfq\+\_\+open\+\_\+}!pfq.\+h@{pfq.\+h}}
 \subsubsection[{pfq\+\_\+open\+\_\+}]{\setlength{\rightskip}{0pt plus 5cm}{\bf pfq\+\_\+t}$\ast$ pfq\+\_\+open\+\_\+ (
 \begin{DoxyParamCaption}
@@ -448,14 +450,14 @@ The default values for class mask and group policy are Q\+\_\+\+C\+L\+A\+S\+S\+\
 )}}\label{pfq_8h_a4094dfd122eb1edb052eccb9c3b5dc73}
 Open the socket and create a new private group.
 
-The default values for class mask and group policy are Q\+\_\+\+C\+L\+A\+S\+S\+\_\+\+D\+E\+F\+A\+U\+L\+T and Q\+\_\+\+G\+R\+O\+U\+P\+\_\+\+P\+R\+I\+V\+A\+T\+E, respectively. \hypertarget{pfq_8h_a121f53320d7c3947ee3073f34b0a08d9}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+open\+\_\+default@{pfq\+\_\+open\+\_\+default}}
+The default values for class mask and group policy are Q\+\_\+\+C\+L\+A\+S\+S\+\_\+\+D\+E\+F\+A\+U\+L\+T and Q\+\_\+\+P\+O\+L\+I\+C\+Y\+\_\+\+G\+R\+O\+U\+P\+\_\+\+P\+R\+I\+V\+A\+T\+E, respectively. \hypertarget{pfq_8h_a121f53320d7c3947ee3073f34b0a08d9}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+open\+\_\+default@{pfq\+\_\+open\+\_\+default}}
 \index{pfq\+\_\+open\+\_\+default@{pfq\+\_\+open\+\_\+default}!pfq.\+h@{pfq.\+h}}
 \subsubsection[{pfq\+\_\+open\+\_\+default}]{\setlength{\rightskip}{0pt plus 5cm}{\bf pfq\+\_\+t}$\ast$ pfq\+\_\+open\+\_\+default (
 \begin{DoxyParamCaption}
 {}
 \end{DoxyParamCaption}
 )}}\label{pfq_8h_a121f53320d7c3947ee3073f34b0a08d9}
-group\+\_\+policy\+: Q\+\_\+\+G\+R\+O\+U\+P\+\_\+\+P\+R\+I\+V\+A\+T\+E, Q\+\_\+\+G\+R\+O\+U\+P\+\_\+\+R\+E\+S\+T\+R\+I\+C\+T\+E\+D, Q\+\_\+\+G\+R\+O\+U\+P\+\_\+\+S\+H\+A\+R\+E\+D, Q\+\_\+\+G\+R\+O\+U\+P\+\_\+\+U\+N\+D\+E\+F\+I\+N\+E\+D...
+group\+\_\+policy\+: Q\+\_\+\+P\+O\+L\+I\+C\+Y\+\_\+\+G\+R\+O\+U\+P\+\_\+\+P\+R\+I\+V\+A\+T\+E, Q\+\_\+\+P\+O\+L\+I\+C\+Y\+\_\+\+G\+R\+O\+U\+P\+\_\+\+R\+E\+S\+T\+R\+I\+C\+T\+E\+D, Q\+\_\+\+P\+O\+L\+I\+C\+Y\+\_\+\+G\+R\+O\+U\+P\+\_\+\+S\+H\+A\+R\+E\+D, Q\+\_\+\+P\+O\+L\+I\+C\+Y\+\_\+\+G\+R\+O\+U\+P\+\_\+\+U\+N\+D\+E\+F\+I\+N\+E\+D...
 
 class\+\_\+mask \+: Q\+\_\+\+C\+L\+A\+S\+S\+\_\+\+D\+E\+F\+A\+U\+L\+T$\vert$ .... = Q\+\_\+\+C\+L\+A\+S\+S\+\_\+\+A\+N\+Y
 
@@ -573,7 +575,18 @@ Capture length must be set before the socket is enabled for capture. \hypertarge
 )}}\label{pfq_8h_a63b881aa62dc2c45b44fdb9810f7a07f}
 Specify a functional computation for the given group.
 
-The functional computation is specified by a pfq\+\_\+computation\+\_\+descriptor. \hypertarget{pfq_8h_af5a7ee00b2df3e1634b20ca9d7c16fbb}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+set\+\_\+maxlen@{pfq\+\_\+set\+\_\+maxlen}}
+The functional computation is specified by a pfq\+\_\+computation\+\_\+descriptor. \hypertarget{pfq_8h_aa40ff5d2d51467a34f168cbb6b296509}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+set\+\_\+group\+\_\+computation\+\_\+from\+\_\+string@{pfq\+\_\+set\+\_\+group\+\_\+computation\+\_\+from\+\_\+string}}
+\index{pfq\+\_\+set\+\_\+group\+\_\+computation\+\_\+from\+\_\+string@{pfq\+\_\+set\+\_\+group\+\_\+computation\+\_\+from\+\_\+string}!pfq.\+h@{pfq.\+h}}
+\subsubsection[{pfq\+\_\+set\+\_\+group\+\_\+computation\+\_\+from\+\_\+string}]{\setlength{\rightskip}{0pt plus 5cm}int pfq\+\_\+set\+\_\+group\+\_\+computation\+\_\+from\+\_\+string (
+\begin{DoxyParamCaption}
+\item[{{\bf pfq\+\_\+t} $\ast$}]{q, }
+\item[{int}]{gid, }
+\item[{const char $\ast$}]{prg}
+\end{DoxyParamCaption}
+)}}\label{pfq_8h_aa40ff5d2d51467a34f168cbb6b296509}
+Specify a functional computation for the given group, from string.
+
+This function is experimental and is limited to simple functional computations. Only the composition of monadic functions without binding arguments are supported. \hypertarget{pfq_8h_af5a7ee00b2df3e1634b20ca9d7c16fbb}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+set\+\_\+maxlen@{pfq\+\_\+set\+\_\+maxlen}}
 \index{pfq\+\_\+set\+\_\+maxlen@{pfq\+\_\+set\+\_\+maxlen}!pfq.\+h@{pfq.\+h}}
 \subsubsection[{pfq\+\_\+set\+\_\+maxlen}]{\setlength{\rightskip}{0pt plus 5cm}int pfq\+\_\+set\+\_\+maxlen (
 \begin{DoxyParamCaption}

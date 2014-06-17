@@ -171,6 +171,12 @@ Traits &gt; &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a cla
 <tr class="memitem:ac7628d7e4c8e89d8ada4d75c292f575f"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacenet.html#ac7628d7e4c8e89d8ada4d75c292f575f">indextoname</a> (int i)</td></tr>
 <tr class="memdesc:ac7628d7e4c8e89d8ada4d75c292f575f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Given the index return the related device name.  <a href="#ac7628d7e4c8e89d8ada4d75c292f575f">More...</a><br /></td></tr>
 <tr class="separator:ac7628d7e4c8e89d8ada4d75c292f575f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a89ef9cb5b1526b5c5f613a837adc6392"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacenet.html#a89ef9cb5b1526b5c5f613a837adc6392">trim</a> (std::string str)</td></tr>
+<tr class="memdesc:a89ef9cb5b1526b5c5f613a837adc6392"><td class="mdescLeft">&#160;</td><td class="mdescRight">Trim pending and trailing whitespaces from a string.  <a href="#a89ef9cb5b1526b5c5f613a837adc6392">More...</a><br /></td></tr>
+<tr class="separator:a89ef9cb5b1526b5c5f613a837adc6392"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af79f3419ccd7c7717d61ecb186f9faba"><td class="memItemLeft" align="right" valign="top">std::vector&lt; std::string &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacenet.html#af79f3419ccd7c7717d61ecb186f9faba">split</a> (std::string str, const char *sep)</td></tr>
+<tr class="memdesc:af79f3419ccd7c7717d61ecb186f9faba"><td class="mdescLeft">&#160;</td><td class="mdescRight">Split a string by means of the given separator.  <a href="#af79f3419ccd7c7717d61ecb186f9faba">More...</a><br /></td></tr>
+<tr class="separator:af79f3419ccd7c7717d61ecb186f9faba"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Typedef Documentation</h2>
 <a class="anchor" id="a05639001760fe5164b163078b5ccc2c0"></a>
@@ -583,13 +589,75 @@ template&lt;typename CharT , typename Traits &gt; </div>
 
 </div>
 </div>
+<a class="anchor" id="af79f3419ccd7c7717d61ecb186f9faba"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::vector&lt;std::string&gt; net::split </td>
+          <td>(</td>
+          <td class="paramtype">std::string&#160;</td>
+          <td class="paramname"><em>str</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>sep</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Split a string by means of the given separator. </p>
+
+</div>
+</div>
+<a class="anchor" id="a89ef9cb5b1526b5c5f613a837adc6392"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string net::trim </td>
+          <td>(</td>
+          <td class="paramtype">std::string&#160;</td>
+          <td class="paramname"><em>str</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Trim pending and trailing whitespaces from a string. </p>
+
+</div>
+</div>
 </div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="namespacenet.html">net</a></li>
-    <li class="footer">Generated on Thu Jun 12 2014 17:03:07 for PFQ C++ library by
+    <li class="footer">Generated on Tue Jun 17 2014 10:06:55 for PFQ C++ library by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.7 </li>
   </ul>

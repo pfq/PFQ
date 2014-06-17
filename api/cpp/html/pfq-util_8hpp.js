@@ -12,5 +12,7 @@ var pfq_util_8hpp =
     [ "indextoname", "pfq-util_8hpp.html#ac7628d7e4c8e89d8ada4d75c292f575f", null ],
     [ "load", "pfq-util_8hpp.html#aef5f360e345f5ab876c171a76a0777a2", null ],
     [ "nametoindex", "pfq-util_8hpp.html#aa90cbca6e910724bc46d5f4c2b12cddf", null ],
-    [ "set_promisc", "pfq-util_8hpp.html#a69de0e47b041dff359c54fe92eb8830a", null ]
+    [ "set_promisc", "pfq-util_8hpp.html#a69de0e47b041dff359c54fe92eb8830a", null ],
+    [ "split", "pfq-util_8hpp.html#af79f3419ccd7c7717d61ecb186f9faba", null ],
+    [ "trim", "pfq-util_8hpp.html#a89ef9cb5b1526b5c5f613a837adc6392", null ]
 ];

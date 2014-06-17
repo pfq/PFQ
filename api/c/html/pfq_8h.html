@@ -179,6 +179,8 @@ Functions</h2></td></tr>
 <tr class="separator:a801637019645491f44219a33317ce735"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a63b881aa62dc2c45b44fdb9810f7a07f"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pfq_8h.html#a63b881aa62dc2c45b44fdb9810f7a07f">pfq_set_group_computation</a> (<a class="el" href="pfq_8h.html#a596619fe99a5c899525c16657c75f1d0">pfq_t</a> *q, int gid, struct pfq_computation_descr *prg)</td></tr>
 <tr class="separator:a63b881aa62dc2c45b44fdb9810f7a07f"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa40ff5d2d51467a34f168cbb6b296509"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pfq_8h.html#aa40ff5d2d51467a34f168cbb6b296509">pfq_set_group_computation_from_string</a> (<a class="el" href="pfq_8h.html#a596619fe99a5c899525c16657c75f1d0">pfq_t</a> *q, int gid, const char *prg)</td></tr>
+<tr class="separator:aa40ff5d2d51467a34f168cbb6b296509"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2f9317c43bc0586ab4909c4216a80ef8"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pfq_8h.html#a2f9317c43bc0586ab4909c4216a80ef8">pfq_group_fprog</a> (<a class="el" href="pfq_8h.html#a596619fe99a5c899525c16657c75f1d0">pfq_t</a> *q, int gid, struct sock_fprog *)</td></tr>
 <tr class="separator:a2f9317c43bc0586ab4909c4216a80ef8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abd0ffab7bc739d24e66bf92e47d3db82"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pfq_8h.html#abd0ffab7bc739d24e66bf92e47d3db82">pfq_group_fprog_reset</a> (<a class="el" href="pfq_8h.html#a596619fe99a5c899525c16657c75f1d0">pfq_t</a> *q, int gid)</td></tr>
@@ -1083,7 +1085,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <p>Open the socket and create a new private group.</p>
-<p>The default values for class mask and group policy are Q_CLASS_DEFAULT and Q_GROUP_PRIVATE, respectively. </p>
+<p>The default values for class mask and group policy are Q_CLASS_DEFAULT and Q_POLICY_GROUP_PRIVATE, respectively. </p>
 
 </div>
 </div>
@@ -1123,7 +1125,7 @@ Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 <p>Open the socket and create a new private group.</p>
-<p>The default values for class mask and group policy are Q_CLASS_DEFAULT and Q_GROUP_PRIVATE, respectively. </p>
+<p>The default values for class mask and group policy are Q_CLASS_DEFAULT and Q_POLICY_GROUP_PRIVATE, respectively. </p>
 
 </div>
 </div>
@@ -1139,7 +1141,7 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>group_policy: Q_GROUP_PRIVATE, Q_GROUP_RESTRICTED, Q_GROUP_SHARED, Q_GROUP_UNDEFINED...</p>
+<p>group_policy: Q_POLICY_GROUP_PRIVATE, Q_POLICY_GROUP_RESTRICTED, Q_POLICY_GROUP_SHARED, Q_POLICY_GROUP_UNDEFINED...</p>
 <p>class_mask : Q_CLASS_DEFAULT| .... = Q_CLASS_ANY</p>
 <p>Open the socket.</p>
 <p>The default values are used; no group is joined or created. The socket open is suitable for egress sockets. </p>
@@ -1506,6 +1508,40 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>Specify a functional computation for the given group.</p>
 <p>The functional computation is specified by a pfq_computation_descriptor. </p>
+
+</div>
+</div>
+<a class="anchor" id="aa40ff5d2d51467a34f168cbb6b296509"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int pfq_set_group_computation_from_string </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="pfq_8h.html#a596619fe99a5c899525c16657c75f1d0">pfq_t</a> *&#160;</td>
+          <td class="paramname"><em>q</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>gid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>prg</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Specify a functional computation for the given group, from string.</p>
+<p>This function is experimental and is limited to simple functional computations. Only the composition of monadic functions without binding arguments are supported. </p>
 
 </div>
 </div>
@@ -1910,7 +1946,7 @@ Functions</h2></td></tr>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="dir_af99bb3c152a306abd27951285ad1127.html">C</a></li><li class="navelem"><a class="el" href="pfq_8h.html">pfq.h</a></li>
-    <li class="footer">Generated on Thu Jun 12 2014 17:03:07 for PFQ C library by
+    <li class="footer">Generated on Tue Jun 17 2014 10:06:54 for PFQ C library by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.7 </li>
   </ul>
