@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['queue',['queue',['../classnet_1_1queue.html#a01a9de73c767d546dcb9a92261043d56',1,'net::queue']]]
+  ['queue',['queue',['../classpfq_1_1queue.html#ae22b5277f726ea9b39a4088128d3cc38',1,'pfq::queue']]]
 ];

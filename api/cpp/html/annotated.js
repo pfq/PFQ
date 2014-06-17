@@ -1,4 +1,4 @@
 var annotated =
 [
-    [ "net", "namespacenet.html", "namespacenet" ]
+    [ "pfq", "namespacepfq.html", "namespacepfq" ]
 ];

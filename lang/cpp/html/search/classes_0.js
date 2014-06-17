@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['action',['Action',['../structpfq__lang_1_1Action.html',1,'pfq_lang']]],
-  ['argument',['Argument',['../structpfq__lang_1_1Argument.html',1,'pfq_lang']]]
+  ['action',['Action',['../structpfq_1_1lang_1_1Action.html',1,'pfq::lang']]],
+  ['argument',['Argument',['../structpfq_1_1lang_1_1Argument.html',1,'pfq::lang']]]
 ];

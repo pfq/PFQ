@@ -118,37 +118,37 @@ $(document).ready(function(){initNavTree('pfq-except_8hpp_source.html','');});
 <div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;</div>
 <div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;<span class="preprocessor">#include &lt;system_error&gt;</span></div>
 <div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160;</div>
-<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;<span class="keyword">namespace </span>net {</div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;<span class="keyword">namespace </span>pfq {</div>
 <div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;</div>
-<div class="line"><a name="l00034"></a><span class="lineno"><a class="line" href="classnet_1_1pfq__error.html">   34</a></span>&#160;    <span class="keyword">class </span><a class="code" href="classnet_1_1pfq__error.html">pfq_error</a> : <span class="keyword">public</span> std::system_error</div>
+<div class="line"><a name="l00034"></a><span class="lineno"><a class="line" href="classpfq_1_1pfq__error.html">   34</a></span>&#160;    <span class="keyword">class </span><a class="code" href="classpfq_1_1pfq__error.html">pfq_error</a> : <span class="keyword">public</span> std::system_error</div>
 <div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;    {</div>
 <div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;    <span class="keyword">public</span>:</div>
 <div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160;</div>
-<div class="line"><a name="l00038"></a><span class="lineno"><a class="line" href="classnet_1_1pfq__error.html#af2d9de405f6302a2b086d124cebefd82">   38</a></span>&#160;        <a class="code" href="classnet_1_1pfq__error.html#af2d9de405f6302a2b086d124cebefd82">pfq_error</a>(<span class="keywordtype">int</span> ev, <span class="keyword">const</span> <span class="keywordtype">char</span> * reason)</div>
+<div class="line"><a name="l00038"></a><span class="lineno"><a class="line" href="classpfq_1_1pfq__error.html#a200dca27eee04a6da834364b9342a81d">   38</a></span>&#160;        <a class="code" href="classpfq_1_1pfq__error.html#a200dca27eee04a6da834364b9342a81d">pfq_error</a>(<span class="keywordtype">int</span> ev, <span class="keyword">const</span> <span class="keywordtype">char</span> * reason)</div>
 <div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160;        : std::system_error(ev, std::generic_category(), reason)</div>
 <div class="line"><a name="l00040"></a><span class="lineno">   40</span>&#160;        {}</div>
 <div class="line"><a name="l00041"></a><span class="lineno">   41</span>&#160;</div>
-<div class="line"><a name="l00042"></a><span class="lineno"><a class="line" href="classnet_1_1pfq__error.html#aad416b1835ae059b8907a1c94e695a2c">   42</a></span>&#160;        <a class="code" href="classnet_1_1pfq__error.html#aad416b1835ae059b8907a1c94e695a2c">pfq_error</a>(<span class="keyword">const</span> <span class="keywordtype">char</span> *reason)</div>
+<div class="line"><a name="l00042"></a><span class="lineno"><a class="line" href="classpfq_1_1pfq__error.html#a5af35c9d9dea6aceff0672b92ad6b844">   42</a></span>&#160;        <a class="code" href="classpfq_1_1pfq__error.html#a5af35c9d9dea6aceff0672b92ad6b844">pfq_error</a>(<span class="keyword">const</span> <span class="keywordtype">char</span> *reason)</div>
 <div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;        : std::system_error(0, std::generic_category(), reason)</div>
 <div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;        {}</div>
 <div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;</div>
-<div class="line"><a name="l00046"></a><span class="lineno"><a class="line" href="classnet_1_1pfq__error.html#abc9c3391a06f55507153b6acbb896eef">   46</a></span>&#160;        <span class="keyword">virtual</span> <a class="code" href="classnet_1_1pfq__error.html#abc9c3391a06f55507153b6acbb896eef">~pfq_error</a>() noexcept</div>
+<div class="line"><a name="l00046"></a><span class="lineno"><a class="line" href="classpfq_1_1pfq__error.html#a0aeb73a633e889817967897ef28b3512">   46</a></span>&#160;        <span class="keyword">virtual</span> <a class="code" href="classpfq_1_1pfq__error.html#a0aeb73a633e889817967897ef28b3512">~pfq_error</a>() noexcept</div>
 <div class="line"><a name="l00047"></a><span class="lineno">   47</span>&#160;        {}</div>
 <div class="line"><a name="l00048"></a><span class="lineno">   48</span>&#160;    };</div>
 <div class="line"><a name="l00049"></a><span class="lineno">   49</span>&#160;</div>
-<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;} <span class="comment">// namespace net</span></div>
+<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160;} <span class="comment">// namespace pfq</span></div>
 <div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;</div>
-<div class="ttc" id="classnet_1_1pfq__error_html"><div class="ttname"><a href="classnet_1_1pfq__error.html">net::pfq_error</a></div><div class="ttdoc">Subclass of std::system_error. </div><div class="ttdef"><b>Definition:</b> pfq-except.hpp:34</div></div>
-<div class="ttc" id="classnet_1_1pfq__error_html_abc9c3391a06f55507153b6acbb896eef"><div class="ttname"><a href="classnet_1_1pfq__error.html#abc9c3391a06f55507153b6acbb896eef">net::pfq_error::~pfq_error</a></div><div class="ttdeci">virtual ~pfq_error() noexcept</div><div class="ttdef"><b>Definition:</b> pfq-except.hpp:46</div></div>
-<div class="ttc" id="classnet_1_1pfq__error_html_af2d9de405f6302a2b086d124cebefd82"><div class="ttname"><a href="classnet_1_1pfq__error.html#af2d9de405f6302a2b086d124cebefd82">net::pfq_error::pfq_error</a></div><div class="ttdeci">pfq_error(int ev, const char *reason)</div><div class="ttdef"><b>Definition:</b> pfq-except.hpp:38</div></div>
-<div class="ttc" id="classnet_1_1pfq__error_html_aad416b1835ae059b8907a1c94e695a2c"><div class="ttname"><a href="classnet_1_1pfq__error.html#aad416b1835ae059b8907a1c94e695a2c">net::pfq_error::pfq_error</a></div><div class="ttdeci">pfq_error(const char *reason)</div><div class="ttdef"><b>Definition:</b> pfq-except.hpp:42</div></div>
+<div class="ttc" id="classpfq_1_1pfq__error_html_a0aeb73a633e889817967897ef28b3512"><div class="ttname"><a href="classpfq_1_1pfq__error.html#a0aeb73a633e889817967897ef28b3512">pfq::pfq_error::~pfq_error</a></div><div class="ttdeci">virtual ~pfq_error() noexcept</div><div class="ttdef"><b>Definition:</b> pfq-except.hpp:46</div></div>
+<div class="ttc" id="classpfq_1_1pfq__error_html_a5af35c9d9dea6aceff0672b92ad6b844"><div class="ttname"><a href="classpfq_1_1pfq__error.html#a5af35c9d9dea6aceff0672b92ad6b844">pfq::pfq_error::pfq_error</a></div><div class="ttdeci">pfq_error(const char *reason)</div><div class="ttdef"><b>Definition:</b> pfq-except.hpp:42</div></div>
+<div class="ttc" id="classpfq_1_1pfq__error_html_a200dca27eee04a6da834364b9342a81d"><div class="ttname"><a href="classpfq_1_1pfq__error.html#a200dca27eee04a6da834364b9342a81d">pfq::pfq_error::pfq_error</a></div><div class="ttdeci">pfq_error(int ev, const char *reason)</div><div class="ttdef"><b>Definition:</b> pfq-except.hpp:38</div></div>
+<div class="ttc" id="classpfq_1_1pfq__error_html"><div class="ttname"><a href="classpfq_1_1pfq__error.html">pfq::pfq_error</a></div><div class="ttdoc">Subclass of std::system_error. </div><div class="ttdef"><b>Definition:</b> pfq-except.hpp:34</div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="dir_2916f9fbcacdf2e5f0583aa159c707b6.html">C++</a></li><li class="navelem"><a class="el" href="pfq-except_8hpp.html">pfq-except.hpp</a></li>
-    <li class="footer">Generated on Tue Jun 17 2014 10:06:55 for PFQ C++ library by
+    <li class="footer">Generated on Tue Jun 17 2014 11:08:43 for PFQ C++ library by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.7 </li>
   </ul>

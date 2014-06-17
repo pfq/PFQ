@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['unbind',['unbind',['../classnet_1_1pfq.html#a769e03c88c5cda30f14e67a7a398aac3',1,'net::pfq']]],
-  ['unbind_5fgroup',['unbind_group',['../classnet_1_1pfq.html#a3bbc9de1354d5cd3e99804e55618a1a3',1,'net::pfq']]]
+  ['unbind',['unbind',['../classpfq_1_1socket.html#af53d407f46ba2b4d143782ff7d585758',1,'pfq::socket']]],
+  ['unbind_5fgroup',['unbind_group',['../classpfq_1_1socket.html#a6e1f7ee7f44b6824d734d4ff7046d907',1,'pfq::socket']]]
 ];

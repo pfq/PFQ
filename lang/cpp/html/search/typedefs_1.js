@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['netfunction',['NetFunction',['../namespacepfq__lang.html#a63dfceff54d39223bbfe7dbc9616c643',1,'pfq_lang']]],
-  ['netpredicate',['NetPredicate',['../namespacepfq__lang.html#a7f62267862cd6049344078744cbcde3b',1,'pfq_lang']]],
-  ['netproperty',['NetProperty',['../namespacepfq__lang.html#aedb71fd680cdb670390e8fac13a7cb5e',1,'pfq_lang']]]
+  ['netfunction',['NetFunction',['../namespacepfq_1_1lang.html#aa02ee91ad7ff586907fc8526b84e0f53',1,'pfq::lang']]],
+  ['netpredicate',['NetPredicate',['../namespacepfq_1_1lang.html#a3c5b96416a3c3834aefd442157498bbd',1,'pfq::lang']]],
+  ['netproperty',['NetProperty',['../namespacepfq_1_1lang.html#aa39ba7aedac05c562ea2f9f399e7f370',1,'pfq::lang']]]
 ];

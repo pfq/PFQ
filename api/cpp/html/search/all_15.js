@@ -1,8 +1,8 @@
 var searchData=
 [
-  ['_7econst_5fiterator',['~const_iterator',['../structnet_1_1queue_1_1const__iterator.html#a3cf353d6ca8299a5de48fb2098b5d75e',1,'net::queue::const_iterator']]],
-  ['_7eiterator',['~iterator',['../structnet_1_1queue_1_1iterator.html#a4561340ab7b2bf535c3c90ec15328426',1,'net::queue::iterator']]],
-  ['_7epfq',['~pfq',['../classnet_1_1pfq.html#acf552123cd0e53eb5b96a4e1eb1b50a2',1,'net::pfq']]],
-  ['_7epfq_5ferror',['~pfq_error',['../classnet_1_1pfq__error.html#abc9c3391a06f55507153b6acbb896eef',1,'net::pfq_error']]],
-  ['_7equeue',['~queue',['../classnet_1_1queue.html#acc80b84e74464ee1b86d09f7b600eb54',1,'net::queue']]]
+  ['_7econst_5fiterator',['~const_iterator',['../structpfq_1_1queue_1_1const__iterator.html#abc154cce287fdda2b0ed2a9f19f422c1',1,'pfq::queue::const_iterator']]],
+  ['_7eiterator',['~iterator',['../structpfq_1_1queue_1_1iterator.html#a11625bbe8c9b064e8545e7aa73f15bae',1,'pfq::queue::iterator']]],
+  ['_7epfq_5ferror',['~pfq_error',['../classpfq_1_1pfq__error.html#a0aeb73a633e889817967897ef28b3512',1,'pfq::pfq_error']]],
+  ['_7equeue',['~queue',['../classpfq_1_1queue.html#a2605dcaac04245b5316262a4cf7cd1c0',1,'pfq::queue']]],
+  ['_7esocket',['~socket',['../classpfq_1_1socket.html#a08fbdcc1736de36d205282ce20ffbaa3',1,'pfq::socket']]]
 ];

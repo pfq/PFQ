@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['leave_5fgroup',['leave_group',['../classnet_1_1pfq.html#af90932832d9695326df7af8b2d629660',1,'net::pfq']]],
-  ['load',['load',['../namespacenet_1_1param.html#aef5f360e345f5ab876c171a76a0777a2',1,'net::param']]]
+  ['leave_5fgroup',['leave_group',['../classpfq_1_1socket.html#ac512d6b89db52da73a51ba9112658180',1,'pfq::socket']]],
+  ['load',['load',['../namespacepfq_1_1param.html#aeabbdcec021e01a0a9321678fea99d8f',1,'pfq::param']]]
 ];

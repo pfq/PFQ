@@ -1,7 +1,7 @@
 var searchData=
 [
-  ['begin',['begin',['../classnet_1_1queue.html#afe83b7428a3a78ba133c7ca2b568b67a',1,'net::queue::begin()'],['../classnet_1_1queue.html#a2babffc7f46dc271a8b2234970ca9b79',1,'net::queue::begin() const ']]],
-  ['bind',['bind',['../classnet_1_1pfq.html#a3e55b38d9f094ab88c3510c91a3c8ac5',1,'net::pfq']]],
-  ['bind_5fgroup',['bind_group',['../classnet_1_1pfq.html#a2b8310320db5d583625d67eaae8be047',1,'net::pfq']]],
-  ['bind_5ftx',['bind_tx',['../classnet_1_1pfq.html#a00ba716bc74388ec7facc7c59d92fa6d',1,'net::pfq']]]
+  ['begin',['begin',['../classpfq_1_1queue.html#a107c15e5be3e53fc2dc7f8e25b3fba1e',1,'pfq::queue::begin()'],['../classpfq_1_1queue.html#a9769ca50f14b7a5ca7196a2ec3608d44',1,'pfq::queue::begin() const ']]],
+  ['bind',['bind',['../classpfq_1_1socket.html#a3a0fc5c70e2d2615e29d06ac55007ed3',1,'pfq::socket']]],
+  ['bind_5fgroup',['bind_group',['../classpfq_1_1socket.html#a4d4d44cc68af0290e3c494dcd10b1541',1,'pfq::socket']]],
+  ['bind_5ftx',['bind_tx',['../classpfq_1_1socket.html#a986a4bb8c7b23fd73ce1e8f340a3fb67',1,'pfq::socket']]]
 ];

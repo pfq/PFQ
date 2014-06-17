@@ -1,7 +1,7 @@
 var searchData=
 [
-  ['make_5fdefault',['make_default',['../namespacenet_1_1param.html#a03072e1c0a005826ed22d692d3f88074',1,'net::param']]],
-  ['maxlen',['maxlen',['../classnet_1_1pfq.html#a0424e39990711493af4f24a0c3e9be4d',1,'net::pfq::maxlen(size_t value)'],['../classnet_1_1pfq.html#a869695c441902d0342212d7581f3e362',1,'net::pfq::maxlen() const ']]],
-  ['mem_5faddr',['mem_addr',['../classnet_1_1pfq.html#a1f16289a4ddffd497ef2dd9c7523bccb',1,'net::pfq']]],
-  ['mem_5fsize',['mem_size',['../classnet_1_1pfq.html#ac25e20f2b2bfd72ef399444337b76459',1,'net::pfq']]]
+  ['make_5fdefault',['make_default',['../namespacepfq_1_1param.html#af1fd1aeb980688527db587b35f55abf2',1,'pfq::param']]],
+  ['maxlen',['maxlen',['../classpfq_1_1socket.html#a863da5015c00d6a49f1515b703c24230',1,'pfq::socket::maxlen(size_t value)'],['../classpfq_1_1socket.html#a45bd7aa973fe4eccce899c552adfedb5',1,'pfq::socket::maxlen() const ']]],
+  ['mem_5faddr',['mem_addr',['../classpfq_1_1socket.html#a32275b5b77913fadc7671efdef75369b',1,'pfq::socket']]],
+  ['mem_5fsize',['mem_size',['../classpfq_1_1socket.html#a1888ae33a42258fdbb2aac1dc3feb55c',1,'pfq::socket']]]
 ];

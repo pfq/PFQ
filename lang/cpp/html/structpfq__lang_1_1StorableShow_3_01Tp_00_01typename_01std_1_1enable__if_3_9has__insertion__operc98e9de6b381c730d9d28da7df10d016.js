@@ -1,7 +1,0 @@
-var structpfq__lang_1_1StorableShow_3_01Tp_00_01typename_01std_1_1enable__if_3_9has__insertion__operc98e9de6b381c730d9d28da7df10d016 =
-[
-    [ "StorableShow", "structpfq__lang_1_1StorableShow_3_01Tp_00_01typename_01std_1_1enable__if_3_9has__insertion__operc98e9de6b381c730d9d28da7df10d016.html#aa1c419e6174b34eec53430c6f2a479a2", null ],
-    [ "forall_addr", "structpfq__lang_1_1StorableShow_3_01Tp_00_01typename_01std_1_1enable__if_3_9has__insertion__operc98e9de6b381c730d9d28da7df10d016.html#a1d2ff6a788af963ba952a4d83dac48c7", null ],
-    [ "forall_show", "structpfq__lang_1_1StorableShow_3_01Tp_00_01typename_01std_1_1enable__if_3_9has__insertion__operc98e9de6b381c730d9d28da7df10d016.html#aba784c55c209b0c780bc9deca4e698e8", null ],
-    [ "value", "structpfq__lang_1_1StorableShow_3_01Tp_00_01typename_01std_1_1enable__if_3_9has__insertion__operc98e9de6b381c730d9d28da7df10d016.html#a98fec55c620c3c3d998c2b75fc63fa23", null ]
-];

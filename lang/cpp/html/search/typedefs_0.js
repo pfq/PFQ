@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['bool_5ftype',['bool_type',['../namespacepfq__lang.html#a66ac99ea626e7d1994f42ebfa003fbff',1,'pfq_lang']]]
+  ['bool_5ftype',['bool_type',['../namespacepfq_1_1lang.html#a9e5878bb1c3720d53960d8218107fe2c',1,'pfq::lang']]]
 ];

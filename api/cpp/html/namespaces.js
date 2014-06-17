@@ -1,4 +1,4 @@
 var namespaces =
 [
-    [ "net", "namespacenet.html", "namespacenet" ]
+    [ "pfq", "namespacepfq.html", "namespacepfq" ]
 ];

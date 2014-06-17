@@ -1,9 +1,9 @@
 var searchData=
 [
-  ['caplen',['caplen',['../classnet_1_1pfq.html#aa915603b2ad8d1226f9bbea0050945c0',1,'net::pfq::caplen(size_t value)'],['../classnet_1_1pfq.html#aa0d64b89a345ca5426a694f6583106c3',1,'net::pfq::caplen() const ']]],
-  ['cbegin',['cbegin',['../classnet_1_1queue.html#a7590f2c5b9b48b1ea44104a1bab6d21d',1,'net::queue']]],
-  ['cend',['cend',['../classnet_1_1queue.html#a17d5c7e685e6bba36e361a2a4fafeedb',1,'net::queue']]],
-  ['close',['close',['../classnet_1_1pfq.html#a3b96eb3ab597bc88142239fa840dbbe0',1,'net::pfq']]],
-  ['const_5fiterator',['const_iterator',['../structnet_1_1queue_1_1const__iterator.html#a18317b1de034fe3b5f772a82769bc529',1,'net::queue::const_iterator::const_iterator(pfq_pkt_hdr *h, size_t slot_size, size_t index)'],['../structnet_1_1queue_1_1const__iterator.html#a1eea657f0e331d07564147aa3ba2816b',1,'net::queue::const_iterator::const_iterator(const const_iterator &amp;other)'],['../structnet_1_1queue_1_1const__iterator.html#aa20b0a5cfd5c93f04f84793dd0bc7bc3',1,'net::queue::const_iterator::const_iterator(const queue::iterator &amp;other)']]],
-  ['current_5fcommit',['current_commit',['../classnet_1_1pfq.html#a31aa0b2b6221c4b70ade77ad00e2761b',1,'net::pfq']]]
+  ['caplen',['caplen',['../classpfq_1_1socket.html#ab68dbba5ef01041b9c96758c4a9f0a6c',1,'pfq::socket::caplen(size_t value)'],['../classpfq_1_1socket.html#a768bee4d974acdc5ee9ee879b0903c54',1,'pfq::socket::caplen() const ']]],
+  ['cbegin',['cbegin',['../classpfq_1_1queue.html#a4fc9d7f6a7a12116ef79bb648dc73527',1,'pfq::queue']]],
+  ['cend',['cend',['../classpfq_1_1queue.html#add65cf417f0258d90f871b47a82e3eea',1,'pfq::queue']]],
+  ['close',['close',['../classpfq_1_1socket.html#a4c179188ea8fceeb5fd47d52f93c6bda',1,'pfq::socket']]],
+  ['const_5fiterator',['const_iterator',['../structpfq_1_1queue_1_1const__iterator.html#a9bdb1eba0b129cd859ab1d008caf6b18',1,'pfq::queue::const_iterator::const_iterator(pfq_pkt_hdr *h, size_t slot_size, size_t index)'],['../structpfq_1_1queue_1_1const__iterator.html#a528fc5b186cec7b4acfb75e4a069636c',1,'pfq::queue::const_iterator::const_iterator(const const_iterator &amp;other)'],['../structpfq_1_1queue_1_1const__iterator.html#a9abd37c031eece3084e6944a7497400e',1,'pfq::queue::const_iterator::const_iterator(const queue::iterator &amp;other)']]],
+  ['current_5fcommit',['current_commit',['../classpfq_1_1socket.html#aba44de6422e3e10b65474e7f3999ebd0',1,'pfq::socket']]]
 ];
