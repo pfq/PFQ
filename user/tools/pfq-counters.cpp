@@ -85,9 +85,9 @@ make_binding(const char *value)
 {
     binding ret { {}, {}, -1, -1 };
 
-    auto vec = net::split(value, ".");
+    auto vec = pfq::split(value, ".");
 
-    ret.dev = net::split(vec[0].c_str(), ":");
+    ret.dev = pfq::split(vec[0].c_str(), ":");
 
     if (vec.size() > 1)
         ret.core = std::atoi(vec[1].c_str());
@@ -108,9 +108,8 @@ make_binding(const char *value)
 }
 
 
-
-using namespace net;
-using namespace pfq_lang;
+using namespace pfq;
+using namespace pfq::lang;
 
 typedef std::tuple<uint32_t, uint32_t, uint16_t, uint16_t> Tuple;
 
@@ -264,7 +263,7 @@ namespace test
 
         std::unique_ptr<std::atomic_bool> m_stop;
 
-        pfq m_pfq;
+        pfq::socket m_pfq;
 
         unsigned long long m_read;
         size_t m_batch;

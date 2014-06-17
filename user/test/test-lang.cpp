@@ -3,7 +3,7 @@
 #include "pfq-lang/lang.hpp"
 #include "pfq-lang/default.hpp"
 
-using namespace pfq_lang;
+using namespace pfq::lang;
 
 template <typename C>
 void show_comp(C const &c)

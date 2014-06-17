@@ -25,7 +25,7 @@
 
 #include <system_error>
 
-namespace net {
+namespace pfq {
 
     /** pfq_error represent problems related to the PFQ system.
      *  @brief Subclass of std::system_error.
@@ -47,5 +47,5 @@ namespace net {
         {}
     };
 
-} // namespace net
+} // namespace pfq
 

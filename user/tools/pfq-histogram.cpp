@@ -17,7 +17,7 @@
 #include <pfq.hpp>
 
 
-using namespace net;
+using namespace pfq;
 
 int
 main(int argc, char *argv[])
@@ -33,7 +33,7 @@ try
     // open a pfq socket:
     //
 
-    pfq q(64);
+    pfq::socket q(64);
 
 
     // add the device to this queue (hw queue = any)
@@ -72,7 +72,7 @@ try
 
         std::for_each(b.begin(), b.end(), [&](pfq_pkt_hdr &h) {
 
-           while(!net::data_ready(h, q.current_commit()))
+           while(!pfq::data_ready(h, q.current_commit()))
            {
                 std::this_thread::yield();
            }

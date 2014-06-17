@@ -8,7 +8,6 @@
 #include "yats.hpp"
 
 using namespace yats;
-using namespace net;
 
 Context(PFQ)
 {
@@ -16,14 +15,14 @@ Context(PFQ)
 
     Test(default_ctor_dtor)
     {
-        pfq x;
+        pfq::socket x;
         Assert(x.id(), is_equal_to(-1));
     }
 
     Test(move_ctor)
     {
-        pfq x(64);
-        pfq y(std::move(x));
+        pfq::socket x(64);
+        pfq::socket y(std::move(x));
 
         Assert(x.fd(), is_equal_to(-1));
         Assert(y.fd(), is_not_equal_to(-1));
@@ -32,8 +31,8 @@ Context(PFQ)
 
     Test(assign_move_oper)
     {
-        pfq x(64);
-        pfq y;
+        pfq::socket x(64);
+        pfq::socket y;
         y = std::move(x);
 
         Assert(x.fd(), is_equal_to(-1));
@@ -43,8 +42,8 @@ Context(PFQ)
 
     Test(swap)
     {
-        pfq x(64);
-        pfq y;
+        pfq::socket x(64);
+        pfq::socket y;
         x.swap(y);
 
         Assert(x.fd(), is_equal_to(-1));
@@ -54,12 +53,12 @@ Context(PFQ)
 
     Test(open_close)
     {
-        pfq x;
-        x.open(group_policy::undefined, 64);
+        pfq::socket x;
+        x.open(pfq::group_policy::undefined, 64);
 
         Assert(x.fd(), is_not_equal_to(-1));
         Assert(x.id(), is_not_equal_to(-1));
-        AssertThrow( x.open(group_policy::undefined, 128) );
+        AssertThrow( x.open(pfq::group_policy::undefined, 128) );
 
         x.close();
         Assert(x.fd(), is_equal_to(-1));
@@ -68,12 +67,12 @@ Context(PFQ)
 
     Test(enable_disable)
     {
-        pfq x;
+        pfq::socket x;
 
         AssertThrow(x.enable());
         AssertThrow(x.disable());
 
-        x.open(group_policy::undefined, 64);
+        x.open(pfq::group_policy::undefined, 64);
 
         x.enable();
 
@@ -87,9 +86,9 @@ Context(PFQ)
 
     Test(enabled)
     {
-        pfq x;
+        pfq::socket x;
         Assert(x.enabled(), is_equal_to(false));
-        x.open(group_policy::undefined, 64);
+        x.open(pfq::group_policy::undefined, 64);
         Assert(x.enabled(), is_equal_to(false));
         x.enable();
         Assert(x.enabled(), is_equal_to(true));
@@ -98,21 +97,21 @@ Context(PFQ)
 
     Test(ifindex)
     {
-        pfq x;
-        AssertThrow(net::ifindex(1, "lo"));
+        pfq::socket x;
+        AssertThrow(pfq::ifindex(1, "lo"));
 
-        x.open(group_policy::undefined, 64);
-        Assert( net::ifindex(x.fd(), "lo"), is_not_equal_to(-1));
+        x.open(pfq::group_policy::undefined, 64);
+        Assert( pfq::ifindex(x.fd(), "lo"), is_not_equal_to(-1));
     }
 
 
     Test(timestamp)
     {
-        pfq x;
+        pfq::socket x;
         AssertThrow(x.timestamp_enable(true));
         AssertThrow(x.timestamp_enabled());
 
-        x.open(group_policy::undefined, 64);
+        x.open(pfq::group_policy::undefined, 64);
         x.timestamp_enable(true);
 
         Assert(x.timestamp_enabled(), is_equal_to(true));
@@ -121,11 +120,11 @@ Context(PFQ)
 
     Test(caplen)
     {
-        pfq x;
+        pfq::socket x;
         AssertThrow(x.caplen(64));
         AssertThrow(x.caplen());
 
-        x.open(group_policy::undefined, 64);
+        x.open(pfq::group_policy::undefined, 64);
         x.caplen(128);
 
         Assert(x.caplen(), is_equal_to(128));
@@ -141,11 +140,11 @@ Context(PFQ)
 
     Test(maxlen)
     {
-        pfq x;
+        pfq::socket x;
         AssertThrow(x.maxlen(64));
         AssertThrow(x.maxlen());
 
-        x.open(group_policy::undefined, 64);
+        x.open(pfq::group_policy::undefined, 64);
         x.maxlen(128);
 
         Assert(x.maxlen(), is_equal_to(128));
@@ -160,11 +159,11 @@ Context(PFQ)
 
     Test(rx_slots)
     {
-        pfq x;
+        pfq::socket x;
         AssertThrow(x.rx_slots(14));
         AssertThrow(x.rx_slots());
 
-        x.open(group_policy::undefined, 64);
+        x.open(pfq::group_policy::undefined, 64);
         x.rx_slots(1024);
 
         Assert(x.rx_slots(), is_equal_to(1024));
@@ -180,10 +179,10 @@ Context(PFQ)
 
     Test(rx_slot_size)
     {
-        pfq x;
+        pfq::socket x;
         AssertThrow(x.rx_slot_size());
 
-        x.open(group_policy::undefined, 64);
+        x.open(pfq::group_policy::undefined, 64);
 
         auto size = 64 + sizeof(pfq_pkt_hdr);
         Assert(x.rx_slot_size(), is_equal_to( size + (size % 8) ));
@@ -191,11 +190,11 @@ Context(PFQ)
 
     Test(tx_slots)
     {
-        pfq x;
+        pfq::socket x;
         AssertThrow(x.tx_slots(14));
         AssertThrow(x.tx_slots());
 
-        x.open(group_policy::undefined, 64);
+        x.open(pfq::group_policy::undefined, 64);
         x.tx_slots(1024);
 
         Assert(x.tx_slots(), is_equal_to(1024));
@@ -210,10 +209,10 @@ Context(PFQ)
 
     Test(bind_device)
     {
-        pfq x;
+        pfq::socket x;
         AssertThrow(x.bind(DEV.c_str()));
 
-        x.open(group_policy::shared, 64);
+        x.open(pfq::group_policy::shared, 64);
 
         AssertThrow(x.bind("unknown"));
         x.bind(DEV.c_str());
@@ -224,10 +223,10 @@ Context(PFQ)
 
     Test(unbind_device)
     {
-        pfq x;
+        pfq::socket x;
         AssertThrow(x.unbind(DEV.c_str()));
 
-        x.open(group_policy::shared, 64);
+        x.open(pfq::group_policy::shared, 64);
 
         AssertThrow(x.unbind("unknown"));
         x.unbind(DEV.c_str());
@@ -238,20 +237,20 @@ Context(PFQ)
 
     Test(poll)
     {
-        pfq x;
+        pfq::socket x;
         AssertThrow(x.poll(10));
 
-        x.open(group_policy::undefined, 64);
+        x.open(pfq::group_policy::undefined, 64);
         x.poll(0);
     }
 
 
     Test(read)
     {
-        pfq x;
+        pfq::socket x;
         AssertThrow(x.read(10));
 
-        x.open(group_policy::undefined, 64);
+        x.open(pfq::group_policy::undefined, 64);
         AssertThrow(x.read(10));
 
         x.enable();
@@ -261,10 +260,10 @@ Context(PFQ)
 
     Test(stats)
     {
-        pfq x;
+        pfq::socket x;
         AssertThrow(x.stats());
 
-        x.open(group_policy::undefined, 64);
+        x.open(pfq::group_policy::undefined, 64);
 
         auto s = x.stats();
         Assert(s.recv, is_equal_to(0));
@@ -274,9 +273,9 @@ Context(PFQ)
 
     Test(group_stats)
     {
-        pfq x;
+        pfq::socket x;
 
-        x.open(group_policy::undefined, 64);
+        x.open(pfq::group_policy::undefined, 64);
 
         AssertNothrow(x.group_stats(11));
 
@@ -291,9 +290,9 @@ Context(PFQ)
 
     Test(my_group_stats_priv)
     {
-        pfq x;
+        pfq::socket x;
 
-        x.open(group_policy::priv, 64);
+        x.open(pfq::group_policy::priv, 64);
 
         auto gid = x.group_id();
 
@@ -307,9 +306,9 @@ Context(PFQ)
 
     Test(my_group_stats_restricted)
     {
-        pfq x;
+        pfq::socket x;
 
-        x.open(group_policy::restricted, 64);
+        x.open(pfq::group_policy::restricted, 64);
 
         auto gid = x.group_id();
 
@@ -323,9 +322,9 @@ Context(PFQ)
 
     Test(my_group_stats_shared)
     {
-        pfq x;
+        pfq::socket x;
 
-        x.open(group_policy::shared, 64);
+        x.open(pfq::group_policy::shared, 64);
 
         auto gid = x.group_id();
 
@@ -339,10 +338,10 @@ Context(PFQ)
 
     Test(groups_mask)
     {
-        pfq x;
+        pfq::socket x;
         AssertThrow(x.groups_mask());
 
-        x.open(group_policy::undefined, 64);
+        x.open(pfq::group_policy::undefined, 64);
 
         Assert(x.groups_mask(), is_equal_to(0));
 
@@ -352,25 +351,25 @@ Context(PFQ)
 
     Test(join_restricted)
     {
-        pfq x(group_policy::restricted, 64);
+        pfq::socket x(pfq::group_policy::restricted, 64);
 
-        pfq y;
+        pfq::socket y;
 
-        y.open(group_policy::undefined, 64);
+        y.open(pfq::group_policy::undefined, 64);
 
-        Assert( y.join_group(x.group_id(), group_policy::restricted), is_equal_to(x.group_id()));
+        Assert( y.join_group(x.group_id(), pfq::group_policy::restricted), is_equal_to(x.group_id()));
     }
 
     Test(join_deferred)
     {
-        pfq x(group_policy::undefined, 64);
+        pfq::socket x(pfq::group_policy::undefined, 64);
 
         x.join_group(22);
         x.join_group(22);
 
         auto task = std::async(std::launch::async,
                     [&] {
-                        pfq y(group_policy::undefined, 64);
+                        pfq::socket y(pfq::group_policy::undefined, 64);
                         Assert(y.join_group(22), is_equal_to(22));
                     });
 
@@ -380,12 +379,12 @@ Context(PFQ)
 
     Test(join_restricted_thread)
     {
-        pfq x(group_policy::restricted, 64);
+        pfq::socket x(pfq::group_policy::restricted, 64);
 
         auto task = std::async(std::launch::async,
                     [&] {
-                        pfq y(group_policy::undefined, 64);
-                        Assert(y.join_group(x.group_id(), group_policy::restricted), is_equal_to(x.group_id()));
+                        pfq::socket y(pfq::group_policy::undefined, 64);
+                        Assert(y.join_group(x.group_id(), pfq::group_policy::restricted), is_equal_to(x.group_id()));
                     });
 
         task.get(); // eventually rethrow the excpetion...
@@ -393,15 +392,15 @@ Context(PFQ)
 
     Test(join_restricted_process)
     {
-        pfq x(group_policy::restricted, 64);
-        pfq z(group_policy::shared, 64);
+        pfq::socket x(pfq::group_policy::restricted, 64);
+        pfq::socket z(pfq::group_policy::shared, 64);
 
         auto p = fork();
         if (p == -1)
             throw std::system_error(errno, std::generic_category());
 
         if (p == 0) {
-            pfq y(group_policy::undefined, 64);;
+            pfq::socket y(pfq::group_policy::undefined, 64);;
 
             Assert( y.join_group(z.group_id()), is_equal_to(z.group_id()));
             AssertThrow(y.join_group(x.group_id()));
@@ -414,71 +413,71 @@ Context(PFQ)
 
     Test(join_private_)
     {
-        pfq x(64);
+        pfq::socket x(64);
 
-        pfq y(group_policy::undefined, 64);
+        pfq::socket y(pfq::group_policy::undefined, 64);
 
-        AssertThrow(y.join_group(x.group_id(), group_policy::restricted));
-        AssertThrow(y.join_group(x.group_id(), group_policy::shared));
-        AssertThrow(y.join_group(x.group_id(), group_policy::priv));
-        AssertThrow(y.join_group(x.group_id(), group_policy::undefined));
+        AssertThrow(y.join_group(x.group_id(), pfq::group_policy::restricted));
+        AssertThrow(y.join_group(x.group_id(), pfq::group_policy::shared));
+        AssertThrow(y.join_group(x.group_id(), pfq::group_policy::priv));
+        AssertThrow(y.join_group(x.group_id(), pfq::group_policy::undefined));
     }
 
     Test(join_restricted_)
     {
         {
-            pfq x(group_policy::restricted, 64);
-            pfq y(group_policy::undefined, 64);
-            AssertNothrow(y.join_group(x.group_id(), group_policy::restricted));
+            pfq::socket x(pfq::group_policy::restricted, 64);
+            pfq::socket y(pfq::group_policy::undefined, 64);
+            AssertNothrow(y.join_group(x.group_id(), pfq::group_policy::restricted));
         }
         {
-            pfq x(group_policy::restricted, 64);
-            pfq y(group_policy::undefined, 64);
-            AssertThrow(y.join_group(x.group_id(), group_policy::shared));
+            pfq::socket x(pfq::group_policy::restricted, 64);
+            pfq::socket y(pfq::group_policy::undefined, 64);
+            AssertThrow(y.join_group(x.group_id(), pfq::group_policy::shared));
         }
         {
-            pfq x(group_policy::restricted, 64);
-            pfq y(group_policy::undefined, 64);
-            AssertThrow(y.join_group(x.group_id(), group_policy::priv));
+            pfq::socket x(pfq::group_policy::restricted, 64);
+            pfq::socket y(pfq::group_policy::undefined, 64);
+            AssertThrow(y.join_group(x.group_id(), pfq::group_policy::priv));
         }
         {
-            pfq x(group_policy::restricted, 64);
-            pfq y(group_policy::undefined, 64);
-            AssertThrow(y.join_group(x.group_id(), group_policy::undefined));
+            pfq::socket x(pfq::group_policy::restricted, 64);
+            pfq::socket y(pfq::group_policy::undefined, 64);
+            AssertThrow(y.join_group(x.group_id(), pfq::group_policy::undefined));
         }
     }
 
     Test(join_shared_)
     {
         {
-            pfq x(group_policy::shared, 64);
-            pfq y(group_policy::undefined, 64);
-            AssertThrow(y.join_group(x.group_id(), group_policy::restricted));
+            pfq::socket x(pfq::group_policy::shared, 64);
+            pfq::socket y(pfq::group_policy::undefined, 64);
+            AssertThrow(y.join_group(x.group_id(), pfq::group_policy::restricted));
         }
         {
-            pfq x(group_policy::shared, 64);
-            pfq y(group_policy::undefined, 64);
-            AssertNothrow(y.join_group(x.group_id(), group_policy::shared));
+            pfq::socket x(pfq::group_policy::shared, 64);
+            pfq::socket y(pfq::group_policy::undefined, 64);
+            AssertNothrow(y.join_group(x.group_id(), pfq::group_policy::shared));
         }
         {
-            pfq x(group_policy::shared, 64);
-            pfq y(group_policy::undefined, 64);
-            AssertThrow(y.join_group(x.group_id(), group_policy::priv));
+            pfq::socket x(pfq::group_policy::shared, 64);
+            pfq::socket y(pfq::group_policy::undefined, 64);
+            AssertThrow(y.join_group(x.group_id(), pfq::group_policy::priv));
         }
         {
-            pfq x(group_policy::shared, 64);
-            pfq y(group_policy::undefined, 64);
-            AssertThrow(y.join_group(x.group_id(), group_policy::undefined));
+            pfq::socket x(pfq::group_policy::shared, 64);
+            pfq::socket y(pfq::group_policy::undefined, 64);
+            AssertThrow(y.join_group(x.group_id(), pfq::group_policy::undefined));
         }
     }
 
 
     Test(join_public)
     {
-        pfq x;
+        pfq::socket x;
         AssertThrow(x.join_group(12));
 
-        x.open(group_policy::undefined, 64);
+        x.open(pfq::group_policy::undefined, 64);
         int gid = x.join_group(0);
         Assert(gid, is_equal_to(0));
 
@@ -493,10 +492,10 @@ Context(PFQ)
 
     Test(leave_group)
     {
-        pfq x;
+        pfq::socket x;
         AssertThrow(x.leave_group(12));
 
-        x.open(group_policy::shared, 64);
+        x.open(pfq::group_policy::shared, 64);
         int gid = x.join_group(22);
         Assert(gid, is_equal_to(22));
 
@@ -509,21 +508,21 @@ Context(PFQ)
 
     Test(gid)
     {
-        pfq x;
+        pfq::socket x;
         Assert(x.group_id(), is_equal_to(-1));
     }
 
 
     Test(vlan_enable)
     {
-        pfq x(64);
+        pfq::socket x(64);
         AssertNothrow(x.vlan_filters_enable(x.group_id(), true));
         AssertNothrow(x.vlan_filters_enable(x.group_id(), false));
     }
 
     Test(vlan_filt)
     {
-        pfq x(64);
+        pfq::socket x(64);
         AssertThrow(x.vlan_set_filter(x.group_id(), 22));
         AssertThrow(x.vlan_reset_filter(x.group_id(), 22));
 
@@ -537,7 +536,7 @@ Context(PFQ)
 
     Test(bind_tx)
     {
-        pfq q(64);
+        pfq::socket q(64);
         AssertNothrow(q.bind_tx("lo", -1));
         AssertThrow(q.bind_tx("unknown", -1));
     }
@@ -545,7 +544,7 @@ Context(PFQ)
 
     Test(start_tx_thread)
     {
-        pfq q(64);
+        pfq::socket q(64);
         AssertThrow(q.start_tx_thread(0));
 
         q.bind_tx("lo", -1);
@@ -558,7 +557,7 @@ Context(PFQ)
 
     Test(stop_tx_thread)
     {
-        pfq q(64);
+        pfq::socket q(64);
         AssertThrow(q.stop_tx_thread());
 
         q.bind_tx("lo", -1);
@@ -571,7 +570,7 @@ Context(PFQ)
 
     Test(wakeup_tx_thread)
     {
-        pfq q(64);
+        pfq::socket q(64);
         AssertThrow(q.wakeup_tx_thread());
 
         q.bind_tx("lo", -1);
@@ -585,7 +584,7 @@ Context(PFQ)
 
     Test(tx_queue_flush)
     {
-        pfq q(64);
+        pfq::socket q(64);
         AssertThrow(q.tx_queue_flush());
 
         q.bind_tx("lo", -1);
@@ -597,14 +596,14 @@ Context(PFQ)
 
     Test(egress_bind)
     {
-        pfq q(64);
+        pfq::socket q(64);
         AssertNothrow(q.egress_bind("lo", -1));
         AssertThrow(q.egress_bind("unknown", -1));
     }
 
     Test(egress_unbind)
     {
-        pfq q(64);
+        pfq::socket q(64);
         AssertNothrow(q.egress_unbind());
     }
 
@@ -613,7 +612,7 @@ Context(PFQ)
 #if 0
     Test(group_context)
     {
-        pfq x(group_policy::shared, 64);
+        pfq::socket x(pfq::group_policy::shared, 64);
 
         int n = 22;
         x.set_group_function_context(x.group_id(), n);

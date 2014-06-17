@@ -28,7 +28,9 @@
 
 #include <arpa/inet.h>
 
-namespace pfq_lang
+namespace pfq
+{
+namespace lang
 {
 
 #if __cplusplus > 201103L
@@ -138,7 +140,7 @@ namespace pfq_lang
             network_addr netaddr;
 
             if (inet_pton(AF_INET, net, &netaddr.addr) <= 0)
-                throw std::runtime_error("pfq_lang::inet_pton");
+                throw std::runtime_error("pfq::lang::inet_pton");
 
             netaddr.prefix = prefix;
 
@@ -152,7 +154,7 @@ namespace pfq_lang
             char addr[16];
 
             if (inet_ntop(AF_INET, &that.addr, addr, sizeof(addr)) == nullptr)
-                throw std::runtime_error("pfq_lang::inet_ntop");
+                throw std::runtime_error("pfq::lang::inet_ntop");
 
             return out << std::string(addr) << '/' << std::to_string(that.prefix);
         }
@@ -160,4 +162,5 @@ namespace pfq_lang
 
     } // namespace details
 
-} // namespace pfq_lang
+} // namespace lang
+} // namespace pfq

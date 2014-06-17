@@ -20,12 +20,6 @@
 #include <atomic>
 #include <cmath>
 #include <tuple>
-
-#include <pfq.hpp>
-
-// ----------------------------------------
-//
-
 #include <unordered_map>
 #include <utility>
 #include <cstring>
@@ -38,6 +32,9 @@
 #include <netinet/if_ether.h>
 #include <linux/if_ether.h>
 
+#include <pfq.hpp>
+
+using namespace pfq;
 
 namespace opt {
 
@@ -58,7 +55,6 @@ namespace opt {
 
 typedef std::tuple<std::string, int, std::vector<int>> binding_type;
 
-using namespace net;
 
 namespace vt100
 {
@@ -167,11 +163,11 @@ namespace test
     struct ctx
     {
         ctx(int id, const char *d, const std::vector<int> & q)
-        : m_id(id), m_dev(d), m_queues(q), m_stop(false), m_pfq(group_policy::undefined, opt::caplen, opt::offset, opt::slots), m_read()
+        : m_id(id), m_dev(d), m_queues(q), m_stop(false), m_pfq(pfq::group_policy::undefined, opt::caplen, opt::offset, opt::slots), m_read()
         {
             int gid = opt::group_id != -1 ? opt::group_id : id;
 
-            m_pfq.join_group(gid, group_policy::shared);
+            m_pfq.join_group(gid, pfq::group_policy::shared);
 
             std::for_each(m_queues.begin(), m_queues.end(),[&](int q) {
                           std::cout << "adding bind to " << d << "@" << q << std::endl;
@@ -209,7 +205,7 @@ namespace test
             m_stop.store(other.m_stop.load());
             m_pfq = std::move(other.m_pfq);
 
-            other.m_pfq = pfq();
+            other.m_pfq = pfq::socket();
             return *this;
         }
 
@@ -259,8 +255,8 @@ namespace test
             {
                 auto many = m_pfq.read(opt::sleep_microseconds);
 
-                queue::iterator it = many.begin();
-                queue::iterator it_e = many.end();
+                pfq::queue::iterator it = many.begin();
+                pfq::queue::iterator it_e = many.end();
 
                 for(; it != it_e; ++it)
                 {
@@ -309,7 +305,7 @@ namespace test
 
         std::atomic_bool m_stop;
 
-        pfq m_pfq;
+        pfq::socket m_pfq;
 
         unsigned long long m_read;
         size_t m_batch;

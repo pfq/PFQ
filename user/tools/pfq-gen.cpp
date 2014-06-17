@@ -136,8 +136,8 @@ make_binding(const char *value)
 
 
 
-using namespace net;
-using namespace pfq_lang;
+using namespace pfq;
+using namespace pfq::lang;
 
 
 namespace vt100
@@ -177,7 +177,7 @@ namespace test
                 // auto q = pfq(opt::len, 0, 64, opt::len, opt::slots);
                 //
 
-                auto q = pfq(param::list, param::maxlen{opt::len},
+                auto q = pfq::socket(param::list, param::maxlen{opt::len},
                                           param::tx_slots{opt::slots});
 
                 q.bind_tx (m_bind.dev.at(0).c_str(), m_bind.queue[n]);
@@ -214,7 +214,7 @@ namespace test
                             ip->daddr = m_gen();
                         }
 
-                        if (m_pfq[n].send_async(net::const_buffer(reinterpret_cast<const char *>(packet), opt::len), opt::batch))
+                        if (m_pfq[n].send_async(pfq::const_buffer(reinterpret_cast<const char *>(packet), opt::len), opt::batch))
                             m_sent->fetch_add(1, std::memory_order_relaxed);
                     }
                 }
@@ -231,7 +231,7 @@ namespace test
                             ip->daddr = m_gen();
                         }
 
-                        if (m_pfq[n].send_sync(net::const_buffer(reinterpret_cast<const char *>(packet), opt::len), opt::batch))
+                        if (m_pfq[n].send_sync(pfq::const_buffer(reinterpret_cast<const char *>(packet), opt::len), opt::batch))
                             m_sent->fetch_add(1, std::memory_order_relaxed);
                     }
                 }
@@ -255,7 +255,7 @@ namespace test
         int m_id;
         binding m_bind;
 
-        std::vector<pfq> m_pfq;
+        std::vector<pfq::socket> m_pfq;
 
         std::unique_ptr<std::atomic_ullong> m_sent;
 

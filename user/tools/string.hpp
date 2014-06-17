@@ -27,7 +27,6 @@ inline std::vector<std::string>
 split(std::string str, const char *sep)
 {
     std::vector<std::string> ret;
-    std::string::size_type n;
 
     auto len = std::strlen(sep);
 

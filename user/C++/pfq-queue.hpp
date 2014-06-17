@@ -28,7 +28,7 @@
 #include <linux/pf_q.h>
 
 
-namespace net {
+namespace pfq {
 
     //! This class represent a queue of packets.
     /*!
@@ -343,4 +343,4 @@ namespace net {
         return &h + 1;
     }
 
-} // namespace net
+} // namespace pfq

@@ -30,7 +30,9 @@
 
 #include <arpa/inet.h>
 
-namespace pfq_lang
+namespace pfq
+{
+namespace lang
 {
     using namespace std::placeholders;
 
@@ -215,7 +217,7 @@ namespace pfq_lang
             } na = { 0, prefix, subprefix };
 
             if (inet_pton(AF_INET, net, &na.addr) <= 0)
-                throw std::runtime_error("pfq_lang::steer_net");
+                throw std::runtime_error("pfq::lang::steer_net");
 
             return mfunction1("steer_net", na);
         };
@@ -292,4 +294,6 @@ namespace pfq_lang
         auto crc16       = mfunction("crc16");
 
     }
-}
+
+} // namespace lang
+} // naemspace pfq

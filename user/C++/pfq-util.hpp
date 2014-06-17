@@ -37,7 +37,7 @@
 #include <pfq-except.hpp>
 
 
-namespace net {
+namespace pfq {
 
     using mutable_buffer = std::pair<char *, size_t>;
     using const_buffer   = std::pair<const char *, const size_t>;
@@ -182,5 +182,5 @@ namespace net {
 
     } // namespace param
 
-} // namespace net
+} // namespace pfq
 

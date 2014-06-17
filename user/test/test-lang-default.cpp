@@ -2,7 +2,7 @@
 
 #include "pfq-lang/default.hpp"
 
-using namespace pfq_lang;
+using namespace pfq::lang;
 
 int
 main()

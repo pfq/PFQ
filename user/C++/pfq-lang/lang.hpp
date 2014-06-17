@@ -33,8 +33,9 @@
 
 #include <linux/pf_q.h>
 
-
-namespace pfq_lang
+namespace pfq
+{
+namespace lang
 {
     using ::pfq_functional_descr;
 
@@ -1119,5 +1120,6 @@ namespace pfq_lang
     }
 
 
-} // namespace pfq_lang
+} // namespace lang
+} // namespace pfq
 

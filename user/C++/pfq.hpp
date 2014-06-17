@@ -46,7 +46,7 @@
 
 #include <pfq-lang/lang.hpp>
 
-namespace net {
+namespace pfq {
 
     //! group policies.
     /*!
@@ -85,6 +85,10 @@ namespace net {
         static constexpr int anytag = Q_VLAN_ANYTAG;
     };
 
+    static constexpr int any_device  = Q_ANY_DEVICE;
+    static constexpr int any_queue   = Q_ANY_QUEUE;
+    static constexpr int any_group   = Q_ANY_GROUP;
+
     //////////////////////////////////////////////////////////////////////
 
     //! open parameters.
@@ -120,14 +124,14 @@ namespace net {
 
     //////////////////////////////////////////////////////////////////////
 
-    //! PFQ: the class
+    //! PFQ: the socket
     /*!
      * This class is the main interface to the PFQ kernel module.
      * Each instance handles a socket that can be used to receive from and transmit
      * packets to the network.
      */
 
-    class pfq
+    class socket
     {
         struct pfq_data
         {
@@ -150,13 +154,9 @@ namespace net {
 
     public:
 
-        static constexpr int any_device  = Q_ANY_DEVICE;
-        static constexpr int any_queue   = Q_ANY_QUEUE;
-        static constexpr int any_group   = Q_ANY_GROUP;
-
         //! Default constructor
 
-        pfq()
+        socket()
         : fd_(-1)
         , pdata_()
         {}
@@ -164,7 +164,7 @@ namespace net {
         //! Constructor with named-parameter idiom (param::get is the C++14 std::get)
 
         template <typename ...Ts>
-        pfq(param::list_t, Ts&& ...args)
+        socket(param::list_t, Ts&& ...args)
         : fd_(-1)
         , pdata_()
         {
@@ -185,7 +185,7 @@ namespace net {
          * Create a PFQ socket and join a new group.
          */
 
-        pfq(size_t caplen, size_t rx_slots = 65536, size_t maxlen = 64, size_t tx_slots = 4096)
+        socket(size_t caplen, size_t rx_slots = 65536, size_t maxlen = 64, size_t tx_slots = 4096)
         : fd_(-1)
         , pdata_()
         {
@@ -197,7 +197,7 @@ namespace net {
          * Create a PFQ socket with the given group policy (default class).
          */
 
-        pfq(group_policy policy, size_t caplen, size_t rx_slots = 65536, size_t maxlen = 64, size_t tx_slots = 4096)
+        socket(group_policy policy, size_t caplen, size_t rx_slots = 65536, size_t maxlen = 64, size_t tx_slots = 4096)
         : fd_(-1)
         , pdata_()
         {
@@ -209,7 +209,7 @@ namespace net {
          * Create a PFQ socket with the given class mask and group policy.
          */
 
-        pfq(class_mask mask, group_policy policy, size_t caplen, size_t rx_slots = 65536, size_t maxlen = 64, size_t tx_slots = 4096)
+        socket(class_mask mask, group_policy policy, size_t caplen, size_t rx_slots = 65536, size_t maxlen = 64, size_t tx_slots = 4096)
         : fd_(-1)
         , pdata_()
         {
@@ -218,23 +218,23 @@ namespace net {
 
         //! Destructor: close the socket
 
-        ~pfq()
+        ~socket()
         {
             this->close();
         }
 
         //! PFQ socket is a non-copyable resource.
 
-        pfq(const pfq&) = delete;
+        socket(const socket&) = delete;
 
         //! PFQ socket is a non-copy assignable resource.
 
-        pfq& operator=(const pfq&) = delete;
+        socket& operator=(const socket&) = delete;
 
 
         //! Move constructor.
 
-        pfq(pfq &&other) noexcept
+        socket(socket &&other) noexcept
         : fd_(other.fd_)
         , pdata_(std::move(other.pdata_))
         {
@@ -243,8 +243,8 @@ namespace net {
 
         //! Move assignment operator.
 
-        pfq&
-        operator=(pfq &&other) noexcept
+        socket &
+        operator=(socket &&other) noexcept
         {
             if (this != &other)
             {
@@ -258,7 +258,7 @@ namespace net {
         //! Swap two PFQ sockets.
 
         void
-        swap(pfq &other)
+        swap(socket &other)
         {
             std::swap(fd_,    other.fd_);
             std::swap(pdata_, other.pdata_);
@@ -756,7 +756,7 @@ namespace net {
         template <typename Comp>
         void set_group_computation(int gid, Comp const &comp)
         {
-            auto ser = pfq_lang::serialize(comp, 0).first;
+            auto ser = pfq::lang::serialize(comp, 0).first;
 
             std::unique_ptr<pfq_computation_descr> prg (
                 reinterpret_cast<pfq_computation_descr *>(malloc(sizeof(size_t) * 2 + sizeof(pfq_functional_descr) * ser.size())));
@@ -808,12 +808,12 @@ namespace net {
         void
         set_group_computation(int gid, std::string prog)
         {
-            std::vector<pfq_lang::MFunction> comp;
+            std::vector<pfq::lang::MFunction> comp;
             auto fs = split(prog, ">->");
 
             for (auto & f : fs)
             {
-                comp.push_back(pfq_lang::mfunction(trim(f)));
+                comp.push_back(pfq::lang::mfunction(trim(f)));
             }
 
             set_group_computation(gid, comp);
@@ -1289,5 +1289,5 @@ namespace net {
         return lhs;
     }
 
-} // namespace net
+} // namespace pfq
 

@@ -4,7 +4,6 @@
 #include <stdexcept>
 
 #include <pfq.hpp>
-using namespace net;
 
 int
 main(int argc, char *argv[])
@@ -12,7 +11,7 @@ main(int argc, char *argv[])
     if (argc < 2)
         throw std::runtime_error(std::string("usage: ").append(argv[0]).append(" dev"));
 
-    pfq q(128);
+    pfq::socket q(128);
 
     q.bind(argv[1], pfq::any_queue);
 
@@ -24,8 +23,8 @@ main(int argc, char *argv[])
     {
             auto many = q.read( 1000000 /* timeout: micro */);
 
-            queue::iterator it = many.begin();
-            queue::iterator it_e = many.end();
+            pfq::queue::iterator it = many.begin();
+            pfq::queue::iterator it_e = many.end();
 
             for(; it != it_e; ++it)
             {

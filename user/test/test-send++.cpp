@@ -2,7 +2,6 @@
 #include <stdexcept>
 
 #include <pfq.hpp>
-using namespace net;
 
 /* Frame (98 bytes) */
 
@@ -24,21 +23,21 @@ static const unsigned char ping[98] =
 };
 
 
-void mode_1(pfq &q, uint64_t num)
+void mode_1(pfq::socket &q, uint64_t num)
 {
     for(uint64_t n = 0; n < num;)
     {
-        if (q.send(net::const_buffer(reinterpret_cast<const char *>(ping), sizeof(ping))))
+        if (q.send(pfq::const_buffer(reinterpret_cast<const char *>(ping), sizeof(ping))))
             n++;
     }
 }
 
 
-void mode_2(pfq &q, uint64_t num)
+void mode_2(pfq::socket &q, uint64_t num)
 {
     for(uint64_t n = 0; n < num;)
     {
-        if (q.send_sync(net::const_buffer(reinterpret_cast<const char *>(ping), sizeof(ping)), 128))
+        if (q.send_sync(pfq::const_buffer(reinterpret_cast<const char *>(ping), sizeof(ping)), 128))
             n++;
     }
 
@@ -46,11 +45,11 @@ void mode_2(pfq &q, uint64_t num)
 
 }
 
-void mode_3(pfq &q, uint64_t num)
+void mode_3(pfq::socket &q, uint64_t num)
 {
     for(uint64_t n = 0; n < num;)
     {
-        if (q.send_async(net::const_buffer(reinterpret_cast<const char *>(ping), sizeof(ping))))
+        if (q.send_async(pfq::const_buffer(reinterpret_cast<const char *>(ping), sizeof(ping))))
             n++;
     }
 
@@ -58,11 +57,11 @@ void mode_3(pfq &q, uint64_t num)
 }
 
 
-void mode_4(pfq &q, uint64_t num)
+void mode_4(pfq::socket &q, uint64_t num)
 {
     for(uint64_t n = 0; n < num;)
     {
-        if (q.send_async(net::const_buffer(reinterpret_cast<const char *>(ping), sizeof(ping)), 128))
+        if (q.send_async(pfq::const_buffer(reinterpret_cast<const char *>(ping), sizeof(ping)), 128))
             n++;
     }
 
@@ -82,7 +81,7 @@ main(int argc, char *argv[])
     uint64_t num    = atoll(argv[4]);
     int mode        = atoi(argv[5]);
 
-    pfq q(64, 4096, 64, 4096);
+    pfq::socket q(64, 4096, 64, 4096);
 
     q.enable();
 
