@@ -28,8 +28,6 @@
 #include <netinet/ip.h>
 #include <netinet/udp.h>
 
-#include "string.hpp"
-
 namespace opt {
 
     int sleep_microseconds;
@@ -87,9 +85,9 @@ make_binding(const char *value)
 {
     binding ret { {}, {}, -1, -1 };
 
-    auto vec = split(value, ".");
+    auto vec = net::split(value, ".");
 
-    ret.dev = split(vec[0].c_str(), ":");
+    ret.dev = net::split(vec[0].c_str(), ":");
 
     if (vec.size() > 1)
         ret.core = std::atoi(vec[1].c_str());
@@ -177,27 +175,11 @@ namespace test
                     }
             }
 
-            std::vector<pfq_lang::MFunction> fs;
-
             if (!opt::function.empty() && (m_id == 0))
             {
-                auto comp = split(opt::function, ">->");
-                for(auto & f : comp)
-                {
-                    fs.push_back(mfunction(trim(f)));
-                }
-            }
+                std::cout << "fun: " << opt::function << std::endl;
 
-            if (!fs.empty())
-            {
-                std::cout << "fun: " << fs.front().symbol_;
-
-                std::for_each(std::next(fs.begin(),1), fs.end(), [](pfq_lang::MFunction &fun) {
-                                std::cout << " >-> " << fun.symbol_;
-                              });
-                std::cout << std::endl;
-
-                m_pfq.set_group_computation(m_bind.gid, fs);
+                m_pfq.set_group_computation(m_bind.gid, opt::function);
             }
 
             m_pfq.timestamp_enable(false);
