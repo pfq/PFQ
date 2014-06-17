@@ -51,7 +51,6 @@ signature_by_user_symbol(const char __user *symb)
 
         entry = pfq_symtable_search(&pfq_lang_functions, symbol);
         if (entry == NULL) {
-                printk(KERN_INFO "[PFQ] resolve_signature_by_symbol: '%s' no such function!\n", symbol);
                 kfree (symbol);
                 return NULL;
         }
@@ -436,8 +435,10 @@ pfq_validate_computation_descr(struct pfq_computation_descr const *descr)
 		/* check for valid signature */
 
 		signature = signature_by_user_symbol(fun->symbol);
-		if (!signature)
+		if (!signature) {
+                	printk(KERN_INFO "[PFQ] resolve_signature_by_symbol: '%s' no such function!\n", fun->symbol);
 			return -EPERM;
+		}
 
 		/* check for valid entry_point */
 
