@@ -313,7 +313,7 @@ is_icmp6(struct sk_buff const *skb)
 
 
 static inline bool
-has_addr(struct sk_buff const *skb, uint32_t addr, uint32_t mask)
+has_addr(struct sk_buff const *skb, __be32 addr, __be32 mask)
 {
 	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP))
 	{
@@ -334,7 +334,7 @@ has_addr(struct sk_buff const *skb, uint32_t addr, uint32_t mask)
 
 
 static inline bool
-has_src_addr(struct sk_buff const *skb, uint32_t addr, uint32_t mask)
+has_src_addr(struct sk_buff const *skb, __be32 addr, __be32 mask)
 {
 	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP))
 	{
@@ -353,7 +353,7 @@ has_src_addr(struct sk_buff const *skb, uint32_t addr, uint32_t mask)
 }
 
 static inline bool
-has_dst_addr(struct sk_buff const *skb, uint32_t addr, uint32_t mask)
+has_dst_addr(struct sk_buff const *skb, __be32 addr, __be32 mask)
 {
 	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP))
 	{
@@ -433,7 +433,7 @@ is_frag(struct sk_buff const *skb)
  		if (ip == NULL)
                         return false;
 
-                return ip->frag_off & __constant_htons(IP_MF|IP_OFFSET);
+                return (ip->frag_off & __constant_htons(IP_MF|IP_OFFSET)) != 0;
 	}
 
 	return false;
@@ -469,7 +469,7 @@ is_more_frag(struct sk_buff const *skb)
  		if (ip == NULL)
                         return false;
 
-                return ip->frag_off & __constant_htons(IP_OFFSET);
+                return (ip->frag_off & __constant_htons(IP_OFFSET)) != 0;
 	}
 
 	return false;

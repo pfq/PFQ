@@ -66,15 +66,15 @@ filter_dst_port(arguments_t args, struct sk_buff *skb)
 
 
 
-int filter_addr_init(arguments_t args)
+static int filter_addr_init(arguments_t args)
 {
 	struct network_addr {
-	 	uint32_t addr;
+	 	__be32 addr;
 	 	int 	 prefix;
 	} data = get_data(struct network_addr, args);
 
-	uint32_t ipv4 = data.addr;
-	uint32_t mask = make_mask(data.prefix);
+	__be32 ipv4 = data.addr;
+	__be32 mask = make_mask(data.prefix);
 
 	set_data (args, ipv4);
 	set_data2(args, mask);
@@ -88,8 +88,8 @@ int filter_addr_init(arguments_t args)
 static struct sk_buff *
 filter_addr(arguments_t args, struct sk_buff *skb)
 {
-	uint32_t addr = get_data(uint32_t, args);
-	uint32_t mask = get_data2(uint32_t, args);
+	__be32 addr = get_data(__be32, args);
+	__be32 mask = get_data2(__be32, args);
 
 	return has_addr(skb, addr, mask) ? skb : drop(skb);
 }
@@ -98,8 +98,8 @@ filter_addr(arguments_t args, struct sk_buff *skb)
 static struct sk_buff *
 filter_src_addr(arguments_t args, struct sk_buff *skb)
 {
-	uint32_t addr = get_data(uint32_t, args);
-	uint32_t mask = get_data2(uint32_t, args);
+	__be32 addr = get_data(__be32, args);
+	__be32 mask = get_data2(__be32, args);
 
 	return has_src_addr(skb, addr, mask) ? skb : drop(skb);
 }
@@ -107,8 +107,8 @@ filter_src_addr(arguments_t args, struct sk_buff *skb)
 static struct sk_buff *
 filter_dst_addr(arguments_t args, struct sk_buff *skb)
 {
-	uint32_t addr = get_data(uint32_t, args);
-	uint32_t mask = get_data2(uint32_t, args);
+	__be32 addr = get_data(__be32, args);
+	__be32 mask = get_data2(__be32, args);
 
 	return has_dst_addr(skb, addr, mask) ? skb : drop(skb);
 }
