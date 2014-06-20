@@ -41,6 +41,8 @@
 struct pfq_function_descr;
 struct pfq_exec;
 
+extern struct list_head pfq_lang_functions;
+
 extern int pfq_symtable_register_functions  (const char *module, struct list_head *category, struct pfq_function_descr *fun);
 extern int pfq_symtable_unregister_functions(const char *module, struct list_head *category, struct pfq_function_descr *fun);
 
