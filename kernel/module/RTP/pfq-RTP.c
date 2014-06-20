@@ -135,25 +135,25 @@ steering_rtp(arguments_t arg, struct sk_buff *skb)
 
 struct pfq_function_descr hooks_f[] = {
 
-	{ "rtp",       filter_rtp  , 	FUN_ACTION 	},
-	{ "steer_rtp", steering_rtp, 	FUN_ACTION 	},
+	{ "rtp",       "SkBuff -> Action SkBuff", 	filter_rtp   	},
+	{ "steer_rtp", "SkBuff -> Action SkBuff", 	steering_rtp 	},
 	{ NULL, NULL}};
 
 
-struct pfq_predicate_fun_descr hooks_p[] = {
+struct pfq_function_descr hooks_p[] = {
 
-	{ "is_rtp",     is_rtp, 	FUN_PREDICATE 	},
+	{ "is_rtp",     "SkBuff -> Bool", 		is_rtp 		},
 	{ NULL, NULL}};
 
 
 static int __init usr_init_module(void)
 {
-	if (pfq_symtable_register_functions("[RTP]", &pfq_monadic_cat, (struct pfq_function_descr *)hooks_f) < 0)
+	if (pfq_symtable_register_functions("[RTP]", &pfq_lang_functions, hooks_f) < 0)
 		return -EPERM;
 
-       	if (pfq_symtable_register_functions("[RTP]", &pfq_predicate_cat, (struct pfq_function_descr *)hooks_p) < 0)
+       	if (pfq_symtable_register_functions("[RTP]", &pfq_lang_functions, hooks_p) < 0)
 	{
-		pfq_symtable_unregister_functions("[RTP]", &pfq_monadic_cat, (struct pfq_function_descr *)hooks_f);
+		pfq_symtable_unregister_functions("[RTP]", &pfq_lang_functions, hooks_f);
 		return -EPERM;
 	}
 
@@ -163,8 +163,8 @@ static int __init usr_init_module(void)
 
 static void __exit usr_exit_module(void)
 {
-	pfq_symtable_unregister_functions("[RTP]", &pfq_monadic_cat, (struct pfq_function_descr *)hooks_f);
-	pfq_symtable_unregister_functions("[RTP]", &pfq_predicate_cat, (struct pfq_function_descr *)hooks_p);
+	pfq_symtable_unregister_functions("[RTP]", &pfq_lang_functions, hooks_f);
+	pfq_symtable_unregister_functions("[RTP]", &pfq_lang_functions, hooks_p);
 }
 
 
