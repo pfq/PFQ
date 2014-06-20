@@ -255,7 +255,7 @@ pfq_symtable_register_function(const char *module, struct list_head *category, c
 	up(&symtable_sem);
 
 	if (rc == 0 && module)
-		printk(KERN_INFO "[PFQ]%s '%s' @%p function registered.\n", module, symbol, fun);
+		printk(KERN_INFO "[PFQ]%s '%s' @%pF function registered.\n", module, symbol, fun);
 
 	return rc;
 }
