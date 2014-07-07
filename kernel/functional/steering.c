@@ -70,7 +70,7 @@ steering_ip(arguments_t args, struct sk_buff *skb)
 }
 
 
-int
+static int
 steering_net_init(arguments_t args)
 {
 	struct network_addr {
