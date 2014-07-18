@@ -59,7 +59,8 @@ forward(arguments_t args, struct sk_buff *skb)
        	queues = get_data2(struct forward_queue *, args);
 
 #ifdef PFQ_NOCLONE_FORWARD
-	nskb = atomic_inc(&skb->users);
+	atomic_inc(&skb->users);
+	nskb = skb;
 #else
 	nskb = skb_clone(skb, GFP_ATOMIC);
 	if (!nskb) {
@@ -94,7 +95,8 @@ forward(arguments_t args, struct sk_buff *skb)
 	}
 
 #ifdef PFQ_NOCLONE_FORWARD
-	nskb = atomic_inc(&skb->users);
+	atomic_inc(&skb->users);
+	nskb = skb;
 #else
 	nskb = skb_clone(skb, GFP_ATOMIC);
 	if (!nskb) {
