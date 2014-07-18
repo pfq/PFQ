@@ -29,6 +29,7 @@
 #include <cstring>
 #include <vector>
 #include <memory>
+#include <array>
 #include <type_traits>
 
 #include <linux/pf_q.h>
