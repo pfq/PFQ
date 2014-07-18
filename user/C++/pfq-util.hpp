@@ -177,7 +177,7 @@ namespace pfq {
         load(Tup &tup, Ts&& ... arg)
         {
             typedef int eval[];
-            (void)eval { ((get<Ts>(tup) = std::forward<Ts>(arg)),0)... };
+            (void)eval { ((param::get<Ts>(tup) = std::forward<Ts>(arg)),0)... };
         }
 
     } // namespace param
