@@ -28,16 +28,14 @@
 #include <netinet/ip.h>
 #include <netinet/udp.h>
 
-namespace opt {
-
+namespace opt
+{
     int sleep_microseconds;
     std::string function;
 
     size_t caplen = 64;
     size_t slots  = 131072;
     bool flow     = false;
-
-    static const int seconds = 600;
 }
 
 // eth0:...:ethx[.core[.gid[.queue.queue...]]]
@@ -214,13 +212,13 @@ namespace test
                         while(!it.ready())
                             std::this_thread::yield();
 
-                        iphdr  *  ip = static_cast<iphdr *> (it.data());
-                        if (ip->protocol == IPPROTO_TCP ||
-                            ip->protocol == IPPROTO_UDP)
+                        iphdr  *  ipv4 = static_cast<iphdr *> (it.data());
+                        if (ipv4->protocol == IPPROTO_TCP ||
+                            ipv4->protocol == IPPROTO_UDP)
                         {
-                            udphdr * udp = reinterpret_cast<udphdr *>(static_cast<char *>(it.data()) + (ip->ihl<<2));
+                            udphdr * udp = reinterpret_cast<udphdr *>(static_cast<char *>(it.data()) + (ipv4->ihl<<2));
 
-                            if (m_set.insert(std::make_tuple(ip->saddr, ip->daddr, udp->source, udp->dest)).second)
+                            if (m_set.insert(std::make_tuple(ipv4->saddr, ipv4->daddr, udp->source, udp->dest)).second)
                                 m_flow++;
                         }
                     }
@@ -388,7 +386,7 @@ try
 
     if (opt::slots < 1024)
     {
-        std::cout << "too few slots may affet the performance!" << std::endl;
+        std::cout << "too few slots may affect the performance!" << std::endl;
         _Exit(0);
     }
 
@@ -424,7 +422,7 @@ try
 
     auto begin = std::chrono::system_clock::now();
 
-    for(int y=0; y < opt::seconds; y++)
+    for(int y=0;; y++)
     {
         std::this_thread::sleep_for(std::chrono::seconds(1));
 
