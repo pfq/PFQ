@@ -34,7 +34,7 @@ The package is organized as follow:
     |   |   |-- dummy
     |   |   `-- rtp
     |   `-- linux
-    |-- tools
+    |-- script
     `-- user
         |-- C
         |-- C++
@@ -42,7 +42,7 @@ The package is organized as follow:
         |-- Haskell
         |   `-- Network
         |-- test
-        `-- tools
+        `-- tool
 
 * The directory kernel/ contains the source code of PFQ, along with some
   headers used by user-space applications.
