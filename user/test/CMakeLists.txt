@@ -1,4 +1,6 @@
-cmake_minimum_required(VERSION 2.4)
+cmake_minimum_required(VERSION 2.8)
+
+include(${CMAKE_CURRENT_SOURCE_DIR}/../common/CMakeLists.txt)
 
 include_directories(../../kernel)
 include_directories(../../user/C++)
@@ -7,14 +9,9 @@ include_directories(../extra)
 
 link_directories(../../user/C)
 
-set (CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -O0 -g2 -Wall -Wextra -std=c++1y")
-set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O0 -g2 -Wall -Wextra")
-
-
 # C++11 tests
 
 add_executable(test-lang-default test-lang-default.cpp)
-add_executable(test-lang test-lang.cpp)
 add_executable(test-fun-lang test-fun-lang.cpp)
 
 add_executable(test-dump test-dump.cpp)
@@ -28,6 +25,12 @@ add_executable(test-send++ test-send++.cpp)
 add_executable(test-regression++ test-regression++.cpp)
 add_executable(test-regression-capture test-regression-capture.cpp)
 add_executable(test-regression-pcap-rewrite test-regression-pcap-rewrite.cpp)
+
+# C++14 tests
+                                        
+if ("${CMAKE_CXX_FLAGS}" MATCHES "std=c\\+\\+1y")
+    add_executable(test-lang test-lang.cpp)
+endif()
 
 # C tests
 
