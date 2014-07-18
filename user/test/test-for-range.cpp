@@ -5,6 +5,8 @@
 
 #include <pfq.hpp>
 
+using namespace pfq;
+
 int
 main(int argc, char *argv[])
 {
