@@ -1,11 +1,10 @@
 var searchData=
 [
-  ['netfunction',['NetFunction',['../namespacepfq_1_1lang.html#aa02ee91ad7ff586907fc8526b84e0f53',1,'pfq::lang']]],
-  ['netpredicate',['NetPredicate',['../namespacepfq_1_1lang.html#a3c5b96416a3c3834aefd442157498bbd',1,'pfq::lang']]],
-  ['netproperty',['NetProperty',['../namespacepfq_1_1lang.html#aa39ba7aedac05c562ea2f9f399e7f370',1,'pfq::lang']]],
-  ['next',['next',['../structpfq_1_1lang_1_1FunctionDescr.html#aed683dff23bcead8e4a16ac21ef8ae68',1,'pfq::lang::FunctionDescr']]],
-  ['no_5ffrag',['no_frag',['../namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03.html#a4cfaf018f687a1563161b8f4245a6652',1,'pfq::lang::anonymous_namespace{default.hpp}']]],
-  ['no_5fmore_5ffrag',['no_more_frag',['../namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03.html#a88628ce70e2a650af1338851373b9891',1,'pfq::lang::anonymous_namespace{default.hpp}']]],
-  ['not_5f',['not_',['../namespacepfq_1_1lang.html#a4356432f0438e003c4f8d2fec7c65c9e',1,'pfq::lang']]],
-  ['null',['Null',['../structpfq_1_1lang_1_1Argument.html#a47b27b590b495ac9e990d850f3052aad',1,'pfq::lang::Argument']]]
+  ['mark',['mark',['../namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03.html#a7b831baeabda070b89ca862a9445a4a8',1,'pfq::lang::anonymous_namespace{default.hpp}']]],
+  ['mfunction',['MFunction',['../structpfq_1_1lang_1_1MFunction.html#af6a48f74323549dd325447dd5aea00cf',1,'pfq::lang::MFunction::MFunction()'],['../namespacepfq_1_1lang.html#ac3ec84f09576bf5fb5db464623a4c165',1,'pfq::lang::mfunction()']]],
+  ['mfunction',['MFunction',['../structpfq_1_1lang_1_1MFunction.html',1,'pfq::lang']]],
+  ['mfunction1',['MFunction1',['../structpfq_1_1lang_1_1MFunction1.html#af8452ca9d81cebe841e9e40e34b6dcb4',1,'pfq::lang::MFunction1::MFunction1()'],['../namespacepfq_1_1lang.html#a68d775c68562fbd0ab9ef213f2519499',1,'pfq::lang::mfunction1()']]],
+  ['mfunction1',['MFunction1',['../structpfq_1_1lang_1_1MFunction1.html',1,'pfq::lang']]],
+  ['mfunction2',['MFunction2',['../structpfq_1_1lang_1_1MFunction2.html#a99bc09be54f48e9f2305feb79a2fa372',1,'pfq::lang::MFunction2::MFunction2()'],['../namespacepfq_1_1lang.html#a16b7f6ec56c0c3450383a9a0cbf0923b',1,'pfq::lang::mfunction2()']]],
+  ['mfunction2',['MFunction2',['../structpfq_1_1lang_1_1MFunction2.html',1,'pfq::lang']]]
 ];

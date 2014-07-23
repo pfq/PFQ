@@ -1,14 +1,11 @@
 var searchData=
 [
-  ['operator_21_3d',['operator!=',['../namespacepfq_1_1lang.html#a4e936e93cff5c5e662a9704aad2f79d0',1,'pfq::lang']]],
-  ['operator_26',['operator&amp;',['../namespacepfq_1_1lang.html#a7c98e7df26113c8681112c5790cc3011',1,'pfq::lang']]],
-  ['operator_2b',['operator+',['../namespacepfq_1_1lang.html#a54f9b99ed2adf6dc2e74d21a38be3bf3',1,'pfq::lang::operator+(std::vector&lt; Tp &gt; v1, std::vector&lt; Tp &gt; &amp;&amp;v2)'],['../namespacepfq_1_1lang.html#ae66ee716bfcd7329fbf24620066e48e0',1,'pfq::lang::operator+(std::vector&lt; Tp &gt; v1, std::vector&lt; Tp &gt; const &amp;v2)']]],
-  ['operator_3c',['operator&lt;',['../namespacepfq_1_1lang.html#ac260f0f66a639ef8ec261533e1cdab5a',1,'pfq::lang']]],
-  ['operator_3c_3d',['operator&lt;=',['../namespacepfq_1_1lang.html#a6ea8f874dce332bfb84fb0ada496b912',1,'pfq::lang']]],
-  ['operator_3d_3d',['operator==',['../namespacepfq_1_1lang.html#a73f82047b62ff230f041c0c52102258d',1,'pfq::lang']]],
-  ['operator_3e',['operator&gt;',['../namespacepfq_1_1lang.html#ac12e702945b63f989900088f1bc5e6d2',1,'pfq::lang']]],
-  ['operator_3e_3d',['operator&gt;=',['../namespacepfq_1_1lang.html#abff7fe4bb323203fd19c7fdaf8d4369b',1,'pfq::lang']]],
-  ['operator_3e_3e',['operator&gt;&gt;',['../namespacepfq_1_1lang.html#aa5c4ec63004bfee1742b763ca4a53b23',1,'pfq::lang']]],
-  ['operator_5e',['operator^',['../namespacepfq_1_1lang.html#a14d034a08684e4ef6d516f57e157b1f0',1,'pfq::lang']]],
-  ['operator_7c',['operator|',['../namespacepfq_1_1lang.html#a4d501437912163a0709baa295ffc995a',1,'pfq::lang']]]
+  ['netfunction',['NetFunction',['../namespacepfq_1_1lang.html#aa02ee91ad7ff586907fc8526b84e0f53',1,'pfq::lang']]],
+  ['netpredicate',['NetPredicate',['../namespacepfq_1_1lang.html#a3c5b96416a3c3834aefd442157498bbd',1,'pfq::lang']]],
+  ['netproperty',['NetProperty',['../namespacepfq_1_1lang.html#aa39ba7aedac05c562ea2f9f399e7f370',1,'pfq::lang']]],
+  ['next',['next',['../structpfq_1_1lang_1_1FunctionDescr.html#aed683dff23bcead8e4a16ac21ef8ae68',1,'pfq::lang::FunctionDescr']]],
+  ['no_5ffrag',['no_frag',['../namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03.html#a4cfaf018f687a1563161b8f4245a6652',1,'pfq::lang::anonymous_namespace{default.hpp}']]],
+  ['no_5fmore_5ffrag',['no_more_frag',['../namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03.html#a88628ce70e2a650af1338851373b9891',1,'pfq::lang::anonymous_namespace{default.hpp}']]],
+  ['not_5f',['not_',['../namespacepfq_1_1lang.html#a4356432f0438e003c4f8d2fec7c65c9e',1,'pfq::lang']]],
+  ['null',['Null',['../structpfq_1_1lang_1_1Argument.html#a47b27b590b495ac9e990d850f3052aad',1,'pfq::lang::Argument']]]
 ];

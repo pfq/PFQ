@@ -1,25 +1,6 @@
 var searchData=
 [
-  ['has_5faddr',['has_addr',['../namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03.html#a74c6b7e812fb3d312ebf534960a6a91d',1,'pfq::lang::anonymous_namespace{default.hpp}']]],
-  ['has_5fdst_5faddr',['has_dst_addr',['../namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03.html#a0a53822af0ed8ea341f16a1da5ea83e3',1,'pfq::lang::anonymous_namespace{default.hpp}']]],
-  ['has_5fdst_5fport',['has_dst_port',['../namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03.html#afa71ece0f4178d0200c0388f503eef14',1,'pfq::lang::anonymous_namespace{default.hpp}']]],
-  ['has_5finsertion_5foperator',['has_insertion_operator',['../structpfq_1_1lang_1_1has__insertion__operator.html',1,'pfq::lang']]],
-  ['has_5finsertion_5ftest',['has_insertion_test',['../namespacepfq_1_1lang.html#aa17006c974b74619f845353f18646f1a',1,'pfq::lang::has_insertion_test(typename std::remove_reference&lt; decltype((std::cout&lt;&lt; std::declval&lt; C &gt;())) &gt;::type *)'],['../namespacepfq_1_1lang.html#ad0cb2b1dba5436f8bdf5500f7eaf114c',1,'pfq::lang::has_insertion_test(...)']]],
-  ['has_5fmark',['has_mark',['../namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03.html#aa4ce1fdb0d99e1ca0afdf76619c58d12',1,'pfq::lang::anonymous_namespace{default.hpp}']]],
-  ['has_5fport',['has_port',['../namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03.html#a9f7161b8dfb842c5a845f413eb6bc82f',1,'pfq::lang::anonymous_namespace{default.hpp}']]],
-  ['has_5fsrc_5faddr',['has_src_addr',['../namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03.html#acb03dd3e34d6dd7e83d621fa9077194c',1,'pfq::lang::anonymous_namespace{default.hpp}']]],
-  ['has_5fsrc_5fport',['has_src_port',['../namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03.html#a964d5ed41f50a1f3a04176f8e54d7a5a',1,'pfq::lang::anonymous_namespace{default.hpp}']]],
-  ['has_5fvid',['has_vid',['../namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03.html#a99c204d8095fdccd50d4cb24d32e5b5b',1,'pfq::lang::anonymous_namespace{default.hpp}']]],
-  ['has_5fvlan',['has_vlan',['../namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03.html#a1f0378ddfa90777d11ffae5fbb57b4e0',1,'pfq::lang::anonymous_namespace{default.hpp}']]],
-  ['hdummy',['hdummy',['../namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03.html#a5ce9765c320b01cb2c6d9b9cba0f13ff',1,'pfq::lang::anonymous_namespace{default.hpp}']]],
-  ['hfunction',['HFunction',['../structpfq_1_1lang_1_1HFunction.html',1,'pfq::lang']]],
-  ['hfunction',['HFunction',['../structpfq_1_1lang_1_1HFunction.html#a0febd7adba8089f29406c53b2aacf9f8',1,'pfq::lang::HFunction::HFunction()'],['../namespacepfq_1_1lang.html#ad20d93f65c3c6d32089cbcc8cd056364',1,'pfq::lang::hfunction()']]],
-  ['hfunction1',['HFunction1',['../structpfq_1_1lang_1_1HFunction1.html#aad645822e3a79a69665cd33c663c038d',1,'pfq::lang::HFunction1::HFunction1()'],['../namespacepfq_1_1lang.html#af2f75576ac2932ec71d0ea53a474a638',1,'pfq::lang::hfunction1()']]],
-  ['hfunction1',['HFunction1',['../structpfq_1_1lang_1_1HFunction1.html',1,'pfq::lang']]],
-  ['hfunction2',['HFunction2',['../structpfq_1_1lang_1_1HFunction2.html#ad1b6b69cb20f56e80c106c07137bb0c7',1,'pfq::lang::HFunction2::HFunction2()'],['../namespacepfq_1_1lang.html#a8f842ec74b3098263d6444df60370807',1,'pfq::lang::hfunction2()']]],
-  ['hfunction2',['HFunction2',['../structpfq_1_1lang_1_1HFunction2.html',1,'pfq::lang']]],
-  ['hfunction3',['HFunction3',['../structpfq_1_1lang_1_1HFunction3.html#a6389e0634347783a7230b29f44a73d78',1,'pfq::lang::HFunction3::HFunction3()'],['../namespacepfq_1_1lang.html#a2875d9c29d6fed1e92664e6f44010ab7',1,'pfq::lang::hfunction3()']]],
-  ['hfunction3',['HFunction3',['../structpfq_1_1lang_1_1HFunction3.html',1,'pfq::lang']]],
-  ['hfunction4',['HFunction4',['../structpfq_1_1lang_1_1HFunction4.html',1,'pfq::lang']]],
-  ['hfunction4',['HFunction4',['../structpfq_1_1lang_1_1HFunction4.html#a6ae3c404f1fcc8a24128159a39da9a45',1,'pfq::lang::HFunction4::HFunction4()'],['../namespacepfq_1_1lang.html#a5858a4473d19510d936613e34aa87564',1,'pfq::lang::hfunction4()']]]
+  ['g_5f',['g_',['../structpfq_1_1lang_1_1HFunction4.html#a1a9a821806c773b379940a042d2de595',1,'pfq::lang::HFunction4::g_()'],['../structpfq_1_1lang_1_1Composition.html#aabe9600a5e6184509c5ac8ae9685271e',1,'pfq::lang::Composition::g_()']]],
+  ['get_5faddr',['get_addr',['../structpfq_1_1lang_1_1StorableShowBase.html#a716426f3a3c0a37e5cbce068dc18cda5',1,'pfq::lang::StorableShowBase::get_addr(std::string const &amp;that)'],['../structpfq_1_1lang_1_1StorableShowBase.html#abbf4497b2a5de3ee38e9ee1c7ffd734d',1,'pfq::lang::StorableShowBase::get_addr(T const &amp;that)']]],
+  ['get_5fmark',['get_mark',['../namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03.html#ab733e24b3ca86450bea0b0888a6327d2',1,'pfq::lang::anonymous_namespace{default.hpp}']]]
 ];
