@@ -203,8 +203,7 @@ struct pfq_function_descr forward_functions[] = {
         { "class",	 "Int -> SkBuff -> Action SkBuff",  		forward_class		},
         { "deliver",	 "Int -> SkBuff -> Action SkBuff",  		forward_deliver		},
 
-        { "kernel", 	    "SkBuff -> Action SkBuff",    		forward_to_kernel	},
-        { "forward_kernel", "SkBuff -> Action SkBuff",   		forward_io_kernel	},
+        { "kernel",    	"SkBuff -> Action SkBuff",    			forward_to_kernel	},
 	{ "forward",        "String -> SkBuff -> Action SkBuff",  	forward, forward_init, forward_fini },
 
         { NULL }};

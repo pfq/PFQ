@@ -439,7 +439,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 
                 if (likely(cb->direct_skb)) {
 
-		        if (unlikely(!capture_incoming && is_for_kernel(skb))) {
+		        if (unlikely(!capture_incoming && is_targeted_to_kernel(skb))) {
 
                                 if (cb->direct_skb == 1)
                                         netif_rx(skb);
