@@ -239,17 +239,13 @@ namespace lang
         auto no_frag        = mfunction("no_frag");
         auto no_more_frag   = mfunction("no_more_frag");
 
-        auto broadcast      = mfunction("broadcast");
         auto kernel         = mfunction("kernel");
-        auto forward_kernel = mfunction("forward_kernel");
+        auto broadcast      = mfunction("broadcast");
         auto drop           = mfunction("drop");
         auto unit           = mfunction("unit");
 
         auto log_msg        = [] (const std::string &msg) { return mfunction2("log_msg", msg); };
         auto log_packet     = mfunction("log_packet");
-
-        auto class_         = [] (int value) { return mfunction1("class", value); };
-        auto deliver        = [] (int value) { return mfunction1("deliver", value); };
 
         auto forward        = [] (std::string dev) { return mfunction2("forward", std::move(dev)); };
         auto mark           = [] (unsigned long value) { return mfunction1("mark", value); };

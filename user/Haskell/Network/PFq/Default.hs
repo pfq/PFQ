@@ -132,16 +132,15 @@ module Network.PFq.Default
         steer_ip   ,
         steer_ip6  ,
         steer_flow ,
-        steer_net  ,
         steer_rtp  ,
+        steer_net  ,
 
         -- * Forwarders
 
+        forward    ,
         kernel     ,
         broadcast  ,
         drop'      ,
-        forward    ,
-        forward_kernel ,
 
         -- * Conditionals
 
@@ -157,8 +156,6 @@ module Network.PFq.Default
         inv        ,
         par'       ,
         mark       ,
-        class'     ,
-        deliver    ,
         crc16      ,
         log_packet ,
         log_msg    ,
@@ -196,6 +193,8 @@ mkNetAddr net p = let a = unsafePerformIO (inet_addr net)
 mkSuperNetAddr :: String -> Int -> Int -> (Word32, CInt, CInt)
 mkSuperNetAddr net p sub = let a = unsafePerformIO (inet_addr net)
                            in (fromIntegral a, fromIntegral p, fromIntegral sub)
+
+forward        = MFunction2 "forward"   :: String   -> NetFunction
 
 -- Default combinators
 
@@ -289,15 +288,15 @@ icmp_code   = Property "icmp_code"
 
 -- Predefined in-kernel computations
 
-steer_net :: String -> Int -> Int -> NetFunction
-steer_net net p sub = MFunction1 "steer_net" (mkSuperNetAddr net p sub)
-
 steer_link      = MFunction "steer_link"    :: NetFunction
 steer_vlan      = MFunction "steer_vlan"    :: NetFunction
 steer_ip        = MFunction "steer_ip"      :: NetFunction
 steer_ip6       = MFunction "steer_ip6"     :: NetFunction
 steer_flow      = MFunction "steer_flow"    :: NetFunction
 steer_rtp       = MFunction "steer_rtp"     :: NetFunction
+
+steer_net :: String -> Int -> Int -> NetFunction
+steer_net net p sub = MFunction1 "steer_net" (mkSuperNetAddr net p sub)
 
 ip              = MFunction "ip"            :: NetFunction
 ip6             = MFunction "ip6"           :: NetFunction
@@ -314,7 +313,6 @@ rtp             = MFunction "rtp"           :: NetFunction
 no_frag         = MFunction "no_frag"       :: NetFunction
 no_more_frag    = MFunction "no_more_frag"  :: NetFunction
 
-forward_kernel = MFunction "forward_kernel" :: NetFunction
 kernel         = MFunction "kernel"         :: NetFunction
 broadcast      = MFunction "broadcast"      :: NetFunction
 drop'          = MFunction "drop"           :: NetFunction
@@ -327,10 +325,7 @@ crc16          = MFunction "crc16" :: NetFunction
 inc            = MFunction1 "inc"       :: CInt     -> NetFunction
 dec            = MFunction1 "dec"       :: CInt     -> NetFunction
 mark           = MFunction1 "mark"      :: CULong   -> NetFunction
-forward        = MFunction2 "forward"   :: String   -> NetFunction
 dummy          = MFunction1 "dummy"     :: CInt     -> NetFunction
-class'         = MFunction1 "class"     :: CInt     -> NetFunction
-deliver        = MFunction1 "deliver"   :: CInt     -> NetFunction
 
 l3_proto       = MFunction1 "l3_proto"  :: Int16    -> NetFunction
 l4_proto       = MFunction1 "l4_proto"  :: Int8     -> NetFunction
