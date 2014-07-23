@@ -39,3 +39,4 @@ install: all
 clean:
 	   @rm -f pfq-counters test-read test-send test-dispatch test-lang
 	   @rm -f *.o *.hi Network/*.o Network/*.hi Network/PFq.hs Network/PFq_stub.h
+	   @rm -f Network/PFq/*.o Network/PFq/*.hi
