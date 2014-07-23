@@ -121,7 +121,7 @@ bridge(arguments_t args, struct sk_buff *skb)
 	if (dev == NULL) {
                 if (printk_ratelimit())
                         printk(KERN_INFO "[PFQ] forward: device error!\n");
-                return skb;
+                return drop(skb);
 	}
 
        	queues = get_data2(struct forward_queue *, args);
@@ -133,7 +133,7 @@ bridge(arguments_t args, struct sk_buff *skb)
 	pfq_non_intrusive_push(&queues[id].q, skb);
 
 	if (pfq_non_intrusive_len(&queues[id].q) < batch_len) {
-		return skb;
+		return drop(skb);
 	}
 
 	if (pfq_queue_xmit(&queues[id].q, dev, id) == 0) {
@@ -150,7 +150,7 @@ bridge(arguments_t args, struct sk_buff *skb)
 	if (dev == NULL) {
                 if (printk_ratelimit())
                         printk(KERN_INFO "[PFQ] forward: device error!\n");
-                return skb;
+                return drop(skb);
 	}
 
 	atomic_inc(&skb->users);
@@ -164,7 +164,7 @@ bridge(arguments_t args, struct sk_buff *skb)
 
 #endif /* PFQ_USE_BATCH_FORWARD */
 
-	return skb;
+	return drop(skb);
 }
 
 
