@@ -113,43 +113,9 @@ bridge(arguments_t args, struct sk_buff *skb)
 {
 	struct net_device *dev = get_data(struct net_device *, args);
 
-#ifdef PFQ_USE_BATCH_FORWARD
-
-       	struct forward_queue *queues;
-       	int id;
-
 	if (dev == NULL) {
                 if (printk_ratelimit())
-                        printk(KERN_INFO "[PFQ] forward: device error!\n");
-                return drop(skb);
-	}
-
-       	queues = get_data2(struct forward_queue *, args);
-
-	atomic_inc(&skb->users);
-
-	id = smp_processor_id();
-
-	pfq_non_intrusive_push(&queues[id].q, skb);
-
-	if (pfq_non_intrusive_len(&queues[id].q) < batch_len) {
-		return drop(skb);
-	}
-
-	if (pfq_queue_xmit(&queues[id].q, dev, id) == 0) {
-#ifdef DEBUG
-                if (printk_ratelimit())
-                        printk(KERN_INFO "[PFQ] forward pfq_queue_xmit: error on device %s!\n", dev->name);
-#endif
-	}
-
-	pfq_non_intrusive_flush(&queues[id].q);
-
-#else /* PFQ_USE_BATCH_FORWARD */
-
-	if (dev == NULL) {
-                if (printk_ratelimit())
-                        printk(KERN_INFO "[PFQ] forward: device error!\n");
+                        printk(KERN_INFO "[PFQ] bridge: device error!\n");
                 return drop(skb);
 	}
 
@@ -158,11 +124,9 @@ bridge(arguments_t args, struct sk_buff *skb)
 	if (pfq_xmit(skb, dev, skb->queue_mapping) != 1) {
 #ifdef DEBUG
                 if (printk_ratelimit())
-                        printk(KERN_INFO "[PFQ] forward pfq_xmit: error on device %s!\n", dev->name);
+                        printk(KERN_INFO "[PFQ] bridge pfq_xmit: error on device %s!\n", dev->name);
 #endif
 	}
-
-#endif /* PFQ_USE_BATCH_FORWARD */
 
 	return drop(skb);
 }
