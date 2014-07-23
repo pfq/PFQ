@@ -34,4 +34,4 @@ cd ../user/Haskell && make clean && make && haddock -h -o ../../docs/api/haskell
 cd -
 
 echo "Haskell: Q-Lang docs" 
-cd ../user/Haskell && haddock -h -o ../../docs/lang/haskell -t "PFQ-Lang v3.0" -p ../../docs/lang.haddock Network/PFq/Default.hs
+cd ../user/Haskell && haddock -h -o ../../docs/lang/haskell -t "PFQ-Lang v3.0" -p ../../docs/lang.haddock Network/PFq/Default.hs Network/PFq/Experimental.hs
