@@ -189,12 +189,16 @@ int main()
 	string_view_t b2 = pfq_signature_bind(f15, 2);
 	string_view_t b3 = pfq_signature_bind(f15, 3);
 	string_view_t b4 = pfq_signature_bind(f15, 4);
+	string_view_t b5 = pfq_signature_bind(f15, 5);
+	string_view_t b6 = pfq_signature_bind(f15, 42);
 
 	printf("b0: "); string_view_put(b0);  putchar('\n');
 	printf("b1: "); string_view_put(b1);  putchar('\n');
 	printf("b2: "); string_view_put(b2);  putchar('\n');
 	printf("b3: "); string_view_put(b3);  putchar('\n');
 	printf("b4: "); string_view_put(b4);  putchar('\n');
+	printf("b5: "); string_view_put(b5);  putchar('\n');
+	printf("b6: "); string_view_put(b6);  putchar('\n');
 
 	string_view_t a0 = pfq_signature_arg(f15, 0);
 	string_view_t a1 = pfq_signature_arg(f15, 1);
