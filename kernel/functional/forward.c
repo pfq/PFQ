@@ -210,6 +210,32 @@ forward_fini(arguments_t args)
 }
 
 
+static struct sk_buff *
+bridge_tap(arguments_t args, struct sk_buff *skb)
+{
+	struct net_device *dev = get_data0(struct net_device *, args);
+        predicate_t pred_      = get_data1(predicate_t, args);
+
+	if (dev == NULL) {
+                if (printk_ratelimit())
+                        printk(KERN_INFO "[PFQ] bridge: device error!\n");
+                return drop(skb);
+	}
+
+        if (EVAL_PREDICATE(pred_, skb))
+		return skb;
+
+	atomic_inc(&skb->users);
+
+	if (pfq_xmit(skb, dev, skb->queue_mapping) != 1) {
+#ifdef DEBUG
+                if (printk_ratelimit())
+                        printk(KERN_INFO "[PFQ] bridge pfq_xmit: error on device %s!\n", dev->name);
+#endif
+	}
+
+	return drop(skb);
+}
 struct pfq_function_descr forward_functions[] = {
 
         { "drop",       "SkBuff -> Action SkBuff",   	    		forward_drop		},
@@ -220,6 +246,7 @@ struct pfq_function_descr forward_functions[] = {
         { "kernel",    	"SkBuff -> Action SkBuff",    			forward_to_kernel	},
 	{ "forward",    "String -> SkBuff -> Action SkBuff",  		forward, forward_init, forward_fini },
 	{ "bridge",     "String -> SkBuff -> Action SkBuff",  		bridge,  forward_init, forward_fini },
+	{ "bridge_tap", "String -> (SkBuff -> Bool) -> SkBuff -> Action SkBuff", bridge_tap, forward_init, forward_fini },
 
         { NULL }};
 
