@@ -34,6 +34,7 @@ module Network.PFq.Experimental
         -- * Experimental Functions
 
         bridge     ,
+        bridge_tap ,
         class'     ,
         deliver    ,
         filter'    ,
@@ -52,4 +53,5 @@ filter'        = HFunction  "filter"    :: NetPredicate -> NetFunction
 class'         = MFunction1 "class"     :: CInt     -> NetFunction
 deliver        = MFunction1 "deliver"   :: CInt     -> NetFunction
 bridge         = MFunction2 "bridge"    :: String   -> NetFunction
+bridge_tap     = MFunction4 "bridge_tap"    :: String  -> NetPredicate -> NetFunction
 
