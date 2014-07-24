@@ -442,7 +442,7 @@ pfq_validate_computation_descr(struct pfq_computation_descr const *descr)
 
 		/* check for valid entry_point */
 
-		if (n == entry_point) {
+		if (n == entry_point || fun->next != -1 ) {  /* next != -1 means monadic function! */
 
 			if (!function_signature_match(fun, make_string_view("SkBuff -> Action SkBuff"), n)) {
 				pr_devel("[PFQ] %zu: %s: invalid signature!\n", n, signature);
