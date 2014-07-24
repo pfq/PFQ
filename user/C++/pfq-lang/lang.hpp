@@ -673,7 +673,7 @@ namespace lang
     {
         MFunction2(std::string symbol, std::string str)
         : symbol_(std::move(symbol))
-        , arg_(Argument::String(str))
+        , arg_(Argument::String(std::move(str)))
         { }
 
         std::string     symbol_;
@@ -705,7 +705,7 @@ namespace lang
 
         MFunction4(std::string symbol, std::string str, const P &pred)
         : symbol_(std::move(symbol))
-        , arg_(Argument::String(str))
+        , arg_(Argument::String(std::move(str)))
         , pred_(pred)
         { }
 
