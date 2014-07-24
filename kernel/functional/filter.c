@@ -30,6 +30,16 @@
 
 
 static struct sk_buff *
+filter_generic(arguments_t args, struct sk_buff *skb)
+{
+	predicate_t pred_ = get_data0(predicate_t, args);
+
+	if (EVAL_PREDICATE(pred_, skb))
+		return skb;
+	return drop(skb);
+}
+
+static struct sk_buff *
 filter_l3_proto(arguments_t args, struct sk_buff *skb)
 {
 	const u16 type = get_data(u16, args);
@@ -150,6 +160,7 @@ struct pfq_function_descr filter_functions[] = {
         { "dst_addr", 	  "Word32 -> SkBuff -> Action SkBuff", 		 filter_dst_addr , filter_addr_init },
  	{ "l3_proto",     "Word16 -> SkBuff -> Action SkBuff",           filter_l3_proto },
         { "l4_proto",     "Word8  -> SkBuff -> Action SkBuff",           filter_l4_proto },
+        { "filter",       "(SkBuff -> Bool) -> SkBuff -> Action SkBuff", filter_generic  },
 
         { NULL }};
 

@@ -27,21 +27,20 @@
 #include <pfq-lang/details.hpp>
 
 #include <functional>
-
 #include <arpa/inet.h>
 
-namespace pfq
-{
+namespace pfq { namespace lang { namespace experimental {
 
-namespace experimental_lang
-{
     namespace
     {
+        auto filter         = std::bind(details::hcomp(),  "filter", _1);
+
         auto class_         = [] (int value) { return mfunction1("class", value); };
         auto deliver        = [] (int value) { return mfunction1("deliver", value); };
 
         auto bridge         = [] (std::string dev) { return mfunction2("bridge", std::move(dev)); };
     }
 
+} // namespace experimental
 } // namespace lang
 } // naemspace pfq

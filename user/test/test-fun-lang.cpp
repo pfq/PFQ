@@ -6,8 +6,10 @@
 #include <pfq.hpp>
 #include <pfq-lang/lang.hpp>
 #include <pfq-lang/default.hpp>
+#include <pfq-lang/experimental.hpp>
 
 using namespace pfq::lang;
+using namespace pfq::lang::experimental;
 
 int
 main(int argc, char *argv[])
@@ -31,7 +33,7 @@ main(int argc, char *argv[])
     //                              (inc (1) >> mark (1) >> steer_ip >> when (has_mark (1), inc (2))),
     //                               drop);
 
-    auto comp = ip >> par(icmp, icmp) >> forward("lo") >> addr("192.168.0.0", 16)  >> unit >> inc (0) >> log_msg ("qui si passa") >>
+    auto comp = ip >> filter (is_ip) >> par(icmp, icmp) >> forward("lo") >> addr("192.168.0.0", 16)  >> unit >> inc (0) >> log_msg ("qui si passa") >>
                     conditional (is_icmp, (inc (1) >> mark (1) >> steer_ip >> when (has_mark (1), inc (2))), drop);
 
     std::cout << pretty (comp) << std::endl;

@@ -36,6 +36,7 @@ module Network.PFq.Experimental
         bridge     ,
         class'     ,
         deliver    ,
+        filter'    ,
 
     ) where
 
@@ -46,6 +47,7 @@ import Foreign.C.Types
 
 -- Experimental in-kernel computations
 
+filter'        = HFunction  "filter"    :: NetPredicate -> NetFunction
 
 class'         = MFunction1 "class"     :: CInt     -> NetFunction
 deliver        = MFunction1 "deliver"   :: CInt     -> NetFunction
