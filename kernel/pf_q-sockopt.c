@@ -809,12 +809,13 @@ int pfq_setsockopt(struct socket *sock,
 
         case Q_SO_GROUP_FUNCTION:
         {
+                struct pfq_computation_descr *descr = NULL;
                 struct pfq_group_computation tmp;
-                struct pfq_computation_descr *descr;
                 size_t psize, ucsize;
+                int err = 0;
 
-                struct pfq_computation_tree *comp;
-                void *context;
+                struct pfq_computation_tree *comp = NULL;
+                void *context = NULL;
 
                 if (optlen != sizeof(tmp))
                         return -EINVAL;
@@ -838,8 +839,8 @@ int pfq_setsockopt(struct socket *sock,
 
                 if (copy_from_user(descr, tmp.prog, ucsize)) {
                         pr_devel("[PFQ|%d] computation: copy_from_user error!\n", so->id);
-                        kfree(descr);
-                        return -EFAULT;
+                        err = -EFAULT;
+                        goto error;
                 }
 
                 /* print user computation */
@@ -850,7 +851,8 @@ int pfq_setsockopt(struct socket *sock,
 
 		if (pfq_validate_computation_descr(descr) < 0) {
                         pr_devel("[PFQ|%d] invalid expression!\n", so->id);
-                        return -EFAULT;
+                        err = -EFAULT;
+                        goto error;
 		}
 
                 /* allocate context */
@@ -858,8 +860,8 @@ int pfq_setsockopt(struct socket *sock,
                 context = pfq_context_alloc(descr);
                 if (context == NULL) {
                         pr_devel("[PFQ|%d] context: alloc error!\n", so->id);
-                        kfree(descr);
-                        return -EFAULT;
+                        err = -EFAULT;
+                        goto error;
                 }
 
                 /* allocate struct pfq_computation_tree */
@@ -867,19 +869,16 @@ int pfq_setsockopt(struct socket *sock,
                 comp = pfq_computation_alloc(descr);
                 if (comp == NULL) {
                         pr_devel("[PFQ|%d] computation: alloc error!\n", so->id);
-                        kfree(context);
-                        kfree(descr);
-                        return -EFAULT;
+                        err = -EFAULT;
+                        goto error;
                 }
 
                 /* link the functional computation */
 
                 if (pfq_computation_rtlink(descr, comp, context) < 0) {
                         pr_devel("[PFQ|%d] computation aborted!", so->id);
-			kfree(context);
-			kfree(descr);
-			kfree(comp);
-                        return -EPERM;
+                        err = -EPERM;
+                        goto error;
                 }
 
 		/* print executable tree data structure */
@@ -890,24 +889,25 @@ int pfq_setsockopt(struct socket *sock,
 
 		if (pfq_computation_init(comp) < 0) {
                         pr_devel("[PFQ|%d] computation initialization aborted!", so->id);
-                        kfree(context);
-                        kfree(descr);
-                        kfree(comp);
-                        return -EPERM;
+                        err = -EPERM;
+                        goto error;
 		}
 
                 /* set the new program */
 
                 if (pfq_set_group_prog(tmp.gid, comp, context) < 0) {
                         pr_devel("[PFQ|%d] set group program error!\n", so->id);
-                        kfree(context);
-                        kfree(descr);
-                        kfree(comp);
-                        return -EPERM;
+                        err = -EPERM;
+                        goto error;
                 }
 
 		kfree(descr);
                 return 0;
+
+	error:  kfree(comp);
+		kfree(context);
+		kfree(descr);
+		return err;
 
         } break;
 
