@@ -722,7 +722,7 @@ vlanFiltersEnabled :: Ptr PFqTag
                    -> Bool       -- ^ toggle: true is on, false is off.
                    -> IO ()
 vlanFiltersEnabled hdl gid value =
-    pfq_vlan_filters_enable hdl (fromIntegral gid) (fromIntegral $ if value then 1 else 0)
+    pfq_vlan_filters_enable hdl (fromIntegral gid) (fromIntegral $ if value then 1 else 0 :: Int)
         >>= throwPFqIf_ hdl (== -1)
 
 
@@ -733,8 +733,8 @@ vlanSetFilterId :: Ptr PFqTag
                 -> Int        -- ^ group id
                 -> Int        -- ^ vlan id
                 -> IO ()
-vlanSetFilterId hdl gid id =
-    pfq_vlan_set_filter hdl (fromIntegral gid) (fromIntegral id)
+vlanSetFilterId hdl gid vid =
+    pfq_vlan_set_filter hdl (fromIntegral gid) (fromIntegral vid)
         >>= throwPFqIf_ hdl (== -1)
 
 -- |Reset the vlan filter.
@@ -743,8 +743,8 @@ vlanResetFilterId :: Ptr PFqTag
                   -> Int        -- ^ group id
                   -> Int        -- ^ vlan id
                   -> IO ()
-vlanResetFilterId hdl gid id =
-    pfq_vlan_reset_filter hdl (fromIntegral gid) (fromIntegral id)
+vlanResetFilterId hdl gid vid =
+    pfq_vlan_reset_filter hdl (fromIntegral gid) (fromIntegral vid)
         >>= throwPFqIf_ hdl (== -1)
 
 -- |Return the socket statistics.
@@ -810,7 +810,7 @@ withSingleArg :: Argument
               -> IO a
 withSingleArg arg callback = do
     case arg of
-        ArgNull                      -> callback (ptrToIntPtr nullPtr, fromIntegral 0)
+        ArgNull                      -> callback (ptrToIntPtr nullPtr, fromIntegral (0 :: Int))
         ArgFun i                     -> callback (ptrToIntPtr nullPtr, fromIntegral i)
         ArgData (StorableArgument v) -> do
             alloca $ \ptr -> do
