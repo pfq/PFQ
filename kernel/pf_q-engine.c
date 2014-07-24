@@ -180,7 +180,7 @@ static void pr_devel_functional_descr(struct pfq_functional_descr const *descr, 
 	if (descr->next != -1)
 		pr_devel("%s] next(%zu)\n", buffer, descr->next);
 	else
-		pr_devel("%s] next(-)\n", buffer);
+		pr_devel("%s]\n", buffer);
 
         kfree(symbol);
 }
@@ -432,7 +432,7 @@ pfq_validate_computation_descr(struct pfq_computation_descr const *descr)
 
 		nargs = number_of_arguments(fun);
 
-		/* check for valid signature */
+		/* get the signature */
 
 		signature = signature_by_user_symbol(fun->symbol);
 		if (!signature) {
@@ -440,7 +440,7 @@ pfq_validate_computation_descr(struct pfq_computation_descr const *descr)
 			return -EPERM;
 		}
 
-		/* check for valid entry_point */
+		/* check for valid signature/entry_point */
 
 		if (n == entry_point || fun->next != -1 ) {  /* next != -1 means monadic function! */
 
