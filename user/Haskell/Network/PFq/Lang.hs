@@ -95,6 +95,8 @@ data Function f where {
         MFunction  :: Symbol -> NetFunction;
         MFunction1 :: forall a. (Show a, Storable a) => Symbol -> a -> NetFunction;
         MFunction2 :: Symbol -> String -> NetFunction;
+        MFunction3 :: forall a. (Show a, Storable a) => Symbol -> a -> NetPredicate -> NetFunction;
+        MFunction4 :: Symbol -> String -> NetPredicate -> NetFunction;
 
         HFunction  :: Symbol -> NetPredicate -> NetFunction;
         HFunction1 :: Symbol -> NetPredicate -> NetFunction -> NetFunction;
@@ -131,6 +133,8 @@ instance Show (Function f) where
         show (MFunction  symb)          = "(MFunction " ++ symb ++ ")"
         show (MFunction1 symb a)        = "(MFunction " ++ symb ++ " " ++ show a ++ ")"
         show (MFunction2 symb s)        = "(MFunction " ++ symb ++ " " ++ show s ++ ")"
+        show (MFunction3 symb a p)      = "(MFunction " ++ symb ++ " " ++ show a ++ " " ++ show p ++ ")"
+        show (MFunction4 symb s p)      = "(MFunction " ++ symb ++ " " ++ show s ++ " " ++ show p ++ ")"
 
         show (HFunction  symb p)        = "(HFunction " ++ symb ++ " " ++ show p  ++ ")"
         show (HFunction1 symb p n1)     = "(HFunction " ++ symb ++ " " ++ show p  ++ " " ++ show n1 ++ ")"
@@ -163,7 +167,9 @@ class Pretty x where
 instance Pretty (Function f) where
         pretty (MFunction symb)           = symb
         pretty (MFunction1 symb a)        = "(" ++ symb ++ " " ++ show a ++ ")"
-        pretty (MFunction2 symb s)        = "(" ++ symb ++ " \"" ++ show s ++ "\")"
+        pretty (MFunction2 symb s)        = "(" ++ symb ++ " " ++ show s ++ ")"
+        pretty (MFunction3 symb a p)      = "(" ++ symb ++ " " ++ show a ++ " " ++ pretty p ++ " )"
+        pretty (MFunction4 symb s p)      = "(" ++ symb ++ " " ++ show s ++ " " ++ pretty p ++ " )"
 
         pretty (HFunction symb p)         = "(" ++ symb ++ " " ++ pretty p  ++ ")"
         pretty (HFunction1 symb p n1)     = "(" ++ symb ++ " " ++ pretty p  ++ " " ++ pretty n1 ++ ")"
@@ -200,6 +206,12 @@ instance Serializable (Function (a -> m b)) where
     serialize (MFunction  symb)    n = ([FunctionDescr symb [] (n+1) ], n+1)
     serialize (MFunction1 symb x)  n = ([FunctionDescr symb [ArgData $ StorableArgument x] (n+1) ], n+1)
     serialize (MFunction2 symb s)  n = ([FunctionDescr symb [ArgString s] (n+1) ], n+1)
+    serialize (MFunction3 symb x p) n = let (s1, n1) = ([FunctionDescr symb [ArgData $ StorableArgument x, ArgFun n1] n2 ], n+1)
+                                            (s2, n2) =  serialize p n1
+                                        in (s1 ++ s2, n2)
+    serialize (MFunction4 symb s p) n = let (s1, n1) = ([FunctionDescr symb [ArgString s, ArgFun n1] n2 ], n+1)
+                                            (s2, n2) =  serialize p n1
+                                        in (s1 ++ s2, n2)
 
     serialize (HFunction  symb p)  n = let (s1, n1) = ([FunctionDescr symb [ArgFun n1] n2 ], n+1)
                                            (s2, n2) =  serialize p n1

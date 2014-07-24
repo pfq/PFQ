@@ -320,6 +320,8 @@ namespace lang
     struct MFunction;
     struct MFunction1;
     struct MFunction2;
+    template <typename P> struct MFunction3;
+    template <typename P> struct MFunction4;
 
     template <typename P> struct HFunction;
     template <typename P, typename F> struct HFunction1;
@@ -351,6 +353,8 @@ namespace lang
         bool_type<std::is_same<Tp, MFunction>::value                ||
                   std::is_same<Tp, MFunction1>::value               ||
                   std::is_same<Tp, MFunction2>::value               ||
+                  is_same_type_constructor<Tp, MFunction3>::value   ||
+                  is_same_type_constructor<Tp, MFunction4>::value   ||
                   is_same_type_constructor<Tp, HFunction>::value    ||
                   is_same_type_constructor<Tp, HFunction1>::value   ||
                   is_same_type_constructor<Tp, HFunction2>::value   ||
@@ -667,13 +671,47 @@ namespace lang
 
     struct MFunction2 : NetFunction
     {
-        MFunction2(std::string symbol, std::string msg)
+        MFunction2(std::string symbol, std::string str)
         : symbol_(std::move(symbol))
-        , arg_(Argument::String(msg))
+        , arg_(Argument::String(str))
         { }
 
         std::string     symbol_;
         Argument        arg_;
+    };
+
+
+    template <typename P>
+    struct MFunction3 : NetFunction
+    {
+        static_assert(is_predicate<P>::value, "MFunction: argument must be a predicate");
+
+        template <typename T>
+        MFunction3(std::string symbol, T const &arg, const P &pred)
+        : symbol_(std::move(symbol))
+        , arg_(Argument::Data(arg))
+        , pred_(pred)
+        { }
+
+        std::string     symbol_;
+        Argument        arg_;
+        P               pred_;
+    };
+
+    template <typename P>
+    struct MFunction4 : NetFunction
+    {
+        static_assert(is_predicate<P>::value, "MFunction: argument must be a predicate");
+
+        MFunction4(std::string symbol, std::string str, const P &pred)
+        : symbol_(std::move(symbol))
+        , arg_(Argument::String(str))
+        , pred_(pred)
+        { }
+
+        std::string     symbol_;
+        Argument        arg_;
+        P               pred_;
     };
 
 
@@ -814,6 +852,20 @@ namespace lang
 
     template <typename P>
     static inline std::string
+    pretty(MFunction3<P> const &descr)
+    {
+        return '(' + descr.symbol_ + ' ' + pretty (descr.arg_) + ' ' + pretty (descr.pred_) + ')';
+    }
+
+    template <typename P>
+    static inline std::string
+    pretty(MFunction4<P> const &descr)
+    {
+        return '(' + descr.symbol_ + ' ' + pretty (descr.arg_) + ' ' + pretty (descr.pred_) + ')';
+    }
+
+    template <typename P>
+    static inline std::string
     pretty(HFunction<P> const &descr)
     {
         return '(' + descr.symbol_ + ' ' + pretty(descr.pred_) + ')';
@@ -872,6 +924,34 @@ namespace lang
     serialize(MFunction2 const &f, std::size_t n)
     {
         return { { FunctionDescr { f.symbol_,  {{ f.arg_ }}, n+1 } }, n+1 };
+    }
+
+    template <typename P>
+    static inline std::pair<std::vector<FunctionDescr>, std::size_t>
+    serialize(MFunction3<P> const &f, std::size_t n)
+    {
+        std::vector<FunctionDescr> p1, v1;
+        std::size_t n1;
+
+        std::tie(p1, n1) = serialize(f.pred_, n+1);
+
+        v1 = { { f.symbol_,  { { f.arg_, Argument::Fun(n+1) } }, n1 } };
+
+        return { std::move(v1) + std::move(p1), n1 };
+    }
+
+    template <typename P>
+    static inline std::pair<std::vector<FunctionDescr>, std::size_t>
+    serialize(MFunction4<P> const &f, std::size_t n)
+    {
+        std::vector<FunctionDescr> p1, v1;
+        std::size_t n1;
+
+        std::tie(p1, n1) = serialize(f.pred_, n+1);
+
+        v1 = { { f.symbol_,  { { f.arg_, Argument::Fun(n+1) } }, n1 } };
+
+        return { std::move(v1) + std::move(p1), n1 };
     }
 
     template <typename P>
@@ -1066,11 +1146,24 @@ namespace lang
     }
 
     inline MFunction2
-    mfunction2(std::string symbol, std::string msg)
+    mfunction2(std::string symbol, std::string str)
     {
-        return MFunction2{ std::move(symbol), std::move(msg) };
+        return MFunction2{ std::move(symbol), std::move(str) };
     }
 
+    template <typename T, typename P>
+    MFunction3<P>
+    mfunction3(std::string symbol, T const &arg, P const &p)
+    {
+        return MFunction3<P>{ std::move(symbol), arg, p };
+    }
+
+    template <typename P>
+    MFunction4<P>
+    mfunction4(std::string symbol, std::string str, P const &p)
+    {
+        return MFunction4<P>{ std::move(symbol), std::move(str), p };
+    }
 
     template <typename P>
     HFunction<P>
