@@ -201,7 +201,7 @@ instance Serializable (Function (a -> m b)) where
     serialize (MFunction1 symb x)  n = ([FunctionDescr symb [ArgData $ StorableArgument x] (n+1) ], n+1)
     serialize (MFunction2 symb s)  n = ([FunctionDescr symb [ArgString s] (n+1) ], n+1)
 
-    serialize (HFunction  symb p)  n = let (s1, n1) = ([FunctionDescr symb [] n2 ], n+1)
+    serialize (HFunction  symb p)  n = let (s1, n1) = ([FunctionDescr symb [ArgFun n1] n2 ], n+1)
                                            (s2, n2) =  serialize p n1
                                        in (s1 ++ s2, n2)
 
