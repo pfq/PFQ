@@ -118,6 +118,26 @@ namespace lang
             }
         };
 
+        struct polymorphic_mfunction3
+        {
+            template <typename T, typename P>
+            auto operator()(std::string symb, const T &arg, P const &p)
+            -> decltype(mfunction3(std::move(symb), arg, p))
+            {
+                return mfunction3(std::move(symb), arg, p);
+            }
+        };
+
+        struct polymorphic_mfunction4
+        {
+            template <typename P>
+            auto operator()(std::string symb, std::string str, P const &p)
+            -> decltype(mfunction4(std::move(symb), str, p))
+            {
+                return mfunction4(std::move(symb), std::move(str), p);
+            }
+        };
+
         // utility function
         //
 
