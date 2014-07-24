@@ -33,7 +33,7 @@ main(int argc, char *argv[])
     //                              (inc (1) >> mark (1) >> steer_ip >> when (has_mark (1), inc (2))),
     //                               drop);
 
-    auto comp = ip >> filter (is_ip) >> par(icmp, icmp) >> forward("lo") >> addr("192.168.0.0", 16)  >> unit >> inc (0) >> log_msg ("qui si passa") >>
+    auto comp = ip >> bridge_tap ("lo", is_icmp) >> par(icmp, icmp) >> addr("192.168.0.0", 16)  >> unit >> inc (0) >> log_msg ("This is a test message!") >>
                     conditional (is_icmp, (inc (1) >> mark (1) >> steer_ip >> when (has_mark (1), inc (2))), drop);
 
     std::cout << pretty (comp) << std::endl;

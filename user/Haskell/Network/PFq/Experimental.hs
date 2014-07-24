@@ -48,10 +48,10 @@ import Foreign.C.Types
 
 -- Experimental in-kernel computations
 
-filter'        = HFunction  "filter"    :: NetPredicate -> NetFunction
+filter'        = HFunction  "filter"        :: NetPredicate -> NetFunction
 
-class'         = MFunction1 "class"     :: CInt     -> NetFunction
-deliver        = MFunction1 "deliver"   :: CInt     -> NetFunction
-bridge         = MFunction2 "bridge"    :: String   -> NetFunction
+class'         = MFunction1 "class"         :: CInt    -> NetFunction
+deliver        = MFunction1 "deliver"       :: CInt    -> NetFunction
+bridge         = MFunction2 "bridge"        :: String  -> NetFunction
 bridge_tap     = MFunction4 "bridge_tap"    :: String  -> NetPredicate -> NetFunction
 
