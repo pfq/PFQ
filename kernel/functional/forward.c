@@ -108,30 +108,6 @@ forward(arguments_t args, struct sk_buff *skb)
 }
 
 
-static struct sk_buff *
-bridge(arguments_t args, struct sk_buff *skb)
-{
-	struct net_device *dev = get_data(struct net_device *, args);
-
-	if (dev == NULL) {
-                if (printk_ratelimit())
-                        printk(KERN_INFO "[PFQ] bridge: device error!\n");
-                return drop(skb);
-	}
-
-	atomic_inc(&skb->users);
-
-	if (pfq_xmit(skb, dev, skb->queue_mapping) != 1) {
-#ifdef DEBUG
-                if (printk_ratelimit())
-                        printk(KERN_INFO "[PFQ] bridge pfq_xmit: error on device %s!\n", dev->name);
-#endif
-	}
-
-	return drop(skb);
-}
-
-
 static int
 forward_init(arguments_t args)
 {
@@ -211,6 +187,30 @@ forward_fini(arguments_t args)
 
 
 static struct sk_buff *
+bridge(arguments_t args, struct sk_buff *skb)
+{
+	struct net_device *dev = get_data(struct net_device *, args);
+
+	if (dev == NULL) {
+                if (printk_ratelimit())
+                        printk(KERN_INFO "[PFQ] bridge: device error!\n");
+                return drop(skb);
+	}
+
+	atomic_inc(&skb->users);
+
+	if (pfq_xmit(skb, dev, skb->queue_mapping) != 1) {
+#ifdef DEBUG
+                if (printk_ratelimit())
+                        printk(KERN_INFO "[PFQ] bridge pfq_xmit: error on device %s!\n", dev->name);
+#endif
+	}
+
+	return drop(skb);
+}
+
+
+static struct sk_buff *
 bridge_tap(arguments_t args, struct sk_buff *skb)
 {
 	struct net_device *dev = get_data0(struct net_device *, args);
@@ -236,16 +236,19 @@ bridge_tap(arguments_t args, struct sk_buff *skb)
 
 	return drop(skb);
 }
+
+
+
 struct pfq_function_descr forward_functions[] = {
 
         { "drop",       "SkBuff -> Action SkBuff",   	    		forward_drop		},
         { "broadcast",  "SkBuff -> Action SkBuff",   	    		forward_broadcast	},
         { "class",	"Int -> SkBuff -> Action SkBuff",  		forward_class		},
         { "deliver",	"Int -> SkBuff -> Action SkBuff",  		forward_deliver		},
+        { "kernel",    	"SkBuff -> Action SkBuff",    			forward_to_kernel 	},
 
-        { "kernel",    	"SkBuff -> Action SkBuff",    			forward_to_kernel	},
-	{ "forward",    "String -> SkBuff -> Action SkBuff",  		forward, forward_init, forward_fini },
-	{ "bridge",     "String -> SkBuff -> Action SkBuff",  		bridge,  forward_init, forward_fini },
+	{ "forward",    "String -> SkBuff -> Action SkBuff",  			 forward,    forward_init, forward_fini },
+	{ "bridge",     "String -> SkBuff -> Action SkBuff",  			 bridge,     forward_init, forward_fini },
 	{ "bridge_tap", "String -> (SkBuff -> Bool) -> SkBuff -> Action SkBuff", bridge_tap, forward_init, forward_fini },
 
         { NULL }};
