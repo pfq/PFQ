@@ -20,6 +20,7 @@
 
 module Main where
 
+import Data.Maybe
 import Data.List(isInfixOf)
 import Data.List.Split(splitOn)
 import Control.Monad.State
@@ -33,6 +34,7 @@ import System.Console.CmdArgs
 import System.IO.Unsafe
 
 proc_interrupt, proc_cpuinfo :: String
+
 
 proc_interrupt = "/proc/interrupts"
 proc_cpuinfo   = "/proc/cpuinfo"
@@ -50,17 +52,18 @@ instance Show MSI where
     show TxRx = "TxRx"
     show None = ""
 
+
 -- Command line options
 --
 
 data Options = Options
-               {
-                firstcore :: Int,
-                exclude   :: [Int],
-                algorithm :: String,
-                msitype   :: MSI,
-                devices   :: [Device]
-               } deriving (Data, Typeable, Show)
+    {
+         firstcore :: Int,
+         exclude   :: [Int],
+         algorithm :: String,
+         msitype   :: Maybe MSI,
+         devices   :: [Device]
+    } deriving (Data, Typeable, Show)
 
 
 type BindState = StateT (Options, Int)
@@ -71,24 +74,24 @@ type BindState = StateT (Options, Int)
 
 options :: Mode (CmdArgs Options)
 options = cmdArgsMode $ Options
-                        {
-                         firstcore = 0       &= typ "CORE" &= help "first core involved",
-                         exclude   = []      &= typ "CORE" &= help "exclude core from binding",
-                         algorithm = ""      &= help "binding algorithm: naive, round-robin, even, odd, all-in:id, comb:id",
-                         msitype   = TxRx    &= typ "MSI"  &= help "MSI type: TxRx, Rx, Tx or None",
-                         devices   = []      &= args
-                        } &= summary "irq-affinity: advanced Linux interrupt affinity binding." &= program "irq-affinity"
+    {
+         firstcore = 0       &= typ "CORE" &= help "first core involved",
+         exclude   = []      &= typ "CORE" &= help "exclude core from binding",
+         algorithm = ""      &= help "binding algorithm: naive, round-robin, even, odd, all-in:id, comb:id",
+         msitype   = Nothing &= typ "MSI" &= help "MSI type: TxRx, Rx, Tx or None",
+         devices   = []      &= args
+    } &= summary "irq-affinity: advanced Linux interrupt affinity binding." &= program "irq-affinity"
 
 
 -- binding algorithm
 --
 
 data Alg = Alg
-            {
-                firstCore :: Int,
-                stepCore  :: Int,
-                runFilt   :: Int -> Bool
-            }
+    {
+        firstCore :: Int,
+        stepCore  :: Int,
+        runFilt   :: Int -> Bool
+    }
 
 makeAlg :: [String] -> Int -> Alg
 makeAlg ["naive"]         n = Alg n     1 none
@@ -105,7 +108,6 @@ none _ = True
 
 
 -- main:
---
 
 main :: IO ()
 main = cmdArgsRun options >>= \ops -> do
@@ -132,7 +134,7 @@ makeBinding dev = do
         irq  = getInterrupts dev msi
         core = mkBinding dev (exclude op) start alg msi
     lift $ putStrLn $ "Setting binding for device " ++ dev ++
-        case msi of { None -> ":"; _ -> " (" ++ show msi ++ "):" }
+        case msi of { Nothing -> ":"; Just None -> "(none):"; _ -> " (" ++ show msi ++ "):" }
     lift $ when (null irq) $ error $ "irq(s) not found for dev " ++ dev ++ "!"
     lift $ when (null core) $ error "no eligible cores found!"
     lift $ mapM_ setIrqAffinity $ zip irq core
@@ -148,7 +150,7 @@ showBinding dev = do
     let msi = msitype op
         irq = getInterrupts dev msi
     lift $ putStrLn $ "Binding for device " ++ dev ++
-        case msi of { None -> ":";  _ -> " (" ++ show msi ++ "):" }
+        case msi of { Nothing -> ":"; Just None -> "(none):";  _ -> " (" ++ show (fromJust msi) ++ "):" }
     lift $ when (null irq) $ error $ "irq vector not found for dev " ++ dev ++ "!"
     lift $ forM_ irq $ \n ->
             getIrqAffinity n >>= \cs -> putStrLn $ "   irq " ++ show n ++ " -> core " ++ show cs
@@ -180,7 +182,8 @@ getCpusFromMask mask  = [ n | n <- [0 .. 127], let p2 = 1 `shiftL` n, mask .&. p
 -- given a device and a binding algorithm, create the eligible list of core
 --
 
-mkBinding :: Device -> [Int] -> Int -> Alg -> MSI -> [Int]
+mkBinding :: Device -> [Int] -> Int -> Alg -> Maybe MSI -> [Int]
+mkBinding _   _  _ _ Nothing = error "to create irq bindings you need to specify the MSI type"
 mkBinding dev excl f (Alg f' s filt) msi =
     take nq [ n | let f''= if f' == -1 then f else f',
                       x <- [f'', f''+s .. 64],
@@ -190,20 +193,21 @@ mkBinding dev excl f (Alg f' s filt) msi =
         where nq = getNumberOfQueues dev msi
 
 
-getDeviceName :: String -> MSI -> String
-getDeviceName dev None = dev
-getDeviceName dev msi  = dev ++ "-" ++ show msi
+getDeviceName :: String -> Maybe MSI -> String
+getDeviceName dev Nothing     = dev
+getDeviceName dev (Just None) = dev
+getDeviceName dev (Just msi ) = dev ++ "-" ++ show msi
 
 
 -- the following actions can be unsafe IO because the files they parse are not mutable
 --
 
-getNumberOfQueues :: Device -> MSI -> Int
+getNumberOfQueues :: Device -> Maybe MSI -> Int
 getNumberOfQueues dev msi = unsafePerformIO $ readFile proc_interrupt >>= \file ->
     return $ length $ filter (isInfixOf $ getDeviceName dev msi) $ lines file
 
 
-getInterrupts :: Device -> MSI -> [Int]
+getInterrupts :: Device -> Maybe MSI -> [Int]
 getInterrupts dev msi = unsafePerformIO $ readFile proc_interrupt >>= \file ->
     return $ map (read . takeWhile (/= ':')) $ filter (isInfixOf $ getDeviceName dev msi) $ lines file
 
