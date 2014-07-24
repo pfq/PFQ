@@ -36,6 +36,7 @@ filter_generic(arguments_t args, struct sk_buff *skb)
 
 	if (EVAL_PREDICATE(pred_, skb))
 		return skb;
+
 	return drop(skb);
 }
 
