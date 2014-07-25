@@ -263,8 +263,6 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
                         return -1;
         }
 
-        /* reset mac len */
-
         skb_reset_mac_len(skb);
 
         /* push the mac header: reset skb->data to the beginning of the packet */
@@ -273,12 +271,9 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
             skb_push(skb, skb->mac_len);
         }
 
-        cb = PFQ_CB(skb);
+	/* ------------------------------------------------------ */
 
-	cb->action.direct = direct;
-        cb->action.attr = 0;
-
-	/* enqueue the packet to the local prefetch queue */
+	/* enqueue the packet to the local pre-fetching queue.... */
 
         cpu = get_cpu();
 
@@ -288,22 +283,29 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 
         pfq_non_intrusive_push(prefetch_queue, skb);
 
+        cb = PFQ_CB(skb);
+
+	cb->action.direct = direct;
+        cb->action.attr = 0;
+
         if (pfq_non_intrusive_len(prefetch_queue) < prefetch_len) {
 
         	put_cpu();
                 return 0;
 	}
 
-	/* initialize data */
+	/* ------------------------------------------------------ */
+
+	/* cleanup sock_queue and skb annotations... */
 
         memset(sock_queue, 0, sizeof(sock_queue));
         memset(local->annotation, 0, sizeof(local->annotation));
 
+ 	group_mask = 0;
+
 #ifdef PFQ_RX_PROFILE
 	start = get_cycles();
 #endif
-
-        group_mask = 0;
 
         pfq_non_intrusive_for_each(skb, n, prefetch_queue)
         {
@@ -315,7 +317,9 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 		PFQ_CB(skb)->annotation = &local->annotation[n];
 	}
 
-        /* capture/dispatch packets */
+	/* ------------------------------------------------------ */
+
+        /* process all groups enabled for this batch of packets */
 
 	pfq_bitwise_foreach(group_mask, bit,
 	{
@@ -420,7 +424,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 			socket_mask |= sock_mask;
 		}
 
-		/* copy packets of this group of endpoints... */
+		/* copy payloads to endpoints... */
 
 		pfq_bitwise_foreach(socket_mask, lb,
 		{
@@ -430,7 +434,9 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 		})
 	})
 
-        /* free skb, or route them to kernel... */
+	/* ------------------------------------------------------ */
+
+	/* Output: sk_buff forwarding */
 
         pfq_non_intrusive_for_each(skb, n, prefetch_queue)
         {

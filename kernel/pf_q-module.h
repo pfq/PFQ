@@ -158,12 +158,13 @@ enum action
 
 enum action_attr
 {
-        attr_stolen        = 0x1,
+        attr_stolen      = 0x1,
         attr_to_kernel 	 = 0x2
 };
 
 
 /* action */
+
 
 #define Q_PERSISTENT_MEM 	64
 
@@ -320,7 +321,7 @@ dispatch(struct sk_buff *skb, unsigned long class_mask, uint32_t hash)
 }
 
 
-/* steal packet: skb is stolen by the function. (i.e. forwarded) */
+/* steal packet: skb is stolen */
 
 static inline
 struct sk_buff *

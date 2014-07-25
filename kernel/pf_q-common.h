@@ -31,12 +31,11 @@
 #include <pf_q-module.h>
 #include <pf_q-sparse.h>
 
-#define Q_MAX_ID                 (sizeof(long)<<3)
-#define Q_MAX_GROUP              (sizeof(long)<<3)
+#define Q_MAX_ID                (sizeof(long)<<3)
+#define Q_MAX_GROUP             (sizeof(long)<<3)
 #define Q_NON_INTRUSIVE_MAXLEN  (sizeof(long)<<3)
 
-
-#define Q_MAX_DEVICE            256
+#define Q_MAX_DEVICE           	256
 #define Q_MAX_DEVICE_MASK       (Q_MAX_DEVICE-1)
 
 #define Q_MAX_HW_QUEUE          256
