@@ -297,6 +297,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 	/* initialize data */
 
         memset(sock_queue, 0, sizeof(sock_queue));
+        memset(local->annotation, 0, sizeof(local->annotation));
 
 #ifdef PFQ_RX_PROFILE
 	start = get_cycles();
@@ -311,6 +312,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 		group_mask |= local_group_mask;
 
 		PFQ_CB(skb)->group_mask = local_group_mask;
+		PFQ_CB(skb)->annotation = &local->annotation[n];
 	}
 
         /* capture/dispatch packets */

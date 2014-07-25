@@ -206,6 +206,7 @@ struct pfq_cb
         unsigned long state;
 
         struct pergroup_context *ctx;
+	struct pfq_annotation *annotation;
 
 } __attribute__((packed));
 
