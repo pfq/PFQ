@@ -311,39 +311,42 @@ rtp             = MFunction "rtp"           :: NetFunction
 no_frag         = MFunction "no_frag"       :: NetFunction
 no_more_frag    = MFunction "no_more_frag"  :: NetFunction
 
-kernel         = MFunction "kernel"         :: NetFunction
-broadcast      = MFunction "broadcast"      :: NetFunction
-drop'          = MFunction "drop"           :: NetFunction
-unit           = MFunction "unit"           :: NetFunction
-log_packet     = MFunction "log_packet"     :: NetFunction
-log_msg        = MFunction2 "log_msg"       :: String -> NetFunction
+-- Forwarder...
 
 forwardIO       = MFunction2 "forwardIO"   :: String   -> NetFunction
-crc16          = MFunction "crc16" :: NetFunction
 
-inc            = MFunction1 "inc"       :: CInt     -> NetFunction
-dec            = MFunction1 "dec"       :: CInt     -> NetFunction
-mark           = MFunction1 "mark"      :: CULong   -> NetFunction
-dummy          = MFunction1 "dummy"     :: CInt     -> NetFunction
+kernel          = MFunction "kernel"         :: NetFunction
+broadcast       = MFunction "broadcast"      :: NetFunction
+drop'           = MFunction "drop"           :: NetFunction
+unit            = MFunction "unit"           :: NetFunction
+log_packet      = MFunction "log_packet"     :: NetFunction
+log_msg         = MFunction2 "log_msg"       :: String -> NetFunction
 
-l3_proto       = MFunction1 "l3_proto"  :: Int16    -> NetFunction
-l4_proto       = MFunction1 "l4_proto"  :: Int8     -> NetFunction
+crc16           = MFunction "crc16" :: NetFunction
 
-port           = MFunction1 "port"      :: Int16    -> NetFunction
-src_port       = MFunction1 "src_port"  :: Int16    -> NetFunction
-dst_port       = MFunction1 "dst_port"  :: Int16    -> NetFunction
+inc             = MFunction1 "inc"       :: CInt     -> NetFunction
+dec             = MFunction1 "dec"       :: CInt     -> NetFunction
+mark            = MFunction1 "mark"      :: CULong   -> NetFunction
+dummy           = MFunction1 "dummy"     :: CInt     -> NetFunction
+
+l3_proto        = MFunction1 "l3_proto"  :: Int16    -> NetFunction
+l4_proto        = MFunction1 "l4_proto"  :: Int8     -> NetFunction
+
+port            = MFunction1 "port"      :: Int16    -> NetFunction
+src_port        = MFunction1 "src_port"  :: Int16    -> NetFunction
+dst_port        = MFunction1 "dst_port"  :: Int16    -> NetFunction
 
 
 addr, src_addr, dst_addr :: String -> Int -> NetFunction
 
-addr net p     = MFunction1 "addr"     (mkNetAddr net p)
-src_addr net p = MFunction1 "src_addr" (mkNetAddr net p)
-dst_addr net p = MFunction1 "dst_addr" (mkNetAddr net p)
+addr net p      = MFunction1 "addr"     (mkNetAddr net p)
+src_addr net p  = MFunction1 "src_addr" (mkNetAddr net p)
+dst_addr net p  = MFunction1 "dst_addr" (mkNetAddr net p)
 
-hdummy         = HFunction  "hdummy"        :: NetPredicate -> NetFunction
-when'          = HFunction1 "when"          :: NetPredicate -> NetFunction  -> NetFunction
-unless'        = HFunction1 "unless"        :: NetPredicate -> NetFunction  -> NetFunction
-conditional    = HFunction2 "conditional"   :: NetPredicate -> NetFunction  -> NetFunction  -> NetFunction
-inv            = HFunction3 "inv"           :: NetFunction -> NetFunction
-par'           = HFunction4 "par"           :: NetFunction -> NetFunction -> NetFunction
+hdummy          = HFunction  "hdummy"        :: NetPredicate -> NetFunction
+when'           = HFunction1 "when"          :: NetPredicate -> NetFunction  -> NetFunction
+unless'         = HFunction1 "unless"        :: NetPredicate -> NetFunction  -> NetFunction
+conditional     = HFunction2 "conditional"   :: NetPredicate -> NetFunction  -> NetFunction  -> NetFunction
+inv             = HFunction3 "inv"           :: NetFunction -> NetFunction
+par'            = HFunction4 "par"           :: NetFunction -> NetFunction -> NetFunction
 

@@ -93,7 +93,7 @@ dumper dev = do
         --                                 (inc 1 >-> mark 1 >-> steer_ip >-> when' (has_mark 1) (inc 2))
         --                                 drop')
 
-        Q.groupComputation q gid (no_frag >-> filter' is_ip6 >-> bridge_tap "lo" is_icmp >-> par' icmp udp >-> addr "192.168.0.0" 16 >-> mark 42 >-> when' is_icmp (inc 1) >-> log_packet )
+        Q.groupComputation q gid (no_frag >-> forwardIO "lo" >-> bridge_tap "lo" is_icmp >-> par' icmp udp >-> addr "192.168.0.0" 16 >-> mark 42 >-> when' is_icmp (inc 1) >-> log_packet )
 
         -- Q.vlanFiltersEnabled q gid True
         -- Q.vlanSetFilterId q gid (0)   -- untagged
