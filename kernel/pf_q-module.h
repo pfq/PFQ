@@ -159,7 +159,7 @@ enum action
 enum action_attr
 {
         attr_stolen        = 0x1,
-        attr_ret_to_kernel = 0x2
+        attr_to_kernel 	 = 0x2
 };
 
 
@@ -326,7 +326,7 @@ struct sk_buff *
 steal(struct sk_buff *skb)
 {
         action_t * a = & PFQ_CB(skb)->action;
-        if (unlikely(a->attr & attr_ret_to_kernel))
+        if (unlikely(a->attr & attr_to_kernel))
         {
                 if (printk_ratelimit())
                         pr_devel("[PFQ] steal modifier applied to a packet returning to kernel!\n");
@@ -349,7 +349,7 @@ to_kernel(struct sk_buff *skb)
                         pr_devel("[PFQ] to_kernel modifier applied to a stolen packet!\n");
                 return skb;
         }
-        a->attr |= attr_ret_to_kernel;
+        a->attr |= attr_to_kernel;
         return skb;
 }
 
@@ -358,8 +358,7 @@ static inline
 bool is_targeted_to_kernel(struct sk_buff *skb)
 {
         action_t * a = & PFQ_CB(skb)->action;
-
-        return (a->attr & attr_ret_to_kernel);
+        return (a->attr & attr_to_kernel);
 }
 
 
