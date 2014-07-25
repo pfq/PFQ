@@ -191,6 +191,13 @@ typedef struct
 } action_t;
 
 
+struct pfq_annotation
+{
+	struct net_device * dev[16];
+	size_t num_fwd;
+};
+
+
 struct pfq_cb
 {
         action_t action;
@@ -204,6 +211,7 @@ struct pfq_cb
 
 
 #define PFQ_CB(skb) ((struct pfq_cb *)(skb)->cb)
+
 
 /* class predicates */
 
