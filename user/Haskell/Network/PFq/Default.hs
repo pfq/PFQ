@@ -137,7 +137,7 @@ module Network.PFq.Default
 
         -- * Forwarders
 
-        forward    ,
+        forwardIO  ,
         kernel     ,
         broadcast  ,
         drop'      ,
@@ -193,8 +193,6 @@ mkNetAddr net p = let a = unsafePerformIO (inet_addr net)
 mkSuperNetAddr :: String -> Int -> Int -> (Word32, CInt, CInt)
 mkSuperNetAddr net p sub = let a = unsafePerformIO (inet_addr net)
                            in (fromIntegral a, fromIntegral p, fromIntegral sub)
-
-forward        = MFunction2 "forward"   :: String   -> NetFunction
 
 -- Default combinators
 
@@ -320,6 +318,7 @@ unit           = MFunction "unit"           :: NetFunction
 log_packet     = MFunction "log_packet"     :: NetFunction
 log_msg        = MFunction2 "log_msg"       :: String -> NetFunction
 
+forwardIO       = MFunction2 "forwardIO"   :: String   -> NetFunction
 crc16          = MFunction "crc16" :: NetFunction
 
 inc            = MFunction1 "inc"       :: CInt     -> NetFunction

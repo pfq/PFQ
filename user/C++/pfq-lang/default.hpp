@@ -247,7 +247,7 @@ namespace lang
         auto log_msg        = [] (const std::string &msg) { return mfunction2("log_msg", msg); };
         auto log_packet     = mfunction("log_packet");
 
-        auto forward        = [] (std::string dev) { return mfunction2("forward", std::move(dev)); };
+        auto forwardIO      = [] (std::string dev) { return mfunction2("forwardIO", std::move(dev)); };
         auto mark           = [] (unsigned long value) { return mfunction1("mark", value); };
         auto dummy          = [] (int value) { return mfunction1("dummy", value); };
         auto inc            = [] (int value) { return mfunction1("inc", value); };

@@ -40,7 +40,7 @@ struct forward_queue
 
 
 static struct sk_buff *
-forward(arguments_t args, struct sk_buff *skb)
+forwardIO(arguments_t args, struct sk_buff *skb)
 {
 	struct net_device *dev = get_data(struct net_device *, args);
 	struct sk_buff *nskb;
@@ -247,7 +247,7 @@ struct pfq_function_descr forward_functions[] = {
         { "deliver",	"Int -> SkBuff -> Action SkBuff",  		forward_deliver		},
         { "kernel",    	"SkBuff -> Action SkBuff",    			forward_to_kernel 	},
 
-	{ "forward",    "String -> SkBuff -> Action SkBuff",  			 forward,    forward_init, forward_fini },
+	{ "forwardIO",  "String -> SkBuff -> Action SkBuff",  		forwardIO,  forward_init, forward_fini },
 	{ "bridge",     "String -> SkBuff -> Action SkBuff",  			 bridge,     forward_init, forward_fini },
 	{ "bridge_tap", "String -> (SkBuff -> Bool) -> SkBuff -> Action SkBuff", bridge_tap, forward_init, forward_fini },
 
