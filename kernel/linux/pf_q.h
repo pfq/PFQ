@@ -80,7 +80,7 @@ static inline void smp_wmb() { barrier(); }
 
 struct pfq_pkt_hdr
 {
-        uint64_t data;          /* state from pfq_annotation */
+        uint64_t data;          /* state from pfq_cb */
 
         union
         {

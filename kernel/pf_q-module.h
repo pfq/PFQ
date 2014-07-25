@@ -186,6 +186,7 @@ typedef struct
         uint32_t hash;
         uint8_t  type;
         uint8_t  attr;
+        uint8_t  direct;
 
 } action_t;
 
@@ -193,8 +194,6 @@ typedef struct
 struct pfq_cb
 {
         action_t action;
-
-        uint8_t  direct_skb;
 
         unsigned long group_mask;
         unsigned long state;

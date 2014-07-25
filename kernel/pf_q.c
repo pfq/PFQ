@@ -275,7 +275,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 
         cb = PFQ_CB(skb);
 
-	cb->direct_skb = direct;
+	cb->action.direct = direct;
         cb->action.attr = 0;
 
 	/* enqueue the packet to the local prefetch queue */
@@ -437,14 +437,14 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
                 if (unlikely(cb->action.attr & attr_stolen))
                         continue;
 
-                if (likely(cb->direct_skb)) {
+                if (likely(cb->action.direct)) {
 
 		        if (unlikely(!capture_incoming && is_targeted_to_kernel(skb))) {
 
-                                if (cb->direct_skb == 1)
+                                if (cb->action.direct == 1)
                                         netif_rx(skb);
                                 else
-                                if (cb->direct_skb == 2)
+                                if (cb->action.direct == 2)
                                         netif_receive_skb(skb);
                                 else
                                         napi_gro_receive(napi, skb);
