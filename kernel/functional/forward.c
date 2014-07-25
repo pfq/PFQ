@@ -108,6 +108,32 @@ forwardIO(arguments_t args, struct sk_buff *skb)
 }
 
 
+static struct sk_buff *
+forward(arguments_t args, struct sk_buff *skb)
+{
+	struct net_device *dev = get_data(struct net_device *, args);
+	struct pfq_cb * cb = PFQ_CB(skb);
+
+	if (dev == NULL) {
+                if (printk_ratelimit())
+                        printk(KERN_INFO "[PFQ] forward: device error!\n");
+                return skb;
+	}
+
+	if (cb->annotation->num_fwd <
+		sizeof(cb->annotation->dev)/sizeof(cb->annotation->dev[0])) {
+
+		cb->annotation->dev[cb->annotation->num_fwd++] = dev;
+	}
+	else {
+		if (printk_ratelimit())
+        		printk(KERN_INFO "[PFQ] forward %s: too many annotation!\n", dev->name);
+	}
+
+	return skb;
+}
+
+
 static int
 forward_init(arguments_t args)
 {
@@ -248,6 +274,8 @@ struct pfq_function_descr forward_functions[] = {
         { "kernel",    	"SkBuff -> Action SkBuff",    			forward_to_kernel 	},
 
 	{ "forwardIO",  "String -> SkBuff -> Action SkBuff",  		forwardIO,  forward_init, forward_fini },
+	{ "forward",    "String -> SkBuff -> Action SkBuff",  		forward,    forward_init, forward_fini },
+
 	{ "bridge",     "String -> SkBuff -> Action SkBuff",  			 bridge,     forward_init, forward_fini },
 	{ "bridge_tap", "String -> (SkBuff -> Bool) -> SkBuff -> Action SkBuff", bridge_tap, forward_init, forward_fini },
 
