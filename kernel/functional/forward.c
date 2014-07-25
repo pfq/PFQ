@@ -216,6 +216,7 @@ static struct sk_buff *
 bridge(arguments_t args, struct sk_buff *skb)
 {
 	struct net_device *dev = get_data(struct net_device *, args);
+	struct pfq_cb * cb = PFQ_CB(skb);
 
 	if (dev == NULL) {
                 if (printk_ratelimit())
@@ -223,13 +224,14 @@ bridge(arguments_t args, struct sk_buff *skb)
                 return drop(skb);
 	}
 
-	skb_get(skb);
+	if (cb->annotation->num_fwd <
+		sizeof(cb->annotation->dev)/sizeof(cb->annotation->dev[0])) {
 
-	if (pfq_xmit(skb, dev, skb->queue_mapping) != 1) {
-#ifdef DEBUG
-                if (printk_ratelimit())
-                        printk(KERN_INFO "[PFQ] bridge pfq_xmit: error on device %s!\n", dev->name);
-#endif
+		cb->annotation->dev[cb->annotation->num_fwd++] = dev;
+	}
+	else {
+		if (printk_ratelimit())
+        		printk(KERN_INFO "[PFQ] bridge %s: too many annotation!\n", dev->name);
 	}
 
 	return drop(skb);
@@ -239,8 +241,9 @@ bridge(arguments_t args, struct sk_buff *skb)
 static struct sk_buff *
 bridge_tap(arguments_t args, struct sk_buff *skb)
 {
-	struct net_device *dev = get_data0(struct net_device *, args);
-        predicate_t pred_      = get_data1(predicate_t, args);
+	struct net_device *dev = get_data(struct net_device *, args);
+	struct pfq_cb * cb = PFQ_CB(skb);
+	predicate_t pred_  = get_data1(predicate_t, args);
 
 	if (dev == NULL) {
                 if (printk_ratelimit())
@@ -251,18 +254,18 @@ bridge_tap(arguments_t args, struct sk_buff *skb)
         if (EVAL_PREDICATE(pred_, skb))
 		return skb;
 
-	skb_get(skb);
+	if (cb->annotation->num_fwd <
+		sizeof(cb->annotation->dev)/sizeof(cb->annotation->dev[0])) {
 
-	if (pfq_xmit(skb, dev, skb->queue_mapping) != 1) {
-#ifdef DEBUG
-                if (printk_ratelimit())
-                        printk(KERN_INFO "[PFQ] bridge pfq_xmit: error on device %s!\n", dev->name);
-#endif
+		cb->annotation->dev[cb->annotation->num_fwd++] = dev;
+	}
+	else {
+		if (printk_ratelimit())
+        		printk(KERN_INFO "[PFQ] bridge %s: too many annotation!\n", dev->name);
 	}
 
 	return drop(skb);
 }
-
 
 
 struct pfq_function_descr forward_functions[] = {
