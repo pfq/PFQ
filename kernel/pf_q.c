@@ -456,31 +456,45 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 
         pfq_non_intrusive_for_each(skb, n, prefetch_queue)
         {
+        	struct sk_buff *nskb;
+        	bool to_kernel;
+        	int num_fwd;
+                int i;
+
                 cb = PFQ_CB(skb);
 
                 if (unlikely(cb->action.attr & attr_stolen))
                         continue;
 
-                if (likely(cb->action.direct)) {
+		to_kernel = cb->action.direct && is_targeted_to_kernel(skb);
+		num_fwd   = cb->annotation->num_fwd;
 
-		        if (unlikely(!capture_incoming && is_targeted_to_kernel(skb))) {
+		for(i = 0; i < num_fwd; ++i)
+		{
+			struct net_device *dev = cb->annotation->dev[i];
 
-                                if (cb->action.direct == 1)
-                                        netif_rx(skb);
-                                else
-                                if (cb->action.direct == 2)
-                                        netif_receive_skb(skb);
-                                else
-                                        napi_gro_receive(napi, skb);
-                        }
-                        else {
-                                pfq_kfree_skb_recycle(skb, &local->rx_recycle_list);
-        		}
+			nskb = ( (i != num_fwd-1) || to_kernel) ? skb_clone(skb, GFP_ATOMIC) : skb;
+			if (nskb) {
+                 		if (pfq_xmit(nskb, dev, nskb->queue_mapping) != 1) {
+
+                                        if (printk_ratelimit())
+                        			printk(KERN_INFO "[PFQ] forward pfq_xmit: error on device %s!\n", dev->name);
+				}
+			}
 		}
-                else {
-                        /* to avoid loops, sniffed packets are not passed back to kernel */
-                        kfree_skb(skb);
-                }
+
+                if (to_kernel) {
+			send_to_kernel(napi, skb);
+		}
+                else  {
+                	if (num_fwd == 0)
+			{
+				if (cb->action.direct)
+                			pfq_kfree_skb_recycle(skb, &local->rx_recycle_list);
+                		else
+                        		kfree_skb(skb);
+                	}
+		}
         }
 
 	pfq_non_intrusive_flush(prefetch_queue);
@@ -495,7 +509,6 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 #endif
         return 0;
 }
-
 
 /* simple packet HANDLER */
 
