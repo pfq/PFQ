@@ -40,7 +40,7 @@ int pfq_prefetch_purge_all(void)
         for_each_possible_cpu(cpu) {
 
                 struct local_data *local = per_cpu_ptr(cpu_data, cpu);
-                struct pfq_non_intrusive_skb *this_queue = &local->prefetch_queue;
+                struct pfq_non_intrusive_queue_skb *this_queue = &local->prefetch_queue;
                 struct sk_buff *skb;
 		int n = 0;
 

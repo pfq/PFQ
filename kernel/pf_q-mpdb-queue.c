@@ -52,7 +52,7 @@ char *mpdb_slot_ptr(struct pfq_rx_opt *ro, struct pfq_rx_queue_hdr *qd, int inde
 
 
 size_t pfq_mpdb_enqueue_batch(struct pfq_rx_opt *ro,
-		              struct pfq_non_intrusive_skb *skbs,
+		              struct pfq_non_intrusive_queue_skb *skbs,
 		              unsigned long long skbs_mask,
 		              int burst_len,
 		              int gid)

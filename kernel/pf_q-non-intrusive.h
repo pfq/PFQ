@@ -30,7 +30,7 @@
 #include <pf_q-common.h>
 
 
-struct pfq_non_intrusive_skb
+struct pfq_non_intrusive_queue_skb
 {
         size_t len;
         struct sk_buff *queue[Q_NON_INTRUSIVE_MAX_LEN];  /* sk_buff */
@@ -53,13 +53,13 @@ struct pfq_non_intrusive_skb
 
 
 static inline
-void pfq_non_intrusive_init(struct pfq_non_intrusive_skb *q)
+void pfq_non_intrusive_init(struct pfq_non_intrusive_queue_skb *q)
 {
     q->len = 0;
 }
 
 static inline
-int pfq_non_intrusive_push(struct pfq_non_intrusive_skb *q, struct sk_buff *skb)
+int pfq_non_intrusive_push(struct pfq_non_intrusive_queue_skb *q, struct sk_buff *skb)
 {
         if (q->len < Q_NON_INTRUSIVE_MAX_LEN)
                 return q->queue[q->len++] = skb, 0;
@@ -68,7 +68,7 @@ int pfq_non_intrusive_push(struct pfq_non_intrusive_skb *q, struct sk_buff *skb)
 
 
 static inline
-struct sk_buff * pfq_non_intrusive_pop(struct pfq_non_intrusive_skb *q)
+struct sk_buff * pfq_non_intrusive_pop(struct pfq_non_intrusive_queue_skb *q)
 {
         if (q->len > 0)
                 return q->queue[--q->len];
@@ -77,14 +77,14 @@ struct sk_buff * pfq_non_intrusive_pop(struct pfq_non_intrusive_skb *q)
 
 
 static inline
-void pfq_non_intrusive_flush(struct pfq_non_intrusive_skb *q)
+void pfq_non_intrusive_flush(struct pfq_non_intrusive_queue_skb *q)
 {
         q->len = 0;
 }
 
 
 static inline
-size_t pfq_non_intrusive_len(struct pfq_non_intrusive_skb *q)
+size_t pfq_non_intrusive_len(struct pfq_non_intrusive_queue_skb *q)
 {
         return q->len;
 }

@@ -54,7 +54,7 @@ struct local_data
         int                     sock_cnt;
         int 			flowctrl;
 
-        struct pfq_non_intrusive_skb prefetch_queue;
+        struct pfq_non_intrusive_queue_skb prefetch_queue;
 
         atomic_t                enable_recycle;
         struct sk_buff_head     tx_recycle_list;

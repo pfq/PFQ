@@ -227,7 +227,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 {
         unsigned long long sock_queue[Q_NON_INTRUSIVE_MAX_LEN];
 
-        struct pfq_non_intrusive_skb * prefetch_queue;
+        struct pfq_non_intrusive_queue_skb * prefetch_queue;
         unsigned long group_mask, socket_mask;
         struct local_data * local;
         long unsigned n, bit, lb;

@@ -24,4 +24,4 @@
 #include "pf_q-sock.h"
 #include "pf_q-non-intrusive.h"
 
-extern bool copy_to_endpoint_skbs(struct pfq_sock *so, struct pfq_non_intrusive_skb *skbs, unsigned long long skbs_mask, int cpu, int gid);
+extern bool copy_to_endpoint_skbs(struct pfq_sock *so, struct pfq_non_intrusive_queue_skb *skbs, unsigned long long skbs_mask, int cpu, int gid);

@@ -76,7 +76,7 @@ pfq_pick_tx(struct net_device *dev, struct sk_buff *skb, int *queue_index)
 
 int pfq_tx_queue_flush(struct pfq_tx_opt *to, struct net_device *dev, int cpu, int node)
 {
-	struct pfq_non_intrusive_skb skbs;
+	struct pfq_non_intrusive_queue_skb skbs;
 
 	struct local_data *local;
         struct pfq_pkt_hdr * h;
@@ -239,7 +239,7 @@ out:
 }
 
 
-int pfq_queue_xmit(struct pfq_non_intrusive_skb *skbs, struct net_device *dev, int queue_index)
+int pfq_queue_xmit(struct pfq_non_intrusive_queue_skb *skbs, struct net_device *dev, int queue_index)
 {
        	struct netdev_queue *txq;
 	struct sk_buff *skb;
@@ -268,7 +268,7 @@ int pfq_queue_xmit(struct pfq_non_intrusive_skb *skbs, struct net_device *dev, i
 }
 
 
-int pfq_queue_xmit_by_mask(struct pfq_non_intrusive_skb *skbs, unsigned long long skbs_mask, struct net_device *dev, int queue_index)
+int pfq_queue_xmit_by_mask(struct pfq_non_intrusive_queue_skb *skbs, unsigned long long skbs_mask, struct net_device *dev, int queue_index)
 {
        	struct netdev_queue *txq;
 	struct sk_buff *skb;

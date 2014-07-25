@@ -33,7 +33,7 @@
 #include "pf_q-endpoint.h"
 
 static inline
-bool copy_to_user_skbs(struct pfq_rx_opt *ro, struct pfq_non_intrusive_skb *skbs, unsigned long long skbs_mask, int cpu, int gid)
+bool copy_to_user_skbs(struct pfq_rx_opt *ro, struct pfq_non_intrusive_queue_skb *skbs, unsigned long long skbs_mask, int cpu, int gid)
 {
         /* enqueue the sk_buffs: it's wait-free. */
 
@@ -57,7 +57,7 @@ bool copy_to_user_skbs(struct pfq_rx_opt *ro, struct pfq_non_intrusive_skb *skbs
 }
 
 
-bool copy_to_endpoint_skbs(struct pfq_sock *so, struct pfq_non_intrusive_skb *skbs, unsigned long long skbs_mask, int cpu, int gid)
+bool copy_to_endpoint_skbs(struct pfq_sock *so, struct pfq_non_intrusive_queue_skb *skbs, unsigned long long skbs_mask, int cpu, int gid)
 {
 	if (so->egress_index) {
 
