@@ -197,7 +197,7 @@ bridge(arguments_t args, struct sk_buff *skb)
                 return drop(skb);
 	}
 
-	atomic_inc(&skb->users);
+	skb_get(skb);
 
 	if (pfq_xmit(skb, dev, skb->queue_mapping) != 1) {
 #ifdef DEBUG
@@ -225,7 +225,7 @@ bridge_tap(arguments_t args, struct sk_buff *skb)
         if (EVAL_PREDICATE(pred_, skb))
 		return skb;
 
-	atomic_inc(&skb->users);
+	skb_get(skb);
 
 	if (pfq_xmit(skb, dev, skb->queue_mapping) != 1) {
 #ifdef DEBUG
