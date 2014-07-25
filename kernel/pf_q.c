@@ -66,6 +66,7 @@
 #include <pf_q-vlan.h>
 #include <pf_q-endpoint.h>
 #include <pf_q-mpdb-queue.h>
+#include <pf_q-transmit.h>
 
 static struct net_proto_family  pfq_family_ops;
 static struct packet_type       pfq_prot_hook;
@@ -219,6 +220,21 @@ unsigned int pfq_fold(unsigned int a, unsigned int b)
         else {
                 return a & c;
         }
+}
+
+
+static
+void send_to_kernel(struct napi_struct *napi, struct sk_buff *skb)
+{
+	struct pfq_cb *cb = PFQ_CB(skb);
+
+	switch(cb->action.direct)
+	{
+		case 0: /* forward not permitted, to avoid loop */
+		case 1: netif_rx(skb);
+		case 2: netif_receive_skb(skb);
+		case 3: napi_gro_receive(napi, skb);
+	}
 }
 
 
