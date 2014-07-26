@@ -192,9 +192,11 @@ typedef struct
 } action_t;
 
 
-struct pfq_annotation
+#define Q_MAX_SKB_DEV_ANNOT	16
+
+struct sk_annot
 {
-	struct net_device * dev[16];
+	struct net_device * dev[Q_MAX_SKB_DEV_ANNOT];
 	size_t num_fwd;
 };
 
@@ -207,13 +209,12 @@ struct pfq_cb
         unsigned long state;
 
         struct pergroup_context *ctx;
-	struct pfq_annotation *annotation;
+	struct sk_annot *ska;
 
 } __attribute__((packed));
 
 
 #define PFQ_CB(skb) ((struct pfq_cb *)(skb)->cb)
-
 
 /* class predicates */
 

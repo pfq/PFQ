@@ -315,7 +315,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 	/* cleanup sock_queue and skb annotations... */
 
         memset(sock_queue, 0, sizeof(sock_queue));
-        memset(local->annotation, 0, sizeof(local->annotation));
+        memset(local->annot, 0, sizeof(local->annot));
 
  	group_mask = 0;
 
@@ -330,7 +330,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 		group_mask |= local_group_mask;
 
 		PFQ_CB(skb)->group_mask = local_group_mask;
-		PFQ_CB(skb)->annotation = &local->annotation[n];
+		PFQ_CB(skb)->ska = &local->annot[n];
 	}
 
 	/* ------------------------------------------------------ */
@@ -468,11 +468,11 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
                         continue;
 
 		to_kernel = cb->action.direct && is_targeted_to_kernel(skb);
-		num_fwd   = cb->annotation->num_fwd;
+		num_fwd   = cb->ska->num_fwd;
 
 		for(i = 0; i < num_fwd; ++i)
 		{
-			struct net_device *dev = cb->annotation->dev[i];
+			struct net_device *dev = cb->ska->dev[i];
 
 			nskb = ( (i != num_fwd-1) || to_kernel) ? skb_clone(skb, GFP_ATOMIC) : skb;
 			if (nskb) {
