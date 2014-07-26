@@ -33,10 +33,28 @@
 
 #include <pf_q-non-intrusive.h>
 #include <pf_q-sock.h>
+#include <pf_q-module.h>
 
 extern int pfq_tx_queue_flush(struct pfq_tx_opt *to, struct net_device *dev, int cpu, int node);
+
 extern int pfq_queue_xmit(struct pfq_non_intrusive_queue_skb *skbs, struct net_device *dev, int queue_index);
 extern int pfq_queue_xmit_by_mask(struct pfq_non_intrusive_queue_skb *skbs, unsigned long long skbs_mask, struct net_device *dev, int queue_index);
+
+
+static inline int pfq_lazy_xmit(struct sk_annot *ska, struct sk_buff *skb, struct net_device *dev)
+{
+       	if (ska->num_fwd >= Q_MAX_SKB_DEV_ANNOT) {
+
+		if (printk_ratelimit())
+        		printk(KERN_INFO "[PFQ] bridge %s: too many annotation!\n", dev->name);
+
+        	return 0;
+	}
+
+	ska->dev[ska->num_fwd++] = dev;
+	return 1;
+}
+
 
 static inline int pfq_xmit(struct sk_buff *skb, struct net_device *dev, int queue_index)
 {

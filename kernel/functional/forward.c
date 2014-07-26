@@ -112,7 +112,7 @@ static struct sk_buff *
 forward(arguments_t args, struct sk_buff *skb)
 {
 	struct net_device *dev = get_data(struct net_device *, args);
-	struct pfq_cb * cb = PFQ_CB(skb);
+        struct pfq_cb * cb = PFQ_CB(skb);
 
 	if (dev == NULL) {
                 if (printk_ratelimit())
@@ -120,16 +120,7 @@ forward(arguments_t args, struct sk_buff *skb)
                 return skb;
 	}
 
-	if (cb->annotation->num_fwd <
-		sizeof(cb->annotation->dev)/sizeof(cb->annotation->dev[0])) {
-
-		cb->annotation->dev[cb->annotation->num_fwd++] = dev;
-	}
-	else {
-		if (printk_ratelimit())
-        		printk(KERN_INFO "[PFQ] forward %s: too many annotation!\n", dev->name);
-	}
-
+	pfq_lazy_xmit(cb->ska, skb, dev);
 	return skb;
 }
 
@@ -138,7 +129,6 @@ static int
 forward_init(arguments_t args)
 {
 	const char *name = get_data(const char *, args);
-
 	struct net_device *dev = dev_get_by_name(&init_net, name);
 
 	if (dev == NULL) {
@@ -216,7 +206,7 @@ static struct sk_buff *
 bridge(arguments_t args, struct sk_buff *skb)
 {
 	struct net_device *dev = get_data(struct net_device *, args);
-	struct pfq_cb * cb = PFQ_CB(skb);
+        struct pfq_cb * cb = PFQ_CB(skb);
 
 	if (dev == NULL) {
                 if (printk_ratelimit())
@@ -224,15 +214,7 @@ bridge(arguments_t args, struct sk_buff *skb)
                 return drop(skb);
 	}
 
-	if (cb->annotation->num_fwd <
-		sizeof(cb->annotation->dev)/sizeof(cb->annotation->dev[0])) {
-
-		cb->annotation->dev[cb->annotation->num_fwd++] = dev;
-	}
-	else {
-		if (printk_ratelimit())
-        		printk(KERN_INFO "[PFQ] bridge %s: too many annotation!\n", dev->name);
-	}
+	pfq_lazy_xmit(cb->ska, skb, dev);
 
 	return drop(skb);
 }
@@ -242,8 +224,8 @@ static struct sk_buff *
 bridge_tap(arguments_t args, struct sk_buff *skb)
 {
 	struct net_device *dev = get_data(struct net_device *, args);
-	struct pfq_cb * cb = PFQ_CB(skb);
 	predicate_t pred_  = get_data1(predicate_t, args);
+        struct pfq_cb * cb = PFQ_CB(skb);
 
 	if (dev == NULL) {
                 if (printk_ratelimit())
@@ -254,15 +236,7 @@ bridge_tap(arguments_t args, struct sk_buff *skb)
         if (EVAL_PREDICATE(pred_, skb))
 		return skb;
 
-	if (cb->annotation->num_fwd <
-		sizeof(cb->annotation->dev)/sizeof(cb->annotation->dev[0])) {
-
-		cb->annotation->dev[cb->annotation->num_fwd++] = dev;
-	}
-	else {
-		if (printk_ratelimit())
-        		printk(KERN_INFO "[PFQ] bridge %s: too many annotation!\n", dev->name);
-	}
+	pfq_lazy_xmit(cb->ska, skb, dev);
 
 	return drop(skb);
 }
