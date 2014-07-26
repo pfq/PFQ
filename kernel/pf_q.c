@@ -446,6 +446,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 		{
 			int i = pfq_ctz(lb);
 			struct pfq_sock * so = pfq_get_sock_by_id(i);
+
 			copy_to_endpoint_skbs(so, prefetch_queue, sock_queue[i], cpu, gid);
 		})
 	})
@@ -492,7 +493,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 				if (cb->action.direct)
                 			pfq_kfree_skb_recycle(skb, &local->rx_recycle_list);
                 		else
-                        		kfree_skb(skb);
+                        		consume_skb(skb);
                 	}
 		}
         }
