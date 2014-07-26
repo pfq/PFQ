@@ -144,6 +144,7 @@ struct pfq_sock
 
         int                 id;
 
+	int		    egress_type;
         int 		    egress_index;
         int 		    egress_queue;
 

@@ -287,8 +287,6 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
             skb_push(skb, skb->mac_len);
         }
 
-	/* ------------------------------------------------------ */
-
 	/* enqueue the packet to the local pre-fetching queue.... */
 
         cpu = get_cpu();
@@ -332,8 +330,6 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 		PFQ_CB(skb)->group_mask = local_group_mask;
 		PFQ_CB(skb)->ska = &local->skas[n];
 	}
-
-	/* ------------------------------------------------------ */
 
         /* process all groups enabled for this batch of packets */
 
@@ -453,7 +449,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 
 	/* ------------------------------------------------------ */
 
-	/* Output: sk_buff forwarding */
+	/* sk_buff forwarding */
 
         pfq_non_intrusive_for_each(skb, n, prefetch_queue)
         {
@@ -618,6 +614,7 @@ pfq_create(
 
         /* memory mapped queues are allocated later, when the socket is enabled */
 
+	so->egress_type  = pfq_endpoint_socket;
 	so->egress_index = 0;
 	so->egress_queue = 0;
 

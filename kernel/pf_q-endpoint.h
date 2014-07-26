@@ -25,4 +25,11 @@
 #include "pf_q-non-intrusive.h"
 #include "pf_q-module.h"
 
+
+enum pfq_endpoint_type
+{
+	pfq_endpoint_socket,
+	pfq_endpoint_device
+};
+
 extern bool copy_to_endpoint_skbs(struct pfq_sock *so, struct sk_annot *skas, struct pfq_non_intrusive_queue_skb *skbs, unsigned long long skbs_mask, int cpu, int gid);

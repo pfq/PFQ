@@ -89,10 +89,15 @@ bool copy_to_dev_skbs(struct pfq_sock *so, struct sk_annot *skas, struct pfq_non
 
 bool copy_to_endpoint_skbs(struct pfq_sock *so, struct sk_annot *skas, struct pfq_non_intrusive_queue_skb *skbs, unsigned long long skbs_mask, int cpu, int gid)
 {
-	if (so->egress_index)
-       		return copy_to_dev_skbs(so, skas, skbs, skbs_mask, cpu, gid);
-	else
+	switch(so->egress_type)
+	{
+	case pfq_endpoint_socket:
 		return copy_to_user_skbs(&so->rx_opt, skbs, skbs_mask, cpu, gid);
-}
 
+	case pfq_endpoint_device:
+		return copy_to_dev_skbs(so, skas, skbs, skbs_mask, cpu, gid);
+	}
+
+	return false;
+}
 

@@ -39,6 +39,7 @@
 #include <pf_q-symtable.h>
 #include <pf_q-engine.h>
 #include <pf_q-sockopt.h>
+#include <pf_q-endpoint.h>
 
 extern atomic_t timestamp_enabled;
 
@@ -437,15 +438,17 @@ int pfq_setsockopt(struct socket *sock,
                         return -EPERM;
                 }
 
+		so->egress_type  = pfq_endpoint_device;
                 so->egress_index = info.if_index;
                 so->egress_queue = info.hw_queue;
 
-                pr_devel("[PFQ|%d] egress bind: if_index:%d hw_queue:%d\n", so->id, so->egress_index, so->egress_queue);
+                pr_devel("[PFQ|%d] egress bind: device if_index:%d hw_queue:%d\n", so->id, so->egress_index, so->egress_queue);
 
         } break;
 
         case Q_SO_EGRESS_UNBIND:
         {
+		so->egress_type  = pfq_endpoint_socket;
                 so->egress_index = 0;
                 so->egress_queue = 0;
                 pr_devel("[PFQ|%d] egress unbind.\n", so->id);
