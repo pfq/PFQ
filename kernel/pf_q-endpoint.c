@@ -59,7 +59,7 @@ bool copy_to_user_skbs(struct pfq_rx_opt *ro, struct pfq_non_intrusive_queue_skb
 
 
 static inline
-bool copy_to_dev_skbs(struct pfq_sock *so, struct sk_annot *annot, struct pfq_non_intrusive_queue_skb *skbs, unsigned long long skbs_mask, int cpu, int gid)
+bool copy_to_dev_skbs(struct pfq_sock *so, struct sk_annot *skas, struct pfq_non_intrusive_queue_skb *skbs, unsigned long long skbs_mask, int cpu, int gid)
 {
 	if (so->egress_index) {
 
@@ -76,7 +76,7 @@ bool copy_to_dev_skbs(struct pfq_sock *so, struct sk_annot *annot, struct pfq_no
 			}
 		}
 
- 		ret = pfq_lazy_queue_xmit_by_mask(annot, skbs, skbs_mask, dev, so->egress_queue);
+ 		ret = pfq_lazy_queue_xmit_by_mask(skas, skbs, skbs_mask, dev, so->egress_queue);
 
                 dev_put(dev);
 

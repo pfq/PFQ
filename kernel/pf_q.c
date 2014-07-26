@@ -315,7 +315,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 	/* cleanup sock_queue and skb annotations... */
 
         memset(sock_queue, 0, sizeof(sock_queue));
-        memset(local->annot, 0, sizeof(local->annot));
+        memset(local->skas, 0, sizeof(local->skas));
 
  	group_mask = 0;
 
@@ -330,7 +330,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 		group_mask |= local_group_mask;
 
 		PFQ_CB(skb)->group_mask = local_group_mask;
-		PFQ_CB(skb)->ska = &local->annot[n];
+		PFQ_CB(skb)->ska = &local->skas[n];
 	}
 
 	/* ------------------------------------------------------ */
@@ -447,7 +447,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 			int i = pfq_ctz(lb);
 			struct pfq_sock * so = pfq_get_sock_by_id(i);
 
-			copy_to_endpoint_skbs(so, local->annot, prefetch_queue, sock_queue[i], cpu, gid);
+			copy_to_endpoint_skbs(so, local->skas, prefetch_queue, sock_queue[i], cpu, gid);
 		})
 	})
 
@@ -487,10 +487,11 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 			}
 		}
 
-		/* this function send multiple copies of skb to different devices...
+		/* pfq_lazy_exec send multiple copies of skb to different devices...
 		 * the skb is freed at the last forward */
 
 		if (num_fwd) {
+
 			pfq_lazy_exec(cb->ska, skb);
 		}
 
