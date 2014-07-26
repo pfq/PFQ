@@ -460,7 +460,6 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
         	struct sk_buff *nskb;
         	bool to_kernel;
         	int num_fwd;
-                int i;
 
                 cb = PFQ_CB(skb);
 
@@ -470,31 +469,37 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 		to_kernel = cb->action.direct && is_targeted_to_kernel(skb);
 		num_fwd   = cb->ska->num_fwd;
 
-		for(i = 0; i < num_fwd; ++i)
-		{
-			struct net_device *dev = cb->ska->dev[i];
+		if (to_kernel) {
 
-			nskb = ( (i != num_fwd-1) || to_kernel) ? skb_clone(skb, GFP_ATOMIC) : skb;
-			if (nskb) {
-                 		if (pfq_xmit(nskb, dev, nskb->queue_mapping) != 1) {
-
-                                        if (printk_ratelimit())
-                        			printk(KERN_INFO "[PFQ] forward pfq_xmit: error on device %s!\n", dev->name);
+			if (num_fwd > 0) {
+				nskb = skb_clone(skb, GFP_ATOMIC);
+				if (!nskb) {
+					if (printk_ratelimit())
+                                		printk(KERN_INFO "[PFQ] forward to kernel: skb_clone error!\n");
 				}
+			}
+			else {
+				nskb = skb;
+                        }
+
+			if (nskb) {
+                        	send_to_kernel(napi, skb);
 			}
 		}
 
-                if (to_kernel) {
-			send_to_kernel(napi, skb);
+		/* this function send multiple copies of skb to different devices...
+		 * the skb is freed at the last forward */
+
+		if (num_fwd) {
+			pfq_lazy_exec(cb->ska, skb);
 		}
-                else  {
-                	if (num_fwd == 0)
-			{
-				if (cb->action.direct)
-                			pfq_kfree_skb_recycle(skb, &local->rx_recycle_list);
-                		else
-                        		consume_skb(skb);
-                	}
+
+		if (!to_kernel && num_fwd == 0) {
+
+			if (cb->action.direct)
+				pfq_kfree_skb_recycle(skb, &local->rx_recycle_list);
+			else
+				consume_skb(skb);
 		}
         }
 
