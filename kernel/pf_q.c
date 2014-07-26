@@ -447,7 +447,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 			int i = pfq_ctz(lb);
 			struct pfq_sock * so = pfq_get_sock_by_id(i);
 
-			copy_to_endpoint_skbs(so, prefetch_queue, sock_queue[i], cpu, gid);
+			copy_to_endpoint_skbs(so, local->annot, prefetch_queue, sock_queue[i], cpu, gid);
 		})
 	})
 

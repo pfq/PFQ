@@ -32,6 +32,7 @@
 #include "pf_q-transmit.h"
 #include "pf_q-endpoint.h"
 
+
 static inline
 bool copy_to_user_skbs(struct pfq_rx_opt *ro, struct pfq_non_intrusive_queue_skb *skbs, unsigned long long skbs_mask, int cpu, int gid)
 {
@@ -57,21 +58,16 @@ bool copy_to_user_skbs(struct pfq_rx_opt *ro, struct pfq_non_intrusive_queue_skb
 }
 
 
-bool copy_to_endpoint_skbs(struct pfq_sock *so, struct pfq_non_intrusive_queue_skb *skbs, unsigned long long skbs_mask, int cpu, int gid)
+static inline
+bool copy_to_dev_skbs(struct pfq_sock *so, struct sk_annot *annot, struct pfq_non_intrusive_queue_skb *skbs, unsigned long long skbs_mask, int cpu, int gid)
 {
 	if (so->egress_index) {
 
 		struct net_device *dev;
-		struct sk_buff *skb;
 		bool ret;
-		int n;
-
-                pfq_non_intrusive_for_each(skb, n, skbs)
-		{
- 			atomic_inc(&skb->users);
-               	}
 
                	dev = dev_get_by_index(&init_net, so->egress_index);
+
                	if (dev == NULL)
 		{
 			if (printk_ratelimit()) {
@@ -80,12 +76,23 @@ bool copy_to_endpoint_skbs(struct pfq_sock *so, struct pfq_non_intrusive_queue_s
 			}
 		}
 
- 		ret = pfq_queue_xmit_by_mask(skbs, skbs_mask, dev, so->egress_queue);
+ 		ret = pfq_lazy_queue_xmit_by_mask(annot, skbs, skbs_mask, dev, so->egress_queue);
+
                 dev_put(dev);
-		return ret;
+
+		return ret != 0;
 	}
 
-	return copy_to_user_skbs(&so->rx_opt, skbs, skbs_mask, cpu, gid);
+	return false;
+}
+
+
+bool copy_to_endpoint_skbs(struct pfq_sock *so, struct sk_annot *skas, struct pfq_non_intrusive_queue_skb *skbs, unsigned long long skbs_mask, int cpu, int gid)
+{
+	if (so->egress_index)
+       		return copy_to_dev_skbs(so, skas, skbs, skbs_mask, cpu, gid);
+	else
+		return copy_to_user_skbs(&so->rx_opt, skbs, skbs_mask, cpu, gid);
 }
 
 
