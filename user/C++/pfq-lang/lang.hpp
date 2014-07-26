@@ -143,7 +143,12 @@ namespace lang
         std::string forall_show() const override
         {
             std::stringstream out;
-            out << value;
+
+            if (std::is_same<Tp, std::string>::value)
+                out << '"' << value << '"';
+            else
+                out << value;
+
             return out.str();
         }
     };
