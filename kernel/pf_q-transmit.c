@@ -297,3 +297,34 @@ int pfq_queue_xmit_by_mask(struct pfq_non_intrusive_queue_skb *skbs, unsigned lo
 }
 
 
+int pfq_lazy_queue_xmit(struct sk_annot *skas, struct pfq_non_intrusive_queue_skb *skbs, struct net_device *dev, int queue_index)
+{
+	struct sk_buff *skb;
+	int i, n = 0;
+
+	pfq_non_intrusive_for_each(skb, i, skbs)
+	{
+		if (pfq_lazy_xmit(&skas[i], skb, dev, queue_index))
+			++n;
+	}
+
+	return n;
+}
+
+
+int pfq_lazy_queue_xmit_by_mask(struct sk_annot *skas, struct pfq_non_intrusive_queue_skb *skbs, unsigned long long skbs_mask, struct net_device *dev, int queue_index)
+{
+	struct sk_buff *skb;
+	int i, n = 0;
+
+	pfq_non_intrusive_for_each_bitmask(skb, skbs_mask, i, skbs)
+	{
+		if (pfq_lazy_xmit(&skas[i], skb, dev, queue_index))
+			++n;
+	}
+
+	return n;
+}
+
+
+

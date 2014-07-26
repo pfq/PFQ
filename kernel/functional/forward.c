@@ -120,7 +120,7 @@ forward(arguments_t args, struct sk_buff *skb)
                 return skb;
 	}
 
-	pfq_lazy_xmit(cb->ska, skb, dev);
+	pfq_lazy_xmit(cb->ska, skb, dev, skb->queue_mapping);
 	return skb;
 }
 
@@ -214,7 +214,7 @@ bridge(arguments_t args, struct sk_buff *skb)
                 return drop(skb);
 	}
 
-	pfq_lazy_xmit(cb->ska, skb, dev);
+	pfq_lazy_xmit(cb->ska, skb, dev, skb->queue_mapping);
 
 	return drop(skb);
 }
@@ -236,7 +236,7 @@ bridge_tap(arguments_t args, struct sk_buff *skb)
         if (EVAL_PREDICATE(pred_, skb))
 		return skb;
 
-	pfq_lazy_xmit(cb->ska, skb, dev);
+	pfq_lazy_xmit(cb->ska, skb, dev, skb->queue_mapping);
 
 	return drop(skb);
 }

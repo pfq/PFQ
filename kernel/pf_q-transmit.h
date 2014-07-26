@@ -41,7 +41,7 @@ extern int pfq_queue_xmit(struct pfq_non_intrusive_queue_skb *skbs, struct net_d
 extern int pfq_queue_xmit_by_mask(struct pfq_non_intrusive_queue_skb *skbs, unsigned long long skbs_mask, struct net_device *dev, int queue_index);
 
 
-static inline int pfq_lazy_xmit(struct sk_annot *ska, struct sk_buff *skb, struct net_device *dev)
+static inline int pfq_lazy_xmit(struct sk_annot *ska, struct sk_buff *skb, struct net_device *dev, int queue_index)
 {
        	if (ska->num_fwd >= Q_MAX_SKB_DEV_ANNOT) {
 
@@ -51,10 +51,14 @@ static inline int pfq_lazy_xmit(struct sk_annot *ska, struct sk_buff *skb, struc
         	return 0;
 	}
 
+	skb_set_queue_mapping(skb, queue_index);
 	ska->dev[ska->num_fwd++] = dev;
+
 	return 1;
 }
 
+extern int pfq_lazy_queue_xmit(struct sk_annot *skas, struct pfq_non_intrusive_queue_skb *skbs, struct net_device *dev, int queue_index);
+extern int pfq_lazy_queue_xmit_by_mask(struct sk_annot *skas, struct pfq_non_intrusive_queue_skb *skbs, unsigned long long mask, struct net_device *dev, int queue_index);
 
 static inline int pfq_xmit(struct sk_buff *skb, struct net_device *dev, int queue_index)
 {
