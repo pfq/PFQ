@@ -297,6 +297,24 @@ int pfq_queue_xmit_by_mask(struct pfq_non_intrusive_queue_skb *skbs, unsigned lo
 }
 
 
+int pfq_lazy_xmit(struct sk_annot *ska, struct sk_buff *skb, struct net_device *dev, int queue_index)
+{
+       	if (ska->num_fwd >= Q_MAX_SKB_DEV_ANNOT) {
+
+		if (printk_ratelimit())
+        		printk(KERN_INFO "[PFQ] bridge %s: too many annotation!\n", dev->name);
+
+        	return 0;
+	}
+
+	skb_set_queue_mapping(skb, queue_index);
+	ska->dev[ska->num_fwd++] = dev;
+
+	return 1;
+}
+
+
+
 int pfq_lazy_queue_xmit(struct sk_annot *skas, struct pfq_non_intrusive_queue_skb *skbs, struct net_device *dev, int queue_index)
 {
 	struct sk_buff *skb;
@@ -326,5 +344,33 @@ int pfq_lazy_queue_xmit_by_mask(struct sk_annot *skas, struct pfq_non_intrusive_
 	return n;
 }
 
+
+int pfq_lazy_exec(struct sk_annot *ska, struct sk_buff *skb)
+{
+	struct sk_buff *nskb;
+	int ret = 0, num_fwd, i;
+
+	num_fwd = ska->num_fwd;
+
+	for(i = 0; i < num_fwd; ++i)
+	{
+		struct net_device *dev = ska->dev[i];
+
+		nskb = (i == num_fwd-1) ? skb : skb_clone(skb, GFP_ATOMIC);
+		if (nskb)
+		{
+			if (pfq_xmit(nskb, dev, nskb->queue_mapping) != 1) {
+
+				if (printk_ratelimit())
+					printk(KERN_INFO "[PFQ] forward pfq_xmit: error on device %s!\n", dev->name);
+			}
+			else {
+				ret++;
+			}
+		}
+	}
+
+	return ret;
+}
 
 
