@@ -25,16 +25,16 @@
 #include <linux/module.h>
 #include <linux/cache.h>
 
+#include <pf_q-bounded-queue.h>
 #include <pf_q-transmit.h>
 #include <pf_q-module.h>
-#include <pf_q-non-intrusive.h>
 #include <pf_q-global.h>
 
 #include "forward.h"
 
 struct forward_queue
 {
-	struct pfq_non_intrusive_queue_skb q;
+	struct pfq_bounded_queue_skb q;
 
 } ____chaline_aligned;
 

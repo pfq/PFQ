@@ -30,7 +30,7 @@
 #include <linux/mm.h>
 #include <linux/pf_q.h>
 
-#include <pf_q-non-intrusive.h>
+#include <pf_q-bounded-queue.h>
 #include <pf_q-mpdb-queue.h>
 #include <pf_q-module.h>
 #include <pf_q-sock.h>
@@ -60,7 +60,7 @@ char *mpdb_slot_ptr(struct pfq_rx_opt *ro, struct pfq_rx_queue_hdr *qd, int inde
 
 
 size_t pfq_mpdb_enqueue_batch(struct pfq_rx_opt *ro,
-		              struct pfq_non_intrusive_queue_skb *skbs,
+		              struct pfq_bounded_queue_skb *skbs,
 		              unsigned long long skbs_mask,
 		              int burst_len,
 		              int gid)
@@ -84,7 +84,7 @@ size_t pfq_mpdb_enqueue_batch(struct pfq_rx_opt *ro,
 	q_index   = MPDB_QUEUE_INDEX(data);
         this_slot = mpdb_slot_ptr(ro, rx, q_index, q_len);
 
-	pfq_non_intrusive_for_each_bitmask(skb, skbs_mask, n, skbs)
+	pfq_bounded_queue_for_each_bitmask(skb, skbs_mask, n, skbs)
 	{
 		unsigned int bytes = min((int)skb->len, (int)ro->caplen);
 

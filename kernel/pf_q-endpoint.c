@@ -26,7 +26,7 @@
 #include <linux/module.h>
 #include <linux/skbuff.h>
 
-#include "pf_q-non-intrusive.h"
+#include "pf_q-bounded-queue.h"
 #include "pf_q-mpdb-queue.h"
 #include "pf_q-sparse.h"
 #include "pf_q-transmit.h"
@@ -34,7 +34,7 @@
 
 
 static inline
-bool copy_to_user_skbs(struct pfq_rx_opt *ro, struct pfq_non_intrusive_queue_skb *skbs, unsigned long long skbs_mask, int cpu, int gid)
+bool copy_to_user_skbs(struct pfq_rx_opt *ro, struct pfq_bounded_queue_skb *skbs, unsigned long long skbs_mask, int cpu, int gid)
 {
         /* enqueue the sk_buffs: it's wait-free. */
 
@@ -59,7 +59,7 @@ bool copy_to_user_skbs(struct pfq_rx_opt *ro, struct pfq_non_intrusive_queue_skb
 
 
 static inline
-bool copy_to_dev_skbs(struct pfq_sock *so, struct sk_annot *skas, struct pfq_non_intrusive_queue_skb *skbs, unsigned long long skbs_mask, int cpu, int gid)
+bool copy_to_dev_skbs(struct pfq_sock *so, struct sk_annot *skas, struct pfq_bounded_queue_skb *skbs, unsigned long long skbs_mask, int cpu, int gid)
 {
 	if (so->egress_index) {
 
@@ -87,7 +87,7 @@ bool copy_to_dev_skbs(struct pfq_sock *so, struct sk_annot *skas, struct pfq_non
 }
 
 
-bool copy_to_endpoint_skbs(struct pfq_sock *so, struct sk_annot *skas, struct pfq_non_intrusive_queue_skb *skbs, unsigned long long skbs_mask, int cpu, int gid)
+bool copy_to_endpoint_skbs(struct pfq_sock *so, struct sk_annot *skas, struct pfq_bounded_queue_skb *skbs, unsigned long long skbs_mask, int cpu, int gid)
 {
 	switch(so->egress_type)
 	{

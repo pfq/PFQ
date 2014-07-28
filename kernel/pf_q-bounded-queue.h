@@ -22,53 +22,53 @@
  ****************************************************************/
 
 
-#ifndef _PF_Q_NON_INTRUSIVE_H_
-#define _PF_Q_NON_INTRUSIVE_H_
+#ifndef _PF_Q_BOUNDED_QUEUE_H_
+#define _PF_Q_BOUNDED_QUEUE_H_
 
 
 #include <pf_q-bitops.h>
 #include <pf_q-common.h>
 
 
-struct pfq_non_intrusive_queue_skb
+struct pfq_bounded_queue_skb
 {
         size_t len;
-        struct sk_buff *queue[Q_NON_INTRUSIVE_MAXLEN];  /* sk_buff */
+        struct sk_buff *queue[Q_BOUNDED_QUEUE_LEN];  /* sk_buff */
 };
 
 
-#define pfq_non_intrusive_for_each(skb, n, q) \
+#define pfq_bounded_queue_for_each(skb, n, q) \
         for(n = 0; (n != (q)->len) && (skb = (q)->queue[n]); \
                 __builtin_prefetch((q)->queue[n+1], 0, 1), n++)
 
 
-#define pfq_non_intrusive_for_each_backward(skb, n, q) \
+#define pfq_bounded_queue_for_each_backward(skb, n, q) \
         for(n = (q)->len; (n > 0) && (skb = (q)->queue[n-1]); \
                 __builtin_prefetch((q)->queue[n-2], 0, 1), n--)
 
 
-#define pfq_non_intrusive_for_each_bitmask(skb, mask, n, q) \
+#define pfq_bounded_queue_for_each_bitmask(skb, mask, n, q) \
         for(n = pfq_ctz(mask); mask && ((skb = (q)->queue[n]), true); \
                 mask ^=(1UL << n), n = pfq_ctz(mask))
 
 
 static inline
-void pfq_non_intrusive_init(struct pfq_non_intrusive_queue_skb *q)
+void pfq_bounded_queue_init(struct pfq_bounded_queue_skb *q)
 {
     q->len = 0;
 }
 
 static inline
-int pfq_non_intrusive_push(struct pfq_non_intrusive_queue_skb *q, struct sk_buff *skb)
+int pfq_bounded_queue_push(struct pfq_bounded_queue_skb *q, struct sk_buff *skb)
 {
-        if (q->len < Q_NON_INTRUSIVE_MAXLEN)
+        if (q->len < Q_BOUNDED_QUEUE_LEN)
                 return q->queue[q->len++] = skb, 0;
         return -1;
 }
 
 
 static inline
-struct sk_buff * pfq_non_intrusive_pop(struct pfq_non_intrusive_queue_skb *q)
+struct sk_buff * pfq_bounded_queue_pop(struct pfq_bounded_queue_skb *q)
 {
         if (q->len > 0)
                 return q->queue[--q->len];
@@ -77,17 +77,17 @@ struct sk_buff * pfq_non_intrusive_pop(struct pfq_non_intrusive_queue_skb *q)
 
 
 static inline
-void pfq_non_intrusive_flush(struct pfq_non_intrusive_queue_skb *q)
+void pfq_bounded_queue_flush(struct pfq_bounded_queue_skb *q)
 {
         q->len = 0;
 }
 
 
 static inline
-size_t pfq_non_intrusive_len(struct pfq_non_intrusive_queue_skb *q)
+size_t pfq_bounded_queue_len(struct pfq_bounded_queue_skb *q)
 {
         return q->len;
 }
 
 
-#endif /* _PF_Q_NON_INTRUSIVE_H_ */
+#endif /* _PF_Q_BOUNDED_QUEUE_H_ */
