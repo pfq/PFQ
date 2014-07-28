@@ -30,9 +30,9 @@
 
 
 #include <pf_q-common.h>
+#include <pf_q-percpu.h>
 #include <pf_q-sparse.h>
 #include <pf_q-bounded-queue.h>
-#include <pf_q-GC.h>
 
 extern int recycle_len;
 extern struct local_data __percpu * cpu_data;
@@ -42,25 +42,6 @@ extern sparse_counter_t os_free;
 extern sparse_counter_t rc_alloc;
 extern sparse_counter_t rc_free;
 extern sparse_counter_t rc_error;
-
-
-/* per-cpu data... */
-
-struct local_data
-{
-        unsigned long           eligible_mask;
-        unsigned long           sock_mask [Q_MAX_ID];
-
-        int                     sock_cnt;
-        int 			flowctrl;
-
-	struct gc_data 		gc;	/* garbage collector */
-
-        atomic_t                enable_recycle;
-        struct sk_buff_head     tx_recycle_list;
-        struct sk_buff_head     rx_recycle_list;
-
-} ____cacheline_aligned;
 
 
 struct pfq_recycle_stat
@@ -238,7 +219,7 @@ static inline
 void pfq_skb_recycle_init(void)
 {
         int cpu;
-        for_each_possible_cpu(cpu)
+        for_each_online_cpu(cpu)
         {
                 struct local_data *this_cpu = per_cpu_ptr(cpu_data, cpu);
 
@@ -254,7 +235,7 @@ void pfq_skb_recycle_enable(bool value)
         int cpu;
 
         smp_wmb();
-        for_each_possible_cpu(cpu)
+        for_each_online_cpu(cpu)
         {
                 struct local_data *this_cpu = per_cpu_ptr(cpu_data, cpu);
                 atomic_set(&this_cpu->enable_recycle, value);
@@ -267,7 +248,7 @@ static inline
 int pfq_skb_recycle_purge(void)
 {
         int cpu, total = 0;
-        for_each_possible_cpu(cpu)
+        for_each_online_cpu(cpu)
         {
                 struct local_data *local = per_cpu_ptr(cpu_data, cpu);
 

@@ -53,7 +53,6 @@
 #include <pf_q-sockopt.h>
 #include <pf_q-devmap.h>
 #include <pf_q-group.h>
-#include <pf_q-prefetch.h>
 #include <pf_q-engine.h>
 #include <pf_q-symtable.h>
 #include <pf_q-bitops.h>
@@ -66,6 +65,7 @@
 #include <pf_q-endpoint.h>
 #include <pf_q-mpdb-queue.h>
 #include <pf_q-transmit.h>
+#include <pf_q-percpu.h>
 #include <pf_q-GC.h>
 
 static struct net_proto_family  pfq_family_ops;
@@ -701,7 +701,7 @@ pfq_release(struct socket *sock)
 
         if (pfq_get_sock_count() == 0) {
 
-                total += pfq_prefetch_purge_all();
+                total += pfq_percpu_flush();
         }
 
         up (&sock_sem);
@@ -939,12 +939,9 @@ static int __init pfq_init_module(void)
                 return -EFAULT;
         }
 
-	/* create a per-cpu context */
-	cpu_data = alloc_percpu(struct local_data);
-	if (!cpu_data) {
-                printk(KERN_WARNING "[PFQ] out of memory!\n");
-		return -ENOMEM;
-        }
+	if (pfq_percpu_init()) {
+		return -EFAULT;
+	}
 
         /* register pfq sniffer protocol */
         n = proto_register(&pfq_proto, 0);
@@ -994,8 +991,8 @@ static void __exit pfq_exit_module(void)
         /* wait grace period */
         msleep(Q_GRACE_PERIOD);
 
-        /* purge both pre-fetch and recycles queues */
-        total += pfq_prefetch_purge_all();
+        /* purge both GC and recycles queues */
+        total += pfq_percpu_flush();
 
 #ifdef PFQ_USE_SKB_RECYCLE
         total += pfq_skb_recycle_purge();

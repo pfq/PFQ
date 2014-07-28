@@ -26,19 +26,33 @@
 #include <linux/cpumask.h>
 #include <linux/pf_q.h>
 
+#include <pf_q-global.h>
 #include <pf_q-memory.h>
 #include <pf_q-module.h>
-#include <pf_q-prefetch.h>
 #include <pf_q-GC.h>
 
-int pfq_prefetch_purge_all(void)
+
+int pfq_percpu_init(void)
+{
+	/* create a per-cpu context */
+	cpu_data = alloc_percpu(struct local_data);
+	if (!cpu_data) {
+                printk(KERN_WARNING "[PFQ] out of memory!\n");
+		return -ENOMEM;
+        }
+
+	return 0;
+}
+
+
+int pfq_percpu_flush(void)
 {
         int cpu;
         int total = 0;
 
         /* destroy prefetch queues (of each cpu) */
 
-        for_each_possible_cpu(cpu) {
+        for_each_online_cpu(cpu) {
 
                 struct local_data *local = per_cpu_ptr(cpu_data, cpu);
                 struct gc_queue_buff *queue = &local->gc.pool;

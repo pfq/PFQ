@@ -1,6 +1,6 @@
 /***************************************************************
  *
- * (C) 2014 Nicola Bonelli <nicola.bonelli@cnit.it>
+ * (C) 2011-14 Nicola Bonelli <nicola.bonelli@cnit.it>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,9 +21,32 @@
  *
  ****************************************************************/
 
-#ifndef _PF_Q_PREFETCH_H_
-#define _PF_Q_PREFETCH_H_
+#ifndef _PF_Q_PERCPU_H_
+#define _PF_Q_PERCPU_H_
 
-int pfq_prefetch_purge_all(void);
+#include <linux/percpu.h>
 
-#endif /* _PF_Q_PREFETCH_H_ */
+#include <pf_q-common.h>
+#include <pf_q-GC.h>
+
+int pfq_percpu_init(void);
+int pfq_percpu_flush(void);
+
+/* per-cpu data... */
+
+struct local_data
+{
+        unsigned long           eligible_mask;
+        unsigned long           sock_mask [Q_MAX_ID];
+
+        int                     sock_cnt;
+
+	struct gc_data 		gc;	/* garbage collector */
+
+        atomic_t                enable_recycle;
+        struct sk_buff_head     tx_recycle_list;
+        struct sk_buff_head     rx_recycle_list;
+
+} ____cacheline_aligned;
+
+#endif /* _PF_Q_PERCPU_H_ */
