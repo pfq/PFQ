@@ -38,16 +38,6 @@ typedef struct
 } action_t;
 
 
-#define Q_MAX_SKB_DEV_ANNOT	16
-
-struct sk_annot
-{
-	struct net_device * dev[Q_MAX_SKB_DEV_ANNOT];
-	size_t num_fwd;
-};
-
-
-
 struct pfq_cb
 {
         action_t action;
@@ -56,7 +46,7 @@ struct pfq_cb
         unsigned long state;
 
         struct pergroup_context *ctx;
-	struct sk_annot *ska;
+	struct gc_log *log;
 
 } __attribute__((packed));
 

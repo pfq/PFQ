@@ -32,10 +32,10 @@
 #include <pf_q-common.h>
 #include <pf_q-sparse.h>
 #include <pf_q-bounded-queue.h>
+#include <pf_q-GC.h>
 
 extern int recycle_len;
 extern struct local_data __percpu * cpu_data;
-
 
 extern sparse_counter_t os_alloc;
 extern sparse_counter_t os_free;
@@ -54,9 +54,7 @@ struct local_data
         int                     sock_cnt;
         int 			flowctrl;
 
-        struct pfq_prefetch_queue_skb prefetch_queue;
-
-	struct sk_annot 	skas[Q_PREFETCH_QUEUE_LEN];
+	struct gc_data 		gc;	/* garbage collector */
 
         atomic_t                enable_recycle;
         struct sk_buff_head     tx_recycle_list;

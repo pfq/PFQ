@@ -38,6 +38,7 @@
 #include <pf_q-transmit.h>
 #include <pf_q-common.h>
 #include <pf_q-global.h>
+#include <pf_q-GC.h>
 
 static inline u16
 __pfq_dev_cap_txqueue(struct net_device *dev, u16 queue_index)
@@ -76,7 +77,7 @@ pfq_pick_tx(struct net_device *dev, struct sk_buff *skb, int *queue_index)
 
 int pfq_tx_queue_flush(struct pfq_tx_opt *to, struct net_device *dev, int cpu, int node)
 {
-	struct pfq_batch_queue_skb skbs;
+	struct pfq_bounded_queue_skb skbs;
 
 	struct local_data *local;
         struct pfq_pkt_hdr * h;
@@ -95,27 +96,27 @@ int pfq_tx_queue_flush(struct pfq_tx_opt *to, struct net_device *dev, int cpu, i
 		struct sk_buff *skb;
         	int sent, i;
 
-		sent = pfq_queue_xmit(PFQ_BOUNDED_QUEUE(&skbs), dev, to->hw_queue);
+		sent = pfq_queue_xmit(&skbs, dev, to->hw_queue);
 
                 /* update stats */
 
                 __sparse_add(&to->stat.sent, sent, cpu);
-                __sparse_add(&to->stat.disc, pfq_bounded_queue_len(PFQ_BOUNDED_QUEUE(&skbs)) - sent, cpu);
+                __sparse_add(&to->stat.disc, pfq_bounded_queue_len(&skbs) - sent, cpu);
 
 		/* free/recycle the packets now... */
 
-		pfq_bounded_queue_for_each(skb, i, PFQ_BOUNDED_QUEUE(&skbs))
+		pfq_bounded_queue_for_each(skb, i, &skbs)
 		{
 			pfq_kfree_skb_recycle(skb, &local->tx_recycle_list);
 		}
 
-		pfq_spsc_read_commit_n(to->queue_ptr, pfq_bounded_queue_len(PFQ_BOUNDED_QUEUE(&skbs)));
+		pfq_spsc_read_commit_n(to->queue_ptr, pfq_bounded_queue_len(&skbs));
 
-		pfq_bounded_queue_flush(PFQ_BOUNDED_QUEUE(&skbs));
+		pfq_bounded_queue_flush(&skbs);
 	}
 
 
-	pfq_bounded_queue_init(PFQ_BOUNDED_QUEUE(&skbs));
+	pfq_bounded_queue_init(&skbs);
 
         local = __this_cpu_ptr(cpu_data);
 
@@ -173,9 +174,9 @@ int pfq_tx_queue_flush(struct pfq_tx_opt *to, struct net_device *dev, int cpu, i
 
                 /* send the packets... */
 
-		pfq_bounded_queue_push(PFQ_BOUNDED_QUEUE(&skbs), Q_BATCH_QUEUE_LEN, skb);
+		pfq_bounded_queue_push(&skbs, skb);
 
-		if (pfq_bounded_queue_len(PFQ_BOUNDED_QUEUE(&skbs)) == batch_len)
+		if (pfq_bounded_queue_len(&skbs) == batch_len)
 		{
 			pfq_tx_batch_queue();
 		}
@@ -193,8 +194,7 @@ int pfq_tx_queue_flush(struct pfq_tx_opt *to, struct net_device *dev, int cpu, i
 #endif
         }
 
-	if (pfq_bounded_queue_len(PFQ_BOUNDED_QUEUE(&skbs))) {
-
+	if (pfq_bounded_queue_len(&skbs)) {
 		pfq_tx_batch_queue();
 	}
 
@@ -268,7 +268,7 @@ int pfq_queue_xmit(struct pfq_bounded_queue_skb *skbs, struct net_device *dev, i
 }
 
 
-int pfq_queue_xmit_by_mask(struct pfq_bounded_queue_skb *skbs, unsigned long long skbs_mask, struct net_device *dev, int queue_index)
+int pfq_queue_xmit_by_mask(struct pfq_bounded_queue_skb *skbs, unsigned long long mask, struct net_device *dev, int queue_index)
 {
        	struct netdev_queue *txq;
 	struct sk_buff *skb;
@@ -283,7 +283,7 @@ int pfq_queue_xmit_by_mask(struct pfq_bounded_queue_skb *skbs, unsigned long lon
 
 	__netif_tx_lock_bh(txq);
 
-	pfq_bounded_queue_for_each_bitmask(skb, skbs_mask, i, skbs)
+	pfq_bounded_queue_for_each_bitmask(skb, mask, i, skbs)
 	{
                 skb_set_queue_mapping(skb, queue_index);
 
@@ -297,9 +297,11 @@ int pfq_queue_xmit_by_mask(struct pfq_bounded_queue_skb *skbs, unsigned long lon
 }
 
 
-int pfq_lazy_xmit(struct sk_annot *ska, struct sk_buff *skb, struct net_device *dev, int queue_index)
+int pfq_lazy_xmit(struct gc_buff buff, struct net_device *dev, int queue_index)
 {
-       	if (ska->num_fwd >= Q_MAX_SKB_DEV_ANNOT) {
+	struct gc_log *log = PFQ_CB(buff.skb)->log;
+
+       	if (log->num_fwd >= Q_GC_LOG_MAX_SIZE) {
 
 		if (printk_ratelimit())
         		printk(KERN_INFO "[PFQ] bridge %s: too many annotation!\n", dev->name);
@@ -307,22 +309,22 @@ int pfq_lazy_xmit(struct sk_annot *ska, struct sk_buff *skb, struct net_device *
         	return 0;
 	}
 
-	skb_set_queue_mapping(skb, queue_index);
-	ska->dev[ska->num_fwd++] = dev;
+	skb_set_queue_mapping(buff.skb, queue_index);
+	log->dev[log->num_fwd++] = dev;
 
 	return 1;
 }
 
 
 
-int pfq_lazy_queue_xmit(struct sk_annot *skas, struct pfq_bounded_queue_skb *skbs, struct net_device *dev, int queue_index)
+int pfq_lazy_queue_xmit(struct gc_queue_buff *queue, struct net_device *dev, int queue_index)
 {
-	struct sk_buff *skb;
+	struct gc_buff buff;
 	int i, n = 0;
 
-	pfq_bounded_queue_for_each(skb, i, skbs)
+	GC_queue_for_each_buff(queue, buff, i)
 	{
-		if (pfq_lazy_xmit(&skas[i], skb, dev, queue_index))
+		if (pfq_lazy_xmit(buff, dev, queue_index))
 			++n;
 	}
 
@@ -330,14 +332,14 @@ int pfq_lazy_queue_xmit(struct sk_annot *skas, struct pfq_bounded_queue_skb *skb
 }
 
 
-int pfq_lazy_queue_xmit_by_mask(struct sk_annot *skas, struct pfq_bounded_queue_skb *skbs, unsigned long long skbs_mask, struct net_device *dev, int queue_index)
+int pfq_lazy_queue_xmit_by_mask(struct gc_queue_buff *queue, unsigned long long mask, struct net_device *dev, int queue_index)
 {
-	struct sk_buff *skb;
+	struct gc_buff buff;
 	int i, n = 0;
 
-	pfq_bounded_queue_for_each_bitmask(skb, skbs_mask, i, skbs)
+	GC_queue_for_each_buff_bitmask(queue, buff, mask, i)
 	{
-		if (pfq_lazy_xmit(&skas[i], skb, dev, queue_index))
+		if (pfq_lazy_xmit(buff, dev, queue_index))
 			++n;
 	}
 
@@ -345,21 +347,24 @@ int pfq_lazy_queue_xmit_by_mask(struct sk_annot *skas, struct pfq_bounded_queue_
 }
 
 
-int pfq_lazy_exec(struct sk_annot *ska, struct sk_buff *skb)
+int pfq_lazy_exec(struct gc_buff buff)
 {
-	struct sk_buff *nskb;
+	struct gc_log *log = PFQ_CB(buff.skb)->log;
+
+	struct sk_buff *skb;
+
 	int ret = 0, num_fwd, i;
 
-	num_fwd = ska->num_fwd;
+	num_fwd = log->num_fwd;
 
 	for(i = 0; i < num_fwd; ++i)
 	{
-		struct net_device *dev = ska->dev[i];
+		struct net_device *dev = log->dev[i];
 
-		nskb = (i == num_fwd-1) ? skb : skb_clone(skb, GFP_ATOMIC);
-		if (nskb)
+		skb = (i == num_fwd-1) ? buff.skb : skb_clone(buff.skb, GFP_ATOMIC);
+		if (skb)
 		{
-			if (pfq_xmit(nskb, dev, nskb->queue_mapping) != 1) {
+			if (pfq_xmit(skb, dev, skb->queue_mapping) != 1) {
 
 				if (printk_ratelimit())
 					printk(KERN_INFO "[PFQ] forward pfq_xmit: error on device %s!\n", dev->name);

@@ -34,7 +34,7 @@
 
 struct forward_queue
 {
-	struct pfq_batch_queue_skb q;
+	struct pfq_bounded_queue_skb q;
 
 } ____chaline_aligned;
 
@@ -112,7 +112,6 @@ static struct sk_buff *
 forward(arguments_t args, struct sk_buff *skb)
 {
 	struct net_device *dev = get_data(struct net_device *, args);
-        struct pfq_cb * cb = PFQ_CB(skb);
 
 	if (dev == NULL) {
                 if (printk_ratelimit())
@@ -120,7 +119,9 @@ forward(arguments_t args, struct sk_buff *skb)
                 return skb;
 	}
 
-	pfq_lazy_xmit(cb->ska, skb, dev, skb->queue_mapping);
+	struct gc_buff buff = { skb };
+
+	pfq_lazy_xmit(buff, dev, skb->queue_mapping);
 	return skb;
 }
 
@@ -206,7 +207,6 @@ static struct sk_buff *
 bridge(arguments_t args, struct sk_buff *skb)
 {
 	struct net_device *dev = get_data(struct net_device *, args);
-        struct pfq_cb * cb = PFQ_CB(skb);
 
 	if (dev == NULL) {
                 if (printk_ratelimit())
@@ -214,7 +214,9 @@ bridge(arguments_t args, struct sk_buff *skb)
                 return drop(skb);
 	}
 
-	pfq_lazy_xmit(cb->ska, skb, dev, skb->queue_mapping);
+	struct gc_buff buff = {skb};
+
+	pfq_lazy_xmit(buff, dev, skb->queue_mapping);
 
 	return drop(skb);
 }
@@ -225,7 +227,6 @@ bridge_tap(arguments_t args, struct sk_buff *skb)
 {
 	struct net_device *dev = get_data(struct net_device *, args);
 	predicate_t pred_  = get_data1(predicate_t, args);
-        struct pfq_cb * cb = PFQ_CB(skb);
 
 	if (dev == NULL) {
                 if (printk_ratelimit())
@@ -236,7 +237,9 @@ bridge_tap(arguments_t args, struct sk_buff *skb)
         if (EVAL_PREDICATE(pred_, skb))
 		return skb;
 
-	pfq_lazy_xmit(cb->ska, skb, dev, skb->queue_mapping);
+	struct gc_buff buff = { skb };
+
+	pfq_lazy_xmit(buff, dev, skb->queue_mapping);
 
 	return drop(skb);
 }

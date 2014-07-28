@@ -34,7 +34,7 @@
 
 
 static inline
-bool copy_to_user_skbs(struct pfq_rx_opt *ro, struct pfq_bounded_queue_skb *skbs, unsigned long long skbs_mask, int cpu, int gid)
+bool copy_to_user_skbs(struct pfq_rx_opt *ro, struct gc_queue_buff *queue, unsigned long long mask, int cpu, int gid)
 {
         /* enqueue the sk_buffs: it's wait-free. */
 
@@ -44,8 +44,8 @@ bool copy_to_user_skbs(struct pfq_rx_opt *ro, struct pfq_bounded_queue_skb *skbs
 
         	smp_rmb();
 
-                len  = (int)pfq_popcount(skbs_mask);
-                sent = pfq_mpdb_enqueue_batch(ro, skbs, skbs_mask, len, gid);
+                len  = (int)pfq_popcount(mask);
+                sent = pfq_mpdb_enqueue_batch(ro, queue, mask, len, gid);
 
         	__sparse_add(&ro->stat.recv, sent, cpu);
 
@@ -59,7 +59,7 @@ bool copy_to_user_skbs(struct pfq_rx_opt *ro, struct pfq_bounded_queue_skb *skbs
 
 
 static inline
-bool copy_to_dev_skbs(struct pfq_sock *so, struct sk_annot *skas, struct pfq_bounded_queue_skb *skbs, unsigned long long skbs_mask, int cpu, int gid)
+bool copy_to_dev_skbs(struct pfq_sock *so, struct gc_queue_buff *queue, unsigned long long mask, int cpu, int gid)
 {
 	if (so->egress_index) {
 
@@ -76,7 +76,7 @@ bool copy_to_dev_skbs(struct pfq_sock *so, struct sk_annot *skas, struct pfq_bou
 			}
 		}
 
- 		ret = pfq_lazy_queue_xmit_by_mask(skas, skbs, skbs_mask, dev, so->egress_queue);
+ 		ret = pfq_lazy_queue_xmit_by_mask(queue, mask, dev, so->egress_queue);
 
                 dev_put(dev);
 
@@ -87,15 +87,15 @@ bool copy_to_dev_skbs(struct pfq_sock *so, struct sk_annot *skas, struct pfq_bou
 }
 
 
-bool copy_to_endpoint_skbs(struct pfq_sock *so, struct sk_annot *skas, struct pfq_bounded_queue_skb *skbs, unsigned long long skbs_mask, int cpu, int gid)
+bool copy_to_endpoint_queue_buff(struct pfq_sock *so, struct gc_queue_buff *queue, unsigned long long mask, int cpu, int gid)
 {
 	switch(so->egress_type)
 	{
 	case pfq_endpoint_socket:
-		return copy_to_user_skbs(&so->rx_opt, skbs, skbs_mask, cpu, gid);
+		return copy_to_user_skbs(&so->rx_opt, queue, mask, cpu, gid);
 
 	case pfq_endpoint_device:
-		return copy_to_dev_skbs(so, skas, skbs, skbs_mask, cpu, gid);
+		return copy_to_dev_skbs(so, queue, mask, cpu, gid);
 	}
 
 	return false;

@@ -33,10 +33,11 @@
 #include <pf_q-prefetch.h>
 #include <pf_q-common.h>
 #include <pf_q-sock.h>
+#include <pf_q-GC.h>
 
 
 extern size_t pfq_mpdb_enqueue_batch(struct pfq_rx_opt *ro,
-		                     struct pfq_bounded_queue_skb *skbs,
+		                     struct gc_queue_buff *queue,
 		                     unsigned long long skbs_mask,
 		                     int burst_len,
 		                     int gid);

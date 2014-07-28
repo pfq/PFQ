@@ -29,6 +29,7 @@
 #include <pf_q-memory.h>
 #include <pf_q-module.h>
 #include <pf_q-prefetch.h>
+#include <pf_q-GC.h>
 
 int pfq_prefetch_purge_all(void)
 {
@@ -40,11 +41,11 @@ int pfq_prefetch_purge_all(void)
         for_each_possible_cpu(cpu) {
 
                 struct local_data *local = per_cpu_ptr(cpu_data, cpu);
-                struct pfq_bounded_queue_skb *this_queue = PFQ_BOUNDED_QUEUE(&local->prefetch_queue);
+                struct gc_queue_buff *queue = &local->gc.pool;
                 struct sk_buff *skb;
 		int n = 0;
 
-		pfq_bounded_queue_for_each(skb, n, this_queue)
+		GC_queue_for_each_skb(queue, skb, n)
 		{
                         struct pfq_cb *cb = PFQ_CB(skb);
                         if (unlikely(cb->action.attr & attr_stolen))
@@ -52,9 +53,9 @@ int pfq_prefetch_purge_all(void)
                  	kfree_skb(skb);
 		}
 
-                total += pfq_bounded_queue_len(this_queue);
+                total += queue->len;
 
-       		pfq_bounded_queue_flush(this_queue);
+		gc_reset(&local->gc);
         }
 
         return total;

@@ -36,7 +36,7 @@
 #include <pf_q-sock.h>
 #include <pf_q-global.h>
 #include <pf_q-memory.h>
-
+#include <pf_q-GC.h>
 
 static inline
 void *pfq_memcpy(void *to, const void *from, size_t len)
@@ -60,7 +60,7 @@ char *mpdb_slot_ptr(struct pfq_rx_opt *ro, struct pfq_rx_queue_hdr *qd, int inde
 
 
 size_t pfq_mpdb_enqueue_batch(struct pfq_rx_opt *ro,
-		              struct pfq_bounded_queue_skb *skbs,
+		              struct gc_queue_buff *queue,
 		              unsigned long long skbs_mask,
 		              int burst_len,
 		              int gid)
@@ -84,7 +84,7 @@ size_t pfq_mpdb_enqueue_batch(struct pfq_rx_opt *ro,
 	q_index   = MPDB_QUEUE_INDEX(data);
         this_slot = mpdb_slot_ptr(ro, rx, q_index, q_len);
 
-	pfq_bounded_queue_for_each_bitmask(skb, skbs_mask, n, skbs)
+	GC_queue_for_each_skb_bitmask(queue, skb, skbs_mask, n)
 	{
 		unsigned int bytes = min((int)skb->len, (int)ro->caplen);
 

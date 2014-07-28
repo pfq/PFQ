@@ -34,6 +34,7 @@
 #include <pf_q-bounded-queue.h>
 #include <pf_q-sock.h>
 #include <pf_q-module.h>
+#include <pf_q-GC.h>
 
 extern int pfq_tx_queue_flush(struct pfq_tx_opt *to, struct net_device *dev, int cpu, int node);
 
@@ -42,15 +43,15 @@ extern int pfq_queue_xmit_by_mask(struct pfq_bounded_queue_skb *skbs, unsigned l
 
 static inline int pfq_xmit(struct sk_buff *skb, struct net_device *dev, int queue_index)
 {
-	struct pfq_batch_queue_skb skbs = { 1 , { skb } };
-	return pfq_queue_xmit(PFQ_BOUNDED_QUEUE(&skbs), dev, queue_index);
+	struct pfq_bounded_queue_skb skbs = { 1 , { skb } };
+	return pfq_queue_xmit(&skbs, dev, queue_index);
 }
 
 
-extern int pfq_lazy_xmit(struct sk_annot *ska, struct sk_buff *skb, struct net_device *dev, int queue_index);
-extern int pfq_lazy_queue_xmit(struct sk_annot *skas, struct pfq_bounded_queue_skb *skbs, struct net_device *dev, int queue_index);
-extern int pfq_lazy_queue_xmit_by_mask(struct sk_annot *skas, struct pfq_bounded_queue_skb *skbs, unsigned long long mask, struct net_device *dev, int queue_index);
-extern int pfq_lazy_exec(struct sk_annot *ska, struct sk_buff *skb);
+extern int pfq_lazy_xmit(struct gc_buff, struct net_device *dev, int queue_index);
+extern int pfq_lazy_exec(struct gc_buff);
+extern int pfq_lazy_queue_xmit(struct gc_queue_buff *queue, struct net_device *dev, int queue_index);
+extern int pfq_lazy_queue_xmit_by_mask(struct gc_queue_buff *queue, unsigned long long mask, struct net_device *dev, int queue_index);
 
 
 #endif /* _PF_Q_TRANSMIT_H_ */

@@ -33,31 +33,8 @@
 struct pfq_bounded_queue_skb
 {
         size_t len;
-        struct sk_buff *queue[];  			/* sk_buff */
+        struct sk_buff *queue[Q_BOUNDED_QUEUE_LEN];  	/* sk_buff */
 };
-
-
-struct pfq_batch_queue_skb
-{
-        size_t len;
-        struct sk_buff *queue[Q_BATCH_QUEUE_LEN];  	/* sk_buff */
-};
-
-struct pfq_prefetch_queue_skb
-{
-        size_t len;
-        struct sk_buff *queue[Q_PREFETCH_QUEUE_LEN];  	/* sk_buff */
-};
-
-
-#define PFQ_BOUNDED_QUEUE(queue) \
-	__builtin_choose_expr( __builtin_types_compatible_p(struct pfq_batch_queue_skb *,    typeof(queue)), (struct pfq_bounded_queue_skb *)queue, \
-	__builtin_choose_expr( __builtin_types_compatible_p(struct pfq_prefetch_queue_skb *, typeof(queue)), (struct pfq_bounded_queue_skb *)queue, \
-	__builtin_choose_expr( __builtin_types_compatible_p(struct pfq_bounded_queue_skb *,  typeof(queue)), queue, \
-	(void)0 )))
-
-
-#define ARGS_TYPE(a) 	__builtin_choose_expr(__builtin_types_compatible_p(arguments_t, typeof(a)), a, (void)0)
 
 
 #define pfq_bounded_queue_for_each(skb, n, q) \
@@ -76,9 +53,9 @@ struct pfq_prefetch_queue_skb
 
 
 static inline
-int pfq_bounded_queue_push(struct pfq_bounded_queue_skb *q, size_t len, struct sk_buff *skb)
+int pfq_bounded_queue_push(struct pfq_bounded_queue_skb *q, struct sk_buff *skb)
 {
-        if (q->len < len)
+        if (q->len < Q_BOUNDED_QUEUE_LEN)
                 return q->queue[q->len++] = skb, 0;
         return -1;
 }

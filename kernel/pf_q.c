@@ -66,6 +66,7 @@
 #include <pf_q-endpoint.h>
 #include <pf_q-mpdb-queue.h>
 #include <pf_q-transmit.h>
+#include <pf_q-GC.h>
 
 static struct net_proto_family  pfq_family_ops;
 static struct packet_type       pfq_prot_hook;
@@ -240,13 +241,12 @@ void send_to_kernel(struct napi_struct *napi, struct sk_buff *skb)
 static int
 pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 {
- 	unsigned long long sock_queue[Q_PREFETCH_QUEUE_LEN];
+ 	unsigned long long sock_queue[Q_BOUNDED_QUEUE_LEN];
 
-        struct pfq_bounded_queue_skb * prefetch_queue;
         unsigned long group_mask, socket_mask;
         struct local_data * local;
         long unsigned n, bit, lb;
-        struct pfq_cb *cb;
+	struct gc_buff buff;
         int cpu;
 
 #ifdef PFQ_RX_PROFILE
@@ -254,7 +254,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 #endif
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,9,0))
-	BUILD_BUG_ON_MSG(Q_PREFETCH_QUEUE_LEN > (sizeof(sock_queue[0]) << 3), "sock_queue overflow");
+	BUILD_BUG_ON_MSG(Q_BOUNDED_QUEUE_LEN > (sizeof(sock_queue[0]) << 3), "sock_queue overflow");
 #endif
 
 	/* if no socket is open, drop the packet now */
@@ -292,27 +292,23 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 
 	local = per_cpu_ptr(cpu_data, cpu);
 
-	prefetch_queue = PFQ_BOUNDED_QUEUE(&local->prefetch_queue);
+	/* make this skb controlled by the garbage collector */
 
-        pfq_bounded_queue_push(prefetch_queue, Q_PREFETCH_QUEUE_LEN, skb);
+	make_buff(&local->gc, skb);
 
-        cb = PFQ_CB(skb);
+        PFQ_CB(skb)->action.direct = direct;
+        PFQ_CB(skb)->action.attr = 0;
 
-	cb->action.direct = direct;
-        cb->action.attr = 0;
-
-        if (pfq_bounded_queue_len(prefetch_queue) < prefetch_len) {
-
+        if (gc_size(&local->gc) < prefetch_len) {
         	put_cpu();
                 return 0;
 	}
 
 	/* ------------------------------------------------------ */
 
-	/* cleanup sock_queue and skb annotations... */
+	/* cleanup sock_queue... */
 
         memset(sock_queue, 0, sizeof(sock_queue));
-        memset(local->skas, 0, sizeof(local->skas));
 
  	group_mask = 0;
 
@@ -320,14 +316,13 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 	start = get_cycles();
 #endif
 
-        pfq_bounded_queue_for_each(skb, n, prefetch_queue)
+	GC_queue_for_each_skb(&local->gc.pool, skb, n)
         {
 		unsigned long local_group_mask = __pfq_devmap_get_groups(skb->dev->ifindex, skb_get_rx_queue(skb));
 
 		group_mask |= local_group_mask;
 
 		PFQ_CB(skb)->group_mask = local_group_mask;
-		PFQ_CB(skb)->ska = &local->skas[n];
 	}
 
         /* process all groups enabled for this batch of packets */
@@ -342,7 +337,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 
 		socket_mask = 0;
 
-		pfq_bounded_queue_for_each(skb, n, prefetch_queue)
+		GC_queue_for_each_skb(&local->gc.pool, skb, n)
 		{
 			struct pfq_cb *cb = PFQ_CB(skb);
 			unsigned long sock_mask = 0;
@@ -442,7 +437,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 			int i = pfq_ctz(lb);
 			struct pfq_sock * so = pfq_get_sock_by_id(i);
 
-			copy_to_endpoint_skbs(so, local->skas, prefetch_queue, sock_queue[i], cpu, gid);
+			copy_to_endpoint_queue_buff(so, &local->gc.pool, sock_queue[i], cpu, gid);
 		})
 	})
 
@@ -450,9 +445,11 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 
 	/* sk_buff forwarding */
 
-        pfq_bounded_queue_for_each(skb, n, prefetch_queue)
+
+        GC_queue_for_each_buff(&local->gc.pool, buff, n)
         {
         	struct sk_buff *nskb;
+        	struct pfq_cb *cb;
         	bool to_kernel;
         	int num_fwd;
 
@@ -462,7 +459,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
                         continue;
 
 		to_kernel = cb->action.direct && is_targeted_to_kernel(skb);
-		num_fwd   = cb->ska->num_fwd;
+		num_fwd   = cb->log->num_fwd;
 
 		if (to_kernel) {
 
@@ -487,7 +484,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 
 		if (num_fwd) {
 
-			pfq_lazy_exec(cb->ska, skb);
+			pfq_lazy_exec(buff);
 		}
 
 		if (!to_kernel && num_fwd == 0) {
@@ -499,7 +496,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 		}
         }
 
-	pfq_bounded_queue_flush(prefetch_queue);
+	gc_reset(&local->gc);
 
 	put_cpu();
 
@@ -932,13 +929,13 @@ static int __init pfq_init_module(void)
         pfq_proto_ops_init();
         pfq_proto_init();
 
-        if (prefetch_len > Q_PREFETCH_QUEUE_LEN || prefetch_len == 0) {
-                printk(KERN_INFO "[PFQ] prefetch_len=%d not allowed (0,%zu)!\n", prefetch_len, Q_PREFETCH_QUEUE_LEN);
+        if (prefetch_len > Q_BOUNDED_QUEUE_LEN || prefetch_len == 0) {
+                printk(KERN_INFO "[PFQ] prefetch_len=%d not allowed (0,%zu)!\n", prefetch_len, Q_BOUNDED_QUEUE_LEN);
                 return -EFAULT;
         }
 
-	if (batch_len > Q_BATCH_QUEUE_LEN || batch_len == 0) {
-                printk(KERN_INFO "[PFQ] batch_len=%d not allowed (0,%zu)!\n", batch_len, Q_BATCH_QUEUE_LEN);
+	if (batch_len > Q_BOUNDED_QUEUE_LEN || batch_len == 0) {
+                printk(KERN_INFO "[PFQ] batch_len=%d not allowed (0,%zu)!\n", batch_len, Q_BOUNDED_QUEUE_LEN);
                 return -EFAULT;
         }
 
