@@ -26,7 +26,7 @@
 #include <linux/module.h>
 #include <linux/skbuff.h>
 
-#include <pf_q-non-intrusive.h>
+#include <pf_q-bounded-queue.h>
 #include <pf_q-memory.h>
 
 

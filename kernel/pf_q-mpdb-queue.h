@@ -29,14 +29,14 @@
 #include <linux/pf_q.h>
 #include <linux/if_vlan.h>
 
-#include <pf_q-non-intrusive.h>
+#include <pf_q-bounded-queue.h>
 #include <pf_q-prefetch.h>
 #include <pf_q-common.h>
 #include <pf_q-sock.h>
 
 
 extern size_t pfq_mpdb_enqueue_batch(struct pfq_rx_opt *ro,
-		                     struct pfq_non_intrusive_queue_skb *skbs,
+		                     struct pfq_bounded_queue_skb *skbs,
 		                     unsigned long long skbs_mask,
 		                     int burst_len,
 		                     int gid);

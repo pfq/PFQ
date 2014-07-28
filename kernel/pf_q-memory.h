@@ -31,7 +31,7 @@
 
 #include <pf_q-common.h>
 #include <pf_q-sparse.h>
-#include <pf_q-non-intrusive.h>
+#include <pf_q-bounded-queue.h>
 
 extern int recycle_len;
 extern struct local_data __percpu * cpu_data;
@@ -54,7 +54,7 @@ struct local_data
         int                     sock_cnt;
         int 			flowctrl;
 
-        struct pfq_non_intrusive_queue_skb prefetch_queue;
+        struct pfq_bounded_queue_skb prefetch_queue;
 
 	struct sk_annot 	skas[Q_NON_INTRUSIVE_MAXLEN];
 

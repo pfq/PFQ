@@ -242,7 +242,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 {
  	unsigned long long sock_queue[Q_NON_INTRUSIVE_MAXLEN];
 
-        struct pfq_non_intrusive_queue_skb * prefetch_queue;
+        struct pfq_bounded_queue_skb * prefetch_queue;
         unsigned long group_mask, socket_mask;
         struct local_data * local;
         long unsigned n, bit, lb;
@@ -294,14 +294,14 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 
 	prefetch_queue = &local->prefetch_queue;
 
-        pfq_non_intrusive_push(prefetch_queue, skb);
+        pfq_bounded_queue_push(prefetch_queue, skb);
 
         cb = PFQ_CB(skb);
 
 	cb->action.direct = direct;
         cb->action.attr = 0;
 
-        if (pfq_non_intrusive_len(prefetch_queue) < prefetch_len) {
+        if (pfq_bounded_queue_len(prefetch_queue) < prefetch_len) {
 
         	put_cpu();
                 return 0;
@@ -320,7 +320,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 	start = get_cycles();
 #endif
 
-        pfq_non_intrusive_for_each(skb, n, prefetch_queue)
+        pfq_bounded_queue_for_each(skb, n, prefetch_queue)
         {
 		unsigned long local_group_mask = __pfq_devmap_get_groups(skb->dev->ifindex, skb_get_rx_queue(skb));
 
@@ -342,7 +342,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 
 		socket_mask = 0;
 
-		pfq_non_intrusive_for_each(skb, n, prefetch_queue)
+		pfq_bounded_queue_for_each(skb, n, prefetch_queue)
 		{
 			struct pfq_cb *cb = PFQ_CB(skb);
 			unsigned long sock_mask = 0;
@@ -450,7 +450,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 
 	/* sk_buff forwarding */
 
-        pfq_non_intrusive_for_each(skb, n, prefetch_queue)
+        pfq_bounded_queue_for_each(skb, n, prefetch_queue)
         {
         	struct sk_buff *nskb;
         	bool to_kernel;
@@ -499,7 +499,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 		}
         }
 
-	pfq_non_intrusive_flush(prefetch_queue);
+	pfq_bounded_queue_flush(prefetch_queue);
 
 	put_cpu();
 

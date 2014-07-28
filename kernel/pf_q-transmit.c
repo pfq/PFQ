@@ -76,7 +76,7 @@ pfq_pick_tx(struct net_device *dev, struct sk_buff *skb, int *queue_index)
 
 int pfq_tx_queue_flush(struct pfq_tx_opt *to, struct net_device *dev, int cpu, int node)
 {
-	struct pfq_non_intrusive_queue_skb skbs;
+	struct pfq_bounded_queue_skb skbs;
 
 	struct local_data *local;
         struct pfq_pkt_hdr * h;
@@ -100,22 +100,22 @@ int pfq_tx_queue_flush(struct pfq_tx_opt *to, struct net_device *dev, int cpu, i
                 /* update stats */
 
                 __sparse_add(&to->stat.sent, sent, cpu);
-                __sparse_add(&to->stat.disc, pfq_non_intrusive_len(&skbs) - sent, cpu);
+                __sparse_add(&to->stat.disc, pfq_bounded_queue_len(&skbs) - sent, cpu);
 
 		/* free/recycle the packets now... */
 
-		pfq_non_intrusive_for_each(skb, i, &skbs)
+		pfq_bounded_queue_for_each(skb, i, &skbs)
 		{
 			pfq_kfree_skb_recycle(skb, &local->tx_recycle_list);
 		}
 
-		pfq_spsc_read_commit_n(to->queue_ptr, pfq_non_intrusive_len(&skbs));
+		pfq_spsc_read_commit_n(to->queue_ptr, pfq_bounded_queue_len(&skbs));
 
-		pfq_non_intrusive_flush(&skbs);
+		pfq_bounded_queue_flush(&skbs);
 	}
 
 
-	pfq_non_intrusive_init(&skbs);
+	pfq_bounded_queue_init(&skbs);
 
         local = __this_cpu_ptr(cpu_data);
 
@@ -173,9 +173,9 @@ int pfq_tx_queue_flush(struct pfq_tx_opt *to, struct net_device *dev, int cpu, i
 
                 /* send the packets... */
 
-		pfq_non_intrusive_push(&skbs, skb);
+		pfq_bounded_queue_push(&skbs, skb);
 
-		if (pfq_non_intrusive_len(&skbs) == batch_len)
+		if (pfq_bounded_queue_len(&skbs) == batch_len)
 		{
 			pfq_tx_batch_queue();
 		}
@@ -193,7 +193,7 @@ int pfq_tx_queue_flush(struct pfq_tx_opt *to, struct net_device *dev, int cpu, i
 #endif
         }
 
-	if (pfq_non_intrusive_len(&skbs)) {
+	if (pfq_bounded_queue_len(&skbs)) {
 
 		pfq_tx_batch_queue();
 	}
@@ -239,7 +239,7 @@ out:
 }
 
 
-int pfq_queue_xmit(struct pfq_non_intrusive_queue_skb *skbs, struct net_device *dev, int queue_index)
+int pfq_queue_xmit(struct pfq_bounded_queue_skb *skbs, struct net_device *dev, int queue_index)
 {
        	struct netdev_queue *txq;
 	struct sk_buff *skb;
@@ -254,7 +254,7 @@ int pfq_queue_xmit(struct pfq_non_intrusive_queue_skb *skbs, struct net_device *
 
 	__netif_tx_lock_bh(txq);
 
-	pfq_non_intrusive_for_each(skb, i, skbs)
+	pfq_bounded_queue_for_each(skb, i, skbs)
 	{
                 skb_set_queue_mapping(skb, queue_index);
 
@@ -268,7 +268,7 @@ int pfq_queue_xmit(struct pfq_non_intrusive_queue_skb *skbs, struct net_device *
 }
 
 
-int pfq_queue_xmit_by_mask(struct pfq_non_intrusive_queue_skb *skbs, unsigned long long skbs_mask, struct net_device *dev, int queue_index)
+int pfq_queue_xmit_by_mask(struct pfq_bounded_queue_skb *skbs, unsigned long long skbs_mask, struct net_device *dev, int queue_index)
 {
        	struct netdev_queue *txq;
 	struct sk_buff *skb;
@@ -283,7 +283,7 @@ int pfq_queue_xmit_by_mask(struct pfq_non_intrusive_queue_skb *skbs, unsigned lo
 
 	__netif_tx_lock_bh(txq);
 
-	pfq_non_intrusive_for_each_bitmask(skb, skbs_mask, i, skbs)
+	pfq_bounded_queue_for_each_bitmask(skb, skbs_mask, i, skbs)
 	{
                 skb_set_queue_mapping(skb, queue_index);
 
@@ -315,12 +315,12 @@ int pfq_lazy_xmit(struct sk_annot *ska, struct sk_buff *skb, struct net_device *
 
 
 
-int pfq_lazy_queue_xmit(struct sk_annot *skas, struct pfq_non_intrusive_queue_skb *skbs, struct net_device *dev, int queue_index)
+int pfq_lazy_queue_xmit(struct sk_annot *skas, struct pfq_bounded_queue_skb *skbs, struct net_device *dev, int queue_index)
 {
 	struct sk_buff *skb;
 	int i, n = 0;
 
-	pfq_non_intrusive_for_each(skb, i, skbs)
+	pfq_bounded_queue_for_each(skb, i, skbs)
 	{
 		if (pfq_lazy_xmit(&skas[i], skb, dev, queue_index))
 			++n;
@@ -330,12 +330,12 @@ int pfq_lazy_queue_xmit(struct sk_annot *skas, struct pfq_non_intrusive_queue_sk
 }
 
 
-int pfq_lazy_queue_xmit_by_mask(struct sk_annot *skas, struct pfq_non_intrusive_queue_skb *skbs, unsigned long long skbs_mask, struct net_device *dev, int queue_index)
+int pfq_lazy_queue_xmit_by_mask(struct sk_annot *skas, struct pfq_bounded_queue_skb *skbs, unsigned long long skbs_mask, struct net_device *dev, int queue_index)
 {
 	struct sk_buff *skb;
 	int i, n = 0;
 
-	pfq_non_intrusive_for_each_bitmask(skb, skbs_mask, i, skbs)
+	pfq_bounded_queue_for_each_bitmask(skb, skbs_mask, i, skbs)
 	{
 		if (pfq_lazy_xmit(&skas[i], skb, dev, queue_index))
 			++n;

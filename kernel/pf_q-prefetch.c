@@ -40,11 +40,11 @@ int pfq_prefetch_purge_all(void)
         for_each_possible_cpu(cpu) {
 
                 struct local_data *local = per_cpu_ptr(cpu_data, cpu);
-                struct pfq_non_intrusive_queue_skb *this_queue = &local->prefetch_queue;
+                struct pfq_bounded_queue_skb *this_queue = &local->prefetch_queue;
                 struct sk_buff *skb;
 		int n = 0;
 
-		pfq_non_intrusive_for_each(skb, n, this_queue)
+		pfq_bounded_queue_for_each(skb, n, this_queue)
 		{
                         struct pfq_cb *cb = PFQ_CB(skb);
                         if (unlikely(cb->action.attr & attr_stolen))
@@ -52,9 +52,9 @@ int pfq_prefetch_purge_all(void)
                  	kfree_skb(skb);
 		}
 
-                total += pfq_non_intrusive_len(this_queue);
+                total += pfq_bounded_queue_len(this_queue);
 
-       		pfq_non_intrusive_flush(this_queue);
+       		pfq_bounded_queue_flush(this_queue);
         }
 
         return total;
