@@ -25,9 +25,17 @@
 #include <linux/kernel.h>
 #include <linux/module.h>
 
+#include <linux/vmalloc.h>
+#include <linux/printk.h>
+#include <linux/mm.h>
+#include <linux/pf_q.h>
+
 #include <pf_q-non-intrusive.h>
 #include <pf_q-mpdb-queue.h>
 #include <pf_q-module.h>
+#include <pf_q-sock.h>
+#include <pf_q-global.h>
+#include <pf_q-memory.h>
 
 
 static inline
@@ -162,5 +170,50 @@ size_t pfq_mpdb_enqueue_batch(struct pfq_rx_opt *ro,
 	}
 
 	return sent;
+}
+
+
+int pfq_shared_queue_alloc(struct pfq_sock *so, size_t queue_mem)
+{
+        /* calculate the size of the buffer */
+
+	size_t tm = PAGE_ALIGN(queue_mem);
+        size_t tot_mem;
+
+	/* align bufflen to page size */
+
+	size_t num_pages = tm / PAGE_SIZE; void *addr;
+
+	num_pages += (num_pages + (PAGE_SIZE-1)) & (PAGE_SIZE-1);
+	tot_mem = num_pages*PAGE_SIZE;
+
+	/* Memory is already zeroed */
+
+        addr = vmalloc_user(tot_mem);
+	if (addr == NULL)
+	{
+		printk(KERN_WARNING "[PFQ|%d] pfq_queue_alloc: out of memory (vmalloc %zu bytes)!", so->id, tot_mem);
+		return -ENOMEM;
+	}
+
+        so->mem_addr = addr;
+        so->mem_size = tot_mem;
+
+	pr_devel("[PFQ|%d] pfq_queue_alloc: caplen:%zu maxlen:%zu memory:%zu bytes.\n", so->id, so->rx_opt.caplen, so->tx_opt.maxlen, tot_mem);
+	return 0;
+}
+
+
+void pfq_shared_queue_free(struct pfq_sock *so)
+{
+	if (so->mem_addr) {
+
+		vfree(so->mem_addr);
+
+		so->mem_addr = NULL;
+		so->mem_size = 0;
+
+		pr_devel("[PFQ|%d] queue freed.\n", so->id);
+	}
 }
 
