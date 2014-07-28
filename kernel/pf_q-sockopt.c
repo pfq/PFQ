@@ -324,7 +324,7 @@ int pfq_setsockopt(struct socket *sock,
 
                                 /* alloc queue memory */
 
-                                if (pfq_shared_queue_alloc(so, pfq_queue_total_mem(so)) < 0)
+                                if (pfq_mpdb_shared_queue_alloc(so, pfq_queue_total_mem(so)) < 0)
                                 {
                                         return -ENOMEM;
                                 }
@@ -381,7 +381,7 @@ int pfq_setsockopt(struct socket *sock,
 
                         msleep(Q_GRACE_PERIOD);
 
-                        pfq_shared_queue_free(so);
+                        pfq_mpdb_shared_queue_free(so);
                 }
 
         } break;

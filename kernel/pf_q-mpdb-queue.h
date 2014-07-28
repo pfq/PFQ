@@ -42,8 +42,9 @@ extern size_t pfq_mpdb_enqueue_batch(struct pfq_rx_opt *ro,
 		                     int gid);
 
 
-int   pfq_shared_queue_alloc(struct pfq_sock *p, size_t queue_mem);
-void  pfq_shared_queue_free (struct pfq_sock *p);
+int   pfq_mpdb_shared_queue_alloc(struct pfq_sock *p, size_t queue_mem);
+void  pfq_mpdb_shared_queue_free (struct pfq_sock *p);
+
 
 static inline size_t pfq_queue_mpdb_mem(struct pfq_sock *so)
 {
@@ -60,22 +61,23 @@ static inline size_t pfq_queue_total_mem(struct pfq_sock *so)
         return sizeof(struct pfq_queue_hdr) + pfq_queue_mpdb_mem(so) + pfq_queue_spsc_mem(so);
 }
 
+
 static inline
-size_t mpdb_queue_len(struct pfq_sock *p)
+size_t pfq_mpdb_queue_len(struct pfq_sock *p)
 {
         return MPDB_QUEUE_LEN(get_pfq_queue_hdr(p)->rx.data);
 }
 
 
 static inline
-int mpdb_queue_index(struct pfq_sock *p)
+int pfq_mpdb_queue_index(struct pfq_sock *p)
 {
         return MPDB_QUEUE_INDEX(get_pfq_queue_hdr(p)->rx.data) & 1;
 }
 
 
 static inline
-size_t mpdb_queue_size(struct pfq_sock *p)
+size_t pfq_mpdb_queue_size(struct pfq_sock *p)
 {
         struct pfq_rx_queue_hdr *rx = & get_pfq_queue_hdr(p)->rx;
         return rx->size * rx->slot_size;

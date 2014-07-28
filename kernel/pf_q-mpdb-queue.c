@@ -173,7 +173,7 @@ size_t pfq_mpdb_enqueue_batch(struct pfq_rx_opt *ro,
 }
 
 
-int pfq_shared_queue_alloc(struct pfq_sock *so, size_t queue_mem)
+int pfq_mpdb_shared_queue_alloc(struct pfq_sock *so, size_t queue_mem)
 {
         /* calculate the size of the buffer */
 
@@ -204,7 +204,7 @@ int pfq_shared_queue_alloc(struct pfq_sock *so, size_t queue_mem)
 }
 
 
-void pfq_shared_queue_free(struct pfq_sock *so)
+void pfq_mpdb_shared_queue_free(struct pfq_sock *so)
 {
 	if (so->mem_addr) {
 
