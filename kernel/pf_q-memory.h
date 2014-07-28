@@ -56,7 +56,7 @@ struct local_data
 
         struct pfq_bounded_queue_skb prefetch_queue;
 
-	struct sk_annot 	skas[Q_NON_INTRUSIVE_MAXLEN];
+	struct sk_annot 	skas[Q_BOUNDED_QUEUE_LEN];
 
         atomic_t                enable_recycle;
         struct sk_buff_head     tx_recycle_list;

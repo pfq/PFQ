@@ -240,7 +240,7 @@ void send_to_kernel(struct napi_struct *napi, struct sk_buff *skb)
 static int
 pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 {
- 	unsigned long long sock_queue[Q_NON_INTRUSIVE_MAXLEN];
+ 	unsigned long long sock_queue[Q_BOUNDED_QUEUE_LEN];
 
         struct pfq_bounded_queue_skb * prefetch_queue;
         unsigned long group_mask, socket_mask;
@@ -254,7 +254,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 #endif
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,9,0))
-	BUILD_BUG_ON_MSG(Q_NON_INTRUSIVE_MAXLEN > (sizeof(sock_queue[0]) << 3), "sock_queue overflow");
+	BUILD_BUG_ON_MSG(Q_BOUNDED_QUEUE_LEN > (sizeof(sock_queue[0]) << 3), "sock_queue overflow");
 #endif
 
 	/* if no socket is open, drop the packet now */
@@ -932,13 +932,13 @@ static int __init pfq_init_module(void)
         pfq_proto_ops_init();
         pfq_proto_init();
 
-        if (prefetch_len > Q_NON_INTRUSIVE_MAXLEN || prefetch_len == 0) {
-                printk(KERN_INFO "[PFQ] prefetch_len=%d not allowed (0,%zu)!\n", prefetch_len, Q_NON_INTRUSIVE_MAXLEN);
+        if (prefetch_len > Q_BOUNDED_QUEUE_LEN || prefetch_len == 0) {
+                printk(KERN_INFO "[PFQ] prefetch_len=%d not allowed (0,%zu)!\n", prefetch_len, Q_BOUNDED_QUEUE_LEN);
                 return -EFAULT;
         }
 
-	if (batch_len > Q_NON_INTRUSIVE_MAXLEN || batch_len == 0) {
-                printk(KERN_INFO "[PFQ] batch_len=%d not allowed (0,%zu)!\n", batch_len, Q_NON_INTRUSIVE_MAXLEN);
+	if (batch_len > Q_BOUNDED_QUEUE_LEN || batch_len == 0) {
+                printk(KERN_INFO "[PFQ] batch_len=%d not allowed (0,%zu)!\n", batch_len, Q_BOUNDED_QUEUE_LEN);
                 return -EFAULT;
         }
 

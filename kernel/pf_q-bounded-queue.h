@@ -33,7 +33,7 @@
 struct pfq_bounded_queue_skb
 {
         size_t len;
-        struct sk_buff *queue[Q_NON_INTRUSIVE_MAXLEN];  /* sk_buff */
+        struct sk_buff *queue[Q_BOUNDED_QUEUE_LEN];  /* sk_buff */
 };
 
 
@@ -61,7 +61,7 @@ void pfq_bounded_queue_init(struct pfq_bounded_queue_skb *q)
 static inline
 int pfq_bounded_queue_push(struct pfq_bounded_queue_skb *q, struct sk_buff *skb)
 {
-        if (q->len < Q_NON_INTRUSIVE_MAXLEN)
+        if (q->len < Q_BOUNDED_QUEUE_LEN)
                 return q->queue[q->len++] = skb, 0;
         return -1;
 }
