@@ -239,7 +239,7 @@ void send_to_kernel(struct napi_struct *napi, struct sk_buff *skb)
 
 
 static int
-pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
+pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 {
  	unsigned long long sock_queue[Q_BOUNDED_QUEUE_LEN];
 
@@ -292,12 +292,18 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 
 	local = per_cpu_ptr(cpu_data, cpu);
 
-	/* make this skb controlled by the garbage collector */
 
-	make_buff(&local->gc, skb);
+	/* the ownership of this skb is under the garbage collector control */
 
-        PFQ_CB(skb)->action.direct = direct;
-        PFQ_CB(skb)->action.attr = 0;
+	buff = make_buff(&local->gc, skb);
+	if (buff.skb == NULL) {
+		printk(KERN_INFO "[PFQ] GC: memory exhausted!\n");
+		kfree_skb(skb);
+		return 0;
+	}
+
+        PFQ_CB(buff.skb)->action.direct = direct;
+        PFQ_CB(buff.skb)->action.attr = 0;
 
         if (gc_size(&local->gc) < prefetch_len) {
         	put_cpu();
@@ -448,33 +454,35 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 
         GC_queue_for_each_buff(&local->gc.pool, buff, n)
         {
-        	struct sk_buff *nskb;
+        	struct sk_buff *skb;
         	struct pfq_cb *cb;
         	bool to_kernel;
         	int num_fwd;
 
-                cb = PFQ_CB(skb);
+                cb = PFQ_CB(buff.skb);
 
                 if (unlikely(cb->action.attr & attr_stolen))
                         continue;
 
-		to_kernel = cb->action.direct && is_targeted_to_kernel(skb);
+		to_kernel = cb->action.direct && is_targeted_to_kernel(buff.skb);
 		num_fwd   = cb->log->num_fwd;
+
+		/* possibly send a copy of this buff to the kernel */
 
 		if (to_kernel) {
 
 			if (num_fwd > 0) {
-				nskb = skb_clone(skb, GFP_ATOMIC);
-				if (!nskb) {
+				skb = skb_clone(buff.skb, GFP_ATOMIC);
+				if (!skb) {
 					if (printk_ratelimit())
                                 		printk(KERN_INFO "[PFQ] forward to kernel: skb_clone error!\n");
 				}
 			}
 			else {
-				nskb = skb;
+				skb = buff.skb;
                         }
 
-			if (nskb) {
+			if (skb) {
                         	send_to_kernel(napi, skb);
 			}
 		}
@@ -482,17 +490,15 @@ pfq_receive(struct napi_struct *napi, struct sk_buff *skb, int direct)
 		/* pfq_lazy_exec send multiple copies of skb to different devices...
 		 * the skb is freed at the last forward */
 
-		if (num_fwd) {
-
+		if (num_fwd)
 			pfq_lazy_exec(buff);
-		}
 
 		if (!to_kernel && num_fwd == 0) {
 
 			if (cb->action.direct)
-				pfq_kfree_skb_recycle(skb, &local->rx_recycle_list);
+				pfq_kfree_skb_recycle(buff.skb, &local->rx_recycle_list);
 			else
-				consume_skb(skb);
+				consume_skb(buff.skb);
 		}
         }
 
@@ -929,13 +935,13 @@ static int __init pfq_init_module(void)
         pfq_proto_ops_init();
         pfq_proto_init();
 
-        if (prefetch_len > Q_BOUNDED_QUEUE_LEN || prefetch_len == 0) {
-                printk(KERN_INFO "[PFQ] prefetch_len=%d not allowed (0,%zu)!\n", prefetch_len, Q_BOUNDED_QUEUE_LEN);
+        if (prefetch_len <= 0 || prefetch_len > 32) {
+                printk(KERN_INFO "[PFQ] prefetch_len=%d not allowed -> valid range (0,32]!\n", prefetch_len);
                 return -EFAULT;
         }
 
-	if (batch_len > Q_BOUNDED_QUEUE_LEN || batch_len == 0) {
-                printk(KERN_INFO "[PFQ] batch_len=%d not allowed (0,%zu)!\n", batch_len, Q_BOUNDED_QUEUE_LEN);
+	if (batch_len <= 0 || batch_len > 32) {
+                printk(KERN_INFO "[PFQ] batch_len=%d not allowed -> valid range (0,32]!\n", batch_len);
                 return -EFAULT;
         }
 

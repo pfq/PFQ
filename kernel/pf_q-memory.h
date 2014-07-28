@@ -219,7 +219,7 @@ static inline
 void pfq_skb_recycle_init(void)
 {
         int cpu;
-        for_each_online_cpu(cpu)
+        for_each_possible_cpu(cpu)
         {
                 struct local_data *this_cpu = per_cpu_ptr(cpu_data, cpu);
 
@@ -235,7 +235,7 @@ void pfq_skb_recycle_enable(bool value)
         int cpu;
 
         smp_wmb();
-        for_each_online_cpu(cpu)
+        for_each_possible_cpu(cpu)
         {
                 struct local_data *this_cpu = per_cpu_ptr(cpu_data, cpu);
                 atomic_set(&this_cpu->enable_recycle, value);
@@ -248,7 +248,7 @@ static inline
 int pfq_skb_recycle_purge(void)
 {
         int cpu, total = 0;
-        for_each_online_cpu(cpu)
+        for_each_possible_cpu(cpu)
         {
                 struct local_data *local = per_cpu_ptr(cpu_data, cpu);
 

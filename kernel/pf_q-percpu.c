@@ -35,11 +35,27 @@
 int pfq_percpu_init(void)
 {
 	/* create a per-cpu context */
+
 	cpu_data = alloc_percpu(struct local_data);
 	if (!cpu_data) {
                 printk(KERN_WARNING "[PFQ] out of memory!\n");
 		return -ENOMEM;
         }
+
+#if 0
+        for_each_possible_cpu(cpu) {
+
+                struct local_data *local = per_cpu_ptr(cpu_data, cpu);
+
+		local->gc = kzalloc(sizeof(struct gc_data), GFP_KERNEL);
+		if (local->gc == NULL) {
+                	printk(KERN_INFO "[PFQ] percpu_init: no memory!\n");
+                	return -ENOMEM;
+		}
+
+		gc_init(local->gc);
+	}
+#endif
 
 	return 0;
 }
@@ -52,22 +68,22 @@ int pfq_percpu_flush(void)
 
         /* destroy prefetch queues (of each cpu) */
 
-        for_each_online_cpu(cpu) {
+        for_each_possible_cpu(cpu) {
 
                 struct local_data *local = per_cpu_ptr(cpu_data, cpu);
-                struct gc_queue_buff *queue = &local->gc.pool;
                 struct sk_buff *skb;
 		int n = 0;
 
-		GC_queue_for_each_skb(queue, skb, n)
+		GC_queue_for_each_skb(&local->gc.pool, skb, n)
 		{
                         struct pfq_cb *cb = PFQ_CB(skb);
                         if (unlikely(cb->action.attr & attr_stolen))
                                 continue;
+
                  	kfree_skb(skb);
 		}
 
-                total += queue->len;
+                total += local->gc.pool.len;
 
 		gc_reset(&local->gc);
         }
