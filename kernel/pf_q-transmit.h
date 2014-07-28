@@ -42,8 +42,8 @@ extern int pfq_queue_xmit_by_mask(struct pfq_bounded_queue_skb *skbs, unsigned l
 
 static inline int pfq_xmit(struct sk_buff *skb, struct net_device *dev, int queue_index)
 {
-	struct pfq_bounded_queue_skb skbs = { 1 , { skb } };
-	return pfq_queue_xmit(&skbs, dev, queue_index);
+	struct pfq_batch_queue_skb skbs = { 1 , { skb } };
+	return pfq_queue_xmit(PFQ_BOUNDED_QUEUE(&skbs), dev, queue_index);
 }
 
 

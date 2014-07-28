@@ -76,7 +76,7 @@ pfq_pick_tx(struct net_device *dev, struct sk_buff *skb, int *queue_index)
 
 int pfq_tx_queue_flush(struct pfq_tx_opt *to, struct net_device *dev, int cpu, int node)
 {
-	struct pfq_bounded_queue_skb skbs;
+	struct pfq_batch_queue_skb skbs;
 
 	struct local_data *local;
         struct pfq_pkt_hdr * h;
@@ -95,27 +95,27 @@ int pfq_tx_queue_flush(struct pfq_tx_opt *to, struct net_device *dev, int cpu, i
 		struct sk_buff *skb;
         	int sent, i;
 
-		sent = pfq_queue_xmit(&skbs, dev, to->hw_queue);
+		sent = pfq_queue_xmit(PFQ_BOUNDED_QUEUE(&skbs), dev, to->hw_queue);
 
                 /* update stats */
 
                 __sparse_add(&to->stat.sent, sent, cpu);
-                __sparse_add(&to->stat.disc, pfq_bounded_queue_len(&skbs) - sent, cpu);
+                __sparse_add(&to->stat.disc, pfq_bounded_queue_len(PFQ_BOUNDED_QUEUE(&skbs)) - sent, cpu);
 
 		/* free/recycle the packets now... */
 
-		pfq_bounded_queue_for_each(skb, i, &skbs)
+		pfq_bounded_queue_for_each(skb, i, PFQ_BOUNDED_QUEUE(&skbs))
 		{
 			pfq_kfree_skb_recycle(skb, &local->tx_recycle_list);
 		}
 
-		pfq_spsc_read_commit_n(to->queue_ptr, pfq_bounded_queue_len(&skbs));
+		pfq_spsc_read_commit_n(to->queue_ptr, pfq_bounded_queue_len(PFQ_BOUNDED_QUEUE(&skbs)));
 
-		pfq_bounded_queue_flush(&skbs);
+		pfq_bounded_queue_flush(PFQ_BOUNDED_QUEUE(&skbs));
 	}
 
 
-	pfq_bounded_queue_init(&skbs);
+	pfq_bounded_queue_init(PFQ_BOUNDED_QUEUE(&skbs));
 
         local = __this_cpu_ptr(cpu_data);
 
@@ -173,9 +173,9 @@ int pfq_tx_queue_flush(struct pfq_tx_opt *to, struct net_device *dev, int cpu, i
 
                 /* send the packets... */
 
-		pfq_bounded_queue_push(&skbs, skb);
+		pfq_bounded_queue_push(PFQ_BOUNDED_QUEUE(&skbs), Q_BATCH_QUEUE_LEN, skb);
 
-		if (pfq_bounded_queue_len(&skbs) == batch_len)
+		if (pfq_bounded_queue_len(PFQ_BOUNDED_QUEUE(&skbs)) == batch_len)
 		{
 			pfq_tx_batch_queue();
 		}
@@ -193,7 +193,7 @@ int pfq_tx_queue_flush(struct pfq_tx_opt *to, struct net_device *dev, int cpu, i
 #endif
         }
 
-	if (pfq_bounded_queue_len(&skbs)) {
+	if (pfq_bounded_queue_len(PFQ_BOUNDED_QUEUE(&skbs))) {
 
 		pfq_tx_batch_queue();
 	}

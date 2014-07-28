@@ -54,9 +54,9 @@ struct local_data
         int                     sock_cnt;
         int 			flowctrl;
 
-        struct pfq_bounded_queue_skb prefetch_queue;
+        struct pfq_prefetch_queue_skb prefetch_queue;
 
-	struct sk_annot 	skas[Q_BOUNDED_QUEUE_LEN];
+	struct sk_annot 	skas[Q_PREFETCH_QUEUE_LEN];
 
         atomic_t                enable_recycle;
         struct sk_buff_head     tx_recycle_list;
