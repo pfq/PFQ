@@ -29,50 +29,50 @@
 #include "predicate.h"
 
 
-static inline struct sk_buff *
-forward_drop(arguments_t args, struct sk_buff *skb)
+static inline Action_SkBuff
+forward_drop(arguments_t args, SkBuff b)
 {
-        return drop(skb);
+        return Drop(b);
 }
 
-static inline struct sk_buff *
-forward_broadcast(arguments_t args, struct sk_buff *skb)
+static inline Action_SkBuff
+forward_broadcast(arguments_t args, SkBuff b)
 {
-        return broadcast(skb);
+        return Broadcast(b);
 }
 
-static inline struct sk_buff *
-forward_to_kernel(arguments_t args, struct sk_buff *skb)
+static inline Action_SkBuff
+forward_to_kernel(arguments_t args, SkBuff b)
 {
-        return to_kernel(skb);
+        return Pass(to_kernel(b));
 }
 
-static inline struct sk_buff *
-forward_class(arguments_t args, struct sk_buff *skb)
+static inline Action_SkBuff
+forward_class(arguments_t args, SkBuff b)
 {
         const int c = get_data(int, args);
 
         if (!c) {
                 if (printk_ratelimit())
                         printk(KERN_INFO "[PFQ] forward class: internal error!\n");
-                return skb;
+                return Pass(b);
         }
 
-        return class(skb, (1ULL << c));
+        return Class(b, (1ULL << c));
 }
 
-static inline struct sk_buff *
-forward_deliver(arguments_t args, struct sk_buff *skb)
+static inline Action_SkBuff
+forward_deliver(arguments_t args, SkBuff b)
 {
         const int c = get_data(int, args);
 
         if (!c) {
                 if (printk_ratelimit())
                         printk(KERN_INFO "[PFQ] deliver: internal error!\n");
-                return skb;
+                return Pass(b);
         }
 
-        return deliver(skb, (1ULL << c));
+        return Deliver(b, (1ULL << c));
 }
 
 #endif /* _FUNCTIONAL_FORWARD_H_ */

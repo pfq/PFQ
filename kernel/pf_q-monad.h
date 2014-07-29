@@ -27,14 +27,18 @@
 #include <pf_q-skbuff.h>
 #include <pf_q-macro.h>
 #include <pf_q-GC.h>
+#include <pf_q-sparse.h>
 
 /* The Action monad */
 
-#define Action(type) \
-struct Action_ ## type \
+#define MakeAction(type) \
+typedef struct \
 { \
 	type 	value; \
-};
+} Action_ ## type;
+
+
+MakeAction(SkBuff);
 
 
 /* persistent state */
@@ -80,107 +84,108 @@ struct pfq_monad
 };
 
 
-/* fanout: copy */
+/* Fanout constructors */
 
 static inline
-struct sk_buff *
-copy(struct sk_buff *skb)
+Action_SkBuff
+Pass(SkBuff b)
 {
-        fanout_t * a = & PFQ_CB(skb)->monad->fanout;
+	Action_SkBuff ret = { b };
+        return ret;
+}
+
+static inline
+Action_SkBuff
+Copy(SkBuff b)
+{
+	Action_SkBuff ret = { b };
+        PFQ_CB(b.skb)->monad->fanout.type = fanout_copy;
+        return ret;
+}
+
+static inline
+Action_SkBuff
+Drop(SkBuff b)
+{
+	Action_SkBuff ret = { b };
+        PFQ_CB(b.skb)->monad->fanout.type = fanout_drop;
+        return ret;
+}
+
+
+static inline
+Action_SkBuff
+Class(SkBuff b, uint64_t class_mask)
+{
+	Action_SkBuff ret = { b };
+        PFQ_CB(b.skb)->monad->fanout.class_mask = class_mask;
+        return ret;
+}
+
+static inline
+Action_SkBuff
+Broadcast(SkBuff b)
+{
+	Action_SkBuff ret = { b };
+        fanout_t * a = & PFQ_CB(b.skb)->monad->fanout;
         a->type = fanout_copy;
-        return skb;
-}
-
-/* drop: ignore this packet for the current group */
-
-static inline
-struct sk_buff *
-drop(struct sk_buff *skb)
-{
-        fanout_t * a = & PFQ_CB(skb)->monad->fanout;
-        a->type = fanout_drop;
-        return skb;
-}
-
-/* class skb: specifies only the class for the packet */
-
-static inline
-struct sk_buff *
-class(struct sk_buff *skb, uint64_t class_mask)
-{
-        fanout_t * a = & PFQ_CB(skb)->monad->fanout;
-        a->class_mask = class_mask;
-        return skb;
-}
-
-/* broadcast: broadcast the skb all the classes */
-
-static inline
-struct sk_buff *
-broadcast(struct sk_buff *skb)
-{
-        fanout_t * a = & PFQ_CB(skb)->monad->fanout;
-        a->type  = fanout_copy;
         a->class_mask = Q_CLASS_ANY;
-        return skb;
+        return ret;
 }
 
-/* steering skb: for this group, steer the skb across sockets (by means of hash) */
-
 static inline
-struct sk_buff *
-steering(struct sk_buff *skb, uint32_t hash)
+Action_SkBuff
+Steering(SkBuff b, uint32_t hash)
 {
-        fanout_t * a = & PFQ_CB(skb)->monad->fanout;
+	Action_SkBuff ret = { b };
+        fanout_t * a = & PFQ_CB(b.skb)->monad->fanout;
         a->type  = fanout_steer;
         a->hash  = hash;
-        return skb;
+        return ret;
 }
 
-/* deliver: for this group, deliver the skb to the sockets of the given classes */
-
 static inline
-struct sk_buff *
-deliver(struct sk_buff *skb, unsigned long class_mask)
+Action_SkBuff
+Deliver(SkBuff b, unsigned long class_mask)
 {
-        fanout_t * a  = & PFQ_CB(skb)->monad->fanout;
+	Action_SkBuff ret = { b };
+        fanout_t * a  = & PFQ_CB(b.skb)->monad->fanout;
         a->type       = fanout_copy;
         a->class_mask = class_mask;
-        return skb;
+        return ret;
 }
 
-/* class + steering: for this group, steer the skb across sockets of the given classes (by means of hash) */
-
 static inline
-struct sk_buff *
-dispatch(struct sk_buff *skb, unsigned long class_mask, uint32_t hash)
+Action_SkBuff
+Dispatch(SkBuff b, unsigned long class_mask, uint32_t hash)
 {
-        fanout_t * a = & PFQ_CB(skb)->monad->fanout;
-        a->type  = fanout_steer;
+	Action_SkBuff ret = { b };
+        fanout_t * a = & PFQ_CB(b.skb)->monad->fanout;
+        a->type       = fanout_steer;
         a->class_mask = class_mask;
-        a->hash  = hash;
-        return skb;
+        a->hash       = hash;
+        return ret;
 }
 
 /* to_kernel: set the skb to be passed to kernel */
 
 static inline
-struct sk_buff *
-to_kernel(struct sk_buff *skb)
+SkBuff
+to_kernel(SkBuff b)
 {
-        PFQ_CB(skb)->log->to_kernel = true;
-        return skb;
+        PFQ_CB(b.skb)->log->to_kernel = true;
+        return b;
 }
 
 /* utility function: counter */
 
 static inline
-sparse_counter_t * get_counter(struct sk_buff *skb, int n)
+sparse_counter_t * get_counter(SkBuff b, int n)
 {
         if (n < 0 || n >= Q_MAX_COUNTERS)
                 return NULL;
 
-	return & PFQ_CB(skb)->monad->persistent->counter[n];
+	return & PFQ_CB(b.skb)->monad->persistent->counter[n];
 }
 
 
@@ -188,31 +193,31 @@ sparse_counter_t * get_counter(struct sk_buff *skb, int n)
 
 
 static inline
-unsigned long get_state(struct sk_buff const *skb)
+unsigned long get_state(SkBuff b)
 {
-        return PFQ_CB(skb)->monad->state;
+        return PFQ_CB(b.skb)->monad->state;
 }
 
 static inline
-void set_state(struct sk_buff *skb, unsigned long state)
+void set_state(SkBuff b, unsigned long state)
 {
-        PFQ_CB(skb)->monad->state = state;
+        PFQ_CB(b.skb)->monad->state = state;
 }
 
 static inline void *
-__get_persistent(struct sk_buff const *skb, int n)
+__get_persistent(SkBuff b, int n)
 {
-	struct pergroup_context *ctx = PFQ_CB(skb)->monad->persistent;
+	struct pergroup_context *ctx = PFQ_CB(b.skb)->monad->persistent;
 	spin_lock(&ctx->persistent[n].lock);
 	return ctx->persistent[n].memory;
 }
 
-#define get_persistent(type, skb, n) __builtin_choose_expr(sizeof(type) <= 64, __get_persistent(skb, n) , (void)0)
+#define get_persistent(type, b, n) __builtin_choose_expr(sizeof(type) <= 64, __get_persistent(b, n) , (void)0)
 
 static inline
-void put_persistent(struct sk_buff const *skb, int n)
+void put_persistent(SkBuff b, int n)
 {
-	struct pergroup_context *ctx = PFQ_CB(skb)->monad->persistent;
+	struct pergroup_context *ctx = PFQ_CB(b.skb)->monad->persistent;
 	spin_unlock(&ctx->persistent[n].lock);
 }
 

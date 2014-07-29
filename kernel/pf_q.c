@@ -345,9 +345,9 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 
 		socket_mask = 0;
 
-		GC_queue_for_each_skb(&local->gc.pool, skb, n)
+		GC_queue_for_each_buff(&local->gc.pool, buff, n)
 		{
-			struct pfq_cb *cb = PFQ_CB(skb);
+			struct pfq_cb *cb = PFQ_CB(buff.skb);
 			unsigned long sock_mask = 0;
 			struct pfq_computation_tree *prg;
 
@@ -363,13 +363,13 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 
 			/* check bpf filter */
 
-			if (bpf && !sk_run_filter(skb, bpf->insns))
+			if (bpf && !sk_run_filter(buff.skb, bpf->insns))
 				continue;
 
 			/* check vlan filter */
 
 			if (vlan_filter_enabled) {
-				if (!__pfq_check_group_vlan_filter(gid, skb->vlan_tci & ~VLAN_TAG_PRESENT))
+				if (!__pfq_check_group_vlan_filter(gid, buff.skb->vlan_tci & ~VLAN_TAG_PRESENT))
 					continue;
 			}
 
@@ -389,9 +389,9 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 
 			if (prg) { /* run the functional program */
 
-				skb = pfq_run(prg, skb);
+				buff = pfq_run(prg, buff).value;
 
-				if (skb == NULL)
+				if (buff.skb == NULL)
 					continue;
 
 				if (likely(!is_drop(monad.fanout))) {

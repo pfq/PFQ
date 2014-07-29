@@ -24,12 +24,14 @@
 #ifndef _FUNCTIONAL_MISC_H
 #define _FUNCTIONAL_MISC_H
 
-static inline struct sk_buff *
-mark(arguments_t args, struct sk_buff *skb)
+#include <pf_q-module.h>
+
+static inline Action_SkBuff
+mark(arguments_t args, SkBuff b)
 {
 	const unsigned long value = get_data(unsigned long, args);
-	set_state(skb, value);
-	return skb;
+	set_state(b, value);
+	return Pass(b);
 }
 
 #endif /* _FUNCTIONAL_MISC_H */

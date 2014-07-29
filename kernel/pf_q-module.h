@@ -38,6 +38,7 @@
 
 #include <pf_q-sparse.h>
 #include <pf_q-monad.h>
+#include <pf_q-GC.h>
 
 /**** macros ****/
 
@@ -48,9 +49,9 @@
 
 #define ARGS_TYPE(a)  		__builtin_choose_expr(__builtin_types_compatible_p(arguments_t, typeof(a)), a, (void)0)
 
-#define EVAL_FUNCTION(f, skb) 	((function_ptr_t)f.fun->ptr)(f.fun, skb)
-#define EVAL_PROPERTY(f, skb) 	((property_ptr_t)f.fun->ptr)(f.fun, skb)
-#define EVAL_PREDICATE(f, skb) 	((predicate_ptr_t)f.fun->ptr)(f.fun, skb)
+#define EVAL_FUNCTION(f,  b) 	((function_ptr_t)f.fun->ptr)(f.fun,  b)
+#define EVAL_PROPERTY(f,  b) 	((property_ptr_t)f.fun->ptr)(f.fun,  b)
+#define EVAL_PREDICATE(f, b) 	((predicate_ptr_t)f.fun->ptr)(f.fun, b)
 
 #define get_data(type,a) get_data0(type,a)
 #define set_data(type,a) set_data0(type,a)
@@ -67,8 +68,8 @@
 
 #define make_mask(prefix)       htonl(~((1ULL << (32-prefix)) - 1))
 
-
 /**** generic functional type ****/
+
 
 struct pfq_function_descr;
 struct pfq_exec;
@@ -89,9 +90,9 @@ typedef struct pfq_functional *  arguments_t;
 
 /**** function prototypes ****/
 
-typedef struct sk_buff *(*function_ptr_t)(arguments_t, struct sk_buff *);
-typedef uint64_t (*property_ptr_t) (arguments_t, struct sk_buff const *);
-typedef bool (*predicate_ptr_t)	(arguments_t, struct sk_buff const *);
+typedef Action_SkBuff (*function_ptr_t)(arguments_t, SkBuff);
+typedef uint64_t (*property_ptr_t) (arguments_t, SkBuff);
+typedef bool (*predicate_ptr_t)	(arguments_t, SkBuff);
 typedef int (*init_ptr_t) (arguments_t);
 typedef int (*fini_ptr_t) (arguments_t);
 

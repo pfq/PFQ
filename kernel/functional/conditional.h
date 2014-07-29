@@ -28,41 +28,41 @@
 
 #include "predicate.h"
 
-static inline struct sk_buff *
-conditional(arguments_t args, struct sk_buff *skb)
+static inline Action_SkBuff
+conditional(arguments_t args, SkBuff b)
 {
         predicate_t pred_ = get_data0(predicate_t, args);
         function_t  then_ = get_data1(function_t, args);
         function_t  else_ = get_data2(function_t, args);
 
-	if (EVAL_PREDICATE(pred_, skb))
-		return EVAL_FUNCTION(then_, skb);
+	if (EVAL_PREDICATE(pred_, b))
+		return EVAL_FUNCTION(then_, b);
 
-	return EVAL_FUNCTION(else_, skb);
+	return EVAL_FUNCTION(else_, b);
 }
 
-static inline struct sk_buff *
-when(arguments_t args, struct sk_buff *skb)
+static inline Action_SkBuff
+when(arguments_t args, SkBuff b)
 {
         predicate_t pred_ = get_data0(predicate_t, args);
         function_t  fun_  = get_data1(function_t, args);
 
-	if (EVAL_PREDICATE(pred_, skb))
-		return EVAL_FUNCTION(fun_, skb);
+	if (EVAL_PREDICATE(pred_, b))
+		return EVAL_FUNCTION(fun_, b);
 
-	return skb;
+	return Pass(b);
 }
 
-static inline struct sk_buff *
-unless(arguments_t args, struct sk_buff *skb)
+static inline Action_SkBuff
+unless(arguments_t args, SkBuff b)
 {
         predicate_t pred_ = get_data0(predicate_t, args);
         function_t  fun_  = get_data1(function_t, args);
 
-	if (!EVAL_PREDICATE(pred_, skb))
-		return EVAL_FUNCTION(fun_, skb);
+	if (!EVAL_PREDICATE(pred_, b))
+		return EVAL_FUNCTION(fun_, b);
 
-	return skb;
+	return Pass(b);
 }
 
 

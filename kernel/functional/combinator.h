@@ -27,40 +27,40 @@
 #include "predicate.h"
 
 static inline
-bool not(arguments_t args, struct sk_buff const *skb)
+bool not(arguments_t args, SkBuff b)
 {
 	predicate_t p1 = get_data(predicate_t, args);
 
-        return !EVAL_PREDICATE(p1,skb);
+        return !EVAL_PREDICATE(p1,b);
 }
 
 static inline
-bool or(arguments_t args, struct sk_buff const *skb)
+bool or(arguments_t args, SkBuff b)
 {
 	predicate_t p1 = get_data0(predicate_t, args);
 	predicate_t p2 = get_data1(predicate_t, args);
 
-        return EVAL_PREDICATE(p1,skb) || EVAL_PREDICATE(p2, skb);
+        return EVAL_PREDICATE(p1,b) || EVAL_PREDICATE(p2, b);
 }
 
 
 static inline
-bool and(arguments_t args, struct sk_buff const *skb)
+bool and(arguments_t args, SkBuff b)
 {
 	predicate_t p1 = get_data0(predicate_t, args);
 	predicate_t p2 = get_data1(predicate_t, args);
 
-        return EVAL_PREDICATE(p1, skb) && EVAL_PREDICATE(p2, skb);
+        return EVAL_PREDICATE(p1, b) && EVAL_PREDICATE(p2, b);
 }
 
 
 static inline
-bool xor(arguments_t args, struct sk_buff const *skb)
+bool xor(arguments_t args, SkBuff b)
 {
 	predicate_t p1 = get_data0(predicate_t, args);
 	predicate_t p2 = get_data1(predicate_t, args);
 
-        return EVAL_PREDICATE(p1, skb) != EVAL_PREDICATE(p2, skb);
+        return EVAL_PREDICATE(p1, b) != EVAL_PREDICATE(p2, b);
 }
 
 

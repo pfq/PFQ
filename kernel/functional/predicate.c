@@ -30,112 +30,112 @@
 
 
 static bool
-pred_is_ip(arguments_t args, struct sk_buff const *skb)
+pred_is_ip(arguments_t args, SkBuff b)
 {
-        return  is_ip(skb);
+        return  is_ip(b);
 }
 
 static bool
-pred_is_ip6(arguments_t args, struct sk_buff const *skb)
+pred_is_ip6(arguments_t args, SkBuff b)
 {
-        return  is_ip6(skb);
+        return  is_ip6(b);
 }
 
 static bool
-pred_is_udp(arguments_t args, struct sk_buff const *skb)
+pred_is_udp(arguments_t args, SkBuff b)
 {
-        return  is_udp(skb);
+        return  is_udp(b);
 }
 
 static bool
-pred_is_udp6(arguments_t args, struct sk_buff const *skb)
+pred_is_udp6(arguments_t args, SkBuff b)
 {
-        return  is_udp6(skb);
+        return  is_udp6(b);
 }
 
 static bool
-pred_is_tcp(arguments_t args, struct sk_buff const *skb)
+pred_is_tcp(arguments_t args, SkBuff b)
 {
-        return  is_tcp(skb);
+        return  is_tcp(b);
 }
 
 static bool
-pred_is_tcp6(arguments_t args, struct sk_buff const *skb)
+pred_is_tcp6(arguments_t args, SkBuff b)
 {
-        return  is_tcp6(skb);
+        return  is_tcp6(b);
 }
 
 static bool
-pred_is_icmp(arguments_t args, struct sk_buff const *skb)
+pred_is_icmp(arguments_t args, SkBuff b)
 {
-        return  is_icmp(skb);
+        return  is_icmp(b);
 }
 
 static bool
-pred_is_icmp6(arguments_t args, struct sk_buff const *skb)
+pred_is_icmp6(arguments_t args, SkBuff b)
 {
-        return  is_icmp6(skb);
+        return  is_icmp6(b);
 }
 
 static bool
-pred_is_flow(arguments_t args, struct sk_buff const *skb)
+pred_is_flow(arguments_t args, SkBuff b)
 {
-        return  is_flow(skb);
+        return  is_flow(b);
 }
 
 static bool
-pred_is_l3_proto(arguments_t args, struct sk_buff const *skb)
+pred_is_l3_proto(arguments_t args, SkBuff b)
 {
 	const u16 type = get_data(u16, args);
-	return is_l3_proto(skb, type);
+	return is_l3_proto(b, type);
 }
 
 static bool
-pred_is_l4_proto(arguments_t args, struct sk_buff const *skb)
+pred_is_l4_proto(arguments_t args, SkBuff b)
 {
 	const u8 protocol = get_data(u8, args);
-	return is_l4_proto(skb, protocol);
+	return is_l4_proto(b, protocol);
 }
 
 static bool
-pred_has_port(arguments_t args, struct sk_buff const *skb)
+pred_has_port(arguments_t args, SkBuff b)
 {
 	const u16 port = get_data(u16, args);
-	return has_port(skb, port);
+	return has_port(b, port);
 }
 
 static bool
-pred_has_src_port(arguments_t args, struct sk_buff const *skb)
+pred_has_src_port(arguments_t args, SkBuff b)
 {
 	const u16 port = get_data(u16, args);
-	return has_src_port(skb, port);
+	return has_src_port(b, port);
 }
 
 static bool
-pred_has_dst_port(arguments_t args, struct sk_buff const *skb)
+pred_has_dst_port(arguments_t args, SkBuff b)
 {
 	const u16 port = get_data(u16, args);
-	return has_dst_port(skb, port);
+	return has_dst_port(b, port);
 }
 
 static bool
-pred_has_vlan(arguments_t args, struct sk_buff const *skb)
+pred_has_vlan(arguments_t args, SkBuff b)
 {
-        return  has_vlan(skb);
+        return  has_vlan(b);
 }
 
 static bool
-pred_has_vid(arguments_t args, struct sk_buff const *skb)
+pred_has_vid(arguments_t args, SkBuff b)
 {
 	const int id = get_data(int, args);
-        return  has_vid(skb, id);
+        return  has_vid(b, id);
 }
 
 static bool
-pred_has_mark(arguments_t args, struct sk_buff const *skb)
+pred_has_mark(arguments_t args, SkBuff b)
 {
 	const unsigned long value = get_data(unsigned long, args);
-	return get_state(skb) == value;
+	return get_state(b) == value;
 }
 
 
@@ -159,49 +159,49 @@ static int pred_addr_init(arguments_t args)
 
 
 static bool
-pred_has_addr(arguments_t args, struct sk_buff const *skb)
+pred_has_addr(arguments_t args, SkBuff b)
 {
 	__be32 addr = get_data(__be32, args);
 	__be32 mask = get_data2(__be32, args);
 
-	return has_addr(skb, addr, mask);
+	return has_addr(b, addr, mask);
 }
 
 
 static bool
-pred_has_src_addr(arguments_t args, struct sk_buff const *skb)
+pred_has_src_addr(arguments_t args, SkBuff b)
 {
 	__be32 addr = get_data(__be32, args);
 	__be32 mask = get_data2(__be32, args);
 
-	return has_src_addr(skb, addr, mask);
+	return has_src_addr(b, addr, mask);
 }
 
 static bool
-pred_has_dst_addr(arguments_t args, struct sk_buff const *skb)
+pred_has_dst_addr(arguments_t args, SkBuff b)
 {
 	__be32 addr = get_data(__be32, args);
 	__be32 mask = get_data2(__be32, args);
 
-	return has_dst_addr(skb, addr, mask);
+	return has_dst_addr(b, addr, mask);
 }
 
 static bool
-pred_is_frag(arguments_t args, struct sk_buff const *skb)
+pred_is_frag(arguments_t args, SkBuff b)
 {
-        return  is_frag(skb);
+        return  is_frag(b);
 }
 
 static bool
-pred_is_first_frag(arguments_t args, struct sk_buff const *skb)
+pred_is_first_frag(arguments_t args, SkBuff b)
 {
-        return  is_first_frag(skb);
+        return  is_first_frag(b);
 }
 
 static bool
-pred_is_more_frag(arguments_t args, struct sk_buff const *skb)
+pred_is_more_frag(arguments_t args, SkBuff b)
 {
-        return  is_more_frag(skb);
+        return  is_more_frag(b);
 }
 
 struct pfq_function_descr predicate_functions[] = {

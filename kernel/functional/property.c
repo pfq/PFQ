@@ -32,14 +32,14 @@
  ****************************************************************/
 
 static uint64_t
-ip_tos(arguments_t args, struct sk_buff const *skb)
+ip_tos(arguments_t args, SkBuff b)
 {
-	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP))
+	if (eth_hdr(b.skb)->h_proto == __constant_htons(ETH_P_IP))
 	{
 		struct iphdr _iph;
     		const struct iphdr *ip;
 
-		ip = skb_header_pointer(skb, skb->mac_len, sizeof(_iph), &_iph);
+		ip = skb_header_pointer(b.skb, b.skb->mac_len, sizeof(_iph), &_iph);
  		if (ip == NULL)
                         return NOTHING;
 
@@ -51,14 +51,14 @@ ip_tos(arguments_t args, struct sk_buff const *skb)
 
 
 static uint64_t
-ip_tot_len(arguments_t args, struct sk_buff const *skb)
+ip_tot_len(arguments_t args, SkBuff b)
 {
-	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP))
+	if (eth_hdr(b.skb)->h_proto == __constant_htons(ETH_P_IP))
 	{
 		struct iphdr _iph;
     		const struct iphdr *ip;
 
-		ip = skb_header_pointer(skb, skb->mac_len, sizeof(_iph), &_iph);
+		ip = skb_header_pointer(b.skb, b.skb->mac_len, sizeof(_iph), &_iph);
  		if (ip == NULL)
                         return NOTHING;
 
@@ -70,14 +70,14 @@ ip_tot_len(arguments_t args, struct sk_buff const *skb)
 
 
 static uint64_t
-ip_id(arguments_t args, struct sk_buff const *skb)
+ip_id(arguments_t args, SkBuff b)
 {
-	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP))
+	if (eth_hdr(b.skb)->h_proto == __constant_htons(ETH_P_IP))
 	{
 		struct iphdr _iph;
     		const struct iphdr *ip;
 
-		ip = skb_header_pointer(skb, skb->mac_len, sizeof(_iph), &_iph);
+		ip = skb_header_pointer(b.skb, b.skb->mac_len, sizeof(_iph), &_iph);
  		if (ip == NULL)
                         return NOTHING;
 
@@ -89,14 +89,14 @@ ip_id(arguments_t args, struct sk_buff const *skb)
 
 
 static uint64_t
-ip_ttl(arguments_t args, struct sk_buff const *skb)
+ip_ttl(arguments_t args, SkBuff b)
 {
-	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP))
+	if (eth_hdr(b.skb)->h_proto == __constant_htons(ETH_P_IP))
 	{
 		struct iphdr _iph;
     		const struct iphdr *ip;
 
-		ip = skb_header_pointer(skb, skb->mac_len, sizeof(_iph), &_iph);
+		ip = skb_header_pointer(b.skb, b.skb->mac_len, sizeof(_iph), &_iph);
  		if (ip == NULL)
                         return NOTHING;
 
@@ -107,14 +107,14 @@ ip_ttl(arguments_t args, struct sk_buff const *skb)
 }
 
 static uint64_t
-ip_frag(arguments_t args, struct sk_buff const *skb)
+ip_frag(arguments_t args, SkBuff b)
 {
-	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP))
+	if (eth_hdr(b.skb)->h_proto == __constant_htons(ETH_P_IP))
 	{
 		struct iphdr _iph;
     		const struct iphdr *ip;
 
-		ip = skb_header_pointer(skb, skb->mac_len, sizeof(_iph), &_iph);
+		ip = skb_header_pointer(b.skb, b.skb->mac_len, sizeof(_iph), &_iph);
  		if (ip == NULL)
                         return NOTHING;
 
@@ -130,9 +130,9 @@ ip_frag(arguments_t args, struct sk_buff const *skb)
  ****************************************************************/
 
 static uint64_t
-tcp_source(arguments_t args, struct sk_buff const *skb)
+tcp_source(arguments_t args, SkBuff b)
 {
-	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP))
+	if (eth_hdr(b.skb)->h_proto == __constant_htons(ETH_P_IP))
 	{
 		struct iphdr _iph;
     		const struct iphdr *ip;
@@ -140,14 +140,14 @@ tcp_source(arguments_t args, struct sk_buff const *skb)
 		struct tcphdr _tcp;
 		const struct tcphdr *tcp;
 
-		ip = skb_header_pointer(skb, skb->mac_len, sizeof(_iph), &_iph);
+		ip = skb_header_pointer(b.skb, b.skb->mac_len, sizeof(_iph), &_iph);
  		if (ip == NULL)
                         return NOTHING;
 
 		if (ip->protocol != IPPROTO_TCP)
                         return NOTHING;
 
-		tcp = skb_header_pointer(skb, skb->mac_len + (ip->ihl<<2), sizeof(_tcp), &_tcp);
+		tcp = skb_header_pointer(b.skb, b.skb->mac_len + (ip->ihl<<2), sizeof(_tcp), &_tcp);
 		if (tcp == NULL)
 			return NOTHING;
 
@@ -159,9 +159,9 @@ tcp_source(arguments_t args, struct sk_buff const *skb)
 
 
 static uint64_t
-tcp_dest(arguments_t args, struct sk_buff const *skb)
+tcp_dest(arguments_t args, SkBuff b)
 {
-	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP))
+	if (eth_hdr(b.skb)->h_proto == __constant_htons(ETH_P_IP))
 	{
 		struct iphdr _iph;
     		const struct iphdr *ip;
@@ -169,14 +169,14 @@ tcp_dest(arguments_t args, struct sk_buff const *skb)
 		struct tcphdr _tcp;
 		const struct tcphdr *tcp;
 
-		ip = skb_header_pointer(skb, skb->mac_len, sizeof(_iph), &_iph);
+		ip = skb_header_pointer(b.skb, b.skb->mac_len, sizeof(_iph), &_iph);
  		if (ip == NULL)
                         return NOTHING;
 
 		if (ip->protocol != IPPROTO_TCP)
                         return NOTHING;
 
-		tcp = skb_header_pointer(skb, skb->mac_len + (ip->ihl<<2), sizeof(_tcp), &_tcp);
+		tcp = skb_header_pointer(b.skb, b.skb->mac_len + (ip->ihl<<2), sizeof(_tcp), &_tcp);
 		if (tcp == NULL)
 			return NOTHING;
 
@@ -187,9 +187,9 @@ tcp_dest(arguments_t args, struct sk_buff const *skb)
 }
 
 static uint64_t
-tcp_hdrlen_(arguments_t args, struct sk_buff const *skb)
+tcp_hdrlen_(arguments_t args, SkBuff b)
 {
-	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP))
+	if (eth_hdr(b.skb)->h_proto == __constant_htons(ETH_P_IP))
 	{
 		struct iphdr _iph;
     		const struct iphdr *ip;
@@ -197,14 +197,14 @@ tcp_hdrlen_(arguments_t args, struct sk_buff const *skb)
 		struct tcphdr _tcp;
 		const struct tcphdr *tcp;
 
-		ip = skb_header_pointer(skb, skb->mac_len, sizeof(_iph), &_iph);
+		ip = skb_header_pointer(b.skb, b.skb->mac_len, sizeof(_iph), &_iph);
  		if (ip == NULL)
                         return NOTHING;
 
 		if (ip->protocol != IPPROTO_TCP)
                         return NOTHING;
 
-		tcp = skb_header_pointer(skb, skb->mac_len + (ip->ihl<<2), sizeof(_tcp), &_tcp);
+		tcp = skb_header_pointer(b.skb, b.skb->mac_len + (ip->ihl<<2), sizeof(_tcp), &_tcp);
 		if (tcp == NULL)
 			return NOTHING;
 
@@ -219,9 +219,9 @@ tcp_hdrlen_(arguments_t args, struct sk_buff const *skb)
  ****************************************************************/
 
 static uint64_t
-udp_source(arguments_t args, struct sk_buff const *skb)
+udp_source(arguments_t args, SkBuff b)
 {
-	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP))
+	if (eth_hdr(b.skb)->h_proto == __constant_htons(ETH_P_IP))
 	{
 		struct iphdr _iph;
     		const struct iphdr *ip;
@@ -229,14 +229,14 @@ udp_source(arguments_t args, struct sk_buff const *skb)
 		struct udphdr _udp;
 		const struct udphdr *udp;
 
-		ip = skb_header_pointer(skb, skb->mac_len, sizeof(_iph), &_iph);
+		ip = skb_header_pointer(b.skb, b.skb->mac_len, sizeof(_iph), &_iph);
  		if (ip == NULL)
                         return NOTHING;
 
 		if (ip->protocol != IPPROTO_TCP)
                         return NOTHING;
 
-		udp = skb_header_pointer(skb, skb->mac_len + (ip->ihl<<2), sizeof(_udp), &_udp);
+		udp = skb_header_pointer(b.skb, b.skb->mac_len + (ip->ihl<<2), sizeof(_udp), &_udp);
 		if (udp == NULL)
 			return NOTHING;
 
@@ -248,9 +248,9 @@ udp_source(arguments_t args, struct sk_buff const *skb)
 
 
 static uint64_t
-udp_dest(arguments_t args, struct sk_buff const *skb)
+udp_dest(arguments_t args, SkBuff b)
 {
-	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP))
+	if (eth_hdr(b.skb)->h_proto == __constant_htons(ETH_P_IP))
 	{
 		struct iphdr _iph;
     		const struct iphdr *ip;
@@ -258,14 +258,14 @@ udp_dest(arguments_t args, struct sk_buff const *skb)
 		struct udphdr _udp;
 		const struct udphdr *udp;
 
-		ip = skb_header_pointer(skb, skb->mac_len, sizeof(_iph), &_iph);
+		ip = skb_header_pointer(b.skb, b.skb->mac_len, sizeof(_iph), &_iph);
  		if (ip == NULL)
                         return NOTHING;
 
 		if (ip->protocol != IPPROTO_TCP)
                         return NOTHING;
 
-		udp = skb_header_pointer(skb, skb->mac_len + (ip->ihl<<2), sizeof(_udp), &_udp);
+		udp = skb_header_pointer(b.skb, b.skb->mac_len + (ip->ihl<<2), sizeof(_udp), &_udp);
 		if (udp == NULL)
 			return NOTHING;
 
@@ -276,9 +276,9 @@ udp_dest(arguments_t args, struct sk_buff const *skb)
 }
 
 static uint64_t
-udp_len(arguments_t args, struct sk_buff const *skb)
+udp_len(arguments_t args, SkBuff b)
 {
-	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP))
+	if (eth_hdr(b.skb)->h_proto == __constant_htons(ETH_P_IP))
 	{
 		struct iphdr _iph;
     		const struct iphdr *ip;
@@ -286,14 +286,14 @@ udp_len(arguments_t args, struct sk_buff const *skb)
 		struct udphdr _udp;
 		const struct udphdr *udp;
 
-		ip = skb_header_pointer(skb, skb->mac_len, sizeof(_iph), &_iph);
+		ip = skb_header_pointer(b.skb, b.skb->mac_len, sizeof(_iph), &_iph);
  		if (ip == NULL)
                         return NOTHING;
 
 		if (ip->protocol != IPPROTO_TCP)
                         return NOTHING;
 
-		udp = skb_header_pointer(skb, skb->mac_len + (ip->ihl<<2), sizeof(_udp), &_udp);
+		udp = skb_header_pointer(b.skb, b.skb->mac_len + (ip->ihl<<2), sizeof(_udp), &_udp);
 		if (udp == NULL)
 			return NOTHING;
 
@@ -305,9 +305,9 @@ udp_len(arguments_t args, struct sk_buff const *skb)
 
 
 static uint64_t
-icmp_type(arguments_t args, struct sk_buff const *skb)
+icmp_type(arguments_t args, SkBuff b)
 {
-	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP))
+	if (eth_hdr(b.skb)->h_proto == __constant_htons(ETH_P_IP))
 	{
 		struct iphdr _iph;
     		const struct iphdr *ip;
@@ -315,14 +315,14 @@ icmp_type(arguments_t args, struct sk_buff const *skb)
 		struct icmphdr _icmp;
 		const struct icmphdr *icmp;
 
-		ip = skb_header_pointer(skb, skb->mac_len, sizeof(_iph), &_iph);
+		ip = skb_header_pointer(b.skb, b.skb->mac_len, sizeof(_iph), &_iph);
  		if (ip == NULL)
                         return NOTHING;
 
 		if (ip->protocol != IPPROTO_ICMP)
                         return NOTHING;
 
-		icmp = skb_header_pointer(skb, skb->mac_len + (ip->ihl<<2), sizeof(_icmp), &_icmp);
+		icmp = skb_header_pointer(b.skb, b.skb->mac_len + (ip->ihl<<2), sizeof(_icmp), &_icmp);
 		if (icmp == NULL)
 			return NOTHING;
 
@@ -334,9 +334,9 @@ icmp_type(arguments_t args, struct sk_buff const *skb)
 
 
 static uint64_t
-icmp_code(arguments_t args, struct sk_buff const *skb)
+icmp_code(arguments_t args, SkBuff b)
 {
-	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP))
+	if (eth_hdr(b.skb)->h_proto == __constant_htons(ETH_P_IP))
 	{
 		struct iphdr _iph;
     		const struct iphdr *ip;
@@ -344,14 +344,14 @@ icmp_code(arguments_t args, struct sk_buff const *skb)
 		struct icmphdr _icmp;
 		const struct icmphdr *icmp;
 
-		ip = skb_header_pointer(skb, skb->mac_len, sizeof(_iph), &_iph);
+		ip = skb_header_pointer(b.skb, b.skb->mac_len, sizeof(_iph), &_iph);
  		if (ip == NULL)
                         return NOTHING;
 
 		if (ip->protocol != IPPROTO_ICMP)
                         return NOTHING;
 
-		icmp = skb_header_pointer(skb, skb->mac_len + (ip->ihl<<2), sizeof(_icmp), &_icmp);
+		icmp = skb_header_pointer(b.skb, b.skb->mac_len + (ip->ihl<<2), sizeof(_icmp), &_icmp);
 		if (icmp == NULL)
 			return NOTHING;
 
@@ -363,9 +363,9 @@ icmp_code(arguments_t args, struct sk_buff const *skb)
 
 
 static uint64_t
-get_mark(arguments_t args, struct sk_buff const *skb)
+get_mark(arguments_t args, SkBuff b)
 {
-	return JUST(get_state(skb));
+	return JUST(get_state(b));
 }
 
 

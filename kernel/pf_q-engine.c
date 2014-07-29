@@ -216,17 +216,17 @@ strdup_user(const char __user *str)
 }
 
 
-static inline struct sk_buff *
-pfq_apply(struct pfq_functional *call, struct sk_buff *skb)
+static inline Action_SkBuff
+pfq_apply(struct pfq_functional *call, SkBuff b)
 {
 	function_t fun = { call };
 
-	return EVAL_FUNCTION(fun, skb);
+	return EVAL_FUNCTION(fun, b);
 }
 
 
-static inline struct sk_buff *
-pfq_bind(struct sk_buff *skb, struct pfq_computation_tree *prg)
+static inline Action_SkBuff
+pfq_bind(SkBuff b, struct pfq_computation_tree *prg)
 {
         struct pfq_functional_node *node = prg->entry_point;
 
@@ -234,24 +234,23 @@ pfq_bind(struct sk_buff *skb, struct pfq_computation_tree *prg)
         {
                 fanout_t *a;
 
-                skb = pfq_apply(&node->fun, skb);
-                if (skb == NULL)
-                        return NULL;
+                b = pfq_apply(&node->fun, b).value;
+                if (b.skb == NULL)
+                        return Pass(b);
 
-                a = &PFQ_CB(skb)->monad->fanout;
+                a = &PFQ_CB(b.skb)->monad->fanout;
 
                 if (is_drop(*a))
-                        return skb;
+                        return Pass(b);
 
                 node = node->next;
         }
 
-        return skb;
+        return Pass(b);
 }
 
-
-struct sk_buff *
-pfq_run(struct pfq_computation_tree *prg, struct sk_buff *skb)
+Action_SkBuff
+pfq_run(struct pfq_computation_tree *prg, SkBuff b)
 {
 #ifdef PFQ_LANG_PROFILE
 	static uint64_t nrun, total;
@@ -261,12 +260,12 @@ pfq_run(struct pfq_computation_tree *prg, struct sk_buff *skb)
 #ifdef PFQ_LANG_PROFILE
 	start = get_cycles();
 
-	skb =
+	b =
 #else
 	return
 #endif
 
-	pfq_bind(skb, prg);
+	pfq_bind(b, prg);
 
 #ifdef PFQ_LANG_PROFILE
 
@@ -276,7 +275,7 @@ pfq_run(struct pfq_computation_tree *prg, struct sk_buff *skb)
 	if ((nrun++ % 1048576) == 0)
 		printk(KERN_INFO "[PFQ] run: %llu\n", total/nrun);
 
-	return skb;
+	return b;
 #endif
 
 }

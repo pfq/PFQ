@@ -29,50 +29,50 @@
 #include "filter.h"
 
 
-static struct sk_buff *
-filter_generic(arguments_t args, struct sk_buff *skb)
+static Action_SkBuff
+filter_generic(arguments_t args, SkBuff b)
 {
 	predicate_t pred_ = get_data0(predicate_t, args);
 
-	if (EVAL_PREDICATE(pred_, skb))
-		return skb;
+	if (EVAL_PREDICATE(pred_, b))
+		return Pass(b);
 
-	return drop(skb);
+	return Drop(b);
 }
 
-static struct sk_buff *
-filter_l3_proto(arguments_t args, struct sk_buff *skb)
+static Action_SkBuff
+filter_l3_proto(arguments_t args, SkBuff b)
 {
 	const u16 type = get_data(u16, args);
-        return is_l3_proto(skb, type) ? skb : drop(skb);
+        return is_l3_proto(b, type) ? Pass(b) : Drop(b);
 }
 
-static struct sk_buff *
-filter_l4_proto(arguments_t args, struct sk_buff *skb)
+static Action_SkBuff
+filter_l4_proto(arguments_t args, SkBuff b)
 {
 	const u8 proto = get_data(u8, args);
-        return is_l4_proto(skb, proto) ? skb : drop(skb);
+        return is_l4_proto(b, proto) ? Pass(b) : Drop(b);
 }
 
-static struct sk_buff *
-filter_port(arguments_t args, struct sk_buff *skb)
+static Action_SkBuff
+filter_port(arguments_t args, SkBuff b)
 {
 	const u16 port = get_data(u16, args);
-        return has_port(skb, port) ? skb : drop(skb);
+        return has_port(b, port) ? Pass(b) : Drop(b);
 }
 
-static struct sk_buff *
-filter_src_port(arguments_t args, struct sk_buff *skb)
+static Action_SkBuff
+filter_src_port(arguments_t args, SkBuff b)
 {
 	const u16 port = get_data(u16, args);
-        return has_src_port(skb, port) ? skb : drop(skb);
+        return has_src_port(b, port) ? Pass(b) : Drop(b);
 }
 
-static struct sk_buff *
-filter_dst_port(arguments_t args, struct sk_buff *skb)
+static Action_SkBuff
+filter_dst_port(arguments_t args, SkBuff b)
 {
 	const u16 port = get_data(u16, args);
-        return has_dst_port(skb, port) ? skb : drop(skb);
+        return has_dst_port(b, port) ? Pass(b) : Drop(b);
 }
 
 
@@ -96,44 +96,44 @@ static int filter_addr_init(arguments_t args)
 }
 
 
-static struct sk_buff *
-filter_addr(arguments_t args, struct sk_buff *skb)
+static Action_SkBuff
+filter_addr(arguments_t args, SkBuff b)
 {
 	__be32 addr = get_data(__be32, args);
 	__be32 mask = get_data2(__be32, args);
 
-	return has_addr(skb, addr, mask) ? skb : drop(skb);
+	return has_addr(b, addr, mask) ? Pass(b) : Drop(b);
 }
 
 
-static struct sk_buff *
-filter_src_addr(arguments_t args, struct sk_buff *skb)
+static Action_SkBuff
+filter_src_addr(arguments_t args, SkBuff b)
 {
 	__be32 addr = get_data(__be32, args);
 	__be32 mask = get_data2(__be32, args);
 
-	return has_src_addr(skb, addr, mask) ? skb : drop(skb);
+	return has_src_addr(b, addr, mask) ? Pass(b) : Drop(b);
 }
 
-static struct sk_buff *
-filter_dst_addr(arguments_t args, struct sk_buff *skb)
+static Action_SkBuff
+filter_dst_addr(arguments_t args, SkBuff b)
 {
 	__be32 addr = get_data(__be32, args);
 	__be32 mask = get_data2(__be32, args);
 
-	return has_dst_addr(skb, addr, mask) ? skb : drop(skb);
+	return has_dst_addr(b, addr, mask) ? Pass(b) : Drop(b);
 }
 
-static struct sk_buff *
-filter_no_frag(arguments_t args, struct sk_buff *skb)
+static Action_SkBuff
+filter_no_frag(arguments_t args, SkBuff b)
 {
-	return is_frag(skb) ? drop(skb) : skb;
+	return is_frag(b) ? Drop(b) : Pass(b);
 }
 
-static struct sk_buff *
-filter_no_more_frag(arguments_t args, struct sk_buff *skb)
+static Action_SkBuff
+filter_no_more_frag(arguments_t args, SkBuff b)
 {
-	return is_more_frag(skb) ? drop(skb) : skb;
+	return is_more_frag(b) ? Drop(b) : Pass(b);
 }
 
 

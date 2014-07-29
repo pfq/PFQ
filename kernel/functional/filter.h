@@ -29,70 +29,70 @@
 #include "predicate.h"
 
 
-static inline struct sk_buff *
-filter_ip(arguments_t args, struct sk_buff *skb)
+static inline Action_SkBuff
+filter_ip(arguments_t args, SkBuff b)
 {
-        return is_ip(skb) ? skb : drop(skb);
+        return is_ip(b) ? Pass(b) : Drop(b);
 }
 
-static inline struct sk_buff *
-filter_ip6(arguments_t args, struct sk_buff *skb)
+static inline Action_SkBuff
+filter_ip6(arguments_t args, SkBuff b)
 {
-        return is_ip6(skb) ? skb : drop(skb);
+        return is_ip6(b) ? Pass(b) : Drop(b);
 }
 
-static inline struct sk_buff *
-filter_udp(arguments_t args, struct sk_buff *skb)
+static inline Action_SkBuff
+filter_udp(arguments_t args, SkBuff b)
 {
-        return is_udp(skb) ? skb : drop(skb);
+        return is_udp(b) ? Pass(b) : Drop(b);
 }
 
-static inline struct sk_buff *
-filter_udp6(arguments_t args, struct sk_buff *skb)
+static inline Action_SkBuff
+filter_udp6(arguments_t args, SkBuff b)
 {
-        return is_udp6(skb) ? skb : drop(skb);
+        return is_udp6(b) ? Pass(b) : Drop(b);
 }
 
-static inline struct sk_buff *
-filter_tcp(arguments_t args, struct sk_buff *skb)
+static inline Action_SkBuff
+filter_tcp(arguments_t args, SkBuff b)
 {
-        return is_tcp(skb) ? skb : drop(skb);
+        return is_tcp(b) ? Pass(b) : Drop(b);
 }
 
-static inline struct sk_buff *
-filter_tcp6(arguments_t args, struct sk_buff *skb)
+static inline Action_SkBuff
+filter_tcp6(arguments_t args, SkBuff b)
 {
-        return is_tcp6(skb) ? skb : drop(skb);
+        return is_tcp6(b) ?  Pass(b) : Drop(b);
 }
 
-static inline struct sk_buff *
-filter_icmp(arguments_t args, struct sk_buff *skb)
+static inline Action_SkBuff
+filter_icmp(arguments_t args, SkBuff b)
 {
-        return is_icmp(skb) ? skb : drop(skb);
+        return is_icmp(b) ? Pass(b) : Drop(b);
 }
 
-static inline struct sk_buff *
-filter_icmp6(arguments_t args, struct sk_buff *skb)
+static inline Action_SkBuff
+filter_icmp6(arguments_t args, SkBuff b)
 {
-        return is_icmp6(skb) ? skb : drop(skb);
+        return is_icmp6(b) ? Pass(b) : Drop(b);
 }
 
-static inline struct sk_buff *
-filter_flow(arguments_t args, struct sk_buff *skb)
+static inline Action_SkBuff
+filter_flow(arguments_t args, SkBuff b)
 {
-        return is_flow(skb) ? skb : drop(skb);
+        return is_flow(b) ? Pass(b) : Drop(b);
 }
 
-static inline struct sk_buff *
-filter_vlan(arguments_t args, struct sk_buff *skb)
+static inline Action_SkBuff
+filter_vlan(arguments_t args, SkBuff b)
 {
-        return has_vlan(skb) ? skb : drop(skb);
+        return has_vlan(b) ? Pass(b) : Drop(b);
 }
 
-static inline struct sk_buff *
-unit(arguments_t args, struct sk_buff *skb)
+static inline Action_SkBuff
+unit(arguments_t args, SkBuff b)
 {
-        return skb;
+        return Pass(b);
 }
 
 #endif /* _FUNCTIONAL_FILTER_H_ */

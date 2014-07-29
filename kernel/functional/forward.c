@@ -39,8 +39,8 @@ struct forward_queue
 } ____chaline_aligned;
 
 
-static struct sk_buff *
-forwardIO(arguments_t args, struct sk_buff *skb)
+static Action_SkBuff
+forwardIO(arguments_t args, SkBuff b)
 {
 	struct net_device *dev = get_data(struct net_device *, args);
 	struct sk_buff *nskb;
@@ -53,15 +53,15 @@ forwardIO(arguments_t args, struct sk_buff *skb)
 	if (dev == NULL) {
                 if (printk_ratelimit())
                         printk(KERN_INFO "[PFQ] forward: device error!\n");
-                return skb;
+                return Pass(b);
 	}
 
        	queues = get_data2(struct forward_queue *, args);
 
-	nskb = skb_clone(skb, GFP_ATOMIC);
+	nskb = skb_clone(b.skb, GFP_ATOMIC);
 	if (!nskb) {
         	printk(KERN_INFO "[PFQ] forward pfq_xmit %s: no memory!\n", dev->name);
-        	return skb;
+        	return Pass(b);
 	}
 
 	id = smp_processor_id();
@@ -69,7 +69,7 @@ forwardIO(arguments_t args, struct sk_buff *skb)
 	pfq_non_intrusive_push(&queues[id].q, nskb);
 
 	if (pfq_non_intrusive_len(&queues[id].q) < batch_len) {
-		return skb;
+		return Pass(b);
 	}
 
 	if (pfq_queue_xmit(&queues[id].q, dev, id) == 0) {
@@ -86,13 +86,13 @@ forwardIO(arguments_t args, struct sk_buff *skb)
 	if (dev == NULL) {
                 if (printk_ratelimit())
                         printk(KERN_INFO "[PFQ] forward: device error!\n");
-                return skb;
+                return Pass(b);
 	}
 
-	nskb = skb_clone(skb, GFP_ATOMIC);
+	nskb = skb_clone(b.skb, GFP_ATOMIC);
 	if (!nskb) {
         	printk(KERN_INFO "[PFQ] forward pfq_xmit %s: no memory!\n", dev->name);
-        	return skb;
+        	return Pass(b);
 	}
 
 	if (pfq_xmit(nskb, dev, nskb->queue_mapping) != 1) {
@@ -104,25 +104,23 @@ forwardIO(arguments_t args, struct sk_buff *skb)
 
 #endif /* PFQ_USE_BATCH_FORWARD */
 
-	return skb;
+	return Pass(b);
 }
 
 
-static struct sk_buff *
-forward(arguments_t args, struct sk_buff *skb)
+static Action_SkBuff
+forward(arguments_t args, SkBuff b)
 {
 	struct net_device *dev = get_data(struct net_device *, args);
 
 	if (dev == NULL) {
                 if (printk_ratelimit())
                         printk(KERN_INFO "[PFQ] forward: device error!\n");
-                return skb;
+                return Pass(b);
 	}
 
-	struct gc_buff buff = { skb };
-
-	pfq_lazy_xmit(buff, dev, skb->queue_mapping);
-	return skb;
+	pfq_lazy_xmit(b, dev, b.skb->queue_mapping);
+	return Pass(b);
 }
 
 
@@ -203,27 +201,25 @@ forward_fini(arguments_t args)
 }
 
 
-static struct sk_buff *
-bridge(arguments_t args, struct sk_buff *skb)
+static Action_SkBuff
+bridge(arguments_t args, SkBuff b)
 {
 	struct net_device *dev = get_data(struct net_device *, args);
 
 	if (dev == NULL) {
                 if (printk_ratelimit())
                         printk(KERN_INFO "[PFQ] bridge: device error!\n");
-                return drop(skb);
+                return Drop(b);
 	}
 
-	struct gc_buff buff = {skb};
+	pfq_lazy_xmit(b, dev, b.skb->queue_mapping);
 
-	pfq_lazy_xmit(buff, dev, skb->queue_mapping);
-
-	return drop(skb);
+	return Drop(b);
 }
 
 
-static struct sk_buff *
-bridge_tap(arguments_t args, struct sk_buff *skb)
+static Action_SkBuff
+bridge_tap(arguments_t args, SkBuff b)
 {
 	struct net_device *dev = get_data(struct net_device *, args);
 	predicate_t pred_  = get_data1(predicate_t, args);
@@ -231,17 +227,15 @@ bridge_tap(arguments_t args, struct sk_buff *skb)
 	if (dev == NULL) {
                 if (printk_ratelimit())
                         printk(KERN_INFO "[PFQ] bridge: device error!\n");
-                return drop(skb);
+                return Drop(b);
 	}
 
-        if (EVAL_PREDICATE(pred_, skb))
-		return skb;
+        if (EVAL_PREDICATE(pred_, b))
+		return Pass(b);
 
-	struct gc_buff buff = { skb };
+	pfq_lazy_xmit(b, dev, b.skb->queue_mapping);
 
-	pfq_lazy_xmit(buff, dev, skb->queue_mapping);
-
-	return drop(skb);
+	return Drop(b);
 }
 
 

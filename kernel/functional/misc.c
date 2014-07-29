@@ -31,8 +31,8 @@
 #include "headers.h"
 #include "misc.h"
 
-static struct sk_buff *
-dummy(arguments_t args, struct sk_buff *skb)
+static Action_SkBuff
+dummy(arguments_t args, SkBuff b)
 {
         const int data = get_data(int,args);
 
@@ -40,7 +40,7 @@ dummy(arguments_t args, struct sk_buff *skb)
                 printk(KERN_INFO "[PFQ] dummy context: %d\n", data);
         }
 
-        return skb;
+        return Pass(b);
 }
 
 
@@ -59,14 +59,14 @@ dummy_fini(arguments_t args)
 }
 
 
-static struct sk_buff *
-inc_counter(arguments_t args, struct sk_buff *skb)
+static Action_SkBuff
+inc_counter(arguments_t args, SkBuff b)
 {
         const int idx = get_data(int,args);
 
         sparse_counter_t * ctr;
 
-        ctr = get_counter(skb, idx);
+        ctr = get_counter(b, idx);
         if (ctr)  {
                 sparse_inc(ctr);
         }
@@ -75,17 +75,18 @@ inc_counter(arguments_t args, struct sk_buff *skb)
                         printk(KERN_INFO "[PFQ] fun/count(%d): bad index!\n", idx);
         }
 
-        return skb;
+        return Pass(b);
 }
 
-static struct sk_buff *
-dec_counter(arguments_t args, struct sk_buff *skb)
+
+static Action_SkBuff
+dec_counter(arguments_t args, SkBuff b)
 {
         const int idx = get_data(int,args);
 
         sparse_counter_t * ctr;
 
-        ctr = get_counter(skb, idx);
+        ctr = get_counter(b, idx);
         if (ctr)  {
                 sparse_dec(ctr);
         }
@@ -94,119 +95,119 @@ dec_counter(arguments_t args, struct sk_buff *skb)
                         printk(KERN_INFO "[PFQ] fun/count(%d): bad index!\n", idx);
         }
 
-        return skb;
+        return Pass(b);
 }
 
 
-static struct sk_buff *
-crc16_sum(arguments_t args, struct sk_buff *skb)
+static Action_SkBuff
+crc16_sum(arguments_t args, SkBuff b)
 {
-	u16 crc = crc16(0, (u8 const *)eth_hdr(skb), skb->len);
-	set_state(skb, crc);
+	u16 crc = crc16(0, (u8 const *)eth_hdr(b.skb), b.skb->len);
+	set_state(b, crc);
 
-        return skb;
+        return Pass(b);
 }
 
 
-static struct sk_buff *
-log_msg(arguments_t args, struct sk_buff *skb)
+static Action_SkBuff
+log_msg(arguments_t args, SkBuff b)
 {
 	const char *msg = get_data(const char *, args);
 
 	if (!printk_ratelimit())
-		return skb;
+		return Pass(b);
 
 	printk(KERN_INFO "[PFQ] log_msg: %s\n", msg);
-	return skb;
+	return Pass(b);
 }
 
 
-static struct sk_buff *
-log_packet(arguments_t args, struct sk_buff *skb)
+static Action_SkBuff
+log_packet(arguments_t args, SkBuff b)
 {
 	if (!printk_ratelimit())
-		return skb;
+		return Pass(b);
 
-	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP))
+	if (eth_hdr(b.skb)->h_proto == __constant_htons(ETH_P_IP))
 	{
 		struct iphdr _iph;
 		const struct iphdr *ip;
 
-		ip = skb_header_pointer(skb, skb->mac_len, sizeof(_iph), &_iph);
+		ip = skb_header_pointer(b.skb, b.skb->mac_len, sizeof(_iph), &_iph);
 		if (ip == NULL)
-			return skb;
+			return Pass(b);
 
 		switch(ip->protocol)
 		{
 		case IPPROTO_UDP: {
 			struct udphdr _udph; const struct udphdr *udp;
-			udp = skb_header_pointer(skb, skb->mac_len + (ip->ihl<<2), sizeof(struct udphdr), &_udph);
+			udp = skb_header_pointer(b.skb, b.skb->mac_len + (ip->ihl<<2), sizeof(struct udphdr), &_udph);
 			if (udp == NULL)
-				return skb;
+				return Pass(b);
 
 			printk(KERN_INFO "[PFQ] IP %pI4.%d > %pI4.%d: UDP\n", &ip->saddr, ntohs(udp->source),
 						         		      &ip->daddr, ntohs(udp->dest));
-			return skb;
+			return Pass(b);
 		}
 		case IPPROTO_TCP: {
 			struct tcphdr _tcph; const struct tcphdr *tcp;
-			tcp = skb_header_pointer(skb, skb->mac_len + (ip->ihl<<2), sizeof(struct tcphdr), &_tcph);
+			tcp = skb_header_pointer(b.skb, b.skb->mac_len + (ip->ihl<<2), sizeof(struct tcphdr), &_tcph);
 			if (tcp == NULL)
-				return skb;
+				return Pass(b);
 
 			printk(KERN_INFO "[PFQ] IP %pI4.%d > %pI4.%d: TCP\n", &ip->saddr, ntohs(tcp->source),
 									      &ip->daddr, ntohs(tcp->dest));
-			return skb;
+			return Pass(b);
 		}
 		case IPPROTO_ICMP: {
 
 			printk(KERN_INFO "[PFQ] IP %pI4 > %pI4: ICMP\n", &ip->saddr, &ip->daddr);
-			return skb;
+			return Pass(b);
 		}
 		default: {
 
 			printk(KERN_INFO "[PFQ] IP %pI4 > %pI4: proto %x\n", &ip->saddr, &ip->daddr,
 									     ip->protocol);
-			return skb;
+			return Pass(b);
 		}
 
 		}
 
 	} else {
 
-		printk(KERN_INFO "[PFQ] ETH proto %x\n", ntohs(eth_hdr(skb)->h_proto));
+		printk(KERN_INFO "[PFQ] ETH proto %x\n", ntohs(eth_hdr(b.skb)->h_proto));
 	}
 
-        return skb;
+        return Pass(b);
 }
 
 
-static struct sk_buff *
-inv(arguments_t args, struct sk_buff *skb)
+static Action_SkBuff
+inv(arguments_t args, SkBuff b)
 {
 	function_t expr = get_data(function_t, args);
-	struct sk_buff *nskb = EVAL_FUNCTION(expr, skb);
+	SkBuff nb = EVAL_FUNCTION(expr, b).value;
 
-	if (!nskb || is_drop(PFQ_CB(nskb)->monad->fanout))
-		return skb;
+	if (!nb.skb || is_drop(PFQ_CB(nb.skb)->monad->fanout))
+		return Pass(nb);
 
-	return drop(nskb);
+	return Drop(nb);
 }
 
 
-static struct sk_buff *
-par(arguments_t args, struct sk_buff *skb)
+static Action_SkBuff
+par(arguments_t args, SkBuff b)
 {
 	function_t f = get_data0(function_t, args);
 	function_t g = get_data1(function_t, args);
 
-	struct sk_buff *nskb = EVAL_FUNCTION(f, skb);
+	SkBuff nb = EVAL_FUNCTION(f, b).value;
 
-	if (!nskb || is_drop(PFQ_CB(nskb)->monad->fanout)) {
-		return EVAL_FUNCTION(g, copy(skb));
+	if (!nb.skb || is_drop(PFQ_CB(nb.skb)->monad->fanout)) {
+		return EVAL_FUNCTION(g, Copy(nb).value);
 	}
 
-	return nskb;
+	return Pass(nb);
 }
 
 

@@ -27,46 +27,46 @@
 
 #include <pf_q-module.h>
 
-static struct sk_buff *
-steering_link(arguments_t args, struct sk_buff *skb)
+static Action_SkBuff
+steering_link(arguments_t args, SkBuff b)
 {
         uint32_t * w;
 
-        w = (uint32_t *)eth_hdr(skb);
+        w = (uint32_t *)eth_hdr(b.skb);
 
-	return steering(skb, w[0] ^ w[1] ^ w[2]); // 3 * sizeof(uint32_t) = 12 bytes.
+	return Steering(b, w[0] ^ w[1] ^ w[2]); // 3 * sizeof(uint32_t) = 12 bytes.
 }
 
 
-static struct sk_buff *
-steering_vlan_id(arguments_t args, struct sk_buff *skb)
+static Action_SkBuff
+steering_vlan_id(arguments_t args, SkBuff b)
 {
-        if (skb->vlan_tci & VLAN_VID_MASK)
- 	        return steering(skb, skb->vlan_tci & VLAN_VID_MASK);
+        if (b.skb->vlan_tci & VLAN_VID_MASK)
+ 	        return Steering(b, b.skb->vlan_tci & VLAN_VID_MASK);
         else
-                return drop(skb);
+                return Drop(b);
 }
 
 
-static struct sk_buff *
-steering_ip(arguments_t args, struct sk_buff *skb)
+static Action_SkBuff
+steering_ip(arguments_t args, SkBuff b)
 {
-	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP))
+	if (eth_hdr(b.skb)->h_proto == __constant_htons(ETH_P_IP))
 	{
 		struct iphdr _iph;
     		const struct iphdr *ip;
 		__be32 hash;
 
-		ip = skb_header_pointer(skb, skb->mac_len, sizeof(_iph), &_iph);
+		ip = skb_header_pointer(b.skb, b.skb->mac_len, sizeof(_iph), &_iph);
  		if (ip == NULL)
-                        return drop(skb);
+                        return Drop(b);
 
 		hash = ip->saddr ^ ip->daddr;
 
-        	return steering(skb, *(uint32_t *)&hash);
+        	return Steering(b, *(uint32_t *)&hash);
 	}
 
-        return drop(skb);
+        return Drop(b);
 }
 
 
@@ -93,40 +93,40 @@ steering_net_init(arguments_t args)
 }
 
 
-static struct sk_buff *
-steering_net(arguments_t args, struct sk_buff *skb)
+static Action_SkBuff
+steering_net(arguments_t args, SkBuff b)
 {
 	__be32 addr    = get_data (__be32, args);
 	__be32 mask    = get_data2(__be32, args);
 	__be32 submask = get_data3(__be32, args);
 
-	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP))
+	if (eth_hdr(b.skb)->h_proto == __constant_htons(ETH_P_IP))
 	{
 		struct iphdr _iph;
     		const struct iphdr *ip;
 
-		ip = skb_header_pointer(skb, skb->mac_len, sizeof(_iph), &_iph);
+		ip = skb_header_pointer(b.skb, b.skb->mac_len, sizeof(_iph), &_iph);
  		if (ip == NULL)
-                        return drop(skb);
+                        return Drop(b);
 
 		if ((ip->saddr & mask) == addr)
 		{
-        		return steering(skb, __swab32(ntohl(ip->saddr & submask)));
+        		return Steering(b, __swab32(ntohl(ip->saddr & submask)));
 		}
 		if ((ip->daddr & mask) == addr)
 		{
-        		return steering(skb, __swab32(ntohl(ip->daddr & submask)));
+        		return Steering(b, __swab32(ntohl(ip->daddr & submask)));
 		}
 	}
 
-        return drop(skb);
+        return Drop(b);
 }
 
 
-static struct sk_buff *
-steering_flow(arguments_t args, struct sk_buff *skb)
+static Action_SkBuff
+steering_flow(arguments_t args, SkBuff b)
 {
-	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP))
+	if (eth_hdr(b.skb)->h_proto == __constant_htons(ETH_P_IP))
 	{
 		struct iphdr _iph;
     		const struct iphdr *ip;
@@ -135,39 +135,39 @@ steering_flow(arguments_t args, struct sk_buff *skb)
 		const struct udphdr *udp;
                	__be32 hash;
 
-		ip = skb_header_pointer(skb, skb->mac_len, sizeof(_iph), &_iph);
+		ip = skb_header_pointer(b.skb, b.skb->mac_len, sizeof(_iph), &_iph);
  		if (ip == NULL)
-                        return drop(skb);
+                        return Drop(b);
 
 		if (ip->protocol != IPPROTO_UDP &&
 		    ip->protocol != IPPROTO_TCP)
-                        return drop(skb);
+                        return Drop(b);
 
-		udp = skb_header_pointer(skb, skb->mac_len + (ip->ihl<<2), sizeof(_udp), &_udp);
+		udp = skb_header_pointer(b.skb, b.skb->mac_len + (ip->ihl<<2), sizeof(_udp), &_udp);
 		if (udp == NULL)
-			return drop(skb);  /* broken */
+			return Drop(b);  /* broken */
 
 		hash = ip->saddr ^ ip->daddr ^ (__force __be32)udp->source ^ (__force __be32)udp->dest;
 
-        	return steering(skb, *(uint32_t *)&hash);
+        	return Steering(b, *(uint32_t *)&hash);
 	}
 
-        return drop(skb);
+        return Drop(b);
 }
 
 
-static struct sk_buff *
-steering_ip6(arguments_t args, struct sk_buff *skb)
+static Action_SkBuff
+steering_ip6(arguments_t args, SkBuff b)
 {
-	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IPV6))
+	if (eth_hdr(b.skb)->h_proto == __constant_htons(ETH_P_IPV6))
 	{
 		struct ipv6hdr _ip6h;
     		const struct ipv6hdr *ip6;
 		__be32 hash;
 
-		ip6 = skb_header_pointer(skb, skb->mac_len, sizeof(_ip6h), &_ip6h);
+		ip6 = skb_header_pointer(b.skb, b.skb->mac_len, sizeof(_ip6h), &_ip6h);
  		if (ip6 == NULL)
-                        return drop(skb);
+                        return Drop(b);
 
 		hash = ip6->saddr.in6_u.u6_addr32[0] ^
 		       ip6->saddr.in6_u.u6_addr32[1] ^
@@ -178,10 +178,10 @@ steering_ip6(arguments_t args, struct sk_buff *skb)
 		       ip6->daddr.in6_u.u6_addr32[2] ^
 		       ip6->daddr.in6_u.u6_addr32[3];
 
-		return steering(skb, *(uint32_t *)&hash);
+		return Steering(b, *(uint32_t *)&hash);
 	}
 
-        return drop(skb);
+        return Drop(b);
 }
 
 

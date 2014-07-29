@@ -53,6 +53,8 @@ struct gc_buff
  	struct sk_buff *skb;
 };
 
+typedef struct gc_buff SkBuff;
+
 
 struct gc_log
 {

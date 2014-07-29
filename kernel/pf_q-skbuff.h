@@ -27,7 +27,6 @@
 struct pfq_monad;
 struct gc_log;
 
-
 struct pfq_cb
 {
         unsigned long 	 group_mask;
