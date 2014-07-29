@@ -25,11 +25,11 @@
 #define _PF_Q_MONAD_H_
 
 #include <pf_q-skbuff.h>
+#include <pf_q-macro.h>
 #include <pf_q-GC.h>
 
 /* persistent state */
 
-#define Q_PERSISTENT_MEM 	64
 
 struct pergroup_context
 {

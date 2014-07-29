@@ -28,9 +28,9 @@
 #include <linux/skbuff.h>
 
 #include <pf_q-skbuff.h>
+#include <pf_q-macro.h>
 #include <pf_q-bounded-queue.h>
 
-#define Q_GC_LOG_MAX_SIZE		16
 
 #define GC_queue_for_each_skb(pool, skb, n) \
         for(n = 0; (n != (pool)->len) && (skb = (pool)->queue[n].skb); \
@@ -56,7 +56,7 @@ struct gc_buff
 
 struct gc_log
 {
-	struct net_device * dev[Q_GC_LOG_MAX_SIZE];
+	struct net_device * dev[Q_GC_LOG_QUEUE_LEN];
 	size_t num_fwd;
 	bool   to_kernel;
 };
@@ -65,13 +65,13 @@ struct gc_log
 struct gc_queue_buff
 {
         size_t len;
-        struct gc_buff queue[Q_GC_QUEUE_LEN];
+        struct gc_buff queue[Q_GC_POOL_QUEUE_LEN];
 };
 
 
 struct gc_data
 {
-	struct gc_log   	log[Q_GC_QUEUE_LEN];
+	struct gc_log   	log[Q_GC_POOL_QUEUE_LEN];
 	struct gc_queue_buff 	pool;
 };
 
@@ -109,7 +109,7 @@ make_buff(struct gc_data *gc, struct sk_buff *skb)
 {
 	struct gc_buff ret;
 
-	if (gc->pool.len >= Q_GC_QUEUE_LEN) {
+	if (gc->pool.len >= Q_GC_POOL_QUEUE_LEN) {
 		ret.skb = NULL;
 	}
 	else {
@@ -136,7 +136,7 @@ gc_alloc_buff(struct gc_data *gc, size_t size)
 	struct sk_buff *skb;
 	struct gc_buff ret;
 
-	if (gc->pool.len >= Q_GC_QUEUE_LEN) {
+	if (gc->pool.len >= Q_GC_POOL_QUEUE_LEN) {
 		ret.skb = NULL;
 		return ret;
 	}
@@ -158,7 +158,7 @@ gc_copy(struct gc_data *gc, struct gc_buff orig)
 	struct sk_buff *skb;
 	struct gc_buff ret;
 
-	if (gc->pool.len >= Q_GC_QUEUE_LEN) {
+	if (gc->pool.len >= Q_GC_POOL_QUEUE_LEN) {
 		ret.skb = NULL;
 		return ret;
 	}

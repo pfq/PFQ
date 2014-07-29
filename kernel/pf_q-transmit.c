@@ -300,7 +300,7 @@ int pfq_lazy_xmit(struct gc_buff buff, struct net_device *dev, int queue_index)
 {
 	struct gc_log *log = PFQ_CB(buff.skb)->log;
 
-       	if (log->num_fwd >= Q_GC_LOG_MAX_SIZE) {
+       	if (log->num_fwd >= Q_GC_LOG_QUEUE_LEN) {
 
 		if (printk_ratelimit())
         		printk(KERN_INFO "[PFQ] bridge %s: too many annotation!\n", dev->name);
