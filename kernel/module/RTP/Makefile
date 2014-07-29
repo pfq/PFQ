@@ -4,13 +4,13 @@
 
 TARGET = pfq-RTP
 
-EXTRA_CFLAGS += -I/usr/include/
-EXTRA_CFLAGS += -Ofast -march=native 
+EXTRA_CFLAGS += -I/usr/include/ -I$(src)/../../
+EXTRA_CFLAGS += -Ofast -march=native
 
 KERNELVERSION := $(shell uname -r)
 KBUILD_EXTRA_SYMBOLS := /lib/modules/${KERNELVERSION}/kernel/net/pfq/Module.symvers
 
-obj-m := $(TARGET).o 
+obj-m := $(TARGET).o
 
 
 all:

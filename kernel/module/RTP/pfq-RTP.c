@@ -55,10 +55,19 @@ bool valid_codec(uint8_t c)
 }
 
 
-struct sk_buff *
-heuristic_rtp(struct sk_buff *skb, bool steer)
+struct hret
 {
-	if (eth_hdr(skb)->h_proto == __constant_htons(ETH_P_IP))
+	uint32_t hash;
+	bool 	 pass;
+};
+
+
+struct hret
+heuristic_rtp(SkBuff b, bool steer)
+{
+	struct hret ret = { 0, false };
+
+	if (eth_hdr(b.skb)->h_proto == __constant_htons(ETH_P_IP))
 	{
 		struct iphdr _iph;
     		const struct iphdr *ip;
@@ -68,68 +77,76 @@ heuristic_rtp(struct sk_buff *skb, bool steer)
 
                 uint16_t source,dest;
 
-		ip = skb_header_pointer(skb, skb->mac_len, sizeof(_iph), &_iph);
+		ip = skb_header_pointer(b.skb, b.skb->mac_len, sizeof(_iph), &_iph);
  		if (ip == NULL)
-        		return NULL;
+        		return ret;
 
 		if (ip->protocol != IPPROTO_UDP)
-        		return NULL;
+        		return ret;
 
-		hdr = skb_header_pointer(skb, skb->mac_len + (ip->ihl<<2), sizeof(_hdr), &_hdr);
+		hdr = skb_header_pointer(b.skb, b.skb->mac_len + (ip->ihl<<2), sizeof(_hdr), &_hdr);
 		if (hdr == NULL)
-        		return NULL;
+        		return ret;
 
 		/* version => 2 */
 
 		if (!((ntohs(hdr->un.rtp.rh_flags) & 0xc000) == 0x8000))
-        		return NULL;
+        		return ret;
 
 		dest   = ntohs(hdr->udp.dest);
 		source = ntohs(hdr->udp.source);
 
 		if (dest < 1024 || source < 1024)
-        		return NULL;
+        		return ret;
 
 		if ((dest & 1) && (source & 1))  /* rtcp */
 		{
                 	if (hdr->un.rtcp.rh_type != 200)  /* SR  */
-        			return NULL;
+        			return ret;
 		}
 		else if (!((dest & 1) || (source & 1)))
 		{
                 	uint8_t pt = hdr->un.rtp.rh_pt;
                  	if (!valid_codec(pt))
-        			return NULL;
+        			return ret;
 		}
 
-		return steer ? steering(skb, ip->saddr ^ ip->daddr ^ ((uint32_t)(hdr->udp.source & 0xfffe) << 16) ^ (hdr->udp.dest & 0xfffe)) : skb;
-
+		ret.pass = true;
+		if (steer)
+			ret.hash = ip->saddr ^ ip->daddr ^ ((uint32_t)(hdr->udp.source & 0xfffe) << 16) ^ (hdr->udp.dest & 0xfffe);
+		return ret;
 	}
 
-        return NULL;
+        return ret;
 }
 
 
 bool
-is_rtp(arguments_t arg, struct sk_buff const *skb)
+is_rtp(arguments_t arg, SkBuff b)
 {
-	return heuristic_rtp((struct sk_buff *)skb, false) != NULL;
+	return heuristic_rtp(b, false).pass;
 }
 
 
-struct sk_buff *
-filter_rtp(arguments_t arg, struct sk_buff *skb)
+static Action_SkBuff
+filter_rtp(arguments_t arg, SkBuff b)
 {
-	struct sk_buff *ret = heuristic_rtp(skb, false);
-	return ret != NULL ? skb : drop(skb);
+	if (is_rtp(arg, b))
+		return Pass(b);
+
+	return Drop(b);
 }
 
 
-struct sk_buff *
-steering_rtp(arguments_t arg, struct sk_buff *skb)
+static Action_SkBuff
+steering_rtp(arguments_t arg, SkBuff b)
 {
-	struct sk_buff *ret = heuristic_rtp(skb, true);
-	return ret != NULL ? skb : drop(skb);
+	struct hret ret = heuristic_rtp(b, true);
+
+	if (ret.pass)
+        	return Steering(b, ret.hash);
+
+	return Drop(b);
 }
 
 
