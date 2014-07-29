@@ -146,7 +146,6 @@ struct pfq_function_descr
         fini_ptr_t 	fini;
 };
 
-
 /* class predicates */
 
 static inline bool

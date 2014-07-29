@@ -31,11 +31,11 @@
 #include <linux/version.h>
 #include <linux/kthread.h>
 
+#include <pf_q-macro.h>
 #include <pf_q-thread.h>
 #include <pf_q-memory.h>
 #include <pf_q-sock.h>
 #include <pf_q-transmit.h>
-#include <pf_q-common.h>
 
 int
 pfq_tx_thread(void *data)

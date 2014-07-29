@@ -21,11 +21,11 @@
  *
  ****************************************************************/
 
-#include <pf_q-bounded-queue.h>
-#include <pf_q-sock.h>
-#include <pf_q-module.h>
-#include <pf_q-GC.h>
+#ifndef _PF_Q_ENDPOINT_H_
+#define _PF_Q_ENDPOINT_H_
 
+struct pfq_sock;
+struct gc_queue_buff;
 
 enum pfq_endpoint_type
 {
@@ -34,3 +34,5 @@ enum pfq_endpoint_type
 };
 
 extern bool copy_to_endpoint_queue_buff(struct pfq_sock *so, struct gc_queue_buff *queue, unsigned long long mask, int cpu, int gid);
+
+#endif /* _PF_Q_ENDPOINT_H_ */

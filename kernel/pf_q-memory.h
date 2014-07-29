@@ -29,13 +29,14 @@
 #include <linux/skbuff.h>
 
 
-#include <pf_q-common.h>
+#include <pf_q-macro.h>
 #include <pf_q-percpu.h>
 #include <pf_q-sparse.h>
 #include <pf_q-bounded-queue.h>
 
 extern int recycle_len;
 extern struct local_data __percpu * cpu_data;
+
 
 extern sparse_counter_t os_alloc;
 extern sparse_counter_t os_free;

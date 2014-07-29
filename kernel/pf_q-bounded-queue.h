@@ -27,7 +27,7 @@
 
 
 #include <pf_q-bitops.h>
-#include <pf_q-common.h>
+#include <pf_q-macro.h>
 
 
 struct pfq_bounded_queue_skb

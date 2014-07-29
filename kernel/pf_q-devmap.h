@@ -27,7 +27,8 @@
 
 #include <linux/pf_q.h>
 
-#include <pf_q-common.h>
+#include <pf_q-macro.h>
+
 
 /* pfq devmap */
 

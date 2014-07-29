@@ -1,3 +1,6 @@
+#ifndef _PF_Q_THREAD_H_
+#define _PF_Q_THREAD_H_
+
 /*
  * Copyright (c) 2014 Bonelli Nicola <nicola.bonelli@cnit.it>
  *
@@ -27,3 +30,5 @@
 
 
 extern int pfq_tx_thread(void *data);
+
+#endif /* _PF_Q_THREAD_H_ */

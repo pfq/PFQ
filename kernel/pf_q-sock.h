@@ -30,7 +30,8 @@
 
 #include <net/sock.h>
 
-#include <pf_q-common.h>
+#include <pf_q-macro.h>
+#include <pf_q-stats.h>
 
 
 extern atomic_long_t pfq_sock_vector[Q_MAX_ID];

@@ -27,6 +27,7 @@
 #include <linux/string.h>
 #include <linux/skbuff.h>
 
+#include <pf_q-skbuff.h>
 #include <pf_q-bounded-queue.h>
 
 #define Q_GC_LOG_MAX_SIZE		16

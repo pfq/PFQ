@@ -30,7 +30,7 @@
 #include <linux/if_vlan.h>
 
 #include <pf_q-bounded-queue.h>
-#include <pf_q-common.h>
+#include <pf_q-macro.h>
 #include <pf_q-sock.h>
 #include <pf_q-GC.h>
 

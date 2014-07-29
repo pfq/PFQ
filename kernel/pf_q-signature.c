@@ -26,7 +26,7 @@
 #include <linux/ctype.h>
 #include <linux/limits.h>
 
-#include "pf_q-signature.h"
+#include <pf_q-signature.h>
 
 static int
 count_outmost_brackets(string_view_t str)

@@ -21,10 +21,11 @@
  *
  ****************************************************************/
 
-#ifndef __PF_Q_SIGNATURE__
-#define __PF_Q_SIGNATURE__
 
-#include "pf_q-string-view.h"
+#ifndef _PF_Q_SIGNATURE_H_
+#define _PF_Q_SIGNATURE_H_
+
+#include <pf_q-string-view.h>
 
 string_view_t pfq_signature_simplify(string_view_t sig);
 string_view_t pfq_signature_bind(string_view_t sig, int n);
@@ -35,4 +36,4 @@ int  pfq_signature_arity(string_view_t sig);
 bool pfq_signature_equal(string_view_t a, string_view_t b);
 bool pfq_signature_is_function(string_view_t sig);
 
-#endif /* __PF_Q_SIGNATURE__ */
+#endif /* _PF_Q_SIGNATURE_H_ */

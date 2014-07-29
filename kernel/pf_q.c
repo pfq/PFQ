@@ -49,7 +49,7 @@
 
 #include <linux/pf_q.h>
 
-#include <pf_q-common.h>
+#include <pf_q-macro.h>
 #include <pf_q-sockopt.h>
 #include <pf_q-devmap.h>
 #include <pf_q-group.h>
@@ -62,6 +62,7 @@
 #include <pf_q-thread.h>
 #include <pf_q-global.h>
 #include <pf_q-vlan.h>
+#include <pf_q-stats.h>
 #include <pf_q-endpoint.h>
 #include <pf_q-mpdb-queue.h>
 #include <pf_q-transmit.h>

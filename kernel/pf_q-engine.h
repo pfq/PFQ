@@ -26,10 +26,9 @@
 #define _PF_Q_ENGINE_H_
 
 #include <linux/kernel.h>
-#include <linux/skbuff.h>
-#include <linux/pf_q.h>
 
-#include <pf_q-module.h>
+struct pfq_computation_descr;
+struct pfq_computation_tree;
 
 extern int pfq_validate_computation_descr(struct pfq_computation_descr const *descr);
 

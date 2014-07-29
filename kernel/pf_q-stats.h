@@ -1,7 +1,6 @@
 /***************************************************************
  *
  * (C) 2011-14 Nicola Bonelli <nicola.bonelli@cnit.it>
- *             Andrea Di Pietro <andrea.dipietro@for.unipi.it>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,35 +21,13 @@
  *
  ****************************************************************/
 
-#ifndef _PF_COMMON_H_
-#define _PF_COMMON_H_
+#ifndef _PF_Q_STATS_H_
+#define _PF_Q_STATS_H_
 
 #include <linux/kernel.h>
 #include <linux/pf_q.h>
 
-#include <pf_q-module.h>
 #include <pf_q-sparse.h>
-
-#define Q_MAX_ID                (sizeof(long)<<3)
-#define Q_MAX_GROUP             (sizeof(long)<<3)
-
-#define Q_BOUNDED_QUEUE_LEN     (sizeof(long)<<3)
-#define Q_GC_QUEUE_LEN      	128
-
-#define Q_MAX_DEVICE           	256
-#define Q_MAX_DEVICE_MASK       (Q_MAX_DEVICE-1)
-
-#define Q_MAX_HW_QUEUE          256
-#define Q_MAX_HW_QUEUE_MASK     (Q_MAX_HW_QUEUE-1)
-
-#define Q_GRACE_PERIOD 500      /* msec */
-
-#define Q_TX_RING_SIZE          (8192)
-#define Q_TX_RING_MASK          (PFQ_TX_RING_SIZE-1)
-
-#define Q_SLOT_ALIGN(s, n)      ((s+(n-1)) & ~(n-1))
-
-#define Q_FUN_SYMB_LEN          256
 
 
 /* sparse_counter_t stats */
@@ -73,4 +50,4 @@ typedef struct pfq_tx_stats
 } pfq_tx_stat_t;
 
 
-#endif /* _PF_COMMON_H_ */
+#endif /* _PF_Q_STATS_H_ */

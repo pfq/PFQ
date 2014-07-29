@@ -21,32 +21,29 @@
  *
  ****************************************************************/
 
-#ifndef _PF_Q_PERCPU_H_
-#define _PF_Q_PERCPU_H_
+#ifndef _PF_Q_MACRO_H_
+#define _PF_Q_MACRO_H_
 
-#include <linux/percpu.h>
+#define Q_MAX_ID                (sizeof(long)<<3)
+#define Q_MAX_GROUP             (sizeof(long)<<3)
 
-#include <pf_q-macro.h>
-#include <pf_q-GC.h>
+#define Q_BOUNDED_QUEUE_LEN     (sizeof(long)<<3)
+#define Q_GC_QUEUE_LEN      	128
 
-int pfq_percpu_init(void);
-int pfq_percpu_flush(void);
+#define Q_MAX_DEVICE           	256
+#define Q_MAX_DEVICE_MASK       (Q_MAX_DEVICE-1)
 
-/* per-cpu data... */
+#define Q_MAX_HW_QUEUE          256
+#define Q_MAX_HW_QUEUE_MASK     (Q_MAX_HW_QUEUE-1)
 
-struct local_data
-{
-        unsigned long           eligible_mask;
-        unsigned long           sock_mask [Q_MAX_ID];
+#define Q_GRACE_PERIOD 500      /* msec */
 
-        int                     sock_cnt;
+#define Q_TX_RING_SIZE          (8192)
+#define Q_TX_RING_MASK          (PFQ_TX_RING_SIZE-1)
 
-	struct gc_data 		gc;	/* garbage collector */
+#define Q_SLOT_ALIGN(s, n)      ((s+(n-1)) & ~(n-1))
 
-        atomic_t                enable_recycle;
-        struct sk_buff_head     tx_recycle_list;
-        struct sk_buff_head     rx_recycle_list;
+#define Q_FUN_SYMB_LEN          256
 
-} ____cacheline_aligned;
 
-#endif /* _PF_Q_PERCPU_H_ */
+#endif /* _PF_Q_MACRO_H_ */

@@ -25,6 +25,7 @@
 #define _PF_Q_MONAD_H_
 
 #include <pf_q-skbuff.h>
+#include <pf_q-GC.h>
 
 /* actions types */
 
