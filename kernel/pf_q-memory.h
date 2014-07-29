@@ -119,7 +119,7 @@ void pfq_kfree_skb_recycle(struct sk_buff *skb, struct sk_buff_head *list)
 #ifdef PFQ_USE_SKB_RECYCLE_STAT
         sparse_inc(&os_free);
 #endif
-        kfree_skb(skb);
+        consume_skb(skb);
 }
 
 
@@ -201,7 +201,7 @@ struct sk_buff * ____pfq_alloc_skb_recycle(unsigned int size, gfp_t priority, in
 #ifdef PFQ_USE_SKB_RECYCLE_STAT
                                         sparse_inc(&os_free);
 #endif
-                                        kfree_skb(skb);
+                                        consume_skb(skb);
                                 }
                         }
                 }
