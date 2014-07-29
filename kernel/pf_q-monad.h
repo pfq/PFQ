@@ -28,6 +28,13 @@
 #include <pf_q-macro.h>
 #include <pf_q-GC.h>
 
+/* The Action monad */
+
+#define Action(type) \
+struct Action_ ## type \
+{ \
+	type 	value; \
+};
 /* persistent state */
 
 
