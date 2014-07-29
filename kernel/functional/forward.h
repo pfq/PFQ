@@ -58,7 +58,7 @@ forward_class(arguments_t args, SkBuff b)
                 return Pass(b);
         }
 
-        return Class(b, (1ULL << c));
+        return Pass(class(b, (1ULL << c)));
 }
 
 static inline Action_SkBuff
