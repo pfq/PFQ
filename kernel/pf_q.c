@@ -229,7 +229,7 @@ void send_to_kernel(struct napi_struct *napi, struct sk_buff *skb)
 {
 	struct pfq_cb *cb = PFQ_CB(skb);
 
-	switch(cb->action.direct)
+	switch(cb->direct)
 	{
 		case 0: /* forward not permitted, to avoid loop */
 		case 1: netif_rx(skb);
@@ -247,6 +247,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
         unsigned long group_mask, socket_mask;
         struct local_data * local;
         long unsigned n, bit, lb;
+        struct pfq_monad monad;
 	struct gc_buff buff;
         int cpu;
 
@@ -303,8 +304,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 		return 0;
 	}
 
-        PFQ_CB(buff.skb)->action.direct = direct;
-        PFQ_CB(buff.skb)->action.attr = 0;
+        PFQ_CB(buff.skb)->direct = direct;
 
         if (gc_size(&local->gc) < prefetch_len) {
         	put_cpu();
@@ -330,6 +330,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 		group_mask |= local_group_mask;
 
 		PFQ_CB(skb)->group_mask = local_group_mask;
+		PFQ_CB(skb)->monad 	= &monad;
 	}
 
         /* process all groups enabled for this batch of packets */
@@ -350,12 +351,15 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 			unsigned long sock_mask = 0;
 			struct pfq_computation_tree *prg;
 
+			/* skip this packet for this group */
+
 			if (unlikely((cb->group_mask & bit) == 0))
 				continue;
 
 			/* increment recv counter for this group */
 
 			__sparse_inc(&pfq_groups[gid].recv, cpu);
+
 
 			/* check bpf filter */
 
@@ -369,9 +373,15 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 					continue;
 			}
 
-			/* setup CB for this skb */
+			/* setup monad for this computation */
 
-			cb->state = 0;
+			if(!pfq_get_group(gid))
+				continue;
+
+			monad.fanout.class_mask = Q_CLASS_DEFAULT;
+			monad.fanout.type       = fanout_copy;
+			monad.state  		= 0;
+			monad.persistent 	= &pfq_get_group(gid)->ctx;
 
 			/* check where a functional program is available for this group */
 
@@ -379,31 +389,25 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 
 			if (prg) { /* run the functional program */
 
-				skb = pfq_run(gid, prg, skb);
+				skb = pfq_run(prg, skb);
 
 				if (skb == NULL)
 					continue;
 
-				cb = PFQ_CB(skb);
-
-				if (cb->action.attr & attr_stolen) {
-					continue;
-				}
-
-				if (likely(!is_drop(cb->action))) {
+				if (likely(!is_drop(monad.fanout))) {
 
 					unsigned long eligible_mask = 0;
 					unsigned long cbit;
 
 					/* load the eligible mask */
 
-					pfq_bitwise_foreach(cb->action.class_mask, cbit,
+					pfq_bitwise_foreach(monad.fanout.class_mask, cbit,
 					{
 						int class = pfq_ctz(cbit);
 						eligible_mask |= atomic_long_read(&pfq_groups[gid].sock_mask[class]);
 					})
 
-					if (is_steering(cb->action)) {
+					if (is_steering(monad.fanout)) {
 
 						if (unlikely(eligible_mask != local->eligible_mask)) {
 
@@ -419,7 +423,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 						}
 
 						if (likely(local->sock_cnt)) {
-							unsigned int h = cb->action.hash ^ (cb->action.hash >> 8) ^ (cb->action.hash >> 16);
+							unsigned int h = monad.fanout.hash ^ (monad.fanout.hash >> 8) ^ (monad.fanout.hash >> 16);
 							sock_mask |= local->sock_mask[pfq_fold(h, local->sock_cnt)];
 						}
 					}
@@ -462,10 +466,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 
                 cb = PFQ_CB(buff.skb);
 
-                if (unlikely(cb->action.attr & attr_stolen))
-                        continue;
-
-		to_kernel = cb->action.direct && is_targeted_to_kernel(buff.skb);
+		to_kernel = cb->direct && is_targeted_to_kernel(buff.skb);
 		num_fwd   = cb->log->num_fwd;
 
 		/* possibly send a copy of this buff to the kernel */
@@ -496,7 +497,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 
 		if (!to_kernel && num_fwd == 0) {
 
-			if (cb->action.direct)
+			if (cb->direct)
 				pfq_kfree_skb_recycle(buff.skb, &local->rx_recycle_list);
 			else
 				consume_skb(buff.skb);

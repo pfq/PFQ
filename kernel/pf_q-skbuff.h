@@ -24,31 +24,18 @@
 #ifndef _PF_Q_SKBUFF_H_
 #define _PF_Q_SKBUFF_H_
 
-struct pergroup_context;
+struct pfq_monad;
 struct gc_log;
-
-typedef struct
-{
-        unsigned long 	class_mask;
-        uint32_t 	hash;
-        uint8_t  	type;
-        uint8_t  	attr;
-        uint8_t  	direct;
-
-} action_t;
 
 
 struct pfq_cb
 {
-        action_t action;
+        unsigned long 	 group_mask;
+	struct gc_log 	 *log;
+	struct pfq_monad *monad;
+	int 		 direct;
 
-        unsigned long group_mask;
-        unsigned long state;
-
-        struct pergroup_context *ctx;
-	struct gc_log *log;
-
-} __attribute__((packed));
+};
 
 
 #define PFQ_CB(skb) ((struct pfq_cb *)(skb)->cb)

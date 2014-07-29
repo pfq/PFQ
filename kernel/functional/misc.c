@@ -187,7 +187,7 @@ inv(arguments_t args, struct sk_buff *skb)
 	function_t expr = get_data(function_t, args);
 	struct sk_buff *nskb = EVAL_FUNCTION(expr, skb);
 
-	if (!nskb || is_drop(PFQ_CB(nskb)->action))
+	if (!nskb || is_drop(PFQ_CB(nskb)->monad->fanout))
 		return skb;
 
 	return drop(nskb);
@@ -202,7 +202,7 @@ par(arguments_t args, struct sk_buff *skb)
 
 	struct sk_buff *nskb = EVAL_FUNCTION(f, skb);
 
-	if (!nskb || is_drop(PFQ_CB(nskb)->action)) {
+	if (!nskb || is_drop(PFQ_CB(nskb)->monad->fanout)) {
 		return EVAL_FUNCTION(g, copy(skb));
 	}
 

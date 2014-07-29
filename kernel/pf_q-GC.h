@@ -58,6 +58,7 @@ struct gc_log
 {
 	struct net_device * dev[Q_GC_LOG_MAX_SIZE];
 	size_t num_fwd;
+	bool   to_kernel;
 };
 
 
@@ -76,9 +77,17 @@ struct gc_data
 
 
 static inline
-void gc_init(struct gc_data *gc)
+void gc_data_init(struct gc_data *gc)
 {
 	memset(gc, 0, sizeof(struct gc_data));
+}
+
+
+static inline
+void gc_log_init(struct gc_log *log)
+{
+	log->num_fwd = 0;
+	log->to_kernel = false;
 }
 
 
@@ -88,20 +97,9 @@ void gc_reset(struct gc_data *gc)
 	size_t n;
 	for(n = 0; n < gc->pool.len; ++n)
 	{
-        	gc->log[n].num_fwd = 0;
+		gc_log_init(&gc->log[n]);
 	}
 	gc->pool.len = 0;
-}
-
-
-static inline
-void gc_foreach(struct gc_data *gc, void (*f)(struct sk_buff *))
-{
-	size_t n = 0;
-	for(; n < gc->pool.len; ++n)
-	{
-               	f(gc->pool.queue[n].skb);
-	}
 }
 
 

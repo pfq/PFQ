@@ -232,13 +232,13 @@ pfq_bind(struct sk_buff *skb, struct pfq_computation_tree *prg)
 
         while (node)
         {
-                action_t *a;
+                fanout_t *a;
 
                 skb = pfq_apply(&node->fun, skb);
                 if (skb == NULL)
                         return NULL;
 
-                a = &PFQ_CB(skb)->action;
+                a = &PFQ_CB(skb)->monad->fanout;
 
                 if (is_drop(*a))
                         return skb;
@@ -251,23 +251,12 @@ pfq_bind(struct sk_buff *skb, struct pfq_computation_tree *prg)
 
 
 struct sk_buff *
-pfq_run(int gid, struct pfq_computation_tree *prg, struct sk_buff *skb)
+pfq_run(struct pfq_computation_tree *prg, struct sk_buff *skb)
 {
-        struct pfq_group * g = pfq_get_group(gid);
-        struct pfq_cb *cb = PFQ_CB(skb);
-
 #ifdef PFQ_LANG_PROFILE
 	static uint64_t nrun, total;
 	uint64_t stop, start;
 #endif
-        if (g == NULL)
-                return NULL;
-
-        cb->ctx = &g->ctx;
-
-        cb->action.class_mask = Q_CLASS_DEFAULT;
-        cb->action.type       = action_copy;
-        cb->action.attr       = 0;
 
 #ifdef PFQ_LANG_PROFILE
 	start = get_cycles();

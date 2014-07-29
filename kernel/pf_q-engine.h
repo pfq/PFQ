@@ -40,7 +40,7 @@ extern struct pfq_computation_tree * pfq_computation_alloc(struct pfq_computatio
 extern void * pfq_context_alloc(struct pfq_computation_descr const *);
 extern char * strdup_user(const char __user *str);
 
-extern struct sk_buff *pfq_run(int gid, struct pfq_computation_tree *prg, struct sk_buff *skb);
+extern struct sk_buff *pfq_run(struct pfq_computation_tree *prg, struct sk_buff *skb);
 
 extern void pr_devel_computation_descr(struct pfq_computation_descr const *);
 extern void pr_devel_computation_tree(struct pfq_computation_tree const *tree);

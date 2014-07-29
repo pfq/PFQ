@@ -149,31 +149,30 @@ struct pfq_function_descr
 /* class predicates */
 
 static inline bool
-is_drop(action_t a)
+is_drop(fanout_t a)
 {
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,9,0))
         BUILD_BUG_ON_MSG(sizeof(struct pfq_cb) > sizeof(((struct sk_buff *)0)->cb), "pfq control buffer overflow");
 #endif
-        return a.type == action_drop;
+        return a.type == fanout_drop;
 }
 
 static inline bool
-is_copy(action_t a)
+is_copy(fanout_t a)
 {
-        return a.type == action_copy;
+        return a.type == fanout_copy;
 }
 
 static inline bool
-is_steering(action_t a)
+is_steering(fanout_t a)
 {
-        return a.type == action_steer;
+        return a.type == fanout_steer;
 }
 
 static inline
 bool is_targeted_to_kernel(struct sk_buff *skb)
 {
-        action_t * a = & PFQ_CB(skb)->action;
-        return (a->attr & attr_to_kernel);
+	return PFQ_CB(skb)->log->to_kernel;
 }
 
 #endif /* _PF_Q_MODULE_H_ */
