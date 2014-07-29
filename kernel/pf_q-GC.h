@@ -169,7 +169,15 @@ gc_copy(struct gc_data *gc, struct gc_buff orig)
 		return ret;
 	}
 
-	return make_buff(gc, skb);
+	ret = make_buff(gc, skb);
+	if (ret.skb) {
+
+		PFQ_CB(ret.skb)->group_mask = PFQ_CB(orig.skb)->group_mask;
+		PFQ_CB(ret.skb)->direct     = PFQ_CB(orig.skb)->direct;
+		PFQ_CB(ret.skb)->monad      = PFQ_CB(orig.skb)->monad;
+	}
+
+	return ret;
 }
 
 
