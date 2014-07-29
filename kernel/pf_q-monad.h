@@ -35,8 +35,9 @@ struct Action_ ## type \
 { \
 	type 	value; \
 };
-/* persistent state */
 
+
+/* persistent state */
 
 struct pergroup_context
 {
