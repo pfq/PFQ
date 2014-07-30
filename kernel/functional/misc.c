@@ -189,7 +189,7 @@ inv(arguments_t args, SkBuff b)
 	SkBuff nb = EVAL_FUNCTION(expr, b).value;
 
 	if (!nb.skb || is_drop(PFQ_CB(nb.skb)->monad->fanout))
-		return Pass(nb);
+		return Copy(nb);
 
 	return Drop(nb);
 }
@@ -201,13 +201,20 @@ par(arguments_t args, SkBuff b)
 	function_t f = get_data0(function_t, args);
 	function_t g = get_data1(function_t, args);
 
-	SkBuff nb = EVAL_FUNCTION(f, b).value;
+	fanout_t fout = PFQ_CB(b.skb)->monad->fanout;
 
-	if (!nb.skb || is_drop(PFQ_CB(nb.skb)->monad->fanout)) {
-		return EVAL_FUNCTION(g, Copy(nb).value);
+	Action_SkBuff a = EVAL_FUNCTION(f, b);
+
+	if (!a.value.skb || is_drop(PFQ_CB(a.value.skb)->monad->fanout)) {
+
+		/* restore the original fanout.. */
+
+		PFQ_CB(b.skb)->monad->fanout = fout;
+
+		return EVAL_FUNCTION(g, b);
 	}
 
-	return Pass(nb);
+	return a;
 }
 
 
