@@ -35,12 +35,24 @@ static Action_SkBuff
 dummy(arguments_t args, SkBuff b)
 {
         const int data = get_data(int,args);
+	SkBuff new;
 
         if (printk_ratelimit()) {
-                printk(KERN_INFO "[PFQ] dummy context: %d\n", data);
+                printk(KERN_INFO "[PFQ] dummy argument: %d\n", data);
         }
 
-        return Pass(b);
+        new = pfq_copy_buff(b);
+
+	if (new.skb == NULL) {
+                printk(KERN_INFO "[PFQ] clone error!!!\n");
+                return Drop(b);
+	}
+
+	if (new.skb != b.skb) {
+                printk(KERN_INFO "[PFQ] packet cloned: %p -> %p\n", new.skb, b.skb);
+	}
+
+        return Pass(new);
 }
 
 
