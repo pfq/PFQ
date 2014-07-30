@@ -21,8 +21,8 @@
  *
  ****************************************************************/
 
-#ifndef _PF_Q_GC_SKBUFF_H_
-#define _PF_Q_GC_SKBUFF_H_
+#ifndef _PF_Q_GC_H_
+#define _PF_Q_GC_H_
 
 #include <linux/string.h>
 #include <linux/skbuff.h>
@@ -94,93 +94,16 @@ void gc_log_init(struct gc_log *log)
 
 
 static inline
-void gc_reset(struct gc_data *gc)
-{
-	size_t n;
-	for(n = 0; n < gc->pool.len; ++n)
-	{
-		gc_log_init(&gc->log[n]);
-	}
-	gc->pool.len = 0;
-}
-
-
-static inline
-struct gc_buff
-make_buff(struct gc_data *gc, struct sk_buff *skb)
-{
-	struct gc_buff ret;
-
-	if (gc->pool.len >= Q_GC_POOL_QUEUE_LEN) {
-		ret.skb = NULL;
-	}
-	else {
-		struct pfq_cb *cb = (struct pfq_cb *)skb->cb;
-                cb->log = &gc->log[gc->pool.len];
-		gc->pool.queue[gc->pool.len++].skb = skb;
-		ret.skb = skb;
-	}
-
-	return ret;
-}
-
-
-static inline
 size_t gc_size(struct gc_data *gc)
 {
 	return gc->pool.len;
 }
 
-static inline
-struct gc_buff
-gc_alloc_buff(struct gc_data *gc, size_t size)
-{
-	struct sk_buff *skb;
-	struct gc_buff ret;
+extern void gc_reset(struct gc_data *gc);
 
-	if (gc->pool.len >= Q_GC_POOL_QUEUE_LEN) {
-		ret.skb = NULL;
-		return ret;
-	}
-
-	skb = alloc_skb(size, GFP_ATOMIC);
-	if (skb == NULL) {
-		ret.skb = NULL;
-		return ret;
-	}
-
-	return make_buff(gc, skb);
-}
-
-
-static inline
-struct gc_buff
-gc_copy(struct gc_data *gc, struct gc_buff orig)
-{
-	struct sk_buff *skb;
-	struct gc_buff ret;
-
-	if (gc->pool.len >= Q_GC_POOL_QUEUE_LEN) {
-		ret.skb = NULL;
-		return ret;
-	}
-
-	skb = skb_copy(orig.skb, GFP_ATOMIC);
-	if (skb == NULL) {
-		ret.skb = NULL;
-		return ret;
-	}
-
-	ret = make_buff(gc, skb);
-	if (ret.skb) {
-
-		PFQ_CB(ret.skb)->group_mask = PFQ_CB(orig.skb)->group_mask;
-		PFQ_CB(ret.skb)->direct     = PFQ_CB(orig.skb)->direct;
-		PFQ_CB(ret.skb)->monad      = PFQ_CB(orig.skb)->monad;
-	}
-
-	return ret;
-}
+extern struct gc_buff gc_make_buff(struct gc_data *gc, struct sk_buff *skb);
+extern struct gc_buff gc_alloc_buff(struct gc_data *gc, size_t size);
+extern struct gc_buff gc_copy_buff(struct gc_data *gc, struct gc_buff orig);
 
 
 #endif /* _PF_Q_GC_H_ */

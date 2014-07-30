@@ -297,7 +297,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 
 	/* the ownership of this skb is under the garbage collector control */
 
-	buff = make_buff(&local->gc, skb);
+	buff = gc_make_buff(&local->gc, skb);
 	if (buff.skb == NULL) {
 		printk(KERN_INFO "[PFQ] GC: memory exhausted!\n");
 		kfree_skb(skb);
