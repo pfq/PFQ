@@ -78,6 +78,16 @@ struct gc_data
 };
 
 
+extern void gc_reset(struct gc_data *gc);
+extern struct gc_buff gc_make_buff(struct gc_data *gc, struct sk_buff *skb);
+extern struct gc_buff gc_alloc_buff(struct gc_data *gc, size_t size);
+extern struct gc_buff gc_copy_buff(struct gc_data *gc, struct gc_buff orig);
+
+extern struct gc_buff pfq_make_buff(struct sk_buff *skb);
+extern struct gc_buff pfq_alloc_buff(size_t size);
+extern struct gc_buff pfq_copy_buff(struct gc_buff buff);
+
+
 static inline
 void gc_data_init(struct gc_data *gc)
 {
@@ -99,11 +109,6 @@ size_t gc_size(struct gc_data *gc)
 	return gc->pool.len;
 }
 
-extern void gc_reset(struct gc_data *gc);
-
-extern struct gc_buff gc_make_buff(struct gc_data *gc, struct sk_buff *skb);
-extern struct gc_buff gc_alloc_buff(struct gc_data *gc, size_t size);
-extern struct gc_buff gc_copy_buff(struct gc_data *gc, struct gc_buff orig);
 
 
 #endif /* _PF_Q_GC_H_ */

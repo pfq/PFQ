@@ -22,8 +22,9 @@
  ****************************************************************/
 
 
+#include <pf_q-percpu.h>
+#include <pf_q-global.h>
 #include <pf_q-GC.h>
-
 
 void gc_reset(struct gc_data *gc)
 {
@@ -102,5 +103,23 @@ gc_copy_buff(struct gc_data *gc, struct gc_buff orig)
 	}
 
 	return ret;
+}
+
+struct gc_buff pfq_make_buff(struct sk_buff *skb)
+{
+	struct local_data *local = this_cpu_ptr(cpu_data);
+	return gc_make_buff(&local->gc, skb);
+}
+
+struct gc_buff pfq_alloc_buff(size_t size)
+{
+	struct local_data *local = this_cpu_ptr(cpu_data);
+	return gc_alloc_buff(&local->gc, size);
+}
+
+struct gc_buff pfq_copy_buff(struct gc_buff buff)
+{
+	struct local_data *local = this_cpu_ptr(cpu_data);
+	return gc_copy_buff(&local->gc, buff);
 }
 
