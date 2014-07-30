@@ -292,7 +292,7 @@ try
 
     if (opt::slots < 1024)
     {
-        std::cout << "too few slots may affect the performance!" << std::endl;
+        std::cout << "too few slots may reduce performance!" << std::endl;
         _Exit(0);
     }
 
