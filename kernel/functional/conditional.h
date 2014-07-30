@@ -59,10 +59,10 @@ unless(arguments_t args, SkBuff b)
         predicate_t pred_ = get_data0(predicate_t, args);
         function_t  fun_  = get_data1(function_t, args);
 
-	if (!EVAL_PREDICATE(pred_, b))
-		return EVAL_FUNCTION(fun_, b);
+	if (EVAL_PREDICATE(pred_, b))
+		return Pass(b);
 
-	return Pass(b);
+	return EVAL_FUNCTION(fun_, b);
 }
 
 
