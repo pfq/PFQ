@@ -118,7 +118,7 @@ Action_SkBuff
 Broadcast(SkBuff b)
 {
 	Action_SkBuff ret = { b };
-        fanout_t * a = & PFQ_CB(b.skb)->monad->fanout;
+        fanout_t * a  = &PFQ_CB(b.skb)->monad->fanout;
         a->class_mask = Q_CLASS_ANY;
         a->type       = fanout_copy;
         return ret;
@@ -129,7 +129,7 @@ Action_SkBuff
 Steering(SkBuff b, uint32_t hash)
 {
 	Action_SkBuff ret = { b };
-        fanout_t * a = & PFQ_CB(b.skb)->monad->fanout;
+        fanout_t * a = &PFQ_CB(b.skb)->monad->fanout;
         a->type  = fanout_steer;
         a->hash  = hash;
         return ret;
@@ -140,7 +140,7 @@ Action_SkBuff
 Deliver(SkBuff b, unsigned long class_mask)
 {
 	Action_SkBuff ret = { b };
-        fanout_t * a  = & PFQ_CB(b.skb)->monad->fanout;
+        fanout_t * a  = &PFQ_CB(b.skb)->monad->fanout;
         a->class_mask = class_mask;
         a->type       = fanout_copy;
         return ret;
@@ -151,7 +151,7 @@ Action_SkBuff
 Dispatch(SkBuff b, unsigned long class_mask, uint32_t hash)
 {
 	Action_SkBuff ret = { b };
-        fanout_t * a = & PFQ_CB(b.skb)->monad->fanout;
+        fanout_t * a  = &PFQ_CB(b.skb)->monad->fanout;
         a->class_mask = class_mask;
         a->type       = fanout_steer;
         a->hash       = hash;
