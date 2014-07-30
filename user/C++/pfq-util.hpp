@@ -29,6 +29,10 @@
 #include <cstring>
 #include <stdexcept>
 #include <system_error>
+#include <fstream>
+#include <iterator>
+#include <thread>
+#include <algorithm>
 
 #include <linux/pf_q.h>
 #include <sys/ioctl.h>
@@ -142,6 +146,21 @@ namespace pfq {
 
         return ret;
     }
+
+    //! Hardware concurrency.
+
+    inline unsigned int hardware_concurrency()
+    {
+        auto proc = []() {
+            std::ifstream cpuinfo("/proc/cpuinfo");
+            return std::count(std::istream_iterator<std::string>(cpuinfo),
+                              std::istream_iterator<std::string>(),
+                              std::string("processor"));
+        };
+
+        return std::thread::hardware_concurrency() ? : proc();
+    }
+
 
     namespace param
     {
