@@ -5,8 +5,6 @@
  *
  ****************************************************************/
 
-#include <affinity.hpp>
-
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -24,15 +22,20 @@
 #include <random>
 
 #include <pfq.hpp>
-#include <pfq-lang/lang.hpp>
+#include <pfq-util.hpp>
 
 #include <netinet/ip.h>
 #include <netinet/udp.h>
 
-#include "string.hpp"
+#include <affinity.hpp>
+#include <vt100.hpp>
+
+
+using namespace pfq;
 
 
 char *packet = nullptr;
+
 
 char *make_packet(size_t n)
 {
@@ -135,26 +138,7 @@ make_binding(const char *value)
 }
 
 
-
-using namespace pfq;
-using namespace pfq::lang;
-
-
-namespace vt100
-{
-    const char * const CLEAR = "\E[2J";
-    const char * const EDOWN = "\E[J";
-    const char * const DOWN  = "\E[1B";
-    const char * const HOME  = "\E[H";
-    const char * const ELINE = "\E[K";
-    const char * const BOLD  = "\E[1m";
-    const char * const RESET = "\E[0m";
-    const char * const BLUE  = "\E[1;34m";
-    const char * const RED   = "\E[31m";
-}
-
-
-namespace test
+namespace thread
 {
     struct context
     {
@@ -265,19 +249,6 @@ namespace test
 }
 
 
-unsigned int hardware_concurrency()
-{
-    auto proc = []() {
-        std::ifstream cpuinfo("/proc/cpuinfo");
-        return std::count(std::istream_iterator<std::string>(cpuinfo),
-                          std::istream_iterator<std::string>(),
-                          std::string("processor"));
-    };
-
-    return std::thread::hardware_concurrency() ? : proc();
-}
-
-
 void usage(const char *name)
 {
     throw std::runtime_error(std::string("usage: ") + name + " [-h|--help] [-r|--rand-ip] [-a|--async] [-b|--batch N] [-l|--len N] [-s|--slot N] T1 T2... \n\t| T = dev[.queue.queue..]");
@@ -292,7 +263,7 @@ try
         usage(argv[0]);
 
     std::vector<std::thread> vt;
-    std::vector<test::context> ctx;
+    std::vector<thread::context> ctx;
     std::vector<binding> thread_binding;
 
     for(int i = 1; i < argc; ++i)
@@ -363,7 +334,7 @@ try
     //
     for(unsigned int i = 0; i < thread_binding.size(); ++i)
     {
-        ctx.push_back(test::context(i, thread_binding[i]));
+        ctx.push_back(thread::context(i, thread_binding[i]));
     }
 
     // create threads:
@@ -389,7 +360,7 @@ try
         std::this_thread::sleep_for(std::chrono::seconds(1));
 
         cur = {0,0,0,0,0};
-        std::for_each(ctx.begin(), ctx.end(), [&](const test::context &c)
+        std::for_each(ctx.begin(), ctx.end(), [&](const thread::context &c)
         {
             cur += c.stats();
         });

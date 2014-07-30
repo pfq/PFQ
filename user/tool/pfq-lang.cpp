@@ -4,8 +4,6 @@
  *
  ****************************************************************/
 
-#include <affinity.hpp>
-
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -24,6 +22,9 @@
 #include <pfq-lang/lang.hpp>
 #include <pfq-lang/default.hpp>
 
+#include <affinity.hpp>
+#include <binding.hpp>
+#include <vt100.hpp>
 
 using namespace pfq;
 using namespace pfq::lang;
@@ -41,95 +42,13 @@ namespace opt
     int sleep_microseconds;
     std::string function;
 
-
     size_t caplen = 64;
     size_t slots  = 131072;
     bool flow     = false;
 }
 
-// eth0:...:ethx[.core[.gid[.queue.queue...]]]
 
-struct binding
-{
-    std::vector<std::string>    dev;
-    std::vector<int>            queue;
-    int                         gid;
-    int                         core;
-};
-
-
-std::string
-show_binding(const binding &b)
-{
-    std::string ret = "binding:{ ";
-    int n = 0;
-
-    ret += "dev:[";
-
-    for(auto &d : b.dev)
-    {
-        if (n++)
-            ret += ", ";
-        ret += d;
-    }
-    ret += "] queue:[";
-
-    n = 0;
-    for(auto &q : b.queue)
-    {
-        if (n++)
-            ret += ", ";
-        ret += std::to_string(q);
-    }
-    ret += "] gid:" + std::to_string(b.gid) + " core:" + std::to_string (b.core);
-
-    return ret + " }";
-}
-
-
-binding
-make_binding(const char *value)
-{
-    binding ret { {}, {}, -1, -1 };
-
-    auto vec = pfq::split(value, ".");
-
-    ret.dev = pfq::split(vec[0].c_str(), ":");
-
-    if (vec.size() > 1)
-        ret.core = std::atoi(vec[1].c_str());
-
-    if (vec.size() > 2)
-        ret.gid = std::atoi(vec[2].c_str());
-
-    if (vec.size() > 3)
-    {
-        unsigned int n = 3;
-        for(; n != vec.size(); n++)
-        {
-            ret.queue.push_back(std::atoi(vec[n].c_str()));
-        }
-    }
-
-    return ret;
-}
-
-
-namespace vt100
-{
-    const char * const CLEAR = "\E[2J";
-    const char * const EDOWN = "\E[J";
-    const char * const DOWN  = "\E[1B";
-    const char * const HOME  = "\E[H";
-    const char * const ELINE = "\E[K";
-    const char * const BOLD  = "\E[1m";
-    const char * const RESET = "\E[0m";
-    const char * const BLUE  = "\E[1;34m";
-    const char * const RED   = "\E[31m";
-}
-
-
-namespace test
+namespace thread
 {
     struct context
     {
@@ -237,19 +156,6 @@ namespace test
 }
 
 
-unsigned int hardware_concurrency()
-{
-    auto proc = []() {
-        std::ifstream cpuinfo("/proc/cpuinfo");
-        return std::count(std::istream_iterator<std::string>(cpuinfo),
-                          std::istream_iterator<std::string>(),
-                          std::string("processor"));
-    };
-
-    return std::thread::hardware_concurrency() ? : proc();
-}
-
-
 void usage(std::string name)
 {
     throw std::runtime_error
@@ -274,7 +180,7 @@ try
         usage(argv[0]);
 
     std::vector<std::thread> vt;
-    std::vector<test::context> ctx;
+    std::vector<thread::context> ctx;
 
     std::vector<binding> thread_binding;
 
@@ -356,13 +262,14 @@ try
     //
     for(unsigned int i = 0; i < thread_binding.size(); ++i)
     {
-        ctx.push_back(test::context(i, thread_binding[i]));
+        ctx.push_back(thread::context(i, thread_binding[i]));
     }
 
     opt::sleep_microseconds = 50000 * ctx.size();
     std::cout << "poll timeout " << opt::sleep_microseconds << " usec" << std::endl;
 
     // create threads:
+    //
 
     int i = 0;
     std::for_each(thread_binding.begin(), thread_binding.end(), [&](binding &b) {
@@ -391,31 +298,31 @@ try
         sum = 0;
         sum_stats = {0,0,0,0,0};
 
-        std::for_each(ctx.begin(), ctx.end(), [&](const test::context &c) {
+        std::for_each(ctx.begin(), ctx.end(), [&](const thread::context &c) {
                       sum += c.read();
                       sum_stats += c.stats();
                       });
 
         std::cout << "recv: ";
-        std::for_each(ctx.begin(), ctx.end(), [&](const test::context &c) {
+        std::for_each(ctx.begin(), ctx.end(), [&](const thread::context &c) {
                       std::cout << c.stats().recv << ' ';
                       });
         std::cout << " -> " << sum_stats.recv << std::endl;
 
         std::cout << "lost: ";
-        std::for_each(ctx.begin(), ctx.end(), [&](const test::context &c) {
+        std::for_each(ctx.begin(), ctx.end(), [&](const thread::context &c) {
                       std::cout << c.stats().lost << ' ';
                       });
         std::cout << " -> " << sum_stats.lost << std::endl;
 
         std::cout << "drop: ";
-        std::for_each(ctx.begin(), ctx.end(), [&](const test::context &c) {
+        std::for_each(ctx.begin(), ctx.end(), [&](const thread::context &c) {
                       std::cout << c.stats().drop << ' ';
                       });
         std::cout << " -> " << sum_stats.drop << std::endl;
 
         std::cout << "max_batch: ";
-        std::for_each(ctx.begin(), ctx.end(), [&](const test::context &c) {
+        std::for_each(ctx.begin(), ctx.end(), [&](const thread::context &c) {
                       std::cout << c.batch() << ' ';
                       });
         std::cout << std::endl;
@@ -433,7 +340,7 @@ try
         old_stats = sum_stats;
     }
 
-    std::for_each(ctx.begin(), ctx.end(), std::mem_fn(&test::context::stop));
+    std::for_each(ctx.begin(), ctx.end(), std::mem_fn(&thread::context::stop));
     std::for_each(vt.begin(), vt.end(), std::mem_fn(&std::thread::join));
 
     return 0;
