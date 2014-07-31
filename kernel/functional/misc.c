@@ -135,6 +135,38 @@ log_msg(arguments_t args, SkBuff b)
 
 
 static Action_SkBuff
+log_buff(arguments_t args, SkBuff b)
+{
+	if (!printk_ratelimit())
+		return Pass(b);
+
+	printk(KERN_INFO "[PFQ] [%p] len=%u head=%u tail=%u\n", b.skb,
+								b.skb->len,
+								skb_headroom(b.skb),
+								skb_tailroom(b.skb));
+
+	printk(KERN_INFO "      [%p] %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x...\n",
+				b.skb->data,
+				b.skb->data[0],
+				b.skb->data[1],
+				b.skb->data[2],
+				b.skb->data[3],
+				b.skb->data[4],
+				b.skb->data[5],
+				b.skb->data[6],
+				b.skb->data[7],
+				b.skb->data[8],
+				b.skb->data[9],
+				b.skb->data[10],
+				b.skb->data[11],
+				b.skb->data[12],
+				b.skb->data[13]);
+
+	return Pass(b);
+}
+
+
+static Action_SkBuff
 log_packet(arguments_t args, SkBuff b)
 {
 	if (!printk_ratelimit())
@@ -238,6 +270,7 @@ struct pfq_function_descr misc_functions[] = {
  	{ "mark", 	"CULong -> SkBuff -> Action SkBuff",  		mark		},
         { "crc16", 	"SkBuff -> Action SkBuff", 			crc16_sum	},
         { "log_msg",  	"String -> SkBuff -> Action SkBuff", 		log_msg 	},
+        { "log_buff",   "SkBuff -> Action SkBuff", 			log_buff 	},
         { "log_packet", "SkBuff -> Action SkBuff", 			log_packet	},
 
         { "inv", 	"(SkBuff -> Action SkBuff) -> SkBuff -> Action SkBuff",     				inv },

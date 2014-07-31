@@ -245,6 +245,7 @@ namespace lang
         auto unit           = mfunction("unit");
 
         auto log_msg        = [] (const std::string &msg) { return mfunction2("log_msg", msg); };
+        auto log_buff       = mfunction("log_buff");
         auto log_packet     = mfunction("log_packet");
 
         auto forwardIO      = [] (std::string dev) { return mfunction2("forwardIO", std::move(dev)); };

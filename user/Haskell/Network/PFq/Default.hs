@@ -157,8 +157,9 @@ module Network.PFq.Default
         par'       ,
         mark       ,
         crc16      ,
-        log_packet ,
         log_msg    ,
+        log_buff   ,
+        log_packet ,
         dummy      ,
         hdummy     ,
     ) where
@@ -319,8 +320,9 @@ kernel          = MFunction "kernel"         :: NetFunction
 broadcast       = MFunction "broadcast"      :: NetFunction
 drop'           = MFunction "drop"           :: NetFunction
 unit            = MFunction "unit"           :: NetFunction
-log_packet      = MFunction "log_packet"     :: NetFunction
 log_msg         = MFunction2 "log_msg"       :: String -> NetFunction
+log_buff        = MFunction "log_buff"       :: NetFunction
+log_packet      = MFunction "log_packet"     :: NetFunction
 
 crc16           = MFunction "crc16" :: NetFunction
 
