@@ -94,6 +94,7 @@ gc_copy_buff(struct gc_data *gc, struct gc_buff orig)
 		return ret;
 	}
 
+	skb->mac_len = orig.skb->mac_len;
 	ret = gc_make_buff(gc, skb);
 	if (ret.skb) {
 
