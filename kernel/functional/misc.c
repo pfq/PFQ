@@ -48,9 +48,7 @@ dummy(arguments_t args, SkBuff b)
                 return Drop(b);
 	}
 
-	if (new.skb != b.skb) {
-                printk(KERN_INFO "[PFQ] packet cloned: %p -> %p\n", new.skb, b.skb);
-	}
+        printk(KERN_INFO "[PFQ] packet cloned: %p -> %p\n", new.skb, b.skb);
 
         return Pass(new);
 }
