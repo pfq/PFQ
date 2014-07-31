@@ -360,13 +360,15 @@ int pfq_lazy_exec(struct gc_buff buff)
 	{
 		struct net_device *dev = log->dev[i];
 
-		skb = (i == num_fwd-1) ? buff.skb : skb_clone(buff.skb, GFP_ATOMIC);
+		skb = (i == num_fwd-1) ? skb_get(buff.skb) : skb_clone(buff.skb, GFP_ATOMIC);
 		if (skb)
 		{
 			if (pfq_xmit(skb, dev, skb->queue_mapping) != 1) {
 
+#ifdef DEBUG
 				if (printk_ratelimit())
 					printk(KERN_INFO "[PFQ] forward pfq_xmit: error on device %s!\n", dev->name);
+#endif
 			}
 			else {
 				ret++;

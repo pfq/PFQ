@@ -480,6 +480,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 				}
 			}
 			else {
+				skb_get(buff.skb);
 				skb = buff.skb;
                         }
 
@@ -491,16 +492,15 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 		/* pfq_lazy_exec send multiple copies of skb to different devices...
 		 * the skb is freed at the last forward */
 
-		if (num_fwd)
+		if (num_fwd) {
+
 			pfq_lazy_exec(buff);
-
-		if (!to_kernel && num_fwd == 0) {
-
-			if (cb->direct)
-				pfq_kfree_skb_recycle(buff.skb, &local->rx_recycle_list);
-			else
-				consume_skb(buff.skb);
 		}
+
+		if (cb->direct)
+			pfq_kfree_skb_recycle(buff.skb, &local->rx_recycle_list);
+		else
+			consume_skb(buff.skb);
         }
 
 	gc_reset(&local->gc);
