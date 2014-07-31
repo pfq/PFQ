@@ -21,6 +21,7 @@
 #include <pfq.hpp>
 #include <pfq-lang/lang.hpp>
 #include <pfq-lang/default.hpp>
+#include <pfq-lang/experimental.hpp>
 
 #include <affinity.hpp>
 #include <binding.hpp>
@@ -28,6 +29,7 @@
 
 using namespace pfq;
 using namespace pfq::lang;
+using namespace pfq::lang::experimental;
 
 
 ///////////////////////////////////////////
