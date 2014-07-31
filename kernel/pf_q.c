@@ -347,13 +347,15 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 
 		GC_queue_for_each_buff(&local->gc.pool, buff, n)
 		{
-			struct pfq_cb *cb = PFQ_CB(buff.skb);
 			unsigned long sock_mask = 0;
 			struct pfq_computation_tree *prg;
 
+			if (n == prefetch_len)
+				break;
+
 			/* skip this packet for this group */
 
-			if (unlikely((cb->group_mask & bit) == 0))
+			if (unlikely((PFQ_CB(buff.skb)->group_mask & bit) == 0))
 				continue;
 
 			/* increment recv counter for this group */
@@ -374,9 +376,6 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 			}
 
 			/* setup monad for this computation */
-
-			if(!pfq_get_group(gid))
-				continue;
 
 			monad.fanout.class_mask = Q_CLASS_DEFAULT;
 			monad.fanout.type       = fanout_copy;
