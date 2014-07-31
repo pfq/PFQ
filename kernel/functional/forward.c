@@ -219,7 +219,7 @@ bridge(arguments_t args, SkBuff b)
 
 
 static Action_SkBuff
-bridge_tap(arguments_t args, SkBuff b)
+bridge_tee(arguments_t args, SkBuff b)
 {
 	struct net_device *dev = get_data(struct net_device *, args);
 	predicate_t pred_  = get_data1(predicate_t, args);
@@ -251,7 +251,7 @@ struct pfq_function_descr forward_functions[] = {
 	{ "forward",    "String -> SkBuff -> Action SkBuff",  		forward,    forward_init, forward_fini },
 
 	{ "bridge",     "String -> SkBuff -> Action SkBuff",  			 bridge,     forward_init, forward_fini },
-	{ "bridge_tap", "String -> (SkBuff -> Bool) -> SkBuff -> Action SkBuff", bridge_tap, forward_init, forward_fini },
+	{ "bridge_tee", "String -> (SkBuff -> Bool) -> SkBuff -> Action SkBuff", bridge_tee, forward_init, forward_fini },
 
         { NULL }};
 
