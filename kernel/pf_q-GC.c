@@ -63,15 +63,19 @@ gc_alloc_buff(struct gc_data *gc, size_t size)
 	struct gc_buff ret;
 
 	if (gc->pool.len >= Q_GC_POOL_QUEUE_LEN) {
+		printk(KERN_INFO "[PFQ] GC: pool exhausted!\n");
 		ret.skb = NULL;
 		return ret;
 	}
 
 	skb = alloc_skb(size, GFP_ATOMIC);
 	if (skb == NULL) {
+		printk(KERN_INFO "[PFQ] GC: out of memory!\n");
 		ret.skb = NULL;
 		return ret;
 	}
+
+	/* gc_make_buff can't fail now */
 
 	return gc_make_buff(gc, skb);
 }
@@ -84,24 +88,27 @@ gc_copy_buff(struct gc_data *gc, struct gc_buff orig)
 	struct gc_buff ret;
 
 	if (gc->pool.len >= Q_GC_POOL_QUEUE_LEN) {
+		printk(KERN_INFO "[PFQ] GC: pool exhausted!\n");
 		ret.skb = NULL;
 		return ret;
 	}
 
 	skb = skb_copy(orig.skb, GFP_ATOMIC);
 	if (skb == NULL) {
+		printk(KERN_INFO "[PFQ] GC: out of memory!\n");
 		ret.skb = NULL;
 		return ret;
 	}
 
 	skb->mac_len = orig.skb->mac_len;
-	ret = gc_make_buff(gc, skb);
-	if (ret.skb) {
 
-		PFQ_CB(ret.skb)->group_mask = PFQ_CB(orig.skb)->group_mask;
-		PFQ_CB(ret.skb)->direct     = PFQ_CB(orig.skb)->direct;
-		PFQ_CB(ret.skb)->monad      = PFQ_CB(orig.skb)->monad;
-	}
+	/* gc_make_buff can't fail now */
+
+	ret = gc_make_buff(gc, skb);
+
+	PFQ_CB(ret.skb)->group_mask = PFQ_CB(orig.skb)->group_mask;
+	PFQ_CB(ret.skb)->direct     = PFQ_CB(orig.skb)->direct;
+	PFQ_CB(ret.skb)->monad      = PFQ_CB(orig.skb)->monad;
 
 	return ret;
 }
