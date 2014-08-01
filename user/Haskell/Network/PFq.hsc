@@ -264,7 +264,10 @@ newtype PFqConstant = PFqConstant { getConstant :: Int }
 
 
 #{enum PFqConstant, PFqConstant
-    , group_max_counters = Q_MAX_COUNTERS
+    , any_device           = Q_ANY_DEVICE
+    , any_queue            = Q_ANY_QUEUE
+    , any_group            = Q_ANY_GROUP
+    , group_max_counters   = Q_MAX_COUNTERS
     , group_fun_descr_size = sizeof(struct pfq_functional_descr)
 }
 
