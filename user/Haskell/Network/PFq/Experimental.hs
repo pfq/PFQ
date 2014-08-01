@@ -34,7 +34,8 @@ module Network.PFq.Experimental
         -- * Experimental Functions
 
         bridge     ,
-        bridge_tee ,
+        tee        ,
+        tap        ,
         class'     ,
         deliver    ,
         forward    ,
@@ -55,5 +56,6 @@ class'         = MFunction1 "class"         :: CInt    -> NetFunction
 deliver        = MFunction1 "deliver"       :: CInt    -> NetFunction
 forward        = MFunction2 "forward"       :: String  -> NetFunction
 bridge         = MFunction2 "bridge"        :: String  -> NetFunction
-bridge_tee     = MFunction4 "bridge_tee"    :: String  -> NetPredicate -> NetFunction
+tee            = MFunction4 "tee"           :: String  -> NetPredicate -> NetFunction
+tap            = MFunction4 "tap"           :: String  -> NetPredicate -> NetFunction
 

@@ -219,7 +219,7 @@ bridge(arguments_t args, SkBuff b)
 
 
 static Action_SkBuff
-bridge_tee(arguments_t args, SkBuff b)
+tee(arguments_t args, SkBuff b)
 {
 	struct net_device *dev = get_data(struct net_device *, args);
 	predicate_t pred_  = get_data1(predicate_t, args);
@@ -239,6 +239,27 @@ bridge_tee(arguments_t args, SkBuff b)
 }
 
 
+static Action_SkBuff
+tap(arguments_t args, SkBuff b)
+{
+	struct net_device *dev = get_data(struct net_device *, args);
+	predicate_t pred_  = get_data1(predicate_t, args);
+
+	if (dev == NULL) {
+                if (printk_ratelimit())
+                        printk(KERN_INFO "[PFQ] bridge: device error!\n");
+                return Drop(b);
+	}
+
+	pfq_lazy_xmit(b, dev, b.skb->queue_mapping);
+
+        if (EVAL_PREDICATE(pred_, b))
+		return Pass(b);
+
+	return Drop(b);
+}
+
+
 struct pfq_function_descr forward_functions[] = {
 
         { "drop",       "SkBuff -> Action SkBuff",   	    		forward_drop		},
@@ -250,8 +271,9 @@ struct pfq_function_descr forward_functions[] = {
 	{ "forwardIO",  "String -> SkBuff -> Action SkBuff",  		forwardIO,  forward_init, forward_fini },
 	{ "forward",    "String -> SkBuff -> Action SkBuff",  		forward,    forward_init, forward_fini },
 
-	{ "bridge",     "String -> SkBuff -> Action SkBuff",  			 bridge,     forward_init, forward_fini },
-	{ "bridge_tee", "String -> (SkBuff -> Bool) -> SkBuff -> Action SkBuff", bridge_tee, forward_init, forward_fini },
+	{ "bridge",     "String -> SkBuff -> Action SkBuff",  			 bridge, forward_init, forward_fini },
+	{ "tee", 	"String -> (SkBuff -> Bool) -> SkBuff -> Action SkBuff", tee, 	 forward_init, forward_fini },
+	{ "tap", 	"String -> (SkBuff -> Bool) -> SkBuff -> Action SkBuff", tap, 	 forward_init, forward_fini },
 
         { NULL }};
 

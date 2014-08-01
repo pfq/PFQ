@@ -41,7 +41,8 @@ namespace pfq { namespace lang { namespace experimental {
         auto forward        = [] (std::string dev) { return mfunction2("forward", std::move(dev)); };
         auto bridge         = [] (std::string dev) { return mfunction2("bridge", std::move(dev)); };
 
-        auto bridge_tee     = std::bind(details::polymorphic_mfunction4(), "bridge_tee", _1, _2);
+        auto tee            = std::bind(details::polymorphic_mfunction4(), "tee", _1, _2);
+        auto tap            = std::bind(details::polymorphic_mfunction4(), "tap", _1, _2);
     }
 
 } // namespace experimental
