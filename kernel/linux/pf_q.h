@@ -349,14 +349,14 @@ void pfq_spsc_read_commit(struct pfq_tx_queue_hdr *q)
 
 /* group class type */
 
-#define Q_CLASS(n)              (1U<<n)
+#define Q_CLASS(n)              (1UL << (n))
 #define Q_CLASS_MAX             (sizeof(unsigned long)<<3)
 
 #define Q_CLASS_DEFAULT         Q_CLASS(0)
-#define Q_CLASS_DATA            Q_CLASS_DEFAULT
-#define Q_CLASS_CONTROL         Q_CLASS(1)
-#define Q_CLASS_ANY             (unsigned long)-1
-
+#define Q_CLASS_USER_PLANE 	Q_CLASS(1)
+#define Q_CLASS_CONTROL_PLANE   Q_CLASS(2)
+#define Q_CLASS_CONTROL		Q_CLASS(Q_CLASS_MAX-1) 			/* reserved for management */
+#define Q_CLASS_ANY             (((unsigned long)-1) ^ Q_CLASS_CONTROL) /* any class except management */
 
 /*
  * Functional argument:

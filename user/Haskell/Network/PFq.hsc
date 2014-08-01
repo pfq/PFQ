@@ -62,8 +62,12 @@ module Network.PFq
         Callback,
 
         ClassMask(..),
-        class_default,
-        class_any,
+
+        class_default       ,
+        class_user_plane    ,
+        class_control_plane ,
+        class_control       ,
+        class_any           ,
 
         GroupPolicy(..),
         policy_undefined,
@@ -244,8 +248,11 @@ newtype PFqConstant = PFqConstant { getConstant :: Int }
 
 
 #{enum ClassMask, ClassMask
-    , class_default = Q_CLASS_DEFAULT
-    , class_any     = Q_CLASS_ANY
+    , class_default       = Q_CLASS_DEFAULT
+    , class_user_plane    = Q_CLASS_USER_PLANE
+    , class_control_plane = Q_CLASS_CONTROL_PLANE
+    , class_control       = Q_CLASS_CONTROL
+    , class_any           = Q_CLASS_ANY
 }
 
 #{enum GroupPolicy, GroupPolicy

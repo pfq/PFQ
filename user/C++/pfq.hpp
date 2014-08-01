@@ -70,8 +70,11 @@ namespace pfq {
 
     enum class class_mask : unsigned long
     {
-        default_ = Q_CLASS_DEFAULT,
-        any      = Q_CLASS_ANY
+        default_      = Q_CLASS_DEFAULT,
+        user_plane    = Q_CLASS_USER_PLANE,
+        control_plane = Q_CLASS_CONTROL_PLANE,
+        control       = Q_CLASS_CONTROL,
+        any           = Q_CLASS_ANY
     };
 
     //! vlan options.
