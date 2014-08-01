@@ -655,11 +655,17 @@ namespace pfq {
         void
         bind_group(int gid, const char *dev, int queue = any_queue)
         {
-            auto index = ifindex(this->fd(), dev);
-            if (index == -1)
-                throw pfq_error("PFQ: device not found");
+            auto index = [this, dev]() -> int {
+                if (strcmp(dev, "any") == 0)
+                    return any_device;
+                auto n = ifindex(this->fd(), dev);
+                if (n == -1)
+                    throw pfq_error("PFQ: bind_group: device not found");
+                return n;
+            }();
 
             struct pfq_binding b = { gid, index, queue };
+
             if (::setsockopt(fd_, PF_Q, Q_SO_GROUP_BIND, &b, sizeof(b)) == -1)
                 throw pfq_error(errno, "PFQ: add binding error");
         }
@@ -681,11 +687,17 @@ namespace pfq {
         void
         unbind_group(int gid, const char *dev, int queue = any_queue)
         {
-            auto index = ifindex(this->fd(), dev);
-            if (index == -1)
-                throw pfq_error("PFQ: device not found");
+            auto index = [this, dev]() -> int {
+                if (strcmp(dev, "any") == 0)
+                    return any_device;
+                auto n = ifindex(this->fd(), dev);
+                if (n == -1)
+                    throw pfq_error("PFQ: unbind_group: device not found");
+                return n;
+            }();
 
             struct pfq_binding b = { gid, index, queue };
+
             if (::setsockopt(fd_, PF_Q, Q_SO_GROUP_UNBIND, &b, sizeof(b)) == -1)
                 throw pfq_error(errno, "PFQ: remove binding error");
         }
@@ -698,9 +710,14 @@ namespace pfq {
         void
         egress_bind(const char *dev, int queue = any_queue)
         {
-            auto index = ifindex(this->fd(), dev);
-            if (index == -1)
-                throw pfq_error("PFQ: egress: device not found");
+            auto index = [this, dev]() -> int {
+                if (strcmp(dev, "any") == 0)
+                    return any_device;
+                auto n = ifindex(this->fd(), dev);
+                if (n == -1)
+                    throw pfq_error("PFQ: egress_bind: device not found");
+                return n;
+            }();
 
             struct pfq_binding b = { 0, index, queue };
 

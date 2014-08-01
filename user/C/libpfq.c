@@ -515,12 +515,19 @@ pfq_get_rx_slot_size(pfq_t const *q)
 int
 pfq_bind_group(pfq_t *q, int gid, const char *dev, int queue)
 {
-	int index = pfq_ifindex(q, dev);
-	if (index == -1) {
-		return q->error = "PFQ: device not found", -1;
+	int index;
+	if (strcmp(dev, "any")==0) {
+        	index = Q_ANY_DEVICE;
+	}
+	else {
+		index = pfq_ifindex(q, dev);
+		if (index == -1) {
+			return q->error = "PFQ: bind_group: device not found", -1;
+		}
 	}
 
 	struct pfq_binding b = { gid, index, queue };
+
 	if (setsockopt(q->fd, PF_Q, Q_SO_GROUP_BIND, &b, sizeof(b)) == -1) {
 		return q->error = "PFQ: add binding error", -1;
 	}
@@ -542,9 +549,16 @@ pfq_bind(pfq_t *q, const char *dev, int queue)
 int
 pfq_egress_bind(pfq_t *q, const char *dev, int queue)
 {
-        int index = pfq_ifindex(q, dev);
-        if (index == -1)
-		return q->error = "PFQ: egress bind: device not found", -1;
+	int index;
+	if (strcmp(dev, "any")==0) {
+        	index = Q_ANY_DEVICE;
+	}
+	else {
+		index = pfq_ifindex(q, dev);
+		if (index == -1) {
+			return q->error = "PFQ: egress_bind: device not found", -1;
+		}
+	}
 
         struct pfq_binding b = { 0, index, queue };
 
@@ -567,11 +581,19 @@ pfq_egress_unbind(pfq_t *q)
 int
 pfq_unbind_group(pfq_t *q, int gid, const char *dev, int queue) /* Q_ANY_QUEUE */
 {
-	int index = pfq_ifindex(q, dev);
-	if (index == -1) {
-		return q->error = "PFQ: device not found", -1;
+	int index;
+	if (strcmp(dev, "any")==0) {
+        	index = Q_ANY_DEVICE;
 	}
+	else {
+		index = pfq_ifindex(q, dev);
+		if (index == -1) {
+			return q->error = "PFQ: unbind_group: device not found", -1;
+		}
+	}
+
 	struct pfq_binding b = { gid, index, queue };
+
 	if (setsockopt(q->fd, PF_Q, Q_SO_GROUP_UNBIND, &b, sizeof(b)) == -1) {
 		return q->error = "PFQ: remove binding error", -1;
 	}
