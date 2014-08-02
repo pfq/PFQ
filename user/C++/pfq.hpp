@@ -878,7 +878,7 @@ namespace pfq {
             if (pol == group_policy::undefined)
                 throw pfq_error("PFQ: join with undefined policy!");
 
-            struct pfq_group_join group { gid, static_cast<int16_t>(pol), static_cast<unsigned int>(mask) };
+            struct pfq_group_join group { gid, static_cast<int16_t>(pol), static_cast<unsigned long>(mask) };
 
             socklen_t size = sizeof(group);
 
