@@ -6,3 +6,11 @@ PFQ 3.0
  * Improved stability, random crashes fixed.
  * Improved pfq-omatic script.
  * Minor bugs fixed.
+
+
+PFQ 3.1
+-------
+ * New lightweight Garbage Collector for sk_buff (GC).
+ * New experimental functions: (lazy) forward, forwardIO, bridge, tap, tee.
+ * Added pfq-bridge tool.
+ * Minor bugs fixed.
