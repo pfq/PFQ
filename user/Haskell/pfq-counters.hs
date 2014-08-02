@@ -157,7 +157,7 @@ runThreads op ms =
                              let fs = map MFunction (fromJust sf)
                              -- putStrLn ("[pfq] Gid " ++ show (groupId binding) ++ " is using computation: " ++ intercalate " >-> " (fromJust sf))
                              -- Q.groupComputation q (groupId binding) (foldl1 (>->) fs)
-                             putStrLn $ "[pfq] Gid " ++ show (groupId binding) ++ " is using computation: " ++ (unwords $ function op)
+                             putStrLn $ "[pfq] Gid " ++ show (groupId binding) ++ " is using computation: " ++ unwords (function op)
                              Q.groupComputationFromString q (groupId binding) (unwords $ function op)
                      Q.enable q
                      M.void (recvLoop q (State c f S.empty))

@@ -812,21 +812,21 @@ makeCounters ptr = do
 
 
 padArguments :: [Argument] -> [Argument]
-padArguments xs = xs ++ (take (4 - length xs) $ repeat ArgNull)
+padArguments xs = xs ++ take (4 - length xs) (repeat ArgNull)
 
 
 withSingleArg :: Argument
               -> ((IntPtr, CSize) -> IO a)
               -> IO a
-withSingleArg arg callback = do
+withSingleArg arg callback =
     case arg of
         ArgNull                      -> callback (ptrToIntPtr nullPtr, fromIntegral (0 :: Int))
         ArgFun i                     -> callback (ptrToIntPtr nullPtr, fromIntegral i)
-        ArgData (StorableArgument v) -> do
+        ArgData (StorableArgument v) ->
             alloca $ \ptr -> do
                 poke ptr v
                 callback (ptrToIntPtr ptr, fromIntegral $ sizeOf v)
-        ArgString s -> do
+        ArgString s ->
             withCString s $ \s' -> callback (ptrToIntPtr s', 0)
 
 
@@ -837,7 +837,7 @@ withFunDescr :: FunctionDescr
              -> IO a
 withFunDescr (FunctionDescr symbol args next) callback =
     withCString symbol $ \ symbol' ->
-        withMany withSingleArg (padArguments args) $ \marArgs -> do
+        withMany withSingleArg (padArguments args) $ \marArgs ->
             callback (symbol', marArgs, fromIntegral next)
 
 
@@ -895,8 +895,8 @@ groupComputationFromString :: Ptr PFqTag
                            -> String    -- ^ simple expression (PFq-Lang)
                            -> IO ()
 
-groupComputationFromString hdl gid comp = do
-    withCString comp $ \ptr -> do
+groupComputationFromString hdl gid comp =
+    withCString comp $ \ptr ->
             pfq_set_group_computation_from_string hdl (fromIntegral gid) ptr >>= throwPFqIf_ hdl (== -1)
 
 
