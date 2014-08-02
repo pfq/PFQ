@@ -82,7 +82,7 @@ inc_counter(arguments_t args, SkBuff b)
         }
         else {
                 if (printk_ratelimit())
-                        printk(KERN_INFO "[PFQ] fun/count(%d): bad index!\n", idx);
+                        printk(KERN_INFO "[PFQ] fun/count (%d): bad index!\n", idx);
         }
 
         return Pass(b);
@@ -102,7 +102,7 @@ dec_counter(arguments_t args, SkBuff b)
         }
         else {
                 if (printk_ratelimit())
-                        printk(KERN_INFO "[PFQ] fun/count(%d): bad index!\n", idx);
+                        printk(KERN_INFO "[PFQ] fun/count (%d): bad index!\n", idx);
         }
 
         return Pass(b);

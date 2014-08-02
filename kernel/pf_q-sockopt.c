@@ -78,7 +78,7 @@ int pfq_getsockopt(struct socket *sock,
                         return -EFAULT;
 
                 if (group.class_mask == 0) {
-                        pr_devel("[PFQ|%d] join error: bad class_mask(%lx)!\n", so->id, group.class_mask);
+                        pr_devel("[PFQ|%d] join error: bad class_mask (%lx)!\n", so->id, group.class_mask);
                         return -EINVAL;
                 }
 
@@ -733,7 +733,7 @@ int pfq_setsockopt(struct socket *sock,
                                 "pfq_tx_%d", so->id);
 
                 if (IS_ERR(to->thread)) {
-                        printk(KERN_INFO "[PFQ] kernel_thread() create failed on cpu %d!\n", to->cpu);
+                        printk(KERN_INFO "[PFQ] kernel_thread: create failed on cpu %d!\n", to->cpu);
                         return PTR_ERR(to->thread);
                 }
 

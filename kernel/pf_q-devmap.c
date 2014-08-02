@@ -57,7 +57,7 @@ int pfq_devmap_update(int action, int index, int queue, int gid)
 
     if (unlikely(gid >= Q_MAX_GROUP || gid < 0))
     {
-        pr_devel("[PF_Q] devmap_update: bad gid(%u)\n",gid);
+        pr_devel("[PF_Q] devmap_update: bad gid (%u)\n",gid);
         return 0;
     }
 
