@@ -102,6 +102,10 @@ $(document).ready(function(){initNavTree('pfq-util_8hpp.html','');});
 <code>#include &lt;cstring&gt;</code><br />
 <code>#include &lt;stdexcept&gt;</code><br />
 <code>#include &lt;system_error&gt;</code><br />
+<code>#include &lt;fstream&gt;</code><br />
+<code>#include &lt;iterator&gt;</code><br />
+<code>#include &lt;thread&gt;</code><br />
+<code>#include &lt;algorithm&gt;</code><br />
 <code>#include &lt;linux/pf_q.h&gt;</code><br />
 <code>#include &lt;sys/ioctl.h&gt;</code><br />
 <code>#include &lt;net/if.h&gt;</code><br />
@@ -161,6 +165,9 @@ Functions</h2></td></tr>
 <tr class="memitem:a0c3aeb61dfd544cb08cb240202caf213"><td class="memItemLeft" align="right" valign="top">std::vector&lt; std::string &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepfq.html#a0c3aeb61dfd544cb08cb240202caf213">pfq::split</a> (std::string str, const char *sep)</td></tr>
 <tr class="memdesc:a0c3aeb61dfd544cb08cb240202caf213"><td class="mdescLeft">&#160;</td><td class="mdescRight">Split a string by means of the given separator.  <a href="#a0c3aeb61dfd544cb08cb240202caf213">More...</a><br /></td></tr>
 <tr class="separator:a0c3aeb61dfd544cb08cb240202caf213"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9a9e9be8b77976ed45483448f54de1f9"><td class="memItemLeft" align="right" valign="top">unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepfq.html#a9a9e9be8b77976ed45483448f54de1f9">pfq::hardware_concurrency</a> ()</td></tr>
+<tr class="memdesc:a9a9e9be8b77976ed45483448f54de1f9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Hardware concurrency.  <a href="#a9a9e9be8b77976ed45483448f54de1f9">More...</a><br /></td></tr>
+<tr class="separator:a9a9e9be8b77976ed45483448f54de1f9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a09da2abc1a228d7f77c35bed3bdb157d"><td class="memTemplParams" colspan="2">template&lt;typename T , typename... Ts&gt; </td></tr>
 <tr class="memitem:a09da2abc1a228d7f77c35bed3bdb157d"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1param.html#a09da2abc1a228d7f77c35bed3bdb157d">pfq::param::get</a> (std::tuple&lt; Ts...&gt; &amp;tup) -&gt; decltype(std::get&lt; details::type_index&lt; T, Ts...&gt;::value &gt;(tup))</td></tr>
 <tr class="separator:a09da2abc1a228d7f77c35bed3bdb157d"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -174,7 +181,7 @@ Functions</h2></td></tr>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="dir_2916f9fbcacdf2e5f0583aa159c707b6.html">C++</a></li><li class="navelem"><a class="el" href="pfq-util_8hpp.html">pfq-util.hpp</a></li>
-    <li class="footer">Generated on Wed Jul 23 2014 18:44:20 for PFQ C++ library by
+    <li class="footer">Generated on Sat Aug 2 2014 12:49:34 for PFQ C++ library by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.7 </li>
   </ul>

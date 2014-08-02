@@ -8,6 +8,7 @@ var pfq_util_8hpp =
     [ "mutable_buffer", "pfq-util_8hpp.html#ad7b88920eaf729154354741132483ea8", null ],
     [ "align", "pfq-util_8hpp.html#a9db75e7163c5f764248401d10a2a3f9b", null ],
     [ "get", "pfq-util_8hpp.html#a09da2abc1a228d7f77c35bed3bdb157d", null ],
+    [ "hardware_concurrency", "pfq-util_8hpp.html#a9a9e9be8b77976ed45483448f54de1f9", null ],
     [ "ifindex", "pfq-util_8hpp.html#a251ac5cc269aa123009754edf62ab8b4", null ],
     [ "indextoname", "pfq-util_8hpp.html#a092fadb4224e60ee17efb0553d982438", null ],
     [ "load", "pfq-util_8hpp.html#aeabbdcec021e01a0a9321678fea99d8f", null ],

@@ -33,7 +33,12 @@ enum \hyperlink{namespacepfq_ac41249c8510558905b01fa4d866a38d7}{group\+\_\+polic
 \hyperlink{namespacepfq_ac41249c8510558905b01fa4d866a38d7a9e81e7b963c71363e2fb3eefcfecfc0e}{group\+\_\+policy\+::shared} = Q\+\_\+\+P\+O\+L\+I\+C\+Y\+\_\+\+G\+R\+O\+U\+P\+\_\+\+S\+H\+A\+R\+E\+D
  \}
 \begin{DoxyCompactList}\small\item\em group policies. \end{DoxyCompactList}\item 
-enum \hyperlink{namespacepfq_a96af1f5ed530eff563eb917516758fbb}{class\+\_\+mask} \+: unsigned long \{ \hyperlink{namespacepfq_a96af1f5ed530eff563eb917516758fbba172b03053216c6158fe380805998ad6c}{class\+\_\+mask\+::default\+\_\+} = Q\+\_\+\+C\+L\+A\+S\+S\+\_\+\+D\+E\+F\+A\+U\+L\+T, 
+enum \hyperlink{namespacepfq_a96af1f5ed530eff563eb917516758fbb}{class\+\_\+mask} \+: unsigned long \{ \\*
+\hyperlink{namespacepfq_a96af1f5ed530eff563eb917516758fbba172b03053216c6158fe380805998ad6c}{class\+\_\+mask\+::default\+\_\+} = Q\+\_\+\+C\+L\+A\+S\+S\+\_\+\+D\+E\+F\+A\+U\+L\+T, 
+\hyperlink{namespacepfq_a96af1f5ed530eff563eb917516758fbba539d70f37267eda88597177e215a6d2a}{class\+\_\+mask\+::user\+\_\+plane} = Q\+\_\+\+C\+L\+A\+S\+S\+\_\+\+U\+S\+E\+R\+\_\+\+P\+L\+A\+N\+E, 
+\hyperlink{namespacepfq_a96af1f5ed530eff563eb917516758fbba1ed75f78f4a1cf2529490db57b294978}{class\+\_\+mask\+::control\+\_\+plane} = Q\+\_\+\+C\+L\+A\+S\+S\+\_\+\+C\+O\+N\+T\+R\+O\+L\+\_\+\+P\+L\+A\+N\+E, 
+\hyperlink{namespacepfq_a96af1f5ed530eff563eb917516758fbbafc5364bf9dbfa34954526becad136d4b}{class\+\_\+mask\+::control} = Q\+\_\+\+C\+L\+A\+S\+S\+\_\+\+C\+O\+N\+T\+R\+O\+L, 
+\\*
 \hyperlink{namespacepfq_a96af1f5ed530eff563eb917516758fbba100b8cad7cf2a56f6df78f171f97a1ec}{class\+\_\+mask\+::any} = Q\+\_\+\+C\+L\+A\+S\+S\+\_\+\+A\+N\+Y
  \}
 \begin{DoxyCompactList}\small\item\em class mask. \end{DoxyCompactList}\end{DoxyCompactItemize}
@@ -64,7 +69,9 @@ std\+::string \hyperlink{namespacepfq_a092fadb4224e60ee17efb0553d982438}{indexto
 std\+::string \hyperlink{namespacepfq_a02a1861a64cc518394d3cc4361799c9f}{trim} (std\+::string str)
 \begin{DoxyCompactList}\small\item\em Trim pending and trailing whitespaces from a string. \end{DoxyCompactList}\item 
 std\+::vector$<$ std\+::string $>$ \hyperlink{namespacepfq_a0c3aeb61dfd544cb08cb240202caf213}{split} (std\+::string str, const char $\ast$sep)
-\begin{DoxyCompactList}\small\item\em Split a string by means of the given separator. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\begin{DoxyCompactList}\small\item\em Split a string by means of the given separator. \end{DoxyCompactList}\item 
+unsigned int \hyperlink{namespacepfq_a9a9e9be8b77976ed45483448f54de1f9}{hardware\+\_\+concurrency} ()
+\begin{DoxyCompactList}\small\item\em Hardware concurrency. \end{DoxyCompactList}\end{DoxyCompactItemize}
 
 
 \subsection{Typedef Documentation}
@@ -89,6 +96,12 @@ The default classes are \hyperlink{namespacepfq_a96af1f5ed530eff563eb917516758fb
 \begin{description}
 \index{default\+\_\+@{default\+\_\+}!pfq@{pfq}}\index{pfq@{pfq}!default\+\_\+@{default\+\_\+}}\item[{\em 
 \hypertarget{namespacepfq_a96af1f5ed530eff563eb917516758fbba172b03053216c6158fe380805998ad6c}{default\+\_\+}\label{namespacepfq_a96af1f5ed530eff563eb917516758fbba172b03053216c6158fe380805998ad6c}
+}]\index{user\+\_\+plane@{user\+\_\+plane}!pfq@{pfq}}\index{pfq@{pfq}!user\+\_\+plane@{user\+\_\+plane}}\item[{\em 
+\hypertarget{namespacepfq_a96af1f5ed530eff563eb917516758fbba539d70f37267eda88597177e215a6d2a}{user\+\_\+plane}\label{namespacepfq_a96af1f5ed530eff563eb917516758fbba539d70f37267eda88597177e215a6d2a}
+}]\index{control\+\_\+plane@{control\+\_\+plane}!pfq@{pfq}}\index{pfq@{pfq}!control\+\_\+plane@{control\+\_\+plane}}\item[{\em 
+\hypertarget{namespacepfq_a96af1f5ed530eff563eb917516758fbba1ed75f78f4a1cf2529490db57b294978}{control\+\_\+plane}\label{namespacepfq_a96af1f5ed530eff563eb917516758fbba1ed75f78f4a1cf2529490db57b294978}
+}]\index{control@{control}!pfq@{pfq}}\index{pfq@{pfq}!control@{control}}\item[{\em 
+\hypertarget{namespacepfq_a96af1f5ed530eff563eb917516758fbbafc5364bf9dbfa34954526becad136d4b}{control}\label{namespacepfq_a96af1f5ed530eff563eb917516758fbbafc5364bf9dbfa34954526becad136d4b}
 }]\index{any@{any}!pfq@{pfq}}\index{pfq@{pfq}!any@{any}}\item[{\em 
 \hypertarget{namespacepfq_a96af1f5ed530eff563eb917516758fbba100b8cad7cf2a56f6df78f171f97a1ec}{any}\label{namespacepfq_a96af1f5ed530eff563eb917516758fbba100b8cad7cf2a56f6df78f171f97a1ec}
 }]\end{description}
@@ -126,6 +139,17 @@ Each group can be specified with the following policies\+: undefined (not specif
 
 
 Return the value aligned to the next power of two. 
+
+\hypertarget{namespacepfq_a9a9e9be8b77976ed45483448f54de1f9}{\index{pfq@{pfq}!hardware\+\_\+concurrency@{hardware\+\_\+concurrency}}
+\index{hardware\+\_\+concurrency@{hardware\+\_\+concurrency}!pfq@{pfq}}
+\subsubsection[{hardware\+\_\+concurrency}]{\setlength{\rightskip}{0pt plus 5cm}unsigned int pfq\+::hardware\+\_\+concurrency (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq_a9a9e9be8b77976ed45483448f54de1f9}
+
+
+Hardware concurrency. 
 
 \hypertarget{namespacepfq_a251ac5cc269aa123009754edf62ab8b4}{\index{pfq@{pfq}!ifindex@{ifindex}}
 \index{ifindex@{ifindex}!pfq@{pfq}}

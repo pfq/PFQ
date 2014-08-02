@@ -5,6 +5,8 @@
 \begin{DoxyCompactItemize}
 \item 
  \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03}{anonymous\+\_\+namespace\{default.\+hpp\}}
+\item 
+ \hyperlink{namespacepfq_1_1lang_1_1experimental}{experimental}
 \end{DoxyCompactItemize}
 \subsection*{Classes}
 \begin{DoxyCompactItemize}
@@ -60,6 +62,10 @@ struct \hyperlink{structpfq_1_1lang_1_1MFunction}{M\+Function}
 struct \hyperlink{structpfq_1_1lang_1_1MFunction1}{M\+Function1}
 \item 
 struct \hyperlink{structpfq_1_1lang_1_1MFunction2}{M\+Function2}
+\item 
+struct \hyperlink{structpfq_1_1lang_1_1MFunction3}{M\+Function3}
+\item 
+struct \hyperlink{structpfq_1_1lang_1_1MFunction4}{M\+Function4}
 \item 
 struct \hyperlink{structpfq_1_1lang_1_1Predicate}{Predicate}
 \item 
@@ -159,6 +165,10 @@ static std\+::string \hyperlink{namespacepfq_1_1lang_a66a25c6ce92b86189f2223cce6
 \item 
 static std\+::string \hyperlink{namespacepfq_1_1lang_a8460e436d2e058600e9b3bed3f1b11e5}{pretty} (\hyperlink{structpfq_1_1lang_1_1MFunction2}{M\+Function2} const \&descr)
 \item 
+{\footnotesize template$<$typename P $>$ }\\static std\+::string \hyperlink{namespacepfq_1_1lang_afa3f8c4a856c4d447368c06b924c93d3}{pretty} (\hyperlink{structpfq_1_1lang_1_1MFunction3}{M\+Function3}$<$ P $>$ const \&descr)
+\item 
+{\footnotesize template$<$typename P $>$ }\\static std\+::string \hyperlink{namespacepfq_1_1lang_ab7d27bd5cc4090ecdaf52efa83459e82}{pretty} (\hyperlink{structpfq_1_1lang_1_1MFunction4}{M\+Function4}$<$ P $>$ const \&descr)
+\item 
 {\footnotesize template$<$typename P $>$ }\\static std\+::string \hyperlink{namespacepfq_1_1lang_a365fd63fa46f090e02d4ec2bad0ddc16}{pretty} (\hyperlink{structpfq_1_1lang_1_1HFunction}{H\+Function}$<$ P $>$ const \&descr)
 \item 
 {\footnotesize template$<$typename P , typename C $>$ }\\static std\+::string \hyperlink{namespacepfq_1_1lang_aafc318bd812367683e44226086cc8215}{pretty} (\hyperlink{structpfq_1_1lang_1_1HFunction1}{H\+Function1}$<$ P, C $>$ const \&descr)
@@ -179,6 +189,12 @@ $<$ \hyperlink{structpfq_1_1lang_1_1FunctionDescr}{Function\+Descr} $>$, std\+::
 \item 
 static std\+::pair$<$ std\+::vector\\*
 $<$ \hyperlink{structpfq_1_1lang_1_1FunctionDescr}{Function\+Descr} $>$, std\+::size\+\_\+t $>$ \hyperlink{namespacepfq_1_1lang_ac47db9ba9d56796bdbb477d09162b9f8}{serialize} (\hyperlink{structpfq_1_1lang_1_1MFunction2}{M\+Function2} const \&f, std\+::size\+\_\+t n)
+\item 
+{\footnotesize template$<$typename P $>$ }\\static std\+::pair$<$ std\+::vector\\*
+$<$ \hyperlink{structpfq_1_1lang_1_1FunctionDescr}{Function\+Descr} $>$, std\+::size\+\_\+t $>$ \hyperlink{namespacepfq_1_1lang_ad7976f968319eea2ecd9ca7240fb0d3c}{serialize} (\hyperlink{structpfq_1_1lang_1_1MFunction3}{M\+Function3}$<$ P $>$ const \&f, std\+::size\+\_\+t n)
+\item 
+{\footnotesize template$<$typename P $>$ }\\static std\+::pair$<$ std\+::vector\\*
+$<$ \hyperlink{structpfq_1_1lang_1_1FunctionDescr}{Function\+Descr} $>$, std\+::size\+\_\+t $>$ \hyperlink{namespacepfq_1_1lang_a5fa534a4952ff79abeb71d3485da9787}{serialize} (\hyperlink{structpfq_1_1lang_1_1MFunction4}{M\+Function4}$<$ P $>$ const \&f, std\+::size\+\_\+t n)
 \item 
 {\footnotesize template$<$typename P $>$ }\\static std\+::pair$<$ std\+::vector\\*
 $<$ \hyperlink{structpfq_1_1lang_1_1FunctionDescr}{Function\+Descr} $>$, std\+::size\+\_\+t $>$ \hyperlink{namespacepfq_1_1lang_ab731311e8d76703379efc2edc97b2d0e}{serialize} (\hyperlink{structpfq_1_1lang_1_1HFunction}{H\+Function}$<$ P $>$ const \&f, std\+::size\+\_\+t n)
@@ -221,7 +237,11 @@ $<$ \hyperlink{structpfq_1_1lang_1_1FunctionDescr}{Function\+Descr} $>$, std\+::
 \item 
 {\footnotesize template$<$typename T $>$ }\\\hyperlink{structpfq_1_1lang_1_1MFunction1}{M\+Function1} \hyperlink{namespacepfq_1_1lang_a68d775c68562fbd0ab9ef213f2519499}{mfunction1} (std\+::string symbol, const T \&arg)
 \item 
-\hyperlink{structpfq_1_1lang_1_1MFunction2}{M\+Function2} \hyperlink{namespacepfq_1_1lang_a16b7f6ec56c0c3450383a9a0cbf0923b}{mfunction2} (std\+::string symbol, std\+::string msg)
+\hyperlink{structpfq_1_1lang_1_1MFunction2}{M\+Function2} \hyperlink{namespacepfq_1_1lang_a67e0307b31080afb135f93398aad267c}{mfunction2} (std\+::string symbol, std\+::string str)
+\item 
+{\footnotesize template$<$typename T , typename P $>$ }\\\hyperlink{structpfq_1_1lang_1_1MFunction3}{M\+Function3}$<$ P $>$ \hyperlink{namespacepfq_1_1lang_afcc3627a964667325f415fa743748fbd}{mfunction3} (std\+::string symbol, T const \&arg, P const \&p)
+\item 
+{\footnotesize template$<$typename P $>$ }\\\hyperlink{structpfq_1_1lang_1_1MFunction4}{M\+Function4}$<$ P $>$ \hyperlink{namespacepfq_1_1lang_a6b3fd27bea470267b4923c769e37d19a}{mfunction4} (std\+::string symbol, std\+::string str, P const \&p)
 \item 
 {\footnotesize template$<$typename P $>$ }\\\hyperlink{structpfq_1_1lang_1_1HFunction}{H\+Function}$<$ P $>$ \hyperlink{namespacepfq_1_1lang_ad20d93f65c3c6d32089cbcc8cd056364}{hfunction} (std\+::string symbol, P const \&p)
 \item 
@@ -385,14 +405,32 @@ $<$ \hyperlink{structpfq_1_1lang_1_1FunctionDescr}{Function\+Descr} $>$, std\+::
 \item[{const T \&}]{arg}
 \end{DoxyParamCaption}
 )\hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq_1_1lang_a68d775c68562fbd0ab9ef213f2519499}
-\hypertarget{namespacepfq_1_1lang_a16b7f6ec56c0c3450383a9a0cbf0923b}{\index{pfq\+::lang@{pfq\+::lang}!mfunction2@{mfunction2}}
+\hypertarget{namespacepfq_1_1lang_a67e0307b31080afb135f93398aad267c}{\index{pfq\+::lang@{pfq\+::lang}!mfunction2@{mfunction2}}
 \index{mfunction2@{mfunction2}!pfq\+::lang@{pfq\+::lang}}
 \subsubsection[{mfunction2}]{\setlength{\rightskip}{0pt plus 5cm}{\bf M\+Function2} pfq\+::lang\+::mfunction2 (
 \begin{DoxyParamCaption}
 \item[{std\+::string}]{symbol, }
-\item[{std\+::string}]{msg}
+\item[{std\+::string}]{str}
 \end{DoxyParamCaption}
-)\hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq_1_1lang_a16b7f6ec56c0c3450383a9a0cbf0923b}
+)\hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq_1_1lang_a67e0307b31080afb135f93398aad267c}
+\hypertarget{namespacepfq_1_1lang_afcc3627a964667325f415fa743748fbd}{\index{pfq\+::lang@{pfq\+::lang}!mfunction3@{mfunction3}}
+\index{mfunction3@{mfunction3}!pfq\+::lang@{pfq\+::lang}}
+\subsubsection[{mfunction3}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename T , typename P $>$ {\bf M\+Function3}$<$P$>$ pfq\+::lang\+::mfunction3 (
+\begin{DoxyParamCaption}
+\item[{std\+::string}]{symbol, }
+\item[{T const \&}]{arg, }
+\item[{P const \&}]{p}
+\end{DoxyParamCaption}
+)}}\label{namespacepfq_1_1lang_afcc3627a964667325f415fa743748fbd}
+\hypertarget{namespacepfq_1_1lang_a6b3fd27bea470267b4923c769e37d19a}{\index{pfq\+::lang@{pfq\+::lang}!mfunction4@{mfunction4}}
+\index{mfunction4@{mfunction4}!pfq\+::lang@{pfq\+::lang}}
+\subsubsection[{mfunction4}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename P $>$ {\bf M\+Function4}$<$P$>$ pfq\+::lang\+::mfunction4 (
+\begin{DoxyParamCaption}
+\item[{std\+::string}]{symbol, }
+\item[{std\+::string}]{str, }
+\item[{P const \&}]{p}
+\end{DoxyParamCaption}
+)}}\label{namespacepfq_1_1lang_a6b3fd27bea470267b4923c769e37d19a}
 \hypertarget{namespacepfq_1_1lang_a4356432f0438e003c4f8d2fec7c65c9e}{\index{pfq\+::lang@{pfq\+::lang}!not\+\_\+@{not\+\_\+}}
 \index{not\+\_\+@{not\+\_\+}!pfq\+::lang@{pfq\+::lang}}
 \subsubsection[{not\+\_\+}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename P $>$ auto pfq\+::lang\+::not\+\_\+ (
@@ -622,6 +660,20 @@ $<$ \hyperlink{structpfq_1_1lang_1_1FunctionDescr}{Function\+Descr} $>$, std\+::
 \item[{M\+Function2 const \&}]{descr}
 \end{DoxyParamCaption}
 )\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}}\label{namespacepfq_1_1lang_a8460e436d2e058600e9b3bed3f1b11e5}
+\hypertarget{namespacepfq_1_1lang_afa3f8c4a856c4d447368c06b924c93d3}{\index{pfq\+::lang@{pfq\+::lang}!pretty@{pretty}}
+\index{pretty@{pretty}!pfq\+::lang@{pfq\+::lang}}
+\subsubsection[{pretty}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename P $>$ static std\+::string pfq\+::lang\+::pretty (
+\begin{DoxyParamCaption}
+\item[{M\+Function3$<$ P $>$ const \&}]{descr}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}}\label{namespacepfq_1_1lang_afa3f8c4a856c4d447368c06b924c93d3}
+\hypertarget{namespacepfq_1_1lang_ab7d27bd5cc4090ecdaf52efa83459e82}{\index{pfq\+::lang@{pfq\+::lang}!pretty@{pretty}}
+\index{pretty@{pretty}!pfq\+::lang@{pfq\+::lang}}
+\subsubsection[{pretty}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename P $>$ static std\+::string pfq\+::lang\+::pretty (
+\begin{DoxyParamCaption}
+\item[{M\+Function4$<$ P $>$ const \&}]{descr}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}}\label{namespacepfq_1_1lang_ab7d27bd5cc4090ecdaf52efa83459e82}
 \hypertarget{namespacepfq_1_1lang_a365fd63fa46f090e02d4ec2bad0ddc16}{\index{pfq\+::lang@{pfq\+::lang}!pretty@{pretty}}
 \index{pretty@{pretty}!pfq\+::lang@{pfq\+::lang}}
 \subsubsection[{pretty}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename P $>$ static std\+::string pfq\+::lang\+::pretty (
@@ -767,6 +819,22 @@ $<$ \hyperlink{structpfq_1_1lang_1_1FunctionDescr}{Function\+Descr} $>$, std\+::
 \item[{std\+::size\+\_\+t}]{n}
 \end{DoxyParamCaption}
 )\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}}\label{namespacepfq_1_1lang_ac47db9ba9d56796bdbb477d09162b9f8}
+\hypertarget{namespacepfq_1_1lang_ad7976f968319eea2ecd9ca7240fb0d3c}{\index{pfq\+::lang@{pfq\+::lang}!serialize@{serialize}}
+\index{serialize@{serialize}!pfq\+::lang@{pfq\+::lang}}
+\subsubsection[{serialize}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename P $>$ static std\+::pair$<$std\+::vector$<${\bf Function\+Descr}$>$, std\+::size\+\_\+t$>$ pfq\+::lang\+::serialize (
+\begin{DoxyParamCaption}
+\item[{M\+Function3$<$ P $>$ const \&}]{f, }
+\item[{std\+::size\+\_\+t}]{n}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}}\label{namespacepfq_1_1lang_ad7976f968319eea2ecd9ca7240fb0d3c}
+\hypertarget{namespacepfq_1_1lang_a5fa534a4952ff79abeb71d3485da9787}{\index{pfq\+::lang@{pfq\+::lang}!serialize@{serialize}}
+\index{serialize@{serialize}!pfq\+::lang@{pfq\+::lang}}
+\subsubsection[{serialize}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename P $>$ static std\+::pair$<$std\+::vector$<${\bf Function\+Descr}$>$, std\+::size\+\_\+t$>$ pfq\+::lang\+::serialize (
+\begin{DoxyParamCaption}
+\item[{M\+Function4$<$ P $>$ const \&}]{f, }
+\item[{std\+::size\+\_\+t}]{n}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}}\label{namespacepfq_1_1lang_a5fa534a4952ff79abeb71d3485da9787}
 \hypertarget{namespacepfq_1_1lang_ab731311e8d76703379efc2edc97b2d0e}{\index{pfq\+::lang@{pfq\+::lang}!serialize@{serialize}}
 \index{serialize@{serialize}!pfq\+::lang@{pfq\+::lang}}
 \subsubsection[{serialize}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename P $>$ static std\+::pair$<$std\+::vector$<${\bf Function\+Descr}$>$, std\+::size\+\_\+t$>$ pfq\+::lang\+::serialize (

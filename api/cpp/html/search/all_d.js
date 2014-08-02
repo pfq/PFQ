@@ -1,15 +1,15 @@
 var searchData=
 [
-  ['details',['details',['../namespacepfq_1_1param_1_1details.html',1,'pfq::param']]],
-  ['param',['param',['../namespacepfq_1_1param.html',1,'pfq']]],
-  ['pfq',['pfq',['../namespacepfq.html',1,'']]],
-  ['pfq_2dexcept_2ehpp',['pfq-except.hpp',['../pfq-except_8hpp.html',1,'']]],
-  ['pfq_2dqueue_2ehpp',['pfq-queue.hpp',['../pfq-queue_8hpp.html',1,'']]],
-  ['pfq_2dutil_2ehpp',['pfq-util.hpp',['../pfq-util_8hpp.html',1,'']]],
-  ['pfq_2ehpp',['pfq.hpp',['../pfq_8hpp.html',1,'']]],
-  ['pfq_5ferror',['pfq_error',['../classpfq_1_1pfq__error.html#a200dca27eee04a6da834364b9342a81d',1,'pfq::pfq_error::pfq_error(int ev, const char *reason)'],['../classpfq_1_1pfq__error.html#a5af35c9d9dea6aceff0672b92ad6b844',1,'pfq::pfq_error::pfq_error(const char *reason)']]],
-  ['pfq_5ferror',['pfq_error',['../classpfq_1_1pfq__error.html',1,'pfq']]],
-  ['policy',['policy',['../structpfq_1_1param_1_1policy.html',1,'pfq::param']]],
-  ['poll',['poll',['../classpfq_1_1socket.html#ad8ce551ea07f39317bb383ab88d66344',1,'pfq::socket']]],
-  ['priv',['priv',['../namespacepfq.html#ac41249c8510558905b01fa4d866a38d7a908b453051b556e053731714a5193921',1,'pfq']]]
+  ['open',['open',['../classpfq_1_1socket.html#a4e9f7b3dfcf771163995fc10ed8835f8',1,'pfq::socket::open(group_policy policy, size_t caplen, size_t rx_slots=65536, size_t maxlen=64, size_t tx_slots=4096)'],['../classpfq_1_1socket.html#a4c622a6debdcae9cfae0abb30c47678c',1,'pfq::socket::open(class_mask mask, group_policy policy, size_t caplen, size_t rx_slots=65536, size_t maxlen=64, size_t tx_slots=4096)'],['../classpfq_1_1socket.html#a33c3e305c62f5a9f8a0ef74f69097ecf',1,'pfq::socket::open(param::list_t, Ts &amp;&amp;...args)']]],
+  ['operator_21_3d',['operator!=',['../structpfq_1_1queue_1_1iterator.html#a8f23e1ed07479277fb48cb2c8d4d91f9',1,'pfq::queue::iterator::operator!=()'],['../structpfq_1_1queue_1_1const__iterator.html#a2d14a9e03bb2dc0bf559a9fa0040a7a2',1,'pfq::queue::const_iterator::operator!=()']]],
+  ['operator_2a',['operator*',['../structpfq_1_1queue_1_1iterator.html#ac980453385a0c31d38f6e029de0e35d7',1,'pfq::queue::iterator::operator*()'],['../structpfq_1_1queue_1_1const__iterator.html#a1ca0da4cae2e6eab69a2cdcbc33458cb',1,'pfq::queue::const_iterator::operator*()']]],
+  ['operator_2b',['operator+',['../namespacepfq.html#a1db1dc5635be457a7ca4cd9148ceae19',1,'pfq']]],
+  ['operator_2b_2b',['operator++',['../structpfq_1_1queue_1_1iterator.html#a65b4b523ec7278c109b9352ca2be0fff',1,'pfq::queue::iterator::operator++()'],['../structpfq_1_1queue_1_1iterator.html#abdd87f1bfeaa729009780289d9db536a',1,'pfq::queue::iterator::operator++(int)'],['../structpfq_1_1queue_1_1const__iterator.html#aa05ff7c6c62b9c00aff7fbf378349d4e',1,'pfq::queue::const_iterator::operator++()'],['../structpfq_1_1queue_1_1const__iterator.html#a50c3feb1c536c69d012de542c3421ec0',1,'pfq::queue::const_iterator::operator++(int)']]],
+  ['operator_2b_3d',['operator+=',['../namespacepfq.html#ae140b453ea425ae677dfbc69a51370f8',1,'pfq']]],
+  ['operator_2d',['operator-',['../namespacepfq.html#ad01713142f8fa670ff8614b9f2bab3b8',1,'pfq']]],
+  ['operator_2d_3d',['operator-=',['../namespacepfq.html#aa7874ca8c38d2bb9b66a33a6c2bb0fc1',1,'pfq']]],
+  ['operator_2d_3e',['operator-&gt;',['../structpfq_1_1queue_1_1iterator.html#afaeefa13418db17b7dc34a339bd81722',1,'pfq::queue::iterator::operator-&gt;()'],['../structpfq_1_1queue_1_1const__iterator.html#aeec5994abbf83bf6004512fca8a41c81',1,'pfq::queue::const_iterator::operator-&gt;()']]],
+  ['operator_3c_3c',['operator&lt;&lt;',['../namespacepfq.html#a1c2bda68e2e2c718ebd80519034002a3',1,'pfq']]],
+  ['operator_3d',['operator=',['../classpfq_1_1socket.html#a3cfd9674358a2ffd8b37e76d73b8a654',1,'pfq::socket::operator=(const socket &amp;)=delete'],['../classpfq_1_1socket.html#a8022eafa68b84a840292ebcfc4d1ba7a',1,'pfq::socket::operator=(socket &amp;&amp;other) noexcept']]],
+  ['operator_3d_3d',['operator==',['../structpfq_1_1queue_1_1iterator.html#a49691cbc49f5cf1836ea405fbaa3775a',1,'pfq::queue::iterator::operator==()'],['../structpfq_1_1queue_1_1const__iterator.html#a4b11f63ae3aaef3585db163a6226bebd',1,'pfq::queue::const_iterator::operator==()']]]
 ];

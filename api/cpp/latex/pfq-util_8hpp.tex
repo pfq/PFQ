@@ -7,6 +7,10 @@
 {\ttfamily \#include $<$cstring$>$}\\*
 {\ttfamily \#include $<$stdexcept$>$}\\*
 {\ttfamily \#include $<$system\+\_\+error$>$}\\*
+{\ttfamily \#include $<$fstream$>$}\\*
+{\ttfamily \#include $<$iterator$>$}\\*
+{\ttfamily \#include $<$thread$>$}\\*
+{\ttfamily \#include $<$algorithm$>$}\\*
 {\ttfamily \#include $<$linux/pf\+\_\+q.\+h$>$}\\*
 {\ttfamily \#include $<$sys/ioctl.\+h$>$}\\*
 {\ttfamily \#include $<$net/if.\+h$>$}\\*
@@ -55,6 +59,8 @@ std\+::string \hyperlink{namespacepfq_a02a1861a64cc518394d3cc4361799c9f}{pfq\+::
 \begin{DoxyCompactList}\small\item\em Trim pending and trailing whitespaces from a string. \end{DoxyCompactList}\item 
 std\+::vector$<$ std\+::string $>$ \hyperlink{namespacepfq_a0c3aeb61dfd544cb08cb240202caf213}{pfq\+::split} (std\+::string str, const char $\ast$sep)
 \begin{DoxyCompactList}\small\item\em Split a string by means of the given separator. \end{DoxyCompactList}\item 
+unsigned int \hyperlink{namespacepfq_a9a9e9be8b77976ed45483448f54de1f9}{pfq\+::hardware\+\_\+concurrency} ()
+\begin{DoxyCompactList}\small\item\em Hardware concurrency. \end{DoxyCompactList}\item 
 {\footnotesize template$<$typename T , typename... Ts$>$ }\\auto \hyperlink{namespacepfq_1_1param_a09da2abc1a228d7f77c35bed3bdb157d}{pfq\+::param\+::get} (std\+::tuple$<$ Ts...$>$ \&tup) -\/$>$ decltype(std\+::get$<$ details\+::type\+\_\+index$<$ T, Ts...$>$\+::value $>$(tup))
 \item 
 {\footnotesize template$<$typename Tup , typename... Ts$>$ }\\void \hyperlink{namespacepfq_1_1param_aeabbdcec021e01a0a9321678fea99d8f}{pfq\+::param\+::load} (Tup \&tup, Ts \&\&...arg)

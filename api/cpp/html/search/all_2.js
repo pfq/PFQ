@@ -10,5 +10,7 @@ var searchData=
   ['const_5fbuffer',['const_buffer',['../namespacepfq.html#ac835a1bd09b4cbaba61c100b50d0a99f',1,'pfq']]],
   ['const_5fiterator',['const_iterator',['../structpfq_1_1queue_1_1const__iterator.html#a9bdb1eba0b129cd859ab1d008caf6b18',1,'pfq::queue::const_iterator::const_iterator(pfq_pkt_hdr *h, size_t slot_size, size_t index)'],['../structpfq_1_1queue_1_1const__iterator.html#a528fc5b186cec7b4acfb75e4a069636c',1,'pfq::queue::const_iterator::const_iterator(const const_iterator &amp;other)'],['../structpfq_1_1queue_1_1const__iterator.html#a9abd37c031eece3084e6944a7497400e',1,'pfq::queue::const_iterator::const_iterator(const queue::iterator &amp;other)']]],
   ['const_5fiterator',['const_iterator',['../structpfq_1_1queue_1_1const__iterator.html',1,'pfq::queue']]],
+  ['control',['control',['../namespacepfq.html#a96af1f5ed530eff563eb917516758fbbafc5364bf9dbfa34954526becad136d4b',1,'pfq']]],
+  ['control_5fplane',['control_plane',['../namespacepfq.html#a96af1f5ed530eff563eb917516758fbba1ed75f78f4a1cf2529490db57b294978',1,'pfq']]],
   ['current_5fcommit',['current_commit',['../classpfq_1_1socket.html#aba44de6422e3e10b65474e7f3999ebd0',1,'pfq::socket']]]
 ];

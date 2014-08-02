@@ -1,8 +1,8 @@
 var searchData=
 [
-  ['value',['value',['../structpfq_1_1param_1_1class__.html#a014cc8b1b64e04bbcd9d8f2ed793efbb',1,'pfq::param::class_::value()'],['../structpfq_1_1param_1_1policy.html#ab0e84b461546b9e889dbe7b56ae39cdf',1,'pfq::param::policy::value()'],['../structpfq_1_1param_1_1caplen.html#ad706d73fbbd8342fea36e920253aaa02',1,'pfq::param::caplen::value()'],['../structpfq_1_1param_1_1rx__slots.html#a2bafbed5d322cf89df33ca10bc397822',1,'pfq::param::rx_slots::value()'],['../structpfq_1_1param_1_1maxlen.html#a693630abf4f41489a69836b661ea127d',1,'pfq::param::maxlen::value()'],['../structpfq_1_1param_1_1tx__slots.html#a0211960e3e5bfab53d2ed6bb96445723',1,'pfq::param::tx_slots::value()'],['../structpfq_1_1param_1_1details_1_1type__index_3_01T_00_01T_00_01Ts_8_8_8_4.html#a70bbdf1be503b26289fdb2a8b37a7ff9ac49a13caeb8608e4992f438260249dfa',1,'pfq::param::details::type_index&lt; T, T, Ts...&gt;::value()'],['../structpfq_1_1param_1_1details_1_1type__index_3_01T_00_01T0_00_01Ts_8_8_8_4.html#a9107ca364fa02c631aa122a5756a88b8a462a8ffc60437747c76392be250281a1',1,'pfq::param::details::type_index&lt; T, T0, Ts...&gt;::value()'],['../structpfq_1_1param_1_1details_1_1type__index_3_01Tp_01_4.html#af9d771ebd1b38996ae3631c8330e6bdda74fe01056516d2934b6ce777009cffe4',1,'pfq::param::details::type_index&lt; Tp &gt;::value()']]],
-  ['vlan_5ffilters_5fenable',['vlan_filters_enable',['../classpfq_1_1socket.html#aaf91b2e089edb2c4695584b01774326e',1,'pfq::socket']]],
-  ['vlan_5fid',['vlan_id',['../structpfq_1_1vlan__id.html',1,'pfq']]],
-  ['vlan_5freset_5ffilter',['vlan_reset_filter',['../classpfq_1_1socket.html#a296d1eddfb061c1a658067006ddb9f37',1,'pfq::socket::vlan_reset_filter(int gid, int vid)'],['../classpfq_1_1socket.html#a18efa89248a6d6bfb29d575744d21608',1,'pfq::socket::vlan_reset_filter(int gid, Iter beg, Iter end)']]],
-  ['vlan_5fset_5ffilter',['vlan_set_filter',['../classpfq_1_1socket.html#a92eeaf78ff595546c517b5699c9a5b1e',1,'pfq::socket::vlan_set_filter(int gid, int vid)'],['../classpfq_1_1socket.html#aee0fbc6a5f899d081c659dbaa4a4a235',1,'pfq::socket::vlan_set_filter(int gid, Iter beg, Iter end)']]]
+  ['unbind',['unbind',['../classpfq_1_1socket.html#af53d407f46ba2b4d143782ff7d585758',1,'pfq::socket']]],
+  ['unbind_5fgroup',['unbind_group',['../classpfq_1_1socket.html#a6e1f7ee7f44b6824d734d4ff7046d907',1,'pfq::socket']]],
+  ['undefined',['undefined',['../namespacepfq.html#ac41249c8510558905b01fa4d866a38d7a5e543256c480ac577d30f76f9120eb74',1,'pfq']]],
+  ['untag',['untag',['../structpfq_1_1vlan__id.html#a9e30bbd86d62e58ae5e5e080f7e046df',1,'pfq::vlan_id']]],
+  ['user_5fplane',['user_plane',['../namespacepfq.html#a96af1f5ed530eff563eb917516758fbba539d70f37267eda88597177e215a6d2a',1,'pfq']]]
 ];

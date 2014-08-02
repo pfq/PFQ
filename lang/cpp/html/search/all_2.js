@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['class_5f',['class_',['../namespacepfq_1_1experimental__lang_1_1anonymous__namespace_02experimental_8hpp_03.html#aab201738a448e9f995300724e6c1de44',1,'pfq::experimental_lang::anonymous_namespace{experimental.hpp}']]],
+  ['class_5f',['class_',['../namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03.html#a55ce0b220b42a47460d1d40d3d5fdd5d',1,'pfq::lang::experimental::anonymous_namespace{experimental.hpp}']]],
   ['combinator1',['Combinator1',['../structpfq_1_1lang_1_1Combinator1.html#aeb68a96d32618eb97abc4d973356e095',1,'pfq::lang::Combinator1::Combinator1()'],['../namespacepfq_1_1lang.html#ab44ced92c6fdf4c10166eb113ff89860',1,'pfq::lang::combinator1()']]],
   ['combinator1',['Combinator1',['../structpfq_1_1lang_1_1Combinator1.html',1,'pfq::lang']]],
   ['combinator2',['Combinator2',['../structpfq_1_1lang_1_1Combinator2.html',1,'pfq::lang']]],

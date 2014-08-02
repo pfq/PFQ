@@ -24,6 +24,8 @@ var hierarchy =
       [ "pfq::lang::MFunction", "structpfq_1_1lang_1_1MFunction.html", null ],
       [ "pfq::lang::MFunction1", "structpfq_1_1lang_1_1MFunction1.html", null ],
       [ "pfq::lang::MFunction2", "structpfq_1_1lang_1_1MFunction2.html", null ],
+      [ "pfq::lang::MFunction3< P >", "structpfq_1_1lang_1_1MFunction3.html", null ],
+      [ "pfq::lang::MFunction4< P >", "structpfq_1_1lang_1_1MFunction4.html", null ],
       [ "pfq::lang::Predicate", "structpfq_1_1lang_1_1Predicate.html", null ],
       [ "pfq::lang::Predicate1", "structpfq_1_1lang_1_1Predicate1.html", null ],
       [ "pfq::lang::Predicate2< Prop >", "structpfq_1_1lang_1_1Predicate2.html", null ],

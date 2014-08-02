@@ -11,6 +11,9 @@ var pfq_8hpp =
     [ "types", "pfq_8hpp.html#ac57f6024bbd9785360348778c1105909", null ],
     [ "class_mask", "pfq_8hpp.html#a96af1f5ed530eff563eb917516758fbb", [
       [ "default_", "pfq_8hpp.html#a96af1f5ed530eff563eb917516758fbba172b03053216c6158fe380805998ad6c", null ],
+      [ "user_plane", "pfq_8hpp.html#a96af1f5ed530eff563eb917516758fbba539d70f37267eda88597177e215a6d2a", null ],
+      [ "control_plane", "pfq_8hpp.html#a96af1f5ed530eff563eb917516758fbba1ed75f78f4a1cf2529490db57b294978", null ],
+      [ "control", "pfq_8hpp.html#a96af1f5ed530eff563eb917516758fbbafc5364bf9dbfa34954526becad136d4b", null ],
       [ "any", "pfq_8hpp.html#a96af1f5ed530eff563eb917516758fbba100b8cad7cf2a56f6df78f171f97a1ec", null ]
     ] ],
     [ "group_policy", "pfq_8hpp.html#ac41249c8510558905b01fa4d866a38d7", [
