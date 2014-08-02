@@ -1,7 +1,7 @@
 /***************************************************************
  *
  * (C) 2011 - Giacomo Volpi <volpozzo@gmail.com>
- *            Nicola Bonelli <nicola.bonelli@cnit.it>
+ *            Nicola Bonelli <nicola@pfq.io>
  *
  ****************************************************************/
 

@@ -2,7 +2,7 @@
 #define _PF_Q_THREAD_H_
 
 /*
- * Copyright (c) 2014 Bonelli Nicola <nicola.bonelli@cnit.it>
+ * Copyright (c) 2014 Bonelli Nicola <nicola@pfq.io>
  *
  * All rights reserved.
  *

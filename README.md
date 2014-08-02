@@ -41,7 +41,7 @@ http://tma2012.ftw.at/papers/PAM2012paper12.pdf
 Author
 ------
 
-Nicola Bonelli <nicola.bonelli@cnit.it>  
+Nicola Bonelli <nicola@pfq.io>  
 
 Contributors
 ------------

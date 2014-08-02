@@ -1,6 +1,6 @@
 /***************************************************************
  *
- * (C) 2011 - Nicola Bonelli <nicola.bonelli@cnit.it>
+ * (C) 2011 - Nicola Bonelli <nicola@pfq.io>
  *            Andrea Di Pietro <andrea.dipietro@for.unipi.it>
  *
  ****************************************************************/

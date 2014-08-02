@@ -1,4 +1,4 @@
-# PFQ Makefile (c) 2011-2014 Nicola Bonelli <nicola.bonelli@cnit.it>
+# PFQ Makefile (c) 2011-2014 Nicola Bonelli <nicola@pfq.io>
 #
 
 MAKE_DIRECTORIES:= kernel user

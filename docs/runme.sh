@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# (C) 2011-14 Nicola Bonelli <nicola.bonelli@cnit.it>
+# (C) 2011-14 Nicola Bonelli <nicola@pfq.io>
 
 set -x
 set -e

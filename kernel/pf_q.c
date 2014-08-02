@@ -1,6 +1,6 @@
 /***************************************************************
  *
- * (C) 2011-14 Nicola Bonelli <nicola.bonelli@cnit.it>
+ * (C) 2011-14 Nicola Bonelli <nicola@pfq.io>
  *             Andrea Di Pietro <andrea.dipietro@for.unipi.it>
  * 	       Loris Gazzarrini <loris.gazzarrini@iet.unipi.it>
  *
@@ -77,7 +77,7 @@ static struct proto_ops         pfq_ops;
 
 MODULE_LICENSE("GPL");
 
-MODULE_AUTHOR("Nicola Bonelli <nicola.bonelli@cnit.it>");
+MODULE_AUTHOR("Nicola Bonelli <nicola@pfq.io>");
 
 MODULE_DESCRIPTION("Network Monitoring Framework for Multi-core Architectures");
 

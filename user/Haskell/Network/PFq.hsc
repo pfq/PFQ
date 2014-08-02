@@ -1,5 +1,5 @@
 
---    Copyright (c) 2011-14, Nicola Bonelli
+--    Copyright (c) 2011-14, Nicola Bonelli <nicola@pfq.io>
 --    All rights reserved.
 --
 --    Redistribution and use in source and binary forms, with or without
@@ -39,7 +39,7 @@
 --  Module      : Network.PFq
 --  Copyright   : Nicola Bonelli (c) 2014
 --  License     : GPL
---  Maintainer  : nicola.bonelli@cnit.it
+--  Maintainer  : nicola@pfq.io
 --  Stability   : experimental
 --  Portability : non-portable
 --
