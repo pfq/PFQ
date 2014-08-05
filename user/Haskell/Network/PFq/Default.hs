@@ -162,6 +162,7 @@ module Network.PFq.Default
         log_packet ,
         dummy      ,
         hdummy     ,
+        vdummy     ,
     ) where
 
 
@@ -174,6 +175,7 @@ import Network.Socket
 import System.IO.Unsafe
 
 import Foreign.Storable.Tuple()
+import Data.StorableVector as SV
 
 -- import Data.Bits
 -- import Data.Endian
@@ -329,7 +331,6 @@ crc16           = MFunction "crc16" :: NetFunction
 inc             = MFunction1 "inc"       :: CInt     -> NetFunction
 dec             = MFunction1 "dec"       :: CInt     -> NetFunction
 mark            = MFunction1 "mark"      :: CULong   -> NetFunction
-dummy           = MFunction1 "dummy"     :: CInt     -> NetFunction
 
 l3_proto        = MFunction1 "l3_proto"  :: Int16    -> NetFunction
 l4_proto        = MFunction1 "l4_proto"  :: Int8     -> NetFunction
@@ -345,10 +346,13 @@ addr net p      = MFunction1 "addr"     (mkNetAddr net p)
 src_addr net p  = MFunction1 "src_addr" (mkNetAddr net p)
 dst_addr net p  = MFunction1 "dst_addr" (mkNetAddr net p)
 
-hdummy          = HFunction  "hdummy"        :: NetPredicate -> NetFunction
 when'           = HFunction1 "when"          :: NetPredicate -> NetFunction  -> NetFunction
 unless'         = HFunction1 "unless"        :: NetPredicate -> NetFunction  -> NetFunction
 conditional     = HFunction2 "conditional"   :: NetPredicate -> NetFunction  -> NetFunction  -> NetFunction
 inv             = HFunction3 "inv"           :: NetFunction -> NetFunction
 par'            = HFunction4 "par"           :: NetFunction -> NetFunction -> NetFunction
+
+dummy           = MFunction1 "dummy"     :: CInt   -> NetFunction
+vdummy          = MFunction5 "vdummy"    :: [CInt] -> NetFunction
+hdummy          = HFunction  "hdummy"    :: NetPredicate -> NetFunction
 
