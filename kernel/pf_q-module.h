@@ -81,6 +81,7 @@
 
 #define make_mask(prefix)       htonl(~((1ULL << (32-prefix)) - 1))
 
+
 /**** generic functional type ****/
 
 
@@ -92,10 +93,17 @@ extern int pfq_symtable_register_functions  (const char *module, struct list_hea
 extern int pfq_symtable_unregister_functions(const char *module, struct list_head *category, struct pfq_function_descr *fun);
 
 
+struct pfq_functional_arg
+{
+        ptrdiff_t     value;
+        size_t 	      nelem; 	/* > 0 array */
+};
+
+
 struct pfq_functional
 {
-	const void *  ptr; 		// pointer to function
-        ptrdiff_t     arg[4];
+	const void *  ptr; 			// pointer to function
+        struct pfq_functional_arg arg[4];       // arguments
 };
 
 typedef struct pfq_functional *  arguments_t;
