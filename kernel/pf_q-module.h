@@ -66,6 +66,19 @@
 #define set_arg_2(a, v)		__builtin_choose_expr(sizeof(typeof(v)) <= sizeof(ptrdiff_t), *(typeof(v) *)(&ARGS_TYPE(a)->arg[2].value) = v, (void)0)
 #define set_arg_3(a, v)		__builtin_choose_expr(sizeof(typeof(v)) <= sizeof(ptrdiff_t), *(typeof(v) *)(&ARGS_TYPE(a)->arg[3].value) = v, (void)0)
 
+#define get_array_0(type,a) 	((type *)ARGS_TYPE(a)->arg[0].value)
+#define get_array_1(type,a) 	((type *)ARGS_TYPE(a)->arg[1].value)
+#define get_array_2(type,a) 	((type *)ARGS_TYPE(a)->arg[2].value)
+#define get_array_3(type,a) 	((type *)ARGS_TYPE(a)->arg[3].value)
+
+#define get_array_len_0(a) 	(ARGS_TYPE(a)->arg[0].nelem)
+#define get_array_len_1(a) 	(ARGS_TYPE(a)->arg[1].nelem)
+#define get_array_len_2(a) 	(ARGS_TYPE(a)->arg[2].nelem)
+#define get_array_len_3(a) 	(ARGS_TYPE(a)->arg[3].nelem)
+
+#define get_array(type, a) 	get_array_0(type,a)
+#define get_array_len(a) 	get_array_len_0(a)
+
 #define make_mask(prefix)       htonl(~((1ULL << (32-prefix)) - 1))
 
 /**** generic functional type ****/
