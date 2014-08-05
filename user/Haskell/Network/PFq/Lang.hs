@@ -54,6 +54,7 @@ module Network.PFq.Lang
 -- import Control.Monad.Identity
 
 import Foreign.Storable
+
 import Data.Word
 
 -- Basic types...
@@ -71,9 +72,14 @@ instance Show StorableArgument where
         show (StorableArgument c) = show c
 
 
-data Argument = ArgNull | ArgData StorableArgument | ArgString String | ArgFun Int
-                    deriving (Show)
+data Argument = ArgNull | ArgData StorableArgument | forall a. (Show a, Storable a) => ArgVector [a] | ArgString String | ArgFun Int
 
+instance Show Argument where
+    show (ArgNull) = "ArgNull"
+    show (ArgData x) = show x
+    show (ArgVector xs) = show xs
+    show (ArgString x) = x
+    show (ArgFun n) = "ArgFun " ++ show n
 
 data FunctionDescr = FunctionDescr Symbol [Argument] Int
                         deriving (Show)

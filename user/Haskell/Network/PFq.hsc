@@ -165,6 +165,8 @@ import Data.Word
 import Data.Bits
 import qualified Data.ByteString.Char8 as C
 import Data.ByteString.Unsafe
+import qualified Data.StorableVector as SV
+import qualified Data.StorableVector.Base as SV
 
 -- import Data.Maybe
 -- import Debug.Trace
@@ -816,21 +818,22 @@ padArguments xs = xs ++ take (4 - length xs) (repeat ArgNull)
 
 
 withSingleArg :: Argument
-              -> ((IntPtr, CSize) -> IO a)
+              -> ((IntPtr, CSize, CSize) -> IO a)
               -> IO a
 withSingleArg arg callback =
     case arg of
-        ArgNull                      -> callback (ptrToIntPtr nullPtr, fromIntegral (0 :: Int))
-        ArgFun i                     -> callback (ptrToIntPtr nullPtr, fromIntegral i)
+        ArgNull                      -> callback (ptrToIntPtr nullPtr, fromIntegral (0 :: Int), fromIntegral (0 :: Int))
+        ArgFun i                     -> callback (ptrToIntPtr nullPtr, fromIntegral i         , fromIntegral (0 :: Int))
+        ArgString s                  -> withCString s $ \s' -> callback (ptrToIntPtr s', 0, 0)
+        ArgVector xs                 -> let vec = SV.pack xs in SV.withStartPtr vec $ \ ptr len -> callback (ptrToIntPtr ptr, fromIntegral $ sizeOf (head xs), fromIntegral len)
         ArgData (StorableArgument v) ->
             alloca $ \ptr -> do
                 poke ptr v
-                callback (ptrToIntPtr ptr, fromIntegral $ sizeOf v)
-        ArgString s ->
-            withCString s $ \s' -> callback (ptrToIntPtr s', 0)
+                callback (ptrToIntPtr ptr, fromIntegral $ sizeOf v, 1)
 
 
-type MarshalFunctionDescr = (CString, [(IntPtr, CSize)], CSize)
+
+type MarshalFunctionDescr = (CString, [(IntPtr, CSize, CSize)], CSize)
 
 withFunDescr :: FunctionDescr
              -> (MarshalFunctionDescr -> IO a)
@@ -841,23 +844,23 @@ withFunDescr (FunctionDescr symbol args next) callback =
             callback (symbol', marArgs, fromIntegral next)
 
 
-data StorableFunDescr = StorableFunDescr CString [(IntPtr,CSize)] CSize
+fst3 (x,_,_) = x
+snd3 (_,x,_) = x
+trd3 (_,_,x) = x
 
+
+data StorableFunDescr = StorableFunDescr CString [(IntPtr,CSize,CSize)] CSize
 
 instance Storable StorableFunDescr where
         sizeOf _    = getConstant group_fun_descr_size
-        alignment _ = undefined
+        alignment _ = alignment (undefined :: CSize)
         poke ptr (StorableFunDescr symbol args next) = do
-            pokeByteOff ptr (off 0) symbol
-            pokeByteOff ptr (off 1) (fst $ args !! 0)
-            pokeByteOff ptr (off 2) (snd $ args !! 0)
-            pokeByteOff ptr (off 3) (fst $ args !! 1)
-            pokeByteOff ptr (off 4) (snd $ args !! 1)
-            pokeByteOff ptr (off 5) (fst $ args !! 2)
-            pokeByteOff ptr (off 6) (snd $ args !! 2)
-            pokeByteOff ptr (off 7) (fst $ args !! 3)
-            pokeByteOff ptr (off 8) (snd $ args !! 3)
-            pokeByteOff ptr (off 9) next
+            pokeByteOff ptr (off 0)  symbol
+            forM_ [0..3] $ \x -> do
+                pokeByteOff ptr (off (x*3 + 1)) (fst3 $ args !! x)
+                pokeByteOff ptr (off (x*3 + 2)) (snd3 $ args !! x)
+                pokeByteOff ptr (off (x*3 + 3)) (trd3 $ args !! x)
+            pokeByteOff ptr (off 13) next
          where
             off n = (sizeOf nullPtr * n)
 
