@@ -358,22 +358,24 @@ void pfq_spsc_read_commit(struct pfq_tx_queue_hdr *q)
 #define Q_CLASS_CONTROL		Q_CLASS(Q_CLASS_MAX-1) 			/* reserved for management */
 #define Q_CLASS_ANY             (((unsigned long)-1) ^ Q_CLASS_CONTROL) /* any class except management */
 
+
 /*
  * Functional argument:
  *
- * pod	  	-> (ptr, size)
- * String 	-> (ptr, 0)
- * expression 	-> (0, index)
+ * pod	  	-> (ptr, sizeof, 1  )
+ * pod array    -> (ptr, sizeof, len)
+ * string 	-> (ptr, 0     ,  - )
+ * expression 	-> (0,   index ,  - )
  *
  */
 
-
-typedef struct
+struct pfq_functional_arg_descr
 {
 	const void __user *	ptr;
 	size_t 			size;
+	size_t 			nelem;   /* > 1 is an array */
+};
 
-} argument_t;
 
 
 /*
@@ -383,7 +385,7 @@ typedef struct
 struct pfq_functional_descr
 {
         const char __user *     	symbol;
-	argument_t	    		arg[4];
+	struct pfq_functional_arg_descr arg[4];
         size_t 				next;
 };
 
