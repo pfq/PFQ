@@ -32,7 +32,7 @@
 static Action_SkBuff
 filter_generic(arguments_t args, SkBuff b)
 {
-	predicate_t pred_ = get_data0(predicate_t, args);
+	predicate_t pred_ = get_arg(predicate_t, args);
 
 	if (EVAL_PREDICATE(pred_, b))
 		return Pass(b);
@@ -43,35 +43,35 @@ filter_generic(arguments_t args, SkBuff b)
 static Action_SkBuff
 filter_l3_proto(arguments_t args, SkBuff b)
 {
-	const u16 type = get_data(u16, args);
+	const u16 type = get_arg(u16, args);
         return is_l3_proto(b, type) ? Pass(b) : Drop(b);
 }
 
 static Action_SkBuff
 filter_l4_proto(arguments_t args, SkBuff b)
 {
-	const u8 proto = get_data(u8, args);
+	const u8 proto = get_arg(u8, args);
         return is_l4_proto(b, proto) ? Pass(b) : Drop(b);
 }
 
 static Action_SkBuff
 filter_port(arguments_t args, SkBuff b)
 {
-	const u16 port = get_data(u16, args);
+	const u16 port = get_arg(u16, args);
         return has_port(b, port) ? Pass(b) : Drop(b);
 }
 
 static Action_SkBuff
 filter_src_port(arguments_t args, SkBuff b)
 {
-	const u16 port = get_data(u16, args);
+	const u16 port = get_arg(u16, args);
         return has_src_port(b, port) ? Pass(b) : Drop(b);
 }
 
 static Action_SkBuff
 filter_dst_port(arguments_t args, SkBuff b)
 {
-	const u16 port = get_data(u16, args);
+	const u16 port = get_arg(u16, args);
         return has_dst_port(b, port) ? Pass(b) : Drop(b);
 }
 
@@ -82,13 +82,13 @@ static int filter_addr_init(arguments_t args)
 	struct network_addr {
 	 	__be32 addr;
 	 	int 	 prefix;
-	} data = get_data(struct network_addr, args);
+	} data = get_arg(struct network_addr, args);
 
 	__be32 ipv4 = data.addr;
 	__be32 mask = make_mask(data.prefix);
 
-	set_data (args, ipv4);
-	set_data2(args, mask);
+	set_arg_0(args, ipv4);
+	set_arg_1(args, mask);
 
 	pr_devel("[PFQ|init] filter: addr:%pI4 mask:%pI4\n", &ipv4, &mask);
 
@@ -99,8 +99,8 @@ static int filter_addr_init(arguments_t args)
 static Action_SkBuff
 filter_addr(arguments_t args, SkBuff b)
 {
-	__be32 addr = get_data(__be32, args);
-	__be32 mask = get_data2(__be32, args);
+	__be32 addr = get_arg_0(__be32, args);
+	__be32 mask = get_arg_1(__be32, args);
 
 	return has_addr(b, addr, mask) ? Pass(b) : Drop(b);
 }
@@ -109,8 +109,8 @@ filter_addr(arguments_t args, SkBuff b)
 static Action_SkBuff
 filter_src_addr(arguments_t args, SkBuff b)
 {
-	__be32 addr = get_data(__be32, args);
-	__be32 mask = get_data2(__be32, args);
+	__be32 addr = get_arg_0(__be32, args);
+	__be32 mask = get_arg_1(__be32, args);
 
 	return has_src_addr(b, addr, mask) ? Pass(b) : Drop(b);
 }
@@ -118,8 +118,8 @@ filter_src_addr(arguments_t args, SkBuff b)
 static Action_SkBuff
 filter_dst_addr(arguments_t args, SkBuff b)
 {
-	__be32 addr = get_data(__be32, args);
-	__be32 mask = get_data2(__be32, args);
+	__be32 addr = get_arg_0(__be32, args);
+	__be32 mask = get_arg_1(__be32, args);
 
 	return has_dst_addr(b, addr, mask) ? Pass(b) : Drop(b);
 }

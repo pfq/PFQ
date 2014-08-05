@@ -77,15 +77,15 @@ steering_net_init(arguments_t args)
 	 	__be32   addr;
 	 	int 	 prefix;
 	 	int 	 prefix2;
-	} * data = get_data(struct network_addr, args);
+	} * data = get_arg(struct network_addr, args);
 
 	__be32 ipv4    = data->addr;
 	__be32 mask    = make_mask(data->prefix);
         __be32 submask = make_mask(data->prefix2);
 
-	set_data (args, ipv4);
-	set_data2(args, mask);
-	set_data3(args, submask);
+	set_arg_0(args, ipv4);
+	set_arg_1(args, mask);
+	set_arg_2(args, submask);
 
 	pr_devel("[PFQ|init] steer_net: addr=%pI4 mask=%pI4 submask=%pI4\n", &ipv4, &mask, &submask);
 
@@ -96,9 +96,9 @@ steering_net_init(arguments_t args)
 static Action_SkBuff
 steering_net(arguments_t args, SkBuff b)
 {
-	__be32 addr    = get_data (__be32, args);
-	__be32 mask    = get_data2(__be32, args);
-	__be32 submask = get_data3(__be32, args);
+	__be32 addr    = get_arg_0(__be32, args);
+	__be32 mask    = get_arg_1(__be32, args);
+	__be32 submask = get_arg_2(__be32, args);
 
 	if (eth_hdr(b.skb)->h_proto == __constant_htons(ETH_P_IP))
 	{

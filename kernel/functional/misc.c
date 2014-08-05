@@ -34,7 +34,7 @@
 static Action_SkBuff
 dummy(arguments_t args, SkBuff b)
 {
-        const int data = get_data(int,args);
+        const int data = get_arg(int,args);
 	SkBuff new;
 
         if (printk_ratelimit()) {
@@ -72,7 +72,7 @@ dummy_fini(arguments_t args)
 static Action_SkBuff
 inc_counter(arguments_t args, SkBuff b)
 {
-        const int idx = get_data(int,args);
+        const int idx = get_arg(int,args);
 
         sparse_counter_t * ctr;
 
@@ -92,7 +92,7 @@ inc_counter(arguments_t args, SkBuff b)
 static Action_SkBuff
 dec_counter(arguments_t args, SkBuff b)
 {
-        const int idx = get_data(int,args);
+        const int idx = get_arg(int,args);
 
         sparse_counter_t * ctr;
 
@@ -122,7 +122,7 @@ crc16_sum(arguments_t args, SkBuff b)
 static Action_SkBuff
 log_msg(arguments_t args, SkBuff b)
 {
-	const char *msg = get_data(const char *, args);
+	const char *msg = get_arg(const char *, args);
 
 	if (!printk_ratelimit())
 		return Pass(b);
@@ -227,7 +227,7 @@ log_packet(arguments_t args, SkBuff b)
 static Action_SkBuff
 inv(arguments_t args, SkBuff b)
 {
-	function_t expr = get_data(function_t, args);
+	function_t expr = get_arg(function_t, args);
 	SkBuff nb = EVAL_FUNCTION(expr, b).value;
 
 	if (!nb.skb || is_drop(PFQ_CB(nb.skb)->monad->fanout))
@@ -240,8 +240,8 @@ inv(arguments_t args, SkBuff b)
 static Action_SkBuff
 par(arguments_t args, SkBuff b)
 {
-	function_t f = get_data0(function_t, args);
-	function_t g = get_data1(function_t, args);
+	function_t f = get_arg_0(function_t, args);
+	function_t g = get_arg_1(function_t, args);
 
 	fanout_t fout = PFQ_CB(b.skb)->monad->fanout;
 
