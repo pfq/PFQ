@@ -12,6 +12,7 @@ build-type:      Simple
 library
   build-depends: base < 5, bytestring >= 0.9,
                  storable-tuple >= 0.0.2,
+                 storable-vector >= 0.2,
                  network
 
   exposed-modules: Network.PFq
