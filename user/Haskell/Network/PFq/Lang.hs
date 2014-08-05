@@ -103,6 +103,7 @@ data Function f where {
         MFunction2 :: Symbol -> String -> NetFunction;
         MFunction3 :: forall a. (Show a, Storable a) => Symbol -> a -> NetPredicate -> NetFunction;
         MFunction4 :: Symbol -> String -> NetPredicate -> NetFunction;
+        MFunction5 :: forall a. (Show a, Storable a) => Symbol -> [a] -> NetFunction;
 
         HFunction  :: Symbol -> NetPredicate -> NetFunction;
         HFunction1 :: Symbol -> NetPredicate -> NetFunction -> NetFunction;
@@ -141,6 +142,7 @@ instance Show (Function f) where
         show (MFunction2 symb s)        = "(MFunction " ++ symb ++ " " ++ show s ++ ")"
         show (MFunction3 symb a p)      = "(MFunction " ++ symb ++ " " ++ show a ++ " " ++ show p ++ ")"
         show (MFunction4 symb s p)      = "(MFunction " ++ symb ++ " " ++ show s ++ " " ++ show p ++ ")"
+        show (MFunction5 symb arr)      = "(MFunction " ++ symb ++ " " ++ show arr ++ " )"
 
         show (HFunction  symb p)        = "(HFunction " ++ symb ++ " " ++ show p  ++ ")"
         show (HFunction1 symb p n1)     = "(HFunction " ++ symb ++ " " ++ show p  ++ " " ++ show n1 ++ ")"
@@ -176,6 +178,7 @@ instance Pretty (Function f) where
         pretty (MFunction2 symb s)        = "(" ++ symb ++ " " ++ show s ++ ")"
         pretty (MFunction3 symb a p)      = "(" ++ symb ++ " " ++ show a ++ " " ++ pretty p ++ " )"
         pretty (MFunction4 symb s p)      = "(" ++ symb ++ " " ++ show s ++ " " ++ pretty p ++ " )"
+        pretty (MFunction5 symb arr)      = "(" ++ symb ++ " " ++ show arr ++ " )"
 
         pretty (HFunction symb p)         = "(" ++ symb ++ " " ++ pretty p  ++ ")"
         pretty (HFunction1 symb p n1)     = "(" ++ symb ++ " " ++ pretty p  ++ " " ++ pretty n1 ++ ")"
@@ -218,6 +221,7 @@ instance Serializable (Function (a -> m b)) where
     serialize (MFunction4 symb s p) n = let (s1, n1) = ([FunctionDescr symb [ArgString s, ArgFun n1] n2 ], n+1)
                                             (s2, n2) =  serialize p n1
                                         in (s1 ++ s2, n2)
+    serialize (MFunction5 symb xs)  n = ([FunctionDescr symb [ArgVector xs] (n+1) ], n+1)
 
     serialize (HFunction  symb p)  n = let (s1, n1) = ([FunctionDescr symb [ArgFun n1] n2 ], n+1)
                                            (s2, n2) =  serialize p n1
