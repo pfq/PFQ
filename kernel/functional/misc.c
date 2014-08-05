@@ -31,15 +31,15 @@
 #include "headers.h"
 #include "misc.h"
 
+
 static Action_SkBuff
 dummy(arguments_t args, SkBuff b)
 {
         const int data = get_arg(int,args);
+
 	SkBuff new;
 
-        if (printk_ratelimit()) {
-                printk(KERN_INFO "[PFQ] dummy argument: %d\n", data);
-        }
+	printk(KERN_INFO "[PFQ] dummy = %d\n", data);
 
         new = pfq_copy_buff(b);
 
@@ -53,6 +53,23 @@ dummy(arguments_t args, SkBuff b)
         return Pass(new);
 }
 
+
+static Action_SkBuff
+vdummy(arguments_t args, SkBuff b)
+{
+        const int *data = get_array(int,args);
+	size_t len = get_array_len(args);
+        int n;
+
+	printk(KERN_INFO "[PFQ] vdummy len: %zu...\n", len);
+
+	for(n = 0; n < len; n++)
+	{
+		printk(KERN_INFO "[PFQ]  data[%d] = %d\n", n, data[n]);
+	}
+
+        return Pass(b);
+}
 
 static int
 dummy_init(arguments_t args)
@@ -263,6 +280,8 @@ par(arguments_t args, SkBuff b)
 struct pfq_function_descr misc_functions[] = {
 
         { "dummy",      "Int -> SkBuff -> Action SkBuff",     		dummy, dummy_init,  dummy_fini },
+        { "vdummy",     "Int -> SkBuff -> Action SkBuff",     		vdummy, dummy_init,  dummy_fini },
+
         { "inc", 	"Int -> SkBuff -> Action SkBuff",     		inc_counter 	},
         { "dec", 	"Int -> SkBuff -> Action SkBuff",    		dec_counter 	},
  	{ "mark", 	"CULong -> SkBuff -> Action SkBuff",  		mark		},
