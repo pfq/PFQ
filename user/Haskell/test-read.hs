@@ -64,19 +64,6 @@ recvLoop q = do
 -- Context shared as Storable Pair
 --
 
-data Pair = Pair Int Int
-    deriving (Show, Eq)
-
-instance Storable Pair where
-    alignment _ = alignment (undefined :: CInt)
-    sizeOf    _ = 8
-    peek p      = Pair <$> fmap fromIntegral ((\ptr -> peekByteOff ptr 0 ::IO CInt) p)
-                       <*> fmap fromIntegral ((\ptr -> peekByteOff ptr 4 ::IO CInt) p)
-    poke p (Pair a b) = do
-        (\ptr val -> pokeByteOff ptr 0 (val::CInt)) p (fromIntegral a)
-        (\ptr val -> pokeByteOff ptr 4 (val::CInt)) p (fromIntegral b)
-
-
 dumper :: String -> IO ()
 dumper dev = do
     putStrLn  $ "dumping " ++ dev  ++ "..."
@@ -101,10 +88,6 @@ dumper dev = do
         -- Q.vlanFiltersEnabled q gid True
         -- Q.vlanSetFilterId q gid (0)   -- untagged
         -- Q.vlanSetFilterId q gid (-1)  -- anyTag
-
-        -- read state of 8 bytes...
-        -- kp :: Pair <- Q.getContextFunction q gid 0 8
-        -- print kp
 
         Q.getRxSlotSize q >>= \o -> putStrLn $ "slot_size: " ++ show o
         recvLoop q
