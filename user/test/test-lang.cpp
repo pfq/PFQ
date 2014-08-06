@@ -28,7 +28,7 @@ main()
     //////// pfq_functional_descr:
     {
         std::cout << "*** pfq_functional_descr:\n" << std::endl;
-        auto fun = pfq_functional_descr { "test", { {(void *)0xdeadbeef, 0}, {0,0}, {0,0}, {0,0}}, 1 };
+        auto fun = pfq_functional_descr { "test", { {(void *)0xdeadbeef, 0, 0}, {0, 0, 0}, {0,0, 0}, {0, 0, 0}}, 1 };
         std::cout << show(fun) << '\n' << std::endl;
     }
 
@@ -58,7 +58,7 @@ main()
 
     auto fun0  = mfunction("fun");
     auto fun1  = [](int n) { return mfunction1("fun1", n); };
-    auto fun2  = [](std::string s) { return mfunction2("fun", std::move(s)); };
+    auto fun2  = [](std::string s) { return mfunction1("fun", std::move(s)); };
 
     auto prop0 = property("prop0");
     auto prop1 = [](int n ) { return property1("prop1", n); };
@@ -104,7 +104,7 @@ main()
     show_comp (when(pred0, fun0) );
     show_comp (cond(pred0, fun0, fun1(3)));
 
-    show_comp (forward("eth0"));
+    show_comp (forwardIO("eth0"));
 
     show_comp (inv(ip >> udp) >> drop);
     show_comp (par (ip >> tcp, ip >> udp) >> drop );
