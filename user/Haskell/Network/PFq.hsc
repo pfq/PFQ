@@ -814,7 +814,7 @@ makeCounters ptr = do
 
 
 padArguments :: [Argument] -> [Argument]
-padArguments xs = xs ++ take (4 - length xs) (repeat ArgNull)
+padArguments xs = xs ++ replicate (4 - length xs) ArgNull
 
 
 withSingleArg :: Argument
@@ -826,11 +826,10 @@ withSingleArg arg callback =
         ArgFun i                     -> callback (ptrToIntPtr nullPtr, fromIntegral i         , fromIntegral (0 :: Int))
         ArgString s                  -> withCString s $ \s' -> callback (ptrToIntPtr s', 0, 0)
         ArgVector xs                 -> let vec = SV.pack xs in SV.withStartPtr vec $ \ ptr len -> callback (ptrToIntPtr ptr, fromIntegral $ sizeOf (head xs), fromIntegral len)
-        ArgData (StorableArgument v) ->
+        ArgData v ->
             alloca $ \ptr -> do
                 poke ptr v
                 callback (ptrToIntPtr ptr, fromIntegral $ sizeOf v, 1)
-
 
 
 type MarshalFunctionDescr = (CString, [(IntPtr, CSize, CSize)], CSize)
@@ -862,7 +861,7 @@ instance Storable StorableFunDescr where
                 pokeByteOff ptr (off (x*3 + 3)) (trd3 $ args !! x)
             pokeByteOff ptr (off 13) next
          where
-            off n = (sizeOf nullPtr * n)
+            off n = sizeOf nullPtr * n
 
 
 -- |Specify a functional computation for the given group.

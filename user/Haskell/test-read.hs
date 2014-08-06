@@ -33,10 +33,6 @@ import System.Environment
 import Numeric
 import Control.Monad
 
-import Foreign.C.Types
-
-import Control.Applicative
-
 
 -- import Debug.Trace
 

@@ -30,15 +30,15 @@
 {-# LANGUAGE ExistentialQuantification #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE FlexibleContexts #-}
+
 {-# LANGUAGE GADTs #-}
 
 {-# OPTIONS_GHC -fno-warn-unused-binds #-}
 
 module Network.PFq.Lang
     (
-        StorableArgument(..),
-        Pretty(..),
         Argument(..),
+        Pretty(..),
         Function(..),
         Serializable(..),
         FunctionDescr(..),
@@ -57,6 +57,7 @@ import Foreign.Storable
 
 import Data.Word
 
+
 -- Basic types...
 
 newtype SkBuff   = SkBuff ()
@@ -64,22 +65,22 @@ newtype Action a = Identity a
 type Symbol      = String
 
 
--- Expressions:
-
-data StorableArgument = forall a. (Show a, Storable a) => StorableArgument a
-
-instance Show StorableArgument where
-        show (StorableArgument c) = show c
+-- Polymorphic storable arguments:
 
 
-data Argument = ArgNull | ArgData StorableArgument | forall a. (Show a, Storable a) => ArgVector [a] | ArgString String | ArgFun Int
+data Argument = forall a. (Show a, Storable a) => ArgData a     |
+                forall a. (Show a, Storable a) => ArgVector [a] |
+                ArgString String                                |
+                ArgFun Int                                      |
+                ArgNull
 
 instance Show Argument where
-    show (ArgNull) = "ArgNull"
-    show (ArgData x) = show x
+    show (ArgNull)      = "()"
+    show (ArgFun n)     = "f(" ++ show n ++ ")"
+    show (ArgString xs) = xs
+    show (ArgData x)    = show x
     show (ArgVector xs) = show xs
-    show (ArgString x) = x
-    show (ArgFun n) = "ArgFun " ++ show n
+
 
 data FunctionDescr = FunctionDescr Symbol [Argument] Int
                         deriving (Show)
@@ -212,10 +213,10 @@ class Serializable a where
 
 instance Serializable (Function (a -> m b)) where
 
-    serialize (MFunction  symb)    n = ([FunctionDescr symb [] (n+1) ], n+1)
-    serialize (MFunction1 symb x)  n = ([FunctionDescr symb [ArgData $ StorableArgument x] (n+1) ], n+1)
-    serialize (MFunction2 symb s)  n = ([FunctionDescr symb [ArgString s] (n+1) ], n+1)
-    serialize (MFunction3 symb x p) n = let (s1, n1) = ([FunctionDescr symb [ArgData $ StorableArgument x, ArgFun n1] n2 ], n+1)
+    serialize (MFunction  symb)    n  = ([FunctionDescr symb [] (n+1) ], n+1)
+    serialize (MFunction1 symb x)  n  = ([FunctionDescr symb [ArgData x] (n+1) ], n+1)
+    serialize (MFunction2 symb s)  n  = ([FunctionDescr symb [ArgString s] (n+1) ], n+1)
+    serialize (MFunction3 symb x p) n = let (s1, n1) = ([FunctionDescr symb [ArgData x, ArgFun n1] n2 ], n+1)
                                             (s2, n2) =  serialize p n1
                                         in (s1 ++ s2, n2)
     serialize (MFunction4 symb s p) n = let (s1, n1) = ([FunctionDescr symb [ArgString s, ArgFun n1] n2 ], n+1)
@@ -255,12 +256,12 @@ instance Serializable (Function (a -> m b)) where
 
 instance Serializable NetPredicate where
     serialize (Predicate  symb)    n = ([FunctionDescr symb [] (-1) ], n+1)
-    serialize (Predicate1 symb x)  n = ([FunctionDescr symb [ArgData $ StorableArgument x] (-1) ], n+1)
+    serialize (Predicate1 symb x)  n = ([FunctionDescr symb [ArgData x] (-1) ], n+1)
     serialize (Predicate2 symb p)  n = let (s1, n1) = ([FunctionDescr symb [ArgFun n1] (-1) ], n+1)
                                            (s2, n2) = serialize p n1
                                        in (s1 ++ s2, n2)
 
-    serialize (Predicate3 symb p x) n = let (s1, n1) = ([FunctionDescr symb [ArgFun n1, ArgData $ StorableArgument x] (-1) ], n+1)
+    serialize (Predicate3 symb p x) n = let (s1, n1) = ([FunctionDescr symb [ArgFun n1, ArgData x] (-1) ], n+1)
                                             (s2, n2) = serialize p n1
                                         in (s1 ++ s2, n2)
 
@@ -277,7 +278,7 @@ instance Serializable NetPredicate where
 
 instance Serializable NetProperty where
     serialize (Property  symb)    n = ([FunctionDescr symb [] (-1) ], n+1)
-    serialize (Property1 symb x)  n = ([FunctionDescr symb [ArgData $ StorableArgument x] (-1) ], n+1)
+    serialize (Property1 symb x)  n = ([FunctionDescr symb [ArgData x] (-1) ], n+1)
 
     serialize _ _ = undefined
 
