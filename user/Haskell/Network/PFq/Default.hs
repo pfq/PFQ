@@ -351,7 +351,9 @@ conditional     = HFunction2 "conditional"   :: NetPredicate -> NetFunction  -> 
 inv             = HFunction3 "inv"           :: NetFunction -> NetFunction
 par'            = HFunction4 "par"           :: NetFunction -> NetFunction -> NetFunction
 
-dummy           = MFunction1 "dummy"                             :: CInt   -> NetFunction
-hdummy          = HFunction  "hdummy"                            :: NetPredicate -> NetFunction
-vdummy xs       = MFunction1 "vdummy" (StorableVector xs)
+vdummy          :: [CInt] -> NetFunction
+
+dummy           = MFunction1 "dummy"         :: CInt   -> NetFunction
+hdummy          = HFunction  "hdummy"        :: NetPredicate -> NetFunction
+vdummy          = \xs -> MFunction1 "vdummy" (Vector xs)
 

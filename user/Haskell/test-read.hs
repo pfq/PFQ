@@ -76,7 +76,7 @@ dumper dev = do
         --                 (inc 1 >-> mark 1 >-> steer_ip >-> when' (has_mark 1) (inc 2))
         --                 drop')
 
-        let comp = no_frag >-> forwardIO "lo" >-> tee "lo" is_icmp >-> par' icmp udp >-> addr "192.168.0.0" 16 >-> mark 42 >-> when' is_icmp (inc 1) >-> log_packet >-> log_msg "Hello World!"
+        let comp = no_frag >-> forwardIO "lo" >-> tee "lo" is_icmp >-> vdummy [1,2,3] >-> par' icmp udp >-> addr "192.168.0.0" 16 >-> mark 42 >-> when' is_icmp (inc 1) >-> log_packet >-> log_msg "Hello World!"
 
         putStrLn $ pretty comp
         Q.groupComputation q gid comp

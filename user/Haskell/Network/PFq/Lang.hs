@@ -44,7 +44,7 @@ module Network.PFq.Lang
         Pretty(..),
         Function(..),
         Serializable(..),
-        StorableVector(..),
+        Vector(..),
         FunctionDescr(..),
         Action,
         SkBuff,
@@ -67,9 +67,8 @@ import Data.Word
 type Symbol      = String
 newtype SkBuff   = SkBuff ()
 newtype Action a = Identity a
-
-newtype StorableVector a = StorableVector [a]
-newtype StorableFun      = StorableFun Int
+newtype Vector a = Vector [a]
+newtype Fun      = Fun Int
 
 
 -- Polymorphic storable arguments:
@@ -89,6 +88,10 @@ instance Show Argument where
     show (ArgVector xs) = show xs
 
 
+instance (Show a) => Show (Vector a) where
+    show (Vector xs) = show xs
+
+
 class Argumentable a where
     mkArgument :: a -> Argument
 
@@ -98,11 +101,11 @@ instance Argumentable String where
 instance (Show a, Storable a) => Argumentable a where
     mkArgument = ArgData
 
-instance (Show a, Storable a) => Argumentable (StorableVector a) where
-    mkArgument (StorableVector xs) = ArgVector xs
+instance (Show a, Storable a) => Argumentable (Vector a) where
+    mkArgument (Vector xs) = ArgVector xs
 
-instance Argumentable StorableFun where
-    mkArgument (StorableFun n) = ArgFun n
+instance Argumentable Fun where
+    mkArgument (Fun n) = ArgFun n
 
 
 
@@ -230,30 +233,30 @@ instance Serializable (Function (a -> m b)) where
 
     serialize (MFunction  symb)    n  = ([FunctionDescr symb [] (n+1) ], n+1)
     serialize (MFunction1 symb x)  n  = ([FunctionDescr symb [mkArgument x] (n+1) ], n+1)
-    serialize (MFunction2 symb x p) n = let (s1, n1) = ([FunctionDescr symb [mkArgument x, mkArgument (StorableFun n1)] n2 ], n+1)
+    serialize (MFunction2 symb x p) n = let (s1, n1) = ([FunctionDescr symb [mkArgument x, mkArgument (Fun n1)] n2 ], n+1)
                                             (s2, n2) =  serialize p n1
                                         in (s1 ++ s2, n2)
 
-    serialize (HFunction  symb p)  n = let (s1, n1) = ([FunctionDescr symb [mkArgument (StorableFun n1)] n2 ], n+1)
+    serialize (HFunction  symb p)  n = let (s1, n1) = ([FunctionDescr symb [mkArgument (Fun n1)] n2 ], n+1)
                                            (s2, n2) =  serialize p n1
                                        in (s1 ++ s2, n2)
 
-    serialize (HFunction1 symb p c) n = let (s1, n1) = ([FunctionDescr symb [mkArgument (StorableFun n1), mkArgument (StorableFun n2)] n3 ], n+1)
+    serialize (HFunction1 symb p c) n = let (s1, n1) = ([FunctionDescr symb [mkArgument (Fun n1), mkArgument (Fun n2)] n3 ], n+1)
                                             (s2, n2) =  serialize p n1
                                             (s3, n3) =  serialize c n2
                                          in (s1 ++ s2 ++ termComp n2 s3, n3)
 
-    serialize (HFunction2 symb p c1 c2) n = let (s1, n1) = ([FunctionDescr symb [mkArgument (StorableFun n1), mkArgument (StorableFun n2), mkArgument (StorableFun n3)] n4 ], n+1)
+    serialize (HFunction2 symb p c1 c2) n = let (s1, n1) = ([FunctionDescr symb [mkArgument (Fun n1), mkArgument (Fun n2), mkArgument (Fun n3)] n4 ], n+1)
                                                 (s2, n2) =  serialize p  n1
                                                 (s3, n3) =  serialize c1 n2
                                                 (s4, n4) =  serialize c2 n3
                                              in (s1 ++ s2 ++ termComp n2 s3 ++ termComp n3 s4, n4)
 
-    serialize (HFunction3  symb f)  n = let (s1, n1) = ([FunctionDescr symb [mkArgument (StorableFun n1)] n2 ], n+1)
+    serialize (HFunction3  symb f)  n = let (s1, n1) = ([FunctionDescr symb [mkArgument (Fun n1)] n2 ], n+1)
                                             (s2, n2) =  serialize f n1
                                         in (s1 ++ termComp n1 s2, n2)
 
-    serialize (HFunction4  symb f g) n = let (s1, n1) = ([FunctionDescr symb [mkArgument (StorableFun n1), mkArgument (StorableFun n2)] n3 ], n+1)
+    serialize (HFunction4  symb f g) n = let (s1, n1) = ([FunctionDescr symb [mkArgument (Fun n1), mkArgument (Fun n2)] n3 ], n+1)
                                              (s2, n2) =  serialize f n1
                                              (s3, n3) =  serialize g n2
                                          in (s1 ++ termComp n1 s2 ++ termComp n2 s3, n3)
@@ -267,19 +270,19 @@ instance Serializable (Function (a -> m b)) where
 instance Serializable NetPredicate where
     serialize (Predicate  symb)    n = ([FunctionDescr symb [] (-1) ], n+1)
     serialize (Predicate1 symb x)  n = ([FunctionDescr symb [mkArgument x] (-1) ], n+1)
-    serialize (Predicate2 symb p)  n = let (s1, n1) = ([FunctionDescr symb [mkArgument (StorableFun n1)] (-1) ], n+1)
+    serialize (Predicate2 symb p)  n = let (s1, n1) = ([FunctionDescr symb [mkArgument (Fun n1)] (-1) ], n+1)
                                            (s2, n2) = serialize p n1
                                        in (s1 ++ s2, n2)
 
-    serialize (Predicate3 symb p x) n = let (s1, n1) = ([FunctionDescr symb [mkArgument (StorableFun n1), mkArgument x] (-1) ], n+1)
+    serialize (Predicate3 symb p x) n = let (s1, n1) = ([FunctionDescr symb [mkArgument (Fun n1), mkArgument x] (-1) ], n+1)
                                             (s2, n2) = serialize p n1
                                         in (s1 ++ s2, n2)
 
-    serialize (Combinator1 symb p) n = let (s1, n1) = ([FunctionDescr symb [mkArgument (StorableFun n1)] (-1) ], n+1)
+    serialize (Combinator1 symb p) n = let (s1, n1) = ([FunctionDescr symb [mkArgument (Fun n1)] (-1) ], n+1)
                                            (s2, n2) = serialize p n1
                                        in (s1 ++ s2, n2)
 
-    serialize (Combinator2 symb p1 p2) n = let (s1, n1) = ([FunctionDescr symb [mkArgument (StorableFun n1), mkArgument (StorableFun n2)] (-1) ], n+1)
+    serialize (Combinator2 symb p1 p2) n = let (s1, n1) = ([FunctionDescr symb [mkArgument (Fun n1), mkArgument (Fun n2)] (-1) ], n+1)
                                                (s2, n2) = serialize p1 n1
                                                (s3, n3) = serialize p2 n2
                                            in (s1 ++ s2 ++ s3, n3)
