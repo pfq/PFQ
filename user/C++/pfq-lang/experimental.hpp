@@ -38,11 +38,11 @@ namespace pfq { namespace lang { namespace experimental {
         auto class_         = [] (int value) { return mfunction1("class", value); };
         auto deliver        = [] (int value) { return mfunction1("deliver", value); };
 
-        auto forward        = [] (std::string dev) { return mfunction2("forward", std::move(dev)); };
-        auto bridge         = [] (std::string dev) { return mfunction2("bridge", std::move(dev)); };
+        auto forward        = [] (std::string dev) { return mfunction1("forward", std::move(dev)); };
+        auto bridge         = [] (std::string dev) { return mfunction1("bridge", std::move(dev)); };
 
-        auto tee            = std::bind(details::polymorphic_mfunction4(), "tee", _1, _2);
-        auto tap            = std::bind(details::polymorphic_mfunction4(), "tap", _1, _2);
+        auto tee            = std::bind(details::polymorphic_mfunction2(), "tee", _1, _2);
+        auto tap            = std::bind(details::polymorphic_mfunction2(), "tap", _1, _2);
     }
 
 } // namespace experimental

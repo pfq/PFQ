@@ -244,13 +244,12 @@ namespace lang
         auto drop           = mfunction("drop");
         auto unit           = mfunction("unit");
 
-        auto log_msg        = [] (const std::string &msg) { return mfunction2("log_msg", msg); };
+        auto log_msg        = [] (std::string msg) { return mfunction1("log_msg", std::move(msg)); };
         auto log_buff       = mfunction("log_buff");
         auto log_packet     = mfunction("log_packet");
 
-        auto forwardIO      = [] (std::string dev) { return mfunction2("forwardIO", std::move(dev)); };
+        auto forwardIO      = [] (std::string dev) { return mfunction1("forwardIO", std::move(dev)); };
         auto mark           = [] (unsigned long value) { return mfunction1("mark", value); };
-        auto dummy          = [] (int value) { return mfunction1("dummy", value); };
         auto inc            = [] (int value) { return mfunction1("inc", value); };
         auto dec            = [] (int value) { return mfunction1("dec", value); };
 
@@ -279,6 +278,8 @@ namespace lang
             return mfunction1("dst_addr", addr);
         };
 
+        auto dummy       = [] (int value) { return mfunction1("dummy", value); };
+        auto vdummy      = [] (std::vector<int> const &vec) { return mfunction1("vdummy", vec); };
         auto hdummy      = std::bind(details::polymorphic_hfunction(),  "hdummy", _1);
 
         auto when        = std::bind(details::polymorphic_hfunction1(), "when", _1, _2);

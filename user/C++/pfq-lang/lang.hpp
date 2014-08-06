@@ -122,6 +122,12 @@ namespace lang
         {
             return &that;
         }
+
+        template <typename T>
+        static const void *get_addr(const std::vector<T> &that)
+        {
+            return that.data();
+        }
     };
 
     template <typename Tp,  typename = void> struct StorableShow;
@@ -169,7 +175,7 @@ namespace lang
 
         std::string forall_show() const override
         {
-            return "{show}";
+            return "()";
         }
     };
 
@@ -184,42 +190,64 @@ namespace lang
         Argument()
         : ptr()
         , size()
+        , nelem()
         {}
 
-        Argument(std::shared_ptr<StorableShowBase> p, size_t s)
+        Argument(std::shared_ptr<StorableShowBase> p, size_t s, size_t n)
         : ptr(std::move(p))
         , size(s)
+        , nelem(n)
         {}
 
         static Argument Null()
         {
-            return Argument{ std::shared_ptr<StorableShowBase>(), 0 };
+            return Argument { std::shared_ptr<StorableShowBase>(), 0, 0 };
         }
 
         template <typename Tp>
         static Argument Data(Tp const &pod)
         {
             static_assert( std::is_pod<Tp>::value, "Data argument must be a pod type");
-
             auto ptr = std::make_shared<StorableShow<Tp>>(pod);
+            return Argument{ std::dynamic_pointer_cast<StorableShowBase>(ptr), sizeof(pod), 1 };
+        }
 
-            return Argument{ std::dynamic_pointer_cast<StorableShowBase>(ptr), sizeof(pod) };
+        template <typename Tp>
+        static Argument Vector(std::vector<Tp> const &vec)
+        {
+            static_assert( std::is_pod<Tp>::value, "Vector type argument must be a pod type");
+            auto ptr = std::make_shared<StorableShow<std::vector<Tp>>>(vec);
+            return Argument{ std::dynamic_pointer_cast<StorableShowBase>(ptr), sizeof(Tp), vec.size() };
         }
 
         static Argument String(std::string str)
         {
             auto ptr = std::make_shared<StorableShow<std::string>>(std::move(str));
-            return Argument{ std::dynamic_pointer_cast<StorableShowBase>(ptr), 0 };
+            return Argument{ std::dynamic_pointer_cast<StorableShowBase>(ptr), 0, 0 };
         }
 
         static Argument Fun(std::size_t n)
         {
-            return Argument{ std::shared_ptr<StorableShowBase>(), n };
+            return Argument{ std::shared_ptr<StorableShowBase>(), n, 0 };
         }
 
         std::shared_ptr<StorableShowBase> ptr;
         size_t size;
+        size_t nelem;
     };
+
+    static inline Argument make_argument() { return Argument::Null(); }
+
+    static inline Argument make_argument(std::string s) { return Argument::String(std::move(s)); }
+
+    static inline Argument make_argument(const char *arr) { return Argument::String(arr); }
+
+    template <typename Tp>
+    static inline Argument make_argument(Tp const &pod) { return Argument::Data(pod); }
+
+    template <typename Tp>
+    static inline Argument make_argument(std::vector<Tp> const &pod) { return Argument::Vector(pod); }
+
 
 
     static inline std::string
@@ -312,27 +340,26 @@ namespace lang
     using NetPredicate = Function< bool(SkBuff) >;
     using NetProperty  = Function< uint64_t(SkBuff) >;
 
-    struct Property;
-    struct Property1;
-
-    struct Predicate;
-    struct Predicate1;
-    template <typename Prop> struct Predicate2;
-    template <typename Prop> struct Predicate3;
-    template <typename Pred> struct Combinator1;
-    template <typename Pred1, typename Pred2> struct Combinator2;
-
     struct MFunction;
     struct MFunction1;
-    struct MFunction2;
-    template <typename P> struct MFunction3;
-    template <typename P> struct MFunction4;
+    template <typename P> struct MFunction2;
 
     template <typename P> struct HFunction;
     template <typename P, typename F> struct HFunction1;
     template <typename P, typename F1, typename F2> struct HFunction2;
     template <typename F> struct HFunction3;
     template <typename F, typename G> struct HFunction4;
+
+    struct Predicate;
+    struct Predicate1;
+    template <typename Prop> struct Predicate2;
+    template <typename Prop> struct Predicate3;
+
+    struct Property;
+    struct Property1;
+
+    template <typename Pred> struct Combinator1;
+    template <typename Pred1, typename Pred2> struct Combinator2;
     template <typename F, typename G> struct Composition;
 
     template <typename Tp>
@@ -357,9 +384,7 @@ namespace lang
     struct is_mfunction :
         bool_type<std::is_same<Tp, MFunction>::value                ||
                   std::is_same<Tp, MFunction1>::value               ||
-                  std::is_same<Tp, MFunction2>::value               ||
-                  is_same_type_constructor<Tp, MFunction3>::value   ||
-                  is_same_type_constructor<Tp, MFunction4>::value   ||
+                  is_same_type_constructor<Tp, MFunction2>::value   ||
                   is_same_type_constructor<Tp, HFunction>::value    ||
                   is_same_type_constructor<Tp, HFunction1>::value   ||
                   is_same_type_constructor<Tp, HFunction2>::value   ||
@@ -661,24 +686,13 @@ namespace lang
         std::string  symbol_;
     };
 
+
     struct MFunction1 : NetFunction
     {
         template <typename T>
         MFunction1(std::string symbol, T const &arg)
         : symbol_(std::move(symbol))
-        , arg_(Argument::Data(arg))
-        { }
-
-        std::string     symbol_;
-        Argument        arg_;
-    };
-
-
-    struct MFunction2 : NetFunction
-    {
-        MFunction2(std::string symbol, std::string str)
-        : symbol_(std::move(symbol))
-        , arg_(Argument::String(std::move(str)))
+        , arg_(make_argument(arg))
         { }
 
         std::string     symbol_;
@@ -687,30 +701,14 @@ namespace lang
 
 
     template <typename P>
-    struct MFunction3 : NetFunction
+    struct MFunction2 : NetFunction
     {
         static_assert(is_predicate<P>::value, "MFunction: argument must be a predicate");
 
         template <typename T>
-        MFunction3(std::string symbol, T const &arg, const P &pred)
+        MFunction2(std::string symbol, T const &arg, const P &pred)
         : symbol_(std::move(symbol))
-        , arg_(Argument::Data(arg))
-        , pred_(pred)
-        { }
-
-        std::string     symbol_;
-        Argument        arg_;
-        P               pred_;
-    };
-
-    template <typename P>
-    struct MFunction4 : NetFunction
-    {
-        static_assert(is_predicate<P>::value, "MFunction: argument must be a predicate");
-
-        MFunction4(std::string symbol, std::string str, const P &pred)
-        : symbol_(std::move(symbol))
-        , arg_(Argument::String(std::move(str)))
+        , arg_(make_argument(arg))
         , pred_(pred)
         { }
 
@@ -849,22 +847,9 @@ namespace lang
         return '(' + descr.symbol_ + ' ' + pretty (descr.arg_) + ')';
     }
 
-    static inline std::string
-    pretty(MFunction2 const &descr)
-    {
-        return '(' + descr.symbol_ + ' ' + pretty (descr.arg_) + ')';
-    }
-
     template <typename P>
     static inline std::string
-    pretty(MFunction3<P> const &descr)
-    {
-        return '(' + descr.symbol_ + ' ' + pretty (descr.arg_) + ' ' + pretty (descr.pred_) + ')';
-    }
-
-    template <typename P>
-    static inline std::string
-    pretty(MFunction4<P> const &descr)
+    pretty(MFunction2<P> const &descr)
     {
         return '(' + descr.symbol_ + ' ' + pretty (descr.arg_) + ' ' + pretty (descr.pred_) + ')';
     }
@@ -925,29 +910,9 @@ namespace lang
         return { { FunctionDescr { f.symbol_, {{ f.arg_ }}, n+1 } }, n+1 };
     }
 
-    static inline std::pair<std::vector<FunctionDescr>, std::size_t>
-    serialize(MFunction2 const &f, std::size_t n)
-    {
-        return { { FunctionDescr { f.symbol_,  {{ f.arg_ }}, n+1 } }, n+1 };
-    }
-
     template <typename P>
     static inline std::pair<std::vector<FunctionDescr>, std::size_t>
-    serialize(MFunction3<P> const &f, std::size_t n)
-    {
-        std::vector<FunctionDescr> p1, v1;
-        std::size_t n1;
-
-        std::tie(p1, n1) = serialize(f.pred_, n+1);
-
-        v1 = { { f.symbol_,  { { f.arg_, Argument::Fun(n+1) } }, n1 } };
-
-        return { std::move(v1) + std::move(p1), n1 };
-    }
-
-    template <typename P>
-    static inline std::pair<std::vector<FunctionDescr>, std::size_t>
-    serialize(MFunction4<P> const &f, std::size_t n)
+    serialize(MFunction2<P> const &f, std::size_t n)
     {
         std::vector<FunctionDescr> p1, v1;
         std::size_t n1;
@@ -1150,24 +1115,11 @@ namespace lang
         return MFunction1{ std::move(symbol), arg };
     }
 
-    inline MFunction2
-    mfunction2(std::string symbol, std::string str)
-    {
-        return MFunction2{ std::move(symbol), std::move(str) };
-    }
-
     template <typename T, typename P>
-    MFunction3<P>
-    mfunction3(std::string symbol, T const &arg, P const &p)
+    MFunction2<P>
+    mfunction2(std::string symbol, T const &arg, P const &p)
     {
-        return MFunction3<P>{ std::move(symbol), arg, p };
-    }
-
-    template <typename P>
-    MFunction4<P>
-    mfunction4(std::string symbol, std::string str, P const &p)
-    {
-        return MFunction4<P>{ std::move(symbol), std::move(str), p };
+        return MFunction2<P>{ std::move(symbol), arg, p };
     }
 
     template <typename P>
