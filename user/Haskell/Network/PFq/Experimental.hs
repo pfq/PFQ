@@ -54,8 +54,8 @@ filter'        = HFunction  "filter"        :: NetPredicate -> NetFunction
 
 class'         = MFunction1 "class"         :: CInt    -> NetFunction
 deliver        = MFunction1 "deliver"       :: CInt    -> NetFunction
-forward        = MFunction2 "forward"       :: String  -> NetFunction
-bridge         = MFunction2 "bridge"        :: String  -> NetFunction
-tee            = MFunction4 "tee"           :: String  -> NetPredicate -> NetFunction
-tap            = MFunction4 "tap"           :: String  -> NetPredicate -> NetFunction
+forward        = MFunction1 "forward"       :: String  -> NetFunction
+bridge         = MFunction1 "bridge"        :: String  -> NetFunction
+tee            = MFunction2 "tee"           :: String  -> NetPredicate -> NetFunction
+tap            = MFunction2 "tap"           :: String  -> NetPredicate -> NetFunction
 

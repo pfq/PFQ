@@ -175,7 +175,6 @@ import Network.Socket
 import System.IO.Unsafe
 
 import Foreign.Storable.Tuple()
-import Data.StorableVector as SV
 
 -- import Data.Bits
 -- import Data.Endian
@@ -316,13 +315,13 @@ no_more_frag    = MFunction "no_more_frag"  :: NetFunction
 
 -- Forwarder...
 
-forwardIO       = MFunction2 "forwardIO"   :: String   -> NetFunction
+forwardIO       = MFunction1 "forwardIO"   :: String   -> NetFunction
 
 kernel          = MFunction "kernel"         :: NetFunction
 broadcast       = MFunction "broadcast"      :: NetFunction
 drop'           = MFunction "drop"           :: NetFunction
 unit            = MFunction "unit"           :: NetFunction
-log_msg         = MFunction2 "log_msg"       :: String -> NetFunction
+log_msg         = MFunction1 "log_msg"       :: String -> NetFunction
 log_buff        = MFunction "log_buff"       :: NetFunction
 log_packet      = MFunction "log_packet"     :: NetFunction
 
@@ -352,7 +351,7 @@ conditional     = HFunction2 "conditional"   :: NetPredicate -> NetFunction  -> 
 inv             = HFunction3 "inv"           :: NetFunction -> NetFunction
 par'            = HFunction4 "par"           :: NetFunction -> NetFunction -> NetFunction
 
-dummy           = MFunction1 "dummy"     :: CInt   -> NetFunction
-vdummy          = MFunction5 "vdummy"    :: [CInt] -> NetFunction
-hdummy          = HFunction  "hdummy"    :: NetPredicate -> NetFunction
+dummy           = MFunction1 "dummy"                             :: CInt   -> NetFunction
+hdummy          = HFunction  "hdummy"                            :: NetPredicate -> NetFunction
+vdummy xs       = MFunction1 "vdummy" (StorableVector xs)
 
