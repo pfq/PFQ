@@ -156,13 +156,10 @@ module Network.PFq.Default
         inv        ,
         par'       ,
         mark       ,
-        crc16      ,
         log_msg    ,
         log_buff   ,
         log_packet ,
-        dummy      ,
-        hdummy     ,
-        vdummy     ,
+
     ) where
 
 
@@ -325,8 +322,6 @@ log_msg         = MFunction1 "log_msg"       :: String -> NetFunction
 log_buff        = MFunction "log_buff"       :: NetFunction
 log_packet      = MFunction "log_packet"     :: NetFunction
 
-crc16           = MFunction "crc16" :: NetFunction
-
 inc             = MFunction1 "inc"       :: CInt     -> NetFunction
 dec             = MFunction1 "dec"       :: CInt     -> NetFunction
 mark            = MFunction1 "mark"      :: CULong   -> NetFunction
@@ -351,9 +346,4 @@ conditional     = HFunction2 "conditional"   :: NetPredicate -> NetFunction  -> 
 inv             = HFunction3 "inv"           :: NetFunction -> NetFunction
 par'            = HFunction4 "par"           :: NetFunction -> NetFunction -> NetFunction
 
-vdummy          :: [CInt] -> NetFunction
-
-dummy           = MFunction1 "dummy"         :: CInt   -> NetFunction
-hdummy          = HFunction  "hdummy"        :: NetPredicate -> NetFunction
-vdummy          = \xs -> MFunction1 "vdummy" (Vector xs)
 

@@ -18,6 +18,7 @@
 --  the file called "COPYING".
 
 import Network.PFq.Default
+import Network.PFq.Experimental
 import Network.PFq.Lang
 
 import Control.Monad

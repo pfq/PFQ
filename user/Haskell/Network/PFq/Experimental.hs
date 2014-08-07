@@ -40,6 +40,10 @@ module Network.PFq.Experimental
         deliver    ,
         forward    ,
         filter'    ,
+        dummy      ,
+        hdummy     ,
+        vdummy     ,
+        crc16      ,
 
     ) where
 
@@ -50,12 +54,20 @@ import Foreign.C.Types
 
 -- Experimental in-kernel computations
 
-filter'        = HFunction  "filter"        :: NetPredicate -> NetFunction
+filter'     = HFunction  "filter"        :: NetPredicate -> NetFunction
 
-class'         = MFunction1 "class"         :: CInt    -> NetFunction
-deliver        = MFunction1 "deliver"       :: CInt    -> NetFunction
-forward        = MFunction1 "forward"       :: String  -> NetFunction
-bridge         = MFunction1 "bridge"        :: String  -> NetFunction
-tee            = MFunction2 "tee"           :: String  -> NetPredicate -> NetFunction
-tap            = MFunction2 "tap"           :: String  -> NetPredicate -> NetFunction
+class'      = MFunction1 "class"         :: CInt    -> NetFunction
+deliver     = MFunction1 "deliver"       :: CInt    -> NetFunction
+forward     = MFunction1 "forward"       :: String  -> NetFunction
+bridge      = MFunction1 "bridge"        :: String  -> NetFunction
+tee         = MFunction2 "tee"           :: String  -> NetPredicate -> NetFunction
+tap         = MFunction2 "tap"           :: String  -> NetPredicate -> NetFunction
+
+vdummy      :: [CInt] -> NetFunction
+
+dummy       = MFunction1 "dummy"         :: CInt   -> NetFunction
+hdummy      = HFunction  "hdummy"        :: NetPredicate -> NetFunction
+vdummy  xs  = MFunction1 "vdummy" (Vector xs)
+
+crc16       = MFunction "crc16" :: NetFunction
 

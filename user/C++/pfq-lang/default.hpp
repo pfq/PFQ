@@ -278,18 +278,12 @@ namespace lang
             return mfunction1("dst_addr", addr);
         };
 
-        auto dummy       = [] (int value) { return mfunction1("dummy", value); };
-        auto vdummy      = [] (std::vector<int> const &vec) { return mfunction1("vdummy", vec); };
-        auto hdummy      = std::bind(details::polymorphic_hfunction(),  "hdummy", _1);
-
         auto when        = std::bind(details::polymorphic_hfunction1(), "when", _1, _2);
         auto unless      = std::bind(details::polymorphic_hfunction1(), "unless", _1, _2);
         auto conditional = std::bind(details::polymorphic_hfunction2(), "conditional", _1, _2, _3);
 
         auto inv         = std::bind(details::polymorphic_hfunction3(), "inv", _1);
         auto par         = std::bind(details::polymorphic_hfunction4(), "par", _1, _2);
-
-        auto crc16       = mfunction("crc16");
 
     }
 
