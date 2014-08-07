@@ -126,17 +126,15 @@ auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a
 \item 
 auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a85f9b2d401cbb1d135679160de0e97de}{unit} = \hyperlink{namespacepfq_1_1lang_ac3ec84f09576bf5fb5db464623a4c165}{mfunction}(\char`\"{}unit\char`\"{})
 \item 
-auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a82e76226844f043aac9a2dd01615c9bb}{log\+\_\+msg} = \mbox{[}$\,$\mbox{]} (const std\+::string \&msg) \{ return \hyperlink{namespacepfq_1_1lang_a67e0307b31080afb135f93398aad267c}{mfunction2}(\char`\"{}log\+\_\+msg\char`\"{}, msg); \}
+auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a82e76226844f043aac9a2dd01615c9bb}{log\+\_\+msg} = \mbox{[}$\,$\mbox{]} (std\+::string msg) \{ return \hyperlink{namespacepfq_1_1lang_a68d775c68562fbd0ab9ef213f2519499}{mfunction1}(\char`\"{}log\+\_\+msg\char`\"{}, std\+::move(msg)); \}
 \item 
 auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_ac16d4c4b496e6e882901d84ded462101}{log\+\_\+buff} = \hyperlink{namespacepfq_1_1lang_ac3ec84f09576bf5fb5db464623a4c165}{mfunction}(\char`\"{}log\+\_\+buff\char`\"{})
 \item 
 auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_aed6076a98aece625738cbda3689183e2}{log\+\_\+packet} = \hyperlink{namespacepfq_1_1lang_ac3ec84f09576bf5fb5db464623a4c165}{mfunction}(\char`\"{}log\+\_\+packet\char`\"{})
 \item 
-auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a3fb6ec42e38c3329534ea3a7024fd967}{forward\+I\+O} = \mbox{[}$\,$\mbox{]} (std\+::string dev) \{ return \hyperlink{namespacepfq_1_1lang_a67e0307b31080afb135f93398aad267c}{mfunction2}(\char`\"{}forward\+I\+O\char`\"{}, std\+::move(dev)); \}
+auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a3fb6ec42e38c3329534ea3a7024fd967}{forward\+I\+O} = \mbox{[}$\,$\mbox{]} (std\+::string dev) \{ return \hyperlink{namespacepfq_1_1lang_a68d775c68562fbd0ab9ef213f2519499}{mfunction1}(\char`\"{}forward\+I\+O\char`\"{}, std\+::move(dev)); \}
 \item 
 auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a7b831baeabda070b89ca862a9445a4a8}{mark} = \mbox{[}$\,$\mbox{]} (unsigned long value) \{ return \hyperlink{namespacepfq_1_1lang_a68d775c68562fbd0ab9ef213f2519499}{mfunction1}(\char`\"{}mark\char`\"{}, value); \}
-\item 
-auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_ab1a38555cb05c81863153fa6113395e3}{dummy} = \mbox{[}$\,$\mbox{]} (int value) \{ return \hyperlink{namespacepfq_1_1lang_a68d775c68562fbd0ab9ef213f2519499}{mfunction1}(\char`\"{}dummy\char`\"{}, value); \}
 \item 
 auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_acc7d3a4cca5eb30ff5456e19c613b174}{inc} = \mbox{[}$\,$\mbox{]} (int value) \{ return \hyperlink{namespacepfq_1_1lang_a68d775c68562fbd0ab9ef213f2519499}{mfunction1}(\char`\"{}inc\char`\"{}, value); \}
 \item 
@@ -157,6 +155,10 @@ auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a
 auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a2ee09b5a65a64d60bc797b2ecd1c8a4a}{src\+\_\+addr}
 \item 
 auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a3f51de44baa33ff19a94995945636072}{dst\+\_\+addr}
+\item 
+auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_ab1a38555cb05c81863153fa6113395e3}{dummy} = \mbox{[}$\,$\mbox{]} (int value) \{ return \hyperlink{namespacepfq_1_1lang_a68d775c68562fbd0ab9ef213f2519499}{mfunction1}(\char`\"{}dummy\char`\"{}, value); \}
+\item 
+auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a5903cd45f9167fd8c2b0080c0afed6e5}{vdummy} = \mbox{[}$\,$\mbox{]} (std\+::vector$<$int$>$ const \&vec) \{ return \hyperlink{namespacepfq_1_1lang_a68d775c68562fbd0ab9ef213f2519499}{mfunction1}(\char`\"{}vdummy\char`\"{}, vec); \}
 \item 
 auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a5ce9765c320b01cb2c6d9b9cba0f13ff}{hdummy} = std\+::bind(details\+::polymorphic\+\_\+hfunction(), \char`\"{}hdummy\char`\"{}, \+\_\+1)
 \item 
@@ -223,7 +225,7 @@ auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a
 \subsubsection[{flow}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::flow = {\bf mfunction}(\char`\"{}flow\char`\"{})}}\label{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_af6c7518847c8c960b0e98cd856871a1b}
 \hypertarget{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a3fb6ec42e38c3329534ea3a7024fd967}{\index{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}!forward\+I\+O@{forward\+I\+O}}
 \index{forward\+I\+O@{forward\+I\+O}!pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}}
-\subsubsection[{forward\+I\+O}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::forward\+I\+O = \mbox{[}$\,$\mbox{]} (std\+::string dev) \{ return {\bf mfunction2}(\char`\"{}forward\+I\+O\char`\"{}, std\+::move(dev)); \}}}\label{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a3fb6ec42e38c3329534ea3a7024fd967}
+\subsubsection[{forward\+I\+O}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::forward\+I\+O = \mbox{[}$\,$\mbox{]} (std\+::string dev) \{ return {\bf mfunction1}(\char`\"{}forward\+I\+O\char`\"{}, std\+::move(dev)); \}}}\label{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a3fb6ec42e38c3329534ea3a7024fd967}
 \hypertarget{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_ab733e24b3ca86450bea0b0888a6327d2}{\index{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}!get\+\_\+mark@{get\+\_\+mark}}
 \index{get\+\_\+mark@{get\+\_\+mark}!pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}}
 \subsubsection[{get\+\_\+mark}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::get\+\_\+mark = {\bf property}(\char`\"{}get\+\_\+mark\char`\"{})}}\label{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_ab733e24b3ca86450bea0b0888a6327d2}
@@ -376,7 +378,7 @@ auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a
 \subsubsection[{log\+\_\+buff}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::log\+\_\+buff = {\bf mfunction}(\char`\"{}log\+\_\+buff\char`\"{})}}\label{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_ac16d4c4b496e6e882901d84ded462101}
 \hypertarget{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a82e76226844f043aac9a2dd01615c9bb}{\index{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}!log\+\_\+msg@{log\+\_\+msg}}
 \index{log\+\_\+msg@{log\+\_\+msg}!pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}}
-\subsubsection[{log\+\_\+msg}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::log\+\_\+msg = \mbox{[}$\,$\mbox{]} (const std\+::string \&msg) \{ return {\bf mfunction2}(\char`\"{}log\+\_\+msg\char`\"{}, msg); \}}}\label{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a82e76226844f043aac9a2dd01615c9bb}
+\subsubsection[{log\+\_\+msg}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::log\+\_\+msg = \mbox{[}$\,$\mbox{]} (std\+::string msg) \{ return {\bf mfunction1}(\char`\"{}log\+\_\+msg\char`\"{}, std\+::move(msg)); \}}}\label{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a82e76226844f043aac9a2dd01615c9bb}
 \hypertarget{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_aed6076a98aece625738cbda3689183e2}{\index{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}!log\+\_\+packet@{log\+\_\+packet}}
 \index{log\+\_\+packet@{log\+\_\+packet}!pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}}
 \subsubsection[{log\+\_\+packet}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::log\+\_\+packet = {\bf mfunction}(\char`\"{}log\+\_\+packet\char`\"{})}}\label{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_aed6076a98aece625738cbda3689183e2}
@@ -485,6 +487,9 @@ auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a
 \hypertarget{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a4873d64e4d84c7c4c4cabe782de2b7b0}{\index{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}!unless@{unless}}
 \index{unless@{unless}!pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}}
 \subsubsection[{unless}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::unless = std\+::bind(details\+::polymorphic\+\_\+hfunction1(), \char`\"{}unless\char`\"{}, \+\_\+1, \+\_\+2)}}\label{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a4873d64e4d84c7c4c4cabe782de2b7b0}
+\hypertarget{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a5903cd45f9167fd8c2b0080c0afed6e5}{\index{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}!vdummy@{vdummy}}
+\index{vdummy@{vdummy}!pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}}
+\subsubsection[{vdummy}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::vdummy = \mbox{[}$\,$\mbox{]} (std\+::vector$<$int$>$ const \&vec) \{ return {\bf mfunction1}(\char`\"{}vdummy\char`\"{}, vec); \}}}\label{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a5903cd45f9167fd8c2b0080c0afed6e5}
 \hypertarget{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a747e907a678ad69c5bfdd3048a239b6a}{\index{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}!vlan@{vlan}}
 \index{vlan@{vlan}!pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}}
 \subsubsection[{vlan}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::vlan = {\bf mfunction}(\char`\"{}vlan\char`\"{})}}\label{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a747e907a678ad69c5bfdd3048a239b6a}

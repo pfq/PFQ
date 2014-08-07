@@ -10,7 +10,7 @@
 \item 
 \hyperlink{structpfq_1_1lang_1_1Argument_afaf71c8c26efb0217437393eadf43d9e}{Argument} ()
 \item 
-\hyperlink{structpfq_1_1lang_1_1Argument_aef6639663214dd391f337620b06b23c9}{Argument} (std\+::shared\+\_\+ptr$<$ \hyperlink{structpfq_1_1lang_1_1StorableShowBase}{Storable\+Show\+Base} $>$ p, size\+\_\+t s)
+\hyperlink{structpfq_1_1lang_1_1Argument_aa5bb138a6566a3c17c6b9ab87ceefa7a}{Argument} (std\+::shared\+\_\+ptr$<$ \hyperlink{structpfq_1_1lang_1_1StorableShowBase}{Storable\+Show\+Base} $>$ p, size\+\_\+t s, size\+\_\+t n)
 \end{DoxyCompactItemize}
 \subsection*{Static Public Member Functions}
 \begin{DoxyCompactItemize}
@@ -18,6 +18,8 @@
 static \hyperlink{structpfq_1_1lang_1_1Argument}{Argument} \hyperlink{structpfq_1_1lang_1_1Argument_a47b27b590b495ac9e990d850f3052aad}{Null} ()
 \item 
 {\footnotesize template$<$typename Tp $>$ }\\static \hyperlink{structpfq_1_1lang_1_1Argument}{Argument} \hyperlink{structpfq_1_1lang_1_1Argument_ae9ded6ceab4dd43be420763bed00f2c3}{Data} (Tp const \&pod)
+\item 
+{\footnotesize template$<$typename Tp $>$ }\\static \hyperlink{structpfq_1_1lang_1_1Argument}{Argument} \hyperlink{structpfq_1_1lang_1_1Argument_a4dc906b330284d955fdc699ea3217da5}{Vector} (std\+::vector$<$ Tp $>$ const \&vec)
 \item 
 static \hyperlink{structpfq_1_1lang_1_1Argument}{Argument} \hyperlink{structpfq_1_1lang_1_1Argument_aba384bb2905edc62d6700a0d61f6b05b}{String} (std\+::string str)
 \item 
@@ -29,6 +31,8 @@ static \hyperlink{structpfq_1_1lang_1_1Argument}{Argument} \hyperlink{structpfq_
 std\+::shared\+\_\+ptr$<$ \hyperlink{structpfq_1_1lang_1_1StorableShowBase}{Storable\+Show\+Base} $>$ \hyperlink{structpfq_1_1lang_1_1Argument_a74137962d82bf5a018d684c04149e446}{ptr}
 \item 
 size\+\_\+t \hyperlink{structpfq_1_1lang_1_1Argument_a0ce45c4283dc6a97dbf142cb9de211df}{size}
+\item 
+size\+\_\+t \hyperlink{structpfq_1_1lang_1_1Argument_a124d3646401b91728340221c59ca884e}{nelem}
 \end{DoxyCompactItemize}
 
 
@@ -40,14 +44,15 @@ size\+\_\+t \hyperlink{structpfq_1_1lang_1_1Argument_a0ce45c4283dc6a97dbf142cb9d
 {}
 \end{DoxyParamCaption}
 )\hspace{0.3cm}{\ttfamily [inline]}}}\label{structpfq_1_1lang_1_1Argument_afaf71c8c26efb0217437393eadf43d9e}
-\hypertarget{structpfq_1_1lang_1_1Argument_aef6639663214dd391f337620b06b23c9}{\index{pfq\+::lang\+::\+Argument@{pfq\+::lang\+::\+Argument}!Argument@{Argument}}
+\hypertarget{structpfq_1_1lang_1_1Argument_aa5bb138a6566a3c17c6b9ab87ceefa7a}{\index{pfq\+::lang\+::\+Argument@{pfq\+::lang\+::\+Argument}!Argument@{Argument}}
 \index{Argument@{Argument}!pfq\+::lang\+::\+Argument@{pfq\+::lang\+::\+Argument}}
 \subsubsection[{Argument}]{\setlength{\rightskip}{0pt plus 5cm}pfq\+::lang\+::\+Argument\+::\+Argument (
 \begin{DoxyParamCaption}
 \item[{std\+::shared\+\_\+ptr$<$ {\bf Storable\+Show\+Base} $>$}]{p, }
-\item[{size\+\_\+t}]{s}
+\item[{size\+\_\+t}]{s, }
+\item[{size\+\_\+t}]{n}
 \end{DoxyParamCaption}
-)\hspace{0.3cm}{\ttfamily [inline]}}}\label{structpfq_1_1lang_1_1Argument_aef6639663214dd391f337620b06b23c9}
+)\hspace{0.3cm}{\ttfamily [inline]}}}\label{structpfq_1_1lang_1_1Argument_aa5bb138a6566a3c17c6b9ab87ceefa7a}
 
 
 \subsection{Member Function Documentation}
@@ -79,9 +84,19 @@ size\+\_\+t \hyperlink{structpfq_1_1lang_1_1Argument_a0ce45c4283dc6a97dbf142cb9d
 \item[{std\+::string}]{str}
 \end{DoxyParamCaption}
 )\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}}\label{structpfq_1_1lang_1_1Argument_aba384bb2905edc62d6700a0d61f6b05b}
+\hypertarget{structpfq_1_1lang_1_1Argument_a4dc906b330284d955fdc699ea3217da5}{\index{pfq\+::lang\+::\+Argument@{pfq\+::lang\+::\+Argument}!Vector@{Vector}}
+\index{Vector@{Vector}!pfq\+::lang\+::\+Argument@{pfq\+::lang\+::\+Argument}}
+\subsubsection[{Vector}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename Tp $>$ static {\bf Argument} pfq\+::lang\+::\+Argument\+::\+Vector (
+\begin{DoxyParamCaption}
+\item[{std\+::vector$<$ Tp $>$ const \&}]{vec}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}, {\ttfamily [static]}}}\label{structpfq_1_1lang_1_1Argument_a4dc906b330284d955fdc699ea3217da5}
 
 
 \subsection{Member Data Documentation}
+\hypertarget{structpfq_1_1lang_1_1Argument_a124d3646401b91728340221c59ca884e}{\index{pfq\+::lang\+::\+Argument@{pfq\+::lang\+::\+Argument}!nelem@{nelem}}
+\index{nelem@{nelem}!pfq\+::lang\+::\+Argument@{pfq\+::lang\+::\+Argument}}
+\subsubsection[{nelem}]{\setlength{\rightskip}{0pt plus 5cm}size\+\_\+t pfq\+::lang\+::\+Argument\+::nelem}}\label{structpfq_1_1lang_1_1Argument_a124d3646401b91728340221c59ca884e}
 \hypertarget{structpfq_1_1lang_1_1Argument_a74137962d82bf5a018d684c04149e446}{\index{pfq\+::lang\+::\+Argument@{pfq\+::lang\+::\+Argument}!ptr@{ptr}}
 \index{ptr@{ptr}!pfq\+::lang\+::\+Argument@{pfq\+::lang\+::\+Argument}}
 \subsubsection[{ptr}]{\setlength{\rightskip}{0pt plus 5cm}std\+::shared\+\_\+ptr$<${\bf Storable\+Show\+Base}$>$ pfq\+::lang\+::\+Argument\+::ptr}}\label{structpfq_1_1lang_1_1Argument_a74137962d82bf5a018d684c04149e446}

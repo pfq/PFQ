@@ -27,8 +27,6 @@ var namespacepfq_1_1lang =
     [ "MFunction", "structpfq_1_1lang_1_1MFunction.html", "structpfq_1_1lang_1_1MFunction" ],
     [ "MFunction1", "structpfq_1_1lang_1_1MFunction1.html", "structpfq_1_1lang_1_1MFunction1" ],
     [ "MFunction2", "structpfq_1_1lang_1_1MFunction2.html", "structpfq_1_1lang_1_1MFunction2" ],
-    [ "MFunction3", "structpfq_1_1lang_1_1MFunction3.html", "structpfq_1_1lang_1_1MFunction3" ],
-    [ "MFunction4", "structpfq_1_1lang_1_1MFunction4.html", "structpfq_1_1lang_1_1MFunction4" ],
     [ "Predicate", "structpfq_1_1lang_1_1Predicate.html", "structpfq_1_1lang_1_1Predicate" ],
     [ "Predicate1", "structpfq_1_1lang_1_1Predicate1.html", "structpfq_1_1lang_1_1Predicate1" ],
     [ "Predicate2", "structpfq_1_1lang_1_1Predicate2.html", "structpfq_1_1lang_1_1Predicate2" ],
