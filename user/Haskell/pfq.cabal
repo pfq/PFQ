@@ -1,5 +1,5 @@
 name:            pfq
-version:         3.0
+version:         3.2
 synopsis:        PFQ interface for user-level packet capture
 description:     PFQ interface for user-level packet capture
 maintainer:      Nicola Bonelli <nicola@pfq.io> 
@@ -7,18 +7,20 @@ author:          Nicola Bonelli
 homepage:        https://www.pfq.io/
 bug-reports:     https://github.com/pfq/PFQ/issues
 category:        Network
-cabal-version:   >= 1.6
+cabal-version:   >= 1.10
 build-type:      Simple
-library
+
+Library
+  default-language: Haskell2010
+  default-extensions: ForeignFunctionInterface, CPP
   build-depends: base < 5, bytestring >= 0.9,
                  storable-tuple >= 0.0.2,
-                 storable-vector >= 0.2,
+                 storablevector >= 0.2,
                  network
 
   exposed-modules: Network.PFq
                    Network.PFq.Default
                    Network.PFq.Experimental
                    Network.PFq.Lang
-  extensions:      ForeignFunctionInterface, CPP
   ghc-options:     -Wall -fno-warn-missing-signatures
 
