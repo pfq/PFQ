@@ -14,3 +14,7 @@ PFQ 3.1
  * New experimental functions: (lazy) forward, forwardIO, bridge, tap, tee.
  * Added pfq-bridge tool.
  * Minor bugs fixed.
+
+PFQ 3.2
+-------
+ * In Q-Lang, support for vectors (of Storable and pod) added.

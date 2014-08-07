@@ -2,7 +2,7 @@
 -- see http://haskell.org/cabal/users-guide/
 
 name:                   irq-affinity
-version:                3.0
+version:                3.2
 -- synopsis:               
 -- description:            
 license-file:           LICENSE
