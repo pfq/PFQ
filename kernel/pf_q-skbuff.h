@@ -27,13 +27,14 @@
 struct pfq_monad;
 struct gc_log;
 
+
 struct pfq_cb
 {
+	unsigned long 	 mark;
         unsigned long 	 group_mask;
 	struct gc_log 	 *log;
 	struct pfq_monad *monad;
 	int 		 direct;
-
 };
 
 

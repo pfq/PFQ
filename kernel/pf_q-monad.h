@@ -188,7 +188,20 @@ sparse_counter_t * get_counter(SkBuff b, int n)
 }
 
 
-/* utility function: volatile state, persistent state */
+/* utility function: mark, volatile state, persistent state */
+
+
+static inline
+unsigned long get_mark(SkBuff b)
+{
+        return PFQ_CB(b.skb)->mark;
+}
+
+static inline
+void set_mark(SkBuff b, unsigned long mark)
+{
+        PFQ_CB(b.skb)->mark = mark;
+}
 
 
 static inline
@@ -202,6 +215,7 @@ void set_state(SkBuff b, unsigned long state)
 {
         PFQ_CB(b.skb)->monad->state = state;
 }
+
 
 static inline void *
 __get_persistent(SkBuff b, int n)

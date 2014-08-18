@@ -130,9 +130,9 @@ size_t pfq_mpdb_enqueue_batch(struct pfq_rx_opt *ro,
 			}
 		}
 
-                /* copy state from pfq_cb (annotation) */
+                /* copy mark from pfq_cb (annotation) */
 
-                hdr->data = PFQ_CB(skb)->monad->state;
+                hdr->data = PFQ_CB(skb)->mark;
 
 		/* setup the header */
 

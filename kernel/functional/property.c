@@ -363,9 +363,9 @@ icmp_code(arguments_t args, SkBuff b)
 
 
 static uint64_t
-get_mark(arguments_t args, SkBuff b)
+__get_mark(arguments_t args, SkBuff b)
 {
-	return JUST(get_state(b));
+	return JUST(get_mark(b));
 }
 
 
@@ -388,7 +388,7 @@ struct pfq_function_descr property_functions[] = {
         { "icmp_type",   "SkBuff -> Word64", icmp_type    	},
         { "icmp_code",   "SkBuff -> Word64", icmp_code    	},
 
-	{ "get_mark", 	 "SkBuff -> Word64", get_mark     	},
+	{ "get_mark", 	 "SkBuff -> Word64", __get_mark     	},
 
         { NULL }};
 

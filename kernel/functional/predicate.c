@@ -135,7 +135,7 @@ static bool
 pred_has_mark(arguments_t args, SkBuff b)
 {
 	const unsigned long value = get_arg(unsigned long, args);
-	return get_state(b) == value;
+	return get_mark(b) == value;
 }
 
 
