@@ -398,6 +398,7 @@ int pfq_setsockopt(struct socket *sock,
                 CHECK_GROUP_ACCES(so->id, bind.gid, "add binding");
 
                 pfq_devmap_update(map_set, bind.if_index, bind.hw_queue, bind.gid);
+
         } break;
 
         case Q_SO_GROUP_UNBIND:
@@ -412,6 +413,7 @@ int pfq_setsockopt(struct socket *sock,
                 CHECK_GROUP_ACCES(so->id, bind.gid, "remove binding");
 
                 pfq_devmap_update(map_reset, bind.if_index, bind.hw_queue, bind.gid);
+
         } break;
 
         case Q_SO_EGRESS_BIND:
@@ -805,6 +807,7 @@ int pfq_setsockopt(struct socket *sock,
                 }
 
                 pfq_tx_queue_flush(to, dev, get_cpu(), NUMA_NO_NODE);
+
                 put_cpu();
 
                 dev_put(dev);

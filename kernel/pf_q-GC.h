@@ -29,7 +29,6 @@
 
 #include <pf_q-skbuff.h>
 #include <pf_q-macro.h>
-#include <pf_q-bounded-queue.h>
 
 
 #define GC_queue_for_each_skb(pool, skb, n) \

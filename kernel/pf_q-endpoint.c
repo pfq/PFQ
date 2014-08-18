@@ -26,7 +26,6 @@
 #include <linux/module.h>
 #include <linux/skbuff.h>
 
-#include <pf_q-bounded-queue.h>
 #include <pf_q-mpdb-queue.h>
 #include <pf_q-sparse.h>
 #include <pf_q-transmit.h>

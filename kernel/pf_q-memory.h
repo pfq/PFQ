@@ -28,11 +28,9 @@
 #include <linux/version.h>
 #include <linux/skbuff.h>
 
-
 #include <pf_q-macro.h>
 #include <pf_q-percpu.h>
 #include <pf_q-sparse.h>
-#include <pf_q-bounded-queue.h>
 
 extern int recycle_len;
 extern struct local_data __percpu * cpu_data;
