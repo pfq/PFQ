@@ -397,6 +397,15 @@ int pfq_setsockopt(struct socket *sock,
 
                 CHECK_GROUP_ACCES(so->id, bind.gid, "add binding");
 
+                rcu_read_lock();
+                if (!dev_get_by_index_rcu(sock_net(&so->sk), bind.if_index))
+                {
+                        rcu_read_unlock();
+                        pr_devel("[PFQ|%d] bind: invalid if_index:%d\n", so->id, bind.if_index);
+                        return -EPERM;
+                }
+                rcu_read_unlock();
+
                 pfq_devmap_update(map_set, bind.if_index, bind.hw_queue, bind.gid);
 
         } break;
@@ -411,6 +420,15 @@ int pfq_setsockopt(struct socket *sock,
                         return -EFAULT;
 
                 CHECK_GROUP_ACCES(so->id, bind.gid, "remove binding");
+
+                rcu_read_lock();
+                if (!dev_get_by_index_rcu(sock_net(&so->sk), bind.if_index))
+                {
+                        rcu_read_unlock();
+                        pr_devel("[PFQ|%d] unbind: invalid if_index:%d\n", so->id, bind.if_index);
+                        return -EPERM;
+                }
+                rcu_read_unlock();
 
                 pfq_devmap_update(map_reset, bind.if_index, bind.hw_queue, bind.gid);
 
