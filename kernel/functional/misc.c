@@ -279,8 +279,8 @@ par(arguments_t args, SkBuff b)
 
 struct pfq_function_descr misc_functions[] = {
 
-        { "dummy",      "Int -> SkBuff -> Action SkBuff",     		dummy, dummy_init,  dummy_fini },
-        { "vdummy",     "Int -> SkBuff -> Action SkBuff",     		vdummy, dummy_init,  dummy_fini },
+        { "dummy",      "Int   -> SkBuff -> Action SkBuff",  		dummy, dummy_init,  dummy_fini },
+        { "vdummy",     "[Int] -> SkBuff -> Action SkBuff",     	vdummy, dummy_init,  dummy_fini },
 
         { "inc", 	"Int -> SkBuff -> Action SkBuff",     		inc_counter 	},
         { "dec", 	"Int -> SkBuff -> Action SkBuff",    		dec_counter 	},

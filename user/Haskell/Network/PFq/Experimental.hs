@@ -63,10 +63,10 @@ bridge      = MFunction1 "bridge"        :: String  -> NetFunction
 tee         = MFunction2 "tee"           :: String  -> NetPredicate -> NetFunction
 tap         = MFunction2 "tap"           :: String  -> NetPredicate -> NetFunction
 
-vdummy      :: [CInt] -> NetFunction
-
 dummy       = MFunction1 "dummy"         :: CInt   -> NetFunction
 hdummy      = HFunction  "hdummy"        :: NetPredicate -> NetFunction
+
+vdummy      :: [CInt] -> NetFunction
 vdummy  xs  = MFunction1 "vdummy" (Vector xs)
 
 crc16       = MFunction "crc16" :: NetFunction
