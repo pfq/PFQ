@@ -143,32 +143,6 @@ void mask_to_sock_queue(unsigned long n, unsigned long mask, unsigned long long 
         })
 }
 
-
-#if 0
-static void
-dump_skb(struct sk_buff const *skb)
-{
-        unsigned char * p;
-
-        printk(KERN_INFO "[PFQ] skb type:%d mac_len:%d proto:%x %pM -> %pM tci:%d %pI4 -> %pI4\n",
-                skb->pkt_type,
-                skb->mac_len,
-                htons(eth_hdr(skb)->h_proto),
-                eth_hdr(skb)->h_source,
-                eth_hdr(skb)->h_dest,
-                skb->vlan_tci & VLAN_VID_MASK,
-                &ip_hdr(skb)->saddr,
-                &ip_hdr(skb)->daddr
-               );
-
-        p = (unsigned char *)eth_hdr(skb);
-
-        printk(KERN_INFO "[PFQ] %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x %x\n",
-                       p[0], p[1], p[2], p[3], p[4], p[5], p[6], p[7], p[8], p[9], p[10], p[11], p[12], p[13], p[14], p[15],
-                       p[16], p[17], p[18], p[19], p[20], p[21], p[22], p[23], p[24], p[25], p[26], p[27], p[28], p[29]);
-}
-#endif
-
 /*
  * Find the next power of two.
  * from "Hacker's Delight, Henry S. Warren."

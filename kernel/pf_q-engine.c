@@ -309,7 +309,7 @@ pfq_run(struct pfq_computation_tree *prg, SkBuff b)
 struct pfq_computation_tree *
 pfq_computation_alloc (struct pfq_computation_descr const *descr)
 {
-        struct pfq_computation_tree * c = kmalloc(sizeof(size_t) + descr->size * sizeof(struct pfq_functional_node), GFP_KERNEL);
+        struct pfq_computation_tree * c = kzalloc(sizeof(size_t) + descr->size * sizeof(struct pfq_functional_node), GFP_KERNEL);
         c->size = descr->size;
         return c;
 }
@@ -541,6 +541,9 @@ pfq_computation_init(struct pfq_computation_tree *comp)
 	for (n = 0; n < comp->size; n++)
 	{
 		if (comp->node[n].init) {
+
+                	pr_devel("[PFQ|init] %zu: running computation init %pF...\n", n, comp->node[n].init);
+
 			if (comp->node[n].init( &comp->node[n].fun ) < 0) {
 				printk(KERN_INFO "[PFQ] computation_init: error in function (%zu)!\n", n);
 				return -EPERM;
@@ -561,6 +564,7 @@ pfq_computation_fini(struct pfq_computation_tree *comp)
 	{
 		if (comp->node[n].fini && comp->node[n].initialized) {
 
+                	pr_devel("[PFQ|init] %zu: running computation fini %pF...\n", n, comp->node[n].fini);
 
 			if (comp->node[n].fini( &comp->node[n].fun ) < 0) {
 				printk(KERN_INFO "[PFQ] computation_fini: error in function (%zu)!\n", n);
