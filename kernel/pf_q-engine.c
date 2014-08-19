@@ -563,7 +563,6 @@ pfq_computation_fini(struct pfq_computation_tree *comp)
 
 			if (comp->node[n].fini( &comp->node[n].fun ) < 0) {
 				printk(KERN_INFO "[PFQ] computation_fini: error in function (%zu)!\n", n);
-				return -EPERM;
 			}
 		}
 	}
