@@ -556,7 +556,8 @@ int
 pfq_computation_fini(struct pfq_computation_tree *comp)
 {
 	size_t n;
-	for (n = 0; n < comp->size; n++)
+
+	for (n = comp->size - 1; n < comp->size; n--)
 	{
 		if (comp->node[n].fini && comp->node[n].initialized) {
 
