@@ -145,6 +145,8 @@ struct pfq_functional_node
  	init_ptr_t 	      init;
  	init_ptr_t 	      fini;
 
+	bool 		      initialized;
+
 	struct pfq_functional_node *next;
 };
 
