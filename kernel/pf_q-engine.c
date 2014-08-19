@@ -558,7 +558,9 @@ pfq_computation_fini(struct pfq_computation_tree *comp)
 	size_t n;
 	for (n = 0; n < comp->size; n++)
 	{
-		if (comp->node[n].fini) {
+		if (comp->node[n].fini && comp->node[n].initialized) {
+
+
 			if (comp->node[n].fini( &comp->node[n].fun ) < 0) {
 				printk(KERN_INFO "[PFQ] computation_fini: error in function (%zu)!\n", n);
 				return -EPERM;
