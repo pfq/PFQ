@@ -545,6 +545,8 @@ pfq_computation_init(struct pfq_computation_tree *comp)
 				printk(KERN_INFO "[PFQ] computation_init: error in function (%zu)!\n", n);
 				return -EPERM;
 			}
+
+			comp->node[n].initialized = true;
 		}
 	}
  	return 0;
