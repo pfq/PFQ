@@ -362,10 +362,10 @@ void pfq_spsc_read_commit(struct pfq_tx_queue_hdr *q)
 /*
  * Functional argument:
  *
- * pod	  	-> (ptr, sizeof, 1  )
- * pod array    -> (ptr, sizeof, len)
- * string 	-> (ptr, 0     ,  - )
- * expression 	-> (0,   index ,  - )
+ * pod	  	-> (ptr/value, sizeof,  -1 )
+ * pod array    -> (ptr,       sizeof,  len)
+ * string 	-> (ptr,       0     ,  -1 )
+ * expression 	-> (0,         index ,  -1 )
  *
  */
 
