@@ -822,11 +822,11 @@ withSingleArg :: Argument
               -> IO a
 withSingleArg arg callback =
     case arg of
-        ArgNull                    -> callback (ptrToIntPtr nullPtr, fromIntegral (0 :: Int), fromIntegral (0 :: Int))
-        ArgFun i                   -> callback (ptrToIntPtr nullPtr, fromIntegral i         , fromIntegral (0 :: Int))
-        ArgString s                -> withCString s $ \s' -> callback (ptrToIntPtr s', 0, 0)
+        ArgNull                    -> callback (ptrToIntPtr nullPtr, fromIntegral 0         , fromIntegral 0)
+        ArgFun i                   -> callback (ptrToIntPtr nullPtr, fromIntegral i         , fromIntegral (-1))
+        ArgString s                -> withCString s $ \s' -> callback (ptrToIntPtr s', 0    , fromIntegral (-1))
         ArgVector xs               -> let vec = SV.pack xs in SV.withStartPtr vec $ \ ptr len -> callback (ptrToIntPtr ptr, fromIntegral $ sizeOf (head xs), fromIntegral len)
-        ArgData v -> alloca $ \ptr -> poke ptr v >> callback (ptrToIntPtr ptr, fromIntegral $ sizeOf v, 1)
+        ArgData v -> alloca $ \ptr -> poke ptr v >> callback (ptrToIntPtr ptr, fromIntegral $ sizeOf v, fromIntegral (-1))
 
 
 type MarshalFunctionDescr = (CString, [(IntPtr, CSize, CSize)], CSize)
@@ -843,7 +843,6 @@ withFunDescr (FunctionDescr symbol args next) callback =
 fst3 (x,_,_) = x
 snd3 (_,x,_) = x
 trd3 (_,_,x) = x
-
 
 data StorableFunDescr = StorableFunDescr CString [(IntPtr,CSize,CSize)] CSize
 
