@@ -209,7 +209,7 @@ namespace lang
         {
             static_assert( std::is_pod<Tp>::value, "Data argument must be a pod type");
             auto ptr = std::make_shared<StorableShow<Tp>>(pod);
-            return Argument{ std::dynamic_pointer_cast<StorableShowBase>(ptr), sizeof(pod), 1 };
+            return Argument{ std::dynamic_pointer_cast<StorableShowBase>(ptr), sizeof(pod), static_cast<size_t>(-1) };
         }
 
         template <typename Tp>
@@ -223,12 +223,12 @@ namespace lang
         static Argument String(std::string str)
         {
             auto ptr = std::make_shared<StorableShow<std::string>>(std::move(str));
-            return Argument{ std::dynamic_pointer_cast<StorableShowBase>(ptr), 0, 0 };
+            return Argument{ std::dynamic_pointer_cast<StorableShowBase>(ptr), 0, static_cast<size_t>(-1) };
         }
 
         static Argument Fun(std::size_t n)
         {
-            return Argument{ std::shared_ptr<StorableShowBase>(), n, 0 };
+            return Argument{ std::shared_ptr<StorableShowBase>(), n, static_cast<size_t>(-1) };
         }
 
         std::shared_ptr<StorableShowBase> ptr;
