@@ -37,19 +37,29 @@
 #include <functional/headers.h>
 
 
+static inline bool is_arg_null(struct pfq_functional_arg_descr const *arg)
+{
+	return !arg->ptr && !arg->size && !arg->nelem;
+}
+
 static inline bool is_arg_data(struct pfq_functional_arg_descr const *arg)
 {
-	return arg->ptr != 0 && arg->size != 0;
+	return arg->ptr != 0 && arg->size != 0 && arg->nelem == -1;
+}
+
+static inline bool is_arg_vector(struct pfq_functional_arg_descr const *arg)
+{
+	return arg->size != 0 && arg->nelem != -1;
 }
 
 static inline bool is_arg_string(struct pfq_functional_arg_descr const *arg)
 {
-	return arg->ptr != 0 && arg->size == 0;
+	return arg->ptr != 0 && arg->size == 0 && arg->nelem == -1;
 }
 
 static inline bool is_arg_function(struct pfq_functional_arg_descr const *arg)
 {
-	return arg->ptr == 0 && arg->size != 0;
+	return arg->ptr == 0 && arg->size != 0 && arg->nelem == -1;
 }
 
 
@@ -131,10 +141,18 @@ pr_devel_functional_node(struct pfq_functional_node const *node, size_t index)
 
 	for(n = 0; n < sizeof(node->fun.arg)/sizeof(node->fun.arg[0]); n++)
 	{
-		if ((node->fun.arg[n].value & 0xffffLLU) == (node->fun.arg[n].value))
-			len += sprintf(buffer + len, "%lld[%zu] ",(int64_t)node->fun.arg[n].value, node->fun.arg[n].nelem);
+		if (node->fun.arg[n].nelem != -1) /* vector */
+		{
+			if (node->fun.arg[n].value)
+				len += sprintf(buffer + len, "%p[%zu] ",(void *)node->fun.arg[n].value, node->fun.arg[n].nelem);
+		}
 		else
-			len += sprintf(buffer + len, "%p[%zu] ",(void *)node->fun.arg[n].value, node->fun.arg[n].nelem);
+		{
+			if ((node->fun.arg[n].value & 0xffffLLU) == (node->fun.arg[n].value))
+				len += sprintf(buffer + len, "%lld ",(int64_t)node->fun.arg[n].value);
+			else
+				len += sprintf(buffer + len, "%p ",(void *)node->fun.arg[n].value);
+		}
 	}
 
 	if (node->next)
@@ -178,27 +196,27 @@ pr_devel_functional_descr(struct pfq_functional_descr const *descr, size_t index
 
         for(n = 0; n < sizeof(descr->arg)/sizeof(descr->arg[0]); n++)
 	{
-		if (descr->arg[n].ptr)
-		{
-			if (descr->arg[n].size) {
+		if (is_arg_function(&descr->arg[n])) {
 
-				if (descr->arg[n].nelem > 1)
-					len += sprintf(buffer + len, "pod_%zu[%zu] ",  descr->arg[n].size, descr->arg[n].nelem);
-				else
-					len += sprintf(buffer + len, "pod_%zu ",  descr->arg[n].size);
-			}
-			else  { /* string */
-				char * tmp = strdup_user(descr->arg[n].ptr);
-				len += sprintf(buffer + len, "'%s' ", tmp);
-				kfree(tmp);
-			}
-		}
-		else
-		{
 			if (descr->arg[n].size)
 				len += sprintf(buffer + len, "fun(%zu) ",  descr->arg[n].size);
 		}
+		else if (is_arg_vector(&descr->arg[n])) {
 
+			len += sprintf(buffer + len, "pod_%zu[%zu] ",  descr->arg[n].size, descr->arg[n].nelem);
+		}
+		else if (is_arg_data(&descr->arg[n])) {
+
+			len += sprintf(buffer + len, "pod_%zu ",  descr->arg[n].size);
+		}
+		else if (is_arg_string(&descr->arg[n])) {
+			char * tmp = strdup_user(descr->arg[n].ptr);
+			len += sprintf(buffer + len, "'%s' ", tmp);
+			kfree(tmp);
+		}
+		else if (!is_arg_null(&descr->arg[n])) {
+			len += sprintf(buffer + len, "??? ");
+		}
 	}
 
 	if (descr->next != -1)
@@ -330,9 +348,9 @@ pfq_context_alloc(struct pfq_computation_descr const *descr)
 		{
 			if (fun->arg[i].ptr) {
 
-				size_t s = fun->arg[i].size == 0 ?  strlen_user(fun->arg[i].ptr)+1 :
-					   fun->arg[i].size  > 8 || fun->arg[i].nelem > 1 ?
-					   	fun->arg[i].size * fun->arg[i].nelem : 0;
+				size_t s = is_arg_string(&fun->arg[i]) ? strlen_user(fun->arg[i].ptr)+1 :
+					   is_arg_vector(&fun->arg[i]) ? fun->arg[i].size * fun->arg[i].nelem :
+					   is_arg_data  (&fun->arg[i]) ? (fun->arg[i].size > 8 ? fun->arg[i].size : 0 ) : 0;
 
 				if (s) {
 					size += sizeof(size_t) + ALIGN(s, 8);
@@ -361,9 +379,9 @@ pfq_context_alloc(struct pfq_computation_descr const *descr)
 		{
 			if (fun->arg[i].ptr) {
 
-				size_t s = fun->arg[i].size == 0  ?  strlen_user(fun->arg[i].ptr)+1 :
-					   fun->arg[i].size >  8  || fun->arg[i].nelem > 1  ?
-					   	fun->arg[i].size * fun->arg[i].nelem : 0;
+				size_t s = is_arg_string(&fun->arg[i]) ? strlen_user(fun->arg[i].ptr)+1 :
+					   is_arg_vector(&fun->arg[i]) ? fun->arg[i].size * fun->arg[i].nelem :
+					   is_arg_data  (&fun->arg[i]) ? (fun->arg[i].size > 8 ? fun->arg[i].size : 0 ) : 0;
 
 				if (s) {
 					* ptr = s;
@@ -385,7 +403,7 @@ number_of_arguments(struct pfq_functional_descr const *fun)
 
 	for(i = 0; i < sizeof(fun->arg)/sizeof(fun->arg[0]); i++)
 	{
-		if (fun->arg[i].ptr || fun->arg[i].size)
+		if (fun->arg[i].ptr || fun->arg[i].size || fun->arg[i].nelem)
 			n++;
 	}
 
@@ -495,7 +513,8 @@ pfq_validate_computation_descr(struct pfq_computation_descr const *descr)
 
 			/* nelem */
 
-			if (fun->arg[i].nelem > 65536) {
+			if (fun->arg[i].nelem > 65536 &&
+			    fun->arg[i].nelem != -1) {
 				pr_devel("[PFQ] %zu: invalid argument (%d): number of array elements is %zu!\n", n, i, fun->arg[i].nelem);
 				return -EPERM;
 			}
@@ -643,42 +662,67 @@ pfq_computation_rtlink(struct pfq_computation_descr const *descr, struct pfq_com
 			{
 				char *str = pod_user(&context, fun->arg[i].ptr, strlen_user(fun->arg[i].ptr)+1);
 				if (str == NULL) {
-					pr_devel("[PFQ] %zu: fun internal error!\n", n);
+					pr_devel("[PFQ] %zu: pod_user: internal error!\n", n);
 					return -EPERM;
 				}
 
 				comp->node[n].fun.arg[i].value = (ptrdiff_t)str;
-				comp->node[n].fun.arg[i].nelem = 0;
+				comp->node[n].fun.arg[i].nelem = -1;
 			}
 			else if (is_arg_data(&fun->arg[i]))
 			{
-				if (fun->arg[i].size > 8 || fun->arg[i].nelem > 1) {
+				if (fun->arg[i].size > 8) {
 
-					char *pod = pod_user(&context, fun->arg[i].ptr, fun->arg[i].size * fun->arg[i].nelem);
-					if (pod == NULL) {
-						pr_devel("[PFQ] %zu: fun internal error!\n", n);
+					char *ptr = pod_user(&context, fun->arg[i].ptr, fun->arg[i].size);
+					if (ptr == NULL) {
+						pr_devel("[PFQ] %zu: pod_user(2): internal error!\n", n);
 						return -EPERM;
 					}
 
-					comp->node[n].fun.arg[i].value = (ptrdiff_t)pod;
-					comp->node[n].fun.arg[i].nelem = fun->arg[i].nelem;
+					comp->node[n].fun.arg[i].value = (ptrdiff_t)ptr;
+					comp->node[n].fun.arg[i].nelem = -1;
 				}
 				else {
 					ptrdiff_t arg = 0;
 
 					if (copy_from_user(&arg, fun->arg[i].ptr, fun->arg[i].size)) {
-						pr_devel("[PFQ] %zu: fun internal error!\n", n);
+						pr_devel("[PFQ] %zu: copy_from_user: internal error!\n", n);
 						return -EPERM;
 					}
 
 					comp->node[n].fun.arg[i].value = arg;
+					comp->node[n].fun.arg[i].nelem = -1;
+				}
+
+			}
+			else if (is_arg_vector(&fun->arg[i]))
+			{
+				if (fun->arg[i].nelem > 0) {
+
+					char *ptr = pod_user(&context, fun->arg[i].ptr, fun->arg[i].size * fun->arg[i].nelem);
+					if (ptr == NULL) {
+						pr_devel("[PFQ] %zu: pod_user(2): internal error!\n", n);
+						return -EPERM;
+					}
+
+					comp->node[n].fun.arg[i].value = (ptrdiff_t)ptr;
+					comp->node[n].fun.arg[i].nelem = fun->arg[i].nelem;
+				}
+				else {  /* empty vector */
+
+					comp->node[n].fun.arg[i].value = 0xdeadbeef;
 					comp->node[n].fun.arg[i].nelem = 0;
 				}
 			}
 			else if (is_arg_function(&fun->arg[i]))
                         {
 				comp->node[n].fun.arg[i].value = (ptrdiff_t)get_functional_by_index(descr, comp, fun->arg[i].size);
-				comp->node[n].fun.arg[i].nelem = 0;
+				comp->node[n].fun.arg[i].nelem = -1;
+			}
+			else if (!is_arg_null(&fun->arg[i]))
+			{
+				pr_devel("[PFQ] %zu: pfq_computation_rtlink: internal error!\n", n);
+				return -EPERM;
 			}
 		}
 	}
