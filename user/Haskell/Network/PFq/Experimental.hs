@@ -46,7 +46,13 @@ module Network.PFq.Experimental
         crc16      ,
 
         bloom       ,
+        bloom_src   ,
+        bloom_dst   ,
+
         bloom_filter,
+        bloom_src_filter,
+        bloom_dst_filter,
+
     ) where
 
 
@@ -77,6 +83,19 @@ vdummy  xs  = MFunction1 "vdummy" (Vector xs)
 crc16       = MFunction "crc16" :: NetFunction
 
 bloom         :: CInt -> [HostName] -> NetPredicate
+bloom_src     :: CInt -> [HostName] -> NetPredicate
+bloom_dst     :: CInt -> [HostName] -> NetPredicate
+
 bloom_filter      :: CInt -> [HostName] -> NetFunction
-bloom        m hs = let ips = unsafePerformIO (mapM inet_addr hs) in Predicate4 "bloom" m (Vector ips)
-bloom_filter     m hs = let ips = unsafePerformIO (mapM inet_addr hs) in MFunction3 "bloom_filter" m (Vector ips)
+bloom_src_filter  :: CInt -> [HostName] -> NetFunction
+bloom_dst_filter  :: CInt -> [HostName] -> NetFunction
+
+bloom            m hs = let ips = unsafePerformIO (mapM inet_addr hs) in Predicate4 "bloom"     m (Vector ips)
+bloom_src        m hs = let ips = unsafePerformIO (mapM inet_addr hs) in Predicate4 "bloom_src" m (Vector ips)
+bloom_dst        m hs = let ips = unsafePerformIO (mapM inet_addr hs) in Predicate4 "bloom_dst" m (Vector ips)
+
+bloom_filter     m hs = let ips = unsafePerformIO (mapM inet_addr hs) in MFunction3 "bloom_filter"     m (Vector ips)
+bloom_src_filter m hs = let ips = unsafePerformIO (mapM inet_addr hs) in MFunction3 "bloom_src_filter" m (Vector ips)
+bloom_dst_filter m hs = let ips = unsafePerformIO (mapM inet_addr hs) in MFunction3 "bloom_dst_filter" m (Vector ips)
+
+
