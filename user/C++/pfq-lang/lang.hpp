@@ -506,7 +506,7 @@ namespace lang
         template <typename T>
         Property1(std::string symbol, T const &arg)
         : symbol_(std::move(symbol))
-        , arg_(Argument::Data(arg))
+        , arg_(make_argument(arg))
         {
         }
 
@@ -561,7 +561,7 @@ namespace lang
         template <typename Tp>
         Predicate1(std::string symb, Tp const &arg)
         : symbol_{std::move(symb)}
-        , arg_ (Argument::Data(arg))
+        , arg_ (make_argument(arg))
         {};
 
         std::string symbol_;
@@ -591,7 +591,7 @@ namespace lang
         Predicate3(std::string symb, Prop const &p, Tp const &arg)
         : symbol_{std::move(symb)}
         , prop_ (p)
-        , arg_ (Argument::Data(arg))
+        , arg_ (make_argument(arg))
         { };
 
         std::string symbol_;
