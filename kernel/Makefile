@@ -26,7 +26,7 @@ pfq-objs := pf_q.o pf_q-sockopt.o pf_q-global.o pf_q-devmap.o pf_q-sock.o pf_q-m
 		    pf_q-thread.o pf_q-transmit.o pf_q-signature.o pf_q-GC.o \
 		    functional/filter.o functional/steering.o functional/forward.o \
 		    functional/predicate.o functional/combinator.o functional/conditional.o \
-		    functional/property.o functional/misc.o
+		    functional/property.o functional/bloom.o functional/misc.o
 
 KERNELVERSION := $(shell uname -r)
 
