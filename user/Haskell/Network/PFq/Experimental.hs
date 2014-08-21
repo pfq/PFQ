@@ -45,12 +45,17 @@ module Network.PFq.Experimental
         vdummy     ,
         crc16      ,
 
+        bloom       ,
+        bloom_filter,
     ) where
 
 
 import Network.PFq.Lang
 import Foreign.C.Types
 
+import System.IO.Unsafe
+import Network.Socket
+import Data.Word
 
 -- Experimental in-kernel computations
 
@@ -71,3 +76,7 @@ vdummy  xs  = MFunction1 "vdummy" (Vector xs)
 
 crc16       = MFunction "crc16" :: NetFunction
 
+bloom         :: CInt -> [HostName] -> NetPredicate
+bloom_filter      :: CInt -> [HostName] -> NetFunction
+bloom        m hs = let ips = unsafePerformIO (mapM inet_addr hs) in Predicate4 "bloom" m (Vector ips)
+bloom_filter     m hs = let ips = unsafePerformIO (mapM inet_addr hs) in MFunction3 "bloom_filter" m (Vector ips)

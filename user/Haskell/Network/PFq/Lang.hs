@@ -129,6 +129,7 @@ data Function f where {
         MFunction  :: Symbol -> NetFunction;
         MFunction1 :: forall a. (Show a, Argumentable a) => Symbol -> a -> NetFunction;
         MFunction2 :: forall a. (Show a, Argumentable a) => Symbol -> a -> NetPredicate -> NetFunction;
+        MFunction3 :: forall a b. (Show a, Argumentable a, Show b, Argumentable b) => Symbol -> a -> b -> NetFunction;
 
         HFunction  :: Symbol -> NetPredicate -> NetFunction;
         HFunction1 :: Symbol -> NetPredicate -> NetFunction -> NetFunction;
@@ -140,6 +141,7 @@ data Function f where {
         Predicate1 :: forall a. (Show a, Argumentable a) => Symbol -> a -> NetPredicate;
         Predicate2 :: Symbol -> NetProperty -> NetPredicate;
         Predicate3 :: forall a. (Show a, Argumentable a) => Symbol -> NetProperty -> a -> NetPredicate;
+        Predicate4 :: forall a b. (Show a, Argumentable a, Show b, Argumentable b) => Symbol -> a -> b -> NetPredicate;
 
         Property   :: Symbol -> NetProperty;
         Property1  :: forall a. (Show a, Argumentable a) => Symbol -> a -> NetProperty;
@@ -165,6 +167,7 @@ instance Show (Function f) where
         show (MFunction  symb)          = "(MFunction " ++ symb ++ ")"
         show (MFunction1 symb a)        = "(MFunction " ++ symb ++ " " ++ show a ++ ")"
         show (MFunction2 symb a p)      = "(MFunction " ++ symb ++ " " ++ show a ++ " " ++ show p ++ ")"
+        show (MFunction3 symb a b)      = "(MFunction " ++ symb ++ " " ++ show a ++ " " ++ show b ++ ")"
 
         show (HFunction  symb p)        = "(HFunction " ++ symb ++ " " ++ show p  ++ ")"
         show (HFunction1 symb p n1)     = "(HFunction " ++ symb ++ " " ++ show p  ++ " " ++ show n1 ++ ")"
@@ -176,6 +179,7 @@ instance Show (Function f) where
         show (Predicate1 symb a)        = "(Predicate " ++ symb ++ " " ++ show a ++ ")"
         show (Predicate2 symb p)        = "(Predicate " ++ symb ++ " " ++ show p ++ ")"
         show (Predicate3 symb p a)      = "(Predicate " ++ symb ++ " " ++ show p ++ " " ++ show a ++ ")"
+        show (Predicate4 symb a b)      = "(Predicate " ++ symb ++ " " ++ show a ++ " " ++ show b ++ ")"
 
         show (Property  symb)           = "(Property " ++ symb ++ ")"
         show (Property1 symb a)         = "(Property " ++ symb ++ " " ++ show a ++ ")"
@@ -198,6 +202,7 @@ instance Pretty (Function f) where
         pretty (MFunction symb)           = symb
         pretty (MFunction1 symb a)        = "(" ++ symb ++ " " ++ show a ++ ")"
         pretty (MFunction2 symb a p)      = "(" ++ symb ++ " " ++ show a ++ " " ++ pretty p ++ " )"
+        pretty (MFunction3 symb a b)      = "(" ++ symb ++ " " ++ show a ++ " " ++ show b ++ " )"
 
         pretty (HFunction symb p)         = "(" ++ symb ++ " " ++ pretty p  ++ ")"
         pretty (HFunction1 symb p n1)     = "(" ++ symb ++ " " ++ pretty p  ++ " " ++ pretty n1 ++ ")"
@@ -209,6 +214,7 @@ instance Pretty (Function f) where
         pretty (Predicate1 symb a)        = "(" ++ symb ++ " " ++ show a ++ ")"
         pretty (Predicate2 symb p)        = "(" ++ symb ++ " " ++ pretty p ++ ")"
         pretty (Predicate3 symb p a)      = "(" ++ symb ++ " " ++ pretty p ++ " " ++ show a ++ ")"
+        pretty (Predicate4 symb a b)      = "(" ++ symb ++ " " ++ show a ++ " " ++ show b ++ ")"
 
         pretty (Property symb)            = symb
         pretty (Property1 symb a)         = "(" ++ symb ++ " " ++ show a ++ ")"
@@ -236,6 +242,7 @@ instance Serializable (Function (a -> m b)) where
     serialize (MFunction2 symb x p) n = let (s1, n1) = ([FunctionDescr symb [mkArgument x, mkArgument (Fun n1)] n2 ], n+1)
                                             (s2, n2) =  serialize p n1
                                         in (s1 ++ s2, n2)
+    serialize (MFunction3 symb x y) n  = ([FunctionDescr symb [mkArgument x, mkArgument y] (n+1) ], n+1)
 
     serialize (HFunction  symb p)  n = let (s1, n1) = ([FunctionDescr symb [mkArgument (Fun n1)] n2 ], n+1)
                                            (s2, n2) =  serialize p n1
@@ -277,6 +284,7 @@ instance Serializable NetPredicate where
     serialize (Predicate3 symb p x) n = let (s1, n1) = ([FunctionDescr symb [mkArgument (Fun n1), mkArgument x] (-1) ], n+1)
                                             (s2, n2) = serialize p n1
                                         in (s1 ++ s2, n2)
+    serialize (Predicate4 symb x y) n = ([FunctionDescr symb [mkArgument x, mkArgument y] (-1) ], n+1)
 
     serialize (Combinator1 symb p) n = let (s1, n1) = ([FunctionDescr symb [mkArgument (Fun n1)] (-1) ], n+1)
                                            (s2, n2) = serialize p n1
