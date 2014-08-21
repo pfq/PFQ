@@ -186,6 +186,7 @@ void
 pfq_symtable_init(void)
 {
 	extern struct pfq_function_descr  filter_functions[];
+	extern struct pfq_function_descr  bloom_functions[];
 	extern struct pfq_function_descr  forward_functions[];
 	extern struct pfq_function_descr  steering_functions[];
 
@@ -202,6 +203,7 @@ pfq_symtable_init(void)
         pfq_symtable_register_functions(NULL, &pfq_lang_functions, (struct pfq_function_descr *)steering_functions);
         pfq_symtable_register_functions(NULL, &pfq_lang_functions, (struct pfq_function_descr *)high_order_functions);
         pfq_symtable_register_functions(NULL, &pfq_lang_functions, (struct pfq_function_descr *)misc_functions);
+        pfq_symtable_register_functions(NULL, &pfq_lang_functions, (struct pfq_function_descr *)bloom_functions);
 
         pfq_symtable_register_functions(NULL, &pfq_lang_functions, (struct pfq_function_descr *)predicate_functions);
         pfq_symtable_register_functions(NULL, &pfq_lang_functions, (struct pfq_function_descr *)combinator_functions);
