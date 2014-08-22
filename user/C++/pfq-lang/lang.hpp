@@ -162,7 +162,7 @@ namespace lang
     };
 
     template <typename Tp>
-    struct StorableShow : StorableShowBase
+    struct StorableShow final : StorableShowBase
     {
         StorableShow(Tp v)
         : value(std::move(v))
