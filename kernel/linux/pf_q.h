@@ -119,14 +119,14 @@ struct pfq_tx_queue_hdr
 {
         struct
         {
-                volatile unsigned long index;
-                unsigned long cache;
+                volatile unsigned int index;
+                unsigned int cache;
         } producer __attribute__((aligned(64)));
 
         struct
         {
-                volatile unsigned long index;
-                unsigned long cache;
+                volatile unsigned int index;
+                unsigned int cache;
         } consumer __attribute__((aligned(64)));
 
         unsigned int size_mask;        /* number of slots */
@@ -165,10 +165,11 @@ struct pfq_queue_hdr
 #define SPSC_QUEUE_SLOT_SIZE(x)    ALIGN(sizeof(struct pfq_pkt_hdr) + x, 8)
 
 static inline
-int pfq_spsc_next_index(struct pfq_tx_queue_hdr *q, unsigned int n)
+unsigned int pfq_spsc_next_index(struct pfq_tx_queue_hdr *q, unsigned int n)
 {
         return (n + 1) & q->size_mask;
 }
+
 
 /* producer */
 
@@ -180,7 +181,7 @@ int pfq_spsc_write_avail(struct pfq_tx_queue_hdr *q)
                 q->producer.cache = (q->consumer.index - q->producer.index + q->size_mask) & q->size_mask;
         }
 
-        return q->producer.cache;
+        return (int)q->producer.cache;
 }
 
 
@@ -191,7 +192,7 @@ int pfq_spsc_write_index(struct pfq_tx_queue_hdr *q)
                 return -1;
         }
 
-        return q->producer.index;
+        return (int)q->producer.index;
 }
 
 
@@ -225,7 +226,7 @@ int pfq_spsc_read_avail(struct pfq_tx_queue_hdr *q)
                 q->consumer.cache = (q->producer.index - q->consumer.index + q->size) & q->size_mask;
         }
 
-        return q->consumer.cache;
+        return (int)q->consumer.cache;
 }
 
 
@@ -236,7 +237,7 @@ int pfq_spsc_read_index(struct pfq_tx_queue_hdr *q)
                 return -1;
         }
 
-        return q->consumer.index;
+        return (int)q->consumer.index;
 }
 
 
