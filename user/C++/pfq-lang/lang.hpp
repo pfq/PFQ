@@ -111,6 +111,7 @@ namespace lang
     {
         virtual std::string forall_show() const = 0;
         virtual void const *forall_addr() const = 0;
+        virtual ~StorableShowBase() { }
 
         static const void *get_addr(std::string const &that)
         {
@@ -237,14 +238,15 @@ namespace lang
         size_t nelem;
     };
 
-    static inline Argument make_argument() { return Argument::Null(); }
 
-    static inline Argument make_argument(std::string s) { return Argument::String(std::move(s)); }
+    static inline Argument make_argument()                { return Argument::Null(); }
+
+    static inline Argument make_argument(std::string s)   { return Argument::String(std::move(s)); }
 
     static inline Argument make_argument(const char *arr) { return Argument::String(arr); }
 
     template <typename Tp>
-    static inline Argument make_argument(Tp const &pod) { return Argument::Data(pod); }
+    static inline Argument make_argument(Tp const &pod)   { return Argument::Data(pod); }
 
     template <typename Tp>
     static inline Argument make_argument(std::vector<Tp> const &pod) { return Argument::Vector(pod); }
@@ -557,7 +559,7 @@ namespace lang
     {
         Predicate(std::string symb)
         : symbol_ {std::move(symb)}
-        {};
+        {}
 
         std::string symbol_;
     };
@@ -568,7 +570,7 @@ namespace lang
         Predicate1(std::string symb, Tp const &arg)
         : symbol_{std::move(symb)}
         , arg_ (make_argument(arg))
-        {};
+        {}
 
         std::string symbol_;
         Argument    arg_;
@@ -581,7 +583,7 @@ namespace lang
         : symbol_{std::move(symb)}
         , arg1_ (make_argument(arg1))
         , arg2_ (make_argument(arg2))
-        {};
+        {}
 
         std::string symbol_;
         Argument    arg1_;
@@ -596,7 +598,7 @@ namespace lang
         Predicate2(std::string symb, Prop const &p)
         : symbol_{std::move(symb)}
         , prop_(p)
-        { };
+        { }
 
         std::string symbol_;
         Prop        prop_;
@@ -612,7 +614,7 @@ namespace lang
         : symbol_{std::move(symb)}
         , prop_ (p)
         , arg_ (make_argument(arg))
-        { };
+        { }
 
         std::string symbol_;
         Prop        prop_;
@@ -1007,7 +1009,7 @@ namespace lang
         std::tie(p1, n1) = serialize(f.pred_, n+1);
         std::tie(c1, n2) = serialize(f.fun_, n1);
 
-        c1.back().next = -1;
+        c1.back().next = static_cast<size_t>(-1);
 
         v1 = { { f.symbol_, { { Argument::Fun(n+1), Argument::Fun(n1) } }, n2 } };
 
@@ -1026,8 +1028,8 @@ namespace lang
         std::tie(c1, n2) = serialize(f.fun1_ , n1  );
         std::tie(c2, n3) = serialize(f.fun2_ , n2  );
 
-        c1.back().next = -1;
-        c2.back().next = -1;
+        c1.back().next = static_cast<size_t>(-1);
+        c2.back().next = static_cast<size_t>(-1);
 
         v1 = { { f.symbol_, { { Argument::Fun(n+1), Argument::Fun(n1), Argument::Fun(n2) } }, n3 } };
 
@@ -1043,7 +1045,7 @@ namespace lang
 
         std::tie(f1, n1) = serialize(f.fun_, n+1);
 
-        f1.back().next = -1;
+        f1.back().next = static_cast<size_t>(-1);
 
         v1 = { { f.symbol_,  { { Argument::Fun(n+1) } }, n1 } };
 
@@ -1060,8 +1062,8 @@ namespace lang
         std::tie(f1, n1) = serialize(fun.f_, n+1);
         std::tie(f2, n2) = serialize(fun.g_, n1);
 
-        f1.back().next = -1;
-        f2.back().next = -1;
+        f1.back().next = static_cast<size_t>(-1);
+        f2.back().next = static_cast<size_t>(-1);
 
         v1 = { { fun.symbol_,  { { Argument::Fun(n+1), Argument::Fun(n1) } }, n2 } };
 
