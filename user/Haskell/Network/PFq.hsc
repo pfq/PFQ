@@ -822,7 +822,7 @@ withSingleArg :: Argument
               -> IO a
 withSingleArg arg callback =
     case arg of
-        ArgNull                    -> callback (ptrToIntPtr nullPtr, fromIntegral 0         , fromIntegral 0)
+        ArgNull                    -> callback (ptrToIntPtr nullPtr, 0                      , fromIntegral 0)
         ArgFun i                   -> callback (ptrToIntPtr nullPtr, fromIntegral i         , fromIntegral (-1))
         ArgString s                -> withCString s $ \s' -> callback (ptrToIntPtr s', 0    , fromIntegral (-1))
         ArgVector xs               -> let vec = SV.pack xs in SV.withStartPtr vec $ \ ptr len -> callback (ptrToIntPtr ptr, fromIntegral $ sizeOf (head xs), fromIntegral len)

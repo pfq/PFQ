@@ -24,7 +24,7 @@
 module Main where
 
 import qualified Network.PFq as Q
-import Network.PFq.Lang
+-- import Network.PFq.Lang
 
 import Foreign
 -- import System.Environment
@@ -39,7 +39,6 @@ import Control.Exception
 import Data.List.Split
 import Data.Data
 import Data.Maybe
-import Data.List
 
 import qualified Data.Set as S
 import qualified Data.Map as M
@@ -154,9 +153,6 @@ runThreads op ms =
                          Q.setPromisc q dev True
                          Q.bindGroup q (groupId binding) dev queue
                          when (isJust sf) $ do
-                             let fs = map MFunction (fromJust sf)
-                             -- putStrLn ("[pfq] Gid " ++ show (groupId binding) ++ " is using computation: " ++ intercalate " >-> " (fromJust sf))
-                             -- Q.groupComputation q (groupId binding) (foldl1 (>->) fs)
                              putStrLn $ "[pfq] Gid " ++ show (groupId binding) ++ " is using computation: " ++ unwords (function op)
                              Q.groupComputationFromString q (groupId binding) (unwords $ function op)
                      Q.enable q
