@@ -25,6 +25,8 @@
 
 #include <stdexcept>
 #include <functional>
+#include <string>
+#include <vector>
 
 #include <arpa/inet.h>
 
@@ -168,6 +170,29 @@ namespace lang
                 throw std::runtime_error("pfq::lang::inet_ntop");
 
             return out << std::string(addr) << '/' << std::to_string(that.prefix);
+        }
+
+        static inline uint32_t inet_addr(const std::string &addr)
+        {
+            uint32_t ret;
+            if (inet_pton(AF_INET, addr.c_str(), &ret) <= 0)
+                throw std::runtime_error("pfq::lang::inet_pton");
+            return ret;
+        }
+
+        template <typename A, typename Fun>
+        static inline auto fmap(Fun fun, std::vector<A> const &xs)
+            -> std::vector<decltype(fun(xs.front()))>
+        {
+            std::vector< decltype(fun( xs.front() )) > out;
+            out.reserve(xs.size());
+
+            for(auto & x : xs)
+            {
+                out.push_back(fun(x));
+            }
+
+            return out;
         }
 
 
