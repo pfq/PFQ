@@ -128,39 +128,40 @@ namespace lang
         {
             return that.data();
         }
-    };
 
-    template <typename Tp,  typename = void> struct StorableShow;
 
-    template <typename Tp>
-    struct StorableShow<Tp, typename std::enable_if<has_insertion_operator<Tp>::value>::type>  : StorableShowBase
-    {
-        StorableShow(Tp v)
-        : value(std::move(v))
-        {}
-
-        Tp value;
-
-        const void *forall_addr() const override
+        static std::string get_string(std::string const &that)
         {
-            return get_addr(value);
+            return '"' + that + '"';
         }
 
-        std::string forall_show() const override
+        template <typename T>
+        static std::string get_string(std::vector<T> const &that)
+        {
+            std::string out("{");
+            for(auto const &elem : that) {
+                out += get_string(elem) + ' ';
+            }
+            return out + '}';
+        }
+
+        template <typename T, typename std::enable_if<has_insertion_operator<T>::value>::type * = nullptr >
+        static std::string get_string(T const &that)
         {
             std::stringstream out;
-
-            if (std::is_same<Tp, std::string>::value)
-                out << '"' << value << '"';
-            else
-                out << value;
-
+            out << that;
             return out.str();
+        }
+
+        template <typename T, typename std::enable_if<!has_insertion_operator<T>::value>::type * = nullptr >
+        static std::string get_string(T const &)
+        {
+            return "()";
         }
     };
 
     template <typename Tp>
-    struct StorableShow<Tp, typename std::enable_if<!has_insertion_operator<Tp>::value>::type>  : StorableShowBase
+    struct StorableShow : StorableShowBase
     {
         StorableShow(Tp v)
         : value(std::move(v))
@@ -175,7 +176,7 @@ namespace lang
 
         std::string forall_show() const override
         {
-            return "()";
+            return get_string(value);
         }
     };
 
