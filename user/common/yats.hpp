@@ -233,7 +233,9 @@ inline namespace yats
         : std::runtime_error(msg)
         { }
 
-        virtual ~yats_error() throw()
+        yats_error(const yats_error &) = default;
+
+        virtual ~yats_error() noexcept
         { }
     };
 
@@ -770,6 +772,8 @@ inline namespace yats
         , rhs_(rhs)
         {}
 
+        binary_expression(binary_expression const &) = default;
+
         ~binary_expression() = default;
 
         template <typename T>
@@ -801,6 +805,8 @@ inline namespace yats
         unary_expression(P1 const &lhs)
         : arg_(lhs)
         {}
+
+        unary_expression(const unary_expression &) = default;
 
         ~unary_expression() = default;
 
