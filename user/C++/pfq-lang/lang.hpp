@@ -343,6 +343,7 @@ namespace lang
 
     struct MFunction;
     struct MFunction1;
+    struct MFunction3;
     template <typename P> struct MFunction2;
 
     template <typename P> struct HFunction;
@@ -353,6 +354,8 @@ namespace lang
 
     struct Predicate;
     struct Predicate1;
+    struct Predicate4;
+
     template <typename Prop> struct Predicate2;
     template <typename Prop> struct Predicate3;
 
@@ -374,6 +377,7 @@ namespace lang
     struct is_predicate :
         bool_type<std::is_same<Tp, Predicate>::value               ||
                   std::is_same<Tp, Predicate1>::value              ||
+                  std::is_same<Tp, Predicate4>::value              ||
                   is_same_type_constructor<Tp, Predicate2>::value  ||
                   is_same_type_constructor<Tp, Predicate3>::value  ||
                   is_same_type_constructor<Tp, Combinator1>::value ||
@@ -385,6 +389,7 @@ namespace lang
     struct is_mfunction :
         bool_type<std::is_same<Tp, MFunction>::value                ||
                   std::is_same<Tp, MFunction1>::value               ||
+                  std::is_same<Tp, MFunction3>::value               ||
                   is_same_type_constructor<Tp, MFunction2>::value   ||
                   is_same_type_constructor<Tp, HFunction>::value    ||
                   is_same_type_constructor<Tp, HFunction1>::value   ||
@@ -569,6 +574,20 @@ namespace lang
         Argument    arg_;
     };
 
+    struct Predicate4 : NetPredicate
+    {
+        template <typename Tp1, typename Tp2>
+        Predicate4(std::string symb, Tp1 const &arg1, Tp2 const &arg2)
+        : symbol_{std::move(symb)}
+        , arg1_ (make_argument(arg1))
+        , arg2_ (make_argument(arg2))
+        {};
+
+        std::string symbol_;
+        Argument    arg1_;
+        Argument    arg2_;
+    };
+
     template <typename Prop>
     struct Predicate2 : NetPredicate
     {
@@ -614,6 +633,12 @@ namespace lang
         return '(' + descr.symbol_ + ' ' + pretty(descr.arg_) + ')';
     }
 
+    static inline std::string
+    pretty(Predicate4 const &descr)
+    {
+        return '(' + descr.symbol_ + ' ' + pretty(descr.arg1_) + ' ' + pretty(descr.arg2_) + ')';
+    }
+
     template <typename Prop>
     static inline std::string
     pretty(Predicate2<Prop> const &descr)
@@ -640,6 +665,12 @@ namespace lang
     serialize(Predicate1 const &p, std::size_t n)
     {
         return { { FunctionDescr { p.symbol_,  {{ p.arg_}}, -1UL } }, n+1 };
+    }
+
+    static inline std::pair<std::vector<FunctionDescr>, std::size_t>
+    serialize(Predicate4 const &p, std::size_t n)
+    {
+        return { { FunctionDescr { p.symbol_,  {{ p.arg1_, p.arg2_}}, -1UL } }, n+1 };
     }
 
     template <typename Prop>
@@ -698,6 +729,20 @@ namespace lang
 
         std::string     symbol_;
         Argument        arg_;
+    };
+
+    struct MFunction3 : NetFunction
+    {
+        template <typename T1, typename T2>
+        MFunction3(std::string symbol, T1 const &arg1, T2 const &arg2)
+        : symbol_(std::move(symbol))
+        , arg1_(make_argument(arg1))
+        , arg2_(make_argument(arg2))
+        { }
+
+        std::string     symbol_;
+        Argument        arg1_;
+        Argument        arg2_;
     };
 
 
@@ -848,6 +893,12 @@ namespace lang
         return '(' + descr.symbol_ + ' ' + pretty (descr.arg_) + ')';
     }
 
+    static inline std::string
+    pretty(MFunction3 const &descr)
+    {
+        return '(' + descr.symbol_ + ' ' + pretty (descr.arg1_) + ' ' + pretty(descr.arg2_) + ')';
+    }
+
     template <typename P>
     static inline std::string
     pretty(MFunction2<P> const &descr)
@@ -909,6 +960,12 @@ namespace lang
     serialize(MFunction1 const &f, std::size_t n)
     {
         return { { FunctionDescr { f.symbol_, {{ f.arg_ }}, n+1 } }, n+1 };
+    }
+
+    static inline std::pair<std::vector<FunctionDescr>, std::size_t>
+    serialize(MFunction3 const &f, std::size_t n)
+    {
+        return { { FunctionDescr { f.symbol_, {{ f.arg1_, f.arg2_ }}, n+1 } }, n+1 };
     }
 
     template <typename P>
@@ -1074,6 +1131,13 @@ namespace lang
         return Predicate1{ std::move(symbol), arg };
     }
 
+    template <typename Tp1, typename Tp2>
+    inline Predicate4
+    predicate4(std::string symbol, Tp1 const &arg1, Tp2 const &arg2)
+    {
+        return Predicate4{ std::move(symbol), arg1, arg2 };
+    }
+
     template <typename Prop>
     inline Predicate2<Prop>
     predicate2(std::string symbol, Prop const &p)
@@ -1114,6 +1178,13 @@ namespace lang
     mfunction1(std::string symbol, const T &arg)
     {
         return MFunction1{ std::move(symbol), arg };
+    }
+
+    template <typename T1, typename T2>
+    inline MFunction3
+    mfunction3(std::string symbol, const T1 &arg1, const T2 &arg2)
+    {
+        return MFunction3{ std::move(symbol), arg1, arg2 };
     }
 
     template <typename T, typename P>
