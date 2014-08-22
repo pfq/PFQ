@@ -1210,11 +1210,12 @@ namespace pfq {
                 return false;
 
             auto h = reinterpret_cast<pfq_pkt_hdr *>(reinterpret_cast<char *>(q + 1) +
-                        pdata_->rx_slots * pdata_->rx_slot_size * 2  + index * tx->slot_size);
+                        pdata_->rx_slots * pdata_->rx_slot_size * 2  + static_cast<unsigned int>(index) * tx->slot_size);
 
             auto addr = reinterpret_cast<char *>(h + 1);
 
-            h->len = std::min(pkt.second, static_cast<size_t>(tx->max_len));
+            h->len = std::min(static_cast<const uint16_t>(pkt.second),
+                              static_cast<const uint16_t>(tx->max_len));
 
             memcpy(addr, pkt.first, h->len);
 

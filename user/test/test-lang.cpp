@@ -74,7 +74,7 @@ main()
 
     auto hfun  = [] (auto p) { return hfunction("hfun", p); };
 
-    auto when  = [] (auto p, auto c) { return hfunction1("when", p, c); };
+    auto when_ = [] (auto p, auto c) { return hfunction1("when", p, c); };
     auto cond  = [] (auto p, auto c1, auto c2) { return hfunction2("cond", p, c1, c2); };
 
     auto comp  = fun0 >> fun1 (10) >> fun0 >> hfun (pred1(42)) >> when (pred0, fun0) >> cond ( pred1(11), fun0, fun1(12));
@@ -101,7 +101,7 @@ main()
 
     show_comp (hfun(pred0));
 
-    show_comp (when(pred0, fun0) );
+    show_comp (when_(pred0, fun0) );
     show_comp (cond(pred0, fun0, fun1(3)));
 
     show_comp (forwardIO("eth0"));

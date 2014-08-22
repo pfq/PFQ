@@ -256,26 +256,26 @@ namespace lang
         auto l3_proto       = [] (uint16_t type) { return mfunction1 ("l3_proto", type); };
         auto l4_proto       = [] (uint8_t proto) { return mfunction1 ("l4_proto", proto); };
 
-        auto port           = [] (uint16_t port) { return mfunction1 ("port", port); };
-        auto src_port       = [] (uint16_t port) { return mfunction1 ("src_port", port); };
-        auto dst_port       = [] (uint16_t port) { return mfunction1 ("dst_port", port); };
+        auto port           = [] (uint16_t p) { return mfunction1 ("port", p); };
+        auto src_port       = [] (uint16_t p) { return mfunction1 ("src_port", p); };
+        auto dst_port       = [] (uint16_t p) { return mfunction1 ("dst_port", p); };
 
         auto addr = [] (const char *net, int prefix)
         {
-            auto addr = details::make_netaddr(net, prefix);
-            return mfunction1("addr", addr);
+            auto a = details::make_netaddr(net, prefix);
+            return mfunction1("addr", a);
         };
 
         auto src_addr = [] (const char *net, int prefix)
         {
-            auto addr = details::make_netaddr(net, prefix);
-            return mfunction1("src_addr", addr);
+            auto a = details::make_netaddr(net, prefix);
+            return mfunction1("src_addr", a);
         };
 
         auto dst_addr = [] (const char *net, int prefix)
         {
-            auto addr = details::make_netaddr(net, prefix);
-            return mfunction1("dst_addr", addr);
+            auto a = details::make_netaddr(net, prefix);
+            return mfunction1("dst_addr", a);
         };
 
         auto when        = std::bind(details::polymorphic_hfunction1(), "when", _1, _2);

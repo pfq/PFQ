@@ -94,7 +94,7 @@ namespace pfq {
     //! Given the device name return the related index.
 
     inline
-    int nametoindex(const char *dev)
+    unsigned int nametoindex(const char *dev)
     {
         auto i = ::if_nametoindex(dev);
         if (i == 0)
@@ -106,7 +106,7 @@ namespace pfq {
 
     inline
     std::string
-    indextoname(int i)
+    indextoname(unsigned int i)
     {
         char buf[IF_NAMESIZE];
         if (::if_indextoname(i, buf) == nullptr)
@@ -158,7 +158,8 @@ namespace pfq {
                               std::string("processor"));
         };
 
-        return std::thread::hardware_concurrency() ? : proc();
+        auto c =  std::thread::hardware_concurrency();
+        return c ? c : static_cast<unsigned int>(proc());
     }
 
 

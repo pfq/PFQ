@@ -31,7 +31,7 @@ namespace pfq {
      *  @brief Subclass of std::system_error.
      */
 
-    class pfq_error : public std::system_error
+    class pfq_error final : public std::system_error
     {
     public:
 
@@ -42,6 +42,8 @@ namespace pfq {
         pfq_error(const char *reason)
         : std::system_error(0, std::generic_category(), reason)
         {}
+
+        pfq_error(const pfq_error &) = default;
 
         virtual ~pfq_error() noexcept
         {}

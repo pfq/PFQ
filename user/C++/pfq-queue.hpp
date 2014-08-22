@@ -206,7 +206,14 @@ namespace pfq {
         : addr_(addr), slot_size_(slot_size), queue_len_(queue_len), index_(index)
         {}
 
+        //! Defaulted copy constructor.
+
+        queue(queue const &) = default;
+
+        //! Defaulted destructor.
+
         ~queue() = default;
+
 
         //! Return the number of packets stored in this queue.
 

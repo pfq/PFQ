@@ -137,7 +137,7 @@ namespace lang
         static inline uint32_t
         prefix2mask(size_t n)
         {
-            return htonl(~((1ULL << (32-n)) - 1));
+            return htonl(static_cast<uint32_t>(~((1ULL << (32-n)) - 1)));
         };
 
         struct network_addr

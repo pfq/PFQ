@@ -99,8 +99,6 @@ try
 
     for(;;)
         std::this_thread::sleep_for(std::chrono::seconds(1));
-
-    return 0;
 }
 catch(std::exception &e)
 {
