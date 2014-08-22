@@ -252,17 +252,19 @@ namespace lang
     static inline Argument make_argument(std::vector<Tp> const &pod) { return Argument::Vector(pod); }
 
 
-
     static inline std::string
     show(const Argument &arg)
     {
         std::stringstream out;
 
-        if (!arg.ptr && arg.size == 0)  {
+        if (!arg.ptr && arg.size == 0 && arg.nelem == 0)  {
             out << "ArgNull";
         }
-        else if (arg.ptr && arg.size != 0)  {
+        else if (arg.ptr && arg.size != 0 && arg.nelem == static_cast<size_t>(-1))  {
             out << "ArgData (" << arg.ptr->forall_show() << "," << arg.size << ")";
+        }
+        else if (arg.ptr && arg.size != 0 && arg.nelem != static_cast<size_t>(-1)) {
+            out << "ArgVector[" << arg.nelem << "] (" << arg.ptr->forall_show() << "," << arg.size << ")";
         }
         else if (arg.ptr && arg.size == 0)  {
             out << "ArgString '" << arg.ptr->forall_show() << "'";
