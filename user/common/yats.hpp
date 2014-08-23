@@ -67,7 +67,7 @@
 #define Test(name) \
     void test_ ## name(const char *); \
     yats::task_register hook_ ## name(test_ ## name, yats::task_register::type::test, _context_name, #name); \
-    void test_ ## name(const char *_test_name __attribute__((unused)))
+    void test_ ## name(const char *_test_name)
 
 
 #define Setup(name) \
@@ -87,7 +87,7 @@
     yats::task_register rhook_ ## name(yats::extended_tag(), (yats::RandTask<decltype(RandomEngine), FOR_EACH(DIST_TYPE, __VA_ARGS__)>\
                                                               (random_ ## name, RandomEngine, FOR_EACH(DIST_INSTANCE, __VA_ARGS__))), \
                                          yats::task_register::type::random, _context_name, #name); \
-    void random_ ## name(const char *_test_name __attribute__((unused)), FOR_EACH(DIST_RES_ARGT,__VA_ARGS__))
+    void random_ ## name(const char *_test_name, FOR_EACH(DIST_RES_ARGT,__VA_ARGS__))
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////

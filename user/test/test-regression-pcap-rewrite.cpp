@@ -8,10 +8,12 @@
 #include <stdexcept>
 #include <iostream>
 
-pcap_t * in;
-pcap_dumper_t * out;
-
-int counter = 0;
+namespace
+{
+    pcap_t * in;
+    pcap_dumper_t * out;
+    unsigned int counter = 0;
+}
 
 static inline
 void handler(u_char *, const struct pcap_pkthdr *h, const u_char *bytes)

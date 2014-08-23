@@ -33,52 +33,18 @@
 #include <linux/if_ether.h>
 
 #include <pfq.hpp>
+#include <vt100.hpp>
 
 using namespace pfq;
-
-namespace opt {
-
-    int sleep_microseconds;
-
-    std::string steer_function;
-    std::string pcap_file;
-
-    size_t caplen = 64;
-    size_t offset = 0;
-    size_t slots  = 262144;
-
-    int group_id  = 42;
-
-    static const int seconds = 60;
-}
-
-
-typedef std::tuple<std::string, int, std::vector<int>> binding_type;
-
-
-namespace vt100
-{
-    const char * const CLEAR = "\E[2J";
-    const char * const EDOWN = "\E[J";
-    const char * const DOWN  = "\E[1B";
-    const char * const HOME  = "\E[H";
-    const char * const ELINE = "\E[K";
-    const char * const BOLD  = "\E[1m";
-    const char * const RESET = "\E[0m";
-    const char * const BLUE  = "\E[1;34m";
-    const char * const RED   = "\E[31m";
-}
-
 
 class buffer
 {
 public:
     buffer(size_t caplen, const u_char* packet)
     : caplen_(caplen)
-    , offset_(opt::offset)
     {
-        buff_ = reinterpret_cast<char *>(malloc(caplen - offset_));
-        memcpy(buff_, packet + offset_, (caplen - offset_));
+        buff_ = reinterpret_cast<char *>(malloc(caplen));
+        memcpy(buff_, packet, caplen);
     }
 
     ~buffer()
@@ -119,16 +85,34 @@ public:
     }
 
 private:
-    char *buff_;
+    char  *buff_;
     size_t caplen_;
-    size_t offset_;
 };
 
 
 typedef std::unordered_map<uint32_t, buffer> unmap_caplen;
-unmap_caplen map_cap;
+typedef std::tuple<std::string, int, std::vector<int>> binding_type;
 
-std::atomic_bool stop(false);
+namespace { namespace opt {
+
+    long sleep_microseconds;
+
+    std::string steer_function;
+    std::string pcap_file;
+
+    size_t caplen = 64;
+    size_t slots  = 262144;
+
+    int group_id  = 42;
+
+    static const int seconds = 60;
+
+}
+
+    unmap_caplen map_cap;
+    std::atomic_bool stop(false);
+}
+
 
 
 binding_type
@@ -158,20 +142,21 @@ binding_parser(const char *arg)
     return std::make_tuple(dev, core, queues);
 }
 
+
 namespace test
 {
     struct ctx
     {
         ctx(int id, const char *d, const std::vector<int> & q)
-        : m_id(id), m_dev(d), m_queues(q), m_stop(false), m_pfq(pfq::group_policy::undefined, opt::caplen, opt::offset, opt::slots), m_read()
+        : m_id(id), m_dev(d), m_queues(q), m_stop(false), m_pfq(pfq::group_policy::undefined, opt::caplen, opt::slots), m_read()
         {
             int gid = opt::group_id != -1 ? opt::group_id : id;
 
             m_pfq.join_group(gid, pfq::group_policy::shared);
 
-            std::for_each(m_queues.begin(), m_queues.end(),[&](int q) {
-                          std::cout << "adding bind to " << d << "@" << q << std::endl;
-                          m_pfq.bind_group(gid, d, q);
+            std::for_each(m_queues.begin(), m_queues.end(),[&](int q_) {
+                            std::cout << "adding bind to " << d << "@" << q_ << std::endl;
+                            m_pfq.bind_group(gid, d, q_);
                           });
 
             if (!opt::steer_function.empty() && (m_id == 0))
@@ -227,13 +212,13 @@ namespace test
 
         void parse_packet (uint16_t cap_pfq, const char *data)
         {
-            struct ether_header *eth;
-            struct iphdr *ip;
+            struct ether_header const *eth;
+            struct iphdr const *ip;
 
-            eth = (struct ether_header *)(data - opt::offset);
+            eth = (struct ether_header *)data;
             if (ntohs(eth->ether_type) == ETHERTYPE_IP)
             {
-                ip = (struct iphdr*) (data - opt::offset + sizeof(ether_header));
+                ip = reinterpret_cast<const struct iphdr*>(data + sizeof(ether_header));
 
                 map_counter[ip->saddr].first++;
 
@@ -323,7 +308,8 @@ unsigned int hardware_concurrency()
                           std::string("processor"));
     };
 
-    return std::thread::hardware_concurrency() ? : proc();
+    auto c = std::thread::hardware_concurrency();
+    return c ? c : static_cast<unsigned int>(proc());
 }
 
 
@@ -331,18 +317,19 @@ void usage(const char *name)
 {
     throw std::runtime_error(std::string("usage: ")
                              .append(name)
-                             .append("[-h|--help] [-c caplen] [-f pcapfile] [-o offset] [-s slots] [-g gid ] [-b|--balance function-name] T1 T2... | T = dev:core:queue,queue..."));
+                             .append("[-h|--help] [-c caplen] [-f pcapfile] [-s slots] [-g gid ] [-b|--balance function-name] T1 T2... | T = dev:core:queue,queue..."));
 }
 
 
 void packet_handler(u_char *, const struct pcap_pkthdr *h, const u_char *bytes)
 {
-    struct ether_header *eth;
-    struct iphdr *ip;
-    eth = (struct ether_header *)(bytes);
+    struct ether_header const *eth;
+    struct iphdr const *ip;
+
+    eth = reinterpret_cast<struct ether_header const *>(bytes);
     if (ntohs(eth->ether_type) == ETHERTYPE_IP)
     {
-        ip = (struct iphdr*) (bytes + sizeof(ether_header));
+        ip = reinterpret_cast<struct iphdr const*>(bytes + sizeof(ether_header));
 
         map_cap.insert(unmap_caplen::value_type(ip->saddr, buffer(h->caplen, bytes)));
     }
@@ -401,29 +388,11 @@ try
                 throw std::runtime_error("caplen missing");
             }
 
-            opt::caplen = std::atoi(argv[i]);
+            opt::caplen = static_cast<size_t>(std::atoi(argv[i]));
 
             if (opt::caplen < 30 || opt::caplen > 1525)
             {
                 throw std::runtime_error("caplen < 26: can't find source ip || caplen > 1525: MTU exceeded");
-            }
-
-            continue;
-        }
-
-        if ( strcmp(argv[i], "-o") == 0 ||
-             strcmp(argv[i], "--offset") == 0) {
-            i++;
-            if (i == argc)
-            {
-                throw std::runtime_error("offset missing");
-            }
-
-            opt::offset = std::atoi(argv[i]);
-
-            if (opt::offset > 12)
-            {
-                throw std::runtime_error("offset: offset > 12 bytes");
             }
 
             continue;
@@ -437,7 +406,7 @@ try
                 throw std::runtime_error("slots missing");
             }
 
-            opt::slots = std::atoi(argv[i]);
+            opt::slots = static_cast<size_t>(std::atoi(argv[i]));
             continue;
         }
 
@@ -464,9 +433,6 @@ try
         vbinding.push_back(binding_parser(argv[i]));
     }
 
-    if (opt::caplen < opt::offset )
-        throw std::runtime_error ("CAPLEN < OFFSET");
-
     std::cout << "Caplen: " << opt::caplen << std::endl;
     std::cout << "Slots : " << opt::slots << std::endl;
 
@@ -488,13 +454,14 @@ try
 
     std::thread sighandler([]
     {
-        sigset_t set;
+        sigset_t sset;
+
         int sig;
-        sigfillset(&set);
+        sigfillset(&sset);
 
         for(;;)
         {
-            if(sigwait(&set, &sig) !=0)
+            if(sigwait(&sset, &sig) !=0)
                throw std::logic_error("sighandler");
             switch(sig)
             {
@@ -520,15 +487,15 @@ try
     for(unsigned int i = 0; i < vbinding.size(); ++i)
     {
         std::cout << "pushing a context: " << std::get<0>(vbinding[i]) << ' ' << std::get<1>(vbinding[i]) << std::endl;
-        ctx.push_back(test::ctx(i, std::get<0>(vbinding[i]).c_str(), std::get<2>(vbinding[i])));
+        ctx.push_back(test::ctx(static_cast<int>(i), std::get<0>(vbinding[i]).c_str(), std::get<2>(vbinding[i])));
     }
 
-    opt::sleep_microseconds = 40000 * ctx.size();
+    opt::sleep_microseconds = 40000 * static_cast<long>(ctx.size());
     std::cout << "poll timeout " << opt::sleep_microseconds << " usec" << std::endl;
 
     // create threads:
 
-    int i = 0;
+    unsigned int i = 0;
     std::for_each(vbinding.begin(), vbinding.end(), [&](const binding_type &b) {
                   std::thread t(std::ref(ctx[i++]));
                   std::cout << "thread on core " << std::get<1>(b) << " -> queues [";
@@ -590,8 +557,8 @@ try
         auto end = std::chrono::system_clock::now();
 
         std::cout << "capture: " << vt100::BOLD <<
-        ((sum-old)*1000000)/std::chrono::duration_cast<std::chrono::microseconds>(end-begin).count()
-        << vt100::RESET << " pkt/sec" << std::endl;
+            static_cast<int64_t>((sum-old)*1000000)/std::chrono::duration_cast<std::chrono::microseconds>(end-begin).count()
+            << vt100::RESET << " pkt/sec" << std::endl;
 
         old = sum, begin = end;
         old_stats = sum_stats;

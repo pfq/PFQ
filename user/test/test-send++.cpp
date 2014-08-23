@@ -22,10 +22,15 @@ static const unsigned char ping[98] =
     0x36, 0x37                                      /* 67 */
 };
 
+void mode_1(pfq::socket &q, int64_t num);
+void mode_2(pfq::socket &q, int64_t num);
+void mode_3(pfq::socket &q, int64_t num);
+void mode_4(pfq::socket &q, int64_t num);
 
-void mode_1(pfq::socket &q, uint64_t num)
+
+void mode_1(pfq::socket &q, int64_t num)
 {
-    for(uint64_t n = 0; n < num;)
+    for(int64_t n = 0; n < num;)
     {
         if (q.send(pfq::const_buffer(reinterpret_cast<const char *>(ping), sizeof(ping))))
             n++;
@@ -33,9 +38,9 @@ void mode_1(pfq::socket &q, uint64_t num)
 }
 
 
-void mode_2(pfq::socket &q, uint64_t num)
+void mode_2(pfq::socket &q, int64_t num)
 {
-    for(uint64_t n = 0; n < num;)
+    for(int64_t n = 0; n < num;)
     {
         if (q.send_sync(pfq::const_buffer(reinterpret_cast<const char *>(ping), sizeof(ping)), 128))
             n++;
@@ -45,9 +50,9 @@ void mode_2(pfq::socket &q, uint64_t num)
 
 }
 
-void mode_3(pfq::socket &q, uint64_t num)
+void mode_3(pfq::socket &q, int64_t num)
 {
-    for(uint64_t n = 0; n < num;)
+    for(int64_t n = 0; n < num;)
     {
         if (q.send_async(pfq::const_buffer(reinterpret_cast<const char *>(ping), sizeof(ping))))
             n++;
@@ -57,9 +62,9 @@ void mode_3(pfq::socket &q, uint64_t num)
 }
 
 
-void mode_4(pfq::socket &q, uint64_t num)
+void mode_4(pfq::socket &q, int64_t num)
 {
-    for(uint64_t n = 0; n < num;)
+    for(int64_t n = 0; n < num;)
     {
         if (q.send_async(pfq::const_buffer(reinterpret_cast<const char *>(ping), sizeof(ping)), 128))
             n++;
@@ -78,7 +83,7 @@ main(int argc, char *argv[])
     const char *dev = argv[1];
     int queue       = atoi(argv[2]);
     int node        = atoi(argv[3]);
-    uint64_t num    = atoll(argv[4]);
+    int64_t num     = atoll(argv[4]);
     int mode        = atoi(argv[5]);
 
     pfq::socket q(64, 4096, 64, 4096);

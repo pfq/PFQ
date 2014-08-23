@@ -127,14 +127,14 @@ Context(PFQ)
         x.open(pfq::group_policy::undefined, 64);
         x.caplen(128);
 
-        Assert(x.caplen(), is_equal_to(128));
+        Assert(x.caplen(), is_equal_to(128UL));
 
         x.enable();
         AssertThrow(x.caplen(64));
         x.disable();
 
         x.caplen(64);
-        Assert(x.caplen(), is_equal_to(64));
+        Assert(x.caplen(), is_equal_to(64UL));
     }
 
 
@@ -147,14 +147,14 @@ Context(PFQ)
         x.open(pfq::group_policy::undefined, 64);
         x.maxlen(128);
 
-        Assert(x.maxlen(), is_equal_to(128));
+        Assert(x.maxlen(), is_equal_to(128UL));
 
         x.enable();
         AssertThrow(x.maxlen(64));
         x.disable();
 
         x.maxlen(64);
-        Assert(x.maxlen(), is_equal_to(64));
+        Assert(x.maxlen(), is_equal_to(64UL));
     }
 
     Test(rx_slots)
@@ -166,14 +166,14 @@ Context(PFQ)
         x.open(pfq::group_policy::undefined, 64);
         x.rx_slots(1024);
 
-        Assert(x.rx_slots(), is_equal_to(1024));
+        Assert(x.rx_slots(), is_equal_to(1024UL));
 
         x.enable();
         AssertThrow(x.rx_slots(4096));
         x.disable();
 
         x.rx_slots(4096);
-        Assert(x.rx_slots(), is_equal_to(4096));
+        Assert(x.rx_slots(), is_equal_to(4096UL));
     }
 
 
@@ -197,14 +197,14 @@ Context(PFQ)
         x.open(pfq::group_policy::undefined, 64);
         x.tx_slots(1024);
 
-        Assert(x.tx_slots(), is_equal_to(1024));
+        Assert(x.tx_slots(), is_equal_to(1024UL));
 
         x.enable();
         AssertThrow(x.tx_slots(4096));
         x.disable();
 
         x.tx_slots(4096);
-        Assert(x.tx_slots(), is_equal_to(4096));
+        Assert(x.tx_slots(), is_equal_to(4096UL));
     }
 
     Test(bind_device)
@@ -266,9 +266,9 @@ Context(PFQ)
         x.open(pfq::group_policy::undefined, 64);
 
         auto s = x.stats();
-        Assert(s.recv, is_equal_to(0));
-        Assert(s.lost, is_equal_to(0));
-        Assert(s.drop, is_equal_to(0));
+        Assert(s.recv, is_equal_to(0UL));
+        Assert(s.lost, is_equal_to(0UL));
+        Assert(s.drop, is_equal_to(0UL));
     }
 
     Test(group_stats)
@@ -282,9 +282,9 @@ Context(PFQ)
         x.join_group(11);
 
         auto s = x.group_stats(11);
-        Assert(s.recv, is_equal_to(0));
-        Assert(s.lost, is_equal_to(0));
-        Assert(s.drop, is_equal_to(0));
+        Assert(s.recv, is_equal_to(0UL));
+        Assert(s.lost, is_equal_to(0UL));
+        Assert(s.drop, is_equal_to(0UL));
     }
 
 
@@ -299,9 +299,9 @@ Context(PFQ)
         AssertNothrow(x.group_stats(gid));
 
         auto s = x.group_stats(gid);
-        Assert(s.recv, is_equal_to(0));
-        Assert(s.lost, is_equal_to(0));
-        Assert(s.drop, is_equal_to(0));
+        Assert(s.recv, is_equal_to(0UL));
+        Assert(s.lost, is_equal_to(0UL));
+        Assert(s.drop, is_equal_to(0UL));
     }
 
     Test(my_group_stats_restricted)
@@ -315,9 +315,9 @@ Context(PFQ)
         AssertNothrow(x.group_stats(gid));
 
         auto s = x.group_stats(gid);
-        Assert(s.recv, is_equal_to(0));
-        Assert(s.lost, is_equal_to(0));
-        Assert(s.drop, is_equal_to(0));
+        Assert(s.recv, is_equal_to(0UL));
+        Assert(s.lost, is_equal_to(0UL));
+        Assert(s.drop, is_equal_to(0UL));
     }
 
     Test(my_group_stats_shared)
@@ -331,9 +331,9 @@ Context(PFQ)
         AssertNothrow(x.group_stats(gid));
 
         auto s = x.group_stats(gid);
-        Assert(s.recv, is_equal_to(0));
-        Assert(s.lost, is_equal_to(0));
-        Assert(s.drop, is_equal_to(0));
+        Assert(s.recv, is_equal_to(0UL));
+        Assert(s.lost, is_equal_to(0UL));
+        Assert(s.drop, is_equal_to(0UL));
     }
 
     Test(groups_mask)
@@ -343,7 +343,7 @@ Context(PFQ)
 
         x.open(pfq::group_policy::undefined, 64);
 
-        Assert(x.groups_mask(), is_equal_to(0));
+        Assert(x.groups_mask(), is_equal_to(0UL));
 
         auto v = x.groups();
         Assert(v.empty(), is_true());
