@@ -33,15 +33,17 @@
 using namespace pfq;
 using namespace pfq::lang;
 
-namespace opt
+
+namespace { namespace opt
 {
-    int sleep_microseconds;
+    long sleep_microseconds;
     std::string function;
 
     size_t caplen = 64;
     size_t slots  = 131072;
     bool flow     = false;
-}
+
+} }
 
 
 typedef std::tuple<uint32_t, uint32_t, uint16_t, uint16_t> Tuple;
@@ -51,8 +53,7 @@ struct HashTuple
     uint32_t operator()(Tuple const &t) const
     {
 
-        return std::get<0>(t) ^ std::get<1>(t) ^
-        std::get<2>(t) ^ (std::get<3>(t) << 16);
+        return std::get<0>(t) ^ std::get<1>(t) ^ std::get<2>(t) ^ (static_cast<uint32_t>(std::get<3>(t)) << 16);
     }
 };
 
@@ -243,7 +244,7 @@ try
                 throw std::runtime_error("caplen missing");
             }
 
-            opt::caplen = std::atoi(argv[i]);
+            opt::caplen = static_cast<size_t>(std::atoi(argv[i]));
             continue;
         }
 
@@ -255,7 +256,7 @@ try
                 throw std::runtime_error("slots missing");
             }
 
-            opt::slots = std::atoi(argv[i]);
+            opt::slots = static_cast<size_t>(std::atoi(argv[i]));
             continue;
         }
 
@@ -300,10 +301,11 @@ try
     //
     for(unsigned int i = 0; i < thread_binding.size(); ++i)
     {
-        ctx.push_back(thread::context(i, thread_binding[i]));
+        ctx.push_back(thread::context(static_cast<int>(i), thread_binding[i]));
     }
 
-    opt::sleep_microseconds = 50000 * ctx.size();
+    opt::sleep_microseconds = 50000 * static_cast<long int>(ctx.size());
+
     std::cout << "poll timeout " << opt::sleep_microseconds << " usec" << std::endl;
 
     // create threads:
@@ -311,7 +313,7 @@ try
     int i = 0;
     std::for_each(thread_binding.begin(), thread_binding.end(), [&](binding &b) {
 
-                  std::thread t(std::ref(ctx[i++]));
+                  std::thread t(std::ref(ctx[static_cast<size_t>(i++)]));
 
                   std::cout << "thread: " << show_binding(b) << std::endl;
 
@@ -369,7 +371,7 @@ try
         auto end = std::chrono::system_clock::now();
 
         std::cout << "capture: " << vt100::BOLD <<
-        (static_cast<uint64_t>(sum-old)*1000000)/std::chrono::duration_cast<std::chrono::microseconds>(end-begin).count()
+        (static_cast<int64_t>(sum-old)*1000000)/std::chrono::duration_cast<std::chrono::microseconds>(end-begin).count()
         << vt100::RESET << " pkt/sec";
 
         if (flow) {
@@ -381,11 +383,6 @@ try
         old = sum, begin = end;
         old_stats = sum_stats;
     }
-
-    std::for_each(ctx.begin(), ctx.end(), std::mem_fn(&thread::context::stop));
-    std::for_each(vt.begin(), vt.end(), std::mem_fn(&std::thread::join));
-
-    return 0;
 }
 catch(std::exception &e)
 {

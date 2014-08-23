@@ -26,9 +26,9 @@ try
     if (argc < 5)
        throw std::runtime_error(std::string("usage: ").append(argv[0]).append(" dev heap-size n-bin bin-size(ns)"));
 
-    size_t heap_size = atoi(argv[2]);
-    size_t nbin = atoi(argv[3]);
-    size_t bin_size = atoi(argv[4]);
+    auto heap_size = static_cast<size_t>(atoi(argv[2]));
+    auto nbin      = static_cast<size_t>(atoi(argv[3]));
+    auto bin_size  = static_cast<size_t>(atoi(argv[4]));
 
     // open a pfq socket:
     //
@@ -79,7 +79,7 @@ try
 
            // this time stamp ...
            //
-           uint64_t ts = static_cast<int64_t>(h.tstamp.tv.sec) * 1000000000 + h.tstamp.tv.nsec;
+           auto ts = static_cast<int64_t>(h.tstamp.tv.sec) * 1000000000 + h.tstamp.tv.nsec;
 
            heap.push_back(ts);
            std::push_heap(heap.begin(), heap.end(), std::greater<uint64_t>());
@@ -90,14 +90,17 @@ try
                 return;
 
            // get the next packet:
-           uint64_t next = heap.front();
+
+           size_t next = static_cast<size_t>(heap.front());
 
            if (next < last) {
                 std::cout << "next: " << next  << " last:" << last << std::endl;
-               throw std::runtime_error("negative index: heap must be too small");
+
+                throw std::runtime_error("negative index: heap is too small");
            }
 
-           size_t i = (next-last)/bin_size;
+           size_t i = static_cast<unsigned long>((next-last)/bin_size);
+
            if (i < nbin) {
                 hist[i]++;
            }

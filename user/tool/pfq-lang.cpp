@@ -32,6 +32,8 @@ using namespace pfq::lang;
 using namespace pfq::lang::experimental;
 
 
+namespace {
+
 ///////////////////////////////////////////
 
     auto computation = unit;
@@ -39,14 +41,15 @@ using namespace pfq::lang::experimental;
 ///////////////////////////////////////////
 
 
-namespace opt
-{
+namespace opt {
+
     std::string function;
 
     size_t caplen = 64;
     size_t slots  = 131072;
     bool   flow   = false;
-}
+
+}}
 
 
 void usage(std::string name)
@@ -95,7 +98,7 @@ try
                 throw std::runtime_error("caplen missing");
             }
 
-            opt::caplen = std::atoi(argv[i]);
+            opt::caplen = static_cast<size_t>(std::atoi(argv[i]));
             continue;
         }
 
@@ -107,7 +110,7 @@ try
                 throw std::runtime_error("slots missing");
             }
 
-            opt::slots = std::atoi(argv[i]);
+            opt::slots = static_cast<size_t>(std::atoi(argv[i]));
             continue;
         }
 
@@ -217,7 +220,7 @@ try
             auto end = std::chrono::system_clock::now();
 
             std::cout << "capture: " << vt100::BOLD <<
-                (static_cast<uint64_t>(sum-old)*1000000)/std::chrono::duration_cast<std::chrono::microseconds>(end-begin).count()
+                (static_cast<int64_t>(sum-old)*1000000)/std::chrono::duration_cast<std::chrono::microseconds>(end-begin).count()
             << vt100::RESET << " pkt/sec";
 
 
@@ -235,8 +238,6 @@ try
 
         read += many.size();
     }
-
-    return 0;
 }
 catch(std::exception &e)
 {

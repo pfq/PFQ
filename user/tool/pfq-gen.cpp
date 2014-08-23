@@ -33,8 +33,7 @@
 
 using namespace pfq;
 
-
-char *packet = nullptr;
+struct binding;
 
 
 char *make_packet(size_t n)
@@ -62,21 +61,24 @@ char *make_packet(size_t n)
 
     for(auto i = sizeof(ping); i < n; i++)
     {
-        p[i] = 0x38 + i - sizeof(ping);
+        p[i] = static_cast<char>(0x38 + i - sizeof(ping));
     }
 
     return p;
 }
 
 
-namespace opt
+namespace { namespace opt
 {
     size_t batch   = 64;
     size_t len     = 64;
     size_t slots   = 4096;
     bool   async   = false;
     bool   rand_ip = false;
-}
+
+    char *packet = nullptr;
+
+}}
 
 // eth0:...:ethx[.core.gid.queue]]
 
@@ -184,7 +186,7 @@ namespace thread
 
         void operator()()
         {
-            auto ip = reinterpret_cast<iphdr *>(packet + 14);
+            auto ip = reinterpret_cast<iphdr *>(opt::packet + 14);
 
             if (opt::async)
             {
@@ -194,11 +196,11 @@ namespace thread
                     {
                         if (opt::rand_ip)
                         {
-                            ip->saddr = m_gen();
-                            ip->daddr = m_gen();
+                            ip->saddr = static_cast<uint32_t>(m_gen());
+                            ip->daddr = static_cast<uint32_t>(m_gen());
                         }
 
-                        if (m_pfq[n].send_async(pfq::const_buffer(reinterpret_cast<const char *>(packet), opt::len), opt::batch))
+                        if (m_pfq[n].send_async(pfq::const_buffer(reinterpret_cast<const char *>(opt::packet), opt::len), opt::batch))
                             m_sent->fetch_add(1, std::memory_order_relaxed);
                     }
                 }
@@ -211,11 +213,11 @@ namespace thread
                     {
                         if (opt::rand_ip)
                         {
-                            ip->saddr = m_gen();
-                            ip->daddr = m_gen();
+                            ip->saddr = static_cast<uint32_t>(m_gen());
+                            ip->daddr = static_cast<uint32_t>(m_gen());
                         }
 
-                        if (m_pfq[n].send_sync(pfq::const_buffer(reinterpret_cast<const char *>(packet), opt::len), opt::batch))
+                        if (m_pfq[n].send_sync(pfq::const_buffer(reinterpret_cast<const char *>(opt::packet), opt::len), opt::batch))
                             m_sent->fetch_add(1, std::memory_order_relaxed);
                     }
                 }
@@ -276,7 +278,7 @@ try
                 throw std::runtime_error("batch len missing");
             }
 
-            opt::batch = std::atoi(argv[i]);
+            opt::batch = static_cast<size_t>(std::atoi(argv[i]));
             continue;
         }
 
@@ -288,7 +290,7 @@ try
                 throw std::runtime_error("len missing");
             }
 
-            opt::len = std::atoi(argv[i]);
+            opt::len = static_cast<size_t>(std::atoi(argv[i]));
             continue;
         }
 
@@ -300,7 +302,7 @@ try
                 throw std::runtime_error("slots missing");
             }
 
-            opt::slots = std::atoi(argv[i]);
+            opt::slots = static_cast<size_t>(std::atoi(argv[i]));
             continue;
         }
 
@@ -328,18 +330,18 @@ try
     std::cout << "async: "  << std::boolalpha << opt::async << std::endl;
     std::cout << "len  : "  << opt::len << std::endl;
 
-    packet = make_packet(opt::len);;
+    opt::packet = make_packet(opt::len);;
 
     // create thread context:
     //
     for(unsigned int i = 0; i < thread_binding.size(); ++i)
     {
-        ctx.push_back(thread::context(i, thread_binding[i]));
+        ctx.push_back(thread::context(static_cast<int>(i), thread_binding[i]));
     }
 
     // create threads:
 
-    int i = 0;
+    size_t i = 0;
     std::for_each(thread_binding.begin(), thread_binding.end(), [&](binding &b) {
 
                   std::thread t(std::ref(ctx[i++]));
@@ -368,15 +370,12 @@ try
         auto end = std::chrono::system_clock::now();
         auto delta = std::chrono::duration_cast<std::chrono::microseconds>(end-begin).count();
 
-        std::cout << "stats: { " << cur << " } -> sent: " << vt100::BOLD << (static_cast<uint64_t>(cur.sent-prec.sent)*1000000)/delta << vt100::RESET << " pkt/sec - "
-                  << "disc: " << vt100::BOLD << (static_cast<uint64_t>(cur.disc-prec.disc)*1000000)/delta << vt100::RESET << " pkt/sec" << std::endl;
+        std::cout << "stats: { " << cur << " } -> sent: " << vt100::BOLD << (static_cast<int64_t>(cur.sent-prec.sent)*1000000)/delta << vt100::RESET << " pkt/sec - "
+                  << "disc: " << vt100::BOLD << (static_cast<int64_t>(cur.disc-prec.disc)*1000000)/delta << vt100::RESET << " pkt/sec" << std::endl;
 
         prec = cur, begin = end;
     }
 
-    std::for_each(vt.begin(), vt.end(), std::mem_fn(&std::thread::join));
-
-    return 0;
 }
 catch(std::exception &e)
 {
