@@ -15,6 +15,16 @@ PFQ 3.1
  * Added pfq-bridge tool.
  * Minor bugs fixed.
 
+
 PFQ 3.2
 -------
  * In Q-Lang, support for vectors (of Storable and pod) added.
+
+
+PFQ 3.3
+-------
+ * Bloom filter family functions added.
+ * Functional argument serialization updated.
+ * Tools and tests updated.
+ * Minor bugs fixed.
+ * Code cleanup.
