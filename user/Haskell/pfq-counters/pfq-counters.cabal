@@ -1,0 +1,26 @@
+name:                   pfq-counters
+version:                3.3
+
+license-file:           LICENSE
+author:                 Nicola Bonelli
+maintainer:             nicola@pfq.io
+category:               Utils
+build-type:             Simple
+cabal-version:          >=1.10
+
+Executable pfq-counters
+    main-is:            pfq-counters.hs
+    build-depends:      base >=4.5, 
+                        cmdargs >= 0.10, 
+                        regex-posix >= 0.90, 
+                        filepath >= 1.0, 
+                        directory >= 1.1,
+                        process >= 1.1,
+                        containers >= 0.4,
+                        split >= 0.2,
+                        old-time >= 1.0,
+                        pfq >= 3.3
+
+    extra-libraries:    pfq
+
+    default-language:   Haskell2010
