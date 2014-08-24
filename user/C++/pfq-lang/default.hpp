@@ -71,63 +71,63 @@ namespace lang
     template <typename P>
     auto inline
     operator<(P const &prop, uint64_t arg)
-    -> decltype(predicate3(nullptr, prop, arg))
+    -> decltype(predicateR1(nullptr, prop, arg))
     {
-        return predicate3("less", prop, arg);
+        return predicateR1("less", prop, arg);
     }
 
     template <typename P>
     auto inline
     operator<=(P const &prop, uint64_t arg)
-    -> decltype(predicate3(nullptr, prop, arg))
+    -> decltype(predicateR1(nullptr, prop, arg))
     {
-        return predicate3("less_eq", prop, arg);
+        return predicateR1("less_eq", prop, arg);
     }
 
     template <typename P>
     auto inline
     operator>(P const &prop, uint64_t arg)
-    -> decltype(predicate3(nullptr, prop, arg))
+    -> decltype(predicateR1(nullptr, prop, arg))
     {
-        return predicate3("greater", prop, arg);
+        return predicateR1("greater", prop, arg);
     }
 
     template <typename P>
     auto inline
     operator>=(P const &prop, uint64_t arg)
-    -> decltype(predicate3(nullptr, prop, arg))
+    -> decltype(predicateR1(nullptr, prop, arg))
     {
-        return predicate3("greater_eq", prop, arg);
+        return predicateR1("greater_eq", prop, arg);
     }
 
     template <typename P>
     auto inline
     operator==(P const &prop, uint64_t arg)
-    -> decltype(predicate3(nullptr, prop, arg))
+    -> decltype(predicateR1(nullptr, prop, arg))
     {
-        return predicate3("equal", prop, arg);
+        return predicateR1("equal", prop, arg);
     }
 
     template <typename P>
     auto inline
     operator!=(P const &prop, uint64_t arg)
-    -> decltype(predicate3(nullptr, prop, arg))
+    -> decltype(predicateR1(nullptr, prop, arg))
     {
-        return predicate3("not_equal", prop, arg);
+        return predicateR1("not_equal", prop, arg);
     }
 
     template <typename P>
     auto inline any_bit(P const &prop, uint64_t mask)
-    -> decltype(predicate3(nullptr, prop, mask))
+    -> decltype(predicateR1(nullptr, prop, mask))
     {
-        return predicate3("any_bit", prop, mask);
+        return predicateR1("any_bit", prop, mask);
     }
 
     template <typename P>
     auto inline all_bit(P const &prop, uint64_t mask)
-    -> decltype(predicate3(nullptr, prop, mask))
+    -> decltype(predicateR1(nullptr, prop, mask))
     {
-        return predicate3("all_bit", prop, mask);
+        return predicateR1("all_bit", prop, mask);
     }
 
     namespace
@@ -278,12 +278,12 @@ namespace lang
             return mfunction1("dst_addr", a);
         };
 
-        auto when        = std::bind(details::polymorphic_hfunction1(), "when", _1, _2);
-        auto unless      = std::bind(details::polymorphic_hfunction1(), "unless", _1, _2);
-        auto conditional = std::bind(details::polymorphic_hfunction2(), "conditional", _1, _2, _3);
+        auto when        = std::bind(details::polymorphic_mfunctionPF(), "when", _1, _2);
+        auto unless      = std::bind(details::polymorphic_mfunctionPF(), "unless", _1, _2);
+        auto conditional = std::bind(details::polymorphic_mfunctionPFF(),  "conditional", _1, _2, _3);
 
-        auto inv         = std::bind(details::polymorphic_hfunction3(), "inv", _1);
-        auto par         = std::bind(details::polymorphic_hfunction4(), "par", _1, _2);
+        auto inv         = std::bind(details::polymorphic_mfunctionF(),  "inv", _1);
+        auto par         = std::bind(details::polymorphic_mfunctionFF(), "par", _1, _2);
 
     }
 

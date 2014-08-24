@@ -11,8 +11,8 @@ main()
 {
     // predicates and combinators:
 
-    std::cout << pretty (is_tcp) << std::endl;
-    std::cout << pretty (has_mark(42)) << std::endl;
+    std::cout << pretty ( is_tcp) << std::endl;
+    std::cout << pretty ( has_mark(42)) << std::endl;
     std::cout << pretty ( is_ip  & is_tcp ) << std::endl;
     std::cout << pretty ( is_udp | is_tcp ) << std::endl;
     std::cout << pretty ( is_ip6 ^ has_mark(11) ) << std::endl;

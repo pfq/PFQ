@@ -347,21 +347,21 @@ namespace lang
 
     struct MFunction;
     struct MFunction1;
-    struct MFunction3;
-    template <typename P> struct MFunction2;
+    struct MFunction2;
 
-    template <typename P> struct HFunction;
-    template <typename P, typename F> struct HFunction1;
-    template <typename P, typename F1, typename F2> struct HFunction2;
-    template <typename F> struct HFunction3;
-    template <typename F, typename G> struct HFunction4;
+    template <typename P> struct MFunctionP;
+    template <typename P> struct MFunction1P;
+    template <typename P, typename F> struct MFunctionPF;
+    template <typename P, typename F1, typename F2> struct MFunctionPFF;
+    template <typename F> struct MFunctionF;
+    template <typename F, typename G> struct MFunctionFF;
 
     struct Predicate;
     struct Predicate1;
-    struct Predicate4;
+    struct Predicate2;
 
-    template <typename Prop> struct Predicate2;
-    template <typename Prop> struct Predicate3;
+    template <typename Prop> struct PredicateR;
+    template <typename Prop> struct PredicateR1;
 
     struct Property;
     struct Property1;
@@ -381,9 +381,9 @@ namespace lang
     struct is_predicate :
         bool_type<std::is_same<Tp, Predicate>::value               ||
                   std::is_same<Tp, Predicate1>::value              ||
-                  std::is_same<Tp, Predicate4>::value              ||
-                  is_same_type_constructor<Tp, Predicate2>::value  ||
-                  is_same_type_constructor<Tp, Predicate3>::value  ||
+                  std::is_same<Tp, Predicate2>::value              ||
+                  is_same_type_constructor<Tp, PredicateR>::value  ||
+                  is_same_type_constructor<Tp, PredicateR1>::value ||
                   is_same_type_constructor<Tp, Combinator1>::value ||
                   is_same_type_constructor<Tp, Combinator2>::value >
     { };
@@ -393,13 +393,13 @@ namespace lang
     struct is_mfunction :
         bool_type<std::is_same<Tp, MFunction>::value                ||
                   std::is_same<Tp, MFunction1>::value               ||
-                  std::is_same<Tp, MFunction3>::value               ||
-                  is_same_type_constructor<Tp, MFunction2>::value   ||
-                  is_same_type_constructor<Tp, HFunction>::value    ||
-                  is_same_type_constructor<Tp, HFunction1>::value   ||
-                  is_same_type_constructor<Tp, HFunction2>::value   ||
-                  is_same_type_constructor<Tp, HFunction3>::value   ||
-                  is_same_type_constructor<Tp, HFunction4>::value   ||
+                  std::is_same<Tp, MFunction2>::value               ||
+                  is_same_type_constructor<Tp, MFunction1P>::value  ||
+                  is_same_type_constructor<Tp, MFunctionP>::value   ||
+                  is_same_type_constructor<Tp, MFunctionPF>::value  ||
+                  is_same_type_constructor<Tp, MFunctionPFF>::value ||
+                  is_same_type_constructor<Tp, MFunctionF>::value   ||
+                  is_same_type_constructor<Tp, MFunctionFF>::value  ||
                   is_same_type_constructor<Tp, Composition>::value>
     { };
 
@@ -410,7 +410,7 @@ namespace lang
     template <typename Pred>
     struct Combinator1 : NetPredicate
     {
-        static_assert(is_predicate<Pred>::value, "combinator1: argument must be a predicate");
+        static_assert(is_predicate<Pred>::value, "combinator: argument must be a predicate");
 
         Combinator1(std::string symbol, Pred p)
         : symbol_(std::move(symbol))
@@ -424,8 +424,8 @@ namespace lang
     template <typename Pred1, typename Pred2>
     struct Combinator2 : NetPredicate
     {
-        static_assert(is_predicate<Pred1>::value, "combinator2: argument 1 must be a predicate");
-        static_assert(is_predicate<Pred2>::value, "combinator2: argument 2 must be a predicate");
+        static_assert(is_predicate<Pred1>::value, "combinator: argument 1 must be a predicate");
+        static_assert(is_predicate<Pred2>::value, "combinator: argument 2 must be a predicate");
 
         Combinator2(std::string symbol, Pred1 p1, Pred2 p2)
         : symbol_(std::move(symbol))
@@ -578,10 +578,10 @@ namespace lang
         Argument    arg_;
     };
 
-    struct Predicate4 : NetPredicate
+    struct Predicate2 : NetPredicate
     {
         template <typename Tp1, typename Tp2>
-        Predicate4(std::string symb, Tp1 const &arg1, Tp2 const &arg2)
+        Predicate2(std::string symb, Tp1 const &arg1, Tp2 const &arg2)
         : symbol_{std::move(symb)}
         , arg1_ (make_argument(arg1))
         , arg2_ (make_argument(arg2))
@@ -593,11 +593,11 @@ namespace lang
     };
 
     template <typename Prop>
-    struct Predicate2 : NetPredicate
+    struct PredicateR : NetPredicate
     {
-        static_assert(is_property<Prop>::value, "predicate2: argument must be a property");
+        static_assert(is_property<Prop>::value, "predicate: argument must be a property");
 
-        Predicate2(std::string symb, Prop const &p)
+        PredicateR(std::string symb, Prop const &p)
         : symbol_{std::move(symb)}
         , prop_(p)
         { }
@@ -607,12 +607,12 @@ namespace lang
     };
 
     template <typename Prop>
-    struct Predicate3 : NetPredicate
+    struct PredicateR1 : NetPredicate
     {
-        static_assert(is_property<Prop>::value, "predicate3: argument must be a property");
+        static_assert(is_property<Prop>::value, "predicate: argument must be a property");
 
         template <typename Tp>
-        Predicate3(std::string symb, Prop const &p, Tp const &arg)
+        PredicateR1(std::string symb, Prop const &p, Tp const &arg)
         : symbol_{std::move(symb)}
         , prop_ (p)
         , arg_ (make_argument(arg))
@@ -638,21 +638,21 @@ namespace lang
     }
 
     static inline std::string
-    pretty(Predicate4 const &descr)
+    pretty(Predicate2 const &descr)
     {
         return '(' + descr.symbol_ + ' ' + pretty(descr.arg1_) + ' ' + pretty(descr.arg2_) + ')';
     }
 
     template <typename Prop>
     static inline std::string
-    pretty(Predicate2<Prop> const &descr)
+    pretty(PredicateR<Prop> const &descr)
     {
         return '(' + descr.symbol_ + ' ' + pretty(descr.prop_) +  ')';
     }
 
     template <typename Prop>
     static inline std::string
-    pretty(Predicate3<Prop> const &descr)
+    pretty(PredicateR1<Prop> const &descr)
     {
         return '(' + descr.symbol_ + ' ' + pretty(descr.prop_) + ' ' + pretty(descr.arg_) + ')';
     }
@@ -672,14 +672,14 @@ namespace lang
     }
 
     static inline std::pair<std::vector<FunctionDescr>, std::size_t>
-    serialize(Predicate4 const &p, std::size_t n)
+    serialize(Predicate2 const &p, std::size_t n)
     {
         return { { FunctionDescr { p.symbol_,  {{ p.arg1_, p.arg2_}}, -1UL } }, n+1 };
     }
 
     template <typename Prop>
     static inline std::pair<std::vector<FunctionDescr>, std::size_t>
-    serialize(Predicate2<Prop> const &p, std::size_t n)
+    serialize(PredicateR<Prop> const &p, std::size_t n)
     {
        std::vector<FunctionDescr> prop, pred =
        {
@@ -695,7 +695,7 @@ namespace lang
 
     template <typename Prop>
     static inline std::pair<std::vector<FunctionDescr>, std::size_t>
-    serialize(Predicate3<Prop> const &p, std::size_t n)
+    serialize(PredicateR1<Prop> const &p, std::size_t n)
     {
        std::vector<FunctionDescr> prop, pred =
        {
@@ -735,10 +735,10 @@ namespace lang
         Argument        arg_;
     };
 
-    struct MFunction3 : NetFunction
+    struct MFunction2 : NetFunction
     {
         template <typename T1, typename T2>
-        MFunction3(std::string symbol, T1 const &arg1, T2 const &arg2)
+        MFunction2(std::string symbol, T1 const &arg1, T2 const &arg2)
         : symbol_(std::move(symbol))
         , arg1_(make_argument(arg1))
         , arg2_(make_argument(arg2))
@@ -751,12 +751,12 @@ namespace lang
 
 
     template <typename P>
-    struct MFunction2 : NetFunction
+    struct MFunction1P : NetFunction
     {
-        static_assert(is_predicate<P>::value, "MFunction: argument must be a predicate");
+        static_assert(is_predicate<P>::value, "function: argument must be a predicate");
 
         template <typename T>
-        MFunction2(std::string symbol, T const &arg, const P &pred)
+        MFunction1P(std::string symbol, T const &arg, const P &pred)
         : symbol_(std::move(symbol))
         , arg_(make_argument(arg))
         , pred_(pred)
@@ -769,11 +769,11 @@ namespace lang
 
 
     template <typename P>
-    struct HFunction : NetFunction
+    struct MFunctionP : NetFunction
     {
-        static_assert(is_predicate<P>::value, "HFunction: argument must be a predicate");
+        static_assert(is_predicate<P>::value, "function: argument must be a predicate");
 
-        HFunction(std::string symbol, P const &pred)
+        MFunctionP(std::string symbol, P const &pred)
         : symbol_(std::move(symbol))
         , pred_(pred)
         { }
@@ -784,12 +784,12 @@ namespace lang
 
 
     template <typename P, typename F>
-    struct HFunction1 : NetFunction
+    struct MFunctionPF : NetFunction
     {
-        static_assert(is_predicate<P>::value, "HFunction: argument 1 must be a predicate");
-        static_assert(is_mfunction<F>::value, "HFunction: argument 2 must be a monadic function");
+        static_assert(is_predicate<P>::value, "function: argument 1 must be a predicate");
+        static_assert(is_mfunction<F>::value, "function: argument 2 must be a monadic function");
 
-        HFunction1(std::string symbol, P const &pred, F const &fun)
+        MFunctionPF(std::string symbol, P const &pred, F const &fun)
         : symbol_(std::move(symbol))
         , pred_(pred)
         , fun_(fun)
@@ -802,13 +802,13 @@ namespace lang
 
 
     template <typename P, typename F, typename G>
-    struct HFunction2 : NetFunction
+    struct MFunctionPFF : NetFunction
     {
-        static_assert(is_predicate<P>::value, "HFunction: argument 1 must be a predicate");
-        static_assert(is_mfunction<F>::value, "HFunction: argument 2 must be a monadic function");
-        static_assert(is_mfunction<G>::value, "HFunction: argument 3 must be a monadic function");
+        static_assert(is_predicate<P>::value, "function: argument 1 must be a predicate");
+        static_assert(is_mfunction<F>::value, "function: argument 2 must be a monadic function");
+        static_assert(is_mfunction<G>::value, "function: argument 3 must be a monadic function");
 
-        HFunction2(std::string symbol, P const &pred, F const &fun1, G const &fun2)
+        MFunctionPFF(std::string symbol, P const &pred, F const &fun1, G const &fun2)
         : symbol_(std::move(symbol))
         , pred_(pred)
         , fun1_(fun1)
@@ -822,11 +822,11 @@ namespace lang
     };
 
     template <typename F>
-    struct HFunction3 : NetFunction
+    struct MFunctionF : NetFunction
     {
-        static_assert(is_mfunction<F>::value, "HFunction: argument must be a monadic function");
+        static_assert(is_mfunction<F>::value, "function: argument must be a monadic function");
 
-        HFunction3(std::string symbol, F const &fun)
+        MFunctionF(std::string symbol, F const &fun)
         : symbol_(std::move(symbol))
         , fun_(fun)
         { }
@@ -836,12 +836,12 @@ namespace lang
     };
 
     template <typename F, typename G>
-    struct HFunction4 : NetFunction
+    struct MFunctionFF : NetFunction
     {
-        static_assert(is_mfunction<F>::value, "HFunction: argument 1 must be a monadic function");
-        static_assert(is_mfunction<G>::value, "HFunction: argument 2 must be a monadic function");
+        static_assert(is_mfunction<F>::value, "function: argument 1 must be a monadic function");
+        static_assert(is_mfunction<G>::value, "function: argument 2 must be a monadic function");
 
-        HFunction4(std::string symbol, F const &f, G const &g)
+        MFunctionFF(std::string symbol, F const &f, G const &g)
         : symbol_(std::move(symbol))
         , f_(f)
         , g_(g)
@@ -861,8 +861,8 @@ namespace lang
     template <typename F, typename G>
     struct Composition
     {
-        static_assert(is_mfunction<F>::value, "Composition: argument 1 must be a monadic function");
-        static_assert(is_mfunction<G>::value, "Composition: argument 2 must be a monadic function");
+        static_assert(is_mfunction<F>::value, "composition: argument 1 must be a monadic function");
+        static_assert(is_mfunction<G>::value, "composition: argument 2 must be a monadic function");
 
         using type = typename kleisly<typename F::type, typename G::type>::type;
 
@@ -898,49 +898,49 @@ namespace lang
     }
 
     static inline std::string
-    pretty(MFunction3 const &descr)
+    pretty(MFunction2 const &descr)
     {
         return '(' + descr.symbol_ + ' ' + pretty (descr.arg1_) + ' ' + pretty(descr.arg2_) + ')';
     }
 
     template <typename P>
     static inline std::string
-    pretty(MFunction2<P> const &descr)
+    pretty(MFunction1P<P> const &descr)
     {
         return '(' + descr.symbol_ + ' ' + pretty (descr.arg_) + ' ' + pretty (descr.pred_) + ')';
     }
 
     template <typename P>
     static inline std::string
-    pretty(HFunction<P> const &descr)
+    pretty(MFunctionP<P> const &descr)
     {
         return '(' + descr.symbol_ + ' ' + pretty(descr.pred_) + ')';
     }
 
     template <typename P, typename C>
     static inline std::string
-    pretty(HFunction1<P,C> const &descr)
+    pretty(MFunctionPF<P,C> const &descr)
     {
         return '(' + descr.symbol_ + ' ' + pretty(descr.pred_) + ' ' + pretty(descr.fun_) + ')';
     }
 
     template <typename P, typename C1, typename C2>
     static inline std::string
-    pretty(HFunction2<P,C1,C2> const &descr)
+    pretty(MFunctionPFF<P,C1,C2> const &descr)
     {
         return '(' + descr.symbol_ + ' ' + pretty(descr.pred_) + ' ' + pretty(descr.fun1_) + ' ' + pretty(descr.fun2_) + ')';
     }
 
     template <typename F>
     static inline std::string
-    pretty(HFunction3<F> const &descr)
+    pretty(MFunctionF<F> const &descr)
     {
         return '(' + descr.symbol_ + ' ' + pretty(descr.fun_) + ')';
     }
 
     template <typename F, typename G>
     static inline std::string
-    pretty(HFunction4<F, G> const &descr)
+    pretty(MFunctionFF<F, G> const &descr)
     {
         return '(' + descr.symbol_ + ' ' + pretty(descr.f_) + ' ' + pretty(descr.g_) + ')';
     }
@@ -967,14 +967,14 @@ namespace lang
     }
 
     static inline std::pair<std::vector<FunctionDescr>, std::size_t>
-    serialize(MFunction3 const &f, std::size_t n)
+    serialize(MFunction2 const &f, std::size_t n)
     {
         return { { FunctionDescr { f.symbol_, {{ f.arg1_, f.arg2_ }}, n+1 } }, n+1 };
     }
 
     template <typename P>
     static inline std::pair<std::vector<FunctionDescr>, std::size_t>
-    serialize(MFunction2<P> const &f, std::size_t n)
+    serialize(MFunction1P<P> const &f, std::size_t n)
     {
         std::vector<FunctionDescr> p1, v1;
         std::size_t n1;
@@ -988,7 +988,7 @@ namespace lang
 
     template <typename P>
     static inline std::pair<std::vector<FunctionDescr>, std::size_t>
-    serialize(HFunction<P> const &f, std::size_t n)
+    serialize(MFunctionP<P> const &f, std::size_t n)
     {
         std::vector<FunctionDescr> p1, v1;
         std::size_t n1;
@@ -1003,7 +1003,7 @@ namespace lang
 
     template <typename P, typename C>
     static inline std::pair<std::vector<FunctionDescr>, std::size_t>
-    serialize(HFunction1<P, C> const &f, std::size_t n)
+    serialize(MFunctionPF<P, C> const &f, std::size_t n)
     {
         std::vector<FunctionDescr> p1, v1, c1;
         std::size_t n1, n2;
@@ -1021,7 +1021,7 @@ namespace lang
 
     template <typename P, typename C1, typename C2>
     static inline std::pair<std::vector<FunctionDescr>, std::size_t>
-    serialize(HFunction2<P, C1, C2> const &f, std::size_t n)
+    serialize(MFunctionPFF<P, C1, C2> const &f, std::size_t n)
     {
         std::vector<FunctionDescr> p1, v1, c1, c2;
         std::size_t n1, n2, n3;
@@ -1040,7 +1040,7 @@ namespace lang
 
     template <typename F>
     static inline std::pair<std::vector<FunctionDescr>, std::size_t>
-    serialize(HFunction3<F> const &f, std::size_t n)
+    serialize(MFunctionF<F> const &f, std::size_t n)
     {
         std::vector<FunctionDescr> f1, v1;
         std::size_t n1;
@@ -1056,7 +1056,7 @@ namespace lang
 
     template <typename F, typename G>
     static inline std::pair<std::vector<FunctionDescr>, std::size_t>
-    serialize(HFunction4<F,G> const &fun, std::size_t n)
+    serialize(MFunctionFF<F,G> const &fun, std::size_t n)
     {
         std::vector<FunctionDescr> f1, f2, v1;
         std::size_t n1, n2;
@@ -1136,24 +1136,24 @@ namespace lang
     }
 
     template <typename Tp1, typename Tp2>
-    inline Predicate4
-    predicate4(std::string symbol, Tp1 const &arg1, Tp2 const &arg2)
+    inline Predicate2
+    predicate2(std::string symbol, Tp1 const &arg1, Tp2 const &arg2)
     {
-        return Predicate4{ std::move(symbol), arg1, arg2 };
+        return Predicate2{ std::move(symbol), arg1, arg2 };
     }
 
     template <typename Prop>
-    inline Predicate2<Prop>
-    predicate2(std::string symbol, Prop const &p)
+    inline PredicateR<Prop>
+    predicateR(std::string symbol, Prop const &p)
     {
-        return Predicate2<Prop>{ std::move(symbol), p };
+        return PredicateR<Prop>{ std::move(symbol), p };
     }
 
     template <typename Prop, typename Tp>
-    inline Predicate3<Prop>
-    predicate3(std::string symbol, Prop const &p, Tp const &arg)
+    inline PredicateR1<Prop>
+    predicateR1(std::string symbol, Prop const &p, Tp const &arg)
     {
-        return Predicate3<Prop>{ std::move(symbol), p, arg };
+        return PredicateR1<Prop>{ std::move(symbol), p, arg };
     }
 
 
@@ -1185,52 +1185,52 @@ namespace lang
     }
 
     template <typename T1, typename T2>
-    inline MFunction3
-    mfunction3(std::string symbol, const T1 &arg1, const T2 &arg2)
+    inline MFunction2
+    mfunction2(std::string symbol, const T1 &arg1, const T2 &arg2)
     {
-        return MFunction3{ std::move(symbol), arg1, arg2 };
+        return MFunction2{ std::move(symbol), arg1, arg2 };
     }
 
     template <typename T, typename P>
-    MFunction2<P>
-    mfunction2(std::string symbol, T const &arg, P const &p)
+    inline MFunction1P<P>
+    mfunction1P(std::string symbol, T const &arg, P const &p)
     {
-        return MFunction2<P>{ std::move(symbol), arg, p };
+        return MFunction1P<P>{ std::move(symbol), arg, p };
     }
 
     template <typename P>
-    HFunction<P>
-    hfunction(std::string symbol, P const &p)
+    inline MFunctionP<P>
+    mfunctionP(std::string symbol, P const &p)
     {
-        return HFunction<P>{ std::move(symbol), p };
+        return MFunctionP<P>{ std::move(symbol), p };
     }
 
     template <typename P, typename C>
-    HFunction1<P,C>
-    hfunction1(std::string symbol, P const &p, C const &c)
+    inline MFunctionPF<P,C>
+    mfunctionPF(std::string symbol, P const &p, C const &c)
     {
-        return HFunction1<P,C>{ std::move(symbol), p, c };
+        return MFunctionPF<P,C>{ std::move(symbol), p, c };
     }
 
     template <typename P, typename C1, typename C2>
-    HFunction2<P,C1, C2>
-    hfunction2(std::string symbol, P const &p, C1 const &c1, C2 const &c2)
+    inline MFunctionPFF<P,C1, C2>
+    mfunctionPFF(std::string symbol, P const &p, C1 const &c1, C2 const &c2)
     {
-        return HFunction2<P,C1,C2>{ std::move(symbol), p, c1, c2 };
+        return MFunctionPFF<P,C1,C2>{ std::move(symbol), p, c1, c2 };
     }
 
     template <typename F>
-    HFunction3<F>
-    hfunction3(std::string symbol, F const &fun)
+    inline MFunctionF<F>
+    mfunctionF(std::string symbol, F const &fun)
     {
-        return HFunction3<F>{ std::move(symbol), fun };
+        return MFunctionF<F>{ std::move(symbol), fun };
     }
 
     template <typename F, typename G>
-    HFunction4<F,G>
-    hfunction4(std::string symbol, F const &f, G const &g)
+    inline MFunctionFF<F,G>
+    mfunctionFF(std::string symbol, F const &f, G const &g)
     {
-        return HFunction4<F, G>{ std::move(symbol), f, g};
+        return MFunctionFF<F, G>{ std::move(symbol), f, g};
     }
 
     //

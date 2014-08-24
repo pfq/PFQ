@@ -33,7 +33,7 @@ namespace pfq { namespace lang { namespace experimental {
 
     namespace
     {
-        auto filter     = std::bind(details::polymorphic_hfunction(), "filter", _1);
+        auto filter     = std::bind(details::polymorphic_mfunctionP(), "filter", _1);
 
         auto class_     = [] (int value) { return mfunction1("class", value); };
         auto deliver    = [] (int value) { return mfunction1("deliver", value); };
@@ -41,12 +41,12 @@ namespace pfq { namespace lang { namespace experimental {
         auto forward    = [] (std::string dev) { return mfunction1("forward", std::move(dev)); };
         auto bridge     = [] (std::string dev) { return mfunction1("bridge", std::move(dev)); };
 
-        auto tee        = std::bind(details::polymorphic_mfunction2(), "tee", _1, _2);
-        auto tap        = std::bind(details::polymorphic_mfunction2(), "tap", _1, _2);
+        auto tee        = std::bind(details::polymorphic_mfunction1P(), "tee", _1, _2);
+        auto tap        = std::bind(details::polymorphic_mfunction1P(), "tap", _1, _2);
 
         auto dummy      = [] (int value) { return mfunction1("dummy", value); };
         auto vdummy     = [] (std::vector<int> const &vec) { return mfunction1("vdummy", vec); };
-        auto hdummy     = std::bind(details::polymorphic_hfunction(),  "hdummy", _1);
+        auto hdummy     = std::bind(details::polymorphic_mfunctionP(),  "hdummy", _1);
 
         auto crc16      = mfunction("crc16");
     }

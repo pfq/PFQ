@@ -61,21 +61,20 @@ import Foreign.C.Types
 
 import System.IO.Unsafe
 import Network.Socket
-import Data.Word
 
 -- Experimental in-kernel computations
 
-filter'     = HFunction  "filter"        :: NetPredicate -> NetFunction
+filter'     = MFunctionP  "filter"        :: NetPredicate -> NetFunction
 
 class'      = MFunction1 "class"         :: CInt    -> NetFunction
 deliver     = MFunction1 "deliver"       :: CInt    -> NetFunction
 forward     = MFunction1 "forward"       :: String  -> NetFunction
 bridge      = MFunction1 "bridge"        :: String  -> NetFunction
-tee         = MFunction2 "tee"           :: String  -> NetPredicate -> NetFunction
-tap         = MFunction2 "tap"           :: String  -> NetPredicate -> NetFunction
+tee         = MFunction1P "tee"          :: String  -> NetPredicate -> NetFunction
+tap         = MFunction1P "tap"          :: String  -> NetPredicate -> NetFunction
 
-dummy       = MFunction1 "dummy"         :: CInt   -> NetFunction
-hdummy      = HFunction  "hdummy"        :: NetPredicate -> NetFunction
+dummy       = MFunction1 "dummy"         :: CInt -> NetFunction
+hdummy      = MFunctionP  "hdummy"       :: NetPredicate -> NetFunction
 
 vdummy      :: [CInt] -> NetFunction
 vdummy  xs  = MFunction1 "vdummy" (Vector xs)
@@ -90,12 +89,12 @@ bloom_filter      :: CInt -> [HostName] -> NetFunction
 bloom_src_filter  :: CInt -> [HostName] -> NetFunction
 bloom_dst_filter  :: CInt -> [HostName] -> NetFunction
 
-bloom            m hs = let ips = unsafePerformIO (mapM inet_addr hs) in Predicate4 "bloom"     m (Vector ips)
-bloom_src        m hs = let ips = unsafePerformIO (mapM inet_addr hs) in Predicate4 "bloom_src" m (Vector ips)
-bloom_dst        m hs = let ips = unsafePerformIO (mapM inet_addr hs) in Predicate4 "bloom_dst" m (Vector ips)
+bloom            m hs = let ips = unsafePerformIO (mapM inet_addr hs) in Predicate2 "bloom"     m (Vector ips)
+bloom_src        m hs = let ips = unsafePerformIO (mapM inet_addr hs) in Predicate2 "bloom_src" m (Vector ips)
+bloom_dst        m hs = let ips = unsafePerformIO (mapM inet_addr hs) in Predicate2 "bloom_dst" m (Vector ips)
 
-bloom_filter     m hs = let ips = unsafePerformIO (mapM inet_addr hs) in MFunction3 "bloom_filter"     m (Vector ips)
-bloom_src_filter m hs = let ips = unsafePerformIO (mapM inet_addr hs) in MFunction3 "bloom_src_filter" m (Vector ips)
-bloom_dst_filter m hs = let ips = unsafePerformIO (mapM inet_addr hs) in MFunction3 "bloom_dst_filter" m (Vector ips)
+bloom_filter     m hs = let ips = unsafePerformIO (mapM inet_addr hs) in MFunction2 "bloom_filter"     m (Vector ips)
+bloom_src_filter m hs = let ips = unsafePerformIO (mapM inet_addr hs) in MFunction2 "bloom_src_filter" m (Vector ips)
+bloom_dst_filter m hs = let ips = unsafePerformIO (mapM inet_addr hs) in MFunction2 "bloom_dst_filter" m (Vector ips)
 
 

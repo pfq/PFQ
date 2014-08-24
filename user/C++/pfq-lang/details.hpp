@@ -70,63 +70,63 @@ namespace lang
     {
         // polymorphic binders (required for C++ < C++14).
 
-        struct polymorphic_hfunction
+        struct polymorphic_mfunctionP
         {
             template <typename P>
             auto operator()(std::string symb, P const &p)
-            -> decltype(hfunction(std::move(symb), p))
+            -> decltype(mfunctionP(std::move(symb), p))
             {
-                return hfunction(std::move(symb), p);
+                return mfunctionP(std::move(symb), p);
             }
         };
 
-        struct polymorphic_hfunction1
+        struct polymorphic_mfunctionPF
         {
             template <typename P, typename C>
             auto operator()(std::string symb, P const &p, C const &c)
-            -> decltype(hfunction1(std::move(symb), p, c))
+            -> decltype(mfunctionPF(std::move(symb), p, c))
             {
-                return hfunction1(std::move(symb), p, c);
+                return mfunctionPF(std::move(symb), p, c);
             }
         };
 
-        struct polymorphic_hfunction2
+        struct polymorphic_mfunctionPFF
         {
             template <typename P, typename C1, typename C2>
             auto operator()(std::string symb, P const &p, C1 const &c1, C2 const &c2)
-            -> decltype(hfunction2(std::move(symb), p, c1, c2))
+            -> decltype(mfunctionPFF(std::move(symb), p, c1, c2))
             {
-                return hfunction2(std::move(symb), p, c1, c2);
+                return mfunctionPFF(std::move(symb), p, c1, c2);
             }
         };
 
-        struct polymorphic_hfunction3
+        struct polymorphic_mfunctionF
         {
             template <typename F>
             auto operator()(std::string symb, F const &fun)
-            -> decltype(hfunction3(std::move(symb), fun))
+            -> decltype(mfunctionF(std::move(symb), fun))
             {
-                return hfunction3(std::move(symb), fun);
+                return mfunctionF(std::move(symb), fun);
             }
         };
 
-        struct polymorphic_hfunction4
+        struct polymorphic_mfunctionFF
         {
             template <typename F, typename G>
             auto operator()(std::string symb, F const &f, G const &g)
-            -> decltype(hfunction4(std::move(symb), f, g))
+            -> decltype(mfunctionFF(std::move(symb), f, g))
             {
-                return hfunction4(std::move(symb), f, g);
+                return mfunctionFF(std::move(symb), f, g);
             }
         };
 
-        struct polymorphic_mfunction2
+        struct polymorphic_mfunction1P
         {
             template <typename T, typename P>
             auto operator()(std::string symb, const T &arg, P const &p)
-            -> decltype(mfunction2(std::move(symb), arg, p))
+            -> decltype(mfunction1P(std::move(symb), arg, p))
             {
-                return mfunction2(std::move(symb), arg, p);
+                return mfunction1P(std::move(symb), arg, p);
             }
         };
 

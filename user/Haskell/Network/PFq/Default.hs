@@ -210,12 +210,12 @@ infixl 5 .||.
 -- Default comparators
 
 (.<.), (.<=.), (.==.), (./=.), (.>.), (.>=.) :: NetProperty -> Word64 -> NetPredicate
-p .<.  x = Predicate3 "less" p x
-p .<=. x = Predicate3 "less_eq" p x
-p .==. x = Predicate3 "equal" p x
-p ./=. x = Predicate3 "not_equal" p x
-p .>.  x = Predicate3 "greater" p x
-p .>=. x = Predicate3 "greater_eq" p x
+p .<.  x = PredicateR1 "less" p x
+p .<=. x = PredicateR1 "less_eq" p x
+p .==. x = PredicateR1 "equal" p x
+p ./=. x = PredicateR1 "not_equal" p x
+p .>.  x = PredicateR1 "greater" p x
+p .>=. x = PredicateR1 "greater_eq" p x
 
 infix 4 .<.
 infix 4 .<=.
@@ -226,8 +226,8 @@ infix 4 ./=.
 
 
 any_bit, all_bit :: NetProperty -> Word64 -> NetPredicate
-p `any_bit` x = Predicate3 "any_bit" p x
-p `all_bit` x = Predicate3 "all_bit" p x
+p `any_bit` x = PredicateR1 "any_bit" p x
+p `all_bit` x = PredicateR1 "all_bit" p x
 
 
 -- Default predicates
@@ -312,13 +312,13 @@ no_more_frag    = MFunction "no_more_frag"  :: NetFunction
 
 -- Forwarder...
 
-forwardIO       = MFunction1 "forwardIO"   :: String   -> NetFunction
+forwardIO       = MFunction1 "forwardIO"     :: String -> NetFunction
+log_msg         = MFunction1 "log_msg"       :: String -> NetFunction
 
 kernel          = MFunction "kernel"         :: NetFunction
 broadcast       = MFunction "broadcast"      :: NetFunction
 drop'           = MFunction "drop"           :: NetFunction
 unit            = MFunction "unit"           :: NetFunction
-log_msg         = MFunction1 "log_msg"       :: String -> NetFunction
 log_buff        = MFunction "log_buff"       :: NetFunction
 log_packet      = MFunction "log_packet"     :: NetFunction
 
@@ -340,10 +340,11 @@ addr net p      = MFunction1 "addr"     (mkNetAddr net p)
 src_addr net p  = MFunction1 "src_addr" (mkNetAddr net p)
 dst_addr net p  = MFunction1 "dst_addr" (mkNetAddr net p)
 
-when'           = HFunction1 "when"          :: NetPredicate -> NetFunction  -> NetFunction
-unless'         = HFunction1 "unless"        :: NetPredicate -> NetFunction  -> NetFunction
-conditional     = HFunction2 "conditional"   :: NetPredicate -> NetFunction  -> NetFunction  -> NetFunction
-inv             = HFunction3 "inv"           :: NetFunction -> NetFunction
-par'            = HFunction4 "par"           :: NetFunction -> NetFunction -> NetFunction
+when'           = MFunctionPF "when"          :: NetPredicate -> NetFunction  -> NetFunction
+unless'         = MFunctionPF "unless"        :: NetPredicate -> NetFunction  -> NetFunction
+conditional     = MFunctionPFF "conditional"  :: NetPredicate -> NetFunction  -> NetFunction  -> NetFunction
+
+inv             = MFunctionF "inv"            :: NetFunction  -> NetFunction
+par'            = MFunctionFF "par"           :: NetFunction  -> NetFunction -> NetFunction
 
 
