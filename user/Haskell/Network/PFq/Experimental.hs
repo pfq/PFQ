@@ -53,6 +53,9 @@ module Network.PFq.Experimental
         bloom_src_filter,
         bloom_dst_filter,
 
+        bloomCalcN  ,
+        bloomCalcM  ,
+        bloomCalcP  ,
     ) where
 
 
@@ -96,5 +99,19 @@ bloom_dst        m hs = let ips = unsafePerformIO (mapM inet_addr hs) in Predica
 bloom_filter     m hs = let ips = unsafePerformIO (mapM inet_addr hs) in MFunction2 "bloom_filter"     m (Vector ips)
 bloom_src_filter m hs = let ips = unsafePerformIO (mapM inet_addr hs) in MFunction2 "bloom_src_filter" m (Vector ips)
 bloom_dst_filter m hs = let ips = unsafePerformIO (mapM inet_addr hs) in MFunction2 "bloom_dst_filter" m (Vector ips)
+
+
+-- bloom filter: utility functions:
+
+bloomK = 4
+
+bloomCalcM  :: Int -> Double -> Int
+bloomCalcM  n p =  ceiling $ fromIntegral(-bloomK * n) / log(1 - p ** (1 / fromIntegral bloomK))
+
+bloomCalcN  :: Int -> Double -> Int
+bloomCalcN  m p =  ceiling $ fromIntegral (-m) * log(1 - p ** (1 / fromIntegral bloomK )) / fromIntegral bloomK
+
+bloomCalcP  :: Int -> Int -> Double
+bloomCalcP  n m =  (1 - (1 - 1 / fromIntegral m) ** fromIntegral (n * bloomK))^bloomK
 
 
