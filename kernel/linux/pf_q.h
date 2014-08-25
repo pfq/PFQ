@@ -450,13 +450,17 @@ struct pfq_fprog
 
 struct pfq_stats
 {
-        unsigned long int recv;   /* received by the queue         */
-        unsigned long int lost;   /* queue is full, packet lost... */
-        unsigned long int drop;   /* by filter                     */
+        unsigned long int recv;   	/* received by the group */
+        unsigned long int lost;   	/* queue is full, packet lost... */
+        unsigned long int drop;   	/* by filter                     */
 
-        unsigned long int sent;   /* sent by the driver */
-        unsigned long int disc;   /* discarded by the driver */
+        unsigned long int sent;   	/* sent by the driver */
+        unsigned long int disc;   	/* discarded by the driver */
+
+	unsigned long int frwd;      	/* forwarded to devices */
+	unsigned long int kern;		/* forwarded to kernel  */
 };
+
 
 /* pfq counters for groups */
 
