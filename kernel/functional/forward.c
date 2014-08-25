@@ -45,53 +45,18 @@ forwardIO(arguments_t args, SkBuff b)
 	struct net_device *dev = get_arg(struct net_device *, args);
 	struct sk_buff *nskb;
 
-#ifdef PFQ_USE_BATCH_FORWARD
-
-       	struct forward_queue *queues;
-       	int id;
-
 	if (dev == NULL) {
                 if (printk_ratelimit())
                         printk(KERN_INFO "[PFQ] forward: device error!\n");
-                return Pass(b);
-	}
-
-       	queues = get_arg2(struct forward_queue *, args);
-
-	nskb = skb_clone(b.skb, GFP_ATOMIC);
-	if (!nskb) {
-        	printk(KERN_INFO "[PFQ] forward pfq_xmit %s: no memory!\n", dev->name);
-        	return Pass(b);
-	}
-
-	id = smp_processor_id();
-
-	pfq_non_intrusive_push(&queues[id].q, nskb);
-
-	if (pfq_non_intrusive_len(&queues[id].q) < batch_len) {
-		return Pass(b);
-	}
-
-	if (pfq_queue_xmit(&queues[id].q, dev, id) == 0) {
-#ifdef DEBUG
-                if (printk_ratelimit())
-                        printk(KERN_INFO "[PFQ] forward pfq_queue_xmit: error on device %s!\n", dev->name);
-#endif
-	}
-
-	pfq_non_intrusive_flush(&queues[id].q);
-
-#else /* PFQ_USE_BATCH_FORWARD */
-
-	if (dev == NULL) {
-                if (printk_ratelimit())
-                        printk(KERN_INFO "[PFQ] forward: device error!\n");
+		sparse_inc(&global_stats.disc);
                 return Pass(b);
 	}
 
 	nskb = skb_clone(b.skb, GFP_ATOMIC);
 	if (!nskb) {
-        	printk(KERN_INFO "[PFQ] forward pfq_xmit %s: no memory!\n", dev->name);
+                if (printk_ratelimit())
+        		printk(KERN_INFO "[PFQ] forward pfq_xmit %s: no memory!\n", dev->name);
+		sparse_inc(&global_stats.disc);
         	return Pass(b);
 	}
 
@@ -100,9 +65,12 @@ forwardIO(arguments_t args, SkBuff b)
                 if (printk_ratelimit())
                         printk(KERN_INFO "[PFQ] forward pfq_xmit: error on device %s!\n", dev->name);
 #endif
+		sparse_inc(&global_stats.disc);
 	}
-
-#endif /* PFQ_USE_BATCH_FORWARD */
+	else
+	{
+		sparse_inc(&global_stats.frwd);
+	}
 
 	return Pass(b);
 }
