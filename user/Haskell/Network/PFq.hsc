@@ -220,6 +220,8 @@ data Statistics = Statistics {
     , sDropped    ::  Integer  -- ^ packets dropped
     , sSent       ::  Integer  -- ^ packets sent
     , sDiscard    ::  Integer  -- ^ packets discarded
+    , sForward    ::  Integer  -- ^ packets forwarded to devices
+    , sKernel     ::  Integer  -- ^ packets forwarded to kernel
     } deriving (Eq, Show)
 
 -- |PFq counters.
@@ -764,7 +766,7 @@ vlanResetFilterId hdl gid vid =
 getStats :: Ptr PFqTag
          -> IO Statistics
 getStats hdl =
-    allocaBytes (sizeOf (undefined :: CLong) * 5) $ \sp -> do
+    allocaBytes (sizeOf (undefined :: CLong) * 7) $ \sp -> do
         pfq_get_stats hdl sp >>= throwPFqIf_ hdl (== -1)
         makeStats sp
 
@@ -774,7 +776,7 @@ getGroupStats :: Ptr PFqTag
               -> Int            -- ^ group id
               -> IO Statistics
 getGroupStats hdl gid =
-    allocaBytes (sizeOf (undefined :: CLong) * 3) $ \sp -> do
+    allocaBytes (sizeOf (undefined :: CLong) * 7) $ \sp -> do
         pfq_get_group_stats hdl (fromIntegral gid) sp >>= throwPFqIf_ hdl (== -1)
         makeStats sp
 
@@ -782,18 +784,22 @@ getGroupStats hdl gid =
 makeStats :: Ptr a
           -> IO Statistics
 makeStats p = do
-        _recv <- (\ptr -> peekByteOff ptr 0 ) p
-        _lost <- (\ptr -> peekByteOff ptr (sizeOf _recv) ) p
-        _drop <- (\ptr -> peekByteOff ptr (sizeOf _recv + sizeOf _lost))  p
-        _sent <- (\ptr -> peekByteOff ptr (sizeOf _recv + sizeOf _lost + sizeOf _drop )) p
-        _disc <- (\ptr -> peekByteOff ptr (sizeOf _recv + sizeOf _lost + sizeOf _drop + sizeOf _sent )) p
-        return Statistics {
+    _recv <- (\ptr -> peekByteOff ptr (sizeOf (undefined :: CLong) * 0)) p
+    _lost <- (\ptr -> peekByteOff ptr (sizeOf (undefined :: CLong) * 1)) p
+    _drop <- (\ptr -> peekByteOff ptr (sizeOf (undefined :: CLong) * 2)) p
+    _sent <- (\ptr -> peekByteOff ptr (sizeOf (undefined :: CLong) * 3)) p
+    _disc <- (\ptr -> peekByteOff ptr (sizeOf (undefined :: CLong) * 4)) p
+    _frwd <- (\ptr -> peekByteOff ptr (sizeOf (undefined :: CLong) * 5)) p
+    _kern <- (\ptr -> peekByteOff ptr (sizeOf (undefined :: CLong) * 6)) p
+    return Statistics {
                             sReceived = fromIntegral (_recv :: CULong),
                             sLost     = fromIntegral (_lost :: CULong),
                             sDropped  = fromIntegral (_drop :: CULong),
                             sSent     = fromIntegral (_sent :: CULong),
-                            sDiscard  = fromIntegral (_disc :: CULong)
-                          }
+                            sDiscard  = fromIntegral (_disc :: CULong),
+                            sForward  = fromIntegral (_frwd :: CULong),
+                            sKernel   = fromIntegral (_kern :: CULong)
+                      }
 
 -- |Return the set of counters of the given group.
 

@@ -1268,7 +1268,7 @@ namespace pfq {
     typename std::basic_ostream<CharT, Traits> &
     operator<<(std::basic_ostream<CharT,Traits> &out, const pfq_stats& rhs)
     {
-        return out << rhs.recv << ' ' << rhs.lost << ' ' << rhs.drop << ' ' << rhs.sent << ' ' << rhs.disc;
+        return out << rhs.recv << ' ' << rhs.lost << ' ' << rhs.drop << ' ' << rhs.sent << ' ' << rhs.disc << ' ' << rhs.frwd << ' ' << rhs.kern;
     }
 
     inline pfq_stats&
@@ -1280,6 +1280,9 @@ namespace pfq {
 
         lhs.sent += rhs.sent;
         lhs.disc += rhs.disc;
+
+        lhs.frwd += rhs.frwd;
+        lhs.kern += rhs.kern;
 
         return lhs;
     }
@@ -1293,6 +1296,9 @@ namespace pfq {
 
         lhs.sent -= rhs.sent;
         lhs.disc -= rhs.disc;
+
+        lhs.frwd -= rhs.frwd;
+        lhs.kern -= rhs.kern;
 
         return lhs;
     }
