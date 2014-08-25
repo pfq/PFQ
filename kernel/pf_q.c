@@ -49,6 +49,7 @@
 
 #include <linux/pf_q.h>
 
+#include <pf_q-proc.h>
 #include <pf_q-macro.h>
 #include <pf_q-sockopt.h>
 #include <pf_q-devmap.h>
@@ -442,7 +443,6 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 
 	/* sk_buff forwarding */
 
-
         GC_queue_for_each_buff(&local->gc.pool, buff, n)
         {
         	struct sk_buff *skb;
@@ -480,7 +480,6 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 		 * the skb is freed at the last forward */
 
 		if (num_fwd) {
-
 			pfq_lazy_exec(buff);
 		}
 
@@ -937,6 +936,10 @@ static int __init pfq_init_module(void)
 		return -EFAULT;
 	}
 
+	if (pfq_proc_init()) {
+		return -ENOMEM;
+	}
+
         /* register pfq sniffer protocol */
         n = proto_register(&pfq_proto, 0);
         if (n != 0)
@@ -1000,6 +1003,8 @@ static void __exit pfq_exit_module(void)
 	/* free functions */
 
 	pfq_symtable_free();
+
+	pfq_proc_fini();
 
         printk(KERN_INFO "[PFQ] unloaded.\n");
 }

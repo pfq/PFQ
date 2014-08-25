@@ -29,6 +29,7 @@
 #include <linux/pf_q.h>
 #include <linux/filter.h>
 #include <linux/spinlock.h>
+#include <linux/semaphore.h>
 
 #include <pf_q-macro.h>
 #include <pf_q-engine.h>
@@ -74,7 +75,7 @@ struct pfq_group
         struct pergroup_context ctx;
 };
 
-
+extern struct semaphore group_sem;
 extern struct pfq_group pfq_groups[Q_MAX_GROUP];
 
 
