@@ -23,9 +23,9 @@ PFQ 3.2
 
 PFQ 3.3
 -------
- * Bloom filter family functions added.
- * Simple debug proc in /proc/net/pfq added.
  * Functional argument serialization updated.
+ * Simple procs in /proc/net/pfq added.
+ * Bloom filter functions added.
  * Tools and tests updated.
  * Minor bugs fixed.
  * Code cleanup.

@@ -27,6 +27,7 @@
 #include <linux/seq_file.h>
 #include <linux/pf_q.h>
 
+#include <pf_q-global.h>
 #include <pf_q-group.h>
 #include <pf_q-bitops.h>
 #include <pf_q-sparse.h>
@@ -134,6 +135,17 @@ static int pfq_proc_groups(struct seq_file *m, void *v)
 	return 0;
 }
 
+static int pfq_proc_stats(struct seq_file *m, void *v)
+{
+	seq_printf(m, "received  : %zu\n", sparse_read(&global_stats.recv));
+	seq_printf(m, "kernel    : %zu\n", sparse_read(&global_stats.kern));
+	seq_printf(m, "forwarded : %zu\n", sparse_read(&global_stats.frwd));
+	seq_printf(m, "lost      : %zu\n", sparse_read(&global_stats.lost));
+	seq_printf(m, "sent      : %zu\n", sparse_read(&global_stats.sent));
+	seq_printf(m, "discarded : %zu\n", sparse_read(&global_stats.disc));
+
+	return 0;
+}
 
 static int pfq_proc_groups_open(struct inode *inode, struct file *file)
 {
@@ -144,6 +156,28 @@ static int pfq_proc_comp_open(struct inode *inode, struct file *file)
 {
 	return single_open(file, pfq_proc_comp, PDE_DATA(inode));
 }
+
+static int pfq_proc_stats_open(struct inode *inode, struct file *file)
+{
+	return single_open(file, pfq_proc_stats, PDE_DATA(inode));
+}
+
+static ssize_t
+pfq_proc_stats_reset(struct file *file, const char __user *buf, size_t length, loff_t *ppos)
+{
+ 	pfq_global_stats_reset();
+ 	return 1;
+}
+
+
+static const struct file_operations pfq_proc_stats_fops = {
+ 	.owner   = THIS_MODULE,
+ 	.open    = pfq_proc_stats_open,
+ 	.read    = seq_read,
+ 	.write   = pfq_proc_stats_reset,
+ 	.llseek  = seq_lseek,
+ 	.release = single_release,
+};
 
 
 static const struct file_operations pfq_proc_groups_fops = {
@@ -171,6 +205,7 @@ int pfq_proc_init(void)
 	}
 
 	proc_create("groups", 0644, pfq_proc_dir, &pfq_proc_groups_fops);
+	proc_create("stats",  0744, pfq_proc_dir, &pfq_proc_stats_fops);
 	proc_create("comp",   0644, pfq_proc_dir, &pfq_proc_comp_fops);
 
 	return 0;
@@ -180,6 +215,7 @@ int pfq_proc_init(void)
 int pfq_proc_fini(void)
 {
 	remove_proc_entry("groups", pfq_proc_dir);
+	remove_proc_entry("stats", pfq_proc_dir);
 	remove_proc_entry("comp",   pfq_proc_dir);
 	remove_proc_entry("pfq", init_net.proc_net);
 
