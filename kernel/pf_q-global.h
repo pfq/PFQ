@@ -25,6 +25,7 @@
 #define _PF_Q_GLOBAL_H_
 
 #include <linux/types.h>
+#include <pf_q-sparse.h>
 
 extern atomic_t timestamp_enabled;
 
@@ -49,5 +50,19 @@ extern int flow_control;
 extern int vl_untag;
 
 extern int recycle_len;
+
+struct pfq_global_stats
+{
+	sparse_counter_t recv; 	/* received by PFQ */
+        sparse_counter_t kern;  /* sent to kernel */
+        sparse_counter_t frwd;  /* forwarded to devs */
+        sparse_counter_t lost;  /* lost in forwarding */
+        sparse_counter_t sent;  /* transmitted */
+        sparse_counter_t disc;  /* lost in transmission */
+};
+
+extern struct pfq_global_stats global_stats;
+
+extern void pfq_global_stats_reset(void);
 
 #endif /* _PF_Q_GLOBAL_H_ */

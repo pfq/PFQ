@@ -102,6 +102,9 @@ int pfq_tx_queue_flush(struct pfq_tx_opt *to, struct net_device *dev, int cpu, i
                 __sparse_add(&to->stat.sent, sent, cpu);
                 __sparse_add(&to->stat.disc, pfq_bounded_queue_len(&skbs) - sent, cpu);
 
+  		__sparse_add(&global_stats.sent, sent, cpu);
+  		__sparse_add(&global_stats.disc, pfq_bounded_queue_len(&skbs) - sent, cpu);
+
 		/* free/recycle the packets now... */
 
 		pfq_bounded_queue_for_each(skb, i, &skbs)

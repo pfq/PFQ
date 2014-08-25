@@ -251,8 +251,10 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 
         if (vl_untag && skb->protocol == cpu_to_be16(ETH_P_8021Q)) {
                 skb = pfq_vlan_untag(skb);
-                if (unlikely(!skb))
+                if (unlikely(!skb)) {
+			sparse_inc(&global_stats.lost);
                         return -1;
+		}
         }
 
         skb_reset_mac_len(skb);
@@ -263,18 +265,16 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
             skb_push(skb, skb->mac_len);
         }
 
-	/* enqueue the packet to the local pre-fetching queue.... */
-
         cpu = get_cpu();
 
 	local = per_cpu_ptr(cpu_data, cpu);
 
-
-	/* the ownership of this skb is under the garbage collector control */
+	/* the ownership of this skb in under the garbage collector control */
 
 	buff = gc_make_buff(&local->gc, skb);
 	if (buff.skb == NULL) {
 		printk(KERN_INFO "[PFQ] GC: memory exhausted!\n");
+		__sparse_inc(&global_stats.lost, cpu);
 		kfree_skb(skb);
 		return 0;
 	}
@@ -287,6 +287,8 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 	}
 
 	/* ------------------------------------------------------ */
+
+	__sparse_add(&global_stats.recv, prefetch_len, cpu);
 
 	/* cleanup sock_queue... */
 
@@ -410,6 +412,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 
 						sock_mask |= eligible_mask;
 					}
+
 				}
 				else {
                                 	__sparse_inc(&pfq_groups[gid].drop, cpu);
@@ -459,6 +462,8 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 
 		if (to_kernel) {
 
+                        __sparse_inc(&global_stats.kern, cpu);
+
 			if (num_fwd > 0) {
 				skb = skb_clone(buff.skb, GFP_ATOMIC);
 				if (!skb) {
@@ -474,13 +479,18 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 			if (skb) {
                         	send_to_kernel(napi, skb);
 			}
+			else {
+                        	__sparse_inc(&global_stats.lost, cpu);
+			}
 		}
 
 		/* pfq_lazy_exec send multiple copies of skb to different devices...
 		 * the skb is freed at the last forward */
 
 		if (num_fwd) {
-			pfq_lazy_exec(buff);
+			int x = pfq_lazy_exec(buff);
+                        __sparse_add(&global_stats.frwd, num_fwd, cpu);
+                        __sparse_add(&global_stats.lost, num_fwd - x, cpu);
 		}
 
 		if (cb->direct)
