@@ -205,7 +205,7 @@ int pfq_proc_init(void)
 	}
 
 	proc_create("groups", 0644, pfq_proc_dir, &pfq_proc_groups_fops);
-	proc_create("stats",  0744, pfq_proc_dir, &pfq_proc_stats_fops);
+	proc_create("stats",  0644, pfq_proc_dir, &pfq_proc_stats_fops);
 	proc_create("comp",   0644, pfq_proc_dir, &pfq_proc_comp_fops);
 
 	return 0;
