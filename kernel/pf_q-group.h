@@ -56,7 +56,7 @@ struct pfq_group
         int policy;                                     /* policy for the group */
         int pid;	                                /* process id for restricted/private group */
 
-        atomic_long_t sock_mask[Q_CLASS_MAX];           /* for class: Q_CLASS_DATA, Q_CLASS_CONTROL, etc... */
+        atomic_long_t sock_mask[Q_CLASS_MAX];           /* for class: Q_CLASS_DEFAULT, Q_CLASS_USER_PLANE, Q_CLASS_CONTROL_PLANE etc... */
 
         atomic_long_t filter; 				/* struct sk_filter pointer */
 
@@ -67,8 +67,9 @@ struct pfq_group
         atomic_long_t comp_ctx;                         /* void *: storage context (new functional program) */
 
         sparse_counter_t recv;
-        sparse_counter_t lost;
         sparse_counter_t drop;
+        sparse_counter_t frwd;
+        sparse_counter_t kern;
 
         struct pergroup_context ctx;
 };

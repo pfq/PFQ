@@ -92,8 +92,9 @@ __pfq_group_init(int gid)
         atomic_long_set(&g->comp_ctx, 0L);
 
         sparse_set(&g->recv, 0);
-        sparse_set(&g->lost, 0);
         sparse_set(&g->drop, 0);
+        sparse_set(&g->frwd, 0);
+        sparse_set(&g->kern, 0);
 
         for(i = 0; i < Q_MAX_COUNTERS; i++)
         {
