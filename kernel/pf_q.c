@@ -362,10 +362,15 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 
 			if (prg) { /* run the functional program */
 
+				size_t to_kernel = PFQ_CB(buff.skb)->log->to_kernel;
+				size_t num_fwd   = PFQ_CB(buff.skb)->log->num_fwd;
+
 				buff = pfq_run(prg, buff).value;
 
-				if (buff.skb == NULL)
+				if (buff.skb == NULL) {
+                                	__sparse_inc(&pfq_groups[gid].drop, cpu);
 					continue;
+				}
 
 				if (likely(!is_drop(monad.fanout))) {
 
@@ -405,6 +410,14 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 						sock_mask |= eligible_mask;
 					}
 				}
+				else {
+                                	__sparse_inc(&pfq_groups[gid].drop, cpu);
+				}
+
+				/* update stats */
+
+                                __sparse_add(&pfq_groups[gid].frwd, PFQ_CB(buff.skb)->log->num_fwd - num_fwd, cpu);
+                                __sparse_add(&pfq_groups[gid].kern, PFQ_CB(buff.skb)->log->to_kernel - to_kernel, cpu);
 			}
 			else {
 				sock_mask |= atomic_long_read(&pfq_groups[gid].sock_mask[0]);
@@ -439,7 +452,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 
                 cb = PFQ_CB(buff.skb);
 
-		to_kernel = cb->direct && is_targeted_to_kernel(buff.skb);
+		to_kernel = cb->direct && fwd_to_kernel(buff.skb);
 		num_fwd   = cb->log->num_fwd;
 
 		/* possibly send a copy of this buff to the kernel */

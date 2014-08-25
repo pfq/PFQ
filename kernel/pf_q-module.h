@@ -194,9 +194,9 @@ is_steering(fanout_t a)
 }
 
 static inline
-bool is_targeted_to_kernel(struct sk_buff *skb)
+bool fwd_to_kernel(struct sk_buff *skb)
 {
-	return PFQ_CB(skb)->log->to_kernel;
+	return PFQ_CB(skb)->log->to_kernel != 0;
 }
 
 #endif /* _PF_Q_MODULE_H_ */

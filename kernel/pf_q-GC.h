@@ -59,7 +59,7 @@ struct gc_log
 {
 	struct net_device * dev[Q_GC_LOG_QUEUE_LEN];
 	size_t num_fwd;
-	bool   to_kernel;
+	size_t to_kernel;
 };
 
 
@@ -97,8 +97,8 @@ void gc_data_init(struct gc_data *gc)
 static inline
 void gc_log_init(struct gc_log *log)
 {
-	log->num_fwd = 0;
-	log->to_kernel = false;
+	log->num_fwd   = 0;
+	log->to_kernel = 0;
 }
 
 
