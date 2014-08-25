@@ -137,7 +137,7 @@ pr_devel_functional_node(struct pfq_functional_node const *node, size_t index)
 	char buffer[256];
         size_t n, len = 0;
 
-	len += sprintf(buffer + len, "%zu@%p: %pF { ", index, node, node->fun.ptr);
+	len += sprintf(buffer + len, "%4zu@%p: %pF { ", index, node, node->fun.ptr);
 
 	for(n = 0; n < sizeof(node->fun.arg)/sizeof(node->fun.arg[0]); n++)
 	{
@@ -168,7 +168,7 @@ void
 pr_devel_computation_tree(struct pfq_computation_tree const *tree)
 {
         size_t n;
-        pr_devel("[PFQ] computation tree size:%zu entry_point:%p\n", tree->size, tree->entry_point);
+        pr_devel("[PFQ] computation size:%zu entry_point:%p\n", tree->size, tree->entry_point);
         for(n = 0; n < tree->size; n++)
         {
                 pr_devel_functional_node(&tree->node[n], n);
@@ -192,7 +192,7 @@ pr_devel_functional_descr(struct pfq_functional_descr const *descr, size_t index
         symbol    = strdup_user(descr->symbol);
 	signature = signature_by_user_symbol(descr->symbol);
 
-	len += sprintf(buffer, "%zu   %s :: %s - [", index, symbol, signature);
+	len += sprintf(buffer, "%3zu   %s :: %s - [", index, symbol, signature);
 
         for(n = 0; n < sizeof(descr->arg)/sizeof(descr->arg[0]); n++)
 	{
