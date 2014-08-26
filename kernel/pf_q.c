@@ -342,14 +342,18 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 
 			/* check bpf filter */
 
-			if (bpf && !sk_run_filter(buff.skb, bpf->insns))
+			if (bpf && !sk_run_filter(buff.skb, bpf->insns)) {
+                                __sparse_inc(&pfq_groups[gid].drop, cpu);
 				continue;
+			}
 
 			/* check vlan filter */
 
 			if (vlan_filter_enabled) {
-				if (!__pfq_check_group_vlan_filter(gid, buff.skb->vlan_tci & ~VLAN_TAG_PRESENT))
+				if (!__pfq_check_group_vlan_filter(gid, buff.skb->vlan_tci & ~VLAN_TAG_PRESENT)) {
+					__sparse_inc(&pfq_groups[gid].drop, cpu);
 					continue;
+				}
 			}
 
 			/* setup monad for this computation */
