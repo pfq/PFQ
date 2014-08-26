@@ -27,6 +27,11 @@
 #include <pfq-lang/details.hpp>
 
 #include <functional>
+#include <stdexcept>
+#include <vector>
+#include <string>
+#include <cmath>
+
 #include <arpa/inet.h>
 
 namespace pfq { namespace lang { namespace experimental {
@@ -49,6 +54,39 @@ namespace pfq { namespace lang { namespace experimental {
         auto hdummy     = std::bind(details::polymorphic_mfunctionP(),  "hdummy", _1);
 
         auto crc16      = mfunction("crc16");
+
+        auto bloom      = [] (int m, std::vector<std::string> const &ips) {
+                                auto addrs = details::fmap(details::inet_addr, ips);
+                                return predicate2("bloom", m, std::move(addrs));
+                          };
+
+        auto bloom_src  = [] (int m, std::vector<std::string> const &ips) {
+                                auto addrs = details::fmap(details::inet_addr, ips);
+                                return predicate2("bloom_src", m, std::move(addrs));
+                          };
+
+        auto bloom_dst  = [] (int m, std::vector<std::string> const &ips) {
+                                auto addrs = details::fmap(details::inet_addr, ips);
+                                return predicate2("bloom_src", m, std::move(addrs));
+                          };
+
+
+        auto bloom_filter      = [] (int m, std::vector<std::string> const &ips) {
+                                    auto addrs = details::fmap(details::inet_addr, ips);
+                                    return mfunction2("bloom_filter", m, std::move(addrs));
+                                };
+
+        auto bloom_src_filter  = [] (int m, std::vector<std::string> const &ips) {
+                                    auto addrs = details::fmap(details::inet_addr, ips);
+                                    return mfunction2("bloom_src_filter", m, std::move(addrs));
+                                };
+
+        auto bloom_dst_filter  = [] (int m, std::vector<std::string> const &ips) {
+                                    auto addrs = details::fmap(details::inet_addr, ips);
+                                    return mfunction2("bloom_src_filter", m, std::move(addrs));
+                                };
+
+        // bloom filter: utility functions:
     }
 
 } // namespace experimental
