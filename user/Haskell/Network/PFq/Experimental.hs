@@ -59,6 +59,8 @@ module Network.PFq.Experimental
 
         vlan_id       ,
         vlan_id_filter,
+
+        steer_field   ,
     ) where
 
 
@@ -124,4 +126,10 @@ vlan_id ids = Predicate1 "vlan_id" (Vector ids)
 
 vlan_id_filter  :: [CInt] -> NetFunction
 vlan_id_filter ids = MFunction1 "vlan_id_filter" (Vector ids)
+
+
+steer_field :: CInt -> CInt -> NetFunction
+steer_field off size = MFunction2 "steer_field" off size
+
+
 

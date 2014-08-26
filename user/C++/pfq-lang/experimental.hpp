@@ -118,6 +118,9 @@ namespace pfq { namespace lang { namespace experimental {
                                     return mfunction1("vlan_id_filter", vid);
                               };
 
+        auto steer_field = [] (int off, int size) {
+                                return mfunction2("steer_field", off, size);
+                           };
     }
 
 } // namespace experimental
