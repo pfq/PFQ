@@ -342,8 +342,13 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 
 			/* check bpf filter */
 
-			if (bpf && !sk_run_filter(buff.skb, bpf->insns)) {
-                                __sparse_inc(&pfq_groups[gid].drop, cpu);
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,15,0))
+			if (bpf && !sk_run_filter(buff.skb, bpf->insns))
+#else
+			if (bpf && !SK_RUN_FILTER(bpf, buff.skb))
+#endif
+                        {
+				__sparse_inc(&pfq_groups[gid].drop, cpu);
 				continue;
 			}
 
