@@ -107,6 +107,17 @@ namespace pfq { namespace lang { namespace experimental {
             return std::pow(1 - std::pow(1 - 1.0/m, n * bloomK), bloomK);
         }
 
+        // experimental vlan functions...
+        //
+
+        auto vlan_id = [] (std::vector<int> const &vid) {
+                                return predicate1("vlan_id", vid);
+                       };
+
+        auto vlan_id_filter = [] (std::vector<int> const &vid) {
+                                    return mfunction1("vlan_id_filter", vid);
+                              };
+
     }
 
 } // namespace experimental

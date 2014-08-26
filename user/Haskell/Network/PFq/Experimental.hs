@@ -56,6 +56,9 @@ module Network.PFq.Experimental
         bloomCalcN  ,
         bloomCalcM  ,
         bloomCalcP  ,
+
+        vlan_id       ,
+        vlan_id_filter,
     ) where
 
 
@@ -114,4 +117,11 @@ bloomCalcN  m p =  ceiling $ fromIntegral (-m) * log(1 - p ** (1 / fromIntegral 
 bloomCalcP  :: Int -> Int -> Double
 bloomCalcP  n m =  (1 - (1 - 1 / fromIntegral m) ** fromIntegral (n * bloomK))^bloomK
 
+-- vlan
+
+vlan_id  :: [CInt] -> NetPredicate
+vlan_id ids = Predicate1 "vlan_id" (Vector ids)
+
+vlan_id_filter  :: [CInt] -> NetFunction
+vlan_id_filter ids = MFunction1 "vlan_id_filter" (Vector ids)
 
