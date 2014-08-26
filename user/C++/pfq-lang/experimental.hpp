@@ -36,8 +36,11 @@
 
 namespace pfq { namespace lang { namespace experimental {
 
+    using namespace std::placeholders;
+
     namespace
     {
+
         auto filter     = std::bind(details::polymorphic_mfunctionP(), "filter", _1);
 
         auto class_     = [] (int value) { return mfunction1("class", value); };
