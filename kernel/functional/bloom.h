@@ -26,33 +26,52 @@
 
 #include <pf_q-module.h>
 
+#include <asm/byteorder.h>
+
 /* macros to test/set bits in bitwise array */
 
-#define BF_TEST(mem, x)  (mem[(x)>>3] &  (1<<((x) & 7)))
 
+#define BF_TEST(mem, x)  (mem[(x)>>3] &  (1<<((x) & 7)))
 #define BF_SET(mem, x)   (mem[(x)>>3] |= (1<<((x) & 7)))
+
+
+#ifdef __LITTLE_ENDIAN
+#define A(ip)	((ip & 0xff000000) >> 24)
+#define B(ip)   ((ip & 0x00ff0000) >> 16)
+#define C(ip)   ((ip & 0x0000ff00) >>  8)
+#define D(ip)   ( ip & 0x000000ff)
+#else
+#define D(ip)	((ip & 0xff000000) >> 24)
+#define C(ip)   ((ip & 0x00ff0000) >> 16)
+#define B(ip)   ((ip & 0x0000ff00) >>  8)
+#define A(ip)   ( ip & 0x000000ff)
+#endif
+
+static inline uint32_t mix(uint32_t a, uint32_t b, uint32_t c)
+{
+	return ((a ^ b ^ c) & 0xff) | ((b ^ c) & 0xff) << 8 | (c & 0xff) << 16;
+}
 
 
 static inline uint32_t hfun1(uint32_t ip_)
 {
-	return ip_ & 0x00ffffff;
+	return mix(A(ip_), B(ip_), C(ip_));
 }
 
 static inline uint32_t hfun2(uint32_t ip_)
 {
-	return (ip_ & 0xffffff00) >> 8;
+	return mix(A(ip_), B(ip_), D(ip_));
 }
 
 static inline uint32_t hfun3(uint32_t ip_)
 {
-	return (ip_ & 0xffff0000) >> 8 | (ip_ & 0xff);
+	return mix(A(ip_), C(ip_), D(ip_));
 }
 
 static inline uint32_t hfun4(uint32_t ip_)
 {
-	return (ip_ & 0xff000000) >> 8 | (ip_ & 0xffff);
+	return mix(B(ip_), C(ip_), D(ip_));
 }
-
 
 /*
  * Find the next power of two.
