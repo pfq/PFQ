@@ -25,7 +25,9 @@ PFQ 3.3
 -------
  * Functional argument serialization updated.
  * Simple procs in /proc/net/pfq added.
- * Bloom filter functions added.
+ * Q-lang bloom filter functions: bloom, bloom_src, bloom_dst, bloom_filter, 
+   bloom_src_filter, bloom_dst_filter, bloom_calc_m, bloom_calc_n,
+   bloom_calc_p.
+ * Q-lang experimental functions: vlan_id, vlan_id_filter, steer_field.
  * Tools and tests updated.
- * Minor bugs fixed.
- * Code cleanup.
+ * Code cleanup and minor bugs fixed.
