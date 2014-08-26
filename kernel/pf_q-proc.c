@@ -36,6 +36,10 @@
 
 #include <net/net_namespace.h>
 
+#if LINUX_VERSION_CODE < KERNEL_VERSION(3,10,0)
+#define PDE_DATA(a) PDE(a)->data
+#endif
+
 struct proc_dir_entry *pfq_proc_dir = NULL;
 
 static const char proc_computations[] = "computations";
