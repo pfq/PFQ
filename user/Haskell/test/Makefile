@@ -16,7 +16,7 @@ HSC=hsc2hs
 all: Network/PFq.hs test-read test-bloom test-dispatch test-send test-lang
 
 Network/PFq.hs:
-		$(HSC) Network/PFq.hsc
+		$(HSC) ../Network/PFq.hsc
 
 test-read: Network/PFq.hs test-read.hs
 		$(HC) $(GHCFLAGS) $(LIBS) test-read.hs -o $@
