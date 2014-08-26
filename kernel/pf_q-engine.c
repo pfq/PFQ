@@ -44,7 +44,7 @@ static inline bool is_arg_null(struct pfq_functional_arg_descr const *arg)
 
 static inline bool is_arg_data(struct pfq_functional_arg_descr const *arg)
 {
-	return arg->ptr != 0 && arg->size != 0 && arg->nelem == -1;
+	return arg->ptr && arg->size != 0 && arg->nelem == -1;
 }
 
 static inline bool is_arg_vector(struct pfq_functional_arg_descr const *arg)
@@ -54,12 +54,12 @@ static inline bool is_arg_vector(struct pfq_functional_arg_descr const *arg)
 
 static inline bool is_arg_string(struct pfq_functional_arg_descr const *arg)
 {
-	return arg->ptr != 0 && arg->size == 0 && arg->nelem == -1;
+	return arg->ptr && arg->size == 0 && arg->nelem == -1;
 }
 
 static inline bool is_arg_function(struct pfq_functional_arg_descr const *arg)
 {
-	return arg->ptr == 0 && arg->size != 0 && arg->nelem == -1;
+	return !arg->ptr && arg->size != 0 && arg->nelem == -1;
 }
 
 
