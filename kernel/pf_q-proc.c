@@ -27,14 +27,16 @@
 #include <linux/seq_file.h>
 #include <linux/pf_q.h>
 
+#include <net/net_namespace.h>
+
 #include <pf_q-global.h>
 #include <pf_q-group.h>
 #include <pf_q-bitops.h>
 #include <pf_q-sparse.h>
 #include <pf_q-macro.h>
 #include <pf_q-proc.h>
+#include <pf_q-memory.h>
 
-#include <net/net_namespace.h>
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(3,10,0)
 #define PDE_DATA(a) PDE(a)->data
@@ -45,6 +47,11 @@ struct proc_dir_entry *pfq_proc_dir = NULL;
 static const char proc_computations[] = "computations";
 static const char proc_groups[]       = "groups";
 static const char proc_stats[]        = "stats";
+
+#ifdef PFQ_USE_SKB_RECYCLE_STAT
+static const char proc_memory[]       = "memory";
+#endif
+
 
 static void
 seq_printf_functional_node(struct seq_file *m, struct pfq_functional_node const *node, size_t index)
@@ -152,9 +159,47 @@ static int pfq_proc_stats(struct seq_file *m, void *v)
 	seq_printf(m, "lost      : %zu\n", sparse_read(&global_stats.lost));
 	seq_printf(m, "sent      : %zu\n", sparse_read(&global_stats.sent));
 	seq_printf(m, "discarded : %zu\n", sparse_read(&global_stats.disc));
-
 	return 0;
 }
+
+
+#ifdef PFQ_USE_SKB_RECYCLE_STAT
+
+static int pfq_proc_memory(struct seq_file *m, void *v)
+{
+	seq_printf(m, "OS alloc  : %zu\n", sparse_read(&global_stats.os_alloc));
+	seq_printf(m, "OS free   : %zu\n", sparse_read(&global_stats.os_free));
+	seq_printf(m, "RC alloc  : %zu\n", sparse_read(&global_stats.rc_alloc));
+	seq_printf(m, "RC free   : %zu\n", sparse_read(&global_stats.rc_free));
+	seq_printf(m, "RC error  : %zu\n", sparse_read(&global_stats.rc_error));
+	return 0;
+}
+
+static int pfq_proc_memory_open(struct inode *inode, struct file *file)
+{
+	return single_open(file, pfq_proc_memory, PDE_DATA(inode));
+}
+
+static ssize_t
+pfq_proc_memory_reset(struct file *file, const char __user *buf, size_t length, loff_t *ppos)
+{
+        pfq_reset_recycle_stats();
+ 	return 1;
+}
+
+
+static const struct file_operations pfq_proc_memory_fops = {
+ 	.owner   = THIS_MODULE,
+ 	.open    = pfq_proc_memory_open,
+ 	.read    = seq_read,
+ 	.write   = pfq_proc_memory_reset,
+ 	.llseek  = seq_lseek,
+ 	.release = single_release,
+};
+
+
+#endif
+
 
 static int pfq_proc_groups_open(struct inode *inode, struct file *file)
 {
@@ -216,6 +261,9 @@ int pfq_proc_init(void)
 	proc_create(proc_computations, 	0644, pfq_proc_dir, &pfq_proc_comp_fops);
 	proc_create(proc_groups,       	0644, pfq_proc_dir, &pfq_proc_groups_fops);
 	proc_create(proc_stats,		0644, pfq_proc_dir, &pfq_proc_stats_fops);
+#ifdef PFQ_USE_SKB_RECYCLE_STAT
+	proc_create(proc_memory,	0644, pfq_proc_dir, &pfq_proc_memory_fops);
+#endif
 
 	return 0;
 }
@@ -226,6 +274,9 @@ int pfq_proc_fini(void)
 	remove_proc_entry(proc_computations, pfq_proc_dir);
 	remove_proc_entry(proc_groups, 	     pfq_proc_dir);
 	remove_proc_entry(proc_stats, 	     pfq_proc_dir);
+#ifdef PFQ_USE_SKB_RECYCLE_STAT
+	remove_proc_entry(proc_memory, 	     pfq_proc_dir);
+#endif
 	remove_proc_entry("pfq", init_net.proc_net);
 
 	return 0;
