@@ -38,6 +38,10 @@
 
 struct proc_dir_entry *pfq_proc_dir = NULL;
 
+static const char proc_computations[] = "computations";
+static const char proc_groups[]       = "groups";
+static const char proc_stats[]        = "stats";
+
 static void
 seq_printf_functional_node(struct seq_file *m, struct pfq_functional_node const *node, size_t index)
 {
@@ -205,9 +209,9 @@ int pfq_proc_init(void)
 		return -ENOMEM;
 	}
 
-	proc_create("groups", 0644, pfq_proc_dir, &pfq_proc_groups_fops);
-	proc_create("stats",  0644, pfq_proc_dir, &pfq_proc_stats_fops);
-	proc_create("comp",   0644, pfq_proc_dir, &pfq_proc_comp_fops);
+	proc_create(proc_computations, 	0644, pfq_proc_dir, &pfq_proc_comp_fops);
+	proc_create(proc_groups,       	0644, pfq_proc_dir, &pfq_proc_groups_fops);
+	proc_create(proc_stats,		0644, pfq_proc_dir, &pfq_proc_stats_fops);
 
 	return 0;
 }
@@ -215,9 +219,9 @@ int pfq_proc_init(void)
 
 int pfq_proc_fini(void)
 {
-	remove_proc_entry("groups", pfq_proc_dir);
-	remove_proc_entry("stats", pfq_proc_dir);
-	remove_proc_entry("comp",   pfq_proc_dir);
+	remove_proc_entry(proc_computations, pfq_proc_dir);
+	remove_proc_entry(proc_groups, 	     pfq_proc_dir);
+	remove_proc_entry(proc_stats, 	     pfq_proc_dir);
 	remove_proc_entry("pfq", init_net.proc_net);
 
 	return 0;
