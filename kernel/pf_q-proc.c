@@ -32,6 +32,7 @@
 #include <pf_q-bitops.h>
 #include <pf_q-sparse.h>
 #include <pf_q-macro.h>
+#include <pf_q-proc.h>
 
 #include <net/net_namespace.h>
 
