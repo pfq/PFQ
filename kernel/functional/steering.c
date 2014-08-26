@@ -27,6 +27,33 @@
 
 #include <pf_q-module.h>
 
+
+static Action_SkBuff
+steering_field(arguments_t args, SkBuff b)
+{
+	uint32_t offset = get_arg_0(uint32_t, args);
+	uint32_t size   = get_arg_1(uint32_t, args);
+
+	uint32_t data, *ptr;
+	uint32_t mask;
+
+	if (size > sizeof(data)) {
+		if (printk_ratelimit()) {
+                	printk(KERN_INFO "[PFQ] steering_field: size too big!\n");
+                	return Drop(b);
+		}
+	}
+
+	ptr = skb_header_pointer(b.skb, offset, sizeof(uint32_t), &data);
+        if (ptr == NULL)
+        	return Drop(b);
+
+	mask = (1ULL << size) - 1;
+
+	return Steering(b, *ptr & mask);
+}
+
+
 static Action_SkBuff
 steering_link(arguments_t args, SkBuff b)
 {
@@ -192,6 +219,7 @@ struct pfq_function_descr steering_functions[] = {
         { "steer_ip",    "SkBuff -> Action SkBuff", steering_ip      },
         { "steer_ip6",	 "SkBuff -> Action SkBuff", steering_ip6     },
         { "steer_flow",  "SkBuff -> Action SkBuff", steering_flow    },
+	{ "steer_field", "Word32 -> Word32 -> SkBuff -> Action SkBuff", steering_field },
         { "steer_net",   "Word32 -> Word32 -> Word32 -> SkBuff -> Action SkBuff", steering_net, steering_net_init },
 
         { NULL }};
