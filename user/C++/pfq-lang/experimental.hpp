@@ -87,6 +87,26 @@ namespace pfq { namespace lang { namespace experimental {
                                 };
 
         // bloom filter: utility functions:
+        //
+
+        constexpr int bloomK = 4;
+
+        inline int bloom_calc_m(int n, double p)
+        {
+            return static_cast<int>(std::ceil( -static_cast<double>(bloomK) * n / std::log( 1.0 - std::pow(p, 1.0 / bloomK) )));
+        }
+
+        inline int bloom_calc_n(int m, double p)
+        {
+            return static_cast<int>(std::ceil( -static_cast<double>(m) * std::log( 1.0 - std::pow(p, 1.0 / bloomK) ) / bloomK ));
+        }
+
+        inline double
+        bloom_calc_p(int n, int m)
+        {
+            return std::pow(1 - std::pow(1 - 1.0/m, n * bloomK), bloomK);
+        }
+
     }
 
 } // namespace experimental
