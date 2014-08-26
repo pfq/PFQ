@@ -59,6 +59,12 @@ struct pfq_global_stats
         sparse_counter_t lost;  /* lost in forwarding */
         sparse_counter_t sent;  /* transmitted */
         sparse_counter_t disc;  /* lost in transmission */
+
+ 	sparse_counter_t os_alloc;
+	sparse_counter_t os_free;
+	sparse_counter_t rc_alloc;
+	sparse_counter_t rc_free;
+	sparse_counter_t rc_error;
 };
 
 extern struct pfq_global_stats global_stats;
