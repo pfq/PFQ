@@ -720,6 +720,7 @@ pfq_release(struct socket *sock)
 
         if (total) {
 
+#if 0
 #ifdef PFQ_USE_SKB_RECYCLE_STAT
 
                 struct pfq_recycle_stat stat = pfq_get_recycle_stats();
@@ -732,6 +733,7 @@ pfq_release(struct socket *sock)
                                         stat.rc_error);
 
                 pfq_reset_recycle_stats();
+#endif
 #endif
                 printk(KERN_INFO "[PFQ|%d] cleanup: %d skb purged.\n", id, total);
         }
