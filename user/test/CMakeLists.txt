@@ -13,6 +13,7 @@ link_directories(../../user/C)
 
 add_executable(test-lang-default test-lang-default.cpp)
 add_executable(test-fun-lang test-fun-lang.cpp)
+add_executable(test-bloom    test-bloom.cpp)
 
 add_executable(test-dump test-dump.cpp)
 add_executable(test-vlan test-vlan.cpp)
