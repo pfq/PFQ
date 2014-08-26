@@ -199,7 +199,7 @@ try
         std::cout << "----------- capture started ------------\n";
 
         unsigned long long sum, old = 0;
-        pfq_stats sum_stats, old_stats = {0,0,0,0,0};
+        pfq_stats sum_stats, old_stats = {0,0,0,0,0,0,0};
 
         auto begin = std::chrono::system_clock::now();
 
@@ -208,7 +208,7 @@ try
             std::this_thread::sleep_for(std::chrono::seconds(1));
 
             sum = 0;
-            sum_stats = {0,0,0,0,0};
+            sum_stats = {0,0,0,0,0,0,0};
 
             sum       += read;
             sum_stats += q.stats();

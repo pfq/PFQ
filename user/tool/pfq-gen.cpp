@@ -227,7 +227,7 @@ namespace thread
         pfq_stats
         stats() const
         {
-            pfq_stats ret = {0, 0, 0 ,0 ,0};
+            pfq_stats ret = {0,0,0,0,0,0,0};
 
             for(auto & q : m_pfq)
             {
@@ -351,7 +351,7 @@ try
                   vt.push_back(std::move(t));
     });
 
-    pfq_stats cur, prec = {0, 0, 0, 0, 0};
+    pfq_stats cur, prec = {0,0,0,0,0,0,0};
 
     std::cout << "------------ gen started ------------\n";
 
@@ -361,7 +361,7 @@ try
     {
         std::this_thread::sleep_for(std::chrono::seconds(1));
 
-        cur = {0,0,0,0,0};
+        cur = {0,0,0,0,0,0,0};
         std::for_each(ctx.begin(), ctx.end(), [&](const thread::context &c)
         {
             cur += c.stats();
