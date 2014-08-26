@@ -46,12 +46,6 @@ bloom_src(arguments_t args, SkBuff b)
 		mem = get_arg_1(char *, args);
         	mask = get_arg_0(unsigned int, args);
 
-		pr_devel("IP_src = %x\n", ip->saddr);
-		pr_devel("HASH_1 = %x\n", hfun1(ip->saddr));
-		pr_devel("HASH_2 = %x\n", hfun2(ip->saddr));
-		pr_devel("HASH_3 = %x\n", hfun3(ip->saddr));
-		pr_devel("HASH_4 = %x\n", hfun4(ip->saddr));
-
 		if ( BF_TEST(mem, hfun1(ip->saddr) & mask ) &&
 		     BF_TEST(mem, hfun2(ip->saddr) & mask ) &&
 		     BF_TEST(mem, hfun3(ip->saddr) & mask ) &&
@@ -79,12 +73,6 @@ bloom_dst(arguments_t args, SkBuff b)
 
 		mem = get_arg_1(char *, args);
         	mask = get_arg_0(unsigned int, args);
-
-		pr_devel("IP_dst = %x\n", ip->daddr);
-		pr_devel("HASH_1 = %x\n", hfun1(ip->daddr));
-		pr_devel("HASH_2 = %x\n", hfun2(ip->daddr));
-		pr_devel("HASH_3 = %x\n", hfun3(ip->daddr));
-		pr_devel("HASH_4 = %x\n", hfun4(ip->daddr));
 
 		if ( BF_TEST(mem, hfun1(ip->daddr) & mask ) &&
 		     BF_TEST(mem, hfun2(ip->daddr) & mask ) &&
