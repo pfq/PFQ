@@ -66,6 +66,7 @@
 #include <pf_q-stats.h>
 #include <pf_q-endpoint.h>
 #include <pf_q-mpdb-queue.h>
+#include <pf_q-skbuff-list.h>
 #include <pf_q-transmit.h>
 #include <pf_q-percpu.h>
 #include <pf_q-GC.h>
@@ -115,14 +116,14 @@ MODULE_PARM_DESC(tx_queue_slots, " Tx Queue slots (default=131072)");
 MODULE_PARM_DESC(prefetch_len,  " Rx pre-fetch queue length");
 MODULE_PARM_DESC(batch_len,     " Tx batch queue length");
 
-MODULE_PARM_DESC(recycle_len,   " Recycle skb list (default=16384)");
+#ifdef PFQ_USE_SKB_RECYCLE
+#pragma message "[PFQ] *** using skb recycle ***"
+MODULE_PARM_DESC(recycle_len,   " Recycle skb list (default=4096)");
+#endif
+
 MODULE_PARM_DESC(flow_control,  " Flow control value (default=0)");
 MODULE_PARM_DESC(vl_untag,      " Enable vlan untagging (default=0)");
 
-
-#ifdef PFQ_USE_SKB_RECYCLE
-#pragma message "[PFQ] *** using skb recycle ***"
-#endif
 
 #ifdef DEBUG
 #pragma message "[PFQ] *** DEBUG mode ***"
@@ -953,6 +954,11 @@ static int __init pfq_init_module(void)
                 return -EFAULT;
         }
 
+	if (recycle_len > PFQ_SK_BUFF_LIST_SIZE) {
+                printk(KERN_INFO "[PFQ] recycle_len=%d not allowed -> valid range (0,%d]!\n", recycle_len, PFQ_SK_BUFF_LIST_SIZE);
+		return -EFAULT;
+	}
+
 	if (pfq_percpu_init()) {
 		return -EFAULT;
 	}
@@ -977,7 +983,10 @@ static int __init pfq_init_module(void)
 	pfq_symtable_init();
 
 #ifdef PFQ_USE_SKB_RECYCLE
-        pfq_skb_recycle_init();
+        if (pfq_skb_recycle_init() != 0) {
+        	pfq_skb_recycle_purge();
+        	return -ENOMEM;
+	}
         pfq_skb_recycle_enable(true);
         printk(KERN_INFO "[PFQ] skb recycle initialized.\n");
 #endif

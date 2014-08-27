@@ -26,6 +26,7 @@
 
 #include <linux/percpu.h>
 
+#include <pf_q-skbuff-list.h>
 #include <pf_q-macro.h>
 #include <pf_q-GC.h>
 
@@ -44,8 +45,8 @@ struct local_data
 	struct gc_data 		gc;	/* garbage collector */
 
         atomic_t                enable_recycle;
-        struct sk_buff_head     tx_recycle_list;
-        struct sk_buff_head     rx_recycle_list;
+        struct pfq_sk_buff_list tx_recycle_list;
+        struct pfq_sk_buff_list rx_recycle_list;
 
 } ____cacheline_aligned;
 
