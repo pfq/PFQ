@@ -66,7 +66,7 @@ data Options = Options
     } deriving (Data, Typeable, Show)
 
 
-type BindState = StateT (Options, Int)
+type BindStateT = StateT (Options, Int)
 
 
 -- default options
@@ -118,7 +118,7 @@ main = cmdArgsRun options >>= \ops -> do
 -- dispatch command:
 --
 
-dispatch :: String -> String -> BindState IO ()
+dispatch :: String -> String -> BindStateT IO ()
 dispatch "" = showBinding
 dispatch _  = makeBinding
 
@@ -126,7 +126,7 @@ dispatch _  = makeBinding
 -- makeBinding algorithm:
 --
 
-makeBinding :: String -> BindState IO ()
+makeBinding :: String -> BindStateT IO ()
 makeBinding dev = do
     (op,start) <- get
     let msi  = msitype op
@@ -144,7 +144,7 @@ makeBinding dev = do
 -- show current binding:
 --
 
-showBinding :: String -> BindState IO ()
+showBinding :: String -> BindStateT IO ()
 showBinding dev = do
     (op,_) <- get
     let msi = msitype op
