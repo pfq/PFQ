@@ -27,6 +27,7 @@
 
 #include <linux/version.h>
 #include <linux/skbuff.h>
+#include <linux/hardirq.h>
 #include <net/dst.h>
 
 #include <pf_q-skbuff-list.h>
@@ -96,7 +97,7 @@ static inline bool pfq_skb_is_recycleable(const struct sk_buff *skb, int skb_siz
     	    	return false;
 
     	skb_size = SKB_DATA_ALIGN(skb_size + NET_SKB_PAD);
-    	if (skb_end_offset(skb) < skb_size)
+    	if (pfq_skb_end_offset(skb) < skb_size)
     	    	return false;
 
     	return true;
