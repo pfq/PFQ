@@ -23,7 +23,7 @@ import System.IO.Unsafe
 import System.Process
 import System.Directory
 import System.FilePath
-import Control.Monad(when,unless,liftM,forM,filterM)
+import Control.Monad(void,when,unless,liftM,forM,filterM)
 import Control.Applicative
 import Text.Regex.Posix
 
@@ -48,19 +48,19 @@ getMostRecentFile xs = do
     xs' <- filterM doesFileExist xs >>=
              mapM (\f -> liftM (\m -> (f,m)) $ getModificationTime f) >>= \x ->
                return $ sortBy (flip compare `on` snd) x
-    return $ if null xs' then Nothing
-                         else Just (fst $ head xs')
+    return $ listToMaybe (map fst xs')
+
 
 main :: IO ()
 main = do
     putStrLn $ "[PFQ] pfq-omatic: v" ++ pfq_omatic_ver
-    sanityCheck
+    generalChecks
     getRecursiveContents "." [".c"] >>= mapM_ tryPatch
-    symver <- getMostRecentFile pfq_symvers
-    copyFile (fromJust symver) "Module.symvers"
-    let cmd = "make -j" ++ show getNumberOfPhyCores
+    symver <- liftM fromJust $ getMostRecentFile pfq_symvers
+    copyFile symver "Module.symvers"
+    let cmd = "make KBUILD_EXTRA_SYMBOLS=" ++ symver ++ " -j" ++ show getNumberOfPhyCores
     putStrLn $ "[PFQ] compiling: " ++ cmd ++ "..."
-    _ <- system cmd
+    void $ system cmd
     putStrLn "[PFQ] done."
 
 
@@ -99,8 +99,8 @@ makePatch file = do
     writeFile file $ "#include " ++ show pfq_kcompat ++ "\n" ++ src
 
 
-sanityCheck :: IO ()
-sanityCheck = do
+generalChecks :: IO ()
+generalChecks = do
     doesFileExist pfq_kcompat >>= \kc ->
         unless kc $ error "error: could not locate pfq-kcompat header!"
     symver <- getMostRecentFile pfq_symvers
