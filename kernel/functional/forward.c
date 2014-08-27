@@ -109,28 +109,6 @@ forward_init(arguments_t args)
 
 	pr_devel("[PFQ|init] forward: device '%s' locked.\n", dev->name);
 
-#ifdef PFQ_USE_BATCH_FORWARD
-	{
-       		struct forward_queue *queues;
-		int n;
-
-		queues = kmalloc(sizeof(struct forward_queue) * 64, GFP_KERNEL);
-		if (!queues) {
-			printk(KERN_INFO "[PFQ|init] forward: out of memory!\n");
-			return -1;
-		}
-
-		for(n = 0; n < 64; n++)
-		{
-			pfq_non_intrusive_init(&queues[n].q);
-		}
-
-		pr_devel("[PFQ|init] forward: queues initialized.\n");
-
-		set_arg2(args, queues);
-	}
-#endif
-
 	return 0;
 }
 
@@ -146,25 +124,6 @@ forward_fini(arguments_t args)
 		pr_devel("[PFQ|fini] forward: device '%s' released.\n", dev->name);
 	}
 
-#ifdef PFQ_USE_BATCH_FORWARD
-	{
-       		struct forward_queue *queues = get_arg2(struct forward_queue *, args);
-        	struct sk_buff *skb;
-       		int n, i;
-
-		for(n = 0; n < 64; n++)
-		{
-			pfq_non_intrusive_for_each(skb, i, &queues[n].q)
-			{
-				kfree_skb(skb);
-			}
-		}
-
-		kfree(queues);
-
-		pr_devel("[PFQ|fini] forward: queues freed.\n");
-	}
-#endif
 	return 0;
 }
 
