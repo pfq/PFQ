@@ -29,6 +29,7 @@
 #define _YATS_HPP_
 
 #include <iostream>
+#include <fstream>
 #include <sstream>
 #include <cstdlib>
 #include <string>
@@ -55,7 +56,7 @@
 
 #define Assert(...)                     XPASTE(YATS_ASSERT_       ,PP_NARG(__VA_ARGS__)) ( __VA_ARGS__)
 #define AssertThrow(...)                XPASTE(YATS_ASSERT_THROW_ ,PP_NARG(__VA_ARGS__)) ( __VA_ARGS__)
-#define AssertNothrow(value)            YATS_ASSERT_NOTHROW(value)
+#define AssertNoThrow(value)            YATS_ASSERT_NOTHROW(value)
 #define StaticError(expr,msg)           XPASTE(YATS_STATIC_ERROR_, __COUNTER__) (expr,msg)
 
 
@@ -67,7 +68,7 @@
 #define Test(name) \
     void test_ ## name(const char *); \
     yats::task_register hook_ ## name(test_ ## name, yats::task_register::type::test, _context_name, #name); \
-    void test_ ## name(const char *_test_name)
+    void test_ ## name(const char *_test_name __attribute__((unused)))
 
 
 #define Setup(name) \
@@ -87,7 +88,7 @@
     yats::task_register rhook_ ## name(yats::extended_tag(), (yats::RandTask<decltype(RandomEngine), FOR_EACH(DIST_TYPE, __VA_ARGS__)>\
                                                               (random_ ## name, RandomEngine, FOR_EACH(DIST_INSTANCE, __VA_ARGS__))), \
                                          yats::task_register::type::random, _context_name, #name); \
-    void random_ ## name(const char *_test_name, FOR_EACH(DIST_RES_ARGT,__VA_ARGS__))
+    void random_ ## name(const char *_test_name __attribute__((unused)), FOR_EACH(DIST_RES_ARGT,__VA_ARGS__))
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -378,7 +379,7 @@ inline namespace yats
     {
         std::cout << "Yats usage: " << name << " [options] [test...]" << std::endl;
         std::cout << "Options:\n";
-        std::cout << "  -e, --exit-immediatly   On error exit.\n";
+        std::cout << "  -e, --exit-immediately  On error exit.\n";
         std::cout << "  -c, --context context   Run tests from the given context.\n";
         std::cout << "  -v, --verbose           Verbose mode.\n";
         std::cout << "  -r, --run int           Number of run per Random test (1000 default).\n";
@@ -446,12 +447,13 @@ inline namespace yats
         for(auto arg = argv + 1; argv && (arg != argv + argc); ++arg)
         {
             if (strcmp(*arg, "-h") == 0 ||
+                strcmp(*arg, "-?") == 0 ||
                 strcmp(*arg, "--help") == 0) {
                 usage(argv[0]);
             }
 
             if (strcmp(*arg, "-e") == 0 ||
-                strcmp(*arg, "--exit-immediatly") == 0) {
+                strcmp(*arg, "--exit-immediately") == 0) {
                 exit_immediatly = true;
                 continue;
             }
@@ -483,7 +485,7 @@ inline namespace yats
 
                 for(auto & c : context::instance())
                 {
-                    std::cout << "context " << c.first << ": ";
+                    std::cout << "Context " << c.first << ": ";
                     int n = 1;
                     for(auto & t : c.second->task_list_)
                     {
@@ -499,30 +501,44 @@ inline namespace yats
             run_test.insert(*arg);
         }
 
-        size_t tot_task = 0;
+        size_t tot_ctx = 0, tot_task = 0;
 
         for(auto & ctx : context::instance())
         {
-            if (!run_ctx.empty() &&
-                run_ctx.find(ctx.first) == run_ctx.end())
+            if (!run_ctx.empty() && run_ctx.find(ctx.first) == run_ctx.end())
                 continue;
-            tot_task += ctx.second->task_list_.size();
+
+            tot_ctx++;
+            tot_task += [&]() -> size_t {
+
+                        if (run_test.empty())
+                            return ctx.second->task_list_.size();
+
+                        else return std::count_if (std::begin(ctx.second->task_list_),
+                                       std::end(ctx.second->task_list_),
+                                       [&] (std::pair<context::Task,std::string> const &elem) -> bool {
+
+                                            return std::find(std::begin(run_test), std::end(run_test), elem.second) != std::end(run_test);
+                                       });
+                        }();
         }
 
         unsigned int run = 0, ok = 0;
-        std::cout << "Loading " << tot_task << " tests in " << context::instance().size() << " contexts." << std::endl;
+
+        std::ofstream ferr("/tmp/" + std::string(argv[0]));
+
+        std::cout << "Loading " << tot_task << " tests in " << tot_ctx << " contexts." << std::endl;
 
         // iterate over contexts:
         //
 
         for(auto & c : context::instance())
         {
-            if (!run_ctx.empty() &&
-                run_ctx.find(c.first) == run_ctx.end())
+            if (!run_ctx.empty() && run_ctx.find(c.first) == run_ctx.end())
                 continue;
 
             if (verbose)
-                std::cout << "context " << c.first << ":\n";
+                std::cout << "Context " << c.first << ":\n";
 
             // run setup:
             //
@@ -559,32 +575,44 @@ inline namespace yats
                 {
                     err = true;
                     std::cerr << e.what() << std::endl;
+                    ferr      << e.what() << std::endl;
                 }
                 catch(std::exception &e)
                 {
+                    std::ostringstream msg;
                     err = true;
-                    format(std::cerr, "test ", c.first, "::" , t.second , ":\n",
-                           "    -> Unexpected exception: '", e.what(), "' error.\n");
+                    format(msg, "test ", c.first, "::" , t.second , ":\n", "    -> Unexpected exception: '", e.what(), "' error.\n");
+                    std::cerr << msg.str();
+                    ferr      << msg.str();
+                }
+                catch(...)
+                {
+                    std::ostringstream msg;
+                    err = true;
+                    format(msg, "test ", c.first, "::" , t.second , ":\n", "    -> Unknown exception.\n");
+                    std::cerr << msg.str();
+                    ferr      << msg.str();
                 }
 
                 if (err && exit_immediatly)
                     _Exit(1);
 
                 if (verbose)
-                    std::cout << "[" <<
-                        duration_to_string(std::chrono::system_clock::now() - start) << "]" << std::endl;
+                    std::cout << "[" << duration_to_string(std::chrono::system_clock::now() - start) << "]" << std::endl;
 
             }
 
             // run teardown:
             //
+
             for(auto & t : c.second->teardown_)
             {
                 t(0);
             }
         }
 
-        std::cerr << (run-ok) << " out of " << run  << " tests failed. " << assert_counter() << " assertions passed." << std::endl;
+        std::cerr <<  std::endl << (run-ok) << " out of " << run  << " tests failed. " << assert_counter() << " assertions passed." << std::endl;
+
         return ok == run ? EXIT_SUCCESS : EXIT_FAILURE;
     }
 

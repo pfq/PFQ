@@ -277,7 +277,7 @@ Context(PFQ)
 
         x.open(pfq::group_policy::undefined, 64);
 
-        AssertNothrow(x.group_stats(11));
+        AssertNoThrow(x.group_stats(11));
 
         x.join_group(11);
 
@@ -296,7 +296,7 @@ Context(PFQ)
 
         auto gid = x.group_id();
 
-        AssertNothrow(x.group_stats(gid));
+        AssertNoThrow(x.group_stats(gid));
 
         auto s = x.group_stats(gid);
         Assert(s.recv, is_equal_to(0UL));
@@ -312,7 +312,7 @@ Context(PFQ)
 
         auto gid = x.group_id();
 
-        AssertNothrow(x.group_stats(gid));
+        AssertNoThrow(x.group_stats(gid));
 
         auto s = x.group_stats(gid);
         Assert(s.recv, is_equal_to(0UL));
@@ -328,7 +328,7 @@ Context(PFQ)
 
         auto gid = x.group_id();
 
-        AssertNothrow(x.group_stats(gid));
+        AssertNoThrow(x.group_stats(gid));
 
         auto s = x.group_stats(gid);
         Assert(s.recv, is_equal_to(0UL));
@@ -428,7 +428,7 @@ Context(PFQ)
         {
             pfq::socket x(pfq::group_policy::restricted, 64);
             pfq::socket y(pfq::group_policy::undefined, 64);
-            AssertNothrow(y.join_group(x.group_id(), pfq::group_policy::restricted));
+            AssertNoThrow(y.join_group(x.group_id(), pfq::group_policy::restricted));
         }
         {
             pfq::socket x(pfq::group_policy::restricted, 64);
@@ -457,7 +457,7 @@ Context(PFQ)
         {
             pfq::socket x(pfq::group_policy::shared, 64);
             pfq::socket y(pfq::group_policy::undefined, 64);
-            AssertNothrow(y.join_group(x.group_id(), pfq::group_policy::shared));
+            AssertNoThrow(y.join_group(x.group_id(), pfq::group_policy::shared));
         }
         {
             pfq::socket x(pfq::group_policy::shared, 64);
@@ -516,8 +516,8 @@ Context(PFQ)
     Test(vlan_enable)
     {
         pfq::socket x(64);
-        AssertNothrow(x.vlan_filters_enable(x.group_id(), true));
-        AssertNothrow(x.vlan_filters_enable(x.group_id(), false));
+        AssertNoThrow(x.vlan_filters_enable(x.group_id(), true));
+        AssertNoThrow(x.vlan_filters_enable(x.group_id(), false));
     }
 
     Test(vlan_filt)
@@ -526,18 +526,18 @@ Context(PFQ)
         AssertThrow(x.vlan_set_filter(x.group_id(), 22));
         AssertThrow(x.vlan_reset_filter(x.group_id(), 22));
 
-        AssertNothrow(x.vlan_filters_enable(x.group_id(), true));
-        AssertNothrow(x.vlan_set_filter(x.group_id(), 22));
-        AssertNothrow(x.vlan_reset_filter(x.group_id(), 22));
+        AssertNoThrow(x.vlan_filters_enable(x.group_id(), true));
+        AssertNoThrow(x.vlan_set_filter(x.group_id(), 22));
+        AssertNoThrow(x.vlan_reset_filter(x.group_id(), 22));
 
-        AssertNothrow(x.vlan_filters_enable(x.group_id(), false));
+        AssertNoThrow(x.vlan_filters_enable(x.group_id(), false));
     }
 
 
     Test(bind_tx)
     {
         pfq::socket q(64);
-        AssertNothrow(q.bind_tx("lo", -1));
+        AssertNoThrow(q.bind_tx("lo", -1));
         AssertThrow(q.bind_tx("unknown", -1));
     }
 
@@ -551,7 +551,7 @@ Context(PFQ)
 
         q.enable();
 
-        AssertNothrow(q.start_tx_thread(0));
+        AssertNoThrow(q.start_tx_thread(0));
     }
 
 
@@ -565,7 +565,7 @@ Context(PFQ)
         q.enable();
         q.start_tx_thread(0);
 
-        AssertNothrow(q.stop_tx_thread());
+        AssertNoThrow(q.stop_tx_thread());
     }
 
     Test(wakeup_tx_thread)
@@ -579,7 +579,7 @@ Context(PFQ)
 
         q.start_tx_thread(0);
 
-        AssertNothrow(q.wakeup_tx_thread());
+        AssertNoThrow(q.wakeup_tx_thread());
     }
 
     Test(tx_queue_flush)
@@ -591,20 +591,20 @@ Context(PFQ)
 
         q.enable();
 
-        AssertNothrow(q.tx_queue_flush());
+        AssertNoThrow(q.tx_queue_flush());
     }
 
     Test(egress_bind)
     {
         pfq::socket q(64);
-        AssertNothrow(q.egress_bind("lo", -1));
+        AssertNoThrow(q.egress_bind("lo", -1));
         AssertThrow(q.egress_bind("unknown", -1));
     }
 
     Test(egress_unbind)
     {
         pfq::socket q(64);
-        AssertNothrow(q.egress_unbind());
+        AssertNoThrow(q.egress_unbind());
     }
 
 // TODO
