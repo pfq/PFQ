@@ -62,9 +62,9 @@ int \hyperlink{namespacepfq_a251ac5cc269aa123009754edf62ab8b4}{ifindex} (int fd,
 \begin{DoxyCompactList}\small\item\em Given a device name, return the interface index. \end{DoxyCompactList}\item 
 void \hyperlink{namespacepfq_a62b9f1831dc714353f6edcb66a4fad4d}{set\+\_\+promisc} (int fd, const char $\ast$dev, bool value)
 \begin{DoxyCompactList}\small\item\em Set/unset the promiscuous mode for the given device. \end{DoxyCompactList}\item 
-int \hyperlink{namespacepfq_ad66073cd0c09437436747515fcab1e43}{nametoindex} (const char $\ast$dev)
+unsigned int \hyperlink{namespacepfq_a55d90c336462015bb2b4e40f9f853847}{nametoindex} (const char $\ast$dev)
 \begin{DoxyCompactList}\small\item\em Given the device name return the related index. \end{DoxyCompactList}\item 
-std\+::string \hyperlink{namespacepfq_a092fadb4224e60ee17efb0553d982438}{indextoname} (int i)
+std\+::string \hyperlink{namespacepfq_a7bf753b90ae15e20c86f40ba59c87c36}{indextoname} (unsigned int i)
 \begin{DoxyCompactList}\small\item\em Given the index return the related device name. \end{DoxyCompactList}\item 
 std\+::string \hyperlink{namespacepfq_a02a1861a64cc518394d3cc4361799c9f}{trim} (std\+::string str)
 \begin{DoxyCompactList}\small\item\em Trim pending and trailing whitespaces from a string. \end{DoxyCompactList}\item 
@@ -163,24 +163,24 @@ Hardware concurrency.
 
 Given a device name, return the interface index. 
 
-\hypertarget{namespacepfq_a092fadb4224e60ee17efb0553d982438}{\index{pfq@{pfq}!indextoname@{indextoname}}
+\hypertarget{namespacepfq_a7bf753b90ae15e20c86f40ba59c87c36}{\index{pfq@{pfq}!indextoname@{indextoname}}
 \index{indextoname@{indextoname}!pfq@{pfq}}
 \subsubsection[{indextoname}]{\setlength{\rightskip}{0pt plus 5cm}std\+::string pfq\+::indextoname (
 \begin{DoxyParamCaption}
-\item[{int}]{i}
+\item[{unsigned int}]{i}
 \end{DoxyParamCaption}
-)\hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq_a092fadb4224e60ee17efb0553d982438}
+)\hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq_a7bf753b90ae15e20c86f40ba59c87c36}
 
 
 Given the index return the related device name. 
 
-\hypertarget{namespacepfq_ad66073cd0c09437436747515fcab1e43}{\index{pfq@{pfq}!nametoindex@{nametoindex}}
+\hypertarget{namespacepfq_a55d90c336462015bb2b4e40f9f853847}{\index{pfq@{pfq}!nametoindex@{nametoindex}}
 \index{nametoindex@{nametoindex}!pfq@{pfq}}
-\subsubsection[{nametoindex}]{\setlength{\rightskip}{0pt plus 5cm}int pfq\+::nametoindex (
+\subsubsection[{nametoindex}]{\setlength{\rightskip}{0pt plus 5cm}unsigned int pfq\+::nametoindex (
 \begin{DoxyParamCaption}
 \item[{const char $\ast$}]{dev}
 \end{DoxyParamCaption}
-)\hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq_ad66073cd0c09437436747515fcab1e43}
+)\hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq_a55d90c336462015bb2b4e40f9f853847}
 
 
 Given the device name return the related index. 

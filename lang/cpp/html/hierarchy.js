@@ -16,18 +16,20 @@ var hierarchy =
     [ "pfq::lang::Function< Sig >", "structpfq_1_1lang_1_1Function.html", [
       [ "pfq::lang::Combinator1< Pred >", "structpfq_1_1lang_1_1Combinator1.html", null ],
       [ "pfq::lang::Combinator2< Pred1, Pred2 >", "structpfq_1_1lang_1_1Combinator2.html", null ],
-      [ "pfq::lang::HFunction< P >", "structpfq_1_1lang_1_1HFunction.html", null ],
-      [ "pfq::lang::HFunction1< P, F >", "structpfq_1_1lang_1_1HFunction1.html", null ],
-      [ "pfq::lang::HFunction2< P, F1, F2 >", "structpfq_1_1lang_1_1HFunction2.html", null ],
-      [ "pfq::lang::HFunction3< F >", "structpfq_1_1lang_1_1HFunction3.html", null ],
-      [ "pfq::lang::HFunction4< F, G >", "structpfq_1_1lang_1_1HFunction4.html", null ],
       [ "pfq::lang::MFunction", "structpfq_1_1lang_1_1MFunction.html", null ],
       [ "pfq::lang::MFunction1", "structpfq_1_1lang_1_1MFunction1.html", null ],
-      [ "pfq::lang::MFunction2< P >", "structpfq_1_1lang_1_1MFunction2.html", null ],
+      [ "pfq::lang::MFunction1P< P >", "structpfq_1_1lang_1_1MFunction1P.html", null ],
+      [ "pfq::lang::MFunction2", "structpfq_1_1lang_1_1MFunction2.html", null ],
+      [ "pfq::lang::MFunctionF< F >", "structpfq_1_1lang_1_1MFunctionF.html", null ],
+      [ "pfq::lang::MFunctionFF< F, G >", "structpfq_1_1lang_1_1MFunctionFF.html", null ],
+      [ "pfq::lang::MFunctionP< P >", "structpfq_1_1lang_1_1MFunctionP.html", null ],
+      [ "pfq::lang::MFunctionPF< P, F >", "structpfq_1_1lang_1_1MFunctionPF.html", null ],
+      [ "pfq::lang::MFunctionPFF< P, F1, F2 >", "structpfq_1_1lang_1_1MFunctionPFF.html", null ],
       [ "pfq::lang::Predicate", "structpfq_1_1lang_1_1Predicate.html", null ],
       [ "pfq::lang::Predicate1", "structpfq_1_1lang_1_1Predicate1.html", null ],
-      [ "pfq::lang::Predicate2< Prop >", "structpfq_1_1lang_1_1Predicate2.html", null ],
-      [ "pfq::lang::Predicate3< Prop >", "structpfq_1_1lang_1_1Predicate3.html", null ],
+      [ "pfq::lang::Predicate2", "structpfq_1_1lang_1_1Predicate2.html", null ],
+      [ "pfq::lang::PredicateR< Prop >", "structpfq_1_1lang_1_1PredicateR.html", null ],
+      [ "pfq::lang::PredicateR1< Prop >", "structpfq_1_1lang_1_1PredicateR1.html", null ],
       [ "pfq::lang::Property", "structpfq_1_1lang_1_1Property.html", null ]
     ] ],
     [ "pfq::lang::FunctionDescr", "structpfq_1_1lang_1_1FunctionDescr.html", null ],
@@ -36,10 +38,8 @@ var hierarchy =
     [ "pfq::lang::kleisly< Function< M< B >(A) >, Function< M< C >(B)> >", "structpfq_1_1lang_1_1kleisly_3_01Function_3_01M_3_01B_01_4_07A_08_01_4_00_01Function_3_01M_3_01C_01_4_07B_08_4_01_4.html", null ],
     [ "pfq::lang::Property1", "structpfq_1_1lang_1_1Property1.html", null ],
     [ "pfq::lang::SkBuff", "structpfq_1_1lang_1_1SkBuff.html", null ],
-    [ "pfq::lang::StorableShow< Tp, typename >", "structpfq_1_1lang_1_1StorableShow.html", null ],
     [ "pfq::lang::StorableShowBase", "structpfq_1_1lang_1_1StorableShowBase.html", [
-      [ "pfq::lang::StorableShow< Tp, typename std::enable_if< has_insertion_operator<Tp >::value >::type >", "structpfq_1_1lang_1_1StorableShow_3_01Tp_00_01typename_01std_1_1enable__if_3_01has__insertion__od122cff4f7f007817c88f5b20f967bec.html", null ],
-      [ "pfq::lang::StorableShow< Tp, typename std::enable_if<!has_insertion_operator<Tp >::value >::type >", "structpfq_1_1lang_1_1StorableShow_3_01Tp_00_01typename_01std_1_1enable__if_3_9has__insertion__op9c58e317fa180887b2f1b929c60377c7.html", null ]
+      [ "pfq::lang::StorableShow< Tp >", "structpfq_1_1lang_1_1StorableShow.html", null ]
     ] ],
     [ "true_type", null, [
       [ "pfq::lang::is_Function< Function< S > >", "structpfq_1_1lang_1_1is__Function_3_01Function_3_01S_01_4_01_4.html", null ],

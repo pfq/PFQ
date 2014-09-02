@@ -22,8 +22,10 @@ struct \hyperlink{structpfq_1_1queue_1_1iterator}{iterator}
 \item 
 \hyperlink{classpfq_1_1queue_ae22b5277f726ea9b39a4088128d3cc38}{queue} (void $\ast$addr, size\+\_\+t \hyperlink{classpfq_1_1queue_aa8ec2b1bd7c4fb2ec924f356c95b81ae}{slot\+\_\+size}, size\+\_\+t queue\+\_\+len, size\+\_\+t \hyperlink{classpfq_1_1queue_a6eec9332ce5248055b03376855469087}{index})
 \begin{DoxyCompactList}\small\item\em Constructor. \end{DoxyCompactList}\item 
+\hyperlink{classpfq_1_1queue_a63fb6cb036b494997edceace28b4dfac}{queue} (\hyperlink{classpfq_1_1queue}{queue} const \&)=default
+\begin{DoxyCompactList}\small\item\em Defaulted copy constructor. \end{DoxyCompactList}\item 
 \hyperlink{classpfq_1_1queue_a2605dcaac04245b5316262a4cf7cd1c0}{$\sim$queue} ()=default
-\item 
+\begin{DoxyCompactList}\small\item\em Defaulted destructor. \end{DoxyCompactList}\item 
 size\+\_\+t \hyperlink{classpfq_1_1queue_a367fd68b05da07a1d95f91b8d2ae9990}{size} () const 
 \begin{DoxyCompactList}\small\item\em Return the number of packets stored in this queue. \end{DoxyCompactList}\item 
 bool \hyperlink{classpfq_1_1queue_ade52977341756f260e8e9f18c0b7b5c5}{empty} () const 
@@ -68,13 +70,28 @@ The memory where packets are stored is not owned by this class.
 
 Constructor. 
 
-Construct a queue descriptor, stored at the given address. \hypertarget{classpfq_1_1queue_a2605dcaac04245b5316262a4cf7cd1c0}{\index{pfq\+::queue@{pfq\+::queue}!````~queue@{$\sim$queue}}
+Construct a queue descriptor, stored at the given address. \hypertarget{classpfq_1_1queue_a63fb6cb036b494997edceace28b4dfac}{\index{pfq\+::queue@{pfq\+::queue}!queue@{queue}}
+\index{queue@{queue}!pfq\+::queue@{pfq\+::queue}}
+\subsubsection[{queue}]{\setlength{\rightskip}{0pt plus 5cm}pfq\+::queue\+::queue (
+\begin{DoxyParamCaption}
+\item[{{\bf queue} const \&}]{}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [default]}}}\label{classpfq_1_1queue_a63fb6cb036b494997edceace28b4dfac}
+
+
+Defaulted copy constructor. 
+
+\hypertarget{classpfq_1_1queue_a2605dcaac04245b5316262a4cf7cd1c0}{\index{pfq\+::queue@{pfq\+::queue}!````~queue@{$\sim$queue}}
 \index{````~queue@{$\sim$queue}!pfq\+::queue@{pfq\+::queue}}
 \subsubsection[{$\sim$queue}]{\setlength{\rightskip}{0pt plus 5cm}pfq\+::queue\+::$\sim$queue (
 \begin{DoxyParamCaption}
 {}
 \end{DoxyParamCaption}
 )\hspace{0.3cm}{\ttfamily [default]}}}\label{classpfq_1_1queue_a2605dcaac04245b5316262a4cf7cd1c0}
+
+
+Defaulted destructor. 
+
 
 
 \subsection{Member Function Documentation}

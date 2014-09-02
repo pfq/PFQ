@@ -103,8 +103,7 @@ Inheritance diagram for pfq::lang::StorableShowBase:</div>
  <div class="center">
   <img src="structpfq_1_1lang_1_1StorableShowBase.png" usemap="#pfq::lang::StorableShowBase_map" alt=""/>
   <map id="pfq::lang::StorableShowBase_map" name="pfq::lang::StorableShowBase_map">
-<area href="structpfq_1_1lang_1_1StorableShow_3_01Tp_00_01typename_01std_1_1enable__if_3_01has__insertion__od122cff4f7f007817c88f5b20f967bec.html" alt="pfq::lang::StorableShow&lt; Tp, typename std::enable_if&lt; has_insertion_operator&lt;Tp &gt;::value &gt;::type &gt;" shape="rect" coords="0,56,577,80"/>
-<area href="structpfq_1_1lang_1_1StorableShow_3_01Tp_00_01typename_01std_1_1enable__if_3_9has__insertion__op9c58e317fa180887b2f1b929c60377c7.html" alt="pfq::lang::StorableShow&lt; Tp, typename std::enable_if&lt;!has_insertion_operator&lt;Tp &gt;::value &gt;::type &gt;" shape="rect" coords="587,56,1164,80"/>
+<area href="structpfq_1_1lang_1_1StorableShow.html" alt="pfq::lang::StorableShow&lt; Tp &gt;" shape="rect" coords="0,56,181,80"/>
 </map>
  </div></div>
 <table class="memberdecls">
@@ -114,6 +113,8 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a1c6d20492a999c961c1120dce33a131d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4b7712509609a2cb18dccf6b699d6ed9"><td class="memItemLeft" align="right" valign="top">virtual void const *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpfq_1_1lang_1_1StorableShowBase.html#a4b7712509609a2cb18dccf6b699d6ed9">forall_addr</a> () const =0</td></tr>
 <tr class="separator:a4b7712509609a2cb18dccf6b699d6ed9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8d4e90f7d227a8f5c0ca14ed7bdd0b5f"><td class="memItemLeft" align="right" valign="top">virtual&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpfq_1_1lang_1_1StorableShowBase.html#a8d4e90f7d227a8f5c0ca14ed7bdd0b5f">~StorableShowBase</a> ()</td></tr>
+<tr class="separator:a8d4e90f7d227a8f5c0ca14ed7bdd0b5f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
@@ -125,7 +126,42 @@ Static Public Member Functions</h2></td></tr>
 <tr class="memitem:a4bc431bc15a71b7ae20964e2685a35cf"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
 <tr class="memitem:a4bc431bc15a71b7ae20964e2685a35cf"><td class="memTemplItemLeft" align="right" valign="top">static const void *&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="structpfq_1_1lang_1_1StorableShowBase.html#a4bc431bc15a71b7ae20964e2685a35cf">get_addr</a> (const std::vector&lt; T &gt; &amp;that)</td></tr>
 <tr class="separator:a4bc431bc15a71b7ae20964e2685a35cf"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9e69c1f0fd60de5a72662bf6e958c4db"><td class="memItemLeft" align="right" valign="top">static std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpfq_1_1lang_1_1StorableShowBase.html#a9e69c1f0fd60de5a72662bf6e958c4db">get_string</a> (std::string const &amp;that)</td></tr>
+<tr class="separator:a9e69c1f0fd60de5a72662bf6e958c4db"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aec6a0735276796b19a8035d35e770116"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
+<tr class="memitem:aec6a0735276796b19a8035d35e770116"><td class="memTemplItemLeft" align="right" valign="top">static std::string&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="structpfq_1_1lang_1_1StorableShowBase.html#aec6a0735276796b19a8035d35e770116">get_string</a> (std::vector&lt; T &gt; const &amp;that)</td></tr>
+<tr class="separator:aec6a0735276796b19a8035d35e770116"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a882c1bc29fbb4c81d9d483201864f41d"><td class="memTemplParams" colspan="2">template&lt;typename T , typename std::enable_if&lt; has_insertion_operator&lt;T &gt;::value &gt;::type *  = nullptr&gt; </td></tr>
+<tr class="memitem:a882c1bc29fbb4c81d9d483201864f41d"><td class="memTemplItemLeft" align="right" valign="top">static std::string&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="structpfq_1_1lang_1_1StorableShowBase.html#a882c1bc29fbb4c81d9d483201864f41d">get_string</a> (T const &amp;that)</td></tr>
+<tr class="separator:a882c1bc29fbb4c81d9d483201864f41d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac5fb47fc6cf85e5279a8aff258173e49"><td class="memTemplParams" colspan="2">template&lt;typename T , typename std::enable_if&lt;!has_insertion_operator&lt;T &gt;::value &gt;::type *  = nullptr&gt; </td></tr>
+<tr class="memitem:ac5fb47fc6cf85e5279a8aff258173e49"><td class="memTemplItemLeft" align="right" valign="top">static std::string&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="structpfq_1_1lang_1_1StorableShowBase.html#ac5fb47fc6cf85e5279a8aff258173e49">get_string</a> (T const &amp;)</td></tr>
+<tr class="separator:ac5fb47fc6cf85e5279a8aff258173e49"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
+<h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a class="anchor" id="a8d4e90f7d227a8f5c0ca14ed7bdd0b5f"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">virtual pfq::lang::StorableShowBase::~StorableShowBase </td>
+          <td>(</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">virtual</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <h2 class="groupheader">Member Function Documentation</h2>
 <a class="anchor" id="a4b7712509609a2cb18dccf6b699d6ed9"></a>
 <div class="memitem">
@@ -148,7 +184,7 @@ Static Public Member Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Implemented in <a class="el" href="structpfq_1_1lang_1_1StorableShow_3_01Tp_00_01typename_01std_1_1enable__if_3_9has__insertion__op9c58e317fa180887b2f1b929c60377c7.html#a033512488e9bbf5604714f7cf54012d2">pfq::lang::StorableShow&lt; Tp, typename std::enable_if&lt;!has_insertion_operator&lt;Tp &gt;::value &gt;::type &gt;</a>, and <a class="el" href="structpfq_1_1lang_1_1StorableShow_3_01Tp_00_01typename_01std_1_1enable__if_3_01has__insertion__od122cff4f7f007817c88f5b20f967bec.html#a7ca1f63697a81ab672a294b9e21f9e96">pfq::lang::StorableShow&lt; Tp, typename std::enable_if&lt; has_insertion_operator&lt;Tp &gt;::value &gt;::type &gt;</a>.</p>
+<p>Implemented in <a class="el" href="structpfq_1_1lang_1_1StorableShow.html#ab0cc607b98685f57624da91d302ab014">pfq::lang::StorableShow&lt; Tp &gt;</a>.</p>
 
 </div>
 </div>
@@ -173,7 +209,7 @@ Static Public Member Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
-<p>Implemented in <a class="el" href="structpfq_1_1lang_1_1StorableShow_3_01Tp_00_01typename_01std_1_1enable__if_3_9has__insertion__op9c58e317fa180887b2f1b929c60377c7.html#a85241b6fce1ce68edfe68dc6c9920ce2">pfq::lang::StorableShow&lt; Tp, typename std::enable_if&lt;!has_insertion_operator&lt;Tp &gt;::value &gt;::type &gt;</a>, and <a class="el" href="structpfq_1_1lang_1_1StorableShow_3_01Tp_00_01typename_01std_1_1enable__if_3_01has__insertion__od122cff4f7f007817c88f5b20f967bec.html#a59253ff200a3638e04df6db43c2b6c53">pfq::lang::StorableShow&lt; Tp, typename std::enable_if&lt; has_insertion_operator&lt;Tp &gt;::value &gt;::type &gt;</a>.</p>
+<p>Implemented in <a class="el" href="structpfq_1_1lang_1_1StorableShow.html#a48c9f0b6cfd17abbd159b3da080dcc6c">pfq::lang::StorableShow&lt; Tp &gt;</a>.</p>
 
 </div>
 </div>
@@ -253,6 +289,108 @@ template&lt;typename T &gt; </div>
 
 </div>
 </div>
+<a class="anchor" id="a9e69c1f0fd60de5a72662bf6e958c4db"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static std::string pfq::lang::StorableShowBase::get_string </td>
+          <td>(</td>
+          <td class="paramtype">std::string const &amp;&#160;</td>
+          <td class="paramname"><em>that</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="aec6a0735276796b19a8035d35e770116"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T &gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static std::string pfq::lang::StorableShowBase::get_string </td>
+          <td>(</td>
+          <td class="paramtype">std::vector&lt; T &gt; const &amp;&#160;</td>
+          <td class="paramname"><em>that</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a882c1bc29fbb4c81d9d483201864f41d"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T , typename std::enable_if&lt; has_insertion_operator&lt;T &gt;::value &gt;::type *  = nullptr&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static std::string pfq::lang::StorableShowBase::get_string </td>
+          <td>(</td>
+          <td class="paramtype">T const &amp;&#160;</td>
+          <td class="paramname"><em>that</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="ac5fb47fc6cf85e5279a8aff258173e49"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename T , typename std::enable_if&lt;!has_insertion_operator&lt;T &gt;::value &gt;::type *  = nullptr&gt; </div>
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">static std::string pfq::lang::StorableShowBase::get_string </td>
+          <td>(</td>
+          <td class="paramtype">T const &amp;&#160;</td>
+          <td class="paramname"></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span><span class="mlabel">static</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <hr/>The documentation for this struct was generated from the following file:<ul>
 <li>C++/pfq-lang/<a class="el" href="lang_8hpp_source.html">lang.hpp</a></li>
 </ul>
@@ -262,7 +400,7 @@ template&lt;typename T &gt; </div>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="namespacepfq.html">pfq</a></li><li class="navelem"><a class="el" href="namespacepfq_1_1lang.html">lang</a></li><li class="navelem"><a class="el" href="structpfq_1_1lang_1_1StorableShowBase.html">StorableShowBase</a></li>
-    <li class="footer">Generated on Thu Aug 7 2014 11:50:02 for PFQ-Lang eDLS by
+    <li class="footer">Generated on Tue Sep 2 2014 14:16:38 for PFQ-Lang eDLS by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.7 </li>
   </ul>

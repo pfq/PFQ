@@ -1,4 +1,6 @@
 var searchData=
 [
-  ['get_5faddr',['get_addr',['../structpfq_1_1lang_1_1StorableShowBase.html#a716426f3a3c0a37e5cbce068dc18cda5',1,'pfq::lang::StorableShowBase::get_addr(std::string const &amp;that)'],['../structpfq_1_1lang_1_1StorableShowBase.html#abbf4497b2a5de3ee38e9ee1c7ffd734d',1,'pfq::lang::StorableShowBase::get_addr(T const &amp;that)'],['../structpfq_1_1lang_1_1StorableShowBase.html#a4bc431bc15a71b7ae20964e2685a35cf',1,'pfq::lang::StorableShowBase::get_addr(const std::vector&lt; T &gt; &amp;that)']]]
+  ['forall_5faddr',['forall_addr',['../structpfq_1_1lang_1_1StorableShowBase.html#a4b7712509609a2cb18dccf6b699d6ed9',1,'pfq::lang::StorableShowBase::forall_addr()'],['../structpfq_1_1lang_1_1StorableShow.html#ab0cc607b98685f57624da91d302ab014',1,'pfq::lang::StorableShow::forall_addr()']]],
+  ['forall_5fshow',['forall_show',['../structpfq_1_1lang_1_1StorableShowBase.html#a1c6d20492a999c961c1120dce33a131d',1,'pfq::lang::StorableShowBase::forall_show()'],['../structpfq_1_1lang_1_1StorableShow.html#a48c9f0b6cfd17abbd159b3da080dcc6c',1,'pfq::lang::StorableShow::forall_show()']]],
+  ['fun',['Fun',['../structpfq_1_1lang_1_1Argument.html#a774e93098c8bc9f3472facd7ddeb08ca',1,'pfq::lang::Argument']]]
 ];

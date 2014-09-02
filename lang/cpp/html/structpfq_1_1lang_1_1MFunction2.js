@@ -1,7 +1,7 @@
 var structpfq_1_1lang_1_1MFunction2 =
 [
-    [ "MFunction2", "structpfq_1_1lang_1_1MFunction2.html#a93b02748a7cde8d7c59f95411e0f714a", null ],
-    [ "arg_", "structpfq_1_1lang_1_1MFunction2.html#a4f7c22f4fe50fe26f130d736303d75fa", null ],
-    [ "pred_", "structpfq_1_1lang_1_1MFunction2.html#a55acfd3493eb2369c4591e3ecb4a8d33", null ],
-    [ "symbol_", "structpfq_1_1lang_1_1MFunction2.html#a74137a8065d53ce354c03718b5724d50", null ]
+    [ "MFunction2", "structpfq_1_1lang_1_1MFunction2.html#ace1b84e90e4d64d527569c710e49a743", null ],
+    [ "arg1_", "structpfq_1_1lang_1_1MFunction2.html#a0093c5b459cb597f34588894f5105e6b", null ],
+    [ "arg2_", "structpfq_1_1lang_1_1MFunction2.html#a5f2a3278cdc59b6560ea02e7f9ead5ab", null ],
+    [ "symbol_", "structpfq_1_1lang_1_1MFunction2.html#afdd71c7aed6b8f5f801bfd6c98f7274d", null ]
 ];

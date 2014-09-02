@@ -171,12 +171,12 @@ Traits &gt; &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a cla
 <tr class="memitem:a62b9f1831dc714353f6edcb66a4fad4d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepfq.html#a62b9f1831dc714353f6edcb66a4fad4d">set_promisc</a> (int fd, const char *dev, bool value)</td></tr>
 <tr class="memdesc:a62b9f1831dc714353f6edcb66a4fad4d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set/unset the promiscuous mode for the given device.  <a href="#a62b9f1831dc714353f6edcb66a4fad4d">More...</a><br /></td></tr>
 <tr class="separator:a62b9f1831dc714353f6edcb66a4fad4d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad66073cd0c09437436747515fcab1e43"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepfq.html#ad66073cd0c09437436747515fcab1e43">nametoindex</a> (const char *dev)</td></tr>
-<tr class="memdesc:ad66073cd0c09437436747515fcab1e43"><td class="mdescLeft">&#160;</td><td class="mdescRight">Given the device name return the related index.  <a href="#ad66073cd0c09437436747515fcab1e43">More...</a><br /></td></tr>
-<tr class="separator:ad66073cd0c09437436747515fcab1e43"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a092fadb4224e60ee17efb0553d982438"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepfq.html#a092fadb4224e60ee17efb0553d982438">indextoname</a> (int i)</td></tr>
-<tr class="memdesc:a092fadb4224e60ee17efb0553d982438"><td class="mdescLeft">&#160;</td><td class="mdescRight">Given the index return the related device name.  <a href="#a092fadb4224e60ee17efb0553d982438">More...</a><br /></td></tr>
-<tr class="separator:a092fadb4224e60ee17efb0553d982438"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a55d90c336462015bb2b4e40f9f853847"><td class="memItemLeft" align="right" valign="top">unsigned int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepfq.html#a55d90c336462015bb2b4e40f9f853847">nametoindex</a> (const char *dev)</td></tr>
+<tr class="memdesc:a55d90c336462015bb2b4e40f9f853847"><td class="mdescLeft">&#160;</td><td class="mdescRight">Given the device name return the related index.  <a href="#a55d90c336462015bb2b4e40f9f853847">More...</a><br /></td></tr>
+<tr class="separator:a55d90c336462015bb2b4e40f9f853847"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7bf753b90ae15e20c86f40ba59c87c36"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepfq.html#a7bf753b90ae15e20c86f40ba59c87c36">indextoname</a> (unsigned int i)</td></tr>
+<tr class="memdesc:a7bf753b90ae15e20c86f40ba59c87c36"><td class="mdescLeft">&#160;</td><td class="mdescRight">Given the index return the related device name.  <a href="#a7bf753b90ae15e20c86f40ba59c87c36">More...</a><br /></td></tr>
+<tr class="separator:a7bf753b90ae15e20c86f40ba59c87c36"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a02a1861a64cc518394d3cc4361799c9f"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepfq.html#a02a1861a64cc518394d3cc4361799c9f">trim</a> (std::string str)</td></tr>
 <tr class="memdesc:a02a1861a64cc518394d3cc4361799c9f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Trim pending and trailing whitespaces from a string.  <a href="#a02a1861a64cc518394d3cc4361799c9f">More...</a><br /></td></tr>
 <tr class="separator:a02a1861a64cc518394d3cc4361799c9f"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -371,7 +371,7 @@ template&lt;size_t N, typename T &gt; </div>
 
 </div>
 </div>
-<a class="anchor" id="a092fadb4224e60ee17efb0553d982438"></a>
+<a class="anchor" id="a7bf753b90ae15e20c86f40ba59c87c36"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -381,7 +381,7 @@ template&lt;size_t N, typename T &gt; </div>
         <tr>
           <td class="memname">std::string pfq::indextoname </td>
           <td>(</td>
-          <td class="paramtype">int&#160;</td>
+          <td class="paramtype">unsigned int&#160;</td>
           <td class="paramname"><em>i</em></td><td>)</td>
           <td></td>
         </tr>
@@ -397,7 +397,7 @@ template&lt;size_t N, typename T &gt; </div>
 
 </div>
 </div>
-<a class="anchor" id="ad66073cd0c09437436747515fcab1e43"></a>
+<a class="anchor" id="a55d90c336462015bb2b4e40f9f853847"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -405,7 +405,7 @@ template&lt;size_t N, typename T &gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">int pfq::nametoindex </td>
+          <td class="memname">unsigned int pfq::nametoindex </td>
           <td>(</td>
           <td class="paramtype">const char *&#160;</td>
           <td class="paramname"><em>dev</em></td><td>)</td>
@@ -697,7 +697,7 @@ template&lt;typename CharT , typename Traits &gt; </div>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="namespacepfq.html">pfq</a></li>
-    <li class="footer">Generated on Thu Aug 7 2014 11:50:02 for PFQ C++ library by
+    <li class="footer">Generated on Tue Sep 2 2014 14:16:38 for PFQ C++ library by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.7 </li>
   </ul>
