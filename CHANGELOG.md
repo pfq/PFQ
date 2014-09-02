@@ -30,3 +30,8 @@ PFQ 3.3
  * Simple proc added in /proc/net/pfq.
  * Code cleanup and minor bugs fixed.
  * Tools and tests updated.
+
+PFQ 3.4
+-------
+ * PFQ daemon released.
+
