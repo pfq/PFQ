@@ -32,11 +32,11 @@ Features
 * pfq-omatic, a script that allows to compile drivers and get the accelerated versions.
 * Accelerated pcap library.
 
-Publication
------------
+Publications
+------------
 
-We received the Best-Paper-Award at PAM2012 in Vienna for the paper _"PFQ: a Novel Engine for Multi-Gigabit Packet Capturing With Multi-Core Commodity Hardware"_":
-http://tma2012.ftw.at/papers/PAM2012paper12.pdf
+* _"PFQ: a Novel Engine for Multi-Gigabit Packet Capturing With Multi-Core Commodity Hardware"_: Best-Paper-Award at PAM2012 in Vienna http://tma2012.ftw.at/papers/PAM2012paper12.pdf
+* _"A Purely Functional Approach to Packet Processing"_: ANCS 2014 Conference (October 2014, Marina del Rey) 
 
 Author
 ------
