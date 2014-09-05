@@ -23,6 +23,8 @@ module Daemon where
 
 import Control.Concurrent
 import Control.Monad
+import Data.List
+import Data.List.Split
 
 import System.Log.Logger
 import System.Directory
@@ -46,6 +48,10 @@ equalFile :: FilePath -> FilePath -> IO Bool
 equalFile a b = liftM2 (==) (readFile a) (readFile b)
 
 
+replace :: Eq a => [a] -> [a] -> [a] -> [a]
+replace old new = intercalate new . splitOn old
+
+
 getConfigFiles :: Options -> IO (FilePath, FilePath)
 getConfigFiles opts = getAppUserDataDirectory "pfqd" >>=
     \udata -> let src = config_file opts
@@ -59,7 +65,7 @@ rebuildRestart opts action = do
    copyFile src dst
    runCompiler >>= \(ec,_,msg) -> if ec == ExitSuccess
        then action >> infoM "daemon" "Done. Restarting..." >> executeFile "pfqd" False ["-c" , src, "-d"] Nothing
-       else mapM_ (errorM "daemon") (lines msg)
+       else mapM_ (errorM "daemon") (lines $ replace "PFQconf.hs" (config_file opts) msg)
 
 
 runCompiler :: IO (ExitCode, String, String)

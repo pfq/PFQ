@@ -28,7 +28,8 @@ executable pfqd
                        directory >= 1.2,
                        filepath  >= 1.2,
                        process >= 1.0,
-                       unix >= 2.5
+                       unix >= 2.5,
+                       split >= 0.2
   extra-libraries:     pfq
   hs-source-dirs:      src
   default-language:    Haskell2010
