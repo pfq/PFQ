@@ -27,6 +27,7 @@ import Data.Default
 import Data.Maybe
 
 import System.Log.Logger
+import qualified System.Log.Handler as SLH
 import System.Log.Handler.Syslog
 import System.Posix.Daemon
 import System.Environment
@@ -73,7 +74,7 @@ main = do
         then  do
             unless (null pfq_config) $ infoM "daemon" $ "Loading configuration for " ++ show (length pfq_config) ++ " groups:"
             forM_ pfq_config (\(gid,comp) -> infoM "daemon" ("    PFQ group " ++ show gid ++ ": " ++ pretty comp ))
-        else  infoM "daemon" "PFQd started!" >> rebuildRestart opts (return ())
+        else  infoM "daemon" "PFQd started!" >> rebuildRestart opts (SLH.close s)
 
     -- run daemon...
 
@@ -81,8 +82,8 @@ main = do
 
     runDetached Nothing DevNull $
         (Q.openDefault >>= \fp ->
-            withForeignPtr fp $ \q -> runQSetup opts q >> daemon opts (Q.close q))
-            `E.catch` (\e -> errorM "daemon" (show (e :: SomeException)) >> daemon opts (return()))
+            withForeignPtr fp $ \q -> runQSetup opts q >> daemon opts (SLH.close s >> Q.close q))
+            `E.catch` (\e -> errorM "daemon" (show (e :: SomeException)) >> daemon opts (SLH.close s))
 
 
 runQSetup :: Options -> Ptr PFqTag -> IO ()
