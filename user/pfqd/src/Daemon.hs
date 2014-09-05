@@ -47,8 +47,8 @@ import Network.PFq as Q
 daemon :: Options -> IO () -> IO ()
 daemon opts closefds = forever $ do
     (src, dst) <- getConfigFiles opts
-    eq <- equalFile src dst
-    unless eq $ rebuildRestart opts callback
+    new <- newerFile src dst
+    when new $ rebuildRestart opts closefds
     threadDelay 1000000
 
 
@@ -68,8 +68,14 @@ getConfigFiles opts = getAppUserDataDirectory "pfqd" >>=
                   dst = udata </> "PFQconf.hs" in return (src, dst)
 
 
-equalFile :: FilePath -> FilePath -> IO Bool
-equalFile a b = liftM2 (==) (readFile a) (readFile b)
+newerFile :: FilePath -> FilePath -> IO Bool
+newerFile a b = do
+    at <- getModificationTime a
+    be <- doesFileExist b
+    if not be
+        then return True
+        else do bt <- getModificationTime b
+                return ( at > bt )
 
 
 replace :: Eq a => [a] -> [a] -> [a] -> [a]
