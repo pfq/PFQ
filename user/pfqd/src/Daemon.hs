@@ -41,6 +41,7 @@ import PFQconf
 
 import Network.PFq as Q
 
+
 equalFile :: FilePath -> FilePath -> IO Bool
 equalFile a b = liftM2 (==) (readFile a) (readFile b)
 
@@ -51,26 +52,25 @@ getConfigFiles opts = getAppUserDataDirectory "pfqd" >>=
                   dst = udata </> "PFQconf.hs" in return (src, dst)
 
 
-rebuild :: Options -> IO () -> IO ()
-rebuild opts action = do
+rebuildRestart :: Options -> IO () -> IO ()
+rebuildRestart opts action = do
    infoM "daemon" "Configuration updated. Rebuilding..."
    (src, dst) <- getConfigFiles opts
    copyFile src dst
-   ec <- runCompiler
-   if ec == ExitSuccess
+   runCompiler >>= \(ec,_,msg) -> if ec == ExitSuccess
        then action >> infoM "daemon" "Done. Restarting..." >> executeFile "pfqd" False ["-c" , src, "-d"] Nothing
-       else errorM "daemon" "Build error!"
+       else mapM_ (errorM "daemon") (lines msg)
 
 
-runCompiler :: IO ExitCode
-runCompiler = system "ghc --make Main -o pfqd -lpfq"
+runCompiler :: IO (ExitCode, String, String)
+runCompiler = readProcessWithExitCode "ghc" ["--make", "Main", "-o", "pfqd", "-lpfq"] ""
 
 
 daemon :: Options -> Ptr PFqTag -> IO ()
 daemon opts q = forever $ do
     (src, dst) <- getConfigFiles opts
     eq <- equalFile src dst
-    unless eq $ rebuild opts (Q.close q)
+    unless eq $ rebuildRestart opts (Q.close q)
     threadDelay 1000000
 
 

@@ -86,7 +86,7 @@ main = do
         then  do
             unless (null pfq_config) $ infoM "daemon" $ "Loading configuration for " ++ show (length pfq_config) ++ " groups:"
             forM_ pfq_config (\(gid,comp) -> infoM "daemon" ("    PFQ group " ++ show gid ++ ": " ++ pretty comp ))
-        else  infoM "daemon" "PFQd started!" >> rebuild opts (return ())
+        else  infoM "daemon" "PFQd started!" >> rebuildRestart opts (return ())
 
     -- run daemon...
 
