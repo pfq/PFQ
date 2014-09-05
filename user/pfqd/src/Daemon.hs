@@ -45,7 +45,7 @@ import Network.PFq as Q
 
 
 daemon :: Options -> IO () -> IO ()
-daemon opts callback = forever $ do
+daemon opts closefds = forever $ do
     (src, dst) <- getConfigFiles opts
     eq <- equalFile src dst
     unless eq $ rebuildRestart opts callback
@@ -53,12 +53,12 @@ daemon opts callback = forever $ do
 
 
 rebuildRestart :: Options -> IO () -> IO ()
-rebuildRestart opts action = do
+rebuildRestart opts closefds = do
    infoM "daemon" "Configuration updated. Rebuilding..."
    (src, dst) <- getConfigFiles opts
    copyFile src dst
    runCompiler >>= \(ec,_,msg) -> if ec == ExitSuccess
-       then action >> infoM "daemon" "Done. Restarting..." >> executeFile "pfqd" False ["-c" , src, "-d"] Nothing
+       then infoM "daemon" "Done. Restarting..." >> closefds >> executeFile "pfqd" False ["-c" , src, "-d"] Nothing
        else mapM_ (errorM "daemon") (lines $ replace "PFQconf.hs" (config_file opts) msg)
 
 
