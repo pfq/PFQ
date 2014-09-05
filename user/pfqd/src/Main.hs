@@ -50,7 +50,6 @@ runSetup opts q = do
         let gid = fromIntegral g
         Q.joinGroup q gid [class_control] policy_shared
         Q.groupComputation q gid comp
-    daemon opts (Q.close q)
 
 
 main :: IO ()
