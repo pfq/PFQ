@@ -44,18 +44,12 @@ import PFQconf
 import Network.PFq as Q
 
 
-equalFile :: FilePath -> FilePath -> IO Bool
-equalFile a b = liftM2 (==) (readFile a) (readFile b)
-
-
-replace :: Eq a => [a] -> [a] -> [a] -> [a]
-replace old new = intercalate new . splitOn old
-
-
-getConfigFiles :: Options -> IO (FilePath, FilePath)
-getConfigFiles opts = getAppUserDataDirectory "pfqd" >>=
-    \udata -> let src = config_file opts
-                  dst = udata </> "PFQconf.hs" in return (src, dst)
+daemon :: Options -> IO () -> IO ()
+daemon opts callback = forever $ do
+    (src, dst) <- getConfigFiles opts
+    eq <- equalFile src dst
+    unless eq $ rebuildRestart opts callback
+    threadDelay 1000000
 
 
 rebuildRestart :: Options -> IO () -> IO ()
@@ -68,15 +62,21 @@ rebuildRestart opts action = do
        else mapM_ (errorM "daemon") (lines $ replace "PFQconf.hs" (config_file opts) msg)
 
 
+getConfigFiles :: Options -> IO (FilePath, FilePath)
+getConfigFiles opts = getAppUserDataDirectory "pfqd" >>=
+    \udata -> let src = config_file opts
+                  dst = udata </> "PFQconf.hs" in return (src, dst)
+
+
+equalFile :: FilePath -> FilePath -> IO Bool
+equalFile a b = liftM2 (==) (readFile a) (readFile b)
+
+
+replace :: Eq a => [a] -> [a] -> [a] -> [a]
+replace old new = intercalate new . splitOn old
+
+
 runCompiler :: IO (ExitCode, String, String)
 runCompiler = readProcessWithExitCode "ghc" ["--make", "Main", "-o", "pfqd", "-lpfq"] ""
-
-
-daemon :: Options -> Ptr PFqTag -> IO ()
-daemon opts q = forever $ do
-    (src, dst) <- getConfigFiles opts
-    eq <- equalFile src dst
-    unless eq $ rebuildRestart opts (Q.close q)
-    threadDelay 1000000
 
 

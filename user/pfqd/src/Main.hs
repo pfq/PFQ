@@ -46,13 +46,11 @@ import Daemon
 
 runSetup :: Options -> Ptr PFqTag -> IO ()
 runSetup opts q = do
-    E.catch ( forM_ pfq_config $ \(g, comp) -> do
-                let gid = fromIntegral g
-                Q.joinGroup q gid [class_control] policy_shared
-                Q.groupComputation q gid comp
-            )
-            (\e -> let msg = show (e :: SomeException) in errorM "daemon" msg)
-    daemon opts q
+    forM_ pfq_config $ \(g, comp) -> do
+        let gid = fromIntegral g
+        Q.joinGroup q gid [class_control] policy_shared
+        Q.groupComputation q gid comp
+    daemon opts (Q.close q)
 
 
 main :: IO ()
@@ -93,7 +91,12 @@ main = do
     infoM "daemon" "Running daemon..."
 
     runDetached Nothing DevNull $ do
-        fp <- Q.openDefault
-        withForeignPtr fp $ \q -> runSetup opts q
-
+        E.catch
+            (
+                do
+                fp <- Q.openDefault
+                withForeignPtr fp $ \q -> runSetup opts q >> daemon opts (Q.close q)
+            )
+            (\e -> let msg = show (e :: SomeException) in errorM "daemon" msg)
+        daemon opts (return ())
 
