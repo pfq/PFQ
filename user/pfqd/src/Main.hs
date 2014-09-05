@@ -44,14 +44,6 @@ import PFQconf
 import Daemon
 
 
-runSetup :: Options -> Ptr PFqTag -> IO ()
-runSetup opts q = do
-    forM_ pfq_config $ \(g, comp) -> do
-        let gid = fromIntegral g
-        Q.joinGroup q gid [class_control] policy_shared
-        Q.groupComputation q gid comp
-
-
 main :: IO ()
 main = do
 
@@ -63,7 +55,6 @@ main = do
 
     when (null $ config_file opts) $ withArgs ["--help"] $ void (cmdArgsRun options)
 
-
     -- open log...
 
     s <- openlog "pfqd" [PID] USER DEBUG
@@ -71,8 +62,7 @@ main = do
     updateGlobalLogger "daemon" (addHandler s)
     updateGlobalLogger "daemon" (setLevel DEBUG)
 
-
-    -- getting work dir...
+    -- getting workdir...
 
     workdir <-getAppUserDataDirectory "pfqd"
     setCurrentDirectory workdir
@@ -89,13 +79,17 @@ main = do
 
     infoM "daemon" "Running daemon..."
 
-    runDetached Nothing DevNull $ do
-        E.catch
-            (
-                do
-                fp <- Q.openDefault
-                withForeignPtr fp $ \q -> runSetup opts q >> daemon opts (Q.close q)
-            )
-            (\e -> let msg = show (e :: SomeException) in errorM "daemon" msg)
-        daemon opts (return ())
+    runDetached Nothing DevNull $
+        (Q.openDefault >>= \fp ->
+            withForeignPtr fp $ \q -> runQSetup opts q >> daemon opts (Q.close q))
+            `E.catch` (\e -> errorM "daemon" (show (e :: SomeException)) >> daemon opts (return()))
+
+
+runQSetup :: Options -> Ptr PFqTag -> IO ()
+runQSetup opts q =
+    forM_ pfq_config $ \(g, comp) -> do
+        let gid = fromIntegral g
+        Q.joinGroup q gid [class_control] policy_shared
+        Q.groupComputation q gid comp
+
 
