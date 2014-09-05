@@ -45,6 +45,7 @@
 #include <set>
 #include <random>
 #include <chrono>
+#include <csignal>
 
 #ifdef __GNUC__
 #include <cxxabi.h>
@@ -224,8 +225,6 @@
 
 inline namespace yats
 {
-    using namespace std::placeholders;
-
     ////////////////////////////////////////////// C++ yats exception:
 
     struct yats_error : public std::runtime_error
@@ -250,7 +249,7 @@ inline namespace yats
         }
     };
 
-    std::string
+    inline std::string
     type_name(nothing)
     {
         return "no";
@@ -264,7 +263,7 @@ inline namespace yats
         }
     };
 
-    std::string
+    inline std::string
     type_name(anything)
     {
         return "any";
@@ -272,7 +271,7 @@ inline namespace yats
 
     ////////////////////////////////////////////// C++ demangling tool:
 
-    static inline std::string
+    inline std::string
     cxa_demangle(const char *name)
     {
         int status;
@@ -283,7 +282,7 @@ inline namespace yats
     }
 
     template <typename Tp>
-    std::string
+    inline std::string
     type_name(const Tp &t)
     {
         return cxa_demangle(typeid(t).name());
@@ -382,6 +381,7 @@ inline namespace yats
         std::cout << "  -e, --exit-immediately  On error exit.\n";
         std::cout << "  -c, --context context   Run tests from the given context.\n";
         std::cout << "  -v, --verbose           Verbose mode.\n";
+        std::cout << "  -s, --signal            Capture unix signals.\n";
         std::cout << "  -r, --run int           Number of run per Random test (1000 default).\n";
         std::cout << "  -l, --list              Print the list of tests\n";
         std::cout << "  -h, --help              Print this help.\n";
@@ -426,23 +426,105 @@ inline namespace yats
             return std::to_string(static_cast<double>(std::chrono::duration_cast<std::chrono::microseconds>(d).count())/1000000.0) + " s";
     }
 
+    ////////////////////////////////////////////// singleton:
+
+    struct singleton
+    {
+        static uint32_t &
+        assert_counter()
+        {
+            static uint32_t c;
+            return c;
+        }
+
+        static const std::string &
+        program_name(std::string n = "")
+        {
+            static std::string name(n);
+            return name;
+        }
+
+        static const std::map<int, std::string> &
+        unix_signal_map()
+        {
+            static std::map<int, std::string> m = []() {
+                std::map<std::string, std::vector<int>> reverse
+                    = {{"SIGHUP"  ,  {     1     }},
+                       {"SIGINT"  ,  {     2     }},
+                       {"SIGQUIT" ,  {     3     }},
+                       {"SIGILL"  ,  {     4     }},
+                       {"SIGABRT" ,  {     6     }},
+                       {"SIGFPE"  ,  {     8     }},
+                       {"SIGKILL" ,  {     9     }},
+                       {"SIGSEGV" ,  {    11     }},
+                       {"SIGPIPE" ,  {    13     }},
+                       {"SIGALRM" ,  {    14     }},
+                       {"SIGTERM" ,  {    15     }},
+                       {"SIGUSR1" ,  { 30,10,16  }},
+                       {"SIGUSR2" ,  { 31,12,17  }},
+                       {"SIGCHLD" ,  { 20,17,18  }},
+                       {"SIGCONT" ,  { 19,18,25  }},
+                       {"SIGSTOP" ,  { 17,19,23  }},
+                       {"SIGTSTP" ,  { 18,20,24  }},
+                       {"SIGTTIN" ,  { 21,21,26  }},
+                       {"SIGTTOU" ,  { 22,22,27  }},
+                       {"SIGBUS"  ,  { 10,7,10   }},
+                       {"SIGPROF" ,  { 27,27,29  }},
+                       {"SIGSYS"  ,  { 12,31,12  }},
+                       {"SIGTRAP" ,  {    5      }},
+                       {"SIGURG"  ,  { 16,23,21  }},
+                       {"SIGVTALRM", { 26,26,28  }},
+                       {"SIGXCPU" ,  { 24,24,30  }},
+                       {"SIGXFSZ" ,  { 25,25,31  }}};
+
+                std::map<int, std::string> sigmap;
+
+                for (auto const & sig : reverse)
+                {
+                    for(auto const &signum : sig.second)
+                    {
+                        sigmap.insert(std::make_pair(signum, sig.first));
+                    }
+                }
+
+                return sigmap;
+            }();
+
+            return m;
+        }
+
+        static std::string
+        unix_signal(int n)
+        {
+            auto it = unix_signal_map().find(n);
+            if (it != std::end(unix_signal_map())) {
+                return it->second;
+            }
+            return std::string("SIGNUM ") + std::to_string(n);
+        }
+
+    };
+
     ////////////////////////////////////////////// run tests:
 
-    uint32_t &
-    assert_counter()
+    static void sig_handler(int n)
     {
-        static uint32_t c;
-        return c;
+        std::ofstream ferr("/tmp/" + singleton::program_name(), std::fstream::app);
+        ferr << singleton::unix_signal(n) << std::endl;
+        _Exit (-n);
     }
 
     static int run(int argc = 0, char *argv[] = nullptr)
     {
         bool exit_immediatly = false,
              err             = false,
-             verbose         = false;
+             verbose         = false,
+             capture_signal  = false;
         int  repeat_run      = 1000;
 
         std::set<std::string> run_ctx, run_test;
+
+        singleton::program_name(argv[0]);
 
         for(auto arg = argv + 1; argv && (arg != argv + argc); ++arg)
         {
@@ -455,6 +537,12 @@ inline namespace yats
             if (strcmp(*arg, "-e") == 0 ||
                 strcmp(*arg, "--exit-immediately") == 0) {
                 exit_immediatly = true;
+                continue;
+            }
+
+            if (strcmp(*arg, "-s") == 0 ||
+                strcmp(*arg, "--signal") == 0) {
+                capture_signal = true;
                 continue;
             }
 
@@ -501,6 +589,13 @@ inline namespace yats
             run_test.insert(*arg);
         }
 
+        std::cout << "YATS: verbose " << std::boolalpha << verbose << ", UNIX signals " << capture_signal << std::endl;
+
+        if (capture_signal) {
+            for(int n = 0; n < 64; n++)
+                signal(n,  sig_handler);
+        }
+
         size_t tot_ctx = 0, tot_task = 0;
 
         for(auto & ctx : context::instance())
@@ -525,7 +620,7 @@ inline namespace yats
 
         unsigned int run = 0, ok = 0;
 
-        std::ofstream ferr("/tmp/" + std::string(argv[0]));
+        std::ofstream ferr("/tmp/" + singleton::program_name());
 
         std::cout << "Loading " << tot_task << " tests in " << tot_ctx << " contexts." << std::endl;
 
@@ -579,19 +674,18 @@ inline namespace yats
                 }
                 catch(std::exception &e)
                 {
-                    std::ostringstream msg;
                     err = true;
-                    format(msg, "test ", c.first, "::" , t.second , ":\n", "    -> Unexpected exception: '", e.what(), "' error.\n");
-                    std::cerr << msg.str();
-                    ferr      << msg.str();
+                    auto msg = make_string("test ", c.first, "::" , t.second , ":\n", "    -> Unexpected exception: '", e.what(), "' error.\n");
+                    std::cerr << msg;
+                    ferr      << msg;
                 }
                 catch(...)
                 {
-                    std::ostringstream msg;
                     err = true;
-                    format(msg, "test ", c.first, "::" , t.second , ":\n", "    -> Unknown exception.\n");
-                    std::cerr << msg.str();
-                    ferr      << msg.str();
+
+                    auto msg = make_string("test ", c.first, "::" , t.second , ":\n", "    -> Unknown exception.\n");
+                    std::cerr << msg;
+                    ferr      << msg;
                 }
 
                 if (err && exit_immediatly)
@@ -611,7 +705,7 @@ inline namespace yats
             }
         }
 
-        std::cerr <<  std::endl << (run-ok) << " out of " << run  << " tests failed. " << assert_counter() << " assertions passed." << std::endl;
+        std::cerr <<  std::endl << (run-ok) << " out of " << run  << " tests failed. " << singleton::assert_counter() << " assertions passed." << std::endl;
 
         return ok == run ? EXIT_SUCCESS : EXIT_FAILURE;
     }
@@ -664,7 +758,7 @@ inline namespace yats
             switch(t)
             {
             case type::random:
-                it->second->task_list_.push_back(std::make_pair(std::bind(fun, name, _1), name));
+                it->second->task_list_.push_back(std::make_pair(std::bind(fun, name, std::placeholders::_1), name));
                 break;
             default:
                 throw std::logic_error("yats");
@@ -703,7 +797,7 @@ inline namespace yats
 
     ////////////////////////////////////////////// pretty printer values:
 
-    std::string inline pretty_value(bool v)
+    static inline std::string pretty_value(bool v)
     {
         std::ostringstream o;
         o << std::boolalpha << v;
@@ -861,7 +955,7 @@ inline namespace yats
     {                        \
         return predicate<T>("is_" #_name_,  \
                             std::function<bool(const T&)>( \
-                                std::bind(std::_name_<T>(), _1, value)), \
+                                std::bind(std::_name_<T>(), std::placeholders::_1, value)), \
                                 value); \
     }
 
@@ -920,7 +1014,7 @@ inline namespace yats
     {
         return predicate<bool>( "is_boolean",
                                 std::function<bool(bool)>(
-                                    std::bind(std::equal_to<bool>(), _1, true)), true);
+                                    std::bind(std::equal_to<bool>(), std::placeholders::_1, true)), true);
     }
 
     inline predicate<bool>
@@ -928,7 +1022,7 @@ inline namespace yats
     {
         return predicate<bool>( "is_boolean",
                                 std::function<bool(bool)>(
-                                    std::bind(std::equal_to<bool>(), _1, false)), false);
+                                    std::bind(std::equal_to<bool>(), std::placeholders::_1, false)), false);
     }
 
     ////////////////////////////////////////////// predicate factory:
@@ -952,7 +1046,7 @@ inline namespace yats
                              "    -> predicate ", pred.str(), " failed: got ", pretty_value(value)));
         }
 
-        assert_counter()++;
+        singleton::assert_counter()++;
     }
 
     template <typename T, typename E>
@@ -970,7 +1064,7 @@ inline namespace yats
                                              " exception caught with reason \"",
                                              e.what(),
                                              "\" != \"", obj.what(), "\"!"));
-            assert_counter()++;
+            singleton::assert_counter()++;
             return;
         }
         catch(std::exception &e)
@@ -981,7 +1075,7 @@ inline namespace yats
                                             " exception expected. Got ",
                                             yats::type_name(e),
                                             " (\"", e.what(), "\")!"));
-            assert_counter()++;
+            singleton::assert_counter()++;
             return;
         }
         catch(...)
@@ -990,7 +1084,7 @@ inline namespace yats
                 throw yats_error(make_string(YATS_HEADER(ctx, test, file, line),
                                             "    -> ", yats::type_name(obj),
                                             " exception expected: got unknown exception!"));
-            assert_counter()++;
+            singleton::assert_counter()++;
             return;
         }
 
@@ -999,9 +1093,8 @@ inline namespace yats
                                         "    -> ", yats::type_name(obj),
                                         " exception expected!"));
 
-        assert_counter()++;
+        singleton::assert_counter()++;
     }
-
 }
 
 #endif /* _YATS_HPP_ */
