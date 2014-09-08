@@ -45,7 +45,7 @@ extern char * strdup_user(const char __user *str);
 extern Action_SkBuff pfq_run(struct pfq_computation_tree *prg, SkBuff);
 
 extern void pr_devel_computation_descr(struct pfq_computation_descr const *);
-extern void pr_devel_computation_tree(struct pfq_computation_tree const *tree);
+extern void pr_devel_computation_tree(struct pfq_computation_tree const *);
 
 
 

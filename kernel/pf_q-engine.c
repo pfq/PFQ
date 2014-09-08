@@ -168,6 +168,10 @@ void
 pr_devel_computation_tree(struct pfq_computation_tree const *tree)
 {
         size_t n;
+        if (tree == NULL) {
+        	pr_devel("[PFQ] computation (unspecified)\n");
+        	return;
+	}
         pr_devel("[PFQ] computation size:%zu entry_point:%p\n", tree->size, tree->entry_point);
         for(n = 0; n < tree->size; n++)
         {
@@ -232,6 +236,10 @@ void
 pr_devel_computation_descr(struct pfq_computation_descr const *descr)
 {
         size_t n;
+        if (descr == NULL) {
+        	pr_devel("[PFQ] computation (unspecified)\n");
+        	return;
+	}
         pr_devel("[PFQ] computation size:%zu entry_point:%zu\n", descr->size, descr->entry_point);
         for(n = 0; n < descr->size; n++)
         {

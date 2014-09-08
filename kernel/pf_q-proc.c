@@ -91,9 +91,8 @@ seq_printf_computation_tree(struct seq_file *m, struct pfq_computation_tree cons
 {
         size_t n;
 
-	if (tree == NULL)
-	{
-        	seq_printf(m, "computation (null)\n");
+	if (tree == NULL) {
+        	seq_printf(m, "computation (unspecified)\n");
         	return;
 	}
 
