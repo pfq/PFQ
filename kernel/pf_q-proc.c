@@ -90,6 +90,13 @@ static void
 seq_printf_computation_tree(struct seq_file *m, struct pfq_computation_tree const *tree)
 {
         size_t n;
+
+	if (tree == NULL)
+	{
+        	seq_printf(m, "computation (null)\n");
+        	return;
+	}
+
         seq_printf(m, "computation size:%zu entry_point:%p\n", tree->size, tree->entry_point);
         for(n = 0; n < tree->size; n++)
         {
@@ -113,6 +120,7 @@ static int pfq_proc_comp(struct seq_file *m, void *v)
                 comp = (struct pfq_computation_tree *)atomic_long_read(&pfq_groups[n].comp);
 
 		seq_printf(m, "group:%zu ", n);
+
 		seq_printf_computation_tree(m, comp);
 	}
 
