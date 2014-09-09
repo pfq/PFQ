@@ -28,6 +28,7 @@
 #include <linux/kernel.h>
 
 #include <pf_q-monad.h>
+#include <pf_q-module.h>
 
 struct pfq_computation_descr;
 struct pfq_computation_tree;
@@ -46,6 +47,8 @@ extern Action_SkBuff pfq_run(struct pfq_computation_tree *prg, SkBuff);
 
 extern void pr_devel_computation_descr(struct pfq_computation_descr const *);
 extern void pr_devel_computation_tree(struct pfq_computation_tree const *);
+
+size_t snprintf_functional_node(char *buffer, size_t size, struct pfq_functional_node const *node, size_t index);
 
 
 
