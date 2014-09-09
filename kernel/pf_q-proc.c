@@ -152,11 +152,11 @@ static int pfq_proc_stats(struct seq_file *m, void *v)
 
 static int pfq_proc_memory(struct seq_file *m, void *v)
 {
-	seq_printf(m, "OS alloc  : %zu\n", sparse_read(&global_stats.os_alloc));
-	seq_printf(m, "OS free   : %zu\n", sparse_read(&global_stats.os_free));
-	seq_printf(m, "RC alloc  : %zu\n", sparse_read(&global_stats.rc_alloc));
-	seq_printf(m, "RC free   : %zu\n", sparse_read(&global_stats.rc_free));
-	seq_printf(m, "RC error  : %zu\n", sparse_read(&global_stats.rc_error));
+	seq_printf(m, "OS alloc        : %zu\n", sparse_read(&global_stats.os_alloc));
+	seq_printf(m, "OS free         : %zu\n", sparse_read(&global_stats.os_free));
+	seq_printf(m, "recycled  alloc : %zu\n", sparse_read(&global_stats.rc_alloc));
+	seq_printf(m, "recycled  free  : %zu\n", sparse_read(&global_stats.rc_free));
+	seq_printf(m, "recycled  error : %zu\n", sparse_read(&global_stats.rc_error));
 	return 0;
 }
 
