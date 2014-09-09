@@ -36,7 +36,7 @@
 #include <pf_q-macro.h>
 #include <pf_q-proc.h>
 #include <pf_q-memory.h>
-
+#include <pf_q-engine.h>
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(3,10,0)
 #define PDE_DATA(a) PDE(a)->data
@@ -57,30 +57,8 @@ static void
 seq_printf_functional_node(struct seq_file *m, struct pfq_functional_node const *node, size_t index)
 {
 	char buffer[256];
-        size_t n, len = 0;
 
-	len += sprintf(buffer + len, "%4zu@%p: %pF { ", index, node, node->fun.ptr);
-
-	for(n = 0; n < sizeof(node->fun.arg)/sizeof(node->fun.arg[0]); n++)
-	{
-		if (node->fun.arg[n].nelem != -1) /* vector */
-		{
-			if (node->fun.arg[n].value)
-				len += sprintf(buffer + len, "%p[%zu] ",(void *)node->fun.arg[n].value, node->fun.arg[n].nelem);
-		}
-		else
-		{
-			if ((node->fun.arg[n].value & 0xffffLLU) == (node->fun.arg[n].value))
-				len += sprintf(buffer + len, "%lld ",(int64_t)node->fun.arg[n].value);
-			else
-				len += sprintf(buffer + len, "%p ",(void *)node->fun.arg[n].value);
-		}
-	}
-
-	if (node->next)
-		len += sprintf(buffer + len, "} -> next:%p", node->next);
-	else
-		len += sprintf(buffer + len, "}");
+ 	snprintf_functional_node(buffer, sizeof(buffer), node, index);
 
 	seq_printf(m, "%s\n", buffer);
 }
