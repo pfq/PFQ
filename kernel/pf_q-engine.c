@@ -203,7 +203,7 @@ pr_devel_functional_descr(struct pfq_functional_descr const *descr, size_t index
 	char buffer[256];
 
         const char *symbol, *signature;
-        size_t n, len = 0;
+        size_t n, len = 0, size = sizeof(buffer);
 
        	if (descr->symbol == NULL) {
 		pr_devel("%zu   NULL :: ???\n", index);
@@ -213,30 +213,33 @@ pr_devel_functional_descr(struct pfq_functional_descr const *descr, size_t index
         symbol    = strdup_user(descr->symbol);
 	signature = signature_by_user_symbol(descr->symbol);
 
-	len += sprintf(buffer, "%3zu   %s :: %s - [", index, symbol, signature);
+	len += snprintf(buffer, size, "%3zu   %s :: %s - [", index, symbol, signature);
 
         for(n = 0; n < sizeof(descr->arg)/sizeof(descr->arg[0]); n++)
 	{
+		if (size <= len)
+			return;
+
 		if (is_arg_function(&descr->arg[n])) {
 
 			if (descr->arg[n].size)
-				len += sprintf(buffer + len, "fun(%zu) ",  descr->arg[n].size);
+				len += snprintf(buffer + len, size - len, "fun(%zu) ",  descr->arg[n].size);
 		}
 		else if (is_arg_vector(&descr->arg[n])) {
 
-			len += sprintf(buffer + len, "pod_%zu[%zu] ",  descr->arg[n].size, descr->arg[n].nelem);
+			len += snprintf(buffer + len, size - len, "pod_%zu[%zu] ",  descr->arg[n].size, descr->arg[n].nelem);
 		}
 		else if (is_arg_data(&descr->arg[n])) {
 
-			len += sprintf(buffer + len, "pod_%zu ",  descr->arg[n].size);
+			len += snprintf(buffer + len, size - len, "pod_%zu ",  descr->arg[n].size);
 		}
 		else if (is_arg_string(&descr->arg[n])) {
 			char * tmp = strdup_user(descr->arg[n].ptr);
-			len += sprintf(buffer + len, "'%s' ", tmp);
+			len += snprintf(buffer + len, size - len, "'%s' ", tmp);
 			kfree(tmp);
 		}
 		else if (!is_arg_null(&descr->arg[n])) {
-			len += sprintf(buffer + len, "??? ");
+			len += snprintf(buffer + len, size - len, "??? ");
 		}
 	}
 
