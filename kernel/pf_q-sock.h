@@ -49,7 +49,8 @@ struct pfq_rx_opt
 	size_t 			slot_size;
 
 	wait_queue_head_t 	waitqueue;
-        struct pfq_group_rx_stats stats;
+
+        struct pfq_socket_rx_stats stats;
 
 } ____cacheline_aligned_in_smp;
 
@@ -104,7 +105,7 @@ struct pfq_tx_opt
 
 	struct task_struct 	*thread;
 
-	struct pfq_group_tx_stats stats;
+	struct pfq_socket_tx_stats stats;
 
 } ____cacheline_aligned_in_smp;
 
