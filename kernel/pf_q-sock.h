@@ -39,18 +39,17 @@ extern atomic_long_t pfq_sock_vector[Q_MAX_ID];
 
 struct pfq_rx_opt
 {
-        struct pfq_rx_queue_hdr *queue_ptr;
-        void *                  base_addr;
+	struct pfq_rx_queue_hdr *queue_ptr;
+	void 			*base_addr;
 
-        int                     tstamp;
+	int    			tstamp;
 
-        size_t                  caplen;
+	size_t 			caplen;
+	size_t 			size;
+	size_t 			slot_size;
 
-        size_t                  size;
-        size_t                  slot_size;
-
-        wait_queue_head_t       waitqueue;
-        pfq_rx_stat_t           stat;
+	wait_queue_head_t 	waitqueue;
+        struct pfq_group_rx_stats stats;
 
 } ____cacheline_aligned_in_smp;
 
@@ -78,35 +77,34 @@ void pfq_rx_opt_init(struct pfq_rx_opt *that, size_t caplen)
         init_waitqueue_head(&that->waitqueue);
 
         /* reset stats */
-        sparse_set(&that->stat.recv, 0);
-        sparse_set(&that->stat.lost, 0);
-        sparse_set(&that->stat.drop, 0);
+        sparse_set(&that->stats.recv, 0);
+        sparse_set(&that->stats.lost, 0);
+        sparse_set(&that->stats.drop, 0);
 
 }
 
 
 struct pfq_tx_opt
 {
-        struct pfq_tx_queue_hdr *queue_ptr;
-        void *                  base_addr;
+	struct pfq_tx_queue_hdr *queue_ptr;
+	void 			*base_addr;
 
-        uint64_t                counter;
+	uint64_t 		counter;
 
-        size_t                  maxlen;
+	size_t  		maxlen;
+	size_t  		size;
+	size_t  		slot_size;
 
-        size_t                  size;
-        size_t                  slot_size;
+	struct net_device 	*dev;
+	struct netdev_queue 	*txq;
 
-        struct net_device       *dev;
-        struct netdev_queue     *txq;
+	int 			if_index;
+	int 			hw_queue;
+	int 			cpu;
 
-        int                     if_index;
-        int                     hw_queue;
-        int                     cpu;
+	struct task_struct 	*thread;
 
-        struct task_struct      *thread;
-
-        pfq_tx_stat_t           stat;
+	struct pfq_group_tx_stats stats;
 
 } ____cacheline_aligned_in_smp;
 
@@ -134,8 +132,8 @@ void pfq_tx_opt_init(struct pfq_tx_opt *that, size_t maxlen)
 
         that->thread            = NULL;
 
-        sparse_set(&that->stat.sent, 0);
-        sparse_set(&that->stat.disc, 0);
+        sparse_set(&that->stats.sent, 0);
+        sparse_set(&that->stats.disc, 0);
 }
 
 
