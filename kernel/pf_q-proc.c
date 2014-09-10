@@ -118,10 +118,10 @@ static int pfq_proc_groups(struct seq_file *m, void *v)
 		if (!pfq_groups[n].policy)
 			continue;
 
-        	seq_printf(m, "%5zu: %-9lu %-9lu %-9lu %-9lu ", n, sparse_read(&pfq_groups[n].recv),
-				   	                           sparse_read(&pfq_groups[n].drop),
-					                           sparse_read(&pfq_groups[n].frwd),
-					                           sparse_read(&pfq_groups[n].kern));
+        	seq_printf(m, "%5zu: %-9lu %-9lu %-9lu %-9lu ", n, sparse_read(&pfq_groups[n].stats.recv),
+				   	                           sparse_read(&pfq_groups[n].stats.drop),
+					                           sparse_read(&pfq_groups[n].stats.frwd),
+					                           sparse_read(&pfq_groups[n].stats.kern));
 
         	seq_printf(m, "%3d %3d ", pfq_groups[n].policy, pfq_groups[n].pid);
 

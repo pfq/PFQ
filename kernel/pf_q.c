@@ -337,7 +337,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 
 			/* increment recv counter for this group */
 
-			__sparse_inc(&pfq_groups[gid].recv, cpu);
+			__sparse_inc(&pfq_groups[gid].stats.recv, cpu);
 
 
 			/* check bpf filter */
@@ -348,7 +348,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 			if (bpf && !SK_RUN_FILTER(bpf, buff.skb))
 #endif
                         {
-				__sparse_inc(&pfq_groups[gid].drop, cpu);
+				__sparse_inc(&pfq_groups[gid].stats.drop, cpu);
 				continue;
 			}
 
@@ -356,7 +356,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 
 			if (vlan_filter_enabled) {
 				if (!__pfq_check_group_vlan_filter(gid, buff.skb->vlan_tci & ~VLAN_TAG_PRESENT)) {
-					__sparse_inc(&pfq_groups[gid].drop, cpu);
+					__sparse_inc(&pfq_groups[gid].stats.drop, cpu);
 					continue;
 				}
 			}
@@ -380,7 +380,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 				buff = pfq_run(prg, buff).value;
 
 				if (buff.skb == NULL) {
-                                	__sparse_inc(&pfq_groups[gid].drop, cpu);
+                                	__sparse_inc(&pfq_groups[gid].stats.drop, cpu);
 					continue;
 				}
 
@@ -424,13 +424,13 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 
 				}
 				else {
-                                	__sparse_inc(&pfq_groups[gid].drop, cpu);
+                                	__sparse_inc(&pfq_groups[gid].stats.drop, cpu);
 				}
 
 				/* update stats */
 
-                                __sparse_add(&pfq_groups[gid].frwd, PFQ_CB(buff.skb)->log->num_fwd - num_fwd, cpu);
-                                __sparse_add(&pfq_groups[gid].kern, PFQ_CB(buff.skb)->log->to_kernel - to_kernel, cpu);
+                                __sparse_add(&pfq_groups[gid].stats.frwd, PFQ_CB(buff.skb)->log->num_fwd - num_fwd, cpu);
+                                __sparse_add(&pfq_groups[gid].stats.kern, PFQ_CB(buff.skb)->log->to_kernel - to_kernel, cpu);
 			}
 			else {
 				sock_mask |= atomic_long_read(&pfq_groups[gid].sock_mask[0]);

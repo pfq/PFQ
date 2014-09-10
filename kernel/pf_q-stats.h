@@ -53,6 +53,14 @@ struct pfq_group_tx_stats
 
 
 
+struct pfq_group_stats
+{
+        sparse_counter_t recv;
+        sparse_counter_t drop;
+        sparse_counter_t frwd;
+        sparse_counter_t kern;
+};
+
 struct pfq_global_stats
 {
 	sparse_counter_t recv; 	    	/* received by PFQ */

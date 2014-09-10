@@ -231,10 +231,10 @@ int pfq_getsockopt(struct socket *sock,
                         return -EACCES;
                 }
 
-                stat.recv = sparse_read(&g->recv);
-                stat.drop = sparse_read(&g->drop);
-                stat.frwd = sparse_read(&g->frwd);
-                stat.kern = sparse_read(&g->kern);
+                stat.recv = sparse_read(&g->stats.recv);
+                stat.drop = sparse_read(&g->stats.drop);
+                stat.frwd = sparse_read(&g->stats.frwd);
+                stat.kern = sparse_read(&g->stats.kern);
 
                 stat.lost = 0;
                 stat.sent = 0;

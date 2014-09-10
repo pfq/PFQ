@@ -35,6 +35,7 @@
 #include <pf_q-engine.h>
 #include <pf_q-module.h>
 #include <pf_q-sparse.h>
+#include <pf_q-stats.h>
 #include <pf_q-bpf.h>
 
 
@@ -67,10 +68,7 @@ struct pfq_group
         atomic_long_t comp;                             /* struct pfq_computation_tree *  (new functional program) */
         atomic_long_t comp_ctx;                         /* void *: storage context (new functional program) */
 
-        sparse_counter_t recv;
-        sparse_counter_t drop;
-        sparse_counter_t frwd;
-        sparse_counter_t kern;
+	struct pfq_group_stats stats;
 
         struct pergroup_context ctx;
 };
