@@ -204,6 +204,13 @@ void set_state(SkBuff b, unsigned long state)
 }
 
 
+static inline
+struct pfq_group_stats *get_stats(SkBuff b)
+{
+	return &PFQ_CB(b.skb)->monad->group->stats;
+}
+
+
 static inline void *
 __get_persistent(SkBuff b, int n)
 {
