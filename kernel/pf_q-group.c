@@ -32,9 +32,11 @@
 #include <pf_q-bitops.h>
 #include <pf_q-engine.h>
 
+
 DEFINE_SEMAPHORE(group_sem);
 
-struct pfq_group pfq_groups[Q_MAX_GROUP];
+
+static struct pfq_group pfq_groups[Q_MAX_GROUP];
 
 
 bool
