@@ -29,6 +29,7 @@
 
 #include <net/net_namespace.h>
 
+#include <pf_q-module.h>
 #include <pf_q-global.h>
 #include <pf_q-group.h>
 #include <pf_q-bitops.h>
@@ -91,10 +92,12 @@ static int pfq_proc_comp(struct seq_file *m, void *v)
 
 	for(n = 0; n < Q_MAX_GROUP; n++)
 	{
-		if (!pfq_groups[n].policy)
+		struct pfq_group *this_group = pfq_get_group(n);
+
+		if (!this_group->policy)
 			continue;
 
-                comp = (struct pfq_computation_tree *)atomic_long_read(&pfq_groups[n].comp);
+                comp = (struct pfq_computation_tree *)atomic_long_read(&this_group->comp);
 
 		seq_printf(m, "group:%zu ", n);
 
@@ -115,20 +118,21 @@ static int pfq_proc_groups(struct seq_file *m, void *v)
 
 	for(n = 0; n < Q_MAX_GROUP; n++)
 	{
-		if (!pfq_groups[n].policy)
+		struct pfq_group *this_group = pfq_get_group(n);
+		if (!this_group->policy)
 			continue;
 
-        	seq_printf(m, "%5zu: %-9lu %-9lu %-9lu %-9lu ", n, sparse_read(&pfq_groups[n].stats.recv),
-				   	                           sparse_read(&pfq_groups[n].stats.drop),
-					                           sparse_read(&pfq_groups[n].stats.frwd),
-					                           sparse_read(&pfq_groups[n].stats.kern));
+        	seq_printf(m, "%5zu: %-9lu %-9lu %-9lu %-9lu ", n, sparse_read(&this_group->stats.recv),
+				   	                           sparse_read(&this_group->stats.drop),
+					                           sparse_read(&this_group->stats.frwd),
+					                           sparse_read(&this_group->stats.kern));
 
-        	seq_printf(m, "%3d %3d ", pfq_groups[n].policy, pfq_groups[n].pid);
+        	seq_printf(m, "%3d %3d ", this_group->policy, this_group->pid);
 
-        	seq_printf(m, "%08zx %08zx %08zx %08zx \n", atomic_long_read(&pfq_groups[n].sock_mask[pfq_ctz(Q_CLASS_DEFAULT)]),
-        				                    atomic_long_read(&pfq_groups[n].sock_mask[pfq_ctz(Q_CLASS_USER_PLANE)]),
-        				                    atomic_long_read(&pfq_groups[n].sock_mask[pfq_ctz(Q_CLASS_CONTROL_PLANE)]),
-        				                    atomic_long_read(&pfq_groups[n].sock_mask[63]));
+        	seq_printf(m, "%08zx %08zx %08zx %08zx \n", atomic_long_read(&this_group->sock_mask[pfq_ctz(Q_CLASS_DEFAULT)]),
+        				                    atomic_long_read(&this_group->sock_mask[pfq_ctz(Q_CLASS_USER_PLANE)]),
+        				                    atomic_long_read(&this_group->sock_mask[pfq_ctz(Q_CLASS_CONTROL_PLANE)]),
+        				                    atomic_long_read(&this_group->sock_mask[63]));
 
 	}
 

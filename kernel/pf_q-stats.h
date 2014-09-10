@@ -30,7 +30,6 @@
 #include <pf_q-sparse.h>
 
 
-
 /* sparse_counter_t stats */
 
 
@@ -41,7 +40,6 @@ struct pfq_socket_rx_stats
         sparse_counter_t  drop;         /* dropped by filters */
 
 };
-
 
 
 struct pfq_socket_tx_stats
@@ -81,7 +79,6 @@ struct pfq_global_stats
 	sparse_counter_t rc_free;
 	sparse_counter_t rc_error;
 };
-
 
 
 #endif /* _PF_Q_STATS_H_ */

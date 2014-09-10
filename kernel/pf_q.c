@@ -316,9 +316,16 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 	{
 		int gid = pfq_ctz(bit);
 
-		struct sk_filter *bpf = (struct sk_filter *)atomic_long_read(&pfq_groups[gid].filter);
-
+		struct pfq_group * this_group = pfq_get_group(gid);
 		bool vlan_filter_enabled = __pfq_vlan_filters_enabled(gid);
+		struct sk_filter *bpf;
+
+		if (this_group == NULL) {
+			printk(KERN_INFO "[PFQ] FATAL: NULL group!\n");
+			continue;
+		}
+
+		bpf = (struct sk_filter *)atomic_long_read(&this_group->filter);
 
 		socket_mask = 0;
 
@@ -337,7 +344,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 
 			/* increment recv counter for this group */
 
-			__sparse_inc(&pfq_groups[gid].stats.recv, cpu);
+			__sparse_inc(&this_group->stats.recv, cpu);
 
 
 			/* check bpf filter */
@@ -348,7 +355,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 			if (bpf && !SK_RUN_FILTER(bpf, buff.skb))
 #endif
                         {
-				__sparse_inc(&pfq_groups[gid].stats.drop, cpu);
+				__sparse_inc(&this_group->stats.drop, cpu);
 				continue;
 			}
 
@@ -356,7 +363,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 
 			if (vlan_filter_enabled) {
 				if (!__pfq_check_group_vlan_filter(gid, buff.skb->vlan_tci & ~VLAN_TAG_PRESENT)) {
-					__sparse_inc(&pfq_groups[gid].stats.drop, cpu);
+					__sparse_inc(&this_group->stats.drop, cpu);
 					continue;
 				}
 			}
@@ -366,11 +373,11 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 			monad.fanout.class_mask = Q_CLASS_DEFAULT;
 			monad.fanout.type       = fanout_copy;
 			monad.state  		= 0;
-			monad.persistent 	= &pfq_get_group(gid)->ctx;
+			monad.group 		= this_group;
 
 			/* check where a functional program is available for this group */
 
-			prg = (struct pfq_computation_tree *)atomic_long_read(&pfq_groups[gid].comp);
+			prg = (struct pfq_computation_tree *)atomic_long_read(&this_group->comp);
 
 			if (prg) { /* run the functional program */
 
@@ -380,7 +387,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 				buff = pfq_run(prg, buff).value;
 
 				if (buff.skb == NULL) {
-                                	__sparse_inc(&pfq_groups[gid].stats.drop, cpu);
+                                	__sparse_inc(&this_group->stats.drop, cpu);
 					continue;
 				}
 
@@ -394,7 +401,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 					pfq_bitwise_foreach(monad.fanout.class_mask, cbit,
 					{
 						int class = pfq_ctz(cbit);
-						eligible_mask |= atomic_long_read(&pfq_groups[gid].sock_mask[class]);
+						eligible_mask |= atomic_long_read(&this_group->sock_mask[class]);
 					})
 
 					if (is_steering(monad.fanout)) {
@@ -424,16 +431,16 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 
 				}
 				else {
-                                	__sparse_inc(&pfq_groups[gid].stats.drop, cpu);
+                                	__sparse_inc(&this_group->stats.drop, cpu);
 				}
 
 				/* update stats */
 
-                                __sparse_add(&pfq_groups[gid].stats.frwd, PFQ_CB(buff.skb)->log->num_fwd - num_fwd, cpu);
-                                __sparse_add(&pfq_groups[gid].stats.kern, PFQ_CB(buff.skb)->log->to_kernel - to_kernel, cpu);
+                                __sparse_add(&this_group->stats.frwd, PFQ_CB(buff.skb)->log->num_fwd - num_fwd, cpu);
+                                __sparse_add(&this_group->stats.kern, PFQ_CB(buff.skb)->log->to_kernel - to_kernel, cpu);
 			}
 			else {
-				sock_mask |= atomic_long_read(&pfq_groups[gid].sock_mask[0]);
+				sock_mask |= atomic_long_read(&this_group->sock_mask[0]);
 			}
 
 			mask_to_sock_queue(n, sock_mask, sock_queue);
