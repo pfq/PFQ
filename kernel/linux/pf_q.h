@@ -446,6 +446,7 @@ struct pfq_fprog
         struct sock_fprog fcode;
 };
 
+
 /* pfq statistics for socket and groups */
 
 struct pfq_stats

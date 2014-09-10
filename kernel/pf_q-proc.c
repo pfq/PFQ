@@ -112,7 +112,7 @@ static int pfq_proc_groups(struct seq_file *m, void *v)
 {
 	size_t n;
 
-	seq_printf(m, "group: recv      drop      forward   kernel    pol pid   def.    uplane   cplane    ctrl\n");
+	seq_printf(m, "group: recv      drop      forward   kernel    disc      quit      pol pid   def.    uplane   cplane    ctrl\n");
 
 	down(&group_sem);
 
@@ -122,10 +122,12 @@ static int pfq_proc_groups(struct seq_file *m, void *v)
 		if (!this_group->policy)
 			continue;
 
-        	seq_printf(m, "%5zu: %-9lu %-9lu %-9lu %-9lu ", n, sparse_read(&this_group->stats.recv),
-				   	                           sparse_read(&this_group->stats.drop),
-					                           sparse_read(&this_group->stats.frwd),
-					                           sparse_read(&this_group->stats.kern));
+        	seq_printf(m, "%5zu: %-9lu %-9lu %-9lu %-9lu %-9lu %-9lu", n, sparse_read(&this_group->stats.recv),
+				   	                           	      sparse_read(&this_group->stats.drop),
+					                           	      sparse_read(&this_group->stats.frwd),
+					                           	      sparse_read(&this_group->stats.kern),
+					                           	      sparse_read(&this_group->stats.disc),
+					                           	      sparse_read(&this_group->stats.quit));
 
         	seq_printf(m, "%3d %3d ", this_group->policy, this_group->pid);
 
