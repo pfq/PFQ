@@ -90,7 +90,6 @@ Drop(SkBuff b)
         return ret;
 }
 
-
 static inline
 Action_SkBuff
 Copy(SkBuff b)
@@ -154,6 +153,7 @@ to_kernel(SkBuff b)
         PFQ_CB(b.skb)->log->to_kernel = true;
         return b;
 }
+
 
 static inline
 SkBuff

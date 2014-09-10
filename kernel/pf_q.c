@@ -474,7 +474,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 		to_kernel = cb->direct && fwd_to_kernel(buff.skb);
 		num_fwd   = cb->log->num_fwd;
 
-		/* possibly send a copy of this buff to the kernel */
+		/* if needed, send a copy of this buff to the kernel */
 
 		if (to_kernel) {
 
@@ -499,11 +499,13 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 			}
 		}
 
-		/* pfq_lazy_exec send multiple copies of skb to different devices...
-		 * the skb is freed at the last forward */
+		/* pfq_lazy_exec send multiple copies of this skb to different devices...
+		   the skb is freed with the last forward */
 
 		if (num_fwd) {
-			int x = pfq_lazy_exec(buff);
+
+			int x = pfq_lazy_xmit_exec(buff);
+
                         __sparse_add(&global_stats.frwd, x, cpu);
                         __sparse_add(&global_stats.disc, num_fwd - x, cpu);
 		}

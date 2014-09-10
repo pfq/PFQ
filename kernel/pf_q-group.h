@@ -113,8 +113,19 @@ extern bool __pfq_vlan_filters_enabled(int gid);
 extern bool __pfq_check_group_vlan_filter(int gid, int vid);
 extern bool __pfq_toggle_group_vlan_filters(int gid, bool value);
 extern void __pfq_set_group_vlan_filter(int gid, bool value, int vid);
-extern bool __pfq_group_is_empty(int gid);
-extern bool __pfq_has_joined_group(int gid, int id);
+
+static inline
+bool __pfq_group_is_empty(int gid)
+{
+        return __pfq_get_all_groups_mask(gid) == 0;
+}
+
+
+static inline
+bool __pfq_has_joined_group(int gid, int id)
+{
+        return __pfq_get_all_groups_mask(gid) & (1L << id);
+}
 
 
 #endif /* _PF_Q_GROUP_H_ */

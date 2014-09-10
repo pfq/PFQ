@@ -349,7 +349,7 @@ int pfq_lazy_queue_xmit_by_mask(struct gc_queue_buff *queue, unsigned long long 
 }
 
 
-int pfq_lazy_exec(struct gc_buff buff)
+int pfq_lazy_xmit_exec(struct gc_buff buff)
 {
 	struct gc_log *log = PFQ_CB(buff.skb)->log;
 
@@ -367,7 +367,6 @@ int pfq_lazy_exec(struct gc_buff buff)
 		if (skb)
 		{
 			if (pfq_xmit(skb, dev, skb->queue_mapping) != 1) {
-
 #ifdef DEBUG
 				if (printk_ratelimit())
 					printk(KERN_INFO "[PFQ] forward pfq_xmit: error on device %s!\n", dev->name);

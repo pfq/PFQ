@@ -38,7 +38,6 @@ struct pfq_socket_rx_stats
         sparse_counter_t  recv;         /* received by the queue */
         sparse_counter_t  lost;         /* packets lost due to queue congestion */
         sparse_counter_t  drop;         /* dropped by filters */
-
 };
 
 
@@ -46,7 +45,6 @@ struct pfq_socket_tx_stats
 {
         sparse_counter_t  sent;         /* sent by the driver */
         sparse_counter_t  disc;         /* discarded by the driver */
-
 };
 
 

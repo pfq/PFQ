@@ -142,13 +142,15 @@ static int pfq_proc_groups(struct seq_file *m, void *v)
 
 static int pfq_proc_stats(struct seq_file *m, void *v)
 {
+	seq_printf(m, "INPUT:\n");
 	seq_printf(m, "received  : %zu\n", sparse_read(&global_stats.recv));
 	seq_printf(m, "lost      : %zu\n", sparse_read(&global_stats.lost));
+	seq_printf(m, "OUTPUT:\n");
 	seq_printf(m, "sent      : %zu\n", sparse_read(&global_stats.sent));
 	seq_printf(m, "kernel    : %zu\n", sparse_read(&global_stats.kern));
 	seq_printf(m, "forwarded : %zu\n", sparse_read(&global_stats.frwd));
 	seq_printf(m, "discarded : %zu\n", sparse_read(&global_stats.disc));
-	seq_printf(m, "fail      : %zu\n", sparse_read(&global_stats.fail));
+	seq_printf(m, "failure   : %zu\n", sparse_read(&global_stats.fail));
 	return 0;
 }
 

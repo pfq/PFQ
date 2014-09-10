@@ -470,14 +470,3 @@ void __pfq_set_group_vlan_filter(int gid, bool value, int vid)
 }
 
 
-bool __pfq_group_is_empty(int gid)
-{
-        return __pfq_get_all_groups_mask(gid) == 0;
-}
-
-
-bool __pfq_has_joined_group(int gid, int id)
-{
-        return __pfq_get_all_groups_mask(gid) & (1L << id);
-}
-
