@@ -282,14 +282,12 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 
         PFQ_CB(buff.skb)->direct = direct;
 
+	__sparse_add(&global_stats.recv, prefetch_len, cpu);
+
         if (gc_size(&local->gc) < prefetch_len) {
         	put_cpu();
                 return 0;
 	}
-
-	/* ------------------------------------------------------ */
-
-	__sparse_add(&global_stats.recv, prefetch_len, cpu);
 
 	/* cleanup sock_queue... */
 
@@ -472,8 +470,6 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 
 		if (to_kernel) {
 
-                        __sparse_inc(&global_stats.kern, cpu);
-
 			if (num_fwd > 0) {
 				skb = skb_clone(buff.skb, GFP_ATOMIC);
 				if (!skb) {
@@ -488,9 +484,10 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 
 			if (skb) {
                         	send_to_kernel(napi, skb);
+                        	__sparse_inc(&global_stats.kern, cpu);
 			}
 			else {
-                        	__sparse_inc(&global_stats.lost, cpu);
+                        	__sparse_inc(&global_stats.fail, cpu);
 			}
 		}
 
@@ -499,8 +496,8 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 
 		if (num_fwd) {
 			int x = pfq_lazy_exec(buff);
-                        __sparse_add(&global_stats.frwd, num_fwd, cpu);
-                        __sparse_add(&global_stats.lost, num_fwd - x, cpu);
+                        __sparse_add(&global_stats.frwd, x, cpu);
+                        __sparse_add(&global_stats.disc, num_fwd - x, cpu);
 		}
 
 		if (cb->direct)
