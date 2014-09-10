@@ -36,7 +36,7 @@
 struct pfq_socket_rx_stats
 {
         sparse_counter_t  recv;         /* received by the queue */
-        sparse_counter_t  lost;         /* packets lost due to queue congestion */
+        sparse_counter_t  lost;         /* packets lost due to socket queue congestion */
         sparse_counter_t  drop;         /* dropped by filters */
 };
 
@@ -48,13 +48,14 @@ struct pfq_socket_tx_stats
 };
 
 
-
 struct pfq_group_stats
 {
-        sparse_counter_t recv;
-        sparse_counter_t drop;
-        sparse_counter_t frwd;
-        sparse_counter_t kern;
+        sparse_counter_t recv;		/* received by the group/computation */
+        sparse_counter_t drop;          /* drop by computation: fanout monad */
+        sparse_counter_t frwd;          /* forwarded to devices */
+        sparse_counter_t kern;          /* passed to kernel */
+        sparse_counter_t disc;          /* discarded due to driver congestion */
+        sparse_counter_t quit;          /* quit due to PFQ problem */
 };
 
 static inline
