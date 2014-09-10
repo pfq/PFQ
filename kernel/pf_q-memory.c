@@ -32,11 +32,11 @@
 struct pfq_recycle_stat
 pfq_get_recycle_stats(void)
 {
-        struct pfq_recycle_stat ret = { sparse_read(&global_stats.os_alloc),
-                                        sparse_read(&global_stats.os_free),
-                                        sparse_read(&global_stats.rc_alloc),
-                                        sparse_read(&global_stats.rc_free),
-                                        sparse_read(&global_stats.rc_error)};
+        struct pfq_recycle_stat ret = { sparse_read(&memory_stats.os_alloc),
+                                        sparse_read(&memory_stats.os_free),
+                                        sparse_read(&memory_stats.rc_alloc),
+                                        sparse_read(&memory_stats.rc_free),
+                                        sparse_read(&memory_stats.rc_error)};
         return ret;
 }
 
@@ -45,11 +45,11 @@ pfq_get_recycle_stats(void)
 void
 pfq_reset_recycle_stats(void)
 {
-        sparse_set(&global_stats.os_alloc, 0);
-        sparse_set(&global_stats.os_free,  0);
-        sparse_set(&global_stats.rc_alloc, 0);
-        sparse_set(&global_stats.rc_free,  0);
-        sparse_set(&global_stats.rc_error, 0);
+        sparse_set(&memory_stats.os_alloc, 0);
+        sparse_set(&memory_stats.os_free,  0);
+        sparse_set(&memory_stats.rc_alloc, 0);
+        sparse_set(&memory_stats.rc_free,  0);
+        sparse_set(&memory_stats.rc_error, 0);
 }
 
 
