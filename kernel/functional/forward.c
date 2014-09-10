@@ -44,11 +44,13 @@ forwardIO(arguments_t args, SkBuff b)
 {
 	struct net_device *dev = get_arg(struct net_device *, args);
 	struct sk_buff *nskb;
+	struct pfq_group_stats *stats = get_stats(b);
 
 	if (dev == NULL) {
                 if (printk_ratelimit())
                         printk(KERN_INFO "[PFQ] forward: device error!\n");
-		sparse_inc(&global_stats.fail);
+		sparse_inc(&global_stats.quit);
+		sparse_inc(&stats->quit);
                 return Pass(b);
 	}
 
@@ -56,7 +58,8 @@ forwardIO(arguments_t args, SkBuff b)
 	if (!nskb) {
                 if (printk_ratelimit())
         		printk(KERN_INFO "[PFQ] forward pfq_xmit %s: no memory!\n", dev->name);
-		sparse_inc(&global_stats.fail);
+		sparse_inc(&global_stats.quit);
+		sparse_inc(&stats->quit);
         	return Pass(b);
 	}
 
@@ -65,9 +68,11 @@ forwardIO(arguments_t args, SkBuff b)
                         printk(KERN_INFO "[PFQ] forward pfq_xmit: error on device %s!\n", dev->name);
 
 		sparse_inc(&global_stats.disc);
+		sparse_inc(&stats->disc);
 	}
 	else {
 		sparse_inc(&global_stats.frwd);
+		sparse_inc(&stats->frwd);
 	}
 
 	return Pass(b);
@@ -86,6 +91,9 @@ forward(arguments_t args, SkBuff b)
 	}
 
 	pfq_lazy_xmit(b, dev, b.skb->queue_mapping);
+
+	sparse_inc(&get_stats(b)->frwd);
+
 	return Pass(b);
 }
 
@@ -139,6 +147,8 @@ bridge(arguments_t args, SkBuff b)
 
 	pfq_lazy_xmit(b, dev, b.skb->queue_mapping);
 
+	sparse_inc(&get_stats(b)->frwd);
+
 	return Drop(b);
 }
 
@@ -160,6 +170,8 @@ tee(arguments_t args, SkBuff b)
 
 	pfq_lazy_xmit(b, dev, b.skb->queue_mapping);
 
+	sparse_inc(&get_stats(b)->frwd);
+
 	return Drop(b);
 }
 
@@ -177,6 +189,8 @@ tap(arguments_t args, SkBuff b)
 	}
 
 	pfq_lazy_xmit(b, dev, b.skb->queue_mapping);
+
+	sparse_inc(&get_stats(b)->frwd);
 
         if (EVAL_PREDICATE(pred_, b))
 		return Pass(b);
