@@ -274,7 +274,8 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 
 	buff = gc_make_buff(&local->gc, skb);
 	if (buff.skb == NULL) {
-		printk(KERN_INFO "[PFQ] GC: memory exhausted!\n");
+		if (printk_ratelimit())
+			printk(KERN_INFO "[PFQ] GC: memory exhausted!\n");
 		__sparse_inc(&global_stats.lost, cpu);
 		kfree_skb(skb);
 		return 0;
@@ -474,7 +475,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 				skb = skb_clone(buff.skb, GFP_ATOMIC);
 				if (!skb) {
 					if (printk_ratelimit())
-                                		printk(KERN_INFO "[PFQ] forward to kernel: skb_clone error!\n");
+                                		printk(KERN_INFO "[PFQ] forward: skb_clone error!\n");
 				}
 			}
 			else {

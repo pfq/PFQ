@@ -61,14 +61,12 @@ forwardIO(arguments_t args, SkBuff b)
 	}
 
 	if (pfq_xmit(nskb, dev, nskb->queue_mapping) != 1) {
-#ifdef DEBUG
                 if (printk_ratelimit())
                         printk(KERN_INFO "[PFQ] forward pfq_xmit: error on device %s!\n", dev->name);
-#endif
+
 		sparse_inc(&global_stats.disc);
 	}
-	else
-	{
+	else {
 		sparse_inc(&global_stats.frwd);
 	}
 
