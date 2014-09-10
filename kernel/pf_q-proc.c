@@ -159,11 +159,11 @@ static int pfq_proc_stats(struct seq_file *m, void *v)
 
 static int pfq_proc_memory(struct seq_file *m, void *v)
 {
-	seq_printf(m, "OS alloc        : %zu\n", sparse_read(&global_stats.os_alloc));
-	seq_printf(m, "OS free         : %zu\n", sparse_read(&global_stats.os_free));
-	seq_printf(m, "recycled  alloc : %zu\n", sparse_read(&global_stats.rc_alloc));
-	seq_printf(m, "recycled  free  : %zu\n", sparse_read(&global_stats.rc_free));
-	seq_printf(m, "recycled  error : %zu\n", sparse_read(&global_stats.rc_error));
+	seq_printf(m, "OS alloc        : %zu\n", sparse_read(&memory_stats.os_alloc));
+	seq_printf(m, "OS free         : %zu\n", sparse_read(&memory_stats.os_free));
+	seq_printf(m, "recycled  alloc : %zu\n", sparse_read(&memory_stats.rc_alloc));
+	seq_printf(m, "recycled  free  : %zu\n", sparse_read(&memory_stats.rc_free));
+	seq_printf(m, "recycled  error : %zu\n", sparse_read(&memory_stats.rc_error));
 	return 0;
 }
 
@@ -175,7 +175,7 @@ static int pfq_proc_memory_open(struct inode *inode, struct file *file)
 static ssize_t
 pfq_proc_memory_reset(struct file *file, const char __user *buf, size_t length, loff_t *ppos)
 {
-        pfq_reset_recycle_stats();
+        pfq_memory_stats_reset(&memory_stats);
  	return 1;
 }
 
@@ -211,7 +211,7 @@ static int pfq_proc_stats_open(struct inode *inode, struct file *file)
 static ssize_t
 pfq_proc_stats_reset(struct file *file, const char __user *buf, size_t length, loff_t *ppos)
 {
- 	pfq_global_stats_reset();
+ 	pfq_global_stats_reset(&global_stats);
  	return 1;
 }
 

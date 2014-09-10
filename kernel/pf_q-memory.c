@@ -41,18 +41,6 @@ pfq_get_recycle_stats(void)
 }
 
 
-
-void
-pfq_reset_recycle_stats(void)
-{
-        sparse_set(&memory_stats.os_alloc, 0);
-        sparse_set(&memory_stats.os_free,  0);
-        sparse_set(&memory_stats.rc_alloc, 0);
-        sparse_set(&memory_stats.rc_free,  0);
-        sparse_set(&memory_stats.rc_error, 0);
-}
-
-
 /* exported symbols */
 
 struct sk_buff *

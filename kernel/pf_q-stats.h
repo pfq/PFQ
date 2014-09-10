@@ -57,6 +57,16 @@ struct pfq_group_stats
         sparse_counter_t kern;
 };
 
+static inline
+void pfq_group_stats_reset(struct pfq_group_stats *stats)
+{
+        sparse_set(&stats->recv, 0);
+        sparse_set(&stats->drop, 0);
+        sparse_set(&stats->frwd, 0);
+        sparse_set(&stats->kern, 0);
+        sparse_set(&stats->disc, 0);
+        sparse_set(&stats->quit, 0);
+}
 
 struct pfq_global_stats
 {
@@ -69,6 +79,18 @@ struct pfq_global_stats
         sparse_counter_t disc;  	/* discarded due to driver congestion */
 };
 
+static inline
+void pfq_global_stats_reset(struct pfq_global_stats *stats)
+{
+	sparse_set(&stats->recv, 0);
+	sparse_set(&stats->lost, 0);
+	sparse_set(&stats->sent, 0);
+	sparse_set(&stats->frwd, 0);
+	sparse_set(&stats->kern, 0);
+	sparse_set(&stats->disc, 0);
+	sparse_set(&stats->quit, 0);
+}
+
 
 struct pfq_memory_stats
 {
@@ -78,6 +100,17 @@ struct pfq_memory_stats
 	sparse_counter_t rc_free;
 	sparse_counter_t rc_error;
 };
+
+
+static inline
+void pfq_memory_stats_reset(struct pfq_memory_stats *stats)
+{
+        sparse_set(&stats->os_alloc, 0);
+        sparse_set(&stats->os_free,  0);
+        sparse_set(&stats->rc_alloc, 0);
+        sparse_set(&stats->rc_free,  0);
+        sparse_set(&stats->rc_error, 0);
+}
 
 
 #endif /* _PF_Q_STATS_H_ */

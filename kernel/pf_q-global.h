@@ -54,7 +54,7 @@ extern int vl_untag;
 extern int recycle_len;
 
 extern struct pfq_global_stats global_stats;
+extern struct pfq_memory_stats memory_stats;
 
-extern void pfq_global_stats_reset(void);
 
 #endif /* _PF_Q_GLOBAL_H_ */
