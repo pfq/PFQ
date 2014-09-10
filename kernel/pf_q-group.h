@@ -32,8 +32,6 @@
 #include <linux/semaphore.h>
 
 #include <pf_q-macro.h>
-#include <pf_q-engine.h>
-#include <pf_q-module.h>
 #include <pf_q-sparse.h>
 #include <pf_q-stats.h>
 #include <pf_q-bpf.h>
@@ -53,6 +51,21 @@
         }
 
 
+/* persistent state */
+
+struct pfq_group_persistent
+{
+        sparse_counter_t counter[Q_MAX_COUNTERS];
+
+	struct _persistent {
+
+		spinlock_t 	lock;
+		char 		memory[Q_PERSISTENT_MEM];
+
+	} persistent [Q_MAX_PERSISTENT];
+};
+
+
 struct pfq_group
 {
         int policy;                                     /* policy for the group */
@@ -70,12 +83,13 @@ struct pfq_group
 
 	struct pfq_group_stats stats;
 
-        struct pergroup_context ctx;
+        struct pfq_group_persistent context;
 };
 
-extern struct semaphore group_sem;
-extern struct pfq_group pfq_groups[Q_MAX_GROUP];
 
+extern struct semaphore group_sem;
+
+struct pfq_computation_tree;
 
 extern int  pfq_join_free_group(int id, unsigned long class_mask, int policy);
 extern int  pfq_join_group(int gid, int id, unsigned long class_mask, int policy);
@@ -93,86 +107,14 @@ extern void __pfq_set_group_filter(int gid, struct sk_filter *filter);
 
 extern void __pfq_dismiss_function(void *f);
 
+extern struct pfq_group * pfq_get_group(int gid);
 
-static inline
-struct pfq_group *
-pfq_get_group(int gid)
-{
-        if (gid < 0 || gid >= Q_MAX_GROUP) {
-                return NULL;
-        }
-        return &pfq_groups[gid];
-}
+extern bool __pfq_vlan_filters_enabled(int gid);
+extern bool __pfq_check_group_vlan_filter(int gid, int vid);
+extern bool __pfq_toggle_group_vlan_filters(int gid, bool value);
+extern void __pfq_set_group_vlan_filter(int gid, bool value, int vid);
+extern bool __pfq_group_is_empty(int gid);
+extern bool __pfq_has_joined_group(int gid, int id);
 
-
-static inline
-bool __pfq_vlan_filters_enabled(int gid)
-{
-        struct pfq_group *g = pfq_get_group(gid);
-        if (!g) {
-                pr_devel("[PFQ] group error: invalid group id:%d!\n", gid);
-                return false;
-        }
-        return g->vlan_filt;
-}
-
-
-static inline
-bool __pfq_check_group_vlan_filter(int gid, int vid)
-{
-        struct pfq_group *g = pfq_get_group(gid);
-        if (!g) {
-                pr_devel("[PFQ] group error: invalid group id:%d!\n", gid);
-                return false;
-        }
-
-        return g->vid_filters[vid & 4095];
-}
-
-
-static inline
-bool __pfq_toggle_group_vlan_filters(int gid, bool value)
-{
-        struct pfq_group *g = pfq_get_group(gid);
-        if (!g) {
-                pr_devel("[PFQ] group error: invalid group id:%d!\n", gid);
-                return false;
-        }
-
-        if (value)
-                memset(g->vid_filters, 0, 4096);
-
-        smp_wmb();
-
-        g->vlan_filt = value;
-        return true;
-}
-
-
-static inline
-void __pfq_set_group_vlan_filter(int gid, bool value, int vid)
-{
-        struct pfq_group *g = pfq_get_group(gid);
-        if (!g) {
-                pr_devel("[PFQ] group error: invalid group id:%d!\n", gid);
-                return;
-        }
-
-        g->vid_filters[vid & 4095] = value;
-}
-
-
-static inline
-bool __pfq_group_is_empty(int gid)
-{
-        return __pfq_get_all_groups_mask(gid) == 0;
-}
-
-
-static inline
-bool __pfq_has_joined_group(int gid, int id)
-{
-        return __pfq_get_all_groups_mask(gid) & (1L << id);
-}
 
 #endif /* _PF_Q_GROUP_H_ */

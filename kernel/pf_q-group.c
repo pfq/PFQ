@@ -30,7 +30,7 @@
 #include <pf_q-group.h>
 #include <pf_q-devmap.h>
 #include <pf_q-bitops.h>
-
+#include <pf_q-engine.h>
 
 DEFINE_SEMAPHORE(group_sem);
 
@@ -98,13 +98,13 @@ __pfq_group_init(int gid)
 
         for(i = 0; i < Q_MAX_COUNTERS; i++)
         {
-                sparse_set(&g->ctx.counter[i], 0);
+                sparse_set(&g->context.counter[i], 0);
         }
 
 	for(i = 0; i < Q_MAX_PERSISTENT; i++)
 	{
-		spin_lock_init(&g->ctx.persistent[i].lock);
-		memset(g->ctx.persistent[i].memory, 0, sizeof(g->ctx.persistent[i].memory));
+		spin_lock_init(&g->context.persistent[i].lock);
+		memset(g->context.persistent[i].memory, 0, sizeof(g->context.persistent[i].memory));
 	}
 }
 
@@ -406,4 +406,78 @@ pfq_get_groups(int id)
         return ret;
 }
 
+
+struct pfq_group *
+pfq_get_group(int gid)
+{
+        if (gid < 0 || gid >= Q_MAX_GROUP) {
+                return NULL;
+        }
+        return &pfq_groups[gid];
+}
+
+
+bool __pfq_vlan_filters_enabled(int gid)
+{
+        struct pfq_group *g = pfq_get_group(gid);
+        if (!g) {
+                pr_devel("[PFQ] group error: invalid group id:%d!\n", gid);
+                return false;
+        }
+        return g->vlan_filt;
+}
+
+
+bool __pfq_check_group_vlan_filter(int gid, int vid)
+{
+        struct pfq_group *g = pfq_get_group(gid);
+        if (!g) {
+                pr_devel("[PFQ] group error: invalid group id:%d!\n", gid);
+                return false;
+        }
+
+        return g->vid_filters[vid & 4095];
+}
+
+
+bool __pfq_toggle_group_vlan_filters(int gid, bool value)
+{
+        struct pfq_group *g = pfq_get_group(gid);
+        if (!g) {
+                pr_devel("[PFQ] group error: invalid group id:%d!\n", gid);
+                return false;
+        }
+
+        if (value)
+                memset(g->vid_filters, 0, 4096);
+
+        smp_wmb();
+
+        g->vlan_filt = value;
+        return true;
+}
+
+
+void __pfq_set_group_vlan_filter(int gid, bool value, int vid)
+{
+        struct pfq_group *g = pfq_get_group(gid);
+        if (!g) {
+                pr_devel("[PFQ] group error: invalid group id:%d!\n", gid);
+                return;
+        }
+
+        g->vid_filters[vid & 4095] = value;
+}
+
+
+bool __pfq_group_is_empty(int gid)
+{
+        return __pfq_get_all_groups_mask(gid) == 0;
+}
+
+
+bool __pfq_has_joined_group(int gid, int id)
+{
+        return __pfq_get_all_groups_mask(gid) & (1L << id);
+}
 
