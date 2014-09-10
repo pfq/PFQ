@@ -59,11 +59,13 @@ struct pfq_global_stats global_stats;
 void pfq_global_stats_reset(void)
 {
 	sparse_set(&global_stats.recv, 0);
+	sparse_set(&global_stats.lost, 0);
 	sparse_set(&global_stats.kern, 0);
 	sparse_set(&global_stats.frwd, 0);
-	sparse_set(&global_stats.lost, 0);
 	sparse_set(&global_stats.sent, 0);
 	sparse_set(&global_stats.disc, 0);
+	sparse_set(&global_stats.fail, 0);
 }
+
 
 

@@ -50,4 +50,26 @@ typedef struct pfq_tx_stats
 } pfq_tx_stat_t;
 
 
+struct pfq_global_stats
+{
+	sparse_counter_t recv; 	    	/* received by PFQ */
+	sparse_counter_t lost; 	    	/* lost during capture, due to PFQ problem (e.g. memory problem) */
+
+        sparse_counter_t kern;  	/* sent to kernel */
+        sparse_counter_t frwd;  	/* successfully forwarded to devices */
+        sparse_counter_t sent;  	/* successfully transmitted from user-space */
+
+        sparse_counter_t fail; 		/* discarded in transmission, due to PFQ problem (e.g. memory problems) */
+        sparse_counter_t disc;  	/* discarded due to driver congestion during transmission/forwarding */
+
+ 	sparse_counter_t os_alloc;
+	sparse_counter_t os_free;
+
+	sparse_counter_t rc_alloc;
+	sparse_counter_t rc_free;
+	sparse_counter_t rc_error;
+};
+
+
+
 #endif /* _PF_Q_STATS_H_ */
