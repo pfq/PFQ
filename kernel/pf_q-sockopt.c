@@ -275,7 +275,7 @@ int pfq_getsockopt(struct socket *sock,
 
                 for(i = 0; i < Q_MAX_COUNTERS; i++)
                 {
-                        cs.counter[i] = sparse_read(&g->ctx.counter[i]);
+                        cs.counter[i] = sparse_read(&g->context.counter[i]);
                 }
 
                 if (copy_to_user(optval, &cs, sizeof(cs)))

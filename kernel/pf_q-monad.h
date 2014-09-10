@@ -24,6 +24,7 @@
 #ifndef _PF_Q_MONAD_H_
 #define _PF_Q_MONAD_H_
 
+#include <pf_q-group.h>
 #include <pf_q-skbuff.h>
 #include <pf_q-macro.h>
 #include <pf_q-GC.h>
@@ -40,20 +41,6 @@ typedef struct \
 
 MakeAction(SkBuff);
 
-
-/* persistent state */
-
-struct pergroup_context
-{
-        sparse_counter_t counter[Q_MAX_COUNTERS];
-
-	struct _persistent {
-
-		spinlock_t 	lock;
-		char 		memory[Q_PERSISTENT_MEM];
-
-	} persistent [Q_MAX_PERSISTENT];
-};
 
 /* fanout: actions types */
 
@@ -80,7 +67,7 @@ struct pfq_monad
 {
         fanout_t 		fanout;
         unsigned long 		state;
-        struct pergroup_context *persistent;
+        struct pfq_group	*group;
 };
 
 
@@ -184,7 +171,7 @@ sparse_counter_t * get_counter(SkBuff b, int n)
         if (n < 0 || n >= Q_MAX_COUNTERS)
                 return NULL;
 
-	return & PFQ_CB(b.skb)->monad->persistent->counter[n];
+	return & PFQ_CB(b.skb)->monad->group->context.counter[n];
 }
 
 
@@ -220,7 +207,7 @@ void set_state(SkBuff b, unsigned long state)
 static inline void *
 __get_persistent(SkBuff b, int n)
 {
-	struct pergroup_context *ctx = PFQ_CB(b.skb)->monad->persistent;
+	struct pfq_group_persistent *ctx = &PFQ_CB(b.skb)->monad->group->context;
 	spin_lock(&ctx->persistent[n].lock);
 	return ctx->persistent[n].memory;
 }
@@ -230,7 +217,7 @@ __get_persistent(SkBuff b, int n)
 static inline
 void put_persistent(SkBuff b, int n)
 {
-	struct pergroup_context *ctx = PFQ_CB(b.skb)->monad->persistent;
+	struct pfq_group_persistent *ctx = &PFQ_CB(b.skb)->monad->group->context;
 	spin_unlock(&ctx->persistent[n].lock);
 }
 
