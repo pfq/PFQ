@@ -75,8 +75,8 @@ struct pfq_global_stats
         sparse_counter_t sent;  	/* transmitted from user-space */
         sparse_counter_t frwd;  	/* forwarded to devices */
         sparse_counter_t kern;  	/* passed to kernel */
-        sparse_counter_t fail; 		/* discarded due to PFQ problem (e.g. memory problems) */
         sparse_counter_t disc;  	/* discarded due to driver congestion */
+        sparse_counter_t quit; 		/* quit due to PFQ problem (e.g. memory problems) */
 };
 
 static inline

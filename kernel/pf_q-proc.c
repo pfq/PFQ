@@ -150,7 +150,7 @@ static int pfq_proc_stats(struct seq_file *m, void *v)
 	seq_printf(m, "kernel    : %zu\n", sparse_read(&global_stats.kern));
 	seq_printf(m, "forwarded : %zu\n", sparse_read(&global_stats.frwd));
 	seq_printf(m, "discarded : %zu\n", sparse_read(&global_stats.disc));
-	seq_printf(m, "failure   : %zu\n", sparse_read(&global_stats.fail));
+	seq_printf(m, "quit      : %zu\n", sparse_read(&global_stats.quit));
 	return 0;
 }
 

@@ -495,7 +495,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
                         	__sparse_inc(&global_stats.kern, cpu);
 			}
 			else {
-                        	__sparse_inc(&global_stats.fail, cpu);
+                        	__sparse_inc(&global_stats.quit, cpu);
 			}
 		}
 
