@@ -154,7 +154,7 @@ bridge(arguments_t args, SkBuff b)
 
 
 static Action_SkBuff
-tee(arguments_t args, SkBuff b)
+tap(arguments_t args, SkBuff b)
 {
 	struct net_device *dev = get_arg(struct net_device *, args);
 	predicate_t pred_  = get_arg_1(predicate_t, args);
@@ -177,7 +177,7 @@ tee(arguments_t args, SkBuff b)
 
 
 static Action_SkBuff
-tap(arguments_t args, SkBuff b)
+tee(arguments_t args, SkBuff b)
 {
 	struct net_device *dev = get_arg(struct net_device *, args);
 	predicate_t pred_  = get_arg_1(predicate_t, args);
