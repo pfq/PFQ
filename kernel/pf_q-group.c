@@ -26,6 +26,7 @@
 #include <linux/bug.h>
 #include <linux/module.h>
 #include <linux/semaphore.h>
+#include <linux/sched.h>
 
 #include <pf_q-group.h>
 #include <pf_q-devmap.h>
