@@ -70,7 +70,7 @@ namespace pfq { namespace lang { namespace experimental {
 
         auto bloom_dst  = [] (int m, std::vector<std::string> const &ips) {
                                 auto addrs = details::fmap(details::inet_addr, ips);
-                                return predicate2("bloom_src", m, std::move(addrs));
+                                return predicate2("bloom_dst", m, std::move(addrs));
                           };
 
 
@@ -86,7 +86,7 @@ namespace pfq { namespace lang { namespace experimental {
 
         auto bloom_dst_filter  = [] (int m, std::vector<std::string> const &ips) {
                                     auto addrs = details::fmap(details::inet_addr, ips);
-                                    return mfunction2("bloom_src_filter", m, std::move(addrs));
+                                    return mfunction2("bloom_dst_filter", m, std::move(addrs));
                                 };
 
         // bloom filter: utility functions:
