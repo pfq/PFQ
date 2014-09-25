@@ -198,22 +198,12 @@ unsigned int pfq_fold(unsigned int a, unsigned int b)
 }
 
 
-static
-void send_to_kernel(struct napi_struct *napi, struct sk_buff *skb)
+static inline
+void send_to_kernel(struct sk_buff *skb)
 {
-	struct pfq_cb *cb = PFQ_CB(skb);
-
 	skb_pull(skb, skb->mac_len);
-
 	skb->pkt_type = PACKET_LOOPBACK;
-
-	switch(cb->direct)
-	{
-		case 0: /* forward not permitted, to avoid loop */
-		case 1: netif_rx(skb);
-		case 2: netif_receive_skb(skb);
-		case 3: napi_gro_receive(napi, skb);
-	}
+	netif_receive_skb(skb);
 }
 
 
@@ -493,7 +483,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
                         }
 
 			if (skb) {
-                        	send_to_kernel(napi, skb);
+                        	send_to_kernel(skb);
                         	__sparse_inc(&global_stats.kern, cpu);
 			}
 			else {
