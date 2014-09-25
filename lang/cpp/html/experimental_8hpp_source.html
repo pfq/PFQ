@@ -163,7 +163,7 @@ $(document).ready(function(){initNavTree('experimental_8hpp_source.html','');});
 <div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;</div>
 <div class="line"><a name="l00071"></a><span class="lineno"><a class="line" href="namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03.html#a77e8efb950d2c9158cdcf00bce24bf1a">   71</a></span>&#160;        <span class="keyword">auto</span> <a class="code" href="namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03.html#a77e8efb950d2c9158cdcf00bce24bf1a">bloom_dst</a>  = [] (<span class="keywordtype">int</span> m, std::vector&lt;std::string&gt; <span class="keyword">const</span> &amp;ips) {</div>
 <div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;                                <span class="keyword">auto</span> addrs = details::fmap(details::inet_addr, ips);</div>
-<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;                                <span class="keywordflow">return</span> <a class="code" href="namespacepfq_1_1lang.html#a7282b9a2e51359b8db0dcdb9fadf2fd1">predicate2</a>(<span class="stringliteral">&quot;bloom_src&quot;</span>, m, std::move(addrs));</div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;                                <span class="keywordflow">return</span> <a class="code" href="namespacepfq_1_1lang.html#a7282b9a2e51359b8db0dcdb9fadf2fd1">predicate2</a>(<span class="stringliteral">&quot;bloom_dst&quot;</span>, m, std::move(addrs));</div>
 <div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;                          };</div>
 <div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;</div>
 <div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;</div>
@@ -179,7 +179,7 @@ $(document).ready(function(){initNavTree('experimental_8hpp_source.html','');});
 <div class="line"><a name="l00086"></a><span class="lineno">   86</span>&#160;</div>
 <div class="line"><a name="l00087"></a><span class="lineno"><a class="line" href="namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03.html#abdc0622697144c772102af575575c07f">   87</a></span>&#160;        <span class="keyword">auto</span> <a class="code" href="namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03.html#abdc0622697144c772102af575575c07f">bloom_dst_filter</a>  = [] (<span class="keywordtype">int</span> m, std::vector&lt;std::string&gt; <span class="keyword">const</span> &amp;ips) {</div>
 <div class="line"><a name="l00088"></a><span class="lineno">   88</span>&#160;                                    <span class="keyword">auto</span> addrs = details::fmap(details::inet_addr, ips);</div>
-<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;                                    <span class="keywordflow">return</span> <a class="code" href="namespacepfq_1_1lang.html#aab1a000712bb2711044255ca1626cc84">mfunction2</a>(<span class="stringliteral">&quot;bloom_src_filter&quot;</span>, m, std::move(addrs));</div>
+<div class="line"><a name="l00089"></a><span class="lineno">   89</span>&#160;                                    <span class="keywordflow">return</span> <a class="code" href="namespacepfq_1_1lang.html#aab1a000712bb2711044255ca1626cc84">mfunction2</a>(<span class="stringliteral">&quot;bloom_dst_filter&quot;</span>, m, std::move(addrs));</div>
 <div class="line"><a name="l00090"></a><span class="lineno">   90</span>&#160;                                };</div>
 <div class="line"><a name="l00091"></a><span class="lineno">   91</span>&#160;</div>
 <div class="line"><a name="l00092"></a><span class="lineno">   92</span>&#160;        <span class="comment">// bloom filter: utility functions:</span></div>
@@ -258,7 +258,7 @@ $(document).ready(function(){initNavTree('experimental_8hpp_source.html','');});
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="dir_2916f9fbcacdf2e5f0583aa159c707b6.html">C++</a></li><li class="navelem"><a class="el" href="dir_a17becaccb2832a17d9695e88ab48c38.html">pfq-lang</a></li><li class="navelem"><a class="el" href="experimental_8hpp.html">experimental.hpp</a></li>
-    <li class="footer">Generated on Tue Sep 2 2014 17:27:30 for PFQ-Lang eDLS by
+    <li class="footer">Generated on Thu Sep 25 2014 17:21:54 for PFQ-Lang eDLS by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.7 </li>
   </ul>

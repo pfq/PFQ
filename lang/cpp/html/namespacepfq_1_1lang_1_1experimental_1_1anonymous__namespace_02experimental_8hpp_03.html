@@ -281,7 +281,7 @@ Variables</h2></td></tr>
 </div><div class="memdoc">
 <b>Initial value:</b><div class="fragment"><div class="line">= [] (<span class="keywordtype">int</span> m, std::vector&lt;std::string&gt; <span class="keyword">const</span> &amp;ips) {</div>
 <div class="line">                                <span class="keyword">auto</span> addrs = details::fmap(details::inet_addr, ips);</div>
-<div class="line">                                <span class="keywordflow">return</span> <a class="code" href="namespacepfq_1_1lang.html#a7282b9a2e51359b8db0dcdb9fadf2fd1">predicate2</a>(<span class="stringliteral">&quot;bloom_src&quot;</span>, m, std::move(addrs));</div>
+<div class="line">                                <span class="keywordflow">return</span> <a class="code" href="namespacepfq_1_1lang.html#a7282b9a2e51359b8db0dcdb9fadf2fd1">predicate2</a>(<span class="stringliteral">&quot;bloom_dst&quot;</span>, m, std::move(addrs));</div>
 <div class="line">                          }</div>
 <div class="ttc" id="namespacepfq_1_1lang_html_a7282b9a2e51359b8db0dcdb9fadf2fd1"><div class="ttname"><a href="namespacepfq_1_1lang.html#a7282b9a2e51359b8db0dcdb9fadf2fd1">pfq::lang::predicate2</a></div><div class="ttdeci">Predicate2 predicate2(std::string symbol, Tp1 const &amp;arg1, Tp2 const &amp;arg2)</div><div class="ttdef"><b>Definition:</b> lang.hpp:1140</div></div>
 </div><!-- fragment -->
@@ -298,7 +298,7 @@ Variables</h2></td></tr>
 </div><div class="memdoc">
 <b>Initial value:</b><div class="fragment"><div class="line">= [] (<span class="keywordtype">int</span> m, std::vector&lt;std::string&gt; <span class="keyword">const</span> &amp;ips) {</div>
 <div class="line">                                    <span class="keyword">auto</span> addrs = details::fmap(details::inet_addr, ips);</div>
-<div class="line">                                    <span class="keywordflow">return</span> <a class="code" href="namespacepfq_1_1lang.html#aab1a000712bb2711044255ca1626cc84">mfunction2</a>(<span class="stringliteral">&quot;bloom_src_filter&quot;</span>, m, std::move(addrs));</div>
+<div class="line">                                    <span class="keywordflow">return</span> <a class="code" href="namespacepfq_1_1lang.html#aab1a000712bb2711044255ca1626cc84">mfunction2</a>(<span class="stringliteral">&quot;bloom_dst_filter&quot;</span>, m, std::move(addrs));</div>
 <div class="line">                                }</div>
 <div class="ttc" id="namespacepfq_1_1lang_html_aab1a000712bb2711044255ca1626cc84"><div class="ttname"><a href="namespacepfq_1_1lang.html#aab1a000712bb2711044255ca1626cc84">pfq::lang::mfunction2</a></div><div class="ttdeci">MFunction2 mfunction2(std::string symbol, const T1 &amp;arg1, const T2 &amp;arg2)</div><div class="ttdef"><b>Definition:</b> lang.hpp:1189</div></div>
 </div><!-- fragment -->
@@ -553,7 +553,7 @@ Variables</h2></td></tr>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="namespacepfq.html">pfq</a></li><li class="navelem"><a class="el" href="namespacepfq_1_1lang.html">lang</a></li><li class="navelem"><a class="el" href="namespacepfq_1_1lang_1_1experimental.html">experimental</a></li><li class="navelem"><a class="el" href="namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03.html">anonymous_namespace{experimental.hpp}</a></li>
-    <li class="footer">Generated on Tue Sep 2 2014 17:27:30 for PFQ-Lang eDLS by
+    <li class="footer">Generated on Thu Sep 25 2014 17:21:54 for PFQ-Lang eDLS by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.7 </li>
   </ul>
