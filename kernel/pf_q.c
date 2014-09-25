@@ -86,7 +86,6 @@ MODULE_DESCRIPTION("Network Monitoring Framework for Multi-core Architectures");
 module_param(direct_capture,    int, 0644);
 module_param(capture_incoming,  int, 0644);
 module_param(capture_outgoing,  int, 0644);
-module_param(capture_loopback,  int, 0644);
 
 
 module_param(cap_len,         int, 0644);
@@ -105,7 +104,6 @@ MODULE_PARM_DESC(direct_capture," Direct capture packets: (0 default)");
 
 MODULE_PARM_DESC(capture_incoming," Capture incoming packets: (1 default)");
 MODULE_PARM_DESC(capture_outgoing," Capture outgoing packets: (0 default)");
-MODULE_PARM_DESC(capture_loopback," Capture loopback packets: (0 default)");
 
 MODULE_PARM_DESC(cap_len, " Default capture length (bytes)");
 MODULE_PARM_DESC(max_len, " Maximum transmission length (bytes)");
@@ -923,7 +921,7 @@ void pfq_net_proto_family_init(void)
 static
 void register_device_handler(void)
 {
-        if (capture_incoming || capture_outgoing || capture_loopback) {
+        if (capture_incoming || capture_outgoing) {
                 pfq_prot_hook.func = pfq_packet_rcv;
                 pfq_prot_hook.type = __constant_htons(ETH_P_ALL);
                 dev_add_pack(&pfq_prot_hook);
@@ -934,7 +932,7 @@ void register_device_handler(void)
 static
 void unregister_device_handler(void)
 {
-        if (capture_incoming || capture_outgoing || capture_loopback) {
+        if (capture_incoming || capture_outgoing) {
 
                 dev_remove_pack(&pfq_prot_hook); /* Remove protocol hook */
         }
