@@ -205,6 +205,8 @@ void send_to_kernel(struct napi_struct *napi, struct sk_buff *skb)
 
 	skb_pull(skb, skb->mac_len);
 
+	skb->pkt_type = PACKET_LOOPBACK;
+
 	switch(cb->direct)
 	{
 		case 0: /* forward not permitted, to avoid loop */
@@ -543,6 +545,9 @@ pfq_packet_rcv
 #endif
     )
 {
+	if (skb->pkt_type == PACKET_LOOPBACK)
+		goto out;
+
 	skb = skb_share_check(skb, GFP_ATOMIC);
 	if (unlikely(!skb))
 		return 0;
@@ -551,21 +556,20 @@ pfq_packet_rcv
         {
             case PACKET_OUTGOING: {
                 if (!capture_outgoing)
-                        return 0;
+                        goto out;
+
                 skb->mac_len = ETH_HLEN;
             } break;
 
-            case PACKET_LOOPBACK: {
-                if (!capture_loopback)
-                        return 0;
-            } break;
-
-            default: /* PACKET_INCOMING */
-                if (!capture_incoming)
-                        return 0;
+            default:
+            	if (!capture_incoming)
+        		goto out;
         }
 
         return pfq_receive(NULL, skb, 0);
+out:
+	kfree_skb(skb);
+	return 0;
 }
 
 
