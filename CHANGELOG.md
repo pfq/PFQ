@@ -35,3 +35,7 @@ PFQ 3.4
 -------
  * PFQ daemon released.
 
+
+PFQ 3.5
+-------
+ * Few bugs and kernel panic fixed.
