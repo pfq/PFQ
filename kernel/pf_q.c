@@ -205,6 +205,8 @@ void send_to_kernel(struct napi_struct *napi, struct sk_buff *skb)
 {
 	struct pfq_cb *cb = PFQ_CB(skb);
 
+	skb_pull(skb, skb->mac_len);
+
 	switch(cb->direct)
 	{
 		case 0: /* forward not permitted, to avoid loop */
@@ -509,6 +511,8 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
                         __sparse_add(&global_stats.frwd, x, cpu);
                         __sparse_add(&global_stats.disc, num_fwd - x, cpu);
 		}
+
+		/* release this skb */
 
 		if (cb->direct)
 			pfq_kfree_skb_recycle(buff.skb, &local->rx_recycle_list);
