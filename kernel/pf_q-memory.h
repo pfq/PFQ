@@ -46,7 +46,12 @@ struct pfq_recycle_stat
         uint64_t        os_free;
         uint64_t        rc_alloc;
         uint64_t        rc_free;
-        uint64_t        rc_error;
+        uint64_t        rc_miss;
+
+        uint64_t        err_intdis;
+        uint64_t        err_shared;
+        uint64_t        err_cloned;
+        uint64_t        err_memory;
 };
 
 
@@ -89,15 +94,35 @@ static inline bool pfq_skb_is_parkable(const struct sk_buff *skb)
 
 static inline bool pfq_skb_is_recycleable(const struct sk_buff *skb, int skb_size)
 {
-    	if (irqs_disabled())
+    	if (irqs_disabled()) {
+#ifdef PFQ_USE_SKB_RECYCLE_STAT
+                sparse_inc(&memory_stats.err_intdis);
+#endif
     		return false;
+	}
 
-    	if (skb_shared(skb) || skb_cloned(skb))
+    	if (skb_shared(skb)) {
+#ifdef PFQ_USE_SKB_RECYCLE_STAT
+                sparse_inc(&memory_stats.err_shared);
+#endif
     	    	return false;
+	}
+
+	if(skb_cloned(skb)) {
+#ifdef PFQ_USE_SKB_RECYCLE_STAT
+                sparse_inc(&memory_stats.err_cloned);
+#endif
+    	    	return false;
+	}
 
     	skb_size = SKB_DATA_ALIGN(skb_size + NET_SKB_PAD);
-    	if (pfq_skb_end_offset(skb) < skb_size)
+
+    	if (pfq_skb_end_offset(skb) < skb_size) {
+#ifdef PFQ_USE_SKB_RECYCLE_STAT
+                sparse_inc(&memory_stats.err_memory);
+#endif
     	    	return false;
+	}
 
     	return true;
 }
@@ -174,6 +199,7 @@ struct sk_buff * pfq_skb_recycle(struct sk_buff *skb)
 
         skb->data = skb->head + NET_SKB_PAD;
         skb_reset_tail_pointer(skb);
+
         return skb;
 }
 
@@ -211,7 +237,7 @@ struct sk_buff * ____pfq_alloc_skb_recycle(unsigned int size, gfp_t priority, in
 
         if (!fclone)
         {
-                skb = pfq_sk_buff_dequeue_tail(recycle_list);
+                skb = pfq_sk_buff_peek_tail(recycle_list);
 
                 if (likely(skb != NULL))
                 {
@@ -221,16 +247,15 @@ struct sk_buff * ____pfq_alloc_skb_recycle(unsigned int size, gfp_t priority, in
 #ifdef PFQ_USE_SKB_RECYCLE_STAT
                                         sparse_inc(&memory_stats.rc_alloc);
 #endif
+					pfq_sk_buff_dequeue_tail(recycle_list);
                                         return pfq_skb_recycle(skb);
                         }
-                        else
-                        {
-#ifdef PFQ_USE_SKB_RECYCLE_STAT
-                                        sparse_inc(&memory_stats.os_free);
-#endif
-                                        consume_skb(skb);
-                        }
                 }
+#ifdef PFQ_USE_SKB_RECYCLE_STAT
+		else {
+                	sparse_inc(&memory_stats.rc_miss);
+		}
+#endif
         }
 #endif
 

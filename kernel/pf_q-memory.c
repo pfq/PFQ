@@ -36,7 +36,12 @@ pfq_get_recycle_stats(void)
                                         sparse_read(&memory_stats.os_free),
                                         sparse_read(&memory_stats.rc_alloc),
                                         sparse_read(&memory_stats.rc_free),
-                                        sparse_read(&memory_stats.rc_error)};
+                                        sparse_read(&memory_stats.rc_miss),
+                                        sparse_read(&memory_stats.err_intdis),
+                                        sparse_read(&memory_stats.err_shared),
+                                        sparse_read(&memory_stats.err_cloned),
+                                        sparse_read(&memory_stats.err_memory),
+        			      };
         return ret;
 }
 

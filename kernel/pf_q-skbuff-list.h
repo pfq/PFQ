@@ -99,6 +99,7 @@ bool pfq_sk_buff_queue_head(struct pfq_sk_buff_list *list, struct sk_buff *skb)
 	return false;
 }
 
+
 static inline
 struct sk_buff *pfq_sk_buff_dequeue_tail(struct pfq_sk_buff_list *list)
 {
@@ -109,6 +110,14 @@ struct sk_buff *pfq_sk_buff_dequeue_tail(struct pfq_sk_buff_list *list)
         list->tail &= PFQ_SK_BUFF_LIST_MASK;
         return skb;
 }
+
+
+static inline
+struct sk_buff *pfq_sk_buff_peek_tail(struct pfq_sk_buff_list *list)
+{
+	return list->node[list->tail];
+}
+
 
 
 #endif /* _PF_Q_SKBUFF_LIST_H_ */
