@@ -48,4 +48,6 @@
 #define Q_GC_LOG_QUEUE_LEN	16
 #define Q_GC_POOL_QUEUE_LEN 	128
 
+#define PACKET_INJECTED  	7  /* mark packet as injected to kernel from PFQ */
+
 #endif /* _PF_Q_MACRO_H_ */

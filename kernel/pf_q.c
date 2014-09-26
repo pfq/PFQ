@@ -200,7 +200,7 @@ static inline
 void send_to_kernel(struct sk_buff *skb)
 {
 	skb_pull(skb, skb->mac_len);
-	skb->pkt_type = PACKET_LOOPBACK;
+	skb->pkt_type = PACKET_INJECTED;
 	netif_receive_skb(skb);
 }
 
@@ -533,7 +533,8 @@ pfq_packet_rcv
 #endif
     )
 {
-	if (skb->pkt_type == PACKET_LOOPBACK)
+	if (skb->pkt_type == PACKET_LOOPBACK ||
+	    skb->pkt_type == PACKET_INJECTED)
 		goto out;
 
 	skb = skb_share_check(skb, GFP_ATOMIC);
