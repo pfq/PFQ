@@ -97,7 +97,6 @@ module_param(prefetch_len,    int, 0644);
 module_param(batch_len,       int, 0644);
 
 module_param(recycle_len,     int, 0644);
-module_param(flow_control,    int, 0644);
 module_param(vl_untag,        int, 0644);
 
 MODULE_PARM_DESC(direct_capture," Direct capture packets: (0 default)");
@@ -119,7 +118,6 @@ MODULE_PARM_DESC(batch_len,     " Tx batch queue length");
 MODULE_PARM_DESC(recycle_len,   " Recycle skb list (default=4096)");
 #endif
 
-MODULE_PARM_DESC(flow_control,  " Flow control value (default=0)");
 MODULE_PARM_DESC(vl_untag,      " Enable vlan untagging (default=0)");
 
 

@@ -48,7 +48,6 @@ extern int max_len;
 extern int prefetch_len;
 extern int batch_len;
 
-extern int flow_control;
 extern int vl_untag;
 
 extern int recycle_len;

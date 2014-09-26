@@ -46,7 +46,6 @@ int max_len      	= 1514;
 int prefetch_len 	= 1;
 int batch_len 		= 1;
 
-int flow_control 	= 0;
 int vl_untag     	= 0;
 
 int recycle_len  	= 4096;
