@@ -131,7 +131,7 @@ static int pfq_proc_groups(struct seq_file *m, void *v)
 
         	seq_printf(m, "%3d %3d ", this_group->policy, this_group->pid);
 
-        	seq_printf(m, "%08zx %08zx %08zx %08zx \n", atomic_long_read(&this_group->sock_mask[pfq_ctz(Q_CLASS_DEFAULT)]),
+        	seq_printf(m, "%08lx %08lx %08lx %08lx \n", atomic_long_read(&this_group->sock_mask[pfq_ctz(Q_CLASS_DEFAULT)]),
         				                    atomic_long_read(&this_group->sock_mask[pfq_ctz(Q_CLASS_USER_PLANE)]),
         				                    atomic_long_read(&this_group->sock_mask[pfq_ctz(Q_CLASS_CONTROL_PLANE)]),
         				                    atomic_long_read(&this_group->sock_mask[63]));
@@ -145,14 +145,14 @@ static int pfq_proc_groups(struct seq_file *m, void *v)
 static int pfq_proc_stats(struct seq_file *m, void *v)
 {
 	seq_printf(m, "INPUT:\n");
-	seq_printf(m, "received  : %zu\n", sparse_read(&global_stats.recv));
-	seq_printf(m, "lost      : %zu\n", sparse_read(&global_stats.lost));
+	seq_printf(m, "received  : %ld\n", sparse_read(&global_stats.recv));
+	seq_printf(m, "lost      : %ld\n", sparse_read(&global_stats.lost));
 	seq_printf(m, "OUTPUT:\n");
-	seq_printf(m, "sent      : %zu\n", sparse_read(&global_stats.sent));
-	seq_printf(m, "kernel    : %zu\n", sparse_read(&global_stats.kern));
-	seq_printf(m, "forwarded : %zu\n", sparse_read(&global_stats.frwd));
-	seq_printf(m, "discarded : %zu\n", sparse_read(&global_stats.disc));
-	seq_printf(m, "quit      : %zu\n", sparse_read(&global_stats.quit));
+	seq_printf(m, "sent      : %ld\n", sparse_read(&global_stats.sent));
+	seq_printf(m, "kernel    : %ld\n", sparse_read(&global_stats.kern));
+	seq_printf(m, "forwarded : %ld\n", sparse_read(&global_stats.frwd));
+	seq_printf(m, "discarded : %ld\n", sparse_read(&global_stats.disc));
+	seq_printf(m, "quit      : %ld\n", sparse_read(&global_stats.quit));
 	return 0;
 }
 
