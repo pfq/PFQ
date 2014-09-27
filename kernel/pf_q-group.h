@@ -46,7 +46,7 @@
 #define CHECK_GROUP_ACCES(id, gid, msg) \
         CHECK_GROUP(id, gid,msg); \
         if (!__pfq_has_joined_group(gid, id)) { \
-                pr_devel("[PFQ|%d] " msg " error: permission denied (git:%d)!\n", id, gid); \
+                pr_devel("[PFQ|%d] " msg " error: permission denied (gid:%d)!\n", id, gid); \
                 return -EACCES; \
         }
 
