@@ -19,7 +19,7 @@ cabal-version:       >=1.10
 executable pfqd
   main-is:             Main.hs
   hs-source-dirs:      src
-  build-depends:       base >=4.6 && <4.7,
+  build-depends:       base >= 4.5,
                        data-default >=0.5 && <0.6, 
                        daemons >=0.2 && <0.3,
                        cmdargs >= 0.10,
