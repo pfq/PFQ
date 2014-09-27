@@ -56,10 +56,10 @@
 #define get_arg(type,a) 	get_arg_0(type,a)
 #define set_arg(type,a) 	set_arg_0(type,a)
 
-#define get_arg_0(type,a) 	__builtin_choose_expr(sizeof(type) <= sizeof(ptrdiff_t), *(type *)&ARGS_TYPE(a)->arg[0], (void *)ARGS_TYPE(a)->arg[0].value)
-#define get_arg_1(type,a) 	__builtin_choose_expr(sizeof(type) <= sizeof(ptrdiff_t), *(type *)&ARGS_TYPE(a)->arg[1], (void *)ARGS_TYPE(a)->arg[1].value)
-#define get_arg_2(type,a) 	__builtin_choose_expr(sizeof(type) <= sizeof(ptrdiff_t), *(type *)&ARGS_TYPE(a)->arg[2], (void *)ARGS_TYPE(a)->arg[2].value)
-#define get_arg_3(type,a) 	__builtin_choose_expr(sizeof(type) <= sizeof(ptrdiff_t), *(type *)&ARGS_TYPE(a)->arg[3], (void *)ARGS_TYPE(a)->arg[3].value)
+#define get_arg_0(type,a) 	__builtin_choose_expr(sizeof(type) <= sizeof(uint64_t), *(type *)&ARGS_TYPE(a)->arg[0], (void *)ARGS_TYPE(a)->arg[0].value)
+#define get_arg_1(type,a) 	__builtin_choose_expr(sizeof(type) <= sizeof(uint64_t), *(type *)&ARGS_TYPE(a)->arg[1], (void *)ARGS_TYPE(a)->arg[1].value)
+#define get_arg_2(type,a) 	__builtin_choose_expr(sizeof(type) <= sizeof(uint64_t), *(type *)&ARGS_TYPE(a)->arg[2], (void *)ARGS_TYPE(a)->arg[2].value)
+#define get_arg_3(type,a) 	__builtin_choose_expr(sizeof(type) <= sizeof(uint64_t), *(type *)&ARGS_TYPE(a)->arg[3], (void *)ARGS_TYPE(a)->arg[3].value)
 
 #define set_arg_0(a, v)		__builtin_choose_expr(sizeof(typeof(v)) <= sizeof(ptrdiff_t), *(typeof(v) *)(&ARGS_TYPE(a)->arg[0].value) = v, (void)0)
 #define set_arg_1(a, v)		__builtin_choose_expr(sizeof(typeof(v)) <= sizeof(ptrdiff_t), *(typeof(v) *)(&ARGS_TYPE(a)->arg[1].value) = v, (void)0)
