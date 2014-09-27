@@ -30,9 +30,9 @@
 #if BITS_PER_LONG == 32
 
 #define pfq_ctz(n) \
-	__builtin_choose_expr(__builtin_types_compatible_p(typeof(n),unsigned int),        (unsigned int)__ffs(n)-1, \
-        __builtin_choose_expr(__builtin_types_compatible_p(typeof(n),unsigned long),       (unsigned int)__ffs((u32)n)-1, \
-        __builtin_choose_expr(__builtin_types_compatible_p(typeof(n),unsigned long long),  (unsigned int)__ffs64((u64)n)-1, (void)0 )))
+	__builtin_choose_expr(__builtin_types_compatible_p(typeof(n),unsigned int),        (unsigned int)__ffs(n), \
+        __builtin_choose_expr(__builtin_types_compatible_p(typeof(n),unsigned long),       (unsigned int)__ffs((u32)n), \
+        __builtin_choose_expr(__builtin_types_compatible_p(typeof(n),unsigned long long),  (unsigned int)__ffs64((u64)n), (void)0 )))
 
 #define pfq_popcount(n) \
         __builtin_choose_expr(__builtin_types_compatible_p(typeof(n),unsigned int),        (unsigned int)hweight32(n), \
