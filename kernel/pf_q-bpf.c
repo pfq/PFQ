@@ -23,6 +23,7 @@
  ****************************************************************/
 
 #include <linux/kernel.h>
+#include <linux/version.h>
 #include <linux/module.h>
 #include <linux/filter.h>
 #include <linux/slab.h>
@@ -38,23 +39,28 @@ pfq_alloc_sk_filter(struct sock_fprog *fprog)
         int err;
 
         /* Make sure new filter is there and in the right amounts. */
+
         if (fprog->filter == NULL)
                 return NULL;
 
         fp = (struct sk_filter *)kmalloc(fsize+sizeof(*fp), GFP_KERNEL);
-        if (!fp)
+        if (fp == NULL)
                 return NULL;
+
         if (copy_from_user(fp->insns, fprog->filter, fsize)) {
         	kfree(fp);
                 return NULL;
         }
 
         fp->len = fprog->len;
+
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,15,0))
         fp->bpf_func = sk_run_filter;
+#endif
 
 	err = sk_chk_filter(fp->insns, fp->len);
-	if (err)
-	{
+	if (err) {
+
 		/* bpf_jit_free(fp); */
 		kfree(fp);
 		return NULL;
@@ -66,8 +72,7 @@ pfq_alloc_sk_filter(struct sock_fprog *fprog)
 
 void pfq_free_sk_filter(struct sk_filter *filter)
 {
-        if (filter)
-	{
+        if (filter) {
 		/* bpf_jit_free(fp); */
 		kfree(filter);
 	}

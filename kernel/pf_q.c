@@ -315,7 +315,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 			continue;
 		}
 
-		bpf = (struct sk_filter *)atomic_long_read(&this_group->filter);
+		bpf = (struct sk_filter *)atomic_long_read(&this_group->bp_filter);
 
 		socket_mask = 0;
 

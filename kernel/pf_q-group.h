@@ -73,7 +73,7 @@ struct pfq_group
 
         atomic_long_t sock_mask[Q_CLASS_MAX];           /* for class: Q_CLASS_DEFAULT, Q_CLASS_USER_PLANE, Q_CLASS_CONTROL_PLANE etc... */
 
-        atomic_long_t filter; 				/* struct sk_filter pointer */
+        atomic_long_t bp_filter; 			/* struct sk_filter pointer */
 
         bool   vlan_filt;                               /* enable/disable vlan filtering */
         char   vid_filters[4096];                       /* vlan filters */

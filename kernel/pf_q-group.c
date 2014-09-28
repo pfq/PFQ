@@ -90,7 +90,7 @@ __pfq_group_init(int gid)
                 atomic_long_set(&g->sock_mask[i], 0);
         }
 
-        atomic_long_set(&g->filter,   0L);
+        atomic_long_set(&g->bp_filter,0L);
         atomic_long_set(&g->comp,     0L);
         atomic_long_set(&g->comp_ctx, 0L);
 
@@ -129,7 +129,7 @@ __pfq_group_free(int gid)
         g->pid = 0;
         g->policy = Q_POLICY_GROUP_UNDEFINED;
 
-        filter   = (struct sk_filter *)atomic_long_xchg(&g->filter, 0L);
+        filter   = (struct sk_filter *)atomic_long_xchg(&g->bp_filter, 0L);
         old_comp = (struct pfq_computation_tree *)atomic_long_xchg(&g->comp, 0L);
         old_ctx  = (void *)atomic_long_xchg(&g->comp_ctx, 0L);
 
@@ -247,7 +247,7 @@ void __pfq_set_group_filter(int gid, struct sk_filter *filter)
                 return;
         }
 
-        old_filter = (void *)atomic_long_xchg(& g->filter, (long)filter);
+        old_filter = (void *)atomic_long_xchg(&g->bp_filter, (long)filter);
 
         msleep(Q_GRACE_PERIOD);
 
