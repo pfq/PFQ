@@ -33,9 +33,6 @@ test-dispatch: Network/PFq.hs test-dispatch.hs
 test-lang: test-lang.hs
 		$(HC) $(GHCFLAGS) $(LIBS) test-lang.hs -o $@
 
-install: all
-		cp pfq-counters  ${INSTDIR}/bin/
-
 clean:
 	   @rm -f test-read test-bloom test-send test-dispatch test-lang
 	   @rm -f *.o *.hi Network/*.o Network/*.hi Network/PFq.hs Network/PFq_stub.h
