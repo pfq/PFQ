@@ -23,7 +23,7 @@ import System.Process
 import System.Exit
 
 import Control.Monad
-import Control.Exception
+import qualified Control.Exception as E
 
 components =
     [
@@ -103,13 +103,13 @@ instance Show Action where
 main = do
     args <- getArgs
     base <- getCurrentDirectory
-    catch (case args of
+    E.catch (case args of
             ("configure":_) -> void $ mapM (runAction Configure base) components >> putStrLn "Done."
             ("build":_)     -> void $ mapM (runAction Build     base) components >> putStrLn "Done."
             ("install":_)   -> void $ mapM (runAction Install   base) components >> putStrLn "Done."
             ("clean":_)     -> void $ mapM (runAction Clean     base) components >> putStrLn "Done."
             _               -> usage)
-          (\e -> setCurrentDirectory base >> print (e :: IOException))
+          (\e -> setCurrentDirectory base >> print (e :: E.SomeException))
 
 
 runAction :: Action -> FilePath -> Component -> IO ()
