@@ -16,126 +16,60 @@
 -- Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 --
 
+import SimpleBuilder
+
 import System.Environment
-import System.Directory
-import System.FilePath
-import System.Process
-import System.Exit
-
 import Control.Monad
-import qualified Control.Exception as E
 
-components =
+script :: Script
+script =
     [
-        ("pfq.ko", "kernel/",
-            [ ],
-            [ "make"],
-            [ "make install" ],
-            [ "make clean"   ]),
+        Configure "pfq.ko"  *>>  into "kernel/" [],
+        Build     "pfq.ko"  *>>  into "kernel/" ["make"],
+        Install   "pfq.ko"  *>>  into "kernel/" ["make install"] .|. [Build "pfq.ko"],
+        Clean     "pfq.ko"  *>>  into "kernel/" ["make clean"],
 
-        ("C lib", "user/C/",
-            [ "cmake ."],
-            [ "make"],
-            [ "make install" ],
-            [ "make clean"   ]),
+        Configure "C lib"   *>>  into "user/C/" ["cmake ."],
+        Build     "C lib"   *>>  into "user/C/" ["make"]         .|. [Configure "C lib"],
+        Install   "C lib"   *>>  into "user/C/" ["make install"] .|. [Build "C lib"],
+        Clean     "C lib"   *>>  into "user/C/" ["make clean"],
 
-        ("C++ headers", "user/C++/",
-            [ ],
-            [ ],
-            [ "make install" ],
-            [ ]),
+        Configure "C++ lib" *>>  into "user/C++/" [],
+        Build     "C++ lib" *>>  into "user/C++/" [],
+        Install   "C++ lib" *>>  into "user/C++/" ["make install"],
+        Clean     "C++ lib" *>>  into "user/C++/" [],
 
-        ("Haskell lib", "user/Haskell/",
-            [ cabalConfigure ],
-            [ cabalBuild     ],
-            [ cabalInstall   ],
-            [ cabalClean     ]),
+        Configure "Haskell lib" *>>  into "user/Haskell/" [cabalConfigure] .|. [Install "C lib"],
+        Build     "Haskell lib" *>>  into "user/Haskell/" [cabalBuild]     .|. [Configure "Haskell lib"],
+        Install   "Haskell lib" *>>  into "user/Haskell/" [cabalInstall]   .|. [Build "Haskell lib"],
+        Clean     "Haskell lib" *>>  into "user/Haskell/" [cabalClean],
 
-        ("pfq-counters", "user/Haskell/pfq-counters/",
-            [ cabalConfigure ],
-            [ cabalBuild     ],
-            [ cabalInstall   ],
-            [ cabalClean     ]),
+        Configure "pfq-counters" *>>  into "user/Haskell/pfq-counters/" [cabalConfigure] .|. [Install   "Haskell lib"],
+        Build     "pfq-counters" *>>  into "user/Haskell/pfq-counters/" [cabalBuild]     .|. [Configure "pfq-counters"],
+        Install   "pfq-counters" *>>  into "user/Haskell/pfq-counters/" [cabalInstall]   .|. [Build     "pfq-counters"],
+        Clean     "pfq-counters" *>>  into "user/Haskell/pfq-counters/" [cabalClean],
 
-        ("Haskell test", "user/Haskell/test/",
-            [ ],
-            [ "make" ],
-            [ ],
-            [ "make clean" ]),
+        Configure "irq-affinity" *>>  into "script/irq-affinity/" [cabalConfigure] .|. [Install   "Haskell lib"],
+        Build     "irq-affinity" *>>  into "script/irq-affinity/" [cabalBuild]     .|. [Configure "irq-affinity"],
+        Install   "irq-affinity" *>>  into "script/irq-affinity/" [cabalInstall]   .|. [Build     "irq-affinity"],
+        Clean     "irq-affinity" *>>  into "script/irq-affinity/" [cabalClean],
 
-        ("irq-affinity", "script/irq-affinity/",
-            [ cabalConfigure ],
-            [ cabalBuild     ],
-            [ cabalInstall   ],
-            [ cabalClean     ]),
+        Configure "pfq-omatic" *>>  into "script/pfq-omatic/" [cabalConfigure] .|. [Install   "Haskell lib"],
+        Build     "pfq-omatic" *>>  into "script/pfq-omatic/" [cabalBuild]     .|. [Configure "pfq-omatic"],
+        Install   "pfq-omatic" *>>  into "script/pfq-omatic/" [cabalInstall]   .|. [Build     "pfq-omatic"],
+        Clean     "pfq-omatic" *>>  into "script/pfq-omatic/" [cabalClean],
 
-        ("pfq-omatic", "script/pfq-omatic/",
-            [ cabalConfigure ],
-            [ cabalBuild     ],
-            [ cabalInstall   ],
-            [ cabalClean     ]),
+        Configure "C/C++ test"   *>>  into "user/test/" ["cmake ."]      .|. [Build "C lib"],
+        Build     "C/C++ test"   *>>  into "user/test/" ["make"]         .|. [Configure "C/C++ test"],
+        Install   "C/C++ test"   *>>  into "user/test/" [ ],
+        Clean     "C/C++ test"   *>>  into "user/test/" ["make clean"],
 
-        ("C/C++ tests", "user/test/",
-            [ "cmake ."],
-            [ "make"],
-            [ ],
-            [ "make clean"   ]),
-
-        ("C/C++ tools", "user/tool/",
-            [ "cmake ."],
-            [ "make"],
-            [ ],
-            [ "make clean"   ])
-    ]
+        Configure "C/C++ tools"   *>>  into "user/tool/" ["cmake ."]      .|. [Build "C lib"],
+        Build     "C/C++ tools"   *>>  into "user/tool/" ["make"]         .|. [Configure "C/C++ tools"],
+        Install   "C/C++ tools"   *>>  into "user/tool/" [ ],
+        Clean     "C/C++ tools"   *>>  into "user/tool/" ["make clean"]
+   ]
 
 
-type Component = (String, FilePath, [String], [String], [String], [String])
-
-data Action = Configure | Build | Install | Clean
-
-instance Show Action where
-    show Configure = "Configuring"
-    show Build     = "Building"
-    show Install   = "Installing"
-    show Clean     = "Cleaning"
-
-
-main = do
-    args <- getArgs
-    base <- getCurrentDirectory
-    E.catch (case args of
-            ("configure":_) -> void $ mapM (runAction Configure base) components >> putStrLn "Done."
-            ("build":_)     -> void $ mapM (runAction Build     base) components >> putStrLn "Done."
-            ("install":_)   -> void $ mapM (runAction Install   base) components >> putStrLn "Done."
-            ("clean":_)     -> void $ mapM (runAction Clean     base) components >> putStrLn "Done."
-            _               -> usage)
-          (\e -> setCurrentDirectory base >> print (e :: E.SomeException))
-
-
-runAction :: Action -> FilePath -> Component -> IO ()
-runAction action base (name, path, cs, bs, is, cns) = do
-    let cmds = case action of
-                Configure -> cs
-                Build     -> bs
-                Install   -> is
-                Clean     -> cns
-    unless (null cmds) $ do
-        putStrLn $ show action ++ " " ++ name ++ ":"
-        setCurrentDirectory $ base </> path
-        ec <- mapM system cmds
-        unless (all (== ExitSuccess) ec) $ error ("Error: " ++ show action ++ " " ++ name ++ " aborted!")
-
-
-usage = putStrLn $ "usage: Setup COMMAND\n\n" ++
-                   "Commands:\n" ++
-                   "    configure   Prepare to build PFQ framework.\n" ++
-                   "    build       Build PFQ framework.\n" ++
-                   "    install     Copy the files into the install location.\n" ++
-                   "    clean       Clean up after a build."
-
-
-cabalConfigure = "runhaskell Setup configure --user"
-cabalBuild     = "runhaskell Setup build"
-cabalInstall   = "runhaskell Setup install"
-cabalClean     = "runhaskell Setup clean"
+main = getArgs >>= simpleBuilder script
 
