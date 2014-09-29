@@ -39,7 +39,7 @@ script =
         Install   "C++ lib" *>>  into "user/C++/" ["make install"],
         Clean     "C++ lib" *>>  into "user/C++/" [],
 
-        Configure "Haskell lib" *>>  into "user/Haskell/" [cabalConfigure] .|. [Install "C lib"],
+        Configure "Haskell lib" *>>  into "user/Haskell/" [cabalConfigure] .|. [Install "pfq.ko", Install "C lib"],
         Build     "Haskell lib" *>>  into "user/Haskell/" [cabalBuild]     .|. [Configure "Haskell lib"],
         Install   "Haskell lib" *>>  into "user/Haskell/" [cabalInstall]   .|. [Build "Haskell lib"],
         Clean     "Haskell lib" *>>  into "user/Haskell/" [cabalClean],
