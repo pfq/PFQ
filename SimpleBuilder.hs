@@ -29,6 +29,7 @@ module SimpleBuilder (
     cabalClean,
 ) where
 
+import System.Console.ANSI
 import System.Environment
 import System.Directory
 import System.FilePath
@@ -36,7 +37,12 @@ import System.Process
 import System.Exit
 
 import Control.Monad
+import Control.Monad.State
+
 import qualified Control.Exception as E
+
+bold    = setSGRCode [SetConsoleIntensity BoldIntensity]
+reset   = setSGRCode []
 
 data Target = Configure String |
               Build String |
@@ -64,6 +70,9 @@ data Component = Component Target Action
 type Script    = [Component]
 
 
+type ScriptT = StateT (Script,[Target])
+
+
 infix 1 *>>
 
 (*>>) :: Target -> Action -> Component
@@ -76,31 +85,38 @@ into dir cs = Action dir cs []
 action .|. ts = action{ deps = ts }
 
 
-buildTarget :: Target -> FilePath -> Script -> IO ()
-buildTarget tar base script = do
-    let script' = filter (\ (Component tar' _) -> tar' == tar) script
-    if (null script')
-    then error ("Error: " ++ show tar ++ ": target not found!")
-    else do
-        let tot = length script'
-        forM_ (zip [1..] script') $ \(n, (Component target (Action path cmds' deps'))) -> do
-            putStrLn $ "[" ++ show n ++ "/" ++ show tot ++ "] " ++ show target ++ ":"
-            unless (null deps') $ do
-                putStrLn $ "Satisfying dependencies for " ++ show target ++ ":"
-                forM_ deps' $ \t -> buildTarget t base script
-            setCurrentDirectory $ base </> path
-            ec <- mapM system cmds'
-            unless (all (== ExitSuccess) ec) $ error ("Error: " ++ show target ++ " aborted!")
+buildTarget :: Target -> FilePath -> ScriptT IO ()
+buildTarget tar base = do
+    (script, done) <- get
+    let script' = filter (\(Component tar' _ ) -> tar' == tar) script
+    if null script'
+        then lift $ error ("Error: " ++ show tar ++ ": target not found!")
+        else do
+            let tot = length script'
+            forM_ (zip [1..] script') $ \(n, Component target (Action path cmds' deps')) -> do
+                (_,done') <- get
+                unless (target `elem` done') $ do
+                    put (script, target : done')
+                    lift $ putStrLn $ bold ++ "[" ++ show n ++ "/" ++ show tot ++ "] " ++ show target ++ ":" ++ reset
+                    -- satisfy dependencies
+                    unless (null deps') $ do
+                        lift $ putStrLn $ "Satisfying dependencies for " ++ show target ++ "..."
+                        forM_ deps' $ \t -> buildTarget t base
+                    -- build target
+                    lift $ setCurrentDirectory $ base </> path
+                    ec <- lift $ mapM system cmds'
+                    unless (all (== ExitSuccess) ec) $
+                        lift $ error ("Error: " ++ show target ++ " aborted!")
 
 
 simpleBuilder :: Script -> [String] -> IO ()
 simpleBuilder script args = do
     base <- getCurrentDirectory
     E.catch (case args of
-            ("configure":xs) -> buildTarget (Configure "*") base script >> putStrLn "Done."
-            ("build":xs)     -> buildTarget (Build "*")     base script >> putStrLn "Done."
-            ("install":xs)   -> buildTarget (Install "*")   base script >> putStrLn "Done."
-            ("clean":xs)     -> buildTarget (Clean "*")     base script >> putStrLn "Done."
+            ("configure":xs) -> evalStateT (buildTarget (Configure "*") base) (script,[]) >> putStrLn "Done."
+            ("build":xs)     -> evalStateT (buildTarget (Build "*")     base) (script,[]) >> putStrLn "Done."
+            ("install":xs)   -> evalStateT (buildTarget (Install "*")   base) (script,[]) >> putStrLn "Done."
+            ("clean":xs)     -> evalStateT (buildTarget (Clean "*")     base) (script,[]) >> putStrLn "Done."
             _                -> usage)
           (\e -> setCurrentDirectory base >> print (e :: E.SomeException))
 
