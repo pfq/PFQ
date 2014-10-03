@@ -34,7 +34,7 @@
 #define Q_MAX_HW_QUEUE          256
 #define Q_MAX_HW_QUEUE_MASK     (Q_MAX_HW_QUEUE-1)
 
-#define Q_GRACE_PERIOD 500      /* msec */
+#define Q_GRACE_PERIOD 			500      /* msec */
 
 #define Q_TX_RING_SIZE          (8192)
 #define Q_TX_RING_MASK          (PFQ_TX_RING_SIZE-1)
@@ -42,12 +42,9 @@
 #define Q_SLOT_ALIGN(s, n)      ((s+(n-1)) & ~(n-1))
 
 #define Q_FUN_SYMB_LEN          256
+#define Q_PERSISTENT_MEM 		64
 
-#define Q_PERSISTENT_MEM 	64
-
-#define Q_GC_LOG_QUEUE_LEN	16
+#define Q_GC_LOG_QUEUE_LEN		16
 #define Q_GC_POOL_QUEUE_LEN 	128
-
-#define PACKET_INJECTED  	7  /* mark packet as injected to kernel from PFQ */
 
 #endif /* _PF_Q_MACRO_H_ */
