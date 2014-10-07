@@ -65,7 +65,7 @@ size_t pfq_mpdb_enqueue_batch(struct pfq_rx_opt *ro,
 		              int burst_len,
 		              int gid)
 {
-	struct pfq_rx_queue_hdr *rx = ro->queue_ptr;
+	struct pfq_rx_queue_hdr *rx_queue = ro->queue_ptr;
 
 	int data, q_len, q_index;
 	struct sk_buff *skb;
@@ -73,16 +73,19 @@ size_t pfq_mpdb_enqueue_batch(struct pfq_rx_opt *ro,
 	unsigned int n;
 	char *this_slot;
 
-	data = atomic_read((atomic_t *)&rx->data);
+	if (unlikely(rx_queue == NULL))
+		return 0;
+
+	data = atomic_read((atomic_t *)&rx_queue->data);
 
         if (unlikely(MPDB_QUEUE_LEN(data) > ro->size))
 		return 0;
 
-	data = atomic_add_return(burst_len, (atomic_t *)&rx->data);
+	data = atomic_add_return(burst_len, (atomic_t *)&rx_queue->data);
 
 	q_len     = MPDB_QUEUE_LEN(data) - burst_len;
 	q_index   = MPDB_QUEUE_INDEX(data);
-        this_slot = mpdb_slot_ptr(ro, rx, q_index, q_len);
+        this_slot = mpdb_slot_ptr(ro, rx_queue, q_index, q_len);
 
 	GC_queue_for_each_skb_bitmask(queue, skb, skbs_mask, n)
 	{
@@ -97,7 +100,7 @@ size_t pfq_mpdb_enqueue_batch(struct pfq_rx_opt *ro,
 
 		if (unlikely(slot_index > ro->size))
 		{
-			if ( rx->poll_wait ) {
+			if ( rx_queue->poll_wait ) {
 				wake_up_interruptible(&ro->waitqueue);
 			}
 			return sent;
@@ -159,7 +162,7 @@ size_t pfq_mpdb_enqueue_batch(struct pfq_rx_opt *ro,
 
 		if (unlikely((slot_index & 16383) == 0) &&
 			     (slot_index >= (ro->size >> 1)) &&
-			     rx->poll_wait)
+			     rx_queue->poll_wait)
 		{
 		        wake_up_interruptible(&ro->waitqueue);
 		}
