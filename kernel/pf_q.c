@@ -725,25 +725,8 @@ pfq_release(struct socket *sock)
 
         up (&sock_sem);
 
-        if (total) {
-
-#if 0
-#ifdef PFQ_USE_SKB_RECYCLE_STAT
-
-                struct pfq_recycle_stat stat = pfq_get_recycle_stats();
-                printk(KERN_INFO "[PFQ|%d] recycle_stat { os_alloc:%llu os_free:%llu rc_alloc:%llu rc_free:%llu error:%llu }\n",
-                                        id,
-                                        stat.os_alloc,
-                                        stat.os_free,
-                                        stat.rc_alloc,
-                                        stat.rc_free,
-                                        stat.rc_error);
-
-                pfq_reset_recycle_stats();
-#endif
-#endif
+        if (total)
                 printk(KERN_INFO "[PFQ|%d] cleanup: %d skb purged.\n", id, total);
-        }
 
         pfq_mpdb_shared_queue_free(so);
 
