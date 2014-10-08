@@ -27,6 +27,7 @@
 
 #include <linux/vmalloc.h>
 #include <linux/printk.h>
+#include <linux/kthread.h>
 #include <linux/mm.h>
 #include <linux/pf_q.h>
 
@@ -55,7 +56,7 @@ void *pfq_memcpy(void *to, const void *from, size_t len)
 static inline
 char *mpdb_slot_ptr(struct pfq_rx_opt *ro, struct pfq_rx_queue_hdr *qd, int index, int slot)
 {
-	return (char *)(ro->base_addr) + ( (index&1 ? ro->size : 0 ) + slot) * ro->slot_size;
+	return (char *)(ro->queue_base) + ( (index&1 ? ro->size : 0 ) + slot) * ro->slot_size;
 }
 
 
@@ -65,7 +66,7 @@ size_t pfq_mpdb_enqueue_batch(struct pfq_rx_opt *ro,
 		              int burst_len,
 		              int gid)
 {
-	struct pfq_rx_queue_hdr *rx_queue = ro->queue_ptr;
+	struct pfq_rx_queue_hdr *rx_queue = pfq_get_rx_queue_hdr(ro);
 
 	int data, q_len, q_index;
 	struct sk_buff *skb;

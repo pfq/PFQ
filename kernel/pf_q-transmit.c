@@ -84,6 +84,8 @@ int pfq_tx_queue_flush(struct pfq_tx_opt *to, struct net_device *dev, int cpu, i
         size_t len;
         int n, index, avail;
 
+	struct pfq_tx_queue_hdr *txq = pfq_get_tx_queue_hdr(to);
+
 #ifdef PFQ_TX_PROFILE
 	static int pkt_counter;
 #endif
@@ -112,18 +114,17 @@ int pfq_tx_queue_flush(struct pfq_tx_opt *to, struct net_device *dev, int cpu, i
 			pfq_kfree_skb_recycle(skb, &local->tx_recycle_list);
 		}
 
-		pfq_spsc_read_commit_n(to->queue_ptr, pfq_bounded_queue_len(&skbs));
+		pfq_spsc_read_commit_n(txq, pfq_bounded_queue_len(&skbs));
 
 		pfq_bounded_queue_flush(&skbs);
 	}
-
 
 	pfq_bounded_queue_init(&skbs);
 
         local = __this_cpu_ptr(cpu_data);
 
-        avail = pfq_spsc_read_avail(to->queue_ptr);
-	index = pfq_spsc_read_index(to->queue_ptr);
+        avail = pfq_spsc_read_avail(txq);
+	index = pfq_spsc_read_index(txq);
 
         for(n = 0; n < avail; ++n)
         {
@@ -138,7 +139,7 @@ int pfq_tx_queue_flush(struct pfq_tx_opt *to, struct net_device *dev, int cpu, i
                         break;
                 }
 
-                h = (struct pfq_pkt_hdr *) (to->base_addr + index * to->queue_ptr->slot_size);
+                h = (struct pfq_pkt_hdr *) (to->queue_base + index * txq->slot_size);
 
                 skb = pfq_tx_alloc_skb(to->maxlen, GFP_KERNEL, node);
                 if (unlikely(skb == NULL))
@@ -148,7 +149,7 @@ int pfq_tx_queue_flush(struct pfq_tx_opt *to, struct net_device *dev, int cpu, i
 
                 /* copy packet to this skb: */
 
-                len = min_t(size_t, h->len, to->queue_ptr->max_len);
+                len = min_t(size_t, h->len, txq->max_len);
 
                 /* set the tail */
 
@@ -185,7 +186,7 @@ int pfq_tx_queue_flush(struct pfq_tx_opt *to, struct net_device *dev, int cpu, i
 
 		/* get the next index... */
 
-                index = pfq_spsc_next_index(to->queue_ptr, index);
+                index = pfq_spsc_next_index(txq, index);
 
 #ifdef PFQ_TX_PROFILE
 		if ((pkt_counter++ % 1048576) == 0)

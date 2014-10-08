@@ -39,7 +39,7 @@ bool copy_to_user_skbs(struct pfq_rx_opt *ro, struct gc_queue_buff *queue, unsig
 
         int len = 0; size_t sent = 0;
 
-        if (likely(ro->queue_ptr)) {
+        if (likely(pfq_get_rx_queue_hdr(ro))) {
 
         	smp_rmb();
 
@@ -53,6 +53,7 @@ bool copy_to_user_skbs(struct pfq_rx_opt *ro, struct gc_queue_buff *queue, unsig
 			return false;
 		}
         }
+
         return true;
 }
 

@@ -657,25 +657,6 @@ pfq_create(
 }
 
 
-static void
-pfq_rx_release(struct pfq_rx_opt *ro)
-{
-        /* decrease the timestamp_enabled counter */
-
-        if (ro->tstamp)
-                atomic_dec(&timestamp_enabled);
-
-        ro->queue_ptr = NULL;
-}
-
-
-static void
-pfq_tx_release(struct pfq_tx_opt *to)
-{
-        to->queue_ptr = NULL;
-}
-
-
 static int
 pfq_release(struct socket *sock)
 {
@@ -700,19 +681,16 @@ pfq_release(struct socket *sock)
 
         pr_devel("[PFQ|%d] releasing socket...\n", id);
 
-        pfq_rx_release(&so->rx_opt);
-        pfq_tx_release(&so->tx_opt);
-
         pfq_leave_all_groups(so->id);
         pfq_release_sock_id(so->id);
 
+        if (so->rx_opt.tstamp)
+                atomic_dec(&timestamp_enabled);
+
+        if (so->mem_addr)
+                pfq_mpdb_shared_queue_toggle(so, false);
+
         down(&sock_sem);
-
-        /* Convenient way to avoid a race condition with NAPI soft-irq,
-         * without using expensive rw-mutexes
-         */
-
-        msleep(Q_GRACE_PERIOD);
 
         /* purge both prefetch and recycle queues if no socket is open */
 
@@ -725,8 +703,6 @@ pfq_release(struct socket *sock)
 
         if (total)
                 printk(KERN_INFO "[PFQ|%d] cleanup: %d skb purged.\n", id, total);
-
-        pfq_mpdb_shared_queue_free(so);
 
         sock_orphan(sk);
 	sock->sk = NULL;
@@ -789,7 +765,7 @@ pfq_poll(struct file *file, struct socket *sock, poll_table * wait)
         struct pfq_rx_queue_hdr * rx;
         unsigned int mask = 0;
 
-        rx = (struct pfq_rx_queue_hdr *)so->rx_opt.queue_ptr;
+        rx = pfq_get_rx_queue_hdr(&so->rx_opt);
         if (rx == NULL)
                 return mask;
 
