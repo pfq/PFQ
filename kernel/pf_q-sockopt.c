@@ -49,15 +49,10 @@ int pfq_getsockopt(struct socket *sock,
                 char __user * optval, int __user * optlen)
 {
         struct pfq_sock *so = pfq_sk(sock->sk);
-        struct pfq_rx_opt * ro;
-        struct pfq_tx_opt * to;
         int len;
 
         if (so == NULL)
                 return -EFAULT;
-
-        ro = &so->rx_opt;
-        to = &so->tx_opt;
 
         if (get_user(len, optlen))
                 return -EFAULT;
@@ -131,15 +126,15 @@ int pfq_getsockopt(struct socket *sock,
                 if (len != sizeof(struct pfq_stats))
                         return -EINVAL;
 
-                stat.recv = sparse_read(&ro->stats.recv);
-                stat.lost = sparse_read(&ro->stats.lost);
-                stat.drop = sparse_read(&ro->stats.drop);
+                stat.recv = sparse_read(&so->rx_opt.stats.recv);
+                stat.lost = sparse_read(&so->rx_opt.stats.lost);
+                stat.drop = sparse_read(&so->rx_opt.stats.drop);
 
 		stat.frwd = 0;
 		stat.kern = 0;
 
-                stat.sent = sparse_read(&to->stats.sent);
-                stat.disc = sparse_read(&to->stats.disc);
+                stat.sent = sparse_read(&so->tx_opt.stats.sent);
+                stat.disc = sparse_read(&so->tx_opt.stats.disc);
 
                 if (copy_to_user(optval, &stat, sizeof(stat)))
                         return -EFAULT;
@@ -147,9 +142,9 @@ int pfq_getsockopt(struct socket *sock,
 
         case Q_SO_GET_RX_TSTAMP:
         {
-                if (len != sizeof(ro->tstamp))
+                if (len != sizeof(so->rx_opt.tstamp))
                         return -EINVAL;
-                if (copy_to_user(optval, &ro->tstamp, sizeof(ro->tstamp)))
+                if (copy_to_user(optval, &so->rx_opt.tstamp, sizeof(so->rx_opt.tstamp)))
                         return -EFAULT;
         } break;
 
@@ -164,33 +159,33 @@ int pfq_getsockopt(struct socket *sock,
 
         case Q_SO_GET_RX_CAPLEN:
         {
-                if (len != sizeof(ro->caplen))
+                if (len != sizeof(so->rx_opt.caplen))
                         return -EINVAL;
-                if (copy_to_user(optval, &ro->caplen, sizeof(ro->caplen)))
+                if (copy_to_user(optval, &so->rx_opt.caplen, sizeof(so->rx_opt.caplen)))
                         return -EFAULT;
         } break;
 
         case Q_SO_GET_TX_MAXLEN:
         {
-                if (len != sizeof(to->maxlen))
+                if (len != sizeof(so->tx_opt.maxlen))
                         return -EINVAL;
-                if (copy_to_user(optval, &to->maxlen, sizeof(to->maxlen)))
+                if (copy_to_user(optval, &so->tx_opt.maxlen, sizeof(so->tx_opt.maxlen)))
                         return -EFAULT;
         } break;
 
         case Q_SO_GET_RX_SLOTS:
         {
-                if (len != sizeof(ro->size))
+                if (len != sizeof(so->rx_opt.size))
                         return -EINVAL;
-                if (copy_to_user(optval, &ro->size, sizeof(ro->size)))
+                if (copy_to_user(optval, &so->rx_opt.size, sizeof(so->rx_opt.size)))
                         return -EFAULT;
         } break;
 
         case Q_SO_GET_TX_SLOTS:
         {
-                if (len != sizeof(to->size))
+                if (len != sizeof(so->tx_opt.size))
                         return -EINVAL;
-                if (copy_to_user(optval, &to->size, sizeof(to->size)))
+                if (copy_to_user(optval, &so->tx_opt.size, sizeof(so->tx_opt.size)))
                         return -EFAULT;
         } break;
 
@@ -306,93 +301,32 @@ int pfq_setsockopt(struct socket *sock,
                 int optlen)
 {
         struct pfq_sock *so = pfq_sk(sock->sk);
-        struct pfq_rx_opt * ro;
-        struct pfq_tx_opt * to;
 
         bool found = true;
 
         if (so == NULL)
                 return -EINVAL;
 
-        ro = &so->rx_opt;
-        to = &so->tx_opt;
-
         switch(optname)
         {
         case Q_SO_TOGGLE_QUEUE:
         {
-                int active;
+                int err, active;
                 if (optlen != sizeof(active))
                         return -EINVAL;
                 if (copy_from_user(&active, optval, optlen))
                         return -EFAULT;
 
-                if (active)
-                {
-                        if (!so->mem_addr)
-                        {
-                                struct pfq_queue_hdr * queue;
-
-                                /* alloc queue memory */
-
-                                if (pfq_mpdb_shared_queue_alloc(so, pfq_queue_total_mem(so)) < 0)
-                                {
-                                        return -ENOMEM;
-                                }
-
-                                /* so->mem_addr and so->mem_size are correctly configured */
-
-                                /* initialize queues headers */
-
-                                queue = (struct pfq_queue_hdr *)so->mem_addr;
-
-                                /* initialize rx queue header */
-
-                                queue->rx.data              = (1L << 24);
-                                queue->rx.poll_wait         = 0;
-                                queue->rx.size              = so->rx_opt.size;
-                                queue->rx.slot_size         = so->rx_opt.slot_size;
-
-                                queue->tx.producer.index    = 0;
-                                queue->tx.producer.cache    = 0;
-                                queue->tx.consumer.index    = 0;
-                                queue->tx.consumer.cache    = 0;
-
-                                queue->tx.size_mask         = so->tx_opt.size - 1;
-                                queue->tx.max_len           = so->tx_opt.maxlen;
-                                queue->tx.size              = so->tx_opt.size;
-                                queue->tx.slot_size         = so->tx_opt.slot_size;
-
-                                /* update the queues base_addr */
-
-                                so->rx_opt.base_addr = so->mem_addr + sizeof(struct pfq_queue_hdr);
-                                so->tx_opt.base_addr = so->mem_addr + sizeof(struct pfq_queue_hdr) + pfq_queue_mpdb_mem(so);
-
-                                /* commit both the queues */
-
-                                smp_wmb();
-
-                                so->rx_opt.queue_ptr = &queue->rx;
-                                so->tx_opt.queue_ptr = &queue->tx;
-
-                                pr_devel("[PFQ|%d] queue: rx_size:%d rx_slot_size:%d tx_size:%d tx_slot_size:%d\n", so->id, queue->rx.size,
-                                                queue->rx.slot_size,
-                                                queue->tx.size,
-                                                queue->tx.slot_size);
-                        }
+                if (so->tx_opt.thread) {
+                        pr_devel("[PFQ|%d] stopping TX thread...\n", so->id);
+                        kthread_stop(so->tx_opt.thread);
+                        so->tx_opt.thread = NULL;
                 }
-                else
-                {
-                        if (so->tx_opt.thread)
-                        {
-                                pr_devel("[PFQ|%d] stopping TX thread...\n", so->id);
-                                kthread_stop(so->tx_opt.thread);
-                                so->tx_opt.thread = NULL;
-                        }
 
-                        msleep(Q_GRACE_PERIOD);
-
-                        pfq_mpdb_shared_queue_free(so);
+                err = pfq_mpdb_shared_queue_toggle(so, active);
+                if (err < 0) {
+                        pr_devel("[PFQ|%d] queue toggle error!\n", so->id);
+                        return err;
                 }
 
         } break;
@@ -736,10 +670,10 @@ int pfq_setsockopt(struct socket *sock,
                         return -EPERM;
                 }
 
-                to->if_index = info.if_index;
-                to->hw_queue = info.hw_queue;
+                so->tx_opt.if_index = info.if_index;
+                so->tx_opt.hw_queue = info.hw_queue;
 
-                pr_devel("[PFQ|%d] TX bind: if_index:%d hw_queue:%d\n", so->id, to->if_index, to->hw_queue);
+                pr_devel("[PFQ|%d] TX bind: if_index:%d hw_queue:%d\n", so->id, so->tx_opt.if_index, so->tx_opt.hw_queue);
 
         } break;
 
@@ -747,17 +681,17 @@ int pfq_setsockopt(struct socket *sock,
         {
                 int cpu;
 
-                if (to->thread)
+                if (so->tx_opt.thread)
                 {
-                        pr_devel("[PFQ|%d] TX thread already created on cpu %d!\n", so->id, to->cpu);
+                        pr_devel("[PFQ|%d] TX thread already created on cpu %d!\n", so->id, so->tx_opt.cpu);
                         return -EPERM;
                 }
-                if (to->if_index == -1)
+                if (so->tx_opt.if_index == -1)
                 {
                         pr_devel("[PFQ|%d] socket TX not bound to any device!\n", so->id);
                         return -EPERM;
                 }
-                if (to->queue_ptr == NULL)
+                if (pfq_get_tx_queue_hdr(&so->tx_opt) == NULL)
                 {
                         pr_devel("[PFQ|%d] socket not enabled!\n", so->id);
                         return -EPERM;
@@ -775,22 +709,22 @@ int pfq_setsockopt(struct socket *sock,
                         return -EPERM;
                 }
 
-                to->cpu = cpu;
+                so->tx_opt.cpu = cpu;
 
-                pr_devel("[PFQ|%d] creating TX thread on cpu %d -> if_index:%d hw_queue:%d\n", so->id, to->cpu, to->if_index, to->hw_queue);
+                pr_devel("[PFQ|%d] creating TX thread on cpu %d -> if_index:%d hw_queue:%d\n", so->id, so->tx_opt.cpu, so->tx_opt.if_index, so->tx_opt.hw_queue);
 
-                to->thread = kthread_create_on_node(pfq_tx_thread,
+                so->tx_opt.thread = kthread_create_on_node(pfq_tx_thread,
                                 so,
-                                to->cpu == -1 ? -1 : cpu_to_node(to->cpu),
+                                so->tx_opt.cpu == -1 ? -1 : cpu_to_node(so->tx_opt.cpu),
                                 "pfq_tx_%d", so->id);
 
-                if (IS_ERR(to->thread)) {
-                        printk(KERN_INFO "[PFQ] kernel_thread: create failed on cpu %d!\n", to->cpu);
-                        return PTR_ERR(to->thread);
+                if (IS_ERR(so->tx_opt.thread)) {
+                        printk(KERN_INFO "[PFQ] kernel_thread: create failed on cpu %d!\n", so->tx_opt.cpu);
+                        return PTR_ERR(so->tx_opt.thread);
                 }
 
-                if (to->cpu != -1)
-                        kthread_bind(to->thread, to->cpu);
+                if (so->tx_opt.cpu != -1)
+                        kthread_bind(so->tx_opt.thread, so->tx_opt.cpu);
 
         } break;
 
@@ -798,14 +732,14 @@ int pfq_setsockopt(struct socket *sock,
         {
                 pr_devel("[PFQ|%d] stopping TX thread...\n", so->id);
 
-                if (!to->thread)
+                if (!so->tx_opt.thread)
                 {
                         pr_devel("[PFQ|%d] TX thread not running!\n", so->id);
                         return -EPERM;
                 }
 
-                kthread_stop(to->thread);
-                to->thread = NULL;
+                kthread_stop(so->tx_opt.thread);
+                so->tx_opt.thread = NULL;
 
                 pr_devel("[PFQ|%d] stop TX thread: done.\n", so->id);
 
@@ -813,50 +747,50 @@ int pfq_setsockopt(struct socket *sock,
 
         case Q_SO_TX_THREAD_WAKEUP:
         {
-                if (to->if_index == -1)
+                if (so->tx_opt.if_index == -1)
                 {
                         pr_devel("[PFQ|%d] socket TX not bound to any device!\n", so->id);
                         return -EPERM;
                 }
-                if (!to->thread)
+                if (!so->tx_opt.thread)
                 {
                         pr_devel("[PFQ|%d] TX thread not running!\n", so->id);
                         return -EPERM;
                 }
 
-                wake_up_process(to->thread);
+                wake_up_process(so->tx_opt.thread);
         } break;
 
         case Q_SO_TX_QUEUE_FLUSH:
         {
                 struct net_device *dev;
 
-                if (to->if_index == -1)
+                if (so->tx_opt.if_index == -1)
                 {
                         pr_devel("[PFQ|%d] socket TX not bound to any device!\n", so->id);
                         return -EPERM;
                 }
 
-                if (to->thread && to->thread->state == TASK_RUNNING)
+                if (so->tx_opt.thread && so->tx_opt.thread->state == TASK_RUNNING)
                 {
                         pr_devel("[PFQ|%d] TX thread is running!\n", so->id);
                         return -EPERM;
                 }
 
-                if (to->queue_ptr == NULL)
+                if (pfq_get_tx_queue_hdr(&so->tx_opt) == NULL)
                 {
                         pr_devel("[PFQ|%d] socket not enabled!\n", so->id);
                         return -EPERM;
                 }
 
-                dev = dev_get_by_index(sock_net(&so->sk), to->if_index);
+                dev = dev_get_by_index(sock_net(&so->sk), so->tx_opt.if_index);
                 if (!dev)
                 {
-                        pr_devel("[PFQ|%d] No such device (if_index = %d)\n", so->id, to->if_index);
+                        pr_devel("[PFQ|%d] No such device (if_index = %d)\n", so->id, so->tx_opt.if_index);
                         return -EPERM;
                 }
 
-                pfq_tx_queue_flush(to, dev, get_cpu(), NUMA_NO_NODE);
+                pfq_tx_queue_flush(&so->tx_opt, dev, get_cpu(), NUMA_NO_NODE);
 
                 put_cpu();
 
