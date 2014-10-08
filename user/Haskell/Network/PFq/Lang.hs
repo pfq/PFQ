@@ -40,6 +40,7 @@
 
 module Network.PFq.Lang
     (
+        NetDevice(..),
         Argument(..),
         Pretty(..),
         Function(..),
@@ -70,6 +71,8 @@ newtype Action a = Identity a
 newtype Vector a = Vector [a]
 newtype Fun      = Fun Int
 
+data NetDevice   = Dev String | DevQueue String Int
+                    deriving (Eq, Show, Read)
 
 -- Polymorphic storable arguments:
 
