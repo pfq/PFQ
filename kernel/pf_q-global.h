@@ -29,8 +29,6 @@
 #include <pf_q-sparse.h>
 #include <pf_q-stats.h>
 
-extern atomic_t timestamp_enabled;
-
 extern struct local_data __percpu * cpu_data;
 
 extern int direct_capture;

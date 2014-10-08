@@ -28,8 +28,6 @@
 
 #include <pf_q-global.h>
 
-atomic_t timestamp_enabled;
-
 struct local_data __percpu    * cpu_data;
 
 int direct_capture 	= 0;

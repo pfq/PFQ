@@ -41,8 +41,6 @@
 #include <pf_q-endpoint.h>
 #include <pf_q-mpdb-queue.h>
 
-extern atomic_t timestamp_enabled;
-
 
 int pfq_getsockopt(struct socket *sock,
                 int level, int optname,
@@ -439,12 +437,9 @@ int pfq_setsockopt(struct socket *sock,
 
                 tstamp = tstamp ? 1 : 0;
 
-                /* update the timestamp_enabled counter */
-
-                atomic_add(tstamp - so->rx_opt.tstamp, &timestamp_enabled);
                 so->rx_opt.tstamp = tstamp;
 
-                pr_devel("[PFQ|%d] timestamp_enabled counter: %d\n", so->id, atomic_read(&timestamp_enabled));
+                pr_devel("[PFQ|%d] timestamp enabled.\n", so->id);
         } break;
 
         case Q_SO_SET_RX_CAPLEN:

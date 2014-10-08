@@ -234,9 +234,8 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 
 	/* if required, timestamp the packet now */
 
-        if (atomic_read(&timestamp_enabled) && skb->tstamp.tv64 == 0) {
+        if (skb->tstamp.tv64 == 0)
                 __net_timestamp(skb);
-        }
 
         /* if vlan header is present, remove it */
 
@@ -683,9 +682,6 @@ pfq_release(struct socket *sock)
 
         pfq_leave_all_groups(so->id);
         pfq_release_sock_id(so->id);
-
-        if (so->rx_opt.tstamp)
-                atomic_dec(&timestamp_enabled);
 
         if (so->mem_addr)
                 pfq_mpdb_shared_queue_toggle(so, false);
