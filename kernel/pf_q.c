@@ -633,10 +633,8 @@ pfq_create(
 	so->egress_index = 0;
 	so->egress_queue = 0;
 
-        so->mem_addr = NULL;
-        so->mem_size = 0;
-
-        /* to protect pfq_prefetch_purge_all() */
+        so->mem_addr 	 = NULL;
+        so->mem_size 	 = 0;
 
         down(&sock_sem);
 

@@ -140,19 +140,19 @@ void pfq_tx_opt_init(struct pfq_tx_opt *that, size_t maxlen)
 
 struct pfq_sock
 {
-        struct sock sk;
+        struct sock 		sk;
 
-        int                 id;
+        int                 	id;
 
-	int		    egress_type;
-        int 		    egress_index;
-        int 		    egress_queue;
+	int		    	egress_type;
+        int 		    	egress_index;
+        int 		    	egress_queue;
 
-        void *              mem_addr;         /* global memory mapped area */
-        size_t              mem_size;         /* global memory mapped size */
+        void *              	mem_addr;         	/* global memory mapped area */
+        size_t              	mem_size;         	/* global memory mapped size */
 
-        struct pfq_rx_opt   rx_opt;
-        struct pfq_tx_opt   tx_opt;
+        struct pfq_rx_opt   	rx_opt;
+        struct pfq_tx_opt   	tx_opt;
 
 } ____cacheline_aligned_in_smp;
 

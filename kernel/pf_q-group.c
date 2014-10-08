@@ -163,9 +163,10 @@ __pfq_join_group(int gid, int id, unsigned long class_mask, int policy)
                 return -EINVAL;
         }
 
-        if (!g->pid) {
+	/* if this group is unused, initializes it */
+
+        if (!g->pid)
                 __pfq_group_init(gid);
-        }
 
         if (!__pfq_group_access(gid, id, policy, true)) {
                 pr_devel("[PFQ] gid:%d is not joinable with policy %d\n", gid, policy);
@@ -214,9 +215,8 @@ __pfq_leave_group(int gid, int id)
                 atomic_long_set(&g->sock_mask[i], tmp);
         }
 
-        if (__pfq_group_is_empty(gid)) {
+        if (__pfq_group_is_empty(gid))
                 __pfq_group_free(gid);
-        }
 
         return 0;
 }
@@ -269,20 +269,6 @@ void __pfq_dismiss_function(void *f)
                 struct pfq_computation_tree *comp = (struct pfq_computation_tree *)atomic_long_read(&pfq_get_group(n)->comp);
 
                 BUG_ON(comp != NULL);
-
-#if 0
-                if (comp) {
-                        int n = 0;
-                        for(; n < comp->size; n++)
-                        {
-                                if (comp->fun[n].fun.eval == f)
-                                {
-                                        comp->fun[n].fun.eval = NULL;
-                                }
-                        }
-                }
-#endif
-
         }
 
         printk(KERN_INFO "[PFQ] function @%p dismissed.\n", f);

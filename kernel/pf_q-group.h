@@ -128,7 +128,6 @@ bool __pfq_group_is_empty(int gid)
         return __pfq_get_all_groups_mask(gid) == 0;
 }
 
-
 static inline
 bool __pfq_has_joined_group(int gid, int id)
 {

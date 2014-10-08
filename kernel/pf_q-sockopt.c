@@ -588,21 +588,24 @@ int pfq_setsockopt(struct socket *sock,
         case Q_SO_GROUP_LEAVE:
         {
                 int gid;
+
                 if (optlen != sizeof(gid))
                         return -EINVAL;
+
                 if (copy_from_user(&gid, optval, optlen))
                         return -EFAULT;
 
-                if (pfq_leave_group(gid, so->id) < 0) {
+                if (pfq_leave_group(gid, so->id) < 0)
                         return -EFAULT;
-                }
 
                 pr_devel("[PFQ|%d] leave: gid:%d\n", so->id, gid);
+
         } break;
 
         case Q_SO_GROUP_FPROG:
         {
                 struct pfq_fprog fprog;
+
                 if (optlen != sizeof(fprog))
                         return -EINVAL;
 
@@ -639,6 +642,7 @@ int pfq_setsockopt(struct socket *sock,
 
                 if (optlen != sizeof(vlan))
                         return -EINVAL;
+
                 if (copy_from_user(&vlan, optval, optlen))
                         return -EFAULT;
 
