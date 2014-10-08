@@ -461,3 +461,34 @@ void __pfq_set_group_vlan_filter(int gid, bool value, int vid)
 }
 
 
+
+int pfq_check_group(int id, int gid, const char *msg)
+{
+        if (gid < 0 || gid >= Q_MAX_GROUP) {
+                pr_devel("[PFQ|%d] %s error: invalid group (gid:%d)!\n", id, msg, gid);
+                return -EINVAL;
+        }
+        return 0;
+}
+
+
+int pfq_check_group_access(int id, int gid, const char *msg)
+{
+	struct pfq_group *g;
+	int err;
+
+	err = pfq_check_group(id, gid, msg);
+	if (err != 0)
+		return err;
+
+        if (!__pfq_has_joined_group(gid, id)) {
+                pr_devel("[PFQ|%d] %s error: permission denied (gid:%d)!\n", id, msg, gid);
+                return -EACCES;
+        }
+	g = pfq_get_group(gid);
+	if (g == NULL || (g->owner != id && g->pid != current->tgid )) {
+                pr_devel("[PFQ|%d] %s error: invalid owner (id:%d)!\n", id, msg, g->owner);
+                return -EACCES;
+	}
+	return 0;
+}

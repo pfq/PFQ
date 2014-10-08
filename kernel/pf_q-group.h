@@ -37,27 +37,6 @@
 #include <pf_q-bpf.h>
 
 
-#define CHECK_GROUP(id, gid, msg) \
-        if (gid < 0 || gid >= Q_MAX_GROUP) { \
-                pr_devel("[PFQ|%d] " msg " error: invalid group (gid:%d)!\n", id, gid); \
-                return -EINVAL; \
-        }
-
-#define CHECK_GROUP_ACCESS(id, gid, msg) { \
-	struct pfq_group *g;  \
-        CHECK_GROUP(id, gid, msg); \
-        if (!__pfq_has_joined_group(gid, id)) { \
-                pr_devel("[PFQ|%d] " msg " error: permission denied (gid:%d)!\n", id, gid); \
-                return -EACCES; \
-        } \
-	g = pfq_get_group(gid); \
-	if (g == NULL || (g->owner != id && g->pid != current->tgid )) { \
-                pr_devel("[PFQ|%d] " msg " error: invalid owner (id:%d)!\n", id, g->owner); \
-                return -EACCES; \
-	} \
-}
-
-
 /* persistent state */
 
 struct pfq_group_persistent
@@ -104,6 +83,9 @@ extern int  pfq_join_group(int gid, int id, unsigned long class_mask, int policy
 extern int  pfq_leave_group(int gid, int id);
 extern void pfq_leave_all_groups(int id);
 extern int  pfq_set_group_prog(int gid, struct pfq_computation_tree *prog, void *ctx);
+
+extern int pfq_check_group(int id, int gid, const char *msg);
+extern int pfq_check_group_access(int id, int gid, const char *msg);
 
 extern unsigned long pfq_get_groups(int id);
 extern unsigned long __pfq_get_all_groups_mask(int gid);
