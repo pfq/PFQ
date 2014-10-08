@@ -400,7 +400,7 @@ int pfq_setsockopt(struct socket *sock,
                 if (copy_from_user(&bind, optval, optlen))
                         return -EFAULT;
 
-                CHECK_GROUP_ACCES(so->id, bind.gid, "add binding");
+                CHECK_GROUP_ACCESS(so->id, bind.gid, "add binding");
 
                 rcu_read_lock();
                 if (!dev_get_by_index_rcu(sock_net(&so->sk), bind.if_index))
@@ -424,7 +424,7 @@ int pfq_setsockopt(struct socket *sock,
                 if (copy_from_user(&bind, optval, optlen))
                         return -EFAULT;
 
-                CHECK_GROUP_ACCES(so->id, bind.gid, "remove binding");
+                CHECK_GROUP_ACCESS(so->id, bind.gid, "remove binding");
 
                 rcu_read_lock();
                 if (!dev_get_by_index_rcu(sock_net(&so->sk), bind.if_index))
@@ -612,7 +612,7 @@ int pfq_setsockopt(struct socket *sock,
                 if (copy_from_user(&fprog, optval, optlen))
                         return -EFAULT;
 
-                CHECK_GROUP_ACCES(so->id, fprog.gid, "group fprog");
+                CHECK_GROUP_ACCESS(so->id, fprog.gid, "group fprog");
 
                 if (fprog.fcode.len > 0)  /* set the filter */
                 {
@@ -646,7 +646,7 @@ int pfq_setsockopt(struct socket *sock,
                 if (copy_from_user(&vlan, optval, optlen))
                         return -EFAULT;
 
-                CHECK_GROUP_ACCES(so->id, vlan.gid, "group vlan filt toggle");
+                CHECK_GROUP_ACCESS(so->id, vlan.gid, "group vlan filt toggle");
 
                 __pfq_toggle_group_vlan_filters(vlan.gid, vlan.toggle);
 
@@ -663,7 +663,7 @@ int pfq_setsockopt(struct socket *sock,
                 if (copy_from_user(&filt, optval, optlen))
                         return -EFAULT;
 
-                CHECK_GROUP_ACCES(so->id, filt.gid, "group vlan filt");
+                CHECK_GROUP_ACCESS(so->id, filt.gid, "group vlan filt");
 
                 if (filt.vid < -1 || filt.vid > 4094) {
                         pr_devel("[PFQ|%d] vlan_set error: gid:%d invalid vid:%d!\n", so->id, filt.gid, filt.vid);
@@ -855,7 +855,7 @@ int pfq_setsockopt(struct socket *sock,
                 if (copy_from_user(&tmp, optval, optlen))
                         return -EFAULT;
 
-                CHECK_GROUP_ACCES(so->id, tmp.gid, "group computation");
+                CHECK_GROUP_ACCESS(so->id, tmp.gid, "group computation");
 
                 if (copy_from_user(&psize, tmp.prog, sizeof(size_t)))
                         return -EFAULT;

@@ -43,7 +43,7 @@
                 return -EINVAL; \
         }
 
-#define CHECK_GROUP_ACCES(id, gid, msg) { \
+#define CHECK_GROUP_ACCESS(id, gid, msg) { \
 	struct pfq_group *g;  \
         CHECK_GROUP(id, gid, msg); \
         if (!__pfq_has_joined_group(gid, id)) { \
