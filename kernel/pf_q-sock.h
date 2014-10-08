@@ -39,8 +39,8 @@ extern atomic_long_t pfq_sock_vector[Q_MAX_ID];
 
 struct pfq_rx_opt
 {
-	struct pfq_rx_queue_hdr *queue_ptr;
-	void 			*base_addr;
+	atomic_long_t 		queue_hdr;
+	void 			*queue_base;
 
 	int    			tstamp;
 
@@ -56,12 +56,21 @@ struct pfq_rx_opt
 
 
 static inline
+struct pfq_rx_queue_hdr *
+pfq_get_rx_queue_hdr(struct pfq_rx_opt *that)
+{
+	return (struct pfq_rx_queue_hdr *)atomic_long_read(&that->queue_hdr);
+}
+
+
+static inline
 void pfq_rx_opt_init(struct pfq_rx_opt *that, size_t caplen)
 {
         /* the queue is allocate later, when the socket is enabled */
 
-        that->queue_ptr = NULL;
-        that->base_addr = NULL;
+        atomic_long_set(&that->queue_hdr, 0);
+
+        that->queue_base = NULL;
 
         /* disable tiemstamping by default */
         that->tstamp    = false;
@@ -87,8 +96,9 @@ void pfq_rx_opt_init(struct pfq_rx_opt *that, size_t caplen)
 
 struct pfq_tx_opt
 {
-	struct pfq_tx_queue_hdr *queue_ptr;
-	void 			*base_addr;
+	atomic_long_t 		queue_hdr;
+
+	void 			*queue_base;
 
 	uint64_t 		counter;
 
@@ -111,12 +121,21 @@ struct pfq_tx_opt
 
 
 static inline
+struct pfq_tx_queue_hdr *
+pfq_get_tx_queue_hdr(struct pfq_tx_opt *that)
+{
+	return (struct pfq_tx_queue_hdr *)atomic_long_read(&that->queue_hdr);
+}
+
+
+static inline
 void pfq_tx_opt_init(struct pfq_tx_opt *that, size_t maxlen)
 {
         /* the queue is allocate later, when the socket is enabled */
 
-        that->queue_ptr 	= NULL;
-        that->base_addr         = NULL;
+	atomic_long_set(&that->queue_hdr, 0);
+
+        that->queue_base = NULL;
 
         that->counter           = 0;
 
@@ -159,7 +178,7 @@ struct pfq_sock
 
 static inline
 struct pfq_queue_hdr *
-get_pfq_queue_hdr(struct pfq_sock *p)
+pfq_get_queue_hdr(struct pfq_sock *p)
 {
         return (struct pfq_queue_hdr *) p->mem_addr;
 }
