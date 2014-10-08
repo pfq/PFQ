@@ -89,27 +89,30 @@ size_t pfq_mpdb_enqueue_batch(struct pfq_rx_opt *ro,
 
 	GC_queue_for_each_skb_bitmask(queue, skb, skbs_mask, n)
 	{
-		unsigned int bytes = min((int)skb->len, (int)ro->caplen);
-
-		size_t slot_index = q_len + sent;
-
-		volatile struct pfq_pkt_hdr *hdr = (struct pfq_pkt_hdr *)this_slot;
-		char                    *pkt = (char *)(hdr+1);
-
+		volatile struct pfq_pkt_hdr *hdr;
+		unsigned int bytes;
+		size_t slot_index;
 		struct timespec ts;
+		char *pkt;
 
-		if (unlikely(slot_index > ro->size))
-		{
-			if ( rx_queue->poll_wait ) {
+		bytes = min((int)skb->len, (int)ro->caplen);
+		slot_index = q_len + sent;
+
+		hdr = (struct pfq_pkt_hdr *)this_slot;
+		pkt = (char *)(hdr+1);
+
+		if (unlikely(slot_index > ro->size)) {
+
+			if ( rx_queue->poll_wait )
 				wake_up_interruptible(&ro->waitqueue);
-			}
+
 			return sent;
 		}
 
 		/* copy bytes of packet */
 
-		if (likely(bytes))
-		{
+		if (likely(bytes)) {
+
 			/* packets might still come from a regular sniffer */
 
 			if (
@@ -118,19 +121,16 @@ size_t pfq_mpdb_enqueue_batch(struct pfq_rx_opt *ro,
 #else
 		           	skb_is_nonlinear(skb)
 #endif
-			   )
-		      	{
-				if (skb_copy_bits(skb, 0, pkt, bytes) != 0)
-				{
+			   ) {
+				if (skb_copy_bits(skb, 0, pkt, bytes) != 0) {
+
 					printk(KERN_WARNING "[PFQ] BUG! skb_copy_bits failed (bytes=%u, skb_len=%d mac_len=%d)!\n",
 							    bytes, skb->len, skb->mac_len);
 					return 0;
 				}
 			}
 			else
-			{
 				pfq_memcpy(pkt, skb->data, bytes);
-			}
 		}
 
                 /* copy mark from pfq_cb (annotation) */
@@ -139,8 +139,8 @@ size_t pfq_mpdb_enqueue_batch(struct pfq_rx_opt *ro,
 
 		/* setup the header */
 
-		if (ro->tstamp != 0)
-		{
+		if (ro->tstamp != 0) {
+
 			skb_get_timestampns(skb, &ts);
 			hdr->tstamp.tv.sec  = (uint32_t)ts.tv_sec;
 			hdr->tstamp.tv.nsec = (uint32_t)ts.tv_nsec;
@@ -163,9 +163,7 @@ size_t pfq_mpdb_enqueue_batch(struct pfq_rx_opt *ro,
 		if (unlikely((slot_index & 16383) == 0) &&
 			     (slot_index >= (ro->size >> 1)) &&
 			     rx_queue->poll_wait)
-		{
 		        wake_up_interruptible(&ro->waitqueue);
-		}
 
 		sent++;
 
@@ -193,8 +191,7 @@ int pfq_mpdb_shared_queue_alloc(struct pfq_sock *so, size_t queue_mem)
 	/* Memory is already zeroed */
 
         addr = vmalloc_user(tot_mem);
-	if (addr == NULL)
-	{
+	if (addr == NULL) {
 		printk(KERN_WARNING "[PFQ|%d] pfq_queue_alloc: out of memory (vmalloc %zu bytes)!", so->id, tot_mem);
 		return -ENOMEM;
 	}
