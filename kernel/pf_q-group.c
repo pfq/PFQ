@@ -41,27 +41,25 @@ static struct pfq_group pfq_groups[Q_MAX_GROUP];
 
 
 bool
-__pfq_group_access(int gid, int id, int policy, bool join)
+__pfq_group_access(int gid, int id, int policy, bool create)
 {
         struct pfq_group * g = pfq_get_group(gid);
+
         if (!g) {
                 pr_devel("[PFQ] get_group: invalid group id %d!\n", gid);
                 return false;
         }
 
-        if (__pfq_has_joined_group(gid,id))
-                return true;
-
         switch(g->policy)
         {
         case Q_POLICY_GROUP_PRIVATE:
-                return false;
+                return __pfq_has_joined_group(gid,id);
 
         case Q_POLICY_GROUP_RESTRICTED:
-                return (join == false || policy == Q_POLICY_GROUP_RESTRICTED) && g->pid == current->tgid;
+                return (create == false || policy == Q_POLICY_GROUP_RESTRICTED) && g->pid == current->tgid;
 
         case Q_POLICY_GROUP_SHARED:
-                return join == false || policy == Q_POLICY_GROUP_SHARED;
+                return create == false || policy == Q_POLICY_GROUP_SHARED;
 
         case Q_POLICY_GROUP_UNDEFINED:
                 return true;
@@ -82,7 +80,8 @@ __pfq_group_init(int gid)
                 return;
         }
 
-        g->pid = -1;
+	g->pid = current->tgid;
+        g->owner = -1;
         g->policy = Q_POLICY_GROUP_UNDEFINED;
 
         for(i = 0; i < Q_CLASS_MAX; i++)
@@ -127,6 +126,7 @@ __pfq_group_free(int gid)
         pfq_devmap_update(map_reset, Q_ANY_DEVICE, Q_ANY_QUEUE, gid);
 
         g->pid = 0;
+        g->owner = -1;
         g->policy = Q_POLICY_GROUP_UNDEFINED;
 
         filter   = (struct sk_filter *)atomic_long_xchg(&g->bp_filter, 0L);
@@ -180,8 +180,13 @@ __pfq_join_group(int gid, int id, unsigned long class_mask, int policy)
                  atomic_long_set(&g->sock_mask[class], tmp);
         })
 
-        g->policy = g->policy == Q_POLICY_GROUP_UNDEFINED ?  policy : g->policy;
-        g->pid    = policy == Q_POLICY_GROUP_RESTRICTED ? current->tgid : -1;
+	if (g->owner == -1) {
+		g->owner = id;
+	}
+
+	if (g->policy == Q_POLICY_GROUP_UNDEFINED) {
+		g->policy = policy;
+	}
 
         return 0;
 }

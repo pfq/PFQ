@@ -43,12 +43,19 @@
                 return -EINVAL; \
         }
 
-#define CHECK_GROUP_ACCES(id, gid, msg) \
-        CHECK_GROUP(id, gid,msg); \
+#define CHECK_GROUP_ACCES(id, gid, msg) { \
+	struct pfq_group *g;  \
+        CHECK_GROUP(id, gid, msg); \
         if (!__pfq_has_joined_group(gid, id)) { \
                 pr_devel("[PFQ|%d] " msg " error: permission denied (gid:%d)!\n", id, gid); \
                 return -EACCES; \
-        }
+        } \
+	g = pfq_get_group(gid); \
+	if (g == NULL || g->owner != id) { \
+                pr_devel("[PFQ|%d] " msg " error: invalid owner (id:%d)!\n", id, g->owner); \
+                return -EACCES; \
+	} \
+}
 
 
 /* persistent state */
@@ -70,6 +77,7 @@ struct pfq_group
 {
         int policy;                                     /* policy for the group */
         int pid;	                                /* process id for restricted/private group */
+	int owner;					/* id of the owner */
 
         atomic_long_t sock_mask[Q_CLASS_MAX];           /* for class: Q_CLASS_DEFAULT, Q_CLASS_USER_PLANE, Q_CLASS_CONTROL_PLANE etc... */
 
