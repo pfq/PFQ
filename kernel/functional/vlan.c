@@ -47,7 +47,7 @@ vlan_id_filter(arguments_t args, SkBuff b)
 static int vlan_init(arguments_t args)
 {
 	unsigned int n = get_array_len_0(args);
-	int32_t *vid  = get_array_0(int32_t, args);
+	int32_t * vids = get_array_0(int32_t, args);
         char *mem; int i;
 
         mem = kzalloc(4096, GFP_KERNEL);
@@ -60,7 +60,8 @@ static int vlan_init(arguments_t args)
 
 	for(i = 0; i < n; i++)
 	{
-		if (vid[i] == -1) {
+		int vid = vids[i];
+		if (vid == -1) {
                 	int n;
                 	for(n = 1; n < 4096; n++)
 			{
@@ -68,10 +69,10 @@ static int vlan_init(arguments_t args)
 			}
 		}
 		else {
-			mem[vid[i] & VLAN_VID_MASK] = 1;
+			mem[vid & VLAN_VID_MASK] = 1;
 		}
 
-		pr_devel("[PFQ|init] vlan_id filter: -> vid %d\n", vid[i]);
+		pr_devel("[PFQ|init] vlan_id filter: -> vid %d\n", vid);
 	}
 
 	return 0;
