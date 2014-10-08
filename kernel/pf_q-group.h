@@ -51,7 +51,7 @@
                 return -EACCES; \
         } \
 	g = pfq_get_group(gid); \
-	if (g == NULL || g->owner != id) { \
+	if (g == NULL || (g->owner != id && g->pid != current->tgid )) { \
                 pr_devel("[PFQ|%d] " msg " error: invalid owner (id:%d)!\n", id, g->owner); \
                 return -EACCES; \
 	} \
