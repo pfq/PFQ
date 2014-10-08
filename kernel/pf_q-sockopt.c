@@ -628,8 +628,8 @@ int pfq_setsockopt(struct socket *sock,
                         return -EFAULT;
 
                 err = pfq_check_group_access(so->id, fprog.gid, "group fprog");
-                if (err != 0)
-                	return err;
+                if (err == -EPERM)
+                	return 0;
 
                 if (fprog.fcode.len > 0)  /* set the filter */
                 {

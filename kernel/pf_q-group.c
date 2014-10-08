@@ -483,11 +483,12 @@ int pfq_check_group_access(int id, int gid, const char *msg)
 
         if (!__pfq_has_joined_group(gid, id)) {
                 pr_devel("[PFQ|%d] %s error: permission denied (gid:%d)!\n", id, msg, gid);
-                return -EACCES;
+                return -EPERM;
         }
+
 	g = pfq_get_group(gid);
 	if (g == NULL || (g->owner != id && g->pid != current->tgid )) {
-                pr_devel("[PFQ|%d] %s error: invalid owner (id:%d)!\n", id, msg, g->owner);
+                pr_devel("[PFQ|%d] %s: invalid owner (id:%d)!\n", id, msg, g->owner);
                 return -EACCES;
 	}
 	return 0;
