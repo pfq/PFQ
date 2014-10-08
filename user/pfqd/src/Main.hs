@@ -73,7 +73,7 @@ main = do
     if dont_rebuild opts
         then  do
             unless (null pfq_config) $ infoM "daemon" $ "Loading configuration for " ++ show (length pfq_config) ++ " groups:"
-            forM_ pfq_config (\(gid,comp) -> infoM "daemon" ("    PFQ group " ++ show gid ++ ": " ++ pretty comp ))
+            forM_ pfq_config (\(gid,devs,comp) -> infoM "daemon" ("    PFQ group " ++ show gid ++ ": " ++ pretty comp ))
         else  infoM "daemon" "PFQd started!" >> rebuildRestart opts (SLH.close s)
 
     -- run daemon...
@@ -86,11 +86,17 @@ main = do
             `E.catch` (\e -> errorM "daemon" (show (e :: SomeException)) >> daemon opts (SLH.close s))
 
 
+bindDev :: Ptr PFqTag -> Int -> NetDevice ->  IO ()
+bindDev q gid (Dev d) = Q.bindGroup q gid d (-1)
+bindDev q gid (DevQueue d hq) = Q.bindGroup q gid d hq
+
+
 runQSetup :: Options -> Ptr PFqTag -> IO ()
 runQSetup opts q =
-    forM_ pfq_config $ \(g, comp) -> do
+    forM_ pfq_config $ \(g, devs, comp) -> do
         let gid = fromIntegral g
         Q.joinGroup q gid [class_control] policy_shared
         Q.groupComputation q gid comp
+        forM_ devs $ \dev -> bindDev q gid dev
 
 
