@@ -143,7 +143,8 @@ __pfq_group_free(int gid)
         kfree(old_comp);
         kfree(old_ctx);
 
-        pfq_free_sk_filter(filter);
+	if (filter)
+        	pfq_free_sk_filter(filter);
 
         g->vlan_filt = false;
 
@@ -256,7 +257,8 @@ void __pfq_set_group_filter(int gid, struct sk_filter *filter)
 
         msleep(Q_GRACE_PERIOD);
 
-        pfq_free_sk_filter(old_filter);
+	if (old_filter)
+        	pfq_free_sk_filter(old_filter);
 }
 
 
