@@ -29,54 +29,39 @@
 #include <linux/slab.h>
 #include <linux/uaccess.h>
 
+#include <net/sock.h>
+
 #include <pf_q-bpf.h>
 
 struct sk_filter *
 pfq_alloc_sk_filter(struct sock_fprog *fprog)
 {
-        struct sk_filter *fp;
-        unsigned int fsize = sizeof(struct sock_filter) * fprog->len;
-        int err;
+       	struct sock sk;
+       	int rv;
 
-        /* Make sure new filter is there and in the right amounts. */
+       	sock_init_data(NULL, &sk);
+       	sock_reset_flag(&sk, SOCK_FILTER_LOCKED);
 
-        if (fprog->filter == NULL)
-                return NULL;
-
-        fp = (struct sk_filter *)kmalloc(fsize+sizeof(*fp), GFP_KERNEL);
-        if (fp == NULL)
-                return NULL;
-
-        if (copy_from_user(fp->insns, fprog->filter, fsize)) {
-        	kfree(fp);
-                return NULL;
-        }
-
-        fp->len = fprog->len;
-
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,15,0))
-        fp->bpf_func = sk_run_filter;
-#endif
-
-	err = sk_chk_filter(fp->insns, fp->len);
-	if (err) {
-
-		/* bpf_jit_free(fp); */
-		kfree(fp);
-		return NULL;
+	if ((rv = sk_attach_filter(fprog, &sk))) {
+		pr_devel("[PFQ] sk_attach_filter (%d)!\n", rv);
+        	return NULL;
 	}
 
-        return fp;
+	return sk.sk_filter;
 }
-
 
 void pfq_free_sk_filter(struct sk_filter *filter)
 {
-        if (filter) {
-		/* bpf_jit_free(fp); */
-		kfree(filter);
+       	struct sock sk;
+       	int rv;
+
+       	sock_init_data(NULL, &sk);
+       	sock_reset_flag(&sk, SOCK_FILTER_LOCKED);
+
+	sk.sk_filter = filter;
+	if ((rv = sk_detach_filter(&sk))) {
+		pr_devel("[PFQ] sk_detach_filter (%d)!\n", rv);
 	}
 }
-
 
 
