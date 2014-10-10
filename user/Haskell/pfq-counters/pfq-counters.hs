@@ -74,7 +74,7 @@ options = cmdArgsMode $
         caplen   = 64,
         slots    = 131072,
         function = [] &= typ "FUNCTION"  &= help "Where FUNCTION = fun[ >-> fun >-> fun][.gid] (ie: steer_ip)",
-        thread   = [] &= typ "BINDING" &= help "Where BINDING = eth0:...:ethx[.core[.gid[.queue.queue...]]]"
+        thread   = [] &= typ "BINDING" &= help "Where BINDING = gid[.core[.eth0:...:ethx[.queue.queue...]]]"
     } &= summary "PFq multi-threaded packet counter." &= program "pfq-counters"
 
 
@@ -85,9 +85,9 @@ type Queue = Int
 type Gid   = Int
 
 data Binding = Binding {
-                         devs      :: [String],
-                         coreNum   :: Int,
                          groupId   :: Int,
+                         coreNum   :: Int,
+                         devs      :: [String],
                          queues    :: [Queue]
                        } deriving (Eq, Show)
 
@@ -95,10 +95,10 @@ data Binding = Binding {
 makeBinding :: String -> Binding
 makeBinding s = case splitOn "." s of
                         []              ->  error "makeBinding: empty string"
-                        ds : []         ->  Binding (splitOn ":" ds) 0 0 [-1]
-                        ds : c : []     ->  Binding (splitOn ":" ds) (read c) 0 [-1]
-                        ds : c : g : [] ->  Binding (splitOn ":" ds) (read c) (read g) [-1]
-                        ds : c : g : qs ->  Binding (splitOn ":" ds) (read c) (read g) (map read qs)
+                        g : []          ->  Binding (read g) 0 [] [-1]
+                        g : c : []      ->  Binding (read g) (read c) [] [-1]
+                        g : c : ds : [] ->  Binding (read g) (read c) (splitOn ":" ds) [-1]
+                        g : c : ds : qs ->  Binding (read g) (read c) (splitOn ":" ds) (map read qs)
 
 
 makeFun :: String -> (Gid, [String])
