@@ -2,7 +2,7 @@
 -- see http://haskell.org/cabal/users-guide/
 
 name:                pfqd
-version:             3.5
+version:             3.6
 -- synopsis:            
 -- description:         
 homepage:            www.pfq.io

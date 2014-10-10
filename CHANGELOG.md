@@ -31,6 +31,7 @@ PFQ 3.3
  * Code cleanup and minor bugs fixed.
  * Tools and tests updated.
 
+
 PFQ 3.4
 -------
  * PFQ daemon released.
@@ -39,3 +40,12 @@ PFQ 3.4
 PFQ 3.5
 -------
  * Few bugs and kernel panic fixed.
+
+
+PFQ 3.6
+-------
+ * Group control access refactoring.
+ * Policies enhanced by socket ownership.
+ * BPF extended to newer kernels.
+
+

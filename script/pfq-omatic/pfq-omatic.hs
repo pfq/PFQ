@@ -34,7 +34,7 @@ import Data.Function(on)
 pfq_omatic_ver,pfq_kcompat,proc_cpuinfo :: String
 pfq_symvers :: [String]
 
-pfq_omatic_ver  = "3.5"
+pfq_omatic_ver  = "3.6"
 proc_cpuinfo    = "/proc/cpuinfo"
 pfq_kcompat     = "/usr/include/linux/pf_q-kcompat.h"
 pfq_symvers     = [ "/lib/modules/" ++ uname_r ++ "/kernel/net/pfq/Module.symvers",
