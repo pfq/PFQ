@@ -489,7 +489,7 @@ int pfq_check_group_access(int id, int gid, const char *msg)
         }
 
 	g = pfq_get_group(gid);
-	if (g == NULL || (g->owner != id && g->pid != current->tgid )) {
+	if (g == NULL || g->owner != id) {
                 pr_devel("[PFQ|%d] %s: invalid owner (id:%d)!\n", id, msg, g->owner);
                 return -EACCES;
 	}
