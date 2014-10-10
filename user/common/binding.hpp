@@ -9,18 +9,19 @@
 #include <vector>
 #include <string>
 
+#include <pfq-util.hpp>
+
+
 namespace pfq {
 
-    //
-    // eth0:...:ethx[.core[.gid[.queue.queue...]]]
-    //
+    constexpr const char binding_format[] = "gid[.core[.eth0:eth1:eth2...[.queue.queue.queue...]]]";
 
     struct binding
     {
-        std::vector<std::string>    dev;
-        std::vector<int>            queue;
         int                         gid;
         int                         core;
+        std::vector<std::string>    dev;
+        std::vector<int>            queue;
     };
 
 
@@ -30,7 +31,9 @@ namespace pfq {
         std::string ret = "binding:{ ";
         int n = 0;
 
-        ret += "dev:[";
+        ret += "gid:" + std::to_string(b.gid) + " core:" + std::to_string(b.core);
+
+        ret += " dev:[";
 
         for(auto &d : b.dev)
         {
@@ -47,9 +50,8 @@ namespace pfq {
                 ret += ", ";
             ret += std::to_string(q);
         }
-        ret += "] gid:" + std::to_string(b.gid) + " core:" + std::to_string (b.core);
 
-        return ret + " }";
+        return ret + "] }";
     }
 
 
@@ -57,17 +59,18 @@ namespace pfq {
     binding
     make_binding(const char *value)
     {
-        binding ret { {}, {}, -1, -1 };
+        binding ret { 0, 0, {}, {} };
 
         auto vec = pfq::split(value, ".");
 
-        ret.dev = pfq::split(vec[0].c_str(), ":");
+        ret.gid = std::atoi(vec.at(0).c_str());
 
         if (vec.size() > 1)
             ret.core = std::atoi(vec[1].c_str());
 
+
         if (vec.size() > 2)
-            ret.gid = std::atoi(vec[2].c_str());
+            ret.dev = pfq::split(vec[2].c_str(), ":");
 
         if (vec.size() > 3)
         {

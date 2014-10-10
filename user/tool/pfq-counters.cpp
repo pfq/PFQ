@@ -205,7 +205,7 @@ void usage(std::string name)
         " -s --slot=INT                 Set slots\n"
         " -f --function=FUNCTION\n"
         " -t --thread=BINDING\n\n"
-        "      BINDING = eth0:...:ethx[.core[.gid[.queue.queue...]]]\n"
+        "      BINDING = " + pfq::binding_format + "\n"
         "      FUNCTION = fun[ >-> fun >-> fun]"
     );
 }
