@@ -46,6 +46,7 @@ proc_modules = "/proc/modules"
 bold  = setSGRCode [SetConsoleIntensity BoldIntensity]
 reset = setSGRCode []
 
+version = "3.6"
 
 data YesNo = Yes | No
     deriving (Show, Read, Eq, Data, Typeable)
@@ -130,7 +131,7 @@ options = cmdArgsMode $ Options
          first_core = 0             &= typ "NUM" &= help "first core used for irq affinity",
          exclude    = []            &= typ "CORE" &= help "exclude core from irq affinity",
          others     = []            &= args
-    } &= summary "pfq-load"         &= program "pfq-load"
+    } &= summary ("pfq-load " ++ version) &= program "pfq-load"
 
 
 -------------------------------------------------------------------------------------------
