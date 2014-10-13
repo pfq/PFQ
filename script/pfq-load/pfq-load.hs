@@ -127,7 +127,7 @@ options = cmdArgsMode $ Options
     {
          config     = Nothing       &= typ "FILE" &= help "specify configuration file",
          queues     = Nothing       &= help "Hardware queues (i.e. Intel RSS)",
-         algorithm  = "naive"       &= help "binding algorithm: naive, round-robin, even, odd, all-in:id, comb:id",
+         algorithm  = ""            &= help "binding algorithm: naive, round-robin, even, odd, all-in:id, comb:id",
          first_core = 0             &= typ "NUM" &= help "first core used for irq affinity",
          exclude    = []            &= typ "CORE" &= help "exclude core from irq affinity",
          others     = []            &= args
