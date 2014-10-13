@@ -62,7 +62,7 @@ data Device =
     {
         devname   :: String,
         devspeed  :: Maybe Int,
-        flowctrl  :: YesNo,
+        flowctrl  :: YesNo
     } deriving (Show, Read, Eq)
 
 
@@ -243,7 +243,7 @@ loadModule name opts = do
 
 
 setupDevice :: Device -> IO ()
-setupDevice (Device dev speed fctrl cmd) = do
+setupDevice (Device dev speed fctrl) = do
     putStrBoldLn $ "Activating " ++ dev ++ "..."
     runSystem ("/sbin/ifconfig " ++ dev ++ " up") "ifconfig error!"
     when (fctrl == No) $ do
