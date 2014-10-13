@@ -59,6 +59,11 @@ script =
         Install   "pfq-omatic" *>>  into "script/pfq-omatic/" [cabalInstall]   .|. [Build     "pfq-omatic"],
         Clean     "pfq-omatic" *>>  into "script/pfq-omatic/" [cabalClean],
 
+        Configure "pfq-load"   *>>  into "script/pfq-load/" [cabalConfigure] .|. [Install   "Haskell lib"],
+        Build     "pfq-load"   *>>  into "script/pfq-load/" [cabalBuild]     .|. [Configure "pfq-load"],
+        Install   "pfq-load"   *>>  into "script/pfq-load/" [cabalInstall]   .|. [Build     "pfq-load"],
+        Clean     "pfq-load"   *>>  into "script/pfq-load/" [cabalClean],
+
         Configure "C/C++ test"   *>>  into "user/test/" ["cmake ."]      .|. [Build "C lib"],
         Build     "C/C++ test"   *>>  into "user/test/" ["make"]         .|. [Configure "C/C++ test"],
         Install   "C/C++ test"   *>>  into "user/test/" [ ],
