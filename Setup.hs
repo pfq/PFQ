@@ -21,11 +21,12 @@ import SimpleBuilder
 import System.Environment
 import Control.Monad
 
+
 script :: Script
 script =
     [
         Configure "pfq.ko"  *>>  into "kernel/" [],
-        Build     "pfq.ko"  *>>  into "kernel/" ["make"],
+        Build     "pfq.ko"  *>>  into "kernel/" ["make -j" ++ show numberOfPhyCores ],
         Install   "pfq.ko"  *>>  into "kernel/" ["make install"] .|. [Build "pfq.ko"],
         Clean     "pfq.ko"  *>>  into "kernel/" ["make clean"],
 
@@ -65,12 +66,12 @@ script =
         Clean     "pfq-load"   *>>  into "script/pfq-load/" [cabalClean],
 
         Configure "C/C++ test"   *>>  into "user/test/" ["cmake ."]      .|. [Build "C lib"],
-        Build     "C/C++ test"   *>>  into "user/test/" ["make"]         .|. [Configure "C/C++ test"],
+        Build     "C/C++ test"   *>>  into "user/test/" ["make -j" ++ show numberOfPhyCores]  .|. [Configure "C/C++ test"],
         Install   "C/C++ test"   *>>  into "user/test/" [ ],
         Clean     "C/C++ test"   *>>  into "user/test/" ["make clean"],
 
         Configure "C/C++ tools"   *>>  into "user/tool/" ["cmake ."]      .|. [Build "C lib"],
-        Build     "C/C++ tools"   *>>  into "user/tool/" ["make"]         .|. [Configure "C/C++ tools"],
+        Build     "C/C++ tools"   *>>  into "user/tool/" ["make -j" ++ show numberOfPhyCores] .|. [Configure "C/C++ tools"],
         Install   "C/C++ tools"   *>>  into "user/tool/" [ ],
         Clean     "C/C++ tools"   *>>  into "user/tool/" ["make clean"]
    ]
