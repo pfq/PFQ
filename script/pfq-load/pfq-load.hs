@@ -33,17 +33,18 @@ import Data.Data
 
 import System.Console.ANSI
 import System.Console.CmdArgs
+import System.Directory (getHomeDirectory)
 import System.IO.Unsafe
 import System.Process
 import System.Exit
-
-
-bold  = setSGRCode [SetConsoleIntensity BoldIntensity]
-reset = setSGRCode []
+import System.FilePath
 
 proc_cpuinfo, proc_modules :: String
 proc_cpuinfo = "/proc/cpuinfo"
 proc_modules = "/proc/modules"
+
+bold  = setSGRCode [SetConsoleIntensity BoldIntensity]
+reset = setSGRCode []
 
 
 data YesNo = Yes | No
@@ -111,7 +112,7 @@ instance Semigroup Config where
 
 data Options = Options
     {
-         config     :: String,
+         config     :: Maybe String,
          algorithm  :: String,
          first_core :: Int,
          exclude    :: [Int],
@@ -123,9 +124,9 @@ data Options = Options
 options :: Mode (CmdArgs Options)
 options = cmdArgsMode $ Options
     {
-         config     = "pfq.conf"    &= typ "FILE" &= help "specify configuration file",
-         algorithm  = "naive"       &= help "binding algorithm: naive, round-robin, even, odd, all-in:id, comb:id",
+         config     = Nothing       &= typ "FILE" &= help "specify configuration file",
          queues     = Nothing       &= help "Hardware queues (i.e. Intel RSS)",
+         algorithm  = "naive"       &= help "binding algorithm: naive, round-robin, even, odd, all-in:id, comb:id",
          first_core = 0             &= typ "NUM" &= help "first core used for irq affinity",
          exclude    = []            &= typ "CORE" &= help "exclude core from irq affinity",
          others     = []            &= args
@@ -139,8 +140,9 @@ main :: IO ()
 main = do
 
     -- load options...
+    home <- getHomeDirectory
     opt  <- cmdArgsRun options
-    conf <- (<> mkConfig opt) <$> loadConfig (config opt)
+    conf <- (<> mkConfig opt) <$> loadConfig (fromMaybe (home </> ".pfq.conf") (config opt))
     pmod <- loadProcModules
     core <- getNumberOfPhyCores
 
