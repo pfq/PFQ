@@ -27,6 +27,7 @@ module SimpleBuilder (
     cabalBuild,
     cabalInstall,
     cabalClean,
+    numberOfPhyCores,
 ) where
 
 import System.Console.ANSI
@@ -35,11 +36,14 @@ import System.Directory
 import System.FilePath
 import System.Process
 import System.Exit
+import System.IO.Unsafe
 
 import Control.Monad
 import Control.Monad.State
 
 import qualified Control.Exception as E
+
+import Data.List
 
 bold    = setSGRCode [SetConsoleIntensity BoldIntensity]
 reset   = setSGRCode []
@@ -133,5 +137,10 @@ cabalConfigure = "runhaskell Setup configure --user"
 cabalBuild     = "runhaskell Setup build"
 cabalInstall   = "runhaskell Setup install"
 cabalClean     = "runhaskell Setup clean"
+
+
+numberOfPhyCores :: Int
+numberOfPhyCores = unsafePerformIO $ readFile "/proc/cpuinfo" >>= \file ->
+    return $ (length . filter (isInfixOf "processor") . lines) file
 
 
