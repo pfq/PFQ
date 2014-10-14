@@ -150,11 +150,18 @@ main = do
     -- check queues
     when (maybe False (> core) (queues opt)) $ error "queues number too big!"
 
-    -- unload pfq and related drivers...
+    -- unload pfq and dependent drivers...
     evalStateT (unloadModule "pfq") pmod
 
     -- load PFQ...
     loadModule (pfq_module conf) (pfq_options conf)
+
+    -- update current loaded proc/modules
+    pmod2 <- loadProcModules
+
+    -- unload drivers...
+    putStrBoldLn "Unloading vanilla/standard drivers..."
+    evalStateT (mapM_ unloadModule (map (takeBaseName . drvmod) $ drivers conf)) pmod2
 
     -- load device drivers...
     forM_ (drivers conf) $ \drv -> do
