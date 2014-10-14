@@ -125,11 +125,11 @@ data Options = Options
 options :: Mode (CmdArgs Options)
 options = cmdArgsMode $ Options
     {
-         config     = Nothing       &= typ "FILE" &= help "specify configuration file",
-         queues     = Nothing       &= help "Hardware queues (i.e. Intel RSS)",
-         algorithm  = ""            &= help "binding algorithm: naive, round-robin, even, odd, all-in:id, comb:id",
-         first_core = 0             &= typ "NUM" &= help "first core used for irq affinity",
-         exclude    = []            &= typ "CORE" &= help "exclude core from irq affinity",
+         config     = Nothing       &= typ "FILE" &= help "Specify configuration file (default ~/.pfq.conf)",
+         queues     = Nothing       &= help "Specify hardware queues (i.e. Intel RSS)",
+         algorithm  = ""            &= help "Irq affinity algorithm: naive, round-robin, even, odd, all-in:id, comb:id",
+         first_core = 0             &= typ "NUM" &= help "First core used for irq affinity",
+         exclude    = []            &= typ "CORE" &= help "Exclude core from irq affinity",
          others     = []            &= args
     } &= summary ("pfq-load " ++ version) &= program "pfq-load"
 
@@ -161,7 +161,7 @@ main = do
 
     -- unload drivers...
     putStrBoldLn "Unloading vanilla/standard drivers..."
-    evalStateT (mapM_ unloadModule (map (takeBaseName . drvmod) $ drivers conf)) pmod2
+    evalStateT (mapM_ (unloadModule . takeBaseName . drvmod) (drivers conf)) pmod2
 
     -- load device drivers...
     forM_ (drivers conf) $ \drv -> do
