@@ -1,5 +1,5 @@
 name:                   pfq-counters
-version:                3.6
+version:                3.7
 
 license-file:           LICENSE
 author:                 Nicola Bonelli
@@ -19,7 +19,7 @@ Executable pfq-counters
                         containers >= 0.4,
                         split >= 0.2,
                         old-time >= 1.0,
-                        pfq >= 3.6
+                        pfq >= 3.7
 
     extra-libraries:    pfq
 
