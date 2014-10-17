@@ -16,7 +16,7 @@
 -- Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 --
 
-module SimpleBuilder (
+module Development.SimpleBuilder (
     Target(..),
     Script,
     (*>>),
@@ -44,14 +44,15 @@ import Control.Monad.State
 import qualified Control.Exception as E
 
 import Data.List
+import Safe
 
 bold    = setSGRCode [SetConsoleIntensity BoldIntensity]
 reset   = setSGRCode []
 
-data Target = Configure String |
-              Build String |
-              Install String |
-              Clean String
+data Target = Configure { getTargetName :: String } |
+              Build     { getTargetName :: String } |
+              Install   { getTargetName :: String } |
+              Clean     { getTargetName :: String }
 
 
 instance Eq Target where
@@ -64,9 +65,10 @@ instance Eq Target where
 
 instance Show Target where
     show (Configure t) = "Configuring " ++ t
-    show (Build     t) = "Building " ++ t
-    show (Install   t) = "Installing " ++ t
-    show (Clean     t) = "Cleaning " ++ t
+    show (Build     t) = "Building "    ++ t
+    show (Install   t) = "Installing "  ++ t
+    show (Clean     t) = "Cleaning "    ++ t
+
 
 
 data Action = Action { basedir :: FilePath, cmds :: [String], deps :: [Target] }
@@ -117,20 +119,27 @@ simpleBuilder :: Script -> [String] -> IO ()
 simpleBuilder script args = do
     base <- getCurrentDirectory
     E.catch (case args of
-            ("configure":xs) -> evalStateT (buildTarget (Configure "*") base 0) (script,[]) >> putStrLn ( bold ++ "Done." ++ reset )
-            ("build":xs)     -> evalStateT (buildTarget (Build "*")     base 0) (script,[]) >> putStrLn ( bold ++ "Done." ++ reset )
-            ("install":xs)   -> evalStateT (buildTarget (Install "*")   base 0) (script,[]) >> putStrLn ( bold ++ "Done." ++ reset )
-            ("clean":xs)     -> evalStateT (buildTarget (Clean "*")     base 0) (script,[]) >> putStrLn ( bold ++ "Done." ++ reset )
+            ("configure":xs) -> evalStateT (buildTarget (Configure (headDef "*" xs)) base 0) (script,[]) >> putStrLn ( bold ++ "Done." ++ reset )
+            ("build":xs)     -> evalStateT (buildTarget (Build (headDef "*" xs))     base 0) (script,[]) >> putStrLn ( bold ++ "Done." ++ reset )
+            ("install":xs)   -> evalStateT (buildTarget (Install (headDef "*" xs))   base 0) (script,[]) >> putStrLn ( bold ++ "Done." ++ reset )
+            ("clean":xs)     -> evalStateT (buildTarget (Clean (headDef "*" xs))     base 0) (script,[]) >> putStrLn ( bold ++ "Done." ++ reset )
+            ("show":_)       -> showTargets script
             _                -> usage)
           (\e -> setCurrentDirectory base >> print (e :: E.SomeException))
 
 
-usage = putStrLn $ "usage: Setup COMMAND\n\n" ++
+showTargets :: Script -> IO ()
+showTargets script =
+    putStrLn "targets:" >> (mapM_ putStrLn $ nub $ map (\(Component t _) -> "    " ++ getTargetName t) script)
+
+
+usage = putStrLn $ "usage: Build COMMAND [target]\n\n" ++
                    "Commands:\n" ++
                    "    configure   Prepare to build PFQ framework.\n" ++
                    "    build       Build PFQ framework.\n" ++
                    "    install     Copy the files into the install location.\n" ++
-                   "    clean       Clean up after a build."
+                   "    clean       Clean up after a build.\n" ++
+                   "    show        Show targets."
 
 
 cabalConfigure = "runhaskell Setup configure --user"
