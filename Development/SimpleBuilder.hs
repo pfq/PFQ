@@ -130,7 +130,7 @@ simpleBuilder script args = do
 
 showTargets :: Script -> IO ()
 showTargets script =
-    putStrLn "targets:" >> (mapM_ putStrLn $ nub $ map (\(Component t _) -> "    " ++ getTargetName t) script)
+    putStrLn "targets:" >> mapM_ putStrLn (nub (map (\(Component t _) -> "    " ++ getTargetName t) script))
 
 
 usage = putStrLn $ "usage: Build COMMAND [target]\n\n" ++

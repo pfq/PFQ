@@ -95,16 +95,16 @@ data Binding = Binding {
 makeBinding :: String -> Binding
 makeBinding s = case splitOn "." s of
                         []              ->  error "makeBinding: empty string"
-                        g : []          ->  Binding (read g) 0 [] [-1]
-                        g : c : []      ->  Binding (read g) (read c) [] [-1]
-                        g : c : ds : [] ->  Binding (read g) (read c) (splitOn ":" ds) [-1]
+                        [g]             ->  Binding (read g) 0 [] [-1]
+                        [g, c]          ->  Binding (read g) (read c) [] [-1]
+                        [g, c, ds]      ->  Binding (read g) (read c) (splitOn ":" ds) [-1]
                         g : c : ds : qs ->  Binding (read g) (read c) (splitOn ":" ds) (map read qs)
 
 
 makeFun :: String -> (Gid, [String])
 makeFun s =  case splitOn "." s of
-                []     -> error "makeFun: empty string"
-                fs : [] -> (-1,             map (filter (/= ' ')) $ splitOn ">->" fs)
+                []      -> error "makeFun: empty string"
+                [fs]    -> (-1,             map (filter (/= ' ')) $ splitOn ">->" fs)
                 fs : n  -> (read $ head n,  map (filter (/= ' ')) $ splitOn ">->" fs)
 
 -- main function
