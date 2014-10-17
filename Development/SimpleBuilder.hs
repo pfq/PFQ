@@ -44,7 +44,6 @@ import Control.Monad.State
 import qualified Control.Exception as E
 
 import Data.List
-import Safe
 
 bold    = setSGRCode [SetConsoleIntensity BoldIntensity]
 reset   = setSGRCode []
@@ -71,8 +70,8 @@ instance Show Target where
 
 
 
-data Action = Action { basedir :: FilePath, cmds :: [String], deps :: [Target] }
-data Component = Component Target Action
+data Action    = Action { basedir :: FilePath, cmds :: [String], deps :: [Target] }
+data Component = Component { getTarget :: Target,  getAction :: Action }
 type Script    = [Component]
 
 
@@ -91,12 +90,14 @@ into dir cs = Action dir cs []
 action .|. ts = action{ deps = ts }
 
 
-buildTarget :: Target -> FilePath -> Int -> ScriptT IO ()
-buildTarget tar base level = do
+buildTarget :: [Target] -> FilePath -> Int -> ScriptT IO ()
+buildTarget tars base level = do
     (script, done) <- get
-    let script' = filter (\(Component tar' _ ) -> tar' == tar) script
-    if null script'
-        then lift $ error ("Error: " ++ show tar ++ ": target not found!")
+    let targets = map getTarget script
+    let script' = filter (\(Component tar' _ ) -> tar' `elem` tars) script
+    if length tars > length script'
+        then lift $ error ("Error: " ++ unwords (
+            map getTargetName $ filter (\t -> not (t `elem` targets) ) tars)  ++ ": target(s) not found!")
         else do
             let tot = length script'
             forM_ (zip [1..] script') $ \(n, Component target (Action path cmds' deps')) -> do
@@ -107,7 +108,7 @@ buildTarget tar base level = do
                     -- satisfy dependencies
                     unless (null deps') $ do
                         lift $ putStrLn $ "Satisfying dependencies for " ++ show target ++ "..."
-                        forM_ deps' $ \t -> when (t `notElem` done') $ buildTarget t base (level+1)
+                        forM_ deps' $ \t -> when (t `notElem` done') $ buildTarget [t] base (level+1)
                     -- build target
                     lift $ setCurrentDirectory $ base </> path
                     ec <- lift $ mapM system cmds'
@@ -119,13 +120,15 @@ simpleBuilder :: Script -> [String] -> IO ()
 simpleBuilder script args = do
     base <- getCurrentDirectory
     E.catch (case args of
-            ("configure":xs) -> evalStateT (buildTarget (Configure (headDef "*" xs)) base 0) (script,[]) >> putStrLn ( bold ++ "Done." ++ reset )
-            ("build":xs)     -> evalStateT (buildTarget (Build (headDef "*" xs))     base 0) (script,[]) >> putStrLn ( bold ++ "Done." ++ reset )
-            ("install":xs)   -> evalStateT (buildTarget (Install (headDef "*" xs))   base 0) (script,[]) >> putStrLn ( bold ++ "Done." ++ reset )
-            ("clean":xs)     -> evalStateT (buildTarget (Clean (headDef "*" xs))     base 0) (script,[]) >> putStrLn ( bold ++ "Done." ++ reset )
+            ("configure":xs) -> evalStateT (buildTarget (map Configure (mkTargets xs)) base 0) (script,[]) >> putStrLn ( bold ++ "Done." ++ reset )
+            ("build":xs)     -> evalStateT (buildTarget (map Build     (mkTargets xs)) base 0) (script,[]) >> putStrLn ( bold ++ "Done." ++ reset )
+            ("install":xs)   -> evalStateT (buildTarget (map Install   (mkTargets xs)) base 0) (script,[]) >> putStrLn ( bold ++ "Done." ++ reset )
+            ("clean":xs)     -> evalStateT (buildTarget (map Clean     (mkTargets xs)) base 0) (script,[]) >> putStrLn ( bold ++ "Done." ++ reset )
             ("show":_)       -> showTargets script
             _                -> usage)
           (\e -> setCurrentDirectory base >> print (e :: E.SomeException))
+    where mkTargets [] = ["*"]
+          mkTargets xs = xs
 
 
 showTargets :: Script -> IO ()
@@ -133,7 +136,7 @@ showTargets script =
     putStrLn "targets:" >> mapM_ putStrLn (nub (map (\(Component t _) -> "    " ++ getTargetName t) script))
 
 
-usage = putStrLn $ "usage: Build COMMAND [target]\n\n" ++
+usage = putStrLn $ "usage: Build COMMAND [TARGET TARGET...]\n\n" ++
                    "Commands:\n" ++
                    "    configure   Prepare to build PFQ framework.\n" ++
                    "    build       Build PFQ framework.\n" ++
