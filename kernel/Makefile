@@ -32,10 +32,10 @@ KERNELVERSION := $(shell uname -r)
 INSTDIR := $(DESTDIR)/lib/modules/${KERNELVERSION}/kernel/net/pfq
 
 all:
-		make -C /lib/modules/${KERNELVERSION}/build M=$(PWD) modules
+		$(MAKE) -C /lib/modules/${KERNELVERSION}/build M=$(PWD) modules
 
 clean:
-		make -C /lib/modules/${KERNELVERSION}/build M=$(PWD) clean
+		$(MAKE) -C /lib/modules/${KERNELVERSION}/build M=$(PWD) clean
 
 install:
 		mkdir -p $(INSTDIR)
