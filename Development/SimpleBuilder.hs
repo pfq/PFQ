@@ -95,25 +95,24 @@ buildTarget tars base level = do
     (script, done) <- get
     let targets = map getTarget script
     let script' = filter (\(Component tar' _ ) -> tar' `elem` tars) script
-    if length tars > length script'
-        then lift $ error ("Error: " ++ unwords (
+    when (length tars > length script') $
+        lift $ error ("Error: " ++ unwords (
             map getTargetName $ filter (\t -> not (t `elem` targets) ) tars)  ++ ": target(s) not found!")
-        else do
-            let tot = length script'
-            forM_ (zip [1..] script') $ \(n, Component target (Action path cmds' deps')) -> do
-                (_, done') <- get
-                unless (target `elem` done') $ do
-                    put (script, target : done')
-                    lift $ putStrLn $ replicate level '.' ++ bold ++ "[" ++ show n ++ "/" ++ show tot ++ "] " ++ show target ++ ":" ++ reset
-                    -- satisfy dependencies
-                    unless (null deps') $ do
-                        lift $ putStrLn $ "Satisfying dependencies for " ++ show target ++ "..."
-                        forM_ deps' $ \t -> when (t `notElem` done') $ buildTarget [t] base (level+1)
-                    -- build target
-                    lift $ setCurrentDirectory $ base </> path
-                    ec <- lift $ mapM system cmds'
-                    unless (all (== ExitSuccess) ec) $
-                        lift $ error ("Error: " ++ show target ++ " aborted!")
+    let tot = length script'
+    forM_ (zip [1..] script') $ \(n, Component target (Action path cmds' deps')) -> do
+        (_, done') <- get
+        unless (target `elem` done') $ do
+            put (script, target : done')
+            lift $ putStrLn $ replicate level '.' ++ bold ++ "[" ++ show n ++ "/" ++ show tot ++ "] " ++ show target ++ ":" ++ reset
+            -- satisfy dependencies
+            unless (null deps') $ do
+                lift $ putStrLn $ "Satisfying dependencies for " ++ show target ++ "..."
+                forM_ deps' $ \t -> when (t `notElem` done') $ buildTarget [t] base (level+1)
+            -- build target
+            lift $ setCurrentDirectory $ base </> path
+            ec <- lift $ mapM system cmds'
+            unless (all (== ExitSuccess) ec) $
+                lift $ error ("Error: " ++ show target ++ " aborted!")
 
 
 simpleBuilder :: Script -> [String] -> IO ()
