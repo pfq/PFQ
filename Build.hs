@@ -60,6 +60,11 @@ script =
         Install   "pfq-omatic"   *>>  into "script/pfq-omatic/" [cabalInstall]   .|. [Build     "pfq-omatic"],
         Clean     "pfq-omatic"   *>>  into "script/pfq-omatic/" [cabalClean],
 
+        Configure "pfqd"        *>>  into "user/pfqd/" [cabalConfigure] .|. [Install   "Haskell-lib", Install "pfq.ko"],
+        Build     "pfqd"        *>>  into "user/pfqd/" [cabalBuild]     .|. [Configure "pfqd"],
+        Install   "pfqd"        *>>  into "user/pfqd/" [cabalInstall]   .|. [Build     "pfqd"],
+        Clean     "pfqd"        *>>  into "user/pfqd/" [cabalClean],
+
         Configure "pfq-load"     *>>  into "script/pfq-load/" [cabalConfigure] .|. [Install   "irq-affinity"],
         Build     "pfq-load"     *>>  into "script/pfq-load/" [cabalBuild]     .|. [Configure "pfq-load"],
         Install   "pfq-load"     *>>  into "script/pfq-load/" [cabalInstall]   .|. [Build     "pfq-load"],
