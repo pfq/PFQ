@@ -9,7 +9,7 @@
 #include <vector>
 #include <string>
 
-#include <pfq-util.hpp>
+#include <pfq/util.hpp>
 
 
 namespace pfq {

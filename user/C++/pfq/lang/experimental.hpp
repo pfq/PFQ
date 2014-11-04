@@ -23,8 +23,8 @@
 
 #pragma once
 
-#include <pfq-lang/lang.hpp>
-#include <pfq-lang/details.hpp>
+#include <pfq/lang/lang.hpp>
+#include <pfq/lang/details.hpp>
 
 #include <functional>
 #include <stdexcept>

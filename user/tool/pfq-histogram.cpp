@@ -14,7 +14,7 @@
 #include <cmath>
 #include <tuple>
 
-#include <pfq.hpp>
+#include <pfq/pfq.hpp>
 
 
 using namespace pfq;

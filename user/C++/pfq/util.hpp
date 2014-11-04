@@ -38,7 +38,7 @@
 #include <sys/ioctl.h>
 #include <net/if.h>
 
-#include <pfq-except.hpp>
+#include <pfq/exception.hpp>
 
 
 namespace pfq {

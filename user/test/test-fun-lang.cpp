@@ -3,10 +3,10 @@
 #include <stdexcept>
 #include <chrono>
 
-#include <pfq.hpp>
-#include <pfq-lang/lang.hpp>
-#include <pfq-lang/default.hpp>
-#include <pfq-lang/experimental.hpp>
+#include <pfq/pfq.hpp>
+#include <pfq/lang/lang.hpp>
+#include <pfq/lang/default.hpp>
+#include <pfq/lang/experimental.hpp>
 
 using namespace pfq::lang;
 using namespace pfq::lang::experimental;

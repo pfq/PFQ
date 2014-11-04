@@ -35,10 +35,10 @@ script =
         Install   "C-lib"        *>>  into "user/C/" ["make install"] .|. [Build "C-lib"],
         Clean     "C-lib"        *>>  into "user/C/" ["make clean"],
 
-        Configure "C++-lib"      *>>  into "user/C++/" [],
-        Build     "C++-lib"      *>>  into "user/C++/" [],
-        Install   "C++-lib"      *>>  into "user/C++/" ["make install"],
-        Clean     "C++-lib"      *>>  into "user/C++/" [],
+        Configure "C++-lib"      *>>  into "user/C++/pfq/" [],
+        Build     "C++-lib"      *>>  into "user/C++/pfq/" [],
+        Install   "C++-lib"      *>>  into "user/C++/pfq/" ["make install"],
+        Clean     "C++-lib"      *>>  into "user/C++/pfq/" [],
 
         Configure "Haskell-lib"  *>>  into "user/Haskell/" [cabalConfigure] .|. [Install "pfq.ko", Install "C-lib"],
         Build     "Haskell-lib"  *>>  into "user/Haskell/" [cabalBuild]     .|. [Configure "Haskell-lib"],
