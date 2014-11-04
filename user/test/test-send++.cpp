@@ -1,7 +1,7 @@
 #include <iostream>
 #include <stdexcept>
 
-#include <pfq.hpp>
+#include <pfq/pfq.hpp>
 
 /* Frame (98 bytes) */
 

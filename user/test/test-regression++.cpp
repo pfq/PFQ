@@ -1,9 +1,10 @@
-#include <pfq.hpp>
 #include <future>
 #include <system_error>
 
 #include <sys/types.h>
 #include <sys/wait.h>
+
+#include <pfq/pfq.hpp>
 
 #include "yats.hpp"
 

@@ -21,8 +21,8 @@
 #include <unordered_set>
 #include <random>
 
-#include <pfq.hpp>
-#include <pfq-util.hpp>
+#include <pfq/pfq.hpp>
+#include <pfq/util.hpp>
 
 #include <netinet/ip.h>
 #include <netinet/udp.h>

@@ -18,10 +18,10 @@
 #include <cmath>
 #include <tuple>
 
-#include <pfq.hpp>
-#include <pfq-lang/lang.hpp>
-#include <pfq-lang/default.hpp>
-#include <pfq-lang/experimental.hpp>
+#include <pfq/pfq.hpp>
+#include <pfq/lang/lang.hpp>
+#include <pfq/lang/default.hpp>
+#include <pfq/lang/experimental.hpp>
 
 #include <affinity.hpp>
 #include <binding.hpp>

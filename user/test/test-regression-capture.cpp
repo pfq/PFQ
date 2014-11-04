@@ -32,7 +32,7 @@
 #include <netinet/if_ether.h>
 #include <linux/if_ether.h>
 
-#include <pfq.hpp>
+#include <pfq/pfq.hpp>
 #include <vt100.hpp>
 
 using namespace pfq;

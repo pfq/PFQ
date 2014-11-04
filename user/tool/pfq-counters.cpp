@@ -20,8 +20,8 @@
 #include <tuple>
 #include <unordered_set>
 
-#include <pfq.hpp>
-#include <pfq-lang/lang.hpp>
+#include <pfq/pfq.hpp>
+#include <pfq/lang/lang.hpp>
 
 #include <binding.hpp>
 #include <affinity.hpp>

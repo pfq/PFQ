@@ -41,10 +41,9 @@
 #include <algorithm>
 #include <thread>
 
-#include <pfq-util.hpp>
-#include <pfq-queue.hpp>
-
-#include <pfq-lang/lang.hpp>
+#include <pfq/util.hpp>
+#include <pfq/queue.hpp>
+#include <pfq/lang/lang.hpp>
 
 namespace pfq {
 

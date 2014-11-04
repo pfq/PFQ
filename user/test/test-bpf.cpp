@@ -2,7 +2,7 @@
 #include <string>
 #include <stdexcept>
 
-#include <pfq.hpp>
+#include <pfq/pfq.hpp>
 
 int
 main(int argc, char *argv[])
