@@ -30,17 +30,17 @@ script =
         Install   "pfq.ko"       *>>  into "kernel/" ["make install"] .|. [Build "pfq.ko"],
         Clean     "pfq.ko"       *>>  into "kernel/" ["make clean"],
 
-        Configure "C-lib"        *>>  into "user/C/" ["cmake ."],
-        Build     "C-lib"        *>>  into "user/C/" ["make"]         .|. [Configure "C-lib"],
-        Install   "C-lib"        *>>  into "user/C/" ["make install"] .|. [Build "C-lib"],
-        Clean     "C-lib"        *>>  into "user/C/" ["make clean"],
+        Configure "pfq-clib"     *>>  into "user/C/" ["cmake ."],
+        Build     "pfq-clib"     *>>  into "user/C/" ["make"]         .|. [Configure "pfq-clib"],
+        Install   "pfq-clib"     *>>  into "user/C/" ["make install"] .|. [Build "pfq-clib"],
+        Clean     "pfq-clib"     *>>  into "user/C/" ["make clean"],
 
-        Configure "C++-lib"      *>>  into "user/C++/pfq/" [],
-        Build     "C++-lib"      *>>  into "user/C++/pfq/" [],
-        Install   "C++-lib"      *>>  into "user/C++/pfq/" ["make install"],
-        Clean     "C++-lib"      *>>  into "user/C++/pfq/" [],
+        Configure "pfq-cpplib"   *>>  into "user/C++/pfq/" [],
+        Build     "pfq-cpplib"   *>>  into "user/C++/pfq/" [],
+        Install   "pfq-cpplib"   *>>  into "user/C++/pfq/" ["make install"],
+        Clean     "pfq-cpplib"   *>>  into "user/C++/pfq/" [],
 
-        Configure "Haskell-lib"  *>>  into "user/Haskell/" [cabalConfigure] .|. [Install "pfq.ko", Install "C-lib"],
+        Configure "Haskell-lib"  *>>  into "user/Haskell/" [cabalConfigure] .|. [Install "pfq.ko", Install "pfq-clib"],
         Build     "Haskell-lib"  *>>  into "user/Haskell/" [cabalBuild]     .|. [Configure "Haskell-lib"],
         Install   "Haskell-lib"  *>>  into "user/Haskell/" [cabalInstall]   .|. [Build "Haskell-lib"],
         Clean     "Haskell-lib"  *>>  into "user/Haskell/" [cabalClean],
@@ -70,12 +70,12 @@ script =
         Install   "pfqd"        *>>  into "user/pfqd/" [cabalInstall]   .|. [Build     "pfqd"],
         Clean     "pfqd"        *>>  into "user/pfqd/" [cabalClean],
 
-        Configure "C/C++-test"   *>>  into "user/test/" ["cmake ."]      .|. [Build "C-lib"],
+        Configure "C/C++-test"   *>>  into "user/test/" ["cmake ."]      .|. [Install "pfq-clib", Install "pfq-cpplib"],
         Build     "C/C++-test"   *>>  into "user/test/" ["make -j" ++ show numberOfPhyCores]  .|. [Configure "C/C++-test"],
         Install   "C/C++-test"   *>>  into "user/test/" [ ],
         Clean     "C/C++-test"   *>>  into "user/test/" ["make clean"],
 
-        Configure "C/C++-tools"  *>>  into "user/tool/" ["cmake ."]      .|. [Build "C-lib"],
+        Configure "C/C++-tools"  *>>  into "user/tool/" ["cmake ."]      .|. [Build "pfq-clib"],
         Build     "C/C++-tools"  *>>  into "user/tool/" ["make -j" ++ show numberOfPhyCores] .|. [Configure "C/C++-tools"],
         Install   "C/C++-tools"  *>>  into "user/tool/" [ ],
         Clean     "C/C++-tools"  *>>  into "user/tool/" ["make clean"]
