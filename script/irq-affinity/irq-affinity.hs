@@ -133,11 +133,12 @@ makeBinding dev = do
         alg  = makeAlg (splitOn ":" $ algorithm op) (firstcore op)
         irq  = getInterrupts dev msi
         core = mkBinding dev (exclude op) start alg msi
-    lift $ putStrLn $ "Setting binding for device " ++ dev ++
-        case msi of { Nothing -> ":"; Just None -> "(none):"; _ -> " (" ++ show msi ++ "):" }
-    lift $ when (null irq) $ error $ "irq(s) not found for dev " ++ dev ++ "!"
-    lift $ when (null core) $ error "no eligible cores found!"
-    lift $ mapM_ setIrqAffinity $ zip irq core
+    lift $ do
+        putStrLn $ "Setting binding for device " ++ dev ++
+            case msi of { Nothing -> ":"; Just None -> "(none):"; _ -> " (" ++ show msi ++ "):" }
+        when (null irq) $ error $ "irq(s) not found for dev " ++ dev ++ "!"
+        when (null core) $ error "no eligible cores found!"
+        mapM_ setIrqAffinity $ zip irq core
     put (op, last core + 1)
 
 
@@ -149,10 +150,11 @@ showBinding dev = do
     (op,_) <- get
     let msi = msitype op
         irq = getInterrupts dev msi
-    lift $ putStrLn $ "Binding for device " ++ dev ++
-        case msi of { Nothing -> ":"; Just None -> "(none):";  _ -> " (" ++ show (fromJust msi) ++ "):" }
-    lift $ when (null irq) $ error $ "irq vector not found for dev " ++ dev ++ "!"
-    lift $ forM_ irq $ \n ->
+    lift $ do
+        putStrLn $ "Binding for device " ++ dev ++
+            case msi of { Nothing -> ":"; Just None -> "(none):";  _ -> " (" ++ show (fromJust msi) ++ "):" }
+        when (null irq) $ error $ "irq vector not found for dev " ++ dev ++ "!"
+        forM_ irq $ \n ->
             getIrqAffinity n >>= \cs -> putStrLn $ "   irq " ++ show n ++ " -> core " ++ show cs
 
 
