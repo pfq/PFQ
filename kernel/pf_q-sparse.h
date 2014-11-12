@@ -28,8 +28,7 @@
 #include <linux/smp.h>  /* get_cpu */
 #include <asm/local.h>
 
-
-#define Q_MAX_CPU                16
+#include <pf_q-macro.h>
 
 
 typedef struct { local_t value; } ____cacheline_aligned counter_t;

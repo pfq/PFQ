@@ -47,4 +47,6 @@
 #define Q_GC_LOG_QUEUE_LEN	16
 #define Q_GC_POOL_QUEUE_LEN 	128
 
+#define Q_MAX_CPU               256
+
 #endif /* _PF_Q_MACRO_H_ */
