@@ -33,61 +33,62 @@
 
 
 static inline
-bool copy_to_user_skbs(struct pfq_rx_opt *ro, struct gc_queue_buff *queue, unsigned long long mask, int cpu, int gid)
+size_t copy_to_user_skbs(struct pfq_rx_opt *ro, struct gc_queue_buff *queue, unsigned long long mask, int cpu, int gid)
 {
         /* enqueue the sk_buffs: it's wait-free. */
 
-        int len = 0; size_t sent = 0;
+        int len = pfq_popcount(mask);
+        size_t sent = 0;
 
         if (likely(pfq_get_rx_queue_hdr(ro))) {
 
         	smp_rmb();
 
-                len  = (int)pfq_popcount(mask);
                 sent = pfq_mpdb_enqueue_batch(ro, queue, mask, len, gid);
 
         	__sparse_add(&ro->stats.recv, sent, cpu);
-
-		if (len > sent) {
+        	if (len > sent)
 			__sparse_add(&ro->stats.lost, len - sent, cpu);
-			return false;
-		}
-        }
 
-        return true;
+		return sent;
+        }
+	else {
+		__sparse_add(&ro->stats.lost, len, cpu);
+	}
+
+        return sent;
 }
 
 
 static inline
-bool copy_to_dev_skbs(struct pfq_sock *so, struct gc_queue_buff *queue, unsigned long long mask, int cpu, int gid)
+size_t copy_to_dev_skbs(struct pfq_sock *so, struct gc_queue_buff *queue, unsigned long long mask, int cpu, int gid)
 {
 	if (so->egress_index) {
 
 		struct net_device *dev;
-		bool ret;
+		int sent;
 
                	dev = dev_get_by_index(&init_net, so->egress_index);
 
-               	if (dev == NULL)
-		{
+               	if (dev == NULL) {
 			if (printk_ratelimit()) {
                         	printk(KERN_INFO "[PFQ] egress endpoint index (%d)\n", so->egress_index);
                         	return false;
 			}
 		}
 
- 		ret = pfq_lazy_queue_xmit_by_mask(queue, mask, dev, so->egress_queue);
+ 		sent = pfq_lazy_queue_xmit_by_mask(queue, mask, dev, so->egress_queue);
 
                 dev_put(dev);
 
-		return ret != 0;
+		return sent;
 	}
 
-	return false;
+	return 0;
 }
 
 
-bool copy_to_endpoint_queue_buff(struct pfq_sock *so, struct gc_queue_buff *queue, unsigned long long mask, int cpu, int gid)
+size_t copy_to_endpoint_queue_buff(struct pfq_sock *so, struct gc_queue_buff *queue, unsigned long long mask, int cpu, int gid)
 {
 	switch(so->egress_type)
 	{

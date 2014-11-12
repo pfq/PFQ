@@ -33,6 +33,6 @@ enum pfq_endpoint_type
 	pfq_endpoint_device
 };
 
-extern bool copy_to_endpoint_queue_buff(struct pfq_sock *so, struct gc_queue_buff *queue, unsigned long long mask, int cpu, int gid);
+extern size_t copy_to_endpoint_queue_buff(struct pfq_sock *so, struct gc_queue_buff *queue, unsigned long long mask, int cpu, int gid);
 
 #endif /* _PF_Q_ENDPOINT_H_ */
