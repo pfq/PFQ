@@ -34,7 +34,7 @@ using namespace pfq;
 using namespace pfq::lang;
 
 
-namespace { namespace opt
+namespace opt
 {
     long sleep_microseconds;
     std::string function;
@@ -43,7 +43,7 @@ namespace { namespace opt
     size_t slots  = 131072;
     bool flow     = false;
 
-} }
+}
 
 
 typedef std::tuple<uint32_t, uint32_t, uint16_t, uint16_t> Tuple;

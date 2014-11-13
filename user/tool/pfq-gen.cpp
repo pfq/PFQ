@@ -68,7 +68,7 @@ char *make_packet(size_t n)
 }
 
 
-namespace { namespace opt
+namespace opt
 {
     size_t batch   = 64;
     size_t len     = 64;
@@ -77,8 +77,7 @@ namespace { namespace opt
     bool   rand_ip = false;
 
     char *packet = nullptr;
-
-}}
+}
 
 // eth0:...:ethx[.core.gid.queue]]
 

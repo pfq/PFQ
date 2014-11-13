@@ -32,24 +32,21 @@ using namespace pfq::lang;
 using namespace pfq::lang::experimental;
 
 
-namespace {
+///////////////////////////////////////////
+
+auto computation = unit;
 
 ///////////////////////////////////////////
 
-    auto computation = unit;
 
-///////////////////////////////////////////
-
-
-namespace opt {
-
+namespace opt
+{
     std::string function;
 
     size_t caplen = 64;
     size_t slots  = 131072;
     bool   flow   = false;
-
-}}
+}
 
 
 void usage(std::string name)
