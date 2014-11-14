@@ -765,14 +765,10 @@ pfq_poll(struct file *file, struct socket *sock, poll_table * wait)
         if (rx == NULL)
                 return mask;
 
-        if (pfq_mpdb_queue_len(so) >= (so->rx_opt.size >> 1)) {
-                rx->poll_wait = 0;
+	poll_wait(file, &so->rx_opt.waitqueue, wait);
+
+        if (pfq_mpdb_queue_len(so) >= 0)
                 mask |= POLLIN | POLLRDNORM;
-        }
-        else if (!rx->poll_wait) {
-                rx->poll_wait = 1;
-                poll_wait(file, &so->rx_opt.waitqueue, wait);
-        }
 
         return mask;
 }

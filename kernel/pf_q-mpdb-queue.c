@@ -104,7 +104,7 @@ size_t pfq_mpdb_enqueue_batch(struct pfq_rx_opt *ro,
 
 		if (unlikely(slot_index > ro->size)) {
 
-			if ( rx_queue->poll_wait )
+			if (waitqueue_active(&ro->waitqueue))
 				wake_up_interruptible(&ro->waitqueue);
 
 			return sent;
@@ -161,9 +161,9 @@ size_t pfq_mpdb_enqueue_batch(struct pfq_rx_opt *ro,
 
 		hdr->commit = (uint8_t)q_index;
 
-		if (unlikely((slot_index & 16383) == 0) &&
-			     (slot_index >= (ro->size >> 1)) &&
-			     rx_queue->poll_wait)
+		if ((slot_index & 16383) == 0 &&
+		    (slot_index >= (ro->size >> 1)) &&
+		    waitqueue_active(&ro->waitqueue))
 		        wake_up_interruptible(&ro->waitqueue);
 
 		sent++;
@@ -243,7 +243,6 @@ int pfq_mpdb_shared_queue_toggle(struct pfq_sock *so, bool active)
                         /* initialize rx queue header */
 
                         queue->rx.data              = (1L << 24);
-                        queue->rx.poll_wait         = 0;
                         queue->rx.size              = so->rx_opt.size;
                         queue->rx.slot_size         = so->rx_opt.slot_size;
 

@@ -140,7 +140,6 @@ struct pfq_tx_queue_hdr
 struct pfq_rx_queue_hdr
 {
         volatile unsigned int   data;
-        volatile int            poll_wait;
         unsigned int            size;       /* number of slots */
         unsigned int            slot_size;  /* sizeof(pfq_pkt_hdr) + max_len + sizeof(skb_shinfo) */
 
