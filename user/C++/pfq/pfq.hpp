@@ -943,9 +943,7 @@ namespace pfq {
             size_t index = MPDB_QUEUE_INDEX(data);
             size_t q_size = pdata_->rx_slots * pdata_->rx_slot_size;
 
-            //  watermark for polling...
-
-            if( MPDB_QUEUE_LEN(data) < (pdata_->rx_slots >> 1) ) {
+            if( MPDB_QUEUE_LEN(data) == 0 ) {
                 this->poll(microseconds);
             }
 

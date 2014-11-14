@@ -857,9 +857,7 @@ pfq_read(pfq_t *q, struct pfq_net_queue *nq, long int microseconds)
 	data   = qd->rx.data;
 	index  = MPDB_QUEUE_INDEX(data);
 
-	/*  watermark for polling... */
-
-	if( MPDB_QUEUE_LEN(data) < (q->rx_slots >> 1) ) {
+	if( MPDB_QUEUE_LEN(data) == 0 ) {
 		if (pfq_poll(q, microseconds) < 0) {
          	        return q->error = "PFQ: poll error", -1;
 		}
