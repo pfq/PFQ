@@ -200,7 +200,7 @@ int pfq_mpdb_shared_queue_alloc(struct pfq_sock *so, size_t queue_mem)
         so->mem_addr = addr;
         so->mem_size = tot_mem;
 
-	pr_devel("[PFQ|%d] pfq_queue_alloc: caplen:%zu maxlen:%zu memory:%zu bytes.\n", so->id, so->rx_opt.caplen, so->tx_opt.maxlen, tot_mem);
+	pr_devel("[PFQ|%d] pfq_queue_alloc: caplen=%zu maxlen=%zu memory=%zu bytes.\n", so->id, so->rx_opt.caplen, so->tx_opt.maxlen, tot_mem);
 	return 0;
 }
 
@@ -268,7 +268,7 @@ int pfq_mpdb_shared_queue_toggle(struct pfq_sock *so, bool active)
 			atomic_long_set(&so->rx_opt.queue_hdr, (long)&queue->rx);
 			atomic_long_set(&so->tx_opt.queue_hdr, (long)&queue->tx);
 
-                        pr_devel("[PFQ|%d] queue: rx_size:%d rx_slot_size:%d tx_size:%d tx_slot_size:%d\n", so->id, queue->rx.size,
+                        pr_devel("[PFQ|%d] queue: rx_size=%d rx_slot_size=%d tx_size=%d tx_slot_size=%d\n", so->id, queue->rx.size,
                                         queue->rx.slot_size,
                                         queue->tx.size,
                                         queue->tx.slot_size);

@@ -89,12 +89,12 @@ int pfq_getsockopt(struct socket *sock,
 				return err;
 
                         if (pfq_join_group(group.gid, so->id, group.class_mask, group.policy) < 0) {
-                                pr_devel("[PFQ|%d] join error: permission denied (gid:%d)!\n", so->id, group.gid);
+                                pr_devel("[PFQ|%d] join error: permission denied (gid=%d)!\n", so->id, group.gid);
                                 return -EACCES;
                         }
                 }
 
-                pr_devel("[PFQ|%d] join -> gid:%d class_mask:%lx\n", so->id, group.gid, group.class_mask);
+                pr_devel("[PFQ|%d] join: gid=%d class_mask=%lx\n", so->id, group.gid, group.class_mask);
         } break;
 
         case Q_SO_GET_ID:
@@ -224,7 +224,7 @@ int pfq_getsockopt(struct socket *sock,
                 /* check whether the group is joinable.. */
 
                 if (!__pfq_group_access(gid, so->id, Q_POLICY_GROUP_UNDEFINED, false)) {
-                        pr_devel("[PFQ|%d] group stats error: permission denied (gid:%d)!\n", so->id, gid);
+                        pr_devel("[PFQ|%d] group stats error: permission denied (gid=%d)!\n", so->id, gid);
                         return -EACCES;
                 }
 
@@ -268,7 +268,7 @@ int pfq_getsockopt(struct socket *sock,
                 /* check whether the group is joinable.. */
 
                 if (!__pfq_group_access(gid, so->id, Q_POLICY_GROUP_UNDEFINED, false)) {
-                        pr_devel("[PFQ|%d] group error: permission denied (gid:%d)!\n", so->id, gid);
+                        pr_devel("[PFQ|%d] group error: permission denied (gid=%d)!\n", so->id, gid);
                         return -EACCES;
                 }
 
@@ -348,7 +348,7 @@ int pfq_setsockopt(struct socket *sock,
                 if (!dev_get_by_index_rcu(sock_net(&so->sk), bind.if_index))
                 {
                         rcu_read_unlock();
-                        pr_devel("[PFQ|%d] bind: invalid if_index:%d\n", so->id, bind.if_index);
+                        pr_devel("[PFQ|%d] bind: invalid if_index=%d\n", so->id, bind.if_index);
                         return -EPERM;
                 }
                 rcu_read_unlock();
@@ -376,7 +376,7 @@ int pfq_setsockopt(struct socket *sock,
                 if (!dev_get_by_index_rcu(sock_net(&so->sk), bind.if_index))
                 {
                         rcu_read_unlock();
-                        pr_devel("[PFQ|%d] unbind: invalid if_index:%d\n", so->id, bind.if_index);
+                        pr_devel("[PFQ|%d] unbind: invalid if_index=%d\n", so->id, bind.if_index);
                         return -EPERM;
                 }
                 rcu_read_unlock();
@@ -398,14 +398,14 @@ int pfq_setsockopt(struct socket *sock,
                 if (!dev_get_by_index_rcu(sock_net(&so->sk), info.if_index))
                 {
                         rcu_read_unlock();
-                        pr_devel("[PFQ|%d] TX bind: invalid if_index:%d\n", so->id, info.if_index);
+                        pr_devel("[PFQ|%d] TX bind: invalid if_index=%d\n", so->id, info.if_index);
                         return -EPERM;
                 }
                 rcu_read_unlock();
 
                 if (info.hw_queue < -1)
                 {
-                        pr_devel("[PFQ|%d] TX bind: invalid queue:%d\n", so->id, info.hw_queue);
+                        pr_devel("[PFQ|%d] TX bind: invalid queue=%d\n", so->id, info.hw_queue);
                         return -EPERM;
                 }
 
@@ -413,7 +413,7 @@ int pfq_setsockopt(struct socket *sock,
                 so->egress_index = info.if_index;
                 so->egress_queue = info.hw_queue;
 
-                pr_devel("[PFQ|%d] egress bind: device if_index:%d hw_queue:%d\n", so->id, so->egress_index, so->egress_queue);
+                pr_devel("[PFQ|%d] egress bind: device if_index=%d hw_queue=%d\n", so->id, so->egress_index, so->egress_queue);
 
         } break;
 
@@ -452,7 +452,7 @@ int pfq_setsockopt(struct socket *sock,
                         return -EFAULT;
 
                 if (caplen > (size_t)cap_len) {
-                        pr_devel("[PFQ|%d] invalid caplen:%zu (max: %d)\n", so->id, caplen, cap_len);
+                        pr_devel("[PFQ|%d] invalid caplen=%zu (max %d)\n", so->id, caplen, cap_len);
                         return -EPERM;
                 }
 
@@ -460,7 +460,7 @@ int pfq_setsockopt(struct socket *sock,
 
                 so->rx_opt.slot_size = MPDB_QUEUE_SLOT_SIZE(so->rx_opt.caplen);
 
-                pr_devel("[PFQ|%d] caplen:%zu -> slot_size:%zu\n",
+                pr_devel("[PFQ|%d] caplen=%zu, slot_size=%zu\n",
                                 so->id, so->rx_opt.caplen, so->rx_opt.slot_size);
         } break;
 
@@ -474,13 +474,13 @@ int pfq_setsockopt(struct socket *sock,
                         return -EFAULT;
 
                 if (slots > (size_t)rx_queue_slots) {
-                        pr_devel("[PFQ|%d] invalid rx slots:%zu (max: %d)\n", so->id, slots, rx_queue_slots);
+                        pr_devel("[PFQ|%d] invalid rx slots=%zu (max %d)\n", so->id, slots, rx_queue_slots);
                         return -EPERM;
                 }
 
                 so->rx_opt.size = slots;
 
-                pr_devel("[PFQ|%d] rx_queue_slots:%zu\n", so->id, so->rx_opt.size);
+                pr_devel("[PFQ|%d] rx_queue_slots=%zu\n", so->id, so->rx_opt.size);
         } break;
 
         case Q_SO_SET_TX_MAXLEN:
@@ -492,7 +492,7 @@ int pfq_setsockopt(struct socket *sock,
                         return -EFAULT;
 
                 if (maxlen > (size_t)max_len) {
-                        pr_devel("[PFQ|%d] invalid maxlen:%zu (max: %d)\n", so->id, maxlen, max_len);
+                        pr_devel("[PFQ|%d] invalid maxlen=%zu (max %d)\n", so->id, maxlen, max_len);
                         return -EPERM;
                 }
 
@@ -500,7 +500,7 @@ int pfq_setsockopt(struct socket *sock,
 
                 so->tx_opt.slot_size = SPSC_QUEUE_SLOT_SIZE(so->tx_opt.maxlen); /* max_len: max length */
 
-                pr_devel("[PFQ|%d] tx_slot_size:%zu\n", so->id, so->rx_opt.slot_size);
+                pr_devel("[PFQ|%d] tx_slot_size=%zu\n", so->id, so->rx_opt.slot_size);
         } break;
 
         case Q_SO_SET_TX_SLOTS:
@@ -519,13 +519,13 @@ int pfq_setsockopt(struct socket *sock,
                 }
 
                 if (slots > (size_t)tx_queue_slots) {
-                        pr_devel("[PFQ|%d] invalid tx slots:%zu (max: %d)\n", so->id, slots, tx_queue_slots);
+                        pr_devel("[PFQ|%d] invalid tx slots=%zu (max %d)\n", so->id, slots, tx_queue_slots);
                         return -EPERM;
                 }
 
                 so->tx_opt.size = slots;
 
-                pr_devel("[PFQ|%d] tx_queue_slots:%zu\n", so->id, so->tx_opt.size);
+                pr_devel("[PFQ|%d] tx_queue_slots=%zu\n", so->id, so->tx_opt.size);
         } break;
 
         case Q_SO_GROUP_LEAVE:
@@ -541,7 +541,7 @@ int pfq_setsockopt(struct socket *sock,
                 if (pfq_leave_group(gid, so->id) < 0)
                         return -EFAULT;
 
-                pr_devel("[PFQ|%d] leave: gid:%d\n", so->id, gid);
+                pr_devel("[PFQ|%d] leave: gid=%d\n", so->id, gid);
 
         } break;
 
@@ -565,19 +565,19 @@ int pfq_setsockopt(struct socket *sock,
                         struct sk_filter *filter = pfq_alloc_sk_filter(&fprog.fcode);
                         if (filter == NULL)
                         {
-                                pr_devel("[PFQ|%d] fprog error: alloc_sk_filter for gid:%d\n", so->id, fprog.gid);
+                                pr_devel("[PFQ|%d] fprog error: alloc_sk_filter for gid=%d\n", so->id, fprog.gid);
                                 return -EINVAL;
                         }
 
                         __pfq_set_group_filter(fprog.gid, filter);
 
-                        pr_devel("[PFQ|%d] fprog: gid:%d (fprog len %d bytes)\n", so->id, fprog.gid, fprog.fcode.len);
+                        pr_devel("[PFQ|%d] fprog: gid=%d (fprog len %d bytes)\n", so->id, fprog.gid, fprog.fcode.len);
                 }
                 else 	/* reset the filter */
                 {
                         __pfq_set_group_filter(fprog.gid, NULL);
 
-                        pr_devel("[PFQ|%d] fprog: gid:%d (resetting filter)\n", so->id, fprog.gid);
+                        pr_devel("[PFQ|%d] fprog: gid=%d (resetting filter)\n", so->id, fprog.gid);
                 }
 
         } break;
@@ -599,7 +599,7 @@ int pfq_setsockopt(struct socket *sock,
 
                 __pfq_toggle_group_vlan_filters(vlan.gid, vlan.toggle);
 
-                pr_devel("[PFQ|%d] vlan filters %s for gid:%d\n", so->id, (vlan.toggle ? "enabled" : "disabled"), vlan.gid);
+                pr_devel("[PFQ|%d] vlan filters %s for gid=%d\n", so->id, (vlan.toggle ? "enabled" : "disabled"), vlan.gid);
         } break;
 
         case Q_SO_GROUP_VLAN_FILT:
@@ -618,12 +618,12 @@ int pfq_setsockopt(struct socket *sock,
                 	return err;
 
                 if (filt.vid < -1 || filt.vid > 4094) {
-                        pr_devel("[PFQ|%d] vlan_set error: gid:%d invalid vid:%d!\n", so->id, filt.gid, filt.vid);
+                        pr_devel("[PFQ|%d] vlan_set error: gid=%d invalid vid=%d!\n", so->id, filt.gid, filt.vid);
                         return -EINVAL;
                 }
 
                 if (!__pfq_vlan_filters_enabled(filt.gid)) {
-                        pr_devel("[PFQ|%d] vlan_set error: vlan filters disabled for gid:%d!\n", so->id, filt.gid);
+                        pr_devel("[PFQ|%d] vlan_set error: vlan filters disabled for gid=%d!\n", so->id, filt.gid);
                         return -EPERM;
                 }
 
@@ -638,7 +638,7 @@ int pfq_setsockopt(struct socket *sock,
                         __pfq_set_group_vlan_filter(filt.gid, filt.toggle, filt.vid);
                 }
 
-                pr_devel("[PFQ|%d] vlan_set filter vid %d for gid:%d\n", so->id, filt.vid, filt.gid);
+                pr_devel("[PFQ|%d] vlan_set filter vid %d for gid=%d\n", so->id, filt.vid, filt.gid);
         } break;
 
         case Q_SO_TX_THREAD_BIND:
@@ -654,21 +654,21 @@ int pfq_setsockopt(struct socket *sock,
                 if (!dev_get_by_index_rcu(sock_net(&so->sk), info.if_index))
                 {
                         rcu_read_unlock();
-                        pr_devel("[PFQ|%d] TX bind: invalid if_index:%d\n", so->id, info.if_index);
+                        pr_devel("[PFQ|%d] TX bind: invalid if_index=%d\n", so->id, info.if_index);
                         return -EPERM;
                 }
                 rcu_read_unlock();
 
                 if (info.hw_queue < -1)
                 {
-                        pr_devel("[PFQ|%d] TX bind: invalid queue:%d\n", so->id, info.hw_queue);
+                        pr_devel("[PFQ|%d] TX bind: invalid queue=%d\n", so->id, info.hw_queue);
                         return -EPERM;
                 }
 
                 so->tx_opt.if_index = info.if_index;
                 so->tx_opt.hw_queue = info.hw_queue;
 
-                pr_devel("[PFQ|%d] TX bind: if_index:%d hw_queue:%d\n", so->id, so->tx_opt.if_index, so->tx_opt.hw_queue);
+                pr_devel("[PFQ|%d] TX bind: if_index=%d hw_queue=%d\n", so->id, so->tx_opt.if_index, so->tx_opt.hw_queue);
 
         } break;
 
@@ -706,7 +706,7 @@ int pfq_setsockopt(struct socket *sock,
 
                 so->tx_opt.cpu = cpu;
 
-                pr_devel("[PFQ|%d] creating TX thread on cpu %d -> if_index:%d hw_queue:%d\n", so->id, so->tx_opt.cpu, so->tx_opt.if_index, so->tx_opt.hw_queue);
+                pr_devel("[PFQ|%d] creating TX thread on cpu %d: if_index=%d hw_queue=%d\n", so->id, so->tx_opt.cpu, so->tx_opt.if_index, so->tx_opt.hw_queue);
 
                 so->tx_opt.thread = kthread_create_on_node(pfq_tx_thread,
                                 so,

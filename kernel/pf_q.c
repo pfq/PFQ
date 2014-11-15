@@ -515,7 +515,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 	stop = get_cycles();
 
 	if (printk_ratelimit())
-		printk(KERN_INFO "[PFQ] RX profile -> %llu tsc.\n", (stop-start)/prefetch_len);
+		printk(KERN_INFO "[PFQ] RX profile: %llu_tsc.\n", (stop-start)/prefetch_len);
 #endif
         return 0;
 }
@@ -900,17 +900,17 @@ static int __init pfq_init_module(void)
         pfq_proto_init();
 
         if (prefetch_len <= 0 || prefetch_len > 32) {
-                printk(KERN_INFO "[PFQ] prefetch_len=%d not allowed -> valid range (0,32]!\n", prefetch_len);
+                printk(KERN_INFO "[PFQ] prefetch_len=%d not allowed: valid range (0,32]!\n", prefetch_len);
                 return -EFAULT;
         }
 
 	if (batch_len <= 0 || batch_len > 32) {
-                printk(KERN_INFO "[PFQ] batch_len=%d not allowed -> valid range (0,32]!\n", batch_len);
+                printk(KERN_INFO "[PFQ] batch_len=%d not allowed: valid range (0,32]!\n", batch_len);
                 return -EFAULT;
         }
 
 	if (recycle_len > PFQ_SK_BUFF_LIST_SIZE) {
-                printk(KERN_INFO "[PFQ] recycle_len=%d not allowed -> valid range (0,%d]!\n", recycle_len, PFQ_SK_BUFF_LIST_SIZE);
+                printk(KERN_INFO "[PFQ] recycle_len=%d not allowed: valid range (0,%d]!\n", recycle_len, PFQ_SK_BUFF_LIST_SIZE);
 		return -EFAULT;
 	}
 

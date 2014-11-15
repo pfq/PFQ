@@ -148,7 +148,7 @@ __pfq_group_free(int gid)
 
         g->vlan_filt = false;
 
-        pr_devel("[PFQ] group id:%d destroyed.\n", gid);
+        pr_devel("[PFQ] group id=%d destroyed.\n", gid);
 }
 
 
@@ -170,7 +170,7 @@ __pfq_join_group(int gid, int id, unsigned long class_mask, int policy)
                 __pfq_group_init(gid);
 
         if (!__pfq_group_access(gid, id, policy, true)) {
-                pr_devel("[PFQ] gid:%d is not joinable with policy %d\n", gid, policy);
+                pr_devel("[PFQ] gid=%d is not joinable with policy %d\n", gid, policy);
                 return -1;
         }
 
@@ -414,7 +414,7 @@ bool __pfq_vlan_filters_enabled(int gid)
 {
         struct pfq_group *g = pfq_get_group(gid);
         if (!g) {
-                pr_devel("[PFQ] group error: invalid group id:%d!\n", gid);
+                pr_devel("[PFQ] group error: invalid group id=%d!\n", gid);
                 return false;
         }
         return g->vlan_filt;
@@ -425,7 +425,7 @@ bool __pfq_check_group_vlan_filter(int gid, int vid)
 {
         struct pfq_group *g = pfq_get_group(gid);
         if (!g) {
-                pr_devel("[PFQ] group error: invalid group id:%d!\n", gid);
+                pr_devel("[PFQ] group error: invalid group id=%d!\n", gid);
                 return false;
         }
 
@@ -437,7 +437,7 @@ bool __pfq_toggle_group_vlan_filters(int gid, bool value)
 {
         struct pfq_group *g = pfq_get_group(gid);
         if (!g) {
-                pr_devel("[PFQ] group error: invalid group id:%d!\n", gid);
+                pr_devel("[PFQ] group error: invalid group id=%d!\n", gid);
                 return false;
         }
 
@@ -455,7 +455,7 @@ void __pfq_set_group_vlan_filter(int gid, bool value, int vid)
 {
         struct pfq_group *g = pfq_get_group(gid);
         if (!g) {
-                pr_devel("[PFQ] group error: invalid group id:%d!\n", gid);
+                pr_devel("[PFQ] group error: invalid group id=%d!\n", gid);
                 return;
         }
 
@@ -467,7 +467,7 @@ void __pfq_set_group_vlan_filter(int gid, bool value, int vid)
 int pfq_check_group(int id, int gid, const char *msg)
 {
         if (gid < 0 || gid >= Q_MAX_GROUP) {
-                pr_devel("[PFQ|%d] %s error: invalid group (gid:%d)!\n", id, msg, gid);
+                pr_devel("[PFQ|%d] %s error: invalid group (gid=%d)!\n", id, msg, gid);
                 return -EINVAL;
         }
         return 0;
@@ -484,13 +484,13 @@ int pfq_check_group_access(int id, int gid, const char *msg)
 		return err;
 
         if (!__pfq_has_joined_group(gid, id)) {
-                pr_devel("[PFQ|%d] %s error: permission denied (gid:%d)!\n", id, msg, gid);
+                pr_devel("[PFQ|%d] %s error: permission denied (gid=%d)!\n", id, msg, gid);
                 return -EPERM;
         }
 
 	g = pfq_get_group(gid);
 	if (g == NULL || g->owner != id) {
-                pr_devel("[PFQ|%d] %s: invalid owner (id:%d)!\n", id, msg, g->owner);
+                pr_devel("[PFQ|%d] %s: invalid owner (id=%d)!\n", id, msg, g->owner);
                 return -EACCES;
 	}
 	return 0;

@@ -135,7 +135,7 @@ int pfq_tx_queue_flush(struct pfq_tx_opt *to, struct net_device *dev, int cpu, i
 		if (unlikely(index >= to->size))
                 {
                         if(printk_ratelimit())
-                                printk(KERN_WARNING "[PFQ] bogus spsc index! q->size=%zu index=%d\n", to->size, index);
+                                printk(KERN_WARNING "[PFQ] bogus spsc index: size=%zu index=%d\n", to->size, index);
                         break;
                 }
 
@@ -192,7 +192,7 @@ int pfq_tx_queue_flush(struct pfq_tx_opt *to, struct net_device *dev, int cpu, i
 		if ((pkt_counter++ % 1048576) == 0)
 		{
 			cycles_t stop = get_cycles();
-			printk(KERN_INFO "[PFQ] TX cpu-cycle: %llu\n", (stop - start));
+			printk(KERN_INFO "[PFQ] TX cpu-cycle: %llu_tsc.\n", (stop - start));
 		}
 #endif
         }

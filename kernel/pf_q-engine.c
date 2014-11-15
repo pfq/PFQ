@@ -189,7 +189,7 @@ pr_devel_computation_tree(struct pfq_computation_tree const *tree)
         	pr_devel("[PFQ] computation (unspecified)\n");
         	return;
 	}
-        pr_devel("[PFQ] computation size:%zu entry_point:%p\n", tree->size, tree->entry_point);
+        pr_devel("[PFQ] computation size=%zu entry_point=%p\n", tree->size, tree->entry_point);
         for(n = 0; n < tree->size; n++)
         {
                 pr_devel_functional_node(&tree->node[n], n);
@@ -260,7 +260,7 @@ pr_devel_computation_descr(struct pfq_computation_descr const *descr)
         	pr_devel("[PFQ] computation (unspecified)\n");
         	return;
 	}
-        pr_devel("[PFQ] computation size:%zu entry_point:%zu\n", descr->size, descr->entry_point);
+        pr_devel("[PFQ] computation size=%zu entry_point=%zu\n", descr->size, descr->entry_point);
         for(n = 0; n < descr->size; n++)
         {
                 pr_devel_functional_descr(&descr->fun[n], n);
@@ -344,7 +344,7 @@ pfq_run(struct pfq_computation_tree *prg, SkBuff b)
 	total += (stop-start);
 
 	if ((nrun++ % 1048576) == 0)
-		printk(KERN_INFO "[PFQ] run: %llu\n", total/nrun);
+		printk(KERN_INFO "[PFQ] PFQ/lang run: %llu_tsc.\n", total/nrun);
 
 	return b;
 #endif
@@ -526,7 +526,7 @@ pfq_validate_computation_descr(struct pfq_computation_descr const *descr)
 				string_view_t farg = pfq_signature_arg(make_string_view(signature), i);
 
 				if (x >= descr->size) {
-					pr_devel("[PFQ] %zu: %s: invalid argument(%d): -> %zu!\n", n, signature, i, x);
+					pr_devel("[PFQ] %zu: %s: invalid argument(%d): %zu!\n", n, signature, i, x);
 					return -EPERM;
 				}
 
