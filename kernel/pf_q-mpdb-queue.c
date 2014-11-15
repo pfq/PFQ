@@ -268,7 +268,7 @@ int pfq_mpdb_shared_queue_toggle(struct pfq_sock *so, bool active)
 			atomic_long_set(&so->rx_opt.queue_hdr, (long)&queue->rx);
 			atomic_long_set(&so->tx_opt.queue_hdr, (long)&queue->tx);
 
-                        pr_devel("[PFQ|%d] queue: rx_size=%d rx_slot_size=%d tx_size=%d tx_slot_size=%d\n", so->id, queue->rx.size,
+                        pr_devel("[PFQ|%d] tx/rx queues enabled: rx_size=%d rx_slot_size=%d tx_size=%d tx_slot_size=%d\n", so->id, queue->rx.size,
                                         queue->rx.slot_size,
                                         queue->tx.size,
                                         queue->tx.slot_size);
@@ -284,6 +284,8 @@ int pfq_mpdb_shared_queue_toggle(struct pfq_sock *so, bool active)
                         msleep(Q_GRACE_PERIOD);
 
                         pfq_mpdb_shared_queue_free(so);
+
+			pr_devel("[PFQ|%d] tx/rx queues disabled.\n", so->id);
                 }
         }
 

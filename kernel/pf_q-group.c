@@ -148,7 +148,7 @@ __pfq_group_free(int gid)
 
         g->vlan_filt = false;
 
-        pr_devel("[PFQ] group id=%d destroyed.\n", gid);
+        pr_devel("[PFQ] group %d destroyed.\n", gid);
 }
 
 
@@ -414,7 +414,7 @@ bool __pfq_vlan_filters_enabled(int gid)
 {
         struct pfq_group *g = pfq_get_group(gid);
         if (!g) {
-                pr_devel("[PFQ] group error: invalid group id=%d!\n", gid);
+                pr_devel("[PFQ] group error: invalid group id %d!\n", gid);
                 return false;
         }
         return g->vlan_filt;
@@ -425,7 +425,7 @@ bool __pfq_check_group_vlan_filter(int gid, int vid)
 {
         struct pfq_group *g = pfq_get_group(gid);
         if (!g) {
-                pr_devel("[PFQ] group error: invalid group id=%d!\n", gid);
+                pr_devel("[PFQ] group error: invalid group id %d!\n", gid);
                 return false;
         }
 
@@ -437,7 +437,7 @@ bool __pfq_toggle_group_vlan_filters(int gid, bool value)
 {
         struct pfq_group *g = pfq_get_group(gid);
         if (!g) {
-                pr_devel("[PFQ] group error: invalid group id=%d!\n", gid);
+                pr_devel("[PFQ] group error: invalid group id %d!\n", gid);
                 return false;
         }
 
@@ -455,7 +455,7 @@ void __pfq_set_group_vlan_filter(int gid, bool value, int vid)
 {
         struct pfq_group *g = pfq_get_group(gid);
         if (!g) {
-                pr_devel("[PFQ] group error: invalid group id=%d!\n", gid);
+                pr_devel("[PFQ] group error: invalid group id %d!\n", gid);
                 return;
         }
 
