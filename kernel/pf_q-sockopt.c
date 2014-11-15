@@ -473,14 +473,14 @@ int pfq_setsockopt(struct socket *sock,
                 if (copy_from_user(&slots, optval, optlen))
                         return -EFAULT;
 
-                if (slots > (size_t)rx_queue_slots) {
-                        pr_devel("[PFQ|%d] invalid rx slots=%zu (max %d)\n", so->id, slots, rx_queue_slots);
+                if (slots > (size_t)max_queue_slots) {
+                        pr_devel("[PFQ|%d] invalid rx slots=%zu (max %d)\n", so->id, slots, max_queue_slots);
                         return -EPERM;
                 }
 
                 so->rx_opt.size = slots;
 
-                pr_devel("[PFQ|%d] rx_queue_slots=%zu\n", so->id, so->rx_opt.size);
+                pr_devel("[PFQ|%d] rx_queue slots=%zu\n", so->id, so->rx_opt.size);
         } break;
 
         case Q_SO_SET_TX_MAXLEN:
@@ -518,14 +518,14 @@ int pfq_setsockopt(struct socket *sock,
                         return -EINVAL;
                 }
 
-                if (slots > (size_t)tx_queue_slots) {
-                        pr_devel("[PFQ|%d] invalid tx slots=%zu (max %d)\n", so->id, slots, tx_queue_slots);
+                if (slots > (size_t)max_queue_slots) {
+                        pr_devel("[PFQ|%d] invalid tx slots=%zu (max %d)\n", so->id, slots, max_queue_slots);
                         return -EPERM;
                 }
 
                 so->tx_opt.size = slots;
 
-                pr_devel("[PFQ|%d] tx_queue_slots=%zu\n", so->id, so->tx_opt.size);
+                pr_devel("[PFQ|%d] tx_queue slots=%zu\n", so->id, so->tx_opt.size);
         } break;
 
         case Q_SO_GROUP_LEAVE:

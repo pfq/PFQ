@@ -37,8 +37,7 @@ extern int capture_incoming;
 extern int capture_outgoing;
 extern int capture_loopback;
 
-extern int tx_queue_slots;
-extern int rx_queue_slots;
+extern int max_queue_slots;
 
 extern int cap_len;
 extern int max_len;

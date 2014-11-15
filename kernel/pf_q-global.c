@@ -35,8 +35,7 @@ int direct_capture 	= 0;
 int capture_incoming 	= 1;
 int capture_outgoing 	= 0;
 
-int tx_queue_slots  	= 131072;       /* slots per queue (both rx and tx) */
-int rx_queue_slots  	= 131072;       /* slots per queue (both rx and tx) */
+int max_queue_slots  	= 262144;       /* max queue slots per queue (both rx and tx) */
 
 int cap_len      	= 1514;
 int max_len      	= 1514;

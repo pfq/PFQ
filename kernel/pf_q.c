@@ -90,8 +90,7 @@ module_param(capture_outgoing,  int, 0644);
 
 module_param(cap_len,         int, 0644);
 module_param(max_len,         int, 0644);
-module_param(rx_queue_slots,  int, 0644);
-module_param(tx_queue_slots,  int, 0644);
+module_param(max_queue_slots, int, 0644);
 
 module_param(prefetch_len,    int, 0644);
 module_param(batch_len,       int, 0644);
@@ -107,8 +106,7 @@ MODULE_PARM_DESC(capture_outgoing," Capture outgoing packets: (0 default)");
 MODULE_PARM_DESC(cap_len, " Default capture length (bytes)");
 MODULE_PARM_DESC(max_len, " Maximum transmission length (bytes)");
 
-MODULE_PARM_DESC(rx_queue_slots, " Rx Queue slots (default=131072)");
-MODULE_PARM_DESC(tx_queue_slots, " Tx Queue slots (default=131072)");
+MODULE_PARM_DESC(max_queue_slots, " Max Queue slots (default=226144)");
 
 MODULE_PARM_DESC(prefetch_len,  " Rx pre-fetch queue length");
 MODULE_PARM_DESC(batch_len,     " Tx batch queue length");
@@ -890,9 +888,9 @@ static int __init pfq_init_module(void)
         int n;
         printk(KERN_INFO "[PFQ] loading (%s)...\n", Q_VERSION);
 
-        if (tx_queue_slots & (tx_queue_slots-1)) {
+        if (max_queue_slots & (max_queue_slots-1)) {
 
-                printk(KERN_INFO "[PFQ] tx_queue_slots (%d) not a power of 2!\n", tx_queue_slots);
+                printk(KERN_INFO "[PFQ] max_queue_slots (%d) not a power of 2!\n", max_queue_slots);
         }
 
         pfq_net_proto_family_init();
