@@ -114,9 +114,9 @@ Build the software
 
 `runhaskell Build.hs install`
 
-The command will configure, build and install the PFQ framework satisfying the dependencies and the correct order of build of the various components. 
+The command will configure, build and install the PFQ framework satisfying the dependencies and the correct build order for the various components. 
 
-Alternatively, you can specify the list of components you want to build from the command line. The following command shows the list of targets available:
+Alternatively, you can specify the list of components you want to build from the command line. The following command shows the targets available:
 
 `runhaskell Build.hs show`
 
@@ -145,11 +145,11 @@ The following components are currently part of the framework:
 Notes
 -----
 
-In order to obtain the maximum performance from PFQ you have to configure your system
+For PFQ, in order to obtain the maximum performance you have to configure your system
 and design your application properly.
 
-Interrupt affinity is indeed a crucial step required for both NAPI context and user-space application to work at the best condition. 
-A good setup dramatically impacts on the performance.
+In particular, interrupt affinity is a crucial step required for both NAPI context and 
+user-space application to work at the best condition.  A good setup dramatically impacts on the performance.
 
 Multiple-queue NICs, like Intel 82599 for instance, allow to setup interrupt affinity.
 In most case the script set_irq_affinity.sh is sufficient. For more advanced setup, we suggest
@@ -159,7 +159,8 @@ In addition to this, when configuring PFQ bear in mind the following notes.
 
 * The load balancing can be enabled on Intel 82599 by means of RSS or VMDQ. Other vendors may provide different technologies.
 
-* A good choice setup is to distribute interrupts among cores. The more core you have the best performance you obtain from PFQ. We have tested it with 12 cores with great satisfaction :-) -- 14.8Mpps collected at user-space with 3 CPUs, on top of a 2.66 Ghz 6-cores Xeon processor and Intel 82599 NIC.
+* A good setup distributes interrupts among cores. In general, the more core you use the best performance you obtain. 
+  We are able to capture 14.8Mpps at user-space with a single thread and 3 hardware queues, running on top of a 2.66 Ghz 6-cores Xeon processor and Intel 82599 NIC.
 
 * For a single capturing thread, a reserved core gives it the best performance. 
 
