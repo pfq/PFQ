@@ -562,12 +562,26 @@ int pfq_setsockopt(struct socket *sock,
 
                 if (fprog.fcode.len > 0)  /* set the filter */
                 {
-                        struct sk_filter *filter = pfq_alloc_sk_filter(&fprog.fcode);
+                        struct sk_filter *filter;
+
+			if (fprog.fcode.len == 1) /* check for dummey BPF_CLASS == BPF_RET */
+			{
+                       	 	if (BPF_CLASS(fprog.fcode.filter[0].code) == BPF_RET) {
+                                	pr_devel("[PFQ|%d] fprog: BPF_RET optimized out!\n", so->id);
+                                	return 0;
+				}
+			}
+
+                        filter = pfq_alloc_sk_filter(&fprog.fcode);
                         if (filter == NULL)
                         {
                                 pr_devel("[PFQ|%d] fprog error: alloc_sk_filter for gid=%d\n", so->id, fprog.gid);
                                 return -EINVAL;
                         }
+
+			if (fprog.fcode.len == 1) {
+
+			}
 
                         __pfq_set_group_filter(fprog.gid, filter);
 
