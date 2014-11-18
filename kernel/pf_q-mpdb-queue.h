@@ -64,22 +64,31 @@ static inline size_t pfq_queue_total_mem(struct pfq_sock *so)
 static inline
 size_t pfq_mpdb_queue_len(struct pfq_sock *p)
 {
-        return MPDB_QUEUE_LEN(pfq_get_queue_hdr(p)->rx.data);
+	struct pfq_queue_hdr *q = pfq_get_queue_hdr(p);
+	if (!q)
+		return 0;
+        return MPDB_QUEUE_LEN(q->rx.data);
 }
 
 
 static inline
 int pfq_mpdb_queue_index(struct pfq_sock *p)
 {
-        return MPDB_QUEUE_INDEX(pfq_get_queue_hdr(p)->rx.data) & 1;
+	struct pfq_queue_hdr *q = pfq_get_queue_hdr(p);
+	if (!q)
+		return 0;
+        return MPDB_QUEUE_INDEX(q->rx.data) & 1;
 }
 
 
 static inline
 size_t pfq_mpdb_queue_size(struct pfq_sock *p)
 {
-        struct pfq_rx_queue_hdr *rx = & pfq_get_queue_hdr(p)->rx;
-        return rx->size * rx->slot_size;
+	struct pfq_queue_hdr *q = pfq_get_queue_hdr(p);
+	if (!q)
+		return 0;
+
+        return q->rx.size * q->rx.slot_size;
 }
 
 #endif /* _PF_Q_MPDB_QUEUE_H_ */
