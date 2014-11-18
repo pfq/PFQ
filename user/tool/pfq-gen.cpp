@@ -199,7 +199,7 @@ namespace thread
                             ip->daddr = static_cast<uint32_t>(m_gen());
                         }
 
-                        if (m_pfq[n].send_async(pfq::const_buffer(reinterpret_cast<const char *>(opt::packet), opt::len), opt::batch))
+                        if (m_pfq[n].send_async(pfq::const_buffer(reinterpret_cast<const char *>(opt::packet), opt::len), opt::batch, async_policy::tx_threaded))
                             m_sent->fetch_add(1, std::memory_order_relaxed);
                     }
                 }
@@ -216,7 +216,7 @@ namespace thread
                             ip->daddr = static_cast<uint32_t>(m_gen());
                         }
 
-                        if (m_pfq[n].send_sync(pfq::const_buffer(reinterpret_cast<const char *>(opt::packet), opt::len), opt::batch))
+                        if (m_pfq[n].send_async(pfq::const_buffer(reinterpret_cast<const char *>(opt::packet), opt::len), opt::batch, async_policy::tx_deferred))
                             m_sent->fetch_add(1, std::memory_order_relaxed);
                     }
                 }

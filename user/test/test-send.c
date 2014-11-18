@@ -38,7 +38,7 @@ void mode_2(pfq_t *q, unsigned long long num)
         unsigned long long n;
         for(n = 0; n < num;)
         {
-                if (pfq_send_sync(q, ping, sizeof(ping), 128))
+                if (pfq_send_async(q, ping, sizeof(ping), 128, Q_TX_ASYNC_DEFERRED))
 			n++;
         }
 
@@ -51,7 +51,7 @@ void mode_3(pfq_t *q, unsigned long long num)
         unsigned long long n;
         for(n = 0; n < num;)
         {
-                if (pfq_send_async(q, ping, sizeof(ping), 1))
+                if (pfq_send_async(q, ping, sizeof(ping), 1, Q_TX_ASYNC_THREADED))
 			n++;
         }
 
@@ -63,7 +63,7 @@ void mode_4(pfq_t *q, unsigned long long num)
         unsigned long long n;
         for(n = 0; n < num;)
         {
-                if (pfq_send_async(q, ping, sizeof(ping), 128))
+                if (pfq_send_async(q, ping, sizeof(ping), 128, Q_TX_ASYNC_THREADED))
 			n++;
         }
 

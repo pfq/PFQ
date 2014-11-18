@@ -3,6 +3,8 @@
 
 #include <pfq/pfq.hpp>
 
+using namespace pfq;
+
 /* Frame (98 bytes) */
 
 static const unsigned char ping[98] =
@@ -42,7 +44,7 @@ void mode_2(pfq::socket &q, int64_t num)
 {
     for(int64_t n = 0; n < num;)
     {
-        if (q.send_sync(pfq::const_buffer(reinterpret_cast<const char *>(ping), sizeof(ping)), 128))
+        if (q.send_async(pfq::const_buffer(reinterpret_cast<const char *>(ping), sizeof(ping)), 128, async_policy::tx_deferred))
             n++;
     }
 
@@ -54,7 +56,7 @@ void mode_3(pfq::socket &q, int64_t num)
 {
     for(int64_t n = 0; n < num;)
     {
-        if (q.send_async(pfq::const_buffer(reinterpret_cast<const char *>(ping), sizeof(ping))))
+        if (q.send_async(pfq::const_buffer(reinterpret_cast<const char *>(ping), sizeof(ping)), 1, async_policy::tx_threaded))
             n++;
     }
 
@@ -66,7 +68,7 @@ void mode_4(pfq::socket &q, int64_t num)
 {
     for(int64_t n = 0; n < num;)
     {
-        if (q.send_async(pfq::const_buffer(reinterpret_cast<const char *>(ping), sizeof(ping)), 128))
+        if (q.send_async(pfq::const_buffer(reinterpret_cast<const char *>(ping), sizeof(ping)), 128, async_policy::tx_threaded))
             n++;
     }
 

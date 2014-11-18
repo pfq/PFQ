@@ -62,6 +62,16 @@ namespace pfq {
         shared     = Q_POLICY_GROUP_SHARED
     };
 
+    //! async policies.
+    /*!
+     */
+
+    enum class async_policy : int
+    {
+        tx_deferred = Q_TX_ASYNC_DEFERRED,
+        tx_threaded = Q_TX_ASYNC_THREADED
+    };
+
     //! class mask.
     /*!
      * The default classes are class::default_ and class::any.
@@ -1162,34 +1172,23 @@ namespace pfq {
             return ret;
         }
 
-        //! Store the packet and possibly transmit the packets in the queue, synchronously.
-        /*!
-         * The transmission is invoked every n packets enqueued.
-         */
-
-        bool
-        send_sync(const_buffer pkt, size_t n = 128)
-        {
-            auto ret = inject(pkt);
-
-            if ((pdata_->tx_counter ++ % n) == 0)
-                tx_queue_flush();
-
-            return ret;
-        }
-
-        //! Store the packet and possibly transmit the packets in the queue, asynchronously.
+        //! Store the packet and transmit the packets in the queue, asynchronously.
         /*!
          * The transmission is invoked in the kernel thread, every n packets enqueued.
          */
 
         bool
-        send_async(const_buffer pkt, size_t n = 128)
+        send_async(const_buffer pkt, size_t n = 128, async_policy pol = async_policy::tx_deferred)
         {
             auto ret = inject(pkt);
 
-            if ((pdata_->tx_counter ++ % n) == 0)
-                wakeup_tx_thread();
+            if ((pdata_->tx_counter ++ % n) == 0) {
+
+                if (pol == async_policy::tx_deferred)
+                    wakeup_tx_thread();
+                else
+                    tx_queue_flush();
+            }
 
             return ret;
         }

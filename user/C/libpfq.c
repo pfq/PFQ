@@ -1008,24 +1008,19 @@ pfq_send(pfq_t *q, const void *ptr, size_t len)
         return rc;
 }
 
+
 int
-pfq_send_sync(pfq_t *q, const void *ptr, size_t len, size_t batch_len)
+pfq_send_async(pfq_t *q, const void *ptr, size_t len, size_t batch_len, int mode)
 {
         int rc = pfq_inject(q, ptr, len);
 
-        if ((q->tx_counter++ % batch_len) == 0)
-        	pfq_tx_queue_flush(q);
+        if ((q->tx_counter++ % batch_len) == 0) {
 
-        return rc;
-}
-
-int
-pfq_send_async(pfq_t *q, const void *ptr, size_t len, size_t batch_len)
-{
-        int rc = pfq_inject(q, ptr, len);
-
-        if ((q->tx_counter++ % batch_len) == 0)
-        	pfq_wakeup_tx_thread(q);
+		if (mode == Q_TX_ASYNC_DEFERRED)
+        		pfq_tx_queue_flush(q);
+		else /* Q_TX_ASYNC_THREADED */
+        		pfq_wakeup_tx_thread(q);
+	}
 
         return rc;
 }

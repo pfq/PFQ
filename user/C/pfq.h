@@ -481,18 +481,12 @@ extern int pfq_inject(pfq_t *q, const void *ptr, size_t len);
 
 extern int pfq_send(pfq_t *q, const void *ptr, size_t len);
 
-/*! Store the packet and possibly transmit the packets in the queue, synchronously. */
-/*!
- * The transmission is invoked every n packets enqueued.
- */
-extern int pfq_send_sync (pfq_t *q, const void *ptr, size_t len, size_t batch_len);
-
-/*! Store the packet and possibly transmit the packets in the queue, asynchronously. */
+/*! Store the packet and transmit the packets in the queue, asynchronously. */
 /*!
  * The transmission is invoked in the kernel thread, every n packets enqueued.
  */
 
-extern int pfq_send_async(pfq_t *q, const void *ptr, size_t len, size_t batch_len);
+extern int pfq_send_async(pfq_t *q, const void *ptr, size_t len, size_t batch_len, int mode);
 
 
 #endif /* _PFQ_H_ */

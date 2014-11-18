@@ -320,6 +320,11 @@ void pfq_spsc_read_commit(struct pfq_tx_queue_hdr *q)
 #define Q_SO_TX_QUEUE_FLUSH         	37
 
 
+/* async transmission */
+
+#define Q_TX_ASYNC_DEFERRED 		0
+#define Q_TX_ASYNC_THREADED		1
+
 /* general placeholders */
 
 #define Q_ANY_DEVICE         -1

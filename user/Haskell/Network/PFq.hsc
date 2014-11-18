@@ -138,7 +138,6 @@ module Network.PFq
 
         inject,
         send,
-        sendSync,
         sendAsync,
 
         getTxSlots,
@@ -246,6 +245,10 @@ newtype ClassMask = ClassMask { getClassMask :: CULong }
 newtype GroupPolicy = GroupPolicy { getGroupPolicy :: CInt }
                         deriving (Eq, Show)
 
+-- |Async policy type.
+newtype AsyncPolicy = AsyncPolicy { getAsyncPolicy :: CInt }
+                        deriving (Eq, Show)
+
 -- |Generic pfq constant.
 newtype PFqConstant = PFqConstant { getConstant :: Int }
                         deriving (Eq, Show)
@@ -258,6 +261,7 @@ newtype PFqConstant = PFqConstant { getConstant :: Int }
     , class_control       = Q_CLASS_CONTROL
     , class_any           = Q_CLASS_ANY
 }
+
 
 #{enum GroupPolicy, GroupPolicy
     , policy_undefined  = Q_POLICY_GROUP_UNDEFINED
@@ -274,6 +278,13 @@ newtype PFqConstant = PFqConstant { getConstant :: Int }
     , group_max_counters   = Q_MAX_COUNTERS
     , group_fun_descr_size = sizeof(struct pfq_functional_descr)
 }
+
+
+#{enum AsyncPolicy, AsyncPolicy
+    , tx_deferred          = Q_TX_ASYNC_DEFERRED
+    , tx_threaded          = Q_TX_ASYNC_THREADED
+}
+
 
 -- | Utility function which folds a list of ClassMask.
 combineClassMasks :: [ClassMask] -> ClassMask
@@ -999,19 +1010,6 @@ send hdl xs =
         pfq_send hdl p (fromIntegral l) >>= throwPFqIf_ hdl (== -1)
 
 
--- |Store the packet and possibly transmit the packets in the queue, synchronously.
---
--- The transmission is invoked every n packets enqueued.
-
-
-sendSync :: Ptr PFqTag
-         -> C.ByteString  -- ^ bytes of packet
-         -> Int           -- ^ length of the batch
-         -> IO ()
-sendSync hdl xs blen =
-    unsafeUseAsCStringLen xs $ \(p, l) ->
-        pfq_send_sync hdl p (fromIntegral l) (fromIntegral blen) >>= throwPFqIf_ hdl (== -1)
-
 -- |Store the packet and possibly transmit the packets in the queue, asynchronously.
 --
 -- The transmission is invoked by the kernel thread, every n packets enqueued.
@@ -1019,10 +1017,11 @@ sendSync hdl xs blen =
 sendAsync :: Ptr PFqTag
           -> C.ByteString  -- ^ bytes of packet
           -> Int           -- ^ length of the batch
+          -> AsyncPolicy
           -> IO ()
-sendAsync hdl xs blen =
+sendAsync hdl xs blen apol =
     unsafeUseAsCStringLen xs $ \(p, l) ->
-        pfq_send_async hdl p (fromIntegral l) (fromIntegral blen) >>= throwPFqIf_ hdl (== -1)
+        pfq_send_async hdl p (fromIntegral l) (fromIntegral blen) (getAsyncPolicy apol) >>= throwPFqIf_ hdl (== -1)
 
 
 -- C functions from libpfq
@@ -1097,8 +1096,7 @@ foreign import ccall unsafe pfq_tx_queue_flush      :: Ptr PFqTag -> IO CInt
 
 foreign import ccall unsafe pfq_inject              :: Ptr PFqTag -> Ptr CChar -> CSize -> IO CInt
 foreign import ccall unsafe pfq_send                :: Ptr PFqTag -> Ptr CChar -> CSize -> IO CInt
-foreign import ccall unsafe pfq_send_sync           :: Ptr PFqTag -> Ptr CChar -> CSize -> CSize -> IO CInt
-foreign import ccall unsafe pfq_send_async          :: Ptr PFqTag -> Ptr CChar -> CSize -> CSize -> IO CInt
+foreign import ccall unsafe pfq_send_async          :: Ptr PFqTag -> Ptr CChar -> CSize -> CSize -> CInt -> IO CInt
 
 -- extern int pfq_get_groups_mask(pfq_t const *q, unsigned long *_mask);
 -- extern int pfq_group_fprog(pfq_t *q, int gid, struct sock_fprog *);
