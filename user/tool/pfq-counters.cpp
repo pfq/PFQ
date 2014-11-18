@@ -36,7 +36,7 @@ using namespace pfq::lang;
 
 namespace opt
 {
-    long sleep_microseconds;
+    long timeout_ms;
     std::string function;
 
     size_t caplen = 64;
@@ -114,7 +114,7 @@ namespace thread
         {
             for(;;)
             {
-                auto many = m_pfq.read(opt::sleep_microseconds);
+                auto many = m_pfq.read(opt::timeout_ms);
 
                 m_read += many.size();
 
@@ -304,9 +304,9 @@ try
         ctx.push_back(thread::context(static_cast<int>(i), thread_binding[i]));
     }
 
-    opt::sleep_microseconds = 50000 * static_cast<long int>(ctx.size());
+    opt::timeout_ms = 50000 * static_cast<long int>(ctx.size());
 
-    std::cout << "poll timeout " << opt::sleep_microseconds << " usec" << std::endl;
+    std::cout << "poll timeout " << opt::timeout_ms << " usec" << std::endl;
 
     // create threads:
 
