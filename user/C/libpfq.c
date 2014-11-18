@@ -858,9 +858,13 @@ pfq_read(pfq_t *q, struct pfq_net_queue *nq, long int microseconds)
 	index  = MPDB_QUEUE_INDEX(data);
 
 	if( MPDB_QUEUE_LEN(data) == 0 ) {
+#ifdef PFQ_USE_POLL
 		if (pfq_poll(q, microseconds) < 0) {
-         	        return q->error = "PFQ: poll error", -1;
+        		return q->error = "PFQ: poll error", -1;
 		}
+#else
+		(void)microseconds;
+#endif
 	}
 
 	/* reset the next buffer... */

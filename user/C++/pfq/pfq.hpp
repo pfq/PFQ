@@ -915,11 +915,11 @@ namespace pfq {
                 throw pfq_error("PFQ: socket not open");
 
             struct pollfd fd = {fd_, POLLIN, 0 };
+
             struct timespec timeout = { microseconds/1000000, (microseconds%1000000) * 1000};
 
             int ret = ::ppoll(&fd, 1, microseconds < 0 ? nullptr : &timeout, nullptr);
-            if (ret < 0 &&
-            	errno != EINTR)
+            if (ret < 0 && errno != EINTR)
                throw pfq_error(errno, "PFQ: ppoll");
             return 0;
         }
@@ -944,19 +944,23 @@ namespace pfq {
             size_t q_size = pdata_->rx_slots * pdata_->rx_slot_size;
 
             if( MPDB_QUEUE_LEN(data) == 0 ) {
+#ifdef PFQ_USE_POLL
                 this->poll(microseconds);
+#else
+                (void)microseconds;
+#endif
             }
 
             // reset the next buffer...
 
             data = __sync_lock_test_and_set(&q->rx.data, (unsigned int)((index+1) << 24));
 
-            auto queue_len =  std::min(static_cast<size_t>(MPDB_QUEUE_LEN(data)), pdata_->rx_slots);
+            auto queue_len = std::min(static_cast<size_t>(MPDB_QUEUE_LEN(data)), pdata_->rx_slots);
 
             return queue(static_cast<char *>(pdata_->queue_addr) +
-						    sizeof(pfq_queue_hdr) +
-						    (index & 1) * q_size,
-                            pdata_->rx_slot_size, queue_len, index);
+						 sizeof(pfq_queue_hdr) +
+						 (index & 1) * q_size,
+                         pdata_->rx_slot_size, queue_len, index);
         }
 
         //! Return the current commit version (used internally by the memory mapped queue).
