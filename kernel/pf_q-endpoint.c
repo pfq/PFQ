@@ -47,8 +47,9 @@ size_t copy_to_user_skbs(struct pfq_rx_opt *ro, struct gc_queue_buff *queue, uns
                 sent = pfq_mpdb_enqueue_batch(ro, queue, mask, len, gid);
 
         	__sparse_add(&ro->stats.recv, sent, cpu);
-        	if (len > sent)
-			__sparse_add(&ro->stats.lost, len - sent, cpu);
+        	if (len > sent) {
+			__sparse_add(&ro->stats.drop, len - sent, cpu);
+		}
 
 		return sent;
         }
