@@ -304,7 +304,7 @@ try
         ctx.push_back(thread::context(static_cast<int>(i), thread_binding[i]));
     }
 
-    opt::timeout_ms = 50000 * static_cast<long int>(ctx.size());
+    opt::timeout_ms = 1000000;
 
     std::cout << "poll timeout " << opt::timeout_ms << " usec" << std::endl;
 
