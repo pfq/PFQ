@@ -40,6 +40,7 @@
 #include <errno.h>
 #include <signal.h>
 #include <ctype.h>
+#include <sched.h>
 
 #include <poll.h>
 
@@ -754,11 +755,11 @@ pfq_poll(pfq_t *q, long int microseconds /* = -1 -> infinite */)
 	}
 
 	struct pollfd fd = {q->fd, POLLIN, 0 };
-	struct timespec timeout = { microseconds/1000000, (microseconds%1000000) * 1000};
+
+	struct timespec timeout = { microseconds/1000000, (microseconds%1000000) * 1000 };
 
 	int ret = ppoll(&fd, 1, microseconds < 0 ? NULL : &timeout, NULL);
-	if (ret < 0 &&
-	    	errno != EINTR) {
+	if (ret < 0 && errno != EINTR) {
 	    return q->error = "PFQ: ppoll error", -1;
 	}
 	return q->error = NULL, 0;
@@ -853,9 +854,9 @@ pfq_read(pfq_t *q, struct pfq_net_queue *nq, long int microseconds)
          	return q->error = "PFQ: read on pfq socket not enabled", -1;
 	}
 
-	qd = (struct pfq_queue_hdr *)(q->queue_addr);
-	data   = qd->rx.data;
-	index  = MPDB_QUEUE_INDEX(data);
+	qd    = (struct pfq_queue_hdr *)(q->queue_addr);
+	data  = qd->rx.data;
+	index = MPDB_QUEUE_INDEX(data);
 
 	if( MPDB_QUEUE_LEN(data) == 0 ) {
 #ifdef PFQ_USE_POLL

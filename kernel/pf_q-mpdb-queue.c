@@ -161,9 +161,8 @@ size_t pfq_mpdb_enqueue_batch(struct pfq_rx_opt *ro,
 
 		hdr->commit = (uint8_t)q_index;
 
-		if ((slot_index & 16383) == 0 &&
-		    (slot_index >= (ro->size >> 1)) &&
-		    waitqueue_active(&ro->waitqueue))
+		if ((slot_index & 8191) == 0 &&
+				waitqueue_active(&ro->waitqueue))
 		        wake_up_interruptible(&ro->waitqueue);
 
 		sent++;
