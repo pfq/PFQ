@@ -42,7 +42,6 @@ extern int max_queue_slots;
 extern int cap_len;
 extern int max_len;
 
-extern int prefetch_len;
 extern int batch_len;
 
 extern int vl_untag;

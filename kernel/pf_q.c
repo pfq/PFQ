@@ -92,7 +92,6 @@ module_param(cap_len,         int, 0644);
 module_param(max_len,         int, 0644);
 module_param(max_queue_slots, int, 0644);
 
-module_param(prefetch_len,    int, 0644);
 module_param(batch_len,       int, 0644);
 
 module_param(recycle_len,     int, 0644);
@@ -108,8 +107,7 @@ MODULE_PARM_DESC(max_len, " Maximum transmission length (bytes)");
 
 MODULE_PARM_DESC(max_queue_slots, " Max Queue slots (default=226144)");
 
-MODULE_PARM_DESC(prefetch_len,  " Rx pre-fetch queue length");
-MODULE_PARM_DESC(batch_len,     " Tx batch queue length");
+MODULE_PARM_DESC(batch_len,     " Batch queue length");
 
 #ifdef PFQ_USE_SKB_RECYCLE
 #pragma message "[PFQ] *** using skb recycle ***"
@@ -270,9 +268,9 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 
         PFQ_CB(buff.skb)->direct = direct;
 
-	__sparse_add(&global_stats.recv, prefetch_len, cpu);
+	__sparse_add(&global_stats.recv, batch_len, cpu);
 
-        if (gc_size(&local->gc) < prefetch_len) {
+        if (gc_size(&local->gc) < batch_len) {
         	put_cpu();
                 return 0;
 	}
@@ -321,7 +319,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 			unsigned long sock_mask = 0;
 			struct pfq_computation_tree *prg;
 
-			if (n == prefetch_len)
+			if (n == batch_len)
 				break;
 
 			/* skip this packet for this group */
@@ -513,7 +511,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 	stop = get_cycles();
 
 	if (printk_ratelimit())
-		printk(KERN_INFO "[PFQ] RX profile: %llu_tsc.\n", (stop-start)/prefetch_len);
+		printk(KERN_INFO "[PFQ] RX profile: %llu_tsc.\n", (stop-start)/batch_len);
 #endif
         return 0;
 }
@@ -686,7 +684,7 @@ pfq_release(struct socket *sock)
 
         down(&sock_sem);
 
-        /* purge both prefetch and recycle queues if no socket is open */
+        /* purge both batch and recycle queues if no socket is open */
 
         if (pfq_get_sock_count() == 0) {
 
@@ -895,12 +893,7 @@ static int __init pfq_init_module(void)
         pfq_proto_ops_init();
         pfq_proto_init();
 
-        if (prefetch_len <= 0 || prefetch_len > 32) {
-                printk(KERN_INFO "[PFQ] prefetch_len=%d not allowed: valid range (0,32]!\n", prefetch_len);
-                return -EFAULT;
-        }
-
-	if (batch_len <= 0 || batch_len > 32) {
+        if (batch_len <= 0 || batch_len > 32) {
                 printk(KERN_INFO "[PFQ] batch_len=%d not allowed: valid range (0,32]!\n", batch_len);
                 return -EFAULT;
         }
