@@ -935,7 +935,7 @@ pfq_bind_tx(pfq_t *q, const char *dev, int queue)
 
         struct pfq_binding b = { 0, index, queue };
 
-        if (setsockopt(q->fd, PF_Q, Q_SO_TX_THREAD_BIND, &b, sizeof(b)) == -1)
+        if (setsockopt(q->fd, PF_Q, Q_SO_TX_BIND, &b, sizeof(b)) == -1)
 		return q->error = "PFQ: TX bind error", -1;
 
 	return q->error = NULL, 0;

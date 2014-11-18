@@ -1145,7 +1145,7 @@ namespace pfq {
 
             struct pfq_binding b = { 0, index, queue };
 
-            if (::setsockopt(fd_, PF_Q, Q_SO_TX_THREAD_BIND, &b, sizeof(b)) == -1)
+            if (::setsockopt(fd_, PF_Q, Q_SO_TX_BIND, &b, sizeof(b)) == -1)
                 throw pfq_error(errno, "PFQ: TX bind error");
         }
 

@@ -313,7 +313,7 @@ void pfq_spsc_read_commit(struct pfq_tx_queue_hdr *q)
 #define Q_SO_GET_GROUP_STATS        	31
 #define Q_SO_GET_GROUP_COUNTERS     	32
 
-#define Q_SO_TX_THREAD_BIND         	33
+#define Q_SO_TX_BIND         		33
 #define Q_SO_TX_THREAD_START        	34
 #define Q_SO_TX_THREAD_STOP         	35
 #define Q_SO_TX_THREAD_WAKEUP       	36

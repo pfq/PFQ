@@ -655,7 +655,7 @@ int pfq_setsockopt(struct socket *sock,
                 pr_devel("[PFQ|%d] vlan_set filter vid %d for gid=%d\n", so->id, filt.vid, filt.gid);
         } break;
 
-        case Q_SO_TX_THREAD_BIND:
+        case Q_SO_TX_BIND:
         {
                 struct pfq_binding info;
 
