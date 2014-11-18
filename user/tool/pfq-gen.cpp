@@ -223,17 +223,17 @@ namespace thread
             }
         }
 
-        pfq_stats
+        std::pair<pfq_stats, uint64_t>
         stats() const
         {
             pfq_stats ret = {0,0,0,0,0,0,0};
 
             for(auto & q : m_pfq)
             {
-                ret +=  q.stats();
+                ret += q.stats();
             }
 
-            return ret;
+            return std::make_pair(ret, m_sent->load(std::memory_order_relaxed));
         }
 
     private:
@@ -351,6 +351,7 @@ try
     });
 
     pfq_stats cur, prec = {0,0,0,0,0,0,0};
+    uint64_t usr, usr_;
 
     std::cout << "------------ gen started ------------\n";
 
@@ -361,18 +362,26 @@ try
         std::this_thread::sleep_for(std::chrono::seconds(1));
 
         cur = {0,0,0,0,0,0,0};
+        usr = 0;
+
         std::for_each(ctx.begin(), ctx.end(), [&](const thread::context &c)
         {
-            cur += c.stats();
+            auto p = c.stats();
+
+            cur += p.first;
+            usr += p.second;
         });
 
-        auto end = std::chrono::system_clock::now();
+        auto end   = std::chrono::system_clock::now();
         auto delta = std::chrono::duration_cast<std::chrono::microseconds>(end-begin).count();
 
-        std::cout << "stats: { " << cur << " } -> sent: " << vt100::BOLD << (static_cast<int64_t>(cur.sent-prec.sent)*1000000)/delta << vt100::RESET << " pkt/sec - "
+        std::cout << "stats: { " << cur << " } -> user: "
+                  << vt100::BOLD << (static_cast<int64_t>(usr-usr_)*1000000)/delta << vt100::RESET << " - "
+                  << "sent: " << vt100::BOLD << (static_cast<int64_t>(cur.sent-prec.sent)*1000000)/delta << vt100::RESET << " pkt/sec - "
                   << "disc: " << vt100::BOLD << (static_cast<int64_t>(cur.disc-prec.disc)*1000000)/delta << vt100::RESET << " pkt/sec" << std::endl;
 
         prec = cur, begin = end;
+        usr_ = usr;
     }
 
 }
