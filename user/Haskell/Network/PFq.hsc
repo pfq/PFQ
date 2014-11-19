@@ -83,6 +83,7 @@ module Network.PFq
         open',
         openDefault,
         openNoGroup,
+        openNoGroup',
         openGroup,
         close,
 
@@ -440,6 +441,20 @@ openNoGroup :: Int  -- ^ caplen
             -> IO (ForeignPtr PFqTag)
 openNoGroup caplen slots =
         pfq_open_nogroup (fromIntegral caplen) (fromIntegral slots) >>=
+            throwPFqIf nullPtr (== nullPtr) >>= \ptr ->
+                C.newForeignPtr ptr (void $ pfq_close ptr)
+
+-- |Open a socket. No group is joined or created.
+--
+-- Groups can later be joined by means of the 'joinGroup' function.
+
+openNoGroup' :: Int  -- ^ caplen
+             -> Int  -- ^ number of rx slots
+             -> Int  -- ^ maxlen
+             -> Int  -- ^ number of tx slots
+             -> IO (ForeignPtr PFqTag)
+openNoGroup' caplen rx_slots maxlen tx_slots =
+        pfq_open_nogroup_ (fromIntegral caplen) (fromIntegral rx_slots) (fromIntegral maxlen) (fromIntegral tx_slots) >>=
             throwPFqIf nullPtr (== nullPtr) >>= \ptr ->
                 C.newForeignPtr ptr (void $ pfq_close ptr)
 
@@ -1031,6 +1046,7 @@ foreign import ccall unsafe pfq_open_default        :: IO (Ptr PFqTag)
 foreign import ccall unsafe pfq_open                :: CSize -> CSize -> IO (Ptr PFqTag)
 foreign import ccall unsafe pfq_open_               :: CSize -> CSize -> CSize -> CSize -> IO (Ptr PFqTag)
 foreign import ccall unsafe pfq_open_nogroup        :: CSize -> CSize -> IO (Ptr PFqTag)
+foreign import ccall unsafe pfq_open_nogroup_       :: CSize -> CSize -> CSize -> CSize -> IO (Ptr PFqTag)
 foreign import ccall unsafe pfq_open_group          :: CULong -> CInt  -> CSize -> CSize -> CSize -> CSize -> IO (Ptr PFqTag)
 
 foreign import ccall unsafe pfq_close               :: Ptr PFqTag -> IO CInt

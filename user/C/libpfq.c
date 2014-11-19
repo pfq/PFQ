@@ -176,7 +176,14 @@ pfq_open_(size_t caplen, size_t rx_slots, size_t maxlen, size_t tx_slots)
 pfq_t *
 pfq_open_nogroup(size_t caplen, size_t slots)
 {
-	return pfq_open_group(Q_CLASS_DEFAULT, Q_POLICY_GROUP_UNDEFINED, caplen, slots, 64, 1);
+	return pfq_open_group(Q_CLASS_DEFAULT, Q_POLICY_GROUP_UNDEFINED, caplen, slots, caplen, slots);
+}
+
+
+pfq_t *
+pfq_open_nogroup_(size_t caplen, size_t rx_slots, size_t maxlen, size_t tx_slots)
+{
+	return pfq_open_group(Q_CLASS_DEFAULT, Q_POLICY_GROUP_UNDEFINED, caplen, rx_slots, maxlen, tx_slots);
 }
 
 

@@ -183,6 +183,14 @@ extern pfq_t *pfq_open_(size_t caplen, size_t rx_slots, size_t maxlen, size_t tx
 extern pfq_t* pfq_open_nogroup(size_t caplen, size_t slots);
 
 
+/*! Open the socket; no group is joined or created. */
+/*!
+ * Groups can be later joined by means of the join function.
+ */
+
+extern pfq_t* pfq_open_nogroup_(size_t caplen, size_t rx_slots, size_t maxlen, size_t tx_slots);
+
+
 /*! Open the socket and create a new group with the specified class and policy. */
 /*!
  * All the possible parameters are specifiable.
