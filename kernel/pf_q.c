@@ -117,7 +117,7 @@ MODULE_PARM_DESC(recycle_len,   " Recycle skb list (default=4096)");
 MODULE_PARM_DESC(vl_untag,      " Enable vlan untagging (default=0)");
 
 
-#ifdef DEBUG
+#ifdef PFQ_DEBUG
 #pragma message "[PFQ] *** DEBUG mode ***"
 #endif
 
