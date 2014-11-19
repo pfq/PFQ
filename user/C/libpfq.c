@@ -750,13 +750,17 @@ pfq_leave_group(pfq_t *q, int gid)
 int
 pfq_poll(pfq_t *q, long int microseconds /* = -1 -> infinite */)
 {
+	struct timespec timeout;
+	struct pollfd fd = {q->fd, POLLIN, 0 };
+
 	if (q->fd == -1) {
 		return q->error = "PFQ: socket not open", -1;
 	}
 
-	struct pollfd fd = {q->fd, POLLIN, 0 };
-
-	struct timespec timeout = { microseconds/1000000, (microseconds%1000000) * 1000 };
+	if (microseconds >= 0) {
+		timeout.tv_sec  = microseconds/1000000;
+		timeout.tv_nsec = (microseconds%1000000) * 1000;
+	}
 
 	int ret = ppoll(&fd, 1, microseconds < 0 ? NULL : &timeout, NULL);
 	if (ret < 0 && errno != EINTR) {

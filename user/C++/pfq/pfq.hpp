@@ -921,16 +921,21 @@ namespace pfq {
         int
         poll(long int microseconds = -1 /* infinite */)
         {
+            struct timespec timeout;
+            struct pollfd fd = {fd_, POLLIN, 0 };
+
             if (fd_ == -1)
                 throw pfq_error("PFQ: socket not open");
 
-            struct pollfd fd = {fd_, POLLIN, 0 };
-
-            struct timespec timeout = { microseconds/1000000, (microseconds%1000000) * 1000};
+            if (microseconds >= 0) {
+                timeout.tv_sec  = microseconds / 1000000;
+                timeout.tv_nsec = (microseconds % 1000000) * 1000;
+            }
 
             int ret = ::ppoll(&fd, 1, microseconds < 0 ? nullptr : &timeout, nullptr);
             if (ret < 0 && errno != EINTR)
                throw pfq_error(errno, "PFQ: ppoll");
+
             return 0;
         }
 
