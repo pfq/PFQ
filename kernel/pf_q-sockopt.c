@@ -514,12 +514,12 @@ int pfq_setsockopt(struct socket *sock,
 
                 if (slots & (slots-1))
                 {
-                        pr_devel("[PFQ|%d] tx slots must be a power of two.\n", so->id);
+                        pr_devel("[PFQ|%d] TX slots must be a power of two.\n", so->id);
                         return -EINVAL;
                 }
 
                 if (slots > (size_t)max_queue_slots) {
-                        pr_devel("[PFQ|%d] invalid tx slots=%zu (max %d)\n", so->id, slots, max_queue_slots);
+                        pr_devel("[PFQ|%d] invalid TX slots=%zu (max %d)\n", so->id, slots, max_queue_slots);
                         return -EPERM;
                 }
 
@@ -697,12 +697,12 @@ int pfq_setsockopt(struct socket *sock,
                 }
                 if (so->tx_opt.if_index == -1)
                 {
-                        pr_devel("[PFQ|%d] socket TX not bound to any device!\n", so->id);
+                        pr_devel("[PFQ|%d] TX thread: socket not bound to any device!\n", so->id);
                         return -EPERM;
                 }
                 if (pfq_get_tx_queue_hdr(&so->tx_opt) == NULL)
                 {
-                        pr_devel("[PFQ|%d] socket not enabled!\n", so->id);
+                        pr_devel("[PFQ|%d] TX thread: socket not enabled!\n", so->id);
                         return -EPERM;
                 }
 
@@ -714,7 +714,7 @@ int pfq_setsockopt(struct socket *sock,
 
                 if (cpu < -1 || (cpu > -1  && !cpu_online(cpu)))
                 {
-                        pr_devel("[PFQ|%d] invalid cpu (%d)!\n", so->id, cpu);
+                        pr_devel("[PFQ|%d] TX thread: invalid cpu (%d)!\n", so->id, cpu);
                         return -EPERM;
                 }
 
@@ -750,7 +750,7 @@ int pfq_setsockopt(struct socket *sock,
                 kthread_stop(so->tx_opt.thread);
                 so->tx_opt.thread = NULL;
 
-                pr_devel("[PFQ|%d] stop TX thread: done.\n", so->id);
+                pr_devel("[PFQ|%d] TX thread stopped.\n", so->id);
 
         } break;
 
@@ -758,7 +758,7 @@ int pfq_setsockopt(struct socket *sock,
         {
                 if (so->tx_opt.if_index == -1)
                 {
-                        pr_devel("[PFQ|%d] socket TX not bound to any device!\n", so->id);
+                        pr_devel("[PFQ|%d] TX socket not bound to any device!\n", so->id);
                         return -EPERM;
                 }
                 if (!so->tx_opt.thread)
@@ -776,26 +776,26 @@ int pfq_setsockopt(struct socket *sock,
 
                 if (so->tx_opt.if_index == -1)
                 {
-                        pr_devel("[PFQ|%d] socket TX not bound to any device!\n", so->id);
+                        pr_devel("[PFQ|%d] TX queue flush: socket not bound to any device!\n", so->id);
                         return -EPERM;
                 }
 
                 if (so->tx_opt.thread && so->tx_opt.thread->state == TASK_RUNNING)
                 {
-                        pr_devel("[PFQ|%d] TX thread is running!\n", so->id);
+                        pr_devel("[PFQ|%d] TX queue flush: thread is running!\n", so->id);
                         return -EPERM;
                 }
 
                 if (pfq_get_tx_queue_hdr(&so->tx_opt) == NULL)
                 {
-                        pr_devel("[PFQ|%d] socket not enabled!\n", so->id);
+                        pr_devel("[PFQ|%d] TX queue flush: socket not enabled!\n", so->id);
                         return -EPERM;
                 }
 
                 dev = dev_get_by_index(sock_net(&so->sk), so->tx_opt.if_index);
                 if (!dev)
                 {
-                        pr_devel("[PFQ|%d] No such device (if_index = %d)\n", so->id, so->tx_opt.if_index);
+                        pr_devel("[PFQ|%d] TX queue flush: No such device (if_index = %d)\n", so->id, so->tx_opt.if_index);
                         return -EPERM;
                 }
 
