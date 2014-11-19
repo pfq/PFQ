@@ -95,21 +95,21 @@ static inline bool pfq_skb_is_parkable(const struct sk_buff *skb)
 static inline bool pfq_skb_is_recycleable(const struct sk_buff *skb, int skb_size)
 {
     	if (irqs_disabled()) {
-#ifdef PFQ_USE_SKB_RECYCLE_STAT
+#ifdef PFQ_USE_EXTENDED_PROC
                 sparse_inc(&memory_stats.err_intdis);
 #endif
     		return false;
 	}
 
     	if (skb_shared(skb)) {
-#ifdef PFQ_USE_SKB_RECYCLE_STAT
+#ifdef PFQ_USE_EXTENDED_PROC
                 sparse_inc(&memory_stats.err_shared);
 #endif
     	    	return false;
 	}
 
 	if(skb_cloned(skb)) {
-#ifdef PFQ_USE_SKB_RECYCLE_STAT
+#ifdef PFQ_USE_EXTENDED_PROC
                 sparse_inc(&memory_stats.err_cloned);
 #endif
     	    	return false;
@@ -118,7 +118,7 @@ static inline bool pfq_skb_is_recycleable(const struct sk_buff *skb, int skb_siz
     	skb_size = SKB_DATA_ALIGN(skb_size + NET_SKB_PAD);
 
     	if (pfq_skb_end_offset(skb) < skb_size) {
-#ifdef PFQ_USE_SKB_RECYCLE_STAT
+#ifdef PFQ_USE_EXTENDED_PROC
                 sparse_inc(&memory_stats.err_memory);
 #endif
     	    	return false;
@@ -139,7 +139,7 @@ void pfq_kfree_skb_recycle(struct sk_buff *skb, struct pfq_sk_buff_list *list)
                 {
                         if (likely(pfq_sk_buff_queue_head(list, skb)))
 			{
-#ifdef PFQ_USE_SKB_RECYCLE_STAT
+#ifdef PFQ_USE_EXTENDED_PROC
                         	sparse_inc(&memory_stats.rc_free);
 #endif
                         	return;
@@ -148,7 +148,7 @@ void pfq_kfree_skb_recycle(struct sk_buff *skb, struct pfq_sk_buff_list *list)
         }
 #endif
 
-#ifdef PFQ_USE_SKB_RECYCLE_STAT
+#ifdef PFQ_USE_EXTENDED_PROC
         sparse_inc(&memory_stats.os_free);
 #endif
         consume_skb(skb);
@@ -244,14 +244,14 @@ struct sk_buff * ____pfq_alloc_skb_recycle(unsigned int size, gfp_t priority, in
                         if (pfq_skb_is_recycleable(skb, size))
                         {
 
-#ifdef PFQ_USE_SKB_RECYCLE_STAT
+#ifdef PFQ_USE_EXTENDED_PROC
                                         sparse_inc(&memory_stats.rc_alloc);
 #endif
 					pfq_sk_buff_dequeue_tail(recycle_list);
                                         return pfq_skb_recycle(skb);
                         }
                 }
-#ifdef PFQ_USE_SKB_RECYCLE_STAT
+#ifdef PFQ_USE_EXTENDED_PROC
 		else {
                 	sparse_inc(&memory_stats.rc_miss);
 		}
@@ -259,7 +259,7 @@ struct sk_buff * ____pfq_alloc_skb_recycle(unsigned int size, gfp_t priority, in
         }
 #endif
 
-#ifdef PFQ_USE_SKB_RECYCLE_STAT
+#ifdef PFQ_USE_EXTENDED_PROC
         sparse_inc(&memory_stats.os_alloc);
 #endif
         return __alloc_skb(size, priority, fclone, node);
@@ -315,7 +315,7 @@ int pfq_skb_recycle_purge(void)
                 pfq_sk_buff_list_free(&local->tx_recycle_list);
         }
 
-#ifdef PFQ_USE_SKB_RECYCLE_STAT
+#ifdef PFQ_USE_EXTENDED_PROC
         sparse_add(&memory_stats.os_free, total);
 #endif
         return total;
@@ -333,7 +333,7 @@ struct sk_buff * pfq_alloc_skb(unsigned int size, gfp_t priority)
                 return ____pfq_alloc_skb_recycle(size, priority, 0, NUMA_NO_NODE, &this_cpu->rx_recycle_list);
         }
 
-#ifdef PFQ_USE_SKB_RECYCLE_STAT
+#ifdef PFQ_USE_EXTENDED_PROC
         sparse_inc(&memory_stats.os_alloc);
 #endif
 #endif
@@ -352,7 +352,7 @@ struct sk_buff * pfq_tx_alloc_skb(unsigned int size, gfp_t priority, int node)
                 return ____pfq_alloc_skb_recycle(size, priority, 0, node, &this_cpu->tx_recycle_list);
         }
 
-#ifdef PFQ_USE_SKB_RECYCLE_STAT
+#ifdef PFQ_USE_EXTENDED_PROC
         sparse_inc(&memory_stats.os_alloc);
 #endif
 #endif

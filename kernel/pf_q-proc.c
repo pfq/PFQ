@@ -49,7 +49,7 @@ static const char proc_computations[] = "computations";
 static const char proc_groups[]       = "groups";
 static const char proc_stats[]        = "stats";
 
-#ifdef PFQ_USE_SKB_RECYCLE_STAT
+#ifdef PFQ_USE_EXTENDED_PROC
 static const char proc_memory[]       = "memory";
 #endif
 
@@ -157,7 +157,7 @@ static int pfq_proc_stats(struct seq_file *m, void *v)
 }
 
 
-#ifdef PFQ_USE_SKB_RECYCLE_STAT
+#ifdef PFQ_USE_EXTENDED_PROC
 
 static int pfq_proc_memory(struct seq_file *m, void *v)
 {
@@ -259,7 +259,7 @@ int pfq_proc_init(void)
 	proc_create(proc_computations, 	0644, pfq_proc_dir, &pfq_proc_comp_fops);
 	proc_create(proc_groups,       	0644, pfq_proc_dir, &pfq_proc_groups_fops);
 	proc_create(proc_stats,		0644, pfq_proc_dir, &pfq_proc_stats_fops);
-#ifdef PFQ_USE_SKB_RECYCLE_STAT
+#ifdef PFQ_USE_EXTENDED_PROC
 	proc_create(proc_memory,	0644, pfq_proc_dir, &pfq_proc_memory_fops);
 #endif
 
@@ -272,7 +272,7 @@ int pfq_proc_fini(void)
 	remove_proc_entry(proc_computations, pfq_proc_dir);
 	remove_proc_entry(proc_groups, 	     pfq_proc_dir);
 	remove_proc_entry(proc_stats, 	     pfq_proc_dir);
-#ifdef PFQ_USE_SKB_RECYCLE_STAT
+#ifdef PFQ_USE_EXTENDED_PROC
 	remove_proc_entry(proc_memory, 	     pfq_proc_dir);
 #endif
 	remove_proc_entry("pfq", init_net.proc_net);

@@ -109,14 +109,15 @@ MODULE_PARM_DESC(max_queue_slots, " Max Queue slots (default=226144)");
 
 MODULE_PARM_DESC(batch_len,     " Batch queue length");
 
+MODULE_PARM_DESC(vl_untag,      " Enable vlan untagging (default=0)");
+
 #ifdef PFQ_USE_SKB_RECYCLE
 #pragma message "[PFQ] *** using skb recycle ***"
 MODULE_PARM_DESC(recycle_len,   " Recycle skb list (default=4096)");
 #endif
-
-MODULE_PARM_DESC(vl_untag,      " Enable vlan untagging (default=0)");
-
-
+#ifdef PFQ_USE_EXTENDED_PROC
+#pragma message "[PFQ] *** using extended proc ***"
+#endif
 #ifdef PFQ_DEBUG
 #pragma message "[PFQ] *** DEBUG mode ***"
 #endif
