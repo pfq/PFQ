@@ -79,10 +79,10 @@ size_t pfq_mpdb_enqueue_batch(struct pfq_rx_opt *ro,
 
 	data = atomic_read((atomic_t *)&rx_queue->data);
 
-        if (unlikely(MPDB_QUEUE_LEN(data) > ro->size))
+        if (MPDB_QUEUE_LEN(data) > ro->size)
 		return 0;
 
-	data = atomic_add_return(burst_len, (atomic_t *)&rx_queue->data);
+	data 	  = atomic_add_return(burst_len, (atomic_t *)&rx_queue->data);
 
 	q_len     = MPDB_QUEUE_LEN(data) - burst_len;
 	q_index   = MPDB_QUEUE_INDEX(data);
@@ -102,7 +102,7 @@ size_t pfq_mpdb_enqueue_batch(struct pfq_rx_opt *ro,
 		hdr = (struct pfq_pkt_hdr *)this_slot;
 		pkt = (char *)(hdr+1);
 
-		if (unlikely(slot_index > ro->size)) {
+		if (slot_index > ro->size) {
 
 			if (waitqueue_active(&ro->waitqueue)) {
 #ifdef PFQ_USE_EXTENDED_PROC
@@ -116,23 +116,16 @@ size_t pfq_mpdb_enqueue_batch(struct pfq_rx_opt *ro,
 
 		/* copy bytes of packet */
 
-		if (likely(bytes)) {
-
-			/* packets might still come from a regular sniffer */
-
-			if (
 #ifdef PFQ_USE_SKB_LINEARIZE
-			   	unlikely(skb_is_nonlinear(skb))
+		if (unlikely(skb_is_nonlinear(skb)))
 #else
-		           	skb_is_nonlinear(skb)
+		if (skb_is_nonlinear(skb))
 #endif
-			   ) {
-				if (skb_copy_bits(skb, 0, pkt, bytes) != 0) {
-
-					printk(KERN_WARNING "[PFQ] BUG! skb_copy_bits failed (bytes=%u, skb_len=%d mac_len=%d)!\n",
+		{
+			if (skb_copy_bits(skb, 0, pkt, bytes) != 0) {
+				printk(KERN_WARNING "[PFQ] BUG! skb_copy_bits failed (bytes=%u, skb_len=%d mac_len=%d)!\n",
 							    bytes, skb->len, skb->mac_len);
-					return 0;
-				}
+				return 0;
 			}
 			else
 				pfq_memcpy(pkt, skb->data, bytes);
