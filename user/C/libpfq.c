@@ -169,7 +169,7 @@ pfq_open(size_t length, size_t slots)
 pfq_t *
 pfq_open_(size_t caplen, size_t rx_slots, size_t maxlen, size_t tx_slots)
 {
-	return pfq_open_group(Q_CLASS_DEFAULT, Q_POLICY_GROUP_UNDEFINED, caplen, rx_slots, maxlen, tx_slots);
+	return pfq_open_group(Q_CLASS_DEFAULT, Q_POLICY_GROUP_PRIVATE, caplen, rx_slots, maxlen, tx_slots);
 }
 
 
