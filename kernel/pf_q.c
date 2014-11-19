@@ -757,6 +757,10 @@ pfq_poll(struct file *file, struct socket *sock, poll_table * wait)
         struct pfq_sock *so = pfq_sk(sk);
         unsigned int mask = 0;
 
+#ifdef PFQ_USE_EXTENDED_PROC
+	sparse_inc(&global_stats.poll);
+#endif
+
 	poll_wait(file, &so->rx_opt.waitqueue, wait);
 
         if(!pfq_get_rx_queue_hdr(&so->rx_opt))

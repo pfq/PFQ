@@ -104,8 +104,12 @@ size_t pfq_mpdb_enqueue_batch(struct pfq_rx_opt *ro,
 
 		if (unlikely(slot_index > ro->size)) {
 
-			if (waitqueue_active(&ro->waitqueue))
+			if (waitqueue_active(&ro->waitqueue)) {
+#ifdef PFQ_USE_EXTENDED_PROC
+ 				sparse_inc(&global_stats.wake);
+#endif
 				wake_up_interruptible(&ro->waitqueue);
+			}
 
 			return sent;
 		}
@@ -162,8 +166,12 @@ size_t pfq_mpdb_enqueue_batch(struct pfq_rx_opt *ro,
 		hdr->commit = (uint8_t)q_index;
 
 		if ((slot_index & 8191) == 0 &&
-				waitqueue_active(&ro->waitqueue))
+				waitqueue_active(&ro->waitqueue)) {
+#ifdef PFQ_USE_EXTENDED_PROC
+ 			sparse_inc(&global_stats.wake);
+#endif
 		        wake_up_interruptible(&ro->waitqueue);
+		}
 
 		sent++;
 
