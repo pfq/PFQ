@@ -1185,19 +1185,24 @@ namespace pfq {
          */
 
         bool
-        send_async(const_buffer pkt, size_t n = 128, async_policy pol = async_policy::tx_deferred)
+        send_async(const_buffer pkt, size_t batch_len = 128, async_policy pol = async_policy::tx_deferred)
         {
-            auto ret = inject(pkt);
+            auto rc = inject(pkt);
 
-            if ((pdata_->tx_counter ++ % n) == 0) {
+            pdata_->tx_counter++;
+
+	        bool do_flush = rc ? (pdata_->tx_counter % batch_len) == 0
+		                       : (pdata_->tx_counter & 8191) == 0;
+
+            if (do_flush) {
 
                 if (pol == async_policy::tx_deferred)
-                    wakeup_tx_thread();
-                else
                     tx_queue_flush();
+                else
+                    wakeup_tx_thread();
             }
 
-            return ret;
+            return rc;
         }
 
         //! Schedule the packet for transmission.

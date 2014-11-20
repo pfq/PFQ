@@ -1035,11 +1035,18 @@ int
 pfq_send_async(pfq_t *q, const void *ptr, size_t len, size_t batch_len, int mode)
 {
         int rc = pfq_inject(q, ptr, len);
+	int do_flush;
 
-        if ((q->tx_counter++ % batch_len) == 0) {
+	q->tx_counter++;
+
+	do_flush = rc > 0 ? (q->tx_counter % batch_len) == 0
+		          : (q->tx_counter & 8191) == 0;
+
+	if (do_flush) {
 
 		if (mode == Q_TX_ASYNC_DEFERRED)
         		pfq_tx_queue_flush(q);
+
 		else /* Q_TX_ASYNC_THREADED */
         		pfq_wakeup_tx_thread(q);
 	}
