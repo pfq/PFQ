@@ -303,8 +303,12 @@ pfq_enable(pfq_t *q)
 
 	q->queue_tot_mem = tot_mem;
 
+	if (q->queue_addr) {
+		return q->error = "PFQ: queue already enabled", -1;
+	}
+
 	if ((q->queue_addr = mmap(NULL, tot_mem, PROT_READ|PROT_WRITE, MAP_SHARED, q->fd, 0)) == MAP_FAILED) {
-		return q->error = "PFQ: mmap error", -1;
+		return q->error = "PFQ: queue mmap error", -1;
 	}
         return q->error = NULL, 0;
 }

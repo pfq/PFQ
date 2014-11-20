@@ -454,9 +454,11 @@ namespace pfq {
 
             pdata_->queue_tot_mem = tot_mem;
 
-            if ((pdata_->queue_addr = mmap(nullptr, tot_mem, PROT_READ|PROT_WRITE, MAP_SHARED, fd_, 0)) == MAP_FAILED)
-                throw pfq_error(errno, "PFQ: mmap error");
+            if (pdata_->queue_addr)
+                throw pfq_error(errno, "PFQ: queue already enabled");
 
+            if ((pdata_->queue_addr = mmap(nullptr, tot_mem, PROT_READ|PROT_WRITE, MAP_SHARED, fd_, 0)) == MAP_FAILED)
+                throw pfq_error(errno, "PFQ: queue mmap error");
         }
 
         //! Disable the packet capture.
