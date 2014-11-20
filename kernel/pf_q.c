@@ -119,6 +119,9 @@ MODULE_PARM_DESC(recycle_len,   " Recycle skb list (default=4096)");
 #pragma message "[PFQ] *** using extended proc ***"
 #endif
 #ifdef PFQ_DEBUG
+#pragma message "[PFQ] *** PFQ_DEBUG mode ***"
+#endif
+#ifdef DEBUG
 #pragma message "[PFQ] *** DEBUG mode ***"
 #endif
 
