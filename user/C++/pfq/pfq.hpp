@@ -1209,6 +1209,9 @@ namespace pfq {
         bool
         inject(const_buffer pkt)
         {
+            if (!pdata_ || !pdata_->queue_addr)
+                throw pfq_error("PFQ: not enabled");
+
             auto q  = static_cast<struct pfq_queue_hdr *>(pdata_->queue_addr);
             auto tx = &q->tx;
 

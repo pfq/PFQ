@@ -960,22 +960,29 @@ pfq_bind_tx(pfq_t *q, const char *dev, int queue)
 int
 pfq_inject(pfq_t *q, const void *ptr, size_t len)
 {
-        struct pfq_queue_hdr *qh  = (struct pfq_queue_hdr *)(q->queue_addr);
-        struct pfq_tx_queue_hdr *tx = &qh->tx;
+        struct pfq_queue_hdr *qh = (struct pfq_queue_hdr *)(q->queue_addr);
+        struct pfq_tx_queue_hdr *tx;
+       	struct pfq_pkt_hdr *h;
+       	char *addr;
+        int index;
 
-        int index = pfq_spsc_write_index(tx);
+	if (q->queue_addr == NULL)
+         	return q->error = "PFQ: inject on pfq socket not enabled", -1;
+
+        tx = &qh->tx;
+
+        index = pfq_spsc_write_index(tx);
         if (index == -1)
 	        return q->error = NULL, 0;
 
-        struct pfq_pkt_hdr *h = (struct pfq_pkt_hdr *)((char *)(qh + 1) + q->rx_slots * q->rx_slot_size * 2  + index * tx->slot_size);
-        char *addr = (char *)(h + 1);
-
+        h = (struct pfq_pkt_hdr *)((char *)(qh + 1) + q->rx_slots * q->rx_slot_size * 2  + index * tx->slot_size);
+        addr = (char *)(h + 1);
         h->len = min(len, (size_t)(tx->max_len));
 
         memcpy(addr, ptr, h->len);
-
         pfq_spsc_write_commit(tx);
-        return q->error = NULL, 1;
+
+        return q->error = NULL, len;
 }
 
 
