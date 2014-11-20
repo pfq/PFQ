@@ -1007,10 +1007,10 @@ txQueueFlush hdl =
 
 inject :: Ptr PFqTag
        -> C.ByteString  -- ^ bytes of packet
-       -> IO ()
+       -> IO Bool
 inject hdl xs =
     unsafeUseAsCStringLen xs $ \(p, l) ->
-        pfq_inject hdl p (fromIntegral l) >>= throwPFqIf_ hdl (== -1)
+        liftM (> 0) $ pfq_inject hdl p (fromIntegral l) >>= throwPFqIf hdl (== -1)
 
 
 -- |Transmit the packet passed.
@@ -1019,10 +1019,10 @@ inject hdl xs =
 
 send :: Ptr PFqTag
      -> C.ByteString    -- ^ bytes of packet
-     -> IO ()
+     -> IO Bool
 send hdl xs =
     unsafeUseAsCStringLen xs $ \(p, l) ->
-        pfq_send hdl p (fromIntegral l) >>= throwPFqIf_ hdl (== -1)
+        liftM (>0) $ pfq_send hdl p (fromIntegral l) >>= throwPFqIf hdl (== -1)
 
 
 -- |Store the packet and possibly transmit the packets in the queue, asynchronously.
@@ -1033,10 +1033,10 @@ sendAsync :: Ptr PFqTag
           -> C.ByteString  -- ^ bytes of packet
           -> Int           -- ^ length of the batch
           -> AsyncPolicy
-          -> IO ()
+          -> IO Bool
 sendAsync hdl xs blen apol =
     unsafeUseAsCStringLen xs $ \(p, l) ->
-        pfq_send_async hdl p (fromIntegral l) (fromIntegral blen) (getAsyncPolicy apol) >>= throwPFqIf_ hdl (== -1)
+        liftM (>0) $ pfq_send_async hdl p (fromIntegral l) (fromIntegral blen) (getAsyncPolicy apol) >>= throwPFqIf hdl (== -1)
 
 
 -- C functions from libpfq
