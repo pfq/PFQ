@@ -48,6 +48,12 @@ __pfq_dev_cap_txqueue(struct net_device *dev, u16 queue_index)
         return queue_index;
 }
 
+static u16 __pfq_pick_tx(struct net_device *dev, struct sk_buff *skb)
+{
+	return 0;
+}
+
+
 /* select the right tx queue, and fix queue_index (-1 means any queue) */
 
 static struct netdev_queue *
@@ -56,14 +62,14 @@ pfq_pick_tx(struct net_device *dev, struct sk_buff *skb, int *queue_index)
         if (dev->real_num_tx_queues != 1 && *queue_index == -1)
         {
                 const struct net_device_ops *ops = dev->netdev_ops;
-                *queue_index = ops->ndo_select_queue
-                                ?
+
+		*queue_index = ops->ndo_select_queue ?
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(3,13,0))
                                 ops->ndo_select_queue(dev, skb)
 #elif (LINUX_VERSION_CODE == KERNEL_VERSION(3,13,0))
                                 ops->ndo_select_queue(dev, skb, NULL)
 #else
-                                ops->ndo_select_queue(dev, skb, NULL, NULL)
+                                ops->ndo_select_queue(dev, skb, NULL, __pfq_pick_tx)
 #endif
                                 : 0;
         }
