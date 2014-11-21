@@ -667,14 +667,18 @@ pfq_set_group_computation_from_string(pfq_t *q, int gid, const char *comp)
 		for(i = 0; i < n; i++)
 		{
 			prog->fun[i].symbol = trim_string(fun[i]);
-			prog->fun[i].arg[0].ptr = NULL;
-			prog->fun[i].arg[0].size = 0;
-			prog->fun[i].arg[1].ptr = NULL;
-			prog->fun[i].arg[1].size = 0;
-			prog->fun[i].arg[2].ptr = NULL;
-			prog->fun[i].arg[2].size = 0;
-			prog->fun[i].arg[3].ptr = NULL;
-			prog->fun[i].arg[3].size = 0;
+			prog->fun[i].arg[0].ptr   = NULL;
+			prog->fun[i].arg[0].size  = 0;
+			prog->fun[i].arg[0].nelem = 0;
+			prog->fun[i].arg[1].ptr   = NULL;
+			prog->fun[i].arg[1].size  = 0;
+			prog->fun[i].arg[1].nelem = 0;
+			prog->fun[i].arg[2].ptr   = NULL;
+			prog->fun[i].arg[2].size  = 0;
+			prog->fun[i].arg[2].nelem = 0;
+			prog->fun[i].arg[3].ptr   = NULL;
+			prog->fun[i].arg[3].size  = 0;
+			prog->fun[i].arg[3].nelem = 0;
 
 			prog->fun[i].next = i+1;
 		}
