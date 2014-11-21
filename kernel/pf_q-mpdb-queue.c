@@ -127,9 +127,10 @@ size_t pfq_mpdb_enqueue_batch(struct pfq_rx_opt *ro,
 							    bytes, skb->len, skb->mac_len);
 				return 0;
 			}
-			else
-				pfq_memcpy(pkt, skb->data, bytes);
 		}
+		else
+			pfq_memcpy(pkt, skb->data, bytes);
+
 
                 /* copy mark from pfq_cb (annotation) */
 
