@@ -48,11 +48,12 @@ __pfq_dev_cap_txqueue(struct net_device *dev, u16 queue_index)
         return queue_index;
 }
 
+#if (LINUX_VERSION_CODE > KERNEL_VERSION(3,13,0))
 static u16 __pfq_pick_tx(struct net_device *dev, struct sk_buff *skb)
 {
 	return 0;
 }
-
+#endif
 
 /* select the right tx queue, and fix queue_index (-1 means any queue) */
 
