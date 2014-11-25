@@ -39,17 +39,13 @@
 #include <pf_q-memory.h>
 #include <pf_q-GC.h>
 
+
 static inline
-void *pfq_memcpy(void *to, const void *from, size_t len)
+void *pfq_skb_copy_from_linear_data(const struct sk_buff *skb, void *to, size_t len)
 {
-	switch(len)
-	{
-		case 64 : return __builtin_memcpy(to, from, 64);
-		case 128: return __builtin_memcpy(to, from, 128);
-		case 256: return __builtin_memcpy(to, from, 256);
-		case 512: return __builtin_memcpy(to, from, 512);
-		default:  return memcpy(to, from, len);
-	}
+	if (len < 64 && (len + skb_tailroom(skb) >= 64))
+		return memcpy(to, skb->data, 64);
+	return memcpy(to, skb->data, len);
 }
 
 
@@ -128,9 +124,9 @@ size_t pfq_mpdb_enqueue_batch(struct pfq_rx_opt *ro,
 				return 0;
 			}
 		}
-		else
-			pfq_memcpy(pkt, skb->data, bytes);
-
+		else {
+			pfq_skb_copy_from_linear_data(skb, pkt, bytes);
+		}
 
                 /* copy mark from pfq_cb (annotation) */
 
