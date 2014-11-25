@@ -166,15 +166,15 @@ static int pfq_proc_stats(struct seq_file *m, void *v)
 
 static int pfq_proc_memory(struct seq_file *m, void *v)
 {
-	seq_printf(m, "OS alloc       : %zu\n", sparse_read(&memory_stats.os_alloc));
-	seq_printf(m, "OS free        : %zu\n", sparse_read(&memory_stats.os_free));
-	seq_printf(m, "recycled alloc : %zu\n", sparse_read(&memory_stats.rc_alloc));
-	seq_printf(m, "recycled free  : %zu\n", sparse_read(&memory_stats.rc_free));
-	seq_printf(m, "recycled miss  : %zu\n", sparse_read(&memory_stats.rc_miss));
-	seq_printf(m, "error intdisab : %zu\n", sparse_read(&memory_stats.err_intdis));
-	seq_printf(m, "error shared   : %zu\n", sparse_read(&memory_stats.err_shared));
-	seq_printf(m, "error cloned   : %zu\n", sparse_read(&memory_stats.err_cloned));
-	seq_printf(m, "error memory   : %zu\n", sparse_read(&memory_stats.err_memory));
+	seq_printf(m, "OS alloc       : %ld\n", sparse_read(&memory_stats.os_alloc));
+	seq_printf(m, "OS free        : %ld\n", sparse_read(&memory_stats.os_free));
+	seq_printf(m, "recycled alloc : %ld\n", sparse_read(&memory_stats.rc_alloc));
+	seq_printf(m, "recycled free  : %ld\n", sparse_read(&memory_stats.rc_free));
+	seq_printf(m, "recycled miss  : %ld\n", sparse_read(&memory_stats.rc_miss));
+	seq_printf(m, "error intdisab : %ld\n", sparse_read(&memory_stats.err_intdis));
+	seq_printf(m, "error shared   : %ld\n", sparse_read(&memory_stats.err_shared));
+	seq_printf(m, "error cloned   : %ld\n", sparse_read(&memory_stats.err_cloned));
+	seq_printf(m, "error memory   : %ld\n", sparse_read(&memory_stats.err_memory));
 	return 0;
 }
 
