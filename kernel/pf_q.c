@@ -166,32 +166,23 @@ unsigned clp2(unsigned int x)
 inline
 unsigned int pfq_fold(unsigned int a, unsigned int b)
 {
-        const unsigned int c = b - 1;
-        if (b & c) {
-
-                switch(b)
-                {
-                case 3:  return a % 3;
-                case 5:  return a % 5;
-                case 6:  return a % 6;
-                case 9:  return a % 9;
-                case 10: return a % 10;
-                case 11: return a % 11;
-                case 12: return a % 12;
-                case 13: return a % 13;
-                case 17: return a % 17;
-                case 18: return a % 18;
-                case 19: return a % 19;
-                case 20: return a % 20;
-                default: {
-                        const unsigned int p = clp2(b);
-                        const unsigned int r = a & (p-1);
-                        return likely(r < b) ? r : a % b;
-                    }
-                }
-        }
-        else {
-                return a & c;
+	unsigned int c;
+	if (b == 1)
+		return 0;
+        c = b - 1;
+        if (likely((b & c) == 0))
+        	return a & c;
+        switch(b)
+        {
+        case 3:  return a % 3;
+        case 5:  return a % 5;
+        case 6:  return a % 6;
+        case 7:  return a % 7;
+        default: {
+                const unsigned int p = clp2(b);
+                const unsigned int r = a & (p-1);
+                return r < b ? r : a % b;
+            }
         }
 }
 
