@@ -64,7 +64,8 @@ data Device =
     {
         devname   :: String,
         devspeed  :: Maybe Int,
-        flowctrl  :: YesNo
+        flowctrl  :: YesNo,
+        ethopt    :: [(String, String, Int)]
     } deriving (Show, Read, Eq)
 
 
@@ -253,7 +254,7 @@ loadModule name opts = do
 
 
 setupDevice :: Device -> IO ()
-setupDevice (Device dev speed fctrl) = do
+setupDevice (Device dev speed fctrl opts) = do
     putStrBoldLn $ "Activating " ++ dev ++ "..."
     runSystem ("/sbin/ifconfig " ++ dev ++ " up") "ifconfig error!"
     when (fctrl == No) $ do
@@ -263,7 +264,8 @@ setupDevice (Device dev speed fctrl) = do
         let s = fromJust speed
         putStrBoldLn $ "Setting speed (" ++ show s ++ ") for " ++ dev ++ "..."
         runSystem ("/sbin/ethtool -s " ++ dev ++ " speed " ++ show s ++ " duplex full") "ethtool error!"
-
+    forM_ opts $ \(opt, arg, value) -> do
+        runSystem ("/sbin/ethtool " ++ opt ++ " " ++ dev ++ " " ++ arg ++ " " ++ show value) "ethtool error!"
 
 getDevices ::  Config -> [String]
 getDevices conf = map devname (concatMap devices (drivers conf))
