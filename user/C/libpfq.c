@@ -128,7 +128,9 @@ typedef struct pfq
 	size_t rx_caplen;
 	size_t rx_slot_size;
         size_t tx_slots;
-	uint64_t tx_counter;
+
+	size_t tx_batch_count;
+	int    tx_last_inject;
 
 	const char * error;
 
@@ -206,14 +208,16 @@ pfq_open_group(unsigned long class_mask, int group_policy, size_t caplen, size_t
 	q->id 	= -1;
 	q->gid 	= -1;
 
-	q->queue_addr 	 = NULL;
-	q->queue_tot_mem = 0;
-	q->rx_slots      = 0;
-	q->rx_caplen     = 0;
-	q->rx_slot_size  = 0;
-	q->tx_slots 	 = 0;
-	q->tx_counter    = 0;
-	q->error 	 = NULL;
+	q->queue_addr 	  = NULL;
+	q->queue_tot_mem  = 0;
+	q->rx_slots       = 0;
+	q->rx_caplen      = 0;
+	q->rx_slot_size   = 0;
+	q->tx_slots 	  = 0;
+	q->tx_batch_count = 0;
+	q->tx_last_inject = 0;
+
+	q->error 	  = NULL;
 
         memset(&q->netq, 0, sizeof(q->netq));
 
@@ -1039,15 +1043,27 @@ int
 pfq_send_async(pfq_t *q, const void *ptr, size_t len, size_t batch_len, int mode)
 {
         int rc = pfq_inject(q, ptr, len);
-	int do_flush;
+        int do_flush = 0;
 
-	q->tx_counter++;
+	q->tx_batch_count++;
 
-	do_flush = rc > 0 ? (q->tx_counter % batch_len) == 0
-		          : (q->tx_counter & 8191) == 0;
+	if (rc > 0) {
+		q->tx_last_inject = 1;
+
+        	if (q->tx_batch_count == batch_len) {
+                	q->tx_batch_count = 0;
+                	do_flush = 1;
+		}
+	}
+	else {
+       		if (q->tx_last_inject || (q->tx_batch_count & 63) == 0) {
+       			q->tx_batch_count = 0;
+       			do_flush = 1;
+		}
+		q->tx_last_inject = 0;
+	}
 
 	if (do_flush) {
-
 		if (mode == Q_TX_ASYNC_DEFERRED)
         		pfq_tx_queue_flush(q);
 

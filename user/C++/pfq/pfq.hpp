@@ -156,8 +156,9 @@ namespace pfq {
             size_t rx_slots;
             size_t rx_slot_size;
 
-            size_t   tx_slots;
-            uint64_t tx_counter;
+            size_t tx_slots;
+            size_t tx_batch_count;
+            bool   tx_last_inject;
         };
 
         int fd_;
@@ -378,7 +379,8 @@ namespace pfq {
                                         0,
                                         0,
                                         0,
-                                        0
+                                        0,
+                                        false
                                        });
 
             // get id
@@ -1188,14 +1190,27 @@ namespace pfq {
         send_async(const_buffer pkt, size_t batch_len = 128, async_policy pol = async_policy::tx_deferred)
         {
             auto rc = inject(pkt);
+            bool do_flush = false;
 
-            pdata_->tx_counter++;
+            pdata_->tx_batch_count++;
 
-	        bool do_flush = rc ? (pdata_->tx_counter % batch_len) == 0
-		                       : (pdata_->tx_counter & 8191) == 0;
+            if (rc) {
+                pdata_->tx_last_inject = true;
+                if (pdata_->tx_batch_count == batch_len) {
+                    pdata_->tx_batch_count = 0;
+                    do_flush = 1;
+                }
+            }
+            else {
+                if (pdata_->tx_last_inject || (pdata_->tx_batch_count & 63) == 0) {
+                    pdata_->tx_batch_count = 0;
+                    do_flush = 1;
+                }
+
+                pdata_->tx_last_inject = false;
+            }
 
             if (do_flush) {
-
                 if (pol == async_policy::tx_deferred)
                     tx_queue_flush();
                 else
