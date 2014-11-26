@@ -985,11 +985,12 @@ pfq_inject(pfq_t *q, const void *ptr, size_t len)
 
         h = (struct pfq_pkt_hdr *)((char *)(qh + 1) + q->rx_slots * q->rx_slot_size * 2  + index * tx->slot_size);
         addr = (char *)(h + 1);
-        h->len = min(len, (size_t)(tx->max_len));
+
+	h->len = min((uint16_t)len, (uint16_t)(tx->max_len));
 
         memcpy(addr, ptr, h->len);
-        pfq_spsc_write_commit(tx);
 
+        pfq_spsc_write_commit(tx);
         return q->error = NULL, len;
 }
 
@@ -1017,6 +1018,7 @@ int pfq_wakeup_tx_thread(pfq_t *q)
 
         return q->error = NULL, 0;
 }
+
 
 int pfq_tx_queue_flush(pfq_t *q)
 {
