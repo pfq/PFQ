@@ -1032,7 +1032,7 @@ pfq_send(pfq_t *q, const void *ptr, size_t len)
 {
         int rc = pfq_inject(q, ptr, len);
 
-        if (rc != 0)
+        if (rc > 0)
                 pfq_tx_queue_flush(q);
 
         return rc;
