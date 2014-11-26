@@ -155,7 +155,7 @@ static int pfq_proc_stats(struct seq_file *m, void *v)
 	seq_printf(m, "quit      : %ld\n", sparse_read(&global_stats.quit));
 #ifdef PFQ_USE_EXTENDED_PROC
 	seq_printf(m, "SCHEDULE:\n");
-	seq_printf(m, "poll	 : %ld\n", sparse_read(&global_stats.poll));
+	seq_printf(m, "poll      : %ld\n", sparse_read(&global_stats.poll));
 	seq_printf(m, "wakeup    : %ld\n", sparse_read(&global_stats.wake));
 #endif
 	return 0;
