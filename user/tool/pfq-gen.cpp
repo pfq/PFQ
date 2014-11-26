@@ -27,20 +27,18 @@
 #include <netinet/ip.h>
 #include <netinet/udp.h>
 
-#include <affinity.hpp>
 #include <vt100.hpp>
 
 
 using namespace pfq;
+
 
 struct binding;
 
 
 char *make_packet(size_t n)
 {
-    auto p = new char[n];
-
-    static const unsigned char ping[98] =
+    static unsigned char ping[98] =
     {
         0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xf0, 0xbf, /* L`..UF.. */
         0x97, 0xe2, 0xff, 0xae, 0x08, 0x00, 0x45, 0x00, /* ......E. */
@@ -56,6 +54,8 @@ char *make_packet(size_t n)
         0x2e, 0x2f, 0x30, 0x31, 0x32, 0x33, 0x34, 0x35, /* ./012345 */
         0x36, 0x37                                      /* 67 */
     };
+
+    auto p = new char[n];
 
     memcpy(p, ping, std::min(n, sizeof(ping)));
 
@@ -148,6 +148,7 @@ namespace thread
         , m_bind(b)
         , m_pfq()
         , m_sent(std::unique_ptr<std::atomic_ullong>(new std::atomic_ullong(0)))
+        , m_fail(std::unique_ptr<std::atomic_ullong>(new std::atomic_ullong(0)))
         , m_gen()
         {
             if (m_bind.dev.empty())
@@ -158,20 +159,17 @@ namespace thread
 
             for(unsigned int n = 0; n < m_bind.queue.size(); n++)
             {
-                //
-                // auto q = pfq(opt::len, 0, 64, opt::len, opt::slots);
-                //
-
                 auto q = pfq::socket(param::list, param::maxlen{opt::len},
-                                          param::tx_slots{opt::slots});
+                                                  param::tx_slots{opt::slots});
 
                 q.bind_tx (m_bind.dev.at(0).c_str(), m_bind.queue[n]);
 
                 q.enable();
 
-                q.start_tx_thread(m_bind.queue[n]);
+                if (opt::async)
+                    q.start_tx_thread(m_bind.queue[n]);
 
-                m_pfq.push_back(std::move(q));
+                m_pfq = std::move(q);
 
                 std::cout << "thread: " << id << " -> gen "  << m_bind.dev.at(0) << "." << m_bind.queue[n] << std::endl;
             }
@@ -187,62 +185,40 @@ namespace thread
         {
             auto ip = reinterpret_cast<iphdr *>(opt::packet + 14);
 
-            if (opt::async)
+            for(;;)
             {
-                for(;;)
+                if (opt::rand_ip)
                 {
-                    for(unsigned int n = 0; n < m_pfq.size(); n++)
-                    {
-                        if (opt::rand_ip)
-                        {
-                            ip->saddr = static_cast<uint32_t>(m_gen());
-                            ip->daddr = static_cast<uint32_t>(m_gen());
-                        }
-
-                        if (m_pfq[n].send_async(pfq::const_buffer(reinterpret_cast<const char *>(opt::packet), opt::len), opt::batch, async_policy::tx_threaded))
-                            m_sent->fetch_add(1, std::memory_order_relaxed);
-                    }
+                    ip->saddr = static_cast<uint32_t>(m_gen());
+                    ip->daddr = static_cast<uint32_t>(m_gen());
                 }
-            }
-            else
-            {
-                for(;;)
-                {
-                    for(unsigned int n = 0; n < m_pfq.size(); n++)
-                    {
-                        if (opt::rand_ip)
-                        {
-                            ip->saddr = static_cast<uint32_t>(m_gen());
-                            ip->daddr = static_cast<uint32_t>(m_gen());
-                        }
 
-                        if (m_pfq[n].send_async(pfq::const_buffer(reinterpret_cast<const char *>(opt::packet), opt::len), opt::batch, async_policy::tx_deferred))
-                            m_sent->fetch_add(1, std::memory_order_relaxed);
-                    }
-                }
+                if (m_pfq.send_async(pfq::const_buffer(reinterpret_cast<const char *>(opt::packet), opt::len), opt::batch, opt::async? async_policy::tx_threaded : async_policy::tx_deferred))
+                    m_sent->fetch_add(1, std::memory_order_relaxed);
+                else
+                    m_fail->fetch_add(1, std::memory_order_relaxed);
             }
         }
 
-        std::pair<pfq_stats, uint64_t>
+        std::tuple<pfq_stats, uint64_t, uint64_t>
         stats() const
         {
             pfq_stats ret = {0,0,0,0,0,0,0};
 
-            for(auto & q : m_pfq)
-            {
-                ret += q.stats();
-            }
+            ret += m_pfq.stats();
 
-            return std::make_pair(ret, m_sent->load(std::memory_order_relaxed));
+            return std::make_tuple(ret, m_sent->load(std::memory_order_relaxed),
+                                        m_fail->load(std::memory_order_relaxed));
         }
 
     private:
         int m_id;
         binding m_bind;
 
-        std::vector<pfq::socket> m_pfq;
+        pfq::socket m_pfq;
 
         std::unique_ptr<std::atomic_ullong> m_sent;
+        std::unique_ptr<std::atomic_ullong> m_fail;
 
         std::mt19937 m_gen;
     };
@@ -274,7 +250,7 @@ try
             i++;
             if (i == argc)
             {
-                throw std::runtime_error("batch len missing");
+                throw std::runtime_error("batch length missing");
             }
 
             opt::batch = static_cast<size_t>(std::atoi(argv[i]));
@@ -286,7 +262,7 @@ try
             i++;
             if (i == argc)
             {
-                throw std::runtime_error("len missing");
+                throw std::runtime_error("length missing");
             }
 
             opt::len = static_cast<size_t>(std::atoi(argv[i]));
@@ -351,7 +327,8 @@ try
     });
 
     pfq_stats cur, prec = {0,0,0,0,0,0,0};
-    uint64_t usr, usr_;
+    uint64_t sent, sent_ = 0;
+    uint64_t fail, fail_ = 0;
 
     std::cout << "------------ gen started ------------\n";
 
@@ -362,26 +339,30 @@ try
         std::this_thread::sleep_for(std::chrono::seconds(1));
 
         cur = {0,0,0,0,0,0,0};
-        usr = 0;
+        sent = 0;
+        fail = 0;
 
         std::for_each(ctx.begin(), ctx.end(), [&](const thread::context &c)
         {
             auto p = c.stats();
 
-            cur += p.first;
-            usr += p.second;
+            cur  += std::get<0>(p);
+            sent += std::get<1>(p);
+            fail += std::get<2>(p);
         });
 
         auto end   = std::chrono::system_clock::now();
         auto delta = std::chrono::duration_cast<std::chrono::microseconds>(end-begin).count();
 
-        std::cout << "stats: { " << cur << " } -> user: "
-                  << vt100::BOLD << (static_cast<int64_t>(usr-usr_)*1000000)/delta << vt100::RESET << " - "
+        std::cout << "stats: { " << cur << " } -> user: { "
+                  << vt100::BOLD << (static_cast<int64_t>(sent-sent_)*1000000)/delta << ' ' <<
+                                    (static_cast<int64_t>(fail-fail_)*1000000)/delta << vt100::RESET << " } - "
                   << "sent: " << vt100::BOLD << (static_cast<int64_t>(cur.sent-prec.sent)*1000000)/delta << vt100::RESET << " pkt/sec - "
                   << "disc: " << vt100::BOLD << (static_cast<int64_t>(cur.disc-prec.disc)*1000000)/delta << vt100::RESET << " pkt/sec" << std::endl;
 
         prec = cur, begin = end;
-        usr_ = usr;
+        sent_ = sent;
+        fail_ = fail;
     }
 
 }
