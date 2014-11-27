@@ -50,7 +50,7 @@ void *pfq_skb_copy_from_linear_data(const struct sk_buff *skb, void *to, size_t 
 
 
 static inline
-char *mpdb_slot_ptr(struct pfq_rx_opt *ro, struct pfq_rx_queue_hdr *qd, int index, int slot)
+char *mpdb_slot_ptr(struct pfq_rx_opt *ro, struct pfq_rx_queue_hdr *qd, size_t index, size_t slot)
 {
 	return (char *)(ro->queue_base) + ( (index&1 ? ro->size : 0 ) + slot) * ro->slot_size;
 }
@@ -63,12 +63,9 @@ size_t pfq_mpdb_enqueue_batch(struct pfq_rx_opt *ro,
 		              int gid)
 {
 	struct pfq_rx_queue_hdr *rx_queue = pfq_get_rx_queue_hdr(ro);
-
-	int data, q_len, q_index;
+	int data, qlen, qindex;
 	struct gc_buff buff;
-	size_t sent = 0;
-
-	unsigned int n;
+	size_t n, sent = 0;
 	char *this_slot;
 
 	if (unlikely(rx_queue == NULL))
@@ -79,22 +76,21 @@ size_t pfq_mpdb_enqueue_batch(struct pfq_rx_opt *ro,
         if (MPDB_QUEUE_LEN(data) > ro->size)
 		return 0;
 
-	data 	  = atomic_add_return(burst_len, (atomic_t *)&rx_queue->data);
+	data = atomic_add_return(burst_len, (atomic_t *)&rx_queue->data);
 
-	q_len     = MPDB_QUEUE_LEN(data) - burst_len;
-	q_index   = MPDB_QUEUE_INDEX(data);
-        this_slot = mpdb_slot_ptr(ro, rx_queue, q_index, q_len);
+	qlen      = MPDB_QUEUE_LEN(data) - burst_len;
+	qindex    = MPDB_QUEUE_INDEX(data);
+        this_slot = mpdb_slot_ptr(ro, rx_queue, qindex, qlen);
 
 	for_each_gcbuff_bitmask(queue, mask, buff, n)
 	{
 		volatile struct pfq_pkt_hdr *hdr;
 		struct sk_buff *skb = buff.skb;
-		unsigned int bytes;
-		size_t slot_index;
+		size_t bytes, slot_index;
 		char *pkt;
 
-		bytes = min((int)skb->len, (int)ro->caplen);
-		slot_index = q_len + sent;
+		bytes = min((size_t)skb->len, ro->caplen);
+		slot_index = qlen + sent;
 
 		hdr = (struct pfq_pkt_hdr *)this_slot;
 		pkt = (char *)(hdr+1);
@@ -120,7 +116,7 @@ size_t pfq_mpdb_enqueue_batch(struct pfq_rx_opt *ro,
 #endif
 		{
 			if (skb_copy_bits(skb, 0, pkt, bytes) != 0) {
-				printk(KERN_WARNING "[PFQ] BUG! skb_copy_bits failed (bytes=%u, skb_len=%d mac_len=%d)!\n",
+				printk(KERN_WARNING "[PFQ] BUG! skb_copy_bits failed (bytes=%zu, skb_len=%d mac_len=%d)!\n",
 							    bytes, skb->len, skb->mac_len);
 				return 0;
 			}
@@ -154,7 +150,7 @@ size_t pfq_mpdb_enqueue_batch(struct pfq_rx_opt *ro,
 
 		smp_wmb();
 
-		hdr->commit = (uint8_t)q_index;
+		hdr->commit = (uint8_t)qindex;
 
 		if ((slot_index & 8191) == 0 &&
 				waitqueue_active(&ro->waitqueue)) {
