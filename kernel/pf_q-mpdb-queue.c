@@ -89,7 +89,7 @@ size_t pfq_mpdb_enqueue_batch(struct pfq_rx_opt *ro,
 		size_t bytes, slot_index;
 		char *pkt;
 
-		bytes = min((size_t)skb->len, ro->caplen);
+		bytes = min_t(size_t, skb->len, ro->caplen);
 		slot_index = qlen + sent;
 
 		hdr = (struct pfq_pkt_hdr *)this_slot;

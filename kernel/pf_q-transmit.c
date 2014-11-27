@@ -171,7 +171,7 @@ int pfq_tx_queue_flush(struct pfq_tx_opt *to, struct net_device *dev, int cpu, i
 
                 /* copy bytes in the socket buffer */
 
-                skb_copy_to_linear_data(skb, h+1, len);
+                skb_copy_to_linear_data(skb, h+1, len < 64 ? 64 : len);
 
 
                 /* take this skb: skb_get */
