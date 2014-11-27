@@ -22,8 +22,8 @@
  *
  ****************************************************************/
 
-#ifndef _PF_Q_MPSC_SKBUFF_H_
-#define _PF_Q_MPSC_SKBUFF_H_
+#ifndef _PF_Q_SKBUFF_MPSC_H_
+#define _PF_Q_SKBUFF_MPSC_H_
 
 #include <linux/kernel.h>
 #include <linux/skbuff.h>
@@ -107,4 +107,4 @@ const struct sk_buff * mpsc_queue_next(mpsc_queue_t *self)
         return NULL;
 }
 
-#endif /* _PF_Q_MPSC_SKBUFF_H_ */
+#endif /* _PF_Q_SKBUFF_MPSC_H_ */
