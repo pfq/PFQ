@@ -31,7 +31,7 @@
 #include <linux/skbuff.h>
 #include <linux/netdevice.h>
 
-#include <pf_q-bounded-queue.h>
+#include <pf_q-skbuff-queue.h>
 #include <pf_q-sock.h>
 #include <pf_q-module.h>
 #include <pf_q-GC.h>

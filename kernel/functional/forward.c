@@ -25,7 +25,7 @@
 #include <linux/module.h>
 #include <linux/cache.h>
 
-#include <pf_q-bounded-queue.h>
+#include <pf_q-skbuff-queue.h>
 #include <pf_q-transmit.h>
 #include <pf_q-module.h>
 #include <pf_q-global.h>
