@@ -31,19 +31,19 @@
 #include <linux/skbuff.h>
 #include <linux/netdevice.h>
 
-#include <pf_q-skbuff-queue.h>
+#include <pf_q-skbuff-batch.h>
 #include <pf_q-sock.h>
 #include <pf_q-module.h>
 #include <pf_q-GC.h>
 
 extern int pfq_tx_queue_flush(struct pfq_tx_opt *to, struct net_device *dev, int cpu, int node);
 
-extern int pfq_queue_xmit(struct pfq_bounded_queue_skb *skbs, struct net_device *dev, int queue_index);
-extern int pfq_queue_xmit_by_mask(struct pfq_bounded_queue_skb *skbs, unsigned long long skbs_mask, struct net_device *dev, int queue_index);
+extern int pfq_queue_xmit(struct pfq_skbuff_batch *skbs, struct net_device *dev, int queue_index);
+extern int pfq_queue_xmit_by_mask(struct pfq_skbuff_batch *skbs, unsigned long long skbs_mask, struct net_device *dev, int queue_index);
 
 static inline int pfq_xmit(struct sk_buff *skb, struct net_device *dev, int queue_index)
 {
-	struct pfq_bounded_queue_skb skbs = { 1 , { skb } };
+	struct pfq_skbuff_batch skbs = { 1 , { skb } };
 	return pfq_queue_xmit(&skbs, dev, queue_index);
 }
 

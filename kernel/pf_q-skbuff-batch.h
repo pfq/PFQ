@@ -22,54 +22,41 @@
  ****************************************************************/
 
 
-#ifndef _PF_Q_SKB_QUEUE_H_
-#define _PF_Q_SKB_QUEUE_H_
+#ifndef _PF_Q_SKB_BATCH_H_
+#define _PF_Q_SKB_BATCH_H_
 
 
 #include <pf_q-bitops.h>
 #include <pf_q-macro.h>
 
+#include <pf_q-skbuff.h>
 
-struct pfq_bounded_queue_skb
+struct pfq_skbuff_batch
 {
         size_t len;
-        struct sk_buff *queue[Q_BOUNDED_QUEUE_LEN];  	/* sk_buff */
+        struct sk_buff *queue[Q_SKBUFF_MAX_BATCH];
 };
 
 
-#define pfq_bounded_queue_for_each(skb, n, q) \
-        for(n = 0; (n != (q)->len) && (skb = (q)->queue[n]); \
-                __builtin_prefetch((q)->queue[n+1], 0, 1), n++)
-
-
-#define pfq_bounded_queue_for_each_backward(skb, n, q) \
-        for(n = (q)->len; (n > 0) && (skb = (q)->queue[n-1]); \
-                __builtin_prefetch((q)->queue[n-2], 0, 1), n--)
-
-
-#define pfq_bounded_queue_for_each_bitmask(skb, mask, n, q) \
-        for(n = pfq_ctz(mask); mask && ((skb = (q)->queue[n]), true); \
-                mask ^=(1UL << n), n = pfq_ctz(mask))
-
-
 static inline
-int pfq_bounded_queue_push(struct pfq_bounded_queue_skb *q, struct sk_buff *skb)
+int pfq_skbuff_batch_push(struct pfq_skbuff_batch *q, struct sk_buff *skb)
 {
-        if (q->len < Q_BOUNDED_QUEUE_LEN)
+        if (q->len < Q_SKBUFF_MAX_BATCH)
                 return q->queue[q->len++] = skb, 0;
         return -1;
 }
 
 
 static inline
-void pfq_bounded_queue_init(struct pfq_bounded_queue_skb *q)
+void pfq_skbuff_batch_init(struct pfq_skbuff_batch *q)
 {
-    q->len = 0;
+	q->len = 0;
 }
 
 
 static inline
-struct sk_buff * pfq_bounded_queue_pop(struct pfq_bounded_queue_skb *q)
+struct sk_buff *
+pfq_skbuff_batch_pop(struct pfq_skbuff_batch *q)
 {
         if (q->len > 0)
                 return q->queue[--q->len];
@@ -78,17 +65,17 @@ struct sk_buff * pfq_bounded_queue_pop(struct pfq_bounded_queue_skb *q)
 
 
 static inline
-void pfq_bounded_queue_flush(struct pfq_bounded_queue_skb *q)
+void pfq_skbuff_batch_flush(struct pfq_skbuff_batch *q)
 {
         q->len = 0;
 }
 
 
 static inline
-size_t pfq_bounded_queue_len(struct pfq_bounded_queue_skb *q)
+size_t pfq_skbuff_batch_len(struct pfq_skbuff_batch *q)
 {
         return q->len;
 }
 
 
-#endif /* _PF_Q_SKB_QUEUE_H_ */
+#endif /* _PF_Q_SKB_BATCH_H_ */

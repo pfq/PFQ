@@ -199,7 +199,7 @@ void send_to_kernel(struct sk_buff *skb)
 static int
 pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 {
- 	unsigned long long sock_queue[Q_BOUNDED_QUEUE_LEN];
+ 	unsigned long long sock_queue[Q_SKBUFF_MAX_BATCH];
 
         unsigned long group_mask, socket_mask;
         struct local_data * local;
@@ -213,7 +213,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 #endif
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,9,0))
-	BUILD_BUG_ON_MSG(Q_BOUNDED_QUEUE_LEN > (sizeof(sock_queue[0]) << 3), "sock_queue overflow");
+	BUILD_BUG_ON_MSG(Q_SKBUFF_MAX_BATCH > (sizeof(sock_queue[0]) << 3), "skbuff batch overflow");
 #endif
 
 	/* if no socket is open, drop the packet now */
@@ -280,14 +280,14 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 	start = get_cycles();
 #endif
 
-	GC_queue_for_each_skb(&local->gc.pool, skb, n)
+	for_each_gcbuff(&local->gc.pool, buff, n)
         {
-		unsigned long local_group_mask = __pfq_devmap_get_groups(skb->dev->ifindex, skb_get_rx_queue(skb));
+		unsigned long local_group_mask = __pfq_devmap_get_groups(buff.skb->dev->ifindex, skb_get_rx_queue(buff.skb));
 
 		group_mask |= local_group_mask;
 
-		PFQ_CB(skb)->group_mask = local_group_mask;
-		PFQ_CB(skb)->monad 	= &monad;
+		PFQ_CB(buff.skb)->group_mask = local_group_mask;
+		PFQ_CB(buff.skb)->monad      = &monad;
 	}
 
         /* process all groups enabled for this batch of packets */
@@ -309,7 +309,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 
 		socket_mask = 0;
 
-		GC_queue_for_each_buff(&local->gc.pool, buff, n)
+		for_each_gcbuff(&local->gc.pool, buff, n)
 		{
 			unsigned long sock_mask = 0;
 			struct pfq_computation_tree *prg;
@@ -442,7 +442,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 
 	/* sk_buff forwarding */
 
-        GC_queue_for_each_buff(&local->gc.pool, buff, n)
+        for_each_gcbuff(&local->gc.pool, buff, n)
         {
         	struct sk_buff *skb;
         	struct pfq_cb *cb;

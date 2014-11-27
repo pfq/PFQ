@@ -24,6 +24,8 @@
 #ifndef _PF_Q_SKBUFF_H_
 #define _PF_Q_SKBUFF_H_
 
+#include <linux/skbuff.h>
+
 struct pfq_monad;
 struct gc_log;
 
@@ -39,6 +41,44 @@ struct pfq_cb
 
 
 #define PFQ_CB(skb) ((struct pfq_cb *)(skb)->cb)
+
+
+/* wrapper used in garbage collector */
+
+struct gc_buff
+{
+ 	struct sk_buff *skb;
+};
+
+
+#define for_each_skbuff(batch, skb, n) \
+        for(n = 0; (n != (batch)->len) && (skb = (batch)->queue[n]); \
+                __builtin_prefetch((batch)->queue[n+1], 0, 1), n++)
+
+
+#define for_each_skbuff_backward(batch, skb, n) \
+        for(n = (batch)->len; (n > 0) && (skb = (batch)->queue[n-1]); \
+                __builtin_prefetch((batch)->queue[n-2], 0, 1), n--)
+
+
+#define for_each_skbuff_bitmask(batch, mask, skb, n) \
+        for(n = pfq_ctz(mask); mask && ((skb = (batch)->queue[n]), true); \
+                mask ^=(1UL << n), n = pfq_ctz(mask))
+
+
+#define for_each_gcbuff(batch, buff, n) \
+        for(n = 0; (n != (batch)->len) && (buff = (batch)->queue[n]).skb; \
+                __builtin_prefetch(((batch)->queue[n+1]).skb, 0, 1), n++)
+
+
+#define for_each_gcbuff_backward(batch, buff, n) \
+        for(n = (batch)->len; (n > 0) && (buff= (batch)->queue[n-1]).skb; \
+                __builtin_prefetch(((batch)->queue[n-2]).skb, 0, 1), n--)
+
+
+#define for_each_gcbuff_bitmask(batch, mask, buff, n) \
+        for(n = pfq_ctz(mask); mask && ((buff = (batch)->queue[n]), true); \
+                mask ^=(1UL << n), n = pfq_ctz(mask))
 
 
 #endif /* _PF_Q_SKBUFF_H_ */

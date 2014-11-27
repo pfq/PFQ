@@ -58,15 +58,16 @@ char *mpdb_slot_ptr(struct pfq_rx_opt *ro, struct pfq_rx_queue_hdr *qd, int inde
 
 size_t pfq_mpdb_enqueue_batch(struct pfq_rx_opt *ro,
 		              struct gc_queue_buff *queue,
-		              unsigned long long skbs_mask,
+		              unsigned long long mask,
 		              int burst_len,
 		              int gid)
 {
 	struct pfq_rx_queue_hdr *rx_queue = pfq_get_rx_queue_hdr(ro);
 
 	int data, q_len, q_index;
-	struct sk_buff *skb;
+	struct gc_buff buff;
 	size_t sent = 0;
+
 	unsigned int n;
 	char *this_slot;
 
@@ -84,12 +85,12 @@ size_t pfq_mpdb_enqueue_batch(struct pfq_rx_opt *ro,
 	q_index   = MPDB_QUEUE_INDEX(data);
         this_slot = mpdb_slot_ptr(ro, rx_queue, q_index, q_len);
 
-	GC_queue_for_each_skb_bitmask(queue, skb, skbs_mask, n)
+	for_each_gcbuff_bitmask(queue, mask, buff, n)
 	{
 		volatile struct pfq_pkt_hdr *hdr;
+		struct sk_buff *skb = buff.skb;
 		unsigned int bytes;
 		size_t slot_index;
-		struct timespec ts;
 		char *pkt;
 
 		bytes = min((int)skb->len, (int)ro->caplen);
@@ -135,7 +136,7 @@ size_t pfq_mpdb_enqueue_batch(struct pfq_rx_opt *ro,
 		/* setup the header */
 
 		if (ro->tstamp != 0) {
-
+			struct timespec ts;
 			skb_get_timestampns(skb, &ts);
 			hdr->tstamp.tv.sec  = (uint32_t)ts.tv_sec;
 			hdr->tstamp.tv.nsec = (uint32_t)ts.tv_nsec;

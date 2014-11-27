@@ -29,28 +29,8 @@
 
 #include <pf_q-skbuff.h>
 #include <pf_q-macro.h>
+#include <pf_q-skbuff.h>
 
-
-#define GC_queue_for_each_skb(pool, skb, n) \
-        for(n = 0; (n != (pool)->len) && (skb = (pool)->queue[n].skb); \
-                __builtin_prefetch((pool)->queue[n+1].skb, 0, 1), n++)
-
-#define GC_queue_for_each_buff(pool, buff, n) \
-        for(n = 0; (n != (pool)->len) && (buff = (pool)->queue[n]).skb; n++)
-
-#define GC_queue_for_each_skb_bitmask(pool, skb, mask, n) \
-        for(n = pfq_ctz(mask); mask && ((skb = (pool)->queue[n].skb), true); \
-                mask ^=(1UL << n), n = pfq_ctz(mask))
-
-#define GC_queue_for_each_buff_bitmask(pool, buff, mask, n) \
-        for(n = pfq_ctz(mask); mask && ((buff = (pool)->queue[n]), true); \
-                mask ^=(1UL << n), n = pfq_ctz(mask))
-
-
-struct gc_buff
-{
- 	struct sk_buff *skb;
-};
 
 typedef struct gc_buff SkBuff;
 

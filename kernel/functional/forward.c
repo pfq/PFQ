@@ -25,16 +25,17 @@
 #include <linux/module.h>
 #include <linux/cache.h>
 
-#include <pf_q-skbuff-queue.h>
+#include <pf_q-skbuff-batch.h>
 #include <pf_q-transmit.h>
 #include <pf_q-module.h>
 #include <pf_q-global.h>
 
 #include "forward.h"
 
+
 struct forward_queue
 {
-	struct pfq_bounded_queue_skb q;
+	struct pfq_skbuff_batch q;
 
 } ____chaline_aligned;
 
