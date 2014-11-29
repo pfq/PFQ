@@ -81,7 +81,56 @@ pfq_pick_tx(struct net_device *dev, struct sk_buff *skb, int *queue_index)
 }
 
 
-int pfq_tx_queue_flush(struct pfq_tx_opt *to, struct net_device *dev, int cpu, int node)
+static int
+__pfq_queue_xmit_batch(struct pfq_skbuff_batch *skbs, struct net_device *dev, struct pfq_tx_opt *to, int cpu, struct local_data *local)
+{
+	struct pfq_tx_queue_hdr *txq = pfq_get_tx_queue_hdr(to);
+	struct sk_buff *skb;
+	int len, sent, i;
+
+#ifdef PFQ_TX_PROFILE
+	cycles_t start = get_cycles();
+#endif
+
+	/* get length of this batch */
+
+	len  = pfq_skbuff_batch_len(skbs);
+
+	/* transmit the skbs */
+
+	sent = pfq_queue_xmit(skbs, dev, to->hw_queue);
+
+	/* update stats */
+
+	__sparse_add(&to->stats.sent, sent, cpu);
+	__sparse_add(&to->stats.disc, len - sent, cpu);
+	__sparse_add(&global_stats.sent, sent, cpu);
+	__sparse_add(&global_stats.disc, len - sent, cpu);
+
+	/* free the slots in the socket queue */
+
+	pfq_spsc_read_commit_n(txq, len);
+
+	/* recycle the skbuff now... */
+
+	for_each_skbuff(skbs, skb, i)
+		pfq_kfree_skb_recycle(skb, &local->tx_recycle_list);
+
+	pfq_skbuff_batch_flush(skbs);
+
+#ifdef PFQ_TX_PROFILE
+	if (printk_ratelimit())
+	{
+		cycles_t stop = get_cycles();
+		printk(KERN_INFO "[PFQ] TX avg cpu-cycle: %llu_tsc (batch len = %d).\n", (stop - start)/len, len);
+	}
+#endif
+	return sent;
+}
+
+
+int
+pfq_tx_queue_flush(struct pfq_tx_opt *to, struct net_device *dev, int cpu, int node)
 {
 	struct pfq_skbuff_batch skbs;
 
@@ -89,55 +138,16 @@ int pfq_tx_queue_flush(struct pfq_tx_opt *to, struct net_device *dev, int cpu, i
         struct pfq_pkt_hdr * h;
         struct sk_buff *skb;
         size_t len;
-        int n, index, avail;
+
+        int index, avail, n;
 
 	struct pfq_tx_queue_hdr *txq = pfq_get_tx_queue_hdr(to);
 
 	/* transmit the batch queue... */
 
-	void pfq_queue_xmit_batch(void)
-	{
-		struct sk_buff *skb;
-        	int len, sent, i;
-
-#ifdef PFQ_TX_PROFILE
-		cycles_t start = get_cycles();
-#endif
-		len  = pfq_skbuff_batch_len(&skbs);
-
-		sent = pfq_queue_xmit(&skbs, dev, to->hw_queue);
-
-		/* free the slots in the socket queue */
-
-		pfq_spsc_read_commit_n(txq, len);
-
-                /* update stats */
-
-                __sparse_add(&to->stats.sent, sent, cpu);
-                __sparse_add(&to->stats.disc, len - sent, cpu);
-  		__sparse_add(&global_stats.sent, sent, cpu);
-  		__sparse_add(&global_stats.disc, len - sent, cpu);
-
-		/* recycle the skbuff now... */
-
-		for_each_skbuff(&skbs, skb, i)
-			pfq_kfree_skb_recycle(skb, &local->tx_recycle_list);
-
-		pfq_skbuff_batch_flush(&skbs);
-
-#ifdef PFQ_TX_PROFILE
-		if (printk_ratelimit())
-		{
-			cycles_t stop = get_cycles();
-			printk(KERN_INFO "[PFQ] TX avg cpu-cycle: %llu_tsc (batch len = %d).\n", (stop - start)/len, len);
-		}
-#endif
-	}
-
 	pfq_skbuff_batch_init(&skbs);
 
         local = __this_cpu_ptr(cpu_data);
-
         avail = pfq_spsc_read_avail(txq);
 	index = pfq_spsc_read_index(txq);
 
@@ -145,7 +155,7 @@ int pfq_tx_queue_flush(struct pfq_tx_opt *to, struct net_device *dev, int cpu, i
         {
 		if (unlikely(index >= to->size)) {
                         if(printk_ratelimit())
-                                printk(KERN_WARNING "[PFQ] bogus spsc index: size=%zu index=%d\n", to->size, index);
+                                printk(KERN_WARNING "[PFQ] bogus queue index: size=%zu index=%d\n", to->size, index);
                         break;
                 }
 
@@ -173,7 +183,6 @@ int pfq_tx_queue_flush(struct pfq_tx_opt *to, struct net_device *dev, int cpu, i
 
                 skb_copy_to_linear_data(skb, h+1, len < 64 ? 64 : len);
 
-
                 /* take this skb: skb_get */
 
 		atomic_set(&skb->users, 2);
@@ -183,20 +192,18 @@ int pfq_tx_queue_flush(struct pfq_tx_opt *to, struct net_device *dev, int cpu, i
 		pfq_skbuff_batch_push(&skbs, skb);
 
 		if (pfq_skbuff_batch_len(&skbs) == batch_len)
-			pfq_queue_xmit_batch();
+			__pfq_queue_xmit_batch(&skbs, dev, to, cpu, local);
 
 		/* get the next index... */
 
                 index = pfq_spsc_next_index(txq, index);
-
         }
 
 	if (pfq_skbuff_batch_len(&skbs))
-		pfq_queue_xmit_batch();
+		 __pfq_queue_xmit_batch(&skbs, dev, to, cpu, local);
 
         return n;
 }
-
 
 
 static int
