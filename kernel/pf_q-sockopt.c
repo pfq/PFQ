@@ -111,7 +111,7 @@ int pfq_getsockopt(struct socket *sock,
                 if (len != sizeof(int))
                         return -EINVAL;
 
-                enabled = so->mem_addr == NULL ? 0 : 1;
+                enabled = so->shmem_addr == NULL ? 0 : 1;
 
                 if (copy_to_user(optval, &enabled, sizeof(enabled)))
                         return -EFAULT;
@@ -148,10 +148,10 @@ int pfq_getsockopt(struct socket *sock,
 
         case Q_SO_GET_QUEUE_MEM:
         {
-                if (len != sizeof(so->mem_size))
+                if (len != sizeof(so->shmem_size))
                         return -EINVAL;
 
-                if (copy_to_user(optval, &so->mem_size, sizeof(so->mem_size)))
+                if (copy_to_user(optval, &so->shmem_size, sizeof(so->shmem_size)))
                         return -EFAULT;
         } break;
 
@@ -321,7 +321,7 @@ int pfq_setsockopt(struct socket *sock,
                         so->tx_opt.thread = NULL;
                 }
 
-                err = pfq_mpdb_shared_queue_toggle(so, active);
+                err = pfq_shared_queue_toggle(so, active);
                 if (err < 0) {
                         pr_devel("[PFQ|%d] queue toggle error!\n", so->id);
                         return err;

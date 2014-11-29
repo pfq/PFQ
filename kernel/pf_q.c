@@ -49,6 +49,7 @@
 
 #include <linux/pf_q.h>
 
+#include <pf_q-shmem.h>
 #include <pf_q-proc.h>
 #include <pf_q-macro.h>
 #include <pf_q-sockopt.h>
@@ -623,8 +624,8 @@ pfq_create(
 	so->egress_index = 0;
 	so->egress_queue = 0;
 
-        so->mem_addr 	 = NULL;
-        so->mem_size 	 = 0;
+        so->shmem_addr 	 = NULL;
+        so->shmem_size 	 = 0;
 
         down(&sock_sem);
 
@@ -674,8 +675,8 @@ pfq_release(struct socket *sock)
         pfq_leave_all_groups(so->id);
         pfq_release_sock_id(so->id);
 
-        if (so->mem_addr)
-                pfq_mpdb_shared_queue_toggle(so, false);
+        if (so->shmem_addr)
+                pfq_shared_queue_toggle(so, false);
 
         down(&sock_sem);
 
@@ -698,48 +699,6 @@ pfq_release(struct socket *sock)
         up_read(&symtable_rw_sem);
 
 	pr_devel("[PFQ|%d] socket closed.\n", id);
-        return 0;
-}
-
-
-static inline
-int
-pfq_memory_mmap(struct vm_area_struct *vma,
-                unsigned long size, char *ptr, unsigned int flags)
-{
-        vma->vm_flags |= flags;
-
-        if (remap_vmalloc_range(vma, ptr, 0) != 0) {
-
-                printk(KERN_WARNING "[PFQ] remap_vmalloc_range!\n");
-                return -EAGAIN;
-        }
-
-        return 0;
-}
-
-
-static int
-pfq_mmap(struct file *file, struct socket *sock, struct vm_area_struct *vma)
-{
-        struct pfq_sock *so = pfq_sk(sock->sk);
-
-        unsigned long size = (unsigned long)(vma->vm_end - vma->vm_start);
-        int ret;
-
-        if(size & (PAGE_SIZE-1)) {
-                printk(KERN_WARNING "[PFQ] pfq_mmap: size not multiple of PAGE_SIZE!\n");
-                return -EINVAL;
-        }
-
-        if(size > so->mem_size) {
-                printk(KERN_WARNING "[PFQ] pfq_mmap: area too large!\n");
-                return -EINVAL;
-        }
-
-        if((ret = pfq_memory_mmap(vma, size, so->mem_addr, VM_LOCKED)) < 0)
-                return ret;
-
         return 0;
 }
 

@@ -167,8 +167,8 @@ struct pfq_sock
         int 		    	egress_index;
         int 		    	egress_queue;
 
-        void *              	mem_addr;         	/* global memory mapped area */
-        size_t              	mem_size;         	/* global memory mapped size */
+        void *              	shmem_addr;         	/* memory mapped area */
+        size_t              	shmem_size;         	/* memory mapped size */
 
         struct pfq_rx_opt   	rx_opt;
         struct pfq_tx_opt   	tx_opt;
@@ -180,7 +180,7 @@ static inline
 struct pfq_queue_hdr *
 pfq_get_queue_hdr(struct pfq_sock *p)
 {
-        return (struct pfq_queue_hdr *) p->mem_addr;
+        return (struct pfq_queue_hdr *) p->shmem_addr;
 }
 
 

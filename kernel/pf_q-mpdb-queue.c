@@ -32,6 +32,8 @@
 #include <linux/pf_q.h>
 
 #include <pf_q-mpdb-queue.h>
+
+#include <pf_q-shmem.h>
 #include <pf_q-bitops.h>
 #include <pf_q-module.h>
 #include <pf_q-sock.h>
@@ -169,61 +171,19 @@ size_t pfq_mpdb_enqueue_batch(struct pfq_rx_opt *ro,
 }
 
 
-int pfq_mpdb_shared_queue_alloc(struct pfq_sock *so, size_t queue_mem)
-{
-        /* calculate the size of the buffer */
 
-	size_t tm = PAGE_ALIGN(queue_mem);
-        size_t tot_mem;
-
-	/* align bufflen to page size */
-
-	size_t num_pages = tm / PAGE_SIZE; void *addr;
-
-	num_pages += (num_pages + (PAGE_SIZE-1)) & (PAGE_SIZE-1);
-	tot_mem = num_pages*PAGE_SIZE;
-
-	/* Memory is already zeroed */
-
-        addr = vmalloc_user(tot_mem);
-	if (addr == NULL) {
-		printk(KERN_WARNING "[PFQ|%d] pfq_queue_alloc: out of memory (vmalloc %zu bytes)!", so->id, tot_mem);
-		return -ENOMEM;
-	}
-
-        so->mem_addr = addr;
-        so->mem_size = tot_mem;
-
-	pr_devel("[PFQ|%d] pfq_queue_alloc: caplen=%zu maxlen=%zu memory=%zu bytes.\n", so->id, so->rx_opt.caplen, so->tx_opt.maxlen, tot_mem);
-	return 0;
-}
-
-
-void pfq_mpdb_shared_queue_free(struct pfq_sock *so)
-{
-	if (so->mem_addr) {
-
-		vfree(so->mem_addr);
-
-		so->mem_addr = NULL;
-		so->mem_size = 0;
-
-		pr_devel("[PFQ|%d] queue freed.\n", so->id);
-	}
-}
-
-
-int pfq_mpdb_shared_queue_toggle(struct pfq_sock *so, bool active)
+int
+pfq_shared_queue_toggle(struct pfq_sock *so, bool active)
 {
         if (active)
         {
-                if (!so->mem_addr) {
+                if (!so->shmem_addr) {
 
                         struct pfq_queue_hdr * queue;
 
                         /* alloc queue memory */
 
-                        if (pfq_mpdb_shared_queue_alloc(so, pfq_queue_total_mem(so)) < 0)
+                        if (pfq_shared_memory_alloc(so, pfq_total_shared_mem(so)) < 0)
                         {
                                 return -ENOMEM;
                         }
@@ -232,7 +192,7 @@ int pfq_mpdb_shared_queue_toggle(struct pfq_sock *so, bool active)
 
                         /* initialize queues headers */
 
-                        queue = (struct pfq_queue_hdr *)so->mem_addr;
+                        queue = (struct pfq_queue_hdr *)so->shmem_addr;
 
                         /* initialize rx queue header */
 
@@ -252,8 +212,8 @@ int pfq_mpdb_shared_queue_toggle(struct pfq_sock *so, bool active)
 
                         /* update the queues base_addr */
 
-                        so->rx_opt.queue_base = so->mem_addr + sizeof(struct pfq_queue_hdr);
-                        so->tx_opt.queue_base = so->mem_addr + sizeof(struct pfq_queue_hdr) + pfq_queue_mpdb_mem(so);
+                        so->rx_opt.queue_base = so->shmem_addr + sizeof(struct pfq_queue_hdr);
+                        so->tx_opt.queue_base = so->shmem_addr + sizeof(struct pfq_queue_hdr) + pfq_queue_mpdb_mem(so);
 
                         /* commit both the queues */
 
@@ -270,14 +230,14 @@ int pfq_mpdb_shared_queue_toggle(struct pfq_sock *so, bool active)
         }
         else
         {
-                if (so->mem_addr) {
+                if (so->shmem_addr) {
 
 			atomic_long_set(&so->rx_opt.queue_hdr, 0);
 			atomic_long_set(&so->tx_opt.queue_hdr, 0);
 
                         msleep(Q_GRACE_PERIOD);
 
-                        pfq_mpdb_shared_queue_free(so);
+                        pfq_shared_memory_free(so);
 
 			pr_devel("[PFQ|%d] tx/rx queues disabled.\n", so->id);
                 }
