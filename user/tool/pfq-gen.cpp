@@ -228,7 +228,7 @@ namespace thread
 
 void usage(const char *name)
 {
-    throw std::runtime_error(std::string("usage: ") + name + " [-h|--help] [-r|--rand-ip] [-a|--async] [-b|--batch N] [-l|--len N] [-s|--slot N] T1 T2... \n\t| T = dev[.queue.queue..]");
+    throw std::runtime_error(std::string("usage: ") + name + " [-h|--help] [-r|--rand-ip] [-a|--async] [-s|--queuel-slots N] [-b|--batch-sync N] [-l|--len N] T1 T2... \n\t| T = dev[.queue.queue..]");
 }
 
 
