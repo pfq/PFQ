@@ -146,7 +146,7 @@ int pfq_getsockopt(struct socket *sock,
                         return -EFAULT;
         } break;
 
-        case Q_SO_GET_QUEUE_MEM:
+        case Q_SO_GET_SHARED_MEM:
         {
                 if (len != sizeof(so->shmem_size))
                         return -EINVAL;

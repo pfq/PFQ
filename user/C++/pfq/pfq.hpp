@@ -451,7 +451,7 @@ namespace pfq {
 
             size_t tot_mem; socklen_t size = sizeof(tot_mem);
 
-            if (::getsockopt(fd_, PF_Q, Q_SO_GET_QUEUE_MEM, &tot_mem, &size) == -1)
+            if (::getsockopt(fd_, PF_Q, Q_SO_GET_SHARED_MEM, &tot_mem, &size) == -1)
                 throw pfq_error(errno, "PFQ: queue memory error");
 
             pdata_->queue_tot_mem = tot_mem;
