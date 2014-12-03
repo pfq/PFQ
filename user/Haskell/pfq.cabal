@@ -23,4 +23,4 @@ Library
                    Network.PFq.Experimental
                    Network.PFq.Lang
   ghc-options:     -Wall -fno-warn-missing-signatures
-
+  extra-libraries: pfq
