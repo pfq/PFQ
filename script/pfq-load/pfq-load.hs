@@ -154,8 +154,8 @@ main = do
 
     -- check irqbalance deaemon
 
-    when ((not . null) bal) $ do
-        putStrBoldLn $ "Irqbalance daemon detected pid " ++ show (bal) ++ ". Sending SIGKILL..."
+    unless (null bal) $ do
+        putStrBoldLn $ "Irqbalance daemon detected pid " ++ show bal ++ ". Sending SIGKILL..."
         forM_ bal $ signalProcess sigKILL
 
     -- check queues
@@ -278,7 +278,7 @@ setupDevice (Device dev speed fctrl opts) = do
         let s = fromJust speed
         putStrBoldLn $ "Setting speed (" ++ show s ++ ") for " ++ dev ++ "..."
         runSystem ("/sbin/ethtool -s " ++ dev ++ " speed " ++ show s ++ " duplex full") "ethtool error!"
-    forM_ opts $ \(opt, arg, value) -> do
+    forM_ opts $ \(opt, arg, value) ->
         runSystem ("/sbin/ethtool " ++ opt ++ " " ++ dev ++ " " ++ arg ++ " " ++ show value) "ethtool error!"
 
 getDevices ::  Config -> [String]
