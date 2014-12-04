@@ -147,7 +147,7 @@ main = do
     -- load options...
     home <- getHomeDirectory
     opt  <- cmdArgsRun options
-    conf <- (<> mkConfig opt) <$> loadConfig (fromMaybe (home </> ".pfq.conf") (config opt))
+    conf <- (<> mkConfig opt) <$> loadConfig (fromMaybe (home </> ".pfq.conf") (config opt)) opt
     pmod <- getProcModules
     core <- getNumberOfPhyCores
     bal  <- getProcessID "irqbalance"
@@ -165,19 +165,22 @@ main = do
     evalStateT (unloadModule "pfq") pmod
 
     -- load PFQ...
-    loadModule (pfq_module conf) (pfq_options conf)
+    if null (pfq_module conf)
+        then loadModule ProbeMod  "pfq" (pfq_options conf)
+        else loadModule InsertMod (pfq_module conf) (pfq_options conf)
 
     -- update current loaded proc/modules
     pmod2 <- getProcModules
 
     -- unload drivers...
-    putStrBoldLn "Unloading vanilla/standard drivers..."
-    evalStateT (mapM_ (unloadModule . takeBaseName . drvmod) (drivers conf)) pmod2
+    unless (null (drivers conf)) $ do
+        putStrBoldLn "Unloading vanilla/standard drivers..."
+        evalStateT (mapM_ (unloadModule . takeBaseName . drvmod) (drivers conf)) pmod2
 
     -- load device drivers...
     forM_ (drivers conf) $ \drv -> do
         let rss = maybe [] (mkRssOption (drvmod drv) (length $ devices drv)) (queues opt)
-        loadModule (drvmod drv) (drvopt drv ++ rss)
+        loadModule InsertMod (drvmod drv) (drvopt drv ++ rss)
         mapM_ setupDevice (devices drv)
 
     -- set interrupt affinity...
@@ -212,9 +215,9 @@ mkConfig
     where isModuleName = (".ko" `isSuffixOf`)
 
 
-loadConfig :: FilePath -> IO Config
-loadConfig conf =
-    liftM read $ fmap (unlines . filter (not . ("#" `isPrefixOf`)) . lines) (readFile conf)
+loadConfig :: FilePath -> Options -> IO Config
+loadConfig conf opt =
+    catchIOError (liftM (read . unlines . filter (not . ("#" `isPrefixOf`)) . lines) (readFile conf)) (\_ -> return $ mkConfig opt)
 
 
 getNumberOfPhyCores :: IO Int
@@ -260,11 +263,16 @@ unloadModule name = do
           isModuleLoaded name =  any (\(mod,_) -> mod == name)
 
 
-loadModule :: String -> [String] -> IO ()
-loadModule name opts = do
+data LoadMode = InsertMod | ProbeMod
+                    deriving Eq
+
+loadModule :: LoadMode -> String -> [String] -> IO ()
+loadModule mode name opts = do
     putStrBoldLn $ "Loading " ++ name ++ "..."
-    runSystem ("/sbin/insmod " ++ name ++ " " ++ unwords opts)
+    runSystem (tool ++ " " ++ name ++ " " ++ unwords opts)
         ("insmod " ++ name ++ " error.")
+    where tool = if mode == InsertMod then "/sbin/insmod"
+                                      else "/sbin/modprobe"
 
 
 setupDevice :: Device -> IO ()
