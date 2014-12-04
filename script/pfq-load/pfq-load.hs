@@ -275,7 +275,7 @@ setupIRQAffinity :: Int -> [Int] -> String -> [String] -> IO ()
 setupIRQAffinity fc excl algo devs = do
     let excl_opt = unwords (map (\n -> " -e " ++ show n) excl)
     unless (null algo) $
-        runSystem ("irq-affinity -f " ++ show fc  ++ " " ++ excl_opt ++ " -a " ++ algo ++ " -m TxRx " ++ unwords devs) "irq-affinity error!"
+        runSystem ("/root/.cabal/bin/irq-affinity -f " ++ show fc  ++ " " ++ excl_opt ++ " -a " ++ algo ++ " -m TxRx " ++ unwords devs) "irq-affinity error!"
 
 
 runSystem :: String -> String -> IO ()
