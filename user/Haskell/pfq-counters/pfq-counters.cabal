@@ -23,6 +23,7 @@ Executable pfq-counters
 
     extra-libraries:    pfq
     ghc-options:
+        -O2
         -threaded
         -rtsopts
 
