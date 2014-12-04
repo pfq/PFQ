@@ -152,17 +152,16 @@ main = do
     core <- getNumberOfPhyCores
     bal  <- getProcessID "irqbalance"
 
-    -- check irqbalance deaemon
-
-    unless (null bal) $ do
-        putStrBoldLn $ "Irqbalance daemon detected pid " ++ show bal ++ ". Sending SIGKILL..."
-        forM_ bal $ signalProcess sigKILL
-
     -- check queues
     when (maybe False (> core) (queues opt)) $ error "queues number too big!"
 
     -- unload pfq and dependent drivers...
     evalStateT (unloadModule "pfq") pmod
+
+    -- check irqbalance deaemon
+    unless (null bal) $ do
+        putStrBoldLn $ "Irqbalance daemon detected pid " ++ show bal ++ ". Sending SIGKILL..."
+        forM_ bal $ signalProcess sigKILL
 
     -- load PFQ...
     if null (pfq_module conf)
