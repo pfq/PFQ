@@ -35,9 +35,12 @@ import System.Console.ANSI
 import System.Console.CmdArgs
 import System.Directory (getHomeDirectory)
 import System.IO.Unsafe
+import System.IO.Error
 import System.Process
 import System.Exit
 import System.FilePath
+import System.Posix.Signals
+import System.Posix.Types
 
 proc_cpuinfo, proc_modules :: String
 proc_cpuinfo = "/proc/cpuinfo"
@@ -145,8 +148,15 @@ main = do
     home <- getHomeDirectory
     opt  <- cmdArgsRun options
     conf <- (<> mkConfig opt) <$> loadConfig (fromMaybe (home </> ".pfq.conf") (config opt))
-    pmod <- loadProcModules
+    pmod <- getProcModules
     core <- getNumberOfPhyCores
+    bal  <- getProcessID "irqbalance"
+
+    -- check irqbalance deaemon
+
+    when ((not . null) bal) $ do
+        putStrBoldLn $ "Irqbalance daemon detected pid " ++ show (bal) ++ ". Sending SIGKILL..."
+        forM_ bal $ signalProcess sigKILL
 
     -- check queues
     when (maybe False (> core) (queues opt)) $ error "queues number too big!"
@@ -158,7 +168,7 @@ main = do
     loadModule (pfq_module conf) (pfq_options conf)
 
     -- update current loaded proc/modules
-    pmod2 <- loadProcModules
+    pmod2 <- getProcModules
 
     -- unload drivers...
     putStrBoldLn "Unloading vanilla/standard drivers..."
@@ -216,8 +226,8 @@ type ProcModules = [ (String, [String]) ]
 type ModStateT   = StateT ProcModules
 
 
-loadProcModules :: IO ProcModules
-loadProcModules =
+getProcModules :: IO ProcModules
+getProcModules =
     readFile proc_modules >>= \file ->
         return $ map (\l -> let ts = words l in (head ts,  filter (\s -> (not . null) s && s /= "-") $
                                 splitOn "," (ts !! 3))) $ lines file
@@ -225,6 +235,10 @@ loadProcModules =
 
 rmmodFromProcMOdules :: String -> ProcModules -> ProcModules
 rmmodFromProcMOdules name = filter (\(m,ds) -> m /= name )
+
+
+getProcessID :: String -> IO [ProcessID]
+getProcessID name = liftM (map read . words) $ catchIOError (readProcess "/bin/pidof" [name] "") (\_-> return [])
 
 
 moduleDependencies :: String -> ProcModules -> [String]
