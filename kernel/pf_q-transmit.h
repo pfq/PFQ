@@ -36,7 +36,17 @@
 #include <pf_q-module.h>
 #include <pf_q-GC.h>
 
-extern int pfq_tx_queue_flush(struct pfq_tx_opt *to, struct net_device *dev, int cpu, int node);
+
+extern int __pfq_tx_queue_flush(size_t index, struct pfq_tx_opt *to, struct net_device *dev, int cpu, int node);
+
+static inline int
+pfq_tx_queue_flush(size_t index, struct pfq_tx_opt *to, struct net_device *dev)
+{
+	return __pfq_tx_queue_flush(index, to, dev, smp_processor_id(), NUMA_NO_NODE);
+}
+
+
+extern int pfq_tx_queue_flush_or_wakeup(struct pfq_sock *so, int index);
 
 extern int pfq_queue_xmit(struct pfq_skbuff_batch *skbs, struct net_device *dev, int queue_index);
 extern int pfq_queue_xmit_by_mask(struct pfq_skbuff_batch *skbs, unsigned long long skbs_mask, struct net_device *dev, int queue_index);

@@ -54,7 +54,7 @@ void *pfq_skb_copy_from_linear_data(const struct sk_buff *skb, void *to, size_t 
 static inline
 char *mpdb_slot_ptr(struct pfq_rx_opt *ro, struct pfq_rx_queue_hdr *qd, size_t index, size_t slot)
 {
-	return (char *)(ro->queue_base) + ( (index&1 ? ro->size : 0 ) + slot) * ro->slot_size;
+	return (char *)(ro->base_addr) + ( (index&1 ? ro->size : 0 ) + slot) * ro->slot_size;
 }
 
 
@@ -171,75 +171,92 @@ size_t pfq_mpdb_enqueue_batch(struct pfq_rx_opt *ro,
 }
 
 
+int
+pfq_shared_queue_enable(struct pfq_sock *so)
+{
+	if (!so->shmem_addr) {
+
+		struct pfq_queue_hdr * queue;
+		size_t n;
+
+		/* alloc queue memory */
+
+		if (pfq_shared_memory_alloc(so, pfq_total_shared_mem(so)) < 0)
+			return -ENOMEM;
+
+		/* so->mem_addr and so->mem_size are correctly configured */
+
+		/* initialize queues headers */
+
+		queue = (struct pfq_queue_hdr *)so->shmem_addr;
+
+		/* initialize rx queue header */
+
+		queue->rx.data              = (1L << 24);
+		queue->rx.size              = so->rx_opt.size;
+		queue->rx.slot_size         = so->rx_opt.slot_size;
+
+		for(n = 0; n < Q_MAX_TX_QUEUES; n++)
+		{
+			queue->tx[n].producer.index    = 0;
+			queue->tx[n].producer.cache    = 0;
+			queue->tx[n].consumer.index    = 0;
+			queue->tx[n].consumer.cache    = 0;
+
+			queue->tx[n].size_mask         = so->tx_opt.size - 1;
+			queue->tx[n].max_len           = so->tx_opt.maxlen;
+			queue->tx[n].size              = so->tx_opt.size;
+			queue->tx[n].slot_size         = so->tx_opt.slot_size;
+
+			so->tx_opt.queue[n].base_addr  = so->shmem_addr + sizeof(struct pfq_queue_hdr) + pfq_queue_mpdb_mem(so) + pfq_queue_spsc_mem(so) * n;
+		}
+
+		/* update the queues base_addr */
+
+		so->rx_opt.base_addr = so->shmem_addr + sizeof(struct pfq_queue_hdr);
+
+		/* commit both the queues */
+
+		smp_wmb();
+
+		atomic_long_set(&so->rx_opt.queue_hdr, (long)&queue->rx);
+
+		for(n = 0; n < Q_MAX_TX_QUEUES; n++)
+		{
+			atomic_long_set(&so->tx_opt.queue[n].queue_hdr, (long)&queue->tx[n]);
+		}
+
+		pr_devel("[PFQ|%d] tx/rx queues enabled: rx_size=%zu rx_slot_size=%zu tx_size=%zu tx_slot_size=%zu\n", so->id,
+				so->rx_opt.size,
+				so->rx_opt.slot_size,
+				so->tx_opt.size,
+				so->tx_opt.slot_size);
+	}
+	return 0;
+}
+
 
 int
-pfq_shared_queue_toggle(struct pfq_sock *so, bool active)
+pfq_shared_queue_disable(struct pfq_sock *so)
 {
-        if (active) {
+	size_t n;
 
-                if (!so->shmem_addr) {
+	if (so->shmem_addr) {
 
-                        struct pfq_queue_hdr * queue;
+		atomic_long_set(&so->rx_opt.queue_hdr, 0);
 
-                        /* alloc queue memory */
+		for(n = 0; n < Q_MAX_TX_QUEUES; n++)
+		{
+			atomic_long_set(&so->tx_opt.queue[n].queue_hdr, 0);
+		}
 
-                        if (pfq_shared_memory_alloc(so, pfq_total_shared_mem(so)) < 0)
-                                return -ENOMEM;
+		msleep(Q_GRACE_PERIOD);
 
-                        /* so->mem_addr and so->mem_size are correctly configured */
+		pfq_shared_memory_free(so);
 
-                        /* initialize queues headers */
-
-                        queue = (struct pfq_queue_hdr *)so->shmem_addr;
-
-                        /* initialize rx queue header */
-
-                        queue->rx.data              = (1L << 24);
-                        queue->rx.size              = so->rx_opt.size;
-                        queue->rx.slot_size         = so->rx_opt.slot_size;
-
-                        queue->tx.producer.index    = 0;
-                        queue->tx.producer.cache    = 0;
-                        queue->tx.consumer.index    = 0;
-                        queue->tx.consumer.cache    = 0;
-
-                        queue->tx.size_mask         = so->tx_opt.size - 1;
-                        queue->tx.max_len           = so->tx_opt.maxlen;
-                        queue->tx.size              = so->tx_opt.size;
-                        queue->tx.slot_size         = so->tx_opt.slot_size;
-
-                        /* update the queues base_addr */
-
-                        so->rx_opt.queue_base = so->shmem_addr + sizeof(struct pfq_queue_hdr);
-                        so->tx_opt.queue_base = so->shmem_addr + sizeof(struct pfq_queue_hdr) + pfq_queue_mpdb_mem(so);
-
-                        /* commit both the queues */
-
-                        smp_wmb();
-
-			atomic_long_set(&so->rx_opt.queue_hdr, (long)&queue->rx);
-			atomic_long_set(&so->tx_opt.queue_hdr, (long)&queue->tx);
-
-                        pr_devel("[PFQ|%d] tx/rx queues enabled: rx_size=%d rx_slot_size=%d tx_size=%d tx_slot_size=%d\n", so->id, queue->rx.size,
-                                        queue->rx.slot_size,
-                                        queue->tx.size,
-                                        queue->tx.slot_size);
-                }
-        }
-        else
-        {
-                if (so->shmem_addr) {
-
-			atomic_long_set(&so->rx_opt.queue_hdr, 0);
-			atomic_long_set(&so->tx_opt.queue_hdr, 0);
-
-                        msleep(Q_GRACE_PERIOD);
-
-                        pfq_shared_memory_free(so);
-
-			pr_devel("[PFQ|%d] tx/rx queues disabled.\n", so->id);
-                }
-        }
+		so->shmem_addr = 0;
+		pr_devel("[PFQ|%d] tx/rx queues disabled.\n", so->id);
+	}
 
         return 0;
 }

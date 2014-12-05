@@ -69,10 +69,9 @@ static inline void smp_wmb() { barrier(); }
 
 #endif /* __KERNEL__ */
 
-
 #define Q_MAX_COUNTERS           	64
 #define Q_MAX_PERSISTENT 		1024
-
+#define Q_MAX_TX_QUEUES 		4
 
 /* Common header */
 
@@ -154,7 +153,7 @@ struct pfq_rx_queue_hdr
 struct pfq_queue_hdr
 {
         struct pfq_rx_queue_hdr rx;
-        struct pfq_tx_queue_hdr tx;
+        struct pfq_tx_queue_hdr tx[Q_MAX_TX_QUEUES];
 };
 
 
@@ -263,15 +262,16 @@ void pfq_spsc_read_commit(struct pfq_tx_queue_hdr *q)
    +------------------+----------------------+          +----------------------+          +----------------------+
    | pfq_queue_hdr    | pfq_pkt_hdr | packet | ...      | pfq_pkt_hdr | packet |...       | pfq_pkt_hdr | packet | ...
    +------------------+----------------------+          +----------------------+          +----------------------+
-   +                             +                             +
-   | <------+ queue rx  +------> |  <----+ queue rx +------>   |  <----+ queue tx +------>
-   +                             +                             +
+   +                             +                             +                            +
+   | <------+ queue rx  +------> |  <----+ queue rx +------>   |  <----+ queue tx +------>  |  <----+ queue tx +------>
+   +                             +                             +                            +
    */
 
 
 /* PFQ socket options */
 
-#define Q_SO_TOGGLE_QUEUE           	1       /* enable = 1, disable = 0 */
+#define Q_SO_DISABLE 			0
+#define Q_SO_ENABLE 			1
 
 #define Q_SO_SET_RX_TSTAMP          	2
 #define Q_SO_SET_RX_CAPLEN          	3
@@ -284,7 +284,6 @@ void pfq_spsc_read_commit(struct pfq_tx_queue_hdr *q)
 #define Q_SO_GROUP_UNBIND 	    	9
 #define Q_SO_GROUP_JOIN             	10
 #define Q_SO_GROUP_LEAVE            	11
-
 #define Q_SO_GROUP_FPROG            	12      /* Berkeley packet filter */
 #define Q_SO_GROUP_VLAN_FILT_TOGGLE 	13      /* enable/disable VLAN filters */
 #define Q_SO_GROUP_VLAN_FILT        	14      /* enable/disable VLAN ID filters */
@@ -297,36 +296,29 @@ void pfq_spsc_read_commit(struct pfq_tx_queue_hdr *q)
 #define Q_SO_GET_STATUS             	21      /* 1 = enabled, 0 = disabled */
 #define Q_SO_GET_STATS              	22
 #define Q_SO_GET_SHARED_MEM          	23      /* size of the shared memory in (bytes) */
-
 #define Q_SO_GET_RX_TSTAMP          	24
 #define Q_SO_GET_RX_CAPLEN          	25
 #define Q_SO_GET_RX_SLOTS           	26
 #define Q_SO_GET_RX_OFFSET          	27
-
 #define Q_SO_GET_TX_MAXLEN          	28
 #define Q_SO_GET_TX_SLOTS           	29
-
 #define Q_SO_GET_GROUPS             	30
 #define Q_SO_GET_GROUP_STATS        	31
 #define Q_SO_GET_GROUP_COUNTERS     	32
 
 #define Q_SO_TX_BIND         		33
-#define Q_SO_TX_THREAD_START        	34
-#define Q_SO_TX_THREAD_STOP         	35
-#define Q_SO_TX_THREAD_WAKEUP       	36
-#define Q_SO_TX_QUEUE_FLUSH         	37
+#define Q_SO_TX_UNBIND 			34
+#define Q_SO_TX_FLUSH			35
 
-
-/* async transmission */
-
-#define Q_TX_ASYNC_DEFERRED 		0
-#define Q_TX_ASYNC_THREADED		1
 
 /* general placeholders */
 
 #define Q_ANY_DEVICE         -1
 #define Q_ANY_QUEUE          -1
 #define Q_ANY_GROUP          -1
+
+#define Q_TX_SYNC	     -1
+#define Q_TX_ANY_CPU	     65535
 
 /* timestamp */
 
@@ -379,7 +371,6 @@ struct pfq_functional_arg_descr
 };
 
 
-
 /*
  * Functional descriptor:
  */
@@ -412,7 +403,11 @@ struct pfq_vlan_toggle
 
 struct pfq_binding
 {
-        int gid;
+        union {
+        	int gid;
+        	int cpu;
+	};
+
         int if_index;
         int hw_queue;
 };

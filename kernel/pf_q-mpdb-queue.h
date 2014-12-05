@@ -34,14 +34,15 @@
 #include <pf_q-GC.h>
 
 
+int pfq_shared_queue_enable(struct pfq_sock *so);
+int pfq_shared_queue_disable(struct pfq_sock *so);
+
 extern size_t pfq_mpdb_enqueue_batch(struct pfq_rx_opt *ro,
 		                     struct gc_queue_buff *queue,
 		                     unsigned long long skbs_mask,
 		                     int burst_len,
 		                     int gid);
 
-
-int   pfq_shared_queue_toggle(struct pfq_sock *so, bool active);
 
 static inline size_t pfq_queue_mpdb_mem(struct pfq_sock *so)
 {
@@ -50,7 +51,7 @@ static inline size_t pfq_queue_mpdb_mem(struct pfq_sock *so)
 
 static inline size_t pfq_queue_spsc_mem(struct pfq_sock *so)
 {
-        return so->tx_opt.size * so->tx_opt.slot_size;
+        return so->tx_opt.size * so->tx_opt.slot_size * Q_MAX_TX_QUEUES;
 }
 
 

@@ -654,6 +654,7 @@ pfq_release(struct socket *sock)
         struct sock * sk = sock->sk;
         struct pfq_sock *so;
         int id, total = 0;
+        int n;
 
 	if (!sk)
 		return 0;
@@ -663,12 +664,14 @@ pfq_release(struct socket *sock)
 
         /* stop TX thread (if running) */
 
-        if (so->tx_opt.thread) {
-
-                pr_devel("[PFQ|%d] stopping TX thread...\n", id);
-                kthread_stop(so->tx_opt.thread);
-                so->tx_opt.thread = NULL;
-        }
+	for(n = 0; n < so->tx_opt.num_queues; n++)
+	{
+		if (so->tx_opt.queue[n].task) {
+			pr_devel("[PFQ|%d] stopping TX thread@%p\n", id, so->tx_opt.queue[n].task);
+			kthread_stop(so->tx_opt.queue[n].task);
+			so->tx_opt.queue[n].task = NULL;
+		}
+	}
 
         pr_devel("[PFQ|%d] releasing socket...\n", id);
 
@@ -676,7 +679,7 @@ pfq_release(struct socket *sock)
         pfq_release_sock_id(so->id);
 
         if (so->shmem_addr)
-                pfq_shared_queue_toggle(so, false);
+                pfq_shared_queue_disable(so);
 
         down(&sock_sem);
 

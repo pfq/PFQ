@@ -29,6 +29,15 @@
  */
 
 
+#include <pf_q-sock.h>
+
 extern int pfq_tx_thread(void *data);
+
+struct pfq_thread_data
+{
+ 	struct pfq_sock *so;
+       	size_t 		 id;
+};
+
 
 #endif /* _PF_Q_THREAD_H_ */

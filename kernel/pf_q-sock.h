@@ -32,6 +32,7 @@
 
 #include <pf_q-macro.h>
 #include <pf_q-stats.h>
+#include <pf_q-shmem.h>
 
 
 extern atomic_long_t pfq_sock_vector[Q_MAX_ID];
@@ -40,7 +41,7 @@ extern atomic_long_t pfq_sock_vector[Q_MAX_ID];
 struct pfq_rx_opt
 {
 	atomic_long_t 		queue_hdr;
-	void 			*queue_base;
+	void 		       *base_addr;
 
 	int    			tstamp;
 
@@ -70,7 +71,7 @@ void pfq_rx_opt_init(struct pfq_rx_opt *that, size_t caplen)
 
         atomic_long_set(&that->queue_hdr, 0);
 
-        that->queue_base = NULL;
+        that->base_addr = NULL;
 
         /* disable tiemstamping by default */
         that->tstamp    = false;
@@ -94,26 +95,29 @@ void pfq_rx_opt_init(struct pfq_rx_opt *that, size_t caplen)
 }
 
 
-struct pfq_tx_opt
+struct pfq_tx_queue_info
 {
 	atomic_long_t 		queue_hdr;
-
-	void 			*queue_base;
-
-	uint64_t 		counter;
-
-	size_t  		maxlen;
-	size_t  		size;
-	size_t  		slot_size;
-
-	struct net_device 	*dev;
-	struct netdev_queue 	*txq;
+	void 		       *base_addr;
 
 	int 			if_index;
 	int 			hw_queue;
 	int 			cpu;
 
-	struct task_struct 	*thread;
+	struct task_struct     *task;
+};
+
+
+struct pfq_tx_opt
+{
+	uint64_t 		counter;
+
+	size_t  		maxlen;
+	size_t  		size;
+	size_t  		slot_size;
+        size_t 	       	 	num_queues;
+
+	struct pfq_tx_queue_info queue[Q_MAX_TX_QUEUES];
 
 	struct pfq_socket_tx_stats stats;
 
@@ -122,9 +126,9 @@ struct pfq_tx_opt
 
 static inline
 struct pfq_tx_queue_hdr *
-pfq_get_tx_queue_hdr(struct pfq_tx_opt *that)
+pfq_get_tx_queue_hdr(struct pfq_tx_opt *that, int index)
 {
-	return (struct pfq_tx_queue_hdr *)atomic_long_read(&that->queue_hdr);
+	return (struct pfq_tx_queue_hdr *)atomic_long_read(&that->queue[index].queue_hdr);
 }
 
 
@@ -132,25 +136,26 @@ static inline
 void pfq_tx_opt_init(struct pfq_tx_opt *that, size_t maxlen)
 {
         /* the queue is allocate later, when the socket is enabled */
+        int n;
 
-	atomic_long_set(&that->queue_hdr, 0);
+        that->counter    = 0;
 
-        that->queue_base = NULL;
+        that->maxlen     = maxlen;
+        that->size       = 0;
+        that->slot_size  = 0;
+	that->num_queues = 0;
 
-        that->counter           = 0;
+	for(n = 0; n < Q_MAX_TX_QUEUES; ++n)
+	{
+		atomic_long_set(&that->queue[n].queue_hdr, 0);
 
-        that->maxlen            = maxlen;
-        that->size              = 0;
-        that->slot_size         = 0;
+        	that->queue[n].base_addr= NULL;
 
-        that->dev               = NULL;
-        that->txq               = NULL;
-
-        that->if_index          = -1;
-        that->hw_queue          = -1;
-        that->cpu               = -1;
-
-        that->thread            = NULL;
+		that->queue[n].if_index = -1;
+		that->queue[n].hw_queue = -1;
+		that->queue[n].cpu      = -1;
+		that->queue[n].task 	= NULL;
+       	}
 
         sparse_set(&that->stats.sent, 0);
         sparse_set(&that->stats.disc, 0);
@@ -169,6 +174,7 @@ struct pfq_sock
 
         void *              	shmem_addr;         	/* memory mapped area */
         size_t              	shmem_size;         	/* memory mapped size */
+	enum pfq_shmem_kind 	shmem_kind;
 
         struct pfq_rx_opt   	rx_opt;
         struct pfq_tx_opt   	tx_opt;

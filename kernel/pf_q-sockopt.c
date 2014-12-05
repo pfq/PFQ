@@ -307,27 +307,85 @@ int pfq_setsockopt(struct socket *sock,
 
         switch(optname)
         {
-        case Q_SO_TOGGLE_QUEUE:
-        {
-                int err, active;
-                if (optlen != sizeof(active))
-                        return -EINVAL;
-                if (copy_from_user(&active, optval, optlen))
-                        return -EFAULT;
+        case Q_SO_ENABLE:
+	{
+		int err = 0;
+                size_t n;
 
-                if (so->tx_opt.thread) {
-                        pr_devel("[PFQ|%d] stopping TX thread...\n", so->id);
-                        kthread_stop(so->tx_opt.thread);
-                        so->tx_opt.thread = NULL;
-                }
-
-                err = pfq_shared_queue_toggle(so, active);
+                err = pfq_shared_queue_enable(so);
                 if (err < 0) {
-                        pr_devel("[PFQ|%d] queue toggle error!\n", so->id);
+                        pr_devel("[PFQ|%d] enable error!\n", so->id);
                         return err;
                 }
 
-        } break;
+		/* start tx kernel threads */
+
+		for(n = 0; n < Q_MAX_TX_QUEUES; n++)
+		{
+			struct pfq_thread_data *data;
+                       	int node;
+
+			if (so->tx_opt.queue[n].if_index == -1)
+				break;
+
+			if (so->tx_opt.queue[n].cpu == -1)
+				continue;
+
+			data = kmalloc(sizeof(struct pfq_thread_data), GFP_KERNEL);
+			if (!data) {
+				printk(KERN_INFO "[PFQ|%d] kernel_thread: could not allocate thread_data! Failed starting thread on cpu %d!\n",
+						so->id, so->tx_opt.queue[n].cpu);
+				err = -EPERM;
+				break;
+			}
+
+			data->so = so;
+			data->id = n;
+			node     = cpu_online(so->tx_opt.queue[n].cpu) ? cpu_to_node(so->tx_opt.queue[n].cpu) : NUMA_NO_NODE;
+
+			pr_devel("[PFQ|%d] creating TX[%zu] thread on cpu %d: if_index=%d hw_queue=%d\n",
+					so->id, n, so->tx_opt.queue[n].cpu, so->tx_opt.queue[n].if_index, so->tx_opt.queue[n].hw_queue);
+
+			so->tx_opt.queue[n].task = kthread_create_on_node(pfq_tx_thread, data, node, "pfq_tx_%d#%zu", so->id, n);
+
+			if (IS_ERR(so->tx_opt.queue[n].task)) {
+				printk(KERN_INFO "[PFQ|%d] kernel_thread: create failed on cpu %d!\n", so->id, so->tx_opt.queue[n].cpu);
+				err = PTR_ERR(so->tx_opt.queue[n].task);
+				so->tx_opt.queue[n].task = NULL;
+				kfree (data);
+				break;
+			}
+
+			if (so->tx_opt.queue[n].cpu != -1)
+				kthread_bind(so->tx_opt.queue[n].task, so->tx_opt.queue[n].cpu);
+		}
+
+		if (err)
+			return err;
+
+	} break;
+
+	case Q_SO_DISABLE:
+	{
+		int err = 0;
+                size_t n;
+
+		for(n = 0; n < so->tx_opt.num_queues; n++)
+		{
+			if (so->tx_opt.queue[n].task) {
+				pr_devel("[PFQ|%d] stopping TX[%zu] thread@%p\n", so->id, n, so->tx_opt.queue[n].task);
+				kthread_stop(so->tx_opt.queue[n].task);
+				so->tx_opt.queue[n].task = NULL;
+			}
+		}
+
+                err = pfq_shared_queue_disable(so);
+                if (err < 0) {
+                        pr_devel("[PFQ|%d] disable error!\n", so->id);
+                        return err;
+                }
+
+	} break;
 
         case Q_SO_GROUP_BIND:
         {
@@ -398,14 +456,14 @@ int pfq_setsockopt(struct socket *sock,
                 if (!dev_get_by_index_rcu(sock_net(&so->sk), info.if_index))
                 {
                         rcu_read_unlock();
-                        pr_devel("[PFQ|%d] TX bind: invalid if_index=%d\n", so->id, info.if_index);
+                        pr_devel("[PFQ|%d] egress bind: invalid if_index=%d\n", so->id, info.if_index);
                         return -EPERM;
                 }
                 rcu_read_unlock();
 
                 if (info.hw_queue < -1)
                 {
-                        pr_devel("[PFQ|%d] TX bind: invalid queue=%d\n", so->id, info.hw_queue);
+                        pr_devel("[PFQ|%d] egress bind: invalid queue=%d\n", so->id, info.hw_queue);
                         return -EPERM;
                 }
 
@@ -486,6 +544,7 @@ int pfq_setsockopt(struct socket *sock,
         case Q_SO_SET_TX_MAXLEN:
         {
                 typeof (so->tx_opt.maxlen) maxlen;
+
                 if (optlen != sizeof(maxlen))
                         return -EINVAL;
                 if (copy_from_user(&maxlen, optval, optlen))
@@ -513,8 +572,7 @@ int pfq_setsockopt(struct socket *sock,
                 if (copy_from_user(&slots, optval, optlen))
                         return -EFAULT;
 
-                if (slots & (slots-1))
-                {
+                if (slots & (slots-1)) {
                         pr_devel("[PFQ|%d] TX slots must be a power of two.\n", so->id);
                         return -EINVAL;
                 }
@@ -659,11 +717,18 @@ int pfq_setsockopt(struct socket *sock,
         case Q_SO_TX_BIND:
         {
                 struct pfq_binding info;
+                size_t i;
 
                 if (optlen != sizeof(info))
                         return -EINVAL;
+
                 if (copy_from_user(&info, optval, optlen))
                         return -EFAULT;
+
+		if (so->tx_opt.num_queues >= Q_MAX_TX_QUEUES) {
+                        pr_devel("[PFQ|%d] TX bind: max number of queues exceeded!\n", so->id);
+			return -EPERM;
+		}
 
                 rcu_read_lock();
                 if (!dev_get_by_index_rcu(sock_net(&so->sk), info.if_index))
@@ -680,131 +745,72 @@ int pfq_setsockopt(struct socket *sock,
                         return -EPERM;
                 }
 
-                so->tx_opt.if_index = info.if_index;
-                so->tx_opt.hw_queue = info.hw_queue;
+                i = so->tx_opt.num_queues;
 
-                pr_devel("[PFQ|%d] TX bind: if_index=%d hw_queue=%d\n", so->id, so->tx_opt.if_index, so->tx_opt.hw_queue);
+		if (info.cpu < -1) {
+			pr_devel("[PFQ|%d] TX[%zu] thread: invalid cpu (%d)!\n", so->id, i, info.cpu);
+			return -EPERM;
+		}
 
-        } break;
+                so->tx_opt.queue[i].if_index = info.if_index;
+                so->tx_opt.queue[i].hw_queue = info.hw_queue;
+                so->tx_opt.queue[i].cpu      = info.cpu;
 
-        case Q_SO_TX_THREAD_START:
-        {
-                int cpu;
+		so->tx_opt.num_queues++;
 
-                if (so->tx_opt.thread)
-                {
-                        pr_devel("[PFQ|%d] TX thread already created on cpu %d!\n", so->id, so->tx_opt.cpu);
-                        return -EPERM;
-                }
-                if (so->tx_opt.if_index == -1)
-                {
-                        pr_devel("[PFQ|%d] TX thread: socket not bound to any device!\n", so->id);
-                        return -EPERM;
-                }
-                if (pfq_get_tx_queue_hdr(&so->tx_opt) == NULL)
-                {
-                        pr_devel("[PFQ|%d] TX thread: socket not enabled!\n", so->id);
-                        return -EPERM;
-                }
-
-                if (optlen != sizeof(cpu))
-                        return -EINVAL;
-
-                if (copy_from_user(&cpu, optval, optlen))
-                        return -EFAULT;
-
-                if (cpu < -1 || (cpu > -1  && !cpu_online(cpu)))
-                {
-                        pr_devel("[PFQ|%d] TX thread: invalid cpu (%d)!\n", so->id, cpu);
-                        return -EPERM;
-                }
-
-                so->tx_opt.cpu = cpu;
-
-                pr_devel("[PFQ|%d] creating TX thread on cpu %d: if_index=%d hw_queue=%d\n", so->id, so->tx_opt.cpu, so->tx_opt.if_index, so->tx_opt.hw_queue);
-
-                so->tx_opt.thread = kthread_create_on_node(pfq_tx_thread,
-                                so,
-                                so->tx_opt.cpu == -1 ? -1 : cpu_to_node(so->tx_opt.cpu),
-                                "pfq_tx_%d", so->id);
-
-                if (IS_ERR(so->tx_opt.thread)) {
-                        printk(KERN_INFO "[PFQ] kernel_thread: create failed on cpu %d!\n", so->tx_opt.cpu);
-                        return PTR_ERR(so->tx_opt.thread);
-                }
-
-                if (so->tx_opt.cpu != -1)
-                        kthread_bind(so->tx_opt.thread, so->tx_opt.cpu);
+                pr_devel("[PFQ|%d] TX[%zu] bind: if_index=%d hw_queue=%d\n", so->id, i,
+                		so->tx_opt.queue[i].if_index, so->tx_opt.queue[i].hw_queue);
 
         } break;
 
-        case Q_SO_TX_THREAD_STOP:
+	case Q_SO_TX_UNBIND:
         {
-                pr_devel("[PFQ|%d] stopping TX thread...\n", so->id);
+        	size_t n;
 
-                if (!so->tx_opt.thread)
-                {
-                        pr_devel("[PFQ|%d] TX thread not running!\n", so->id);
-                        return -EPERM;
-                }
-
-                kthread_stop(so->tx_opt.thread);
-                so->tx_opt.thread = NULL;
-
-                pr_devel("[PFQ|%d] TX thread stopped.\n", so->id);
+         	for(n = 0; n < Q_MAX_TX_QUEUES; ++n)
+		{
+			so->tx_opt.queue[n].if_index = -1;
+			so->tx_opt.queue[n].hw_queue = -1;
+			so->tx_opt.queue[n].cpu      = -1;
+		}
 
         } break;
 
-        case Q_SO_TX_THREAD_WAKEUP:
+        case Q_SO_TX_FLUSH:
         {
-                if (so->tx_opt.if_index == -1)
-                {
-                        pr_devel("[PFQ|%d] TX socket not bound to any device!\n", so->id);
-                        return -EPERM;
-                }
-                if (!so->tx_opt.thread)
-                {
-                        pr_devel("[PFQ|%d] TX thread not running!\n", so->id);
-                        return -EPERM;
-                }
+		int queue, err = 0;
+                size_t n;
 
-                wake_up_process(so->tx_opt.thread);
-        } break;
+        	if (optlen != sizeof(queue))
+        		return -EINVAL;
+        	if (copy_from_user(&queue, optval, optlen))
+        		return -EFAULT;
 
-        case Q_SO_TX_QUEUE_FLUSH:
-        {
-                struct net_device *dev;
+		if (pfq_get_tx_queue_hdr(&so->tx_opt, 0) == NULL) {
+			pr_devel("[PFQ|%d] TX queue flush: socket not enabled!\n", so->id);
+			return -EPERM;
+		}
 
-                if (so->tx_opt.if_index == -1)
-                {
-                        pr_devel("[PFQ|%d] TX queue flush: socket not bound to any device!\n", so->id);
-                        return -EPERM;
-                }
+		if (queue < -1 || (queue > 0 && queue >= so->tx_opt.num_queues)) {
+			pr_devel("[PFQ|%d] TX queue flush: bad queue %d (num_queue=%zu)!\n", so->id, queue, so->tx_opt.num_queues);
+			return -EPERM;
+		}
 
-                if (so->tx_opt.thread && so->tx_opt.thread->state == TASK_RUNNING)
-                {
-                        pr_devel("[PFQ|%d] TX queue flush: thread is running!\n", so->id);
-                        return -EPERM;
-                }
+		if (queue != -1) {
+			pr_devel("[PFQ|%d] flushing TX queue %d...\n", so->id, queue);
+			return pfq_tx_queue_flush_or_wakeup(so, queue);
+		}
 
-                if (pfq_get_tx_queue_hdr(&so->tx_opt) == NULL)
-                {
-                        pr_devel("[PFQ|%d] TX queue flush: socket not enabled!\n", so->id);
-                        return -EPERM;
-                }
+		for(n = 0; n < so->tx_opt.num_queues; n++)
+		{
+			if (pfq_tx_queue_flush_or_wakeup(so, n) != 0) {
+				pr_devel("[PFQ|%d] TX[%zu] queue flush: flush error (if_index=%d)!\n", so->id, n, so->tx_opt.queue[n].if_index);
+				err = -EPERM;
+			}
+		}
 
-                dev = dev_get_by_index(sock_net(&so->sk), so->tx_opt.if_index);
-                if (!dev)
-                {
-                        pr_devel("[PFQ|%d] TX queue flush: No such device (if_index = %d)\n", so->id, so->tx_opt.if_index);
-                        return -EPERM;
-                }
-
-                pfq_tx_queue_flush(&so->tx_opt, dev, get_cpu(), NUMA_NO_NODE);
-
-                put_cpu();
-
-                dev_put(dev);
+		if (err)
+			return err;
         } break;
 
         case Q_SO_GROUP_FUNCTION:
