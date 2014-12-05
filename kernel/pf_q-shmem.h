@@ -24,14 +24,17 @@
 #ifndef _PF_Q_SHMEM_H_
 #define _PF_Q_SHMEM_H_
 
-#include <pf_q-mpdb-queue.h>
+#include <linux/vmalloc.h>
+#include <linux/net.h>
 
+struct pfq_sock;
 
-static inline size_t pfq_total_shared_mem(struct pfq_sock *so)
-{
-        return sizeof(struct pfq_queue_hdr) + pfq_queue_mpdb_mem(so) + pfq_queue_spsc_mem(so);
-}
+enum pfq_shmem_kind {
+	pfq_shmem_virt,
+	pfq_shmem_phys
+};
 
+size_t pfq_total_shared_mem(struct pfq_sock *so);
 
 int pfq_mmap(struct file *file, struct socket *sock, struct vm_area_struct *vma);
 

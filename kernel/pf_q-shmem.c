@@ -27,20 +27,33 @@
 #include <linux/vmalloc.h>
 
 #include <pf_q-shmem.h>
+#include <pf_q-mpdb-queue.h>
 
-static inline
-int
-pfq_memory_mmap(struct vm_area_struct *vma,
-                unsigned long size, char *ptr, unsigned int flags)
+
+static int
+pfq_memory_map(struct vm_area_struct *vma, unsigned long size, char *ptr, unsigned int flags, enum pfq_shmem_kind kind)
 {
+	unsigned long addr = vma->vm_start;
+
         vma->vm_flags |= flags;
 
-        if (remap_vmalloc_range(vma, ptr, 0) != 0) {
+	switch(kind)
+	{
+	case pfq_shmem_virt: {
+		if (remap_vmalloc_range(vma, ptr, 0) != 0) {
+			printk(KERN_WARNING "[PFQ] remap_vmalloc_range error.\n");
+			return -EAGAIN;
+		}
+	} break;
 
-                printk(KERN_WARNING "[PFQ] remap_vmalloc_range!\n");
-                return -EAGAIN;
-        }
+	case pfq_shmem_phys: {
+		if (remap_pfn_range(vma, addr, __pa((unsigned long)ptr) >> PAGE_SHIFT, PAGE_SIZE, PAGE_SHARED) != 0) {
+			printk(KERN_WARNING "[PFQ] remap_vmalloc_range error.\n");
+			return -EAGAIN;
+		}
+	} break;
 
+	}
         return 0;
 }
 
@@ -63,7 +76,7 @@ pfq_mmap(struct file *file, struct socket *sock, struct vm_area_struct *vma)
                 return -EINVAL;
         }
 
-        if((ret = pfq_memory_mmap(vma, size, so->shmem_addr, VM_LOCKED)) < 0)
+        if((ret = pfq_memory_map(vma, size, so->shmem_addr, VM_LOCKED, so->shmem_kind)) < 0)
                 return ret;
 
         return 0;
@@ -80,14 +93,21 @@ pfq_shared_memory_alloc(struct pfq_sock *so, size_t shmem)
 
 	/* align bufflen to page size */
 
-	size_t num_pages = tm / PAGE_SIZE; void *addr;
+	size_t num_pages = tm / PAGE_SIZE;
+	void *addr;
 
 	num_pages += (num_pages + (PAGE_SIZE-1)) & (PAGE_SIZE-1);
 	tot_mem = num_pages*PAGE_SIZE;
 
-	/* Memory is already zeroed */
+	so->shmem_kind = pfq_shmem_phys;
 
-        addr = vmalloc_user(tot_mem);
+	addr = kzalloc(tot_mem, GFP_KERNEL);
+	if (!addr) {
+		printk(KERN_WARNING "[PFQ|%d] trying with vmalloc...\n", so->id);
+        	addr = vmalloc_user(tot_mem);
+		so->shmem_kind = pfq_shmem_virt;
+	}
+
 	if (addr == NULL) {
 		printk(KERN_WARNING "[PFQ|%d] shared memory alloc: out of memory (vmalloc %zu bytes)!", so->id, tot_mem);
 		return -ENOMEM;
@@ -96,7 +116,7 @@ pfq_shared_memory_alloc(struct pfq_sock *so, size_t shmem)
         so->shmem_addr = addr;
         so->shmem_size = tot_mem;
 
-	pr_devel("[PFQ|%d] total shared memory: %zu bytes.\n", so->id, tot_mem);
+	pr_devel("[PFQ|%d] total shared memory: %zu bytes (%s contiguous).\n", so->id, tot_mem, (so->shmem_kind == pfq_shmem_virt ? "virtually" : "physically"));
 	return 0;
 }
 
@@ -106,11 +126,23 @@ pfq_shared_memory_free(struct pfq_sock *so)
 {
 	if (so->shmem_addr) {
 
-		vfree(so->shmem_addr);
+		switch(so->shmem_kind)
+		{
+		case pfq_shmem_virt: vfree(so->shmem_addr); break;
+		case pfq_shmem_phys: kfree(so->shmem_addr); break;
+
+		}
+
 		so->shmem_addr = NULL;
 		so->shmem_size = 0;
 
 		pr_devel("[PFQ|%d] shared memory freed.\n", so->id);
 	}
+}
+
+
+size_t pfq_total_shared_mem(struct pfq_sock *so)
+{
+        return sizeof(struct pfq_queue_hdr) + pfq_queue_mpdb_mem(so) + pfq_queue_spsc_mem(so);
 }
 
