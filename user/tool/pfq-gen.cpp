@@ -79,11 +79,10 @@ namespace opt
     char *packet = nullptr;
 }
 
-// eth0:...:ethx[.core.gid.queue]]
 
 struct binding
 {
-    std::vector<std::string>    dev;
+    std::string                 dev;
     std::vector<int>            queue;
 };
 
@@ -91,48 +90,36 @@ struct binding
 std::string
 show_binding(const binding &b)
 {
-    std::string ret = "binding:{ ";
-    int n = 0;
+    std::string ret = "binding:{ dev:" + b.dev + " queues:";
 
-    ret += "dev:[";
-
-    for(auto &d : b.dev)
+    for(size_t n = 0; n < b.queue.size(); ++n)
     {
-        if (n++)
-            ret += ", ";
-        ret += d;
+        ret += std::to_string(b.queue[n]) + ' ';
     }
-    ret += "] queue:[";
 
-    n = 0;
-    for(auto &q : b.queue)
-    {
-        if (n++)
-            ret += ", ";
-        ret += std::to_string(q);
-    }
-    ret += "]";
-
-    return ret + " }";
+    return ret + "}";
 }
 
 
 binding
 make_binding(const char *value)
 {
-    binding ret { {}, {} };
+    binding ret { "", {} };
 
-    auto vec = split(value, ".");
-
-    ret.dev = split(vec[0].c_str(), ":");
+    auto vec = split(value, ":");
+    ret.dev = vec.at(0);
 
     if (vec.size() > 1)
     {
-        unsigned int n = 1;
-        for(; n != vec.size(); n++)
+        auto queues = split(vec.at(1), ".");
+        for(auto &q : queues)
         {
-            ret.queue.push_back(std::atoi(vec[n].c_str()));
+            ret.queue.push_back(std::atoi(q.c_str()));
         }
+
+    } else
+    {
+        ret.queue.push_back(any_queue);
     }
 
     return ret;
@@ -157,22 +144,17 @@ namespace thread
             if (m_bind.queue.empty())
                 m_bind.queue.push_back(-1);
 
+            auto q = pfq::socket(param::list, param::maxlen{opt::len},
+                                              param::tx_slots{opt::slots});
+
             for(unsigned int n = 0; n < m_bind.queue.size(); n++)
             {
-                auto q = pfq::socket(param::list, param::maxlen{opt::len},
-                                                  param::tx_slots{opt::slots});
-
-                q.bind_tx (m_bind.dev.at(0).c_str(), m_bind.queue[n]);
-
-                q.enable();
-
-                if (opt::async)
-                    q.start_tx_thread(m_bind.queue[n]);
-
-                m_pfq = std::move(q);
-
-                std::cout << "thread: " << id << " -> gen "  << m_bind.dev.at(0) << "." << m_bind.queue[n] << std::endl;
+                q.bind_tx (m_bind.dev.c_str(), m_bind.queue[n], opt::async ? n : -1);
+                std::cout << "thread: " << id << " -> gen "  << m_bind.dev << ":" << m_bind.queue[n] << std::endl;
             }
+
+            q.enable();
+            m_pfq = std::move(q);
         }
 
         context(const context &) = delete;
@@ -193,7 +175,7 @@ namespace thread
                     ip->daddr = static_cast<uint32_t>(m_gen());
                 }
 
-                if (m_pfq.send_async(pfq::const_buffer(reinterpret_cast<const char *>(opt::packet), opt::len), opt::batch, opt::async? async_policy::tx_threaded : async_policy::tx_deferred))
+                if (m_pfq.send_async(pfq::const_buffer(reinterpret_cast<const char *>(opt::packet), opt::len), opt::batch))
                     m_sent->fetch_add(1, std::memory_order_relaxed);
                 else
                     m_fail->fetch_add(1, std::memory_order_relaxed);
@@ -228,7 +210,9 @@ namespace thread
 
 void usage(const char *name)
 {
-    throw std::runtime_error(std::string("usage: ") + name + " [-h|--help] [-r|--rand-ip] [-a|--async] [-s|--queuel-slots N] [-b|--batch-sync N] [-l|--len N] T1 T2... \n\t| T = dev[.queue.queue..]");
+    throw std::runtime_error(std::string("usage: ") + name +
+        " [-h|--help] [-r|--rand-ip] [-a|--async] [-s|--queuel-slots N] "
+        "[-b|--batch-sync N] [-l|--len N] T1 T2... \n\t| T = dev[:queue[.queue...]]");
 }
 
 
@@ -295,7 +279,8 @@ try
             continue;
         }
 
-        if ( strcmp(argv[i], "-h") == 0 ||
+        if ( strcmp(argv[i], "-?") == 0 ||
+             strcmp(argv[i], "-h") == 0 ||
              strcmp(argv[i], "--help") == 0)
             usage(argv[0]);
 
