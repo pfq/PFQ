@@ -142,13 +142,15 @@ struct pfq_rx_queue_hdr
         unsigned int            size;       /* number of slots */
         unsigned int            slot_size;  /* sizeof(pfq_pkt_hdr) + max_len + sizeof(skb_shinfo) */
 
-} __attribute__((aligned(8)));
+} __attribute__((aligned(64)));
 
 
 #define MPDB_QUEUE_SLOT_SIZE(x)    ALIGN(sizeof(struct pfq_pkt_hdr) + x, 8)
 #define MPDB_QUEUE_INDEX(data)     (((data) & 0xff000000U) >> 24)
 #define MPDB_QUEUE_LEN(data)       ((data) & 0x00ffffffU)
 
+
+/* Queues Headers */
 
 struct pfq_queue_hdr
 {
