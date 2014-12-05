@@ -75,14 +75,4 @@ int pfq_mpdb_queue_index(struct pfq_sock *p)
 }
 
 
-static inline
-size_t pfq_mpdb_queue_size(struct pfq_sock *p)
-{
-	struct pfq_queue_hdr *q = pfq_get_queue_hdr(p);
-	if (!q)
-		return 0;
-
-        return q->rx.size * q->rx.slot_size;
-}
-
 #endif /* _PF_Q_MPDB_QUEUE_H_ */
