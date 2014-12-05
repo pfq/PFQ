@@ -144,6 +144,12 @@ namespace pfq {
             void * shm_addr;
             size_t shm_size;
 
+            void * tx_queue_addr;
+            size_t tx_queue_size;
+
+            void * rx_queue_addr;
+            size_t rx_queue_size;
+
             size_t rx_slots;
             size_t rx_slot_size;
 
@@ -365,8 +371,12 @@ namespace pfq {
 
             // allocate pdata
 
-            data_.reset(new pfq_data { -1,
+            data_.reset(new pfq_data {  -1,
                                         -1,
+                                        nullptr,
+                                        0,
+                                        nullptr,
+                                        0,
                                         nullptr,
                                         0,
                                         0,
@@ -453,6 +463,13 @@ namespace pfq {
 
             if ((data_->shm_addr = mmap(nullptr, tot_mem, PROT_READ|PROT_WRITE, MAP_SHARED, fd_, 0)) == MAP_FAILED)
                 throw pfq_error(errno, "PFQ: queue mmap error");
+
+
+            data_->rx_queue_addr = static_cast<char *>(data_->shm_addr) + sizeof(pfq_queue_hdr);
+            data_->rx_queue_size = data_->rx_slots * data_->rx_slot_size;
+
+            data_->tx_queue_addr = static_cast<char *>(data_->shm_addr) + sizeof(pfq_queue_hdr) + data_->rx_queue_size * 2;
+            data_->tx_queue_size = data_->tx_slots * data_->tx_slot_size;
         }
 
         //! Disable the packet capture.
@@ -951,7 +968,6 @@ namespace pfq {
 
             size_t data = q->rx.data;
             size_t index = MPDB_QUEUE_INDEX(data);
-            size_t q_size = data_->rx_slots * data_->rx_slot_size;
 
             if( MPDB_QUEUE_LEN(data) == 0 ) {
 #ifdef PFQ_USE_POLL
@@ -967,9 +983,7 @@ namespace pfq {
 
             auto queue_len = std::min(static_cast<size_t>(MPDB_QUEUE_LEN(data)), data_->rx_slots);
 
-            return queue(static_cast<char *>(data_->shm_addr) +
-						 sizeof(pfq_queue_hdr) +
-						 (index & 1) * q_size,
+            return queue(static_cast<char *>(data_->rx_queue_addr) + (index & 1) * data_->rx_queue_size,
                          data_->rx_slot_size, queue_len, index);
         }
 
@@ -1245,10 +1259,10 @@ namespace pfq {
             if (index == -1)
                 return false;
 
-            auto h = reinterpret_cast<pfq_pkt_hdr *>(reinterpret_cast<char *>(q + 1) +
-                        data_->rx_slots * data_->rx_slot_size * 2   +
-                        data_->tx_slots * data_->tx_slot_size * tss +
-                        static_cast<unsigned int>(index) * tx->slot_size);
+            auto h = reinterpret_cast<pfq_pkt_hdr *>(
+                        reinterpret_cast<char *>(data_->tx_queue_addr) +
+                            data_->tx_slots * data_->tx_slot_size * tss +
+                            static_cast<unsigned int>(index) * tx->slot_size);
 
             auto addr = reinterpret_cast<char *>(h + 1);
 
