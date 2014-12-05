@@ -46,7 +46,7 @@ pfq_alloc_sk_filter(struct sock_fprog *fprog)
        	sock_reset_flag(&sk, SOCK_FILTER_LOCKED);
 #endif
         pr_devel("[PFQ] BPF: new fprog (len %d)\n", fprog->len);
-        
+
 	if ((rv = sk_attach_filter(fprog, &sk))) {
 		pr_devel("[PFQ] BPF: sk_attach_filter (%d)!\n", rv);
         	return NULL;
@@ -55,7 +55,9 @@ pfq_alloc_sk_filter(struct sock_fprog *fprog)
 	return sk.sk_filter;
 }
 
-void pfq_free_sk_filter(struct sk_filter *filter)
+
+void
+pfq_free_sk_filter(struct sk_filter *filter)
 {
        	struct sock sk;
        	int rv;
@@ -67,9 +69,8 @@ void pfq_free_sk_filter(struct sk_filter *filter)
        	sock_reset_flag(&sk, SOCK_FILTER_LOCKED);
 #endif
 	sk.sk_filter = filter;
-	if ((rv = sk_detach_filter(&sk))) {
+	if ((rv = sk_detach_filter(&sk)))
 		pr_devel("[PFQ] BPF: sk_detach_filter (%d)!\n", rv);
-	}
 }
 
 

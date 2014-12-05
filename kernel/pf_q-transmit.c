@@ -60,8 +60,8 @@ static u16 __pfq_pick_tx(struct net_device *dev, struct sk_buff *skb)
 static struct netdev_queue *
 pfq_pick_tx(struct net_device *dev, struct sk_buff *skb, int *queue_index)
 {
-        if (dev->real_num_tx_queues != 1 && *queue_index == -1)
-        {
+        if (dev->real_num_tx_queues != 1 && *queue_index == -1) {
+
                 const struct net_device_ops *ops = dev->netdev_ops;
 
 		*queue_index = ops->ndo_select_queue ?
@@ -119,8 +119,7 @@ __pfq_queue_xmit_batch(struct pfq_skbuff_batch *skbs, struct net_device *dev, st
 	pfq_skbuff_batch_flush(skbs);
 
 #ifdef PFQ_TX_PROFILE
-	if (printk_ratelimit())
-	{
+	if (printk_ratelimit()) {
 		cycles_t stop = get_cycles();
 		printk(KERN_INFO "[PFQ] TX avg cpu-cycle: %llu_tsc (batch len = %d).\n", (stop - start)/len, len);
 	}
@@ -228,9 +227,7 @@ __pfq_queue_xmit(struct sk_buff *skb, struct net_device *dev, struct netdev_queu
 		        rc = dev->netdev_ops->ndo_start_xmit(skb, dev);
 
 			if (dev_xmit_complete(rc))
-			{
 				goto out;
-			}
 		}
 	}
 

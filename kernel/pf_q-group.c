@@ -338,8 +338,7 @@ pfq_join_free_group(int id, unsigned long class_mask, int policy)
         down(&group_sem);
         for(; n < Q_MAX_ID; n++)
         {
-                if(!pfq_get_group(n)->pid)
-                {
+                if(!pfq_get_group(n)->pid) {
                         __pfq_join_group(n, id, class_mask, policy);
                         up(&group_sem);
                         return n;
@@ -391,9 +390,7 @@ pfq_get_groups(int id)
         {
                 unsigned long mask = __pfq_get_all_groups_mask(n);
                 if(mask & (1L << id))
-                {
                         ret |= (1UL << n);
-                }
         }
         up(&group_sem);
         return ret;

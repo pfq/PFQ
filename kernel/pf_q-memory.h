@@ -133,12 +133,10 @@ void pfq_kfree_skb_recycle(struct sk_buff *skb, struct pfq_sk_buff_list *list)
 {
 #ifdef PFQ_USE_SKB_RECYCLE
 
-        if (pfq_skb_is_parkable(skb))
-        {
-                if (pfq_sk_buff_list_size(list) <= recycle_len)
-                {
-                        if (likely(pfq_sk_buff_queue_head(list, skb)))
-			{
+        if (pfq_skb_is_parkable(skb)) {
+                if (pfq_sk_buff_list_size(list) <= recycle_len) {
+
+                        if (likely(pfq_sk_buff_queue_head(list, skb))) {
 #ifdef PFQ_USE_EXTENDED_PROC
                         	sparse_inc(&memory_stats.rc_free);
 #endif
@@ -235,14 +233,12 @@ struct sk_buff * ____pfq_alloc_skb_recycle(unsigned int size, gfp_t priority, in
 #ifdef PFQ_USE_SKB_RECYCLE
         struct sk_buff *skb;
 
-        if (!fclone)
-        {
+        if (!fclone) {
+
                 skb = pfq_sk_buff_peek_tail(recycle_list);
 
-                if (likely(skb != NULL))
-                {
-                        if (pfq_skb_is_recycleable(skb, size))
-                        {
+                if (likely(skb != NULL)) {
+                        if (pfq_skb_is_recycleable(skb, size)) {
 
 #ifdef PFQ_USE_EXTENDED_PROC
                                         sparse_inc(&memory_stats.rc_alloc);
@@ -329,9 +325,7 @@ struct sk_buff * pfq_alloc_skb(unsigned int size, gfp_t priority)
         struct local_data *this_cpu = __this_cpu_ptr(cpu_data);
 
         if (atomic_read(&this_cpu->enable_recycle))
-        {
                 return ____pfq_alloc_skb_recycle(size, priority, 0, NUMA_NO_NODE, &this_cpu->rx_recycle_list);
-        }
 
 #ifdef PFQ_USE_EXTENDED_PROC
         sparse_inc(&memory_stats.os_alloc);
@@ -348,9 +342,7 @@ struct sk_buff * pfq_tx_alloc_skb(unsigned int size, gfp_t priority, int node)
         struct local_data *this_cpu = __this_cpu_ptr(cpu_data);
 
         if (atomic_read(&this_cpu->enable_recycle))
-        {
                 return ____pfq_alloc_skb_recycle(size, priority, 0, node, &this_cpu->tx_recycle_list);
-        }
 
 #ifdef PFQ_USE_EXTENDED_PROC
         sparse_inc(&memory_stats.os_alloc);

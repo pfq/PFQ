@@ -187,9 +187,8 @@ int pfq_spsc_write_avail(struct pfq_tx_queue_hdr *q)
 static inline
 int pfq_spsc_write_index(struct pfq_tx_queue_hdr *q)
 {
-        if (pfq_spsc_write_avail(q) == 0) {
+        if (pfq_spsc_write_avail(q) == 0)
                 return -1;
-        }
 
         return (int)q->producer.index;
 }
@@ -221,9 +220,8 @@ void pfq_spsc_write_commit(struct pfq_tx_queue_hdr *q)
 static inline
 int pfq_spsc_read_avail(struct pfq_tx_queue_hdr *q)
 {
-        if(unlikely(q->consumer.cache == 0)) {
+        if(unlikely(q->consumer.cache == 0))
                 q->consumer.cache = (q->producer.index - q->consumer.index + q->size) & q->size_mask;
-        }
 
         return (int)q->consumer.cache;
 }
@@ -232,9 +230,8 @@ int pfq_spsc_read_avail(struct pfq_tx_queue_hdr *q)
 static inline
 int pfq_spsc_read_index(struct pfq_tx_queue_hdr *q)
 {
-        if (pfq_spsc_read_avail(q) == 0) {
+        if (pfq_spsc_read_avail(q) == 0)
                 return -1;
-        }
 
         return (int)q->consumer.index;
 }

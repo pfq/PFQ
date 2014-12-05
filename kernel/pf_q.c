@@ -683,7 +683,6 @@ pfq_release(struct socket *sock)
         /* purge both batch and recycle queues if no socket is open */
 
         if (pfq_get_sock_count() == 0) {
-
                 total += pfq_percpu_flush();
         }
 
@@ -831,7 +830,6 @@ static
 void unregister_device_handler(void)
 {
         if (capture_incoming || capture_outgoing) {
-
                 dev_remove_pack(&pfq_prot_hook); /* Remove protocol hook */
         }
 }
@@ -843,7 +841,6 @@ static int __init pfq_init_module(void)
         printk(KERN_INFO "[PFQ] loading (%s)...\n", Q_VERSION);
 
         if (max_queue_slots & (max_queue_slots-1)) {
-
                 printk(KERN_INFO "[PFQ] max_queue_slots (%d) not a power of 2!\n", max_queue_slots);
         }
 

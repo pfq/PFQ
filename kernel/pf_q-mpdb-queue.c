@@ -175,8 +175,8 @@ size_t pfq_mpdb_enqueue_batch(struct pfq_rx_opt *ro,
 int
 pfq_shared_queue_toggle(struct pfq_sock *so, bool active)
 {
-        if (active)
-        {
+        if (active) {
+
                 if (!so->shmem_addr) {
 
                         struct pfq_queue_hdr * queue;
@@ -184,9 +184,7 @@ pfq_shared_queue_toggle(struct pfq_sock *so, bool active)
                         /* alloc queue memory */
 
                         if (pfq_shared_memory_alloc(so, pfq_total_shared_mem(so)) < 0)
-                        {
                                 return -ENOMEM;
-                        }
 
                         /* so->mem_addr and so->mem_size are correctly configured */
 

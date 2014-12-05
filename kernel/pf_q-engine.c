@@ -143,13 +143,12 @@ snprintf_functional_node(char *buffer, size_t size, struct pfq_functional_node c
 		if (size <= len)
 			return len;
 
-		if (node->fun.arg[n].nelem != -1) /* vector */
-		{
+		if (node->fun.arg[n].nelem != -1) { /* vector */
+
 			if (node->fun.arg[n].value)
 				len += snprintf(buffer + len, size - len, "%p[%zu] ",(void *)node->fun.arg[n].value, node->fun.arg[n].nelem);
 		}
-		else
-		{
+		else {
 			if ((node->fun.arg[n].value & 0xffffLLU) == (node->fun.arg[n].value))
 				len += snprintf(buffer + len, size - len, "%lld ",(int64_t)node->fun.arg[n].value);
 			else
@@ -207,7 +206,7 @@ pr_devel_functional_descr(struct pfq_functional_descr const *descr, size_t index
 
        	if (descr->symbol == NULL) {
 		pr_devel("%zu   NULL :: ???\n", index);
-       		return ;
+       		return;
 	}
 
         symbol    = strdup_user(descr->symbol);
@@ -456,8 +455,8 @@ function_signature_match(struct pfq_functional_descr const *fun, string_view_t f
 
 	sig = pfq_signature_bind(make_string_view(signature), nargs);
 
-	if (!pfq_signature_equal(sig, fullsig))
-	{
+	if (!pfq_signature_equal(sig, fullsig)) {
+
 		pr_devel("[PFQ] %zu: invalid function: %s (%zu args bound)!\n", index, signature, nargs);
 		return false;
 	}
@@ -686,8 +685,8 @@ pfq_computation_rtlink(struct pfq_computation_descr const *descr, struct pfq_com
 
         	for(i = 0; i < sizeof(fun->arg)/sizeof(fun->arg[0]); i++)
 		{
-			if (is_arg_string(&fun->arg[i]))
-			{
+			if (is_arg_string(&fun->arg[i])) {
+
 				char *str = pod_user(&context, fun->arg[i].ptr, strlen_user(fun->arg[i].ptr)+1);
 				if (str == NULL) {
 					pr_devel("[PFQ] %zu: pod_user: internal error!\n", n);
@@ -697,8 +696,8 @@ pfq_computation_rtlink(struct pfq_computation_descr const *descr, struct pfq_com
 				comp->node[n].fun.arg[i].value = (ptrdiff_t)str;
 				comp->node[n].fun.arg[i].nelem = -1;
 			}
-			else if (is_arg_data(&fun->arg[i]))
-			{
+			else if (is_arg_data(&fun->arg[i])) {
+
 				if (fun->arg[i].size > 8) {
 
 					char *ptr = pod_user(&context, fun->arg[i].ptr, fun->arg[i].size);
@@ -723,8 +722,8 @@ pfq_computation_rtlink(struct pfq_computation_descr const *descr, struct pfq_com
 				}
 
 			}
-			else if (is_arg_vector(&fun->arg[i]))
-			{
+			else if (is_arg_vector(&fun->arg[i])) {
+
 				if (fun->arg[i].nelem > 0) {
 
 					char *ptr = pod_user(&context, fun->arg[i].ptr, fun->arg[i].size * fun->arg[i].nelem);
@@ -742,13 +741,13 @@ pfq_computation_rtlink(struct pfq_computation_descr const *descr, struct pfq_com
 					comp->node[n].fun.arg[i].nelem = 0;
 				}
 			}
-			else if (is_arg_function(&fun->arg[i]))
-                        {
+			else if (is_arg_function(&fun->arg[i])) {
+
 				comp->node[n].fun.arg[i].value = (ptrdiff_t)get_functional_by_index(descr, comp, fun->arg[i].size);
 				comp->node[n].fun.arg[i].nelem = -1;
 			}
-			else if (!is_arg_null(&fun->arg[i]))
-			{
+			else if (!is_arg_null(&fun->arg[i])) {
+
 				pr_devel("[PFQ] %zu: pfq_computation_rtlink: internal error!\n", n);
 				return -EPERM;
 			}

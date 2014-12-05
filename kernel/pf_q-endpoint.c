@@ -47,9 +47,9 @@ size_t copy_to_user_skbs(struct pfq_rx_opt *ro, struct gc_queue_buff *queue, uns
                 sent = pfq_mpdb_enqueue_batch(ro, queue, mask, len, gid);
 
         	__sparse_add(&ro->stats.recv, sent, cpu);
-        	if (len > sent) {
+
+		if (len > sent)
 			__sparse_add(&ro->stats.drop, len - sent, cpu);
-		}
 
 		return sent;
         }
@@ -64,10 +64,10 @@ size_t copy_to_user_skbs(struct pfq_rx_opt *ro, struct gc_queue_buff *queue, uns
 static inline
 size_t copy_to_dev_skbs(struct pfq_sock *so, struct gc_queue_buff *queue, unsigned long long mask, int cpu, int gid)
 {
-	if (so->egress_index) {
+	struct net_device *dev;
+	int sent;
 
-		struct net_device *dev;
-		int sent;
+	if (so->egress_index) {
 
                	dev = dev_get_by_index(&init_net, so->egress_index);
 
@@ -81,7 +81,6 @@ size_t copy_to_dev_skbs(struct pfq_sock *so, struct gc_queue_buff *queue, unsign
  		sent = pfq_lazy_queue_xmit_by_mask(queue, mask, dev, so->egress_queue);
 
                 dev_put(dev);
-
 		return sent;
 	}
 
