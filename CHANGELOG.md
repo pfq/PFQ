@@ -53,3 +53,12 @@ PFQ 3.7
 -------
  * pfq-load utility added.
 
+
+PFQ 3.8
+-------
+ * Aggressive polling added to libraries.
+ * Performance improvements.
+ * pfq-load utility improved.
+ * Bug fixes.
+
+
