@@ -101,9 +101,6 @@ __pfq_queue_xmit_batch(size_t qindex, struct pfq_skbuff_batch *skbs, struct net_
 
 	sent = pfq_queue_xmit(skbs, dev, to->queue[qindex].hw_queue);
 
-	if (printk_ratelimit())
-		printk("PFQ: len:%d sent:%d\n", len, sent);
-
 	/* update stats */
 
 	__sparse_add(&to->stats.sent, sent, cpu);
@@ -286,9 +283,6 @@ pfq_queue_xmit(struct pfq_skbuff_batch *skbs, struct net_device *dev, int hw_que
 
         txq = pfq_pick_tx(dev, skbs->queue[0], &hw_queue);
 
-	if (printk_ratelimit())
-	printk(KERN_INFO "PFQ: txq:%p, dev:%p, queue:%d\n", txq, dev, hw_queue);
-
 	__netif_tx_lock_bh(txq);
 
 	for_each_skbuff(skbs, skb, i)
@@ -318,9 +312,6 @@ int pfq_queue_xmit_by_mask(struct pfq_skbuff_batch *skbs, unsigned long long mas
 
         txq = pfq_pick_tx(dev, skbs->queue[0], &hw_queue);
 
-	if(printk_ratelimit())
-		printk("PFQ: dev:%p, hw_queue=%d\n", dev, hw_queue);
-
 	__netif_tx_lock_bh(txq);
 
 	for_each_skbuff_bitmask(skbs, mask, skb, i)
@@ -342,7 +333,6 @@ int pfq_lazy_xmit(struct gc_buff buff, struct net_device *dev, int hw_queue)
 	struct gc_log *log = PFQ_CB(buff.skb)->log;
 
        	if (log->num_fwd >= Q_GC_LOG_QUEUE_LEN) {
-
 		if (printk_ratelimit())
         		printk(KERN_INFO "[PFQ] bridge %s: too many annotation!\n", dev->name);
 
