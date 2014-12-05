@@ -46,12 +46,12 @@ extern size_t pfq_mpdb_enqueue_batch(struct pfq_rx_opt *ro,
 
 static inline size_t pfq_queue_mpdb_mem(struct pfq_sock *so)
 {
-        return so->rx_opt.size * so->rx_opt.slot_size * 2;
+        return so->rx_opt.size * so->rx_opt.slot_size;
 }
 
 static inline size_t pfq_queue_spsc_mem(struct pfq_sock *so)
 {
-        return so->tx_opt.size * so->tx_opt.slot_size * Q_MAX_TX_QUEUES;
+        return so->tx_opt.size * so->tx_opt.slot_size;
 }
 
 

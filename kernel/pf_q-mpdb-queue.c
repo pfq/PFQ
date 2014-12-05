@@ -208,7 +208,7 @@ pfq_shared_queue_enable(struct pfq_sock *so)
 			queue->tx[n].size              = so->tx_opt.size;
 			queue->tx[n].slot_size         = so->tx_opt.slot_size;
 
-			so->tx_opt.queue[n].base_addr  = so->shmem_addr + sizeof(struct pfq_queue_hdr) + pfq_queue_mpdb_mem(so) + pfq_queue_spsc_mem(so) * n;
+			so->tx_opt.queue[n].base_addr  = so->shmem_addr + sizeof(struct pfq_queue_hdr) + pfq_queue_mpdb_mem(so) * 2 + pfq_queue_spsc_mem(so) * n;
 		}
 
 		/* update the queues base_addr */
