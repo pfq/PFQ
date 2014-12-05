@@ -141,10 +141,8 @@ void \hyperlink{classpfq_1_1socket_a986a4bb8c7b23fd73ce1e8f340a3fb67}{bind\+\_\+
 \begin{DoxyCompactList}\small\item\em Bind the socket for transmission to the given device name and queue. \end{DoxyCompactList}\item 
 bool \hyperlink{classpfq_1_1socket_ab0b61a0a5741e24aa7cfbf090e2dc776}{send} (\hyperlink{namespacepfq_ac835a1bd09b4cbaba61c100b50d0a99f}{const\+\_\+buffer} pkt)
 \begin{DoxyCompactList}\small\item\em Transmit the packet stored in the given buffer. \end{DoxyCompactList}\item 
-bool \hyperlink{classpfq_1_1socket_a73acb3e9a0ee657255385c32ef53334e}{send\+\_\+sync} (\hyperlink{namespacepfq_ac835a1bd09b4cbaba61c100b50d0a99f}{const\+\_\+buffer} pkt, size\+\_\+t n=128)
-\begin{DoxyCompactList}\small\item\em Store the packet and possibly transmit the packets in the queue, synchronously. \end{DoxyCompactList}\item 
-bool \hyperlink{classpfq_1_1socket_a7def045b0472dc611c95c80f512c6e7e}{send\+\_\+async} (\hyperlink{namespacepfq_ac835a1bd09b4cbaba61c100b50d0a99f}{const\+\_\+buffer} pkt, size\+\_\+t n=128)
-\begin{DoxyCompactList}\small\item\em Store the packet and possibly transmit the packets in the queue, asynchronously. \end{DoxyCompactList}\item 
+bool \hyperlink{classpfq_1_1socket_a6601ef180bd51689de229021156d1f0e}{send\+\_\+async} (\hyperlink{namespacepfq_ac835a1bd09b4cbaba61c100b50d0a99f}{const\+\_\+buffer} pkt, size\+\_\+t batch\+\_\+len=128, \hyperlink{namespacepfq_a1746801a74eba08ffdc09e63ceef61b4}{async\+\_\+policy} pol=\hyperlink{namespacepfq_a1746801a74eba08ffdc09e63ceef61b4aaac4195216fbbb11f455deff79f13e57}{async\+\_\+policy\+::tx\+\_\+deferred})
+\begin{DoxyCompactList}\small\item\em Store the packet and transmit the packets in the queue, asynchronously. \end{DoxyCompactList}\item 
 bool \hyperlink{classpfq_1_1socket_ae237165f4533990f1e39386235b2e72c}{inject} (\hyperlink{namespacepfq_ac835a1bd09b4cbaba61c100b50d0a99f}{const\+\_\+buffer} pkt)
 \begin{DoxyCompactList}\small\item\em Schedule the packet for transmission. \end{DoxyCompactList}\item 
 void \hyperlink{classpfq_1_1socket_a29a751a6e0f547bac18c8d812be6224f}{start\+\_\+tx\+\_\+thread} (int node)
@@ -729,31 +727,20 @@ Return the length of the R\+X queue, in number of packets.
 
 Transmit the packet stored in the given buffer. 
 
-\hypertarget{classpfq_1_1socket_a7def045b0472dc611c95c80f512c6e7e}{\index{pfq\+::socket@{pfq\+::socket}!send\+\_\+async@{send\+\_\+async}}
+\hypertarget{classpfq_1_1socket_a6601ef180bd51689de229021156d1f0e}{\index{pfq\+::socket@{pfq\+::socket}!send\+\_\+async@{send\+\_\+async}}
 \index{send\+\_\+async@{send\+\_\+async}!pfq\+::socket@{pfq\+::socket}}
 \subsubsection[{send\+\_\+async}]{\setlength{\rightskip}{0pt plus 5cm}bool pfq\+::socket\+::send\+\_\+async (
 \begin{DoxyParamCaption}
 \item[{{\bf const\+\_\+buffer}}]{pkt, }
-\item[{size\+\_\+t}]{n = {\ttfamily 128}}
+\item[{size\+\_\+t}]{batch\+\_\+len = {\ttfamily 128}, }
+\item[{{\bf async\+\_\+policy}}]{pol = {\ttfamily {\bf async\+\_\+policy\+::tx\+\_\+deferred}}}
 \end{DoxyParamCaption}
-)\hspace{0.3cm}{\ttfamily [inline]}}}\label{classpfq_1_1socket_a7def045b0472dc611c95c80f512c6e7e}
+)\hspace{0.3cm}{\ttfamily [inline]}}}\label{classpfq_1_1socket_a6601ef180bd51689de229021156d1f0e}
 
 
-Store the packet and possibly transmit the packets in the queue, asynchronously. 
+Store the packet and transmit the packets in the queue, asynchronously. 
 
-The transmission is invoked in the kernel thread, every n packets enqueued. \hypertarget{classpfq_1_1socket_a73acb3e9a0ee657255385c32ef53334e}{\index{pfq\+::socket@{pfq\+::socket}!send\+\_\+sync@{send\+\_\+sync}}
-\index{send\+\_\+sync@{send\+\_\+sync}!pfq\+::socket@{pfq\+::socket}}
-\subsubsection[{send\+\_\+sync}]{\setlength{\rightskip}{0pt plus 5cm}bool pfq\+::socket\+::send\+\_\+sync (
-\begin{DoxyParamCaption}
-\item[{{\bf const\+\_\+buffer}}]{pkt, }
-\item[{size\+\_\+t}]{n = {\ttfamily 128}}
-\end{DoxyParamCaption}
-)\hspace{0.3cm}{\ttfamily [inline]}}}\label{classpfq_1_1socket_a73acb3e9a0ee657255385c32ef53334e}
-
-
-Store the packet and possibly transmit the packets in the queue, synchronously. 
-
-The transmission is invoked every n packets enqueued. \hypertarget{classpfq_1_1socket_a5cb37765ffcb1b78c5d61211f9e806df}{\index{pfq\+::socket@{pfq\+::socket}!set\+\_\+group\+\_\+computation@{set\+\_\+group\+\_\+computation}}
+The transmission is invoked in the kernel thread, every n packets enqueued. \hypertarget{classpfq_1_1socket_a5cb37765ffcb1b78c5d61211f9e806df}{\index{pfq\+::socket@{pfq\+::socket}!set\+\_\+group\+\_\+computation@{set\+\_\+group\+\_\+computation}}
 \index{set\+\_\+group\+\_\+computation@{set\+\_\+group\+\_\+computation}!pfq\+::socket@{pfq\+::socket}}
 \subsubsection[{set\+\_\+group\+\_\+computation}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename Comp $>$ void pfq\+::socket\+::set\+\_\+group\+\_\+computation (
 \begin{DoxyParamCaption}

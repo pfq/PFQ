@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['group_5fpolicy',['group_policy',['../namespacepfq.html#ac41249c8510558905b01fa4d866a38d7',1,'pfq']]]
+  ['class_5fmask',['class_mask',['../namespacepfq.html#a96af1f5ed530eff563eb917516758fbb',1,'pfq']]]
 ];

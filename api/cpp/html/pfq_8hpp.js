@@ -9,6 +9,10 @@ var pfq_8hpp =
     [ "tx_slots", "structpfq_1_1param_1_1tx__slots.html", "structpfq_1_1param_1_1tx__slots" ],
     [ "socket", "classpfq_1_1socket.html", "classpfq_1_1socket" ],
     [ "types", "pfq_8hpp.html#ac57f6024bbd9785360348778c1105909", null ],
+    [ "async_policy", "pfq_8hpp.html#a1746801a74eba08ffdc09e63ceef61b4", [
+      [ "tx_deferred", "pfq_8hpp.html#a1746801a74eba08ffdc09e63ceef61b4aaac4195216fbbb11f455deff79f13e57", null ],
+      [ "tx_threaded", "pfq_8hpp.html#a1746801a74eba08ffdc09e63ceef61b4a4bb5789fc0dc625ba948410d59ead775", null ]
+    ] ],
     [ "class_mask", "pfq_8hpp.html#a96af1f5ed530eff563eb917516758fbb", [
       [ "default_", "pfq_8hpp.html#a96af1f5ed530eff563eb917516758fbba172b03053216c6158fe380805998ad6c", null ],
       [ "user_plane", "pfq_8hpp.html#a96af1f5ed530eff563eb917516758fbba539d70f37267eda88597177e215a6d2a", null ],

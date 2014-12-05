@@ -29,6 +29,8 @@ typedef void($\ast$ \hyperlink{pfq_8h_a02c437b7f59f35b87a517d145e399e47}{pfq\+\_
 \item 
 \hyperlink{pfq_8h_a596619fe99a5c899525c16657c75f1d0}{pfq\+\_\+t} $\ast$ \hyperlink{pfq_8h_afa12209ae06ff6f85c4f16483bf993e5}{pfq\+\_\+open\+\_\+nogroup} (size\+\_\+t caplen, size\+\_\+t slots)
 \item 
+\hyperlink{pfq_8h_a596619fe99a5c899525c16657c75f1d0}{pfq\+\_\+t} $\ast$ \hyperlink{pfq_8h_a366fc41f2d6f22cea00176689198c128}{pfq\+\_\+open\+\_\+nogroup\+\_\+} (size\+\_\+t caplen, size\+\_\+t rx\+\_\+slots, size\+\_\+t maxlen, size\+\_\+t tx\+\_\+slots)
+\item 
 \hyperlink{pfq_8h_a596619fe99a5c899525c16657c75f1d0}{pfq\+\_\+t} $\ast$ \hyperlink{pfq_8h_a48059205f9d517b10150f5de779c3086}{pfq\+\_\+open\+\_\+group} (unsigned long class\+\_\+mask, int group\+\_\+policy, size\+\_\+t calpen, size\+\_\+t rx\+\_\+slots, size\+\_\+t maxlen, size\+\_\+t tx\+\_\+slots)
 \item 
 int \hyperlink{pfq_8h_a6c69fd7fecfa6e15a356e93395efe7e6}{pfq\+\_\+close} (\hyperlink{pfq_8h_a596619fe99a5c899525c16657c75f1d0}{pfq\+\_\+t} $\ast$)
@@ -137,9 +139,7 @@ int \hyperlink{pfq_8h_a540138c99eee17da6efa5fb39af1730d}{pfq\+\_\+inject} (\hype
 \item 
 int \hyperlink{pfq_8h_adf21947e13aac64deb0e2f21ec5fc3f5}{pfq\+\_\+send} (\hyperlink{pfq_8h_a596619fe99a5c899525c16657c75f1d0}{pfq\+\_\+t} $\ast$q, const void $\ast$ptr, size\+\_\+t len)
 \item 
-int \hyperlink{pfq_8h_a6e3d7e37b6b90db429afe32d4bb35f89}{pfq\+\_\+send\+\_\+sync} (\hyperlink{pfq_8h_a596619fe99a5c899525c16657c75f1d0}{pfq\+\_\+t} $\ast$q, const void $\ast$ptr, size\+\_\+t len, size\+\_\+t batch\+\_\+len)
-\item 
-int \hyperlink{pfq_8h_ae73826f5b6619e9436ea9a91b1953073}{pfq\+\_\+send\+\_\+async} (\hyperlink{pfq_8h_a596619fe99a5c899525c16657c75f1d0}{pfq\+\_\+t} $\ast$q, const void $\ast$ptr, size\+\_\+t len, size\+\_\+t batch\+\_\+len)
+int \hyperlink{pfq_8h_ad904e759efcb6c409bac379763d8a372}{pfq\+\_\+send\+\_\+async} (\hyperlink{pfq_8h_a596619fe99a5c899525c16657c75f1d0}{pfq\+\_\+t} $\ast$q, const void $\ast$ptr, size\+\_\+t len, size\+\_\+t batch\+\_\+len, int mode)
 \end{DoxyCompactItemize}
 
 
@@ -487,6 +487,18 @@ All the possible parameters are specifiable. \hypertarget{pfq_8h_afa12209ae06ff6
 )}}\label{pfq_8h_afa12209ae06ff6f85c4f16483bf993e5}
 Open the socket; no group is joined or created.
 
+Groups can be later joined by means of the join function. \hypertarget{pfq_8h_a366fc41f2d6f22cea00176689198c128}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+open\+\_\+nogroup\+\_\+@{pfq\+\_\+open\+\_\+nogroup\+\_\+}}
+\index{pfq\+\_\+open\+\_\+nogroup\+\_\+@{pfq\+\_\+open\+\_\+nogroup\+\_\+}!pfq.\+h@{pfq.\+h}}
+\subsubsection[{pfq\+\_\+open\+\_\+nogroup\+\_\+}]{\setlength{\rightskip}{0pt plus 5cm}{\bf pfq\+\_\+t}$\ast$ pfq\+\_\+open\+\_\+nogroup\+\_\+ (
+\begin{DoxyParamCaption}
+\item[{size\+\_\+t}]{caplen, }
+\item[{size\+\_\+t}]{rx\+\_\+slots, }
+\item[{size\+\_\+t}]{maxlen, }
+\item[{size\+\_\+t}]{tx\+\_\+slots}
+\end{DoxyParamCaption}
+)}}\label{pfq_8h_a366fc41f2d6f22cea00176689198c128}
+Open the socket; no group is joined or created.
+
 Groups can be later joined by means of the join function. \hypertarget{pfq_8h_af1c79c9d73cd04f6731ed497314dc175}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+poll@{pfq\+\_\+poll}}
 \index{pfq\+\_\+poll@{pfq\+\_\+poll}!pfq.\+h@{pfq.\+h}}
 \subsubsection[{pfq\+\_\+poll}]{\setlength{\rightskip}{0pt plus 5cm}int pfq\+\_\+poll (
@@ -530,31 +542,20 @@ Wait for packets and return the number of packets available. Packets are stored 
 \item[{size\+\_\+t}]{len}
 \end{DoxyParamCaption}
 )}}\label{pfq_8h_adf21947e13aac64deb0e2f21ec5fc3f5}
-Transmit the packet stored in the given buffer. \hypertarget{pfq_8h_ae73826f5b6619e9436ea9a91b1953073}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+send\+\_\+async@{pfq\+\_\+send\+\_\+async}}
+Transmit the packet stored in the given buffer. \hypertarget{pfq_8h_ad904e759efcb6c409bac379763d8a372}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+send\+\_\+async@{pfq\+\_\+send\+\_\+async}}
 \index{pfq\+\_\+send\+\_\+async@{pfq\+\_\+send\+\_\+async}!pfq.\+h@{pfq.\+h}}
 \subsubsection[{pfq\+\_\+send\+\_\+async}]{\setlength{\rightskip}{0pt plus 5cm}int pfq\+\_\+send\+\_\+async (
 \begin{DoxyParamCaption}
 \item[{{\bf pfq\+\_\+t} $\ast$}]{q, }
 \item[{const void $\ast$}]{ptr, }
 \item[{size\+\_\+t}]{len, }
-\item[{size\+\_\+t}]{batch\+\_\+len}
+\item[{size\+\_\+t}]{batch\+\_\+len, }
+\item[{int}]{mode}
 \end{DoxyParamCaption}
-)}}\label{pfq_8h_ae73826f5b6619e9436ea9a91b1953073}
-Store the packet and possibly transmit the packets in the queue, asynchronously.
+)}}\label{pfq_8h_ad904e759efcb6c409bac379763d8a372}
+Store the packet and transmit the packets in the queue, asynchronously.
 
-The transmission is invoked in the kernel thread, every n packets enqueued. \hypertarget{pfq_8h_a6e3d7e37b6b90db429afe32d4bb35f89}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+send\+\_\+sync@{pfq\+\_\+send\+\_\+sync}}
-\index{pfq\+\_\+send\+\_\+sync@{pfq\+\_\+send\+\_\+sync}!pfq.\+h@{pfq.\+h}}
-\subsubsection[{pfq\+\_\+send\+\_\+sync}]{\setlength{\rightskip}{0pt plus 5cm}int pfq\+\_\+send\+\_\+sync (
-\begin{DoxyParamCaption}
-\item[{{\bf pfq\+\_\+t} $\ast$}]{q, }
-\item[{const void $\ast$}]{ptr, }
-\item[{size\+\_\+t}]{len, }
-\item[{size\+\_\+t}]{batch\+\_\+len}
-\end{DoxyParamCaption}
-)}}\label{pfq_8h_a6e3d7e37b6b90db429afe32d4bb35f89}
-Store the packet and possibly transmit the packets in the queue, synchronously.
-
-The transmission is invoked every n packets enqueued. \hypertarget{pfq_8h_ac726d1da4c6aecfa1dcb1544c036cdc4}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+set\+\_\+caplen@{pfq\+\_\+set\+\_\+caplen}}
+The transmission is invoked in the kernel thread, every n packets enqueued. \hypertarget{pfq_8h_ac726d1da4c6aecfa1dcb1544c036cdc4}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+set\+\_\+caplen@{pfq\+\_\+set\+\_\+caplen}}
 \index{pfq\+\_\+set\+\_\+caplen@{pfq\+\_\+set\+\_\+caplen}!pfq.\+h@{pfq.\+h}}
 \subsubsection[{pfq\+\_\+set\+\_\+caplen}]{\setlength{\rightskip}{0pt plus 5cm}int pfq\+\_\+set\+\_\+caplen (
 \begin{DoxyParamCaption}

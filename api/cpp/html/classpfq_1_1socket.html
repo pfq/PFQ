@@ -301,12 +301,9 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:ab0b61a0a5741e24aa7cfbf090e2dc776"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpfq_1_1socket.html#ab0b61a0a5741e24aa7cfbf090e2dc776">send</a> (<a class="el" href="namespacepfq.html#ac835a1bd09b4cbaba61c100b50d0a99f">const_buffer</a> pkt)</td></tr>
 <tr class="memdesc:ab0b61a0a5741e24aa7cfbf090e2dc776"><td class="mdescLeft">&#160;</td><td class="mdescRight">Transmit the packet stored in the given buffer.  <a href="#ab0b61a0a5741e24aa7cfbf090e2dc776">More...</a><br /></td></tr>
 <tr class="separator:ab0b61a0a5741e24aa7cfbf090e2dc776"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a73acb3e9a0ee657255385c32ef53334e"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpfq_1_1socket.html#a73acb3e9a0ee657255385c32ef53334e">send_sync</a> (<a class="el" href="namespacepfq.html#ac835a1bd09b4cbaba61c100b50d0a99f">const_buffer</a> pkt, size_t n=128)</td></tr>
-<tr class="memdesc:a73acb3e9a0ee657255385c32ef53334e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Store the packet and possibly transmit the packets in the queue, synchronously.  <a href="#a73acb3e9a0ee657255385c32ef53334e">More...</a><br /></td></tr>
-<tr class="separator:a73acb3e9a0ee657255385c32ef53334e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7def045b0472dc611c95c80f512c6e7e"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpfq_1_1socket.html#a7def045b0472dc611c95c80f512c6e7e">send_async</a> (<a class="el" href="namespacepfq.html#ac835a1bd09b4cbaba61c100b50d0a99f">const_buffer</a> pkt, size_t n=128)</td></tr>
-<tr class="memdesc:a7def045b0472dc611c95c80f512c6e7e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Store the packet and possibly transmit the packets in the queue, asynchronously.  <a href="#a7def045b0472dc611c95c80f512c6e7e">More...</a><br /></td></tr>
-<tr class="separator:a7def045b0472dc611c95c80f512c6e7e"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6601ef180bd51689de229021156d1f0e"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpfq_1_1socket.html#a6601ef180bd51689de229021156d1f0e">send_async</a> (<a class="el" href="namespacepfq.html#ac835a1bd09b4cbaba61c100b50d0a99f">const_buffer</a> pkt, size_t batch_len=128, <a class="el" href="namespacepfq.html#a1746801a74eba08ffdc09e63ceef61b4">async_policy</a> pol=<a class="el" href="namespacepfq.html#a1746801a74eba08ffdc09e63ceef61b4aaac4195216fbbb11f455deff79f13e57">async_policy::tx_deferred</a>)</td></tr>
+<tr class="memdesc:a6601ef180bd51689de229021156d1f0e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Store the packet and transmit the packets in the queue, asynchronously.  <a href="#a6601ef180bd51689de229021156d1f0e">More...</a><br /></td></tr>
+<tr class="separator:a6601ef180bd51689de229021156d1f0e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae237165f4533990f1e39386235b2e72c"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpfq_1_1socket.html#ae237165f4533990f1e39386235b2e72c">inject</a> (<a class="el" href="namespacepfq.html#ac835a1bd09b4cbaba61c100b50d0a99f">const_buffer</a> pkt)</td></tr>
 <tr class="memdesc:ae237165f4533990f1e39386235b2e72c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Schedule the packet for transmission.  <a href="#ae237165f4533990f1e39386235b2e72c">More...</a><br /></td></tr>
 <tr class="separator:ae237165f4533990f1e39386235b2e72c"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -1836,7 +1833,7 @@ template&lt;typename... Ts&gt; </div>
 
 </div>
 </div>
-<a class="anchor" id="a7def045b0472dc611c95c80f512c6e7e"></a>
+<a class="anchor" id="a6601ef180bd51689de229021156d1f0e"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -1853,44 +1850,13 @@ template&lt;typename... Ts&gt; </div>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">size_t&#160;</td>
-          <td class="paramname"><em>n</em> = <code>128</code>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
-  </tr>
-</table>
-</div><div class="memdoc">
-
-<p>Store the packet and possibly transmit the packets in the queue, asynchronously. </p>
-<p>The transmission is invoked in the kernel thread, every n packets enqueued. </p>
-
-</div>
-</div>
-<a class="anchor" id="a73acb3e9a0ee657255385c32ef53334e"></a>
-<div class="memitem">
-<div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
-      <table class="memname">
-        <tr>
-          <td class="memname">bool pfq::socket::send_sync </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="namespacepfq.html#ac835a1bd09b4cbaba61c100b50d0a99f">const_buffer</a>&#160;</td>
-          <td class="paramname"><em>pkt</em>, </td>
+          <td class="paramname"><em>batch_len</em> = <code>128</code>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">size_t&#160;</td>
-          <td class="paramname"><em>n</em> = <code>128</code>&#160;</td>
+          <td class="paramtype"><a class="el" href="namespacepfq.html#a1746801a74eba08ffdc09e63ceef61b4">async_policy</a>&#160;</td>
+          <td class="paramname"><em>pol</em> = <code><a class="el" href="namespacepfq.html#a1746801a74eba08ffdc09e63ceef61b4aaac4195216fbbb11f455deff79f13e57">async_policy::tx_deferred</a></code>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -1905,8 +1871,8 @@ template&lt;typename... Ts&gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Store the packet and possibly transmit the packets in the queue, synchronously. </p>
-<p>The transmission is invoked every n packets enqueued. </p>
+<p>Store the packet and transmit the packets in the queue, asynchronously. </p>
+<p>The transmission is invoked in the kernel thread, every n packets enqueued. </p>
 
 </div>
 </div>
@@ -2601,7 +2567,7 @@ template&lt;typename Iter &gt; </div>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="namespacepfq.html">pfq</a></li><li class="navelem"><a class="el" href="classpfq_1_1socket.html">socket</a></li>
-    <li class="footer">Generated on Tue Nov 4 2014 12:27:07 for PFQ C++ library by
+    <li class="footer">Generated on Fri Dec 5 2014 08:06:03 for PFQ C++ library by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.8 </li>
   </ul>

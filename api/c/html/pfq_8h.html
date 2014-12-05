@@ -125,6 +125,8 @@ Functions</h2></td></tr>
 <tr class="separator:a4094dfd122eb1edb052eccb9c3b5dc73"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afa12209ae06ff6f85c4f16483bf993e5"><td class="memItemLeft" align="right" valign="top"><a class="el" href="pfq_8h.html#a596619fe99a5c899525c16657c75f1d0">pfq_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pfq_8h.html#afa12209ae06ff6f85c4f16483bf993e5">pfq_open_nogroup</a> (size_t caplen, size_t slots)</td></tr>
 <tr class="separator:afa12209ae06ff6f85c4f16483bf993e5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a366fc41f2d6f22cea00176689198c128"><td class="memItemLeft" align="right" valign="top"><a class="el" href="pfq_8h.html#a596619fe99a5c899525c16657c75f1d0">pfq_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pfq_8h.html#a366fc41f2d6f22cea00176689198c128">pfq_open_nogroup_</a> (size_t caplen, size_t rx_slots, size_t maxlen, size_t tx_slots)</td></tr>
+<tr class="separator:a366fc41f2d6f22cea00176689198c128"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a48059205f9d517b10150f5de779c3086"><td class="memItemLeft" align="right" valign="top"><a class="el" href="pfq_8h.html#a596619fe99a5c899525c16657c75f1d0">pfq_t</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pfq_8h.html#a48059205f9d517b10150f5de779c3086">pfq_open_group</a> (unsigned long class_mask, int group_policy, size_t calpen, size_t rx_slots, size_t maxlen, size_t tx_slots)</td></tr>
 <tr class="separator:a48059205f9d517b10150f5de779c3086"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6c69fd7fecfa6e15a356e93395efe7e6"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pfq_8h.html#a6c69fd7fecfa6e15a356e93395efe7e6">pfq_close</a> (<a class="el" href="pfq_8h.html#a596619fe99a5c899525c16657c75f1d0">pfq_t</a> *)</td></tr>
@@ -233,10 +235,8 @@ Functions</h2></td></tr>
 <tr class="separator:a540138c99eee17da6efa5fb39af1730d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adf21947e13aac64deb0e2f21ec5fc3f5"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pfq_8h.html#adf21947e13aac64deb0e2f21ec5fc3f5">pfq_send</a> (<a class="el" href="pfq_8h.html#a596619fe99a5c899525c16657c75f1d0">pfq_t</a> *q, const void *ptr, size_t len)</td></tr>
 <tr class="separator:adf21947e13aac64deb0e2f21ec5fc3f5"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6e3d7e37b6b90db429afe32d4bb35f89"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pfq_8h.html#a6e3d7e37b6b90db429afe32d4bb35f89">pfq_send_sync</a> (<a class="el" href="pfq_8h.html#a596619fe99a5c899525c16657c75f1d0">pfq_t</a> *q, const void *ptr, size_t len, size_t batch_len)</td></tr>
-<tr class="separator:a6e3d7e37b6b90db429afe32d4bb35f89"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ae73826f5b6619e9436ea9a91b1953073"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pfq_8h.html#ae73826f5b6619e9436ea9a91b1953073">pfq_send_async</a> (<a class="el" href="pfq_8h.html#a596619fe99a5c899525c16657c75f1d0">pfq_t</a> *q, const void *ptr, size_t len, size_t batch_len)</td></tr>
-<tr class="separator:ae73826f5b6619e9436ea9a91b1953073"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad904e759efcb6c409bac379763d8a372"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pfq_8h.html#ad904e759efcb6c409bac379763d8a372">pfq_send_async</a> (<a class="el" href="pfq_8h.html#a596619fe99a5c899525c16657c75f1d0">pfq_t</a> *q, const void *ptr, size_t len, size_t batch_len, int mode)</td></tr>
+<tr class="separator:ad904e759efcb6c409bac379763d8a372"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Typedef Documentation</h2>
 <a class="anchor" id="a02c437b7f59f35b87a517d145e399e47"></a>
@@ -1228,6 +1228,46 @@ Functions</h2></td></tr>
 
 </div>
 </div>
+<a class="anchor" id="a366fc41f2d6f22cea00176689198c128"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="pfq_8h.html#a596619fe99a5c899525c16657c75f1d0">pfq_t</a>* pfq_open_nogroup_ </td>
+          <td>(</td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>caplen</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>rx_slots</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>maxlen</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>tx_slots</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Open the socket; no group is joined or created.</p>
+<p>Groups can be later joined by means of the join function. </p>
+
+</div>
+</div>
 <a class="anchor" id="af1c79c9d73cd04f6731ed497314dc175"></a>
 <div class="memitem">
 <div class="memproto">
@@ -1369,7 +1409,7 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="ae73826f5b6619e9436ea9a91b1953073"></a>
+<a class="anchor" id="ad904e759efcb6c409bac379763d8a372"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -1395,7 +1435,13 @@ Functions</h2></td></tr>
           <td class="paramkey"></td>
           <td></td>
           <td class="paramtype">size_t&#160;</td>
-          <td class="paramname"><em>batch_len</em>&#160;</td>
+          <td class="paramname"><em>batch_len</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>mode</em>&#160;</td>
         </tr>
         <tr>
           <td></td>
@@ -1404,48 +1450,8 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
-<p>Store the packet and possibly transmit the packets in the queue, asynchronously.</p>
+<p>Store the packet and transmit the packets in the queue, asynchronously.</p>
 <p>The transmission is invoked in the kernel thread, every n packets enqueued. </p>
-
-</div>
-</div>
-<a class="anchor" id="a6e3d7e37b6b90db429afe32d4bb35f89"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">int pfq_send_sync </td>
-          <td>(</td>
-          <td class="paramtype"><a class="el" href="pfq_8h.html#a596619fe99a5c899525c16657c75f1d0">pfq_t</a> *&#160;</td>
-          <td class="paramname"><em>q</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const void *&#160;</td>
-          <td class="paramname"><em>ptr</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">size_t&#160;</td>
-          <td class="paramname"><em>len</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">size_t&#160;</td>
-          <td class="paramname"><em>batch_len</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-<p>Store the packet and possibly transmit the packets in the queue, synchronously.</p>
-<p>The transmission is invoked every n packets enqueued. </p>
 
 </div>
 </div>
@@ -1946,7 +1952,7 @@ Functions</h2></td></tr>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="dir_af99bb3c152a306abd27951285ad1127.html">C</a></li><li class="navelem"><a class="el" href="pfq_8h.html">pfq.h</a></li>
-    <li class="footer">Generated on Tue Nov 4 2014 12:27:07 for PFQ C library by
+    <li class="footer">Generated on Fri Dec 5 2014 08:06:03 for PFQ C library by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.8 </li>
   </ul>

@@ -1,8 +1,7 @@
 var searchData=
 [
   ['send',['send',['../classpfq_1_1socket.html#ab0b61a0a5741e24aa7cfbf090e2dc776',1,'pfq::socket']]],
-  ['send_5fasync',['send_async',['../classpfq_1_1socket.html#a7def045b0472dc611c95c80f512c6e7e',1,'pfq::socket']]],
-  ['send_5fsync',['send_sync',['../classpfq_1_1socket.html#a73acb3e9a0ee657255385c32ef53334e',1,'pfq::socket']]],
+  ['send_5fasync',['send_async',['../classpfq_1_1socket.html#a6601ef180bd51689de229021156d1f0e',1,'pfq::socket']]],
   ['set_5fgroup_5fcomputation',['set_group_computation',['../classpfq_1_1socket.html#a5cb37765ffcb1b78c5d61211f9e806df',1,'pfq::socket::set_group_computation(int gid, Comp const &amp;comp)'],['../classpfq_1_1socket.html#acd2ef781a82b49566f03a085ba091138',1,'pfq::socket::set_group_computation(int gid, pfq_computation_descr *prog)'],['../classpfq_1_1socket.html#a968ae9e3375650990488dcb1784a4bd1',1,'pfq::socket::set_group_computation(int gid, std::string prog)']]],
   ['set_5fgroup_5ffprog',['set_group_fprog',['../classpfq_1_1socket.html#ad618894910a12a08eaed3d8668db25af',1,'pfq::socket']]],
   ['set_5fpromisc',['set_promisc',['../namespacepfq.html#a62b9f1831dc714353f6edcb66a4fad4d',1,'pfq']]],

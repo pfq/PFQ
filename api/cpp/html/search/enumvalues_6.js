@@ -1,5 +1,5 @@
 var searchData=
 [
-  ['undefined',['undefined',['../namespacepfq.html#ac41249c8510558905b01fa4d866a38d7a5e543256c480ac577d30f76f9120eb74',1,'pfq']]],
-  ['user_5fplane',['user_plane',['../namespacepfq.html#a96af1f5ed530eff563eb917516758fbba539d70f37267eda88597177e215a6d2a',1,'pfq']]]
+  ['tx_5fdeferred',['tx_deferred',['../namespacepfq.html#a1746801a74eba08ffdc09e63ceef61b4aaac4195216fbbb11f455deff79f13e57',1,'pfq']]],
+  ['tx_5fthreaded',['tx_threaded',['../namespacepfq.html#a1746801a74eba08ffdc09e63ceef61b4a4bb5789fc0dc625ba948410d59ead775',1,'pfq']]]
 ];

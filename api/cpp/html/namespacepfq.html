@@ -135,6 +135,11 @@ Enumerations</h2></td></tr>
  }</td></tr>
 <tr class="memdesc:ac41249c8510558905b01fa4d866a38d7"><td class="mdescLeft">&#160;</td><td class="mdescRight">group policies.  <a href="namespacepfq.html#ac41249c8510558905b01fa4d866a38d7">More...</a><br /></td></tr>
 <tr class="separator:ac41249c8510558905b01fa4d866a38d7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1746801a74eba08ffdc09e63ceef61b4"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepfq.html#a1746801a74eba08ffdc09e63ceef61b4">async_policy</a> : int { <a class="el" href="namespacepfq.html#a1746801a74eba08ffdc09e63ceef61b4aaac4195216fbbb11f455deff79f13e57">async_policy::tx_deferred</a> = Q_TX_ASYNC_DEFERRED, 
+<a class="el" href="namespacepfq.html#a1746801a74eba08ffdc09e63ceef61b4a4bb5789fc0dc625ba948410d59ead775">async_policy::tx_threaded</a> = Q_TX_ASYNC_THREADED
+ }</td></tr>
+<tr class="memdesc:a1746801a74eba08ffdc09e63ceef61b4"><td class="mdescLeft">&#160;</td><td class="mdescRight">async policies.  <a href="namespacepfq.html#a1746801a74eba08ffdc09e63ceef61b4">More...</a><br /></td></tr>
+<tr class="separator:a1746801a74eba08ffdc09e63ceef61b4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a96af1f5ed530eff563eb917516758fbb"><td class="memItemLeft" align="right" valign="top">enum &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepfq.html#a96af1f5ed530eff563eb917516758fbb">class_mask</a> : unsigned long { <br />
 &#160;&#160;<a class="el" href="namespacepfq.html#a96af1f5ed530eff563eb917516758fbba172b03053216c6158fe380805998ad6c">class_mask::default_</a> = Q_CLASS_DEFAULT, 
 <a class="el" href="namespacepfq.html#a96af1f5ed530eff563eb917516758fbba539d70f37267eda88597177e215a6d2a">class_mask::user_plane</a> = Q_CLASS_USER_PLANE, 
@@ -213,6 +218,34 @@ Traits &gt; &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a cla
 </div>
 </div>
 <h2 class="groupheader">Enumeration Type Documentation</h2>
+<a class="anchor" id="a1746801a74eba08ffdc09e63ceef61b4"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">enum <a class="el" href="namespacepfq.html#a1746801a74eba08ffdc09e63ceef61b4">pfq::async_policy</a> : int</td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">strong</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>async policies. </p>
+<table class="fieldtable">
+<tr><th colspan="2">Enumerator</th></tr><tr><td class="fieldname"><a class="anchor" id="a1746801a74eba08ffdc09e63ceef61b4aaac4195216fbbb11f455deff79f13e57"></a>tx_deferred&#160;</td><td class="fielddoc">
+</td></tr>
+<tr><td class="fieldname"><a class="anchor" id="a1746801a74eba08ffdc09e63ceef61b4a4bb5789fc0dc625ba948410d59ead775"></a>tx_threaded&#160;</td><td class="fielddoc">
+</td></tr>
+</table>
+
+</div>
+</div>
 <a class="anchor" id="a96af1f5ed530eff563eb917516758fbb"></a>
 <div class="memitem">
 <div class="memproto">
@@ -697,7 +730,7 @@ template&lt;typename CharT , typename Traits &gt; </div>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="namespacepfq.html">pfq</a></li>
-    <li class="footer">Generated on Tue Nov 4 2014 12:27:07 for PFQ C++ library by
+    <li class="footer">Generated on Fri Dec 5 2014 08:06:03 for PFQ C++ library by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.8 </li>
   </ul>
