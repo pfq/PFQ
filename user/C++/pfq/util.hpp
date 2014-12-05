@@ -64,7 +64,7 @@ namespace pfq {
         memset(&ifreq_io, 0, sizeof(struct ifreq));
         strncpy(ifreq_io.ifr_name, dev, IFNAMSIZ);
         if (::ioctl(fd, SIOCGIFINDEX, &ifreq_io) == -1)
-            throw pfq_error(errno, "PFQ: ioctl get ifindex");
+            throw pfq_error(errno, ("PFQ: ioctl get ifindex " + std::string(dev)).c_str());
         return ifreq_io.ifr_ifindex;
     }
 

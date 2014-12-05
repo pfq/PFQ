@@ -25,6 +25,7 @@
 
 #include <linux/if_ether.h>
 #include <linux/pf_q.h>
+#include <netinet/ip.h>
 
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -60,16 +61,6 @@ namespace pfq {
         priv       = Q_POLICY_GROUP_PRIVATE,
         restricted = Q_POLICY_GROUP_RESTRICTED,
         shared     = Q_POLICY_GROUP_SHARED
-    };
-
-    //! async policies.
-    /*!
-     */
-
-    enum class async_policy : int
-    {
-        tx_deferred = Q_TX_ASYNC_DEFERRED,
-        tx_threaded = Q_TX_ASYNC_THREADED
     };
 
     //! class mask.
@@ -152,12 +143,15 @@ namespace pfq {
 
             void * queue_addr;
             size_t queue_tot_mem;
-            size_t rx_caplen;
+
             size_t rx_slots;
             size_t rx_slot_size;
 
             size_t tx_slots;
+            size_t tx_slot_size;
             size_t tx_batch_count;
+
+            size_t tx_num_bind;
             bool   tx_last_inject;
         };
 
@@ -380,6 +374,7 @@ namespace pfq {
                                         0,
                                         0,
                                         0,
+                                        0,
                                         false
                                        });
 
@@ -401,9 +396,7 @@ namespace pfq {
             if (::setsockopt(fd_, PF_Q, Q_SO_SET_RX_CAPLEN, &caplen, sizeof(caplen)) == -1)
                 throw pfq_error(errno, "PFQ: set caplen error");
 
-            pdata_->rx_caplen = caplen;
-
-            pdata_->rx_slot_size = align<8>(sizeof(pfq_pkt_hdr) + pdata_->rx_caplen);
+            pdata_->rx_slot_size = align<8>(sizeof(pfq_pkt_hdr) + caplen);
 
             // set TX queue slots
 
@@ -411,6 +404,7 @@ namespace pfq {
                 throw pfq_error(errno, "PFQ: set TX slots error");
 
             pdata_->tx_slots = tx_slots;
+            pdata_->tx_slot_size = align<8>(sizeof(pfq_pkt_hdr) + maxlen);
 
             // set maxlen
 
@@ -443,10 +437,8 @@ namespace pfq {
         void
         enable()
         {
-            int one = 1;
-
-            if(::setsockopt(fd_, PF_Q, Q_SO_TOGGLE_QUEUE, &one, sizeof(one)) == -1) {
-                throw pfq_error(errno, "PFQ: queue: out of memory");
+            if(::setsockopt(fd_, PF_Q, Q_SO_ENABLE, nullptr, 0) == -1) {
+                throw pfq_error(errno, "PFQ: socket enable");
             }
 
             size_t tot_mem; socklen_t size = sizeof(tot_mem);
@@ -477,9 +469,8 @@ namespace pfq {
             pdata_->queue_addr = nullptr;
             pdata_->queue_tot_mem = 0;
 
-            int zero = 0;
-            if(::setsockopt(fd_, PF_Q, Q_SO_TOGGLE_QUEUE, &zero, sizeof(zero)) == -1)
-                throw pfq_error(errno, "PFQ: queue cleanup error");
+            if(::setsockopt(fd_, PF_Q, Q_SO_DISABLE, nullptr, 0) == -1)
+                throw pfq_error(errno, "PFQ: socket disable");
         }
 
         //! Check whether the packet capture is enabled.
@@ -1152,20 +1143,36 @@ namespace pfq {
 
         //! Bind the socket for transmission to the given device name and queue.
         /*!
-         * A socket for transmission can be bound to a given device/queue at time.
+         * A socket for transmission can be bound up to the max. number of logic queue.
          */
 
         void
-        bind_tx(const char *dev, int queue = any_queue)
+        bind_tx(const char *dev, int queue = any_queue, int core = Q_TX_SYNC)
         {
             auto index = ifindex(this->fd(), dev);
             if (index == -1)
                 throw pfq_error("PFQ: device not found");
 
-            struct pfq_binding b = { 0, index, queue };
+            struct pfq_binding b = { core, index, queue };
 
             if (::setsockopt(fd_, PF_Q, Q_SO_TX_BIND, &b, sizeof(b)) == -1)
                 throw pfq_error(errno, "PFQ: TX bind error");
+
+            pdata_->tx_num_bind++;
+        }
+
+        //! Unbind the socket transmission.
+        /*!
+         * Unbind the socket for transmission from any device/queue.
+         */
+
+        void
+        unbind_tx()
+        {
+            if (::setsockopt(fd_, PF_Q, Q_SO_TX_UNBIND, nullptr, 0) == -1)
+                throw pfq_error(errno, "PFQ: TX unbind error");
+
+            pdata_->tx_num_bind = 0;
         }
 
         //! Transmit the packet stored in the given buffer.
@@ -1176,7 +1183,7 @@ namespace pfq {
             auto ret = inject(pkt);
 
             if (ret)
-                tx_queue_flush();
+                tx_queue_flush(any_queue);
 
             return ret;
         }
@@ -1187,7 +1194,7 @@ namespace pfq {
          */
 
         bool
-        send_async(const_buffer pkt, size_t batch_len = 128, async_policy pol = async_policy::tx_deferred)
+        send_async(const_buffer pkt, size_t batch_len = 128)
         {
             auto rc = inject(pkt);
             bool do_flush = false;
@@ -1210,12 +1217,8 @@ namespace pfq {
                 pdata_->tx_last_inject = false;
             }
 
-            if (do_flush) {
-                if (pol == async_policy::tx_deferred)
-                    tx_queue_flush();
-                else
-                    wakeup_tx_thread();
-            }
+            if (do_flush)
+                    tx_queue_flush(any_queue);
 
             return rc;
         }
@@ -1232,15 +1235,20 @@ namespace pfq {
             if (!pdata_ || !pdata_->queue_addr)
                 throw pfq_error("PFQ: not enabled");
 
-            auto q  = static_cast<struct pfq_queue_hdr *>(pdata_->queue_addr);
-            auto tx = &q->tx;
+            auto _iph = (struct iphdr *)(pkt.first + 14);
+            auto  tss = (_iph->saddr ^ _iph->daddr) % pdata_->tx_num_bind;
+
+            auto q    = static_cast<struct pfq_queue_hdr *>(pdata_->queue_addr);
+            auto tx   = &q->tx[tss];
 
             int index = pfq_spsc_write_index(tx);
             if (index == -1)
                 return false;
 
             auto h = reinterpret_cast<pfq_pkt_hdr *>(reinterpret_cast<char *>(q + 1) +
-                        pdata_->rx_slots * pdata_->rx_slot_size * 2  + static_cast<unsigned int>(index) * tx->slot_size);
+                        pdata_->rx_slots * pdata_->rx_slot_size * 2   +
+                        pdata_->tx_slots * pdata_->tx_slot_size * tss +
+                        static_cast<unsigned int>(index) * tx->slot_size);
 
             auto addr = reinterpret_cast<char *>(h + 1);
 
@@ -1253,42 +1261,14 @@ namespace pfq {
             return true;
         }
 
-        //! Start the TX kernel thread.
-
-        void start_tx_thread(int node)
-        {
-            if (::setsockopt(fd_, PF_Q, Q_SO_TX_THREAD_START, &node, sizeof(node)) == -1)
-                throw pfq_error(errno, "PFQ: start TX thread");
-        }
-
-        //! Stop the TX kernel thread.
-
-        void stop_tx_thread()
-        {
-            if (::setsockopt(fd_, PF_Q, Q_SO_TX_THREAD_STOP, nullptr, 0) == -1)
-                throw pfq_error(errno, "PFQ: stop TX thread");
-        }
-
-        //! Wakeup the TX kernel thread.
+        //! Flush the TX queue, in the context of the thread or
+        //! wakeup kernel thread(s).
         /*!
-         * Wake up the TX kernel thread which transmit the packets in the Tx queue.
-         * The kernel thread must be started.
          */
 
-        void wakeup_tx_thread()
+        void tx_queue_flush(int queue = any_queue)
         {
-            if (::setsockopt(fd_, PF_Q, Q_SO_TX_THREAD_WAKEUP, nullptr, 0) == -1)
-                throw pfq_error(errno, "PFQ: wakeup TX thread");
-        }
-
-        //! Flush the TX queue, in the context of the calling thread.
-        /*!
-         * To invoke this function, no TX kernel thread is required.
-         */
-
-        void tx_queue_flush()
-        {
-            if (::setsockopt(fd_, PF_Q, Q_SO_TX_QUEUE_FLUSH, nullptr, 0) == -1)
+            if (::setsockopt(fd_, PF_Q, Q_SO_TX_FLUSH, &queue, sizeof(queue)) == -1)
                 throw pfq_error(errno, "PFQ: TX queue flush");
         }
     };
