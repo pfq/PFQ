@@ -319,8 +319,9 @@ void pfq_spsc_read_commit(struct pfq_tx_queue_hdr *q)
 #define Q_ANY_QUEUE          -1
 #define Q_ANY_GROUP          -1
 
-#define Q_TX_SYNC	     -1
-#define Q_TX_ANY_CPU	     65535
+#define Q_NO_KTHREAD         -1
+#define Q_ANY_CPU	     65535
+
 
 /* timestamp */
 

@@ -328,7 +328,7 @@ int pfq_setsockopt(struct socket *sock,
 			if (so->tx_opt.queue[n].if_index == -1)
 				break;
 
-			if (so->tx_opt.queue[n].cpu == -1)
+			if (so->tx_opt.queue[n].cpu == Q_NO_KTHREAD)
 				continue;
 
 			data = kmalloc(sizeof(struct pfq_thread_data), GFP_KERNEL);
