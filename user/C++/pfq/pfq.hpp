@@ -1189,7 +1189,12 @@ namespace pfq {
             data_->tx_num_bind = 0;
         }
 
+
         //! Transmit the packet stored in the given buffer.
+        /*!
+         * The packet is injected into the transmit queue and immediately
+         * transmitted.
+         */
 
         bool
         send(const_buffer pkt)
@@ -1202,16 +1207,16 @@ namespace pfq {
             return ret;
         }
 
-        //! Store the packet and transmit the packets in the queue, asynchronously.
+        //! Inject the packet and transmit the packets in the queue, asynchronously.
         /*!
-         * The transmission is invoked in the kernel thread, every n packets enqueued.
+         * The transmission is invoked every batch_len packets.
          */
 
         bool
         send_async(const_buffer pkt, size_t batch_len = 128)
         {
+            bool flush = false;
             auto rc = inject(pkt);
-            bool do_flush = false;
 
             data_->tx_batch_count++;
 
@@ -1219,19 +1224,19 @@ namespace pfq {
                 data_->tx_last_inject = true;
                 if (data_->tx_batch_count == batch_len) {
                     data_->tx_batch_count = 0;
-                    do_flush = 1;
+                    flush = true;
                 }
             }
             else {
-                if (data_->tx_last_inject || (data_->tx_batch_count & 63) == 0) {
+                if (data_->tx_last_inject || (data_->tx_batch_count & 127) == 0) {
                     data_->tx_batch_count = 0;
-                    do_flush = 1;
+                    flush = true;
                 }
 
                 data_->tx_last_inject = false;
             }
 
-            if (do_flush)
+            if (flush)
                     tx_queue_flush(any_queue);
 
             return rc;
@@ -1239,39 +1244,46 @@ namespace pfq {
 
         //! Schedule the packet for transmission.
         /*!
-         * The packet is copied to the TX queue and later sent when
-         * the tx_queue_flush or wakeup_tx_thread function are invoked.
+         * The packet is injected into the TX queue and later sent when
+         * the tx_queue_flush function is invoked.
          */
 
         bool
-        inject(const_buffer pkt)
+        inject(const_buffer buf, int queue = any_queue)
         {
             if (!data_ || !data_->shm_addr)
                 throw pfq_error("PFQ: not enabled");
 
-            auto _iph = (struct iphdr *)(pkt.first + 14);
-            auto  tss = (_iph->saddr ^ _iph->daddr) % data_->tx_num_bind;
+            const int tss = [=]() {
 
-            auto q    = static_cast<struct pfq_queue_hdr *>(data_->shm_addr);
-            auto tx   = &q->tx[tss];
+                if (queue == any_queue)
+                {
+                    auto _iph = (struct iphdr *)(buf.first + 14);
+                    return (_iph->saddr ^ _iph->daddr) % data_->tx_num_bind;
+                }
+
+                return queue % data_->tx_num_bind;
+            }();
+
+            auto tx = &static_cast<struct pfq_queue_hdr *>(data_->shm_addr)->tx[tss];
 
             int index = pfq_spsc_write_index(tx);
             if (index == -1)
                 return false;
 
-            auto h = reinterpret_cast<pfq_pkt_hdr *>(
+            auto hdr = reinterpret_cast<pfq_pkt_hdr *>(
                         reinterpret_cast<char *>(data_->tx_queue_addr) +
-                            data_->tx_slots * data_->tx_slot_size * tss +
-                            static_cast<unsigned int>(index) * tx->slot_size);
+                            (data_->tx_slots * tss + static_cast<unsigned int>(index)) * tx->slot_size);
 
-            auto addr = reinterpret_cast<char *>(h + 1);
+            auto pkt = reinterpret_cast<char *>(hdr + 1);
 
-            h->len = std::min(static_cast<const uint16_t>(pkt.second),
-                              static_cast<const uint16_t>(tx->max_len));
+            hdr->len = std::min(static_cast<const uint16_t>(buf.second),
+                                static_cast<const uint16_t>(tx->max_len));
 
-            memcpy(addr, pkt.first, h->len);
+            memcpy(pkt, buf.first, hdr->len);
 
             pfq_spsc_write_commit(tx);
+
             return true;
         }
 
@@ -1280,7 +1292,8 @@ namespace pfq {
         /*!
          */
 
-        void tx_queue_flush(int queue = any_queue)
+        void
+        tx_queue_flush(int queue = any_queue)
         {
             if (::setsockopt(fd_, PF_Q, Q_SO_TX_FLUSH, &queue, sizeof(queue)) == -1)
                 throw pfq_error(errno, "PFQ: TX queue flush");
