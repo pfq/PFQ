@@ -25,7 +25,7 @@
 
 #include <linux/if_ether.h>
 #include <linux/pf_q.h>
-#include <netinet/ip.h>
+#include <linux/ip.h>
 
 #include <sys/types.h>
 #include <sys/socket.h>
