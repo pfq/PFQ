@@ -573,6 +573,8 @@ namespace pfq {
             if (::setsockopt(fd_, PF_Q, Q_SO_SET_TX_MAXLEN, &value, sizeof(value)) == -1) {
                 throw pfq_error(errno, "PFQ: set maxlen error");
             }
+
+            data_->rx_slot_size = align<8>(sizeof(pfq_pkt_hdr) + value);
         }
 
         //! Return the max transmission length of packets, in bytes.
