@@ -162,7 +162,6 @@ struct pcap_md {
         pfq_iterator_t 	current;
         pfq_iterator_t 	end;
         uint64_t        ifs_promisc;
-        int 		tx_async;
 
     } pfq;
 #endif
@@ -237,9 +236,10 @@ struct pcap_opt {
 		int rx_slots;
 		int tx_slots;
 
-		int tx_queue;
 		int tx_batch;
-		int tx_node;
+
+		int tx_queue[4];
+		int tx_node[4];
 
 		const char *vlan;
 		const char *comp;

@@ -451,6 +451,42 @@ linux_if_drops(const char * if_name)
 	return dropped_pkts;
 }
 
+static int
+pfq_parse_integers(int *out, size_t max, const char *in)
+{
+	size_t n = 0; int ret = 0;
+
+	int store_int(const char *num) {
+		if (n < max) {
+			out[n++] = atoi(num);
+			ret++;
+		}
+		return 0;
+	}
+
+	if (string_for_each_token(in, ",", store_int) < 0)
+		return -1;
+	return ret;
+}
+
+
+static size_t
+pfq_count_transmitter(struct pfq_opt const *opt)
+{
+	size_t n, txq = 0, txn = 0;
+
+        for(n = 0; n < 4; n++)
+        {
+        	if (opt->tx_queue[n] != Q_ANY_QUEUE)
+        		txq = n+1;
+        	if (opt->tx_node[n] != Q_NO_KTHREAD)
+        		txn = n+1;
+	}
+
+	n = txq > txn ? txq : txn;
+	return n > 0 ? n : 1;
+}
+
 
 static struct pfq_opt
 pfq_getenv(pcap_t *handle)
@@ -463,9 +499,9 @@ pfq_getenv(pcap_t *handle)
        		.caplen   = handle->snapshot,
        		.rx_slots = 131072,
 		.tx_slots = 8192,
-		.tx_queue = -1,
+		.tx_queue = {-1, -1, -1, -1},
+		.tx_node  = { Q_NO_KTHREAD, Q_NO_KTHREAD, Q_NO_KTHREAD, Q_NO_KTHREAD },
 		.tx_batch =  1,
-		.tx_node  = -1,
 		.vlan     = NULL,
 		.comp     = NULL
 	};
@@ -478,16 +514,27 @@ pfq_getenv(pcap_t *handle)
 		rc.rx_slots = atoi(opt);
 	if ((opt = getenv("PFQ_TX_SLOTS")))
 		rc.tx_slots = atoi(opt);
-	if ((opt = getenv("PFQ_TX_QUEUE")))
-		rc.tx_queue = atoi(opt);
 	if ((opt = getenv("PFQ_TX_BATCH")))
 		rc.tx_batch = atoi(opt);
-	if ((opt = getenv("PFQ_TX_NODE")))
-		rc.tx_node = atoi(opt);
 	if ((opt = getenv("PFQ_VLAN")))
 		rc.vlan = opt;
 	if ((opt = getenv("PFQ_COMPUTATION")))
 		rc.comp = opt;
+
+	if ((opt = getenv("PFQ_TX_QUEUE"))) {
+		if (pfq_parse_integers(rc.tx_queue, 4, opt) < 0) {
+			fprintf(stderr, "[PFQ] PFQ_TX_QUEUE parse error!\n");
+			exit(-1);
+		}
+	}
+
+	if ((opt = getenv("PFQ_TX_NODE"))) {
+		if (pfq_parse_integers(rc.tx_node, 4, opt) < 0) {
+			fprintf(stderr, "[PFQ] PFQ_TX_NODE parse error!\n");
+			exit(-1);
+		}
+
+	}
 
 	return rc;
 }
@@ -582,8 +629,14 @@ pfq_parse_config(struct pfq_opt *opt, const char *filename)
 				case KEY_caplen:	opt->caplen 	= atoi(value);  break;
 				case KEY_rx_slots: 	opt->rx_slots 	= atoi(value);  break;
 				case KEY_tx_slots:	opt->tx_slots 	= atoi(value);  break;
-				case KEY_tx_queue: 	opt->tx_queue 	= atoi(value);  break;
-				case KEY_tx_node: 	opt->tx_node 	= atoi(value);  break;
+				case KEY_tx_queue:  {
+					if (pfq_parse_integers(opt->tx_queue, 4, value) != 0)
+					 	rc = -1;
+				} break;
+				case KEY_tx_node:   {
+					if (pfq_parse_integers(opt->tx_node, 4, value) != 0)
+					 	rc = -1;
+				} break;
 				case KEY_vlan:		opt->vlan 	= strdup(string_trim(value)); break;
 				case KEY_computation:	opt->comp 	= strdup(string_trim(value)); break;
 				case KEY_ERR: {
@@ -671,7 +724,6 @@ pfq_activate_linux(pcap_t *handle)
 	handle->set_datalink_op 	= NULL;	/* can't change data link type */
 
 	handle->md.pfq.ifs_promisc 	= 0;
-        handle->md.pfq.tx_async 	= Q_TX_ASYNC_DEFERRED;
 
 	handle->fd = socket(AF_INET, SOCK_DGRAM, 0);
 	if (handle->fd == -1) {
@@ -851,13 +903,21 @@ pfq_activate_linux(pcap_t *handle)
 
 	if ((first_dev = string_first_token(device, ":"))) {
 
-        	fprintf(stderr, "[PFQ] binding tx on %s, txq %d.\n", first_dev, handle->opt.pfq.tx_queue);
+		size_t tot, idx;
 
-		if (pfq_bind_tx(handle->md.pfq.q, first_dev, handle->opt.pfq.tx_queue) < 0) {
+		tot = pfq_count_transmitter(&handle->opt.pfq);
 
-			free(first_dev);
-			snprintf(handle->errbuf, PCAP_ERRBUF_SIZE, "%s", pfq_error(handle->md.pfq.q));
-			goto fail;
+ 		fprintf(stderr, "[PFQ] enabling %zu logic Tx queues on dev %s...\n", tot, first_dev);
+
+		for(idx = 0; idx < tot; idx++)
+		{
+        		fprintf(stderr, "[PFQ] binding Tx on %s, queue %d, core %d\n", first_dev, handle->opt.pfq.tx_queue[idx], handle->opt.pfq.tx_node[idx]);
+
+			if (pfq_bind_tx(handle->md.pfq.q, first_dev, handle->opt.pfq.tx_queue[idx], handle->opt.pfq.tx_node[idx]) < 0) {
+				free(first_dev);
+				snprintf(handle->errbuf, PCAP_ERRBUF_SIZE, "%s", pfq_error(handle->md.pfq.q));
+				goto fail;
+			}
 		}
 
 		free(first_dev);
@@ -918,21 +978,6 @@ pfq_activate_linux(pcap_t *handle)
 		goto fail;
 	}
 
-	/* start TX thread, if specified */
-
-	if (handle->opt.pfq.tx_node != -1)
-	{
-        	fprintf(stderr, "[PFQ] starting tx thread on %d node...\n", handle->opt.pfq.tx_node);
-
-         	if (pfq_start_tx_thread(handle->md.pfq.q, handle->opt.pfq.tx_node) < 0) {
-
-			snprintf(handle->errbuf, PCAP_ERRBUF_SIZE, "%s", pfq_error(handle->md.pfq.q));
-			goto fail;
-		}
-
-		handle->md.pfq.tx_async = Q_TX_ASYNC_THREADED;
-	}
-
 	/* handle->selectable_fd = pfq_get_fd(handle->md.pfq.q); */
 
 	handle->selectable_fd = -1;
@@ -952,7 +997,7 @@ pfq_inject_linux(pcap_t *handle, const void * buf, size_t size)
 	if (handle->opt.pfq.tx_batch == 1)
 		ret = pfq_send(handle->md.pfq.q, buf, size);
 	else
-		ret = pfq_send_async(handle->md.pfq.q, buf, size, handle->opt.pfq.tx_batch, handle->md.pfq.tx_async);
+		ret = pfq_send_async(handle->md.pfq.q, buf, size, handle->opt.pfq.tx_batch);
 
 	if (ret == -1) {
 		snprintf(handle->errbuf, PCAP_ERRBUF_SIZE, "%s", pfq_error(handle->md.pfq.q));
