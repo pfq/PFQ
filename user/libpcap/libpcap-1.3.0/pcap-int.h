@@ -239,7 +239,7 @@ struct pcap_opt {
 		int tx_batch;
 
 		int tx_queue[4];
-		int tx_node[4];
+		int tx_cpu[4];
 
 		const char *vlan;
 		const char *comp;

@@ -471,20 +471,18 @@ pfq_parse_integers(int *out, size_t max, const char *in)
 
 
 static size_t
-pfq_count_transmitter(struct pfq_opt const *opt)
+pfq_count_tx_queues(struct pfq_opt const *opt)
 {
-	size_t n, txq = 0, txn = 0;
+	size_t n, txq = 0;
 
         for(n = 0; n < 4; n++)
         {
-        	if (opt->tx_queue[n] != Q_ANY_QUEUE)
+        	if (opt->tx_queue[n] != Q_ANY_QUEUE ||
+		    	opt->tx_cpu[n]  != Q_NO_KTHREAD)
         		txq = n+1;
-        	if (opt->tx_node[n] != Q_NO_KTHREAD)
-        		txn = n+1;
 	}
 
-	n = txq > txn ? txq : txn;
-	return n > 0 ? n : 1;
+	return txq > 0 ? txq : 1;
 }
 
 
@@ -500,7 +498,7 @@ pfq_getenv(pcap_t *handle)
        		.rx_slots = 131072,
 		.tx_slots = 8192,
 		.tx_queue = {-1, -1, -1, -1},
-		.tx_node  = { Q_NO_KTHREAD, Q_NO_KTHREAD, Q_NO_KTHREAD, Q_NO_KTHREAD },
+		.tx_cpu   = { Q_NO_KTHREAD, Q_NO_KTHREAD, Q_NO_KTHREAD, Q_NO_KTHREAD },
 		.tx_batch =  1,
 		.vlan     = NULL,
 		.comp     = NULL
@@ -528,9 +526,9 @@ pfq_getenv(pcap_t *handle)
 		}
 	}
 
-	if ((opt = getenv("PFQ_TX_NODE"))) {
-		if (pfq_parse_integers(rc.tx_node, 4, opt) < 0) {
-			fprintf(stderr, "[PFQ] PFQ_TX_NODE parse error!\n");
+	if ((opt = getenv("PFQ_TX_CPU"))) {
+		if (pfq_parse_integers(rc.tx_cpu, 4, opt) < 0) {
+			fprintf(stderr, "[PFQ] PFQ_TX_CPU parse error!\n");
 			exit(-1);
 		}
 
@@ -557,7 +555,7 @@ pfq_parse_filename(const char *device)
 #define KEY_rx_slots		2
 #define KEY_tx_slots            3
 #define KEY_tx_queue 		4
-#define KEY_tx_node 		5
+#define KEY_tx_cpu 		5
 #define KEY_vlan 		6
 #define KEY_computation 	7
 
@@ -571,7 +569,7 @@ struct pfq_conf_key {
 	KEY(rx_slots),
 	KEY(tx_slots),
 	KEY(tx_queue),
-	KEY(tx_node),
+	KEY(tx_cpu),
 	KEY(vlan),
 	KEY(computation)
 };
@@ -633,8 +631,8 @@ pfq_parse_config(struct pfq_opt *opt, const char *filename)
 					if (pfq_parse_integers(opt->tx_queue, 4, value) != 0)
 					 	rc = -1;
 				} break;
-				case KEY_tx_node:   {
-					if (pfq_parse_integers(opt->tx_node, 4, value) != 0)
+				case KEY_tx_cpu:   {
+					if (pfq_parse_integers(opt->tx_cpu, 4, value) != 0)
 					 	rc = -1;
 				} break;
 				case KEY_vlan:		opt->vlan 	= strdup(string_trim(value)); break;
@@ -905,15 +903,15 @@ pfq_activate_linux(pcap_t *handle)
 
 		size_t tot, idx;
 
-		tot = pfq_count_transmitter(&handle->opt.pfq);
+		tot = pfq_count_tx_queues(&handle->opt.pfq);
 
  		fprintf(stderr, "[PFQ] enabling %zu logic Tx queues on dev %s...\n", tot, first_dev);
 
 		for(idx = 0; idx < tot; idx++)
 		{
-        		fprintf(stderr, "[PFQ] binding Tx on %s, queue %d, core %d\n", first_dev, handle->opt.pfq.tx_queue[idx], handle->opt.pfq.tx_node[idx]);
+        		fprintf(stderr, "[PFQ] binding Tx on %s, queue %d, core %d\n", first_dev, handle->opt.pfq.tx_queue[idx], handle->opt.pfq.tx_cpu[idx]);
 
-			if (pfq_bind_tx(handle->md.pfq.q, first_dev, handle->opt.pfq.tx_queue[idx], handle->opt.pfq.tx_node[idx]) < 0) {
+			if (pfq_bind_tx(handle->md.pfq.q, first_dev, handle->opt.pfq.tx_queue[idx], handle->opt.pfq.tx_cpu[idx]) < 0) {
 				free(first_dev);
 				snprintf(handle->errbuf, PCAP_ERRBUF_SIZE, "%s", pfq_error(handle->md.pfq.q));
 				goto fail;
