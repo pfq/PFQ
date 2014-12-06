@@ -35,7 +35,7 @@
 
 /*! PFQ descriptor. */
 
-typedef struct pfq pfq_t;
+typedef struct pfq_data pfq_t;
 
 /*! PFQ iterator type. */
 
@@ -452,30 +452,19 @@ extern int pfq_get_group_counters(pfq_t const *q, int gid, struct pfq_counters *
  * A socket for transmission can be bound to a given device/queue at time.
  */
 
-extern int pfq_bind_tx(pfq_t *q, const char *dev, int queue);
+extern int pfq_bind_tx(pfq_t *q, const char *dev, int queue, int core);
 
-/*! Start the TX kernel thread. */
+/*! Unbind the socket for transmission. */
 
-extern int pfq_start_tx_thread(pfq_t *q, int node);
+extern int pfq_unbind_tx(pfq_t *q);
 
-/*! Stop the TX kernel thread. */
-
-extern int pfq_stop_tx_thread(pfq_t *q);
-
-/*! Wakeup the TX kernel thread. */
-/*!
- * Wake up the TX kernel thread which transmits the packets in the Tx queue.
- * The kernel thread must be aldready started.
- */
-
-extern int pfq_wakeup_tx_thread(pfq_t *q);
 
 /*! Flush the TX queue, in the context of the calling thread. */
 /*!
  * To invoke this function, no TX kernel thread is required.
  */
 
-extern int pfq_tx_queue_flush(pfq_t *q);
+extern int pfq_tx_queue_flush(pfq_t *q, int queue);
 
 /*! Schedule the packet for transmission. */
 /*!
@@ -483,7 +472,7 @@ extern int pfq_tx_queue_flush(pfq_t *q);
  * the tx_queue_flush or wakeup_tx_thread function are invoked.
  */
 
-extern int pfq_inject(pfq_t *q, const void *ptr, size_t len);
+extern int pfq_inject(pfq_t *q, const void *ptr, size_t len, int queue);
 
 /*! Transmit the packet stored in the given buffer. */
 
@@ -494,7 +483,7 @@ extern int pfq_send(pfq_t *q, const void *ptr, size_t len);
  * The transmission is invoked in the kernel thread, every n packets enqueued.
  */
 
-extern int pfq_send_async(pfq_t *q, const void *ptr, size_t len, size_t batch_len, int mode);
+extern int pfq_send_async(pfq_t *q, const void *ptr, size_t len, size_t batch_len);
 
 
 #endif /* _PFQ_H_ */

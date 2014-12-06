@@ -23,6 +23,7 @@
 
 #include <linux/if_ether.h>
 #include <linux/pf_q.h>
+#include <netinet/ip.h>
 
 #include <sys/socket.h>
 #include <sys/types.h>
@@ -76,6 +77,7 @@ static char *trim_string(char *str)
 	return str+i;
 }
 
+
 static void split_on(const char *str, const char *sep, void (*cb)(char *))
 {
 	const char * p = str, *q;
@@ -116,20 +118,28 @@ static int with_tokens(const char *str, const char *sep, int (*cb)(char **, int 
 	return ret;
 }
 
+
 /* pfq descriptor */
 
-typedef struct pfq
+typedef struct pfq_data
 {
-	void * queue_addr;
+	void * shm_addr;
+	size_t shm_size;
 
-	size_t queue_tot_mem;
+	void * tx_queue_addr;
+	size_t tx_queue_size;
+
+	void * rx_queue_addr;
+	size_t rx_queue_size;
 
 	size_t rx_slots;
-	size_t rx_caplen;
 	size_t rx_slot_size;
-        size_t tx_slots;
 
+        size_t tx_slots;
+	size_t tx_slot_size;
 	size_t tx_batch_count;
+	size_t tx_num_bind;
+
 	int    tx_last_inject;
 
 	const char * error;
@@ -204,20 +214,11 @@ pfq_open_group(unsigned long class_mask, int group_policy, size_t caplen, size_t
 		return __error = "PFQ: out of memory", NULL;
 	}
 
+	memset(q, 0, sizeof(pfq_t));
+
 	q->fd 	= fd;
 	q->id 	= -1;
 	q->gid 	= -1;
-
-	q->queue_addr 	  = NULL;
-	q->queue_tot_mem  = 0;
-	q->rx_slots       = 0;
-	q->rx_caplen      = 0;
-	q->rx_slot_size   = 0;
-	q->tx_slots 	  = 0;
-	q->tx_batch_count = 0;
-	q->tx_last_inject = 0;
-
-	q->error 	  = NULL;
 
         memset(&q->netq, 0, sizeof(q->netq));
 
@@ -239,9 +240,7 @@ pfq_open_group(unsigned long class_mask, int group_policy, size_t caplen, size_t
 		return __error = "PFQ: set RX caplen error", free(q), NULL;
 	}
 
-	q->rx_caplen = caplen;
-
-	q->rx_slot_size = ALIGN8(sizeof(struct pfq_pkt_hdr) + q->rx_caplen);
+	q->rx_slot_size = ALIGN8(sizeof(struct pfq_pkt_hdr) + caplen);
 
 	/* set TX queue slots */
 	if (setsockopt(fd, PF_Q, Q_SO_SET_TX_SLOTS, &tx_slots, sizeof(tx_slots)) == -1) {
@@ -249,6 +248,7 @@ pfq_open_group(unsigned long class_mask, int group_policy, size_t caplen, size_t
 	}
 
 	q->tx_slots = tx_slots;
+	q->tx_slot_size = ALIGN8(sizeof(struct pfq_pkt_hdr) + maxlen);
 
         /* set maxlen */
         if (setsockopt(fd, PF_Q, Q_SO_SET_TX_MAXLEN, &maxlen, sizeof(maxlen)) == -1)
@@ -272,7 +272,7 @@ int pfq_close(pfq_t *q)
 {
 	if (q->fd != -1)
 	{
-		if (q->queue_addr)
+		if (q->shm_addr)
 			pfq_disable(q);
 
 		if (close(q->fd) < 0)
@@ -293,10 +293,8 @@ int pfq_close(pfq_t *q)
 int
 pfq_enable(pfq_t *q)
 {
-	int one = 1;
-
-	if(setsockopt(q->fd, PF_Q, Q_SO_TOGGLE_QUEUE, &one, sizeof(one)) == -1) {
-		return q->error = "PFQ: queue: out of memory", -1;
+	if(setsockopt(q->fd, PF_Q, Q_SO_ENABLE, NULL, 0) == -1) {
+		return q->error = "PFQ: socket enable", -1;
 	}
 
 	size_t tot_mem; socklen_t size = sizeof(tot_mem);
@@ -305,15 +303,22 @@ pfq_enable(pfq_t *q)
 		return q->error = "PFQ: queue memory error", -1;
 	}
 
-	q->queue_tot_mem = tot_mem;
+	q->shm_size = tot_mem;
 
-	if (q->queue_addr) {
+	if (q->shm_addr) {
 		return q->error = "PFQ: queue already enabled", -1;
 	}
 
-	if ((q->queue_addr = mmap(NULL, tot_mem, PROT_READ|PROT_WRITE, MAP_SHARED, q->fd, 0)) == MAP_FAILED) {
+	if ((q->shm_addr = mmap(NULL, tot_mem, PROT_READ|PROT_WRITE, MAP_SHARED, q->fd, 0)) == MAP_FAILED) {
 		return q->error = "PFQ: queue mmap error", -1;
 	}
+
+       	q->rx_queue_addr = (char *)(q->shm_addr) + sizeof(struct pfq_queue_hdr);
+        q->rx_queue_size = q->rx_slots * q->rx_slot_size;
+
+        q->tx_queue_addr = (char *)(q->shm_addr) + sizeof(struct pfq_queue_hdr) + q->rx_queue_size * 2;
+        q->tx_queue_size = q->tx_slots * q->tx_slot_size;
+
         return q->error = NULL, 0;
 }
 
@@ -321,16 +326,15 @@ pfq_enable(pfq_t *q)
 int
 pfq_disable(pfq_t *q)
 {
-	if (munmap(q->queue_addr,q->queue_tot_mem) == -1) {
+	if (munmap(q->shm_addr,q->shm_size) == -1) {
 		return q->error = "PFQ: munmap error", -1;
 	}
 
-	q->queue_addr = NULL;
-	q->queue_tot_mem = 0;
+	q->shm_addr = NULL;
+	q->shm_size = 0;
 
-	int zero = 0;
-	if(setsockopt(q->fd, PF_Q, Q_SO_TOGGLE_QUEUE, &zero, sizeof(zero)) == -1) {
-		return q->error = "PFQ: queue cleanup error", -1;
+	if(setsockopt(q->fd, PF_Q, Q_SO_DISABLE, NULL, 0) == -1) {
+		return q->error = "PFQ: socket disable", -1;
 	}
 	return q->error = NULL, 0;
 }
@@ -531,7 +535,9 @@ pfq_get_rx_slot_size(pfq_t const *q)
 int
 pfq_bind_group(pfq_t *q, int gid, const char *dev, int queue)
 {
+	struct pfq_binding b;
 	int index;
+
 	if (strcmp(dev, "any")==0) {
         	index = Q_ANY_DEVICE;
 	}
@@ -542,7 +548,9 @@ pfq_bind_group(pfq_t *q, int gid, const char *dev, int queue)
 		}
 	}
 
-	struct pfq_binding b = { gid, index, queue };
+	b.gid      = gid;
+	b.if_index = index;
+	b.hw_queue = queue;
 
 	if (setsockopt(q->fd, PF_Q, Q_SO_GROUP_BIND, &b, sizeof(b)) == -1) {
 		return q->error = "PFQ: add binding error", -1;
@@ -565,6 +573,8 @@ pfq_bind(pfq_t *q, const char *dev, int queue)
 int
 pfq_egress_bind(pfq_t *q, const char *dev, int queue)
 {
+	struct pfq_binding b;
+
 	int index;
 	if (strcmp(dev, "any")==0) {
         	index = Q_ANY_DEVICE;
@@ -576,7 +586,9 @@ pfq_egress_bind(pfq_t *q, const char *dev, int queue)
 		}
 	}
 
-        struct pfq_binding b = { 0, index, queue };
+	b.gid = 0;
+	b.if_index = index;
+	b.hw_queue = queue;
 
         if (setsockopt(q->fd, PF_Q, Q_SO_EGRESS_BIND, &b, sizeof(b)) == -1)
 		return q->error = "PFQ: egress bind error", -1;
@@ -597,6 +609,8 @@ pfq_egress_unbind(pfq_t *q)
 int
 pfq_unbind_group(pfq_t *q, int gid, const char *dev, int queue) /* Q_ANY_QUEUE */
 {
+	struct pfq_binding b;
+
 	int index;
 	if (strcmp(dev, "any")==0) {
         	index = Q_ANY_DEVICE;
@@ -608,7 +622,9 @@ pfq_unbind_group(pfq_t *q, int gid, const char *dev, int queue) /* Q_ANY_QUEUE *
 		}
 	}
 
-	struct pfq_binding b = { gid, index, queue };
+	b.gid = gid;
+	b.if_index = index;
+	b.hw_queue = queue;
 
 	if (setsockopt(q->fd, PF_Q, Q_SO_GROUP_UNBIND, &b, sizeof(b)) == -1) {
 		return q->error = "PFQ: remove binding error", -1;
@@ -869,15 +885,14 @@ int pfq_vlan_reset_filter(pfq_t *q, int gid, int vid)
 int
 pfq_read(pfq_t *q, struct pfq_net_queue *nq, long int microseconds)
 {
-	size_t q_size = q->rx_slots * q->rx_slot_size;
 	struct pfq_queue_hdr * qd;
 	unsigned int index, data;
 
-        if (q->queue_addr == NULL) {
+        if (q->shm_addr == NULL) {
          	return q->error = "PFQ: read on pfq socket not enabled", -1;
 	}
 
-	qd    = (struct pfq_queue_hdr *)(q->queue_addr);
+	qd    = (struct pfq_queue_hdr *)(q->shm_addr);
 	data  = qd->rx.data;
 	index = MPDB_QUEUE_INDEX(data);
 
@@ -897,9 +912,7 @@ pfq_read(pfq_t *q, struct pfq_net_queue *nq, long int microseconds)
 
 	size_t queue_len = min(MPDB_QUEUE_LEN(data), q->rx_slots);
 
-	nq->queue = (char *)(q->queue_addr) +
-			    sizeof(struct pfq_queue_hdr) +
-			    (index & 1) * q_size;
+	nq->queue = (char *)(q->rx_queue_addr) + (index & 1) * q->rx_queue_size;
 	nq->index = index;
 	nq->len   = queue_len;
         nq->slot_size = q->rx_slot_size;
@@ -946,83 +959,86 @@ pfq_dispatch(pfq_t *q, pfq_handler_t cb, long int microseconds, char *user)
         return q->error = NULL, n;
 }
 
-
 /* TX APIs */
 
 int
-pfq_bind_tx(pfq_t *q, const char *dev, int queue)
+pfq_bind_tx(pfq_t *q, const char *dev, int queue, int core)
 {
+	struct pfq_binding b;
+
         int index = pfq_ifindex(q, dev);
         if (index == -1)
 		return q->error = "PFQ: device not found", -1;
 
-        struct pfq_binding b = { 0, index, queue };
+	b.cpu = core;
+	b.if_index = index;
+	b.hw_queue = queue;
 
         if (setsockopt(q->fd, PF_Q, Q_SO_TX_BIND, &b, sizeof(b)) == -1)
 		return q->error = "PFQ: TX bind error", -1;
+
+	q->tx_num_bind++;
 
 	return q->error = NULL, 0;
 }
 
 
 int
-pfq_inject(pfq_t *q, const void *ptr, size_t len)
+pfq_unbind_tx(pfq_t *q)
 {
-        struct pfq_queue_hdr *qh = (struct pfq_queue_hdr *)(q->queue_addr);
+        if (setsockopt(q->fd, PF_Q, Q_SO_TX_UNBIND, NULL, 0) == -1)
+		return q->error = "PFQ: TX unbind error", -1;
+
+	return q->error = NULL, 0;
+}
+
+int
+pfq_inject(pfq_t *q, const void *buf, size_t len, int queue)
+{
+        struct pfq_queue_hdr *qh = (struct pfq_queue_hdr *)(q->shm_addr);
         struct pfq_tx_queue_hdr *tx;
-       	struct pfq_pkt_hdr *h;
-       	char *addr;
+       	struct pfq_pkt_hdr *hdr;
+       	char *pkt;
         int index;
+	int tss;
 
-	if (q->queue_addr == NULL)
-         	return q->error = "PFQ: inject on pfq socket not enabled", -1;
+	if (q->shm_addr == NULL)
+         	return q->error = "PFQ: inject: socket not enabled", -1;
 
-        tx = &qh->tx;
+	if (queue == Q_ANY_QUEUE) {
+        	struct iphdr const * _ip = (struct iphdr const *)(buf + 14);
+        	tss = (_ip->saddr ^ _ip->daddr) % q->tx_num_bind;
+	}
+	else {
+        	tss = queue % q->tx_num_bind;
+	}
+
+        tx = (struct pfq_tx_queue_hdr *)&qh->tx[tss];
 
         index = pfq_spsc_write_index(tx);
         if (index == -1)
 	        return q->error = NULL, 0;
 
-        h = (struct pfq_pkt_hdr *)((char *)(qh + 1) + q->rx_slots * q->rx_slot_size * 2  + index * tx->slot_size);
-        addr = (char *)(h + 1);
+        hdr = (struct pfq_pkt_hdr *)(
+        		(char *)(q->tx_queue_addr) +
+        		(q->tx_slots * tss + index) * tx->slot_size);
 
-	h->len = min((uint16_t)len, (uint16_t)(tx->max_len));
+        pkt = (char *)(hdr + 1);
 
-        memcpy(addr, ptr, h->len);
+	hdr->len = min((uint16_t)len, (uint16_t)(tx->max_len));
+
+        memcpy(pkt, buf, hdr->len);
 
         pfq_spsc_write_commit(tx);
+
         return q->error = NULL, len;
 }
 
 
-int pfq_start_tx_thread(pfq_t *q, int node)
+int
+pfq_tx_queue_flush(pfq_t *q, int queue)
 {
-        if (setsockopt(q->fd, PF_Q, Q_SO_TX_THREAD_START, &node, sizeof(node)) == -1)
-		return q->error = "PFQ: start TX thread", -1;
-
-	return q->error = NULL, 0;
-}
-
-int pfq_stop_tx_thread(pfq_t *q)
-{
-        if (setsockopt(q->fd, PF_Q, Q_SO_TX_THREAD_STOP, NULL, 0) == -1)
-		return q->error = "PFQ: stop TX thread", -1;
-
-        return q->error = NULL, 0;
-}
-
-int pfq_wakeup_tx_thread(pfq_t *q)
-{
-        if (setsockopt(q->fd, PF_Q, Q_SO_TX_THREAD_WAKEUP, NULL, 0) == -1)
-		return q->error = "PFQ: wakeup TX thread", -1;
-
-        return q->error = NULL, 0;
-}
-
-
-int pfq_tx_queue_flush(pfq_t *q)
-{
-        if (setsockopt(q->fd, PF_Q, Q_SO_TX_QUEUE_FLUSH, NULL, 0) == -1)
+        if (setsockopt(q->fd, PF_Q, Q_SO_TX_FLUSH, &queue, sizeof(queue)) == -1)
 		return q->error = "PFQ: TX queue flush", -1;
 
         return q->error = NULL, 0;
@@ -1032,19 +1048,19 @@ int pfq_tx_queue_flush(pfq_t *q)
 int
 pfq_send(pfq_t *q, const void *ptr, size_t len)
 {
-        int rc = pfq_inject(q, ptr, len);
+        int rc = pfq_inject(q, ptr, len, Q_ANY_QUEUE);
 
         if (rc > 0)
-                pfq_tx_queue_flush(q);
+                pfq_tx_queue_flush(q, Q_ANY_QUEUE);
 
         return rc;
 }
 
 
 int
-pfq_send_async(pfq_t *q, const void *ptr, size_t len, size_t batch_len, int mode)
+pfq_send_async(pfq_t *q, const void *ptr, size_t len, size_t batch_len)
 {
-        int rc = pfq_inject(q, ptr, len);
+        int rc = pfq_inject(q, ptr, len, Q_ANY_QUEUE);
         int do_flush = 0;
 
 	q->tx_batch_count++;
@@ -1058,7 +1074,7 @@ pfq_send_async(pfq_t *q, const void *ptr, size_t len, size_t batch_len, int mode
 		}
 	}
 	else {
-       		if (q->tx_last_inject || (q->tx_batch_count & 63) == 0) {
+       		if (q->tx_last_inject || (q->tx_batch_count & 127) == 0) {
        			q->tx_batch_count = 0;
        			do_flush = 1;
 		}
@@ -1066,11 +1082,7 @@ pfq_send_async(pfq_t *q, const void *ptr, size_t len, size_t batch_len, int mode
 	}
 
 	if (do_flush) {
-		if (mode == Q_TX_ASYNC_DEFERRED)
-        		pfq_tx_queue_flush(q);
-
-		else /* Q_TX_ASYNC_THREADED */
-        		pfq_wakeup_tx_thread(q);
+		pfq_tx_queue_flush(q, Q_ANY_QUEUE);
 	}
 
         return rc;
@@ -1080,14 +1092,14 @@ pfq_send_async(pfq_t *q, const void *ptr, size_t len, size_t batch_len, int mode
 size_t
 pfq_mem_size(pfq_t const *q)
 {
-	return q->queue_tot_mem;
+	return q->shm_size;
 }
 
 
 const void *
 pfq_mem_addr(pfq_t const *q)
 {
-	return q->queue_addr;
+	return q->shm_addr;
 }
 
 
