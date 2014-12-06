@@ -230,21 +230,21 @@ pfq_open_group(unsigned long class_mask, int group_policy, size_t caplen, size_t
 
 	/* set rx queue slots */
 	if (setsockopt(fd, PF_Q, Q_SO_SET_RX_SLOTS, &rx_slots, sizeof(rx_slots)) == -1) {
-		return __error = "PFQ: set RX slots error", free(q), NULL;
+		return __error = "PFQ: set Rx slots error", free(q), NULL;
 	}
 
 	q->rx_slots = rx_slots;
 
 	/* set caplen */
 	if (setsockopt(fd, PF_Q, Q_SO_SET_RX_CAPLEN, &caplen, sizeof(caplen)) == -1) {
-		return __error = "PFQ: set RX caplen error", free(q), NULL;
+		return __error = "PFQ: set Rx caplen error", free(q), NULL;
 	}
 
 	q->rx_slot_size = ALIGN8(sizeof(struct pfq_pkt_hdr) + caplen);
 
-	/* set TX queue slots */
+	/* set Tx queue slots */
 	if (setsockopt(fd, PF_Q, Q_SO_SET_TX_SLOTS, &tx_slots, sizeof(tx_slots)) == -1) {
-		return __error = "PFQ: set TX slots error", free(q), NULL;
+		return __error = "PFQ: set Tx slots error", free(q), NULL;
 	}
 
 	q->tx_slots = tx_slots;
@@ -508,10 +508,10 @@ pfq_set_tx_slots(pfq_t *q, size_t value)
 {
 	int enabled = pfq_is_enabled(q);
 	if (enabled == 1) {
-		return q->error = "PFQ: enabled (TX slots could not be set)", -1;
+		return q->error = "PFQ: enabled (Tx slots could not be set)", -1;
 	}
 	if (setsockopt(q->fd, PF_Q, Q_SO_SET_TX_SLOTS, &value, sizeof(value)) == -1) {
-		return q->error = "PFQ: set TX slots error", -1;
+		return q->error = "PFQ: set Tx slots error", -1;
 	}
 
 	q->tx_slots = value;
@@ -959,7 +959,7 @@ pfq_dispatch(pfq_t *q, pfq_handler_t cb, long int microseconds, char *user)
         return q->error = NULL, n;
 }
 
-/* TX APIs */
+/* Tx APIs */
 
 int
 pfq_bind_tx(pfq_t *q, const char *dev, int queue, int core)
@@ -975,7 +975,7 @@ pfq_bind_tx(pfq_t *q, const char *dev, int queue, int core)
 	b.hw_queue = queue;
 
         if (setsockopt(q->fd, PF_Q, Q_SO_TX_BIND, &b, sizeof(b)) == -1)
-		return q->error = "PFQ: TX bind error", -1;
+		return q->error = "PFQ: Tx bind error", -1;
 
 	q->tx_num_bind++;
 
@@ -987,7 +987,7 @@ int
 pfq_unbind_tx(pfq_t *q)
 {
         if (setsockopt(q->fd, PF_Q, Q_SO_TX_UNBIND, NULL, 0) == -1)
-		return q->error = "PFQ: TX unbind error", -1;
+		return q->error = "PFQ: Tx unbind error", -1;
 
 	return q->error = NULL, 0;
 }
@@ -1039,7 +1039,7 @@ int
 pfq_tx_queue_flush(pfq_t *q, int queue)
 {
         if (setsockopt(q->fd, PF_Q, Q_SO_TX_FLUSH, &queue, sizeof(queue)) == -1)
-		return q->error = "PFQ: TX queue flush", -1;
+		return q->error = "PFQ: Tx queue flush", -1;
 
         return q->error = NULL, 0;
 }

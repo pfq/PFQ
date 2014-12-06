@@ -408,7 +408,7 @@ openDefault = pfq_open_default  >>=
 -- 'policy_priv', respectively.
 
 open :: Int  -- ^ caplen
-     -> Int  -- ^ number of rx slots
+     -> Int  -- ^ number of Rx slots
      -> IO (ForeignPtr PFqTag)
 open caplen slots =
         pfq_open (fromIntegral caplen) (fromIntegral slots) >>=
@@ -422,9 +422,9 @@ open caplen slots =
 -- 'policy_priv', respectively.
 
 open' :: Int  -- ^ caplen
-      -> Int  -- ^ number of rx slots
+      -> Int  -- ^ number of Rx slots
       -> Int  -- ^ maxlen
-      -> Int  -- ^ number of tx slots
+      -> Int  -- ^ number of Tx slots
       -> IO (ForeignPtr PFqTag)
 open' caplen rx_slots maxlen tx_slots =
         pfq_open_ (fromIntegral caplen) (fromIntegral rx_slots) (fromIntegral maxlen) (fromIntegral tx_slots) >>=
@@ -437,7 +437,7 @@ open' caplen rx_slots maxlen tx_slots =
 -- Groups can later be joined by means of the 'joinGroup' function.
 
 openNoGroup :: Int  -- ^ caplen
-            -> Int  -- ^ number of rx slots
+            -> Int  -- ^ number of Rx slots
             -> IO (ForeignPtr PFqTag)
 openNoGroup caplen slots =
         pfq_open_nogroup (fromIntegral caplen) (fromIntegral slots) >>=
@@ -449,9 +449,9 @@ openNoGroup caplen slots =
 -- Groups can later be joined by means of the 'joinGroup' function.
 
 openNoGroup' :: Int  -- ^ caplen
-             -> Int  -- ^ number of rx slots
+             -> Int  -- ^ number of Rx slots
              -> Int  -- ^ maxlen
-             -> Int  -- ^ number of tx slots
+             -> Int  -- ^ number of Tx slots
              -> IO (ForeignPtr PFqTag)
 openNoGroup' caplen rx_slots maxlen tx_slots =
         pfq_open_nogroup_ (fromIntegral caplen) (fromIntegral rx_slots) (fromIntegral maxlen) (fromIntegral tx_slots) >>=
@@ -465,9 +465,9 @@ openNoGroup' caplen rx_slots maxlen tx_slots =
 openGroup :: [ClassMask]  -- ^ list of ClassMask (e.g., [class_default])
           -> GroupPolicy  -- ^ policy for the group
           -> Int          -- ^ caplen
-          -> Int          -- ^ number of rx slots
+          -> Int          -- ^ number of Rx slots
           -> Int          -- ^ maxlen
-          -> Int          -- ^ number of tx slots
+          -> Int          -- ^ number of Tx slots
           -> IO (ForeignPtr PFqTag)
 openGroup ms policy caplen rx_slots maxlen tx_slots =
         pfq_open_group (getClassMask $ combineClassMasks ms) (getGroupPolicy policy)
@@ -703,19 +703,19 @@ getMaxlen hdl =
     pfq_get_maxlen hdl >>= throwPFqIf hdl (== -1)
         >>= return . fromIntegral
 
--- |Specify the length of the RX queue, in number of packets./
+-- |Specify the length of the Rx queue, in number of packets./
 --
--- The number of RX slots can't exceed the max value specified by
+-- The number of Rx slots can't exceed the max value specified by
 -- the rx_queue_slot kernel module parameter.
 
 setRxSlots :: Ptr PFqTag
-           -> Int   -- ^ number of rx slots
+           -> Int   -- ^ number of Rx slots
            -> IO ()
 setRxSlots hdl value =
     pfq_set_rx_slots hdl (fromIntegral value)
     >>= throwPFqIf_ hdl (== -1)
 
--- |Return the length of the RX queue, in number of packets.
+-- |Return the length of the Rx queue, in number of packets.
 
 getRxSlots :: Ptr PFqTag
            -> IO Int
@@ -724,7 +724,7 @@ getRxSlots hdl =
         >>= return . fromIntegral
 
 
--- |Return the length of a RX slot, in bytes.
+-- |Return the length of a Rx slot, in bytes.
 
 getRxSlotSize :: Ptr PFqTag
               -> IO Int
@@ -733,20 +733,20 @@ getRxSlotSize hdl =
         >>= return . fromIntegral
 
 
--- |Specify the length of the TX queue, in number of packets.
+-- |Specify the length of the Tx queue, in number of packets.
 --
--- The number of TX slots can't exceed the max value specified by
+-- The number of Tx slots can't exceed the max value specified by
 -- the tx_queue_slot kernel module parameter.
 
 setTxSlots :: Ptr PFqTag
-           -> Int       -- ^ numer of tx slots
+           -> Int       -- ^ numer of Tx slots
            -> IO ()
 setTxSlots hdl value =
     pfq_set_tx_slots hdl (fromIntegral value)
     >>= throwPFqIf_ hdl (== -1)
 
 
--- |Return the length of the TX queue, in number of packets.
+-- |Return the length of the Tx queue, in number of packets.
 
 getTxSlots :: Ptr PFqTag
            -> IO Int
@@ -963,7 +963,7 @@ bindTx hdl name queue =
     withCString name $ \dev ->
         pfq_bind_tx hdl dev (fromIntegral queue) >>= throwPFqIf_ hdl (== -1)
 
--- |Start the TX kernel thread for transmission.
+-- |Start the Tx kernel thread for transmission.
 
 startTxThread :: Ptr PFqTag
               -> Int        -- ^ node
@@ -972,16 +972,16 @@ startTxThread hdl node =
     pfq_start_tx_thread hdl (fromIntegral node) >>= throwPFqIf_ hdl (== -1)
 
 
--- |Stop the TX kernel thread.
+-- |Stop the Tx kernel thread.
 
 stopTxThread :: Ptr PFqTag
              -> IO ()
 stopTxThread hdl =
     pfq_stop_tx_thread hdl >>= throwPFqIf_ hdl (== -1)
 
--- |Wakeup the TX kernel thread.
+-- |Wakeup the Tx kernel thread.
 --
--- Wake up the TX kernel thread which transmits the packets in the Tx queue.
+-- Wake up the Tx kernel thread which transmits the packets in the Tx queue.
 -- The kernel thread must be already started.
 
 wakeupTxThread :: Ptr PFqTag
@@ -990,7 +990,7 @@ wakeupTxThread hdl =
     pfq_wakeup_tx_thread hdl >>= throwPFqIf_ hdl (== -1)
 
 
--- |Flush the TX queue, in the user context of the calling thread.
+-- |Flush the Tx queue, in the user context of the calling thread.
 --
 -- To invoke this function, no kernel thread is required.
 
@@ -1002,7 +1002,7 @@ txQueueFlush hdl =
 
 -- |Schedule the packet for transmission.
 --
--- The packet is copied into the TX queue and sent when
+-- The packet is copied into the Tx queue and sent when
 -- the 'txQueueFlush' or the 'wakeupTxThread' function is invoked.
 
 inject :: Ptr PFqTag
@@ -1015,7 +1015,7 @@ inject hdl xs =
 
 -- |Transmit the packet passed.
 --
--- The packet is copied into the TX queue and sent immediately.
+-- The packet is copied into the Tx queue and sent immediately.
 
 send :: Ptr PFqTag
      -> C.ByteString    -- ^ bytes of packet

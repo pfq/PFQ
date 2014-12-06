@@ -400,10 +400,10 @@ namespace pfq {
             if (::getsockopt(fd_, PF_Q, Q_SO_GET_ID, &data_->id, &size) == -1)
                 throw pfq_error(errno, "PFQ: get id error");
 
-            // set RX queue slots
+            // set Rx queue slots
 
             if (::setsockopt(fd_, PF_Q, Q_SO_SET_RX_SLOTS, &rx_slots, sizeof(rx_slots)) == -1)
-                throw pfq_error(errno, "PFQ: set RX slots error");
+                throw pfq_error(errno, "PFQ: set Rx slots error");
 
             data_->rx_slots = rx_slots;
 
@@ -414,10 +414,10 @@ namespace pfq {
 
             data_->rx_slot_size = align<8>(sizeof(pfq_pkt_hdr) + caplen);
 
-            // set TX queue slots
+            // set Tx queue slots
 
             if (::setsockopt(fd_, PF_Q, Q_SO_SET_TX_SLOTS, &tx_slots, sizeof(tx_slots)) == -1)
-                throw pfq_error(errno, "PFQ: set TX slots error");
+                throw pfq_error(errno, "PFQ: set Tx slots error");
 
             data_->tx_slots = tx_slots;
             data_->tx_slot_size = align<8>(sizeof(pfq_pkt_hdr) + maxlen);
@@ -586,9 +586,9 @@ namespace pfq {
            return ret;
         }
 
-        //! Specify the length of the RX queue, in number of packets.
+        //! Specify the length of the Rx queue, in number of packets.
         /*!
-         * The number of RX slots can't exceed the max value specified by
+         * The number of Rx slots can't exceed the max value specified by
          * the rx_queue_slot kernel module parameter.
          */
 
@@ -596,16 +596,16 @@ namespace pfq {
         rx_slots(size_t value)
         {
             if (enabled())
-                throw pfq_error("PFQ: enabled (RX slots could not be set)");
+                throw pfq_error("PFQ: enabled (Rx slots could not be set)");
 
             if (::setsockopt(fd_, PF_Q, Q_SO_SET_RX_SLOTS, &value, sizeof(value)) == -1) {
-                throw pfq_error(errno, "PFQ: set RX slots error");
+                throw pfq_error(errno, "PFQ: set Rx slots error");
             }
 
             data_->rx_slots = value;
         }
 
-        //! Return the length of the RX queue, in number of packets.
+        //! Return the length of the Rx queue, in number of packets.
 
         size_t
         rx_slots() const
@@ -616,9 +616,9 @@ namespace pfq {
             return data_->rx_slots;
         }
 
-        //! Specify the length of the TX queue, in number of packets.
+        //! Specify the length of the Tx queue, in number of packets.
         /*!
-         * The number of TX slots can't exceed the max value specified by
+         * The number of Tx slots can't exceed the max value specified by
          * the tx_queue_slot kernel module parameter.
          */
 
@@ -626,16 +626,16 @@ namespace pfq {
         tx_slots(size_t value)
         {
             if (enabled())
-                throw pfq_error("PFQ: enabled (TX slots could not be set)");
+                throw pfq_error("PFQ: enabled (Tx slots could not be set)");
 
             if (::setsockopt(fd_, PF_Q, Q_SO_SET_TX_SLOTS, &value, sizeof(value)) == -1) {
-                throw pfq_error(errno, "PFQ: set TX slots error");
+                throw pfq_error(errno, "PFQ: set Tx slots error");
             }
 
             data_->tx_slots = value;
         }
 
-        //! Return the length of the TX queue, in number of packets.
+        //! Return the length of the Tx queue, in number of packets.
 
         size_t
         tx_slots() const
@@ -646,7 +646,7 @@ namespace pfq {
            return data_->tx_slots;
         }
 
-        //! Return the length of a RX slot, in bytes.
+        //! Return the length of a Rx slot, in bytes.
 
         size_t
         rx_slot_size() const
@@ -1141,7 +1141,7 @@ namespace pfq {
             return std::vector<unsigned long>(std::begin(cs.counter), std::end(cs.counter));
         }
 
-        //! Return the memory size of the RX queue.
+        //! Return the memory size of the Rx queue.
 
         size_t
         mem_size() const
@@ -1151,7 +1151,7 @@ namespace pfq {
             return 0;
         }
 
-        //! Return the address of the RX queue.
+        //! Return the address of the Rx queue.
 
         const void *
         mem_addr() const
@@ -1176,7 +1176,7 @@ namespace pfq {
             struct pfq_binding b = { {core}, index, queue };
 
             if (::setsockopt(fd_, PF_Q, Q_SO_TX_BIND, &b, sizeof(b)) == -1)
-                throw pfq_error(errno, "PFQ: TX bind error");
+                throw pfq_error(errno, "PFQ: Tx bind error");
 
             data_->tx_num_bind++;
         }
@@ -1190,7 +1190,7 @@ namespace pfq {
         unbind_tx()
         {
             if (::setsockopt(fd_, PF_Q, Q_SO_TX_UNBIND, nullptr, 0) == -1)
-                throw pfq_error(errno, "PFQ: TX unbind error");
+                throw pfq_error(errno, "PFQ: Tx unbind error");
 
             data_->tx_num_bind = 0;
         }
@@ -1250,7 +1250,7 @@ namespace pfq {
 
         //! Schedule the packet for transmission.
         /*!
-         * The packet is injected into the TX queue and later sent when
+         * The packet is injected into the Tx queue and later sent when
          * the tx_queue_flush function is invoked.
          */
 
@@ -1293,7 +1293,7 @@ namespace pfq {
             return true;
         }
 
-        //! Flush the TX queue, in the context of the thread or
+        //! Flush the Tx queue, in the context of the thread or
         //! wakeup kernel thread(s).
         /*!
          */
@@ -1302,7 +1302,7 @@ namespace pfq {
         tx_queue_flush(int queue = any_queue)
         {
             if (::setsockopt(fd_, PF_Q, Q_SO_TX_FLUSH, &queue, sizeof(queue)) == -1)
-                throw pfq_error(errno, "PFQ: TX queue flush");
+                throw pfq_error(errno, "PFQ: Tx queue flush");
         }
     };
 

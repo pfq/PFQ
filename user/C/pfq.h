@@ -258,31 +258,31 @@ extern int pfq_set_maxlen(pfq_t *q, size_t value);
 
 extern ssize_t pfq_get_maxlen(pfq_t const *q);
 
-/*! Specify the length of the RX queue, in number of packets. */
+/*! Specify the length of the Rx queue, in number of packets. */
 /*!
- * The number of RX slots can't exceed the max value specified by
+ * The number of Rx slots can't exceed the max value specified by
  * the rx_queue_slot kernel module parameter.
  */
 
 extern int pfq_set_rx_slots(pfq_t *q, size_t value);
 
-/*! Return the length of the RX queue, in number of packets. */
+/*! Return the length of the Rx queue, in number of packets. */
 
 extern size_t pfq_get_rx_slots(pfq_t const *q);
 
-/*! Specify the length of the TX queue, in number of packets. */
+/*! Specify the length of the Tx queue, in number of packets. */
 /*!
- * The number of TX slots can't exceed the max value specified by
+ * The number of Tx slots can't exceed the max value specified by
  * the tx_queue_slot kernel module parameter.
  */
 
 extern int pfq_set_tx_slots(pfq_t *q, size_t value);
 
-/*! Return the length of the TX queue, in number of packets. */
+/*! Return the length of the Tx queue, in number of packets. */
 
 extern size_t pfq_get_tx_slots(pfq_t const *q);
 
-/*! Return the length of a RX slot, in bytes. */
+/*! Return the length of a Rx slot, in bytes. */
 
 extern size_t pfq_get_rx_slot_size(pfq_t const *q);
 
@@ -415,11 +415,11 @@ extern int pfq_recv(pfq_t *q, void *buf, size_t buflen, struct pfq_net_queue *nq
 
 extern int pfq_dispatch(pfq_t *q, pfq_handler_t cb, long int microseconds, char *user);
 
-/*! Return the memory size of the RX queue. */
+/*! Return the memory size of the Rx queue. */
 
 extern size_t pfq_mem_size(pfq_t const *q);
 
-/*! Return the address of the RX queue. */
+/*! Return the address of the Rx queue. */
 
 extern const void * pfq_mem_addr(pfq_t const *q);
 
@@ -459,16 +459,16 @@ extern int pfq_bind_tx(pfq_t *q, const char *dev, int queue, int core);
 extern int pfq_unbind_tx(pfq_t *q);
 
 
-/*! Flush the TX queue, in the context of the calling thread. */
+/*! Flush the Tx queue, in the context of the calling thread. */
 /*!
- * To invoke this function, no TX kernel thread is required.
+ * To invoke this function, no Tx kernel thread is required.
  */
 
 extern int pfq_tx_queue_flush(pfq_t *q, int queue);
 
 /*! Schedule the packet for transmission. */
 /*!
- * The packet is copied to the TX queue and later sent when
+ * The packet is copied to the Tx queue and later sent when
  * the tx_queue_flush or wakeup_tx_thread function are invoked.
  */
 
