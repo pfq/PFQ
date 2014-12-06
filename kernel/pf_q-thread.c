@@ -49,12 +49,11 @@ pfq_tx_thread(void *_data)
 		return -EPERM;
 	}
 
-        dev  = dev_get_by_index(sock_net(&data->so->sk), data->so->tx_opt.queue[data->id].if_index);
+       	printk(KERN_INFO "[PFQ|T] TX[%zu] thread started on cpu %d...\n", data->id, smp_processor_id());
 
+        dev  = dev_get_by_index(sock_net(&data->so->sk), data->so->tx_opt.queue[data->id].if_index);
         cpu  = smp_processor_id();
 	node = cpu_to_node(cpu);
-
-        printk(KERN_INFO "[PFQ|T] TX[%zu] thread started on cpu %d...\n", data->id, smp_processor_id());
 
         for(;;)
         {
