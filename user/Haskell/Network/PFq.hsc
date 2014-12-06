@@ -132,12 +132,12 @@ module Network.PFq
         -- * Packet transmission
 
         bindTx,
-        startTxThread,
-        stopTxThread,
-        wakeupTxThread,
-        txQueueFlush,
+        bindTxOnCpu,
+        unbindTx,
 
+        txQueueFlush,
         inject,
+
         send,
         sendAsync,
 
@@ -276,14 +276,10 @@ newtype PFqConstant = PFqConstant { getConstant :: Int }
     , any_device           = Q_ANY_DEVICE
     , any_queue            = Q_ANY_QUEUE
     , any_group            = Q_ANY_GROUP
+    , any_cpu              = Q_ANY_CPU
+    , no_kthread           = Q_NO_KTHREAD
     , group_max_counters   = Q_MAX_COUNTERS
     , group_fun_descr_size = sizeof(struct pfq_functional_descr)
-}
-
-
-#{enum AsyncPolicy, AsyncPolicy
-    , tx_deferred          = Q_TX_ASYNC_DEFERRED
-    , tx_threaded          = Q_TX_ASYNC_THREADED
 }
 
 
@@ -961,33 +957,31 @@ bindTx :: Ptr PFqTag
        -> IO ()
 bindTx hdl name queue =
     withCString name $ \dev ->
-        pfq_bind_tx hdl dev (fromIntegral queue) >>= throwPFqIf_ hdl (== -1)
-
--- |Start the Tx kernel thread for transmission.
-
-startTxThread :: Ptr PFqTag
-              -> Int        -- ^ node
-              -> IO ()
-startTxThread hdl node =
-    pfq_start_tx_thread hdl (fromIntegral node) >>= throwPFqIf_ hdl (== -1)
+        pfq_bind_tx hdl dev (fromIntegral queue) (fromIntegral $ getConstant no_kthread) >>= throwPFqIf_ hdl (== -1)
 
 
--- |Stop the Tx kernel thread.
-
-stopTxThread :: Ptr PFqTag
-             -> IO ()
-stopTxThread hdl =
-    pfq_stop_tx_thread hdl >>= throwPFqIf_ hdl (== -1)
-
--- |Wakeup the Tx kernel thread.
+-- |Bind the socket for transmission to the given device name and queue.
 --
--- Wake up the Tx kernel thread which transmits the packets in the Tx queue.
--- The kernel thread must be already started.
+-- A socket for transmission can be bound to a given device/queue at time.
 
-wakeupTxThread :: Ptr PFqTag
-               -> IO ()
-wakeupTxThread hdl =
-    pfq_wakeup_tx_thread hdl >>= throwPFqIf_ hdl (== -1)
+bindTxOnCpu :: Ptr PFqTag
+       -> String      -- device name
+       -> Int         -- hw queue index
+       -> Int         -- cpu number
+       -> IO ()
+bindTxOnCpu hdl name queue cpu =
+    withCString name $ \dev ->
+        pfq_bind_tx hdl dev (fromIntegral queue) (fromIntegral cpu) >>= throwPFqIf_ hdl (== -1)
+
+
+-- |Unbind the socket for transmission.
+--
+-- A socket for transmission can be bound to a multiple device/queues.
+
+unbindTx :: Ptr PFqTag
+       -> IO ()
+unbindTx hdl =
+    pfq_unbind_tx hdl >>= throwPFqIf_ hdl (== -1)
 
 
 -- |Flush the Tx queue, in the user context of the calling thread.
@@ -995,9 +989,10 @@ wakeupTxThread hdl =
 -- To invoke this function, no kernel thread is required.
 
 txQueueFlush :: Ptr PFqTag
+             -> Int     -- queue index (any_queue is valid)
              -> IO ()
-txQueueFlush hdl =
-    pfq_tx_queue_flush hdl >>= throwPFqIf_ hdl (== -1)
+txQueueFlush hdl queue =
+    pfq_tx_queue_flush hdl (fromIntegral queue) >>= throwPFqIf_ hdl (== -1)
 
 
 -- |Schedule the packet for transmission.
@@ -1007,10 +1002,11 @@ txQueueFlush hdl =
 
 inject :: Ptr PFqTag
        -> C.ByteString  -- ^ bytes of packet
+       -> Int           -- queue index (any_queue is valid)
        -> IO Bool
-inject hdl xs =
+inject hdl xs queue =
     unsafeUseAsCStringLen xs $ \(p, l) ->
-        liftM (> 0) $ pfq_inject hdl p (fromIntegral l) >>= throwPFqIf hdl (== -1)
+        liftM (> 0) $ pfq_inject hdl p (fromIntegral l) (fromIntegral queue) >>= throwPFqIf hdl (== -1)
 
 
 -- |Transmit the packet passed.
@@ -1032,11 +1028,10 @@ send hdl xs =
 sendAsync :: Ptr PFqTag
           -> C.ByteString  -- ^ bytes of packet
           -> Int           -- ^ length of the batch
-          -> AsyncPolicy
           -> IO Bool
-sendAsync hdl xs blen apol =
+sendAsync hdl xs blen =
     unsafeUseAsCStringLen xs $ \(p, l) ->
-        liftM (>0) $ pfq_send_async hdl p (fromIntegral l) (fromIntegral blen) (getAsyncPolicy apol) >>= throwPFqIf hdl (== -1)
+        liftM (>0) $ pfq_send_async hdl p (fromIntegral l) (fromIntegral blen) >>= throwPFqIf hdl (== -1)
 
 
 -- C functions from libpfq
@@ -1104,17 +1099,12 @@ foreign import ccall unsafe pfq_vlan_filters_enable :: Ptr PFqTag -> CInt -> CIn
 foreign import ccall unsafe pfq_vlan_set_filter     :: Ptr PFqTag -> CInt -> CInt -> IO CInt
 foreign import ccall unsafe pfq_vlan_reset_filter   :: Ptr PFqTag -> CInt -> CInt -> IO CInt
 
-foreign import ccall unsafe pfq_bind_tx             :: Ptr PFqTag -> CString -> CInt -> IO CInt
-foreign import ccall unsafe pfq_start_tx_thread     :: Ptr PFqTag -> CInt -> IO CInt
-foreign import ccall unsafe pfq_stop_tx_thread      :: Ptr PFqTag -> IO CInt
-foreign import ccall unsafe pfq_wakeup_tx_thread    :: Ptr PFqTag -> IO CInt
-foreign import ccall unsafe pfq_tx_queue_flush      :: Ptr PFqTag -> IO CInt
+foreign import ccall unsafe pfq_bind_tx             :: Ptr PFqTag -> CString -> CInt -> CInt -> IO CInt
+foreign import ccall unsafe pfq_unbind_tx           :: Ptr PFqTag -> IO CInt
 
-foreign import ccall unsafe pfq_inject              :: Ptr PFqTag -> Ptr CChar -> CSize -> IO CInt
+foreign import ccall unsafe pfq_inject              :: Ptr PFqTag -> Ptr CChar -> CSize -> CInt -> IO CInt
+foreign import ccall unsafe pfq_tx_queue_flush      :: Ptr PFqTag -> CInt -> IO CInt
+
 foreign import ccall unsafe pfq_send                :: Ptr PFqTag -> Ptr CChar -> CSize -> IO CInt
-foreign import ccall unsafe pfq_send_async          :: Ptr PFqTag -> Ptr CChar -> CSize -> CSize -> CInt -> IO CInt
-
--- extern int pfq_get_groups_mask(pfq_t const *q, unsigned long *_mask);
--- extern int pfq_group_fprog(pfq_t *q, int gid, struct sock_fprog *);
--- extern int pfq_group_fprog_reset(pfq_t *q, int gid);
+foreign import ccall unsafe pfq_send_async          :: Ptr PFqTag -> Ptr CChar -> CSize -> CSize -> IO CInt
 
