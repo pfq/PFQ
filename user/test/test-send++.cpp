@@ -24,13 +24,8 @@ static const unsigned char ping[98] =
     0x36, 0x37                                      /* 67 */
 };
 
-void mode_1(pfq::socket &q, int64_t num);
-void mode_2(pfq::socket &q, int64_t num);
-void mode_3(pfq::socket &q, int64_t num);
-void mode_4(pfq::socket &q, int64_t num);
 
-
-void mode_1(pfq::socket &q, int64_t num)
+void send_packets(pfq::socket &q, int64_t num)
 {
     for(int64_t n = 0; n < num;)
     {
@@ -40,41 +35,16 @@ void mode_1(pfq::socket &q, int64_t num)
 }
 
 
-void mode_2(pfq::socket &q, int64_t num)
+void send_async_packets(pfq::socket &q, int64_t num)
 {
     for(int64_t n = 0; n < num;)
     {
-        if (q.send_async(pfq::const_buffer(reinterpret_cast<const char *>(ping), sizeof(ping)), 128, async_policy::tx_deferred))
+        if (q.send_async(pfq::const_buffer(reinterpret_cast<const char *>(ping), sizeof(ping)), 128))
             n++;
     }
 
     q.tx_queue_flush();
-
 }
-
-void mode_3(pfq::socket &q, int64_t num)
-{
-    for(int64_t n = 0; n < num;)
-    {
-        if (q.send_async(pfq::const_buffer(reinterpret_cast<const char *>(ping), sizeof(ping)), 1, async_policy::tx_threaded))
-            n++;
-    }
-
-    q.wakeup_tx_thread();
-}
-
-
-void mode_4(pfq::socket &q, int64_t num)
-{
-    for(int64_t n = 0; n < num;)
-    {
-        if (q.send_async(pfq::const_buffer(reinterpret_cast<const char *>(ping), sizeof(ping)), 128, async_policy::tx_threaded))
-            n++;
-    }
-
-    q.wakeup_tx_thread();
-}
-
 
 int
 main(int argc, char *argv[])
@@ -92,26 +62,19 @@ main(int argc, char *argv[])
 
     q.enable();
 
-    q.bind_tx(dev, queue);
+    q.bind_tx(dev, queue, node);
 
-    q.start_tx_thread(node);
+    if (mode)
+        send_async_packets(q, num);
+    else
+        send_packets(q, num);
 
-    switch(mode)
-    {
-    case 1: mode_1(q, num); break;
-    case 2: mode_2(q, num); break;
-    case 3: mode_3(q, num); break;
-    case 4: mode_4(q, num); break;
-    default:
-            throw std::runtime_error("unknown mode " + std::to_string(mode));
-    }
 
     std::this_thread::sleep_for(std::chrono::seconds(1));
 
     auto stat = q.stats();
 
     std::cout << "sent: " << stat.sent << " - disc: " << stat.disc << std::endl;
-    q.stop_tx_thread();
 
     return 0;
 }

@@ -26,11 +26,11 @@
 
 #include <pcap.h>
 #include <signal.h>
-#include <netinet/ip.h>
 #include <arpa/inet.h>
 #include <net/ethernet.h>
-#include <netinet/if_ether.h>
+
 #include <linux/if_ether.h>
+#include <linux/ip.h>
 
 #include <pfq/pfq.hpp>
 #include <vt100.hpp>

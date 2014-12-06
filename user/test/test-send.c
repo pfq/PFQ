@@ -23,7 +23,7 @@ static const unsigned char ping[98] =
 };
 
 
-void mode_1(pfq_t *q, unsigned long long num)
+void send_packets(pfq_t *q, unsigned long long num)
 {
         unsigned long long n;
         for(n = 0; n < num;)
@@ -33,41 +33,16 @@ void mode_1(pfq_t *q, unsigned long long num)
         }
 }
 
-void mode_2(pfq_t *q, unsigned long long num)
+void send_async_packets(pfq_t *q, unsigned long long num)
 {
         unsigned long long n;
         for(n = 0; n < num;)
         {
-                if (pfq_send_async(q, ping, sizeof(ping), 128, Q_TX_ASYNC_DEFERRED))
+                if (pfq_send_async(q, ping, sizeof(ping), 128))
 			n++;
         }
 
-        pfq_tx_queue_flush(q);
-}
-
-
-void mode_3(pfq_t *q, unsigned long long num)
-{
-        unsigned long long n;
-        for(n = 0; n < num;)
-        {
-                if (pfq_send_async(q, ping, sizeof(ping), 1, Q_TX_ASYNC_THREADED))
-			n++;
-        }
-
-        pfq_wakeup_tx_thread(q);
-}
-
-void mode_4(pfq_t *q, unsigned long long num)
-{
-        unsigned long long n;
-        for(n = 0; n < num;)
-        {
-                if (pfq_send_async(q, ping, sizeof(ping), 128, Q_TX_ASYNC_THREADED))
-			n++;
-        }
-
-        pfq_wakeup_tx_thread(q);
+        pfq_tx_queue_flush(q, Q_ANY_QUEUE);
 }
 
 
@@ -91,24 +66,14 @@ main(int argc, char *argv[])
 
         pfq_enable(q);
 
-        pfq_bind_tx(q, dev, queue);
+        pfq_bind_tx(q, dev, queue, node);
 
-        pfq_start_tx_thread(q, node);
-
-        switch(mode)
-        {
-        case 1: mode_1(q, num); break;
-        case 2: mode_2(q, num); break;
-        case 3: mode_3(q, num); break;
-        case 4: mode_4(q, num); break;
-        default:
-                fprintf(stderr, "error: unknown mode\n");
-                return -1;
-        }
+	if (mode)
+		send_async_packets(q, num);
+	else
+		send_packets(q, num);
 
         sleep(1);
-
-        pfq_stop_tx_thread(q);
 
         struct pfq_stats stat;
         pfq_get_stats(q, &stat);

@@ -576,52 +576,19 @@ void test_bind_tx()
 {
         pfq_t * q = pfq_open(64, 1024);
 
-        assert(pfq_bind_tx(q, "lo", -1) == 0);
-        assert(pfq_bind_tx(q, "unknown", -1) == -1);
+        assert(pfq_bind_tx(q, "lo", Q_ANY_QUEUE, Q_NO_KTHREAD) == 0);
+        assert(pfq_bind_tx(q, "unknown", Q_ANY_QUEUE, Q_NO_KTHREAD) == -1);
 
         pfq_close(q);
 }
 
 
-void test_start_tx_thread()
+void test_tx_thread()
 {
         pfq_t * q = pfq_open(64, 1024);
-        assert(pfq_start_tx_thread(q, 0) == -1);
 
-        assert(pfq_bind_tx(q, "lo", -1) == 0);
+        assert(pfq_bind_tx(q, "lo", Q_ANY_QUEUE, Q_ANY_CPU) == 0);
         assert(pfq_enable(q) == 0);
-
-        assert(pfq_start_tx_thread(q, 0) == 0);
-
-        pfq_close(q);
-}
-
-
-void test_stop_tx_thread()
-{
-        pfq_t * q = pfq_open(64, 1024);
-        assert(pfq_stop_tx_thread(q) == -1);
-
-        assert(pfq_bind_tx(q, "lo", -1) == 0);
-        assert(pfq_enable(q) == 0);
-
-        assert(pfq_start_tx_thread(q, 0) == 0);
-        assert(pfq_stop_tx_thread(q) == 0);
-
-        pfq_close(q);
-}
-
-
-void test_wakeup_tx_thread()
-{
-        pfq_t * q = pfq_open(64, 1024);
-        assert(pfq_wakeup_tx_thread(q) == -1);
-
-        assert(pfq_bind_tx(q, "lo", -1) == 0);
-        assert(pfq_enable(q) == 0);
-
-        assert(pfq_start_tx_thread(q, 0) == 0);
-        assert(pfq_wakeup_tx_thread(q) == 0);
 
         pfq_close(q);
 }
@@ -630,12 +597,12 @@ void test_wakeup_tx_thread()
 void test_tx_queue_flush()
 {
         pfq_t * q = pfq_open(64, 1024);
-        assert(pfq_tx_queue_flush(q) == -1);
+        assert(pfq_tx_queue_flush(q, Q_ANY_QUEUE) == -1);
 
-        assert(pfq_bind_tx(q, "lo", -1) == 0);
+        assert(pfq_bind_tx(q, "lo", Q_ANY_QUEUE, Q_NO_KTHREAD) == 0);
         assert(pfq_enable(q) == 0);
 
-        assert(pfq_tx_queue_flush(q) == 0);
+        assert(pfq_tx_queue_flush(q, Q_ANY_QUEUE) == 0);
 
         pfq_close(q);
 }
@@ -710,10 +677,8 @@ main(int argc __attribute__((unused)), char *argv[]__attribute__((unused)))
 
         TEST(test_bind_tx);
 
-        TEST(test_start_tx_thread);
+        TEST(test_tx_thread);
 
-        TEST(test_stop_tx_thread);
-        TEST(test_wakeup_tx_thread);
         TEST(test_tx_queue_flush);
 
         TEST(test_egress_bind);

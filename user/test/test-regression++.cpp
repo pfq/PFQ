@@ -543,45 +543,15 @@ Context(PFQ)
     }
 
 
-    Test(start_tx_thread)
+    Test(tx_thread)
     {
         pfq::socket q(64);
-        AssertThrow(q.start_tx_thread(0));
 
         q.bind_tx("lo", -1);
 
         q.enable();
-
-        AssertNoThrow(q.start_tx_thread(0));
     }
 
-
-    Test(stop_tx_thread)
-    {
-        pfq::socket q(64);
-        AssertThrow(q.stop_tx_thread());
-
-        q.bind_tx("lo", -1);
-
-        q.enable();
-        q.start_tx_thread(0);
-
-        AssertNoThrow(q.stop_tx_thread());
-    }
-
-    Test(wakeup_tx_thread)
-    {
-        pfq::socket q(64);
-        AssertThrow(q.wakeup_tx_thread());
-
-        q.bind_tx("lo", -1);
-
-        q.enable();
-
-        q.start_tx_thread(0);
-
-        AssertNoThrow(q.wakeup_tx_thread());
-    }
 
     Test(tx_queue_flush)
     {
