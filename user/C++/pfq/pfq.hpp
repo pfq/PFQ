@@ -1264,7 +1264,7 @@ namespace pfq {
 
                 if (queue == any_queue)
                 {
-                    auto _iph = (struct iphdr *)(buf.first + 14);
+                    auto _iph = reinterpret_cast<const iphdr *>(buf.first + 14);
                     return (_iph->saddr ^ _iph->daddr) % data_->tx_num_bind;
                 }
 
