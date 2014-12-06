@@ -44,21 +44,21 @@ endif()
 # C++ compiler-specific options
 #
 
-set(CMAKE_CXX_FLAGS                "${CXX_FLAGS_COMPAT} -O2 -Wall -Wextra")
-set(CMAKE_CXX_FLAGS_DEBUG          "${CXX_FLAGS_COMPAT} -O0 -g")
-set(CMAKE_CXX_FLAGS_MINSIZEREL     "${CXX_FLAGS_COMPAT} -Os -DNDEBUG")
-set(CMAKE_CXX_FLAGS_RELEASE        "${CXX_FLAGS_COMPAT} -O2 -DNDEBUG")
-set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CXX_FLAGS_COMPAT} -O2 -g")
+set(CMAKE_CXX_FLAGS                "${CXX_FLAGS_COMPAT} -Wall -Wextra -O2")
+set(CMAKE_CXX_FLAGS_DEBUG          "${CXX_FLAGS_COMPAT} -Wall -Wextra -O0 -g")
+set(CMAKE_CXX_FLAGS_MINSIZEREL     "${CXX_FLAGS_COMPAT} -Wall -Wextra -Os -DNDEBUG")
+set(CMAKE_CXX_FLAGS_RELEASE        "${CXX_FLAGS_COMPAT} -Wall -Wextra -O2 -DNDEBUG")
+set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CXX_FLAGS_COMPAT} -Wall -Wextra -O2 -g")
  
 
 # C compiler-specific options
 #
 
-set(CMAKE_C_FLAGS                   "-O2 -Wall -Wextra")
-set(CMAKE_C_FLAGS_DEBUG             "-O0 -g")
-set(CMAKE_C_FLAGS_MINSIZEREL        "-Os -DNDEBUG")
-set(CMAKE_C_FLAGS_RELEASE           "-O2 -DNDEBUG")
-set(CMAKE_C_FLAGS_RELWITHDEBINFO    "-O2 -g")
+set(CMAKE_C_FLAGS                   "-Wall -Wextra -O2")
+set(CMAKE_C_FLAGS_DEBUG             "-Wall -Wextra -O0 -g")
+set(CMAKE_C_FLAGS_MINSIZEREL        "-Wall -Wextra -Os -DNDEBUG")
+set(CMAKE_C_FLAGS_RELEASE           "-Wall -Wextra -O2 -DNDEBUG")
+set(CMAKE_C_FLAGS_RELWITHDEBINFO    "-Wall -Wextra -O2 -g")
 
 
 string (STRIP ${COMP_VERSION} COMP_STRIP_VERSION)
