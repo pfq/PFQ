@@ -88,9 +88,15 @@ namespace pfq {
         static constexpr int anytag = Q_VLAN_ANYTAG;
     };
 
+    //! integer constants...
+    //!
+
     static constexpr int any_device  = Q_ANY_DEVICE;
     static constexpr int any_queue   = Q_ANY_QUEUE;
     static constexpr int any_group   = Q_ANY_GROUP;
+
+    static constexpr int any_cpu     = Q_ANY_CPU;
+    static constexpr int no_kthread  = Q_NO_KTHREAD;
 
     //////////////////////////////////////////////////////////////////////
 
@@ -1157,11 +1163,11 @@ namespace pfq {
 
         //! Bind the socket for transmission to the given device name and queue.
         /*!
-         * A socket for transmission can be bound up to the max. number of logic queue.
+         * A socket for transmission can be bound up to the max. number of logic queues.
          */
 
         void
-        bind_tx(const char *dev, int queue = any_queue, int core = Q_TX_SYNC)
+        bind_tx(const char *dev, int queue = any_queue, int core = no_kthread)
         {
             auto index = ifindex(this->fd(), dev);
             if (index == -1)
