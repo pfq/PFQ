@@ -47,9 +47,19 @@
 
 #include <pfq.h>
 
-/* macros */
+
+/* useful macros */
 
 #define  ALIGN8(value) ((value + 7) & ~(__typeof__(value))7)
+
+#define Q_VALUE(q,value)   __builtin_choose_expr(__builtin_types_compatible_p(typeof(q), pfq_t *), (((pfq_t *)q)->error = NULL, (value)), \
+	     	         ( __builtin_choose_expr(__builtin_types_compatible_p(typeof(q), pfq_t const *), (((pfq_t *)q)->error = NULL, (value)), (void)0)))
+
+#define Q_ERROR(q,msg)	  __builtin_choose_expr(__builtin_types_compatible_p(typeof(q), pfq_t *), (((pfq_t *)q)->error = (msg), -1), \
+	     	        ( __builtin_choose_expr(__builtin_types_compatible_p(typeof(q), pfq_t const *), (((pfq_t *)q)->error = (msg), -1), (void)0)))
+
+#define Q_OK(q) Q_VALUE(q,0)
+
 
 #define max(a,b) \
 	({ __typeof__ (a) _a = (a); \
@@ -276,11 +286,11 @@ int pfq_close(pfq_t *q)
 			pfq_disable(q);
 
 		if (close(q->fd) < 0)
-			return q->error = "PFQ: close error", -1;
+			return Q_ERROR(q, "PFQ: close error");
 
 		free(q);
 
-                return q->error = NULL, 0;
+                return Q_OK(q);
 	}
 	else
 	{
@@ -294,23 +304,23 @@ int
 pfq_enable(pfq_t *q)
 {
 	if(setsockopt(q->fd, PF_Q, Q_SO_ENABLE, NULL, 0) == -1) {
-		return q->error = "PFQ: socket enable", -1;
+		return Q_ERROR(q, "PFQ: socket enable");
 	}
 
 	size_t tot_mem; socklen_t size = sizeof(tot_mem);
 
 	if (getsockopt(q->fd, PF_Q, Q_SO_GET_SHARED_MEM, &tot_mem, &size) == -1) {
-		return q->error = "PFQ: queue memory error", -1;
+		return Q_ERROR(q, "PFQ: queue memory error");
 	}
 
 	q->shm_size = tot_mem;
 
 	if (q->shm_addr) {
-		return q->error = "PFQ: queue already enabled", -1;
+		return Q_ERROR(q, "PFQ: queue already enabled");
 	}
 
 	if ((q->shm_addr = mmap(NULL, tot_mem, PROT_READ|PROT_WRITE, MAP_SHARED, q->fd, 0)) == MAP_FAILED) {
-		return q->error = "PFQ: queue mmap error", -1;
+		return Q_ERROR(q, "PFQ: queue mmap error");
 	}
 
        	q->rx_queue_addr = (char *)(q->shm_addr) + sizeof(struct pfq_queue_hdr);
@@ -319,7 +329,7 @@ pfq_enable(pfq_t *q)
         q->tx_queue_addr = (char *)(q->shm_addr) + sizeof(struct pfq_queue_hdr) + q->rx_queue_size * 2;
         q->tx_queue_size = q->tx_slots * q->tx_slot_size;
 
-        return q->error = NULL, 0;
+        return Q_OK(q);
 }
 
 
@@ -327,35 +337,34 @@ int
 pfq_disable(pfq_t *q)
 {
 	if (q->fd == -1)
-		return q->error = "PFQ: socket not open", -1;
+		return Q_ERROR(q, "PFQ: socket not open");
 
 	if (munmap(q->shm_addr,q->shm_size) == -1) {
-		return q->error = "PFQ: munmap error", -1;
+		return Q_ERROR(q, "PFQ: munmap error");
 	}
 
 	q->shm_addr = NULL;
 	q->shm_size = 0;
 
 	if(setsockopt(q->fd, PF_Q, Q_SO_DISABLE, NULL, 0) == -1) {
-		return q->error = "PFQ: socket disable", -1;
+		return Q_ERROR(q, "PFQ: socket disable");
 	}
-	return q->error = NULL, 0;
+	return Q_OK(q);
 }
 
 
 int
 pfq_is_enabled(pfq_t const *q)
 {
-	pfq_t * mutable = (pfq_t *)q;
 	if (q->fd != -1)
 	{
 		int ret; socklen_t size = sizeof(ret);
 		if (getsockopt(q->fd, PF_Q, Q_SO_GET_STATUS, &ret, &size) == -1) {
-			return mutable->error = "PFQ: get status error", -1;
+			return Q_ERROR(q, "PFQ: get status error");
 		}
-		return mutable->error = NULL, ret;
+		return Q_VALUE(q, ret);
 	}
-	return mutable->error = NULL, 0;
+	return Q_OK(q);
 }
 
 
@@ -364,22 +373,21 @@ pfq_timestamp_enable(pfq_t *q, int value)
 {
 	int ts = value;
 	if (setsockopt(q->fd, PF_Q, Q_SO_SET_RX_TSTAMP, &ts, sizeof(ts)) == -1) {
-		return q->error = "PFQ: set timestamp mode", -1;
+		return Q_ERROR(q, "PFQ: set timestamp mode");
 	}
-	return q->error = NULL, 0;
+	return Q_OK(q);
 }
 
 
 int
 pfq_is_timestamp_enabled(pfq_t const *q)
 {
-	pfq_t * mutable = (pfq_t *)q;
 	int ret; socklen_t size = sizeof(int);
 
 	if (getsockopt(q->fd, PF_Q, Q_SO_GET_RX_TSTAMP, &ret, &size) == -1) {
-	        return mutable->error = "PFQ: get timestamp mode", -1;
+	        return Q_ERROR(q, "PFQ: get timestamp mode");
 	}
-	return mutable->error = NULL, ret;
+	return Q_VALUE(q, ret);
 }
 
 
@@ -387,14 +395,13 @@ int
 pfq_ifindex(pfq_t const *q, const char *dev)
 {
 	struct ifreq ifreq_io;
-	pfq_t * mutable = (pfq_t *)q;
 
 	memset(&ifreq_io, 0, sizeof(struct ifreq));
 	strncpy(ifreq_io.ifr_name, dev, IFNAMSIZ);
 	if (ioctl(q->fd, SIOCGIFINDEX, &ifreq_io) == -1) {
-		return mutable->error = "PFQ: ioctl get ifindex error", -1;
+		return Q_ERROR(q, "PFQ: ioctl get ifindex error");
 	}
-	return mutable->error = NULL, ifreq_io.ifr_ifindex;
+	return Q_VALUE(q, ifreq_io.ifr_ifindex);
 }
 
 
@@ -402,13 +409,12 @@ int
 pfq_set_promisc(pfq_t const *q, const char *dev, int value)
 {
 	struct ifreq ifreq_io;
-	pfq_t * mutable = (pfq_t *)q;
 
 	memset(&ifreq_io, 0, sizeof(struct ifreq));
 	strncpy(ifreq_io.ifr_name, dev, IFNAMSIZ);
 
 	if(ioctl(q->fd, SIOCGIFFLAGS, &ifreq_io) == -1) {
-		return mutable->error = "PFQ: ioctl getflags error", -1;
+		return Q_ERROR(q, "PFQ: ioctl getflags error");
 	}
 
 	if (value)
@@ -417,9 +423,9 @@ pfq_set_promisc(pfq_t const *q, const char *dev, int value)
 		ifreq_io.ifr_flags &= ~IFF_PROMISC;
 
 	if(ioctl(q->fd, SIOCSIFFLAGS, &ifreq_io) == -1) {
-		return mutable->error = "PFQ: ioctl setflags error", -1;
+		return Q_ERROR(q, "PFQ: ioctl setflags error");
 	}
-	return mutable->error = NULL, 0;
+	return Q_OK(q);
 }
 
 
@@ -428,15 +434,15 @@ pfq_set_caplen(pfq_t *q, size_t value)
 {
 	int enabled = pfq_is_enabled(q);
 	if (enabled == 1) {
-		return q->error =  "PFQ: enabled (caplen could not be set)", -1;
+		return Q_ERROR(q, "PFQ: enabled (caplen could not be set)");
 	}
 
 	if (setsockopt(q->fd, PF_Q, Q_SO_SET_RX_CAPLEN, &value, sizeof(value)) == -1) {
-		return q->error = "PFQ: set caplen error", -1;
+		return Q_ERROR(q, "PFQ: set caplen error");
 	}
 
 	q->rx_slot_size = ALIGN8(sizeof(struct pfq_pkt_hdr)+ value);
-	return q->error = NULL, 0;
+	return Q_OK(q);
 }
 
 
@@ -444,12 +450,11 @@ ssize_t
 pfq_get_caplen(pfq_t const *q)
 {
 	size_t ret; socklen_t size = sizeof(ret);
-	pfq_t * mutable = (pfq_t *)q;
 
 	if (getsockopt(q->fd, PF_Q, Q_SO_GET_RX_CAPLEN, &ret, &size) == -1) {
-		return mutable->error = "PFQ: get caplen error", -1;
+		return Q_ERROR(q, "PFQ: get caplen error");
 	}
-	return mutable->error = NULL, (ssize_t)ret;
+	return Q_VALUE(q, (ssize_t)ret);
 }
 
 
@@ -458,15 +463,15 @@ pfq_set_maxlen(pfq_t *q, size_t value)
 {
 	int enabled = pfq_is_enabled(q);
 	if (enabled == 1) {
-		return q->error = "PFQ: enabled (maxlen could not be set)", -1;
+		return Q_ERROR(q, "PFQ: enabled (maxlen could not be set)");
 	}
 
 	if (setsockopt(q->fd, PF_Q, Q_SO_SET_TX_MAXLEN, &value, sizeof(value)) == -1) {
-		return q->error = "PFQ: set maxlen error", -1;
+		return Q_ERROR(q, "PFQ: set maxlen error");
 	}
 
 	q->rx_slot_size = ALIGN8(sizeof(struct pfq_pkt_hdr) + value);
-	return q->error = NULL, 0;
+	return Q_OK(q);
 }
 
 
@@ -474,12 +479,11 @@ ssize_t
 pfq_get_maxlen(pfq_t const *q)
 {
 	size_t ret; socklen_t size = sizeof(ret);
-	pfq_t * mutable = (pfq_t *)q;
 
 	if (getsockopt(q->fd, PF_Q, Q_SO_GET_TX_MAXLEN, &ret, &size) == -1) {
-		return mutable->error = "PFQ: get maxlen error", -1;
+		return Q_ERROR(q, "PFQ: get maxlen error");
 	}
-	return mutable->error = NULL, (ssize_t)ret;
+	return Q_VALUE(q, (ssize_t)ret);
 }
 
 
@@ -488,14 +492,14 @@ pfq_set_rx_slots(pfq_t *q, size_t value)
 {
 	int enabled = pfq_is_enabled(q);
 	if (enabled == 1) {
-		return q->error = "PFQ: enabled (slots could not be set)", -1;
+		return Q_ERROR(q, "PFQ: enabled (slots could not be set)");
 	}
 	if (setsockopt(q->fd, PF_Q, Q_SO_SET_RX_SLOTS, &value, sizeof(value)) == -1) {
-		return q->error = "PFQ: set Rx slots error", -1;
+		return Q_ERROR(q, "PFQ: set Rx slots error");
 	}
 
 	q->rx_slots = value;
-	return q->error = NULL, 0;
+	return Q_OK(q);
 }
 
 
@@ -511,14 +515,14 @@ pfq_set_tx_slots(pfq_t *q, size_t value)
 {
 	int enabled = pfq_is_enabled(q);
 	if (enabled == 1) {
-		return q->error = "PFQ: enabled (Tx slots could not be set)", -1;
+		return Q_ERROR(q, "PFQ: enabled (Tx slots could not be set)");
 	}
 	if (setsockopt(q->fd, PF_Q, Q_SO_SET_TX_SLOTS, &value, sizeof(value)) == -1) {
-		return q->error = "PFQ: set Tx slots error", -1;
+		return Q_ERROR(q, "PFQ: set Tx slots error");
 	}
 
 	q->tx_slots = value;
-	return q->error = NULL, 0;
+	return Q_OK(q);
 }
 
 
@@ -547,7 +551,7 @@ pfq_bind_group(pfq_t *q, int gid, const char *dev, int queue)
 	else {
 		index = pfq_ifindex(q, dev);
 		if (index == -1) {
-			return q->error = "PFQ: bind_group: device not found", -1;
+			return Q_ERROR(q, "PFQ: bind_group: device not found");
 		}
 	}
 
@@ -556,9 +560,9 @@ pfq_bind_group(pfq_t *q, int gid, const char *dev, int queue)
 	b.hw_queue = queue;
 
 	if (setsockopt(q->fd, PF_Q, Q_SO_GROUP_BIND, &b, sizeof(b)) == -1) {
-		return q->error = "PFQ: bind error", -1;
+		return Q_ERROR(q, "PFQ: bind error");
 	}
-	return q->error = NULL, 0;
+	return Q_OK(q);
 }
 
 
@@ -567,7 +571,7 @@ pfq_bind(pfq_t *q, const char *dev, int queue)
 {
 	int gid = q->gid;
 	if (gid < 0) {
-		return q->error = "PFQ: default group undefined", -1;
+		return Q_ERROR(q, "PFQ: default group undefined");
 	}
 	return pfq_bind_group(q, gid, dev, queue);
 }
@@ -585,7 +589,7 @@ pfq_egress_bind(pfq_t *q, const char *dev, int queue)
 	else {
 		index = pfq_ifindex(q, dev);
 		if (index == -1) {
-			return q->error = "PFQ: egress_bind: device not found", -1;
+			return Q_ERROR(q, "PFQ: egress_bind: device not found");
 		}
 	}
 
@@ -594,18 +598,18 @@ pfq_egress_bind(pfq_t *q, const char *dev, int queue)
 	b.hw_queue = queue;
 
         if (setsockopt(q->fd, PF_Q, Q_SO_EGRESS_BIND, &b, sizeof(b)) == -1)
-		return q->error = "PFQ: egress bind error", -1;
+		return Q_ERROR(q, "PFQ: egress bind error");
 
-	return q->error = NULL, 0;
+	return Q_OK(q);
 }
 
 int
 pfq_egress_unbind(pfq_t *q)
 {
         if (setsockopt(q->fd, PF_Q, Q_SO_EGRESS_UNBIND, 0, 0) == -1)
-		return q->error = "PFQ: egress unbind error", -1;
+		return Q_ERROR(q, "PFQ: egress unbind error");
 
-	return q->error = NULL, 0;
+	return Q_OK(q);
 }
 
 
@@ -621,7 +625,7 @@ pfq_unbind_group(pfq_t *q, int gid, const char *dev, int queue) /* Q_ANY_QUEUE *
 	else {
 		index = pfq_ifindex(q, dev);
 		if (index == -1) {
-			return q->error = "PFQ: unbind_group: device not found", -1;
+			return Q_ERROR(q, "PFQ: unbind_group: device not found");
 		}
 	}
 
@@ -630,9 +634,9 @@ pfq_unbind_group(pfq_t *q, int gid, const char *dev, int queue) /* Q_ANY_QUEUE *
 	b.hw_queue = queue;
 
 	if (setsockopt(q->fd, PF_Q, Q_SO_GROUP_UNBIND, &b, sizeof(b)) == -1) {
-		return q->error = "PFQ: unbind error", -1;
+		return Q_ERROR(q, "PFQ: unbind error");
 	}
-	return q->error = NULL, 0;
+	return Q_OK(q);
 }
 
 
@@ -641,7 +645,7 @@ pfq_unbind(pfq_t *q, const char *dev, int queue)
 {
 	int gid = q->gid;
 	if (gid < 0) {
-		return q->error = "PFQ: default group undefined", -1;
+		return Q_ERROR(q, "PFQ: default group undefined");
 	}
 	return pfq_unbind_group(q, gid, dev, queue);
 }
@@ -651,13 +655,12 @@ int
 pfq_groups_mask(pfq_t const *q, unsigned long *_mask)
 {
 	unsigned long mask; socklen_t size = sizeof(mask);
-	pfq_t * mutable = (pfq_t *)q;
 
 	if (getsockopt(q->fd, PF_Q, Q_SO_GET_GROUPS, &mask, &size) == -1) {
-		return mutable->error = "PFQ: get groups error", -1;
+		return Q_ERROR(q, "PFQ: get groups error");
 	}
 	*_mask = mask;
-	return mutable->error = NULL, 0;
+	return Q_OK(q);
 }
 
 int
@@ -666,10 +669,10 @@ pfq_set_group_computation(pfq_t *q, int gid, struct pfq_computation_descr *comp)
         struct pfq_group_computation p = { gid, comp };
 
         if (setsockopt(q->fd, PF_Q, Q_SO_GROUP_FUNCTION, &p, sizeof(p)) == -1) {
-		return q->error = "PFQ: group computation error", -1;
+		return Q_ERROR(q, "PFQ: group computation error");
         }
 
-	return q->error = NULL, 0;
+	return Q_OK(q);
 }
 
 
@@ -682,7 +685,7 @@ pfq_set_group_computation_from_string(pfq_t *q, int gid, const char *comp)
 
                 struct pfq_computation_descr * prog = malloc(sizeof(size_t) * 2 + sizeof(struct pfq_functional_descr) * n);
 		if (!prog)
-			return q->error = "PFQ: group computation error (no memory)", -1;
+			return Q_ERROR(q, "PFQ: group computation error (no memory)");
 
 		prog->entry_point = 0;
 		prog->size = n;
@@ -735,10 +738,10 @@ pfq_group_fprog(pfq_t *q, int gid, struct sock_fprog *f)
 	}
 
         if (setsockopt(q->fd, PF_Q, Q_SO_GROUP_FPROG, &fprog, sizeof(fprog)) == -1) {
-		return q->error = "PFQ: set group fprog error", -1;
+		return Q_ERROR(q, "PFQ: set group fprog error");
 	}
 
-	return q->error = NULL, 0;
+	return Q_OK(q);
 }
 
 
@@ -755,20 +758,20 @@ int
 pfq_join_group(pfq_t *q, int gid, unsigned long class_mask, int group_policy)
 {
 	if (group_policy == Q_POLICY_GROUP_UNDEFINED) {
-         	return q->error = "PFQ: join with undefined policy!", -1;
+         	return Q_ERROR(q, "PFQ: join with undefined policy!");
 	}
 
 	struct pfq_group_join group = { gid, group_policy, class_mask };
 
 	socklen_t size = sizeof(group);
 	if (getsockopt(q->fd, PF_Q, Q_SO_GROUP_JOIN, &group, &size) == -1) {
-	        return q->error = "PFQ: join group error", -1;
+	        return Q_ERROR(q, "PFQ: join group error");
 	}
 
         if (q->gid == -1)
                 q->gid = group.gid;
 
-	return q->error = NULL, group.gid;
+	return Q_VALUE(q, group.gid);
 }
 
 
@@ -776,12 +779,12 @@ int
 pfq_leave_group(pfq_t *q, int gid)
 {
 	if (setsockopt(q->fd, PF_Q, Q_SO_GROUP_LEAVE, &gid, sizeof(gid)) == -1) {
-	        return q->error = "PFQ: leave group error", -1;
+	        return Q_ERROR(q, "PFQ: leave group error");
 	}
 	if (q->gid == gid)
 	        q->gid = -1;
 
-	return q->error = NULL, 0;
+	return Q_OK(q);
 }
 
 
@@ -792,7 +795,7 @@ pfq_poll(pfq_t *q, long int microseconds /* = -1 -> infinite */)
 	struct pollfd fd = {q->fd, POLLIN, 0 };
 
 	if (q->fd == -1) {
-		return q->error = "PFQ: socket not open", -1;
+		return Q_ERROR(q, "PFQ: socket not open");
 	}
 
 	if (microseconds >= 0) {
@@ -802,50 +805,47 @@ pfq_poll(pfq_t *q, long int microseconds /* = -1 -> infinite */)
 
 	int ret = ppoll(&fd, 1, microseconds < 0 ? NULL : &timeout, NULL);
 	if (ret < 0 && errno != EINTR) {
-	    return q->error = "PFQ: ppoll error", -1;
+	    return Q_ERROR(q, "PFQ: ppoll error");
 	}
-	return q->error = NULL, 0;
+	return Q_OK(q);
 }
 
 
 int
 pfq_get_stats(pfq_t const *q, struct pfq_stats *stats)
 {
-	pfq_t *mutable = (pfq_t *)q;
 	socklen_t size = sizeof(struct pfq_stats);
 	if (getsockopt(q->fd, PF_Q, Q_SO_GET_STATS, stats, &size) == -1) {
-		return mutable->error = "PFQ: get stats error", -1;
+		return Q_ERROR(q, "PFQ: get stats error");
 	}
-	return mutable->error = NULL, 0;
+	return Q_OK(q);
 }
 
 
 int
 pfq_get_group_stats(pfq_t const *q, int gid, struct pfq_stats *stats)
 {
-	pfq_t *mutable = (pfq_t *)q;
 	socklen_t size = sizeof(struct pfq_stats);
 
 	stats->recv = (unsigned int)gid;
 	if (getsockopt(q->fd, PF_Q, Q_SO_GET_GROUP_STATS, stats, &size) == -1) {
-		return mutable->error = "PFQ: get group stats error", -1;
+		return Q_ERROR(q, "PFQ: get group stats error");
 	}
-	return mutable->error = NULL, 0;
+	return Q_OK(q);
 }
 
 
 int
 pfq_get_group_counters(pfq_t const *q, int gid, struct pfq_counters *cs)
 {
-	pfq_t *mutable = (pfq_t *)q;
 	socklen_t size = sizeof(struct pfq_counters);
 
 	cs->counter[0] = (unsigned int)gid;
 
 	if (getsockopt(q->fd, PF_Q, Q_SO_GET_GROUP_COUNTERS, cs, &size) == -1) {
-		return mutable->error = "PFQ: get group counters error", -1;
+		return Q_ERROR(q, "PFQ: get group counters error");
 	}
-	return mutable->error = NULL, 0;
+	return Q_OK(q);
 }
 
 
@@ -855,10 +855,10 @@ pfq_vlan_filters_enable(pfq_t *q, int gid, int toggle)
         struct pfq_vlan_toggle value = { gid, 0, toggle };
 
         if (setsockopt(q->fd, PF_Q, Q_SO_GROUP_VLAN_FILT_TOGGLE, &value, sizeof(value)) == -1) {
-	        return q->error = "PFQ: vlan filters", -1;
+	        return Q_ERROR(q, "PFQ: vlan filters");
         }
 
-        return q->error = NULL, 0;
+        return Q_OK(q);
 }
 
 int
@@ -867,10 +867,10 @@ pfq_vlan_set_filter(pfq_t *q, int gid, int vid)
         struct pfq_vlan_toggle value = { gid, vid, 1 };
 
         if (setsockopt(q->fd, PF_Q, Q_SO_GROUP_VLAN_FILT, &value, sizeof(value)) == -1) {
-	        return q->error = "PFQ: vlan set filter", -1;
+	        return Q_ERROR(q, "PFQ: vlan set filter");
         }
 
-        return q->error = NULL, 0;
+        return Q_OK(q);
 }
 
 int pfq_vlan_reset_filter(pfq_t *q, int gid, int vid)
@@ -878,10 +878,10 @@ int pfq_vlan_reset_filter(pfq_t *q, int gid, int vid)
         struct pfq_vlan_toggle value = { gid, vid, 0 };
 
         if (setsockopt(q->fd, PF_Q, Q_SO_GROUP_VLAN_FILT, &value, sizeof(value)) == -1) {
-	        return q->error = "PFQ: vlan reset filter", -1;
+	        return Q_ERROR(q, "PFQ: vlan reset filter");
         }
 
-        return q->error = NULL, 0;
+        return Q_OK(q);
 }
 
 
@@ -892,7 +892,7 @@ pfq_read(pfq_t *q, struct pfq_net_queue *nq, long int microseconds)
 	unsigned int index, data;
 
         if (q->shm_addr == NULL) {
-         	return q->error = "PFQ: read: socket not enabled", -1;
+         	return Q_ERROR(q, "PFQ: read: socket not enabled");
 	}
 
 	qd    = (struct pfq_queue_hdr *)(q->shm_addr);
@@ -902,7 +902,7 @@ pfq_read(pfq_t *q, struct pfq_net_queue *nq, long int microseconds)
 	if( MPDB_QUEUE_LEN(data) == 0 ) {
 #ifdef PFQ_USE_POLL
 		if (pfq_poll(q, microseconds) < 0) {
-        		return q->error = "PFQ: poll error", -1;
+        		return Q_ERROR(q, "PFQ: poll error");
 		}
 #else
 		(void)microseconds;
@@ -920,7 +920,7 @@ pfq_read(pfq_t *q, struct pfq_net_queue *nq, long int microseconds)
 	nq->len   = queue_len;
         nq->slot_size = q->rx_slot_size;
 
-	return q->error = NULL, (int)queue_len;
+	return Q_VALUE(q, (int)queue_len);
 }
 
 
@@ -931,11 +931,11 @@ pfq_recv(pfq_t *q, void *buf, size_t buflen, struct pfq_net_queue *nq, long int 
 		return -1;
 
 	if (buflen < (q->rx_slots * q->rx_slot_size)) {
-		return q->error = "PFQ: buffer too small", -1;
+		return Q_ERROR(q, "PFQ: buffer too small");
 	}
 
 	memcpy(buf, nq->queue, q->rx_slot_size * nq->len);
-	return q->error = NULL, 0;
+	return Q_OK(q);
 }
 
 
@@ -959,7 +959,7 @@ pfq_dispatch(pfq_t *q, pfq_handler_t cb, long int microseconds, char *user)
 		cb(user, pfq_iterator_header(it), pfq_iterator_data(it));
 		n++;
 	}
-        return q->error = NULL, n;
+        return Q_VALUE(q, n);
 }
 
 /* Tx APIs */
@@ -971,18 +971,18 @@ pfq_bind_tx(pfq_t *q, const char *dev, int queue, int core)
 
         int index = pfq_ifindex(q, dev);
         if (index == -1)
-		return q->error = "PFQ: device not found", -1;
+		return Q_ERROR(q, "PFQ: device not found");
 
 	b.cpu = core;
 	b.if_index = index;
 	b.hw_queue = queue;
 
         if (setsockopt(q->fd, PF_Q, Q_SO_TX_BIND, &b, sizeof(b)) == -1)
-		return q->error = "PFQ: Tx bind error", -1;
+		return Q_ERROR(q, "PFQ: Tx bind error");
 
 	q->tx_num_bind++;
 
-	return q->error = NULL, 0;
+	return Q_OK(q);
 }
 
 
@@ -990,9 +990,9 @@ int
 pfq_unbind_tx(pfq_t *q)
 {
         if (setsockopt(q->fd, PF_Q, Q_SO_TX_UNBIND, NULL, 0) == -1)
-		return q->error = "PFQ: Tx unbind error", -1;
+		return Q_ERROR(q, "PFQ: Tx unbind error");
 
-	return q->error = NULL, 0;
+	return Q_OK(q);
 }
 
 int
@@ -1006,7 +1006,7 @@ pfq_inject(pfq_t *q, const void *buf, size_t len, int queue)
 	int tss;
 
 	if (q->shm_addr == NULL)
-         	return q->error = "PFQ: inject: socket not enabled", -1;
+         	return Q_ERROR(q, "PFQ: inject: socket not enabled");
 
 	if (queue == Q_ANY_QUEUE) {
         	struct iphdr const * _ip = (struct iphdr const *)(buf + 14);
@@ -1020,7 +1020,7 @@ pfq_inject(pfq_t *q, const void *buf, size_t len, int queue)
 
         index = pfq_spsc_write_index(tx);
         if (index == -1)
-	        return q->error = NULL, 0;
+	        return Q_OK(q);
 
         hdr = (struct pfq_pkt_hdr *)(
         		(char *)(q->tx_queue_addr) +
@@ -1034,7 +1034,7 @@ pfq_inject(pfq_t *q, const void *buf, size_t len, int queue)
 
         pfq_spsc_write_commit(tx);
 
-        return q->error = NULL, len;
+        return Q_VALUE(q, len);
 }
 
 
@@ -1042,9 +1042,9 @@ int
 pfq_tx_queue_flush(pfq_t *q, int queue)
 {
         if (setsockopt(q->fd, PF_Q, Q_SO_TX_FLUSH, &queue, sizeof(queue)) == -1)
-		return q->error = "PFQ: Tx queue flush", -1;
+		return Q_ERROR(q, "PFQ: Tx queue flush");
 
-        return q->error = NULL, 0;
+        return Q_OK(q);
 }
 
 
