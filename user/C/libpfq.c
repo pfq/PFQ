@@ -253,7 +253,7 @@ pfq_open_group(unsigned long class_mask, int group_policy, size_t caplen, size_t
         /* set maxlen */
         if (setsockopt(fd, PF_Q, Q_SO_SET_TX_MAXLEN, &maxlen, sizeof(maxlen)) == -1)
         {
-		return __error = "PFQ: set maxlen error", free(q), NULL;
+		return __error = "PFQ: set Tx maxlen error", free(q), NULL;
         }
 
 	if (group_policy != Q_POLICY_GROUP_UNDEFINED)
@@ -488,7 +488,7 @@ pfq_set_rx_slots(pfq_t *q, size_t value)
 		return q->error = "PFQ: enabled (slots could not be set)", -1;
 	}
 	if (setsockopt(q->fd, PF_Q, Q_SO_SET_RX_SLOTS, &value, sizeof(value)) == -1) {
-		return q->error = "PFQ: set slots error", -1;
+		return q->error = "PFQ: set Rx slots error", -1;
 	}
 
 	q->rx_slots = value;
@@ -553,7 +553,7 @@ pfq_bind_group(pfq_t *q, int gid, const char *dev, int queue)
 	b.hw_queue = queue;
 
 	if (setsockopt(q->fd, PF_Q, Q_SO_GROUP_BIND, &b, sizeof(b)) == -1) {
-		return q->error = "PFQ: add binding error", -1;
+		return q->error = "PFQ: bind error", -1;
 	}
 	return q->error = NULL, 0;
 }
@@ -627,7 +627,7 @@ pfq_unbind_group(pfq_t *q, int gid, const char *dev, int queue) /* Q_ANY_QUEUE *
 	b.hw_queue = queue;
 
 	if (setsockopt(q->fd, PF_Q, Q_SO_GROUP_UNBIND, &b, sizeof(b)) == -1) {
-		return q->error = "PFQ: remove binding error", -1;
+		return q->error = "PFQ: unbind error", -1;
 	}
 	return q->error = NULL, 0;
 }
@@ -889,7 +889,7 @@ pfq_read(pfq_t *q, struct pfq_net_queue *nq, long int microseconds)
 	unsigned int index, data;
 
         if (q->shm_addr == NULL) {
-         	return q->error = "PFQ: read on pfq socket not enabled", -1;
+         	return q->error = "PFQ: read: socket not enabled", -1;
 	}
 
 	qd    = (struct pfq_queue_hdr *)(q->shm_addr);

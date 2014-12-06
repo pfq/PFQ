@@ -410,7 +410,7 @@ namespace pfq {
             // set caplen
 
             if (::setsockopt(fd_, PF_Q, Q_SO_SET_RX_CAPLEN, &caplen, sizeof(caplen)) == -1)
-                throw pfq_error(errno, "PFQ: set caplen error");
+                throw pfq_error(errno, "PFQ: set Rx caplen error");
 
             data_->rx_slot_size = align<8>(sizeof(pfq_pkt_hdr) + caplen);
 
@@ -425,7 +425,7 @@ namespace pfq {
             // set maxlen
 
             if (::setsockopt(fd_, PF_Q, Q_SO_SET_TX_MAXLEN, &maxlen, sizeof(maxlen)) == -1)
-                throw pfq_error(errno, "PFQ: set maxlen error");
+                throw pfq_error(errno, "PFQ: set Tx maxlen error");
         }
 
     public:
@@ -443,7 +443,7 @@ namespace pfq {
                 data_.reset(nullptr);
 
                 if (::close(fd_) < 0)
-                    throw pfq_error("FPQ: close");
+                    throw pfq_error("FPQ: close error");
                 fd_ = -1;
             }
         }
@@ -696,7 +696,7 @@ namespace pfq {
             struct pfq_binding b = { {gid}, index, queue };
 
             if (::setsockopt(fd_, PF_Q, Q_SO_GROUP_BIND, &b, sizeof(b)) == -1)
-                throw pfq_error(errno, "PFQ: add binding error");
+                throw pfq_error(errno, "PFQ: bind error");
         }
 
         //! Unbind the main group of the socket from the given device/queue.
@@ -728,7 +728,7 @@ namespace pfq {
             struct pfq_binding b = { {gid}, index, queue };
 
             if (::setsockopt(fd_, PF_Q, Q_SO_GROUP_UNBIND, &b, sizeof(b)) == -1)
-                throw pfq_error(errno, "PFQ: remove binding error");
+                throw pfq_error(errno, "PFQ: unbind error");
         }
 
         //! Mark the socket as egress and bind it to the given device/queue.
@@ -954,7 +954,7 @@ namespace pfq {
 
             int ret = ::ppoll(&fd, 1, microseconds < 0 ? nullptr : &timeout, nullptr);
             if (ret < 0 && errno != EINTR)
-               throw pfq_error(errno, "PFQ: ppoll");
+               throw pfq_error(errno, "PFQ: ppoll error");
 
             return 0;
         }
@@ -970,7 +970,7 @@ namespace pfq {
         read(long int microseconds = -1)
         {
             if (!data_ || !data_->shm_addr)
-                throw pfq_error("PFQ: not enabled");
+                throw pfq_error("PFQ: read: socket not enabled");
 
             auto q = static_cast<struct pfq_queue_hdr *>(data_->shm_addr);
 
@@ -1260,7 +1260,7 @@ namespace pfq {
         inject(const_buffer buf, int queue = any_queue)
         {
             if (!data_ || !data_->shm_addr)
-                throw pfq_error("PFQ: not enabled");
+                throw pfq_error("PFQ: inject: socket not enabled");
 
             const int tss = [=]() {
 
