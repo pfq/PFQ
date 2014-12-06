@@ -326,6 +326,9 @@ pfq_enable(pfq_t *q)
 int
 pfq_disable(pfq_t *q)
 {
+	if (q->fd == -1)
+		return q->error = "PFQ: socket not open", -1;
+
 	if (munmap(q->shm_addr,q->shm_size) == -1) {
 		return q->error = "PFQ: munmap error", -1;
 	}
@@ -462,7 +465,7 @@ pfq_set_maxlen(pfq_t *q, size_t value)
 		return q->error = "PFQ: set maxlen error", -1;
 	}
 
-	q->rx_slot_size = ALIGN8(sizeof(struct pfq_pkt_hdr)+ value);
+	q->rx_slot_size = ALIGN8(sizeof(struct pfq_pkt_hdr) + value);
 	return q->error = NULL, 0;
 }
 
