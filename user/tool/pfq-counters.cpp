@@ -27,8 +27,8 @@
 #include <affinity.hpp>
 #include <vt100.hpp>
 
-#include <netinet/ip.h>
-#include <netinet/udp.h>
+#include <linux/ip.h>
+#include <linux/udp.h>
 
 using namespace pfq;
 using namespace pfq::lang;

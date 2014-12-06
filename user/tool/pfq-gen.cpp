@@ -24,8 +24,8 @@
 #include <pfq/pfq.hpp>
 #include <pfq/util.hpp>
 
-#include <netinet/ip.h>
-#include <netinet/udp.h>
+#include <linux/ip.h>
+#include <linux/udp.h>
 
 #include <vt100.hpp>
 
