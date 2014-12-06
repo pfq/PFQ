@@ -691,7 +691,7 @@ namespace pfq {
                 return n;
             }();
 
-            struct pfq_binding b = { gid, index, queue };
+            struct pfq_binding b = { {gid}, index, queue };
 
             if (::setsockopt(fd_, PF_Q, Q_SO_GROUP_BIND, &b, sizeof(b)) == -1)
                 throw pfq_error(errno, "PFQ: add binding error");
@@ -723,7 +723,7 @@ namespace pfq {
                 return n;
             }();
 
-            struct pfq_binding b = { gid, index, queue };
+            struct pfq_binding b = { {gid}, index, queue };
 
             if (::setsockopt(fd_, PF_Q, Q_SO_GROUP_UNBIND, &b, sizeof(b)) == -1)
                 throw pfq_error(errno, "PFQ: remove binding error");
@@ -746,7 +746,7 @@ namespace pfq {
                 return n;
             }();
 
-            struct pfq_binding b = { 0, index, queue };
+            struct pfq_binding b = { {0}, index, queue };
 
             if (::setsockopt(fd_, PF_Q, Q_SO_EGRESS_BIND, &b, sizeof(b)) == -1)
                 throw pfq_error(errno, "PFQ: egress bind error");
@@ -1173,7 +1173,7 @@ namespace pfq {
             if (index == -1)
                 throw pfq_error("PFQ: device not found");
 
-            struct pfq_binding b = { core, index, queue };
+            struct pfq_binding b = { {core}, index, queue };
 
             if (::setsockopt(fd_, PF_Q, Q_SO_TX_BIND, &b, sizeof(b)) == -1)
                 throw pfq_error(errno, "PFQ: TX bind error");
