@@ -62,7 +62,7 @@ PFQ\_GROUP        |  free one     |           | Specify the PFQ group for the pr
 PFQ\_CAPLEN       | pcap snapshot |           | Override the snaplen value
 PFQ\_RX\_SLOTS    |    4096       |  131072   | Define the RX queue length of the socket   
 PFQ\_TX\_SLOTS    |    4096       |   8192    | Define the TX queue length of the socket   
-PFQ\_TX\_BATCH    |      1        | 128-512   | Set the transmission batch length
+PFQ\_TX\_BATCH    |      1        | 16..512   | Set the transmission batch length
 PFQ\_TX\_QUEUE    | empty list    |e.g. 0,1,2 | Set the TX HW queue passed to the driver
 PFQ\_TX\_TASK     | empty list    |e.g. 0,1,2 | Set the cpus for the TX kthreads (optional)
 PFQ\_COMPUTATION  |    null       |           | Set the PFQ/lang computation for the group
