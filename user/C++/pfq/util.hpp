@@ -195,18 +195,15 @@ namespace pfq {
     inline uint32_t
     fold(uint32_t hash, size_t n) noexcept
     {
-        if (n == 1)
-            return 0;
-
         hash = hash ^ (hash >> 8) ^ (hash >> 16) ^ (hash >> 24);
 
         switch(n) {
+            case 1: return 0;
             case 2: return hash & 1;
             case 3: {
-                auto x = hash & 3;
-                return x != 3 ? x : 0;
+                return (hash & 3) != 3 ? (hash & 3) : 0;
             }
-            case 4: return hash & 2;
+            case 4: return hash & 3;
         }
 
         return hash % n;

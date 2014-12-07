@@ -169,18 +169,15 @@ unsigned int pfq_symmetric_hash(const char *buf)
 static inline
 unsigned int pfq_fold(unsigned int hash, unsigned int n)
 {
-        if (n == 1)
-            return 0;
-
         hash = hash ^ (hash >> 8) ^ (hash >> 16) ^ (hash >> 24);
 
         switch(n) {
+	    case 1: return 0;
             case 2: return hash & 1;
             case 3: {
-                unsigned x = hash & 3;
-                return x != 3 ? x : 0;
+                return (hash & 3) != 3 ? (hash & 3) : 0;
             }
-            case 4: return hash & 2;
+            case 4: return hash & 3;
         }
 
         return hash % n;
