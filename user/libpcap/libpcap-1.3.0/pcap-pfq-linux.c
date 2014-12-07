@@ -628,12 +628,16 @@ pfq_parse_config(struct pfq_opt *opt, const char *filename)
 				case KEY_rx_slots: 	opt->rx_slots 	= atoi(value);  break;
 				case KEY_tx_slots:	opt->tx_slots 	= atoi(value);  break;
 				case KEY_tx_queue:  {
-					if (pfq_parse_integers(opt->tx_queue, 4, value) != 0)
+					if (pfq_parse_integers(opt->tx_queue, 4, value) < 0) {
+						fprintf(stderr, "[PFQ] %s: parse error at: %s\n", filename, tkey);
 					 	rc = -1;
+					}
 				} break;
 				case KEY_tx_task:   {
-					if (pfq_parse_integers(opt->tx_task, 4, value) != 0)
+					if (pfq_parse_integers(opt->tx_task, 4, value) < 0) {
+						fprintf(stderr, "[PFQ] %s: parse error at: %s\n", filename, tkey);
 					 	rc = -1;
+					}
 				} break;
 				case KEY_vlan:		opt->vlan 	= strdup(string_trim(value)); break;
 				case KEY_computation:	opt->comp 	= strdup(string_trim(value)); break;
