@@ -51,18 +51,23 @@ Environment variables
 ---------------------
 
 The following variables specify additional PFQ parameters not allowed in pcap APIs:
+Default values are those assumed if not specified otherwise.
+
+PFQ\_TX\_QUEUE, PFQ\_TX\_TASK, and PFQ\_VLAN are specified as comma separated list.
 
 
-Variable          | Meaning
-------------------| --------------------------------------------------
-PFQ_GROUP         | Specify the PFQ group for the process.
-PFQ_CAPLEN        | Override the snaplen value.
-PFQ_RX_SLOTS      | Define the RX queue length of the socket.   
-PFQ_TX_SLOTS      | Define the TX queue length of the socket.   
-PFQ_TX_QUEUE      | Set the TX HW queue passed to the driver.
-PFQ_TX_NODE       | Set the core for the TX kthread (optional)
-PFQ_TX_BATCH      | Set the transmission batch length.
-PFQ_COMPUTATION   | Set the PFQ/lang computation for the group.
+
+Variable          | Default       | (~10G) | Meaning
+------------------| -----------------------------------------------------------------------
+PFQ_GROUP         |  free one     |           | Specify the PFQ group for the process
+PFQ_CAPLEN        | pcap snapshot |           | Override the snaplen value
+PFQ_RX_SLOTS      |    4096       |  131072   | Define the RX queue length of the socket   
+PFQ_TX_SLOTS      |    4096       |   8192    | Define the TX queue length of the socket   
+PFQ_TX_BATCH      |      1        | 128-512   | Set the transmission batch length
+PFQ_TX_QUEUE      | empty list    |e.g. 0,1,2 | Set the TX HW queue passed to the driver
+PFQ_TX_TASK       | empty list    |e.g. 0,1,2 | Set the cpus for the TX kthreads (optional)
+PFQ_COMPUTATION   |    null       |           | Set the PFQ/lang computation for the group
+PFQ_VLAN          | empty list    |           | Set the PFQ/lang computation for the group
 
 
 Configuration Files
