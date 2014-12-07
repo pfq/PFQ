@@ -25,7 +25,11 @@
 #define _PFQ_H_
 
 #include <stddef.h>
+
 #include <linux/pf_q.h>
+#include <linux/if_ether.h>
+#include <linux/ip.h>
+#include <linux/udp.h>
 
 #ifdef _REENTRANT
 #include <pthread.h>
@@ -136,6 +140,51 @@ pfq_yield()
 /*! pfq handler: function prototype. */
 
 typedef void (*pfq_handler_t)(char *user, const struct pfq_pkt_hdr *h, const char *data);
+
+
+static inline
+unsigned int pfq_symmetric_hash(const char *buf)
+{
+        const char *ptr = buf;
+
+        struct ethhdr const *eh = (struct ethhdr const *)(ptr);
+        if (eh->h_proto != htons(0x800))
+            return 0;
+
+        ptr += sizeof(struct ethhdr);
+
+        struct iphdr const *ih = (struct iphdr const *)(ptr);
+        if (ih->protocol != IPPROTO_TCP &&
+            ih->protocol != IPPROTO_UDP)
+            return (ih->saddr ^ ih->daddr);
+
+        ptr += sizeof(ih->ihl << 2);
+
+        struct udphdr const *uh = (struct udphdr const *)(ptr);
+        return (ih->saddr ^ ih->daddr ^ uh->source ^ uh->dest);
+
+}
+
+
+static inline
+unsigned int pfq_fold(unsigned int hash, unsigned int n)
+{
+        if (n == 1)
+            return 0;
+
+        hash = hash ^ (hash >> 8) ^ (hash >> 16) ^ (hash >> 24);
+
+        switch(n) {
+            case 2: return hash & 1;
+            case 3: {
+                unsigned x = hash & 3;
+                return x != 3 ? x : 0;
+            }
+            case 4: return hash & 2;
+        }
+
+        return hash % n;
+}
 
 
 /* ************************************** *

@@ -35,8 +35,13 @@
 #include <algorithm>
 
 #include <linux/pf_q.h>
+#include <linux/if_ether.h>
+#include <linux/ip.h>
+#include <linux/udp.h>
+
 #include <sys/ioctl.h>
 #include <net/if.h>
+
 
 #include <pfq/exception.hpp>
 
@@ -149,7 +154,8 @@ namespace pfq {
 
     //! Hardware concurrency.
 
-    inline unsigned int hardware_concurrency()
+    inline unsigned int
+    hardware_concurrency()
     {
         auto proc = []() {
             std::ifstream cpuinfo("/proc/cpuinfo");
@@ -160,6 +166,50 @@ namespace pfq {
 
         auto c =  std::thread::hardware_concurrency();
         return c ? c : static_cast<unsigned int>(proc());
+    }
+
+
+    inline uint32_t
+    symmetric_hash(const char *buf) noexcept
+    {
+        const char *ptr = buf;
+
+        auto eh = reinterpret_cast<const ethhdr *>(ptr);
+        if (eh->h_proto != htons(0x800))
+            return 0;
+
+        ptr += sizeof(ethhdr);
+
+        auto ih = reinterpret_cast<const iphdr *>(ptr);
+        if (ih->protocol != IPPROTO_TCP &&
+            ih->protocol != IPPROTO_UDP)
+            return (ih->saddr ^ ih->daddr);
+
+        ptr += sizeof(ih->ihl << 2);
+
+        auto uh = reinterpret_cast<const udphdr *>(ptr);
+        return (ih->saddr ^ ih->daddr ^ uh->source ^ uh->dest);
+    }
+
+
+    inline uint32_t
+    fold(uint32_t hash, size_t n) noexcept
+    {
+        if (n == 1)
+            return 0;
+
+        hash = hash ^ (hash >> 8) ^ (hash >> 16) ^ (hash >> 24);
+
+        switch(n) {
+            case 2: return hash & 1;
+            case 3: {
+                auto x = hash & 3;
+                return x != 3 ? x : 0;
+            }
+            case 4: return hash & 2;
+        }
+
+        return hash % n;
     }
 
 

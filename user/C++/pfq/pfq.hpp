@@ -1262,15 +1262,10 @@ namespace pfq {
             if (!data_ || !data_->shm_addr)
                 throw pfq_error("PFQ: inject: socket not enabled");
 
-            const int tss = [=]() {
-
+            const int tss = [=]() -> size_t {
                 if (queue == any_queue)
-                {
-                    auto _iph = reinterpret_cast<const iphdr *>(buf.first + 14);
-                    return (_iph->saddr ^ _iph->daddr) % data_->tx_num_bind;
-                }
-
-                return queue % data_->tx_num_bind;
+                    return fold(symmetric_hash(buf.first), data_->tx_num_bind);
+                return fold(queue, data_->tx_num_bind);
             }();
 
             auto tx = &static_cast<struct pfq_queue_hdr *>(data_->shm_addr)->tx[tss];

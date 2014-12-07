@@ -23,7 +23,6 @@
 
 #include <linux/if_ether.h>
 #include <linux/pf_q.h>
-#include <netinet/ip.h>
 
 #include <sys/socket.h>
 #include <sys/types.h>
@@ -1009,11 +1008,10 @@ pfq_inject(pfq_t *q, const void *buf, size_t len, int queue)
          	return Q_ERROR(q, "PFQ: inject: socket not enabled");
 
 	if (queue == Q_ANY_QUEUE) {
-        	struct iphdr const * _ip = (struct iphdr const *)(buf + 14);
-        	tss = (_ip->saddr ^ _ip->daddr) % q->tx_num_bind;
+		tss = pfq_fold(pfq_symmetric_hash(buf), q->tx_num_bind);
 	}
 	else {
-        	tss = queue % q->tx_num_bind;
+        	tss = pfq_fold(queue,q->tx_num_bind);
 	}
 
         tx = (struct pfq_tx_queue_hdr *)&qh->tx[tss];
