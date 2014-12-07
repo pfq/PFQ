@@ -607,6 +607,7 @@ pfq_parse_config(struct pfq_opt *opt, const char *filename)
 		int n = sscanf(line, "%m[^=]=%m[ \ta-z0-9=>_,-]",&key, &value);
 
 		if (n > 0) {
+
 			char *tkey = string_trim(key);
 
 			if (!strlen(tkey))
@@ -616,7 +617,7 @@ pfq_parse_config(struct pfq_opt *opt, const char *filename)
 				goto next;
 
 			if (n != 2) {
-				fprintf(stderr, "[PFQ] parse error at: %s\n", key);
+				fprintf(stderr, "[PFQ] %s: parse error at: %s\n", filename, key);
 				rc = -1;
 				goto next;
 			}
