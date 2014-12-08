@@ -22,6 +22,7 @@
 import System.IO.Unsafe
 import System.Process
 import System.Directory
+import System.Environment
 import System.FilePath
 import Control.Monad(void,when,unless,liftM,forM,filterM)
 import Control.Applicative
@@ -53,12 +54,13 @@ getMostRecentFile xs = do
 
 main :: IO ()
 main = do
+    args <- getArgs
     putStrLn $ "[PFQ] pfq-omatic: v" ++ pfq_omatic_ver
     generalChecks
     getRecursiveContents "." [".c"] >>= mapM_ tryPatch
     symver <- liftM fromJust $ getMostRecentFile pfq_symvers
     copyFile symver "Module.symvers"
-    let cmd = "make KBUILD_EXTRA_SYMBOLS=" ++ symver ++ " -j" ++ show getNumberOfPhyCores
+    let cmd = "make KBUILD_EXTRA_SYMBOLS=" ++ symver ++ " -j" ++ show getNumberOfPhyCores ++ " " ++ unwords args
     putStrLn $ "[PFQ] compiling: " ++ cmd ++ "..."
     void $ system cmd
     putStrLn "[PFQ] done."
