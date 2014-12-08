@@ -103,11 +103,17 @@ namespace thread
                                               param::tx_slots{opt::slots});
 
             std::cout << "thread: " << id << " -> "  << show_binding(m_bind) << std::endl;
-            for(unsigned int n = 0; n < m_bind.queue.size(); n++)
+
+            if (m_bind.queue.size())
             {
-                int core = opt::async ? (n + m_kcpu) : -1;
-                std::cout << "  -> core " << core << std::endl;
-                q.bind_tx (m_bind.dev.at(0).c_str(), m_bind.queue[n], opt::async ? (n + m_kcpu) : -1);
+                for(unsigned int n = 0; n < m_bind.queue.size(); n++)
+                {
+                    q.bind_tx (m_bind.dev.at(0).c_str(), m_bind.queue[n], opt::async ? (n + m_kcpu) : -1);
+                }
+            }
+            else
+            {
+                q.bind_tx (m_bind.dev.at(0).c_str(), any_queue, opt::async ? m_kcpu : -1);
             }
 
             q.enable();
@@ -272,7 +278,7 @@ try
     for(unsigned int i = 0; i < thread_binding.size(); ++i)
     {
         ctx.push_back(thread::context(static_cast<int>(i), thread_binding[i], kcore));
-        kcore += thread_binding[i].queue.size();
+        kcore += std::max<size_t>(thread_binding[i].queue.size(), 1);
     }
 
     // create threads:
