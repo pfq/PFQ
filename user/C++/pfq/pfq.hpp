@@ -1236,7 +1236,7 @@ namespace pfq {
                 }
             }
             else {
-                if (data_->tx_last_inject || (data_->tx_batch_count & 127) == 0) {
+                if (data_->tx_last_inject) {
                     data_->tx_batch_count = 0;
                     flush = true;
                 }
