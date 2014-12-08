@@ -39,9 +39,9 @@
 #include <linux/ip.h>
 #include <linux/udp.h>
 
+#include <arpa/inet.h>
 #include <sys/ioctl.h>
 #include <net/if.h>
-
 
 #include <pfq/exception.hpp>
 
