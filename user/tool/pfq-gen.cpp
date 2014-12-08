@@ -176,9 +176,10 @@ namespace thread
 void usage(const char *name)
 {
     throw std::runtime_error(std::string("usage: ") + name +
-        " [-h|--help] [-r|--rand-ip] [-a|--async] [-s|--queuel-slots N] "
-        "[-b|--batch-sync N] [-l|--len N] T1 T2... \n\t| -t BINDING [-t BINDING...]\n"
-        "    BIND = " + pfq::binding_format);
+        " [-h|--help] [-r|--rand-ip] [-a|--async]\n"
+        " [-s|--queuel-slots N]\n"
+        " [-b|--batch-sync N] [-l|--len N] -t T1 -t T2... \n"
+        "    | Ti = BINDING = " + pfq::binding_format);
 }
 
 
