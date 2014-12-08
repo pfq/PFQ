@@ -235,16 +235,12 @@ int pfq_tx_queue_flush_or_wakeup(struct pfq_sock *so, int index)
 }
 
 
-static int
+inline static int
 __pfq_queue_xmit(struct sk_buff *skb, struct net_device *dev, struct netdev_queue *txq)
 {
         int rc = -ENOMEM;
 
         skb_reset_mac_header(skb);
-
-        /* Disable soft irqs for various locks below. Also
-         * stops preemption for RCU.
-         */
 
         if (dev->flags & IFF_UP) {
 
