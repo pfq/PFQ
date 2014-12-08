@@ -84,8 +84,9 @@ namespace thread
 {
     struct context
     {
-        context(int id, const binding &b)
+        context(int id, const binding &b, int kcpu)
         : m_id(id)
+        , m_kcpu(kcpu)
         , m_bind(b)
         , m_pfq()
         , m_sent(std::unique_ptr<std::atomic_ullong>(new std::atomic_ullong(0)))
@@ -101,10 +102,12 @@ namespace thread
             auto q = pfq::socket(param::list, param::maxlen{opt::len},
                                               param::tx_slots{opt::slots});
 
+            std::cout << "thread: " << id << " -> "  << show_binding(m_bind) << std::endl;
             for(unsigned int n = 0; n < m_bind.queue.size(); n++)
             {
-                q.bind_tx (m_bind.dev.at(0).c_str(), m_bind.queue[n], opt::async ? n : -1);
-                std::cout << "thread: " << id << " -> "  << show_binding(m_bind) << std::endl;
+                int core = opt::async ? (n + m_kcpu) : -1;
+                std::cout << "  -> core " << core << std::endl;
+                q.bind_tx (m_bind.dev.at(0).c_str(), m_bind.queue[n], opt::async ? (n + m_kcpu) : -1);
             }
 
             q.enable();
@@ -149,6 +152,8 @@ namespace thread
 
     private:
         int m_id;
+        int m_kcpu;
+
         binding m_bind;
 
         pfq::socket m_pfq;
@@ -261,9 +266,13 @@ try
 
     // create thread context:
     //
+
+    int kcore = 0;
+
     for(unsigned int i = 0; i < thread_binding.size(); ++i)
     {
-        ctx.push_back(thread::context(static_cast<int>(i), thread_binding[i]));
+        ctx.push_back(thread::context(static_cast<int>(i), thread_binding[i], kcore));
+        kcore += thread_binding[i].queue.size();
     }
 
     // create threads:
