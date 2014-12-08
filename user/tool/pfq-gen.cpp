@@ -21,6 +21,9 @@
 #include <unordered_set>
 #include <random>
 
+#include <binding.hpp>
+#include <affinity.hpp>
+
 #include <pfq/pfq.hpp>
 #include <pfq/util.hpp>
 
@@ -31,9 +34,6 @@
 
 
 using namespace pfq;
-
-
-struct binding;
 
 
 char *make_packet(size_t n)
@@ -80,52 +80,6 @@ namespace opt
 }
 
 
-struct binding
-{
-    std::string                 dev;
-    std::vector<int>            queue;
-};
-
-
-std::string
-show_binding(const binding &b)
-{
-    std::string ret = "binding:{ dev:" + b.dev + " queues:";
-
-    for(size_t n = 0; n < b.queue.size(); ++n)
-    {
-        ret += std::to_string(b.queue[n]) + ' ';
-    }
-
-    return ret + "}";
-}
-
-
-binding
-make_binding(const char *value)
-{
-    binding ret { "", {} };
-
-    auto vec = split(value, ":");
-    ret.dev = vec.at(0);
-
-    if (vec.size() > 1)
-    {
-        auto queues = split(vec.at(1), ".");
-        for(auto &q : queues)
-        {
-            ret.queue.push_back(std::atoi(q.c_str()));
-        }
-
-    } else
-    {
-        ret.queue.push_back(any_queue);
-    }
-
-    return ret;
-}
-
-
 namespace thread
 {
     struct context
@@ -149,8 +103,8 @@ namespace thread
 
             for(unsigned int n = 0; n < m_bind.queue.size(); n++)
             {
-                q.bind_tx (m_bind.dev.c_str(), m_bind.queue[n], opt::async ? n : -1);
-                std::cout << "thread: " << id << " -> gen "  << m_bind.dev << ":" << m_bind.queue[n] << std::endl;
+                q.bind_tx (m_bind.dev.at(0).c_str(), m_bind.queue[n], opt::async ? n : -1);
+                std::cout << "thread: " << id << " -> "  << show_binding(m_bind) << std::endl;
             }
 
             q.enable();
@@ -212,7 +166,8 @@ void usage(const char *name)
 {
     throw std::runtime_error(std::string("usage: ") + name +
         " [-h|--help] [-r|--rand-ip] [-a|--async] [-s|--queuel-slots N] "
-        "[-b|--batch-sync N] [-l|--len N] T1 T2... \n\t| T = dev[:queue[.queue...]]");
+        "[-b|--batch-sync N] [-l|--len N] T1 T2... \n\t| -t BINDING [-t BINDING...]\n"
+        "    BIND = " + pfq::binding_format);
 }
 
 
@@ -279,12 +234,24 @@ try
             continue;
         }
 
+        if ( strcmp(argv[i], "-t") == 0 ||
+             strcmp(argv[i], "--thread") == 0) {
+            i++;
+            if (i == argc)
+            {
+                throw std::runtime_error("binding missing");
+            }
+
+            thread_binding.push_back(make_binding(argv[i]));
+            continue;
+        }
+
         if ( strcmp(argv[i], "-?") == 0 ||
              strcmp(argv[i], "-h") == 0 ||
              strcmp(argv[i], "--help") == 0)
             usage(argv[0]);
 
-        thread_binding.push_back(make_binding(argv[i]));
+        throw std::runtime_error(std::string("pfq-gen: ") + argv[i] + " unknown option");
     }
 
     std::cout << "async: "  << std::boolalpha << opt::async << std::endl;
@@ -306,7 +273,7 @@ try
 
                   std::thread t(std::ref(ctx[i++]));
 
-                  std::cout << "thread: " << show_binding(b) << std::endl;
+                  extra::set_affinity(t, b.core);
 
                   vt.push_back(std::move(t));
     });
