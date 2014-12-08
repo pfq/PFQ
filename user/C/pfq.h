@@ -30,6 +30,7 @@
 #include <linux/if_ether.h>
 #include <linux/ip.h>
 #include <linux/udp.h>
+#include <arpa/inet.h>
 
 #ifdef _REENTRANT
 #include <pthread.h>
