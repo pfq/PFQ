@@ -70,15 +70,15 @@ script =
         Install   "pfqd"        *>>  into "user/pfqd/" [cabalInstall]   .|. [Build     "pfqd"],
         Clean     "pfqd"        *>>  into "user/pfqd/" [cabalClean],
 
-        Configure "C/C++-test"  *>>  into "user/test/" ["cmake ."]      .|. [Install "pfq-clib", Install "pfq-cpplib"],
-        Build     "C/C++-test"  *>>  into "user/test/" ["make -j" ++ show numberOfPhyCores]  .|. [Configure "C/C++-test"],
-        Install   "C/C++-test"  *>>  into "user/test/" [ ]              .|. [Build "C/C++-test"],
-        Clean     "C/C++-test"  *>>  into "user/test/" ["make clean"],
+        Configure "test"        *>>  into "user/test/" ["cmake ."]      .|. [Install "pfq-clib", Install "pfq-cpplib"],
+        Build     "test"        *>>  into "user/test/" ["make -j" ++ show numberOfPhyCores]  .|. [Configure "test"],
+        Install   "test"        *>>  into "user/test/" [ ]              .|. [Build "test"],
+        Clean     "test"        *>>  into "user/test/" ["make clean"],
 
-        Configure "C/C++-tool"  *>>  into "user/tool/" ["cmake ."]      .|. [Build "pfq-clib"],
-        Build     "C/C++-tool"  *>>  into "user/tool/" ["make -j" ++ show numberOfPhyCores] .|. [Configure "C/C++-tool"],
-        Install   "C/C++-tool"  *>>  into "user/tool/" [ ]              .|. [Build "C/C++-tool"],
-        Clean     "C/C++-tool"  *>>  into "user/tool/" ["make clean"]
+        Configure "tool"        *>>  into "user/tool/" ["cmake ."]      .|. [Build "pfq-clib"],
+        Build     "tool"        *>>  into "user/tool/" ["make -j" ++ show numberOfPhyCores] .|. [Configure "tool"],
+        Install   "tool"        *>>  into "user/tool/" [ ]              .|. [Build "tool"],
+        Clean     "tool"        *>>  into "user/tool/" ["make clean"]
    ]
 
 
