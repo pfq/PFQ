@@ -1075,7 +1075,7 @@ pfq_send_async(pfq_t *q, const void *ptr, size_t len, size_t batch_len)
 		}
 	}
 	else {
-       		if (q->tx_last_inject) {
+       		if (q->tx_last_inject || q->tx_batch_count == batch_len) {
        			q->tx_batch_count = 0;
        			do_flush = 1;
 		}

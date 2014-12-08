@@ -1236,7 +1236,8 @@ namespace pfq {
                 }
             }
             else {
-                if (data_->tx_last_inject) {
+
+                if (data_->tx_last_inject || data_->tx_batch_count == batch_len) {
                     data_->tx_batch_count = 0;
                     flush = true;
                 }
