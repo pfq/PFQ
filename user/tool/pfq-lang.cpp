@@ -198,7 +198,7 @@ try
 
     std::atomic<unsigned long> read { 0 };
 
-    std::thread stat([&]() {
+    std::thread([&]() {
 
         std::cout << "----------- capture started ------------\n";
 
@@ -225,16 +225,13 @@ try
 
             std::cout << "capture: " << vt100::BOLD <<
                 (static_cast<int64_t>(sum-old)*1000000)/std::chrono::duration_cast<std::chrono::microseconds>(end-begin).count()
-            << vt100::RESET << " pkt/sec";
-
-
-            std::cout << std::endl;
+            << vt100::RESET << " pkt/sec" << std::endl;
 
             old = sum, begin = end;
             old_stats = sum_stats;
         }
 
-    });
+    }).detach();
 
     for(;;)
     {
