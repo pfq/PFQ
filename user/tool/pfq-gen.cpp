@@ -266,10 +266,30 @@ try
         throw std::runtime_error(std::string("pfq-gen: ") + argv[i] + " unknown option");
     }
 
-    std::cout << "async: "  << std::boolalpha << opt::async << std::endl;
-    std::cout << "len  : "  << opt::len << std::endl;
+    std::cout << "async : "  << std::boolalpha << opt::async << std::endl;
+    std::cout << "len   : "  << opt::len << std::endl;
 
-    opt::packet = make_packet(opt::len);;
+    opt::packet = make_packet(opt::len);
+
+    // process binding:
+    //
+
+    for(size_t i = 0; i < thread_binding.size(); ++i)
+    {
+        if (thread_binding[i].queue.empty())
+        {
+            std::cout << show_binding(thread_binding[i]) << std::endl;
+
+            auto num_queues = get_num_queues(thread_binding[i].dev.at(0).c_str());
+
+            std::cout << "device: " << thread_binding[i].dev.at(0) << ", " << num_queues << " queues detected." << std::endl;
+
+            for(size_t n = 0; n < num_queues; ++n)
+            {
+                thread_binding[i].queue.push_back(n);
+            }
+        }
+    }
 
     // create thread context:
     //
