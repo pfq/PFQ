@@ -499,7 +499,7 @@ pfq_getenv(pcap_t *handle)
 		.tx_slots = 4096,
 		.tx_queue = {-1, -1, -1, -1},
 		.tx_task  = { Q_NO_KTHREAD, Q_NO_KTHREAD, Q_NO_KTHREAD, Q_NO_KTHREAD },
-		.tx_batch =  1,
+		.tx_batch =  0,
 		.vlan     = NULL,
 		.comp     = NULL
 	};
@@ -995,13 +995,7 @@ fail:
 static int
 pfq_inject_linux(pcap_t *handle, const void * buf, size_t size)
 {
-	int ret;
-
-	if (handle->opt.pfq.tx_batch == 1)
-		ret = pfq_send(handle->md.pfq.q, buf, size);
-	else
-		ret = pfq_send_async(handle->md.pfq.q, buf, size, handle->opt.pfq.tx_batch);
-
+	int ret = pfq_send_async(handle->md.pfq.q, buf, size, handle->opt.pfq.tx_batch);
 	if (ret == -1) {
 		snprintf(handle->errbuf, PCAP_ERRBUF_SIZE, "%s", pfq_error(handle->md.pfq.q));
 		return PCAP_ERROR;
