@@ -173,6 +173,17 @@ namespace thread
 }
 
 
+bool any_strcmp(const char *arg, const char *opt)
+{
+    return strcmp(arg,opt) == 0;
+}
+template <typename ...Ts>
+bool any_strcmp(const char *arg, const char *opt, Ts&&...args)
+{
+    return (strcmp(arg,opt) == 0 ? true : any_strcmp(arg, std::forward<Ts>(args)...));
+}
+
+
 void usage(std::string name)
 {
     throw std::runtime_error
@@ -203,8 +214,8 @@ try
 
     for(int i = 1; i < argc; ++i)
     {
-        if ( strcmp(argv[i], "-b") == 0 ||
-             strcmp(argv[i], "--batch") == 0) {
+        if ( any_strcmp(argv[i], "-b", "--batch") )
+        {
             i++;
             if (i == argc)
             {
@@ -215,8 +226,8 @@ try
             continue;
         }
 
-        if ( strcmp(argv[i], "-l") == 0 ||
-             strcmp(argv[i], "--len") == 0) {
+        if ( any_strcmp(argv[i], "-l", "--len") )
+        {
             i++;
             if (i == argc)
             {
@@ -227,8 +238,8 @@ try
             continue;
         }
 
-        if ( strcmp(argv[i], "-s") == 0 ||
-             strcmp(argv[i], "--slots") == 0) {
+        if ( any_strcmp(argv[i], "-s", "--slots") )
+        {
             i++;
             if (i == argc)
             {
@@ -239,22 +250,20 @@ try
             continue;
         }
 
-        if ( strcmp(argv[i], "-a") == 0 ||
-             strcmp(argv[i], "--async") == 0) {
-
+        if ( any_strcmp(argv[i], "-a", "--async") )
+        {
             opt::async = true;
             continue;
         }
 
-        if ( strcmp(argv[i], "-R") == 0 ||
-             strcmp(argv[i], "--rand-ip") == 0) {
-
+        if ( any_strcmp(argv[i], "-R", "--rand-ip") )
+        {
             opt::rand_ip = true;
             continue;
         }
 
-        if ( strcmp(argv[i], "-t") == 0 ||
-             strcmp(argv[i], "--thread") == 0) {
+        if ( any_strcmp(argv[i], "-t", "--thread") )
+        {
             i++;
             if (i == argc)
             {
@@ -265,9 +274,7 @@ try
             continue;
         }
 
-        if ( strcmp(argv[i], "-?") == 0 ||
-             strcmp(argv[i], "-h") == 0 ||
-             strcmp(argv[i], "--help") == 0)
+        if ( any_strcmp(argv[i], "-?", "-h", "--help") )
             usage(argv[0]);
 
         throw std::runtime_error(std::string("pfq-gen: ") + argv[i] + " unknown option");

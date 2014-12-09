@@ -183,6 +183,17 @@ namespace thread
 }
 
 
+bool any_strcmp(const char *arg, const char *opt)
+{
+    return strcmp(arg,opt) == 0;
+}
+template <typename ...Ts>
+bool any_strcmp(const char *arg, const char *opt, Ts&&...args)
+{
+    return (strcmp(arg,opt) == 0 ? true : any_strcmp(arg, std::forward<Ts>(args)...));
+}
+
+
 void usage(std::string name)
 {
     throw std::runtime_error
@@ -214,8 +225,8 @@ try
 
     for(int i = 1; i < argc; ++i)
     {
-        if ( strcmp(argv[i], "-f") == 0 ||
-             strcmp(argv[i], "--fun") == 0) {
+        if (any_strcmp(argv[i], "-f", "--fun"))
+        {
             i++;
             if (i == argc)
             {
@@ -225,8 +236,8 @@ try
             continue;
         }
 
-        if ( strcmp(argv[i], "-c") == 0 ||
-             strcmp(argv[i], "--caplen") == 0) {
+        if (any_strcmp(argv[i], "-c", "--caplen"))
+        {
             i++;
             if (i == argc)
             {
@@ -237,8 +248,8 @@ try
             continue;
         }
 
-        if ( strcmp(argv[i], "-s") == 0 ||
-             strcmp(argv[i], "--slots") == 0) {
+        if (any_strcmp(argv[i], "-s", "--slots"))
+        {
             i++;
             if (i == argc)
             {
@@ -249,15 +260,14 @@ try
             continue;
         }
 
-        if ( strcmp(argv[i], "-w") == 0 ||
-             strcmp(argv[i], "--flow") == 0)
+        if (any_strcmp(argv[i], "-w", "--flow"))
         {
             opt::flow = true;
             continue;
         }
 
-        if ( strcmp(argv[i], "-t") == 0 ||
-             strcmp(argv[i], "--thread") == 0) {
+        if (any_strcmp(argv[i], "-t", "--thread"))
+        {
             i++;
             if (i == argc)
             {
@@ -268,10 +278,7 @@ try
             continue;
         }
 
-        if ( strcmp(argv[i], "-h") == 0 ||
-             strcmp(argv[i], "-?") == 0 ||
-             strcmp(argv[i], "--help") == 0
-             )
+        if (any_strcmp(argv[i], "-h", "-?", "--help"))
             usage(argv[0]);
 
         throw std::runtime_error(std::string(argv[i]) + " unknown option!");
