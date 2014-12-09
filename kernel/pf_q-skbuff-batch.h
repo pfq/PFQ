@@ -31,11 +31,29 @@
 
 #include <pf_q-skbuff.h>
 
+
 struct pfq_skbuff_batch
 {
         size_t len;
         struct sk_buff *queue[Q_SKBUFF_MAX_BATCH];
 };
+
+
+static inline
+void pfq_skbuff_batch_drop_n(struct pfq_skbuff_batch *q, size_t n)
+{
+	size_t i;
+
+	if (n > q->len)
+		n = q->len;
+
+	for(i = 0; i < (q->len - n); i++)
+	{
+        	q->queue[i] = q->queue[i + n];
+	}
+
+	q->len -= n;
+}
 
 
 static inline
