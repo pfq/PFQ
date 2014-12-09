@@ -55,9 +55,9 @@ void usage(std::string name)
     (
         "usage: " + std::move(name) + " [OPTIONS]\n\n"
         " -h --help                     Display this help\n"
-        " -c --caplen=INT               Set caplen\n"
-        " -s --slot=INT                 Set slots\n"
-        " -f --function=FUNCTION\n"
+        " -c --caplen INT               Set caplen\n"
+        " -s --slot INT                 Set slots\n"
+        " -f --function FUNCTION\n"
         " -b --binding=BINDING\n\n"
         "      BINDING = " + pfq::binding_format + "\n" +
         "      FUNCTION = fun[ >-> fun >-> fun]"

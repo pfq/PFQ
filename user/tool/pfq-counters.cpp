@@ -200,11 +200,11 @@ void usage(std::string name)
     (
         "usage: " + std::move(name) + " [OPTIONS]\n\n"
         " -h --help                     Display this help\n"
-        " -c --caplen=INT               Set caplen\n"
+        " -c --caplen INT               Set caplen\n"
         " -w --flow                     Enable flow counter\n"
-        " -s --slot=INT                 Set slots\n"
-        " -f --function=FUNCTION\n"
-        " -t --thread=BINDING\n\n"
+        " -s --slot INT                 Set slots\n"
+        " -f --function FUNCTION\n"
+        " -t --thread BINDING\n\n"
         "      BINDING = " + pfq::binding_format + "\n"
         "      FUNCTION = fun[ >-> fun >-> fun]"
     );
