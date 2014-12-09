@@ -70,7 +70,7 @@ char *make_packet(size_t n)
 
 namespace opt
 {
-    size_t batch   = 64;
+    size_t batch   = 0;
     size_t len     = 64;
     size_t slots   = 4096;
     bool   async   = false;
@@ -102,7 +102,7 @@ namespace thread
             auto q = pfq::socket(param::list, param::maxlen{opt::len},
                                               param::tx_slots{opt::slots});
 
-            std::cout << "thread: " << id << " -> "  << show_binding(m_bind) << std::endl;
+            std::cout << "thread  : " << id << " -> "  << show_binding(m_bind) << std::endl;
 
             if (m_bind.queue.size())
             {
@@ -173,13 +173,20 @@ namespace thread
 }
 
 
-void usage(const char *name)
+void usage(std::string name)
 {
-    throw std::runtime_error(std::string("usage: ") + name +
-        " [-h|--help] [-r|--rand-ip] [-a|--async]\n"
-        " [-s|--queuel-slots N]\n"
-        " [-b|--batch-sync N] [-l|--len N] -t T1 -t T2... \n"
-        "    | Ti = BINDING = " + pfq::binding_format);
+    throw std::runtime_error
+    (
+        "usage: " + std::move(name) + " [OPTIONS]\n\n"
+        " -h --help                     Display this help\n"
+        " -l --len INT                  Set packet lenght\n"
+        " -s --queue-slots INT          Set tx queue lenght\n"
+        " -a --async                    Async with kernel threads\n"
+        " -R --rand-ip                  Randomize IP addresses\n"
+        " -b --batch-sync INT           Set batch len, used in sync tx\n"
+        " -t --thread BINDING\n\n"
+        "      BINDING = " + pfq::binding_format
+    );
 }
 
 
@@ -192,7 +199,7 @@ try
 
     std::vector<std::thread> vt;
     std::vector<thread::context> ctx;
-    std::vector<binding> thread_binding;
+    std::vector<pfq::binding> binding;
 
     for(int i = 1; i < argc; ++i)
     {
@@ -239,7 +246,7 @@ try
             continue;
         }
 
-        if ( strcmp(argv[i], "-r") == 0 ||
+        if ( strcmp(argv[i], "-R") == 0 ||
              strcmp(argv[i], "--rand-ip") == 0) {
 
             opt::rand_ip = true;
@@ -254,7 +261,7 @@ try
                 throw std::runtime_error("binding missing");
             }
 
-            thread_binding.push_back(make_binding(argv[i]));
+            binding.push_back(make_binding(argv[i]));
             continue;
         }
 
@@ -266,27 +273,54 @@ try
         throw std::runtime_error(std::string("pfq-gen: ") + argv[i] + " unknown option");
     }
 
-    std::cout << "async : "  << std::boolalpha << opt::async << std::endl;
-    std::cout << "len   : "  << opt::len << std::endl;
+    if (opt::async && opt::batch) {
+        std::cout << vt100::BOLD << "In async mode, batch forced to 0!" << vt100::RESET << std::endl;
+        opt::batch = 0;
+    }
+
+    if (!opt::async && !opt::batch) {
+        opt::batch = 128;
+        std::cout << vt100::BOLD << "Sync mode, batch set to 128 (by default)." << vt100::RESET << std::endl;
+    }
+
+    std::cout << "async   : "  << std::boolalpha << opt::async << std::endl;
+    std::cout << "rand_ip : "  << std::boolalpha << opt::rand_ip << std::endl;
+    std::cout << "len     : "  << opt::len << std::endl;
+
+    if (opt::slots == 0)
+        throw std::runtime_error("tx_slots set to 0!");
 
     opt::packet = make_packet(opt::len);
 
     // process binding:
     //
 
-    for(size_t i = 0; i < thread_binding.size(); ++i)
+    for(size_t i = 0; i < binding.size(); ++i)
     {
-        if (thread_binding[i].queue.empty())
+        if (binding[i].queue.empty())
         {
-            auto num_queues = get_num_queues(thread_binding[i].dev.at(0).c_str());
+            auto num_queues = get_num_queues(binding[i].dev.at(0).c_str());
 
-            std::cout << "device: " << thread_binding[i].dev.at(0) << ", " << num_queues << " queues detected." << std::endl;
+            std::cout << "device  : " << binding[i].dev.at(0) << ", " << num_queues << " queues detected." << std::endl;
 
             for(size_t n = 0; n < num_queues; ++n)
             {
-                thread_binding[i].queue.push_back(n);
+                binding[i].queue.push_back(n);
             }
         }
+    }
+
+    auto mq = std::any_of(std::begin(binding), std::end(binding),
+                [](pfq::binding const &b) { return b.queue.size() > 1; });
+
+    if (!opt::rand_ip && mq)
+    {
+        std::cout << vt100::BOLD << "*** Multiple queue detected! Consider to randomize IP addresses with -R option! ***" << vt100::RESET << std::endl;
+    }
+
+    if (!opt::async && mq)
+    {
+        std::cout << vt100::BOLD << "*** Multiple queue detected! Consider to enable asynchronous transmission, with -a option! ***" << vt100::RESET << std::endl;
     }
 
     // create thread context:
@@ -294,16 +328,16 @@ try
 
     int kcore = 0;
 
-    for(unsigned int i = 0; i < thread_binding.size(); ++i)
+    for(unsigned int i = 0; i < binding.size(); ++i)
     {
-        ctx.push_back(thread::context(static_cast<int>(i), thread_binding[i], kcore));
-        kcore += std::max<size_t>(thread_binding[i].queue.size(), 1);
+        ctx.push_back(thread::context(static_cast<int>(i), binding[i], kcore));
+        kcore += std::max<size_t>(binding[i].queue.size(), 1);
     }
 
     // create threads:
 
     size_t i = 0;
-    std::for_each(thread_binding.begin(), thread_binding.end(), [&](binding &b) {
+    std::for_each(binding.begin(), binding.end(), [&](pfq::binding const &b) {
 
                   std::thread t(std::ref(ctx[i++]));
 
