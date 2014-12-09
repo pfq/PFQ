@@ -1245,7 +1245,7 @@ namespace pfq {
                 data_->tx_last_inject = false;
             }
 
-            if (flush)
+            if (batch_len && flush)
                     tx_queue_flush(any_queue);
 
             return rc;

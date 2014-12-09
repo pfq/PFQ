@@ -1082,9 +1082,8 @@ pfq_send_async(pfq_t *q, const void *ptr, size_t len, size_t batch_len)
 		q->tx_last_inject = 0;
 	}
 
-	if (do_flush) {
+	if (batch_len && do_flush)
 		pfq_tx_queue_flush(q, Q_ANY_QUEUE);
-	}
 
         return rc;
 }
