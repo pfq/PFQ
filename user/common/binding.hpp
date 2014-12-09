@@ -28,7 +28,7 @@ namespace pfq {
     static inline std::string
     show_binding(const binding &b)
     {
-        std::string ret = "binding:{ ";
+        std::string ret = "binding { ";
         int n = 0;
 
         ret += "gid:" + std::to_string(b.gid) +

@@ -278,8 +278,6 @@ try
     {
         if (thread_binding[i].queue.empty())
         {
-            std::cout << show_binding(thread_binding[i]) << std::endl;
-
             auto num_queues = get_num_queues(thread_binding[i].dev.at(0).c_str());
 
             std::cout << "device: " << thread_binding[i].dev.at(0) << ", " << num_queues << " queues detected." << std::endl;
