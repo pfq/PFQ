@@ -1197,31 +1197,14 @@ namespace pfq {
             data_->tx_num_bind = 0;
         }
 
-
-        //! Transmit the packet stored in the given buffer.
-        /*!
-         * The packet is injected into the transmit queue and immediately
-         * transmitted.
-         */
-
-        bool
-        send(const_buffer pkt)
-        {
-            auto ret = inject(pkt);
-
-            if (ret)
-                tx_queue_flush(any_queue);
-
-            return ret;
-        }
-
         //! Inject the packet and transmit the packets in the queue, asynchronously.
         /*!
-         * The transmission is invoked every batch_len packets.
+         * The transmission is invoked every batch_len packets. @batch_len 1 means
+         * synchronous transmission.  When kernel threads are in use, @batch_len can be 0.
          */
 
         bool
-        send_async(const_buffer pkt, size_t batch_len = 128)
+        send(const_buffer pkt, size_t batch_len = 1)
         {
             bool flush = false;
             auto rc = inject(pkt);
@@ -1236,7 +1219,6 @@ namespace pfq {
                 }
             }
             else {
-
                 if (data_->tx_last_inject || data_->tx_batch_count == batch_len) {
                     data_->tx_batch_count = 0;
                     flush = true;

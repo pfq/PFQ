@@ -1047,19 +1047,7 @@ pfq_tx_queue_flush(pfq_t *q, int queue)
 
 
 int
-pfq_send(pfq_t *q, const void *ptr, size_t len)
-{
-        int rc = pfq_inject(q, ptr, len, Q_ANY_QUEUE);
-
-        if (rc > 0)
-                pfq_tx_queue_flush(q, Q_ANY_QUEUE);
-
-        return rc;
-}
-
-
-int
-pfq_send_async(pfq_t *q, const void *ptr, size_t len, size_t batch_len)
+pfq_send(pfq_t *q, const void *ptr, size_t len, size_t batch_len)
 {
         int rc = pfq_inject(q, ptr, len, Q_ANY_QUEUE);
         int do_flush = 0;
