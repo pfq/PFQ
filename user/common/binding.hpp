@@ -31,16 +31,17 @@ namespace pfq {
         std::string ret = "binding:{ ";
         int n = 0;
 
-        ret += "gid:" + std::to_string(b.gid) + " core:" + std::to_string(b.core);
+        ret += "gid:" + std::to_string(b.gid) +
+               " core:" + std::to_string(b.core) +
+               " dev:[";
 
-        ret += " dev:[";
-
-        for(auto &d : b.dev)
+        for(auto &dev : b.dev)
         {
             if (n++)
                 ret += ", ";
-            ret += d;
+            ret += dev;
         }
+
         ret += "] queue:[";
 
         n = 0;
@@ -68,14 +69,12 @@ namespace pfq {
         if (vec.size() > 1)
             ret.core = std::atoi(vec[1].c_str());
 
-
         if (vec.size() > 2)
             ret.dev = pfq::split(vec[2].c_str(), ":");
 
         if (vec.size() > 3)
         {
-            unsigned int n = 3;
-            for(; n != vec.size(); n++)
+            for(size_t n = 3; n < vec.size(); n++)
             {
                 ret.queue.push_back(std::atoi(vec[n].c_str()));
             }
