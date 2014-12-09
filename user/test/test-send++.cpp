@@ -29,17 +29,7 @@ void send_packets(pfq::socket &q, int64_t num)
 {
     for(int64_t n = 0; n < num;)
     {
-        if (q.send(pfq::const_buffer(reinterpret_cast<const char *>(ping), sizeof(ping))))
-            n++;
-    }
-}
-
-
-void send_async_packets(pfq::socket &q, int64_t num)
-{
-    for(int64_t n = 0; n < num;)
-    {
-        if (q.send_async(pfq::const_buffer(reinterpret_cast<const char *>(ping), sizeof(ping)), 128))
+        if (q.send(pfq::const_buffer(reinterpret_cast<const char *>(ping), sizeof(ping)), 128))
             n++;
     }
 
@@ -50,13 +40,12 @@ int
 main(int argc, char *argv[])
 {
     if (argc < 6)
-        throw std::runtime_error(std::string("usage: ").append(argv[0]).append(" dev queue node num mode"));
+        throw std::runtime_error(std::string("usage: ").append(argv[0]).append(" dev queue node num"));
 
     const char *dev = argv[1];
     int queue       = atoi(argv[2]);
     int node        = atoi(argv[3]);
     int64_t num     = atoll(argv[4]);
-    int mode        = atoi(argv[5]);
 
     pfq::socket q(64, 4096, 64, 4096);
 
@@ -64,11 +53,7 @@ main(int argc, char *argv[])
 
     q.bind_tx(dev, queue, node);
 
-    if (mode)
-        send_async_packets(q, num);
-    else
-        send_packets(q, num);
-
+    send_packets(q, num);
 
     std::this_thread::sleep_for(std::chrono::seconds(1));
 
