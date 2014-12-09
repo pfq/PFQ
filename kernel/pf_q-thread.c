@@ -42,35 +42,36 @@ pfq_tx_thread(void *_data)
 {
         struct pfq_thread_data *data = (struct pfq_thread_data *)_data;
         struct net_device *dev;
-	int cpu, node;
+	int cpu;
 
 	if (data == NULL) {
 		printk(KERN_INFO "[PFQ|T] TX thread data error!\n");
 		return -EPERM;
 	}
 
-       	printk(KERN_INFO "[PFQ|T] TX[%zu] thread started on cpu %d...\n", data->id, smp_processor_id());
+	cpu = smp_processor_id();
+        dev = dev_get_by_index(sock_net(&data->so->sk), data->so->tx_opt.queue[data->id].if_index);
 
-        dev  = dev_get_by_index(sock_net(&data->so->sk), data->so->tx_opt.queue[data->id].if_index);
-        cpu  = smp_processor_id();
-	node = cpu_to_node(cpu);
+       	printk(KERN_INFO "[PFQ|T] TX[%zu] thread started on cpu %d.\n", data->id, cpu);
+
+	__set_current_state(TASK_RUNNING);
 
         for(;;)
         {
-                __pfq_tx_queue_flush(data->id, &data->so->tx_opt, dev, cpu, node);
-
-                set_current_state(TASK_INTERRUPTIBLE);
+                __pfq_tx_queue_flush(data->id, &data->so->tx_opt, dev, cpu, cpu_to_node(cpu));
 
                 if (kthread_should_stop())
                         break;
 
-                schedule();
+		if (need_resched())
+			schedule();
+		else
+			cpu_relax();
         }
 
         dev_put(dev);
 
-        printk(KERN_INFO "[PFQ|T] TX[%zu] thread stopped on cpu %d.\n", data->id,
-        		smp_processor_id());
+        printk(KERN_INFO "[PFQ|T] TX[%zu] thread stopped on cpu %d.\n", data->id, cpu);
 
         kfree(data);
 
