@@ -35,6 +35,14 @@ namespace pfq {
     {
     public:
 
+        pfq_error(std::string const &reason)
+        : std::system_error(0, std::generic_category(), reason.c_str())
+        {}
+
+        pfq_error(int ev, std::string const &reason)
+        : std::system_error(ev, std::generic_category(), reason.c_str())
+        {}
+
         pfq_error(int ev, const char * reason)
         : std::system_error(ev, std::generic_category(), reason)
         {}

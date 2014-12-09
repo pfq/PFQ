@@ -69,7 +69,8 @@ namespace pfq {
         memset(&ifreq_io, 0, sizeof(struct ifreq));
         strncpy(ifreq_io.ifr_name, dev, IFNAMSIZ);
         if (::ioctl(fd, SIOCGIFINDEX, &ifreq_io) == -1)
-            throw pfq_error(errno, ("PFQ: ioctl get ifindex " + std::string(dev)).c_str());
+            throw pfq_error(errno, ("PFQ: " + std::string (dev) + ": ifindex"));
+
         return ifreq_io.ifr_ifindex;
     }
 
@@ -84,7 +85,7 @@ namespace pfq {
         strncpy(ifreq_io.ifr_name, dev, IFNAMSIZ);
 
         if(::ioctl(fd, SIOCGIFFLAGS, &ifreq_io) == -1)
-            throw pfq_error(errno, "PFQ: ioctl getflags");
+            throw pfq_error(errno, "PFQ: " + std::string(dev) + ": set_promisc");
 
         if (value)
             ifreq_io.ifr_flags |= IFF_PROMISC;
@@ -92,8 +93,7 @@ namespace pfq {
             ifreq_io.ifr_flags &= ~IFF_PROMISC;
 
         if(::ioctl(fd, SIOCSIFFLAGS, &ifreq_io) == -1)
-            throw pfq_error(errno, "PFQ: ioctl setflags");
-
+            throw pfq_error(errno, "PFQ: " + std::string(dev) + ": set_promisc");
     }
 
     //! Given the device name return the related index.
@@ -103,7 +103,7 @@ namespace pfq {
     {
         auto i = ::if_nametoindex(dev);
         if (i == 0)
-            throw pfq_error("PFQ: unknown device");
+            throw pfq_error(errno, "PFQ: " + std::string(dev) + ": nametoindex");
         return i;
     }
 
@@ -115,7 +115,7 @@ namespace pfq {
     {
         char buf[IF_NAMESIZE];
         if (::if_indextoname(i, buf) == nullptr)
-            throw pfq_error("PFQ: index not available");
+            throw pfq_error(errno, "PFQ: " + std::to_string(i) + ": indextoname");
         return buf;
     }
 
@@ -137,7 +137,6 @@ namespace pfq {
     split(std::string str, const char *sep)
     {
         std::vector<std::string> ret;
-
         auto len = std::strlen(sep);
 
         for(std::string::size_type n; (n = str.find(sep)) != std::string::npos;)
@@ -197,7 +196,8 @@ namespace pfq {
     {
         hash = hash ^ (hash >> 8) ^ (hash >> 16) ^ (hash >> 24);
 
-        switch(n) {
+        switch(n)
+        {
             case 1: return 0;
             case 2: return hash & 1;
             case 3: {
