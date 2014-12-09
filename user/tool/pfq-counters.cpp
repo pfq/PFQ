@@ -65,7 +65,6 @@ namespace thread
         context(int id, const binding &b)
         : m_id(id)
         , m_bind(b)
-        , m_stop(std::unique_ptr<std::atomic_bool>(new std::atomic_bool(false)))
         , m_pfq(group_policy::undefined, opt::caplen, opt::slots)
         , m_read()
         , m_batch()
@@ -120,9 +119,6 @@ namespace thread
 
                 m_batch = std::max(m_batch, many.size());
 
-                if (m_stop->load(std::memory_order_relaxed))
-                    return;
-
                 if (opt::flow)
                 {
                     auto it = many.begin();
@@ -144,11 +140,6 @@ namespace thread
                     }
                 }
             }
-        }
-
-        void stop()
-        {
-            m_stop->store(true, std::memory_order_release);
         }
 
         pfq_stats
@@ -178,8 +169,6 @@ namespace thread
     private:
         int m_id;
         binding m_bind;
-
-        std::unique_ptr<std::atomic_bool> m_stop;
 
         pfq::socket m_pfq;
 
@@ -211,15 +200,15 @@ void usage(std::string name)
 }
 
 
+std::vector<thread::context *> thread_ctx;
+
+
 int
 main(int argc, char *argv[])
 try
 {
     if (argc < 2)
         usage(argv[0]);
-
-    std::vector<std::thread> vt;
-    std::vector<thread::context> ctx;
 
     std::vector<binding> thread_binding;
 
@@ -301,7 +290,7 @@ try
     //
     for(unsigned int i = 0; i < thread_binding.size(); ++i)
     {
-        ctx.push_back(thread::context(static_cast<int>(i), thread_binding[i]));
+        thread_ctx.push_back(new thread::context(static_cast<int>(i), thread_binding[i]));
     }
 
     opt::timeout_ms = 1000000;
@@ -313,15 +302,15 @@ try
     int i = 0;
     std::for_each(thread_binding.begin(), thread_binding.end(), [&](binding &b) {
 
-                  std::thread t(std::ref(ctx[static_cast<size_t>(i++)]));
+        std::cout << "thread: " << show_binding(b) << std::endl;
 
-                  std::cout << "thread: " << show_binding(b) << std::endl;
+        auto t = new std::thread(std::ref(*thread_ctx[static_cast<size_t>(i++)]));
 
-                  if (b.core != -1)
-                  extra::set_affinity(t, b.core);
+        if (b.core != -1)
+            extra::set_affinity(*t, b.core);
 
-                  vt.push_back(std::move(t));
-                  });
+        t->detach();
+    });
 
     unsigned long long sum, flow, old = 0;
     pfq_stats sum_stats, old_stats = {0,0,0,0,0,0,0};
@@ -338,33 +327,33 @@ try
         flow = 0;
         sum_stats = {0,0,0,0,0,0,0};
 
-        std::for_each(ctx.begin(), ctx.end(), [&](const thread::context &c) {
-                      sum += c.read();
-                      flow += c.flow();
-                      sum_stats += c.stats();
-                      });
+        std::for_each(thread_ctx.begin(), thread_ctx.end(), [&](const thread::context *c) {
+            sum += c->read();
+            flow += c->flow();
+            sum_stats += c->stats();
+        });
 
         std::cout << "recv: ";
-        std::for_each(ctx.begin(), ctx.end(), [&](const thread::context &c) {
-                      std::cout << c.stats().recv << ' ';
+        std::for_each(thread_ctx.begin(), thread_ctx.end(), [&](const thread::context *c) {
+                      std::cout << c->stats().recv << ' ';
                       });
         std::cout << " -> " << sum_stats.recv << std::endl;
 
         std::cout << "lost: ";
-        std::for_each(ctx.begin(), ctx.end(), [&](const thread::context &c) {
-                      std::cout << c.stats().lost << ' ';
+        std::for_each(thread_ctx.begin(), thread_ctx.end(), [&](const thread::context *c) {
+                      std::cout << c->stats().lost << ' ';
                       });
         std::cout << " -> " << sum_stats.lost << std::endl;
 
         std::cout << "drop: ";
-        std::for_each(ctx.begin(), ctx.end(), [&](const thread::context &c) {
-                      std::cout << c.stats().drop << ' ';
+        std::for_each(thread_ctx.begin(), thread_ctx.end(), [&](const thread::context *c) {
+                      std::cout << c->stats().drop << ' ';
                       });
         std::cout << " -> " << sum_stats.drop << std::endl;
 
         std::cout << "max_batch: ";
-        std::for_each(ctx.begin(), ctx.end(), [&](const thread::context &c) {
-                      std::cout << c.batch() << ' ';
+        std::for_each(thread_ctx.begin(), thread_ctx.end(), [&](const thread::context *c) {
+                      std::cout << c->batch() << ' ';
                       });
         std::cout << std::endl;
 

@@ -190,6 +190,8 @@ void usage(std::string name)
 }
 
 
+std::vector<thread::context *> thread_ctx;
+
 int
 main(int argc, char *argv[])
 try
@@ -197,8 +199,6 @@ try
     if (argc < 2)
         usage(argv[0]);
 
-    std::vector<std::thread> vt;
-    std::vector<thread::context> ctx;
     std::vector<pfq::binding> binding;
 
     for(int i = 1; i < argc; ++i)
@@ -330,7 +330,7 @@ try
 
     for(unsigned int i = 0; i < binding.size(); ++i)
     {
-        ctx.push_back(thread::context(static_cast<int>(i), binding[i], kcore));
+        thread_ctx.push_back(new thread::context(static_cast<int>(i), binding[i], kcore));
         kcore += std::max<size_t>(binding[i].queue.size(), 1);
     }
 
@@ -339,11 +339,12 @@ try
     size_t i = 0;
     std::for_each(binding.begin(), binding.end(), [&](pfq::binding const &b) {
 
-                  std::thread t(std::ref(ctx[i++]));
+        auto t = new std::thread(std::ref(*thread_ctx[i++]));
 
-                  extra::set_affinity(t, b.core);
+        extra::set_affinity(*t, b.core);
 
-                  vt.push_back(std::move(t));
+        t->detach();
+
     });
 
     pfq_stats cur, prec = {0,0,0,0,0,0,0};
@@ -362,9 +363,9 @@ try
         sent = 0;
         fail = 0;
 
-        std::for_each(ctx.begin(), ctx.end(), [&](const thread::context &c)
+        std::for_each(thread_ctx.begin(), thread_ctx.end(), [&](const thread::context *c)
         {
-            auto p = c.stats();
+            auto p = c->stats();
 
             cur  += std::get<0>(p);
             sent += std::get<1>(p);
