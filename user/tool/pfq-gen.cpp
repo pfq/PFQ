@@ -138,7 +138,7 @@ namespace thread
                     ip->daddr = static_cast<uint32_t>(m_gen());
                 }
 
-                if (m_pfq.send_async(pfq::const_buffer(reinterpret_cast<const char *>(opt::packet), opt::len), opt::batch))
+                if (m_pfq.send(pfq::const_buffer(reinterpret_cast<const char *>(opt::packet), opt::len), opt::batch))
                     m_sent->fetch_add(1, std::memory_order_relaxed);
                 else
                     m_fail->fetch_add(1, std::memory_order_relaxed);
