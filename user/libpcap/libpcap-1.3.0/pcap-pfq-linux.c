@@ -995,7 +995,7 @@ fail:
 static int
 pfq_inject_linux(pcap_t *handle, const void * buf, size_t size)
 {
-	int ret = pfq_send_async(handle->md.pfq.q, buf, size, handle->opt.pfq.tx_batch);
+	int ret = pfq_send(handle->md.pfq.q, buf, size, handle->opt.pfq.tx_batch);
 	if (ret == -1) {
 		snprintf(handle->errbuf, PCAP_ERRBUF_SIZE, "%s", pfq_error(handle->md.pfq.q));
 		return PCAP_ERROR;
