@@ -52,33 +52,43 @@ struct gc_buff
 
 
 #define for_each_skbuff(batch, skb, n) \
-        for(n = 0; (n != (batch)->len) && (skb = (batch)->queue[n]); \
-                __builtin_prefetch((batch)->queue[n+1], 0, 1), n++)
+        for((n) = 0; ((n) < (batch)->len) && ((skb) = (batch)->queue[n]); \
+                __builtin_prefetch((batch)->queue[n+1], 0, 1), (n)++)
+
+
+#define for_each_skbuff_from(x, batch, skb, n) \
+        for((n) = (x); ((n) < (batch)->len) && ((skb) = (batch)->queue[n]); \
+                __builtin_prefetch((batch)->queue[n+1], 0, 1), (n)++)
+
+
+#define for_each_skbuff_upto(max, batch, skb, n) \
+        for((n) = 0; ((n) < (max)) && ((n) < (batch)->len) && ((skb) = (batch)->queue[n]); \
+                __builtin_prefetch((batch)->queue[n+1], 0, 1), (n)++)
 
 
 #define for_each_skbuff_backward(batch, skb, n) \
-        for(n = (batch)->len; (n > 0) && (skb = (batch)->queue[n-1]); \
-                __builtin_prefetch((batch)->queue[n-2], 0, 1), n--)
+        for((n) = (batch)->len; ((n) > 0) && ((skb) = (batch)->queue[n-1]); \
+                __builtin_prefetch((batch)->queue[n-2], 0, 1), (n)--)
 
 
 #define for_each_skbuff_bitmask(batch, mask, skb, n) \
-        for(n = pfq_ctz(mask); mask && ((skb = (batch)->queue[n]), true); \
-                mask ^=(1UL << n), n = pfq_ctz(mask))
+        for((n) = pfq_ctz(mask); (mask) && ((skb = (batch)->queue[n]), true); \
+                (mask) ^=(1UL << (n)), n = pfq_ctz(mask))
 
 
 #define for_each_gcbuff(batch, buff, n) \
-        for(n = 0; (n != (batch)->len) && (buff = (batch)->queue[n]).skb; \
-                __builtin_prefetch(((batch)->queue[n+1]).skb, 0, 1), n++)
+        for((n) = 0; (n < (batch)->len) && (buff = (batch)->queue[n]).skb; \
+                __builtin_prefetch(((batch)->queue[n+1]).skb, 0, 1), (n)++)
 
 
 #define for_each_gcbuff_backward(batch, buff, n) \
-        for(n = (batch)->len; (n > 0) && (buff= (batch)->queue[n-1]).skb; \
-                __builtin_prefetch(((batch)->queue[n-2]).skb, 0, 1), n--)
+        for((n) = (batch)->len; ((n) > 0) && ((buff) = (batch)->queue[n-1]).skb; \
+                __builtin_prefetch(((batch)->queue[n-2]).skb, 0, 1), (n)--)
 
 
 #define for_each_gcbuff_bitmask(batch, mask, buff, n) \
-        for(n = pfq_ctz(mask); mask && ((buff = (batch)->queue[n]), true); \
-                mask ^=(1UL << n), n = pfq_ctz(mask))
+        for((n) = pfq_ctz(mask); (mask) && ((buff = (batch)->queue[n]), true); \
+                (mask) ^=(1UL << n), n = pfq_ctz(mask))
 
 
 #endif /* _PF_Q_SKBUFF_H_ */
