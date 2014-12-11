@@ -180,12 +180,14 @@ __pfq_tx_queue_flush(size_t qidx, struct pfq_tx_opt *to, struct net_device *dev,
 
 			len = min_t(size_t, h->len, txq->max_len);
 
+
 			/* set the skb */
 
 			skb_reset_tail_pointer(skb);
 			skb->dev = dev;
 			skb->len = 0;
-			skb_put(skb, len);
+			__skb_put(skb, len);
+
 
 			/* get the skb */
 
