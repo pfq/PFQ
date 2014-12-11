@@ -184,6 +184,50 @@ bool any_strcmp(const char *arg, const char *opt, Ts&&...args)
 }
 
 
+template <typename U, typename T, typename Duration>
+U persecond(T value, Duration dur)
+{
+    return static_cast<U>(value) * 1000000 /
+        std::chrono::duration_cast<std::chrono::microseconds>(dur).count();
+}
+
+template <typename T>
+std::string to_string_(std::ostringstream &out, T &&arg)
+{
+    out << std::move(arg);
+    return out.str();
+}
+template <typename T, typename ...Ts>
+std::string to_string_(std::ostringstream &out, T &&arg, Ts&&... args)
+{
+    out << std::move(arg);
+    return to_string_(out, std::forward<Ts>(args)...);
+}
+template <typename ...Ts>
+inline std::string
+to_string(Ts&& ... args)
+{
+    std::ostringstream out;
+    return to_string_(out, std::forward<Ts>(args)...);
+}
+
+template <typename T>
+std::string
+pretty(T value)
+{
+    if (value < 1000000000) {
+    if (value < 1000000) {
+    if (value < 1000) {
+         return to_string(value);
+    }
+    else return to_string(value/1000, "_K");
+    }
+    else return to_string(value/1000000, "_M");
+    }
+    else return to_string(value/1000000000, "_G");
+}
+
+
 void usage(std::string name)
 {
     throw std::runtime_error
@@ -380,13 +424,13 @@ try
         });
 
         auto end   = std::chrono::system_clock::now();
-        auto delta = std::chrono::duration_cast<std::chrono::microseconds>(end-begin).count();
+        auto delta = end-begin;
 
         std::cout << "stats: { " << cur << " } -> user: { "
-                  << vt100::BOLD << (static_cast<int64_t>(sent-sent_)*1000000)/delta << ' ' <<
-                                    (static_cast<int64_t>(fail-fail_)*1000000)/delta << vt100::RESET << " } - "
-                  << "sent: " << vt100::BOLD << (static_cast<int64_t>(cur.sent-prec.sent)*1000000)/delta << vt100::RESET << " pkt/sec - "
-                  << "disc: " << vt100::BOLD << (static_cast<int64_t>(cur.disc-prec.disc)*1000000)/delta << vt100::RESET << " pkt/sec" << std::endl;
+                  << vt100::BOLD << persecond<int64_t>(sent - sent_, delta) << ' ' << persecond<int64_t>(fail-fail_, delta) << vt100::RESET << " } - "
+                  << "sent: " << vt100::BOLD << persecond<int64_t>(cur.sent - prec.sent, delta) << vt100::RESET << " pkt/sec - "
+                  << "band: " << vt100::BOLD << pretty(persecond<double>((cur.sent - prec.sent) * opt::len * 8, delta)) << vt100::RESET << "bit/sec - "
+                  << "disc: " << vt100::BOLD << persecond<int64_t>(cur.disc - prec.disc, delta) << vt100::RESET << " pkt/sec" << std::endl;
 
         prec = cur, begin = end;
         sent_ = sent;
