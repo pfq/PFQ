@@ -118,7 +118,7 @@ __pfq_tx_queue_flush(size_t qidx, struct pfq_tx_opt *to, struct net_device *dev,
 	struct local_data *local;
 	struct pfq_pkt_hdr * h;
 	struct sk_buff *skb;
-	size_t len;
+	size_t len, drain = 0, tot_sent = 0;
 
 	int index, avail, n;
 
@@ -145,13 +145,16 @@ __pfq_tx_queue_flush(size_t qidx, struct pfq_tx_opt *to, struct net_device *dev,
 		{
 			int sent, i;
 
+			sent = __pfq_tx_queue_xmit(qidx, &skbs, dev, to, cpu, local);
+
 			/* commit the slots of *all* packets in the batch:
 			   unset packets are transmitted next in the loop
 			 */
 
-			pfq_spsc_read_commit_n(txq, batch_len);
+			tot_sent += sent;
 
-			sent = __pfq_tx_queue_xmit(qidx, &skbs, dev, to, cpu, local);
+			pfq_spsc_read_commit_n(txq, drain);
+			drain = 0;
 
 			/* free/recycle the transmitted skb... */
 
@@ -168,6 +171,7 @@ __pfq_tx_queue_flush(size_t qidx, struct pfq_tx_opt *to, struct net_device *dev,
 				skb_get(skb);
 		}
 
+
 		if (pfq_skbuff_batch_len(&skbs) != batch_len)
 		{
 			h = (struct pfq_pkt_hdr *) (to->queue[qidx].base_addr + index * txq->slot_size);
@@ -180,14 +184,12 @@ __pfq_tx_queue_flush(size_t qidx, struct pfq_tx_opt *to, struct net_device *dev,
 
 			len = min_t(size_t, h->len, txq->max_len);
 
-
 			/* set the skb */
 
 			skb_reset_tail_pointer(skb);
 			skb->dev = dev;
 			skb->len = 0;
 			__skb_put(skb, len);
-
 
 			/* get the skb */
 
@@ -201,6 +203,8 @@ __pfq_tx_queue_flush(size_t qidx, struct pfq_tx_opt *to, struct net_device *dev,
 
 			pfq_skbuff_batch_push(&skbs, skb);
 
+			drain++;
+
 			/* get the index... */
 
 			index = pfq_spsc_next_index(txq, index);
@@ -213,6 +217,7 @@ __pfq_tx_queue_flush(size_t qidx, struct pfq_tx_opt *to, struct net_device *dev,
 		/* transmit the last batch */
 
 		int sent = __pfq_tx_queue_xmit(qidx, &skbs, dev, to, cpu, local);
+		tot_sent += sent;
 
 		/* commit the slots of packets successfully *sent* */
 
@@ -224,7 +229,7 @@ __pfq_tx_queue_flush(size_t qidx, struct pfq_tx_opt *to, struct net_device *dev,
 			pfq_kfree_skb_recycle(skb, &local->tx_recycle_list);
 	}
 
-	return n;
+	return tot_sent;
 }
 
 
