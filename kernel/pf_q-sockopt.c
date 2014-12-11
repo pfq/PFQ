@@ -173,17 +173,17 @@ int pfq_getsockopt(struct socket *sock,
 
         case Q_SO_GET_RX_SLOTS:
         {
-                if (len != sizeof(so->rx_opt.size))
+                if (len != sizeof(so->rx_opt.queue_size))
                         return -EINVAL;
-                if (copy_to_user(optval, &so->rx_opt.size, sizeof(so->rx_opt.size)))
+                if (copy_to_user(optval, &so->rx_opt.queue_size, sizeof(so->rx_opt.queue_size)))
                         return -EFAULT;
         } break;
 
         case Q_SO_GET_TX_SLOTS:
         {
-                if (len != sizeof(so->tx_opt.size))
+                if (len != sizeof(so->tx_opt.queue_size))
                         return -EINVAL;
-                if (copy_to_user(optval, &so->tx_opt.size, sizeof(so->tx_opt.size)))
+                if (copy_to_user(optval, &so->tx_opt.queue_size, sizeof(so->tx_opt.queue_size)))
                         return -EFAULT;
         } break;
 
@@ -526,10 +526,11 @@ int pfq_setsockopt(struct socket *sock,
 
         case Q_SO_SET_RX_SLOTS:
         {
-                typeof(so->rx_opt.size) slots;
+                typeof(so->rx_opt.queue_size) slots;
 
                 if (optlen != sizeof(slots))
                         return -EINVAL;
+
                 if (copy_from_user(&slots, optval, optlen))
                         return -EFAULT;
 
@@ -538,9 +539,9 @@ int pfq_setsockopt(struct socket *sock,
                         return -EPERM;
                 }
 
-                so->rx_opt.size = slots;
+                so->rx_opt.queue_size = slots;
 
-                pr_devel("[PFQ|%d] rx_queue slots=%zu\n", so->id, so->rx_opt.size);
+                pr_devel("[PFQ|%d] rx_queue slots=%zu\n", so->id, so->rx_opt.queue_size);
         } break;
 
         case Q_SO_SET_TX_MAXLEN:
@@ -567,7 +568,7 @@ int pfq_setsockopt(struct socket *sock,
 
         case Q_SO_SET_TX_SLOTS:
         {
-                typeof (so->tx_opt.size) slots;
+                typeof (so->tx_opt.queue_size) slots;
 
                 if (optlen != sizeof(slots))
                         return -EINVAL;
@@ -584,9 +585,9 @@ int pfq_setsockopt(struct socket *sock,
                         return -EPERM;
                 }
 
-                so->tx_opt.size = slots;
+                so->tx_opt.queue_size = slots;
 
-                pr_devel("[PFQ|%d] tx_queue slots=%zu\n", so->id, so->tx_opt.size);
+                pr_devel("[PFQ|%d] tx_queue slots=%zu\n", so->id, so->tx_opt.queue_size);
         } break;
 
         case Q_SO_GROUP_LEAVE:

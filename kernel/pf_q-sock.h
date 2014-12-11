@@ -46,7 +46,8 @@ struct pfq_rx_opt
 	int    			tstamp;
 
 	size_t 			caplen;
-	size_t 			size;
+
+	size_t 			queue_size;
 	size_t 			slot_size;
 
 	wait_queue_head_t 	waitqueue;
@@ -74,13 +75,13 @@ void pfq_rx_opt_init(struct pfq_rx_opt *that, size_t caplen)
         that->base_addr = NULL;
 
         /* disable tiemstamping by default */
-        that->tstamp    = false;
+        that->tstamp = false;
 
         /* set q_slots and q_caplen default values */
 
-        that->caplen    = caplen;
+        that->caplen = caplen;
 
-        that->size      = 0;
+        that->queue_size = 0;
         that->slot_size = 0;
 
         /* initialize waitqueue */
@@ -113,7 +114,7 @@ struct pfq_tx_opt
 	uint64_t 		counter;
 
 	size_t  		maxlen;
-	size_t  		size;
+	size_t  		queue_size;
 	size_t  		slot_size;
         size_t 	       	 	num_queues;
 
@@ -138,10 +139,10 @@ void pfq_tx_opt_init(struct pfq_tx_opt *that, size_t maxlen)
         /* the queue is allocate later, when the socket is enabled */
         int n;
 
-        that->counter    = 0;
+        that->counter = 0;
 
-        that->maxlen     = maxlen;
-        that->size       = 0;
+        that->maxlen = maxlen;
+        that->queue_size = 0;
         that->slot_size  = 0;
 	that->num_queues = 0;
 
@@ -149,12 +150,11 @@ void pfq_tx_opt_init(struct pfq_tx_opt *that, size_t maxlen)
 	{
 		atomic_long_set(&that->queue[n].queue_hdr, 0);
 
-        	that->queue[n].base_addr= NULL;
-
-		that->queue[n].if_index = -1;
-		that->queue[n].hw_queue = -1;
-		that->queue[n].cpu      = -1;
-		that->queue[n].task 	= NULL;
+        	that->queue[n].base_addr = NULL;
+		that->queue[n].if_index  = -1;
+		that->queue[n].hw_queue  = -1;
+		that->queue[n].cpu       = -1;
+		that->queue[n].task 	 = NULL;
        	}
 
         sparse_set(&that->stats.sent, 0);
