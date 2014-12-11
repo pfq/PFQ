@@ -254,7 +254,7 @@ pfq_shared_queue_disable(struct pfq_sock *so)
 
 		pfq_shared_memory_free(so);
 
-		so->shmem_addr = 0;
+		so->shmem_addr = NULL;
 		pr_devel("[PFQ|%d] tx/rx queues disabled.\n", so->id);
 	}
 

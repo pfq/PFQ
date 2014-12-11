@@ -153,7 +153,8 @@ void pfq_kfree_skb_recycle(struct sk_buff *skb, struct pfq_sk_buff_list *list)
 }
 
 
-static void skb_release_head_state(struct sk_buff *skb)
+static inline void
+skb_release_head_state(struct sk_buff *skb)
 {
     	skb_dst_drop(skb);
 
@@ -183,7 +184,7 @@ static void skb_release_head_state(struct sk_buff *skb)
 static inline
 struct sk_buff * pfq_skb_recycle(struct sk_buff *skb)
 {
-        //  skb_recycle(skb); removed from kernel 3.7!!!
+        /*  skb_recycle(skb); removed from kernel 3.7 */
 
         struct skb_shared_info *shinfo;
 
