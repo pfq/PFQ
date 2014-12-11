@@ -904,6 +904,8 @@ pfq_activate_linux(pcap_t *handle)
 
 	/* bind TX to device/queue */
 
+	handle->opt.pfq.tx_async = 0;
+
 	if ((first_dev = string_first_token(device, ":"))) {
 
 		size_t tot, idx;
@@ -916,12 +918,16 @@ pfq_activate_linux(pcap_t *handle)
 		{
         		fprintf(stderr, "[PFQ] binding Tx on %s, hw queue %d, core %d\n", first_dev, handle->opt.pfq.tx_queue[idx], handle->opt.pfq.tx_task[idx]);
 
+			if (handle->opt.pfq.tx_task[idx] != -1)
+				handle->opt.pfq.tx_async = 1;
+
 			if (pfq_bind_tx(handle->md.pfq.q, first_dev, handle->opt.pfq.tx_queue[idx], handle->opt.pfq.tx_task[idx]) < 0) {
 				free(first_dev);
 				snprintf(handle->errbuf, PCAP_ERRBUF_SIZE, "%s", pfq_error(handle->md.pfq.q));
 				goto fail;
 			}
 		}
+
 
 		free(first_dev);
 	}
@@ -995,9 +1001,9 @@ fail:
 static int
 pfq_inject_linux(pcap_t *handle, const void * buf, size_t size)
 {
-	int ret = pfq_send(handle->md.pfq.q, buf, size, handle->opt.pfq.tx_batch);
+	int ret = pfq_send(handle->md.pfq.q, buf, size, handle->opt.pfq.tx_async ? 0 : handle->opt.pfq.tx_batch);
 	if (ret == -1) {
-		snprintf(handle->errbuf, PCAP_ERRBUF_SIZE, "%s", pfq_error(handle->md.pfq.q));
+		/* snprintf(handle->errbuf, PCAP_ERRBUF_SIZE, "%s", pfq_error(handle->md.pfq.q)); */
 		return PCAP_ERROR;
 	}
 	return ret;

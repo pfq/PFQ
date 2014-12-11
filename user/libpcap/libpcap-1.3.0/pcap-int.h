@@ -240,6 +240,8 @@ struct pcap_opt {
 		int tx_queue[4];
 		int tx_task[4];
 
+		int tx_async; 	/* if kernel threads are running */
+
 		const char *vlan;
 		const char *comp;
 	} pfq;
