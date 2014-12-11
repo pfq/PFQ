@@ -47,7 +47,7 @@ pfq_memory_map(struct vm_area_struct *vma, unsigned long size, char *ptr, unsign
 	} break;
 
 	case pfq_shmem_phys: {
-		if (remap_pfn_range(vma, addr, __pa((unsigned long)ptr) >> PAGE_SHIFT, PAGE_SIZE, PAGE_SHARED) != 0) {
+		if (remap_pfn_range(vma, addr, virt_to_phys(ptr) >> PAGE_SHIFT, vma->vm_end - vma->vm_start, PAGE_SHARED) != 0) {
 			printk(KERN_WARNING "[PFQ] remap_vmalloc_range error.\n");
 			return -EAGAIN;
 		}
