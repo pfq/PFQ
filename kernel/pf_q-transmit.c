@@ -42,10 +42,10 @@
 static inline u16
 __pfq_dev_cap_txqueue(struct net_device *dev, u16 hw_queue)
 {
-        if (unlikely(hw_queue >= dev->real_num_tx_queues))
-                return 0;
+	if (unlikely(hw_queue >= dev->real_num_tx_queues))
+		return 0;
 
-        return hw_queue;
+	return hw_queue;
 }
 
 #if (LINUX_VERSION_CODE > KERNEL_VERSION(3,13,0))
@@ -60,64 +60,45 @@ static u16 __pfq_pick_tx(struct net_device *dev, struct sk_buff *skb)
 static struct netdev_queue *
 pfq_pick_tx(struct net_device *dev, struct sk_buff *skb, int *hw_queue)
 {
-        if (dev->real_num_tx_queues != 1 && *hw_queue == -1) {
+	if (dev->real_num_tx_queues != 1 && *hw_queue == -1) {
 
-                const struct net_device_ops *ops = dev->netdev_ops;
+		const struct net_device_ops *ops = dev->netdev_ops;
 
 		*hw_queue = ops->ndo_select_queue ?
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(3,13,0))
-                                ops->ndo_select_queue(dev, skb)
+			ops->ndo_select_queue(dev, skb)
 #elif (LINUX_VERSION_CODE == KERNEL_VERSION(3,13,0))
-                                ops->ndo_select_queue(dev, skb, NULL)
+			ops->ndo_select_queue(dev, skb, NULL)
 #else
-                                ops->ndo_select_queue(dev, skb, NULL, __pfq_pick_tx)
+			ops->ndo_select_queue(dev, skb, NULL, __pfq_pick_tx)
 #endif
-                                : 0;
-        }
+			: 0;
+	}
 
-        *hw_queue = __pfq_dev_cap_txqueue(dev, *hw_queue);
+	*hw_queue = __pfq_dev_cap_txqueue(dev, *hw_queue);
 
-        return netdev_get_tx_queue(dev, *hw_queue);
+	return netdev_get_tx_queue(dev, *hw_queue);
 }
 
 
-static int
-__pfq_queue_xmit_batch(size_t qindex, struct pfq_skbuff_batch *skbs, struct net_device *dev, struct pfq_tx_opt *to, int cpu, struct local_data *local)
+static inline int
+__pfq_tx_queue_xmit(size_t qidx, struct pfq_skbuff_batch *skbs, struct net_device *dev, struct pfq_tx_opt *to, int cpu, struct local_data *local)
 {
-	struct pfq_tx_queue_hdr *txq = pfq_get_tx_queue_hdr(to, qindex);
-
-	struct sk_buff *skb;
-	int len, sent, i;
+	size_t sent;
 
 #ifdef PFQ_TX_PROFILE
+	size_t len = pfq_skbuff_batch_len(skbs);
 	cycles_t start = get_cycles();
 #endif
 
-	/* get length of this batch */
+	/* transmit the batch */
 
-	len  = pfq_skbuff_batch_len(skbs);
-
-	/* transmit the skbs */
-
-	sent = pfq_queue_xmit(skbs, dev, to->queue[qindex].hw_queue);
+	sent = pfq_queue_xmit(skbs, dev, to->queue[qidx].hw_queue);
 
 	/* update stats */
 
 	__sparse_add(&to->stats.sent, sent, cpu);
-	__sparse_add(&to->stats.disc, len - sent, cpu);
 	__sparse_add(&global_stats.sent, sent, cpu);
-	__sparse_add(&global_stats.disc, len - sent, cpu);
-
-	/* free the slots in the socket queue */
-
-	pfq_spsc_read_commit_n(txq, len);
-
-	/* recycle the skbuff now... */
-
-	for_each_skbuff(skbs, skb, i)
-		pfq_kfree_skb_recycle(skb, &local->tx_recycle_list);
-
-	pfq_skbuff_batch_flush(skbs);
 
 #ifdef PFQ_TX_PROFILE
 	if (printk_ratelimit()) {
@@ -130,93 +111,133 @@ __pfq_queue_xmit_batch(size_t qindex, struct pfq_skbuff_batch *skbs, struct net_
 
 
 int
-__pfq_tx_queue_flush(size_t qindex, struct pfq_tx_opt *to, struct net_device *dev, int cpu, int node)
+__pfq_tx_queue_flush(size_t qidx, struct pfq_tx_opt *to, struct net_device *dev, int cpu, int node)
 {
 	struct pfq_skbuff_batch skbs;
-
+	struct pfq_tx_queue_hdr *txq;
 	struct local_data *local;
-        struct pfq_pkt_hdr * h;
-        struct sk_buff *skb;
-        size_t len;
+	struct pfq_pkt_hdr * h;
+	struct sk_buff *skb;
+	size_t len;
 
-        int index, avail, n;
+	int index, avail, n;
 
-	struct pfq_tx_queue_hdr *txq = pfq_get_tx_queue_hdr(to, qindex);
+	/* get the socket queue */
 
-	/* transmit the batch queue... */
+	txq = pfq_get_tx_queue_hdr(to, qidx);
+
+	/* initialize the batch */
 
 	pfq_skbuff_batch_init(&skbs);
 
-        local = __this_cpu_ptr(cpu_data);
-        avail = pfq_spsc_read_avail(txq);
+	/* get cpu data */
+
+	local = __this_cpu_ptr(cpu_data);
+
+	avail = pfq_spsc_read_avail(txq);
 	index = pfq_spsc_read_index(txq);
 
-        for(n = 0; n < avail; ++n)
-        {
-		if (unlikely(index >= to->size)) {
-                        if(printk_ratelimit())
-                                printk(KERN_WARNING "[PFQ] bogus queue index: size=%zu index=%d\n", to->size, index);
-                        break;
-                }
-
-                h = (struct pfq_pkt_hdr *) (to->queue[qindex].base_addr + index * txq->slot_size);
-
-                skb = pfq_tx_alloc_skb(to->maxlen, GFP_KERNEL, node);
-                if (unlikely(skb == NULL))
-		        break;
-
-                skb->dev = dev;
-
-                /* copy packet to this skb: */
-
-                len = min_t(size_t, h->len, txq->max_len);
-
-                /* set the tail */
-
-                skb_reset_tail_pointer(skb);
-
-                skb->len = 0;
-
-                skb_put(skb, len);
-
-                /* copy bytes in the socket buffer */
-
-                skb_copy_to_linear_data(skb, h+1, len < 64 ? 64 : len);
-
-                /* take this skb: skb_get */
-
-		atomic_set(&skb->users, 2);
-
-                /* send the packets... */
-
-		pfq_skbuff_batch_push(&skbs, skb);
+	for(n = 0; n < avail; ++n)
+	{
+		/* if the batch is full, transmit it */
 
 		if (pfq_skbuff_batch_len(&skbs) == batch_len)
-			__pfq_queue_xmit_batch(qindex, &skbs, dev, to, cpu, local);
+		{
+			int sent, i;
 
-		/* get the next index... */
+			/* commit the slots of *all* packets in the batch:
+			   unset packets are transmitted next in the loop
+			 */
 
-                index = pfq_spsc_next_index(txq, index);
-        }
+			pfq_spsc_read_commit_n(txq, batch_len);
 
-	if (pfq_skbuff_batch_len(&skbs))
-		 __pfq_queue_xmit_batch(qindex, &skbs, dev, to, cpu, local);
+			sent = __pfq_tx_queue_xmit(qidx, &skbs, dev, to, cpu, local);
 
-        return n;
+			/* free/recycle the transmitted skb... */
+
+			for_each_skbuff_upto(sent, &skbs, skb, i)
+				pfq_kfree_skb_recycle(skb, &local->tx_recycle_list);
+
+			/* ... and drop them from the batch */
+
+			pfq_skbuff_batch_drop_n(&skbs, sent);
+
+			/* reset use count of unsent skb */
+
+			for_each_skbuff(&skbs, skb, i)
+				skb_get(skb);
+		}
+
+		if (pfq_skbuff_batch_len(&skbs) != batch_len)
+		{
+			h = (struct pfq_pkt_hdr *) (to->queue[qidx].base_addr + index * txq->slot_size);
+
+			skb = pfq_tx_alloc_skb(to->maxlen, GFP_KERNEL, node);
+			if (unlikely(skb == NULL))
+				break;
+
+			/* fill the skb */
+
+			len = min_t(size_t, h->len, txq->max_len);
+
+			/* set the skb */
+
+			skb_reset_tail_pointer(skb);
+			skb->dev = dev;
+			skb->len = 0;
+			skb_put(skb, len);
+
+			/* get the skb */
+
+			skb_get(skb);
+
+			/* copy bytes in the socket buffer */
+
+			skb_copy_to_linear_data(skb, h+1, len < 64 ? 64 : len);
+
+			/* enqueue the skb to the batch */
+
+			pfq_skbuff_batch_push(&skbs, skb);
+
+			/* get the index... */
+
+			index = pfq_spsc_next_index(txq, index);
+		}
+	}
+
+
+	if (pfq_skbuff_batch_len(&skbs)) {
+
+		/* transmit the last batch */
+
+		int sent = __pfq_tx_queue_xmit(qidx, &skbs, dev, to, cpu, local);
+
+		/* commit the slots of packets successfully *sent* */
+
+		pfq_spsc_read_commit_n(txq, sent);
+
+		/* recycle the skbs */
+
+		for_each_skbuff(&skbs, skb, n)
+			pfq_kfree_skb_recycle(skb, &local->tx_recycle_list);
+	}
+
+	return n;
 }
 
 
 /*
- * transmit the logic queue or wakeup the related kernel thread
+ * flush the logic queue or wakeup the related kernel thread
  */
 
-int pfq_tx_queue_flush_or_wakeup(struct pfq_sock *so, int index)
+int
+pfq_tx_queue_flush_or_wakeup(struct pfq_sock *so, int index)
 {
 	struct pfq_tx_queue_hdr *txq = pfq_get_tx_queue_hdr(&so->tx_opt, index);
 	struct net_device *dev;
 
-        if (!pfq_spsc_read_avail(txq))
-        	return 0;
+	if (!pfq_spsc_read_avail(txq))
+		return 0;
 
 	if (so->tx_opt.queue[index].task) {
 		wake_up_process(so->tx_opt.queue[index].task);
@@ -238,28 +259,26 @@ int pfq_tx_queue_flush_or_wakeup(struct pfq_sock *so, int index)
 inline static int
 __pfq_queue_xmit(struct sk_buff *skb, struct net_device *dev, struct netdev_queue *txq)
 {
-        int rc = -ENOMEM;
+	int rc = -ENOMEM;
 
-        skb_reset_mac_header(skb);
+	skb_reset_mac_header(skb);
 
-        if (dev->flags & IFF_UP) {
+	if (dev->flags & IFF_UP) {
 
 #if (LINUX_VERSION_CODE <= KERNEL_VERSION(3,2,0))
 		if (!netif_tx_queue_stopped(txq))
 #else
-		if (!netif_xmit_stopped(txq))
+			if (!netif_xmit_stopped(txq))
 #endif
-                {
-		        rc = dev->netdev_ops->ndo_start_xmit(skb, dev);
-
-			if (dev_xmit_complete(rc))
-				goto out;
-		}
+			{
+				rc = dev->netdev_ops->ndo_start_xmit(skb, dev);
+				if (dev_xmit_complete(rc))
+					goto out;
+			}
 	}
 
 	kfree_skb(skb);
 	return -ENETDOWN;
-
 out:
 	return rc;
 }
@@ -268,59 +287,75 @@ out:
 int
 pfq_queue_xmit(struct pfq_skbuff_batch *skbs, struct net_device *dev, int hw_queue)
 {
-       	struct netdev_queue *txq;
+	struct netdev_queue *txq;
 	struct sk_buff *skb;
-	int i, n = 0;
+	int n, ret = 0;
 
-        /* get txq and fix the hw_queue for this batch.
-         *
-         * note: in case the hw_queue is set to any-queue (-1), the driver along the first skb
-         * select the queue */
+	/* get txq and fix the hw_queue for this batch.
+	 *
+	 * note: in case the hw_queue is set to any-queue (-1), the driver along the first skb
+	 * select the queue */
 
-        txq = pfq_pick_tx(dev, skbs->queue[0], &hw_queue);
+	txq = pfq_pick_tx(dev, skbs->queue[0], &hw_queue);
 
 	__netif_tx_lock_bh(txq);
 
-	for_each_skbuff(skbs, skb, i)
+	for_each_skbuff(skbs, skb, n)
 	{
-                skb_set_queue_mapping(skb, hw_queue);
+		skb_set_queue_mapping(skb, hw_queue);
 
 		if (__pfq_queue_xmit(skb, dev, txq) == NETDEV_TX_OK)
-			++n;
+			++ret;
+		else
+			goto intr;
 	}
 
 	__netif_tx_unlock_bh(txq);
+	return ret;
 
-	return n;
+intr:
+	for_each_skbuff_from(ret + 1, skbs, skb, n)
+		kfree_skb(skb);
+
+	__netif_tx_unlock_bh(txq);
+	return ret;
 }
 
 
 int pfq_queue_xmit_by_mask(struct pfq_skbuff_batch *skbs, unsigned long long mask, struct net_device *dev, int hw_queue)
 {
-       	struct netdev_queue *txq;
+	struct netdev_queue *txq;
 	struct sk_buff *skb;
-	int i, n = 0;
+	int n, ret = 0;
 
-        /* get txq and fix the hw_queue for this batch.
-         *
-         * note: in case the hw_queue is set to any-queue (-1), the driver along the first skb
-         * select the queue */
+	/* get txq and fix the hw_queue for this batch.
+	 *
+	 * note: in case the hw_queue is set to any-queue (-1), the driver along the first skb
+	 * select the queue */
 
-        txq = pfq_pick_tx(dev, skbs->queue[0], &hw_queue);
+	txq = pfq_pick_tx(dev, skbs->queue[0], &hw_queue);
 
 	__netif_tx_lock_bh(txq);
 
-	for_each_skbuff_bitmask(skbs, mask, skb, i)
+	for_each_skbuff_bitmask(skbs, mask, skb, n)
 	{
-                skb_set_queue_mapping(skb, hw_queue);
+		skb_set_queue_mapping(skb, hw_queue);
 
 		if (__pfq_queue_xmit(skb, dev, txq) == NETDEV_TX_OK)
-			++n;
+			++ret;
+		else
+			goto intr;
 	}
 
 	__netif_tx_unlock_bh(txq);
+	return ret;
 
-	return n;
+intr:
+	for_each_skbuff_from(ret + 1, skbs, skb, n)
+		kfree_skb(skb);
+
+	__netif_tx_unlock_bh(txq);
+	return ret;
 }
 
 
@@ -328,11 +363,11 @@ int pfq_lazy_xmit(struct gc_buff buff, struct net_device *dev, int hw_queue)
 {
 	struct gc_log *log = PFQ_CB(buff.skb)->log;
 
-       	if (log->num_fwd >= Q_GC_LOG_QUEUE_LEN) {
+	if (log->num_fwd >= Q_GC_LOG_QUEUE_LEN) {
 		if (printk_ratelimit())
-        		printk(KERN_INFO "[PFQ] bridge %s: too many annotation!\n", dev->name);
+			printk(KERN_INFO "[PFQ] bridge %s: too many annotation!\n", dev->name);
 
-        	return 0;
+		return 0;
 	}
 
 	skb_set_queue_mapping(buff.skb, hw_queue);
@@ -376,7 +411,6 @@ int pfq_lazy_queue_xmit_by_mask(struct gc_queue_buff *queue, unsigned long long 
 int pfq_lazy_xmit_exec(struct gc_buff buff)
 {
 	struct gc_log *log = PFQ_CB(buff.skb)->log;
-
 	struct sk_buff *skb;
 
 	int ret = 0, num_fwd, i;

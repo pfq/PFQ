@@ -83,7 +83,7 @@ pfq_skbuff_batch_pop(struct pfq_skbuff_batch *q)
 
 
 static inline
-void pfq_skbuff_batch_flush(struct pfq_skbuff_batch *q)
+void pfq_skbuff_batch_clear(struct pfq_skbuff_batch *q)
 {
         q->len = 0;
 }
