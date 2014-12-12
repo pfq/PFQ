@@ -61,4 +61,10 @@ PFQ 3.8
  * pfq-load utility improved.
  * Bug fixes.
 
+PFQ 4.0
+-------
+ * New APIs for accelerated transmission.
+ * Transparent support of kernel threads.
+ * pcap libraries merged.
+ * Bug fixes.
 

@@ -30,8 +30,8 @@ echo "C++: Q-Lang docs"
 cd ../user && cat ../docs/cpp-lang.doxy | doxygen -
 
 echo "Haskell: library docs" 
-cd ../user/Haskell && runhaskell Setup configure --user && runhaskell Setup build && haddock -h -o ../../docs/api/haskell  -t "PFQ Library v3.8" -p ../../docs/library.haddock Network/PFq.hs
+cd ../user/Haskell && runhaskell Setup configure --user && runhaskell Setup build && haddock -h -o ../../docs/api/haskell  -t "PFQ Library v4.0" -p ../../docs/library.haddock Network/PFq.hs
 cd -
 
 echo "Haskell: Q-Lang docs" 
-cd ../user/Haskell && haddock -h -o ../../docs/lang/haskell -t "PFQ-Lang v3.8" -p ../../docs/lang.haddock Network/PFq/Default.hs Network/PFq/Experimental.hs
+cd ../user/Haskell && haddock -h -o ../../docs/lang/haskell -t "PFQ-Lang v4.0" -p ../../docs/lang.haddock Network/PFq/Default.hs Network/PFq/Experimental.hs
