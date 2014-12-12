@@ -36,11 +36,11 @@
 #include <pf_q-sparse.h>
 #include <pf_q-global.h>
 
-extern int recycle_len;
+extern int skb_pool_size;
 extern struct local_data __percpu * cpu_data;
 
 
-struct pfq_recycle_stat
+struct pfq_skb_pool_stat
 {
         uint64_t        os_alloc;
         uint64_t        os_free;
@@ -55,7 +55,7 @@ struct pfq_recycle_stat
 };
 
 
-extern struct pfq_recycle_stat pfq_get_recycle_stats(void);
+extern struct pfq_skb_pool_stat pfq_get_skb_pool_stats(void);
 
 extern struct sk_buff * __pfq_alloc_skb(unsigned int size, gfp_t priority, int fclone, int node);
 extern struct sk_buff * pfq_dev_alloc_skb(unsigned int length);
@@ -129,12 +129,12 @@ static inline bool pfq_skb_is_recycleable(const struct sk_buff *skb, int skb_siz
 
 
 static inline
-void pfq_kfree_skb_recycle(struct sk_buff *skb, struct pfq_sk_buff_list *list)
+void pfq_kfree_skb_pool(struct sk_buff *skb, struct pfq_sk_buff_list *list)
 {
 #ifdef PFQ_USE_SKB_RECYCLE
 
         if (pfq_skb_is_parkable(skb)) {
-                if (pfq_sk_buff_list_size(list) <= recycle_len) {
+                if (pfq_sk_buff_list_size(list) <= skb_pool_size) {
 
                         if (likely(pfq_sk_buff_queue_head(list, skb))) {
 #ifdef PFQ_USE_EXTENDED_PROC
@@ -228,7 +228,7 @@ struct sk_buff * pfq_netdev_alloc_skb_ip_align(struct net_device *dev, unsigned 
 
 
 static inline
-struct sk_buff * ____pfq_alloc_skb_recycle(unsigned int size, gfp_t priority, int fclone, int node, struct pfq_sk_buff_list *recycle_list)
+struct sk_buff * ____pfq_alloc_skb_pool(unsigned int size, gfp_t priority, int fclone, int node, struct pfq_sk_buff_list *skb_pool_list)
 {
 
 #ifdef PFQ_USE_SKB_RECYCLE
@@ -236,7 +236,7 @@ struct sk_buff * ____pfq_alloc_skb_recycle(unsigned int size, gfp_t priority, in
 
         if (!fclone) {
 
-                skb = pfq_sk_buff_peek_tail(recycle_list);
+                skb = pfq_sk_buff_peek_tail(skb_pool_list);
 
                 if (likely(skb != NULL)) {
                         if (pfq_skb_is_recycleable(skb, size)) {
@@ -244,7 +244,7 @@ struct sk_buff * ____pfq_alloc_skb_recycle(unsigned int size, gfp_t priority, in
 #ifdef PFQ_USE_EXTENDED_PROC
                                         sparse_inc(&memory_stats.rc_alloc);
 #endif
-					pfq_sk_buff_dequeue_tail(recycle_list);
+					pfq_sk_buff_dequeue_tail(skb_pool_list);
                                         return pfq_skb_recycle(skb);
                         }
                 }
@@ -264,17 +264,17 @@ struct sk_buff * ____pfq_alloc_skb_recycle(unsigned int size, gfp_t priority, in
 
 
 static inline
-int pfq_skb_recycle_init(void)
+int pfq_skb_pool_init(void)
 {
         int cpu;
         for_each_possible_cpu(cpu)
         {
                 struct local_data *this_cpu = per_cpu_ptr(cpu_data, cpu);
 
-                if (pfq_sk_buff_list_init(&this_cpu->tx_recycle_list) != 0)
+                if (pfq_sk_buff_list_init(&this_cpu->tx_pool) != 0)
                 	return -ENOMEM;
 
-                if (pfq_sk_buff_list_init(&this_cpu->rx_recycle_list) != 0)
+                if (pfq_sk_buff_list_init(&this_cpu->rx_pool) != 0)
                 	return -ENOMEM;
         }
 
@@ -283,7 +283,7 @@ int pfq_skb_recycle_init(void)
 
 
 static inline
-void pfq_skb_recycle_enable(bool value)
+void pfq_skb_pool_enable(bool value)
 {
         int cpu;
 
@@ -291,25 +291,25 @@ void pfq_skb_recycle_enable(bool value)
         for_each_possible_cpu(cpu)
         {
                 struct local_data *this_cpu = per_cpu_ptr(cpu_data, cpu);
-                atomic_set(&this_cpu->enable_recycle, value);
+                atomic_set(&this_cpu->enable_skb_pool, value);
         }
         smp_wmb();
 }
 
 
 static inline
-int pfq_skb_recycle_purge(void)
+int pfq_skb_pool_purge(void)
 {
         int cpu, total = 0;
         for_each_possible_cpu(cpu)
         {
                 struct local_data *local = per_cpu_ptr(cpu_data, cpu);
 
-                total += pfq_sk_buff_list_size(&local->rx_recycle_list);
-                total += pfq_sk_buff_list_size(&local->tx_recycle_list);
+                total += pfq_sk_buff_list_size(&local->rx_pool);
+                total += pfq_sk_buff_list_size(&local->tx_pool);
 
-                pfq_sk_buff_list_free(&local->rx_recycle_list);
-                pfq_sk_buff_list_free(&local->tx_recycle_list);
+                pfq_sk_buff_list_free(&local->rx_pool);
+                pfq_sk_buff_list_free(&local->tx_pool);
         }
 
 #ifdef PFQ_USE_EXTENDED_PROC
@@ -325,8 +325,8 @@ struct sk_buff * pfq_alloc_skb(unsigned int size, gfp_t priority)
 #ifdef PFQ_USE_SKB_RECYCLE
         struct local_data *this_cpu = __this_cpu_ptr(cpu_data);
 
-        if (atomic_read(&this_cpu->enable_recycle))
-                return ____pfq_alloc_skb_recycle(size, priority, 0, NUMA_NO_NODE, &this_cpu->rx_recycle_list);
+        if (atomic_read(&this_cpu->enable_skb_pool))
+                return ____pfq_alloc_skb_pool(size, priority, 0, NUMA_NO_NODE, &this_cpu->rx_pool);
 
 #ifdef PFQ_USE_EXTENDED_PROC
         sparse_inc(&memory_stats.os_alloc);
@@ -342,8 +342,8 @@ struct sk_buff * pfq_tx_alloc_skb(unsigned int size, gfp_t priority, int node)
 #ifdef PFQ_USE_SKB_RECYCLE
         struct local_data *this_cpu = __this_cpu_ptr(cpu_data);
 
-        if (atomic_read(&this_cpu->enable_recycle))
-                return ____pfq_alloc_skb_recycle(size, priority, 0, node, &this_cpu->tx_recycle_list);
+        if (atomic_read(&this_cpu->enable_skb_pool))
+                return ____pfq_alloc_skb_pool(size, priority, 0, node, &this_cpu->tx_pool);
 
 #ifdef PFQ_USE_EXTENDED_PROC
         sparse_inc(&memory_stats.os_alloc);

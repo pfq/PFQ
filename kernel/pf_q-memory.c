@@ -29,10 +29,10 @@
 #include <pf_q-memory.h>
 #include <pf_q-global.h>
 
-struct pfq_recycle_stat
-pfq_get_recycle_stats(void)
+struct pfq_skb_pool_stat
+pfq_get_skb_pool_stats(void)
 {
-        struct pfq_recycle_stat ret = { sparse_read(&memory_stats.os_alloc),
+        struct pfq_skb_pool_stat ret = { sparse_read(&memory_stats.os_alloc),
                                         sparse_read(&memory_stats.os_free),
                                         sparse_read(&memory_stats.rc_alloc),
                                         sparse_read(&memory_stats.rc_free),
@@ -54,9 +54,9 @@ __pfq_alloc_skb(unsigned int size, gfp_t priority, int fclone, int node)
 #ifdef PFQ_USE_SKB_RECYCLE
         struct local_data *this_cpu = __this_cpu_ptr(cpu_data);
 
-        if (atomic_read(&this_cpu->enable_recycle))
+        if (atomic_read(&this_cpu->enable_skb_pool))
         {
-                return ____pfq_alloc_skb_recycle(size, priority, fclone, node, &this_cpu->rx_recycle_list);
+                return ____pfq_alloc_skb_pool(size, priority, fclone, node, &this_cpu->rx_pool);
         }
 #endif
         return __alloc_skb(size, priority, fclone, node);

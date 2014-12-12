@@ -79,7 +79,6 @@ static struct proto_ops         pfq_ops;
 
 
 MODULE_LICENSE("GPL");
-
 MODULE_AUTHOR("Nicola Bonelli <nicola@pfq.io>");
 
 MODULE_DESCRIPTION("Network Monitoring Framework for Multi-core Architectures");
@@ -95,7 +94,7 @@ module_param(max_queue_slots, int, 0644);
 
 module_param(batch_len,       int, 0644);
 
-module_param(recycle_len,     int, 0644);
+module_param(skb_pool_size,   int, 0644);
 module_param(vl_untag,        int, 0644);
 
 MODULE_PARM_DESC(direct_capture," Direct capture packets: (0 default)");
@@ -108,14 +107,15 @@ MODULE_PARM_DESC(max_len, " Maximum transmission length (bytes)");
 
 MODULE_PARM_DESC(max_queue_slots, " Max Queue slots (default=226144)");
 
-MODULE_PARM_DESC(batch_len,     " Batch queue length");
+MODULE_PARM_DESC(batch_len, " Batch queue length");
 
-MODULE_PARM_DESC(vl_untag,      " Enable vlan untagging (default=0)");
+MODULE_PARM_DESC(vl_untag,  " Enable vlan untagging (default=0)");
 
-#ifdef PFQ_USE_SKB_RECYCLE
-#pragma message "[PFQ] *** using skb recycle ***"
-MODULE_PARM_DESC(recycle_len,   " Recycle skb list (default=4096)");
+#ifndef PFQ_USE_SKB_RECYCLE
+#pragma message "[PFQ] *** using kernel skb allocator ***"
+MODULE_PARM_DESC(skb_pool_size,   " Socket buffer pool size (default=1024)");
 #endif
+
 #ifdef PFQ_USE_EXTENDED_PROC
 #pragma message "[PFQ] *** using extended proc ***"
 #endif
@@ -494,7 +494,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 		/* release this skb */
 
 		if (cb->direct)
-			pfq_kfree_skb_recycle(buff.skb, &local->rx_recycle_list);
+			pfq_kfree_skb_pool(buff.skb, &local->rx_pool);
 		else
 			consume_skb(buff.skb);
         }
@@ -843,9 +843,8 @@ static int __init pfq_init_module(void)
         int n;
         printk(KERN_INFO "[PFQ] loading (%s)...\n", Q_VERSION);
 
-        if (max_queue_slots & (max_queue_slots-1)) {
+        if (max_queue_slots & (max_queue_slots-1))
                 printk(KERN_INFO "[PFQ] max_queue_slots (%d) not a power of 2!\n", max_queue_slots);
-        }
 
         pfq_net_proto_family_init();
         pfq_proto_ops_init();
@@ -856,8 +855,8 @@ static int __init pfq_init_module(void)
                 return -EFAULT;
         }
 
-	if (recycle_len > PFQ_SK_BUFF_LIST_SIZE) {
-                printk(KERN_INFO "[PFQ] recycle_len=%d not allowed: valid range (0,%d]!\n", recycle_len, PFQ_SK_BUFF_LIST_SIZE);
+	if (skb_pool_size > PFQ_SK_BUFF_LIST_SIZE) {
+                printk(KERN_INFO "[PFQ] skb_pool_size=%d not allowed: valid range (0,%d]!\n", skb_pool_size, PFQ_SK_BUFF_LIST_SIZE);
 		return -EFAULT;
 	}
 
@@ -885,12 +884,12 @@ static int __init pfq_init_module(void)
 	pfq_symtable_init();
 
 #ifdef PFQ_USE_SKB_RECYCLE
-        if (pfq_skb_recycle_init() != 0) {
-        	pfq_skb_recycle_purge();
+        if (pfq_skb_pool_init() != 0) {
+        	pfq_skb_pool_purge();
         	return -ENOMEM;
 	}
-        pfq_skb_recycle_enable(true);
-        printk(KERN_INFO "[PFQ] skb recycle initialized.\n");
+        pfq_skb_pool_enable(true);
+        printk(KERN_INFO "[PFQ] skb pool initialized.\n");
 #endif
 
 	printk(KERN_INFO "[PFQ] ready!\n");
@@ -903,7 +902,7 @@ static void __exit pfq_exit_module(void)
         int total = 0;
 
 #ifdef PFQ_USE_SKB_RECYCLE
-        pfq_skb_recycle_enable(false);
+        pfq_skb_pool_enable(false);
 #endif
         /* unregister the basic device handler */
         unregister_device_handler();
@@ -924,7 +923,7 @@ static void __exit pfq_exit_module(void)
         total += pfq_percpu_flush();
 
 #ifdef PFQ_USE_SKB_RECYCLE
-        total += pfq_skb_recycle_purge();
+        total += pfq_skb_pool_purge();
 #endif
         if (total)
                 printk(KERN_INFO "[PFQ] %d skbuff freed.\n", total);

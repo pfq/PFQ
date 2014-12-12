@@ -23,10 +23,10 @@
 
 #include <linux/kernel.h>
 #include <linux/module.h>
-
 #include <linux/types.h>
 
 #include <pf_q-global.h>
+
 
 struct local_data __percpu    * cpu_data;
 
@@ -44,7 +44,7 @@ int batch_len 		= 1;
 
 int vl_untag     	= 0;
 
-int recycle_len  	= 4096;
+int skb_pool_size 	= 4096;
 
 
 struct pfq_global_stats global_stats;

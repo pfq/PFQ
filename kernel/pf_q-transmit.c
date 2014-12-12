@@ -153,14 +153,13 @@ __pfq_tx_queue_flush(size_t qidx, struct pfq_tx_opt *to, struct net_device *dev,
 			   unset packets are transmitted next in the loop
 			 */
 
-
 			pfq_spsc_read_commit_n(txq, drain);
 			drain = 0;
 
 			/* free/recycle the transmitted skb... */
 
 			for_each_skbuff_upto(sent, &skbs, skb, i)
-				pfq_kfree_skb_recycle(skb, &local->tx_recycle_list);
+				pfq_kfree_skb_pool(skb, &local->tx_pool);
 
 			/* ... and drop them from the batch */
 
@@ -222,7 +221,7 @@ __pfq_tx_queue_flush(size_t qidx, struct pfq_tx_opt *to, struct net_device *dev,
 		/* recycle the skbs */
 
 		for_each_skbuff(&skbs, skb, n)
-			pfq_kfree_skb_recycle(skb, &local->tx_recycle_list);
+			pfq_kfree_skb_pool(skb, &local->tx_pool);
 	}
 
 	return tot_sent;

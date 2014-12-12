@@ -44,10 +44,10 @@ struct local_data
 
 	struct gc_data 		gc;	/* garbage collector */
 
-        atomic_t                enable_recycle;
+        atomic_t                enable_skb_pool;
 
-        struct pfq_sk_buff_list tx_recycle_list;
-        struct pfq_sk_buff_list rx_recycle_list;
+        struct pfq_sk_buff_list tx_pool;
+        struct pfq_sk_buff_list rx_pool;
 
 } ____cacheline_aligned;
 
