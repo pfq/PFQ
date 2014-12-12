@@ -29,7 +29,7 @@ void send_packets(pfq::socket &q, int64_t num)
 {
     for(int64_t n = 0; n < num;)
     {
-        if (q.send(pfq::const_buffer(reinterpret_cast<const char *>(ping), sizeof(ping)), 128))
+        if (q.send_async(pfq::const_buffer(reinterpret_cast<const char *>(ping), sizeof(ping)), 128))
             n++;
     }
 

@@ -28,7 +28,7 @@ void send_packets(pfq_t *q, unsigned long long num)
         unsigned long long n;
         for(n = 0; n < num;)
         {
-                if (pfq_send(q, ping, sizeof(ping), 128))
+                if (pfq_send_async(q, ping, sizeof(ping), 128))
 			n++;
         }
 
