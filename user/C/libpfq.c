@@ -1070,9 +1070,7 @@ pfq_send_async(pfq_t *q, const void *ptr, size_t len, size_t flush_hint)
 {
         int rc = pfq_inject(q, ptr, len, Q_ANY_QUEUE);
 
-	q->tx_attempt++;
-
-	if (q->tx_attempt == flush_hint) {
+	if (++q->tx_attempt == flush_hint) {
 
        		q->tx_attempt = 0;
 

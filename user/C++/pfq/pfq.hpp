@@ -1221,7 +1221,7 @@ namespace pfq {
 
         //! Inject the packet and transmit the packets in the queue, asynchronously.
         /*!
-         * The transmission is invoked every flush_hint packets. @flush_int 1 means
+         * The transmission is invoked every flush_hint packets. @flush_hint 1 means
          * synchronous transmission.  When kernel threads are in use, @batch_len can be 0.
          */
 
@@ -1230,9 +1230,7 @@ namespace pfq {
         {
             auto rc = inject(pkt);
 
-            data_->tx_attempt++;
-
-            if (data_->tx_attempt == flush_hint) {
+            if (++data_->tx_attempt == flush_hint) {
 
                 data_->tx_attempt = 0;
 
