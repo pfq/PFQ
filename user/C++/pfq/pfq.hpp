@@ -161,10 +161,11 @@ namespace pfq {
 
             size_t tx_slots;
             size_t tx_slot_size;
-            size_t tx_batch_count;
 
+            size_t tx_attempt;
             size_t tx_num_bind;
-            bool   tx_last_inject;
+
+            bool   tx_async;
         };
 
         int fd_;
@@ -391,7 +392,7 @@ namespace pfq {
                                         0,
                                         0,
                                         0,
-                                        false
+                                        true
                                        });
 
             // get id
@@ -1180,6 +1181,9 @@ namespace pfq {
             if (::setsockopt(fd_, PF_Q, Q_SO_TX_BIND, &b, sizeof(b)) == -1)
                 throw pfq_error(errno, "PFQ: Tx bind error");
 
+            if (core == no_kthread)
+                data_->tx_async = false;
+
             data_->tx_num_bind++;
         }
 
@@ -1194,41 +1198,47 @@ namespace pfq {
             if (::setsockopt(fd_, PF_Q, Q_SO_TX_UNBIND, nullptr, 0) == -1)
                 throw pfq_error(errno, "PFQ: Tx unbind error");
 
+            data_->tx_async = true;
             data_->tx_num_bind = 0;
         }
 
+
+        //! Inject the packet and transmit the packet, synchronously.
+        /*!
+         * The transmission is invoked after the packet is injected.
+         */
+
+        bool
+        send(const_buffer pkt)
+        {
+            auto rc = inject(pkt);
+
+            tx_queue_flush();
+
+            return rc;
+        }
+
+
         //! Inject the packet and transmit the packets in the queue, asynchronously.
         /*!
-         * The transmission is invoked every batch_len packets. @batch_len 1 means
+         * The transmission is invoked every flush_hint packets. @flush_int 1 means
          * synchronous transmission.  When kernel threads are in use, @batch_len can be 0.
          */
 
         bool
-        send(const_buffer pkt, size_t batch_len = 1)
+        send_async(const_buffer pkt, size_t flush_hint = 1)
         {
-            bool flush = false;
             auto rc = inject(pkt);
 
-            data_->tx_batch_count++;
+            data_->tx_attempt++;
 
-            if (rc) {
-                data_->tx_last_inject = true;
-                if (data_->tx_batch_count == batch_len) {
-                    data_->tx_batch_count = 0;
-                    flush = true;
-                }
-            }
-            else {
-                if (data_->tx_last_inject || data_->tx_batch_count == batch_len) {
-                    data_->tx_batch_count = 0;
-                    flush = true;
-                }
+            if (data_->tx_attempt == flush_hint) {
 
-                data_->tx_last_inject = false;
-            }
+                data_->tx_attempt = 0;
 
-            if (batch_len && flush)
+                if (!data_->tx_async)
                     tx_queue_flush(any_queue);
+            }
 
             return rc;
         }

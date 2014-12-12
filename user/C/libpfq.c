@@ -146,10 +146,11 @@ typedef struct pfq_data
 
         size_t tx_slots;
 	size_t tx_slot_size;
-	size_t tx_batch_count;
+
+	size_t tx_attempt;
 	size_t tx_num_bind;
 
-	int    tx_last_inject;
+	int    tx_async;
 
 	const char * error;
 
@@ -225,9 +226,10 @@ pfq_open_group(unsigned long class_mask, int group_policy, size_t caplen, size_t
 
 	memset(q, 0, sizeof(pfq_t));
 
-	q->fd 	= fd;
-	q->id 	= -1;
-	q->gid 	= -1;
+	q->fd 	    = fd;
+	q->id 	    = -1;
+	q->gid 	    = -1;
+        q->tx_async =  1;
 
         memset(&q->netq, 0, sizeof(q->netq));
 
@@ -979,6 +981,9 @@ pfq_bind_tx(pfq_t *q, const char *dev, int queue, int core)
         if (setsockopt(q->fd, PF_Q, Q_SO_TX_BIND, &b, sizeof(b)) == -1)
 		return Q_ERROR(q, "PFQ: Tx bind error");
 
+	if (core == Q_NO_KTHREAD)
+		q->tx_async = 0;
+
 	q->tx_num_bind++;
 
 	return Q_OK(q);
@@ -990,6 +995,9 @@ pfq_unbind_tx(pfq_t *q)
 {
         if (setsockopt(q->fd, PF_Q, Q_SO_TX_UNBIND, NULL, 0) == -1)
 		return Q_ERROR(q, "PFQ: Tx unbind error");
+
+	q->tx_async = 1;
+	q->tx_num_bind = 0;
 
 	return Q_OK(q);
 }
@@ -1047,33 +1055,32 @@ pfq_tx_queue_flush(pfq_t *q, int queue)
 
 
 int
-pfq_send(pfq_t *q, const void *ptr, size_t len, size_t batch_len)
+pfq_send(pfq_t *q, const void *ptr, size_t len)
 {
         int rc = pfq_inject(q, ptr, len, Q_ANY_QUEUE);
-        int do_flush = 0;
 
-	q->tx_batch_count++;
+	pfq_tx_queue_flush(q, Q_ANY_QUEUE);
 
-	if (rc > 0) {
-		q->tx_last_inject = 1;
+	return Q_VALUE(q, rc);
+}
 
-        	if (q->tx_batch_count == batch_len) {
-                	q->tx_batch_count = 0;
-                	do_flush = 1;
-		}
+
+int
+pfq_send_async(pfq_t *q, const void *ptr, size_t len, size_t flush_hint)
+{
+        int rc = pfq_inject(q, ptr, len, Q_ANY_QUEUE);
+
+	q->tx_attempt++;
+
+	if (q->tx_attempt == flush_hint) {
+
+       		q->tx_attempt = 0;
+
+       		if (!q->tx_async)
+       			pfq_tx_queue_flush(q, Q_ANY_QUEUE);
 	}
-	else {
-       		if (q->tx_last_inject || q->tx_batch_count == batch_len) {
-       			q->tx_batch_count = 0;
-       			do_flush = 1;
-		}
-		q->tx_last_inject = 0;
-	}
 
-	if (batch_len && do_flush)
-		pfq_tx_queue_flush(q, Q_ANY_QUEUE);
-
-        return rc;
+	return Q_VALUE(q, rc);
 }
 
 

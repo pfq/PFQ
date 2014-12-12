@@ -522,12 +522,20 @@ extern int pfq_tx_queue_flush(pfq_t *q, int queue);
 extern int pfq_inject(pfq_t *q, const void *ptr, size_t len, int queue);
 
 
+/*! Transmit the packets in the queue, synchronously. */
+/*!
+ * The transmission is invoked immediately.
+ */
+
+extern int pfq_send(pfq_t *q, const void *ptr, size_t len);
+
+
 /*! Transmit the packets in the queue, possibly asynchronously. */
 /*!
  * The transmission is invoked in the kernel thread, every n packets enqueued.
  */
 
-extern int pfq_send(pfq_t *q, const void *ptr, size_t len, size_t batch_len);
+extern int pfq_send_async(pfq_t *q, const void *ptr, size_t len, size_t flush_hint);
 
 
 #endif /* _PFQ_H_ */

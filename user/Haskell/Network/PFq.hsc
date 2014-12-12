@@ -139,6 +139,7 @@ module Network.PFq
         inject,
 
         send,
+        sendAsync,
 
         getTxSlots,
         setTxSlots,
@@ -1008,17 +1009,28 @@ inject hdl xs queue =
         liftM (> 0) $ pfq_inject hdl p (fromIntegral l) (fromIntegral queue) >>= throwPFqIf hdl (== -1)
 
 
+-- |Store and transmit the packets in the queue, synchronously.
+--
+-- The transmission is invoked immediately.
+
+send :: Ptr PFqTag
+          -> C.ByteString  -- ^ bytes of packet
+          -> IO Bool
+send hdl xs =
+    unsafeUseAsCStringLen xs $ \(p, l) ->
+        liftM (>0) $ pfq_send hdl p (fromIntegral l) >>= throwPFqIf hdl (== -1)
+
 -- |Store and transmit the packets in the queue, possibly asynchronously.
 --
 -- The transmission is invoked by the kernel thread, every n packets enqueued.
 
-send :: Ptr PFqTag
+sendAsync :: Ptr PFqTag
           -> C.ByteString  -- ^ bytes of packet
-          -> Int           -- ^ length of the batch
+          -> Int           -- ^ flush hint
           -> IO Bool
-send hdl xs blen =
+sendAsync hdl xs fh =
     unsafeUseAsCStringLen xs $ \(p, l) ->
-        liftM (>0) $ pfq_send hdl p (fromIntegral l) (fromIntegral blen) >>= throwPFqIf hdl (== -1)
+        liftM (>0) $ pfq_send_async hdl p (fromIntegral l) (fromIntegral fh) >>= throwPFqIf hdl (== -1)
 
 
 -- C functions from libpfq
@@ -1089,7 +1101,9 @@ foreign import ccall unsafe pfq_vlan_reset_filter   :: Ptr PFqTag -> CInt -> CIn
 foreign import ccall unsafe pfq_bind_tx             :: Ptr PFqTag -> CString -> CInt -> CInt -> IO CInt
 foreign import ccall unsafe pfq_unbind_tx           :: Ptr PFqTag -> IO CInt
 
-foreign import ccall unsafe pfq_send                :: Ptr PFqTag -> Ptr CChar -> CSize -> CSize -> IO CInt
+foreign import ccall unsafe pfq_send                :: Ptr PFqTag -> Ptr CChar -> CSize -> IO CInt
+foreign import ccall unsafe pfq_send_async          :: Ptr PFqTag -> Ptr CChar -> CSize -> CSize -> IO CInt
+
 foreign import ccall unsafe pfq_inject              :: Ptr PFqTag -> Ptr CChar -> CSize -> CInt -> IO CInt
 foreign import ccall unsafe pfq_tx_queue_flush      :: Ptr PFqTag -> CInt -> IO CInt
 
