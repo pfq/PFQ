@@ -235,7 +235,8 @@ struct pcap_opt {
 
 		int rx_slots;
 		int tx_slots;
-		int tx_batch;
+
+		int tx_flush;
 
 		int tx_queue[4];
 		int tx_task[4];

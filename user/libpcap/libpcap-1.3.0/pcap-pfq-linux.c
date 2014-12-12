@@ -497,9 +497,9 @@ pfq_getenv(pcap_t *handle)
        		.caplen   = handle->snapshot,
        		.rx_slots = 4096,
 		.tx_slots = 4096,
+		.tx_flush = 1,
 		.tx_queue = {-1, -1, -1, -1},
 		.tx_task  = { Q_NO_KTHREAD, Q_NO_KTHREAD, Q_NO_KTHREAD, Q_NO_KTHREAD },
-		.tx_batch =  0,
 		.vlan     = NULL,
 		.comp     = NULL
 	};
@@ -512,8 +512,9 @@ pfq_getenv(pcap_t *handle)
 		rc.rx_slots = atoi(opt);
 	if ((opt = getenv("PFQ_TX_SLOTS")))
 		rc.tx_slots = atoi(opt);
-	if ((opt = getenv("PFQ_TX_BATCH")))
-		rc.tx_batch = atoi(opt);
+	if ((opt = getenv("PFQ_TX_FLUSH")))
+		rc.tx_flush = atoi(opt);
+
 	if ((opt = getenv("PFQ_VLAN")))
 		rc.vlan = opt;
 	if ((opt = getenv("PFQ_COMPUTATION")))
@@ -548,15 +549,16 @@ pfq_parse_filename(const char *device)
 
 #define KEY(value) [KEY_ ## value] = # value
 
-#define KEY_ERR 	      	-1
+#define KEY_ERR 	       -1
 #define KEY_group 	       	0
 #define KEY_caplen 	    	1
 #define KEY_rx_slots		2
-#define KEY_tx_slots             3
-#define KEY_tx_queue 		4
-#define KEY_tx_task 		5
-#define KEY_vlan 		6
-#define KEY_computation 	7
+#define KEY_tx_slots            3
+#define KEY_tx_flush 		4
+#define KEY_tx_queue 		5
+#define KEY_tx_task 		6
+#define KEY_vlan 		7
+#define KEY_computation 	8
 
 
 struct pfq_conf_key {
@@ -568,6 +570,7 @@ struct pfq_conf_key {
 	KEY(rx_slots),
 	KEY(tx_slots),
 	KEY(tx_queue),
+	KEY(tx_flush),
 	KEY(tx_task),
 	KEY(vlan),
 	KEY(computation)
@@ -628,6 +631,7 @@ pfq_parse_config(struct pfq_opt *opt, const char *filename)
 				case KEY_caplen:	opt->caplen 	= atoi(value);  break;
 				case KEY_rx_slots: 	opt->rx_slots 	= atoi(value);  break;
 				case KEY_tx_slots:	opt->tx_slots 	= atoi(value);  break;
+				case KEY_tx_flush:	opt->tx_flush   = atoi(value);  break;
 				case KEY_tx_queue:  {
 					if (pfq_parse_integers(opt->tx_queue, 4, value) < 0) {
 						fprintf(stderr, "[PFQ] %s: parse error at: %s\n", filename, tkey);
@@ -709,12 +713,12 @@ pfq_activate_linux(pcap_t *handle)
 		else device = colon;
 	}
 
-        fprintf(stderr, "[PFQ] buffer_size = %d caplen = %d, rx_slots = %d, tx_slots = %d, tx_batch = %d\n",
+        fprintf(stderr, "[PFQ] buffer_size = %d caplen = %d, rx_slots = %d, tx_slots = %d, tx_flush = %d\n",
         		handle->opt.buffer_size,
         		handle->opt.pfq.caplen,
         		handle->opt.pfq.rx_slots,
         		handle->opt.pfq.tx_slots,
-        		handle->opt.pfq.tx_batch);
+        		handle->opt.pfq.tx_flush);
 
 	handle->read_op 		= pfq_read_linux;
 	handle->inject_op 		= pfq_inject_linux;
@@ -996,7 +1000,7 @@ fail:
 static int
 pfq_inject_linux(pcap_t *handle, const void * buf, size_t size)
 {
-	int ret = pfq_send(handle->md.pfq.q, buf, size, handle->opt.pfq.tx_batch);
+	int ret = pfq_send_async(handle->md.pfq.q, buf, size, handle->opt.pfq.tx_flush);
 	if (ret == -1) {
 		/* snprintf(handle->errbuf, PCAP_ERRBUF_SIZE, "%s", pfq_error(handle->md.pfq.q)); */
 		return PCAP_ERROR;
