@@ -141,17 +141,18 @@ __pfq_tx_queue_flush(size_t qidx, struct pfq_tx_opt *to, struct net_device *dev,
 	{
 		/* if the batch is full, transmit it */
 
-		if (pfq_skbuff_batch_len(&skbs) == batch_len)
-		{
+		if (pfq_skbuff_batch_len(&skbs) == batch_len) {
+
 			int sent, i;
 
 			sent = __pfq_tx_queue_xmit(qidx, &skbs, dev, to, cpu, local);
+
+			tot_sent += sent;
 
 			/* commit the slots of *all* packets in the batch:
 			   unset packets are transmitted next in the loop
 			 */
 
-			tot_sent += sent;
 
 			pfq_spsc_read_commit_n(txq, drain);
 			drain = 0;
@@ -170,10 +171,7 @@ __pfq_tx_queue_flush(size_t qidx, struct pfq_tx_opt *to, struct net_device *dev,
 			for_each_skbuff(&skbs, skb, i)
 				skb_get(skb);
 		}
-
-
-		if (pfq_skbuff_batch_len(&skbs) != batch_len)
-		{
+		else {
 			h = (struct pfq_pkt_hdr *) (to->queue[qidx].base_addr + index * txq->slot_size);
 
 			skb = pfq_tx_alloc_skb(to->maxlen, GFP_KERNEL, node);
@@ -202,7 +200,6 @@ __pfq_tx_queue_flush(size_t qidx, struct pfq_tx_opt *to, struct net_device *dev,
 			/* enqueue the skb to the batch */
 
 			pfq_skbuff_batch_push(&skbs, skb);
-
 			drain++;
 
 			/* get the index... */
@@ -210,7 +207,6 @@ __pfq_tx_queue_flush(size_t qidx, struct pfq_tx_opt *to, struct net_device *dev,
 			index = pfq_spsc_next_index(txq, index);
 		}
 	}
-
 
 	if (pfq_skbuff_batch_len(&skbs)) {
 
