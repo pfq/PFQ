@@ -70,13 +70,12 @@ char *make_packet(size_t n)
 
 namespace opt
 {
-    size_t batch   = 0;
+    size_t flush   = 1;
     size_t len     = 64;
     size_t slots   = 4096;
     bool   async   = false;
     bool   rand_ip = false;
-
-    char *packet = nullptr;
+    char *packet   = nullptr;
 }
 
 
@@ -138,7 +137,7 @@ namespace thread
                     ip->daddr = static_cast<uint32_t>(m_gen());
                 }
 
-                if (m_pfq.send_async(pfq::const_buffer(reinterpret_cast<const char *>(opt::packet), opt::len), opt::batch))
+                if (m_pfq.send_async(pfq::const_buffer(reinterpret_cast<const char *>(opt::packet), opt::len), opt::flush))
                     m_sent->fetch_add(1, std::memory_order_relaxed);
                 else
                     m_fail->fetch_add(1, std::memory_order_relaxed);
@@ -238,7 +237,7 @@ void usage(std::string name)
         " -s --queue-slots INT          Set tx queue lenght\n"
         " -a --async                    Async with kernel threads\n"
         " -R --rand-ip                  Randomize IP addresses\n"
-        " -b --batch-sync INT           Set batch len, used in sync tx\n"
+        " -f --flush INT                Set flush len, used in async tx\n"
         " -t --thread BINDING\n\n"
         "      BINDING = " + pfq::binding_format
     );
@@ -258,15 +257,15 @@ try
 
     for(int i = 1; i < argc; ++i)
     {
-        if ( any_strcmp(argv[i], "-b", "--batch") )
+        if ( any_strcmp(argv[i], "-f", "--flush") )
         {
             i++;
             if (i == argc)
             {
-                throw std::runtime_error("batch length missing");
+                throw std::runtime_error("hint missing");
             }
 
-            opt::batch = static_cast<size_t>(std::atoi(argv[i]));
+            opt::flush = static_cast<size_t>(std::atoi(argv[i]));
             continue;
         }
 
@@ -324,19 +323,13 @@ try
         throw std::runtime_error(std::string("pfq-gen: ") + argv[i] + " unknown option");
     }
 
-    if (opt::async && opt::batch) {
-        std::cout << vt100::BOLD << "In async mode, batch forced to 0!" << vt100::RESET << std::endl;
-        opt::batch = 0;
-    }
 
-    if (!opt::async && !opt::batch) {
-        opt::batch = 128;
-        std::cout << vt100::BOLD << "Sync mode, batch set to 128 (by default)." << vt100::RESET << std::endl;
-    }
+    std::cout << "async      : "  << std::boolalpha << opt::async << std::endl;
+    std::cout << "rand_ip    : "  << std::boolalpha << opt::rand_ip << std::endl;
+    std::cout << "len        : "  << opt::len << std::endl;
 
-    std::cout << "async   : "  << std::boolalpha << opt::async << std::endl;
-    std::cout << "rand_ip : "  << std::boolalpha << opt::rand_ip << std::endl;
-    std::cout << "len     : "  << opt::len << std::endl;
+    if (!opt::async)
+        std::cout << "flush-hint : "  << opt::flush << std::endl;
 
     if (opt::slots == 0)
         throw std::runtime_error("tx_slots set to 0!");
