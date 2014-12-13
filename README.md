@@ -15,22 +15,23 @@ from their source codes.
 
 The framework enables the development of high-performance networking applications 
 with different languages (i.e. C, C++ and Haskell). In addition, a new functional language 
-designed for software defined monitoring and networking is included: PFQ-lang.
+designed for software defined monitoring and networking is included: PFQ/lang.
 
 The package provides the source code of the PFQ kernel module, user-space libraries 
-for C, C++11 and Haskell languages, PFQ-lang implemented as eDSL and a set of diagnostic tools.
+for C, C++11 and Haskell languages, PFQ/lang implemented as eDSL and a set of diagnostic tools.
 
 Features
 --------
 
 * 10-Gbit Line-rate (14,8Mpps) with Intel ixgbe vanilla driver.
+* Transparent support of multiple kernel threads for packets transmission.
 * Socket groups allow for concurrent monitoring of multi-threaded applications.
 * Per-group packet steering through randomized hashing algorithms or deterministic classifications.
 * Per-group Berkeley filters and per-group VLAN filters.
 * Extensible framework for in-kernel functional monitoring: PFQ-Lang. 
 * User-space native bindings for C, C++11 and Haskell languages.
 * pfq-omatic, a script that allows to compile drivers and get the accelerated versions.
-* Accelerated pcap library.
+* Accelerated pcap library for both packet capture and transmission.
 
 Publications
 ------------
