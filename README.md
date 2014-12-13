@@ -28,7 +28,7 @@ Features
 * Socket groups allow for concurrent monitoring of multi-threaded applications.
 * Per-group packet steering through randomized hashing algorithms or deterministic classifications.
 * Per-group Berkeley filters and per-group VLAN filters.
-* Extensible framework for in-kernel functional monitoring: PFQ-Lang. 
+* Extensible framework for in-kernel functional monitoring: PFQ/lang. 
 * User-space native bindings for C, C++11 and Haskell languages.
 * pfq-omatic, a script that allows to compile drivers and get the accelerated versions.
 * Accelerated pcap library for both packet capture and transmission.
