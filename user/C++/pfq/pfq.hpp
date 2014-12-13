@@ -202,7 +202,9 @@ namespace pfq {
 
         //! Constructor
         /*!
-         * Create a PFQ socket and join a new group.
+         * Create a socket and join a new private group.
+         * The default values for class mask and group policy are class_mask::default_ and
+         * group_policy::priv, respectively.
          */
 
         socket(size_t caplen, size_t rx_slots = 65536, size_t maxlen = 64, size_t tx_slots = 4096)
@@ -214,7 +216,8 @@ namespace pfq {
 
         //! Constructor
         /*!
-         * Create a PFQ socket with the given group policy (default class).
+         * Create a socket with the given group policy.
+         * The default class used is class_mask::default_.
          */
 
         socket(group_policy policy, size_t caplen, size_t rx_slots = 65536, size_t maxlen = 64, size_t tx_slots = 4096)
@@ -226,7 +229,8 @@ namespace pfq {
 
         //! Constructor
         /*!
-         * Create a PFQ socket with the given class mask and group policy.
+         * Create a socket with the given class mask and group policy.
+         * All the possible parameters are specifiable.
          */
 
         socket(class_mask mask, group_policy policy, size_t caplen, size_t rx_slots = 65536, size_t maxlen = 64, size_t tx_slots = 4096)
@@ -275,7 +279,7 @@ namespace pfq {
             return *this;
         }
 
-        //! Swap two PFQ sockets.
+        //! Swap two sockets.
 
         void
         swap(socket &other)
@@ -284,7 +288,7 @@ namespace pfq {
             std::swap(data_, other.data_);
         }
 
-        //! Open the PFQ socket with the given group policy.
+        //! Open the socket with the given group policy.
         /*!
          * If the policy is not group_policy::undefined, also join a
          * new group with class_mask::default_ and the given policy.
@@ -301,7 +305,7 @@ namespace pfq {
             }
         }
 
-        //! Open the PFQ socket with the given class mask and group policy.
+        //! Open the socket with the given class mask and group policy.
         /*!
          * If the policy is not group_policy::undefined, also join a
          * new group with the specified class mask and group policy.
@@ -317,6 +321,7 @@ namespace pfq {
                 data_->gid = this->join_group(any_group, policy, mask);
             }
         }
+
 
         //! Open the socket with named-parameter idiom.
 
@@ -335,7 +340,7 @@ namespace pfq {
                        param::get<param::tx_slots>(def).value);
         }
 
-        //! Return the id for the socket.
+        //! Return the id of the socket.
 
         int
         id() const
@@ -345,7 +350,7 @@ namespace pfq {
             return -1;
         }
 
-        //! Return the group-id for the socket.
+        //! Return the group-id of the socket.
 
         int
         group_id() const
@@ -449,7 +454,7 @@ namespace pfq {
             }
         }
 
-        //! Enable the socket for packet capture.
+        //! Enable the socket for packets capture and transmission.
 
         void
         enable()
@@ -479,7 +484,10 @@ namespace pfq {
             data_->tx_queue_size = data_->tx_slots * data_->tx_slot_size;
         }
 
-        //! Disable the packet capture.
+        //! Disable the socket.
+        /*!
+         * Release the shared memory, stop kernel threads.
+         */
 
         void
         disable()
@@ -497,7 +505,7 @@ namespace pfq {
                 throw pfq_error(errno, "PFQ: socket disable");
         }
 
-        //! Check whether the packet capture is enabled.
+        //! Check whether the socket capture is enabled.
 
         bool
         enabled() const
@@ -523,7 +531,7 @@ namespace pfq {
                 throw pfq_error(errno, "PFQ: set timestamp mode");
         }
 
-        //! Check whether the timestamping is enabled for packets.
+        //! Check whether the timestamping for packets is enabled.
 
         bool
         timestamp_enabled() const
@@ -591,8 +599,8 @@ namespace pfq {
 
         //! Specify the length of the Rx queue, in number of packets.
         /*!
-         * The number of Rx slots can't exceed the max value specified by
-         * the rx_queue_slot kernel module parameter.
+         * The number of Rx slots can't exceed the value specified by
+         * the max_queue_slot kernel module parameter.
          */
 
         void
@@ -619,10 +627,21 @@ namespace pfq {
             return data_->rx_slots;
         }
 
+        //! Return the length of a Rx slot, in bytes.
+
+        size_t
+        rx_slot_size() const
+        {
+            if (!data_)
+                throw pfq_error("PFQ: socket not open");
+
+            return data_->rx_slot_size;
+        }
+
         //! Specify the length of the Tx queue, in number of packets.
         /*!
-         * The number of Tx slots can't exceed the max value specified by
-         * the tx_queue_slot kernel module parameter.
+         * The number of Tx slots can't exceed the value specified by
+         * the max_queue_slot kernel module parameter.
          */
 
         void
@@ -649,16 +668,6 @@ namespace pfq {
            return data_->tx_slots;
         }
 
-        //! Return the length of a Rx slot, in bytes.
-
-        size_t
-        rx_slot_size() const
-        {
-            if (!data_)
-                throw pfq_error("PFQ: socket not open");
-
-            return data_->rx_slot_size;
-        }
 
         //! Bind the main group of the socket to the given device/queue.
         /*!
@@ -732,7 +741,7 @@ namespace pfq {
                 throw pfq_error(errno, "PFQ: unbind error");
         }
 
-        //! Mark the socket as egress and bind it to the given device/queue.
+        //! Set the socket as egress and bind it to the given device/queue.
         /*!
          * The egress socket will be used within the capture groups as forwarder.
          */
@@ -756,7 +765,7 @@ namespace pfq {
 
         }
 
-        //! Unmark the socket as egress.
+        //! Unset the socket as egress.
 
         void
         egress_unbind()
@@ -764,6 +773,48 @@ namespace pfq {
             if (::setsockopt(fd_, PF_Q, Q_SO_EGRESS_UNBIND, 0, 0) == -1)
                 throw pfq_error(errno, "PFQ: egress unbind error");
         }
+
+
+        //! Bind the socket for transmission to the given device name and queue.
+        /*!
+         *  A socket can be bound up to a maximum number of queues.
+         *  The core parameter specifies the CPU index where to run a
+         *  kernel thread (unless no_kthread id is specified).
+         */
+
+        void
+        bind_tx(const char *dev, int queue = any_queue, int core = no_kthread)
+        {
+            auto index = ifindex(this->fd(), dev);
+            if (index == -1)
+                throw pfq_error("PFQ: device not found");
+
+            struct pfq_binding b = { {core}, index, queue };
+
+            if (::setsockopt(fd_, PF_Q, Q_SO_TX_BIND, &b, sizeof(b)) == -1)
+                throw pfq_error(errno, "PFQ: Tx bind error");
+
+            if (core == no_kthread)
+                data_->tx_async = false;
+
+            data_->tx_num_bind++;
+        }
+
+        //! Unbind the socket transmission.
+        /*!
+         * Unbind the socket for transmission from any device/queue.
+         */
+
+        void
+        unbind_tx()
+        {
+            if (::setsockopt(fd_, PF_Q, Q_SO_TX_UNBIND, nullptr, 0) == -1)
+                throw pfq_error(errno, "PFQ: Tx unbind error");
+
+            data_->tx_async = true;
+            data_->tx_num_bind = 0;
+        }
+
 
         //! Return the mask of the joined groups.
         /*!
@@ -800,7 +851,7 @@ namespace pfq {
 
         //! Specify a functional computation for the given group.
         /*!
-         * The functional computation is specified by the eDSL pfq-lang.
+         * The functional computation is specified as a PFQ/lang expression.
          */
 
         template <typename Comp>
@@ -852,8 +903,8 @@ namespace pfq {
 
         //! Specify a functional computation for the given group, from string.
         /*!
-         * This function is experimental and is limited to simple functional computations.
-         * Only the composition of monadic functions without binding arguments are supported.
+         * This function is limited to simple PFQ/lang functional computations.
+         * Only the composition of monadic functions without arguments are supported.
          */
 
         void
@@ -874,7 +925,7 @@ namespace pfq {
         //! Specify a BPF program for the given group.
         /*!
          * This function can be used to set a specific BPF filter for the group.
-         * It is used by the pfq pcap library.
+         * It is used by the PFQ/pcap library.
          */
 
         void
@@ -896,6 +947,7 @@ namespace pfq {
             if (::setsockopt(fd_, PF_Q, Q_SO_GROUP_FPROG, &fprog, sizeof(fprog)) == -1)
                 throw pfq_error(errno, "PFQ: reset group fprog error");
         }
+
 
         //! Join the given group.
         /*!
@@ -922,7 +974,7 @@ namespace pfq {
             return group.gid;
         }
 
-        //! Leave the given group.
+        //! Leave the group specified by the group id.
 
         void
         leave_group(int gid)
@@ -962,7 +1014,7 @@ namespace pfq {
 
         //! Read packets in place.
         /*!
-         * Wait for packets to read and return a queue descriptor.
+         * Wait for packets and return a queue descriptor.
          * Packets are stored in the memory mapped queue of the socket.
          * The timeout is specified in microseconds.
          */
@@ -1007,7 +1059,8 @@ namespace pfq {
 
         //! Receive packets in the given mutable buffer.
         /*!
-         * Wait for packets and return a queue descriptor. Packets are stored in the given mutable buffer.
+         * Wait for packets and return a queue descriptor.
+         * Packets are stored in the given mutable buffer.
          * It is possible to specify a timeout in microseconds.
          */
 
@@ -1026,9 +1079,11 @@ namespace pfq {
             return queue(buff.first, this_queue.slot_size(), this_queue.size(), this_queue.index());
         }
 
-        //! This function takes an instance of a callable type which is invoked on each packet captured.
-        /*!
-         * The object must provide the following callable signature:
+
+        //! Collect and process packets.
+
+        /*! The function takes an instance of a callable type.
+         * The object must have the following callable signature:
          *
          * typedef void (*pfq_handler)(char *user, const struct pfq_pkt_hdr *h, const char *data);
          */
@@ -1105,7 +1160,7 @@ namespace pfq {
             });
         }
 
-        //! Return the socket stats.
+        //! Return the socket statistics.
 
         pfq_stats
         stats() const
@@ -1117,7 +1172,7 @@ namespace pfq {
             return stat;
         }
 
-        //! Return the stats of the given group.
+        //! Return the statistics of the given group.
 
         pfq_stats
         group_stats(int gid) const
@@ -1130,7 +1185,7 @@ namespace pfq {
             return stat;
         }
 
-        //! Return the counters of the given group.
+        //! Return the set of counters of the given group.
 
         std::vector<unsigned long>
         group_counters(int gid) const
@@ -1164,65 +1219,26 @@ namespace pfq {
             return nullptr;
         }
 
-        //! Bind the socket for transmission to the given device name and queue.
+
+        //! Store the packet and transmit the packets in the queue, synchronously.
         /*!
-         * A socket for transmission can be bound up to the max. number of logic queues.
-         */
-
-        void
-        bind_tx(const char *dev, int queue = any_queue, int core = no_kthread)
-        {
-            auto index = ifindex(this->fd(), dev);
-            if (index == -1)
-                throw pfq_error("PFQ: device not found");
-
-            struct pfq_binding b = { {core}, index, queue };
-
-            if (::setsockopt(fd_, PF_Q, Q_SO_TX_BIND, &b, sizeof(b)) == -1)
-                throw pfq_error(errno, "PFQ: Tx bind error");
-
-            if (core == no_kthread)
-                data_->tx_async = false;
-
-            data_->tx_num_bind++;
-        }
-
-        //! Unbind the socket transmission.
-        /*!
-         * Unbind the socket for transmission from any device/queue.
-         */
-
-        void
-        unbind_tx()
-        {
-            if (::setsockopt(fd_, PF_Q, Q_SO_TX_UNBIND, nullptr, 0) == -1)
-                throw pfq_error(errno, "PFQ: Tx unbind error");
-
-            data_->tx_async = true;
-            data_->tx_num_bind = 0;
-        }
-
-
-        //! Inject the packet and transmit the packet, synchronously.
-        /*!
-         * The transmission is invoked after the packet is injected.
+         * The queue is flushed (if required) and the transmission takes place.
          */
 
         bool
         send(const_buffer pkt)
         {
             auto rc = inject(pkt);
-
-            tx_queue_flush();
-
+            if (!data_->tx_async)
+                tx_queue_flush();
             return rc;
         }
 
 
-        //! Inject the packet and transmit the packets in the queue, asynchronously.
+        //! Store the packet and transmit the packets in the queue, asynchronously.
         /*!
-         * The transmission is invoked every flush_hint packets. @flush_hint 1 means
-         * synchronous transmission.  When kernel threads are in use, @batch_len can be 0.
+         * The transmission is invoked every @flush_hint packets.
+         * When kernel threads are in use, @flush_hint is ignored.
          */
 
         bool
@@ -1243,8 +1259,8 @@ namespace pfq {
 
         //! Schedule the packet for transmission.
         /*!
-         * The packet is injected into the Tx queue and later sent when
-         * the tx_queue_flush function is invoked.
+         * The packet is copied into a Tx queue (according to a symmetric hash)
+         * and transmitted by a kernel thread, or when tx_queue_flush is called.
          */
 
         bool
@@ -1281,9 +1297,11 @@ namespace pfq {
             return true;
         }
 
-        //! Flush the Tx queue, in the context of the thread or
-        //! wakeup kernel thread(s).
+
+        //! Flush the Tx queue(s).
         /*!
+         * Transmit the packets in the queues associated with the socket.
+         * No flush is required for queues with kernel threads enabled.
          */
 
         void
