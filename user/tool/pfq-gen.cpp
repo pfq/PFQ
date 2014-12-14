@@ -101,7 +101,7 @@ namespace thread
             auto q = pfq::socket(param::list, param::maxlen{opt::len},
                                               param::tx_slots{opt::slots});
 
-            std::cout << "thread  : " << id << " -> "  << show_binding(m_bind) << std::endl;
+            std::cout << "thread     : " << id << " -> "  << show_binding(m_bind) << std::endl;
 
             if (m_bind.queue.size())
             {
@@ -345,7 +345,7 @@ try
         {
             auto num_queues = get_num_queues(binding[i].dev.at(0).c_str());
 
-            std::cout << "device  : " << binding[i].dev.at(0) << ", " << num_queues << " queues detected." << std::endl;
+            std::cout << "device     : " << binding[i].dev.at(0) << ", " << num_queues << " queues detected." << std::endl;
 
             for(size_t n = 0; n < num_queues; ++n)
             {
