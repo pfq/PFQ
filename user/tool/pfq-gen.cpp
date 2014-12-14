@@ -259,8 +259,7 @@ try
     {
         if ( any_strcmp(argv[i], "-f", "--flush") )
         {
-            i++;
-            if (i == argc)
+            if (++i == argc)
             {
                 throw std::runtime_error("hint missing");
             }
@@ -271,8 +270,7 @@ try
 
         if ( any_strcmp(argv[i], "-l", "--len") )
         {
-            i++;
-            if (i == argc)
+            if (++i == argc)
             {
                 throw std::runtime_error("length missing");
             }
@@ -283,8 +281,7 @@ try
 
         if ( any_strcmp(argv[i], "-s", "--slots") )
         {
-            i++;
-            if (i == argc)
+            if (++i == argc)
             {
                 throw std::runtime_error("slots missing");
             }
@@ -307,8 +304,7 @@ try
 
         if ( any_strcmp(argv[i], "-t", "--thread") )
         {
-            i++;
-            if (i == argc)
+            if (++i == argc)
             {
                 throw std::runtime_error("binding missing");
             }
