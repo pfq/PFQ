@@ -55,10 +55,10 @@
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-#define Assert(...)                     XPASTE(YATS_ASSERT_       ,PP_NARG(__VA_ARGS__)) ( __VA_ARGS__)
-#define AssertThrow(...)                XPASTE(YATS_ASSERT_THROW_ ,PP_NARG(__VA_ARGS__)) ( __VA_ARGS__)
+#define Assert(...)                     YATS_XPASTE(YATS_ASSERT_       , YATS_PP_NARG(__VA_ARGS__)) ( __VA_ARGS__)
+#define AssertThrow(...)                YATS_XPASTE(YATS_ASSERT_THROW_ , YATS_PP_NARG(__VA_ARGS__)) ( __VA_ARGS__)
 #define AssertNoThrow(value)            YATS_ASSERT_NOTHROW(value)
-#define StaticError(expr,msg)           XPASTE(YATS_STATIC_ERROR_, __COUNTER__) (expr,msg)
+#define StaticError(expr,msg)           YATS_XPASTE(YATS_STATIC_ERROR_, __COUNTER__) (expr,msg)
 
 
 #define Context(ctx) \
@@ -85,26 +85,24 @@
 
 
 #define Random(name, ...) \
-    void random_ ## name(const char *, FOR_EACH(DIST_RES_TYPE,__VA_ARGS__)); \
-    yats::task_register rhook_ ## name(yats::extended_tag(), (yats::RandTask<decltype(RandomEngine), FOR_EACH(DIST_TYPE, __VA_ARGS__)>\
-                                                              (random_ ## name, RandomEngine, FOR_EACH(DIST_INSTANCE, __VA_ARGS__))), \
+    void random_ ## name(const char *, YATS_FOR_EACH(YATS_DIST_RES_TYPE,__VA_ARGS__)); \
+    yats::task_register rhook_ ## name(yats::extended_tag(), (yats::RandTask<decltype(RandomEngine), YATS_FOR_EACH(YATS_DIST_TYPE, __VA_ARGS__)>\
+                                                              (random_ ## name, RandomEngine, YATS_FOR_EACH(YATS_DIST_INSTANCE, __VA_ARGS__))), \
                                          yats::task_register::type::random, _context_name, #name); \
-    void random_ ## name(const char *_test_name __attribute__((unused)), FOR_EACH(DIST_RES_ARGT,__VA_ARGS__))
+    void random_ ## name(const char *_test_name __attribute__((unused)), YATS_FOR_EACH(YATS_DIST_RES_ARGT,__VA_ARGS__))
 
 
 ///////////////////////////////////////////////////////////////////////////////////////////////////////
-
 
 /* the so-called __VA_NARG__ (PP_NARG) macro from the thread at
    http://groups.google.com/group/comp.std.c/browse_frm/thread/77ee8c8f92e4a3fb
  */
 
-#ifndef PP_NARG
-#define PP_NARG(...) \
-         PP_NARG_(__VA_ARGS__,PP_RSEQ_N())
-#define PP_NARG_(...) \
-         PP_ARG_N(__VA_ARGS__)
-#define PP_ARG_N( \
+#define YATS_PP_NARG(...) \
+         YATS_PP_NARG_(__VA_ARGS__,YATS_PP_RSEQ_N())
+#define YATS_PP_NARG_(...) \
+         YATS_PP_ARG_N(__VA_ARGS__)
+#define YATS_PP_ARG_N( \
           _1, _2, _3, _4, _5, _6, _7, _8, _9,_10, \
          _11,_12,_13,_14,_15,_16,_17,_18,_19,_20, \
          _21,_22,_23,_24,_25,_26,_27,_28,_29,_30, \
@@ -113,7 +111,7 @@
          _51,_52,_53,_54,_55,_56,_57,_58,_59,_60, \
          _61,_62,_63,N,...) N
 
-#define PP_RSEQ_N() \
+#define YATS_PP_RSEQ_N() \
          63,62,61,60,                   \
          59,58,57,56,55,54,53,52,51,50, \
          49,48,47,46,45,44,43,42,41,40, \
@@ -121,34 +119,30 @@
          29,28,27,26,25,24,23,22,21,20, \
          19,18,17,16,15,14,13,12,11,10, \
          9,8,7,6,5,4,3,2,1,0
-#endif
 
-#ifndef PASTE
-#define PASTE(a,b)      a ## b
-#define XPASTE(a,b)     PASTE(a,b)
-#endif
+#define YATS_PASTE(a,b)         a ## b
+#define YATS_XPASTE(a,b)        YATS_PASTE(a,b)
+#define YATS_UNPACK_ARGS(...)   __VA_ARGS__
+#define YATS_UNPACK(x)          YATS_UNPACK_ARGS x
+#define YATS_APPLY(f, ...)      f(__VA_ARGS__)
 
-#define UNPACK_ARGS(...)    __VA_ARGS__
-#define UNPACK(x)           UNPACK_ARGS x
-#define APPLY(f, ...)       f(__VA_ARGS__)
+#define YATS_FOR_EACH_1(f, x)        YATS_APPLY(f,YATS_UNPACK(x))
+#define YATS_FOR_EACH_2(f, x, ...)   YATS_APPLY(f,YATS_UNPACK(x)) , YATS_FOR_EACH_1(f, __VA_ARGS__)
+#define YATS_FOR_EACH_3(f, x, ...)   YATS_APPLY(f,YATS_UNPACK(x)) , YATS_FOR_EACH_2(f, __VA_ARGS__)
+#define YATS_FOR_EACH_4(f, x, ...)   YATS_APPLY(f,YATS_UNPACK(x)) , YATS_FOR_EACH_3(f, __VA_ARGS__)
+#define YATS_FOR_EACH_5(f, x, ...)   YATS_APPLY(f,YATS_UNPACK(x)) , YATS_FOR_EACH_4(f, __VA_ARGS__)
+#define YATS_FOR_EACH_6(f, x, ...)   YATS_APPLY(f,YATS_UNPACK(x)) , YATS_FOR_EACH_5(f, __VA_ARGS__)
+#define YATS_FOR_EACH_7(f, x, ...)   YATS_APPLY(f,YATS_UNPACK(x)) , YATS_FOR_EACH_6(f, __VA_ARGS__)
+#define YATS_FOR_EACH_8(f, x, ...)   YATS_APPLY(f,YATS_UNPACK(x)) , YATS_FOR_EACH_7(f, __VA_ARGS__)
+#define YATS_FOR_EACH_9(f, x, ...)   YATS_APPLY(f,YATS_UNPACK(x)) , YATS_FOR_EACH_8(f, __VA_ARGS__)
+#define YATS_FOR_EACH_10(f, x, ...)  YATS_APPLY(f,YATS_UNPACK(x)) , YATS_FOR_EACH_9(f, __VA_ARGS__)
+#define YATS_FOR_EACH(f, ...)        YATS_XPASTE(YATS_FOR_EACH_, YATS_PP_NARG(__VA_ARGS__))(f, __VA_ARGS__)
 
-#define FOR_EACH_1(f, x)        APPLY(f,UNPACK(x))
-#define FOR_EACH_2(f, x, ...)   APPLY(f,UNPACK(x)) , FOR_EACH_1(f, __VA_ARGS__)
-#define FOR_EACH_3(f, x, ...)   APPLY(f,UNPACK(x)) , FOR_EACH_2(f, __VA_ARGS__)
-#define FOR_EACH_4(f, x, ...)   APPLY(f,UNPACK(x)) , FOR_EACH_3(f, __VA_ARGS__)
-#define FOR_EACH_5(f, x, ...)   APPLY(f,UNPACK(x)) , FOR_EACH_4(f, __VA_ARGS__)
-#define FOR_EACH_6(f, x, ...)   APPLY(f,UNPACK(x)) , FOR_EACH_5(f, __VA_ARGS__)
-#define FOR_EACH_7(f, x, ...)   APPLY(f,UNPACK(x)) , FOR_EACH_6(f, __VA_ARGS__)
-#define FOR_EACH_8(f, x, ...)   APPLY(f,UNPACK(x)) , FOR_EACH_7(f, __VA_ARGS__)
-#define FOR_EACH_9(f, x, ...)   APPLY(f,UNPACK(x)) , FOR_EACH_8(f, __VA_ARGS__)
-#define FOR_EACH_10(f, x, ...)  APPLY(f,UNPACK(x)) , FOR_EACH_9(f, __VA_ARGS__)
-#define FOR_EACH(f, ...)        XPASTE(FOR_EACH_, PP_NARG(__VA_ARGS__))(f, __VA_ARGS__)
-
-#define DIST_TYPE(dist, name, ...)        dist
-#define DIST_ARG_NAME(dist, name, ...)    name
-#define DIST_RES_TYPE(dist, name, ...)    dist::result_type
-#define DIST_RES_ARGT(dist, name, ...)    dist::result_type name
-#define DIST_INSTANCE(dist, name, ...)    dist(__VA_ARGS__)
+#define YATS_DIST_TYPE(dist, name, ...)        dist
+#define YATS_DIST_ARG_NAME(dist, name, ...)    name
+#define YATS_DIST_RES_TYPE(dist, name, ...)    dist::result_type
+#define YATS_DIST_RES_ARGT(dist, name, ...)    dist::result_type name
+#define YATS_DIST_INSTANCE(dist, name, ...)    dist(__VA_ARGS__)
 
 #define YATS_HEADER(ctx,test,file,line) file, ':', line, ": *** ", ctx, "::", test, ":\n"
 
@@ -218,9 +212,6 @@
 #else
 #define YATS_STATIC_ERROR_9(expr,msg)
 #endif
-
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
 inline namespace yats
@@ -608,13 +599,14 @@ inline namespace yats
 
                         if (run_test.empty())
                             return ctx.second->task_list_.size();
-
-                        else return std::count_if (std::begin(ctx.second->task_list_),
+                        else
+                            return static_cast<size_t>(
+                                std::count_if (std::begin(ctx.second->task_list_),
                                        std::end(ctx.second->task_list_),
                                        [&] (std::pair<context::Task,std::string> const &elem) -> bool {
 
                                             return std::find(std::begin(run_test), std::end(run_test), elem.second) != std::end(run_test);
-                                       });
+                                       }));
                         }();
         }
 
