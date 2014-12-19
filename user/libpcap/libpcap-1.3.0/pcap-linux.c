@@ -452,7 +452,19 @@ pcap_create(const char *device, char *ebuf)
 #endif
 
 #ifdef PCAP_SUPPORT_PFQ
-	if (strstr(device, "pfq") || getenv("PFQ_CONFIG"))
+	if (strstr(device, "pfq") 	||
+	    getenv("PFQ_CONFIG")  	||
+	    getenv("PFQ_GROUP")	  	||
+	    getenv("PFQ_CAPLEN")  	||
+	    getenv("PFQ_GENLEN")  	||
+	    getenv("PFQ_RX_SLOTS")	||
+	    getenv("PFQ_TX_SLOTS")	||
+	    getenv("PFQ_TX_FLUSH")	||
+	    getenv("PFQ_TX_QUEUE") 	||
+	    getenv("PFQ_TX_TASK") 	||
+	    getenv("PFQ_COMPUTATION") 	||
+	    getenv("PFQ_VLAN")
+	   )
 		return pfq_create(device, ebuf);
 #endif
 
