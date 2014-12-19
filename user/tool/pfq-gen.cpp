@@ -33,6 +33,8 @@
 #include <vt100.hpp>
 
 
+#include <pcap/pcap.h>
+
 using namespace pfq;
 
 
@@ -76,6 +78,9 @@ namespace opt
     bool   async   = false;
     bool   rand_ip = false;
     char *packet   = nullptr;
+
+    std::string file;
+    char errbuf[PCAP_ERRBUF_SIZE];
 }
 
 
@@ -127,6 +132,27 @@ namespace thread
 
         void operator()()
         {
+            if (opt::file.empty())
+                synt_generator();
+            else
+                pcap_generator();
+        }
+
+        std::tuple<pfq_stats, uint64_t, uint64_t>
+        stats() const
+        {
+            pfq_stats ret = {0,0,0,0,0,0,0};
+
+            ret += m_pfq.stats();
+
+            return std::make_tuple(ret, m_sent->load(std::memory_order_relaxed),
+                                        m_fail->load(std::memory_order_relaxed));
+        }
+
+    private:
+
+        void synt_generator()
+        {
             auto ip = reinterpret_cast<iphdr *>(opt::packet + 14);
 
             for(;;)
@@ -144,18 +170,44 @@ namespace thread
             }
         }
 
-        std::tuple<pfq_stats, uint64_t, uint64_t>
-        stats() const
+
+        void pcap_generator()
         {
-            pfq_stats ret = {0,0,0,0,0,0,0};
+            struct pcap_pkthdr *hdr;
+            u_char *data;
 
-            ret += m_pfq.stats();
+            auto p = pcap_open_offline(opt::file.c_str(), opt::errbuf);
+            if (p == nullptr)
+                throw std::runtime_error("pcap_open_offline:" + std::string(opt::errbuf));
 
-            return std::make_tuple(ret, m_sent->load(std::memory_order_relaxed),
-                                        m_fail->load(std::memory_order_relaxed));
+
+            for(;;)
+            {
+                auto n = pcap_next_ex(p, &hdr, (u_char const **)&data);
+
+                if (n == -2)
+                    break;
+                else if (n == 1) {
+
+                    auto ip = reinterpret_cast<iphdr *>(data + 14);
+
+                    if (opt::rand_ip)
+                    {
+                        ip->saddr = static_cast<uint32_t>(m_gen());
+                        ip->daddr = static_cast<uint32_t>(m_gen());
+                    }
+
+                    if (m_pfq.send_async(pfq::const_buffer(reinterpret_cast<const char *>(data), std::min<size_t>(hdr->caplen, opt::len)), opt::flush))
+                        m_sent->fetch_add(1, std::memory_order_relaxed);
+                    else
+                        m_fail->fetch_add(1, std::memory_order_relaxed);
+                }
+            }
+
+
         }
 
-    private:
+
         int m_id;
         int m_kcpu;
 
@@ -236,6 +288,7 @@ void usage(std::string name)
         " -l --len INT                  Set packet lenght\n"
         " -s --queue-slots INT          Set tx queue lenght\n"
         " -a --async                    Async with kernel threads\n"
+        " -r --read FILE                Read trace to send from pcap\n"
         " -R --rand-ip                  Randomize IP addresses\n"
         " -f --flush INT                Set flush len, used in async tx\n"
         " -t --thread BINDING\n\n"
@@ -257,6 +310,17 @@ try
 
     for(int i = 1; i < argc; ++i)
     {
+        if ( any_strcmp(argv[i], "-r", "--read") )
+        {
+            if (++i == argc)
+            {
+                throw std::runtime_error("pcap file missing");
+            }
+
+            opt::file = argv[i];
+            continue;
+        }
+
         if ( any_strcmp(argv[i], "-f", "--flush") )
         {
             if (++i == argc)
