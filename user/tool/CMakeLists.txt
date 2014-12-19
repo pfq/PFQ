@@ -15,6 +15,6 @@ add_executable(pfq-bridge pfq-bridge.cpp)
 
 target_link_libraries(pfq-counters -pthread)
 target_link_libraries(pfq-histogram -pthread)
-target_link_libraries(pfq-gen -pthread)
+target_link_libraries(pfq-gen -pthread -lpcap)
 target_link_libraries(pfq-lang -pthread)
 target_link_libraries(pfq-bridge -pthread)

@@ -73,7 +73,7 @@ char *make_packet(size_t n)
 namespace opt
 {
     size_t flush   = 1;
-    size_t len     = 64;
+    size_t len     = 1514;
     size_t slots   = 4096;
     bool   async   = false;
     bool   rand_ip = false;
@@ -94,6 +94,7 @@ namespace thread
         , m_bind(b)
         , m_pfq()
         , m_sent(std::unique_ptr<std::atomic_ullong>(new std::atomic_ullong(0)))
+        , m_band(std::unique_ptr<std::atomic_ullong>(new std::atomic_ullong(0)))
         , m_fail(std::unique_ptr<std::atomic_ullong>(new std::atomic_ullong(0)))
         , m_gen()
         {
@@ -138,7 +139,7 @@ namespace thread
                 pcap_generator();
         }
 
-        std::tuple<pfq_stats, uint64_t, uint64_t>
+        std::tuple<pfq_stats, uint64_t, uint64_t, uint64_t>
         stats() const
         {
             pfq_stats ret = {0,0,0,0,0,0,0};
@@ -146,6 +147,7 @@ namespace thread
             ret += m_pfq.stats();
 
             return std::make_tuple(ret, m_sent->load(std::memory_order_relaxed),
+                                        m_band->load(std::memory_order_relaxed),
                                         m_fail->load(std::memory_order_relaxed));
         }
 
@@ -164,7 +166,10 @@ namespace thread
                 }
 
                 if (m_pfq.send_async(pfq::const_buffer(reinterpret_cast<const char *>(opt::packet), opt::len), opt::flush))
+                {
                     m_sent->fetch_add(1, std::memory_order_relaxed);
+                    m_band->fetch_add(opt::len, std::memory_order_relaxed);
+                }
                 else
                     m_fail->fetch_add(1, std::memory_order_relaxed);
             }
@@ -187,6 +192,7 @@ namespace thread
 
                 if (n == -2)
                     break;
+
                 else if (n == 1) {
 
                     auto ip = reinterpret_cast<iphdr *>(data + 14);
@@ -197,14 +203,17 @@ namespace thread
                         ip->daddr = static_cast<uint32_t>(m_gen());
                     }
 
-                    if (m_pfq.send_async(pfq::const_buffer(reinterpret_cast<const char *>(data), std::min<size_t>(hdr->caplen, opt::len)), opt::flush))
+                    auto len = std::min<size_t>(hdr->caplen, opt::len);
+
+                    if (m_pfq.send_async(pfq::const_buffer(reinterpret_cast<const char *>(data), len), opt::flush))
+                    {
                         m_sent->fetch_add(1, std::memory_order_relaxed);
+                        m_band->fetch_add(len, std::memory_order_relaxed);
+                    }
                     else
                         m_fail->fetch_add(1, std::memory_order_relaxed);
                 }
             }
-
-
         }
 
 
@@ -216,6 +225,7 @@ namespace thread
         pfq::socket m_pfq;
 
         std::unique_ptr<std::atomic_ullong> m_sent;
+        std::unique_ptr<std::atomic_ullong> m_band;
         std::unique_ptr<std::atomic_ullong> m_fail;
 
         std::mt19937 m_gen;
@@ -451,8 +461,10 @@ try
 
     });
 
-    pfq_stats cur, prec = {0,0,0,0,0,0,0};
+     pfq_stats cur, prec = {0,0,0,0,0,0,0};
+
     uint64_t sent, sent_ = 0;
+    uint64_t band, band_ = 0;
     uint64_t fail, fail_ = 0;
 
     std::cout << "------------ gen started ------------\n";
@@ -465,6 +477,7 @@ try
 
         cur = {0,0,0,0,0,0,0};
         sent = 0;
+        band = 0;
         fail = 0;
 
         std::for_each(thread_ctx.begin(), thread_ctx.end(), [&](const thread::context *c)
@@ -473,20 +486,25 @@ try
 
             cur  += std::get<0>(p);
             sent += std::get<1>(p);
-            fail += std::get<2>(p);
+            band += std::get<2>(p);
+            fail += std::get<3>(p);
         });
 
         auto end   = std::chrono::system_clock::now();
         auto delta = end-begin;
 
         std::cout << "stats: { " << cur << " } -> user: { "
-                  << vt100::BOLD << persecond<int64_t>(sent - sent_, delta) << ' ' << persecond<int64_t>(fail-fail_, delta) << vt100::RESET << " } - "
+                  << vt100::BOLD
+                  << persecond<int64_t>(sent - sent_, delta)            << ' '
+                  << persecond<int64_t>(fail-fail_, delta)              << ' '
+                  << pretty(persecond<double>((band-band_)*8, delta))  << "bit/sec "
+                  << vt100::RESET << " } - "
                   << "sent: " << vt100::BOLD << persecond<int64_t>(cur.sent - prec.sent, delta) << vt100::RESET << " pkt/sec - "
-                  << "band: " << vt100::BOLD << pretty(persecond<double>((cur.sent - prec.sent) * opt::len * 8, delta)) << vt100::RESET << "bit/sec - "
                   << "disc: " << vt100::BOLD << persecond<int64_t>(cur.disc - prec.disc, delta) << vt100::RESET << " pkt/sec" << std::endl;
 
         prec = cur, begin = end;
         sent_ = sent;
+        band_ = band;
         fail_ = fail;
     }
 
