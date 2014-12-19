@@ -3,11 +3,12 @@ cmake_minimum_required(VERSION 2.8)
 include(${CMAKE_CURRENT_SOURCE_DIR}/../common/CMakeLists.txt)
 
 include_directories(../../kernel)
-include_directories(../../user/C++)
-include_directories(../../user/C)
-include_directories(../common)
 
-link_directories(../../user/C)
+include_directories(../C++)
+include_directories(../C)
+include_directories(../common/lib)
+
+link_directories(../C)
 
 # C++11 tests
 

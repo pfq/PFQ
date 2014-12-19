@@ -25,8 +25,8 @@
  *  WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE.
  *
  *  Modifications:     Added PACKET_MMAP support
- *                     Paolo Abeni <paolo.abeni@email.it> 
- *                     
+ *                     Paolo Abeni <paolo.abeni@email.it>
+ *
  *                     based on previous works of:
  *                     Simon Patarin <patarin@cs.unibo.it>
  *                     Phil Wood <cpw@lanl.gov>
@@ -45,7 +45,7 @@
  * modification, are permitted provided that the following conditions
  * are met:
  * 1. Redistributions of source code must retain the above copyright
- *    notice, this list of conditions and the following disclaimer. 
+ *    notice, this list of conditions and the following disclaimer.
  * 2. Redistributions in binary form must reproduce the above copyright
  *    notice, this list of conditions and the following disclaimer in the
  *    documentation and/or other materials provided with the distribution.
@@ -54,12 +54,12 @@
  *
  * THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR
  * IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES
- * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.  
+ * OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED.
  * IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT,
  * INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING,
  * BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
  * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED
- * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, 
+ * AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
  * OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF
  * SUCH DAMAGE.
@@ -224,7 +224,7 @@ static const char rcsid[] _U_ =
 # endif /* PACKET_HOST */
 
 
- /* check for memory mapped access avaibility. We assume every needed 
+ /* check for memory mapped access avaibility. We assume every needed
   * struct is defined if the macro TPACKET_HDRLEN is defined, because it
   * uses many ring related structs and macros */
 # ifdef TPACKET_HDRLEN
@@ -452,7 +452,19 @@ pcap_create(const char *device, char *ebuf)
 #endif
 
 #ifdef PCAP_SUPPORT_PFQ
-	if (strstr(device, "pfq"))
+	if (strstr(device, "pfq") 	||
+	    getenv("PFQ_CONFIG")  	||
+	    getenv("PFQ_GROUP")	  	||
+	    getenv("PFQ_CAPLEN")  	||
+	    getenv("PFQ_GENLEN")  	||
+	    getenv("PFQ_RX_SLOTS")	||
+	    getenv("PFQ_TX_SLOTS")	||
+	    getenv("PFQ_TX_FLUSH")	||
+	    getenv("PFQ_TX_QUEUE") 	||
+	    getenv("PFQ_TX_TASK") 	||
+	    getenv("PFQ_COMPUTATION") 	||
+	    getenv("PFQ_VLAN")
+	   )
 		return pfq_create(device, ebuf);
 #endif
 
@@ -1037,7 +1049,7 @@ linux_if_drops(const char * if_name)
 	FILE * file;
 	int field_to_convert = 3, if_name_sz = strlen(if_name);
 	long int dropped_pkts = 0;
-	
+
 	file = fopen("/proc/net/dev", "r");
 	if (!file)
 		return 0;
@@ -1052,7 +1064,7 @@ linux_if_drops(const char * if_name)
 			field_to_convert = 4;
 			continue;
 		}
-	
+
 		/* find iface and make sure it actually matches -- space before the name and : after it */
 		if ((bufptr = strstr(buffer, if_name)) &&
 			(bufptr == buffer || *(bufptr-1) == ' ') &&
@@ -1066,20 +1078,20 @@ linux_if_drops(const char * if_name)
 				while (*bufptr != '\0' && *(bufptr++) == ' ');
 				while (*bufptr != '\0' && *(bufptr++) != ' ');
 			}
-			
+
 			/* get rid of any final spaces */
 			while (*bufptr != '\0' && *bufptr == ' ') bufptr++;
-			
+
 			if (*bufptr != '\0')
 				dropped_pkts = strtol(bufptr, NULL, 10);
 
 			break;
 		}
 	}
-	
+
 	fclose(file);
 	return dropped_pkts;
-} 
+}
 
 
 /*
@@ -1296,9 +1308,9 @@ pcap_activate_linux(pcap_t *handle)
 			 pcap_strerror(errno) );
 		return PCAP_ERROR;
 	}
-	
+
 	/*
-	 * If we're in promiscuous mode, then we probably want 
+	 * If we're in promiscuous mode, then we probably want
 	 * to see when the interface drops packets too, so get an
 	 * initial count from /proc/net/dev
 	 */
@@ -1805,7 +1817,7 @@ pcap_inject_linux(pcap_t *handle, const void *buf, size_t size)
 		return (-1);
 	}
 	return (ret);
-}                           
+}
 
 /*
  *  Get the statistics for the given packet capture handle.
@@ -1824,8 +1836,8 @@ pcap_stats_linux(pcap_t *handle, struct pcap_stat *stats)
 #endif
 
 	long if_dropped = 0;
-	
-	/* 
+
+	/*
 	 *	To fill in ps_ifdrop, we parse /proc/net/dev for the number
 	 */
 	if (handle->opt.promisc)
@@ -1855,7 +1867,7 @@ pcap_stats_linux(pcap_t *handle, struct pcap_stat *stats)
 		 *	dropped by the interface driver.  It counts only
 		 *	packets that passed the filter.
 		 *
-		 *	See above for ps_ifdrop. 
+		 *	See above for ps_ifdrop.
 		 *
 		 *	Both statistics include packets not yet read from
 		 *	the kernel by libpcap, and thus not yet seen by
@@ -1884,7 +1896,7 @@ pcap_stats_linux(pcap_t *handle, struct pcap_stat *stats)
 		 * "tp_packets" as the count of packets and "tp_drops"
 		 * as the count of drops.
 		 *
-		 * Keep a running total because each call to 
+		 * Keep a running total because each call to
 		 *    getsockopt(handle->fd, SOL_PACKET, PACKET_STATISTICS, ....
 		 * resets the counters to zero.
 		 */
@@ -1930,10 +1942,10 @@ pcap_stats_linux(pcap_t *handle, struct pcap_stat *stats)
 	 * We maintain the count of packets processed by libpcap in
 	 * "md.packets_read", for reasons described in the comment
 	 * at the end of pcap_read_packet().  We have no idea how many
-	 * packets were dropped by the kernel buffers -- but we know 
+	 * packets were dropped by the kernel buffers -- but we know
 	 * how many the interface dropped, so we can return that.
 	 */
-	 
+
 	stats->ps_recv = handle->md.packets_read;
 	stats->ps_drop = 0;
 	stats->ps_ifdrop = handle->md.stat.ps_ifdrop;
@@ -3215,7 +3227,7 @@ activate_new(pcap_t *handle)
  * On error, returns -1, and sets *status to the appropriate error code;
  * if that is PCAP_ERROR, sets handle->errbuf to the appropriate message.
  */
-static int 
+static int
 activate_mmap(pcap_t *handle, int *status)
 {
 	int ret;
@@ -3280,7 +3292,7 @@ activate_mmap(pcap_t *handle, int *status)
 	return 1;
 }
 #else /* HAVE_PACKET_RING */
-static int 
+static int
 activate_mmap(pcap_t *handle _U_, int *status _U_)
 {
 	return 0;
@@ -3420,7 +3432,7 @@ create_ring(pcap_t *handle, int *status)
 				frame_size = mtu + 18;
 		}
 	}
-	
+
 	/* NOTE: calculus matching those in tpacket_rcv()
 	 * in linux-2.6/net/packet/af_packet.c
 	 */
@@ -3480,12 +3492,12 @@ create_ring(pcap_t *handle, int *status)
 	req.tp_frame_size = TPACKET_ALIGN(macoff + frame_size);
 	req.tp_frame_nr = handle->opt.buffer_size/req.tp_frame_size;
 
-	/* compute the minumum block size that will handle this frame. 
-	 * The block has to be page size aligned. 
-	 * The max block size allowed by the kernel is arch-dependent and 
+	/* compute the minumum block size that will handle this frame.
+	 * The block has to be page size aligned.
+	 * The max block size allowed by the kernel is arch-dependent and
 	 * it's not explicitly checked here. */
 	req.tp_block_size = getpagesize();
-	while (req.tp_block_size < req.tp_frame_size) 
+	while (req.tp_block_size < req.tp_frame_size)
 		req.tp_block_size <<= 1;
 
 	frames_per_block = req.tp_block_size/req.tp_frame_size;
@@ -3583,8 +3595,8 @@ create_ring(pcap_t *handle, int *status)
 			}
 			if (setsockopt(handle->fd, SOL_PACKET, PACKET_TIMESTAMP,
 				(void *)&timesource, sizeof(timesource))) {
-				snprintf(handle->errbuf, PCAP_ERRBUF_SIZE, 
-					"can't set PACKET_TIMESTAMP: %s", 
+				snprintf(handle->errbuf, PCAP_ERRBUF_SIZE,
+					"can't set PACKET_TIMESTAMP: %s",
 					pcap_strerror(errno));
 				*status = PCAP_ERROR;
 				return -1;
@@ -3599,7 +3611,7 @@ retry:
 
 	/* req.tp_frame_nr is requested to match frames_per_block*req.tp_block_nr */
 	req.tp_frame_nr = req.tp_block_nr * frames_per_block;
-	
+
 	if (setsockopt(handle->fd, SOL_PACKET, PACKET_RX_RING,
 					(void *) &req, sizeof(req))) {
 		if ((errno == ENOMEM) && (req.tp_block_nr > 1)) {
@@ -3718,7 +3730,7 @@ pcap_oneshot_mmap(u_char *user, const struct pcap_pkthdr *h,
 	memcpy(sp->pd->md.oneshot_buffer, bytes, h->caplen);
 	*sp->pkt = sp->pd->md.oneshot_buffer;
 }
-    
+
 static void
 pcap_cleanup_linux_mmap( pcap_t *handle )
 {
@@ -3741,7 +3753,7 @@ pcap_getnonblock_mmap(pcap_t *p, char *errbuf)
 static int
 pcap_setnonblock_mmap(pcap_t *p, int nonblock, char *errbuf)
 {
-	/* map each value to the corresponding 2's complement, to 
+	/* map each value to the corresponding 2's complement, to
 	 * preserve the timeout value provided with pcap_set_timeout */
 	if (nonblock) {
 		if (p->md.timeout >= 0) {
@@ -3795,7 +3807,7 @@ pcap_get_ring_frame(pcap_t *handle, int status)
 #endif
 
 static int
-pcap_read_linux_mmap(pcap_t *handle, int max_packets, pcap_handler callback, 
+pcap_read_linux_mmap(pcap_t *handle, int max_packets, pcap_handler callback,
 		u_char *user)
 {
 	int timeout;
@@ -3819,7 +3831,7 @@ pcap_read_linux_mmap(pcap_t *handle, int max_packets, pcap_handler callback,
 		do {
 			ret = poll(&pollinfo, 1, timeout);
 			if (ret < 0 && errno != EINTR) {
-				snprintf(handle->errbuf, PCAP_ERRBUF_SIZE, 
+				snprintf(handle->errbuf, PCAP_ERRBUF_SIZE,
 					"can't poll on packet socket: %s",
 					pcap_strerror(errno));
 				return PCAP_ERROR;
@@ -3862,7 +3874,7 @@ pcap_read_linux_mmap(pcap_t *handle, int max_packets, pcap_handler callback,
 							"The interface went down");
 					} else {
 						snprintf(handle->errbuf,
-							PCAP_ERRBUF_SIZE, 
+							PCAP_ERRBUF_SIZE,
 							"Error condition on packet socket: %s",
 							strerror(errno));
 					}
@@ -3870,7 +3882,7 @@ pcap_read_linux_mmap(pcap_t *handle, int max_packets, pcap_handler callback,
 				}
 				if (pollinfo.revents & POLLNVAL) {
 					snprintf(handle->errbuf,
-						PCAP_ERRBUF_SIZE, 
+						PCAP_ERRBUF_SIZE,
 						"Invalid polling request on packet socket");
 					return PCAP_ERROR;
 				}
@@ -3883,7 +3895,7 @@ pcap_read_linux_mmap(pcap_t *handle, int max_packets, pcap_handler callback,
 		} while (ret < 0);
 	}
 
-	/* non-positive values of max_packets are used to require all 
+	/* non-positive values of max_packets are used to require all
 	 * packets currently available in the ring */
 	while ((pkts < max_packets) || (max_packets <= 0)) {
 		int run_bpf;
@@ -3919,33 +3931,33 @@ pcap_read_linux_mmap(pcap_t *handle, int max_packets, pcap_handler callback,
 			break;
 #endif
 		default:
-			snprintf(handle->errbuf, PCAP_ERRBUF_SIZE, 
+			snprintf(handle->errbuf, PCAP_ERRBUF_SIZE,
 				"unsupported tpacket version %d",
 				handle->md.tp_version);
 			return -1;
 		}
 		/* perform sanity check on internal offset. */
 		if (tp_mac + tp_snaplen > handle->bufsize) {
-			snprintf(handle->errbuf, PCAP_ERRBUF_SIZE, 
+			snprintf(handle->errbuf, PCAP_ERRBUF_SIZE,
 				"corrupted frame on kernel ring mac "
-				"offset %d + caplen %d > frame len %d", 
+				"offset %d + caplen %d > frame len %d",
 				tp_mac, tp_snaplen, handle->bufsize);
 			return -1;
 		}
 
 		/* run filter on received packet
 		 * If the kernel filtering is enabled we need to run the
-		 * filter until all the frames present into the ring 
-		 * at filter creation time are processed. 
-		 * In such case md.use_bpf is used as a counter for the 
+		 * filter until all the frames present into the ring
+		 * at filter creation time are processed.
+		 * In such case md.use_bpf is used as a counter for the
 		 * packet we need to filter.
-		 * Note: alternatively it could be possible to stop applying 
+		 * Note: alternatively it could be possible to stop applying
 		 * the filter when the ring became empty, but it can possibly
 		 * happen a lot later... */
 		bp = (unsigned char*)h.raw + tp_mac;
-		run_bpf = (!handle->md.use_bpf) || 
+		run_bpf = (!handle->md.use_bpf) ||
 			((handle->md.use_bpf>1) && handle->md.use_bpf--);
-		if (run_bpf && handle->fcode.bf_insns && 
+		if (run_bpf && handle->fcode.bf_insns &&
 				(bpf_filter(handle->fcode.bf_insns, bp,
 					tp_len, tp_snaplen) == 0))
 			goto skip;
@@ -4007,7 +4019,7 @@ pcap_read_linux_mmap(pcap_t *handle, int max_packets, pcap_handler callback,
 			if (bp < (u_char *)h.raw +
 					   TPACKET_ALIGN(handle->md.tp_hdrlen) +
 					   sizeof(struct sockaddr_ll)) {
-				snprintf(handle->errbuf, PCAP_ERRBUF_SIZE, 
+				snprintf(handle->errbuf, PCAP_ERRBUF_SIZE,
 					"cooked-mode frame doesn't have room for sll header");
 				return -1;
 			}
@@ -4086,7 +4098,7 @@ skip:
 	return pkts;
 }
 
-static int 
+static int
 pcap_setfilter_linux_mmap(pcap_t *handle, struct bpf_program *filter)
 {
 	int n, offset;
@@ -4958,7 +4970,7 @@ iface_ethtool_ioctl(pcap_t *handle, int cmd, const char *cmdname)
 		    cmdname, strerror(errno));
 		return -1;
 	}
-	return eval.data;	
+	return eval.data;
 }
 
 static int

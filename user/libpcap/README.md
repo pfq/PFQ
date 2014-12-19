@@ -31,7 +31,11 @@ Details
 
 This implementation of pcap library is extended to support PFQ sockets. By default
 the library makes use of AF\_PACKET sockets. Only only when a special device name 
-is provided the PFQ acceleration takes place.
+is provided the PFQ acceleration takes place. 
+
+For applications that do not admit arbitrary names for devices, it is possible 
+to trigger the PFQ acceleration by specifying one of the environment variables
+described in the table below.
 
 The syntax of the device name is the following:
 
@@ -57,9 +61,11 @@ PFQ\_TX\_QUEUE, PFQ\_TX\_TASK, and PFQ\_VLAN are specified as comma separated li
 
 
 Variable          |    Default    |  > 1Mpps  | Meaning
-------------------|---------------|-----------|------------------------------------------
+------------------|---------------|-----------|--------------------------------------------
+PFQ\_CONFIG       |               |           | Specify the PFQ/pcap config file
 PFQ\_GROUP        |  free one     |           | Specify the PFQ group for the process
-PFQ\_CAPLEN       | pcap snapshot |           | Override the snaplen value
+PFQ\_CAPLEN       | pcap snapshot |           | Override the snaplen value for capture
+PFQ\_GENLEN       | pcap snapshot |           | Override the snaplen value for transmission
 PFQ\_RX\_SLOTS    |    4096       |  131072   | Define the RX queue length of the socket   
 PFQ\_TX\_SLOTS    |    4096       |   8192    | Define the TX queue length of the socket   
 PFQ\_TX\_FLUSH    |      1        | 16..512   | Hint used to flush then transmission queue

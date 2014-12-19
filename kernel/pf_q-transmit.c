@@ -39,6 +39,7 @@
 #include <pf_q-global.h>
 #include <pf_q-GC.h>
 
+
 static inline u16
 __pfq_dev_cap_txqueue(struct net_device *dev, u16 hw_queue)
 {
@@ -111,14 +112,14 @@ __pfq_tx_queue_xmit(size_t qidx, struct pfq_skbuff_batch *skbs, struct net_devic
 
 
 int
-__pfq_tx_queue_flush(size_t qidx, struct pfq_tx_opt *to, struct net_device *dev, int cpu, int node)
+__pfq_queue_flush(size_t qidx, struct pfq_tx_opt *to, struct net_device *dev, int cpu, int node)
 {
 	struct pfq_skbuff_batch skbs;
 	struct pfq_tx_queue_hdr *txq;
 	struct local_data *local;
 	struct pfq_pkt_hdr * h;
 	struct sk_buff *skb;
-	size_t len, drain = 0, tot_sent = 0;
+	size_t len, tot_sent = 0;
 
 	int index, avail, n;
 
@@ -149,12 +150,12 @@ __pfq_tx_queue_flush(size_t qidx, struct pfq_tx_opt *to, struct net_device *dev,
 
 			tot_sent += sent;
 
-			/* commit the slots of *all* packets in the batch:
-			   unset packets are transmitted next in the loop
+			/* commit the slots of packets sent:
+			   unset packets are transmitted later in the loop
 			 */
 
-			pfq_spsc_read_commit_n(txq, drain);
-			drain = 0;
+			pfq_spsc_read_commit_n(txq, sent);
+
 
 			/* free/recycle the transmitted skb... */
 
@@ -164,6 +165,7 @@ __pfq_tx_queue_flush(size_t qidx, struct pfq_tx_opt *to, struct net_device *dev,
 			/* ... and drop them from the batch */
 
 			pfq_skbuff_batch_drop_n(&skbs, sent);
+
 
 			/* reset use count of unsent skb */
 
@@ -199,7 +201,6 @@ __pfq_tx_queue_flush(size_t qidx, struct pfq_tx_opt *to, struct net_device *dev,
 			/* enqueue the skb to the batch */
 
 			pfq_skbuff_batch_push(&skbs, skb);
-			drain++;
 
 			/* get the index... */
 
@@ -233,7 +234,7 @@ __pfq_tx_queue_flush(size_t qidx, struct pfq_tx_opt *to, struct net_device *dev,
  */
 
 int
-pfq_tx_queue_flush_or_wakeup(struct pfq_sock *so, int index)
+pfq_queue_flush_or_wakeup(struct pfq_sock *so, int index)
 {
 	struct pfq_tx_queue_hdr *txq = pfq_get_tx_queue_hdr(&so->tx_opt, index);
 	struct net_device *dev;
@@ -250,7 +251,7 @@ pfq_tx_queue_flush_or_wakeup(struct pfq_sock *so, int index)
 	if (!dev)
 		return -EPERM;
 
-	pfq_tx_queue_flush(index, &so->tx_opt, dev);
+	pfq_queue_flush(index, &so->tx_opt, dev);
 
 	put_cpu();
 	dev_put(dev);

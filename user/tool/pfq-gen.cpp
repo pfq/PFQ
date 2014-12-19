@@ -33,6 +33,8 @@
 #include <vt100.hpp>
 
 
+#include <pcap/pcap.h>
+
 using namespace pfq;
 
 
@@ -71,11 +73,14 @@ char *make_packet(size_t n)
 namespace opt
 {
     size_t flush   = 1;
-    size_t len     = 64;
+    size_t len     = 1514;
     size_t slots   = 4096;
     bool   async   = false;
     bool   rand_ip = false;
     char *packet   = nullptr;
+
+    std::string file;
+    char errbuf[PCAP_ERRBUF_SIZE];
 }
 
 
@@ -89,6 +94,7 @@ namespace thread
         , m_bind(b)
         , m_pfq()
         , m_sent(std::unique_ptr<std::atomic_ullong>(new std::atomic_ullong(0)))
+        , m_band(std::unique_ptr<std::atomic_ullong>(new std::atomic_ullong(0)))
         , m_fail(std::unique_ptr<std::atomic_ullong>(new std::atomic_ullong(0)))
         , m_gen()
         {
@@ -101,7 +107,7 @@ namespace thread
             auto q = pfq::socket(param::list, param::maxlen{opt::len},
                                               param::tx_slots{opt::slots});
 
-            std::cout << "thread  : " << id << " -> "  << show_binding(m_bind) << std::endl;
+            std::cout << "thread     : " << id << " -> "  << show_binding(m_bind) << std::endl;
 
             if (m_bind.queue.size())
             {
@@ -127,6 +133,28 @@ namespace thread
 
         void operator()()
         {
+            if (opt::file.empty())
+                synt_generator();
+            else
+                pcap_generator();
+        }
+
+        std::tuple<pfq_stats, uint64_t, uint64_t, uint64_t>
+        stats() const
+        {
+            pfq_stats ret = {0,0,0,0,0,0,0};
+
+            ret += m_pfq.stats();
+
+            return std::make_tuple(ret, m_sent->load(std::memory_order_relaxed),
+                                        m_band->load(std::memory_order_relaxed),
+                                        m_fail->load(std::memory_order_relaxed));
+        }
+
+    private:
+
+        void synt_generator()
+        {
             auto ip = reinterpret_cast<iphdr *>(opt::packet + 14);
 
             for(;;)
@@ -138,24 +166,57 @@ namespace thread
                 }
 
                 if (m_pfq.send_async(pfq::const_buffer(reinterpret_cast<const char *>(opt::packet), opt::len), opt::flush))
+                {
                     m_sent->fetch_add(1, std::memory_order_relaxed);
+                    m_band->fetch_add(opt::len, std::memory_order_relaxed);
+                }
                 else
                     m_fail->fetch_add(1, std::memory_order_relaxed);
             }
         }
 
-        std::tuple<pfq_stats, uint64_t, uint64_t>
-        stats() const
+
+        void pcap_generator()
         {
-            pfq_stats ret = {0,0,0,0,0,0,0};
+            struct pcap_pkthdr *hdr;
+            u_char *data;
 
-            ret += m_pfq.stats();
+            auto p = pcap_open_offline(opt::file.c_str(), opt::errbuf);
+            if (p == nullptr)
+                throw std::runtime_error("pcap_open_offline:" + std::string(opt::errbuf));
 
-            return std::make_tuple(ret, m_sent->load(std::memory_order_relaxed),
-                                        m_fail->load(std::memory_order_relaxed));
+
+            for(;;)
+            {
+                auto n = pcap_next_ex(p, &hdr, (u_char const **)&data);
+
+                if (n == -2)
+                    break;
+
+                else if (n == 1) {
+
+                    auto ip = reinterpret_cast<iphdr *>(data + 14);
+
+                    if (opt::rand_ip)
+                    {
+                        ip->saddr = static_cast<uint32_t>(m_gen());
+                        ip->daddr = static_cast<uint32_t>(m_gen());
+                    }
+
+                    auto len = std::min<size_t>(hdr->caplen, opt::len);
+
+                    if (m_pfq.send_async(pfq::const_buffer(reinterpret_cast<const char *>(data), len), opt::flush))
+                    {
+                        m_sent->fetch_add(1, std::memory_order_relaxed);
+                        m_band->fetch_add(len, std::memory_order_relaxed);
+                    }
+                    else
+                        m_fail->fetch_add(1, std::memory_order_relaxed);
+                }
+            }
         }
 
-    private:
+
         int m_id;
         int m_kcpu;
 
@@ -164,6 +225,7 @@ namespace thread
         pfq::socket m_pfq;
 
         std::unique_ptr<std::atomic_ullong> m_sent;
+        std::unique_ptr<std::atomic_ullong> m_band;
         std::unique_ptr<std::atomic_ullong> m_fail;
 
         std::mt19937 m_gen;
@@ -236,6 +298,7 @@ void usage(std::string name)
         " -l --len INT                  Set packet lenght\n"
         " -s --queue-slots INT          Set tx queue lenght\n"
         " -a --async                    Async with kernel threads\n"
+        " -r --read FILE                Read trace to send from pcap\n"
         " -R --rand-ip                  Randomize IP addresses\n"
         " -f --flush INT                Set flush len, used in async tx\n"
         " -t --thread BINDING\n\n"
@@ -257,10 +320,20 @@ try
 
     for(int i = 1; i < argc; ++i)
     {
+        if ( any_strcmp(argv[i], "-r", "--read") )
+        {
+            if (++i == argc)
+            {
+                throw std::runtime_error("pcap file missing");
+            }
+
+            opt::file = argv[i];
+            continue;
+        }
+
         if ( any_strcmp(argv[i], "-f", "--flush") )
         {
-            i++;
-            if (i == argc)
+            if (++i == argc)
             {
                 throw std::runtime_error("hint missing");
             }
@@ -271,8 +344,7 @@ try
 
         if ( any_strcmp(argv[i], "-l", "--len") )
         {
-            i++;
-            if (i == argc)
+            if (++i == argc)
             {
                 throw std::runtime_error("length missing");
             }
@@ -283,8 +355,7 @@ try
 
         if ( any_strcmp(argv[i], "-s", "--slots") )
         {
-            i++;
-            if (i == argc)
+            if (++i == argc)
             {
                 throw std::runtime_error("slots missing");
             }
@@ -307,8 +378,7 @@ try
 
         if ( any_strcmp(argv[i], "-t", "--thread") )
         {
-            i++;
-            if (i == argc)
+            if (++i == argc)
             {
                 throw std::runtime_error("binding missing");
             }
@@ -345,7 +415,7 @@ try
         {
             auto num_queues = get_num_queues(binding[i].dev.at(0).c_str());
 
-            std::cout << "device  : " << binding[i].dev.at(0) << ", " << num_queues << " queues detected." << std::endl;
+            std::cout << "device     : " << binding[i].dev.at(0) << ", " << num_queues << " queues detected." << std::endl;
 
             for(size_t n = 0; n < num_queues; ++n)
             {
@@ -391,8 +461,10 @@ try
 
     });
 
-    pfq_stats cur, prec = {0,0,0,0,0,0,0};
+     pfq_stats cur, prec = {0,0,0,0,0,0,0};
+
     uint64_t sent, sent_ = 0;
+    uint64_t band, band_ = 0;
     uint64_t fail, fail_ = 0;
 
     std::cout << "------------ gen started ------------\n";
@@ -405,6 +477,7 @@ try
 
         cur = {0,0,0,0,0,0,0};
         sent = 0;
+        band = 0;
         fail = 0;
 
         std::for_each(thread_ctx.begin(), thread_ctx.end(), [&](const thread::context *c)
@@ -413,20 +486,25 @@ try
 
             cur  += std::get<0>(p);
             sent += std::get<1>(p);
-            fail += std::get<2>(p);
+            band += std::get<2>(p);
+            fail += std::get<3>(p);
         });
 
         auto end   = std::chrono::system_clock::now();
         auto delta = end-begin;
 
         std::cout << "stats: { " << cur << " } -> user: { "
-                  << vt100::BOLD << persecond<int64_t>(sent - sent_, delta) << ' ' << persecond<int64_t>(fail-fail_, delta) << vt100::RESET << " } - "
+                  << vt100::BOLD
+                  << persecond<int64_t>(sent - sent_, delta)            << ' '
+                  << persecond<int64_t>(fail-fail_, delta)              << ' '
+                  << pretty(persecond<double>((band-band_)*8, delta))  << "bit/sec "
+                  << vt100::RESET << " } - "
                   << "sent: " << vt100::BOLD << persecond<int64_t>(cur.sent - prec.sent, delta) << vt100::RESET << " pkt/sec - "
-                  << "band: " << vt100::BOLD << pretty(persecond<double>((cur.sent - prec.sent) * opt::len * 8, delta)) << vt100::RESET << "bit/sec - "
                   << "disc: " << vt100::BOLD << persecond<int64_t>(cur.disc - prec.disc, delta) << vt100::RESET << " pkt/sec" << std::endl;
 
         prec = cur, begin = end;
         sent_ = sent;
+        band_ = band;
         fail_ = fail;
     }
 

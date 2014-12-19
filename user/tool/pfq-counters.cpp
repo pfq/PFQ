@@ -227,22 +227,17 @@ try
     {
         if (any_strcmp(argv[i], "-f", "--fun"))
         {
-            i++;
-            if (i == argc)
-            {
+            if (++i == argc)
                 throw std::runtime_error("group function missing");
-            }
+
             opt::function.assign(argv[i]);
             continue;
         }
 
         if (any_strcmp(argv[i], "-c", "--caplen"))
         {
-            i++;
-            if (i == argc)
-            {
+            if (++i == argc)
                 throw std::runtime_error("caplen missing");
-            }
 
             opt::caplen = static_cast<size_t>(std::atoi(argv[i]));
             continue;
@@ -250,11 +245,8 @@ try
 
         if (any_strcmp(argv[i], "-s", "--slots"))
         {
-            i++;
-            if (i == argc)
-            {
+            if (++i == argc)
                 throw std::runtime_error("slots missing");
-            }
 
             opt::slots = static_cast<size_t>(std::atoi(argv[i]));
             continue;
@@ -268,11 +260,8 @@ try
 
         if (any_strcmp(argv[i], "-t", "--thread"))
         {
-            i++;
-            if (i == argc)
-            {
+            if (++i == argc)
                 throw std::runtime_error("descriptor missing");
-            }
 
             thread_binding.push_back(make_binding(argv[i]));
             continue;

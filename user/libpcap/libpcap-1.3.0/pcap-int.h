@@ -232,6 +232,7 @@ struct pcap_opt {
 	{
 		int group;
 		int caplen;
+		int genlen;
 
 		int rx_slots;
 		int tx_slots;

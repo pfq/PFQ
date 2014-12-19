@@ -1,5 +1,10 @@
-#ifndef _AFFINITY_HPP_
-#define _AFFINITY_HPP_
+/***************************************************************
+ *
+ * (C) 2014 - Nicola Bonelli <nicola@pfq.io>
+ *
+ ****************************************************************/
+
+#pragma once
 
 #include <thread>
 #include <pthread.h> // pthread_setaffinity_np
@@ -24,4 +29,3 @@ namespace extra {
 
 } // namespace extra
 
-#endif /* _AFFINITY_HPP_ */
