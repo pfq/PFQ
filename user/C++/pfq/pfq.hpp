@@ -484,24 +484,37 @@ namespace pfq {
         void
         enable()
         {
-            if(::setsockopt(fd_, PF_Q, Q_SO_ENABLE, nullptr, 0) == -1) {
-                throw pfq_error(errno, "PFQ: socket enable");
-            }
-
             size_t tot_mem; socklen_t size = sizeof(tot_mem);
-
-            if (::getsockopt(fd_, PF_Q, Q_SO_GET_SHARED_MEM, &tot_mem, &size) == -1)
-                throw pfq_error(errno, "PFQ: queue memory error");
 
             if (data_->shm_addr)
                 throw pfq_error(errno, "PFQ: queue already enabled");
 
+            if (::getsockopt(fd_, PF_Q, Q_SO_GET_SHMEM_SIZE, &tot_mem, &size) == -1)
+                throw pfq_error(errno, "PFQ: queue memory error");
+
             hd_ = ::open(("/dev/hugepages/pfq-" + std::to_string(fd_)).c_str(),  O_CREAT | O_RDWR, 0755);
             if (hd_ != -1)
-                data_->shm_addr = mmap(nullptr, tot_mem, PROT_READ|PROT_WRITE, MAP_SHARED, hd_, 0);
+                data_->shm_addr = ::mmap(nullptr, tot_mem, PROT_READ|PROT_WRITE, MAP_SHARED, hd_, 0);
 
             if (data_->shm_addr == MAP_FAILED)
-                data_->shm_addr = mmap(nullptr, tot_mem, PROT_READ|PROT_WRITE, MAP_SHARED, fd_, 0);
+            {
+                std::cerr << "hugepage not available!" << std::endl;
+
+                void * null = nullptr;
+                if(::setsockopt(fd_, PF_Q, Q_SO_ENABLE, &null, sizeof(null)) == -1) {
+                    throw pfq_error(errno, "PFQ: socket enable");
+                }
+
+                data_->shm_addr = ::mmap(nullptr, tot_mem, PROT_READ|PROT_WRITE, MAP_SHARED, fd_, 0);
+            }
+            else
+            {
+                std::cerr << "hugepage support *** enabled ***" << std::endl;
+
+                if(::setsockopt(fd_, PF_Q, Q_SO_ENABLE, &data_->shm_addr, sizeof(data_->shm_addr)) == -1) {
+                    throw pfq_error(errno, "PFQ: socket enable");
+                }
+            }
 
             if (data_->shm_addr == MAP_FAILED)
                 throw pfq_error(errno, "PFQ: mmap");
