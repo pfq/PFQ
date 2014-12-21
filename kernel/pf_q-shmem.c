@@ -25,6 +25,7 @@
 #include <linux/version.h>
 #include <linux/module.h>
 #include <linux/vmalloc.h>
+#include <linux/pagemap.h>
 
 #include <pf_q-shmem.h>
 #include <pf_q-mpdb-queue.h>
@@ -81,6 +82,61 @@ pfq_mmap(struct file *file, struct socket *sock, struct vm_area_struct *vma)
 
         return 0;
 }
+
+
+int
+pfq_hugemap(struct pfq_sock *so, unsigned long addr, size_t size)
+{
+	void* remapped;
+	int nid;
+
+	so->shmem_npages =  1 + (size - 1) / PAGE_SIZE;
+
+	so->shmem_hugepages = vmalloc(so->shmem_npages * sizeof(struct page *));
+
+	down_read(&current->mm->mmap_sem);
+
+	if (get_user_pages(current,
+			   current->mm, addr,
+			   so->shmem_npages,
+			   1 /* Write enable */, 0 /* Force */,
+			   so->shmem_hugepages, NULL) != so->shmem_npages)
+		return -1;
+
+	up_read(&current->mm->mmap_sem);
+
+	nid = page_to_nid(so->shmem_hugepages[0]);
+
+	remapped = vm_map_ram(so->shmem_hugepages, so->shmem_npages, nid, PAGE_KERNEL);
+
+	return 0;
+}
+
+
+int
+pfq_hugeunmap(struct pfq_sock *so, void *addr, size_t size)
+{
+	int i;
+
+	down_read(&current->mm->mmap_sem);
+
+	for(i = 0; i < so->shmem_npages; i++)
+	{
+		if (!PageReserved(so->shmem_hugepages[i]))
+		    SetPageDirty(so->shmem_hugepages[i]);
+
+		page_cache_release(so->shmem_hugepages[i]);
+	}
+
+	up_read(&current->mm->mmap_sem);
+
+	vfree(so->shmem_hugepages);
+	so->shmem_hugepages = NULL;
+	so->shmem_npages = 0;
+
+	return 0;
+}
+
 
 
 int

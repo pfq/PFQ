@@ -176,6 +176,9 @@ struct pfq_sock
         size_t              	shmem_size;         	/* memory mapped size */
 	enum pfq_shmem_kind 	shmem_kind;
 
+	struct page ** 		shmem_hugepages;
+	size_t 			shmem_npages;
+
         struct pfq_rx_opt   	rx_opt;
         struct pfq_tx_opt   	tx_opt;
 
