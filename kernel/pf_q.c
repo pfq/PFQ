@@ -624,8 +624,12 @@ pfq_create(
 	so->egress_index = 0;
 	so->egress_queue = 0;
 
-        so->shmem_addr 	 = NULL;
-        so->shmem_size 	 = 0;
+        so->shmem.addr = NULL;
+        so->shmem.size = 0;
+        so->shmem.kind = 0;
+
+        so->shmem.hugepages = NULL;
+        so->shmem.npages = 0;
 
         down(&sock_sem);
 
@@ -678,7 +682,7 @@ pfq_release(struct socket *sock)
         pfq_leave_all_groups(so->id);
         pfq_release_sock_id(so->id);
 
-        if (so->shmem_addr)
+        if (so->shmem.addr)
                 pfq_shared_queue_disable(so);
 
         down(&sock_sem);

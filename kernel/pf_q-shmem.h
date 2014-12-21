@@ -31,15 +31,32 @@ struct pfq_sock;
 
 enum pfq_shmem_kind {
 	pfq_shmem_virt,
-	pfq_shmem_phys
+	pfq_shmem_user
 };
 
-size_t pfq_total_shared_mem(struct pfq_sock *so);
+
+struct pfq_shmem_descr
+{
+	void *			addr;
+	size_t  		size;
+	enum pfq_shmem_kind     kind;
+
+	struct page** 		hugepages;
+	size_t 			npages;
+};
+
+
+size_t pfq_total_queue_mem(struct pfq_sock *so);
+
 
 int pfq_mmap(struct file *file, struct socket *sock, struct vm_area_struct *vma);
 
-int pfq_shared_memory_alloc(struct pfq_sock *so, size_t shmem);
-void pfq_shared_memory_free(struct pfq_sock *so);
+int pfq_shared_memory_alloc(struct pfq_shmem_descr *shmem, size_t size);
+void pfq_shared_memory_free(struct pfq_shmem_descr *shmem);
+size_t pfq_shared_memory_size(struct pfq_sock *so);
+
+int pfq_hugepage_map(struct pfq_shmem_descr *shmem, unsigned long addr, size_t size);
+int pfq_hugepage_unmap(struct pfq_shmem_descr *shmem);
 
 
 #endif /* _PF_Q_SHMEM_H_ */

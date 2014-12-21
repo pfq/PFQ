@@ -34,7 +34,7 @@
 #include <pf_q-GC.h>
 
 
-int pfq_shared_queue_enable(struct pfq_sock *so);
+int pfq_shared_queue_enable(struct pfq_sock *so, unsigned long addr);
 int pfq_shared_queue_disable(struct pfq_sock *so);
 
 extern size_t pfq_mpdb_enqueue_batch(struct pfq_rx_opt *ro,

@@ -34,7 +34,7 @@
 static int
 pfq_memory_map(struct vm_area_struct *vma, unsigned long size, char *ptr, unsigned int flags, enum pfq_shmem_kind kind)
 {
-	unsigned long addr = vma->vm_start;
+	// unsigned long addr = vma->vm_start;
 
         vma->vm_flags |= flags;
 
@@ -47,13 +47,15 @@ pfq_memory_map(struct vm_area_struct *vma, unsigned long size, char *ptr, unsign
 		}
 	} break;
 
-	case pfq_shmem_phys: {
-		if (remap_pfn_range(vma, addr, virt_to_phys(ptr) >> PAGE_SHIFT, vma->vm_end - vma->vm_start, PAGE_SHARED) != 0) {
-			printk(KERN_WARNING "[PFQ] remap_vmalloc_range error.\n");
-			return -EAGAIN;
-		}
-	} break;
+	//case pfq_shmem_phys: {
+	//	if (remap_pfn_range(vma, addr, virt_to_phys(ptr) >> PAGE_SHIFT, vma->vm_end - vma->vm_start, PAGE_SHARED) != 0) {
+	//		printk(KERN_WARNING "[PFQ] remap_vmalloc_range error.\n");
+	//		return -EAGAIN;
+	//	}
+	//} break;
 
+	case pfq_shmem_user:
+		break;
 	}
         return 0;
 }
@@ -72,12 +74,12 @@ pfq_mmap(struct file *file, struct socket *sock, struct vm_area_struct *vma)
                 return -EINVAL;
         }
 
-        if(size > so->shmem_size) {
+        if(size > so->shmem.size) {
                 printk(KERN_WARNING "[PFQ] pfq_mmap: area too large!\n");
                 return -EINVAL;
         }
 
-        if((ret = pfq_memory_map(vma, size, so->shmem_addr, VM_LOCKED, so->shmem_kind)) < 0)
+        if((ret = pfq_memory_map(vma, size, so->shmem.addr, VM_LOCKED, so->shmem.kind)) < 0)
                 return ret;
 
         return 0;
@@ -85,120 +87,135 @@ pfq_mmap(struct file *file, struct socket *sock, struct vm_area_struct *vma)
 
 
 int
-pfq_hugemap(struct pfq_sock *so, unsigned long addr, size_t size)
+pfq_hugepage_map(struct pfq_shmem_descr *shmem, unsigned long addr, size_t size)
 {
-	void* remapped;
 	int nid;
 
-	so->shmem_npages =  1 + (size - 1) / PAGE_SIZE;
+	printk(KERN_WARNING "[PFQ] mapping user memory...\n");
 
-	so->shmem_hugepages = vmalloc(so->shmem_npages * sizeof(struct page *));
+	shmem->npages = PAGE_ALIGN(size) / PAGE_SIZE;
+	shmem->hugepages = vmalloc(shmem->npages * sizeof(struct page *));
 
 	down_read(&current->mm->mmap_sem);
 
 	if (get_user_pages(current,
 			   current->mm, addr,
-			   so->shmem_npages,
+			   shmem->npages,
 			   1 /* Write enable */, 0 /* Force */,
-			   so->shmem_hugepages, NULL) != so->shmem_npages)
+			   shmem->hugepages, NULL) != shmem->npages)
+	{
+		up_read(&current->mm->mmap_sem);
+
+		vfree(shmem->hugepages);
+		shmem->npages = 0;
+		shmem->hugepages = NULL;
+		pr_devel("[PFQ] could not get user pages!\n");
+
 		return -1;
+	}
 
 	up_read(&current->mm->mmap_sem);
 
-	nid = page_to_nid(so->shmem_hugepages[0]);
+	nid = page_to_nid(shmem->hugepages[0]);
 
-	remapped = vm_map_ram(so->shmem_hugepages, so->shmem_npages, nid, PAGE_KERNEL);
+	shmem->addr = vm_map_ram(shmem->hugepages, shmem->npages, nid, PAGE_KERNEL);
+	if (!shmem->addr) {
+		pr_devel("[PFQ] mapping memory failure.\n");
+		return -1;
+	}
 
+	shmem->kind = pfq_shmem_user;
+        shmem->size = size;
+
+	pr_devel("[PFQ] total mapped memory: %zu bytes.\n", size);
 	return 0;
 }
 
 
 int
-pfq_hugeunmap(struct pfq_sock *so, void *addr, size_t size)
+pfq_hugepage_unmap(struct pfq_shmem_descr *shmem)
 {
 	int i;
 
-	down_read(&current->mm->mmap_sem);
+	if (current->mm)
+		down_read(&current->mm->mmap_sem);
 
-	for(i = 0; i < so->shmem_npages; i++)
+	for(i = 0; i < shmem->npages; i++)
 	{
-		if (!PageReserved(so->shmem_hugepages[i]))
-		    SetPageDirty(so->shmem_hugepages[i]);
 
-		page_cache_release(so->shmem_hugepages[i]);
+		if (!PageReserved(shmem->hugepages[i]))
+		    SetPageDirty(shmem->hugepages[i]);
+
+		page_cache_release(shmem->hugepages[i]);
+
 	}
 
-	up_read(&current->mm->mmap_sem);
+	if (current->mm)
+		up_read(&current->mm->mmap_sem);
 
-	vfree(so->shmem_hugepages);
-	so->shmem_hugepages = NULL;
-	so->shmem_npages = 0;
+	vfree(shmem->hugepages);
+
+	shmem->hugepages = NULL;
+	shmem->npages = 0;
 
 	return 0;
 }
 
 
-
 int
-pfq_shared_memory_alloc(struct pfq_sock *so, size_t shmem)
+pfq_shared_memory_alloc(struct pfq_shmem_descr *shmem, size_t mem_size)
 {
-        /* calculate the size of the buffer */
+	size_t tot_mem = PAGE_ALIGN(mem_size);
 
-	size_t tm = PAGE_ALIGN(shmem);
-        size_t tot_mem;
+	printk(KERN_WARNING "[PFQ] allocating shared memory...\n");
 
-	/* align bufflen to page size */
+        shmem->addr = vmalloc_user(tot_mem);
+        shmem->size = tot_mem;
+	shmem->kind = pfq_shmem_virt;
 
-	size_t num_pages = tm / PAGE_SIZE;
-	void *addr;
-
-	num_pages += (num_pages + (PAGE_SIZE-1)) & (PAGE_SIZE-1);
-	tot_mem = num_pages*PAGE_SIZE;
-
-	so->shmem_kind = pfq_shmem_phys;
-
-	addr = kzalloc(tot_mem, GFP_KERNEL);
-	if (!addr) {
-		printk(KERN_WARNING "[PFQ|%d] trying with vmalloc...\n", so->id);
-        	addr = vmalloc_user(tot_mem);
-		so->shmem_kind = pfq_shmem_virt;
-	}
-
-	if (addr == NULL) {
-		printk(KERN_WARNING "[PFQ|%d] shared memory alloc: out of memory (vmalloc %zu bytes)!", so->id, tot_mem);
+	if (shmem->addr == NULL) {
+		printk(KERN_WARNING "[PFQ] shared memory alloc: out of memory (vmalloc %zu bytes)!", tot_mem);
 		return -ENOMEM;
 	}
 
-        so->shmem_addr = addr;
-        so->shmem_size = tot_mem;
-
-	pr_devel("[PFQ|%d] total shared memory: %zu bytes (%s contiguous).\n", so->id, tot_mem, (so->shmem_kind == pfq_shmem_virt ? "virtually" : "physically"));
+	pr_devel("[PFQ] total shared memory: %zu bytes.\n", tot_mem);
 	return 0;
 }
 
 
 void
-pfq_shared_memory_free(struct pfq_sock *so)
+pfq_shared_memory_free(struct pfq_shmem_descr *shmem)
 {
-	if (so->shmem_addr) {
+	if (shmem->addr) {
 
-		switch(so->shmem_kind)
+		switch(shmem->kind)
 		{
-		case pfq_shmem_virt: vfree(so->shmem_addr); break;
-		case pfq_shmem_phys: kfree(so->shmem_addr); break;
-
+		case pfq_shmem_virt: vfree(shmem->addr); break;
+		case pfq_shmem_user: pfq_hugepage_unmap(shmem); break;
 		}
 
-		so->shmem_addr = NULL;
-		so->shmem_size = 0;
+		shmem->addr = NULL;
+		shmem->size = 0;
 
-		pr_devel("[PFQ|%d] shared memory freed.\n", so->id);
+		pr_devel("[PFQ] shared memory freed.\n");
 	}
 }
 
 
-size_t pfq_total_shared_mem(struct pfq_sock *so)
+size_t pfq_total_queue_mem(struct pfq_sock *so)
 {
         return sizeof(struct pfq_queue_hdr) + pfq_queue_mpdb_mem(so) * 2 + pfq_queue_spsc_mem(so) * Q_MAX_TX_QUEUES;
 }
+
+
+
+#define HUGEPAGE_SIZE  (2*1024*1024)
+
+size_t pfq_shared_memory_size(struct pfq_sock *so)
+{
+	size_t tot_mem = pfq_total_queue_mem(so);
+
+	return (1 + tot_mem/HUGEPAGE_SIZE) * HUGEPAGE_SIZE;
+}
+
 

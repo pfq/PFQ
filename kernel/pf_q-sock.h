@@ -172,12 +172,7 @@ struct pfq_sock
         int 		    	egress_index;
         int 		    	egress_queue;
 
-        void *              	shmem_addr;         	/* memory mapped area */
-        size_t              	shmem_size;         	/* memory mapped size */
-	enum pfq_shmem_kind 	shmem_kind;
-
-	struct page ** 		shmem_hugepages;
-	size_t 			shmem_npages;
+	struct pfq_shmem_descr  shmem;
 
         struct pfq_rx_opt   	rx_opt;
         struct pfq_tx_opt   	tx_opt;
@@ -189,7 +184,7 @@ static inline
 struct pfq_queue_hdr *
 pfq_get_queue_hdr(struct pfq_sock *p)
 {
-        return (struct pfq_queue_hdr *) p->shmem_addr;
+        return (struct pfq_queue_hdr *) p->shmem.addr;
 }
 
 

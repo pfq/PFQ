@@ -111,7 +111,7 @@ int pfq_getsockopt(struct socket *sock,
                 if (len != sizeof(int))
                         return -EINVAL;
 
-                enabled = so->shmem_addr == NULL ? 0 : 1;
+                enabled = so->shmem.addr == NULL ? 0 : 1;
 
                 if (copy_to_user(optval, &enabled, sizeof(enabled)))
                         return -EFAULT;
@@ -148,10 +148,12 @@ int pfq_getsockopt(struct socket *sock,
 
         case Q_SO_GET_SHMEM_SIZE:
         {
-                if (len != sizeof(so->shmem_size))
+        	size_t size = pfq_shared_memory_size(so);
+
+                if (len != sizeof(size))
                         return -EINVAL;
 
-                if (copy_to_user(optval, &so->shmem_size, sizeof(so->shmem_size)))
+                if (copy_to_user(optval, &size, sizeof(size)))
                         return -EFAULT;
         } break;
 
@@ -309,10 +311,17 @@ int pfq_setsockopt(struct socket *sock,
         {
         case Q_SO_ENABLE:
 	{
+		unsigned long addr;
 		int err = 0;
                 size_t n;
 
-                err = pfq_shared_queue_enable(so);
+                if (optlen != sizeof(addr))
+                        return -EINVAL;
+
+                if (copy_from_user(&addr, optval, optlen))
+                        return -EFAULT;
+
+                err = pfq_shared_queue_enable(so, addr);
                 if (err < 0) {
                         pr_devel("[PFQ|%d] enable error!\n", so->id);
                         return err;
