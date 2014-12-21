@@ -24,15 +24,17 @@
 #pragma once
 
 #include <linux/if_ether.h>
-#include <linux/pf_q.h>
 #include <linux/ip.h>
+#include <linux/pf_q.h>
 
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <sys/socket.h>
 #include <sys/ioctl.h>
 #include <arpa/inet.h>
 #include <net/if.h>
 #include <sys/mman.h>
+#include <fcntl.h>
 #include <poll.h>
 
 #include <tuple>
@@ -169,6 +171,7 @@ namespace pfq {
         };
 
         int fd_;
+        int hd_;
 
         std::unique_ptr<pfq_data> data_;
 
@@ -178,6 +181,7 @@ namespace pfq {
 
         socket()
         : fd_(-1)
+        , hd_(-1)
         , data_()
         {}
 
@@ -186,6 +190,7 @@ namespace pfq {
         template <typename ...Ts>
         socket(param::list_t, Ts&& ...args)
         : fd_(-1)
+        , hd_(-1)
         , data_()
         {
             auto def = param::make_default();
@@ -209,6 +214,7 @@ namespace pfq {
 
         socket(size_t caplen, size_t rx_slots = 65536, size_t maxlen = 64, size_t tx_slots = 4096)
         : fd_(-1)
+        , hd_(-1)
         , data_()
         {
             this->open(class_mask::default_, group_policy::priv, caplen, rx_slots, maxlen, tx_slots);
@@ -222,6 +228,7 @@ namespace pfq {
 
         socket(group_policy policy, size_t caplen, size_t rx_slots = 65536, size_t maxlen = 64, size_t tx_slots = 4096)
         : fd_(-1)
+        , hd_(-1)
         , data_()
         {
             this->open(class_mask::default_, policy, caplen, rx_slots, maxlen, tx_slots);
@@ -235,6 +242,7 @@ namespace pfq {
 
         socket(class_mask mask, group_policy policy, size_t caplen, size_t rx_slots = 65536, size_t maxlen = 64, size_t tx_slots = 4096)
         : fd_(-1)
+        , hd_(-1)
         , data_()
         {
             this->open(mask, policy, caplen, rx_slots, maxlen, tx_slots);
@@ -244,7 +252,14 @@ namespace pfq {
 
         ~socket()
         {
-            this->close();
+            try
+            {
+                this->close();
+            }
+            catch(std::exception &e)
+            {
+                std::cerr << "exception: " << e.what() << std::endl;
+            }
         }
 
         //! PFQ socket is a non-copyable resource.
@@ -260,9 +275,11 @@ namespace pfq {
 
         socket(socket &&other) noexcept
         : fd_(other.fd_)
+        , hd_(other.hd_)
         , data_(std::move(other.data_))
         {
             other.fd_ = -1;
+            other.hd_ = -1;
         }
 
         //! Move assignment operator.
@@ -272,9 +289,11 @@ namespace pfq {
         {
             if (this != &other)
             {
-                fd_    = other.fd_;
-                data_ = std::move(other.data_);
+                data_     = std::move(other.data_);
+                fd_       = other.fd_;
+                hd_       = other.hd_;
                 other.fd_ = -1;
+                other.hd_ = -1;
             }
             return *this;
         }
@@ -284,8 +303,9 @@ namespace pfq {
         void
         swap(socket &other)
         {
-            std::swap(fd_,    other.fd_);
             std::swap(data_, other.data_);
+            std::swap(fd_,   other.fd_);
+            std::swap(hd_,   other.hd_);
         }
 
         //! Open the socket with the given group policy.
@@ -452,6 +472,11 @@ namespace pfq {
                     throw pfq_error("FPQ: close error");
                 fd_ = -1;
             }
+
+            if (hd_ != -1) {
+                ::close(hd_);
+                hd_ = -1;
+            }
         }
 
         //! Enable the socket for packets capture and transmission.
@@ -468,14 +493,20 @@ namespace pfq {
             if (::getsockopt(fd_, PF_Q, Q_SO_GET_SHARED_MEM, &tot_mem, &size) == -1)
                 throw pfq_error(errno, "PFQ: queue memory error");
 
-            data_->shm_size = tot_mem;
-
             if (data_->shm_addr)
                 throw pfq_error(errno, "PFQ: queue already enabled");
 
-            if ((data_->shm_addr = mmap(nullptr, tot_mem, PROT_READ|PROT_WRITE, MAP_SHARED, fd_, 0)) == MAP_FAILED)
-                throw pfq_error(errno, "PFQ: queue mmap error");
+            hd_ = ::open(("/dev/hugepages/pfq-" + std::to_string(fd_)).c_str(),  O_CREAT | O_RDWR, 0755);
+            if (hd_ != -1)
+                data_->shm_addr = mmap(nullptr, tot_mem, PROT_READ|PROT_WRITE, MAP_SHARED, hd_, 0);
 
+            if (data_->shm_addr == MAP_FAILED)
+                data_->shm_addr = mmap(nullptr, tot_mem, PROT_READ|PROT_WRITE, MAP_SHARED, fd_, 0);
+
+            if (data_->shm_addr == MAP_FAILED)
+                throw pfq_error(errno, "PFQ: mmap");
+
+            data_->shm_size = tot_mem;
 
             data_->rx_queue_addr = static_cast<char *>(data_->shm_addr) + sizeof(pfq_queue_hdr);
             data_->rx_queue_size = data_->rx_slots * data_->rx_slot_size;
@@ -495,8 +526,14 @@ namespace pfq {
             if (fd_ == -1)
                 throw pfq_error("PFQ: socket not open");
 
-            if (munmap(data_->shm_addr, data_->shm_size) == -1)
-                throw pfq_error(errno, "PFQ: munmap error");
+            if (data_->shm_addr != MAP_FAILED)
+            {
+                if (::munmap(data_->shm_addr, data_->shm_size) == -1)
+                    throw pfq_error(errno, "PFQ: munmap error");
+
+                if (hd_ != -1)
+                    unlink(("/dev/hugepages/pfq-" + std::to_string(fd_)).c_str());
+            }
 
             data_->shm_addr = nullptr;
             data_->shm_size = 0;
