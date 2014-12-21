@@ -297,7 +297,7 @@ void pfq_spsc_read_commit(struct pfq_tx_queue_hdr *q)
 #define Q_SO_GET_ID                 	20
 #define Q_SO_GET_STATUS             	21      /* 1 = enabled, 0 = disabled */
 #define Q_SO_GET_STATS              	22
-#define Q_SO_GET_SHARED_MEM          	23      /* size of the shared memory in (bytes) */
+#define Q_SO_GET_SHMEM_SIZE          	23      /* size of the shared memory in (bytes) */
 #define Q_SO_GET_RX_TSTAMP          	24
 #define Q_SO_GET_RX_CAPLEN          	25
 #define Q_SO_GET_RX_SLOTS           	26
