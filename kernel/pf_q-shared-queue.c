@@ -31,7 +31,7 @@
 #include <linux/mm.h>
 #include <linux/pf_q.h>
 
-#include <pf_q-mpdb-queue.h>
+#include <pf_q-shared-queue.h>
 
 #include <pf_q-shmem.h>
 #include <pf_q-bitops.h>

@@ -39,7 +39,7 @@
 #include <pf_q-engine.h>
 #include <pf_q-sockopt.h>
 #include <pf_q-endpoint.h>
-#include <pf_q-mpdb-queue.h>
+#include <pf_q-shared-queue.h>
 
 
 int pfq_getsockopt(struct socket *sock,

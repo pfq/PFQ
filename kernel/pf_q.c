@@ -66,7 +66,7 @@
 #include <pf_q-vlan.h>
 #include <pf_q-stats.h>
 #include <pf_q-endpoint.h>
-#include <pf_q-mpdb-queue.h>
+#include <pf_q-shared-queue.h>
 #include <pf_q-skbuff-list.h>
 #include <pf_q-transmit.h>
 #include <pf_q-percpu.h>

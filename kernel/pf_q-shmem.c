@@ -28,7 +28,7 @@
 #include <linux/pagemap.h>
 
 #include <pf_q-shmem.h>
-#include <pf_q-mpdb-queue.h>
+#include <pf_q-shared-queue.h>
 
 
 static int
