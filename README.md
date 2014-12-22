@@ -32,6 +32,7 @@ Features
 * User-space native bindings for C, C++11 and Haskell languages.
 * pfq-omatic, a script that allows to compile drivers and get the accelerated versions.
 * Accelerated pcap library for both packet capture and transmission.
+* HugePages support.
 
 Publications
 ------------
