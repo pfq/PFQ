@@ -470,12 +470,14 @@ namespace pfq {
 
                 if (::close(fd_) < 0)
                     throw pfq_error("FPQ: close error");
-                fd_ = -1;
-            }
 
-            if (hd_ != -1) {
-                ::close(hd_);
-                hd_ = -1;
+                fd_ = -1;
+
+                if (hd_ != -1)
+                {
+                    ::close(hd_);
+                    hd_ = -1;
+                }
             }
         }
 
@@ -486,20 +488,19 @@ namespace pfq {
         {
             size_t tot_mem; socklen_t size = sizeof(tot_mem);
 
-            if (data_->shm_addr)
+            if (data_->shm_addr != 0 &&
+                data_->shm_addr != MAP_FAILED)
                 throw pfq_error(errno, "PFQ: queue already enabled");
 
             if (::getsockopt(fd_, PF_Q, Q_SO_GET_SHMEM_SIZE, &tot_mem, &size) == -1)
                 throw pfq_error(errno, "PFQ: queue memory error");
 
-            hd_ = ::open(("/dev/hugepages/pfq-" + std::to_string(fd_)).c_str(),  O_CREAT | O_RDWR, 0755);
+            hd_ = ::open(("/dev/hugepages/pfq." + std::to_string(fd_)).c_str(),  O_CREAT | O_RDWR, 0755);
             if (hd_ != -1)
                 data_->shm_addr = ::mmap(nullptr, tot_mem, PROT_READ|PROT_WRITE, MAP_SHARED, hd_, 0);
 
             if (data_->shm_addr == MAP_FAILED)
             {
-                std::cerr << "hugepage not available!" << std::endl;
-
                 void * null = nullptr;
                 if(::setsockopt(fd_, PF_Q, Q_SO_ENABLE, &null, sizeof(null)) == -1) {
                     throw pfq_error(errno, "PFQ: socket enable");
@@ -509,15 +510,13 @@ namespace pfq {
             }
             else
             {
-                std::cerr << "hugepage support *** enabled ***" << std::endl;
-
                 if(::setsockopt(fd_, PF_Q, Q_SO_ENABLE, &data_->shm_addr, sizeof(data_->shm_addr)) == -1) {
                     throw pfq_error(errno, "PFQ: socket enable");
                 }
             }
 
             if (data_->shm_addr == MAP_FAILED)
-                throw pfq_error(errno, "PFQ: mmap");
+                throw pfq_error(errno, "PFQ: socket enable (mmap)");
 
             data_->shm_size = tot_mem;
 
@@ -545,7 +544,7 @@ namespace pfq {
                     throw pfq_error(errno, "PFQ: munmap error");
 
                 if (hd_ != -1)
-                    unlink(("/dev/hugepages/pfq-" + std::to_string(fd_)).c_str());
+                    unlink(("/dev/hugepages/pfq." + std::to_string(fd_)).c_str());
             }
 
             data_->shm_addr = nullptr;
