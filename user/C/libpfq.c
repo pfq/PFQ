@@ -26,6 +26,7 @@
 
 #include <sys/socket.h>
 #include <sys/types.h>
+#include <sys/stat.h>
 #include <sys/ioctl.h>
 #include <sys/mman.h>
 
@@ -41,6 +42,7 @@
 #include <signal.h>
 #include <ctype.h>
 #include <sched.h>
+#include <fcntl.h>
 
 #include <poll.h>
 
@@ -155,6 +157,8 @@ typedef struct pfq_data
 	const char * error;
 
 	int fd;
+	int hd;
+
 	int id;
 	int gid;
 
@@ -227,6 +231,7 @@ pfq_open_group(unsigned long class_mask, int group_policy, size_t caplen, size_t
 	memset(q, 0, sizeof(pfq_t));
 
 	q->fd 	    = fd;
+	q->hd 	    = -1;
 	q->id 	    = -1;
 	q->gid 	    = -1;
         q->tx_async =  1;
@@ -289,40 +294,59 @@ int pfq_close(pfq_t *q)
 		if (close(q->fd) < 0)
 			return Q_ERROR(q, "PFQ: close error");
 
-		free(q);
+		if (q->hd != -1)
+			close(q->hd);
 
+		free(q);
                 return Q_OK(q);
 	}
-	else
-	{
-		free(q);
-		return __error = "PFQ: socket not open", -1;
-	}
+
+	free(q);
+	return __error = "PFQ: socket not open", -1;
 }
 
 
 int
 pfq_enable(pfq_t *q)
 {
-	if(setsockopt(q->fd, PF_Q, Q_SO_ENABLE, NULL, 0) == -1) {
-		return Q_ERROR(q, "PFQ: socket enable");
-	}
-
 	size_t tot_mem; socklen_t size = sizeof(tot_mem);
+	char filename[64];
 
-	if (getsockopt(q->fd, PF_Q, Q_SO_GET_SHARED_MEM, &tot_mem, &size) == -1) {
-		return Q_ERROR(q, "PFQ: queue memory error");
-	}
-
-	q->shm_size = tot_mem;
-
-	if (q->shm_addr) {
+	if (q->shm_addr != 0 &&
+	    q->shm_addr != MAP_FAILED) {
 		return Q_ERROR(q, "PFQ: queue already enabled");
 	}
 
-	if ((q->shm_addr = mmap(NULL, tot_mem, PROT_READ|PROT_WRITE, MAP_SHARED, q->fd, 0)) == MAP_FAILED) {
-		return Q_ERROR(q, "PFQ: queue mmap error");
+	if (getsockopt(q->fd, PF_Q, Q_SO_GET_SHMEM_SIZE, &tot_mem, &size) == -1) {
+		return Q_ERROR(q, "PFQ: queue memory error");
 	}
+
+	snprintf(filename, 64, "/dev/hugepages/pfq.%d", q->fd);
+
+	q->hd = open(filename, O_CREAT | O_RDWR, 0755);
+	if (q->hd != -1)
+		q->shm_addr = mmap(NULL, tot_mem, PROT_READ|PROT_WRITE, MAP_SHARED, q->hd, 0);
+
+
+	if (q->shm_addr == MAP_FAILED) {
+        	void * null = NULL;
+                if(setsockopt(q->fd, PF_Q, Q_SO_ENABLE, &null, sizeof(null)) == -1) {
+			return Q_ERROR(q, "PFQ: socket enable");
+                }
+
+                q->shm_addr = mmap(NULL, tot_mem, PROT_READ|PROT_WRITE, MAP_SHARED, q->fd, 0);
+	}
+	else {
+		if(setsockopt(q->fd, PF_Q, Q_SO_ENABLE, &q->shm_addr, sizeof(q->shm_addr)) == -1) {
+			return Q_ERROR(q, "PFQ: socket enable");
+		}
+	}
+
+	if (q->shm_addr == MAP_FAILED) {
+		return Q_ERROR(q, "PFQ: socket enable (mmap)");
+	}
+
+	q->shm_size = tot_mem;
 
        	q->rx_queue_addr = (char *)(q->shm_addr) + sizeof(struct pfq_queue_hdr);
         q->rx_queue_size = q->rx_slots * q->rx_slot_size;
@@ -340,8 +364,17 @@ pfq_disable(pfq_t *q)
 	if (q->fd == -1)
 		return Q_ERROR(q, "PFQ: socket not open");
 
-	if (munmap(q->shm_addr,q->shm_size) == -1) {
-		return Q_ERROR(q, "PFQ: munmap error");
+	if (q->shm_addr != MAP_FAILED) {
+
+		if (munmap(q->shm_addr,q->shm_size) == -1)
+			return Q_ERROR(q, "PFQ: munmap error");
+
+		if (q->hd != -1) {
+                	char filename[64];
+                	snprintf(filename, 64, "/dev/hugepages/pfq.%d", q->fd);
+                	unlink(filename);
+		}
+
 	}
 
 	q->shm_addr = NULL;
