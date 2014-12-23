@@ -321,7 +321,7 @@ namespace pfq {
 
             if (policy != group_policy::undefined)
             {
-                data_->gid = this->join_group(any_group, policy, class_mask::default_);
+                data()->gid = this->join_group(any_group, policy, class_mask::default_);
             }
         }
 
@@ -338,7 +338,7 @@ namespace pfq {
 
             if (policy != group_policy::undefined)
             {
-                data_->gid = this->join_group(any_group, policy, mask);
+                data()->gid = this->join_group(any_group, policy, mask);
             }
         }
 
@@ -391,6 +391,20 @@ namespace pfq {
 
     private:
 
+        pfq_data * data()
+        {
+            if (data_)
+                return data_.get();
+            throw pfq_error("PFQ: socket not open");
+        }
+
+        pfq_data const * data() const
+        {
+            if (data_)
+                return data_.get();
+            throw pfq_error("PFQ: socket not open");
+        }
+
         void
         open(size_t caplen, size_t rx_slots, size_t maxlen, size_t tx_slots)
         {
@@ -418,7 +432,7 @@ namespace pfq {
                                         0,
                                         0,
                                         true
-                                       });
+                                     });
 
             // get id
 
@@ -489,8 +503,8 @@ namespace pfq {
         {
             size_t tot_mem; socklen_t size = sizeof(tot_mem);
 
-            if (data_->shm_addr != 0 &&
-                data_->shm_addr != MAP_FAILED)
+            if (data()->shm_addr != 0 &&
+                data()->shm_addr != MAP_FAILED)
                 throw pfq_error(errno, "PFQ: queue already enabled");
 
             if (::getsockopt(fd_, PF_Q, Q_SO_GET_SHMEM_SIZE, &tot_mem, &size) == -1)
@@ -498,34 +512,34 @@ namespace pfq {
 
             hd_ = ::open(("/dev/hugepages/pfq." + std::to_string(fd_)).c_str(),  O_CREAT | O_RDWR, 0755);
             if (hd_ != -1)
-                data_->shm_addr = ::mmap(nullptr, tot_mem, PROT_READ|PROT_WRITE, MAP_SHARED, hd_, 0);
+                data()->shm_addr = ::mmap(nullptr, tot_mem, PROT_READ|PROT_WRITE, MAP_SHARED, hd_, 0);
 
-            if (data_->shm_addr == MAP_FAILED)
+            if (data()->shm_addr == MAP_FAILED)
             {
                 void * null = nullptr;
                 if(::setsockopt(fd_, PF_Q, Q_SO_ENABLE, &null, sizeof(null)) == -1) {
                     throw pfq_error(errno, "PFQ: socket enable");
                 }
 
-                data_->shm_addr = ::mmap(nullptr, tot_mem, PROT_READ|PROT_WRITE, MAP_SHARED, fd_, 0);
+                data()->shm_addr = ::mmap(nullptr, tot_mem, PROT_READ|PROT_WRITE, MAP_SHARED, fd_, 0);
             }
             else
             {
-                if(::setsockopt(fd_, PF_Q, Q_SO_ENABLE, &data_->shm_addr, sizeof(data_->shm_addr)) == -1) {
+                if(::setsockopt(fd_, PF_Q, Q_SO_ENABLE, &data()->shm_addr, sizeof(data()->shm_addr)) == -1) {
                     throw pfq_error(errno, "PFQ: socket enable");
                 }
             }
 
-            if (data_->shm_addr == MAP_FAILED)
+            if (data()->shm_addr == MAP_FAILED)
                 throw pfq_error(errno, "PFQ: socket enable (mmap)");
 
-            data_->shm_size = tot_mem;
+            data()->shm_size = tot_mem;
 
-            data_->rx_queue_addr = static_cast<char *>(data_->shm_addr) + sizeof(pfq_queue_hdr);
-            data_->rx_queue_size = data_->rx_slots * data_->rx_slot_size;
+            data()->rx_queue_addr = static_cast<char *>(data()->shm_addr) + sizeof(pfq_queue_hdr);
+            data()->rx_queue_size = data()->rx_slots * data()->rx_slot_size;
 
-            data_->tx_queue_addr = static_cast<char *>(data_->shm_addr) + sizeof(pfq_queue_hdr) + data_->rx_queue_size * 2;
-            data_->tx_queue_size = data_->tx_slots * data_->tx_slot_size;
+            data()->tx_queue_addr = static_cast<char *>(data()->shm_addr) + sizeof(pfq_queue_hdr) + data()->rx_queue_size * 2;
+            data()->tx_queue_size = data()->tx_slots * data()->tx_slot_size;
         }
 
         //! Disable the socket.
@@ -539,17 +553,17 @@ namespace pfq {
             if (fd_ == -1)
                 throw pfq_error("PFQ: socket not open");
 
-            if (data_->shm_addr != MAP_FAILED)
+            if (data()->shm_addr != MAP_FAILED)
             {
-                if (::munmap(data_->shm_addr, data_->shm_size) == -1)
+                if (::munmap(data()->shm_addr, data()->shm_size) == -1)
                     throw pfq_error(errno, "PFQ: munmap error");
 
                 if (hd_ != -1)
                     unlink(("/dev/hugepages/pfq." + std::to_string(fd_)).c_str());
             }
 
-            data_->shm_addr = nullptr;
-            data_->shm_size = 0;
+            data()->shm_addr = nullptr;
+            data()->shm_size = 0;
 
             if(::setsockopt(fd_, PF_Q, Q_SO_DISABLE, nullptr, 0) == -1)
                 throw pfq_error(errno, "PFQ: socket disable");
@@ -607,7 +621,7 @@ namespace pfq {
                 throw pfq_error(errno, "PFQ: set caplen error");
             }
 
-            data_->rx_slot_size = align<64>(sizeof(pfq_pkthdr) + value);
+            data()->rx_slot_size = align<64>(sizeof(pfq_pkthdr) + value);
         }
 
         //! Return the capture length of packets, in bytes.
@@ -633,7 +647,7 @@ namespace pfq {
                 throw pfq_error(errno, "PFQ: set maxlen error");
             }
 
-            data_->rx_slot_size = align<64>(sizeof(pfq_pkthdr_tx) + value);
+            data()->rx_slot_size = align<64>(sizeof(pfq_pkthdr_tx) + value);
         }
 
         //! Return the max transmission length of packets, in bytes.
@@ -663,7 +677,7 @@ namespace pfq {
                 throw pfq_error(errno, "PFQ: set Rx slots error");
             }
 
-            data_->rx_slots = value;
+            data()->rx_slots = value;
         }
 
         //! Return the length of the Rx queue, in number of packets.
@@ -671,10 +685,7 @@ namespace pfq {
         size_t
         rx_slots() const
         {
-            if (!data_)
-                throw pfq_error("PFQ: socket not open");
-
-            return data_->rx_slots;
+            return data()->rx_slots;
         }
 
         //! Return the length of a Rx slot, in bytes.
@@ -682,10 +693,7 @@ namespace pfq {
         size_t
         rx_slot_size() const
         {
-            if (!data_)
-                throw pfq_error("PFQ: socket not open");
-
-            return data_->rx_slot_size;
+            return data()->rx_slot_size;
         }
 
         //! Specify the length of the Tx queue, in number of packets.
@@ -704,7 +712,7 @@ namespace pfq {
                 throw pfq_error(errno, "PFQ: set Tx slots error");
             }
 
-            data_->tx_slots = value;
+            data()->tx_slots = value;
         }
 
         //! Return the length of the Tx queue, in number of packets.
@@ -712,10 +720,7 @@ namespace pfq {
         size_t
         tx_slots() const
         {
-           if (!data_)
-                throw pfq_error("PFQ: socket not open");
-
-           return data_->tx_slots;
+           return data()->tx_slots;
         }
 
 
@@ -845,9 +850,9 @@ namespace pfq {
                 throw pfq_error(errno, "PFQ: Tx bind error");
 
             if (core == no_kthread)
-                data_->tx_async = false;
+                data()->tx_async = false;
 
-            data_->tx_num_bind++;
+            data()->tx_num_bind++;
         }
 
         //! Unbind the socket transmission.
@@ -861,8 +866,8 @@ namespace pfq {
             if (::setsockopt(fd_, PF_Q, Q_SO_TX_UNBIND, nullptr, 0) == -1)
                 throw pfq_error(errno, "PFQ: Tx unbind error");
 
-            data_->tx_async = true;
-            data_->tx_num_bind = 0;
+            data()->tx_async = true;
+            data()->tx_num_bind = 0;
         }
 
 
@@ -1018,8 +1023,8 @@ namespace pfq {
             if (::getsockopt(fd_, PF_Q, Q_SO_GROUP_JOIN, &group, &size) == -1)
                 throw pfq_error(errno, "PFQ: join group error");
 
-            if (data_->gid == -1)
-                data_->gid = group.gid;
+            if (data()->gid == -1)
+                data()->gid = group.gid;
 
             return group.gid;
         }
@@ -1032,8 +1037,8 @@ namespace pfq {
             if (::setsockopt(fd_, PF_Q, Q_SO_GROUP_LEAVE, &gid, sizeof(gid)) == -1)
                 throw pfq_error(errno, "PFQ: leave group error");
 
-            if (data_->gid == gid)
-                data_->gid = -1;
+            if (data()->gid == gid)
+                data()->gid = -1;
         }
 
         //! Wait for packets.
@@ -1072,10 +1077,10 @@ namespace pfq {
         queue
         read(long int microseconds = -1)
         {
-            if (!data_ || !data_->shm_addr)
+            if (!data()->shm_addr)
                 throw pfq_error("PFQ: read: socket not enabled");
 
-            auto q = static_cast<struct pfq_queue_hdr *>(data_->shm_addr);
+            auto q = static_cast<struct pfq_queue_hdr *>(data()->shm_addr);
 
             size_t data = q->rx.data;
             size_t index = MPDB_QUEUE_INDEX(data);
@@ -1254,9 +1259,7 @@ namespace pfq {
         size_t
         mem_size() const
         {
-            if (data_)
-                return data_->shm_size;
-            return 0;
+            return data()->shm_size;
         }
 
         //! Return the address of the Rx queue.
@@ -1264,9 +1267,7 @@ namespace pfq {
         const void *
         mem_addr() const
         {
-            if (data_)
-                return data_->shm_addr;
-            return nullptr;
+            return data()->shm_addr;
         }
 
 
@@ -1316,7 +1317,7 @@ namespace pfq {
         bool
         inject(const_buffer buf, int queue = any_queue)
         {
-            if (!data_ || !data_->shm_addr)
+            if (!data_->shm_addr)
                 throw pfq_error("PFQ: inject: socket not enabled");
 
             const int tss = [=]() -> size_t {
