@@ -43,11 +43,11 @@ namespace pfq {
 
         //! Forward iterator over packets.
 
-        struct iterator : public std::iterator<std::forward_iterator_tag, pfq_pkt_hdr>
+        struct iterator : public std::iterator<std::forward_iterator_tag, pfq_pkthdr>
         {
             friend struct queue::const_iterator;
 
-            iterator(pfq_pkt_hdr *h, size_t slot_size, size_t index)
+            iterator(pfq_pkthdr *h, size_t slot_size, size_t index)
             : hdr_(h), slot_size_(slot_size), index_(index)
             {}
 
@@ -60,7 +60,7 @@ namespace pfq {
             iterator &
             operator++()
             {
-                hdr_ = reinterpret_cast<pfq_pkt_hdr *>(
+                hdr_ = reinterpret_cast<pfq_pkthdr *>(
                         reinterpret_cast<char *>(hdr_) + slot_size_);
                 return *this;
             }
@@ -73,13 +73,13 @@ namespace pfq {
                 return ret;
             }
 
-            pfq_pkt_hdr *
+            pfq_pkthdr *
             operator->() const
             {
                 return hdr_;
             }
 
-            pfq_pkt_hdr &
+            pfq_pkthdr &
             operator*() const
             {
                 return *hdr_;
@@ -112,16 +112,16 @@ namespace pfq {
             }
 
         private:
-            pfq_pkt_hdr *hdr_;
+            pfq_pkthdr *hdr_;
             size_t   slot_size_;
             size_t   index_;
         };
 
         //! Constant forward iterator over packets.
 
-        struct const_iterator : public std::iterator<std::forward_iterator_tag, pfq_pkt_hdr>
+        struct const_iterator : public std::iterator<std::forward_iterator_tag, pfq_pkthdr>
         {
-            const_iterator(pfq_pkt_hdr *h, size_t slot_size, size_t index)
+            const_iterator(pfq_pkthdr *h, size_t slot_size, size_t index)
             : hdr_(h), slot_size_(slot_size), index_(index)
             {}
 
@@ -138,7 +138,7 @@ namespace pfq {
             const_iterator &
             operator++()
             {
-                hdr_ = reinterpret_cast<pfq_pkt_hdr *>(
+                hdr_ = reinterpret_cast<pfq_pkthdr *>(
                         reinterpret_cast<char *>(hdr_) + slot_size_);
                 return *this;
             }
@@ -151,13 +151,13 @@ namespace pfq {
                 return ret;
             }
 
-            const pfq_pkt_hdr *
+            const pfq_pkthdr *
             operator->() const
             {
                 return hdr_;
             }
 
-            const pfq_pkt_hdr &
+            const pfq_pkthdr &
             operator*() const
             {
                 return *hdr_;
@@ -190,7 +190,7 @@ namespace pfq {
             }
 
         private:
-            pfq_pkt_hdr *hdr_;
+            pfq_pkthdr *hdr_;
             size_t  slot_size_;
             size_t  index_;
         };
@@ -263,7 +263,7 @@ namespace pfq {
         iterator
         begin()
         {
-            return iterator(reinterpret_cast<pfq_pkt_hdr *>(addr_), slot_size_, index_);
+            return iterator(reinterpret_cast<pfq_pkthdr *>(addr_), slot_size_, index_);
         }
 
         //! Return a constant iterator to the first slot of a non-empty queue.
@@ -274,7 +274,7 @@ namespace pfq {
         const_iterator
         begin() const
         {
-            return const_iterator(reinterpret_cast<pfq_pkt_hdr *>(addr_), slot_size_, index_);
+            return const_iterator(reinterpret_cast<pfq_pkthdr *>(addr_), slot_size_, index_);
         }
 
         //! Return an iterator past to the end of the queue.
@@ -282,7 +282,7 @@ namespace pfq {
         iterator
         end()
         {
-            return iterator(reinterpret_cast<pfq_pkt_hdr *>(
+            return iterator(reinterpret_cast<pfq_pkthdr *>(
                         static_cast<char *>(addr_) + queue_len_ * slot_size_), slot_size_, index_);
         }
 
@@ -291,7 +291,7 @@ namespace pfq {
         const_iterator
         end() const
         {
-            return const_iterator(reinterpret_cast<pfq_pkt_hdr *>(
+            return const_iterator(reinterpret_cast<pfq_pkthdr *>(
                         static_cast<char *>(addr_) + queue_len_ * slot_size_), slot_size_, index_);
         }
 
@@ -303,7 +303,7 @@ namespace pfq {
         const_iterator
         cbegin() const
         {
-            return const_iterator(reinterpret_cast<pfq_pkt_hdr *>(addr_), slot_size_, index_);
+            return const_iterator(reinterpret_cast<pfq_pkthdr *>(addr_), slot_size_, index_);
         }
 
         //! Return a constant iterator past to the end of the queue.
@@ -311,7 +311,7 @@ namespace pfq {
         const_iterator
         cend() const
         {
-            return const_iterator(reinterpret_cast<pfq_pkt_hdr *>(
+            return const_iterator(reinterpret_cast<pfq_pkthdr *>(
                         static_cast<char *>(addr_) + queue_len_ * slot_size_), slot_size_, index_);
         }
 
@@ -328,7 +328,7 @@ namespace pfq {
      * return a nullptr otherwise.
      */
 
-    static inline void * data_ready(pfq_pkt_hdr &h, uint8_t current_commit)
+    static inline void * data_ready(pfq_pkthdr &h, uint8_t current_commit)
     {
         if (const_cast<volatile uint8_t &>(h.commit) != current_commit)
             return nullptr;
@@ -342,7 +342,7 @@ namespace pfq {
      * return a nullptr otherwise.
      */
 
-    static inline const void * data_ready(pfq_pkt_hdr const &h, uint8_t current_commit)
+    static inline const void * data_ready(pfq_pkthdr const &h, uint8_t current_commit)
     {
         if (const_cast<volatile uint8_t &>(h.commit) != current_commit)
             return nullptr;

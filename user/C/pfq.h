@@ -96,10 +96,10 @@ pfq_net_queue_prev(struct pfq_net_queue const *nq, pfq_iterator_t iter)
 /*! Given an iterator, return a pointer to the packet header. */
 
 static inline
-const struct pfq_pkt_hdr *
+const struct pfq_pkthdr *
 pfq_iterator_header(pfq_iterator_t iter)
 {
-        return (const struct pfq_pkt_hdr *)iter;
+        return (const struct pfq_pkthdr *)iter;
 }
 
 /*! Given an iterator, return a pointer to the packet data. */
@@ -108,7 +108,7 @@ static inline
 const char *
 pfq_iterator_data(pfq_iterator_t iter)
 {
-        return (const char *)(iter + sizeof(struct pfq_pkt_hdr));
+        return (const char *)(iter + sizeof(struct pfq_pkthdr));
 }
 
 /*! Given an iterator, return 1 if the packet is available. */
@@ -140,7 +140,7 @@ pfq_yield()
 
 /*! pfq handler: function prototype. */
 
-typedef void (*pfq_handler_t)(char *user, const struct pfq_pkt_hdr *h, const char *data);
+typedef void (*pfq_handler_t)(char *user, const struct pfq_pkthdr *h, const char *data);
 
 
 /*! Symmetric hashx */
@@ -526,7 +526,7 @@ extern int pfq_recv(pfq_t *q, void *buf, size_t buflen, struct pfq_net_queue *nq
 /*! The function takes a function pointer as callback.
  *  The callback must have the following signature:
  *
- * typedef void (*pfq_handler)(char *user, const struct pfq_pkt_hdr *h, const char *data);
+ * typedef void (*pfq_handler)(char *user, const struct pfq_pkthdr *h, const char *data);
  */
 
 extern int pfq_dispatch(pfq_t *q, pfq_handler_t cb, long int microseconds, char *user);

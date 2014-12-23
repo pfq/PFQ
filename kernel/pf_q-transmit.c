@@ -117,7 +117,7 @@ __pfq_queue_flush(size_t qidx, struct pfq_tx_opt *to, struct net_device *dev, in
 	struct pfq_skbuff_batch skbs;
 	struct pfq_tx_queue_hdr *txq;
 	struct local_data *local;
-	struct pfq_pkt_hdr * h;
+	struct pfq_pkthdr_tx * hdr;
 	struct sk_buff *skb;
 	size_t len, tot_sent = 0;
 
@@ -173,15 +173,15 @@ __pfq_queue_flush(size_t qidx, struct pfq_tx_opt *to, struct net_device *dev, in
 				skb_get(skb);
 		}
 		else {
-			h = (struct pfq_pkt_hdr *) (to->queue[qidx].base_addr + index * txq->slot_size);
-
 			skb = pfq_tx_alloc_skb(to->maxlen, GFP_KERNEL, node);
 			if (unlikely(skb == NULL))
 				break;
 
+			hdr = (struct pfq_pkthdr_tx *) (to->queue[qidx].base_addr + index * txq->slot_size);
+
 			/* fill the skb */
 
-			len = min_t(size_t, h->len, txq->max_len);
+			len = min_t(size_t, hdr->len, txq->max_len);
 
 			/* set the skb */
 
@@ -196,7 +196,7 @@ __pfq_queue_flush(size_t qidx, struct pfq_tx_opt *to, struct net_device *dev, in
 
 			/* copy bytes in the socket buffer */
 
-			skb_copy_to_linear_data(skb, h+1, len < 64 ? 64 : len);
+			skb_copy_to_linear_data(skb, hdr+1, len < 64 ? 64 : len);
 
 			/* enqueue the skb to the batch */
 

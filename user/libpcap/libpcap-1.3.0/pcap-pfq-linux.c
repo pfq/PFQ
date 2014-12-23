@@ -1134,14 +1134,14 @@ pfq_read_linux(pcap_t *handle, int max_packets, pcap_handler callback, u_char *u
 	for(; (max_packets <= 0 || n > 0) && (it != it_end); it = pfq_net_queue_next(&nq, it))
 	{
 		struct pcap_pkthdr pcap_h;
-		struct pfq_pkt_hdr *h;
+		struct pfq_pkthdr *h;
                 uint16_t vlan_tci;
 		const char *pkt;
 
 		while (!pfq_iterator_ready(&nq, it))
 			pfq_yield();
 
-		h = (struct pfq_pkt_hdr *)pfq_iterator_header(it);
+		h = (struct pfq_pkthdr *)pfq_iterator_header(it);
 
 		pcap_h.ts.tv_sec  = h->tstamp.tv.sec;
 		pcap_h.ts.tv_usec = h->tstamp.tv.nsec / 1000;

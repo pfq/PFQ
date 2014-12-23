@@ -70,7 +70,7 @@ try
 
         // std::cout << "batch size: " << b.size() << std::endl;
 
-        std::for_each(b.begin(), b.end(), [&](pfq_pkt_hdr &h) {
+        std::for_each(b.begin(), b.end(), [&](pfq_pkthdr &h) {
 
            while(!pfq::data_ready(h, q.current_commit()))
            {

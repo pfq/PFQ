@@ -86,7 +86,7 @@ size_t pfq_mpdb_enqueue_batch(struct pfq_rx_opt *ro,
 
 	for_each_gcbuff_bitmask(queue, mask, buff, n)
 	{
-		volatile struct pfq_pkt_hdr *hdr;
+		volatile struct pfq_pkthdr *hdr;
 		struct sk_buff *skb = buff.skb;
 		size_t bytes, slot_index;
 		char *pkt;
@@ -94,7 +94,7 @@ size_t pfq_mpdb_enqueue_batch(struct pfq_rx_opt *ro,
 		bytes = min_t(size_t, skb->len, ro->caplen);
 		slot_index = qlen + sent;
 
-		hdr = (struct pfq_pkt_hdr *)this_slot;
+		hdr = (struct pfq_pkthdr *)this_slot;
 		pkt = (char *)(hdr+1);
 
 		if (slot_index > ro->queue_size) {
@@ -238,7 +238,7 @@ pfq_shared_queue_enable(struct pfq_sock *so, unsigned long user_addr)
 				so->rx_opt.caplen,
 				pfq_queue_mpdb_mem(so) * 2);
 
-		pr_devel("[PFQ|%d] Tx queue: len=%zu slot_size=%zu max_len=%zu, mem=%zu bytes\n", so->id,
+		pr_devel("[PFQ|%d] Tx queue: len=%zu slot_size=%zu maxlen=%zu, mem=%zu bytes\n", so->id,
 				so->tx_opt.queue_size,
 				so->tx_opt.slot_size,
 				so->tx_opt.maxlen,
