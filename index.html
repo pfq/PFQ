@@ -61,6 +61,7 @@ below the network stack of the Linux Kernel. Through PFQ/lang it is possible to 
 
 <ul>
 
+<li>Full lock-free, non-blocking architecture.</li>
 <li>Rx and Tx 10-Gbit Line-rate (14,8Mpps), with Intel ixgbe vanilla drivers.</li>
 <li>Transparent support of kernel threads for asynchronous packets transmission.</li>
 <li>Concurrent monitoring of multi-threaded applications with socket groups.</li>
@@ -68,9 +69,11 @@ below the network stack of the Linux Kernel. Through PFQ/lang it is possible to 
 <li>Per-group Berkeley and VLAN filters.</li>
 <li>Functional engine for in-kernel packet processing: <a href="http://pfq.github.io/PFQ/lang/haskell/index.html">PFQ/lang</a>.</li>
 <li>User-space native bindings for C, C++11 and Haskell languages.</li>
-<li>Accelerated pcap library for both packet capture and transmission.</li>
-<li>pfq-omatic script to dramatically <b>accelerate</b> vanilla drivers.</li>
-<li>I/O user<->kernel space shared-memory on-top-of <b>HugePages</b>.</li>
+<li>PFQ/lang implementation as eDLS for C++11-14 and Haskell language.</li>
+<li>Accelerated pcap library for packet capture and transmission (linespeed tested with <a href="https://github.com/awgn/captop">captop</a>).</li>
+<li><b>pfqd</b> daemon used to configure and parallelize multiple instances of pcap legacy applications.</li>
+<li><b>pfq-omatic</b>, a script that dramatically <b>accelerates</b> vanilla drivers.</li>
+<li>I/O user<->kernel space by means of shared-memory on-top-of <b>HugePages</b>.</li>
 <li><a href="https://github.com/pfq/PFQ-pcap">Accelerated pcap library (for PFQ 3.x).</a></li>
 
 </ul><h3>
