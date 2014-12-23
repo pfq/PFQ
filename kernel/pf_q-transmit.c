@@ -307,6 +307,11 @@ pfq_queue_xmit(struct pfq_skbuff_batch *skbs, struct net_device *dev, int hw_que
 	{
 		skb_set_queue_mapping(skb, hw_queue);
 
+#if(LINUX_VERSION_CODE >= KERNEL_VERSION(3,18,0))
+		skb->xmit_more = !!n;
+#else
+		skb->mark = !!n;
+#endif
 		if (__pfq_queue_xmit(skb, dev, txq) == NETDEV_TX_OK)
 			++ret;
 		else
