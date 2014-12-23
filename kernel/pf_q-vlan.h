@@ -31,7 +31,7 @@
 
 extern struct sk_buff *pfq_vlan_untag(struct sk_buff *skb);
 
-#elif (LINUX_VERSION_CODE < KERNEL_VERSION(3,17,0))
+#elif (LINUX_VERSION_CODE < KERNEL_VERSION(3,16,0))
 
 static inline
 struct sk_buff *pfq_vlan_untag(struct sk_buff *skb)
