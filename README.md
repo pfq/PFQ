@@ -28,11 +28,11 @@ Features
 * Concurrent monitoring of multi-threaded applications with socket groups.
 * Per-group packet steering through randomized hashing or deterministic classification.
 * Per-group Berkeley and VLAN filters.
-* Functional engine for in-kernel packet processing: *PFQ/lang*. 
+* Functional engine for in-kernel packet processing: **PFQ/lang**. 
 * User-space native bindings for C, C++11 and Haskell languages.
 * Accelerated pcap library for both packet capture and transmission.
-* pfq-omatic script to dramatically *accelerate* vanilla drivers.
-* I/O user<->kernel space shared-memory on-top-of HugePages.
+* pfq-omatic script to dramatically **accelerate** vanilla drivers.
+* I/O user<->kernel space shared-memory on-top-of **HugePages**.
 
 Publications
 ------------
