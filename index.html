@@ -60,14 +60,19 @@ below the network stack of the Linux Kernel. Through PFQ/lang it is possible to 
 <a name="features" class="anchor" href="#features"><span class="octicon octicon-link"></span></a>Features</h3>
 
 <ul>
-<li>10-Gbit Line-rate (14,8Mpps) with Intel ixgbe vanilla driver.</li>
-<li>Socket groups allow for concurrent monitoring of multiple multi-threaded applications.</li>
-<li>Per-group packet steering through randomized hashing algorithms or deterministic classifications.</li>
+
+<li>Rx and Tx 10-Gbit Line-rate (14,8Mpps), with Intel ixgbe vanilla drivers.</li>
+<li>Transparent support of kernel threads for asynchronous packets transmission.</li>
+<li>Concurrent monitoring of multi-threaded applications with socket groups.</li>
+<li>Per-group packet steering through randomized hashing or deterministic classification.</li>
 <li>Per-group Berkeley and VLAN filters.</li>
-<li>Extensible framework for in-kernel pure functional monitoring through PFQ-Lang.</li>
-<li>User-space native bindings for the C, C++11 and Haskell languages.</li>
-<li>pfq-omatic, a script that allows to compile drivers and get accelerated versions.</li>
-<li><a href="https://github.com/pfq/PFQ-pcap">Accelerated pcap library.</a></li>
+<li>Functional engine for in-kernel packet processing: <b>PFQ/lang</b>.</li>
+<li>User-space native bindings for C, C++11 and Haskell languages.</li>
+<li>Accelerated pcap library for both packet capture and transmission.</li>
+<li>pfq-omatic script to dramatically <b>accelerate</b> vanilla drivers.</li>
+<li>I/O user<->kernel space shared-memory on-top-of <b>HugePages</b>.</li>
+<li><a href="https://github.com/pfq/PFQ-pcap">Accelerated pcap library (for PFQ 3.x).</a></li>
+
 </ul><h3>
 <a name="performance" class="anchor" href="#performance"><span class="octicon octicon-link"></span></a>Performance</h3>
 
