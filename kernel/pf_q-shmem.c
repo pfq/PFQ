@@ -91,7 +91,7 @@ pfq_hugepage_map(struct pfq_shmem_descr *shmem, unsigned long addr, size_t size)
 {
 	int nid;
 
-	printk(KERN_WARNING "[PFQ] mapping user memory...\n");
+	printk(KERN_WARNING "[PFQ] mapping user memory (HugePages)...\n");
 
 	shmem->npages = PAGE_ALIGN(size) / PAGE_SIZE;
 	shmem->hugepages = vmalloc(shmem->npages * sizeof(struct page *));
