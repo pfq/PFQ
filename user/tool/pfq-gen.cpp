@@ -495,9 +495,9 @@ try
 
         std::cout << "stats: { " << cur << " } -> user: { "
                   << vt100::BOLD
-                  << persecond<int64_t>(sent - sent_, delta)            << ' '
-                  << persecond<int64_t>(fail-fail_, delta)              << ' '
-                  << pretty(persecond<double>((band-band_)*8, delta))  << "bit/sec "
+                  << "sent: " << persecond<int64_t>(sent - sent_, delta)            << ' '
+                  << "fail: " << persecond<int64_t>(fail-fail_, delta)              << ' '
+                  << "band: " << pretty(persecond<double>((band-band_)*8, delta))  << "bit/sec "
                   << vt100::RESET << " } - "
                   << "sent: " << vt100::BOLD << persecond<int64_t>(cur.sent - prec.sent, delta) << vt100::RESET << " pkt/sec - "
                   << "disc: " << vt100::BOLD << persecond<int64_t>(cur.disc - prec.disc, delta) << vt100::RESET << " pkt/sec" << std::endl;
