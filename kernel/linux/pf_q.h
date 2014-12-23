@@ -77,7 +77,7 @@ static inline void smp_wmb() { barrier(); }
 
 #define PF_Q    27          /* packet q domain */
 
-struct pfq_pkt_hdr
+struct pfq_pkthdr
 {
         uint64_t data;          /* state from pfq_cb */
 
@@ -87,11 +87,11 @@ struct pfq_pkt_hdr
                 struct {
                         uint32_t    sec;
                         uint32_t    nsec;
-                } tv;               /* note: struct timespec is badly defined for 64 bits arch. */
+                } tv;               /* note: compact timespec for 64 bits arch. */
         } tstamp;
 
         int         if_index;   /* interface index */
-        int         gid;        /* gruop id */
+        int         gid;        /* group id */
 
         uint16_t    len;        /* length of the packet (off wire) */
         uint16_t    caplen;     /* bytes captured */
@@ -114,6 +114,14 @@ struct pfq_pkt_hdr
 }; /* __attribute__((packed)); */
 
 
+
+struct pfq_pkthdr_tx
+{
+	uint16_t len;
+	uint16_t res;
+};
+
+
 struct pfq_tx_queue_hdr
 {
         struct
@@ -131,7 +139,7 @@ struct pfq_tx_queue_hdr
         unsigned int size_mask;        /* number of slots */
         unsigned int max_len;          /* max length of packet */
         unsigned int size;             /* number of slots (power of two) */
-        unsigned int slot_size;        /* sizeof(pfq_pkt_hdr) + max_len + sizeof(skb_shinfo) */
+        unsigned int slot_size;        /* sizeof(pfq_pkthdr) + max_len + sizeof(skb_shinfo) */
 
 } __attribute__((aligned(64)));
 
@@ -140,12 +148,11 @@ struct pfq_rx_queue_hdr
 {
         volatile unsigned int   data;
         unsigned int            size;       /* number of slots */
-        unsigned int            slot_size;  /* sizeof(pfq_pkt_hdr) + max_len + sizeof(skb_shinfo) */
+        unsigned int            slot_size;  /* sizeof(pfq_pkthdr) + max_len + sizeof(skb_shinfo) */
 
 } __attribute__((aligned(64)));
 
 
-#define MPDB_QUEUE_SLOT_SIZE(x)    ALIGN(sizeof(struct pfq_pkt_hdr) + x, 8)
 #define MPDB_QUEUE_INDEX(data)     (((data) & 0xff000000U) >> 24)
 #define MPDB_QUEUE_LEN(data)       ((data) & 0x00ffffffU)
 
@@ -159,10 +166,11 @@ struct pfq_queue_hdr
 };
 
 
-/* SPSC queue handling... */
+/* slots size... */
 
+#define MPDB_QUEUE_SLOT_SIZE(x)    ALIGN(sizeof(struct pfq_pkthdr) + x, 64)
+#define SPSC_QUEUE_SLOT_SIZE(x)    ALIGN(sizeof(struct pfq_pkthdr_tx) + x, 64)
 
-#define SPSC_QUEUE_SLOT_SIZE(x)    ALIGN(sizeof(struct pfq_pkt_hdr) + x, 8)
 
 static inline
 unsigned int pfq_spsc_next_index(struct pfq_tx_queue_hdr *q, unsigned int n)
@@ -261,9 +269,9 @@ void pfq_spsc_read_commit(struct pfq_tx_queue_hdr *q)
 
 
 /*
-   +------------------+----------------------+          +----------------------+          +----------------------+
-   | pfq_queue_hdr    | pfq_pkt_hdr | packet | ...      | pfq_pkt_hdr | packet |...       | pfq_pkt_hdr | packet | ...
-   +------------------+----------------------+          +----------------------+          +----------------------+
+   +------------------+---------------------+          +---------------------+          +---------------------+
+   | pfq_queue_hdr    | pfq_pkthdr | packet | ...      | pfq_pkthdr | packet |...       | pfq_pkthdr | packet | ...
+   +------------------+---------------------+          +---------------------+          +---------------------+
    +                             +                             +                            +
    | <------+ queue rx  +------> |  <----+ queue rx +------>   |  <----+ queue tx +------>  |  <----+ queue tx +------>
    +                             +                             +                            +

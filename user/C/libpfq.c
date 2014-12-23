@@ -51,7 +51,9 @@
 
 /* useful macros */
 
-#define  ALIGN8(value) ((value + 7) & ~(__typeof__(value))7)
+
+#define  ALIGN(value, size) (((value) + ((size)-1)) & (~((size)-1)))
+
 
 #define Q_VALUE(q,value)   __builtin_choose_expr(__builtin_types_compatible_p(typeof(q), pfq_t *), (((pfq_t *)q)->error = NULL, (value)), \
 	     	         ( __builtin_choose_expr(__builtin_types_compatible_p(typeof(q), pfq_t const *), (((pfq_t *)q)->error = NULL, (value)), (void)0)))
@@ -256,7 +258,7 @@ pfq_open_group(unsigned long class_mask, int group_policy, size_t caplen, size_t
 		return __error = "PFQ: set Rx caplen error", free(q), NULL;
 	}
 
-	q->rx_slot_size = ALIGN8(sizeof(struct pfq_pkt_hdr) + caplen);
+	q->rx_slot_size = ALIGN(sizeof(struct pfq_pkthdr) + caplen, 64);
 
 	/* set Tx queue slots */
 	if (setsockopt(fd, PF_Q, Q_SO_SET_TX_SLOTS, &tx_slots, sizeof(tx_slots)) == -1) {
@@ -264,7 +266,7 @@ pfq_open_group(unsigned long class_mask, int group_policy, size_t caplen, size_t
 	}
 
 	q->tx_slots = tx_slots;
-	q->tx_slot_size = ALIGN8(sizeof(struct pfq_pkt_hdr) + maxlen);
+	q->tx_slot_size = ALIGN(sizeof(struct pfq_pkthdr_tx) + maxlen, 64);
 
         /* set maxlen */
         if (setsockopt(fd, PF_Q, Q_SO_SET_TX_MAXLEN, &maxlen, sizeof(maxlen)) == -1)
@@ -475,7 +477,7 @@ pfq_set_caplen(pfq_t *q, size_t value)
 		return Q_ERROR(q, "PFQ: set caplen error");
 	}
 
-	q->rx_slot_size = ALIGN8(sizeof(struct pfq_pkt_hdr)+ value);
+	q->rx_slot_size = ALIGN(sizeof(struct pfq_pkthdr) + value, 64);
 	return Q_OK(q);
 }
 
@@ -504,7 +506,7 @@ pfq_set_maxlen(pfq_t *q, size_t value)
 		return Q_ERROR(q, "PFQ: set maxlen error");
 	}
 
-	q->rx_slot_size = ALIGN8(sizeof(struct pfq_pkt_hdr) + value);
+	q->rx_slot_size = ALIGN(sizeof(struct pfq_pkthdr_tx) + value, 64);
 	return Q_OK(q);
 }
 
@@ -1040,7 +1042,7 @@ pfq_inject(pfq_t *q, const void *buf, size_t len, int queue)
 {
         struct pfq_queue_hdr *qh = (struct pfq_queue_hdr *)(q->shm_addr);
         struct pfq_tx_queue_hdr *tx;
-       	struct pfq_pkt_hdr *hdr;
+       	struct pfq_pkthdr_tx *hdr;
        	char *pkt;
         int index;
 	int tss;
@@ -1061,7 +1063,7 @@ pfq_inject(pfq_t *q, const void *buf, size_t len, int queue)
         if (index == -1)
 	        return Q_VALUE(q,-1);
 
-        hdr = (struct pfq_pkt_hdr *)(
+        hdr = (struct pfq_pkthdr_tx *)(
         		(char *)(q->tx_queue_addr) +
         		(q->tx_slots * tss + index) * tx->slot_size);
 

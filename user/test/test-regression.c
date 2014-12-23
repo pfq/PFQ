@@ -142,8 +142,8 @@ void test_rx_slot_size()
 {
 	pfq_t * q = pfq_open(64, 1024);
         assert(q);
-        size_t size = 64 + sizeof(struct pfq_pkt_hdr);
-	assert(pfq_get_rx_slot_size(q) == (size + (size % 8)));
+        size_t size = 64 + sizeof(struct pfq_pkthdr);
+	assert(pfq_get_rx_slot_size(q) == (size + (size % 64)));
 	pfq_close(q);
 }
 

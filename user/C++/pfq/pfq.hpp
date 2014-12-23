@@ -434,11 +434,12 @@ namespace pfq {
             data_->rx_slots = rx_slots;
 
             // set caplen
+            //
 
             if (::setsockopt(fd_, PF_Q, Q_SO_SET_RX_CAPLEN, &caplen, sizeof(caplen)) == -1)
                 throw pfq_error(errno, "PFQ: set Rx caplen error");
 
-            data_->rx_slot_size = align<8>(sizeof(pfq_pkt_hdr) + caplen);
+            data_->rx_slot_size = align<64>(sizeof(pfq_pkthdr) + caplen);
 
             // set Tx queue slots
 
@@ -446,7 +447,7 @@ namespace pfq {
                 throw pfq_error(errno, "PFQ: set Tx slots error");
 
             data_->tx_slots = tx_slots;
-            data_->tx_slot_size = align<8>(sizeof(pfq_pkt_hdr) + maxlen);
+            data_->tx_slot_size = align<64>(sizeof(pfq_pkthdr_tx) + maxlen);
 
             // set maxlen
 
@@ -606,7 +607,7 @@ namespace pfq {
                 throw pfq_error(errno, "PFQ: set caplen error");
             }
 
-            data_->rx_slot_size = align<8>(sizeof(pfq_pkt_hdr)+ value);
+            data_->rx_slot_size = align<64>(sizeof(pfq_pkthdr) + value);
         }
 
         //! Return the capture length of packets, in bytes.
@@ -632,7 +633,7 @@ namespace pfq {
                 throw pfq_error(errno, "PFQ: set maxlen error");
             }
 
-            data_->rx_slot_size = align<8>(sizeof(pfq_pkt_hdr) + value);
+            data_->rx_slot_size = align<64>(sizeof(pfq_pkthdr_tx) + value);
         }
 
         //! Return the max transmission length of packets, in bytes.
@@ -1134,7 +1135,7 @@ namespace pfq {
         /*! The function takes an instance of a callable type.
          * The object must have the following callable signature:
          *
-         * typedef void (*pfq_handler)(char *user, const struct pfq_pkt_hdr *h, const char *data);
+         * typedef void (*pfq_handler)(char *user, const struct pfq_pkthdr *h, const char *data);
          */
 
         template <typename Fun>
@@ -1330,7 +1331,7 @@ namespace pfq {
             if (index == -1)
                 return false;
 
-            auto hdr = reinterpret_cast<pfq_pkt_hdr *>(
+            auto hdr = reinterpret_cast<pfq_pkthdr_tx *>(
                         reinterpret_cast<char *>(data_->tx_queue_addr) +
                             (data_->tx_slots * tss + static_cast<unsigned int>(index)) * tx->slot_size);
 

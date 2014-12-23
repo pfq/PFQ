@@ -567,9 +567,9 @@ int pfq_setsockopt(struct socket *sock,
                         return -EPERM;
                 }
 
-                so->tx_opt.maxlen = maxlen < 64 ? 64 : maxlen;
+                so->tx_opt.maxlen = maxlen;
 
-                so->tx_opt.slot_size = SPSC_QUEUE_SLOT_SIZE(so->tx_opt.maxlen); /* max_len: max length */
+                so->tx_opt.slot_size = SPSC_QUEUE_SLOT_SIZE(so->tx_opt.maxlen);
 
                 pr_devel("[PFQ|%d] tx_maxlen=%zu, tx_slot_size=%zu\n", so->id, so->tx_opt.maxlen, so->tx_opt.slot_size);
 
