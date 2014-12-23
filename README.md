@@ -23,16 +23,16 @@ for C, C++11 and Haskell languages, PFQ/lang implemented as eDSL and a set of di
 Features
 --------
 
-* 10-Gbit Line-rate (14,8Mpps) with Intel ixgbe vanilla driver.
-* Transparent support of multiple kernel threads for packets transmission.
-* Socket groups allow for concurrent monitoring of multi-threaded applications.
-* Per-group packet steering through randomized hashing algorithms or deterministic classifications.
-* Per-group Berkeley filters and per-group VLAN filters.
-* Extensible framework for in-kernel functional monitoring: PFQ/lang. 
+* Rx and Tx 10-Gbit Line-rate (14,8Mpps), with Intel ixgbe vanilla drivers.
+* Transparent support of kernel threads for asynchronous packets transmission.
+* Concurrent monitoring of multi-threaded applications with socket groups.
+* Per-group packet steering through randomized hashing or deterministic classification.
+* Per-group Berkeley and VLAN filters.
+* Functional engine for in-kernel packet processing: *PFQ/lang*. 
 * User-space native bindings for C, C++11 and Haskell languages.
-* pfq-omatic, a script that allows to compile drivers and get the accelerated versions.
 * Accelerated pcap library for both packet capture and transmission.
-* HugePages support.
+* pfq-omatic script to dramatically *accelerate* vanilla drivers.
+* I/O user<->kernel space shared-memory on-top-of HugePages.
 
 Publications
 ------------
