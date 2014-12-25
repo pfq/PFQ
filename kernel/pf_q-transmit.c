@@ -293,6 +293,7 @@ pfq_queue_xmit(struct pfq_skbuff_batch *skbs, struct net_device *dev, int hw_que
 	struct netdev_queue *txq;
 	struct sk_buff *skb;
 	int n, ret = 0;
+	size_t last;
 
 	/* get txq and fix the hw_queue for this batch.
 	 *
@@ -301,6 +302,8 @@ pfq_queue_xmit(struct pfq_skbuff_batch *skbs, struct net_device *dev, int hw_que
 
 	txq = pfq_pick_tx(dev, skbs->queue[0], &hw_queue);
 
+	last = pfq_skbuff_batch_len(skbs) - 1;
+
 	__netif_tx_lock_bh(txq);
 
 	for_each_skbuff(skbs, skb, n)
@@ -308,9 +311,9 @@ pfq_queue_xmit(struct pfq_skbuff_batch *skbs, struct net_device *dev, int hw_que
 		skb_set_queue_mapping(skb, hw_queue);
 
 #if(LINUX_VERSION_CODE >= KERNEL_VERSION(3,18,0))
-		skb->xmit_more = !!n;
+		skb->xmit_more = n != last;
 #else
-		skb->mark = !!n;
+		skb->mark = n != last;
 #endif
 		if (__pfq_queue_xmit(skb, dev, txq) == NETDEV_TX_OK)
 			++ret;
