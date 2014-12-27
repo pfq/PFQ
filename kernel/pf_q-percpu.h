@@ -25,6 +25,7 @@
 #define _PF_Q_PERCPU_H_
 
 #include <linux/percpu.h>
+#include <linux/ktime.h>
 
 #include <pf_q-skbuff-list.h>
 #include <pf_q-macro.h>
@@ -42,7 +43,8 @@ struct local_data
 
         int                     sock_cnt;
 
-	struct gc_data 		gc;	/* garbage collector */
+	struct gc_data 		gc;		/* garbage collector */
+	ktime_t 		last_ts;	/* timestamp of the last packet */
 
         atomic_t                enable_skb_pool;
 

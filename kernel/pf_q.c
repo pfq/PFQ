@@ -247,11 +247,13 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
             skb_push(skb, skb->mac_len);
         }
 
+	/* get the cpu */
+
         cpu = get_cpu();
 
 	local = per_cpu_ptr(cpu_data, cpu);
 
-	/* the ownership of this skb in under the garbage collector control */
+	/* set the ownership of this skb to the garbage collector */
 
 	buff = gc_make_buff(&local->gc, skb);
 	if (buff.skb == NULL) {
@@ -264,12 +266,17 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 
         PFQ_CB(buff.skb)->direct = direct;
 
-	__sparse_add(&global_stats.recv, batch_len, cpu);
-
-        if (gc_size(&local->gc) < batch_len) {
+        if ((gc_size(&local->gc) < batch_len) &&
+             (ktime_to_ns(ktime_sub(skb_get_ktime(buff.skb), local->last_ts)) < 1000000) )
+        {
+		local->last_ts = skb_get_ktime(buff.skb);
         	put_cpu();
                 return 0;
 	}
+
+	local->last_ts = skb_get_ktime(buff.skb);
+
+	__sparse_add(&global_stats.recv, gc_size(&local->gc), cpu);
 
 	/* cleanup sock_queue... */
 
