@@ -96,25 +96,16 @@ pfq_hugepage_map(struct pfq_shmem_descr *shmem, unsigned long addr, size_t size)
 	shmem->npages = PAGE_ALIGN(size) / PAGE_SIZE;
 	shmem->hugepages = vmalloc(shmem->npages * sizeof(struct page *));
 
-	down_read(&current->mm->mmap_sem);
-
-	if (get_user_pages(current,
-			   current->mm, addr,
-			   shmem->npages,
-			   1 /* Write enable */, 0 /* Force */,
-			   shmem->hugepages, NULL) != shmem->npages)
+	if (get_user_pages_fast(addr, shmem->npages, 1, shmem->hugepages) != shmem->npages)
 	{
-		up_read(&current->mm->mmap_sem);
-
 		vfree(shmem->hugepages);
+
 		shmem->npages = 0;
 		shmem->hugepages = NULL;
 		pr_devel("[PFQ] could not get user pages!\n");
 
 		return -1;
 	}
-
-	up_read(&current->mm->mmap_sem);
 
 	nid = page_to_nid(shmem->hugepages[0]);
 
