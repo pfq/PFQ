@@ -269,7 +269,6 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
         if ((gc_size(&local->gc) < batch_len) &&
              (ktime_to_ns(ktime_sub(skb_get_ktime(buff.skb), local->last_ts)) < 1000000) )
         {
-		local->last_ts = skb_get_ktime(buff.skb);
         	put_cpu();
                 return 0;
 	}
