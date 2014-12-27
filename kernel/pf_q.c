@@ -860,8 +860,8 @@ static int __init pfq_init_module(void)
         pfq_proto_ops_init();
         pfq_proto_init();
 
-        if (batch_len <= 0 || batch_len > 32) {
-                printk(KERN_INFO "[PFQ] batch_len=%d not allowed: valid range (0,32]!\n", batch_len);
+        if (batch_len <= 0 || batch_len > Q_SKBUFF_MAX_BATCH) {
+                printk(KERN_INFO "[PFQ] batch_len=%d not allowed: valid range (0,%zu]!\n", batch_len, Q_SKBUFF_MAX_BATCH);
                 return -EFAULT;
         }
 
