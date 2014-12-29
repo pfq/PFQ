@@ -59,14 +59,15 @@ char *mpdb_slot_ptr(struct pfq_rx_opt *ro, struct pfq_rx_queue_hdr *qd, size_t q
 
 
 size_t pfq_mpdb_enqueue_batch(struct pfq_rx_opt *ro,
-		              struct gc_queue_buff *queue,
+		              struct pfq_skbuff_batch *skbs,
 		              unsigned long long mask,
 		              int burst_len,
 		              int gid)
 {
 	struct pfq_rx_queue_hdr *rx_queue = pfq_get_rx_queue_hdr(ro);
 	int data, qlen, qindex;
-	struct gc_buff buff;
+	struct sk_buff *skb;
+
 	size_t n, sent = 0;
 	char *this_slot;
 
@@ -84,10 +85,9 @@ size_t pfq_mpdb_enqueue_batch(struct pfq_rx_opt *ro,
 	qindex    = MPDB_QUEUE_INDEX(data);
         this_slot = mpdb_slot_ptr(ro, rx_queue, qindex, qlen);
 
-	for_each_gcbuff_bitmask(queue, mask, buff, n)
+	for_each_skbuff_bitmask(skbs, mask, skb, n)
 	{
 		volatile struct pfq_pkthdr *hdr;
-		struct sk_buff *skb = buff.skb;
 		size_t bytes, slot_index;
 		char *pkt;
 

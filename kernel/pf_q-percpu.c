@@ -65,12 +65,12 @@ int pfq_percpu_flush(void)
         for_each_possible_cpu(cpu) {
 
                 struct local_data *local = per_cpu_ptr(cpu_data, cpu);
-                struct gc_buff buff;
+	        struct sk_buff *skb;
 		int n = 0;
 
-		for_each_gcbuff(&local->gc.pool, buff, n)
+		for_each_skbuff(&local->gc.pool, skb, n)
 		{
-                 	kfree_skb(buff.skb);
+                 	kfree_skb(skb);
 		}
 
                 total += local->gc.pool.len;

@@ -76,19 +76,4 @@ struct gc_buff
                 (mask) ^=(1UL << (n)), n = pfq_ctz(mask))
 
 
-#define for_each_gcbuff(batch, buff, n) \
-        for((n) = 0; (n < (batch)->len) && (buff = (batch)->queue[n]).skb; \
-                __builtin_prefetch(((batch)->queue[n+1]).skb, 0, 1), (n)++)
-
-
-#define for_each_gcbuff_backward(batch, buff, n) \
-        for((n) = (batch)->len; ((n) > 0) && ((buff) = (batch)->queue[n-1]).skb; \
-                __builtin_prefetch(((batch)->queue[n-2]).skb, 0, 1), (n)--)
-
-
-#define for_each_gcbuff_bitmask(batch, mask, buff, n) \
-        for((n) = pfq_ctz(mask); (mask) && ((buff = (batch)->queue[n]), true); \
-                (mask) ^=(1UL << n), n = pfq_ctz(mask))
-
-
 #endif /* _PF_Q_SKBUFF_H_ */

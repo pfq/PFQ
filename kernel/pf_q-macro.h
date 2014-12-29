@@ -29,6 +29,9 @@
 #define Q_SKBUFF_SHORT_BATCH	(sizeof(long)<<3)
 #define Q_SKBUFF_LONG_BATCH	256
 
+#define Q_GC_LOG_QUEUE_LEN	16
+#define Q_GC_POOL_QUEUE_LEN 	Q_SKBUFF_LONG_BATCH
+
 #define Q_MAX_DEVICE           	256
 #define Q_MAX_DEVICE_MASK       (Q_MAX_DEVICE-1)
 
@@ -45,8 +48,6 @@
 #define Q_FUN_SYMB_LEN          256
 #define Q_PERSISTENT_MEM 	64
 
-#define Q_GC_LOG_QUEUE_LEN	16
-#define Q_GC_POOL_QUEUE_LEN 	128
 
 #define Q_MAX_CPU               256
 

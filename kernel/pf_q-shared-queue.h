@@ -38,7 +38,7 @@ int pfq_shared_queue_enable(struct pfq_sock *so, unsigned long addr);
 int pfq_shared_queue_disable(struct pfq_sock *so);
 
 extern size_t pfq_mpdb_enqueue_batch(struct pfq_rx_opt *ro,
-		                     struct gc_queue_buff *queue,
+		                     struct pfq_skbuff_batch *skbs,
 		                     unsigned long long skbs_mask,
 		                     int burst_len,
 		                     int gid);

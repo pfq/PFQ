@@ -33,10 +33,8 @@
 
 
 static inline
-size_t copy_to_user_skbs(struct pfq_rx_opt *ro, struct gc_queue_buff *queue, unsigned long long mask, int cpu, int gid)
+size_t copy_to_user_skbs(struct pfq_rx_opt *ro, struct pfq_skbuff_batch *skbs, unsigned long long mask, int cpu, int gid)
 {
-        /* enqueue the sk_buffs: it's wait-free. */
-
         int len = pfq_popcount(mask);
         size_t sent = 0;
 
@@ -44,7 +42,7 @@ size_t copy_to_user_skbs(struct pfq_rx_opt *ro, struct gc_queue_buff *queue, uns
 
         	smp_rmb();
 
-                sent = pfq_mpdb_enqueue_batch(ro, queue, mask, len, gid);
+                sent = pfq_mpdb_enqueue_batch(ro, skbs, mask, len, gid);
 
         	__sparse_add(&ro->stats.recv, sent, cpu);
 
@@ -62,7 +60,7 @@ size_t copy_to_user_skbs(struct pfq_rx_opt *ro, struct gc_queue_buff *queue, uns
 
 
 static inline
-size_t copy_to_dev_skbs(struct pfq_sock *so, struct gc_queue_buff *queue, unsigned long long mask, int cpu, int gid)
+size_t copy_to_dev_skbs(struct pfq_sock *so, struct pfq_skbuff_batch *skbs, unsigned long long mask, int cpu, int gid)
 {
 	struct net_device *dev;
 	int sent;
@@ -88,15 +86,15 @@ size_t copy_to_dev_skbs(struct pfq_sock *so, struct gc_queue_buff *queue, unsign
 }
 
 
-size_t copy_to_endpoint_queue_buff(struct pfq_sock *so, struct gc_queue_buff *queue, unsigned long long mask, int cpu, int gid)
+size_t copy_to_endpoint_skbs(struct pfq_sock *so, struct pfq_skbuff_batch *skbs, unsigned long long mask, int cpu, int gid)
 {
 	switch(so->egress_type)
 	{
 	case pfq_endpoint_socket:
-		return copy_to_user_skbs(&so->rx_opt, queue, mask, cpu, gid);
+		return copy_to_user_skbs(&so->rx_opt, skbs, mask, cpu, gid);
 
 	case pfq_endpoint_device:
-		return copy_to_dev_skbs(so, queue, mask, cpu, gid);
+		return copy_to_dev_skbs(so, skbs, mask, cpu, gid);
 	}
 
 	return false;

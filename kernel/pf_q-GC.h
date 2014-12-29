@@ -30,7 +30,7 @@
 #include <pf_q-skbuff.h>
 #include <pf_q-macro.h>
 #include <pf_q-skbuff.h>
-
+#include <pf_q-skbuff-batch.h>
 
 typedef struct gc_buff SkBuff;
 
@@ -43,17 +43,10 @@ struct gc_log
 };
 
 
-struct gc_queue_buff
-{
-        size_t len;
-        struct gc_buff queue[Q_GC_POOL_QUEUE_LEN];
-};
-
-
 struct gc_data
 {
-	struct gc_log   	log[Q_GC_POOL_QUEUE_LEN];
-	struct gc_queue_buff 	pool;
+	struct gc_log   		log[Q_GC_POOL_QUEUE_LEN];
+	struct pfq_skbuff_long_batch 	pool;
 };
 
 
