@@ -60,7 +60,7 @@ size_t copy_to_user_skbs(struct pfq_rx_opt *ro, struct pfq_skbuff_batch *skbs, u
 
 
 static inline
-size_t copy_to_dev_gcbs(struct pfq_sock *so, struct gc_skbuff_batch *gcbs, unsigned long long mask, int cpu, int gid)
+size_t copy_to_dev_gcbs(struct pfq_sock *so, struct gc_queue_buff *gcbs, unsigned long long mask, int cpu, int gid)
 {
 	struct net_device *dev;
 	int sent;
@@ -86,7 +86,7 @@ size_t copy_to_dev_gcbs(struct pfq_sock *so, struct gc_skbuff_batch *gcbs, unsig
 }
 
 
-size_t copy_to_endpoint_gcbs(struct pfq_sock *so, struct gc_skbuff_batch *pool, unsigned long long mask, int cpu, int gid)
+size_t copy_to_endpoint_gcbs(struct pfq_sock *so, struct gc_queue_buff *pool, unsigned long long mask, int cpu, int gid)
 {
 	switch(so->egress_type)
 	{

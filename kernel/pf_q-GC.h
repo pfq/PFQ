@@ -48,7 +48,7 @@ typedef struct gc_buff SkBuff;
 #define SKBUFF_BATCH_ADDR(batch) \
 	__builtin_choose_expr(__builtin_types_compatible_p(typeof(batch),struct pfq_skbuff_short_batch), (struct pfq_skbuff_batch *)&batch, \
 	__builtin_choose_expr(__builtin_types_compatible_p(typeof(batch),struct pfq_skbuff_long_batch),  (struct pfq_skbuff_batch *)&batch, \
-	__builtin_choose_expr(__builtin_types_compatible_p(typeof(batch),struct gc_skbuff_batch),  	 (struct pfq_skbuff_batch *)&batch, (void) 0)))
+	__builtin_choose_expr(__builtin_types_compatible_p(typeof(batch),struct gc_queue_buff),  	 (struct pfq_skbuff_batch *)&batch, (void) 0)))
 
 
 struct gc_log
@@ -59,7 +59,7 @@ struct gc_log
 };
 
 
-struct gc_skbuff_batch
+struct gc_queue_buff
 {
         size_t len;
         struct gc_buff queue[Q_SKBUFF_LONG_BATCH];
@@ -69,7 +69,7 @@ struct gc_skbuff_batch
 struct gc_data
 {
 	struct gc_log   	log[Q_GC_POOL_QUEUE_LEN];
-	struct gc_skbuff_batch 	pool;
+	struct gc_queue_buff 	pool;
 };
 
 

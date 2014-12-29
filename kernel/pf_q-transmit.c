@@ -388,7 +388,7 @@ int pfq_lazy_xmit(struct gc_buff buff, struct net_device *dev, int hw_queue)
 }
 
 
-int pfq_queue_lazy_xmit(struct gc_skbuff_batch *queue, struct net_device *dev, int hw_queue)
+int pfq_queue_lazy_xmit(struct gc_queue_buff *queue, struct net_device *dev, int hw_queue)
 {
 	struct gc_buff buff;
 	int i, n = 0;
@@ -403,7 +403,7 @@ int pfq_queue_lazy_xmit(struct gc_skbuff_batch *queue, struct net_device *dev, i
 }
 
 
-int pfq_queue_lazy_xmit_by_mask(struct gc_skbuff_batch *queue, unsigned long long mask, struct net_device *dev, int hw_queue)
+int pfq_queue_lazy_xmit_by_mask(struct gc_queue_buff *queue, unsigned long long mask, struct net_device *dev, int hw_queue)
 {
 	struct gc_buff buff;
 	int i, n = 0;
