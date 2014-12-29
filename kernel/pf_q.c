@@ -450,61 +450,61 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 
 	/* sk_buff forwarding */
 
-        for_each_gcbuff(&local->gc.pool, buff, n)
-        {
-        	struct sk_buff *skb;
-        	struct pfq_cb *cb;
-        	bool to_kernel;
-        	int num_fwd;
-
-                cb = PFQ_CB(buff.skb);
-
-		to_kernel = cb->direct && fwd_to_kernel(buff.skb);
-		num_fwd   = cb->log->num_fwd;
-
-		/* if needed, send a copy of this buff to the kernel */
-
-		if (to_kernel) {
-
-			if (num_fwd > 0) {
-				skb = skb_clone(buff.skb, GFP_ATOMIC);
-				if (!skb) {
-					if (printk_ratelimit())
-                                		printk(KERN_INFO "[PFQ] forward: skb_clone error!\n");
-				}
-			}
-			else {
-				skb_get(buff.skb);
-				skb = buff.skb;
-                        }
-
-			if (skb) {
-                        	send_to_kernel(skb);
-                        	__sparse_inc(&global_stats.kern, cpu);
-			}
-			else {
-                        	__sparse_inc(&global_stats.quit, cpu);
-			}
-		}
-
-		/* pfq_lazy_exec send multiple copies of this skb to different devices...
-		   the skb is freed with the last forward */
-
-		if (num_fwd) {
-
-			int x = pfq_lazy_xmit_exec(buff);
-
-                        __sparse_add(&global_stats.frwd, x, cpu);
-                        __sparse_add(&global_stats.disc, num_fwd - x, cpu);
-		}
-
-		/* release this skb */
-
-		if (cb->direct)
-			pfq_kfree_skb_pool(buff.skb, &local->rx_pool);
-		else
-			consume_skb(buff.skb);
-        }
+//        for_each_skbuff(SKBUFF_BATCH_ADDR(local->gc.pool), buff, n)
+//        {
+//        	struct sk_buff *skb;
+//        	struct pfq_cb *cb;
+//        	bool to_kernel;
+//        	int num_fwd;
+//
+//                cb = PFQ_CB(buff.skb);
+//
+//		to_kernel = cb->direct && fwd_to_kernel(buff.skb);
+//		num_fwd   = cb->log->num_fwd;
+//
+//		/* if needed, send a copy of this buff to the kernel */
+//
+//		if (to_kernel) {
+//
+//			if (num_fwd > 0) {
+//				skb = skb_clone(buff.skb, GFP_ATOMIC);
+//				if (!skb) {
+//					if (printk_ratelimit())
+//                                		printk(KERN_INFO "[PFQ] forward: skb_clone error!\n");
+//				}
+//			}
+//			else {
+//				skb_get(buff.skb);
+//				skb = buff.skb;
+//                        }
+//
+//			if (skb) {
+//                        	send_to_kernel(skb);
+//                        	__sparse_inc(&global_stats.kern, cpu);
+//			}
+//			else {
+//                        	__sparse_inc(&global_stats.quit, cpu);
+//			}
+//		}
+//
+//		/* pfq_lazy_exec send multiple copies of this skb to different devices...
+//		   the skb is freed with the last forward */
+//
+//		if (num_fwd) {
+//
+//			int x = pfq_lazy_xmit_exec(buff);
+//
+//                        __sparse_add(&global_stats.frwd, x, cpu);
+//                        __sparse_add(&global_stats.disc, num_fwd - x, cpu);
+//		}
+//
+//		/* release this skb */
+//
+//		if (cb->direct)
+//			pfq_kfree_skb_pool(buff.skb, &local->rx_pool);
+//		else
+//			consume_skb(buff.skb);
+//        }
 
 	gc_reset(&local->gc);
 

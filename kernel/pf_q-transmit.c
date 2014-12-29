@@ -389,67 +389,68 @@ int pfq_lazy_xmit(struct gc_buff buff, struct net_device *dev, int hw_queue)
 }
 
 
-
-int pfq_lazy_queue_xmit(struct gc_queue_buff *queue, struct net_device *dev, int hw_queue)
-{
-	struct gc_buff buff;
-	int i, n = 0;
-
-	for_each_gcbuff(queue, buff, i)
-	{
-		if (pfq_lazy_xmit(buff, dev, hw_queue))
-			++n;
-	}
-
-	return n;
-}
-
-
-int pfq_lazy_queue_xmit_by_mask(struct gc_queue_buff *queue, unsigned long long mask, struct net_device *dev, int hw_queue)
-{
-	struct gc_buff buff;
-	int i, n = 0;
-
-	for_each_gcbuff_bitmask(queue, mask, buff, i)
-	{
-		if (pfq_lazy_xmit(buff, dev, hw_queue))
-			++n;
-	}
-
-	return n;
-}
-
-
-int pfq_lazy_xmit_exec(struct gc_buff buff)
-{
-	struct gc_log *log = PFQ_CB(buff.skb)->log;
-	struct sk_buff *skb;
-
-	int ret = 0, num_fwd, i;
-
-	num_fwd = log->num_fwd;
-
-	for(i = 0; i < num_fwd; ++i)
-	{
-		struct net_device *dev = log->dev[i];
-
-		skb = (i == num_fwd-1) ? skb_get(buff.skb) : skb_clone(buff.skb, GFP_ATOMIC);
-		if (skb)
-		{
-			if (pfq_xmit(skb, dev, skb->queue_mapping) != 1) {
-#ifdef PFQ_DEBUG
-				if (printk_ratelimit())
-					printk(KERN_INFO "[PFQ] forward pfq_xmit: error on device %s!\n", dev->name);
-#endif
-			}
-			else {
-				ret++;
-			}
-		}
-	}
-
-	return ret;
-}
+// FIXME LAZY
+//
+// int pfq_lazy_queue_xmit(struct gc_queue_buff *queue, struct net_device *dev, int hw_queue)
+// {
+// 	struct gc_buff buff;
+// 	int i, n = 0;
+//
+// 	for_each_gcbuff(queue, buff, i)
+// 	{
+// 		if (pfq_lazy_xmit(buff, dev, hw_queue))
+// 			++n;
+// 	}
+//
+// 	return n;
+// }
+//
+//
+// int pfq_lazy_queue_xmit_by_mask(struct gc_queue_buff *queue, unsigned long long mask, struct net_device *dev, int hw_queue)
+// {
+// 	struct gc_buff buff;
+// 	int i, n = 0;
+//
+// 	for_each_gcbuff_bitmask(queue, mask, buff, i)
+// 	{
+// 		if (pfq_lazy_xmit(buff, dev, hw_queue))
+// 			++n;
+// 	}
+//
+// 	return n;
+// }
+//
+//
+// int pfq_lazy_xmit_exec(struct gc_buff buff)
+// {
+// 	struct gc_log *log = PFQ_CB(buff.skb)->log;
+// 	struct sk_buff *skb;
+//
+// 	int ret = 0, num_fwd, i;
+//
+// 	num_fwd = log->num_fwd;
+//
+// 	for(i = 0; i < num_fwd; ++i)
+// 	{
+// 		struct net_device *dev = log->dev[i];
+//
+// 		skb = (i == num_fwd-1) ? skb_get(buff.skb) : skb_clone(buff.skb, GFP_ATOMIC);
+// 		if (skb)
+// 		{
+// 			if (pfq_xmit(skb, dev, skb->queue_mapping) != 1) {
+// #ifdef PFQ_DEBUG
+// 				if (printk_ratelimit())
+// 					printk(KERN_INFO "[PFQ] forward pfq_xmit: error on device %s!\n", dev->name);
+// #endif
+// 			}
+// 			else {
+// 				ret++;
+// 			}
+// 		}
+// 	}
+//
+// 	return ret;
+// }
 
 
 

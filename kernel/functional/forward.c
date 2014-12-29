@@ -91,7 +91,9 @@ forward(arguments_t args, SkBuff b)
                 return Pass(b);
 	}
 
-	pfq_lazy_xmit(b, dev, b.skb->queue_mapping);
+	// FIXME LAZY
+	//
+	// pfq_lazy_xmit(b, dev, b.skb->queue_mapping);
 
 	sparse_inc(&get_stats(b)->frwd);
 
@@ -146,7 +148,9 @@ bridge(arguments_t args, SkBuff b)
                 return Drop(b);
 	}
 
-	pfq_lazy_xmit(b, dev, b.skb->queue_mapping);
+   	// FIXME
+        //
+	// pfq_lazy_xmit(b, dev, b.skb->queue_mapping);
 
 	sparse_inc(&get_stats(b)->frwd);
 
@@ -169,7 +173,10 @@ tap(arguments_t args, SkBuff b)
         if (EVAL_PREDICATE(pred_, b))
 		return Pass(b);
 
-	pfq_lazy_xmit(b, dev, b.skb->queue_mapping);
+	// FIXME LAZY
+	//
+	//
+	// pfq_lazy_xmit(b, dev, b.skb->queue_mapping);
 
 	sparse_inc(&get_stats(b)->frwd);
 
@@ -189,7 +196,10 @@ tee(arguments_t args, SkBuff b)
                 return Drop(b);
 	}
 
-	pfq_lazy_xmit(b, dev, b.skb->queue_mapping);
+	// FIXME LAZY
+	//
+	//
+	// pfq_lazy_xmit(b, dev, b.skb->queue_mapping);
 
 	sparse_inc(&get_stats(b)->frwd);
 
