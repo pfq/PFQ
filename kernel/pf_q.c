@@ -446,7 +446,6 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 		})
 	})
 
-
 	/* forward sk_buff to kernel */
 
 	for_each_skbuff(SKBUFF_BATCH_ADDR(local->gc.pool), skb, n)
@@ -484,7 +483,14 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 	}
 
 
-
+//	for_each_skbuff(SKBUFF_BATCH_ADDR(local->gc.pool), skb, n)
+//	{
+//		struct pfq_cb *cb = PFQ_CB(skb);
+//		int num_fwd = cb->log->num_fwd;
+//
+//
+//	}
+//
 //		/* pfq_lazy_exec send multiple copies of this skb to different devices...
 //		   the skb is freed with the last forward */
 //

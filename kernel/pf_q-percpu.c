@@ -68,7 +68,7 @@ int pfq_percpu_flush(void)
 	        struct sk_buff *skb;
 		int n = 0;
 
-		for_each_skbuff(&local->gc.pool, skb, n)
+		for_each_skbuff(SKBUFF_BATCH_ADDR(local->gc.pool), skb, n)
 		{
                  	kfree_skb(skb);
 		}
