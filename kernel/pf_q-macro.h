@@ -27,7 +27,7 @@
 #define Q_MAX_ID                (sizeof(long)<<3)
 #define Q_MAX_GROUP             (sizeof(long)<<3)
 #define Q_SKBUFF_SHORT_BATCH	(sizeof(long)<<3)
-#define Q_SKBUFF_LONG_BATCH	256
+#define Q_SKBUFF_LONG_BATCH	128
 
 #define Q_GC_LOG_QUEUE_LEN	16
 #define Q_GC_POOL_QUEUE_LEN 	Q_SKBUFF_LONG_BATCH

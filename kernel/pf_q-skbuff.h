@@ -39,16 +39,15 @@ struct pfq_cb
 	int 		 direct;
 };
 
-
-#define PFQ_CB(skb) ((struct pfq_cb *)(skb)->cb)
-
-
 /* wrapper used in garbage collector */
 
 struct gc_buff
 {
  	struct sk_buff *skb;
 };
+
+
+#define PFQ_CB(skb) ((struct pfq_cb *)(skb)->cb)
 
 
 #define for_each_skbuff(batch, skb, n) \
