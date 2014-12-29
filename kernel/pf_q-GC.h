@@ -59,6 +59,14 @@ struct gc_log
 };
 
 
+struct gc_fwd_targets
+{
+	struct net_device * dev[Q_GC_LOG_QUEUE_LEN];
+	size_t cnt [Q_GC_LOG_QUEUE_LEN];
+	size_t num;
+};
+
+
 struct gc_queue_buff
 {
         size_t len;
@@ -81,6 +89,21 @@ extern struct gc_buff gc_copy_buff(struct gc_data *gc, struct gc_buff orig);
 extern struct gc_buff pfq_make_buff(struct sk_buff *skb);
 extern struct gc_buff pfq_alloc_buff(size_t size);
 extern struct gc_buff pfq_copy_buff(struct gc_buff buff);
+
+extern void gc_get_fwd_targets(struct gc_data *gc, struct gc_fwd_targets *targets);
+
+
+static inline bool
+gc_dev_elem_log(struct net_device *dev, struct gc_log *log)
+{
+	size_t n;
+	for(n = 0; n < log->num_fwd; n++)
+	{
+		if (dev == log->dev[n])
+			return true;
+	}
+	return false;
+}
 
 
 static inline

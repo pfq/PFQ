@@ -113,6 +113,48 @@ gc_copy_buff(struct gc_data *gc, struct gc_buff orig)
 	return ret;
 }
 
+
+inline void
+__gc_add_dev_to_targets(struct net_device *dev, struct gc_fwd_targets *t)
+{
+	size_t n = 0;
+
+	for(; n < t->num; ++n)
+	{
+        	if (dev == t->dev[n]) {
+        		t->cnt[n]++;
+        		return;
+		}
+	}
+
+	if (n < Q_GC_LOG_QUEUE_LEN) {
+		t->dev[n] = dev;
+		t->cnt[n] = 1;
+		t->num++;
+	}
+	else {
+		printk(KERN_INFO "[PFQ] GC: forward pool exhausted!\n");
+	}
+}
+
+
+void
+gc_get_fwd_targets(struct gc_data *gc, struct gc_fwd_targets *fwd)
+{
+	size_t n, i;
+
+	fwd->num = 0;
+
+	for(n = 0; n < gc->pool.len; ++n)
+	{
+		for(i = 0; i < gc->log[n].num_fwd; i++)
+		{
+         		__gc_add_dev_to_targets(gc->log[n].dev[i], fwd);
+		}
+	}
+}
+
+
 struct gc_buff pfq_make_buff(struct sk_buff *skb)
 {
 	struct local_data *local = this_cpu_ptr(cpu_data);
