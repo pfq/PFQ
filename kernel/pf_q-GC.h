@@ -35,6 +35,16 @@
 typedef struct gc_buff SkBuff;
 
 
+#define for_each_gcbuff(batch, buff, n) \
+        for(n = 0; (n != (batch)->len) && (buff = (batch)->queue[n]).skb; \
+                __builtin_prefetch(((batch)->queue[n+1]).skb, 0, 1), n++)
+
+
+#define for_each_gcbuff_bitmask(batch, mask, buff, n) \
+        for(n = pfq_ctz(mask); mask && ((buff = (batch)->queue[n]), true); \
+                mask ^=(1UL << n), n = pfq_ctz(mask))
+
+
 #define SKBUFF_BATCH_ADDR(batch) \
 	__builtin_choose_expr(__builtin_types_compatible_p(typeof(batch),struct pfq_skbuff_short_batch), (struct pfq_skbuff_batch *)&batch, \
 	__builtin_choose_expr(__builtin_types_compatible_p(typeof(batch),struct pfq_skbuff_long_batch),  (struct pfq_skbuff_batch *)&batch, \
@@ -49,10 +59,17 @@ struct gc_log
 };
 
 
+struct gc_skbuff_batch
+{
+        size_t len;
+        struct gc_buff queue[Q_SKBUFF_LONG_BATCH];
+};
+
+
 struct gc_data
 {
-	struct gc_log   		log[Q_GC_POOL_QUEUE_LEN];
-	struct pfq_skbuff_long_batch 	pool;
+	struct gc_log   	log[Q_GC_POOL_QUEUE_LEN];
+	struct gc_skbuff_batch 	pool;
 };
 
 

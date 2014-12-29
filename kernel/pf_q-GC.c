@@ -48,7 +48,7 @@ gc_make_buff(struct gc_data *gc, struct sk_buff *skb)
 	else {
 		struct pfq_cb *cb = (struct pfq_cb *)skb->cb;
                 cb->log = &gc->log[gc->pool.len];
-		gc->pool.queue[gc->pool.len++] = skb;
+		gc->pool.queue[gc->pool.len++].skb = skb;
 		ret.skb = skb;
 	}
 
