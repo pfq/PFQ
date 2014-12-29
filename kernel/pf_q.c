@@ -316,7 +316,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 
 		socket_mask = 0;
 
-		for_each_skbuff(SKBUFF_BATCH_ADDR(local->gc.pool), skb, n)
+		for_each_gcbuff(&local->gc.pool, buff, n)
 		{
 			unsigned long sock_mask = 0;
 			struct pfq_computation_tree *prg;
@@ -326,7 +326,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 
 			/* skip this packet for this group */
 
-			if (unlikely((PFQ_CB(skb)->group_mask & bit) == 0))
+			if (unlikely((PFQ_CB(buff.skb)->group_mask & bit) == 0))
 				continue;
 
 			/* increment recv counter for this group */
@@ -337,9 +337,9 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 			/* check bpf filter */
 
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(3,15,0))
-			if (bpf && !sk_run_filter(skb, bpf->insns))
+			if (bpf && !sk_run_filter(buff.skb, bpf->insns))
 #else
-			if (bpf && !SK_RUN_FILTER(bpf, skb))
+			if (bpf && !SK_RUN_FILTER(bpf, buff.skb))
 #endif
                         {
 				__sparse_inc(&this_group->stats.drop, cpu);
@@ -349,7 +349,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 			/* check vlan filter */
 
 			if (vlan_filter_enabled) {
-				if (!__pfq_check_group_vlan_filter(gid, skb->vlan_tci & ~VLAN_TAG_PRESENT)) {
+				if (!__pfq_check_group_vlan_filter(gid, buff.skb->vlan_tci & ~VLAN_TAG_PRESENT)) {
 					__sparse_inc(&this_group->stats.drop, cpu);
 					continue;
 				}
@@ -368,10 +368,9 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 
 			if (prg) { /* run the functional program */
 
-				size_t to_kernel = PFQ_CB(skb)->log->to_kernel;
-				size_t num_fwd   = PFQ_CB(skb)->log->num_fwd;
+				size_t to_kernel = PFQ_CB(buff.skb)->log->to_kernel;
+				size_t num_fwd   = PFQ_CB(buff.skb)->log->num_fwd;
 
-				struct gc_buff buff = { skb };
 				buff = pfq_run(prg, buff).value;
 
 				if (buff.skb == NULL) {
