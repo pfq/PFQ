@@ -26,7 +26,8 @@
 
 #define Q_MAX_ID                (sizeof(long)<<3)
 #define Q_MAX_GROUP             (sizeof(long)<<3)
-#define Q_SKBUFF_MAX_BATCH	(sizeof(long)<<3)
+#define Q_SKBUFF_SHORT_BATCH	(sizeof(long)<<3)
+#define Q_SKBUFF_LONG_BATCH	256
 
 #define Q_MAX_DEVICE           	256
 #define Q_MAX_DEVICE_MASK       (Q_MAX_DEVICE-1)

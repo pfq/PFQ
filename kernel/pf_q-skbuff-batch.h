@@ -32,10 +32,27 @@
 #include <pf_q-skbuff.h>
 
 
+#define SKBUFF_BATCH_ADDR(batch) \
+	__builtin_choose_expr(__builtin_types_compatible_p(typeof(batch),struct pfq_skbuff_short_batch), (struct pfq_skbuff_batch *)&batch, \
+	__builtin_choose_expr(__builtin_types_compatible_p(typeof(batch),struct pfq_skbuff_long_batch),  (struct pfq_skbuff_batch *)&batch, (void) 0))
+
+
+struct pfq_skbuff_short_batch
+{
+        size_t len;
+        struct sk_buff *queue[Q_SKBUFF_SHORT_BATCH];
+};
+
+struct pfq_skbuff_long_batch
+{
+        size_t len;
+        struct sk_buff *queue[Q_SKBUFF_LONG_BATCH];
+};
+
 struct pfq_skbuff_batch
 {
         size_t len;
-        struct sk_buff *queue[Q_SKBUFF_MAX_BATCH];
+        struct sk_buff *queue[];
 };
 
 
@@ -57,9 +74,18 @@ void pfq_skbuff_batch_drop_n(struct pfq_skbuff_batch *q, size_t n)
 
 
 static inline
-int pfq_skbuff_batch_push(struct pfq_skbuff_batch *q, struct sk_buff *skb)
+int pfq_skbuff_short_batch_push(struct pfq_skbuff_batch *q, struct sk_buff *skb)
 {
-        if (q->len < Q_SKBUFF_MAX_BATCH)
+        if (q->len < Q_SKBUFF_SHORT_BATCH)
+                return q->queue[q->len++] = skb, 0;
+        return -1;
+}
+
+
+static inline
+int pfq_skbuff_long_batch_push(struct pfq_skbuff_batch *q, struct sk_buff *skb)
+{
+        if (q->len < Q_SKBUFF_LONG_BATCH)
                 return q->queue[q->len++] = skb, 0;
         return -1;
 }

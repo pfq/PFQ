@@ -54,8 +54,8 @@ extern int pfq_queue_xmit_by_mask(struct pfq_skbuff_batch *skbs, unsigned long l
 
 static inline int pfq_xmit(struct sk_buff *skb, struct net_device *dev, int queue_index)
 {
-	struct pfq_skbuff_batch skbs = { 1 , { skb } };
-	return pfq_queue_xmit(&skbs, dev, queue_index);
+	struct pfq_skbuff_short_batch skbs = { 1 , { skb } };
+	return pfq_queue_xmit(SKBUFF_BATCH_ADDR(skbs), dev, queue_index);
 }
 
 

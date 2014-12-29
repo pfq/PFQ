@@ -200,7 +200,7 @@ void send_to_kernel(struct sk_buff *skb)
 static int
 pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 {
- 	unsigned long long sock_queue[Q_SKBUFF_MAX_BATCH];
+ 	unsigned long long sock_queue[Q_SKBUFF_SHORT_BATCH];
 
         unsigned long group_mask, socket_mask;
         struct local_data * local;
@@ -214,7 +214,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 #endif
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,9,0))
-	BUILD_BUG_ON_MSG(Q_SKBUFF_MAX_BATCH > (sizeof(sock_queue[0]) << 3), "skbuff batch overflow");
+	BUILD_BUG_ON_MSG(Q_SKBUFF_SHORT_BATCH > (sizeof(sock_queue[0]) << 3), "skbuff batch overflow");
 #endif
 
 	/* if no socket is open, drop the packet now */
@@ -860,8 +860,8 @@ static int __init pfq_init_module(void)
         pfq_proto_ops_init();
         pfq_proto_init();
 
-        if (batch_len <= 0 || batch_len > Q_SKBUFF_MAX_BATCH) {
-                printk(KERN_INFO "[PFQ] batch_len=%d not allowed: valid range (0,%zu]!\n", batch_len, Q_SKBUFF_MAX_BATCH);
+        if (batch_len <= 0 || batch_len > Q_SKBUFF_SHORT_BATCH) {
+                printk(KERN_INFO "[PFQ] batch_len=%d not allowed: valid range (0,%zu]!\n", batch_len, Q_SKBUFF_SHORT_BATCH);
                 return -EFAULT;
         }
 

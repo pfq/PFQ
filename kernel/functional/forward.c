@@ -35,7 +35,7 @@
 
 struct forward_queue
 {
-	struct pfq_skbuff_batch q;
+	struct pfq_skbuff_short_batch q;
 
 } ____chaline_aligned;
 

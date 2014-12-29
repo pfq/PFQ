@@ -114,7 +114,8 @@ __pfq_tx_queue_xmit(size_t qidx, struct pfq_skbuff_batch *skbs, struct net_devic
 int
 __pfq_queue_flush(size_t qidx, struct pfq_tx_opt *to, struct net_device *dev, int cpu, int node)
 {
-	struct pfq_skbuff_batch skbs;
+	struct pfq_skbuff_short_batch skbs;
+
 	struct pfq_tx_queue_hdr *txq;
 	struct local_data *local;
 	struct pfq_pkthdr_tx * hdr;
@@ -129,7 +130,7 @@ __pfq_queue_flush(size_t qidx, struct pfq_tx_opt *to, struct net_device *dev, in
 
 	/* initialize the batch */
 
-	pfq_skbuff_batch_init(&skbs);
+	pfq_skbuff_batch_init(SKBUFF_BATCH_ADDR(skbs));
 
 	/* get cpu data */
 
@@ -142,11 +143,11 @@ __pfq_queue_flush(size_t qidx, struct pfq_tx_opt *to, struct net_device *dev, in
 	{
 		/* if the batch is full, transmit it */
 
-		if (pfq_skbuff_batch_len(&skbs) == batch_len) {
+		if (pfq_skbuff_batch_len(SKBUFF_BATCH_ADDR(skbs)) == batch_len) {
 
 			int sent, i;
 
-			sent = __pfq_tx_queue_xmit(qidx, &skbs, dev, to, cpu, local);
+			sent = __pfq_tx_queue_xmit(qidx, SKBUFF_BATCH_ADDR(skbs), dev, to, cpu, local);
 
 			tot_sent += sent;
 
@@ -159,12 +160,12 @@ __pfq_queue_flush(size_t qidx, struct pfq_tx_opt *to, struct net_device *dev, in
 
 			/* free/recycle the transmitted skb... */
 
-			for_each_skbuff_upto(sent, &skbs, skb, i)
+			for_each_skbuff_upto(sent, SKBUFF_BATCH_ADDR(skbs), skb, i)
 				pfq_kfree_skb_pool(skb, &local->tx_pool);
 
 			/* ... and drop them from the batch */
 
-			pfq_skbuff_batch_drop_n(&skbs, sent);
+			pfq_skbuff_batch_drop_n(SKBUFF_BATCH_ADDR(skbs), sent);
 
 
 			/* reset use count of unsent skb */
@@ -200,7 +201,7 @@ __pfq_queue_flush(size_t qidx, struct pfq_tx_opt *to, struct net_device *dev, in
 
 			/* enqueue the skb to the batch */
 
-			pfq_skbuff_batch_push(&skbs, skb);
+			pfq_skbuff_short_batch_push(SKBUFF_BATCH_ADDR(skbs), skb);
 
 			/* get the index... */
 
@@ -208,11 +209,11 @@ __pfq_queue_flush(size_t qidx, struct pfq_tx_opt *to, struct net_device *dev, in
 		}
 	}
 
-	if (pfq_skbuff_batch_len(&skbs)) {
+	if (pfq_skbuff_batch_len(SKBUFF_BATCH_ADDR(skbs))) {
 
 		/* transmit the last batch */
 
-		int sent = __pfq_tx_queue_xmit(qidx, &skbs, dev, to, cpu, local);
+		int sent = __pfq_tx_queue_xmit(qidx, SKBUFF_BATCH_ADDR(skbs), dev, to, cpu, local);
 		tot_sent += sent;
 
 		/* commit the slots of packets successfully *sent* */
@@ -221,7 +222,7 @@ __pfq_queue_flush(size_t qidx, struct pfq_tx_opt *to, struct net_device *dev, in
 
 		/* recycle the skbs */
 
-		for_each_skbuff(&skbs, skb, n)
+		for_each_skbuff(SKBUFF_BATCH_ADDR(skbs), skb, n)
 			pfq_kfree_skb_pool(skb, &local->tx_pool);
 	}
 
