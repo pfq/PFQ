@@ -33,6 +33,6 @@ enum pfq_endpoint_type
 	pfq_endpoint_device
 };
 
-extern size_t copy_to_endpoint_skbs(struct pfq_sock *so, struct gc_skbuff_batch *pool, unsigned long long mask, int cpu, int gid);
+extern size_t copy_to_endpoint_gcbs(struct pfq_sock *so, struct gc_skbuff_batch *pool, unsigned long long mask, int cpu, int gid);
 
 #endif /* _PF_Q_ENDPOINT_H_ */
