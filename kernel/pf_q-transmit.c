@@ -378,7 +378,6 @@ int pfq_lazy_xmit(struct gc_buff buff, struct net_device *dev, int hw_queue)
 	if (log->num_fwd >= Q_GC_LOG_QUEUE_LEN) {
 		if (printk_ratelimit())
 			printk(KERN_INFO "[PFQ] bridge %s: too many annotation!\n", dev->name);
-
 		return 0;
 	}
 
@@ -389,38 +388,37 @@ int pfq_lazy_xmit(struct gc_buff buff, struct net_device *dev, int hw_queue)
 }
 
 
-// FIXME LAZY
-//
-// int pfq_lazy_queue_xmit(struct gc_queue_buff *queue, struct net_device *dev, int hw_queue)
-// {
-// 	struct gc_buff buff;
-// 	int i, n = 0;
-//
-// 	for_each_gcbuff(queue, buff, i)
-// 	{
-// 		if (pfq_lazy_xmit(buff, dev, hw_queue))
-// 			++n;
-// 	}
-//
-// 	return n;
-// }
-//
-//
-// int pfq_lazy_queue_xmit_by_mask(struct gc_queue_buff *queue, unsigned long long mask, struct net_device *dev, int hw_queue)
-// {
-// 	struct gc_buff buff;
-// 	int i, n = 0;
-//
-// 	for_each_gcbuff_bitmask(queue, mask, buff, i)
-// 	{
-// 		if (pfq_lazy_xmit(buff, dev, hw_queue))
-// 			++n;
-// 	}
-//
-// 	return n;
-// }
-//
-//
+int pfq_lazy_queue_xmit(struct gc_skbuff_batch *queue, struct net_device *dev, int hw_queue)
+{
+	struct gc_buff buff;
+	int i, n = 0;
+
+	for_each_gcbuff(queue, buff, i)
+	{
+		if (pfq_lazy_xmit(buff, dev, hw_queue))
+			++n;
+	}
+
+	return n;
+}
+
+
+int pfq_lazy_queue_xmit_by_mask(struct gc_skbuff_batch *queue, unsigned long long mask, struct net_device *dev, int hw_queue)
+{
+	struct gc_buff buff;
+	int i, n = 0;
+
+	for_each_gcbuff_bitmask(queue, mask, buff, i)
+	{
+		if (pfq_lazy_xmit(buff, dev, hw_queue))
+			++n;
+	}
+
+	return n;
+}
+
+
+
 // int pfq_lazy_xmit_exec(struct gc_buff buff)
 // {
 // 	struct gc_log *log = PFQ_CB(buff.skb)->log;
