@@ -115,22 +115,24 @@ gc_copy_buff(struct gc_data *gc, struct gc_buff orig)
 
 
 inline void
-__gc_add_dev_to_targets(struct net_device *dev, struct gc_fwd_targets *t)
+__gc_add_dev_to_targets(struct net_device *dev, struct gc_fwd_targets *ts)
 {
 	size_t n = 0;
 
-	for(; n < t->num; ++n)
+	for(; n < ts->num; ++n)
 	{
-        	if (dev == t->dev[n]) {
-        		t->cnt[n]++;
+        	if (dev == ts->dev[n]) {
+        		ts->cnt[n]++;
+        		ts->cnt_total++;
         		return;
 		}
 	}
 
 	if (n < Q_GC_LOG_QUEUE_LEN) {
-		t->dev[n] = dev;
-		t->cnt[n] = 1;
-		t->num++;
+		ts->dev[n] = dev;
+		ts->cnt[n] = 1;
+		ts->cnt_total++;
+		ts->num++;
 	}
 	else {
 		printk(KERN_INFO "[PFQ] GC: forward pool exhausted!\n");
@@ -139,17 +141,18 @@ __gc_add_dev_to_targets(struct net_device *dev, struct gc_fwd_targets *t)
 
 
 void
-gc_get_fwd_targets(struct gc_data *gc, struct gc_fwd_targets *fwd)
+gc_get_fwd_targets(struct gc_data *gc, struct gc_fwd_targets *ts)
 {
 	size_t n, i;
 
-	fwd->num = 0;
+	ts->num = 0;
+        ts->cnt_total = 0;
 
 	for(n = 0; n < gc->pool.len; ++n)
 	{
 		for(i = 0; i < gc->log[n].num_fwd; i++)
 		{
-         		__gc_add_dev_to_targets(gc->log[n].dev[i], fwd);
+         		__gc_add_dev_to_targets(gc->log[n].dev[i], ts);
 		}
 	}
 }

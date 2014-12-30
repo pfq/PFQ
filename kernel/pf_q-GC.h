@@ -56,6 +56,7 @@ struct gc_log
 	struct net_device * dev[Q_GC_LOG_QUEUE_LEN];
 	size_t num_fwd;
 	size_t to_kernel;
+	size_t xmit_todo;
 };
 
 
@@ -63,6 +64,7 @@ struct gc_fwd_targets
 {
 	struct net_device * dev[Q_GC_LOG_QUEUE_LEN];
 	size_t cnt [Q_GC_LOG_QUEUE_LEN];
+	size_t cnt_total;
 	size_t num;
 };
 
@@ -90,19 +92,19 @@ extern struct gc_buff pfq_make_buff(struct sk_buff *skb);
 extern struct gc_buff pfq_alloc_buff(size_t size);
 extern struct gc_buff pfq_copy_buff(struct gc_buff buff);
 
-extern void gc_get_fwd_targets(struct gc_data *gc, struct gc_fwd_targets *targets);
+extern void gc_get_fwd_targets(struct gc_data *gc, struct gc_fwd_targets *ts);
 
 
 static inline bool
-gc_dev_elem_log(struct net_device *dev, struct gc_log *log)
+gc_count_dev_in_log(struct net_device *dev, struct gc_log *log)
 {
-	size_t n;
+	size_t n, ret = 0;
 	for(n = 0; n < log->num_fwd; n++)
 	{
 		if (dev == log->dev[n])
-			return true;
+			ret++;
 	}
-	return false;
+	return ret;
 }
 
 
@@ -116,8 +118,9 @@ void gc_data_init(struct gc_data *gc)
 static inline
 void gc_log_init(struct gc_log *log)
 {
-	log->num_fwd   = 0;
 	log->to_kernel = 0;
+	log->xmit_todo = 0;
+	log->num_fwd   = 0;
 }
 
 
