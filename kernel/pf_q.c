@@ -499,9 +499,9 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 	for_each_skbuff(SKBUFF_BATCH_ADDR(local->gc.pool), skb, n)
 	{
 		if (PFQ_CB(skb)->direct)
-			pfq_kfree_skb_pool(buff.skb, &local->rx_pool);
+			pfq_kfree_skb_pool(skb, &local->rx_pool);
 		else
-			consume_skb(buff.skb);
+			consume_skb(skb);
 	}
 
 	gc_reset(&local->gc);
