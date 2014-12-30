@@ -30,12 +30,12 @@ Features
 * Concurrent monitoring of multiple multi-threaded applications by means of groups of sockets.
 * Per-group packet steering through randomized hashing or deterministic classification.
 * Per-group Berkeley and VLAN filters.
-* Functional engine for in-kernel packet processing: **PFQ/lang**.
+* Functional engine for in-kernel packet processing with **PFQ/lang**.
 * User-space libraries for C, C++11-14 and Haskell languages.
 * PFQ/lang eDLS for C++11-14 and Haskell language.
-* Accelerated pcap library for packet capture and transmission (line-speed tested with captop).
-* **pfqd** daemon used to configure and parallelize multiple instances of pcap legacy applications.
-* **pfq-omatic**, a script that dramatically accelerates vanilla drivers.
+* Accelerated pcap library (line-speed tested with captop).
+* **pfqd** daemon used to parallelize multiple instances of pcap legacy applications.
+* **pfq-omatic**, a script designed to accelerate vanilla drivers.
 * I/O user<->kernel shared-memory on top of **HugePages**.
 
 Publications
