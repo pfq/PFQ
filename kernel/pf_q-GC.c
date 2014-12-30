@@ -150,7 +150,7 @@ gc_get_fwd_targets(struct gc_data *gc, struct gc_fwd_targets *ts)
 
 	for(n = 0; n < gc->pool.len; ++n)
 	{
-		for(i = 0; i < gc->log[n].num_fwd; i++)
+		for(i = 0; i < gc->log[n].num_devs; i++)
 		{
          		__gc_add_dev_to_targets(gc->log[n].dev[i], ts);
 		}

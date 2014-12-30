@@ -369,7 +369,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 			if (prg) { /* run the functional program */
 
 				size_t to_kernel = PFQ_CB(buff.skb)->log->to_kernel;
-				size_t num_fwd   = PFQ_CB(buff.skb)->log->num_fwd;
+				size_t num_fwd   = PFQ_CB(buff.skb)->log->num_devs;
 
 				buff = pfq_run(prg, buff).value;
 
@@ -423,7 +423,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 
 				/* update stats */
 
-                                __sparse_add(&this_group->stats.frwd, PFQ_CB(buff.skb)->log->num_fwd - num_fwd, cpu);
+                                __sparse_add(&this_group->stats.frwd, PFQ_CB(buff.skb)->log->num_devs - num_fwd, cpu);
                                 __sparse_add(&this_group->stats.kern, PFQ_CB(buff.skb)->log->to_kernel - to_kernel, cpu);
 			}
 			else {
@@ -460,7 +460,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 
 		if (to_kernel) {
 
-			if (cb->log->num_fwd > 0) {
+			if (cb->log->num_devs > 0) {
 				skb = skb_clone(skb, GFP_ATOMIC);
 				if (!skb) {
 					__sparse_inc(&global_stats.quit, cpu);

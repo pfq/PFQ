@@ -54,7 +54,7 @@ typedef struct gc_buff SkBuff;
 struct gc_log
 {
 	struct net_device * dev[Q_GC_LOG_QUEUE_LEN];
-	size_t num_fwd;
+	size_t num_devs;
 	size_t to_kernel;
 	size_t xmit_todo;
 };
@@ -99,7 +99,7 @@ static inline bool
 gc_count_dev_in_log(struct net_device *dev, struct gc_log *log)
 {
 	size_t n, ret = 0;
-	for(n = 0; n < log->num_fwd; n++)
+	for(n = 0; n < log->num_devs; n++)
 	{
 		if (dev == log->dev[n])
 			ret++;
@@ -120,7 +120,7 @@ void gc_log_init(struct gc_log *log)
 {
 	log->to_kernel = 0;
 	log->xmit_todo = 0;
-	log->num_fwd   = 0;
+	log->num_devs  = 0;
 }
 
 
