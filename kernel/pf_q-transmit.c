@@ -261,9 +261,15 @@ pfq_queue_flush_or_wakeup(struct pfq_sock *so, int index)
 
 
 inline static int
-__pfq_queue_xmit(struct sk_buff *skb, struct net_device *dev, struct netdev_queue *txq)
+__pfq_xmit(struct sk_buff *skb, struct net_device *dev, struct netdev_queue *txq, int xmit_more)
 {
 	int rc = -ENOMEM;
+
+#if(LINUX_VERSION_CODE >= KERNEL_VERSION(3,18,0))
+	skb->xmit_more = xmit_more;
+#else
+	skb->mark = xmit_more;
+#endif
 
 	skb_reset_mac_header(skb);
 
@@ -311,12 +317,7 @@ pfq_queue_xmit(struct pfq_skbuff_batch *skbs, struct net_device *dev, int hw_que
 	{
 		skb_set_queue_mapping(skb, hw_queue);
 
-#if(LINUX_VERSION_CODE >= KERNEL_VERSION(3,18,0))
-		skb->xmit_more = n != last;
-#else
-		skb->mark = n != last;
-#endif
-		if (__pfq_queue_xmit(skb, dev, txq) == NETDEV_TX_OK)
+		if (__pfq_xmit(skb, dev, txq, n != last) == NETDEV_TX_OK)
 			++ret;
 		else
 			goto intr;
@@ -354,7 +355,7 @@ pfq_queue_xmit_by_mask(struct pfq_skbuff_batch *skbs, unsigned long long mask, s
 	{
 		skb_set_queue_mapping(skb, hw_queue);
 
-		if (__pfq_queue_xmit(skb, dev, txq) == NETDEV_TX_OK)
+		if (__pfq_xmit(skb, dev, txq, 0) == NETDEV_TX_OK)
 			++ret;
 		else
 			goto intr;
