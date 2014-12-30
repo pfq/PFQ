@@ -265,6 +265,10 @@ __pfq_xmit(struct sk_buff *skb, struct net_device *dev, struct netdev_queue *txq
 {
 	int rc = -ENOMEM;
 
+#ifndef PFQ_USE_XMIT_MORE
+	xmit_more = 0;
+#endif
+
 #if(LINUX_VERSION_CODE >= KERNEL_VERSION(3,18,0))
 	skb->xmit_more = xmit_more;
 #else
