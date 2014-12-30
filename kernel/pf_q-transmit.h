@@ -60,6 +60,7 @@ static inline int pfq_xmit(struct sk_buff *skb, struct net_device *dev, int queu
 extern int pfq_lazy_xmit(struct gc_buff, struct net_device *dev, int queue_index);
 extern int pfq_queue_lazy_xmit(struct gc_queue_buff *queue, struct net_device *dev, int queue_index);
 extern int pfq_queue_lazy_xmit_by_mask(struct gc_queue_buff *queue, unsigned long long mask, struct net_device *dev, int queue_index);
-// extern int pfq_lazy_xmit_exec(struct gc_buff);
+
+extern size_t pfq_lazy_xmit_exec(struct gc_data *gc, struct gc_fwd_targets const *t);
 
 #endif /* _PF_Q_TRANSMIT_H_ */

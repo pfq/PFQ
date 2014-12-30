@@ -481,33 +481,28 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 		}
 	}
 
+	/* do lazy forward to network devices */
+	{
+ 		struct gc_fwd_targets targets;
+               	size_t total;
 
-//	for_each_skbuff(SKBUFF_BATCH_ADDR(local->gc.pool), skb, n)
-//	{
-//		struct pfq_cb *cb = PFQ_CB(skb);
-//		int num_fwd = cb->log->num_fwd;
-//
-//
-//	}
-//
-//		/* pfq_lazy_exec send multiple copies of this skb to different devices...
-//		   the skb is freed with the last forward */
-//
-//		if (num_fwd) {
-//
-//			int x = pfq_lazy_xmit_exec(buff);
-//
-//                        __sparse_add(&global_stats.frwd, x, cpu);
-//                        __sparse_add(&global_stats.disc, num_fwd - x, cpu);
-//		}
-//
-//		/* release this skb */
-//
-//		if (cb->direct)
-//			pfq_kfree_skb_pool(buff.skb, &local->rx_pool);
-//		else
-//			consume_skb(buff.skb);
-//        }
+		gc_get_fwd_targets(&local->gc, &targets);
+
+		total = pfq_lazy_xmit_exec(&local->gc, &targets);
+
+		__sparse_add(&global_stats.frwd, total, cpu);
+		__sparse_add(&global_stats.disc, targets.cnt_total - total, cpu);
+	}
+
+	/* reset GC, free skbs */
+
+	for_each_skbuff(SKBUFF_BATCH_ADDR(local->gc.pool), skb, n)
+	{
+		if (PFQ_CB(skb)->direct)
+			pfq_kfree_skb_pool(buff.skb, &local->rx_pool);
+		else
+			consume_skb(buff.skb);
+	}
 
 	gc_reset(&local->gc);
 

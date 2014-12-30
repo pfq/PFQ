@@ -386,6 +386,7 @@ pfq_lazy_xmit(struct gc_buff buff, struct net_device *dev, int hw_queue)
 
 	skb_set_queue_mapping(buff.skb, hw_queue);
 	log->dev[log->num_fwd++] = dev;
+	log->xmit_todo++;
 
 	return 1;
 }
@@ -423,37 +424,68 @@ pfq_queue_lazy_xmit_by_mask(struct gc_queue_buff *queue, unsigned long long mask
 }
 
 
+size_t
+pfq_lazy_xmit_exec(struct gc_data *gc, struct gc_fwd_targets const *t)
+{
+	struct netdev_queue *txq = NULL;
+	struct net_device *dev;
+	struct sk_buff *skb;
+        size_t sent = 0;
+	size_t n, i, k;
 
-// int pfq_lazy_xmit_exec(struct gc_buff buff)
-// {
-// 	struct gc_log *log = PFQ_CB(buff.skb)->log;
-// 	struct sk_buff *skb;
-//
-// 	int ret = 0, num_fwd, i;
-//
-// 	num_fwd = log->num_fwd;
-//
-// 	for(i = 0; i < num_fwd; ++i)
-// 	{
-// 		struct net_device *dev = log->dev[i];
-//
-// 		skb = (i == num_fwd-1) ? skb_get(buff.skb) : skb_clone(buff.skb, GFP_ATOMIC);
-// 		if (skb)
-// 		{
-// 			if (pfq_xmit(skb, dev, skb->queue_mapping) != 1) {
-// #ifdef PFQ_DEBUG
-// 				if (printk_ratelimit())
-// 					printk(KERN_INFO "[PFQ] forward pfq_xmit: error on device %s!\n", dev->name);
-// #endif
-// 			}
-// 			else {
-// 				ret++;
-// 			}
-// 		}
-// 	}
-//
-// 	return ret;
-// }
+	int queue;
 
+	/* for each net_device */
 
+	for(n = 0; n < t->num; n++)
+	{
+		dev = t->dev[n];
+		k = 0; txq = NULL;
+
+		/* scan the list of skbs, and forward them in batch fashion */
+
+		for(i = 0; i < gc->pool.len; i++)
+		{
+			struct gc_log *log = &gc->log[i];
+			size_t num = gc_count_dev_in_log(dev, log);
+                        size_t j;
+
+			if (num == 0)
+				continue;
+
+			/* select the packet */
+
+			skb = gc->pool.queue[i].skb;
+
+			/* the first packet for this dev determines the hw queue */
+
+			if (!txq) {
+				queue = skb->queue_mapping;
+				txq   = pfq_pick_tx(dev, skb, &queue);
+
+				__netif_tx_lock_bh(txq);
+			}
+
+			/* forward this skb `num` times */
+
+                        for (j = 0; j < num; j++)
+			{
+				int xmit_more = (++k != t->cnt[n]);
+
+				skb = (log->xmit_todo-- == 1) ? skb_get(skb) : skb_clone(skb, GFP_ATOMIC);
+
+				if (skb) {
+					if (__pfq_xmit(skb, dev, txq, xmit_more) == NETDEV_TX_OK)
+		   				sent++;
+				}
+			}
+
+		}
+
+		if (txq)
+			__netif_tx_unlock_bh(txq);
+	}
+
+	return sent;
+}
 
