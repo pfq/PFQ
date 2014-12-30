@@ -86,7 +86,7 @@ data Config = Config
          pfq_module     :: String,
          pfq_options    :: [String],
          exclude_core   :: [Int],
-         irq_affinity   :: String,
+         irq_affinity   :: [String],
          drivers        :: [Driver]
     } deriving (Show, Read, Eq)
 
@@ -110,7 +110,7 @@ instance Semigroup Config where
             pfq_module   = getOptString $ OptString mod1  <> OptString mod2,
             pfq_options  = opt1  <> opt2,
             exclude_core = excl1 <> excl2,
-            irq_affinity = getOptString $ OptString algo1 <> OptString algo2,
+            irq_affinity = algo1 <> algo2,
             drivers      = drvs1 <> drvs2
         }
 
@@ -199,7 +199,7 @@ mkRssOption driver numdev queues =
 
 mkConfig :: Options -> Config
 mkConfig
-    Options { config = _,
+    Options { config    = _,
               algorithm = algo,
               exclude   = excl,
               others    = mod
@@ -208,7 +208,7 @@ mkConfig
         pfq_module    = if null mod || not (isModuleName (head mod)) then "" else head mod,
         pfq_options   = [],
         exclude_core  = excl,
-        irq_affinity  = algo,
+        irq_affinity  = [algo | not (null algo)],
         drivers       = []
     }
     where isModuleName = (".ko" `isSuffixOf`)
@@ -292,11 +292,14 @@ getDevices ::  Config -> [String]
 getDevices conf = map devname (concatMap devices (drivers conf))
 
 
-setupIRQAffinity :: Int -> [Int] -> String -> [String] -> IO ()
-setupIRQAffinity fc excl algo devs = do
+setupIRQAffinity :: Int -> [Int] -> [String] -> [String] -> IO ()
+setupIRQAffinity fc excl algs devs = do
     let excl_opt = unwords (map (\n -> " -e " ++ show n) excl)
-    unless (null algo) $
-        runSystem ("/root/.cabal/bin/irq-affinity -f " ++ show fc  ++ " " ++ excl_opt ++ " -a " ++ algo ++ " -m TxRx " ++ unwords devs) "irq-affinity error!"
+    let affinity = zip algs (tails devs)
+    unless (null affinity) $
+        forM_ affinity $ \(alg, devs') -> do
+            putStrLn $ show alg
+            runSystem ("/root/.cabal/bin/irq-affinity -f " ++ show fc  ++ " " ++ excl_opt ++ " -a " ++ alg ++ " -m TxRx " ++ unwords devs') "irq-affinity error!"
 
 
 runSystem :: String -> String -> IO ()
