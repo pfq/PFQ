@@ -282,13 +282,13 @@ __pfq_xmit(struct sk_buff *skb, struct net_device *dev, struct netdev_queue *txq
 #if (LINUX_VERSION_CODE <= KERNEL_VERSION(3,2,0))
 		if (!netif_tx_queue_stopped(txq))
 #else
-			if (!netif_xmit_stopped(txq))
+		if (!netif_xmit_stopped(txq))
 #endif
-			{
-				rc = dev->netdev_ops->ndo_start_xmit(skb, dev);
-				if (dev_xmit_complete(rc))
-					goto out;
-			}
+		{
+			rc = dev->netdev_ops->ndo_start_xmit(skb, dev);
+			if (dev_xmit_complete(rc))
+				goto out;
+		}
 	}
 
 	kfree_skb(skb);
@@ -431,15 +431,14 @@ pfq_queue_lazy_xmit_by_mask(struct gc_queue_buff *queue, unsigned long long mask
 size_t
 pfq_lazy_xmit_exec(struct gc_data *gc, struct gc_fwd_targets const *t)
 {
-	struct netdev_queue *txq = NULL;
+	struct netdev_queue *txq;
 	struct net_device *dev;
 	struct sk_buff *skb;
         size_t sent = 0;
 	size_t n, i, k;
-
 	int queue;
 
-	/* for each net_device */
+	/* for each net_device... */
 
 	for(n = 0; n < t->num; n++)
 	{
@@ -451,16 +450,15 @@ pfq_lazy_xmit_exec(struct gc_data *gc, struct gc_fwd_targets const *t)
 		for(i = 0; i < gc->pool.len; i++)
 		{
 			struct gc_log *log;
-                        size_t num, j;
+                        size_t j, num;
 
 			/* select the packet */
 
                         log = &gc->log[i];
 
 			num = gc_count_dev_in_log(dev, log);
-			if (num == 0) {
+			if (num == 0)
 				continue;
-			}
 
 			skb = gc->pool.queue[i].skb;
 
@@ -468,7 +466,8 @@ pfq_lazy_xmit_exec(struct gc_data *gc, struct gc_fwd_targets const *t)
 
 			if (!txq) {
 				queue = skb->queue_mapping;
-				txq   = pfq_pick_tx(dev, skb, &queue);
+				txq = pfq_pick_tx(dev, skb, &queue);
+
 				__netif_tx_lock_bh(txq);
 			}
 
@@ -476,15 +475,9 @@ pfq_lazy_xmit_exec(struct gc_data *gc, struct gc_fwd_targets const *t)
 
                         for (j = 0; j < num; j++)
 			{
-				int xmit_more = (++k != t->cnt[n]);
+				const int xmit_more = ++k != t->cnt[n];
 
-                        	bool clone = log->xmit_todo-- > 1;
-
-				//if (printk_ratelimit())
-				//	printk(KERN_INFO "[PFQ] xmit_more=%d -> num=%zu n=%zu i=%zu k=%zu j=%zu target_count=%zu total_count=%zu!\n", xmit_more, num, n, i, k, j, t->cnt[n], t->cnt_total);
-
-				skb = clone ? skb_clone(skb, GFP_ATOMIC) : skb_get(skb);
-
+				skb = log->xmit_todo-- > 1 ? skb_clone(skb, GFP_ATOMIC) : skb_get(skb);
 				if (skb) {
 					if (__pfq_xmit(skb, dev, txq, xmit_more) == NETDEV_TX_OK)
 		   				sent++;
