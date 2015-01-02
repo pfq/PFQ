@@ -297,8 +297,7 @@ setupIRQAffinity fc excl algs devs = do
     let excl_opt = unwords (map (\n -> " -e " ++ show n) excl)
     let affinity = zip algs (tails devs)
     unless (null affinity) $
-        forM_ affinity $ \(alg, devs') -> do
-            putStrLn $ show alg
+        forM_ affinity $ \(alg, devs') ->
             runSystem ("/root/.cabal/bin/irq-affinity -f " ++ show fc  ++ " " ++ excl_opt ++ " -a " ++ alg ++ " -m TxRx " ++ unwords devs') "irq-affinity error!"
 
 
