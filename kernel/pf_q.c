@@ -210,6 +210,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
         long unsigned n, bit, lb;
         struct pfq_monad monad;
 	struct gc_buff buff;
+	size_t this_batch_len;
         int cpu;
 
 #ifdef PFQ_RX_PROFILE
@@ -278,9 +279,11 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
                 return 0;
 	}
 
-	local->last_ts = skb_get_ktime(buff.skb);
+	this_batch_len = gc_size(gcollector);
 
-	__sparse_add(&global_stats.recv, gc_size(gcollector), cpu);
+	__sparse_add(&global_stats.recv, this_batch_len, cpu);
+
+	local->last_ts = skb_get_ktime(buff.skb);
 
 	/* cleanup sock_queue... */
 
@@ -326,7 +329,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 			unsigned long sock_mask = 0;
 			struct pfq_computation_tree *prg;
 
-			if (n == batch_len)
+			if (n == this_batch_len)
 				break;
 
 			/* skip this packet for this group */
