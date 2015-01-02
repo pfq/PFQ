@@ -315,11 +315,6 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 		bool vlan_filter_enabled = __pfq_vlan_filters_enabled(gid);
 		struct sk_filter *bpf;
 
-		if (this_group == NULL) {
-			printk(KERN_INFO "[PFQ] FATAL: NULL group!\n");
-			continue;
-		}
-
 		bpf = (struct sk_filter *)atomic_long_read(&this_group->bp_filter);
 
 		socket_mask = 0;
