@@ -364,22 +364,21 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 				}
 			}
 
-			/* setup monad for this computation */
-
-			monad.fanout.class_mask = Q_CLASS_DEFAULT;
-			monad.fanout.type       = fanout_copy;
-			monad.state  		= 0;
-			monad.group 		= this_group;
-
 			/* check where a functional program is available for this group */
 
 			prg = (struct pfq_computation_tree *)atomic_long_read(&this_group->comp);
+			if (prg) {
 
-			if (prg) { /* run the functional program */
 
 				size_t to_kernel = PFQ_CB(buff.skb)->log->to_kernel;
 				size_t num_fwd   = PFQ_CB(buff.skb)->log->num_devs;
 
+				/* setup monad for this computation */
+
+				monad.fanout.class_mask = Q_CLASS_DEFAULT;
+				monad.fanout.type       = fanout_copy;
+				monad.state  		= 0;
+				monad.group 		= this_group;
 				buff = pfq_run(prg, buff).value;
 
 				if (buff.skb == NULL) {
