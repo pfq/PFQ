@@ -374,7 +374,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 			prg = (struct pfq_computation_tree *)atomic_long_read(&this_group->comp);
 			if (prg) {
 
-
+				unsigned long cbit, eligible_mask = 0;
 				size_t to_kernel = PFQ_CB(buff.skb)->log->to_kernel;
 				size_t num_fwd   = PFQ_CB(buff.skb)->log->num_devs;
 
@@ -384,63 +384,70 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 				monad.fanout.type       = fanout_copy;
 				monad.state  		= 0;
 				monad.group 		= this_group;
+
+				/* run the functional program */
+
 				buff = pfq_run(prg, buff).value;
 
 				/* save a reference of the current packet */
 
 				pktref.queue[pktref.len++] = buff;
+
 				if (buff.skb == NULL) {
                                 	__sparse_inc(&this_group->stats.drop, cpu);
 					continue;
-				}
-
-				if (likely(!is_drop(monad.fanout))) {
-
-					unsigned long eligible_mask = 0;
-					unsigned long cbit;
-
-					/* load the eligible mask */
-
-					pfq_bitwise_foreach(monad.fanout.class_mask, cbit,
-					{
-						int class = pfq_ctz(cbit);
-						eligible_mask |= atomic_long_read(&this_group->sock_mask[class]);
-					})
-
-					if (is_steering(monad.fanout)) {
-
-						if (unlikely(eligible_mask != local->eligible_mask)) {
-
-							unsigned long ebit;
-
-							local->eligible_mask = eligible_mask;
-							local->sock_cnt = 0;
-
-							pfq_bitwise_foreach(eligible_mask, ebit,
-							{
-								local->sock_mask[local->sock_cnt++] = ebit;
-							})
-						}
-
-						if (likely(local->sock_cnt)) {
-							unsigned int h = monad.fanout.hash ^ (monad.fanout.hash >> 8) ^ (monad.fanout.hash >> 16);
-							sock_mask |= local->sock_mask[pfq_fold(h, local->sock_cnt)];
-						}
-					}
-					else {  /* clone or continue ... */
-
-						sock_mask |= eligible_mask;
-					}
-
-				}
-				else {
-                                	__sparse_inc(&this_group->stats.drop, cpu);
 				}
 
 				/* update stats */
 
                                 __sparse_add(&this_group->stats.frwd, PFQ_CB(buff.skb)->log->num_devs - num_fwd, cpu);
                                 __sparse_add(&this_group->stats.kern, PFQ_CB(buff.skb)->log->to_kernel - to_kernel, cpu);
+
+				/* skip the packet? */
+
+				if (unlikely(is_drop(monad.fanout))) {
+                                	__sparse_inc(&this_group->stats.drop, cpu);
+                                	continue;
+				}
+
+				/* process output... */
+
+
+				/* compute the eligible mask of sockets enabled for this packet... */
+
+				pfq_bitwise_foreach(monad.fanout.class_mask, cbit,
+				{
+					int class = pfq_ctz(cbit);
+					eligible_mask |= atomic_long_read(&this_group->sock_mask[class]);
+				})
+
+
+				if (is_steering(monad.fanout)) {
+
+					/* cache the number of sockets in the mask */
+
+					if (unlikely(eligible_mask != local->eligible_mask)) {
+
+						unsigned long ebit;
+
+						local->eligible_mask = eligible_mask;
+						local->sock_cnt = 0;
+
+						pfq_bitwise_foreach(eligible_mask, ebit,
+						{
+							local->sock_mask[local->sock_cnt++] = ebit;
+						})
+					}
+
+					if (likely(local->sock_cnt)) {
+						unsigned int h = monad.fanout.hash ^ (monad.fanout.hash >> 8) ^ (monad.fanout.hash >> 16);
+						sock_mask |= local->sock_mask[pfq_fold(h, local->sock_cnt)];
+					}
+				}
+				else {  /* clone or continue ... */
+
+					sock_mask |= eligible_mask;
+				}
 			}
 			else {
 				/* save a reference of the current packet */
