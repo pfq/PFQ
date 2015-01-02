@@ -318,6 +318,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 		bool bf_filter_enabled = atomic_long_read(&this_group->bp_filter);
 		bool vlan_filter_enabled = __pfq_vlan_filters_enabled(gid);
 
+		struct gc_queue_buff pktref = { len:0 };
 
 		socket_mask = 0;
 
@@ -385,6 +386,9 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 				monad.group 		= this_group;
 				buff = pfq_run(prg, buff).value;
 
+				/* save a reference of the current packet */
+
+				pktref.queue[pktref.len++] = buff;
 				if (buff.skb == NULL) {
                                 	__sparse_inc(&this_group->stats.drop, cpu);
 					continue;
@@ -439,6 +443,9 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
                                 __sparse_add(&this_group->stats.kern, PFQ_CB(buff.skb)->log->to_kernel - to_kernel, cpu);
 			}
 			else {
+				/* save a reference of the current packet */
+				pktref.queue[pktref.len++] = buff;
+
 				sock_mask |= atomic_long_read(&this_group->sock_mask[0]);
 			}
 
@@ -453,7 +460,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 			int i = pfq_ctz(lb);
 			struct pfq_sock * so = pfq_get_sock_by_id(i);
 
-			copy_to_endpoint_gcbs(so, &gcollector->pool, sock_queue[i], cpu, gid);
+			copy_to_endpoint_gcbs(so, &pktref, sock_queue[i], cpu, gid);
 		})
 	})
 
