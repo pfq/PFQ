@@ -312,12 +312,11 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 	pfq_bitwise_foreach(group_mask, bit,
 	{
 		int gid = pfq_ctz(bit);
-
 		struct pfq_group * this_group = pfq_get_group(gid);
-		bool vlan_filter_enabled = __pfq_vlan_filters_enabled(gid);
-		struct sk_filter *bpf;
 
-		bpf = (struct sk_filter *)atomic_long_read(&this_group->bp_filter);
+		bool bf_filter_enabled = atomic_long_read(&this_group->bp_filter);
+		bool vlan_filter_enabled = __pfq_vlan_filters_enabled(gid);
+
 
 		socket_mask = 0;
 
@@ -338,16 +337,22 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 
 			__sparse_inc(&this_group->stats.recv, cpu);
 
-			/* check bpf filter */
+
+			/* check for bp filter */
+
+			if (bf_filter_enabled)
+			{
+				struct sk_filter *bpf = (struct sk_filter *)atomic_long_read(&this_group->bp_filter);
 
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(3,15,0))
-			if (bpf && !sk_run_filter(buff.skb, bpf->insns))
+				if (bpf && !sk_run_filter(buff.skb, bpf->insns))
 #else
-			if (bpf && !SK_RUN_FILTER(bpf, buff.skb))
+				if (bpf && !SK_RUN_FILTER(bpf, buff.skb))
 #endif
-                        {
-				__sparse_inc(&this_group->stats.drop, cpu);
-				continue;
+                        	{
+					__sparse_inc(&this_group->stats.drop, cpu);
+					continue;
+				}
 			}
 
 			/* check vlan filter */
