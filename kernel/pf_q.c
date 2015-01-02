@@ -307,6 +307,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 		PFQ_CB(skb)->monad      = &monad;
 	}
 
+
         /* process all groups enabled for this batch of packets */
 
 	pfq_bitwise_foreach(group_mask, bit,
@@ -322,8 +323,10 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 
 		for_each_gcbuff(&gcollector->pool, buff, n)
 		{
-			unsigned long sock_mask = 0;
 			struct pfq_computation_tree *prg;
+			unsigned long sock_mask = 0;
+
+			/* stop processing packets in GC ? */
 
 			if (n == this_batch_len)
 				break;
@@ -358,6 +361,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 			/* check vlan filter */
 
 			if (vlan_filter_enabled) {
+
 				if (!__pfq_check_group_vlan_filter(gid, buff.skb->vlan_tci & ~VLAN_TAG_PRESENT)) {
 					__sparse_inc(&this_group->stats.drop, cpu);
 					continue;
