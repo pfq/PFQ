@@ -295,6 +295,8 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 	start = get_cycles();
 #endif
 
+        /* setup all the skbs collected */
+
 	for_each_skbuff(SKBUFF_BATCH_ADDR(gcollector->pool), skb, n)
         {
 		unsigned long local_group_mask = __pfq_devmap_get_groups(skb->dev->ifindex, skb_get_rx_queue(skb));
@@ -335,7 +337,6 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 			/* increment recv counter for this group */
 
 			__sparse_inc(&this_group->stats.recv, cpu);
-
 
 			/* check bpf filter */
 
@@ -437,7 +438,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 			socket_mask |= sock_mask;
 		}
 
-		/* copy payloads to endpoints... */
+		/* copy payload of packets to endpoints... */
 
 		pfq_bitwise_foreach(socket_mask, lb,
 		{
@@ -448,7 +449,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 		})
 	})
 
-	/* forward sk_buff to kernel */
+	/* forward skbs to kernel */
 
 	for_each_skbuff(SKBUFF_BATCH_ADDR(gcollector->pool), skb, n)
 	{
@@ -463,28 +464,23 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 
 		if (to_kernel) {
 
-			if (cb->log->num_devs > 0) {
-				skb = skb_clone(skb, GFP_ATOMIC);
-				if (!skb) {
-					__sparse_inc(&global_stats.quit, cpu);
-					if (printk_ratelimit())
-						printk(KERN_INFO "[PFQ] forward: skb_clone error!\n");
-				}
-				else {
-					__sparse_inc(&global_stats.kern, cpu);
-					send_to_kernel(skb);
-				}
-			}
-			else {
-				skb_get(skb);
+			skb = cb->log->num_devs > 0 ?
+				skb_clone(skb, GFP_ATOMIC) : skb_get(skb);
 
+			if (skb) {
 				__sparse_inc(&global_stats.kern, cpu);
 				send_to_kernel(skb);
+			}
+			else {
+				__sparse_inc(&global_stats.quit, cpu);
+				if (printk_ratelimit())
+			       		printk(KERN_INFO "[PFQ] forward: skb_clone error!\n");
 			}
 		}
 	}
 
-	/* do lazy forward to network devices */
+	/* forward skbs to network devices */
+
 	{
  		struct gc_fwd_targets targets;
                	size_t total;
