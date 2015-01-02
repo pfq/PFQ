@@ -40,6 +40,8 @@
 
 module Network.PFq.Lang
     (
+        -- * Basic types
+
         NetDevice(..),
         Argument(..),
         Pretty(..),
@@ -49,6 +51,9 @@ module Network.PFq.Lang
         FunctionDescr(..),
         Action,
         SkBuff,
+
+        -- * Function types
+
         NetFunction,
         NetPredicate,
         NetProperty,
@@ -62,20 +67,33 @@ import Foreign.Storable
 
 import Data.Word
 
-
 -- Basic types...
 
-type Symbol      = String
-newtype SkBuff   = SkBuff ()
-newtype Action a = Identity a
+-- |Symbol is a value of type 'String' and it is used to represent the name of
+-- a function.
+
+type Symbol = String
+
+-- |SkBuff is a placeholder type, used to model the kernel sk_buff data structure.
+
+newtype SkBuff = SkBuff ()
+
+-- |Vector data type
+
 newtype Vector a = Vector [a]
-newtype Fun      = Fun Int
 
-data NetDevice   = Dev String | DevQueue String Int
+-- |Function data type
+
+newtype Fun = Fun Int
+
+-- |Action is a monad modelled after the Identity monad and implemented at kernel level.
+
+newtype Action a = Identity a
+
+-- |NetDevice data type
+
+data NetDevice = Dev String | DevQueue String Int
                     deriving (Eq, Show, Read)
-
--- Polymorphic storable arguments:
-
 
 data Argument = forall a. (Show a, Storable a) => ArgData a     |
                 forall a. (Show a, Storable a) => ArgVector [a] |
@@ -111,7 +129,6 @@ instance Argumentable Fun where
     mkArgument (Fun n) = ArgFun n
 
 
-
 data FunctionDescr = FunctionDescr Symbol [Argument] Int
                         deriving (Show)
 
@@ -120,10 +137,16 @@ termComp n xs = map (\(FunctionDescr sym as next) -> FunctionDescr sym as (cut n
                 where
                     cut x = if x == (n + length xs) then (-1) else x
 
--- DLS NetFunction
+
+-- |Function that takes a SkBuff and returns an Action SkBuff.
 
 type NetFunction  = Function (SkBuff -> Action SkBuff)
+
+-- |Function that takes a SkBuff and returns a Bool.
+
 type NetPredicate = Function (SkBuff -> Bool)
+
+-- |Function that takes a SkBuff and returns a generic Word64.
 type NetProperty  = Function (SkBuff -> Word64)
 
 
@@ -156,7 +179,7 @@ data Function f where {
     }
 
 
--- DLS Kleisli operator: >->
+-- |Kleisli left-to-right operator, for monadic composition of DLS NetFunction
 
 (>->) :: Function (a -> m b) -> Function (b -> m c) -> Function (a -> m c)
 f1 >-> f2 = Composition f1 f2
