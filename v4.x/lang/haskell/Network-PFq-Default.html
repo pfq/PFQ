@@ -46,7 +46,7 @@ window.onload = function () {pageLoad();setSynopsis("mini_Network-PFq-Default.ht
 </p><pre> has_vid 42
 </pre></div></div><div class="top"><p class="src"><a name="v:vlan_id" class="def">vlan_id</a> :: [CInt] -&gt; <a href="Network-PFq-Lang.html#t:NetPredicate">NetPredicate</a></p><div class="doc"><p>Predicate which evaluates to <em>True</em> when the packet has one of the
  vlan id specified by the list. Example:
-</p><pre> when' (vland_id [1,13,42,43]) msg_log &quot;Got a packet!&quot;
+</p><pre> when' (vland_id [1,13,42,43]) (msg_log &quot;Got a packet!&quot;)
 </pre></div></div><h1 id="g:2">Properties
 </h1><div class="top"><p class="src"><a name="v:ip_tos" class="def">ip_tos</a> :: <a href="Network-PFq-Lang.html#t:NetProperty">NetProperty</a></p><div class="doc"><p>Evaluate to the <em>tos</em> field of the IP header.
 </p></div></div><div class="top"><p class="src"><a name="v:ip_tot_len" class="def">ip_tot_len</a> :: <a href="Network-PFq-Lang.html#t:NetProperty">NetProperty</a></p><div class="doc"><p>Evaluate to the <em>tot_len</em> field of the IP header.
