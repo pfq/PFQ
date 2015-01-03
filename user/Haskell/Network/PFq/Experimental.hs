@@ -32,35 +32,16 @@
 module Network.PFq.Experimental
     (
         -- * Experimental Functions
+        -- | This set of experimental functions may be subject to changes in future releases
 
-        bridge     ,
-        tee        ,
-        tap        ,
-        class'     ,
-        deliver    ,
-        forward    ,
-        filter'    ,
         dummy      ,
         hdummy     ,
         vdummy     ,
         crc16      ,
 
-        bloom       ,
-        bloom_src   ,
-        bloom_dst   ,
+        class'     ,
+        deliver    ,
 
-        bloom_filter,
-        bloom_src_filter,
-        bloom_dst_filter,
-
-        bloomCalcN  ,
-        bloomCalcM  ,
-        bloomCalcP  ,
-
-        vlan_id       ,
-        vlan_id_filter,
-
-        steer_field   ,
     ) where
 
 
@@ -72,64 +53,16 @@ import Network.Socket
 
 -- Experimental in-kernel computations
 
-filter'     = MFunctionP  "filter"        :: NetPredicate -> NetFunction
+-- | Specify the class mask for the given packet.
+class'  = MFunction1 "class"   :: CInt -> NetFunction
 
-class'      = MFunction1 "class"         :: CInt    -> NetFunction
-deliver     = MFunction1 "deliver"       :: CInt    -> NetFunction
-forward     = MFunction1 "forward"       :: String  -> NetFunction
-bridge      = MFunction1 "bridge"        :: String  -> NetFunction
-tee         = MFunction1P "tee"          :: String  -> NetPredicate -> NetFunction
-tap         = MFunction1P "tap"          :: String  -> NetPredicate -> NetFunction
+deliver = MFunction1 "deliver" :: CInt -> NetFunction
 
 dummy       = MFunction1 "dummy"         :: CInt -> NetFunction
 hdummy      = MFunctionP  "hdummy"       :: NetPredicate -> NetFunction
-
 vdummy      :: [CInt] -> NetFunction
 vdummy  xs  = MFunction1 "vdummy" (Vector xs)
-
 crc16       = MFunction "crc16" :: NetFunction
-
-bloom         :: CInt -> [HostName] -> NetPredicate
-bloom_src     :: CInt -> [HostName] -> NetPredicate
-bloom_dst     :: CInt -> [HostName] -> NetPredicate
-
-bloom_filter      :: CInt -> [HostName] -> NetFunction
-bloom_src_filter  :: CInt -> [HostName] -> NetFunction
-bloom_dst_filter  :: CInt -> [HostName] -> NetFunction
-
-bloom            m hs = let ips = unsafePerformIO (mapM inet_addr hs) in Predicate2 "bloom"     m (Vector ips)
-bloom_src        m hs = let ips = unsafePerformIO (mapM inet_addr hs) in Predicate2 "bloom_src" m (Vector ips)
-bloom_dst        m hs = let ips = unsafePerformIO (mapM inet_addr hs) in Predicate2 "bloom_dst" m (Vector ips)
-
-bloom_filter     m hs = let ips = unsafePerformIO (mapM inet_addr hs) in MFunction2 "bloom_filter"     m (Vector ips)
-bloom_src_filter m hs = let ips = unsafePerformIO (mapM inet_addr hs) in MFunction2 "bloom_src_filter" m (Vector ips)
-bloom_dst_filter m hs = let ips = unsafePerformIO (mapM inet_addr hs) in MFunction2 "bloom_dst_filter" m (Vector ips)
-
-
--- bloom filter: utility functions:
-
-bloomK = 4
-
-bloomCalcM  :: Int -> Double -> Int
-bloomCalcM  n p =  ceiling $ fromIntegral(-bloomK * n) / log(1 - p ** (1 / fromIntegral bloomK))
-
-bloomCalcN  :: Int -> Double -> Int
-bloomCalcN  m p =  ceiling $ fromIntegral (-m) * log(1 - p ** (1 / fromIntegral bloomK )) / fromIntegral bloomK
-
-bloomCalcP  :: Int -> Int -> Double
-bloomCalcP  n m =  (1 - (1 - 1 / fromIntegral m) ** fromIntegral (n * bloomK))^bloomK
-
--- vlan
-
-vlan_id  :: [CInt] -> NetPredicate
-vlan_id ids = Predicate1 "vlan_id" (Vector ids)
-
-vlan_id_filter  :: [CInt] -> NetFunction
-vlan_id_filter ids = MFunction1 "vlan_id_filter" (Vector ids)
-
-
-steer_field :: CInt -> CInt -> NetFunction
-steer_field off size = MFunction2 "steer_field" off size
 
 
 
