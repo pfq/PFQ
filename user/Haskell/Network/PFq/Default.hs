@@ -709,7 +709,7 @@ par'            = MFunctionFF "par"           :: NetFunction  -> NetFunction -> 
 -- | Predicate which evaluates to /True/ when the packet has one of the
 -- vlan id specified by the list. Example:
 --
--- > when' (vland_id [1,13,42,43]) msg_log "Got a packet!"
+-- > when' (vland_id [1,13,42,43]) (msg_log "Got a packet!")
 vlan_id  :: [CInt] -> NetPredicate
 vlan_id ids = Predicate1 "vlan_id" (Vector ids)
 
