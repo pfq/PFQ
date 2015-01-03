@@ -48,9 +48,6 @@ module Network.PFq.Experimental
 import Network.PFq.Lang
 import Foreign.C.Types
 
-import System.IO.Unsafe
-import Network.Socket
-
 -- Experimental in-kernel computations
 
 -- | Specify the class mask for the given packet.
@@ -60,7 +57,7 @@ deliver = MFunction1 "deliver" :: CInt -> NetFunction
 
 dummy       = MFunction1 "dummy"         :: CInt -> NetFunction
 hdummy      = MFunctionP  "hdummy"       :: NetPredicate -> NetFunction
-vdummy      :: [CInt] -> NetFunction
+vdummy  :: [CInt] -> NetFunction
 vdummy  xs  = MFunction1 "vdummy" (Vector xs)
 crc16       = MFunction "crc16" :: NetFunction
 
