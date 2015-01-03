@@ -270,7 +270,7 @@ $<$ \hyperlink{structpfq_1_1lang_1_1FunctionDescr}{Function\+Descr} $>$, std\+::
 {\footnotesize template$<$typename P $>$ }\\auto \hyperlink{namespacepfq_1_1lang_a4356432f0438e003c4f8d2fec7c65c9e}{not\+\_\+} (P const \&p) -\/$>$ decltype(\hyperlink{namespacepfq_1_1lang_ab44ced92c6fdf4c10166eb113ff89860}{combinator1}(nullptr, p))
 \begin{DoxyCompactList}\small\item\em Return a new predicate that evaluates to true, when the given one evaluates to false, and vice versa. \end{DoxyCompactList}\item 
 {\footnotesize template$<$typename P $>$ }\\auto \hyperlink{namespacepfq_1_1lang_ae7cede583fed88c883da63ad7b08e223}{operator$<$} (P const \&prop, uint64\+\_\+t arg) -\/$>$ decltype(\hyperlink{namespacepfq_1_1lang_a14607c549693b4cd47d7c3a7aac3bcb0}{predicate\+R1}(nullptr, prop, arg))
-\begin{DoxyCompactList}\small\item\em Return a predicate that evaluates to /\+True/, if the property is less than the given value. \end{DoxyCompactList}\item 
+\begin{DoxyCompactList}\small\item\em Return a predicate that evaluates to {\ttfamily true}, if the property is less than the given value. \end{DoxyCompactList}\item 
 {\footnotesize template$<$typename P $>$ }\\auto \hyperlink{namespacepfq_1_1lang_ac98a23586f64edebbf807dbeafd79ac6}{operator$<$=} (P const \&prop, uint64\+\_\+t arg) -\/$>$ decltype(\hyperlink{namespacepfq_1_1lang_a14607c549693b4cd47d7c3a7aac3bcb0}{predicate\+R1}(nullptr, prop, arg))
 \item 
 {\footnotesize template$<$typename P $>$ }\\auto \hyperlink{namespacepfq_1_1lang_a699fc499a477fab8f08c32c2dd313140}{operator$>$} (P const \&prop, uint64\+\_\+t arg) -\/$>$ decltype(\hyperlink{namespacepfq_1_1lang_a14607c549693b4cd47d7c3a7aac3bcb0}{predicate\+R1}(nullptr, prop, arg))
@@ -282,9 +282,9 @@ $<$ \hyperlink{structpfq_1_1lang_1_1FunctionDescr}{Function\+Descr} $>$, std\+::
 {\footnotesize template$<$typename P $>$ }\\auto \hyperlink{namespacepfq_1_1lang_a233a0ec58c193c19f779c5ec7007b89f}{operator!=} (P const \&prop, uint64\+\_\+t arg) -\/$>$ decltype(\hyperlink{namespacepfq_1_1lang_a14607c549693b4cd47d7c3a7aac3bcb0}{predicate\+R1}(nullptr, prop, arg))
 \item 
 {\footnotesize template$<$typename P $>$ }\\auto \hyperlink{namespacepfq_1_1lang_a393e2dd7b7dfda8765295f6887c4ee90}{any\+\_\+bit} (P const \&prop, uint64\+\_\+t mask) -\/$>$ decltype(\hyperlink{namespacepfq_1_1lang_a14607c549693b4cd47d7c3a7aac3bcb0}{predicate\+R1}(nullptr, prop, mask))
-\begin{DoxyCompactList}\small\item\em Return a predicate that evaluates to /\+True/, if the property has at least one bit set among those specified by the given mask. \end{DoxyCompactList}\item 
+\begin{DoxyCompactList}\small\item\em Return a predicate that evaluates to {\ttfamily true}, if the property has at least one bit set among those specified by the given mask. \end{DoxyCompactList}\item 
 {\footnotesize template$<$typename P $>$ }\\auto \hyperlink{namespacepfq_1_1lang_aef1dea66d0ff90ede4ac1fcf02aa4c93}{all\+\_\+bit} (P const \&prop, uint64\+\_\+t mask) -\/$>$ decltype(\hyperlink{namespacepfq_1_1lang_a14607c549693b4cd47d7c3a7aac3bcb0}{predicate\+R1}(nullptr, prop, mask))
-\begin{DoxyCompactList}\small\item\em Return a predicate that evaluates to /\+True/, if the property has all bits set among those specified in the given mask. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\begin{DoxyCompactList}\small\item\em Return a predicate that evaluates to {\ttfamily true}, if the property has all bits set among those specified in the given mask. \end{DoxyCompactList}\end{DoxyCompactItemize}
 
 
 \subsection{Typedef Documentation}
@@ -314,7 +314,7 @@ $<$ \hyperlink{structpfq_1_1lang_1_1FunctionDescr}{Function\+Descr} $>$, std\+::
     \hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq_1_1lang_aef1dea66d0ff90ede4ac1fcf02aa4c93}
 
 
-Return a predicate that evaluates to /\+True/, if the property has all bits set among those specified in the given mask. 
+Return a predicate that evaluates to {\ttfamily true}, if the property has all bits set among those specified in the given mask. 
 
 \hypertarget{namespacepfq_1_1lang_a393e2dd7b7dfda8765295f6887c4ee90}{\index{pfq\+::lang@{pfq\+::lang}!any\+\_\+bit@{any\+\_\+bit}}
 \index{any\+\_\+bit@{any\+\_\+bit}!pfq\+::lang@{pfq\+::lang}}
@@ -327,7 +327,7 @@ Return a predicate that evaluates to /\+True/, if the property has all bits set 
     \hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq_1_1lang_a393e2dd7b7dfda8765295f6887c4ee90}
 
 
-Return a predicate that evaluates to /\+True/, if the property has at least one bit set among those specified by the given mask. 
+Return a predicate that evaluates to {\ttfamily true}, if the property has at least one bit set among those specified by the given mask. 
 
 \hypertarget{namespacepfq_1_1lang_ab44ced92c6fdf4c10166eb113ff89860}{\index{pfq\+::lang@{pfq\+::lang}!combinator1@{combinator1}}
 \index{combinator1@{combinator1}!pfq\+::lang@{pfq\+::lang}}
@@ -533,7 +533,7 @@ Combine two predicate expressions with a specific boolean 'and' operation.
     \hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq_1_1lang_ae7cede583fed88c883da63ad7b08e223}
 
 
-Return a predicate that evaluates to /\+True/, if the property is less than the given value. 
+Return a predicate that evaluates to {\ttfamily true}, if the property is less than the given value. 
 
 Example\+:
 
