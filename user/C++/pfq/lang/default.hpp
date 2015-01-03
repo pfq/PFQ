@@ -87,7 +87,7 @@ namespace lang
     // default comparators:
     //
 
-    //! Return a predicate that evaluates to /True/, if the property is less than the given value.
+    //! Return a predicate that evaluates to \c true, if the property is less than the given value.
     /*!
      * Example:
      *
@@ -142,7 +142,7 @@ namespace lang
         return predicateR1("not_equal", prop, arg);
     }
 
-    //! Return a predicate that evaluates to /True/, if the property has at least one bit set among those specified by the given mask.
+    //! Return a predicate that evaluates to \c true, if the property has at least one bit set among those specified by the given mask.
 
     template <typename P>
     auto inline any_bit(P const &prop, uint64_t mask)
@@ -151,7 +151,7 @@ namespace lang
         return predicateR1("any_bit", prop, mask);
     }
 
-    //! Return a predicate that evaluates to /True/, if the property has all bits set among those specified in the given mask.
+    //! Return a predicate that evaluates to \c true, if the property has all bits set among those specified in the given mask.
 
     template <typename P>
     auto inline all_bit(P const &prop, uint64_t mask)
@@ -166,63 +166,63 @@ namespace lang
         // default predicates:
         //
 
-        //! Evaluate to /True/ if the SkBuff is an IPv4 packet.
+        //! Evaluate to \c true if the SkBuff is an IPv4 packet.
 
         auto is_ip          = predicate ("is_ip");
 
-        //! Evaluate to /True/ if the SkBuff is an IPv6 packet.
+        //! Evaluate to \c true if the SkBuff is an IPv6 packet.
 
         auto is_ip6         = predicate ("is_ip6");
 
-        //! Evaluate to /True/ if the SkBuff is an UDP packet.
+        //! Evaluate to \c true if the SkBuff is an UDP packet.
 
         auto is_udp         = predicate ("is_udp");
 
-        //! Evaluate to /True/ if the SkBuff is a TCP packet.
+        //! Evaluate to \c true if the SkBuff is a TCP packet.
 
         auto is_tcp         = predicate ("is_tcp");
 
-        //! Evaluate to /True/ if the SkBuff is an ICMP packet.
+        //! Evaluate to \c true if the SkBuff is an ICMP packet.
 
         auto is_icmp        = predicate ("is_icmp");
 
-        //! Evaluate to /True/ if the SkBuff is an UDP packet, on top of IPv6.
+        //! Evaluate to \c true if the SkBuff is an UDP packet, on top of IPv6.
 
         auto is_udp6        = predicate ("is_udp6");
 
-        //! Evaluate to /True/ if the SkBuff is a TCP packet, on top of IPv6.
+        //! Evaluate to \c true if the SkBuff is a TCP packet, on top of IPv6.
 
         auto is_tcp6        = predicate ("is_tcp6");
 
-        //! Evaluate to /True/ if the SkBuff is an ICMP packet, on top of IPv6.
+        //! Evaluate to \c true if the SkBuff is an ICMP packet, on top of IPv6.
 
         auto is_icmp6       = predicate ("is_icmp6");
 
-        //! Evaluate to /True/ if the SkBuff is an UDP or TCP packet.
+        //! Evaluate to \c true if the SkBuff is an UDP or TCP packet.
 
         auto is_flow        = predicate ("is_flow");
 
-        //! Evaluate to /True/ if the SkBuff is a TCP fragment.
+        //! Evaluate to \c true if the SkBuff is a TCP fragment.
 
         auto is_frag        = predicate ("is_frag");
 
-        //! Evaluate to /True/ if the SkBuff is the first TCP fragment.
+        //! Evaluate to \c true if the SkBuff is the first TCP fragment.
 
         auto is_first_frag  = predicate ("is_first_frag");
 
-        //! Evaluate to /True/ if the SkBuff is a TCP fragment, but the first.
+        //! Evaluate to \c true if the SkBuff is a TCP fragment, but the first.
 
         auto is_more_frag   = predicate ("is_more_frag");
 
-        //! Evaluate to /True/ if the SkBuff has the given Layer3 protocol.
+        //! Evaluate to \c true if the SkBuff has the given Layer3 protocol.
 
         auto is_l3_proto    = [] (uint16_t type) { return predicate1 ("is_l3_proto", type); };
 
-        //! Evaluate to /True/ if the SkBuff has the given Layer4 protocol.
+        //! Evaluate to \c true if the SkBuff has the given Layer4 protocol.
 
         auto is_l4_proto    = [] (uint8_t proto) { return predicate1 ("is_l4_proto", proto); };
 
-        //! Evaluate to /True/ if the SkBuff has the given source or destination port.
+        //! Evaluate to \c true if the SkBuff has the given source or destination port.
         /*!
          * If the transport protocol is not present or has no port, the predicate evaluates to False.
          *
@@ -233,21 +233,21 @@ namespace lang
 
         auto has_port       = [] (uint16_t port) { return predicate1 ("is_port", port); };
 
-        //! Evaluate to /True/ if the SkBuff has the given source port.
+        //! Evaluate to \c true if the SkBuff has the given source port.
         /*!
          * If the transport protocol is not present or has no port, the predicate evaluates to False.
          */
 
         auto has_src_port   = [] (uint16_t port) { return predicate1 ("is_src_port", port); };
 
-        //! Evaluate to /True/ if the SkBuff has the given destination port.
+        //! Evaluate to \c true if the SkBuff has the given destination port.
         /*!
          * If the transport protocol is not present or has no port, the predicate evaluates to False.
          */
 
         auto has_dst_port   = [] (uint16_t port) { return predicate1 ("is_dst_port", port); };
 
-        //! Evaluate to /True/ if the source or destination IP address matches the given network address. I.e.,
+        //! Evaluate to \c true if the source or destination IP address matches the given network address. I.e.,
         /*!
          * Example:
          *
@@ -260,7 +260,7 @@ namespace lang
             return predicate1("has_addr", addr);
         };
 
-        //! Evaluate to /True/ if the source IP address matches the given network address.
+        //! Evaluate to \c true if the source IP address matches the given network address.
 
         auto has_src_addr = [] (const char *net, int prefix)
         {
@@ -268,7 +268,7 @@ namespace lang
             return predicate1("has_src_addr", addr);
         };
 
-        //! Evaluate to /True/ if the destination IP address matches the given network address.
+        //! Evaluate to \c true if the destination IP address matches the given network address.
 
         auto has_dst_addr = [] (const char *net, int prefix)
         {
@@ -276,7 +276,7 @@ namespace lang
             return predicate1("has_dst_addr", addr);
         };
 
-        //! Evaluate to /True/ if the SkBuff has the given mark, set by 'mark' function.
+        //! Evaluate to \c true if the SkBuff has the given mark, set by 'mark' function.
         /*!
          * Example:
          *
@@ -285,11 +285,11 @@ namespace lang
 
         auto has_mark       = [] (unsigned long value) { return predicate1("has_mark", value); };
 
-        //! Evaluate to /True/ if the SkBuff has a vlan tag.
+        //! Evaluate to \c true if the SkBuff has a vlan tag.
 
         auto has_vlan       = predicate ("has_vlan");
 
-        //! Evaluate to /True/ if the SkBuff has the given vlan id.
+        //! Evaluate to \c true if the SkBuff has the given vlan id.
         /*!
          * Example:
          *
@@ -298,7 +298,7 @@ namespace lang
 
         auto has_vid        = [] (int value) { return predicate1 ("has_vid", value); };
 
-        //! Predicate which evaluates to /True/ when the packet has one of the
+        //! Predicate which evaluates to \c true when the packet has one of the
         /*!
          * vlan id specified by the list. Example:
          *
@@ -487,55 +487,55 @@ namespace lang
 
         auto filter         = std::bind(details::polymorphic_mfunctionP(), "filter", _1);
 
-        //! Evaluate to /Pass SkBuff/ if it is an IPv4 packet, /Drop/ it otherwise.
+        //! Evaluate to \c Pass SkBuff if it is an IPv4 packet, \c Drop it otherwise.
 
         auto ip             = mfunction("ip");
 
-        //! Evaluate to /Pass SkBuff/ if it is an IPv6 packet, /Drop/ it otherwise.
+        //! Evaluate to \c Pass SkBuff if it is an IPv6 packet, \c Drop it otherwise.
 
         auto ip6            = mfunction("ip6");
 
-        //! Evaluate to /Pass SkBuff/ if it is an UDP packet, /Drop/ it otherwise.
+        //! Evaluate to \c Pass SkBuff if it is an UDP packet, \c Drop it otherwise.
 
         auto udp            = mfunction("udp");
 
-        //! Evaluate to /Pass SkBuff/ if it is a TCP packet, /Drop/ it otherwise.
+        //! Evaluate to \c Pass SkBuff if it is a TCP packet, \c Drop it otherwise.
 
         auto tcp            = mfunction("tcp");
 
-        //! Evaluate to /Pass SkBuff/ if it is an ICMP packet, /Drop/ it otherwise.
+        //! Evaluate to \c Pass SkBuff if it is an ICMP packet, \c Drop it otherwise.
 
         auto icmp           = mfunction("icmp");
 
-        //! Evaluate to /Pass SkBuff/ if it is an UDP packet (on top of IPv6), /Drop/ it otherwise.
+        //! Evaluate to \c Pass SkBuff if it is an UDP packet (on top of IPv6), \c Drop it otherwise.
 
         auto udp6           = mfunction("udp6");
 
-        //! Evaluate to /Pass SkBuff/ if it is a TCP packet (on top of IPv6), /Drop/ it otherwise.
+        //! Evaluate to \c Pass SkBuff if it is a TCP packet (on top of IPv6), \c Drop it otherwise.
 
         auto tcp6           = mfunction("tcp6");
 
-        //! Evaluate to /Pass SkBuff/ if it is an ICMP packet (on top of IPv6), /Drop/ it otherwise.
+        //! Evaluate to \c Pass SkBuff if it is an ICMP packet (on top of IPv6), \c Drop it otherwise.
 
         auto icmp6          = mfunction("icmp6");
 
-        //! Evaluate to /Pass SkBuff/ if it has a vlan tag, /Drop/ it otherwise.
+        //! Evaluate to \c Pass SkBuff if it has a vlan tag, \c Drop it otherwise.
 
         auto vlan           = mfunction("vlan");
 
-        //! Evaluate to /Pass SkBuff/ if it is a TCP or UDP packet, /Drop/ it otherwise.
+        //! Evaluate to \c Pass SkBuff if it is a TCP or UDP packet, \c Drop it otherwise.
 
         auto flow           = mfunction("flow");
 
-        //! Evaluate to /Pass SkBuff/ if it is a RTP/RTCP packet, /Drop/ it otherwise.
+        //! Evaluate to \c Pass SkBuff if it is a RTP/RTCP packet, \c Drop it otherwise.
 
         auto rtp            = mfunction("rtp");
 
-        //! Evaluate to /Pass SkBuff/ if it is not a fragment, /Drop/ it otherwise.
+        //! Evaluate to \c Pass SkBuff if it is not a fragment, \c Drop it otherwise.
 
         auto no_frag        = mfunction("no_frag");
 
-        //! Evaluate to /Pass SkBuff/ if it is not a fragment or if it's the first fragment, /Drop/ it otherwise.
+        //! Evaluate to \c Pass SkBuff if it is not a fragment or if it's the first fragment, \c Drop it otherwise.
 
         auto no_more_frag   = mfunction("no_more_frag");
 
@@ -551,7 +551,7 @@ namespace lang
 
         auto broadcast      = mfunction("broadcast");
 
-        //! Drop the packet. The computation evaluates to /Drop/.
+        //! Drop the packet. The computation evaluates to \c Drop.
 
         auto drop           = mfunction("drop");
 
@@ -602,7 +602,7 @@ namespace lang
 
         auto forwardIO  = [] (std::string dev) { return mfunction1("forwardIO", std::move(dev)); };
 
-        //! Forward the packet to the given device and evaluates to /Drop/.
+        //! Forward the packet to the given device and evaluates to \c Drop.
         /*!
          * Example:
          *
@@ -614,7 +614,7 @@ namespace lang
         auto bridge     = [] (std::string dev) { return mfunction1("bridge", std::move(dev)); };
 
         //! Forward the packet to the given device.
-        /*! It evaluates to /Pass SkBuff/ or /Drop/,
+        /*! It evaluates to \c Pass SkBuff or \c Drop,
          * depending on the value returned by the predicate. Example:
          *
          * tee("eth1", is_udp) >> kernel
@@ -628,9 +628,9 @@ namespace lang
 
         auto tee_       = std::bind(details::polymorphic_mfunction1P(), "tee", _1, _2);
 
-        //! Evaluate to /Pass SkBuff/, or forward the packet to the given device.
+        //! Evaluate to \c Pass SkBuff, or forward the packet to the given device.
         /*!
-         * It evaluates to /Drop/, depending on the value returned by the predicate. Example:
+         * It evaluates to \c Drop, depending on the value returned by the predicate. Example:
          *
          * tap ("eth1", is_udp) >> kernel
          *
@@ -716,7 +716,7 @@ namespace lang
          * Predicates are used in conditional expressions, while monadic functions
          * are combined with kleisli operator:
          *
-         * addr ("192.168.0.0",24) >-> log_packet
+         * addr ("192.168.0.0",24) >> log_packet
          *
          */
 
@@ -744,7 +744,7 @@ namespace lang
 
         //! Conditional execution of monadic NetFunctions.
         /*!
-         * The function takes a predicate and evaluates to given the NetFunction when it evalutes to /True/,
+         * The function takes a predicate and evaluates to given the NetFunction when it evalutes to \c true,
          * otherwise does nothing.
          * Example:
          *
@@ -754,7 +754,7 @@ namespace lang
 
         auto when        = std::bind(details::polymorphic_mfunctionPF(), "when", _1, _2);
 
-        //! The reverse of "when'"
+        //! The reverse of "when"
 
         auto unless      = std::bind(details::polymorphic_mfunctionPF(), "unless", _1, _2);
 
@@ -793,13 +793,13 @@ namespace lang
         // bloom filters:
         //
 
-        //! Predicate that evaluates to /True/ when the source or the destination address
+        //! Predicate that evaluates to \c true when the source or the destination address
         // of the packet matches the ones specified by the bloom list.
         /*!
          * The first 'CInt' argument specifies the size of the bloom filter.
          * Example:
          *
-         * when (bloom 1024 ["192.168.0.13", "192.168.0.42"]) log_packet >-> kernel
+         * when (bloom 1024 ["192.168.0.13", "192.168.0.42"]) log_packet >> kernel
          *
          */
 
@@ -808,7 +808,7 @@ namespace lang
                                 return predicate2("bloom", m, std::move(addrs));
                           };
 
-        //! Similarly to 'bloom', evaluates to /True/ when the source address
+        //! Similarly to 'bloom', evaluates to \c true when the source address
         // of the packet matches the ones specified by the bloom list.
 
         auto bloom_src  = [] (int m, std::vector<std::string> const &ips) {
@@ -816,7 +816,7 @@ namespace lang
                                 return predicate2("bloom_src", m, std::move(addrs));
                           };
 
-        //! Similarly to 'bloom', evaluates to /True/ when the destination address
+        //! Similarly to 'bloom', evaluates to \c true when the destination address
         // of the packet matches the ones specified by the bloom list.
 
         auto bloom_dst  = [] (int m, std::vector<std::string> const &ips) {
