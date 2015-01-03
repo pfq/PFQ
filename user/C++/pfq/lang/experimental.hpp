@@ -35,6 +35,10 @@
 
 namespace pfq { namespace lang { namespace experimental {
 
+    /*! \file experimental.hpp
+     *  \brief This header contains the PFQ/lang eDSL experimental functions.
+     */
+
     using namespace std::placeholders;
 
     //
@@ -51,7 +55,6 @@ namespace pfq { namespace lang { namespace experimental {
         auto hdummy     = std::bind(details::polymorphic_mfunctionP(),  "hdummy", _1);
 
         auto crc16      = mfunction("crc16");
-
     }
 
 } // namespace experimental
