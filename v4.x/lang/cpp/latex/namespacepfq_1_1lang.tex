@@ -262,15 +262,15 @@ $<$ \hyperlink{structpfq_1_1lang_1_1FunctionDescr}{Function\+Descr} $>$, std\+::
 {\footnotesize template$<$typename C1 , typename C2 , typename  = typename kleisly$<$typename C1\+::type, typename C2\+::type$>$\+::type$>$ }\\\hyperlink{structpfq_1_1lang_1_1Composition}{Composition}$<$ C1, C2 $>$ \hyperlink{namespacepfq_1_1lang_aa5c4ec63004bfee1742b763ca4a53b23}{operator$>$$>$} (C1 c1, C2 c2)
 \item 
 {\footnotesize template$<$typename P1 , typename P2 $>$ }\\auto \hyperlink{namespacepfq_1_1lang_a7c98e7df26113c8681112c5790cc3011}{operator\&} (P1 const \&p1, P2 const \&p2) -\/$>$ decltype(\hyperlink{namespacepfq_1_1lang_aae4d5ff79879ea73b1feaab4afc77712}{combinator2}(nullptr, p1, p2))
-\item 
+\begin{DoxyCompactList}\small\item\em Combine two predicate expressions with a specific boolean 'and' operation. \end{DoxyCompactList}\item 
 {\footnotesize template$<$typename P1 , typename P2 $>$ }\\auto \hyperlink{namespacepfq_1_1lang_a4d501437912163a0709baa295ffc995a}{operator$\vert$} (P1 const \&p1, P2 const \&p2) -\/$>$ decltype(\hyperlink{namespacepfq_1_1lang_aae4d5ff79879ea73b1feaab4afc77712}{combinator2}(nullptr, p1, p2))
-\item 
+\begin{DoxyCompactList}\small\item\em Combine two predicate expressions with a specific boolean 'or' operation. \end{DoxyCompactList}\item 
 {\footnotesize template$<$typename P1 , typename P2 $>$ }\\auto \hyperlink{namespacepfq_1_1lang_a14d034a08684e4ef6d516f57e157b1f0}{operator$^\wedge$} (P1 const \&p1, P2 const \&p2) -\/$>$ decltype(\hyperlink{namespacepfq_1_1lang_aae4d5ff79879ea73b1feaab4afc77712}{combinator2}(nullptr, p1, p2))
-\item 
+\begin{DoxyCompactList}\small\item\em Combine two predicate expressions with a specific boolean 'xor' operation. \end{DoxyCompactList}\item 
 {\footnotesize template$<$typename P $>$ }\\auto \hyperlink{namespacepfq_1_1lang_a4356432f0438e003c4f8d2fec7c65c9e}{not\+\_\+} (P const \&p) -\/$>$ decltype(\hyperlink{namespacepfq_1_1lang_ab44ced92c6fdf4c10166eb113ff89860}{combinator1}(nullptr, p))
-\item 
+\begin{DoxyCompactList}\small\item\em Return a new predicate that evaluates to true, when the given one evaluates to false, and vice versa. \end{DoxyCompactList}\item 
 {\footnotesize template$<$typename P $>$ }\\auto \hyperlink{namespacepfq_1_1lang_ae7cede583fed88c883da63ad7b08e223}{operator$<$} (P const \&prop, uint64\+\_\+t arg) -\/$>$ decltype(\hyperlink{namespacepfq_1_1lang_a14607c549693b4cd47d7c3a7aac3bcb0}{predicate\+R1}(nullptr, prop, arg))
-\item 
+\begin{DoxyCompactList}\small\item\em Return a predicate that evaluates to /\+True/, if the property is less than the given value. \end{DoxyCompactList}\item 
 {\footnotesize template$<$typename P $>$ }\\auto \hyperlink{namespacepfq_1_1lang_ac98a23586f64edebbf807dbeafd79ac6}{operator$<$=} (P const \&prop, uint64\+\_\+t arg) -\/$>$ decltype(\hyperlink{namespacepfq_1_1lang_a14607c549693b4cd47d7c3a7aac3bcb0}{predicate\+R1}(nullptr, prop, arg))
 \item 
 {\footnotesize template$<$typename P $>$ }\\auto \hyperlink{namespacepfq_1_1lang_a699fc499a477fab8f08c32c2dd313140}{operator$>$} (P const \&prop, uint64\+\_\+t arg) -\/$>$ decltype(\hyperlink{namespacepfq_1_1lang_a14607c549693b4cd47d7c3a7aac3bcb0}{predicate\+R1}(nullptr, prop, arg))
@@ -282,9 +282,9 @@ $<$ \hyperlink{structpfq_1_1lang_1_1FunctionDescr}{Function\+Descr} $>$, std\+::
 {\footnotesize template$<$typename P $>$ }\\auto \hyperlink{namespacepfq_1_1lang_a233a0ec58c193c19f779c5ec7007b89f}{operator!=} (P const \&prop, uint64\+\_\+t arg) -\/$>$ decltype(\hyperlink{namespacepfq_1_1lang_a14607c549693b4cd47d7c3a7aac3bcb0}{predicate\+R1}(nullptr, prop, arg))
 \item 
 {\footnotesize template$<$typename P $>$ }\\auto \hyperlink{namespacepfq_1_1lang_a393e2dd7b7dfda8765295f6887c4ee90}{any\+\_\+bit} (P const \&prop, uint64\+\_\+t mask) -\/$>$ decltype(\hyperlink{namespacepfq_1_1lang_a14607c549693b4cd47d7c3a7aac3bcb0}{predicate\+R1}(nullptr, prop, mask))
-\item 
+\begin{DoxyCompactList}\small\item\em Return a predicate that evaluates to /\+True/, if the property has at least one bit set among those specified by the given mask. \end{DoxyCompactList}\item 
 {\footnotesize template$<$typename P $>$ }\\auto \hyperlink{namespacepfq_1_1lang_aef1dea66d0ff90ede4ac1fcf02aa4c93}{all\+\_\+bit} (P const \&prop, uint64\+\_\+t mask) -\/$>$ decltype(\hyperlink{namespacepfq_1_1lang_a14607c549693b4cd47d7c3a7aac3bcb0}{predicate\+R1}(nullptr, prop, mask))
-\end{DoxyCompactItemize}
+\begin{DoxyCompactList}\small\item\em Return a predicate that evaluates to /\+True/, if the property has all bits set among those specified in the given mask. \end{DoxyCompactList}\end{DoxyCompactItemize}
 
 
 \subsection{Typedef Documentation}
@@ -312,6 +312,10 @@ $<$ \hyperlink{structpfq_1_1lang_1_1FunctionDescr}{Function\+Descr} $>$, std\+::
 \end{DoxyParamCaption}
 ) -\/$>$ decltype(predicate\+R1(nullptr, prop, mask))
     \hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq_1_1lang_aef1dea66d0ff90ede4ac1fcf02aa4c93}
+
+
+Return a predicate that evaluates to /\+True/, if the property has all bits set among those specified in the given mask. 
+
 \hypertarget{namespacepfq_1_1lang_a393e2dd7b7dfda8765295f6887c4ee90}{\index{pfq\+::lang@{pfq\+::lang}!any\+\_\+bit@{any\+\_\+bit}}
 \index{any\+\_\+bit@{any\+\_\+bit}!pfq\+::lang@{pfq\+::lang}}
 \subsubsection[{any\+\_\+bit}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename P $>$ auto pfq\+::lang\+::any\+\_\+bit (
@@ -321,6 +325,10 @@ $<$ \hyperlink{structpfq_1_1lang_1_1FunctionDescr}{Function\+Descr} $>$, std\+::
 \end{DoxyParamCaption}
 ) -\/$>$ decltype(predicate\+R1(nullptr, prop, mask))
     \hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq_1_1lang_a393e2dd7b7dfda8765295f6887c4ee90}
+
+
+Return a predicate that evaluates to /\+True/, if the property has at least one bit set among those specified by the given mask. 
+
 \hypertarget{namespacepfq_1_1lang_ab44ced92c6fdf4c10166eb113ff89860}{\index{pfq\+::lang@{pfq\+::lang}!combinator1@{combinator1}}
 \index{combinator1@{combinator1}!pfq\+::lang@{pfq\+::lang}}
 \subsubsection[{combinator1}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename P $>$ {\bf Combinator1}$<$P$>$ pfq\+::lang\+::combinator1 (
@@ -472,6 +480,10 @@ $<$ \hyperlink{structpfq_1_1lang_1_1FunctionDescr}{Function\+Descr} $>$, std\+::
 \end{DoxyParamCaption}
 ) -\/$>$ decltype(combinator1(nullptr, p))
     \hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq_1_1lang_a4356432f0438e003c4f8d2fec7c65c9e}
+
+
+Return a new predicate that evaluates to true, when the given one evaluates to false, and vice versa. 
+
 \hypertarget{namespacepfq_1_1lang_a233a0ec58c193c19f779c5ec7007b89f}{\index{pfq\+::lang@{pfq\+::lang}!operator"!=@{operator"!=}}
 \index{operator"!=@{operator"!=}!pfq\+::lang@{pfq\+::lang}}
 \subsubsection[{operator"!=}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename P $>$ auto pfq\+::lang\+::operator!= (
@@ -490,6 +502,10 @@ $<$ \hyperlink{structpfq_1_1lang_1_1FunctionDescr}{Function\+Descr} $>$, std\+::
 \end{DoxyParamCaption}
 ) -\/$>$ decltype(combinator2(nullptr, p1, p2))
     \hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq_1_1lang_a7c98e7df26113c8681112c5790cc3011}
+
+
+Combine two predicate expressions with a specific boolean 'and' operation. 
+
 \hypertarget{namespacepfq_1_1lang_a54f9b99ed2adf6dc2e74d21a38be3bf3}{\index{pfq\+::lang@{pfq\+::lang}!operator+@{operator+}}
 \index{operator+@{operator+}!pfq\+::lang@{pfq\+::lang}}
 \subsubsection[{operator+}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename Tp $>$ std\+::vector$<$Tp$>$ pfq\+::lang\+::operator+ (
@@ -515,7 +531,13 @@ $<$ \hyperlink{structpfq_1_1lang_1_1FunctionDescr}{Function\+Descr} $>$, std\+::
 \end{DoxyParamCaption}
 ) -\/$>$ decltype(predicate\+R1(nullptr, prop, arg))
     \hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq_1_1lang_ae7cede583fed88c883da63ad7b08e223}
-\hypertarget{namespacepfq_1_1lang_ac98a23586f64edebbf807dbeafd79ac6}{\index{pfq\+::lang@{pfq\+::lang}!operator$<$=@{operator$<$=}}
+
+
+Return a predicate that evaluates to /\+True/, if the property is less than the given value. 
+
+Example\+:
+
+when (ip\+\_\+ttl $<$ 64, drop) \hypertarget{namespacepfq_1_1lang_ac98a23586f64edebbf807dbeafd79ac6}{\index{pfq\+::lang@{pfq\+::lang}!operator$<$=@{operator$<$=}}
 \index{operator$<$=@{operator$<$=}!pfq\+::lang@{pfq\+::lang}}
 \subsubsection[{operator$<$=}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename P $>$ auto pfq\+::lang\+::operator$<$= (
 \begin{DoxyParamCaption}
@@ -568,6 +590,10 @@ $<$ \hyperlink{structpfq_1_1lang_1_1FunctionDescr}{Function\+Descr} $>$, std\+::
 \end{DoxyParamCaption}
 ) -\/$>$ decltype(combinator2(nullptr, p1, p2))
     \hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq_1_1lang_a14d034a08684e4ef6d516f57e157b1f0}
+
+
+Combine two predicate expressions with a specific boolean 'xor' operation. 
+
 \hypertarget{namespacepfq_1_1lang_a4d501437912163a0709baa295ffc995a}{\index{pfq\+::lang@{pfq\+::lang}!operator\texttt{"|}@{operator\texttt{"|}}}
 \index{operator\texttt{"|}@{operator\texttt{"|}}!pfq\+::lang@{pfq\+::lang}}
 \subsubsection[{operator\texttt{"|}}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename P1 , typename P2 $>$ auto pfq\+::lang\+::operator$\vert$ (
@@ -577,6 +603,10 @@ $<$ \hyperlink{structpfq_1_1lang_1_1FunctionDescr}{Function\+Descr} $>$, std\+::
 \end{DoxyParamCaption}
 ) -\/$>$ decltype(combinator2(nullptr, p1, p2))
     \hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq_1_1lang_a4d501437912163a0709baa295ffc995a}
+
+
+Combine two predicate expressions with a specific boolean 'or' operation. 
+
 \hypertarget{namespacepfq_1_1lang_a6c156f209614d0291b280153416dba97}{\index{pfq\+::lang@{pfq\+::lang}!predicate@{predicate}}
 \index{predicate@{predicate}!pfq\+::lang@{pfq\+::lang}}
 \subsubsection[{predicate}]{\setlength{\rightskip}{0pt plus 5cm}{\bf Predicate} pfq\+::lang\+::predicate (

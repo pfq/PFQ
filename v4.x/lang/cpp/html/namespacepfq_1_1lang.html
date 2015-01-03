@@ -403,18 +403,23 @@ Functions</h2></td></tr>
 <tr class="separator:aa5c4ec63004bfee1742b763ca4a53b23"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7c98e7df26113c8681112c5790cc3011"><td class="memTemplParams" colspan="2">template&lt;typename P1 , typename P2 &gt; </td></tr>
 <tr class="memitem:a7c98e7df26113c8681112c5790cc3011"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1lang.html#a7c98e7df26113c8681112c5790cc3011">operator&amp;</a> (P1 const &amp;p1, P2 const &amp;p2) -&gt; decltype(<a class="el" href="namespacepfq_1_1lang.html#aae4d5ff79879ea73b1feaab4afc77712">combinator2</a>(nullptr, p1, p2))</td></tr>
+<tr class="memdesc:a7c98e7df26113c8681112c5790cc3011"><td class="mdescLeft">&#160;</td><td class="mdescRight">Combine two predicate expressions with a specific boolean 'and' operation.  <a href="#a7c98e7df26113c8681112c5790cc3011">More...</a><br /></td></tr>
 <tr class="separator:a7c98e7df26113c8681112c5790cc3011"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4d501437912163a0709baa295ffc995a"><td class="memTemplParams" colspan="2">template&lt;typename P1 , typename P2 &gt; </td></tr>
 <tr class="memitem:a4d501437912163a0709baa295ffc995a"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1lang.html#a4d501437912163a0709baa295ffc995a">operator|</a> (P1 const &amp;p1, P2 const &amp;p2) -&gt; decltype(<a class="el" href="namespacepfq_1_1lang.html#aae4d5ff79879ea73b1feaab4afc77712">combinator2</a>(nullptr, p1, p2))</td></tr>
+<tr class="memdesc:a4d501437912163a0709baa295ffc995a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Combine two predicate expressions with a specific boolean 'or' operation.  <a href="#a4d501437912163a0709baa295ffc995a">More...</a><br /></td></tr>
 <tr class="separator:a4d501437912163a0709baa295ffc995a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a14d034a08684e4ef6d516f57e157b1f0"><td class="memTemplParams" colspan="2">template&lt;typename P1 , typename P2 &gt; </td></tr>
 <tr class="memitem:a14d034a08684e4ef6d516f57e157b1f0"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1lang.html#a14d034a08684e4ef6d516f57e157b1f0">operator^</a> (P1 const &amp;p1, P2 const &amp;p2) -&gt; decltype(<a class="el" href="namespacepfq_1_1lang.html#aae4d5ff79879ea73b1feaab4afc77712">combinator2</a>(nullptr, p1, p2))</td></tr>
+<tr class="memdesc:a14d034a08684e4ef6d516f57e157b1f0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Combine two predicate expressions with a specific boolean 'xor' operation.  <a href="#a14d034a08684e4ef6d516f57e157b1f0">More...</a><br /></td></tr>
 <tr class="separator:a14d034a08684e4ef6d516f57e157b1f0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4356432f0438e003c4f8d2fec7c65c9e"><td class="memTemplParams" colspan="2">template&lt;typename P &gt; </td></tr>
 <tr class="memitem:a4356432f0438e003c4f8d2fec7c65c9e"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1lang.html#a4356432f0438e003c4f8d2fec7c65c9e">not_</a> (P const &amp;p) -&gt; decltype(<a class="el" href="namespacepfq_1_1lang.html#ab44ced92c6fdf4c10166eb113ff89860">combinator1</a>(nullptr, p))</td></tr>
+<tr class="memdesc:a4356432f0438e003c4f8d2fec7c65c9e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a new predicate that evaluates to true, when the given one evaluates to false, and vice versa.  <a href="#a4356432f0438e003c4f8d2fec7c65c9e">More...</a><br /></td></tr>
 <tr class="separator:a4356432f0438e003c4f8d2fec7c65c9e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae7cede583fed88c883da63ad7b08e223"><td class="memTemplParams" colspan="2">template&lt;typename P &gt; </td></tr>
 <tr class="memitem:ae7cede583fed88c883da63ad7b08e223"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1lang.html#ae7cede583fed88c883da63ad7b08e223">operator&lt;</a> (P const &amp;prop, uint64_t arg) -&gt; decltype(<a class="el" href="namespacepfq_1_1lang.html#a14607c549693b4cd47d7c3a7aac3bcb0">predicateR1</a>(nullptr, prop, arg))</td></tr>
+<tr class="memdesc:ae7cede583fed88c883da63ad7b08e223"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a predicate that evaluates to /True/, if the property is less than the given value.  <a href="#ae7cede583fed88c883da63ad7b08e223">More...</a><br /></td></tr>
 <tr class="separator:ae7cede583fed88c883da63ad7b08e223"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac98a23586f64edebbf807dbeafd79ac6"><td class="memTemplParams" colspan="2">template&lt;typename P &gt; </td></tr>
 <tr class="memitem:ac98a23586f64edebbf807dbeafd79ac6"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1lang.html#ac98a23586f64edebbf807dbeafd79ac6">operator&lt;=</a> (P const &amp;prop, uint64_t arg) -&gt; decltype(<a class="el" href="namespacepfq_1_1lang.html#a14607c549693b4cd47d7c3a7aac3bcb0">predicateR1</a>(nullptr, prop, arg))</td></tr>
@@ -433,9 +438,11 @@ Functions</h2></td></tr>
 <tr class="separator:a233a0ec58c193c19f779c5ec7007b89f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a393e2dd7b7dfda8765295f6887c4ee90"><td class="memTemplParams" colspan="2">template&lt;typename P &gt; </td></tr>
 <tr class="memitem:a393e2dd7b7dfda8765295f6887c4ee90"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1lang.html#a393e2dd7b7dfda8765295f6887c4ee90">any_bit</a> (P const &amp;prop, uint64_t mask) -&gt; decltype(<a class="el" href="namespacepfq_1_1lang.html#a14607c549693b4cd47d7c3a7aac3bcb0">predicateR1</a>(nullptr, prop, mask))</td></tr>
+<tr class="memdesc:a393e2dd7b7dfda8765295f6887c4ee90"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a predicate that evaluates to /True/, if the property has at least one bit set among those specified by the given mask.  <a href="#a393e2dd7b7dfda8765295f6887c4ee90">More...</a><br /></td></tr>
 <tr class="separator:a393e2dd7b7dfda8765295f6887c4ee90"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aef1dea66d0ff90ede4ac1fcf02aa4c93"><td class="memTemplParams" colspan="2">template&lt;typename P &gt; </td></tr>
 <tr class="memitem:aef1dea66d0ff90ede4ac1fcf02aa4c93"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1lang.html#aef1dea66d0ff90ede4ac1fcf02aa4c93">all_bit</a> (P const &amp;prop, uint64_t mask) -&gt; decltype(<a class="el" href="namespacepfq_1_1lang.html#a14607c549693b4cd47d7c3a7aac3bcb0">predicateR1</a>(nullptr, prop, mask))</td></tr>
+<tr class="memdesc:aef1dea66d0ff90ede4ac1fcf02aa4c93"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a predicate that evaluates to /True/, if the property has all bits set among those specified in the given mask.  <a href="#aef1dea66d0ff90ede4ac1fcf02aa4c93">More...</a><br /></td></tr>
 <tr class="separator:aef1dea66d0ff90ede4ac1fcf02aa4c93"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Typedef Documentation</h2>
@@ -525,6 +532,8 @@ template&lt;typename P &gt; </div>
 </table>
 </div><div class="memdoc">
 
+<p>Return a predicate that evaluates to /True/, if the property has all bits set among those specified in the given mask. </p>
+
 </div>
 </div>
 <a class="anchor" id="a393e2dd7b7dfda8765295f6887c4ee90"></a>
@@ -561,6 +570,8 @@ template&lt;typename P &gt; </div>
   </tr>
 </table>
 </div><div class="memdoc">
+
+<p>Return a predicate that evaluates to /True/, if the property has at least one bit set among those specified by the given mask. </p>
 
 </div>
 </div>
@@ -1190,6 +1201,8 @@ template&lt;typename P &gt; </div>
 </table>
 </div><div class="memdoc">
 
+<p>Return a new predicate that evaluates to true, when the given one evaluates to false, and vice versa. </p>
+
 </div>
 </div>
 <a class="anchor" id="a233a0ec58c193c19f779c5ec7007b89f"></a>
@@ -1263,6 +1276,8 @@ template&lt;typename P1 , typename P2 &gt; </div>
   </tr>
 </table>
 </div><div class="memdoc">
+
+<p>Combine two predicate expressions with a specific boolean 'and' operation. </p>
 
 </div>
 </div>
@@ -1372,6 +1387,10 @@ template&lt;typename P &gt; </div>
   </tr>
 </table>
 </div><div class="memdoc">
+
+<p>Return a predicate that evaluates to /True/, if the property is less than the given value. </p>
+<p>Example:</p>
+<p>when (ip_ttl &lt; 64, drop) </p>
 
 </div>
 </div>
@@ -1594,6 +1613,8 @@ template&lt;typename P1 , typename P2 &gt; </div>
 </table>
 </div><div class="memdoc">
 
+<p>Combine two predicate expressions with a specific boolean 'xor' operation. </p>
+
 </div>
 </div>
 <a class="anchor" id="a4d501437912163a0709baa295ffc995a"></a>
@@ -1630,6 +1651,8 @@ template&lt;typename P1 , typename P2 &gt; </div>
   </tr>
 </table>
 </div><div class="memdoc">
+
+<p>Combine two predicate expressions with a specific boolean 'or' operation. </p>
 
 </div>
 </div>
@@ -3147,7 +3170,7 @@ template&lt;typename C1 , typename C2 &gt; </div>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="namespacepfq.html">pfq</a></li><li class="navelem"><a class="el" href="namespacepfq_1_1lang.html">lang</a></li>
-    <li class="footer">Generated on Sat Jan 3 2015 12:42:24 for PFQ-Lang eDLS by
+    <li class="footer">Generated on Sat Jan 3 2015 14:36:27 for PFQ-Lang eDLS by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.8 </li>
   </ul>

@@ -33,24 +33,20 @@ window.onload = function () {pageLoad();setSynopsis("mini_Network-PFq-Default.ht
 </p><pre> has_port 80
 </pre></div></div><div class="top"><p class="src"><a name="v:has_src_port" class="def">has_src_port</a> :: Int16 -&gt; <a href="Network-PFq-Lang.html#t:NetPredicate">NetPredicate</a></p><div class="doc"><p>Evaluate to <em>True</em> if the SkBuff has the given source port.
 </p><p>If the transport protocol is not present or has no port, the predicate evaluates to False.
-</p><pre> has_src_port 20
-</pre></div></div><div class="top"><p class="src"><a name="v:has_dst_port" class="def">has_dst_port</a> :: Int16 -&gt; <a href="Network-PFq-Lang.html#t:NetPredicate">NetPredicate</a></p><div class="doc"><p>Evaluate to <em>True</em> if the SkBuff has the given destination port.
+</p></div></div><div class="top"><p class="src"><a name="v:has_dst_port" class="def">has_dst_port</a> :: Int16 -&gt; <a href="Network-PFq-Lang.html#t:NetPredicate">NetPredicate</a></p><div class="doc"><p>Evaluate to <em>True</em> if the SkBuff has the given destination port.
 </p><p>If the transport protocol is not present or has no port, the predicate evaluates to False.
-</p><pre> has_dst_port 80
-</pre></div></div><div class="top"><p class="src"><a name="v:has_addr" class="def">has_addr</a> :: String -&gt; Int -&gt; <a href="Network-PFq-Lang.html#t:NetPredicate">NetPredicate</a></p><div class="doc"><p>Evaluate to <em>True</em> if the source or destination IP address matches the given network address. I.e.,
+</p></div></div><div class="top"><p class="src"><a name="v:has_addr" class="def">has_addr</a> :: String -&gt; Int -&gt; <a href="Network-PFq-Lang.html#t:NetPredicate">NetPredicate</a></p><div class="doc"><p>Evaluate to <em>True</em> if the source or destination IP address matches the given network address. I.e.,
 </p><pre> has_addr &quot;192.168.0.0&quot; 24
-</pre></div></div><div class="top"><p class="src"><a name="v:has_src_addr" class="def">has_src_addr</a> :: String -&gt; Int -&gt; <a href="Network-PFq-Lang.html#t:NetPredicate">NetPredicate</a></p><div class="doc"><p>Evaluate to <em>True</em> if the source IP address matches the given network address. I.e.,
-</p><pre> has_addr &quot;192.168.0.0&quot; 24
-</pre></div></div><div class="top"><p class="src"><a name="v:has_dst_addr" class="def">has_dst_addr</a> :: String -&gt; Int -&gt; <a href="Network-PFq-Lang.html#t:NetPredicate">NetPredicate</a></p><div class="doc"><p>Evaluate to <em>True</em> if the destination IP address matches the given network address. I.e.,
-</p><pre> has_addr &quot;192.168.0.0&quot; 24
-</pre></div></div><div class="top"><p class="src"><a name="v:has_mark" class="def">has_mark</a> :: CULong -&gt; <a href="Network-PFq-Lang.html#t:NetPredicate">NetPredicate</a></p><div class="doc"><p>Evaluate to <em>True</em> if the SkBuff has the given mark, set by <code><a href="Network-PFq-Default.html#v:mark">mark</a></code> function.
+</pre></div></div><div class="top"><p class="src"><a name="v:has_src_addr" class="def">has_src_addr</a> :: String -&gt; Int -&gt; <a href="Network-PFq-Lang.html#t:NetPredicate">NetPredicate</a></p><div class="doc"><p>Evaluate to <em>True</em> if the source IP address matches the given network address.
+</p></div></div><div class="top"><p class="src"><a name="v:has_dst_addr" class="def">has_dst_addr</a> :: String -&gt; Int -&gt; <a href="Network-PFq-Lang.html#t:NetPredicate">NetPredicate</a></p><div class="doc"><p>Evaluate to <em>True</em> if the destination IP address matches the given network address.
+</p></div></div><div class="top"><p class="src"><a name="v:has_mark" class="def">has_mark</a> :: CULong -&gt; <a href="Network-PFq-Lang.html#t:NetPredicate">NetPredicate</a></p><div class="doc"><p>Evaluate to <em>True</em> if the SkBuff has the given mark, set by <code><a href="Network-PFq-Default.html#v:mark">mark</a></code> function.
 </p><pre> has_mark 11
 </pre></div></div><div class="top"><p class="src"><a name="v:has_vlan" class="def">has_vlan</a> :: <a href="Network-PFq-Lang.html#t:NetPredicate">NetPredicate</a></p><div class="doc"><p>Evaluate to <em>True</em> if the SkBuff has a vlan tag.
 </p></div></div><div class="top"><p class="src"><a name="v:has_vid" class="def">has_vid</a> :: CInt -&gt; <a href="Network-PFq-Lang.html#t:NetPredicate">NetPredicate</a></p><div class="doc"><p>Evaluate to <em>True</em> if the SkBuff has the given vlan id.
 </p><pre> has_vid 42
 </pre></div></div><div class="top"><p class="src"><a name="v:vlan_id" class="def">vlan_id</a> :: [CInt] -&gt; <a href="Network-PFq-Lang.html#t:NetPredicate">NetPredicate</a></p><div class="doc"><p>Predicate which evaluates to <em>True</em> when the packet has one of the
  vlan id specified by the list. Example:
-</p><pre> when (vland_id [1,13,42,43]) msg_log &quot;Got a packet!&quot;
+</p><pre> when' (vland_id [1,13,42,43]) msg_log &quot;Got a packet!&quot;
 </pre></div></div><h1 id="g:2">Properties
 </h1><div class="top"><p class="src"><a name="v:ip_tos" class="def">ip_tos</a> :: <a href="Network-PFq-Lang.html#t:NetProperty">NetProperty</a></p><div class="doc"><p>Evaluate to the <em>tos</em> field of the IP header.
 </p></div></div><div class="top"><p class="src"><a name="v:ip_tot_len" class="def">ip_tot_len</a> :: <a href="Network-PFq-Lang.html#t:NetProperty">NetProperty</a></p><div class="doc"><p>Evaluate to the <em>tot_len</em> field of the IP header.
@@ -74,13 +70,14 @@ window.onload = function () {pageLoad();setSynopsis("mini_Network-PFq-Default.ht
  false, and vice versa.
 </p></div></div><div class="top"><p class="src"><a name="v:inv" class="def">inv</a> :: <a href="Network-PFq-Lang.html#t:NetFunction">NetFunction</a> -&gt; <a href="Network-PFq-Lang.html#t:NetFunction">NetFunction</a></p><div class="doc"><p>Function that inverts a monadic NetFunction. Useful to invert filters:
 </p><pre> inv ip &gt;-&gt; log_msg &quot;This is not an IPv4 Packet&quot;
-</pre></div></div><div class="top"><p class="src"><a name="v:par-39-" class="def">par'</a> :: <a href="Network-PFq-Lang.html#t:NetFunction">NetFunction</a> -&gt; <a href="Network-PFq-Lang.html#t:NetFunction">NetFunction</a> -&gt; <a href="Network-PFq-Lang.html#t:NetFunction">NetFunction</a></p><div class="doc"><p>Function that returns the parallel of two monadic NetFunctions. Useful with filters:
-</p><pre> par' udp icmp &gt;-&gt; log_msg &quot;This is an UDP or an ICMP Packet&quot;
+</pre></div></div><div class="top"><p class="src"><a name="v:par-39-" class="def">par'</a> :: <a href="Network-PFq-Lang.html#t:NetFunction">NetFunction</a> -&gt; <a href="Network-PFq-Lang.html#t:NetFunction">NetFunction</a> -&gt; <a href="Network-PFq-Lang.html#t:NetFunction">NetFunction</a></p><div class="doc"><p>Function that returns the parallel of two monadic NetFunctions.
+</p><p>Logic <code>or</code> for monadic filters:
+</p><pre> par' udp icmp &gt;-&gt; log_msg &quot;This is an UDP or ICMP Packet&quot;
 </pre></div></div><h1 id="g:4">Comparators
 </h1><div class="doc"><p>Take a NetProperty, a value, and return a predicate that compares the values.
 </p></div><div class="top"><p class="src"><a name="v:.-60-." class="def">(.&lt;.)</a> :: <a href="Network-PFq-Lang.html#t:NetProperty">NetProperty</a> -&gt; Word64 -&gt; <a href="Network-PFq-Lang.html#t:NetPredicate">NetPredicate</a></p><div class="doc"><p>Return a predicate that evaluates to <em>True</em>, if the property is less than
  the given value. Example:
-</p><pre>  when (ip_ttl .&lt;. 64) drop'
+</p><pre>  when' (ip_ttl .&lt;. 64) drop'
 </pre></div></div><div class="top"><p class="src"><a name="v:.-60--61-." class="def">(.&lt;=.)</a> :: <a href="Network-PFq-Lang.html#t:NetProperty">NetProperty</a> -&gt; Word64 -&gt; <a href="Network-PFq-Lang.html#t:NetPredicate">NetPredicate</a></p></div><div class="top"><p class="src"><a name="v:.-61--61-." class="def">(.==.)</a> :: <a href="Network-PFq-Lang.html#t:NetProperty">NetProperty</a> -&gt; Word64 -&gt; <a href="Network-PFq-Lang.html#t:NetPredicate">NetPredicate</a></p></div><div class="top"><p class="src"><a name="v:.-47--61-." class="def">(./=.)</a> :: <a href="Network-PFq-Lang.html#t:NetProperty">NetProperty</a> -&gt; Word64 -&gt; <a href="Network-PFq-Lang.html#t:NetPredicate">NetPredicate</a></p></div><div class="top"><p class="src"><a name="v:.-62-." class="def">(.&gt;.)</a> :: <a href="Network-PFq-Lang.html#t:NetProperty">NetProperty</a> -&gt; Word64 -&gt; <a href="Network-PFq-Lang.html#t:NetPredicate">NetPredicate</a></p></div><div class="top"><p class="src"><a name="v:.-62--61-." class="def">(.&gt;=.)</a> :: <a href="Network-PFq-Lang.html#t:NetProperty">NetProperty</a> -&gt; Word64 -&gt; <a href="Network-PFq-Lang.html#t:NetPredicate">NetPredicate</a></p></div><div class="top"><p class="src"><a name="v:any_bit" class="def">any_bit</a></p><div class="subs arguments"><p class="caption">Arguments</p><table><tr><td class="src">:: <a href="Network-PFq-Lang.html#t:NetProperty">NetProperty</a></td><td class="doc empty">&nbsp;</td></tr><tr><td class="src">-&gt; Word64</td><td class="doc"><p>comparison mask
 </p></td></tr><tr><td class="src">-&gt; <a href="Network-PFq-Lang.html#t:NetPredicate">NetPredicate</a></td><td class="doc empty">&nbsp;</td></tr></table></div><div class="doc"><p>Return a predicate that evaluates to <em>True</em>, if the property has at least
  one bit set among those specified by the given mask.
@@ -88,10 +85,9 @@ window.onload = function () {pageLoad();setSynopsis("mini_Network-PFq-Default.ht
 </p></td></tr><tr><td class="src">-&gt; <a href="Network-PFq-Lang.html#t:NetPredicate">NetPredicate</a></td><td class="doc empty">&nbsp;</td></tr></table></div><div class="doc"><p>Return a predicate that evaluates to <em>True</em>, if the property has all bits
  set among those specified in the given mask.
 </p></div></div><h1 id="g:5">Conditionals
-</h1><div class="top"><p class="src"><a name="v:conditional" class="def">conditional</a> :: <a href="Network-PFq-Lang.html#t:NetPredicate">NetPredicate</a> -&gt; <a href="Network-PFq-Lang.html#t:NetFunction">NetFunction</a> -&gt; <a href="Network-PFq-Lang.html#t:NetFunction">NetFunction</a> -&gt; <a href="Network-PFq-Lang.html#t:NetFunction">NetFunction</a></p><div class="doc"><p>Conditional execution of monadic NetFunctions.
-</p><p>The function takes a predicate and evaluates to the first or the second expression, depending on the
- value returned by the predicate.
- Example:
+</h1><div class="top"><p class="src"><a name="v:conditional" class="def">conditional</a> :: <a href="Network-PFq-Lang.html#t:NetPredicate">NetPredicate</a> -&gt; <a href="Network-PFq-Lang.html#t:NetFunction">NetFunction</a> -&gt; <a href="Network-PFq-Lang.html#t:NetFunction">NetFunction</a> -&gt; <a href="Network-PFq-Lang.html#t:NetFunction">NetFunction</a></p><div class="doc"><p>conditional execution of monadic netfunctions.
+</p><p>the function takes a predicate and evaluates to the first or the second expression, depending on the
+ value returned by the predicate. Example:
 </p><pre> conditional is_udp (forward &quot;eth1&quot;) (forward &quot;eth2&quot;)
 </pre></div></div><div class="top"><p class="src"><a name="v:when-39-" class="def">when'</a> :: <a href="Network-PFq-Lang.html#t:NetPredicate">NetPredicate</a> -&gt; <a href="Network-PFq-Lang.html#t:NetFunction">NetFunction</a> -&gt; <a href="Network-PFq-Lang.html#t:NetFunction">NetFunction</a></p><div class="doc"><p>Conditional execution of monadic NetFunctions.
 </p><p>The function takes a predicate and evaluates to given the NetFunction when it evalutes to <em>True</em>,
@@ -103,7 +99,7 @@ window.onload = function () {pageLoad();setSynopsis("mini_Network-PFq-Default.ht
 </h1><div class="doc"><p>A collection of monadic NetFunctions.
 </p></div><div class="top"><p class="src"><a name="v:filter-39-" class="def">filter'</a> :: <a href="Network-PFq-Lang.html#t:NetPredicate">NetPredicate</a> -&gt; <a href="Network-PFq-Lang.html#t:NetFunction">NetFunction</a></p><div class="doc"><p>Transform the given predicate in its counterpart monadic version.
  Example:
-</p><pre> filter' (is_udp) &gt;-&gt; kernel
+</p><pre> filter' is_udp &gt;-&gt; kernel
 </pre><p>is logically equivalent to:
 </p><pre> udp &gt;-&gt; kernel
 </pre></div></div><div class="top"><p class="src"><a name="v:ip" class="def">ip</a> :: <a href="Network-PFq-Lang.html#t:NetFunction">NetFunction</a></p><div class="doc"><p>Evaluate to <em>Pass SkBuff</em> if it is an IPv4 packet, <em>Drop</em> it otherwise.
@@ -135,14 +131,12 @@ window.onload = function () {pageLoad();setSynopsis("mini_Network-PFq-Default.ht
 </pre></div></div><div class="top"><p class="src"><a name="v:src_port" class="def">src_port</a> :: Int16 -&gt; <a href="Network-PFq-Lang.html#t:NetFunction">NetFunction</a></p><div class="doc"><p>Monadic version of <code><a href="Network-PFq-Default.html#v:has_src_port">has_src_port</a></code> predicate.
 </p></div></div><div class="top"><p class="src"><a name="v:dst_port" class="def">dst_port</a> :: Int16 -&gt; <a href="Network-PFq-Lang.html#t:NetFunction">NetFunction</a></p><div class="doc"><p>Monadic version of <code><a href="Network-PFq-Default.html#v:has_dst_port">has_dst_port</a></code> predicate.
 </p></div></div><div class="top"><p class="src"><a name="v:addr" class="def">addr</a> :: String -&gt; Int -&gt; <a href="Network-PFq-Lang.html#t:NetFunction">NetFunction</a></p><div class="doc"><p>Monadic version of <code><a href="Network-PFq-Default.html#v:has_addr">has_addr</a></code> predicate.
-</p><p>Predicates are used in conditional expressions, while monadic functions
- are combined with Kleisli operator:
+</p><p>predicates are used in conditional expressions, while monadic functions
+ are combined with kleisli operator:
 </p><pre> addr &quot;192.168.0.0&quot; 24 &gt;-&gt; log_packet
 </pre></div></div><div class="top"><p class="src"><a name="v:src_addr" class="def">src_addr</a> :: String -&gt; Int -&gt; <a href="Network-PFq-Lang.html#t:NetFunction">NetFunction</a></p><div class="doc"><p>Monadic version of <code><a href="Network-PFq-Default.html#v:has_src_addr">has_src_addr</a></code> predicate.
-</p><pre> src_addr &quot;192.168.0.0&quot; 24 &gt;-&gt; log_packet
-</pre></div></div><div class="top"><p class="src"><a name="v:dst_addr" class="def">dst_addr</a> :: String -&gt; Int -&gt; <a href="Network-PFq-Lang.html#t:NetFunction">NetFunction</a></p><div class="doc"><p>Monadic version of <code><a href="Network-PFq-Default.html#v:has_src_addr">has_src_addr</a></code> predicate.
-</p><pre> dst_addr &quot;192.168.0.0&quot; 24 &gt;-&gt; log_packet
-</pre></div></div><h1 id="g:7">Steering functions
+</p></div></div><div class="top"><p class="src"><a name="v:dst_addr" class="def">dst_addr</a> :: String -&gt; Int -&gt; <a href="Network-PFq-Lang.html#t:NetFunction">NetFunction</a></p><div class="doc"><p>Monadic version of <code><a href="Network-PFq-Default.html#v:has_src_addr">has_src_addr</a></code> predicate.
+</p></div></div><h1 id="g:7">Steering functions
 </h1><div class="doc"><p>Monadic functions used to dispatch packets across sockets.
  They evaluate to <em>Steer Hash Skbuff</em>, if the packet has a certain property, <em>Drop</em> otherwise.
 </p></div><div class="top"><p class="src"><a name="v:steer_link" class="def">steer_link</a> :: <a href="Network-PFq-Lang.html#t:NetFunction">NetFunction</a></p><div class="doc"><p>Dispatch the packet across the sockets
@@ -193,7 +187,7 @@ window.onload = function () {pageLoad();setSynopsis("mini_Network-PFq-Default.ht
  and it is possibly slower than the lazy <a href="forward.html">forward</a> counterpart.
 </p><pre> forwardIO &quot;eth1&quot;
 </pre></div></div><div class="top"><p class="src"><a name="v:bridge" class="def">bridge</a> :: String -&gt; <a href="Network-PFq-Lang.html#t:NetFunction">NetFunction</a></p><div class="doc"><p>Forward the packet to the given device and evaluates to <em>Drop</em>. Example:
-</p><pre> when is_udp (bridge &quot;eth1&quot;) &gt;-&gt; kernel
+</p><pre> when' is_udp (bridge &quot;eth1&quot;) &gt;-&gt; kernel
 </pre><p>Conditional bridge, forward the packet to eth1 if UDP, send it to the kernel
  otherwise.
 </p></div></div><div class="top"><p class="src"><a name="v:tee" class="def">tee</a> :: String -&gt; <a href="Network-PFq-Lang.html#t:NetPredicate">NetPredicate</a> -&gt; <a href="Network-PFq-Lang.html#t:NetFunction">NetFunction</a></p><div class="doc"><p>Forward the packet to the given device and, evaluates to <em>Pass SkBuff</em> or <em>Drop</em>,
@@ -219,7 +213,7 @@ window.onload = function () {pageLoad();setSynopsis("mini_Network-PFq-Default.ht
 </h1><div class="top"><p class="src"><a name="v:bloom" class="def">bloom</a> :: CInt -&gt; [HostName] -&gt; <a href="Network-PFq-Lang.html#t:NetPredicate">NetPredicate</a></p><div class="doc"><p>Predicate that evaluates to <em>True</em> when the source or the destination address
  of the packet matches the ones specified by the bloom list.
 </p><p>The first <code>CInt</code> argument specifies the size of the bloom filter. Example:
-</p><pre> when (bloom 1024 [&quot;192.168.0.13&quot;, &quot;192.168.0.42&quot;]) log_packet &gt;-&gt; kernel
+</p><pre> when' (bloom 1024 [&quot;192.168.0.13&quot;, &quot;192.168.0.42&quot;]) log_packet &gt;-&gt; kernel
 </pre></div></div><div class="top"><p class="src"><a name="v:bloom_src" class="def">bloom_src</a> :: CInt -&gt; [HostName] -&gt; <a href="Network-PFq-Lang.html#t:NetPredicate">NetPredicate</a></p><div class="doc"><p>Similarly to <code><a href="Network-PFq-Default.html#v:bloom">bloom</a></code>, evaluates to <em>True</em> when the source address
  of the packet matches the ones specified by the bloom list.
 </p></div></div><div class="top"><p class="src"><a name="v:bloom_dst" class="def">bloom_dst</a> :: CInt -&gt; [HostName] -&gt; <a href="Network-PFq-Lang.html#t:NetPredicate">NetPredicate</a></p><div class="doc"><p>Similarly to <code><a href="Network-PFq-Default.html#v:bloom">bloom</a></code>, evaluates to <em>True</em> when the destination address
@@ -237,7 +231,7 @@ window.onload = function () {pageLoad();setSynopsis("mini_Network-PFq-Default.ht
 </p></div></div><div class="top"><p class="src"><a name="v:inc" class="def">inc</a> :: CInt -&gt; <a href="Network-PFq-Lang.html#t:NetFunction">NetFunction</a></p><div class="doc"><p>Increment the i-th counter of the current group.
 </p><pre> inc 10
 </pre></div></div><div class="top"><p class="src"><a name="v:dec" class="def">dec</a> :: CInt -&gt; <a href="Network-PFq-Lang.html#t:NetFunction">NetFunction</a></p><div class="doc"><p>Decrement the i-th counter of the current group.
-</p><pre> inc 10
+</p><pre> dec 10
 </pre></div></div><div class="top"><p class="src"><a name="v:mark" class="def">mark</a> :: CULong -&gt; <a href="Network-PFq-Lang.html#t:NetFunction">NetFunction</a></p><div class="doc"><p>Mark the packet with the given value.
 </p><pre> mark 42
 </pre></div></div></div></div><div id="footer"><p>Produced by <a href="http://www.haskell.org/haddock/">Haddock</a> version 2.13.2</p></div></body></html>
