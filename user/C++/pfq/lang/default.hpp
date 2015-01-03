@@ -27,6 +27,9 @@
 #include <pfq/lang/details.hpp>
 
 #include <functional>
+#include <vector>
+#include <string>
+#include <cmath>
 
 #include <arpa/inet.h>
 
@@ -178,6 +181,13 @@ namespace lang
         auto is_first_frag  = predicate ("is_first_frag");
         auto is_more_frag   = predicate ("is_more_frag");
 
+        auto vlan_id        = [] (std::vector<int> const &vs) {
+                                    return predicate1("vlan_id", vs);
+                                };
+
+        auto vlan_id_filter = [] (std::vector<int> const &vs) {
+                                    return mfunction1("vlan_id_filter", vs);
+                              };
         // default properties:
 
         auto get_mark   = property("get_mark");
@@ -222,7 +232,12 @@ namespace lang
             return mfunction1("steer_net", na);
         };
 
-        // others:
+        auto steer_field = [] (int off_bytes, int size_bits) {
+                                return mfunction2("steer_field", off_bytes, size_bits);
+                           };
+        // filters:
+
+        auto filter         = std::bind(details::polymorphic_mfunctionP(), "filter", _1);
 
         auto ip             = mfunction("ip");
         auto ip6            = mfunction("ip6");
@@ -248,7 +263,12 @@ namespace lang
         auto log_buff       = mfunction("log_buff");
         auto log_packet     = mfunction("log_packet");
 
-        auto forwardIO      = [] (std::string dev) { return mfunction1("forwardIO", std::move(dev)); };
+        auto forward    = [] (std::string dev) { return mfunction1("forward", std::move(dev)); };
+        auto forwardIO  = [] (std::string dev) { return mfunction1("forwardIO", std::move(dev)); };
+        auto bridge     = [] (std::string dev) { return mfunction1("bridge", std::move(dev)); };
+        auto tee_       = std::bind(details::polymorphic_mfunction1P(), "tee", _1, _2);
+        auto tap        = std::bind(details::polymorphic_mfunction1P(), "tap", _1, _2);
+
         auto mark           = [] (unsigned long value) { return mfunction1("mark", value); };
         auto inc            = [] (int value) { return mfunction1("inc", value); };
         auto dec            = [] (int value) { return mfunction1("dec", value); };
@@ -284,6 +304,60 @@ namespace lang
 
         auto inv         = std::bind(details::polymorphic_mfunctionF(),  "inv", _1);
         auto par         = std::bind(details::polymorphic_mfunctionFF(), "par", _1, _2);
+
+        // bloom filters:
+
+        auto bloom      = [] (int m, std::vector<std::string> const &ips) {
+                                auto addrs = details::fmap(details::inet_addr, ips);
+                                return predicate2("bloom", m, std::move(addrs));
+                          };
+
+        auto bloom_src  = [] (int m, std::vector<std::string> const &ips) {
+                                auto addrs = details::fmap(details::inet_addr, ips);
+                                return predicate2("bloom_src", m, std::move(addrs));
+                          };
+
+        auto bloom_dst  = [] (int m, std::vector<std::string> const &ips) {
+                                auto addrs = details::fmap(details::inet_addr, ips);
+                                return predicate2("bloom_dst", m, std::move(addrs));
+                          };
+
+
+        auto bloom_filter      = [] (int m, std::vector<std::string> const &ips) {
+                                    auto addrs = details::fmap(details::inet_addr, ips);
+                                    return mfunction2("bloom_filter", m, std::move(addrs));
+                                };
+
+        auto bloom_src_filter  = [] (int m, std::vector<std::string> const &ips) {
+                                    auto addrs = details::fmap(details::inet_addr, ips);
+                                    return mfunction2("bloom_src_filter", m, std::move(addrs));
+                                };
+
+        auto bloom_dst_filter  = [] (int m, std::vector<std::string> const &ips) {
+                                    auto addrs = details::fmap(details::inet_addr, ips);
+                                    return mfunction2("bloom_dst_filter", m, std::move(addrs));
+                                };
+
+        // bloom filter, utility functions:
+        //
+
+        constexpr int bloomK = 4;
+
+        inline int bloom_calc_m(int n, double p)
+        {
+            return static_cast<int>(std::ceil( -static_cast<double>(bloomK) * n / std::log( 1.0 - std::pow(p, 1.0 / bloomK) )));
+        }
+
+        inline int bloom_calc_n(int m, double p)
+        {
+            return static_cast<int>(std::ceil( -static_cast<double>(m) * std::log( 1.0 - std::pow(p, 1.0 / bloomK) ) / bloomK ));
+        }
+
+        inline double
+        bloom_calc_p(int n, int m)
+        {
+            return std::pow(1 - std::pow(1 - 1.0/m, n * bloomK), bloomK);
+        }
 
     }
 
