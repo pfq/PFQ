@@ -276,11 +276,13 @@ namespace lang
             return predicate1("has_dst_addr", addr);
         };
 
-        //! Evaluate to \c true if the SkBuff has the given mark, set by 'mark' function.
+        //! Evaluate to \c true if the SkBuff has the given \c mark, set by mark function.
         /*!
          * Example:
          *
          * has_mark(11)
+         *
+         * \see mark
          */
 
         auto has_mark       = [] (unsigned long value) { return predicate1("has_mark", value); };
@@ -309,7 +311,7 @@ namespace lang
                                     return predicate1("vlan_id", vs);
                                 };
 
-        //! Monadic function, counterpart of 'vlan_id' function.
+        //! Monadic function, counterpart of \c vlan_id function. \see vlan_id
 
         auto vlan_id_filter = [] (std::vector<int> const &vs) {
                                     return mfunction1("vlan_id_filter", vs);
@@ -318,7 +320,11 @@ namespace lang
         // default properties:
         //
 
-        //! Evaluate to the mark set by 'mark' function. By default packets are marked with 0.
+        //! Evaluate to the mark set by \c mark function.
+        /*! By default packets are marked with 0.
+         *
+         * \see mark
+         */
 
         auto get_mark   = property("get_mark");
 
@@ -535,7 +541,7 @@ namespace lang
 
         auto no_frag        = mfunction("no_frag");
 
-        //! Evaluate to \c Pass SkBuff if it is not a fragment or if it's the first fragment, \c Drop it otherwise.
+        //! Evaluate to \c Pass SkBuff if it is not a fragment or if it is the first fragment, \c Drop it otherwise.
 
         auto no_more_frag   = mfunction("no_more_frag");
 
@@ -670,54 +676,58 @@ namespace lang
 
         auto dec            = [] (int value) { return mfunction1("dec", value); };
 
-        //! Monadic version of 'is_l3_proto' predicate.
+        //! Monadic version of \c is_l3_proto predicate.
         /*!
          * Predicates are used in conditional expressions, while monadic functions
          * are combined with Kleisli operator:
          *
          * l3_proto (0x842) >> log_msg ("Wake-on-LAN packet!")
          *
+         * \see is_l3_proto
          */
 
         auto l3_proto       = [] (uint16_t type) { return mfunction1 ("l3_proto", type); };
 
-        //! Monadic version of 'is_l4_proto' predicate.
+        //! Monadic version of \c is_l4_proto predicate.
         /*!
          * Predicates are used in conditional expressions, while monadic functions
          * are combined with Kleisli operator:
          *
          * l4_proto(89) >> log_msg("OSFP packet!")
          *
+         * \see is_l4_proto
          */
 
         auto l4_proto       = [] (uint8_t proto) { return mfunction1 ("l4_proto", proto); };
 
-        //! Monadic version of 'has_port' predicate.
+        //! Monadic version of \c has_port predicate.
         /*!
          * Predicates are used in conditional expressions, while monadic functions
          * are combined with Kleisli operator:
          *
          * port(80) >> log_msg ("http packet!")
          *
+         * \see has_port
          */
 
         auto port           = [] (uint16_t p) { return mfunction1 ("port", p); };
 
-        //! Monadic version of 'has_src_port' predicate.
+        //! Monadic version of \c has_src_port predicate.  \see has_src_port
 
         auto src_port       = [] (uint16_t p) { return mfunction1 ("src_port", p); };
 
-        //! Monadic version of 'has_dst_port' predicate.
+        //! Monadic version of \c has_dst_port predicate.  \see has_dst_port
 
         auto dst_port       = [] (uint16_t p) { return mfunction1 ("dst_port", p); };
 
-        //! Monadic version of 'has_addr' predicate.
+        //! Monadic version of \c has_addr predicate.
         /*!
          * Predicates are used in conditional expressions, while monadic functions
          * are combined with kleisli operator:
          *
          * addr ("192.168.0.0",24) >> log_packet
          *
+         * \see has_addr
          */
 
         auto addr = [] (const char *net, int prefix)
@@ -726,7 +736,7 @@ namespace lang
             return mfunction1("addr", a);
         };
 
-        //! Monadic version of 'has_src_addr' predicate.
+        //! Monadic version of \c has_src_addr predicate.  \see has_src_addr
 
         auto src_addr = [] (const char *net, int prefix)
         {
@@ -734,7 +744,7 @@ namespace lang
             return mfunction1("src_addr", a);
         };
 
-        //! Monadic version of 'has_src_addr' predicate.
+        //! Monadic version of \c has_dst_addr predicate.  \see has_dst_addr
 
         auto dst_addr = [] (const char *net, int prefix)
         {
@@ -754,7 +764,7 @@ namespace lang
 
         auto when        = std::bind(details::polymorphic_mfunctionPF(), "when", _1, _2);
 
-        //! The reverse of "when"
+        //! The reverse of \c when. \see when
 
         auto unless      = std::bind(details::polymorphic_mfunctionPF(), "unless", _1, _2);
 
@@ -796,7 +806,7 @@ namespace lang
         //! Predicate that evaluates to \c true when the source or the destination address
         // of the packet matches the ones specified by the bloom list.
         /*!
-         * The first 'CInt' argument specifies the size of the bloom filter.
+         * The first \c int argument specifies the size of the bloom filter.
          * Example:
          *
          * when (bloom 1024 ["192.168.0.13", "192.168.0.42"]) log_packet >> kernel
@@ -808,37 +818,37 @@ namespace lang
                                 return predicate2("bloom", m, std::move(addrs));
                           };
 
-        //! Similarly to 'bloom', evaluates to \c true when the source address
-        // of the packet matches the ones specified by the bloom list.
+        //! Similarly to \c bloom, evaluates to \c true when the source address
+        //! of the packet matches the ones specified by the bloom list.  \see bloom
 
         auto bloom_src  = [] (int m, std::vector<std::string> const &ips) {
                                 auto addrs = details::fmap(details::inet_addr, ips);
                                 return predicate2("bloom_src", m, std::move(addrs));
                           };
 
-        //! Similarly to 'bloom', evaluates to \c true when the destination address
-        // of the packet matches the ones specified by the bloom list.
+        //! Similarly to \c bloom, evaluates to \c true when the destination address
+        //! of the packet matches the ones specified by the bloom list.  \see bloom
 
         auto bloom_dst  = [] (int m, std::vector<std::string> const &ips) {
                                 auto addrs = details::fmap(details::inet_addr, ips);
                                 return predicate2("bloom_dst", m, std::move(addrs));
                           };
 
-        //! Monadic counterpart of 'bloom' function.
+        //! Monadic counterpart of \c bloom function.  \see bloom
 
         auto bloom_filter      = [] (int m, std::vector<std::string> const &ips) {
                                     auto addrs = details::fmap(details::inet_addr, ips);
                                     return mfunction2("bloom_filter", m, std::move(addrs));
                                 };
 
-        //! Monadic counterpart of 'bloom_src' function.
+        //! Monadic counterpart of \c bloom_src function.  \see bloom_src
 
         auto bloom_src_filter  = [] (int m, std::vector<std::string> const &ips) {
                                     auto addrs = details::fmap(details::inet_addr, ips);
                                     return mfunction2("bloom_src_filter", m, std::move(addrs));
                                 };
 
-        //! Monadic counterpart of 'bloom_dst' function.
+        //! Monadic counterpart of \c bloom_dst function. \see bloom_dst
 
         auto bloom_dst_filter  = [] (int m, std::vector<std::string> const &ips) {
                                     auto addrs = details::fmap(details::inet_addr, ips);
