@@ -646,10 +646,6 @@ int pfq_setsockopt(struct socket *sock,
                                 return -EINVAL;
                         }
 
-			if (fprog.fcode.len == 1) {
-
-			}
-
                         __pfq_set_group_filter(fprog.gid, filter);
 
                         pr_devel("[PFQ|%d] fprog: gid=%d (fprog len %d bytes)\n", so->id, fprog.gid, fprog.fcode.len);
