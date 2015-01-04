@@ -828,15 +828,15 @@ int pfq_setsockopt(struct socket *sock,
         case Q_SO_GROUP_FUNCTION:
         {
                 struct pfq_computation_descr *descr = NULL;
+                struct pfq_computation_tree *comp = NULL;
                 struct pfq_group_computation tmp;
                 size_t psize, ucsize;
-                int err = 0;
-
-                struct pfq_computation_tree *comp = NULL;
                 void *context = NULL;
+                int err = 0;
 
                 if (optlen != sizeof(tmp))
                         return -EINVAL;
+
                 if (copy_from_user(&tmp, optval, optlen))
                         return -EFAULT;
 
@@ -867,7 +867,7 @@ int pfq_setsockopt(struct socket *sock,
 
                 pr_devel_computation_descr(descr);
 
-		/* ensure the correctness of the specified functional computation */
+		/* check the correctness of computation */
 
 		if (pfq_validate_computation_descr(descr) < 0) {
                         pr_devel("[PFQ|%d] invalid expression!\n", so->id);
@@ -884,7 +884,7 @@ int pfq_setsockopt(struct socket *sock,
                         goto error;
                 }
 
-                /* allocate struct pfq_computation_tree */
+                /* allocate a pfq_computation_tree */
 
                 comp = pfq_computation_alloc(descr);
                 if (comp == NULL) {
@@ -893,7 +893,7 @@ int pfq_setsockopt(struct socket *sock,
                         goto error;
                 }
 
-                /* link the functional computation */
+                /* link functions of computation */
 
                 if (pfq_computation_rtlink(descr, comp, context) < 0) {
                         pr_devel("[PFQ|%d] computation aborted!", so->id);
@@ -905,7 +905,7 @@ int pfq_setsockopt(struct socket *sock,
 
 		pr_devel_computation_tree(comp);
 
-		/* exec init functions */
+		/* run init functions */
 
 		if (pfq_computation_init(comp) < 0) {
                         pr_devel("[PFQ|%d] initialization of computation aborted!", so->id);
@@ -914,7 +914,7 @@ int pfq_setsockopt(struct socket *sock,
                         goto error;
 		}
 
-                /* set the new program */
+                /* enable functional program */
 
                 if (pfq_set_group_prog(tmp.gid, comp, context) < 0) {
                         pr_devel("[PFQ|%d] set group program error!\n", so->id);
