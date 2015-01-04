@@ -67,12 +67,10 @@ size_t copy_to_dev_gcbs(struct pfq_sock *so, struct gc_queue_buff *gcbs, unsigne
 	if (so->egress_index) {
 
                	dev = dev_get_by_index(&init_net, so->egress_index);
-
                	if (dev == NULL) {
-			if (printk_ratelimit()) {
-                        	printk(KERN_INFO "[PFQ] egress endpoint index (%d)\n", so->egress_index);
-                        	return false;
-			}
+			if (printk_ratelimit())
+                        	printk(KERN_INFO "[PFQ] egress endpoint not existing (%d)\n", so->egress_index);
+                        return false;
 		}
 
  		sent = pfq_queue_lazy_xmit_by_mask(gcbs, mask, dev, so->egress_queue);
