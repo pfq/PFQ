@@ -328,7 +328,7 @@ namespace pfq {
      * return a nullptr otherwise.
      */
 
-    static inline void * data_ready(pfq_pkthdr &h, uint8_t current_commit)
+    inline void * data_ready(pfq_pkthdr &h, uint8_t current_commit)
     {
         if (const_cast<volatile uint8_t &>(h.commit) != current_commit)
             return nullptr;
@@ -342,7 +342,7 @@ namespace pfq {
      * return a nullptr otherwise.
      */
 
-    static inline const void * data_ready(pfq_pkthdr const &h, uint8_t current_commit)
+    inline const void * data_ready(pfq_pkthdr const &h, uint8_t current_commit)
     {
         if (const_cast<volatile uint8_t &>(h.commit) != current_commit)
             return nullptr;

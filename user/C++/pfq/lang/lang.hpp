@@ -38,9 +38,11 @@ namespace pfq
 {
 namespace lang
 {
+    //////// pfq_functional_descr:
+
     using ::pfq_functional_descr;
 
-    static inline std::string
+    inline std::string
     show(pfq_functional_descr const &descr)
     {
         std::stringstream out;
@@ -59,13 +61,10 @@ namespace lang
         return out.str();
     }
 
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-
     //////// bool_type:
 
     template <bool Value>
     using bool_type = std::integral_constant<bool, Value>;
-
 
     //////// is_same_type_constructor:
 
@@ -98,14 +97,14 @@ namespace lang
 
     //////// has_insertion_operator:
 
-    template <typename C> static char  has_insertion_test(typename std::remove_reference< decltype((std::cout << std::declval<C>())) >::type *);
-    template <typename C> static short has_insertion_test(...);
+    template <typename C> char  has_insertion_test(typename std::remove_reference< decltype((std::cout << std::declval<C>())) >::type *);
+    template <typename C> short has_insertion_test(...);
 
     template <typename T>
     struct has_insertion_operator : bool_type<sizeof(has_insertion_test<T>(0)) == sizeof(char)> {};
 
 
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //////// StorableShowBase polymorphic class:
 
     struct StorableShowBase
     {
@@ -129,7 +128,6 @@ namespace lang
         {
             return that.data();
         }
-
 
         static std::string get_string(std::string const &that)
         {
@@ -161,6 +159,8 @@ namespace lang
         }
     };
 
+    //////// StorableShow class:
+
     template <typename Tp>
     struct StorableShow final : StorableShowBase
     {
@@ -181,11 +181,7 @@ namespace lang
         }
     };
 
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-
-    //
-    // Argument
-    //
+    //////// Function Argument class:
 
     struct Argument
     {
@@ -239,20 +235,35 @@ namespace lang
     };
 
 
-    static inline Argument make_argument()                { return Argument::Null(); }
 
-    static inline Argument make_argument(std::string s)   { return Argument::String(std::move(s)); }
+    inline Argument make_argument()
+    {
+        return Argument::Null();
+    }
 
-    static inline Argument make_argument(const char *arr) { return Argument::String(arr); }
+    inline Argument make_argument(std::string s)
+    {
+        return Argument::String(std::move(s));
+    }
+
+    inline Argument make_argument(const char *arr)
+    {
+        return Argument::String(arr);
+    }
 
     template <typename Tp>
-    static inline Argument make_argument(Tp const &pod)   { return Argument::Data(pod); }
+    inline Argument make_argument(Tp const &pod)
+    {
+        return Argument::Data(pod);
+    }
 
     template <typename Tp>
-    static inline Argument make_argument(std::vector<Tp> const &pod) { return Argument::Vector(pod); }
+    inline Argument make_argument(std::vector<Tp> const &pod)
+    {
+        return Argument::Vector(pod);
+    }
 
-
-    static inline std::string
+    inline std::string
     show(const Argument &arg)
     {
         std::stringstream out;
@@ -276,7 +287,7 @@ namespace lang
         return out.str();
     }
 
-    static inline std::string
+    inline std::string
     pretty(const Argument &arg)
     {
         if (arg.ptr)
@@ -287,9 +298,8 @@ namespace lang
         return "";
     }
 
-    //
-    // Function descriptor
-    //
+
+    //////// Function descriptor class:
 
     struct FunctionDescr
     {
@@ -299,7 +309,7 @@ namespace lang
     };
 
 
-    static inline std::string
+    inline std::string
     show(const FunctionDescr &descr)
     {
         std::string out;
@@ -314,7 +324,6 @@ namespace lang
 
         return out;
     }
-
 
     ///////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -336,10 +345,6 @@ namespace lang
     template <typename S>
     struct is_Function<Function<S>> : std::true_type
     { };
-
-
-    ///////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 
     using NetFunction  = Function< Action<SkBuff>(SkBuff) >;
     using NetPredicate = Function< bool(SkBuff) >;
@@ -440,7 +445,7 @@ namespace lang
 
 
     template <typename P>
-    static inline std::string
+    inline std::string
     pretty(Combinator1<P> const &comb)
     {
         if (comb.symbol_ == "not")
@@ -451,7 +456,7 @@ namespace lang
 
 
     template <typename P1, typename P2>
-    static inline std::string
+    inline std::string
     pretty(Combinator2<P1,P2> const &comb)
     {
         if (comb.symbol_ == "or")
@@ -466,7 +471,7 @@ namespace lang
 
 
     template <typename Pred>
-    static inline std::pair<std::vector<FunctionDescr>, std::size_t>
+    inline std::pair<std::vector<FunctionDescr>, std::size_t>
     serialize(Combinator1<Pred> const &f, std::size_t n)
     {
        std::vector<FunctionDescr> pred, comb =
@@ -483,7 +488,7 @@ namespace lang
 
 
     template <typename Pred1, typename Pred2>
-    static inline std::pair<std::vector<FunctionDescr>, std::size_t>
+    inline std::pair<std::vector<FunctionDescr>, std::size_t>
     serialize(Combinator2<Pred1, Pred2> const &f, std::size_t n)
     {
        std::vector<FunctionDescr> pred1, pred2, comb;
@@ -498,9 +503,9 @@ namespace lang
        return { std::move(comb) + std::move(pred1) + std::move(pred2), n2 };
     }
 
-    //
-    // Property
-    //
+
+    //////// Property:
+
 
     struct Property : NetProperty
     {
@@ -524,16 +529,15 @@ namespace lang
         Argument              arg_;
     };
 
-
     ///////// pretty property:
 
-    static inline std::string
+    inline std::string
     pretty(Property const &descr)
     {
         return descr.symbol_;
     }
 
-    static inline std::string
+    inline std::string
     pretty(Property1 const &descr)
     {
         return  '(' + descr.symbol_ + ' ' + pretty(descr.arg_) + ')';
@@ -541,13 +545,13 @@ namespace lang
 
     //////// serialize property:
 
-    static inline std::pair<std::vector<FunctionDescr>, std::size_t>
+    inline std::pair<std::vector<FunctionDescr>, std::size_t>
     serialize(Property const &p, std::size_t n)
     {
         return { { FunctionDescr {p.symbol_, {{}}, -1UL } }, n+1 };
     }
 
-    static inline std::pair<std::vector<FunctionDescr>, std::size_t>
+    inline std::pair<std::vector<FunctionDescr>, std::size_t>
     serialize(Property1 const &p, std::size_t n)
     {
         return { {FunctionDescr { p.symbol_, {{ p.arg_ }}, -1UL } }, n+1 };
@@ -625,33 +629,33 @@ namespace lang
 
     ///////// pretty predicates:
 
-    static inline std::string
+    inline std::string
     pretty(Predicate const &descr)
     {
         return descr.symbol_;
     }
 
-    static inline std::string
+    inline std::string
     pretty(Predicate1 const &descr)
     {
         return '(' + descr.symbol_ + ' ' + pretty(descr.arg_) + ')';
     }
 
-    static inline std::string
+    inline std::string
     pretty(Predicate2 const &descr)
     {
         return '(' + descr.symbol_ + ' ' + pretty(descr.arg1_) + ' ' + pretty(descr.arg2_) + ')';
     }
 
     template <typename Prop>
-    static inline std::string
+    inline std::string
     pretty(PredicateR<Prop> const &descr)
     {
         return '(' + descr.symbol_ + ' ' + pretty(descr.prop_) +  ')';
     }
 
     template <typename Prop>
-    static inline std::string
+    inline std::string
     pretty(PredicateR1<Prop> const &descr)
     {
         return '(' + descr.symbol_ + ' ' + pretty(descr.prop_) + ' ' + pretty(descr.arg_) + ')';
@@ -659,26 +663,26 @@ namespace lang
 
     //////// serialize predicates:
 
-    static inline std::pair<std::vector<FunctionDescr>, std::size_t>
+    inline std::pair<std::vector<FunctionDescr>, std::size_t>
     serialize(Predicate const &p, std::size_t n)
     {
         return { { FunctionDescr { p.symbol_,  {{}}, -1UL } }, n+1 };
     }
 
-    static inline std::pair<std::vector<FunctionDescr>, std::size_t>
+    inline std::pair<std::vector<FunctionDescr>, std::size_t>
     serialize(Predicate1 const &p, std::size_t n)
     {
         return { { FunctionDescr { p.symbol_,  {{ p.arg_}}, -1UL } }, n+1 };
     }
 
-    static inline std::pair<std::vector<FunctionDescr>, std::size_t>
+    inline std::pair<std::vector<FunctionDescr>, std::size_t>
     serialize(Predicate2 const &p, std::size_t n)
     {
         return { { FunctionDescr { p.symbol_,  {{ p.arg1_, p.arg2_}}, -1UL } }, n+1 };
     }
 
     template <typename Prop>
-    static inline std::pair<std::vector<FunctionDescr>, std::size_t>
+    inline std::pair<std::vector<FunctionDescr>, std::size_t>
     serialize(PredicateR<Prop> const &p, std::size_t n)
     {
        std::vector<FunctionDescr> prop, pred =
@@ -694,7 +698,7 @@ namespace lang
     }
 
     template <typename Prop>
-    static inline std::pair<std::vector<FunctionDescr>, std::size_t>
+    inline std::pair<std::vector<FunctionDescr>, std::size_t>
     serialize(PredicateR1<Prop> const &p, std::size_t n)
     {
        std::vector<FunctionDescr> prop, pred =
@@ -709,9 +713,9 @@ namespace lang
        return { std::move(pred) + std::move(prop), n1 };
     }
 
-    //
-    // NetFunction:
-    //
+
+    ///////// NetFunction class:
+
 
     struct MFunction : NetFunction
     {
@@ -885,68 +889,68 @@ namespace lang
 
     ///// pretty NetFunction:
 
-    static inline std::string
+    inline std::string
     pretty(MFunction const &descr)
     {
         return descr.symbol_;
     }
 
-    static inline std::string
+    inline std::string
     pretty(MFunction1 const &descr)
     {
         return '(' + descr.symbol_ + ' ' + pretty (descr.arg_) + ')';
     }
 
-    static inline std::string
+    inline std::string
     pretty(MFunction2 const &descr)
     {
         return '(' + descr.symbol_ + ' ' + pretty (descr.arg1_) + ' ' + pretty(descr.arg2_) + ')';
     }
 
     template <typename P>
-    static inline std::string
+    inline std::string
     pretty(MFunction1P<P> const &descr)
     {
         return '(' + descr.symbol_ + ' ' + pretty (descr.arg_) + ' ' + pretty (descr.pred_) + ')';
     }
 
     template <typename P>
-    static inline std::string
+    inline std::string
     pretty(MFunctionP<P> const &descr)
     {
         return '(' + descr.symbol_ + ' ' + pretty(descr.pred_) + ')';
     }
 
     template <typename P, typename C>
-    static inline std::string
+    inline std::string
     pretty(MFunctionPF<P,C> const &descr)
     {
         return '(' + descr.symbol_ + ' ' + pretty(descr.pred_) + ' ' + pretty(descr.fun_) + ')';
     }
 
     template <typename P, typename C1, typename C2>
-    static inline std::string
+    inline std::string
     pretty(MFunctionPFF<P,C1,C2> const &descr)
     {
         return '(' + descr.symbol_ + ' ' + pretty(descr.pred_) + ' ' + pretty(descr.fun1_) + ' ' + pretty(descr.fun2_) + ')';
     }
 
     template <typename F>
-    static inline std::string
+    inline std::string
     pretty(MFunctionF<F> const &descr)
     {
         return '(' + descr.symbol_ + ' ' + pretty(descr.fun_) + ')';
     }
 
     template <typename F, typename G>
-    static inline std::string
+    inline std::string
     pretty(MFunctionFF<F, G> const &descr)
     {
         return '(' + descr.symbol_ + ' ' + pretty(descr.f_) + ' ' + pretty(descr.g_) + ')';
     }
 
     template <typename C1, typename C2>
-    static inline std::string
+    inline std::string
     pretty(Composition<C1,C2> const &descr)
     {
         return pretty(descr.f_) + " >-> " + pretty(descr.g_);
@@ -954,26 +958,26 @@ namespace lang
 
     ///// serialize NetFunction:
 
-    static inline std::pair<std::vector<FunctionDescr>, std::size_t>
+    inline std::pair<std::vector<FunctionDescr>, std::size_t>
     serialize(MFunction const &f, std::size_t n)
     {
         return { { FunctionDescr { f.symbol_, {{}}, n+1 } }, n+1 };
     }
 
-    static inline std::pair<std::vector<FunctionDescr>, std::size_t>
+    inline std::pair<std::vector<FunctionDescr>, std::size_t>
     serialize(MFunction1 const &f, std::size_t n)
     {
         return { { FunctionDescr { f.symbol_, {{ f.arg_ }}, n+1 } }, n+1 };
     }
 
-    static inline std::pair<std::vector<FunctionDescr>, std::size_t>
+    inline std::pair<std::vector<FunctionDescr>, std::size_t>
     serialize(MFunction2 const &f, std::size_t n)
     {
         return { { FunctionDescr { f.symbol_, {{ f.arg1_, f.arg2_ }}, n+1 } }, n+1 };
     }
 
     template <typename P>
-    static inline std::pair<std::vector<FunctionDescr>, std::size_t>
+    inline std::pair<std::vector<FunctionDescr>, std::size_t>
     serialize(MFunction1P<P> const &f, std::size_t n)
     {
         std::vector<FunctionDescr> p1, v1;
@@ -987,7 +991,7 @@ namespace lang
     }
 
     template <typename P>
-    static inline std::pair<std::vector<FunctionDescr>, std::size_t>
+    inline std::pair<std::vector<FunctionDescr>, std::size_t>
     serialize(MFunctionP<P> const &f, std::size_t n)
     {
         std::vector<FunctionDescr> p1, v1;
@@ -1002,7 +1006,7 @@ namespace lang
 
 
     template <typename P, typename C>
-    static inline std::pair<std::vector<FunctionDescr>, std::size_t>
+    inline std::pair<std::vector<FunctionDescr>, std::size_t>
     serialize(MFunctionPF<P, C> const &f, std::size_t n)
     {
         std::vector<FunctionDescr> p1, v1, c1;
@@ -1020,7 +1024,7 @@ namespace lang
 
 
     template <typename P, typename C1, typename C2>
-    static inline std::pair<std::vector<FunctionDescr>, std::size_t>
+    inline std::pair<std::vector<FunctionDescr>, std::size_t>
     serialize(MFunctionPFF<P, C1, C2> const &f, std::size_t n)
     {
         std::vector<FunctionDescr> p1, v1, c1, c2;
@@ -1039,7 +1043,7 @@ namespace lang
     }
 
     template <typename F>
-    static inline std::pair<std::vector<FunctionDescr>, std::size_t>
+    inline std::pair<std::vector<FunctionDescr>, std::size_t>
     serialize(MFunctionF<F> const &f, std::size_t n)
     {
         std::vector<FunctionDescr> f1, v1;
@@ -1055,7 +1059,7 @@ namespace lang
     }
 
     template <typename F, typename G>
-    static inline std::pair<std::vector<FunctionDescr>, std::size_t>
+    inline std::pair<std::vector<FunctionDescr>, std::size_t>
     serialize(MFunctionFF<F,G> const &fun, std::size_t n)
     {
         std::vector<FunctionDescr> f1, f2, v1;
@@ -1074,7 +1078,7 @@ namespace lang
 
 
     template <typename C1, typename C2>
-    static inline std::pair<std::vector<FunctionDescr>, std::size_t>
+    inline std::pair<std::vector<FunctionDescr>, std::size_t>
     serialize(Composition<C1, C2> const &f, std::size_t n)
     {
         std::vector<FunctionDescr> v1, v2;
@@ -1086,11 +1090,11 @@ namespace lang
         return { std::move(v1) + std::move(v2), n2 };
     }
 
-
+    //
     // serialize a vector of simple MFunction (utility)
     //
 
-    static inline std::pair<std::vector<FunctionDescr>, std::size_t>
+    inline std::pair<std::vector<FunctionDescr>, std::size_t>
     serialize (std::vector<MFunction> const &cont, std::size_t n)
     {
         std::vector<FunctionDescr> ret, v;
@@ -1104,7 +1108,6 @@ namespace lang
 
         return { ret, n1 };
     }
-
 
     ////// public constructors:
 

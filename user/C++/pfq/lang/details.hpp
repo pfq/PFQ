@@ -134,7 +134,7 @@ namespace lang
         // utility function
         //
 
-        static inline uint32_t
+        inline uint32_t
         prefix2mask(size_t n)
         {
             return htonl(static_cast<uint32_t>(~((1ULL << (32-n)) - 1)));
@@ -146,7 +146,7 @@ namespace lang
             int         prefix;
         };
 
-        static inline
+        inline
         struct network_addr
         make_netaddr(const char *net, int prefix)
         {
@@ -172,7 +172,8 @@ namespace lang
             return out << std::string(addr) << '/' << std::to_string(that.prefix);
         }
 
-        static inline uint32_t inet_addr(const std::string &addr)
+        inline uint32_t
+        inet_addr(const std::string &addr)
         {
             uint32_t ret;
             if (inet_pton(AF_INET, addr.c_str(), &ret) <= 0)
@@ -181,7 +182,7 @@ namespace lang
         }
 
         template <typename A, typename Fun>
-        static inline auto fmap(Fun fun, std::vector<A> const &xs)
+        inline auto fmap(Fun fun, std::vector<A> const &xs)
             -> std::vector<decltype(fun(xs.front()))>
         {
             std::vector< decltype(fun( xs.front() )) > out;

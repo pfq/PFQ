@@ -132,11 +132,6 @@ instance Argumentable Fun where
 data FunctionDescr = FunctionDescr Symbol [Argument] Int
                         deriving (Show)
 
-termComp :: Int -> [FunctionDescr] -> [FunctionDescr]
-termComp n xs = map (\(FunctionDescr sym as next) -> FunctionDescr sym as (cut next)) xs
-                where
-                    cut x = if x == (n + length xs) then (-1) else x
-
 
 -- |Function that takes a SkBuff and returns an Action SkBuff.
 
@@ -189,45 +184,47 @@ f1 >-> f2 = Composition f1 f2
 
 instance Show (Function f) where
 
-        show (MFunction  symb)          = "(MFunction " ++ symb ++ ")"
-        show (MFunction1 symb a)        = "(MFunction " ++ symb ++ " " ++ show a ++ ")"
-        show (MFunction2 symb a b)      = "(MFunction " ++ symb ++ " " ++ show a ++ " " ++ show b ++ ")"
-        show (MFunction1P symb a p)     = "(MFunction " ++ symb ++ " " ++ show a ++ " " ++ show p ++ ")"
+        show (MFunction  symb)           = "(Function " ++ symb ++ ")"
+        show (MFunction1 symb a)         = "(Function " ++ symb ++ " " ++ show a ++ ")"
+        show (MFunction2 symb a b)       = "(Function " ++ symb ++ " " ++ show a ++ " " ++ show b ++ ")"
+        show (MFunction1P symb a p)      = "(Function " ++ symb ++ " " ++ show a ++ " " ++ show p ++ ")"
 
-        show (MFunctionP  symb p)        = "(MFunction " ++ symb ++ " " ++ show p  ++ ")"
-        show (MFunctionPF symb p n1)     = "(MFunction " ++ symb ++ " " ++ show p  ++ " " ++ show n1 ++ ")"
-        show (MFunctionPFF symb p n1 n2) = "(MFunction " ++ symb ++ " " ++ show p  ++ " " ++ show n1 ++ " " ++ show n2 ++ ")"
-        show (MFunctionF symb f)         = "(MFunction " ++ symb ++ " " ++ show f  ++ ")"
-        show (MFunctionFF symb f g)      = "(MFunction " ++ symb ++ " " ++ show f  ++ " " ++ show g ++ ")"
+        show (MFunctionP  symb p)        = "(Function " ++ symb ++ " " ++ show p  ++ ")"
+        show (MFunctionPF symb p n1)     = "(Function " ++ symb ++ " " ++ show p  ++ " " ++ show n1 ++ ")"
+        show (MFunctionPFF symb p n1 n2) = "(Function " ++ symb ++ " " ++ show p  ++ " " ++ show n1 ++ " " ++ show n2 ++ ")"
+        show (MFunctionF symb f)         = "(Function " ++ symb ++ " " ++ show f  ++ ")"
+        show (MFunctionFF symb f g)      = "(Function " ++ symb ++ " " ++ show f  ++ " " ++ show g ++ ")"
 
-        show (Predicate  symb)          = "(Predicate " ++ symb ++  ")"
-        show (Predicate1 symb a)        = "(Predicate " ++ symb ++ " " ++ show a ++ ")"
-        show (Predicate2 symb a b)      = "(Predicate " ++ symb ++ " " ++ show a ++ " " ++ show b ++ ")"
-        show (PredicateR symb p)        = "(Predicate " ++ symb ++ " " ++ show p ++ ")"
-        show (PredicateR1 symb p a)     = "(Predicate " ++ symb ++ " " ++ show p ++ " " ++ show a ++ ")"
+        show (Predicate  symb)           = "(Predicate " ++ symb ++  ")"
+        show (Predicate1 symb a)         = "(Predicate " ++ symb ++ " " ++ show a ++ ")"
+        show (Predicate2 symb a b)       = "(Predicate " ++ symb ++ " " ++ show a ++ " " ++ show b ++ ")"
+        show (PredicateR symb p)         = "(Predicate " ++ symb ++ " " ++ show p ++ ")"
+        show (PredicateR1 symb p a)      = "(Predicate " ++ symb ++ " " ++ show p ++ " " ++ show a ++ ")"
 
-        show (Property  symb)           = "(Property " ++ symb ++ ")"
-        show (Property1 symb a)         = "(Property " ++ symb ++ " " ++ show a ++ ")"
+        show (Property  symb)            = "(Property " ++ symb ++ ")"
+        show (Property1 symb a)          = "(Property " ++ symb ++ " " ++ show a ++ ")"
 
-        show (Combinator1 "not" p)      = "(Combinator not " ++ show p  ++ ")"
-        show (Combinator2 "and" p1 p2)  = "(Combinator and " ++ show p1 ++" " ++ show p2 ++ ")"
-        show (Combinator2 "or"  p1 p2)  = "(Combinator or  " ++ show p1 ++" " ++ show p2 ++ ")"
-        show (Combinator2 "xor" p1 p2)  = "(Combinator xor " ++ show p1 ++" " ++ show p2 ++ ")"
-        show (Combinator1{})            = undefined
-        show (Combinator2 {})           = undefined
+        show (Combinator1 "not" p)       = "(Combinator not " ++ show p  ++ ")"
+        show (Combinator2 "and" p1 p2)   = "(Combinator and " ++ show p1 ++" " ++ show p2 ++ ")"
+        show (Combinator2 "or"  p1 p2)   = "(Combinator or  " ++ show p1 ++" " ++ show p2 ++ ")"
+        show (Combinator2 "xor" p1 p2)   = "(Combinator xor " ++ show p1 ++" " ++ show p2 ++ ")"
+        show (Combinator1 {})            = undefined
+        show (Combinator2 {})            = undefined
 
-        show (Composition a b)          = "(Composition " ++ show a ++ " " ++ show b ++ ")"
+        show (Composition a b)           = "(Composition " ++ show a ++ " " ++ show b ++ ")"
 
--- Pretty class:
+
+-- | Pretty class:
 
 class Pretty x where
         pretty :: x -> String
 
 instance Pretty (Function f) where
-        pretty (MFunction symb)           = symb
-        pretty (MFunction1 symb a)        = "(" ++ symb ++ " " ++ show a ++ ")"
-        pretty (MFunction2 symb a b)      = "(" ++ symb ++ " " ++ show a ++ " " ++ show b ++ " )"
-        pretty (MFunction1P symb a p)     = "(" ++ symb ++ " " ++ show a ++ " " ++ pretty p ++ " )"
+
+        pretty (MFunction symb)            = symb
+        pretty (MFunction1 symb a)         = "(" ++ symb ++ " " ++ show a ++ ")"
+        pretty (MFunction2 symb a b)       = "(" ++ symb ++ " " ++ show a ++ " " ++ show b ++ " )"
+        pretty (MFunction1P symb a p)      = "(" ++ symb ++ " " ++ show a ++ " " ++ pretty p ++ " )"
 
         pretty (MFunctionP symb p)         = "(" ++ symb ++ " " ++ pretty p  ++ ")"
         pretty (MFunctionPF symb p n1)     = "(" ++ symb ++ " " ++ pretty p  ++ " " ++ pretty n1 ++ ")"
@@ -235,22 +232,22 @@ instance Pretty (Function f) where
         pretty (MFunctionF symb f)         = "(" ++ symb ++ " " ++ pretty f  ++ ")"
         pretty (MFunctionFF symb f g)      = "(" ++ symb ++ " " ++ pretty f  ++ " " ++ pretty g ++ ")"
 
-        pretty (Predicate  symb)          = symb
-        pretty (Predicate1 symb a)        = "(" ++ symb ++ " " ++ show a ++ ")"
-        pretty (Predicate2 symb a b)      = "(" ++ symb ++ " " ++ show a ++ " " ++ show b ++ ")"
-        pretty (PredicateR symb p)        = "(" ++ symb ++ " " ++ pretty p ++ ")"
-        pretty (PredicateR1 symb p a)     = "(" ++ symb ++ " " ++ pretty p ++ " " ++ show a ++ ")"
+        pretty (Predicate  symb)           = symb
+        pretty (Predicate1 symb a)         = "(" ++ symb ++ " " ++ show a ++ ")"
+        pretty (Predicate2 symb a b)       = "(" ++ symb ++ " " ++ show a ++ " " ++ show b ++ ")"
+        pretty (PredicateR symb p)         = "(" ++ symb ++ " " ++ pretty p ++ ")"
+        pretty (PredicateR1 symb p a)      = "(" ++ symb ++ " " ++ pretty p ++ " " ++ show a ++ ")"
 
-        pretty (Property symb)            = symb
-        pretty (Property1 symb a)         = "(" ++ symb ++ " " ++ show a ++ ")"
+        pretty (Property symb)             = symb
+        pretty (Property1 symb a)          = "(" ++ symb ++ " " ++ show a ++ ")"
 
-        pretty (Combinator1 "not" p)      = "(not " ++ pretty p ++ ")"
-        pretty (Combinator2 "and" p1 p2)  = "(" ++ pretty p1 ++" && " ++ pretty p2 ++ ")"
-        pretty (Combinator2 "or"  p1 p2)  = "(" ++ pretty p1 ++" || " ++ pretty p2 ++ ")"
-        pretty (Combinator2 "xor" p1 p2)  = "(" ++ pretty p1 ++" ^^ " ++ pretty p2 ++ ")"
-        pretty (Combinator1{} )           = undefined
-        pretty (Combinator2{})            = undefined
-        pretty (Composition a b)          = pretty a ++ " >-> " ++ pretty b
+        pretty (Combinator1 "not" p)       = "(not " ++ pretty p ++ ")"
+        pretty (Combinator2 "and" p1 p2)   = "(" ++ pretty p1 ++" && " ++ pretty p2 ++ ")"
+        pretty (Combinator2 "or"  p1 p2)   = "(" ++ pretty p1 ++" || " ++ pretty p2 ++ ")"
+        pretty (Combinator2 "xor" p1 p2)   = "(" ++ pretty p1 ++" ^^ " ++ pretty p2 ++ ")"
+        pretty (Combinator1{} )            = undefined
+        pretty (Combinator2{})             = undefined
+        pretty (Composition a b)           = pretty a ++ " >-> " ++ pretty b
 
 
 -- Serializable class:
@@ -299,6 +296,7 @@ instance Serializable (Function (a -> m b)) where
 
     serialize _ _ = undefined
 
+
 instance Serializable NetPredicate where
     serialize (Predicate  symb)     n = ([FunctionDescr symb [] (-1) ], n+1)
     serialize (Predicate1 symb x)   n = ([FunctionDescr symb [mkArgument x] (-1) ], n+1)
@@ -327,4 +325,10 @@ instance Serializable NetProperty where
     serialize (Property1 symb x)  n = ([FunctionDescr symb [mkArgument x] (-1) ], n+1)
 
     serialize _ _ = undefined
+
+
+termComp :: Int -> [FunctionDescr] -> [FunctionDescr]
+termComp n xs = map (\(FunctionDescr sym as next) -> FunctionDescr sym as (cut next)) xs
+                where
+                    cut x = if x == (n + length xs) then (-1) else x
 
