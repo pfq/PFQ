@@ -51,9 +51,8 @@ size_t copy_to_user_skbs(struct pfq_rx_opt *ro, struct pfq_skbuff_batch *skbs, u
 
 		return sent;
         }
-	else {
+	else
 		__sparse_add(&ro->stats.lost, len, cpu);
-	}
 
         return sent;
 }

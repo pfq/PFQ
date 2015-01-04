@@ -68,9 +68,8 @@ static int vlan_init(arguments_t args)
                         	mem[n] = 1;
 			}
 		}
-		else {
+		else
 			mem[vid & VLAN_VID_MASK] = 1;
-		}
 
 		pr_devel("[PFQ|init] vlan_id filter: -> vid %d\n", vid);
 	}

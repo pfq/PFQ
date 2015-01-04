@@ -249,9 +249,8 @@ struct sk_buff * ____pfq_alloc_skb_pool(unsigned int size, gfp_t priority, int f
                         }
                 }
 #ifdef PFQ_USE_EXTENDED_PROC
-		else {
+		else
                 	sparse_inc(&memory_stats.rc_miss);
-		}
 #endif
         }
 #endif

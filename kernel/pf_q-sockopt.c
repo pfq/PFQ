@@ -54,6 +54,7 @@ int pfq_getsockopt(struct socket *sock,
 
         if (get_user(len, optlen))
                 return -EFAULT;
+
         if (len < 0)
                 return -EINVAL;
 
@@ -414,8 +415,7 @@ int pfq_setsockopt(struct socket *sock,
                 	return err;
 
                 rcu_read_lock();
-                if (!dev_get_by_index_rcu(sock_net(&so->sk), bind.if_index))
-                {
+                if (!dev_get_by_index_rcu(sock_net(&so->sk), bind.if_index)) {
                         rcu_read_unlock();
                         pr_devel("[PFQ|%d] bind: invalid if_index=%d\n", so->id, bind.if_index);
                         return -EPERM;
@@ -442,8 +442,7 @@ int pfq_setsockopt(struct socket *sock,
                 	return err;
 
                 rcu_read_lock();
-                if (!dev_get_by_index_rcu(sock_net(&so->sk), bind.if_index))
-                {
+                if (!dev_get_by_index_rcu(sock_net(&so->sk), bind.if_index)) {
                         rcu_read_unlock();
                         pr_devel("[PFQ|%d] unbind: invalid if_index=%d\n", so->id, bind.if_index);
                         return -EPERM;
@@ -464,16 +463,14 @@ int pfq_setsockopt(struct socket *sock,
                         return -EFAULT;
 
                 rcu_read_lock();
-                if (!dev_get_by_index_rcu(sock_net(&so->sk), info.if_index))
-                {
+                if (!dev_get_by_index_rcu(sock_net(&so->sk), info.if_index)) {
                         rcu_read_unlock();
                         pr_devel("[PFQ|%d] egress bind: invalid if_index=%d\n", so->id, info.if_index);
                         return -EPERM;
                 }
                 rcu_read_unlock();
 
-                if (info.hw_queue < -1)
-                {
+                if (info.hw_queue < -1) {
                         pr_devel("[PFQ|%d] egress bind: invalid queue=%d\n", so->id, info.hw_queue);
                         return -EPERM;
                 }
@@ -631,12 +628,12 @@ int pfq_setsockopt(struct socket *sock,
                 if (err == -EPERM)
                 	return 0;
 
-                if (fprog.fcode.len > 0)  /* set the filter */
-                {
+                if (fprog.fcode.len > 0) {  /* set the filter */
+
                         struct sk_filter *filter;
 
-			if (fprog.fcode.len == 1) /* check for dummey BPF_CLASS == BPF_RET */
-			{
+			if (fprog.fcode.len == 1) { /* check for dummey BPF_CLASS == BPF_RET */
+
                        	 	if (BPF_CLASS(fprog.fcode.filter[0].code) == BPF_RET) {
                                 	pr_devel("[PFQ|%d] fprog: BPF_RET optimized out!\n", so->id);
                                 	return 0;
@@ -644,8 +641,7 @@ int pfq_setsockopt(struct socket *sock,
 			}
 
                         filter = pfq_alloc_sk_filter(&fprog.fcode);
-                        if (filter == NULL)
-                        {
+                        if (filter == NULL) {
                                 pr_devel("[PFQ|%d] fprog error: alloc_sk_filter for gid=%d\n", so->id, fprog.gid);
                                 return -EINVAL;
                         }
@@ -658,10 +654,9 @@ int pfq_setsockopt(struct socket *sock,
 
                         pr_devel("[PFQ|%d] fprog: gid=%d (fprog len %d bytes)\n", so->id, fprog.gid, fprog.fcode.len);
                 }
-                else 	/* reset the filter */
-                {
-                        __pfq_set_group_filter(fprog.gid, NULL);
+                else { 	/* reset the filter */
 
+                        __pfq_set_group_filter(fprog.gid, NULL);
                         pr_devel("[PFQ|%d] fprog: gid=%d (resetting filter)\n", so->id, fprog.gid);
                 }
 
@@ -712,16 +707,13 @@ int pfq_setsockopt(struct socket *sock,
                         return -EPERM;
                 }
 
-                if (filt.vid  == -1) /* any */
-                {
+                if (filt.vid  == -1) { /* any */
                         int i;
                         for(i = 1; i < 4095; i++)
                                 __pfq_set_group_vlan_filter(filt.gid, filt.toggle, i);
                 }
                 else
-                {
                         __pfq_set_group_vlan_filter(filt.gid, filt.toggle, filt.vid);
-                }
 
                 pr_devel("[PFQ|%d] vlan_set filter vid %d for gid=%d\n", so->id, filt.vid, filt.gid);
         } break;
@@ -743,16 +735,14 @@ int pfq_setsockopt(struct socket *sock,
 		}
 
                 rcu_read_lock();
-                if (!dev_get_by_index_rcu(sock_net(&so->sk), info.if_index))
-                {
+                if (!dev_get_by_index_rcu(sock_net(&so->sk), info.if_index)) {
                         rcu_read_unlock();
                         pr_devel("[PFQ|%d] TX bind: invalid if_index=%d\n", so->id, info.if_index);
                         return -EPERM;
                 }
                 rcu_read_unlock();
 
-                if (info.hw_queue < -1)
-                {
+                if (info.hw_queue < -1) {
                         pr_devel("[PFQ|%d] TX bind: invalid queue=%d\n", so->id, info.hw_queue);
                         return -EPERM;
                 }

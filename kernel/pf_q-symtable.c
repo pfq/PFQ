@@ -146,8 +146,7 @@ pfq_symtable_register_functions(const char *module, struct list_head *category, 
 	int i = 0;
 	for(; fun[i].symbol != NULL; i++)
 	{
-		if (pfq_symtable_register_function(module, category, fun[i].symbol, fun[i].ptr, fun[i].init, fun[i].fini, fun[i].signature) < 0)
-                {
+		if (pfq_symtable_register_function(module, category, fun[i].symbol, fun[i].ptr, fun[i].init, fun[i].fini, fun[i].signature) < 0) {
                         /* unregister all functions */
                         int j = 0;
 

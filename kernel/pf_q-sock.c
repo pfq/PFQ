@@ -42,8 +42,7 @@ int pfq_get_free_sock_id(struct pfq_sock * so)
         int n = 0;
         for(; n < Q_MAX_ID; n++)
         {
-                if (!atomic_long_cmpxchg(pfq_sock_vector + n, 0, (long)so))
-                {
+                if (!atomic_long_cmpxchg(pfq_sock_vector + n, 0, (long)so)) {
                         atomic_inc(&pfq_sock_count);
                         return n;
                 }
@@ -61,8 +60,7 @@ struct pfq_sock *
 pfq_get_sock_by_id(size_t id)
 {
         struct pfq_sock *so;
-        if (unlikely(id >= Q_MAX_ID))
-        {
+        if (unlikely(id >= Q_MAX_ID)) {
                 pr_devel("[PFQ] pfq_devmap_freeid: bad id=%zd!\n", id);
                 return NULL;
         }
@@ -74,8 +72,7 @@ pfq_get_sock_by_id(size_t id)
 
 void pfq_release_sock_id(int id)
 {
-        if (unlikely(id >= Q_MAX_ID || id < 0))
-        {
+        if (unlikely(id >= Q_MAX_ID || id < 0)) {
                 pr_devel("[PFQ] pfq_devmap_freeid: bad id=%d!\n", id);
                 return;
         }

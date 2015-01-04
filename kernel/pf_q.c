@@ -344,8 +344,8 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 
 			/* check for bp filter */
 
-			if (bf_filter_enabled)
-			{
+			if (bf_filter_enabled) {
+
 				struct sk_filter *bpf = (struct sk_filter *)atomic_long_read(&this_group->bp_filter);
 
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(3,15,0))
@@ -449,10 +449,9 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 					sock_mask |= eligible_mask;
 				}
 			}
-			else {
-				/* save a reference of the current packet */
-				pktref.queue[pktref.len++] = buff;
+			else { /* save a reference of the current packet */
 
+				pktref.queue[pktref.len++] = buff;
 				sock_mask |= atomic_long_read(&this_group->sock_mask[0]);
 			}
 
@@ -554,8 +553,8 @@ pfq_packet_rcv
 		goto out;
 
 	if (skb->peeked) {
-    	skb->peeked = 0;
-    	goto out;
+    		skb->peeked = 0;
+    		goto out;
 	}
 
 	skb = skb_share_check(skb, GFP_ATOMIC);
@@ -620,8 +619,8 @@ pfq_create(
         sock->state = SS_UNCONNECTED;
 
         sk = sk_alloc(net, PF_INET, GFP_KERNEL, &pfq_proto);
-        if (sk == NULL)
-        {
+        if (sk == NULL) {
+
                 printk(KERN_WARNING "[PFQ] error: could not allocate a socket\n");
                 return -ENOMEM;
         }
@@ -637,8 +636,8 @@ pfq_create(
         /* get a unique id for this sock */
 
         so->id = pfq_get_free_sock_id(so);
-        if (so->id == -1)
-        {
+        if (so->id == -1) {
+
                 printk(KERN_WARNING "[PFQ] error: resource exhausted\n");
                 sk_free(sk);
                 return -EBUSY;

@@ -55,9 +55,7 @@ __pfq_alloc_skb(unsigned int size, gfp_t priority, int fclone, int node)
         struct local_data *this_cpu = __this_cpu_ptr(cpu_data);
 
         if (atomic_read(&this_cpu->enable_skb_pool))
-        {
                 return ____pfq_alloc_skb_pool(size, priority, fclone, node, &this_cpu->rx_pool);
-        }
 #endif
         return __alloc_skb(size, priority, fclone, node);
 }

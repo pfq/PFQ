@@ -400,9 +400,9 @@ pfq_get_groups(int id)
 struct pfq_group *
 pfq_get_group(int gid)
 {
-        if (gid < 0 || gid >= Q_MAX_GROUP) {
+        if (gid < 0 || gid >= Q_MAX_GROUP)
                 return NULL;
-        }
+
         return &pfq_groups[gid];
 }
 

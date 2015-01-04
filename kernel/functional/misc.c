@@ -232,10 +232,8 @@ log_packet(arguments_t args, SkBuff b)
 
 		}
 
-	} else {
-
+	} else
 		printk(KERN_INFO "[PFQ] ETH proto %x\n", ntohs(eth_hdr(b.skb)->h_proto));
-	}
 
         return Pass(b);
 }

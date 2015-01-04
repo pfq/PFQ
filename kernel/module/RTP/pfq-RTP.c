@@ -99,13 +99,11 @@ heuristic_rtp(SkBuff b, bool steer)
 		if (dest < 1024 || source < 1024)
         		return ret;
 
-		if ((dest & 1) && (source & 1))  /* rtcp */
-		{
+		if ((dest & 1) && (source & 1)) { /* rtcp */
                 	if (hdr->un.rtcp.rh_type != 200)  /* SR  */
         			return ret;
 		}
-		else if (!((dest & 1) || (source & 1)))
-		{
+		else if (!((dest & 1) || (source & 1))) {
                 	uint8_t pt = hdr->un.rtp.rh_pt;
                  	if (!valid_codec(pt))
         			return ret;

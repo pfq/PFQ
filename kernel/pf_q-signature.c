@@ -243,9 +243,8 @@ compare_argument(string_view_t a, string_view_t b)
  			ap = skip_white_space(ap, str_a.end);
  			bp = skip_white_space(bp, str_b.end);
 		}
-		else {
+		else
  			ap++, bp++;
-		}
  	}
 
 	return ap == str_a.end && bp == str_b.end;

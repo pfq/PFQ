@@ -40,8 +40,7 @@ static inline
 int mpsc_queue_ctor(mpsc_queue_t * self)
 {
         struct sk_buff * stub = dev_alloc_skb(1);
-        if (stub != NULL)
-        {
+        if (stub != NULL) {
                 stub->next = 0;
                 atomic_long_set(&self->head, (long)stub);
                 self->tail = stub;
@@ -88,8 +87,7 @@ struct sk_buff * mpsc_queue_pop(mpsc_queue_t *self)
         struct sk_buff * tail = self->tail;
         struct sk_buff * next = tail->next;
 
-        if (next)
-        {
+        if (next) {
                 self->tail = next;
                 tail->prev = next;   /* data in this case is the skb itself: tail->data = next->data; */
                 return tail;

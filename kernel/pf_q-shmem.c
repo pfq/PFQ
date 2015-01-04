@@ -96,8 +96,8 @@ pfq_hugepage_map(struct pfq_shmem_descr *shmem, unsigned long addr, size_t size)
 	shmem->npages = PAGE_ALIGN(size) / PAGE_SIZE;
 	shmem->hugepages = vmalloc(shmem->npages * sizeof(struct page *));
 
-	if (get_user_pages_fast(addr, shmem->npages, 1, shmem->hugepages) != shmem->npages)
-	{
+	if (get_user_pages_fast(addr, shmem->npages, 1, shmem->hugepages) != shmem->npages) {
+
 		vfree(shmem->hugepages);
 
 		shmem->npages = 0;

@@ -134,9 +134,8 @@ __gc_add_dev_to_targets(struct net_device *dev, struct gc_fwd_targets *ts)
 		ts->cnt_total++;
 		ts->num++;
 	}
-	else {
+	else
 		printk(KERN_INFO "[PFQ] GC: forward pool exhausted!\n");
-	}
 }
 
 
