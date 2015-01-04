@@ -275,6 +275,7 @@ strdup_user(const char __user *str)
 
         if (len == 0)
                 return NULL;
+
         ret = (char *)kmalloc(len, GFP_KERNEL);
         if (!ret)
                 return NULL;
@@ -375,7 +376,7 @@ pfq_context_alloc(struct pfq_computation_descr const *descr)
 		{
 			if (fun->arg[i].ptr) {
 
-				size_t s = is_arg_string(&fun->arg[i]) ? strlen_user(fun->arg[i].ptr)+1 :
+				size_t s = is_arg_string(&fun->arg[i]) ? strlen_user(fun->arg[i].ptr) :
 					   is_arg_vector(&fun->arg[i]) ? fun->arg[i].size * fun->arg[i].nelem :
 					   is_arg_data  (&fun->arg[i]) ? (fun->arg[i].size > 8 ? fun->arg[i].size : 0 ) : 0;
 
@@ -406,7 +407,7 @@ pfq_context_alloc(struct pfq_computation_descr const *descr)
 		{
 			if (fun->arg[i].ptr) {
 
-				size_t s = is_arg_string(&fun->arg[i]) ? strlen_user(fun->arg[i].ptr)+1 :
+				size_t s = is_arg_string(&fun->arg[i]) ? strlen_user(fun->arg[i].ptr) :
 					   is_arg_vector(&fun->arg[i]) ? fun->arg[i].size * fun->arg[i].nelem :
 					   is_arg_data  (&fun->arg[i]) ? (fun->arg[i].size > 8 ? fun->arg[i].size : 0 ) : 0;
 
@@ -687,7 +688,7 @@ pfq_computation_rtlink(struct pfq_computation_descr const *descr, struct pfq_com
 		{
 			if (is_arg_string(&fun->arg[i])) {
 
-				char *str = pod_user(&context, fun->arg[i].ptr, strlen_user(fun->arg[i].ptr)+1);
+				char *str = pod_user(&context, fun->arg[i].ptr, strlen_user(fun->arg[i].ptr));
 				if (str == NULL) {
 					pr_devel("[PFQ] %zu: pod_user: internal error!\n", n);
 					return -EPERM;
