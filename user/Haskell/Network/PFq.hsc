@@ -165,6 +165,8 @@ module Network.PFq
 
 import Data.Word
 import Data.Bits
+import Data.List (intercalate)
+
 import qualified Data.ByteString.Char8 as C
 import Data.ByteString.Unsafe
 import qualified Data.StorableVector as SV
@@ -918,8 +920,8 @@ makeCounters ptr = do
     return $ Counters $ map fromIntegral (cs :: [CULong])
 
 
-padArguments :: [Argument] -> [Argument]
-padArguments xs = xs ++ replicate (4 - length xs) ArgNull
+padArguments :: Int -> [Argument] -> [Argument]
+padArguments n xs = xs ++ replicate (n - length xs) ArgNull
 
 
 withSingleArg :: Argument
@@ -927,10 +929,11 @@ withSingleArg :: Argument
               -> IO a
 withSingleArg arg callback =
     case arg of
-        ArgNull                    -> callback (ptrToIntPtr nullPtr, 0                      ,  0)
-        ArgFun i                   -> callback (ptrToIntPtr nullPtr, fromIntegral i         , -1)
-        ArgString s                -> withCString s $ \s' -> callback (ptrToIntPtr s', 0    , -1)
-        ArgVector xs               -> let vec = SV.pack xs in SV.withStartPtr vec $ \ ptr len -> callback (ptrToIntPtr ptr, fromIntegral $ sizeOf (head xs), fromIntegral len)
+        ArgNull       -> callback (ptrToIntPtr nullPtr, 0                      ,  0)
+        ArgFun i      -> callback (ptrToIntPtr nullPtr, fromIntegral i         , -1)
+        ArgString s   -> withCString s $ \ ptr -> callback (ptrToIntPtr ptr, 0 , -1)
+        ArgVector xs  -> let vec = SV.pack xs in SV.withStartPtr vec $ \ ptr len -> callback (ptrToIntPtr ptr, fromIntegral $ sizeOf (head xs), fromIntegral len)
+        ArgSVector xs -> let s = intercalate "\x1e" xs in withCString s $ \ ptr -> callback (ptrToIntPtr ptr, 0, fromIntegral (length xs))
         ArgData v -> alloca $ \ptr -> poke ptr v >> callback (ptrToIntPtr ptr, fromIntegral $ sizeOf v, -1)
 
 
@@ -941,7 +944,7 @@ withFunDescr :: FunctionDescr
              -> IO a
 withFunDescr (FunctionDescr symbol args next) callback =
     withCString symbol $ \ symbol' ->
-        withMany withSingleArg (padArguments args) $ \marArgs ->
+        withMany withSingleArg (padArguments 4 args) $ \marArgs ->
             callback (symbol', marArgs, fromIntegral next)
 
 
@@ -982,9 +985,9 @@ groupComputation hdl gid comp = do
         pokeByteOff ptr (sizeOf(undefined :: CSize)) (0 :: CSize)        -- entry_point: always the first one!
         withMany withFunDescr descrList $ \marshList -> do
             let offset n = sizeOf(undefined :: CSize) * 2 + getConstant group_fun_descr_size * n
-            forM_ (zip [0..] marshList) $ \(n, (symbol, ps, next)) ->
+            forM_ (zip [0..] marshList) $ \(n, (symbol, parms, next)) ->
                 pokeByteOff ptr (offset n)
-                    (StorableFunDescr symbol ps (fromIntegral next))
+                    (StorableFunDescr symbol parms (fromIntegral next))
             pfq_set_group_computation hdl (fromIntegral gid) ptr >>= throwPFqIf_ hdl (== -1)
 
 

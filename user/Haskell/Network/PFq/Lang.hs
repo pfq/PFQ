@@ -96,15 +96,17 @@ data NetDevice = Dev String | DevQueue String Int
 data Argument = forall a. (Show a, Storable a) => ArgData a     |
                 forall a. (Show a, Storable a) => ArgVector [a] |
                 ArgString String                                |
+                ArgSVector [String]                             |
                 ArgFun Int                                      |
                 ArgNull
 
 instance Show Argument where
-    show (ArgNull)      = "()"
-    show (ArgFun n)     = "f(" ++ show n ++ ")"
-    show (ArgString xs) = xs
-    show (ArgData x)    = show x
-    show (ArgVector xs) = show xs
+    show (ArgNull)       = "()"
+    show (ArgFun n)      = "f(" ++ show n ++ ")"
+    show (ArgString xs)  = xs
+    show (ArgData x)     = show x
+    show (ArgVector xs)  = show xs
+    show (ArgSVector xs) = show xs
 
 
 -- | Argumentable class, a typeclass for building function Arguments.
@@ -114,6 +116,9 @@ class Argumentable a where
 
 instance Argumentable String where
     mkArgument = ArgString
+
+instance Argumentable [String] where
+    mkArgument xs = ArgSVector xs
 
 instance (Show a, Storable a) => Argumentable a where
     mkArgument = ArgData

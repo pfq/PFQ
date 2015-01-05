@@ -224,6 +224,21 @@ namespace lang
             return Argument{ std::dynamic_pointer_cast<StorableShowBase>(ptr), 0, static_cast<size_t>(-1) };
         }
 
+        static Argument SVector(std::vector<std::string> const &svec)
+        {
+            std::string str;
+            int n = 0;
+            for(auto const & s : svec)
+            {
+                if (n++)
+                    str += '\x1e';
+                str += s;
+            }
+
+            auto ptr = std::make_shared<StorableShow<std::string>>(std::move(str));
+            return Argument{ std::dynamic_pointer_cast<StorableShowBase>(ptr), 0, svec.size() };
+        }
+
         static Argument Fun(std::size_t n)
         {
             return Argument{ std::shared_ptr<StorableShowBase>(), n, static_cast<size_t>(-1) };
@@ -260,6 +275,11 @@ namespace lang
     inline Argument make_argument(std::vector<Tp> const &pod)
     {
         return Argument::Vector(pod);
+    }
+
+    inline Argument make_argument(std::vector<std::string> const &vec)
+    {
+        return Argument::SVector(vec);
     }
 
     inline std::string
