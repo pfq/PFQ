@@ -711,11 +711,11 @@ par'            = MFunctionFF "par"           :: NetFunction  -> NetFunction -> 
 --
 -- > when' (vland_id [1,13,42,43]) (msg_log "Got a packet!")
 vlan_id  :: [CInt] -> NetPredicate
-vlan_id ids = Predicate1 "vlan_id" (Vector ids)
+vlan_id ids = Predicate1 "vlan_id" ids
 
 -- | Monadic function, counterpart of 'vlan_id' function.
 vlan_id_filter  :: [CInt] -> NetFunction
-vlan_id_filter ids = MFunction1 "vlan_id_filter" (Vector ids)
+vlan_id_filter ids = MFunction1 "vlan_id_filter" ids
 
 -- | Predicate that evaluates to /True/ when the source or the destination address
 -- of the packet matches the ones specified by the bloom list.
@@ -742,13 +742,13 @@ bloom_src_filter  :: CInt -> [HostName] -> NetFunction
 -- | Monadic counterpart of 'bloom_dst' function.
 bloom_dst_filter  :: CInt -> [HostName] -> NetFunction
 
-bloom            m hs = let ips = unsafePerformIO (mapM inet_addr hs) in Predicate2 "bloom"     m (Vector ips)
-bloom_src        m hs = let ips = unsafePerformIO (mapM inet_addr hs) in Predicate2 "bloom_src" m (Vector ips)
-bloom_dst        m hs = let ips = unsafePerformIO (mapM inet_addr hs) in Predicate2 "bloom_dst" m (Vector ips)
+bloom            m hs = let ips = unsafePerformIO (mapM inet_addr hs) in Predicate2 "bloom" m ips
+bloom_src        m hs = let ips = unsafePerformIO (mapM inet_addr hs) in Predicate2 "bloom_src" m ips
+bloom_dst        m hs = let ips = unsafePerformIO (mapM inet_addr hs) in Predicate2 "bloom_dst" m ips
 
-bloom_filter     m hs = let ips = unsafePerformIO (mapM inet_addr hs) in MFunction2 "bloom_filter"     m (Vector ips)
-bloom_src_filter m hs = let ips = unsafePerformIO (mapM inet_addr hs) in MFunction2 "bloom_src_filter" m (Vector ips)
-bloom_dst_filter m hs = let ips = unsafePerformIO (mapM inet_addr hs) in MFunction2 "bloom_dst_filter" m (Vector ips)
+bloom_filter     m hs = let ips = unsafePerformIO (mapM inet_addr hs) in MFunction2 "bloom_filter"  m ips
+bloom_src_filter m hs = let ips = unsafePerformIO (mapM inet_addr hs) in MFunction2 "bloom_src_filter" m ips
+bloom_dst_filter m hs = let ips = unsafePerformIO (mapM inet_addr hs) in MFunction2 "bloom_dst_filter" m ips
 
 -- bloom filter, utility functions:
 

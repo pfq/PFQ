@@ -58,7 +58,7 @@ deliver = MFunction1 "deliver" :: CInt -> NetFunction
 dummy       = MFunction1 "dummy"         :: CInt -> NetFunction
 hdummy      = MFunctionP  "hdummy"       :: NetPredicate -> NetFunction
 vdummy  :: [CInt] -> NetFunction
-vdummy  xs  = MFunction1 "vdummy" (Vector xs)
+vdummy  xs  = MFunction1 "vdummy" xs
 crc16       = MFunction "crc16" :: NetFunction
 
 

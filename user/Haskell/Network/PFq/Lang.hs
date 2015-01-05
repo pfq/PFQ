@@ -33,7 +33,6 @@
 {-# LANGUAGE TypeSynonymInstances #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE FlexibleContexts #-}
-
 {-# LANGUAGE GADTs #-}
 
 {-# OPTIONS_GHC -fno-warn-unused-binds #-}
@@ -47,7 +46,6 @@ module Network.PFq.Lang
         Pretty(..),
         Function(..),
         Serializable(..),
-        Vector(..),
         FunctionDescr(..),
         Action,
         SkBuff,
@@ -78,9 +76,6 @@ type Symbol = String
 
 newtype SkBuff = SkBuff ()
 
--- |Vector data type
-
-newtype Vector a = Vector [a]
 
 -- |Function data type
 
@@ -109,9 +104,6 @@ instance Show Argument where
     show (ArgVector xs) = show xs
 
 
-instance (Show a) => Show (Vector a) where
-    show (Vector xs) = show xs
-
 
 class Argumentable a where
     mkArgument :: a -> Argument
@@ -122,8 +114,9 @@ instance Argumentable String where
 instance (Show a, Storable a) => Argumentable a where
     mkArgument = ArgData
 
-instance (Show a, Storable a) => Argumentable (Vector a) where
-    mkArgument (Vector xs) = ArgVector xs
+
+instance (Show a, Storable a) => Argumentable [a] where
+    mkArgument xs = ArgVector xs
 
 instance Argumentable Fun where
     mkArgument (Fun n) = ArgFun n
@@ -250,7 +243,7 @@ instance Pretty (Function f) where
         pretty (Composition a b)           = pretty a ++ " >-> " ++ pretty b
 
 
--- Serializable class:
+-- | Serializable class:
 
 
 class Serializable a where
