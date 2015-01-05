@@ -698,10 +698,10 @@ pfq_computation_rtlink(struct pfq_computation_descr const *descr, struct pfq_com
 					char *end;
 					*(ptr++) = str;
 					end = strchr(str, '\x1e');
-					if (end != NULL) {
-						*end = '\0';
-						str = end+1;
-					}
+					if (end == NULL)
+						break;
+					*end = '\0';
+					str = end+1;
 				}
 
 				comp->node[n].fun.arg[i].value = (ptrdiff_t)base_ptr;
