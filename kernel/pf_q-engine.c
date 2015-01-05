@@ -85,24 +85,20 @@ signature_by_user_symbol(const char __user *symb)
         return entry->signature;
 }
 
+
 static void *
 pod_memory_get(void **ptr, size_t size)
 {
-        size_t *s;
+        void *ret;
 
        	if (size == 0)
        		return NULL;
 
-        s = *(size_t **)ptr;
+        ret = *ptr;
 
-        if (*s != size) {
-                pr_devel("[PFQ] pod_user: memory slot is %zu!\n", *s);
-                return NULL;
-	}
+        *ptr += ALIGN(size, 8);
 
-        *ptr = (char *)(s+1) + ALIGN(size, 8);
-
-        return s+1;
+        return ret;
 }
 
 
@@ -364,8 +360,8 @@ pfq_computation_alloc (struct pfq_computation_descr const *descr)
 void *
 pfq_context_alloc(struct pfq_computation_descr const *descr)
 {
-        size_t size = 0, n = 0, *ptr;
-        void *r;
+        size_t size = 0, n = 0;
+        void *ret;
 
         for(; n < descr->size; n++)
         {
@@ -376,50 +372,23 @@ pfq_context_alloc(struct pfq_computation_descr const *descr)
 		{
 			if (fun->arg[i].ptr) {
 
-				size_t s = is_arg_string(&fun->arg[i]) ? strlen_user(fun->arg[i].ptr) :
-					   is_arg_vector(&fun->arg[i]) ? fun->arg[i].size * fun->arg[i].nelem :
-					   is_arg_data  (&fun->arg[i]) ? (fun->arg[i].size > 8 ? fun->arg[i].size : 0 ) : 0;
+				size_t s = is_arg_string(&fun->arg[i])        ? strlen_user(fun->arg[i].ptr) :
+					   is_arg_vector(&fun->arg[i]) 	      ? fun->arg[i].size * fun->arg[i].nelem :
+					   is_arg_data  (&fun->arg[i]) 	      ? (fun->arg[i].size > 8 ? fun->arg[i].size : 0 ) : 0;
 
-				if (s) {
-					size += sizeof(size_t) + ALIGN(s, 8);
-				}
+				size += ALIGN(s, 8);
 			}
 		}
         }
 
-        r = kmalloc(size, GFP_KERNEL);
-
-        if (r == NULL) {
-                pr_devel("[PFQ] context_alloc: could not allocate %zu bytes!\n", size);
+        ret = kmalloc(size, GFP_KERNEL);
+        if (ret == NULL) {
+                printk(KERN_INFO "[PFQ] context_alloc: could not allocate %zu bytes!\n", size);
                 return NULL;
         }
 
         pr_devel("[PFQ] context_alloc: %zu bytes allocated.\n", size);
-
-        ptr = (size_t *)r;
-
-        for(n = 0; n < descr->size; n++)
-        {
-        	struct pfq_functional_descr const * fun = &descr->fun[n];
-
-        	int i;
-        	for(i = 0; i < sizeof(descr->fun[i].arg)/sizeof(descr->fun[i].arg[0]); i++)
-		{
-			if (fun->arg[i].ptr) {
-
-				size_t s = is_arg_string(&fun->arg[i]) ? strlen_user(fun->arg[i].ptr) :
-					   is_arg_vector(&fun->arg[i]) ? fun->arg[i].size * fun->arg[i].nelem :
-					   is_arg_data  (&fun->arg[i]) ? (fun->arg[i].size > 8 ? fun->arg[i].size : 0 ) : 0;
-
-				if (s) {
-					* ptr = s;
-				  	  ptr = (size_t *)((char *)(ptr+1) + ALIGN(s, 8));
-				}
-			}
-		}
-        }
-
-        return r;
+        return ret;
 }
 
 
