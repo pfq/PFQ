@@ -33,11 +33,44 @@
 #include <type_traits>
 
 #include <linux/pf_q.h>
+#include <arpa/inet.h>
 
 namespace pfq
 {
 namespace lang
 {
+    /* ipv4_t, network byte order type with converting constructor
+     */
+
+    struct ipv4_t
+    {
+        ipv4_t() = default;
+
+        ipv4_t(const char *addr)
+        {
+            if (inet_pton(AF_INET, addr, &value) <= 0)
+                throw std::runtime_error("pfq::lang::ipv4_t");
+        }
+
+        uint32_t value;
+    };
+
+    inline std::string
+    show(ipv4_t value)
+    {
+        char buff[16];
+        if (inet_ntop(AF_INET, &value, buff, sizeof(buff)) != NULL)
+            throw std::runtime_error("pfq::lang::inet_ntop");
+
+        return buff;
+    }
+
+    inline std::string
+    pretty(ipv4_t value)
+    {
+        return show(value);
+    }
+
     //////// pfq_functional_descr:
 
     using ::pfq_functional_descr;

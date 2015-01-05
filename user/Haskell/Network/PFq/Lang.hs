@@ -41,6 +41,7 @@ module Network.PFq.Lang
     (
         -- * Basic types
 
+        IPv4(..),
         NetDevice(..),
         Argument(..),
         Pretty(..),
@@ -59,9 +60,30 @@ module Network.PFq.Lang
     ) where
 
 
+import Network.Socket
 import Foreign.Storable
+import Foreign.Storable.Newtype as Store
 
 import Data.Word
+import Data.String
+import System.IO.Unsafe
+
+
+-- | IPv4 data type
+
+newtype IPv4 = IPv4 { getIP4Address :: HostAddress }
+
+instance IsString IPv4 where
+    fromString xs = IPv4 $ unsafePerformIO (inet_addr xs)
+
+instance Storable IPv4 where
+    sizeOf    = Store.sizeOf getIP4Address
+    alignment = Store.alignment getIP4Address
+    peek      = Store.peek IPv4
+    poke      = Store.poke getIP4Address
+
+instance Show IPv4 where
+    show a = unsafePerformIO $ inet_ntoa (getIP4Address a)
 
 
 -- |Symbol is a 'String' representing the name of a function.
