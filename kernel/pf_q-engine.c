@@ -569,7 +569,7 @@ pfq_computation_init(struct pfq_computation_tree *comp)
 	{
 		if (comp->node[n].init) {
 
-                	pr_devel("[PFQ|init] %zu: running computation init %pF...\n", n, comp->node[n].init);
+                	pr_devel("[PFQ] %zu: initializing computation %pF...\n", n, comp->node[n].init);
 
 			if (comp->node[n].init( &comp->node[n].fun ) < 0) {
 				printk(KERN_INFO "[PFQ] computation_init: error in function (%zu)!\n", n);
@@ -591,7 +591,7 @@ pfq_computation_fini(struct pfq_computation_tree *comp)
 	{
 		if (comp->node[n].fini && comp->node[n].initialized) {
 
-                	pr_devel("[PFQ|init] %zu: running computation fini %pF...\n", n, comp->node[n].fini);
+                	pr_devel("[PFQ] %zu: finalizing computation %pF...\n", n, comp->node[n].fini);
 
 			if (comp->node[n].fini( &comp->node[n].fun ) < 0) {
 				printk(KERN_INFO "[PFQ] computation_fini: error in function (%zu)!\n", n);
