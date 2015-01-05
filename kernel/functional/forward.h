@@ -54,7 +54,7 @@ forward_class(arguments_t args, SkBuff b)
 
         if (!c) {
                 if (printk_ratelimit())
-                        printk(KERN_INFO "[PFQ] forward class: internal error!\n");
+                        printk(KERN_INFO "[PFQ/lang] forward class: internal error!\n");
                 return Pass(b);
         }
 
@@ -68,7 +68,7 @@ forward_deliver(arguments_t args, SkBuff b)
 
         if (!c) {
                 if (printk_ratelimit())
-                        printk(KERN_INFO "[PFQ] deliver: internal error!\n");
+                        printk(KERN_INFO "[PFQ/lang] deliver: internal error!\n");
                 return Pass(b);
         }
 

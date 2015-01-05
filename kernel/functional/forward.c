@@ -49,7 +49,7 @@ forwardIO(arguments_t args, SkBuff b)
 
 	if (dev == NULL) {
                 if (printk_ratelimit())
-                        printk(KERN_INFO "[PFQ] forward: device error!\n");
+                        printk(KERN_INFO "[PFQ/lang] forward: device error!\n");
 		sparse_inc(&global_stats.quit);
 		sparse_inc(&stats->quit);
                 return Pass(b);
@@ -58,7 +58,7 @@ forwardIO(arguments_t args, SkBuff b)
 	nskb = skb_clone(b.skb, GFP_ATOMIC);
 	if (!nskb) {
                 if (printk_ratelimit())
-        		printk(KERN_INFO "[PFQ] forward pfq_xmit %s: no memory!\n", dev->name);
+        		printk(KERN_INFO "[PFQ/lang] forward pfq_xmit %s: no memory!\n", dev->name);
 		sparse_inc(&global_stats.quit);
 		sparse_inc(&stats->quit);
         	return Pass(b);
@@ -66,7 +66,7 @@ forwardIO(arguments_t args, SkBuff b)
 
 	if (pfq_xmit(nskb, dev, nskb->queue_mapping) != 1) {
                 if (printk_ratelimit())
-                        printk(KERN_INFO "[PFQ] forward pfq_xmit: error on device %s!\n", dev->name);
+                        printk(KERN_INFO "[PFQ/lang] forward pfq_xmit: error on device %s!\n", dev->name);
 
 		sparse_inc(&global_stats.disc);
 		sparse_inc(&stats->disc);
@@ -87,7 +87,7 @@ forward(arguments_t args, SkBuff b)
 
 	if (dev == NULL) {
                 if (printk_ratelimit())
-                        printk(KERN_INFO "[PFQ] forward: device error!\n");
+                        printk(KERN_INFO "[PFQ/lang] forward: device error!\n");
                 return Pass(b);
 	}
 
@@ -142,7 +142,7 @@ bridge(arguments_t args, SkBuff b)
 
 	if (dev == NULL) {
                 if (printk_ratelimit())
-                        printk(KERN_INFO "[PFQ] bridge: device error!\n");
+                        printk(KERN_INFO "[PFQ/lang] bridge: device error!\n");
                 return Drop(b);
 	}
 
@@ -162,7 +162,7 @@ tap(arguments_t args, SkBuff b)
 
 	if (dev == NULL) {
                 if (printk_ratelimit())
-                        printk(KERN_INFO "[PFQ] bridge: device error!\n");
+                        printk(KERN_INFO "[PFQ/lang] bridge: device error!\n");
                 return Drop(b);
 	}
 
@@ -185,7 +185,7 @@ tee(arguments_t args, SkBuff b)
 
 	if (dev == NULL) {
                 if (printk_ratelimit())
-                        printk(KERN_INFO "[PFQ] bridge: device error!\n");
+                        printk(KERN_INFO "[PFQ/lang] bridge: device error!\n");
                 return Drop(b);
 	}
 

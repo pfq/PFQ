@@ -40,7 +40,7 @@ steering_field(arguments_t args, SkBuff b)
 	if (size > (sizeof(data)*8)) { 	/* size is number of bits */
 
 		if (printk_ratelimit())
-                	printk(KERN_INFO "[PFQ] steering_field: bit-size too big (max. 32)!\n");
+                	printk(KERN_INFO "[PFQ/lang] steering_field: bit-size too big (max. 32)!\n");
 
                 return Drop(b);
 	}

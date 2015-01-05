@@ -39,16 +39,16 @@ dummy(arguments_t args, SkBuff b)
 
 	SkBuff new;
 
-	printk(KERN_INFO "[PFQ] dummy = %d\n", data);
+	printk(KERN_INFO "[PFQ/lang] dummy = %d\n", data);
 
         new = pfq_copy_buff(b);
 
 	if (new.skb == NULL) {
-                printk(KERN_INFO "[PFQ] clone error!!!\n");
+                printk(KERN_INFO "[PFQ/lang] clone error!!!\n");
                 return Drop(b);
 	}
 
-        printk(KERN_INFO "[PFQ] packet cloned: %p -> %p\n", new.skb, b.skb);
+        printk(KERN_INFO "[PFQ/lang] packet cloned: %p -> %p\n", new.skb, b.skb);
 
         return Pass(new);
 }
@@ -61,11 +61,11 @@ vdummy(arguments_t args, SkBuff b)
 	size_t len = get_array_len(args);
         int n;
 
-	printk(KERN_INFO "[PFQ] vdummy len: %zu...\n", len);
+	printk(KERN_INFO "[PFQ/lang] vdummy len: %zu...\n", len);
 
 	for(n = 0; n < len; n++)
 	{
-		printk(KERN_INFO "[PFQ]  data[%d] = %d\n", n, data[n]);
+		printk(KERN_INFO "[PFQ/lang]  data[%d] = %d\n", n, data[n]);
 	}
 
         return Pass(b);
@@ -74,14 +74,14 @@ vdummy(arguments_t args, SkBuff b)
 static int
 dummy_init(arguments_t args)
 {
-	printk(KERN_INFO "[PFQ] %s :)\n", __PRETTY_FUNCTION__);
+	printk(KERN_INFO "[PFQ/lang] %s :)\n", __PRETTY_FUNCTION__);
 	return 0;
 }
 
 static int
 dummy_fini(arguments_t args)
 {
-	printk(KERN_INFO "[PFQ] %s :(\n", __PRETTY_FUNCTION__);
+	printk(KERN_INFO "[PFQ/lang] %s :(\n", __PRETTY_FUNCTION__);
 	return 0;
 }
 
@@ -99,7 +99,7 @@ inc_counter(arguments_t args, SkBuff b)
         }
         else {
                 if (printk_ratelimit())
-                        printk(KERN_INFO "[PFQ] counter[%d]: bad index!\n", idx);
+                        printk(KERN_INFO "[PFQ/lang] counter[%d]: bad index!\n", idx);
         }
 
         return Pass(b);
@@ -119,7 +119,7 @@ dec_counter(arguments_t args, SkBuff b)
         }
         else {
                 if (printk_ratelimit())
-                        printk(KERN_INFO "[PFQ] counter[%d]: bad index!\n", idx);
+                        printk(KERN_INFO "[PFQ/lang] counter[%d]: bad index!\n", idx);
         }
 
         return Pass(b);
@@ -142,7 +142,7 @@ log_msg(arguments_t args, SkBuff b)
 	const char *msg = get_arg(const char *, args);
 
 	if (printk_ratelimit())
-		printk(KERN_INFO "[PFQ] log_msg: %s\n", msg);
+		printk(KERN_INFO "[PFQ/lang] log_msg: %s\n", msg);
 
 	return Pass(b);
 }
@@ -154,7 +154,7 @@ log_buff(arguments_t args, SkBuff b)
 	if (!printk_ratelimit())
 		return Pass(b);
 
-	printk(KERN_INFO "[PFQ] [%p] len=%u head=%u tail=%u\n", b.skb,
+	printk(KERN_INFO "[PFQ/lang] [%p] len=%u head=%u tail=%u\n", b.skb,
 								b.skb->len,
 								skb_headroom(b.skb),
 								skb_tailroom(b.skb));
@@ -203,7 +203,7 @@ log_packet(arguments_t args, SkBuff b)
 			if (udp == NULL)
 				return Pass(b);
 
-			printk(KERN_INFO "[PFQ] IP %pI4.%d > %pI4.%d: UDP\n", &ip->saddr, ntohs(udp->source),
+			printk(KERN_INFO "[PFQ/lang] IP %pI4.%d > %pI4.%d: UDP\n", &ip->saddr, ntohs(udp->source),
 						         		      &ip->daddr, ntohs(udp->dest));
 			return Pass(b);
 		}
@@ -213,18 +213,18 @@ log_packet(arguments_t args, SkBuff b)
 			if (tcp == NULL)
 				return Pass(b);
 
-			printk(KERN_INFO "[PFQ] IP %pI4.%d > %pI4.%d: TCP\n", &ip->saddr, ntohs(tcp->source),
+			printk(KERN_INFO "[PFQ/lang] IP %pI4.%d > %pI4.%d: TCP\n", &ip->saddr, ntohs(tcp->source),
 									      &ip->daddr, ntohs(tcp->dest));
 			return Pass(b);
 		}
 		case IPPROTO_ICMP: {
 
-			printk(KERN_INFO "[PFQ] IP %pI4 > %pI4: ICMP\n", &ip->saddr, &ip->daddr);
+			printk(KERN_INFO "[PFQ/lang] IP %pI4 > %pI4: ICMP\n", &ip->saddr, &ip->daddr);
 			return Pass(b);
 		}
 		default: {
 
-			printk(KERN_INFO "[PFQ] IP %pI4 > %pI4: proto %x\n", &ip->saddr, &ip->daddr,
+			printk(KERN_INFO "[PFQ/lang] IP %pI4 > %pI4: proto %x\n", &ip->saddr, &ip->daddr,
 									     ip->protocol);
 			return Pass(b);
 		}
@@ -232,7 +232,7 @@ log_packet(arguments_t args, SkBuff b)
 		}
 
 	} else
-		printk(KERN_INFO "[PFQ] ETH proto %x\n", ntohs(eth_hdr(b.skb)->h_proto));
+		printk(KERN_INFO "[PFQ/lang] ETH proto %x\n", ntohs(eth_hdr(b.skb)->h_proto));
 
         return Pass(b);
 }
