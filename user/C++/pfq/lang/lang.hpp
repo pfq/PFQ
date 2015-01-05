@@ -372,6 +372,7 @@ namespace lang
     struct MFunction;
     struct MFunction1;
     struct MFunction2;
+    struct MFunction3;
 
     template <typename P> struct MFunctionP;
     template <typename P> struct MFunction1P;
@@ -420,6 +421,7 @@ namespace lang
         bool_type<std::is_same<Tp, MFunction>::value                ||
                   std::is_same<Tp, MFunction1>::value               ||
                   std::is_same<Tp, MFunction2>::value               ||
+                  std::is_same<Tp, MFunction3>::value               ||
                   is_same_type_constructor<Tp, MFunction1P>::value  ||
                   is_same_type_constructor<Tp, MFunctionP>::value   ||
                   is_same_type_constructor<Tp, MFunctionPF>::value  ||
@@ -802,6 +804,22 @@ namespace lang
         Argument        arg2_;
     };
 
+    struct MFunction3 : NetFunction
+    {
+        template <typename T1, typename T2, typename T3>
+        MFunction3(std::string symbol, T1 const &arg1, T2 const &arg2, T3 const &arg3)
+        : symbol_(std::move(symbol))
+        , arg1_(make_argument(arg1))
+        , arg2_(make_argument(arg2))
+        , arg3_(make_argument(arg3))
+        { }
+
+        std::string     symbol_;
+        Argument        arg1_;
+        Argument        arg2_;
+        Argument        arg3_;
+    };
+
 
     template <typename P>
     struct MFunction1P : NetFunction
@@ -956,6 +974,12 @@ namespace lang
         return '(' + descr.symbol_ + ' ' + pretty (descr.arg1_) + ' ' + pretty(descr.arg2_) + ')';
     }
 
+    inline std::string
+    pretty(MFunction3 const &descr)
+    {
+        return '(' + descr.symbol_ + ' ' + pretty (descr.arg1_) + ' ' + pretty(descr.arg2_) + ' ' + pretty(descr.arg3_) + ')';
+    }
+
     template <typename P>
     inline std::string
     pretty(MFunction1P<P> const &descr)
@@ -1023,6 +1047,12 @@ namespace lang
     serialize(MFunction2 const &f, std::size_t n)
     {
         return { { FunctionDescr { f.symbol_, {{ f.arg1_, f.arg2_ }}, n+1 } }, n+1 };
+    }
+
+    inline std::pair<std::vector<FunctionDescr>, std::size_t>
+    serialize(MFunction3 const &f, std::size_t n)
+    {
+        return { { FunctionDescr { f.symbol_, {{ f.arg1_, f.arg2_, f.arg3_ }}, n+1 } }, n+1 };
     }
 
     template <typename P>
@@ -1248,6 +1278,13 @@ namespace lang
     mfunction2(std::string symbol, const T1 &arg1, const T2 &arg2)
     {
         return MFunction2{ std::move(symbol), arg1, arg2 };
+    }
+
+    template <typename T1, typename T2, typename T3>
+    inline MFunction3
+    mfunction3(std::string symbol, const T1 &arg1, const T2 &arg2, const T3 &arg3)
+    {
+        return MFunction3{ std::move(symbol), arg1, arg2, arg3 };
     }
 
     template <typename T, typename P>

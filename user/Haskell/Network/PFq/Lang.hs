@@ -157,6 +157,8 @@ data Function f where
         MFunction    :: Symbol -> NetFunction;
         MFunction1   :: forall a. (Show a, Argumentable a) => Symbol -> a -> NetFunction;
         MFunction2   :: forall a b. (Show a, Argumentable a, Show b, Argumentable b) => Symbol -> a -> b -> NetFunction;
+        MFunction3   :: forall a b c. (Show a, Argumentable a, Show b, Argumentable b, Show c, Argumentable c) => Symbol -> a -> b -> c -> NetFunction;
+
         MFunction1P  :: forall a. (Show a, Argumentable a) => Symbol -> a -> NetPredicate -> NetFunction;
         MFunctionP   :: Symbol -> NetPredicate -> NetFunction;
         MFunctionPF  :: Symbol -> NetPredicate -> NetFunction -> NetFunction;
@@ -192,6 +194,7 @@ instance Show (Function f) where
         show (MFunction  symb)           = "(Function " ++ symb ++ ")"
         show (MFunction1 symb a)         = "(Function " ++ symb ++ " " ++ show a ++ ")"
         show (MFunction2 symb a b)       = "(Function " ++ symb ++ " " ++ show a ++ " " ++ show b ++ ")"
+        show (MFunction3 symb a b c)     = "(Function " ++ symb ++ " " ++ show a ++ " " ++ show b ++ " " ++ show c ++ ")"
         show (MFunction1P symb a p)      = "(Function " ++ symb ++ " " ++ show a ++ " " ++ show p ++ ")"
 
         show (MFunctionP  symb p)        = "(Function " ++ symb ++ " " ++ show p  ++ ")"
@@ -229,8 +232,9 @@ instance Pretty (Function f) where
 
         pretty (MFunction symb)            = symb
         pretty (MFunction1 symb a)         = "(" ++ symb ++ " " ++ show a ++ ")"
-        pretty (MFunction2 symb a b)       = "(" ++ symb ++ " " ++ show a ++ " " ++ show b ++ " )"
-        pretty (MFunction1P symb a p)      = "(" ++ symb ++ " " ++ show a ++ " " ++ pretty p ++ " )"
+        pretty (MFunction2 symb a b)       = "(" ++ symb ++ " " ++ show a ++ " " ++ show b ++ ")"
+        pretty (MFunction3 symb a b c)     = "(" ++ symb ++ " " ++ show a ++ " " ++ show b ++ " " ++ show c ++ ")"
+        pretty (MFunction1P symb a p)      = "(" ++ symb ++ " " ++ show a ++ " " ++ pretty p ++ ")"
 
         pretty (MFunctionP symb p)         = "(" ++ symb ++ " " ++ pretty p  ++ ")"
         pretty (MFunctionPF symb p n1)     = "(" ++ symb ++ " " ++ pretty p  ++ " " ++ pretty n1 ++ ")"
@@ -269,6 +273,7 @@ instance Serializable (Function (a -> m b)) where
     serialize (MFunction  symb)    n   = ([FunctionDescr symb [] (n+1) ], n+1)
     serialize (MFunction1 symb x)  n   = ([FunctionDescr symb [mkArgument x] (n+1) ], n+1)
     serialize (MFunction2 symb x y) n  = ([FunctionDescr symb [mkArgument x, mkArgument y] (n+1) ], n+1)
+    serialize (MFunction3 symb x y z) n  = ([FunctionDescr symb [mkArgument x, mkArgument y, mkArgument z] (n+1) ], n+1)
     serialize (MFunction1P symb x p) n = let (s1, n1) = ([FunctionDescr symb [mkArgument x, mkArgument (Fun n1)] n2 ], n+1)
                                              (s2, n2) =  serialize p n1
                                          in (s1 ++ s2, n2)
