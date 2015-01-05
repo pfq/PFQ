@@ -55,5 +55,5 @@ main :: IO ()
 main = do
     args <- getArgs
     case length args of
-        0   -> error "usage: pfq-dispatch dev"
+        0   -> error "usage: test-dispatch dev"
         _   -> dumper (head args)

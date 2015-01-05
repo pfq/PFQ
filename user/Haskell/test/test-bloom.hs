@@ -84,5 +84,5 @@ main :: IO ()
 main = do
     args <- getArgs
     case length args of
-        0   -> error "usage: pfq-bloom dev"
+        0   -> error "usage: test-bloom dev"
         _   -> dumper (head args)

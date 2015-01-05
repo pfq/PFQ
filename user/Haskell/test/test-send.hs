@@ -67,19 +67,13 @@ sender (dev:xs) = do
             Q.enable q
             Q.bindTx q dev (-1)
 
-            Q.startTxThread q 0
-
             replicateM_ numb $ do
                Q.send q ping
                -- Q.sendSync q ping 128
                -- Q.sendAsync q ping 128
                threadDelay 1
 
-            Q.wakeupTxThread q
-
             threadDelay 1000000
-
-            Q.stopTxThread q
 
             stat <- Q.getStats q
             print stat
@@ -90,7 +84,7 @@ main :: IO ()
 main = do
     args <- getArgs
     case length args of
-        0  -> error "usage: pfq-send dev numb"
-        1  -> error "usage: pfq-send dev numb"
+        0  -> error "usage: test-send dev numb"
+        1  -> error "usage: test-send dev numb"
         _  -> sender args
 
