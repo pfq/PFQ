@@ -384,7 +384,7 @@ $(document).ready(function(){initNavTree('queue_8hpp_source.html','');});
 <div class="line"><a name="l00323"></a><span class="lineno">  323</span>&#160;    };</div>
 <div class="line"><a name="l00324"></a><span class="lineno">  324</span>&#160;</div>
 <div class="line"><a name="l00326"></a><span class="lineno">  326</span>&#160;</div>
-<div class="line"><a name="l00331"></a><span class="lineno">  331</span>&#160;    <span class="keyword">static</span> <span class="keyword">inline</span> <span class="keywordtype">void</span> * data_ready(pfq_pkthdr &amp;h, uint8_t current_commit)</div>
+<div class="line"><a name="l00331"></a><span class="lineno"><a class="line" href="namespacepfq.html#a89313b8c7a729b4e37b751db8ea522f4">  331</a></span>&#160;    <span class="keyword">inline</span> <span class="keywordtype">void</span> * <a class="code" href="namespacepfq.html#a89313b8c7a729b4e37b751db8ea522f4">data_ready</a>(pfq_pkthdr &amp;h, uint8_t current_commit)</div>
 <div class="line"><a name="l00332"></a><span class="lineno">  332</span>&#160;    {</div>
 <div class="line"><a name="l00333"></a><span class="lineno">  333</span>&#160;        <span class="keywordflow">if</span> (const_cast&lt;volatile uint8_t &amp;&gt;(h.commit) != current_commit)</div>
 <div class="line"><a name="l00334"></a><span class="lineno">  334</span>&#160;            <span class="keywordflow">return</span> <span class="keyword">nullptr</span>;</div>
@@ -393,7 +393,7 @@ $(document).ready(function(){initNavTree('queue_8hpp_source.html','');});
 <div class="line"><a name="l00337"></a><span class="lineno">  337</span>&#160;    }</div>
 <div class="line"><a name="l00338"></a><span class="lineno">  338</span>&#160;</div>
 <div class="line"><a name="l00340"></a><span class="lineno">  340</span>&#160;</div>
-<div class="line"><a name="l00345"></a><span class="lineno">  345</span>&#160;    <span class="keyword">static</span> <span class="keyword">inline</span> <span class="keyword">const</span> <span class="keywordtype">void</span> * data_ready(pfq_pkthdr <span class="keyword">const</span> &amp;h, uint8_t current_commit)</div>
+<div class="line"><a name="l00345"></a><span class="lineno"><a class="line" href="namespacepfq.html#a50ce09535c2c899fe6b3c069681b4cae">  345</a></span>&#160;    <span class="keyword">inline</span> <span class="keyword">const</span> <span class="keywordtype">void</span> * <a class="code" href="namespacepfq.html#a89313b8c7a729b4e37b751db8ea522f4">data_ready</a>(pfq_pkthdr <span class="keyword">const</span> &amp;h, uint8_t current_commit)</div>
 <div class="line"><a name="l00346"></a><span class="lineno">  346</span>&#160;    {</div>
 <div class="line"><a name="l00347"></a><span class="lineno">  347</span>&#160;        <span class="keywordflow">if</span> (const_cast&lt;volatile uint8_t &amp;&gt;(h.commit) != current_commit)</div>
 <div class="line"><a name="l00348"></a><span class="lineno">  348</span>&#160;            <span class="keywordflow">return</span> <span class="keyword">nullptr</span>;</div>
@@ -429,6 +429,7 @@ $(document).ready(function(){initNavTree('queue_8hpp_source.html','');});
 <div class="ttc" id="structpfq_1_1queue_1_1const__iterator_html_a054acc5d8bd0bb6b0bfe493573c0a2f2"><div class="ttname"><a href="structpfq_1_1queue_1_1const__iterator.html#a054acc5d8bd0bb6b0bfe493573c0a2f2">pfq::queue::const_iterator::operator-&gt;</a></div><div class="ttdeci">const pfq_pkthdr * operator-&gt;() const </div><div class="ttdef"><b>Definition:</b> queue.hpp:155</div></div>
 <div class="ttc" id="classpfq_1_1queue_html_a107c15e5be3e53fc2dc7f8e25b3fba1e"><div class="ttname"><a href="classpfq_1_1queue.html#a107c15e5be3e53fc2dc7f8e25b3fba1e">pfq::queue::begin</a></div><div class="ttdeci">iterator begin()</div><div class="ttdoc">Return an iterator to the first slot of a non-empty queue. </div><div class="ttdef"><b>Definition:</b> queue.hpp:264</div></div>
 <div class="ttc" id="classpfq_1_1queue_html_a1f2bcf8ef825d3c9d7761f2e4b4ed6dd"><div class="ttname"><a href="classpfq_1_1queue.html#a1f2bcf8ef825d3c9d7761f2e4b4ed6dd">pfq::queue::end</a></div><div class="ttdeci">iterator end()</div><div class="ttdoc">Return an iterator past to the end of the queue. </div><div class="ttdef"><b>Definition:</b> queue.hpp:283</div></div>
+<div class="ttc" id="namespacepfq_html_a89313b8c7a729b4e37b751db8ea522f4"><div class="ttname"><a href="namespacepfq.html#a89313b8c7a729b4e37b751db8ea522f4">pfq::data_ready</a></div><div class="ttdeci">void * data_ready(pfq_pkthdr &amp;h, uint8_t current_commit)</div><div class="ttdoc">Return the pointer to the packet. </div><div class="ttdef"><b>Definition:</b> queue.hpp:331</div></div>
 <div class="ttc" id="structpfq_1_1queue_1_1const__iterator_html_a2d14a9e03bb2dc0bf559a9fa0040a7a2"><div class="ttname"><a href="structpfq_1_1queue_1_1const__iterator.html#a2d14a9e03bb2dc0bf559a9fa0040a7a2">pfq::queue::const_iterator::operator!=</a></div><div class="ttdeci">bool operator!=(const const_iterator &amp;other) const </div><div class="ttdef"><b>Definition:</b> queue.hpp:187</div></div>
 <div class="ttc" id="structpfq_1_1queue_1_1const__iterator_html_abc154cce287fdda2b0ed2a9f19f422c1"><div class="ttname"><a href="structpfq_1_1queue_1_1const__iterator.html#abc154cce287fdda2b0ed2a9f19f422c1">pfq::queue::const_iterator::~const_iterator</a></div><div class="ttdeci">~const_iterator()=default</div></div>
 <div class="ttc" id="structpfq_1_1queue_1_1iterator_html_acdb50c9d9900d722c49402495c0829c0"><div class="ttname"><a href="structpfq_1_1queue_1_1iterator.html#acdb50c9d9900d722c49402495c0829c0">pfq::queue::iterator::operator*</a></div><div class="ttdeci">pfq_pkthdr &amp; operator*() const </div><div class="ttdef"><b>Definition:</b> queue.hpp:83</div></div>
@@ -448,7 +449,7 @@ $(document).ready(function(){initNavTree('queue_8hpp_source.html','');});
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="dir_2916f9fbcacdf2e5f0583aa159c707b6.html">C++</a></li><li class="navelem"><a class="el" href="dir_f5c141fe61b0a0287f06112b2feb457f.html">pfq</a></li><li class="navelem"><a class="el" href="queue_8hpp.html">queue.hpp</a></li>
-    <li class="footer">Generated on Sat Jan 3 2015 15:14:39 for PFQ C++ library by
+    <li class="footer">Generated on Mon Jan 5 2015 10:14:17 for PFQ C++ library by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.8 </li>
   </ul>

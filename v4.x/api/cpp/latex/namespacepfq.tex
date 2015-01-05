@@ -57,7 +57,11 @@ pfq\+\_\+stats \hyperlink{namespacepfq_a1db1dc5635be457a7ca4cd9148ceae19}{operat
 pfq\+\_\+stats \hyperlink{namespacepfq_ad01713142f8fa670ff8614b9f2bab3b8}{operator-\/} (pfq\+\_\+stats lhs, const pfq\+\_\+stats \&rhs)
 \item 
 {\footnotesize template$<$size\+\_\+t N, typename T $>$ }\\T \hyperlink{namespacepfq_a9db75e7163c5f764248401d10a2a3f9b}{align} (T value)
-\begin{DoxyCompactList}\small\item\em Return the value aligned to the next power of two. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\begin{DoxyCompactList}\small\item\em Return the value aligned to the next power of two. \end{DoxyCompactList}\item 
+void $\ast$ \hyperlink{namespacepfq_a89313b8c7a729b4e37b751db8ea522f4}{data\+\_\+ready} (pfq\+\_\+pkthdr \&h, uint8\+\_\+t current\+\_\+commit)
+\begin{DoxyCompactList}\small\item\em Return the pointer to the packet. \end{DoxyCompactList}\item 
+const void $\ast$ \hyperlink{namespacepfq_a50ce09535c2c899fe6b3c069681b4cae}{data\+\_\+ready} (pfq\+\_\+pkthdr const \&h, uint8\+\_\+t current\+\_\+commit)
+\begin{DoxyCompactList}\small\item\em Return a constant pointer to the packet. \end{DoxyCompactList}\end{DoxyCompactItemize}
 
 
 \subsection{Typedef Documentation}
@@ -126,7 +130,31 @@ Each group can be specified with the following policies\+: undefined (not specif
 
 Return the value aligned to the next power of two. 
 
-\hypertarget{namespacepfq_a1db1dc5635be457a7ca4cd9148ceae19}{\index{pfq@{pfq}!operator+@{operator+}}
+\hypertarget{namespacepfq_a89313b8c7a729b4e37b751db8ea522f4}{\index{pfq@{pfq}!data\+\_\+ready@{data\+\_\+ready}}
+\index{data\+\_\+ready@{data\+\_\+ready}!pfq@{pfq}}
+\subsubsection[{data\+\_\+ready}]{\setlength{\rightskip}{0pt plus 5cm}void$\ast$ pfq\+::data\+\_\+ready (
+\begin{DoxyParamCaption}
+\item[{pfq\+\_\+pkthdr \&}]{h, }
+\item[{uint8\+\_\+t}]{current\+\_\+commit}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq_a89313b8c7a729b4e37b751db8ea522f4}
+
+
+Return the pointer to the packet. 
+
+Return the pointer to the packet, if the data is available to read; return a nullptr otherwise. \hypertarget{namespacepfq_a50ce09535c2c899fe6b3c069681b4cae}{\index{pfq@{pfq}!data\+\_\+ready@{data\+\_\+ready}}
+\index{data\+\_\+ready@{data\+\_\+ready}!pfq@{pfq}}
+\subsubsection[{data\+\_\+ready}]{\setlength{\rightskip}{0pt plus 5cm}const void$\ast$ pfq\+::data\+\_\+ready (
+\begin{DoxyParamCaption}
+\item[{pfq\+\_\+pkthdr const \&}]{h, }
+\item[{uint8\+\_\+t}]{current\+\_\+commit}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq_a50ce09535c2c899fe6b3c069681b4cae}
+
+
+Return a constant pointer to the packet. 
+
+Return a constant pointer to the packet, if the data is available to read; return a nullptr otherwise. \hypertarget{namespacepfq_a1db1dc5635be457a7ca4cd9148ceae19}{\index{pfq@{pfq}!operator+@{operator+}}
 \index{operator+@{operator+}!pfq@{pfq}}
 \subsubsection[{operator+}]{\setlength{\rightskip}{0pt plus 5cm}pfq\+\_\+stats pfq\+::operator+ (
 \begin{DoxyParamCaption}

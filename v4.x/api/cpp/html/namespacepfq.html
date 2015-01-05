@@ -165,6 +165,12 @@ Traits &gt; &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a cla
 <tr class="memitem:a9db75e7163c5f764248401d10a2a3f9b"><td class="memTemplItemLeft" align="right" valign="top">T&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq.html#a9db75e7163c5f764248401d10a2a3f9b">align</a> (T value)</td></tr>
 <tr class="memdesc:a9db75e7163c5f764248401d10a2a3f9b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the value aligned to the next power of two.  <a href="#a9db75e7163c5f764248401d10a2a3f9b">More...</a><br /></td></tr>
 <tr class="separator:a9db75e7163c5f764248401d10a2a3f9b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a89313b8c7a729b4e37b751db8ea522f4"><td class="memItemLeft" align="right" valign="top">void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepfq.html#a89313b8c7a729b4e37b751db8ea522f4">data_ready</a> (pfq_pkthdr &amp;h, uint8_t current_commit)</td></tr>
+<tr class="memdesc:a89313b8c7a729b4e37b751db8ea522f4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return the pointer to the packet.  <a href="#a89313b8c7a729b4e37b751db8ea522f4">More...</a><br /></td></tr>
+<tr class="separator:a89313b8c7a729b4e37b751db8ea522f4"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a50ce09535c2c899fe6b3c069681b4cae"><td class="memItemLeft" align="right" valign="top">const void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepfq.html#a50ce09535c2c899fe6b3c069681b4cae">data_ready</a> (pfq_pkthdr const &amp;h, uint8_t current_commit)</td></tr>
+<tr class="memdesc:a50ce09535c2c899fe6b3c069681b4cae"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a constant pointer to the packet.  <a href="#a50ce09535c2c899fe6b3c069681b4cae">More...</a><br /></td></tr>
+<tr class="separator:a50ce09535c2c899fe6b3c069681b4cae"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Typedef Documentation</h2>
 <a class="anchor" id="ac835a1bd09b4cbaba61c100b50d0a99f"></a>
@@ -286,6 +292,80 @@ template&lt;size_t N, typename T &gt; </div>
 </div><div class="memdoc">
 
 <p>Return the value aligned to the next power of two. </p>
+
+</div>
+</div>
+<a class="anchor" id="a89313b8c7a729b4e37b751db8ea522f4"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void* pfq::data_ready </td>
+          <td>(</td>
+          <td class="paramtype">pfq_pkthdr &amp;&#160;</td>
+          <td class="paramname"><em>h</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint8_t&#160;</td>
+          <td class="paramname"><em>current_commit</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Return the pointer to the packet. </p>
+<p>Return the pointer to the packet, if the data is available to read; return a nullptr otherwise. </p>
+
+</div>
+</div>
+<a class="anchor" id="a50ce09535c2c899fe6b3c069681b4cae"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">const void* pfq::data_ready </td>
+          <td>(</td>
+          <td class="paramtype">pfq_pkthdr const &amp;&#160;</td>
+          <td class="paramname"><em>h</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">uint8_t&#160;</td>
+          <td class="paramname"><em>current_commit</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Return a constant pointer to the packet. </p>
+<p>Return a constant pointer to the packet, if the data is available to read; return a nullptr otherwise. </p>
 
 </div>
 </div>
@@ -459,7 +539,7 @@ template&lt;typename CharT , typename Traits &gt; </div>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="namespacepfq.html">pfq</a></li>
-    <li class="footer">Generated on Sat Jan 3 2015 15:14:39 for PFQ C++ library by
+    <li class="footer">Generated on Mon Jan 5 2015 10:14:17 for PFQ C++ library by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.8 </li>
   </ul>

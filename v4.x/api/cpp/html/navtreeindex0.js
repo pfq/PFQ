@@ -138,6 +138,8 @@ var NAVTREEINDEX0 =
 "pfq_8hpp.html#af1fd1aeb980688527db587b35f55abf2":[2,0,0,0,1,11],
 "pfq_8hpp_source.html":[2,0,0,0,1],
 "queue_8hpp.html":[2,0,0,0,2],
+"queue_8hpp.html#a50ce09535c2c899fe6b3c069681b4cae":[2,0,0,0,2,4],
+"queue_8hpp.html#a89313b8c7a729b4e37b751db8ea522f4":[2,0,0,0,2,3],
 "queue_8hpp_source.html":[2,0,0,0,2],
 "structpfq_1_1param_1_1caplen.html":[1,0,0,0,1],
 "structpfq_1_1param_1_1caplen.html#ad706d73fbbd8342fea36e920253aaa02":[1,0,0,0,1,0],
