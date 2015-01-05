@@ -235,7 +235,6 @@ namespace lang
     };
 
 
-
     inline Argument make_argument()
     {
         return Argument::Null();

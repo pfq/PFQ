@@ -59,36 +59,39 @@ module Network.PFq.Lang
     ) where
 
 
--- import Control.Monad.Identity
-
 import Foreign.Storable
 
 import Data.Word
 
--- Basic types...
 
--- |Symbol is a value of type 'String' and it is used to represent the name of
--- a function.
+-- |Symbol is a 'String' representing the name of a function.
 
 type Symbol = String
 
--- |SkBuff is a placeholder type, used to model the kernel sk_buff data structure.
+
+-- |SkBuff placeholder type is used to model the kernel sk_buff data structure.
 
 newtype SkBuff = SkBuff ()
 
 
--- |Function data type
+-- |Function data type represents a function in a list of FunctionDescr.
 
 newtype Fun = Fun Int
 
--- |Action is a monad modelled after the Identity monad and implemented at kernel level.
+
+-- |Action is a monad modelled after the Identity and implemented at kernel level.
 
 newtype Action a = Identity a
 
--- |NetDevice data type
+
+-- |NetDevice data type.
 
 data NetDevice = Dev String | DevQueue String Int
                     deriving (Eq, Show, Read)
+
+
+-- | Argument data type.
+-- Any PFQ/lang function can take up to 4 Arguments.
 
 data Argument = forall a. (Show a, Storable a) => ArgData a     |
                 forall a. (Show a, Storable a) => ArgVector [a] |
@@ -104,6 +107,7 @@ instance Show Argument where
     show (ArgVector xs) = show xs
 
 
+-- | Argumentable class, a typeclass for building function Arguments.
 
 class Argumentable a where
     mkArgument :: a -> Argument
@@ -114,7 +118,6 @@ instance Argumentable String where
 instance (Show a, Storable a) => Argumentable a where
     mkArgument = ArgData
 
-
 instance (Show a, Storable a) => Argumentable [a] where
     mkArgument xs = ArgVector xs
 
@@ -122,24 +125,30 @@ instance Argumentable Fun where
     mkArgument (Fun n) = ArgFun n
 
 
+-- | Function descriptor.
+
 data FunctionDescr = FunctionDescr Symbol [Argument] Int
                         deriving (Show)
 
 
--- |Function that takes a SkBuff and returns an Action SkBuff.
+-- |Simple monadic in-kernel PFQ/lang function.
 
 type NetFunction  = Function (SkBuff -> Action SkBuff)
 
--- |Function that takes a SkBuff and returns a Bool.
+
+-- |Simple in-kernel PFQ/lang predicate.
 
 type NetPredicate = Function (SkBuff -> Bool)
 
--- |Function that takes a SkBuff and returns a generic Word64.
+-- |Simple in-kernel PFQ/lang property function.
+
 type NetProperty  = Function (SkBuff -> Word64)
 
 
-data Function f where {
+-- | Parametric Function data type.
 
+data Function f where
+{
         MFunction    :: Symbol -> NetFunction;
         MFunction1   :: forall a. (Show a, Argumentable a) => Symbol -> a -> NetFunction;
         MFunction2   :: forall a b. (Show a, Argumentable a, Show b, Argumentable b) => Symbol -> a -> b -> NetFunction;
@@ -163,17 +172,14 @@ data Function f where {
         Combinator2 :: Symbol -> NetPredicate -> NetPredicate -> NetPredicate;
 
         Composition :: forall f1 f2 f. (Serializable (Function f1), Serializable (Function f2)) => Function f1 -> Function f2 -> Function f;
+}
 
-    }
 
-
--- |Kleisli left-to-right operator, for monadic composition of DLS NetFunction
+-- |Kleisli left-to-right operator, for monadic composition of PFQ/lang functions.
 
 (>->) :: Function (a -> m b) -> Function (b -> m c) -> Function (a -> m c)
 f1 >-> f2 = Composition f1 f2
 
-
--- Show instance:
 
 instance Show (Function f) where
 
@@ -207,7 +213,7 @@ instance Show (Function f) where
         show (Composition a b)           = "(Composition " ++ show a ++ " " ++ show b ++ ")"
 
 
--- | Pretty class:
+-- | Pretty class, typeclass used to print a PFQ/lang computation.
 
 class Pretty x where
         pretty :: x -> String
@@ -243,8 +249,8 @@ instance Pretty (Function f) where
         pretty (Composition a b)           = pretty a ++ " >-> " ++ pretty b
 
 
--- | Serializable class:
-
+-- | Serializable class, a typeclass used to serialize computations.
+-- Transform a Function into a list of FunctionDescr.
 
 class Serializable a where
     serialize :: a -> Int -> ([FunctionDescr], Int)
