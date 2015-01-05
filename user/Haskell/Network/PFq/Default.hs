@@ -351,10 +351,10 @@ has_dst_port  = Predicate1 "has_dst_port"   :: Int16 -> NetPredicate
 -- | Evaluate to /True/ if the source or destination IP address matches the given network address. I.e.,
 --
 -- > has_addr "192.168.0.0" 24
-has_addr     :: HostName -> Int -> NetPredicate
+has_addr     :: IPv4 -> Int -> NetPredicate
 
 -- | Evaluate to /True/ if the source IP address matches the given network address.
-has_src_addr :: HostName -> Int -> NetPredicate
+has_src_addr :: IPv4 -> Int -> NetPredicate
 
 -- | Evaluate to /True/ if the destination IP address matches the given network address.
 has_dst_addr :: IPv4 -> Int -> NetPredicate
