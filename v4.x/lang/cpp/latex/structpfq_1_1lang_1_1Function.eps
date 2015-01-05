@@ -5,7 +5,7 @@
 %%For: 
 %Magnification: 1.00
 %%Orientation: Portrait
-%%BoundingBox: 0 0 500 734.693878
+%%BoundingBox: 0 0 500 816.326531
 %%Pages: 0
 %%BeginSetup
 %%EndSetup
@@ -19,12 +19,12 @@
 /marginwidth 10 def
 /distx 20 def
 /disty 40 def
-/boundaspect 0.680556 def  % aspect ratio of the BoundingBox (width/height)
+/boundaspect 0.612500 def  % aspect ratio of the BoundingBox (width/height)
 /boundx 500 def
 /boundy boundx boundaspect div def
 /xspacing 0 def
 /yspacing 0 def
-/rows 18 def
+/rows 20 def
 /cols 2 def
 /scalefactor 0 def
 /boxfont /Times-Roman findfont fontheight scalefont def
@@ -180,6 +180,7 @@ boxfont setfont
 (pfq::lang::MFunction1) cw
 (pfq::lang::MFunction1P< P >) cw
 (pfq::lang::MFunction2) cw
+(pfq::lang::MFunction3) cw
 (pfq::lang::MFunctionF< F >) cw
 (pfq::lang::MFunctionFF< F, G >) cw
 (pfq::lang::MFunctionP< P >) cw
@@ -188,6 +189,7 @@ boxfont setfont
 (pfq::lang::Predicate) cw
 (pfq::lang::Predicate1) cw
 (pfq::lang::Predicate2) cw
+(pfq::lang::Predicate3) cw
 (pfq::lang::PredicateR< Prop >) cw
 (pfq::lang::PredicateR1< Prop >) cw
 (pfq::lang::Property) cw
@@ -202,21 +204,23 @@ boundx scalefactor div boundy scalefactor div scale
 
 % ----- classes -----
 
- (pfq::lang::Function< Sig >) 0.000000 17.000000 box
- (pfq::lang::Combinator1< Pred >) 1.000000 16.000000 box
- (pfq::lang::Combinator2< Pred1, Pred2 >) 1.000000 15.000000 box
- (pfq::lang::MFunction) 1.000000 14.000000 box
- (pfq::lang::MFunction1) 1.000000 13.000000 box
- (pfq::lang::MFunction1P< P >) 1.000000 12.000000 box
- (pfq::lang::MFunction2) 1.000000 11.000000 box
- (pfq::lang::MFunctionF< F >) 1.000000 10.000000 box
- (pfq::lang::MFunctionFF< F, G >) 1.000000 9.000000 box
- (pfq::lang::MFunctionP< P >) 1.000000 8.000000 box
- (pfq::lang::MFunctionPF< P, F >) 1.000000 7.000000 box
- (pfq::lang::MFunctionPFF< P, F, G >) 1.000000 6.000000 box
- (pfq::lang::Predicate) 1.000000 5.000000 box
- (pfq::lang::Predicate1) 1.000000 4.000000 box
- (pfq::lang::Predicate2) 1.000000 3.000000 box
+ (pfq::lang::Function< Sig >) 0.000000 19.000000 box
+ (pfq::lang::Combinator1< Pred >) 1.000000 18.000000 box
+ (pfq::lang::Combinator2< Pred1, Pred2 >) 1.000000 17.000000 box
+ (pfq::lang::MFunction) 1.000000 16.000000 box
+ (pfq::lang::MFunction1) 1.000000 15.000000 box
+ (pfq::lang::MFunction1P< P >) 1.000000 14.000000 box
+ (pfq::lang::MFunction2) 1.000000 13.000000 box
+ (pfq::lang::MFunction3) 1.000000 12.000000 box
+ (pfq::lang::MFunctionF< F >) 1.000000 11.000000 box
+ (pfq::lang::MFunctionFF< F, G >) 1.000000 10.000000 box
+ (pfq::lang::MFunctionP< P >) 1.000000 9.000000 box
+ (pfq::lang::MFunctionPF< P, F >) 1.000000 8.000000 box
+ (pfq::lang::MFunctionPFF< P, F, G >) 1.000000 7.000000 box
+ (pfq::lang::Predicate) 1.000000 6.000000 box
+ (pfq::lang::Predicate1) 1.000000 5.000000 box
+ (pfq::lang::Predicate2) 1.000000 4.000000 box
+ (pfq::lang::Predicate3) 1.000000 3.000000 box
  (pfq::lang::PredicateR< Prop >) 1.000000 2.000000 box
  (pfq::lang::PredicateR1< Prop >) 1.000000 1.000000 box
  (pfq::lang::Property) 1.000000 0.000000 box
@@ -224,7 +228,11 @@ boundx scalefactor div boundy scalefactor div scale
 % ----- relations -----
 
 solid
-1 0.000000 16.250000 out
+1 0.000000 18.250000 out
+solid
+0 0.000000 18.500000 hedge
+solid
+0 0.000000 17.500000 hedge
 solid
 0 0.000000 16.500000 hedge
 solid
@@ -260,4 +268,4 @@ solid
 solid
 0 0.000000 0.500000 hedge
 solid
-0.000000 17.000000 0.500000 vedge
+0.000000 19.000000 0.500000 vedge

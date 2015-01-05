@@ -27,6 +27,8 @@ struct \hyperlink{structpfq_1_1lang_1_1FunctionDescr}{Function\+Descr}
 \item 
 struct \hyperlink{structpfq_1_1lang_1_1has__insertion__operator}{has\+\_\+insertion\+\_\+operator}
 \item 
+struct \hyperlink{structpfq_1_1lang_1_1ipv4__t}{ipv4\+\_\+t}
+\item 
 struct \hyperlink{structpfq_1_1lang_1_1is__Function}{is\+\_\+\+Function}
 \item 
 struct \hyperlink{structpfq_1_1lang_1_1is__Function_3_01Function_3_01S_01_4_01_4}{is\+\_\+\+Function$<$ Function$<$ S $>$ $>$}
@@ -55,6 +57,8 @@ struct \hyperlink{structpfq_1_1lang_1_1MFunction1P}{M\+Function1\+P}
 \item 
 struct \hyperlink{structpfq_1_1lang_1_1MFunction2}{M\+Function2}
 \item 
+struct \hyperlink{structpfq_1_1lang_1_1MFunction3}{M\+Function3}
+\item 
 struct \hyperlink{structpfq_1_1lang_1_1MFunctionF}{M\+Function\+F}
 \item 
 struct \hyperlink{structpfq_1_1lang_1_1MFunctionFF}{M\+Function\+F\+F}
@@ -70,6 +74,8 @@ struct \hyperlink{structpfq_1_1lang_1_1Predicate}{Predicate}
 struct \hyperlink{structpfq_1_1lang_1_1Predicate1}{Predicate1}
 \item 
 struct \hyperlink{structpfq_1_1lang_1_1Predicate2}{Predicate2}
+\item 
+struct \hyperlink{structpfq_1_1lang_1_1Predicate3}{Predicate3}
 \item 
 struct \hyperlink{structpfq_1_1lang_1_1PredicateR}{Predicate\+R}
 \item 
@@ -99,6 +105,10 @@ using \hyperlink{namespacepfq_1_1lang_aa39ba7aedac05c562ea2f9f399e7f370}{Net\+Pr
 \subsection*{Functions}
 \begin{DoxyCompactItemize}
 \item 
+std\+::string \hyperlink{namespacepfq_1_1lang_a6b371b706602987f7e45c7558824fa34}{show} (\hyperlink{structpfq_1_1lang_1_1ipv4__t}{ipv4\+\_\+t} value)
+\item 
+std\+::string \hyperlink{namespacepfq_1_1lang_a7a4c9ec62feae5479366427beeff5b74}{pretty} (\hyperlink{structpfq_1_1lang_1_1ipv4__t}{ipv4\+\_\+t} value)
+\item 
 std\+::string \hyperlink{namespacepfq_1_1lang_a92d9597c137911206814e93dc0b8a414}{show} (pfq\+\_\+functional\+\_\+descr const \&descr)
 \item 
 {\footnotesize template$<$typename Tp $>$ }\\std\+::vector$<$ Tp $>$ \hyperlink{namespacepfq_1_1lang_a54f9b99ed2adf6dc2e74d21a38be3bf3}{operator+} (std\+::vector$<$ Tp $>$ v1, std\+::vector$<$ Tp $>$ \&\&v2)
@@ -118,6 +128,8 @@ std\+::string \hyperlink{namespacepfq_1_1lang_a92d9597c137911206814e93dc0b8a414}
 {\footnotesize template$<$typename Tp $>$ }\\\hyperlink{structpfq_1_1lang_1_1Argument}{Argument} \hyperlink{namespacepfq_1_1lang_a06c5e8c76af98792eb9a4234c24506dd}{make\+\_\+argument} (Tp const \&pod)
 \item 
 {\footnotesize template$<$typename Tp $>$ }\\\hyperlink{structpfq_1_1lang_1_1Argument}{Argument} \hyperlink{namespacepfq_1_1lang_a1543c06cf527cb69eb4953329c06e244}{make\+\_\+argument} (std\+::vector$<$ Tp $>$ const \&pod)
+\item 
+\hyperlink{structpfq_1_1lang_1_1Argument}{Argument} \hyperlink{namespacepfq_1_1lang_a807950c0f256eadba5571049401dbc81}{make\+\_\+argument} (std\+::vector$<$ std\+::string $>$ const \&vec)
 \item 
 std\+::string \hyperlink{namespacepfq_1_1lang_a28e387bb791f0b8756e887a54853121b}{show} (const \hyperlink{structpfq_1_1lang_1_1Argument}{Argument} \&arg)
 \item 
@@ -151,6 +163,8 @@ std\+::string \hyperlink{namespacepfq_1_1lang_ad6eb992723d46c140c4a431aa49eee80}
 \item 
 std\+::string \hyperlink{namespacepfq_1_1lang_a9c7d94ec537bda04dc52d20bc7f9a6f8}{pretty} (\hyperlink{structpfq_1_1lang_1_1Predicate2}{Predicate2} const \&descr)
 \item 
+std\+::string \hyperlink{namespacepfq_1_1lang_ab64eb5ff467f787346f5da525dcc227e}{pretty} (\hyperlink{structpfq_1_1lang_1_1Predicate3}{Predicate3} const \&descr)
+\item 
 {\footnotesize template$<$typename Prop $>$ }\\std\+::string \hyperlink{namespacepfq_1_1lang_a4bab9aa1d5635e949a79b0dedb592a90}{pretty} (\hyperlink{structpfq_1_1lang_1_1PredicateR}{Predicate\+R}$<$ Prop $>$ const \&descr)
 \item 
 {\footnotesize template$<$typename Prop $>$ }\\std\+::string \hyperlink{namespacepfq_1_1lang_a1318d3e7b5c1cd7a7cd2b10dfd4cb64e}{pretty} (\hyperlink{structpfq_1_1lang_1_1PredicateR1}{Predicate\+R1}$<$ Prop $>$ const \&descr)
@@ -164,6 +178,9 @@ $<$ \hyperlink{structpfq_1_1lang_1_1FunctionDescr}{Function\+Descr} $>$, std\+::
 std\+::pair$<$ std\+::vector\\*
 $<$ \hyperlink{structpfq_1_1lang_1_1FunctionDescr}{Function\+Descr} $>$, std\+::size\+\_\+t $>$ \hyperlink{namespacepfq_1_1lang_afc1dab8573f3100bddcc480f74cda6b7}{serialize} (\hyperlink{structpfq_1_1lang_1_1Predicate2}{Predicate2} const \&p, std\+::size\+\_\+t n)
 \item 
+std\+::pair$<$ std\+::vector\\*
+$<$ \hyperlink{structpfq_1_1lang_1_1FunctionDescr}{Function\+Descr} $>$, std\+::size\+\_\+t $>$ \hyperlink{namespacepfq_1_1lang_a50589c00726512e9a57f1fce61fc08a9}{serialize} (\hyperlink{structpfq_1_1lang_1_1Predicate3}{Predicate3} const \&p, std\+::size\+\_\+t n)
+\item 
 {\footnotesize template$<$typename Prop $>$ }\\std\+::pair$<$ std\+::vector\\*
 $<$ \hyperlink{structpfq_1_1lang_1_1FunctionDescr}{Function\+Descr} $>$, std\+::size\+\_\+t $>$ \hyperlink{namespacepfq_1_1lang_a54d0bc7a6ac76ff2971497a9765a7548}{serialize} (\hyperlink{structpfq_1_1lang_1_1PredicateR}{Predicate\+R}$<$ Prop $>$ const \&p, std\+::size\+\_\+t n)
 \item 
@@ -175,6 +192,8 @@ std\+::string \hyperlink{namespacepfq_1_1lang_a4c408055af7a626894154a6c1b42b291}
 std\+::string \hyperlink{namespacepfq_1_1lang_a11c465858cdd1ae573f784d38a77623d}{pretty} (\hyperlink{structpfq_1_1lang_1_1MFunction1}{M\+Function1} const \&descr)
 \item 
 std\+::string \hyperlink{namespacepfq_1_1lang_a971519a49acf7c002f256554775837d3}{pretty} (\hyperlink{structpfq_1_1lang_1_1MFunction2}{M\+Function2} const \&descr)
+\item 
+std\+::string \hyperlink{namespacepfq_1_1lang_ab59cb0aa2d939d82ccf6c88f511e4c4b}{pretty} (\hyperlink{structpfq_1_1lang_1_1MFunction3}{M\+Function3} const \&descr)
 \item 
 {\footnotesize template$<$typename P $>$ }\\std\+::string \hyperlink{namespacepfq_1_1lang_ae7fa4b2cb57cb95fd354825a01e0414d}{pretty} (\hyperlink{structpfq_1_1lang_1_1MFunction1P}{M\+Function1\+P}$<$ P $>$ const \&descr)
 \item 
@@ -198,6 +217,9 @@ $<$ \hyperlink{structpfq_1_1lang_1_1FunctionDescr}{Function\+Descr} $>$, std\+::
 \item 
 std\+::pair$<$ std\+::vector\\*
 $<$ \hyperlink{structpfq_1_1lang_1_1FunctionDescr}{Function\+Descr} $>$, std\+::size\+\_\+t $>$ \hyperlink{namespacepfq_1_1lang_ae38a0c639d07ecadccff0049fafc7400}{serialize} (\hyperlink{structpfq_1_1lang_1_1MFunction2}{M\+Function2} const \&f, std\+::size\+\_\+t n)
+\item 
+std\+::pair$<$ std\+::vector\\*
+$<$ \hyperlink{structpfq_1_1lang_1_1FunctionDescr}{Function\+Descr} $>$, std\+::size\+\_\+t $>$ \hyperlink{namespacepfq_1_1lang_a874ab12f1fbebaeff8b0fb80704efe65}{serialize} (\hyperlink{structpfq_1_1lang_1_1MFunction3}{M\+Function3} const \&f, std\+::size\+\_\+t n)
 \item 
 {\footnotesize template$<$typename P $>$ }\\std\+::pair$<$ std\+::vector\\*
 $<$ \hyperlink{structpfq_1_1lang_1_1FunctionDescr}{Function\+Descr} $>$, std\+::size\+\_\+t $>$ \hyperlink{namespacepfq_1_1lang_ae6eec15cc6a0e9f41b7bcaca7e326dad}{serialize} (\hyperlink{structpfq_1_1lang_1_1MFunction1P}{M\+Function1\+P}$<$ P $>$ const \&f, std\+::size\+\_\+t n)
@@ -233,6 +255,8 @@ $<$ \hyperlink{structpfq_1_1lang_1_1FunctionDescr}{Function\+Descr} $>$, std\+::
 \item 
 {\footnotesize template$<$typename Tp1 , typename Tp2 $>$ }\\\hyperlink{structpfq_1_1lang_1_1Predicate2}{Predicate2} \hyperlink{namespacepfq_1_1lang_a7282b9a2e51359b8db0dcdb9fadf2fd1}{predicate2} (std\+::string symbol, Tp1 const \&arg1, Tp2 const \&arg2)
 \item 
+{\footnotesize template$<$typename Tp1 , typename Tp2 , typename Tp3 $>$ }\\\hyperlink{structpfq_1_1lang_1_1Predicate3}{Predicate3} \hyperlink{namespacepfq_1_1lang_a7a2fe598d3d275693aba6b0a9a1c21b9}{predicate3} (std\+::string symbol, Tp1 const \&arg1, Tp2 const \&arg2, Tp3 const \&arg3)
+\item 
 {\footnotesize template$<$typename Prop $>$ }\\\hyperlink{structpfq_1_1lang_1_1PredicateR}{Predicate\+R}$<$ Prop $>$ \hyperlink{namespacepfq_1_1lang_a8ff48bc31519132b1e1889b03d40d2c9}{predicate\+R} (std\+::string symbol, Prop const \&p)
 \item 
 {\footnotesize template$<$typename Prop , typename Tp $>$ }\\\hyperlink{structpfq_1_1lang_1_1PredicateR1}{Predicate\+R1}$<$ Prop $>$ \hyperlink{namespacepfq_1_1lang_a14607c549693b4cd47d7c3a7aac3bcb0}{predicate\+R1} (std\+::string symbol, Prop const \&p, Tp const \&arg)
@@ -246,6 +270,8 @@ $<$ \hyperlink{structpfq_1_1lang_1_1FunctionDescr}{Function\+Descr} $>$, std\+::
 {\footnotesize template$<$typename T $>$ }\\\hyperlink{structpfq_1_1lang_1_1MFunction1}{M\+Function1} \hyperlink{namespacepfq_1_1lang_a68d775c68562fbd0ab9ef213f2519499}{mfunction1} (std\+::string symbol, const T \&arg)
 \item 
 {\footnotesize template$<$typename T1 , typename T2 $>$ }\\\hyperlink{structpfq_1_1lang_1_1MFunction2}{M\+Function2} \hyperlink{namespacepfq_1_1lang_aab1a000712bb2711044255ca1626cc84}{mfunction2} (std\+::string symbol, const T1 \&arg1, const T2 \&arg2)
+\item 
+{\footnotesize template$<$typename T1 , typename T2 , typename T3 $>$ }\\\hyperlink{structpfq_1_1lang_1_1MFunction3}{M\+Function3} \hyperlink{namespacepfq_1_1lang_ad1c7e85160419846c1ef553c474ad023}{mfunction3} (std\+::string symbol, const T1 \&arg1, const T2 \&arg2, const T3 \&arg3)
 \item 
 {\footnotesize template$<$typename T , typename P $>$ }\\\hyperlink{structpfq_1_1lang_1_1MFunction1P}{M\+Function1\+P}$<$ P $>$ \hyperlink{namespacepfq_1_1lang_a84590df1e34ecdd8cb2808ec9055a226}{mfunction1\+P} (std\+::string symbol, T const \&arg, P const \&p)
 \item 
@@ -395,6 +421,13 @@ Return a predicate that evaluates to {\ttfamily true}, if the property has at le
 \item[{std\+::vector$<$ Tp $>$ const \&}]{pod}
 \end{DoxyParamCaption}
 )\hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq_1_1lang_a1543c06cf527cb69eb4953329c06e244}
+\hypertarget{namespacepfq_1_1lang_a807950c0f256eadba5571049401dbc81}{\index{pfq\+::lang@{pfq\+::lang}!make\+\_\+argument@{make\+\_\+argument}}
+\index{make\+\_\+argument@{make\+\_\+argument}!pfq\+::lang@{pfq\+::lang}}
+\subsubsection[{make\+\_\+argument}]{\setlength{\rightskip}{0pt plus 5cm}{\bf Argument} pfq\+::lang\+::make\+\_\+argument (
+\begin{DoxyParamCaption}
+\item[{std\+::vector$<$ std\+::string $>$ const \&}]{vec}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq_1_1lang_a807950c0f256eadba5571049401dbc81}
 \hypertarget{namespacepfq_1_1lang_ac3ec84f09576bf5fb5db464623a4c165}{\index{pfq\+::lang@{pfq\+::lang}!mfunction@{mfunction}}
 \index{mfunction@{mfunction}!pfq\+::lang@{pfq\+::lang}}
 \subsubsection[{mfunction}]{\setlength{\rightskip}{0pt plus 5cm}{\bf M\+Function} pfq\+::lang\+::mfunction (
@@ -428,6 +461,16 @@ Return a predicate that evaluates to {\ttfamily true}, if the property has at le
 \item[{const T2 \&}]{arg2}
 \end{DoxyParamCaption}
 )\hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq_1_1lang_aab1a000712bb2711044255ca1626cc84}
+\hypertarget{namespacepfq_1_1lang_ad1c7e85160419846c1ef553c474ad023}{\index{pfq\+::lang@{pfq\+::lang}!mfunction3@{mfunction3}}
+\index{mfunction3@{mfunction3}!pfq\+::lang@{pfq\+::lang}}
+\subsubsection[{mfunction3}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename T1 , typename T2 , typename T3 $>$ {\bf M\+Function3} pfq\+::lang\+::mfunction3 (
+\begin{DoxyParamCaption}
+\item[{std\+::string}]{symbol, }
+\item[{const T1 \&}]{arg1, }
+\item[{const T2 \&}]{arg2, }
+\item[{const T3 \&}]{arg3}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq_1_1lang_ad1c7e85160419846c1ef553c474ad023}
 \hypertarget{namespacepfq_1_1lang_a7776af196f44ecee906abcb56f3c2a6d}{\index{pfq\+::lang@{pfq\+::lang}!mfunction\+F@{mfunction\+F}}
 \index{mfunction\+F@{mfunction\+F}!pfq\+::lang@{pfq\+::lang}}
 \subsubsection[{mfunction\+F}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename F $>$ {\bf M\+Function\+F}$<$F$>$ pfq\+::lang\+::mfunction\+F (
@@ -631,6 +674,16 @@ Combine two predicate expressions with a specific boolean 'or' operation.
 \item[{Tp2 const \&}]{arg2}
 \end{DoxyParamCaption}
 )\hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq_1_1lang_a7282b9a2e51359b8db0dcdb9fadf2fd1}
+\hypertarget{namespacepfq_1_1lang_a7a2fe598d3d275693aba6b0a9a1c21b9}{\index{pfq\+::lang@{pfq\+::lang}!predicate3@{predicate3}}
+\index{predicate3@{predicate3}!pfq\+::lang@{pfq\+::lang}}
+\subsubsection[{predicate3}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename Tp1 , typename Tp2 , typename Tp3 $>$ {\bf Predicate3} pfq\+::lang\+::predicate3 (
+\begin{DoxyParamCaption}
+\item[{std\+::string}]{symbol, }
+\item[{Tp1 const \&}]{arg1, }
+\item[{Tp2 const \&}]{arg2, }
+\item[{Tp3 const \&}]{arg3}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq_1_1lang_a7a2fe598d3d275693aba6b0a9a1c21b9}
 \hypertarget{namespacepfq_1_1lang_a8ff48bc31519132b1e1889b03d40d2c9}{\index{pfq\+::lang@{pfq\+::lang}!predicate\+R@{predicate\+R}}
 \index{predicate\+R@{predicate\+R}!pfq\+::lang@{pfq\+::lang}}
 \subsubsection[{predicate\+R}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename Prop $>$ {\bf Predicate\+R}$<$Prop$>$ pfq\+::lang\+::predicate\+R (
@@ -648,6 +701,13 @@ Combine two predicate expressions with a specific boolean 'or' operation.
 \item[{Tp const \&}]{arg}
 \end{DoxyParamCaption}
 )\hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq_1_1lang_a14607c549693b4cd47d7c3a7aac3bcb0}
+\hypertarget{namespacepfq_1_1lang_a7a4c9ec62feae5479366427beeff5b74}{\index{pfq\+::lang@{pfq\+::lang}!pretty@{pretty}}
+\index{pretty@{pretty}!pfq\+::lang@{pfq\+::lang}}
+\subsubsection[{pretty}]{\setlength{\rightskip}{0pt plus 5cm}std\+::string pfq\+::lang\+::pretty (
+\begin{DoxyParamCaption}
+\item[{ipv4\+\_\+t}]{value}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq_1_1lang_a7a4c9ec62feae5479366427beeff5b74}
 \hypertarget{namespacepfq_1_1lang_a00da90017f887d155d305c64a5073910}{\index{pfq\+::lang@{pfq\+::lang}!pretty@{pretty}}
 \index{pretty@{pretty}!pfq\+::lang@{pfq\+::lang}}
 \subsubsection[{pretty}]{\setlength{\rightskip}{0pt plus 5cm}std\+::string pfq\+::lang\+::pretty (
@@ -704,6 +764,13 @@ Combine two predicate expressions with a specific boolean 'or' operation.
 \item[{Predicate2 const \&}]{descr}
 \end{DoxyParamCaption}
 )\hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq_1_1lang_a9c7d94ec537bda04dc52d20bc7f9a6f8}
+\hypertarget{namespacepfq_1_1lang_ab64eb5ff467f787346f5da525dcc227e}{\index{pfq\+::lang@{pfq\+::lang}!pretty@{pretty}}
+\index{pretty@{pretty}!pfq\+::lang@{pfq\+::lang}}
+\subsubsection[{pretty}]{\setlength{\rightskip}{0pt plus 5cm}std\+::string pfq\+::lang\+::pretty (
+\begin{DoxyParamCaption}
+\item[{Predicate3 const \&}]{descr}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq_1_1lang_ab64eb5ff467f787346f5da525dcc227e}
 \hypertarget{namespacepfq_1_1lang_a4bab9aa1d5635e949a79b0dedb592a90}{\index{pfq\+::lang@{pfq\+::lang}!pretty@{pretty}}
 \index{pretty@{pretty}!pfq\+::lang@{pfq\+::lang}}
 \subsubsection[{pretty}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename Prop $>$ std\+::string pfq\+::lang\+::pretty (
@@ -739,6 +806,13 @@ Combine two predicate expressions with a specific boolean 'or' operation.
 \item[{M\+Function2 const \&}]{descr}
 \end{DoxyParamCaption}
 )\hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq_1_1lang_a971519a49acf7c002f256554775837d3}
+\hypertarget{namespacepfq_1_1lang_ab59cb0aa2d939d82ccf6c88f511e4c4b}{\index{pfq\+::lang@{pfq\+::lang}!pretty@{pretty}}
+\index{pretty@{pretty}!pfq\+::lang@{pfq\+::lang}}
+\subsubsection[{pretty}]{\setlength{\rightskip}{0pt plus 5cm}std\+::string pfq\+::lang\+::pretty (
+\begin{DoxyParamCaption}
+\item[{M\+Function3 const \&}]{descr}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq_1_1lang_ab59cb0aa2d939d82ccf6c88f511e4c4b}
 \hypertarget{namespacepfq_1_1lang_ae7fa4b2cb57cb95fd354825a01e0414d}{\index{pfq\+::lang@{pfq\+::lang}!pretty@{pretty}}
 \index{pretty@{pretty}!pfq\+::lang@{pfq\+::lang}}
 \subsubsection[{pretty}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename P $>$ std\+::string pfq\+::lang\+::pretty (
@@ -859,6 +933,14 @@ Combine two predicate expressions with a specific boolean 'or' operation.
 \item[{std\+::size\+\_\+t}]{n}
 \end{DoxyParamCaption}
 )\hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq_1_1lang_afc1dab8573f3100bddcc480f74cda6b7}
+\hypertarget{namespacepfq_1_1lang_a50589c00726512e9a57f1fce61fc08a9}{\index{pfq\+::lang@{pfq\+::lang}!serialize@{serialize}}
+\index{serialize@{serialize}!pfq\+::lang@{pfq\+::lang}}
+\subsubsection[{serialize}]{\setlength{\rightskip}{0pt plus 5cm}std\+::pair$<$std\+::vector$<${\bf Function\+Descr}$>$, std\+::size\+\_\+t$>$ pfq\+::lang\+::serialize (
+\begin{DoxyParamCaption}
+\item[{Predicate3 const \&}]{p, }
+\item[{std\+::size\+\_\+t}]{n}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq_1_1lang_a50589c00726512e9a57f1fce61fc08a9}
 \hypertarget{namespacepfq_1_1lang_a54d0bc7a6ac76ff2971497a9765a7548}{\index{pfq\+::lang@{pfq\+::lang}!serialize@{serialize}}
 \index{serialize@{serialize}!pfq\+::lang@{pfq\+::lang}}
 \subsubsection[{serialize}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename Prop $>$ std\+::pair$<$std\+::vector$<${\bf Function\+Descr}$>$, std\+::size\+\_\+t$>$ pfq\+::lang\+::serialize (
@@ -899,6 +981,14 @@ Combine two predicate expressions with a specific boolean 'or' operation.
 \item[{std\+::size\+\_\+t}]{n}
 \end{DoxyParamCaption}
 )\hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq_1_1lang_ae38a0c639d07ecadccff0049fafc7400}
+\hypertarget{namespacepfq_1_1lang_a874ab12f1fbebaeff8b0fb80704efe65}{\index{pfq\+::lang@{pfq\+::lang}!serialize@{serialize}}
+\index{serialize@{serialize}!pfq\+::lang@{pfq\+::lang}}
+\subsubsection[{serialize}]{\setlength{\rightskip}{0pt plus 5cm}std\+::pair$<$std\+::vector$<${\bf Function\+Descr}$>$, std\+::size\+\_\+t$>$ pfq\+::lang\+::serialize (
+\begin{DoxyParamCaption}
+\item[{M\+Function3 const \&}]{f, }
+\item[{std\+::size\+\_\+t}]{n}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq_1_1lang_a874ab12f1fbebaeff8b0fb80704efe65}
 \hypertarget{namespacepfq_1_1lang_ae6eec15cc6a0e9f41b7bcaca7e326dad}{\index{pfq\+::lang@{pfq\+::lang}!serialize@{serialize}}
 \index{serialize@{serialize}!pfq\+::lang@{pfq\+::lang}}
 \subsubsection[{serialize}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename P $>$ std\+::pair$<$std\+::vector$<${\bf Function\+Descr}$>$, std\+::size\+\_\+t$>$ pfq\+::lang\+::serialize (
@@ -963,6 +1053,13 @@ Combine two predicate expressions with a specific boolean 'or' operation.
 \item[{std\+::size\+\_\+t}]{n}
 \end{DoxyParamCaption}
 )\hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq_1_1lang_a034705d1c7a67efd3edcde3a59c22f2f}
+\hypertarget{namespacepfq_1_1lang_a6b371b706602987f7e45c7558824fa34}{\index{pfq\+::lang@{pfq\+::lang}!show@{show}}
+\index{show@{show}!pfq\+::lang@{pfq\+::lang}}
+\subsubsection[{show}]{\setlength{\rightskip}{0pt plus 5cm}std\+::string pfq\+::lang\+::show (
+\begin{DoxyParamCaption}
+\item[{ipv4\+\_\+t}]{value}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq_1_1lang_a6b371b706602987f7e45c7558824fa34}
 \hypertarget{namespacepfq_1_1lang_a92d9597c137911206814e93dc0b8a414}{\index{pfq\+::lang@{pfq\+::lang}!show@{show}}
 \index{show@{show}!pfq\+::lang@{pfq\+::lang}}
 \subsubsection[{show}]{\setlength{\rightskip}{0pt plus 5cm}std\+::string pfq\+::lang\+::show (

@@ -11,7 +11,7 @@ var indexSectionsWithContent =
   1: "acfhikmps",
   2: "p",
   3: "del",
-  4: "abcdfghmnopsv~",
+  4: "abcdfghimnopsv~",
   5: "abcdfghiklmnprstuvw",
   6: "bnt"
 };

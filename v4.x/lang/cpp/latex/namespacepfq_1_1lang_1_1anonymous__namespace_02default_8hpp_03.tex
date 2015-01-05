@@ -254,8 +254,7 @@ Bloom filter\+: utility function that computes the false positive P, given /\+N/
 \begin{DoxyCode}
 = [] (\textcolor{keyword}{const} \textcolor{keywordtype}{char} *net, \textcolor{keywordtype}{int} prefix)
         \{
-            \textcolor{keyword}{auto} a = details::make\_netaddr(net, prefix);
-            \textcolor{keywordflow}{return} \hyperlink{namespacepfq_1_1lang_a68d775c68562fbd0ab9ef213f2519499}{mfunction1}(\textcolor{stringliteral}{"addr"}, a);
+            \textcolor{keywordflow}{return} \hyperlink{namespacepfq_1_1lang_aab1a000712bb2711044255ca1626cc84}{mfunction2}(\textcolor{stringliteral}{"addr"}, ipv4\_t\{net\}, prefix);
         \}
 \end{DoxyCode}
 
@@ -413,8 +412,7 @@ Drop the packet. The computation evaluates to {\ttfamily Drop}.
 \begin{DoxyCode}
 = [] (\textcolor{keyword}{const} \textcolor{keywordtype}{char} *net, \textcolor{keywordtype}{int} prefix)
         \{
-            \textcolor{keyword}{auto} a = details::make\_netaddr(net, prefix);
-            \textcolor{keywordflow}{return} \hyperlink{namespacepfq_1_1lang_a68d775c68562fbd0ab9ef213f2519499}{mfunction1}(\textcolor{stringliteral}{"dst\_addr"}, a);
+            \textcolor{keywordflow}{return} \hyperlink{namespacepfq_1_1lang_aab1a000712bb2711044255ca1626cc84}{mfunction2}(\textcolor{stringliteral}{"dst\_addr"}, ipv4\_t\{net\}, prefix);
         \}
 \end{DoxyCode}
 
@@ -489,10 +487,9 @@ By default packets are marked with 0.
 \subsubsection[{has\+\_\+addr}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::has\+\_\+addr}}\label{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a74c6b7e812fb3d312ebf534960a6a91d}
 {\bfseries Initial value\+:}
 \begin{DoxyCode}
-= [] (\textcolor{keyword}{const} \textcolor{keywordtype}{char} *net, \textcolor{keywordtype}{int} prefix)
+= [] (\textcolor{keyword}{const} \textcolor{keywordtype}{char} *\hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a13cabe468839119d8d68540e3c60718b}{addr}, \textcolor{keywordtype}{int} prefix)
         \{
-            \textcolor{keyword}{auto} \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a13cabe468839119d8d68540e3c60718b}{addr} = details::make\_netaddr(net, prefix);
-            \textcolor{keywordflow}{return} \hyperlink{namespacepfq_1_1lang_a3e018f096545ca95a68e67027c8e3144}{predicate1}(\textcolor{stringliteral}{"has\_addr"}, \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a13cabe468839119d8d68540e3c60718b}{addr});
+            \textcolor{keywordflow}{return} \hyperlink{namespacepfq_1_1lang_a7282b9a2e51359b8db0dcdb9fadf2fd1}{predicate2}(\textcolor{stringliteral}{"has\_addr"}, ipv4\_t \{\hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a13cabe468839119d8d68540e3c60718b}{addr}\}, prefix);
         \}
 \end{DoxyCode}
 
@@ -506,10 +503,9 @@ has\+\_\+addr (\char`\"{}192.\+168.\+0.\+0\char`\"{},24) \hypertarget{namespacep
 \subsubsection[{has\+\_\+dst\+\_\+addr}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::has\+\_\+dst\+\_\+addr}}\label{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a0a53822af0ed8ea341f16a1da5ea83e3}
 {\bfseries Initial value\+:}
 \begin{DoxyCode}
-= [] (\textcolor{keyword}{const} \textcolor{keywordtype}{char} *net, \textcolor{keywordtype}{int} prefix)
+= [] (\textcolor{keyword}{const} \textcolor{keywordtype}{char} *\hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a13cabe468839119d8d68540e3c60718b}{addr}, \textcolor{keywordtype}{int} prefix)
         \{
-            \textcolor{keyword}{auto} \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a13cabe468839119d8d68540e3c60718b}{addr} = details::make\_netaddr(net, prefix);
-            \textcolor{keywordflow}{return} \hyperlink{namespacepfq_1_1lang_a3e018f096545ca95a68e67027c8e3144}{predicate1}(\textcolor{stringliteral}{"has\_dst\_addr"}, \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a13cabe468839119d8d68540e3c60718b}{addr});
+            \textcolor{keywordflow}{return} \hyperlink{namespacepfq_1_1lang_a7282b9a2e51359b8db0dcdb9fadf2fd1}{predicate2}(\textcolor{stringliteral}{"has\_dst\_addr"}, ipv4\_t\{\hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a13cabe468839119d8d68540e3c60718b}{addr}\}, prefix);
         \}
 \end{DoxyCode}
 
@@ -553,10 +549,9 @@ has\+\_\+port(80) \hypertarget{namespacepfq_1_1lang_1_1anonymous__namespace_02de
 \subsubsection[{has\+\_\+src\+\_\+addr}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::has\+\_\+src\+\_\+addr}}\label{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_acb03dd3e34d6dd7e83d621fa9077194c}
 {\bfseries Initial value\+:}
 \begin{DoxyCode}
-= [] (\textcolor{keyword}{const} \textcolor{keywordtype}{char} *net, \textcolor{keywordtype}{int} prefix)
+= [] (\textcolor{keyword}{const} \textcolor{keywordtype}{char} *\hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a13cabe468839119d8d68540e3c60718b}{addr}, \textcolor{keywordtype}{int} prefix)
         \{
-            \textcolor{keyword}{auto} \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a13cabe468839119d8d68540e3c60718b}{addr} = details::make\_netaddr(net, prefix);
-            \textcolor{keywordflow}{return} \hyperlink{namespacepfq_1_1lang_a3e018f096545ca95a68e67027c8e3144}{predicate1}(\textcolor{stringliteral}{"has\_src\_addr"}, \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a13cabe468839119d8d68540e3c60718b}{addr});
+            \textcolor{keywordflow}{return} \hyperlink{namespacepfq_1_1lang_a7282b9a2e51359b8db0dcdb9fadf2fd1}{predicate2}(\textcolor{stringliteral}{"has\_src\_addr"}, ipv4\_t \{\hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a13cabe468839119d8d68540e3c60718b}{addr}\}, prefix);
         \}
 \end{DoxyCode}
 
@@ -895,8 +890,7 @@ Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} i
 \begin{DoxyCode}
 = [] (\textcolor{keyword}{const} \textcolor{keywordtype}{char} *net, \textcolor{keywordtype}{int} prefix)
         \{
-            \textcolor{keyword}{auto} a = details::make\_netaddr(net, prefix);
-            \textcolor{keywordflow}{return} \hyperlink{namespacepfq_1_1lang_a68d775c68562fbd0ab9ef213f2519499}{mfunction1}(\textcolor{stringliteral}{"src\_addr"}, a);
+            \textcolor{keywordflow}{return} \hyperlink{namespacepfq_1_1lang_aab1a000712bb2711044255ca1626cc84}{mfunction2}(\textcolor{stringliteral}{"src\_addr"}, ipv4\_t\{net\}, prefix);
         \}
 \end{DoxyCode}
 

@@ -6,6 +6,7 @@ var structpfq_1_1lang_1_1Argument =
     [ "Fun", "structpfq_1_1lang_1_1Argument.html#a774e93098c8bc9f3472facd7ddeb08ca", null ],
     [ "Null", "structpfq_1_1lang_1_1Argument.html#a47b27b590b495ac9e990d850f3052aad", null ],
     [ "String", "structpfq_1_1lang_1_1Argument.html#aba384bb2905edc62d6700a0d61f6b05b", null ],
+    [ "SVector", "structpfq_1_1lang_1_1Argument.html#ae01b308812cd388a46bcfcddb645f09d", null ],
     [ "Vector", "structpfq_1_1lang_1_1Argument.html#a4dc906b330284d955fdc699ea3217da5", null ],
     [ "nelem", "structpfq_1_1lang_1_1Argument.html#a124d3646401b91728340221c59ca884e", null ],
     [ "ptr", "structpfq_1_1lang_1_1Argument.html#a74137962d82bf5a018d684c04149e446", null ],

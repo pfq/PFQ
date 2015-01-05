@@ -13,6 +13,8 @@ var searchData=
   ['ip_5ftos',['ip_tos',['../namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03.html#acc5d2b786c39d4177ab37ee16ee2295d',1,'pfq::lang::anonymous_namespace{default.hpp}']]],
   ['ip_5ftot_5flen',['ip_tot_len',['../namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03.html#a48d42ce1bea31f55be3377e8f2c41bbe',1,'pfq::lang::anonymous_namespace{default.hpp}']]],
   ['ip_5fttl',['ip_ttl',['../namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03.html#a885339d6e5b34ec5d037e085dfba9851',1,'pfq::lang::anonymous_namespace{default.hpp}']]],
+  ['ipv4_5ft',['ipv4_t',['../structpfq_1_1lang_1_1ipv4__t.html',1,'pfq::lang']]],
+  ['ipv4_5ft',['ipv4_t',['../structpfq_1_1lang_1_1ipv4__t.html#a3237166f3fab90a77846d9656b0482c8',1,'pfq::lang::ipv4_t::ipv4_t()=default'],['../structpfq_1_1lang_1_1ipv4__t.html#a86fa55f6ef31157415d65d43ce228fae',1,'pfq::lang::ipv4_t::ipv4_t(const char *addr)']]],
   ['is_5ffirst_5ffrag',['is_first_frag',['../namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03.html#afb797cc442d04e614a9ac68c7c4c35ff',1,'pfq::lang::anonymous_namespace{default.hpp}']]],
   ['is_5fflow',['is_flow',['../namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03.html#ae52890434121a999589d48bccae3c3e2',1,'pfq::lang::anonymous_namespace{default.hpp}']]],
   ['is_5ffrag',['is_frag',['../namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03.html#af042e092c925ae6306ae85ae5a56563d',1,'pfq::lang::anonymous_namespace{default.hpp}']]],
