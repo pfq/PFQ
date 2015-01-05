@@ -383,6 +383,7 @@ namespace lang
     struct Predicate;
     struct Predicate1;
     struct Predicate2;
+    struct Predicate3;
 
     template <typename Prop> struct PredicateR;
     template <typename Prop> struct PredicateR1;
@@ -406,6 +407,7 @@ namespace lang
         bool_type<std::is_same<Tp, Predicate>::value               ||
                   std::is_same<Tp, Predicate1>::value              ||
                   std::is_same<Tp, Predicate2>::value              ||
+                  std::is_same<Tp, Predicate3>::value              ||
                   is_same_type_constructor<Tp, PredicateR>::value  ||
                   is_same_type_constructor<Tp, PredicateR1>::value ||
                   is_same_type_constructor<Tp, Combinator1>::value ||
@@ -615,6 +617,22 @@ namespace lang
         Argument    arg2_;
     };
 
+    struct Predicate3 : NetPredicate
+    {
+        template <typename Tp1, typename Tp2, typename Tp3>
+        Predicate3(std::string symb, Tp1 const &arg1, Tp2 const &arg2, Tp3 const &arg3)
+        : symbol_{std::move(symb)}
+        , arg1_ (make_argument(arg1))
+        , arg2_ (make_argument(arg2))
+        , arg3_ (make_argument(arg3))
+        {}
+
+        std::string symbol_;
+        Argument    arg1_;
+        Argument    arg2_;
+        Argument    arg3_;
+    };
+
     template <typename Prop>
     struct PredicateR : NetPredicate
     {
@@ -666,6 +684,12 @@ namespace lang
         return '(' + descr.symbol_ + ' ' + pretty(descr.arg1_) + ' ' + pretty(descr.arg2_) + ')';
     }
 
+    inline std::string
+    pretty(Predicate3 const &descr)
+    {
+        return '(' + descr.symbol_ + ' ' + pretty(descr.arg1_) + ' ' + pretty(descr.arg2_) + ' ' + pretty (descr.arg3_) + ')';
+    }
+
     template <typename Prop>
     inline std::string
     pretty(PredicateR<Prop> const &descr)
@@ -698,6 +722,12 @@ namespace lang
     serialize(Predicate2 const &p, std::size_t n)
     {
         return { { FunctionDescr { p.symbol_,  {{ p.arg1_, p.arg2_}}, -1UL } }, n+1 };
+    }
+
+    inline std::pair<std::vector<FunctionDescr>, std::size_t>
+    serialize(Predicate3 const &p, std::size_t n)
+    {
+        return { { FunctionDescr { p.symbol_,  {{ p.arg1_, p.arg2_, p.arg3_ }}, -1UL } }, n+1 };
     }
 
     template <typename Prop>
@@ -1162,6 +1192,13 @@ namespace lang
     predicate2(std::string symbol, Tp1 const &arg1, Tp2 const &arg2)
     {
         return Predicate2{ std::move(symbol), arg1, arg2 };
+    }
+
+    template <typename Tp1, typename Tp2, typename Tp3>
+    inline Predicate3
+    predicate3(std::string symbol, Tp1 const &arg1, Tp2 const &arg2, Tp3 const &arg3)
+    {
+        return Predicate3{ std::move(symbol), arg1, arg2, arg3 };
     }
 
     template <typename Prop>
