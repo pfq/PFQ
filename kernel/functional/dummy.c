@@ -72,6 +72,17 @@ dummy_vector(arguments_t args, SkBuff b)
 
 
 static Action_SkBuff
+dummy_string(arguments_t args, SkBuff b)
+{
+        const char *data = get_arg(const char *,args);
+
+	printk(KERN_INFO "[PFQ/lang] dummy: vector string: %s\n", data);
+
+        return Pass(b);
+}
+
+
+static Action_SkBuff
 dummy_strings(arguments_t args, SkBuff b)
 {
         const char **data = get_array(const char *,args);
@@ -108,6 +119,7 @@ struct pfq_function_descr dummy_functions[] = {
 
         { "dummy",         "Int   -> SkBuff -> Action SkBuff",  	dummy, dummy_init,  dummy_fini },
         { "dummy_vector",  "[Int] -> SkBuff -> Action SkBuff",     	dummy_vector, dummy_init,  dummy_fini },
+        { "dummy_string",  "String -> SkBuff -> Action SkBuff",     	dummy_string, dummy_init,  dummy_fini },
         { "dummy_strings", "[String] -> SkBuff -> Action SkBuff",     	dummy_strings, dummy_init,  dummy_fini },
 
         { NULL }};
