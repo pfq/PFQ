@@ -34,9 +34,11 @@ module Network.PFq.Experimental
         -- * Experimental Functions
         -- | This set of experimental functions may be subject to changes in future releases
 
-        dummy      ,
-        hdummy     ,
-        vdummy     ,
+        dummy        ,
+        dummy_vector ,
+        dummy_string ,
+        dummy_strings,
+
         crc16      ,
 
         class'     ,
@@ -51,15 +53,25 @@ import Foreign.C.Types
 -- Experimental in-kernel computations
 
 -- | Specify the class mask for the given packet.
+
 class'  = MFunction1 "class"   :: CInt -> NetFunction
 
 deliver = MFunction1 "deliver" :: CInt -> NetFunction
 
-dummy       = MFunction1 "dummy"         :: CInt -> NetFunction
-hdummy      = MFunctionP  "hdummy"       :: NetPredicate -> NetFunction
-vdummy  :: [CInt] -> NetFunction
-vdummy  xs  = MFunction1 "vdummy" xs
-crc16       = MFunction "crc16" :: NetFunction
+dummy = MFunction1 "dummy" :: CInt -> NetFunction
+
+
+dummy_vector  :: [CInt] -> NetFunction
+dummy_vector xs  = MFunction1 "dummy_vector" xs
+
+dummy_string :: String -> NetFunction
+dummy_string xs  = MFunction1 "dummy_string" xs
+
+dummy_strings :: [String] -> NetFunction
+dummy_strings xs  = MFunction1 "dummy_strings" xs
+
+
+crc16 = MFunction "crc16" :: NetFunction
 
 
 
