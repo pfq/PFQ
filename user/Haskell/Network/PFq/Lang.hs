@@ -135,7 +135,7 @@ instance Show Argument where
 
 -- | Argumentable class, a typeclass for building function Arguments.
 
-class Argumentable a where
+class (Show a) => Argumentable a where
     mkArgument :: a -> Argument
 
 instance Argumentable String where
@@ -150,8 +150,8 @@ instance (Show a, Storable a) => Argumentable a where
 instance (Show a, Storable a) => Argumentable [a] where
     mkArgument xs = ArgVector xs
 
-instance Argumentable Fun where
-    mkArgument (Fun n) = ArgFun n
+instance Argumentable FunPtr where
+    mkArgument (FunPtr n) = ArgFunPtr n
 
 
 -- | Function descriptor.
@@ -179,31 +179,31 @@ type NetProperty  = Function (SkBuff -> Word64)
 data Function f where
 {
         MFunction    :: Symbol -> NetFunction;
-        MFunction1   :: forall a. (Show a, Argumentable a) => Symbol -> a -> NetFunction;
-        MFunction2   :: forall a b. (Show a, Argumentable a, Show b, Argumentable b) => Symbol -> a -> b -> NetFunction;
-        MFunction3   :: forall a b c. (Show a, Argumentable a, Show b, Argumentable b, Show c, Argumentable c) => Symbol -> a -> b -> c -> NetFunction;
+        MFunction1   :: forall a. (Argumentable a) => Symbol -> a -> NetFunction;
+        MFunction2   :: forall a b. (Argumentable a, Argumentable b) => Symbol -> a -> b -> NetFunction;
+        MFunction3   :: forall a b c. (Argumentable a, Argumentable b, Argumentable c) => Symbol -> a -> b -> c -> NetFunction;
 
-        MFunction1P  :: forall a. (Show a, Argumentable a) => Symbol -> a -> NetPredicate -> NetFunction;
+        MFunction1P  :: forall a. (Argumentable a) => Symbol -> a -> NetPredicate -> NetFunction;
         MFunctionP   :: Symbol -> NetPredicate -> NetFunction;
         MFunctionPF  :: Symbol -> NetPredicate -> NetFunction -> NetFunction;
         MFunctionPFF :: Symbol -> NetPredicate -> NetFunction -> NetFunction -> NetFunction;
         MFunctionF   :: Symbol -> NetFunction  -> NetFunction;
         MFunctionFF  :: Symbol -> NetFunction  -> NetFunction -> NetFunction;
 
-        Predicate   :: Symbol -> NetPredicate;
-        Predicate1  :: forall a. (Show a, Argumentable a) => Symbol -> a -> NetPredicate;
-        Predicate2  :: forall a b. (Show a, Argumentable a, Show b, Argumentable b) => Symbol -> a -> b -> NetPredicate;
-        Predicate3  :: forall a b c. (Show a, Argumentable a, Show b, Argumentable b, Show c, Argumentable c) => Symbol -> a -> b -> c -> NetPredicate;
-        PredicateR  :: Symbol -> NetProperty -> NetPredicate;
-        PredicateR1 :: forall a. (Show a, Argumentable a) => Symbol -> NetProperty -> a -> NetPredicate;
+        Predicate    :: Symbol -> NetPredicate;
+        Predicate1   :: forall a. (Argumentable a) => Symbol -> a -> NetPredicate;
+        Predicate2   :: forall a b. (Argumentable a, Argumentable b) => Symbol -> a -> b -> NetPredicate;
+        Predicate3   :: forall a b c. (Argumentable a, Argumentable b, Argumentable c) => Symbol -> a -> b -> c -> NetPredicate;
+        PredicateR   :: Symbol -> NetProperty -> NetPredicate;
+        PredicateR1  :: forall a. (Argumentable a) => Symbol -> NetProperty -> a -> NetPredicate;
 
-        Property    :: Symbol -> NetProperty;
-        Property1   :: forall a. (Show a, Argumentable a) => Symbol -> a -> NetProperty;
+        Property     :: Symbol -> NetProperty;
+        Property1    :: forall a. (Argumentable a) => Symbol -> a -> NetProperty;
 
-        Combinator1 :: Symbol -> NetPredicate -> NetPredicate;
-        Combinator2 :: Symbol -> NetPredicate -> NetPredicate -> NetPredicate;
+        Combinator1  :: Symbol -> NetPredicate -> NetPredicate;
+        Combinator2  :: Symbol -> NetPredicate -> NetPredicate -> NetPredicate;
 
-        Composition :: forall f1 f2 f. (Serializable (Function f1), Serializable (Function f2)) => Function f1 -> Function f2 -> Function f;
+        Composition  :: forall f1 f2 f. (Serializable (Function f1), Serializable (Function f2)) => Function f1 -> Function f2 -> Function f;
 }
 
 
