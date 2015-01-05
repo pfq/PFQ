@@ -130,48 +130,6 @@ namespace lang
             }
         };
 
-
-        // utility function
-        //
-
-        inline uint32_t
-        prefix2mask(size_t n)
-        {
-            return htonl(static_cast<uint32_t>(~((1ULL << (32-n)) - 1)));
-        };
-
-        struct network_addr
-        {
-            uint32_t    addr;
-            int         prefix;
-        };
-
-        inline
-        struct network_addr
-        make_netaddr(const char *net, int prefix)
-        {
-            network_addr netaddr;
-
-            if (inet_pton(AF_INET, net, &netaddr.addr) <= 0)
-                throw std::runtime_error("pfq::lang::inet_pton");
-
-            netaddr.prefix = prefix;
-
-            return netaddr;
-        }
-
-        template <typename CharT, typename Traits>
-        typename std::basic_ostream<CharT, Traits> &
-        operator<<(std::basic_ostream<CharT,Traits>& out, network_addr const&  that)
-        {
-            char addr[16];
-
-            if (inet_ntop(AF_INET, &that.addr, addr, sizeof(addr)) == nullptr)
-                throw std::runtime_error("pfq::lang::inet_ntop");
-
-            return out << std::string(addr) << '/' << std::to_string(that.prefix);
-        }
-
         inline uint32_t
         inet_addr(const std::string &addr)
         {

@@ -33,14 +33,14 @@
 
 #include <arpa/inet.h>
 
+/*! \file default.hpp
+ *  \brief This header contains the PFQ/lang eDSL functions.
+ */
+
 namespace pfq
 {
 namespace lang
 {
-    /*! \file default.hpp
-     *  \brief This header contains the PFQ/lang eDSL functions.
-     */
-
     using namespace std::placeholders;
 
     //
@@ -254,26 +254,23 @@ namespace lang
          * has_addr ("192.168.0.0",24)
          */
 
-        auto has_addr = [] (const char *net, int prefix)
+        auto has_addr = [] (const char *addr, int prefix)
         {
-            auto addr = details::make_netaddr(net, prefix);
-            return predicate1("has_addr", addr);
+            return predicate2("has_addr", ipv4_t {addr}, prefix);
         };
 
         //! Evaluate to \c true if the source IP address matches the given network address.
 
-        auto has_src_addr = [] (const char *net, int prefix)
+        auto has_src_addr = [] (const char *addr, int prefix)
         {
-            auto addr = details::make_netaddr(net, prefix);
-            return predicate1("has_src_addr", addr);
+            return predicate2("has_src_addr", ipv4_t {addr}, prefix);
         };
 
         //! Evaluate to \c true if the destination IP address matches the given network address.
 
-        auto has_dst_addr = [] (const char *net, int prefix)
+        auto has_dst_addr = [] (const char *addr, int prefix)
         {
-            auto addr = details::make_netaddr(net, prefix);
-            return predicate1("has_dst_addr", addr);
+            return predicate2("has_dst_addr", ipv4_t{addr}, prefix);
         };
 
         //! Evaluate to \c true if the SkBuff has the given \c mark, set by mark function.
@@ -732,24 +729,21 @@ namespace lang
 
         auto addr = [] (const char *net, int prefix)
         {
-            auto a = details::make_netaddr(net, prefix);
-            return mfunction1("addr", a);
+            return mfunction2("addr", ipv4_t{net}, prefix);
         };
 
         //! Monadic version of \c has_src_addr predicate.  \see has_src_addr
 
         auto src_addr = [] (const char *net, int prefix)
         {
-            auto a = details::make_netaddr(net, prefix);
-            return mfunction1("src_addr", a);
+            return mfunction2("src_addr", ipv4_t{net}, prefix);
         };
 
         //! Monadic version of \c has_dst_addr predicate.  \see has_dst_addr
 
         auto dst_addr = [] (const char *net, int prefix)
         {
-            auto a = details::make_netaddr(net, prefix);
-            return mfunction1("dst_addr", a);
+            return mfunction2("dst_addr", ipv4_t{net}, prefix);
         };
 
         //! Conditional execution of monadic NetFunctions.

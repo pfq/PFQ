@@ -198,34 +198,15 @@ module Network.PFq.Default
 
 
 import Network.PFq.Lang
-import Foreign.C.Types
 import Data.Int
 
 import Data.Word
+import Data.String
 import Network.Socket
 import System.IO.Unsafe
 
+import Foreign.C.Types
 import Foreign.Storable.Tuple()
-
--- import Data.Bits
--- import Data.Endian
-
--- prefix2mask :: Int -> Word32
--- prefix2mask p =  toBigEndian $ fromIntegral $ complement (shiftL (1 :: Word64) (32 - p) - 1)
-
--- mkNetAddr :: String -> Int -> Word64
--- mkNetAddr net p = let a = unsafePerformIO (inet_addr net)
---                       b = prefix2mask p
---                   in  shiftL (fromIntegral a :: Word64) 32 .|. (fromIntegral b :: Word64)
-
-
-mkNetAddr :: String -> Int -> (Word32, CInt)
-mkNetAddr net p = let a = unsafePerformIO (inet_addr net)
-                  in (fromIntegral a, fromIntegral p)
-
-mkSuperNetAddr :: String -> Int -> Int -> (Word32, CInt, CInt)
-mkSuperNetAddr net p sub = let a = unsafePerformIO (inet_addr net)
-                           in (fromIntegral a, fromIntegral p, fromIntegral sub)
 
 -- Default combinators
 
@@ -369,17 +350,17 @@ has_dst_port  = Predicate1 "has_dst_port"   :: Int16 -> NetPredicate
 -- | Evaluate to /True/ if the source or destination IP address matches the given network address. I.e.,
 --
 -- > has_addr "192.168.0.0" 24
-has_addr     :: String -> Int -> NetPredicate
+has_addr     :: HostName -> Int -> NetPredicate
 
 -- | Evaluate to /True/ if the source IP address matches the given network address.
-has_src_addr :: String -> Int -> NetPredicate
+has_src_addr :: HostName -> Int -> NetPredicate
 
 -- | Evaluate to /True/ if the destination IP address matches the given network address.
-has_dst_addr :: String -> Int -> NetPredicate
+has_dst_addr :: HostName -> Int -> NetPredicate
 
-has_addr net p     = Predicate1 "has_addr" (mkNetAddr net p)
-has_src_addr net p = Predicate1 "has_src_addr" (mkNetAddr net p)
-has_dst_addr net p = Predicate1 "has_dst_addr" (mkNetAddr net p)
+has_addr a p     = Predicate2 "has_addr"     (fromString a :: IPv4) p
+has_src_addr a p = Predicate2 "has_src_addr" (fromString a :: IPv4) p
+has_dst_addr a p = Predicate2 "has_dst_addr" (fromString a :: IPv4) p
 
 -- | Evaluate to the mark set by 'mark' function. By default packets are marked with 0.
 get_mark    = Property "get_mark"
@@ -473,8 +454,8 @@ steer_rtp       = MFunction "steer_rtp"     :: NetFunction
 -- sub networks.
 --
 -- > steer_net "192.168.0.0" 16 24
-steer_net :: String -> Int -> Int -> NetFunction
-steer_net net p sub = MFunction1 "steer_net" (mkSuperNetAddr net p sub)
+steer_net :: HostName -> Int -> Int -> NetFunction
+steer_net net p sub = MFunction3 "steer_net" (fromString net :: IPv4) p sub
 
 -- | Dispatch the packet across the sockets
 -- with a randomized algorithm. The function uses as /hash/ the field
@@ -670,9 +651,9 @@ src_addr :: String -> Int -> NetFunction
 -- | Monadic version of 'has_src_addr' predicate.
 dst_addr :: String -> Int -> NetFunction
 
-addr net p      = MFunction1 "addr"     (mkNetAddr net p)
-src_addr net p  = MFunction1 "src_addr" (mkNetAddr net p)
-dst_addr net p  = MFunction1 "dst_addr" (mkNetAddr net p)
+addr net p      = MFunction2 "addr"     (fromString net :: IPv4) p
+src_addr net p  = MFunction2 "src_addr" (fromString net :: IPv4) p
+dst_addr net p  = MFunction2 "dst_addr" (fromString net :: IPv4) p
 
 -- | Conditional execution of monadic NetFunctions.
 --
