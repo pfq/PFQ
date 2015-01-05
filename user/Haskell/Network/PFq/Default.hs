@@ -28,6 +28,7 @@
 --
 
 {-# LANGUAGE ImpredicativeTypes #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Network.PFq.Default
     (
@@ -356,11 +357,11 @@ has_addr     :: HostName -> Int -> NetPredicate
 has_src_addr :: HostName -> Int -> NetPredicate
 
 -- | Evaluate to /True/ if the destination IP address matches the given network address.
-has_dst_addr :: HostName -> Int -> NetPredicate
+has_dst_addr :: IPv4 -> Int -> NetPredicate
 
-has_addr a p     = Predicate2 "has_addr"     (fromString a :: IPv4) p
-has_src_addr a p = Predicate2 "has_src_addr" (fromString a :: IPv4) p
-has_dst_addr a p = Predicate2 "has_dst_addr" (fromString a :: IPv4) p
+has_addr a p     = Predicate2 "has_addr"     a p
+has_src_addr a p = Predicate2 "has_src_addr" a p
+has_dst_addr a p = Predicate2 "has_dst_addr" a p
 
 -- | Evaluate to the mark set by 'mark' function. By default packets are marked with 0.
 get_mark    = Property "get_mark"
@@ -454,8 +455,8 @@ steer_rtp       = MFunction "steer_rtp"     :: NetFunction
 -- sub networks.
 --
 -- > steer_net "192.168.0.0" 16 24
-steer_net :: HostName -> Int -> Int -> NetFunction
-steer_net net p sub = MFunction3 "steer_net" (fromString net :: IPv4) p sub
+steer_net :: IPv4 -> Int -> Int -> NetFunction
+steer_net net p sub = MFunction3 "steer_net" net p sub
 
 -- | Dispatch the packet across the sockets
 -- with a randomized algorithm. The function uses as /hash/ the field
@@ -643,17 +644,17 @@ dst_port        = MFunction1 "dst_port"  :: Int16    -> NetFunction
 -- are combined with kleisli operator:
 --
 -- > addr "192.168.0.0" 24 >-> log_packet
-addr     :: String -> Int -> NetFunction
+addr     :: IPv4 -> Int -> NetFunction
 
 -- | Monadic version of 'has_src_addr' predicate.
-src_addr :: String -> Int -> NetFunction
+src_addr :: IPv4 -> Int -> NetFunction
 
 -- | Monadic version of 'has_src_addr' predicate.
-dst_addr :: String -> Int -> NetFunction
+dst_addr :: IPv4 -> Int -> NetFunction
 
-addr net p      = MFunction2 "addr"     (fromString net :: IPv4) p
-src_addr net p  = MFunction2 "src_addr" (fromString net :: IPv4) p
-dst_addr net p  = MFunction2 "dst_addr" (fromString net :: IPv4) p
+addr net p      = MFunction2 "addr"     net p
+src_addr net p  = MFunction2 "src_addr" net p
+dst_addr net p  = MFunction2 "dst_addr" net p
 
 -- | Conditional execution of monadic NetFunctions.
 --
