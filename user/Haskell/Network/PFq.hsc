@@ -930,7 +930,7 @@ withSingleArg :: Argument
 withSingleArg arg callback =
     case arg of
         ArgNull       -> callback (ptrToIntPtr nullPtr, 0                      ,  0)
-        ArgFun i      -> callback (ptrToIntPtr nullPtr, fromIntegral i         , -1)
+        ArgFunPtr i   -> callback (ptrToIntPtr nullPtr, fromIntegral i         , -1)
         ArgString s   -> withCString s $ \ ptr -> callback (ptrToIntPtr ptr, 0 , -1)
         ArgVector xs  -> let vec = SV.pack xs in SV.withStartPtr vec $ \ ptr len -> callback (ptrToIntPtr ptr, fromIntegral $ sizeOf (head xs), fromIntegral len)
         ArgSVector xs -> let s = intercalate "\x1e" xs in withCString s $ \ ptr -> callback (ptrToIntPtr ptr, 0, fromIntegral (length xs))

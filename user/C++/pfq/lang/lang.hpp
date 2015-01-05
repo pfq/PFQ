@@ -272,7 +272,7 @@ namespace lang
             return Argument{ std::dynamic_pointer_cast<StorableShowBase>(ptr), 0, svec.size() };
         }
 
-        static Argument Fun(std::size_t n)
+        static Argument FunPtr(std::size_t n)
         {
             return Argument{ std::shared_ptr<StorableShowBase>(), n, static_cast<size_t>(-1) };
         }
@@ -532,7 +532,7 @@ namespace lang
     {
        std::vector<FunctionDescr> pred, comb =
        {
-           { f.symbol_, { { Argument::Fun(n+1) } }, -1UL }
+           { f.symbol_, { { Argument::FunPtr(n+1) } }, -1UL }
        };
 
        std::size_t n1;
@@ -554,7 +554,7 @@ namespace lang
        std::tie(pred1, n1) = serialize(f.pred1_, n+1);
        std::tie(pred2, n2) = serialize(f.pred2_, n1);
 
-       comb = { { f.symbol_, { { Argument::Fun(n+1), Argument::Fun(n1) } }, -1UL } };
+       comb = { { f.symbol_, { { Argument::FunPtr(n+1), Argument::FunPtr(n1) } }, -1UL } };
 
        return { std::move(comb) + std::move(pred1) + std::move(pred2), n2 };
     }
@@ -771,7 +771,7 @@ namespace lang
     {
        std::vector<FunctionDescr> prop, pred =
        {
-           { p.symbol_, { {Argument::Fun(n+1) } }, -1UL }
+           { p.symbol_, { {Argument::FunPtr(n+1) } }, -1UL }
        };
 
        std::size_t n1;
@@ -787,7 +787,7 @@ namespace lang
     {
        std::vector<FunctionDescr> prop, pred =
        {
-           { p.symbol_, { {Argument::Fun(n+1), p.arg_ } }, -1UL }
+           { p.symbol_, { {Argument::FunPtr(n+1), p.arg_ } }, -1UL }
        };
 
        std::size_t n1;
@@ -1097,7 +1097,7 @@ namespace lang
 
         std::tie(p1, n1) = serialize(f.pred_, n+1);
 
-        v1 = { { f.symbol_,  { { f.arg_, Argument::Fun(n+1) } }, n1 } };
+        v1 = { { f.symbol_,  { { f.arg_, Argument::FunPtr(n+1) } }, n1 } };
 
         return { std::move(v1) + std::move(p1), n1 };
     }
@@ -1111,7 +1111,7 @@ namespace lang
 
         std::tie(p1, n1) = serialize(f.pred_, n+1);
 
-        v1 = { { f.symbol_,  { { Argument::Fun(n+1) } }, n1 } };
+        v1 = { { f.symbol_,  { { Argument::FunPtr(n+1) } }, n1 } };
 
         return { std::move(v1) + std::move(p1), n1 };
     }
@@ -1129,7 +1129,7 @@ namespace lang
 
         c1.back().next = static_cast<size_t>(-1);
 
-        v1 = { { f.symbol_, { { Argument::Fun(n+1), Argument::Fun(n1) } }, n2 } };
+        v1 = { { f.symbol_, { { Argument::FunPtr(n+1), Argument::FunPtr(n1) } }, n2 } };
 
         return { { std::move(v1) + std::move(p1) + std::move(c1) }, n2 };
     }
@@ -1149,7 +1149,7 @@ namespace lang
         c1.back().next = static_cast<size_t>(-1);
         c2.back().next = static_cast<size_t>(-1);
 
-        v1 = { { f.symbol_, { { Argument::Fun(n+1), Argument::Fun(n1), Argument::Fun(n2) } }, n3 } };
+        v1 = { { f.symbol_, { { Argument::FunPtr(n+1), Argument::FunPtr(n1), Argument::FunPtr(n2) } }, n3 } };
 
         return { std::move(v1) + std::move(p1) + std::move(c1) + std::move(c2), n3 };
     }
@@ -1165,7 +1165,7 @@ namespace lang
 
         f1.back().next = static_cast<size_t>(-1);
 
-        v1 = { { f.symbol_,  { { Argument::Fun(n+1) } }, n1 } };
+        v1 = { { f.symbol_,  { { Argument::FunPtr(n+1) } }, n1 } };
 
         return { std::move(v1) + std::move(f1), n1 };
     }
@@ -1183,7 +1183,7 @@ namespace lang
         f1.back().next = static_cast<size_t>(-1);
         f2.back().next = static_cast<size_t>(-1);
 
-        v1 = { { fun.symbol_,  { { Argument::Fun(n+1), Argument::Fun(n1) } }, n2 } };
+        v1 = { { fun.symbol_,  { { Argument::FunPtr(n+1), Argument::FunPtr(n1) } }, n2 } };
 
         return { std::move(v1) + std::move(f1) + std::move(f2), n2 };
     }
