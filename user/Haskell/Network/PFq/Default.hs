@@ -202,7 +202,6 @@ import Network.PFq.Lang
 import Data.Int
 
 import Data.Word
-import Data.String
 import Network.Socket
 import System.IO.Unsafe
 
