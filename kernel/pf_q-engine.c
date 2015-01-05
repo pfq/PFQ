@@ -57,6 +57,11 @@ static inline bool is_arg_string(struct pfq_functional_arg_descr const *arg)
 	return arg->ptr && arg->size == 0 && arg->nelem == -1;
 }
 
+static inline bool is_arg_string_vector(struct pfq_functional_arg_descr const *arg)
+{
+	return arg->ptr && arg->size == 0 && arg->nelem != -1;
+}
+
 static inline bool is_arg_function(struct pfq_functional_arg_descr const *arg)
 {
 	return !arg->ptr && arg->size != 0 && arg->nelem == -1;
@@ -233,6 +238,11 @@ pr_devel_functional_descr(struct pfq_functional_descr const *descr, size_t index
 			len += snprintf(buffer + len, size - len, "'%s' ", tmp);
 			kfree(tmp);
 		}
+		else if (is_arg_string_vector(&descr->arg[n])) {
+			char * tmp = strdup_user(descr->arg[n].ptr);
+			len += snprintf(buffer + len, size - len, "'%s...' ", tmp);
+			kfree(tmp);
+		}
 		else if (!is_arg_null(&descr->arg[n])) {
 			len += snprintf(buffer + len, size - len, "??? ");
 		}
@@ -373,6 +383,7 @@ pfq_context_alloc(struct pfq_computation_descr const *descr)
 			if (fun->arg[i].ptr) {
 
 				size_t s = is_arg_string(&fun->arg[i])        ? strlen_user(fun->arg[i].ptr) :
+					   is_arg_string_vector(&fun->arg[i]) ? fun->arg[i].nelem * sizeof(char *) + strlen_user(fun->arg[i].ptr) :
 					   is_arg_vector(&fun->arg[i]) 	      ? fun->arg[i].size * fun->arg[i].nelem :
 					   is_arg_data  (&fun->arg[i]) 	      ? (fun->arg[i].size > 8 ? fun->arg[i].size : 0 ) : 0;
 
@@ -665,6 +676,36 @@ pfq_computation_rtlink(struct pfq_computation_descr const *descr, struct pfq_com
 
 				comp->node[n].fun.arg[i].value = (ptrdiff_t)str;
 				comp->node[n].fun.arg[i].nelem = -1;
+			}
+			else if (is_arg_string_vector(&fun->arg[i])) {
+
+				char **base_ptr, **ptr;
+				char *str;
+				size_t j;
+
+				base_ptr = ptr = (char **)context;
+
+				context += sizeof(char *) * fun->arg[i].nelem;
+
+				str = pod_user(&context, fun->arg[i].ptr, strlen_user(fun->arg[i].ptr));
+				if (str == NULL) {
+					pr_devel("[PFQ] %zu: pod_user: internal error!\n", n);
+					return -EPERM;
+				}
+
+				for(j = 0; j < fun->arg[i].nelem; j++)
+				{
+					char *end;
+					*(ptr++) = str;
+					end = strchr(str, '\x1e');
+					if (end != NULL) {
+						*end = '\0';
+						str = end+1;
+					}
+				}
+
+				comp->node[n].fun.arg[i].value = (ptrdiff_t)base_ptr;
+				comp->node[n].fun.arg[i].nelem = fun->arg[i].nelem;
 			}
 			else if (is_arg_data(&fun->arg[i])) {
 
