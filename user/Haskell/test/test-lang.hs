@@ -34,10 +34,10 @@ main = do
         let mycond1 = is_udp
 
         let comp = par' (ip >-> udp) (ip >-> tcp) >-> steer_rtp >-> dummy 24
-                    >-> (conditional (mycond  .||. mycond1)
+                    >-> conditional (mycond  .||. mycond1)
                                         steer_ip
                                         (inc 1 >-> drop')
-                        ) >-> when' is_tcp (inc 2)  >-> dummy 11
+                         >-> when' is_tcp (inc 2)  >-> dummy 11
 
         putStrLn "\nFunctional computation (show):"
         print comp

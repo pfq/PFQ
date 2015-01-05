@@ -214,6 +214,7 @@ getInterrupts dev msi = unsafePerformIO $ readFile proc_interrupt >>= \file ->
     return $ map (read . takeWhile (/= ':')) $ filter (isInfixOf $ getDeviceName dev msi) $ lines file
 
 
+{-# NOINLINE getNumberOfPhyCores #-}
 getNumberOfPhyCores :: Int
 getNumberOfPhyCores = unsafePerformIO $ readFile proc_cpuinfo >>= \file ->
     return $ length $ filter (isInfixOf "processor") $ lines file

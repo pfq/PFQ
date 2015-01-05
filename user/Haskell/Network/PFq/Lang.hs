@@ -177,7 +177,7 @@ type NetProperty  = Function (SkBuff -> Word64)
 -- | Parametric Function data type.
 
 data Function f where
-{
+    {
         MFunction    :: Symbol -> NetFunction;
         MFunction1   :: forall a. (Argumentable a) => Symbol -> a -> NetFunction;
         MFunction2   :: forall a b. (Argumentable a, Argumentable b) => Symbol -> a -> b -> NetFunction;
@@ -204,7 +204,7 @@ data Function f where
         Combinator2  :: Symbol -> NetPredicate -> NetPredicate -> NetPredicate;
 
         Composition  :: forall f1 f2 f. (Serializable (Function f1), Serializable (Function f2)) => Function f1 -> Function f2 -> Function f;
-}
+    }
 
 
 -- |Kleisli left-to-right operator, for monadic composition of PFQ/lang functions.

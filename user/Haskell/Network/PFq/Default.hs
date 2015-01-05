@@ -704,23 +704,29 @@ vlan_id_filter ids = MFunction1 "vlan_id_filter" ids
 -- The first 'CInt' argument specifies the size of the bloom filter. Example:
 --
 -- > when' (bloom 1024 ["192.168.0.13", "192.168.0.42"]) log_packet >-> kernel
+{-# NOINLINE bloom #-}
 bloom         :: CInt -> [HostName] -> NetPredicate
 
 -- | Similarly to 'bloom', evaluates to /True/ when the source address
 -- of the packet matches the ones specified by the bloom list.
+{-# NOINLINE bloom_src #-}
 bloom_src     :: CInt -> [HostName] -> NetPredicate
 
 -- | Similarly to 'bloom', evaluates to /True/ when the destination address
 -- of the packet matches the ones specified by the bloom list.
+{-# NOINLINE bloom_dst #-}
 bloom_dst     :: CInt -> [HostName] -> NetPredicate
 
 -- | Monadic counterpart of 'bloom' function.
+{-# NOINLINE bloom_filter #-}
 bloom_filter      :: CInt -> [HostName] -> NetFunction
 
 -- | Monadic counterpart of 'bloom_src' function.
+{-# NOINLINE bloom_src_filter #-}
 bloom_src_filter  :: CInt -> [HostName] -> NetFunction
 
 -- | Monadic counterpart of 'bloom_dst' function.
+{-# NOINLINE bloom_dst_filter #-}
 bloom_dst_filter  :: CInt -> [HostName] -> NetFunction
 
 bloom            m hs = let ips = unsafePerformIO (mapM inet_addr hs) in Predicate2 "bloom" m ips

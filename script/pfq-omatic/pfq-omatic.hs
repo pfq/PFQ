@@ -66,11 +66,13 @@ main = do
     putStrLn "[PFQ] done."
 
 
+{-# NOINLINE uname_r #-}
 uname_r :: String
 uname_r = unsafePerformIO $
     head . lines <$> readProcess "/bin/uname" ["-r"] ""
 
 
+{-# NOINLINE home_dir #-}
 home_dir :: String
 home_dir = unsafePerformIO getHomeDirectory
 
@@ -127,6 +129,7 @@ getRecursiveContents topdir ext = do
   return (concat paths)
 
 
+{-# NOINLINE getNumberOfPhyCores #-}
 getNumberOfPhyCores :: Int
 getNumberOfPhyCores = unsafePerformIO $
     length . filter (isInfixOf "processor") . lines <$> readFile proc_cpuinfo

@@ -150,6 +150,7 @@ cabalInstall   = "runhaskell Setup install"
 cabalClean     = "runhaskell Setup clean"
 
 
+{-# NOINLINE numberOfPhyCores #-}
 numberOfPhyCores :: Int
 numberOfPhyCores = unsafePerformIO $ readFile "/proc/cpuinfo" >>= \file ->
     return $ (length . filter (isInfixOf "processor") . lines) file
