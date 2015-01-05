@@ -628,7 +628,7 @@ pfq_computation_rtlink(struct pfq_computation_descr const *descr, struct pfq_com
  		const char *signature;
         	init_ptr_t init, fini;
 		void *addr;
-                int i;
+                size_t i;
 
                 fun = &descr->fun[n];
 
@@ -718,7 +718,7 @@ pfq_computation_rtlink(struct pfq_computation_descr const *descr, struct pfq_com
 			}
 			else if (!is_arg_null(&fun->arg[i])) {
 
-				pr_devel("[PFQ] %zu: pfq_computation_rtlink: internal error!\n", n);
+				pr_devel("[PFQ] pfq_computation_rtlink: internal error@ function:%zu argument[%zu] = { %p, %zu, %zu }!\n", n, i, (void *)fun->arg[i].ptr, fun->arg[i].size, fun->arg[i].nelem);
 				return -EPERM;
 			}
 		}
