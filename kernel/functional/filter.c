@@ -79,15 +79,12 @@ filter_dst_port(arguments_t args, SkBuff b)
 
 static int filter_addr_init(arguments_t args)
 {
-	struct network_addr {
-	 	__be32 addr;
-	 	int 	 prefix;
-	} data = get_arg(struct network_addr, args);
+	__be32 mask, ipv4 = get_arg_0(__be32, args);
+	int prefix  = get_arg_1(int, args);
 
-	__be32 ipv4 = data.addr;
-	__be32 mask = make_mask(data.prefix);
+	mask = make_mask(prefix);
 
-	set_arg_0(args, ipv4);
+	set_arg_0(args, ipv4 & mask);
 	set_arg_1(args, mask);
 
 	pr_devel("[PFQ|init] filter: addr:%pI4 mask:%pI4\n", &ipv4, &mask);
@@ -156,9 +153,10 @@ struct pfq_function_descr filter_functions[] = {
         { "port",     	  "Word16 -> SkBuff -> Action SkBuff", 		 filter_port     },
         { "src_port", 	  "Word16 -> SkBuff -> Action SkBuff", 		 filter_src_port },
         { "dst_port", 	  "Word16 -> SkBuff -> Action SkBuff", 		 filter_dst_port },
-        { "addr",     	  "Word32 -> SkBuff -> Action SkBuff", 		 filter_addr     , filter_addr_init },
-        { "src_addr", 	  "Word32 -> SkBuff -> Action SkBuff", 		 filter_src_addr , filter_addr_init },
-        { "dst_addr", 	  "Word32 -> SkBuff -> Action SkBuff", 		 filter_dst_addr , filter_addr_init },
+        { "addr",     	  "Word32 -> Word32 -> SkBuff -> Action SkBuff", filter_addr     , filter_addr_init },
+        { "src_addr", 	  "Word32 -> Word32 -> SkBuff -> Action SkBuff", filter_src_addr , filter_addr_init },
+        { "dst_addr", 	  "Word32 -> Word32 -> SkBuff -> Action SkBuff", filter_dst_addr , filter_addr_init },
+
  	{ "l3_proto",     "Word16 -> SkBuff -> Action SkBuff",           filter_l3_proto },
         { "l4_proto",     "Word8  -> SkBuff -> Action SkBuff",           filter_l4_proto },
         { "filter",       "(SkBuff -> Bool) -> SkBuff -> Action SkBuff", filter_generic  },

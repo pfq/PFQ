@@ -141,15 +141,12 @@ pred_has_mark(arguments_t args, SkBuff b)
 
 static int pred_addr_init(arguments_t args)
 {
-	struct network_addr {
-	 	__be32  addr;
-	 	int 	prefix;
-	} data = get_arg(struct network_addr, args);
+	__be32 mask, ipv4 = get_arg_0(__be32, args);
+	int prefix  = get_arg_1(int, args);
 
-	__be32 ipv4 = data.addr;
-	__be32 mask = make_mask(data.prefix);
+	mask = make_mask(prefix);
 
-	set_arg_0(args, ipv4);
+	set_arg_0(args, ipv4 & mask);
 	set_arg_1(args, mask);
 
 	pr_devel("[PFQ|init] predicate: addr:%pI4 mask:%pI4\n", &ipv4, &mask);
@@ -237,9 +234,9 @@ struct pfq_function_descr predicate_functions[] = {
         { "has_vid",      "Int -> SkBuff -> Bool",     pred_has_vid      },
         { "has_mark",     "CULong -> SkBuff -> Bool",  pred_has_mark     },
 
-        { "has_addr",     "NetworkAddr -> SkBuff -> Bool", pred_has_addr     , pred_addr_init },
-        { "has_src_addr", "NetworkAddr -> SkBuff -> Bool", pred_has_src_addr , pred_addr_init },
-        { "has_dst_addr", "NetworkAddr -> SkBuff -> Bool", pred_has_dst_addr , pred_addr_init },
+        { "has_addr",     "Word32 -> Word32 -> SkBuff -> Bool", pred_has_addr     , pred_addr_init },
+        { "has_src_addr", "Word32 -> Word32 -> SkBuff -> Bool", pred_has_src_addr , pred_addr_init },
+        { "has_dst_addr", "Word32 -> Word32 -> SkBuff -> Bool", pred_has_dst_addr , pred_addr_init },
 
         { NULL }};
 

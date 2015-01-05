@@ -98,24 +98,22 @@ steering_ip(arguments_t args, SkBuff b)
 }
 
 
-static int
-steering_net_init(arguments_t args)
+static int steering_net_init(arguments_t args)
 {
-	struct network_addr {
-	 	__be32   addr;
-	 	int 	 prefix;
-	 	int 	 prefix2;
-	} * data = get_arg(struct network_addr, args);
+	__be32 addr = get_arg_0(__be32, args);
+	int prefix  = get_arg_1(int, args);
+        int subpref = get_arg_2(int, args);
 
-	__be32 ipv4    = data->addr;
-	__be32 mask    = make_mask(data->prefix);
-        __be32 submask = make_mask(data->prefix2);
+	__be32 mask, submask;
 
-	set_arg_0(args, ipv4);
+	mask    = make_mask(prefix);
+	submask = make_mask(subpref);
+
+	set_arg_0(args, addr & mask);
 	set_arg_1(args, mask);
 	set_arg_2(args, submask);
 
-	pr_devel("[PFQ|init] steer_net: addr=%pI4 mask=%pI4 submask=%pI4\n", &ipv4, &mask, &submask);
+	pr_devel("[PFQ|init] steer_net: addr=%pI4 mask=%pI4 submask=%pI4\n", &addr, &mask, &submask);
 
 	return 0;
 }
@@ -221,7 +219,8 @@ struct pfq_function_descr steering_functions[] = {
         { "steer_ip6",	 "SkBuff -> Action SkBuff", steering_ip6     },
         { "steer_flow",  "SkBuff -> Action SkBuff", steering_flow    },
 	{ "steer_field", "Word32 -> Word32 -> SkBuff -> Action SkBuff", steering_field },
-        { "steer_net",   "Word32 -> Word32 -> Word32 -> SkBuff -> Action SkBuff", steering_net, steering_net_init },
+
+	{ "steer_net",   "Word32 -> Word32 -> Word32 -> SkBuff -> Action SkBuff", steering_net, steering_net_init },
 
         { NULL }};
 
