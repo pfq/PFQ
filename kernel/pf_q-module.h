@@ -42,6 +42,7 @@
 
 /**** macros ****/
 
+
 #define JUST(x) 		((1ULL<<31) | x)
 #define IS_JUST(x)		((1ULL<<31) & x)
 #define FROM_JUST(x)		(~(1ULL<<31) & x)
@@ -172,7 +173,6 @@ struct pfq_function_descr
         fini_ptr_t 	fini;
 };
 
-
 /* class predicates */
 
 static inline bool
@@ -201,5 +201,19 @@ bool fwd_to_kernel(struct sk_buff *skb)
 {
 	return PFQ_CB(skb)->log->to_kernel != 0;
 }
+
+
+extern struct pfq_function_descr  filter_functions[];
+extern struct pfq_function_descr  bloom_functions[];
+extern struct pfq_function_descr  vlan_functions[];
+extern struct pfq_function_descr  forward_functions[];
+extern struct pfq_function_descr  steering_functions[];
+extern struct pfq_function_descr  predicate_functions[];
+extern struct pfq_function_descr  combinator_functions[];
+extern struct pfq_function_descr  property_functions[];
+extern struct pfq_function_descr  high_order_functions[];
+extern struct pfq_function_descr  misc_functions[];
+extern struct pfq_function_descr  dummy_functions[];
+
 
 #endif /* _PF_Q_MODULE_H_ */

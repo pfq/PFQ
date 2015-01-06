@@ -184,21 +184,6 @@ pfq_symtable_pr_devel(const char *hdr, struct list_head *category)
 void
 pfq_symtable_init(void)
 {
-	extern struct pfq_function_descr  filter_functions[];
-	extern struct pfq_function_descr  bloom_functions[];
-	extern struct pfq_function_descr  vlan_functions[];
-	extern struct pfq_function_descr  forward_functions[];
-	extern struct pfq_function_descr  steering_functions[];
-
-	extern struct pfq_function_descr  predicate_functions[];
-	extern struct pfq_function_descr  combinator_functions[];
-
-	extern struct pfq_function_descr  property_functions[];
-
-	extern struct pfq_function_descr  high_order_functions[];
-	extern struct pfq_function_descr  misc_functions[];
-	extern struct pfq_function_descr  dummy_functions[];
-
         pfq_symtable_register_functions(NULL, &pfq_lang_functions, (struct pfq_function_descr *)filter_functions);
         pfq_symtable_register_functions(NULL, &pfq_lang_functions, (struct pfq_function_descr *)forward_functions);
         pfq_symtable_register_functions(NULL, &pfq_lang_functions, (struct pfq_function_descr *)steering_functions);

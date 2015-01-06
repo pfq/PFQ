@@ -27,7 +27,7 @@
 
 #include <pf_q-module.h>
 #include <pf_q-engine.h>
-
+#include <pf_q-printk.h>
 
 size_t
 snprintf_functional_node(char *buffer, size_t size, struct pfq_functional_node const *node, size_t index)
