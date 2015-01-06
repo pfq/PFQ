@@ -50,7 +50,7 @@ static inline bool is_arg_string(struct pfq_functional_arg_descr const *arg)
 	return arg->ptr && arg->size == 0 && arg->nelem == -1;
 }
 
-static inline bool is_arg_string_vector(struct pfq_functional_arg_descr const *arg)
+static inline bool is_arg_vector_str(struct pfq_functional_arg_descr const *arg)
 {
 	return arg->ptr && arg->size == 0 && arg->nelem != -1;
 }

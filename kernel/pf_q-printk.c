@@ -134,7 +134,7 @@ pr_devel_functional_descr(struct pfq_functional_descr const *descr, size_t index
 			len += snprintf(buffer + len, size - len, "'%s' ", tmp);
 			kfree(tmp);
 		}
-		else if (is_arg_string_vector(&descr->arg[n])) {
+		else if (is_arg_vector_str(&descr->arg[n])) {
 			char * tmp = strdup_user(descr->arg[n].ptr);
 			len += snprintf(buffer + len, size - len, "'%s...' ", tmp);
 			kfree(tmp);
