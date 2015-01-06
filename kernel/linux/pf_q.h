@@ -376,7 +376,7 @@ void pfq_spsc_read_commit(struct pfq_tx_queue_hdr *q)
 
 struct pfq_functional_arg_descr
 {
-	const void __user *	ptr;
+	const void __user *	addr;
 	size_t 			size;
 	size_t 			nelem;   /* > 1 is an array */
 };

@@ -130,12 +130,12 @@ pr_devel_functional_descr(struct pfq_functional_descr const *descr, size_t index
 			len += snprintf(buffer + len, size - len, "pod_%zu ",  descr->arg[n].size);
 		}
 		else if (is_arg_string(&descr->arg[n])) {
-			char * tmp = strdup_user(descr->arg[n].ptr);
+			char * tmp = strdup_user(descr->arg[n].addr);
 			len += snprintf(buffer + len, size - len, "'%s' ", tmp);
 			kfree(tmp);
 		}
 		else if (is_arg_vector_str(&descr->arg[n])) {
-			char * tmp = strdup_user(descr->arg[n].ptr);
+			char * tmp = strdup_user(descr->arg[n].addr);
 			len += snprintf(buffer + len, size - len, "'%s...' ", tmp);
 			kfree(tmp);
 		}

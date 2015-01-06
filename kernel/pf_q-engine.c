@@ -209,11 +209,11 @@ pfq_context_alloc(struct pfq_computation_descr const *descr)
 
         	for(i = 0; i < sizeof(fun->arg)/sizeof(fun->arg[0]); i++)
 		{
-			if (fun->arg[i].ptr) {
+			if (fun->arg[i].addr) {
 
-				size_t s = is_arg_string(&fun->arg[i])     ?  strlen_user(fun->arg[i].ptr) :
+				size_t s = is_arg_string(&fun->arg[i])     ?  strlen_user(fun->arg[i].addr) :
 					   is_arg_vector(&fun->arg[i]) 	   ?  fun->arg[i].size * fun->arg[i].nelem :
-					   is_arg_vector_str(&fun->arg[i]) ?  fun->arg[i].nelem * sizeof(char *) + strlen_user(fun->arg[i].ptr) :
+					   is_arg_vector_str(&fun->arg[i]) ?  fun->arg[i].nelem * sizeof(char *) + strlen_user(fun->arg[i].addr) :
 					   is_arg_data  (&fun->arg[i]) 	   ?  (fun->arg[i].size > 8 ? fun->arg[i].size : 0 ) : 0;
 
 				size += ALIGN(s, 8);
@@ -240,7 +240,7 @@ number_of_arguments(struct pfq_functional_descr const *fun)
 
 	for(i = 0; i < sizeof(fun->arg)/sizeof(fun->arg[0]); i++)
 	{
-		if (fun->arg[i].ptr || fun->arg[i].size || fun->arg[i].nelem)
+		if (fun->arg[i].addr || fun->arg[i].size || fun->arg[i].nelem)
 			n++;
 	}
 
@@ -497,7 +497,7 @@ pfq_computation_rtlink(struct pfq_computation_descr const *descr, struct pfq_com
 		{
 			if (is_arg_string(&fun->arg[i])) {
 
-				char *str = pod_user(&context, fun->arg[i].ptr, strlen_user(fun->arg[i].ptr));
+				char *str = pod_user(&context, fun->arg[i].addr, strlen_user(fun->arg[i].addr));
 				if (str == NULL) {
 					pr_devel("[PFQ] %zu: pod_user: internal error!\n", n);
 					return -EPERM;
@@ -516,7 +516,7 @@ pfq_computation_rtlink(struct pfq_computation_descr const *descr, struct pfq_com
 
 				context += sizeof(char *) * fun->arg[i].nelem;
 
-				str = pod_user(&context, fun->arg[i].ptr, strlen_user(fun->arg[i].ptr));
+				str = pod_user(&context, fun->arg[i].addr, strlen_user(fun->arg[i].addr));
 				if (str == NULL) {
 					pr_devel("[PFQ] %zu: pod_user: internal error!\n", n);
 					return -EPERM;
@@ -540,7 +540,7 @@ pfq_computation_rtlink(struct pfq_computation_descr const *descr, struct pfq_com
 
 				if (fun->arg[i].size > 8) {
 
-					char *ptr = pod_user(&context, fun->arg[i].ptr, fun->arg[i].size);
+					char *ptr = pod_user(&context, fun->arg[i].addr, fun->arg[i].size);
 					if (ptr == NULL) {
 						pr_devel("[PFQ] %zu: pod_user(2): internal error!\n", n);
 						return -EPERM;
@@ -552,7 +552,7 @@ pfq_computation_rtlink(struct pfq_computation_descr const *descr, struct pfq_com
 				else {
 					ptrdiff_t arg = 0;
 
-					if (copy_from_user(&arg, fun->arg[i].ptr, fun->arg[i].size)) {
+					if (copy_from_user(&arg, fun->arg[i].addr, fun->arg[i].size)) {
 						pr_devel("[PFQ] %zu: copy_from_user: internal error!\n", n);
 						return -EPERM;
 					}
@@ -566,7 +566,7 @@ pfq_computation_rtlink(struct pfq_computation_descr const *descr, struct pfq_com
 
 				if (fun->arg[i].nelem > 0) {
 
-					char *ptr = pod_user(&context, fun->arg[i].ptr, fun->arg[i].size * fun->arg[i].nelem);
+					char *ptr = pod_user(&context, fun->arg[i].addr, fun->arg[i].size * fun->arg[i].nelem);
 					if (ptr == NULL) {
 						pr_devel("[PFQ] %zu: pod_user(2): internal error!\n", n);
 						return -EPERM;
@@ -588,7 +588,7 @@ pfq_computation_rtlink(struct pfq_computation_descr const *descr, struct pfq_com
 			}
 			else if (!is_arg_null(&fun->arg[i])) {
 
-				pr_devel("[PFQ] pfq_computation_rtlink: internal error@ function:%zu argument[%zu] = { %p, %zu, %zu }!\n", n, i, (void *)fun->arg[i].ptr, fun->arg[i].size, fun->arg[i].nelem);
+				pr_devel("[PFQ] pfq_computation_rtlink: internal error@ function:%zu argument[%zu] => { %p, %zu, %zu }!\n", n, i, (void __user *)fun->arg[i].addr, fun->arg[i].size, fun->arg[i].nelem);
 				return -EPERM;
 			}
 		}
