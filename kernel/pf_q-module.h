@@ -102,20 +102,22 @@ struct pfq_functional_arg
 
 struct pfq_functional
 {
-	const void *  ptr; 			// pointer to function
-        struct pfq_functional_arg arg[4];       // arguments
+	void *  ptr; 				/* pointer to function */
+	struct pfq_functional_arg arg[4];       /* arguments */
 };
+
 
 typedef struct pfq_functional *  arguments_t;
 
 
 /**** function prototypes ****/
 
-typedef Action_SkBuff (*function_ptr_t)(arguments_t, SkBuff);
-typedef uint64_t (*property_ptr_t) (arguments_t, SkBuff);
-typedef bool (*predicate_ptr_t)	(arguments_t, SkBuff);
-typedef int (*init_ptr_t) (arguments_t);
-typedef int (*fini_ptr_t) (arguments_t);
+
+typedef Action_SkBuff (*function_ptr_t) (arguments_t, SkBuff);
+typedef uint64_t      (*property_ptr_t) (arguments_t, SkBuff);
+typedef bool 	      (*predicate_ptr_t)(arguments_t, SkBuff);
+typedef int 	      (*init_ptr_t) 	(arguments_t);
+typedef int 	      (*fini_ptr_t) 	(arguments_t);
 
 typedef struct
 {
@@ -143,7 +145,7 @@ struct pfq_functional_node
  	struct pfq_functional fun;
 
  	init_ptr_t 	      init;
- 	init_ptr_t 	      fini;
+ 	fini_ptr_t 	      fini;
 
 	bool 		      initialized;
 
@@ -169,6 +171,7 @@ struct pfq_function_descr
         init_ptr_t 	init;
         fini_ptr_t 	fini;
 };
+
 
 /* class predicates */
 

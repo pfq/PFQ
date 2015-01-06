@@ -27,10 +27,39 @@
 
 #include <linux/kernel.h>
 #include <pf_q-monad.h>
+#include <pf_q-module.h>
 
-struct pfq_computation_descr;
-struct pfq_computation_tree;
-struct pfq_functional_node;
+
+static inline bool is_arg_null(struct pfq_functional_arg_descr const *arg)
+{
+	return !arg->ptr && !arg->size && !arg->nelem;
+}
+
+static inline bool is_arg_data(struct pfq_functional_arg_descr const *arg)
+{
+	return arg->ptr && arg->size != 0 && arg->nelem == -1;
+}
+
+static inline bool is_arg_vector(struct pfq_functional_arg_descr const *arg)
+{
+	return arg->size != 0 && arg->nelem != -1;
+}
+
+static inline bool is_arg_string(struct pfq_functional_arg_descr const *arg)
+{
+	return arg->ptr && arg->size == 0 && arg->nelem == -1;
+}
+
+static inline bool is_arg_string_vector(struct pfq_functional_arg_descr const *arg)
+{
+	return arg->ptr && arg->size == 0 && arg->nelem != -1;
+}
+
+static inline bool is_arg_function(struct pfq_functional_arg_descr const *arg)
+{
+	return !arg->ptr && arg->size != 0 && arg->nelem == -1;
+}
+
 
 extern int pfq_validate_computation_descr(struct pfq_computation_descr const *descr);
 
@@ -40,14 +69,11 @@ extern int pfq_computation_fini(struct pfq_computation_tree *comp);
 
 extern struct pfq_computation_tree * pfq_computation_alloc(struct pfq_computation_descr const *);
 extern void * pfq_context_alloc(struct pfq_computation_descr const *);
+extern const char *pfq_signature_by_user_symbol(const char __user *symb);
+
 extern char * strdup_user(const char __user *str);
 
 extern Action_SkBuff pfq_run(struct pfq_computation_tree *prg, SkBuff);
-
-extern void pr_devel_computation_descr(struct pfq_computation_descr const *);
-extern void pr_devel_computation_tree(struct pfq_computation_tree const *);
-
-size_t snprintf_functional_node(char *buffer, size_t size, struct pfq_functional_node const *node, size_t index);
 
 
 #endif /* _PF_Q_ENGINE_H_ */

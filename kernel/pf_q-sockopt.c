@@ -37,6 +37,7 @@
 #include <pf_q-devmap.h>
 #include <pf_q-symtable.h>
 #include <pf_q-engine.h>
+#include <pf_q-printk.h>
 #include <pf_q-sockopt.h>
 #include <pf_q-endpoint.h>
 #include <pf_q-shared-queue.h>

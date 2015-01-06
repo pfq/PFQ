@@ -29,47 +29,16 @@
 
 #include <pf_q-group.h>
 #include <pf_q-engine.h>
-#include <pf_q-symtable.h>
 #include <pf_q-module.h>
+#include <pf_q-symtable.h>
 #include <pf_q-signature.h>
 #include <pf_q-engine.h>
 
 #include <functional/headers.h>
 
 
-static inline bool is_arg_null(struct pfq_functional_arg_descr const *arg)
-{
-	return !arg->ptr && !arg->size && !arg->nelem;
-}
-
-static inline bool is_arg_data(struct pfq_functional_arg_descr const *arg)
-{
-	return arg->ptr && arg->size != 0 && arg->nelem == -1;
-}
-
-static inline bool is_arg_vector(struct pfq_functional_arg_descr const *arg)
-{
-	return arg->size != 0 && arg->nelem != -1;
-}
-
-static inline bool is_arg_string(struct pfq_functional_arg_descr const *arg)
-{
-	return arg->ptr && arg->size == 0 && arg->nelem == -1;
-}
-
-static inline bool is_arg_string_vector(struct pfq_functional_arg_descr const *arg)
-{
-	return arg->ptr && arg->size == 0 && arg->nelem != -1;
-}
-
-static inline bool is_arg_function(struct pfq_functional_arg_descr const *arg)
-{
-	return !arg->ptr && arg->size != 0 && arg->nelem == -1;
-}
-
-
-static const char *
-signature_by_user_symbol(const char __user *symb)
+const char *
+pfq_signature_by_user_symbol(const char __user *symb)
 {
 	struct symtable_entry *entry;
         const char *symbol;
@@ -129,147 +98,6 @@ pod_user(void **ptr, void const __user *arg, size_t size)
         }
 
         return ret;
-}
-
-
-size_t
-snprintf_functional_node(char *buffer, size_t size, struct pfq_functional_node const *node, size_t index)
-{
-        size_t n, len = 0;
-
-	len += snprintf(buffer, size, "%4zu@%p: %pF { ", index, node, node->fun.ptr);
-
-	for(n = 0; n < sizeof(node->fun.arg)/sizeof(node->fun.arg[0]); n++)
-	{
-		if (size <= len)
-			return len;
-
-		if (node->fun.arg[n].nelem != -1) { /* vector */
-
-			if (node->fun.arg[n].value)
-				len += snprintf(buffer + len, size - len, "%p[%zu] ",(void *)node->fun.arg[n].value, node->fun.arg[n].nelem);
-		}
-		else {
-			if ((node->fun.arg[n].value & 0xffffLLU) == (node->fun.arg[n].value))
-				len += snprintf(buffer + len, size - len, "%lld ",(int64_t)node->fun.arg[n].value);
-			else
-				len += snprintf(buffer + len, size - len, "%p ",(void *)node->fun.arg[n].value);
-		}
-	}
-
-	if (size <= len)
-         	return len;
-
-	if (node->next)
-		len += snprintf(buffer + len, size - len, "} -> next:%p", node->next);
-	else
-		len += snprintf(buffer + len, size - len, "}");
-
-	return len;
-}
-
-
-
-static void
-pr_devel_functional_node(struct pfq_functional_node const *node, size_t index)
-{
-	char buffer[256];
-
-	snprintf_functional_node(buffer, sizeof(buffer), node, index);
-
-	pr_devel("%s\n", buffer);
-}
-
-
-void
-pr_devel_computation_tree(struct pfq_computation_tree const *tree)
-{
-        size_t n;
-        if (tree == NULL) {
-        	pr_devel("[PFQ] computation (unspecified)\n");
-        	return;
-	}
-        pr_devel("[PFQ] computation size=%zu entry_point=%p\n", tree->size, tree->entry_point);
-        for(n = 0; n < tree->size; n++)
-        {
-                pr_devel_functional_node(&tree->node[n], n);
-        }
-}
-
-
-static void
-pr_devel_functional_descr(struct pfq_functional_descr const *descr, size_t index)
-{
-	char buffer[256];
-
-        const char *symbol, *signature;
-        size_t n, len = 0, size = sizeof(buffer);
-
-       	if (descr->symbol == NULL) {
-		pr_devel("%zu   NULL :: ???\n", index);
-       		return;
-	}
-
-        symbol    = strdup_user(descr->symbol);
-	signature = signature_by_user_symbol(descr->symbol);
-
-	len += snprintf(buffer, size, "%3zu   %s :: %s - [", index, symbol, signature);
-
-        for(n = 0; n < sizeof(descr->arg)/sizeof(descr->arg[0]); n++)
-	{
-		if (size <= len)
-			return;
-
-		if (is_arg_function(&descr->arg[n])) {
-
-			if (descr->arg[n].size)
-				len += snprintf(buffer + len, size - len, "fun(%zu) ",  descr->arg[n].size);
-		}
-		else if (is_arg_vector(&descr->arg[n])) {
-
-			len += snprintf(buffer + len, size - len, "pod_%zu[%zu] ",  descr->arg[n].size, descr->arg[n].nelem);
-		}
-		else if (is_arg_data(&descr->arg[n])) {
-
-			len += snprintf(buffer + len, size - len, "pod_%zu ",  descr->arg[n].size);
-		}
-		else if (is_arg_string(&descr->arg[n])) {
-			char * tmp = strdup_user(descr->arg[n].ptr);
-			len += snprintf(buffer + len, size - len, "'%s' ", tmp);
-			kfree(tmp);
-		}
-		else if (is_arg_string_vector(&descr->arg[n])) {
-			char * tmp = strdup_user(descr->arg[n].ptr);
-			len += snprintf(buffer + len, size - len, "'%s...' ", tmp);
-			kfree(tmp);
-		}
-		else if (!is_arg_null(&descr->arg[n])) {
-			len += snprintf(buffer + len, size - len, "??? ");
-		}
-	}
-
-	if (descr->next != -1)
-		pr_devel("%s] next(%zu)\n", buffer, descr->next);
-	else
-		pr_devel("%s]\n", buffer);
-
-        kfree(symbol);
-}
-
-
-void
-pr_devel_computation_descr(struct pfq_computation_descr const *descr)
-{
-        size_t n;
-        if (descr == NULL) {
-        	pr_devel("[PFQ] computation (unspecified)\n");
-        	return;
-	}
-        pr_devel("[PFQ] computation size=%zu entry_point=%zu\n", descr->size, descr->entry_point);
-        for(n = 0; n < descr->size; n++)
-        {
-                pr_devel_functional_descr(&descr->fun[n], n);
-        }
 }
 
 
@@ -423,7 +251,7 @@ number_of_arguments(struct pfq_functional_descr const *fun)
 static bool
 function_signature_match(struct pfq_functional_descr const *fun, string_view_t fullsig, size_t index)
 {
-	const char *signature = signature_by_user_symbol(fun->symbol);
+	const char *signature = pfq_signature_by_user_symbol(fun->symbol);
 	string_view_t sig;
 	size_t nargs;
 
@@ -475,7 +303,7 @@ pfq_validate_computation_descr(struct pfq_computation_descr const *descr)
 
 		/* get the signature */
 
-		signature = signature_by_user_symbol(fun->symbol);
+		signature = pfq_signature_by_user_symbol(fun->symbol);
 		if (!signature) {
                 	printk(KERN_INFO "[PFQ] resolve_signature_by_symbol: '%s' no such function!\n", fun->symbol);
 			return -EPERM;

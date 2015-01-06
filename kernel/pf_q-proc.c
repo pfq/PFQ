@@ -37,7 +37,7 @@
 #include <pf_q-macro.h>
 #include <pf_q-proc.h>
 #include <pf_q-memory.h>
-#include <pf_q-engine.h>
+#include <pf_q-printk.h>
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(3,10,0)
 #define PDE_DATA(a) PDE(a)->data
