@@ -37,6 +37,11 @@ import Control.Monad
 
 -- import Debug.Trace
 
+prettyPrinter :: Serializable a => a -> IO ()
+prettyPrinter comp = let (xs,_) = serialize comp 0
+                 in forM_ (zip [0..] xs) $ \(n, x) -> putStrLn $ "    " ++ show n ++ ": " ++ show x
+
+
 dumpPacket :: Q.Packet -> IO ()
 dumpPacket p = do
                 Q.waitForPacket p
@@ -79,9 +84,11 @@ dumper dev = do
 
         let comp = no_frag >-> forwardIO "lo" >-> tee "lo" is_icmp >-> dummy_vector [1,2,3] >-> par' icmp udp >-> addr "192.168.0.1" 24 >-> mark 42 >-> when' is_icmp (inc 1) >-> log_packet >-> log_msg "Hello World!"
 
+        putStrLn $ pretty comp
+        prettyPrinter comp
+
         Q.groupComputation q gid comp
 
-        putStrLn $ pretty comp
 
         -- Q.vlanFiltersEnabled q gid True
         -- Q.vlanSetFilterId q gid (0)   -- untagged

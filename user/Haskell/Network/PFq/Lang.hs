@@ -147,13 +147,13 @@ instance Argumentable String where
     argument = ArgString
 
 instance Argumentable [String] where
-    argument xs = ArgSVector xs
+    argument = ArgSVector
 
 instance (Show a, Pretty a, Storable a) => Argumentable a where
     argument = ArgData
 
 instance (Show a, Pretty [a], Storable a) => Argumentable [a] where
-    argument xs = ArgVector xs
+    argument = ArgVector
 
 instance Argumentable FunPtr where
     argument (FunPtr n) = ArgFunPtr n
@@ -253,9 +253,11 @@ instance Storable NetPredicate where
     poke      = undefined
 
 
--- | Like unwords, drop empty string istead...
+-- | Like unwords, drop empty string instead...
 
-unwords' = unwords . (filter (not . null))
+unwords' :: [String] -> String
+unwords' = unwords . filter (not . null)
+
 
 -- |Kleisli left-to-right operator, for monadic composition of PFQ/lang functions.
 
@@ -407,6 +409,7 @@ instance Serializable a where
 
 instance Serializable () where
     serialize _ n = ([], n)
+
 
 fixComputation :: Int -> [FunctionDescr] -> [FunctionDescr]
 fixComputation n xs = map (\(FunctionDescr sym as cur next) -> FunctionDescr sym as cur (cut next)) xs

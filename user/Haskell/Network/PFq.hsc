@@ -172,7 +172,6 @@ import Data.ByteString.Unsafe
 import qualified Data.StorableVector as SV
 import qualified Data.StorableVector.Base as SV
 
--- import Data.Maybe
 -- import Debug.Trace
 
 import Control.Monad
@@ -934,7 +933,7 @@ withSingleArg arg callback =
         ArgString s   -> withCString s $ \ ptr -> callback (ptrToIntPtr ptr, 0 , -1)
         ArgVector xs  -> let vec = SV.pack xs in SV.withStartPtr vec $ \ ptr len -> callback (ptrToIntPtr ptr, fromIntegral $ sizeOf (head xs), fromIntegral len)
         ArgSVector xs -> let s = intercalate "\x1e" xs in withCString s $ \ ptr -> callback (ptrToIntPtr ptr, 0, fromIntegral (length xs))
-        ArgData v -> alloca $ \ptr -> poke ptr v >> callback (ptrToIntPtr ptr, fromIntegral $ sizeOf v, -1)
+        ArgData v     -> alloca $ \ptr -> poke ptr v >> callback (ptrToIntPtr ptr, fromIntegral $ sizeOf v, -1)
 
 
 type MarshalFunctionDescr = (CString, [(IntPtr, CSize, CSize)], CSize)
