@@ -591,21 +591,45 @@ namespace lang
     inline std::string
     pretty(Property const &descr)
     {
-        return descr.symbol_;
+        if (descr.args_.empty())
+            return descr.symbol_;
+
+        std::string ret = '(' + descr.symbol_ + ' ';
+        for(auto &a : descr.args_) {
+            auto tmp = pretty(a);
+            if (!tmp.empty())
+                ret += std::move(tmp);
+        }
+
+        return ret + ')';
     }
 
-    inline std::string
-    pretty(Property1 const &descr)
-    {
-        return  '(' + descr.symbol_ + ' ' + pretty(descr.arg_) + ')';
-    }
 
     //////// serialize property:
 
-    inline std::pair<std::vector<FunctionDescr>, std::size_t>
-    serialize(Property const &p, std::size_t n)
+    template <typename T, size_t N, typename C>
+    std::array<T, N> make_array(C const &cont)
     {
-        return { { FunctionDescr {p.symbol_, {{}}, -1UL } }, n+1 };
+        std::array<T, N> ret;
+        size_t n = 0;
+
+        for(auto &e : cont)
+        {
+            ret[n] = e;
+            if (n == N)
+                break;
+        }
+
+        return ret;
+    }
+
+    template <typename C>
+    void fix_computation(C &cont)
+    {
+        if (!cont.empty())
+        {
+            cont.back().link = static_cast<std::size_t>(-1);
+        }
     }
 
     inline std::pair<std::vector<FunctionDescr>, std::size_t>
@@ -1128,7 +1152,7 @@ namespace lang
         std::tie(p1, n1) = serialize(f.pred_, n+1);
         std::tie(c1, n2) = serialize(f.fun_, n1);
 
-        c1.back().next = static_cast<size_t>(-1);
+        fix_computation(c1);
 
         v1 = { { f.symbol_, { { Argument::FunPtr(n+1), Argument::FunPtr(n1) } }, n, n2 } };
 
@@ -1147,8 +1171,8 @@ namespace lang
         std::tie(c1, n2) = serialize(f.fun1_ , n1  );
         std::tie(c2, n3) = serialize(f.fun2_ , n2  );
 
-        c1.back().next = static_cast<size_t>(-1);
-        c2.back().next = static_cast<size_t>(-1);
+        fix_computation(c1);
+        fix_computation(c2);
 
         v1 = { { f.symbol_, { { Argument::FunPtr(n+1), Argument::FunPtr(n1), Argument::FunPtr(n2) } }, n, n3 } };
 
@@ -1164,7 +1188,7 @@ namespace lang
 
         std::tie(f1, n1) = serialize(f.fun_, n+1);
 
-        f1.back().next = static_cast<size_t>(-1);
+        fix_computation(f1);
 
         v1 = { { f.symbol_,  { { Argument::FunPtr(n+1) } }, n, n1 } };
 
@@ -1181,8 +1205,8 @@ namespace lang
         std::tie(f1, n1) = serialize(fun.f_, n+1);
         std::tie(f2, n2) = serialize(fun.g_, n1);
 
-        f1.back().next = static_cast<size_t>(-1);
-        f2.back().next = static_cast<size_t>(-1);
+        fix_computation(f1);
+        fix_computation(f2);
 
         v1 = { { fun.symbol_,  { { Argument::FunPtr(n+1), Argument::FunPtr(n1) } }, n, n2 } };
 
