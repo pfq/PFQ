@@ -40,7 +40,7 @@ main()
         std::string test("test");
         std::cout << show(Argument::Null()) << std::endl;
         std::cout << show(Argument::String(test)) << std::endl;
-        std::cout << show(Argument::Fun(42)) << std::endl;
+        std::cout << show(Argument::FunPtr(42)) << std::endl;
         std::cout << show(Argument::Data(11)) << std::endl;
         std::cout << std::endl;
     }
@@ -80,35 +80,36 @@ main()
 
     auto comp  = fun0 >> fun1 (10) >> fun0 >> hfun (pred1(42)) >> when (pred0, fun0) >> cond ( pred1(11), fun0, fun1(12));
 
+    // std::cout << pretty (comp) << std::endl;
 
-    std::cout << pretty (comp) << std::endl;
+    // show_comp (fun0);
+    // show_comp (fun1(42));
+    // show_comp (fun2("hello"));
+    // show_comp (fun0 >> fun1(1) >> fun2 ("test"));
 
-    show_comp (fun0);
-    show_comp (fun1(42));
-    show_comp (fun2("hello"));
-    show_comp (fun0 >> fun1(1) >> fun2 ("test"));
+    // show_comp (prop0);
+    // show_comp (prop1 (1));
 
-    show_comp (prop0);
-    show_comp (prop1 (1));
+    // show_comp (pred0);
+    // show_comp (pred1(1));
+    // show_comp (pred2(prop0));
+    // show_comp (pred3(prop0, 10));
+    // show_comp (not_(pred0));
 
-    show_comp (pred0);
-    show_comp (pred1(1));
-    show_comp (pred2(prop0));
-    show_comp (pred3(prop0, 10));
-    show_comp (not_(pred0));
+    // show_comp (or_(pred0, pred1(1)));
+    // show_comp (and_(pred0, or_(pred1(1), pred1(2)) ));
 
-    show_comp (or_(pred0, pred1(1)));
-    show_comp (and_(pred0, or_(pred1(1), pred1(2)) ));
+    // show_comp (hfun(pred0));
 
-    show_comp (hfun(pred0));
+    // show_comp (cond(pred0, fun0, fun1(3)));
 
-    show_comp (when_(pred0, fun0) );
-    show_comp (cond(pred0, fun0, fun1(3)));
+    // show_comp (forwardIO("eth0"));
 
-    show_comp (forwardIO("eth0"));
+    // show_comp (inv(ip >> udp) >> drop);
+    // show_comp (par (ip >> tcp, ip >> udp) >> drop);
 
-    show_comp (inv(ip >> udp) >> drop);
-    show_comp (par (ip >> tcp, ip >> udp) >> drop );
+    show_comp (conditional(pred0, fun0 >> fun1(10), fun1(11) >> fun2("ciao")) >> forwardIO("eth1") );
+
 
     return 0;
 }

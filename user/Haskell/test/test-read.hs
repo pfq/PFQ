@@ -20,6 +20,7 @@
 --  the file called "COPYING".
 
 {-# LANGUAGE ScopedTypeVariables #-}
+{-# LANGUAGE OverloadedStrings #-}
 
 module Main where
 

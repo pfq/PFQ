@@ -942,7 +942,7 @@ type MarshalFunctionDescr = (CString, [(IntPtr, CSize, CSize)], CSize)
 withFunDescr :: FunctionDescr
              -> (MarshalFunctionDescr -> IO a)
              -> IO a
-withFunDescr (FunctionDescr symbol args next) callback =
+withFunDescr (FunctionDescr symbol args _ next) callback =
     withCString symbol $ \ symbol' ->
         withMany withSingleArg (padArguments 8 args) $ \marArgs ->
             callback (symbol', marArgs, fromIntegral next)
