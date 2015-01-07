@@ -357,7 +357,8 @@ namespace lang
     {
         std::string                 symbol;
         std::array<Argument, 8>     arg;
-        std::size_t                 next;
+        std::size_t                 index;
+        std::size_t                 link;
     };
 
 
@@ -370,9 +371,9 @@ namespace lang
 
         for(auto const &a : descr.arg)
         {
-            out += show(a) + ", ";
+            out += show(a) + " ";
         }
-        out +=  "] (" + ((descr.next != -1UL) ? std::to_string(descr.next) : "-")  + ')';
+        out +=  "] " + std::to_string(descr.index) + " " + std::to_string(descr.link) + ')';
 
         return out;
     }
@@ -532,7 +533,7 @@ namespace lang
     {
        std::vector<FunctionDescr> pred, comb =
        {
-           { f.symbol_, { { Argument::FunPtr(n+1) } }, -1UL }
+           { f.symbol_, { { Argument::FunPtr(n+1) } }, n, -1UL }
        };
 
        std::size_t n1;
@@ -554,7 +555,7 @@ namespace lang
        std::tie(pred1, n1) = serialize(f.pred1_, n+1);
        std::tie(pred2, n2) = serialize(f.pred2_, n1);
 
-       comb = { { f.symbol_, { { Argument::FunPtr(n+1), Argument::FunPtr(n1) } }, -1UL } };
+       comb = { { f.symbol_, { { Argument::FunPtr(n+1), Argument::FunPtr(n1) } }, n, -1UL } };
 
        return { std::move(comb) + std::move(pred1) + std::move(pred2), n2 };
     }
@@ -610,7 +611,7 @@ namespace lang
     inline std::pair<std::vector<FunctionDescr>, std::size_t>
     serialize(Property1 const &p, std::size_t n)
     {
-        return { {FunctionDescr { p.symbol_, {{ p.arg_ }}, -1UL } }, n+1 };
+        return { { FunctionDescr { p.symbol_, make_array<Argument, 8>(p.args_), n, -1UL } }, n+1 };
     }
 
 
@@ -744,25 +745,25 @@ namespace lang
     inline std::pair<std::vector<FunctionDescr>, std::size_t>
     serialize(Predicate const &p, std::size_t n)
     {
-        return { { FunctionDescr { p.symbol_,  {{}}, -1UL } }, n+1 };
+        return { { FunctionDescr { p.symbol_,  {{}}, n, -1UL } }, n+1 };
     }
 
     inline std::pair<std::vector<FunctionDescr>, std::size_t>
     serialize(Predicate1 const &p, std::size_t n)
     {
-        return { { FunctionDescr { p.symbol_,  {{ p.arg_}}, -1UL } }, n+1 };
+        return { { FunctionDescr { p.symbol_,  {{ p.arg_}}, n, -1UL } }, n+1 };
     }
 
     inline std::pair<std::vector<FunctionDescr>, std::size_t>
     serialize(Predicate2 const &p, std::size_t n)
     {
-        return { { FunctionDescr { p.symbol_,  {{ p.arg1_, p.arg2_}}, -1UL } }, n+1 };
+        return { { FunctionDescr { p.symbol_,  {{ p.arg1_, p.arg2_}}, n, -1UL } }, n+1 };
     }
 
     inline std::pair<std::vector<FunctionDescr>, std::size_t>
     serialize(Predicate3 const &p, std::size_t n)
     {
-        return { { FunctionDescr { p.symbol_,  {{ p.arg1_, p.arg2_, p.arg3_ }}, -1UL } }, n+1 };
+        return { { FunctionDescr { p.symbol_,  {{ p.arg1_, p.arg2_, p.arg3_ }}, n, -1UL } }, n+1 };
     }
 
     template <typename Prop>
@@ -771,7 +772,7 @@ namespace lang
     {
        std::vector<FunctionDescr> prop, pred =
        {
-           { p.symbol_, { {Argument::FunPtr(n+1) } }, -1UL }
+           { p.symbol_, { {Argument::FunPtr(n+1) } }, n, -1UL }
        };
 
        std::size_t n1;
@@ -787,7 +788,7 @@ namespace lang
     {
        std::vector<FunctionDescr> prop, pred =
        {
-           { p.symbol_, { {Argument::FunPtr(n+1), p.arg_ } }, -1UL }
+           { p.symbol_, { {Argument::FunPtr(n+1), p.arg_ } }, n, -1UL }
        };
 
        std::size_t n1;
@@ -1067,25 +1068,25 @@ namespace lang
     inline std::pair<std::vector<FunctionDescr>, std::size_t>
     serialize(MFunction const &f, std::size_t n)
     {
-        return { { FunctionDescr { f.symbol_, {{}}, n+1 } }, n+1 };
+        return { { FunctionDescr { f.symbol_, {{}}, n, n+1 } }, n+1 };
     }
 
     inline std::pair<std::vector<FunctionDescr>, std::size_t>
     serialize(MFunction1 const &f, std::size_t n)
     {
-        return { { FunctionDescr { f.symbol_, {{ f.arg_ }}, n+1 } }, n+1 };
+        return { { FunctionDescr { f.symbol_, {{ f.arg_ }}, n, n+1 } }, n+1 };
     }
 
     inline std::pair<std::vector<FunctionDescr>, std::size_t>
     serialize(MFunction2 const &f, std::size_t n)
     {
-        return { { FunctionDescr { f.symbol_, {{ f.arg1_, f.arg2_ }}, n+1 } }, n+1 };
+        return { { FunctionDescr { f.symbol_, {{ f.arg1_, f.arg2_ }}, n, n+1 } }, n+1 };
     }
 
     inline std::pair<std::vector<FunctionDescr>, std::size_t>
     serialize(MFunction3 const &f, std::size_t n)
     {
-        return { { FunctionDescr { f.symbol_, {{ f.arg1_, f.arg2_, f.arg3_ }}, n+1 } }, n+1 };
+        return { { FunctionDescr { f.symbol_, {{ f.arg1_, f.arg2_, f.arg3_ }}, n, n+1 } }, n+1 };
     }
 
     template <typename P>
@@ -1097,7 +1098,7 @@ namespace lang
 
         std::tie(p1, n1) = serialize(f.pred_, n+1);
 
-        v1 = { { f.symbol_,  { { f.arg_, Argument::FunPtr(n+1) } }, n1 } };
+        v1 = { { f.symbol_,  { { f.arg_, Argument::FunPtr(n+1) } }, n, n1 } };
 
         return { std::move(v1) + std::move(p1), n1 };
     }
@@ -1111,7 +1112,7 @@ namespace lang
 
         std::tie(p1, n1) = serialize(f.pred_, n+1);
 
-        v1 = { { f.symbol_,  { { Argument::FunPtr(n+1) } }, n1 } };
+        v1 = { { f.symbol_,  { { Argument::FunPtr(n+1) } }, n, n1 } };
 
         return { std::move(v1) + std::move(p1), n1 };
     }
@@ -1129,7 +1130,7 @@ namespace lang
 
         c1.back().next = static_cast<size_t>(-1);
 
-        v1 = { { f.symbol_, { { Argument::FunPtr(n+1), Argument::FunPtr(n1) } }, n2 } };
+        v1 = { { f.symbol_, { { Argument::FunPtr(n+1), Argument::FunPtr(n1) } }, n, n2 } };
 
         return { { std::move(v1) + std::move(p1) + std::move(c1) }, n2 };
     }
@@ -1149,7 +1150,7 @@ namespace lang
         c1.back().next = static_cast<size_t>(-1);
         c2.back().next = static_cast<size_t>(-1);
 
-        v1 = { { f.symbol_, { { Argument::FunPtr(n+1), Argument::FunPtr(n1), Argument::FunPtr(n2) } }, n3 } };
+        v1 = { { f.symbol_, { { Argument::FunPtr(n+1), Argument::FunPtr(n1), Argument::FunPtr(n2) } }, n, n3 } };
 
         return { std::move(v1) + std::move(p1) + std::move(c1) + std::move(c2), n3 };
     }
@@ -1165,7 +1166,7 @@ namespace lang
 
         f1.back().next = static_cast<size_t>(-1);
 
-        v1 = { { f.symbol_,  { { Argument::FunPtr(n+1) } }, n1 } };
+        v1 = { { f.symbol_,  { { Argument::FunPtr(n+1) } }, n, n1 } };
 
         return { std::move(v1) + std::move(f1), n1 };
     }
@@ -1183,7 +1184,7 @@ namespace lang
         f1.back().next = static_cast<size_t>(-1);
         f2.back().next = static_cast<size_t>(-1);
 
-        v1 = { { fun.symbol_,  { { Argument::FunPtr(n+1), Argument::FunPtr(n1) } }, n2 } };
+        v1 = { { fun.symbol_,  { { Argument::FunPtr(n+1), Argument::FunPtr(n1) } }, n, n2 } };
 
         return { std::move(v1) + std::move(f1) + std::move(f2), n2 };
     }

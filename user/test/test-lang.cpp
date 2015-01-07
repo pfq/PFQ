@@ -50,7 +50,7 @@ main()
         std::cout << "*** FunctionDescr:\n" << std::endl;
 
         std::string test("test");
-        FunctionDescr descr { "fun" , {{ Argument::String(test), Argument::Data(42) }}, 1 };
+        FunctionDescr descr { "fun" , {{ Argument::String(test), Argument::Data(42) }}, 0, 1 };
         std::cout << show(descr) << std::endl;
         std::cout << std::endl;
     }
