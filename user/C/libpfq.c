@@ -717,7 +717,7 @@ pfq_set_group_computation_from_string(pfq_t *q, int gid, const char *comp)
 {
 	int do_set_group_computation(char **fun, int n)
 	{
-		int i = 0, ret;
+		int i = 0, j, ret;
 
                 struct pfq_computation_descr * prog = malloc(sizeof(size_t) * 2 + sizeof(struct pfq_functional_descr) * n);
 		if (!prog)
@@ -729,20 +729,15 @@ pfq_set_group_computation_from_string(pfq_t *q, int gid, const char *comp)
 		for(i = 0; i < n; i++)
 		{
 			prog->fun[i].symbol = trim_string(fun[i]);
-			prog->fun[i].arg[0].ptr   = NULL;
-			prog->fun[i].arg[0].size  = 0;
-			prog->fun[i].arg[0].nelem = 0;
-			prog->fun[i].arg[1].ptr   = NULL;
-			prog->fun[i].arg[1].size  = 0;
-			prog->fun[i].arg[1].nelem = 0;
-			prog->fun[i].arg[2].ptr   = NULL;
-			prog->fun[i].arg[2].size  = 0;
-			prog->fun[i].arg[2].nelem = 0;
-			prog->fun[i].arg[3].ptr   = NULL;
-			prog->fun[i].arg[3].size  = 0;
-			prog->fun[i].arg[3].nelem = 0;
-
 			prog->fun[i].next = i+1;
+
+			for (j = 0; j < 8; j++)
+			{
+				prog->fun[i].arg[j].addr  = NULL;
+				prog->fun[i].arg[j].size  = 0;
+				prog->fun[i].arg[j].nelem = 0;
+			}
+
 		}
 
 		ret = pfq_set_group_computation(q, gid, prog);

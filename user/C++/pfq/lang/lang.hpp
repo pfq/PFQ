@@ -86,7 +86,7 @@ namespace lang
 
         for(auto const &arg : descr.arg)
         {
-            out << '(' << arg.ptr << ',' << arg.size << ") ";
+            out << '(' << arg.addr << ',' << arg.size << ") ";
         }
 
         out << "} " << "next:"  << descr.next << ' ';

@@ -928,7 +928,7 @@ namespace pfq {
 
                 for(size_t i = 0; i < sizeof(prg->fun[0].arg)/sizeof(prg->fun[0].arg[0]); i++)
                 {
-                    prg->fun[n].arg[i].ptr   = descr.arg[i].ptr ? descr.arg[i].ptr->forall_addr() : nullptr;
+                    prg->fun[n].arg[i].addr  = descr.arg[i].ptr ? descr.arg[i].ptr->forall_addr() : nullptr;
                     prg->fun[n].arg[i].size  = descr.arg[i].size;
                     prg->fun[n].arg[i].nelem = descr.arg[i].nelem;
                 }
