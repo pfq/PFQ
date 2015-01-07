@@ -201,8 +201,8 @@ inv(arguments_t args, SkBuff b)
 static Action_SkBuff
 par(arguments_t args, SkBuff b)
 {
-	function_t f = get_arg_0(function_t, args);
-	function_t g = get_arg_1(function_t, args);
+	function_t f = get_arg0(function_t, args);
+	function_t g = get_arg1(function_t, args);
 
 	fanout_t fout = PFQ_CB(b.skb)->monad->fanout;
 

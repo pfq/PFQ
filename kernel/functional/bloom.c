@@ -43,8 +43,8 @@ bloom_src(arguments_t args, SkBuff b)
  		if (ip == NULL)
                         return false;
 
-		mem = get_arg_1(char *, args);
-        	mask = get_arg_0(unsigned int, args);
+		mem = get_arg1(char *, args);
+        	mask = get_arg0(unsigned int, args);
 
 		if ( BF_TEST(mem, hfun1(ip->saddr) & mask ) &&
 		     BF_TEST(mem, hfun2(ip->saddr) & mask ) &&
@@ -71,8 +71,8 @@ bloom_dst(arguments_t args, SkBuff b)
  		if (ip == NULL)
                         return false;
 
-		mem = get_arg_1(char *, args);
-        	mask = get_arg_0(unsigned int, args);
+		mem = get_arg1(char *, args);
+        	mask = get_arg0(unsigned int, args);
 
 		if ( BF_TEST(mem, hfun1(ip->daddr) & mask ) &&
 		     BF_TEST(mem, hfun2(ip->daddr) & mask ) &&
@@ -98,8 +98,8 @@ bloom(arguments_t args, SkBuff b)
  		if (ip == NULL)
                         return false;
 
-		mem  = get_arg_1(char *, args);
-        	mask = get_arg_0(unsigned int, args);
+		mem  = get_arg1(char *, args);
+        	mask = get_arg0(unsigned int, args);
 
 		if ( BF_TEST(mem, hfun1(ip->daddr) & mask ) &&
 		     BF_TEST(mem, hfun2(ip->daddr) & mask ) &&
@@ -146,16 +146,16 @@ bloom_dst_filter(arguments_t args, SkBuff b)
 
 static int bloom_init(arguments_t args)
 {
-	unsigned int m = get_arg_0(int, args);
-	unsigned int n = get_array_len_1(args);
-	uint32_t *ips  = get_array_1(uint32_t, args);
+	unsigned int m = get_arg0(int, args);
+	unsigned int n = get_len_array1(args);
+	uint32_t *ips  = get_array1(uint32_t, args);
 	unsigned int i;
 	size_t size;
 	char *mem;
 
 	m = clp2(m);
 
-	set_arg_0(args, m-1); 	/* fold mask */
+	set_arg0(args, m-1); 	/* fold mask */
 
 	if (m > (1UL << 24)) {
 	       	printk(KERN_INFO "[PFQ|init] bloom filter: maximum number of bins exceeded (2^24)!\n");
@@ -170,7 +170,7 @@ static int bloom_init(arguments_t args)
 	       	return -ENOMEM;
 	}
 
-	set_arg_1(args, mem);
+	set_arg1(args, mem);
 
 	pr_devel("[PFQ|init] bloom filter@%p: k=4, n=%d, m=%d size=%zu bytes.\n", mem, n, m, size);
 
@@ -195,7 +195,7 @@ static int bloom_init(arguments_t args)
 
 static int bloom_fini(arguments_t args)
 {
-	char *mem = get_arg_1(char *, args);
+	char *mem = get_arg1(char *, args);
 
 	kfree(mem);
 

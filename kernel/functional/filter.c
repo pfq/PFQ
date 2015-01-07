@@ -79,13 +79,13 @@ filter_dst_port(arguments_t args, SkBuff b)
 
 static int filter_addr_init(arguments_t args)
 {
-	__be32 mask, ipv4 = get_arg_0(__be32, args);
-	int prefix  = get_arg_1(int, args);
+	__be32 mask, ipv4 = get_arg0(__be32, args);
+	int prefix  = get_arg1(int, args);
 
 	mask = make_mask(prefix);
 
-	set_arg_0(args, ipv4 & mask);
-	set_arg_1(args, mask);
+	set_arg0(args, ipv4 & mask);
+	set_arg1(args, mask);
 
 	pr_devel("[PFQ|init] filter: addr:%pI4 mask:%pI4\n", &ipv4, &mask);
 
@@ -96,8 +96,8 @@ static int filter_addr_init(arguments_t args)
 static Action_SkBuff
 filter_addr(arguments_t args, SkBuff b)
 {
-	__be32 addr = get_arg_0(__be32, args);
-	__be32 mask = get_arg_1(__be32, args);
+	__be32 addr = get_arg0(__be32, args);
+	__be32 mask = get_arg1(__be32, args);
 
 	return has_addr(b, addr, mask) ? Pass(b) : Drop(b);
 }
@@ -106,8 +106,8 @@ filter_addr(arguments_t args, SkBuff b)
 static Action_SkBuff
 filter_src_addr(arguments_t args, SkBuff b)
 {
-	__be32 addr = get_arg_0(__be32, args);
-	__be32 mask = get_arg_1(__be32, args);
+	__be32 addr = get_arg0(__be32, args);
+	__be32 mask = get_arg1(__be32, args);
 
 	return has_src_addr(b, addr, mask) ? Pass(b) : Drop(b);
 }
@@ -115,8 +115,8 @@ filter_src_addr(arguments_t args, SkBuff b)
 static Action_SkBuff
 filter_dst_addr(arguments_t args, SkBuff b)
 {
-	__be32 addr = get_arg_0(__be32, args);
-	__be32 mask = get_arg_1(__be32, args);
+	__be32 addr = get_arg0(__be32, args);
+	__be32 mask = get_arg1(__be32, args);
 
 	return has_dst_addr(b, addr, mask) ? Pass(b) : Drop(b);
 }

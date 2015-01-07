@@ -43,7 +43,7 @@ static inline bool
 less(arguments_t args, SkBuff b)
 {
 	property_t p = get_arg(property_t, args);
-	const uint64_t data = get_arg_1(uint64_t, args);
+	const uint64_t data = get_arg1(uint64_t, args);
 
 	uint64_t ret = EVAL_PROPERTY(p, b);
 
@@ -57,7 +57,7 @@ static inline bool
 less_eq(arguments_t args, SkBuff b)
 {
 	property_t p = get_arg(property_t, args);
-	const uint64_t data = get_arg_1(uint64_t, args);
+	const uint64_t data = get_arg1(uint64_t, args);
 
 	uint64_t ret = EVAL_PROPERTY(p, b);
 
@@ -71,7 +71,7 @@ static inline bool
 greater(arguments_t args, SkBuff b)
 {
 	property_t p = get_arg(property_t, args);
-	const uint64_t data = get_arg_1(uint64_t, args);
+	const uint64_t data = get_arg1(uint64_t, args);
 
 	uint64_t ret = EVAL_PROPERTY(p, b);
 
@@ -85,7 +85,7 @@ static inline bool
 greater_eq(arguments_t args, SkBuff b)
 {
 	property_t p = get_arg(property_t, args);
-	const uint64_t data = get_arg_1(uint64_t, args);
+	const uint64_t data = get_arg1(uint64_t, args);
 
 	uint64_t ret = EVAL_PROPERTY(p, b);
 
@@ -99,7 +99,7 @@ static inline bool
 equal(arguments_t args, SkBuff b)
 {
 	property_t p = get_arg(property_t, args);
-	const uint64_t data = get_arg_1(uint64_t, args);
+	const uint64_t data = get_arg1(uint64_t, args);
 
 	uint64_t ret = EVAL_PROPERTY(p, b);
 
@@ -113,7 +113,7 @@ static inline bool
 not_equal(arguments_t args, SkBuff b)
 {
 	property_t p = get_arg(property_t, args);
-	const uint64_t data = get_arg_1(uint64_t, args);
+	const uint64_t data = get_arg1(uint64_t, args);
 
 	uint64_t ret = EVAL_PROPERTY(p, b);
 
@@ -127,7 +127,7 @@ static inline bool
 any_bit(arguments_t args, SkBuff b)
 {
 	property_t p = get_arg(property_t, args);
-	const uint64_t data = get_arg_1(uint64_t, args);
+	const uint64_t data = get_arg1(uint64_t, args);
 
 	uint64_t ret = EVAL_PROPERTY(p, b);
 
@@ -141,7 +141,7 @@ static inline bool
 all_bit(arguments_t args, SkBuff b)
 {
 	property_t p = get_arg(property_t, args);
-	const uint64_t data = get_arg_1(uint64_t, args);
+	const uint64_t data = get_arg1(uint64_t, args);
 
 	uint64_t ret = EVAL_PROPERTY(p, b);
 

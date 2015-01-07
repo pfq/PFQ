@@ -31,8 +31,8 @@
 static Action_SkBuff
 steering_field(arguments_t args, SkBuff b)
 {
-	uint32_t offset = get_arg_0(uint32_t, args);
-	uint32_t size   = get_arg_1(uint32_t, args);
+	uint32_t offset = get_arg0(uint32_t, args);
+	uint32_t size   = get_arg1(uint32_t, args);
 
 	uint32_t data, *ptr;
 	uint32_t mask;
@@ -100,18 +100,18 @@ steering_ip(arguments_t args, SkBuff b)
 
 static int steering_net_init(arguments_t args)
 {
-	__be32 addr = get_arg_0(__be32, args);
-	int prefix  = get_arg_1(int, args);
-        int subpref = get_arg_2(int, args);
+	__be32 addr = get_arg0(__be32, args);
+	int prefix  = get_arg1(int, args);
+        int subpref = get_arg2(int, args);
 
 	__be32 mask, submask;
 
 	mask    = make_mask(prefix);
 	submask = make_mask(subpref);
 
-	set_arg_0(args, addr & mask);
-	set_arg_1(args, mask);
-	set_arg_2(args, submask);
+	set_arg0(args, addr & mask);
+	set_arg1(args, mask);
+	set_arg2(args, submask);
 
 	pr_devel("[PFQ|init] steer_net: addr=%pI4 mask=%pI4 submask=%pI4\n", &addr, &mask, &submask);
 
@@ -122,9 +122,9 @@ static int steering_net_init(arguments_t args)
 static Action_SkBuff
 steering_net(arguments_t args, SkBuff b)
 {
-	__be32 addr    = get_arg_0(__be32, args);
-	__be32 mask    = get_arg_1(__be32, args);
-	__be32 submask = get_arg_2(__be32, args);
+	__be32 addr    = get_arg0(__be32, args);
+	__be32 mask    = get_arg1(__be32, args);
+	__be32 submask = get_arg2(__be32, args);
 
 	if (eth_hdr(b.skb)->h_proto == __constant_htons(ETH_P_IP))
 	{
