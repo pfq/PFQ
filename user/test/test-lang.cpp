@@ -38,10 +38,10 @@ main()
         std::cout << "*** Argument:\n" << std::endl;
 
         std::string test("test");
-        std::cout << show(Argument::Null()) << std::endl;
-        std::cout << show(Argument::String(test)) << std::endl;
-        std::cout << show(Argument::FunPtr(42)) << std::endl;
-        std::cout << show(Argument::Data(11)) << std::endl;
+        std::cout << show(Argument()) << std::endl;
+        std::cout << show(Argument(test)) << std::endl;
+        std::cout << show(Argument(funptr_tag, 42)) << std::endl;
+        std::cout << show(Argument(11)) << std::endl;
         std::cout << std::endl;
     }
 
@@ -50,7 +50,7 @@ main()
         std::cout << "*** FunctionDescr:\n" << std::endl;
 
         std::string test("test");
-        FunctionDescr descr { "fun" , {{ Argument::String(test), Argument::Data(42) }}, 0, 1 };
+        FunctionDescr descr { "fun" , {{ Argument(test), Argument(42) }}, 0, 1 };
         std::cout << show(descr) << std::endl;
         std::cout << std::endl;
     }

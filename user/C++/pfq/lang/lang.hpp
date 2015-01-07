@@ -216,6 +216,8 @@ namespace lang
 
     //////// Function Argument class:
 
+    struct funptr_tag_t { } funptr_tag = {};
+
     struct Argument
     {
         Argument()
@@ -224,40 +226,33 @@ namespace lang
         , nelem()
         {}
 
-        Argument(std::shared_ptr<StorableShowBase> p, size_t s, size_t n)
-        : ptr(std::move(p))
-        , size(s)
-        , nelem(n)
-        {}
+        template <typename Tp, typename = typename std::enable_if<std::is_pod<Tp>::value >::type>
+        Argument(Tp const &pod)
+        : ptr(std::make_shared<StorableShow<Tp>>(pod))
+        , size(sizeof(Tp))
+        , nelem(static_cast<std::size_t>(-1))
+        { }
 
-        static Argument Null()
-        {
-            return Argument { std::shared_ptr<StorableShowBase>(), 0, 0 };
-        }
+        template <typename Tp, typename = typename std::enable_if<std::is_pod<Tp>::value>::type>
+        Argument(std::vector<Tp> const &vec)
+        : ptr(std::make_shared<StorableShow<std::vector<Tp>>>(vec))
+        , size(sizeof(Tp))
+        , nelem(vec.size())
+        { }
 
-        template <typename Tp>
-        static Argument Data(Tp const &pod)
-        {
-            static_assert( std::is_pod<Tp>::value, "Data argument must be a pod type");
-            auto ptr = std::make_shared<StorableShow<Tp>>(pod);
-            return Argument{ std::dynamic_pointer_cast<StorableShowBase>(ptr), sizeof(pod), static_cast<size_t>(-1) };
-        }
+        Argument(const char *p)
+        : ptr(std::make_shared<StorableShow<std::string>>(p))
+        , size(0)
+        , nelem(static_cast<std::size_t>(-1))
+        { }
 
-        template <typename Tp>
-        static Argument Vector(std::vector<Tp> const &vec)
-        {
-            static_assert( std::is_pod<Tp>::value, "Vector type argument must be a pod type");
-            auto ptr = std::make_shared<StorableShow<std::vector<Tp>>>(vec);
-            return Argument{ std::dynamic_pointer_cast<StorableShowBase>(ptr), sizeof(Tp), vec.size() };
-        }
+        Argument(std::string str)
+        : ptr(std::make_shared<StorableShow<std::string>>(std::move(str)))
+        , size(0)
+        , nelem(static_cast<std::size_t>(-1))
+        { }
 
-        static Argument String(std::string str)
-        {
-            auto ptr = std::make_shared<StorableShow<std::string>>(std::move(str));
-            return Argument{ std::dynamic_pointer_cast<StorableShowBase>(ptr), 0, static_cast<size_t>(-1) };
-        }
-
-        static Argument SVector(std::vector<std::string> const &svec)
+        Argument(std::vector<std::string> const &svec)
         {
             std::string str;
             int n = 0;
@@ -268,52 +263,28 @@ namespace lang
                 str += s;
             }
 
-            auto ptr = std::make_shared<StorableShow<std::string>>(std::move(str));
-            return Argument{ std::dynamic_pointer_cast<StorableShowBase>(ptr), 0, svec.size() };
+            ptr = std::make_shared<StorableShow<std::string>>(std::move(str));
+            size = 0;
+            nelem = svec.size();
         }
 
-        static Argument FunPtr(std::size_t n)
-        {
-            return Argument{ std::shared_ptr<StorableShowBase>(), n, static_cast<size_t>(-1) };
-        }
+        Argument(funptr_tag_t, std::size_t n)
+        : ptr()
+        , size(n)
+        , nelem(static_cast<std::size_t>(-1))
+        { }
+
+        Argument(std::shared_ptr<StorableShowBase> p, size_t s, size_t n)
+        : ptr(std::move(p))
+        , size(s)
+        , nelem(n)
+        {}
 
         std::shared_ptr<StorableShowBase> ptr;
         size_t size;
         size_t nelem;
     };
 
-
-    inline Argument make_argument()
-    {
-        return Argument::Null();
-    }
-
-    inline Argument make_argument(std::string s)
-    {
-        return Argument::String(std::move(s));
-    }
-
-    inline Argument make_argument(const char *arr)
-    {
-        return Argument::String(arr);
-    }
-
-    template <typename Tp>
-    inline Argument make_argument(Tp const &pod)
-    {
-        return Argument::Data(pod);
-    }
-
-    template <typename Tp>
-    inline Argument make_argument(std::vector<Tp> const &pod)
-    {
-        return Argument::Vector(pod);
-    }
-
-    inline Argument make_argument(std::vector<std::string> const &vec)
-    {
-        return Argument::SVector(vec);
-    }
 
     inline std::string
     show(const Argument &arg)
@@ -529,7 +500,7 @@ namespace lang
     {
        std::vector<FunctionDescr> pred, comb =
        {
-           { f.symbol_, { { Argument::FunPtr(n+1) } }, n, -1UL }
+           { f.symbol_, { { Argument(funptr_tag, n+1) } }, n, -1UL }
        };
 
        std::size_t n1;
@@ -551,7 +522,7 @@ namespace lang
        std::tie(pred1, n1) = serialize(f.pred1_, n+1);
        std::tie(pred2, n2) = serialize(f.pred2_, n1);
 
-       comb = { { f.symbol_, { { Argument::FunPtr(n+1), Argument::FunPtr(n1) } }, n, -1UL } };
+       comb = { { f.symbol_, { { Argument(funptr_tag, n+1), Argument(funptr_tag, n1) } }, n, -1UL } };
 
        return { std::move(comb) + std::move(pred1) + std::move(pred2), n2 };
     }
@@ -565,7 +536,7 @@ namespace lang
         template <typename ...Ts>
         Property(std::string symbol, Ts &&...args)
         : symbol_(std::move(symbol))
-        , args_({make_argument(std::forward<Ts>(args))...})
+        , args_({Argument(std::forward<Ts>(args))...})
         {
         }
 
@@ -643,7 +614,7 @@ namespace lang
         template <typename Tp>
         Predicate1(std::string symb, Tp const &arg)
         : symbol_{std::move(symb)}
-        , arg_ (make_argument(arg))
+        , arg_ (Argument(arg))
         {}
 
         std::string symbol_;
@@ -655,8 +626,8 @@ namespace lang
         template <typename Tp1, typename Tp2>
         Predicate2(std::string symb, Tp1 const &arg1, Tp2 const &arg2)
         : symbol_{std::move(symb)}
-        , arg1_ (make_argument(arg1))
-        , arg2_ (make_argument(arg2))
+        , arg1_ (Argument(arg1))
+        , arg2_ (Argument(arg2))
         {}
 
         std::string symbol_;
@@ -669,9 +640,9 @@ namespace lang
         template <typename Tp1, typename Tp2, typename Tp3>
         Predicate3(std::string symb, Tp1 const &arg1, Tp2 const &arg2, Tp3 const &arg3)
         : symbol_{std::move(symb)}
-        , arg1_ (make_argument(arg1))
-        , arg2_ (make_argument(arg2))
-        , arg3_ (make_argument(arg3))
+        , arg1_ (Argument(arg1))
+        , arg2_ (Argument(arg2))
+        , arg3_ (Argument(arg3))
         {}
 
         std::string symbol_;
@@ -703,7 +674,7 @@ namespace lang
         PredicateR1(std::string symb, Prop const &p, Tp const &arg)
         : symbol_{std::move(symb)}
         , prop_ (p)
-        , arg_ (make_argument(arg))
+        , arg_ (Argument(arg))
         { }
 
         std::string symbol_;
@@ -783,7 +754,7 @@ namespace lang
     {
        std::vector<FunctionDescr> prop, pred =
        {
-           { p.symbol_, { {Argument::FunPtr(n+1) } }, n, -1UL }
+           { p.symbol_, { {Argument(funptr_tag, n+1) } }, n, -1UL }
        };
 
        std::size_t n1;
@@ -799,7 +770,7 @@ namespace lang
     {
        std::vector<FunctionDescr> prop, pred =
        {
-           { p.symbol_, { {Argument::FunPtr(n+1), p.arg_ } }, n, -1UL }
+           { p.symbol_, { {Argument(funptr_tag, n+1), p.arg_ } }, n, -1UL }
        };
 
        std::size_t n1;
@@ -828,7 +799,7 @@ namespace lang
         template <typename T>
         MFunction1(std::string symbol, T const &arg)
         : symbol_(std::move(symbol))
-        , arg_(make_argument(arg))
+        , arg_(Argument(arg))
         { }
 
         std::string     symbol_;
@@ -840,8 +811,8 @@ namespace lang
         template <typename T1, typename T2>
         MFunction2(std::string symbol, T1 const &arg1, T2 const &arg2)
         : symbol_(std::move(symbol))
-        , arg1_(make_argument(arg1))
-        , arg2_(make_argument(arg2))
+        , arg1_(Argument(arg1))
+        , arg2_(Argument(arg2))
         { }
 
         std::string     symbol_;
@@ -854,9 +825,9 @@ namespace lang
         template <typename T1, typename T2, typename T3>
         MFunction3(std::string symbol, T1 const &arg1, T2 const &arg2, T3 const &arg3)
         : symbol_(std::move(symbol))
-        , arg1_(make_argument(arg1))
-        , arg2_(make_argument(arg2))
-        , arg3_(make_argument(arg3))
+        , arg1_(Argument(arg1))
+        , arg2_(Argument(arg2))
+        , arg3_(Argument(arg3))
         { }
 
         std::string     symbol_;
@@ -874,7 +845,7 @@ namespace lang
         template <typename T>
         MFunction1P(std::string symbol, T const &arg, const P &pred)
         : symbol_(std::move(symbol))
-        , arg_(make_argument(arg))
+        , arg_(Argument(arg))
         , pred_(pred)
         { }
 
@@ -1109,7 +1080,7 @@ namespace lang
 
         std::tie(p1, n1) = serialize(f.pred_, n+1);
 
-        v1 = { { f.symbol_,  { { f.arg_, Argument::FunPtr(n+1) } }, n, n1 } };
+        v1 = { { f.symbol_,  { { f.arg_, Argument(funptr_tag,n+1) } }, n, n1 } };
 
         return { std::move(v1) + std::move(p1), n1 };
     }
@@ -1123,7 +1094,7 @@ namespace lang
 
         std::tie(p1, n1) = serialize(f.pred_, n+1);
 
-        v1 = { { f.symbol_,  { { Argument::FunPtr(n+1) } }, n, n1 } };
+        v1 = { { f.symbol_,  { { Argument(funptr_tag,n+1) } }, n, n1 } };
 
         return { std::move(v1) + std::move(p1), n1 };
     }
@@ -1141,7 +1112,7 @@ namespace lang
 
         fix_computation(c1);
 
-        v1 = { { f.symbol_, { { Argument::FunPtr(n+1), Argument::FunPtr(n1) } }, n, n2 } };
+        v1 = { { f.symbol_, { { Argument(funptr_tag,n+1), Argument(funptr_tag,n1) } }, n, n2 } };
 
         return { { std::move(v1) + std::move(p1) + std::move(c1) }, n2 };
     }
@@ -1161,7 +1132,7 @@ namespace lang
         fix_computation(c1);
         fix_computation(c2);
 
-        v1 = { { f.symbol_, { { Argument::FunPtr(n+1), Argument::FunPtr(n1), Argument::FunPtr(n2) } }, n, n3 } };
+        v1 = { { f.symbol_, { { Argument(funptr_tag,n+1), Argument(funptr_tag,n1), Argument(funptr_tag,n2) } }, n, n3 } };
 
         return { std::move(v1) + std::move(p1) + std::move(c1) + std::move(c2), n3 };
     }
@@ -1177,7 +1148,7 @@ namespace lang
 
         fix_computation(f1);
 
-        v1 = { { f.symbol_,  { { Argument::FunPtr(n+1) } }, n, n1 } };
+        v1 = { { f.symbol_,  { { Argument(funptr_tag,n+1) } }, n, n1 } };
 
         return { std::move(v1) + std::move(f1), n1 };
     }
@@ -1195,7 +1166,7 @@ namespace lang
         fix_computation(f1);
         fix_computation(f2);
 
-        v1 = { { fun.symbol_,  { { Argument::FunPtr(n+1), Argument::FunPtr(n1) } }, n, n2 } };
+        v1 = { { fun.symbol_,  { { Argument(funptr_tag,n+1), Argument(funptr_tag,n1) } }, n, n2 } };
 
         return { std::move(v1) + std::move(f1) + std::move(f2), n2 };
     }
