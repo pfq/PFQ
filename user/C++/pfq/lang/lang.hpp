@@ -422,7 +422,6 @@ namespace lang
     template <typename Prop> struct PredicateR1;
 
     struct Property;
-    struct Property1;
 
     template <typename Pred> struct Combinator1;
     template <typename Pred1, typename Pred2> struct Combinator2;
@@ -430,8 +429,7 @@ namespace lang
 
     template <typename Tp>
     struct is_property :
-        bool_type<std::is_same<Tp, Property>::value  ||
-                  std::is_same<Tp, Property1>::value >
+        bool_type<std::is_same<Tp, Property>::value>
     { };
 
 
@@ -562,26 +560,17 @@ namespace lang
     //////// Property:
 
 
-    struct Property : NetProperty
+    struct Property
     {
-        Property(std::string symbol)
+        template <typename ...Ts>
+        Property(std::string symbol, Ts &&...args)
         : symbol_(std::move(symbol))
-        { }
-
-        std::string symbol_;
-    };
-
-    struct Property1
-    {
-        template <typename T>
-        Property1(std::string symbol, T const &arg)
-        : symbol_(std::move(symbol))
-        , arg_(make_argument(arg))
+        , args_({make_argument(std::forward<Ts>(args))...})
         {
         }
 
-        std::string           symbol_;
-        Argument              arg_;
+        std::string             symbol_;
+        std::vector<Argument>   args_;
     };
 
     ///////// pretty property:
@@ -631,7 +620,7 @@ namespace lang
     }
 
     inline std::pair<std::vector<FunctionDescr>, std::size_t>
-    serialize(Property1 const &p, std::size_t n)
+    serialize(Property const &p, std::size_t n)
     {
         return { { FunctionDescr { p.symbol_, make_array<Argument, 8>(p.args_), n, -1UL } }, n+1 };
     }
@@ -1302,17 +1291,11 @@ namespace lang
     }
 
 
-    inline Property
-    property(std::string symbol)
+    template <typename ...Ts>
+    Property
+    property(std::string symbol, Ts &&...args)
     {
-        return Property{ std::move(symbol) };
-    }
-
-    template <typename T>
-    Property1
-    property1(std::string symbol, const T &arg)
-    {
-        return Property1{ std::move(symbol), arg };
+        return Property{ std::move(symbol), std::forward<Ts>(args)... };
     }
 
 
