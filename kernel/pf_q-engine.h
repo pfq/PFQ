@@ -70,10 +70,12 @@ extern int pfq_computation_fini(struct pfq_computation_tree *comp);
 extern struct pfq_computation_tree * pfq_computation_alloc(struct pfq_computation_descr const *);
 extern void * pfq_context_alloc(struct pfq_computation_descr const *);
 extern const char *pfq_signature_by_user_symbol(const char __user *symb);
+extern size_t pfq_number_of_arguments(struct pfq_functional_descr const *fun);
 
 extern char * strdup_user(const char __user *str);
 
 extern Action_SkBuff pfq_run(struct pfq_computation_tree *prg, SkBuff);
+
 
 
 #endif /* _PF_Q_ENGINE_H_ */

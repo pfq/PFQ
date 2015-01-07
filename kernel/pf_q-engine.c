@@ -232,8 +232,8 @@ pfq_context_alloc(struct pfq_computation_descr const *descr)
 }
 
 
-static size_t
-number_of_arguments(struct pfq_functional_descr const *fun)
+size_t
+pfq_number_of_arguments(struct pfq_functional_descr const *fun)
 {
 	size_t n = 0;
 	int i;
@@ -261,7 +261,7 @@ function_signature_match(struct pfq_functional_descr const *fun, string_view_t f
 		return false;
 	}
 
-	nargs = number_of_arguments(fun);
+	nargs = pfq_number_of_arguments(fun);
 
 	sig = pfq_signature_bind(make_string_view(signature), nargs);
 
@@ -300,7 +300,7 @@ pfq_validate_computation_descr(struct pfq_computation_descr const *descr)
 			return -EPERM;
 		}
 
-		nargs = number_of_arguments(fun);
+		nargs = pfq_number_of_arguments(fun);
 
 		/* get the signature */
 

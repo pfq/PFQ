@@ -99,7 +99,7 @@ pr_devel_functional_descr(struct pfq_functional_descr const *descr, size_t index
 	char buffer[256];
 
         const char *symbol, *signature;
-        size_t n, len = 0, size = sizeof(buffer);
+        size_t n, nargs, len = 0, size = sizeof(buffer);
 
        	if (descr->symbol == NULL) {
 		pr_devel("%zu   NULL :: ???\n", index);
@@ -108,10 +108,11 @@ pr_devel_functional_descr(struct pfq_functional_descr const *descr, size_t index
 
         symbol    = strdup_user(descr->symbol);
 	signature = pfq_signature_by_user_symbol(descr->symbol);
+	nargs     = pfq_number_of_arguments(descr);
 
-	len += snprintf(buffer, size, "%3zu   %s :: %s - [", index, symbol, signature);
+	len += snprintf(buffer, size, "%3zu   %s :: %s - nargs:%zu [", index, symbol, signature, nargs);
 
-        for(n = 0; n < sizeof(descr->arg)/sizeof(descr->arg[0]); n++)
+        for(n = 0; n < sizeof(descr->arg)/sizeof(descr->arg[0]) && n < nargs; n++)
 	{
 		if (size <= len)
 			return;
