@@ -944,7 +944,7 @@ withFunDescr :: FunctionDescr
              -> IO a
 withFunDescr (FunctionDescr symbol args next) callback =
     withCString symbol $ \ symbol' ->
-        withMany withSingleArg (padArguments 4 args) $ \marArgs ->
+        withMany withSingleArg (padArguments 8 args) $ \marArgs ->
             callback (symbol', marArgs, fromIntegral next)
 
 

@@ -104,7 +104,7 @@ struct pfq_functional_arg
 struct pfq_functional
 {
 	void *  ptr; 				/* pointer to function */
-	struct pfq_functional_arg arg[4];       /* arguments */
+	struct pfq_functional_arg arg[8];       /* arguments */
 };
 
 

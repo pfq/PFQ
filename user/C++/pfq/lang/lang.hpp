@@ -356,7 +356,7 @@ namespace lang
     struct FunctionDescr
     {
         std::string                 symbol;
-        std::array<Argument, 4>     arg;
+        std::array<Argument, 8>     arg;
         std::size_t                 next;
     };
 
