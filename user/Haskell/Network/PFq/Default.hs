@@ -553,7 +553,7 @@ bridge  d  = MFunction  "bridge" d () () () () () () ()
 --
 -- Only a little bit more efficient.
 tee :: String  -> NetPredicate -> NetFunction
-tee d = MFunction "tee"  d () () () () () ()
+tee d p = MFunction "tee"  d p () () () () () ()
 
 -- | Evaluate to /Pass SkBuff/, or forward the packet to the given device and evaluate to /Drop/,
 -- depending on the value returned by the predicate. Example:
@@ -566,7 +566,7 @@ tee d = MFunction "tee"  d () () () () () ()
 --
 -- Only a little bit more efficient.
 tap :: String  -> NetPredicate -> NetFunction
-tap d = MFunction "tap" d () () () () () ()
+tap d p = MFunction "tap" d p () () () () () ()
 
 -- | Forward the packet to the given device. This operation breaks the purity of the language,
 -- and it is possibly slower than the lazy "forward" counterpart.

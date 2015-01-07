@@ -952,6 +952,7 @@ fst3 (x,_,_) = x
 snd3 (_,x,_) = x
 trd3 (_,_,x) = x
 
+
 data StorableFunDescr = StorableFunDescr CString [(IntPtr,CSize,CSize)] CSize
 
 instance Storable StorableFunDescr where
@@ -959,14 +960,14 @@ instance Storable StorableFunDescr where
         alignment _ = alignment (undefined :: CSize)
         poke ptr (StorableFunDescr symbol args next) = do
             pokeByteOff ptr (off 0)  symbol
-            forM_ [0..3] $ \x -> do
+            forM_ [0..(maxNargs-1)] $ \x -> do
                 pokeByteOff ptr (off (x*3 + 1)) (fst3 $ args !! x)
                 pokeByteOff ptr (off (x*3 + 2)) (snd3 $ args !! x)
                 pokeByteOff ptr (off (x*3 + 3)) (trd3 $ args !! x)
-            pokeByteOff ptr (off 13) next
+            pokeByteOff ptr (off (1 + maxNargs *3)) next
          where
             off n = sizeOf nullPtr * n
-
+            maxNargs = 8
 
 -- |Specify a functional computation for the given group.
 --
