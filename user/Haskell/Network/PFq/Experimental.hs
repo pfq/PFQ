@@ -54,24 +54,27 @@ import Foreign.C.Types
 
 -- | Specify the class mask for the given packet.
 
-class'  = MFunction1 "class"   :: CInt -> NetFunction
+class'  :: CInt -> NetFunction
+class'  n = MFunction "class" n () () () () () () ()
 
-deliver = MFunction1 "deliver" :: CInt -> NetFunction
+deliver :: CInt -> NetFunction
+deliver n = MFunction "deliver" n () () () () () () ()
 
-dummy = MFunction1 "dummy" :: CInt -> NetFunction
+dummy :: CInt -> NetFunction
+dummy n = MFunction "dummy" n () () () () () () ()
 
 
 dummy_vector  :: [CInt] -> NetFunction
-dummy_vector xs  = MFunction1 "dummy_vector" xs
+dummy_vector xs  = MFunction "dummy_vector" xs () () () () () () ()
 
 dummy_string :: String -> NetFunction
-dummy_string xs  = MFunction1 "dummy_string" xs
+dummy_string xs  = MFunction "dummy_string" xs () () () () () () ()
 
 dummy_strings :: [String] -> NetFunction
-dummy_strings xs  = MFunction1 "dummy_strings" xs
+dummy_strings xs  = MFunction "dummy_strings" xs () () () () () () ()
 
-
-crc16 = MFunction "crc16" :: NetFunction
+crc16 :: NetFunction
+crc16 = MFunction "crc16" () () () () () () () ()
 
 
 

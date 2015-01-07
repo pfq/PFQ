@@ -197,10 +197,15 @@ type NetProperty  = Function (SkBuff -> Word64)
 
 data Function fun where
     {
-        MFunction    :: Symbol -> NetFunction;
-        MFunction1   :: forall a. (Serializable a, Argumentable a) => Symbol -> a -> NetFunction;
-        MFunction2   :: forall a b. (Serializable a, Argumentable a, Serializable b, Argumentable b) => Symbol -> a -> b -> NetFunction;
-        MFunction3   :: forall a b c. (Serializable a, Argumentable a, Serializable b, Argumentable b, Serializable c, Argumentable c) => Symbol -> a -> b -> c -> NetFunction;
+        MFunction    :: forall a b c d e f g h. (Serializable a, Argumentable a,
+                                                 Serializable b, Argumentable b,
+                                                 Serializable c, Argumentable c,
+                                                 Serializable d, Argumentable d,
+                                                 Serializable e, Argumentable e,
+                                                 Serializable f, Argumentable f,
+                                                 Serializable g, Argumentable g,
+                                                 Serializable h, Argumentable h
+                                                ) => Symbol -> a -> b -> c -> d -> e -> f -> g -> h -> NetFunction;
 
         Predicate    :: forall a b c d e f g h. (Serializable a, Argumentable a,
                                                  Serializable b, Argumentable b,
@@ -260,10 +265,9 @@ f1 >-> f2 = Composition f1 f2
 
 instance Show (Function f) where
 
-        show (MFunction  symb)           = "(Function " ++ symb ++ ")"
-        show (MFunction1 symb a)         = "(Function " ++ symb ++ " " ++ show a ++ ")"
-        show (MFunction2 symb a b)       = "(Function " ++ symb ++ " " ++ show a ++ " " ++ show b ++ ")"
-        show (MFunction3 symb a b c)     = "(Function " ++ symb ++ " " ++ show a ++ " " ++ show b ++ " " ++ show c ++ ")"
+        show (MFunction symb a b c d e f g h) = let args = unwords' [show a, show b, show c, show d, show e, show f, show g, show h]
+                                                in if null args then symb
+                                                                else "(Function " ++ symb ++ " " ++ args  ++ ")"
 
         show (Predicate symb a b c d e f g h) = let args = unwords' [show a, show b, show c, show d, show e, show f, show g, show h]
                                                 in if null args then symb
@@ -306,10 +310,9 @@ instance Pretty () where
 
 instance Pretty (Function f) where
 
-        pretty (MFunction symb)            = symb
-        pretty (MFunction1 symb a)         = "(" ++ symb ++ " " ++ pretty a ++ ")"
-        pretty (MFunction2 symb a b)       = "(" ++ symb ++ " " ++ pretty a ++ " " ++ pretty b ++ ")"
-        pretty (MFunction3 symb a b c)     = "(" ++ symb ++ " " ++ pretty a ++ " " ++ pretty b ++ " " ++ pretty c ++ ")"
+        pretty (MFunction symb a b c d e f g h) = let args = unwords' [pretty a, pretty b, pretty c, pretty d, pretty e, pretty f, pretty g, pretty h]
+                                                  in if null args then symb
+                                                                  else "(" ++ symb ++ " " ++ args ++ ")"
 
         pretty (Predicate symb a b c d e f g h) = let args = unwords' [pretty a, pretty b, pretty c, pretty d, pretty e, pretty f, pretty g, pretty h]
                                                   in if null args then symb
@@ -337,22 +340,31 @@ class Serializable a where
 
 instance Serializable (Function f) where
 
-    serialize (MFunction  symb)    n   = ([FunctionDescr symb [] n (n+1) ], n+1)
+    serialize (MFunction symb a b c d e f g h) n = let (s1, n1) = ([FunctionDescr symb [mkArgument a s2,
+                                                                                        mkArgument b s3,
+                                                                                        mkArgument c s4,
+                                                                                        mkArgument d s5,
+                                                                                        mkArgument e s6,
+                                                                                        mkArgument f s7,
+                                                                                        mkArgument g s8,
+                                                                                        mkArgument h s9] n n9 ], n+1)
+                                                       (s2, n2) = serialize a n1
+                                                       (s3, n3) = serialize b n2
+                                                       (s4, n4) = serialize c n3
+                                                       (s5, n5) = serialize d n4
+                                                       (s6, n6) = serialize e n5
+                                                       (s7, n7) = serialize f n6
+                                                       (s8, n8) = serialize g n7
+                                                       (s9, n9) = serialize h n8
 
-    serialize (MFunction1  symb c)  n = let (s1, n1) = ([FunctionDescr symb [mkArgument c s2] n n2 ], n+1)
-                                            (s2, n2) =  serialize c n1
-                                        in (s1 ++ fixComputation n1 s2, n2)
-
-    serialize (MFunction2 symb c1 c2) n = let (s1, n1) = ([FunctionDescr symb [mkArgument c1 s2, mkArgument c2 s3] n n3 ], n+1)
-                                              (s2, n2) =  serialize c1 n1
-                                              (s3, n3) =  serialize c2 n2
-                                          in (s1 ++ fixComputation n1 s2 ++ fixComputation n2 s3, n3)
-
-    serialize (MFunction3 symb p c1 c2) n = let (s1, n1) = ([FunctionDescr symb [mkArgument p s2, mkArgument c1 s3, mkArgument c2 s4] n n4 ], n+1)
-                                                (s2, n2) =  serialize p  n1
-                                                (s3, n3) =  serialize c1 n2
-                                                (s4, n4) =  serialize c2 n3
-                                            in (s1 ++ fixComputation n1 s2 ++ fixComputation n2 s3 ++ fixComputation n3 s4, n4)
+                                                   in (s1 ++ fixComputation n1 s2 ++
+                                                             fixComputation n2 s3 ++
+                                                             fixComputation n3 s4 ++
+                                                             fixComputation n4 s5 ++
+                                                             fixComputation n5 s6 ++
+                                                             fixComputation n6 s7 ++
+                                                             fixComputation n7 s8 ++
+                                                             fixComputation n8 s9, n9)
 
     serialize (Composition a b) n = let (s1, n1) = serialize a n
                                         (s2, n2) = serialize b n1
