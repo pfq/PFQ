@@ -170,11 +170,11 @@ namespace lang
         template <typename T>
         static std::string get_string(std::vector<T> const &that)
         {
-            std::string out("{");
+            std::string out("[");
             for(auto const &elem : that) {
                 out += get_string(elem) + ' ';
             }
-            return out + '}';
+            return out + ']';
         }
 
         template <typename T, typename std::enable_if<has_insertion_operator<T>::value>::type * = nullptr >
@@ -324,13 +324,13 @@ namespace lang
             out << "ArgNull";
         }
         else if (arg.ptr && arg.size != 0 && arg.nelem == static_cast<size_t>(-1))  {
-            out << "ArgData (" << arg.ptr->forall_show() << "," << arg.size << ")";
+            out << "ArgData " << arg.ptr->forall_show();
         }
         else if (arg.ptr && arg.size != 0 && arg.nelem != static_cast<size_t>(-1)) {
-            out << "ArgVector[" << arg.nelem << "] (" << arg.ptr->forall_show() << "," << arg.size << ")";
+            out << "ArgVector " << arg.ptr->forall_show();
         }
         else if (arg.ptr && arg.size == 0)  {
-            out << "ArgString '" << arg.ptr->forall_show() << "'";
+            out << "ArgString " << arg.ptr->forall_show();
         }
         else {
             out << "ArgFun " << arg.size;
@@ -345,11 +345,9 @@ namespace lang
         if (arg.ptr)
             return arg.ptr->forall_show();
         else if (arg.size)
-            return "f[" + std::to_string(arg.size) + "]";
-
+            return "arg[" + std::to_string(arg.size) + "]";
         return "";
     }
-
 
     //////// Function descriptor class:
 

@@ -933,7 +933,7 @@ namespace pfq {
                     prg->fun[n].arg[i].nelem = descr.arg[i].nelem;
                 }
 
-                prg->fun[n].next  = descr.next;
+                prg->fun[n].next  = descr.link;
 
                 n++;
             }
