@@ -957,6 +957,7 @@ data StorableFunDescr = StorableFunDescr CString [(IntPtr,CSize,CSize)] CSize
 instance Storable StorableFunDescr where
         sizeOf _    = getConstant group_fun_descr_size
         alignment _ = alignment (undefined :: CSize)
+        peek        = undefined
         poke ptr (StorableFunDescr symbol args next) = do
             pokeByteOff ptr (off 0)  symbol
             forM_ [0..(maxNargs-1)] $ \x -> do
