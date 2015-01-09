@@ -23,6 +23,8 @@
 
 #include "string-view.h"
 
+#include <assert.h>
+
 int main()
 {
 	char buffer0[64];
@@ -44,5 +46,25 @@ int main()
 	printf("'%s'\n", buffer1);
 	printf("'%s'\n", buffer2);
 	printf("'%s'\n", buffer3);
+
+	assert( string_view_compare(null_string_view(), "")   == 0);
+	assert( string_view_compare(make_string_view(""), "") == 0);
+
+	assert( string_view_compare(null_string_view(), "1")   != 0);
+	assert( string_view_compare(make_string_view(""), "1") != 0);
+
+	assert( string_view_compare(make_string_view("test"), "") != 0);
+	assert( string_view_compare(make_string_view("test"), "1") != 0);
+	assert( string_view_compare(make_string_view("test"), "12") != 0);
+	assert( string_view_compare(make_string_view("test"), "123") != 0);
+	assert( string_view_compare(make_string_view("test"), "1234") != 0);
+	assert( string_view_compare(make_string_view("test"), "12345") != 0);
+
+	assert( string_view_compare(make_string_view("test"), "") != 0);
+	assert( string_view_compare(make_string_view("test"), "t") != 0);
+	assert( string_view_compare(make_string_view("test"), "te") != 0);
+	assert( string_view_compare(make_string_view("test"), "tes") != 0);
+	assert( string_view_compare(make_string_view("test"), "test") == 0);
+	assert( string_view_compare(make_string_view("test"), "test!") != 0);
 
 }

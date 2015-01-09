@@ -103,6 +103,24 @@ view_to_string(string_view_t str)
 
 
 static inline int
+string_view_compare(string_view_t str, const char *rhs)
+{
+	const char * l = str.begin;
+	const char * r = rhs;
+
+	for(; l != str.end && *l == *r; ++l, ++r)
+	{ }
+
+	if (l == str.end) {
+		return *r == '\0' ? 0 : -1;
+	}
+	else {
+		return ((*(unsigned char *)l < *(unsigned char *)r) ? -1 : +1);
+	}
+}
+
+
+static inline int
 string_view_sprintf(char *buffer, string_view_t str)
 {
 	char * p = view_to_string(str);
