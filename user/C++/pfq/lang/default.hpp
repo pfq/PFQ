@@ -51,36 +51,36 @@ namespace lang
 
     template <typename P1, typename P2>
     auto inline operator&(P1 const &p1, P2 const &p2)
-    -> decltype(combinator2(nullptr, p1, p2))
+    -> decltype(predicate(nullptr, p1, p2))
     {
-        return combinator2("and", p1, p2);
+        return predicate("and", p1, p2);
     }
 
     //! Combine two predicate expressions with a specific boolean 'or' operation.
 
     template <typename P1, typename P2>
     auto inline operator|(P1 const &p1, P2 const &p2)
-    -> decltype(combinator2(nullptr, p1, p2))
+    -> decltype(predicate(nullptr, p1, p2))
     {
-        return combinator2("or", p1, p2);
+        return predicate("or", p1, p2);
     }
 
     //! Combine two predicate expressions with a specific boolean 'xor' operation.
 
     template <typename P1, typename P2>
     auto inline operator^(P1 const &p1, P2 const &p2)
-    -> decltype(combinator2(nullptr, p1, p2))
+    -> decltype(predicate(nullptr, p1, p2))
     {
-        return combinator2("xor", p1, p2);
+        return predicate("xor", p1, p2);
     }
 
     //! Return a new predicate that evaluates to true, when the given one evaluates to false, and vice versa.
 
     template <typename P>
     auto inline not_(P const &p)
-    -> decltype(combinator1(nullptr, p))
+    -> decltype(predicate(nullptr, p))
     {
-        return combinator1("not", p);
+        return predicate("not", p);
     }
 
     //
@@ -97,67 +97,67 @@ namespace lang
     template <typename P>
     auto inline
     operator<(P const &prop, uint64_t arg)
-    -> decltype(predicateR1(nullptr, prop, arg))
+    -> decltype(predicate(nullptr, prop, arg))
     {
-        return predicateR1("less", prop, arg);
+        return predicate("less", prop, arg);
     }
 
     template <typename P>
     auto inline
     operator<=(P const &prop, uint64_t arg)
-    -> decltype(predicateR1(nullptr, prop, arg))
+    -> decltype(predicate(nullptr, prop, arg))
     {
-        return predicateR1("less_eq", prop, arg);
+        return predicate("less_eq", prop, arg);
     }
 
     template <typename P>
     auto inline
     operator>(P const &prop, uint64_t arg)
-    -> decltype(predicateR1(nullptr, prop, arg))
+    -> decltype(predicate(nullptr, prop, arg))
     {
-        return predicateR1("greater", prop, arg);
+        return predicate("greater", prop, arg);
     }
 
     template <typename P>
     auto inline
     operator>=(P const &prop, uint64_t arg)
-    -> decltype(predicateR1(nullptr, prop, arg))
+    -> decltype(predicate(nullptr, prop, arg))
     {
-        return predicateR1("greater_eq", prop, arg);
+        return predicate("greater_eq", prop, arg);
     }
 
     template <typename P>
     auto inline
     operator==(P const &prop, uint64_t arg)
-    -> decltype(predicateR1(nullptr, prop, arg))
+    -> decltype(predicate(nullptr, prop, arg))
     {
-        return predicateR1("equal", prop, arg);
+        return predicate("equal", prop, arg);
     }
 
     template <typename P>
     auto inline
     operator!=(P const &prop, uint64_t arg)
-    -> decltype(predicateR1(nullptr, prop, arg))
+    -> decltype(predicate(nullptr, prop, arg))
     {
-        return predicateR1("not_equal", prop, arg);
+        return predicate("not_equal", prop, arg);
     }
 
     //! Return a predicate that evaluates to \c true, if the property has at least one bit set among those specified by the given mask.
 
     template <typename P>
     auto inline any_bit(P const &prop, uint64_t mask)
-    -> decltype(predicateR1(nullptr, prop, mask))
+    -> decltype(predicate(nullptr, prop, mask))
     {
-        return predicateR1("any_bit", prop, mask);
+        return predicate("any_bit", prop, mask);
     }
 
     //! Return a predicate that evaluates to \c true, if the property has all bits set among those specified in the given mask.
 
     template <typename P>
     auto inline all_bit(P const &prop, uint64_t mask)
-    -> decltype(predicateR1(nullptr, prop, mask))
+    -> decltype(predicate(nullptr, prop, mask))
     {
-        return predicateR1("all_bit", prop, mask);
+        return predicate("all_bit", prop, mask);
     }
 
     namespace
@@ -216,11 +216,11 @@ namespace lang
 
         //! Evaluate to \c true if the SkBuff has the given Layer3 protocol.
 
-        auto is_l3_proto    = [] (uint16_t type) { return predicate1 ("is_l3_proto", type); };
+        auto is_l3_proto    = [] (uint16_t type) { return predicate ("is_l3_proto", type); };
 
         //! Evaluate to \c true if the SkBuff has the given Layer4 protocol.
 
-        auto is_l4_proto    = [] (uint8_t proto) { return predicate1 ("is_l4_proto", proto); };
+        auto is_l4_proto    = [] (uint8_t proto) { return predicate ("is_l4_proto", proto); };
 
         //! Evaluate to \c true if the SkBuff has the given source or destination port.
         /*!
@@ -231,21 +231,21 @@ namespace lang
          * has_port(80)
          */
 
-        auto has_port       = [] (uint16_t port) { return predicate1 ("is_port", port); };
+        auto has_port       = [] (uint16_t port) { return predicate ("is_port", port); };
 
         //! Evaluate to \c true if the SkBuff has the given source port.
         /*!
          * If the transport protocol is not present or has no port, the predicate evaluates to False.
          */
 
-        auto has_src_port   = [] (uint16_t port) { return predicate1 ("is_src_port", port); };
+        auto has_src_port   = [] (uint16_t port) { return predicate ("is_src_port", port); };
 
         //! Evaluate to \c true if the SkBuff has the given destination port.
         /*!
          * If the transport protocol is not present or has no port, the predicate evaluates to False.
          */
 
-        auto has_dst_port   = [] (uint16_t port) { return predicate1 ("is_dst_port", port); };
+        auto has_dst_port   = [] (uint16_t port) { return predicate ("is_dst_port", port); };
 
         //! Evaluate to \c true if the source or destination IP address matches the given network address. I.e.,
         /*!
@@ -256,21 +256,21 @@ namespace lang
 
         auto has_addr = [] (const char *addr, int prefix)
         {
-            return predicate2("has_addr", ipv4_t {addr}, prefix);
+            return predicate("has_addr", ipv4_t {addr}, prefix);
         };
 
         //! Evaluate to \c true if the source IP address matches the given network address.
 
         auto has_src_addr = [] (const char *addr, int prefix)
         {
-            return predicate2("has_src_addr", ipv4_t {addr}, prefix);
+            return predicate("has_src_addr", ipv4_t {addr}, prefix);
         };
 
         //! Evaluate to \c true if the destination IP address matches the given network address.
 
         auto has_dst_addr = [] (const char *addr, int prefix)
         {
-            return predicate2("has_dst_addr", ipv4_t{addr}, prefix);
+            return predicate("has_dst_addr", ipv4_t{addr}, prefix);
         };
 
         //! Evaluate to \c true if the SkBuff has the given \c mark, set by mark function.
@@ -282,7 +282,7 @@ namespace lang
          * \see mark
          */
 
-        auto has_mark       = [] (unsigned long value) { return predicate1("has_mark", value); };
+        auto has_mark       = [] (unsigned long value) { return predicate("has_mark", value); };
 
         //! Evaluate to \c true if the SkBuff has a vlan tag.
 
@@ -295,7 +295,7 @@ namespace lang
          * has_vid(42)
          */
 
-        auto has_vid        = [] (int value) { return predicate1 ("has_vid", value); };
+        auto has_vid        = [] (int value) { return predicate ("has_vid", value); };
 
         //! Predicate which evaluates to \c true when the packet has one of the
         /*!
@@ -305,13 +305,13 @@ namespace lang
          */
 
         auto vlan_id        = [] (std::vector<int> const &vs) {
-                                    return predicate1("vlan_id", vs);
+                                    return predicate("vlan_id", vs);
                                 };
 
         //! Monadic function, counterpart of \c vlan_id function. \see vlan_id
 
         auto vlan_id_filter = [] (std::vector<int> const &vs) {
-                                    return mfunction1("vlan_id_filter", vs);
+                                    return mfunction("vlan_id_filter", vs);
                               };
         //
         // default properties:
@@ -460,7 +460,7 @@ namespace lang
             if (inet_pton(AF_INET, net, &na.addr) <= 0)
                 throw std::runtime_error("pfq::lang::steer_net");
 
-            return mfunction1("steer_net", na);
+            return mfunction("steer_net", na);
         };
 
         //! Dispatch the packet across the sockets
@@ -471,7 +471,7 @@ namespace lang
          */
 
         auto steer_field = [] (int off_bytes, int size_bits) {
-                                return mfunction2("steer_field", off_bytes, size_bits);
+                                return mfunction("steer_field", off_bytes, size_bits);
                            };
         //
         // default filters:
@@ -488,7 +488,13 @@ namespace lang
          * udp >> kernel
          */
 
-        auto filter         = std::bind(details::polymorphic_mfunctionP(), "filter", _1);
+        template <typename Predicate>
+        auto filter(Predicate p)
+            -> decltype (mfunction(nullptr, p))
+        {
+            static_assert(is_predicate<Predicate>::value, "filter: argument 0: predicate expected");
+            return mfunction("filter", p);
+        }
 
         //! Evaluate to \c Pass SkBuff if it is an IPv4 packet, \c Drop it otherwise.
 
@@ -564,7 +570,7 @@ namespace lang
 
         //! Unit operation implements left- and right-identity for Action monad.
 
-        auto log_msg        = [] (std::string msg) { return mfunction1("log_msg", std::move(msg)); };
+        auto log_msg        = [] (std::string msg) { return mfunction("log_msg", std::move(msg)); };
 
         //! Dump the payload of packet to syslog.
         /*!
@@ -594,7 +600,7 @@ namespace lang
          * forward ("eth1")
          */
 
-        auto forward    = [] (std::string dev) { return mfunction1("forward", std::move(dev)); };
+        auto forward    = [] (std::string dev) { return mfunction("forward", std::move(dev)); };
 
         //! Forward the packet to the given device.
         /*! This operation breaks the purity of the language, and it is possibly slower
@@ -603,7 +609,7 @@ namespace lang
          * forwardIO ("eth1")
          */
 
-        auto forwardIO  = [] (std::string dev) { return mfunction1("forwardIO", std::move(dev)); };
+        auto forwardIO  = [] (std::string dev) { return mfunction("forwardIO", std::move(dev)); };
 
         //! Forward the packet to the given device and evaluates to \c Drop.
         /*!
@@ -614,7 +620,7 @@ namespace lang
          * Conditional bridge, forward the packet to eth1 if UDP, send it to the kernel otherwise.
          */
 
-        auto bridge     = [] (std::string dev) { return mfunction1("bridge", std::move(dev)); };
+        auto bridge     = [] (std::string dev) { return mfunction("bridge", std::move(dev)); };
 
         //! Forward the packet to the given device.
         /*! It evaluates to \c Pass SkBuff or \c Drop,
@@ -629,7 +635,13 @@ namespace lang
          * Only a little bit more efficient.
          */
 
-        auto tee_       = std::bind(details::polymorphic_mfunction1P(), "tee", _1, _2);
+        template <typename Predicate>
+        auto tee_(std::string dev, Predicate p)
+            -> decltype(mfunction(nullptr, dev, p))
+        {
+            static_assert(is_predicate<Predicate>::value, "tee: argument 1: predicate expected");
+            return mfunction("tee", dev, p);
+        }
 
         //! Evaluate to \c Pass SkBuff, or forward the packet to the given device.
         /*!
@@ -644,7 +656,13 @@ namespace lang
          * Only a little bit more efficient.
          */
 
-        auto tap        = std::bind(details::polymorphic_mfunction1P(), "tap", _1, _2);
+        template <typename Predicate>
+        auto tap(std::string dev, Predicate p)
+            -> decltype(mfunction(nullptr, dev, p))
+        {
+            static_assert(is_predicate<Predicate>::value, "tap: argument 1: predicate expected");
+            return mfunction("tap", dev, p);
+        }
 
         //! Mark the packet with the given value.
         /*
@@ -653,7 +671,7 @@ namespace lang
          * mark (42)
          */
 
-        auto mark           = [] (unsigned long value) { return mfunction1("mark", value); };
+        auto mark           = [] (unsigned long value) { return mfunction("mark", value); };
 
         //! Increment the i-th counter of the current group.
         /*
@@ -662,7 +680,7 @@ namespace lang
          * inc (10)
          */
 
-        auto inc            = [] (int value) { return mfunction1("inc", value); };
+        auto inc            = [] (int value) { return mfunction("inc", value); };
 
         //! Decrement the i-th counter of the current group.
         /*
@@ -671,7 +689,7 @@ namespace lang
          * dec (10)
          */
 
-        auto dec            = [] (int value) { return mfunction1("dec", value); };
+        auto dec            = [] (int value) { return mfunction("dec", value); };
 
         //! Monadic version of \c is_l3_proto predicate.
         /*!
@@ -683,7 +701,7 @@ namespace lang
          * \see is_l3_proto
          */
 
-        auto l3_proto       = [] (uint16_t type) { return mfunction1 ("l3_proto", type); };
+        auto l3_proto       = [] (uint16_t type) { return mfunction ("l3_proto", type); };
 
         //! Monadic version of \c is_l4_proto predicate.
         /*!
@@ -695,7 +713,7 @@ namespace lang
          * \see is_l4_proto
          */
 
-        auto l4_proto       = [] (uint8_t proto) { return mfunction1 ("l4_proto", proto); };
+        auto l4_proto       = [] (uint8_t proto) { return mfunction ("l4_proto", proto); };
 
         //! Monadic version of \c has_port predicate.
         /*!
@@ -707,15 +725,15 @@ namespace lang
          * \see has_port
          */
 
-        auto port           = [] (uint16_t p) { return mfunction1 ("port", p); };
+        auto port           = [] (uint16_t p) { return mfunction ("port", p); };
 
         //! Monadic version of \c has_src_port predicate.  \see has_src_port
 
-        auto src_port       = [] (uint16_t p) { return mfunction1 ("src_port", p); };
+        auto src_port       = [] (uint16_t p) { return mfunction ("src_port", p); };
 
         //! Monadic version of \c has_dst_port predicate.  \see has_dst_port
 
-        auto dst_port       = [] (uint16_t p) { return mfunction1 ("dst_port", p); };
+        auto dst_port       = [] (uint16_t p) { return mfunction ("dst_port", p); };
 
         //! Monadic version of \c has_addr predicate.
         /*!
@@ -729,21 +747,21 @@ namespace lang
 
         auto addr = [] (const char *net, int prefix)
         {
-            return mfunction2("addr", ipv4_t{net}, prefix);
+            return mfunction("addr", ipv4_t{net}, prefix);
         };
 
         //! Monadic version of \c has_src_addr predicate.  \see has_src_addr
 
         auto src_addr = [] (const char *net, int prefix)
         {
-            return mfunction2("src_addr", ipv4_t{net}, prefix);
+            return mfunction("src_addr", ipv4_t{net}, prefix);
         };
 
         //! Monadic version of \c has_dst_addr predicate.  \see has_dst_addr
 
         auto dst_addr = [] (const char *net, int prefix)
         {
-            return mfunction2("dst_addr", ipv4_t{net}, prefix);
+            return mfunction("dst_addr", ipv4_t{net}, prefix);
         };
 
         //! Conditional execution of monadic NetFunctions.
@@ -756,11 +774,27 @@ namespace lang
          *
          */
 
-        auto when        = std::bind(details::polymorphic_mfunctionPF(), "when", _1, _2);
+        template <typename Predicate, typename Fun>
+        auto when(Predicate p, Fun f)
+            -> decltype(mfunction(nullptr, p, f))
+        {
+            static_assert(is_predicate<Predicate>::value,  "when: argument 0: predicate expected");
+            static_assert(is_monadic_function<Fun>::value, "when: argument 1: monadic function expected");
+
+            return mfunction("when", p, f);
+        }
 
         //! The reverse of \c when. \see when
 
-        auto unless      = std::bind(details::polymorphic_mfunctionPF(), "unless", _1, _2);
+        template <typename Predicate, typename Fun>
+        auto unless(Predicate p, Fun f)
+            -> decltype(mfunction(nullptr, p, f))
+        {
+            static_assert(is_predicate<Predicate>::value,  "unless: argument 0: predicate expected");
+            static_assert(is_monadic_function<Fun>::value, "unless: argument 1: monadic function expected");
+
+            return mfunction("unless", p, f);
+        }
 
         //! conditional execution of monadic netfunctions.
         /*!
@@ -771,7 +805,16 @@ namespace lang
          *
          */
 
-        auto conditional = std::bind(details::polymorphic_mfunctionPFF(),  "conditional", _1, _2, _3);
+        template <typename Predicate, typename F1, typename F2>
+        auto conditional(Predicate p, F1 f1, F2 f2)
+            -> decltype(mfunction(nullptr, p, f1, f2))
+        {
+            static_assert(is_predicate<Predicate>::value,  "conditional: argument 0: predicate expected");
+            static_assert(is_monadic_function<F1>::value,  "conditional: argument 1: monadic function expected");
+            static_assert(is_monadic_function<F2>::value,  "conditional: argument 1: monadic function expected");
+
+            return mfunction("conditional", p, f1, f2);
+        }
 
         //! Function that inverts a monadic NetFunction.
         /*!
@@ -781,7 +824,14 @@ namespace lang
          *
          */
 
-        auto inv         = std::bind(details::polymorphic_mfunctionF(),  "inv", _1);
+        template <typename Fun>
+        auto inv(Fun f)
+            -> decltype(mfunction(nullptr, f))
+        {
+            static_assert(is_monadic_function<Fun>::value, "inv: argument 0: monadic function expected");
+
+            return mfunction("inv", f);
+        }
 
         //! Function that returns the parallel of two monadic NetFunctions.
         /*!
@@ -791,7 +841,15 @@ namespace lang
          *
          */
 
-        auto par         = std::bind(details::polymorphic_mfunctionFF(), "par", _1, _2);
+        template <typename F1, typename F2>
+        auto par(F1 f1, F2 f2)
+            -> decltype(mfunction(nullptr, f1, f2))
+        {
+            static_assert(is_monadic_function<F1>::value, "par: argument 0: monadic function expected");
+            static_assert(is_monadic_function<F1>::value, "par: argument 1: monadic function expected");
+
+            return mfunction("par", f1, f2);
+        }
 
         //
         // bloom filters:
@@ -809,7 +867,7 @@ namespace lang
 
         auto bloom      = [] (int m, std::vector<std::string> const &ips) {
                                 auto addrs = fmap(details::inet_addr, ips);
-                                return predicate2("bloom", m, std::move(addrs));
+                                return predicate("bloom", m, std::move(addrs));
                           };
 
         //! Similarly to \c bloom, evaluates to \c true when the source address
@@ -817,7 +875,7 @@ namespace lang
 
         auto bloom_src  = [] (int m, std::vector<std::string> const &ips) {
                                 auto addrs = fmap(details::inet_addr, ips);
-                                return predicate2("bloom_src", m, std::move(addrs));
+                                return predicate("bloom_src", m, std::move(addrs));
                           };
 
         //! Similarly to \c bloom, evaluates to \c true when the destination address
@@ -825,28 +883,28 @@ namespace lang
 
         auto bloom_dst  = [] (int m, std::vector<std::string> const &ips) {
                                 auto addrs = fmap(details::inet_addr, ips);
-                                return predicate2("bloom_dst", m, std::move(addrs));
+                                return predicate("bloom_dst", m, std::move(addrs));
                           };
 
         //! Monadic counterpart of \c bloom function.  \see bloom
 
         auto bloom_filter      = [] (int m, std::vector<std::string> const &ips) {
                                     auto addrs = fmap(details::inet_addr, ips);
-                                    return mfunction2("bloom_filter", m, std::move(addrs));
+                                    return mfunction("bloom_filter", m, std::move(addrs));
                                 };
 
         //! Monadic counterpart of \c bloom_src function.  \see bloom_src
 
         auto bloom_src_filter  = [] (int m, std::vector<std::string> const &ips) {
                                     auto addrs = fmap(details::inet_addr, ips);
-                                    return mfunction2("bloom_src_filter", m, std::move(addrs));
+                                    return mfunction("bloom_src_filter", m, std::move(addrs));
                                 };
 
         //! Monadic counterpart of \c bloom_dst function. \see bloom_dst
 
         auto bloom_dst_filter  = [] (int m, std::vector<std::string> const &ips) {
                                     auto addrs = fmap(details::inet_addr, ips);
-                                    return mfunction2("bloom_dst_filter", m, std::move(addrs));
+                                    return mfunction("bloom_dst_filter", m, std::move(addrs));
                                 };
         //
         // bloom filter, utility functions:

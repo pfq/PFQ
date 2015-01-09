@@ -47,16 +47,14 @@ namespace pfq { namespace lang { namespace experimental {
 
     namespace
     {
-        auto class_        = [] (int value) { return mfunction1("class", value); };
-        auto deliver       = [] (int value) { return mfunction1("deliver", value); };
+        auto class_        = [] (int value) { return mfunction("class", value); };
+        auto deliver       = [] (int value) { return mfunction("deliver", value); };
 
-        auto dummy         = [] (int value) { return mfunction1("dummy", value); };
-        auto dummy_vector  = [] (std::vector<int> const &vec) { return mfunction1("dummy_vector", vec); };
+        auto dummy         = [] (int value) { return mfunction("dummy", value); };
+        auto dummy_vector  = [] (std::vector<int> const &vec) { return mfunction("dummy_vector", vec); };
 
-        auto dummy_string  = [] (std::string s) { return mfunction1("dummy_string", std::move(s)); };
-        auto dummy_strings = [] (std::vector<std::string> const &vec) { return mfunction1("dummy_strings", vec); };
-
-        auto hdummy        = std::bind(details::polymorphic_mfunctionP(),  "hdummy", _1);
+        auto dummy_string  = [] (std::string s) { return mfunction("dummy_string", std::move(s)); };
+        auto dummy_strings = [] (std::vector<std::string> const &vec) { return mfunction("dummy_strings", vec); };
 
         auto crc16         = mfunction("crc16");
     }
