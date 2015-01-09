@@ -45,7 +45,13 @@ endif()
 #
 
 set(CMAKE_CXX_FLAGS                "${CXX_FLAGS_COMPAT} -Wall -Wextra -O2")
-set(CMAKE_CXX_FLAGS_DEBUG          "${CXX_FLAGS_COMPAT} -Wall -Wextra -O0 -g")
+
+if (COMP_VERSION VERSION_EQUAL 4.8 OR COMP_VERSION VERSION_GREATER 4.8)
+    set(CMAKE_CXX_FLAGS_DEBUG      "${CXX_FLAGS_COMPAT} -Wall -Wextra -O0 -g -fsanitize=address -std=c++1y")
+else()
+    set(CMAKE_CXX_FLAGS_DEBUG      "${CXX_FLAGS_COMPAT} -Wall -Wextra -O0 -g -std=c++1y")
+endif()
+
 set(CMAKE_CXX_FLAGS_MINSIZEREL     "${CXX_FLAGS_COMPAT} -Wall -Wextra -Os -DNDEBUG")
 set(CMAKE_CXX_FLAGS_RELEASE        "${CXX_FLAGS_COMPAT} -Wall -Wextra -O2 -DNDEBUG")
 set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CXX_FLAGS_COMPAT} -Wall -Wextra -O2 -g")
