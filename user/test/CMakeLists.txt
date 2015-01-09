@@ -13,7 +13,7 @@ link_directories(../C)
 # C++11 tests
 
 add_executable(test-lang-default test-lang-default.cpp)
-add_executable(test-fun-lang test-fun-lang.cpp)
+add_executable(test-lang-functional test-lang-functional.cpp)
 add_executable(test-bloom    test-bloom.cpp)
 
 add_executable(test-dump test-dump.cpp)

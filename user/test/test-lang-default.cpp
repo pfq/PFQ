@@ -22,12 +22,11 @@ main()
 
     std::cout << pretty ( ip >> udp >> steer_rtp >> inc(2) ) << std::endl;
 
-    std::cout << pretty ( hdummy (is_ip) ) << std::endl;
-    std::cout << pretty ( hdummy (is_ip) ) << std::endl;
-
     std::cout << pretty ( when   (has_vid(1), ip >> steer_ip) ) << std::endl;
     std::cout << pretty ( unless (is_ip, ip >> steer_ip) ) << std::endl;
     std::cout << pretty ( conditional (is_ip, steer_ip, drop  ) ) << std::endl;
+
+    std::cout << pretty ( filter(is_ip) ) << std::endl;
 
     return 0;
 }
