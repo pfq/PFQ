@@ -14,8 +14,8 @@ cabal-version:          >=1.10
 
 Executable irq-affinity
     main-is:            irq-affinity.hs
-    build-depends:      base >=4.5, 
-                        cmdargs >= 0.10, 
-                        mtl >= 2.0, 
-                        split >= 0.2 
+    build-depends:      base >= 4.7, 
+                        cmdargs, 
+                        mtl, 
+                        split
     default-language:   Haskell2010
