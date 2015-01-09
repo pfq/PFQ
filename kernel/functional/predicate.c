@@ -231,7 +231,7 @@ struct pfq_function_descr predicate_functions[] = {
         { "has_port",     "Word16 -> SkBuff -> Bool",  pred_has_port     },
         { "has_src_port", "Word16 -> SkBuff -> Bool",  pred_has_src_port },
         { "has_dst_port", "Word16 -> SkBuff -> Bool",  pred_has_dst_port },
-        { "has_vid",      "Int -> SkBuff -> Bool",     pred_has_vid      },
+        { "has_vid",      "CInt   -> SkBuff -> Bool",  pred_has_vid      },
         { "has_mark",     "CULong -> SkBuff -> Bool",  pred_has_mark     },
 
         { "has_addr",     "Word32 -> Word32 -> SkBuff -> Bool", pred_has_addr     , pred_addr_init },
