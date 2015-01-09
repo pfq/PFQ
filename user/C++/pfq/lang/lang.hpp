@@ -90,7 +90,7 @@ namespace pfq { namespace lang
     show(ipv4_t value)
     {
         char buff[16];
-        if (inet_ntop(AF_INET, &value, buff, sizeof(buff)) != NULL)
+        if (inet_ntop(AF_INET, &value, buff, sizeof(buff)) == NULL)
             throw std::runtime_error("pfq::lang::inet_ntop");
 
         return buff;
