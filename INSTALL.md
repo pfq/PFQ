@@ -17,7 +17,9 @@ To install PFQ, the following requisites must be present:
 
 * A working g++ compiler, g++-4.7 or higher, required to compile the user-space tools and applications.  
 
-* Haskell-platform: to compile user-space tools.
+* GHC Glasgow Haskell Compiler 7.8 or higher.
+
+* Alex and happy tool.
 
 * CMake and make tool.
 
@@ -68,7 +70,7 @@ The framework is organized as follow:
 * The directory user/C contains the user-space C library used by user-space
   applications.
 
-* The directory user/C++ contains the C++11 inline library used by 
+* The directory user/C++ contains the C++11-14 library used by 
   C++ user-space applications.
 
 * The directory user/Haskell contains the FFI library used by Haskell user-space applications.
@@ -79,7 +81,9 @@ The framework is organized as follow:
 Satisfy Library Dependencies
 ----------------------------
 
-Before installing the framework, ensure the following Haskell libraries are installed:
+Before installing the framework, ensure to have the required tools installed.
+
+pfq-framework depends on the following Haskell libraries:
 
 * filepath
 * directory
@@ -101,22 +105,22 @@ Before installing the framework, ensure the following Haskell libraries are inst
 
 You can use the cabal tool to install them. More information on cabal are available at: [https://www.haskell.org/cabal/download.html](https://www.haskell.org/cabal/download.html).
 
-In addition, we suggest to update cabal to the most recent version with:
-
-`cabal install cabal-install`
-
-Please ensure you have ~/cabal/bin in your PATH.
 
 Build the software
 ------------------
 
-2. From the base directory launch the following command:
+1. To install libraries dependencies, from the base directory launch the following command:
+
+`cabal install --only-dep`
+
+
+2. To build and install the framework:
 
 `runhaskell Build.hs install`
 
-The command will configure, build and install the PFQ framework satisfying the dependencies and the correct build order for the various components. 
+The command configures, builds and installs the PFQ framework satisfying the dependencies and the correct order of the various build. 
 
-Alternatively, you can specify the list of components you want to build from the command line. The following command shows the targets available:
+3. Alternatively, you can specify the list of components you want to build from the command line. The following command shows the targets available:
 
 `runhaskell Build.hs show`
 
