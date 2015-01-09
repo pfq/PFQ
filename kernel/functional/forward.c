@@ -115,7 +115,7 @@ forward_init(arguments_t args)
 
 	set_arg(args, dev);
 
-	printk(KERN_INFO "[PFQ|init] forward: device '%s' locked (refcnt=%d)\n", dev->name, netdev_refcnt_read(dev));
+	printk(KERN_INFO "[PFQ|init] forward: device '%s' locked\n", dev->name);
 
 	return 0;
 }
@@ -129,7 +129,7 @@ forward_fini(arguments_t args)
 	if (dev)
 	{
 		dev_put(dev);
-		printk(KERN_INFO "[PFQ|fini] forward: device '%s' released (refcnt=%d)\n", dev->name, netdev_refcnt_read(dev));
+		printk(KERN_INFO "[PFQ|fini] forward: device '%s' released\n", dev->name);
 	}
 
 	return 0;
