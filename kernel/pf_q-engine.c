@@ -437,15 +437,14 @@ get_functional_by_index(struct pfq_computation_descr const *descr, struct pfq_co
 }
 
 
+/*
+ * Prerequisite: valid computation (check by means of pfq_validate_computation_descr)
+ */
+
 int
 pfq_computation_rtlink(struct pfq_computation_descr const *descr, struct pfq_computation_tree *comp, void *context)
 {
 	size_t n;
-
-	/* validate the computation descriptors */
-
-        if (pfq_validate_computation_descr(descr) < 0)
-                return -EPERM;
 
         /* size */
 
