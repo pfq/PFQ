@@ -60,7 +60,7 @@ module Network.PFq.Lang
     ) where
 
 
-import Debug.Trace
+-- import Debug.Trace
 
 import Network.Socket
 import Foreign.Storable
