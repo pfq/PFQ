@@ -275,9 +275,78 @@ function_signature_match(struct pfq_functional_descr const *fun, string_view_t f
 }
 
 
+static int
+check_argument_descr(struct pfq_functional_arg_descr const *arg, string_view_t expected)
+{
+	if (is_arg_data(arg)) {
+		ptrdiff_t size = pfq_signature_sizeof(expected);
+		if (size != -1) {
+			if (size != arg->size) {
+				const char *str = string_view_to_string(expected);
+				pr_devel("[PFQ] invalid argument: expected %s, pod size = %zu (size mismatch)!\n", str, arg->size);
+				kfree(str);
+				return -EPERM;
+			}
+		}
+		return 0;
+	}
+
+	if (is_arg_vector(arg)) {
+
+		string_view_t type;
+		ptrdiff_t size;
+
+		if (string_view_at(expected, 0) != '[')
+		{
+			const char *str = string_view_to_string(expected);
+			pr_devel("[PFQ] invalid argument: expected %s, got a vector!\n", str);
+			kfree(str);
+			return -EPERM;
+		}
+
+		type = pfq_signature_vector_type(expected);
+		size = pfq_signature_sizeof(type);
+
+		if (size != -1) {
+			if (size != arg->size) {
+				const char *str = string_view_to_string(type);
+				pr_devel("[PFQ] invalid argument: expected %s, pod size = %zu (size mismatch)!\n", str, arg->size);
+				kfree(str);
+				return -EPERM;
+			}
+		}
+
+		return 0;
+	}
+
+	if (is_arg_string(arg)) {
+		if (string_view_compare(expected, "String") != 0) {
+			const char *str = string_view_to_string(expected);
+			pr_devel("[PFQ] invalid argument: expected %s, got String!\n", str);
+			kfree(str);
+			return -EPERM;
+		}
+
+		return 0;
+	}
+
+	if (is_arg_vector_str(arg)) {
+		if (string_view_compare(expected, "[String]") != 0) {
+			const char *str = string_view_to_string(expected);
+			pr_devel("[PFQ] invalid argument: expected %s, got [String]!\n", str);
+			kfree(str);
+			return -EPERM;
+		}
+
+		return 0;
+	}
+
+	return -EPERM;
+}
+
 
 int
-pfq_validate_computation_descr(struct pfq_computation_descr const *descr)
+pfq_check_computation_descr(struct pfq_computation_descr const *descr)
 {
         size_t entry_point = descr->entry_point, n;
 
@@ -287,6 +356,8 @@ pfq_validate_computation_descr(struct pfq_computation_descr const *descr)
 	}
 
 	/* check if functions are valid */
+
+        pr_devel("[PFQ] validating computation (%zu functions)\n", descr->size);
 
 	for(n = 0; n < descr->size; n++)
 	{
@@ -322,7 +393,7 @@ pfq_validate_computation_descr(struct pfq_computation_descr const *descr)
 
 		/* check for valid function arguments */
 
-        	for(i = 0; i < sizeof(fun->arg)/sizeof(fun->arg[0]); i++)
+        	for(i = 0; i < nargs; i++)
        		{
 			string_view_t sarg = pfq_signature_arg(make_string_view(signature), i);
 
@@ -333,11 +404,7 @@ pfq_validate_computation_descr(struct pfq_computation_descr const *descr)
 			}
 
 			if (is_arg_function(&fun->arg[i])) {
-
-				/* function argument */
-
 				size_t x = fun->arg[i].size;
-
 
 				if (x >= descr->size) {
 					pr_devel("[PFQ] %zu: %s: invalid argument(%d): %zu!\n", n, signature, i, x);
@@ -345,11 +412,17 @@ pfq_validate_computation_descr(struct pfq_computation_descr const *descr)
 				}
 
 				if (!function_signature_match(&descr->fun[x], sarg, x)) {
-					const char *expected = string_view_to_string(sarg);
-					pr_devel("[PFQ] %zu: %s: invalid argument(%d): expected signature: %s!\n", n, signature, i, expected);
-					kfree(expected);
+					const char *str = string_view_to_string(sarg);
+					pr_devel("[PFQ] %zu: %s: invalid argument(%d): expected signature: %s!\n", n, signature, i, str);
+					kfree(str);
 					return -EPERM;
 				}
+				continue;
+			}
+
+			if (check_argument_descr(&fun->arg[i], sarg) != 0) {
+				pr_devel("[PFQ] %zu: invalid argument %d!\n", n, i);
+				return -EPERM;
 			}
 		}
 	}

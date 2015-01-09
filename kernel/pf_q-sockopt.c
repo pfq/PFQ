@@ -856,7 +856,7 @@ int pfq_setsockopt(struct socket *sock,
 
 		/* check the correctness of computation */
 
-		if (pfq_validate_computation_descr(descr) < 0) {
+		if (pfq_check_computation_descr(descr) < 0) {
                         pr_devel("[PFQ|%d] invalid expression!\n", so->id);
                         err = -EFAULT;
                         goto error;
