@@ -128,7 +128,7 @@ namespace pfq { namespace lang
 
     inline std::string pretty(std::string const &that)
     {
-        return fix_string(that);
+        return "\"" + fix_string(that) + "\"";
     }
 
     template <typename T, typename std::enable_if<has_insertion_operator<T>::value>::type * = nullptr >
