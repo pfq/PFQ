@@ -216,6 +216,47 @@ pfq_signature_arg(string_view_t str, int index)
 }
 
 
+size_t
+pfq_signature_sizeof(string_view_t str)
+{
+	if (!string_view_compare(str, "Bool"))
+		return sizeof(bool);
+	if (!string_view_compare(str, "CChar"))
+		return sizeof(char);
+	if (!string_view_compare(str, "CUChar"))
+		return sizeof(unsigned char);
+	if (!string_view_compare(str, "CInt"))
+		return sizeof(int);
+	if (!string_view_compare(str, "CUnt"))
+		return sizeof(unsigned int);
+	if (!string_view_compare(str, "CShort"))
+		return sizeof(short);
+	if (!string_view_compare(str, "CUShort"))
+		return sizeof(unsigned short);
+	if (!string_view_compare(str, "CLong"))
+		return sizeof(long);
+	if (!string_view_compare(str, "CULong"))
+		return sizeof(unsigned long);
+	if (!string_view_compare(str, "CLLong"))
+		return sizeof(long long);
+	if (!string_view_compare(str, "CULLong"))
+		return sizeof(unsigned long long);
+	if (!string_view_compare(str, "CDouble"))
+		return sizeof(double);
+	if (!string_view_compare(str, "CSize"))
+		return sizeof(size_t);
+	if (!string_view_compare(str, "Word8"))
+		return sizeof(uint8_t);
+	if (!string_view_compare(str, "Word16"))
+		return sizeof(uint16_t);
+	if (!string_view_compare(str, "Word32"))
+		return sizeof(uint32_t);
+	if (!string_view_compare(str, "Word64"))
+		return sizeof(uint64_t);
+	return -1;
+}
+
+
 static inline const char *
 skip_white_space(const char *p, const char *end)
 {

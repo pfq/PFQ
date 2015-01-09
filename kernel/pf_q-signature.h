@@ -35,5 +35,6 @@ int  pfq_signature_redundant_brackets(string_view_t sig);
 int  pfq_signature_arity(string_view_t sig);
 bool pfq_signature_equal(string_view_t a, string_view_t b);
 bool pfq_signature_is_function(string_view_t sig);
+size_t pfq_signature_sizeof(string_view_t str);
 
 #endif /* _PF_Q_SIGNATURE_H_ */
