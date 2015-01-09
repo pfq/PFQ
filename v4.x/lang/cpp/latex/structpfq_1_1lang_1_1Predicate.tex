@@ -1,11 +1,11 @@
-\hypertarget{structpfq_1_1lang_1_1Predicate}{\section{pfq\+:\+:lang\+:\+:Predicate Struct Reference}
-\label{structpfq_1_1lang_1_1Predicate}\index{pfq\+::lang\+::\+Predicate@{pfq\+::lang\+::\+Predicate}}
+\hypertarget{structpfq_1_1lang_1_1Predicate}{\section{pfq\+:\+:lang\+:\+:Predicate$<$ Ts $>$ Struct Template Reference}
+\label{structpfq_1_1lang_1_1Predicate}\index{pfq\+::lang\+::\+Predicate$<$ Ts $>$@{pfq\+::lang\+::\+Predicate$<$ Ts $>$}}
 }
 
 
 {\ttfamily \#include $<$lang.\+hpp$>$}
 
-Inheritance diagram for pfq\+:\+:lang\+:\+:Predicate\+:\begin{figure}[H]
+Inheritance diagram for pfq\+:\+:lang\+:\+:Predicate$<$ Ts $>$\+:\begin{figure}[H]
 \begin{center}
 \leavevmode
 \includegraphics[height=2.000000cm]{structpfq_1_1lang_1_1Predicate}
@@ -14,30 +14,36 @@ Inheritance diagram for pfq\+:\+:lang\+:\+:Predicate\+:\begin{figure}[H]
 \subsection*{Public Member Functions}
 \begin{DoxyCompactItemize}
 \item 
-\hyperlink{structpfq_1_1lang_1_1Predicate_a508e8ecee71522146a784e1ee26719f5}{Predicate} (std\+::string symb)
+{\footnotesize template$<$typename... Tp$>$ }\\\hyperlink{structpfq_1_1lang_1_1Predicate_ad604e102c7599051e801d790cca70591}{Predicate} (std\+::string symbol, Tp \&\&...args)
 \end{DoxyCompactItemize}
 \subsection*{Public Attributes}
 \begin{DoxyCompactItemize}
 \item 
-std\+::string \hyperlink{structpfq_1_1lang_1_1Predicate_af3caf778e1fba3f768925816405cdfce}{symbol\+\_\+}
+std\+::string \hyperlink{structpfq_1_1lang_1_1Predicate_a5f3219d34d216f1af9f6b1cafb93cc62}{symbol\+\_\+}
+\item 
+std\+::tuple$<$ Ts...$>$ \hyperlink{structpfq_1_1lang_1_1Predicate_aee302feb9cdf55566e50249e6dcd50af}{args\+\_\+}
 \end{DoxyCompactItemize}
 \subsection*{Additional Inherited Members}
 
 
 \subsection{Constructor \& Destructor Documentation}
-\hypertarget{structpfq_1_1lang_1_1Predicate_a508e8ecee71522146a784e1ee26719f5}{\index{pfq\+::lang\+::\+Predicate@{pfq\+::lang\+::\+Predicate}!Predicate@{Predicate}}
+\hypertarget{structpfq_1_1lang_1_1Predicate_ad604e102c7599051e801d790cca70591}{\index{pfq\+::lang\+::\+Predicate@{pfq\+::lang\+::\+Predicate}!Predicate@{Predicate}}
 \index{Predicate@{Predicate}!pfq\+::lang\+::\+Predicate@{pfq\+::lang\+::\+Predicate}}
-\subsubsection[{Predicate}]{\setlength{\rightskip}{0pt plus 5cm}pfq\+::lang\+::\+Predicate\+::\+Predicate (
+\subsubsection[{Predicate}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename... Ts$>$ template$<$typename... Tp$>$ {\bf pfq\+::lang\+::\+Predicate}$<$ Ts $>$\+::{\bf Predicate} (
 \begin{DoxyParamCaption}
-\item[{std\+::string}]{symb}
+\item[{std\+::string}]{symbol, }
+\item[{Tp \&\&...}]{args}
 \end{DoxyParamCaption}
-)\hspace{0.3cm}{\ttfamily [inline]}}}\label{structpfq_1_1lang_1_1Predicate_a508e8ecee71522146a784e1ee26719f5}
+)\hspace{0.3cm}{\ttfamily [inline]}}}\label{structpfq_1_1lang_1_1Predicate_ad604e102c7599051e801d790cca70591}
 
 
 \subsection{Member Data Documentation}
-\hypertarget{structpfq_1_1lang_1_1Predicate_af3caf778e1fba3f768925816405cdfce}{\index{pfq\+::lang\+::\+Predicate@{pfq\+::lang\+::\+Predicate}!symbol\+\_\+@{symbol\+\_\+}}
+\hypertarget{structpfq_1_1lang_1_1Predicate_aee302feb9cdf55566e50249e6dcd50af}{\index{pfq\+::lang\+::\+Predicate@{pfq\+::lang\+::\+Predicate}!args\+\_\+@{args\+\_\+}}
+\index{args\+\_\+@{args\+\_\+}!pfq\+::lang\+::\+Predicate@{pfq\+::lang\+::\+Predicate}}
+\subsubsection[{args\+\_\+}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename... Ts$>$ std\+::tuple$<$Ts...$>$ {\bf pfq\+::lang\+::\+Predicate}$<$ Ts $>$\+::args\+\_\+}}\label{structpfq_1_1lang_1_1Predicate_aee302feb9cdf55566e50249e6dcd50af}
+\hypertarget{structpfq_1_1lang_1_1Predicate_a5f3219d34d216f1af9f6b1cafb93cc62}{\index{pfq\+::lang\+::\+Predicate@{pfq\+::lang\+::\+Predicate}!symbol\+\_\+@{symbol\+\_\+}}
 \index{symbol\+\_\+@{symbol\+\_\+}!pfq\+::lang\+::\+Predicate@{pfq\+::lang\+::\+Predicate}}
-\subsubsection[{symbol\+\_\+}]{\setlength{\rightskip}{0pt plus 5cm}std\+::string pfq\+::lang\+::\+Predicate\+::symbol\+\_\+}}\label{structpfq_1_1lang_1_1Predicate_af3caf778e1fba3f768925816405cdfce}
+\subsubsection[{symbol\+\_\+}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename... Ts$>$ std\+::string {\bf pfq\+::lang\+::\+Predicate}$<$ Ts $>$\+::symbol\+\_\+}}\label{structpfq_1_1lang_1_1Predicate_a5f3219d34d216f1af9f6b1cafb93cc62}
 
 
 The documentation for this struct was generated from the following file\+:\begin{DoxyCompactItemize}

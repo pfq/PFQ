@@ -173,7 +173,7 @@
 
 boxfont setfont
 1 boundaspect scale
-(pfq::lang::MFunction) cw
+(pfq::lang::MFunction< Ts >) cw
 (pfq::lang::Function< Action< SkBuff >(SkBuff) >) cw
 /boxwidth boxwidth marginwidth 2 mul add def
 /xspacing boxwidth distx add def
@@ -186,7 +186,7 @@ boundx scalefactor div boundy scalefactor div scale
 
 % ----- classes -----
 
- (pfq::lang::MFunction) 0.000000 0.000000 box
+ (pfq::lang::MFunction< Ts >) 0.000000 0.000000 box
  (pfq::lang::Function< Action< SkBuff >(SkBuff) >) 0.000000 1.000000 box
 
 % ----- relations -----

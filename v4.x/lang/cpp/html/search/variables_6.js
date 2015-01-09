@@ -8,6 +8,5 @@ var searchData=
   ['has_5fsrc_5faddr',['has_src_addr',['../namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03.html#acb03dd3e34d6dd7e83d621fa9077194c',1,'pfq::lang::anonymous_namespace{default.hpp}']]],
   ['has_5fsrc_5fport',['has_src_port',['../namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03.html#a964d5ed41f50a1f3a04176f8e54d7a5a',1,'pfq::lang::anonymous_namespace{default.hpp}']]],
   ['has_5fvid',['has_vid',['../namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03.html#a99c204d8095fdccd50d4cb24d32e5b5b',1,'pfq::lang::anonymous_namespace{default.hpp}']]],
-  ['has_5fvlan',['has_vlan',['../namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03.html#a1f0378ddfa90777d11ffae5fbb57b4e0',1,'pfq::lang::anonymous_namespace{default.hpp}']]],
-  ['hdummy',['hdummy',['../namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03.html#a6377eeaace811b051eaf2edffd4968f9',1,'pfq::lang::experimental::anonymous_namespace{experimental.hpp}']]]
+  ['has_5fvlan',['has_vlan',['../namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03.html#a1f0378ddfa90777d11ffae5fbb57b4e0',1,'pfq::lang::anonymous_namespace{default.hpp}']]]
 ];

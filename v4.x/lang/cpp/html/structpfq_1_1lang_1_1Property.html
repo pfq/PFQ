@@ -4,7 +4,7 @@
 <meta http-equiv="Content-Type" content="text/xhtml;charset=UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.8.8"/>
-<title>PFQ-Lang eDLS: pfq::lang::Property Struct Reference</title>
+<title>PFQ-Lang eDLS: pfq::lang::Property&lt; Ts &gt; Struct Template Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -92,30 +92,33 @@ $(document).ready(function(){initNavTree('structpfq_1_1lang_1_1Property.html',''
 <a href="#pub-attribs">Public Attributes</a> &#124;
 <a href="structpfq_1_1lang_1_1Property-members.html">List of all members</a>  </div>
   <div class="headertitle">
-<div class="title">pfq::lang::Property Struct Reference</div>  </div>
+<div class="title">pfq::lang::Property&lt; Ts &gt; Struct Template Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
 
 <p><code>#include &lt;<a class="el" href="lang_8hpp_source.html">lang.hpp</a>&gt;</code></p>
 <div class="dynheader">
-Inheritance diagram for pfq::lang::Property:</div>
+Inheritance diagram for pfq::lang::Property&lt; Ts &gt;:</div>
 <div class="dyncontent">
  <div class="center">
-  <img src="structpfq_1_1lang_1_1Property.png" usemap="#pfq::lang::Property_map" alt=""/>
-  <map id="pfq::lang::Property_map" name="pfq::lang::Property_map">
+  <img src="structpfq_1_1lang_1_1Property.png" usemap="#pfq::lang::Property&lt; Ts &gt;_map" alt=""/>
+  <map id="pfq::lang::Property&lt; Ts &gt;_map" name="pfq::lang::Property&lt; Ts &gt;_map">
 <area href="structpfq_1_1lang_1_1Function.html" alt="pfq::lang::Function&lt; Sig &gt;" shape="rect" coords="0,0,227,24"/>
 </map>
  </div></div>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a1db5bd07efa67a8fd41320150b788096"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpfq_1_1lang_1_1Property.html#a1db5bd07efa67a8fd41320150b788096">Property</a> (std::string symbol)</td></tr>
-<tr class="separator:a1db5bd07efa67a8fd41320150b788096"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a65d215ea79feeaf43feaa02f3c8a31a4"><td class="memTemplParams" colspan="2">template&lt;typename... Tp&gt; </td></tr>
+<tr class="memitem:a65d215ea79feeaf43feaa02f3c8a31a4"><td class="memTemplItemLeft" align="right" valign="top">&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="structpfq_1_1lang_1_1Property.html#a65d215ea79feeaf43feaa02f3c8a31a4">Property</a> (std::string symbol, Tp &amp;&amp;...args)</td></tr>
+<tr class="separator:a65d215ea79feeaf43feaa02f3c8a31a4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
-<tr class="memitem:a9d42c07009ac00fdc93bde1d50a52790"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpfq_1_1lang_1_1Property.html#a9d42c07009ac00fdc93bde1d50a52790">symbol_</a></td></tr>
-<tr class="separator:a9d42c07009ac00fdc93bde1d50a52790"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a27cdbc97fd6ffc8b92ff75599c7dce72"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpfq_1_1lang_1_1Property.html#a27cdbc97fd6ffc8b92ff75599c7dce72">symbol_</a></td></tr>
+<tr class="separator:a27cdbc97fd6ffc8b92ff75599c7dce72"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a01e0bf793226860cbafe4bea5075d507"><td class="memItemLeft" align="right" valign="top">std::tuple&lt; Ts...&gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpfq_1_1lang_1_1Property.html#a01e0bf793226860cbafe4bea5075d507">args_</a></td></tr>
+<tr class="separator:a01e0bf793226860cbafe4bea5075d507"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="inherited"></a>
 Additional Inherited Members</h2></td></tr>
@@ -124,19 +127,33 @@ Additional Inherited Members</h2></td></tr>
 <tr class="separator:ac7124e473c4804e25b24e9e15fe7b392 inherit pub_types_structpfq_1_1lang_1_1Function"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
-<a class="anchor" id="a1db5bd07efa67a8fd41320150b788096"></a>
+<a class="anchor" id="a65d215ea79feeaf43feaa02f3c8a31a4"></a>
 <div class="memitem">
 <div class="memproto">
+<div class="memtemplate">
+template&lt;typename... Ts&gt; </div>
+<div class="memtemplate">
+template&lt;typename... Tp&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">pfq::lang::Property::Property </td>
+          <td class="memname"><a class="el" href="structpfq_1_1lang_1_1Property.html">pfq::lang::Property</a>&lt; Ts &gt;::<a class="el" href="structpfq_1_1lang_1_1Property.html">Property</a> </td>
           <td>(</td>
           <td class="paramtype">std::string&#160;</td>
-          <td class="paramname"><em>symbol</em></td><td>)</td>
+          <td class="paramname"><em>symbol</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
           <td></td>
+          <td class="paramtype">Tp &amp;&amp;...&#160;</td>
+          <td class="paramname"><em>args</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
         </tr>
       </table>
   </td>
@@ -149,12 +166,28 @@ Additional Inherited Members</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Member Data Documentation</h2>
-<a class="anchor" id="a9d42c07009ac00fdc93bde1d50a52790"></a>
+<a class="anchor" id="a01e0bf793226860cbafe4bea5075d507"></a>
 <div class="memitem">
 <div class="memproto">
+<div class="memtemplate">
+template&lt;typename... Ts&gt; </div>
       <table class="memname">
         <tr>
-          <td class="memname">std::string pfq::lang::Property::symbol_</td>
+          <td class="memname">std::tuple&lt;Ts...&gt; <a class="el" href="structpfq_1_1lang_1_1Property.html">pfq::lang::Property</a>&lt; Ts &gt;::args_</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a27cdbc97fd6ffc8b92ff75599c7dce72"></a>
+<div class="memitem">
+<div class="memproto">
+<div class="memtemplate">
+template&lt;typename... Ts&gt; </div>
+      <table class="memname">
+        <tr>
+          <td class="memname">std::string <a class="el" href="structpfq_1_1lang_1_1Property.html">pfq::lang::Property</a>&lt; Ts &gt;::symbol_</td>
         </tr>
       </table>
 </div><div class="memdoc">
@@ -170,7 +203,7 @@ Additional Inherited Members</h2></td></tr>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="namespacepfq.html">pfq</a></li><li class="navelem"><a class="el" href="namespacepfq_1_1lang.html">lang</a></li><li class="navelem"><a class="el" href="structpfq_1_1lang_1_1Property.html">Property</a></li>
-    <li class="footer">Generated on Mon Jan 5 2015 18:29:32 for PFQ-Lang eDLS by
+    <li class="footer">Generated on Fri Jan 9 2015 18:18:23 for PFQ-Lang eDLS by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.8 </li>
   </ul>

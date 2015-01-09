@@ -1,6 +1,5 @@
 var searchData=
 [
-  ['data',['Data',['../structpfq_1_1lang_1_1Argument.html#ae9ded6ceab4dd43be420763bed00f2c3',1,'pfq::lang::Argument']]],
   ['dec',['dec',['../namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03.html#a139906841e77a2eb86b761b27ceeb685',1,'pfq::lang::anonymous_namespace{default.hpp}']]],
   ['default_2ehpp',['default.hpp',['../default_8hpp.html',1,'']]],
   ['deliver',['deliver',['../namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03.html#aabd600ebf1ee62184fa0765f49f9f990',1,'pfq::lang::experimental::anonymous_namespace{experimental.hpp}']]],

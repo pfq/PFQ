@@ -1,4 +1,5 @@
 var searchData=
 [
-  ['data',['Data',['../structpfq_1_1lang_1_1Argument.html#ae9ded6ceab4dd43be420763bed00f2c3',1,'pfq::lang::Argument']]]
+  ['filter',['filter',['../namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03.html#a8b131cbcae69b656e529a88aff3a16b8',1,'pfq::lang::anonymous_namespace{default.hpp}']]],
+  ['fix_5fcomputation',['fix_computation',['../namespacepfq_1_1lang.html#adffac06fa2bba45eca6f8eeab33262d2',1,'pfq::lang']]]
 ];

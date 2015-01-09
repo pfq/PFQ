@@ -1,6 +1,4 @@
 var searchData=
 [
-  ['get_5faddr',['get_addr',['../structpfq_1_1lang_1_1StorableShowBase.html#a716426f3a3c0a37e5cbce068dc18cda5',1,'pfq::lang::StorableShowBase::get_addr(std::string const &amp;that)'],['../structpfq_1_1lang_1_1StorableShowBase.html#abbf4497b2a5de3ee38e9ee1c7ffd734d',1,'pfq::lang::StorableShowBase::get_addr(T const &amp;that)'],['../structpfq_1_1lang_1_1StorableShowBase.html#a4bc431bc15a71b7ae20964e2685a35cf',1,'pfq::lang::StorableShowBase::get_addr(const std::vector&lt; T &gt; &amp;that)']]],
-  ['get_5fmark',['get_mark',['../namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03.html#ab733e24b3ca86450bea0b0888a6327d2',1,'pfq::lang::anonymous_namespace{default.hpp}']]],
-  ['get_5fstring',['get_string',['../structpfq_1_1lang_1_1StorableShowBase.html#a9e69c1f0fd60de5a72662bf6e958c4db',1,'pfq::lang::StorableShowBase::get_string(std::string const &amp;that)'],['../structpfq_1_1lang_1_1StorableShowBase.html#aec6a0735276796b19a8035d35e770116',1,'pfq::lang::StorableShowBase::get_string(std::vector&lt; T &gt; const &amp;that)'],['../structpfq_1_1lang_1_1StorableShowBase.html#a882c1bc29fbb4c81d9d483201864f41d',1,'pfq::lang::StorableShowBase::get_string(T const &amp;that)'],['../structpfq_1_1lang_1_1StorableShowBase.html#ac5fb47fc6cf85e5279a8aff258173e49',1,'pfq::lang::StorableShowBase::get_string(T const &amp;)']]]
+  ['get_5fmark',['get_mark',['../namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03.html#ab733e24b3ca86450bea0b0888a6327d2',1,'pfq::lang::anonymous_namespace{default.hpp}']]]
 ];
