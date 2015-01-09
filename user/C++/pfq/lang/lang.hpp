@@ -367,6 +367,7 @@ namespace pfq { namespace lang
                     make_arguments(args, std::forward_as_tuple(s2,s3,s4,s5,s6,s7,s8,s9)),
                         n, (cont ? n9 : -1) }
             },
+
             n+1
         );
 
@@ -388,10 +389,10 @@ namespace pfq { namespace lang
     //////// Property:
 
     template <typename ... Ts>
-    struct Property : NetPredicate
+    struct Property : NetProperty
     {
         template <typename ...Tp>
-        Property(std::string symbol, Tp &&...args)
+        Property(std::string symbol, Tp && ... args)
         : symbol_(std::move(symbol))
         , args_(std::forward<Tp>(args)...)
         { }
@@ -410,34 +411,34 @@ namespace pfq { namespace lang
     ///////// pretty property:
 
     inline std::string
-    pretty(Property<> const &descr)
+    pretty(Property<> const &p)
     {
-       return descr.symbol_;
+       return p.symbol_;
     }
 
-    template <typename ...ts>
+    template <typename ...Ts>
     inline std::string
-    pretty(Property<ts...> const &descr)
+    pretty(Property<Ts...> const &p)
     {
-        std::string ret = '(' + descr.symbol_;
-        tuple_for_each(descr.args_, pretty_tuple(ret));
+        std::string ret = '(' + p.symbol_;
+        tuple_for_each(p.args_, pretty_tuple(ret));
         return ret + ')';
     }
 
     ///////// show property:
 
     inline std::string
-    show(Property<> const &descr)
+    show(Property<> const &p)
     {
-       return descr.symbol_;
+       return p.symbol_;
     }
 
-    template <typename ...ts>
+    template <typename ...Ts>
     inline std::string
-    show(Property<ts...> const &descr)
+    show(Property<Ts...> const &p)
     {
-        std::string ret = "(Property " + descr.symbol_;
-        tuple_for_each(descr.args_, show_tuple(ret));
+        std::string ret = "(Property " + p.symbol_;
+        tuple_for_each(p.args_, show_tuple(ret));
         return ret + ')';
     }
 
@@ -456,7 +457,7 @@ namespace pfq { namespace lang
     //////// Predicate:
 
     template <typename ... Ts>
-    struct Predicate
+    struct Predicate : NetPredicate
     {
         template <typename ...Tp>
         Predicate(std::string symbol, Tp &&...args)
@@ -478,34 +479,34 @@ namespace pfq { namespace lang
     ///////// pretty predicate:
 
     inline std::string
-    pretty(Predicate<> const &descr)
+    pretty(Predicate<> const &p)
     {
-       return descr.symbol_;
+       return p.symbol_;
     }
 
-    template <typename ...ts>
+    template <typename ...Ts>
     inline std::string
-    pretty(Predicate<ts...> const &descr)
+    pretty(Predicate<Ts...> const &p)
     {
-        std::string ret = '(' + descr.symbol_;
-        tuple_for_each(descr.args_, pretty_tuple(ret));
+        std::string ret = '(' + p.symbol_;
+        tuple_for_each(p.args_, pretty_tuple(ret));
         return ret + ')';
     }
 
     ///////// show predicate:
 
     inline std::string
-    show(Predicate<> const &descr)
+    show(Predicate<> const &p)
     {
-       return descr.symbol_;
+       return p.symbol_;
     }
 
     template <typename ...Ts>
     inline std::string
-    show(Predicate<Ts...> const &descr)
+    show(Predicate<Ts...> const &p)
     {
-        std::string ret = "(Predicate " + descr.symbol_;
-        tuple_for_each(descr.args_, show_tuple(ret));
+        std::string ret = "(Predicate " + p.symbol_;
+        tuple_for_each(p.args_, show_tuple(ret));
         return ret + ')';
     }
 
@@ -546,34 +547,34 @@ namespace pfq { namespace lang
     ///////// pretty function:
 
     inline std::string
-    pretty(MFunction<> const &descr)
+    pretty(MFunction<> const &f)
     {
-       return descr.symbol_;
+       return f.symbol_;
     }
 
-    template <typename ...ts>
+    template <typename ...Ts>
     inline std::string
-    pretty(MFunction<ts...> const &descr)
+    pretty(MFunction<Ts...> const &f)
     {
-        std::string ret = '(' + descr.symbol_;
-        tuple_for_each(descr.args_, pretty_tuple(ret));
+        std::string ret = '(' + f.symbol_;
+        tuple_for_each(f.args_, pretty_tuple(ret));
         return ret + ')';
     }
 
     ///////// show function:
 
     inline std::string
-    show(MFunction<> const &descr)
+    show(MFunction<> const &f)
     {
-       return descr.symbol_;
+       return f.symbol_;
     }
 
     template <typename ...Ts>
     inline std::string
-    show(MFunction<Ts...> const &descr)
+    show(MFunction<Ts...> const &f)
     {
-        std::string ret = "(MFunction " + descr.symbol_;
-        tuple_for_each(descr.args_, show_tuple(ret));
+        std::string ret = "(MFunction " + f.symbol_;
+        tuple_for_each(f.args_, show_tuple(ret));
         return ret + ')';
     }
 
@@ -631,16 +632,16 @@ namespace pfq { namespace lang
 
     template <typename C1, typename C2>
     inline std::string
-    pretty(Composition<C1,C2> const &descr)
+    pretty(Composition<C1,C2> const &comp)
     {
-        return pretty(descr.f_) + " >-> " + pretty(descr.g_);
+        return pretty(comp.f_) + " >-> " + pretty(comp.g_);
     }
 
     template <typename C1, typename C2>
     inline std::string
-    show(Composition<C1,C2> const &descr)
+    show(Composition<C1,C2> const &comp)
     {
-        return "(Composition " + show(descr.f_) + " " + show(descr.g_) + ")";
+        return "(Composition " + show(comp.f_) + " " + show(comp.g_) + ")";
     }
 
     template <typename C1, typename C2>
