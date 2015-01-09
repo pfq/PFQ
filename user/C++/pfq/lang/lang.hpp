@@ -70,6 +70,41 @@ namespace pfq { namespace lang
     using NetPredicate = Function< bool(SkBuff) >;
     using NetProperty  = Function< uint64_t(SkBuff) >;
 
+    // ipv4_t, network byte order type with converting constructor
+    //
+
+    struct ipv4_t
+    {
+        ipv4_t() = default;
+
+        ipv4_t(const char *addr)
+        {
+            if (inet_pton(AF_INET, addr, &value) <= 0)
+                throw std::runtime_error("pfq::lang::ipv4_t");
+        }
+
+        uint32_t value;
+    };
+
+    inline std::string
+    show(ipv4_t value)
+    {
+        char buff[16];
+        if (inet_ntop(AF_INET, &value, buff, sizeof(buff)) != NULL)
+            throw std::runtime_error("pfq::lang::inet_ntop");
+
+        return buff;
+    }
+
+    inline std::string
+    pretty(ipv4_t value)
+    {
+        return show(value);
+    }
+
+    //
+    // PFQ/lang DSL...
+    //
 
     template <typename ...Ts>
     struct Property;
@@ -99,7 +134,7 @@ namespace pfq { namespace lang
     { };
 
     template <typename Tp>
-    struct is_monad_function :
+    struct is_monadic_function :
         bool_type<is_same_type_constructor<Tp, MFunction>::value   ||
                   is_same_type_constructor<Tp, Composition>::value>
     { };
@@ -299,7 +334,7 @@ namespace pfq { namespace lang
     // serialize arguments...
     //
 
-    template <typename Ts, typename std::enable_if<!is_monad_function<Ts>::value>::type * = nullptr>
+    template <typename Ts, typename std::enable_if<!is_monadic_function<Ts>::value>::type * = nullptr>
     inline std::pair<std::vector<FunctionDescr>, std::ptrdiff_t>
     serialize(Ts const &, std::ptrdiff_t n)
     {
@@ -560,8 +595,8 @@ namespace pfq { namespace lang
     template <typename F, typename G>
     struct Composition
     {
-        static_assert(is_monad_function<F>::value, "composition: argument 1 must be a monadic function");
-        static_assert(is_monad_function<G>::value, "composition: argument 2 must be a monadic function");
+        static_assert(is_monadic_function<F>::value, "composition: argument 1 must be a monadic function");
+        static_assert(is_monadic_function<G>::value, "composition: argument 2 must be a monadic function");
 
         using type = typename kleisly<typename F::type, typename G::type>::type;
 

@@ -965,7 +965,7 @@ namespace pfq {
         void
         set_group_computation(int gid, std::string prog)
         {
-            std::vector<pfq::lang::MFunction> comp;
+            std::vector<pfq::lang::MFunction<>> comp;
             auto fs = split(prog, ">->");
 
             for (auto & f : fs)
