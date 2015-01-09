@@ -4,7 +4,7 @@ PFQ v4.0
 Introduction
 ------------
 
-PFQ is a network monitoring framework designed for the Linux operating system 
+PFQ is a networking framework designed for the Linux operating system 
 that allows efficient packet capturing, in-kernel functional processing and packet 
 steering across sockets. 
 
