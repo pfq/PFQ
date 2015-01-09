@@ -29,7 +29,7 @@ if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
         set(CXX_FLAGS_COMPAT "-std=c++11")
 
     elseif (COMP_VERSION VERSION_EQUAL 4.9 OR COMP_VERSION VERSION_GREATER 4.9)
-        set(CXX_FLAGS_COMPAT "-std=c++1y")
+        set(CXX_FLAGS_COMPAT "-std=c++1y -fdiagnostics-color=auto")
     endif ()
 elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
 
