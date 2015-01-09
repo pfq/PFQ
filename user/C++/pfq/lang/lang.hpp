@@ -401,10 +401,10 @@ namespace pfq { namespace lang
     };
 
     template <typename ...Ts>
-    Property<Ts...>
+    Property<typename std::decay<Ts>::type...>
     property(std::string symbol, Ts &&...args)
     {
-        return Property<Ts...>(std::move(symbol), std::forward<Ts>(args)...);
+        return Property<typename std::decay<Ts>::type...>(std::move(symbol), std::forward<Ts>(args)...);
     }
 
     ///////// pretty property:
@@ -469,10 +469,10 @@ namespace pfq { namespace lang
     };
 
     template <typename ...Ts>
-    Predicate<Ts...>
+    Predicate<typename std::decay<Ts>::type...>
     predicate(std::string symbol, Ts &&...args)
     {
-        return Predicate<Ts...>(std::move(symbol), std::forward<Ts>(args)...);
+        return Predicate<typename std::decay<Ts>::type...>(std::move(symbol), std::forward<Ts>(args)...);
     }
 
     ///////// pretty predicate:
@@ -537,10 +537,10 @@ namespace pfq { namespace lang
     };
 
     template <typename ...Ts>
-    MFunction<Ts...>
+    MFunction<typename std::decay<Ts>::type...>
     mfunction(std::string symbol, Ts &&...args)
     {
-        return MFunction<Ts...>(std::move(symbol), std::forward<Ts>(args)...);
+        return MFunction<typename std::decay<Ts>::type...>(std::move(symbol), std::forward<Ts>(args)...);
     }
 
     ///////// pretty function:
