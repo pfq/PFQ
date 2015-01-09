@@ -133,6 +133,23 @@ signature_tail(string_view_t str)
 
 
 string_view_t
+pfq_signature_vector_type(string_view_t str)
+{
+	string_view_t ret = str;
+
+	if (string_view_at(str, 0) == '[' &&
+	    string_view_at(str, string_view_length(str)-1) == ']') {
+
+        	ret.begin +=1;
+        	ret.end -=1;
+
+        	return pfq_signature_simplify(ret);
+	}
+
+	return null_string_view();
+}
+
+string_view_t
 pfq_signature_simplify(string_view_t str)
 {
 	int red = count_outmost_brackets(str);

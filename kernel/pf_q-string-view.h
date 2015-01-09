@@ -57,6 +57,14 @@ string_view_length(string_view_t str)
 }
 
 
+static inline char
+string_view_at(string_view_t str, size_t at)
+{
+	if (at > string_view_length(str))
+		return '\0';
+	return *(str.begin+at);
+}
+
 static inline string_view_t
 make_string_view(const char *str)
 {
