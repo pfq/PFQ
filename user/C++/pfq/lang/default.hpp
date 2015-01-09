@@ -808,7 +808,7 @@ namespace lang
          */
 
         auto bloom      = [] (int m, std::vector<std::string> const &ips) {
-                                auto addrs = details::fmap(details::inet_addr, ips);
+                                auto addrs = fmap(details::inet_addr, ips);
                                 return predicate2("bloom", m, std::move(addrs));
                           };
 
@@ -816,7 +816,7 @@ namespace lang
         //! of the packet matches the ones specified by the bloom list.  \see bloom
 
         auto bloom_src  = [] (int m, std::vector<std::string> const &ips) {
-                                auto addrs = details::fmap(details::inet_addr, ips);
+                                auto addrs = fmap(details::inet_addr, ips);
                                 return predicate2("bloom_src", m, std::move(addrs));
                           };
 
@@ -824,28 +824,28 @@ namespace lang
         //! of the packet matches the ones specified by the bloom list.  \see bloom
 
         auto bloom_dst  = [] (int m, std::vector<std::string> const &ips) {
-                                auto addrs = details::fmap(details::inet_addr, ips);
+                                auto addrs = fmap(details::inet_addr, ips);
                                 return predicate2("bloom_dst", m, std::move(addrs));
                           };
 
         //! Monadic counterpart of \c bloom function.  \see bloom
 
         auto bloom_filter      = [] (int m, std::vector<std::string> const &ips) {
-                                    auto addrs = details::fmap(details::inet_addr, ips);
+                                    auto addrs = fmap(details::inet_addr, ips);
                                     return mfunction2("bloom_filter", m, std::move(addrs));
                                 };
 
         //! Monadic counterpart of \c bloom_src function.  \see bloom_src
 
         auto bloom_src_filter  = [] (int m, std::vector<std::string> const &ips) {
-                                    auto addrs = details::fmap(details::inet_addr, ips);
+                                    auto addrs = fmap(details::inet_addr, ips);
                                     return mfunction2("bloom_src_filter", m, std::move(addrs));
                                 };
 
         //! Monadic counterpart of \c bloom_dst function. \see bloom_dst
 
         auto bloom_dst_filter  = [] (int m, std::vector<std::string> const &ips) {
-                                    auto addrs = details::fmap(details::inet_addr, ips);
+                                    auto addrs = fmap(details::inet_addr, ips);
                                     return mfunction2("bloom_dst_filter", m, std::move(addrs));
                                 };
         //
