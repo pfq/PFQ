@@ -324,31 +324,7 @@ pfq_validate_computation_descr(struct pfq_computation_descr const *descr)
 
         	for(i = 0; i < sizeof(fun->arg)/sizeof(fun->arg[0]); i++)
        		{
-       			/* function */
-
-			if (is_arg_function(&fun->arg[i])) {
-
-				/* function argument */
-
-				size_t x = fun->arg[i].size;
-
-				string_view_t farg = pfq_signature_arg(make_string_view(signature), i);
-
-				if (x >= descr->size) {
-					pr_devel("[PFQ] %zu: %s: invalid argument(%d): %zu!\n", n, signature, i, x);
-					return -EPERM;
-				}
-
-				if (!function_signature_match(&descr->fun[x], farg, x)) {
-					const char *expected = view_to_string(farg);
-					pr_devel("[PFQ] %zu: %s: invalid argument(%d): expected signature: %s!\n", n, signature, i, expected);
-					kfree(expected);
-					return -EPERM;
-				}
-
-			}
-
-			/* nelem */
+			string_view_t sarg = pfq_signature_arg(make_string_view(signature), i);
 
 			if (fun->arg[i].nelem > 65536 &&
 			    fun->arg[i].nelem != -1) {
@@ -356,6 +332,25 @@ pfq_validate_computation_descr(struct pfq_computation_descr const *descr)
 				return -EPERM;
 			}
 
+			if (is_arg_function(&fun->arg[i])) {
+
+				/* function argument */
+
+				size_t x = fun->arg[i].size;
+
+
+				if (x >= descr->size) {
+					pr_devel("[PFQ] %zu: %s: invalid argument(%d): %zu!\n", n, signature, i, x);
+					return -EPERM;
+				}
+
+				if (!function_signature_match(&descr->fun[x], sarg, x)) {
+					const char *expected = string_view_to_string(sarg);
+					pr_devel("[PFQ] %zu: %s: invalid argument(%d): expected signature: %s!\n", n, signature, i, expected);
+					kfree(expected);
+					return -EPERM;
+				}
+			}
 		}
 	}
 

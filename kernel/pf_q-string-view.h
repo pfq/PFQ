@@ -83,7 +83,7 @@ string_view_trim(string_view_t str)
 
 
 static inline char *
-view_to_string(string_view_t str)
+string_view_to_string(string_view_t str)
 {
 	size_t len = str.end - str.begin;
 
@@ -117,7 +117,7 @@ string_view_compare(string_view_t str, const char *rhs)
 static inline int
 string_view_sprintf(char *buffer, string_view_t str)
 {
-	char * p = view_to_string(str);
+	char * p = string_view_to_string(str);
 	int n = sprintf(buffer, "%s", p);
 	kfree(p);
 	return n;
@@ -126,7 +126,7 @@ string_view_sprintf(char *buffer, string_view_t str)
 static inline void
 string_view_printk(string_view_t str)
 {
-	char * p = view_to_string(str);
+	char * p = string_view_to_string(str);
 	printk(KERN_INFO "%s\n", p);
 	kfree(p);
 }
