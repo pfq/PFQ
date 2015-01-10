@@ -64,10 +64,11 @@ PFQ 3.8
 
 PFQ 4.0
 -------
- * Linux Kernel 3.18 xmit_more-support ready.
- * New APIs for accelerated transmission.
- * Transparent support of kernel threads.
+ * Transparent support of kernel transmission threads.
+ * Linux Kernel 3.18 xmit_more bit ready.
+ * New APIs for transmission of packets.
  * Shared memory on top of HugePages.
- * Complete pcap libraries.
+ * LTS 1.0 Haskell compliant (Stackage).
+ * pcap libraries support. 
  * Bug fixes.
 
