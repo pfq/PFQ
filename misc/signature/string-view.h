@@ -128,16 +128,14 @@ string_view_compare(string_view_t str, const char *rhs)
 static inline int
 string_view_sprintf(char *buffer, string_view_t str)
 {
-	int n = sprintf(buffer, SVIEW_FMT, SVIEW_ARG(str));
-	return n;
+	return sprintf(buffer, SVIEW_FMT, SVIEW_ARG(str));
 }
 
 
 static inline int
 string_view_snprintf(char *buffer, size_t s, string_view_t str)
 {
-	int n = snprintf(buffer, s, SVIEW_FMT, SVIEW_ARG(str));
-	return n;
+	return snprintf(buffer, s, SVIEW_FMT, SVIEW_ARG(str));
 }
 
 static inline int
