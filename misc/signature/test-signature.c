@@ -126,23 +126,23 @@ int main()
 	string_view_t c15 = pfq_signature_simplify(f15);
 	string_view_t c16 = pfq_signature_simplify(f16);
 
-	printf("f0: "); string_view_put(c0);    putchar('\n');
-	printf("f1: "); string_view_put(c1);    putchar('\n');
-	printf("f2: "); string_view_put(c2);    putchar('\n');
-	printf("f3: "); string_view_put(c3);    putchar('\n');
-	printf("f4: "); string_view_put(c4);    putchar('\n');
-	printf("f5: "); string_view_put(c5);    putchar('\n');
-	printf("f6: "); string_view_put(c6);    putchar('\n');
-	printf("f7: "); string_view_put(c7);    putchar('\n');
-	printf("f8: "); string_view_put(c8);    putchar('\n');
-	printf("f9: "); string_view_put(c9);    putchar('\n');
-	printf("f10: "); string_view_put(c10);  putchar('\n');
-	printf("f11: "); string_view_put(c11);  putchar('\n');
-	printf("f12: "); string_view_put(c12);  putchar('\n');
-	printf("f13: "); string_view_put(c13);  putchar('\n');
-	printf("f14: "); string_view_put(c14);  putchar('\n');
-	printf("f15: "); string_view_put(c15);  putchar('\n');
-	printf("f16: "); string_view_put(c16);  putchar('\n');
+	printf("f0: "); string_view_puts(c0);    putchar('\n');
+	printf("f1: "); string_view_puts(c1);    putchar('\n');
+	printf("f2: "); string_view_puts(c2);    putchar('\n');
+	printf("f3: "); string_view_puts(c3);    putchar('\n');
+	printf("f4: "); string_view_puts(c4);    putchar('\n');
+	printf("f5: "); string_view_puts(c5);    putchar('\n');
+	printf("f6: "); string_view_puts(c6);    putchar('\n');
+	printf("f7: "); string_view_puts(c7);    putchar('\n');
+	printf("f8: "); string_view_puts(c8);    putchar('\n');
+	printf("f9: "); string_view_puts(c9);    putchar('\n');
+	printf("f10: "); string_view_puts(c10);  putchar('\n');
+	printf("f11: "); string_view_puts(c11);  putchar('\n');
+	printf("f12: "); string_view_puts(c12);  putchar('\n');
+	printf("f13: "); string_view_puts(c13);  putchar('\n');
+	printf("f14: "); string_view_puts(c14);  putchar('\n');
+	printf("f15: "); string_view_puts(c15);  putchar('\n');
+	printf("f16: "); string_view_puts(c16);  putchar('\n');
 
 	assert(pfq_signature_equal(make_string_view("CInt"), make_string_view("CInt")) == true );
 	assert(pfq_signature_equal(make_string_view("CInt"), make_string_view("(CInt)")) == true );
@@ -192,23 +192,23 @@ int main()
 	string_view_t b5 = pfq_signature_bind(f15, 5);
 	string_view_t b6 = pfq_signature_bind(f15, 42);
 
-	printf("b0: "); string_view_put(b0);  putchar('\n');
-	printf("b1: "); string_view_put(b1);  putchar('\n');
-	printf("b2: "); string_view_put(b2);  putchar('\n');
-	printf("b3: "); string_view_put(b3);  putchar('\n');
-	printf("b4: "); string_view_put(b4);  putchar('\n');
-	printf("b5: "); string_view_put(b5);  putchar('\n');
-	printf("b6: "); string_view_put(b6);  putchar('\n');
+	printf("b0: "); string_view_puts(b0);  putchar('\n');
+	printf("b1: "); string_view_puts(b1);  putchar('\n');
+	printf("b2: "); string_view_puts(b2);  putchar('\n');
+	printf("b3: "); string_view_puts(b3);  putchar('\n');
+	printf("b4: "); string_view_puts(b4);  putchar('\n');
+	printf("b5: "); string_view_puts(b5);  putchar('\n');
+	printf("b6: "); string_view_puts(b6);  putchar('\n');
 
 	string_view_t a0 = pfq_signature_arg(f15, 0);
 	string_view_t a1 = pfq_signature_arg(f15, 1);
 	string_view_t a2 = pfq_signature_arg(f15, 2);
 	string_view_t a3 = pfq_signature_arg(f15, 3);
 
-	printf("arg0: "); string_view_put(a0); putchar('\n');
-	printf("arg1: "); string_view_put(a1); putchar('\n');
-	printf("arg2: "); string_view_put(a2); putchar('\n');
-	printf("arg3: "); string_view_put(a3); putchar('\n');
+	printf("arg0: "); string_view_puts(a0); putchar('\n');
+	printf("arg1: "); string_view_puts(a1); putchar('\n');
+	printf("arg2: "); string_view_puts(a2); putchar('\n');
+	printf("arg3: "); string_view_puts(a3); putchar('\n');
 
 	printf("---: f16\n");
 
@@ -223,10 +223,10 @@ int main()
 	string_view_t d2 = pfq_signature_arg(f16, 2);
 	string_view_t d3 = pfq_signature_arg(f16, 3);
 
-	printf("arg0: "); string_view_put(d0); putchar('\n');
-	printf("arg1: "); string_view_put(d1); putchar('\n');
-	printf("arg2: "); string_view_put(d2); putchar('\n');
-	printf("arg3: "); string_view_put(d3); putchar('\n');
+	printf("arg0: "); string_view_puts(d0); putchar('\n');
+	printf("arg1: "); string_view_puts(d1); putchar('\n');
+	printf("arg2: "); string_view_puts(d2); putchar('\n');
+	printf("arg3: "); string_view_puts(d3); putchar('\n');
 
 	printf("All test passed.\n");
 	return 0;

@@ -137,7 +137,7 @@ pfq_signature_tail(string_view_t str)
 
 	const char * p = find_next_arrow(str);
 	if (p == NULL)
-		return null_string_view();
+		return string_view();
 
 	tail.begin = p+1;
 	return tail;

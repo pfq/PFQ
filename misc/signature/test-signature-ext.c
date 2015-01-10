@@ -35,7 +35,7 @@ extern const char * find_next_arrow(string_view_t str);
 int main()
 {
 	{
-		string_view_t f0 =  null_string_view();
+		string_view_t f0 =  string_view();
 		string_view_t f1 =  make_string_view("");
 		string_view_t f2 =  make_string_view("CInt");
 		string_view_t f3 =  make_string_view("  CInt   ");
@@ -90,7 +90,7 @@ int main()
 	}
 
 	{
-		string_view_t f0 =  null_string_view();
+		string_view_t f0 =  string_view();
 		string_view_t f1 =  make_string_view("");
 		string_view_t f2 =  make_string_view("CInt");
 		string_view_t f3 =  make_string_view("  CInt   ");
@@ -101,7 +101,7 @@ int main()
 		string_view_t f8 =  make_string_view("   Action   SkBuff    ");
 		string_view_t f9 =  make_string_view("Action   SkBuff    ");
 
-		string_view_t f10 =  null_string_view();
+		string_view_t f10 =  string_view();
 		string_view_t f11 =  make_string_view("");
 		string_view_t f12 =  make_string_view("CInt");
 		string_view_t f13 =  make_string_view("  CInt  -> CInt  ");
@@ -220,7 +220,7 @@ int main()
 	}
 
 	{
-		string_view_t f0 =  null_string_view();
+		string_view_t f0 =  string_view();
 		string_view_t f1 =  make_string_view("");
 		string_view_t f2 =  make_string_view("CInt");
 		string_view_t f3 =  make_string_view("  CInt   ");

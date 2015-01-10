@@ -47,10 +47,16 @@ int main()
 	printf("'%s'\n", buffer2);
 	printf("'%s'\n", buffer3);
 
-	assert( string_view_compare(null_string_view(), "")   == 0);
+	printf("'" SVIEW_FMT "'\n", SVIEW_ARG(string_view_trim(s0)));
+	printf("'" SVIEW_FMT "'\n", SVIEW_ARG(string_view_trim(s1)));
+	printf("'" SVIEW_FMT "'\n", SVIEW_ARG(string_view_trim(s2)));
+	printf("'" SVIEW_FMT "'\n", SVIEW_ARG(string_view_trim(s3)));
+
+
+	assert( string_view_compare(string_view(), "")   == 0);
 	assert( string_view_compare(make_string_view(""), "") == 0);
 
-	assert( string_view_compare(null_string_view(), "1")   != 0);
+	assert( string_view_compare(string_view(), "1")   != 0);
 	assert( string_view_compare(make_string_view(""), "1") != 0);
 
 	assert( string_view_compare(make_string_view("test"), "") != 0);

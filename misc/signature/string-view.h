@@ -30,7 +30,12 @@
 #include <ctype.h>
 
 
+#define SVIEW_FMT 	"%.*s"
+#define SVIEW_ARG(x) 	string_view_length(x), x.begin
+
+
 typedef int bool;
+
 
 typedef struct
 {
@@ -41,7 +46,7 @@ typedef struct
 
 
 static inline string_view_t
-null_string_view()
+string_view()
 {
 	string_view_t s = { NULL, NULL };
 	return s;
@@ -89,7 +94,7 @@ string_view_trim(string_view_t str)
 
 
 static inline char *
-view_to_string(string_view_t str)
+string_view_to_string(string_view_t str)
 {
 	size_t len = str.end - str.begin;
 
@@ -123,26 +128,29 @@ string_view_compare(string_view_t str, const char *rhs)
 static inline int
 string_view_sprintf(char *buffer, string_view_t str)
 {
-	char * p = view_to_string(str);
-	int n = sprintf(buffer, "%s", p);
-	free(p);
+	int n = sprintf(buffer, SVIEW_FMT, SVIEW_ARG(str));
 	return n;
 }
 
-static inline void
-string_view_put(string_view_t str)
+
+static inline int
+string_view_snprintf(char *buffer, size_t s, string_view_t str)
 {
-	char * p = view_to_string(str);
-	printf("%s", p);
-	free(p);
+	int n = snprintf(buffer, s, SVIEW_FMT, SVIEW_ARG(str));
+	return n;
 }
 
-static inline void
-string_view_put_ln(string_view_t str)
+static inline int
+string_view_puts(string_view_t str)
 {
-	char * p = view_to_string(str);
-	printf("%s\n", p);
-	free(p);
+	return printf(SVIEW_FMT, SVIEW_ARG(str));
 }
+
+static inline int
+string_view_fputs(FILE *stream, string_view_t str)
+{
+	return fprintf(stream, SVIEW_FMT, SVIEW_ARG(str));
+}
+
 
 #endif /* __STRING_VIEW__ */
