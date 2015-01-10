@@ -10,4 +10,4 @@ install:
 		cp util.hpp ${INSTDIR}
 		cp lang/lang.hpp ${INSTDIR}/lang
 		cp lang/default.hpp ${INSTDIR}/lang
-		cp lang/details.hpp ${INSTDIR}/lang
+		cp lang/util.hpp ${INSTDIR}/lang

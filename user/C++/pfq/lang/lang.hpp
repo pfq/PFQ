@@ -37,9 +37,7 @@
 #include <linux/pf_q.h>
 #include <arpa/inet.h>
 
-#include <pfq/lang/details.hpp>
 #include <pfq/lang/util.hpp>
-
 
 namespace pfq { namespace lang
 {

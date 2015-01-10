@@ -24,7 +24,7 @@
 #pragma once
 
 #include <pfq/lang/lang.hpp>
-#include <pfq/lang/details.hpp>
+#include <pfq/lang/util.hpp>
 
 #include <functional>
 #include <stdexcept>
