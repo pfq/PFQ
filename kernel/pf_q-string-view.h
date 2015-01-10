@@ -29,6 +29,11 @@
 #include <linux/slab.h>
 #include <linux/ctype.h>
 
+
+#define SVIEW_FMT 	"%.*s"
+#define SVIEW_ARG(x) 	(int)string_view_length(x), x.begin
+
+
 typedef struct
 {
  	const char *begin;
@@ -37,19 +42,29 @@ typedef struct
 } string_view_t;
 
 
-
 static inline string_view_t
-null_string_view(void)
+string_view(void)
 {
 	string_view_t s = { NULL, NULL };
 	return s;
 }
+
+
+static inline string_view_t
+make_string_view(const char *str)
+{
+	string_view_t s = { str, str + strlen(str) };
+	return s;
+}
+
 
 static inline bool
 string_view_empty(string_view_t str)
 {
 	return (str.end - str.begin) == 0;
 }
+
+
 static inline size_t
 string_view_length(string_view_t str)
 {
@@ -63,13 +78,6 @@ string_view_at(string_view_t str, size_t at)
 	if (at > string_view_length(str))
 		return '\0';
 	return *(str.begin+at);
-}
-
-static inline string_view_t
-make_string_view(const char *str)
-{
-	string_view_t s = { str, str + strlen(str) };
-	return s;
 }
 
 
@@ -125,18 +133,15 @@ string_view_compare(string_view_t str, const char *rhs)
 static inline int
 string_view_sprintf(char *buffer, string_view_t str)
 {
-	char * p = string_view_to_string(str);
-	int n = sprintf(buffer, "%s", p);
-	kfree(p);
-	return n;
+	return sprintf(buffer, SVIEW_FMT, SVIEW_ARG(str));
 }
 
-static inline void
-string_view_printk(string_view_t str)
+
+static inline int
+string_view_snprintf(char *buffer, size_t s, string_view_t str)
 {
-	char * p = string_view_to_string(str);
-	printk(KERN_INFO "%s\n", p);
-	kfree(p);
+	return snprintf(buffer, s, SVIEW_FMT, SVIEW_ARG(str));
 }
+
 
 #endif /* __PF_Q_STRING_VIEW__ */

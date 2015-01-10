@@ -125,7 +125,7 @@ signature_tail(string_view_t str)
 
 	const char * p = find_next_arrow(str);
 	if (p == NULL)
-		return null_string_view();
+		return string_view();
 
 	tail.begin = p+1;
 	return tail;
@@ -146,8 +146,9 @@ pfq_signature_vector_type(string_view_t str)
         	return pfq_signature_simplify(ret);
 	}
 
-	return null_string_view();
+	return string_view();
 }
+
 
 string_view_t
 pfq_signature_simplify(string_view_t str)
