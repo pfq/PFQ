@@ -294,13 +294,17 @@ check_argument_descr(struct pfq_functional_arg_descr const *arg, string_view_t e
 		string_view_t type;
 		ptrdiff_t size;
 
-		if (string_view_at(expected, 0) != '[')
-		{
+		if (string_view_at(expected, 0) != '[') {
 			pr_devel("[PFQ] invalid argument: expected " SVIEW_FMT ", got a vector!\n", SVIEW_ARG(expected));
 			return -EPERM;
 		}
 
-		type = pfq_signature_vector_type(expected);
+		type = pfq_signature_remove_extent(expected);
+                if(!string_view_empty(type)) {
+			pr_devel("[PFQ] invalid argument: expected " SVIEW_FMT ", got a vector!\n", SVIEW_ARG(expected));
+			return -EPERM;
+		}
+
 		size = pfq_signature_sizeof(type);
 
 		if (size != -1) {

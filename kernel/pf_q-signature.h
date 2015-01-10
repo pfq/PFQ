@@ -30,7 +30,7 @@
 string_view_t pfq_signature_simplify(string_view_t sig);
 string_view_t pfq_signature_bind(string_view_t sig, int n);
 string_view_t pfq_signature_arg(string_view_t sig, int n);
-string_view_t pfq_signature_vector_type(string_view_t str);
+string_view_t pfq_signature_remove_extent(string_view_t str);
 
 int  pfq_signature_redundant_brackets(string_view_t sig);
 int  pfq_signature_arity(string_view_t sig);

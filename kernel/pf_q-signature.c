@@ -133,7 +133,7 @@ signature_tail(string_view_t str)
 
 
 string_view_t
-pfq_signature_vector_type(string_view_t str)
+pfq_signature_remove_extent(string_view_t str)
 {
 	string_view_t ret = str;
 
@@ -146,7 +146,7 @@ pfq_signature_vector_type(string_view_t str)
         	return pfq_signature_simplify(ret);
 	}
 
-	return string_view();
+	return pfq_signature_simplify(string_view_chr(str, ' '));
 }
 
 
