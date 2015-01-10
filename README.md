@@ -5,8 +5,8 @@ Introduction
 ------------
 
 PFQ is a networking framework designed for the Linux operating system 
-that allows efficient packet capturing, in-kernel functional processing and packet 
-steering across sockets. 
+that allows efficient packet capture/transmission, in-kernel functional processing 
+and packet steering across sockets. 
 
 PFQ is highly optimized for multi-core architecture, as well as for network 
 devices equipped with multiple hardware queues. It works with any device
@@ -14,7 +14,7 @@ driver and provides a script designed to obtain accelerated versions of the driv
 from their source codes.
 
 The framework enables the development of high-performance networking applications 
-with different languages (i.e. C, C++ and Haskell). In addition, a new functional language 
+with different languages (i.e. C, C++ and Haskell). In addition, a pure functional language 
 designed for software defined monitoring and networking is included: PFQ/lang.
 
 The package provides the source code of the PFQ kernel module, user-space libraries 
