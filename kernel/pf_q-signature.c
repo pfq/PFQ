@@ -283,6 +283,10 @@ pfq_signature_sizeof(string_view_t str)
 		return sizeof(uint32_t);
 	if (!string_view_compare(str, "Word64"))
 		return sizeof(uint64_t);
+	if (!string_view_compare(str, "String"))
+		return 0;
+	if (!string_view_compare(str, "SkBuff"))
+		return 0;
 	return -1;
 }
 
