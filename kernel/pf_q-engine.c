@@ -282,9 +282,7 @@ check_argument_descr(struct pfq_functional_arg_descr const *arg, string_view_t e
 		ptrdiff_t size = pfq_signature_sizeof(expected);
 		if (size != -1) {
 			if (size != arg->size) {
-				const char *str = string_view_to_string(expected);
-				pr_devel("[PFQ] invalid argument: expected %s, pod size = %zu (size mismatch)!\n", str, arg->size);
-				kfree(str);
+				pr_devel("[PFQ] invalid argument: expected " SVIEW_FMT ", pod size = %zu (size mismatch)!\n", SVIEW_ARG(expected), arg->size);
 				return -EPERM;
 			}
 		}
@@ -298,9 +296,7 @@ check_argument_descr(struct pfq_functional_arg_descr const *arg, string_view_t e
 
 		if (string_view_at(expected, 0) != '[')
 		{
-			const char *str = string_view_to_string(expected);
-			pr_devel("[PFQ] invalid argument: expected %s, got a vector!\n", str);
-			kfree(str);
+			pr_devel("[PFQ] invalid argument: expected " SVIEW_FMT ", got a vector!\n", SVIEW_ARG(expected));
 			return -EPERM;
 		}
 
@@ -309,9 +305,7 @@ check_argument_descr(struct pfq_functional_arg_descr const *arg, string_view_t e
 
 		if (size != -1) {
 			if (size != arg->size) {
-				const char *str = string_view_to_string(type);
-				pr_devel("[PFQ] invalid argument: expected %s, pod size = %zu (size mismatch)!\n", str, arg->size);
-				kfree(str);
+				pr_devel("[PFQ] invalid argument: expected " SVIEW_FMT ", pod size = %zu (size mismatch)!\n", SVIEW_ARG(type), arg->size);
 				return -EPERM;
 			}
 		}
@@ -321,9 +315,7 @@ check_argument_descr(struct pfq_functional_arg_descr const *arg, string_view_t e
 
 	if (is_arg_string(arg)) {
 		if (string_view_compare(expected, "String") != 0) {
-			const char *str = string_view_to_string(expected);
-			pr_devel("[PFQ] invalid argument: expected %s, got String!\n", str);
-			kfree(str);
+			pr_devel("[PFQ] invalid argument: expected " SVIEW_FMT ", got String!\n", SVIEW_ARG(expected));
 			return -EPERM;
 		}
 
@@ -332,9 +324,7 @@ check_argument_descr(struct pfq_functional_arg_descr const *arg, string_view_t e
 
 	if (is_arg_vector_str(arg)) {
 		if (string_view_compare(expected, "[String]") != 0) {
-			const char *str = string_view_to_string(expected);
-			pr_devel("[PFQ] invalid argument: expected %s, got [String]!\n", str);
-			kfree(str);
+			pr_devel("[PFQ] invalid argument: expected " SVIEW_FMT ", got [String]!\n", SVIEW_ARG(expected));
 			return -EPERM;
 		}
 
@@ -412,9 +402,7 @@ pfq_check_computation_descr(struct pfq_computation_descr const *descr)
 				}
 
 				if (!function_signature_match(&descr->fun[x], sarg, x)) {
-					const char *str = string_view_to_string(sarg);
-					pr_devel("[PFQ] %zu: %s: invalid argument(%d): expected signature: %s!\n", n, signature, i, str);
-					kfree(str);
+					pr_devel("[PFQ] %zu: %s: invalid argument(%d): expected signature " SVIEW_FMT "!\n", n, signature, i, SVIEW_ARG(sarg));
 					return -EPERM;
 				}
 				continue;
