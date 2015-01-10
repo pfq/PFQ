@@ -258,6 +258,21 @@ int main()
 	printf("extent: '" SVIEW_FMT "'\n", SVIEW_ARG(pfq_signature_remove_extent(t2)));
 	printf("extent: '" SVIEW_FMT "'\n", SVIEW_ARG(pfq_signature_remove_extent(t3)));
 
+	assert( pfq_signature_check(make_string_view("")) );
+	assert( pfq_signature_check(make_string_view("CInt")) );
+	assert( pfq_signature_check(make_string_view("CInt -> CInt ")) );
+	assert( pfq_signature_check(make_string_view("(CInt -> CInt ) -> Bool")) );
+	assert( pfq_signature_check(make_string_view("a")) );
+	assert( pfq_signature_check(make_string_view("[CInt]")) );
+	assert( pfq_signature_check(make_string_view("[  CInt   ]")) );
+	assert( pfq_signature_check(make_string_view("[a]")) );
+
+	assert( pfq_signature_check(make_string_view("Action CInt")) );
+	assert( pfq_signature_check(make_string_view("Action a")) );
+	assert( pfq_signature_check(make_string_view("Action [CInt]")) );
+	assert( pfq_signature_check(make_string_view("Action [a]")) );
+	assert( pfq_signature_check(make_string_view("Action SkBuff")) );
+
 	printf("All test passed.\n");
 	return 0;
 }
