@@ -24,11 +24,22 @@
 #ifndef __PF_Q_STRING_VIEW__
 #define __PF_Q_STRING_VIEW__
 
-#include <linux/kernel.h>
+#ifdef __KERNEL__
+
 #include <linux/string.h>
 #include <linux/slab.h>
 #include <linux/ctype.h>
 
+#else
+
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+#include <ctype.h>
+
+typedef int bool;
+
+#endif
 
 #define SVIEW_FMT 	"%.*s"
 #define SVIEW_ARG(x) 	(int)string_view_length(x), x.begin
@@ -82,6 +93,21 @@ string_view_at(string_view_t str, size_t at)
 
 
 static inline string_view_t
+string_view_chr(string_view_t str, int c)
+{
+	string_view_t ret;
+	const char * p;
+
+	for(p = str.begin; p != str.end && *p != c; ++p)
+	{ }
+
+	ret.begin = p;
+	ret.end = str.end;
+	return ret;
+}
+
+
+static inline string_view_t
 string_view_trim(string_view_t str)
 {
 	if (!str.begin || !str.end)
@@ -103,7 +129,11 @@ string_view_to_string(string_view_t str)
 {
 	size_t len = str.end - str.begin;
 
+#ifdef __KERNEL__
 	char * ret = kmalloc(len + 1, GFP_KERNEL);
+#else
+	char * ret = malloc(len + 1);
+#endif
 	if (ret) {
 		strncpy(ret, str.begin, len);
 		ret [len] = '\0';
@@ -142,6 +172,21 @@ string_view_snprintf(char *buffer, size_t s, string_view_t str)
 {
 	return snprintf(buffer, s, SVIEW_FMT, SVIEW_ARG(str));
 }
+
+
+#ifndef __KERNEL__
+static inline int
+string_view_puts(string_view_t str)
+{
+	return printf(SVIEW_FMT, SVIEW_ARG(str));
+}
+
+static inline int
+string_view_fputs(FILE *stream, string_view_t str)
+{
+	return fprintf(stream, SVIEW_FMT, SVIEW_ARG(str));
+}
+#endif
 
 
 #endif /* __PF_Q_STRING_VIEW__ */
