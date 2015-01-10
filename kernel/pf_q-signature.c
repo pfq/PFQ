@@ -141,18 +141,24 @@ signature_tail(string_view_t str)
 string_view_t
 pfq_signature_remove_extent(string_view_t str)
 {
-	string_view_t ret = str;
+	string_view_t ret = pfq_signature_simplify(str);
 
-	if (string_view_at(str, 0) == '[' &&
-	    string_view_at(str, string_view_length(str)-1) == ']') {
+	if (string_view_at(ret, 0) == '(' &&
+	    string_view_at(ret, string_view_length(ret)-1) == ')') {
+		return ret;
+	}
 
+	if (string_view_at(ret, 0) == '[' &&
+	    string_view_at(ret, string_view_length(ret)-1) == ']') {
         	ret.begin +=1;
         	ret.end -=1;
-
         	return pfq_signature_simplify(ret);
 	}
 
-	return pfq_signature_simplify(string_view_chr(str, ' '));
+	if (pfq_signature_arity(ret) > 0)
+		return ret;
+
+	return pfq_signature_simplify(string_view_chr(ret, ' '));
 }
 
 

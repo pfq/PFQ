@@ -230,6 +230,34 @@ int main()
 	printf("arg2: "); string_view_puts(d2); putchar('\n');
 	printf("arg3: "); string_view_puts(d3); putchar('\n');
 
+	printf("f0:  '" SVIEW_FMT "'\n", SVIEW_ARG(pfq_signature_remove_extent(f0)));
+	printf("f1:  '" SVIEW_FMT "'\n", SVIEW_ARG(pfq_signature_remove_extent(f1)));
+	printf("f2:  '" SVIEW_FMT "'\n", SVIEW_ARG(pfq_signature_remove_extent(f2)));
+	printf("f3:  '" SVIEW_FMT "'\n", SVIEW_ARG(pfq_signature_remove_extent(f3)));
+	printf("f4:  '" SVIEW_FMT "'\n", SVIEW_ARG(pfq_signature_remove_extent(f4)));
+	printf("f5:  '" SVIEW_FMT "'\n", SVIEW_ARG(pfq_signature_remove_extent(f5)));
+	printf("f6:  '" SVIEW_FMT "'\n", SVIEW_ARG(pfq_signature_remove_extent(f6)));
+	printf("f7:  '" SVIEW_FMT "'\n", SVIEW_ARG(pfq_signature_remove_extent(f7)));
+	printf("f8:  '" SVIEW_FMT "'\n", SVIEW_ARG(pfq_signature_remove_extent(f8)));
+	printf("f9:  '" SVIEW_FMT "'\n", SVIEW_ARG(pfq_signature_remove_extent(f9)));
+	printf("f10: '" SVIEW_FMT "'\n", SVIEW_ARG(pfq_signature_remove_extent(f10)));
+	printf("f11: '" SVIEW_FMT "'\n", SVIEW_ARG(pfq_signature_remove_extent(f11)));
+	printf("f12: '" SVIEW_FMT "'\n", SVIEW_ARG(pfq_signature_remove_extent(f12)));
+	printf("f13: '" SVIEW_FMT "'\n", SVIEW_ARG(pfq_signature_remove_extent(f13)));
+	printf("f14: '" SVIEW_FMT "'\n", SVIEW_ARG(pfq_signature_remove_extent(f14)));
+	printf("f15: '" SVIEW_FMT "'\n", SVIEW_ARG(pfq_signature_remove_extent(f15)));
+	printf("f16: '" SVIEW_FMT "'\n", SVIEW_ARG(pfq_signature_remove_extent(f16)));
+
+	string_view_t t0 = make_string_view("[ Int]");
+	string_view_t t1 = make_string_view("[Int]");
+	string_view_t t2 = make_string_view("Maybe Int");
+	string_view_t t3 = make_string_view("  Maybe Int");
+
+	printf("extent: '" SVIEW_FMT "'\n", SVIEW_ARG(pfq_signature_remove_extent(t0)));
+	printf("extent: '" SVIEW_FMT "'\n", SVIEW_ARG(pfq_signature_remove_extent(t1)));
+	printf("extent: '" SVIEW_FMT "'\n", SVIEW_ARG(pfq_signature_remove_extent(t2)));
+	printf("extent: '" SVIEW_FMT "'\n", SVIEW_ARG(pfq_signature_remove_extent(t3)));
+
 	printf("All test passed.\n");
 	return 0;
 }
