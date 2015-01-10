@@ -13,9 +13,9 @@ To install PFQ, the following requisites must be present:
 
 * Kernel headers installed, required to compile modules for your kernel.  
 
-* A working gcc compiler, usually the one used to compile the kernel.  
+* gcc compiler, usually the one used to compile the kernel.  
 
-* A working g++ compiler, g++-4.7 or higher, required to compile the user-space tools and applications.  
+* g++ compiler, g++-4.7 or higher, required to compile the user-space tools and applications.  
 
 * GHC Glasgow Haskell Compiler 7.8 or higher.
 
@@ -118,7 +118,7 @@ Build the software
 
 `runhaskell Build.hs install`
 
-The command configures, builds and installs the PFQ framework satisfying the dependencies and the correct order of the various build. 
+The command configures, compiles and installs the PFQ framework satisfying the dependencies and the correct order of build. 
 
 3. Alternatively, you can specify the list of components you want to build from the command line. The following command shows the targets available:
 
