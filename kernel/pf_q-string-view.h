@@ -31,14 +31,7 @@
 #include <linux/ctype.h>
 
 #else
-
-#include <stdlib.h>
-#include <string.h>
-#include <stdio.h>
-#include <ctype.h>
-
-typedef int bool;
-
+#include <kcompat.h>
 #endif
 
 #define SVIEW_FMT 	"%.*s"

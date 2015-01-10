@@ -26,6 +26,8 @@
 #include <assert.h>
 #include <string.h>
 
+#include "kcompat.h"
+
 #include "pf_q-signature.h"
 
 int main()

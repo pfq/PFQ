@@ -28,7 +28,10 @@
 
 #include <pf_q-signature.h>
 
-static int
+#ifdef __KERNEL
+static
+#endif
+int
 count_outmost_brackets(string_view_t str)
 {
        	int red = INT_MAX, nest = 0;
@@ -58,7 +61,10 @@ count_outmost_brackets(string_view_t str)
 }
 
 
-static const char *
+#ifdef __KERNEL
+static
+#endif
+const char *
 find_next_arrow(string_view_t str)
 {
  	int state = 0, bracket = 0;
@@ -284,7 +290,10 @@ skip_white_space(const char *p, const char *end)
 }
 
 
-static bool
+#ifdef __KERNEL
+static
+#endif
+bool
 compare_argument(string_view_t a, string_view_t b)
 {
 	string_view_t str_a = pfq_signature_simplify(a);

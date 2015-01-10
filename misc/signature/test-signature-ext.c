@@ -26,6 +26,7 @@
 #include <assert.h>
 #include <string.h>
 
+#include "kcompat.h"
 #include "pf_q-signature.h"
 
 extern int compare_argument(string_view_t sig1, string_view_t sig2);
