@@ -33,6 +33,9 @@
 #include <pf_q-group.h>
 #include <pf_q-symtable.h>
 
+#include <pf_q-string-view.h>
+#include <pf_q-signature.h>
+
 
 DECLARE_RWSEM(symtable_rw_sem);
 DEFINE_SEMAPHORE(symtable_sem);
@@ -76,6 +79,7 @@ __pfq_symtable_search(struct list_head *category, const char *symbol)
 
 }
 
+
 static int
 __pfq_symtable_register_function(struct list_head *category, const char *symbol, void *fun, init_ptr_t init, fini_ptr_t fini, const char *signature)
 {
@@ -83,6 +87,11 @@ __pfq_symtable_register_function(struct list_head *category, const char *symbol,
 
 	if (__pfq_symtable_search(category, symbol) != NULL) {
 		printk(KERN_INFO "[PFQ] symtable error: symbol '%s' already in use!\n", symbol);
+		return -1;
+	}
+
+	if (!pfq_signature_check(make_string_view(signature))) {
+		printk(KERN_INFO "[PFQ] symtable error: symbol '%s' bad signature '%s'!\n", symbol, signature);
 		return -1;
 	}
 
