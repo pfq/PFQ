@@ -359,9 +359,41 @@ pfq_signature_equal(string_view_t sig_a, string_view_t sig_b)
 	return __signature_equal(sig_a, sig_b);
 }
 
+
 bool
 pfq_signature_is_function(string_view_t sig)
 {
 	return pfq_signature_arity(sig) > 0;
+}
+
+
+bool
+pfq_signature_type_check(string_view_t type)
+{
+	for(; !string_view_empty(type);)
+	{
+        	if (pfq_signature_sizeof(type) != -1 || islower(string_view_at(type, 0)) )
+        		return true;
+
+		type = pfq_signature_remove_extent(type);
+	}
+
+	return false;
+}
+
+
+bool
+pfq_signature_check(string_view_t sig)
+{
+	int n, size = pfq_signature_arity(sig);
+	bool ret = true;
+
+	for(n = 0; n <= size && ret; n++)
+	{
+		string_view_t arg = pfq_signature_arg(sig, n);
+		ret = pfq_signature_arity(sig) > 0 ? pfq_signature_check(arg) : pfq_signature_type_check(arg);
+	}
+
+	return ret;
 }
 
