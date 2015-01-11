@@ -3,12 +3,12 @@
 body {
   padding:50px;
   font:14px/1.5 Lato, "Helvetica Neue", Helvetica, Arial, sans-serif;
-  color:#333;
+  color:#222;
   font-weight:300;
 }
 
 h1, h2, h3, h4, h5, h6 {
-  color:#222;
+  color:#111;
   margin:0 0 20px;
 }
 
@@ -35,12 +35,12 @@ h3, h4, h5, h6 {
 a {
   color:#3465a4;
   font-weight:400;
-  text-decoration:none;
+  text-decoration:bold;
 }
 
 a small {
   font-size:11px;
-  color:#333;
+  color:#222;
   margin-top:-0.6em;
   display:block;
 }
@@ -59,7 +59,7 @@ blockquote {
 
 code, pre {
   font-family:Monaco, Bitstream Vera Sans Mono, Lucida Console, Terminal;
-  color:#333;
+  color:#222;
   font-size:12px;
 }
 
@@ -83,12 +83,12 @@ th, td {
 }
 
 dt {
-  color:#333;
+  color:#222;
   font-weight:700;
 }
 
 th {
-  color:#333;
+  color:#222;
 }
 
 img {
@@ -139,7 +139,7 @@ header ul a {
 }
 
 strong {
-  color:#222;
+  color:#111;
   font-weight:700;
 }
 
@@ -156,7 +156,7 @@ header ul li + li + li {
 header ul a strong {
   font-size:14px;
   display:block;
-  color:#222;
+  color:#111;
 }
 
 section {
@@ -250,6 +250,6 @@ footer {
   body {
     padding:0.4in;
     font-size:12pt;
-    color:#333;
+    color:#222;
   }
 }
