@@ -26,7 +26,7 @@ main(int argc, char *argv[])
     // let comp = icmp >-> bloom_src_filter (fromIntegral m) ["192.168.0.1", "192.168.0.3"] >-> icmp >-> log_packet
     //
 
-    auto comp = icmp >> bloom_filter (256, {"192.168.0.3" }) >> log_packet;
+    auto comp = icmp >> bloom_filter (256, {"192.168.0.1"}, 32) >> log_packet;
 
     std::cout << pretty (comp) << std::endl;
 
