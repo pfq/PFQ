@@ -846,7 +846,7 @@ namespace lang
             -> decltype(mfunction(nullptr, f1, f2))
         {
             static_assert(is_monadic_function<F1>::value, "par: argument 0: monadic function expected");
-            static_assert(is_monadic_function<F1>::value, "par: argument 1: monadic function expected");
+            static_assert(is_monadic_function<F2>::value, "par: argument 1: monadic function expected");
 
             return mfunction("par", f1, f2);
         }
