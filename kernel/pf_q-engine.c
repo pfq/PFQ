@@ -300,13 +300,12 @@ check_argument_descr(struct pfq_functional_arg_descr const *arg, string_view_t e
 		}
 
 		type = pfq_signature_remove_extent(expected);
-                if(!string_view_empty(type)) {
-			pr_devel("[PFQ] invalid argument: expected " SVIEW_FMT ", got a vector!\n", SVIEW_ARG(expected));
+                if(string_view_empty(type)) {
+			pr_devel("[PFQ] invalid argument: expected a non empty vector!\n");
 			return -EPERM;
 		}
 
 		size = pfq_signature_sizeof(type);
-
 		if (size != -1) {
 			if (size != arg->size) {
 				pr_devel("[PFQ] invalid argument: expected " SVIEW_FMT ", pod size = %zu (size mismatch)!\n", SVIEW_ARG(type), arg->size);
