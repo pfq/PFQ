@@ -409,25 +409,25 @@ addr (\char`\"{}192.\+168.\+0.\+0\char`\"{},24) $>$$>$ log\+\_\+packet
 \subsubsection[{bloom}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::bloom}}\label{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_abfcd230137acb93cfd99f7a0a7c1f17f}
 {\bfseries Initial value\+:}
 \begin{DoxyCode}
-= [] (\textcolor{keywordtype}{int} m, std::vector<std::string> \textcolor{keyword}{const} &ips) \{
+= [] (\textcolor{keywordtype}{int} m, std::vector<std::string> \textcolor{keyword}{const} &ips, \textcolor{keywordtype}{int} prefix) \{
                                 \textcolor{keyword}{auto} addrs = fmap(details::inet\_addr, ips);
-                                \textcolor{keywordflow}{return} \hyperlink{namespacepfq_1_1lang_aca9adafc436b7f851621b979fa1aaf88}{predicate}(\textcolor{stringliteral}{"bloom"}, m, std::move(addrs));
+                                \textcolor{keywordflow}{return} \hyperlink{namespacepfq_1_1lang_aca9adafc436b7f851621b979fa1aaf88}{predicate}(\textcolor{stringliteral}{"bloom"}, m, std::move(addrs), prefix);
                           \}
 \end{DoxyCode}
 
 
 \hyperlink{structpfq_1_1lang_1_1Predicate}{Predicate} that evaluates to {\ttfamily true} when the source or the destination address. 
 
-The first {\ttfamily int} argument specifies the size of the bloom filter. Example\+:
+The first {\ttfamily int} argument specifies the size of the bloom filter. The second {\ttfamily vector} argument specifies the list of I\+P/network addresses of the bloom filter. The third {\ttfamily int} argument specifies the network prefix. Example\+:
 
-when (bloom 1024 \mbox{[}\char`\"{}192.\+168.\+0.\+13\char`\"{}, \char`\"{}192.\+168.\+0.\+42\char`\"{}\mbox{]}) log\+\_\+packet $>$$>$ kernel \hypertarget{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_ac1c667000a13acfbda8490d5748b91c4}{\index{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}!bloom\+\_\+dst@{bloom\+\_\+dst}}
+when (bloom (1024, \{\char`\"{}192.\+168.\+0.\+13\char`\"{}, \char`\"{}192.\+168.\+0.\+42\char`\"{}\}, 32), log\+\_\+packet ) $>$$>$ kernel \hypertarget{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_ac1c667000a13acfbda8490d5748b91c4}{\index{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}!bloom\+\_\+dst@{bloom\+\_\+dst}}
 \index{bloom\+\_\+dst@{bloom\+\_\+dst}!pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}}
 \subsubsection[{bloom\+\_\+dst}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::bloom\+\_\+dst}}\label{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_ac1c667000a13acfbda8490d5748b91c4}
 {\bfseries Initial value\+:}
 \begin{DoxyCode}
-= [] (\textcolor{keywordtype}{int} m, std::vector<std::string> \textcolor{keyword}{const} &ips) \{
+= [] (\textcolor{keywordtype}{int} m, std::vector<std::string> \textcolor{keyword}{const} &ips, \textcolor{keywordtype}{int} prefix) \{
                                 \textcolor{keyword}{auto} addrs = fmap(details::inet\_addr, ips);
-                                \textcolor{keywordflow}{return} \hyperlink{namespacepfq_1_1lang_aca9adafc436b7f851621b979fa1aaf88}{predicate}(\textcolor{stringliteral}{"bloom\_dst"}, m, std::move(addrs));
+                                \textcolor{keywordflow}{return} \hyperlink{namespacepfq_1_1lang_aca9adafc436b7f851621b979fa1aaf88}{predicate}(\textcolor{stringliteral}{"bloom\_dst"}, m, std::move(addrs), prefix);
                           \}
 \end{DoxyCode}
 Similarly to {\ttfamily bloom}, evaluates to {\ttfamily true} when the destination address of the packet matches the ones specified by the bloom list. \begin{DoxySeeAlso}{See also}
@@ -438,9 +438,10 @@ Similarly to {\ttfamily bloom}, evaluates to {\ttfamily true} when the destinati
 \subsubsection[{bloom\+\_\+dst\+\_\+filter}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::bloom\+\_\+dst\+\_\+filter}}\label{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a71aa2d21ceb343786b3911801eb0741b}
 {\bfseries Initial value\+:}
 \begin{DoxyCode}
-= [] (\textcolor{keywordtype}{int} m, std::vector<std::string> \textcolor{keyword}{const} &ips) \{
+= [] (\textcolor{keywordtype}{int} m, std::vector<std::string> \textcolor{keyword}{const} &ips, \textcolor{keywordtype}{int} prefix) \{
                                     \textcolor{keyword}{auto} addrs = fmap(details::inet\_addr, ips);
-                                    \textcolor{keywordflow}{return} \hyperlink{namespacepfq_1_1lang_a1aacba4a159b6c2ddf275bd1fec19ec2}{mfunction}(\textcolor{stringliteral}{"bloom\_dst\_filter"}, m, std::move(addrs));
+                                    \textcolor{keywordflow}{return} \hyperlink{namespacepfq_1_1lang_a1aacba4a159b6c2ddf275bd1fec19ec2}{mfunction}(\textcolor{stringliteral}{"bloom\_dst\_filter"}, m, std::move(addrs), 
+      prefix);
                                 \}
 \end{DoxyCode}
 
@@ -455,9 +456,9 @@ Monadic counterpart of {\ttfamily bloom\+\_\+dst} function.
 \subsubsection[{bloom\+\_\+filter}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::bloom\+\_\+filter}}\label{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a3a5eda5d7a49e279941725df8388378d}
 {\bfseries Initial value\+:}
 \begin{DoxyCode}
-= [] (\textcolor{keywordtype}{int} m, std::vector<std::string> \textcolor{keyword}{const} &ips) \{
+= [] (\textcolor{keywordtype}{int} m, std::vector<std::string> \textcolor{keyword}{const} &ips, \textcolor{keywordtype}{int} prefix) \{
                                     \textcolor{keyword}{auto} addrs = fmap(details::inet\_addr, ips);
-                                    \textcolor{keywordflow}{return} \hyperlink{namespacepfq_1_1lang_a1aacba4a159b6c2ddf275bd1fec19ec2}{mfunction}(\textcolor{stringliteral}{"bloom\_filter"}, m, std::move(addrs));
+                                    \textcolor{keywordflow}{return} \hyperlink{namespacepfq_1_1lang_a1aacba4a159b6c2ddf275bd1fec19ec2}{mfunction}(\textcolor{stringliteral}{"bloom\_filter"}, m, std::move(addrs), prefix);
                                 \}
 \end{DoxyCode}
 
@@ -472,9 +473,9 @@ Monadic counterpart of {\ttfamily bloom} function.
 \subsubsection[{bloom\+\_\+src}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::bloom\+\_\+src}}\label{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_aa2a8ff506d61e93d8eca4419513970f4}
 {\bfseries Initial value\+:}
 \begin{DoxyCode}
-= [] (\textcolor{keywordtype}{int} m, std::vector<std::string> \textcolor{keyword}{const} &ips) \{
+= [] (\textcolor{keywordtype}{int} m, std::vector<std::string> \textcolor{keyword}{const} &ips, \textcolor{keywordtype}{int} prefix) \{
                                 \textcolor{keyword}{auto} addrs = fmap(details::inet\_addr, ips);
-                                \textcolor{keywordflow}{return} \hyperlink{namespacepfq_1_1lang_aca9adafc436b7f851621b979fa1aaf88}{predicate}(\textcolor{stringliteral}{"bloom\_src"}, m, std::move(addrs));
+                                \textcolor{keywordflow}{return} \hyperlink{namespacepfq_1_1lang_aca9adafc436b7f851621b979fa1aaf88}{predicate}(\textcolor{stringliteral}{"bloom\_src"}, m, std::move(addrs), prefix);
                           \}
 \end{DoxyCode}
 Similarly to {\ttfamily bloom}, evaluates to {\ttfamily true} when the source address of the packet matches the ones specified by the bloom list. \begin{DoxySeeAlso}{See also}
@@ -485,9 +486,10 @@ Similarly to {\ttfamily bloom}, evaluates to {\ttfamily true} when the source ad
 \subsubsection[{bloom\+\_\+src\+\_\+filter}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::bloom\+\_\+src\+\_\+filter}}\label{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a04d4dfefacab3230f7d17f0f797cd37e}
 {\bfseries Initial value\+:}
 \begin{DoxyCode}
-= [] (\textcolor{keywordtype}{int} m, std::vector<std::string> \textcolor{keyword}{const} &ips) \{
+= [] (\textcolor{keywordtype}{int} m, std::vector<std::string> \textcolor{keyword}{const} &ips, \textcolor{keywordtype}{int} prefix) \{
                                     \textcolor{keyword}{auto} addrs = fmap(details::inet\_addr, ips);
-                                    \textcolor{keywordflow}{return} \hyperlink{namespacepfq_1_1lang_a1aacba4a159b6c2ddf275bd1fec19ec2}{mfunction}(\textcolor{stringliteral}{"bloom\_src\_filter"}, m, std::move(addrs));
+                                    \textcolor{keywordflow}{return} \hyperlink{namespacepfq_1_1lang_a1aacba4a159b6c2ddf275bd1fec19ec2}{mfunction}(\textcolor{stringliteral}{"bloom\_src\_filter"}, m, std::move(addrs), 
+      prefix);
                                 \}
 \end{DoxyCode}
 
