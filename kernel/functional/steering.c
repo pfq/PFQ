@@ -24,6 +24,7 @@
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/swab.h>
+#include <linux/inetdevice.h>
 
 #include <pf_q-module.h>
 
@@ -106,8 +107,8 @@ static int steering_net_init(arguments_t args)
 
 	__be32 mask, submask;
 
-	mask    = make_mask(prefix);
-	submask = make_mask(subpref);
+	mask    = inet_make_mask(prefix);
+	submask = inet_make_mask(subpref);
 
 	set_arg0(args, addr & mask);
 	set_arg1(args, mask);

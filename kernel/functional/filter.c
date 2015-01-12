@@ -23,6 +23,7 @@
 
 #include <linux/kernel.h>
 #include <linux/module.h>
+#include <linux/inetdevice.h>
 
 #include <pf_q-module.h>
 
@@ -82,7 +83,7 @@ static int filter_addr_init(arguments_t args)
 	__be32 mask, ipv4 = get_arg0(__be32, args);
 	int prefix  = get_arg1(int, args);
 
-	mask = make_mask(prefix);
+	mask = inet_make_mask(prefix);
 
 	set_arg0(args, ipv4 & mask);
 	set_arg1(args, mask);

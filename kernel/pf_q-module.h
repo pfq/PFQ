@@ -101,8 +101,6 @@
 #define get_array_num(n,type,a) ((type *)ARGS_TYPE(a)->arg[n].value)
 #define get_len_array_num(n,a) 	(ARGS_TYPE(a)->arg[n].nelem)
 
-#define make_mask(prefix)       htonl(~((1ULL << (32-prefix)) - 1))
-
 
 /**** generic functional type ****/
 
