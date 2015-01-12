@@ -79,9 +79,9 @@ string_view_length(string_view_t str)
 static inline char
 string_view_at(string_view_t str, size_t at)
 {
-	if (at > string_view_length(str))
-		return '\0';
-	return *(str.begin+at);
+	if (at < string_view_length(str))
+		return *(str.begin+at);
+	return '\0';
 }
 
 
