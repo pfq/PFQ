@@ -21,8 +21,8 @@
  *
  ****************************************************************/
 
-#ifndef _PF_Q_GC_H_
-#define _PF_Q_GC_H_
+#ifndef PF_Q_GC_H
+#define PF_Q_GC_H
 
 #include <linux/string.h>
 #include <linux/skbuff.h>
@@ -131,4 +131,4 @@ size_t gc_size(struct gc_data *gc)
 }
 
 
-#endif /* _PF_Q_GC_H_ */
+#endif /* PF_Q_GC_H */

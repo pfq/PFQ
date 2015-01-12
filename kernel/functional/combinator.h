@@ -21,8 +21,8 @@
  *
  ****************************************************************/
 
-#ifndef _FUNCTIONAL_COMBINATOR_H_
-#define _FUNCTIONAL_COMBINATOR_H_
+#ifndef PF_Q_FUNCTIONAL_COMBINATOR_H
+#define PF_Q_FUNCTIONAL_COMBINATOR_H
 
 #include "predicate.h"
 
@@ -64,4 +64,4 @@ bool xor(arguments_t args, SkBuff b)
 }
 
 
-#endif /* _FUNCTIONAL_COMBINATOR_H_ */
+#endif /* PF_Q_FUNCTIONAL_COMBINATOR_H */

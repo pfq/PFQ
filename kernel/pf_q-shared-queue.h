@@ -22,8 +22,8 @@
  *
  ****************************************************************/
 
-#ifndef _PF_Q_SHARED_QUEUE_H_
-#define _PF_Q_SHARED_QUEUE_H_
+#ifndef PF_Q_SHARED_QUEUE_H
+#define PF_Q_SHARED_QUEUE_H
 
 #include <linux/skbuff.h>
 #include <linux/pf_q.h>
@@ -75,4 +75,4 @@ int pfq_mpdb_queue_index(struct pfq_sock *p)
 }
 
 
-#endif /* _PF_Q_SHARED_QUEUE_H_ */
+#endif /* PF_Q_SHARED_QUEUE_H */

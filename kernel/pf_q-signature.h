@@ -22,8 +22,8 @@
  ****************************************************************/
 
 
-#ifndef _PF_Q_SIGNATURE_H_
-#define _PF_Q_SIGNATURE_H_
+#ifndef PF_Q_SIGNATURE_H
+#define PF_Q_SIGNATURE_H
 
 #include <pf_q-string-view.h>
 
@@ -43,4 +43,4 @@ bool   pfq_signature_check(string_view_t sig);
 bool   pfq_signature_type_check(string_view_t t);
 
 
-#endif /* _PF_Q_SIGNATURE_H_ */
+#endif /* PF_Q_SIGNATURE_H */

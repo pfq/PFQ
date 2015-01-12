@@ -21,8 +21,8 @@
  *
  ****************************************************************/
 
-#ifndef _HEADERS_H_
-#define _HEADERS_H_
+#ifndef PF_Q_FUNCTIONAL_HEADERS_H
+#define PF_Q_FUNCTIONAL_HEADERS_H
 
 #include <functional/combinator.h>
 #include <functional/conditional.h>
@@ -31,4 +31,4 @@
 #include <functional/filter.h>
 #include <functional/misc.h>
 
-#endif /* _HEADERS_H_ */
+#endif /* PF_Q_FUNCTIONAL_HEADERS_H */

@@ -1,6 +1,3 @@
-#ifndef _PF_Q_THREAD_H_
-#define _PF_Q_THREAD_H_
-
 /*
  * Copyright (c) 2014 Bonelli Nicola <nicola@pfq.io>
  *
@@ -28,6 +25,9 @@
  *
  */
 
+#ifndef PF_Q_THREAD_H
+#define PF_Q_THREAD_H
+
 
 #include <pf_q-sock.h>
 
@@ -40,4 +40,4 @@ struct pfq_thread_data
 };
 
 
-#endif /* _PF_Q_THREAD_H_ */
+#endif /* PF_Q_THREAD_H */

@@ -21,8 +21,8 @@
  *
  ****************************************************************/
 
-#ifndef _FUNCTIONAL_BLOOM_H_
-#define _FUNCTIONAL_BLOOM_H_
+#ifndef PF_Q_FUNCTIONAL_BLOOM_H
+#define PF_Q_FUNCTIONAL_BLOOM_H
 
 #include <pf_q-module.h>
 
@@ -91,4 +91,4 @@ unsigned clp2(unsigned int x)
 }
 
 
-#endif /* _FUNCTIONAL_BLOOM_H_ */
+#endif /* PF_Q_FUNCTIONAL_BLOOM_H */

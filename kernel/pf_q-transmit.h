@@ -25,8 +25,8 @@
  *
  */
 
-#ifndef _PF_Q_TRANSMIT_H_
-#define _PF_Q_TRANSMIT_H_
+#ifndef PF_Q_TRANSMIT_H
+#define PF_Q_TRANSMIT_H
 
 #include <linux/skbuff.h>
 #include <linux/netdevice.h>
@@ -63,4 +63,5 @@ extern int pfq_queue_lazy_xmit_by_mask(struct gc_queue_buff *queue, unsigned lon
 
 extern size_t pfq_lazy_xmit_exec(struct gc_data *gc, struct gc_fwd_targets const *t);
 
-#endif /* _PF_Q_TRANSMIT_H_ */
+
+#endif /* PF_Q_TRANSMIT_H */

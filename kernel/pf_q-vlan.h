@@ -22,8 +22,8 @@
  ****************************************************************/
 
 
-#ifndef _PF_Q_VLAN_H_
-#define _PF_Q_VLAN_H_
+#ifndef PF_Q_VLAN_H
+#define PF_Q_VLAN_H
 
 #include <linux/if_vlan.h>
 
@@ -49,4 +49,4 @@ struct sk_buff *pfq_vlan_untag(struct sk_buff *skb)
 
 #endif
 
-#endif /* _PF_Q_VLAN_H_ */
+#endif /* PF_Q_VLAN_H */

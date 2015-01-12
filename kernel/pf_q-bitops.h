@@ -21,8 +21,8 @@
  *
  ****************************************************************/
 
-#ifndef _PF_Q_BITOPS_H_
-#define _PF_Q_BITOPS_H_
+#ifndef PF_Q_BITOPS_H
+#define PF_Q_BITOPS_H
 
 #include <asm/bitops.h>
 
@@ -64,4 +64,4 @@
 }
 
 
-#endif /* _PF_Q_BITOPS_H_ */
+#endif /* PF_Q_BITOPS_H */

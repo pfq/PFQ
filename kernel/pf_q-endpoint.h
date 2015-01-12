@@ -21,8 +21,8 @@
  *
  ****************************************************************/
 
-#ifndef _PF_Q_ENDPOINT_H_
-#define _PF_Q_ENDPOINT_H_
+#ifndef PF_Q_ENDPOINT_H
+#define PF_Q_ENDPOINT_H
 
 struct pfq_sock;
 struct pfq_skbuff_batch;
@@ -35,4 +35,4 @@ enum pfq_endpoint_type
 
 extern size_t copy_to_endpoint_gcbs(struct pfq_sock *so, struct gc_queue_buff *pool, unsigned long long mask, int cpu, int gid);
 
-#endif /* _PF_Q_ENDPOINT_H_ */
+#endif /* PF_Q_ENDPOINT_H */

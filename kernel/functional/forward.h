@@ -21,8 +21,8 @@
  *
  ****************************************************************/
 
-#ifndef _FUNCTIONAL_FORWARD_H_
-#define _FUNCTIONAL_FORWARD_H_
+#ifndef PF_Q_FUNCTIONAL_FORWARD_H
+#define PF_Q_FUNCTIONAL_FORWARD_H
 
 #include <pf_q-module.h>
 
@@ -75,4 +75,4 @@ forward_deliver(arguments_t args, SkBuff b)
         return Deliver(b, (1ULL << c));
 }
 
-#endif /* _FUNCTIONAL_FORWARD_H_ */
+#endif /* PF_Q_FUNCTIONAL_FORWARD_H */

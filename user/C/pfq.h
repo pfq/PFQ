@@ -21,8 +21,8 @@
  *
  ****************************************************************/
 
-#ifndef _PFQ_H_
-#define _PFQ_H_
+#ifndef PFQ_H
+#define PFQ_H
 
 #include <stddef.h>
 
@@ -597,4 +597,4 @@ extern int pfq_send(pfq_t *q, const void *ptr, size_t len);
 extern int pfq_send_async(pfq_t *q, const void *ptr, size_t len, size_t flush_hint);
 
 
-#endif /* _PFQ_H_ */
+#endif /* PFQ_H */

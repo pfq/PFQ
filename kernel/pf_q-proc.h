@@ -21,6 +21,9 @@
  *
  ****************************************************************/
 
+#ifndef PF_Q_PROC_H
+#define PF_Q_PROC_H
+
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/proc_fs.h>
@@ -31,3 +34,4 @@ extern struct proc_dir_entry *pfq_proc_dir;
 extern int pfq_proc_init(void);
 extern int pfq_proc_fini(void);
 
+#endif /*  PF_Q_PROC_H */

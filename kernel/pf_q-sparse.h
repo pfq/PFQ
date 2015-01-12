@@ -22,8 +22,8 @@
  *
  ****************************************************************/
 
-#ifndef _PF_Q_LINUX_SPARSE_H_
-#define _PF_Q_LINUX_SPARSE_H_
+#ifndef PF_Q_SPARSE_H
+#define PF_Q_SPARSE_H
 
 #include <linux/smp.h>  /* get_cpu */
 #include <asm/local.h>
@@ -111,4 +111,4 @@ long sparse_read(sparse_counter_t *sc)
         return ret;
 }
 
-#endif /* _PF_Q_LINUX_SPARSE_H_ */
+#endif /* PF_Q_SPARSE_H */

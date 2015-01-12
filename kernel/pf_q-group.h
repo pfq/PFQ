@@ -21,8 +21,8 @@
  *
  ****************************************************************/
 
-#ifndef _PF_Q_GROUP_H_
-#define _PF_Q_GROUP_H_
+#ifndef PF_Q_GROUP_H
+#define PF_Q_GROUP_H
 
 #include <linux/kernel.h>
 #include <linux/delay.h>
@@ -117,4 +117,4 @@ bool __pfq_has_joined_group(int gid, int id)
 }
 
 
-#endif /* _PF_Q_GROUP_H_ */
+#endif /* PF_Q_GROUP_H */

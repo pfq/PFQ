@@ -22,8 +22,8 @@
  *
  ****************************************************************/
 
-#ifndef _PF_Q_DEVMAP_H_
-#define _PF_Q_DEVMAP_H_
+#ifndef PF_Q_DEVMAP_H
+#define PF_Q_DEVMAP_H
 
 #include <linux/pf_q.h>
 
@@ -84,4 +84,4 @@ void __pfq_devmap_monitor_reset(void)
         }
 }
 
-#endif /* _PF_Q_DEVMAP_H_ */
+#endif /* PF_Q_DEVMAP_H */

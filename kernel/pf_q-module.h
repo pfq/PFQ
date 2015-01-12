@@ -21,8 +21,8 @@
  *
  ****************************************************************/
 
-#ifndef _PF_Q_MODULE_H_
-#define _PF_Q_MODULE_H_
+#ifndef PF_Q_MODULE_H
+#define PF_Q_MODULE_H
 
 #include <linux/kernel.h>
 #include <linux/version.h>
@@ -237,4 +237,4 @@ extern struct pfq_function_descr  misc_functions[];
 extern struct pfq_function_descr  dummy_functions[];
 
 
-#endif /* _PF_Q_MODULE_H_ */
+#endif /* PF_Q_MODULE_H */

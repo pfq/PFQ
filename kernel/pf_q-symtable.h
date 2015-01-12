@@ -21,8 +21,8 @@
  *
  ****************************************************************/
 
-#ifndef _PF_Q_SYMTABLE_H_
-#define _PF_Q_SYMTBALE_H_
+#ifndef PF_Q_SYMTABLE_H
+#define PF_Q_SYMTBALE_H
 
 #include <linux/skbuff.h>
 #include <linux/list.h>
@@ -69,4 +69,4 @@ extern int pfq_symtable_unregister_functions(const char *module, struct list_hea
 extern struct symtable_entry *pfq_symtable_search(struct list_head *category, const char *symbol);
 
 
-#endif /* _PF_Q_SYMTABLE_H_ */
+#endif /* PF_Q_SYMTABLE_H */

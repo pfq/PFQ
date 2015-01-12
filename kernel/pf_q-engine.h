@@ -22,8 +22,8 @@
  ****************************************************************/
 
 
-#ifndef _PF_Q_ENGINE_H_
-#define _PF_Q_ENGINE_H_
+#ifndef PF_Q_ENGINE_H
+#define PF_Q_ENGINE_H
 
 #include <linux/kernel.h>
 #include <pf_q-monad.h>
@@ -78,4 +78,4 @@ extern Action_SkBuff pfq_run(struct pfq_computation_tree *prg, SkBuff);
 
 
 
-#endif /* _PF_Q_ENGINE_H_ */
+#endif /* PF_Q_ENGINE_H */

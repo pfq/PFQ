@@ -21,8 +21,8 @@
  *
  ****************************************************************/
 
-#ifndef _PF_Q_SKBUFF_LIST_H_
-#define _PF_Q_SKBUFF_LIST_H_
+#ifndef PF_Q_SKBUFF_LIST_H
+#define PF_Q_SKBUFF_LIST_H
 
 #include <linux/skbuff.h>
 
@@ -120,4 +120,4 @@ struct sk_buff *pfq_sk_buff_peek_tail(struct pfq_sk_buff_list *list)
 
 
 
-#endif /* _PF_Q_SKBUFF_LIST_H_ */
+#endif /* PF_Q_SKBUFF_LIST_H */

@@ -21,8 +21,8 @@
  *
  ****************************************************************/
 
-#ifndef _PF_Q_SOCK_H_
-#define _PF_Q_SOCK_H_
+#ifndef PF_Q_SOCK_H
+#define PF_Q_SOCK_H
 
 #include <linux/kernel.h>
 #include <linux/poll.h>
@@ -201,4 +201,4 @@ struct pfq_sock * pfq_get_sock_by_id(size_t id);
 void   pfq_release_sock_id(int id);
 
 
-#endif /* _PF_COMMON_H_ */
+#endif /* PF_COMMON_H */

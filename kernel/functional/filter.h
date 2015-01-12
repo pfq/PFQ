@@ -21,8 +21,8 @@
  *
  ****************************************************************/
 
-#ifndef _FUNCTIONAL_FILTER_H_
-#define _FUNCTIONAL_FILTER_H_
+#ifndef PF_Q_FUNCTIONAL_FILTER_H
+#define PF_Q_FUNCTIONAL_FILTER_H
 
 #include <pf_q-module.h>
 
@@ -95,4 +95,4 @@ unit(arguments_t args, SkBuff b)
         return Pass(b);
 }
 
-#endif /* _FUNCTIONAL_FILTER_H_ */
+#endif /* PF_Q_FUNCTIONAL_FILTER_H */

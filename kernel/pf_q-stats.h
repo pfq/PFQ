@@ -21,8 +21,8 @@
  *
  ****************************************************************/
 
-#ifndef _PF_Q_STATS_H_
-#define _PF_Q_STATS_H_
+#ifndef PF_Q_STATS_H
+#define PF_Q_STATS_H
 
 #include <linux/kernel.h>
 #include <linux/pf_q.h>
@@ -128,4 +128,4 @@ void pfq_memory_stats_reset(struct pfq_memory_stats *stats)
 }
 
 
-#endif /* _PF_Q_STATS_H_ */
+#endif /* PF_Q_STATS_H */

@@ -21,8 +21,8 @@
  *
  ****************************************************************/
 
-#ifndef _PF_Q_SKBUFF_H_
-#define _PF_Q_SKBUFF_H_
+#ifndef PF_Q_SKBUFF_H
+#define PF_Q_SKBUFF_H
 
 #include <linux/skbuff.h>
 
@@ -75,4 +75,4 @@ struct gc_buff
                 (mask) ^=(1UL << (n)), n = pfq_ctz(mask))
 
 
-#endif /* _PF_Q_SKBUFF_H_ */
+#endif /* PF_Q_SKBUFF_H */

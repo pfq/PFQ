@@ -21,8 +21,8 @@
  *
  ****************************************************************/
 
-#ifndef _PFQ_KCOMPAT_H_
-#define _PFQ_KCOMPAT_H_
+#ifndef PF_Q_KCOMPAT_H
+#define PF_Q_KCOMPAT_H
 
 #include <linux/netdevice.h>
 #include <linux/skbuff.h>
@@ -92,4 +92,4 @@ pfq_alloc_skb_fclone(unsigned int size, gfp_t priority)
 #define dev_alloc_skb(len)             			pfq_dev_alloc_skb(len)
 
 
-#endif /* _PFQ_KCOMPAT_H_ */
+#endif /* PF_Q_KCOMPAT_H */

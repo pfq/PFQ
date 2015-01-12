@@ -21,8 +21,8 @@
  *
  ****************************************************************/
 
-#ifndef _PF_Q_GLOBAL_H_
-#define _PF_Q_GLOBAL_H_
+#ifndef PF_Q_GLOBAL_H
+#define PF_Q_GLOBAL_H
 
 #include <linux/types.h>
 
@@ -52,4 +52,4 @@ extern struct pfq_global_stats global_stats;
 extern struct pfq_memory_stats memory_stats;
 
 
-#endif /* _PF_Q_GLOBAL_H_ */
+#endif /* PF_Q_GLOBAL_H */

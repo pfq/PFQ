@@ -21,8 +21,8 @@
  *
  ****************************************************************/
 
-#ifndef __PF_Q_STRING_VIEW__
-#define __PF_Q_STRING_VIEW__
+#ifndef PF_Q_STRING_VIEW_H
+#define PF_Q_STRING_VIEW_H
 
 #ifdef __KERNEL__
 
@@ -182,4 +182,4 @@ string_view_fputs(FILE *stream, string_view_t str)
 #endif
 
 
-#endif /* __PF_Q_STRING_VIEW__ */
+#endif /* PF_Q_STRING_VIEW_H */

@@ -21,8 +21,8 @@
  *
  ****************************************************************/
 
-#ifndef _FUNCTIONAL_CONDITIONAL_H_
-#define _FUNCTIONAL_CONDITIONAL_H_
+#ifndef PF_Q_FUNCTIONAL_CONDITIONAL_H
+#define PF_Q_FUNCTIONAL_CONDITIONAL_H
 
 #include <pf_q-module.h>
 
@@ -66,4 +66,4 @@ unless(arguments_t args, SkBuff b)
 }
 
 
-#endif /* _FUNCTIONAL_CONDITIONAL_H_ */
+#endif /* PF_Q_FUNCTIONAL_CONDITIONAL_H */

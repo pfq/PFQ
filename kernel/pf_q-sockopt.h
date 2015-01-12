@@ -21,8 +21,8 @@
  *
  ****************************************************************/
 
-#ifndef _PF_Q_SOCKOPT_H_
-#define _PF_Q_SOCKOPT_H_
+#ifndef PF_Q_SOCKOPT_H
+#define PF_Q_SOCKOPT_H
 
 #include <linux/socket.h>
 
@@ -38,4 +38,4 @@ extern int pfq_setsockopt(struct socket *sock,
 #endif
                 int optlen);
 
-#endif /* _PF_Q_SOCKOPT_H_ */
+#endif /* PF_Q_SOCKOPT_H */

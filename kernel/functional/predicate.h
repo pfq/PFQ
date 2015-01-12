@@ -21,8 +21,8 @@
  *
  ****************************************************************/
 
-#ifndef _FUNCTIONAL_PREDICATE_H
-#define _FUNCTIONAL_PREDICATE_H
+#ifndef PF_Q_FUNCTIONAL_PREDICATE_H
+#define PF_Q_FUNCTIONAL_PREDICATE_H
 
 #include <linux/kernel.h>
 #include <linux/module.h>
@@ -574,4 +574,4 @@ has_vid(SkBuff b, int vid)
 }
 
 
-#endif /* _FUNCTIONAL_PREDICATE_H */
+#endif /* PF_Q_FUNCTIONAL_PREDICATE_H */

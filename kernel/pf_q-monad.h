@@ -21,8 +21,8 @@
  *
  ****************************************************************/
 
-#ifndef _PF_Q_MONAD_H_
-#define _PF_Q_MONAD_H_
+#ifndef PF_Q_MONAD_H
+#define PF_Q_MONAD_H
 
 #include <pf_q-group.h>
 #include <pf_q-skbuff.h>
@@ -228,4 +228,4 @@ void put_persistent(SkBuff b, int n)
 	spin_unlock(&ctx->persistent[n].lock);
 }
 
-#endif /* _PF_Q_MONAD_H_ */
+#endif /* PF_Q_MONAD_H */

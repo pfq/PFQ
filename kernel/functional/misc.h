@@ -21,8 +21,8 @@
  *
  ****************************************************************/
 
-#ifndef _FUNCTIONAL_MISC_H
-#define _FUNCTIONAL_MISC_H
+#ifndef PF_Q_FUNCTIONAL_MISC_H
+#define PF_Q_FUNCTIONAL_MISC_H
 
 #include <pf_q-module.h>
 
@@ -34,4 +34,4 @@ mark(arguments_t args, SkBuff b)
 	return Pass(b);
 }
 
-#endif /* _FUNCTIONAL_MISC_H */
+#endif /* PF_Q_FUNCTIONAL_MISC_H */

@@ -21,8 +21,8 @@
  *
  ****************************************************************/
 
-#ifndef _PF_Q_MACRO_H_
-#define _PF_Q_MACRO_H_
+#ifndef PF_Q_MACRO_H
+#define PF_Q_MACRO_H
 
 #define Q_MAX_ID                (sizeof(long)<<3)
 #define Q_MAX_GROUP             (sizeof(long)<<3)
@@ -51,4 +51,4 @@
 
 #define Q_MAX_CPU               256
 
-#endif /* _PF_Q_MACRO_H_ */
+#endif /* PF_Q_MACRO_H */

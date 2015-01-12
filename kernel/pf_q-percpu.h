@@ -21,8 +21,8 @@
  *
  ****************************************************************/
 
-#ifndef _PF_Q_PERCPU_H_
-#define _PF_Q_PERCPU_H_
+#ifndef PF_Q_PERCPU_H
+#define PF_Q_PERCPU_H
 
 #include <linux/percpu.h>
 #include <linux/ktime.h>
@@ -53,4 +53,4 @@ struct local_data
 
 } ____cacheline_aligned;
 
-#endif /* _PF_Q_PERCPU_H_ */
+#endif /* PF_Q_PERCPU_H */

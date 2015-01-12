@@ -22,8 +22,8 @@
  ****************************************************************/
 
 
-#ifndef _PF_Q_SKB_BATCH_H_
-#define _PF_Q_SKB_BATCH_H_
+#ifndef PF_Q_SKB_BATCH_H
+#define PF_Q_SKB_BATCH_H
 
 
 #include <pf_q-bitops.h>
@@ -117,4 +117,4 @@ size_t pfq_skbuff_batch_len(struct pfq_skbuff_batch *q)
 }
 
 
-#endif /* _PF_Q_SKB_BATCH_H_ */
+#endif /* PF_Q_SKB_BATCH_H */
