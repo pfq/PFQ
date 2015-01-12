@@ -859,52 +859,54 @@ namespace lang
         // of the packet matches the ones specified by the bloom list.
         /*!
          * The first \c int argument specifies the size of the bloom filter.
+         * The second \c vector argument specifies the list of IP/network addresses of the bloom filter.
+         * The third \c int argument specifies the network prefix.
          * Example:
          *
-         * when (bloom 1024 ["192.168.0.13", "192.168.0.42"]) log_packet >> kernel
+         * when (bloom (1024, {"192.168.0.13", "192.168.0.42"}, 32), log_packet ) >> kernel
          *
          */
 
-        auto bloom      = [] (int m, std::vector<std::string> const &ips) {
+        auto bloom      = [] (int m, std::vector<std::string> const &ips, int prefix) {
                                 auto addrs = fmap(details::inet_addr, ips);
-                                return predicate("bloom", m, std::move(addrs));
+                                return predicate("bloom", m, std::move(addrs), prefix);
                           };
 
         //! Similarly to \c bloom, evaluates to \c true when the source address
         //! of the packet matches the ones specified by the bloom list.  \see bloom
 
-        auto bloom_src  = [] (int m, std::vector<std::string> const &ips) {
+        auto bloom_src  = [] (int m, std::vector<std::string> const &ips, int prefix) {
                                 auto addrs = fmap(details::inet_addr, ips);
-                                return predicate("bloom_src", m, std::move(addrs));
+                                return predicate("bloom_src", m, std::move(addrs), prefix);
                           };
 
         //! Similarly to \c bloom, evaluates to \c true when the destination address
         //! of the packet matches the ones specified by the bloom list.  \see bloom
 
-        auto bloom_dst  = [] (int m, std::vector<std::string> const &ips) {
+        auto bloom_dst  = [] (int m, std::vector<std::string> const &ips, int prefix) {
                                 auto addrs = fmap(details::inet_addr, ips);
-                                return predicate("bloom_dst", m, std::move(addrs));
+                                return predicate("bloom_dst", m, std::move(addrs), prefix);
                           };
 
         //! Monadic counterpart of \c bloom function.  \see bloom
 
-        auto bloom_filter      = [] (int m, std::vector<std::string> const &ips) {
+        auto bloom_filter      = [] (int m, std::vector<std::string> const &ips, int prefix) {
                                     auto addrs = fmap(details::inet_addr, ips);
-                                    return mfunction("bloom_filter", m, std::move(addrs));
+                                    return mfunction("bloom_filter", m, std::move(addrs), prefix);
                                 };
 
         //! Monadic counterpart of \c bloom_src function.  \see bloom_src
 
-        auto bloom_src_filter  = [] (int m, std::vector<std::string> const &ips) {
+        auto bloom_src_filter  = [] (int m, std::vector<std::string> const &ips, int prefix) {
                                     auto addrs = fmap(details::inet_addr, ips);
-                                    return mfunction("bloom_src_filter", m, std::move(addrs));
+                                    return mfunction("bloom_src_filter", m, std::move(addrs), prefix);
                                 };
 
         //! Monadic counterpart of \c bloom_dst function. \see bloom_dst
 
-        auto bloom_dst_filter  = [] (int m, std::vector<std::string> const &ips) {
+        auto bloom_dst_filter  = [] (int m, std::vector<std::string> const &ips, int prefix) {
                                     auto addrs = fmap(details::inet_addr, ips);
-                                    return mfunction("bloom_dst_filter", m, std::move(addrs));
+                                    return mfunction("bloom_dst_filter", m, std::move(addrs), prefix);
                                 };
         //
         // bloom filter, utility functions:

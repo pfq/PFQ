@@ -731,39 +731,42 @@ vlan_id_filter ids = MFunction "vlan_id_filter" ids () () () () () () ()
 --
 -- The first 'CInt' argument specifies the size of the bloom filter. Example:
 --
--- > when' (bloom 1024 ["192.168.0.13", "192.168.0.42"]) log_packet >-> kernel
+-- > when' (bloom 1024 ["192.168.0.13", "192.168.0.42"] 32) log_packet >-> kernel
 {-# NOINLINE bloom #-}
-bloom :: CInt -> [HostName] -> NetPredicate
+bloom ::  CInt        -- ^ Hint: size of bloom filter (M)
+      ->  [HostName]  -- ^ List of Host/Network address to match
+      ->  CInt        -- ^ Network prefix
+      ->  NetPredicate
 
 -- | Similarly to 'bloom', evaluates to /True/ when the source address
 -- of the packet matches the ones specified by the bloom list.
 {-# NOINLINE bloom_src #-}
-bloom_src :: CInt -> [HostName] -> NetPredicate
+bloom_src :: CInt -> [HostName] -> CInt -> NetPredicate
 
 -- | Similarly to 'bloom', evaluates to /True/ when the destination address
 -- of the packet matches the ones specified by the bloom list.
 {-# NOINLINE bloom_dst #-}
-bloom_dst :: CInt -> [HostName] -> NetPredicate
+bloom_dst :: CInt -> [HostName] -> CInt -> NetPredicate
 
 -- | Monadic counterpart of 'bloom' function.
 {-# NOINLINE bloom_filter #-}
-bloom_filter :: CInt -> [HostName] -> NetFunction
+bloom_filter :: CInt -> [HostName] -> CInt -> NetFunction
 
 -- | Monadic counterpart of 'bloom_src' function.
 {-# NOINLINE bloom_src_filter #-}
-bloom_src_filter :: CInt -> [HostName] -> NetFunction
+bloom_src_filter :: CInt -> [HostName] -> CInt -> NetFunction
 
 -- | Monadic counterpart of 'bloom_dst' function.
 {-# NOINLINE bloom_dst_filter #-}
-bloom_dst_filter :: CInt -> [HostName] -> NetFunction
+bloom_dst_filter :: CInt -> [HostName] -> CInt -> NetFunction
 
-bloom m hs = let ips = unsafePerformIO (mapM inet_addr hs) in Predicate "bloom" m ips () () () () () ()
-bloom_src m hs = let ips = unsafePerformIO (mapM inet_addr hs) in Predicate "bloom_src" m ips () () () () () ()
-bloom_dst m hs = let ips = unsafePerformIO (mapM inet_addr hs) in Predicate "bloom_dst" m ips () () () () () ()
+bloom m hs p     = let ips = unsafePerformIO (mapM inet_addr hs) in Predicate "bloom" m ips p () () () () ()
+bloom_src m hs p = let ips = unsafePerformIO (mapM inet_addr hs) in Predicate "bloom_src" m ips p () () () () ()
+bloom_dst m hs p = let ips = unsafePerformIO (mapM inet_addr hs) in Predicate "bloom_dst" m ips p () () () () ()
 
-bloom_filter m hs = let ips = unsafePerformIO (mapM inet_addr hs) in MFunction "bloom_filter" m ips () () () () () ()
-bloom_src_filter m hs = let ips = unsafePerformIO (mapM inet_addr hs) in MFunction "bloom_src_filter" m ips () () () () () ()
-bloom_dst_filter m hs = let ips = unsafePerformIO (mapM inet_addr hs) in MFunction "bloom_dst_filter" m ips () () () () () ()
+bloom_filter m hs p     = let ips = unsafePerformIO (mapM inet_addr hs) in MFunction "bloom_filter" m ips p () () () () ()
+bloom_src_filter m hs p = let ips = unsafePerformIO (mapM inet_addr hs) in MFunction "bloom_src_filter" m ips p () () () () ()
+bloom_dst_filter m hs p = let ips = unsafePerformIO (mapM inet_addr hs) in MFunction "bloom_dst_filter" m ips p () () () () ()
 
 -- bloom filter, utility functions:
 
