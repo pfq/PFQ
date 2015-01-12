@@ -44,6 +44,13 @@ module Network.PFq.Experimental
         class'     ,
         deliver    ,
 
+        par3,
+        par4,
+        par5,
+        par6,
+        par7,
+        par8,
+
     ) where
 
 
@@ -76,5 +83,23 @@ dummy_strings xs  = MFunction "dummy_strings" xs () () () () () () ()
 crc16 :: NetFunction
 crc16 = MFunction "crc16" () () () () () () () ()
 
+-- | Function that returns the parallel of 3 monadic NetFunctions.
 
+par3 :: NetFunction -> NetFunction -> NetFunction -> NetFunction
+par3 a b c = MFunction "par3" a b c () () () () ()
+
+par4 :: NetFunction -> NetFunction -> NetFunction -> NetFunction -> NetFunction
+par4 a b c d = MFunction "par4" a b c d () () () ()
+
+par5 :: NetFunction -> NetFunction -> NetFunction -> NetFunction -> NetFunction -> NetFunction
+par5 a b c d e = MFunction "par5" a b c d e () () ()
+
+par6 :: NetFunction -> NetFunction -> NetFunction -> NetFunction -> NetFunction -> NetFunction -> NetFunction
+par6 a b c d e f = MFunction "par6" a b c d e f () ()
+
+par7 :: NetFunction -> NetFunction -> NetFunction -> NetFunction -> NetFunction -> NetFunction -> NetFunction -> NetFunction
+par7 a b c d e f g = MFunction "par7" a b c d e f g ()
+
+par8 :: NetFunction -> NetFunction -> NetFunction -> NetFunction -> NetFunction -> NetFunction -> NetFunction -> NetFunction -> NetFunction
+par8 a b c d e f g h = MFunction "par8" a b c d e f g h
 
