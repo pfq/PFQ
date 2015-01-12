@@ -473,7 +473,8 @@ struct pfq_function_descr misc_functions[] = {
         { "log_buff",   "SkBuff -> Action SkBuff", 			log_buff 	},
         { "log_packet", "SkBuff -> Action SkBuff", 			log_packet	},
 
-        { "inv", 	"(SkBuff -> Action SkBuff) -> SkBuff -> Action SkBuff",     				inv },
+        { "inv", 	"(SkBuff -> Action SkBuff) -> SkBuff -> Action SkBuff", inv },
+
         { "par", 	"(SkBuff -> Action SkBuff) -> (SkBuff -> Action SkBuff) -> SkBuff -> Action SkBuff",    par },
 
        	{ "par3", 	"(SkBuff -> Action SkBuff) -> (SkBuff -> Action SkBuff) -> "
@@ -496,6 +497,7 @@ struct pfq_function_descr misc_functions[] = {
         		"(SkBuff -> Action SkBuff) -> SkBuff -> Action SkBuff", par7 },
 
         { "par8", 	"(SkBuff -> Action SkBuff) -> (SkBuff -> Action SkBuff) -> "
+        		"(SkBuff -> Action SkBuff) -> (SkBuff -> Action SkBuff) -> "
         		"(SkBuff -> Action SkBuff) -> (SkBuff -> Action SkBuff) -> "
         		"(SkBuff -> Action SkBuff) -> (SkBuff -> Action SkBuff) -> SkBuff -> Action SkBuff", par8 },
         { NULL }};
