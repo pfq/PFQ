@@ -91,7 +91,7 @@ pfq_hugepage_map(struct pfq_shmem_descr *shmem, unsigned long addr, size_t size)
 {
 	int nid;
 
-	printk(KERN_WARNING "[PFQ] mapping user memory (HugePages)...\n");
+	printk(KERN_INFO "[PFQ] mapping user memory (HugePages)...\n");
 
 	shmem->npages = PAGE_ALIGN(size) / PAGE_SIZE;
 	shmem->hugepages = vmalloc(shmem->npages * sizeof(struct page *));
@@ -102,8 +102,7 @@ pfq_hugepage_map(struct pfq_shmem_descr *shmem, unsigned long addr, size_t size)
 
 		shmem->npages = 0;
 		shmem->hugepages = NULL;
-		pr_devel("[PFQ] could not get user pages!\n");
-
+		printk(KERN_WARNING "[PFQ] could not get user pages!\n");
 		return -1;
 	}
 
@@ -111,7 +110,7 @@ pfq_hugepage_map(struct pfq_shmem_descr *shmem, unsigned long addr, size_t size)
 
 	shmem->addr = vm_map_ram(shmem->hugepages, shmem->npages, nid, PAGE_KERNEL);
 	if (!shmem->addr) {
-		pr_devel("[PFQ] mapping memory failure.\n");
+		printk(KERN_INFO "[PFQ] mapping memory failure.\n");
 		return -1;
 	}
 

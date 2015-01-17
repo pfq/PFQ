@@ -196,8 +196,8 @@ pfq_sk(struct sock *sk)
 
 
 int    pfq_get_sock_count(void);
-int    pfq_get_free_sock_id(struct pfq_sock * so);
-struct pfq_sock * pfq_get_sock_by_id(size_t id);
+int    pfq_get_free_id(struct pfq_sock * so);
+struct pfq_sock * pfq_get_sock_by_id(int id);
 void   pfq_release_sock_id(int id);
 
 

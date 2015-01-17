@@ -62,14 +62,14 @@ gc_alloc_buff(struct gc_data *gc, size_t size)
 	struct gc_buff ret;
 
 	if (gc->pool.len >= Q_GC_POOL_QUEUE_LEN) {
-		printk(KERN_INFO "[PFQ] GC: pool exhausted!\n");
+		pr_devel("[PFQ] GC: pool exhausted!\n");
 		ret.skb = NULL;
 		return ret;
 	}
 
 	skb = alloc_skb(size, GFP_ATOMIC);
 	if (skb == NULL) {
-		printk(KERN_INFO "[PFQ] GC: out of memory!\n");
+		pr_devel("[PFQ] GC: out of memory!\n");
 		ret.skb = NULL;
 		return ret;
 	}
@@ -87,14 +87,14 @@ gc_copy_buff(struct gc_data *gc, struct gc_buff orig)
 	struct gc_buff ret;
 
 	if (gc->pool.len >= Q_GC_POOL_QUEUE_LEN) {
-		printk(KERN_INFO "[PFQ] GC: pool exhausted!\n");
+		pr_devel("[PFQ] GC: pool exhausted!\n");
 		ret.skb = NULL;
 		return ret;
 	}
 
 	skb = skb_copy(orig.skb, GFP_ATOMIC);
 	if (skb == NULL) {
-		printk(KERN_INFO "[PFQ] GC: out of memory!\n");
+		pr_devel("[PFQ] GC: out of memory!\n");
 		ret.skb = NULL;
 		return ret;
 	}
@@ -134,7 +134,7 @@ __gc_add_dev_to_targets(struct net_device *dev, struct gc_fwd_targets *ts)
 		ts->num++;
 	}
 	else
-		printk(KERN_INFO "[PFQ] GC: forward pool exhausted!\n");
+		pr_devel("[PFQ] GC: forward pool exhausted!\n");
 }
 
 

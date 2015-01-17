@@ -620,7 +620,6 @@ pfq_create(
 
         sk = sk_alloc(net, PF_INET, GFP_KERNEL, &pfq_proto);
         if (sk == NULL) {
-
                 printk(KERN_WARNING "[PFQ] error: could not allocate a socket\n");
                 return -ENOMEM;
         }
@@ -635,9 +634,8 @@ pfq_create(
 
         /* get a unique id for this sock */
 
-        so->id = pfq_get_free_sock_id(so);
+        so->id = pfq_get_free_id(so);
         if (so->id == -1) {
-
                 printk(KERN_WARNING "[PFQ] error: resource exhausted\n");
                 sk_free(sk);
                 return -EBUSY;
