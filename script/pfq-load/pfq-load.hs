@@ -57,8 +57,15 @@ data YesNo = Yes | No
 newtype OptString = OptString { getOptString :: String }
     deriving (Show, Read, Eq, Data, Typeable)
 
+newtype OptList a = OptList { getOptList :: [a] }
+    deriving (Show, Read, Eq, Data, Typeable)
+
 instance Semigroup OptString where
     a <> OptString "" = a
+    _ <> b = b
+
+instance Semigroup (OptList a) where
+    a <> OptList [] = a
     _ <> b = b
 
 
@@ -108,7 +115,7 @@ instance Semigroup Config where
         } =
         Config {
             pfq_module   = getOptString $ OptString mod1  <> OptString mod2,
-            pfq_options  = opt1  <> opt2,
+            pfq_options  = getOptList   $ OptList opt1 <> OptList opt2,
             exclude_core = excl1 <> excl2,
             irq_affinity = algo1 <> algo2,
             drivers      = drvs1 <> drvs2
@@ -118,6 +125,7 @@ instance Semigroup Config where
 data Options = Options
     {
          config     :: Maybe String,
+         kmodule    :: String,
          algorithm  :: String,
          first_core :: Int,
          exclude    :: [Int],
@@ -129,7 +137,8 @@ data Options = Options
 options :: Mode (CmdArgs Options)
 options = cmdArgsMode $ Options
     {
-         config     = Nothing       &= typ "FILE" &= help "Specify configuration file (default ~/.pfq.conf)",
+         config     = Nothing       &= typ "FILE" &= help "Specify config file (default ~/.pfq.conf)",
+         kmodule    = ""            &= help "Override the kmodule specified in config file",
          queues     = Nothing       &= help "Specify hardware queues (i.e. Intel RSS)",
          algorithm  = ""            &= help "Irq affinity algorithm: naive, round-robin, even, odd, all-in:id, comb:id",
          first_core = 0             &= typ "NUM" &= help "First core used for irq affinity",
@@ -200,13 +209,14 @@ mkRssOption driver numdev queues =
 mkConfig :: Options -> Config
 mkConfig
     Options { config    = _,
+              kmodule   = mod,
               algorithm = algo,
               exclude   = excl,
-              others    = mod
+              others    = opt
             } =
     Config {
-        pfq_module    = if null mod || not (isModuleName (head mod)) then "" else head mod,
-        pfq_options   = [],
+        pfq_module    = mod,
+        pfq_options   = opt,
         exclude_core  = excl,
         irq_affinity  = [algo | not (null algo)],
         drivers       = []
