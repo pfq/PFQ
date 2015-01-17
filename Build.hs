@@ -45,10 +45,10 @@ script =
         Install   "pfq-haskell-lib"  *>>  into "user/Haskell/" [cabalInstall]   .|. [Build "pfq-haskell-lib"],
         Clean     "pfq-haskell-lib"  *>>  into "user/Haskell/" [cabalClean],
 
-        Configure "pfq-counters" *>>  into "user/Haskell/pfq-counters/" [cabalConfigure] .|. [Install   "pfq-haskell-lib"],
-        Build     "pfq-counters" *>>  into "user/Haskell/pfq-counters/" [cabalBuild]     .|. [Configure "pfq-counters"],
-        Install   "pfq-counters" *>>  into "user/Haskell/pfq-counters/" [cabalInstall]   .|. [Build     "pfq-counters"],
-        Clean     "pfq-counters" *>>  into "user/Haskell/pfq-counters/" [cabalClean],
+        Configure "pfq-counters-hs" *>>  into "user/Haskell/pfq-counters-hs/" [cabalConfigure] .|. [Install   "pfq-haskell-lib"],
+        Build     "pfq-counters-hs" *>>  into "user/Haskell/pfq-counters-hs/" [cabalBuild]     .|. [Configure "pfq-counters-hs"],
+        Install   "pfq-counters-hs" *>>  into "user/Haskell/pfq-counters-hs/" [cabalInstall]   .|. [Build     "pfq-counters-hs"],
+        Clean     "pfq-counters-hs" *>>  into "user/Haskell/pfq-counters-hs/" [cabalClean],
 
         Configure "irq-affinity" *>>  into "script/irq-affinity/" [cabalConfigure] .|. [Install   "pfq-haskell-lib"],
         Build     "irq-affinity" *>>  into "script/irq-affinity/" [cabalBuild]     .|. [Configure "irq-affinity"],
