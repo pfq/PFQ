@@ -77,7 +77,7 @@ script =
 
         Configure "tool"        *>>  into "user/tool/" ["cmake ."]      .|. [Build "pfq-clib"],
         Build     "tool"        *>>  into "user/tool/" ["make -j" ++ show numberOfPhyCores] .|. [Configure "tool"],
-        Install   "tool"        *>>  into "user/tool/" [ ]              .|. [Build "tool"],
+        Install   "tool"        *>>  into "user/tool/" ["make install" ] .|. [Build "tool"],
         Clean     "tool"        *>>  into "user/tool/" ["make clean"]
    ]
 
