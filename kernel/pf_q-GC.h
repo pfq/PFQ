@@ -84,6 +84,7 @@ struct gc_data
 
 
 extern void   gc_reset(struct gc_data *gc);
+
 extern struct gc_buff gc_make_buff(struct gc_data *gc, struct sk_buff *skb);
 extern struct gc_buff gc_alloc_buff(struct gc_data *gc, size_t size);
 extern struct gc_buff gc_copy_buff(struct gc_data *gc, struct gc_buff orig);

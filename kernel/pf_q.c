@@ -201,11 +201,12 @@ static int
 pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 {
  	unsigned long long sock_queue[Q_SKBUFF_SHORT_BATCH];
-
         unsigned long group_mask, socket_mask;
 
 	struct local_data * local;
         struct gc_data *gcollector;
+
+ 	struct gc_fwd_targets targets;
 
         long unsigned n, bit, lb;
         struct pfq_monad monad;
@@ -221,7 +222,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 	BUILD_BUG_ON_MSG(Q_SKBUFF_SHORT_BATCH > (sizeof(sock_queue[0]) << 3), "skbuff batch overflow");
 #endif
 
-	/* if no socket is open, drop the packet now */
+	/* if no socket is open drop the packet */
 
         if (pfq_get_sock_count() == 0) {
         	kfree_skb(skb);
@@ -232,6 +233,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 
         if (skb->tstamp.tv64 == 0)
                 __net_timestamp(skb);
+
 
         /* if vlan header is present, remove it */
 
@@ -266,7 +268,9 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 		if (printk_ratelimit())
 			printk(KERN_INFO "[PFQ] GC: memory exhausted!\n");
 		__sparse_inc(&global_stats.lost, cpu);
+
 		kfree_skb(skb);
+        	put_cpu();
 		return 0;
 	}
 
@@ -474,16 +478,11 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 
 	for_each_skbuff(SKBUFF_BATCH_ADDR(gcollector->pool), skb, n)
 	{
-		struct pfq_cb *cb;
-		bool to_kernel;
-
-		cb = PFQ_CB(skb);
-
-		to_kernel = cb->direct && fwd_to_kernel(skb);
+		struct pfq_cb *cb = PFQ_CB(skb);
 
 		/* send a copy of this skb to the kernel */
 
-		if (to_kernel) {
+		if (cb->direct && fwd_to_kernel(skb)) {
 
 			skb = cb->log->num_devs > 0 ?
 				skb_clone(skb, GFP_ATOMIC) : skb_get(skb);
@@ -502,19 +501,18 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 
 	/* forward skbs to network devices */
 
+	gc_get_fwd_targets(gcollector, &targets);
+
+	if (targets.cnt_total)
 	{
- 		struct gc_fwd_targets targets;
-               	size_t total;
-
-		gc_get_fwd_targets(gcollector, &targets);
-
-		total = pfq_lazy_xmit_exec(gcollector, &targets);
+		size_t total = pfq_lazy_xmit_exec(gcollector, &targets);
 
 		__sparse_add(&global_stats.frwd, total, cpu);
 		__sparse_add(&global_stats.disc, targets.cnt_total - total, cpu);
 	}
 
-	/* reset GC, free skbs */
+
+	/* free skbs */
 
 	for_each_skbuff(SKBUFF_BATCH_ADDR(gcollector->pool), skb, n)
 	{
@@ -523,6 +521,8 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 		else
 			consume_skb(skb);
 	}
+
+	/* reset the GC */
 
 	gc_reset(gcollector);
 
@@ -758,41 +758,6 @@ pfq_poll(struct file *file, struct socket *sock, poll_table * wait)
 
 
 static
-int pfq_ioctl(struct socket *sock, unsigned int cmd, unsigned long arg)
-{
-        switch (cmd) {
-#ifdef CONFIG_INET
-        case SIOCGIFFLAGS:
-        case SIOCSIFFLAGS:
-        case SIOCGIFCONF:
-        case SIOCGIFMETRIC:
-        case SIOCSIFMETRIC:
-        case SIOCGIFMEM:
-        case SIOCSIFMEM:
-        case SIOCGIFMTU:
-        case SIOCSIFMTU:
-        case SIOCSIFLINK:
-        case SIOCGIFHWADDR:
-        case SIOCSIFHWADDR:
-        case SIOCSIFMAP:
-        case SIOCGIFMAP:
-        case SIOCSIFSLAVE:
-        case SIOCGIFSLAVE:
-        case SIOCGIFINDEX:
-        case SIOCGIFNAME:
-        case SIOCGIFCOUNT:
-        case SIOCSIFHWBROADCAST:
-            return(inet_dgram_ops.ioctl(sock, cmd, arg));
-#endif
-        default:
-            return -ENOIOCTLCMD;
-        }
-
-        return 0;
-}
-
-
-static
 void pfq_proto_ops_init(void)
 {
         pfq_ops = (struct proto_ops)
@@ -816,9 +781,9 @@ void pfq_proto_ops_init(void)
                 .poll       = pfq_poll,             // pfq_poll,
                 .setsockopt = pfq_setsockopt,       // pfq_setsockopt,
                 .getsockopt = pfq_getsockopt,       // pfq_getsockopt,
-                .ioctl      = pfq_ioctl,            // pfq_ioctl,
-                .recvmsg    = sock_no_recvmsg,      // pfq_recvmsg,
-                .sendmsg    = sock_no_sendmsg       // pfq_sendmsg,
+                .ioctl      = sock_no_ioctl,
+                .recvmsg    = sock_no_recvmsg,
+                .sendmsg    = sock_no_sendmsg
         };
 }
 
@@ -889,13 +854,11 @@ static int __init pfq_init_module(void)
 		return -EFAULT;
 	}
 
-	if (pfq_percpu_init()) {
+	if (pfq_percpu_init())
 		return -EFAULT;
-	}
 
-	if (pfq_proc_init()) {
+	if (pfq_proc_init())
 		return -ENOMEM;
-	}
 
         /* register pfq sniffer protocol */
         n = proto_register(&pfq_proto, 0);

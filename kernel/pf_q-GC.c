@@ -26,6 +26,7 @@
 #include <pf_q-global.h>
 #include <pf_q-GC.h>
 
+
 void gc_reset(struct gc_data *gc)
 {
 	size_t n;
@@ -46,10 +47,8 @@ gc_make_buff(struct gc_data *gc, struct sk_buff *skb)
 		ret.skb = NULL;
 	}
 	else {
-		struct pfq_cb *cb = (struct pfq_cb *)skb->cb;
-                cb->log = &gc->log[gc->pool.len];
-		gc->pool.queue[gc->pool.len++].skb = skb;
-		ret.skb = skb;
+                PFQ_CB(skb)->log = &gc->log[gc->pool.len];
+		ret.skb = gc->pool.queue[gc->pool.len++].skb = skb;
 	}
 
 	return ret;
