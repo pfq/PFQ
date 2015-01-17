@@ -42,6 +42,7 @@
 #include <sys/time.h>
 #include <unistd.h>
 #include <stdint.h>
+#include <errno.h>
 
 static inline void barrier() { asm volatile ("" ::: "memory"); }
 
@@ -72,6 +73,7 @@ static inline void smp_wmb() { barrier(); }
 #define Q_MAX_COUNTERS           	64
 #define Q_MAX_PERSISTENT 		1024
 #define Q_MAX_TX_QUEUES 		4
+
 
 /* Common header */
 
@@ -197,7 +199,7 @@ static inline
 int pfq_spsc_write_index(struct pfq_tx_queue_hdr *q)
 {
         if (pfq_spsc_write_avail(q) == 0)
-                return -1;
+                return -ENOMEM;
 
         return (int)q->producer.index;
 }
@@ -240,7 +242,7 @@ static inline
 int pfq_spsc_read_index(struct pfq_tx_queue_hdr *q)
 {
         if (pfq_spsc_read_avail(q) == 0)
-                return -1;
+                return -EINVAL;
 
         return (int)q->consumer.index;
 }

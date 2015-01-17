@@ -162,7 +162,7 @@ __pfq_join_group(int gid, int id, unsigned long class_mask, int policy)
 
         if (!__pfq_group_access(gid, id, policy, true)) {
                 pr_devel("[PFQ] gid=%d is not joinable with policy %d\n", gid, policy);
-                return -1;
+                return -EPERM;
         }
 
         pfq_bitwise_foreach(class_mask, bit,
@@ -196,7 +196,7 @@ __pfq_leave_group(int gid, int id)
                 return -EINVAL;
 
 	if (!g->pid)
-		return -1;
+		return -EPERM;
 
         for(i = 0; i < Q_CLASS_MAX; ++i)
         {
@@ -327,7 +327,7 @@ pfq_join_free_group(int id, unsigned long class_mask, int policy)
                 }
         }
         up(&group_sem);
-        return -1;
+        return -EPERM;
 }
 
 

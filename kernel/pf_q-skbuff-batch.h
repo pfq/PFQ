@@ -73,7 +73,7 @@ int pfq_skbuff_short_batch_push(struct pfq_skbuff_batch *q, struct sk_buff *skb)
 {
         if (q->len < Q_SKBUFF_SHORT_BATCH)
                 return q->queue[q->len++] = skb, 0;
-        return -1;
+        return -ENOMEM;
 }
 
 
@@ -82,7 +82,7 @@ int pfq_skbuff_long_batch_push(struct pfq_skbuff_batch *q, struct sk_buff *skb)
 {
         if (q->len < Q_SKBUFF_LONG_BATCH)
                 return q->queue[q->len++] = skb, 0;
-        return -1;
+        return -ENOMEM;
 }
 
 

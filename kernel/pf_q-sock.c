@@ -47,7 +47,7 @@ int pfq_get_free_id(struct pfq_sock * so)
                         return n;
                 }
         }
-        return -1;
+        return -ENOMEM;
 }
 
 int pfq_get_sock_count(void)

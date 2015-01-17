@@ -87,18 +87,18 @@ __pfq_symtable_register_function(struct list_head *category, const char *symbol,
 
 	if (__pfq_symtable_search(category, symbol) != NULL) {
 		printk(KERN_INFO "[PFQ] symtable error: symbol '%s' already in use!\n", symbol);
-		return -1;
+		return -EPERM;
 	}
 
 	if (!pfq_signature_check(make_string_view(signature))) {
 		printk(KERN_INFO "[PFQ] symtable error: symbol '%s' bad signature '%s'!\n", symbol, signature);
-		return -1;
+		return -EFAULT;
 	}
 
 	elem = kmalloc(sizeof(struct symtable_entry), GFP_KERNEL);
 	if (elem == NULL) {
 		printk(KERN_WARNING "[PFQ] symtable error: out of memory!\n");
-		return -1;
+		return -ENOMEM;
 	}
 
 	INIT_LIST_HEAD(&elem->list);
@@ -133,7 +133,7 @@ __pfq_symtable_unregister_function(struct list_head *category, const char *symbo
 		}
 	}
 	printk(KERN_INFO "[PFQ] symtable error: '%s' no such function\n", symbol);
-	return -1;
+	return -EFAULT;
 }
 
 
@@ -162,7 +162,7 @@ pfq_symtable_register_functions(const char *module, struct list_head *category, 
                         for(; j < i; j++)
                                 pfq_symtable_unregister_function(module, category, fun[j].symbol);
 
-                        return -1;
+                        return -EFAULT;
                 }
 	}
 
@@ -270,7 +270,7 @@ pfq_symtable_unregister_function(const char *module, struct list_head *category,
 
 	elem = __pfq_symtable_search(category, symbol);
 	if (elem == NULL)
-        	return -1;
+        	return -EFAULT;
 
 	__pfq_dismiss_function(elem->function);
         __pfq_symtable_unregister_function(category, symbol);

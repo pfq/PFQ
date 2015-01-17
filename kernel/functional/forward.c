@@ -108,7 +108,7 @@ forward_init(arguments_t args)
 
 	if (dev == NULL) {
                 printk(KERN_INFO "[PFQ|init] forward: %s no such device!\n", name);
-                return -1;
+                return -EINVAL;
 	}
 
 	/* it is safe to override the address of the string... */
@@ -116,7 +116,6 @@ forward_init(arguments_t args)
 	set_arg(args, dev);
 
 	printk(KERN_INFO "[PFQ|init] forward: device '%s' locked\n", dev->name);
-
 	return 0;
 }
 
