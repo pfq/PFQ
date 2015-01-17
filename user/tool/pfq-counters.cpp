@@ -18,6 +18,7 @@
 #include <atomic>
 #include <cmath>
 #include <tuple>
+#include <limits>
 #include <unordered_set>
 
 #include <pfq/pfq.hpp>
@@ -39,10 +40,10 @@ namespace opt
     long timeout_ms;
     std::string function;
 
-    size_t caplen = 64;
-    size_t slots  = 131072;
-    bool flow     = false;
-
+    size_t seconds = std::numeric_limits<size_t>::max();
+    size_t caplen  = 64;
+    size_t slots   = 131072;
+    bool flow      = false;
 }
 
 
@@ -203,6 +204,7 @@ void usage(std::string name)
         " -c --caplen INT               Set caplen\n"
         " -w --flow                     Enable flow counter\n"
         " -s --slot INT                 Set slots\n"
+        "    --seconds INT              Terminate after INT seconds\n"
         " -f --function FUNCTION\n"
         " -t --thread BINDING\n\n"
         "      BINDING = " + pfq::binding_format + "\n"
@@ -249,6 +251,15 @@ try
                 throw std::runtime_error("slots missing");
 
             opt::slots = static_cast<size_t>(std::atoi(argv[i]));
+            continue;
+        }
+
+        if (any_strcmp(argv[i], "--seconds"))
+        {
+            if (++i == argc)
+                throw std::runtime_error("seconds missing");
+
+            opt::seconds = static_cast<size_t>(std::atoi(argv[i]));
             continue;
         }
 
@@ -315,7 +326,7 @@ try
 
     auto begin = std::chrono::system_clock::now();
 
-    for(int y=0;; y++)
+    for(size_t y=0; y < opt::seconds; y++)
     {
         std::this_thread::sleep_for(std::chrono::seconds(1));
 
