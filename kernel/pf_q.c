@@ -756,6 +756,39 @@ pfq_poll(struct file *file, struct socket *sock, poll_table * wait)
         return mask;
 }
 
+static
+int pfq_ioctl(struct socket *sock, unsigned int cmd, unsigned long arg)
+{
+        switch (cmd) {
+#ifdef CONFIG_INET
+        case SIOCGIFFLAGS:
+        case SIOCSIFFLAGS:
+        case SIOCGIFCONF:
+        case SIOCGIFMETRIC:
+        case SIOCSIFMETRIC:
+        case SIOCGIFMEM:
+        case SIOCSIFMEM:
+        case SIOCGIFMTU:
+        case SIOCSIFMTU:
+        case SIOCSIFLINK:
+        case SIOCGIFHWADDR:
+        case SIOCSIFHWADDR:
+        case SIOCSIFMAP:
+        case SIOCGIFMAP:
+        case SIOCSIFSLAVE:
+        case SIOCGIFSLAVE:
+        case SIOCGIFINDEX:
+        case SIOCGIFNAME:
+        case SIOCGIFCOUNT:
+        case SIOCSIFHWBROADCAST:
+            return(inet_dgram_ops.ioctl(sock, cmd, arg));
+#endif
+        default:
+            return -ENOIOCTLCMD;
+        }
+
+        return 0;
+}
 
 static
 void pfq_proto_ops_init(void)
@@ -777,11 +810,11 @@ void pfq_proto_ops_init(void)
                 /* Now the operations that really occur. */
                 .release    = pfq_release,
                 .bind       = sock_no_bind,
-                .mmap       = pfq_mmap,             // pfq_mmap,
-                .poll       = pfq_poll,             // pfq_poll,
-                .setsockopt = pfq_setsockopt,       // pfq_setsockopt,
-                .getsockopt = pfq_getsockopt,       // pfq_getsockopt,
-                .ioctl      = sock_no_ioctl,
+                .mmap       = pfq_mmap,
+                .poll       = pfq_poll,
+                .setsockopt = pfq_setsockopt,
+                .getsockopt = pfq_getsockopt,
+                .ioctl      = pfq_ioctl,
                 .recvmsg    = sock_no_recvmsg,
                 .sendmsg    = sock_no_sendmsg
         };
