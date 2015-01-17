@@ -1,5 +1,5 @@
 --
--- Copyright (c) 2015 Bonelli Nicola <nicola.bonelli@antifork.org>
+-- Copyright (c) 2015 Nicola Bonelli <nicola@pfq.io>
 --
 -- This program is free software; you can redistribute it and/or modify
 -- it under the terms of the GNU General Public License as published by
@@ -31,37 +31,23 @@ import Control.Concurrent (threadDelay)
 import Data.Data
 import Data.List (intercalate)
 
+version = "4.0"
 
 pfq_counters = "/usr/local/bin/pfq-counters"
 pfq_load = "/root/.cabal/bin/pfq-load"
-
-version = "4.0"
 
 pfqOptions = [ (rss, [mkOption "direct_capture" dcap,
                       mkOption "capture_incoming" icap,
                       mkOption "capture_outgoing" ocap,
                       mkOption "batch_len" blen]) |
 
-                      rss  <- [1,2],
+                      rss  <- [1,3],
                       dcap <- [0,1],
                       icap <- [0,1],
                       ocap <- [0],
                       blen <- [1, 16],
                       dcap /= 0 || icap /= 0]
 
-
-bold    = setSGRCode [SetConsoleIntensity BoldIntensity]
-reset   = setSGRCode []
-
-
-mkOption :: (Show a) => String -> a -> String
-mkOption opt x = opt ++ "=" ++ show x
-
-
-runSystem :: String -> String -> IO ()
-runSystem cmd errmsg = do
-    putStrLn $ "-> " ++ cmd
-    system cmd >>= \ec -> when (ec /= ExitSuccess) $ error errmsg
 
 data Options = Options
     {
@@ -82,7 +68,6 @@ options = cmdArgsMode $ Options
     } &= summary ("pfq-tOest " ++ version) &= program "pfq-test"
 
 
-
 main :: IO ()
 main = do
     opts <- cmdArgsRun options
@@ -99,4 +84,18 @@ main = do
             "Could not run test correctly!"
 
     putStrLn $ bold ++ "[PFQ] Done." ++ reset
+
+
+bold    = setSGRCode [SetConsoleIntensity BoldIntensity]
+reset   = setSGRCode []
+
+
+mkOption :: (Show a) => String -> a -> String
+mkOption opt x = opt ++ "=" ++ show x
+
+
+runSystem :: String -> String -> IO ()
+runSystem cmd errmsg = do
+    putStrLn $ "-> " ++ cmd
+    system cmd >>= \ec -> when (ec /= ExitSuccess) $ error errmsg
 
