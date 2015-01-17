@@ -52,13 +52,13 @@ reset = setSGRCode []
 version = "4.0"
 
 data YesNo = Yes | No
-    deriving (Show, Read, Eq, Data, Typeable)
+    deriving (Show, Read, Eq)
 
 newtype OptString = OptString { getOptString :: String }
-    deriving (Show, Read, Eq, Data, Typeable)
+    deriving (Show, Read, Eq)
 
 newtype OptList a = OptList { getOptList :: [a] }
-    deriving (Show, Read, Eq, Data, Typeable)
+    deriving (Show, Read, Eq)
 
 instance Semigroup OptString where
     a <> OptString "" = a
@@ -221,7 +221,6 @@ mkConfig
         irq_affinity  = [algo | not (null algo)],
         drivers       = []
     }
-    where isModuleName = (".ko" `isSuffixOf`)
 
 
 loadConfig :: FilePath -> Options -> IO Config
@@ -298,8 +297,10 @@ setupDevice (Device dev speed fctrl opts) = do
     forM_ opts $ \(opt, arg, value) ->
         runSystem ("/sbin/ethtool " ++ opt ++ " " ++ dev ++ " " ++ arg ++ " " ++ show value) "ethtool error!"
 
+
 getDevices ::  Config -> [String]
-getDevices conf = map devname (concatMap devices (drivers conf))
+getDevices conf =
+    map devname (concatMap devices (drivers conf))
 
 
 setupIRQAffinity :: Int -> [Int] -> [String] -> [String] -> IO ()
