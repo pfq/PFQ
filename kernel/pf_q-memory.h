@@ -134,7 +134,7 @@ void pfq_kfree_skb_pool(struct sk_buff *skb, struct pfq_sk_buff_list *list)
 #ifdef PFQ_USE_SKB_RECYCLE
 
         if (pfq_skb_is_parkable(skb)) {
-                if (pfq_sk_buff_list_size(list) <= skb_pool_size) {
+                if (pfq_sk_buff_list_size(list) < skb_pool_size) {
 
                         if (likely(pfq_sk_buff_queue_head(list, skb))) {
 #ifdef PFQ_USE_EXTENDED_PROC

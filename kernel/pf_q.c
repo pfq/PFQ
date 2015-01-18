@@ -234,7 +234,6 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
         if (skb->tstamp.tv64 == 0)
                 __net_timestamp(skb);
 
-
         /* if vlan header is present, remove it */
 
         if (vl_untag && skb->protocol == cpu_to_be16(ETH_P_8021Q)) {
@@ -253,10 +252,9 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
             skb_push(skb, skb->mac_len);
         }
 
-	/* get the cpu */
+	/* get garbage collector */
 
-        cpu = get_cpu();
-
+	cpu = get_cpu();
 	local = per_cpu_ptr(cpu_data, cpu);
 
 	gcollector = &local->gc;
@@ -268,8 +266,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 		if (printk_ratelimit())
 			printk(KERN_INFO "[PFQ] GC: memory exhausted!\n");
 		__sparse_inc(&global_stats.lost, cpu);
-
-		kfree_skb(skb);
+		pfq_kfree_skb_pool(skb, &local->rx_pool);
         	put_cpu();
 		return 0;
 	}
@@ -881,7 +878,7 @@ static int __init pfq_init_module(void)
         }
 
 	if (skb_pool_size > PFQ_SK_BUFF_LIST_SIZE) {
-                printk(KERN_INFO "[PFQ] skb_pool_size=%d not allowed: valid range (0,%d]!\n", skb_pool_size, PFQ_SK_BUFF_LIST_SIZE);
+                printk(KERN_INFO "[PFQ] skb_pool_size=%d not allowed: valid range [0,%d]!\n", skb_pool_size, PFQ_SK_BUFF_LIST_SIZE);
 		return -EFAULT;
 	}
 

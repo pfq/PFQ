@@ -31,7 +31,6 @@
 struct local_data __percpu    * cpu_data;
 
 int direct_capture 	= 0;
-
 int capture_incoming 	= 1;
 int capture_outgoing 	= 0;
 
@@ -41,10 +40,9 @@ int cap_len      	= 1514;
 int max_len      	= 1514;
 
 int batch_len 		= 1;
-
 int vl_untag     	= 0;
 
-int skb_pool_size 	= 4096;
+int skb_pool_size 	= 1024;
 
 
 struct pfq_global_stats global_stats;
