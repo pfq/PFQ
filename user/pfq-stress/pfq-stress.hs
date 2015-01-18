@@ -17,6 +17,7 @@
 --
 
 {-# LANGUAGE DeriveDataTypeable #-}
+{-# LANGUAGE QuasiQuotes #-}
 
 module Main where
 
@@ -28,19 +29,21 @@ import System.Exit
 import Control.Monad
 import Control.Concurrent (threadDelay)
 
+import Data.String.Here
 import Data.Data
-import Data.List (intercalate)
+import Data.List (intercalate, (\\))
 
-version = "4.0"
+version, pfq_counters, pfq_load :: String
 
 pfq_counters = "/usr/local/bin/pfq-counters"
 pfq_load = "/root/.cabal/bin/pfq-load"
+version = "4.0"
 
+pfqOptions :: [ (Int, [String]) ]
 pfqOptions = [ (rss, [mkOption "direct_capture" dcap,
                       mkOption "capture_incoming" icap,
                       mkOption "capture_outgoing" ocap,
                       mkOption "batch_len" blen]) |
-
                       rss  <- [1,3],
                       dcap <- [0,1],
                       icap <- [0,1],
@@ -54,7 +57,10 @@ data Options = Options
          core       :: Int,
          gid        :: Int,
          seconds    :: Int,
-         device     :: [String]
+         device     :: [String],
+         dryRun     :: Bool,
+         run        :: [Int],
+         skip       :: [Int]
     } deriving (Show, Read, Data, Typeable)
 
 
@@ -64,38 +70,48 @@ options = cmdArgsMode $ Options
          core       = 0             &= typ "NUM" &= help "core where to run the tests",
          gid        = 0             &= typ "NUM" &= help "PFQ group id of the tests",
          seconds    = 5             &= typ "NUM" &= help "Duration of each test in seconds",
-         device     = []            &= help "List of devices where to run the tests"
+         device     = []            &= help "List of devices where to run the tests",
+         run        = []            &= help "List of tests to run",
+         skip       = []            &= help "List of tests to skip",
+         dryRun     = False         &= help "Don't actually run tests"
     } &= summary ("pfq-tOest " ++ version) &= program "pfq-test"
+
 
 
 main :: IO ()
 main = do
     opts <- cmdArgsRun options
-    when (null $ device opts) $ error "At least a device must be specified"
 
-    putStrLn $ bold ++ "[PFQ] running regression tests..." ++ reset
+    let filt = (if null (run opts) then [0..] else run opts) \\ skip opts
 
-    forM_ (zip [0..] pfqOptions) $ \(n, opt) -> do
-        putStrLn $ bold ++ "\n### Test #" ++ show n ++ reset ++ ": " ++ show opt
-        runSystem (pfq_load ++ " -q " ++ show (fst opt) ++ " " ++ unwords (snd opt))
-            "Could not load PFQ module!"
-        runSystem (pfq_counters ++ " --seconds " ++ show (seconds opts) ++
-            " -t " ++ show(core opts) ++ "." ++ show(gid opts) ++ "." ++ intercalate ":" (device opts))
-            "Could not run test correctly!"
+    when (null $ device opts) $ error "[PFQ] At least a device must be specified"
 
-    putStrLn $ bold ++ "[PFQ] Done." ++ reset
+    putStrLn $ bold ++ "[PFQ] Running regression tests..." ++ reset
+
+    forM_ (zip [0..] pfqOptions) $ \(n, opt) ->
+
+        when (n `elem` filt) $ do
+
+            putStrLn  [i| ${bold}[PFQ] Test #${n}${reset}: ${opt}|]
+
+            runSystem [i|${pfq_load} -q ${fst opt} ${unwords (snd opt)}|] "Could not load PFQ module!" ((not . dryRun) opts)
+            runSystem [i|${pfq_counters} --seconds ${seconds opts} -t ${core opts}.${gid opts}.${intercalate ":" (device opts)}|]
+                      [i|"Could not run test# ${n} correctly!|] ((not . dryRun) opts)
+
+    putStrLn $ bold ++ "\n[PFQ] Done." ++ reset
 
 
-bold    = setSGRCode [SetConsoleIntensity BoldIntensity]
-reset   = setSGRCode []
+bold  = setSGRCode [SetConsoleIntensity BoldIntensity]
+reset = setSGRCode []
 
 
 mkOption :: (Show a) => String -> a -> String
 mkOption opt x = opt ++ "=" ++ show x
 
 
-runSystem :: String -> String -> IO ()
-runSystem cmd errmsg = do
+runSystem :: String -> String -> Bool -> IO ()
+runSystem cmd errmsg run = do
     putStrLn $ "-> " ++ cmd
-    system cmd >>= \ec -> when (ec /= ExitSuccess) $ error errmsg
+    when run $
+        system cmd >>= \ec -> when (ec /= ExitSuccess) $ error errmsg
 

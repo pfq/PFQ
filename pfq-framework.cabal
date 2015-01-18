@@ -31,7 +31,8 @@ Library
                  mtl, 
                  regex-posix, 
                  bytestring, 
-                 split
+                 split,
+                 here
 
 
 

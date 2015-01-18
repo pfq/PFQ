@@ -65,10 +65,10 @@ script =
         Install   "pfq-load"     *>>  into "user/pfq-load/" [cabalInstall]   .|. [Build     "pfq-load"],
         Clean     "pfq-load"     *>>  into "user/pfq-load/" [cabalClean],
 
-        Configure "pfq-captest"  *>>  into "user/pfq-captest/" [cabalConfigure] .|. [Install   "irq-affinity", Install "pfq-load"],
-        Build     "pfq-captest"  *>>  into "user/pfq-captest/" [cabalBuild]     .|. [Configure "pfq-captest"],
-        Install   "pfq-captest"  *>>  into "user/pfq-captest/" [cabalInstall]   .|. [Build     "pfq-captest"],
-        Clean     "pfq-captest"  *>>  into "user/pfq-captest/" [cabalClean],
+        Configure "pfq-stress"  *>>  into "user/pfq-stress/" [cabalConfigure] .|. [Install   "irq-affinity", Install "pfq-load"],
+        Build     "pfq-stress"  *>>  into "user/pfq-stress/" [cabalBuild]     .|. [Configure "pfq-stress"],
+        Install   "pfq-stress"  *>>  into "user/pfq-stress/" [cabalInstall]   .|. [Build     "pfq-stress"],
+        Clean     "pfq-stress"  *>>  into "user/pfq-stress/" [cabalClean],
 
         Configure "pfqd"        *>>  into "user/pfqd/" [cabalConfigure] .|. [Install   "pfq-haskell-lib", Install "pfq.ko"],
         Build     "pfqd"        *>>  into "user/pfqd/" [cabalBuild]     .|. [Configure "pfqd"],
