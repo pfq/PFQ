@@ -43,12 +43,14 @@ pfqOptions :: [ (Int, [String]) ]
 pfqOptions = [ (rss, [mkOption "direct_capture" dcap,
                       mkOption "capture_incoming" icap,
                       mkOption "capture_outgoing" ocap,
+                      mkOption "skb_pool_size" skbp,
                       mkOption "batch_len" blen]) |
                       rss  <- [1,3],
                       dcap <- [0,1],
                       icap <- [0,1],
                       ocap <- [0],
                       blen <- [1, 16],
+                      skbp <- [0, 1024],
                       dcap /= 0 || icap /= 0]
 
 
@@ -95,10 +97,13 @@ main = do
             putStrLn  [i| ${bold}[PFQ] Test #${n}${reset}: ${opt}|]
 
             runSystem [i|${pfq_load} -q ${fst opt} ${unwords (snd opt)}|] "Could not load PFQ module!" ((not . dryRun) opts)
+
+            unless (dryRun opts) $ threadDelay 1000000
+
             runSystem [i|${pfq_counters} --seconds ${seconds opts} -t ${core opts}.${gid opts}.${intercalate ":" (device opts)}|]
                       [i|"Could not run test# ${n} correctly!|] ((not . dryRun) opts)
 
-    putStrLn $ bold ++ "\n[PFQ] Done." ++ reset
+    putStrLn $ bold ++ "[PFQ] Done." ++ reset
 
 
 bold  = setSGRCode [SetConsoleIntensity BoldIntensity]
