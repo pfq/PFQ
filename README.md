@@ -4,21 +4,25 @@ PFQ v4.0
 Introduction
 ------------
 
-PFQ is a networking framework designed for the Linux operating system 
-that allows efficient packet capture/transmission, in-kernel functional processing 
-and packet steering across sockets. 
+PFQ is a functional networking framework designed for the Linux operating system 
+that allows efficient packets capture/transmission, in-kernel functional processing 
+and packets steering across sockets/end-points.
 
-PFQ is highly optimized for multi-core architecture, as well as for network 
-devices equipped with multiple hardware queues. It works with any device
-driver and provides a script designed to obtain accelerated versions of the drivers 
-from their source codes.
+PFQ is highly optimized for multi-core architecture, as well as for network devices 
+equipped with multiple hardware queues. It works with any network device driver and 
+provides a script designed to obtain accelerated versions starting from their source codes.
 
-The framework enables the development of high-performance networking applications 
-with different languages (i.e. C, C++ and Haskell). In addition, a pure functional language 
-designed for software defined monitoring and networking is included: PFQ/lang.
+The framework enables the development of high-performance networking applications with 
+different programming languages: C, C++11 and Haskell. In addition, a pure functional language 
+designed for early stages applications is included: PFQ/lang.
 
-The package provides the source code of the PFQ kernel module, user-space libraries 
-for C, C++11 and Haskell languages, PFQ/lang implemented as eDSL and a set of diagnostic tools.
+PFQ/lang is inspired to Haskell and allows to create small applications that run in 
+kernel space, on top of network device drivers. Through PFQ/lang it is possible to create 
+efficient bridges, port mirrors, simple firewalls, network balancers and so forth.
+
+The package provides the source code of the PFQ kernel module, user-space libraries for C, 
+C++11-14 and Haskell language, an implementation of PFQ/lang as eDSL for C++11-14 and Haskell, 
+and a set of diagnostic tools.
 
 Features
 --------
