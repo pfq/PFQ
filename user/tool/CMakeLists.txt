@@ -18,3 +18,8 @@ target_link_libraries(pfq-histogram -pthread)
 target_link_libraries(pfq-gen -pthread -lpcap)
 target_link_libraries(pfq-lang -pthread)
 target_link_libraries(pfq-bridge -pthread)
+ 
+install (TARGETS pfq-counters DESTINATION bin)
+install (TARGETS pfq-gen      DESTINATION bin)
+install (TARGETS pfq-bridge   DESTINATION bin)
+

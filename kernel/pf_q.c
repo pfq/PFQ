@@ -201,11 +201,12 @@ static int
 pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 {
  	unsigned long long sock_queue[Q_SKBUFF_SHORT_BATCH];
-
         unsigned long group_mask, socket_mask;
 
 	struct local_data * local;
         struct gc_data *gcollector;
+
+ 	struct gc_fwd_targets targets;
 
         long unsigned n, bit, lb;
         struct pfq_monad monad;
@@ -221,7 +222,8 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 	BUILD_BUG_ON_MSG(Q_SKBUFF_SHORT_BATCH > (sizeof(sock_queue[0]) << 3), "skbuff batch overflow");
 #endif
 
-	/* if no socket is open, drop the packet now */
+
+	/* if no socket is open drop the packet */
 
         if (pfq_get_sock_count() == 0) {
         	kfree_skb(skb);
@@ -251,10 +253,9 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
             skb_push(skb, skb->mac_len);
         }
 
-	/* get the cpu */
+	/* get garbage collector */
 
-        cpu = get_cpu();
-
+	cpu = get_cpu();
 	local = per_cpu_ptr(cpu_data, cpu);
 
 	gcollector = &local->gc;
@@ -266,7 +267,8 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 		if (printk_ratelimit())
 			printk(KERN_INFO "[PFQ] GC: memory exhausted!\n");
 		__sparse_inc(&global_stats.lost, cpu);
-		kfree_skb(skb);
+		pfq_kfree_skb_pool(skb, &local->rx_pool);
+        	put_cpu();
 		return 0;
 	}
 
@@ -307,18 +309,17 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 		PFQ_CB(skb)->monad      = &monad;
 	}
 
-
         /* process all groups enabled for this batch of packets */
 
 	pfq_bitwise_foreach(group_mask, bit,
 	{
 		int gid = pfq_ctz(bit);
+
 		struct pfq_group * this_group = pfq_get_group(gid);
 
 		bool bf_filter_enabled = atomic_long_read(&this_group->bp_filter);
 		bool vlan_filter_enabled = __pfq_vlan_filters_enabled(gid);
-
-		struct gc_queue_buff pktref = { len:0 };
+		struct gc_queue_buff refs = { len:0 };
 
 		socket_mask = 0;
 
@@ -332,9 +333,9 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 			if (n == this_batch_len)
 				break;
 
-			/* skip this packet for this group */
+			/* skip this packet for this group ? */
 
-			if (unlikely((PFQ_CB(buff.skb)->group_mask & bit) == 0))
+			if ((PFQ_CB(buff.skb)->group_mask & bit) == 0)
 				continue;
 
 			/* increment recv counter for this group */
@@ -391,12 +392,12 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 
 				/* save a reference of the current packet */
 
-				pktref.queue[pktref.len++] = buff;
-
 				if (buff.skb == NULL) {
                                 	__sparse_inc(&this_group->stats.drop, cpu);
 					continue;
 				}
+
+				refs.queue[refs.len++] = buff;
 
 				/* update stats */
 
@@ -405,13 +406,10 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 
 				/* skip the packet? */
 
-				if (unlikely(is_drop(monad.fanout))) {
+				if (is_drop(monad.fanout)) {
                                 	__sparse_inc(&this_group->stats.drop, cpu);
                                 	continue;
 				}
-
-				/* process output... */
-
 
 				/* compute the eligible mask of sockets enabled for this packet... */
 
@@ -426,7 +424,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 
 					/* cache the number of sockets in the mask */
 
-					if (unlikely(eligible_mask != local->eligible_mask)) {
+					if (eligible_mask != local->eligible_mask) {
 
 						unsigned long ebit;
 
@@ -449,13 +447,14 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 					sock_mask |= eligible_mask;
 				}
 			}
-			else { /* save a reference of the current packet */
+			else { /* save a reference to the current packet */
 
-				pktref.queue[pktref.len++] = buff;
+				refs.queue[refs.len++] = buff;
 				sock_mask |= atomic_long_read(&this_group->sock_mask[0]);
 			}
 
 			mask_to_sock_queue(n, sock_mask, sock_queue);
+
 			socket_mask |= sock_mask;
 		}
 
@@ -466,24 +465,20 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 			int i = pfq_ctz(lb);
 			struct pfq_sock * so = pfq_get_sock_by_id(i);
 
-			copy_to_endpoint_gcbs(so, &pktref, sock_queue[i], cpu, gid);
+			copy_to_endpoint_buffs(so, &refs, sock_queue[i], cpu, gid);
 		})
 	})
+
 
 	/* forward skbs to kernel */
 
 	for_each_skbuff(SKBUFF_BATCH_ADDR(gcollector->pool), skb, n)
 	{
-		struct pfq_cb *cb;
-		bool to_kernel;
-
-		cb = PFQ_CB(skb);
-
-		to_kernel = cb->direct && fwd_to_kernel(skb);
+		struct pfq_cb *cb = PFQ_CB(skb);
 
 		/* send a copy of this skb to the kernel */
 
-		if (to_kernel) {
+		if (cb->direct && fwd_to_kernel(skb)) {
 
 			skb = cb->log->num_devs > 0 ?
 				skb_clone(skb, GFP_ATOMIC) : skb_get(skb);
@@ -502,27 +497,25 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 
 	/* forward skbs to network devices */
 
+	gc_get_fwd_targets(gcollector, &targets);
+
+	if (targets.cnt_total)
 	{
- 		struct gc_fwd_targets targets;
-               	size_t total;
-
-		gc_get_fwd_targets(gcollector, &targets);
-
-		total = pfq_lazy_xmit_exec(gcollector, &targets);
+		size_t total = pfq_lazy_xmit_exec(gcollector, &targets);
 
 		__sparse_add(&global_stats.frwd, total, cpu);
 		__sparse_add(&global_stats.disc, targets.cnt_total - total, cpu);
 	}
 
-	/* reset GC, free skbs */
+
+	/* free skbs */
 
 	for_each_skbuff(SKBUFF_BATCH_ADDR(gcollector->pool), skb, n)
 	{
-		if (PFQ_CB(skb)->direct)
-			pfq_kfree_skb_pool(skb, &local->rx_pool);
-		else
-			consume_skb(skb);
+		pfq_kfree_skb_pool(skb, &local->rx_pool);
 	}
+
+	/* reset the GC */
 
 	gc_reset(gcollector);
 
@@ -620,7 +613,6 @@ pfq_create(
 
         sk = sk_alloc(net, PF_INET, GFP_KERNEL, &pfq_proto);
         if (sk == NULL) {
-
                 printk(KERN_WARNING "[PFQ] error: could not allocate a socket\n");
                 return -ENOMEM;
         }
@@ -635,9 +627,8 @@ pfq_create(
 
         /* get a unique id for this sock */
 
-        so->id = pfq_get_free_sock_id(so);
+        so->id = pfq_get_free_id(so);
         if (so->id == -1) {
-
                 printk(KERN_WARNING "[PFQ] error: resource exhausted\n");
                 sk_free(sk);
                 return -EBUSY;
@@ -756,7 +747,6 @@ pfq_poll(struct file *file, struct socket *sock, poll_table * wait)
         return mask;
 }
 
-
 static
 int pfq_ioctl(struct socket *sock, unsigned int cmd, unsigned long arg)
 {
@@ -791,7 +781,6 @@ int pfq_ioctl(struct socket *sock, unsigned int cmd, unsigned long arg)
         return 0;
 }
 
-
 static
 void pfq_proto_ops_init(void)
 {
@@ -812,13 +801,13 @@ void pfq_proto_ops_init(void)
                 /* Now the operations that really occur. */
                 .release    = pfq_release,
                 .bind       = sock_no_bind,
-                .mmap       = pfq_mmap,             // pfq_mmap,
-                .poll       = pfq_poll,             // pfq_poll,
-                .setsockopt = pfq_setsockopt,       // pfq_setsockopt,
-                .getsockopt = pfq_getsockopt,       // pfq_getsockopt,
-                .ioctl      = pfq_ioctl,            // pfq_ioctl,
-                .recvmsg    = sock_no_recvmsg,      // pfq_recvmsg,
-                .sendmsg    = sock_no_sendmsg       // pfq_sendmsg,
+                .mmap       = pfq_mmap,
+                .poll       = pfq_poll,
+                .setsockopt = pfq_setsockopt,
+                .getsockopt = pfq_getsockopt,
+                .ioctl      = pfq_ioctl,
+                .recvmsg    = sock_no_recvmsg,
+                .sendmsg    = sock_no_sendmsg
         };
 }
 
@@ -885,17 +874,15 @@ static int __init pfq_init_module(void)
         }
 
 	if (skb_pool_size > PFQ_SK_BUFF_LIST_SIZE) {
-                printk(KERN_INFO "[PFQ] skb_pool_size=%d not allowed: valid range (0,%d]!\n", skb_pool_size, PFQ_SK_BUFF_LIST_SIZE);
+                printk(KERN_INFO "[PFQ] skb_pool_size=%d not allowed: valid range [0,%d]!\n", skb_pool_size, PFQ_SK_BUFF_LIST_SIZE);
 		return -EFAULT;
 	}
 
-	if (pfq_percpu_init()) {
+	if (pfq_percpu_init())
 		return -EFAULT;
-	}
 
-	if (pfq_proc_init()) {
+	if (pfq_proc_init())
 		return -ENOMEM;
-	}
 
         /* register pfq sniffer protocol */
         n = proto_register(&pfq_proto, 0);

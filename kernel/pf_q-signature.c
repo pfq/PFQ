@@ -246,47 +246,47 @@ pfq_signature_arg(string_view_t str, int index)
 }
 
 
+struct
+{
+	const char *symb;
+	size_t size;
+
+} static sizeof_table[] =
+{
+	{.symb = "Bool",    .size = sizeof(char)},
+	{.symb = "CChar",   .size = sizeof(char)},
+	{.symb = "CUChar",  .size = sizeof(unsigned char)},
+	{.symb = "CInt",    .size = sizeof(int)},
+	{.symb = "CUnt",    .size = sizeof(unsigned int)},
+	{.symb = "CShort",  .size = sizeof(short)},
+	{.symb = "CUShort", .size = sizeof(unsigned short)},
+	{.symb = "CLong",   .size = sizeof(long)},
+	{.symb = "CULong",  .size = sizeof(unsigned long)},
+	{.symb = "CLLong",  .size = sizeof(long long)},
+	{.symb = "CULLong", .size = sizeof(unsigned long long)},
+	{.symb = "CDouble", .size = sizeof(double)},
+	{.symb = "CSize",   .size = sizeof(size_t)},
+	{.symb = "Word8",   .size = sizeof(uint8_t)},
+	{.symb = "Word16",  .size = sizeof(uint16_t)},
+	{.symb = "Word32",  .size = sizeof(uint32_t)},
+	{.symb = "Word64",  .size = sizeof(uint64_t)},
+	{.symb = "String",  .size = 0},
+	{.symb = "Action",  .size = 0},
+	{.symb = "SkBuff",  .size = 0}
+};
+
+
 size_t
 pfq_signature_sizeof(string_view_t str)
 {
-	if (!string_view_compare(str, "Bool"))
-		return sizeof(bool);
-	if (!string_view_compare(str, "CChar"))
-		return sizeof(char);
-	if (!string_view_compare(str, "CUChar"))
-		return sizeof(unsigned char);
-	if (!string_view_compare(str, "CInt"))
-		return sizeof(int);
-	if (!string_view_compare(str, "CUnt"))
-		return sizeof(unsigned int);
-	if (!string_view_compare(str, "CShort"))
-		return sizeof(short);
-	if (!string_view_compare(str, "CUShort"))
-		return sizeof(unsigned short);
-	if (!string_view_compare(str, "CLong"))
-		return sizeof(long);
-	if (!string_view_compare(str, "CULong"))
-		return sizeof(unsigned long);
-	if (!string_view_compare(str, "CLLong"))
-		return sizeof(long long);
-	if (!string_view_compare(str, "CULLong"))
-		return sizeof(unsigned long long);
-	if (!string_view_compare(str, "CDouble"))
-		return sizeof(double);
-	if (!string_view_compare(str, "CSize"))
-		return sizeof(size_t);
-	if (!string_view_compare(str, "Word8"))
-		return sizeof(uint8_t);
-	if (!string_view_compare(str, "Word16"))
-		return sizeof(uint16_t);
-	if (!string_view_compare(str, "Word32"))
-		return sizeof(uint32_t);
-	if (!string_view_compare(str, "Word64"))
-		return sizeof(uint64_t);
-	if (!string_view_compare(str, "String"))
-		return 0;
-	if (!string_view_compare(str, "SkBuff"))
-		return 0;
+	size_t n;
+
+	for(n = 0; n < sizeof(sizeof_table)/sizeof(sizeof_table[0]); n++)
+	{
+       		if (!string_view_compare(str, sizeof_table[n].symb))
+       			return sizeof_table[n].size;
+	}
+
 	return -1;
 }
 

@@ -35,7 +35,6 @@ extern int direct_capture;
 
 extern int capture_incoming;
 extern int capture_outgoing;
-extern int capture_loopback;
 
 extern int max_queue_slots;
 

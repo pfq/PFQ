@@ -1,5 +1,5 @@
 --
--- Copyright (c) 2013 Bonelli Nicola <nicola.bonelli@antifork.org>
+-- Copyright (c) 2015 Nicola Bonelli <nicola@pfq.io>
 --
 -- This program is free software; you can redistribute it and/or modify
 -- it under the terms of the GNU General Public License as published by
@@ -52,13 +52,20 @@ reset = setSGRCode []
 version = "4.0"
 
 data YesNo = Yes | No
-    deriving (Show, Read, Eq, Data, Typeable)
+    deriving (Show, Read, Eq)
 
 newtype OptString = OptString { getOptString :: String }
-    deriving (Show, Read, Eq, Data, Typeable)
+    deriving (Show, Read, Eq)
+
+newtype OptList a = OptList { getOptList :: [a] }
+    deriving (Show, Read, Eq)
 
 instance Semigroup OptString where
     a <> OptString "" = a
+    _ <> b = b
+
+instance Semigroup (OptList a) where
+    a <> OptList [] = a
     _ <> b = b
 
 
@@ -108,7 +115,7 @@ instance Semigroup Config where
         } =
         Config {
             pfq_module   = getOptString $ OptString mod1  <> OptString mod2,
-            pfq_options  = opt1  <> opt2,
+            pfq_options  = getOptList   $ OptList opt1 <> OptList opt2,
             exclude_core = excl1 <> excl2,
             irq_affinity = algo1 <> algo2,
             drivers      = drvs1 <> drvs2
@@ -118,6 +125,7 @@ instance Semigroup Config where
 data Options = Options
     {
          config     :: Maybe String,
+         kmodule    :: String,
          algorithm  :: String,
          first_core :: Int,
          exclude    :: [Int],
@@ -129,7 +137,8 @@ data Options = Options
 options :: Mode (CmdArgs Options)
 options = cmdArgsMode $ Options
     {
-         config     = Nothing       &= typ "FILE" &= help "Specify configuration file (default ~/.pfq.conf)",
+         config     = Nothing       &= typ "FILE" &= help "Specify config file (default ~/.pfq.conf)",
+         kmodule    = ""            &= help "Override the kmodule specified in config file",
          queues     = Nothing       &= help "Specify hardware queues (i.e. Intel RSS)",
          algorithm  = ""            &= help "Irq affinity algorithm: naive, round-robin, even, odd, all-in:id, comb:id",
          first_core = 0             &= typ "NUM" &= help "First core used for irq affinity",
@@ -200,18 +209,18 @@ mkRssOption driver numdev queues =
 mkConfig :: Options -> Config
 mkConfig
     Options { config    = _,
+              kmodule   = mod,
               algorithm = algo,
               exclude   = excl,
-              others    = mod
+              others    = opt
             } =
     Config {
-        pfq_module    = if null mod || not (isModuleName (head mod)) then "" else head mod,
-        pfq_options   = [],
+        pfq_module    = mod,
+        pfq_options   = opt,
         exclude_core  = excl,
         irq_affinity  = [algo | not (null algo)],
         drivers       = []
     }
-    where isModuleName = (".ko" `isSuffixOf`)
 
 
 loadConfig :: FilePath -> Options -> IO Config
@@ -288,8 +297,10 @@ setupDevice (Device dev speed fctrl opts) = do
     forM_ opts $ \(opt, arg, value) ->
         runSystem ("/sbin/ethtool " ++ opt ++ " " ++ dev ++ " " ++ arg ++ " " ++ show value) "ethtool error!"
 
+
 getDevices ::  Config -> [String]
-getDevices conf = map devname (concatMap devices (drivers conf))
+getDevices conf =
+    map devname (concatMap devices (drivers conf))
 
 
 setupIRQAffinity :: Int -> [Int] -> [String] -> [String] -> IO ()

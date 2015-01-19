@@ -45,7 +45,7 @@ pfq_signature_by_user_symbol(const char __user *symb)
 
         symbol = strdup_user(symb);
         if (symbol == NULL) {
-                pr_devel("[PFQ] resolve_signature_by_symbol: strdup!\n");
+                pr_devel("[PFQ] pfq_signature_by_user_symbol: strdup!\n");
                 return NULL;
         }
 
@@ -344,7 +344,7 @@ pfq_check_computation_descr(struct pfq_computation_descr const *descr)
         size_t entry_point = descr->entry_point, n;
 
 	if (entry_point >= descr->size) {
-		pr_devel("[PFQ] %zu: entry_point: invalid function!\n", entry_point);
+		printk(KERN_INFO "[PFQ] %zu: entry_point: invalid function!\n", entry_point);
 		return -EPERM;
 	}
 
@@ -379,7 +379,7 @@ pfq_check_computation_descr(struct pfq_computation_descr const *descr)
 		if (n == entry_point || fun->next != -1 ) {  /* next != -1 means monadic function! */
 
 			if (!function_signature_match(fun, make_string_view("SkBuff -> Action SkBuff"), n)) {
-				pr_devel("[PFQ] %zu: %s: invalid signature!\n", n, signature);
+				printk(KERN_INFO "[PFQ] %zu: %s: invalid signature!\n", n, signature);
 				return -EPERM;
 			}
 		}
@@ -392,7 +392,7 @@ pfq_check_computation_descr(struct pfq_computation_descr const *descr)
 
 			if (fun->arg[i].nelem > 65536 &&
 			    fun->arg[i].nelem != -1) {
-				pr_devel("[PFQ] %zu: invalid argument (%d): number of array elements is %zu!\n", n, i, fun->arg[i].nelem);
+				printk(KERN_INFO "[PFQ] %zu: invalid argument (%d): number of array elements is %zu!\n", n, i, fun->arg[i].nelem);
 				return -EPERM;
 			}
 
@@ -400,19 +400,19 @@ pfq_check_computation_descr(struct pfq_computation_descr const *descr)
 				size_t x = fun->arg[i].size;
 
 				if (x >= descr->size) {
-					pr_devel("[PFQ] %zu: %s: invalid argument(%d): %zu!\n", n, signature, i, x);
+					printk(KERN_INFO "[PFQ] %zu: %s: invalid argument(%d): %zu!\n", n, signature, i, x);
 					return -EPERM;
 				}
 
 				if (!function_signature_match(&descr->fun[x], sarg, x)) {
-					pr_devel("[PFQ] %zu: %s: invalid argument(%d): expected signature " SVIEW_FMT "!\n", n, signature, i, SVIEW_ARG(sarg));
+					printk(KERN_INFO "[PFQ] %zu: %s: invalid argument(%d): expected signature " SVIEW_FMT "!\n", n, signature, i, SVIEW_ARG(sarg));
 					return -EPERM;
 				}
 				continue;
 			}
 
 			if (check_argument_descr(&fun->arg[i], sarg) != 0) {
-				pr_devel("[PFQ] %zu: invalid argument %d!\n", n, i);
+				printk(KERN_INFO "[PFQ] %zu: invalid argument %d!\n", n, i);
 				return -EPERM;
 			}
 		}
@@ -436,7 +436,7 @@ resolve_user_symbol(struct list_head *cat, const char __user *symb, const char *
 
         entry = pfq_symtable_search(cat, symbol);
         if (entry == NULL) {
-                printk(KERN_INFO "[PFQ] resolve_symbol: '%s' no such function!\n", symbol);
+                pr_devel("[PFQ] resolve_symbol: '%s' no such function!\n", symbol);
                 return NULL;
         }
 
@@ -557,7 +557,7 @@ pfq_computation_rtlink(struct pfq_computation_descr const *descr, struct pfq_com
 
 				char *str = pod_user(&context, fun->arg[i].addr, strlen_user(fun->arg[i].addr));
 				if (str == NULL) {
-					pr_devel("[PFQ] %zu: pod_user: internal error!\n", n);
+					printk(KERN_INFO "[PFQ] %zu: pod_user(1): internal error!\n", n);
 					return -EPERM;
 				}
 
@@ -576,7 +576,7 @@ pfq_computation_rtlink(struct pfq_computation_descr const *descr, struct pfq_com
 
 				str = pod_user(&context, fun->arg[i].addr, strlen_user(fun->arg[i].addr));
 				if (str == NULL) {
-					pr_devel("[PFQ] %zu: pod_user: internal error!\n", n);
+					printk(KERN_INFO "[PFQ] %zu: pod_user(2): internal error!\n", n);
 					return -EPERM;
 				}
 
@@ -600,7 +600,7 @@ pfq_computation_rtlink(struct pfq_computation_descr const *descr, struct pfq_com
 
 					char *ptr = pod_user(&context, fun->arg[i].addr, fun->arg[i].size);
 					if (ptr == NULL) {
-						pr_devel("[PFQ] %zu: pod_user(2): internal error!\n", n);
+						printk(KERN_INFO "[PFQ] %zu: pod_user(3): internal error!\n", n);
 						return -EPERM;
 					}
 
@@ -611,7 +611,7 @@ pfq_computation_rtlink(struct pfq_computation_descr const *descr, struct pfq_com
 					ptrdiff_t arg = 0;
 
 					if (copy_from_user(&arg, fun->arg[i].addr, fun->arg[i].size)) {
-						pr_devel("[PFQ] %zu: copy_from_user: internal error!\n", n);
+						printk(KERN_INFO "[PFQ] %zu: copy_from_user: internal error!\n", n);
 						return -EPERM;
 					}
 
@@ -626,7 +626,7 @@ pfq_computation_rtlink(struct pfq_computation_descr const *descr, struct pfq_com
 
 					char *ptr = pod_user(&context, fun->arg[i].addr, fun->arg[i].size * fun->arg[i].nelem);
 					if (ptr == NULL) {
-						pr_devel("[PFQ] %zu: pod_user(2): internal error!\n", n);
+						printk(KERN_INFO "[PFQ] %zu: pod_user(4): internal error!\n", n);
 						return -EPERM;
 					}
 
@@ -646,7 +646,7 @@ pfq_computation_rtlink(struct pfq_computation_descr const *descr, struct pfq_com
 			}
 			else if (!is_arg_null(&fun->arg[i])) {
 
-				pr_devel("[PFQ] pfq_computation_rtlink: internal error@ function:%zu argument[%zu] => { %p, %zu, %zu }!\n", n, i, (void __user *)fun->arg[i].addr, fun->arg[i].size, fun->arg[i].nelem);
+				printk(KERN_INFO "[PFQ] pfq_computation_rtlink: internal error@ function:%zu argument[%zu] => { %p, %zu, %zu }!\n", n, i, (void __user *)fun->arg[i].addr, fun->arg[i].size, fun->arg[i].nelem);
 				return -EPERM;
 			}
 		}

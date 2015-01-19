@@ -45,10 +45,8 @@ __pfq_group_access(int gid, int id, int policy, bool create)
 {
         struct pfq_group * g = pfq_get_group(gid);
 
-        if (!g) {
-                pr_devel("[PFQ] get_group: invalid group id %d!\n", gid);
+        if (!g)
                 return false;
-        }
 
         switch(g->policy)
         {
@@ -75,10 +73,8 @@ __pfq_group_init(int gid)
         struct pfq_group * g = pfq_get_group(gid);
         int i;
 
-        if (!g) {
-                pr_devel("[PFQ] get_group: invalid group id %d!\n", gid);
+        if (!g)
                 return;
-        }
 
 	g->pid = current->tgid;
         g->owner = -1;
@@ -116,10 +112,8 @@ __pfq_group_free(int gid)
         struct pfq_computation_tree *old_comp;
         void *old_ctx;
 
-        if (!g) {
-                pr_devel("[PFQ] get_group: invalid group id %d!\n", gid);
+        if (!g)
                 return;
-        }
 
         /* remove this gid from demux matrix */
 
@@ -147,7 +141,6 @@ __pfq_group_free(int gid)
         	pfq_free_sk_filter(filter);
 
         g->vlan_filt = false;
-
         pr_devel("[PFQ] group %d destroyed.\n", gid);
 }
 
@@ -159,10 +152,8 @@ __pfq_join_group(int gid, int id, unsigned long class_mask, int policy)
         unsigned long tmp = 0;
         unsigned long bit;
 
-        if (!g) {
-                pr_devel("[PFQ] get_group: invalid group id %d!\n", gid);
+        if (!g)
                 return -EINVAL;
-        }
 
 	/* if this group is unused, initializes it */
 
@@ -171,7 +162,7 @@ __pfq_join_group(int gid, int id, unsigned long class_mask, int policy)
 
         if (!__pfq_group_access(gid, id, policy, true)) {
                 pr_devel("[PFQ] gid=%d is not joinable with policy %d\n", gid, policy);
-                return -1;
+                return -EPERM;
         }
 
         pfq_bitwise_foreach(class_mask, bit,
@@ -201,13 +192,11 @@ __pfq_leave_group(int gid, int id)
         unsigned long tmp;
         int i;
 
-        if (!g) {
-                pr_devel("[PFQ] get_group: invalid group id %d!\n", gid);
+        if (!g)
                 return -EINVAL;
-        }
 
 	if (!g->pid)
-		return -1;
+		return -EPERM;
 
         for(i = 0; i < Q_CLASS_MAX; ++i)
         {
@@ -229,10 +218,8 @@ __pfq_get_all_groups_mask(int gid)
         unsigned long mask = 0;
         int i;
 
-        if (!g) {
-                pr_devel("[PFQ] get_group: invalid group id %d!\n", gid);
+        if (!g)
                 return mask;
-        }
 
         for(i = 0; i < Q_CLASS_MAX; ++i)
         {
@@ -248,7 +235,6 @@ void __pfq_set_group_filter(int gid, struct sk_filter *filter)
         struct sk_filter * old_filter;
 
         if (!g) {
-                pr_devel("[PFQ] get_group: invalid group id %d!\n", gid);
                 pfq_free_sk_filter(filter);
                 return;
         }
@@ -283,10 +269,8 @@ int pfq_set_group_prog(int gid, struct pfq_computation_tree *comp, void *ctx)
         struct pfq_computation_tree *old_comp;
         void *old_ctx;
 
-        if (!g) {
-                pr_devel("[PFQ] get_group: invalid group id %d!\n", gid);
+        if (!g)
                 return -EINVAL;
-        }
 
         down(&group_sem);
 
@@ -316,10 +300,8 @@ pfq_join_group(int gid, int id, unsigned long class_mask, int policy)
         struct pfq_group * g = pfq_get_group(gid);
         int ret;
 
-        if (!g) {
-                pr_devel("[PFQ] get_group: invalid group id %d!\n", gid);
+        if (!g)
                 return -EINVAL;
-        }
 
         down(&group_sem);
 
@@ -345,7 +327,7 @@ pfq_join_free_group(int id, unsigned long class_mask, int policy)
                 }
         }
         up(&group_sem);
-        return -1;
+        return -EPERM;
 }
 
 
@@ -355,10 +337,8 @@ pfq_leave_group(int gid, int id)
         struct pfq_group * g = pfq_get_group(gid);
         int ret;
 
-        if (!g) {
-                pr_devel("[PFQ] get_group: invalid group id %d!\n", gid);
+        if (!g)
                 return -EINVAL;
-        }
 
         down(&group_sem);
         ret = __pfq_leave_group(gid,id);
@@ -400,8 +380,10 @@ pfq_get_groups(int id)
 struct pfq_group *
 pfq_get_group(int gid)
 {
-        if (gid < 0 || gid >= Q_MAX_GROUP)
+        if (gid < 0 || gid >= Q_MAX_GROUP) {
+                pr_devel("[PFQ] get_group error: invalid group id %d!\n", gid);
                 return NULL;
+	}
 
         return &pfq_groups[gid];
 }
@@ -410,10 +392,8 @@ pfq_get_group(int gid)
 bool __pfq_vlan_filters_enabled(int gid)
 {
         struct pfq_group *g = pfq_get_group(gid);
-        if (!g) {
-                pr_devel("[PFQ] group error: invalid group id %d!\n", gid);
-                return false;
-        }
+        if (!g)
+        	return false;
         return g->vlan_filt;
 }
 
@@ -421,10 +401,8 @@ bool __pfq_vlan_filters_enabled(int gid)
 bool __pfq_check_group_vlan_filter(int gid, int vid)
 {
         struct pfq_group *g = pfq_get_group(gid);
-        if (!g) {
-                pr_devel("[PFQ] group error: invalid group id %d!\n", gid);
+        if (!g)
                 return false;
-        }
 
         return g->vid_filters[vid & 4095];
 }
@@ -433,10 +411,8 @@ bool __pfq_check_group_vlan_filter(int gid, int vid)
 bool __pfq_toggle_group_vlan_filters(int gid, bool value)
 {
         struct pfq_group *g = pfq_get_group(gid);
-        if (!g) {
-                pr_devel("[PFQ] group error: invalid group id %d!\n", gid);
+        if (!g)
                 return false;
-        }
 
         if (value)
                 memset(g->vid_filters, 0, 4096);
@@ -451,10 +427,8 @@ bool __pfq_toggle_group_vlan_filters(int gid, bool value)
 void __pfq_set_group_vlan_filter(int gid, bool value, int vid)
 {
         struct pfq_group *g = pfq_get_group(gid);
-        if (!g) {
-                pr_devel("[PFQ] group error: invalid group id %d!\n", gid);
+        if (!g)
                 return;
-        }
 
         g->vid_filters[vid & 4095] = value;
 }
@@ -464,7 +438,7 @@ void __pfq_set_group_vlan_filter(int gid, bool value, int vid)
 int pfq_check_group(int id, int gid, const char *msg)
 {
         if (gid < 0 || gid >= Q_MAX_GROUP) {
-                pr_devel("[PFQ|%d] %s error: invalid group (gid=%d)!\n", id, msg, gid);
+                printk(KERN_INFO "[PFQ|%d] %s error: invalid group (gid=%d)!\n", id, msg, gid);
                 return -EINVAL;
         }
         return 0;
@@ -481,13 +455,13 @@ int pfq_check_group_access(int id, int gid, const char *msg)
 		return err;
 
         if (!__pfq_has_joined_group(gid, id)) {
-                pr_devel("[PFQ|%d] %s error: permission denied (gid=%d)!\n", id, msg, gid);
+                printk(KERN_INFO "[PFQ|%d] %s error: permission denied (gid=%d)!\n", id, msg, gid);
                 return -EPERM;
         }
 
 	g = pfq_get_group(gid);
 	if (g == NULL || g->owner != id) {
-                pr_devel("[PFQ|%d] %s: invalid owner (id=%d)!\n", id, msg, g->owner);
+                printk(KERN_INFO "[PFQ|%d] %s: invalid owner (id=%d)!\n", id, msg, g->owner);
                 return -EACCES;
 	}
 	return 0;

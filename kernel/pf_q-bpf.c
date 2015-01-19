@@ -48,7 +48,7 @@ pfq_alloc_sk_filter(struct sock_fprog *fprog)
         pr_devel("[PFQ] BPF: new fprog (len %d)\n", fprog->len);
 
 	if ((rv = sk_attach_filter(fprog, &sk))) {
-		pr_devel("[PFQ] BPF: sk_attach_filter (%d)!\n", rv);
+		pr_devel("[PFQ] BPF: sk_attach_filter error: (%d)!\n", rv);
         	return NULL;
 	}
 
@@ -70,7 +70,7 @@ pfq_free_sk_filter(struct sk_filter *filter)
 #endif
 	sk.sk_filter = filter;
 	if ((rv = sk_detach_filter(&sk)))
-		pr_devel("[PFQ] BPF: sk_detach_filter (%d)!\n", rv);
+		pr_devel("[PFQ] BPF: sk_detach_filter error: (%d)!\n", rv);
 }
 
 

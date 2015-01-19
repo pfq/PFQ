@@ -71,8 +71,8 @@ struct gc_buff
 
 
 #define for_each_skbuff_bitmask(batch, mask, skb, n) \
-        for((n) = pfq_ctz(mask); (mask) && ((skb = (batch)->queue[n]), true); \
-                (mask) ^=(1UL << (n)), n = pfq_ctz(mask))
+        for((n) = pfq_ctz(mask); (mask) && (skb = (batch)->queue[n]); \
+                (mask) ^=(1ULL << (n)), n = pfq_ctz(mask))
 
 
 #endif /* PF_Q_SKBUFF_H */

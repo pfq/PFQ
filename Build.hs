@@ -45,25 +45,30 @@ script =
         Install   "pfq-haskell-lib"  *>>  into "user/Haskell/" [cabalInstall]   .|. [Build "pfq-haskell-lib"],
         Clean     "pfq-haskell-lib"  *>>  into "user/Haskell/" [cabalClean],
 
-        Configure "pfq-counters" *>>  into "user/Haskell/pfq-counters/" [cabalConfigure] .|. [Install   "pfq-haskell-lib"],
-        Build     "pfq-counters" *>>  into "user/Haskell/pfq-counters/" [cabalBuild]     .|. [Configure "pfq-counters"],
-        Install   "pfq-counters" *>>  into "user/Haskell/pfq-counters/" [cabalInstall]   .|. [Build     "pfq-counters"],
-        Clean     "pfq-counters" *>>  into "user/Haskell/pfq-counters/" [cabalClean],
+        Configure "pfq-counters-hs" *>>  into "user/Haskell/pfq-counters-hs/" [cabalConfigure] .|. [Install   "pfq-haskell-lib"],
+        Build     "pfq-counters-hs" *>>  into "user/Haskell/pfq-counters-hs/" [cabalBuild]     .|. [Configure "pfq-counters-hs"],
+        Install   "pfq-counters-hs" *>>  into "user/Haskell/pfq-counters-hs/" [cabalInstall]   .|. [Build     "pfq-counters-hs"],
+        Clean     "pfq-counters-hs" *>>  into "user/Haskell/pfq-counters-hs/" [cabalClean],
 
-        Configure "irq-affinity" *>>  into "script/irq-affinity/" [cabalConfigure] .|. [Install   "pfq-haskell-lib"],
-        Build     "irq-affinity" *>>  into "script/irq-affinity/" [cabalBuild]     .|. [Configure "irq-affinity"],
-        Install   "irq-affinity" *>>  into "script/irq-affinity/" [cabalInstall]   .|. [Build     "irq-affinity"],
-        Clean     "irq-affinity" *>>  into "script/irq-affinity/" [cabalClean],
+        Configure "irq-affinity" *>>  into "user/irq-affinity/" [cabalConfigure] .|. [Install   "pfq-haskell-lib"],
+        Build     "irq-affinity" *>>  into "user/irq-affinity/" [cabalBuild]     .|. [Configure "irq-affinity"],
+        Install   "irq-affinity" *>>  into "user/irq-affinity/" [cabalInstall]   .|. [Build     "irq-affinity"],
+        Clean     "irq-affinity" *>>  into "user/irq-affinity/" [cabalClean],
 
-        Configure "pfq-omatic"   *>>  into "script/pfq-omatic/" [cabalConfigure] .|. [Install   "pfq-haskell-lib"],
-        Build     "pfq-omatic"   *>>  into "script/pfq-omatic/" [cabalBuild]     .|. [Configure "pfq-omatic"],
-        Install   "pfq-omatic"   *>>  into "script/pfq-omatic/" [cabalInstall]   .|. [Build     "pfq-omatic"],
-        Clean     "pfq-omatic"   *>>  into "script/pfq-omatic/" [cabalClean],
+        Configure "pfq-omatic"   *>>  into "user/pfq-omatic/" [cabalConfigure] .|. [Install   "pfq-haskell-lib"],
+        Build     "pfq-omatic"   *>>  into "user/pfq-omatic/" [cabalBuild]     .|. [Configure "pfq-omatic"],
+        Install   "pfq-omatic"   *>>  into "user/pfq-omatic/" [cabalInstall]   .|. [Build     "pfq-omatic"],
+        Clean     "pfq-omatic"   *>>  into "user/pfq-omatic/" [cabalClean],
 
-        Configure "pfq-load"     *>>  into "script/pfq-load/" [cabalConfigure] .|. [Install   "irq-affinity"],
-        Build     "pfq-load"     *>>  into "script/pfq-load/" [cabalBuild]     .|. [Configure "pfq-load"],
-        Install   "pfq-load"     *>>  into "script/pfq-load/" [cabalInstall]   .|. [Build     "pfq-load"],
-        Clean     "pfq-load"     *>>  into "script/pfq-load/" [cabalClean],
+        Configure "pfq-load"     *>>  into "user/pfq-load/" [cabalConfigure] .|. [Install   "irq-affinity"],
+        Build     "pfq-load"     *>>  into "user/pfq-load/" [cabalBuild]     .|. [Configure "pfq-load"],
+        Install   "pfq-load"     *>>  into "user/pfq-load/" [cabalInstall]   .|. [Build     "pfq-load"],
+        Clean     "pfq-load"     *>>  into "user/pfq-load/" [cabalClean],
+
+        Configure "pfq-stress"  *>>  into "user/pfq-stress/" [cabalConfigure] .|. [Install   "irq-affinity", Install "pfq-load"],
+        Build     "pfq-stress"  *>>  into "user/pfq-stress/" [cabalBuild]     .|. [Configure "pfq-stress"],
+        Install   "pfq-stress"  *>>  into "user/pfq-stress/" [cabalInstall]   .|. [Build     "pfq-stress"],
+        Clean     "pfq-stress"  *>>  into "user/pfq-stress/" [cabalClean],
 
         Configure "pfqd"        *>>  into "user/pfqd/" [cabalConfigure] .|. [Install   "pfq-haskell-lib", Install "pfq.ko"],
         Build     "pfqd"        *>>  into "user/pfqd/" [cabalBuild]     .|. [Configure "pfqd"],
@@ -77,7 +82,7 @@ script =
 
         Configure "tool"        *>>  into "user/tool/" ["cmake ."]      .|. [Build "pfq-clib"],
         Build     "tool"        *>>  into "user/tool/" ["make -j" ++ show numberOfPhyCores] .|. [Configure "tool"],
-        Install   "tool"        *>>  into "user/tool/" [ ]              .|. [Build "tool"],
+        Install   "tool"        *>>  into "user/tool/" ["make install" ] .|. [Build "tool"],
         Clean     "tool"        *>>  into "user/tool/" ["make clean"]
    ]
 

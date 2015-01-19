@@ -1,32 +1,42 @@
 #include <iostream>
 
+#include <pfq/pfq.hpp>
 #include <pfq/lang/default.hpp>
-#include <pfq/lang/experimental.hpp>
 
 using namespace pfq::lang;
-using namespace pfq::lang::experimental;
+
+template <typename Comp>
+void
+check_computation(pfq::socket &q, Comp comp)
+{
+    auto gid = q.group_id();
+
+    std::cout << pretty(comp) << std::endl;
+
+    q.set_group_computation(gid, comp);
+}
+
 
 int
 main()
 {
+    pfq::socket q(128);
+
     // predicates and combinators:
 
-    std::cout << pretty ( is_tcp) << std::endl;
-    std::cout << pretty ( has_mark(42)) << std::endl;
-    std::cout << pretty ( is_ip  & is_tcp ) << std::endl;
-    std::cout << pretty ( is_udp | is_tcp ) << std::endl;
-    std::cout << pretty ( is_ip6 ^ has_mark(11) ) << std::endl;
-    std::cout << pretty ( is_ip & ( is_tcp | is_udp) ) << std::endl;
+    check_computation(q, filter(is_tcp));
+    check_computation(q, filter(has_mark(42)));
+    check_computation(q, filter(is_ip  & is_tcp ));
+    check_computation(q, filter(is_udp | is_tcp ));
+    check_computation(q, filter(is_ip6 ^ has_mark(11) ));
+    check_computation(q, filter(is_ip & ( is_tcp | is_udp) ));
 
     // computations:
 
-    std::cout << pretty ( ip >> udp >> steer_rtp >> inc(2) ) << std::endl;
-
-    std::cout << pretty ( when   (has_vid(1), ip >> steer_ip) ) << std::endl;
-    std::cout << pretty ( unless (is_ip, ip >> steer_ip) ) << std::endl;
-    std::cout << pretty ( conditional (is_ip, steer_ip, drop  ) ) << std::endl;
-
-    std::cout << pretty ( filter(is_ip) ) << std::endl;
+    check_computation(q, ip >> udp >> inc(2) );
+    check_computation(q, when   (has_vid(1), ip >> steer_ip) );
+    check_computation(q, unless (is_ip, ip >> steer_ip) );
+    check_computation(q, conditional (is_ip, steer_ip, drop  ) );
 
     return 0;
 }

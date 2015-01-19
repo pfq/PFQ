@@ -137,13 +137,10 @@ steering_net(arguments_t args, SkBuff b)
                         return Drop(b);
 
 		if ((ip->saddr & mask) == addr)
-		{
         		return Steering(b, __swab32(ntohl(ip->saddr & submask)));
-		}
+
 		if ((ip->daddr & mask) == addr)
-		{
         		return Steering(b, __swab32(ntohl(ip->daddr & submask)));
-		}
 	}
 
         return Drop(b);

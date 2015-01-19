@@ -36,30 +36,30 @@ static inline
 size_t copy_to_user_skbs(struct pfq_rx_opt *ro, struct pfq_skbuff_batch *skbs, unsigned long long mask, int cpu, int gid)
 {
         int len = pfq_popcount(mask);
-        size_t sent = 0;
+        size_t cpy = 0;
 
         if (likely(pfq_get_rx_queue_hdr(ro))) {
 
         	smp_rmb();
 
-                sent = pfq_mpdb_enqueue_batch(ro, skbs, mask, len, gid);
+                cpy = pfq_mpdb_enqueue_batch(ro, skbs, mask, len, gid);
 
-        	__sparse_add(&ro->stats.recv, sent, cpu);
+        	__sparse_add(&ro->stats.recv, cpy, cpu);
 
-		if (len > sent)
-			__sparse_add(&ro->stats.drop, len - sent, cpu);
+		if (len > cpy)
+			__sparse_add(&ro->stats.drop, len - cpy, cpu);
 
-		return sent;
+		return cpy;
         }
 	else
 		__sparse_add(&ro->stats.lost, len, cpu);
 
-        return sent;
+        return cpy;
 }
 
 
 static inline
-size_t copy_to_dev_gcbs(struct pfq_sock *so, struct gc_queue_buff *gcbs, unsigned long long mask, int cpu, int gid)
+size_t copy_to_dev_buffs(struct pfq_sock *so, struct gc_queue_buff *buffs, unsigned long long mask, int cpu, int gid)
 {
 	struct net_device *dev;
 	int sent;
@@ -73,7 +73,7 @@ size_t copy_to_dev_gcbs(struct pfq_sock *so, struct gc_queue_buff *gcbs, unsigne
                         return false;
 		}
 
- 		sent = pfq_queue_lazy_xmit_by_mask(gcbs, mask, dev, so->egress_queue);
+ 		sent = pfq_queue_lazy_xmit_by_mask(buffs, mask, dev, so->egress_queue);
 
                 dev_put(dev);
 		return sent;
@@ -83,7 +83,7 @@ size_t copy_to_dev_gcbs(struct pfq_sock *so, struct gc_queue_buff *gcbs, unsigne
 }
 
 
-size_t copy_to_endpoint_gcbs(struct pfq_sock *so, struct gc_queue_buff *pool, unsigned long long mask, int cpu, int gid)
+size_t copy_to_endpoint_buffs(struct pfq_sock *so, struct gc_queue_buff *pool, unsigned long long mask, int cpu, int gid)
 {
 	switch(so->egress_type)
 	{
@@ -91,7 +91,7 @@ size_t copy_to_endpoint_gcbs(struct pfq_sock *so, struct gc_queue_buff *pool, un
 		return copy_to_user_skbs(&so->rx_opt, SKBUFF_BATCH_ADDR(*pool), mask, cpu, gid);
 
 	case pfq_endpoint_device:
-		return copy_to_dev_gcbs(so, pool, mask, cpu, gid);
+		return copy_to_dev_buffs(so, pool, mask, cpu, gid);
 	}
 
 	return false;
