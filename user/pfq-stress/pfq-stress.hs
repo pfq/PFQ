@@ -92,15 +92,17 @@ main = do
 
     forM_ (zip [0..] pfqOptions) $ \(n, opt) ->
 
-        when (n `elem` filt) $ do
+        when (n `elem` (take 1024 filt)) $ do
 
-            putStrLn  [i| ${bold}[PFQ] Test #${n}${reset}: ${opt}|]
+            putChar '\n'
+
+            putStrLn  [i|${bold}[PFQ] ####### Test #${n}${reset}: ${opt}|]
+
+            unless (dryRun opts) $ threadDelay 3000000
 
             runSystem [i|${pfq_load} -q ${fst opt} ${unwords (snd opt)}|] "Could not load PFQ module!" ((not . dryRun) opts)
 
-            unless (dryRun opts) $ threadDelay 1000000
-
-            runSystem [i|${pfq_counters} --seconds ${seconds opts} -t ${core opts}.${gid opts}.${intercalate ":" (device opts)}|]
+            runSystem [i|${pfq_counters} --seconds ${seconds opts} -t ${gid opts}.${core opts}.${intercalate ":" (device opts)}|]
                       [i|"Could not run test# ${n} correctly!|] ((not . dryRun) opts)
 
     putStrLn $ bold ++ "[PFQ] Done." ++ reset
@@ -108,7 +110,6 @@ main = do
 
 bold  = setSGRCode [SetConsoleIntensity BoldIntensity]
 reset = setSGRCode []
-
 
 mkOption :: (Show a) => String -> a -> String
 mkOption opt x = opt ++ "=" ++ show x
