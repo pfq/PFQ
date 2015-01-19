@@ -314,11 +314,11 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 	pfq_bitwise_foreach(group_mask, bit,
 	{
 		int gid = pfq_ctz(bit);
+
 		struct pfq_group * this_group = pfq_get_group(gid);
 
 		bool bf_filter_enabled = atomic_long_read(&this_group->bp_filter);
 		bool vlan_filter_enabled = __pfq_vlan_filters_enabled(gid);
-
 		struct gc_queue_buff refs = { len:0 };
 
 		socket_mask = 0;
@@ -333,9 +333,9 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 			if (n == this_batch_len)
 				break;
 
-			/* skip this packet for this group */
+			/* skip this packet for this group ? */
 
-			if (unlikely((PFQ_CB(buff.skb)->group_mask & bit) == 0))
+			if ((PFQ_CB(buff.skb)->group_mask & bit) == 0)
 				continue;
 
 			/* increment recv counter for this group */
@@ -406,13 +406,10 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 
 				/* skip the packet? */
 
-				if (unlikely(is_drop(monad.fanout))) {
+				if (is_drop(monad.fanout)) {
                                 	__sparse_inc(&this_group->stats.drop, cpu);
                                 	continue;
 				}
-
-				/* process output... */
-
 
 				/* compute the eligible mask of sockets enabled for this packet... */
 
@@ -427,7 +424,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 
 					/* cache the number of sockets in the mask */
 
-					if (unlikely(eligible_mask != local->eligible_mask)) {
+					if (eligible_mask != local->eligible_mask) {
 
 						unsigned long ebit;
 
@@ -450,7 +447,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 					sock_mask |= eligible_mask;
 				}
 			}
-			else { /* save a reference of the current packet */
+			else { /* save a reference to the current packet */
 
 				refs.queue[refs.len++] = buff;
 				sock_mask |= atomic_long_read(&this_group->sock_mask[0]);
