@@ -222,6 +222,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 	BUILD_BUG_ON_MSG(Q_SKBUFF_SHORT_BATCH > (sizeof(sock_queue[0]) << 3), "skbuff batch overflow");
 #endif
 
+
 	/* if no socket is open drop the packet */
 
         if (pfq_get_sock_count() == 0) {
@@ -308,7 +309,6 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 		PFQ_CB(skb)->monad      = &monad;
 	}
 
-
         /* process all groups enabled for this batch of packets */
 
 	pfq_bitwise_foreach(group_mask, bit,
@@ -319,7 +319,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 		bool bf_filter_enabled = atomic_long_read(&this_group->bp_filter);
 		bool vlan_filter_enabled = __pfq_vlan_filters_enabled(gid);
 
-		struct gc_queue_buff pktref = { len:0 };
+		struct gc_queue_buff refs = { len:0 };
 
 		socket_mask = 0;
 
@@ -392,12 +392,12 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 
 				/* save a reference of the current packet */
 
-				pktref.queue[pktref.len++] = buff;
-
 				if (buff.skb == NULL) {
                                 	__sparse_inc(&this_group->stats.drop, cpu);
 					continue;
 				}
+
+				refs.queue[refs.len++] = buff;
 
 				/* update stats */
 
@@ -452,11 +452,12 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 			}
 			else { /* save a reference of the current packet */
 
-				pktref.queue[pktref.len++] = buff;
+				refs.queue[refs.len++] = buff;
 				sock_mask |= atomic_long_read(&this_group->sock_mask[0]);
 			}
 
 			mask_to_sock_queue(n, sock_mask, sock_queue);
+
 			socket_mask |= sock_mask;
 		}
 
@@ -467,9 +468,10 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 			int i = pfq_ctz(lb);
 			struct pfq_sock * so = pfq_get_sock_by_id(i);
 
-			copy_to_endpoint_gcbs(so, &pktref, sock_queue[i], cpu, gid);
+			copy_to_endpoint_buffs(so, &refs, sock_queue[i], cpu, gid);
 		})
 	})
+
 
 	/* forward skbs to kernel */
 
