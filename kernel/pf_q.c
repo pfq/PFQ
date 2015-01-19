@@ -515,10 +515,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 
 	for_each_skbuff(SKBUFF_BATCH_ADDR(gcollector->pool), skb, n)
 	{
-		if (PFQ_CB(skb)->direct)
-			pfq_kfree_skb_pool(skb, &local->rx_pool);
-		else
-			consume_skb(skb);
+		pfq_kfree_skb_pool(skb, &local->rx_pool);
 	}
 
 	/* reset the GC */

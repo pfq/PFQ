@@ -123,8 +123,9 @@ size_t pfq_mpdb_enqueue_batch(struct pfq_rx_opt *ro,
 				return 0;
 			}
 		}
-		else
+		else {
 			pfq_skb_copy_from_linear_data(skb, pkt, bytes);
+		}
 
                 /* copy mark from pfq_cb (annotation) */
 
