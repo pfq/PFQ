@@ -41,8 +41,8 @@ typedef struct gc_buff SkBuff;
 
 
 #define for_each_gcbuff_bitmask(batch, mask, buff, n) \
-        for(n = pfq_ctz(mask); mask && ((buff = (batch)->queue[n]), true); \
-                mask ^=(1UL << n), n = pfq_ctz(mask))
+        for(n = pfq_ctz(mask); mask && ((buff = (batch)->queue[n]), buff.skb); \
+                mask ^=(1ULL << n), n = pfq_ctz(mask))
 
 
 #define SKBUFF_BATCH_ADDR(batch) \
