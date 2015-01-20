@@ -89,7 +89,7 @@ tryPatch :: FilePath -> IO ()
 tryPatch file =
     readFile file >>= \c ->
         when (c =~ (regexFunCall "netif_rx" 1 ++ "|" ++ regexFunCall "netif_receive_skb" 1 ++ "|" ++ regexFunCall "napi_gro_receive" 2)) $
-            doesFileExist (file ++ ".orig") >>= \orig ->
+            doesFileExist (file ++ ".omatic") >>= \orig ->
                 if orig
                 then putStrLn $ "[PFQ] " ++ file ++ " is already patched :)"
                 else makePatch file
@@ -99,7 +99,7 @@ makePatch :: FilePath -> IO ()
 makePatch file = do
     putStrLn $ "[PFQ] patching " ++ file
     src <- readFile file
-    renameFile file $ file ++ ".orig"
+    renameFile file $ file ++ ".omatic"
     writeFile file $ "#include " ++ show pfq_kcompat ++ "\n" ++ src
 
 
