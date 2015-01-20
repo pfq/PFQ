@@ -78,6 +78,7 @@ namespace opt
     bool   async   = false;
     bool   rand_ip = false;
     char *packet   = nullptr;
+    double rate    = 0;
 
     std::string file;
     char errbuf[PCAP_ERRBUF_SIZE];
@@ -157,8 +158,19 @@ namespace thread
         {
             auto ip = reinterpret_cast<iphdr *>(opt::packet + 14);
 
-            for(;;)
+            auto delta = std::chrono::nanoseconds(static_cast<uint64_t>(1000/opt::rate));
+
+            auto now = std::chrono::system_clock::now();
+
+            for(size_t n = 0;;n++)
             {
+                if ((n & 8191) == 0)
+                {
+                    while (std::chrono::system_clock::now() < (now + delta*8192))
+                    {}
+                    now = std::chrono::system_clock::now();
+                }
+
                 if (opt::rand_ip)
                 {
                     ip->saddr = static_cast<uint32_t>(m_gen());
@@ -300,6 +312,7 @@ void usage(std::string name)
         " -a --async                    Async with kernel threads\n"
         " -r --read FILE                Read trace to send from pcap\n"
         " -R --rand-ip                  Randomize IP addresses\n"
+        "    --rate DOUBLE              Packet rate in Mpps\n"
         " -f --flush INT                Set flush len, used in async tx\n"
         " -t --thread BINDING\n\n"
         "      BINDING = " + pfq::binding_format
@@ -387,6 +400,17 @@ try
             continue;
         }
 
+        if ( any_strcmp(argv[i], "--rate") )
+        {
+            if (++i == argc)
+            {
+                throw std::runtime_error("rate missing");
+            }
+
+            opt::rate = atof(argv[i]);
+            continue;
+        }
+
         if ( any_strcmp(argv[i], "-?", "-h", "--help") )
             usage(argv[0]);
 
@@ -397,6 +421,8 @@ try
     std::cout << "async      : "  << std::boolalpha << opt::async << std::endl;
     std::cout << "rand_ip    : "  << std::boolalpha << opt::rand_ip << std::endl;
     std::cout << "len        : "  << opt::len << std::endl;
+    if (opt::rate != 0.0)
+        std::cout << "rate       : "  << opt::rate << " Mpps" << std::endl;
 
     if (!opt::async)
         std::cout << "flush-hint : "  << opt::flush << std::endl;
