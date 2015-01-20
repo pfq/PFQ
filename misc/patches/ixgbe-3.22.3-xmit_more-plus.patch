@@ -1,0 +1,37 @@
+diff --git a/src/ixgbe_main.c b/src/ixgbe_main.c
+index 8bca2b9..92a3798 100644
+--- a/src/ixgbe_main.c
++++ b/src/ixgbe_main.c
+@@ -8000,6 +8000,13 @@ static void ixgbe_tx_olinfo_status(union ixgbe_adv_tx_desc *tx_desc,
+ 	tx_desc->read.olinfo_status = cpu_to_le32(olinfo_status);
+ }
+ 
++
++static inline struct netdev_queue *txring_txq(const struct ixgbe_ring *ring)
++{
++        return netdev_get_tx_queue(ring->netdev, ring->queue_index);
++}
++
++
+ #define IXGBE_TXD_CMD (IXGBE_TXD_CMD_EOP | \
+ 		       IXGBE_TXD_CMD_RS)
+ 
+@@ -8123,8 +8130,16 @@ static void ixgbe_tx_map(struct ixgbe_ring *tx_ring,
+ 
+ 	tx_ring->next_to_use = i;
+ 
+-	/* notify HW of packet */
+-	ixgbe_write_tail(tx_ring, i);
++	if (netif_xmit_stopped(txring_txq(tx_ring)) ||
++#if(LINUX_VERSION_CODE >= KERNEL_VERSION(3,18,0))
++			!skb->xmit_more
++#else
++			!skb->mark
++#endif
++	) {
++		/* notify HW of packet */
++		ixgbe_write_tail(tx_ring, i);
++	}
+ 
+ 	/*
+ 	 * we need this if more than one processor can write to our tail
