@@ -42,7 +42,6 @@
 #include <sys/time.h>
 #include <unistd.h>
 #include <stdint.h>
-#include <errno.h>
 
 static inline void barrier() { asm volatile ("" ::: "memory"); }
 
@@ -199,7 +198,7 @@ static inline
 int pfq_spsc_write_index(struct pfq_tx_queue_hdr *q)
 {
         if (pfq_spsc_write_avail(q) == 0)
-                return -ENOMEM;
+                return -1;
 
         return (int)q->producer.index;
 }
@@ -242,7 +241,7 @@ static inline
 int pfq_spsc_read_index(struct pfq_tx_queue_hdr *q)
 {
         if (pfq_spsc_read_avail(q) == 0)
-                return -EINVAL;
+                return -1;
 
         return (int)q->consumer.index;
 }

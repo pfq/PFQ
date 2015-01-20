@@ -1334,7 +1334,7 @@ namespace pfq {
             auto tx = &static_cast<struct pfq_queue_hdr *>(data_->shm_addr)->tx[tss];
 
             int index = pfq_spsc_write_index(tx);
-            if (index == -1)
+            if (index < 0)
                 return false;
 
             auto hdr = reinterpret_cast<pfq_pkthdr_tx *>(
@@ -1349,7 +1349,6 @@ namespace pfq {
             memcpy(pkt, buf.first, hdr->len);
 
             pfq_spsc_write_commit(tx);
-
             return true;
         }
 

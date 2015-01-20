@@ -1055,7 +1055,7 @@ pfq_inject(pfq_t *q, const void *buf, size_t len, int queue)
         tx = (struct pfq_tx_queue_hdr *)&qh->tx[tss];
 
         index = pfq_spsc_write_index(tx);
-        if (index == -1)
+        if (index < 0)
 	        return Q_VALUE(q,-1);
 
         hdr = (struct pfq_pkthdr_tx *)(
