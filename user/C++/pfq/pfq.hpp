@@ -503,8 +503,8 @@ namespace pfq {
         {
             size_t tot_mem; socklen_t size = sizeof(tot_mem);
 
-            if (data()->shm_addr != 0 &&
-                data()->shm_addr != MAP_FAILED)
+            if (data()->shm_addr != MAP_FAILED && 
+                data()->shm_addr != nullptr )
                 throw pfq_error(errno, "PFQ: queue already enabled");
 
             if (::getsockopt(fd_, PF_Q, Q_SO_GET_SHMEM_SIZE, &tot_mem, &size) == -1)
@@ -514,7 +514,14 @@ namespace pfq {
             if (hd_ != -1)
                 data()->shm_addr = ::mmap(nullptr, tot_mem, PROT_READ|PROT_WRITE, MAP_SHARED, hd_, 0);
 
-            if (data()->shm_addr == MAP_FAILED)
+            if (data()->shm_addr != MAP_FAILED &&
+                data()->shm_addr != nullptr)
+            {
+                if(::setsockopt(fd_, PF_Q, Q_SO_ENABLE, &data()->shm_addr, sizeof(data()->shm_addr)) == -1) {
+                    throw pfq_error(errno, "PFQ: socket enable (hugepages)");
+                }
+            }
+            else
             {
                 void * null = nullptr;
                 if(::setsockopt(fd_, PF_Q, Q_SO_ENABLE, &null, sizeof(null)) == -1) {
@@ -523,15 +530,10 @@ namespace pfq {
 
                 data()->shm_addr = ::mmap(nullptr, tot_mem, PROT_READ|PROT_WRITE, MAP_SHARED, fd_, 0);
             }
-            else
-            {
-                if(::setsockopt(fd_, PF_Q, Q_SO_ENABLE, &data()->shm_addr, sizeof(data()->shm_addr)) == -1) {
-                    throw pfq_error(errno, "PFQ: socket enable");
-                }
-            }
 
-            if (data()->shm_addr == MAP_FAILED)
-                throw pfq_error(errno, "PFQ: socket enable (mmap)");
+            if (data()->shm_addr == MAP_FAILED ||
+                data()->shm_addr == nullptr)
+                throw pfq_error(errno, "PFQ: socket enable (memory map)");
 
             data()->shm_size = tot_mem;
 
@@ -1334,7 +1336,7 @@ namespace pfq {
             auto tx = &static_cast<struct pfq_queue_hdr *>(data_->shm_addr)->tx[tss];
 
             int index = pfq_spsc_write_index(tx);
-            if (index == -1)
+            if (index < 0)
                 return false;
 
             auto hdr = reinterpret_cast<pfq_pkthdr_tx *>(
@@ -1349,7 +1351,6 @@ namespace pfq {
             memcpy(pkt, buf.first, hdr->len);
 
             pfq_spsc_write_commit(tx);
-
             return true;
         }
 
