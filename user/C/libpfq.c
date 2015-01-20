@@ -314,8 +314,8 @@ pfq_enable(pfq_t *q)
 	size_t tot_mem; socklen_t size = sizeof(tot_mem);
 	char filename[64];
 
-	if (q->shm_addr != 0 &&
-	    q->shm_addr != MAP_FAILED) {
+	if (q->shm_addr != MAP_FAILED &&
+	    q->shm_addr != NULL) {
 		return Q_ERROR(q, "PFQ: queue already enabled");
 	}
 
@@ -329,8 +329,13 @@ pfq_enable(pfq_t *q)
 	if (q->hd != -1)
 		q->shm_addr = mmap(NULL, tot_mem, PROT_READ|PROT_WRITE, MAP_SHARED, q->hd, 0);
 
-
-	if (q->shm_addr == MAP_FAILED) {
+	if (q->shm_addr != MAP_FAILED &&
+	    q->shm_addr != NULL) {
+		if(setsockopt(q->fd, PF_Q, Q_SO_ENABLE, &q->shm_addr, sizeof(q->shm_addr)) == -1) {
+			return Q_ERROR(q, "PFQ: socket enable (hugepages)");
+		}
+	}
+	else {
         	void * null = NULL;
                 if(setsockopt(q->fd, PF_Q, Q_SO_ENABLE, &null, sizeof(null)) == -1) {
 			return Q_ERROR(q, "PFQ: socket enable");
@@ -338,14 +343,10 @@ pfq_enable(pfq_t *q)
 
                 q->shm_addr = mmap(NULL, tot_mem, PROT_READ|PROT_WRITE, MAP_SHARED, q->fd, 0);
 	}
-	else {
-		if(setsockopt(q->fd, PF_Q, Q_SO_ENABLE, &q->shm_addr, sizeof(q->shm_addr)) == -1) {
-			return Q_ERROR(q, "PFQ: socket enable");
-		}
-	}
 
-	if (q->shm_addr == MAP_FAILED) {
-		return Q_ERROR(q, "PFQ: socket enable (mmap)");
+	if (q->shm_addr == MAP_FAILED ||
+	    q->shm_addr == NULL) {
+		return Q_ERROR(q, "PFQ: socket enable (memory map)");
 	}
 
 	q->shm_size = tot_mem;
