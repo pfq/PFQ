@@ -875,8 +875,7 @@ pfq_activate_linux(pcap_t *handle)
                 	fprintf(stderr, "[PFQ] binding group %d on dev %s...\n", handle->opt.pfq.group, dev);
 
 			if (pfq_bind_group(handle->md.pfq.q, handle->opt.pfq.group, dev, queue) == -1) {
-				snprintf(handle->errbuf, PCAP_ERRBUF_SIZE, "%s", pfq_error(handle->md.pfq.q));
-				return PCAP_ERROR;
+                       	 	fprintf(stderr, "[PFQ] error: %s\n", pfq_error(handle->md.pfq.q));
 			}
 			return 0;
 		}
@@ -891,9 +890,7 @@ pfq_activate_linux(pcap_t *handle)
                 fprintf(stderr, "[PFQ] group = %d\n", handle->opt.pfq.group);
 
 		if (pfq_join_group(handle->md.pfq.q, handle->opt.pfq.group, Q_CLASS_DEFAULT, Q_POLICY_GROUP_SHARED) < 0) {
-
-			snprintf(handle->errbuf, PCAP_ERRBUF_SIZE, "%s", pfq_error(handle->md.pfq.q));
-			goto fail;
+                       	fprintf(stderr, "[PFQ] error: %s\n", pfq_error(handle->md.pfq.q));
 		}
 
 		/* bind to device(es) */
@@ -910,15 +907,13 @@ pfq_activate_linux(pcap_t *handle)
                 	fprintf(stderr, "[PFQ] binding socket on dev %s...\n", dev);
 
 			if (pfq_bind(handle->md.pfq.q, dev, queue) == -1) {
-				snprintf(handle->errbuf, PCAP_ERRBUF_SIZE, "%s", pfq_error(handle->md.pfq.q));
-				return PCAP_ERROR;
+                       		fprintf(stderr, "[PFQ] error: %s\n", pfq_error(handle->md.pfq.q));
 			}
 			return 0;
 		}
 
 		handle->md.pfq.q = pfq_open_group(Q_CLASS_DEFAULT, Q_POLICY_GROUP_SHARED, handle->opt.pfq.caplen, handle->opt.pfq.rx_slots, handle->opt.pfq.caplen, handle->opt.pfq.tx_slots);
 		if (handle->md.pfq.q == NULL) {
-
 			snprintf(handle->errbuf, PCAP_ERRBUF_SIZE, "%s", pfq_error(handle->md.pfq.q));
 			goto fail;
 		}
@@ -952,9 +947,7 @@ pfq_activate_linux(pcap_t *handle)
         		fprintf(stderr, "[PFQ] binding Tx on %s, hw queue %d, core %d\n", first_dev, handle->opt.pfq.tx_queue[idx], handle->opt.pfq.tx_task[idx]);
 
 			if (pfq_bind_tx(handle->md.pfq.q, first_dev, handle->opt.pfq.tx_queue[idx], handle->opt.pfq.tx_task[idx]) < 0) {
-				free(first_dev);
-				snprintf(handle->errbuf, PCAP_ERRBUF_SIZE, "%s", pfq_error(handle->md.pfq.q));
-				goto fail;
+                       		fprintf(stderr, "[PFQ] error: %s\n", pfq_error(handle->md.pfq.q));
 			}
 		}
 
@@ -970,8 +963,7 @@ pfq_activate_linux(pcap_t *handle)
 
 		if (pfq_set_group_computation_from_string(handle->md.pfq.q, handle->opt.pfq.group, handle->opt.pfq.comp) < 0) {
 
-			snprintf(handle->errbuf, PCAP_ERRBUF_SIZE, "%s", pfq_error(handle->md.pfq.q));
-			goto fail;
+                       	fprintf(stderr, "[PFQ] error: %s\n", pfq_error(handle->md.pfq.q));
 		}
 	}
 
@@ -981,8 +973,7 @@ pfq_activate_linux(pcap_t *handle)
 
                 if (pfq_vlan_filters_enable(handle->md.pfq.q, handle->opt.pfq.group, 1) < 0) {
 
-			snprintf(handle->errbuf, PCAP_ERRBUF_SIZE, "%s", pfq_error(handle->md.pfq.q));
-                	goto fail;
+                       	fprintf(stderr, "[PFQ] error: %s\n", pfq_error(handle->md.pfq.q));
                 }
 
 		int set_vlan_filter(const char *vid_)
@@ -992,9 +983,7 @@ pfq_activate_linux(pcap_t *handle)
                 	fprintf(stderr, "[PFQ] group %d setting vlan filer id=%d\n", handle->opt.pfq.group, vid);
 
 			if (pfq_vlan_set_filter(handle->md.pfq.q, handle->opt.pfq.group, vid)  == -1) {
-
-				snprintf(handle->errbuf, PCAP_ERRBUF_SIZE, "%s", pfq_error(handle->md.pfq.q));
-				return PCAP_ERROR;
+                       		fprintf(stderr, "[PFQ] error: %s\n", pfq_error(handle->md.pfq.q));
 			}
 			return 0;
 		}
@@ -1185,8 +1174,8 @@ pfq_read_linux(pcap_t *handle, int max_packets, pcap_handler callback, u_char *u
 static int
 pfq_setdirection_linux(pcap_t *handle, pcap_direction_t d)
 {
-	snprintf(handle->errbuf, sizeof(handle->errbuf), "Setting direction is not supported with PFQ enabled");
-	return PCAP_ERROR;
+        fprintf(stderr, "[PFQ] set direciton not support with PFQ.\n");
+	return 0;
 }
 
 
