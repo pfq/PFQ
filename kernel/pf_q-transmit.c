@@ -149,8 +149,35 @@ __pfq_queue_flush(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int
 	ptr = to->queue[idx].base_addr +
 	      	(index & 1) * txq->size * txq->slot_size;
 
-	for(n = 0; n < Q_SHARED_QUEUE_LEN(qdata); ++n)
+	for(n = 0; n < Q_SHARED_QUEUE_LEN(qdata);)
 	{
+		/* if complete transmit the batch */
+
+		if (pfq_skbuff_batch_len(SKBUFF_BATCH_ADDR(skbs)) == batch_len) {
+
+		 	int sent, i;
+
+		 	sent = __pfq_tx_queue_xmit(idx, SKBUFF_BATCH_ADDR(skbs), dev, to, cpu, local);
+
+		 	tot_sent += sent;
+
+		 	/* free/recycle the transmitted skb... */
+
+		 	for_each_skbuff_upto(sent, SKBUFF_BATCH_ADDR(skbs), skb, i)
+		 		pfq_kfree_skb_pool(skb, &local->tx_pool);
+
+		 	/* ... remove them from the batch */
+
+		 	pfq_skbuff_batch_drop_n(SKBUFF_BATCH_ADDR(skbs), sent);
+
+		 	/* reset the use_count of unsent skb */
+
+		 	for_each_skbuff(&skbs, skb, i)
+		 		skb_get(skb);
+
+		 	continue;
+		}
+
 		skb = pfq_tx_alloc_skb(1514, GFP_KERNEL, node);
 		if (unlikely(skb == NULL))
 			break;
@@ -185,33 +212,7 @@ __pfq_queue_flush(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int
 
 		pfq_skbuff_short_batch_push(SKBUFF_BATCH_ADDR(skbs), skb);
 
-		/* if complete transmit the batch */
-
-		if (pfq_skbuff_batch_len(SKBUFF_BATCH_ADDR(skbs)) == batch_len) {
-
-		 	int sent, i;
-
-		 	sent = __pfq_tx_queue_xmit(idx, SKBUFF_BATCH_ADDR(skbs), dev, to, cpu, local);
-
-		 	tot_sent += sent;
-
-		 	/* free/recycle the transmitted skb... */
-
-		 	for_each_skbuff_upto(sent, SKBUFF_BATCH_ADDR(skbs), skb, i)
-		 		pfq_kfree_skb_pool(skb, &local->tx_pool);
-
-		 	/* ... remove them from the batch */
-
-		 	pfq_skbuff_batch_drop_n(SKBUFF_BATCH_ADDR(skbs), sent);
-
-		 	/* reset the use_count of unsent skb */
-
-		 	for_each_skbuff(&skbs, skb, i)
-		 		skb_get(skb);
-
- 		 	if (need_resched())
-		 		schedule();
-		}
+		n++;
 	}
 
 	if (pfq_skbuff_batch_len(SKBUFF_BATCH_ADDR(skbs))) {
