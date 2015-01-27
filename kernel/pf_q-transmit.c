@@ -122,7 +122,7 @@ __pfq_queue_flush(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int
 	size_t len, tot_sent = 0;
 	struct sk_buff *skb;
 
-	int index, qdata, ndata, n;
+	unsigned int index, qdata, ndata, n;
 	char *ptr;
 
 	/* get the Tx queue */
@@ -149,23 +149,13 @@ __pfq_queue_flush(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int
 	ptr = to->queue[idx].base_addr +
 	      	(index & 1) * txq->size * txq->slot_size;
 
-	if (Q_SHARED_QUEUE_LEN(qdata) == 0)
-	{
- 		if (need_resched())
-			schedule();
-		else
-			cpu_relax();
-
-		return 0;
-	}
-
 	for(n = 0; n < Q_SHARED_QUEUE_LEN(qdata); ++n)
 	{
 		skb = pfq_tx_alloc_skb(1514, GFP_KERNEL, node);
 		if (unlikely(skb == NULL))
 			break;
 
-		hdr  = (struct pfq_pkthdr_tx *) ptr;
+		hdr = (struct pfq_pkthdr_tx *) ptr;
 
 		/* increment ptr to the next packet */
 
@@ -188,10 +178,7 @@ __pfq_queue_flush(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int
 
 		/* copy bytes in the socket buffer */
 
-		//
 		// skb_copy_to_linear_data(skb, hdr+1, len < 64 ? 64 : len);
-		//
-
 		skb_store_bits(skb, 0, hdr+1, len < 64 ? 64 : len);
 
 		/* enqueue the skb to the batch */
@@ -202,27 +189,29 @@ __pfq_queue_flush(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int
 
 		if (pfq_skbuff_batch_len(SKBUFF_BATCH_ADDR(skbs)) == batch_len) {
 
-			int sent, i;
+		 	int sent, i;
 
-			sent = __pfq_tx_queue_xmit(idx, SKBUFF_BATCH_ADDR(skbs), dev, to, cpu, local);
+		 	sent = __pfq_tx_queue_xmit(idx, SKBUFF_BATCH_ADDR(skbs), dev, to, cpu, local);
 
-			tot_sent += sent;
+		 	tot_sent += sent;
 
-			/* free/recycle the transmitted skb... */
+		 	/* free/recycle the transmitted skb... */
 
-			for_each_skbuff_upto(sent, SKBUFF_BATCH_ADDR(skbs), skb, i)
-				pfq_kfree_skb_pool(skb, &local->tx_pool);
+		 	for_each_skbuff_upto(sent, SKBUFF_BATCH_ADDR(skbs), skb, i)
+		 		pfq_kfree_skb_pool(skb, &local->tx_pool);
 
-			/* ... and drop them from the batch */
+		 	/* ... remove them from the batch */
 
-			pfq_skbuff_batch_drop_n(SKBUFF_BATCH_ADDR(skbs), sent);
+		 	pfq_skbuff_batch_drop_n(SKBUFF_BATCH_ADDR(skbs), sent);
 
-			/* reset the use_count of unsent skb */
+		 	/* reset the use_count of unsent skb */
 
-			for_each_skbuff(&skbs, skb, i)
-				skb_get(skb);
+		 	for_each_skbuff(&skbs, skb, i)
+		 		skb_get(skb);
+
+ 		 	if (need_resched())
+		 		schedule();
 		}
-
 	}
 
 	if (pfq_skbuff_batch_len(SKBUFF_BATCH_ADDR(skbs))) {

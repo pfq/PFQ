@@ -210,7 +210,8 @@ pfq_shared_queue_enable(struct pfq_sock *so, unsigned long user_addr)
                         queue->tx[n].ptr       = 0;
                         queue->tx[n].index     = -1;
 
-			so->tx_opt.queue[n].base_addr = so->shmem.addr + sizeof(struct pfq_shared_queue) + pfq_queue_mpsc_mem(so) + pfq_queue_spsc_mem(so) * n;
+			so->tx_opt.queue[n].base_addr = so->shmem.addr + sizeof(struct pfq_shared_queue)
+							+ pfq_queue_mpsc_mem(so) + pfq_queue_spsc_mem(so) * n;
 		}
 
 		/* update the queues base_addr */
@@ -240,6 +241,7 @@ pfq_shared_queue_enable(struct pfq_sock *so, unsigned long user_addr)
 				so->tx_opt.maxlen,
 				pfq_queue_spsc_mem(so) * Q_MAX_TX_QUEUES);
 	}
+
 	return 0;
 }
 
