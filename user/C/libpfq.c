@@ -258,7 +258,7 @@ pfq_open_group(unsigned long class_mask, int group_policy, size_t caplen, size_t
 		return __error = "PFQ: set Rx caplen error", free(q), NULL;
 	}
 
-	q->rx_slot_size = ALIGN(sizeof(struct pfq_pkthdr) + caplen, 64);
+	q->rx_slot_size = ALIGN(sizeof(struct pfq_pkthdr) + caplen, 8);
 
 	/* set Tx queue slots */
 	if (setsockopt(fd, PF_Q, Q_SO_SET_TX_SLOTS, &tx_slots, sizeof(tx_slots)) == -1) {
@@ -266,7 +266,7 @@ pfq_open_group(unsigned long class_mask, int group_policy, size_t caplen, size_t
 	}
 
 	q->tx_slots = tx_slots;
-	q->tx_slot_size = ALIGN(sizeof(struct pfq_pkthdr_tx) + maxlen, 64);
+	q->tx_slot_size = ALIGN(sizeof(struct pfq_pkthdr_tx) + maxlen, 8);
 
         /* set maxlen */
         if (setsockopt(fd, PF_Q, Q_SO_SET_TX_MAXLEN, &maxlen, sizeof(maxlen)) == -1)
@@ -478,7 +478,7 @@ pfq_set_caplen(pfq_t *q, size_t value)
 		return Q_ERROR(q, "PFQ: set caplen error");
 	}
 
-	q->rx_slot_size = ALIGN(sizeof(struct pfq_pkthdr) + value, 64);
+	q->rx_slot_size = ALIGN(sizeof(struct pfq_pkthdr) + value, 8);
 	return Q_OK(q);
 }
 
@@ -507,7 +507,7 @@ pfq_set_maxlen(pfq_t *q, size_t value)
 		return Q_ERROR(q, "PFQ: set maxlen error");
 	}
 
-	q->rx_slot_size = ALIGN(sizeof(struct pfq_pkthdr_tx) + value, 64);
+	q->rx_slot_size = ALIGN(sizeof(struct pfq_pkthdr_tx) + value, 8);
 	return Q_OK(q);
 }
 

@@ -453,7 +453,7 @@ namespace pfq {
             if (::setsockopt(fd_, PF_Q, Q_SO_SET_RX_CAPLEN, &caplen, sizeof(caplen)) == -1)
                 throw pfq_error(errno, "PFQ: set Rx caplen error");
 
-            data_->rx_slot_size = align<64>(sizeof(pfq_pkthdr) + caplen);
+            data_->rx_slot_size = align<8>(sizeof(pfq_pkthdr) + caplen);
 
             // set Tx queue slots
 
@@ -461,7 +461,7 @@ namespace pfq {
                 throw pfq_error(errno, "PFQ: set Tx slots error");
 
             data_->tx_slots = tx_slots;
-            data_->tx_slot_size = align<64>(sizeof(pfq_pkthdr_tx) + maxlen);
+            data_->tx_slot_size = align<8>(sizeof(pfq_pkthdr_tx) + maxlen);
 
             // set maxlen
 
@@ -623,7 +623,7 @@ namespace pfq {
                 throw pfq_error(errno, "PFQ: set caplen error");
             }
 
-            data()->rx_slot_size = align<64>(sizeof(pfq_pkthdr) + value);
+            data()->rx_slot_size = align<8>(sizeof(pfq_pkthdr) + value);
         }
 
         //! Return the capture length of packets, in bytes.
@@ -649,7 +649,7 @@ namespace pfq {
                 throw pfq_error(errno, "PFQ: set maxlen error");
             }
 
-            data()->rx_slot_size = align<64>(sizeof(pfq_pkthdr_tx) + value);
+            data()->rx_slot_size = align<8>(sizeof(pfq_pkthdr_tx) + value);
         }
 
         //! Return the max transmission length of packets, in bytes.
