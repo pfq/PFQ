@@ -1066,8 +1066,6 @@ pfq_inject(pfq_t *q, const void *buf, size_t len, int queue)
         	tx->ptr = base_addr;
 	}
 
-       	/* FIXME len < 1514 */
-
 	len = min(len, 1514ull);
 
 	slot_size = sizeof(struct pfq_pkthdr_tx) + ALIGN(len, 8);

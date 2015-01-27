@@ -1339,21 +1339,20 @@ namespace pfq {
 
 	        int index = Q_SHARED_QUEUE_INDEX(qdata);
 
-	        void * base_addr = static_cast<char *>(data_->tx_queue_addr) + data_->tx_queue_size * (2 * tss + (index & 1));
+	        void * base_addr = static_cast<char *>(data_->tx_queue_addr)
+	                            + data_->tx_queue_size * (2 * tss + (index & 1));
 
             if (index != tx->index) {
                     tx->index = index;
                     tx->ptr = base_addr;
             }
 
-            /* FIXME len < 1514 */
-
             size_t len = std::min(buf.second, 1514ul);
 
             auto slot_size = sizeof(struct pfq_pkthdr_tx) + align<8>(len);
 
-            if (static_cast<char *>(tx->ptr) - static_cast<char *>(base_addr)
-                    + slot_size < data_->tx_queue_size)
+
+            if ((static_cast<char *>(tx->ptr) - static_cast<char *>(base_addr) + slot_size) < data_->tx_queue_size)
             {
                 struct pfq_pkthdr_tx *hdr;
 
