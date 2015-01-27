@@ -351,10 +351,10 @@ pfq_enable(pfq_t *q)
 
 	q->shm_size = tot_mem;
 
-       	q->rx_queue_addr = (char *)(q->shm_addr) + sizeof(struct pfq_queue_hdr);
+       	q->rx_queue_addr = (char *)(q->shm_addr) + sizeof(struct pfq_shared_queue);
         q->rx_queue_size = q->rx_slots * q->rx_slot_size;
 
-        q->tx_queue_addr = (char *)(q->shm_addr) + sizeof(struct pfq_queue_hdr) + q->rx_queue_size * 2;
+        q->tx_queue_addr = (char *)(q->shm_addr) + sizeof(struct pfq_shared_queue) + q->rx_queue_size * 2;
         q->tx_queue_size = q->tx_slots * q->tx_slot_size;
 
         return Q_OK(q);
@@ -920,18 +920,18 @@ int pfq_vlan_reset_filter(pfq_t *q, int gid, int vid)
 int
 pfq_read(pfq_t *q, struct pfq_net_queue *nq, long int microseconds)
 {
-	struct pfq_queue_hdr * qd;
+	struct pfq_shared_queue * qd;
 	unsigned int index, data;
 
         if (q->shm_addr == NULL) {
          	return Q_ERROR(q, "PFQ: read: socket not enabled");
 	}
 
-	qd    = (struct pfq_queue_hdr *)(q->shm_addr);
+	qd    = (struct pfq_shared_queue *)(q->shm_addr);
 	data  = qd->rx.data;
-	index = MPDB_QUEUE_INDEX(data);
+	index = PFQ_SHARED_QUEUE_INDEX(data);
 
-	if( MPDB_QUEUE_LEN(data) == 0 ) {
+	if(PFQ_SHARED_QUEUE_LEN(data) == 0 ) {
 #ifdef PFQ_USE_POLL
 		if (pfq_poll(q, microseconds) < 0) {
         		return Q_ERROR(q, "PFQ: poll error");
@@ -945,7 +945,7 @@ pfq_read(pfq_t *q, struct pfq_net_queue *nq, long int microseconds)
 
 	data = __sync_lock_test_and_set(&qd->rx.data, ((index+1) << 24));
 
-	size_t queue_len = min(MPDB_QUEUE_LEN(data), q->rx_slots);
+	size_t queue_len = min(PFQ_SHARED_QUEUE_LEN(data), q->rx_slots);
 
 	nq->queue = (char *)(q->rx_queue_addr) + (index & 1) * q->rx_queue_size;
 	nq->index = index;
@@ -1036,8 +1036,8 @@ pfq_unbind_tx(pfq_t *q)
 int
 pfq_inject(pfq_t *q, const void *buf, size_t len, int queue)
 {
-        struct pfq_queue_hdr *qh = (struct pfq_queue_hdr *)(q->shm_addr);
-        struct pfq_tx_queue_hdr *tx;
+        struct pfq_shared_queue *qh = (struct pfq_shared_queue *)(q->shm_addr);
+        struct pfq_tx_queue *tx;
        	struct pfq_pkthdr_tx *hdr;
        	char *pkt;
         int index;
@@ -1053,7 +1053,7 @@ pfq_inject(pfq_t *q, const void *buf, size_t len, int queue)
         	tss = pfq_fold(queue,q->tx_num_bind);
 	}
 
-        tx = (struct pfq_tx_queue_hdr *)&qh->tx[tss];
+        tx = (struct pfq_tx_queue *)&qh->tx[tss];
 
         index = pfq_spsc_write_index(tx);
         if (index < 0)

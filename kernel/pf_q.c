@@ -738,7 +738,7 @@ pfq_poll(struct file *file, struct socket *sock, poll_table * wait)
 
 	poll_wait(file, &so->rx_opt.waitqueue, wait);
 
-        if(!pfq_get_rx_queue_hdr(&so->rx_opt))
+        if(!pfq_get_rx_queue(&so->rx_opt))
                 return mask;
 
         if (pfq_mpdb_queue_len(so) > 0)

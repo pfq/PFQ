@@ -194,7 +194,7 @@ pfq_shared_memory_free(struct pfq_shmem_descr *shmem)
 
 size_t pfq_total_queue_mem(struct pfq_sock *so)
 {
-        return sizeof(struct pfq_queue_hdr) + pfq_queue_mpdb_mem(so) * 2 +
+        return sizeof(struct pfq_shared_queue) + pfq_queue_mpdb_mem(so) * 2 +
         	pfq_queue_spsc_mem(so) * Q_MAX_TX_QUEUES;
 }
 

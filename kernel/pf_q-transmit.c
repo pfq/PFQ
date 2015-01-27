@@ -116,7 +116,7 @@ __pfq_queue_flush(size_t qidx, struct pfq_tx_opt *to, struct net_device *dev, in
 {
 	struct pfq_skbuff_short_batch skbs;
 
-	struct pfq_tx_queue_hdr *txq;
+	struct pfq_tx_queue *txq;
 	struct local_data *local;
 	struct pfq_pkthdr_tx * hdr;
 	struct sk_buff *skb;
@@ -126,7 +126,7 @@ __pfq_queue_flush(size_t qidx, struct pfq_tx_opt *to, struct net_device *dev, in
 
 	/* get the socket queue */
 
-	txq = pfq_get_tx_queue_hdr(to, qidx);
+	txq = pfq_get_tx_queue(to, qidx);
 
 	/* initialize the batch */
 
@@ -237,7 +237,7 @@ __pfq_queue_flush(size_t qidx, struct pfq_tx_opt *to, struct net_device *dev, in
 int
 pfq_queue_flush_or_wakeup(struct pfq_sock *so, int index)
 {
-	struct pfq_tx_queue_hdr *txq = pfq_get_tx_queue_hdr(&so->tx_opt, index);
+	struct pfq_tx_queue *txq = pfq_get_tx_queue(&so->tx_opt, index);
 	struct net_device *dev;
 
 	if (!pfq_spsc_read_avail(txq))

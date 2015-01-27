@@ -58,10 +58,10 @@ struct pfq_rx_opt
 
 
 static inline
-struct pfq_rx_queue_hdr *
-pfq_get_rx_queue_hdr(struct pfq_rx_opt *that)
+struct pfq_rx_queue *
+pfq_get_rx_queue(struct pfq_rx_opt *that)
 {
-	return (struct pfq_rx_queue_hdr *)atomic_long_read(&that->queue_hdr);
+	return (struct pfq_rx_queue *)atomic_long_read(&that->queue_hdr);
 }
 
 
@@ -126,10 +126,10 @@ struct pfq_tx_opt
 
 
 static inline
-struct pfq_tx_queue_hdr *
-pfq_get_tx_queue_hdr(struct pfq_tx_opt *that, int index)
+struct pfq_tx_queue *
+pfq_get_tx_queue(struct pfq_tx_opt *that, int index)
 {
-	return (struct pfq_tx_queue_hdr *)atomic_long_read(&that->queue[index].queue_hdr);
+	return (struct pfq_tx_queue *)atomic_long_read(&that->queue[index].queue_hdr);
 }
 
 
@@ -181,10 +181,10 @@ struct pfq_sock
 
 
 static inline
-struct pfq_queue_hdr *
+struct pfq_shared_queue *
 pfq_get_queue_hdr(struct pfq_sock *p)
 {
-        return (struct pfq_queue_hdr *) p->shmem.addr;
+        return (struct pfq_shared_queue *) p->shmem.addr;
 }
 
 

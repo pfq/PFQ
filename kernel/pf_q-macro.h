@@ -50,5 +50,6 @@
 
 
 #define Q_MAX_CPU               256
+#define Q_MAX_PERSISTENT 	1024
 
 #endif /* PF_Q_MACRO_H */

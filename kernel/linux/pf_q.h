@@ -69,14 +69,60 @@ static inline void smp_wmb() { barrier(); }
 
 #endif /* __KERNEL__ */
 
-#define Q_MAX_COUNTERS           	64
-#define Q_MAX_PERSISTENT 		1024
+
+#define PF_Q    			27     /* packet queue domain */
+
+#define Q_MAX_COUNTERS          	64
 #define Q_MAX_TX_QUEUES 		4
 
+#define PFQ_SHARED_QUEUE_INDEX(data)   	(((data) & 0xff000000U) >> 24)
+#define PFQ_SHARED_QUEUE_LEN(data)     	((data) & 0x00ffffffU)
 
-/* Common header */
+#define PFQ_MPDB_QUEUE_SLOT_SIZE(x)    	ALIGN(sizeof(struct pfq_pkthdr) + x, 8)
+#define PFQ_SPSC_QUEUE_SLOT_SIZE(x)    	ALIGN(sizeof(struct pfq_pkthdr_tx) + x, 8)
 
-#define PF_Q    27          /* packet q domain */
+
+/* PFQ socket queue */
+
+struct pfq_rx_queue
+{
+        volatile unsigned int   data;
+        unsigned int            size;       /* number of slots */
+        unsigned int            slot_size;  /* sizeof(pfq_pkthdr) + max_len + sizeof(skb_shinfo) */
+
+} __attribute__((aligned(64)));
+
+
+struct pfq_tx_queue
+{
+        struct
+        {
+                volatile unsigned int index;
+                unsigned int cache;
+        } producer __attribute__((aligned(64)));
+
+        struct
+        {
+                volatile unsigned int index;
+                unsigned int cache;
+        } consumer __attribute__((aligned(64)));
+
+        unsigned int size_mask;        /* number of slots */
+        unsigned int max_len;          /* max length of packet */
+        unsigned int size;             /* number of slots (power of two) */
+        unsigned int slot_size;        /* sizeof(pfq_pkthdr) + max_len + sizeof(skb_shinfo) */
+
+} __attribute__((aligned(64)));
+
+
+struct pfq_shared_queue
+{
+        struct pfq_rx_queue rx;
+        struct pfq_tx_queue tx[Q_MAX_TX_QUEUES];
+};
+
+
+/* packet headers */
 
 struct pfq_pkthdr
 {
@@ -112,8 +158,7 @@ struct pfq_pkthdr
         uint8_t     hw_queue;   /* 256 queues per device */
         uint8_t     commit;
 
-}; /* __attribute__((packed)); */
-
+} __attribute__((packed));
 
 
 struct pfq_pkthdr_tx
@@ -123,58 +168,8 @@ struct pfq_pkthdr_tx
 };
 
 
-struct pfq_tx_queue_hdr
-{
-        struct
-        {
-                volatile unsigned int index;
-                unsigned int cache;
-        } producer __attribute__((aligned(64)));
-
-        struct
-        {
-                volatile unsigned int index;
-                unsigned int cache;
-        } consumer __attribute__((aligned(64)));
-
-        unsigned int size_mask;        /* number of slots */
-        unsigned int max_len;          /* max length of packet */
-        unsigned int size;             /* number of slots (power of two) */
-        unsigned int slot_size;        /* sizeof(pfq_pkthdr) + max_len + sizeof(skb_shinfo) */
-
-} __attribute__((aligned(64)));
-
-
-struct pfq_rx_queue_hdr
-{
-        volatile unsigned int   data;
-        unsigned int            size;       /* number of slots */
-        unsigned int            slot_size;  /* sizeof(pfq_pkthdr) + max_len + sizeof(skb_shinfo) */
-
-} __attribute__((aligned(64)));
-
-
-#define MPDB_QUEUE_INDEX(data)     (((data) & 0xff000000U) >> 24)
-#define MPDB_QUEUE_LEN(data)       ((data) & 0x00ffffffU)
-
-
-/* Queues Headers */
-
-struct pfq_queue_hdr
-{
-        struct pfq_rx_queue_hdr rx;
-        struct pfq_tx_queue_hdr tx[Q_MAX_TX_QUEUES];
-};
-
-
-/* slots size... */
-
-#define MPDB_QUEUE_SLOT_SIZE(x)    ALIGN(sizeof(struct pfq_pkthdr) + x, 64)
-#define SPSC_QUEUE_SLOT_SIZE(x)    ALIGN(sizeof(struct pfq_pkthdr_tx) + x, 64)
-
-
 static inline
-unsigned int pfq_spsc_next_index(struct pfq_tx_queue_hdr *q, unsigned int n)
+unsigned int pfq_spsc_next_index(struct pfq_tx_queue *q, unsigned int n)
 {
         return (n + 1) & q->size_mask;
 }
@@ -183,7 +178,7 @@ unsigned int pfq_spsc_next_index(struct pfq_tx_queue_hdr *q, unsigned int n)
 /* producer */
 
 static inline
-int pfq_spsc_write_avail(struct pfq_tx_queue_hdr *q)
+int pfq_spsc_write_avail(struct pfq_tx_queue *q)
 {
         if (unlikely(q->producer.cache == 0)) {
                 /* consumer - producer - 1 + size */
@@ -195,7 +190,7 @@ int pfq_spsc_write_avail(struct pfq_tx_queue_hdr *q)
 
 
 static inline
-int pfq_spsc_write_index(struct pfq_tx_queue_hdr *q)
+int pfq_spsc_write_index(struct pfq_tx_queue *q)
 {
         if (pfq_spsc_write_avail(q) == 0)
                 return -1;
@@ -205,7 +200,7 @@ int pfq_spsc_write_index(struct pfq_tx_queue_hdr *q)
 
 
 static inline
-void pfq_spsc_write_commit_n(struct pfq_tx_queue_hdr *q, unsigned int n)
+void pfq_spsc_write_commit_n(struct pfq_tx_queue *q, unsigned int n)
 {
         smp_wmb();
 
@@ -220,7 +215,7 @@ void pfq_spsc_write_commit_n(struct pfq_tx_queue_hdr *q, unsigned int n)
 
 
 static inline
-void pfq_spsc_write_commit(struct pfq_tx_queue_hdr *q)
+void pfq_spsc_write_commit(struct pfq_tx_queue *q)
 {
         pfq_spsc_write_commit_n(q,1);
 }
@@ -228,7 +223,7 @@ void pfq_spsc_write_commit(struct pfq_tx_queue_hdr *q)
 /* consumer */
 
 static inline
-int pfq_spsc_read_avail(struct pfq_tx_queue_hdr *q)
+int pfq_spsc_read_avail(struct pfq_tx_queue *q)
 {
         if(unlikely(q->consumer.cache == 0))
                 q->consumer.cache = (q->producer.index - q->consumer.index + q->size) & q->size_mask;
@@ -238,7 +233,7 @@ int pfq_spsc_read_avail(struct pfq_tx_queue_hdr *q)
 
 
 static inline
-int pfq_spsc_read_index(struct pfq_tx_queue_hdr *q)
+int pfq_spsc_read_index(struct pfq_tx_queue *q)
 {
         if (pfq_spsc_read_avail(q) == 0)
                 return -1;
@@ -248,7 +243,7 @@ int pfq_spsc_read_index(struct pfq_tx_queue_hdr *q)
 
 
 static inline
-void pfq_spsc_read_commit_n(struct pfq_tx_queue_hdr *q, unsigned int n)
+void pfq_spsc_read_commit_n(struct pfq_tx_queue *q, unsigned int n)
 {
         smp_wmb();
 
@@ -263,7 +258,7 @@ void pfq_spsc_read_commit_n(struct pfq_tx_queue_hdr *q, unsigned int n)
 
 
 static inline
-void pfq_spsc_read_commit(struct pfq_tx_queue_hdr *q)
+void pfq_spsc_read_commit(struct pfq_tx_queue *q)
 {
         pfq_spsc_read_commit_n(q,1);
 }

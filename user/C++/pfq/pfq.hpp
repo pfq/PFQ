@@ -503,7 +503,7 @@ namespace pfq {
         {
             size_t tot_mem; socklen_t size = sizeof(tot_mem);
 
-            if (data()->shm_addr != MAP_FAILED && 
+            if (data()->shm_addr != MAP_FAILED &&
                 data()->shm_addr != nullptr )
                 throw pfq_error(errno, "PFQ: queue already enabled");
 
@@ -537,10 +537,10 @@ namespace pfq {
 
             data()->shm_size = tot_mem;
 
-            data()->rx_queue_addr = static_cast<char *>(data()->shm_addr) + sizeof(pfq_queue_hdr);
+            data()->rx_queue_addr = static_cast<char *>(data()->shm_addr) + sizeof(pfq_shared_queue);
             data()->rx_queue_size = data()->rx_slots * data()->rx_slot_size;
 
-            data()->tx_queue_addr = static_cast<char *>(data()->shm_addr) + sizeof(pfq_queue_hdr) + data()->rx_queue_size * 2;
+            data()->tx_queue_addr = static_cast<char *>(data()->shm_addr) + sizeof(pfq_shared_queue) + data()->rx_queue_size * 2;
             data()->tx_queue_size = data()->tx_slots * data()->tx_slot_size;
         }
 
@@ -1087,12 +1087,12 @@ namespace pfq {
             if (!data()->shm_addr)
                 throw pfq_error("PFQ: read: socket not enabled");
 
-            auto q = static_cast<struct pfq_queue_hdr *>(data()->shm_addr);
+            auto q = static_cast<struct pfq_shared_queue *>(data()->shm_addr);
 
             size_t data = q->rx.data;
-            size_t index = MPDB_QUEUE_INDEX(data);
+            size_t index = PFQ_SHARED_QUEUE_INDEX(data);
 
-            if( MPDB_QUEUE_LEN(data) == 0 ) {
+            if( PFQ_SHARED_QUEUE_LEN(data) == 0 ) {
 #ifdef PFQ_USE_POLL
                 this->poll(microseconds);
 #else
@@ -1104,7 +1104,7 @@ namespace pfq {
 
             data = __sync_lock_test_and_set(&q->rx.data, (unsigned int)((index+1) << 24));
 
-            auto queue_len = std::min(static_cast<size_t>(MPDB_QUEUE_LEN(data)), data_->rx_slots);
+            auto queue_len = std::min(static_cast<size_t>(PFQ_SHARED_QUEUE_LEN(data)), data_->rx_slots);
 
             return queue(static_cast<char *>(data_->rx_queue_addr) + (index & 1) * data_->rx_queue_size,
                          data_->rx_slot_size, queue_len, index);
@@ -1115,8 +1115,8 @@ namespace pfq {
         uint8_t
         current_commit() const
         {
-            auto q = static_cast<struct pfq_queue_hdr *>(data_->shm_addr);
-            return MPDB_QUEUE_INDEX(q->rx.data);
+            auto q = static_cast<struct pfq_shared_queue *>(data_->shm_addr);
+            return PFQ_SHARED_QUEUE_INDEX(q->rx.data);
         }
 
         //! Receive packets in the given mutable buffer.
@@ -1333,7 +1333,7 @@ namespace pfq {
                 return fold(queue, data_->tx_num_bind);
             }();
 
-            auto tx = &static_cast<struct pfq_queue_hdr *>(data_->shm_addr)->tx[tss];
+            auto tx = &static_cast<struct pfq_shared_queue *>(data_->shm_addr)->tx[tss];
 
             int index = pfq_spsc_write_index(tx);
             if (index < 0)

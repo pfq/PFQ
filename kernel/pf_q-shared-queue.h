@@ -58,20 +58,20 @@ static inline size_t pfq_queue_spsc_mem(struct pfq_sock *so)
 static inline
 size_t pfq_mpdb_queue_len(struct pfq_sock *p)
 {
-	struct pfq_queue_hdr *q = pfq_get_queue_hdr(p);
+	struct pfq_shared_queue *q = pfq_get_queue_hdr(p);
 	if (!q)
 		return 0;
-        return MPDB_QUEUE_LEN(q->rx.data);
+        return PFQ_SHARED_QUEUE_LEN(q->rx.data);
 }
 
 
 static inline
 int pfq_mpdb_queue_index(struct pfq_sock *p)
 {
-	struct pfq_queue_hdr *q = pfq_get_queue_hdr(p);
+	struct pfq_shared_queue *q = pfq_get_queue_hdr(p);
 	if (!q)
 		return 0;
-        return MPDB_QUEUE_INDEX(q->rx.data) & 1;
+        return PFQ_SHARED_QUEUE_INDEX(q->rx.data) & 1;
 }
 
 
