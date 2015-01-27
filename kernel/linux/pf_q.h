@@ -188,7 +188,7 @@ struct pfq_tx_queue
         unsigned int            size;       /* queue length in slots */
         unsigned int            slot_size;  /* sizeof(pfq_pkthdr_tx) + maxlen */
 
-	char __user * 		ptr; 	    /* reserved for user-space */
+	void __user * 		ptr; 	    /* reserved for user-space */
 	int  __user 		index;	    /* reserved for user-space */
 
 } __attribute__((aligned(64)));

@@ -1090,9 +1090,9 @@ namespace pfq {
             auto q = static_cast<struct pfq_shared_queue *>(data()->shm_addr);
 
             size_t data = q->rx.data;
-            size_t index = PFQ_SHARED_QUEUE_INDEX(data);
+            size_t index = Q_SHARED_QUEUE_INDEX(data);
 
-            if( PFQ_SHARED_QUEUE_LEN(data) == 0 ) {
+            if( Q_SHARED_QUEUE_LEN(data) == 0 ) {
 #ifdef PFQ_USE_POLL
                 this->poll(microseconds);
 #else
@@ -1104,7 +1104,7 @@ namespace pfq {
 
             data = __sync_lock_test_and_set(&q->rx.data, (unsigned int)((index+1) << 24));
 
-            auto queue_len = std::min(static_cast<size_t>(PFQ_SHARED_QUEUE_LEN(data)), data_->rx_slots);
+            auto queue_len = std::min(static_cast<size_t>(Q_SHARED_QUEUE_LEN(data)), data_->rx_slots);
 
             return queue(static_cast<char *>(data_->rx_queue_addr) + (index & 1) * data_->rx_queue_size,
                          data_->rx_slot_size, queue_len, index);
@@ -1116,7 +1116,7 @@ namespace pfq {
         current_commit() const
         {
             auto q = static_cast<struct pfq_shared_queue *>(data_->shm_addr);
-            return PFQ_SHARED_QUEUE_INDEX(q->rx.data);
+            return Q_SHARED_QUEUE_INDEX(q->rx.data);
         }
 
         //! Receive packets in the given mutable buffer.
@@ -1335,23 +1335,40 @@ namespace pfq {
 
             auto tx = &static_cast<struct pfq_shared_queue *>(data_->shm_addr)->tx[tss];
 
-            int index = pfq_spsc_write_index(tx);
-            if (index < 0)
-                return false;
+            unsigned int qdata = __atomic_load_n(&tx->data, __ATOMIC_RELAXED);
 
-            auto hdr = reinterpret_cast<pfq_pkthdr_tx *>(
-                        reinterpret_cast<char *>(data_->tx_queue_addr) +
-                            (data_->tx_slots * tss + static_cast<unsigned int>(index)) * tx->slot_size);
+	        int index = Q_SHARED_QUEUE_INDEX(qdata);
 
-            auto pkt = reinterpret_cast<char *>(hdr + 1);
+	        void * base_addr = static_cast<char *>(data_->tx_queue_addr) + data_->tx_queue_size * (2 * tss + (index & 1));
 
-            hdr->len = std::min(static_cast<const uint16_t>(buf.second),
-                                static_cast<const uint16_t>(tx->max_len));
+            if (index != tx->index) {
+                    tx->index = index;
+                    tx->ptr = base_addr;
+            }
 
-            memcpy(pkt, buf.first, hdr->len);
+            /* FIXME len < 1514 */
 
-            pfq_spsc_write_commit(tx);
-            return true;
+            size_t len = std::min(buf.second, 1514ul);
+
+            auto slot_size = sizeof(struct pfq_pkthdr_tx) + align<8>(len);
+
+            if (static_cast<char *>(tx->ptr) - static_cast<char *>(base_addr)
+                    + slot_size < data_->tx_queue_size)
+            {
+                struct pfq_pkthdr_tx *hdr;
+
+                hdr = (struct pfq_pkthdr_tx *)tx->ptr;
+                hdr->len = len;
+                memcpy(hdr+1, buf.first, hdr->len);
+
+                if (__atomic_compare_exchange_n(&tx->data, &qdata, qdata+1, 0, __ATOMIC_RELEASE, __ATOMIC_RELAXED))
+                {
+                    reinterpret_cast<char *&>(tx->ptr) += slot_size;
+                    return true;
+                }
+            }
+
+            return false;
         }
 
 

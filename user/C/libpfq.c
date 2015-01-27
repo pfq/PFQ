@@ -929,9 +929,9 @@ pfq_read(pfq_t *q, struct pfq_net_queue *nq, long int microseconds)
 
 	qd    = (struct pfq_shared_queue *)(q->shm_addr);
 	data  = qd->rx.data;
-	index = PFQ_SHARED_QUEUE_INDEX(data);
+	index = Q_SHARED_QUEUE_INDEX(data);
 
-	if(PFQ_SHARED_QUEUE_LEN(data) == 0 ) {
+	if(Q_SHARED_QUEUE_LEN(data) == 0 ) {
 #ifdef PFQ_USE_POLL
 		if (pfq_poll(q, microseconds) < 0) {
         		return Q_ERROR(q, "PFQ: poll error");
@@ -945,7 +945,7 @@ pfq_read(pfq_t *q, struct pfq_net_queue *nq, long int microseconds)
 
 	data = __sync_lock_test_and_set(&qd->rx.data, ((index+1) << 24));
 
-	size_t queue_len = min(PFQ_SHARED_QUEUE_LEN(data), q->rx_slots);
+	size_t queue_len = min(Q_SHARED_QUEUE_LEN(data), q->rx_slots);
 
 	nq->queue = (char *)(q->rx_queue_addr) + (index & 1) * q->rx_queue_size;
 	nq->index = index;
@@ -1036,12 +1036,12 @@ pfq_unbind_tx(pfq_t *q)
 int
 pfq_inject(pfq_t *q, const void *buf, size_t len, int queue)
 {
-        struct pfq_shared_queue *qh = (struct pfq_shared_queue *)(q->shm_addr);
+        struct pfq_shared_queue *sh_queue = (struct pfq_shared_queue *)(q->shm_addr);
         struct pfq_tx_queue *tx;
-       	struct pfq_pkthdr_tx *hdr;
-       	char *pkt;
-        int index;
-	int tss;
+       	unsigned int qdata;
+        size_t slot_size;
+        int tss, index;
+        void *base_addr;
 
 	if (q->shm_addr == NULL)
          	return Q_ERROR(q, "PFQ: inject: socket not enabled");
@@ -1053,25 +1053,41 @@ pfq_inject(pfq_t *q, const void *buf, size_t len, int queue)
         	tss = pfq_fold(queue,q->tx_num_bind);
 	}
 
-        tx = (struct pfq_tx_queue *)&qh->tx[tss];
+        tx = (struct pfq_tx_queue *)&sh_queue->tx[tss];
 
-        index = pfq_spsc_write_index(tx);
-        if (index < 0)
-	        return Q_VALUE(q,-1);
+        qdata = __atomic_load_n(&tx->data, __ATOMIC_RELAXED);
 
-        hdr = (struct pfq_pkthdr_tx *)(
-        		(char *)(q->tx_queue_addr) +
-        		(q->tx_slots * tss + index) * tx->slot_size);
+	index = Q_SHARED_QUEUE_INDEX(qdata);
 
-        pkt = (char *)(hdr + 1);
+	base_addr = q->tx_queue_addr + q->tx_queue_size * (2 * tss + (index & 1));
 
-	hdr->len = min((uint16_t)len, (uint16_t)(tx->max_len));
+	if (index != tx->index) {
+        	tx->index = index;
+        	tx->ptr = base_addr;
+	}
 
-        memcpy(pkt, buf, hdr->len);
+       	/* FIXME len < 1514 */
 
-        pfq_spsc_write_commit(tx);
+	len = min(len, 1514ull);
 
-        return Q_VALUE(q, len);
+	slot_size = sizeof(struct pfq_pkthdr_tx) + ALIGN(len, 8);
+
+	if (tx->ptr - base_addr + slot_size < q->tx_queue_size)
+	{
+       		struct pfq_pkthdr_tx *hdr;
+
+        	hdr = (struct pfq_pkthdr_tx *)tx->ptr;
+		hdr->len = len;
+		memcpy(hdr+1, buf, hdr->len);
+
+                if (__atomic_compare_exchange_n(&tx->data, &qdata, qdata+1, 0, __ATOMIC_RELEASE, __ATOMIC_RELAXED))
+                {
+                    tx->ptr += slot_size;
+                    return Q_VALUE(q, len);
+                }
+	}
+
+	return Q_VALUE(q, -1);
 }
 
 
