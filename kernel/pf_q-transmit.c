@@ -83,7 +83,7 @@ pfq_pick_tx(struct net_device *dev, struct sk_buff *skb, int *hw_queue)
 
 
 static inline int
-__pfq_tx_queue_xmit(size_t qidx, struct pfq_skbuff_batch *skbs, struct net_device *dev, struct pfq_tx_opt *to, int cpu, struct local_data *local)
+__pfq_tx_queue_xmit(size_t idx, struct pfq_skbuff_batch *skbs, struct net_device *dev, struct pfq_tx_opt *to, int cpu, struct local_data *local)
 {
 	size_t sent;
 
@@ -94,7 +94,7 @@ __pfq_tx_queue_xmit(size_t qidx, struct pfq_skbuff_batch *skbs, struct net_devic
 
 	/* transmit the batch */
 
-	sent = pfq_queue_xmit(skbs, dev, to->queue[qidx].hw_queue);
+	sent = pfq_queue_xmit(skbs, dev, to->queue[idx].hw_queue);
 
 	/* update stats */
 
@@ -237,11 +237,7 @@ __pfq_queue_flush(size_t qidx, struct pfq_tx_opt *to, struct net_device *dev, in
 int
 pfq_queue_flush_or_wakeup(struct pfq_sock *so, int index)
 {
-	struct pfq_tx_queue *txq = pfq_get_tx_queue(&so->tx_opt, index);
 	struct net_device *dev;
-
-	if (!pfq_spsc_read_avail(txq))
-		return 0;
 
 	if (so->tx_opt.queue[index].task) {
 		wake_up_process(so->tx_opt.queue[index].task);

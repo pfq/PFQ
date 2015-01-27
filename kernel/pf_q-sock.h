@@ -182,7 +182,7 @@ struct pfq_sock
 
 static inline
 struct pfq_shared_queue *
-pfq_get_queue_hdr(struct pfq_sock *p)
+pfq_get_shared_queue(struct pfq_sock *p)
 {
         return (struct pfq_shared_queue *) p->shmem.addr;
 }

@@ -523,7 +523,7 @@ int pfq_setsockopt(struct socket *sock,
                 }
 
                 so->rx_opt.caplen = caplen;
-                so->rx_opt.slot_size = PFQ_MPDB_QUEUE_SLOT_SIZE(so->rx_opt.caplen);
+                so->rx_opt.slot_size = Q_MPDB_QUEUE_SLOT_SIZE(so->rx_opt.caplen);
 
                 pr_devel("[PFQ|%d] caplen=%zu, slot_size=%zu\n",
                                 so->id, so->rx_opt.caplen, so->rx_opt.slot_size);
@@ -564,7 +564,7 @@ int pfq_setsockopt(struct socket *sock,
                 }
 
                 so->tx_opt.maxlen = maxlen;
-                so->tx_opt.slot_size = PFQ_SPSC_QUEUE_SLOT_SIZE(so->tx_opt.maxlen);
+                so->tx_opt.slot_size = Q_SPSC_QUEUE_SLOT_SIZE(so->tx_opt.maxlen);
 
                 pr_devel("[PFQ|%d] tx_maxlen=%zu, tx_slot_size=%zu\n", so->id, so->tx_opt.maxlen, so->tx_opt.slot_size);
 

@@ -42,7 +42,7 @@ size_t copy_to_user_skbs(struct pfq_rx_opt *ro, struct pfq_skbuff_batch *skbs, u
 
         	smp_rmb();
 
-                cpy = pfq_mpdb_enqueue_batch(ro, skbs, mask, len, gid);
+                cpy = pfq_mpsc_enqueue_batch(ro, skbs, mask, len, gid);
 
         	__sparse_add(&ro->stats.recv, cpy, cpu);
 

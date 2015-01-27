@@ -70,208 +70,13 @@ static inline void smp_wmb() { barrier(); }
 #endif /* __KERNEL__ */
 
 
-#define PF_Q    			27     /* packet queue domain */
+#define PF_Q    			27   /* pfq socket family */
 
-#define Q_MAX_COUNTERS          	64
-#define Q_MAX_TX_QUEUES 		4
+#define Q_SHARED_QUEUE_INDEX(data)   	((data) >> 24)
+#define Q_SHARED_QUEUE_LEN(data)     	((data) & 0x00ffffffu )
 
-#define PFQ_SHARED_QUEUE_INDEX(data)   	(((data) & 0xff000000U) >> 24)
-#define PFQ_SHARED_QUEUE_LEN(data)     	((data) & 0x00ffffffU)
-
-#define PFQ_MPDB_QUEUE_SLOT_SIZE(x)    	ALIGN(sizeof(struct pfq_pkthdr) + x, 8)
-#define PFQ_SPSC_QUEUE_SLOT_SIZE(x)    	ALIGN(sizeof(struct pfq_pkthdr_tx) + x, 8)
-
-
-/* PFQ socket queue */
-
-struct pfq_rx_queue
-{
-        volatile unsigned int   data;
-        unsigned int            size;       /* number of slots */
-        unsigned int            slot_size;  /* sizeof(pfq_pkthdr) + max_len + sizeof(skb_shinfo) */
-
-} __attribute__((aligned(64)));
-
-
-struct pfq_tx_queue
-{
-        struct
-        {
-                volatile unsigned int index;
-                unsigned int cache;
-        } producer __attribute__((aligned(64)));
-
-        struct
-        {
-                volatile unsigned int index;
-                unsigned int cache;
-        } consumer __attribute__((aligned(64)));
-
-        unsigned int size_mask;        /* number of slots */
-        unsigned int max_len;          /* max length of packet */
-        unsigned int size;             /* number of slots (power of two) */
-        unsigned int slot_size;        /* sizeof(pfq_pkthdr) + max_len + sizeof(skb_shinfo) */
-
-} __attribute__((aligned(64)));
-
-
-struct pfq_shared_queue
-{
-        struct pfq_rx_queue rx;
-        struct pfq_tx_queue tx[Q_MAX_TX_QUEUES];
-};
-
-
-/* packet headers */
-
-struct pfq_pkthdr
-{
-        uint64_t data;          /* state from pfq_cb */
-
-        union
-        {
-                unsigned long long tv64;
-                struct {
-                        uint32_t    sec;
-                        uint32_t    nsec;
-                } tv;               /* note: compact timespec for 64 bits arch. */
-        } tstamp;
-
-        int         if_index;   /* interface index */
-        int         gid;        /* group id */
-
-        uint16_t    len;        /* length of the packet (off wire) */
-        uint16_t    caplen;     /* bytes captured */
-
-        union
-        {
-                struct
-                {
-                        uint16_t vlan_vid:12,   /* 8021q vlan id */
-                                 reserved:1,    /* 8021q reserved bit */
-                                 vlan_prio:3;   /* 8021q vlan priority */
-                } vlan;
-
-                uint16_t     vlan_tci;
-        } un;
-
-        uint8_t     hw_queue;   /* 256 queues per device */
-        uint8_t     commit;
-
-} __attribute__((packed));
-
-
-struct pfq_pkthdr_tx
-{
-	uint16_t len;
-	uint16_t res;
-};
-
-
-static inline
-unsigned int pfq_spsc_next_index(struct pfq_tx_queue *q, unsigned int n)
-{
-        return (n + 1) & q->size_mask;
-}
-
-
-/* producer */
-
-static inline
-int pfq_spsc_write_avail(struct pfq_tx_queue *q)
-{
-        if (unlikely(q->producer.cache == 0)) {
-                /* consumer - producer - 1 + size */
-                q->producer.cache = (q->consumer.index - q->producer.index + q->size_mask) & q->size_mask;
-        }
-
-        return (int)q->producer.cache;
-}
-
-
-static inline
-int pfq_spsc_write_index(struct pfq_tx_queue *q)
-{
-        if (pfq_spsc_write_avail(q) == 0)
-                return -1;
-
-        return (int)q->producer.index;
-}
-
-
-static inline
-void pfq_spsc_write_commit_n(struct pfq_tx_queue *q, unsigned int n)
-{
-        smp_wmb();
-
-        if (unlikely(n > q->producer.cache))
-                n = q->producer.cache;
-
-        q->producer.index = (q->producer.index + n) & q->size_mask;
-        q->producer.cache -= n;
-
-        smp_wmb();
-}
-
-
-static inline
-void pfq_spsc_write_commit(struct pfq_tx_queue *q)
-{
-        pfq_spsc_write_commit_n(q,1);
-}
-
-/* consumer */
-
-static inline
-int pfq_spsc_read_avail(struct pfq_tx_queue *q)
-{
-        if(unlikely(q->consumer.cache == 0))
-                q->consumer.cache = (q->producer.index - q->consumer.index + q->size) & q->size_mask;
-
-        return (int)q->consumer.cache;
-}
-
-
-static inline
-int pfq_spsc_read_index(struct pfq_tx_queue *q)
-{
-        if (pfq_spsc_read_avail(q) == 0)
-                return -1;
-
-        return (int)q->consumer.index;
-}
-
-
-static inline
-void pfq_spsc_read_commit_n(struct pfq_tx_queue *q, unsigned int n)
-{
-        smp_wmb();
-
-        if (unlikely(n > q->consumer.cache))
-                n = q->consumer.cache;
-
-        q->consumer.index  = (q->consumer.index + n) & q->size_mask;
-        q->consumer.cache -= n;
-
-        smp_wmb();
-}
-
-
-static inline
-void pfq_spsc_read_commit(struct pfq_tx_queue *q)
-{
-        pfq_spsc_read_commit_n(q,1);
-}
-
-
-/*
-   +------------------+---------------------+          +---------------------+          +---------------------+
-   | pfq_queue_hdr    | pfq_pkthdr | packet | ...      | pfq_pkthdr | packet |...       | pfq_pkthdr | packet | ...
-   +------------------+---------------------+          +---------------------+          +---------------------+
-   +                             +                             +                            +
-   | <------+ queue rx  +------> |  <----+ queue rx +------>   |  <----+ queue tx +------>  |  <----+ queue tx +------>
-   +                             +                             +                            +
-   */
+#define Q_MPDB_QUEUE_SLOT_SIZE(x)    	ALIGN(sizeof(struct pfq_pkthdr) + x, 8)
+#define Q_SPSC_QUEUE_SLOT_SIZE(x)    	ALIGN(sizeof(struct pfq_pkthdr_tx) + x, 8)
 
 
 /* PFQ socket options */
@@ -319,45 +124,138 @@ void pfq_spsc_read_commit(struct pfq_tx_queue *q)
 
 /* general placeholders */
 
-#define Q_ANY_DEVICE         -1
-#define Q_ANY_QUEUE          -1
-#define Q_ANY_GROUP          -1
+#define Q_ANY_DEVICE         		-1
+#define Q_ANY_QUEUE          		-1
+#define Q_ANY_GROUP          		-1
 
-#define Q_NO_KTHREAD         -1
-#define Q_ANY_CPU	     65535
-
+#define Q_NO_KTHREAD         		-1
+#define Q_ANY_CPU	     		65535
 
 /* timestamp */
 
-#define Q_TSTAMP_OFF          0       /* default */
-#define Q_TSTAMP_ON           1
+#define Q_TSTAMP_OFF         	     	0       /* default */
+#define Q_TSTAMP_ON          		1
+
 
 /* vlan */
 
-#define Q_VLAN_PRIO_MASK     0xe000
-#define Q_VLAN_VID_MASK      0x0fff
-#define Q_VLAN_TAG_PRESENT   0x1000
+#define Q_VLAN_PRIO_MASK     		0xe000
+#define Q_VLAN_VID_MASK      		0x0fff
+#define Q_VLAN_TAG_PRESENT   		0x1000
 
-#define Q_VLAN_UNTAG         0
-#define Q_VLAN_ANYTAG       -1
+#define Q_VLAN_UNTAG         		0
+#define Q_VLAN_ANYTAG       		-1
 
 /* group policies */
 
-#define Q_POLICY_GROUP_UNDEFINED       0
-#define Q_POLICY_GROUP_PRIVATE         1
-#define Q_POLICY_GROUP_RESTRICTED      2
-#define Q_POLICY_GROUP_SHARED          3
+#define Q_POLICY_GROUP_UNDEFINED       	0
+#define Q_POLICY_GROUP_PRIVATE         	1
+#define Q_POLICY_GROUP_RESTRICTED      	2
+#define Q_POLICY_GROUP_SHARED          	3
 
 /* group class type */
 
-#define Q_CLASS(n)              (1UL << (n))
-#define Q_CLASS_MAX             (sizeof(unsigned long)<<3)
+#define Q_CLASS(n)              	(1UL << (n))
+#define Q_CLASS_MAX             	(sizeof(unsigned long)<<3)
 
-#define Q_CLASS_DEFAULT         Q_CLASS(0)
-#define Q_CLASS_USER_PLANE 	Q_CLASS(1)
-#define Q_CLASS_CONTROL_PLANE   Q_CLASS(2)
-#define Q_CLASS_CONTROL		Q_CLASS(Q_CLASS_MAX-1) 			/* reserved for management */
-#define Q_CLASS_ANY             (((unsigned long)-1) ^ Q_CLASS_CONTROL) /* any class except management */
+#define Q_CLASS_DEFAULT         	Q_CLASS(0)
+#define Q_CLASS_USER_PLANE 		Q_CLASS(1)
+#define Q_CLASS_CONTROL_PLANE   	Q_CLASS(2)
+#define Q_CLASS_CONTROL			Q_CLASS(Q_CLASS_MAX-1) 			/* reserved for management */
+#define Q_CLASS_ANY             	(((unsigned long)-1) ^ Q_CLASS_CONTROL) /* any class except management */
+
+/* additional constants */
+
+#define Q_MAX_COUNTERS          	64
+#define Q_MAX_TX_QUEUES 		4
+
+
+/* PFQ socket queue */
+
+
+struct pfq_rx_queue
+{
+        unsigned int   		data;
+        unsigned int            size;       /* queue length in slots */
+        unsigned int            slot_size;  /* sizeof(pfq_pkthdr) + caplen  */
+
+} __attribute__((aligned(64)));
+
+
+struct pfq_tx_queue
+{
+        unsigned int   		data;
+        unsigned int            size;       /* queue length in slots */
+        unsigned int            slot_size;  /* sizeof(pfq_pkthdr_tx) + maxlen */
+
+	char __user * 		ptr; 	    /* reserved for user-space */
+	int  __user 		index;	    /* reserved for user-space */
+
+} __attribute__((aligned(64)));
+
+
+struct pfq_shared_queue
+{
+        struct pfq_rx_queue rx;
+        struct pfq_tx_queue tx[Q_MAX_TX_QUEUES];
+};
+
+
+/* packet headers */
+
+
+struct pfq_pkthdr
+{
+        uint64_t data;          /* state from pfq_cb */
+
+        union
+        {
+                unsigned long long tv64;
+                struct {
+                        uint32_t    sec;
+                        uint32_t    nsec;
+                } tv;               /* note: compact timespec for 64 bits arch. */
+        } tstamp;
+
+        int         if_index;   /* interface index */
+        int         gid;        /* group id */
+
+        uint16_t    len;        /* length of the packet (off wire) */
+        uint16_t    caplen;     /* bytes captured */
+
+        union
+        {
+                struct
+                {
+                        uint16_t vlan_vid:12,   /* 8021q vlan id */
+                                 reserved:1,    /* 8021q reserved bit */
+                                 vlan_prio:3;   /* 8021q vlan priority */
+                } vlan;
+
+                uint16_t     vlan_tci;
+        } un;
+
+        uint8_t     hw_queue;   /* 256 queues per device */
+        uint8_t     commit;
+
+} __attribute__((packed));
+
+
+struct pfq_pkthdr_tx
+{
+	uint64_t len;
+};
+
+
+/*
+   +------------------+---------------------+                  +---------------------+          +---------------------+
+   | pfq_queue_hdr    | pfq_pkthdr | packet | ...              | pfq_pkthdr | packet |...       | pfq_pkthdr | packet | ...
+   +------------------+---------------------+                  +---------------------+          +---------------------+
+   +                             +                             +                            +
+   | <------+ queue rx  +------> |  <----+ queue rx +------>   |  <----+ queue tx +------>  |  <----+ queue tx +------>
+   +                             +                             +                            +
+   */
+
 
 
 /*
