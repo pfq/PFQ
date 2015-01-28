@@ -75,10 +75,11 @@ namespace opt
     size_t flush   = 1;
     size_t len     = 1514;
     size_t slots   = 4096;
-    bool   async   = false;
     bool   rand_ip = false;
     char *packet   = nullptr;
     double rate    = 0;
+
+    std::vector< std::vector<int> > kcore;
 
     std::string file;
     char errbuf[PCAP_ERRBUF_SIZE];
@@ -89,9 +90,8 @@ namespace thread
 {
     struct context
     {
-        context(int id, const binding &b, int kcpu)
+        context(int id, const binding &b, std::vector<int> kcpu)
         : m_id(id)
-        , m_kcpu(kcpu)
         , m_bind(b)
         , m_pfq()
         , m_sent(std::unique_ptr<std::atomic_ullong>(new std::atomic_ullong(0)))
@@ -110,16 +110,9 @@ namespace thread
 
             std::cout << "thread     : " << id << " -> "  << show_binding(m_bind) << std::endl;
 
-            if (m_bind.queue.size())
+            for(unsigned int n = 0; n < m_bind.queue.size(); n++)
             {
-                for(unsigned int n = 0; n < m_bind.queue.size(); n++)
-                {
-                    q.bind_tx (m_bind.dev.at(0).c_str(), m_bind.queue[n], opt::async ? (n + m_kcpu) : -1);
-                }
-            }
-            else
-            {
-                q.bind_tx (m_bind.dev.at(0).c_str(), any_queue, opt::async ? m_kcpu : -1);
+                q.bind_tx (m_bind.dev.at(0).c_str(), m_bind.queue[n], kcpu[n]);
             }
 
             q.enable();
@@ -230,7 +223,6 @@ namespace thread
 
 
         int m_id;
-        int m_kcpu;
 
         binding m_bind;
 
@@ -309,7 +301,7 @@ void usage(std::string name)
         " -h --help                     Display this help\n"
         " -l --len INT                  Set packet lenght\n"
         " -s --queue-slots INT          Set tx queue lenght\n"
-        " -a --async                    Async with kernel threads\n"
+        " -k --kcore IDX,IDX...         Async with kernel threads\n"
         " -r --read FILE                Read trace to send from pcap\n"
         " -R --rand-ip                  Randomize IP addresses\n"
         "    --rate DOUBLE              Packet rate in Mpps\n"
@@ -377,9 +369,18 @@ try
             continue;
         }
 
-        if ( any_strcmp(argv[i], "-a", "--async") )
+        if ( any_strcmp(argv[i], "-k", "--kcore") )
         {
-            opt::async = true;
+            if (++i == argc)
+            {
+                throw std::runtime_error("kcore list missing");
+            }
+
+            auto vec = pfq::split(argv[i], ",");
+
+            auto cores = pfq::fmap([](const std::string &val) -> int { return std::stoi(val); }, vec);
+
+            opt::kcore.push_back(std::move(cores));
             continue;
         }
 
@@ -417,38 +418,21 @@ try
         throw std::runtime_error(std::string("pfq-gen: ") + argv[i] + " unknown option");
     }
 
-
-    std::cout << "async      : "  << std::boolalpha << opt::async << std::endl;
     std::cout << "rand_ip    : "  << std::boolalpha << opt::rand_ip << std::endl;
     std::cout << "len        : "  << opt::len << std::endl;
+
     if (opt::rate != 0.0)
         std::cout << "rate       : "  << opt::rate << " Mpps" << std::endl;
 
-    if (!opt::async)
+    if (opt::kcore.empty())
         std::cout << "flush-hint : "  << opt::flush << std::endl;
+
 
     if (opt::slots == 0)
         throw std::runtime_error("tx_slots set to 0!");
 
     opt::packet = make_packet(opt::len);
 
-    // process binding:
-    //
-
-    for(size_t i = 0; i < binding.size(); ++i)
-    {
-        if (binding[i].queue.empty())
-        {
-            auto num_queues = get_num_queues(binding[i].dev.at(0).c_str());
-
-            std::cout << "device     : " << binding[i].dev.at(0) << ", " << num_queues << " queues detected." << std::endl;
-
-            for(size_t n = 0; n < num_queues; ++n)
-            {
-                binding[i].queue.push_back(n);
-            }
-        }
-    }
 
     auto mq = std::any_of(std::begin(binding), std::end(binding),
                 [](pfq::binding const &b) { return b.queue.size() > 1; });
@@ -458,21 +442,57 @@ try
         std::cout << vt100::BOLD << "*** Multiple queue detected! Consider to randomize IP addresses with -R option! ***" << vt100::RESET << std::endl;
     }
 
-    if (!opt::async && mq)
+    if (opt::kcore.empty() && mq)
     {
-        std::cout << vt100::BOLD << "*** Multiple queue detected! Consider to enable asynchronous transmission, with -a option! ***" << vt100::RESET << std::endl;
+        std::cout << vt100::BOLD << "*** Multiple queue detected! Consider to enable asynchronous transmission, with -k option! ***" << vt100::RESET << std::endl;
     }
 
+    //
+    // process binding:
+    //
+
+    for(size_t i = 0; i < binding.size(); ++i)
+    {
+        auto num_queues = get_num_queues(binding[i].dev.at(0).c_str());
+
+        std::cout << "device     : " << binding[i].dev.at(0) << ", " << num_queues << " queues detected." << std::endl;
+
+        while (binding[i].queue.size() < num_queues)
+        {
+            binding[i].queue.push_back(binding[i].queue.size());
+        }
+    }
+
+    //
+    // process kcore:
+    //
+
+    while (opt::kcore.size() < binding.size())
+        opt::kcore.push_back(std::vector<int>{});
+
+    //
+    // finally pad each kcore list...
+    //
+
+    {
+        size_t n = 0;
+
+        for(auto & v : opt::kcore)
+        {
+            while(v.size() < binding[n].queue.size())
+                v.push_back(-1);
+        }
+    }
+
+    //
     // create thread context:
     //
 
-    int kcore = 0;
-
     for(unsigned int i = 0; i < binding.size(); ++i)
     {
-        thread_ctx.push_back(new thread::context(static_cast<int>(i), binding[i], kcore));
-        kcore += std::max<size_t>(binding[i].queue.size(), 1);
+        thread_ctx.push_back(new thread::context(static_cast<int>(i), binding[i], opt::kcore[i]));
     }
+
 
     // create threads:
 
