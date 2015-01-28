@@ -74,6 +74,7 @@ namespace opt
 {
     size_t flush   = 1;
     size_t len     = 1514;
+    size_t maxlen  = 1514;
     size_t slots   = 4096;
     bool   rand_ip = false;
     char *packet   = nullptr;
@@ -105,7 +106,7 @@ namespace thread
             if (m_bind.queue.empty())
                 m_bind.queue.push_back(-1);
 
-            auto q = pfq::socket(param::list, param::maxlen{opt::len},
+            auto q = pfq::socket(param::list, param::maxlen{opt::maxlen},
                                               param::tx_slots{opt::slots});
 
             std::cout << "thread     : " << id << " -> "  << show_binding(m_bind) << std::endl;
@@ -299,13 +300,14 @@ void usage(std::string name)
     (
         "usage: " + std::move(name) + " [OPTIONS]\n\n"
         " -h --help                     Display this help\n"
-        " -l --len INT                  Set packet lenght\n"
-        " -s --queue-slots INT          Set tx queue lenght\n"
+        " -l --len INT                  Set packet length\n"
+        " -m --maxlen INT               Set max packet length\n"
+        " -s --queue-slots INT          Set Tx queue length\n"
         " -k --kcore IDX,IDX...         Async with kernel threads\n"
-        " -r --read FILE                Read trace to send from pcap\n"
+        " -r --read FILE                Read pcap trace file to send\n"
         " -R --rand-ip                  Randomize IP addresses\n"
         "    --rate DOUBLE              Packet rate in Mpps\n"
-        " -f --flush INT                Set flush len, used in async tx\n"
+        " -f --flush INT                Set flush length, used in sync Tx\n"
         " -t --thread BINDING\n\n"
         "      BINDING = " + pfq::binding_format
     );
@@ -355,6 +357,17 @@ try
             }
 
             opt::len = static_cast<size_t>(std::atoi(argv[i]));
+            continue;
+        }
+
+        if ( any_strcmp(argv[i], "-m", "--maxlen") )
+        {
+            if (++i == argc)
+            {
+                throw std::runtime_error("max length missing");
+            }
+
+            opt::maxlen = static_cast<size_t>(std::atoi(argv[i]));
             continue;
         }
 
