@@ -74,7 +74,7 @@ namespace opt
 {
     size_t flush   = 1;
     size_t len     = 1514;
-    size_t maxlen  = 1514;
+    size_t maxlen  = 0;
     size_t slots   = 4096;
     bool   rand_ip = false;
     char *packet   = nullptr;
@@ -161,6 +161,8 @@ namespace thread
 
             auto now = std::chrono::system_clock::now();
 
+            auto len = std::min(opt::len, opt::maxlen);
+
             for(size_t n = 0;;n++)
             {
                 if ((n & 8191) == 0)
@@ -176,10 +178,10 @@ namespace thread
                     ip->daddr = static_cast<uint32_t>(m_gen());
                 }
 
-                if (m_pfq.send_async(pfq::const_buffer(reinterpret_cast<const char *>(opt::packet), opt::len), opt::flush))
+                if (m_pfq.send_async(pfq::const_buffer(reinterpret_cast<const char *>(opt::packet), len), opt::flush))
                 {
                     m_sent->fetch_add(1, std::memory_order_relaxed);
-                    m_band->fetch_add(opt::len, std::memory_order_relaxed);
+                    m_band->fetch_add(len, std::memory_order_relaxed);
                 }
                 else
                     m_fail->fetch_add(1, std::memory_order_relaxed);
@@ -196,6 +198,8 @@ namespace thread
             if (p == nullptr)
                 throw std::runtime_error("pcap_open_offline:" + std::string(opt::errbuf));
 
+
+            auto len = std::min(opt::len, opt::maxlen);
 
             for(;;)
             {
@@ -214,12 +218,12 @@ namespace thread
                         ip->daddr = static_cast<uint32_t>(m_gen());
                     }
 
-                    auto len = std::min<size_t>(hdr->caplen, opt::len);
+                    auto plen = std::min<size_t>(hdr->caplen, len);
 
-                    if (m_pfq.send_async(pfq::const_buffer(reinterpret_cast<const char *>(data), len), opt::flush))
+                    if (m_pfq.send_async(pfq::const_buffer(reinterpret_cast<const char *>(data), plen), opt::flush))
                     {
                         m_sent->fetch_add(1, std::memory_order_relaxed);
-                        m_band->fetch_add(len, std::memory_order_relaxed);
+                        m_band->fetch_add(plen, std::memory_order_relaxed);
                     }
                     else
                         m_fail->fetch_add(1, std::memory_order_relaxed);
@@ -436,14 +440,17 @@ try
         throw std::runtime_error(std::string("pfq-gen: ") + argv[i] + " unknown option");
     }
 
+    if (!opt::maxlen) {
+        opt::maxlen = opt::len;
+    }
+
     std::cout << "rand_ip    : "  << std::boolalpha << opt::rand_ip << std::endl;
     std::cout << "len        : "  << opt::len << std::endl;
+    std::cout << "maxlen     : "  << opt::maxlen << std::endl;
+    std::cout << "flush-hint : "  << opt::flush << std::endl;
 
     if (opt::rate != 0.0)
         std::cout << "rate       : "  << opt::rate << " Mpps" << std::endl;
-
-    if (opt::kcore.empty())
-        std::cout << "flush-hint : "  << opt::flush << std::endl;
 
 
     if (opt::slots == 0)
