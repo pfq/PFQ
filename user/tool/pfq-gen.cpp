@@ -451,20 +451,6 @@ try
 
     opt::packet = make_packet(opt::len);
 
-
-    auto mq = std::any_of(std::begin(binding), std::end(binding),
-                [](pfq::binding const &b) { return b.queue.size() > 1; });
-
-    if (!opt::rand_ip && mq)
-    {
-        std::cout << vt100::BOLD << "*** Multiple queue detected! Consider to randomize IP addresses with -R option! ***" << vt100::RESET << std::endl;
-    }
-
-    if (opt::kcore.empty() && mq)
-    {
-        std::cout << vt100::BOLD << "*** Multiple queue detected! Consider to enable asynchronous transmission, with -k option! ***" << vt100::RESET << std::endl;
-    }
-
     //
     // process binding:
     //
@@ -479,6 +465,19 @@ try
         {
             binding[i].queue.push_back(binding[i].queue.size());
         }
+    }
+
+    auto mq = std::any_of(std::begin(binding), std::end(binding),
+                [](pfq::binding const &b) { return b.queue.size() > 1; });
+
+    if (!opt::rand_ip && mq)
+    {
+        std::cout << vt100::BOLD << "*** Multiple queue detected! Consider to randomize IP addresses with -R option! ***" << vt100::RESET << std::endl;
+    }
+
+    if (opt::kcore.empty() && mq)
+    {
+        std::cout << vt100::BOLD << "*** Multiple queue detected! Consider to enable asynchronous transmission, with -k option! ***" << vt100::RESET << std::endl;
     }
 
     //
