@@ -109,7 +109,12 @@ namespace thread
             auto q = pfq::socket(param::list, param::maxlen{opt::maxlen},
                                               param::tx_slots{opt::slots});
 
-            std::cout << "thread     : " << id << " -> "  << show_binding(m_bind) << std::endl;
+            std::cout << "thread     : " << id << " -> "  << show_binding(m_bind) << " kcore { ";
+
+            for(auto x : kcpu)
+                std::cout << x  << ' ';
+
+            std::cout << "}" << std::endl;
 
             for(unsigned int n = 0; n < m_bind.queue.size(); n++)
             {
