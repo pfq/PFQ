@@ -25,6 +25,7 @@
 
 #include <pfq/lang/lang.hpp>
 #include <pfq/lang/util.hpp>
+#include <pfq/util.hpp>
 
 #include <functional>
 #include <vector>
