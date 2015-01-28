@@ -128,24 +128,6 @@ namespace pfq { namespace lang
         }
     }
 
-    //
-    // fmap
-    //
-
-    template <typename A, typename Fun>
-    inline auto fmap(Fun fun, std::vector<A> const &xs)
-        -> std::vector<decltype(fun(xs.front()))>
-    {
-        std::vector< decltype(fun( xs.front() )) > out;
-        out.reserve(xs.size());
-
-        for(auto & x : xs)
-        {
-            out.push_back(fun(x));
-        }
-
-        return out;
-    }
 
     //
     // tuple helpers

@@ -152,6 +152,20 @@ namespace pfq {
             return ret;
         }
 
+        //! Useful functor map.
+
+        template <typename F, template <typename ...> class Fun, typename V>
+        inline auto fmap(F f, Fun<V> const &xs)
+            -> Fun<decltype(f(std::declval<V>()))>
+        {
+            Fun<decltype(f(std::declval<V>()))> out;
+
+            for(auto & x : xs)
+                out.push_back(f(x));
+
+            return out;
+        }
+
         //! Hardware concurrency.
 
         inline unsigned int
