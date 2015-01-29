@@ -32,6 +32,7 @@
 #include <linux/skbuff.h>
 #include <linux/netdevice.h>
 
+#include <pf_q-thread.h>
 #include <pf_q-transmit.h>
 #include <pf_q-memory.h>
 #include <pf_q-sock.h>

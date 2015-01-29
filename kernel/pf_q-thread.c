@@ -63,10 +63,7 @@ pfq_tx_thread(void *_data)
                 if (kthread_should_stop())
                         break;
 
-		if (need_resched())
-			schedule();
-		else
-			cpu_relax();
+		pfq_thread_relax();
         }
 
         dev_put(dev);
