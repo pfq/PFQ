@@ -116,10 +116,9 @@ namespace pfq {
 
         struct caplen   { size_t value; };
         struct rx_slots { size_t value; };
-        struct maxlen   { size_t value; };
         struct tx_slots { size_t value; };
 
-        using types = std::tuple<class_, policy, caplen, rx_slots, maxlen, tx_slots>;
+        using types = std::tuple<class_, policy, caplen, rx_slots, tx_slots>;
 
         inline
         types make_default()
@@ -128,7 +127,6 @@ namespace pfq {
                                    param::policy   {group_policy::priv},
                                    param::caplen   {64},
                                    param::rx_slots {1024},
-                                   param::maxlen   {64},
                                    param::tx_slots {1024});
         }
     }
@@ -201,7 +199,6 @@ namespace pfq {
                        param::get<param::policy>(def).value,
                        param::get<param::caplen>(def).value,
                        param::get<param::rx_slots>(def).value,
-                       param::get<param::maxlen>(def).value,
                        param::get<param::tx_slots>(def).value);
         }
 
@@ -212,12 +209,12 @@ namespace pfq {
          * group_policy::priv, respectively.
          */
 
-        socket(size_t caplen, size_t rx_slots = 65536, size_t maxlen = 64, size_t tx_slots = 4096)
+        socket(size_t caplen, size_t rx_slots = 1024, size_t tx_slots = 1024)
         : fd_(-1)
         , hd_(-1)
         , data_()
         {
-            this->open(class_mask::default_, group_policy::priv, caplen, rx_slots, maxlen, tx_slots);
+            this->open(class_mask::default_, group_policy::priv, caplen, rx_slots, tx_slots);
         }
 
         //! Constructor
@@ -226,12 +223,12 @@ namespace pfq {
          * The default class used is class_mask::default_.
          */
 
-        socket(group_policy policy, size_t caplen, size_t rx_slots = 65536, size_t maxlen = 64, size_t tx_slots = 4096)
+        socket(group_policy policy, size_t caplen, size_t rx_slots = 1024, size_t tx_slots = 1024)
         : fd_(-1)
         , hd_(-1)
         , data_()
         {
-            this->open(class_mask::default_, policy, caplen, rx_slots, maxlen, tx_slots);
+            this->open(class_mask::default_, policy, caplen, rx_slots, tx_slots);
         }
 
         //! Constructor
@@ -240,12 +237,12 @@ namespace pfq {
          * All the possible parameters are specifiable.
          */
 
-        socket(class_mask mask, group_policy policy, size_t caplen, size_t rx_slots = 65536, size_t maxlen = 64, size_t tx_slots = 4096)
+        socket(class_mask mask, group_policy policy, size_t caplen, size_t rx_slots = 1024, size_t tx_slots = 1024)
         : fd_(-1)
         , hd_(-1)
         , data_()
         {
-            this->open(mask, policy, caplen, rx_slots, maxlen, tx_slots);
+            this->open(mask, policy, caplen, rx_slots, tx_slots);
         }
 
         //! Destructor: close the socket
@@ -315,9 +312,9 @@ namespace pfq {
          */
 
         void
-        open(group_policy policy, size_t caplen, size_t rx_slots = 65536, size_t maxlen = 64, size_t tx_slots = 4096)
+        open(group_policy policy, size_t caplen, size_t rx_slots = 1024, size_t tx_slots = 1024)
         {
-            this->open(caplen, rx_slots, maxlen, tx_slots);
+            this->open(caplen, rx_slots, tx_slots);
 
             if (policy != group_policy::undefined)
             {
@@ -332,9 +329,9 @@ namespace pfq {
          */
 
         void
-        open(class_mask mask, group_policy policy, size_t caplen, size_t rx_slots = 65536, size_t maxlen = 64, size_t tx_slots = 4096)
+        open(class_mask mask, group_policy policy, size_t caplen, size_t rx_slots = 1024, size_t tx_slots = 1024)
         {
-            this->open(caplen, rx_slots, maxlen, tx_slots);
+            this->open(caplen, rx_slots, tx_slots);
 
             if (policy != group_policy::undefined)
             {
@@ -356,7 +353,6 @@ namespace pfq {
                        param::get<param::policy>(def).value,
                        param::get<param::caplen>(def).value,
                        param::get<param::rx_slots>(def).value,
-                       param::get<param::maxlen>(def).value,
                        param::get<param::tx_slots>(def).value);
         }
 
@@ -406,7 +402,7 @@ namespace pfq {
         }
 
         void
-        open(size_t caplen, size_t rx_slots, size_t maxlen, size_t tx_slots)
+        open(size_t caplen, size_t rx_slots, size_t tx_slots)
         {
             if (fd_ != -1)
                 throw pfq_error("PFQ: socket already open");
@@ -460,13 +456,18 @@ namespace pfq {
             if (::setsockopt(fd_, PF_Q, Q_SO_SET_TX_SLOTS, &tx_slots, sizeof(tx_slots)) == -1)
                 throw pfq_error(errno, "PFQ: set Tx slots error");
 
+
+            // get maxlen
+
+            int maxlen;
+            size = sizeof(maxlen);
+
+            if (::getsockopt(fd_, PF_Q, Q_SO_GET_TX_MAXLEN, &maxlen, &size) == -1)
+                throw pfq_error(errno, "PFQ: get Tx maxlen error");
+
             data_->tx_slots = tx_slots;
             data_->tx_slot_size = align<8>(sizeof(pfq_pkthdr_tx) + maxlen);
 
-            // set maxlen
-
-            if (::setsockopt(fd_, PF_Q, Q_SO_SET_TX_MAXLEN, &maxlen, sizeof(maxlen)) == -1)
-                throw pfq_error(errno, "PFQ: set Tx maxlen error");
         }
 
     public:
@@ -637,27 +638,12 @@ namespace pfq {
            return ret;
         }
 
-        //! Specify the max transmission length of packets, in bytes.
-
-        void
-        maxlen(size_t value)
-        {
-            if (enabled())
-                throw pfq_error("PFQ: enabled (maxlen could not be set)");
-
-            if (::setsockopt(fd_, PF_Q, Q_SO_SET_TX_MAXLEN, &value, sizeof(value)) == -1) {
-                throw pfq_error(errno, "PFQ: set maxlen error");
-            }
-
-            data()->rx_slot_size = align<8>(sizeof(pfq_pkthdr_tx) + value);
-        }
-
         //! Return the max transmission length of packets, in bytes.
 
         size_t
         maxlen() const
         {
-           size_t ret; socklen_t size = sizeof(ret);
+           int ret; socklen_t size = sizeof(ret);
            if (::getsockopt(fd_, PF_Q, Q_SO_GET_TX_MAXLEN, &ret, &size) == -1)
                 throw pfq_error(errno, "PFQ: get maxlen error");
            return ret;

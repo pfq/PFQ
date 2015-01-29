@@ -183,42 +183,44 @@ const char *pfq_error(pfq_t *q)
 pfq_t *
 pfq_open_default()
 {
-	return pfq_open_group(Q_CLASS_DEFAULT, Q_POLICY_GROUP_UNDEFINED, 64, 1, 64, 1);
+	return pfq_open_group(Q_CLASS_DEFAULT, Q_POLICY_GROUP_UNDEFINED, 64, 1024, 1024);
 }
 
 
 pfq_t *
 pfq_open(size_t length, size_t slots)
 {
-	return pfq_open_group(Q_CLASS_DEFAULT, Q_POLICY_GROUP_PRIVATE, length, slots, length, slots);
+	return pfq_open_group(Q_CLASS_DEFAULT, Q_POLICY_GROUP_PRIVATE, length, slots, slots);
 }
 
 
 pfq_t *
-pfq_open_(size_t caplen, size_t rx_slots, size_t maxlen, size_t tx_slots)
+pfq_open_(size_t caplen, size_t rx_slots, size_t tx_slots)
 {
-	return pfq_open_group(Q_CLASS_DEFAULT, Q_POLICY_GROUP_PRIVATE, caplen, rx_slots, maxlen, tx_slots);
+	return pfq_open_group(Q_CLASS_DEFAULT, Q_POLICY_GROUP_PRIVATE, caplen, rx_slots, tx_slots);
 }
 
 
 pfq_t *
 pfq_open_nogroup(size_t caplen, size_t slots)
 {
-	return pfq_open_group(Q_CLASS_DEFAULT, Q_POLICY_GROUP_UNDEFINED, caplen, slots, caplen, slots);
+	return pfq_open_group(Q_CLASS_DEFAULT, Q_POLICY_GROUP_UNDEFINED, caplen, slots, slots);
 }
 
 
 pfq_t *
-pfq_open_nogroup_(size_t caplen, size_t rx_slots, size_t maxlen, size_t tx_slots)
+pfq_open_nogroup_(size_t caplen, size_t rx_slots, size_t tx_slots)
 {
-	return pfq_open_group(Q_CLASS_DEFAULT, Q_POLICY_GROUP_UNDEFINED, caplen, rx_slots, maxlen, tx_slots);
+	return pfq_open_group(Q_CLASS_DEFAULT, Q_POLICY_GROUP_UNDEFINED, caplen, rx_slots, tx_slots);
 }
 
 
 pfq_t *
-pfq_open_group(unsigned long class_mask, int group_policy, size_t caplen, size_t rx_slots, size_t maxlen, size_t tx_slots)
+pfq_open_group(unsigned long class_mask, int group_policy, size_t caplen, size_t rx_slots, size_t tx_slots)
 {
 	int fd = socket(PF_Q, SOCK_RAW, htons(ETH_P_ALL));
+	int maxlen;
+
 	pfq_t * q;
 
 	if (fd == -1) {
@@ -265,14 +267,17 @@ pfq_open_group(unsigned long class_mask, int group_policy, size_t caplen, size_t
 		return __error = "PFQ: set Tx slots error", free(q), NULL;
 	}
 
+        /* get maxlen */
+
+	size = sizeof(maxlen);
+        if (getsockopt(fd, PF_Q, Q_SO_GET_TX_MAXLEN, &maxlen, &size) == -1)
+        {
+		return __error = "PFQ: get Tx maxlen error", free(q), NULL;
+        }
+
 	q->tx_slots = tx_slots;
 	q->tx_slot_size = ALIGN(sizeof(struct pfq_pkthdr_tx) + maxlen, 8);
 
-        /* set maxlen */
-        if (setsockopt(fd, PF_Q, Q_SO_SET_TX_MAXLEN, &maxlen, sizeof(maxlen)) == -1)
-        {
-		return __error = "PFQ: set Tx maxlen error", free(q), NULL;
-        }
 
 	if (group_policy != Q_POLICY_GROUP_UNDEFINED)
 	{
@@ -495,27 +500,10 @@ pfq_get_caplen(pfq_t const *q)
 }
 
 
-int
-pfq_set_maxlen(pfq_t *q, size_t value)
-{
-	int enabled = pfq_is_enabled(q);
-	if (enabled == 1) {
-		return Q_ERROR(q, "PFQ: enabled (maxlen could not be set)");
-	}
-
-	if (setsockopt(q->fd, PF_Q, Q_SO_SET_TX_MAXLEN, &value, sizeof(value)) == -1) {
-		return Q_ERROR(q, "PFQ: set maxlen error");
-	}
-
-	q->rx_slot_size = ALIGN(sizeof(struct pfq_pkthdr_tx) + value, 8);
-	return Q_OK(q);
-}
-
-
 ssize_t
 pfq_get_maxlen(pfq_t const *q)
 {
-	size_t ret; socklen_t size = sizeof(ret);
+	int ret; socklen_t size = sizeof(ret);
 
 	if (getsockopt(q->fd, PF_Q, Q_SO_GET_TX_MAXLEN, &ret, &size) == -1) {
 		return Q_ERROR(q, "PFQ: get maxlen error");

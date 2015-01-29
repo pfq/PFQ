@@ -241,7 +241,7 @@ extern pfq_t* pfq_open(size_t calpen, size_t slots);
  * Q_POLICY_GROUP_PRIVATE, respectively.
  */
 
-extern pfq_t *pfq_open_(size_t caplen, size_t rx_slots, size_t maxlen, size_t tx_slots);
+extern pfq_t *pfq_open_(size_t caplen, size_t rx_slots, size_t tx_slots);
 
 
 /*! Open the socket; no group is joined or created. */
@@ -257,7 +257,7 @@ extern pfq_t* pfq_open_nogroup(size_t caplen, size_t slots);
  * Groups can be later joined by means of the join function.
  */
 
-extern pfq_t* pfq_open_nogroup_(size_t caplen, size_t rx_slots, size_t maxlen, size_t tx_slots);
+extern pfq_t* pfq_open_nogroup_(size_t caplen, size_t rx_slots, size_t tx_slots);
 
 
 /*! Open the socket and create a new group with the specified class and policy. */
@@ -266,8 +266,7 @@ extern pfq_t* pfq_open_nogroup_(size_t caplen, size_t rx_slots, size_t maxlen, s
  */
 
 extern pfq_t* pfq_open_group(unsigned long class_mask, int group_policy,
-                size_t calpen, size_t rx_slots,
-                size_t maxlen, size_t tx_slots);
+                size_t calpen, size_t rx_slots, size_t tx_slots);
 
 /*! Close the socket. */
 
@@ -323,11 +322,6 @@ extern int pfq_set_caplen(pfq_t *q, size_t value);
 /*! Return the capture length of packets, in bytes. */
 
 extern ssize_t pfq_get_caplen(pfq_t const *q);
-
-
-/*! Specify the max transmission length of packets, in bytes. */
-
-extern int pfq_set_maxlen(pfq_t *q, size_t value);
 
 
 /*! Return the max transmission length of packets, in bytes. */

@@ -126,7 +126,6 @@ module Network.PFq
         setTxSlots,
 
         getMaxlen,
-        setMaxlen,
 
         -- * Packet capture
 
@@ -422,11 +421,10 @@ open caplen slots =
 
 open' :: Int  -- ^ caplen
       -> Int  -- ^ number of Rx slots
-      -> Int  -- ^ maxlen
       -> Int  -- ^ number of Tx slots
       -> IO (ForeignPtr PFqTag)
-open' caplen rx_slots maxlen tx_slots =
-        pfq_open_ (fromIntegral caplen) (fromIntegral rx_slots) (fromIntegral maxlen) (fromIntegral tx_slots) >>=
+open' caplen rx_slots tx_slots =
+        pfq_open_ (fromIntegral caplen) (fromIntegral rx_slots) (fromIntegral tx_slots) >>=
             throwPFqIf nullPtr (== nullPtr) >>= \ptr ->
                 C.newForeignPtr ptr (void $ pfq_close ptr)
 
@@ -450,11 +448,10 @@ openNoGroup caplen slots =
 
 openNoGroup' :: Int  -- ^ caplen
              -> Int  -- ^ number of Rx slots
-             -> Int  -- ^ maxlen
              -> Int  -- ^ number of Tx slots
              -> IO (ForeignPtr PFqTag)
-openNoGroup' caplen rx_slots maxlen tx_slots =
-        pfq_open_nogroup_ (fromIntegral caplen) (fromIntegral rx_slots) (fromIntegral maxlen) (fromIntegral tx_slots) >>=
+openNoGroup' caplen rx_slots tx_slots =
+        pfq_open_nogroup_ (fromIntegral caplen) (fromIntegral rx_slots) (fromIntegral tx_slots) >>=
             throwPFqIf nullPtr (== nullPtr) >>= \ptr ->
                 C.newForeignPtr ptr (void $ pfq_close ptr)
 
@@ -467,13 +464,12 @@ openGroup :: [ClassMask]  -- ^ list of ClassMask (e.g., [class_default])
           -> GroupPolicy  -- ^ policy for the group
           -> Int          -- ^ caplen
           -> Int          -- ^ number of Rx slots
-          -> Int          -- ^ maxlen
           -> Int          -- ^ number of Tx slots
           -> IO (ForeignPtr PFqTag)
-openGroup ms policy caplen rx_slots maxlen tx_slots =
+openGroup ms policy caplen rx_slots tx_slots =
         pfq_open_group (getClassMask $ combineClassMasks ms) (getGroupPolicy policy)
             (fromIntegral caplen) (fromIntegral rx_slots)
-            (fromIntegral maxlen) (fromIntegral tx_slots) >>=
+            (fromIntegral tx_slots) >>=
             throwPFqIf nullPtr (== nullPtr) >>= \ptr ->
                 C.newForeignPtr ptr (void $ pfq_close ptr)
 
@@ -566,16 +562,6 @@ getCaplen :: Ptr PFqTag
 getCaplen hdl =
     pfq_get_caplen hdl >>= throwPFqIf hdl (== -1)
         >>= return . fromIntegral
-
-
--- |Specify the max transmission length of packets, in bytes.
-
-setMaxlen :: Ptr PFqTag
-          -> Int        -- ^ maxlen (bytes)
-          -> IO ()
-setMaxlen hdl value =
-    pfq_set_maxlen hdl (fromIntegral value)
-        >>= throwPFqIf_ hdl (== -1)
 
 
 -- |Return the max transmission length of packets, in bytes.
@@ -1064,10 +1050,10 @@ sendAsync hdl xs fh =
 
 foreign import ccall unsafe pfq_open_default        :: IO (Ptr PFqTag)
 foreign import ccall unsafe pfq_open                :: CSize -> CSize -> IO (Ptr PFqTag)
-foreign import ccall unsafe pfq_open_               :: CSize -> CSize -> CSize -> CSize -> IO (Ptr PFqTag)
+foreign import ccall unsafe pfq_open_               :: CSize -> CSize -> CSize -> IO (Ptr PFqTag)
 foreign import ccall unsafe pfq_open_nogroup        :: CSize -> CSize -> IO (Ptr PFqTag)
-foreign import ccall unsafe pfq_open_nogroup_       :: CSize -> CSize -> CSize -> CSize -> IO (Ptr PFqTag)
-foreign import ccall unsafe pfq_open_group          :: CULong -> CInt  -> CSize -> CSize -> CSize -> CSize -> IO (Ptr PFqTag)
+foreign import ccall unsafe pfq_open_nogroup_       :: CSize -> CSize -> CSize -> IO (Ptr PFqTag)
+foreign import ccall unsafe pfq_open_group          :: CULong -> CInt  -> CSize -> CSize -> CSize -> IO (Ptr PFqTag)
 
 foreign import ccall unsafe pfq_close               :: Ptr PFqTag -> IO CInt
 foreign import ccall unsafe pfq_error               :: Ptr PFqTag -> IO CString
@@ -1086,7 +1072,6 @@ foreign import ccall unsafe pfq_is_timestamp_enabled :: Ptr PFqTag -> IO CInt
 foreign import ccall unsafe pfq_set_caplen          :: Ptr PFqTag -> CSize -> IO CInt
 foreign import ccall unsafe pfq_get_caplen          :: Ptr PFqTag -> IO CPtrdiff
 
-foreign import ccall unsafe pfq_set_maxlen          :: Ptr PFqTag -> CSize -> IO CInt
 foreign import ccall unsafe pfq_get_maxlen          :: Ptr PFqTag -> IO CPtrdiff
 
 foreign import ccall unsafe pfq_set_tx_slots        :: Ptr PFqTag -> CSize -> IO CInt
