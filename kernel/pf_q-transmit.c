@@ -187,13 +187,15 @@ __pfq_queue_flush(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int
 	 	 	continue;
 	 	}
 
-	 	skb = pfq_tx_alloc_skb(1514, GFP_KERNEL, node);
-	 	if (unlikely(skb == NULL))
-	 		break;
-
 	 	hdr = (struct pfq_pkthdr_tx *)ptr;
 		if (hdr->len == 0)
 			break;
+
+		/* allocate a packet */
+
+	 	skb = pfq_tx_alloc_skb(1514, GFP_KERNEL, node);
+	 	if (unlikely(skb == NULL))
+	 		break;
 
 	 	/* increment ptr to the next packet */
 
