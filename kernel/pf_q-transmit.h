@@ -39,10 +39,11 @@
 
 extern int __pfq_queue_flush(size_t index, struct pfq_tx_opt *to, struct net_device *dev, int cpu, int node);
 
+
 static inline int
 pfq_queue_flush(size_t index, struct pfq_tx_opt *to, struct net_device *dev)
 {
-	return __pfq_queue_flush(index, to, dev, smp_processor_id(), NUMA_NO_NODE);
+	return __pfq_queue_flush(index, to, dev, Q_NO_KTHREAD, NUMA_NO_NODE);
 }
 
 

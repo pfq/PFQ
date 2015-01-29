@@ -779,6 +779,7 @@ int pfq_setsockopt(struct socket *sock,
 
         	if (optlen != sizeof(queue))
         		return -EINVAL;
+
         	if (copy_from_user(&queue, optval, optlen))
         		return -EFAULT;
 
