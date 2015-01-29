@@ -216,10 +216,6 @@ __pfq_queue_flush(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int
 
 	 	/* copy bytes in the socket buffer */
 
-		//
-	 	// skb_copy_to_linear_data(skb, hdr+1, len < 64 ? 64 : len);
-	 	//
-
 	 	skb_store_bits(skb, 0, hdr+1, len < 64 ? 64 : len);
 
 	 	/* enqueue the skb to the batch */
