@@ -1038,9 +1038,9 @@ pfq_inject(pfq_t *q, const void *buf, size_t len, int queue)
 {
         struct pfq_shared_queue *sh_queue = (struct pfq_shared_queue *)(q->shm_addr);
         struct pfq_tx_queue *tx;
-       	unsigned int qdata;
+        unsigned int index;
         size_t slot_size;
-        int tss, index;
+        int tss;
         void *base_addr;
 
 	if (q->shm_addr == NULL)
@@ -1055,9 +1055,11 @@ pfq_inject(pfq_t *q, const void *buf, size_t len, int queue)
 
         tx = (struct pfq_tx_queue *)&sh_queue->tx[tss];
 
-        qdata = __atomic_load_n(&tx->data, __ATOMIC_RELAXED);
-
-	index = Q_SHARED_QUEUE_INDEX(qdata);
+	index = __atomic_load_n(&tx->cons, __ATOMIC_RELAXED);
+	if (index != __atomic_load_n(&tx->prod, __ATOMIC_RELAXED))
+	{
+		__atomic_store_n(&tx->prod, index, __ATOMIC_RELAXED);
+	}
 
 	base_addr = q->tx_queue_addr + q->tx_queue_size * (2 * tss + (index & 1));
 
@@ -1066,11 +1068,10 @@ pfq_inject(pfq_t *q, const void *buf, size_t len, int queue)
         	tx->ptr = base_addr;
 	}
 
-	len = min(len, 1514ull);
-
 	slot_size = sizeof(struct pfq_pkthdr_tx) + ALIGN(len, 8);
 
-	if (tx->ptr - base_addr + slot_size < q->tx_queue_size)
+	if ((tx->ptr - base_addr + slot_size
+	   	+ sizeof(struct pfq_pkthdr_tx)) < q->tx_queue_size)
 	{
        		struct pfq_pkthdr_tx *hdr;
 
@@ -1078,11 +1079,11 @@ pfq_inject(pfq_t *q, const void *buf, size_t len, int queue)
 		hdr->len = len;
 		memcpy(hdr+1, buf, hdr->len);
 
-                if (__atomic_compare_exchange_n(&tx->data, &qdata, qdata+1, 0, __ATOMIC_RELEASE, __ATOMIC_RELAXED))
-                {
-                    tx->ptr += slot_size;
-                    return Q_VALUE(q, len);
-                }
+                tx->ptr += slot_size;
+        	hdr = (struct pfq_pkthdr_tx *)tx->ptr;
+                hdr->len = 0;
+
+                return Q_VALUE(q, len);
 	}
 
 	return Q_VALUE(q, -1);
