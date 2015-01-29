@@ -186,7 +186,7 @@ struct pfq_tx_queue
 {
         unsigned int   		prod;
         unsigned int            cons;
-        unsigned int            size;  	    /* queue length in bytes */
+        size_t 			size;  	    /* queue length in bytes */
 
 	void __user * 		ptr; 	    /* reserved for user-space */
 	unsigned int __user     index; 	    /* reserved for user-space */
