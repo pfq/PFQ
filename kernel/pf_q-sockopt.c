@@ -370,7 +370,11 @@ int pfq_setsockopt(struct socket *sock,
 			if (so->tx_opt.queue[n].cpu != -1)
 				kthread_bind(so->tx_opt.queue[n].task, so->tx_opt.queue[n].cpu);
 
-			wake_up_process(so->tx_opt.queue[n].task);
+			//
+			// threads need to be woken up with pfq_queue_flush_or_wakeup function.
+		        //
+			// wake_up_process(so->tx_opt.queue[n].task);
+			//
 		}
 
 		if (err)

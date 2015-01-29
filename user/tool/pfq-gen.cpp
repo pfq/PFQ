@@ -122,6 +122,9 @@ namespace thread
             }
 
             q.enable();
+
+            q.tx_queue_flush_or_wakeup();
+
             m_pfq = std::move(q);
         }
 
