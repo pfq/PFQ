@@ -206,7 +206,7 @@ pfq_shared_queue_enable(struct pfq_sock *so, unsigned long user_addr)
 		{
 			queue->tx[n].prod      = 0;
 			queue->tx[n].cons      = 0;
-			queue->tx[n].size      = so->tx_opt.queue_size * so->tx_opt.slot_size;
+			queue->tx[n].size      = pfq_queue_spsc_mem(so)/2;
                         queue->tx[n].ptr       = 0;
                         queue->tx[n].index     = 0;
 

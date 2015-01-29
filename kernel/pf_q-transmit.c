@@ -140,13 +140,14 @@ __pfq_queue_flush(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int
 
 	/* swap the Tx queue */
 
-	index = __atomic_add_fetch(&txq->cons, 1, __ATOMIC_RELAXED);
+	index = __atomic_load_n(&txq->cons, __ATOMIC_RELAXED);
+	__atomic_store_n(&txq->cons, ++index, __ATOMIC_RELAXED);
+
 	while (index != __atomic_load_n(&txq->prod, __ATOMIC_RELAXED))
 	{
+		pfq_thread_relax();
                 if (kthread_should_stop())
                         return 0;
-
-		pfq_thread_relax();
 	}
 
 	index++;
