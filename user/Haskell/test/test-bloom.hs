@@ -73,7 +73,7 @@ dumper dev = do
 
         let m = bloomCalcM 2 0.000001
 
-        let comp = icmp >-> bloom_src_filter (fromIntegral m) ["192.168.0.1", "192.168.0.3"] >-> icmp >-> log_packet
+        let comp = icmp >-> bloom_src_filter (fromIntegral m) ["192.168.0.1", "192.168.0.3"] (fromIntegral 32) >-> icmp >-> log_packet
 
         putStrLn $ pretty comp
         Q.groupComputation q gid comp
