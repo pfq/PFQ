@@ -235,10 +235,10 @@ pfq_shared_queue_enable(struct pfq_sock *so, unsigned long user_addr)
 				so->rx_opt.caplen,
 				pfq_queue_mpsc_mem(so));
 
-		pr_devel("[PFQ|%d] Tx queue: len=%zu slot_size=%zu maxlen=%zu, mem=%zu bytes\n", so->id,
+		pr_devel("[PFQ|%d] Tx queue: len=%zu slot_size=%zu maxlen=%d, mem=%zu bytes\n", so->id,
 				so->tx_opt.queue_size,
 				so->tx_opt.slot_size,
-				so->tx_opt.maxlen,
+				max_len,
 				pfq_queue_spsc_mem(so) * Q_MAX_TX_QUEUES);
 	}
 

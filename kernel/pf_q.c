@@ -90,6 +90,7 @@ module_param(capture_outgoing,  int, 0644);
 
 module_param(cap_len,         int, 0644);
 module_param(max_len,         int, 0644);
+
 module_param(max_queue_slots, int, 0644);
 
 module_param(batch_len,       int, 0644);
@@ -103,7 +104,7 @@ MODULE_PARM_DESC(capture_incoming," Capture incoming packets: (1 default)");
 MODULE_PARM_DESC(capture_outgoing," Capture outgoing packets: (0 default)");
 
 MODULE_PARM_DESC(cap_len, " Default capture length (bytes)");
-MODULE_PARM_DESC(max_len, " Maximum transmission length (bytes)");
+MODULE_PARM_DESC(max_len, " Maximum transmission length (default=1514 bytes)");
 
 MODULE_PARM_DESC(max_queue_slots, " Max Queue slots (default=226144)");
 

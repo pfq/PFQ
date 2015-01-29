@@ -88,7 +88,6 @@ static inline void smp_wmb() { barrier(); }
 #define Q_SO_SET_RX_CAPLEN          	3
 #define Q_SO_SET_RX_SLOTS           	4
 #define Q_SO_SET_RX_OFFSET          	5
-#define Q_SO_SET_TX_MAXLEN          	6
 #define Q_SO_SET_TX_SLOTS           	7
 
 #define Q_SO_GROUP_BIND		    	8
@@ -111,7 +110,7 @@ static inline void smp_wmb() { barrier(); }
 #define Q_SO_GET_RX_CAPLEN          	25
 #define Q_SO_GET_RX_SLOTS           	26
 #define Q_SO_GET_RX_OFFSET          	27
-#define Q_SO_GET_TX_MAXLEN          	28
+#define Q_SO_GET_TX_MAXLEN		28
 #define Q_SO_GET_TX_SLOTS           	29
 #define Q_SO_GET_GROUPS             	30
 #define Q_SO_GET_GROUP_STATS        	31

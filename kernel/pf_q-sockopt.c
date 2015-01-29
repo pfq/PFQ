@@ -169,9 +169,9 @@ int pfq_getsockopt(struct socket *sock,
 
         case Q_SO_GET_TX_MAXLEN:
         {
-                if (len != sizeof(so->tx_opt.maxlen))
+                if (len != sizeof(max_len))
                         return -EINVAL;
-                if (copy_to_user(optval, &so->tx_opt.maxlen, sizeof(so->tx_opt.maxlen)))
+                if (copy_to_user(optval, &max_len, sizeof(max_len)))
                         return -EFAULT;
         } break;
 
@@ -551,27 +551,6 @@ int pfq_setsockopt(struct socket *sock,
                 so->rx_opt.queue_size = slots;
 
                 pr_devel("[PFQ|%d] rx_queue slots=%zu\n", so->id, so->rx_opt.queue_size);
-        } break;
-
-        case Q_SO_SET_TX_MAXLEN:
-        {
-                typeof (so->tx_opt.maxlen) maxlen;
-
-                if (optlen != sizeof(maxlen))
-                        return -EINVAL;
-                if (copy_from_user(&maxlen, optval, optlen))
-                        return -EFAULT;
-
-                if (maxlen > (size_t)max_len) {
-                        printk(KERN_INFO "[PFQ|%d] invalid maxlen=%zu (max %d)\n", so->id, maxlen, max_len);
-                        return -EPERM;
-                }
-
-                so->tx_opt.maxlen = maxlen;
-                so->tx_opt.slot_size = Q_SPSC_QUEUE_SLOT_SIZE(so->tx_opt.maxlen);
-
-                pr_devel("[PFQ|%d] tx_maxlen=%zu, tx_slot_size=%zu\n", so->id, so->tx_opt.maxlen, so->tx_opt.slot_size);
-
         } break;
 
         case Q_SO_SET_TX_SLOTS:

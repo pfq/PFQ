@@ -113,7 +113,6 @@ struct pfq_tx_opt
 {
 	uint64_t 		counter;
 
-	size_t  		maxlen;
 	size_t  		queue_size;
 	size_t  		slot_size;
         size_t 	       	 	num_queues;
@@ -141,9 +140,8 @@ void pfq_tx_opt_init(struct pfq_tx_opt *that, size_t maxlen)
 
         that->counter = 0;
 
-        that->maxlen = maxlen;
         that->queue_size = 0;
-        that->slot_size  = 0;
+        that->slot_size  = Q_SPSC_QUEUE_SLOT_SIZE(maxlen);
 	that->num_queues = 0;
 
 	for(n = 0; n < Q_MAX_TX_QUEUES; ++n)
