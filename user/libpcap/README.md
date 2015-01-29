@@ -65,7 +65,6 @@ Variable          |    Default    |  > 1Mpps  | Meaning
 PFQ\_CONFIG       |               |           | Specify the PFQ/pcap config file
 PFQ\_GROUP        |  free one     |           | Specify the PFQ group for the process
 PFQ\_CAPLEN       | pcap snapshot |           | Override the snaplen value for capture
-PFQ\_GENLEN       | pcap snapshot |           | Override the snaplen value for transmission
 PFQ\_RX\_SLOTS    |    4096       |  131072   | Define the RX queue length of the socket   
 PFQ\_TX\_SLOTS    |    4096       |   8192    | Define the TX queue length of the socket   
 PFQ\_TX\_FLUSH    |      1        | 16..512   | Hint used to flush then transmission queue
