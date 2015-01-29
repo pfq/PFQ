@@ -33,7 +33,7 @@ void send_packets(pfq::socket &q, int64_t num)
             n++;
     }
 
-    q.tx_queue_flush();
+    q.tx_queue_flush_or_wakeup();
 }
 
 int

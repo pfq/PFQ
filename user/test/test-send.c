@@ -32,7 +32,7 @@ void send_packets(pfq_t *q, unsigned long long num)
 			n++;
         }
 
-        pfq_tx_queue_flush(q, Q_ANY_QUEUE);
+        pfq_tx_queue_flush_or_wakeup(q, Q_ANY_QUEUE);
 }
 
 

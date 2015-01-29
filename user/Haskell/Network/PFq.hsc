@@ -144,7 +144,7 @@ module Network.PFq
 
         -- * Packet transmission
 
-        txQueueFlush,
+        txQueueFlushOrWakeup,
         inject,
         send,
         sendAsync,
@@ -1009,14 +1009,14 @@ groupComputationFromString hdl gid comp =
 
 -- |Flush the Tx queue(s)
 --
--- Transmit the packets in the queues associated wit the socket.
--- No flush is required for queues with kernel threads enabled.
+-- Transmit the packets in the queues associated with the socket.
+-- Perfrom a wakeup for queues with kernel threads enabled.
 
-txQueueFlush :: Ptr PFqTag
+txQueueFlushOrWakeup :: Ptr PFqTag
              -> Int     -- queue index (any_queue is valid)
              -> IO ()
-txQueueFlush hdl queue =
-    pfq_tx_queue_flush hdl (fromIntegral queue) >>= throwPFqIf_ hdl (== -1)
+txQueueFlushOrWakeup hdl queue =
+    pfq_tx_queue_flush_or_wakeup hdl (fromIntegral queue) >>= throwPFqIf_ hdl (== -1)
 
 
 -- |Schedule the packet for transmission.
@@ -1131,6 +1131,6 @@ foreign import ccall unsafe pfq_send                :: Ptr PFqTag -> Ptr CChar -
 foreign import ccall unsafe pfq_send_async          :: Ptr PFqTag -> Ptr CChar -> CSize -> CSize -> IO CInt
 
 foreign import ccall unsafe pfq_inject              :: Ptr PFqTag -> Ptr CChar -> CSize -> CInt -> IO CInt
-foreign import ccall unsafe pfq_tx_queue_flush      :: Ptr PFqTag -> CInt -> IO CInt
+foreign import ccall unsafe pfq_tx_queue_flush_or_wakeup :: Ptr PFqTag -> CInt -> IO CInt
 
 

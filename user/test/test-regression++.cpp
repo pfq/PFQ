@@ -556,13 +556,13 @@ Context(PFQ)
     Test(tx_queue_flush)
     {
         pfq::socket q(64);
-        AssertThrow(q.tx_queue_flush());
+        AssertThrow(q.tx_queue_flush_or_wakeup());
 
         q.bind_tx("lo", -1);
 
         q.enable();
 
-        AssertNoThrow(q.tx_queue_flush());
+        AssertNoThrow(q.tx_queue_flush_or_wakeup());
     }
 
     Test(egress_bind)

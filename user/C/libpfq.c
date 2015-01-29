@@ -1091,7 +1091,7 @@ pfq_inject(pfq_t *q, const void *buf, size_t len, int queue)
 
 
 int
-pfq_tx_queue_flush(pfq_t *q, int queue)
+pfq_tx_queue_flush_or_wakeup(pfq_t *q, int queue)
 {
         if (setsockopt(q->fd, PF_Q, Q_SO_TX_FLUSH, &queue, sizeof(queue)) == -1)
 		return Q_ERROR(q, "PFQ: Tx queue flush");
@@ -1105,7 +1105,7 @@ pfq_send(pfq_t *q, const void *ptr, size_t len)
 {
         int rc = pfq_inject(q, ptr, len, Q_ANY_QUEUE);
 
-	pfq_tx_queue_flush(q, Q_ANY_QUEUE);
+	pfq_tx_queue_flush_or_wakeup(q, Q_ANY_QUEUE);
 
 	return Q_VALUE(q, rc);
 }
@@ -1121,7 +1121,7 @@ pfq_send_async(pfq_t *q, const void *ptr, size_t len, size_t flush_hint)
        		q->tx_attempt = 0;
 
        		if (!q->tx_async)
-       			pfq_tx_queue_flush(q, Q_ANY_QUEUE);
+       			pfq_tx_queue_flush_or_wakeup(q, Q_ANY_QUEUE);
 	}
 
 	return Q_VALUE(q, rc);
