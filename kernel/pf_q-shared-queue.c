@@ -204,11 +204,11 @@ pfq_shared_queue_enable(struct pfq_sock *so, unsigned long user_addr)
 
 		for(n = 0; n < Q_MAX_TX_QUEUES; n++)
 		{
-			queue->tx[n].data      = 0;
-			queue->tx[n].size      = so->tx_opt.queue_size;
-			queue->tx[n].slot_size = so->tx_opt.slot_size;
+			queue->tx[n].prod      = 0;
+			queue->tx[n].cons      = 0;
+			queue->tx[n].size      = so->tx_opt.queue_size * so->tx_opt.slot_size;
                         queue->tx[n].ptr       = 0;
-                        queue->tx[n].index     = -1;
+                        queue->tx[n].index     = 0;
 
 			so->tx_opt.queue[n].base_addr = so->shmem.addr + sizeof(struct pfq_shared_queue)
 							+ pfq_queue_mpsc_mem(so) + pfq_queue_spsc_mem(so) * n;

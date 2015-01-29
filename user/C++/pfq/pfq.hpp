@@ -1335,9 +1335,12 @@ namespace pfq {
 
             auto tx = &static_cast<struct pfq_shared_queue *>(data_->shm_addr)->tx[tss];
 
-            unsigned int qdata = __atomic_load_n(&tx->data, __ATOMIC_RELAXED);
+            auto index = __atomic_load_n(&tx->cons, __ATOMIC_RELAXED);
+            if (index != __atomic_load_n(&tx->prod, __ATOMIC_RELAXED))
+            {
+                __atomic_store_n(&tx->prod, index, __ATOMIC_RELAXED);
+            }
 
-	        int index = Q_SHARED_QUEUE_INDEX(qdata);
 
 	        void * base_addr = static_cast<char *>(data_->tx_queue_addr)
 	                            + data_->tx_queue_size * (2 * tss + (index & 1));
@@ -1351,20 +1354,17 @@ namespace pfq {
 
             auto slot_size = sizeof(struct pfq_pkthdr_tx) + align<8>(len);
 
-
             if ((static_cast<char *>(tx->ptr) - static_cast<char *>(base_addr) + slot_size) < data_->tx_queue_size)
             {
-                struct pfq_pkthdr_tx *hdr;
-
-                hdr = (struct pfq_pkthdr_tx *)tx->ptr;
+                auto hdr = (struct pfq_pkthdr_tx *)tx->ptr;
                 hdr->len = len;
                 memcpy(hdr+1, buf.first, hdr->len);
 
-                if (__atomic_compare_exchange_n(&tx->data, &qdata, qdata+1, 0, __ATOMIC_RELEASE, __ATOMIC_RELAXED))
-                {
-                    reinterpret_cast<char *&>(tx->ptr) += slot_size;
-                    return true;
-                }
+                reinterpret_cast<char *&>(tx->ptr) += slot_size;
+                hdr = (struct pfq_pkthdr_tx *)tx->ptr;
+                hdr->len = 0;
+
+                return true;
             }
 
             return false;

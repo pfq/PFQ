@@ -123,7 +123,7 @@ __pfq_queue_flush(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int
 	size_t len, tot_sent = 0;
 	struct sk_buff *skb;
 
-	unsigned int index, qdata, ndata, n;
+	unsigned int index;
 	char *ptr;
 
 	/* get the Tx queue */
@@ -140,83 +140,98 @@ __pfq_queue_flush(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int
 
 	/* swap the Tx queue */
 
-	qdata = __atomic_load_n(&txq->data, __ATOMIC_RELAXED);
-	index = Q_SHARED_QUEUE_INDEX(qdata);
-	ndata = (index+1) << 24;
-	qdata = __atomic_exchange_n(&txq->data, ndata, __ATOMIC_ACQUIRE);
+	index = __atomic_add_fetch(&txq->cons, 1, __ATOMIC_RELAXED);
+	while (index != __atomic_load_n(&txq->prod, __ATOMIC_RELAXED))
+	{
+                if (kthread_should_stop())
+                        return 0;
+
+		pfq_thread_relax();
+	}
+
+	index++;
 
         /* transmit the queue */
 
-	ptr = to->queue[idx].base_addr +
-	      	(index & 1) * txq->size * txq->slot_size;
+	ptr = to->queue[idx].base_addr + (index & 1) * txq->size;
 
-	for(n = 0; n < Q_SHARED_QUEUE_LEN(qdata);)
+	//
+	//  TODO: update stats for packets lost
+	//
+
+	for(;;)
 	{
-		/* if complete transmit the batch */
+	 	/* if complete transmit the batch */
 
-		if (pfq_skbuff_batch_len(SKBUFF_BATCH_ADDR(skbs)) == batch_len) {
+	 	if (pfq_skbuff_batch_len(SKBUFF_BATCH_ADDR(skbs)) == batch_len) {
 
-		 	int sent, i;
+	 	 	int sent, i;
 
-		 	sent = __pfq_tx_queue_xmit(idx, SKBUFF_BATCH_ADDR(skbs), dev, to, cpu, local);
+	 	 	sent = __pfq_tx_queue_xmit(idx, SKBUFF_BATCH_ADDR(skbs), dev, to, cpu, local);
 
-		 	tot_sent += sent;
+	 	 	tot_sent += sent;
 
-		 	/* free/recycle the transmitted skb... */
+	 	 	/* free/recycle the transmitted skb... */
 
-		 	for_each_skbuff_upto(sent, SKBUFF_BATCH_ADDR(skbs), skb, i)
-		 		pfq_kfree_skb_pool(skb, &local->tx_pool);
+	 	 	for_each_skbuff_upto(sent, SKBUFF_BATCH_ADDR(skbs), skb, i)
+	 	 		pfq_kfree_skb_pool(skb, &local->tx_pool);
 
-		 	/* ... remove them from the batch */
+	 	 	/* ... remove them from the batch */
 
-		 	pfq_skbuff_batch_drop_n(SKBUFF_BATCH_ADDR(skbs), sent);
+	 	 	pfq_skbuff_batch_drop_n(SKBUFF_BATCH_ADDR(skbs), sent);
 
-		 	/* reset the use_count of unsent skb */
+	 	 	/* reset the use_count of unsent skb */
 
-		 	for_each_skbuff(&skbs, skb, i)
-		 		skb_get(skb);
+	 	 	for_each_skbuff(&skbs, skb, i)
+	 	 		skb_get(skb);
 
-		 	continue;
-		}
+	 	 	continue;
+	 	}
 
-		skb = pfq_tx_alloc_skb(1514, GFP_KERNEL, node);
-		if (unlikely(skb == NULL))
+	 	skb = pfq_tx_alloc_skb(1514, GFP_KERNEL, node);
+	 	if (unlikely(skb == NULL))
+	 		break;
+
+	 	hdr = (struct pfq_pkthdr_tx *)ptr;
+		if (hdr->len == 0)
 			break;
 
-		hdr = (struct pfq_pkthdr_tx *) ptr;
+	 	/* increment ptr to the next packet */
 
-		/* increment ptr to the next packet */
+	 	ptr += sizeof(struct pfq_pkthdr_tx) + ALIGN(hdr->len, 8);
 
-		ptr += sizeof(struct pfq_pkthdr_tx) + ALIGN(hdr->len, 8);
+	 	/* fill the skb */
 
-		/* fill the skb */
+	 	len = min_t(size_t, hdr->len, 1514);
 
-		len = min_t(size_t, hdr->len, 1514);
+	 	/* set the skb */
 
-		/* set the skb */
+	 	skb_reset_tail_pointer(skb);
+	 	skb->dev = dev;
+	 	skb->len = 0;
+	 	__skb_put(skb, len);
 
-		skb_reset_tail_pointer(skb);
-		skb->dev = dev;
-		skb->len = 0;
-		__skb_put(skb, len);
+	 	/* get the skb */
 
-		/* get the skb */
+	 	skb_get(skb);
 
-		skb_get(skb);
+	 	/* copy bytes in the socket buffer */
 
-		/* copy bytes in the socket buffer */
+		//
+	 	// skb_copy_to_linear_data(skb, hdr+1, len < 64 ? 64 : len);
+	 	//
 
-		// skb_copy_to_linear_data(skb, hdr+1, len < 64 ? 64 : len);
-		skb_store_bits(skb, 0, hdr+1, len < 64 ? 64 : len);
+	 	skb_store_bits(skb, 0, hdr+1, len < 64 ? 64 : len);
 
-		/* enqueue the skb to the batch */
+	 	/* enqueue the skb to the batch */
 
-		pfq_skbuff_short_batch_push(SKBUFF_BATCH_ADDR(skbs), skb);
+	 	pfq_skbuff_short_batch_push(SKBUFF_BATCH_ADDR(skbs), skb);
 
-		n++;
 	}
 
 	if (pfq_skbuff_batch_len(SKBUFF_BATCH_ADDR(skbs))) {
+
+		unsigned int n;
 
 		/* transmit the last batch */
 
@@ -229,9 +244,13 @@ __pfq_queue_flush(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int
 			pfq_kfree_skb_pool(skb, &local->tx_pool);
 	}
 
-	return tot_sent;
+	ptr = to->queue[idx].base_addr + (index & 1) * txq->size;
+	hdr = (struct pfq_pkthdr_tx *)ptr;
+        hdr->len = 0;
 
+	return tot_sent;
 }
+
 
 /*
  * flush the logic queue or wakeup the related kernel thread
