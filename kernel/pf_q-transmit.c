@@ -117,12 +117,11 @@ __pfq_queue_flush(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int
 {
 	struct pfq_skbuff_short_batch skbs;
 
+	struct pfq_pkthdr_tx * hdr;
 	struct pfq_tx_queue *txq;
 	struct local_data *local;
-	struct pfq_pkthdr_tx * hdr;
 	size_t len, tot_sent = 0;
 	struct sk_buff *skb;
-
 	unsigned int index;
 	char *ptr;
 
@@ -170,7 +169,7 @@ __pfq_queue_flush(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int
 
 	for(;;)
 	{
-	 	/* if complete transmit the batch */
+	 	/* if complete, transmit the batch */
 
 	 	if (pfq_skbuff_batch_len(SKBUFF_BATCH_ADDR(skbs)) == batch_len) {
 
@@ -197,6 +196,8 @@ __pfq_queue_flush(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int
 	 	 	continue;
 	 	}
 
+		/* check whether the queue is consumed */
+
 	 	hdr = (struct pfq_pkthdr_tx *)ptr;
 		if (hdr->len == 0)
 			break;
@@ -207,7 +208,7 @@ __pfq_queue_flush(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int
 	 	if (unlikely(skb == NULL))
 	 		break;
 
-	 	/* increment ptr to the next packet */
+	 	/* move ptr to the next packet */
 
 	 	ptr += sizeof(struct pfq_pkthdr_tx) + ALIGN(hdr->len, 8);
 
@@ -222,18 +223,15 @@ __pfq_queue_flush(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int
 	 	skb->len = 0;
 	 	__skb_put(skb, len);
 
-	 	/* get the skb */
-
 	 	skb_get(skb);
 
 	 	/* copy bytes in the socket buffer */
 
 	 	skb_store_bits(skb, 0, hdr+1, len < 64 ? 64 : len);
 
-	 	/* enqueue the skb to the batch */
+	 	/* enqueue the skb into the batch */
 
 	 	pfq_skbuff_short_batch_push(SKBUFF_BATCH_ADDR(skbs), skb);
-
 	}
 
 	if (pfq_skbuff_batch_len(SKBUFF_BATCH_ADDR(skbs))) {
