@@ -47,7 +47,7 @@ main(int argc, char *argv[])
     int node        = atoi(argv[3]);
     int64_t num     = atoll(argv[4]);
 
-    pfq::socket q(64, 4096, 64, 4096);
+    pfq::socket q(64, 4096, 4096);
 
     q.enable();
 

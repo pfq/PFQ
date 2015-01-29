@@ -51,7 +51,7 @@ main(int argc, char *argv[])
         int node   = atoi(argv[3]);
         unsigned long long num = atoll(argv[4]);
 
-        pfq_t * q= pfq_open_(64, 1, 128, 4096);
+        pfq_t * q= pfq_open_(64, 1, 4096);
 
         pfq_enable(q);
 
