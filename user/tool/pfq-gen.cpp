@@ -205,7 +205,7 @@ namespace thread
 
             auto len = opt::len;
 
-            for(size_t n = 0; n < opt::npackets; n++)
+            for(size_t i = 0; i < opt::npackets; i++)
             {
                 auto n = pcap_next_ex(p, &hdr, (u_char const **)&data);
 
