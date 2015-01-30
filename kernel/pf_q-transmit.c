@@ -84,35 +84,6 @@ pfq_pick_tx(struct net_device *dev, struct sk_buff *skb, int *hw_queue)
 }
 
 
-static inline int
-__pfq_tx_queue_xmit(size_t idx, struct pfq_skbuff_batch *skbs, struct net_device *dev, struct pfq_tx_opt *to, int cpu, struct local_data *local)
-{
-	size_t sent;
-
-#ifdef PFQ_TX_PROFILE
-	size_t len = pfq_skbuff_batch_len(skbs);
-	cycles_t start = get_cycles();
-#endif
-
-	/* transmit the batch */
-
-	sent = pfq_queue_xmit(skbs, dev, to->queue[idx].hw_queue);
-
-	/* update stats */
-
-	__sparse_add(&to->stats.sent, sent, cpu);
-	__sparse_add(&global_stats.sent, sent, cpu);
-
-#ifdef PFQ_TX_PROFILE
-	if (printk_ratelimit()) {
-		cycles_t stop = get_cycles();
-		printk(KERN_INFO "[PFQ] TX avg cpu-cycle: %llu_tsc (batch len = %d).\n", (stop - start)/len, len);
-	}
-#endif
-	return sent;
-}
-
-
 static inline
 int giveup_tx(int cpu)
 {
@@ -167,7 +138,6 @@ __pfq_queue_flush(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int
 		__atomic_store_n(&txq->prod, 1, __ATOMIC_RELAXED);
 	}
 
-
 	index++;
 
         /* transmit the queue */
@@ -186,11 +156,16 @@ __pfq_queue_flush(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int
 
 	 	 	int sent, i;
 
-	 	 	sent = __pfq_tx_queue_xmit(idx, SKBUFF_BATCH_ADDR(skbs), dev, to, cpu, local);
+			sent = pfq_queue_xmit(SKBUFF_BATCH_ADDR(skbs), dev, to->queue[idx].hw_queue);
 	 	 	tot_sent += sent;
 
-	 	 	/* free/recycle the transmitted skb... */
+			/* update stats */
 
+			__sparse_add(&to->stats.sent, sent, cpu);
+			__sparse_add(&global_stats.sent, sent, cpu);
+
+	 	 	/* free the transmitted skb... */
+	 	 	
 	 	 	for_each_skbuff_upto(sent, SKBUFF_BATCH_ADDR(skbs), skb, i)
 	 	 		pfq_kfree_skb_pool(skb, &local->tx_pool);
 
@@ -248,6 +223,7 @@ __pfq_queue_flush(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int
 	 	/* enqueue the skb into the batch */
 
 	 	pfq_skbuff_short_batch_push(SKBUFF_BATCH_ADDR(skbs), skb);
+
 	}
 
 	if (pfq_skbuff_batch_len(SKBUFF_BATCH_ADDR(skbs))) {
@@ -255,10 +231,15 @@ __pfq_queue_flush(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int
 
 		/* transmit the last batch */
 
-		int sent  = __pfq_tx_queue_xmit(idx, SKBUFF_BATCH_ADDR(skbs), dev, to, cpu, local);
+		int sent = pfq_queue_xmit(SKBUFF_BATCH_ADDR(skbs), dev, to->queue[idx].hw_queue);
 		tot_sent += sent;
 
-		/* recycle the skbs */
+		/* update stats */
+
+		__sparse_add(&to->stats.sent, sent, cpu);
+		__sparse_add(&global_stats.sent, sent, cpu);
+
+		/* free the skbs */
 
 		for_each_skbuff(SKBUFF_BATCH_ADDR(skbs), skb, n)
 			pfq_kfree_skb_pool(skb, &local->tx_pool);
