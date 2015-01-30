@@ -20,6 +20,7 @@
 #include <tuple>
 #include <unordered_set>
 #include <random>
+#include <limits>
 
 #include <binding.hpp>
 #include <affinity.hpp>
@@ -75,6 +76,8 @@ namespace opt
     size_t flush   = 1;
     size_t len     = 1514;
     size_t slots   = 4096;
+    size_t npackets = std::numeric_limits<size_t>::max();
+
     bool   rand_ip = false;
     char *packet   = nullptr;
     double rate    = 0;
@@ -164,7 +167,7 @@ namespace thread
 
             auto len = opt::len;
 
-            for(size_t n = 0;;n++)
+            for(size_t n = 0; n < opt::npackets; n++)
             {
                 if ((n & 8191) == 0)
                 {
@@ -202,7 +205,7 @@ namespace thread
 
             auto len = opt::len;
 
-            for(;;)
+            for(size_t n = 0; n < opt::npackets; n++)
             {
                 auto n = pcap_next_ex(p, &hdr, (u_char const **)&data);
 
@@ -311,6 +314,7 @@ void usage(std::string name)
         "usage: " + std::move(name) + " [OPTIONS]\n\n"
         " -h --help                     Display this help\n"
         " -l --len INT                  Set packet length\n"
+        " -n --packets INT              Number of packets\n"
         " -s --queue-slots INT          Set Tx queue length\n"
         " -k --kcore IDX,IDX...         Async with kernel threads\n"
         " -r --read FILE                Read pcap trace file to send\n"
@@ -366,6 +370,17 @@ try
             }
 
             opt::len = static_cast<size_t>(std::atoi(argv[i]));
+            continue;
+        }
+
+        if ( any_strcmp(argv[i], "-n", "--packets") )
+        {
+            if (++i == argc)
+            {
+                throw std::runtime_error("number missing");
+            }
+
+            opt::npackets = static_cast<size_t>(std::atoi(argv[i]));
             continue;
         }
 
@@ -436,7 +451,6 @@ try
 
     if (opt::rate != 0.0)
         std::cout << "rate       : "  << opt::rate << " Mpps" << std::endl;
-
 
     if (opt::slots == 0)
         throw std::runtime_error("tx_slots set to 0!");
