@@ -31,7 +31,7 @@
 
 
 void
-pr_devel_buffer(const char *buff, size_t len)
+pr_devel_buffer(const unsigned char *buff, size_t len)
 {
 	pr_devel("[PFQ] %zu [%2x %2x %2x %2x %2x %2x %2x %2x %2x %2x"
 		          " %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x"
