@@ -268,12 +268,12 @@ pfq_queue_flush_or_wakeup(struct pfq_sock *so, int index)
 	}
 
 	dev = dev_get_by_index(sock_net(&so->sk), so->tx_opt.queue[index].if_index);
-	if (!dev)
+	if (!dev) {
+		printk(KERN_INFO "[PFQ] pfq_queue_flush_or_wakeup[%d]: bad if_index:%d!\n", index, so->tx_opt.queue[index].if_index);
 		return -EPERM;
+	}
 
 	pfq_queue_flush(index, &so->tx_opt, dev);
-
-	put_cpu();
 	dev_put(dev);
 	return 0;
 }
