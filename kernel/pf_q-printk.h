@@ -29,6 +29,7 @@ struct pfq_computation_descr;
 struct pfq_computation_tree;
 struct pfq_functional_node;
 
+extern void   pr_devel_buffer(const char *buff, size_t len);
 extern void   pr_devel_computation_descr(struct pfq_computation_descr const *);
 extern void   pr_devel_computation_tree(struct pfq_computation_tree const *);
 extern size_t snprintf_functional_node(char *buffer, size_t size, struct pfq_functional_node const *node, size_t index);

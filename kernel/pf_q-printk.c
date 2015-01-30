@@ -29,6 +29,22 @@
 #include <pf_q-engine.h>
 #include <pf_q-printk.h>
 
+
+void
+pr_devel_buffer(const char *buff, size_t len)
+{
+	pr_devel("[PFQ] %zu [%2x %2x %2x %2x %2x %2x %2x %2x %2x %2x"
+		          " %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x"
+		          " %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x"
+		          " %2x %2x %2x %2x...]\n", len,
+       	buff[0], buff[1], buff[2], buff[3], buff[4], buff[5], buff[6], buff[7],
+       	buff[8], buff[9], buff[10], buff[11], buff[12], buff[13], buff[14], buff[15],
+       	buff[16], buff[17], buff[18], buff[19], buff[20], buff[21], buff[22], buff[23],
+       	buff[24], buff[25], buff[26], buff[27], buff[28], buff[29], buff[30], buff[31],
+       	buff[32], buff[33]);
+}
+
+
 size_t
 snprintf_functional_node(char *buffer, size_t size, struct pfq_functional_node const *node, size_t index)
 {
