@@ -81,7 +81,6 @@ namespace opt
     std::atomic_int nthreads;
 
     bool   rand_ip = false;
-    char *packet   = nullptr;
     double rate    = 0;
 
     std::vector< std::vector<int> > kcore;
@@ -103,6 +102,7 @@ namespace thread
         , m_band(std::unique_ptr<std::atomic_ullong>(new std::atomic_ullong(0)))
         , m_fail(std::unique_ptr<std::atomic_ullong>(new std::atomic_ullong(0)))
         , m_gen()
+        , m_packet(std::unique_ptr<char>(make_packet(opt::len)))
         {
             if (m_bind.dev.empty())
                 throw std::runtime_error("context: device unspecified");
@@ -163,7 +163,7 @@ namespace thread
 
         void synt_generator()
         {
-            auto ip = reinterpret_cast<iphdr *>(opt::packet + 14);
+            auto ip = reinterpret_cast<iphdr *>(m_packet.get() + 14);
 
             auto delta = std::chrono::nanoseconds(static_cast<uint64_t>(1000/opt::rate));
 
@@ -251,6 +251,8 @@ namespace thread
         std::unique_ptr<std::atomic_ullong> m_fail;
 
         std::mt19937 m_gen;
+
+        std::unique_ptr<char> m_packet;
     };
 
 }
@@ -457,8 +459,6 @@ try
 
     if (opt::slots == 0)
         throw std::runtime_error("tx_slots set to 0!");
-
-    opt::packet = make_packet(opt::len);
 
     //
     // process binding:
