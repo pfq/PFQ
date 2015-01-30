@@ -204,7 +204,7 @@ __pfq_queue_flush(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int
 
 		/* allocate a packet */
 
-	 	skb = pfq_tx_alloc_skb(1514, GFP_KERNEL, node);
+	 	skb = pfq_tx_alloc_skb(max_len, GFP_KERNEL, node);
 	 	if (unlikely(skb == NULL))
 	 		break;
 
@@ -214,7 +214,7 @@ __pfq_queue_flush(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int
 
 	 	/* fill the skb */
 
-	 	len = min_t(size_t, hdr->len, 1514);
+	 	len = min_t(size_t, hdr->len, max_len);
 
 	 	/* set the skb */
 
