@@ -28,6 +28,7 @@
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/version.h>
+#include <linux/sched.h>
 
 #include <linux/skbuff.h>
 #include <linux/netdevice.h>
@@ -112,6 +113,16 @@ __pfq_tx_queue_xmit(size_t idx, struct pfq_skbuff_batch *skbs, struct net_device
 }
 
 
+static inline
+int giveup_tx(int cpu)
+{
+	if (cpu == Q_NO_KTHREAD)
+		return signal_pending(current);
+
+	return kthread_should_stop();
+}
+
+
 int
 __pfq_queue_flush(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int cpu, int node)
 {
@@ -146,7 +157,7 @@ __pfq_queue_flush(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int
 		{
 			pfq_thread_relax();
 
-			if (kthread_should_stop())
+			if (giveup_tx(cpu))
 				return 0;
 		}
 
@@ -176,7 +187,6 @@ __pfq_queue_flush(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int
 	 	 	int sent, i;
 
 	 	 	sent = __pfq_tx_queue_xmit(idx, SKBUFF_BATCH_ADDR(skbs), dev, to, cpu, local);
-
 	 	 	tot_sent += sent;
 
 	 	 	/* free/recycle the transmitted skb... */
@@ -192,6 +202,12 @@ __pfq_queue_flush(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int
 
 	 	 	for_each_skbuff(&skbs, skb, i)
 	 	 		skb_get(skb);
+
+			if (sent == 0) {
+                        	if (giveup_tx(cpu))
+                        		goto out;
+				pfq_thread_relax();
+			}
 
 	 	 	continue;
 	 	}
@@ -235,7 +251,6 @@ __pfq_queue_flush(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int
 	}
 
 	if (pfq_skbuff_batch_len(SKBUFF_BATCH_ADDR(skbs))) {
-
 		unsigned int n;
 
 		/* transmit the last batch */
@@ -248,7 +263,7 @@ __pfq_queue_flush(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int
 		for_each_skbuff(SKBUFF_BATCH_ADDR(skbs), skb, n)
 			pfq_kfree_skb_pool(skb, &local->tx_pool);
 	}
-
+out:
 	ptr = to->queue[idx].base_addr + (index & 1) * txq->size;
 	hdr = (struct pfq_pkthdr_tx *)ptr;
         hdr->len = 0;
