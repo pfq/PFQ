@@ -171,8 +171,12 @@ namespace thread
 
             auto len = opt::len;
 
-            for(size_t n = 0; n < opt::npackets; n++)
+            for(size_t n = 0; n < opt::npackets;)
             {
+                //
+                // poor-man rate control...
+                //
+
                 if ((n & 8191) == 0)
                 {
                     while (std::chrono::system_clock::now() < (now + delta*8192))
@@ -180,19 +184,22 @@ namespace thread
                     now = std::chrono::system_clock::now();
                 }
 
+                if (!m_pfq.send_async(pfq::const_buffer(reinterpret_cast<const char *>(m_packet.get()), len), opt::flush))
+                {
+                    m_fail->fetch_add(1, std::memory_order_relaxed);
+                    continue;
+                }
+
+                m_sent->fetch_add(1, std::memory_order_relaxed);
+                m_band->fetch_add(len, std::memory_order_relaxed);
+
                 if (opt::rand_ip)
                 {
                     ip->saddr = static_cast<uint32_t>(m_gen());
                     ip->daddr = static_cast<uint32_t>(m_gen());
                 }
 
-                if (m_pfq.send_async(pfq::const_buffer(reinterpret_cast<const char *>(opt::packet), len), opt::flush))
-                {
-                    m_sent->fetch_add(1, std::memory_order_relaxed);
-                    m_band->fetch_add(len, std::memory_order_relaxed);
-                }
-                else
-                    m_fail->fetch_add(1, std::memory_order_relaxed);
+                n++;
             }
         }
 
@@ -206,39 +213,51 @@ namespace thread
             if (p == nullptr)
                 throw std::runtime_error("pcap_open_offline:" + std::string(opt::errbuf));
 
+            auto n = pcap_next_ex(p, &hdr, (u_char const **)&data);
+            if (n == -2)
+                return;
 
-            auto len = opt::len;
+            auto delta = std::chrono::nanoseconds(static_cast<uint64_t>(1000/opt::rate));
 
-            for(size_t i = 0; i < opt::npackets; i++)
+            auto now = std::chrono::system_clock::now();
+
+            for(size_t i = 0; i < opt::npackets;)
             {
-                auto n = pcap_next_ex(p, &hdr, (u_char const **)&data);
+                //
+                // poor-man rate control...
+                //
 
+                if ((n & 8191) == 0)
+                {
+                    while (std::chrono::system_clock::now() < (now + delta*8192))
+                    {}
+                    now = std::chrono::system_clock::now();
+                }
+
+                auto plen = std::min<size_t>(hdr->caplen, opt::len);
+
+                if (!m_pfq.send_async(pfq::const_buffer(reinterpret_cast<const char *>(data), plen), opt::flush))
+                {
+                    m_fail->fetch_add(1, std::memory_order_relaxed);
+                    continue;
+                }
+
+                m_sent->fetch_add(1, std::memory_order_relaxed);
+                m_band->fetch_add(plen, std::memory_order_relaxed);
+
+                n = pcap_next_ex(p, &hdr, (u_char const **)&data);
                 if (n == -2)
                     break;
 
-                else if (n == 1) {
-
-                    auto ip = reinterpret_cast<iphdr *>(data + 14);
-
-                    if (opt::rand_ip)
-                    {
-                        ip->saddr = static_cast<uint32_t>(m_gen());
-                        ip->daddr = static_cast<uint32_t>(m_gen());
-                    }
-
-                    auto plen = std::min<size_t>(hdr->caplen, len);
-
-                    if (m_pfq.send_async(pfq::const_buffer(reinterpret_cast<const char *>(data), plen), opt::flush))
-                    {
-                        m_sent->fetch_add(1, std::memory_order_relaxed);
-                        m_band->fetch_add(plen, std::memory_order_relaxed);
-                    }
-                    else
-                        m_fail->fetch_add(1, std::memory_order_relaxed);
+                if (auto ip = opt::rand_ip ? reinterpret_cast<iphdr *>(data + 14) : nullptr)
+                {
+                    ip->saddr = static_cast<uint32_t>(m_gen());
+                    ip->daddr = static_cast<uint32_t>(m_gen());
                 }
+
+                i++;
             }
         }
-
 
         int m_id;
 
@@ -549,9 +568,6 @@ try
     {
         std::this_thread::sleep_for(std::chrono::seconds(1));
 
-        if (opt::nthreads.load(std::memory_order_relaxed) == 0)
-            break;
-
         cur = {0,0,0,0,0,0,0};
         sent = 0;
         band = 0;
@@ -583,6 +599,9 @@ try
         sent_ = sent;
         band_ = band;
         fail_ = fail;
+
+        if (opt::nthreads.load(std::memory_order_relaxed) == 0)
+            break;
     }
 
 }
