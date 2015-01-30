@@ -603,6 +603,10 @@ try
         if (opt::nthreads.load(std::memory_order_relaxed) == 0)
             break;
     }
+    
+    std::cout << "Shutting down sockets in 1 sec..." << std::endl;
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+    std::cout << "Done." << std::endl;
 
 }
 catch(std::exception &e)
