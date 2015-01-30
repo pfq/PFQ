@@ -78,6 +78,8 @@ namespace opt
     size_t slots   = 4096;
     size_t npackets = std::numeric_limits<size_t>::max();
 
+    std::atomic_int nthreads;
+
     bool   rand_ip = false;
     char *packet   = nullptr;
     double rate    = 0;
@@ -141,6 +143,8 @@ namespace thread
                 synt_generator();
             else
                 pcap_generator();
+
+            opt::nthreads--;
         }
 
         std::tuple<pfq_stats, uint64_t, uint64_t, uint64_t>
@@ -444,7 +448,6 @@ try
         throw std::runtime_error(std::string("pfq-gen: ") + argv[i] + " unknown option");
     }
 
-
     std::cout << "rand_ip    : "  << std::boolalpha << opt::rand_ip << std::endl;
     std::cout << "len        : "  << opt::len << std::endl;
     std::cout << "flush-hint : "  << opt::flush << std::endl;
@@ -516,8 +519,11 @@ try
         thread_ctx.push_back(new thread::context(static_cast<int>(i), binding[i], opt::kcore[i]));
     }
 
+    opt::nthreads.store(binding.size(), std::memory_order_relaxed);
 
+    //
     // create threads:
+    //
 
     size_t i = 0;
     std::for_each(binding.begin(), binding.end(), [&](pfq::binding const &b) {
@@ -527,10 +533,9 @@ try
         extra::set_affinity(*t, b.core);
 
         t->detach();
-
     });
 
-     pfq_stats cur, prec = {0,0,0,0,0,0,0};
+    pfq_stats cur, prec = {0,0,0,0,0,0,0};
 
     uint64_t sent, sent_ = 0;
     uint64_t band, band_ = 0;
@@ -543,6 +548,9 @@ try
     for(int y=0; true; y++)
     {
         std::this_thread::sleep_for(std::chrono::seconds(1));
+
+        if (opt::nthreads.load(std::memory_order_relaxed) == 0)
+            break;
 
         cur = {0,0,0,0,0,0,0};
         sent = 0;
