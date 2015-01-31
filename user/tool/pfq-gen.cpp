@@ -102,7 +102,7 @@ namespace thread
         , m_band(std::unique_ptr<std::atomic_ullong>(new std::atomic_ullong(0)))
         , m_fail(std::unique_ptr<std::atomic_ullong>(new std::atomic_ullong(0)))
         , m_gen()
-        , m_packet(std::unique_ptr<char>(make_packet(opt::len)))
+        , m_packet(std::unique_ptr<char[]>(make_packet(opt::len)))
         {
             if (m_bind.dev.empty())
                 throw std::runtime_error("context: device unspecified");
@@ -126,7 +126,7 @@ namespace thread
 
             q.enable();
 
-            q.tx_queue_flush_or_wakeup();
+            q.tx_wakeup();
 
             m_pfq = std::move(q);
         }
@@ -271,7 +271,7 @@ namespace thread
 
         std::mt19937 m_gen;
 
-        std::unique_ptr<char> m_packet;
+        std::unique_ptr<char[]> m_packet;
     };
 
 }
@@ -603,7 +603,7 @@ try
         if (opt::nthreads.load(std::memory_order_relaxed) == 0)
             break;
     }
-    
+
     std::cout << "Shutting down sockets in 1 sec..." << std::endl;
     std::this_thread::sleep_for(std::chrono::seconds(1));
     std::cout << "Done." << std::endl;

@@ -588,12 +588,12 @@ void test_tx_thread()
 void test_tx_queue_flush()
 {
         pfq_t * q = pfq_open(64, 1024);
-        assert(pfq_tx_queue_flush_or_wakeup(q, Q_ANY_QUEUE) == -1);
+        assert(pfq_tx_queue_flush(q, Q_ANY_QUEUE) == -1);
 
         assert(pfq_bind_tx(q, "lo", Q_ANY_QUEUE, Q_NO_KTHREAD) == 0);
         assert(pfq_enable(q) == 0);
 
-        assert(pfq_tx_queue_flush_or_wakeup(q, Q_ANY_QUEUE) == 0);
+        assert(pfq_tx_queue_flush(q, Q_ANY_QUEUE) == 0);
 
         pfq_close(q);
 }
