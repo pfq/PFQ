@@ -527,7 +527,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 	stop = get_cycles();
 
 	if (printk_ratelimit())
-		printk(KERN_INFO "[PFQ] RX profile: %llu_tsc.\n", (stop-start)/batch_len);
+		printk(KERN_INFO "[PFQ] Rx profile: %llu_tsc.\n", (stop-start)/batch_len);
 #endif
         return 0;
 }
@@ -689,7 +689,7 @@ pfq_release(struct socket *sock)
 	for(n = 0; n < so->tx_opt.num_queues; n++)
 	{
 		if (so->tx_opt.queue[n].task) {
-			pr_devel("[PFQ|%d] stopping TX thread@%p\n", id, so->tx_opt.queue[n].task);
+			pr_devel("[PFQ|%d] stopping Tx thread@%p\n", id, so->tx_opt.queue[n].task);
 			kthread_stop(so->tx_opt.queue[n].task);
 			so->tx_opt.queue[n].task = NULL;
 		}

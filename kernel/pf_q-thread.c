@@ -57,14 +57,14 @@ pfq_tx_thread(void *_data)
 	int cpu;
 
 	if (data == NULL) {
-		printk(KERN_INFO "[PFQ] TX thread data error!\n");
+		printk(KERN_INFO "[PFQ] Tx thread data error!\n");
 		return -EPERM;
 	}
 
 	cpu = smp_processor_id();
         dev = dev_get_by_index(sock_net(&data->so->sk), data->so->tx_opt.queue[data->id].if_index);
 
-       	printk(KERN_INFO "[PFQ] TX[%zu] thread started on cpu %d.\n", data->id, cpu);
+       	printk(KERN_INFO "[PFQ] Tx[%zu] thread started on cpu %d.\n", data->id, cpu);
 
 	__set_current_state(TASK_RUNNING);
 
@@ -80,7 +80,7 @@ pfq_tx_thread(void *_data)
 
         dev_put(dev);
 
-        printk(KERN_INFO "[PFQ] TX[%zu] thread stopped on cpu %d.\n", data->id, cpu);
+        printk(KERN_INFO "[PFQ] Tx[%zu] thread stopped on cpu %d.\n", data->id, cpu);
 
         kfree(data);
         return 0;

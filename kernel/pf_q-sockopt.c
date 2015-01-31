@@ -354,7 +354,7 @@ int pfq_setsockopt(struct socket *sock,
 			data->id = n;
 			node     = cpu_online(so->tx_opt.queue[n].cpu) ? cpu_to_node(so->tx_opt.queue[n].cpu) : NUMA_NO_NODE;
 
-			pr_devel("[PFQ|%d] creating TX[%zu] thread on cpu %d: if_index=%d hw_queue=%d\n",
+			pr_devel("[PFQ|%d] creating Tx[%zu] thread on cpu %d: if_index=%d hw_queue=%d\n",
 					so->id, n, so->tx_opt.queue[n].cpu, so->tx_opt.queue[n].if_index, so->tx_opt.queue[n].hw_queue);
 
 			so->tx_opt.queue[n].task = kthread_create_on_node(pfq_tx_thread, data, node, "pfq_tx_%d#%zu", so->id, n);
@@ -390,7 +390,7 @@ int pfq_setsockopt(struct socket *sock,
 		for(n = 0; n < so->tx_opt.num_queues; n++)
 		{
 			if (so->tx_opt.queue[n].task) {
-				pr_devel("[PFQ|%d] stopping TX[%zu] thread@%p\n", so->id, n, so->tx_opt.queue[n].task);
+				pr_devel("[PFQ|%d] stopping Tx[%zu] thread@%p\n", so->id, n, so->tx_opt.queue[n].task);
 				kthread_stop(so->tx_opt.queue[n].task);
 				so->tx_opt.queue[n].task = NULL;
 			}
@@ -563,12 +563,12 @@ int pfq_setsockopt(struct socket *sock,
                         return -EFAULT;
 
                 if (slots & (slots-1)) {
-                        printk(KERN_INFO "[PFQ|%d] TX slots must be a power of two.\n", so->id);
+                        printk(KERN_INFO "[PFQ|%d] Tx slots must be a power of two.\n", so->id);
                         return -EINVAL;
                 }
 
                 if (slots > (size_t)max_queue_slots) {
-                        printk(KERN_INFO "[PFQ|%d] invalid TX slots=%zu (max %d)\n", so->id, slots, max_queue_slots);
+                        printk(KERN_INFO "[PFQ|%d] invalid Tx slots=%zu (max %d)\n", so->id, slots, max_queue_slots);
                         return -EPERM;
                 }
 
@@ -707,27 +707,27 @@ int pfq_setsockopt(struct socket *sock,
                         return -EFAULT;
 
 		if (so->tx_opt.num_queues >= Q_MAX_TX_QUEUES) {
-                        printk(KERN_INFO "[PFQ|%d] TX bind: max number of queues exceeded!\n", so->id);
+                        printk(KERN_INFO "[PFQ|%d] Tx bind: max number of queues exceeded!\n", so->id);
 			return -EPERM;
 		}
 
                 rcu_read_lock();
                 if (!dev_get_by_index_rcu(sock_net(&so->sk), info.if_index)) {
                         rcu_read_unlock();
-                        printk(KERN_INFO "[PFQ|%d] TX bind: invalid if_index=%d\n", so->id, info.if_index);
+                        printk(KERN_INFO "[PFQ|%d] Tx bind: invalid if_index=%d\n", so->id, info.if_index);
                         return -EPERM;
                 }
                 rcu_read_unlock();
 
                 if (info.hw_queue < -1) {
-                        printk(KERN_INFO "[PFQ|%d] TX bind: invalid queue=%d\n", so->id, info.hw_queue);
+                        printk(KERN_INFO "[PFQ|%d] Tx bind: invalid queue=%d\n", so->id, info.hw_queue);
                         return -EPERM;
                 }
 
                 i = so->tx_opt.num_queues;
 
 		if (info.cpu < -1) {
-			printk(KERN_INFO "[PFQ|%d] TX[%zu] thread: invalid cpu (%d)!\n", so->id, i, info.cpu);
+			printk(KERN_INFO "[PFQ|%d] Tx[%zu] thread: invalid cpu (%d)!\n", so->id, i, info.cpu);
 			return -EPERM;
 		}
 
@@ -737,7 +737,7 @@ int pfq_setsockopt(struct socket *sock,
 
 		so->tx_opt.num_queues++;
 
-                pr_devel("[PFQ|%d] TX[%zu] bind: if_index=%d hw_queue=%d\n", so->id, i,
+                pr_devel("[PFQ|%d] Tx[%zu] bind: if_index=%d hw_queue=%d\n", so->id, i,
                 		so->tx_opt.queue[i].if_index, so->tx_opt.queue[i].hw_queue);
 
         } break;
@@ -767,24 +767,24 @@ int pfq_setsockopt(struct socket *sock,
         		return -EFAULT;
 
 		if (pfq_get_tx_queue(&so->tx_opt, 0) == NULL) {
-			printk(KERN_INFO "[PFQ|%d] TX queue flush: socket not enabled!\n", so->id);
+			printk(KERN_INFO "[PFQ|%d] Tx queue flush: socket not enabled!\n", so->id);
 			return -EPERM;
 		}
 
 		if (queue < -1 || (queue > 0 && queue >= so->tx_opt.num_queues)) {
-			printk(KERN_INFO "[PFQ|%d] TX queue flush: bad queue %d (num_queue=%zu)!\n", so->id, queue, so->tx_opt.num_queues);
+			printk(KERN_INFO "[PFQ|%d] Tx queue flush: bad queue %d (num_queue=%zu)!\n", so->id, queue, so->tx_opt.num_queues);
 			return -EPERM;
 		}
 
 		if (queue != -1) {
-			pr_devel("[PFQ|%d] flushing TX queue %d...\n", so->id, queue);
+			pr_devel("[PFQ|%d] flushing Tx queue %d...\n", so->id, queue);
 			return pfq_queue_flush(so, queue);
 		}
 
 		for(n = 0; n < so->tx_opt.num_queues; n++)
 		{
 			if (pfq_queue_flush(so, n) != 0) {
-				printk(KERN_INFO "[PFQ|%d] TX[%zu] queue flush: flush error (if_index=%d)!\n", so->id, n, so->tx_opt.queue[n].if_index);
+				printk(KERN_INFO "[PFQ|%d] Tx[%zu] queue flush: flush error (if_index=%d)!\n", so->id, n, so->tx_opt.queue[n].if_index);
 				err = -EPERM;
 			}
 		}
