@@ -153,7 +153,7 @@ __pfq_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int 
 	unsigned int n, index;
        	int last_batch_len, hw_queue;
 
-	char *ptr, *end;
+	char *ptr, *begin, *end;
 
 	/* get the Tx queue */
 
@@ -189,8 +189,8 @@ __pfq_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int 
 
         /* initialize pointer to the current transmit queue */
 
-	ptr = to->queue[idx].base_addr + (index & 1) * soft_txq->size;
-        end = to->queue[idx].base_addr + 2 * soft_txq->size;
+	begin = to->queue[idx].base_addr + (index & 1) * soft_txq->size;
+        end   = to->queue[idx].base_addr + 2 * soft_txq->size;
 
 	/* initialize the batch */
 
@@ -198,7 +198,7 @@ __pfq_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int 
 
 	/* Tx loop */
 
-	hdr = (struct pfq_pkthdr_tx *)ptr;
+	hdr = (struct pfq_pkthdr_tx *)(ptr = begin);
 
 	for(n = 0; ptr < end && hdr->len != 0; n++, hdr = (struct pfq_pkthdr_tx *)ptr)
 	{
@@ -299,8 +299,7 @@ __pfq_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int 
 
 	/* clear the queue */
 
-	ptr = to->queue[idx].base_addr + (index & 1) * soft_txq->size;
-	hdr = (struct pfq_pkthdr_tx *)ptr;
+	hdr = (struct pfq_pkthdr_tx *)begin;
         hdr->len = 0;
 
 	return tot_sent;
