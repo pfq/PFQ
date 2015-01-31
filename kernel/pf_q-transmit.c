@@ -289,16 +289,13 @@ __pfq_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int 
 
 	/* update stat for discarded packets */
 
-	if (hdr->len != 0)
+	for(n = 0; ptr < end && hdr->len != 0; n++, hdr = (struct pfq_pkthdr_tx *)ptr)
 	{
-		for(n = 0; ptr < end && hdr->len != 0; n++, hdr = (struct pfq_pkthdr_tx *)ptr)
-		{
-			ptr += sizeof(struct pfq_pkthdr_tx) + ALIGN(hdr->len, 8);
-		}
-
-		__sparse_add(&to->stats.disc, n, cpu);
-		__sparse_add(&global_stats.disc, n, cpu);
+		ptr += sizeof(struct pfq_pkthdr_tx) + ALIGN(hdr->len, 8);
 	}
+
+	__sparse_add(&to->stats.disc, n, cpu);
+	__sparse_add(&global_stats.disc, n, cpu);
 
 	/* clear the queue */
 
