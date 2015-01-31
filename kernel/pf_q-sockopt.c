@@ -793,6 +793,42 @@ int pfq_setsockopt(struct socket *sock,
 			return err;
         } break;
 
+        case Q_SO_TX_WAKEUP:
+        {
+		int queue;
+                size_t n;
+
+        	if (optlen != sizeof(queue))
+        		return -EINVAL;
+
+        	if (copy_from_user(&queue, optval, optlen))
+        		return -EFAULT;
+
+		if (pfq_get_tx_queue(&so->tx_opt, 0) == NULL) {
+			printk(KERN_INFO "[PFQ|%d] Tx queue flush: socket not enabled!\n", so->id);
+			return -EPERM;
+		}
+
+		if (queue < -1 || (queue >= so->tx_opt.num_queues) || (queue != -1 && so->tx_opt.queue[queue].task == NULL)) {
+			printk(KERN_INFO "[PFQ|%d] Tx wakeup: bad queue %d (num_queue=%zu)!\n", so->id, queue, so->tx_opt.num_queues);
+			return -EPERM;
+		}
+
+		for(n = 0; n < so->tx_opt.num_queues; n++)
+		{
+			if (queue == n || (queue == -1 && so->tx_opt.queue[n].task))
+			{
+				if (pfq_tx_wakeup(so, n) != 0) {
+					printk(KERN_INFO "[PFQ|%d] Tx[%zu] wakeup: error!\n", so->id, n);
+					return -EPERM;
+				}
+			}
+		}
+
+		return 0;
+
+        } break;
+
         case Q_SO_GROUP_FUNCTION:
         {
                 struct pfq_computation_descr *descr = NULL;
