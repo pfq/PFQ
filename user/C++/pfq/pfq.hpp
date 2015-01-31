@@ -1274,7 +1274,7 @@ namespace pfq {
         {
             auto rc = inject(pkt);
             if (!data_->tx_async)
-                tx_queue_flush_or_wakeup();
+                tx_queue_flush();
             return rc;
         }
 
@@ -1295,7 +1295,7 @@ namespace pfq {
                 data_->tx_attempt = 0;
 
                 if (!data_->tx_async)
-                    tx_queue_flush_or_wakeup(any_queue);
+                    tx_queue_flush(any_queue);
             }
 
             return rc;
@@ -1304,7 +1304,7 @@ namespace pfq {
         //! Schedule the packet for transmission.
         /*!
          * The packet is copied into a Tx queue (according to a symmetric hash)
-         * and transmitted by a kernel thread, or when tx_queue_flush_or_wakeup is called.
+         * and transmitted by a kernel thread, or when tx_queue_flush is called.
          */
 
         bool
@@ -1359,15 +1359,28 @@ namespace pfq {
         //! Flush the Tx queue(s).
         /*!
          * Transmit the packets in the Tx queues of the socket.
-         * Perform a thread wakeup for queues associated with kernel threads.
          */
 
         void
-        tx_queue_flush_or_wakeup(int queue = any_queue)
+        tx_queue_flush(int queue = any_queue)
         {
             if (::setsockopt(fd_, PF_Q, Q_SO_TX_FLUSH, &queue, sizeof(queue)) == -1)
                 throw pfq_error(errno, "PFQ: Tx queue flush");
         }
+
+        //! Start kernel threads.
+        /*!
+         * Start kernel threads associated with Tx queues.
+         */
+
+        void
+        tx_wakeup()
+        {
+            void * null = nullptr;
+            if (::setsockopt(fd_, PF_Q, Q_SO_TX_WAKEUP, &null, sizeof(null)) == -1)
+                throw pfq_error(errno, "PFQ: Tx wakeup");
+        }
+
     };
 
 

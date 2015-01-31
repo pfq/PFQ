@@ -559,16 +559,23 @@ extern int pfq_get_group_counters(pfq_t const *q, int gid, struct pfq_counters *
 /*! Flush the Tx queue(s). */
 /*!
  * Transmit the packets in the Tx queues of the socket.
- * Perform a thread wakeup for queues associated with kernel threads.
  */
 
-extern int pfq_tx_queue_flush_or_wakeup(pfq_t *q, int queue);
+extern int pfq_tx_queue_flush(pfq_t *q, int queue);
+
+
+/*! Start kernel threads. */
+/*!
+ * Start kernel threads associated with Tx queues.
+ */
+
+extern int pfq_tx_wakeup(pfq_t *q);
 
 
 /*! Schedule the packet for transmission. */
 /*!
  * The packet is copied into a Tx queue (according to a symmetric hash)
- * and transmitted by a kernel thread, or when tx_queue_flush_or_wakeup is called.
+ * and transmitted by a kernel thread, or when tx_queue_flush is called.
  */
 
 extern int pfq_inject(pfq_t *q, const void *ptr, size_t len, int queue);

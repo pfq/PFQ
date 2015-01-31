@@ -988,14 +988,15 @@ int
 pfq_bind_tx(pfq_t *q, const char *dev, int queue, int core)
 {
 	struct pfq_binding b;
+        int index;
 
-        int index = pfq_ifindex(q, dev);
+        index = pfq_ifindex(q, dev);
         if (index == -1)
 		return Q_ERROR(q, "PFQ: device not found");
 
-	b.cpu = core;
 	b.if_index = index;
 	b.hw_queue = queue;
+	b.cpu = core;
 
         if (setsockopt(q->fd, PF_Q, Q_SO_TX_BIND, &b, sizeof(b)) == -1)
 		return Q_ERROR(q, "PFQ: Tx bind error");
@@ -1058,8 +1059,7 @@ pfq_inject(pfq_t *q, const void *buf, size_t len, int queue)
 
 	slot_size = sizeof(struct pfq_pkthdr_tx) + ALIGN(len, 8);
 
-	if ((tx->ptr - base_addr + slot_size
-	   	+ sizeof(struct pfq_pkthdr_tx)) < q->tx_queue_size)
+	if ((tx->ptr - base_addr + slot_size + sizeof(struct pfq_pkthdr_tx)) < q->tx_queue_size)
 	{
        		struct pfq_pkthdr_tx *hdr;
 
@@ -1079,10 +1079,21 @@ pfq_inject(pfq_t *q, const void *buf, size_t len, int queue)
 
 
 int
-pfq_tx_queue_flush_or_wakeup(pfq_t *q, int queue)
+pfq_tx_queue_flush(pfq_t *q, int queue)
 {
         if (setsockopt(q->fd, PF_Q, Q_SO_TX_FLUSH, &queue, sizeof(queue)) == -1)
 		return Q_ERROR(q, "PFQ: Tx queue flush");
+
+        return Q_OK(q);
+}
+
+
+int
+pfq_tx_wakeup(pfq_t *q)
+{
+        void * null = NULL;
+        if (setsockopt(q->fd, PF_Q, Q_SO_TX_WAKEUP, &null, sizeof(null)) == -1)
+		return Q_ERROR(q, "PFQ: Tx wakeup");
 
         return Q_OK(q);
 }
@@ -1093,7 +1104,7 @@ pfq_send(pfq_t *q, const void *ptr, size_t len)
 {
         int rc = pfq_inject(q, ptr, len, Q_ANY_QUEUE);
 
-	pfq_tx_queue_flush_or_wakeup(q, Q_ANY_QUEUE);
+	pfq_tx_queue_flush(q, Q_ANY_QUEUE);
 
 	return Q_VALUE(q, rc);
 }
@@ -1109,7 +1120,7 @@ pfq_send_async(pfq_t *q, const void *ptr, size_t len, size_t flush_hint)
        		q->tx_attempt = 0;
 
        		if (!q->tx_async)
-       			pfq_tx_queue_flush_or_wakeup(q, Q_ANY_QUEUE);
+       			pfq_tx_queue_flush(q, Q_ANY_QUEUE);
 	}
 
 	return Q_VALUE(q, rc);
