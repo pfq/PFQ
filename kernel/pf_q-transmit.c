@@ -317,6 +317,31 @@ out:
 }
 
 
+int 
+pfq_xmit(struct sk_buff *skb, struct net_device *dev, int hw_queue, int more)
+{
+	struct netdev_queue *txq;
+	int ret = 0;
+
+	/* get txq and fix the hw_queue for this batch.
+	 *
+	 * note: in case the hw_queue is set to any-queue (-1), the driver along the first skb
+	 * select the queue */
+
+	txq = pfq_pick_tx(dev, skb, &hw_queue);
+
+	skb_set_queue_mapping(skb, hw_queue);
+	
+	__netif_tx_lock_bh(txq);
+
+	ret = __pfq_xmit(skb, dev, txq, more);
+
+	__netif_tx_unlock_bh(txq);
+	
+	return ret;
+}
+
+
 int
 pfq_queue_xmit(struct pfq_skbuff_batch *skbs, struct net_device *dev, int hw_queue)
 {

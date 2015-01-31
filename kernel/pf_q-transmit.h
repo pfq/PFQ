@@ -52,11 +52,7 @@ extern int pfq_queue_flush_or_wakeup(struct pfq_sock *so, int index);
 
 extern int pfq_queue_xmit(struct pfq_skbuff_batch *skbs, struct net_device *dev, int queue_index);
 extern int pfq_queue_xmit_by_mask(struct pfq_skbuff_batch *skbs, unsigned long long skbs_mask, struct net_device *dev, int queue_index);
-static inline int pfq_xmit(struct sk_buff *skb, struct net_device *dev, int queue_index)
-{
-	struct pfq_skbuff_short_batch skbs = { 1 , { skb } };
-	return pfq_queue_xmit(SKBUFF_BATCH_ADDR(skbs), dev, queue_index);
-}
+extern int pfq_xmit(struct sk_buff *skb, struct net_device *dev, int hw_queue, int more);
 
 extern int pfq_lazy_xmit(struct gc_buff, struct net_device *dev, int queue_index);
 extern int pfq_queue_lazy_xmit(struct gc_queue_buff *queue, struct net_device *dev, int queue_index);
