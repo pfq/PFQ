@@ -111,44 +111,67 @@ int giveup_tx(int cpu)
 }
 
 
+static size_t
+batch_drain(struct pfq_skbuff_batch *skbs, struct local_data *local, struct net_device *dev, int hw_queue)
+{
+	struct sk_buff *skb;
+	int sent, i;
+
+	/* transmit the batch */
+
+	sent = pfq_batch_xmit(skbs, dev, hw_queue);
+
+	/* free the transmitted skb... */
+
+	for_each_skbuff_upto(sent, skbs, skb, i)
+		pfq_kfree_skb_pool(skb, &local->tx_pool);
+
+	/* ... discard them from the batch */
+
+	pfq_skbuff_batch_drop_n(skbs, sent);
+
+	/* get unsent skb */
+
+	for_each_skbuff(skbs, skb, i)
+		skb_get(skb);
+
+	return sent;
+}
+
+
 int
 __pfq_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int cpu, int node)
 {
-	struct pfq_pkthdr_tx * hdr;
+	struct pfq_skbuff_short_batch skbs;
+
 	struct pfq_tx_queue *soft_txq;
 	struct netdev_queue *txq;
 
+	struct pfq_pkthdr_tx * hdr;
 	struct local_data *local;
 	size_t len, tot_sent = 0;
 	unsigned int n, index;
-       	int retry, hw_queue;
-       	bool tx_locked = false;
+       	int last_batch_len, hw_queue;
+
 	char *ptr;
 
 	/* get the Tx queue */
 
 	soft_txq = pfq_get_tx_queue(to, idx);
 
-	/* lock hw Tx queue */
+	/* get the netdev_queue for transmission */
 
 	hw_queue = to->queue[idx].hw_queue;
 
-	/* the the netdev_queue for transmission */
-
 	txq = __pfq_pick_tx(dev, &hw_queue);
-
-	//
-	// if (printk_ratelimit())
-	// 	printk(KERN_INFO "[PFQ] queue => %d\n", hw_queue);
 
 	/* swap the soft Tx queue */
 
 	if (cpu != Q_NO_KTHREAD) {
-
 		index = __atomic_add_fetch(&soft_txq->cons, 1, __ATOMIC_RELAXED);
 		while (index != __atomic_load_n(&soft_txq->prod, __ATOMIC_RELAXED))
 		{
-			pfq_thread_relax();
+			pfq_relax();
 			if (giveup_tx(cpu))
 				break;
 		}
@@ -168,6 +191,10 @@ __pfq_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int 
 
 	ptr = to->queue[idx].base_addr + (index & 1) * soft_txq->size;
 
+	/* initialize the batch */
+
+	pfq_skbuff_batch_init(SKBUFF_BATCH_ADDR(skbs));
+
 	/* Tx loop */
 
 	hdr = (struct pfq_pkthdr_tx *)ptr;
@@ -175,7 +202,30 @@ __pfq_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int 
 	for(n = 0; hdr->len != 0; n++, hdr = (struct pfq_pkthdr_tx *)ptr)
 	{
 		struct sk_buff *skb;
-		int rc;
+
+		/* if the batch is full, transmit it */
+
+		if (pfq_skbuff_batch_len(SKBUFF_BATCH_ADDR(skbs)) == batch_len) {
+
+			int sent = batch_drain(SKBUFF_BATCH_ADDR(skbs), local, dev, hw_queue);
+			tot_sent += sent;
+
+		       	__sparse_add(&to->stats.sent, sent, cpu);
+		       	__sparse_add(&global_stats.sent, sent, cpu);
+
+			/* break the loop when giveup is needed */
+
+			if (sent == 0) {
+				pfq_relax();
+				if (giveup_tx(cpu)) {
+		       			__sparse_add(&to->stats.disc, batch_len, cpu);
+		       			__sparse_add(&global_stats.disc, batch_len, cpu);
+		       			break;
+				}
+			}
+
+			continue;
+		}
 
 		/* allocate a packet */
 
@@ -207,49 +257,47 @@ __pfq_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int 
 
                 /* transmit packet */
 
-		if (!tx_locked) {
-			__netif_tx_lock_bh(txq);
-                	tx_locked = true;
-		}
-
-                n = (n == batch_len ? 0 : n);
-
-		retry = 0;
-		while(((rc = __pfq_xmit(skb, dev, txq, n)) < 0)
-				&& (retry++ < tx_max_retry))
-		{
-	 		skb_get(skb);
-                	cpu_relax();
-		}
-
-		if (rc < 0 || n == 0) {
-                	tx_locked = false;
-		 	__netif_tx_unlock_bh(txq);
-		}
-
-		if (rc < 0) {
-
-			__sparse_inc(&to->stats.disc, cpu);
-		       	__sparse_inc(&global_stats.disc, cpu);
-		}
-		else {
-
-                       tot_sent++;
-		       __sparse_add(&to->stats.sent, 1, cpu);
-		       __sparse_add(&global_stats.sent, 1, cpu);
-		}
-
-		/* free the skb */
-
-	 	pfq_kfree_skb_pool(skb, &local->tx_pool);
+		pfq_skbuff_short_batch_push(SKBUFF_BATCH_ADDR(skbs), skb);
 
 	 	/* move ptr to the next packet */
 
 	 	ptr += sizeof(struct pfq_pkthdr_tx) + ALIGN(hdr->len, 8);
 	}
 
-	if (tx_locked)
-		 __netif_tx_unlock_bh(txq);
+	/* send the last batch */
+
+	while ((last_batch_len=pfq_skbuff_batch_len(SKBUFF_BATCH_ADDR(skbs)))) {
+
+		int sent = batch_drain(SKBUFF_BATCH_ADDR(skbs), local, dev, hw_queue);
+		tot_sent += sent;
+
+		__sparse_add(&to->stats.sent, sent, cpu);
+		__sparse_add(&global_stats.sent, sent, cpu);
+
+		/* break the loop when giveup is needed */
+
+		if (sent == 0) {
+			pfq_relax();
+			if (giveup_tx(cpu)) {
+				__sparse_add(&to->stats.disc, batch_len, cpu);
+				__sparse_add(&global_stats.disc, batch_len, cpu);
+				break;
+			}
+		}
+	}
+
+	/* update stat for discarded packets */
+
+	if (hdr->len != 0)
+	{
+		for(n = 0; hdr->len != 0; n++, hdr = (struct pfq_pkthdr_tx *)ptr)
+		{
+			ptr += sizeof(struct pfq_pkthdr_tx) + ALIGN(hdr->len, 8);
+		}
+
+		__sparse_add(&to->stats.disc, n, cpu);
+		__sparse_add(&global_stats.disc, n, cpu);
+	}
 
 	/* clear the queue */
 
