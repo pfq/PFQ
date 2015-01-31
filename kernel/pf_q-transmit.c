@@ -153,7 +153,7 @@ __pfq_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int 
 	unsigned int n, index;
        	int last_batch_len, hw_queue;
 
-	char *ptr;
+	char *ptr, *end;
 
 	/* get the Tx queue */
 
@@ -190,6 +190,7 @@ __pfq_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int 
         /* initialize pointer to the current transmit queue */
 
 	ptr = to->queue[idx].base_addr + (index & 1) * soft_txq->size;
+        end = to->queue[idx].base_addr + 2 * soft_txq->size;
 
 	/* initialize the batch */
 
@@ -199,7 +200,7 @@ __pfq_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int 
 
 	hdr = (struct pfq_pkthdr_tx *)ptr;
 
-	for(n = 0; hdr->len != 0; n++, hdr = (struct pfq_pkthdr_tx *)ptr)
+	for(n = 0; ptr < end && hdr->len != 0; n++, hdr = (struct pfq_pkthdr_tx *)ptr)
 	{
 		struct sk_buff *skb;
 
@@ -290,7 +291,7 @@ __pfq_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int 
 
 	if (hdr->len != 0)
 	{
-		for(n = 0; hdr->len != 0; n++, hdr = (struct pfq_pkthdr_tx *)ptr)
+		for(n = 0; ptr < end && hdr->len != 0; n++, hdr = (struct pfq_pkthdr_tx *)ptr)
 		{
 			ptr += sizeof(struct pfq_pkthdr_tx) + ALIGN(hdr->len, 8);
 		}
