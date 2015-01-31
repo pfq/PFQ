@@ -1358,8 +1358,8 @@ namespace pfq {
 
         //! Flush the Tx queue(s).
         /*!
-         * Transmit the packets in the queues associated with the socket.
-         * Perfrom a wakeup for queues with kernel threads enabled.
+         * Transmit the packets in the Tx queues of the socket.
+         * Perform a thread wakeup for queues associated with kernel threads.
          */
 
         void

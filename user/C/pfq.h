@@ -558,8 +558,8 @@ extern int pfq_get_group_counters(pfq_t const *q, int gid, struct pfq_counters *
 
 /*! Flush the Tx queue(s). */
 /*!
- * Transmit the packets in the queues associated with the socket.
- * Perfrom a wakeup for queues with kernel threads enabled.
+ * Transmit the packets in the Tx queues of the socket.
+ * Perform a thread wakeup for queues associated with kernel threads.
  */
 
 extern int pfq_tx_queue_flush_or_wakeup(pfq_t *q, int queue);

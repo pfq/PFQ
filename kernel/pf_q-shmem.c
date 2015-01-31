@@ -157,7 +157,7 @@ pfq_shared_memory_alloc(struct pfq_shmem_descr *shmem, size_t mem_size)
 {
 	size_t tot_mem = PAGE_ALIGN(mem_size);
 
-	printk(KERN_WARNING "[PFQ] allocating shared memory...\n");
+	pr_devel("[PFQ] allocating shared memory...\n");
 
         shmem->addr = vmalloc_user(tot_mem);
         shmem->size = tot_mem;

@@ -72,3 +72,10 @@ PFQ 4.0
  * pcap libraries support. 
  * Bug fixes.
 
+
+PFQ 4.1
+-------
+ * New SPSC double-buffered variadic Tx queue.
+ * Improved performance and stability.
+ * Bug fixes.
+

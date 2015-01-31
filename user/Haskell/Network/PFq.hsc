@@ -1016,7 +1016,7 @@ inject :: Ptr PFqTag
        -> IO Bool
 inject hdl xs queue =
     unsafeUseAsCStringLen xs $ \(p, l) ->
-        liftM (> 0) $ pfq_inject hdl p (fromIntegral l) (fromIntegral queue) >>= throwPFqIf hdl (== -1)
+        liftM (>= 0) $ pfq_inject hdl p (fromIntegral l) (fromIntegral queue) >>= throwPFqIf hdl (== -1)
 
 
 -- |Store the packet and transmit the packets in the queue, synchronously.
@@ -1028,7 +1028,7 @@ send :: Ptr PFqTag
           -> IO Bool
 send hdl xs =
     unsafeUseAsCStringLen xs $ \(p, l) ->
-        liftM (>0) $ pfq_send hdl p (fromIntegral l) >>= throwPFqIf hdl (== -1)
+        liftM (>= 0) $ pfq_send hdl p (fromIntegral l) >>= throwPFqIf hdl (== -1)
 
 
 -- |Store the packet and transmit the packets in the queue, asynchronously.
@@ -1042,7 +1042,7 @@ sendAsync :: Ptr PFqTag
           -> IO Bool
 sendAsync hdl xs fh =
     unsafeUseAsCStringLen xs $ \(p, l) ->
-        liftM (>0) $ pfq_send_async hdl p (fromIntegral l) (fromIntegral fh) >>= throwPFqIf hdl (== -1)
+        liftM (>= 0) $ pfq_send_async hdl p (fromIntegral l) (fromIntegral fh) >>= throwPFqIf hdl (== -1)
 
 
 -- C functions from libpfq
