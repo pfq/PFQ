@@ -47,7 +47,7 @@ pfq_queue_xmit(size_t index, struct pfq_tx_opt *to, struct net_device *dev)
 }
 
 
-extern int pfq_queue_flush_or_wakeup(struct pfq_sock *so, int index);
+extern int pfq_queue_flush(struct pfq_sock *so, int index);
 
 
 extern int pfq_batch_xmit(struct pfq_skbuff_batch *skbs, struct net_device *dev, int queue_index);

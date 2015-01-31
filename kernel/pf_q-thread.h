@@ -34,6 +34,7 @@
 
 
 extern int pfq_tx_thread(void *data);
+extern int pfq_tx_wakeup(struct pfq_sock *so, int index);
 
 struct pfq_thread_data
 {

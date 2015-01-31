@@ -778,12 +778,12 @@ int pfq_setsockopt(struct socket *sock,
 
 		if (queue != -1) {
 			pr_devel("[PFQ|%d] flushing TX queue %d...\n", so->id, queue);
-			return pfq_queue_flush_or_wakeup(so, queue);
+			return pfq_queue_flush(so, queue);
 		}
 
 		for(n = 0; n < so->tx_opt.num_queues; n++)
 		{
-			if (pfq_queue_flush_or_wakeup(so, n) != 0) {
+			if (pfq_queue_flush(so, n) != 0) {
 				printk(KERN_INFO "[PFQ|%d] TX[%zu] queue flush: flush error (if_index=%d)!\n", so->id, n, so->tx_opt.queue[n].if_index);
 				err = -EPERM;
 			}

@@ -307,22 +307,21 @@ __pfq_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int 
 
 
 /*
- * flush the logic queue or wakeup the related kernel thread
+ * flush the soft queue
  */
 
 int
-pfq_queue_flush_or_wakeup(struct pfq_sock *so, int index)
+pfq_queue_flush(struct pfq_sock *so, int index)
 {
 	struct net_device *dev;
 
 	if (so->tx_opt.queue[index].task) {
-		wake_up_process(so->tx_opt.queue[index].task);
 		return 0;
 	}
 
 	dev = dev_get_by_index(sock_net(&so->sk), so->tx_opt.queue[index].if_index);
 	if (!dev) {
-		printk(KERN_INFO "[PFQ] pfq_queue_flush_or_wakeup[%d]: bad if_index:%d!\n", index, so->tx_opt.queue[index].if_index);
+		printk(KERN_INFO "[PFQ] pfq_queue_flush[%d]: bad if_index:%d!\n", index, so->tx_opt.queue[index].if_index);
 		return -EPERM;
 	}
 
