@@ -315,7 +315,6 @@ int pfq_setsockopt(struct socket *sock,
 	{
 		unsigned long addr;
 		int err = 0;
-                size_t n;
 
                 if (optlen != sizeof(addr))
                         return -EINVAL;
@@ -329,56 +328,7 @@ int pfq_setsockopt(struct socket *sock,
                         return err;
                 }
 
-		/* start tx kernel threads */
-
-		for(n = 0; n < Q_MAX_TX_QUEUES; n++)
-		{
-			struct pfq_thread_data *data;
-                       	int node;
-
-			if (so->tx_opt.queue[n].if_index == -1)
-				break;
-
-			if (so->tx_opt.queue[n].cpu == Q_NO_KTHREAD)
-				continue;
-
-			data = kmalloc(sizeof(struct pfq_thread_data), GFP_KERNEL);
-			if (!data) {
-				printk(KERN_INFO "[PFQ|%d] kernel_thread: could not allocate thread_data! Failed starting thread on cpu %d!\n",
-						so->id, so->tx_opt.queue[n].cpu);
-				err = -EPERM;
-				break;
-			}
-
-			data->so = so;
-			data->id = n;
-			node     = cpu_online(so->tx_opt.queue[n].cpu) ? cpu_to_node(so->tx_opt.queue[n].cpu) : NUMA_NO_NODE;
-
-			pr_devel("[PFQ|%d] creating Tx[%zu] thread on cpu %d: if_index=%d hw_queue=%d\n",
-					so->id, n, so->tx_opt.queue[n].cpu, so->tx_opt.queue[n].if_index, so->tx_opt.queue[n].hw_queue);
-
-			so->tx_opt.queue[n].task = kthread_create_on_node(pfq_tx_thread, data, node, "pfq_tx_%d#%zu", so->id, n);
-
-			if (IS_ERR(so->tx_opt.queue[n].task)) {
-				printk(KERN_INFO "[PFQ|%d] kernel_thread: create failed on cpu %d!\n", so->id, so->tx_opt.queue[n].cpu);
-				err = PTR_ERR(so->tx_opt.queue[n].task);
-				so->tx_opt.queue[n].task = NULL;
-				kfree (data);
-				break;
-			}
-
-			if (so->tx_opt.queue[n].cpu != -1)
-				kthread_bind(so->tx_opt.queue[n].task, so->tx_opt.queue[n].cpu);
-
-			//
-			// threads need to be woken up with pfq_queue_flush_or_wakeup function.
-		        //
-			// wake_up_process(so->tx_opt.queue[n].task);
-			//
-		}
-
-		if (err)
-			return err;
+		return 0;
 
 	} break;
 
@@ -737,8 +687,8 @@ int pfq_setsockopt(struct socket *sock,
 
 		so->tx_opt.num_queues++;
 
-                pr_devel("[PFQ|%d] Tx[%zu] bind: if_index=%d hw_queue=%d\n", so->id, i,
-                		so->tx_opt.queue[i].if_index, so->tx_opt.queue[i].hw_queue);
+                pr_devel("[PFQ|%d] Tx[%zu] bind: if_index=%d hw_queue=%d cpu=%d\n", so->id, i,
+                		so->tx_opt.queue[i].if_index, so->tx_opt.queue[i].hw_queue, info.cpu);
 
         } break;
 
@@ -795,34 +745,56 @@ int pfq_setsockopt(struct socket *sock,
 
         case Q_SO_TX_WAKEUP:
         {
-		int queue;
                 size_t n;
+                int err;
 
-        	if (optlen != sizeof(queue))
-        		return -EINVAL;
-
-        	if (copy_from_user(&queue, optval, optlen))
-        		return -EFAULT;
+		/* start tx kernel threads */
 
 		if (pfq_get_tx_queue(&so->tx_opt, 0) == NULL) {
 			printk(KERN_INFO "[PFQ|%d] Tx queue flush: socket not enabled!\n", so->id);
 			return -EPERM;
 		}
 
-		if (queue < -1 || (queue >= so->tx_opt.num_queues) || (queue != -1 && so->tx_opt.queue[queue].task == NULL)) {
-			printk(KERN_INFO "[PFQ|%d] Tx wakeup: bad queue %d (num_queue=%zu)!\n", so->id, queue, so->tx_opt.num_queues);
-			return -EPERM;
-		}
-
-		for(n = 0; n < so->tx_opt.num_queues; n++)
+		for(n = 0; n < Q_MAX_TX_QUEUES; n++)
 		{
-			if (queue == n || (queue == -1 && so->tx_opt.queue[n].task))
-			{
-				if (pfq_tx_wakeup(so, n) != 0) {
-					printk(KERN_INFO "[PFQ|%d] Tx[%zu] wakeup: error!\n", so->id, n);
-					return -EPERM;
-				}
+			struct pfq_thread_data *data;
+                       	int node;
+
+			if (so->tx_opt.queue[n].if_index == -1)
+				break;
+
+			if (so->tx_opt.queue[n].cpu == Q_NO_KTHREAD)
+				continue;
+
+			data = kmalloc(sizeof(struct pfq_thread_data), GFP_KERNEL);
+			if (!data) {
+				printk(KERN_INFO "[PFQ|%d] kernel_thread: could not allocate thread_data! Failed starting thread on cpu %d!\n",
+						so->id, so->tx_opt.queue[n].cpu);
+				err = -EPERM;
+				break;
 			}
+
+			data->so = so;
+			data->id = n;
+			node     = cpu_online(so->tx_opt.queue[n].cpu) ? cpu_to_node(so->tx_opt.queue[n].cpu) : NUMA_NO_NODE;
+
+			pr_devel("[PFQ|%d] creating Tx[%zu] thread on cpu %d: if_index=%d hw_queue=%d\n",
+					so->id, n, so->tx_opt.queue[n].cpu, so->tx_opt.queue[n].if_index, so->tx_opt.queue[n].hw_queue);
+
+			so->tx_opt.queue[n].task = kthread_create_on_node(pfq_tx_thread, data, node, "pfq_tx_%d#%zu", so->id, n);
+
+			if (IS_ERR(so->tx_opt.queue[n].task)) {
+				printk(KERN_INFO "[PFQ|%d] kernel_thread: create failed on cpu %d!\n", so->id, so->tx_opt.queue[n].cpu);
+				err = PTR_ERR(so->tx_opt.queue[n].task);
+				so->tx_opt.queue[n].task = NULL;
+				kfree (data);
+				break;
+			}
+
+			if (so->tx_opt.queue[n].cpu != -1)
+				kthread_bind(so->tx_opt.queue[n].task, so->tx_opt.queue[n].cpu);
+
+			wake_up_process(so->tx_opt.queue[n].task);
 		}
 
 		return 0;
