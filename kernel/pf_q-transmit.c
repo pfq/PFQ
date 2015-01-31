@@ -122,6 +122,7 @@ __pfq_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int 
 	size_t len, tot_sent = 0;
 	unsigned int n, index;
        	int retry, hw_queue;
+       	bool tx_locked = false;
 	char *ptr;
 
 	/* get the Tx queue */
@@ -167,10 +168,6 @@ __pfq_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int 
 
 	ptr = to->queue[idx].base_addr + (index & 1) * soft_txq->size;
 
-	/* lock the netdev queue */
-
-	__netif_tx_lock_bh(txq);
-
 	/* Tx loop */
 
 	hdr = (struct pfq_pkthdr_tx *)ptr;
@@ -210,6 +207,11 @@ __pfq_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int 
 
                 /* transmit packet */
 
+		if (!tx_locked) {
+			__netif_tx_lock_bh(txq);
+                	tx_locked = true;
+		}
+
                 n = (n == batch_len ? 0 : n);
 
 		retry = 0;
@@ -220,9 +222,15 @@ __pfq_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int 
                 	cpu_relax();
 		}
 
+		if (rc < 0 || n == 0) {
+                	tx_locked = false;
+		 	__netif_tx_unlock_bh(txq);
+		}
+
 		if (rc < 0) {
-		       __sparse_inc(&to->stats.disc, cpu);
-		       __sparse_inc(&global_stats.disc, cpu);
+
+			__sparse_inc(&to->stats.disc, cpu);
+		       	__sparse_inc(&global_stats.disc, cpu);
 		}
 		else {
 
@@ -240,7 +248,8 @@ __pfq_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int 
 	 	ptr += sizeof(struct pfq_pkthdr_tx) + ALIGN(hdr->len, 8);
 	}
 
-	__netif_tx_unlock_bh(txq);
+	if (tx_locked)
+		 __netif_tx_unlock_bh(txq);
 
 	/* clear the queue */
 
