@@ -63,7 +63,7 @@ pfq_tx_thread(void *_data)
                 if (kthread_should_stop())
                         break;
 
-		pfq_thread_relax();
+		pfq_relax();
         }
 
         dev_put(dev);
@@ -71,6 +71,5 @@ pfq_tx_thread(void *_data)
         printk(KERN_INFO "[PFQ] TX[%zu] thread stopped on cpu %d.\n", data->id, cpu);
 
         kfree(data);
-
         return 0;
 }

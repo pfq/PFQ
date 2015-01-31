@@ -43,7 +43,7 @@ struct pfq_thread_data
 
 
 static inline
-void pfq_thread_relax(void)
+void pfq_relax(void)
 {
 	if (need_resched())
 		schedule();
