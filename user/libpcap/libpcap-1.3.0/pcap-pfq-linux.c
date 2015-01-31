@@ -1011,7 +1011,7 @@ pfq_inject_linux(pcap_t *handle, const void * buf, size_t size)
 {
 	if (handle->opt.pfq.tx_wakeup == 0) {
         	handle->opt.pfq.tx_wakeup = 1;
-		pfq_tx_queue_flush_or_wakeup(handle->md.pfq.q, -1);
+		pfq_tx_wakeup(handle->md.pfq.q);
 	}
 
 	int ret = pfq_send_async(handle->md.pfq.q, buf, size, handle->opt.pfq.tx_flush);
