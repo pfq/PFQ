@@ -51,8 +51,9 @@ __pfq_dev_cap_txqueue(struct net_device *dev, u16 hw_queue)
 	return hw_queue;
 }
 
+
 #if (LINUX_VERSION_CODE > KERNEL_VERSION(3,13,0))
-static u16 __pfq_pick_tx(struct net_device *dev, struct sk_buff *skb)
+static u16 __pfq_pick_tx_default(struct net_device *dev, struct sk_buff *skb)
 {
 	return 0;
 }
@@ -73,7 +74,7 @@ pfq_pick_tx(struct net_device *dev, struct sk_buff *skb, int *hw_queue)
 #elif (LINUX_VERSION_CODE == KERNEL_VERSION(3,13,0))
 			ops->ndo_select_queue(dev, skb, NULL)
 #else
-			ops->ndo_select_queue(dev, skb, NULL, __pfq_pick_tx)
+			ops->ndo_select_queue(dev, skb, NULL, __pfq_pick_tx_default)
 #endif
 			: 0;
 	}
@@ -95,7 +96,7 @@ int giveup_tx(int cpu)
 
 
 int
-__pfq_queue_flush(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int cpu, int node)
+__pfq_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int cpu, int node)
 {
 	struct pfq_skbuff_short_batch skbs;
 
@@ -273,13 +274,13 @@ pfq_queue_flush_or_wakeup(struct pfq_sock *so, int index)
 		return -EPERM;
 	}
 
-	pfq_queue_flush(index, &so->tx_opt, dev);
+	pfq_queue_xmit(index, &so->tx_opt, dev);
 	dev_put(dev);
 	return 0;
 }
 
 
-inline static int
+static inline int
 __pfq_xmit(struct sk_buff *skb, struct net_device *dev, struct netdev_queue *txq, int xmit_more)
 {
 	int rc = -ENOMEM;
@@ -317,7 +318,7 @@ out:
 }
 
 
-int 
+int
 pfq_xmit(struct sk_buff *skb, struct net_device *dev, int hw_queue, int more)
 {
 	struct netdev_queue *txq;
@@ -331,19 +332,19 @@ pfq_xmit(struct sk_buff *skb, struct net_device *dev, int hw_queue, int more)
 	txq = pfq_pick_tx(dev, skb, &hw_queue);
 
 	skb_set_queue_mapping(skb, hw_queue);
-	
+
 	__netif_tx_lock_bh(txq);
 
 	ret = __pfq_xmit(skb, dev, txq, more);
 
 	__netif_tx_unlock_bh(txq);
-	
+
 	return ret;
 }
 
 
 int
-pfq_queue_xmit(struct pfq_skbuff_batch *skbs, struct net_device *dev, int hw_queue)
+pfq_batch_xmit(struct pfq_skbuff_batch *skbs, struct net_device *dev, int hw_queue)
 {
 	struct netdev_queue *txq;
 	struct sk_buff *skb;
@@ -384,7 +385,7 @@ intr:
 
 
 int
-pfq_queue_xmit_by_mask(struct pfq_skbuff_batch *skbs, unsigned long long mask, struct net_device *dev, int hw_queue)
+pfq_batch_xmit_by_mask(struct pfq_skbuff_batch *skbs, unsigned long long mask, struct net_device *dev, int hw_queue)
 {
 	struct netdev_queue *txq;
 	struct sk_buff *skb;
@@ -441,7 +442,7 @@ pfq_lazy_xmit(struct gc_buff buff, struct net_device *dev, int hw_queue)
 
 
 int
-pfq_queue_lazy_xmit(struct gc_queue_buff *queue, struct net_device *dev, int hw_queue)
+pfq_batch_lazy_xmit(struct gc_queue_buff *queue, struct net_device *dev, int hw_queue)
 {
 	struct gc_buff buff;
 	int i, n = 0;
@@ -457,7 +458,7 @@ pfq_queue_lazy_xmit(struct gc_queue_buff *queue, struct net_device *dev, int hw_
 
 
 int
-pfq_queue_lazy_xmit_by_mask(struct gc_queue_buff *queue, unsigned long long mask, struct net_device *dev, int hw_queue)
+pfq_batch_lazy_xmit_by_mask(struct gc_queue_buff *queue, unsigned long long mask, struct net_device *dev, int hw_queue)
 {
 	struct gc_buff buff;
 	int i, n = 0;

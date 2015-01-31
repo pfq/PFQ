@@ -73,7 +73,7 @@ size_t copy_to_dev_buffs(struct pfq_sock *so, struct gc_queue_buff *buffs, unsig
                         return false;
 		}
 
- 		sent = pfq_queue_lazy_xmit_by_mask(buffs, mask, dev, so->egress_queue);
+ 		sent = pfq_batch_lazy_xmit_by_mask(buffs, mask, dev, so->egress_queue);
 
                 dev_put(dev);
 		return sent;
