@@ -68,8 +68,8 @@ PFQ 4.0
  * Linux Kernel 3.18 xmit_more bit ready.
  * New APIs for transmission of packets.
  * Shared memory on top of HugePages.
- * LTS 1.0 Haskell compliant (Stackage).
- * pcap libraries support. 
+ * Switched to LTS 1.0 Haskell (Stackage).
+ * Accelerated pcap library. 
  * Bug fixes.
 
 
@@ -77,5 +77,5 @@ PFQ 4.1
 -------
  * New SPSC double-buffered variadic Tx queue.
  * Improved performance and stability.
- * Bug fixes.
+ * Various bug fixes.
 
