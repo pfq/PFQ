@@ -55,7 +55,7 @@ main(int argc, char *argv[])
 try
 {
     if (argc < 5)
-        throw std::runtime_error(std::string("usage: ").append(argv[0]).append(" dev queue node num [async]"));
+        throw std::runtime_error(std::string("usage: ").append(argv[0]).append(" dev queue node num"));
 
     const char *dev = argv[1];
     int queue       = atoi(argv[2]);
@@ -68,12 +68,14 @@ try
 
     q.bind_tx(dev, queue, node);
 
-    q.tx_wakeup();
 
-    if (argc == 5)
+    if (node == -1) {
         send_packets(q, num);
-    else
+    }
+    else {
+        q.tx_async(true);
         send_packets_async(q, num);
+    }
 
     std::this_thread::sleep_for(std::chrono::seconds(1));
 

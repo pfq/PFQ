@@ -84,11 +84,11 @@ sender xs = do
     withForeignPtr fp  $ \q -> do
             Q.enable q
             Q.bindTxOnCpu q dev queue core
-            Q.txWakeup q
 
-            if length xs > 6
+            if core /= -1
             then do
                 putStrLn  $ "sending " ++ show num ++ " packets to dev " ++ dev  ++ " (async)..."
+                Q.txAsync q True
                 while (< num) (sendAsync q) 0
             else do
                 putStrLn  $ "sending " ++ show num ++ " packets to dev " ++ dev  ++ "..."
@@ -105,6 +105,6 @@ main :: IO ()
 main = do
     args <- getArgs
     case ()  of
-        _ | length args < 4 -> error "usage: test-send dev queue node num [async]"
+        _ | length args < 4 -> error "usage: test-send dev queue node num"
           | otherwise       -> sender args
 

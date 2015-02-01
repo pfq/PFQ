@@ -59,7 +59,7 @@ main(int argc, char *argv[])
 {
         if (argc < 5)
         {
-                fprintf(stderr, "usage: %s dev queue node num [async]\n", argv[0]);
+                fprintf(stderr, "usage: %s dev queue node num\n", argv[0]);
                 return -1;
         }
 
@@ -74,11 +74,11 @@ main(int argc, char *argv[])
 
         pfq_bind_tx(q, dev, queue, node);
 
-	if (argc == 5) {
+	if (node == -1) {
 		send_packets(q, num);
 	}
 	else  {
-        	pfq_tx_wakeup(q);
+		pfq_tx_async(q, 1);
 		send_packets_async(q, num);
 	}
 
