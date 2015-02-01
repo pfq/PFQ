@@ -494,7 +494,7 @@ int pfq_setsockopt(struct socket *sock,
                         return -EFAULT;
 
                 if (slots > (size_t)max_queue_slots) {
-                        printk(KERN_INFO "[PFQ|%d] invalid rx slots=%zu (max %d)\n", so->id, slots, max_queue_slots);
+                        printk(KERN_INFO "[PFQ|%d] invalid Rx slots=%zu (max %d)\n", so->id, slots, max_queue_slots);
                         return -EPERM;
                 }
 
@@ -511,11 +511,6 @@ int pfq_setsockopt(struct socket *sock,
                         return -EINVAL;
                 if (copy_from_user(&slots, optval, optlen))
                         return -EFAULT;
-
-                if (slots & (slots-1)) {
-                        printk(KERN_INFO "[PFQ|%d] Tx slots must be a power of two.\n", so->id);
-                        return -EINVAL;
-                }
 
                 if (slots > (size_t)max_queue_slots) {
                         printk(KERN_INFO "[PFQ|%d] invalid Tx slots=%zu (max %d)\n", so->id, slots, max_queue_slots);

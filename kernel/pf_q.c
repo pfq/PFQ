@@ -863,9 +863,6 @@ static int __init pfq_init_module(void)
         int n;
         printk(KERN_INFO "[PFQ] loading (%s)...\n", Q_VERSION);
 
-        if (max_queue_slots & (max_queue_slots-1))
-                printk(KERN_INFO "[PFQ] max_queue_slots (%d) not a power of 2!\n", max_queue_slots);
-
         pfq_net_proto_family_init();
         pfq_proto_ops_init();
         pfq_proto_init();
