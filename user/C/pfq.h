@@ -574,7 +574,7 @@ extern int pfq_tx_async(pfq_t *q, int toggle);
 
 /*! Schedule the packet for transmission. */
 /*!
- * The packet is copied into a Tx queue (according to a symmetric hash)
+ * The packet is copied into a Tx queue (using TSS symmetric hash)
  * and transmitted by a kernel thread, or when tx_queue_flush is called.
  */
 

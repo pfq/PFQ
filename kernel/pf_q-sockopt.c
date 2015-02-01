@@ -600,8 +600,8 @@ int pfq_setsockopt(struct socket *sock,
                 	return err;
 
                 __pfq_toggle_group_vlan_filters(vlan.gid, vlan.toggle);
-
                 pr_devel("[PFQ|%d] vlan filters %s for gid=%d\n", so->id, (vlan.toggle ? "enabled" : "disabled"), vlan.gid);
+
         } break;
 
         case Q_SO_GROUP_VLAN_FILT:
@@ -615,17 +615,17 @@ int pfq_setsockopt(struct socket *sock,
                 if (copy_from_user(&filt, optval, optlen))
                         return -EFAULT;
 
-                err = pfq_check_group_access(so->id, filt.gid, "group vlan filt");
+                err = pfq_check_group_access(so->id, filt.gid, "group vlan filter");
                 if (err != 0)
                 	return err;
 
                 if (filt.vid < -1 || filt.vid > 4094) {
-                        printk(KERN_INFO "[PFQ|%d] vlan_set error: gid=%d invalid vid=%d!\n", so->id, filt.gid, filt.vid);
+                        printk(KERN_INFO "[PFQ|%d] vlan error: invalid vid=%d for gid=%d!\n", so->id, filt.vid, filt.gid);
                         return -EINVAL;
                 }
 
                 if (!__pfq_vlan_filters_enabled(filt.gid)) {
-                        printk(KERN_INFO "[PFQ|%d] vlan_set error: vlan filters disabled for gid=%d!\n", so->id, filt.gid);
+                        printk(KERN_INFO "[PFQ|%d] vlan error: vlan filters disabled for gid=%d!\n", so->id, filt.gid);
                         return -EPERM;
                 }
 
@@ -637,7 +637,7 @@ int pfq_setsockopt(struct socket *sock,
                 else
                         __pfq_set_group_vlan_filter(filt.gid, filt.toggle, filt.vid);
 
-                pr_devel("[PFQ|%d] vlan_set filter vid %d for gid=%d\n", so->id, filt.vid, filt.gid);
+                pr_devel("[PFQ|%d] vlan filter vid %d set for gid=%d\n", so->id, filt.vid, filt.gid);
         } break;
 
         case Q_SO_TX_BIND:

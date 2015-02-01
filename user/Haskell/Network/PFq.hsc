@@ -1018,7 +1018,7 @@ txAsync hdl toggle =
 
 -- |Schedule the packet for transmission.
 --
--- The packet is copied into a Tx queue (according to a symmetric hash)
+-- The packet is copied into a Tx queue (using TSS symmetric hash)
 -- and transmitted by a kernel thread, or when txQueueFlush is called.
 
 inject :: Ptr PFqTag
@@ -1030,7 +1030,7 @@ inject hdl xs queue =
         liftM (>= 0) $ pfq_inject hdl p (fromIntegral l) (fromIntegral queue) >>= throwPFqIf hdl (== -1)
 
 
--- |Store the packet and transmit the packets in the queue, synchronously.
+-- |Store the packet and transmit the packets in the queue.
 --
 -- The queue is flushed (if required) and the transmission takes place.
 
