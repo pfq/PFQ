@@ -37,7 +37,7 @@ Features
 * Functional engine for in-kernel packet processing with **PFQ/lang**.
 * User-space libraries for C, C++11-14 and Haskell languages.
 * PFQ/lang eDLS for C++11-14 and Haskell language.
-* Accelerated pcap library (line-speed tested with captop).
+* Accelerated pcap library (line-speed tested with [captop][3]).
 * **pfqd** daemon used to parallelize multiple instances of pcap legacy applications.
 * **pfq-omatic**, a script designed to accelerate vanilla drivers.
 * I/O user<->kernel shared-memory on top of **HugePages**.
@@ -73,3 +73,4 @@ PFQ home-page is [www.pfq.io][1]. Additional information are available at [netgr
 
 [1]: http://www.pfq.io
 [2]: http://netgroup.iet.unipi.it/software/pfq/
+[3]: https://github.com/awgn/captop
