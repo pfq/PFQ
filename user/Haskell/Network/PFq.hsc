@@ -144,7 +144,7 @@ module Network.PFq
         -- * Packet transmission
 
         txQueueFlush,
-        txWakeup,
+        txAsync,
         inject,
         send,
         sendAsync,
@@ -1005,14 +1005,15 @@ txQueueFlush hdl queue =
     pfq_tx_queue_flush hdl (fromIntegral queue) >>= throwPFqIf_ hdl (== -1)
 
 
--- |Start kernel threads.
+-- |Start/Stop kernel threads.
 --
--- Start kernel threads associated with Tx queues.
+-- Start/Stop kernel threads associated with Tx queues.
 
-txWakeup :: Ptr PFqTag
-         -> IO ()
-txWakeup hdl =
-    pfq_tx_wakeup hdl >>= throwPFqIf_ hdl (== -1)
+txAsync :: Ptr PFqTag
+        -> Bool
+        -> IO ()
+txAsync hdl toggle =
+    pfq_tx_async hdl (fromIntegral (if toggle then 1 else 0 :: Integer) ) >>= throwPFqIf_ hdl (== -1)
 
 
 -- |Schedule the packet for transmission.
@@ -1038,7 +1039,7 @@ send :: Ptr PFqTag
           -> IO Bool
 send hdl xs =
     unsafeUseAsCStringLen xs $ \(p, l) ->
-        liftM (>= 0) $ pfq_send hdl p (fromIntegral l)
+        liftM (> 0) $ pfq_send hdl p (fromIntegral l)
 
 
 -- |Store the packet and transmit the packets in the queue, asynchronously.
@@ -1052,7 +1053,7 @@ sendAsync :: Ptr PFqTag
           -> IO Bool
 sendAsync hdl xs fh =
     unsafeUseAsCStringLen xs $ \(p, l) ->
-        liftM (>= 0) $ pfq_send_async hdl p (fromIntegral l) (fromIntegral fh)
+        liftM (> 0) $ pfq_send_async hdl p (fromIntegral l) (fromIntegral fh)
 
 
 -- C functions from libpfq
@@ -1127,6 +1128,6 @@ foreign import ccall unsafe pfq_send_async          :: Ptr PFqTag -> Ptr CChar -
 
 foreign import ccall unsafe pfq_inject              :: Ptr PFqTag -> Ptr CChar -> CSize -> CInt -> IO CInt
 foreign import ccall unsafe pfq_tx_queue_flush      :: Ptr PFqTag -> CInt -> IO CInt
-foreign import ccall unsafe pfq_tx_wakeup           :: Ptr PFqTag -> IO CInt
+foreign import ccall unsafe pfq_tx_async            :: Ptr PFqTag -> CInt -> IO CInt
 
 

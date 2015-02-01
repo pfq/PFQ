@@ -1368,17 +1368,17 @@ namespace pfq {
                 throw pfq_error(errno, "PFQ: Tx queue flush");
         }
 
-        //! Start kernel threads.
+        //! Start/Stop kernel threads.
         /*!
-         * Start kernel threads associated with Tx queues.
+         * Start/Stop kernel threads associated with Tx queues.
          */
 
         void
-        tx_wakeup()
+        tx_async(bool value)
         {
-            void * null = nullptr;
-            if (::setsockopt(fd_, PF_Q, Q_SO_TX_WAKEUP, &null, sizeof(null)) == -1)
-                throw pfq_error(errno, "PFQ: Tx wakeup");
+            int toggle = value;
+            if (::setsockopt(fd_, PF_Q, Q_SO_TX_ASYNC, &toggle, sizeof(toggle)) == -1)
+                throw pfq_error(errno, "PFQ: Tx async");
         }
 
     };

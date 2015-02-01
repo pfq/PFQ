@@ -1089,11 +1089,10 @@ pfq_tx_queue_flush(pfq_t *q, int queue)
 
 
 int
-pfq_tx_wakeup(pfq_t *q)
+pfq_tx_async(pfq_t *q, int toggle)
 {
-        void * null = NULL;
-        if (setsockopt(q->fd, PF_Q, Q_SO_TX_WAKEUP, &null, sizeof(null)) == -1)
-		return Q_ERROR(q, "PFQ: Tx wakeup");
+        if (setsockopt(q->fd, PF_Q, Q_SO_TX_ASYNC, &toggle, sizeof(toggle)) == -1)
+		return Q_ERROR(q, "PFQ: Tx async");
 
         return Q_OK(q);
 }
@@ -1104,7 +1103,8 @@ pfq_send(pfq_t *q, const void *ptr, size_t len)
 {
         int rc = pfq_inject(q, ptr, len, Q_ANY_QUEUE);
 
-	pfq_tx_queue_flush(q, Q_ANY_QUEUE);
+	if(!q->tx_async)
+		pfq_tx_queue_flush(q, Q_ANY_QUEUE);
 
 	return Q_VALUE(q, rc);
 }
