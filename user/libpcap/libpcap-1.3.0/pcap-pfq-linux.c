@@ -498,7 +498,7 @@ pfq_getenv(pcap_t *handle)
        		.rx_slots = 4096,
 		.tx_slots = 4096,
 		.tx_flush = 1,
-		.tx_wakeup= 0,
+		.tx_async = 0,
 		.tx_queue = {-1, -1, -1, -1},
 		.tx_task  = { Q_NO_KTHREAD, Q_NO_KTHREAD, Q_NO_KTHREAD, Q_NO_KTHREAD },
 		.vlan     = NULL,
@@ -1009,9 +1009,9 @@ fail:
 static int
 pfq_inject_linux(pcap_t *handle, const void * buf, size_t size)
 {
-	if (handle->opt.pfq.tx_wakeup == 0) {
-        	handle->opt.pfq.tx_wakeup = 1;
-		pfq_tx_wakeup(handle->md.pfq.q);
+	if (handle->opt.pfq.tx_async == 0) {
+        	handle->opt.pfq.tx_async = 1;
+		pfq_tx_async(handle->md.pfq.q, 1);
 	}
 
 	int ret = pfq_send_async(handle->md.pfq.q, buf, size, handle->opt.pfq.tx_flush);
