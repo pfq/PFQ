@@ -126,7 +126,10 @@ namespace thread
 
             q.enable();
 
-            q.tx_wakeup();
+            if (std::any_of(std::begin(kcpu), std::end(kcpu), [](int cpu) { return cpu != -1; }))
+            {
+                    q.tx_async(true);
+            }
 
             m_pfq = std::move(q);
         }
