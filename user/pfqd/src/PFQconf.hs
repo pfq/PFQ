@@ -1,1 +1,0 @@
-../pfq-conf.hs

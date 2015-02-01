@@ -39,7 +39,7 @@ import Foreign.Ptr
 
 import Network.PFq.Default
 import Options
-import PFQconf
+import PFQdaemon
 
 import Network.PFq as Q
 
