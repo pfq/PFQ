@@ -244,6 +244,7 @@ struct pfq_pkthdr
 struct pfq_pkthdr_tx
 {
 	uint64_t len;
+	uint64_t nsec; /* absolute timestamp */
 };
 
 
