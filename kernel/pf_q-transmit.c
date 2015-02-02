@@ -111,7 +111,7 @@ int giveup_tx(int cpu)
 }
 
 
-static size_t
+static int
 batch_drain(struct pfq_skbuff_batch *skbs, struct local_data *local, struct net_device *dev, int hw_queue)
 {
 	struct sk_buff *skb;
@@ -139,6 +139,23 @@ batch_drain(struct pfq_skbuff_batch *skbs, struct local_data *local, struct net_
 }
 
 
+static inline
+bool keep_trying(int *retry, int sent, int cpu)
+{
+	if (sent == 0) {
+		pfq_relax();
+
+		if (*retry++ >= tx_max_retry) {
+			*retry = 0;
+			return !giveup_tx(cpu);
+		}
+		return true;
+	}
+	*retry = 0;
+	return true;
+}
+
+
 int
 __pfq_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int cpu, int node)
 {
@@ -150,7 +167,7 @@ __pfq_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int 
 	struct pfq_pkthdr_tx * hdr;
 	struct local_data *local;
 	size_t len, tot_sent = 0;
-	unsigned int n, index;
+	unsigned int n, retry, index;
        	int last_batch_len, hw_queue;
 
 	char *ptr, *begin, *end;
@@ -200,6 +217,8 @@ __pfq_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int 
 
 	hdr = (struct pfq_pkthdr_tx *)(ptr = begin);
 
+	retry = 0;
+
 	for(n = 0; ptr < end && hdr->len != 0; n++, hdr = (struct pfq_pkthdr_tx *)ptr)
 	{
 		struct sk_buff *skb;
@@ -211,20 +230,13 @@ __pfq_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int 
 			int sent = batch_drain(SKBUFF_BATCH_ADDR(skbs), local, dev, hw_queue);
 			tot_sent += sent;
 
-		       	__sparse_add(&to->stats.sent, sent, cpu);
-		       	__sparse_add(&global_stats.sent, sent, cpu);
+			__sparse_add(&to->stats.sent, sent, cpu);
+			__sparse_add(&global_stats.sent, sent, cpu);
 
 			/* break the loop when giveup is needed */
 
-			if (sent == 0) {
-				pfq_relax();
-				if (giveup_tx(cpu)) {
-		       			__sparse_add(&to->stats.disc, batch_len, cpu);
-		       			__sparse_add(&global_stats.disc, batch_len, cpu);
-		       			break;
-				}
-			}
-
+			if (!keep_trying(&retry, sent, cpu))
+				break;
 			continue;
 		}
 
@@ -267,6 +279,7 @@ __pfq_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int 
 
 	/* send the last batch */
 
+	retry = 0;
 	while ((last_batch_len=pfq_skbuff_batch_len(SKBUFF_BATCH_ADDR(skbs)))) {
 
 		int sent = batch_drain(SKBUFF_BATCH_ADDR(skbs), local, dev, hw_queue);
@@ -277,13 +290,11 @@ __pfq_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int 
 
 		/* break the loop when giveup is needed */
 
-		if (sent == 0) {
-			pfq_relax();
-			if (giveup_tx(cpu)) {
-				__sparse_add(&to->stats.disc, batch_len, cpu);
-				__sparse_add(&global_stats.disc, batch_len, cpu);
-				break;
-			}
+		if (!keep_trying(&retry, sent, cpu)) 
+		{
+			__sparse_add(&to->stats.disc, last_batch_len, cpu);
+			__sparse_add(&global_stats.disc, last_batch_len, cpu);
+			break;
 		}
 	}
 
