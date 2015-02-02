@@ -1043,7 +1043,7 @@ sendAsync hdl xs fh =
 
 sendAt :: Ptr PFqTag
           -> C.ByteString  -- ^ bytes of packet
-          -> TimeSpec      -- ^ flush hint
+          -> TimeSpec      -- ^ active timestamp
           -> IO Bool
 sendAt hdl xs ts =
     unsafeUseAsCStringLen xs $ \(p, l) ->
