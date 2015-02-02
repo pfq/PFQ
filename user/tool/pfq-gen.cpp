@@ -216,7 +216,7 @@ namespace thread
 
             auto delta = std::chrono::nanoseconds(static_cast<uint64_t>(1000/opt::rate));
 
-            auto now = std::chrono::system_clock::now() + std::chrono::seconds(5);
+            auto now = std::chrono::system_clock::now();
 
             auto len = opt::len;
 
