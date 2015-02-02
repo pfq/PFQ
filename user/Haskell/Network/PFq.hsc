@@ -28,16 +28,10 @@
 --
 --
 
-{-# LANGUAGE ForeignFunctionInterface #-}
-{-# LANGUAGE ImpredicativeTypes #-}
-{-# LANGUAGE BangPatterns #-}
-
-{-# OPTIONS_GHC -fno-warn-unused-binds #-}
-
 ------------------------------------------------------------------------------
 -- |
 --  Module      : Network.PFq
---  Copyright   : Nicola Bonelli (c) 2014
+--  Copyright   : Nicola Bonelli (c) 2012-2015
 --  License     : GPL
 --  Maintainer  : nicola@pfq.io
 --  Stability   : experimental
@@ -49,6 +43,10 @@
 --
 ------------------------------------------------------------------------------
 
+{-# LANGUAGE ForeignFunctionInterface #-}
+{-# LANGUAGE ImpredicativeTypes #-}
+{-# LANGUAGE BangPatterns #-}
+{-# OPTIONS_GHC -fno-warn-unused-binds #-}
 
 module Network.PFq
     (
