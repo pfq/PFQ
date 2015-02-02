@@ -29,6 +29,7 @@
 #include <linux/module.h>
 #include <linux/version.h>
 #include <linux/sched.h>
+#include <linux/ktime.h>
 
 #include <linux/skbuff.h>
 #include <linux/netdevice.h>
@@ -140,19 +141,43 @@ batch_drain(struct pfq_skbuff_batch *skbs, struct local_data *local, struct net_
 
 
 static inline
-bool keep_trying(int *retry, int sent, int cpu)
+bool keep_trying(int *retry, int sent, int cpu, bool aggressive)
 {
 	if (sent == 0) {
 		pfq_relax();
-
 		if (*retry++ >= tx_max_retry) {
 			*retry = 0;
 			return !giveup_tx(cpu);
 		}
 		return true;
 	}
+
 	*retry = 0;
-	return true;
+	return aggressive;
+}
+
+
+static inline 
+bool tx_required(struct pfq_skbuff_batch *q, ktime_t now, uint64_t ts)
+{
+	size_t len = pfq_skbuff_batch_len(q);
+	return len == batch_len || ((len > 0) && (ts > ktime_to_ns(now))); 
+}
+
+static inline
+ktime_t wait_until(uint64_t ts, int cpu)
+{
+	ktime_t now;
+	do
+	{
+        	now = ktime_get_real();
+        	if (giveup_tx(cpu))
+        		return now;
+	}
+	while (ktime_to_ns(now) < ts 
+	       	&& (pfq_relax(), true));
+
+	return now;
 }
 
 
@@ -171,6 +196,7 @@ __pfq_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int 
        	int last_batch_len, hw_queue;
 
 	char *ptr, *begin, *end;
+        ktime_t now; uint64_t last_ts;
 
 	/* get the Tx queue */
 
@@ -219,13 +245,19 @@ __pfq_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int 
 
 	retry = 0;
 
+	now = ktime_get_real();
+	
 	for(n = 0; ptr < end && hdr->len != 0; n++, hdr = (struct pfq_pkthdr_tx *)ptr)
 	{
 		struct sk_buff *skb;
 
-		/* if the batch is full, transmit it */
+		/* get tstamp of this packet */
 
-		if (pfq_skbuff_batch_len(SKBUFF_BATCH_ADDR(skbs)) == batch_len) {
+		last_ts = hdr->nsec;
+
+		/* if the batch is full (or the packet is in the future), transmit the batch */
+
+		if (tx_required(SKBUFF_BATCH_ADDR(skbs), now, last_ts)) {
 
 			int sent = batch_drain(SKBUFF_BATCH_ADDR(skbs), local, dev, hw_queue);
 			tot_sent += sent;
@@ -233,12 +265,17 @@ __pfq_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int 
 			__sparse_add(&to->stats.sent, sent, cpu);
 			__sparse_add(&global_stats.sent, sent, cpu);
 
-			/* break the loop when giveup is needed */
+			/* break the loop in case of giveup event */
 
-			if (!keep_trying(&retry, sent, cpu))
-				break;
-			continue;
+			if (keep_trying(&retry, sent, cpu, false))
+				continue;
 		}
+		
+		/* wait until the ts */
+                
+                
+		if (last_ts > ktime_to_ns(now)) 
+			now = wait_until(last_ts, cpu);
 
 		/* allocate a packet */
 
@@ -290,7 +327,7 @@ __pfq_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int 
 
 		/* break the loop when giveup is needed */
 
-		if (!keep_trying(&retry, sent, cpu)) 
+		if (!keep_trying(&retry, sent, cpu, true)) 
 		{
 			__sparse_add(&to->stats.disc, last_batch_len, cpu);
 			__sparse_add(&global_stats.disc, last_batch_len, cpu);
