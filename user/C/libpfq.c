@@ -1023,7 +1023,7 @@ pfq_unbind_tx(pfq_t *q)
 }
 
 int
-pfq_inject(pfq_t *q, const void *buf, size_t len, int queue)
+pfq_inject(pfq_t *q, const void *buf, size_t len, uint64_t nsec, int queue)
 {
         struct pfq_shared_queue *sh_queue = (struct pfq_shared_queue *)(q->shm_addr);
         struct pfq_tx_queue *tx;
@@ -1065,6 +1065,7 @@ pfq_inject(pfq_t *q, const void *buf, size_t len, int queue)
 
         	hdr = (struct pfq_pkthdr_tx *)tx->ptr;
 		hdr->len = len;
+		hdr->nsec = nsec;
 		memcpy(hdr+1, buf, hdr->len);
 
                 tx->ptr += slot_size;
@@ -1101,7 +1102,7 @@ pfq_tx_async(pfq_t *q, int toggle)
 int
 pfq_send(pfq_t *q, const void *ptr, size_t len)
 {
-        int rc = pfq_inject(q, ptr, len, Q_ANY_QUEUE);
+        int rc = pfq_inject(q, ptr, len, 0, Q_ANY_QUEUE);
 
 	if(!q->tx_async)
 		pfq_tx_queue_flush(q, Q_ANY_QUEUE);
@@ -1113,7 +1114,7 @@ pfq_send(pfq_t *q, const void *ptr, size_t len)
 int
 pfq_send_async(pfq_t *q, const void *ptr, size_t len, size_t flush_hint)
 {
-        int rc = pfq_inject(q, ptr, len, Q_ANY_QUEUE);
+        int rc = pfq_inject(q, ptr, len, 0, Q_ANY_QUEUE);
 
 	if (++q->tx_attempt == flush_hint) {
 
@@ -1124,6 +1125,18 @@ pfq_send_async(pfq_t *q, const void *ptr, size_t len, size_t flush_hint)
 	}
 
 	return Q_VALUE(q, rc);
+}
+
+
+int
+pfq_send_at(pfq_t *q, const void *ptr, size_t len, struct timespec *ts)
+{
+	uint64_t nsec;
+        if (!q->tx_async)
+		return Q_ERROR(q, "PFQ: send_at not async!");
+
+	nsec = (uint64_t)(ts->tv_sec)*1000000000ull + (uint64_t)ts->tv_nsec;
+        return pfq_inject(q, ptr, len, nsec, Q_ANY_QUEUE);
 }
 
 

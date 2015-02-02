@@ -43,6 +43,7 @@
 #include <type_traits>
 #include <algorithm>
 #include <thread>
+#include <chrono>
 
 #include <pfq/util.hpp>
 #include <pfq/queue.hpp>
@@ -1272,7 +1273,7 @@ namespace pfq {
         bool
         send(const_buffer pkt)
         {
-            auto rc = inject(pkt);
+            auto rc = inject(pkt, 0);
             if (!data_->tx_async)
                 tx_queue_flush();
             return rc;
@@ -1288,7 +1289,7 @@ namespace pfq {
         bool
         send_async(const_buffer pkt, size_t flush_hint = 1)
         {
-            auto rc = inject(pkt);
+            auto rc = inject(pkt, 0);
 
             if (++data_->tx_attempt == flush_hint) {
 
@@ -1301,14 +1302,31 @@ namespace pfq {
             return rc;
         }
 
+        /*! Store the packet and transmit it. */
+        /*!
+         * The transmission takes place at the given timespec time, specified
+         * as a generic chrono::time_point.
+         */
+
+        template <typename Clock, typename Duration>
+        bool
+        send_at(const_buffer pkt, std::chrono::time_point<Clock, Duration> const &tp)
+        {
+            if (!data_->tx_async)
+                throw std::runtime_error("PFQ: send_at not async!");
+            auto ns = std::chrono::duration_cast<std::chrono::nanoseconds>(tp.time_since_epoch()).count();
+            return inject(pkt, ns);
+        }
+
         //! Schedule the packet for transmission.
         /*!
-         * The packet is copied into a Tx queue (using a TSS symmetric hash)
-         * and transmitted by a kernel thread, or when tx_queue_flush is called.
+         * The packet is copied into a Tx queue (using a TSS symmetric hash if any_queue is specified)
+         * and transmitted at the given timestamp by a kernel thread or when tx_queue_flush is called.
+         * A timestamp of 0 nanoseconds means 'immediate transmission'.
          */
 
         bool
-        inject(const_buffer buf, int queue = any_queue)
+        inject(const_buffer buf, uint64_t ts, int queue = any_queue)
         {
             if (!data_->shm_addr)
                 throw pfq_error("PFQ: inject: socket not enabled");
@@ -1343,6 +1361,7 @@ namespace pfq {
             {
                 auto hdr = (struct pfq_pkthdr_tx *)tx->ptr;
                 hdr->len = len;
+                hdr->nsec = ts;
                 memcpy(hdr+1, buf.first, hdr->len);
 
                 reinterpret_cast<char *&>(tx->ptr) += slot_size;

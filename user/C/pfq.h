@@ -574,11 +574,12 @@ extern int pfq_tx_async(pfq_t *q, int toggle);
 
 /*! Schedule the packet for transmission. */
 /*!
- * The packet is copied into a Tx queue (using TSS symmetric hash)
- * and transmitted by a kernel thread, or when tx_queue_flush is called.
+ * The packet is copied into a Tx queue (using a TSS symmetric hash if any_queue is specified)
+ * and transmitted at the given timestamp by a kernel thread or when tx_queue_flush is called.
+ * A timestamp of 0 nanoseconds means 'immediate transmission'.
  */
 
-extern int pfq_inject(pfq_t *q, const void *ptr, size_t len, int queue);
+extern int pfq_inject(pfq_t *q, const void *ptr, size_t len, uint64_t nsec, int queue);
 
 
 /*! Store the packet and transmit the packets in the queue. */
@@ -596,6 +597,14 @@ extern int pfq_send(pfq_t *q, const void *ptr, size_t len);
  */
 
 extern int pfq_send_async(pfq_t *q, const void *ptr, size_t len, size_t flush_hint);
+
+
+/*! Store the packet and transmit it. */
+/*!
+ * The transmission takes place at the given timespec time.
+ */
+
+extern int pfq_send_at(pfq_t *q, const void *ptr, size_t len, struct timespec *ts);
 
 
 #endif /* PFQ_H */

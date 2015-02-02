@@ -145,9 +145,9 @@ module Network.PFq
 
         txQueueFlush,
         txAsync,
-        inject,
         send,
         sendAsync,
+        sendAt,
 
         -- * PFQ/lang
 
@@ -187,7 +187,7 @@ import Foreign.Concurrent as C (newForeignPtr)
 import Foreign.ForeignPtr (ForeignPtr)
 
 import Network.PFq.Lang
-
+import System.Clock
 
 -- |Packet capture handle.
 newtype PFqTag = PFqTag ()
@@ -490,7 +490,7 @@ close hdl =
 getId :: Ptr PFqTag
       -> IO Int
 getId hdl =
-    pfq_id hdl >>= throwPFqIf hdl (== -1) >>= return . fromIntegral
+    liftM fromIntegral (pfq_id hdl >>= throwPFqIf hdl (== -1))
 
 
 -- |Return the group id of the socket.
@@ -498,7 +498,7 @@ getId hdl =
 getGroupId :: Ptr PFqTag
            -> IO Int
 getGroupId hdl =
-    pfq_group_id hdl >>= throwPFqIf hdl (== -1) >>= return . fromIntegral
+    liftM fromIntegral (pfq_group_id hdl >>= throwPFqIf hdl (== -1))
 
 
 -- |Enable the socket for packets capture and transmission.
@@ -561,8 +561,7 @@ setCaplen hdl value =
 getCaplen :: Ptr PFqTag
           -> IO Int
 getCaplen hdl =
-    pfq_get_caplen hdl >>= throwPFqIf hdl (== -1)
-        >>= return . fromIntegral
+    liftM fromIntegral (pfq_get_caplen hdl >>= throwPFqIf hdl (== -1))
 
 
 -- |Return the max transmission length of packets, in bytes.
@@ -570,8 +569,7 @@ getCaplen hdl =
 getMaxlen :: Ptr PFqTag
           -> IO Int
 getMaxlen hdl =
-    pfq_get_maxlen hdl >>= throwPFqIf hdl (== -1)
-        >>= return . fromIntegral
+    liftM fromIntegral (pfq_get_maxlen hdl >>= throwPFqIf hdl (== -1))
 
 
 -- |Specify the length of the Rx queue, in number of packets./
@@ -592,8 +590,7 @@ setRxSlots hdl value =
 getRxSlots :: Ptr PFqTag
            -> IO Int
 getRxSlots hdl =
-    pfq_get_rx_slots hdl >>= throwPFqIf hdl (== -1)
-        >>= return . fromIntegral
+    liftM fromIntegral (pfq_get_rx_slots hdl >>= throwPFqIf hdl (== -1))
 
 
 -- |Return the length of a Rx slot, in bytes.
@@ -601,8 +598,7 @@ getRxSlots hdl =
 getRxSlotSize :: Ptr PFqTag
               -> IO Int
 getRxSlotSize hdl =
-    pfq_get_rx_slot_size hdl >>= throwPFqIf hdl (== -1)
-        >>= return . fromIntegral
+    liftM fromIntegral (pfq_get_rx_slot_size hdl >>= throwPFqIf hdl (== -1))
 
 
 -- |Specify the length of the Tx queue, in number of packets.
@@ -623,8 +619,7 @@ setTxSlots hdl value =
 getTxSlots :: Ptr PFqTag
            -> IO Int
 getTxSlots hdl =
-    pfq_get_tx_slots hdl >>= throwPFqIf hdl (== -1)
-        >>= return . fromIntegral
+    liftM fromIntegral (pfq_get_tx_slots hdl >>= throwPFqIf hdl (== -1))
 
 
 
@@ -1016,20 +1011,6 @@ txAsync hdl toggle =
     pfq_tx_async hdl (fromIntegral (if toggle then 1 else 0 :: Integer) ) >>= throwPFqIf_ hdl (== -1)
 
 
--- |Schedule the packet for transmission.
---
--- The packet is copied into a Tx queue (using TSS symmetric hash)
--- and transmitted by a kernel thread, or when txQueueFlush is called.
-
-inject :: Ptr PFqTag
-       -> C.ByteString  -- ^ bytes of packet
-       -> Int           -- queue index (any_queue is valid)
-       -> IO Bool
-inject hdl xs queue =
-    unsafeUseAsCStringLen xs $ \(p, l) ->
-        liftM (>= 0) $ pfq_inject hdl p (fromIntegral l) (fromIntegral queue) >>= throwPFqIf hdl (== -1)
-
-
 -- |Store the packet and transmit the packets in the queue.
 --
 -- The queue is flushed (if required) and the transmission takes place.
@@ -1054,6 +1035,22 @@ sendAsync :: Ptr PFqTag
 sendAsync hdl xs fh =
     unsafeUseAsCStringLen xs $ \(p, l) ->
         liftM (> 0) $ pfq_send_async hdl p (fromIntegral l) (fromIntegral fh)
+
+
+-- |Store the packet and transmit it.
+--
+-- The transmission takes place at the given TimeSpec time.
+
+sendAt :: Ptr PFqTag
+          -> C.ByteString  -- ^ bytes of packet
+          -> TimeSpec      -- ^ flush hint
+          -> IO Bool
+sendAt hdl xs ts =
+    unsafeUseAsCStringLen xs $ \(p, l) ->
+        liftM (> 0) $ pfq_inject hdl p
+                        (fromIntegral l)
+                        (fromIntegral (fromIntegral (sec ts) * (1000000000 :: Integer) + fromIntegral (nsec ts)))
+                        (fromIntegral $ getConstant any_queue)
 
 
 -- C functions from libpfq
@@ -1125,8 +1122,9 @@ foreign import ccall unsafe pfq_unbind_tx           :: Ptr PFqTag -> IO CInt
 
 foreign import ccall unsafe pfq_send                :: Ptr PFqTag -> Ptr CChar -> CSize -> IO CInt
 foreign import ccall unsafe pfq_send_async          :: Ptr PFqTag -> Ptr CChar -> CSize -> CSize -> IO CInt
+foreign import ccall unsafe pfq_send_at             :: Ptr PFqTag -> Ptr CChar -> CSize -> CSize -> IO CInt
 
-foreign import ccall unsafe pfq_inject              :: Ptr PFqTag -> Ptr CChar -> CSize -> CInt -> IO CInt
+foreign import ccall unsafe pfq_inject              :: Ptr PFqTag -> Ptr CChar -> CSize -> CULLong -> CInt -> IO CInt
 foreign import ccall unsafe pfq_tx_queue_flush      :: Ptr PFqTag -> CInt -> IO CInt
 foreign import ccall unsafe pfq_tx_async            :: Ptr PFqTag -> CInt -> IO CInt
 

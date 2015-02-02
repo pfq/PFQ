@@ -17,7 +17,8 @@ Library
                  storable-tuple,
                  storablevector,
                  storable-record, 
-                 network
+                 network,
+                 clock
 
   exposed-modules: Network.PFq
                    Network.PFq.Default
