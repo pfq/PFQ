@@ -65,7 +65,7 @@ forwardIO(arguments_t args, SkBuff b)
         	return Pass(b);
 	}
 
-	if (pfq_xmit(nskb, dev, nskb->queue_mapping) != 1) {
+	if (pfq_xmit(nskb, dev, nskb->queue_mapping, 0) != 1) {
                 if (printk_ratelimit())
                         printk(KERN_INFO "[PFQ/lang] forward pfq_xmit: error on device %s!\n", dev->name);
 

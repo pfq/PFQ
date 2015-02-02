@@ -232,12 +232,12 @@ struct pcap_opt {
 	{
 		int group;
 		int caplen;
-		int genlen;
 
 		int rx_slots;
 		int tx_slots;
 
 		int tx_flush;
+        	int tx_async;
 
 		int tx_queue[4];
 		int tx_task[4];

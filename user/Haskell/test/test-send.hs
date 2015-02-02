@@ -51,29 +51,50 @@ ping = C.pack [
         0x36, 0x37                                      -- 67
         ]
 
--- import Debug.Trace
+sendSync :: Ptr Q.PFqTag -> Int -> IO Int
+sendSync q n  =
+    Q.send q ping >>= (\b -> if b then return (n+1)
+                                  else return n)
+
+
+sendAsync :: Ptr Q.PFqTag -> Int -> IO Int
+sendAsync q n =
+    Q.sendAsync q ping 128 >>= (\b -> if b then return (n+1)
+                                           else return n)
+
+
+while :: (a -> Bool) -> (a -> IO a) -> a -> IO a
+while pred fun x
+    | pred x   = do
+        y <- fun x
+        while pred fun y
+    | otherwise = return x
+
 
 sender :: [String] -> IO ()
-sender []       = undefined
-sender (dev:xs) = do
+sender xs = do
 
-    let numb = read (head xs) :: Int
+    let dev    = head xs
+    let queue  = read (xs !! 1) :: Int
+    let core   = read (xs !! 2) :: Int
+    let num    = read (xs !! 3) :: Int
 
-    fp <- Q.open' 64 1024 128 1024
-
-    putStrLn  $ "sending " ++ show numb ++ " packets to dev " ++ dev  ++ "..."
+    fp <- Q.open' 64 1024 1024
 
     withForeignPtr fp  $ \q -> do
             Q.enable q
-            Q.bindTx q dev (-1)
+            Q.bindTxOnCpu q dev queue core
 
-            replicateM_ numb $ do
-               Q.send q ping
-               -- Q.sendSync q ping 128
-               -- Q.sendAsync q ping 128
-               threadDelay 1
+            if core /= -1
+            then do
+                putStrLn  $ "sending " ++ show num ++ " packets to dev " ++ dev  ++ " (async)..."
+                Q.txAsync q True
+                while (< num) (sendAsync q) 0
+            else do
+                putStrLn  $ "sending " ++ show num ++ " packets to dev " ++ dev  ++ "..."
+                while (< num) (sendSync q) 0
 
-            threadDelay 1000000
+            threadDelay 2000000
 
             stat <- Q.getStats q
             print stat
@@ -83,8 +104,7 @@ sender (dev:xs) = do
 main :: IO ()
 main = do
     args <- getArgs
-    case length args of
-        0  -> error "usage: test-send dev numb"
-        1  -> error "usage: test-send dev numb"
-        _  -> sender args
+    case ()  of
+        _ | length args < 4 -> error "usage: test-send dev queue node num"
+          | otherwise       -> sender args
 

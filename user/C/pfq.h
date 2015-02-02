@@ -241,7 +241,7 @@ extern pfq_t* pfq_open(size_t calpen, size_t slots);
  * Q_POLICY_GROUP_PRIVATE, respectively.
  */
 
-extern pfq_t *pfq_open_(size_t caplen, size_t rx_slots, size_t maxlen, size_t tx_slots);
+extern pfq_t *pfq_open_(size_t caplen, size_t rx_slots, size_t tx_slots);
 
 
 /*! Open the socket; no group is joined or created. */
@@ -257,7 +257,7 @@ extern pfq_t* pfq_open_nogroup(size_t caplen, size_t slots);
  * Groups can be later joined by means of the join function.
  */
 
-extern pfq_t* pfq_open_nogroup_(size_t caplen, size_t rx_slots, size_t maxlen, size_t tx_slots);
+extern pfq_t* pfq_open_nogroup_(size_t caplen, size_t rx_slots, size_t tx_slots);
 
 
 /*! Open the socket and create a new group with the specified class and policy. */
@@ -266,8 +266,7 @@ extern pfq_t* pfq_open_nogroup_(size_t caplen, size_t rx_slots, size_t maxlen, s
  */
 
 extern pfq_t* pfq_open_group(unsigned long class_mask, int group_policy,
-                size_t calpen, size_t rx_slots,
-                size_t maxlen, size_t tx_slots);
+                size_t calpen, size_t rx_slots, size_t tx_slots);
 
 /*! Close the socket. */
 
@@ -323,11 +322,6 @@ extern int pfq_set_caplen(pfq_t *q, size_t value);
 /*! Return the capture length of packets, in bytes. */
 
 extern ssize_t pfq_get_caplen(pfq_t const *q);
-
-
-/*! Specify the max transmission length of packets, in bytes. */
-
-extern int pfq_set_maxlen(pfq_t *q, size_t value);
 
 
 /*! Return the max transmission length of packets, in bytes. */
@@ -564,23 +558,31 @@ extern int pfq_get_group_counters(pfq_t const *q, int gid, struct pfq_counters *
 
 /*! Flush the Tx queue(s). */
 /*!
- * Transmit the packets in the queues associated with the socket.
- * No flush is required for queues with kernel threads enabled.
+ * Transmit the packets in the Tx queues of the socket.
  */
 
 extern int pfq_tx_queue_flush(pfq_t *q, int queue);
 
 
-/*! Schedule the packet for transmission. */
+/*! Start/Stop kernel threads. */
 /*!
- * The packet is copied into a Tx queue (according to a symmetric hash)
- * and transmitted by a kernel thread, or when tx_queue_flush is called.
+ * Start/Stop kernel threads associated with Tx queues.
  */
 
-extern int pfq_inject(pfq_t *q, const void *ptr, size_t len, int queue);
+extern int pfq_tx_async(pfq_t *q, int toggle);
 
 
-/*! Store the packet and transmit the packets in the queue, synchronously. */
+/*! Schedule the packet for transmission. */
+/*!
+ * The packet is copied into a Tx queue (using a TSS symmetric hash if any_queue is specified)
+ * and transmitted at the given timestamp by a kernel thread or when tx_queue_flush is called.
+ * A timestamp of 0 nanoseconds means 'immediate transmission'.
+ */
+
+extern int pfq_inject(pfq_t *q, const void *ptr, size_t len, uint64_t nsec, int queue);
+
+
+/*! Store the packet and transmit the packets in the queue. */
 /*!
  * The queue is flushed (if required) and the transmission takes place.
  */
@@ -595,6 +597,14 @@ extern int pfq_send(pfq_t *q, const void *ptr, size_t len);
  */
 
 extern int pfq_send_async(pfq_t *q, const void *ptr, size_t len, size_t flush_hint);
+
+
+/*! Store the packet and transmit it. */
+/*!
+ * The transmission takes place at the given timespec time.
+ */
+
+extern int pfq_send_at(pfq_t *q, const void *ptr, size_t len, struct timespec *ts);
 
 
 #endif /* PFQ_H */

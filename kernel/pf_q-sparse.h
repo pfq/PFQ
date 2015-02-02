@@ -40,25 +40,25 @@ typedef struct { counter_t ctx[Q_MAX_CPU]; } sparse_counter_t;
 static inline
 void __sparse_inc(sparse_counter_t *sc, int cpu)
 {
-        local_inc(&sc->ctx[cpu].value);
+        local_inc(&sc->ctx[cpu & Q_MAX_CPU_MASK].value);
 }
 
 static inline
 void __sparse_dec(sparse_counter_t *sc, int cpu)
 {
-        local_dec(&sc->ctx[cpu].value);
+        local_dec(&sc->ctx[cpu & Q_MAX_CPU_MASK].value);
 }
 
 static inline
 void __sparse_add(sparse_counter_t *sc, long n, int cpu)
 {
-        local_add(n, &sc->ctx[cpu].value);
+        local_add(n, &sc->ctx[cpu & Q_MAX_CPU_MASK].value);
 }
 
 static inline
 void __sparse_sub(sparse_counter_t *sc, long n, int cpu)
 {
-        local_sub(n, &sc->ctx[cpu].value);
+        local_sub(n, &sc->ctx[cpu & Q_MAX_CPU_MASK].value);
 }
 
 

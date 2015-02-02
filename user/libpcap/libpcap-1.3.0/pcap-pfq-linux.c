@@ -495,10 +495,10 @@ pfq_getenv(pcap_t *handle)
  	{
        		.group    = -1,
        		.caplen   = handle->snapshot,
-       		.genlen   = handle->snapshot,
        		.rx_slots = 4096,
 		.tx_slots = 4096,
 		.tx_flush = 1,
+		.tx_async = 0,
 		.tx_queue = {-1, -1, -1, -1},
 		.tx_task  = { Q_NO_KTHREAD, Q_NO_KTHREAD, Q_NO_KTHREAD, Q_NO_KTHREAD },
 		.vlan     = NULL,
@@ -510,9 +510,6 @@ pfq_getenv(pcap_t *handle)
 
 	if ((opt = getenv("PFQ_CAPLEN")))
 		rc.caplen = atoi(opt);
-
-	if ((opt = getenv("PFQ_GENLEN")))
-		rc.genlen = atoi(opt);
 
 	if ((opt = getenv("PFQ_RX_SLOTS")))
 		rc.rx_slots = atoi(opt);
@@ -563,14 +560,13 @@ pfq_parse_filename(const char *device)
 #define KEY_ERR 	       -1
 #define KEY_group 	       	0
 #define KEY_caplen 	    	1
-#define KEY_genlen 	    	2
-#define KEY_rx_slots		3
-#define KEY_tx_slots            4
-#define KEY_tx_flush 		5
-#define KEY_tx_queue 		6
-#define KEY_tx_task 		7
-#define KEY_vlan 		8
-#define KEY_computation 	9
+#define KEY_rx_slots		2
+#define KEY_tx_slots            3
+#define KEY_tx_flush 		4
+#define KEY_tx_queue 		5
+#define KEY_tx_task 		6
+#define KEY_vlan 		7
+#define KEY_computation 	8
 
 
 struct pfq_conf_key {
@@ -579,7 +575,6 @@ struct pfq_conf_key {
 {
 	KEY(group),
 	KEY(caplen),
-	KEY(genlen),
 	KEY(rx_slots),
 	KEY(tx_slots),
 	KEY(tx_queue),
@@ -642,7 +637,6 @@ pfq_parse_config(struct pfq_opt *opt, const char *filename)
 			{
 				case KEY_group:  	opt->group 	= atoi(value); 	break;
 				case KEY_caplen:	opt->caplen 	= atoi(value);  break;
-				case KEY_genlen:	opt->genlen 	= atoi(value);  break;
 				case KEY_rx_slots: 	opt->rx_slots 	= atoi(value);  break;
 				case KEY_tx_slots:	opt->tx_slots 	= atoi(value);  break;
 				case KEY_tx_flush:	opt->tx_flush   = atoi(value);  break;
@@ -734,19 +728,14 @@ pfq_activate_linux(pcap_t *handle)
                 fprintf(stderr, "[PFQ] capture length forced to %d\n", maxlen);
                 handle->opt.pfq.caplen = maxlen;
         }
-        if (handle->opt.pfq.genlen > maxlen || handle->opt.pfq.genlen == 0) {
-                fprintf(stderr, "[PFQ] generation length forced to %d\n", maxlen);
-                handle->opt.pfq.genlen = maxlen;
-        }
 
 	if (handle->opt.buffer_size/handle->opt.pfq.caplen > handle->opt.pfq.rx_slots)
         	handle->opt.pfq.rx_slots = handle->opt.buffer_size/handle->opt.pfq.caplen;
 
 
-        fprintf(stderr, "[PFQ] buffer_size = %d caplen = %d, genlen = %d, rx_slots = %d, tx_slots = %d, tx_flush = %d\n",
+        fprintf(stderr, "[PFQ] buffer_size = %d caplen = %d, rx_slots = %d, tx_slots = %d, tx_flush = %d\n",
         		handle->opt.buffer_size,
         		handle->opt.pfq.caplen,
-        		handle->opt.pfq.genlen,
         		handle->opt.pfq.rx_slots,
         		handle->opt.pfq.tx_slots,
         		handle->opt.pfq.tx_flush);
@@ -880,7 +869,7 @@ pfq_activate_linux(pcap_t *handle)
 			return 0;
 		}
 
-		handle->md.pfq.q = pfq_open_nogroup_(handle->opt.pfq.caplen, handle->opt.pfq.rx_slots, handle->opt.pfq.genlen, handle->opt.pfq.tx_slots);
+		handle->md.pfq.q = pfq_open_nogroup_(handle->opt.pfq.caplen, handle->opt.pfq.rx_slots, handle->opt.pfq.tx_slots);
 		if (handle->md.pfq.q == NULL) {
 
 			snprintf(handle->errbuf, PCAP_ERRBUF_SIZE, "%s", pfq_error(handle->md.pfq.q));
@@ -912,7 +901,7 @@ pfq_activate_linux(pcap_t *handle)
 			return 0;
 		}
 
-		handle->md.pfq.q = pfq_open_group(Q_CLASS_DEFAULT, Q_POLICY_GROUP_SHARED, handle->opt.pfq.caplen, handle->opt.pfq.rx_slots, handle->opt.pfq.caplen, handle->opt.pfq.tx_slots);
+		handle->md.pfq.q = pfq_open_group(Q_CLASS_DEFAULT, Q_POLICY_GROUP_SHARED, handle->opt.pfq.caplen, handle->opt.pfq.rx_slots, handle->opt.pfq.tx_slots);
 		if (handle->md.pfq.q == NULL) {
 			snprintf(handle->errbuf, PCAP_ERRBUF_SIZE, "%s", pfq_error(handle->md.pfq.q));
 			goto fail;
@@ -1020,6 +1009,11 @@ fail:
 static int
 pfq_inject_linux(pcap_t *handle, const void * buf, size_t size)
 {
+	if (handle->opt.pfq.tx_async == 0) {
+        	handle->opt.pfq.tx_async = 1;
+		pfq_tx_async(handle->md.pfq.q, 1);
+	}
+
 	int ret = pfq_send_async(handle->md.pfq.q, buf, size, handle->opt.pfq.tx_flush);
 	if (ret == -1) {
 		/* snprintf(handle->errbuf, PCAP_ERRBUF_SIZE, "%s", pfq_error(handle->md.pfq.q)); */

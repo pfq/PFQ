@@ -20,6 +20,7 @@
 #include <tuple>
 #include <unordered_set>
 #include <random>
+#include <limits>
 
 #include <binding.hpp>
 #include <affinity.hpp>
@@ -76,8 +77,15 @@ namespace opt
     size_t len     = 1514;
     size_t maxlen  = 0;
     size_t slots   = 4096;
+<<<<<<< HEAD
+=======
+    size_t npackets = std::numeric_limits<size_t>::max();
+
+    std::atomic_int nthreads;
+
+>>>>>>> experimental
     bool   rand_ip = false;
-    char *packet   = nullptr;
+    bool   active_ts = false;
     double rate    = 0;
 
     std::vector< std::vector<int> > kcore;
@@ -99,6 +107,7 @@ namespace thread
         , m_band(std::unique_ptr<std::atomic_ullong>(new std::atomic_ullong(0)))
         , m_fail(std::unique_ptr<std::atomic_ullong>(new std::atomic_ullong(0)))
         , m_gen()
+        , m_packet(std::unique_ptr<char[]>(make_packet(opt::len)))
         {
             if (m_bind.dev.empty())
                 throw std::runtime_error("context: device unspecified");
@@ -106,8 +115,22 @@ namespace thread
             if (m_bind.queue.empty())
                 m_bind.queue.push_back(-1);
 
+<<<<<<< HEAD
             auto q = pfq::socket(param::list, param::maxlen{opt::maxlen},
                                               param::tx_slots{opt::slots});
+
+            std::cout << "thread     : " << id << " -> "  << show_binding(m_bind) << " kcore { ";
+
+            for(auto x : kcpu)
+                std::cout << x  << ' ';
+
+            std::cout << "}" << std::endl;
+
+            for(unsigned int n = 0; n < m_bind.queue.size(); n++)
+            {
+                q.bind_tx (m_bind.dev.at(0).c_str(), m_bind.queue[n], kcpu[n]);
+=======
+            auto q = pfq::socket(param::list, param::tx_slots{opt::slots});
 
             std::cout << "thread     : " << id << " -> "  << show_binding(m_bind) << " kcore { ";
 
@@ -122,6 +145,13 @@ namespace thread
             }
 
             q.enable();
+
+            if (std::any_of(std::begin(kcpu), std::end(kcpu), [](int cpu) { return cpu != -1; }))
+            {
+                    q.tx_async(true);
+>>>>>>> experimental
+            }
+
             m_pfq = std::move(q);
         }
 
@@ -134,9 +164,14 @@ namespace thread
         void operator()()
         {
             if (opt::file.empty())
-                synt_generator();
+                if (opt::active_ts)
+                    active_generator();
+                else 
+                    generator();
             else
                 pcap_generator();
+
+            opt::nthreads--;
         }
 
         std::tuple<pfq_stats, uint64_t, uint64_t, uint64_t>
@@ -153,18 +188,28 @@ namespace thread
 
     private:
 
-        void synt_generator()
+        void generator()
         {
-            auto ip = reinterpret_cast<iphdr *>(opt::packet + 14);
+            auto ip = reinterpret_cast<iphdr *>(m_packet.get() + 14);
 
             auto delta = std::chrono::nanoseconds(static_cast<uint64_t>(1000/opt::rate));
 
             auto now = std::chrono::system_clock::now();
 
+<<<<<<< HEAD
             auto len = std::min(opt::len, opt::maxlen);
 
             for(size_t n = 0;;n++)
+=======
+            auto len = opt::len;
+
+            for(size_t n = 0; n < opt::npackets;)
+>>>>>>> experimental
             {
+                //
+                // poor-man rate control...
+                //
+
                 if ((n & 8191) == 0)
                 {
                     while (std::chrono::system_clock::now() < (now + delta*8192))
@@ -172,19 +217,64 @@ namespace thread
                     now = std::chrono::system_clock::now();
                 }
 
+                if (!m_pfq.send_async(pfq::const_buffer(reinterpret_cast<const char *>(m_packet.get()), len), opt::flush))
+                {
+                    m_fail->fetch_add(1, std::memory_order_relaxed);
+                    continue;
+                }
+
+                m_sent->fetch_add(1, std::memory_order_relaxed);
+                m_band->fetch_add(len, std::memory_order_relaxed);
+
                 if (opt::rand_ip)
                 {
                     ip->saddr = static_cast<uint32_t>(m_gen());
                     ip->daddr = static_cast<uint32_t>(m_gen());
                 }
 
+<<<<<<< HEAD
                 if (m_pfq.send_async(pfq::const_buffer(reinterpret_cast<const char *>(opt::packet), len), opt::flush))
                 {
                     m_sent->fetch_add(1, std::memory_order_relaxed);
                     m_band->fetch_add(len, std::memory_order_relaxed);
                 }
                 else
+=======
+                n++;
+            }
+        }
+        
+        void active_generator()
+        {
+            auto ip = reinterpret_cast<iphdr *>(m_packet.get() + 14);
+
+            auto delta = std::chrono::nanoseconds(static_cast<uint64_t>(1000/opt::rate));
+
+            auto now = std::chrono::system_clock::now();
+
+            auto len = opt::len;
+
+            for(size_t n = 0; n < opt::npackets;)
+            {
+                if (!m_pfq.send_at(pfq::const_buffer(reinterpret_cast<const char *>(m_packet.get()), len), now))
+                {
+>>>>>>> experimental
                     m_fail->fetch_add(1, std::memory_order_relaxed);
+                    continue;
+                }
+                
+                now += delta; 
+
+                m_sent->fetch_add(1, std::memory_order_relaxed);
+                m_band->fetch_add(len, std::memory_order_relaxed);
+
+                if (opt::rand_ip)
+                {
+                    ip->saddr = static_cast<uint32_t>(m_gen());
+                    ip->daddr = static_cast<uint32_t>(m_gen());
+                }
+
+                n++;
             }
         }
 
@@ -198,26 +288,45 @@ namespace thread
             if (p == nullptr)
                 throw std::runtime_error("pcap_open_offline:" + std::string(opt::errbuf));
 
+            auto n = pcap_next_ex(p, &hdr, (u_char const **)&data);
+            if (n == -2)
+                return;
 
+            auto delta = std::chrono::nanoseconds(static_cast<uint64_t>(1000/opt::rate));
+
+<<<<<<< HEAD
             auto len = std::min(opt::len, opt::maxlen);
 
             for(;;)
+=======
+            auto now = std::chrono::system_clock::now();
+
+            for(size_t i = 0; i < opt::npackets;)
+>>>>>>> experimental
             {
-                auto n = pcap_next_ex(p, &hdr, (u_char const **)&data);
+                //
+                // poor-man rate control...
+                //
 
-                if (n == -2)
-                    break;
+                if ((n & 8191) == 0)
+                {
+                    while (std::chrono::system_clock::now() < (now + delta*8192))
+                    {}
+                    now = std::chrono::system_clock::now();
+                }
 
-                else if (n == 1) {
+                auto plen = std::min<size_t>(hdr->caplen, opt::len);
 
-                    auto ip = reinterpret_cast<iphdr *>(data + 14);
+                if (!m_pfq.send_async(pfq::const_buffer(reinterpret_cast<const char *>(data), plen), opt::flush))
+                {
+                    m_fail->fetch_add(1, std::memory_order_relaxed);
+                    continue;
+                }
 
-                    if (opt::rand_ip)
-                    {
-                        ip->saddr = static_cast<uint32_t>(m_gen());
-                        ip->daddr = static_cast<uint32_t>(m_gen());
-                    }
+                m_sent->fetch_add(1, std::memory_order_relaxed);
+                m_band->fetch_add(plen, std::memory_order_relaxed);
 
+<<<<<<< HEAD
                     auto plen = std::min<size_t>(hdr->caplen, len);
 
                     if (m_pfq.send_async(pfq::const_buffer(reinterpret_cast<const char *>(data), plen), opt::flush))
@@ -227,10 +336,21 @@ namespace thread
                     }
                     else
                         m_fail->fetch_add(1, std::memory_order_relaxed);
+=======
+                n = pcap_next_ex(p, &hdr, (u_char const **)&data);
+                if (n == -2)
+                    break;
+
+                if (auto ip = opt::rand_ip ? reinterpret_cast<iphdr *>(data + 14) : nullptr)
+                {
+                    ip->saddr = static_cast<uint32_t>(m_gen());
+                    ip->daddr = static_cast<uint32_t>(m_gen());
+>>>>>>> experimental
                 }
+
+                i++;
             }
         }
-
 
         int m_id;
 
@@ -243,6 +363,8 @@ namespace thread
         std::unique_ptr<std::atomic_ullong> m_fail;
 
         std::mt19937 m_gen;
+
+        std::unique_ptr<char[]> m_packet;
     };
 
 }
@@ -310,12 +432,20 @@ void usage(std::string name)
         "usage: " + std::move(name) + " [OPTIONS]\n\n"
         " -h --help                     Display this help\n"
         " -l --len INT                  Set packet length\n"
+<<<<<<< HEAD
         " -m --maxlen INT               Set max packet length\n"
+=======
+        " -n --packets INT              Number of packets\n"
+>>>>>>> experimental
         " -s --queue-slots INT          Set Tx queue length\n"
         " -k --kcore IDX,IDX...         Async with kernel threads\n"
         " -r --read FILE                Read pcap trace file to send\n"
         " -R --rand-ip                  Randomize IP addresses\n"
         "    --rate DOUBLE              Packet rate in Mpps\n"
+<<<<<<< HEAD
+=======
+        " -a --active-tstamp            Use active timestamp as rate control\n"
+>>>>>>> experimental
         " -f --flush INT                Set flush length, used in sync Tx\n"
         " -t --thread BINDING\n\n"
         "      BINDING = " + pfq::binding_format
@@ -369,6 +499,7 @@ try
             continue;
         }
 
+<<<<<<< HEAD
         if ( any_strcmp(argv[i], "-m", "--maxlen") )
         {
             if (++i == argc)
@@ -377,6 +508,16 @@ try
             }
 
             opt::maxlen = static_cast<size_t>(std::atoi(argv[i]));
+=======
+        if ( any_strcmp(argv[i], "-n", "--packets") )
+        {
+            if (++i == argc)
+            {
+                throw std::runtime_error("number missing");
+            }
+
+            opt::npackets = static_cast<size_t>(std::atoi(argv[i]));
+>>>>>>> experimental
             continue;
         }
 
@@ -411,6 +552,12 @@ try
             opt::rand_ip = true;
             continue;
         }
+        
+        if ( any_strcmp(argv[i], "-a", "--active-tstamp") )
+        {
+            opt::active_ts = true;
+            continue;
+        }
 
         if ( any_strcmp(argv[i], "-t", "--thread") )
         {
@@ -440,6 +587,7 @@ try
         throw std::runtime_error(std::string("pfq-gen: ") + argv[i] + " unknown option");
     }
 
+<<<<<<< HEAD
     if (!opt::maxlen) {
         opt::maxlen = opt::len;
     }
@@ -447,17 +595,27 @@ try
     std::cout << "rand_ip    : "  << std::boolalpha << opt::rand_ip << std::endl;
     std::cout << "len        : "  << opt::len << std::endl;
     std::cout << "maxlen     : "  << opt::maxlen << std::endl;
+=======
+    std::cout << "rand_ip    : "  << std::boolalpha << opt::rand_ip << std::endl;
+    std::cout << "len        : "  << opt::len << std::endl;
+>>>>>>> experimental
     std::cout << "flush-hint : "  << opt::flush << std::endl;
 
     if (opt::rate != 0.0)
         std::cout << "rate       : "  << opt::rate << " Mpps" << std::endl;
 
+<<<<<<< HEAD
 
     if (opt::slots == 0)
         throw std::runtime_error("tx_slots set to 0!");
 
     opt::packet = make_packet(opt::len);
 
+=======
+    if (opt::slots == 0)
+        throw std::runtime_error("tx_slots set to 0!");
+
+>>>>>>> experimental
     //
     // process binding:
     //
@@ -487,6 +645,11 @@ try
         std::cout << vt100::BOLD << "*** Multiple queue detected! Consider to enable asynchronous transmission, with -k option! ***" << vt100::RESET << std::endl;
     }
 
+<<<<<<< HEAD
+    //
+    // process kcore:
+=======
+>>>>>>> experimental
     //
     // process kcore:
     //
@@ -494,6 +657,12 @@ try
     while (opt::kcore.size() < binding.size())
         opt::kcore.push_back(std::vector<int>{});
 
+<<<<<<< HEAD
+    while (opt::kcore.size() < binding.size())
+        opt::kcore.push_back(std::vector<int>{});
+
+=======
+>>>>>>> experimental
     //
     // finally pad each kcore list...
     //
@@ -517,8 +686,15 @@ try
         thread_ctx.push_back(new thread::context(static_cast<int>(i), binding[i], opt::kcore[i]));
     }
 
+<<<<<<< HEAD
 
+=======
+    opt::nthreads.store(binding.size(), std::memory_order_relaxed);
+
+    //
+>>>>>>> experimental
     // create threads:
+    //
 
     size_t i = 0;
     std::for_each(binding.begin(), binding.end(), [&](pfq::binding const &b) {
@@ -528,10 +704,9 @@ try
         extra::set_affinity(*t, b.core);
 
         t->detach();
-
     });
 
-     pfq_stats cur, prec = {0,0,0,0,0,0,0};
+    pfq_stats cur, prec = {0,0,0,0,0,0,0};
 
     uint64_t sent, sent_ = 0;
     uint64_t band, band_ = 0;
@@ -576,7 +751,14 @@ try
         sent_ = sent;
         band_ = band;
         fail_ = fail;
+
+        if (opt::nthreads.load(std::memory_order_relaxed) == 0)
+            break;
     }
+
+    std::cout << "Shutting down sockets in 1 sec..." << std::endl;
+    std::this_thread::sleep_for(std::chrono::seconds(1));
+    std::cout << "Done." << std::endl;
 
 }
 catch(std::exception &e)

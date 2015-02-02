@@ -142,20 +142,11 @@ Context(PFQ)
     Test(maxlen)
     {
         pfq::socket x;
-        AssertThrow(x.maxlen(64));
         AssertThrow(x.maxlen());
 
         x.open(pfq::group_policy::undefined, 64);
-        x.maxlen(128);
 
-        Assert(x.maxlen(), is_equal_to(128UL));
-
-        x.enable();
-        AssertThrow(x.maxlen(64));
-        x.disable();
-
-        x.maxlen(64);
-        Assert(x.maxlen(), is_equal_to(64UL));
+        Assert(x.maxlen(), is_equal_to(1514UL));
     }
 
     Test(rx_slots)
@@ -186,7 +177,7 @@ Context(PFQ)
         x.open(pfq::group_policy::undefined, 64);
 
         auto size = 64 + sizeof(pfq_pkthdr);
-        Assert(x.rx_slot_size(), is_equal_to( size + (size % 64) ));
+        Assert(x.rx_slot_size(), is_equal_to(size));
     }
 
     Test(tx_slots)

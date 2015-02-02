@@ -43,7 +43,7 @@ int batch_len 		= 1;
 int vl_untag     	= 0;
 
 int skb_pool_size 	= 1024;
-
+int tx_max_retry 	= 1024;
 
 struct pfq_global_stats global_stats;
 struct pfq_memory_stats memory_stats;

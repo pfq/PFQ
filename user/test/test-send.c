@@ -26,10 +26,28 @@ static const unsigned char ping[98] =
 void send_packets(pfq_t *q, unsigned long long num)
 {
         unsigned long long n;
+
+	printf("sending %llu packets:\n", num);
+
         for(n = 0; n < num;)
         {
-                if (pfq_send_async(q, ping, sizeof(ping), 128))
+                if (pfq_send(q, ping, sizeof(ping))) {
 			n++;
+		}
+        }
+}
+
+
+void send_packets_async(pfq_t *q, unsigned long long num)
+{
+        unsigned long long n;
+
+	printf("sending %llu packets (async):\n", num);
+        for(n = 0; n < num;)
+        {
+                if (pfq_send_async(q, ping, sizeof(ping), 128) != -1) {
+			n++;
+		}
         }
 
         pfq_tx_queue_flush(q, Q_ANY_QUEUE);
@@ -46,20 +64,25 @@ main(int argc, char *argv[])
         }
 
         const char *dev = argv[1];
-
         int queue  = atoi(argv[2]);
         int node   = atoi(argv[3]);
         unsigned long long num = atoll(argv[4]);
 
-        pfq_t * q= pfq_open_(64, 1, 128, 4096);
+        pfq_t * q= pfq_open_(64, 1024, 1024);
 
         pfq_enable(q);
 
         pfq_bind_tx(q, dev, queue, node);
 
-	send_packets(q, num);
+	if (node == -1) {
+		send_packets(q, num);
+	}
+	else  {
+		pfq_tx_async(q, 1);
+		send_packets_async(q, num);
+	}
 
-        sleep(1);
+        sleep(2);
 
         struct pfq_stats stat;
         pfq_get_stats(q, &stat);

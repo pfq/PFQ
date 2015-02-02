@@ -27,6 +27,19 @@ static const unsigned char ping[98] =
 
 void send_packets(pfq::socket &q, int64_t num)
 {
+    std::cout << "sending " << num << " packets:" << std::endl;
+
+    for(int64_t n = 0; n < num;)
+    {
+        if (q.send(pfq::const_buffer(reinterpret_cast<const char *>(ping), sizeof(ping))))
+            n++;
+    }
+}
+
+
+void send_packets_async(pfq::socket &q, int64_t num)
+{
+    std::cout << "sending " << num << " packets (async):" << std::endl;
     for(int64_t n = 0; n < num;)
     {
         if (q.send_async(pfq::const_buffer(reinterpret_cast<const char *>(ping), sizeof(ping)), 128))
@@ -36,10 +49,12 @@ void send_packets(pfq::socket &q, int64_t num)
     q.tx_queue_flush();
 }
 
+
 int
 main(int argc, char *argv[])
+try
 {
-    if (argc < 6)
+    if (argc < 5)
         throw std::runtime_error(std::string("usage: ").append(argv[0]).append(" dev queue node num"));
 
     const char *dev = argv[1];
@@ -47,13 +62,20 @@ main(int argc, char *argv[])
     int node        = atoi(argv[3]);
     int64_t num     = atoll(argv[4]);
 
-    pfq::socket q(64, 4096, 64, 4096);
+    pfq::socket q(64, 1024, 1024);
 
     q.enable();
 
     q.bind_tx(dev, queue, node);
 
-    send_packets(q, num);
+
+    if (node == -1) {
+        send_packets(q, num);
+    }
+    else {
+        q.tx_async(true);
+        send_packets_async(q, num);
+    }
 
     std::this_thread::sleep_for(std::chrono::seconds(1));
 
@@ -62,5 +84,9 @@ main(int argc, char *argv[])
     std::cout << "sent: " << stat.sent << " - disc: " << stat.disc << std::endl;
 
     return 0;
+}
+catch(std::exception &e)
+{
+    std::cout << e.what() << std::endl;
 }
 

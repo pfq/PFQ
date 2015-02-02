@@ -38,11 +38,11 @@ size_t copy_to_user_skbs(struct pfq_rx_opt *ro, struct pfq_skbuff_batch *skbs, u
         int len = pfq_popcount(mask);
         size_t cpy = 0;
 
-        if (likely(pfq_get_rx_queue_hdr(ro))) {
+        if (likely(pfq_get_rx_queue(ro))) {
 
         	smp_rmb();
 
-                cpy = pfq_mpdb_enqueue_batch(ro, skbs, mask, len, gid);
+                cpy = pfq_mpsc_enqueue_batch(ro, skbs, mask, len, gid);
 
         	__sparse_add(&ro->stats.recv, cpy, cpu);
 
@@ -73,7 +73,7 @@ size_t copy_to_dev_buffs(struct pfq_sock *so, struct gc_queue_buff *buffs, unsig
                         return false;
 		}
 
- 		sent = pfq_queue_lazy_xmit_by_mask(buffs, mask, dev, so->egress_queue);
+ 		sent = pfq_batch_lazy_xmit_by_mask(buffs, mask, dev, so->egress_queue);
 
                 dev_put(dev);
 		return sent;

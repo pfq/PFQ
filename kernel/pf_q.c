@@ -90,6 +90,7 @@ module_param(capture_outgoing,  int, 0644);
 
 module_param(cap_len,         int, 0644);
 module_param(max_len,         int, 0644);
+
 module_param(max_queue_slots, int, 0644);
 
 module_param(batch_len,       int, 0644);
@@ -103,11 +104,12 @@ MODULE_PARM_DESC(capture_incoming," Capture incoming packets: (1 default)");
 MODULE_PARM_DESC(capture_outgoing," Capture outgoing packets: (0 default)");
 
 MODULE_PARM_DESC(cap_len, " Default capture length (bytes)");
-MODULE_PARM_DESC(max_len, " Maximum transmission length (bytes)");
+MODULE_PARM_DESC(max_len, " Maximum transmission length (default=1514 bytes)");
 
 MODULE_PARM_DESC(max_queue_slots, " Max Queue slots (default=226144)");
 
-MODULE_PARM_DESC(batch_len, " Batch queue length");
+MODULE_PARM_DESC(batch_len, 	" Batch queue length");
+MODULE_PARM_DESC(tx_max_retry,  " Transmission max retry (default=1024)");
 
 MODULE_PARM_DESC(vl_untag,  " Enable vlan untagging (default=0)");
 
@@ -525,7 +527,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 	stop = get_cycles();
 
 	if (printk_ratelimit())
-		printk(KERN_INFO "[PFQ] RX profile: %llu_tsc.\n", (stop-start)/batch_len);
+		printk(KERN_INFO "[PFQ] Rx profile: %llu_tsc.\n", (stop-start)/batch_len);
 #endif
         return 0;
 }
@@ -687,7 +689,7 @@ pfq_release(struct socket *sock)
 	for(n = 0; n < so->tx_opt.num_queues; n++)
 	{
 		if (so->tx_opt.queue[n].task) {
-			pr_devel("[PFQ|%d] stopping TX thread@%p\n", id, so->tx_opt.queue[n].task);
+			pr_devel("[PFQ|%d] stopping Tx thread@%p\n", id, so->tx_opt.queue[n].task);
 			kthread_stop(so->tx_opt.queue[n].task);
 			so->tx_opt.queue[n].task = NULL;
 		}
@@ -738,10 +740,10 @@ pfq_poll(struct file *file, struct socket *sock, poll_table * wait)
 
 	poll_wait(file, &so->rx_opt.waitqueue, wait);
 
-        if(!pfq_get_rx_queue_hdr(&so->rx_opt))
+        if(!pfq_get_rx_queue(&so->rx_opt))
                 return mask;
 
-        if (pfq_mpdb_queue_len(so) > 0)
+        if (pfq_mpsc_queue_len(so) > 0)
                 mask |= POLLIN | POLLRDNORM;
 
         return mask;
@@ -860,9 +862,6 @@ static int __init pfq_init_module(void)
 {
         int n;
         printk(KERN_INFO "[PFQ] loading (%s)...\n", Q_VERSION);
-
-        if (max_queue_slots & (max_queue_slots-1))
-                printk(KERN_INFO "[PFQ] max_queue_slots (%d) not a power of 2!\n", max_queue_slots);
 
         pfq_net_proto_family_init();
         pfq_proto_ops_init();

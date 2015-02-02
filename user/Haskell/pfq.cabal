@@ -1,5 +1,5 @@
 name:            pfq
-version:         4.0
+version:         4.1
 synopsis:        PFQ interface for user-level packet capture
 description:     PFQ interface for user-level packet capture
 maintainer:      Nicola Bonelli <nicola@pfq.io> 
@@ -17,7 +17,8 @@ Library
                  storable-tuple,
                  storablevector,
                  storable-record, 
-                 network
+                 network,
+                 clock
 
   exposed-modules: Network.PFq
                    Network.PFq.Default

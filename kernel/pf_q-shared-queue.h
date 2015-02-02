@@ -37,41 +37,41 @@
 int pfq_shared_queue_enable(struct pfq_sock *so, unsigned long addr);
 int pfq_shared_queue_disable(struct pfq_sock *so);
 
-extern size_t pfq_mpdb_enqueue_batch(struct pfq_rx_opt *ro,
+extern size_t pfq_mpsc_enqueue_batch(struct pfq_rx_opt *ro,
 		                     struct pfq_skbuff_batch *skbs,
 		                     unsigned long long skbs_mask,
 		                     int burst_len,
 		                     int gid);
 
 
-static inline size_t pfq_queue_mpdb_mem(struct pfq_sock *so)
+static inline size_t pfq_queue_mpsc_mem(struct pfq_sock *so)
 {
-        return so->rx_opt.queue_size * so->rx_opt.slot_size;
+        return so->rx_opt.queue_size * so->rx_opt.slot_size * 2;
 }
 
 static inline size_t pfq_queue_spsc_mem(struct pfq_sock *so)
 {
-        return so->tx_opt.queue_size * so->tx_opt.slot_size;
+        return so->tx_opt.queue_size * so->tx_opt.slot_size * 2;
 }
 
 
 static inline
-size_t pfq_mpdb_queue_len(struct pfq_sock *p)
+size_t pfq_mpsc_queue_len(struct pfq_sock *p)
 {
-	struct pfq_queue_hdr *q = pfq_get_queue_hdr(p);
+	struct pfq_shared_queue *q = pfq_get_shared_queue(p);
 	if (!q)
 		return 0;
-        return MPDB_QUEUE_LEN(q->rx.data);
+        return Q_SHARED_QUEUE_LEN(q->rx.data);
 }
 
 
 static inline
-int pfq_mpdb_queue_index(struct pfq_sock *p)
+int pfq_mpsc_queue_index(struct pfq_sock *p)
 {
-	struct pfq_queue_hdr *q = pfq_get_queue_hdr(p);
+	struct pfq_shared_queue *q = pfq_get_shared_queue(p);
 	if (!q)
 		return 0;
-        return MPDB_QUEUE_INDEX(q->rx.data) & 1;
+        return Q_SHARED_QUEUE_INDEX(q->rx.data) & 1;
 }
 
 

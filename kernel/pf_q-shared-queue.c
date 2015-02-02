@@ -52,19 +52,19 @@ void *pfq_skb_copy_from_linear_data(const struct sk_buff *skb, void *to, size_t 
 
 
 static inline
-char *mpdb_slot_ptr(struct pfq_rx_opt *ro, struct pfq_rx_queue_hdr *qd, size_t qindex, size_t slot)
+char *mpsc_slot_ptr(struct pfq_rx_opt *ro, struct pfq_rx_queue *qd, size_t qindex, size_t slot)
 {
 	return (char *)(ro->base_addr) + ( (qindex&1) ? ro->queue_size : 0 + slot) * ro->slot_size;
 }
 
 
-size_t pfq_mpdb_enqueue_batch(struct pfq_rx_opt *ro,
+size_t pfq_mpsc_enqueue_batch(struct pfq_rx_opt *ro,
 		              struct pfq_skbuff_batch *skbs,
 		              unsigned long long mask,
 		              int burst_len,
 		              int gid)
 {
-	struct pfq_rx_queue_hdr *rx_queue = pfq_get_rx_queue_hdr(ro);
+	struct pfq_rx_queue *rx_queue = pfq_get_rx_queue(ro);
 	int data, qlen, qindex;
 	struct sk_buff *skb;
 
@@ -76,14 +76,14 @@ size_t pfq_mpdb_enqueue_batch(struct pfq_rx_opt *ro,
 
 	data = atomic_read((atomic_t *)&rx_queue->data);
 
-        if (MPDB_QUEUE_LEN(data) > ro->queue_size)
+        if (Q_SHARED_QUEUE_LEN(data) > ro->queue_size)
 		return 0;
 
 	data = atomic_add_return(burst_len, (atomic_t *)&rx_queue->data);
 
-	qlen      = MPDB_QUEUE_LEN(data) - burst_len;
-	qindex    = MPDB_QUEUE_INDEX(data);
-        this_slot = mpdb_slot_ptr(ro, rx_queue, qindex, qlen);
+	qlen      = Q_SHARED_QUEUE_LEN(data) - burst_len;
+	qindex    = Q_SHARED_QUEUE_INDEX(data);
+        this_slot = mpsc_slot_ptr(ro, rx_queue, qindex, qlen);
 
 	for_each_skbuff_bitmask(skbs, mask, skb, n)
 	{
@@ -176,7 +176,7 @@ pfq_shared_queue_enable(struct pfq_sock *so, unsigned long user_addr)
 {
 	if (!so->shmem.addr) {
 
-		struct pfq_queue_hdr * queue;
+		struct pfq_shared_queue * queue;
 		size_t n;
 
 		/* alloc queue memory */
@@ -194,7 +194,7 @@ pfq_shared_queue_enable(struct pfq_sock *so, unsigned long user_addr)
 
 		/* initialize queues headers */
 
-		queue = (struct pfq_queue_hdr *)so->shmem.addr;
+		queue = (struct pfq_shared_queue *)so->shmem.addr;
 
 		/* initialize rx queue header */
 
@@ -204,22 +204,19 @@ pfq_shared_queue_enable(struct pfq_sock *so, unsigned long user_addr)
 
 		for(n = 0; n < Q_MAX_TX_QUEUES; n++)
 		{
-			queue->tx[n].producer.index = 0;
-			queue->tx[n].producer.cache = 0;
-			queue->tx[n].consumer.index = 0;
-			queue->tx[n].consumer.cache = 0;
+			queue->tx[n].prod      = 0;
+			queue->tx[n].cons      = 0;
+			queue->tx[n].size      = pfq_queue_spsc_mem(so)/2;
+                        queue->tx[n].ptr       = NULL;
+                        queue->tx[n].index     = -1;
 
-			queue->tx[n].size_mask = so->tx_opt.queue_size - 1;
-			queue->tx[n].max_len   = so->tx_opt.maxlen;
-			queue->tx[n].size      = so->tx_opt.queue_size;
-			queue->tx[n].slot_size = so->tx_opt.slot_size;
-
-			so->tx_opt.queue[n].base_addr = so->shmem.addr + sizeof(struct pfq_queue_hdr) + pfq_queue_mpdb_mem(so) * 2 + pfq_queue_spsc_mem(so) * n;
+			so->tx_opt.queue[n].base_addr = so->shmem.addr + sizeof(struct pfq_shared_queue)
+							+ pfq_queue_mpsc_mem(so) + pfq_queue_spsc_mem(so) * n;
 		}
 
 		/* update the queues base_addr */
 
-		so->rx_opt.base_addr = so->shmem.addr + sizeof(struct pfq_queue_hdr);
+		so->rx_opt.base_addr = so->shmem.addr + sizeof(struct pfq_shared_queue);
 
 		/* commit both the queues */
 
@@ -236,14 +233,15 @@ pfq_shared_queue_enable(struct pfq_sock *so, unsigned long user_addr)
 				so->rx_opt.queue_size,
 				so->rx_opt.slot_size,
 				so->rx_opt.caplen,
-				pfq_queue_mpdb_mem(so) * 2);
+				pfq_queue_mpsc_mem(so));
 
-		pr_devel("[PFQ|%d] Tx queue: len=%zu slot_size=%zu maxlen=%zu, mem=%zu bytes\n", so->id,
+		pr_devel("[PFQ|%d] Tx queue: len=%zu slot_size=%zu maxlen=%d, mem=%zu bytes (%d queues)\n", so->id,
 				so->tx_opt.queue_size,
 				so->tx_opt.slot_size,
-				so->tx_opt.maxlen,
-				pfq_queue_spsc_mem(so) * 4);
+				max_len,
+				pfq_queue_spsc_mem(so) * Q_MAX_TX_QUEUES, Q_MAX_TX_QUEUES);
 	}
+
 	return 0;
 }
 
@@ -269,7 +267,7 @@ pfq_shared_queue_disable(struct pfq_sock *so)
 		so->shmem.addr = NULL;
 		so->shmem.size = 0;
 
-		pr_devel("[PFQ|%d] tx/rx queues disabled.\n", so->id);
+		pr_devel("[PFQ|%d] Tx/Rx queues disabled.\n", so->id);
 	}
 
         return 0;

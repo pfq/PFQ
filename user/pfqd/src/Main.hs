@@ -40,8 +40,8 @@ import Network.PFq.Lang
 import Foreign.ForeignPtr
 import Foreign.Ptr
 
+import PFQdaemon
 import Options
-import PFQconf
 import Daemon
 
 

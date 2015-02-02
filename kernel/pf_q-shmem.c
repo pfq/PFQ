@@ -157,7 +157,7 @@ pfq_shared_memory_alloc(struct pfq_shmem_descr *shmem, size_t mem_size)
 {
 	size_t tot_mem = PAGE_ALIGN(mem_size);
 
-	printk(KERN_WARNING "[PFQ] allocating shared memory...\n");
+	pr_devel("[PFQ] allocating shared memory...\n");
 
         shmem->addr = vmalloc_user(tot_mem);
         shmem->size = tot_mem;
@@ -194,8 +194,7 @@ pfq_shared_memory_free(struct pfq_shmem_descr *shmem)
 
 size_t pfq_total_queue_mem(struct pfq_sock *so)
 {
-        return sizeof(struct pfq_queue_hdr) + pfq_queue_mpdb_mem(so) * 2 +
-        	pfq_queue_spsc_mem(so) * Q_MAX_TX_QUEUES;
+        return sizeof(struct pfq_shared_queue) + pfq_queue_mpsc_mem(so) + pfq_queue_spsc_mem(so) * Q_MAX_TX_QUEUES;
 }
 
 

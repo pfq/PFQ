@@ -58,10 +58,10 @@ struct pfq_rx_opt
 
 
 static inline
-struct pfq_rx_queue_hdr *
-pfq_get_rx_queue_hdr(struct pfq_rx_opt *that)
+struct pfq_rx_queue *
+pfq_get_rx_queue(struct pfq_rx_opt *that)
 {
-	return (struct pfq_rx_queue_hdr *)atomic_long_read(&that->queue_hdr);
+	return (struct pfq_rx_queue *)atomic_long_read(&that->queue_hdr);
 }
 
 
@@ -113,7 +113,6 @@ struct pfq_tx_opt
 {
 	uint64_t 		counter;
 
-	size_t  		maxlen;
 	size_t  		queue_size;
 	size_t  		slot_size;
         size_t 	       	 	num_queues;
@@ -126,10 +125,10 @@ struct pfq_tx_opt
 
 
 static inline
-struct pfq_tx_queue_hdr *
-pfq_get_tx_queue_hdr(struct pfq_tx_opt *that, int index)
+struct pfq_tx_queue *
+pfq_get_tx_queue(struct pfq_tx_opt *that, int index)
 {
-	return (struct pfq_tx_queue_hdr *)atomic_long_read(&that->queue[index].queue_hdr);
+	return (struct pfq_tx_queue *)atomic_long_read(&that->queue[index].queue_hdr);
 }
 
 
@@ -141,9 +140,8 @@ void pfq_tx_opt_init(struct pfq_tx_opt *that, size_t maxlen)
 
         that->counter = 0;
 
-        that->maxlen = maxlen;
         that->queue_size = 0;
-        that->slot_size  = 0;
+        that->slot_size  = Q_SPSC_QUEUE_SLOT_SIZE(maxlen);
 	that->num_queues = 0;
 
 	for(n = 0; n < Q_MAX_TX_QUEUES; ++n)
@@ -181,10 +179,10 @@ struct pfq_sock
 
 
 static inline
-struct pfq_queue_hdr *
-pfq_get_queue_hdr(struct pfq_sock *p)
+struct pfq_shared_queue *
+pfq_get_shared_queue(struct pfq_sock *p)
 {
-        return (struct pfq_queue_hdr *) p->shmem.addr;
+        return (struct pfq_shared_queue *) p->shmem.addr;
 }
 
 

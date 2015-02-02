@@ -358,13 +358,13 @@ has_dst_port x = Predicate "has_dst_port" x () () () () () () ()
 -- | Evaluate to /True/ if the source or destination IP address matches the given network address. I.e.,
 --
 -- > has_addr "192.168.0.0" 24
-has_addr :: IPv4 -> Int -> NetPredicate
+has_addr :: IPv4 -> CInt -> NetPredicate
 
 -- | Evaluate to /True/ if the source IP address matches the given network address.
-has_src_addr :: IPv4 -> Int -> NetPredicate
+has_src_addr :: IPv4 -> CInt -> NetPredicate
 
 -- | Evaluate to /True/ if the destination IP address matches the given network address.
-has_dst_addr :: IPv4 -> Int -> NetPredicate
+has_dst_addr :: IPv4 -> CInt -> NetPredicate
 
 has_addr a p     = Predicate "has_addr"     a p () () () () () ()
 has_src_addr a p = Predicate "has_src_addr" a p () () () () () ()
@@ -462,7 +462,7 @@ steer_rtp = MFunction "steer_rtp" () () () () () () () () :: NetFunction
 -- sub networks.
 --
 -- > steer_net "192.168.0.0" 16 24
-steer_net :: IPv4 -> Int -> Int -> NetFunction
+steer_net :: IPv4 -> CInt -> CInt -> NetFunction
 steer_net net p sub = MFunction "steer_net" net p sub () () () () ()
 
 -- | Dispatch the packet across the sockets
@@ -666,13 +666,13 @@ dst_port a = MFunction "dst_port" a () () () () () () ()
 -- are combined with kleisli operator:
 --
 -- > addr "192.168.0.0" 24 >-> log_packet
-addr :: IPv4 -> Int -> NetFunction
+addr :: IPv4 -> CInt -> NetFunction
 
 -- | Monadic version of 'has_src_addr' predicate.
-src_addr :: IPv4 -> Int -> NetFunction
+src_addr :: IPv4 -> CInt -> NetFunction
 
 -- | Monadic version of 'has_src_addr' predicate.
-dst_addr :: IPv4 -> Int -> NetFunction
+dst_addr :: IPv4 -> CInt -> NetFunction
 
 addr net p = MFunction "addr" net p () () () () () ()
 src_addr net p = MFunction "src_addr" net p () () () () () ()

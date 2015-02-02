@@ -28,16 +28,28 @@
 #ifndef PF_Q_THREAD_H
 #define PF_Q_THREAD_H
 
+#include <linux/kthread.h>
 
 #include <pf_q-sock.h>
 
+
 extern int pfq_tx_thread(void *data);
+extern int pfq_tx_wakeup(struct pfq_sock *so, int index);
 
 struct pfq_thread_data
 {
  	struct pfq_sock *so;
        	size_t 		 id;
 };
+
+
+static inline
+void pfq_relax(void)
+{
+	if (need_resched())
+		schedule();
+        cpu_relax();
+}
 
 
 #endif /* PF_Q_THREAD_H */

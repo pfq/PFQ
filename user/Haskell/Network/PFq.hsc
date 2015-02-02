@@ -126,7 +126,6 @@ module Network.PFq
         setTxSlots,
 
         getMaxlen,
-        setMaxlen,
 
         -- * Packet capture
 
@@ -145,9 +144,10 @@ module Network.PFq
         -- * Packet transmission
 
         txQueueFlush,
-        inject,
+        txAsync,
         send,
         sendAsync,
+        sendAt,
 
         -- * PFQ/lang
 
@@ -187,7 +187,7 @@ import Foreign.Concurrent as C (newForeignPtr)
 import Foreign.ForeignPtr (ForeignPtr)
 
 import Network.PFq.Lang
-
+import System.Clock
 
 -- |Packet capture handle.
 newtype PFqTag = PFqTag ()
@@ -422,11 +422,10 @@ open caplen slots =
 
 open' :: Int  -- ^ caplen
       -> Int  -- ^ number of Rx slots
-      -> Int  -- ^ maxlen
       -> Int  -- ^ number of Tx slots
       -> IO (ForeignPtr PFqTag)
-open' caplen rx_slots maxlen tx_slots =
-        pfq_open_ (fromIntegral caplen) (fromIntegral rx_slots) (fromIntegral maxlen) (fromIntegral tx_slots) >>=
+open' caplen rx_slots tx_slots =
+        pfq_open_ (fromIntegral caplen) (fromIntegral rx_slots) (fromIntegral tx_slots) >>=
             throwPFqIf nullPtr (== nullPtr) >>= \ptr ->
                 C.newForeignPtr ptr (void $ pfq_close ptr)
 
@@ -450,11 +449,10 @@ openNoGroup caplen slots =
 
 openNoGroup' :: Int  -- ^ caplen
              -> Int  -- ^ number of Rx slots
-             -> Int  -- ^ maxlen
              -> Int  -- ^ number of Tx slots
              -> IO (ForeignPtr PFqTag)
-openNoGroup' caplen rx_slots maxlen tx_slots =
-        pfq_open_nogroup_ (fromIntegral caplen) (fromIntegral rx_slots) (fromIntegral maxlen) (fromIntegral tx_slots) >>=
+openNoGroup' caplen rx_slots tx_slots =
+        pfq_open_nogroup_ (fromIntegral caplen) (fromIntegral rx_slots) (fromIntegral tx_slots) >>=
             throwPFqIf nullPtr (== nullPtr) >>= \ptr ->
                 C.newForeignPtr ptr (void $ pfq_close ptr)
 
@@ -467,13 +465,12 @@ openGroup :: [ClassMask]  -- ^ list of ClassMask (e.g., [class_default])
           -> GroupPolicy  -- ^ policy for the group
           -> Int          -- ^ caplen
           -> Int          -- ^ number of Rx slots
-          -> Int          -- ^ maxlen
           -> Int          -- ^ number of Tx slots
           -> IO (ForeignPtr PFqTag)
-openGroup ms policy caplen rx_slots maxlen tx_slots =
+openGroup ms policy caplen rx_slots tx_slots =
         pfq_open_group (getClassMask $ combineClassMasks ms) (getGroupPolicy policy)
             (fromIntegral caplen) (fromIntegral rx_slots)
-            (fromIntegral maxlen) (fromIntegral tx_slots) >>=
+            (fromIntegral tx_slots) >>=
             throwPFqIf nullPtr (== nullPtr) >>= \ptr ->
                 C.newForeignPtr ptr (void $ pfq_close ptr)
 
@@ -493,7 +490,7 @@ close hdl =
 getId :: Ptr PFqTag
       -> IO Int
 getId hdl =
-    pfq_id hdl >>= throwPFqIf hdl (== -1) >>= return . fromIntegral
+    liftM fromIntegral (pfq_id hdl >>= throwPFqIf hdl (== -1))
 
 
 -- |Return the group id of the socket.
@@ -501,7 +498,7 @@ getId hdl =
 getGroupId :: Ptr PFqTag
            -> IO Int
 getGroupId hdl =
-    pfq_group_id hdl >>= throwPFqIf hdl (== -1) >>= return . fromIntegral
+    liftM fromIntegral (pfq_group_id hdl >>= throwPFqIf hdl (== -1))
 
 
 -- |Enable the socket for packets capture and transmission.
@@ -564,18 +561,7 @@ setCaplen hdl value =
 getCaplen :: Ptr PFqTag
           -> IO Int
 getCaplen hdl =
-    pfq_get_caplen hdl >>= throwPFqIf hdl (== -1)
-        >>= return . fromIntegral
-
-
--- |Specify the max transmission length of packets, in bytes.
-
-setMaxlen :: Ptr PFqTag
-          -> Int        -- ^ maxlen (bytes)
-          -> IO ()
-setMaxlen hdl value =
-    pfq_set_maxlen hdl (fromIntegral value)
-        >>= throwPFqIf_ hdl (== -1)
+    liftM fromIntegral (pfq_get_caplen hdl >>= throwPFqIf hdl (== -1))
 
 
 -- |Return the max transmission length of packets, in bytes.
@@ -583,8 +569,7 @@ setMaxlen hdl value =
 getMaxlen :: Ptr PFqTag
           -> IO Int
 getMaxlen hdl =
-    pfq_get_maxlen hdl >>= throwPFqIf hdl (== -1)
-        >>= return . fromIntegral
+    liftM fromIntegral (pfq_get_maxlen hdl >>= throwPFqIf hdl (== -1))
 
 
 -- |Specify the length of the Rx queue, in number of packets./
@@ -605,8 +590,7 @@ setRxSlots hdl value =
 getRxSlots :: Ptr PFqTag
            -> IO Int
 getRxSlots hdl =
-    pfq_get_rx_slots hdl >>= throwPFqIf hdl (== -1)
-        >>= return . fromIntegral
+    liftM fromIntegral (pfq_get_rx_slots hdl >>= throwPFqIf hdl (== -1))
 
 
 -- |Return the length of a Rx slot, in bytes.
@@ -614,8 +598,7 @@ getRxSlots hdl =
 getRxSlotSize :: Ptr PFqTag
               -> IO Int
 getRxSlotSize hdl =
-    pfq_get_rx_slot_size hdl >>= throwPFqIf hdl (== -1)
-        >>= return . fromIntegral
+    liftM fromIntegral (pfq_get_rx_slot_size hdl >>= throwPFqIf hdl (== -1))
 
 
 -- |Specify the length of the Tx queue, in number of packets.
@@ -636,8 +619,7 @@ setTxSlots hdl value =
 getTxSlots :: Ptr PFqTag
            -> IO Int
 getTxSlots hdl =
-    pfq_get_tx_slots hdl >>= throwPFqIf hdl (== -1)
-        >>= return . fromIntegral
+    liftM fromIntegral (pfq_get_tx_slots hdl >>= throwPFqIf hdl (== -1))
 
 
 
@@ -1009,8 +991,7 @@ groupComputationFromString hdl gid comp =
 
 -- |Flush the Tx queue(s)
 --
--- Transmit the packets in the queues associated wit the socket.
--- No flush is required for queues with kernel threads enabled.
+-- Transmit the packets in the queues associated with the socket.
 
 txQueueFlush :: Ptr PFqTag
              -> Int     -- queue index (any_queue is valid)
@@ -1019,21 +1000,18 @@ txQueueFlush hdl queue =
     pfq_tx_queue_flush hdl (fromIntegral queue) >>= throwPFqIf_ hdl (== -1)
 
 
--- |Schedule the packet for transmission.
+-- |Start/Stop kernel threads.
 --
--- The packet is copied into a Tx queue (according to a symmetric hash)
--- and transmitted by a kernel thread, or when txQueueFlush is called.
+-- Start/Stop kernel threads associated with Tx queues.
 
-inject :: Ptr PFqTag
-       -> C.ByteString  -- ^ bytes of packet
-       -> Int           -- queue index (any_queue is valid)
-       -> IO Bool
-inject hdl xs queue =
-    unsafeUseAsCStringLen xs $ \(p, l) ->
-        liftM (> 0) $ pfq_inject hdl p (fromIntegral l) (fromIntegral queue) >>= throwPFqIf hdl (== -1)
+txAsync :: Ptr PFqTag
+        -> Bool
+        -> IO ()
+txAsync hdl toggle =
+    pfq_tx_async hdl (fromIntegral (if toggle then 1 else 0 :: Integer) ) >>= throwPFqIf_ hdl (== -1)
 
 
--- |Store the packet and transmit the packets in the queue, synchronously.
+-- |Store the packet and transmit the packets in the queue.
 --
 -- The queue is flushed (if required) and the transmission takes place.
 
@@ -1042,7 +1020,7 @@ send :: Ptr PFqTag
           -> IO Bool
 send hdl xs =
     unsafeUseAsCStringLen xs $ \(p, l) ->
-        liftM (>0) $ pfq_send hdl p (fromIntegral l) >>= throwPFqIf hdl (== -1)
+        liftM (> 0) $ pfq_send hdl p (fromIntegral l)
 
 
 -- |Store the packet and transmit the packets in the queue, asynchronously.
@@ -1056,7 +1034,23 @@ sendAsync :: Ptr PFqTag
           -> IO Bool
 sendAsync hdl xs fh =
     unsafeUseAsCStringLen xs $ \(p, l) ->
-        liftM (>0) $ pfq_send_async hdl p (fromIntegral l) (fromIntegral fh) >>= throwPFqIf hdl (== -1)
+        liftM (> 0) $ pfq_send_async hdl p (fromIntegral l) (fromIntegral fh)
+
+
+-- |Store the packet and transmit it.
+--
+-- The transmission takes place at the given TimeSpec time.
+
+sendAt :: Ptr PFqTag
+          -> C.ByteString  -- ^ bytes of packet
+          -> TimeSpec      -- ^ flush hint
+          -> IO Bool
+sendAt hdl xs ts =
+    unsafeUseAsCStringLen xs $ \(p, l) ->
+        liftM (> 0) $ pfq_inject hdl p
+                        (fromIntegral l)
+                        (fromIntegral (fromIntegral (sec ts) * (1000000000 :: Integer) + fromIntegral (nsec ts)))
+                        (fromIntegral $ getConstant any_queue)
 
 
 -- C functions from libpfq
@@ -1064,10 +1058,10 @@ sendAsync hdl xs fh =
 
 foreign import ccall unsafe pfq_open_default        :: IO (Ptr PFqTag)
 foreign import ccall unsafe pfq_open                :: CSize -> CSize -> IO (Ptr PFqTag)
-foreign import ccall unsafe pfq_open_               :: CSize -> CSize -> CSize -> CSize -> IO (Ptr PFqTag)
+foreign import ccall unsafe pfq_open_               :: CSize -> CSize -> CSize -> IO (Ptr PFqTag)
 foreign import ccall unsafe pfq_open_nogroup        :: CSize -> CSize -> IO (Ptr PFqTag)
-foreign import ccall unsafe pfq_open_nogroup_       :: CSize -> CSize -> CSize -> CSize -> IO (Ptr PFqTag)
-foreign import ccall unsafe pfq_open_group          :: CULong -> CInt  -> CSize -> CSize -> CSize -> CSize -> IO (Ptr PFqTag)
+foreign import ccall unsafe pfq_open_nogroup_       :: CSize -> CSize -> CSize -> IO (Ptr PFqTag)
+foreign import ccall unsafe pfq_open_group          :: CULong -> CInt  -> CSize -> CSize -> CSize -> IO (Ptr PFqTag)
 
 foreign import ccall unsafe pfq_close               :: Ptr PFqTag -> IO CInt
 foreign import ccall unsafe pfq_error               :: Ptr PFqTag -> IO CString
@@ -1086,7 +1080,6 @@ foreign import ccall unsafe pfq_is_timestamp_enabled :: Ptr PFqTag -> IO CInt
 foreign import ccall unsafe pfq_set_caplen          :: Ptr PFqTag -> CSize -> IO CInt
 foreign import ccall unsafe pfq_get_caplen          :: Ptr PFqTag -> IO CPtrdiff
 
-foreign import ccall unsafe pfq_set_maxlen          :: Ptr PFqTag -> CSize -> IO CInt
 foreign import ccall unsafe pfq_get_maxlen          :: Ptr PFqTag -> IO CPtrdiff
 
 foreign import ccall unsafe pfq_set_tx_slots        :: Ptr PFqTag -> CSize -> IO CInt
@@ -1129,8 +1122,10 @@ foreign import ccall unsafe pfq_unbind_tx           :: Ptr PFqTag -> IO CInt
 
 foreign import ccall unsafe pfq_send                :: Ptr PFqTag -> Ptr CChar -> CSize -> IO CInt
 foreign import ccall unsafe pfq_send_async          :: Ptr PFqTag -> Ptr CChar -> CSize -> CSize -> IO CInt
+foreign import ccall unsafe pfq_send_at             :: Ptr PFqTag -> Ptr CChar -> CSize -> CSize -> IO CInt
 
-foreign import ccall unsafe pfq_inject              :: Ptr PFqTag -> Ptr CChar -> CSize -> CInt -> IO CInt
+foreign import ccall unsafe pfq_inject              :: Ptr PFqTag -> Ptr CChar -> CSize -> CULLong -> CInt -> IO CInt
 foreign import ccall unsafe pfq_tx_queue_flush      :: Ptr PFqTag -> CInt -> IO CInt
+foreign import ccall unsafe pfq_tx_async            :: Ptr PFqTag -> CInt -> IO CInt
 
 

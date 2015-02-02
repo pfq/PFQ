@@ -46,6 +46,7 @@ extern int batch_len;
 extern int vl_untag;
 
 extern int skb_pool_size;
+extern int tx_max_retry;
 
 extern struct pfq_global_stats global_stats;
 extern struct pfq_memory_stats memory_stats;
