@@ -5,10 +5,9 @@ var pfq_8hpp =
     [ "policy", "structpfq_1_1param_1_1policy.html", "structpfq_1_1param_1_1policy" ],
     [ "caplen", "structpfq_1_1param_1_1caplen.html", "structpfq_1_1param_1_1caplen" ],
     [ "rx_slots", "structpfq_1_1param_1_1rx__slots.html", "structpfq_1_1param_1_1rx__slots" ],
-    [ "maxlen", "structpfq_1_1param_1_1maxlen.html", "structpfq_1_1param_1_1maxlen" ],
     [ "tx_slots", "structpfq_1_1param_1_1tx__slots.html", "structpfq_1_1param_1_1tx__slots" ],
     [ "socket", "classpfq_1_1socket.html", "classpfq_1_1socket" ],
-    [ "types", "pfq_8hpp.html#ac57f6024bbd9785360348778c1105909", null ],
+    [ "types", "pfq_8hpp.html#af3ddce79237872fa77ef9a45bdb48acd", null ],
     [ "class_mask", "pfq_8hpp.html#a96af1f5ed530eff563eb917516758fbb", [
       [ "default_", "pfq_8hpp.html#a96af1f5ed530eff563eb917516758fbba172b03053216c6158fe380805998ad6c", null ],
       [ "user_plane", "pfq_8hpp.html#a96af1f5ed530eff563eb917516758fbba539d70f37267eda88597177e215a6d2a", null ],

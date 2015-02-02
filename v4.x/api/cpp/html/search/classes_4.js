@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['queue',['queue',['../classpfq_1_1queue.html',1,'pfq']]]
+  ['rx_5fslots',['rx_slots',['../structpfq_1_1param_1_1rx__slots.html',1,'pfq::param']]]
 ];
