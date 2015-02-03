@@ -31,6 +31,7 @@ Features
 * Compliant with a plethora of network devices drivers.
 * Rx and Tx 10-Gbit line-rate (14,8Mpps), on-top-of Intel ixgbe vanilla drivers.
 * Transparent support of kernel threads for asynchronous packets transmission.
+* Asynchronous transmission with active timestamp.
 * Concurrent monitoring of multiple multi-threaded applications by means of groups of sockets.
 * Per-group packet steering through randomized hashing or deterministic classification.
 * Per-group Berkeley and VLAN filters.
