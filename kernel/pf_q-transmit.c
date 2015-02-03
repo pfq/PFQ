@@ -157,11 +157,11 @@ bool keep_trying(int *retry, int sent, int cpu, bool aggressive)
 }
 
 
-static inline 
+static inline
 bool tx_required(struct pfq_skbuff_batch *q, ktime_t now, uint64_t ts)
 {
 	size_t len = pfq_skbuff_batch_len(q);
-	return len == batch_len || ((len > 0) && (ts > ktime_to_ns(now))); 
+	return len == batch_len || ((len > 0) && (ts > ktime_to_ns(now)));
 }
 
 static inline
@@ -174,7 +174,7 @@ ktime_t wait_until(uint64_t ts, int cpu)
         	if (unlikely(giveup_tx(cpu)))
         		return now;
 	}
-	while (ktime_to_ns(now) < ts 
+	while (ktime_to_ns(now) < ts
 	       	&& (pfq_relax(), true));
 
 	return now;
@@ -246,7 +246,7 @@ __pfq_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int 
 	retry = 0;
 
 	now = ktime_get_real();
-	
+
 	for(n = 0; ptr < end && hdr->len != 0; n++, hdr = (struct pfq_pkthdr_tx *)ptr)
 	{
 		struct sk_buff *skb;
@@ -270,11 +270,11 @@ __pfq_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int 
 			if (keep_trying(&retry, sent, cpu, false))
 				continue;
 		}
-		
+
 		/* wait until the ts */
-                
-                
-		if (last_ts > ktime_to_ns(now)) 
+
+
+		if (last_ts > ktime_to_ns(now))
 			now = wait_until(last_ts, cpu);
 
 		/* allocate a packet */
@@ -300,10 +300,7 @@ __pfq_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int 
 
 	 	/* copy bytes in the socket buffer */
 
-		if (skb_is_nonlinear(skb))
-	 		skb_store_bits(skb, 0, hdr+1, len);
-                else
-			skb_copy_to_linear_data(skb, hdr+1, len < 64 ? 64 : len);
+		skb_copy_to_linear_data(skb, hdr+1, len < 64 ? 64 : len);
 
                 /* transmit packet */
 
@@ -327,7 +324,7 @@ __pfq_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int 
 
 		/* break the loop when giveup is needed */
 
-		if (!keep_trying(&retry, sent, cpu, true)) 
+		if (!keep_trying(&retry, sent, cpu, true))
 		{
 			__sparse_add(&to->stats.disc, last_batch_len, cpu);
 			__sparse_add(&global_stats.disc, last_batch_len, cpu);
