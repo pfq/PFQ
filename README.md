@@ -16,7 +16,7 @@ The framework enables the development of high-performance networking application
 different programming languages: C, C++11 and Haskell. In addition, a pure functional language 
 designed for early stages applications is included: PFQ/lang.
 
-PFQ/lang is inspired to Haskell and allows to create small applications that run in 
+PFQ/lang is inspired by Haskell and allows to create small applications that run in 
 kernel space, on top of network device drivers. Through PFQ/lang it is possible to create 
 efficient bridges, port mirrors, simple firewalls, network balancers and so forth.
 
