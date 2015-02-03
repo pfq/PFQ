@@ -147,7 +147,7 @@ bool keep_trying(int *retry, int sent, int cpu, bool aggressive)
 		pfq_relax();
 		if (*retry++ >= tx_max_retry) {
 			*retry = 0;
-			return !giveup_tx(cpu);
+			return !unlikely(giveup_tx(cpu));
 		}
 		return true;
 	}
@@ -171,7 +171,7 @@ ktime_t wait_until(uint64_t ts, int cpu)
 	do
 	{
         	now = ktime_get_real();
-        	if (giveup_tx(cpu))
+        	if (unlikely(giveup_tx(cpu)))
         		return now;
 	}
 	while (ktime_to_ns(now) < ts 
@@ -215,7 +215,7 @@ __pfq_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int 
 		while (index != __atomic_load_n(&soft_txq->prod, __ATOMIC_RELAXED))
 		{
 			pfq_relax();
-			if (giveup_tx(cpu))
+			if (unlikely(giveup_tx(cpu)))
 				break;
 		}
 	}
