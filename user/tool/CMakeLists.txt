@@ -25,10 +25,15 @@ add_executable(pfq-bridge pfq-bridge.cpp)
 
 target_link_libraries(pfq-counters -pthread)
 target_link_libraries(pfq-histogram -pthread)
-target_link_libraries(pfq-gen -pthread -lpcap)
 target_link_libraries(pfq-lang -pthread)
 target_link_libraries(pfq-bridge -pthread)
- 
+
+if (PCAP_HEADER_FOUND) 
+	target_link_libraries(pfq-gen -pthread -lpcap)
+else(PCAP_HEADER_FOUND)
+	target_link_libraries(pfq-gen -pthread)
+endif(PCAP_HEADER_FOUND)
+
 install (TARGETS pfq-counters DESTINATION bin)
 install (TARGETS pfq-gen      DESTINATION bin)
 install (TARGETS pfq-bridge   DESTINATION bin)

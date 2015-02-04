@@ -2,6 +2,9 @@ cmake_minimum_required(VERSION 2.8)
 
 project(pfq-test)
 
+include(CheckIncludeFile)
+check_include_file(pcap/pcap.h PCAP_HEADER_FOUND)
+
 include(${CMAKE_CURRENT_SOURCE_DIR}/../common/CMakeLists.txt)
 
 include_directories(../../kernel)
@@ -29,8 +32,11 @@ add_executable(test-send   test-send.c)
 add_executable(test-send++ test-send++.cpp)
 
 add_executable(test-regression++ test-regression++.cpp)
-add_executable(test-regression-capture test-regression-capture.cpp)
-add_executable(test-regression-pcap-rewrite test-regression-pcap-rewrite.cpp)
+
+if (PCAP_HEADER_FOUND)
+	add_executable(test-regression-capture test-regression-capture.cpp)
+	add_executable(test-regression-pcap-rewrite test-regression-pcap-rewrite.cpp)
+endif(PCAP_HEADER_FOUND)
 
 # C++14 tests
                                         
@@ -50,7 +56,8 @@ target_link_libraries(test-dispatch -lpfq)
 
 target_link_libraries(test-regression -lpfq -pthread)      
 target_link_libraries(test-regression++ -pthread)
-target_link_libraries(test-regression-capture -pthread -lpcap)
 
-target_link_libraries(test-regression-pcap-rewrite -lpcap)
-
+if (PCAP_HEADER_FOUND)
+	target_link_libraries(test-regression-capture -pthread -lpcap)
+	target_link_libraries(test-regression-pcap-rewrite -lpcap)
+endif(PCAP_HEADER_FOUND)
