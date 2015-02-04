@@ -7,11 +7,6 @@
 
 set(PROJECT_NAME "PFQ")
 
-# set verbose make
-#
-
-set(CMAKE_VERBOSE_MAKEFILE "off")
-
 
 # gcc compiler-specific options
 #
@@ -21,13 +16,9 @@ execute_process(COMMAND ${CMAKE_CXX_COMPILER} -dumpversion OUTPUT_VARIABLE COMP_
 message(STATUS "${PROJECT_NAME} C   compiler id: ${CMAKE_CXX_COMPILER_ID}")
 message(STATUS "${PROJECT_NAME} C++ compiler id: ${CMAKE_CXX_COMPILER_ID}")
 
-
 if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
-    if (COMP_VERSION VERSION_LESS 4.7)
-        message(FATAL_ERROR "${PROJECT_NAME} requires g++ 4.7 or greater")
-
-    elseif (COMP_VERSION VERSION_EQUAL 4.7)
-        set(CXX_FLAGS_COMPAT "-std=c++11 -D_GLIBCXX_USE_NANOSLEEP -D_GLIBCXX_USE_SCHED_YIELD")
+    if (COMP_VERSION VERSION_LESS 4.8)
+        message(FATAL_ERROR "${PROJECT_NAME} requires g++ 4.8 or greater")
 
     elseif (COMP_VERSION VERSION_EQUAL 4.8)
         set(CXX_FLAGS_COMPAT "-std=c++11")
@@ -48,17 +39,16 @@ endif()
 # C++ compiler-specific options
 #
 
-set(CMAKE_CXX_FLAGS                "${CXX_FLAGS_COMPAT} -Wall -Wextra -O2")
+set(CMAKE_CXX_FLAGS                "${CMAKE_CXX_FLAGS} ${CXX_FLAGS_COMPAT} -Wall -Wextra")
 
 if (COMP_VERSION VERSION_EQUAL 4.8 OR COMP_VERSION VERSION_GREATER 4.8)
-    set(CMAKE_CXX_FLAGS_DEBUG      "${CXX_FLAGS_COMPAT} -Wall -Wextra -O0 -g -fsanitize=address -std=c++1y")
+    set(CMAKE_CXX_FLAGS_DEBUG      "${CMAKE_CXX_FLAGS_DEBUG} ${CXX_FLAGS_COMPAT} -Wall -Wextra -fsanitize=address")
 else()
-    set(CMAKE_CXX_FLAGS_DEBUG      "${CXX_FLAGS_COMPAT} -Wall -Wextra -O0 -g -std=c++1y")
+    set(CMAKE_CXX_FLAGS_DEBUG      "${CMAKE_CXX_FLAGS_DEBUG} ${CXX_FLAGS_COMPAT} -Wall -Wextra")
 endif()
 
-set(CMAKE_CXX_FLAGS_MINSIZEREL     "${CXX_FLAGS_COMPAT} -Wall -Wextra -Os -DNDEBUG")
-set(CMAKE_CXX_FLAGS_RELEASE        "${CXX_FLAGS_COMPAT} -Wall -Wextra -O2 -DNDEBUG")
-set(CMAKE_CXX_FLAGS_RELWITHDEBINFO "${CXX_FLAGS_COMPAT} -Wall -Wextra -O2 -g")
+set(CMAKE_CXX_FLAGS_MINSIZEREL     "${CMAKE_CXX_FLAGS_MINSIZEREL} ${CXX_FLAGS_COMPAT} -Wall -Wextra")
+set(CMAKE_CXX_FLAGS_RELEASE        "${CMAKE_CXX_FLAGS_RELEASE} ${CXX_FLAGS_COMPAT} -Wall -Wextra")
  
 
 # C compiler-specific options
@@ -68,7 +58,6 @@ set(CMAKE_C_FLAGS                   "-Wall -Wextra -O2")
 set(CMAKE_C_FLAGS_DEBUG             "-Wall -Wextra -O0 -g")
 set(CMAKE_C_FLAGS_MINSIZEREL        "-Wall -Wextra -Os -DNDEBUG")
 set(CMAKE_C_FLAGS_RELEASE           "-Wall -Wextra -O2 -DNDEBUG")
-set(CMAKE_C_FLAGS_RELWITHDEBINFO    "-Wall -Wextra -O2 -g")
 
 
 string (STRIP ${COMP_VERSION} COMP_STRIP_VERSION)
