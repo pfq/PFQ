@@ -15,7 +15,7 @@ To install PFQ, the following requisites must be present:
 
 * gcc compiler, usually the one used to compile the kernel.  
 
-* g++ compiler, g++-4.7 or higher, required to compile the user-space tools and applications.  
+* g++ compiler (g++ 4.8/clang 3.4 or higher), required to compile the user-space tools and applications.  
 
 * GHC Glasgow Haskell Compiler 7.8 or higher.
 
