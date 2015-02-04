@@ -34,9 +34,14 @@
 #include <vt100.hpp>
 
 
+#ifdef HAVE_PCAP_H
 #include <pcap/pcap.h>
+#else
+#warning "*** pfq-gen: compiling without pcap library ***"
+#endif
 
 using namespace pfq;
+
 
 
 char *make_packet(size_t n)
@@ -87,7 +92,9 @@ namespace opt
     std::vector< std::vector<int> > kcore;
 
     std::string file;
+#ifdef HAVE_PCAP_H
     char errbuf[PCAP_ERRBUF_SIZE];
+#endif
 }
 
 
@@ -143,14 +150,17 @@ namespace thread
 
         void operator()()
         {
-            if (opt::file.empty())
+            if (opt::file.empty()) {
                 if (opt::active_ts)
                     active_generator();
-                else 
+                else
                     generator();
-            else
+            }
+#ifdef HAVE_PCAP_H
+            else {
                 pcap_generator();
-
+            }
+#endif
             opt::nthreads--;
         }
 
@@ -244,6 +254,7 @@ namespace thread
         }
 
 
+#ifdef HAVE_PCAP_H
         void pcap_generator()
         {
             struct pcap_pkthdr *hdr;
@@ -298,6 +309,7 @@ namespace thread
                 i++;
             }
         }
+#endif
 
         int m_id;
 
@@ -382,7 +394,9 @@ void usage(std::string name)
         " -n --packets INT              Number of packets\n"
         " -s --queue-slots INT          Set Tx queue length\n"
         " -k --kcore IDX,IDX...         Async with kernel threads\n"
+#ifdef HAVE_PCAP_H
         " -r --read FILE                Read pcap trace file to send\n"
+#endif
         " -R --rand-ip                  Randomize IP addresses\n"
         "    --rate DOUBLE              Packet rate in Mpps\n"
         " -a --active-tstamp            Use active timestamp as rate control\n"
@@ -406,6 +420,8 @@ try
 
     for(int i = 1; i < argc; ++i)
     {
+
+#ifdef HAVE_PCAP_H
         if ( any_strcmp(argv[i], "-r", "--read") )
         {
             if (++i == argc)
@@ -416,6 +432,7 @@ try
             opt::file = argv[i];
             continue;
         }
+#endif
 
         if ( any_strcmp(argv[i], "-f", "--flush") )
         {
