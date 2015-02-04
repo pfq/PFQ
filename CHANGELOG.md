@@ -76,6 +76,7 @@ PFQ 4.0
 PFQ 4.1
 -------
  * New SPSC double-buffered variadic Tx queue.
+ * Active timestamping for transmission.
  * Improved performance and stability.
  * Various bug fixes.
 
