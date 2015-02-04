@@ -17,6 +17,10 @@ set(CMAKE_VERBOSE_MAKEFILE "off")
 #
     
 execute_process(COMMAND ${CMAKE_CXX_COMPILER} -dumpversion OUTPUT_VARIABLE COMP_VERSION)
+    
+message(STATUS "${PROJECT_NAME} C   compiler id: ${CMAKE_CXX_COMPILER_ID}")
+message(STATUS "${PROJECT_NAME} C++ compiler id: ${CMAKE_CXX_COMPILER_ID}")
+
 
 if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "GNU")
     if (COMP_VERSION VERSION_LESS 4.7)
@@ -38,7 +42,7 @@ elseif ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
     set(CXX_FLAGS_COMPAT "-std=c++1y")
 
 else()
-        message(FATAL_ERROR "${PROJECT_NAME} requires gcc or clang!")
+    message(FATAL_ERROR "${PROJECT_NAME} requires gcc or clang (CMAKE_CXX_COMPILER_ID=${CMAKE_CXX_COMPILER_ID})")
 endif()
         
 # C++ compiler-specific options
