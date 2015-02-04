@@ -81,7 +81,7 @@ static struct proto_ops         pfq_ops;
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Nicola Bonelli <nicola@pfq.io>");
 
-MODULE_DESCRIPTION("Network Monitoring Framework for Multi-core Architectures");
+MODULE_DESCRIPTION("Functional Networking Framework for Multi-core Architectures");
 
 module_param(direct_capture,    int, 0644);
 module_param(capture_incoming,  int, 0644);
