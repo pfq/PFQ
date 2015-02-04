@@ -2,12 +2,20 @@ cmake_minimum_required(VERSION 2.8)
 
 project(pfq-tool)
 
+include(CheckIncludeFile)
+check_include_file(pcap/pcap.h PCAP_HEADER_FOUND)
+
+if(PCAP_HEADER_FOUND)
+    add_definitions(-DHAVE_PCAP_H)
+endif(PCAP_HEADER_FOUND)
+
 include(${CMAKE_CURRENT_SOURCE_DIR}/../common/CMakeLists.txt)
 
 include_directories(.)
 include_directories(../../kernel)
 include_directories(../C++)
 include_directories(../common/lib)
+
 
 add_executable(pfq-counters pfq-counters.cpp)
 add_executable(pfq-histogram pfq-histogram.cpp)
