@@ -239,18 +239,24 @@ namespace pfq {
         fold(uint32_t hash, size_t n) noexcept
         {
             hash = hash ^ (hash >> 8) ^ (hash >> 16) ^ (hash >> 24);
-
-            switch(n)
-            {
-                case 1: return 0;
-                case 2: return hash & 1;
-                case 3: {
-                    return (hash & 3) != 3 ? (hash & 3) : 0;
-                }
-                case 4: return hash & 3;
-            }
-
             return hash % n;
+
+            //
+            // switch(n)
+            // {
+            //     case 1: return 0;
+            //     case 2: return hash & 1;
+            //     case 3: {
+            //         return (hash & 3) != 3 ? (hash & 3) :
+            //                ((hash >> 2) & 3) != 3 ? ((hash >> 2) & 3) :
+            //                ((hash >> 4) & 3) != 3 ? ((hash >> 4) & 3) :
+            //                ((hash >> 6) & 3) != 3 ? ((hash >> 6) & 3) :
+            //                ((hash >> 8) & 3) != 3 ? ((hash >> 8) & 3) : 0;
+            //     }
+            //     case 4: return hash & 3;
+            // }
+
+            // return hash % n;
         }
 
     } // namespace
