@@ -44,7 +44,7 @@ int pfq_percpu_init(void)
 		return -ENOMEM;
         }
 
-        for_each_possible_cpu(cpu) {
+        for_each_online_cpu(cpu) {
 
                 struct local_data *local = per_cpu_ptr(cpu_data, cpu);
 
@@ -62,7 +62,7 @@ int pfq_percpu_flush(void)
 
         /* destroy prefetch queues (of each cpu) */
 
-        for_each_possible_cpu(cpu) {
+        for_each_online_cpu(cpu) {
 
                 struct local_data *local = per_cpu_ptr(cpu_data, cpu);
 	        struct sk_buff *skb;
