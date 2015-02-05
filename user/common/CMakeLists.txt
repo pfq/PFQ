@@ -39,7 +39,7 @@ endif()
 # C++ compiler-specific options
 #
 
-set(CMAKE_CXX_FLAGS                "${CMAKE_CXX_FLAGS} ${CXX_FLAGS_COMPAT} -Wall -Wextra")
+set(CMAKE_CXX_FLAGS                "${CMAKE_CXX_FLAGS} ${CXX_FLAGS_COMPAT} -O2 -Wall -Wextra")
 
 if (COMP_VERSION VERSION_EQUAL 4.8 OR COMP_VERSION VERSION_GREATER 4.8)
     set(CMAKE_CXX_FLAGS_DEBUG      "${CMAKE_CXX_FLAGS_DEBUG} ${CXX_FLAGS_COMPAT} -Wall -Wextra -fsanitize=address")
@@ -54,10 +54,10 @@ set(CMAKE_CXX_FLAGS_RELEASE        "${CMAKE_CXX_FLAGS_RELEASE} ${CXX_FLAGS_COMPA
 # C compiler-specific options
 #
 
-set(CMAKE_C_FLAGS                   "-Wall -Wextra -O2")
-set(CMAKE_C_FLAGS_DEBUG             "-Wall -Wextra -O0 -g")
-set(CMAKE_C_FLAGS_MINSIZEREL        "-Wall -Wextra -Os -DNDEBUG")
-set(CMAKE_C_FLAGS_RELEASE           "-Wall -Wextra -O2 -DNDEBUG")
+set(CMAKE_C_FLAGS                   "${CMAKE_C_FLAGS} -O2 -Wall -Wextra")
+set(CMAKE_C_FLAGS_DEBUG             "${CMAKE_C_FLAGS_DEBUG} -Wall -Wextra")
+set(CMAKE_C_FLAGS_MINSIZEREL        "${CMAKE_C_FLAGS_MINSIZEREL} -Wall -Wextra")
+set(CMAKE_C_FLAGS_RELEASE           "${CMAKE_C_FLAGS_RELEASE} -Wall -Wextra")
 
 
 string (STRIP ${COMP_VERSION} COMP_STRIP_VERSION)
