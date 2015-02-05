@@ -91,6 +91,7 @@ int pfq_percpu_flush(void)
  		del_timer(&local->timer);
         }
 
+	sparse_add(&global_stats.lost, total);
         return total;
 }
 
