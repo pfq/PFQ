@@ -219,7 +219,7 @@ namespace thread
                 n++;
             }
         }
-        
+
         void active_generator()
         {
             auto ip = reinterpret_cast<iphdr *>(m_packet.get() + 14);
@@ -237,8 +237,8 @@ namespace thread
                     m_fail->fetch_add(1, std::memory_order_relaxed);
                     continue;
                 }
-                
-                now += delta; 
+
+                now += delta;
 
                 m_sent->fetch_add(1, std::memory_order_relaxed);
                 m_band->fetch_add(len, std::memory_order_relaxed);
@@ -498,7 +498,7 @@ try
             opt::rand_ip = true;
             continue;
         }
-        
+
         if ( any_strcmp(argv[i], "-a", "--active-tstamp") )
         {
             opt::active_ts = true;
@@ -542,6 +542,9 @@ try
 
     if (opt::slots == 0)
         throw std::runtime_error("tx_slots set to 0!");
+
+    if (opt::active_ts)
+        std::cout << "timestamp  : active!" << std::endl;
 
     //
     // process binding:
