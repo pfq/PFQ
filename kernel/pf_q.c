@@ -594,6 +594,19 @@ out:
 }
 
 
+void
+pfq_timer(unsigned long cpu)
+{
+	struct local_data *local;
+
+	pfq_receive(NULL, NULL, 0);
+
+	local = per_cpu_ptr(cpu_data, cpu);
+	mod_timer_pinned(&local->timer, jiffies + msecs_to_jiffies(100));
+}
+
+
+
 static void pfq_sock_destruct(struct sock *sk)
 {
         skb_queue_purge(&sk->sk_error_queue);

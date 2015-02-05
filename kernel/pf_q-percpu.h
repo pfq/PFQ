@@ -26,6 +26,7 @@
 
 #include <linux/percpu.h>
 #include <linux/ktime.h>
+#include <linux/timer.h>
 
 #include <pf_q-skbuff-list.h>
 #include <pf_q-macro.h>
@@ -47,6 +48,8 @@ struct local_data
 	ktime_t 		last_ts;	/* timestamp of the last packet */
 
         atomic_t                enable_skb_pool;
+
+	struct timer_list 	timer;
 
         struct pfq_sk_buff_list tx_pool;
         struct pfq_sk_buff_list rx_pool;

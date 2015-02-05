@@ -24,6 +24,7 @@
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/cpumask.h>
+#include <linux/timer.h>
 #include <linux/pf_q.h>
 
 #include <pf_q-global.h>
@@ -31,6 +32,8 @@
 #include <pf_q-module.h>
 #include <pf_q-GC.h>
 
+
+extern void pfq_timer (unsigned long);
 
 int pfq_percpu_init(void)
 {
@@ -47,6 +50,14 @@ int pfq_percpu_init(void)
         for_each_online_cpu(cpu) {
 
                 struct local_data *local = per_cpu_ptr(cpu_data, cpu);
+
+		init_timer_deferrable(&local->timer);
+
+ 		local->timer.function = pfq_timer;
+		local->timer.data = (unsigned long)cpu;
+ 		local->timer.expires = jiffies + msecs_to_jiffies(100);
+
+		add_timer_on(&local->timer, cpu);
 
 		gc_data_init(&local->gc);
 	}
@@ -76,6 +87,8 @@ int pfq_percpu_flush(void)
                 total += local->gc.pool.len;
 
 		gc_reset(&local->gc);
+
+ 		del_timer(&local->timer);
         }
 
         return total;
