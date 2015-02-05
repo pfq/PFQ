@@ -28,6 +28,7 @@ import Data.Maybe
 import Control.Applicative
 import Control.Monad
 import Control.Monad.State
+import Control.Concurrent (threadDelay)
 
 import Data.Data
 
@@ -189,6 +190,7 @@ main = do
     forM_ (drivers conf) $ \drv -> do
         let rss = maybe [] (mkRssOption (drvmod drv) (length $ devices drv)) (queues opt)
         loadModule InsertMod (drvmod drv) (drvopt drv ++ rss)
+        threadDelay 1000000
         mapM_ setupDevice (devices drv)
 
     -- set interrupt affinity...
