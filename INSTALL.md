@@ -169,7 +169,7 @@ Build the software
 
 2. To build and install the framework:
 
-`runhaskell Build.hs install`
+`runhaskell Build.hs install --release`
 
 The command configures, compiles and installs the PFQ framework satisfying the dependencies and the correct order of build. 
 
@@ -180,7 +180,7 @@ The following command shows the targets available:
 
 Example:
 
-`runhaskell Build.hs install pfq.ko pfqd`
+`runhaskell Build.hs install pfq.ko pfqd --release`
 
 Software Components
 -------------------
