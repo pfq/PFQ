@@ -54,6 +54,13 @@ data Target = Configure { getTargetName :: String } |
               Clean     { getTargetName :: String }
 
 
+data Options =
+    Options
+    {
+        dryRun :: Bool
+
+    } deriving (Eq, Show)
+
 instance Eq Target where
     (Configure a) == (Configure b) = a == b || a == "*" || b == "*"
     (Build a)     == (Build b)     = a == b || a == "*" || b == "*"
@@ -69,13 +76,12 @@ instance Show Target where
     show (Clean     t) = "Cleaning "    ++ t
 
 
-
 data Action    = Action { basedir :: FilePath, cmds :: [String], deps :: [Target] }
 data Component = Component { getTarget :: Target,  getAction :: Action }
 type Script    = [Component]
 
 
-type ScriptT = StateT (Script,[Target])
+type ScriptT = StateT (Script, [Target], Options)
 
 
 infix 1 *>>
@@ -92,50 +98,62 @@ action .|. ts = action{ deps = ts }
 
 buildTarget :: [Target] -> FilePath -> Int -> ScriptT IO ()
 buildTarget tars base level = do
-    (script, done) <- get
+    (script, done, _) <- get
     let targets = map getTarget script
     let script' = filter (\(Component tar' _ ) -> tar' `elem` tars) script
     when (length tars > length script') $
         lift $ error ("Error: " ++ unwords (
-            map getTargetName $ filter (\t -> not (t `elem` targets) ) tars)  ++ ": target(s) not found!")
+            map getTargetName $ filter (`notElem` targets) tars)  ++ ": target(s) not found!")
     let tot = length script'
     forM_ (zip [1..] script') $ \(n, Component target (Action path cmds' deps')) -> do
-        (_, done') <- get
+        (_, done', opt) <- get
         unless (target `elem` done') $ do
-            put (script, target : done')
-            lift $ putStrLn $ replicate level '.' ++ bold ++ "[" ++ show n ++ "/" ++ show tot ++ "] " ++ show target ++ ":" ++ reset
+            put (script, target : done', opt)
+
+            unless (dryRun opt) $
+                lift $ putStrLn $ replicate level '.' ++ bold ++ "[" ++ show n ++ "/" ++ show tot ++ "] " ++ show target ++ ":" ++ reset
+
             -- satisfy dependencies
             unless (null deps') $ do
-                lift $ putStrLn $ "Satisfying dependencies for " ++ show target ++ "..."
+                lift $ putStrLn $ "# Satisfying dependencies for " ++ show target ++ "..."
                 forM_ deps' $ \t -> when (t `notElem` done') $ buildTarget [t] base (level+1)
+
             -- build target
-            lift $ setCurrentDirectory $ base </> path
-            ec <- lift $ mapM system cmds'
-            unless (all (== ExitSuccess) ec) $
-                lift $ error ("Error: " ++ show target ++ " aborted!")
+            if dryRun opt
+            then void ( lift $ do
+                            putStrLn $ "cd " ++ base </> path
+                            mapM putStrLn cmds'
+                      )
+            else void ( lift $ do
+                            setCurrentDirectory $ base </> path
+                            ec <- mapM system cmds'
+                            unless (all (== ExitSuccess) ec) $
+                                error ("Error: " ++ show target ++ " aborted!")
+                       )
 
 
 simpleBuilder :: Script -> [String] -> IO ()
 simpleBuilder script args = do
     base <- getCurrentDirectory
     E.catch (case args of
-            ("configure":xs) -> evalStateT (buildTarget (map Configure (mkTargets xs)) base 0) (script,[]) >> putStrLn ( bold ++ "Done." ++ reset )
-            ("build":xs)     -> evalStateT (buildTarget (map Build     (mkTargets xs)) base 0) (script,[]) >> putStrLn ( bold ++ "Done." ++ reset )
-            ("install":xs)   -> evalStateT (buildTarget (map Install   (mkTargets xs)) base 0) (script,[]) >> putStrLn ( bold ++ "Done." ++ reset )
-            ("clean":xs)     -> evalStateT (buildTarget (map Clean     (mkTargets xs)) base 0) (script,[]) >> putStrLn ( bold ++ "Done." ++ reset )
+            ("configure":xs) -> evalStateT (buildTarget (map Configure (mkTargets xs)) base 0) (script,[], Options ("--dry-run" `elem` xs)) >> putStrLn ( bold ++ "Done." ++ reset )
+            ("build":xs)     -> evalStateT (buildTarget (map Build     (mkTargets xs)) base 0) (script,[], Options ("--dry-run" `elem` xs)) >> putStrLn ( bold ++ "Done." ++ reset )
+            ("install":xs)   -> evalStateT (buildTarget (map Install   (mkTargets xs)) base 0) (script,[], Options ("--dry-run" `elem` xs)) >> putStrLn ( bold ++ "Done." ++ reset )
+            ("clean":xs)     -> evalStateT (buildTarget (map Clean     (mkTargets xs)) base 0) (script,[], Options ("--dry-run" `elem` xs)) >> putStrLn ( bold ++ "Done." ++ reset )
             ("show":_)       -> showTargets script
             _                -> usage)
           (\e -> setCurrentDirectory base >> print (e :: E.SomeException))
-    where mkTargets [] = ["*"]
-          mkTargets xs = xs
-
+    where mkTargets xs = let xs' = filter (/= "--dry-run") xs
+                         in if null xs'
+                            then ["*"]
+                            else xs'
 
 showTargets :: Script -> IO ()
 showTargets script =
     putStrLn "targets:" >> mapM_ putStrLn (nub (map (\(Component t _) -> "    " ++ getTargetName t) script))
 
 
-usage = putStrLn $ "usage: Build COMMAND [TARGET TARGET...]\n\n" ++
+usage = putStrLn $ "usage: Build COMMAND [TARGET TARGET...] [--dry-run]\n\n" ++
                    "Commands:\n" ++
                    "    configure   Prepare to build PFQ framework.\n" ++
                    "    build       Build PFQ framework.\n" ++
