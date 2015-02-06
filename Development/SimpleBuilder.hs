@@ -71,6 +71,8 @@ cmake  = AdornedCmd (\o -> case buildType o of
                         Just Debug   -> "cmake -DCMAKE_BUILD_TYPE=Debug ."
                     )
 
+-- Colors
+
 bold    = setSGRCode [SetConsoleIntensity BoldIntensity]
 reset   = setSGRCode []
 
@@ -79,6 +81,19 @@ data Target = Configure { getTargetName :: String } |
               Build     { getTargetName :: String } |
               Install   { getTargetName :: String } |
               Clean     { getTargetName :: String }
+
+instance Eq Target where
+    (Configure a) == (Configure b) = a == b || a == "*" || b == "*"
+    (Build a)     == (Build b)     = a == b || a == "*" || b == "*"
+    (Install a)   == (Install b)   = a == b || a == "*" || b == "*"
+    (Clean a)     == (Clean b)     = a == b || a == "*" || b == "*"
+    _ == _ = False
+
+instance Show Target where
+    show (Configure t) = "Configuring " ++ t
+    show (Build     t) = "Building "    ++ t
+    show (Install   t) = "Installing "  ++ t
+    show (Clean     t) = "Cleaning "    ++ t
 
 
 data Command = BareCmd String | AdornedCmd (Options -> String)
@@ -94,45 +109,29 @@ evalCmd opt (AdornedCmd fun) = fun opt
 
 data BuildType = Release | Debug deriving (Show, Eq)
 
-data Options =
-    Options
-    {
-        dryRun    :: Bool,
-        buildType :: Maybe BuildType
+data Options = Options
+               {
+                   dryRun :: Bool,
+                   buildType :: Maybe BuildType
 
-    } deriving (Eq, Show)
-
-
-instance Eq Target where
-    (Configure a) == (Configure b) = a == b || a == "*" || b == "*"
-    (Build a)     == (Build b)     = a == b || a == "*" || b == "*"
-    (Install a)   == (Install b)   = a == b || a == "*" || b == "*"
-    (Clean a)     == (Clean b)     = a == b || a == "*" || b == "*"
-    _ == _ = False
-
-
-instance Show Target where
-    show (Configure t) = "Configuring " ++ t
-    show (Build     t) = "Building "    ++ t
-    show (Install   t) = "Installing "  ++ t
-    show (Clean     t) = "Cleaning "    ++ t
-
+               } deriving (Eq, Show)
 
 data Action    = Action { basedir :: FilePath, cmds :: [Command], deps :: [Target] }
 data Component = Component { getTarget :: Target,  getAction :: Action }
 
-
 type Script  = [Component]
 type ScriptT = StateT (Script, [Target], Options)
 
-infix 1 *>>
 
+infix 1 *>>
 
 (*>>) :: Target -> Action -> Component
 t *>> r = Component t r
 
+
 into :: FilePath -> [Command] -> Action
 into dir cs = Action dir cs []
+
 
 (.|.) :: Action -> [Target] -> Action
 action .|. ts = action{ deps = ts }
@@ -164,11 +163,11 @@ buildTarget tars base level = do
             if dryRun opt
             then void ( lift $ do
                             putStrLn $ "cd " ++ base </> path
-                            mapM (putStrLn . (evalCmd opt)) cmds'
+                            mapM (putStrLn . evalCmd opt) cmds'
                       )
             else void ( lift $ do
                             setCurrentDirectory $ base </> path
-                            ec <- mapM (system . (evalCmd opt)) cmds'
+                            ec <- mapM (system . evalCmd opt) cmds'
                             unless (all (== ExitSuccess) ec) $
                                 error ("Error: " ++ show target ++ " aborted!")
                        )
