@@ -16,18 +16,25 @@
 -- Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 --
 
+{-# LANGUAGE OverloadedStrings #-}
+
 module Development.SimpleBuilder (
     Target(..),
     Script,
+    Command,
     (*>>),
     (.|.),
     into,
     simpleBuilder,
+    numberOfPhyCores,
     cabalConfigure,
     cabalBuild,
     cabalInstall,
     cabalClean,
-    numberOfPhyCores,
+    cmake,
+    make,
+    make_install,
+    make_clean,
 ) where
 
 import System.Console.ANSI
@@ -44,9 +51,29 @@ import Control.Monad.State
 import qualified Control.Exception as E
 
 import Data.List
+import Data.Maybe
+import Data.String
+
+-- Predefined commands
+
+cabalConfigure = BareCmd "runhaskell Setup configure --user"
+cabalBuild     = BareCmd "runhaskell Setup build"
+cabalInstall   = BareCmd "runhaskell Setup install"
+cabalClean     = BareCmd "runhaskell Setup clean"
+
+make           = BareCmd ("make -j " ++ show numberOfPhyCores)
+make_install   = BareCmd "make install"
+make_clean     = BareCmd "make clean"
+
+cmake  = AdornedCmd (\o -> case buildType o of
+                        Nothing      -> "cmake ."
+                        Just Release -> "cmake -DCMAKE_BUILD_TYPE=Release ."
+                        Just Debug   -> "cmake -DCMAKE_BUILD_TYPE=Debug ."
+                    )
 
 bold    = setSGRCode [SetConsoleIntensity BoldIntensity]
 reset   = setSGRCode []
+
 
 data Target = Configure { getTargetName :: String } |
               Build     { getTargetName :: String } |
@@ -54,12 +81,27 @@ data Target = Configure { getTargetName :: String } |
               Clean     { getTargetName :: String }
 
 
+data Command = BareCmd String | AdornedCmd (Options -> String)
+
+instance IsString Command where
+    fromString = BareCmd
+
+
+evalCmd :: Options -> Command -> String
+evalCmd _   (BareCmd xs) = xs
+evalCmd opt (AdornedCmd fun) = fun opt
+
+
+data BuildType = Release | Debug deriving (Show, Eq)
+
 data Options =
     Options
     {
-        dryRun :: Bool
+        dryRun    :: Bool,
+        buildType :: Maybe BuildType
 
     } deriving (Eq, Show)
+
 
 instance Eq Target where
     (Configure a) == (Configure b) = a == b || a == "*" || b == "*"
@@ -76,20 +118,20 @@ instance Show Target where
     show (Clean     t) = "Cleaning "    ++ t
 
 
-data Action    = Action { basedir :: FilePath, cmds :: [String], deps :: [Target] }
+data Action    = Action { basedir :: FilePath, cmds :: [Command], deps :: [Target] }
 data Component = Component { getTarget :: Target,  getAction :: Action }
-type Script    = [Component]
 
 
+type Script  = [Component]
 type ScriptT = StateT (Script, [Target], Options)
 
-
 infix 1 *>>
+
 
 (*>>) :: Target -> Action -> Component
 t *>> r = Component t r
 
-into :: FilePath -> [String] -> Action
+into :: FilePath -> [Command] -> Action
 into dir cs = Action dir cs []
 
 (.|.) :: Action -> [Target] -> Action
@@ -122,11 +164,11 @@ buildTarget tars base level = do
             if dryRun opt
             then void ( lift $ do
                             putStrLn $ "cd " ++ base </> path
-                            mapM putStrLn cmds'
+                            mapM (putStrLn . (evalCmd opt)) cmds'
                       )
             else void ( lift $ do
                             setCurrentDirectory $ base </> path
-                            ec <- mapM system cmds'
+                            ec <- mapM (system . (evalCmd opt)) cmds'
                             unless (all (== ExitSuccess) ec) $
                                 error ("Error: " ++ show target ++ " aborted!")
                        )
@@ -136,37 +178,40 @@ simpleBuilder :: Script -> [String] -> IO ()
 simpleBuilder script args = do
     base <- getCurrentDirectory
     E.catch (case args of
-            ("configure":xs) -> evalStateT (buildTarget (map Configure (mkTargets xs)) base 0) (script,[], Options ("--dry-run" `elem` xs)) >> putStrLn ( bold ++ "Done." ++ reset )
-            ("build":xs)     -> evalStateT (buildTarget (map Build     (mkTargets xs)) base 0) (script,[], Options ("--dry-run" `elem` xs)) >> putStrLn ( bold ++ "Done." ++ reset )
-            ("install":xs)   -> evalStateT (buildTarget (map Install   (mkTargets xs)) base 0) (script,[], Options ("--dry-run" `elem` xs)) >> putStrLn ( bold ++ "Done." ++ reset )
-            ("clean":xs)     -> evalStateT (buildTarget (map Clean     (mkTargets xs)) base 0) (script,[], Options ("--dry-run" `elem` xs)) >> putStrLn ( bold ++ "Done." ++ reset )
+            ("configure":xs) -> evalStateT (buildTarget (map Configure (mkTargets xs)) base 0) (script,[], mkOptions xs) >> putStrLn ( bold ++ "Done." ++ reset )
+            ("build":xs)     -> evalStateT (buildTarget (map Build     (mkTargets xs)) base 0) (script,[], mkOptions xs) >> putStrLn ( bold ++ "Done." ++ reset )
+            ("install":xs)   -> evalStateT (buildTarget (map Install   (mkTargets xs)) base 0) (script,[], mkOptions xs) >> putStrLn ( bold ++ "Done." ++ reset )
+            ("clean":xs)     -> evalStateT (buildTarget (map Clean     (mkTargets xs)) base 0) (script,[], mkOptions xs) >> putStrLn ( bold ++ "Done." ++ reset )
             ("show":_)       -> showTargets script
             _                -> usage)
           (\e -> setCurrentDirectory base >> print (e :: E.SomeException))
-    where mkTargets xs = let xs' = filter (/= "--dry-run") xs
-                         in if null xs'
-                            then ["*"]
-                            else xs'
+    where mkTargets xs =  let ys = [ x | x <- xs, x `notElem` cmdOptions]
+                           in if null ys then ["*"] else ys
+
+cmdOptions :: [String]
+cmdOptions =  ["--dry-run", "--release", "--debug"]
+
+mkOptions :: [String] -> Options
+mkOptions xs = Options ("--dry-run" `elem` xs) (mkBuildType xs)
+    where mkBuildType :: [String] -> Maybe BuildType
+          mkBuildType xs
+            | "--debug"   `elem` xs = Just Debug
+            | "--release" `elem` xs = Just Release
+            | otherwise             = Nothing
+
 
 showTargets :: Script -> IO ()
 showTargets script =
     putStrLn "targets:" >> mapM_ putStrLn (nub (map (\(Component t _) -> "    " ++ getTargetName t) script))
 
 
-usage = putStrLn $ "usage: Build COMMAND [TARGET TARGET...] [--dry-run]\n\n" ++
+usage = putStrLn $ "usage: Build COMMAND [TARGET TARGET...] [--dry-run][--release|--debug]\n\n" ++
                    "Commands:\n" ++
                    "    configure   Prepare to build PFQ framework.\n" ++
                    "    build       Build PFQ framework.\n" ++
                    "    install     Copy the files into the install location.\n" ++
                    "    clean       Clean up after a build.\n" ++
                    "    show        Show targets."
-
-
-cabalConfigure = "runhaskell Setup configure --user"
-cabalBuild     = "runhaskell Setup build"
-cabalInstall   = "runhaskell Setup install"
-cabalClean     = "runhaskell Setup clean"
-
 
 {-# NOINLINE numberOfPhyCores #-}
 numberOfPhyCores :: Int
