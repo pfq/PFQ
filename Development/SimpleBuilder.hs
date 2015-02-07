@@ -23,6 +23,7 @@ module Development.SimpleBuilder (
     Target(..),
     Script,
     Command,
+    Options,
     (*>>),
     (.|.),
     into,
@@ -69,15 +70,22 @@ make_install   = BareCmd "make install"
 make_clean     = BareCmd "make clean"
 
 make   = AdornedCmd (\o -> case () of
-                            _ | jobs o > numberOfPhyCores -> "make -j " ++ show (numberOfPhyCores + 1)
-                              | jobs o == 0               -> "make"
+                            _ | jobs o == 0               -> "make"
+                              | jobs o > numberOfPhyCores -> "make -j " ++ show (numberOfPhyCores + 1)
                               | otherwise                 -> "make -j " ++ show (jobs o))
 
-cmake  = AdornedCmd (\o -> case buildType o of
-                        Nothing      -> "cmake ."
-                        Just Release -> "cmake -DCMAKE_BUILD_TYPE=Release ."
-                        Just Debug   -> "cmake -DCMAKE_BUILD_TYPE=Debug ."
-                    )
+cmake  = AdornedCmd (\o -> let build = case buildType o of
+                                        Nothing      -> ""
+                                        Just Release -> "-DCMAKE_BUILD_TYPE=Release"
+                                        Just Debug   -> "-DCMAKE_BUILD_TYPE=Debug"
+                               cc  = case ccComp o of
+                                        Nothing  -> ""
+                                        Just xs  -> "-DCMAKE_C_COMPILER=" ++ xs
+                               cxx = case cxxComp o of
+                                        Nothing  -> ""
+                                        Just xs  -> "-DCMAKE_CXX_COMPILER=" ++ xs
+                            in unwords [ "cmake" , build, cc, cxx, "." ]
+                     )
 
 -- Colors
 
@@ -122,6 +130,8 @@ data BuildType = Release | Debug
 data Options = Options
     {
         buildType  :: Maybe BuildType,
+        cxxComp    :: Maybe String,
+        ccComp     :: Maybe String,
         dryRun     :: Bool,
         jobs       :: Int,
         extra      :: [String]
@@ -131,8 +141,10 @@ data Options = Options
 options :: Mode (CmdArgs Options)
 options = cmdArgsMode $ Options
     {
-         buildType = Nothing    &= explicit &= name "build"   &= help "Specify build type (Release, Debug)",
-         dryRun    = False      &= explicit &= name "dry-run" &= help "Print commands, don't actually run them",
+         buildType = Nothing    &= explicit &= name "build"    &= help "Specify build type (Release, Debug)",
+         cxxComp   = Nothing    &= explicit &= name "cxx"      &= help "Specify the Ccpp compiler to use",
+         ccComp    = Nothing    &= explicit &= name "cc"       &= help "Specify the C compiler to use",
+         dryRun    = False      &= explicit &= name "dry-run"  &= help "Print commands, don't actually run them",
          jobs      = 0          &= help "Specify the number of jobs",
          extra     = []         &= typ "ITEMS" &= args
     } &= summary ("SimpleBuilder " ++ version) &= program "Build" &= details detailsBanner
