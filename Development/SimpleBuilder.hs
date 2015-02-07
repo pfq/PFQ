@@ -17,6 +17,7 @@
 --
 
 {-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE DeriveDataTypeable #-}
 
 module Development.SimpleBuilder (
     Target(..),
@@ -37,6 +38,8 @@ module Development.SimpleBuilder (
     make_clean,
 ) where
 
+import System.Console.CmdArgs
+import System.Console.CmdArgs.Explicit
 import System.Console.ANSI
 import System.Environment
 import System.Directory
@@ -50,6 +53,7 @@ import Control.Monad.State
 
 import qualified Control.Exception as E
 
+import Data.Data
 import Data.List
 import Data.Maybe
 import Data.String
@@ -73,6 +77,7 @@ cmake  = AdornedCmd (\o -> case buildType o of
 
 -- Colors
 
+version = "0.1"
 bold    = setSGRCode [SetConsoleIntensity BoldIntensity]
 reset   = setSGRCode []
 
@@ -107,14 +112,33 @@ evalCmd _   (BareCmd xs) = xs
 evalCmd opt (AdornedCmd fun) = fun opt
 
 
-data BuildType = Release | Debug deriving (Show, Eq)
+data BuildType = Release | Debug
+                    deriving (Data, Typeable, Show, Read, Eq)
 
 data Options = Options
-               {
-                   dryRun :: Bool,
-                   buildType :: Maybe BuildType
+    {
+        dryRun     :: Bool,
+        buildType  :: Maybe BuildType,
+        extra      :: [String]
+    } deriving (Data, Typeable, Show, Read)
 
-               } deriving (Eq, Show)
+
+options :: Mode (CmdArgs Options)
+options = cmdArgsMode $ Options
+    {
+         buildType = Nothing    &= explicit &= name "build"   &= help "Specify build type (Release, Debug)",
+         dryRun    = False      &= explicit &= name "dry-run" &= help "Print commands, don't actually run them",
+         extra     = []         &= typ "ITEMS" &= args
+    } &= summary ("SimpleBuilder " ++ version) &= program "Build" &= details detailsBanner
+
+detailsBanner = [ "[ITEMS] = COMMAND [TARGETS]",
+        "",
+        "Commands:",
+        "    configure   Prepare to build PFQ framework.",
+        "    build       Build PFQ framework.",
+        "    install     Copy the files into the install location.",
+        "    clean       Clean up after a build.",
+        "    show        Show targets.", ""]
 
 data Action    = Action { basedir :: FilePath, cmds :: [Command], deps :: [Target] }
 data Component = Component { getTarget :: Target,  getAction :: Action }
@@ -175,42 +199,23 @@ buildTarget tars base level = do
 
 simpleBuilder :: Script -> [String] -> IO ()
 simpleBuilder script args = do
+    opt  <- cmdArgsRun options
     base <- getCurrentDirectory
-    E.catch (case args of
-            ("configure":xs) -> evalStateT (buildTarget (map Configure (mkTargets xs)) base 0) (script,[], mkOptions xs) >> putStrLn ( bold ++ "Done." ++ reset )
-            ("build":xs)     -> evalStateT (buildTarget (map Build     (mkTargets xs)) base 0) (script,[], mkOptions xs) >> putStrLn ( bold ++ "Done." ++ reset )
-            ("install":xs)   -> evalStateT (buildTarget (map Install   (mkTargets xs)) base 0) (script,[], mkOptions xs) >> putStrLn ( bold ++ "Done." ++ reset )
-            ("clean":xs)     -> evalStateT (buildTarget (map Clean     (mkTargets xs)) base 0) (script,[], mkOptions xs) >> putStrLn ( bold ++ "Done." ++ reset )
+    E.catch (case (extra opt) of
+            ("configure":xs) -> evalStateT (buildTarget (map Configure (mkTargets xs)) base 0) (script,[], opt) >> putStrLn ( bold ++ "Done." ++ reset )
+            ("build":xs)     -> evalStateT (buildTarget (map Build     (mkTargets xs)) base 0) (script,[], opt) >> putStrLn ( bold ++ "Done." ++ reset )
+            ("install":xs)   -> evalStateT (buildTarget (map Install   (mkTargets xs)) base 0) (script,[], opt) >> putStrLn ( bold ++ "Done." ++ reset )
+            ("clean":xs)     -> evalStateT (buildTarget (map Clean     (mkTargets xs)) base 0) (script,[], opt) >> putStrLn ( bold ++ "Done." ++ reset )
             ("show":_)       -> showTargets script
-            _                -> usage)
-          (\e -> setCurrentDirectory base >> print (e :: E.SomeException))
-    where mkTargets xs =  let ys = [ x | x <- xs, x `notElem` cmdOptions]
-                           in if null ys then ["*"] else ys
-
-cmdOptions :: [String]
-cmdOptions =  ["--dry-run", "--release", "--debug"]
-
-mkOptions :: [String] -> Options
-mkOptions xs = Options ("--dry-run" `elem` xs) (mkBuildType xs)
-    where mkBuildType :: [String] -> Maybe BuildType
-          mkBuildType xs
-            | "--debug"   `elem` xs = Just Debug
-            | "--release" `elem` xs = Just Release
-            | otherwise             = Nothing
+            _                -> putStr $ show $ helpText [] HelpFormatDefault options)
+        (\e -> setCurrentDirectory base >> putStrLn ( "error: " ++ show(e :: E.SomeException) ))
+    where mkTargets xs =  if null xs then ["*"] else xs
 
 
 showTargets :: Script -> IO ()
 showTargets script =
     putStrLn "targets:" >> mapM_ putStrLn (nub (map (\(Component t _) -> "    " ++ getTargetName t) script))
 
-
-usage = putStrLn $ "usage: Build COMMAND [TARGET TARGET...] [--dry-run][--release|--debug]\n\n" ++
-                   "Commands:\n" ++
-                   "    configure   Prepare to build PFQ framework.\n" ++
-                   "    build       Build PFQ framework.\n" ++
-                   "    install     Copy the files into the install location.\n" ++
-                   "    clean       Clean up after a build.\n" ++
-                   "    show        Show targets."
 
 {-# NOINLINE numberOfPhyCores #-}
 numberOfPhyCores :: Int
