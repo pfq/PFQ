@@ -65,9 +65,13 @@ cabalBuild     = BareCmd "runhaskell Setup build"
 cabalInstall   = BareCmd "runhaskell Setup install"
 cabalClean     = BareCmd "runhaskell Setup clean"
 
-make           = BareCmd ("make -j " ++ show numberOfPhyCores)
 make_install   = BareCmd "make install"
 make_clean     = BareCmd "make clean"
+
+make   = AdornedCmd (\o -> case () of
+                            _ | jobs o > numberOfPhyCores -> "make -j " ++ show (numberOfPhyCores + 1)
+                              | jobs o == 0               -> "make"
+                              | otherwise                 -> "make -j " ++ show (jobs o))
 
 cmake  = AdornedCmd (\o -> case buildType o of
                         Nothing      -> "cmake ."
@@ -117,8 +121,9 @@ data BuildType = Release | Debug
 
 data Options = Options
     {
-        dryRun     :: Bool,
         buildType  :: Maybe BuildType,
+        dryRun     :: Bool,
+        jobs       :: Int,
         extra      :: [String]
     } deriving (Data, Typeable, Show, Read)
 
@@ -128,6 +133,7 @@ options = cmdArgsMode $ Options
     {
          buildType = Nothing    &= explicit &= name "build"   &= help "Specify build type (Release, Debug)",
          dryRun    = False      &= explicit &= name "dry-run" &= help "Print commands, don't actually run them",
+         jobs      = 0          &= help "Specify the number of jobs",
          extra     = []         &= typ "ITEMS" &= args
     } &= summary ("SimpleBuilder " ++ version) &= program "Build" &= details detailsBanner
 
