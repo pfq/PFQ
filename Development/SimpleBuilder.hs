@@ -59,6 +59,8 @@ import Data.List
 import Data.Maybe
 import Data.String
 
+version = "0.1"
+
 -- Predefined commands
 
 cabalConfigure = BareCmd "runhaskell Setup configure --user"
@@ -87,11 +89,42 @@ cmake  = AdornedCmd (\o -> let build = case buildType o of
                             in unwords [ "cmake" , build, cc, cxx, "." ]
                      )
 
--- Colors
+-- data types
 
-version = "0.1"
-bold    = setSGRCode [SetConsoleIntensity BoldIntensity]
-reset   = setSGRCode []
+data Options = Options
+    {
+        buildType  :: Maybe BuildType,
+        cxxComp    :: Maybe String,
+        ccComp     :: Maybe String,
+        dryRun     :: Bool,
+        jobs       :: Int,
+        extra      :: [String]
+    } deriving (Data, Typeable, Show, Read)
+
+
+options :: Mode (CmdArgs Options)
+options = cmdArgsMode $ Options
+    {
+         buildType = Nothing    &= explicit &= name "build"    &= help "Specify build type (Release, Debug)",
+         cxxComp   = Nothing    &= explicit &= name "cxx"      &= help "Specify the Ccpp compiler to use",
+         ccComp    = Nothing    &= explicit &= name "cc"       &= help "Specify the C compiler to use",
+         dryRun    = False      &= explicit &= name "dry-run"  &= help "Print commands, don't actually run them",
+         jobs      = 0          &= help "Specify the number of jobs",
+         extra     = []         &= typ "ITEMS" &= args
+    } &= summary ("SimpleBuilder " ++ version) &= program "Build" &= details detailsBanner
+
+detailsBanner = [ "[ITEMS] = COMMAND [TARGETS]",
+        "",
+        "Commands:",
+        "    configure   Prepare to build PFQ framework.",
+        "    build       Build PFQ framework.",
+        "    install     Copy the files into the install location.",
+        "    clean       Clean up after a build.",
+        "    show        Show targets.", ""]
+
+
+bold  = setSGRCode [SetConsoleIntensity BoldIntensity]
+reset = setSGRCode []
 
 
 data Target = Configure { getTargetName :: String } |
@@ -126,37 +159,6 @@ evalCmd opt (AdornedCmd fun) = fun opt
 
 data BuildType = Release | Debug
                     deriving (Data, Typeable, Show, Read, Eq)
-
-data Options = Options
-    {
-        buildType  :: Maybe BuildType,
-        cxxComp    :: Maybe String,
-        ccComp     :: Maybe String,
-        dryRun     :: Bool,
-        jobs       :: Int,
-        extra      :: [String]
-    } deriving (Data, Typeable, Show, Read)
-
-
-options :: Mode (CmdArgs Options)
-options = cmdArgsMode $ Options
-    {
-         buildType = Nothing    &= explicit &= name "build"    &= help "Specify build type (Release, Debug)",
-         cxxComp   = Nothing    &= explicit &= name "cxx"      &= help "Specify the Ccpp compiler to use",
-         ccComp    = Nothing    &= explicit &= name "cc"       &= help "Specify the C compiler to use",
-         dryRun    = False      &= explicit &= name "dry-run"  &= help "Print commands, don't actually run them",
-         jobs      = 0          &= help "Specify the number of jobs",
-         extra     = []         &= typ "ITEMS" &= args
-    } &= summary ("SimpleBuilder " ++ version) &= program "Build" &= details detailsBanner
-
-detailsBanner = [ "[ITEMS] = COMMAND [TARGETS]",
-        "",
-        "Commands:",
-        "    configure   Prepare to build PFQ framework.",
-        "    build       Build PFQ framework.",
-        "    install     Copy the files into the install location.",
-        "    clean       Clean up after a build.",
-        "    show        Show targets.", ""]
 
 data Action    = Action { basedir :: FilePath, cmds :: [Command], deps :: [Target] }
 data Component = Component { getTarget :: Target,  getAction :: Action }
@@ -219,14 +221,14 @@ simpleBuilder :: Script -> [String] -> IO ()
 simpleBuilder script args = do
     opt  <- cmdArgsRun options
     base <- getCurrentDirectory
-    E.catch (case (extra opt) of
+    E.catch (case extra opt of
             ("configure":xs) -> evalStateT (buildTarget (map Configure (mkTargets xs)) base 0) (script,[], opt) >> putStrLn ( bold ++ "Done." ++ reset )
             ("build":xs)     -> evalStateT (buildTarget (map Build     (mkTargets xs)) base 0) (script,[], opt) >> putStrLn ( bold ++ "Done." ++ reset )
             ("install":xs)   -> evalStateT (buildTarget (map Install   (mkTargets xs)) base 0) (script,[], opt) >> putStrLn ( bold ++ "Done." ++ reset )
             ("clean":xs)     -> evalStateT (buildTarget (map Clean     (mkTargets xs)) base 0) (script,[], opt) >> putStrLn ( bold ++ "Done." ++ reset )
             ("show":_)       -> showTargets script
             _                -> putStr $ show $ helpText [] HelpFormatDefault options)
-        (\e -> setCurrentDirectory base >> putStrLn ( "error: " ++ show(e :: E.SomeException) ))
+        (\e -> setCurrentDirectory base >> print (e :: E.SomeException))
     where mkTargets xs =  if null xs then ["*"] else xs
 
 
@@ -239,5 +241,4 @@ showTargets script =
 numberOfPhyCores :: Int
 numberOfPhyCores = unsafePerformIO $ readFile "/proc/cpuinfo" >>= \file ->
     return $ (length . filter (isInfixOf "processor") . lines) file
-
 
