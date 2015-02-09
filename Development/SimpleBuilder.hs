@@ -105,11 +105,11 @@ data Options = Options
 options :: Mode (CmdArgs Options)
 options = cmdArgsMode $ Options
     {
-         buildType = Nothing    &= explicit &= name "build"    &= help "Specify build type (Release, Debug)",
-         cxxComp   = Nothing    &= explicit &= name "cxx"      &= help "Specify the Ccpp compiler to use",
-         ccComp    = Nothing    &= explicit &= name "cc"       &= help "Specify the C compiler to use",
+         buildType = Nothing    &= explicit &= name "build"    &= help "Specify the build type (Release, Debug)",
+         cxxComp   = Nothing    &= explicit &= name "cxx"      &= help "Compiler for C++ programs",
+         ccComp    = Nothing    &= explicit &= name "cc"       &= help "Compiler for C programs",
          dryRun    = False      &= explicit &= name "dry-run"  &= help "Print commands, don't actually run them",
-         jobs      = 0          &= help "Specify the number of jobs",
+         jobs      = 0          &= help "Allow N jobs at once (if possible)",
          extra     = []         &= typ "ITEMS" &= args
     } &= summary ("SimpleBuilder " ++ version) &= program "Build" &= details detailsBanner
 
