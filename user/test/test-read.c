@@ -38,7 +38,7 @@ main(int argc, char *argv[])
 	printf("reading from %s...\n", argv[1]);
 
 
-	for(n = 0; n < 100; n++) {
+	for(;;) {
 
                 struct pfq_net_queue nq;
 		pfq_iterator_t it, it_e;
@@ -47,6 +47,11 @@ main(int argc, char *argv[])
 		if (many < 0) {
                 	printf("error: %s\n", pfq_error(p));
 			break;
+		}
+
+		if (nq.len == 0) {
+ 			pfq_yield();
+ 			continue;
 		}
 
 		printf("queue size: %zd\n", nq.len);
@@ -75,6 +80,7 @@ main(int argc, char *argv[])
 			}
 			printf("\n");
 		}
+
         }
 
         // struct pfq_stats s = pfq_get_stats(p, &ok);
