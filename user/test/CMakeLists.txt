@@ -28,7 +28,7 @@ add_executable(test-vlan test-vlan.cpp)
 add_executable(test-for-range test-for-range.cpp)
 add_executable(test-bpf test-bpf.cpp)
 
-add_executable(test-send   test-send.c)
+add_executable(test-read++ test-read++.cpp)
 add_executable(test-send++ test-send++.cpp)
 
 add_executable(test-regression++ test-regression++.cpp)
@@ -47,6 +47,7 @@ endif()
 # C tests
 
 add_executable(test-read test-read.c)
+add_executable(test-send test-send.c)
 add_executable(test-dispatch test-dispatch.c)
 add_executable(test-regression test-regression.c)
 
