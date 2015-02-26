@@ -25,6 +25,7 @@ import System.Console.ANSI
 import System.Console.CmdArgs
 import System.Process
 import System.Exit
+import System.IO
 
 import Control.Monad
 import Control.Concurrent (threadDelay)
@@ -88,24 +89,33 @@ main = do
 
     when (null $ device opts) $ error "[PFQ] At least a device must be specified"
 
-    putStrLn $ bold ++ "[PFQ] Running regression tests..." ++ reset
+    withFile "stress.run" WriteMode $ \h -> do
 
-    forM_ (zip [0..] pfqOptions) $ \(n, opt) ->
+        sPutStrLn h $ bold ++ "[PFQ] Running regression tests..." ++ reset
 
-        when (n `elem` (take 1024 filt)) $ do
+        forM_ (zip [0..] pfqOptions) $ \(n, opt) ->
 
-            putChar '\n'
+            when (n `elem` (take 1024 filt)) $ do
 
-            putStrLn  [i|${bold}[PFQ] ####### Test #${n}${reset}: ${opt}|]
+                    putChar '\n'
 
-            unless (dryRun opts) $ threadDelay 3000000
+                    let banner = [i|${bold}[PFQ] ####### Test #${n}${reset}: ${opt}|]
 
-            runSystem [i|${pfq_load} -q ${fst opt} ${unwords (snd opt)}|] "Could not load PFQ module!" ((not . dryRun) opts)
+                    sPutStrLn h banner
 
-            runSystem [i|${pfq_counters} --seconds ${seconds opts} -t ${gid opts}.${core opts}.${intercalate ":" (device opts)}|]
-                      [i|"Could not run test# ${n} correctly!|] ((not . dryRun) opts)
+                    unless (dryRun opts) $ threadDelay 3000000
 
-    putStrLn $ bold ++ "[PFQ] Done." ++ reset
+                    runSystem [i|${pfq_load} -q ${fst opt} ${unwords (snd opt)}|] "Could not load PFQ module!" ((not . dryRun) opts)
+
+                    runSystem [i|${pfq_counters} --seconds ${seconds opts} -t ${gid opts}.${core opts}.${intercalate ":" (device opts)}|]
+                              [i|"Could not run test# ${n} correctly!|] ((not . dryRun) opts)
+
+        sPutStrLn h $ bold ++ "[PFQ] Stress Done." ++ reset
+
+
+sPutStrLn :: Handle -> String -> IO ()
+sPutStrLn h msg =
+    putStrLn msg >> hPutStrLn h msg >> hFlush h
 
 
 bold  = setSGRCode [SetConsoleIntensity BoldIntensity]
