@@ -54,7 +54,7 @@ void *pfq_skb_copy_from_linear_data(const struct sk_buff *skb, void *to, size_t 
 static inline
 char *mpsc_slot_ptr(struct pfq_rx_opt *ro, struct pfq_rx_queue *qd, size_t qindex, size_t slot)
 {
-	return (char *)(ro->base_addr) + ( (qindex&1) ? ro->queue_size : 0 + slot) * ro->slot_size;
+	return (char *)(ro->base_addr) + (ro->queue_size * (qindex & 1) + slot) * ro->slot_size;
 }
 
 
@@ -92,6 +92,7 @@ size_t pfq_mpsc_enqueue_batch(struct pfq_rx_opt *ro,
 		char *pkt;
 
 		bytes = min_t(size_t, skb->len, ro->caplen);
+
 		slot_index = qlen + sent;
 
 		hdr = (struct pfq_pkthdr *)this_slot;
