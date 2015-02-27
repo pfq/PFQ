@@ -44,9 +44,9 @@ struct pfq_skb_pool_stat
 {
         uint64_t        os_alloc;
         uint64_t        os_free;
-        uint64_t        rc_alloc;
-        uint64_t        rc_free;
-        uint64_t        rc_miss;
+
+        uint64_t        pool_alloc;
+        uint64_t        pool_miss;
 
         uint64_t        err_intdis;
         uint64_t        err_shared;
@@ -208,7 +208,7 @@ struct sk_buff * ____pfq_alloc_skb_pool(unsigned int size, gfp_t priority, int f
                 if (likely(skb != NULL)) {
                         if (pfq_skb_is_recycleable(skb, size)) {
 #ifdef PFQ_USE_EXTENDED_PROC
-                                        sparse_inc(&memory_stats.rc_alloc);
+                                        sparse_inc(&memory_stats.pool_alloc);
 #endif
 					pfq_skb_recycle(skb);
 				       	skb_get(skb);
@@ -218,7 +218,7 @@ struct sk_buff * ____pfq_alloc_skb_pool(unsigned int size, gfp_t priority, int f
                 }
 #ifdef PFQ_USE_EXTENDED_PROC
 		else
-                	sparse_inc(&memory_stats.rc_miss);
+                	sparse_inc(&memory_stats.pool_miss);
 #endif
         }
 #endif

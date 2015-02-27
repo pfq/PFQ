@@ -103,9 +103,8 @@ struct pfq_memory_stats
 {
  	sparse_counter_t os_alloc;
 	sparse_counter_t os_free;
-	sparse_counter_t rc_alloc;
-	sparse_counter_t rc_free;
-	sparse_counter_t rc_miss;
+	sparse_counter_t pool_alloc;
+	sparse_counter_t pool_miss;
 	sparse_counter_t err_intdis;
 	sparse_counter_t err_shared;
 	sparse_counter_t err_cloned;
@@ -118,9 +117,8 @@ void pfq_memory_stats_reset(struct pfq_memory_stats *stats)
 {
         sparse_set(&stats->os_alloc, 0);
         sparse_set(&stats->os_free,  0);
-        sparse_set(&stats->rc_alloc, 0);
-        sparse_set(&stats->rc_free,  0);
-        sparse_set(&stats->rc_miss, 0);
+        sparse_set(&stats->pool_alloc, 0);
+        sparse_set(&stats->pool_miss,  0);
         sparse_set(&stats->err_intdis, 0);
         sparse_set(&stats->err_shared, 0);
         sparse_set(&stats->err_cloned, 0);
