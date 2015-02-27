@@ -223,7 +223,7 @@ __pfq_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int 
 
 	/* get local cpu data */
 
-	local = __this_cpu_ptr(cpu_data);
+	local = this_cpu_ptr(cpu_data);
 
         /* initialize pointer to the current transmit queue */
 

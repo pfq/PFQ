@@ -295,7 +295,7 @@ static inline
 struct sk_buff * pfq_alloc_skb(unsigned int size, gfp_t priority)
 {
 #ifdef PFQ_USE_SKB_RECYCLE
-        struct local_data *this_cpu = __this_cpu_ptr(cpu_data);
+        struct local_data *this_cpu = this_cpu_ptr(cpu_data);
 
         if (atomic_read(&this_cpu->enable_skb_pool))
                 return ____pfq_alloc_skb_pool(size, priority, 0, NUMA_NO_NODE, &this_cpu->rx_pool);
@@ -312,7 +312,7 @@ static inline
 struct sk_buff * pfq_tx_alloc_skb(unsigned int size, gfp_t priority, int node)
 {
 #ifdef PFQ_USE_SKB_RECYCLE
-        struct local_data *this_cpu = __this_cpu_ptr(cpu_data);
+        struct local_data *this_cpu = this_cpu_ptr(cpu_data);
 
         if (atomic_read(&this_cpu->enable_skb_pool))
                 return ____pfq_alloc_skb_pool(size, priority, 0, node, &this_cpu->tx_pool);
