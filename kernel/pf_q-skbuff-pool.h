@@ -88,13 +88,15 @@ struct sk_buff *pfq_sk_buff_pool_get(struct pfq_sk_buff_pool *pool)
 
 
 static inline
-struct sk_buff *
-pfq_sk_buff_pool_put(struct pfq_sk_buff_pool *pool, struct sk_buff *skb)
+int pfq_sk_buff_pool_put(struct pfq_sk_buff_pool *pool, struct sk_buff *skb)
 {
+	int free = 0;
 	if (pool->skbs[pool->index]) {
 		kfree_skb(pool->skbs[pool->index]);
+		free = 1;
 	}
-	return pool->skbs[pool->index] = skb;
+	pool->skbs[pool->index] = skb;
+	return free;
 }
 
 

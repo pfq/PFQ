@@ -118,9 +118,6 @@ MODULE_PARM_DESC(vl_untag,  " Enable vlan untagging (default=0)");
 MODULE_PARM_DESC(skb_pool_size,   " Socket buffer pool size (default=1024)");
 #endif
 
-#ifdef PFQ_USE_EXTENDED_PROC
-#pragma message "[PFQ] *** using extended proc ***"
-#endif
 #ifdef PFQ_DEBUG
 #pragma message "[PFQ] *** PFQ_DEBUG mode ***"
 #endif
@@ -227,8 +224,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 	/* if no socket is open drop the packet */
 
 	if (unlikely(pfq_get_sock_count() == 0)) {
-		if (skb)
-			kfree_skb(skb);
+		kfree_skb(skb);
 		return 0;
 	}
 

@@ -34,8 +34,7 @@ pfq_get_skb_pool_stats(void)
 {
         struct pfq_skb_pool_stat ret = { sparse_read(&memory_stats.os_alloc),
                                         sparse_read(&memory_stats.os_free),
-                                        sparse_read(&memory_stats.pool_alloc),
-                                        sparse_read(&memory_stats.pool_miss),
+                                        sparse_read(&memory_stats.pool_reuse),
                                         sparse_read(&memory_stats.err_intdis),
                                         sparse_read(&memory_stats.err_shared),
                                         sparse_read(&memory_stats.err_cloned),
