@@ -30,7 +30,7 @@
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
    <div id="projectname">PFQ C++ library
-   &#160;<span id="projectnumber">v4.1</span>
+   &#160;<span id="projectnumber">v4.2</span>
    </div>
   </td>
    <td>        <div id="MSearchBox" class="MSearchBoxInactive">
@@ -322,70 +322,76 @@ $(document).ready(function(){initNavTree('util_8hpp_source.html','');});
 <div class="line"><a name="l00239"></a><span class="lineno">  239</span>&#160;        fold(uint32_t hash, <span class="keywordtype">size_t</span> n) noexcept</div>
 <div class="line"><a name="l00240"></a><span class="lineno">  240</span>&#160;        {</div>
 <div class="line"><a name="l00241"></a><span class="lineno">  241</span>&#160;            hash = hash ^ (hash &gt;&gt; 8) ^ (hash &gt;&gt; 16) ^ (hash &gt;&gt; 24);</div>
-<div class="line"><a name="l00242"></a><span class="lineno">  242</span>&#160;</div>
-<div class="line"><a name="l00243"></a><span class="lineno">  243</span>&#160;            <span class="keywordflow">switch</span>(n)</div>
-<div class="line"><a name="l00244"></a><span class="lineno">  244</span>&#160;            {</div>
-<div class="line"><a name="l00245"></a><span class="lineno">  245</span>&#160;                <span class="keywordflow">case</span> 1: <span class="keywordflow">return</span> 0;</div>
-<div class="line"><a name="l00246"></a><span class="lineno">  246</span>&#160;                <span class="keywordflow">case</span> 2: <span class="keywordflow">return</span> hash &amp; 1;</div>
-<div class="line"><a name="l00247"></a><span class="lineno">  247</span>&#160;                <span class="keywordflow">case</span> 3: {</div>
-<div class="line"><a name="l00248"></a><span class="lineno">  248</span>&#160;                    <span class="keywordflow">return</span> (hash &amp; 3) != 3 ? (hash &amp; 3) : 0;</div>
-<div class="line"><a name="l00249"></a><span class="lineno">  249</span>&#160;                }</div>
-<div class="line"><a name="l00250"></a><span class="lineno">  250</span>&#160;                <span class="keywordflow">case</span> 4: <span class="keywordflow">return</span> hash &amp; 3;</div>
-<div class="line"><a name="l00251"></a><span class="lineno">  251</span>&#160;            }</div>
-<div class="line"><a name="l00252"></a><span class="lineno">  252</span>&#160;</div>
-<div class="line"><a name="l00253"></a><span class="lineno">  253</span>&#160;            <span class="keywordflow">return</span> hash % n;</div>
-<div class="line"><a name="l00254"></a><span class="lineno">  254</span>&#160;        }</div>
-<div class="line"><a name="l00255"></a><span class="lineno">  255</span>&#160;</div>
-<div class="line"><a name="l00256"></a><span class="lineno">  256</span>&#160;    } <span class="comment">// namespace</span></div>
-<div class="line"><a name="l00257"></a><span class="lineno">  257</span>&#160;</div>
-<div class="line"><a name="l00258"></a><span class="lineno">  258</span>&#160;    <span class="keyword">namespace </span>param</div>
-<div class="line"><a name="l00259"></a><span class="lineno">  259</span>&#160;    {</div>
-<div class="line"><a name="l00260"></a><span class="lineno"><a class="line" href="namespacepfq_1_1param_1_1details.html">  260</a></span>&#160;        <span class="keyword">namespace </span>details</div>
-<div class="line"><a name="l00261"></a><span class="lineno">  261</span>&#160;        {</div>
-<div class="line"><a name="l00262"></a><span class="lineno"><a class="line" href="structpfq_1_1param_1_1details_1_1type__index.html">  262</a></span>&#160;            <span class="keyword">template</span> &lt;<span class="keyword">typename</span> ... Ts&gt; <span class="keyword">struct </span><a class="code" href="structpfq_1_1param_1_1details_1_1type__index.html">type_index</a>;</div>
-<div class="line"><a name="l00263"></a><span class="lineno">  263</span>&#160;            <span class="keyword">template</span> &lt;<span class="keyword">typename</span> T, <span class="keyword">typename</span> ... Ts&gt;</div>
-<div class="line"><a name="l00264"></a><span class="lineno"><a class="line" href="structpfq_1_1param_1_1details_1_1type__index_3_01T_00_01T_00_01Ts_8_8_8_4.html">  264</a></span>&#160;            <span class="keyword">struct </span><a class="code" href="structpfq_1_1param_1_1details_1_1type__index.html">type_index</a>&lt;T, T, Ts...&gt;</div>
-<div class="line"><a name="l00265"></a><span class="lineno">  265</span>&#160;            {</div>
-<div class="line"><a name="l00266"></a><span class="lineno"><a class="line" href="structpfq_1_1param_1_1details_1_1type__index_3_01T_00_01T_00_01Ts_8_8_8_4.html#a70bbdf1be503b26289fdb2a8b37a7ff9ac49a13caeb8608e4992f438260249dfa">  266</a></span>&#160;                <span class="keyword">enum</span> { value = 0 }; <span class="comment">// stop recursion here</span></div>
-<div class="line"><a name="l00267"></a><span class="lineno">  267</span>&#160;            };</div>
-<div class="line"><a name="l00268"></a><span class="lineno">  268</span>&#160;            <span class="keyword">template</span> &lt;<span class="keyword">typename</span> T, <span class="keyword">typename</span> T0, <span class="keyword">typename</span> ... Ts&gt;</div>
-<div class="line"><a name="l00269"></a><span class="lineno"><a class="line" href="structpfq_1_1param_1_1details_1_1type__index_3_01T_00_01T0_00_01Ts_8_8_8_4.html">  269</a></span>&#160;            <span class="keyword">struct </span><a class="code" href="structpfq_1_1param_1_1details_1_1type__index.html">type_index</a>&lt;T, T0, Ts...&gt;</div>
-<div class="line"><a name="l00270"></a><span class="lineno">  270</span>&#160;            {</div>
-<div class="line"><a name="l00271"></a><span class="lineno"><a class="line" href="structpfq_1_1param_1_1details_1_1type__index_3_01T_00_01T0_00_01Ts_8_8_8_4.html#a9107ca364fa02c631aa122a5756a88b8a462a8ffc60437747c76392be250281a1">  271</a></span>&#160;                <span class="keyword">enum</span> { value = 1 + <a class="code" href="structpfq_1_1param_1_1details_1_1type__index.html">type_index</a>&lt;T, Ts...&gt;::value };</div>
-<div class="line"><a name="l00272"></a><span class="lineno">  272</span>&#160;            };</div>
-<div class="line"><a name="l00273"></a><span class="lineno">  273</span>&#160;            <span class="keyword">template</span> &lt;<span class="keyword">typename</span> Tp&gt;</div>
-<div class="line"><a name="l00274"></a><span class="lineno"><a class="line" href="structpfq_1_1param_1_1details_1_1type__index_3_01Tp_01_4.html">  274</a></span>&#160;            <span class="keyword">struct </span><a class="code" href="structpfq_1_1param_1_1details_1_1type__index.html">type_index</a>&lt;Tp&gt;</div>
-<div class="line"><a name="l00275"></a><span class="lineno">  275</span>&#160;            {</div>
-<div class="line"><a name="l00276"></a><span class="lineno"><a class="line" href="structpfq_1_1param_1_1details_1_1type__index_3_01Tp_01_4.html#af9d771ebd1b38996ae3631c8330e6bdda74fe01056516d2934b6ce777009cffe4">  276</a></span>&#160;                <span class="keyword">enum</span> { value = 1 };</div>
-<div class="line"><a name="l00277"></a><span class="lineno">  277</span>&#160;            };</div>
-<div class="line"><a name="l00278"></a><span class="lineno">  278</span>&#160;        }</div>
-<div class="line"><a name="l00279"></a><span class="lineno">  279</span>&#160;</div>
-<div class="line"><a name="l00280"></a><span class="lineno">  280</span>&#160;        <span class="keyword">template</span> &lt;<span class="keyword">typename</span> T, <span class="keyword">typename</span> ...Ts&gt;</div>
-<div class="line"><a name="l00281"></a><span class="lineno"><a class="line" href="namespacepfq_1_1param.html#a09da2abc1a228d7f77c35bed3bdb157d">  281</a></span>&#160;        <span class="keyword">auto</span> <span class="keyword">get</span>(std::tuple&lt;Ts...&gt; &amp;tup)</div>
-<div class="line"><a name="l00282"></a><span class="lineno">  282</span>&#160;        -&gt; decltype (<a class="code" href="namespacepfq_1_1param.html#a09da2abc1a228d7f77c35bed3bdb157d">std::get</a>&lt;<a class="code" href="structpfq_1_1param_1_1details_1_1type__index.html">details::type_index&lt;T, Ts...&gt;::value</a>&gt;(tup))</div>
-<div class="line"><a name="l00283"></a><span class="lineno">  283</span>&#160;        {</div>
-<div class="line"><a name="l00284"></a><span class="lineno">  284</span>&#160;            <span class="keywordflow">return</span> <a class="code" href="namespacepfq_1_1param.html#a09da2abc1a228d7f77c35bed3bdb157d">std::get</a>&lt;<a class="code" href="structpfq_1_1param_1_1details_1_1type__index.html">details::type_index</a>&lt;T, Ts...&gt;::value&gt;(tup);</div>
-<div class="line"><a name="l00285"></a><span class="lineno">  285</span>&#160;        }</div>
-<div class="line"><a name="l00286"></a><span class="lineno">  286</span>&#160;</div>
-<div class="line"><a name="l00287"></a><span class="lineno">  287</span>&#160;        <span class="keyword">template</span> &lt;<span class="keyword">typename</span> Tup, <span class="keyword">typename</span> ...Ts&gt;</div>
-<div class="line"><a name="l00288"></a><span class="lineno">  288</span>&#160;        <span class="keywordtype">void</span></div>
-<div class="line"><a name="l00289"></a><span class="lineno"><a class="line" href="namespacepfq_1_1param.html#aeabbdcec021e01a0a9321678fea99d8f">  289</a></span>&#160;        <a class="code" href="namespacepfq_1_1param.html#aeabbdcec021e01a0a9321678fea99d8f">load</a>(Tup &amp;tup, Ts&amp;&amp; ... arg)</div>
-<div class="line"><a name="l00290"></a><span class="lineno">  290</span>&#160;        {</div>
-<div class="line"><a name="l00291"></a><span class="lineno">  291</span>&#160;            <span class="keyword">typedef</span> <span class="keywordtype">int</span> eval[];</div>
-<div class="line"><a name="l00292"></a><span class="lineno">  292</span>&#160;            (void)eval { ((param::get&lt;Ts&gt;(tup) = std::forward&lt;Ts&gt;(arg)),0)... };</div>
-<div class="line"><a name="l00293"></a><span class="lineno">  293</span>&#160;        }</div>
-<div class="line"><a name="l00294"></a><span class="lineno">  294</span>&#160;</div>
-<div class="line"><a name="l00295"></a><span class="lineno">  295</span>&#160;    } <span class="comment">// namespace param</span></div>
-<div class="line"><a name="l00296"></a><span class="lineno">  296</span>&#160;</div>
-<div class="line"><a name="l00297"></a><span class="lineno">  297</span>&#160;} <span class="comment">// namespace pfq</span></div>
-<div class="line"><a name="l00298"></a><span class="lineno">  298</span>&#160;</div>
+<div class="line"><a name="l00242"></a><span class="lineno">  242</span>&#160;            <span class="keywordflow">return</span> hash % n;</div>
+<div class="line"><a name="l00243"></a><span class="lineno">  243</span>&#160;</div>
+<div class="line"><a name="l00244"></a><span class="lineno">  244</span>&#160;            <span class="comment">//</span></div>
+<div class="line"><a name="l00245"></a><span class="lineno">  245</span>&#160;            <span class="comment">// switch(n)</span></div>
+<div class="line"><a name="l00246"></a><span class="lineno">  246</span>&#160;            <span class="comment">// {</span></div>
+<div class="line"><a name="l00247"></a><span class="lineno">  247</span>&#160;            <span class="comment">//     case 1: return 0;</span></div>
+<div class="line"><a name="l00248"></a><span class="lineno">  248</span>&#160;            <span class="comment">//     case 2: return hash &amp; 1;</span></div>
+<div class="line"><a name="l00249"></a><span class="lineno">  249</span>&#160;            <span class="comment">//     case 3: {</span></div>
+<div class="line"><a name="l00250"></a><span class="lineno">  250</span>&#160;            <span class="comment">//         return (hash &amp; 3) != 3 ? (hash &amp; 3) :</span></div>
+<div class="line"><a name="l00251"></a><span class="lineno">  251</span>&#160;            <span class="comment">//                ((hash &gt;&gt; 2) &amp; 3) != 3 ? ((hash &gt;&gt; 2) &amp; 3) :</span></div>
+<div class="line"><a name="l00252"></a><span class="lineno">  252</span>&#160;            <span class="comment">//                ((hash &gt;&gt; 4) &amp; 3) != 3 ? ((hash &gt;&gt; 4) &amp; 3) :</span></div>
+<div class="line"><a name="l00253"></a><span class="lineno">  253</span>&#160;            <span class="comment">//                ((hash &gt;&gt; 6) &amp; 3) != 3 ? ((hash &gt;&gt; 6) &amp; 3) :</span></div>
+<div class="line"><a name="l00254"></a><span class="lineno">  254</span>&#160;            <span class="comment">//                ((hash &gt;&gt; 8) &amp; 3) != 3 ? ((hash &gt;&gt; 8) &amp; 3) : 0;</span></div>
+<div class="line"><a name="l00255"></a><span class="lineno">  255</span>&#160;            <span class="comment">//     }</span></div>
+<div class="line"><a name="l00256"></a><span class="lineno">  256</span>&#160;            <span class="comment">//     case 4: return hash &amp; 3;</span></div>
+<div class="line"><a name="l00257"></a><span class="lineno">  257</span>&#160;            <span class="comment">// }</span></div>
+<div class="line"><a name="l00258"></a><span class="lineno">  258</span>&#160;</div>
+<div class="line"><a name="l00259"></a><span class="lineno">  259</span>&#160;            <span class="comment">// return hash % n;</span></div>
+<div class="line"><a name="l00260"></a><span class="lineno">  260</span>&#160;        }</div>
+<div class="line"><a name="l00261"></a><span class="lineno">  261</span>&#160;</div>
+<div class="line"><a name="l00262"></a><span class="lineno">  262</span>&#160;    } <span class="comment">// namespace</span></div>
+<div class="line"><a name="l00263"></a><span class="lineno">  263</span>&#160;</div>
+<div class="line"><a name="l00264"></a><span class="lineno">  264</span>&#160;    <span class="keyword">namespace </span>param</div>
+<div class="line"><a name="l00265"></a><span class="lineno">  265</span>&#160;    {</div>
+<div class="line"><a name="l00266"></a><span class="lineno"><a class="line" href="namespacepfq_1_1param_1_1details.html">  266</a></span>&#160;        <span class="keyword">namespace </span>details</div>
+<div class="line"><a name="l00267"></a><span class="lineno">  267</span>&#160;        {</div>
+<div class="line"><a name="l00268"></a><span class="lineno"><a class="line" href="structpfq_1_1param_1_1details_1_1type__index.html">  268</a></span>&#160;            <span class="keyword">template</span> &lt;<span class="keyword">typename</span> ... Ts&gt; <span class="keyword">struct </span><a class="code" href="structpfq_1_1param_1_1details_1_1type__index.html">type_index</a>;</div>
+<div class="line"><a name="l00269"></a><span class="lineno">  269</span>&#160;            <span class="keyword">template</span> &lt;<span class="keyword">typename</span> T, <span class="keyword">typename</span> ... Ts&gt;</div>
+<div class="line"><a name="l00270"></a><span class="lineno"><a class="line" href="structpfq_1_1param_1_1details_1_1type__index_3_01T_00_01T_00_01Ts_8_8_8_4.html">  270</a></span>&#160;            <span class="keyword">struct </span><a class="code" href="structpfq_1_1param_1_1details_1_1type__index.html">type_index</a>&lt;T, T, Ts...&gt;</div>
+<div class="line"><a name="l00271"></a><span class="lineno">  271</span>&#160;            {</div>
+<div class="line"><a name="l00272"></a><span class="lineno"><a class="line" href="structpfq_1_1param_1_1details_1_1type__index_3_01T_00_01T_00_01Ts_8_8_8_4.html#a70bbdf1be503b26289fdb2a8b37a7ff9ac49a13caeb8608e4992f438260249dfa">  272</a></span>&#160;                <span class="keyword">enum</span> { value = 0 }; <span class="comment">// stop recursion here</span></div>
+<div class="line"><a name="l00273"></a><span class="lineno">  273</span>&#160;            };</div>
+<div class="line"><a name="l00274"></a><span class="lineno">  274</span>&#160;            <span class="keyword">template</span> &lt;<span class="keyword">typename</span> T, <span class="keyword">typename</span> T0, <span class="keyword">typename</span> ... Ts&gt;</div>
+<div class="line"><a name="l00275"></a><span class="lineno"><a class="line" href="structpfq_1_1param_1_1details_1_1type__index_3_01T_00_01T0_00_01Ts_8_8_8_4.html">  275</a></span>&#160;            <span class="keyword">struct </span><a class="code" href="structpfq_1_1param_1_1details_1_1type__index.html">type_index</a>&lt;T, T0, Ts...&gt;</div>
+<div class="line"><a name="l00276"></a><span class="lineno">  276</span>&#160;            {</div>
+<div class="line"><a name="l00277"></a><span class="lineno"><a class="line" href="structpfq_1_1param_1_1details_1_1type__index_3_01T_00_01T0_00_01Ts_8_8_8_4.html#a9107ca364fa02c631aa122a5756a88b8a462a8ffc60437747c76392be250281a1">  277</a></span>&#160;                <span class="keyword">enum</span> { value = 1 + <a class="code" href="structpfq_1_1param_1_1details_1_1type__index.html">type_index</a>&lt;T, Ts...&gt;::value };</div>
+<div class="line"><a name="l00278"></a><span class="lineno">  278</span>&#160;            };</div>
+<div class="line"><a name="l00279"></a><span class="lineno">  279</span>&#160;            <span class="keyword">template</span> &lt;<span class="keyword">typename</span> Tp&gt;</div>
+<div class="line"><a name="l00280"></a><span class="lineno"><a class="line" href="structpfq_1_1param_1_1details_1_1type__index_3_01Tp_01_4.html">  280</a></span>&#160;            <span class="keyword">struct </span><a class="code" href="structpfq_1_1param_1_1details_1_1type__index.html">type_index</a>&lt;Tp&gt;</div>
+<div class="line"><a name="l00281"></a><span class="lineno">  281</span>&#160;            {</div>
+<div class="line"><a name="l00282"></a><span class="lineno"><a class="line" href="structpfq_1_1param_1_1details_1_1type__index_3_01Tp_01_4.html#af9d771ebd1b38996ae3631c8330e6bdda74fe01056516d2934b6ce777009cffe4">  282</a></span>&#160;                <span class="keyword">enum</span> { value = 1 };</div>
+<div class="line"><a name="l00283"></a><span class="lineno">  283</span>&#160;            };</div>
+<div class="line"><a name="l00284"></a><span class="lineno">  284</span>&#160;        }</div>
+<div class="line"><a name="l00285"></a><span class="lineno">  285</span>&#160;</div>
+<div class="line"><a name="l00286"></a><span class="lineno">  286</span>&#160;        <span class="keyword">template</span> &lt;<span class="keyword">typename</span> T, <span class="keyword">typename</span> ...Ts&gt;</div>
+<div class="line"><a name="l00287"></a><span class="lineno"><a class="line" href="namespacepfq_1_1param.html#a09da2abc1a228d7f77c35bed3bdb157d">  287</a></span>&#160;        <span class="keyword">auto</span> <span class="keyword">get</span>(std::tuple&lt;Ts...&gt; &amp;tup)</div>
+<div class="line"><a name="l00288"></a><span class="lineno">  288</span>&#160;        -&gt; decltype (<a class="code" href="namespacepfq_1_1param.html#a09da2abc1a228d7f77c35bed3bdb157d">std::get</a>&lt;<a class="code" href="structpfq_1_1param_1_1details_1_1type__index.html">details::type_index&lt;T, Ts...&gt;::value</a>&gt;(tup))</div>
+<div class="line"><a name="l00289"></a><span class="lineno">  289</span>&#160;        {</div>
+<div class="line"><a name="l00290"></a><span class="lineno">  290</span>&#160;            <span class="keywordflow">return</span> <a class="code" href="namespacepfq_1_1param.html#a09da2abc1a228d7f77c35bed3bdb157d">std::get</a>&lt;<a class="code" href="structpfq_1_1param_1_1details_1_1type__index.html">details::type_index</a>&lt;T, Ts...&gt;::value&gt;(tup);</div>
+<div class="line"><a name="l00291"></a><span class="lineno">  291</span>&#160;        }</div>
+<div class="line"><a name="l00292"></a><span class="lineno">  292</span>&#160;</div>
+<div class="line"><a name="l00293"></a><span class="lineno">  293</span>&#160;        <span class="keyword">template</span> &lt;<span class="keyword">typename</span> Tup, <span class="keyword">typename</span> ...Ts&gt;</div>
+<div class="line"><a name="l00294"></a><span class="lineno">  294</span>&#160;        <span class="keywordtype">void</span></div>
+<div class="line"><a name="l00295"></a><span class="lineno"><a class="line" href="namespacepfq_1_1param.html#aeabbdcec021e01a0a9321678fea99d8f">  295</a></span>&#160;        <a class="code" href="namespacepfq_1_1param.html#aeabbdcec021e01a0a9321678fea99d8f">load</a>(Tup &amp;tup, Ts&amp;&amp; ... arg)</div>
+<div class="line"><a name="l00296"></a><span class="lineno">  296</span>&#160;        {</div>
+<div class="line"><a name="l00297"></a><span class="lineno">  297</span>&#160;            <span class="keyword">typedef</span> <span class="keywordtype">int</span> eval[];</div>
+<div class="line"><a name="l00298"></a><span class="lineno">  298</span>&#160;            (void)eval { ((param::get&lt;Ts&gt;(tup) = std::forward&lt;Ts&gt;(arg)),0)... };</div>
+<div class="line"><a name="l00299"></a><span class="lineno">  299</span>&#160;        }</div>
+<div class="line"><a name="l00300"></a><span class="lineno">  300</span>&#160;</div>
+<div class="line"><a name="l00301"></a><span class="lineno">  301</span>&#160;    } <span class="comment">// namespace param</span></div>
+<div class="line"><a name="l00302"></a><span class="lineno">  302</span>&#160;</div>
+<div class="line"><a name="l00303"></a><span class="lineno">  303</span>&#160;} <span class="comment">// namespace pfq</span></div>
+<div class="line"><a name="l00304"></a><span class="lineno">  304</span>&#160;</div>
 <div class="ttc" id="namespacepfq_html"><div class="ttname"><a href="namespacepfq.html">pfq</a></div><div class="ttdef"><b>Definition:</b> pfq.hpp:52</div></div>
 <div class="ttc" id="namespacepfq_html_a9db75e7163c5f764248401d10a2a3f9b"><div class="ttname"><a href="namespacepfq.html#a9db75e7163c5f764248401d10a2a3f9b">pfq::align</a></div><div class="ttdeci">T align(T value)</div><div class="ttdoc">Return the value aligned to the next power of two. </div><div class="ttdef"><b>Definition:</b> util.hpp:57</div></div>
 <div class="ttc" id="namespacepfq_html_ad7b88920eaf729154354741132483ea8"><div class="ttname"><a href="namespacepfq.html#ad7b88920eaf729154354741132483ea8">pfq::mutable_buffer</a></div><div class="ttdeci">std::pair&lt; char *, size_t &gt; mutable_buffer</div><div class="ttdef"><b>Definition:</b> util.hpp:51</div></div>
-<div class="ttc" id="structpfq_1_1param_1_1details_1_1type__index_html"><div class="ttname"><a href="structpfq_1_1param_1_1details_1_1type__index.html">pfq::param::details::type_index</a></div><div class="ttdef"><b>Definition:</b> util.hpp:262</div></div>
-<div class="ttc" id="namespacepfq_1_1param_html_aeabbdcec021e01a0a9321678fea99d8f"><div class="ttname"><a href="namespacepfq_1_1param.html#aeabbdcec021e01a0a9321678fea99d8f">pfq::param::load</a></div><div class="ttdeci">void load(Tup &amp;tup, Ts &amp;&amp;...arg)</div><div class="ttdef"><b>Definition:</b> util.hpp:289</div></div>
+<div class="ttc" id="structpfq_1_1param_1_1details_1_1type__index_html"><div class="ttname"><a href="structpfq_1_1param_1_1details_1_1type__index.html">pfq::param::details::type_index</a></div><div class="ttdef"><b>Definition:</b> util.hpp:268</div></div>
+<div class="ttc" id="namespacepfq_1_1param_html_aeabbdcec021e01a0a9321678fea99d8f"><div class="ttname"><a href="namespacepfq_1_1param.html#aeabbdcec021e01a0a9321678fea99d8f">pfq::param::load</a></div><div class="ttdeci">void load(Tup &amp;tup, Ts &amp;&amp;...arg)</div><div class="ttdef"><b>Definition:</b> util.hpp:295</div></div>
 <div class="ttc" id="exception_8hpp_html"><div class="ttname"><a href="exception_8hpp.html">exception.hpp</a></div></div>
-<div class="ttc" id="namespacepfq_1_1param_html_a09da2abc1a228d7f77c35bed3bdb157d"><div class="ttname"><a href="namespacepfq_1_1param.html#a09da2abc1a228d7f77c35bed3bdb157d">pfq::param::get</a></div><div class="ttdeci">auto get(std::tuple&lt; Ts...&gt; &amp;tup) -&gt; decltype(std::get&lt; details::type_index&lt; T, Ts...&gt;::value &gt;(tup))</div><div class="ttdef"><b>Definition:</b> util.hpp:281</div></div>
+<div class="ttc" id="namespacepfq_1_1param_html_a09da2abc1a228d7f77c35bed3bdb157d"><div class="ttname"><a href="namespacepfq_1_1param.html#a09da2abc1a228d7f77c35bed3bdb157d">pfq::param::get</a></div><div class="ttdeci">auto get(std::tuple&lt; Ts...&gt; &amp;tup) -&gt; decltype(std::get&lt; details::type_index&lt; T, Ts...&gt;::value &gt;(tup))</div><div class="ttdef"><b>Definition:</b> util.hpp:287</div></div>
 <div class="ttc" id="namespacepfq_html_ac835a1bd09b4cbaba61c100b50d0a99f"><div class="ttname"><a href="namespacepfq.html#ac835a1bd09b4cbaba61c100b50d0a99f">pfq::const_buffer</a></div><div class="ttdeci">std::pair&lt; const char *, const size_t &gt; const_buffer</div><div class="ttdef"><b>Definition:</b> util.hpp:52</div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
@@ -393,7 +399,7 @@ $(document).ready(function(){initNavTree('util_8hpp_source.html','');});
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="dir_2916f9fbcacdf2e5f0583aa159c707b6.html">C++</a></li><li class="navelem"><a class="el" href="dir_f5c141fe61b0a0287f06112b2feb457f.html">pfq</a></li><li class="navelem"><a class="el" href="util_8hpp.html">util.hpp</a></li>
-    <li class="footer">Generated on Mon Feb 2 2015 17:08:18 for PFQ C++ library by
+    <li class="footer">Generated on Fri Feb 27 2015 17:03:38 for PFQ C++ library by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.8 </li>
   </ul>
