@@ -50,7 +50,7 @@ proc_modules = "/proc/modules"
 bold  = setSGRCode [SetConsoleIntensity BoldIntensity]
 reset = setSGRCode []
 
-version = "4.1"
+version = "4.2"
 
 data YesNo = Yes | No
     deriving (Show, Read, Eq)

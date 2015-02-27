@@ -80,3 +80,8 @@ PFQ 4.1
  * Improved performance and stability.
  * Various bug fixes.
 
+
+PFQ 4.2
+-------
+ * pool of socket buffers improved.
+

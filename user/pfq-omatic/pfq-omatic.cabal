@@ -2,7 +2,7 @@
 -- see http://haskell.org/cabal/users-guide/
 
 name:                   pfq-omatic
-version:                4.1
+version:                4.2
 
 license-file:           LICENSE
 author:                 Nicola Bonelli

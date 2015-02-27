@@ -1,4 +1,4 @@
-PFQ v4.1 
+PFQ v4.2 
 ========
 
 Introduction
