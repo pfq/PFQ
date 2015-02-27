@@ -30,7 +30,7 @@
 #include <linux/hardirq.h>
 #include <net/dst.h>
 
-#include <pf_q-skbuff-list.h>
+#include <pf_q-skbuff-pool.h>
 #include <pf_q-macro.h>
 #include <pf_q-percpu.h>
 #include <pf_q-sparse.h>
@@ -77,21 +77,6 @@ unsigned int pfq_skb_end_offset(const struct sk_buff *skb)
 #endif
 
 
-static inline bool pfq_skb_is_parkable(const struct sk_buff *skb)
-{
-
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,1,0)
-    	if (skb_shinfo(skb)->tx_flags & SKBTX_DEV_ZEROCOPY)
-    	   	return false;
-#endif
-
-    	if (skb_is_nonlinear(skb) || skb->fclone != SKB_FCLONE_UNAVAILABLE)
-    		return false;
-
-    	return true;
-}
-
-
 static inline bool pfq_skb_is_recycleable(const struct sk_buff *skb, int skb_size)
 {
     	if (irqs_disabled()) {
@@ -101,7 +86,12 @@ static inline bool pfq_skb_is_recycleable(const struct sk_buff *skb, int skb_siz
     		return false;
 	}
 
-    	if (skb_shared(skb)) {
+	if (skb_is_nonlinear(skb) || skb->fclone != SKB_FCLONE_UNAVAILABLE)
+		return false;
+
+	/*  check whether the skb is shared with someone else.. */
+
+	if (atomic_read(&skb->users) > 1) {
 #ifdef PFQ_USE_EXTENDED_PROC
                 sparse_inc(&memory_stats.err_shared);
 #endif
@@ -125,31 +115,6 @@ static inline bool pfq_skb_is_recycleable(const struct sk_buff *skb, int skb_siz
 	}
 
     	return true;
-}
-
-
-static inline
-void pfq_kfree_skb_pool(struct sk_buff *skb, struct pfq_sk_buff_list *list)
-{
-#ifdef PFQ_USE_SKB_RECYCLE
-
-        if (pfq_skb_is_parkable(skb)) {
-                if (pfq_sk_buff_list_size(list) < skb_pool_size) {
-
-                        if (likely(pfq_sk_buff_queue_head(list, skb))) {
-#ifdef PFQ_USE_EXTENDED_PROC
-                        	sparse_inc(&memory_stats.rc_free);
-#endif
-                        	return;
-			}
-                }
-        }
-#endif
-
-#ifdef PFQ_USE_EXTENDED_PROC
-        sparse_inc(&memory_stats.os_free);
-#endif
-        consume_skb(skb);
 }
 
 
@@ -180,6 +145,7 @@ skb_release_head_state(struct sk_buff *skb)
 #endif
 
 }
+
 
 static inline
 struct sk_buff * pfq_skb_recycle(struct sk_buff *skb)
@@ -228,24 +194,24 @@ struct sk_buff * pfq_netdev_alloc_skb_ip_align(struct net_device *dev, unsigned 
 
 
 static inline
-struct sk_buff * ____pfq_alloc_skb_pool(unsigned int size, gfp_t priority, int fclone, int node, struct pfq_sk_buff_list *skb_pool_list)
+struct sk_buff * ____pfq_alloc_skb_pool(unsigned int size, gfp_t priority, int fclone, int node, struct pfq_sk_buff_pool *pool)
 {
 
-#ifdef PFQ_USE_SKB_RECYCLE
         struct sk_buff *skb;
-
+#ifdef PFQ_USE_SKB_RECYCLE
         if (!fclone) {
 
-                skb = pfq_sk_buff_peek_tail(skb_pool_list);
+                skb = pfq_sk_buff_pool_get(pool);
 
                 if (likely(skb != NULL)) {
                         if (pfq_skb_is_recycleable(skb, size)) {
-
 #ifdef PFQ_USE_EXTENDED_PROC
                                         sparse_inc(&memory_stats.rc_alloc);
 #endif
-					pfq_sk_buff_dequeue_tail(skb_pool_list);
-                                        return pfq_skb_recycle(skb);
+				       	skb_get(skb);
+				       	pfq_sk_buff_pool_advance(pool);
+
+					return pfq_skb_recycle(skb);
                         }
                 }
 #ifdef PFQ_USE_EXTENDED_PROC
@@ -258,7 +224,14 @@ struct sk_buff * ____pfq_alloc_skb_pool(unsigned int size, gfp_t priority, int f
 #ifdef PFQ_USE_EXTENDED_PROC
         sparse_inc(&memory_stats.os_alloc);
 #endif
-        return __alloc_skb(size, priority, fclone, node);
+
+       	skb = __alloc_skb(size, priority, fclone, node);
+
+#ifdef PFQ_USE_SKB_RECYCLE
+	pfq_sk_buff_pool_put(pool, skb);
+	pfq_sk_buff_pool_advance(pool);
+#endif
+	return skb;
 }
 
 
@@ -270,10 +243,10 @@ int pfq_skb_pool_init(void)
         {
                 struct local_data *this_cpu = per_cpu_ptr(cpu_data, cpu);
 
-                if (pfq_sk_buff_list_init(&this_cpu->tx_pool) != 0)
+                if (pfq_sk_buff_pool_init(&this_cpu->tx_pool, skb_pool_size) != 0)
                 	return -ENOMEM;
 
-                if (pfq_sk_buff_list_init(&this_cpu->rx_pool) != 0)
+                if (pfq_sk_buff_pool_init(&this_cpu->rx_pool, skb_pool_size) != 0)
                 	return -ENOMEM;
         }
 
@@ -304,11 +277,8 @@ int pfq_skb_pool_purge(void)
         {
                 struct local_data *local = per_cpu_ptr(cpu_data, cpu);
 
-                total += pfq_sk_buff_list_size(&local->rx_pool);
-                total += pfq_sk_buff_list_size(&local->tx_pool);
-
-                pfq_sk_buff_list_free(&local->rx_pool);
-                pfq_sk_buff_list_free(&local->tx_pool);
+                total += pfq_sk_buff_pool_free(&local->rx_pool);
+                total += pfq_sk_buff_pool_free(&local->tx_pool);
         }
 
 #ifdef PFQ_USE_EXTENDED_PROC

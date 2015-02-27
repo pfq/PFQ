@@ -67,7 +67,7 @@
 #include <pf_q-stats.h>
 #include <pf_q-endpoint.h>
 #include <pf_q-shared-queue.h>
-#include <pf_q-skbuff-list.h>
+#include <pf_q-skbuff-pool.h>
 #include <pf_q-transmit.h>
 #include <pf_q-percpu.h>
 #include <pf_q-GC.h>
@@ -275,8 +275,9 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 		if (buff.skb == NULL) {
 			if (printk_ratelimit())
 				printk(KERN_INFO "[PFQ] GC: memory exhausted!\n");
+
 			__sparse_inc(&global_stats.lost, cpu);
-			pfq_kfree_skb_pool(skb, &local->rx_pool);
+			kfree_skb(skb);
 			local_bh_enable();
 			return 0;
 		}
@@ -531,7 +532,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 
 	for_each_skbuff(SKBUFF_BATCH_ADDR(gcollector->pool), skb, n)
 	{
-		pfq_kfree_skb_pool(skb, &local->rx_pool);
+		kfree_skb(skb);
 	}
 
 	/* reset the GC */
@@ -902,8 +903,8 @@ static int __init pfq_init_module(void)
                 return -EFAULT;
         }
 
-	if (skb_pool_size > PFQ_SK_BUFF_LIST_SIZE) {
-                printk(KERN_INFO "[PFQ] skb_pool_size=%d not allowed: valid range [0,%d]!\n", skb_pool_size, PFQ_SK_BUFF_LIST_SIZE);
+	if (skb_pool_size > Q_POOL_MAX_SIZE) {
+                printk(KERN_INFO "[PFQ] skb_pool_size=%d not allowed: valid range [0,%d]!\n", skb_pool_size, Q_POOL_MAX_SIZE);
 		return -EFAULT;
 	}
 

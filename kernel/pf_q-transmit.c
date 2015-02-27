@@ -125,7 +125,7 @@ batch_drain(struct pfq_skbuff_batch *skbs, struct local_data *local, struct net_
 	/* free the transmitted skb... */
 
 	for_each_skbuff_upto(sent, skbs, skb, i)
-		pfq_kfree_skb_pool(skb, &local->tx_pool);
+		kfree_skb(skb);
 
 	/* ... discard them from the batch */
 

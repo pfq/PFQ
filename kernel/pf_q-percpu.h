@@ -28,7 +28,7 @@
 #include <linux/ktime.h>
 #include <linux/timer.h>
 
-#include <pf_q-skbuff-list.h>
+#include <pf_q-skbuff-pool.h>
 #include <pf_q-macro.h>
 #include <pf_q-GC.h>
 
@@ -51,8 +51,8 @@ struct local_data
 
 	struct timer_list 	timer;
 
-        struct pfq_sk_buff_list tx_pool;
-        struct pfq_sk_buff_list rx_pool;
+        struct pfq_sk_buff_pool tx_pool;
+        struct pfq_sk_buff_pool rx_pool;
 
 } ____cacheline_aligned;
 

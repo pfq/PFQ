@@ -53,5 +53,6 @@
 #define Q_MAX_CPU_MASK          (Q_MAX_CPU-1)
 
 #define Q_MAX_PERSISTENT 	1024
+#define Q_POOL_MAX_SIZE         16384
 
 #endif /* PF_Q_MACRO_H */
