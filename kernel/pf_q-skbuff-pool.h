@@ -91,7 +91,9 @@ static inline
 struct sk_buff *
 pfq_sk_buff_pool_put(struct pfq_sk_buff_pool *pool, struct sk_buff *skb)
 {
-	kfree_skb(pool->skbs[pool->index]);
+	if (pool->skbs[pool->index]) {
+		kfree_skb(pool->skbs[pool->index]);
+	}
 	return pool->skbs[pool->index] = skb;
 }
 

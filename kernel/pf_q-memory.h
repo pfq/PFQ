@@ -86,7 +86,10 @@ static inline bool pfq_skb_is_recycleable(const struct sk_buff *skb, int skb_siz
     		return false;
 	}
 
-	if (skb_is_nonlinear(skb) || skb->fclone != SKB_FCLONE_UNAVAILABLE)
+	if (skb_is_nonlinear(skb))
+		return false;
+
+	if (skb->fclone != SKB_FCLONE_UNAVAILABLE)
 		return false;
 
 	/*  check whether the skb is shared with someone else.. */
@@ -200,7 +203,6 @@ struct sk_buff * ____pfq_alloc_skb_pool(unsigned int size, gfp_t priority, int f
         struct sk_buff *skb;
 #ifdef PFQ_USE_SKB_RECYCLE
         if (!fclone) {
-
                 skb = pfq_sk_buff_pool_get(pool);
 
                 if (likely(skb != NULL)) {
@@ -208,10 +210,10 @@ struct sk_buff * ____pfq_alloc_skb_pool(unsigned int size, gfp_t priority, int f
 #ifdef PFQ_USE_EXTENDED_PROC
                                         sparse_inc(&memory_stats.rc_alloc);
 #endif
+					pfq_skb_recycle(skb);
 				       	skb_get(skb);
 				       	pfq_sk_buff_pool_advance(pool);
-
-					return pfq_skb_recycle(skb);
+					return skb;
                         }
                 }
 #ifdef PFQ_USE_EXTENDED_PROC
@@ -228,6 +230,7 @@ struct sk_buff * ____pfq_alloc_skb_pool(unsigned int size, gfp_t priority, int f
        	skb = __alloc_skb(size, priority, fclone, node);
 
 #ifdef PFQ_USE_SKB_RECYCLE
+	skb_get(skb);
 	pfq_sk_buff_pool_put(pool, skb);
 	pfq_sk_buff_pool_advance(pool);
 #endif

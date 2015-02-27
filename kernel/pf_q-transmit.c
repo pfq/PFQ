@@ -122,16 +122,11 @@ batch_drain(struct pfq_skbuff_batch *skbs, struct local_data *local, struct net_
 
 	sent = pfq_batch_xmit(skbs, dev, hw_queue);
 
-	/* free the transmitted skb... */
-
-	for_each_skbuff_upto(sent, skbs, skb, i)
-		kfree_skb(skb);
-
 	/* ... discard them from the batch */
 
 	pfq_skbuff_batch_drop_n(skbs, sent);
 
-	/* get unsent skb */
+	/* get unsent skb (to be transmitted later) */
 
 	for_each_skbuff(skbs, skb, i)
 		skb_get(skb);
@@ -293,8 +288,6 @@ __pfq_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int 
 	 	skb->dev = dev;
 	 	skb->len = 0;
 	 	__skb_put(skb, len);
-
-	 	skb_get(skb);
 
 		skb_set_queue_mapping(skb, hw_queue);
 
