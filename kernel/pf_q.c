@@ -111,11 +111,10 @@ MODULE_PARM_DESC(max_queue_slots, " Max Queue slots (default=226144)");
 MODULE_PARM_DESC(batch_len, 	" Batch queue length");
 MODULE_PARM_DESC(tx_max_retry,  " Transmission max retry (default=1024)");
 
-MODULE_PARM_DESC(vl_untag,  " Enable vlan untagging (default=0)");
+MODULE_PARM_DESC(vl_untag, " Enable vlan untagging (default=0)");
 
-#ifndef PFQ_USE_SKB_RECYCLE
-#pragma message "[PFQ] *** using kernel skb allocator ***"
-MODULE_PARM_DESC(skb_pool_size,   " Socket buffer pool size (default=1024)");
+#ifdef PFQ_USE_SKB_POOL
+MODULE_PARM_DESC(skb_pool_size, " Socket buffer pool size (default=1024)");
 #endif
 
 #ifdef PFQ_DEBUG
@@ -925,7 +924,7 @@ static int __init pfq_init_module(void)
 
 	pfq_symtable_init();
 
-#ifdef PFQ_USE_SKB_RECYCLE
+#ifdef PFQ_USE_SKB_POOL
         if (pfq_skb_pool_init() != 0) {
         	pfq_skb_pool_purge();
         	return -ENOMEM;
@@ -943,7 +942,7 @@ static void __exit pfq_exit_module(void)
 {
         int total = 0;
 
-#ifdef PFQ_USE_SKB_RECYCLE
+#ifdef PFQ_USE_SKB_POOL
         pfq_skb_pool_enable(false);
 #endif
         /* unregister the basic device handler */
@@ -964,7 +963,7 @@ static void __exit pfq_exit_module(void)
         /* purge both GC and recycles queues */
         total += pfq_percpu_flush();
 
-#ifdef PFQ_USE_SKB_RECYCLE
+#ifdef PFQ_USE_SKB_POOL
         total += pfq_skb_pool_purge();
 #endif
         if (total)

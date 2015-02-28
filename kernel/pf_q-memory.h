@@ -200,7 +200,7 @@ struct sk_buff * ____pfq_alloc_skb_pool(unsigned int size, gfp_t priority, int f
 {
 
         struct sk_buff *skb;
-#ifdef PFQ_USE_SKB_RECYCLE
+#ifdef PFQ_USE_SKB_POOL
         if (!fclone) {
                 skb = pfq_sk_buff_pool_get(pool);
 
@@ -224,7 +224,7 @@ struct sk_buff * ____pfq_alloc_skb_pool(unsigned int size, gfp_t priority, int f
 
        	skb = __alloc_skb(size, priority, fclone, node);
 
-#ifdef PFQ_USE_SKB_RECYCLE
+#ifdef PFQ_USE_SKB_POOL
 	skb_get(skb);
 
 	if (pfq_sk_buff_pool_put(pool, skb) > 0)
@@ -292,7 +292,7 @@ int pfq_skb_pool_purge(void)
 static inline
 struct sk_buff * pfq_alloc_skb(unsigned int size, gfp_t priority)
 {
-#ifdef PFQ_USE_SKB_RECYCLE
+#ifdef PFQ_USE_SKB_POOL
         struct local_data *this_cpu = this_cpu_ptr(cpu_data);
 
         if (atomic_read(&this_cpu->enable_skb_pool))
@@ -309,7 +309,7 @@ struct sk_buff * pfq_alloc_skb(unsigned int size, gfp_t priority)
 static inline
 struct sk_buff * pfq_tx_alloc_skb(unsigned int size, gfp_t priority, int node)
 {
-#ifdef PFQ_USE_SKB_RECYCLE
+#ifdef PFQ_USE_SKB_POOL
         struct local_data *this_cpu = this_cpu_ptr(cpu_data);
 
         if (atomic_read(&this_cpu->enable_skb_pool))

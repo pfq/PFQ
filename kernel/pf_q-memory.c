@@ -49,7 +49,7 @@ pfq_get_skb_pool_stats(void)
 struct sk_buff *
 __pfq_alloc_skb(unsigned int size, gfp_t priority, int fclone, int node)
 {
-#ifdef PFQ_USE_SKB_RECYCLE
+#ifdef PFQ_USE_SKB_POOL
         struct local_data *this_cpu = this_cpu_ptr(cpu_data);
 
         if (atomic_read(&this_cpu->enable_skb_pool))
