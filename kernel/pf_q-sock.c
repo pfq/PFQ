@@ -28,7 +28,7 @@
 #include <linux/types.h>
 
 #include <pf_q-sock.h>
-
+#include <pf_q-memory.h>
 
 /* vector of pointers to pfq_sock */
 
@@ -37,18 +37,38 @@ static atomic_t      pfq_sock_count;
 atomic_long_t pfq_sock_vector[Q_MAX_ID];
 
 
+static void
+pfq_sock_init(void)
+{
+#ifdef PFQ_USE_SKB_POOL
+	pfq_skb_pool_enable(true);
+#endif
+}
+
+
+static void
+pfq_sock_finish(void)
+{
+#ifdef PFQ_USE_SKB_POOL
+	pfq_skb_pool_enable(false);
+#endif
+}
+
+
 int pfq_get_free_id(struct pfq_sock * so)
 {
         int n = 0;
         for(; n < Q_MAX_ID; n++)
         {
                 if (!atomic_long_cmpxchg(pfq_sock_vector + n, 0, (long)so)) {
-                        atomic_inc(&pfq_sock_count);
+			if(atomic_inc_return(&pfq_sock_count) == 1)
+				pfq_sock_init();
                         return n;
                 }
         }
         return -ENOMEM;
 }
+
 
 int pfq_get_sock_count(void)
 {
@@ -78,7 +98,8 @@ void pfq_release_sock_id(int id)
         }
 
         atomic_long_set(pfq_sock_vector + id, 0);
-        atomic_dec(&pfq_sock_count);
+        if (atomic_dec_return(&pfq_sock_count) == 0)
+        	pfq_sock_finish();
 }
 
 

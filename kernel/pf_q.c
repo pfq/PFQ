@@ -929,7 +929,6 @@ static int __init pfq_init_module(void)
         	pfq_skb_pool_purge();
         	return -ENOMEM;
 	}
-        pfq_skb_pool_enable(true);
         printk(KERN_INFO "[PFQ] skb pool initialized.\n");
 #endif
 
