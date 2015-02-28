@@ -38,10 +38,15 @@ struct pfq_sk_buff_pool
 static inline
 int pfq_sk_buff_pool_init (struct pfq_sk_buff_pool *pool, size_t size)
 {
-	pool->skbs = kzalloc(sizeof(struct sk_buff *) * size, GFP_KERNEL);
-	if (pool->skbs == NULL) {
-		printk(KERN_INFO "[PFQ] pfq_sk_buff_pool_init: out of memory!\n");
-		return -ENOMEM;
+	if (size > 0) {
+		pool->skbs = kzalloc(sizeof(struct sk_buff *) * size, GFP_KERNEL);
+		if (pool->skbs == NULL) {
+			printk(KERN_INFO "[PFQ] pfq_sk_buff_pool_init: out of memory!\n");
+			return -ENOMEM;
+		}
+	}
+	else {
+            	pool->skbs = NULL;
 	}
 
 	pool->size = size;
@@ -83,7 +88,9 @@ size_t pfq_sk_buff_pool_free(struct pfq_sk_buff_pool *pool)
 static inline
 struct sk_buff *pfq_sk_buff_pool_get(struct pfq_sk_buff_pool *pool)
 {
-	return pool->skbs[pool->index];
+	if (pool->skbs)
+		return pool->skbs[pool->index];
+	return NULL;
 }
 
 
@@ -91,11 +98,15 @@ static inline
 int pfq_sk_buff_pool_put(struct pfq_sk_buff_pool *pool, struct sk_buff *skb)
 {
 	int free = 0;
-	if (pool->skbs[pool->index]) {
-		kfree_skb(pool->skbs[pool->index]);
-		free = 1;
+	if (pool->skbs) {
+		if (pool->skbs[pool->index]) {
+			kfree_skb(pool->skbs[pool->index]);
+			free = 1;
+		}
+		pool->skbs[pool->index] = skb;
+	} else {
+		kfree_skb(skb);
 	}
-	pool->skbs[pool->index] = skb;
 	return free;
 }
 
