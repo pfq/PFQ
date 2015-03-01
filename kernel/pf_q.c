@@ -106,7 +106,7 @@ MODULE_PARM_DESC(capture_outgoing," Capture outgoing packets: (0 default)");
 MODULE_PARM_DESC(cap_len, " Default capture length (bytes)");
 MODULE_PARM_DESC(max_len, " Maximum transmission length (default=1514 bytes)");
 
-MODULE_PARM_DESC(max_queue_slots, " Max Queue slots (default=226144)");
+MODULE_PARM_DESC(max_queue_slots, " Max Queue slots (default=262144)");
 
 MODULE_PARM_DESC(batch_len, 	" Batch queue length");
 MODULE_PARM_DESC(tx_max_retry,  " Transmission max retry (default=1024)");
