@@ -201,43 +201,38 @@ struct sk_buff * ____pfq_alloc_skb_pool(unsigned int size, gfp_t priority, int f
         struct sk_buff *skb;
 
 #ifdef PFQ_USE_SKB_POOL
-        if (!fclone) {
-                skb = pfq_sk_buff_pool_get(pool);
-
-                if (likely(skb != NULL)) {
-                        if (pfq_skb_is_recycleable(skb, size)) {
+        skb = pfq_sk_buff_pool_get(pool);
+        if (skb != NULL) {
+        	if (pfq_skb_is_recycleable(skb, size)) {
 #ifdef PFQ_USE_EXTENDED_PROC
-                                        sparse_inc(&memory_stats.pool_alloc);
+                	sparse_inc(&memory_stats.pool_alloc);
 #endif
-					pfq_skb_recycle(skb);
-				       	skb_get(skb);
-				       	pfq_sk_buff_pool_advance(pool);
-					return skb;
-                        }
-                }
-#ifdef PFQ_USE_EXTENDED_PROC
-		else {
-
-                	sparse_inc(&memory_stats.pool_fail);
-		}
-#endif
+			return pfq_skb_recycle(skb);
+                } else
+                	kfree_skb(skb);
         }
+#ifdef PFQ_USE_EXTENDED_PROC
+	else {
+		sparse_inc(&memory_stats.pool_fail);
+	}
+#endif
 #endif
 
 #ifdef PFQ_USE_EXTENDED_PROC
         sparse_inc(&memory_stats.os_alloc);
 #endif
+       	return  __alloc_skb(size, priority, fclone, node);
+}
 
-       	skb = __alloc_skb(size, priority, fclone, node);
 
+static inline
+void pfq_kfree_skb_pool(struct sk_buff *skb, struct pfq_sk_buff_pool *pool)
+{
 #ifdef PFQ_USE_SKB_POOL
-	skb_get(skb);
-
 	pfq_sk_buff_pool_put(pool, skb);
-
-	pfq_sk_buff_pool_advance(pool);
+#else
+	kfree_skb(skb);
 #endif
-	return skb;
 }
 
 

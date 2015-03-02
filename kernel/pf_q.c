@@ -484,32 +484,6 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 		})
 	})
 
-
-	/* forward skbs to kernel */
-
-	for_each_skbuff(SKBUFF_BATCH_ADDR(gcollector->pool), skb, n)
-	{
-		struct pfq_cb *cb = PFQ_CB(skb);
-
-		/* send a copy of this skb to the kernel */
-
-		if (cb->direct && fwd_to_kernel(skb)) {
-
-			skb = cb->log->num_devs > 0 ?
-				skb_clone(skb, GFP_ATOMIC) : skb_get(skb);
-
-			if (skb) {
-				__sparse_inc(&global_stats.kern, cpu);
-				send_to_kernel(skb);
-			}
-			else {
-				__sparse_inc(&global_stats.quit, cpu);
-				if (printk_ratelimit())
-			       		printk(KERN_INFO "[PFQ] forward: skb_clone error!\n");
-			}
-		}
-	}
-
 	/* forward skbs to network devices */
 
 	gc_get_fwd_targets(gcollector, &targets);
@@ -522,12 +496,22 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 		__sparse_add(&global_stats.disc, targets.cnt_total - total, cpu);
 	}
 
-
-	/* free skbs */
+	/* forward skbs to kernel or to the pool */
 
 	for_each_skbuff(SKBUFF_BATCH_ADDR(gcollector->pool), skb, n)
 	{
-		kfree_skb(skb);
+		struct pfq_cb *cb = PFQ_CB(skb);
+
+		/* send a copy of this skb to the kernel */
+
+		if (cb->direct && fwd_to_kernel(skb)) {
+
+		        __sparse_inc(&global_stats.kern, cpu);
+			send_to_kernel(skb);
+		}
+		else {
+			pfq_kfree_skb_pool(skb, &local->rx_pool);
+		}
 	}
 
 	/* reset the GC */
