@@ -167,8 +167,8 @@ static int pfq_proc_stats(struct seq_file *m, void *v)
 static int pfq_proc_memory(struct seq_file *m, void *v)
 {
 	seq_printf(m, "OS alloc       : %ld\n", sparse_read(&memory_stats.os_alloc));
-	seq_printf(m, "OS free        : %ld\n", sparse_read(&memory_stats.os_free));
-	seq_printf(m, "pool reuse     : %ld\n", sparse_read(&memory_stats.pool_reuse));
+	seq_printf(m, "pool alloc     : %ld\n", sparse_read(&memory_stats.pool_alloc));
+	seq_printf(m, "pool failure   : %ld\n", sparse_read(&memory_stats.pool_fail));
 	seq_printf(m, "error intdisab : %ld\n", sparse_read(&memory_stats.err_intdis));
 	seq_printf(m, "error shared   : %ld\n", sparse_read(&memory_stats.err_shared));
 	seq_printf(m, "error cloned   : %ld\n", sparse_read(&memory_stats.err_cloned));

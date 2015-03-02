@@ -43,9 +43,9 @@ extern struct local_data __percpu * cpu_data;
 struct pfq_skb_pool_stat
 {
         uint64_t        os_alloc;
-        uint64_t        os_free;
 
-        uint64_t        pool_reuse;
+        uint64_t        pool_alloc;
+        uint64_t        pool_fail;
 
         uint64_t        err_intdis;
         uint64_t        err_shared;
@@ -198,8 +198,8 @@ struct sk_buff * pfq_netdev_alloc_skb_ip_align(struct net_device *dev, unsigned 
 static inline
 struct sk_buff * ____pfq_alloc_skb_pool(unsigned int size, gfp_t priority, int fclone, int node, struct pfq_sk_buff_pool *pool)
 {
-
         struct sk_buff *skb;
+
 #ifdef PFQ_USE_SKB_POOL
         if (!fclone) {
                 skb = pfq_sk_buff_pool_get(pool);
@@ -207,7 +207,7 @@ struct sk_buff * ____pfq_alloc_skb_pool(unsigned int size, gfp_t priority, int f
                 if (likely(skb != NULL)) {
                         if (pfq_skb_is_recycleable(skb, size)) {
 #ifdef PFQ_USE_EXTENDED_PROC
-                                        sparse_inc(&memory_stats.pool_reuse);
+                                        sparse_inc(&memory_stats.pool_alloc);
 #endif
 					pfq_skb_recycle(skb);
 				       	skb_get(skb);
@@ -215,6 +215,12 @@ struct sk_buff * ____pfq_alloc_skb_pool(unsigned int size, gfp_t priority, int f
 					return skb;
                         }
                 }
+#ifdef PFQ_USE_EXTENDED_PROC
+		else {
+
+                	sparse_inc(&memory_stats.pool_fail);
+		}
+#endif
         }
 #endif
 
@@ -227,8 +233,7 @@ struct sk_buff * ____pfq_alloc_skb_pool(unsigned int size, gfp_t priority, int f
 #ifdef PFQ_USE_SKB_POOL
 	skb_get(skb);
 
-	if (pfq_sk_buff_pool_put(pool, skb) > 0)
-        	sparse_inc(&memory_stats.os_free);
+	pfq_sk_buff_pool_put(pool, skb);
 
 	pfq_sk_buff_pool_advance(pool);
 #endif
@@ -260,6 +265,8 @@ void pfq_skb_pool_enable(bool value)
 {
         int cpu;
 
+        printk(KERN_INFO "[PFQ] %s skb memory pool...\n", value ? "enabling" : "disabling");
+
         smp_wmb();
         for_each_online_cpu(cpu)
         {
@@ -282,9 +289,6 @@ int pfq_skb_pool_purge(void)
                 total += pfq_sk_buff_pool_free(&local->tx_pool);
         }
 
-#ifdef PFQ_USE_EXTENDED_PROC
-        sparse_add(&memory_stats.os_free, total);
-#endif
         return total;
 }
 
