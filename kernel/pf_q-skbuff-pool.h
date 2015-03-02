@@ -31,7 +31,8 @@ struct pfq_sk_buff_pool
 {
 	struct sk_buff ** skbs;
 	size_t size;
-	size_t index;
+	size_t p_idx;
+	size_t c_idx;
 };
 
 
@@ -49,8 +50,9 @@ int pfq_sk_buff_pool_init (struct pfq_sk_buff_pool *pool, size_t size)
             	pool->skbs = NULL;
 	}
 
-	pool->size = size;
-	pool->index = 0;
+	pool->size  = size;
+	pool->p_idx = 0;
+	pool->c_idx = 0;
 	return 0;
 }
 
@@ -69,7 +71,8 @@ pfq_sk_buff_pool_purge(struct pfq_sk_buff_pool *pool)
 		}
 	}
 
-	pool->index = 0;
+	pool->p_idx = 0;
+	pool->c_idx = 0;
 	return total;
 }
 
@@ -88,35 +91,30 @@ size_t pfq_sk_buff_pool_free(struct pfq_sk_buff_pool *pool)
 static inline
 struct sk_buff *pfq_sk_buff_pool_get(struct pfq_sk_buff_pool *pool)
 {
-	if (pool->skbs)
-		return pool->skbs[pool->index];
+	if (pool->skbs) {
+		struct sk_buff *skb = __atomic_exchange_n(&pool->skbs[pool->c_idx], NULL, __ATOMIC_RELAXED);
+		if (++pool->c_idx >= pool->size)
+			pool->c_idx = 0;
+		return skb;
+	}
 	return NULL;
 }
 
 
 static inline
-int pfq_sk_buff_pool_put(struct pfq_sk_buff_pool *pool, struct sk_buff *skb)
+void pfq_sk_buff_pool_put(struct pfq_sk_buff_pool *pool, struct sk_buff *nskb)
 {
-	int free = 0;
 	if (pool->skbs) {
-		if (pool->skbs[pool->index]) {
-			kfree_skb(pool->skbs[pool->index]);
-			free = 1;
-		}
-		pool->skbs[pool->index] = skb;
-	} else {
+
+		/* most of the time skb is NULL */
+		struct sk_buff *skb = __atomic_exchange_n(&pool->skbs[pool->p_idx], nskb, __ATOMIC_RELAXED);
 		kfree_skb(skb);
+		if (++pool->p_idx >= pool->size)
+			pool->p_idx = 0;
+
+	} else {
+		kfree_skb(nskb);
 	}
-	return free;
 }
-
-
-static inline
-void pfq_sk_buff_pool_advance(struct pfq_sk_buff_pool *pool)
-{
-	if (++pool->index == pool->size)
-		pool->index = 0;
-}
-
 
 #endif /* PF_Q_SKBUFF_POOL_H */
