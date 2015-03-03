@@ -25,7 +25,7 @@
 #include <pf_q-percpu.h>
 #include <pf_q-global.h>
 #include <pf_q-GC.h>
-
+#include <pf_q-transmit.h>
 
 void gc_reset(struct gc_data *gc)
 {
@@ -114,7 +114,7 @@ gc_copy_buff(struct gc_data *gc, struct gc_buff orig)
 
 
 inline void
-__gc_add_dev_to_targets(struct net_device *dev, struct gc_fwd_targets *ts)
+__gc_add_dev_to_targets(struct net_device *dev, struct lazy_fwd_targets *ts)
 {
 	size_t n = 0;
 
@@ -139,7 +139,7 @@ __gc_add_dev_to_targets(struct net_device *dev, struct gc_fwd_targets *ts)
 
 
 void
-gc_get_fwd_targets(struct gc_data *gc, struct gc_fwd_targets *ts)
+gc_get_fwd_targets(struct gc_data *gc, struct lazy_fwd_targets *ts)
 {
 	size_t n, i;
 

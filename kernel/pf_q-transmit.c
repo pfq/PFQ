@@ -273,7 +273,6 @@ __pfq_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int 
 
 		/* wait until the ts */
 
-
 		if (last_ts > ktime_to_ns(now))
 			now = wait_until(last_ts, cpu);
 
@@ -570,21 +569,23 @@ pfq_batch_lazy_xmit_by_mask(struct gc_queue_buff *queue, unsigned long long mask
 
 
 size_t
-pfq_lazy_xmit_exec(struct gc_data *gc, struct gc_fwd_targets const *t)
+pfq_lazy_xmit_exec(struct gc_data *gc, struct lazy_fwd_targets const *ts)
 {
 	struct netdev_queue *txq;
 	struct net_device *dev;
 	struct sk_buff *skb;
         size_t sent = 0;
-	size_t n, i, k;
+	size_t n, i;
 	int queue;
 
 	/* for each net_device... */
 
-	for(n = 0; n < t->num; n++)
+	for(n = 0; n < ts->num; n++)
 	{
-		dev = t->dev[n];
-		k = 0; txq = NULL;
+		size_t sent_dev = 0;
+
+		dev = ts->dev[n];
+		txq = NULL;
 
 		/* scan the list of skbs, and forward them in batch fashion */
 
@@ -595,20 +596,17 @@ pfq_lazy_xmit_exec(struct gc_data *gc, struct gc_fwd_targets const *t)
 
 			/* select the packet */
 
+			skb = gc->pool.queue[i].skb;
                         log = &gc->log[i];
-
 			num = gc_count_dev_in_log(dev, log);
 			if (num == 0)
 				continue;
-
-			skb = gc->pool.queue[i].skb;
 
 			/* the first packet for this dev determines the hw queue */
 
 			if (!txq) {
 				queue = skb->queue_mapping;
 				txq = pfq_pick_tx(dev, skb, &queue);
-
 				__netif_tx_lock_bh(txq);
 			}
 
@@ -616,9 +614,9 @@ pfq_lazy_xmit_exec(struct gc_data *gc, struct gc_fwd_targets const *t)
 
                         for (j = 0; j < num; j++)
 			{
-				const int xmit_more = ++k != t->cnt[n];
+				const int xmit_more = ++sent_dev != ts->cnt[n];
 
-				skb = log->xmit_todo-- > 1 ? skb_clone(skb, GFP_ATOMIC) : skb_get(skb);
+				skb = ( log->to_kernel || log->xmit_todo-- > 1 ) ? skb_clone(skb, GFP_ATOMIC) : skb_get(skb);
 				if (skb) {
 					if (__pfq_xmit(skb, dev, txq, xmit_more) == NETDEV_TX_OK)
 		   				sent++;

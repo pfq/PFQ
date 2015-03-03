@@ -204,7 +204,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 	struct local_data * local;
         struct gc_data *gcollector;
 
- 	struct gc_fwd_targets targets;
+ 	struct lazy_fwd_targets targets;
 
         long unsigned n, bit, lb;
         struct pfq_monad monad;

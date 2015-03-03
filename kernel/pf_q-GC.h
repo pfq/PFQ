@@ -60,15 +60,6 @@ struct gc_log
 };
 
 
-struct gc_fwd_targets
-{
-	struct net_device * dev[Q_GC_LOG_QUEUE_LEN];
-	size_t cnt [Q_GC_LOG_QUEUE_LEN];
-	size_t cnt_total;
-	size_t num;
-};
-
-
 struct gc_queue_buff
 {
         size_t len;
@@ -93,7 +84,9 @@ extern struct gc_buff pfq_make_buff(struct sk_buff *skb);
 extern struct gc_buff pfq_alloc_buff(size_t size);
 extern struct gc_buff pfq_copy_buff(struct gc_buff buff);
 
-extern void gc_get_fwd_targets(struct gc_data *gc, struct gc_fwd_targets *ts);
+struct lazy_fwd_targets;
+
+extern void   gc_get_fwd_targets(struct gc_data *gc, struct lazy_fwd_targets *ts);
 
 
 static inline bool
