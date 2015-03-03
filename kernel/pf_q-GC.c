@@ -113,8 +113,8 @@ gc_copy_buff(struct gc_data *gc, struct gc_buff orig)
 }
 
 
-inline void
-__gc_add_dev_to_targets(struct net_device *dev, struct lazy_fwd_targets *ts)
+static inline void
+add_dev_to_targets(struct net_device *dev, struct lazy_fwd_targets *ts)
 {
 	size_t n = 0;
 
@@ -150,7 +150,7 @@ gc_get_fwd_targets(struct gc_data *gc, struct lazy_fwd_targets *ts)
 	{
 		for(i = 0; i < gc->log[n].num_devs; i++)
 		{
-         		__gc_add_dev_to_targets(gc->log[n].dev[i], ts);
+         		add_dev_to_targets(gc->log[n].dev[i], ts);
 		}
 	}
 }
