@@ -599,6 +599,7 @@ pfq_lazy_xmit_exec(struct gc_data *gc, struct lazy_fwd_targets const *ts)
 			skb = gc->pool.queue[i].skb;
                         log = &gc->log[i];
 			num = gc_count_dev_in_log(dev, log);
+
 			if (num == 0)
 				continue;
 
@@ -612,14 +613,20 @@ pfq_lazy_xmit_exec(struct gc_data *gc, struct lazy_fwd_targets const *ts)
 
 			/* forward this skb `num` times */
 
-                        for (j = 0; j < num; j++)
+			for (j = 0; j < num; j++)
 			{
 				const int xmit_more = ++sent_dev != ts->cnt[n];
+				const bool to_clone = log->to_kernel || log->xmit_todo-- > 1;
 
-				skb = ( log->to_kernel || log->xmit_todo-- > 1 ) ? skb_clone(skb, GFP_ATOMIC) : skb_get(skb);
-				if (skb) {
-					if (__pfq_xmit(skb, dev, txq, xmit_more) == NETDEV_TX_OK)
+				struct sk_buff *nskb = to_clone ? skb_clone(skb, GFP_ATOMIC) : skb_get(skb);
+				if (nskb) {
+					if (__pfq_xmit(nskb, dev, txq, xmit_more) == NETDEV_TX_OK)
 		   				sent++;
+					else
+						sparse_inc(&global_stats.abrt);
+				}
+				else {
+					sparse_inc(&global_stats.abrt);
 				}
 			}
 		}
