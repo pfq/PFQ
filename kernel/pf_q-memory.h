@@ -198,10 +198,9 @@ struct sk_buff * pfq_netdev_alloc_skb_ip_align(struct net_device *dev, unsigned 
 static inline
 struct sk_buff * ____pfq_alloc_skb_pool(unsigned int size, gfp_t priority, int fclone, int node, struct pfq_sk_buff_pool *pool)
 {
-        struct sk_buff *skb;
 
 #ifdef PFQ_USE_SKB_POOL
-        skb = pfq_sk_buff_pool_get(pool);
+        struct sk_buff *skb = pfq_sk_buff_pool_get(pool);
         if (skb != NULL) {
         	if (pfq_skb_is_recycleable(skb, size)) {
 #ifdef PFQ_USE_EXTENDED_PROC
