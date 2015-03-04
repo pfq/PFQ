@@ -89,7 +89,7 @@ struct lazy_fwd_targets;
 extern void   gc_get_fwd_targets(struct gc_data *gc, struct lazy_fwd_targets *ts);
 
 
-static inline bool
+static inline size_t
 gc_count_dev_in_log(struct net_device *dev, struct gc_log *log)
 {
 	size_t n, ret = 0;
