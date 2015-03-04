@@ -112,7 +112,7 @@ static int pfq_proc_groups(struct seq_file *m, void *v)
 {
 	size_t n;
 
-	seq_printf(m, "group: recv      drop      forward   kernel    disc      quit      pol pid   def.    uplane   cplane    ctrl\n");
+	seq_printf(m, "group: recv      drop      forward   kernel    disc      aborted   pol pid   def.    uplane   cplane    ctrl\n");
 
 	down(&group_sem);
 
@@ -127,7 +127,7 @@ static int pfq_proc_groups(struct seq_file *m, void *v)
 					                           	      sparse_read(&this_group->stats.frwd),
 					                           	      sparse_read(&this_group->stats.kern),
 					                           	      sparse_read(&this_group->stats.disc),
-					                           	      sparse_read(&this_group->stats.quit));
+					                           	      sparse_read(&this_group->stats.abrt));
 
         	seq_printf(m, "%3d %3d ", this_group->policy, this_group->pid);
 
@@ -152,7 +152,7 @@ static int pfq_proc_stats(struct seq_file *m, void *v)
 	seq_printf(m, "kernel    : %ld\n", sparse_read(&global_stats.kern));
 	seq_printf(m, "forwarded : %ld\n", sparse_read(&global_stats.frwd));
 	seq_printf(m, "discarded : %ld\n", sparse_read(&global_stats.disc));
-	seq_printf(m, "quit      : %ld\n", sparse_read(&global_stats.quit));
+	seq_printf(m, "aborted   : %ld\n", sparse_read(&global_stats.abrt));
 #ifdef PFQ_USE_EXTENDED_PROC
 	seq_printf(m, "SCHEDULE:\n");
 	seq_printf(m, "poll      : %ld\n", sparse_read(&global_stats.poll));

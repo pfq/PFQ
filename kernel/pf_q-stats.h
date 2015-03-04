@@ -55,7 +55,7 @@ struct pfq_group_stats
         sparse_counter_t frwd;          /* forwarded to devices */
         sparse_counter_t kern;          /* passed to kernel */
         sparse_counter_t disc;          /* discarded due to driver congestion */
-        sparse_counter_t quit;          /* quit due to PFQ problem */
+        sparse_counter_t abrt;          /* aborted (e.g. memory problems) */
 };
 
 static inline
@@ -66,7 +66,7 @@ void pfq_group_stats_reset(struct pfq_group_stats *stats)
         sparse_set(&stats->frwd, 0);
         sparse_set(&stats->kern, 0);
         sparse_set(&stats->disc, 0);
-        sparse_set(&stats->quit, 0);
+        sparse_set(&stats->abrt, 0);
 }
 
 struct pfq_global_stats
@@ -77,7 +77,7 @@ struct pfq_global_stats
         sparse_counter_t frwd;  	/* forwarded to devices */
         sparse_counter_t kern;  	/* passed to kernel */
         sparse_counter_t disc;  	/* discarded due to driver congestion */
-        sparse_counter_t quit; 		/* quit due to PFQ problem (e.g. memory problems) */
+        sparse_counter_t abrt; 		/* aborted (e.g. memory problems) */
 
         sparse_counter_t poll; 		/* number of poll */
         sparse_counter_t wake; 		/* number of wakeup */
@@ -92,7 +92,7 @@ void pfq_global_stats_reset(struct pfq_global_stats *stats)
 	sparse_set(&stats->frwd, 0);
 	sparse_set(&stats->kern, 0);
 	sparse_set(&stats->disc, 0);
-	sparse_set(&stats->quit, 0);
+	sparse_set(&stats->abrt, 0);
 
 	sparse_set(&stats->poll, 0);
 	sparse_set(&stats->wake, 0);

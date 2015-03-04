@@ -51,8 +51,8 @@ forwardIO(arguments_t args, SkBuff b)
 	if (dev == NULL) {
                 if (printk_ratelimit())
                         printk(KERN_INFO "[PFQ/lang] forward: device error!\n");
-		sparse_inc(&global_stats.quit);
-		sparse_inc(&stats->quit);
+		sparse_inc(&global_stats.abrt);
+		sparse_inc(&stats->abrt);
                 return Pass(b);
 	}
 
@@ -60,8 +60,8 @@ forwardIO(arguments_t args, SkBuff b)
 	if (!nskb) {
                 if (printk_ratelimit())
         		printk(KERN_INFO "[PFQ/lang] forward pfq_xmit %s: no memory!\n", dev->name);
-		sparse_inc(&global_stats.quit);
-		sparse_inc(&stats->quit);
+		sparse_inc(&global_stats.abrt);
+		sparse_inc(&stats->abrt);
         	return Pass(b);
 	}
 
