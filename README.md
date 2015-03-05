@@ -14,7 +14,7 @@ provides a script designed to obtain accelerated versions starting from their so
 codes.
 
 The framework enables the development of high-performance networking applications with 
-different programming languages: C, C++11 and Haskell. In addition, a pure functional 
+different programming languages: C, C++ and Haskell. In addition, a pure functional 
 language designed for early stages applications is included: PFQ/lang.
 
 PFQ/lang is inspired by Haskell and allows for creation of small applications that run in 
