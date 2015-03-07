@@ -128,7 +128,7 @@ namespace pfq {
             auto b = str.find_first_not_of(" \n\r\t");
             auto e = str.find_last_not_of(" \n\r\t");
             b = b == std::string::npos ? 0 : b;
-            e = e == std::string::npos ? std::string::npos : (e + 1 - b);
+            e = e == std::string::npos ? 0 : (e + 1 - b);
             return str.substr(b, e);
         }
 
@@ -146,9 +146,7 @@ namespace pfq {
                 str = str.substr(n + len, std::string::npos);
             }
 
-            if (!str.empty())
-                ret.push_back(std::move(str));
-
+            ret.push_back(std::move(str));
             return ret;
         }
 
