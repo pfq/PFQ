@@ -91,10 +91,16 @@ size_t pfq_sk_buff_pool_free(struct pfq_sk_buff_pool *pool)
 static inline
 struct sk_buff *pfq_sk_buff_pool_get(struct pfq_sk_buff_pool *pool)
 {
-	if (pool->skbs) {
-		struct sk_buff *skb = __atomic_exchange_n(&pool->skbs[pool->c_idx], NULL, __ATOMIC_RELAXED);
+	if (likely(pool->skbs)) {
+
+		struct sk_buff *skb = __atomic_load_n(&pool->skbs[pool->c_idx], __ATOMIC_RELAXED);
+		if (likely(skb)) {
+			__atomic_store_n(&pool->skbs[pool->c_idx], NULL, __ATOMIC_RELAXED);
+		}
+
 		if (++pool->c_idx >= pool->size)
 			pool->c_idx = 0;
+
 		return skb;
 	}
 	return NULL;
@@ -104,11 +110,18 @@ struct sk_buff *pfq_sk_buff_pool_get(struct pfq_sk_buff_pool *pool)
 static inline
 void pfq_sk_buff_pool_put(struct pfq_sk_buff_pool *pool, struct sk_buff *nskb)
 {
-	if (pool->skbs) {
+	if (likely(pool->skbs)) {
 
 		/* most of the time skb is NULL */
-		struct sk_buff *skb = __atomic_exchange_n(&pool->skbs[pool->p_idx], nskb, __ATOMIC_RELAXED);
-		kfree_skb(skb);
+
+		struct sk_buff *skb = __atomic_load_n(&pool->skbs[pool->p_idx], __ATOMIC_RELAXED);
+		if (likely(!skb)) {
+			__atomic_store_n(&pool->skbs[pool->p_idx], nskb, __ATOMIC_RELAXED);
+		}
+		else {
+			kfree_skb(nskb);
+		}
+
 		if (++pool->p_idx >= pool->size)
 			pool->p_idx = 0;
 
