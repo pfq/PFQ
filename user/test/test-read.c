@@ -8,7 +8,6 @@
 int
 main(int argc, char *argv[])
 {
-	int n;
         if (argc < 2) {
                 fprintf(stderr, "usage: %s dev\n", argv[0]);
                 return 0;

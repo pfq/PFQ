@@ -175,7 +175,7 @@ sparse_counter_t * get_counter(SkBuff b, int n)
 }
 
 
-/* utility function: mark, volatile state, persistent state */
+/* utility function: data, mark, volatile state, persistent state */
 
 
 static inline
