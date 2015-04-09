@@ -32,12 +32,14 @@ struct gc_log;
 
 struct pfq_cb
 {
-	unsigned long 	 mark;
+	uint64_t 	 data;
+
         unsigned long 	 group_mask;
 	struct gc_log 	 *log;
 	struct pfq_monad *monad;
 	int 		 direct;
 };
+
 
 /* wrapper used in garbage collector */
 

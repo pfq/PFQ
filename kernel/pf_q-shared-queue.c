@@ -130,7 +130,7 @@ size_t pfq_mpsc_enqueue_batch(struct pfq_rx_opt *ro,
 
                 /* copy mark from pfq_cb (annotation) */
 
-                hdr->data = PFQ_CB(skb)->mark;
+                hdr->data = PFQ_CB(skb)->data;
 
 		/* setup the header */
 

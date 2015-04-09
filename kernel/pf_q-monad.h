@@ -179,16 +179,30 @@ sparse_counter_t * get_counter(SkBuff b, int n)
 
 
 static inline
-unsigned long get_mark(SkBuff b)
+uint64_t get_data(SkBuff b)
 {
-        return PFQ_CB(b.skb)->mark;
+        return PFQ_CB(b.skb)->data;
 }
 
 static inline
-void set_mark(SkBuff b, unsigned long mark)
+void set_data(SkBuff b, uint64_t value)
 {
-        PFQ_CB(b.skb)->mark = mark;
+        PFQ_CB(b.skb)->data = value;
 }
+
+
+static inline
+uint32_t get_mark(SkBuff b)
+{
+        return b.skb->mark;
+}
+
+static inline
+void set_mark(SkBuff b, uint32_t value)
+{
+        b.skb->mark = value;
+}
+
 
 
 static inline

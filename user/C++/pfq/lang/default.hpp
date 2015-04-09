@@ -283,7 +283,7 @@ namespace lang
          * \see mark
          */
 
-        auto has_mark       = [] (unsigned long value) { return predicate("has_mark", value); };
+        auto has_mark       = [] (uint32_t value) { return predicate("has_mark", value); };
 
         //! Evaluate to \c true if the SkBuff has a vlan tag.
 
@@ -672,7 +672,7 @@ namespace lang
          * mark (42)
          */
 
-        auto mark           = [] (unsigned long value) { return mfunction("mark", value); };
+        auto mark           = [] (uint32_t value) { return mfunction("mark", value); };
 
         //! Increment the i-th counter of the current group.
         /*

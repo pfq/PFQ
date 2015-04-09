@@ -29,7 +29,7 @@
 static inline Action_SkBuff
 mark(arguments_t args, SkBuff b)
 {
-	const unsigned long value = get_arg(unsigned long, args);
+	const uint32_t value = get_arg(uint32_t, args);
 	set_mark(b, value);
 	return Pass(b);
 }

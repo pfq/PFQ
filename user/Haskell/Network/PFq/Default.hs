@@ -324,7 +324,7 @@ has_vid x = Predicate "has_vid" x () () () () () () ()
 -- | Evaluate to /True/ if the SkBuff has the given mark, set by 'mark' function.
 --
 -- > has_mark 11
-has_mark :: CULong -> NetPredicate
+has_mark :: Word32 -> NetPredicate
 has_mark x = Predicate "has_mark" x () () () () () () ()
 
 -- | Evaluate to /True/ if the SkBuff has the given Layer3 protocol.
@@ -622,7 +622,7 @@ dec n = MFunction "dec" n () () () () () () ()
 -- | Mark the packet with the given value.
 --
 -- > mark 42
-mark :: CULong -> NetFunction
+mark :: Word32 -> NetFunction
 mark n = MFunction "mark" n () () () () () () ()
 
 -- | Monadic version of 'is_l3_proto' predicate.

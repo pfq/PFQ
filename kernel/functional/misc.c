@@ -467,7 +467,8 @@ struct pfq_function_descr misc_functions[] = {
 
         { "inc", 	"CInt -> SkBuff -> Action SkBuff",     		inc_counter 	},
         { "dec", 	"CInt -> SkBuff -> Action SkBuff",    		dec_counter 	},
- 	{ "mark", 	"CULong -> SkBuff -> Action SkBuff",  		mark		},
+ 	{ "mark", 	"Word32  -> SkBuff -> Action SkBuff",  		mark		},
+
         { "crc16", 	"SkBuff -> Action SkBuff", 			crc16_sum	},
         { "log_msg",  	"String -> SkBuff -> Action SkBuff", 		log_msg 	},
         { "log_buff",   "SkBuff -> Action SkBuff", 			log_buff 	},
