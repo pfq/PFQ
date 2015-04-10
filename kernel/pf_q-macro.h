@@ -46,13 +46,13 @@
 #define Q_SLOT_ALIGN(s, n)      ((s+(n-1)) & ~(n-1))
 
 #define Q_FUN_SYMB_LEN          256
-#define Q_PERSISTENT_MEM 	64
-
 
 #define Q_MAX_CPU               256
 #define Q_MAX_CPU_MASK          (Q_MAX_CPU-1)
 
-#define Q_MAX_PERSISTENT 	1024
+#define Q_GROUP_PERSIST_MEM 	64
+#define Q_GROUP_PERSIST_DATA 	1024
+
 #define Q_POOL_MAX_SIZE         16384
 
 #endif /* PF_Q_MACRO_H */

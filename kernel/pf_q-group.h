@@ -46,9 +46,9 @@ struct pfq_group_persistent
 	struct _persistent {
 
 		spinlock_t 	lock;
-		char 		memory[Q_PERSISTENT_MEM];
+		char 		memory[Q_GROUP_PERSIST_MEM];
 
-	} persistent [Q_MAX_PERSISTENT];
+	} persistent [Q_GROUP_PERSIST_DATA];
 };
 
 

@@ -96,7 +96,7 @@ __pfq_group_init(int gid)
                 sparse_set(&g->context.counter[i], 0);
         }
 
-	for(i = 0; i < Q_MAX_PERSISTENT; i++)
+	for(i = 0; i < Q_GROUP_PERSIST_DATA; i++)
 	{
 		spin_lock_init(&g->context.persistent[i].lock);
 		memset(g->context.persistent[i].memory, 0, sizeof(g->context.persistent[i].memory));

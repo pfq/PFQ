@@ -233,7 +233,9 @@ __get_persistent(SkBuff b, int n)
 	return ctx->persistent[n].memory;
 }
 
-#define get_persistent(type, b, n) __builtin_choose_expr(sizeof(type) <= 64, __get_persistent(b, n) , (void)0)
+
+#define get_persistent(type, b, n) __builtin_choose_expr(sizeof(type) <= Q_GROUP_PERSIST_MEM, __get_persistent(b, n) , (void)0)
+
 
 static inline
 void put_persistent(SkBuff b, int n)
