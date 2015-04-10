@@ -36,7 +36,7 @@ main(int argc, char *argv[])
                     while(!it.ready());
 
                     printf("vlan_vid:%d vlan_prio:%d caplen:%d len:%d ifindex:%d hw_queue:%d tstamp: %u:%u -> ",
-                           it->un.vlan.vlan_vid, it->un.vlan.vlan_prio,
+                           it->vlan.vid, it->vlan.prio,
                            it->caplen, it->len, it->if_index, it->hw_queue,
                                 it->tstamp.tv.sec, it->tstamp.tv.nsec);
                     char *buff = static_cast<char *>(it.data());
