@@ -175,20 +175,7 @@ sparse_counter_t * get_counter(SkBuff b, int n)
 }
 
 
-/* utility function: data, mark, volatile state, persistent state */
-
-
-static inline
-uint64_t get_data(SkBuff b)
-{
-        return PFQ_CB(b.skb)->data;
-}
-
-static inline
-void set_data(SkBuff b, uint64_t value)
-{
-        PFQ_CB(b.skb)->data = value;
-}
+/* utility function: mark, volatile state, persistent state */
 
 
 static inline

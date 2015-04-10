@@ -128,9 +128,9 @@ size_t pfq_mpsc_enqueue_batch(struct pfq_rx_opt *ro,
 			pfq_skb_copy_from_linear_data(skb, pkt, bytes);
 		}
 
-                /* copy data from pfq_cb annotation */
+                /* copy state from pfq_cb annotation */
 
-                hdr->data = PFQ_CB(skb)->data;
+		hdr->data = PFQ_CB(skb)->monad->state;
 
 		/* setup the header */
 

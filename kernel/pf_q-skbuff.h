@@ -32,12 +32,10 @@ struct gc_log;
 
 struct pfq_cb
 {
-	uint64_t 	 data;
-
-        unsigned long 	 group_mask;
 	struct gc_log 	 *log;
 	struct pfq_monad *monad;
-	int 		 direct;
+        unsigned long 	  group_mask;
+	int 		  direct;
 };
 
 
