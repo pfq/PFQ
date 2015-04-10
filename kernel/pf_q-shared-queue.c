@@ -141,13 +141,12 @@ size_t pfq_mpsc_enqueue_batch(struct pfq_rx_opt *ro,
 			hdr->tstamp.tv.nsec = (uint32_t)ts.tv_nsec;
 		}
 
-		hdr->if_index    = skb->dev->ifindex & 0xff;
-		hdr->gid         = gid;
-
-		hdr->len         = (uint16_t)skb->len;
-		hdr->caplen 	 = (uint16_t)bytes;
-		hdr->un.vlan_tci = skb->vlan_tci & ~VLAN_TAG_PRESENT;
-		hdr->hw_queue    = (uint8_t)(skb_get_rx_queue(skb) & 0xff);
+		hdr->if_index = skb->dev->ifindex & 0xff;
+		hdr->gid      = gid;
+		hdr->len      = (uint16_t)skb->len;
+		hdr->caplen   = (uint16_t)bytes;
+		hdr->vlan.tci = skb->vlan_tci & ~VLAN_TAG_PRESENT;
+		hdr->hw_queue = (uint8_t)(skb_get_rx_queue(skb) & 0xff);
 
 		/* commit the slot (release semantic) */
 

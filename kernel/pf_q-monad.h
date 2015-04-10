@@ -65,9 +65,9 @@ typedef struct
 
 struct pfq_monad
 {
+        struct pfq_group       *group;
+        uint64_t 		state;
         fanout_t 		fanout;
-        unsigned long 		state;
-        struct pfq_group	*group;
 };
 
 
@@ -166,7 +166,8 @@ class(SkBuff b, uint64_t class_mask)
 /* utility function: counter */
 
 static inline
-sparse_counter_t * get_counter(SkBuff b, int n)
+sparse_counter_t *
+get_counter(SkBuff b, int n)
 {
         if (n < 0 || n >= Q_MAX_COUNTERS)
                 return NULL;
@@ -193,13 +194,13 @@ void set_mark(SkBuff b, uint32_t value)
 
 
 static inline
-unsigned long get_state(SkBuff b)
+uint64_t get_state(SkBuff b)
 {
         return PFQ_CB(b.skb)->monad->state;
 }
 
 static inline
-void set_state(SkBuff b, unsigned long state)
+void set_state(SkBuff b, uint64_t state)
 {
         PFQ_CB(b.skb)->monad->state = state;
 }
