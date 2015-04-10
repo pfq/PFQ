@@ -194,13 +194,13 @@ void set_mark(SkBuff b, uint32_t value)
 
 
 static inline
-unsigned long get_state(SkBuff b)
+uint64_t get_state(SkBuff b)
 {
         return PFQ_CB(b.skb)->monad->state;
 }
 
 static inline
-void set_state(SkBuff b, unsigned long state)
+void set_state(SkBuff b, uint64_t state)
 {
         PFQ_CB(b.skb)->monad->state = state;
 }
