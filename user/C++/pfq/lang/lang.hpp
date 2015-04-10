@@ -585,6 +585,24 @@ namespace pfq { namespace lang
         return serialize_all(p.symbol_, n, true, p.args_);
     }
 
+    ///////// serialize vector of functions:
+
+    inline std::pair<std::vector<FunctionDescr>, std::ptrdiff_t>
+    serialize (std::vector<MFunction<>> const &cont, std::ptrdiff_t n)
+    {
+        std::vector<FunctionDescr> ret, v;
+        std::size_t n1 = n;
+
+        for(auto & f : cont)
+        {
+            std::tie(v, n1) = serialize(f, n1);
+            ret = std::move(ret) + v;
+        }
+
+        return { ret, n1 };
+    }
+
+
     //
     // Composition
     //
