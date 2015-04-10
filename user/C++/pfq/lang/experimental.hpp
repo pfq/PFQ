@@ -157,6 +157,34 @@ namespace pfq { namespace lang { namespace experimental {
             return mfunction("par8", f0, f1, f2, f3, f4, f5, f6, f7);
         }
 
+
+        //! Evaluate to \c Pass SkBuff if it is a GTP packet, \c Drop it otherwise.
+
+        auto gtp            = [] (const char *net, int prefix)
+        {
+            return mfunction("gtp", ipv4_t{net}, prefix);
+        };
+
+        //! Evaluate to \c Pass SkBuff if it is a GTP packet, \c Drop it otherwise.
+
+        auto is_gtp         = [] (const char *net, int prefix)
+        {
+            return predicate("is_gtp", ipv4_t{net}, prefix);
+        };
+
+        //! Dispatch the packet across the sockets
+        /*!
+         * Dispatch with a randomized algorithm that maintains the integrity
+         * of per-user flows on top of GTP tunnels. Example:
+         *
+         * steer_rtp
+         */
+
+        auto steer_gtp_usr = [] (const char *net, int prefix)
+        {
+            return mfunction("steer_gtp_usr", ipv4_t{net}, prefix);
+        };
+
     }
 
 } // namespace experimental
