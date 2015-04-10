@@ -206,11 +206,11 @@ struct pfq_shared_queue
 
 struct pfq_pkthdr
 {
-        uint64_t data;          /* state from pfq_cb */
+        uint64_t data;          /* volatile state */
 
         union
         {
-                unsigned long long tv64;
+                uint64_t 	    tv64;
                 struct {
                         uint32_t    sec;
                         uint32_t    nsec;
@@ -227,13 +227,13 @@ struct pfq_pkthdr
         {
                 struct
                 {
-                        uint16_t vlan_vid:12,   /* 8021q vlan id */
+                        uint16_t vid:12,   	/* 8021q vlan id */
                                  reserved:1,    /* 8021q reserved bit */
-                                 vlan_prio:3;   /* 8021q vlan priority */
-                } vlan;
+                                 prio:3;   	/* 8021q vlan priority */
+                };
 
-                uint16_t     vlan_tci;
-        } un;
+                uint16_t     tci;
+        } vlan;
 
         uint8_t     hw_queue;   /* 256 queues per device */
         uint8_t     commit;
