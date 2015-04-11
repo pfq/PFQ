@@ -25,10 +25,13 @@
 #ifndef PF_Q_PRINTK_H
 #define PF_Q_PRINTK_H
 
+#include <pf_q-group.h>
+
 struct pfq_computation_descr;
 struct pfq_computation_tree;
 struct pfq_functional_node;
 
+extern void   pr_devel_group(pfq_gid_t gid);
 extern void   pr_devel_buffer(const unsigned char *buff, size_t len);
 extern void   pr_devel_computation_descr(struct pfq_computation_descr const *);
 extern void   pr_devel_computation_tree(struct pfq_computation_tree const *);

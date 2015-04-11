@@ -25,9 +25,26 @@
 #include <linux/printk.h>
 #include <linux/pf_q.h>
 
+#include <pf_q-group.h>
 #include <pf_q-module.h>
 #include <pf_q-engine.h>
 #include <pf_q-printk.h>
+
+
+void
+pr_devel_group(pfq_gid_t gid)
+{
+	struct pfq_group * g;
+	g = pfq_get_group(gid);
+	if (g != NULL) {
+
+		pr_devel("[PFQ] group %d { policy=%d, pid=%d, owner-id=%d ...}\n",
+				gid.value,
+				g->policy,
+				g->pid,
+				g->owner.value);
+	}
+}
 
 
 void
