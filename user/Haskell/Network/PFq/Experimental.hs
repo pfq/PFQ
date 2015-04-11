@@ -53,7 +53,12 @@ module Network.PFq.Experimental
 
         steer_gtp_usr,
         gtp,
-        is_gtp
+        gtp_cp,
+        gtp_up,
+        is_gtp,
+        is_gtp_cp,
+        is_gtp_up
+
     ) where
 
 
