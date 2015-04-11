@@ -86,11 +86,12 @@ int pfq_getsockopt(struct socket *sock,
                                 return -EFAULT;
                 }
                 else {
-                	int err = pfq_check_group(so->id, group.gid, "group join");
+                	pfq_gid_t gid = { group.gid };
+                	int err = pfq_check_group_id(gid, so->id, "group join");
 			if (err != 0)
 				return err;
 
-                        if (pfq_join_group(group.gid, so->id, group.class_mask, group.policy) < 0) {
+                        if (pfq_join_group(gid, so->id, group.class_mask, group.policy) < 0) {
                                 printk(KERN_INFO "[PFQ|%d] join error: permission denied (gid=%d)!\n", so->id, group.gid);
                                 return -EACCES;
                         }
@@ -205,7 +206,8 @@ int pfq_getsockopt(struct socket *sock,
         {
                 struct pfq_group *g;
                 struct pfq_stats stat;
-                int err, gid;
+                pfq_gid_t gid;
+                int err;
 
                 if (len != sizeof(stat))
                         return -EINVAL;
@@ -213,23 +215,26 @@ int pfq_getsockopt(struct socket *sock,
                 if (copy_from_user(&stat, optval, sizeof(stat)))
                         return -EFAULT;
 
-                gid = (int)stat.recv;
+                gid.value = (int)stat.recv;
 
-                err = pfq_check_group(so->id, gid, "group stat");
+                err = pfq_check_group_id(gid, so->id, "group stat");
                 if (err != 0)
                 	return err;
 
-                g = pfq_get_group(gid);
-                if (!g) {
-                        printk(KERN_INFO "[PFQ|%d] group error: invalid group id %d!\n", so->id, gid);
-                        return -EFAULT;
+		if (pfq_group_is_free(gid)) {
+                        printk(KERN_INFO "[PFQ|%d] group stats error: gid=%d is a free group!\n", so->id, gid.value);
+                        return -EACCES;
+		}
+
+                if (!pfq_group_access(gid, so->id)) {
+                        printk(KERN_INFO "[PFQ|%d] group stats error: gid=%d permission denied!\n", so->id, gid.value);
+                        return -EACCES;
                 }
 
-                /* check whether the group is joinable.. */
-
-                if (!__pfq_group_access(gid, so->id, Q_POLICY_GROUP_UNDEFINED, false)) {
-                        printk(KERN_INFO "[PFQ|%d] group stats error: permission denied (gid=%d)!\n", so->id, gid);
-                        return -EACCES;
+                g = pfq_get_group(gid);
+                if (!g) {
+                        printk(KERN_INFO "[PFQ|%d] group error: invalid group id %d!\n", so->id, gid.value);
+                        return -EFAULT;
                 }
 
                 stat.recv = sparse_read(&g->stats.recv);
@@ -249,7 +254,8 @@ int pfq_getsockopt(struct socket *sock,
         {
                 struct pfq_group *g;
                 struct pfq_counters cs;
-                int i, err, gid;
+                pfq_gid_t gid;
+                int i, err;
 
                 if (len != sizeof(cs))
                         return -EINVAL;
@@ -257,22 +263,22 @@ int pfq_getsockopt(struct socket *sock,
                 if (copy_from_user(&cs, optval, sizeof(cs)))
                         return -EFAULT;
 
-                gid = (int)cs.counter[0];
+                gid.value = (int)cs.counter[0];
 
-                err = pfq_check_group(so->id, gid, "group stat");
+                err = pfq_check_group_id(gid, so->id, "group stat");
                 if (err != 0)
                 	return err;
 
                 g = pfq_get_group(gid);
-                if (!g) {
-                        printk(KERN_INFO "[PFQ|%d] group error: invalid group id %d!\n", so->id, gid);
+                if (g == NULL) {
+                        printk(KERN_INFO "[PFQ|%d] group error: invalid group id %d!\n", so->id, gid.value);
                         return -EFAULT;
                 }
 
                 /* check whether the group is joinable.. */
 
-                if (!__pfq_group_access(gid, so->id, Q_POLICY_GROUP_UNDEFINED, false)) {
-                        printk(KERN_INFO "[PFQ|%d] group error: permission denied (gid=%d)!\n", so->id, gid);
+                if (!pfq_group_policy_access(gid, so->id, Q_POLICY_GROUP_UNDEFINED)) {
+                        printk(KERN_INFO "[PFQ|%d] group error: permission denied (gid=%d)!\n", so->id, gid.value);
                         return -EACCES;
                 }
 
@@ -357,7 +363,7 @@ int pfq_setsockopt(struct socket *sock,
         case Q_SO_GROUP_BIND:
         {
                 struct pfq_binding bind;
-                int err;
+		pfq_gid_t gid;
 
                 if (optlen != sizeof(struct pfq_binding))
                         return -EINVAL;
@@ -365,26 +371,29 @@ int pfq_setsockopt(struct socket *sock,
                 if (copy_from_user(&bind, optval, optlen))
                         return -EFAULT;
 
-                err = pfq_check_group_access(so->id, bind.gid, "add binding");
-                if (err != 0)
-                	return err;
+		gid.value = bind.gid;
+
+                if (!pfq_has_joined_group(gid, so->id)) {
+                        printk(KERN_INFO "[PFQ|%d] add bind: gid=%d not joined!\n", so->id, bind.gid);
+                	return -EACCES;
+		}
 
                 rcu_read_lock();
                 if (!dev_get_by_index_rcu(sock_net(&so->sk), bind.if_index)) {
                         rcu_read_unlock();
-                        printk(KERN_INFO "[PFQ|%d] bind: invalid if_index=%d\n", so->id, bind.if_index);
-                        return -EPERM;
+                        printk(KERN_INFO "[PFQ|%d] bind: invalid if_index=%d!\n", so->id, bind.if_index);
+                        return -EACCES;
                 }
                 rcu_read_unlock();
 
-                pfq_devmap_update(map_set, bind.if_index, bind.hw_queue, bind.gid);
+                pfq_devmap_update(map_set, bind.if_index, bind.hw_queue, gid);
 
         } break;
 
         case Q_SO_GROUP_UNBIND:
         {
                 struct pfq_binding bind;
-                int err;
+		pfq_gid_t gid;
 
                 if (optlen != sizeof(struct pfq_binding))
                         return -EINVAL;
@@ -392,9 +401,12 @@ int pfq_setsockopt(struct socket *sock,
                 if (copy_from_user(&bind, optval, optlen))
                         return -EFAULT;
 
-                err = pfq_check_group_access(so->id, bind.gid, "remove binding");
-                if (err != 0)
-                	return err;
+		gid.value = bind.gid;
+
+		if (!pfq_has_joined_group(gid, so->id)) {
+                        printk(KERN_INFO "[PFQ|%d] remove bind: gid=%d not joined!\n", so->id, bind.gid);
+			return -EACCES;
+		}
 
                 rcu_read_lock();
                 if (!dev_get_by_index_rcu(sock_net(&so->sk), bind.if_index)) {
@@ -404,7 +416,7 @@ int pfq_setsockopt(struct socket *sock,
                 }
                 rcu_read_unlock();
 
-                pfq_devmap_update(map_reset, bind.if_index, bind.hw_queue, bind.gid);
+                pfq_devmap_update(map_reset, bind.if_index, bind.hw_queue, gid);
 
         } break;
 
@@ -524,25 +536,25 @@ int pfq_setsockopt(struct socket *sock,
 
         case Q_SO_GROUP_LEAVE:
         {
-                int gid;
+                pfq_gid_t gid;
 
-                if (optlen != sizeof(gid))
+                if (optlen != sizeof(gid.value))
                         return -EINVAL;
 
-                if (copy_from_user(&gid, optval, optlen))
+                if (copy_from_user(&gid.value, optval, optlen))
                         return -EFAULT;
 
                 if (pfq_leave_group(gid, so->id) < 0)
                         return -EFAULT;
 
-                pr_devel("[PFQ|%d] leave: gid=%d\n", so->id, gid);
+                pr_devel("[PFQ|%d] leave: gid=%d\n", so->id, gid.value);
 
         } break;
 
         case Q_SO_GROUP_FPROG:
         {
                 struct pfq_fprog fprog;
-                int err;
+		pfq_gid_t gid;
 
                 if (optlen != sizeof(fprog))
                         return -EINVAL;
@@ -550,9 +562,12 @@ int pfq_setsockopt(struct socket *sock,
                 if (copy_from_user(&fprog, optval, optlen))
                         return -EFAULT;
 
-                err = pfq_check_group_access(so->id, fprog.gid, "group fprog");
-                if (err == -EPERM)
+		gid.value = fprog.gid;
+
+		if (!pfq_has_joined_group(gid, so->id)) {
+			/* don't set the first and return */
                 	return 0;
+		}
 
                 if (fprog.fcode.len > 0) {  /* set the filter */
 
@@ -572,13 +587,13 @@ int pfq_setsockopt(struct socket *sock,
                                 return -EINVAL;
                         }
 
-                        __pfq_set_group_filter(fprog.gid, filter);
+                        pfq_set_group_filter(gid, filter);
 
                         pr_devel("[PFQ|%d] fprog: gid=%d (fprog len %d bytes)\n", so->id, fprog.gid, fprog.fcode.len);
                 }
                 else { 	/* reset the filter */
 
-                        __pfq_set_group_filter(fprog.gid, NULL);
+                        pfq_set_group_filter(gid, NULL);
                         pr_devel("[PFQ|%d] fprog: gid=%d (resetting filter)\n", so->id, fprog.gid);
                 }
 
@@ -587,7 +602,7 @@ int pfq_setsockopt(struct socket *sock,
         case Q_SO_GROUP_VLAN_FILT_TOGGLE:
         {
                 struct pfq_vlan_toggle vlan;
-                int err;
+                pfq_gid_t gid;
 
                 if (optlen != sizeof(vlan))
                         return -EINVAL;
@@ -595,11 +610,14 @@ int pfq_setsockopt(struct socket *sock,
                 if (copy_from_user(&vlan, optval, optlen))
                         return -EFAULT;
 
-                err = pfq_check_group_access(so->id, vlan.gid, "group vlan filt toggle");
-                if (err != 0)
-                	return err;
+		gid.value = vlan.gid;
 
-                __pfq_toggle_group_vlan_filters(vlan.gid, vlan.toggle);
+		if (!pfq_has_joined_group(gid, so->id)) {
+                        printk(KERN_INFO "[PFQ|%d] vlan filter toggle: gid=%d not joined!\n", so->id, vlan.gid);
+			return -EACCES;
+		}
+
+                pfq_toggle_group_vlan_filters(gid, vlan.toggle);
                 pr_devel("[PFQ|%d] vlan filters %s for gid=%d\n", so->id, (vlan.toggle ? "enabled" : "disabled"), vlan.gid);
 
         } break;
@@ -607,7 +625,7 @@ int pfq_setsockopt(struct socket *sock,
         case Q_SO_GROUP_VLAN_FILT:
         {
                 struct pfq_vlan_toggle filt;
-                int err;
+                pfq_gid_t gid;
 
                 if (optlen != sizeof(filt))
                         return -EINVAL;
@@ -615,16 +633,19 @@ int pfq_setsockopt(struct socket *sock,
                 if (copy_from_user(&filt, optval, optlen))
                         return -EFAULT;
 
-                err = pfq_check_group_access(so->id, filt.gid, "group vlan filter");
-                if (err != 0)
-                	return err;
+		gid.value = filt.gid;
+
+		if (!pfq_has_joined_group(gid, so->id)) {
+                        printk(KERN_INFO "[PFQ|%d] vlan filter: gid=%d not joined!\n", so->id, filt.gid);
+			return -EACCES;
+		}
 
                 if (filt.vid < -1 || filt.vid > 4094) {
                         printk(KERN_INFO "[PFQ|%d] vlan error: invalid vid=%d for gid=%d!\n", so->id, filt.vid, filt.gid);
                         return -EINVAL;
                 }
 
-                if (!__pfq_vlan_filters_enabled(filt.gid)) {
+                if (!pfq_vlan_filters_enabled(gid)) {
                         printk(KERN_INFO "[PFQ|%d] vlan error: vlan filters disabled for gid=%d!\n", so->id, filt.gid);
                         return -EPERM;
                 }
@@ -632,10 +653,13 @@ int pfq_setsockopt(struct socket *sock,
                 if (filt.vid  == -1) { /* any */
                         int i;
                         for(i = 1; i < 4095; i++)
-                                __pfq_set_group_vlan_filter(filt.gid, filt.toggle, i);
+			{
+                                pfq_set_group_vlan_filter(gid, filt.toggle, i);
+			}
                 }
-                else
-                        __pfq_set_group_vlan_filter(filt.gid, filt.toggle, filt.vid);
+                else  {
+                        pfq_set_group_vlan_filter(gid, filt.toggle, filt.vid);
+		}
 
                 pr_devel("[PFQ|%d] vlan filter vid %d set for gid=%d\n", so->id, filt.vid, filt.gid);
         } break;
@@ -841,6 +865,7 @@ int pfq_setsockopt(struct socket *sock,
                 struct pfq_group_computation tmp;
                 size_t psize, ucsize;
                 void *context = NULL;
+                pfq_gid_t gid;
                 int err = 0;
 
                 if (optlen != sizeof(tmp))
@@ -849,9 +874,12 @@ int pfq_setsockopt(struct socket *sock,
                 if (copy_from_user(&tmp, optval, optlen))
                         return -EFAULT;
 
-                err = pfq_check_group_access(so->id, tmp.gid, "group computation");
-                if (err != 0)
-                	return err;
+		gid.value = tmp.gid;
+
+		if (!pfq_has_joined_group(gid, so->id)) {
+                        printk(KERN_INFO "[PFQ|%d] group computation: gid=%d not joined!\n", so->id, tmp.gid);
+			return -EACCES;
+		}
 
                 if (copy_from_user(&psize, tmp.prog, sizeof(size_t)))
                         return -EFAULT;
@@ -925,7 +953,7 @@ int pfq_setsockopt(struct socket *sock,
 
                 /* enable functional program */
 
-                if (pfq_set_group_prog(tmp.gid, comp, context) < 0) {
+                if (pfq_set_group_prog(gid, comp, context) < 0) {
                         printk(KERN_INFO "[PFQ|%d] set group program error!\n", so->id);
                         err = -EPERM;
                         goto error;

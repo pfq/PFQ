@@ -62,7 +62,7 @@ size_t pfq_mpsc_enqueue_batch(struct pfq_rx_opt *ro,
 		              struct pfq_skbuff_batch *skbs,
 		              unsigned long long mask,
 		              int burst_len,
-		              int gid)
+		              pfq_gid_t gid)
 {
 	struct pfq_rx_queue *rx_queue = pfq_get_rx_queue(ro);
 	int data, qlen, qindex;
@@ -142,7 +142,7 @@ size_t pfq_mpsc_enqueue_batch(struct pfq_rx_opt *ro,
 		}
 
 		hdr->if_index = skb->dev->ifindex & 0xff;
-		hdr->gid      = gid;
+		hdr->gid      = gid.value;
 		hdr->len      = (uint16_t)skb->len;
 		hdr->caplen   = (uint16_t)bytes;
 		hdr->vlan.tci = skb->vlan_tci & ~VLAN_TAG_PRESENT;

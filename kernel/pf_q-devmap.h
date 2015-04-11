@@ -28,7 +28,7 @@
 #include <linux/pf_q.h>
 
 #include <pf_q-macro.h>
-
+#include <pf_q-group.h>
 
 /* pfq devmap */
 
@@ -41,7 +41,7 @@ extern atomic_t      pfq_devmap_monitor [Q_MAX_DEVICE];
 /* called from u-context
 */
 
-extern int  pfq_devmap_update(int action, int index, int queue, int gid);
+extern int  pfq_devmap_update(int action, int index, int queue, pfq_gid_t gid);
 extern void pfq_devmap_monitor_update(void);
 
 static inline

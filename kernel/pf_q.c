@@ -328,7 +328,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 
 	pfq_bitwise_foreach(group_mask, bit,
 	{
-		int gid = pfq_ctz(bit);
+		pfq_gid_t gid = { pfq_ctz(bit) };
 
 		struct pfq_group * this_group = pfq_get_group(gid);
 

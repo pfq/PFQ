@@ -36,8 +36,13 @@
 #include <pf_q-stats.h>
 #include <pf_q-bpf.h>
 
-
 /* persistent state */
+
+typedef struct
+{
+	int value;
+} pfq_gid_t;
+
 
 struct pfq_group_persistent
 {
@@ -79,42 +84,48 @@ extern struct semaphore group_sem;
 struct pfq_computation_tree;
 
 extern int  pfq_join_free_group(int id, unsigned long class_mask, int policy);
-extern int  pfq_join_group(int gid, int id, unsigned long class_mask, int policy);
-extern int  pfq_leave_group(int gid, int id);
+extern int  pfq_join_group(pfq_gid_t gid, int id, unsigned long class_mask, int policy);
+extern int  pfq_leave_group(pfq_gid_t gid, int id);
+extern int  pfq_set_group_prog(pfq_gid_t gid, struct pfq_computation_tree *prog, void *ctx);
 extern void pfq_leave_all_groups(int id);
-extern int  pfq_set_group_prog(int gid, struct pfq_computation_tree *prog, void *ctx);
 
-extern int pfq_check_group(int id, int gid, const char *msg);
-extern int pfq_check_group_access(int id, int gid, const char *msg);
+extern int pfq_check_group_id(pfq_gid_t gid, int id, const char *msg);
 
 extern unsigned long pfq_get_groups(int id);
-extern unsigned long __pfq_get_all_groups_mask(int gid);
+extern unsigned long pfq_get_all_groups_mask(pfq_gid_t gid);
 
-extern bool __pfq_group_access(int gid, int id, int policy, bool join);
+extern int  pfq_get_group_context(pfq_gid_t gid, int level, int size, void __user *context);
+extern void pfq_set_group_filter(pfq_gid_t gid, struct sk_filter *filter);
 
-extern int  __pfq_get_group_context(int gid, int level, int size, void __user *context);
-extern void __pfq_set_group_filter(int gid, struct sk_filter *filter);
+extern void pfq_dismiss_function(void *f);
+extern struct pfq_group * pfq_get_group(pfq_gid_t gid);
 
-extern void __pfq_dismiss_function(void *f);
+extern bool pfq_vlan_filters_enabled(pfq_gid_t gid);
+extern bool pfq_check_group_vlan_filter(pfq_gid_t gid, int vid);
+extern bool pfq_toggle_group_vlan_filters(pfq_gid_t gid, bool value);
+extern void pfq_set_group_vlan_filter(pfq_gid_t gid, bool value, int vid);
 
-extern struct pfq_group * pfq_get_group(int gid);
+extern bool pfq_group_policy_access(pfq_gid_t gid, int id, int policy);
+extern bool pfq_group_access(pfq_gid_t gid, int id);
 
-extern bool __pfq_vlan_filters_enabled(int gid);
-extern bool __pfq_check_group_vlan_filter(int gid, int vid);
-extern bool __pfq_toggle_group_vlan_filters(int gid, bool value);
-extern void __pfq_set_group_vlan_filter(int gid, bool value, int vid);
 
 static inline
-bool __pfq_group_is_empty(int gid)
+bool pfq_has_joined_group(pfq_gid_t gid, int id)
 {
-        return __pfq_get_all_groups_mask(gid) == 0;
+        return pfq_get_all_groups_mask(gid) & (1L << id);
 }
 
 static inline
-bool __pfq_has_joined_group(int gid, int id)
+bool pfq_group_is_free(pfq_gid_t gid)
 {
-        return __pfq_get_all_groups_mask(gid) & (1L << id);
-}
+	struct pfq_group * g;
 
+	g = pfq_get_group(gid);
+	if (g == NULL)
+		return true;
+	if (g->owner != -1 || g->pid != 0)
+		return false;
+	return true;
+}
 
 #endif /* PF_Q_GROUP_H */

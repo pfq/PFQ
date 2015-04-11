@@ -29,6 +29,7 @@
 #include <linux/pf_q.h>
 #include <linux/if_vlan.h>
 
+#include <pf_q-group.h>
 #include <pf_q-macro.h>
 #include <pf_q-sock.h>
 #include <pf_q-GC.h>
@@ -41,7 +42,7 @@ extern size_t pfq_mpsc_enqueue_batch(struct pfq_rx_opt *ro,
 		                     struct pfq_skbuff_batch *skbs,
 		                     unsigned long long skbs_mask,
 		                     int burst_len,
-		                     int gid);
+		                     pfq_gid_t gid);
 
 
 static inline size_t pfq_queue_mpsc_mem(struct pfq_sock *so)

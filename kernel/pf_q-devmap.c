@@ -27,7 +27,7 @@
 #include <linux/semaphore.h>
 
 #include <pf_q-devmap.h>
-
+#include <pf_q-group.h>
 
 static DEFINE_SEMAPHORE(devmap_sem);
 
@@ -51,12 +51,12 @@ void pfq_devmap_monitor_update(void)
 }
 
 
-int pfq_devmap_update(int action, int index, int queue, int gid)
+int pfq_devmap_update(int action, int index, int queue, pfq_gid_t gid)
 {
     int n = 0, i,q;
 
-    if (unlikely(gid >= Q_MAX_GROUP || gid < 0)) {
-        pr_devel("[PF_Q] devmap_update: bad gid (%u)\n",gid);
+    if (unlikely(gid.value >= Q_MAX_GROUP || gid.value < 0)) {
+        pr_devel("[PF_Q] devmap_update: bad gid (%u)\n",gid.value);
         return 0;
     }
 
@@ -75,7 +75,7 @@ int pfq_devmap_update(int action, int index, int queue, int gid)
             if (action == map_set) {
 
                 tmp = atomic_long_read(&pfq_devmap[i][q]);
-                tmp |= 1L << gid;
+                tmp |= 1L << gid.value;
                 atomic_long_set(&pfq_devmap[i][q], tmp);
                 n++;
                 continue;
@@ -83,8 +83,8 @@ int pfq_devmap_update(int action, int index, int queue, int gid)
 
             /* map_reset */
             tmp = atomic_long_read(&pfq_devmap[i][q]);
-            if (tmp & (1L<<gid)) {
-                tmp &= ~(1L<<gid);
+            if (tmp & (1L<<gid.value)) {
+                tmp &= ~(1L<<gid.value);
                 atomic_long_set(&pfq_devmap[i][q], tmp);
                 n++;
                 continue;
