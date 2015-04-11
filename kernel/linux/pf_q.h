@@ -31,7 +31,7 @@
 #include <linux/filter.h>
 #include <linux/skbuff.h>
 
-#define Q_VERSION               "4.2"
+#define Q_VERSION               "4.3"
 
 #else  /* user space */
 

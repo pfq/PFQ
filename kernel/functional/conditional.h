@@ -31,9 +31,9 @@
 static inline Action_SkBuff
 conditional(arguments_t args, SkBuff b)
 {
-        predicate_t pred_ = get_arg0(predicate_t, args);
-        function_t  then_ = get_arg1(function_t, args);
-        function_t  else_ = get_arg2(function_t, args);
+        predicate_t pred_ = GET_ARG_0(predicate_t, args);
+        function_t  then_ = GET_ARG_1(function_t, args);
+        function_t  else_ = GET_ARG_2(function_t, args);
 
 	if (EVAL_PREDICATE(pred_, b))
 		return EVAL_FUNCTION(then_, b);
@@ -44,8 +44,8 @@ conditional(arguments_t args, SkBuff b)
 static inline Action_SkBuff
 when(arguments_t args, SkBuff b)
 {
-        predicate_t pred_ = get_arg0(predicate_t, args);
-        function_t  fun_  = get_arg1(function_t, args);
+        predicate_t pred_ = GET_ARG_0(predicate_t, args);
+        function_t  fun_  = GET_ARG_1(function_t, args);
 
 	if (EVAL_PREDICATE(pred_, b))
 		return EVAL_FUNCTION(fun_, b);
@@ -56,8 +56,8 @@ when(arguments_t args, SkBuff b)
 static inline Action_SkBuff
 unless(arguments_t args, SkBuff b)
 {
-        predicate_t pred_ = get_arg0(predicate_t, args);
-        function_t  fun_  = get_arg1(function_t, args);
+        predicate_t pred_ = GET_ARG_0(predicate_t, args);
+        function_t  fun_  = GET_ARG_1(function_t, args);
 
 	if (EVAL_PREDICATE(pred_, b))
 		return Pass(b);

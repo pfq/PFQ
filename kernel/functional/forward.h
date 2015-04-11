@@ -50,7 +50,7 @@ forward_to_kernel(arguments_t args, SkBuff b)
 static inline Action_SkBuff
 forward_class(arguments_t args, SkBuff b)
 {
-        const int c = get_arg(int, args);
+        const int c = GET_ARG(int, args);
 
         if (!c) {
                 if (printk_ratelimit())
@@ -64,7 +64,7 @@ forward_class(arguments_t args, SkBuff b)
 static inline Action_SkBuff
 forward_deliver(arguments_t args, SkBuff b)
 {
-        const int c = get_arg(int, args);
+        const int c = GET_ARG(int, args);
 
         if (!c) {
                 if (printk_ratelimit())

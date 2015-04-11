@@ -35,7 +35,7 @@
 static Action_SkBuff
 dummy(arguments_t args, SkBuff b)
 {
-        const int data = get_arg(int,args);
+        const int data = GET_ARG(int,args);
 
 	SkBuff new;
 
@@ -57,8 +57,8 @@ dummy(arguments_t args, SkBuff b)
 static Action_SkBuff
 dummy_vector(arguments_t args, SkBuff b)
 {
-        const int *data = get_array(int,args);
-	size_t n, len = get_array_len(args);
+        const int *data = GET_ARRAY(int,args);
+	size_t n, len = LEN_ARRAY(args);
 
 	printk(KERN_INFO "[PFQ/lang] dummy: vector len: %zu...\n", len);
 
@@ -74,7 +74,7 @@ dummy_vector(arguments_t args, SkBuff b)
 static Action_SkBuff
 dummy_string(arguments_t args, SkBuff b)
 {
-        const char *data = get_arg(const char *,args);
+        const char *data = GET_ARG(const char *,args);
 
 	printk(KERN_INFO "[PFQ/lang] dummy: vector string: %s\n", data);
 
@@ -85,8 +85,8 @@ dummy_string(arguments_t args, SkBuff b)
 static Action_SkBuff
 dummy_strings(arguments_t args, SkBuff b)
 {
-        const char **data = get_array(const char *,args);
-	size_t n, len = get_array_len(args);
+        const char **data = GET_ARRAY(const char *,args);
+	size_t n, len = LEN_ARRAY(args);
 
 	printk(KERN_INFO "[PFQ/lang] dummy: vector strings len: %zu...\n", len);
 

@@ -2,7 +2,7 @@
 -- see http://haskell.org/cabal/users-guide/
 
 name:                   pfq-stress
-version:                4.2
+version:                4.3
 
 license-file:           LICENSE
 author:                 Nicola Bonelli

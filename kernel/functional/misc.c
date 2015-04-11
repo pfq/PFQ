@@ -36,7 +36,7 @@
 static Action_SkBuff
 inc_counter(arguments_t args, SkBuff b)
 {
-        const int idx = get_arg(int,args);
+        const int idx = GET_ARG(int,args);
 
         sparse_counter_t * ctr;
 
@@ -56,7 +56,7 @@ inc_counter(arguments_t args, SkBuff b)
 static Action_SkBuff
 dec_counter(arguments_t args, SkBuff b)
 {
-        const int idx = get_arg(int,args);
+        const int idx = GET_ARG(int,args);
 
         sparse_counter_t * ctr;
 
@@ -86,7 +86,7 @@ crc16_sum(arguments_t args, SkBuff b)
 static Action_SkBuff
 log_msg(arguments_t args, SkBuff b)
 {
-	const char *msg = get_arg(const char *, args);
+	const char *msg = GET_ARG(const char *, args);
 
 	if (printk_ratelimit())
 		printk(KERN_INFO "[PFQ/lang] log_msg: %s\n", msg);
@@ -188,7 +188,7 @@ log_packet(arguments_t args, SkBuff b)
 static Action_SkBuff
 inv(arguments_t args, SkBuff b)
 {
-	function_t expr = get_arg(function_t, args);
+	function_t expr = GET_ARG(function_t, args);
 	SkBuff nb = EVAL_FUNCTION(expr, b).value;
 
 	if (!nb.skb || is_drop(PFQ_CB(nb.skb)->monad->fanout))
@@ -201,8 +201,8 @@ inv(arguments_t args, SkBuff b)
 static Action_SkBuff
 par(arguments_t args, SkBuff b)
 {
-	function_t f0 = get_arg0(function_t, args);
-	function_t f1 = get_arg1(function_t, args);
+	function_t f0 = GET_ARG_0(function_t, args);
+	function_t f1 = GET_ARG_1(function_t, args);
 	fanout_t fout = PFQ_CB(b.skb)->monad->fanout;
         Action_SkBuff a;
 
@@ -218,9 +218,9 @@ par(arguments_t args, SkBuff b)
 static Action_SkBuff
 par3(arguments_t args, SkBuff b)
 {
-	function_t f0 = get_arg0(function_t, args);
-	function_t f1 = get_arg1(function_t, args);
-	function_t f2 = get_arg2(function_t, args);
+	function_t f0 = GET_ARG_0(function_t, args);
+	function_t f1 = GET_ARG_1(function_t, args);
+	function_t f2 = GET_ARG_2(function_t, args);
 	fanout_t fout = PFQ_CB(b.skb)->monad->fanout;
         Action_SkBuff a;
 
@@ -242,10 +242,10 @@ par3(arguments_t args, SkBuff b)
 static Action_SkBuff
 par4(arguments_t args, SkBuff b)
 {
-	function_t f0 = get_arg0(function_t, args);
-	function_t f1 = get_arg1(function_t, args);
-	function_t f2 = get_arg2(function_t, args);
-	function_t f3 = get_arg3(function_t, args);
+	function_t f0 = GET_ARG_0(function_t, args);
+	function_t f1 = GET_ARG_1(function_t, args);
+	function_t f2 = GET_ARG_2(function_t, args);
+	function_t f3 = GET_ARG_3(function_t, args);
 	fanout_t fout = PFQ_CB(b.skb)->monad->fanout;
         Action_SkBuff a;
 
@@ -273,11 +273,11 @@ par4(arguments_t args, SkBuff b)
 static Action_SkBuff
 par5(arguments_t args, SkBuff b)
 {
-	function_t f0 = get_arg0(function_t, args);
-	function_t f1 = get_arg1(function_t, args);
-	function_t f2 = get_arg2(function_t, args);
-	function_t f3 = get_arg3(function_t, args);
-	function_t f4 = get_arg4(function_t, args);
+	function_t f0 = GET_ARG_0(function_t, args);
+	function_t f1 = GET_ARG_1(function_t, args);
+	function_t f2 = GET_ARG_2(function_t, args);
+	function_t f3 = GET_ARG_3(function_t, args);
+	function_t f4 = GET_ARG_4(function_t, args);
 	fanout_t fout = PFQ_CB(b.skb)->monad->fanout;
         Action_SkBuff a;
 
@@ -310,12 +310,12 @@ par5(arguments_t args, SkBuff b)
 static Action_SkBuff
 par6(arguments_t args, SkBuff b)
 {
-	function_t f0 = get_arg0(function_t, args);
-	function_t f1 = get_arg1(function_t, args);
-	function_t f2 = get_arg2(function_t, args);
-	function_t f3 = get_arg3(function_t, args);
-	function_t f4 = get_arg4(function_t, args);
-	function_t f5 = get_arg5(function_t, args);
+	function_t f0 = GET_ARG_0(function_t, args);
+	function_t f1 = GET_ARG_1(function_t, args);
+	function_t f2 = GET_ARG_2(function_t, args);
+	function_t f3 = GET_ARG_3(function_t, args);
+	function_t f4 = GET_ARG_4(function_t, args);
+	function_t f5 = GET_ARG_5(function_t, args);
 	fanout_t fout = PFQ_CB(b.skb)->monad->fanout;
         Action_SkBuff a;
 
@@ -355,13 +355,13 @@ par6(arguments_t args, SkBuff b)
 static Action_SkBuff
 par7(arguments_t args, SkBuff b)
 {
-	function_t f0 = get_arg0(function_t, args);
-	function_t f1 = get_arg1(function_t, args);
-	function_t f2 = get_arg2(function_t, args);
-	function_t f3 = get_arg3(function_t, args);
-	function_t f4 = get_arg4(function_t, args);
-	function_t f5 = get_arg5(function_t, args);
-	function_t f6 = get_arg6(function_t, args);
+	function_t f0 = GET_ARG_0(function_t, args);
+	function_t f1 = GET_ARG_1(function_t, args);
+	function_t f2 = GET_ARG_2(function_t, args);
+	function_t f3 = GET_ARG_3(function_t, args);
+	function_t f4 = GET_ARG_4(function_t, args);
+	function_t f5 = GET_ARG_5(function_t, args);
+	function_t f6 = GET_ARG_6(function_t, args);
 	fanout_t fout = PFQ_CB(b.skb)->monad->fanout;
         Action_SkBuff a;
 
@@ -407,14 +407,14 @@ par7(arguments_t args, SkBuff b)
 static Action_SkBuff
 par8(arguments_t args, SkBuff b)
 {
-	function_t f0 = get_arg0(function_t, args);
-	function_t f1 = get_arg1(function_t, args);
-	function_t f2 = get_arg2(function_t, args);
-	function_t f3 = get_arg3(function_t, args);
-	function_t f4 = get_arg4(function_t, args);
-	function_t f5 = get_arg5(function_t, args);
-	function_t f6 = get_arg6(function_t, args);
-	function_t f7 = get_arg7(function_t, args);
+	function_t f0 = GET_ARG_0(function_t, args);
+	function_t f1 = GET_ARG_1(function_t, args);
+	function_t f2 = GET_ARG_2(function_t, args);
+	function_t f3 = GET_ARG_3(function_t, args);
+	function_t f4 = GET_ARG_4(function_t, args);
+	function_t f5 = GET_ARG_5(function_t, args);
+	function_t f6 = GET_ARG_6(function_t, args);
+	function_t f7 = GET_ARG_7(function_t, args);
 	fanout_t fout = PFQ_CB(b.skb)->monad->fanout;
         Action_SkBuff a;
 

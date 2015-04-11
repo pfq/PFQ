@@ -44,9 +44,9 @@ bloom_src(arguments_t args, SkBuff b)
  		if (ip == NULL)
                         return false;
 
-        	fold = get_arg0(uint32_t, args);
-		mem  = get_arg1(char *, args);
-        	mask = get_arg2(uint32_t, args);
+        	fold = GET_ARG_0(uint32_t, args);
+		mem  = GET_ARG_1(char *, args);
+        	mask = GET_ARG_2(uint32_t, args);
 
 		addr = ip->saddr & mask;
 
@@ -75,9 +75,9 @@ bloom_dst(arguments_t args, SkBuff b)
  		if (ip == NULL)
                         return false;
 
-        	fold = get_arg0(uint32_t, args);
-		mem  = get_arg1(char *, args);
-        	mask = get_arg2(uint32_t, args);
+        	fold = GET_ARG_0(uint32_t, args);
+		mem  = GET_ARG_1(char *, args);
+        	mask = GET_ARG_2(uint32_t, args);
 
 		addr = ip->daddr & mask;
 
@@ -105,9 +105,9 @@ bloom(arguments_t args, SkBuff b)
  		if (ip == NULL)
                         return false;
 
-        	fold = get_arg0(uint32_t, args);
-		mem  = get_arg1(char *, args);
-        	mask = get_arg2(uint32_t, args);
+        	fold = GET_ARG_0(uint32_t, args);
+		mem  = GET_ARG_1(char *, args);
+        	mask = GET_ARG_2(uint32_t, args);
 
 		addr = ip->daddr & mask;
 
@@ -158,9 +158,9 @@ bloom_dst_filter(arguments_t args, SkBuff b)
 
 static int bloom_init(arguments_t args)
 {
-	unsigned int m = get_arg0(int, args);
-	unsigned int n = get_len_array1(args);
-	uint32_t *ips  = get_array1(uint32_t, args);
+	unsigned int m = GET_ARG_0(int, args);
+	unsigned int n = LEN_ARRAY_1(args);
+	uint32_t *ips  = GET_ARRAY_1(uint32_t, args);
 	uint32_t mask;
 	size_t i, size;
 
@@ -168,7 +168,7 @@ static int bloom_init(arguments_t args)
 
 	m = clp2(m);
 
-	set_arg0(args, m-1); 	/* bloom filter fold mask */
+	SET_ARG_0(args, m-1); 	/* bloom filter fold mask */
 
 	if (m > (1UL << 24)) {
 	       	printk(KERN_INFO "[PFQ|init] bloom filter: maximum number of bins exceeded (2^24)!\n");
@@ -183,11 +183,11 @@ static int bloom_init(arguments_t args)
 	       	return -ENOMEM;
 	}
 
-	set_arg1(args, mem);
+	SET_ARG_1(args, mem);
 
-	mask = inet_make_mask(get_arg2(int, args));
+	mask = inet_make_mask(GET_ARG_2(int, args));
 
-	set_arg2(args, mask);
+	SET_ARG_2(args, mask);
 
 	pr_devel("[PFQ|init] bloom filter@%p: k=4, n=%d, m=%d size=%zu netmask=%pI4 bytes.\n", mem, n, m, size, &mask);
 
@@ -212,7 +212,7 @@ static int bloom_init(arguments_t args)
 
 static int bloom_fini(arguments_t args)
 {
-	char *mem = get_arg1(char *, args);
+	char *mem = GET_ARG_1(char *, args);
 
 	kfree(mem);
 

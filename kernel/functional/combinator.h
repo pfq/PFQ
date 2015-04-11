@@ -29,7 +29,7 @@
 static inline
 bool not(arguments_t args, SkBuff b)
 {
-	predicate_t p1 = get_arg(predicate_t, args);
+	predicate_t p1 = GET_ARG(predicate_t, args);
 
         return !EVAL_PREDICATE(p1,b);
 }
@@ -37,8 +37,8 @@ bool not(arguments_t args, SkBuff b)
 static inline
 bool or(arguments_t args, SkBuff b)
 {
-	predicate_t p1 = get_arg0(predicate_t, args);
-	predicate_t p2 = get_arg1(predicate_t, args);
+	predicate_t p1 = GET_ARG_0(predicate_t, args);
+	predicate_t p2 = GET_ARG_1(predicate_t, args);
 
         return EVAL_PREDICATE(p1,b) || EVAL_PREDICATE(p2, b);
 }
@@ -47,8 +47,8 @@ bool or(arguments_t args, SkBuff b)
 static inline
 bool and(arguments_t args, SkBuff b)
 {
-	predicate_t p1 = get_arg0(predicate_t, args);
-	predicate_t p2 = get_arg1(predicate_t, args);
+	predicate_t p1 = GET_ARG_0(predicate_t, args);
+	predicate_t p2 = GET_ARG_1(predicate_t, args);
 
         return EVAL_PREDICATE(p1, b) && EVAL_PREDICATE(p2, b);
 }
@@ -57,8 +57,8 @@ bool and(arguments_t args, SkBuff b)
 static inline
 bool xor(arguments_t args, SkBuff b)
 {
-	predicate_t p1 = get_arg0(predicate_t, args);
-	predicate_t p2 = get_arg1(predicate_t, args);
+	predicate_t p1 = GET_ARG_0(predicate_t, args);
+	predicate_t p2 = GET_ARG_1(predicate_t, args);
 
         return EVAL_PREDICATE(p1, b) != EVAL_PREDICATE(p2, b);
 }

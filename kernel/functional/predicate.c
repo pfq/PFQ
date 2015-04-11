@@ -87,35 +87,35 @@ pred_is_flow(arguments_t args, SkBuff b)
 static bool
 pred_is_l3_proto(arguments_t args, SkBuff b)
 {
-	const u16 type = get_arg(u16, args);
+	const u16 type = GET_ARG(u16, args);
 	return is_l3_proto(b, type);
 }
 
 static bool
 pred_is_l4_proto(arguments_t args, SkBuff b)
 {
-	const u8 protocol = get_arg(u8, args);
+	const u8 protocol = GET_ARG(u8, args);
 	return is_l4_proto(b, protocol);
 }
 
 static bool
 pred_has_port(arguments_t args, SkBuff b)
 {
-	const u16 port = get_arg(u16, args);
+	const u16 port = GET_ARG(u16, args);
 	return has_port(b, port);
 }
 
 static bool
 pred_has_src_port(arguments_t args, SkBuff b)
 {
-	const u16 port = get_arg(u16, args);
+	const u16 port = GET_ARG(u16, args);
 	return has_src_port(b, port);
 }
 
 static bool
 pred_has_dst_port(arguments_t args, SkBuff b)
 {
-	const u16 port = get_arg(u16, args);
+	const u16 port = GET_ARG(u16, args);
 	return has_dst_port(b, port);
 }
 
@@ -128,27 +128,27 @@ pred_has_vlan(arguments_t args, SkBuff b)
 static bool
 pred_has_vid(arguments_t args, SkBuff b)
 {
-	const int id = get_arg(int, args);
+	const int id = GET_ARG(int, args);
         return  has_vid(b, id);
 }
 
 static bool
 pred_has_mark(arguments_t args, SkBuff b)
 {
-	const uint32_t value = get_arg(uint32_t, args);
+	const uint32_t value = GET_ARG(uint32_t, args);
 	return get_mark(b) == value;
 }
 
 
 static int pred_addr_init(arguments_t args)
 {
-	__be32 mask, ipv4 = get_arg0(__be32, args);
-	int prefix  = get_arg1(int, args);
+	__be32 mask, ipv4 = GET_ARG_0(__be32, args);
+	int prefix  = GET_ARG_1(int, args);
 
 	mask = inet_make_mask(prefix);
 
-	set_arg0(args, ipv4 & mask);
-	set_arg1(args, mask);
+	SET_ARG_0(args, ipv4 & mask);
+	SET_ARG_1(args, mask);
 
 	pr_devel("[PFQ|init] predicate: addr:%pI4 mask:%pI4\n", &ipv4, &mask);
 
@@ -159,8 +159,8 @@ static int pred_addr_init(arguments_t args)
 static bool
 pred_has_addr(arguments_t args, SkBuff b)
 {
-	__be32 addr = get_arg0(__be32, args);
-	__be32 mask = get_arg1(__be32, args);
+	__be32 addr = GET_ARG_0(__be32, args);
+	__be32 mask = GET_ARG_1(__be32, args);
 
 	return has_addr(b, addr, mask);
 }
@@ -169,8 +169,8 @@ pred_has_addr(arguments_t args, SkBuff b)
 static bool
 pred_has_src_addr(arguments_t args, SkBuff b)
 {
-	__be32 addr = get_arg0(__be32, args);
-	__be32 mask = get_arg1(__be32, args);
+	__be32 addr = GET_ARG_0(__be32, args);
+	__be32 mask = GET_ARG_1(__be32, args);
 
 	return has_src_addr(b, addr, mask);
 }
@@ -178,8 +178,8 @@ pred_has_src_addr(arguments_t args, SkBuff b)
 static bool
 pred_has_dst_addr(arguments_t args, SkBuff b)
 {
-	__be32 addr = get_arg0(__be32, args);
-	__be32 mask = get_arg1(__be32, args);
+	__be32 addr = GET_ARG_0(__be32, args);
+	__be32 mask = GET_ARG_1(__be32, args);
 
 	return has_dst_addr(b, addr, mask);
 }

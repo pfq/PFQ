@@ -30,7 +30,7 @@
 static bool
 vlan_id(arguments_t args, SkBuff b)
 {
-	char *mem = get_arg1(char *, args);
+	char *mem = GET_ARG_1(char *, args);
 	return mem[ b.skb->vlan_tci & VLAN_VID_MASK ];
 }
 
@@ -46,8 +46,8 @@ vlan_id_filter(arguments_t args, SkBuff b)
 
 static int vlan_init(arguments_t args)
 {
-	unsigned int n = get_len_array0(args);
-	int32_t * vids = get_array0(int32_t, args);
+	unsigned int n = LEN_ARRAY_0(args);
+	int32_t * vids = GET_ARRAY_0(int32_t, args);
         char *mem; int i;
 
         mem = kzalloc(4096, GFP_KERNEL);
@@ -56,7 +56,7 @@ static int vlan_init(arguments_t args)
 	       	return -ENOMEM;
 	}
 
-	set_arg1(args, mem);
+	SET_ARG_1(args, mem);
 
 	for(i = 0; i < n; i++)
 	{
@@ -80,7 +80,7 @@ static int vlan_init(arguments_t args)
 
 static int vlan_fini(arguments_t args)
 {
-	char *mem = get_arg1(char *, args);
+	char *mem = GET_ARG_1(char *, args);
 
 	kfree(mem);
 

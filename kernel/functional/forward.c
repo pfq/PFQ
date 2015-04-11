@@ -44,7 +44,7 @@ struct forward_queue
 static Action_SkBuff
 forwardIO(arguments_t args, SkBuff b)
 {
-	struct net_device *dev = get_arg(struct net_device *, args);
+	struct net_device *dev = GET_ARG(struct net_device *, args);
 	struct sk_buff *nskb;
 	struct pfq_group_stats *stats = get_stats(b);
 
@@ -84,7 +84,7 @@ forwardIO(arguments_t args, SkBuff b)
 static Action_SkBuff
 forward(arguments_t args, SkBuff b)
 {
-	struct net_device *dev = get_arg(struct net_device *, args);
+	struct net_device *dev = GET_ARG(struct net_device *, args);
 
 	if (dev == NULL) {
                 if (printk_ratelimit())
@@ -103,7 +103,7 @@ forward(arguments_t args, SkBuff b)
 static int
 forward_init(arguments_t args)
 {
-	const char *name = get_arg(const char *, args);
+	const char *name = GET_ARG(const char *, args);
 	struct net_device *dev = dev_get_by_name(&init_net, name);
 
 	if (dev == NULL) {
@@ -113,7 +113,7 @@ forward_init(arguments_t args)
 
 	/* it is safe to override the address of the string... */
 
-	set_arg(args, dev);
+	SET_ARG(args, dev);
 
 	printk(KERN_INFO "[PFQ|init] forward: device '%s' locked\n", dev->name);
 	return 0;
@@ -123,7 +123,7 @@ forward_init(arguments_t args)
 static int
 forward_fini(arguments_t args)
 {
-	struct net_device *dev = get_arg(struct net_device *, args);
+	struct net_device *dev = GET_ARG(struct net_device *, args);
 
 	if (dev)
 	{
@@ -138,7 +138,7 @@ forward_fini(arguments_t args)
 static Action_SkBuff
 bridge(arguments_t args, SkBuff b)
 {
-	struct net_device *dev = get_arg(struct net_device *, args);
+	struct net_device *dev = GET_ARG(struct net_device *, args);
 
 	if (dev == NULL) {
                 if (printk_ratelimit())
@@ -157,8 +157,8 @@ bridge(arguments_t args, SkBuff b)
 static Action_SkBuff
 tap(arguments_t args, SkBuff b)
 {
-	struct net_device *dev = get_arg(struct net_device *, args);
-	predicate_t pred_  = get_arg1(predicate_t, args);
+	struct net_device *dev = GET_ARG(struct net_device *, args);
+	predicate_t pred_  = GET_ARG_1(predicate_t, args);
 
 	if (dev == NULL) {
                 if (printk_ratelimit())
@@ -180,8 +180,8 @@ tap(arguments_t args, SkBuff b)
 static Action_SkBuff
 tee(arguments_t args, SkBuff b)
 {
-	struct net_device *dev = get_arg(struct net_device *, args);
-	predicate_t pred_  = get_arg1(predicate_t, args);
+	struct net_device *dev = GET_ARG(struct net_device *, args);
+	predicate_t pred_  = GET_ARG_1(predicate_t, args);
 
 	if (dev == NULL) {
                 if (printk_ratelimit())
