@@ -92,6 +92,7 @@ pfq_pick_tx(struct net_device *dev, struct sk_buff *skb, int *hw_queue)
 }
 
 
+#if 0
 static struct netdev_queue *
 __pfq_pick_tx(struct net_device *dev, int *hw_queue)
 {
@@ -100,7 +101,7 @@ __pfq_pick_tx(struct net_device *dev, int *hw_queue)
 
 	return netdev_get_tx_queue(dev, *hw_queue);
 }
-
+#endif
 
 static inline
 int giveup_tx(int cpu)
@@ -187,7 +188,6 @@ __pfq_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int 
 	struct pfq_skbuff_short_batch skbs;
 
 	struct pfq_tx_queue *soft_txq;
-	struct netdev_queue *txq;
 
 	struct pfq_pkthdr_tx * hdr;
 	struct local_data *local;
@@ -205,8 +205,6 @@ __pfq_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int 
 	/* get the netdev_queue for transmission */
 
 	hw_queue = to->queue[idx].hw_queue;
-
-	txq = __pfq_pick_tx(dev, &hw_queue);
 
 	/* swap the soft Tx queue */
 
