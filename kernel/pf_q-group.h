@@ -91,8 +91,6 @@ extern int  pfq_leave_group(pfq_gid_t gid, pfq_id_t id);
 extern int  pfq_set_group_prog(pfq_gid_t gid, struct pfq_computation_tree *prog, void *ctx);
 extern void pfq_leave_all_groups(pfq_id_t id);
 
-extern int pfq_check_group_id(pfq_gid_t gid, pfq_id_t id, const char *msg);
-
 extern unsigned long pfq_get_groups(pfq_id_t id);
 extern unsigned long pfq_get_all_groups_mask(pfq_gid_t gid);
 

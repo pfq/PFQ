@@ -443,17 +443,6 @@ pfq_get_group(pfq_gid_t gid)
 }
 
 
-int
-pfq_check_group_id(pfq_gid_t gid, pfq_id_t id, const char *msg)
-{
-	if (pfq_get_group(gid) == NULL) {
-                printk(KERN_INFO "[PFQ|%d] %s error: invalid group id (gid=%d)!\n", id.value, msg, gid.value);
-                return -EINVAL;
-        }
-        return 0;
-}
-
-
 bool
 pfq_vlan_filters_enabled(pfq_gid_t gid)
 {

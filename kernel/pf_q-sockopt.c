@@ -42,7 +42,6 @@
 #include <pf_q-endpoint.h>
 #include <pf_q-shared-queue.h>
 
-
 int pfq_getsockopt(struct socket *sock,
                 int level, int optname,
                 char __user * optval, int __user * optlen)
@@ -87,9 +86,11 @@ int pfq_getsockopt(struct socket *sock,
                 }
                 else {
                 	pfq_gid_t gid = { group.gid };
-                	int err = pfq_check_group_id(gid, so->id, "group join");
-			if (err != 0)
-				return err;
+
+                	if (!pfq_get_group(gid)) {
+                        	printk(KERN_INFO "[PFQ|%d] group error: invalid group id %d!\n", so->id.value, gid.value);
+                        	return -EFAULT;
+                	}
 
                         if (pfq_join_group(gid, so->id, group.class_mask, group.policy) < 0) {
                                 printk(KERN_INFO "[PFQ|%d] join error: permission denied (gid=%d)!\n", so->id.value, group.gid);
@@ -207,7 +208,6 @@ int pfq_getsockopt(struct socket *sock,
                 struct pfq_group *g;
                 struct pfq_stats stat;
                 pfq_gid_t gid;
-                int err;
 
                 if (len != sizeof(stat))
                         return -EINVAL;
@@ -217,9 +217,11 @@ int pfq_getsockopt(struct socket *sock,
 
                 gid.value = (int)stat.recv;
 
-                err = pfq_check_group_id(gid, so->id, "group stat");
-                if (err != 0)
-                	return err;
+                g = pfq_get_group(gid);
+                if (g == NULL) {
+                        printk(KERN_INFO "[PFQ|%d] group error: invalid group id %d!\n", so->id.value, gid.value);
+                        return -EFAULT;
+                }
 
 		if (pfq_group_is_free(gid)) {
                         printk(KERN_INFO "[PFQ|%d] group stats error: gid=%d is a free group!\n", so->id.value, gid.value);
@@ -231,11 +233,6 @@ int pfq_getsockopt(struct socket *sock,
                         return -EACCES;
                 }
 
-                g = pfq_get_group(gid);
-                if (!g) {
-                        printk(KERN_INFO "[PFQ|%d] group error: invalid group id %d!\n", so->id.value, gid.value);
-                        return -EFAULT;
-                }
 
                 stat.recv = sparse_read(&g->stats.recv);
                 stat.drop = sparse_read(&g->stats.drop);
@@ -255,7 +252,7 @@ int pfq_getsockopt(struct socket *sock,
                 struct pfq_group *g;
                 struct pfq_counters cs;
                 pfq_gid_t gid;
-                int i, err;
+                int i;
 
                 if (len != sizeof(cs))
                         return -EINVAL;
@@ -264,10 +261,6 @@ int pfq_getsockopt(struct socket *sock,
                         return -EFAULT;
 
                 gid.value = (int)cs.counter[0];
-
-                err = pfq_check_group_id(gid, so->id, "group stat");
-                if (err != 0)
-                	return err;
 
                 g = pfq_get_group(gid);
                 if (g == NULL) {
