@@ -40,6 +40,19 @@ DEFINE_SEMAPHORE(group_sem);
 static struct pfq_group pfq_groups[Q_MAX_GROUP];
 
 
+void
+pfq_groups_init()
+{
+	int n;
+	for(n = 0; n < Q_MAX_GROUP; n++)
+	{
+        	pfq_groups[n].pid = 0;
+        	pfq_groups[n].owner.value = -1;
+        	pfq_groups[n].policy = Q_POLICY_GROUP_UNDEFINED;
+	}
+}
+
+
 static inline
 bool __pfq_group_is_empty(pfq_gid_t gid)
 {

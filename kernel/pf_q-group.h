@@ -108,6 +108,7 @@ extern void pfq_set_group_vlan_filter(pfq_gid_t gid, bool value, int vid);
 extern bool pfq_group_policy_access(pfq_gid_t gid, pfq_id_t id, int policy);
 extern bool pfq_group_access(pfq_gid_t gid, pfq_id_t id);
 
+extern void pfq_groups_init(void);
 
 static inline
 bool pfq_has_joined_group(pfq_gid_t gid, pfq_id_t id)

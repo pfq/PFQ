@@ -879,6 +879,7 @@ static int __init pfq_init_module(void)
         pfq_net_proto_family_init();
         pfq_proto_ops_init();
         pfq_proto_init();
+	pfq_groups_init();
 
         if (batch_len <= 0 || batch_len > Q_SKBUFF_SHORT_BATCH) {
                 printk(KERN_INFO "[PFQ] batch_len=%d not allowed: valid range (0,%zu]!\n", batch_len, Q_SKBUFF_SHORT_BATCH);
