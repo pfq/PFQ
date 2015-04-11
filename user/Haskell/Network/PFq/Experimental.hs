@@ -51,6 +51,9 @@ module Network.PFq.Experimental
         par7,
         par8,
 
+        steer_gtp_usr,
+        gtp,
+        is_gtp
     ) where
 
 
@@ -109,13 +112,16 @@ par8 a b c d e f g h = MFunction "par8" a b c d e f g h
 -- user flows on top of GTP tunnel protocol.
 --
 -- > steer_gtp_usr "192.168.0.0" 16
+
 steer_gtp_usr :: IPv4 -> CInt -> NetFunction
 steer_gtp_usr net prefix = MFunction "steer_gtp_usr" net prefix () () () () () () :: NetFunction
+
 
 -- | Evaluate to /Pass SkBuff/ in case of GTP packet, /Drop/ it otherwise.
 gtp    = MFunction "gtp" () () () () () () () () :: NetFunction
 
+
 -- | Evaluate to /True/ if the SkBuff is a GTP packet.
-is_gtp = Predicate "is_gtp" () () () () () () () () :: NetFunction
+is_gtp = Predicate "is_gtp" () () () () () () () () :: NetPredicate
 
 
