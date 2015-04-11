@@ -23,6 +23,8 @@
 
 #include <pfq/pfq.hpp>
 #include <pfq/lang/lang.hpp>
+#include <pfq/lang/default.hpp>
+#include <pfq/lang/experimental.hpp>
 
 #include <binding.hpp>
 #include <affinity.hpp>
@@ -33,17 +35,26 @@
 
 using namespace pfq;
 using namespace pfq::lang;
+using namespace pfq::lang::experimental;
 
 
 namespace opt
 {
+    ///////////////////////////////////////////
+
+    auto comp = unit;
+
+    ///////////////////////////////////////////
+
     long timeout_ms;
     std::string function;
 
     size_t seconds = std::numeric_limits<size_t>::max();
     size_t caplen  = 64;
     size_t slots   = 131072;
+
     bool flow      = false;
+    bool use_comp  = false;
 }
 
 
@@ -92,10 +103,15 @@ namespace thread
                     }
             }
 
+            if (opt::use_comp)
+            {
+                std::cout << "computation: " << pretty (opt::comp) << std::endl;
+                m_pfq.set_group_computation(m_bind.gid, opt::comp);
+            }
+
             if (!opt::function.empty() && (m_id == 0))
             {
-                std::cout << "fun: " << opt::function << std::endl;
-
+                std::cout << "function: " << opt::function << std::endl;
                 m_pfq.set_group_computation(m_bind.gid, opt::function);
             }
 
@@ -243,6 +259,12 @@ try
                 throw std::runtime_error("group function missing");
 
             opt::function.assign(argv[i]);
+            continue;
+        }
+
+        if (any_strcmp(argv[i], "-C", "--comp"))
+        {
+            opt::use_comp = true;
             continue;
         }
 
