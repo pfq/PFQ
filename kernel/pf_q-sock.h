@@ -37,6 +37,11 @@
 
 extern atomic_long_t pfq_sock_vector[Q_MAX_ID];
 
+typedef struct
+{
+	int value;
+} pfq_id_t;
+
 
 struct pfq_rx_opt
 {
@@ -164,7 +169,7 @@ struct pfq_sock
 {
         struct sock 		sk;
 
-        int                 	id;
+        pfq_id_t 		id;
 
 	int		    	egress_type;
         int 		    	egress_index;
@@ -193,10 +198,10 @@ pfq_sk(struct sock *sk)
 }
 
 
-int    pfq_get_sock_count(void);
-int    pfq_get_free_id(struct pfq_sock * so);
-struct pfq_sock * pfq_get_sock_by_id(int id);
-void   pfq_release_sock_id(int id);
+int      pfq_get_sock_count(void);
+pfq_id_t pfq_get_free_id(struct pfq_sock * so);
+struct pfq_sock * pfq_get_sock_by_id(pfq_id_t id);
+void   pfq_release_sock_id(pfq_id_t id);
 
 
 #endif /* PF_COMMON_H */

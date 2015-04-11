@@ -55,18 +55,23 @@ pfq_sock_finish(void)
 }
 
 
-int pfq_get_free_id(struct pfq_sock * so)
+pfq_id_t
+pfq_get_free_id(struct pfq_sock * so)
 {
         int n = 0;
+        pfq_id_t id;
+
         for(; n < Q_MAX_ID; n++)
         {
                 if (!atomic_long_cmpxchg(pfq_sock_vector + n, 0, (long)so)) {
 			if(atomic_inc_return(&pfq_sock_count) == 1)
 				pfq_sock_init();
-                        return n;
+			id.value = n;
+                        return id;
                 }
         }
-        return -ENOMEM;
+        id.value = -ENOMEM;
+        return id;
 }
 
 
@@ -77,27 +82,27 @@ int pfq_get_sock_count(void)
 
 
 struct pfq_sock *
-pfq_get_sock_by_id(int id)
+pfq_get_sock_by_id(pfq_id_t id)
 {
         struct pfq_sock *so;
-        if (unlikely(id >= Q_MAX_ID)) {
-                pr_devel("[PFQ] pfq_get_sock_by_id: bad id=%d!\n", id);
+        if (unlikely(id.value >= Q_MAX_ID)) {
+                pr_devel("[PFQ] pfq_get_sock_by_id: bad id=%d!\n", id.value);
                 return NULL;
         }
-	so = (struct pfq_sock *)atomic_long_read(&pfq_sock_vector[id]);
+	so = (struct pfq_sock *)atomic_long_read(&pfq_sock_vector[id.value]);
 	smp_read_barrier_depends();
 	return so;
 }
 
 
-void pfq_release_sock_id(int id)
+void pfq_release_sock_id(pfq_id_t id)
 {
-        if (unlikely(id >= Q_MAX_ID || id < 0)) {
-                pr_devel("[PFQ] pfq_release_sock_by_id: bad id=%d!\n", id);
+        if (unlikely(id.value >= Q_MAX_ID || id.value < 0)) {
+                pr_devel("[PFQ] pfq_release_sock_by_id: bad id=%d!\n", id.value);
                 return;
         }
 
-        atomic_long_set(pfq_sock_vector + id, 0);
+        atomic_long_set(pfq_sock_vector + id.value, 0);
         if (atomic_dec_return(&pfq_sock_count) == 0)
         	pfq_sock_finish();
 }

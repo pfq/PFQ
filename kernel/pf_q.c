@@ -478,7 +478,10 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 		pfq_bitwise_foreach(socket_mask, lb,
 		{
 			int i = pfq_ctz(lb);
-			struct pfq_sock * so = pfq_get_sock_by_id(i);
+			struct pfq_sock * so;
+			pfq_id_t id = { i };
+
+			so= pfq_get_sock_by_id(id);
 
 			copy_to_endpoint_buffs(so, &refs, sock_queue[i], cpu, gid);
 		})
@@ -640,7 +643,7 @@ pfq_create(
         /* get a unique id for this sock */
 
         so->id = pfq_get_free_id(so);
-        if (so->id == -1) {
+        if (so->id.value == -1) {
                 printk(KERN_WARNING "[PFQ] error: resource exhausted\n");
                 sk_free(sk);
                 return -EBUSY;
@@ -685,8 +688,8 @@ pfq_release(struct socket *sock)
 {
         struct sock * sk = sock->sk;
         struct pfq_sock *so;
-        int id, total = 0;
-        int n;
+        pfq_id_t id;
+        int n, total = 0;
 
 	if (!sk)
 		return 0;
@@ -699,13 +702,13 @@ pfq_release(struct socket *sock)
 	for(n = 0; n < so->tx_opt.num_queues; n++)
 	{
 		if (so->tx_opt.queue[n].task) {
-			pr_devel("[PFQ|%d] stopping Tx thread@%p\n", id, so->tx_opt.queue[n].task);
+			pr_devel("[PFQ|%d] stopping Tx thread@%p\n", id.value, so->tx_opt.queue[n].task);
 			kthread_stop(so->tx_opt.queue[n].task);
 			so->tx_opt.queue[n].task = NULL;
 		}
 	}
 
-        pr_devel("[PFQ|%d] releasing socket...\n", id);
+        pr_devel("[PFQ|%d] releasing socket...\n", id.value);
 
         pfq_leave_all_groups(so->id);
         pfq_release_sock_id(so->id);
@@ -724,7 +727,7 @@ pfq_release(struct socket *sock)
         up (&sock_sem);
 
         if (total)
-                printk(KERN_INFO "[PFQ|%d] cleanup: %d skb purged.\n", id, total);
+                printk(KERN_INFO "[PFQ|%d] cleanup: %d skb purged.\n", id.value, total);
 
         sock_orphan(sk);
 	sock->sk = NULL;
@@ -732,7 +735,7 @@ pfq_release(struct socket *sock)
 
         up_read(&symtable_rw_sem);
 
-	pr_devel("[PFQ|%d] socket closed.\n", id);
+	pr_devel("[PFQ|%d] socket closed.\n", id.value);
         return 0;
 }
 
