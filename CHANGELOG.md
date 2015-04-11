@@ -83,5 +83,13 @@ PFQ 4.1
 
 PFQ 4.2
 -------
- * pool of socket buffers improved.
+ * Pool of socket buffers improved.
+
+
+PFQ 4.3
+-------
+ * Possible regression fixed in group policies.
+ * Internal refactoring of socket groups.
+ * Miscellaneous improvements.
+ * Bug fixes.
 
