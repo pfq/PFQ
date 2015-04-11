@@ -28,6 +28,7 @@
 #include <pfq/util.hpp>
 
 #include <functional>
+#include <type_traits>
 #include <vector>
 #include <string>
 #include <cmath>
@@ -50,7 +51,7 @@ namespace lang
 
     //! Combine two predicate expressions with a specific boolean 'and' operation.
 
-    template <typename P1, typename P2>
+    template <typename P1, typename P2, typename std::enable_if< is_predicate<P1>::value && is_predicate<P2>::value >::type * = nullptr>
     auto inline operator&(P1 const &p1, P2 const &p2)
     -> decltype(predicate(nullptr, p1, p2))
     {
@@ -59,7 +60,7 @@ namespace lang
 
     //! Combine two predicate expressions with a specific boolean 'or' operation.
 
-    template <typename P1, typename P2>
+    template <typename P1, typename P2, typename std::enable_if< is_predicate<P1>::value && is_predicate<P2>::value >::type * = nullptr>
     auto inline operator|(P1 const &p1, P2 const &p2)
     -> decltype(predicate(nullptr, p1, p2))
     {
@@ -68,7 +69,7 @@ namespace lang
 
     //! Combine two predicate expressions with a specific boolean 'xor' operation.
 
-    template <typename P1, typename P2>
+    template <typename P1, typename P2, typename std::enable_if< is_predicate<P1>::value && is_predicate<P2>::value >::type * = nullptr>
     auto inline operator^(P1 const &p1, P2 const &p2)
     -> decltype(predicate(nullptr, p1, p2))
     {
@@ -95,7 +96,7 @@ namespace lang
      * when (ip_ttl < 64,  drop)
      */
 
-    template <typename P>
+    template <typename P, typename std::enable_if<is_property<P>::value>::type * = nullptr>
     auto inline
     operator<(P const &prop, uint64_t arg)
     -> decltype(predicate(nullptr, prop, arg))
@@ -103,7 +104,7 @@ namespace lang
         return predicate("less", prop, arg);
     }
 
-    template <typename P>
+    template <typename P, typename std::enable_if<is_property<P>::value>::type * = nullptr>
     auto inline
     operator<=(P const &prop, uint64_t arg)
     -> decltype(predicate(nullptr, prop, arg))
@@ -111,7 +112,7 @@ namespace lang
         return predicate("less_eq", prop, arg);
     }
 
-    template <typename P>
+    template <typename P, typename std::enable_if<is_property<P>::value>::type * = nullptr>
     auto inline
     operator>(P const &prop, uint64_t arg)
     -> decltype(predicate(nullptr, prop, arg))
@@ -119,7 +120,7 @@ namespace lang
         return predicate("greater", prop, arg);
     }
 
-    template <typename P>
+    template <typename P, typename std::enable_if<is_property<P>::value>::type * = nullptr>
     auto inline
     operator>=(P const &prop, uint64_t arg)
     -> decltype(predicate(nullptr, prop, arg))
@@ -127,7 +128,7 @@ namespace lang
         return predicate("greater_eq", prop, arg);
     }
 
-    template <typename P>
+    template <typename P, typename std::enable_if<is_property<P>::value>::type * = nullptr>
     auto inline
     operator==(P const &prop, uint64_t arg)
     -> decltype(predicate(nullptr, prop, arg))
@@ -135,7 +136,7 @@ namespace lang
         return predicate("equal", prop, arg);
     }
 
-    template <typename P>
+    template <typename P, typename std::enable_if<is_property<P>::value>::type * = nullptr>
     auto inline
     operator!=(P const &prop, uint64_t arg)
     -> decltype(predicate(nullptr, prop, arg))
