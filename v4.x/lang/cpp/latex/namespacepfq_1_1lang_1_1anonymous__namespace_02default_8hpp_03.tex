@@ -69,7 +69,7 @@ auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a
 \begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily true} if the source I\+P address matches the given network address. \end{DoxyCompactList}\item 
 auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a0a53822af0ed8ea341f16a1da5ea83e3}{has\+\_\+dst\+\_\+addr}
 \begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily true} if the destination I\+P address matches the given network address. \end{DoxyCompactList}\item 
-auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_aa4ce1fdb0d99e1ca0afdf76619c58d12}{has\+\_\+mark} = \mbox{[}$\,$\mbox{]} (unsigned long value) \{ return \hyperlink{namespacepfq_1_1lang_aca9adafc436b7f851621b979fa1aaf88}{predicate}(\char`\"{}has\+\_\+mark\char`\"{}, value); \}
+auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_aa4ce1fdb0d99e1ca0afdf76619c58d12}{has\+\_\+mark} = \mbox{[}$\,$\mbox{]} (uint32\+\_\+t value) \{ return \hyperlink{namespacepfq_1_1lang_aca9adafc436b7f851621b979fa1aaf88}{predicate}(\char`\"{}has\+\_\+mark\char`\"{}, value); \}
 \begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} has the given {\ttfamily mark}, set by mark function. \end{DoxyCompactList}\item 
 auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a1f0378ddfa90777d11ffae5fbb57b4e0}{has\+\_\+vlan} = \hyperlink{namespacepfq_1_1lang_aca9adafc436b7f851621b979fa1aaf88}{predicate} (\char`\"{}has\+\_\+vlan\char`\"{})
 \begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} has a vlan tag. \end{DoxyCompactList}\item 
@@ -169,7 +169,7 @@ auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a
 \begin{DoxyCompactList}\small\item\em Forward the packet to the given device. \end{DoxyCompactList}\item 
 auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_ad318dd8fb6441b78bdfb056173e5a7e2}{bridge} = \mbox{[}$\,$\mbox{]} (std\+::string dev) \{ return \hyperlink{namespacepfq_1_1lang_a1aacba4a159b6c2ddf275bd1fec19ec2}{mfunction}(\char`\"{}bridge\char`\"{}, std\+::move(dev)); \}
 \begin{DoxyCompactList}\small\item\em Forward the packet to the given device and evaluates to {\ttfamily Drop}. \end{DoxyCompactList}\item 
-auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a7b831baeabda070b89ca862a9445a4a8}{mark} = \mbox{[}$\,$\mbox{]} (unsigned long value) \{ return \hyperlink{namespacepfq_1_1lang_a1aacba4a159b6c2ddf275bd1fec19ec2}{mfunction}(\char`\"{}mark\char`\"{}, value); \}
+auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a7b831baeabda070b89ca862a9445a4a8}{mark} = \mbox{[}$\,$\mbox{]} (uint32\+\_\+t value) \{ return \hyperlink{namespacepfq_1_1lang_a1aacba4a159b6c2ddf275bd1fec19ec2}{mfunction}(\char`\"{}mark\char`\"{}, value); \}
 \begin{DoxyCompactList}\small\item\em Mark the packet with the given value. \end{DoxyCompactList}\item 
 auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_acc7d3a4cca5eb30ff5456e19c613b174}{inc} = \mbox{[}$\,$\mbox{]} (int value) \{ return \hyperlink{namespacepfq_1_1lang_a1aacba4a159b6c2ddf275bd1fec19ec2}{mfunction}(\char`\"{}inc\char`\"{}, value); \}
 \begin{DoxyCompactList}\small\item\em Increment the i-\/th counter of the current group. \end{DoxyCompactList}\item 
@@ -637,7 +637,7 @@ Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+
 
 If the transport protocol is not present or has no port, the predicate evaluates to False. \hypertarget{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_aa4ce1fdb0d99e1ca0afdf76619c58d12}{\index{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}!has\+\_\+mark@{has\+\_\+mark}}
 \index{has\+\_\+mark@{has\+\_\+mark}!pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}}
-\subsubsection[{has\+\_\+mark}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::has\+\_\+mark = \mbox{[}$\,$\mbox{]} (unsigned long value) \{ return {\bf predicate}(\char`\"{}has\+\_\+mark\char`\"{}, value); \}}}\label{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_aa4ce1fdb0d99e1ca0afdf76619c58d12}
+\subsubsection[{has\+\_\+mark}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::has\+\_\+mark = \mbox{[}$\,$\mbox{]} (uint32\+\_\+t value) \{ return {\bf predicate}(\char`\"{}has\+\_\+mark\char`\"{}, value); \}}}\label{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_aa4ce1fdb0d99e1ca0afdf76619c58d12}
 
 
 Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} has the given {\ttfamily mark}, set by mark function. 
@@ -941,7 +941,7 @@ Example\+:
 
 icmp $>$$>$ log\+\_\+msg (\char`\"{}\+This is an I\+C\+M\+P packet\+:\char`\"{}) $>$$>$ log\+\_\+packet \hypertarget{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a7b831baeabda070b89ca862a9445a4a8}{\index{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}!mark@{mark}}
 \index{mark@{mark}!pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}}
-\subsubsection[{mark}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::mark = \mbox{[}$\,$\mbox{]} (unsigned long value) \{ return {\bf mfunction}(\char`\"{}mark\char`\"{}, value); \}}}\label{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a7b831baeabda070b89ca862a9445a4a8}
+\subsubsection[{mark}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::mark = \mbox{[}$\,$\mbox{]} (uint32\+\_\+t value) \{ return {\bf mfunction}(\char`\"{}mark\char`\"{}, value); \}}}\label{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a7b831baeabda070b89ca862a9445a4a8}
 
 
 Mark the packet with the given value. 

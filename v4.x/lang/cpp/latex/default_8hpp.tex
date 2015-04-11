@@ -10,6 +10,7 @@ This header contains the P\+F\+Q/lang e\+D\+S\+L functions.
 {\ttfamily \#include $<$pfq/lang/util.\+hpp$>$}\\*
 {\ttfamily \#include $<$pfq/util.\+hpp$>$}\\*
 {\ttfamily \#include $<$functional$>$}\\*
+{\ttfamily \#include $<$type\+\_\+traits$>$}\\*
 {\ttfamily \#include $<$vector$>$}\\*
 {\ttfamily \#include $<$string$>$}\\*
 {\ttfamily \#include $<$cmath$>$}\\*
@@ -26,25 +27,25 @@ This header contains the P\+F\+Q/lang e\+D\+S\+L functions.
 \subsection*{Functions}
 \begin{DoxyCompactItemize}
 \item 
-{\footnotesize template$<$typename P1 , typename P2 $>$ }\\auto \hyperlink{namespacepfq_1_1lang_aab91c135f631201b35e344e631a79e83}{pfq\+::lang\+::operator\&} (P1 const \&p1, P2 const \&p2) -\/$>$ decltype(predicate(nullptr, p1, p2))
+{\footnotesize template$<$typename P1 , typename P2 , typename std\+::enable\+\_\+if$<$ is\+\_\+predicate$<$ P1 $>$\+::value \&\&is\+\_\+predicate$<$ P2 $>$\+::value $>$\+::type $\ast$  = nullptr$>$ }\\auto \hyperlink{namespacepfq_1_1lang_af24d9c3092f064b0732a4b601dde2c64}{pfq\+::lang\+::operator\&} (P1 const \&p1, P2 const \&p2) -\/$>$ decltype(predicate(nullptr, p1, p2))
 \begin{DoxyCompactList}\small\item\em Combine two predicate expressions with a specific boolean 'and' operation. \end{DoxyCompactList}\item 
-{\footnotesize template$<$typename P1 , typename P2 $>$ }\\auto \hyperlink{namespacepfq_1_1lang_a0d4e61b7f964b7ce7a2ce76b038e52aa}{pfq\+::lang\+::operator$\vert$} (P1 const \&p1, P2 const \&p2) -\/$>$ decltype(predicate(nullptr, p1, p2))
+{\footnotesize template$<$typename P1 , typename P2 , typename std\+::enable\+\_\+if$<$ is\+\_\+predicate$<$ P1 $>$\+::value \&\&is\+\_\+predicate$<$ P2 $>$\+::value $>$\+::type $\ast$  = nullptr$>$ }\\auto \hyperlink{namespacepfq_1_1lang_a425bb535884185450da7addcdb47f35b}{pfq\+::lang\+::operator$\vert$} (P1 const \&p1, P2 const \&p2) -\/$>$ decltype(predicate(nullptr, p1, p2))
 \begin{DoxyCompactList}\small\item\em Combine two predicate expressions with a specific boolean 'or' operation. \end{DoxyCompactList}\item 
-{\footnotesize template$<$typename P1 , typename P2 $>$ }\\auto \hyperlink{namespacepfq_1_1lang_aa42a32904d2952c1229bf15dd215e91b}{pfq\+::lang\+::operator$^\wedge$} (P1 const \&p1, P2 const \&p2) -\/$>$ decltype(predicate(nullptr, p1, p2))
+{\footnotesize template$<$typename P1 , typename P2 , typename std\+::enable\+\_\+if$<$ is\+\_\+predicate$<$ P1 $>$\+::value \&\&is\+\_\+predicate$<$ P2 $>$\+::value $>$\+::type $\ast$  = nullptr$>$ }\\auto \hyperlink{namespacepfq_1_1lang_aa6692a978788617acebfee6ded6ebbbc}{pfq\+::lang\+::operator$^\wedge$} (P1 const \&p1, P2 const \&p2) -\/$>$ decltype(predicate(nullptr, p1, p2))
 \begin{DoxyCompactList}\small\item\em Combine two predicate expressions with a specific boolean 'xor' operation. \end{DoxyCompactList}\item 
 {\footnotesize template$<$typename P $>$ }\\auto \hyperlink{namespacepfq_1_1lang_aad91ae49c0ddea5a9219f679e8de212a}{pfq\+::lang\+::not\+\_\+} (P const \&p) -\/$>$ decltype(predicate(nullptr, p))
 \begin{DoxyCompactList}\small\item\em Return a new predicate that evaluates to true, when the given one evaluates to false, and vice versa. \end{DoxyCompactList}\item 
-{\footnotesize template$<$typename P $>$ }\\auto \hyperlink{namespacepfq_1_1lang_a621f0ba92e962637b0a31ed44576149b}{pfq\+::lang\+::operator$<$} (P const \&prop, uint64\+\_\+t arg) -\/$>$ decltype(predicate(nullptr, prop, arg))
+{\footnotesize template$<$typename P , typename std\+::enable\+\_\+if$<$ is\+\_\+property$<$ P $>$\+::value $>$\+::type $\ast$  = nullptr$>$ }\\auto \hyperlink{namespacepfq_1_1lang_aa358821bfd1326e552c69635b969835d}{pfq\+::lang\+::operator$<$} (P const \&prop, uint64\+\_\+t arg) -\/$>$ decltype(predicate(nullptr, prop, arg))
 \begin{DoxyCompactList}\small\item\em Return a predicate that evaluates to {\ttfamily true}, if the property is less than the given value. \end{DoxyCompactList}\item 
-{\footnotesize template$<$typename P $>$ }\\auto \hyperlink{namespacepfq_1_1lang_a39d99d5ec8bb46ebe6efa8c3816376e3}{pfq\+::lang\+::operator$<$=} (P const \&prop, uint64\+\_\+t arg) -\/$>$ decltype(predicate(nullptr, prop, arg))
+{\footnotesize template$<$typename P , typename std\+::enable\+\_\+if$<$ is\+\_\+property$<$ P $>$\+::value $>$\+::type $\ast$  = nullptr$>$ }\\auto \hyperlink{namespacepfq_1_1lang_a039a937311f139f9a6e84c49c6505c70}{pfq\+::lang\+::operator$<$=} (P const \&prop, uint64\+\_\+t arg) -\/$>$ decltype(predicate(nullptr, prop, arg))
 \item 
-{\footnotesize template$<$typename P $>$ }\\auto \hyperlink{namespacepfq_1_1lang_ac8b5cd4322fa1de4ec52e8356e9fbee8}{pfq\+::lang\+::operator$>$} (P const \&prop, uint64\+\_\+t arg) -\/$>$ decltype(predicate(nullptr, prop, arg))
+{\footnotesize template$<$typename P , typename std\+::enable\+\_\+if$<$ is\+\_\+property$<$ P $>$\+::value $>$\+::type $\ast$  = nullptr$>$ }\\auto \hyperlink{namespacepfq_1_1lang_a708ca1f29e8dd2461859c46369e89322}{pfq\+::lang\+::operator$>$} (P const \&prop, uint64\+\_\+t arg) -\/$>$ decltype(predicate(nullptr, prop, arg))
 \item 
-{\footnotesize template$<$typename P $>$ }\\auto \hyperlink{namespacepfq_1_1lang_ad5ca0642e91360ee35beecfb31b62b6d}{pfq\+::lang\+::operator$>$=} (P const \&prop, uint64\+\_\+t arg) -\/$>$ decltype(predicate(nullptr, prop, arg))
+{\footnotesize template$<$typename P , typename std\+::enable\+\_\+if$<$ is\+\_\+property$<$ P $>$\+::value $>$\+::type $\ast$  = nullptr$>$ }\\auto \hyperlink{namespacepfq_1_1lang_a8278e1cf39622e9eb4859f4720da1d16}{pfq\+::lang\+::operator$>$=} (P const \&prop, uint64\+\_\+t arg) -\/$>$ decltype(predicate(nullptr, prop, arg))
 \item 
-{\footnotesize template$<$typename P $>$ }\\auto \hyperlink{namespacepfq_1_1lang_a055e29efb9299750331375acb2082056}{pfq\+::lang\+::operator==} (P const \&prop, uint64\+\_\+t arg) -\/$>$ decltype(predicate(nullptr, prop, arg))
+{\footnotesize template$<$typename P , typename std\+::enable\+\_\+if$<$ is\+\_\+property$<$ P $>$\+::value $>$\+::type $\ast$  = nullptr$>$ }\\auto \hyperlink{namespacepfq_1_1lang_a87c8fa322873efdbddaa437f194b72b0}{pfq\+::lang\+::operator==} (P const \&prop, uint64\+\_\+t arg) -\/$>$ decltype(predicate(nullptr, prop, arg))
 \item 
-{\footnotesize template$<$typename P $>$ }\\auto \hyperlink{namespacepfq_1_1lang_a6b68f3f983df3797675371e11b14cc06}{pfq\+::lang\+::operator!=} (P const \&prop, uint64\+\_\+t arg) -\/$>$ decltype(predicate(nullptr, prop, arg))
+{\footnotesize template$<$typename P , typename std\+::enable\+\_\+if$<$ is\+\_\+property$<$ P $>$\+::value $>$\+::type $\ast$  = nullptr$>$ }\\auto \hyperlink{namespacepfq_1_1lang_a4943eabefcfed4198394f42f913a14e8}{pfq\+::lang\+::operator!=} (P const \&prop, uint64\+\_\+t arg) -\/$>$ decltype(predicate(nullptr, prop, arg))
 \item 
 {\footnotesize template$<$typename P $>$ }\\auto \hyperlink{namespacepfq_1_1lang_ac247c3827084d381d8518dabfff43bb2}{pfq\+::lang\+::any\+\_\+bit} (P const \&prop, uint64\+\_\+t mask) -\/$>$ decltype(predicate(nullptr, prop, mask))
 \begin{DoxyCompactList}\small\item\em Return a predicate that evaluates to {\ttfamily true}, if the property has at least one bit set among those specified by the given mask. \end{DoxyCompactList}\item 
@@ -115,7 +116,7 @@ auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a
 \begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily true} if the source I\+P address matches the given network address. \end{DoxyCompactList}\item 
 auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a0a53822af0ed8ea341f16a1da5ea83e3}{pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::has\+\_\+dst\+\_\+addr}
 \begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily true} if the destination I\+P address matches the given network address. \end{DoxyCompactList}\item 
-auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_aa4ce1fdb0d99e1ca0afdf76619c58d12}{pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::has\+\_\+mark} = \mbox{[}$\,$\mbox{]} (unsigned long value) \{ return predicate(\char`\"{}has\+\_\+mark\char`\"{}, value); \}
+auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_aa4ce1fdb0d99e1ca0afdf76619c58d12}{pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::has\+\_\+mark} = \mbox{[}$\,$\mbox{]} (uint32\+\_\+t value) \{ return predicate(\char`\"{}has\+\_\+mark\char`\"{}, value); \}
 \begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} has the given {\ttfamily mark}, set by mark function. \end{DoxyCompactList}\item 
 auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a1f0378ddfa90777d11ffae5fbb57b4e0}{pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::has\+\_\+vlan} = predicate (\char`\"{}has\+\_\+vlan\char`\"{})
 \begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} has a vlan tag. \end{DoxyCompactList}\item 
@@ -215,7 +216,7 @@ auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a
 \begin{DoxyCompactList}\small\item\em Forward the packet to the given device. \end{DoxyCompactList}\item 
 auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_ad318dd8fb6441b78bdfb056173e5a7e2}{pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::bridge} = \mbox{[}$\,$\mbox{]} (std\+::string dev) \{ return mfunction(\char`\"{}bridge\char`\"{}, std\+::move(dev)); \}
 \begin{DoxyCompactList}\small\item\em Forward the packet to the given device and evaluates to {\ttfamily Drop}. \end{DoxyCompactList}\item 
-auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a7b831baeabda070b89ca862a9445a4a8}{pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::mark} = \mbox{[}$\,$\mbox{]} (unsigned long value) \{ return mfunction(\char`\"{}mark\char`\"{}, value); \}
+auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a7b831baeabda070b89ca862a9445a4a8}{pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::mark} = \mbox{[}$\,$\mbox{]} (uint32\+\_\+t value) \{ return mfunction(\char`\"{}mark\char`\"{}, value); \}
 \begin{DoxyCompactList}\small\item\em Mark the packet with the given value. \end{DoxyCompactList}\item 
 auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_acc7d3a4cca5eb30ff5456e19c613b174}{pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::inc} = \mbox{[}$\,$\mbox{]} (int value) \{ return mfunction(\char`\"{}inc\char`\"{}, value); \}
 \begin{DoxyCompactList}\small\item\em Increment the i-\/th counter of the current group. \end{DoxyCompactList}\item 

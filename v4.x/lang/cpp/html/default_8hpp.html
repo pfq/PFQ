@@ -30,7 +30,7 @@
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
    <div id="projectname">PFQ/lang eDLS
-   &#160;<span id="projectnumber">v4.2</span>
+   &#160;<span id="projectnumber">v4.3</span>
    </div>
   </td>
    <td>        <div id="MSearchBox" class="MSearchBoxInactive">
@@ -102,6 +102,7 @@ $(document).ready(function(){initNavTree('default_8hpp.html','');});
 <code>#include &lt;pfq/lang/util.hpp&gt;</code><br />
 <code>#include &lt;pfq/util.hpp&gt;</code><br />
 <code>#include &lt;functional&gt;</code><br />
+<code>#include &lt;type_traits&gt;</code><br />
 <code>#include &lt;vector&gt;</code><br />
 <code>#include &lt;string&gt;</code><br />
 <code>#include &lt;cmath&gt;</code><br />
@@ -120,41 +121,41 @@ Namespaces</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:aab91c135f631201b35e344e631a79e83"><td class="memTemplParams" colspan="2">template&lt;typename P1 , typename P2 &gt; </td></tr>
-<tr class="memitem:aab91c135f631201b35e344e631a79e83"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1lang.html#aab91c135f631201b35e344e631a79e83">pfq::lang::operator&amp;</a> (P1 const &amp;p1, P2 const &amp;p2) -&gt; decltype(predicate(nullptr, p1, p2))</td></tr>
-<tr class="memdesc:aab91c135f631201b35e344e631a79e83"><td class="mdescLeft">&#160;</td><td class="mdescRight">Combine two predicate expressions with a specific boolean 'and' operation.  <a href="#aab91c135f631201b35e344e631a79e83">More...</a><br /></td></tr>
-<tr class="separator:aab91c135f631201b35e344e631a79e83"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0d4e61b7f964b7ce7a2ce76b038e52aa"><td class="memTemplParams" colspan="2">template&lt;typename P1 , typename P2 &gt; </td></tr>
-<tr class="memitem:a0d4e61b7f964b7ce7a2ce76b038e52aa"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1lang.html#a0d4e61b7f964b7ce7a2ce76b038e52aa">pfq::lang::operator|</a> (P1 const &amp;p1, P2 const &amp;p2) -&gt; decltype(predicate(nullptr, p1, p2))</td></tr>
-<tr class="memdesc:a0d4e61b7f964b7ce7a2ce76b038e52aa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Combine two predicate expressions with a specific boolean 'or' operation.  <a href="#a0d4e61b7f964b7ce7a2ce76b038e52aa">More...</a><br /></td></tr>
-<tr class="separator:a0d4e61b7f964b7ce7a2ce76b038e52aa"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa42a32904d2952c1229bf15dd215e91b"><td class="memTemplParams" colspan="2">template&lt;typename P1 , typename P2 &gt; </td></tr>
-<tr class="memitem:aa42a32904d2952c1229bf15dd215e91b"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1lang.html#aa42a32904d2952c1229bf15dd215e91b">pfq::lang::operator^</a> (P1 const &amp;p1, P2 const &amp;p2) -&gt; decltype(predicate(nullptr, p1, p2))</td></tr>
-<tr class="memdesc:aa42a32904d2952c1229bf15dd215e91b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Combine two predicate expressions with a specific boolean 'xor' operation.  <a href="#aa42a32904d2952c1229bf15dd215e91b">More...</a><br /></td></tr>
-<tr class="separator:aa42a32904d2952c1229bf15dd215e91b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af24d9c3092f064b0732a4b601dde2c64"><td class="memTemplParams" colspan="2">template&lt;typename P1 , typename P2 , typename std::enable_if&lt; is_predicate&lt; P1 &gt;::value &amp;&amp;is_predicate&lt; P2 &gt;::value &gt;::type *  = nullptr&gt; </td></tr>
+<tr class="memitem:af24d9c3092f064b0732a4b601dde2c64"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1lang.html#af24d9c3092f064b0732a4b601dde2c64">pfq::lang::operator&amp;</a> (P1 const &amp;p1, P2 const &amp;p2) -&gt; decltype(predicate(nullptr, p1, p2))</td></tr>
+<tr class="memdesc:af24d9c3092f064b0732a4b601dde2c64"><td class="mdescLeft">&#160;</td><td class="mdescRight">Combine two predicate expressions with a specific boolean 'and' operation.  <a href="#af24d9c3092f064b0732a4b601dde2c64">More...</a><br /></td></tr>
+<tr class="separator:af24d9c3092f064b0732a4b601dde2c64"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a425bb535884185450da7addcdb47f35b"><td class="memTemplParams" colspan="2">template&lt;typename P1 , typename P2 , typename std::enable_if&lt; is_predicate&lt; P1 &gt;::value &amp;&amp;is_predicate&lt; P2 &gt;::value &gt;::type *  = nullptr&gt; </td></tr>
+<tr class="memitem:a425bb535884185450da7addcdb47f35b"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1lang.html#a425bb535884185450da7addcdb47f35b">pfq::lang::operator|</a> (P1 const &amp;p1, P2 const &amp;p2) -&gt; decltype(predicate(nullptr, p1, p2))</td></tr>
+<tr class="memdesc:a425bb535884185450da7addcdb47f35b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Combine two predicate expressions with a specific boolean 'or' operation.  <a href="#a425bb535884185450da7addcdb47f35b">More...</a><br /></td></tr>
+<tr class="separator:a425bb535884185450da7addcdb47f35b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa6692a978788617acebfee6ded6ebbbc"><td class="memTemplParams" colspan="2">template&lt;typename P1 , typename P2 , typename std::enable_if&lt; is_predicate&lt; P1 &gt;::value &amp;&amp;is_predicate&lt; P2 &gt;::value &gt;::type *  = nullptr&gt; </td></tr>
+<tr class="memitem:aa6692a978788617acebfee6ded6ebbbc"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1lang.html#aa6692a978788617acebfee6ded6ebbbc">pfq::lang::operator^</a> (P1 const &amp;p1, P2 const &amp;p2) -&gt; decltype(predicate(nullptr, p1, p2))</td></tr>
+<tr class="memdesc:aa6692a978788617acebfee6ded6ebbbc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Combine two predicate expressions with a specific boolean 'xor' operation.  <a href="#aa6692a978788617acebfee6ded6ebbbc">More...</a><br /></td></tr>
+<tr class="separator:aa6692a978788617acebfee6ded6ebbbc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aad91ae49c0ddea5a9219f679e8de212a"><td class="memTemplParams" colspan="2">template&lt;typename P &gt; </td></tr>
 <tr class="memitem:aad91ae49c0ddea5a9219f679e8de212a"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1lang.html#aad91ae49c0ddea5a9219f679e8de212a">pfq::lang::not_</a> (P const &amp;p) -&gt; decltype(predicate(nullptr, p))</td></tr>
 <tr class="memdesc:aad91ae49c0ddea5a9219f679e8de212a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a new predicate that evaluates to true, when the given one evaluates to false, and vice versa.  <a href="#aad91ae49c0ddea5a9219f679e8de212a">More...</a><br /></td></tr>
 <tr class="separator:aad91ae49c0ddea5a9219f679e8de212a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a621f0ba92e962637b0a31ed44576149b"><td class="memTemplParams" colspan="2">template&lt;typename P &gt; </td></tr>
-<tr class="memitem:a621f0ba92e962637b0a31ed44576149b"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1lang.html#a621f0ba92e962637b0a31ed44576149b">pfq::lang::operator&lt;</a> (P const &amp;prop, uint64_t arg) -&gt; decltype(predicate(nullptr, prop, arg))</td></tr>
-<tr class="memdesc:a621f0ba92e962637b0a31ed44576149b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a predicate that evaluates to <code>true</code>, if the property is less than the given value.  <a href="#a621f0ba92e962637b0a31ed44576149b">More...</a><br /></td></tr>
-<tr class="separator:a621f0ba92e962637b0a31ed44576149b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a39d99d5ec8bb46ebe6efa8c3816376e3"><td class="memTemplParams" colspan="2">template&lt;typename P &gt; </td></tr>
-<tr class="memitem:a39d99d5ec8bb46ebe6efa8c3816376e3"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1lang.html#a39d99d5ec8bb46ebe6efa8c3816376e3">pfq::lang::operator&lt;=</a> (P const &amp;prop, uint64_t arg) -&gt; decltype(predicate(nullptr, prop, arg))</td></tr>
-<tr class="separator:a39d99d5ec8bb46ebe6efa8c3816376e3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac8b5cd4322fa1de4ec52e8356e9fbee8"><td class="memTemplParams" colspan="2">template&lt;typename P &gt; </td></tr>
-<tr class="memitem:ac8b5cd4322fa1de4ec52e8356e9fbee8"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1lang.html#ac8b5cd4322fa1de4ec52e8356e9fbee8">pfq::lang::operator&gt;</a> (P const &amp;prop, uint64_t arg) -&gt; decltype(predicate(nullptr, prop, arg))</td></tr>
-<tr class="separator:ac8b5cd4322fa1de4ec52e8356e9fbee8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad5ca0642e91360ee35beecfb31b62b6d"><td class="memTemplParams" colspan="2">template&lt;typename P &gt; </td></tr>
-<tr class="memitem:ad5ca0642e91360ee35beecfb31b62b6d"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1lang.html#ad5ca0642e91360ee35beecfb31b62b6d">pfq::lang::operator&gt;=</a> (P const &amp;prop, uint64_t arg) -&gt; decltype(predicate(nullptr, prop, arg))</td></tr>
-<tr class="separator:ad5ca0642e91360ee35beecfb31b62b6d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a055e29efb9299750331375acb2082056"><td class="memTemplParams" colspan="2">template&lt;typename P &gt; </td></tr>
-<tr class="memitem:a055e29efb9299750331375acb2082056"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1lang.html#a055e29efb9299750331375acb2082056">pfq::lang::operator==</a> (P const &amp;prop, uint64_t arg) -&gt; decltype(predicate(nullptr, prop, arg))</td></tr>
-<tr class="separator:a055e29efb9299750331375acb2082056"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6b68f3f983df3797675371e11b14cc06"><td class="memTemplParams" colspan="2">template&lt;typename P &gt; </td></tr>
-<tr class="memitem:a6b68f3f983df3797675371e11b14cc06"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1lang.html#a6b68f3f983df3797675371e11b14cc06">pfq::lang::operator!=</a> (P const &amp;prop, uint64_t arg) -&gt; decltype(predicate(nullptr, prop, arg))</td></tr>
-<tr class="separator:a6b68f3f983df3797675371e11b14cc06"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa358821bfd1326e552c69635b969835d"><td class="memTemplParams" colspan="2">template&lt;typename P , typename std::enable_if&lt; is_property&lt; P &gt;::value &gt;::type *  = nullptr&gt; </td></tr>
+<tr class="memitem:aa358821bfd1326e552c69635b969835d"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1lang.html#aa358821bfd1326e552c69635b969835d">pfq::lang::operator&lt;</a> (P const &amp;prop, uint64_t arg) -&gt; decltype(predicate(nullptr, prop, arg))</td></tr>
+<tr class="memdesc:aa358821bfd1326e552c69635b969835d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a predicate that evaluates to <code>true</code>, if the property is less than the given value.  <a href="#aa358821bfd1326e552c69635b969835d">More...</a><br /></td></tr>
+<tr class="separator:aa358821bfd1326e552c69635b969835d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a039a937311f139f9a6e84c49c6505c70"><td class="memTemplParams" colspan="2">template&lt;typename P , typename std::enable_if&lt; is_property&lt; P &gt;::value &gt;::type *  = nullptr&gt; </td></tr>
+<tr class="memitem:a039a937311f139f9a6e84c49c6505c70"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1lang.html#a039a937311f139f9a6e84c49c6505c70">pfq::lang::operator&lt;=</a> (P const &amp;prop, uint64_t arg) -&gt; decltype(predicate(nullptr, prop, arg))</td></tr>
+<tr class="separator:a039a937311f139f9a6e84c49c6505c70"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a708ca1f29e8dd2461859c46369e89322"><td class="memTemplParams" colspan="2">template&lt;typename P , typename std::enable_if&lt; is_property&lt; P &gt;::value &gt;::type *  = nullptr&gt; </td></tr>
+<tr class="memitem:a708ca1f29e8dd2461859c46369e89322"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1lang.html#a708ca1f29e8dd2461859c46369e89322">pfq::lang::operator&gt;</a> (P const &amp;prop, uint64_t arg) -&gt; decltype(predicate(nullptr, prop, arg))</td></tr>
+<tr class="separator:a708ca1f29e8dd2461859c46369e89322"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8278e1cf39622e9eb4859f4720da1d16"><td class="memTemplParams" colspan="2">template&lt;typename P , typename std::enable_if&lt; is_property&lt; P &gt;::value &gt;::type *  = nullptr&gt; </td></tr>
+<tr class="memitem:a8278e1cf39622e9eb4859f4720da1d16"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1lang.html#a8278e1cf39622e9eb4859f4720da1d16">pfq::lang::operator&gt;=</a> (P const &amp;prop, uint64_t arg) -&gt; decltype(predicate(nullptr, prop, arg))</td></tr>
+<tr class="separator:a8278e1cf39622e9eb4859f4720da1d16"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a87c8fa322873efdbddaa437f194b72b0"><td class="memTemplParams" colspan="2">template&lt;typename P , typename std::enable_if&lt; is_property&lt; P &gt;::value &gt;::type *  = nullptr&gt; </td></tr>
+<tr class="memitem:a87c8fa322873efdbddaa437f194b72b0"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1lang.html#a87c8fa322873efdbddaa437f194b72b0">pfq::lang::operator==</a> (P const &amp;prop, uint64_t arg) -&gt; decltype(predicate(nullptr, prop, arg))</td></tr>
+<tr class="separator:a87c8fa322873efdbddaa437f194b72b0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4943eabefcfed4198394f42f913a14e8"><td class="memTemplParams" colspan="2">template&lt;typename P , typename std::enable_if&lt; is_property&lt; P &gt;::value &gt;::type *  = nullptr&gt; </td></tr>
+<tr class="memitem:a4943eabefcfed4198394f42f913a14e8"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1lang.html#a4943eabefcfed4198394f42f913a14e8">pfq::lang::operator!=</a> (P const &amp;prop, uint64_t arg) -&gt; decltype(predicate(nullptr, prop, arg))</td></tr>
+<tr class="separator:a4943eabefcfed4198394f42f913a14e8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac247c3827084d381d8518dabfff43bb2"><td class="memTemplParams" colspan="2">template&lt;typename P &gt; </td></tr>
 <tr class="memitem:ac247c3827084d381d8518dabfff43bb2"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1lang.html#ac247c3827084d381d8518dabfff43bb2">pfq::lang::any_bit</a> (P const &amp;prop, uint64_t mask) -&gt; decltype(predicate(nullptr, prop, mask))</td></tr>
 <tr class="memdesc:ac247c3827084d381d8518dabfff43bb2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a predicate that evaluates to <code>true</code>, if the property has at least one bit set among those specified by the given mask.  <a href="#ac247c3827084d381d8518dabfff43bb2">More...</a><br /></td></tr>
@@ -267,7 +268,7 @@ Variables</h2></td></tr>
 <tr class="memitem:a0a53822af0ed8ea341f16a1da5ea83e3"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03.html#a0a53822af0ed8ea341f16a1da5ea83e3">pfq::lang::anonymous_namespace{default.hpp}::has_dst_addr</a></td></tr>
 <tr class="memdesc:a0a53822af0ed8ea341f16a1da5ea83e3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Evaluate to <code>true</code> if the destination IP address matches the given network address.  <a href="#a0a53822af0ed8ea341f16a1da5ea83e3">More...</a><br /></td></tr>
 <tr class="separator:a0a53822af0ed8ea341f16a1da5ea83e3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa4ce1fdb0d99e1ca0afdf76619c58d12"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03.html#aa4ce1fdb0d99e1ca0afdf76619c58d12">pfq::lang::anonymous_namespace{default.hpp}::has_mark</a> = [] (unsigned long value) { return predicate(&quot;has_mark&quot;, value); }</td></tr>
+<tr class="memitem:aa4ce1fdb0d99e1ca0afdf76619c58d12"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03.html#aa4ce1fdb0d99e1ca0afdf76619c58d12">pfq::lang::anonymous_namespace{default.hpp}::has_mark</a> = [] (uint32_t value) { return predicate(&quot;has_mark&quot;, value); }</td></tr>
 <tr class="memdesc:aa4ce1fdb0d99e1ca0afdf76619c58d12"><td class="mdescLeft">&#160;</td><td class="mdescRight">Evaluate to <code>true</code> if the <a class="el" href="structpfq_1_1lang_1_1SkBuff.html">SkBuff</a> has the given <code>mark</code>, set by mark function.  <a href="#aa4ce1fdb0d99e1ca0afdf76619c58d12">More...</a><br /></td></tr>
 <tr class="separator:aa4ce1fdb0d99e1ca0afdf76619c58d12"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1f0378ddfa90777d11ffae5fbb57b4e0"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03.html#a1f0378ddfa90777d11ffae5fbb57b4e0">pfq::lang::anonymous_namespace{default.hpp}::has_vlan</a> = predicate (&quot;has_vlan&quot;)</td></tr>
@@ -417,7 +418,7 @@ Variables</h2></td></tr>
 <tr class="memitem:ad318dd8fb6441b78bdfb056173e5a7e2"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03.html#ad318dd8fb6441b78bdfb056173e5a7e2">pfq::lang::anonymous_namespace{default.hpp}::bridge</a> = [] (std::string dev) { return mfunction(&quot;bridge&quot;, std::move(dev)); }</td></tr>
 <tr class="memdesc:ad318dd8fb6441b78bdfb056173e5a7e2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Forward the packet to the given device and evaluates to <code>Drop</code>.  <a href="#ad318dd8fb6441b78bdfb056173e5a7e2">More...</a><br /></td></tr>
 <tr class="separator:ad318dd8fb6441b78bdfb056173e5a7e2"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7b831baeabda070b89ca862a9445a4a8"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03.html#a7b831baeabda070b89ca862a9445a4a8">pfq::lang::anonymous_namespace{default.hpp}::mark</a> = [] (unsigned long value) { return mfunction(&quot;mark&quot;, value); }</td></tr>
+<tr class="memitem:a7b831baeabda070b89ca862a9445a4a8"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03.html#a7b831baeabda070b89ca862a9445a4a8">pfq::lang::anonymous_namespace{default.hpp}::mark</a> = [] (uint32_t value) { return mfunction(&quot;mark&quot;, value); }</td></tr>
 <tr class="memdesc:a7b831baeabda070b89ca862a9445a4a8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Mark the packet with the given value.  <a href="#a7b831baeabda070b89ca862a9445a4a8">More...</a><br /></td></tr>
 <tr class="separator:a7b831baeabda070b89ca862a9445a4a8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acc7d3a4cca5eb30ff5456e19c613b174"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03.html#acc7d3a4cca5eb30ff5456e19c613b174">pfq::lang::anonymous_namespace{default.hpp}::inc</a> = [] (int value) { return mfunction(&quot;inc&quot;, value); }</td></tr>
@@ -477,7 +478,7 @@ Variables</h2></td></tr>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="dir_2916f9fbcacdf2e5f0583aa159c707b6.html">C++</a></li><li class="navelem"><a class="el" href="dir_f5c141fe61b0a0287f06112b2feb457f.html">pfq</a></li><li class="navelem"><a class="el" href="dir_a171f0db53f771baaddfd0e93f871e64.html">lang</a></li><li class="navelem"><a class="el" href="default_8hpp.html">default.hpp</a></li>
-    <li class="footer">Generated on Fri Feb 27 2015 17:03:38 for PFQ/lang eDLS by
+    <li class="footer">Generated on Sat Apr 11 2015 16:34:28 for PFQ/lang eDLS by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.8 </li>
   </ul>

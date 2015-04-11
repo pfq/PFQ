@@ -30,7 +30,7 @@
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
    <div id="projectname">PFQ/lang eDLS
-   &#160;<span id="projectnumber">v4.2</span>
+   &#160;<span id="projectnumber">v4.3</span>
    </div>
   </td>
    <td>        <div id="MSearchBox" class="MSearchBoxInactive">
@@ -242,6 +242,10 @@ Functions</h2></td></tr>
 &lt; <a class="el" href="structpfq_1_1lang_1_1FunctionDescr.html">FunctionDescr</a> &gt;<br class="typebreak" />
 , std::ptrdiff_t &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1lang.html#ad851806bad7a4396e236a7ad52a8aca5">serialize</a> (<a class="el" href="structpfq_1_1lang_1_1MFunction.html">MFunction</a>&lt; Ts...&gt; const &amp;p, std::ptrdiff_t n)</td></tr>
 <tr class="separator:ad851806bad7a4396e236a7ad52a8aca5"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af7276855e5133126a11b075d19a63a7f"><td class="memItemLeft" align="right" valign="top">std::pair&lt; std::vector<br class="typebreak" />
+&lt; <a class="el" href="structpfq_1_1lang_1_1FunctionDescr.html">FunctionDescr</a> &gt;<br class="typebreak" />
+, std::ptrdiff_t &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1lang.html#af7276855e5133126a11b075d19a63a7f">serialize</a> (std::vector&lt; <a class="el" href="structpfq_1_1lang_1_1MFunction.html">MFunction</a>&lt;&gt;&gt; const &amp;cont, std::ptrdiff_t n)</td></tr>
+<tr class="separator:af7276855e5133126a11b075d19a63a7f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa5c4ec63004bfee1742b763ca4a53b23"><td class="memTemplParams" colspan="2">template&lt;typename C1 , typename C2 , typename  = typename kleisly&lt;typename C1::type, typename C2::type&gt;::type&gt; </td></tr>
 <tr class="memitem:aa5c4ec63004bfee1742b763ca4a53b23"><td class="memTemplItemLeft" align="right" valign="top"><a class="el" href="structpfq_1_1lang_1_1Composition.html">Composition</a>&lt; C1, C2 &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1lang.html#aa5c4ec63004bfee1742b763ca4a53b23">operator&gt;&gt;</a> (C1 c1, C2 c2)</td></tr>
 <tr class="separator:aa5c4ec63004bfee1742b763ca4a53b23"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -255,41 +259,41 @@ Functions</h2></td></tr>
 <tr class="memitem:ad5a149c9a27022cf32a497eaac3e9027"><td class="memTemplItemLeft" align="right" valign="top">std::pair&lt; std::vector<br class="typebreak" />
 &lt; <a class="el" href="structpfq_1_1lang_1_1FunctionDescr.html">FunctionDescr</a> &gt;, std::size_t &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1lang.html#ad5a149c9a27022cf32a497eaac3e9027">serialize</a> (<a class="el" href="structpfq_1_1lang_1_1Composition.html">Composition</a>&lt; C1, C2 &gt; const &amp;f, std::size_t n)</td></tr>
 <tr class="separator:ad5a149c9a27022cf32a497eaac3e9027"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aab91c135f631201b35e344e631a79e83"><td class="memTemplParams" colspan="2">template&lt;typename P1 , typename P2 &gt; </td></tr>
-<tr class="memitem:aab91c135f631201b35e344e631a79e83"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1lang.html#aab91c135f631201b35e344e631a79e83">operator&amp;</a> (P1 const &amp;p1, P2 const &amp;p2) -&gt; decltype(<a class="el" href="namespacepfq_1_1lang.html#aca9adafc436b7f851621b979fa1aaf88">predicate</a>(nullptr, p1, p2))</td></tr>
-<tr class="memdesc:aab91c135f631201b35e344e631a79e83"><td class="mdescLeft">&#160;</td><td class="mdescRight">Combine two predicate expressions with a specific boolean 'and' operation.  <a href="#aab91c135f631201b35e344e631a79e83">More...</a><br /></td></tr>
-<tr class="separator:aab91c135f631201b35e344e631a79e83"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0d4e61b7f964b7ce7a2ce76b038e52aa"><td class="memTemplParams" colspan="2">template&lt;typename P1 , typename P2 &gt; </td></tr>
-<tr class="memitem:a0d4e61b7f964b7ce7a2ce76b038e52aa"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1lang.html#a0d4e61b7f964b7ce7a2ce76b038e52aa">operator|</a> (P1 const &amp;p1, P2 const &amp;p2) -&gt; decltype(<a class="el" href="namespacepfq_1_1lang.html#aca9adafc436b7f851621b979fa1aaf88">predicate</a>(nullptr, p1, p2))</td></tr>
-<tr class="memdesc:a0d4e61b7f964b7ce7a2ce76b038e52aa"><td class="mdescLeft">&#160;</td><td class="mdescRight">Combine two predicate expressions with a specific boolean 'or' operation.  <a href="#a0d4e61b7f964b7ce7a2ce76b038e52aa">More...</a><br /></td></tr>
-<tr class="separator:a0d4e61b7f964b7ce7a2ce76b038e52aa"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa42a32904d2952c1229bf15dd215e91b"><td class="memTemplParams" colspan="2">template&lt;typename P1 , typename P2 &gt; </td></tr>
-<tr class="memitem:aa42a32904d2952c1229bf15dd215e91b"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1lang.html#aa42a32904d2952c1229bf15dd215e91b">operator^</a> (P1 const &amp;p1, P2 const &amp;p2) -&gt; decltype(<a class="el" href="namespacepfq_1_1lang.html#aca9adafc436b7f851621b979fa1aaf88">predicate</a>(nullptr, p1, p2))</td></tr>
-<tr class="memdesc:aa42a32904d2952c1229bf15dd215e91b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Combine two predicate expressions with a specific boolean 'xor' operation.  <a href="#aa42a32904d2952c1229bf15dd215e91b">More...</a><br /></td></tr>
-<tr class="separator:aa42a32904d2952c1229bf15dd215e91b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:af24d9c3092f064b0732a4b601dde2c64"><td class="memTemplParams" colspan="2">template&lt;typename P1 , typename P2 , typename std::enable_if&lt; is_predicate&lt; P1 &gt;::value &amp;&amp;is_predicate&lt; P2 &gt;::value &gt;::type *  = nullptr&gt; </td></tr>
+<tr class="memitem:af24d9c3092f064b0732a4b601dde2c64"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1lang.html#af24d9c3092f064b0732a4b601dde2c64">operator&amp;</a> (P1 const &amp;p1, P2 const &amp;p2) -&gt; decltype(<a class="el" href="namespacepfq_1_1lang.html#aca9adafc436b7f851621b979fa1aaf88">predicate</a>(nullptr, p1, p2))</td></tr>
+<tr class="memdesc:af24d9c3092f064b0732a4b601dde2c64"><td class="mdescLeft">&#160;</td><td class="mdescRight">Combine two predicate expressions with a specific boolean 'and' operation.  <a href="#af24d9c3092f064b0732a4b601dde2c64">More...</a><br /></td></tr>
+<tr class="separator:af24d9c3092f064b0732a4b601dde2c64"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a425bb535884185450da7addcdb47f35b"><td class="memTemplParams" colspan="2">template&lt;typename P1 , typename P2 , typename std::enable_if&lt; is_predicate&lt; P1 &gt;::value &amp;&amp;is_predicate&lt; P2 &gt;::value &gt;::type *  = nullptr&gt; </td></tr>
+<tr class="memitem:a425bb535884185450da7addcdb47f35b"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1lang.html#a425bb535884185450da7addcdb47f35b">operator|</a> (P1 const &amp;p1, P2 const &amp;p2) -&gt; decltype(<a class="el" href="namespacepfq_1_1lang.html#aca9adafc436b7f851621b979fa1aaf88">predicate</a>(nullptr, p1, p2))</td></tr>
+<tr class="memdesc:a425bb535884185450da7addcdb47f35b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Combine two predicate expressions with a specific boolean 'or' operation.  <a href="#a425bb535884185450da7addcdb47f35b">More...</a><br /></td></tr>
+<tr class="separator:a425bb535884185450da7addcdb47f35b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa6692a978788617acebfee6ded6ebbbc"><td class="memTemplParams" colspan="2">template&lt;typename P1 , typename P2 , typename std::enable_if&lt; is_predicate&lt; P1 &gt;::value &amp;&amp;is_predicate&lt; P2 &gt;::value &gt;::type *  = nullptr&gt; </td></tr>
+<tr class="memitem:aa6692a978788617acebfee6ded6ebbbc"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1lang.html#aa6692a978788617acebfee6ded6ebbbc">operator^</a> (P1 const &amp;p1, P2 const &amp;p2) -&gt; decltype(<a class="el" href="namespacepfq_1_1lang.html#aca9adafc436b7f851621b979fa1aaf88">predicate</a>(nullptr, p1, p2))</td></tr>
+<tr class="memdesc:aa6692a978788617acebfee6ded6ebbbc"><td class="mdescLeft">&#160;</td><td class="mdescRight">Combine two predicate expressions with a specific boolean 'xor' operation.  <a href="#aa6692a978788617acebfee6ded6ebbbc">More...</a><br /></td></tr>
+<tr class="separator:aa6692a978788617acebfee6ded6ebbbc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aad91ae49c0ddea5a9219f679e8de212a"><td class="memTemplParams" colspan="2">template&lt;typename P &gt; </td></tr>
 <tr class="memitem:aad91ae49c0ddea5a9219f679e8de212a"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1lang.html#aad91ae49c0ddea5a9219f679e8de212a">not_</a> (P const &amp;p) -&gt; decltype(<a class="el" href="namespacepfq_1_1lang.html#aca9adafc436b7f851621b979fa1aaf88">predicate</a>(nullptr, p))</td></tr>
 <tr class="memdesc:aad91ae49c0ddea5a9219f679e8de212a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a new predicate that evaluates to true, when the given one evaluates to false, and vice versa.  <a href="#aad91ae49c0ddea5a9219f679e8de212a">More...</a><br /></td></tr>
 <tr class="separator:aad91ae49c0ddea5a9219f679e8de212a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a621f0ba92e962637b0a31ed44576149b"><td class="memTemplParams" colspan="2">template&lt;typename P &gt; </td></tr>
-<tr class="memitem:a621f0ba92e962637b0a31ed44576149b"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1lang.html#a621f0ba92e962637b0a31ed44576149b">operator&lt;</a> (P const &amp;prop, uint64_t arg) -&gt; decltype(<a class="el" href="namespacepfq_1_1lang.html#aca9adafc436b7f851621b979fa1aaf88">predicate</a>(nullptr, prop, arg))</td></tr>
-<tr class="memdesc:a621f0ba92e962637b0a31ed44576149b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a predicate that evaluates to <code>true</code>, if the property is less than the given value.  <a href="#a621f0ba92e962637b0a31ed44576149b">More...</a><br /></td></tr>
-<tr class="separator:a621f0ba92e962637b0a31ed44576149b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a39d99d5ec8bb46ebe6efa8c3816376e3"><td class="memTemplParams" colspan="2">template&lt;typename P &gt; </td></tr>
-<tr class="memitem:a39d99d5ec8bb46ebe6efa8c3816376e3"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1lang.html#a39d99d5ec8bb46ebe6efa8c3816376e3">operator&lt;=</a> (P const &amp;prop, uint64_t arg) -&gt; decltype(<a class="el" href="namespacepfq_1_1lang.html#aca9adafc436b7f851621b979fa1aaf88">predicate</a>(nullptr, prop, arg))</td></tr>
-<tr class="separator:a39d99d5ec8bb46ebe6efa8c3816376e3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac8b5cd4322fa1de4ec52e8356e9fbee8"><td class="memTemplParams" colspan="2">template&lt;typename P &gt; </td></tr>
-<tr class="memitem:ac8b5cd4322fa1de4ec52e8356e9fbee8"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1lang.html#ac8b5cd4322fa1de4ec52e8356e9fbee8">operator&gt;</a> (P const &amp;prop, uint64_t arg) -&gt; decltype(<a class="el" href="namespacepfq_1_1lang.html#aca9adafc436b7f851621b979fa1aaf88">predicate</a>(nullptr, prop, arg))</td></tr>
-<tr class="separator:ac8b5cd4322fa1de4ec52e8356e9fbee8"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad5ca0642e91360ee35beecfb31b62b6d"><td class="memTemplParams" colspan="2">template&lt;typename P &gt; </td></tr>
-<tr class="memitem:ad5ca0642e91360ee35beecfb31b62b6d"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1lang.html#ad5ca0642e91360ee35beecfb31b62b6d">operator&gt;=</a> (P const &amp;prop, uint64_t arg) -&gt; decltype(<a class="el" href="namespacepfq_1_1lang.html#aca9adafc436b7f851621b979fa1aaf88">predicate</a>(nullptr, prop, arg))</td></tr>
-<tr class="separator:ad5ca0642e91360ee35beecfb31b62b6d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a055e29efb9299750331375acb2082056"><td class="memTemplParams" colspan="2">template&lt;typename P &gt; </td></tr>
-<tr class="memitem:a055e29efb9299750331375acb2082056"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1lang.html#a055e29efb9299750331375acb2082056">operator==</a> (P const &amp;prop, uint64_t arg) -&gt; decltype(<a class="el" href="namespacepfq_1_1lang.html#aca9adafc436b7f851621b979fa1aaf88">predicate</a>(nullptr, prop, arg))</td></tr>
-<tr class="separator:a055e29efb9299750331375acb2082056"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a6b68f3f983df3797675371e11b14cc06"><td class="memTemplParams" colspan="2">template&lt;typename P &gt; </td></tr>
-<tr class="memitem:a6b68f3f983df3797675371e11b14cc06"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1lang.html#a6b68f3f983df3797675371e11b14cc06">operator!=</a> (P const &amp;prop, uint64_t arg) -&gt; decltype(<a class="el" href="namespacepfq_1_1lang.html#aca9adafc436b7f851621b979fa1aaf88">predicate</a>(nullptr, prop, arg))</td></tr>
-<tr class="separator:a6b68f3f983df3797675371e11b14cc06"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa358821bfd1326e552c69635b969835d"><td class="memTemplParams" colspan="2">template&lt;typename P , typename std::enable_if&lt; is_property&lt; P &gt;::value &gt;::type *  = nullptr&gt; </td></tr>
+<tr class="memitem:aa358821bfd1326e552c69635b969835d"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1lang.html#aa358821bfd1326e552c69635b969835d">operator&lt;</a> (P const &amp;prop, uint64_t arg) -&gt; decltype(<a class="el" href="namespacepfq_1_1lang.html#aca9adafc436b7f851621b979fa1aaf88">predicate</a>(nullptr, prop, arg))</td></tr>
+<tr class="memdesc:aa358821bfd1326e552c69635b969835d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a predicate that evaluates to <code>true</code>, if the property is less than the given value.  <a href="#aa358821bfd1326e552c69635b969835d">More...</a><br /></td></tr>
+<tr class="separator:aa358821bfd1326e552c69635b969835d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a039a937311f139f9a6e84c49c6505c70"><td class="memTemplParams" colspan="2">template&lt;typename P , typename std::enable_if&lt; is_property&lt; P &gt;::value &gt;::type *  = nullptr&gt; </td></tr>
+<tr class="memitem:a039a937311f139f9a6e84c49c6505c70"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1lang.html#a039a937311f139f9a6e84c49c6505c70">operator&lt;=</a> (P const &amp;prop, uint64_t arg) -&gt; decltype(<a class="el" href="namespacepfq_1_1lang.html#aca9adafc436b7f851621b979fa1aaf88">predicate</a>(nullptr, prop, arg))</td></tr>
+<tr class="separator:a039a937311f139f9a6e84c49c6505c70"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a708ca1f29e8dd2461859c46369e89322"><td class="memTemplParams" colspan="2">template&lt;typename P , typename std::enable_if&lt; is_property&lt; P &gt;::value &gt;::type *  = nullptr&gt; </td></tr>
+<tr class="memitem:a708ca1f29e8dd2461859c46369e89322"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1lang.html#a708ca1f29e8dd2461859c46369e89322">operator&gt;</a> (P const &amp;prop, uint64_t arg) -&gt; decltype(<a class="el" href="namespacepfq_1_1lang.html#aca9adafc436b7f851621b979fa1aaf88">predicate</a>(nullptr, prop, arg))</td></tr>
+<tr class="separator:a708ca1f29e8dd2461859c46369e89322"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8278e1cf39622e9eb4859f4720da1d16"><td class="memTemplParams" colspan="2">template&lt;typename P , typename std::enable_if&lt; is_property&lt; P &gt;::value &gt;::type *  = nullptr&gt; </td></tr>
+<tr class="memitem:a8278e1cf39622e9eb4859f4720da1d16"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1lang.html#a8278e1cf39622e9eb4859f4720da1d16">operator&gt;=</a> (P const &amp;prop, uint64_t arg) -&gt; decltype(<a class="el" href="namespacepfq_1_1lang.html#aca9adafc436b7f851621b979fa1aaf88">predicate</a>(nullptr, prop, arg))</td></tr>
+<tr class="separator:a8278e1cf39622e9eb4859f4720da1d16"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a87c8fa322873efdbddaa437f194b72b0"><td class="memTemplParams" colspan="2">template&lt;typename P , typename std::enable_if&lt; is_property&lt; P &gt;::value &gt;::type *  = nullptr&gt; </td></tr>
+<tr class="memitem:a87c8fa322873efdbddaa437f194b72b0"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1lang.html#a87c8fa322873efdbddaa437f194b72b0">operator==</a> (P const &amp;prop, uint64_t arg) -&gt; decltype(<a class="el" href="namespacepfq_1_1lang.html#aca9adafc436b7f851621b979fa1aaf88">predicate</a>(nullptr, prop, arg))</td></tr>
+<tr class="separator:a87c8fa322873efdbddaa437f194b72b0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a4943eabefcfed4198394f42f913a14e8"><td class="memTemplParams" colspan="2">template&lt;typename P , typename std::enable_if&lt; is_property&lt; P &gt;::value &gt;::type *  = nullptr&gt; </td></tr>
+<tr class="memitem:a4943eabefcfed4198394f42f913a14e8"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1lang.html#a4943eabefcfed4198394f42f913a14e8">operator!=</a> (P const &amp;prop, uint64_t arg) -&gt; decltype(<a class="el" href="namespacepfq_1_1lang.html#aca9adafc436b7f851621b979fa1aaf88">predicate</a>(nullptr, prop, arg))</td></tr>
+<tr class="separator:a4943eabefcfed4198394f42f913a14e8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac247c3827084d381d8518dabfff43bb2"><td class="memTemplParams" colspan="2">template&lt;typename P &gt; </td></tr>
 <tr class="memitem:ac247c3827084d381d8518dabfff43bb2"><td class="memTemplItemLeft" align="right" valign="top">auto&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1lang.html#ac247c3827084d381d8518dabfff43bb2">any_bit</a> (P const &amp;prop, uint64_t mask) -&gt; decltype(<a class="el" href="namespacepfq_1_1lang.html#aca9adafc436b7f851621b979fa1aaf88">predicate</a>(nullptr, prop, mask))</td></tr>
 <tr class="memdesc:ac247c3827084d381d8518dabfff43bb2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a predicate that evaluates to <code>true</code>, if the property has at least one bit set among those specified by the given mask.  <a href="#ac247c3827084d381d8518dabfff43bb2">More...</a><br /></td></tr>
@@ -567,11 +571,11 @@ template&lt;typename P &gt; </div>
 
 </div>
 </div>
-<a class="anchor" id="a6b68f3f983df3797675371e11b14cc06"></a>
+<a class="anchor" id="a4943eabefcfed4198394f42f913a14e8"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename P &gt; </div>
+template&lt;typename P , typename std::enable_if&lt; is_property&lt; P &gt;::value &gt;::type *  = nullptr&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
@@ -604,11 +608,11 @@ template&lt;typename P &gt; </div>
 
 </div>
 </div>
-<a class="anchor" id="aab91c135f631201b35e344e631a79e83"></a>
+<a class="anchor" id="af24d9c3092f064b0732a4b601dde2c64"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename P1 , typename P2 &gt; </div>
+template&lt;typename P1 , typename P2 , typename std::enable_if&lt; is_predicate&lt; P1 &gt;::value &amp;&amp;is_predicate&lt; P2 &gt;::value &gt;::type *  = nullptr&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
@@ -643,11 +647,11 @@ template&lt;typename P1 , typename P2 &gt; </div>
 
 </div>
 </div>
-<a class="anchor" id="a621f0ba92e962637b0a31ed44576149b"></a>
+<a class="anchor" id="aa358821bfd1326e552c69635b969835d"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename P &gt; </div>
+template&lt;typename P , typename std::enable_if&lt; is_property&lt; P &gt;::value &gt;::type *  = nullptr&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
@@ -684,11 +688,11 @@ template&lt;typename P &gt; </div>
 
 </div>
 </div>
-<a class="anchor" id="a39d99d5ec8bb46ebe6efa8c3816376e3"></a>
+<a class="anchor" id="a039a937311f139f9a6e84c49c6505c70"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename P &gt; </div>
+template&lt;typename P , typename std::enable_if&lt; is_property&lt; P &gt;::value &gt;::type *  = nullptr&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
@@ -721,11 +725,11 @@ template&lt;typename P &gt; </div>
 
 </div>
 </div>
-<a class="anchor" id="a055e29efb9299750331375acb2082056"></a>
+<a class="anchor" id="a87c8fa322873efdbddaa437f194b72b0"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename P &gt; </div>
+template&lt;typename P , typename std::enable_if&lt; is_property&lt; P &gt;::value &gt;::type *  = nullptr&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
@@ -758,11 +762,11 @@ template&lt;typename P &gt; </div>
 
 </div>
 </div>
-<a class="anchor" id="ac8b5cd4322fa1de4ec52e8356e9fbee8"></a>
+<a class="anchor" id="a708ca1f29e8dd2461859c46369e89322"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename P &gt; </div>
+template&lt;typename P , typename std::enable_if&lt; is_property&lt; P &gt;::value &gt;::type *  = nullptr&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
@@ -795,11 +799,11 @@ template&lt;typename P &gt; </div>
 
 </div>
 </div>
-<a class="anchor" id="ad5ca0642e91360ee35beecfb31b62b6d"></a>
+<a class="anchor" id="a8278e1cf39622e9eb4859f4720da1d16"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename P &gt; </div>
+template&lt;typename P , typename std::enable_if&lt; is_property&lt; P &gt;::value &gt;::type *  = nullptr&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
@@ -868,11 +872,11 @@ template&lt;typename C1 , typename C2 , typename  = typename kleisly&lt;typename
 
 </div>
 </div>
-<a class="anchor" id="aa42a32904d2952c1229bf15dd215e91b"></a>
+<a class="anchor" id="aa6692a978788617acebfee6ded6ebbbc"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename P1 , typename P2 &gt; </div>
+template&lt;typename P1 , typename P2 , typename std::enable_if&lt; is_predicate&lt; P1 &gt;::value &amp;&amp;is_predicate&lt; P2 &gt;::value &gt;::type *  = nullptr&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
@@ -907,11 +911,11 @@ template&lt;typename P1 , typename P2 &gt; </div>
 
 </div>
 </div>
-<a class="anchor" id="a0d4e61b7f964b7ce7a2ce76b038e52aa"></a>
+<a class="anchor" id="a425bb535884185450da7addcdb47f35b"></a>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename P1 , typename P2 &gt; </div>
+template&lt;typename P1 , typename P2 , typename std::enable_if&lt; is_predicate&lt; P1 &gt;::value &amp;&amp;is_predicate&lt; P2 &gt;::value &gt;::type *  = nullptr&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
@@ -1370,6 +1374,40 @@ template&lt;typename... Ts&gt; </div>
 
 </div>
 </div>
+<a class="anchor" id="af7276855e5133126a11b075d19a63a7f"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::pair&lt;std::vector&lt;<a class="el" href="structpfq_1_1lang_1_1FunctionDescr.html">FunctionDescr</a>&gt;, std::ptrdiff_t&gt; pfq::lang::serialize </td>
+          <td>(</td>
+          <td class="paramtype">std::vector&lt; MFunction&lt;&gt;&gt; const &amp;&#160;</td>
+          <td class="paramname"><em>cont</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::ptrdiff_t&#160;</td>
+          <td class="paramname"><em>n</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+</div>
+</div>
 <a class="anchor" id="ad5a149c9a27022cf32a497eaac3e9027"></a>
 <div class="memitem">
 <div class="memproto">
@@ -1721,7 +1759,7 @@ template&lt;typename C1 , typename C2 &gt; </div>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="namespacepfq.html">pfq</a></li><li class="navelem"><a class="el" href="namespacepfq_1_1lang.html">lang</a></li>
-    <li class="footer">Generated on Fri Feb 27 2015 17:03:38 for PFQ/lang eDLS by
+    <li class="footer">Generated on Sat Apr 11 2015 16:34:28 for PFQ/lang eDLS by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.8 </li>
   </ul>

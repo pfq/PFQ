@@ -32,7 +32,21 @@ auto \hyperlink{namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02e
 auto \hyperlink{namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03_af6c041f2494f9dd06acb73d42524e3ad}{dummy\+\_\+strings} = \mbox{[}$\,$\mbox{]} (std\+::vector$<$std\+::string$>$ const \&vec) \{ return \hyperlink{namespacepfq_1_1lang_a1aacba4a159b6c2ddf275bd1fec19ec2}{mfunction}(\char`\"{}dummy\+\_\+strings\char`\"{}, vec); \}
 \item 
 auto \hyperlink{namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03_a8152d34c5c69cc26aaa2b4a14ed37af1}{crc16} = \hyperlink{namespacepfq_1_1lang_a1aacba4a159b6c2ddf275bd1fec19ec2}{mfunction}(\char`\"{}crc16\char`\"{})
-\end{DoxyCompactItemize}
+\item 
+auto \hyperlink{namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03_abd26824e1b0e6a31ddbba793b727ef8f}{gtp} = \hyperlink{namespacepfq_1_1lang_a1aacba4a159b6c2ddf275bd1fec19ec2}{mfunction}(\char`\"{}gtp\char`\"{})
+\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} if it is a G\+T\+P packet, {\ttfamily Drop} it otherwise. \end{DoxyCompactList}\item 
+auto \hyperlink{namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03_a209a0ce5245cb37a38e0e4c6616e3604}{gtp\+\_\+cp} = \hyperlink{namespacepfq_1_1lang_a1aacba4a159b6c2ddf275bd1fec19ec2}{mfunction}(\char`\"{}gtp\+\_\+cp\char`\"{})
+\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} if it is a G\+T\+P Control-\/\+Plane packet, {\ttfamily Drop} it otherwise. \end{DoxyCompactList}\item 
+auto \hyperlink{namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03_ac8b95a754c8c3bbef4847904eaf6cb9b}{gtp\+\_\+up} = \hyperlink{namespacepfq_1_1lang_a1aacba4a159b6c2ddf275bd1fec19ec2}{mfunction}(\char`\"{}gtp\+\_\+up\char`\"{})
+\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} if it is a G\+T\+P User-\/\+Plane packet, {\ttfamily Drop} it otherwise. \end{DoxyCompactList}\item 
+auto \hyperlink{namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03_a2eb9e54a6fc6170b246cf3149445a2c4}{is\+\_\+gtp} = \hyperlink{namespacepfq_1_1lang_aca9adafc436b7f851621b979fa1aaf88}{predicate}(\char`\"{}is\+\_\+gtp\char`\"{})
+\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} if it is a G\+T\+P packet, {\ttfamily Drop} it otherwise. \end{DoxyCompactList}\item 
+auto \hyperlink{namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03_ade25d79513e3131a54a05e23d25a7539}{is\+\_\+gtp\+\_\+cp} = \hyperlink{namespacepfq_1_1lang_aca9adafc436b7f851621b979fa1aaf88}{predicate}(\char`\"{}is\+\_\+gtp\+\_\+cp\char`\"{})
+\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} if it is a G\+T\+P Control-\/\+Plane packet, {\ttfamily Drop} it otherwise. \end{DoxyCompactList}\item 
+auto \hyperlink{namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03_a8c12f3cb8c8faaab619e0feb874ed0c3}{is\+\_\+gtp\+\_\+up} = \hyperlink{namespacepfq_1_1lang_aca9adafc436b7f851621b979fa1aaf88}{predicate}(\char`\"{}is\+\_\+gtp\+\_\+up\char`\"{})
+\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} if it is a G\+T\+P Control-\/\+Plane packet, {\ttfamily Drop} it otherwise. \end{DoxyCompactList}\item 
+auto \hyperlink{namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03_a6b08a2b49251677736f1939eaadac4a6}{steer\+\_\+gtp\+\_\+usr}
+\begin{DoxyCompactList}\small\item\em Dispatch the packet across the sockets. \end{DoxyCompactList}\end{DoxyCompactItemize}
 
 
 \subsection{Function Documentation}
@@ -161,3 +175,62 @@ par3 (udp, tcp, icmp) $>$$>$ log\+\_\+msg (\char`\"{}\+This is an U\+D\+P/\+T\+C
 \hypertarget{namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03_a8ee61246090fb5d74e96dbb7f19b7008}{\index{pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}@{pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}}!dummy\+\_\+vector@{dummy\+\_\+vector}}
 \index{dummy\+\_\+vector@{dummy\+\_\+vector}!pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}@{pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}}}
 \subsubsection[{dummy\+\_\+vector}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\{experimental.\+hpp\}\+::dummy\+\_\+vector = \mbox{[}$\,$\mbox{]} (std\+::vector$<$int$>$ const \&vec) \{ return {\bf mfunction}(\char`\"{}dummy\+\_\+vector\char`\"{}, vec); \}}}\label{namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03_a8ee61246090fb5d74e96dbb7f19b7008}
+\hypertarget{namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03_abd26824e1b0e6a31ddbba793b727ef8f}{\index{pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}@{pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}}!gtp@{gtp}}
+\index{gtp@{gtp}!pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}@{pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}}}
+\subsubsection[{gtp}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\{experimental.\+hpp\}\+::gtp = {\bf mfunction}(\char`\"{}gtp\char`\"{})}}\label{namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03_abd26824e1b0e6a31ddbba793b727ef8f}
+
+
+Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} if it is a G\+T\+P packet, {\ttfamily Drop} it otherwise. 
+
+\hypertarget{namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03_a209a0ce5245cb37a38e0e4c6616e3604}{\index{pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}@{pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}}!gtp\+\_\+cp@{gtp\+\_\+cp}}
+\index{gtp\+\_\+cp@{gtp\+\_\+cp}!pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}@{pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}}}
+\subsubsection[{gtp\+\_\+cp}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\{experimental.\+hpp\}\+::gtp\+\_\+cp = {\bf mfunction}(\char`\"{}gtp\+\_\+cp\char`\"{})}}\label{namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03_a209a0ce5245cb37a38e0e4c6616e3604}
+
+
+Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} if it is a G\+T\+P Control-\/\+Plane packet, {\ttfamily Drop} it otherwise. 
+
+\hypertarget{namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03_ac8b95a754c8c3bbef4847904eaf6cb9b}{\index{pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}@{pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}}!gtp\+\_\+up@{gtp\+\_\+up}}
+\index{gtp\+\_\+up@{gtp\+\_\+up}!pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}@{pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}}}
+\subsubsection[{gtp\+\_\+up}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\{experimental.\+hpp\}\+::gtp\+\_\+up = {\bf mfunction}(\char`\"{}gtp\+\_\+up\char`\"{})}}\label{namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03_ac8b95a754c8c3bbef4847904eaf6cb9b}
+
+
+Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} if it is a G\+T\+P User-\/\+Plane packet, {\ttfamily Drop} it otherwise. 
+
+\hypertarget{namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03_a2eb9e54a6fc6170b246cf3149445a2c4}{\index{pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}@{pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}}!is\+\_\+gtp@{is\+\_\+gtp}}
+\index{is\+\_\+gtp@{is\+\_\+gtp}!pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}@{pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}}}
+\subsubsection[{is\+\_\+gtp}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\{experimental.\+hpp\}\+::is\+\_\+gtp = {\bf predicate}(\char`\"{}is\+\_\+gtp\char`\"{})}}\label{namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03_a2eb9e54a6fc6170b246cf3149445a2c4}
+
+
+Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} if it is a G\+T\+P packet, {\ttfamily Drop} it otherwise. 
+
+\hypertarget{namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03_ade25d79513e3131a54a05e23d25a7539}{\index{pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}@{pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}}!is\+\_\+gtp\+\_\+cp@{is\+\_\+gtp\+\_\+cp}}
+\index{is\+\_\+gtp\+\_\+cp@{is\+\_\+gtp\+\_\+cp}!pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}@{pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}}}
+\subsubsection[{is\+\_\+gtp\+\_\+cp}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\{experimental.\+hpp\}\+::is\+\_\+gtp\+\_\+cp = {\bf predicate}(\char`\"{}is\+\_\+gtp\+\_\+cp\char`\"{})}}\label{namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03_ade25d79513e3131a54a05e23d25a7539}
+
+
+Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} if it is a G\+T\+P Control-\/\+Plane packet, {\ttfamily Drop} it otherwise. 
+
+\hypertarget{namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03_a8c12f3cb8c8faaab619e0feb874ed0c3}{\index{pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}@{pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}}!is\+\_\+gtp\+\_\+up@{is\+\_\+gtp\+\_\+up}}
+\index{is\+\_\+gtp\+\_\+up@{is\+\_\+gtp\+\_\+up}!pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}@{pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}}}
+\subsubsection[{is\+\_\+gtp\+\_\+up}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\{experimental.\+hpp\}\+::is\+\_\+gtp\+\_\+up = {\bf predicate}(\char`\"{}is\+\_\+gtp\+\_\+up\char`\"{})}}\label{namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03_a8c12f3cb8c8faaab619e0feb874ed0c3}
+
+
+Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} if it is a G\+T\+P Control-\/\+Plane packet, {\ttfamily Drop} it otherwise. 
+
+\hypertarget{namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03_a6b08a2b49251677736f1939eaadac4a6}{\index{pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}@{pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}}!steer\+\_\+gtp\+\_\+usr@{steer\+\_\+gtp\+\_\+usr}}
+\index{steer\+\_\+gtp\+\_\+usr@{steer\+\_\+gtp\+\_\+usr}!pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}@{pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\lcurly{}experimental.\+hpp\rcurly{}}}
+\subsubsection[{steer\+\_\+gtp\+\_\+usr}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::experimental\+::anonymous\+\_\+namespace\{experimental.\+hpp\}\+::steer\+\_\+gtp\+\_\+usr}}\label{namespacepfq_1_1lang_1_1experimental_1_1anonymous__namespace_02experimental_8hpp_03_a6b08a2b49251677736f1939eaadac4a6}
+{\bfseries Initial value\+:}
+\begin{DoxyCode}
+= [] (\textcolor{keyword}{const} \textcolor{keywordtype}{char} *net, \textcolor{keywordtype}{int} prefix)
+        \{
+            \textcolor{keywordflow}{return} \hyperlink{namespacepfq_1_1lang_a1aacba4a159b6c2ddf275bd1fec19ec2}{mfunction}(\textcolor{stringliteral}{"steer\_gtp\_usr"}, ipv4\_t\{net\}, prefix);
+        \}
+\end{DoxyCode}
+
+
+Dispatch the packet across the sockets. 
+
+Dispatch with a randomized algorithm that maintains the integrity of per-\/user flows on top of G\+T\+P tunnels (Control-\/\+Plane packets are broadcasted to all sockets). Example\+:
+
+steer\+\_\+gtp\+\_\+usr (\char`\"{}10.\+0.\+0.\+0\char`\"{}, 8) 
