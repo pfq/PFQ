@@ -316,7 +316,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 
 	for_each_skbuff(SKBUFF_BATCH_ADDR(gcollector->pool), skb, n)
         {
-		unsigned long local_group_mask = __pfq_devmap_get_groups(skb->dev->ifindex, skb_get_rx_queue(skb));
+		unsigned long local_group_mask = pfq_devmap_get_groups(skb->dev->ifindex, skb_get_rx_queue(skb));
 
 		group_mask |= local_group_mask;
 
@@ -333,7 +333,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 		struct pfq_group * this_group = pfq_get_group(gid);
 
 		bool bf_filter_enabled = atomic_long_read(&this_group->bp_filter);
-		bool vlan_filter_enabled = __pfq_vlan_filters_enabled(gid);
+		bool vlan_filter_enabled = pfq_vlan_filters_enabled(gid);
 		struct gc_queue_buff refs = { len:0 };
 
 		socket_mask = 0;
@@ -379,7 +379,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 
 			if (vlan_filter_enabled) {
 
-				if (!__pfq_check_group_vlan_filter(gid, buff.skb->vlan_tci & ~VLAN_TAG_PRESENT)) {
+				if (!pfq_check_group_vlan_filter(gid, buff.skb->vlan_tci & ~VLAN_TAG_PRESENT)) {
 					__sparse_inc(&this_group->stats.drop, cpu);
 					continue;
 				}
@@ -938,7 +938,7 @@ static void __exit pfq_exit_module(void)
         proto_unregister(&pfq_proto);
 
         /* disable direct capture */
-        __pfq_devmap_monitor_reset();
+        pfq_devmap_monitor_reset();
 
         /* wait grace period */
         msleep(Q_GRACE_PERIOD);
@@ -970,7 +970,7 @@ static void __exit pfq_exit_module(void)
 inline
 int pfq_direct_capture(const struct sk_buff *skb)
 {
-        return direct_capture && __pfq_devmap_monitor_get(skb->dev->ifindex);
+        return direct_capture && pfq_devmap_monitor_get(skb->dev->ifindex);
 }
 
 

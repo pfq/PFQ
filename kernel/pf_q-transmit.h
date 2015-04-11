@@ -48,7 +48,6 @@ struct lazy_fwd_targets
 
 extern int __pfq_queue_xmit(size_t index, struct pfq_tx_opt *to, struct net_device *dev, int cpu, int node);
 
-
 static inline int
 pfq_queue_xmit(size_t index, struct pfq_tx_opt *to, struct net_device *dev)
 {

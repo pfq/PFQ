@@ -45,7 +45,7 @@ extern int  pfq_devmap_update(int action, int index, int queue, int gid);
 extern void pfq_devmap_monitor_update(void);
 
 static inline
-int __pfq_devmap_equal(int i1, int q1, int i2, int q2)
+int pfq_devmap_equal(int i1, int q1, int i2, int q2)
 {
         i1 = i1 > 0 ? i1 & Q_MAX_DEVICE_MASK   : i1;
         q1 = q1 > 0 ? q1 & Q_MAX_HW_QUEUE_MASK : q1;
@@ -61,21 +61,21 @@ int __pfq_devmap_equal(int i1, int q1, int i2, int q2)
 
 
 static inline
-unsigned long __pfq_devmap_get_groups(int d, int q)
+unsigned long pfq_devmap_get_groups(int d, int q)
 {
         return atomic_long_read(&pfq_devmap[d & Q_MAX_DEVICE_MASK][q & Q_MAX_HW_QUEUE_MASK]);
 }
 
 
 static inline
-int __pfq_devmap_monitor_get(int index)
+int pfq_devmap_monitor_get(int index)
 {
         return atomic_read(&pfq_devmap_monitor[index & Q_MAX_DEVICE_MASK]);
 }
 
 
 static inline
-void __pfq_devmap_monitor_reset(void)
+void pfq_devmap_monitor_reset(void)
 {
         int n;
         for(n = 0; n < Q_MAX_DEVICE; n++)

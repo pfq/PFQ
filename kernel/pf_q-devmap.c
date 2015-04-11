@@ -68,7 +68,7 @@ int pfq_devmap_update(int action, int index, int queue, int gid)
         {
             unsigned long tmp;
 
-            if (!__pfq_devmap_equal(i, q, index, queue))
+            if (!pfq_devmap_equal(i, q, index, queue))
                 continue;
 
             /* map_set... */

@@ -272,7 +272,7 @@ pfq_symtable_unregister_function(const char *module, struct list_head *category,
 	if (elem == NULL)
         	return -EFAULT;
 
-	__pfq_dismiss_function(elem->function);
+	pfq_dismiss_function(elem->function);
         __pfq_symtable_unregister_function(category, symbol);
 
 	up(&symtable_sem);
