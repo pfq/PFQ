@@ -199,6 +199,7 @@ Context(PFQ)
         Assert(x.tx_slots(), is_equal_to(4096UL));
     }
 
+
     Test(bind_device)
     {
         pfq::socket x;
@@ -269,7 +270,7 @@ Context(PFQ)
 
         x.open(pfq::group_policy::undefined, 64);
 
-        AssertNoThrow(x.group_stats(11));
+        AssertThrow(x.group_stats(11));
 
         x.join_group(11);
 

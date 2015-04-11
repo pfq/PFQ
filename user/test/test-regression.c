@@ -217,7 +217,7 @@ void test_group_stats()
         assert(q);
 
 	struct pfq_stats s;
-	assert(pfq_get_group_stats(q, 11, &s) == 0);
+	assert(pfq_get_group_stats(q, 11, &s) == -1);
 
 	assert(pfq_join_group(q, 11, Q_CLASS_DEFAULT, Q_POLICY_GROUP_RESTRICTED) == 11);
 
@@ -642,8 +642,8 @@ main(int argc __attribute__((unused)), char *argv[]__attribute__((unused)))
 	TEST(test_read);
 
 	TEST(test_stats);
-	TEST(test_group_stats);
 
+	TEST(test_group_stats);
         TEST(test_my_group_stats_priv);
 	TEST(test_my_group_stats_restricted);
 	TEST(test_my_group_stats_shared);
