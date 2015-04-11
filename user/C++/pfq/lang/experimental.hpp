@@ -157,27 +157,37 @@ namespace pfq { namespace lang { namespace experimental {
             return mfunction("par8", f0, f1, f2, f3, f4, f5, f6, f7);
         }
 
+        //! Evaluate to \c Pass SkBuff if it is a GTP packet, \c Drop it otherwise.
+
+        auto gtp            = mfunction("gtp");
+
+        //! Evaluate to \c Pass SkBuff if it is a GTP Control-Plane packet, \c Drop it otherwise.
+
+        auto gtp_cp         = mfunction("gtp_cp");
+
+        //! Evaluate to \c Pass SkBuff if it is a GTP User-Plane packet, \c Drop it otherwise.
+
+        auto gtp_up         = mfunction("gtp_up");
 
         //! Evaluate to \c Pass SkBuff if it is a GTP packet, \c Drop it otherwise.
 
-        auto gtp            = [] (const char *net, int prefix)
-        {
-            return mfunction("gtp", ipv4_t{net}, prefix);
-        };
+        auto is_gtp         = predicate("is_gtp");
 
-        //! Evaluate to \c Pass SkBuff if it is a GTP packet, \c Drop it otherwise.
+        //! Evaluate to \c Pass SkBuff if it is a GTP Control-Plane packet, \c Drop it otherwise.
 
-        auto is_gtp         = [] (const char *net, int prefix)
-        {
-            return predicate("is_gtp", ipv4_t{net}, prefix);
-        };
+        auto is_gtp_cp      = predicate("is_gtp_cp");
+
+        //! Evaluate to \c Pass SkBuff if it is a GTP Control-Plane packet, \c Drop it otherwise.
+
+        auto is_gtp_up      = predicate("is_gtp_up");
 
         //! Dispatch the packet across the sockets
         /*!
          * Dispatch with a randomized algorithm that maintains the integrity
-         * of per-user flows on top of GTP tunnels. Example:
+         * of per-user flows on top of GTP tunnels (Control-Plane packets are broadcasted to
+         * all sockets). Example:
          *
-         * steer_rtp
+         * steer_gtp_usr ("10.0.0.0", 8)
          */
 
         auto steer_gtp_usr = [] (const char *net, int prefix)

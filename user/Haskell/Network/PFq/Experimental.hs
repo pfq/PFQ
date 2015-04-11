@@ -109,9 +109,10 @@ par8 a b c d e f g h = MFunction "par8" a b c d e f g h
 
 -- | Dispatch the packet across the sockets
 -- with a randomized algorithm that maintains the integrity of
--- user flows on top of GTP tunnel protocol.
+-- per-user flows on top of GTP tunnel protocol (Control-Plane packets
+-- are broadcasted to all sockets).
 --
--- > steer_gtp_usr "192.168.0.0" 16
+-- > (steer_gtp_usr "192.168.0.0" 16)
 
 steer_gtp_usr :: IPv4 -> CInt -> NetFunction
 steer_gtp_usr net prefix = MFunction "steer_gtp_usr" net prefix () () () () () () :: NetFunction
@@ -120,8 +121,19 @@ steer_gtp_usr net prefix = MFunction "steer_gtp_usr" net prefix () () () () () (
 -- | Evaluate to /Pass SkBuff/ in case of GTP packet, /Drop/ it otherwise.
 gtp    = MFunction "gtp" () () () () () () () () :: NetFunction
 
+-- | Evaluate to /Pass SkBuff/ in case of GTP Control-Plane packet, /Drop/ it otherwise.
+gtp_cp  = MFunction "gtp_cp" () () () () () () () () :: NetFunction
+
+-- | Evaluate to /Pass SkBuff/ in case of GTP User-Plane packet, /Drop/ it otherwise.
+gtp_up  = MFunction "gtp_up" () () () () () () () () :: NetFunction
 
 -- | Evaluate to /True/ if the SkBuff is a GTP packet.
 is_gtp = Predicate "is_gtp" () () () () () () () () :: NetPredicate
+
+-- | Evaluate to /True/ if the SkBuff is a GTP Control-Plane packet.
+is_gtp_cp = Predicate "is_gtp_cp" () () () () () () () () :: NetPredicate
+
+-- | Evaluate to /True/ if the SkBuff is a GTP User-Plane packet.
+is_gtp_up = Predicate "is_gtp_up" () () () () () () () () :: NetPredicate
 
 
