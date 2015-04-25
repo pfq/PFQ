@@ -60,29 +60,29 @@ In addition, a pure functional language designed for early stages in-kernel appl
 Through PFQ/lang it is possible to build efficient bridges, port mirrors, simple firewalls, network balancers and so forth.</p>
 
 <p>The package provides the source code of the PFQ kernel module, user-space libraries for C, C++11-14 and Haskell language, 
-an implementation of PFQ/lang as eDSL for both C++11-14 and Haskell, and a set of diagnostic tools.</p>
+an implementation of PFQ/lang as eDSL for C++11-14 and Haskell, and a set of diagnostic tools.</p>
 
 <h3>
 <a name="features" class="anchor" href="#features"><span class="octicon octicon-link"></span></a>Features</h3>
 
 <ul>
 
-<li>Full lock-free architecture.</li>
+<li>Data-path with full lock-free architecture.</li>
 <li>Preallocated pools of socket buffers.</li> 
 <li>Compliant with a plethora of network devices drivers.</li>
 <li>Rx and Tx line-rate on 10-Gbit links (14,8 Mpps), on-top-of Intel ixgbe <i>vanilla</i> drivers.</li>
 <li>Transparent support of kernel threads for asynchronous packets transmission.</li>
-<li>Asynchronous transmission with active timestamping (which determines when to transmit a packet).</li>
-<li>Concurrent monitoring of multiple multi-threaded applications by means of groups of sockets.</li>
+<li>Transmission with active timestamping (which determines when to transmit a packet).</li>
+<li>Groups of sockets enable concurrent monitoring of multiple multi-threaded applications.</li>
 <li>Per-group packet steering through randomized hashing or deterministic classification.</li>
 <li>Per-group Berkeley and VLAN filters.</li>
-<li>Functional engine for in-kernel packet processing: <a href="http://pfq.github.io/PFQ/v4.x/lang/haskell/index.html">PFQ/lang</a> v4.x.</li>
+<li>Functional engine for in-kernel packet processing by means of <a href="http://pfq.github.io/PFQ/v4.x/lang/haskell/index.html">PFQ/lang</a>.</li>
 <li>User-space libraries for C, C++11-14 and Haskell language.</li>
-<li>PFQ/lang as eDLS for C++11-14 and Haskell language.</li>
-<li>Accelerated pcap library for packet capture and transmission (line-speed tested with <a href="https://github.com/awgn/captop">captop</a>).</li>
-<li><b>pfqd</b>, a daemon to configure and parallelize multiple instances of legacy applications.</li>
-<li><b>pfq-omatic</b>, a script that automagically accelerates vanilla drivers.</li>
-<li>I/O user<->kernel shared-memory on top of <b>HugePages</b>.</li>
+<li>PFQ/lang eDLS for C++11-14 and Haskell language.</li>
+<li>Accelerated pcap library for legacy applications (line-speed tested with <a href="https://github.com/awgn/captop">captop</a>).</li>
+<li><b>pfqd</b> daemon used to configure and parallele legacy applications.</li>
+<li><b>pfq-omatic</b> script that automagically accelerates vanilla drivers.</li>
+<li>I/O user<->kernel memory-mapped communications allocated on top of <b>HugePages</b>.</li>
 
 </ul>
 
@@ -92,7 +92,7 @@ an implementation of PFQ/lang as eDSL for both C++11-14 and Haskell, and a set o
 <p>PFQ performance is highly dependent on the hardware in use. </p>
 
 <p>Running on top of a Xeon processor equipped and the Intel 82599 10G controller, PFQ can process and steer to user-space and transmit the line speed (~14,8 Million packets per second) deploying 2 or 3 kernel threads.</p>
-<p>The following link shows the configuration file and the performance measured running PFQ on top of two different <a href="https://github.com/pfq/PFQ/wiki/Intel-Processors">Intel processors</a>.</p>
+<p>The following link shows the configuration file and the performance measured running PFQ on top of different <a href="https://github.com/pfq/PFQ/wiki/Intel-Processors">Intel processors</a>.</p>
 
 <h3>
 <a name="releases" class="anchor" href="#releases"><span class="octicon octicon-link"></span></a>Releases</h3>
@@ -102,7 +102,8 @@ an implementation of PFQ/lang as eDSL for both C++11-14 and Haskell, and a set o
 <h3>
 <a name="source-code" class="anchor" href="#source-code"><span class="octicon octicon-link"></span></a>Source code</h3>
 
-<p>The package provides the source code of the PFQ kernel module, user-space libraries for the C, C++11 and Haskell language and a set of diagnostic tools.</p>
+<p>The package provides the source code of the PFQ kernel module, user-space libraries for the C, C++11 and Haskell language, 
+utilities, scripts a set of diagnostic tools.</p>
 
 <p>Gcc/g++ 4.7 (or higher), GHC 7.8, alex, happy, CMake and make tool are required for the compilation.</p>
 
@@ -116,7 +117,7 @@ an implementation of PFQ/lang as eDSL for both C++11-14 and Haskell, and a set o
 <a name="publications" class="anchor" href="#publication"><span class="octicon octicon-link"></span></a>Publications</h3>
 
 <li><a href="http://tma2012.ftw.at/papers/PAM2012paper12.pdf"><em>"PFQ: a Novel Engine for Multi-Gigabit Packet Capturing With Multi-Core Commodity Hardware"</em></a> <strong>Best-Paper-Award</strong> at PAM2012</li>
-<li><a href="http://www.ancsconf.org/conference-program"><em>"A Purely Functional Approach to Packet Processing"</em></a> ANCS 2014 Conference - Marina del Rey</li>
+<li><a href="http://www.ancsconf.org/conference-program"><em>"A Purely Functional Approach to Packet Processing"</em></a> ANCS 2014 Conference - Marina del Rey (LA)</li>
 
 <br>
 
