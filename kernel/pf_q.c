@@ -873,13 +873,11 @@ void unregister_device_handler(void)
 
 static int __init pfq_init_module(void)
 {
-        int n;
-        printk(KERN_INFO "[PFQ] loading (%s)...\n", Q_VERSION);
+        int err = 0;
 
-        pfq_net_proto_family_init();
-        pfq_proto_ops_init();
-        pfq_proto_init();
-	pfq_groups_init();
+        printk(KERN_INFO "[PFQ] loading version (%s)...\n", Q_VERSION);
+
+	/* check options */
 
         if (batch_len <= 0 || batch_len > Q_SKBUFF_SHORT_BATCH) {
                 printk(KERN_INFO "[PFQ] batch_len=%d not allowed: valid range (0,%zu]!\n", batch_len, Q_SKBUFF_SHORT_BATCH);
@@ -891,37 +889,67 @@ static int __init pfq_init_module(void)
 		return -EFAULT;
 	}
 
-	if (pfq_percpu_init())
-		return -EFAULT;
+	/* initialize data structures ... */
 
-	if (pfq_proc_init())
-		return -ENOMEM;
+        pfq_net_proto_family_init();
+        pfq_proto_ops_init();
+        pfq_proto_init();
+	pfq_groups_init();
 
-        /* register pfq sniffer protocol */
-        n = proto_register(&pfq_proto, 0);
-        if (n != 0)
-                return n;
+	/* initialization */
+
+	err = pfq_percpu_init();
+	if (err < 0)
+		goto err;
+
+	err = pfq_proc_init();
+	if (err < 0)
+		goto err2;
+
+        /* register PFQ sniffer protocol */
+
+        err = proto_register(&pfq_proto, 0);
+        if (err < 0)
+		goto err3;
 
 	/* register the pfq socket */
-        sock_register(&pfq_family_ops);
 
-        /* finally register the basic device handler */
-        register_device_handler();
-
-	/* register functions */
-
-	pfq_symtable_init();
+        err = sock_register(&pfq_family_ops);
+        if (err < 0)
+        	goto err4;
 
 #ifdef PFQ_USE_SKB_POOL
-        if (pfq_skb_pool_init() != 0) {
+	err = pfq_skb_pool_init();
+        if (err < 0) {
         	pfq_skb_pool_purge();
-        	return -ENOMEM;
+        	goto err5;
 	}
         printk(KERN_INFO "[PFQ] skb pool initialized.\n");
 #endif
 
+	/* register pfq-lang default functions */
+	pfq_symtable_init();
+
+        /* finally register the basic device handler */
+        register_device_handler();
+
 	printk(KERN_INFO "[PFQ] ready!\n");
         return 0;
+
+#ifdef PFQ_USE_SKB_POOL
+err5:
+        sock_unregister(PF_Q);
+#endif
+
+err4:
+        proto_unregister(&pfq_proto);
+err3:
+	pfq_proc_fini();
+err2:
+	pfq_percpu_flush();
+	free_percpu(cpu_data);
+err:
+	return err;
 }
 
 
@@ -959,8 +987,7 @@ static void __exit pfq_exit_module(void)
         /* free per-cpu data */
 	free_percpu(cpu_data);
 
-	/* free functions */
-
+	/* free symbol table of pfq-lang functions */
 	pfq_symtable_free();
 
 	pfq_proc_fini();
