@@ -1133,7 +1133,7 @@ pfq_read_linux(pcap_t *handle, int max_packets, pcap_handler callback, u_char *u
 
 		pkt = pfq_iterator_data(it);
 
-		if ((vlan_tci = h->un.vlan_tci) != 0) {
+		if ((vlan_tci = h->vlan.tci) != 0) {
 
 			struct vlan_tag *tag;
 
