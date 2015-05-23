@@ -52,7 +52,7 @@ reset = setSGRCode []
 
 version = "4.3"
 
-data YesNo = Yes | No
+data YesNo = Yes | No | Unspec
     deriving (Show, Read, Eq)
 
 newtype OptString = OptString { getOptString :: String }
@@ -289,15 +289,20 @@ setupDevice :: Device -> IO ()
 setupDevice (Device dev speed fctrl opts) = do
     putStrBoldLn $ "Activating " ++ dev ++ "..."
     runSystem ("/sbin/ifconfig " ++ dev ++ " up") "ifconfig error!"
-    when (fctrl == No) $ do
-        putStrBoldLn $ "Disabling flow control for " ++ dev ++ "..."
-        runSystem ("/sbin/ethtool -A " ++ dev ++ " autoneg off rx off tx off") "ethtool error!"
+    case fctrl of
+        No -> do
+                putStrBoldLn $ "Disabling flow control for " ++ dev ++ "..."
+                runSystem ("/sbin/ethtool -A " ++ dev ++ " autoneg off rx off tx off") "flowctrl: ethtool error!"
+        Yes -> do
+                putStrBoldLn $ "Enabling flow control for " ++ dev ++ "..."
+                runSystem ("/sbin/ethtool -A " ++ dev ++ " autoneg on rx on tx on") "flowctrl: ethtool error!"
+        Unspec -> return ()
     when (isJust speed) $ do
         let s = fromJust speed
         putStrBoldLn $ "Setting speed (" ++ show s ++ ") for " ++ dev ++ "..."
-        runSystem ("/sbin/ethtool -s " ++ dev ++ " speed " ++ show s ++ " duplex full") "ethtool error!"
+        runSystem ("/sbin/ethtool -s " ++ dev ++ " speed " ++ show s ++ " duplex full") "speed: ethtool error!"
     forM_ opts $ \(opt, arg, value) ->
-        runSystem ("/sbin/ethtool " ++ opt ++ " " ++ dev ++ " " ++ arg ++ " " ++ show value) "ethtool error!"
+        runSystem ("/sbin/ethtool " ++ opt ++ " " ++ dev ++ " " ++ arg ++ " " ++ show value) (opt ++ ": ethtool error!")
 
 
 getDevices ::  Config -> [String]
