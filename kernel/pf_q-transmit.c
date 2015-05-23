@@ -118,11 +118,11 @@ batch_xmit_and_drain(struct pfq_skbuff_batch *skbs, struct local_data *local, st
 	for_each_skbuff_upto(sent, skbs, skb, i)
 		pfq_kfree_skb_pool(skb, &local->tx_pool);
 
-	/* flush transmitted packets from the batch */
+	/* ... and drop them from the batch */
 
 	pfq_skbuff_batch_drop_n(skbs, sent);
 
-	/* get unsent skb (to be transmitted later) */
+	/* get the unsent skbs (to be transmitted later) */
 
 	for_each_skbuff(skbs, skb, i)
 		skb_get(skb);
@@ -219,11 +219,11 @@ __pfq_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int 
 	{
 		struct sk_buff *skb;
 
-		/* get tstamp of this packet */
+		/* get the tstamp of this packet */
 
 		last_ts = hdr->nsec;
 
-		/* if the batch is full, transmit it now */
+		/* if the batch is full, transmit it (now) */
 
 		if (tx_batch_required(SKBUFF_BATCH_ADDR(skbs), now, last_ts)) {
 
@@ -233,7 +233,7 @@ __pfq_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int 
 			if (giveup_tx(cpu))
 				break;
 
-			if (pfq_skbuff_batch_len(SKBUFF_BATCH_ADDR(skbs)) == batch_len)
+			if (sent == 0)
 				continue;
 		}
 
@@ -288,18 +288,31 @@ __pfq_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int 
 			break;
 	}
 
-	/* update stat of discarded packets from batch and from Tx shared queue */
+	/* packet unsent from the last batch are freed */
 
 	disc = pfq_skbuff_batch_len(SKBUFF_BATCH_ADDR(skbs));
+	if (disc) {
+		struct sk_buff *skb;
+		size_t n;
+		for_each_skbuff(SKBUFF_BATCH_ADDR(skbs), skb, n) {
+
+			kfree_skb(skb); /* decrement use-count to 1 */
+
+			pfq_kfree_skb_pool(skb, &local->tx_pool);
+		}
+	}
+
+	/* disc takes into account packets possibly left in the shared queue */
+
 	for(; ptr < end && hdr->len != 0; disc++, hdr = (struct pfq_pkthdr_tx *)ptr)
 	{
 		ptr += sizeof(struct pfq_pkthdr_tx) + ALIGN(hdr->len, 8);
 	}
 
+	/* update stats */
+
 	__sparse_add(&to->stats.disc, disc, cpu);
 	__sparse_add(&global_stats.disc, disc, cpu);
-
-	/* update stat of total sent packets */
 
 	__sparse_add(&to->stats.sent, tot_sent, cpu);
 	__sparse_add(&global_stats.sent, tot_sent, cpu);
