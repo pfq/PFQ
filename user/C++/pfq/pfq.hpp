@@ -164,9 +164,9 @@ namespace pfq {
             size_t tx_slot_size;
 
             size_t tx_attempt;
-            size_t tx_num_bind;
 
-            bool   tx_async;
+            size_t tx_num_bind;
+            size_t tx_num_async;
         };
 
         int fd_;
@@ -428,7 +428,7 @@ namespace pfq {
                                         0,
                                         0,
                                         0,
-                                        true
+                                        0
                                      });
 
             // get id
@@ -838,8 +838,8 @@ namespace pfq {
             if (::setsockopt(fd_, PF_Q, Q_SO_TX_BIND, &b, sizeof(b)) == -1)
                 throw pfq_error(errno, "PFQ: Tx bind error");
 
-            if (core == no_kthread)
-                data()->tx_async = false;
+            if (core != no_kthread)
+                data()->tx_num_async++;
 
             data()->tx_num_bind++;
         }
@@ -855,7 +855,7 @@ namespace pfq {
             if (::setsockopt(fd_, PF_Q, Q_SO_TX_UNBIND, nullptr, 0) == -1)
                 throw pfq_error(errno, "PFQ: Tx unbind error");
 
-            data()->tx_async = true;
+            data()->tx_num_async = 0;
             data()->tx_num_bind = 0;
         }
 
@@ -1274,7 +1274,7 @@ namespace pfq {
         send(const_buffer pkt)
         {
             auto rc = inject(pkt, 0);
-            if (!data_->tx_async)
+            if (data_->tx_num_bind != data_->tx_num_async)
                 tx_queue_flush();
             return rc;
         }
@@ -1295,7 +1295,7 @@ namespace pfq {
 
                 data_->tx_attempt = 0;
 
-                if (!data_->tx_async)
+                if (data_->tx_num_bind != data_->tx_num_async)
                     tx_queue_flush(any_queue);
             }
 
@@ -1312,8 +1312,9 @@ namespace pfq {
         bool
         send_at(const_buffer pkt, std::chrono::time_point<Clock, Duration> const &tp)
         {
-            if (!data_->tx_async)
-                throw std::runtime_error("PFQ: send_at not async!");
+            if (data_->tx_num_bind != data_->tx_num_async)
+                throw std::runtime_error("PFQ: send_at not fully async!");
+
             auto ns = std::chrono::duration_cast<std::chrono::nanoseconds>(tp.time_since_epoch()).count();
             return inject(pkt, ns);
         }

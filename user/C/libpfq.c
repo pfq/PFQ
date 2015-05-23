@@ -152,9 +152,9 @@ typedef struct pfq_data
 	size_t tx_slot_size;
 
 	size_t tx_attempt;
-	size_t tx_num_bind;
 
-	int    tx_async;
+	size_t tx_num_bind;
+	size_t tx_num_async;
 
 	const char * error;
 
@@ -234,11 +234,10 @@ pfq_open_group(unsigned long class_mask, int group_policy, size_t caplen, size_t
 
 	memset(q, 0, sizeof(pfq_t));
 
-	q->fd 	    = fd;
-	q->hd 	    = -1;
-	q->id 	    = -1;
-	q->gid 	    = -1;
-        q->tx_async =  1;
+	q->fd = fd;
+	q->hd = -1;
+	q->id = -1;
+	q->gid = -1;
 
         memset(&q->netq, 0, sizeof(q->netq));
 
@@ -1001,9 +1000,8 @@ pfq_bind_tx(pfq_t *q, const char *dev, int queue, int core)
         if (setsockopt(q->fd, PF_Q, Q_SO_TX_BIND, &b, sizeof(b)) == -1)
 		return Q_ERROR(q, "PFQ: Tx bind error");
 
-	if (core == Q_NO_KTHREAD)
-		q->tx_async = 0;
-
+	if (core != Q_NO_KTHREAD)
+		q->tx_num_async++;
 	q->tx_num_bind++;
 
 	return Q_OK(q);
@@ -1016,7 +1014,7 @@ pfq_unbind_tx(pfq_t *q)
         if (setsockopt(q->fd, PF_Q, Q_SO_TX_UNBIND, NULL, 0) == -1)
 		return Q_ERROR(q, "PFQ: Tx unbind error");
 
-	q->tx_async = 1;
+	q->tx_num_async = 0;
 	q->tx_num_bind = 0;
 
 	return Q_OK(q);
@@ -1104,7 +1102,7 @@ pfq_send(pfq_t *q, const void *ptr, size_t len)
 {
         int rc = pfq_inject(q, ptr, len, 0, Q_ANY_QUEUE);
 
-	if(!q->tx_async)
+	if(q->tx_num_bind != q->tx_num_async)
 		pfq_tx_queue_flush(q, Q_ANY_QUEUE);
 
 	return Q_VALUE(q, rc);
@@ -1120,7 +1118,7 @@ pfq_send_async(pfq_t *q, const void *ptr, size_t len, size_t flush_hint)
 
 		q->tx_attempt = 0;
 
-		if (!q->tx_async)
+		if (q->tx_num_bind != q->tx_num_async)
 			pfq_tx_queue_flush(q, Q_ANY_QUEUE);
 	}
 
@@ -1132,8 +1130,8 @@ int
 pfq_send_at(pfq_t *q, const void *ptr, size_t len, struct timespec *ts)
 {
 	uint64_t nsec;
-        if (!q->tx_async)
-		return Q_ERROR(q, "PFQ: send_at not async!");
+        if (q->tx_num_bind != q->tx_num_async)
+		return Q_ERROR(q, "PFQ: send_at not fully async!");
 
 	nsec = (uint64_t)(ts->tv_sec)*1000000000ull + (uint64_t)ts->tv_nsec;
         return pfq_inject(q, ptr, len, nsec, Q_ANY_QUEUE);
