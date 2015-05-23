@@ -56,10 +56,10 @@
 
 
 #define Q_VALUE(q,value)   __builtin_choose_expr(__builtin_types_compatible_p(typeof(q), pfq_t *), (((pfq_t *)q)->error = NULL, (value)), \
-	     	         ( __builtin_choose_expr(__builtin_types_compatible_p(typeof(q), pfq_t const *), (((pfq_t *)q)->error = NULL, (value)), (void)0)))
+				( __builtin_choose_expr(__builtin_types_compatible_p(typeof(q), pfq_t const *), (((pfq_t *)q)->error = NULL, (value)), (void)0)))
 
 #define Q_ERROR(q,msg)	  __builtin_choose_expr(__builtin_types_compatible_p(typeof(q), pfq_t *), (((pfq_t *)q)->error = (msg), -1), \
-	     	        ( __builtin_choose_expr(__builtin_types_compatible_p(typeof(q), pfq_t const *), (((pfq_t *)q)->error = (msg), -1), (void)0)))
+				( __builtin_choose_expr(__builtin_types_compatible_p(typeof(q), pfq_t const *), (((pfq_t *)q)->error = (msg), -1), (void)0)))
 
 #define Q_OK(q) Q_VALUE(q,0)
 
@@ -125,7 +125,7 @@ static int with_tokens(const char *str, const char *sep, int (*cb)(char **, int 
 
 	for(i = 0; i < n; ++i)
 	{
-        	free(tokens[i]);
+		free(tokens[i]);
 	}
 
 	return ret;
@@ -341,12 +341,12 @@ pfq_enable(pfq_t *q)
 		}
 	}
 	else {
-        	void * null = NULL;
-                if(setsockopt(q->fd, PF_Q, Q_SO_ENABLE, &null, sizeof(null)) == -1) {
+		void * null = NULL;
+		if(setsockopt(q->fd, PF_Q, Q_SO_ENABLE, &null, sizeof(null)) == -1) {
 			return Q_ERROR(q, "PFQ: socket enable");
-                }
+		}
 
-                q->shm_addr = mmap(NULL, tot_mem, PROT_READ|PROT_WRITE, MAP_SHARED, q->fd, 0);
+		q->shm_addr = mmap(NULL, tot_mem, PROT_READ|PROT_WRITE, MAP_SHARED, q->fd, 0);
 	}
 
 	if (q->shm_addr == MAP_FAILED ||
@@ -356,13 +356,13 @@ pfq_enable(pfq_t *q)
 
 	q->shm_size = tot_mem;
 
-       	q->rx_queue_addr = (char *)(q->shm_addr) + sizeof(struct pfq_shared_queue);
-        q->rx_queue_size = q->rx_slots * q->rx_slot_size;
+	q->rx_queue_addr = (char *)(q->shm_addr) + sizeof(struct pfq_shared_queue);
+	q->rx_queue_size = q->rx_slots * q->rx_slot_size;
 
-        q->tx_queue_addr = (char *)(q->shm_addr) + sizeof(struct pfq_shared_queue) + q->rx_queue_size * 2;
-        q->tx_queue_size = q->tx_slots * q->tx_slot_size;
+	q->tx_queue_addr = (char *)(q->shm_addr) + sizeof(struct pfq_shared_queue) + q->rx_queue_size * 2;
+	q->tx_queue_size = q->tx_slots * q->tx_slot_size;
 
-        return Q_OK(q);
+	return Q_OK(q);
 }
 
 
@@ -378,9 +378,9 @@ pfq_disable(pfq_t *q)
 			return Q_ERROR(q, "PFQ: munmap error");
 
 		if (q->hd != -1) {
-                	char filename[64];
-                	snprintf(filename, 64, "/dev/hugepages/pfq.%d", q->fd);
-                	unlink(filename);
+			char filename[64];
+			snprintf(filename, 64, "/dev/hugepages/pfq.%d", q->fd);
+			unlink(filename);
 		}
 
 	}
@@ -571,7 +571,7 @@ pfq_bind_group(pfq_t *q, int gid, const char *dev, int queue)
 	int index;
 
 	if (strcmp(dev, "any")==0) {
-        	index = Q_ANY_DEVICE;
+		index = Q_ANY_DEVICE;
 	}
 	else {
 		index = pfq_ifindex(q, dev);
@@ -609,7 +609,7 @@ pfq_egress_bind(pfq_t *q, const char *dev, int queue)
 
 	int index;
 	if (strcmp(dev, "any")==0) {
-        	index = Q_ANY_DEVICE;
+		index = Q_ANY_DEVICE;
 	}
 	else {
 		index = pfq_ifindex(q, dev);
@@ -645,7 +645,7 @@ pfq_unbind_group(pfq_t *q, int gid, const char *dev, int queue) /* Q_ANY_QUEUE *
 
 	int index;
 	if (strcmp(dev, "any")==0) {
-        	index = Q_ANY_DEVICE;
+		index = Q_ANY_DEVICE;
 	}
 	else {
 		index = pfq_ifindex(q, dev);
@@ -748,13 +748,13 @@ pfq_group_fprog(pfq_t *q, int gid, struct sock_fprog *f)
 	fprog.gid = gid;
 	if (f != NULL)
 	{
-        	fprog.fcode.len = f->len;
-        	fprog.fcode.filter = f->filter;
+		fprog.fcode.len = f->len;
+		fprog.fcode.filter = f->filter;
 	}
 	else
 	{
-        	fprog.fcode.len = 0;
-        	fprog.fcode.filter = NULL;
+		fprog.fcode.len = 0;
+		fprog.fcode.filter = NULL;
 	}
 
         if (setsockopt(q->fd, PF_Q, Q_SO_GROUP_FPROG, &fprog, sizeof(fprog)) == -1) {
@@ -778,7 +778,7 @@ int
 pfq_join_group(pfq_t *q, int gid, unsigned long class_mask, int group_policy)
 {
 	if (group_policy == Q_POLICY_GROUP_UNDEFINED) {
-         	return Q_ERROR(q, "PFQ: join with undefined policy!");
+		return Q_ERROR(q, "PFQ: join with undefined policy!");
 	}
 
 	struct pfq_group_join group = { gid, group_policy, class_mask };
@@ -912,7 +912,7 @@ pfq_read(pfq_t *q, struct pfq_net_queue *nq, long int microseconds)
 	unsigned int index, data;
 
         if (q->shm_addr == NULL) {
-         	return Q_ERROR(q, "PFQ: read: socket not enabled");
+		return Q_ERROR(q, "PFQ: read: socket not enabled");
 	}
 
 	qd    = (struct pfq_shared_queue *)(q->shm_addr);
@@ -922,7 +922,7 @@ pfq_read(pfq_t *q, struct pfq_net_queue *nq, long int microseconds)
 	if(Q_SHARED_QUEUE_LEN(data) == 0 ) {
 #ifdef PFQ_USE_POLL
 		if (pfq_poll(q, microseconds) < 0) {
-        		return Q_ERROR(q, "PFQ: poll error");
+			return Q_ERROR(q, "PFQ: poll error");
 		}
 #else
 		(void)microseconds;
@@ -947,7 +947,7 @@ pfq_read(pfq_t *q, struct pfq_net_queue *nq, long int microseconds)
 int
 pfq_recv(pfq_t *q, void *buf, size_t buflen, struct pfq_net_queue *nq, long int microseconds)
 {
-       	if (pfq_read(q, nq, microseconds) < 0)
+	if (pfq_read(q, nq, microseconds) < 0)
 		return -1;
 
 	if (buflen < (q->rx_slots * q->rx_slot_size)) {
@@ -1033,13 +1033,13 @@ pfq_inject(pfq_t *q, const void *buf, size_t len, uint64_t nsec, int queue)
         void *base_addr;
 
 	if (q->shm_addr == NULL)
-         	return Q_ERROR(q, "PFQ: inject: socket not enabled");
+		return Q_ERROR(q, "PFQ: inject: socket not enabled");
 
 	if (queue == Q_ANY_QUEUE) {
 		tss = pfq_fold(pfq_symmetric_hash(buf), q->tx_num_bind);
 	}
 	else {
-        	tss = pfq_fold(queue,q->tx_num_bind);
+		tss = pfq_fold(queue,q->tx_num_bind);
 	}
 
         tx = (struct pfq_tx_queue *)&sh_queue->tx[tss];
@@ -1053,26 +1053,26 @@ pfq_inject(pfq_t *q, const void *buf, size_t len, uint64_t nsec, int queue)
 	base_addr = q->tx_queue_addr + q->tx_queue_size * (2 * tss + (index & 1));
 
 	if (index != tx->index) {
-        	tx->index = index;
-        	tx->ptr = base_addr;
+		tx->index = index;
+		tx->ptr = base_addr;
 	}
 
 	slot_size = sizeof(struct pfq_pkthdr_tx) + ALIGN(len, 8);
 
 	if ((tx->ptr - base_addr + slot_size + sizeof(struct pfq_pkthdr_tx)) < q->tx_queue_size)
 	{
-       		struct pfq_pkthdr_tx *hdr;
+		struct pfq_pkthdr_tx *hdr;
 
-        	hdr = (struct pfq_pkthdr_tx *)tx->ptr;
+		hdr = (struct pfq_pkthdr_tx *)tx->ptr;
 		hdr->len = len;
 		hdr->nsec = nsec;
 		memcpy(hdr+1, buf, hdr->len);
 
-                tx->ptr += slot_size;
-        	hdr = (struct pfq_pkthdr_tx *)tx->ptr;
-                hdr->len = 0;
+		tx->ptr += slot_size;
+		hdr = (struct pfq_pkthdr_tx *)tx->ptr;
+		hdr->len = 0;
 
-                return Q_VALUE(q, len);
+		return Q_VALUE(q, len);
 	}
 
 	return Q_VALUE(q, -1);
@@ -1118,10 +1118,10 @@ pfq_send_async(pfq_t *q, const void *ptr, size_t len, size_t flush_hint)
 
 	if (++q->tx_attempt == flush_hint) {
 
-       		q->tx_attempt = 0;
+		q->tx_attempt = 0;
 
-       		if (!q->tx_async)
-       			pfq_tx_queue_flush(q, Q_ANY_QUEUE);
+		if (!q->tx_async)
+			pfq_tx_queue_flush(q, Q_ANY_QUEUE);
 	}
 
 	return Q_VALUE(q, rc);
@@ -1157,14 +1157,14 @@ pfq_mem_addr(pfq_t const *q)
 int
 pfq_id(pfq_t *q)
 {
- 	return q->id;
+	return q->id;
 }
 
 
 int
 pfq_group_id(pfq_t *q)
 {
- 	return q->gid;
+	return q->gid;
 }
 
 
