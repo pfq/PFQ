@@ -302,28 +302,6 @@ pfq_set_group_filter(pfq_gid_t gid, struct sk_filter *filter)
 }
 
 
-void
-pfq_dismiss_function(void *f)
-{
-        int n;
-
-        for(n = 0; n < Q_MAX_GROUP; n++)
-        {
-		struct pfq_group * g;
-                struct pfq_computation_tree *comp;
-                pfq_gid_t gid = { n };
-
-		g = pfq_get_group(gid);
-                BUG_ON(g != NULL);
-
-                comp = (struct pfq_computation_tree *)atomic_long_read(&g->comp);
-                BUG_ON(comp != NULL);
-        }
-
-        printk(KERN_INFO "[PFQ] function @%p dismissed.\n", f);
-}
-
-
 int
 pfq_set_group_prog(pfq_gid_t gid, struct pfq_computation_tree *comp, void *ctx)
 {

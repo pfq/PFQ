@@ -97,7 +97,6 @@ extern unsigned long pfq_get_all_groups_mask(pfq_gid_t gid);
 extern int  pfq_get_group_context(pfq_gid_t gid, int level, int size, void __user *context);
 extern void pfq_set_group_filter(pfq_gid_t gid, struct sk_filter *filter);
 
-extern void pfq_dismiss_function(void *f);
 extern struct pfq_group * pfq_get_group(pfq_gid_t gid);
 
 extern bool pfq_vlan_filters_enabled(pfq_gid_t gid);
