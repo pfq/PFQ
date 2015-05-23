@@ -59,10 +59,10 @@ forwardIO(arguments_t args, SkBuff b)
 	nskb = skb_clone(b.skb, GFP_ATOMIC);
 	if (!nskb) {
                 if (printk_ratelimit())
-        		printk(KERN_INFO "[PFQ/lang] forward pfq_xmit %s: no memory!\n", dev->name);
+			printk(KERN_INFO "[PFQ/lang] forward pfq_xmit %s: no memory!\n", dev->name);
 		sparse_inc(&global_stats.abrt);
 		sparse_inc(&stats->abrt);
-        	return Pass(b);
+		return Pass(b);
 	}
 
 	if (pfq_xmit(nskb, dev, nskb->queue_mapping, 0) != 1) {
@@ -202,18 +202,18 @@ tee(arguments_t args, SkBuff b)
 
 struct pfq_function_descr forward_functions[] = {
 
-        { "drop",       "SkBuff -> Action SkBuff",   	    		forward_drop		},
-        { "broadcast",  "SkBuff -> Action SkBuff",   	    		forward_broadcast	},
-        { "class",	"CInt -> SkBuff -> Action SkBuff",  		forward_class		},
-        { "deliver",	"CInt -> SkBuff -> Action SkBuff",  		forward_deliver		},
-        { "kernel",    	"SkBuff -> Action SkBuff",    			forward_to_kernel 	},
+        { "drop",       "SkBuff -> Action SkBuff",		forward_drop		},
+        { "broadcast",  "SkBuff -> Action SkBuff",		forward_broadcast	},
+        { "class",	"CInt -> SkBuff -> Action SkBuff",	forward_class		},
+        { "deliver",	"CInt -> SkBuff -> Action SkBuff",	forward_deliver		},
+        { "kernel",	"SkBuff -> Action SkBuff",		forward_to_kernel	},
 
-	{ "forwardIO",  "String -> SkBuff -> Action SkBuff",  		forwardIO,  forward_init, forward_fini },
-	{ "forward",    "String -> SkBuff -> Action SkBuff",  		forward,    forward_init, forward_fini },
+	{ "forwardIO",  "String -> SkBuff -> Action SkBuff",	forwardIO,  forward_init, forward_fini },
+	{ "forward",    "String -> SkBuff -> Action SkBuff",	forward,    forward_init, forward_fini },
 
-	{ "bridge",     "String -> SkBuff -> Action SkBuff",  			 bridge, forward_init, forward_fini },
-	{ "tee", 	"String -> (SkBuff -> Bool) -> SkBuff -> Action SkBuff", tee, 	 forward_init, forward_fini },
-	{ "tap", 	"String -> (SkBuff -> Bool) -> SkBuff -> Action SkBuff", tap, 	 forward_init, forward_fini },
+	{ "bridge",     "String -> SkBuff -> Action SkBuff",	bridge,			forward_init, forward_fini },
+	{ "tee",	"String -> (SkBuff -> Bool) -> SkBuff -> Action SkBuff", tee,	forward_init, forward_fini },
+	{ "tap",	"String -> (SkBuff -> Bool) -> SkBuff -> Action SkBuff", tap,	forward_init, forward_fini },
 
         { NULL }};
 

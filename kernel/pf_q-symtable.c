@@ -53,7 +53,7 @@ __pfq_symtable_free(struct list_head *category)
 
 	list_for_each_safe(pos, q, category)
 	{
-    		this = list_entry(pos, struct symtable_entry, list);
+		this = list_entry(pos, struct symtable_entry, list);
 		list_del(pos);
                 kfree(this);
 	}
@@ -71,8 +71,8 @@ __pfq_symtable_search(struct list_head *category, const char *symbol)
 
 	list_for_each(pos, category)
 	{
-    		this = list_entry(pos, struct symtable_entry, list);
-        	if (!strcmp(this->symbol, symbol))
+		this = list_entry(pos, struct symtable_entry, list);
+		if (!strcmp(this->symbol, symbol))
 			return this;
 	}
 	return NULL;
@@ -125,10 +125,10 @@ __pfq_symtable_unregister_function(struct list_head *category, const char *symbo
 
 	list_for_each_safe(pos, q, category)
 	{
-    		this = list_entry(pos, struct symtable_entry, list);
+		this = list_entry(pos, struct symtable_entry, list);
 		if (!strcmp(this->symbol, symbol)) {
 			list_del(pos);
-	       		kfree(this);
+			kfree(this);
 			return 0;
 		}
 	}
@@ -182,8 +182,8 @@ pfq_symtable_pr_devel(const char *hdr, struct list_head *category)
 
 	list_for_each(pos, category)
 	{
-    		this = list_entry(pos, struct symtable_entry, list);
-    		pr_devel("      %s %pF\n", this->symbol, this->function);
+		this = list_entry(pos, struct symtable_entry, list);
+		pr_devel("      %s %pF\n", this->symbol, this->function);
 	}
 
         up(&symtable_sem);
@@ -270,7 +270,7 @@ pfq_symtable_unregister_function(const char *module, struct list_head *category,
 
 	elem = __pfq_symtable_search(category, symbol);
 	if (elem == NULL)
-        	return -EFAULT;
+		return -EFAULT;
 
 	pfq_dismiss_function(elem->function);
         __pfq_symtable_unregister_function(category, symbol);

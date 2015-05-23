@@ -38,11 +38,11 @@ enum pfq_shmem_kind {
 struct pfq_shmem_descr
 {
 	void *			addr;
-	size_t  		size;
+	size_t			size;
 	enum pfq_shmem_kind     kind;
 
-	struct page** 		hugepages;
-	size_t 			npages;
+	struct page**		hugepages;
+	size_t			npages;
 };
 
 

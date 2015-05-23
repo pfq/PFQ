@@ -64,7 +64,7 @@ pfq_tx_thread(void *_data)
 	cpu = smp_processor_id();
         dev = dev_get_by_index(sock_net(&data->so->sk), data->so->tx_opt.queue[data->id].if_index);
 
-       	printk(KERN_INFO "[PFQ] Tx[%zu] thread started on cpu %d.\n", data->id, cpu);
+	printk(KERN_INFO "[PFQ] Tx[%zu] thread started on cpu %d.\n", data->id, cpu);
 
 	__set_current_state(TASK_RUNNING);
 

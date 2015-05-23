@@ -117,10 +117,10 @@ dummy_fini(arguments_t args)
 
 struct pfq_function_descr dummy_functions[] = {
 
-        { "dummy",         "CInt   -> SkBuff -> Action SkBuff",  	dummy, dummy_init,  dummy_fini },
-        { "dummy_vector",  "[CInt] -> SkBuff -> Action SkBuff",     	dummy_vector, dummy_init,  dummy_fini },
-        { "dummy_string",  "String -> SkBuff -> Action SkBuff",     	dummy_string, dummy_init,  dummy_fini },
-        { "dummy_strings", "[String] -> SkBuff -> Action SkBuff",     	dummy_strings, dummy_init,  dummy_fini },
+        { "dummy",         "CInt   -> SkBuff -> Action SkBuff",	  dummy, dummy_init,	     dummy_fini },
+        { "dummy_vector",  "[CInt] -> SkBuff -> Action SkBuff",	  dummy_vector, dummy_init,  dummy_fini },
+        { "dummy_string",  "String -> SkBuff -> Action SkBuff",	  dummy_string, dummy_init,  dummy_fini },
+        { "dummy_strings", "[String] -> SkBuff -> Action SkBuff", dummy_strings, dummy_init, dummy_fini },
 
         { NULL }};
 

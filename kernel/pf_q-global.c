@@ -30,20 +30,20 @@
 
 struct local_data __percpu    * cpu_data;
 
-int direct_capture 	= 0;
-int capture_incoming 	= 1;
-int capture_outgoing 	= 0;
+int direct_capture	= 0;
+int capture_incoming	= 1;
+int capture_outgoing	= 0;
 
-int max_queue_slots  	= 262144;       /* max queue slots per queue (both rx and tx) */
+int max_queue_slots	= 262144;       /* max queue slots per queue (both rx and tx) */
 
-int cap_len      	= 1514;
-int max_len      	= 1514;
+int cap_len		= 1514;
+int max_len		= 1514;
 
-int batch_len 		= 1;
-int vl_untag     	= 0;
+int batch_len		= 1;
+int vl_untag		= 0;
 
-int skb_pool_size 	= 1024;
-int tx_max_retry 	= 1024;
+int skb_pool_size	= 1024;
+int tx_max_retry	= 1024;
 
 struct pfq_global_stats global_stats;
 struct pfq_memory_stats memory_stats;

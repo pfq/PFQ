@@ -34,13 +34,13 @@ static
 int
 count_outmost_brackets(string_view_t str)
 {
-       	int red = INT_MAX, nest = 0;
+	int red = INT_MAX, nest = 0;
 	int bracket = 0;
         const char *p;
 
 	for(p = str.begin; p != str.end; p++)
 	{
-	       	switch(*p) {
+		switch(*p) {
 		case '(': {
 			bracket++;
 			nest = max(nest, bracket);
@@ -51,7 +51,7 @@ count_outmost_brackets(string_view_t str)
 		} break;
 
 		case '>': {
-                	red = min(red, bracket);
+			red = min(red, bracket);
 		} break;
 
 		}
@@ -67,44 +67,44 @@ static
 const char *
 find_next_arrow(string_view_t str)
 {
- 	int state = 0, bracket = 0;
+	int state = 0, bracket = 0;
 
-        const char * p = str.begin;
+	const char * p = str.begin;
 
- 	for(; p != str.end; ++p)
- 	{
-         	switch (state)
- 		{
- 		case 0: {
-               		if (*p == '-') {
-               			state = 1;
-               			continue;
- 			}
- 			if (*p == '(') {
-                         	bracket++;
-                         	state = 2;
-                         	continue;
- 			}
- 		} break;
- 		case 1: {
-                   	if(*p == '>')
-                   		return p;
+	for(; p != str.end; ++p)
+	{
+		switch (state)
+		{
+		case 0: {
+			if (*p == '-') {
+				state = 1;
+				continue;
+			}
+			if (*p == '(') {
+				bracket++;
+				state = 2;
+				continue;
+			}
+		} break;
+		case 1: {
+			if(*p == '>')
+				return p;
 			return NULL;
- 		} break;
- 		case 2: {
- 			if (*p == '(') {
- 				bracket++;
-                         	continue;
- 			}
- 			if (*p == ')') {
-                         	if (--bracket == 0)
-                         		state = 0;
- 			}
+		} break;
+		case 2: {
+			if (*p == '(') {
+				bracket++;
+				continue;
+			}
+			if (*p == ')') {
+				if (--bracket == 0)
+					state = 0;
+			}
 
- 		} break;
+		} break;
 
- 		}
- 	}
+		}
+	}
 
 	return NULL;
 }
@@ -150,9 +150,9 @@ pfq_signature_remove_extent(string_view_t str)
 
 	if (string_view_at(ret, 0) == '[' &&
 	    string_view_at(ret, string_view_length(ret)-1) == ']') {
-        	ret.begin +=1;
-        	ret.end -=1;
-        	return pfq_signature_simplify(ret);
+		ret.begin +=1;
+		ret.end -=1;
+		return pfq_signature_simplify(ret);
 	}
 
 	if (pfq_signature_arity(ret) > 0)
@@ -170,12 +170,12 @@ pfq_signature_simplify(string_view_t str)
 
 	for(n = 0; n < red; n++)
 	{
-        	while (*str.begin++ != '(')
-        	{ }
+		while (*str.begin++ != '(')
+		{ }
 
-        	while (str.end != str.begin &&
-        		*--str.end != ')')
-        	{ }
+		while (str.end != str.begin &&
+		       *--str.end != ')')
+		{ }
 	}
 	return string_view_trim(str);
 }
@@ -190,7 +190,7 @@ pfq_signature_arity(string_view_t str)
 		string_view_t tail = signature_tail(str);
 
 		if (!string_view_empty(tail))
-                	return 1 + __signature_arity(tail);
+			return 1 + __signature_arity(tail);
 
 		if (string_view_empty(head))
 			return 0;
@@ -215,7 +215,7 @@ pfq_signature_bind(string_view_t str, int n)
 		tail = signature_tail(str);
 
 		if (!string_view_empty(tail))
-                	return __signature_bind(tail, stop + 1);
+			return __signature_bind(tail, stop + 1);
 
 		return tail;
 	}
@@ -237,7 +237,7 @@ pfq_signature_arg(string_view_t str, int index)
 			return head;
 
 		if (!string_view_empty(tail))
-                	return __signature_arg(tail, stop + 1);
+			return __signature_arg(tail, stop + 1);
 
 		return tail;
 	}
@@ -283,8 +283,8 @@ pfq_signature_sizeof(string_view_t str)
 
 	for(n = 0; n < sizeof(sizeof_table)/sizeof(sizeof_table[0]); n++)
 	{
-       		if (!string_view_compare(str, sizeof_table[n].symb))
-       			return sizeof_table[n].size;
+		if (!string_view_compare(str, sizeof_table[n].symb))
+			return sizeof_table[n].size;
 	}
 
 	return -1;
@@ -312,18 +312,19 @@ compare_argument(string_view_t a, string_view_t b)
 	const char *ap = str_a.begin;
 	const char *bp = str_b.begin;
 
- 	while (ap != str_a.end && bp != str_b.end)
- 	{
- 		if (*ap != *bp)
- 			return false;
+	while (ap != str_a.end && bp != str_b.end)
+	{
+		if (*ap != *bp)
+			return false;
 
 		if (isspace(*ap)) {
- 			ap = skip_white_space(ap, str_a.end);
- 			bp = skip_white_space(bp, str_b.end);
+			ap = skip_white_space(ap, str_a.end);
+			bp = skip_white_space(bp, str_b.end);
 		}
-		else
- 			ap++, bp++;
- 	}
+		else {
+			ap++, bp++;
+		}
+	}
 
 	return ap == str_a.end && bp == str_b.end;
 }
@@ -344,7 +345,7 @@ pfq_signature_equal(string_view_t sig_a, string_view_t sig_b)
 
 		if ((string_view_empty(tail_a) && !string_view_empty(tail_b)) ||
 		    (!string_view_empty(tail_a) && string_view_empty(tail_b)))
-		    	return false;
+			return false;
 
 		if (!(pfq_signature_arity(head_a) == 0 ?
 			       compare_argument(head_a, head_b) : pfq_signature_equal(head_a, head_b)))
@@ -353,7 +354,7 @@ pfq_signature_equal(string_view_t sig_a, string_view_t sig_b)
 		if (string_view_empty(tail_a) && string_view_empty(tail_b))
 			return true;
 
- 		return __signature_equal(tail_a, tail_b);
+		return __signature_equal(tail_a, tail_b);
 	}
 
 	return __signature_equal(sig_a, sig_b);
@@ -372,8 +373,8 @@ pfq_signature_type_check(string_view_t type)
 {
 	for(; !string_view_empty(type);)
 	{
-        	if (pfq_signature_sizeof(type) != -1 || islower(string_view_at(type, 0)) )
-        		return true;
+		if (pfq_signature_sizeof(type) != -1 || islower(string_view_at(type, 0)))
+			return true;
 
 		type = pfq_signature_remove_extent(type);
 	}

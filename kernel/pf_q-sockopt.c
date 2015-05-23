@@ -85,12 +85,12 @@ int pfq_getsockopt(struct socket *sock,
                                 return -EFAULT;
                 }
                 else {
-                	pfq_gid_t gid = { group.gid };
+			pfq_gid_t gid = { group.gid };
 
-                	if (!pfq_get_group(gid)) {
-                        	printk(KERN_INFO "[PFQ|%d] group error: invalid group id %d!\n", so->id.value, gid.value);
-                        	return -EFAULT;
-                	}
+			if (!pfq_get_group(gid)) {
+				printk(KERN_INFO "[PFQ|%d] group error: invalid group id %d!\n", so->id.value, gid.value);
+				return -EFAULT;
+			}
 
                         if (pfq_join_group(gid, so->id, group.class_mask, group.policy) < 0) {
                                 printk(KERN_INFO "[PFQ|%d] join error: permission denied (gid=%d)!\n", so->id.value, group.gid);
@@ -151,8 +151,8 @@ int pfq_getsockopt(struct socket *sock,
         } break;
 
         case Q_SO_GET_SHMEM_SIZE:
-        {
-        	size_t size = pfq_shared_memory_size(so);
+	{
+		size_t size = pfq_shared_memory_size(so);
 
                 if (len != sizeof(size))
                         return -EINVAL;
@@ -368,7 +368,7 @@ int pfq_setsockopt(struct socket *sock,
 
                 if (!pfq_has_joined_group(gid, so->id)) {
                         printk(KERN_INFO "[PFQ|%d] add bind: gid=%d not joined!\n", so->id.value, bind.gid);
-                	return -EACCES;
+			return -EACCES;
 		}
 
                 rcu_read_lock();
@@ -559,7 +559,7 @@ int pfq_setsockopt(struct socket *sock,
 
 		if (!pfq_has_joined_group(gid, so->id)) {
 			/* don't set the first and return */
-                	return 0;
+			return 0;
 		}
 
                 if (fprog.fcode.len > 0) {  /* set the filter */
@@ -568,9 +568,9 @@ int pfq_setsockopt(struct socket *sock,
 
 			if (fprog.fcode.len == 1) { /* check for dummey BPF_CLASS == BPF_RET */
 
-                       	 	if (BPF_CLASS(fprog.fcode.filter[0].code) == BPF_RET) {
-                                	pr_devel("[PFQ|%d] fprog: BPF_RET optimized out!\n", so->id.value);
-                                	return 0;
+				if (BPF_CLASS(fprog.fcode.filter[0].code) == BPF_RET) {
+					pr_devel("[PFQ|%d] fprog: BPF_RET optimized out!\n", so->id.value);
+					return 0;
 				}
 			}
 
@@ -584,7 +584,7 @@ int pfq_setsockopt(struct socket *sock,
 
                         pr_devel("[PFQ|%d] fprog: gid=%d (fprog len %d bytes)\n", so->id.value, fprog.gid, fprog.fcode.len);
                 }
-                else { 	/* reset the filter */
+                else {	/* reset the filter */
 
                         pfq_set_group_filter(gid, NULL);
                         pr_devel("[PFQ|%d] fprog: gid=%d (resetting filter)\n", so->id.value, fprog.gid);
@@ -700,15 +700,15 @@ int pfq_setsockopt(struct socket *sock,
 		so->tx_opt.num_queues++;
 
                 pr_devel("[PFQ|%d] Tx[%zu] bind: if_index=%d hw_queue=%d cpu=%d\n", so->id.value, i,
-                		so->tx_opt.queue[i].if_index, so->tx_opt.queue[i].hw_queue, info.cpu);
+			 so->tx_opt.queue[i].if_index, so->tx_opt.queue[i].hw_queue, info.cpu);
 
         } break;
 
 	case Q_SO_TX_UNBIND:
-        {
-        	size_t n;
+	{
+		size_t n;
 
-         	for(n = 0; n < Q_MAX_TX_QUEUES; ++n)
+		for(n = 0; n < Q_MAX_TX_QUEUES; ++n)
 		{
 			so->tx_opt.queue[n].if_index = -1;
 			so->tx_opt.queue[n].hw_queue = -1;
@@ -722,11 +722,11 @@ int pfq_setsockopt(struct socket *sock,
 		int queue, err = 0;
                 size_t n;
 
-        	if (optlen != sizeof(queue))
-        		return -EINVAL;
+		if (optlen != sizeof(queue))
+			return -EINVAL;
 
-        	if (copy_from_user(&queue, optval, optlen))
-        		return -EFAULT;
+		if (copy_from_user(&queue, optval, optlen))
+			return -EFAULT;
 
 		if (pfq_get_tx_queue(&so->tx_opt, 0) == NULL) {
 			printk(KERN_INFO "[PFQ|%d] Tx queue flush: socket not enabled!\n", so->id.value);
@@ -760,11 +760,11 @@ int pfq_setsockopt(struct socket *sock,
                 int toggle, err = 0;
                 size_t n;
 
-        	if (optlen != sizeof(toggle))
-        		return -EINVAL;
+		if (optlen != sizeof(toggle))
+			return -EINVAL;
 
-        	if (copy_from_user(&toggle, optval, optlen))
-        		return -EFAULT;
+		if (copy_from_user(&toggle, optval, optlen))
+			return -EFAULT;
 
 		if (toggle) {
 
@@ -835,7 +835,7 @@ int pfq_setsockopt(struct socket *sock,
 			}
 		}
 		else {
-                	/* stop running threads */
+			/* stop running threads */
 
 			for(n = 0; n < so->tx_opt.num_queues; n++)
 			{

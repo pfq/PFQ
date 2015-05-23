@@ -120,10 +120,10 @@ add_dev_to_targets(struct net_device *dev, struct lazy_fwd_targets *ts)
 
 	for(; n < ts->num; ++n)
 	{
-        	if (dev == ts->dev[n]) {
-        		ts->cnt[n]++;
-        		ts->cnt_total++;
-        		return;
+		if (dev == ts->dev[n]) {
+			ts->cnt[n]++;
+			ts->cnt_total++;
+			return;
 		}
 	}
 
@@ -150,7 +150,7 @@ gc_get_fwd_targets(struct gc_data *gc, struct lazy_fwd_targets *ts)
 	{
 		for(i = 0; i < gc->log[n].num_devs; i++)
 		{
-         		add_dev_to_targets(gc->log[n].dev[i], ts);
+			add_dev_to_targets(gc->log[n].dev[i], ts);
 		}
 	}
 }

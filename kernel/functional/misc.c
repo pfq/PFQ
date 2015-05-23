@@ -150,8 +150,9 @@ log_packet(arguments_t args, SkBuff b)
 			if (udp == NULL)
 				return Pass(b);
 
-			printk(KERN_INFO "[PFQ/lang] IP %pI4.%d > %pI4.%d: UDP\n", &ip->saddr, ntohs(udp->source),
-						         		      &ip->daddr, ntohs(udp->dest));
+			printk(KERN_INFO "[PFQ/lang] IP %pI4.%d > %pI4.%d: UDP\n",
+						&ip->saddr, ntohs(udp->source),
+						&ip->daddr, ntohs(udp->dest));
 			return Pass(b);
 		}
 		case IPPROTO_TCP: {
@@ -465,42 +466,37 @@ par8(arguments_t args, SkBuff b)
 
 struct pfq_function_descr misc_functions[] = {
 
-        { "inc", 	"CInt    -> SkBuff -> Action SkBuff",     	inc_counter 	},
-        { "dec", 	"CInt    -> SkBuff -> Action SkBuff",    	dec_counter 	},
- 	{ "mark", 	"Word32  -> SkBuff -> Action SkBuff",  		mark		},
+        { "inc",	"CInt    -> SkBuff -> Action SkBuff",	inc_counter	},
+        { "dec",	"CInt    -> SkBuff -> Action SkBuff",	dec_counter	},
+	{ "mark",	"Word32  -> SkBuff -> Action SkBuff",	mark		},
 
-        { "crc16", 	"SkBuff -> Action SkBuff", 			crc16_sum	},
-        { "log_msg",  	"String -> SkBuff -> Action SkBuff", 		log_msg 	},
-        { "log_buff",   "SkBuff -> Action SkBuff", 			log_buff 	},
-        { "log_packet", "SkBuff -> Action SkBuff", 			log_packet	},
+        { "crc16",	"SkBuff -> Action SkBuff",		crc16_sum	},
+        { "log_msg",	"String -> SkBuff -> Action SkBuff",	log_msg		},
+        { "log_buff",   "SkBuff -> Action SkBuff",		log_buff	},
+        { "log_packet", "SkBuff -> Action SkBuff",		log_packet	},
 
-        { "inv", 	"(SkBuff -> Action SkBuff) -> SkBuff -> Action SkBuff", inv },
+        { "inv",	"(SkBuff -> Action SkBuff) -> SkBuff -> Action SkBuff", inv },
 
-        { "par", 	"(SkBuff -> Action SkBuff) -> (SkBuff -> Action SkBuff) -> SkBuff -> Action SkBuff",    par },
+        { "par",	"(SkBuff -> Action SkBuff) -> (SkBuff -> Action SkBuff) -> SkBuff -> Action SkBuff", par },
 
-       	{ "par3", 	"(SkBuff -> Action SkBuff) -> (SkBuff -> Action SkBuff) -> "
-        		"(SkBuff -> Action SkBuff) -> SkBuff -> Action SkBuff", par3 },
-
-	{ "par4", 	"(SkBuff -> Action SkBuff) -> (SkBuff -> Action SkBuff) -> "
-        		"(SkBuff -> Action SkBuff) -> (SkBuff -> Action SkBuff) -> SkBuff -> Action SkBuff", par4 },
-
-        { "par5", 	"(SkBuff -> Action SkBuff) -> (SkBuff -> Action SkBuff) -> "
-        		"(SkBuff -> Action SkBuff) -> (SkBuff -> Action SkBuff) -> "
-        		"(SkBuff -> Action SkBuff) -> SkBuff -> Action SkBuff", par5 },
-
-        { "par6", 	"(SkBuff -> Action SkBuff) -> (SkBuff -> Action SkBuff) -> "
-        		"(SkBuff -> Action SkBuff) -> (SkBuff -> Action SkBuff) -> "
-        		"(SkBuff -> Action SkBuff) -> (SkBuff -> Action SkBuff) -> SkBuff -> Action SkBuff", par6 },
-
-        { "par7", 	"(SkBuff -> Action SkBuff) -> (SkBuff -> Action SkBuff) -> "
-        		"(SkBuff -> Action SkBuff) -> (SkBuff -> Action SkBuff) -> "
-        		"(SkBuff -> Action SkBuff) -> (SkBuff -> Action SkBuff) -> "
-        		"(SkBuff -> Action SkBuff) -> SkBuff -> Action SkBuff", par7 },
-
-        { "par8", 	"(SkBuff -> Action SkBuff) -> (SkBuff -> Action SkBuff) -> "
-        		"(SkBuff -> Action SkBuff) -> (SkBuff -> Action SkBuff) -> "
-        		"(SkBuff -> Action SkBuff) -> (SkBuff -> Action SkBuff) -> "
-        		"(SkBuff -> Action SkBuff) -> (SkBuff -> Action SkBuff) -> SkBuff -> Action SkBuff", par8 },
+	{ "par3",	"(SkBuff -> Action SkBuff) -> (SkBuff -> Action SkBuff) -> "
+			"(SkBuff -> Action SkBuff) -> SkBuff -> Action SkBuff", par3 },
+	{ "par4",	"(SkBuff -> Action SkBuff) -> (SkBuff -> Action SkBuff) -> "
+			"(SkBuff -> Action SkBuff) -> (SkBuff -> Action SkBuff) -> SkBuff -> Action SkBuff", par4 },
+	{ "par5",	"(SkBuff -> Action SkBuff) -> (SkBuff -> Action SkBuff) -> "
+			"(SkBuff -> Action SkBuff) -> (SkBuff -> Action SkBuff) -> "
+			"(SkBuff -> Action SkBuff) -> SkBuff -> Action SkBuff", par5 },
+	{ "par6",	"(SkBuff -> Action SkBuff) -> (SkBuff -> Action SkBuff) -> "
+			"(SkBuff -> Action SkBuff) -> (SkBuff -> Action SkBuff) -> "
+			"(SkBuff -> Action SkBuff) -> (SkBuff -> Action SkBuff) -> SkBuff -> Action SkBuff", par6 },
+	{ "par7",	"(SkBuff -> Action SkBuff) -> (SkBuff -> Action SkBuff) -> "
+			"(SkBuff -> Action SkBuff) -> (SkBuff -> Action SkBuff) -> "
+			"(SkBuff -> Action SkBuff) -> (SkBuff -> Action SkBuff) -> "
+			"(SkBuff -> Action SkBuff) -> SkBuff -> Action SkBuff", par7 },
+	{ "par8",	"(SkBuff -> Action SkBuff) -> (SkBuff -> Action SkBuff) -> "
+			"(SkBuff -> Action SkBuff) -> (SkBuff -> Action SkBuff) -> "
+			"(SkBuff -> Action SkBuff) -> (SkBuff -> Action SkBuff) -> "
+			"(SkBuff -> Action SkBuff) -> (SkBuff -> Action SkBuff) -> SkBuff -> Action SkBuff", par8 },
         { NULL }};
 
 

@@ -28,7 +28,6 @@
 
 #include <pf_q-bitops.h>
 #include <pf_q-macro.h>
-
 #include <pf_q-skbuff.h>
 
 
@@ -61,7 +60,7 @@ void pfq_skbuff_batch_drop_n(struct pfq_skbuff_batch *q, size_t n)
 
 	for(i = 0; i < (q->len - n); i++)
 	{
-        	q->queue[i] = q->queue[i + n];
+		q->queue[i] = q->queue[i + n];
 	}
 
 	q->len -= n;

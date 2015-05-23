@@ -49,10 +49,10 @@ struct pfq_group_persistent
 {
         sparse_counter_t counter[Q_MAX_COUNTERS];
 
-	struct _persistent {
-
-		spinlock_t 	lock;
-		char 		memory[Q_GROUP_PERSIST_MEM];
+	struct _persistent
+	{
+		spinlock_t	lock;
+		char		memory[Q_GROUP_PERSIST_MEM];
 
 	} persistent [Q_GROUP_PERSIST_DATA];
 };
@@ -67,7 +67,7 @@ struct pfq_group
 
         atomic_long_t sock_mask[Q_CLASS_MAX];           /* for class: Q_CLASS_DEFAULT, Q_CLASS_USER_PLANE, Q_CLASS_CONTROL_PLANE etc... */
 
-        atomic_long_t bp_filter; 			/* struct sk_filter pointer */
+        atomic_long_t bp_filter;			/* struct sk_filter pointer */
 
         bool   vlan_filt;                               /* enable/disable vlan filtering */
         char   vid_filters[4096];                       /* vlan filters */

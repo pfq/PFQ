@@ -61,9 +61,13 @@ static inline bool is_arg_function(struct pfq_functional_arg_descr const *arg)
 }
 
 
-extern int pfq_check_computation_descr(struct pfq_computation_descr const *descr);
+extern int pfq_check_computation_descr(struct pfq_computation_descr const *
+				       descr);
 
-extern int pfq_computation_rtlink(struct pfq_computation_descr const *descr, struct pfq_computation_tree *comp, void *context);
+extern int pfq_computation_rtlink(struct pfq_computation_descr const *descr,
+				  struct pfq_computation_tree *comp,
+				  void *context);
+
 extern int pfq_computation_init(struct pfq_computation_tree *comp);
 extern int pfq_computation_fini(struct pfq_computation_tree *comp);
 
@@ -75,7 +79,6 @@ extern size_t pfq_number_of_arguments(struct pfq_functional_descr const *fun);
 extern char * strdup_user(const char __user *str);
 
 extern Action_SkBuff pfq_run(struct pfq_computation_tree *prg, SkBuff);
-
 
 
 #endif /* PF_Q_ENGINE_H */

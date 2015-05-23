@@ -45,17 +45,17 @@ typedef struct
 
 struct pfq_rx_opt
 {
-	atomic_long_t 		queue_hdr;
-	void 		       *base_addr;
+	atomic_long_t		queue_hdr;
+	void		       *base_addr;
 
-	int    			tstamp;
+	int			tstamp;
 
-	size_t 			caplen;
+	size_t			caplen;
 
-	size_t 			queue_size;
-	size_t 			slot_size;
+	size_t			queue_size;
+	size_t			slot_size;
 
-	wait_queue_head_t 	waitqueue;
+	wait_queue_head_t	waitqueue;
 
         struct pfq_socket_rx_stats stats;
 
@@ -103,12 +103,12 @@ void pfq_rx_opt_init(struct pfq_rx_opt *that, size_t caplen)
 
 struct pfq_tx_queue_info
 {
-	atomic_long_t 		queue_hdr;
-	void 		       *base_addr;
+	atomic_long_t		queue_hdr;
+	void		       *base_addr;
 
-	int 			if_index;
-	int 			hw_queue;
-	int 			cpu;
+	int			if_index;
+	int			hw_queue;
+	int			cpu;
 
 	struct task_struct     *task;
 };
@@ -116,11 +116,11 @@ struct pfq_tx_queue_info
 
 struct pfq_tx_opt
 {
-	uint64_t 		counter;
+	uint64_t		counter;
 
-	size_t  		queue_size;
-	size_t  		slot_size;
-        size_t 	       	 	num_queues;
+	size_t			queue_size;
+	size_t			slot_size;
+        size_t			num_queues;
 
 	struct pfq_tx_queue_info queue[Q_MAX_TX_QUEUES];
 
@@ -153,12 +153,12 @@ void pfq_tx_opt_init(struct pfq_tx_opt *that, size_t maxlen)
 	{
 		atomic_long_set(&that->queue[n].queue_hdr, 0);
 
-        	that->queue[n].base_addr = NULL;
+		that->queue[n].base_addr = NULL;
 		that->queue[n].if_index  = -1;
 		that->queue[n].hw_queue  = -1;
 		that->queue[n].cpu       = -1;
-		that->queue[n].task 	 = NULL;
-       	}
+		that->queue[n].task	 = NULL;
+	}
 
         sparse_set(&that->stats.sent, 0);
         sparse_set(&that->stats.disc, 0);
@@ -167,18 +167,18 @@ void pfq_tx_opt_init(struct pfq_tx_opt *that, size_t maxlen)
 
 struct pfq_sock
 {
-        struct sock 		sk;
+        struct sock		sk;
 
-        pfq_id_t 		id;
+        pfq_id_t		id;
 
-	int		    	egress_type;
-        int 		    	egress_index;
-        int 		    	egress_queue;
+	int			egress_type;
+        int			egress_index;
+        int			egress_queue;
 
 	struct pfq_shmem_descr  shmem;
 
-        struct pfq_rx_opt   	rx_opt;
-        struct pfq_tx_opt   	tx_opt;
+        struct pfq_rx_opt	rx_opt;
+        struct pfq_tx_opt	tx_opt;
 
 } ____cacheline_aligned_in_smp;
 

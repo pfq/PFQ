@@ -48,12 +48,12 @@ static int vlan_init(arguments_t args)
 {
 	unsigned int n = LEN_ARRAY_0(args);
 	int32_t * vids = GET_ARRAY_0(int32_t, args);
-        char *mem; int i;
+	char *mem; int i;
 
-        mem = kzalloc(4096, GFP_KERNEL);
-        if (!mem) {
-	       	printk(KERN_INFO "[PFQ|init] vlan_id filter: out of memory!\n");
-	       	return -ENOMEM;
+	mem = kzalloc(4096, GFP_KERNEL);
+	if (!mem) {
+		printk(KERN_INFO "[PFQ|init] vlan_id filter: out of memory!\n");
+		return -ENOMEM;
 	}
 
 	SET_ARG_1(args, mem);
@@ -62,10 +62,10 @@ static int vlan_init(arguments_t args)
 	{
 		int vid = vids[i];
 		if (vid == -1) {
-                	int n;
-                	for(n = 1; n < 4096; n++)
+			int n;
+			for(n = 1; n < 4096; n++)
 			{
-                        	mem[n] = 1;
+				mem[n] = 1;
 			}
 		}
 		else
@@ -91,8 +91,8 @@ static int vlan_fini(arguments_t args)
 
 struct pfq_function_descr vlan_functions[] = {
 
-        { "vlan_id",   		"[CInt] -> SkBuff -> Bool",		vlan_id, 	vlan_init, 	vlan_fini },
-        { "vlan_id_filter",  	"[CInt] -> SkBuff -> Action SkBuff", 	vlan_id_filter, vlan_init, 	vlan_fini },
+	{ "vlan_id",		"[CInt] -> SkBuff -> Bool",		vlan_id,	vlan_init,	vlan_fini },
+	{ "vlan_id_filter",	"[CInt] -> SkBuff -> Action SkBuff",	vlan_id_filter, vlan_init,	vlan_fini },
 
-        { NULL }};
+	{ NULL }};
 

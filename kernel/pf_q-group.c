@@ -46,9 +46,9 @@ pfq_groups_init()
 	int n;
 	for(n = 0; n < Q_MAX_GROUP; n++)
 	{
-        	pfq_groups[n].pid = 0;
-        	pfq_groups[n].owner.value = -1;
-        	pfq_groups[n].policy = Q_POLICY_GROUP_UNDEFINED;
+		pfq_groups[n].pid = 0;
+		pfq_groups[n].owner.value = -1;
+		pfq_groups[n].policy = Q_POLICY_GROUP_UNDEFINED;
 	}
 }
 
@@ -95,12 +95,12 @@ pfq_group_access(pfq_gid_t gid, pfq_id_t id)
 
 	g = pfq_get_group(gid);
 	if (g == NULL)
-        	return false;
+		return false;
 
 	switch(g->policy)
 	{
-        case Q_POLICY_GROUP_PRIVATE:
-        	return g->owner.value == id.value;
+	case Q_POLICY_GROUP_PRIVATE:
+		return g->owner.value == id.value;
 
         case Q_POLICY_GROUP_RESTRICTED:
                 return g->pid == current->tgid;
@@ -181,13 +181,13 @@ __pfq_group_free(pfq_gid_t gid)
 	/* call fini on old computation */
 
 	if (old_comp)
- 		pfq_computation_fini(old_comp);
+		pfq_computation_fini(old_comp);
 
-        kfree(old_comp);
-        kfree(old_ctx);
+	kfree(old_comp);
+	kfree(old_ctx);
 
 	if (filter)
-        	pfq_free_sk_filter(filter);
+		pfq_free_sk_filter(filter);
 
         g->vlan_filt = false;
 
@@ -298,7 +298,7 @@ pfq_set_group_filter(pfq_gid_t gid, struct sk_filter *filter)
         msleep(Q_GRACE_PERIOD);
 
 	if (old_filter)
-        	pfq_free_sk_filter(old_filter);
+		pfq_free_sk_filter(old_filter);
 }
 
 
@@ -313,7 +313,7 @@ pfq_dismiss_function(void *f)
                 struct pfq_computation_tree *comp;
                 pfq_gid_t gid = { n };
 
-               	g = pfq_get_group(gid);
+		g = pfq_get_group(gid);
                 BUG_ON(g != NULL);
 
                 comp = (struct pfq_computation_tree *)atomic_long_read(&g->comp);
@@ -345,7 +345,7 @@ pfq_set_group_prog(pfq_gid_t gid, struct pfq_computation_tree *comp, void *ctx)
 	/* call fini on old computation */
 
 	if (old_comp)
- 		pfq_computation_fini(old_comp);
+		pfq_computation_fini(old_comp);
 
         /* free the old computation/context */
 
@@ -384,7 +384,7 @@ pfq_join_free_group(pfq_id_t id, unsigned long class_mask, int policy)
         down(&group_sem);
         for(; n < Q_MAX_ID; n++)
         {
-        	pfq_gid_t gid = {n};
+		pfq_gid_t gid = {n};
 
                 if(!pfq_get_group(gid)->pid) {
                         __pfq_join_group(gid, id, class_mask, policy);
@@ -436,7 +436,7 @@ pfq_get_groups(pfq_id_t id)
         down(&group_sem);
         for(; n < Q_MAX_ID; n++)
         {
-        	pfq_gid_t gid = {n};
+		pfq_gid_t gid = {n};
                 unsigned long mask = pfq_get_all_groups_mask(gid);
 
                 if(mask & (1L << id.value))
@@ -463,7 +463,7 @@ pfq_vlan_filters_enabled(pfq_gid_t gid)
 
         g = pfq_get_group(gid);
         if (g == NULL)
-        	return false;
+		return false;
         return g->vlan_filt;
 }
 

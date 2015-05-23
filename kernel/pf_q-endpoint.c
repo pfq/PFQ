@@ -40,11 +40,11 @@ size_t copy_to_user_skbs(struct pfq_rx_opt *ro, struct pfq_skbuff_batch *skbs, u
 
         if (likely(pfq_get_rx_queue(ro))) {
 
-        	smp_rmb();
+		smp_rmb();
 
                 cpy = pfq_mpsc_enqueue_batch(ro, skbs, mask, len, gid);
 
-        	__sparse_add(&ro->stats.recv, cpy, cpu);
+		__sparse_add(&ro->stats.recv, cpy, cpu);
 
 		if (len > cpy)
 			__sparse_add(&ro->stats.drop, len - cpy, cpu);
@@ -66,14 +66,14 @@ size_t copy_to_dev_buffs(struct pfq_sock *so, struct gc_queue_buff *buffs, unsig
 
 	if (so->egress_index) {
 
-               	dev = dev_get_by_index(&init_net, so->egress_index);
-               	if (dev == NULL) {
+		dev = dev_get_by_index(&init_net, so->egress_index);
+		if (dev == NULL) {
 			if (printk_ratelimit())
-                        	printk(KERN_INFO "[PFQ] egress endpoint not existing (%d)\n", so->egress_index);
+				printk(KERN_INFO "[PFQ] egress endpoint not existing (%d)\n", so->egress_index);
                         return false;
 		}
 
- 		sent = pfq_batch_lazy_xmit_by_mask(buffs, mask, dev, so->egress_queue);
+		sent = pfq_batch_lazy_xmit_by_mask(buffs, mask, dev, so->egress_queue);
 
                 dev_put(dev);
 		return sent;

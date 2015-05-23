@@ -44,12 +44,12 @@ struct local_data
 
         int                     sock_cnt;
 
-	struct gc_data 		gc;		/* garbage collector */
-	ktime_t 		last_ts;	/* timestamp of the last packet */
+	struct gc_data		gc;		/* garbage collector */
+	ktime_t			last_ts;	/* timestamp of the last packet */
 
         atomic_t                enable_skb_pool;
 
-	struct timer_list 	timer;
+	struct timer_list	timer;
 
         struct pfq_sk_buff_pool tx_pool;
         struct pfq_sk_buff_pool rx_pool;

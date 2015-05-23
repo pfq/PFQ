@@ -65,8 +65,8 @@ pod_memory_get(void **ptr, size_t size)
 {
         void *ret;
 
-       	if (size == 0)
-       		return NULL;
+	if (size == 0)
+		return NULL;
 
         ret = *ptr;
 
@@ -204,17 +204,17 @@ pfq_context_alloc(struct pfq_computation_descr const *descr)
 
         for(; n < descr->size; n++)
         {
-        	struct pfq_functional_descr const * fun = &descr->fun[n];
-        	int i;
+		struct pfq_functional_descr const * fun = &descr->fun[n];
+		int i;
 
-        	for(i = 0; i < sizeof(fun->arg)/sizeof(fun->arg[0]); i++)
+		for(i = 0; i < sizeof(fun->arg)/sizeof(fun->arg[0]); i++)
 		{
 			if (fun->arg[i].addr) {
 
 				size_t s = is_arg_string(&fun->arg[i])     ?  strlen_user(fun->arg[i].addr) :
-					   is_arg_vector(&fun->arg[i]) 	   ?  fun->arg[i].size * fun->arg[i].nelem :
+					   is_arg_vector(&fun->arg[i])	   ?  fun->arg[i].size * fun->arg[i].nelem :
 					   is_arg_vector_str(&fun->arg[i]) ?  fun->arg[i].nelem * sizeof(char *) + strlen_user(fun->arg[i].addr) :
-					   is_arg_data  (&fun->arg[i]) 	   ?  (fun->arg[i].size > 8 ? fun->arg[i].size : 0 ) : 0;
+					   is_arg_data  (&fun->arg[i])	   ?  (fun->arg[i].size > 8 ? fun->arg[i].size : 0 ) : 0;
 
 				size += ALIGN(s, 8);
 			}
@@ -357,7 +357,7 @@ pfq_check_computation_descr(struct pfq_computation_descr const *descr)
 		struct pfq_functional_descr const * fun = &descr->fun[n];
 		const char *signature;
 		size_t nargs;
-               	int i;
+		int i;
 
 		if (fun->symbol == NULL) {
 			printk(KERN_INFO "[PFQ] %zu: NULL symbol!\n", n);
@@ -370,7 +370,7 @@ pfq_check_computation_descr(struct pfq_computation_descr const *descr)
 
 		signature = pfq_signature_by_user_symbol(fun->symbol);
 		if (!signature) {
-                	printk(KERN_INFO "[PFQ] resolve_signature_by_symbol: '%s' no such function!\n", fun->symbol);
+			printk(KERN_INFO "[PFQ] resolve_signature_by_symbol: '%s' no such function!\n", fun->symbol);
 			return -EPERM;
 		}
 
@@ -386,8 +386,8 @@ pfq_check_computation_descr(struct pfq_computation_descr const *descr)
 
 		/* check for valid function arguments */
 
-        	for(i = 0; i < nargs; i++)
-       		{
+		for(i = 0; i < nargs; i++)
+		{
 			string_view_t sarg = pfq_signature_arg(make_string_view(signature), i);
 
 			if (fun->arg[i].nelem > 65536 &&
@@ -457,7 +457,7 @@ pfq_computation_init(struct pfq_computation_tree *comp)
 	{
 		if (comp->node[n].init) {
 
-                	pr_devel("[PFQ] %zu: initializing computation %pF...\n", n, comp->node[n].init);
+			pr_devel("[PFQ] %zu: initializing computation %pF...\n", n, comp->node[n].init);
 
 			if (comp->node[n].init( &comp->node[n].fun ) < 0) {
 				printk(KERN_INFO "[PFQ] computation_init: error in function (%zu)!\n", n);
@@ -479,7 +479,7 @@ pfq_computation_fini(struct pfq_computation_tree *comp)
 	{
 		if (comp->node[n].fini && comp->node[n].initialized) {
 
-                	pr_devel("[PFQ] %zu: finalizing computation %pF...\n", n, comp->node[n].fini);
+			pr_devel("[PFQ] %zu: finalizing computation %pF...\n", n, comp->node[n].fini);
 
 			if (comp->node[n].fini( &comp->node[n].fun ) < 0) {
 				printk(KERN_INFO "[PFQ] computation_fini: error in function (%zu)!\n", n);
@@ -522,9 +522,9 @@ pfq_computation_rtlink(struct pfq_computation_descr const *descr, struct pfq_com
 
         for(n = 0; n < descr->size; n++)
         {
-        	struct pfq_functional_descr const *fun;
- 		const char *signature;
-        	init_ptr_t init, fini;
+		struct pfq_functional_descr const *fun;
+		const char *signature;
+		init_ptr_t init, fini;
 		void *addr;
                 size_t i;
 
@@ -532,13 +532,13 @@ pfq_computation_rtlink(struct pfq_computation_descr const *descr, struct pfq_com
 
 		addr = resolve_user_symbol(&pfq_lang_functions, fun->symbol, &signature, &init, &fini);
 		if (addr == NULL) {
-        		printk(KERN_INFO "[PFQ] %zu: rtlink: bad descriptor!\n", n);
-        		return -EPERM;
+			printk(KERN_INFO "[PFQ] %zu: rtlink: bad descriptor!\n", n);
+			return -EPERM;
 		}
 
 		comp->node[n].fun.ptr = addr;
-        	comp->node[n].init    = init;
-        	comp->node[n].fini    = fini;
+		comp->node[n].init    = init;
+		comp->node[n].fini    = fini;
 		comp->node[n].next    = get_functional_by_index(descr, comp, descr->fun[n].next);
 
 		comp->node[n].fun.arg[0].value = 0;
@@ -551,7 +551,7 @@ pfq_computation_rtlink(struct pfq_computation_descr const *descr, struct pfq_com
 		comp->node[n].fun.arg[2].nelem = 0;
 		comp->node[n].fun.arg[3].nelem = 0;
 
-        	for(i = 0; i < sizeof(fun->arg)/sizeof(fun->arg[0]); i++)
+		for(i = 0; i < sizeof(fun->arg)/sizeof(fun->arg[0]); i++)
 		{
 			if (is_arg_string(&fun->arg[i])) {
 

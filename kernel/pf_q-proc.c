@@ -59,7 +59,7 @@ seq_printf_functional_node(struct seq_file *m, struct pfq_functional_node const 
 {
 	char buffer[256];
 
- 	snprintf_functional_node(buffer, sizeof(buffer), node, index);
+	snprintf_functional_node(buffer, sizeof(buffer), node, index);
 
 	seq_printf(m, "%s\n", buffer);
 }
@@ -68,18 +68,18 @@ seq_printf_functional_node(struct seq_file *m, struct pfq_functional_node const 
 static void
 seq_printf_computation_tree(struct seq_file *m, struct pfq_computation_tree const *tree)
 {
-        size_t n;
+	size_t n;
 
 	if (tree == NULL) {
-        	seq_printf(m, "computation (unspecified)\n");
-        	return;
+		seq_printf(m, "computation (unspecified)\n");
+		return;
 	}
 
-        seq_printf(m, "computation size=%zu entry_point=%p\n", tree->size, tree->entry_point);
-        for(n = 0; n < tree->size; n++)
-        {
-                seq_printf_functional_node(m, &tree->node[n], n);
-        }
+	seq_printf(m, "computation size=%zu entry_point=%p\n", tree->size, tree->entry_point);
+	for(n = 0; n < tree->size; n++)
+	{
+		seq_printf_functional_node(m, &tree->node[n], n);
+	}
 }
 
 
@@ -99,10 +99,9 @@ static int pfq_proc_comp(struct seq_file *m, void *v)
 		if (!this_group->policy)
 			continue;
 
-                comp = (struct pfq_computation_tree *)atomic_long_read(&this_group->comp);
+		comp = (struct pfq_computation_tree *)atomic_long_read(&this_group->comp);
 
 		seq_printf(m, "group=%zu ", n);
-
 		seq_printf_computation_tree(m, comp);
 	}
 
@@ -126,19 +125,21 @@ static int pfq_proc_groups(struct seq_file *m, void *v)
 		if (!this_group->policy)
 			continue;
 
-        	seq_printf(m, "%5zu: %-9lu %-9lu %-9lu %-9lu %-9lu %-9lu", n, sparse_read(&this_group->stats.recv),
-				   	                           	      sparse_read(&this_group->stats.drop),
-					                           	      sparse_read(&this_group->stats.frwd),
-					                           	      sparse_read(&this_group->stats.kern),
-					                           	      sparse_read(&this_group->stats.disc),
-					                           	      sparse_read(&this_group->stats.abrt));
+		seq_printf(m, "%5zu: %-9lu %-9lu %-9lu %-9lu %-9lu %-9lu", n,
+			   sparse_read(&this_group->stats.recv),
+			   sparse_read(&this_group->stats.drop),
+			   sparse_read(&this_group->stats.frwd),
+			   sparse_read(&this_group->stats.kern),
+			   sparse_read(&this_group->stats.disc),
+			   sparse_read(&this_group->stats.abrt));
 
-        	seq_printf(m, "%3d %3d ", this_group->policy, this_group->pid);
+		seq_printf(m, "%3d %3d ", this_group->policy, this_group->pid);
 
-        	seq_printf(m, "%08lx %08lx %08lx %08lx \n", atomic_long_read(&this_group->sock_mask[pfq_ctz(Q_CLASS_DEFAULT)]),
-        				                    atomic_long_read(&this_group->sock_mask[pfq_ctz(Q_CLASS_USER_PLANE)]),
-        				                    atomic_long_read(&this_group->sock_mask[pfq_ctz(Q_CLASS_CONTROL_PLANE)]),
-        				                    atomic_long_read(&this_group->sock_mask[63]));
+		seq_printf(m, "%08lx %08lx %08lx %08lx \n",
+			   atomic_long_read(&this_group->sock_mask[pfq_ctz(Q_CLASS_DEFAULT)]),
+			   atomic_long_read(&this_group->sock_mask[pfq_ctz(Q_CLASS_USER_PLANE)]),
+			   atomic_long_read(&this_group->sock_mask[pfq_ctz(Q_CLASS_CONTROL_PLANE)]),
+			   atomic_long_read(&this_group->sock_mask[63]));
 
 	}
 
@@ -188,18 +189,18 @@ static int pfq_proc_memory_open(struct inode *inode, struct file *file)
 static ssize_t
 pfq_proc_memory_reset(struct file *file, const char __user *buf, size_t length, loff_t *ppos)
 {
-        pfq_memory_stats_reset(&memory_stats);
- 	return 1;
+	pfq_memory_stats_reset(&memory_stats);
+	return 1;
 }
 
 
 static const struct file_operations pfq_proc_memory_fops = {
- 	.owner   = THIS_MODULE,
- 	.open    = pfq_proc_memory_open,
- 	.read    = seq_read,
- 	.write   = pfq_proc_memory_reset,
- 	.llseek  = seq_lseek,
- 	.release = single_release,
+	.owner   = THIS_MODULE,
+	.open    = pfq_proc_memory_open,
+	.read    = seq_read,
+	.write   = pfq_proc_memory_reset,
+	.llseek  = seq_lseek,
+	.release = single_release,
 };
 
 
@@ -224,35 +225,35 @@ static int pfq_proc_stats_open(struct inode *inode, struct file *file)
 static ssize_t
 pfq_proc_stats_reset(struct file *file, const char __user *buf, size_t length, loff_t *ppos)
 {
- 	pfq_global_stats_reset(&global_stats);
- 	return 1;
+	pfq_global_stats_reset(&global_stats);
+	return 1;
 }
 
 
 static const struct file_operations pfq_proc_stats_fops = {
- 	.owner   = THIS_MODULE,
- 	.open    = pfq_proc_stats_open,
- 	.read    = seq_read,
- 	.write   = pfq_proc_stats_reset,
- 	.llseek  = seq_lseek,
- 	.release = single_release,
+	.owner   = THIS_MODULE,
+	.open    = pfq_proc_stats_open,
+	.read    = seq_read,
+	.write   = pfq_proc_stats_reset,
+	.llseek  = seq_lseek,
+	.release = single_release,
 };
 
 
 static const struct file_operations pfq_proc_groups_fops = {
- 	.owner   = THIS_MODULE,
- 	.open    = pfq_proc_groups_open,
- 	.read    = seq_read,
- 	.llseek  = seq_lseek,
- 	.release = single_release,
+	.owner   = THIS_MODULE,
+	.open    = pfq_proc_groups_open,
+	.read    = seq_read,
+	.llseek  = seq_lseek,
+	.release = single_release,
 };
 
 static const struct file_operations pfq_proc_comp_fops = {
- 	.owner   = THIS_MODULE,
- 	.open    = pfq_proc_comp_open,
- 	.read    = seq_read,
- 	.llseek  = seq_lseek,
- 	.release = single_release,
+	.owner   = THIS_MODULE,
+	.open    = pfq_proc_comp_open,
+	.read    = seq_read,
+	.llseek  = seq_lseek,
+	.release = single_release,
 };
 
 int pfq_proc_init(void)
@@ -263,8 +264,8 @@ int pfq_proc_init(void)
 		return -ENOMEM;
 	}
 
-	proc_create(proc_computations, 	0644, pfq_proc_dir, &pfq_proc_comp_fops);
-	proc_create(proc_groups,       	0644, pfq_proc_dir, &pfq_proc_groups_fops);
+	proc_create(proc_computations,	0644, pfq_proc_dir, &pfq_proc_comp_fops);
+	proc_create(proc_groups,	0644, pfq_proc_dir, &pfq_proc_groups_fops);
 	proc_create(proc_stats,		0644, pfq_proc_dir, &pfq_proc_stats_fops);
 #ifdef PFQ_USE_EXTENDED_PROC
 	proc_create(proc_memory,	0644, pfq_proc_dir, &pfq_proc_memory_fops);
@@ -276,11 +277,11 @@ int pfq_proc_init(void)
 
 int pfq_proc_fini(void)
 {
-	remove_proc_entry(proc_computations, pfq_proc_dir);
-	remove_proc_entry(proc_groups, 	     pfq_proc_dir);
-	remove_proc_entry(proc_stats, 	     pfq_proc_dir);
+	remove_proc_entry(proc_computations,	pfq_proc_dir);
+	remove_proc_entry(proc_groups,		pfq_proc_dir);
+	remove_proc_entry(proc_stats,		pfq_proc_dir);
 #ifdef PFQ_USE_EXTENDED_PROC
-	remove_proc_entry(proc_memory, 	     pfq_proc_dir);
+	remove_proc_entry(proc_memory,		pfq_proc_dir);
 #endif
 	remove_proc_entry("pfq", init_net.proc_net);
 

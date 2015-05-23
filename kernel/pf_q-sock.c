@@ -104,7 +104,7 @@ void pfq_release_sock_id(pfq_id_t id)
 
         atomic_long_set(pfq_sock_vector + id.value, 0);
         if (atomic_dec_return(&pfq_sock_count) == 0)
-        	pfq_sock_finish();
+		pfq_sock_finish();
 }
 
 

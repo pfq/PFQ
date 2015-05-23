@@ -108,7 +108,7 @@ MODULE_PARM_DESC(max_len, " Maximum transmission length (default=1514 bytes)");
 
 MODULE_PARM_DESC(max_queue_slots, " Max Queue slots (default=262144)");
 
-MODULE_PARM_DESC(batch_len, 	" Batch queue length");
+MODULE_PARM_DESC(batch_len,	" Batch queue length");
 MODULE_PARM_DESC(tx_max_retry,  " Transmission max retry (default=1024)");
 
 MODULE_PARM_DESC(vl_untag, " Enable vlan untagging (default=0)");
@@ -133,7 +133,7 @@ static inline
 void mask_to_sock_queue(unsigned long n, unsigned long mask, unsigned long long *sock_queue)
 {
 	unsigned long bit;
-       	pfq_bitwise_foreach(mask, bit,
+	pfq_bitwise_foreach(mask, bit,
 	{
 	        int index = pfq_ctz(bit);
                 sock_queue[index] |= 1UL << n;
@@ -170,7 +170,7 @@ unsigned int pfq_fold(unsigned int a, unsigned int b)
 		return 0;
         c = b - 1;
         if (likely((b & c) == 0))
-        	return a & c;
+		return a & c;
         switch(b)
         {
         case 3:  return a % 3;
@@ -198,13 +198,13 @@ void send_to_kernel(struct sk_buff *skb)
 static int
 pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 {
- 	unsigned long long sock_queue[Q_SKBUFF_SHORT_BATCH];
+	unsigned long long sock_queue[Q_SKBUFF_SHORT_BATCH];
         unsigned long group_mask, socket_mask;
 
 	struct local_data * local;
         struct gc_data *gcollector;
 
- 	struct lazy_fwd_targets targets;
+	struct lazy_fwd_targets targets;
 
         long unsigned n, bit, lb;
         struct pfq_monad monad;
@@ -291,8 +291,8 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 	else {
                 if (gc_size(gcollector) == 0)
 		{
-                	local_bh_enable();
-                	return 0;
+			local_bh_enable();
+			return 0;
 		}
 	}
 
@@ -306,7 +306,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 
         memset(sock_queue, 0, sizeof(sock_queue));
 
- 	group_mask = 0;
+	group_mask = 0;
 
 #ifdef PFQ_RX_PROFILE
 	start = get_cycles();
@@ -369,7 +369,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 #else
 				if (bpf && !SK_RUN_FILTER(bpf, buff.skb))
 #endif
-                        	{
+				{
 					__sparse_inc(&this_group->stats.drop, cpu);
 					continue;
 				}
@@ -398,8 +398,8 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 
 				monad.fanout.class_mask = Q_CLASS_DEFAULT;
 				monad.fanout.type       = fanout_copy;
-				monad.state  		= 0;
-				monad.group 		= this_group;
+				monad.state		= 0;
+				monad.group		= this_group;
 
 				/* run the functional program */
 
@@ -408,7 +408,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 				/* save a reference of the current packet */
 
 				if (buff.skb == NULL) {
-                                	__sparse_inc(&this_group->stats.drop, cpu);
+					__sparse_inc(&this_group->stats.drop, cpu);
 					continue;
 				}
 
@@ -422,8 +422,8 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 				/* skip the packet? */
 
 				if (is_drop(monad.fanout)) {
-                                	__sparse_inc(&this_group->stats.drop, cpu);
-                                	continue;
+					__sparse_inc(&this_group->stats.drop, cpu);
+					continue;
 				}
 
 				/* compute the eligible mask of sockets enabled for this packet... */
@@ -548,8 +548,8 @@ pfq_packet_rcv
 		goto out;
 
 	if (skb->peeked) {
-    		skb->peeked = 0;
-    		goto out;
+		skb->peeked = 0;
+		goto out;
 	}
 
 	skb = skb_share_check(skb, GFP_ATOMIC);
@@ -566,8 +566,8 @@ pfq_packet_rcv
             } break;
 
             default:
-            	if (!capture_incoming)
-        		goto out;
+		if (!capture_incoming)
+			goto out;
         }
 
         return pfq_receive(NULL, skb, 0);
@@ -916,13 +916,13 @@ static int __init pfq_init_module(void)
 
         err = sock_register(&pfq_family_ops);
         if (err < 0)
-        	goto err4;
+		goto err4;
 
 #ifdef PFQ_USE_SKB_POOL
 	err = pfq_skb_pool_init();
         if (err < 0) {
-        	pfq_skb_pool_purge();
-        	goto err5;
+		pfq_skb_pool_purge();
+		goto err5;
 	}
         printk(KERN_INFO "[PFQ] skb pool initialized.\n");
 #endif
@@ -1027,7 +1027,7 @@ pfq_netif_receive_skb(struct sk_buff *skb)
         if (likely(pfq_direct_capture(skb))) {
 
 		if (pfq_normalize_skb(skb) < 0)
-                	return NET_RX_DROP;
+			return NET_RX_DROP;
 
 		pfq_receive(NULL, skb, 2);
 		return NET_RX_SUCCESS;
@@ -1043,7 +1043,7 @@ pfq_netif_rx(struct sk_buff *skb)
         if (likely(pfq_direct_capture(skb))) {
 
 		if (pfq_normalize_skb(skb) < 0)
-                	return NET_RX_DROP;
+			return NET_RX_DROP;
 
 		pfq_receive(NULL, skb, 1);
 		return NET_RX_SUCCESS;
@@ -1059,7 +1059,7 @@ pfq_gro_receive(struct napi_struct *napi, struct sk_buff *skb)
         if (likely(pfq_direct_capture(skb))) {
 
 		if (pfq_normalize_skb(skb) < 0)
-                	return GRO_DROP;
+			return GRO_DROP;
 
                 pfq_receive(napi, skb, 3);
                 return GRO_NORMAL;

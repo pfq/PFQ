@@ -71,16 +71,16 @@ void pfq_group_stats_reset(struct pfq_group_stats *stats)
 
 struct pfq_global_stats
 {
-	sparse_counter_t recv; 	    	/* received by PFQ */
-	sparse_counter_t lost; 	    	/* lost during capture, due to PFQ problem (e.g. memory problem) */
-        sparse_counter_t sent;  	/* transmitted from user-space */
-        sparse_counter_t frwd;  	/* forwarded to devices */
-        sparse_counter_t kern;  	/* passed to kernel */
-        sparse_counter_t disc;  	/* discarded due to driver congestion */
-        sparse_counter_t abrt; 		/* aborted (e.g. memory problems) */
+	sparse_counter_t recv;		/* received by PFQ */
+	sparse_counter_t lost;		/* lost during capture, due to PFQ problem (e.g. memory problem) */
+        sparse_counter_t sent;		/* transmitted from user-space */
+        sparse_counter_t frwd;		/* forwarded to devices */
+        sparse_counter_t kern;		/* passed to kernel */
+        sparse_counter_t disc;		/* discarded due to driver congestion */
+        sparse_counter_t abrt;		/* aborted (e.g. memory problems) */
 
-        sparse_counter_t poll; 		/* number of poll */
-        sparse_counter_t wake; 		/* number of wakeup */
+        sparse_counter_t poll;		/* number of poll */
+        sparse_counter_t wake;		/* number of wakeup */
 };
 
 static inline
@@ -101,7 +101,7 @@ void pfq_global_stats_reset(struct pfq_global_stats *stats)
 
 struct pfq_memory_stats
 {
- 	sparse_counter_t os_alloc;
+	sparse_counter_t os_alloc;
 	sparse_counter_t pool_alloc;
 	sparse_counter_t pool_fail;
 	sparse_counter_t err_intdis;

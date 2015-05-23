@@ -53,9 +53,9 @@ int pfq_percpu_init(void)
 
 		init_timer_deferrable(&local->timer);
 
- 		local->timer.function = pfq_timer;
+		local->timer.function = pfq_timer;
 		local->timer.data = (unsigned long)cpu;
- 		local->timer.expires = jiffies + msecs_to_jiffies(100);
+		local->timer.expires = jiffies + msecs_to_jiffies(100);
 
 		add_timer_on(&local->timer, cpu);
 
@@ -81,14 +81,14 @@ int pfq_percpu_flush(void)
 
 		for_each_skbuff(SKBUFF_BATCH_ADDR(local->gc.pool), skb, n)
 		{
-                 	kfree_skb(skb);
+			kfree_skb(skb);
 		}
 
                 total += local->gc.pool.len;
 
 		gc_reset(&local->gc);
 
- 		del_timer(&local->timer);
+		del_timer(&local->timer);
         }
 
 	sparse_add(&global_stats.lost, total);

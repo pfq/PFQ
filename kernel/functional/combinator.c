@@ -33,7 +33,7 @@ struct pfq_function_descr combinator_functions[] = {
         { "or",    "(SkBuff -> Bool) -> (SkBuff -> Bool) -> SkBuff -> Bool",    or  },
         { "and",   "(SkBuff -> Bool) -> (SkBuff -> Bool) -> SkBuff -> Bool",    and },
         { "xor",   "(SkBuff -> Bool) -> (SkBuff -> Bool) -> SkBuff -> Bool",    xor },
-        { "not",   "(SkBuff -> Bool) -> SkBuff -> Bool",  			not },
+        { "not",   "(SkBuff -> Bool) -> SkBuff -> Bool",			not },
 
         { NULL }};
 

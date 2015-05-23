@@ -36,20 +36,20 @@
 struct sk_filter *
 pfq_alloc_sk_filter(struct sock_fprog *fprog)
 {
-       	struct sock sk;
-       	int rv;
+	struct sock sk;
+	int rv;
 
-       	sock_init_data(NULL, &sk);
-       	sk.sk_filter = NULL;
-       	atomic_set(&sk.sk_omem_alloc, 0);
+	sock_init_data(NULL, &sk);
+	sk.sk_filter = NULL;
+	atomic_set(&sk.sk_omem_alloc, 0);
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,9,0))
-       	sock_reset_flag(&sk, SOCK_FILTER_LOCKED);
+	sock_reset_flag(&sk, SOCK_FILTER_LOCKED);
 #endif
         pr_devel("[PFQ] BPF: new fprog (len %d)\n", fprog->len);
 
 	if ((rv = sk_attach_filter(fprog, &sk))) {
 		pr_devel("[PFQ] BPF: sk_attach_filter error: (%d)!\n", rv);
-        	return NULL;
+		return NULL;
 	}
 
 	return sk.sk_filter;
@@ -59,14 +59,14 @@ pfq_alloc_sk_filter(struct sock_fprog *fprog)
 void
 pfq_free_sk_filter(struct sk_filter *filter)
 {
-       	struct sock sk;
-       	int rv;
+	struct sock sk;
+	int rv;
 
-       	sock_init_data(NULL, &sk);
-       	sk.sk_filter = NULL;
-       	atomic_set(&sk.sk_omem_alloc, 0);
+	sock_init_data(NULL, &sk);
+	sk.sk_filter = NULL;
+	atomic_set(&sk.sk_omem_alloc, 0);
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,9,0))
-       	sock_reset_flag(&sk, SOCK_FILTER_LOCKED);
+	sock_reset_flag(&sk, SOCK_FILTER_LOCKED);
 #endif
 	sk.sk_filter = filter;
 	if ((rv = sk_detach_filter(&sk)))

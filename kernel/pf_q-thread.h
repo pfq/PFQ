@@ -38,8 +38,8 @@ extern int pfq_tx_wakeup(struct pfq_sock *so, int index);
 
 struct pfq_thread_data
 {
- 	struct pfq_sock *so;
-       	size_t 		 id;
+	struct pfq_sock *so;
+	size_t		id;
 };
 
 
@@ -48,7 +48,7 @@ void pfq_relax(void)
 {
 	if (need_resched())
 		schedule();
-        cpu_relax();
+	cpu_relax();
 }
 
 

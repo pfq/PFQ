@@ -171,12 +171,12 @@ ktime_t wait_until(uint64_t ts, int cpu)
 	ktime_t now;
 	do
 	{
-        	now = ktime_get_real();
-        	if (unlikely(giveup_tx(cpu)))
-        		return now;
+		now = ktime_get_real();
+		if (unlikely(giveup_tx(cpu)))
+			return now;
 	}
 	while (ktime_to_ns(now) < ts
-	       	&& (pfq_relax(), true));
+	       && (pfq_relax(), true));
 
 	return now;
 }
@@ -193,7 +193,7 @@ __pfq_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int 
 	struct local_data *local;
 	size_t len, tot_sent = 0;
 	unsigned int n, retry, index;
-       	int last_batch_len, hw_queue;
+	int last_batch_len, hw_queue;
 
 	char *ptr, *begin, *end;
         ktime_t now; uint64_t last_ts;
@@ -276,36 +276,36 @@ __pfq_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int 
 
 		/* allocate a packet */
 
-	 	skb = pfq_tx_alloc_skb(max_len, GFP_KERNEL, node);
-	 	if (unlikely(skb == NULL)) {
-	 		printk(KERN_INFO "[PFQ] Tx could not allocate an skb!\n");
-	 		break;
+		skb = pfq_tx_alloc_skb(max_len, GFP_KERNEL, node);
+		if (unlikely(skb == NULL)) {
+			printk(KERN_INFO "[PFQ] Tx could not allocate an skb!\n");
+			break;
 		}
 
-	 	/* fill the skb */
+		/* fill the skb */
 
-	 	len = min_t(size_t, hdr->len, max_len);
+		len = min_t(size_t, hdr->len, max_len);
 
-	 	skb_reset_tail_pointer(skb);
-	 	skb->dev = dev;
-	 	skb->len = 0;
-	 	__skb_put(skb, len);
+		skb_reset_tail_pointer(skb);
+		skb->dev = dev;
+		skb->len = 0;
+		__skb_put(skb, len);
 
-	 	skb_get(skb);
+		skb_get(skb);
 
 		skb_set_queue_mapping(skb, hw_queue);
 
-	 	/* copy bytes in the socket buffer */
+		/* copy bytes in the socket buffer */
 
 		skb_copy_to_linear_data(skb, hdr+1, len < 64 ? 64 : len);
 
-                /* transmit packet */
+		/* transmit packet */
 
 		pfq_skbuff_short_batch_push(SKBUFF_BATCH_ADDR(skbs), skb);
 
-	 	/* move ptr to the next packet */
+		/* move ptr to the next packet */
 
-	 	ptr += sizeof(struct pfq_pkthdr_tx) + ALIGN(hdr->len, 8);
+		ptr += sizeof(struct pfq_pkthdr_tx) + ALIGN(hdr->len, 8);
 	}
 
 	/* send the last batch */
@@ -619,7 +619,7 @@ pfq_lazy_xmit_exec(struct gc_data *gc, struct lazy_fwd_targets const *ts)
 				struct sk_buff *nskb = to_clone ? skb_clone(skb, GFP_ATOMIC) : skb_get(skb);
 				if (nskb) {
 					if (__pfq_xmit(nskb, dev, txq, xmit_more) == NETDEV_TX_OK)
-		   				sent++;
+						sent++;
 					else
 						sparse_inc(&global_stats.abrt);
 				}

@@ -35,7 +35,7 @@
 #define MakeAction(type) \
 typedef struct \
 { \
-	type 	value; \
+	type	value; \
 } Action_ ## type;
 
 
@@ -54,9 +54,9 @@ enum fanout
 
 typedef struct
 {
-        unsigned long 	class_mask;
-        uint32_t 	hash;
-        uint8_t  	type;
+        unsigned long	class_mask;
+        uint32_t	hash;
+        uint8_t		type;
 
 } fanout_t;
 
@@ -65,9 +65,9 @@ typedef struct
 
 struct pfq_monad
 {
-        struct pfq_group       *group;
-        uint64_t 		state;
-        fanout_t 		fanout;
+        struct pfq_group	*group;
+        uint64_t		state;
+        fanout_t		fanout;
 };
 
 

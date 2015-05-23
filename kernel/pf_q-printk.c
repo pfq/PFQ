@@ -54,11 +54,11 @@ pr_devel_buffer(const unsigned char *buff, size_t len)
 		          " %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x"
 		          " %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x"
 		          " %2x %2x %2x %2x...]\n", len,
-       	buff[0], buff[1], buff[2], buff[3], buff[4], buff[5], buff[6], buff[7],
-       	buff[8], buff[9], buff[10], buff[11], buff[12], buff[13], buff[14], buff[15],
-       	buff[16], buff[17], buff[18], buff[19], buff[20], buff[21], buff[22], buff[23],
-       	buff[24], buff[25], buff[26], buff[27], buff[28], buff[29], buff[30], buff[31],
-       	buff[32], buff[33]);
+			  buff[0], buff[1], buff[2], buff[3], buff[4], buff[5], buff[6], buff[7],
+			  buff[8], buff[9], buff[10], buff[11], buff[12], buff[13], buff[14], buff[15],
+			  buff[16], buff[17], buff[18], buff[19], buff[20], buff[21], buff[22], buff[23],
+			  buff[24], buff[25], buff[26], buff[27], buff[28], buff[29], buff[30], buff[31],
+			  buff[32], buff[33]);
 }
 
 
@@ -88,7 +88,7 @@ snprintf_functional_node(char *buffer, size_t size, struct pfq_functional_node c
 	}
 
 	if (size <= len)
-         	return len;
+		return len;
 
 	if (node->next)
 		len += snprintf(buffer + len, size - len, "} -> next:%p", node->next);
@@ -114,9 +114,9 @@ void
 pr_devel_computation_tree(struct pfq_computation_tree const *tree)
 {
         size_t n;
-        if (tree == NULL) {
-        	pr_devel("[PFQ] computation (unspecified)\n");
-        	return;
+	if (tree == NULL) {
+		pr_devel("[PFQ] computation (unspecified)\n");
+		return;
 	}
         pr_devel("[PFQ] computation size=%zu entry_point=%p\n", tree->size, tree->entry_point);
         for(n = 0; n < tree->size; n++)
@@ -134,9 +134,9 @@ pr_devel_functional_descr(struct pfq_functional_descr const *descr, size_t index
         const char *symbol, *signature;
         size_t n, nargs, len = 0, size = sizeof(buffer);
 
-       	if (descr->symbol == NULL) {
+	if (descr->symbol == NULL) {
 		pr_devel("%zu   NULL :: ???\n", index);
-       		return;
+		return;
 	}
 
         symbol    = strdup_user(descr->symbol);
@@ -190,10 +190,10 @@ pr_devel_functional_descr(struct pfq_functional_descr const *descr, size_t index
 void
 pr_devel_computation_descr(struct pfq_computation_descr const *descr)
 {
-        size_t n;
-        if (descr == NULL) {
-        	pr_devel("[PFQ] computation (unspecified)\n");
-        	return;
+	size_t n;
+	if (descr == NULL) {
+		pr_devel("[PFQ] computation (unspecified)\n");
+		return;
 	}
         pr_devel("[PFQ] computation size=%zu entry_point=%zu\n", descr->size, descr->entry_point);
         for(n = 0; n < descr->size; n++)

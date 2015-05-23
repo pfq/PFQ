@@ -36,17 +36,17 @@ bloom_src(arguments_t args, SkBuff b)
 	if (eth_hdr(b.skb)->h_proto == __constant_htons(ETH_P_IP))
 	{
 		struct iphdr _iph;
-    		const struct iphdr *ip;
+		const struct iphdr *ip;
 		uint32_t fold, mask, addr;
 		char *mem;
 
 		ip = skb_header_pointer(b.skb, b.skb->mac_len, sizeof(_iph), &_iph);
- 		if (ip == NULL)
-                        return false;
+		if (ip == NULL)
+			return false;
 
-        	fold = GET_ARG_0(uint32_t, args);
+		fold = GET_ARG_0(uint32_t, args);
 		mem  = GET_ARG_1(char *, args);
-        	mask = GET_ARG_2(uint32_t, args);
+		mask = GET_ARG_2(uint32_t, args);
 
 		addr = ip->saddr & mask;
 
@@ -54,10 +54,10 @@ bloom_src(arguments_t args, SkBuff b)
 		     BF_TEST(mem, hfun2(addr) & fold ) &&
 		     BF_TEST(mem, hfun3(addr) & fold ) &&
 		     BF_TEST(mem, hfun4(addr) & fold ) )
-		     	return true;
+			return true;
 	}
 
-        return false;
+	return false;
 }
 
 
@@ -67,17 +67,17 @@ bloom_dst(arguments_t args, SkBuff b)
 	if (eth_hdr(b.skb)->h_proto == __constant_htons(ETH_P_IP))
 	{
 		struct iphdr _iph;
-    		const struct iphdr *ip;
+		const struct iphdr *ip;
 		uint32_t fold, mask, addr;
 		char *mem;
 
 		ip = skb_header_pointer(b.skb, b.skb->mac_len, sizeof(_iph), &_iph);
- 		if (ip == NULL)
-                        return false;
+		if (ip == NULL)
+			return false;
 
-        	fold = GET_ARG_0(uint32_t, args);
+		fold = GET_ARG_0(uint32_t, args);
 		mem  = GET_ARG_1(char *, args);
-        	mask = GET_ARG_2(uint32_t, args);
+		mask = GET_ARG_2(uint32_t, args);
 
 		addr = ip->daddr & mask;
 
@@ -85,10 +85,10 @@ bloom_dst(arguments_t args, SkBuff b)
 		     BF_TEST(mem, hfun2(addr) & fold ) &&
 		     BF_TEST(mem, hfun3(addr) & fold ) &&
 		     BF_TEST(mem, hfun4(addr) & fold ) )
-		     	return true;
+			return true;
 	}
 
-        return false;
+	return false;
 }
 
 static bool
@@ -97,17 +97,17 @@ bloom(arguments_t args, SkBuff b)
 	if (eth_hdr(b.skb)->h_proto == __constant_htons(ETH_P_IP))
 	{
 		struct iphdr _iph;
-    		const struct iphdr *ip;
+		const struct iphdr *ip;
 		uint32_t fold, mask, addr;
 		char *mem;
 
 		ip = skb_header_pointer(b.skb, b.skb->mac_len, sizeof(_iph), &_iph);
- 		if (ip == NULL)
-                        return false;
+		if (ip == NULL)
+			return false;
 
-        	fold = GET_ARG_0(uint32_t, args);
+		fold = GET_ARG_0(uint32_t, args);
 		mem  = GET_ARG_1(char *, args);
-        	mask = GET_ARG_2(uint32_t, args);
+		mask = GET_ARG_2(uint32_t, args);
 
 		addr = ip->daddr & mask;
 
@@ -115,7 +115,7 @@ bloom(arguments_t args, SkBuff b)
 		     BF_TEST(mem, hfun2(addr) & fold ) &&
 		     BF_TEST(mem, hfun3(addr) & fold ) &&
 		     BF_TEST(mem, hfun4(addr) & fold ) )
-		     	return true;
+			return true;
 
 		addr = ip->saddr & mask;
 
@@ -123,10 +123,10 @@ bloom(arguments_t args, SkBuff b)
 		     BF_TEST(mem, hfun2(addr) & fold ) &&
 		     BF_TEST(mem, hfun3(addr) & fold ) &&
 		     BF_TEST(mem, hfun4(addr) & fold ) )
-		     	return true;
+			return true;
 	}
 
-        return false;
+	return false;
 }
 
 
@@ -168,19 +168,19 @@ static int bloom_init(arguments_t args)
 
 	m = clp2(m);
 
-	SET_ARG_0(args, m-1); 	/* bloom filter fold mask */
+	SET_ARG_0(args, m-1);	/* bloom filter fold mask */
 
 	if (m > (1UL << 24)) {
-	       	printk(KERN_INFO "[PFQ|init] bloom filter: maximum number of bins exceeded (2^24)!\n");
-	       	return -EPERM;
+		printk(KERN_INFO "[PFQ|init] bloom filter: maximum number of bins exceeded (2^24)!\n");
+		return -EPERM;
 	}
 
 	size = (m >> 3);
 
-        mem = kzalloc(size, GFP_KERNEL);
-        if (!mem) {
-	       	printk(KERN_INFO "[PFQ|init] bloom filter: out of memory!\n");
-	       	return -ENOMEM;
+	mem = kzalloc(size, GFP_KERNEL);
+	if (!mem) {
+		printk(KERN_INFO "[PFQ|init] bloom filter: out of memory!\n");
+		return -ENOMEM;
 	}
 
 	SET_ARG_1(args, mem);
@@ -224,11 +224,11 @@ static int bloom_fini(arguments_t args)
 
 struct pfq_function_descr bloom_functions[] = {
 
-        { "bloom",	  	"CInt -> [Word32] -> CInt -> SkBuff -> Bool", 		bloom, 			bloom_init, 	bloom_fini },
-        { "bloom_src",	  	"CInt -> [Word32] -> CInt -> SkBuff -> Bool", 		bloom_src, 		bloom_init, 	bloom_fini },
-        { "bloom_dst",	  	"CInt -> [Word32] -> CInt -> SkBuff -> Bool", 		bloom_dst, 		bloom_init, 	bloom_fini },
-        { "bloom_filter", 	"CInt -> [Word32] -> CInt -> SkBuff -> Action SkBuff", 	bloom_filter, 		bloom_init, 	bloom_fini },
-        { "bloom_src_filter", 	"CInt -> [Word32] -> CInt -> SkBuff -> Action SkBuff", 	bloom_src_filter, 	bloom_init, 	bloom_fini },
-        { "bloom_dst_filter", 	"CInt -> [Word32] -> CInt -> SkBuff -> Action SkBuff", 	bloom_dst_filter, 	bloom_init, 	bloom_fini },
-        { NULL }};
+	{"bloom",		"CInt->[Word32]->CInt->SkBuff->Bool",		bloom,			bloom_init,	bloom_fini},
+	{"bloom_src",		"CInt->[Word32]->CInt->SkBuff->Bool",		bloom_src,		bloom_init,	bloom_fini},
+	{"bloom_dst",		"CInt->[Word32]->CInt->SkBuff->Bool",		bloom_dst,		bloom_init,	bloom_fini},
+	{"bloom_filter",	"CInt->[Word32]->CInt->SkBuff->ActionSkBuff",	bloom_filter,		bloom_init,	bloom_fini},
+	{"bloom_src_filter",	"CInt->[Word32]->CInt->SkBuff->ActionSkBuff",	bloom_src_filter,	bloom_init,	bloom_fini},
+	{"bloom_dst_filter",	"CInt->[Word32]->CInt->SkBuff->ActionSkBuff",	bloom_dst_filter,	bloom_init,	bloom_fini},
+	{ NULL }};
 

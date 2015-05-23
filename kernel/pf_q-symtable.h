@@ -37,12 +37,12 @@
 
 struct symtable_entry
 {
-	struct list_head 	list;
-	char 			symbol[Q_FUN_SYMB_LEN];
+	struct list_head	list;
+	char			symbol[Q_FUN_SYMB_LEN];
 	void *                  function;
 	void *			init;
 	void *			fini;
-	const char * 		signature;
+	const char *		signature;
 };
 
 /* semaphore */

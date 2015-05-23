@@ -56,7 +56,7 @@ struct headers {
 	struct udphdr udp;
 	union
 	{
-		struct rtphdr 	rtp;
+		struct rtphdr	rtp;
 		struct rtcphdr  rtcp;
 	} un;
 
@@ -81,7 +81,7 @@ bool valid_codec(uint8_t c)
 struct hret
 {
 	uint32_t hash;
-	bool 	 pass;
+	bool	 pass;
 };
 
 
@@ -93,7 +93,7 @@ heuristic_rtp(SkBuff b, bool steer)
 	if (eth_hdr(b.skb)->h_proto == __constant_htons(ETH_P_IP))
 	{
 		struct iphdr _iph;
-    		const struct iphdr *ip;
+		const struct iphdr *ip;
 
 		struct headers _hdr;
 		const struct headers *hdr;
@@ -101,35 +101,35 @@ heuristic_rtp(SkBuff b, bool steer)
                 uint16_t source,dest;
 
 		ip = skb_header_pointer(b.skb, b.skb->mac_len, sizeof(_iph), &_iph);
- 		if (ip == NULL)
-        		return ret;
+		if (ip == NULL)
+			return ret;
 
 		if (ip->protocol != IPPROTO_UDP)
-        		return ret;
+			return ret;
 
 		hdr = skb_header_pointer(b.skb, b.skb->mac_len + (ip->ihl<<2), sizeof(_hdr), &_hdr);
 		if (hdr == NULL)
-        		return ret;
+			return ret;
 
 		/* version => 2 */
 
 		if (!((ntohs(hdr->un.rtp.rh_flags) & 0xc000) == 0x8000))
-        		return ret;
+			return ret;
 
 		dest   = ntohs(hdr->udp.dest);
 		source = ntohs(hdr->udp.source);
 
 		if (dest < 1024 || source < 1024)
-        		return ret;
+			return ret;
 
 		if ((dest & 1) && (source & 1)) { /* rtcp */
-                	if (hdr->un.rtcp.rh_type != 200)  /* SR  */
-        			return ret;
+			if (hdr->un.rtcp.rh_type != 200)  /* SR  */
+				return ret;
 		}
 		else if (!((dest & 1) || (source & 1))) {
-                	uint8_t pt = hdr->un.rtp.rh_pt;
-                 	if (!valid_codec(pt))
-        			return ret;
+			uint8_t pt = hdr->un.rtp.rh_pt;
+			if (!valid_codec(pt))
+				return ret;
 		}
 
 		ret.pass = true;
@@ -165,7 +165,7 @@ steering_rtp(arguments_t arg, SkBuff b)
 	struct hret ret = heuristic_rtp(b, true);
 
 	if (ret.pass)
-        	return Steering(b, ret.hash);
+		return Steering(b, ret.hash);
 
 	return Drop(b);
 }
@@ -173,14 +173,14 @@ steering_rtp(arguments_t arg, SkBuff b)
 
 struct pfq_function_descr hooks_f[] = {
 
-	{ "rtp",       "SkBuff -> Action SkBuff", 	filter_rtp   	},
-	{ "steer_rtp", "SkBuff -> Action SkBuff", 	steering_rtp 	},
+	{ "rtp",       "SkBuff -> Action SkBuff",	filter_rtp	},
+	{ "steer_rtp", "SkBuff -> Action SkBuff",	steering_rtp	},
 	{ NULL, NULL}};
 
 
 struct pfq_function_descr hooks_p[] = {
 
-	{ "is_rtp",     "SkBuff -> Bool", 		is_rtp 		},
+	{ "is_rtp",     "SkBuff -> Bool",	is_rtp	},
 	{ NULL, NULL}};
 
 
@@ -189,7 +189,7 @@ static int __init usr_init_module(void)
 	if (pfq_symtable_register_functions("[RTP]", &pfq_lang_functions, hooks_f) < 0)
 		return -EPERM;
 
-       	if (pfq_symtable_register_functions("[RTP]", &pfq_lang_functions, hooks_p) < 0)
+	if (pfq_symtable_register_functions("[RTP]", &pfq_lang_functions, hooks_p) < 0)
 	{
 		pfq_symtable_unregister_functions("[RTP]", &pfq_lang_functions, hooks_f);
 		return -EPERM;

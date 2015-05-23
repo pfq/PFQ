@@ -32,10 +32,10 @@ struct gc_log;
 
 struct pfq_cb
 {
-	struct gc_log 	 *log;
+	struct gc_log	 *log;
 	struct pfq_monad *monad;
-        unsigned long 	  group_mask;
-	int 		  direct;
+        unsigned long	  group_mask;
+	int		  direct;
 };
 
 
@@ -43,7 +43,7 @@ struct pfq_cb
 
 struct gc_buff
 {
- 	struct sk_buff *skb;
+	struct sk_buff *skb;
 };
 
 

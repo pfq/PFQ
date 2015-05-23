@@ -34,14 +34,14 @@
 #include <kcompat.h>
 #endif
 
-#define SVIEW_FMT 	"%.*s"
-#define SVIEW_ARG(x) 	(int)string_view_length(x), x.begin
+#define SVIEW_FMT	"%.*s"
+#define SVIEW_ARG(x)	(int)string_view_length(x), x.begin
 
 
 typedef struct
 {
- 	const char *begin;
- 	const char *end;
+	const char *begin;
+	const char *end;
 
 } string_view_t;
 
@@ -106,14 +106,14 @@ string_view_trim(string_view_t str)
 	if (!str.begin || !str.end)
 		return str;
 	while ( isspace(*str.begin) &&
-                str.begin != str.end )
-                str.begin++;
+		str.begin != str.end )
+		str.begin++;
 
 	while ( str.end != str.begin &&
 		isspace(*(str.end-1)) )
-                str.end--;
+		str.end--;
 
-        return str;
+	return str;
 }
 
 

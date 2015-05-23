@@ -47,7 +47,7 @@ int pfq_sk_buff_pool_init (struct pfq_sk_buff_pool *pool, size_t size)
 		}
 	}
 	else {
-            	pool->skbs = NULL;
+		pool->skbs = NULL;
 	}
 
 	pool->size  = size;
