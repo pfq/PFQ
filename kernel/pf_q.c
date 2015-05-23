@@ -679,7 +679,7 @@ pfq_create(
 
         up (&sock_sem);
 
-        down_read(&symtable_rw_sem);
+        down_read(&symtable_sem);
         return 0;
 }
 
@@ -734,7 +734,7 @@ pfq_release(struct socket *sock)
 	sock->sk = NULL;
 	sock_put(sk);
 
-        up_read(&symtable_rw_sem);
+        up_read(&symtable_sem);
 
 	pr_devel("[PFQ|%d] socket closed.\n", id.value);
         return 0;

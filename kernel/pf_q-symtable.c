@@ -37,10 +37,10 @@
 #include <pf_q-signature.h>
 
 
-DECLARE_RWSEM(symtable_rw_sem);
-DEFINE_SEMAPHORE(symtable_sem);
+DECLARE_RWSEM(symtable_sem);
 
 LIST_HEAD(pfq_lang_functions);
+
 
 EXPORT_SYMBOL_GPL(pfq_lang_functions);
 
@@ -178,7 +178,7 @@ pfq_symtable_pr_devel(const char *hdr, struct list_head *category)
 	struct list_head *pos = NULL;
 	struct symtable_entry *this;
 
-        down(&symtable_sem);
+        down_read(&symtable_sem);
 
 	pr_devel("[PFQ] %s:\n", hdr);
 
@@ -188,7 +188,7 @@ pfq_symtable_pr_devel(const char *hdr, struct list_head *category)
 		pr_devel("      %s %pF\n", this->symbol, this->function);
 	}
 
-        up(&symtable_sem);
+        up_read(&symtable_sem);
 }
 
 
@@ -203,7 +203,6 @@ pfq_symtable_init(void)
         pfq_symtable_register_functions(NULL, &pfq_lang_functions, (struct pfq_function_descr *)vlan_functions);
         pfq_symtable_register_functions(NULL, &pfq_lang_functions, (struct pfq_function_descr *)misc_functions);
         pfq_symtable_register_functions(NULL, &pfq_lang_functions, (struct pfq_function_descr *)dummy_functions);
-
         pfq_symtable_register_functions(NULL, &pfq_lang_functions, (struct pfq_function_descr *)predicate_functions);
         pfq_symtable_register_functions(NULL, &pfq_lang_functions, (struct pfq_function_descr *)combinator_functions);
         pfq_symtable_register_functions(NULL, &pfq_lang_functions, (struct pfq_function_descr *)property_functions);
@@ -217,13 +216,11 @@ pfq_symtable_init(void)
 void
 pfq_symtable_free(void)
 {
-        down_write(&symtable_rw_sem);
-	down(&symtable_sem);
+        down_write(&symtable_sem);
 
         __pfq_symtable_free(&pfq_lang_functions);
 
-        up(&symtable_sem);
-        up_write(&symtable_rw_sem);
+        up_write(&symtable_sem);
 
 	printk(KERN_INFO "[PFQ] symtable freed.\n");
 }
@@ -234,11 +231,11 @@ pfq_symtable_search(struct list_head *category, const char *symbol)
 {
 	void *ptr;
 
-        down(&symtable_sem);
+        down_read(&symtable_sem);
 
 	ptr = __pfq_symtable_search(category, symbol);
 
-	up(&symtable_sem);
+	up_read(&symtable_sem);
 
         return ptr;
 }
@@ -250,11 +247,11 @@ pfq_symtable_register_function(const char *module, struct list_head *category, c
 {
 	int rc;
 
-        down(&symtable_sem);
+        down_write(&symtable_sem);
 
 	rc = __pfq_symtable_register_function(category, symbol, fun, init, fini, signature);
 
-	up(&symtable_sem);
+	up_write(&symtable_sem);
 
 	if (rc == 0 && module)
 		printk(KERN_INFO "[PFQ]%s '%s' @%pF function registered.\n", module, symbol, fun);
@@ -268,18 +265,15 @@ pfq_symtable_unregister_function(const char *module, struct list_head *category,
 {
 	struct symtable_entry * elem;
 
-        down_write(&symtable_rw_sem);
-	down(&symtable_sem);
+        down_write(&symtable_sem);
 
 	elem = __pfq_symtable_search(category, symbol);
 	if (elem == NULL)
 		return -EFAULT;
 
-	pfq_dismiss_function(elem->function);
         __pfq_symtable_unregister_function(category, symbol);
 
-	up(&symtable_sem);
-        up_write(&symtable_rw_sem);
+        up_write(&symtable_sem);
 
 	printk(KERN_INFO "[PFQ]%s '%s' function unregistered.\n", module, symbol);
 

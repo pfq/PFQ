@@ -47,8 +47,7 @@ struct symtable_entry
 
 /* semaphore */
 
-extern struct semaphore         symtable_sem;
-extern struct rw_semaphore      symtable_rw_sem;
+extern struct rw_semaphore      symtable_sem;
 
 /* categories */
 
