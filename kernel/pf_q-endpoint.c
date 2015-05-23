@@ -33,7 +33,8 @@
 
 
 static inline
-size_t copy_to_user_skbs(struct pfq_rx_opt *ro, struct pfq_skbuff_batch *skbs, unsigned long long mask, int cpu, pfq_gid_t gid)
+size_t copy_to_user_skbs(struct pfq_rx_opt *ro, struct pfq_skbuff_batch *skbs,
+			 unsigned long long mask, int cpu, pfq_gid_t gid)
 {
         int len = pfq_popcount(mask);
         size_t cpy = 0;
@@ -59,7 +60,8 @@ size_t copy_to_user_skbs(struct pfq_rx_opt *ro, struct pfq_skbuff_batch *skbs, u
 
 
 static inline
-size_t copy_to_dev_buffs(struct pfq_sock *so, struct gc_queue_buff *buffs, unsigned long long mask, int cpu, pfq_gid_t gid)
+size_t copy_to_dev_buffs(struct pfq_sock *so, struct gc_queue_buff *buffs,
+			 unsigned long long mask, int cpu, pfq_gid_t gid)
 {
 	struct net_device *dev;
 	int sent;
@@ -69,7 +71,8 @@ size_t copy_to_dev_buffs(struct pfq_sock *so, struct gc_queue_buff *buffs, unsig
 		dev = dev_get_by_index(&init_net, so->egress_index);
 		if (dev == NULL) {
 			if (printk_ratelimit())
-				printk(KERN_INFO "[PFQ] egress endpoint not existing (%d)\n", so->egress_index);
+				printk(KERN_INFO "[PFQ] egress endpoint not existing (%d)\n",
+				       so->egress_index);
                         return false;
 		}
 
@@ -83,7 +86,8 @@ size_t copy_to_dev_buffs(struct pfq_sock *so, struct gc_queue_buff *buffs, unsig
 }
 
 
-size_t copy_to_endpoint_buffs(struct pfq_sock *so, struct gc_queue_buff *pool, unsigned long long mask, int cpu, pfq_gid_t gid)
+size_t copy_to_endpoint_buffs(struct pfq_sock *so, struct gc_queue_buff *pool,
+			      unsigned long long mask, int cpu, pfq_gid_t gid)
 {
 	switch(so->egress_type)
 	{

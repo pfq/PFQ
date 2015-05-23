@@ -190,7 +190,8 @@ pfq_run(struct pfq_computation_tree *prg, SkBuff b)
 struct pfq_computation_tree *
 pfq_computation_alloc (struct pfq_computation_descr const *descr)
 {
-        struct pfq_computation_tree * c = kzalloc(sizeof(size_t) + descr->size * sizeof(struct pfq_functional_node), GFP_KERNEL);
+        struct pfq_computation_tree * c = kzalloc(sizeof(size_t) + descr->size * sizeof(struct pfq_functional_node),
+						  GFP_KERNEL);
         c->size = descr->size;
         return c;
 }
@@ -392,7 +393,8 @@ pfq_check_computation_descr(struct pfq_computation_descr const *descr)
 
 			if (fun->arg[i].nelem > 65536 &&
 			    fun->arg[i].nelem != -1) {
-				printk(KERN_INFO "[PFQ] %zu: invalid argument (%d): number of array elements is %zu!\n", n, i, fun->arg[i].nelem);
+				printk(KERN_INFO "[PFQ] %zu: invalid argument (%d): number of array elements is %zu!\n",
+				       n, i, fun->arg[i].nelem);
 				return -EPERM;
 			}
 
@@ -400,12 +402,14 @@ pfq_check_computation_descr(struct pfq_computation_descr const *descr)
 				size_t x = fun->arg[i].size;
 
 				if (x >= descr->size) {
-					printk(KERN_INFO "[PFQ] %zu: %s: invalid argument(%d): %zu!\n", n, signature, i, x);
+					printk(KERN_INFO "[PFQ] %zu: %s: invalid argument(%d): %zu!\n",
+					       n, signature, i, x);
 					return -EPERM;
 				}
 
 				if (!function_signature_match(&descr->fun[x], sarg, x)) {
-					printk(KERN_INFO "[PFQ] %zu: %s: invalid argument(%d): expected signature " SVIEW_FMT "!\n", n, signature, i, SVIEW_ARG(sarg));
+					printk(KERN_INFO "[PFQ] %zu: %s: invalid argument(%d): expected signature "
+					       SVIEW_FMT "!\n", n, signature, i, SVIEW_ARG(sarg));
 					return -EPERM;
 				}
 				continue;
@@ -423,7 +427,8 @@ pfq_check_computation_descr(struct pfq_computation_descr const *descr)
 
 
 static void *
-resolve_user_symbol(struct list_head *cat, const char __user *symb, const char **signature, init_ptr_t *init, fini_ptr_t *fini)
+resolve_user_symbol(struct list_head *cat, const char __user *symb, const char **signature,
+		    init_ptr_t *init, fini_ptr_t *fini)
 {
 	struct symtable_entry *entry;
         const char *symbol;
@@ -467,7 +472,7 @@ pfq_computation_init(struct pfq_computation_tree *comp)
 			comp->node[n].initialized = true;
 		}
 	}
- 	return 0;
+	return 0;
 }
 
 int
@@ -624,7 +629,8 @@ pfq_computation_rtlink(struct pfq_computation_descr const *descr, struct pfq_com
 
 				if (fun->arg[i].nelem > 0) {
 
-					char *ptr = pod_user(&context, fun->arg[i].addr, fun->arg[i].size * fun->arg[i].nelem);
+					char *ptr = pod_user(&context, fun->arg[i].addr,
+							     fun->arg[i].size * fun->arg[i].nelem);
 					if (ptr == NULL) {
 						printk(KERN_INFO "[PFQ] %zu: pod_user(4): internal error!\n", n);
 						return -EPERM;
@@ -641,12 +647,14 @@ pfq_computation_rtlink(struct pfq_computation_descr const *descr, struct pfq_com
 			}
 			else if (is_arg_function(&fun->arg[i])) {
 
-				comp->node[n].fun.arg[i].value = (ptrdiff_t)get_functional_by_index(descr, comp, fun->arg[i].size);
+				comp->node[n].fun.arg[i].value = (ptrdiff_t)get_functional_by_index(descr, comp,
+												    fun->arg[i].size);
 				comp->node[n].fun.arg[i].nelem = -1;
 			}
 			else if (!is_arg_null(&fun->arg[i])) {
 
-				printk(KERN_INFO "[PFQ] pfq_computation_rtlink: internal error@ function:%zu argument[%zu] => { %p, %zu, %zu }!\n", n, i, (void __user *)fun->arg[i].addr, fun->arg[i].size, fun->arg[i].nelem);
+				printk(KERN_INFO "[PFQ] pfq_computation_rtlink: internal error@ function:%zu argument[%zu] => { %p, %zu, %zu }!\n",
+				       n, i, (void __user *)fun->arg[i].addr, fun->arg[i].size, fun->arg[i].nelem);
 				return -EPERM;
 			}
 		}

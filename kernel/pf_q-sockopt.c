@@ -72,7 +72,8 @@ int pfq_getsockopt(struct socket *sock,
                         return -EFAULT;
 
                 if (group.class_mask == 0) {
-                        printk(KERN_INFO "[PFQ|%d] join error: bad class_mask (%lx)!\n", so->id.value, group.class_mask);
+                        printk(KERN_INFO "[PFQ|%d] join error: bad class_mask (%lx)!\n",
+                               so->id.value, group.class_mask);
                         return -EINVAL;
                 }
 
@@ -88,12 +89,14 @@ int pfq_getsockopt(struct socket *sock,
 			pfq_gid_t gid = { group.gid };
 
 			if (!pfq_get_group(gid)) {
-				printk(KERN_INFO "[PFQ|%d] group error: invalid group id %d!\n", so->id.value, gid.value);
+				printk(KERN_INFO "[PFQ|%d] group error: invalid group id %d!\n",
+				       so->id.value, gid.value);
 				return -EFAULT;
 			}
 
                         if (pfq_join_group(gid, so->id, group.class_mask, group.policy) < 0) {
-                                printk(KERN_INFO "[PFQ|%d] join error: permission denied (gid=%d)!\n", so->id.value, group.gid);
+                                printk(KERN_INFO "[PFQ|%d] join error: permission denied (gid=%d)!\n",
+                                       so->id.value, group.gid);
                                 return -EACCES;
                         }
                 }
@@ -224,12 +227,14 @@ int pfq_getsockopt(struct socket *sock,
                 }
 
 		if (pfq_group_is_free(gid)) {
-                        printk(KERN_INFO "[PFQ|%d] group stats error: gid=%d is a free group!\n", so->id.value, gid.value);
+                        printk(KERN_INFO "[PFQ|%d] group stats error: gid=%d is a free group!\n",
+                               so->id.value, gid.value);
                         return -EACCES;
 		}
 
                 if (!pfq_group_access(gid, so->id)) {
-                        printk(KERN_INFO "[PFQ|%d] group stats error: gid=%d permission denied!\n", so->id.value, gid.value);
+                        printk(KERN_INFO "[PFQ|%d] group stats error: gid=%d permission denied!\n",
+                               so->id.value, gid.value);
                         return -EACCES;
                 }
 
@@ -271,7 +276,8 @@ int pfq_getsockopt(struct socket *sock,
                 /* check whether the group is joinable.. */
 
                 if (!pfq_group_policy_access(gid, so->id, Q_POLICY_GROUP_UNDEFINED)) {
-                        printk(KERN_INFO "[PFQ|%d] group error: permission denied (gid=%d)!\n", so->id.value, gid.value);
+                        printk(KERN_INFO "[PFQ|%d] group error: permission denied (gid=%d)!\n",
+                               so->id.value, gid.value);
                         return -EACCES;
                 }
 
@@ -339,7 +345,8 @@ int pfq_setsockopt(struct socket *sock,
 		for(n = 0; n < so->tx_opt.num_queues; n++)
 		{
 			if (so->tx_opt.queue[n].task) {
-				pr_devel("[PFQ|%d] stopping Tx[%zu] thread@%p\n", so->id.value, n, so->tx_opt.queue[n].task);
+				pr_devel("[PFQ|%d] stopping Tx[%zu] thread@%p\n",
+					 so->id.value, n, so->tx_opt.queue[n].task);
 				kthread_stop(so->tx_opt.queue[n].task);
 				so->tx_opt.queue[n].task = NULL;
 			}
@@ -439,7 +446,8 @@ int pfq_setsockopt(struct socket *sock,
                 so->egress_index = info.if_index;
                 so->egress_queue = info.hw_queue;
 
-                pr_devel("[PFQ|%d] egress bind: device if_index=%d hw_queue=%d\n", so->id.value, so->egress_index, so->egress_queue);
+                pr_devel("[PFQ|%d] egress bind: device if_index=%d hw_queue=%d\n",
+			 so->id.value, so->egress_index, so->egress_queue);
 
         } break;
 
@@ -499,7 +507,8 @@ int pfq_setsockopt(struct socket *sock,
                         return -EFAULT;
 
                 if (slots > (size_t)max_queue_slots) {
-                        printk(KERN_INFO "[PFQ|%d] invalid Rx slots=%zu (max %d)\n", so->id.value, slots, max_queue_slots);
+                        printk(KERN_INFO "[PFQ|%d] invalid Rx slots=%zu (max %d)\n",
+                               so->id.value, slots, max_queue_slots);
                         return -EPERM;
                 }
 
@@ -518,7 +527,8 @@ int pfq_setsockopt(struct socket *sock,
                         return -EFAULT;
 
                 if (slots > (size_t)max_queue_slots) {
-                        printk(KERN_INFO "[PFQ|%d] invalid Tx slots=%zu (max %d)\n", so->id.value, slots, max_queue_slots);
+                        printk(KERN_INFO "[PFQ|%d] invalid Tx slots=%zu (max %d)\n",
+                               so->id.value, slots, max_queue_slots);
                         return -EPERM;
                 }
 
@@ -576,13 +586,15 @@ int pfq_setsockopt(struct socket *sock,
 
                         filter = pfq_alloc_sk_filter(&fprog.fcode);
                         if (filter == NULL) {
-                                printk(KERN_INFO "[PFQ|%d] fprog error: alloc_sk_filter for gid=%d\n", so->id.value, fprog.gid);
+                                printk(KERN_INFO "[PFQ|%d] fprog error: alloc_sk_filter for gid=%d\n",
+                                       so->id.value, fprog.gid);
                                 return -EINVAL;
                         }
 
                         pfq_set_group_filter(gid, filter);
 
-                        pr_devel("[PFQ|%d] fprog: gid=%d (fprog len %d bytes)\n", so->id.value, fprog.gid, fprog.fcode.len);
+                        pr_devel("[PFQ|%d] fprog: gid=%d (fprog len %d bytes)\n",
+				 so->id.value, fprog.gid, fprog.fcode.len);
                 }
                 else {	/* reset the filter */
 
@@ -611,7 +623,8 @@ int pfq_setsockopt(struct socket *sock,
 		}
 
                 pfq_toggle_group_vlan_filters(gid, vlan.toggle);
-                pr_devel("[PFQ|%d] vlan filters %s for gid=%d\n", so->id.value, (vlan.toggle ? "enabled" : "disabled"), vlan.gid);
+                pr_devel("[PFQ|%d] vlan filters %s for gid=%d\n",
+			 so->id.value, (vlan.toggle ? "enabled" : "disabled"), vlan.gid);
 
         } break;
 
@@ -634,12 +647,14 @@ int pfq_setsockopt(struct socket *sock,
 		}
 
                 if (filt.vid < -1 || filt.vid > 4094) {
-                        printk(KERN_INFO "[PFQ|%d] vlan error: invalid vid=%d for gid=%d!\n", so->id.value, filt.vid, filt.gid);
+                        printk(KERN_INFO "[PFQ|%d] vlan error: invalid vid=%d for gid=%d!\n",
+                               so->id.value, filt.vid, filt.gid);
                         return -EINVAL;
                 }
 
                 if (!pfq_vlan_filters_enabled(gid)) {
-                        printk(KERN_INFO "[PFQ|%d] vlan error: vlan filters disabled for gid=%d!\n", so->id.value, filt.gid);
+                        printk(KERN_INFO "[PFQ|%d] vlan error: vlan filters disabled for gid=%d!\n",
+                               so->id.value, filt.gid);
                         return -EPERM;
                 }
 
@@ -734,7 +749,8 @@ int pfq_setsockopt(struct socket *sock,
 		}
 
 		if (queue < -1 || (queue > 0 && queue >= so->tx_opt.num_queues)) {
-			printk(KERN_INFO "[PFQ|%d] Tx queue flush: bad queue %d (num_queue=%zu)!\n", so->id.value, queue, so->tx_opt.num_queues);
+			printk(KERN_INFO "[PFQ|%d] Tx queue flush: bad queue %d (num_queue=%zu)!\n",
+			       so->id.value, queue, so->tx_opt.num_queues);
 			return -EPERM;
 		}
 
@@ -746,7 +762,8 @@ int pfq_setsockopt(struct socket *sock,
 		for(n = 0; n < so->tx_opt.num_queues; n++)
 		{
 			if (pfq_queue_flush(so, n) != 0) {
-				printk(KERN_INFO "[PFQ|%d] Tx[%zu] queue flush: flush error (if_index=%d)!\n", so->id.value, n, so->tx_opt.queue[n].if_index);
+				printk(KERN_INFO "[PFQ|%d] Tx[%zu] queue flush: flush error (if_index=%d)!\n",
+				       so->id.value, n, so->tx_opt.queue[n].if_index);
 				err = -EPERM;
 			}
 		}
@@ -789,7 +806,8 @@ int pfq_setsockopt(struct socket *sock,
 					continue;
 
 				if (so->tx_opt.queue[n].task) {
-					printk(KERN_INFO "[PFQ|%d] kernel_thread: Tx[%zu] thread already running!\n", so->id.value, n);
+					printk(KERN_INFO "[PFQ|%d] kernel_thread: Tx[%zu] thread already running!\n",
+					       so->id.value, n);
 					continue;
 				}
 
@@ -803,15 +821,18 @@ int pfq_setsockopt(struct socket *sock,
 
 				data->so = so;
 				data->id = n;
-				node     = cpu_online(so->tx_opt.queue[n].cpu) ? cpu_to_node(so->tx_opt.queue[n].cpu) : NUMA_NO_NODE;
+				node     = cpu_online(so->tx_opt.queue[n].cpu) ?
+						cpu_to_node(so->tx_opt.queue[n].cpu) : NUMA_NO_NODE;
 
 				pr_devel("[PFQ|%d] creating Tx[%zu] thread on cpu %d: if_index=%d hw_queue=%d\n",
-						so->id.value, n, so->tx_opt.queue[n].cpu, so->tx_opt.queue[n].if_index, so->tx_opt.queue[n].hw_queue);
+						so->id.value, n, so->tx_opt.queue[n].cpu, so->tx_opt.queue[n].if_index,
+						so->tx_opt.queue[n].hw_queue);
 
 				so->tx_opt.queue[n].task = kthread_create_on_node(pfq_tx_thread, data, node, "pfq_tx_%d#%zu", so->id.value, n);
 
 				if (IS_ERR(so->tx_opt.queue[n].task)) {
-					printk(KERN_INFO "[PFQ|%d] kernel_thread: create failed on cpu %d!\n", so->id.value, so->tx_opt.queue[n].cpu);
+					printk(KERN_INFO "[PFQ|%d] kernel_thread: create failed on cpu %d!\n",
+					       so->id.value, so->tx_opt.queue[n].cpu);
 					err = PTR_ERR(so->tx_opt.queue[n].task);
 					so->tx_opt.queue[n].task = NULL;
 					kfree (data);
@@ -840,7 +861,8 @@ int pfq_setsockopt(struct socket *sock,
 			for(n = 0; n < so->tx_opt.num_queues; n++)
 			{
 				if (so->tx_opt.queue[n].task) {
-					pr_devel("[PFQ|%d] stopping Tx[%zu] kernel thread@%p\n", so->id.value, n, so->tx_opt.queue[n].task);
+					pr_devel("[PFQ|%d] stopping Tx[%zu] kernel thread@%p\n",
+						 so->id.value, n, so->tx_opt.queue[n].task);
 					kthread_stop(so->tx_opt.queue[n].task);
 					so->tx_opt.queue[n].task = NULL;
 				}

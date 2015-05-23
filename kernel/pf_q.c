@@ -280,7 +280,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 		PFQ_CB(buff.skb)->direct = direct;
 
 		if ((gc_size(gcollector) < batch_len) &&
-		     (ktime_to_ns(ktime_sub(skb_get_ktime(buff.skb), local->last_ts)) < 1000000) )
+		     (ktime_to_ns(ktime_sub(skb_get_ktime(buff.skb), local->last_ts)) < 1000000))
 		{
 			local_bh_enable();
 			return 0;
@@ -416,8 +416,8 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 
 				/* update stats */
 
-                                __sparse_add(&this_group->stats.frwd, PFQ_CB(buff.skb)->log->num_devs - num_fwd, cpu);
-                                __sparse_add(&this_group->stats.kern, PFQ_CB(buff.skb)->log->to_kernel - to_kernel, cpu);
+                                __sparse_add(&this_group->stats.frwd, PFQ_CB(buff.skb)->log->num_devs -num_fwd, cpu);
+                                __sparse_add(&this_group->stats.kern, PFQ_CB(buff.skb)->log->to_kernel -to_kernel, cpu);
 
 				/* skip the packet? */
 
@@ -453,7 +453,8 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 					}
 
 					if (likely(local->sock_cnt)) {
-						unsigned int h = monad.fanout.hash ^ (monad.fanout.hash >> 8) ^ (monad.fanout.hash >> 16);
+						unsigned int h = monad.fanout.hash ^ (monad.fanout.hash >> 8) ^
+							(monad.fanout.hash >> 16);
 						sock_mask |= local->sock_mask[pfq_fold(h, local->sock_cnt)];
 					}
 				}
@@ -880,12 +881,14 @@ static int __init pfq_init_module(void)
 	/* check options */
 
         if (batch_len <= 0 || batch_len > Q_SKBUFF_SHORT_BATCH) {
-                printk(KERN_INFO "[PFQ] batch_len=%d not allowed: valid range (0,%zu]!\n", batch_len, Q_SKBUFF_SHORT_BATCH);
+                printk(KERN_INFO "[PFQ] batch_len=%d not allowed: valid range (0,%zu]!\n",
+                       batch_len, Q_SKBUFF_SHORT_BATCH);
                 return -EFAULT;
         }
 
 	if (skb_pool_size > Q_POOL_MAX_SIZE) {
-                printk(KERN_INFO "[PFQ] skb_pool_size=%d not allowed: valid range [0,%d]!\n", skb_pool_size, Q_POOL_MAX_SIZE);
+                printk(KERN_INFO "[PFQ] skb_pool_size=%d not allowed: valid range [0,%d]!\n",
+                       skb_pool_size, Q_POOL_MAX_SIZE);
 		return -EFAULT;
 	}
 

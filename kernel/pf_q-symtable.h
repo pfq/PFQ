@@ -60,7 +60,8 @@ extern struct list_head pfq_lang_functions;
 extern void pfq_symtable_init(void);
 extern void pfq_symtable_free(void);
 
-extern int  pfq_symtable_register_function(const char *module, struct list_head *category, const char *symbol, void * fun, init_ptr_t init, fini_ptr_t fini, const char *signature);
+extern int  pfq_symtable_register_function(const char *module, struct list_head *category, const char *symbol,
+					   void * fun, init_ptr_t init, fini_ptr_t fini, const char *signature);
 extern int  pfq_symtable_unregister_function(const char *module, struct list_head *category, const char *symbol);
 
 extern int pfq_symtable_register_functions  (const char *module, struct list_head *category, struct pfq_function_descr *fun);

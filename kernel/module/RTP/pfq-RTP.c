@@ -134,7 +134,8 @@ heuristic_rtp(SkBuff b, bool steer)
 
 		ret.pass = true;
 		if (steer)
-			ret.hash = ip->saddr ^ ip->daddr ^ ((uint32_t)(hdr->udp.source & 0xfffe) << 16) ^ (hdr->udp.dest & 0xfffe);
+			ret.hash = ip->saddr ^ ip->daddr ^ ((uint32_t)(hdr->udp.source & 0xfffe) << 16) ^
+				(hdr->udp.dest & 0xfffe);
 		return ret;
 	}
 

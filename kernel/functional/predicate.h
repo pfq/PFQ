@@ -388,7 +388,8 @@ is_flow(SkBuff b)
 		    ip->protocol != IPPROTO_TCP)
                         return false;
 
-		return skb_header_available(b.skb, b.skb->mac_len + (ip->ihl<<2), ip->protocol == IPPROTO_UDP ? sizeof(struct udphdr) : sizeof(struct tcphdr));
+		return skb_header_available(b.skb, b.skb->mac_len + (ip->ihl<<2), ip->protocol == IPPROTO_UDP ?
+					    sizeof(struct udphdr) : sizeof(struct tcphdr));
 	}
 
         return false;

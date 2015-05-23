@@ -81,7 +81,8 @@ __pfq_symtable_search(struct list_head *category, const char *symbol)
 
 
 static int
-__pfq_symtable_register_function(struct list_head *category, const char *symbol, void *fun, init_ptr_t init, fini_ptr_t fini, const char *signature)
+__pfq_symtable_register_function(struct list_head *category, const char *symbol, void *fun,
+				 init_ptr_t init, fini_ptr_t fini, const char *signature)
 {
 	struct symtable_entry * elem;
 
@@ -155,7 +156,8 @@ pfq_symtable_register_functions(const char *module, struct list_head *category, 
 	int i = 0;
 	for(; fun[i].symbol != NULL; i++)
 	{
-		if (pfq_symtable_register_function(module, category, fun[i].symbol, fun[i].ptr, fun[i].init, fun[i].fini, fun[i].signature) < 0) {
+		if (pfq_symtable_register_function(module, category, fun[i].symbol, fun[i].ptr,
+						   fun[i].init, fun[i].fini, fun[i].signature) < 0) {
                         /* unregister all functions */
                         int j = 0;
 
@@ -243,7 +245,8 @@ pfq_symtable_search(struct list_head *category, const char *symbol)
 
 
 int
-pfq_symtable_register_function(const char *module, struct list_head *category, const char *symbol, void *fun, init_ptr_t init, fini_ptr_t fini, const char *signature)
+pfq_symtable_register_function(const char *module, struct list_head *category, const char *symbol, void *fun,
+			       init_ptr_t init, fini_ptr_t fini, const char *signature)
 {
 	int rc;
 

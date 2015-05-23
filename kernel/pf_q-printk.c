@@ -77,7 +77,8 @@ snprintf_functional_node(char *buffer, size_t size, struct pfq_functional_node c
 		if (node->fun.arg[n].nelem != -1) { /* vector */
 
 			if (node->fun.arg[n].value)
-				len += snprintf(buffer + len, size - len, "%p[%zu] ",(void *)node->fun.arg[n].value, node->fun.arg[n].nelem);
+				len += snprintf(buffer + len, size - len, "%p[%zu] ",
+						(void *)node->fun.arg[n].value, node->fun.arg[n].nelem);
 		}
 		else {
 			if ((node->fun.arg[n].value & 0xffffLLU) == (node->fun.arg[n].value))
@@ -153,15 +154,16 @@ pr_devel_functional_descr(struct pfq_functional_descr const *descr, size_t index
 		if (is_arg_function(&descr->arg[n])) {
 
 			if (descr->arg[n].size)
-				len += snprintf(buffer + len, size - len, "fun(%zu) ",  descr->arg[n].size);
+				len += snprintf(buffer + len, size - len, "fun(%zu) ", descr->arg[n].size);
 		}
 		else if (is_arg_vector(&descr->arg[n])) {
 
-			len += snprintf(buffer + len, size - len, "pod_%zu[%zu] ",  descr->arg[n].size, descr->arg[n].nelem);
+			len += snprintf(buffer + len, size - len, "pod_%zu[%zu] ",
+					descr->arg[n].size, descr->arg[n].nelem);
 		}
 		else if (is_arg_data(&descr->arg[n])) {
 
-			len += snprintf(buffer + len, size - len, "pod_%zu ",  descr->arg[n].size);
+			len += snprintf(buffer + len, size - len, "pod_%zu ", descr->arg[n].size);
 		}
 		else if (is_arg_string(&descr->arg[n])) {
 			char * tmp = strdup_user(descr->arg[n].addr);

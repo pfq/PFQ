@@ -229,13 +229,15 @@ pfq_shared_queue_enable(struct pfq_sock *so, unsigned long user_addr)
 			atomic_long_set(&so->tx_opt.queue[n].queue_hdr, (long)&queue->tx[n]);
 		}
 
-		pr_devel("[PFQ|%d] Rx queue: len=%zu slot_size=%zu caplen=%zu, mem=%zu bytes\n", so->id.value,
+		pr_devel("[PFQ|%d] Rx queue: len=%zu slot_size=%zu caplen=%zu, mem=%zu bytes\n",
+			 so->id.value,
 			 so->rx_opt.queue_size,
 			 so->rx_opt.slot_size,
 			 so->rx_opt.caplen,
 			 pfq_queue_mpsc_mem(so));
 
-		pr_devel("[PFQ|%d] Tx queue: len=%zu slot_size=%zu maxlen=%d, mem=%zu bytes (%d queues)\n", so->id.value,
+		pr_devel("[PFQ|%d] Tx queue: len=%zu slot_size=%zu maxlen=%d, mem=%zu bytes (%d queues)\n",
+			 so->id.value,
 			 so->tx_opt.queue_size,
 			 so->tx_opt.slot_size,
 			 max_len,

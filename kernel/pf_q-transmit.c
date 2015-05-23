@@ -363,7 +363,8 @@ pfq_queue_flush(struct pfq_sock *so, int index)
 
 	dev = dev_get_by_index(sock_net(&so->sk), so->tx_opt.queue[index].if_index);
 	if (!dev) {
-		printk(KERN_INFO "[PFQ] pfq_queue_flush[%d]: bad if_index:%d!\n", index, so->tx_opt.queue[index].if_index);
+		printk(KERN_INFO "[PFQ] pfq_queue_flush[%d]: bad if_index:%d!\n",
+		       index, so->tx_opt.queue[index].if_index);
 		return -EPERM;
 	}
 
