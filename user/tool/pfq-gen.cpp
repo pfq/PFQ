@@ -556,6 +556,8 @@ try
 
         std::cout << "device     : " << binding[i].dev.at(0) << ", " << num_queues << " queues detected." << std::endl;
 
+        num_queues = std::min<size_t>(4, num_queues);
+
         while (binding[i].queue.size() < num_queues)
         {
             binding[i].queue.push_back(binding[i].queue.size());
@@ -591,7 +593,7 @@ try
 
         for(auto & v : opt::kcore)
         {
-            while(v.size() < binding[n].queue.size())
+            while(v.size() < std::min<size_t>(4,binding[n].queue.size()))
                 v.push_back(-1);
         }
     }
