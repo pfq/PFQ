@@ -224,11 +224,11 @@ static int bloom_fini(arguments_t args)
 
 struct pfq_function_descr bloom_functions[] = {
 
-	{"bloom",		"CInt->[Word32]->CInt->SkBuff->Bool",		bloom,			bloom_init,	bloom_fini},
-	{"bloom_src",		"CInt->[Word32]->CInt->SkBuff->Bool",		bloom_src,		bloom_init,	bloom_fini},
-	{"bloom_dst",		"CInt->[Word32]->CInt->SkBuff->Bool",		bloom_dst,		bloom_init,	bloom_fini},
-	{"bloom_filter",	"CInt->[Word32]->CInt->SkBuff->ActionSkBuff",	bloom_filter,		bloom_init,	bloom_fini},
-	{"bloom_src_filter",	"CInt->[Word32]->CInt->SkBuff->ActionSkBuff",	bloom_src_filter,	bloom_init,	bloom_fini},
-	{"bloom_dst_filter",	"CInt->[Word32]->CInt->SkBuff->ActionSkBuff",	bloom_dst_filter,	bloom_init,	bloom_fini},
+	{"bloom",		"CInt -> [Word32] -> CInt -> SkBuff -> Bool",		bloom,			bloom_init,	bloom_fini},
+	{"bloom_src",		"CInt -> [Word32] -> CInt -> SkBuff -> Bool",		bloom_src,		bloom_init,	bloom_fini},
+	{"bloom_dst",		"CInt -> [Word32] -> CInt -> SkBuff -> Bool",		bloom_dst,		bloom_init,	bloom_fini},
+	{"bloom_filter",	"CInt -> [Word32] -> CInt -> SkBuff -> Action SkBuff",	bloom_filter,		bloom_init,	bloom_fini},
+	{"bloom_src_filter",	"CInt -> [Word32] -> CInt -> SkBuff -> Action SkBuff",	bloom_src_filter,	bloom_init,	bloom_fini},
+	{"bloom_dst_filter",	"CInt -> [Word32] -> CInt -> SkBuff -> Action SkBuff",	bloom_dst_filter,	bloom_init,	bloom_fini},
 	{ NULL }};
 

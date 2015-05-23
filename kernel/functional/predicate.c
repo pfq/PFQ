@@ -227,8 +227,8 @@ struct pfq_function_descr predicate_functions[] = {
         { "is_first_frag", "SkBuff -> Bool", pred_is_first_frag },
         { "is_more_frag",  "SkBuff -> Bool", pred_is_more_frag  },
 
-        { "is_l3_proto",  "Word16  -> SkBuff -> Bool", pred_is_l3_proto  },
-        { "is_l4_proto",  "Word8   -> SkBuff -> Bool", pred_is_l4_proto  },
+        { "is_l3_proto",  "Word16 -> SkBuff -> Bool",  pred_is_l3_proto  },
+        { "is_l4_proto",  "Word8  -> SkBuff -> Bool",  pred_is_l4_proto  },
         { "has_port",     "Word16 -> SkBuff -> Bool",  pred_has_port     },
         { "has_src_port", "Word16 -> SkBuff -> Bool",  pred_has_src_port },
         { "has_dst_port", "Word16 -> SkBuff -> Bool",  pred_has_dst_port },
