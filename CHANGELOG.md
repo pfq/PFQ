@@ -93,3 +93,9 @@ PFQ 4.3
  * Miscellaneous improvements.
  * Bug fixes.
 
+
+PFQ 4.4
+-------
+ * Improved stability in packet transmission.
+ * Bug fixes.
+
