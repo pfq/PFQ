@@ -104,7 +104,7 @@ int giveup_tx(int cpu)
 
 
 static int
-batch_xmit_and_drain(struct pfq_skbuff_batch *skbs, struct local_data *local, struct net_device *dev, int hw_queue)
+batch_xmit(struct pfq_skbuff_batch *skbs, struct local_data *local, struct net_device *dev, int hw_queue)
 {
 	struct sk_buff *skb;
 	int sent, i;
@@ -224,17 +224,19 @@ __pfq_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int 
 		last_ts = hdr->nsec;
 
 		/* if the batch is full, transmit it (now) */
-
+	retry:
 		if (tx_batch_required(SKBUFF_BATCH_ADDR(skbs), now, last_ts)) {
 
-			int sent = batch_xmit_and_drain(SKBUFF_BATCH_ADDR(skbs), local, dev, hw_queue);
+			int sent = batch_xmit(SKBUFF_BATCH_ADDR(skbs), local, dev, hw_queue);
 			tot_sent += sent;
 
 			if (giveup_tx(cpu))
 				break;
 
-			if (sent == 0)
-				continue;
+			if (sent == 0) {
+				pfq_relax();
+				goto retry;
+			}
 		}
 
 		/* wait until the ts */
@@ -280,12 +282,16 @@ __pfq_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int 
 
 	while (pfq_skbuff_batch_len(SKBUFF_BATCH_ADDR(skbs))) {
 
-		int sent = batch_xmit_and_drain(SKBUFF_BATCH_ADDR(skbs), local, dev, hw_queue);
+		int sent = batch_xmit(SKBUFF_BATCH_ADDR(skbs), local, dev, hw_queue);
 		tot_sent += sent;
 
 		/* break the loop when giveup is needed */
 		if (giveup_tx(cpu))
 			break;
+
+		if (sent == 0)
+			pfq_relax();
+
 	}
 
 	/* packet unsent from the last batch are freed */
