@@ -184,17 +184,17 @@ namespace pfq {
         //! Hardware concurrency.
 
         std::vector<int>
-        get_irq_by_device(const char *dev)
+        get_irq_by_device(const char *dev, const char *kind = "TxRx")
         {
             std::ifstream irq("/proc/interrupts");
             std::vector<int> res;
+            std::string vector_name = std::string(dev) + "-" + kind;
 
             for(std::string line; std::getline(irq, line); )
             {
-                auto pos = line.find(dev);
+                auto pos = line.find(vector_name);
                 if (pos == std::string::npos)
                     continue;
-
                 res.push_back(std::stoi(line));
             }
 
@@ -203,10 +203,9 @@ namespace pfq {
 
 
         inline size_t
-        get_num_queues(const char *dev)
+        get_num_queues(const char *dev, const char *kind = "TxRx")
         {
-            auto vec = get_irq_by_device(dev);
-            return vec.size() > 1 ? vec.size() - 1 : vec.size();
+            return get_irq_by_device(dev, kind).size();
         }
 
 
