@@ -75,6 +75,7 @@ data Device =
     {
         devname   :: String,
         devspeed  :: Maybe Int,
+        channels  :: Maybe Int,
         flowctrl  :: YesNo,
         ethopt    :: [(String, String, Int)]
     } deriving (Show, Read, Eq)
@@ -83,9 +84,10 @@ data Device =
 data Driver =
     Driver
     {
-        drvmod  :: String,
-        drvopt  :: [String],
-        devices :: [Device]
+        drvmod      :: String,
+        drvopt      :: [String],
+        instances   :: Int,
+        devices     :: [Device]
     } deriving (Show, Read, Eq)
 
 
@@ -140,7 +142,7 @@ options = cmdArgsMode $ Options
     {
          config     = Nothing       &= typ "FILE" &= help "Specify config file (default ~/.pfq.conf)",
          kmodule    = ""            &= help "Override the kmodule specified in config file",
-         queues     = Nothing       &= help "Specify hardware queues (i.e. Intel RSS)",
+         queues     = Nothing       &= help "Specify hardware channels (i.e. Intel RSS)",
          algorithm  = ""            &= help "Irq affinity algorithm: naive, round-robin, even, odd, all-in:id, comb:id",
          first_core = 0             &= typ "NUM" &= help "First core used for irq affinity",
          exclude    = []            &= typ "CORE" &= help "Exclude core from irq affinity",
@@ -188,10 +190,10 @@ main = do
 
     -- load device drivers...
     forM_ (drivers conf) $ \drv -> do
-        let rss = maybe [] (mkRssOption (drvmod drv) (length $ devices drv)) (queues opt)
+        let rss = maybe [] (mkRssOption (drvmod drv) (instances drv)) (queues opt)
         loadModule InsertMod (drvmod drv) (drvopt drv ++ rss)
         threadDelay 1000000
-        mapM_ setupDevice (devices drv)
+        mapM_ (setupDevice (queues opt)) (devices drv)
 
     -- set interrupt affinity...
     putStrBoldLn "Setting irq affinity..."
@@ -205,7 +207,7 @@ mkRssOption driver numdev queues =
     case () of
      _   | "ixgbe.ko" `isSuffixOf` driver -> [ "RSS=" ++ intercalate "," (replicate numdev (show queues)) ]
          | "igb.ko"   `isSuffixOf` driver -> [ "RSS=" ++ intercalate "," (replicate numdev (show queues)) ]
-         | otherwise -> error "queue option: driver not supported!"
+         | otherwise -> []
 
 
 mkConfig :: Options -> Config
@@ -285,8 +287,8 @@ loadModule mode name opts = do
                                       else "/sbin/modprobe"
 
 
-setupDevice :: Device -> IO ()
-setupDevice (Device dev speed fctrl opts) = do
+setupDevice :: Maybe Int -> Device -> IO ()
+setupDevice queues (Device dev speed channels fctrl opts) = do
     putStrBoldLn $ "Activating " ++ dev ++ "..."
     runSystem ("/sbin/ifconfig " ++ dev ++ " up") "ifconfig error!"
     case fctrl of
@@ -297,10 +299,17 @@ setupDevice (Device dev speed fctrl opts) = do
                 putStrBoldLn $ "Enabling flow control for " ++ dev ++ "..."
                 runSystem ("/sbin/ethtool -A " ++ dev ++ " autoneg on rx on tx on") "flowctrl: ethtool error!"
         Unspec -> return ()
+
     when (isJust speed) $ do
         let s = fromJust speed
         putStrBoldLn $ "Setting speed (" ++ show s ++ ") for " ++ dev ++ "..."
         runSystem ("/sbin/ethtool -s " ++ dev ++ " speed " ++ show s ++ " duplex full") "speed: ethtool error!"
+
+    when (isJust queues || isJust channels) $ do
+        let c = fromJust (queues <|> channels)
+        putStrBoldLn $ "Setting channels to " ++ show c ++ "..."
+        runSystem ("/sbin/ethtool -L " ++ dev ++ " combined " ++ show c) "channels: ethtool error!"
+
     forM_ opts $ \(opt, arg, value) ->
         runSystem ("/sbin/ethtool " ++ opt ++ " " ++ dev ++ " " ++ arg ++ " " ++ show value) (opt ++ ": ethtool error!")
 
