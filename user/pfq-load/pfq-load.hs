@@ -167,7 +167,7 @@ main = do
     -- check queues
     when (maybe False (> core) (queues opt)) $ error "queues number too big!"
 
-    -- unload pfq and dependent drivers...
+    -- unload pfq and drivers that depend on it...
     evalStateT (unloadModule "pfq") pmod
 
     -- check irqbalance deaemon
@@ -188,7 +188,7 @@ main = do
         putStrBoldLn "Unloading vanilla/standard drivers..."
         evalStateT (mapM_ (unloadModule . takeBaseName . drvmod) (drivers conf)) pmod2
 
-    -- load device drivers...
+    -- load and configure device drivers...
     forM_ (drivers conf) $ \drv -> do
         let rss = maybe [] (mkRssOption (drvmod drv) (instances drv)) (queues opt)
         loadModule InsertMod (drvmod drv) (drvopt drv ++ rss)
@@ -197,8 +197,8 @@ main = do
 
     -- set interrupt affinity...
     putStrBoldLn "Setting irq affinity..."
-
     setupIRQAffinity (first_core opt) (exclude_core conf) (irq_affinity conf) (getDevices conf)
+
     putStrBoldLn "PFQ ready."
 
 
@@ -270,8 +270,7 @@ unloadModule name = do
         put $ rmmodFromProcMOdules name proc_mods
     where rmmod name = do
             putStrBoldLn $ "Unloading " ++ name ++ "..."
-            runSystem ("/sbin/rmmod " ++ name)
-                ("rmmod " ++ name ++ " error.")
+            runSystem ("/sbin/rmmod " ++ name) ("rmmod " ++ name ++ " error.") True
           isModuleLoaded name =  any (\(mod,_) -> mod == name)
 
 
@@ -281,8 +280,7 @@ data LoadMode = InsertMod | ProbeMod
 loadModule :: LoadMode -> String -> [String] -> IO ()
 loadModule mode name opts = do
     putStrBoldLn $ "Loading " ++ name ++ "..."
-    runSystem (tool ++ " " ++ name ++ " " ++ unwords opts)
-        ("insmod " ++ name ++ " error.")
+    runSystem (tool ++ " " ++ name ++ " " ++ unwords opts) ("insmod " ++ name ++ " error.") True
     where tool = if mode == InsertMod then "/sbin/insmod"
                                       else "/sbin/modprobe"
 
@@ -290,28 +288,28 @@ loadModule mode name opts = do
 setupDevice :: Maybe Int -> Device -> IO ()
 setupDevice queues (Device dev speed channels fctrl opts) = do
     putStrBoldLn $ "Activating " ++ dev ++ "..."
-    runSystem ("/sbin/ifconfig " ++ dev ++ " up") "ifconfig error!"
+    runSystem ("/sbin/ifconfig " ++ dev ++ " up") "ifconfig error!" True
     case fctrl of
         No -> do
                 putStrBoldLn $ "Disabling flow control for " ++ dev ++ "..."
-                runSystem ("/sbin/ethtool -A " ++ dev ++ " autoneg off rx off tx off") "flowctrl: ethtool error!"
+                runSystem ("/sbin/ethtool -A " ++ dev ++ " autoneg off rx off tx off") "ethtool: flowctrl error!" False
         Yes -> do
                 putStrBoldLn $ "Enabling flow control for " ++ dev ++ "..."
-                runSystem ("/sbin/ethtool -A " ++ dev ++ " autoneg on rx on tx on") "flowctrl: ethtool error!"
+                runSystem ("/sbin/ethtool -A " ++ dev ++ " autoneg on rx on tx on") "ethtool: flowctrl error!" False
         Unspec -> return ()
 
     when (isJust speed) $ do
         let s = fromJust speed
         putStrBoldLn $ "Setting speed (" ++ show s ++ ") for " ++ dev ++ "..."
-        runSystem ("/sbin/ethtool -s " ++ dev ++ " speed " ++ show s ++ " duplex full") "speed: ethtool error!"
+        runSystem ("/sbin/ethtool -s " ++ dev ++ " speed " ++ show s ++ " duplex full") "ethtool: set speed error!" False
 
     when (isJust queues || isJust channels) $ do
         let c = fromJust (queues <|> channels)
         putStrBoldLn $ "Setting channels to " ++ show c ++ "..."
-        runSystem ("/sbin/ethtool -L " ++ dev ++ " combined " ++ show c) ""
+        runSystem ("/sbin/ethtool -L " ++ dev ++ " combined " ++ show c) "" False
 
     forM_ opts $ \(opt, arg, value) ->
-        runSystem ("/sbin/ethtool " ++ opt ++ " " ++ dev ++ " " ++ arg ++ " " ++ show value) (opt ++ ": ethtool error!")
+        runSystem ("/sbin/ethtool " ++ opt ++ " " ++ dev ++ " " ++ arg ++ " " ++ show value) ("ethtool:" ++ opt ++ " error!") True
 
 
 getDevices ::  Config -> [String]
@@ -325,13 +323,13 @@ setupIRQAffinity fc excl algs devs = do
     let affinity = zip algs (tails devs)
     unless (null affinity) $
         forM_ affinity $ \(alg, devs') ->
-            runSystem ("/root/.cabal/bin/irq-affinity -f " ++ show fc  ++ " " ++ excl_opt ++ " -a " ++ alg ++ " -m TxRx " ++ unwords devs') "irq-affinity error!"
+            runSystem ("/root/.cabal/bin/irq-affinity -f " ++ show fc  ++ " " ++ excl_opt ++ " -a " ++ alg ++ " -m TxRx " ++ unwords devs') "irq-affinity error!" True
 
 
-runSystem :: String -> String -> IO ()
-runSystem cmd errmsg = do
+runSystem :: String -> String -> Bool -> IO ()
+runSystem cmd errmsg term = do
     putStrLn $ "-> " ++ cmd
-    system cmd >>= \ec -> when (ec /= ExitSuccess) $ when (not . null $ errmsg) $ error errmsg
+    system cmd >>= \ec -> when (ec /= ExitSuccess) $ (if term then error else putStrLn) errmsg
 
 
 putStrBoldLn :: String -> IO ()
