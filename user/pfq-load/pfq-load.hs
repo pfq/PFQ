@@ -308,7 +308,7 @@ setupDevice queues (Device dev speed channels fctrl opts) = do
     when (isJust queues || isJust channels) $ do
         let c = fromJust (queues <|> channels)
         putStrBoldLn $ "Setting channels to " ++ show c ++ "..."
-        runSystem ("/sbin/ethtool -L " ++ dev ++ " combined " ++ show c) "channels: ethtool error!"
+        runSystem ("/sbin/ethtool -L " ++ dev ++ " combined " ++ show c) ""
 
     forM_ opts $ \(opt, arg, value) ->
         runSystem ("/sbin/ethtool " ++ opt ++ " " ++ dev ++ " " ++ arg ++ " " ++ show value) (opt ++ ": ethtool error!")
@@ -331,7 +331,7 @@ setupIRQAffinity fc excl algs devs = do
 runSystem :: String -> String -> IO ()
 runSystem cmd errmsg = do
     putStrLn $ "-> " ++ cmd
-    system cmd >>= \ec -> when (ec /= ExitSuccess) $ error errmsg
+    system cmd >>= \ec -> when (ec /= ExitSuccess) $ when (not . null $ errmsg) $ error errmsg
 
 
 putStrBoldLn :: String -> IO ()
