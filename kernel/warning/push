@@ -5,3 +5,4 @@
 #pragma GCC diagnostic ignored "-Wnested-externs"
 #pragma GCC diagnostic ignored "-Wshadow"
 #pragma GCC diagnostic ignored "-Waggregate-return"
+#pragma GCC diagnostic ignored "-Wmissing-field-initializers"

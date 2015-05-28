@@ -128,8 +128,10 @@ MODULE_PARM_DESC(skb_pool_size, " Socket buffer pool size (default=1024)");
 #pragma message "[PFQ] *** DEBUG mode ***"
 #endif
 
+
 static DEFINE_SEMAPHORE(sock_sem);
 
+void pfq_timer(unsigned long cpu);
 
 /* send this packet to selected sockets */
 
@@ -149,7 +151,7 @@ void mask_to_sock_queue(unsigned long n, unsigned long mask, unsigned long long 
  * from "Hacker's Delight, Henry S. Warren."
  */
 
-inline
+static inline
 unsigned clp2(unsigned int x)
 {
         x = x - 1;
@@ -166,7 +168,7 @@ unsigned clp2(unsigned int x)
  * Optimized folding operation...
  */
 
-inline
+static inline
 unsigned int pfq_fold(unsigned int a, unsigned int b)
 {
 	unsigned int c;
@@ -582,8 +584,7 @@ out:
 }
 
 
-void
-pfq_timer(unsigned long cpu)
+void pfq_timer(unsigned long cpu)
 {
 	struct local_data *local;
 
@@ -1005,14 +1006,14 @@ static void __exit pfq_exit_module(void)
 
 /* pfq direct capture drivers support */
 
-inline
+static inline
 int pfq_direct_capture(const struct sk_buff *skb)
 {
         return direct_capture && pfq_devmap_monitor_get(skb->dev->ifindex);
 }
 
 
-inline
+static inline
 int pfq_normalize_skb(struct sk_buff *skb)
 {
         skb_reset_network_header(skb);

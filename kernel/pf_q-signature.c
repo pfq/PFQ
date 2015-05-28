@@ -32,6 +32,10 @@
 
 #include <pf_q-signature.h>
 
+int count_outmost_brackets(string_view_t str);
+const char * find_next_arrow(string_view_t str);
+bool compare_argument(string_view_t a, string_view_t b);
+
 #ifdef __KERNEL
 static
 #endif
@@ -250,12 +254,12 @@ pfq_signature_arg(string_view_t str, int index)
 }
 
 
-struct
+static struct
 {
 	const char *symb;
 	size_t size;
 
-} static sizeof_table[] =
+} sizeof_table[] =
 {
 	{.symb = "Bool",    .size = sizeof(char)},
 	{.symb = "CChar",   .size = sizeof(char)},
