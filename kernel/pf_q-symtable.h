@@ -24,7 +24,7 @@
 #ifndef PF_Q_SYMTABLE_H
 #define PF_Q_SYMTBALE_H
 
-#include <warning/push>
+#include <pragma/diagnostic_push>
 
 #include <linux/skbuff.h>
 #include <linux/list.h>
@@ -32,7 +32,7 @@
 #include <linux/rwsem.h>
 #include <linux/pf_q.h>
 
-#include <warning/pop>
+#include <pragma/diagnostic_pop>
 
 #include <pf_q-module.h>
 

@@ -24,7 +24,7 @@
 #ifndef PF_Q_FUNCTIONAL_PREDICATE_H
 #define PF_Q_FUNCTIONAL_PREDICATE_H
 
-#include <warning/push>
+#include <pragma/diagnostic_push>
 
 #include <linux/kernel.h>
 #include <linux/module.h>
@@ -37,7 +37,7 @@
 #include <linux/if_vlan.h>
 #include <net/ip.h>
 
-#include <warning/pop>
+#include <pragma/diagnostic_pop>
 
 #include <pf_q-module.h>
 

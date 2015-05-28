@@ -27,11 +27,13 @@
 
 #ifdef __KERNEL__
 
-#include <warning/push>
+#include <pragma/diagnostic_push>
+
 #include <linux/types.h>
 #include <linux/filter.h>
 #include <linux/skbuff.h>
-#include <warning/pop>
+
+#include <pragma/diagnostic_pop>
 
 #define Q_VERSION               "4.4"
 

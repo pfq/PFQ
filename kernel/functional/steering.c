@@ -21,14 +21,14 @@
  *
  ****************************************************************/
 
-#include <warning/push>
+#include <pragma/diagnostic_push>
 
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/swab.h>
 #include <linux/inetdevice.h>
 
-#include <warning/pop>
+#include <pragma/diagnostic_pop>
 
 #include <pf_q-module.h>
 

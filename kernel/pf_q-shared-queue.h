@@ -25,13 +25,13 @@
 #ifndef PF_Q_SHARED_QUEUE_H
 #define PF_Q_SHARED_QUEUE_H
 
-#include <warning/push>
+#include <pragma/diagnostic_push>
 
 #include <linux/skbuff.h>
 #include <linux/pf_q.h>
 #include <linux/if_vlan.h>
 
-#include <warning/pop>
+#include <pragma/diagnostic_pop>
 
 
 #include <pf_q-group.h>

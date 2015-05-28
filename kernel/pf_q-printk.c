@@ -21,13 +21,13 @@
  *
  ****************************************************************/
 
-#include <warning/push>
+#include <pragma/diagnostic_push>
 
 #include <linux/kernel.h>
 #include <linux/printk.h>
 #include <linux/pf_q.h>
 
-#include <warning/pop>
+#include <pragma/diagnostic_pop>
 
 #include <pf_q-group.h>
 #include <pf_q-module.h>

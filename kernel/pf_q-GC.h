@@ -24,10 +24,10 @@
 #ifndef PF_Q_GC_H
 #define PF_Q_GC_H
 
-#include <warning/push>
+#include <pragma/diagnostic_push>
 #include <linux/string.h>
 #include <linux/skbuff.h>
-#include <warning/pop>
+#include <pragma/diagnostic_pop>
 
 #include <pf_q-skbuff.h>
 #include <pf_q-macro.h>

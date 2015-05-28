@@ -22,13 +22,13 @@
  *
  ****************************************************************/
 
-#include <warning/push>
+#include <pragma/diagnostic_push>
 
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/skbuff.h>
 
-#include <warning/pop>
+#include <pragma/diagnostic_pop>
 
 #include <pf_q-memory.h>
 #include <pf_q-global.h>

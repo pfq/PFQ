@@ -22,7 +22,7 @@
  *
  ****************************************************************/
 
-#include <warning/push>
+#include <pragma/diagnostic_push>
 
 #include <linux/kernel.h>
 #include <linux/version.h>
@@ -32,7 +32,7 @@
 #include <linux/uaccess.h>
 #include <net/sock.h>
 
-#include <warning/pop>
+#include <pragma/diagnostic_pop>
 
 #include <pf_q-bpf.h>
 

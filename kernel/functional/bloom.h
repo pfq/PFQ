@@ -24,9 +24,9 @@
 #ifndef PF_Q_FUNCTIONAL_BLOOM_H
 #define PF_Q_FUNCTIONAL_BLOOM_H
 
-#include <warning/push>
+#include <pragma/diagnostic_push>
 #include <asm/byteorder.h>
-#include <warning/pop>
+#include <pragma/diagnostic_pop>
 
 #include <pf_q-module.h>
 

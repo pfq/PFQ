@@ -28,10 +28,10 @@
 #ifndef PF_Q_TRANSMIT_H
 #define PF_Q_TRANSMIT_H
 
-#include <warning/push>
+#include <pragma/diagnostic_push>
 #include <linux/skbuff.h>
 #include <linux/netdevice.h>
-#include <warning/pop>
+#include <pragma/diagnostic_pop>
 
 #include <pf_q-skbuff-batch.h>
 #include <pf_q-sock.h>

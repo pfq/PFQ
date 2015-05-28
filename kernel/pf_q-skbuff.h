@@ -24,9 +24,9 @@
 #ifndef PF_Q_SKBUFF_H
 #define PF_Q_SKBUFF_H
 
-#include <warning/push>
+#include <pragma/diagnostic_push>
 #include <linux/skbuff.h>
-#include <warning/pop>
+#include <pragma/diagnostic_pop>
 
 struct pfq_monad;
 struct gc_log;

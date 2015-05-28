@@ -23,7 +23,7 @@
  *
  ****************************************************************/
 
-#include <warning/push>
+#include <pragma/diagnostic_push>
 
 #include <linux/kernel.h>
 #include <linux/version.h>
@@ -51,7 +51,7 @@
 
 #include <linux/pf_q.h>
 
-#include <warning/pop>
+#include <pragma/diagnostic_pop>
 
 #include <pf_q-shmem.h>
 #include <pf_q-proc.h>

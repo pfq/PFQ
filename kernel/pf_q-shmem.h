@@ -24,10 +24,10 @@
 #ifndef PF_Q_SHMEM_H
 #define PF_Q_SHMEM_H
 
-#include <warning/push>
+#include <pragma/diagnostic_push>
 #include <linux/vmalloc.h>
 #include <linux/net.h>
-#include <warning/pop>
+#include <pragma/diagnostic_pop>
 
 struct pfq_sock;
 

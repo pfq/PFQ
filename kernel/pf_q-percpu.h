@@ -24,13 +24,13 @@
 #ifndef PF_Q_PERCPU_H
 #define PF_Q_PERCPU_H
 
-#include <warning/push>
+#include <pragma/diagnostic_push>
 
 #include <linux/percpu.h>
 #include <linux/ktime.h>
 #include <linux/timer.h>
 
-#include <warning/pop>
+#include <pragma/diagnostic_pop>
 
 #include <pf_q-skbuff-pool.h>
 #include <pf_q-macro.h>

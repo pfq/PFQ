@@ -25,10 +25,10 @@
 #ifndef PF_Q_SKBUFF_MPSC_H
 #define PF_Q_SKBUFF_MPSC_H
 
-#include <warning/push>
+#include <pragma/diagnostic_push>
 #include <linux/kernel.h>
 #include <linux/skbuff.h>
-#include <warning/pop>
+#include <pragma/diagnostic_pop>
 
 typedef struct mpsc_queue
 {

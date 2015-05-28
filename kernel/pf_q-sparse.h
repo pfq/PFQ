@@ -25,10 +25,10 @@
 #ifndef PF_Q_SPARSE_H
 #define PF_Q_SPARSE_H
 
-#include <warning/push>
+#include <pragma/diagnostic_push>
 #include <linux/smp.h>  /* get_cpu */
 #include <asm/local.h>
-#include <warning/pop>
+#include <pragma/diagnostic_pop>
 
 #include <pf_q-macro.h>
 

@@ -24,14 +24,14 @@
 #ifndef PF_Q_GROUP_H
 #define PF_Q_GROUP_H
 
-#include <warning/push>
+#include <pragma/diagnostic_push>
 #include <linux/kernel.h>
 #include <linux/delay.h>
 #include <linux/pf_q.h>
 #include <linux/filter.h>
 #include <linux/spinlock.h>
 #include <linux/semaphore.h>
-#include <warning/pop>
+#include <pragma/diagnostic_pop>
 
 #include <pf_q-sock.h>
 #include <pf_q-macro.h>

@@ -24,12 +24,12 @@
 #ifndef PF_Q_SOCK_H
 #define PF_Q_SOCK_H
 
-#include <warning/push>
+#include <pragma/diagnostic_push>
 #include <linux/kernel.h>
 #include <linux/poll.h>
 #include <linux/pf_q.h>
 #include <net/sock.h>
-#include <warning/pop>
+#include <pragma/diagnostic_pop>
 
 #include <pf_q-macro.h>
 #include <pf_q-stats.h>
