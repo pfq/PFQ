@@ -21,10 +21,14 @@
  *
  ****************************************************************/
 
+#include <warning/push>
+
 #include <linux/kernel.h>
 #include <linux/string.h>
 #include <linux/ctype.h>
 #include <linux/limits.h>
+
+#include <warning/pop>
 
 #include <pf_q-signature.h>
 

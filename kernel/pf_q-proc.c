@@ -21,6 +21,8 @@
  *
  ****************************************************************/
 
+#include <warning/push>
+
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/proc_fs.h>
@@ -28,6 +30,8 @@
 #include <linux/pf_q.h>
 
 #include <net/net_namespace.h>
+
+#include <warning/pop>
 
 #include <pf_q-module.h>
 #include <pf_q-global.h>

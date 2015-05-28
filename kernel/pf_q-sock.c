@@ -21,11 +21,14 @@
  *
  ****************************************************************/
 
+#include <warning/push>
+
 #include <linux/kernel.h>
 #include <linux/module.h>
-
 #include <linux/version.h>
 #include <linux/types.h>
+
+#include <warning/pop>
 
 #include <pf_q-sock.h>
 #include <pf_q-memory.h>

@@ -21,11 +21,15 @@
  *
  ****************************************************************/
 
+#include <warning/push>
+
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/cpumask.h>
 #include <linux/timer.h>
 #include <linux/pf_q.h>
+
+#include <warning/pop>
 
 #include <pf_q-global.h>
 #include <pf_q-memory.h>

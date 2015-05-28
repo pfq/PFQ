@@ -24,17 +24,19 @@
 #ifndef PF_Q_MODULE_H
 #define PF_Q_MODULE_H
 
+#include <warning/push>
+
 #include <linux/kernel.h>
 #include <linux/version.h>
-
 #include <linux/pf_q.h>
-
 #include <linux/skbuff.h>
 #include <linux/ip.h>
 #include <linux/icmp.h>
 #include <linux/ipv6.h>
 #include <linux/if_ether.h>
 #include <linux/if_vlan.h>
+
+#include <warning/pop>
 
 #include <pf_q-sparse.h>
 #include <pf_q-monad.h>

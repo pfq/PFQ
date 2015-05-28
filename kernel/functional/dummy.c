@@ -21,9 +21,13 @@
  *
  ****************************************************************/
 
+#include <warning/push>
+
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/crc16.h>
+
+#include <warning/pop>
 
 #include <pf_q-module.h>
 #include <pf_q-sparse.h>

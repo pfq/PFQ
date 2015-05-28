@@ -21,18 +21,20 @@
  *
  ****************************************************************/
 
+#include <warning/push>
+
 #include <linux/kernel.h>
 #include <linux/module.h>
-
 #include <linux/list.h>
 #include <linux/string.h>
 #include <linux/semaphore.h>
 #include <linux/rwsem.h>
 
+#include <warning/pop>
+
 #include <pf_q-module.h>
 #include <pf_q-group.h>
 #include <pf_q-symtable.h>
-
 #include <pf_q-string-view.h>
 #include <pf_q-signature.h>
 

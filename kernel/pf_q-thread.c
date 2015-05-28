@@ -25,11 +25,14 @@
  *
  */
 
+#include <warning/push>
 
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/version.h>
 #include <linux/kthread.h>
+
+#include <warning/pop>
 
 #include <pf_q-macro.h>
 #include <pf_q-thread.h>

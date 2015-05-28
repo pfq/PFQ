@@ -24,10 +24,14 @@
 #ifndef PF_Q_PROC_H
 #define PF_Q_PROC_H
 
+#include <warning/push>
+
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/proc_fs.h>
 #include <linux/pf_q.h>
+
+#include <warning/pop>
 
 extern struct proc_dir_entry *pfq_proc_dir;
 

@@ -22,17 +22,19 @@
  *
  ****************************************************************/
 
+#include <warning/push>
+
 #include <linux/kernel.h>
 #include <linux/module.h>
-
 #include <linux/vmalloc.h>
 #include <linux/printk.h>
 #include <linux/kthread.h>
 #include <linux/mm.h>
 #include <linux/pf_q.h>
 
-#include <pf_q-shared-queue.h>
+#include <warning/pop>
 
+#include <pf_q-shared-queue.h>
 #include <pf_q-shmem.h>
 #include <pf_q-bitops.h>
 #include <pf_q-module.h>

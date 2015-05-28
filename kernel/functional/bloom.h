@@ -24,9 +24,11 @@
 #ifndef PF_Q_FUNCTIONAL_BLOOM_H
 #define PF_Q_FUNCTIONAL_BLOOM_H
 
-#include <pf_q-module.h>
-
+#include <warning/push>
 #include <asm/byteorder.h>
+#include <warning/pop>
+
+#include <pf_q-module.h>
 
 /* macros to test/set bits in bitwise array */
 

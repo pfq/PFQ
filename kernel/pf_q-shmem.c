@@ -21,11 +21,15 @@
  *
  ****************************************************************/
 
+#include <warning/push>
+
 #include <linux/kernel.h>
 #include <linux/version.h>
 #include <linux/module.h>
 #include <linux/vmalloc.h>
 #include <linux/pagemap.h>
+
+#include <warning/pop>
 
 #include <pf_q-shmem.h>
 #include <pf_q-shared-queue.h>

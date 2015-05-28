@@ -24,7 +24,9 @@
 #ifndef PF_Q_SOCKOPT_H
 #define PF_Q_SOCKOPT_H
 
+#include <warning/push>
 #include <linux/socket.h>
+#include <warning/pop>
 
 extern int pfq_getsockopt(struct socket *sock,
                 int level, int optname,

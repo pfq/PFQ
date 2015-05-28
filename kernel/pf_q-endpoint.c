@@ -21,10 +21,14 @@
  *
  ****************************************************************/
 
+#include <warning/push>
+
 #include <linux/kernel.h>
 #include <linux/version.h>
 #include <linux/module.h>
 #include <linux/skbuff.h>
+
+#include <warning/pop>
 
 #include <pf_q-shared-queue.h>
 #include <pf_q-sparse.h>

@@ -24,8 +24,9 @@
 #ifndef PF_Q_SKBUFF_POOL_H
 #define PF_Q_SKBUFF_POOL_H
 
+#include <warning/push>
 #include <linux/skbuff.h>
-
+#include <warning/pop>
 
 struct pfq_sk_buff_pool
 {

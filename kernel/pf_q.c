@@ -23,6 +23,8 @@
  *
  ****************************************************************/
 
+#include <warning/push>
+
 #include <linux/kernel.h>
 #include <linux/version.h>
 #include <linux/module.h>
@@ -48,6 +50,8 @@
 #endif
 
 #include <linux/pf_q.h>
+
+#include <warning/pop>
 
 #include <pf_q-shmem.h>
 #include <pf_q-proc.h>

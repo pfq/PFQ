@@ -25,7 +25,9 @@
 #ifndef PF_Q_BPF_H
 #define PF_Q_BPF_H
 
+#include <warning/push>
 #include <linux/filter.h>
+#include <warning/pop>
 
 struct sk_filter * pfq_alloc_sk_filter(struct sock_fprog *fprog);
 

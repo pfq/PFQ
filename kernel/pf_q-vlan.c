@@ -21,8 +21,12 @@
  *
  ****************************************************************/
 
+#include <warning/push>
+
 #include <linux/if_vlan.h>
 #include <linux/version.h>
+
+#include <warning/pop>
 
 /* inspired to linux kernel vlan_untag */
 

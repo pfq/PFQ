@@ -24,7 +24,9 @@
 #ifndef PF_Q_GLOBAL_H
 #define PF_Q_GLOBAL_H
 
+#include <warning/push>
 #include <linux/types.h>
+#include <warning/pop>
 
 #include <pf_q-sparse.h>
 #include <pf_q-stats.h>

@@ -22,14 +22,17 @@
  *
  ****************************************************************/
 
+#include <warning/push>
+
 #include <linux/kernel.h>
 #include <linux/version.h>
 #include <linux/module.h>
 #include <linux/filter.h>
 #include <linux/slab.h>
 #include <linux/uaccess.h>
-
 #include <net/sock.h>
+
+#include <warning/pop>
 
 #include <pf_q-bpf.h>
 

@@ -25,14 +25,17 @@
  *
  */
 
+#include <warning/push>
+
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/version.h>
 #include <linux/sched.h>
 #include <linux/ktime.h>
-
 #include <linux/skbuff.h>
 #include <linux/netdevice.h>
+
+#include <warning/pop>
 
 #include <pf_q-thread.h>
 #include <pf_q-transmit.h>
@@ -41,7 +44,6 @@
 #include <pf_q-macro.h>
 #include <pf_q-global.h>
 #include <pf_q-GC.h>
-
 #include <pf_q-printk.h>
 
 static inline int

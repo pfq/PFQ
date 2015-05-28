@@ -24,17 +24,20 @@
 #ifndef PF_Q_FUNCTIONAL_PREDICATE_H
 #define PF_Q_FUNCTIONAL_PREDICATE_H
 
+#include <warning/push>
+
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/skbuff.h>
-
-#include <net/ip.h>
 #include <linux/ip.h>
 #include <linux/ipv6.h>
 #include <linux/udp.h>
 #include <linux/tcp.h>
 #include <linux/icmp.h>
 #include <linux/if_vlan.h>
+#include <net/ip.h>
+
+#include <warning/pop>
 
 #include <pf_q-module.h>
 

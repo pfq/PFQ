@@ -26,9 +26,11 @@
 
 #ifdef __KERNEL__
 
+#include <warning/push>
 #include <linux/string.h>
 #include <linux/slab.h>
 #include <linux/ctype.h>
+#include <warning/pop>
 
 #else
 #include <kcompat.h>

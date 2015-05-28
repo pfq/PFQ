@@ -28,7 +28,9 @@
 #ifndef PF_Q_THREAD_H
 #define PF_Q_THREAD_H
 
+#include <warning/push>
 #include <linux/kthread.h>
+#include <warning/pop>
 
 #include <pf_q-sock.h>
 

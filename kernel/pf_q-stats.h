@@ -24,8 +24,10 @@
 #ifndef PF_Q_STATS_H
 #define PF_Q_STATS_H
 
+#include <warning/push>
 #include <linux/kernel.h>
 #include <linux/pf_q.h>
+#include <warning/pop>
 
 #include <pf_q-sparse.h>
 

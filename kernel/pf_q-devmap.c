@@ -22,9 +22,13 @@
  *
  ****************************************************************/
 
+#include <warning/push>
+
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/semaphore.h>
+
+#include <warning/pop>
 
 #include <pf_q-devmap.h>
 #include <pf_q-group.h>

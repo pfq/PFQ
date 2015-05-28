@@ -24,7 +24,9 @@
 #ifndef PF_Q_BITOPS_H
 #define PF_Q_BITOPS_H
 
+#include <warning/push>
 #include <asm/bitops.h>
+#include <warning/pop>
 
 
 #if BITS_PER_LONG == 32

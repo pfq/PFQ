@@ -25,10 +25,12 @@
 #ifndef PF_Q_MEMORY_H
 #define PF_Q_MEMORY_H
 
+#include <warning/push>
 #include <linux/version.h>
 #include <linux/skbuff.h>
 #include <linux/hardirq.h>
 #include <net/dst.h>
+#include <warning/pop>
 
 #include <pf_q-skbuff-pool.h>
 #include <pf_q-macro.h>

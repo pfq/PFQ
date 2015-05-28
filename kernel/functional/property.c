@@ -21,8 +21,12 @@
  *
  ****************************************************************/
 
+#include <warning/push>
+
 #include <linux/kernel.h>
 #include <linux/module.h>
+
+#include <warning/pop>
 
 #include <pf_q-module.h>
 
