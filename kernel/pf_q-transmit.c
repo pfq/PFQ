@@ -169,7 +169,7 @@ bool transmission_required(struct pfq_skbuff_batch *q, ktime_t now, uint64_t ts)
 
 
 static inline
-ktime_t wait_until(uint64_t ts, int cpu)
+ktime_t wait_until(uint64_t ts)
 {
 	ktime_t now;
 	do
@@ -265,7 +265,7 @@ __pfq_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int 
 		/* wait until the ts */
 
 		if (last_ts > ktime_to_ns(now))
-			now = wait_until(last_ts, cpu);
+			now = wait_until(last_ts);
 
 		/* allocate a packet */
 

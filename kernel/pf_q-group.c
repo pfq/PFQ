@@ -41,7 +41,7 @@ static struct pfq_group pfq_groups[Q_MAX_GROUP];
 
 
 void
-pfq_groups_init()
+pfq_groups_init(void)
 {
 	int n;
 	for(n = 0; n < Q_MAX_GROUP; n++)
