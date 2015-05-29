@@ -1,5 +1,5 @@
 /*
- *  Copyright (c) 2011-2015 Bonelli Nicola <bonelli@antifork.org>
+ *  Copyright (c) 2011-2012 Bonelli Nicola <bonelli@antifork.org>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License as published by
@@ -52,13 +52,14 @@
 #endif
 
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////
+/////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-#define Assert(...)                     YATS_XPASTE(YATS_ASSERT_       , YATS_PP_NARG(__VA_ARGS__)) ( __VA_ARGS__)
-#define AssertThrow(...)                YATS_XPASTE(YATS_ASSERT_THROW_ , YATS_PP_NARG(__VA_ARGS__)) ( __VA_ARGS__)
-#define AssertNoThrow(value)            YATS_ASSERT_NOTHROW(value)
-#define StaticError(expr,msg)           YATS_XPASTE(YATS_STATIC_ERROR_, __COUNTER__) (expr,msg)
+#define Assert(...)             YATS_ASSERT(__VA_ARGS__)
+#define AssertNoThrow(...)      YATS_ASSERT_NOTHROW(__VA_ARGS__)
+#define AssertThrow(...)        YATS_ASSERT_THROW(__VA_ARGS__)
+#define AssertThrowAs(...)      YATS_ASSERT_THROW_AS(__VA_ARGS__)
+#define StaticError(expr,msg)   YATS_XPASTE(YATS_STATIC_ERROR_, __COUNTER__) (expr,msg)
 
 
 #define Context(ctx) \
@@ -92,7 +93,15 @@
     void random_ ## name(const char *_test_name __attribute__((unused)), YATS_FOR_EACH(YATS_DIST_RES_ARGT,__VA_ARGS__))
 
 
-///////////////////////////////////////////////////////////////////////////////////////////////////////
+
+/////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+#define YATS_ASSERT(...)                yats::assert        (__FILE__, __LINE__, _context_name, _test_name, __VA_ARGS__)
+#define YATS_ASSERT_NOTHROW(...)        yats::assert_throw  (__FILE__, __LINE__, _context_name, _test_name, [&](){ __VA_ARGS__; }, nothing())
+#define YATS_ASSERT_THROW(...)          yats::assert_throw  (__FILE__, __LINE__, _context_name, _test_name, [&](){ __VA_ARGS__; }, anything())
+#define YATS_ASSERT_THROW_AS(e, ...)    yats::assert_throw  (__FILE__, __LINE__, _context_name, _test_name, [&](){ __VA_ARGS__; }, e)
+
 
 /* the so-called __VA_NARG__ (PP_NARG) macro from the thread at
    http://groups.google.com/group/comp.std.c/browse_frm/thread/77ee8c8f92e4a3fb
@@ -122,6 +131,7 @@
 
 #define YATS_PASTE(a,b)         a ## b
 #define YATS_XPASTE(a,b)        YATS_PASTE(a,b)
+
 #define YATS_UNPACK_ARGS(...)   __VA_ARGS__
 #define YATS_UNPACK(x)          YATS_UNPACK_ARGS x
 #define YATS_APPLY(f, ...)      f(__VA_ARGS__)
@@ -145,12 +155,6 @@
 #define YATS_DIST_INSTANCE(dist, name, ...)    dist(__VA_ARGS__)
 
 #define YATS_HEADER(ctx,test,file,line) file, ':', line, ": *** ", ctx, "::", test, ":\n"
-
-#define YATS_ASSERT_1(value)            yats::assert_predicate(value, is_true(),  _context_name, _test_name, __FILE__, __LINE__)
-#define YATS_ASSERT_2(value,pred)       yats::assert_predicate(value, pred,       _context_name, _test_name, __FILE__, __LINE__)
-#define YATS_ASSERT_NOTHROW(expr)       yats::assert_throw(nothing(), [&]{expr;}, _context_name, _test_name, __FILE__, __LINE__)
-#define YATS_ASSERT_THROW_1(expr)       yats::assert_throw(anything(),[&]{expr;}, _context_name, _test_name, __FILE__, __LINE__)
-#define YATS_ASSERT_THROW_2(expr,obj)   yats::assert_throw(obj,       [&]{expr;}, _context_name, _test_name, __FILE__, __LINE__)
 
 #define YATS_STATIC_ERROR_CLASS(expr, msg) \
     struct static_error {\
@@ -214,8 +218,9 @@
 #endif
 
 
-inline namespace yats
+namespace yats
 {
+
     ////////////////////////////////////////////// C++ yats exception:
 
     struct yats_error : public std::runtime_error
@@ -260,6 +265,7 @@ inline namespace yats
         return "any";
     }
 
+
     ////////////////////////////////////////////// C++ demangling tool:
 
     inline std::string
@@ -278,6 +284,7 @@ inline namespace yats
     {
         return cxa_demangle(typeid(t).name());
     }
+
 
     ////////////////////////////////////////////// seq and gens metafunction:
 
@@ -363,6 +370,7 @@ inline namespace yats
         context& operator=(context const &) = delete;
     };
 
+
     ////////////////////////////////////////////// usage:
 
     static void usage(const char *name)
@@ -380,18 +388,18 @@ inline namespace yats
         _Exit(EXIT_SUCCESS);
     }
 
-    ////////////////////////////////////////////// format error:
+
+    ////////////////////////////////////////////// print:
 
     template <typename CharT, typename Traits, typename T>
-    void format(std::basic_ostream<CharT,Traits> &out, T &&arg)
+    void print(std::basic_ostream<CharT,Traits> &out, T &&arg)
     {
         out << std::forward<T>(arg);
     }
     template <typename CharT, typename Traits, typename T, typename ...Ti>
-    void format(std::basic_ostream<CharT, Traits> &out, T &&arg, Ti&&... args)
+    void print(std::basic_ostream<CharT, Traits> &out, T &&arg, Ti&&... args)
     {
-        out << arg;
-        format(out, std::forward<Ti>(args)...);
+        out << arg; print(out, std::forward<Ti>(args)...);
     }
 
     template <typename ...Ts>
@@ -400,9 +408,10 @@ inline namespace yats
     {
         std::ostringstream out;
         out << std::boolalpha;
-        format(out, std::forward<Ts>(args)...);
+        print(out, std::forward<Ts>(args)...);
         return out.str();
     }
+
 
     ////////////////////////////////////////////// duration:
 
@@ -416,6 +425,7 @@ inline namespace yats
         else
             return std::to_string(static_cast<double>(std::chrono::duration_cast<std::chrono::microseconds>(d).count())/1000000.0) + " s";
     }
+
 
     ////////////////////////////////////////////// singleton:
 
@@ -493,8 +503,8 @@ inline namespace yats
             }
             return std::string("SIGNUM ") + std::to_string(n);
         }
-
     };
+
 
     ////////////////////////////////////////////// run tests:
 
@@ -654,7 +664,7 @@ inline namespace yats
                 try
                 {
                     // run the test here
-
+                    //
                     t.first.operator()(repeat_run);
                     ok++;
                 }
@@ -695,6 +705,7 @@ inline namespace yats
             {
                 t(0);
             }
+
         }
 
         std::cerr <<  std::endl << (run-ok) << " out of " << run  << " tests failed. " << singleton::assert_counter() << " assertions passed." << std::endl;
@@ -760,7 +771,7 @@ inline namespace yats
 
 
     ////////////////////////////////////////////// magic sfinae:
-    // ...for use in has_insertion_operator
+    // ...for has_insertion_operator
 
     struct __sfinae_types
     {
@@ -789,7 +800,7 @@ inline namespace yats
 
     ////////////////////////////////////////////// pretty printer values:
 
-    static inline std::string pretty_value(bool v)
+    static inline std::string pretty(bool v)
     {
         std::ostringstream o;
         o << std::boolalpha << v;
@@ -797,7 +808,7 @@ inline namespace yats
     }
     template <typename T>
     typename std::enable_if<std::is_integral<T>::value, std::string>::type
-    pretty_value(const T &v)
+    pretty(const T &v)
     {
         std::ostringstream o;
         o << std::boolalpha << v;
@@ -808,7 +819,7 @@ inline namespace yats
     template <typename T>
     typename std::enable_if<!std::is_integral<T>::value &&
                             has_insertion_operator<T>::value, std::string>::type
-    pretty_value(const T &v)
+    pretty(const T &v)
     {
         std::ostringstream o;
         o << v;
@@ -817,7 +828,7 @@ inline namespace yats
     template <typename T>
     typename std::enable_if<!std::is_integral<T>::value &&
                             !has_insertion_operator<T>::value, std::string>::type
-    pretty_value(const T &)
+    pretty(const T &)
     {
         return "()";
     }
@@ -858,7 +869,7 @@ inline namespace yats
         str() const
         {
             if (arg_)
-                return name_ + std::string("(") + pretty_value(*arg_) + std::string(")");
+                return name_ + std::string("(") + pretty(*arg_) + std::string(")");
             else
                 return name_ + "()";
         }
@@ -1029,26 +1040,32 @@ inline namespace yats
 
     ////////////////////////////////////////////// YATS assertions:
 
-    template <typename T1, typename P>
-    void assert_predicate(const T1 &value, const P &pred, const char *ctx, const char *name, const char *file, int line)
+    template <typename T, typename P>
+    void assert(const char *file, int line, const char *ctx, const char *test, const T &value, P pred)
     {
         if (!pred(value))
         {
-            throw yats_error(make_string(YATS_HEADER(ctx, name, file, line),
-                             "    -> predicate ", pred.str(), " failed: got ", pretty_value(value)));
+            throw yats_error(make_string(YATS_HEADER(ctx, test, file, line),
+                             "    -> predicate ", pred.str(), " failed: got ", pretty(value)));
         }
 
         singleton::assert_counter()++;
     }
 
+    static inline
+    void assert(const char *file, int line, const char *ctx, const char *test, bool value)
+    {
+        return assert(file, line, ctx, test, value, is_true());
+    }
+
     template <typename T, typename E>
-    void assert_throw(T const &obj, E expr, const char *ctx, const char *test, const char *file, int line)
+    void assert_throw(const char *file, int line, const char *ctx, const char *test, T const & expr, E const &obj)
     {
         try
         {
             expr();
         }
-        catch(T &e)
+        catch(E &e)
         {
             if (std::string(e.what()).compare(obj.what()))
                 throw yats_error(make_string(YATS_HEADER(ctx, test, file, line),
@@ -1061,7 +1078,7 @@ inline namespace yats
         }
         catch(std::exception &e)
         {
-            if (!std::is_same<T,anything>::value)
+            if (!std::is_same<E,anything>::value)
                 throw yats_error(make_string(YATS_HEADER(ctx, test, file, line),
                                             "    -> ", yats::type_name(obj),
                                             " exception expected. Got ",
@@ -1072,7 +1089,7 @@ inline namespace yats
         }
         catch(...)
         {
-            if (!std::is_same<T,anything>::value)
+            if (!std::is_same<E,anything>::value)
                 throw yats_error(make_string(YATS_HEADER(ctx, test, file, line),
                                             "    -> ", yats::type_name(obj),
                                             " exception expected: got unknown exception!"));
@@ -1080,13 +1097,15 @@ inline namespace yats
             return;
         }
 
-        if (!std::is_same<T, nothing>::value)
+        if (!std::is_same<E, nothing>::value)
             throw yats_error(make_string(YATS_HEADER(ctx, test, file, line),
                                         "    -> ", yats::type_name(obj),
                                         " exception expected!"));
 
         singleton::assert_counter()++;
+
     }
+
 }
 
 #endif /* _YATS_HPP_ */
