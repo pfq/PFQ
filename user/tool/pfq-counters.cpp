@@ -26,12 +26,14 @@
 #include <pfq/lang/default.hpp>
 #include <pfq/lang/experimental.hpp>
 
-#include <binding.hpp>
-#include <affinity.hpp>
-#include <vt100.hpp>
+#include <more/binding.hpp>
+#include <more/affinity.hpp>
+#include <more/vt100.hpp>
 
 #include <linux/ip.h>
 #include <linux/udp.h>
+
+using namespace more;
 
 using namespace pfq;
 using namespace pfq::lang;
@@ -74,7 +76,7 @@ namespace thread
 {
     struct context
     {
-        context(int id, const binding &b)
+        context(int id, const thread_binding &b)
         : m_id(id)
         , m_bind(b)
         , m_pfq(group_policy::undefined, opt::caplen, opt::slots)
@@ -90,16 +92,16 @@ namespace thread
 
             for(auto &d : m_bind.dev)
             {
-                if (m_bind.queue.empty())
+                if (d.queue.empty())
                 {
-                    m_pfq.bind_group(m_bind.gid, d.c_str(), -1);
-                    std::cout << "+ bind to " << d << "@" << -1 << std::endl;
+                    m_pfq.bind_group(m_bind.gid, d.name.c_str(), -1);
+                    std::cout << "+ bind to " << d.name << "@" << -1 << std::endl;
                 }
                 else
-                    for(auto q : m_bind.queue)
+                    for(auto q : d.queue)
                     {
-                        std::cout << "+ bind to " << d << "@" << q << std::endl;
-                        m_pfq.bind_group(m_bind.gid, d.c_str(), q);
+                        std::cout << "+ bind to " << d.name << "@" << q << std::endl;
+                        m_pfq.bind_group(m_bind.gid, d.name.c_str(), q);
                     }
             }
 
@@ -185,7 +187,7 @@ namespace thread
 
     private:
         int m_id;
-        binding m_bind;
+        thread_binding m_bind;
 
         pfq::socket m_pfq;
 
@@ -223,7 +225,8 @@ void usage(std::string name)
         "    --seconds INT              Terminate after INT seconds\n"
         " -f --function FUNCTION\n"
         " -t --thread BINDING\n\n"
-        "      BINDING = " + pfq::binding_format + "\n"
+        "      " + more::netdev_format + "\n"
+        "      " + more::thread_binding_format + "\n"
         "      FUNCTION = fun[ >-> fun >-> fun]"
     );
 }
@@ -249,7 +252,7 @@ try
     if (argc < 2)
         usage(argv[0]);
 
-    std::vector<binding> thread_binding;
+    std::vector<thread_binding> thread_bindings;
 
     for(int i = 1; i < argc; ++i)
     {
@@ -306,7 +309,7 @@ try
             if (++i == argc)
                 throw std::runtime_error("descriptor missing");
 
-            thread_binding.push_back(make_binding(argv[i]));
+            thread_bindings.push_back(read_thread_binding(argv[i]));
             continue;
         }
 
@@ -327,9 +330,9 @@ try
 
     // create thread context:
     //
-    for(unsigned int i = 0; i < thread_binding.size(); ++i)
+    for(unsigned int i = 0; i < thread_bindings.size(); ++i)
     {
-        thread_ctx.push_back(new thread::context(static_cast<int>(i), thread_binding[i]));
+        thread_ctx.push_back(new thread::context(static_cast<int>(i), thread_bindings[i]));
     }
 
     opt::timeout_ms = 1000000;
@@ -339,14 +342,14 @@ try
     // create threads:
 
     int i = 0;
-    std::for_each(thread_binding.begin(), thread_binding.end(), [&](binding &b) {
+    std::for_each(thread_bindings.begin(), thread_bindings.end(), [&](thread_binding &b) {
 
-        std::cout << "thread: " << show_binding(b) << std::endl;
+        std::cout << "thread: " << show(b) << std::endl;
 
         auto t = new std::thread(std::ref(*thread_ctx[static_cast<size_t>(i++)]));
 
-        if (b.core != -1)
-            extra::set_affinity(*t, b.core);
+        if (b.cpu != -1)
+            more::set_affinity(*t, b.cpu);
 
         t->detach();
     });

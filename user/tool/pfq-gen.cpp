@@ -22,8 +22,6 @@
 #include <random>
 #include <limits>
 
-#include <binding.hpp>
-#include <affinity.hpp>
 
 #include <pfq/pfq.hpp>
 #include <pfq/util.hpp>
@@ -31,7 +29,9 @@
 #include <linux/ip.h>
 #include <linux/udp.h>
 
-#include <vt100.hpp>
+#include <more/vt100.hpp>
+#include <more/binding.hpp>
+#include <more/affinity.hpp>
 
 
 #ifdef HAVE_PCAP_H
@@ -89,7 +89,7 @@ namespace opt
     bool   active_ts = false;
     double rate    = 0;
 
-    std::vector< std::vector<int> > kcore;
+    std::vector< std::vector<int> > kthread;
 
     std::string file;
 #ifdef HAVE_PCAP_H
@@ -97,12 +97,13 @@ namespace opt
 #endif
 }
 
+using namespace more;
 
 namespace thread
 {
     struct context
     {
-        context(int id, const binding &b, std::vector<int> kcpu)
+        context(int id, const thread_binding &b, std::vector<int> kcpu)
         : m_id(id)
         , m_bind(b)
         , m_pfq()
@@ -115,29 +116,22 @@ namespace thread
             if (m_bind.dev.empty())
                 throw std::runtime_error("context: device unspecified");
 
-            if (m_bind.queue.empty())
-                m_bind.queue.push_back(-1);
-
             auto q = pfq::socket(param::list, param::tx_slots{opt::slots});
 
-            std::cout << "thread     : " << id << " -> "  << show_binding(m_bind) << " kcore { ";
-
+            std::cout << "thread     : " << id << " -> "  << show(m_bind) << " kthread { ";
             for(auto x : kcpu)
                 std::cout << x  << ' ';
-
             std::cout << "}" << std::endl;
 
-            for(unsigned int n = 0; n < m_bind.queue.size(); n++)
+            for(unsigned int n = 0; n < m_bind.dev.front().queue.size(); n++)
             {
-                q.bind_tx (m_bind.dev.at(0).c_str(), m_bind.queue[n], kcpu[n]);
+                q.bind_tx (m_bind.dev.front().name.c_str(), m_bind.dev.front().queue[n], n >= kcpu.size() ? -1 : kcpu.at(n));
             }
 
             q.enable();
 
             if (std::any_of(std::begin(kcpu), std::end(kcpu), [](int cpu) { return cpu != -1; }))
-            {
                     q.tx_async(true);
-            }
 
             m_pfq = std::move(q);
         }
@@ -313,7 +307,7 @@ namespace thread
 
         int m_id;
 
-        binding m_bind;
+        thread_binding m_bind;
 
         pfq::socket m_pfq;
 
@@ -393,7 +387,7 @@ void usage(std::string name)
         " -l --len INT                  Set packet length\n"
         " -n --packets INT              Number of packets\n"
         " -s --queue-slots INT          Set Tx queue length\n"
-        " -k --kcore IDX,IDX...         Async with kernel threads\n"
+        " -k --kthread IDX,IDX...       Async with kernel threads\n"
 #ifdef HAVE_PCAP_H
         " -r --read FILE                Read pcap trace file to send\n"
 #endif
@@ -402,7 +396,8 @@ void usage(std::string name)
         " -a --active-tstamp            Use active timestamp as rate control\n"
         " -f --flush INT                Set flush length, used in sync Tx\n"
         " -t --thread BINDING\n\n"
-        "      BINDING = " + pfq::binding_format
+        "      " + more::netdev_format + "\n" +
+        "      " + more::thread_binding_format
     );
 }
 
@@ -416,7 +411,7 @@ try
     if (argc < 2)
         usage(argv[0]);
 
-    std::vector<pfq::binding> binding;
+    std::vector<more::thread_binding> binding;
 
     for(int i = 1; i < argc; ++i)
     {
@@ -478,18 +473,17 @@ try
             continue;
         }
 
-        if ( any_strcmp(argv[i], "-k", "--kcore") )
+        if ( any_strcmp(argv[i], "-k", "--kthread") )
         {
             if (++i == argc)
             {
-                throw std::runtime_error("kcore list missing");
+                throw std::runtime_error("kthread list missing");
             }
 
             auto vec = pfq::split(argv[i], ",");
-
             auto cores = pfq::fmap([](const std::string &val) -> int { return std::stoi(val); }, vec);
 
-            opt::kcore.push_back(std::move(cores));
+            opt::kthread.push_back(std::move(cores));
             continue;
         }
 
@@ -512,7 +506,7 @@ try
                 throw std::runtime_error("binding missing");
             }
 
-            binding.push_back(make_binding(argv[i]));
+            binding.push_back(read_thread_binding(argv[i]));
             continue;
         }
 
@@ -533,6 +527,40 @@ try
         throw std::runtime_error(std::string("pfq-gen: ") + argv[i] + " unknown option");
     }
 
+    //
+    // process kthread:
+    //
+
+    while (opt::kthread.size() < binding.size())
+        opt::kthread.push_back(std::vector<int>{});
+
+    //
+    // process binding:
+    //
+
+    size_t queue_num = 0;
+
+    for(size_t i = 0; i < binding.size(); ++i)
+    {
+        if (binding[i].dev.empty())
+            throw std::runtime_error("binding error: device unspecified");
+
+        std::cout << "device     : " << show(binding[i].dev.front()) << std::endl;
+
+        while (binding.at(i).dev.front().queue.size() < opt::kthread.at(i).size())
+            binding.at(i).dev.front().queue.push_back(queue_num++);
+
+        while (opt::kthread.at(i).size() < binding.at(i).dev.front().queue.size())
+            opt::kthread.at(i).push_back(-1);
+
+        if (binding.at(i).dev.front().queue.empty())
+        {
+            binding.at(i).dev.front().queue.push_back(-1);
+            opt::kthread.at(i).push_back(-1);
+        }
+
+    }
+
     std::cout << "rand_ip    : "  << std::boolalpha << opt::rand_ip << std::endl;
     std::cout << "len        : "  << opt::len << std::endl;
     std::cout << "flush-hint : "  << opt::flush << std::endl;
@@ -546,56 +574,11 @@ try
     if (opt::active_ts)
         std::cout << "timestamp  : active!" << std::endl;
 
-    //
-    // process binding:
-    //
-
-    for(size_t i = 0; i < binding.size(); ++i)
-    {
-        auto num_queues = get_num_queues(binding[i].dev.at(0).c_str());
-
-        std::cout << "device     : " << binding[i].dev.at(0) << ", " << num_queues << " queues detected." << std::endl;
-
-        num_queues = std::min<size_t>(4, num_queues);
-
-        while (binding[i].queue.size() < num_queues)
-        {
-            binding[i].queue.push_back(binding[i].queue.size());
-        }
-    }
-
-    auto mq = std::any_of(std::begin(binding), std::end(binding),
-                [](pfq::binding const &b) { return b.queue.size() > 1; });
+    auto mq = std::any_of(std::begin(binding), std::end(binding), [](more::thread_binding const &b) { return b.dev.front().queue.size() > 1; });
 
     if (!opt::rand_ip && mq)
     {
         std::cout << vt100::BOLD << "*** Multiple queue detected! Consider to randomize IP addresses with -R option! ***" << vt100::RESET << std::endl;
-    }
-
-    if (opt::kcore.empty() && mq)
-    {
-        std::cout << vt100::BOLD << "*** Multiple queue detected! Consider to enable asynchronous transmission, with -k option! ***" << vt100::RESET << std::endl;
-    }
-
-    //
-    // process kcore:
-    //
-
-    while (opt::kcore.size() < binding.size())
-        opt::kcore.push_back(std::vector<int>{});
-
-    //
-    // finally pad each kcore list...
-    //
-
-    {
-        size_t n = 0;
-
-        for(auto & v : opt::kcore)
-        {
-            while(v.size() < std::min<size_t>(4,binding[n].queue.size()))
-                v.push_back(-1);
-        }
     }
 
     //
@@ -604,7 +587,7 @@ try
 
     for(unsigned int i = 0; i < binding.size(); ++i)
     {
-        thread_ctx.push_back(new thread::context(static_cast<int>(i), binding[i], opt::kcore[i]));
+        thread_ctx.push_back(new thread::context(static_cast<int>(i), binding[i], opt::kthread.at(i)));
     }
 
     opt::nthreads.store(binding.size(), std::memory_order_relaxed);
@@ -614,11 +597,11 @@ try
     //
 
     size_t i = 0;
-    std::for_each(binding.begin(), binding.end(), [&](pfq::binding const &b) {
+    std::for_each(binding.begin(), binding.end(), [&](more::thread_binding const &b) {
 
         auto t = new std::thread(std::ref(*thread_ctx[i++]));
 
-        extra::set_affinity(*t, b.core);
+        more::set_affinity(*t, b.cpu);
 
         t->detach();
     });
