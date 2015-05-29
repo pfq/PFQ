@@ -786,6 +786,8 @@ int pfq_setsockopt(struct socket *sock,
 		if (copy_from_user(&toggle, optval, optlen))
 			return -EFAULT;
 
+		printk(KERN_INFO "[PFQ|%d] Tx async %s!\n", so->id.value, toggle ? "enabled" : "disabled");
+
 		if (toggle) {
 
 			size_t started = 0;
@@ -805,8 +807,11 @@ int pfq_setsockopt(struct socket *sock,
 				if (so->tx_opt.queue[n].if_index == -1)
 					break;
 
-				if (so->tx_opt.queue[n].cpu == Q_NO_KTHREAD)
+				if (so->tx_opt.queue[n].cpu == Q_NO_KTHREAD) {
+					printk(KERN_INFO "[PFQ|%d] kernel_thread: skipping queue %zu (no kthread).\n",
+					       so->id.value, n);
 					continue;
+				}
 
 				if (so->tx_opt.queue[n].task) {
 					printk(KERN_INFO "[PFQ|%d] kernel_thread: Tx[%zu] thread already running!\n",
@@ -824,8 +829,8 @@ int pfq_setsockopt(struct socket *sock,
 
 				data->so = so;
 				data->id = n;
-				node     = cpu_online(so->tx_opt.queue[n].cpu) ?
-						cpu_to_node(so->tx_opt.queue[n].cpu) : NUMA_NO_NODE;
+				node = cpu_online(so->tx_opt.queue[n].cpu) ?
+				       cpu_to_node(so->tx_opt.queue[n].cpu) : NUMA_NO_NODE;
 
 				pr_devel("[PFQ|%d] creating Tx[%zu] thread on cpu %d: if_index=%d hw_queue=%d\n",
 						so->id.value, n, so->tx_opt.queue[n].cpu, so->tx_opt.queue[n].if_index,
