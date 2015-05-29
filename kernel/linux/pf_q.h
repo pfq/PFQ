@@ -172,7 +172,7 @@ static inline void smp_wmb() { barrier(); }
 /*additionalconstants*/
 
 #define Q_MAX_COUNTERS			64
-#define Q_MAX_TX_QUEUES			4
+#define Q_MAX_TX_QUEUES			8
 
 
 /* PFQ socket queue */
