@@ -5,7 +5,6 @@
  *
  ****************************************************************/
 
-#include <affinity.hpp>
 
 #include <iostream>
 #include <fstream>
@@ -33,7 +32,9 @@
 #include <linux/ip.h>
 
 #include <pfq/pfq.hpp>
-#include <vt100.hpp>
+
+#include <more/affinity.hpp>
+#include <more/vt100.hpp>
 
 using namespace pfq;
 
@@ -504,7 +505,7 @@ try
                             std::ostream_iterator<int>(std::cout, " "));
                   std::cout << "]\n";
 
-                  extra::set_affinity(t, std::get<1>(b));
+                  more::set_affinity(t, std::get<1>(b));
                   vt.push_back(std::move(t));
                   });
 
@@ -556,9 +557,9 @@ try
 
         auto end = std::chrono::system_clock::now();
 
-        std::cout << "capture: " << vt100::BOLD <<
+        std::cout << "capture: " << more::vt100::BOLD <<
             static_cast<int64_t>((sum-old)*1000000)/std::chrono::duration_cast<std::chrono::microseconds>(end-begin).count()
-            << vt100::RESET << " pkt/sec" << std::endl;
+            << more::vt100::RESET << " pkt/sec" << std::endl;
 
         old = sum, begin = end;
         old_stats = sum_stats;
