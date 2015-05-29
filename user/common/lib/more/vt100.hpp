@@ -20,5 +20,6 @@ namespace more { namespace vt100
         const char * const BLUE  = "\E[1;34m";
         const char * const RED   = "\E[31m";
     }
-}}
+}
+} // namespace more
 

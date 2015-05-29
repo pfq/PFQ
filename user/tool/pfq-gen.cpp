@@ -114,7 +114,7 @@ namespace thread
         , m_packet(std::unique_ptr<char[]>(make_packet(opt::len)))
         {
             if (m_bind.dev.empty())
-                throw std::runtime_error("context: device unspecified");
+                throw std::runtime_error("context[" + std::to_string (m_id) + "]: device unspecified");
 
             auto q = pfq::socket(param::list, param::tx_slots{opt::slots});
 

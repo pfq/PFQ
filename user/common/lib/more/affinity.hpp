@@ -27,5 +27,5 @@ namespace more {
             throw std::runtime_error("pthread_setaffinity_np");
     }
 
-} // namespace nlib
+} // namespace more
 
