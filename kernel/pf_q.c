@@ -202,21 +202,17 @@ void send_to_kernel(struct sk_buff *skb)
 
 
 static int
-pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
+pfq_process_batch(struct local_data * local, struct gc_data *gcollector, int cpu)
 {
 	unsigned long long sock_queue[Q_SKBUFF_SHORT_BATCH];
         unsigned long group_mask, socket_mask;
-
-	struct local_data * local;
-        struct gc_data *gcollector;
-
 	struct lazy_fwd_targets targets;
+        struct sk_buff *skb;
 
         long unsigned n, bit, lb;
         struct pfq_monad monad;
 	struct gc_buff buff;
 	size_t this_batch_len;
-        int cpu;
 
 #ifdef PFQ_RX_PROFILE
 	cycles_t start, stop;
@@ -225,84 +221,6 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,9,0))
 	BUILD_BUG_ON_MSG(Q_SKBUFF_SHORT_BATCH > (sizeof(sock_queue[0]) << 3), "skbuff batch overflow");
 #endif
-
-	/* if no socket is open drop the packet */
-
-	if (unlikely(pfq_get_sock_count() == 0)) {
-		kfree_skb(skb);
-		return 0;
-	}
-
-	/* disable soft-irq */
-
-        local_bh_disable();
-
-        cpu = smp_processor_id();
-
-	local = per_cpu_ptr(cpu_data, cpu);
-
-	gcollector = &local->gc;
-
-	if (likely(skb))
-	{
-		/* if required, timestamp the packet now */
-
-		if (skb->tstamp.tv64 == 0)
-			__net_timestamp(skb);
-
-		/* if vlan header is present, remove it */
-
-		if (vl_untag && skb->protocol == cpu_to_be16(ETH_P_8021Q)) {
-			skb = pfq_vlan_untag(skb);
-			if (unlikely(!skb)) {
-				sparse_inc(&global_stats.lost);
-				local_bh_enable();
-				return -1;
-			}
-		}
-
-		skb_reset_mac_len(skb);
-
-		/* push the mac header: reset skb->data to the beginning of the packet */
-
-		if (likely(skb->pkt_type != PACKET_OUTGOING)) {
-		    skb_push(skb, skb->mac_len);
-		}
-
-
-		/* set the ownership of this skb to the garbage collector */
-
-		buff = gc_make_buff(gcollector, skb);
-		if (buff.skb == NULL) {
-			if (printk_ratelimit())
-				printk(KERN_INFO "[PFQ] GC: memory exhausted!\n");
-
-			__sparse_inc(&global_stats.lost, cpu);
-			kfree_skb(skb);
-			local_bh_enable();
-			return 0;
-		}
-
-		PFQ_CB(buff.skb)->direct = direct;
-
-		if ((gc_size(gcollector) < batch_len) &&
-		     (ktime_to_ns(ktime_sub(skb_get_ktime(buff.skb), local->last_ts)) < 1000000))
-		{
-			local_bh_enable();
-			return 0;
-		}
-
-		local->last_ts = skb_get_ktime(buff.skb);
-	}
-	else {
-                if (gc_size(gcollector) == 0)
-		{
-			local_bh_enable();
-			return 0;
-		}
-	}
-
-	/* --- process batch --- */
 
 	this_batch_len = gc_size(gcollector);
 
@@ -538,6 +456,90 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 #endif
         return 0;
 }
+
+
+static int
+pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
+{
+        struct gc_data *gcollector;
+	struct local_data * local;
+	struct gc_buff buff;
+	int cpu;
+
+	/* if no socket is open drop the packet */
+
+	if (unlikely(pfq_get_sock_count() == 0)) {
+		kfree_skb(skb);
+		return 0;
+	}
+
+	/* disable soft-irq */
+
+        local_bh_disable();
+
+        cpu = smp_processor_id();
+	local = per_cpu_ptr(cpu_data, cpu);
+	gcollector = &local->gc;
+
+	if (likely(skb))
+	{
+		/* if required, timestamp the packet now */
+
+		if (skb->tstamp.tv64 == 0)
+			__net_timestamp(skb);
+
+		/* if vlan header is present, remove it */
+
+		if (vl_untag && skb->protocol == cpu_to_be16(ETH_P_8021Q)) {
+			skb = pfq_vlan_untag(skb);
+			if (unlikely(!skb)) {
+				sparse_inc(&global_stats.lost);
+				local_bh_enable();
+				return -1;
+			}
+		}
+
+		skb_reset_mac_len(skb);
+
+		/* push the mac header: reset skb->data to the beginning of the packet */
+
+		if (likely(skb->pkt_type != PACKET_OUTGOING))
+		    skb_push(skb, skb->mac_len);
+
+		/* pass the ownership of this skb to the garbage collector */
+
+		buff = gc_make_buff(gcollector, skb);
+		if (buff.skb == NULL) {
+			if (printk_ratelimit())
+				printk(KERN_INFO "[PFQ] GC: memory exhausted!\n");
+			__sparse_inc(&global_stats.lost, cpu);
+			kfree_skb(skb);
+			local_bh_enable();
+			return 0;
+		}
+
+		PFQ_CB(buff.skb)->direct = direct;
+
+		if ((gc_size(gcollector) < batch_len) &&
+		     (ktime_to_ns(ktime_sub(skb_get_ktime(buff.skb), local->last_ts)) < 1000000))
+		{
+			local_bh_enable();
+			return 0;
+		}
+
+		local->last_ts = skb_get_ktime(buff.skb);
+	}
+	else {
+                if (gc_size(gcollector) == 0)
+		{
+			local_bh_enable();
+			return 0;
+		}
+	}
+
+	return pfq_process_batch(local, gcollector, cpu);
+}
+
 
 /* simple packet HANDLER */
 
