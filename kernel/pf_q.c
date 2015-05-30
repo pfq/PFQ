@@ -229,33 +229,28 @@ pfq_process_batch(struct local_data * local, struct gc_data *gcollector, int cpu
 	/* cleanup sock_queue... */
 
         memset(sock_queue, 0, sizeof(sock_queue));
-
 	group_mask = 0;
 
 #ifdef PFQ_RX_PROFILE
 	start = get_cycles();
 #endif
-
         /* setup all the skbs collected */
 
 	for_each_skbuff(SKBUFF_BATCH_ADDR(gcollector->pool), skb, n)
         {
 		unsigned long local_group_mask = pfq_devmap_get_groups(skb->dev->ifindex, skb_get_rx_queue(skb));
-
 		group_mask |= local_group_mask;
-
 		PFQ_CB(skb)->group_mask = local_group_mask;
-		PFQ_CB(skb)->monad      = &monad;
+		PFQ_CB(skb)->monad = &monad;
 	}
 
-        /* process all groups enabled for this batch of packets */
+        /* process all groups enabled for this batch */
 
 	pfq_bitwise_foreach(group_mask, bit,
 	{
 		pfq_gid_t gid = { pfq_ctz(bit) };
 
 		struct pfq_group * this_group = pfq_get_group(gid);
-
 		bool bf_filter_enabled = atomic_long_read(&this_group->bp_filter);
 		bool vlan_filter_enabled = pfq_vlan_filters_enabled(gid);
 		struct gc_queue_buff refs = { len:0 };
@@ -277,15 +272,13 @@ pfq_process_batch(struct local_data * local, struct gc_data *gcollector, int cpu
 			if ((PFQ_CB(buff.skb)->group_mask & bit) == 0)
 				continue;
 
-			/* increment recv counter for this group */
+			/* increment counter for this group */
 
 			__sparse_inc(&this_group->stats.recv, cpu);
 
-
-			/* check for bp filter */
+			/* check if bp filter is enabled */
 
 			if (bf_filter_enabled) {
-
 				struct sk_filter *bpf = (struct sk_filter *)atomic_long_read(&this_group->bp_filter);
 
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(3,15,0))
@@ -302,7 +295,6 @@ pfq_process_batch(struct local_data * local, struct gc_data *gcollector, int cpu
 			/* check vlan filter */
 
 			if (vlan_filter_enabled) {
-
 				if (!pfq_check_group_vlan_filter(gid, buff.skb->vlan_tci & ~VLAN_TAG_PRESENT)) {
 					__sparse_inc(&this_group->stats.drop, cpu);
 					continue;
@@ -313,29 +305,26 @@ pfq_process_batch(struct local_data * local, struct gc_data *gcollector, int cpu
 
 			prg = (struct pfq_computation_tree *)atomic_long_read(&this_group->comp);
 			if (prg) {
-
 				unsigned long cbit, eligible_mask = 0;
 				size_t to_kernel = PFQ_CB(buff.skb)->log->to_kernel;
-				size_t num_fwd   = PFQ_CB(buff.skb)->log->num_devs;
+				size_t num_fwd = PFQ_CB(buff.skb)->log->num_devs;
 
 				/* setup monad for this computation */
 
 				monad.fanout.class_mask = Q_CLASS_DEFAULT;
-				monad.fanout.type       = fanout_copy;
-				monad.state		= 0;
-				monad.group		= this_group;
+				monad.fanout.type = fanout_copy;
+				monad.state = 0;
+				monad.group = this_group;
 
 				/* run the functional program */
 
 				buff = pfq_run(prg, buff).value;
-
-				/* save a reference of the current packet */
-
 				if (buff.skb == NULL) {
 					__sparse_inc(&this_group->stats.drop, cpu);
 					continue;
 				}
 
+				/* save a reference to the current packet */
 				refs.queue[refs.len++] = buff;
 
 				/* update stats */
@@ -358,18 +347,14 @@ pfq_process_batch(struct local_data * local, struct gc_data *gcollector, int cpu
 					eligible_mask |= atomic_long_read(&this_group->sock_mask[class]);
 				})
 
-
 				if (is_steering(monad.fanout)) {
 
 					/* cache the number of sockets in the mask */
 
 					if (eligible_mask != local->eligible_mask) {
-
 						unsigned long ebit;
-
 						local->eligible_mask = eligible_mask;
 						local->sock_cnt = 0;
-
 						pfq_bitwise_foreach(eligible_mask, ebit,
 						{
 							local->sock_mask[local->sock_cnt++] = ebit;
@@ -387,27 +372,24 @@ pfq_process_batch(struct local_data * local, struct gc_data *gcollector, int cpu
 					sock_mask |= eligible_mask;
 				}
 			}
-			else { /* save a reference to the current packet */
-
+			else {
+				/* save a reference to the current packet */
 				refs.queue[refs.len++] = buff;
 				sock_mask |= atomic_long_read(&this_group->sock_mask[0]);
 			}
 
 			mask_to_sock_queue(n, sock_mask, sock_queue);
-
 			socket_mask |= sock_mask;
 		}
 
-		/* copy payload of packets to endpoints... */
+		/* copy payloads to endpoints... */
 
 		pfq_bitwise_foreach(socket_mask, lb,
 		{
 			int i = pfq_ctz(lb);
 			struct pfq_sock * so;
 			pfq_id_t id = { i };
-
 			so= pfq_get_sock_by_id(id);
-
 			copy_to_endpoint_buffs(so, &refs, sock_queue[i], cpu, gid);
 		})
 	})
@@ -419,7 +401,6 @@ pfq_process_batch(struct local_data * local, struct gc_data *gcollector, int cpu
 	if (targets.cnt_total)
 	{
 		size_t total = pfq_lazy_xmit_exec(gcollector, &targets);
-
 		__sparse_add(&global_stats.frwd, total, cpu);
 		__sparse_add(&global_stats.disc, targets.cnt_total - total, cpu);
 	}
@@ -433,7 +414,6 @@ pfq_process_batch(struct local_data * local, struct gc_data *gcollector, int cpu
 		/* send a copy of this skb to the kernel */
 
 		if (cb->direct && fwd_to_kernel(skb)) {
-
 		        __sparse_inc(&global_stats.kern, cpu);
 			send_to_kernel(skb);
 		}
@@ -445,12 +425,10 @@ pfq_process_batch(struct local_data * local, struct gc_data *gcollector, int cpu
 	/* reset the GC */
 
 	gc_reset(gcollector);
-
 	local_bh_enable();
 
 #ifdef PFQ_RX_PROFILE
 	stop = get_cycles();
-
 	if (printk_ratelimit())
 		printk(KERN_INFO "[PFQ] Rx profile: %llu_tsc.\n", (stop-start)/batch_len);
 #endif
