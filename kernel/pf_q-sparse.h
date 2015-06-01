@@ -33,11 +33,15 @@
 #include <pf_q-macro.h>
 
 #ifdef PFQ_USE_EXTENDED_PROC
-#define SPARSE_INC(...)	(sparse_inc(__VA_ARGS__))
-#define SPARSE_DEC(...)	(sparse_dec(__VA_ARGS__))
+#define SPARSE_INC(x)	(sparse_inc(x))
+#define SPARSE_DEC(x)	(sparse_dec(x))
+#define SPARSE_ADD(x,v)	(sparse_add(x,v))
+#define SPARSE_SUB(x,v)	(sparse_sub(x,v))
 #else
-#define SPARSE_INC(...)	((void)__VA_ARGS__)
-#define SPARSE_DEC(...)	((void)__VA_ARGS__)
+#define SPARSE_INC(x)	((void)x)
+#define SPARSE_DEC(x)	((void)x)
+#define SPARSE_ADD(x,v)	((void)x)
+#define SPARSE_SUB(x,v)	((void)x)
 #endif
 
 

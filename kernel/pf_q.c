@@ -968,6 +968,7 @@ static void __exit pfq_exit_module(void)
 
 #ifdef PFQ_USE_SKB_POOL
         total += pfq_skb_pool_purge();
+	SPARSE_ADD(&memory_stats.pool_pop, total);
 #endif
         if (total)
                 printk(KERN_INFO "[PFQ] %d skbuff freed.\n", total);
