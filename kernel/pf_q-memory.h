@@ -206,7 +206,7 @@ ____pfq_alloc_skb_pool(unsigned int size, gfp_t priority, int fclone, int node, 
 {
 
 #ifdef PFQ_USE_SKB_POOL
-	struct sk_buff *skb = pfq_sk_buff_pool_get(pool);
+	struct sk_buff *skb = pfq_sk_buff_pool_pop(pool);
 	if (skb != NULL) {
 		if (pfq_skb_is_recycleable(skb, size)) {
 #ifdef PFQ_USE_EXTENDED_PROC
@@ -234,7 +234,7 @@ static inline
 void pfq_kfree_skb_pool(struct sk_buff *skb, struct pfq_sk_buff_pool *pool)
 {
 #ifdef PFQ_USE_SKB_POOL
-	pfq_sk_buff_pool_put(pool, skb);
+	pfq_sk_buff_pool_push(pool, skb);
 #else
 	kfree_skb(skb);
 #endif

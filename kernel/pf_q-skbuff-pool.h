@@ -90,7 +90,7 @@ size_t pfq_sk_buff_pool_free(struct pfq_sk_buff_pool *pool)
 
 
 static inline
-struct sk_buff *pfq_sk_buff_pool_get(struct pfq_sk_buff_pool *pool)
+struct sk_buff *pfq_sk_buff_pool_pop(struct pfq_sk_buff_pool *pool)
 {
 	if (likely(pool->skbs)) {
 
@@ -109,7 +109,7 @@ struct sk_buff *pfq_sk_buff_pool_get(struct pfq_sk_buff_pool *pool)
 
 
 static inline
-void pfq_sk_buff_pool_put(struct pfq_sk_buff_pool *pool, struct sk_buff *nskb)
+bool pfq_sk_buff_pool_push(struct pfq_sk_buff_pool *pool, struct sk_buff *nskb)
 {
 	if (likely(pool->skbs)) {
 
@@ -129,6 +129,7 @@ void pfq_sk_buff_pool_put(struct pfq_sk_buff_pool *pool, struct sk_buff *nskb)
 	} else {
 		kfree_skb(nskb);
 	}
+	return false;
 }
 
 #endif /* PF_Q_SKBUFF_POOL_H */
