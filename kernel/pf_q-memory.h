@@ -199,7 +199,7 @@ ____pfq_alloc_skb_pool(unsigned int size, gfp_t priority, int fclone, int node, 
 #ifdef PFQ_USE_SKB_POOL
 	struct sk_buff *skb = pfq_sk_buff_pool_pop(pool);
 	if (likely(skb != NULL)) {
-		SPARSE_INC(&memory_stats.pool_push);
+		SPARSE_INC(&memory_stats.pool_pop);
 
 		if (likely(pfq_skb_is_recycleable(skb, size))) {
 			SPARSE_INC(&memory_stats.pool_alloc);
