@@ -106,6 +106,8 @@ struct pfq_memory_stats
 	sparse_counter_t os_alloc;
 	sparse_counter_t pool_alloc;
 	sparse_counter_t pool_fail;
+	sparse_counter_t pool_push;
+	sparse_counter_t pool_pop;
 	sparse_counter_t err_intdis;
 	sparse_counter_t err_shared;
 	sparse_counter_t err_cloned;
@@ -116,9 +118,11 @@ struct pfq_memory_stats
 static inline
 void pfq_memory_stats_reset(struct pfq_memory_stats *stats)
 {
-        sparse_set(&stats->os_alloc, 0);
+        sparse_set(&stats->os_alloc,   0);
         sparse_set(&stats->pool_alloc, 0);
         sparse_set(&stats->pool_fail,  0);
+        sparse_set(&stats->pool_push,  0);
+        sparse_set(&stats->pool_pop,   0);
         sparse_set(&stats->err_intdis, 0);
         sparse_set(&stats->err_shared, 0);
         sparse_set(&stats->err_cloned, 0);
