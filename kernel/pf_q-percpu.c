@@ -91,7 +91,6 @@ int pfq_percpu_flush(void)
                 total += local->gc.pool.len;
 
 		gc_reset(&local->gc);
-
 		del_timer(&local->timer);
         }
 

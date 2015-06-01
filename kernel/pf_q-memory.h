@@ -41,22 +41,6 @@
 extern int skb_pool_size;
 extern struct local_data __percpu * cpu_data;
 
-
-struct pfq_skb_pool_stat
-{
-	uint64_t        os_alloc;
-
-	uint64_t        pool_alloc;
-	uint64_t        pool_fail;
-
-	uint64_t        err_intdis;
-	uint64_t        err_shared;
-	uint64_t        err_cloned;
-	uint64_t        err_memory;
-};
-
-
-extern struct pfq_skb_pool_stat pfq_get_skb_pool_stats(void);
 extern struct sk_buff * __pfq_alloc_skb(unsigned int size, gfp_t priority, int fclone, int node);
 extern struct sk_buff * pfq_dev_alloc_skb(unsigned int length);
 extern struct sk_buff * __pfq_netdev_alloc_skb(struct net_device *dev, unsigned int length, gfp_t gfp);
@@ -193,11 +177,11 @@ struct sk_buff * pfq_netdev_alloc_skb_ip_align(struct net_device *dev,
 
 static inline
 struct sk_buff *
-____pfq_alloc_skb_pool(unsigned int size, gfp_t priority, int fclone, int node, struct pfq_sk_buff_pool *pool)
+____pfq_alloc_skb_pool(unsigned int size, gfp_t priority, int fclone, int node, struct pfq_skb_pool *pool)
 {
 
 #ifdef PFQ_USE_SKB_POOL
-	struct sk_buff *skb = pfq_sk_buff_pool_pop(pool);
+	struct sk_buff *skb = pfq_skb_pool_pop(pool);
 	if (likely(skb != NULL)) {
 		SPARSE_INC(&memory_stats.pool_pop);
 
@@ -218,69 +202,15 @@ ____pfq_alloc_skb_pool(unsigned int size, gfp_t priority, int fclone, int node, 
 
 
 static inline
-void pfq_kfree_skb_pool(struct sk_buff *skb, struct pfq_sk_buff_pool *pool)
+void pfq_kfree_skb_pool(struct sk_buff *skb, struct pfq_skb_pool *pool)
 {
 #ifdef PFQ_USE_SKB_POOL
-	bool ret = pfq_sk_buff_pool_push(pool, skb);
+	bool ret = pfq_skb_pool_push(pool, skb);
 	if (ret)
 		SPARSE_INC(&memory_stats.pool_push);
 #else
 	kfree_skb(skb);
 #endif
-}
-
-
-static inline
-int pfq_skb_pool_init(void)
-{
-	int cpu;
-	for_each_online_cpu(cpu)
-	{
-		struct local_data *this_cpu = per_cpu_ptr(cpu_data, cpu);
-
-		if (pfq_sk_buff_pool_init(&this_cpu->tx_pool, skb_pool_size) != 0)
-			return -ENOMEM;
-
-		if (pfq_sk_buff_pool_init(&this_cpu->rx_pool, skb_pool_size) != 0)
-			return -ENOMEM;
-	}
-
-	return 0;
-}
-
-
-static inline
-void pfq_skb_pool_enable(bool value)
-{
-	int cpu;
-
-	printk(KERN_INFO "[PFQ] %s skb memory pool...\n", value ? "enabling" : "disabling");
-
-	smp_wmb();
-	for_each_online_cpu(cpu)
-	{
-		struct local_data *this_cpu = per_cpu_ptr(cpu_data, cpu);
-		atomic_set(&this_cpu->enable_skb_pool, value);
-	}
-	smp_wmb();
-}
-
-
-static inline
-int pfq_skb_pool_purge(void)
-{
-	int cpu, total = 0;
-
-	printk(KERN_INFO "[PFQ] flushing skbuff memory pool...\n");
-	for_each_online_cpu(cpu)
-	{
-		struct local_data *local = per_cpu_ptr(cpu_data, cpu);
-
-		total += pfq_sk_buff_pool_free(&local->rx_pool);
-		total += pfq_sk_buff_pool_free(&local->tx_pool);
-	}
-
-	return total;
 }
 
 

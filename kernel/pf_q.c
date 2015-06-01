@@ -907,9 +907,9 @@ static int __init pfq_init_module(void)
 		goto err4;
 
 #ifdef PFQ_USE_SKB_POOL
-	err = pfq_skb_pool_init();
+	err = pfq_skb_pool_init_all();
         if (err < 0) {
-		pfq_skb_pool_purge();
+		pfq_skb_pool_free_all();
 		goto err5;
 	}
         printk(KERN_INFO "[PFQ] skb pool initialized.\n");
@@ -963,11 +963,11 @@ static void __exit pfq_exit_module(void)
         /* wait grace period */
         msleep(Q_GRACE_PERIOD);
 
-        /* purge both GC and recycles queues */
+        /* free per CPU data */
         total += pfq_percpu_flush();
 
 #ifdef PFQ_USE_SKB_POOL
-        total += pfq_skb_pool_purge();
+        total += pfq_skb_pool_free_all();
 	SPARSE_ADD(&memory_stats.pool_pop, total);
 #endif
         if (total)

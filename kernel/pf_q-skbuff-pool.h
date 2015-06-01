@@ -28,7 +28,8 @@
 #include <linux/skbuff.h>
 #include <pragma/diagnostic_pop>
 
-struct pfq_sk_buff_pool
+
+struct pfq_skb_pool
 {
 	struct sk_buff ** skbs;
 	size_t size;
@@ -37,60 +38,34 @@ struct pfq_sk_buff_pool
 };
 
 
-static inline
-int pfq_sk_buff_pool_init (struct pfq_sk_buff_pool *pool, size_t size)
+struct pfq_skb_pool_stat
 {
-	if (size > 0) {
-		pool->skbs = kzalloc(sizeof(struct sk_buff *) * size, GFP_KERNEL);
-		if (pool->skbs == NULL) {
-			printk(KERN_INFO "[PFQ] pfq_sk_buff_pool_init: out of memory!\n");
-			return -ENOMEM;
-		}
-	}
-	else {
-		pool->skbs = NULL;
-	}
+	uint64_t        os_alloc;
 
-	pool->size  = size;
-	pool->p_idx = 0;
-	pool->c_idx = 0;
-	return 0;
-}
+	uint64_t        pool_alloc;
+	uint64_t        pool_fail;
+
+	uint64_t        err_intdis;
+	uint64_t        err_shared;
+	uint64_t        err_cloned;
+	uint64_t        err_memory;
+};
 
 
-static inline
-size_t
-pfq_sk_buff_pool_purge(struct pfq_sk_buff_pool *pool)
-{
-	size_t n, total = 0;
-	for(n = 0; n < pool->size; n++)
-	{
-		if (pool->skbs[n]) {
-			total++;
-			kfree_skb(pool->skbs[n]);
-			pool->skbs[n] = NULL;
-		}
-	}
+void	pfq_skb_pool_enable(bool value);
+int     pfq_skb_pool_init_all(void);
+int	pfq_skb_pool_free_all(void);
+int	pfq_skb_pool_flush_all(void);
 
-	pool->p_idx = 0;
-	pool->c_idx = 0;
-	return total;
-}
+int	pfq_skb_pool_init (struct pfq_skb_pool *pool, size_t size);
+size_t	pfq_skb_pool_free (struct pfq_skb_pool *pool);
+size_t	pfq_skb_pool_flush(struct pfq_skb_pool *pool);
+
+struct  pfq_skb_pool_stat pfq_get_skb_pool_stats(void);
 
 
 static inline
-size_t pfq_sk_buff_pool_free(struct pfq_sk_buff_pool *pool)
-{
-	size_t total = pfq_sk_buff_pool_purge(pool);
-	kfree(pool->skbs);
-	pool->skbs = NULL;
-	pool->size = 0;
-	return total;
-}
-
-
-static inline
-struct sk_buff *pfq_sk_buff_pool_pop(struct pfq_sk_buff_pool *pool)
+struct sk_buff *pfq_skb_pool_pop(struct pfq_skb_pool *pool)
 {
 	if (likely(pool->skbs)) {
 
@@ -109,7 +84,7 @@ struct sk_buff *pfq_sk_buff_pool_pop(struct pfq_sk_buff_pool *pool)
 
 
 static inline
-bool pfq_sk_buff_pool_push(struct pfq_sk_buff_pool *pool, struct sk_buff *nskb)
+bool pfq_skb_pool_push(struct pfq_skb_pool *pool, struct sk_buff *nskb)
 {
 	bool ret = false;
 	if (likely(pool->skbs)) {

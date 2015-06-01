@@ -55,8 +55,8 @@ struct local_data
 
 	struct timer_list	timer;
 
-        struct pfq_sk_buff_pool tx_pool;
-        struct pfq_sk_buff_pool rx_pool;
+        struct pfq_skb_pool	tx_pool;
+        struct pfq_skb_pool	rx_pool;
 
 } ____cacheline_aligned;
 
