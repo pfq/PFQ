@@ -198,9 +198,10 @@ ____pfq_alloc_skb_pool(unsigned int size, gfp_t priority, int fclone, int node, 
 
 #ifdef PFQ_USE_SKB_POOL
 	struct sk_buff *skb = pfq_sk_buff_pool_pop(pool);
-	if (skb != NULL) {
-		if (pfq_skb_is_recycleable(skb, size)) {
+	if (likely(skb != NULL)) {
 		SPARSE_INC(&memory_stats.pool_push);
+
+		if (likely(pfq_skb_is_recycleable(skb, size))) {
 			SPARSE_INC(&memory_stats.pool_alloc);
 			return pfq_skb_recycle(skb);
 		} else
@@ -287,7 +288,7 @@ struct sk_buff * pfq_alloc_skb(unsigned int size, gfp_t priority)
 #ifdef PFQ_USE_SKB_POOL
 	struct local_data *this_cpu = this_cpu_ptr(cpu_data);
 
-	if (atomic_read(&this_cpu->enable_skb_pool))
+	if (likely(atomic_read(&this_cpu->enable_skb_pool)))
 		return ____pfq_alloc_skb_pool(size, priority, 0, NUMA_NO_NODE, &this_cpu->rx_pool);
 
 	SPARSE_INC(&memory_stats.os_alloc);
@@ -302,7 +303,7 @@ struct sk_buff * pfq_tx_alloc_skb(unsigned int size, gfp_t priority, int node)
 #ifdef PFQ_USE_SKB_POOL
 	struct local_data *this_cpu = this_cpu_ptr(cpu_data);
 
-	if (atomic_read(&this_cpu->enable_skb_pool))
+	if (likely(atomic_read(&this_cpu->enable_skb_pool)))
 		return ____pfq_alloc_skb_pool(size, priority, 0, node, &this_cpu->tx_pool);
 
 	SPARSE_INC(&memory_stats.os_alloc);
