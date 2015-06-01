@@ -57,7 +57,6 @@ struct pfq_skb_pool_stat
 
 
 extern struct pfq_skb_pool_stat pfq_get_skb_pool_stats(void);
-
 extern struct sk_buff * __pfq_alloc_skb(unsigned int size, gfp_t priority, int fclone, int node);
 extern struct sk_buff * pfq_dev_alloc_skb(unsigned int length);
 extern struct sk_buff * __pfq_netdev_alloc_skb(struct net_device *dev, unsigned int length, gfp_t gfp);
@@ -81,9 +80,7 @@ unsigned int pfq_skb_end_offset(const struct sk_buff *skb)
 static inline bool pfq_skb_is_recycleable(const struct sk_buff *skb, int skb_size)
 {
 	if (irqs_disabled()) {
-#ifdef PFQ_USE_EXTENDED_PROC
-		sparse_inc(&memory_stats.err_intdis);
-#endif
+		SPARSE_INC(&memory_stats.err_intdis);
 		return false;
 	}
 
@@ -96,25 +93,19 @@ static inline bool pfq_skb_is_recycleable(const struct sk_buff *skb, int skb_siz
 	/*  check whether the skb is shared with someone else.. */
 
 	if (atomic_read(&skb->users) > 1) {
-#ifdef PFQ_USE_EXTENDED_PROC
-		sparse_inc(&memory_stats.err_shared);
-#endif
+		SPARSE_INC(&memory_stats.err_shared);
 		return false;
 	}
 
 	if(skb_cloned(skb)) {
-#ifdef PFQ_USE_EXTENDED_PROC
-		sparse_inc(&memory_stats.err_cloned);
-#endif
+		SPARSE_INC(&memory_stats.err_cloned);
 		return false;
 	}
 
 	skb_size = SKB_DATA_ALIGN(skb_size + NET_SKB_PAD);
 
 	if (pfq_skb_end_offset(skb) < skb_size) {
-#ifdef PFQ_USE_EXTENDED_PROC
-		sparse_inc(&memory_stats.err_memory);
-#endif
+		SPARSE_INC(&memory_stats.err_memory);
 		return false;
 	}
 
@@ -209,23 +200,17 @@ ____pfq_alloc_skb_pool(unsigned int size, gfp_t priority, int fclone, int node, 
 	struct sk_buff *skb = pfq_sk_buff_pool_pop(pool);
 	if (skb != NULL) {
 		if (pfq_skb_is_recycleable(skb, size)) {
-#ifdef PFQ_USE_EXTENDED_PROC
-			sparse_inc(&memory_stats.pool_alloc);
-#endif
+			SPARSE_INC(&memory_stats.pool_alloc);
 			return pfq_skb_recycle(skb);
 		} else
 			kfree_skb(skb);
 	}
-#ifdef PFQ_USE_EXTENDED_PROC
 	else {
-		sparse_inc(&memory_stats.pool_fail);
+		SPARSE_INC(&memory_stats.pool_fail);
 	}
 #endif
-#endif
 
-#ifdef PFQ_USE_EXTENDED_PROC
-	sparse_inc(&memory_stats.os_alloc);
-#endif
+	SPARSE_INC(&memory_stats.os_alloc);
 	return  __alloc_skb(size, priority, fclone, node);
 }
 
@@ -302,9 +287,7 @@ struct sk_buff * pfq_alloc_skb(unsigned int size, gfp_t priority)
 	if (atomic_read(&this_cpu->enable_skb_pool))
 		return ____pfq_alloc_skb_pool(size, priority, 0, NUMA_NO_NODE, &this_cpu->rx_pool);
 
-#ifdef PFQ_USE_EXTENDED_PROC
-	sparse_inc(&memory_stats.os_alloc);
-#endif
+	SPARSE_INC(&memory_stats.os_alloc);
 #endif
 	return __alloc_skb(size, priority, 0, NUMA_NO_NODE);
 }
@@ -319,9 +302,7 @@ struct sk_buff * pfq_tx_alloc_skb(unsigned int size, gfp_t priority, int node)
 	if (atomic_read(&this_cpu->enable_skb_pool))
 		return ____pfq_alloc_skb_pool(size, priority, 0, node, &this_cpu->tx_pool);
 
-#ifdef PFQ_USE_EXTENDED_PROC
-	sparse_inc(&memory_stats.os_alloc);
-#endif
+	SPARSE_INC(&memory_stats.os_alloc);
 #endif
 	return __alloc_skb(size, priority, 0, NUMA_NO_NODE);
 }

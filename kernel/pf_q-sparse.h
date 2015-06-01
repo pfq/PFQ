@@ -32,10 +32,16 @@
 
 #include <pf_q-macro.h>
 
+#ifdef PFQ_USE_EXTENDED_PROC
+#define SPARSE_INC(...)	(sparse_inc(__VA_ARGS__))
+#define SPARSE_DEC(...)	(sparse_dec(__VA_ARGS__))
+#else
+#define SPARSE_INC(...)	((void)__VA_ARGS__)
+#define SPARSE_DEC(...)	((void)__VA_ARGS__)
+#endif
+
 
 typedef struct { local_t value; } ____cacheline_aligned counter_t;
-
-
 typedef struct { counter_t ctx[Q_MAX_CPU]; } sparse_counter_t;
 
 

@@ -103,9 +103,7 @@ size_t pfq_mpsc_enqueue_batch(struct pfq_rx_opt *ro,
 		if (slot_index > ro->queue_size) {
 
 			if (waitqueue_active(&ro->waitqueue)) {
-#ifdef PFQ_USE_EXTENDED_PROC
-				sparse_inc(&global_stats.wake);
-#endif
+				SPARSE_INC(&global_stats.wake);
 				wake_up_interruptible(&ro->waitqueue);
 			}
 
@@ -158,9 +156,7 @@ size_t pfq_mpsc_enqueue_batch(struct pfq_rx_opt *ro,
 
 		if ((slot_index & 8191) == 0 &&
 		    waitqueue_active(&ro->waitqueue)) {
-#ifdef PFQ_USE_EXTENDED_PROC
-			sparse_inc(&global_stats.wake);
-#endif
+			SPARSE_INC(&global_stats.wake);
 			wake_up_interruptible(&ro->waitqueue);
 		}
 
