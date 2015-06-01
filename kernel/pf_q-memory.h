@@ -270,6 +270,8 @@ static inline
 int pfq_skb_pool_purge(void)
 {
 	int cpu, total = 0;
+
+	printk(KERN_INFO "[PFQ] flushing skbuff memory pool...\n");
 	for_each_online_cpu(cpu)
 	{
 		struct local_data *local = per_cpu_ptr(cpu_data, cpu);

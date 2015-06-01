@@ -200,6 +200,7 @@ static ssize_t
 pfq_proc_memory_reset(struct file *file, const char __user *buf, size_t length, loff_t *ppos)
 {
 	pfq_memory_stats_reset(&memory_stats);
+	pfq_skb_pool_purge();
 	return 1;
 }
 
