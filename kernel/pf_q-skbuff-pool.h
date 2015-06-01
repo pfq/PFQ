@@ -111,13 +111,13 @@ struct sk_buff *pfq_sk_buff_pool_pop(struct pfq_sk_buff_pool *pool)
 static inline
 bool pfq_sk_buff_pool_push(struct pfq_sk_buff_pool *pool, struct sk_buff *nskb)
 {
+	bool ret = false;
 	if (likely(pool->skbs)) {
-
-		/* most of the time skb is NULL */
 
 		struct sk_buff *skb = __atomic_load_n(&pool->skbs[pool->p_idx], __ATOMIC_RELAXED);
 		if (likely(!skb)) {
 			__atomic_store_n(&pool->skbs[pool->p_idx], nskb, __ATOMIC_RELAXED);
+			ret = true;
 		}
 		else {
 			kfree_skb(nskb);
@@ -129,7 +129,8 @@ bool pfq_sk_buff_pool_push(struct pfq_sk_buff_pool *pool, struct sk_buff *nskb)
 	} else {
 		kfree_skb(nskb);
 	}
-	return false;
+
+	return ret;
 }
 
 #endif /* PF_Q_SKBUFF_POOL_H */
