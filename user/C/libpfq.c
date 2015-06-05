@@ -91,13 +91,12 @@ static char *trim_string(char *str)
 }
 
 
-static void split_on(const char *str, const char *sep, void (*cb)(char *))
+static void __split_on(const char *str, const char *sep, void (*cb)(char *))
 {
 	const char * p = str, *q;
 	char *x;
 
 	while((q = strstr(p, sep)) != NULL) {
-
 		x = strndup(p, q-p);
 		cb(x);
 		p = q + strlen(sep);
@@ -110,23 +109,21 @@ static void split_on(const char *str, const char *sep, void (*cb)(char *))
 
 static int with_tokens(const char *str, const char *sep, int (*cb)(char **, int n))
 {
-	char *tokens[64] = { NULL };
+	char *tokens[256] = { NULL };
 	int n = 0, i, ret;
 
-	void push_back_ptr(char *ptr)
+	void push_back(char *ptr)
 	{
-		if (n < 64)
+		if (n < 256)
 			tokens[n++] = ptr;
 	}
 
-	split_on(str, sep, push_back_ptr);
+	__split_on(str, sep, push_back);
 
 	ret = cb(tokens, n);
 
 	for(i = 0; i < n; ++i)
-	{
 		free(tokens[i]);
-	}
 
 	return ret;
 }
@@ -347,7 +344,7 @@ int
 pfq_enable(pfq_t *q)
 {
 	size_t tot_mem; socklen_t size = sizeof(tot_mem);
-	char filename[64];
+	char filename[256];
 
 	if (q->shm_addr != MAP_FAILED &&
 	    q->shm_addr != NULL) {
@@ -767,9 +764,7 @@ pfq_set_group_computation_from_string(pfq_t *q, int gid, const char *comp)
 		}
 
 		ret = pfq_set_group_computation(q, gid, prog);
-
 		free(prog);
-
 		return ret;
 	}
 
