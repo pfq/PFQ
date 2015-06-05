@@ -699,7 +699,7 @@ int pfq_setsockopt(struct socket *sock,
                 i = so->tx_opt.num_queues;
 
 		if (info.cpu < -1) {
-			printk(KERN_INFO "[PFQ|%d] Tx[%zu] thread: invalid cpu (%d)!\n", so->id.value, i, info.cpu);
+			printk(KERN_INFO "[PFQ|%d] Tx[%zu] kthread: invalid cpu (%d)!\n", so->id.value, i, info.cpu);
 			return -EPERM;
 		}
 
@@ -809,7 +809,7 @@ int pfq_setsockopt(struct socket *sock,
 
 				if (so->tx_opt.queue[n].task != NULL ||
 				    kthread_tx_pool[so->tx_opt.queue[n].cpu % 256] != NULL) {
-					printk(KERN_INFO "[PFQ|%d] kernel_thread: Tx[%zu] kthread already running (cpu = %d)!\n",
+					printk(KERN_INFO "[PFQ|%d] kernel_thread: Tx[%zu] kthread already running (cpu=%d)!\n",
 					       so->id.value, n,
 					       so->tx_opt.queue[n].cpu);
 					continue;
@@ -817,7 +817,7 @@ int pfq_setsockopt(struct socket *sock,
 
 				data = kmalloc(sizeof(struct pfq_thread_data), GFP_KERNEL);
 				if (!data) {
-					printk(KERN_INFO "[PFQ|%d] kernel_thread: could not allocate thread_data! Failed starting thread on cpu %d!\n",
+					printk(KERN_INFO "[PFQ|%d] kernel_thread: could not allocate thread_data! Failed starting kthread on cpu %d!\n",
 							so->id.value, so->tx_opt.queue[n].cpu);
 					err = -EPERM;
 					continue;
@@ -828,16 +828,18 @@ int pfq_setsockopt(struct socket *sock,
 				node = cpu_online(so->tx_opt.queue[n].cpu) ?
 				       cpu_to_node(so->tx_opt.queue[n].cpu) : NUMA_NO_NODE;
 
-				pr_devel("[PFQ|%d] creating Tx[%zu] thread on cpu %d: if_index=%d hw_queue=%d\n",
+				pr_devel("[PFQ|%d] creating Tx[%zu] kthread on cpu %d: if_index=%d hw_queue=%d\n",
 						so->id.value, n, so->tx_opt.queue[n].cpu, so->tx_opt.queue[n].if_index,
 						so->tx_opt.queue[n].hw_queue);
 
 				so->tx_opt.queue[n].task = kthread_create_on_node(pfq_tx_thread, data, node, "pfq_tx_%d#%zu", so->id.value, n);
 
 				if (IS_ERR(so->tx_opt.queue[n].task)) {
+
 					printk(KERN_INFO "[PFQ|%d] kernel_thread: create failed on cpu %d!\n",
 					       so->id.value, so->tx_opt.queue[n].cpu);
 					err = PTR_ERR(so->tx_opt.queue[n].task);
+
 					so->tx_opt.queue[n].task = NULL;
 					kfree (data);
 					continue;
@@ -861,7 +863,7 @@ int pfq_setsockopt(struct socket *sock,
 			mutex_unlock(&kthread_tx_pool_lock);
 
 			if (started == 0) {
-				printk(KERN_INFO "[PFQ|%d] no kernel thread started!\n", so->id.value);
+				printk(KERN_INFO "[PFQ|%d] no kernel kthread started!\n", so->id.value);
 				err = -EPERM;
 			}
 		}
