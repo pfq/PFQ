@@ -42,6 +42,7 @@ extern struct task_struct *kthread_tx_pool [256];
 
 extern int pfq_tx_thread(void *data);
 extern int pfq_tx_wakeup(struct pfq_sock *so, int index);
+extern void pfq_stop_all_tx_threads(struct pfq_sock *so);
 
 struct pfq_thread_data
 {

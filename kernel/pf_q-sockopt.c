@@ -41,6 +41,7 @@
 #include <pf_q-symtable.h>
 #include <pf_q-engine.h>
 #include <pf_q-printk.h>
+#include <pf_q-thread.h>
 #include <pf_q-sockopt.h>
 #include <pf_q-endpoint.h>
 #include <pf_q-shared-queue.h>
@@ -343,17 +344,8 @@ int pfq_setsockopt(struct socket *sock,
 	case Q_SO_DISABLE:
 	{
 		int err = 0;
-                size_t n;
 
-		for(n = 0; n < so->tx_opt.num_queues; n++)
-		{
-			if (so->tx_opt.queue[n].task) {
-				pr_devel("[PFQ|%d] stopping Tx[%zu] thread@%p\n",
-					 so->id.value, n, so->tx_opt.queue[n].task);
-				kthread_stop(so->tx_opt.queue[n].task);
-				so->tx_opt.queue[n].task = NULL;
-			}
-		}
+		pfq_stop_all_tx_threads(so);
 
                 err = pfq_shared_queue_disable(so);
                 if (err < 0) {
@@ -866,15 +858,7 @@ int pfq_setsockopt(struct socket *sock,
 		else {
 			/* stop running threads */
 
-			for(n = 0; n < so->tx_opt.num_queues; n++)
-			{
-				if (so->tx_opt.queue[n].task) {
-					pr_devel("[PFQ|%d] stopping Tx[%zu] kernel thread@%p\n",
-						 so->id.value, n, so->tx_opt.queue[n].task);
-					kthread_stop(so->tx_opt.queue[n].task);
-					so->tx_opt.queue[n].task = NULL;
-				}
-			}
+			pfq_stop_all_tx_threads(so);
 		}
 
 		return err;

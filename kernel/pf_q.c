@@ -675,7 +675,7 @@ pfq_release(struct socket *sock)
         struct sock * sk = sock->sk;
         struct pfq_sock *so;
         pfq_id_t id;
-        int n, total = 0;
+        int total = 0;
 
 	if (!sk)
 		return 0;
@@ -685,14 +685,7 @@ pfq_release(struct socket *sock)
 
         /* stop TX thread (if running) */
 
-	for(n = 0; n < so->tx_opt.num_queues; n++)
-	{
-		if (so->tx_opt.queue[n].task) {
-			pr_devel("[PFQ|%d] stopping Tx thread@%p\n", id.value, so->tx_opt.queue[n].task);
-			kthread_stop(so->tx_opt.queue[n].task);
-			so->tx_opt.queue[n].task = NULL;
-		}
-	}
+	pfq_stop_all_tx_threads(so);
 
         pr_devel("[PFQ|%d] releasing socket...\n", id.value);
 

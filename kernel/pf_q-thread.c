@@ -95,3 +95,32 @@ pfq_tx_thread(void *_data)
         kfree(data);
         return 0;
 }
+
+
+void
+pfq_stop_all_tx_threads(struct pfq_sock *so)
+{
+	int n = 0;
+
+	mutex_lock(&kthread_tx_pool_lock);
+
+	for(n = 0; n < so->tx_opt.num_queues; n++)
+	{
+		if (so->tx_opt.queue[n].task) {
+
+			pr_devel("[PFQ|%d] stopping Tx thread@%p\n", so->id.value, so->tx_opt.queue[n].task);
+
+			if (so->tx_opt.queue[n].cpu != -1)
+				BUG_ON(kthread_tx_pool[so->tx_opt.queue[n].cpu % 256] != so->tx_opt.queue[n].task);
+
+			kthread_stop(so->tx_opt.queue[n].task);
+			kthread_tx_pool[so->tx_opt.queue[n].cpu % 256] = NULL;
+			so->tx_opt.queue[n].task = NULL;
+			so->tx_opt.queue[n].cpu = -1;
+		}
+	}
+
+	mutex_unlock(&kthread_tx_pool_lock);
+}
+
+
