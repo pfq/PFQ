@@ -357,89 +357,89 @@ int pfq_setsockopt(struct socket *sock,
 
         case Q_SO_GROUP_BIND:
         {
-                struct pfq_binding bind;
+                struct pfq_binding binfo;
 		pfq_gid_t gid;
 
                 if (optlen != sizeof(struct pfq_binding))
                         return -EINVAL;
 
-                if (copy_from_user(&bind, optval, optlen))
+                if (copy_from_user(&binfo, optval, optlen))
                         return -EFAULT;
 
-		gid.value = bind.gid;
+		gid.value = binfo.gid;
 
                 if (!pfq_has_joined_group(gid, so->id)) {
-                        printk(KERN_INFO "[PFQ|%d] add bind: gid=%d not joined!\n", so->id.value, bind.gid);
+                        printk(KERN_INFO "[PFQ|%d] add bind: gid=%d not joined!\n", so->id.value, binfo.gid);
 			return -EACCES;
 		}
 
                 rcu_read_lock();
-                if (!dev_get_by_index_rcu(sock_net(&so->sk), bind.if_index)) {
+                if (!dev_get_by_index_rcu(sock_net(&so->sk), binfo.if_index)) {
                         rcu_read_unlock();
-                        printk(KERN_INFO "[PFQ|%d] bind: invalid if_index=%d!\n", so->id.value, bind.if_index);
+                        printk(KERN_INFO "[PFQ|%d] bind: invalid if_index=%d!\n", so->id.value, binfo.if_index);
                         return -EACCES;
                 }
                 rcu_read_unlock();
 
-                pfq_devmap_update(map_set, bind.if_index, bind.hw_queue, gid);
+                pfq_devmap_update(map_set, binfo.if_index, binfo.hw_queue, gid);
 
         } break;
 
         case Q_SO_GROUP_UNBIND:
         {
-                struct pfq_binding bind;
+                struct pfq_binding binfo;
 		pfq_gid_t gid;
 
                 if (optlen != sizeof(struct pfq_binding))
                         return -EINVAL;
 
-                if (copy_from_user(&bind, optval, optlen))
+                if (copy_from_user(&binfo, optval, optlen))
                         return -EFAULT;
 
-		gid.value = bind.gid;
+		gid.value = binfo.gid;
 
 		if (!pfq_has_joined_group(gid, so->id)) {
-                        printk(KERN_INFO "[PFQ|%d] remove bind: gid=%d not joined!\n", so->id.value, bind.gid);
+                        printk(KERN_INFO "[PFQ|%d] remove bind: gid=%d not joined!\n", so->id.value, binfo.gid);
 			return -EACCES;
 		}
 
                 rcu_read_lock();
-                if (!dev_get_by_index_rcu(sock_net(&so->sk), bind.if_index)) {
+                if (!dev_get_by_index_rcu(sock_net(&so->sk), binfo.if_index)) {
                         rcu_read_unlock();
-                        printk(KERN_INFO "[PFQ|%d] unbind: invalid if_index=%d\n", so->id.value, bind.if_index);
+                        printk(KERN_INFO "[PFQ|%d] unbind: invalid if_index=%d\n", so->id.value, binfo.if_index);
                         return -EPERM;
                 }
                 rcu_read_unlock();
 
-                pfq_devmap_update(map_reset, bind.if_index, bind.hw_queue, gid);
+                pfq_devmap_update(map_reset, binfo.if_index, binfo.hw_queue, gid);
 
         } break;
 
         case Q_SO_EGRESS_BIND:
         {
-                struct pfq_binding info;
+                struct pfq_binding binfo;
 
-                if (optlen != sizeof(info))
+                if (optlen != sizeof(binfo))
                         return -EINVAL;
-                if (copy_from_user(&info, optval, optlen))
+                if (copy_from_user(&binfo, optval, optlen))
                         return -EFAULT;
 
                 rcu_read_lock();
-                if (!dev_get_by_index_rcu(sock_net(&so->sk), info.if_index)) {
+                if (!dev_get_by_index_rcu(sock_net(&so->sk), binfo.if_index)) {
                         rcu_read_unlock();
-                        printk(KERN_INFO "[PFQ|%d] egress bind: invalid if_index=%d\n", so->id.value, info.if_index);
+                        printk(KERN_INFO "[PFQ|%d] egress bind: invalid if_index=%d\n", so->id.value, binfo.if_index);
                         return -EPERM;
                 }
                 rcu_read_unlock();
 
-                if (info.hw_queue < -1) {
-                        printk(KERN_INFO "[PFQ|%d] egress bind: invalid queue=%d\n", so->id.value, info.hw_queue);
+                if (binfo.hw_queue < -1) {
+                        printk(KERN_INFO "[PFQ|%d] egress bind: invalid queue=%d\n", so->id.value, binfo.hw_queue);
                         return -EPERM;
                 }
 
 		so->egress_type  = pfq_endpoint_device;
-                so->egress_index = info.if_index;
-                so->egress_queue = info.hw_queue;
+                so->egress_index = binfo.if_index;
+                so->egress_queue = binfo.hw_queue;
 
                 pr_devel("[PFQ|%d] egress bind: device if_index=%d hw_queue=%d\n",
 			 so->id.value, so->egress_index, so->egress_queue);
@@ -669,13 +669,13 @@ int pfq_setsockopt(struct socket *sock,
 
         case Q_SO_TX_BIND:
         {
-                struct pfq_binding info;
+                struct pfq_binding binfo;
                 size_t i;
 
-                if (optlen != sizeof(info))
+                if (optlen != sizeof(binfo))
                         return -EINVAL;
 
-                if (copy_from_user(&info, optval, optlen))
+                if (copy_from_user(&binfo, optval, optlen))
                         return -EFAULT;
 
 		if (so->tx_opt.num_queues >= Q_MAX_TX_QUEUES) {
@@ -684,33 +684,32 @@ int pfq_setsockopt(struct socket *sock,
 		}
 
                 rcu_read_lock();
-                if (!dev_get_by_index_rcu(sock_net(&so->sk), info.if_index)) {
+                if (!dev_get_by_index_rcu(sock_net(&so->sk), binfo.if_index)) {
                         rcu_read_unlock();
-                        printk(KERN_INFO "[PFQ|%d] Tx bind: invalid if_index=%d\n", so->id.value, info.if_index);
+                        printk(KERN_INFO "[PFQ|%d] Tx bind: invalid if_index=%d\n", so->id.value, binfo.if_index);
                         return -EPERM;
                 }
                 rcu_read_unlock();
 
-                if (info.hw_queue < -1) {
-                        printk(KERN_INFO "[PFQ|%d] Tx bind: invalid queue=%d\n", so->id.value, info.hw_queue);
+                if (binfo.hw_queue < -1) {
+                        printk(KERN_INFO "[PFQ|%d] Tx bind: invalid queue=%d\n", so->id.value, binfo.hw_queue);
                         return -EPERM;
                 }
 
                 i = so->tx_opt.num_queues;
 
-		if (info.cpu < -1) {
-			printk(KERN_INFO "[PFQ|%d] Tx[%zu] kthread: invalid cpu (%d)!\n", so->id.value, i, info.cpu);
+		if (binfo.cpu < -1) {
+			printk(KERN_INFO "[PFQ|%d] Tx[%zu] kthread: invalid cpu (%d)!\n", so->id.value, i, binfo.cpu);
 			return -EPERM;
 		}
 
-                so->tx_opt.queue[i].if_index = info.if_index;
-                so->tx_opt.queue[i].hw_queue = info.hw_queue;
-                so->tx_opt.queue[i].cpu      = info.cpu;
-
+                so->tx_opt.queue[i].if_index = binfo.if_index;
+                so->tx_opt.queue[i].hw_queue = binfo.hw_queue;
+                so->tx_opt.queue[i].cpu = binfo.cpu;
 		so->tx_opt.num_queues++;
 
                 pr_devel("[PFQ|%d] Tx[%zu] bind: if_index=%d hw_queue=%d cpu=%d\n", so->id.value, i,
-			 so->tx_opt.queue[i].if_index, so->tx_opt.queue[i].hw_queue, info.cpu);
+			 so->tx_opt.queue[i].if_index, so->tx_opt.queue[i].hw_queue, binfo.cpu);
 
         } break;
 
@@ -730,7 +729,7 @@ int pfq_setsockopt(struct socket *sock,
 		{
 			so->tx_opt.queue[n].if_index = -1;
 			so->tx_opt.queue[n].hw_queue = -1;
-			so->tx_opt.queue[n].cpu      = -1;
+			so->tx_opt.queue[n].cpu = -1;
 		}
 
         } break;

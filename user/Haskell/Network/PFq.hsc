@@ -690,8 +690,6 @@ egressUnbind hdl =
 -- |Bind the socket for transmission to the given device name and queue.
 --
 --  A socket can be bound up to a maximum number of queues.
---  The core parameter specifies the CPU index where to run a
---  kernel thread (unless no_kthread id is specified).
 
 
 bindTx :: Ptr PFqTag
@@ -706,7 +704,7 @@ bindTx hdl name queue =
 -- |Bind the socket for transmission to the given device name and queue.
 --
 --  A socket can be bound up to a maximum number of queues.
---  The core parameter specifies the CPU index where to run a
+--  The cpu parameter specifies the CPU index where to run the
 --  kernel thread.
 
 bindTxOnCpu :: Ptr PFqTag
