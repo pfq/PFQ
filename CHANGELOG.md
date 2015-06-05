@@ -96,6 +96,17 @@ PFQ 4.3
 
 PFQ 4.4
 -------
- * Improved stability in packet transmission.
+ * Improved stability of packet transmission.
  * Bug fixes.
+
+
+PFQ 4.5
+-------
+ * HugePages support used by default. 
+ * Software Tx queues extended up to 8.
+ * New binding format for user/tools.
+ * Stats of memory pool improved.
+ * Performance improvements.
+ * Minor bugs fixed.
+ * Code cleanup.
 

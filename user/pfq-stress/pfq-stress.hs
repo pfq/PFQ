@@ -38,7 +38,7 @@ version, pfq_counters, pfq_load :: String
 
 pfq_counters = "/usr/local/bin/pfq-counters"
 pfq_load = "/root/.cabal/bin/pfq-load"
-version = "4.4"
+version = "4.5"
 
 pfqOptions :: [ (Int, [String]) ]
 pfqOptions = [ (rss, [mkOption "direct_capture" dcap,
