@@ -767,113 +767,105 @@ int pfq_setsockopt(struct socket *sock,
 			return err;
         } break;
 
-        case Q_SO_TX_ASYNC:
+        case Q_SO_TX_ASYNC_START:
         {
-                int toggle, err = 0;
-                size_t n;
+                int err = 0;
+                size_t n, started = 0;
 
-		if (optlen != sizeof(toggle))
-			return -EINVAL;
+		if (pfq_get_tx_queue(&so->tx_opt, 0) == NULL) {
+			printk(KERN_INFO "[PFQ|%d] Tx queue flush: socket not enabled!\n", so->id.value);
+			return -EPERM;
+		}
 
-		if (copy_from_user(&toggle, optval, optlen))
-			return -EFAULT;
+		printk(KERN_INFO "[PFQ|%d] Starting Tx kthreads...\n", so->id.value);
 
-		printk(KERN_INFO "[PFQ|%d] Tx async %s!\n", so->id.value, toggle ? "enabled" : "disabled");
+		mutex_lock(&kthread_tx_pool_lock);
 
-		if (toggle) {
+		for(n = 0; n < Q_MAX_TX_QUEUES; n++)
+		{
+			struct pfq_thread_data *data;
+			int node;
 
-			size_t started = 0;
+			if (so->tx_opt.queue[n].if_index == -1)
+				break;
 
-			if (pfq_get_tx_queue(&so->tx_opt, 0) == NULL) {
-				printk(KERN_INFO "[PFQ|%d] Tx queue flush: socket not enabled!\n", so->id.value);
-				return -EPERM;
+			if (so->tx_opt.queue[n].cpu == Q_NO_KTHREAD) {
+				printk(KERN_INFO "[PFQ|%d] kernel_thread: skipping queue %zu (no kthread).\n",
+				       so->id.value, n);
+				continue;
 			}
 
-			/* start Tx kernel threads */
-
-			mutex_lock(&kthread_tx_pool_lock);
-
-			for(n = 0; n < Q_MAX_TX_QUEUES; n++)
-			{
-				struct pfq_thread_data *data;
-				int node;
-
-				if (so->tx_opt.queue[n].if_index == -1)
-					break;
-
-				if (so->tx_opt.queue[n].cpu == Q_NO_KTHREAD) {
-					printk(KERN_INFO "[PFQ|%d] kernel_thread: skipping queue %zu (no kthread).\n",
-					       so->id.value, n);
-					continue;
-				}
-
-				if (so->tx_opt.queue[n].task != NULL ||
-				    kthread_tx_pool[so->tx_opt.queue[n].cpu % 256] != NULL) {
-					printk(KERN_INFO "[PFQ|%d] kernel_thread: Tx[%zu] kthread already running (cpu=%d)!\n",
-					       so->id.value, n,
-					       so->tx_opt.queue[n].cpu);
-					continue;
-				}
-
-				data = kmalloc(sizeof(struct pfq_thread_data), GFP_KERNEL);
-				if (!data) {
-					printk(KERN_INFO "[PFQ|%d] kernel_thread: could not allocate thread_data! Failed starting kthread on cpu %d!\n",
-							so->id.value, so->tx_opt.queue[n].cpu);
-					err = -EPERM;
-					continue;
-				}
-
-				data->so = so;
-				data->id = n;
-				node = cpu_online(so->tx_opt.queue[n].cpu) ?
-				       cpu_to_node(so->tx_opt.queue[n].cpu) : NUMA_NO_NODE;
-
-				pr_devel("[PFQ|%d] creating Tx[%zu] kthread on cpu %d: if_index=%d hw_queue=%d\n",
-						so->id.value, n, so->tx_opt.queue[n].cpu, so->tx_opt.queue[n].if_index,
-						so->tx_opt.queue[n].hw_queue);
-
-				so->tx_opt.queue[n].task = kthread_create_on_node(pfq_tx_thread, data, node, "pfq_tx_%d#%zu", so->id.value, n);
-
-				if (IS_ERR(so->tx_opt.queue[n].task)) {
-
-					printk(KERN_INFO "[PFQ|%d] kernel_thread: create failed on cpu %d!\n",
-					       so->id.value, so->tx_opt.queue[n].cpu);
-					err = PTR_ERR(so->tx_opt.queue[n].task);
-
-					so->tx_opt.queue[n].task = NULL;
-					kfree (data);
-					continue;
-				}
-
-				/* update global tx pool */
-
-				kthread_tx_pool[so->tx_opt.queue[n].cpu % 256] = so->tx_opt.queue[n].task;
-
-				/* bind the thread */
-
-				kthread_bind(so->tx_opt.queue[n].task, so->tx_opt.queue[n].cpu);
-
-				/* start it */
-
-				wake_up_process(so->tx_opt.queue[n].task);
-
-				started++;
+			if (so->tx_opt.queue[n].task != NULL ||
+			    kthread_tx_pool[so->tx_opt.queue[n].cpu % 256] != NULL) {
+				printk(KERN_INFO "[PFQ|%d] kernel_thread: Tx[%zu] kthread already running (cpu=%d)!\n",
+				       so->id.value, n,
+				       so->tx_opt.queue[n].cpu);
+				continue;
 			}
 
-			mutex_unlock(&kthread_tx_pool_lock);
-
-			if (started == 0) {
-				printk(KERN_INFO "[PFQ|%d] no kernel kthread started!\n", so->id.value);
+			data = kmalloc(sizeof(struct pfq_thread_data), GFP_KERNEL);
+			if (!data) {
+				printk(KERN_INFO "[PFQ|%d] kernel_thread: could not allocate thread_data! Failed starting kthread on cpu %d!\n",
+						so->id.value, so->tx_opt.queue[n].cpu);
 				err = -EPERM;
+				continue;
 			}
-		}
-		else {
-			/* stop running threads */
 
-			pfq_stop_all_tx_threads(so);
+			data->so = so;
+			data->id = n;
+			node = cpu_online(so->tx_opt.queue[n].cpu) ?
+			       cpu_to_node(so->tx_opt.queue[n].cpu) : NUMA_NO_NODE;
+
+			pr_devel("[PFQ|%d] creating Tx[%zu] kthread on cpu %d: if_index=%d hw_queue=%d\n",
+					so->id.value, n, so->tx_opt.queue[n].cpu, so->tx_opt.queue[n].if_index,
+					so->tx_opt.queue[n].hw_queue);
+
+			so->tx_opt.queue[n].task = kthread_create_on_node(pfq_tx_thread, data, node,
+									  "pfq_tx_%d#%zu", so->id.value, n);
+
+			if (IS_ERR(so->tx_opt.queue[n].task)) {
+
+				printk(KERN_INFO "[PFQ|%d] kernel_thread: create failed on cpu %d!\n",
+				       so->id.value, so->tx_opt.queue[n].cpu);
+				err = PTR_ERR(so->tx_opt.queue[n].task);
+
+				so->tx_opt.queue[n].task = NULL;
+				kfree (data);
+				continue;
+			}
+
+			/* update global tx pool */
+
+			kthread_tx_pool[so->tx_opt.queue[n].cpu % 256] = so->tx_opt.queue[n].task;
+
+			/* bind the thread */
+
+			kthread_bind(so->tx_opt.queue[n].task, so->tx_opt.queue[n].cpu);
+
+			/* start it */
+
+			wake_up_process(so->tx_opt.queue[n].task);
+
+			started++;
 		}
+
+		mutex_unlock(&kthread_tx_pool_lock);
+
+		printk(KERN_INFO "[PFQ|%d] %zu kernel kthread started!\n", so->id.value, started);
+
+		if (started == 0)
+			err = -EPERM;
 
 		return err;
+
+        } break;
+
+        case Q_SO_TX_ASYNC_STOP:
+        {
+		printk(KERN_INFO "[PFQ|%d] Stopping Tx threads...\n", so->id.value);
+		pfq_stop_all_tx_threads(so);
+
+		return 0;
 
         } break;
 
