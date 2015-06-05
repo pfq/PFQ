@@ -78,7 +78,7 @@ main(int argc, char *argv[])
 		send_packets(q, num);
 	}
 	else  {
-		pfq_tx_async(q, 1);
+		pfq_tx_async_start(q);
 		send_packets_async(q, num);
 	}
 

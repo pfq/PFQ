@@ -566,12 +566,20 @@ extern int pfq_get_group_counters(pfq_t const *q, int gid, struct pfq_counters *
 extern int pfq_tx_queue_flush(pfq_t *q, int queue);
 
 
-/*! Start/Stop kernel threads. */
+/*! Start Tx kernel threads. */
 /*!
- * Start/Stop kernel threads associated with Tx queues.
+ * Start kernel threads associated with Tx queues.
  */
 
-extern int pfq_tx_async(pfq_t *q, int toggle);
+extern int pfq_tx_async_start(pfq_t *q);
+
+
+/*! Stop Tx kernel threads. */
+/*!
+ * Stop kernel threads associated with Tx queues.
+ */
+
+extern int pfq_tx_async_stop(pfq_t *q);
 
 
 /*! Schedule the packet for transmission. */

@@ -1121,10 +1121,20 @@ pfq_tx_queue_flush(pfq_t *q, int queue)
 
 
 int
-pfq_tx_async(pfq_t *q, int toggle)
+pfq_tx_async_start(pfq_t *q)
 {
-        if (setsockopt(q->fd, PF_Q, Q_SO_TX_ASYNC, &toggle, sizeof(toggle)) == -1)
-		return Q_ERROR(q, "PFQ: Tx async");
+        if (setsockopt(q->fd, PF_Q, Q_SO_TX_ASYNC_START, NULL, 0) == -1)
+		return Q_ERROR(q, "PFQ: Tx async start");
+
+        return Q_OK(q);
+}
+
+
+int
+pfq_tx_async_stop(pfq_t *q)
+{
+        if (setsockopt(q->fd, PF_Q, Q_SO_TX_ASYNC_STOP, NULL, 0) == -1)
+		return Q_ERROR(q, "PFQ: Tx async stop");
 
         return Q_OK(q);
 }

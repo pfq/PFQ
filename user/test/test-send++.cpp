@@ -73,7 +73,7 @@ try
         send_packets(q, num);
     }
     else {
-        q.tx_async(true);
+        q.tx_async_start();
         send_packets_async(q, num);
     }
 

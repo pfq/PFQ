@@ -142,7 +142,8 @@ module Network.PFq
         -- * Packet transmission
 
         txQueueFlush,
-        txAsync,
+        txAsyncStart,
+        txAsyncStop,
         send,
         sendAsync,
         sendAt,
@@ -998,15 +999,23 @@ txQueueFlush hdl queue =
     pfq_tx_queue_flush hdl (fromIntegral queue) >>= throwPFqIf_ hdl (== -1)
 
 
--- |Start/Stop kernel threads.
+-- |Start kernel threads.
 --
--- Start/Stop kernel threads associated with Tx queues.
+-- Start kernel threads associated with Tx queues.
 
-txAsync :: Ptr PFqTag
-        -> Bool
+txAsyncStart :: Ptr PFqTag
         -> IO ()
-txAsync hdl toggle =
-    pfq_tx_async hdl (fromIntegral (if toggle then 1 else 0 :: Integer) ) >>= throwPFqIf_ hdl (== -1)
+txAsyncStart hdl =
+    pfq_tx_async_start hdl >>= throwPFqIf_ hdl (== -1)
+
+-- |Stop kernel threads.
+--
+-- Stop kernel threads associated with Tx queues.
+
+txAsyncStop :: Ptr PFqTag
+        -> IO ()
+txAsyncStop hdl =
+    pfq_tx_async_stop hdl >>= throwPFqIf_ hdl (== -1)
 
 
 -- |Store the packet and transmit the packets in the queue.
@@ -1124,6 +1133,7 @@ foreign import ccall unsafe pfq_send_at             :: Ptr PFqTag -> Ptr CChar -
 
 foreign import ccall unsafe pfq_inject              :: Ptr PFqTag -> Ptr CChar -> CSize -> CULLong -> CInt -> IO CInt
 foreign import ccall unsafe pfq_tx_queue_flush      :: Ptr PFqTag -> CInt -> IO CInt
-foreign import ccall unsafe pfq_tx_async            :: Ptr PFqTag -> CInt -> IO CInt
+foreign import ccall unsafe pfq_tx_async_start      :: Ptr PFqTag -> IO CInt
+foreign import ccall unsafe pfq_tx_async_stop       :: Ptr PFqTag -> IO CInt
 
 
