@@ -30,9 +30,14 @@
 
 #include <pragma/diagnostic_push>
 #include <linux/kthread.h>
+#include <linux/mutex.h>
 #include <pragma/diagnostic_pop>
 
 #include <pf_q-sock.h>
+
+
+extern struct mutex kthread_tx_pool_lock;
+extern struct task_struct *kthread_tx_pool [256];
 
 
 extern int pfq_tx_thread(void *data);

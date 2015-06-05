@@ -31,6 +31,7 @@
 #include <linux/module.h>
 #include <linux/version.h>
 #include <linux/kthread.h>
+#include <linux/mutex.h>
 
 #include <pragma/diagnostic_pop>
 
@@ -39,6 +40,12 @@
 #include <pf_q-memory.h>
 #include <pf_q-sock.h>
 #include <pf_q-transmit.h>
+
+
+DEFINE_MUTEX(kthread_tx_pool_lock);
+
+struct task_struct *kthread_tx_pool [256] = { [0 ... 255] = NULL };
+
 
 int
 pfq_tx_wakeup(struct pfq_sock *so, int index)
