@@ -358,30 +358,34 @@ pfq_enable(pfq_t *q)
 		return Q_ERROR(q, "PFQ: queue memory error");
 	}
 
-	snprintf(filename, 64, "/dev/hugepages/pfq.%d", q->fd);
+	char *hugepages = hugepages_mountpoint();
+	if (hugepages && !getenv("PFQ_NO_HUGEPAGES"))
+	{
+		/* HugePages */
+		snprintf(filename, 256, "%s/pfq.%d", hugepages, q->fd);
+		free (hugepages);
 
-	q->hd = open(filename, O_CREAT | O_RDWR, 0755);
-	if (q->hd != -1)
+		q->hd = open(filename, O_CREAT | O_RDWR, 0755);
+		if (q->hd == -1)
+			return Q_ERROR(q, "PFQ: couldn't open a HugePages descriptor");
+
 		q->shm_addr = mmap(NULL, tot_mem, PROT_READ|PROT_WRITE, MAP_SHARED, q->hd, 0);
+		if (q->shm_addr == MAP_FAILED)
+			return Q_ERROR(q, "PFQ: couldn't mmap HugePages");
 
-	if (q->shm_addr != MAP_FAILED &&
-	    q->shm_addr != NULL) {
-		if(setsockopt(q->fd, PF_Q, Q_SO_ENABLE, &q->shm_addr, sizeof(q->shm_addr)) == -1) {
-			return Q_ERROR(q, "PFQ: socket enable (hugepages)");
-		}
+		if(setsockopt(q->fd, PF_Q, Q_SO_ENABLE, &q->shm_addr, sizeof(q->shm_addr)) == -1)
+			return Q_ERROR(q, "PFQ: socket enable (HugePages)");
 	}
 	else {
+		/* Standard pages (4K) */
+
 		void * null = NULL;
-		if(setsockopt(q->fd, PF_Q, Q_SO_ENABLE, &null, sizeof(null)) == -1) {
+		if(setsockopt(q->fd, PF_Q, Q_SO_ENABLE, &null, sizeof(null)) == -1)
 			return Q_ERROR(q, "PFQ: socket enable");
-		}
 
 		q->shm_addr = mmap(NULL, tot_mem, PROT_READ|PROT_WRITE, MAP_SHARED, q->fd, 0);
-	}
-
-	if (q->shm_addr == MAP_FAILED ||
-	    q->shm_addr == NULL) {
-		return Q_ERROR(q, "PFQ: socket enable (memory map)");
+		if (q->shm_addr == MAP_FAILED)
+			return Q_ERROR(q, "PFQ: socket enable (memory map)");
 	}
 
 	q->shm_size = tot_mem;
@@ -408,11 +412,14 @@ pfq_disable(pfq_t *q)
 			return Q_ERROR(q, "PFQ: munmap error");
 
 		if (q->hd != -1) {
-			char filename[64];
-			snprintf(filename, 64, "/dev/hugepages/pfq.%d", q->fd);
-			unlink(filename);
+			char filename[256];
+			char *hugepages = hugepages_mountpoint();
+			if (hugepages) {
+				snprintf(filename, 256, "%s/pfq.%d", hugepages, q->fd);
+				unlink(filename);
+				free(hugepages);
+			}
 		}
-
 	}
 
 	q->shm_addr = NULL;
