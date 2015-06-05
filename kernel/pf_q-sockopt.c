@@ -720,6 +720,14 @@ int pfq_setsockopt(struct socket *sock,
 
 		for(n = 0; n < Q_MAX_TX_QUEUES; ++n)
 		{
+			if (so->tx_opt.queue[n].task != NULL) {
+				printk(KERN_INFO "[PFQ|%d] Tx unbind error: kthread running!\n", so->id.value);
+				return -EPERM;
+			}
+		}
+
+		for(n = 0; n < Q_MAX_TX_QUEUES; ++n)
+		{
 			so->tx_opt.queue[n].if_index = -1;
 			so->tx_opt.queue[n].hw_queue = -1;
 			so->tx_opt.queue[n].cpu      = -1;
