@@ -854,7 +854,10 @@ static int __init pfq_init_module(void)
 {
         int err = 0;
 
-        printk(KERN_INFO "[PFQ] loading version (%s)...\n", Q_VERSION);
+        printk(KERN_INFO "[PFQ] version %d.%d.%d (loading)...\n",
+               PFQ_MAJOR(PFQ_VERSION_CODE),
+               PFQ_MINOR(PFQ_VERSION_CODE),
+               PFQ_PATCHLEVEL(PFQ_VERSION_CODE));
 
 	/* check options */
 

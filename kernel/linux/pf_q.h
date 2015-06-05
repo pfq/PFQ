@@ -35,8 +35,6 @@
 
 #include <pragma/diagnostic_pop>
 
-#define Q_VERSION               "4.4"
-
 #else  /* user space */
 
 #define __user
@@ -72,6 +70,17 @@ static inline void smp_wmb() { barrier(); }
 #define unlikely(x)     __builtin_expect((x),0)
 
 #endif /* __KERNEL__ */
+
+
+/* PFQ version as in Linux kernel */
+
+#define PFQ_VERSION(a,b,c)		(((a) << 16) + ((b) << 8) + (c))
+
+#define PFQ_VERSION_CODE		PFQ_VERSION(4,5,0)
+
+#define PFQ_MAJOR(a)			((a >> 16) & 0xff)
+#define PFQ_MINOR(a)			((a >> 8) & 0xff)
+#define PFQ_PATCHLEVEL(a)		(a & 0xff)
 
 
 #define PF_Q				27   /* pfq socket family */
