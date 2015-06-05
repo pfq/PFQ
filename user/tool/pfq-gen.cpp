@@ -581,6 +581,12 @@ try
         std::cout << vt100::BOLD << "*** Multiple queue detected! Consider to randomize IP addresses with -R option! ***" << vt100::RESET << std::endl;
     }
 
+    // HugePages warning...
+    //
+
+    if (pfq::hugepages_mountpoint().empty())
+        std::cout << "*** Warning: HugePages not mounted ***" << std::endl;
+
     //
     // create thread context:
     //

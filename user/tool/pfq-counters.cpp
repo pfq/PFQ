@@ -354,6 +354,12 @@ try
         t->detach();
     });
 
+    // HugePages warning...
+    //
+
+    if (pfq::hugepages_mountpoint().empty())
+        std::cout << "*** Warning: HugePages not mounted ***" << std::endl;
+
     unsigned long long sum, flow, old = 0;
     pfq_stats sum_stats, old_stats = {0,0,0,0,0,0,0};
 
