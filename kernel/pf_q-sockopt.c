@@ -791,6 +791,8 @@ int pfq_setsockopt(struct socket *sock,
 
 			/* start Tx kernel threads */
 
+			mutex_lock(&kthread_tx_pool_lock);
+
 			for(n = 0; n < Q_MAX_TX_QUEUES; n++)
 			{
 				struct pfq_thread_data *data;
@@ -805,9 +807,11 @@ int pfq_setsockopt(struct socket *sock,
 					continue;
 				}
 
-				if (so->tx_opt.queue[n].task) {
-					printk(KERN_INFO "[PFQ|%d] kernel_thread: Tx[%zu] thread already running!\n",
-					       so->id.value, n);
+				if (so->tx_opt.queue[n].task != NULL ||
+				    kthread_tx_pool[so->tx_opt.queue[n].cpu % 256] != NULL) {
+					printk(KERN_INFO "[PFQ|%d] kernel_thread: Tx[%zu] kthread already running (cpu = %d)!\n",
+					       so->id.value, n,
+					       so->tx_opt.queue[n].cpu);
 					continue;
 				}
 
@@ -839,6 +843,10 @@ int pfq_setsockopt(struct socket *sock,
 					continue;
 				}
 
+				/* update global tx pool */
+
+				kthread_tx_pool[so->tx_opt.queue[n].cpu % 256] = so->tx_opt.queue[n].task;
+
 				/* bind the thread */
 
 				kthread_bind(so->tx_opt.queue[n].task, so->tx_opt.queue[n].cpu);
@@ -849,6 +857,8 @@ int pfq_setsockopt(struct socket *sock,
 
 				started++;
 			}
+
+			mutex_unlock(&kthread_tx_pool_lock);
 
 			if (started == 0) {
 				printk(KERN_INFO "[PFQ|%d] no kernel thread started!\n", so->id.value);
