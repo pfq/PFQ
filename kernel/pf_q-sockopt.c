@@ -110,8 +110,26 @@ int pfq_getsockopt(struct socket *sock,
 
         case Q_SO_GET_ID:
         {
+		int ver;
+
                 if (len != sizeof(so->id.value))
                         return -EINVAL;
+
+                if (copy_from_user(&ver, optval, sizeof(ver)))
+                        return -EFAULT;
+
+		if (ver != PFQ_VERSION_CODE) {
+			printk(KERN_INFO "[PFQ] version mismatch: kernel version %d.%d.%d, library version = %d.%d.%d!\n",
+			       PFQ_MAJOR(PFQ_VERSION_CODE),
+			       PFQ_MINOR(PFQ_VERSION_CODE),
+			       PFQ_PATCHLEVEL(PFQ_VERSION_CODE),
+			       PFQ_MAJOR(ver),
+			       PFQ_MINOR(ver),
+			       PFQ_PATCHLEVEL(ver));
+
+			return -EPERM;
+		}
+
                 if (copy_to_user(optval, &so->id.value, sizeof(so->id.value)))
                         return -EFAULT;
         } break;

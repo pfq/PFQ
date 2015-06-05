@@ -433,7 +433,9 @@ namespace pfq {
 
             // get id
 
+            data_->id = PFQ_VERSION_CODE;
             socklen_t size = sizeof(data_->id);
+
             if (::getsockopt(fd_, PF_Q, Q_SO_GET_ID, &data_->id, &size) == -1)
                 throw pfq_error(errno, "PFQ: get id error");
 

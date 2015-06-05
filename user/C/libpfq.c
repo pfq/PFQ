@@ -270,7 +270,10 @@ pfq_open_group(unsigned long class_mask, int group_policy, size_t caplen, size_t
         memset(&q->netq, 0, sizeof(q->netq));
 
 	/* get id */
+
+	q->id = PFQ_VERSION_CODE;
 	socklen_t size = sizeof(q->id);
+
 	if (getsockopt(fd, PF_Q, Q_SO_GET_ID, &q->id, &size) == -1) {
 		return __error = "PFQ: get id error", free(q), NULL;
 	}
