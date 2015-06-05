@@ -132,6 +132,37 @@ static int with_tokens(const char *str, const char *sep, int (*cb)(char **, int 
 }
 
 
+static char *
+hugepages_mountpoint()
+{
+	FILE *mp;
+	char *line = NULL, *mount_point = NULL;
+	size_t len = 0;
+	ssize_t read;
+
+	mp = fopen("/proc/mounts", "r");
+	if (!mp)
+		return NULL;
+
+	int set_mount_point(char **token, int n)
+	{
+		(void)n; mount_point = strdup(token[1]);
+		return 0;
+	}
+
+	while((read = getline(&line, &len, mp)) != -1) {
+		if (strstr(line, "hugetlbfs")) {
+			with_tokens(line, " ",  &set_mount_point);
+			break;
+		}
+	}
+
+	free (line);
+	fclose (mp);
+	return mount_point;
+}
+
+
 /* pfq descriptor */
 
 typedef struct pfq_data

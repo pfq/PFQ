@@ -51,6 +51,7 @@ namespace pfq {
     using mutable_buffer = std::pair<char *, size_t>;
     using const_buffer   = std::pair<const char *, const size_t>;
 
+
     //! Return the value aligned to the next power of two.
 
     template<size_t N, typename T>
@@ -59,6 +60,7 @@ namespace pfq {
         static_assert((N & (N-1)) == 0, "align: N not a power of two");
         return (value + (N-1)) & ~(N-1);
     }
+
 
     //! Given a device name, return the interface index.
 
@@ -117,6 +119,7 @@ namespace pfq {
             throw pfq_error(errno, "PFQ: " + std::to_string(i) + ": indextoname");
         return buf;
     }
+
 
     //! Trim pending and trailing whitespaces from a string.
 
@@ -205,6 +208,23 @@ namespace pfq {
     get_num_queues(const char *dev, const char *kind = "TxRx")
     {
         return get_irq_by_device(dev, kind).size();
+    }
+
+
+    //! HugePages
+
+    inline std::string
+    hugepages_mountpoint()
+    {
+        std::ifstream ms("/proc/mounts");
+        for(std::string line; std::getline(ms, line); )
+        {
+            auto pos = line.find("hugetlbfs");
+            if (pos == std::string::npos)
+                continue;
+            return split(line, " ").at(1);
+        }
+        return {};
     }
 
 
