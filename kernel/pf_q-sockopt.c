@@ -821,7 +821,7 @@ int pfq_setsockopt(struct socket *sock,
 			}
 
 			if (so->tx_opt.queue[n].task != NULL ||
-			    kthread_tx_pool[so->tx_opt.queue[n].cpu % 256] != NULL) {
+			    kthread_tx_pool[so->tx_opt.queue[n].cpu % Q_MAX_CPU] != NULL) {
 				printk(KERN_INFO "[PFQ|%d] kernel_thread: Tx[%zu] kthread already running (cpu=%d)!\n",
 				       so->id.value, n,
 				       so->tx_opt.queue[n].cpu);
@@ -861,7 +861,7 @@ int pfq_setsockopt(struct socket *sock,
 
 			/* update global tx pool */
 
-			kthread_tx_pool[so->tx_opt.queue[n].cpu % 256] = so->tx_opt.queue[n].task;
+			kthread_tx_pool[so->tx_opt.queue[n].cpu % Q_MAX_CPU] = so->tx_opt.queue[n].task;
 
 			/* bind the thread */
 

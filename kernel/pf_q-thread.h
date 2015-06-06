@@ -34,10 +34,10 @@
 #include <pragma/diagnostic_pop>
 
 #include <pf_q-sock.h>
-
+#include <pf_q-macro.h>
 
 extern struct mutex kthread_tx_pool_lock;
-extern struct task_struct *kthread_tx_pool [256];
+extern struct task_struct *kthread_tx_pool [Q_MAX_CPU];
 
 
 extern int pfq_tx_thread(void *data);
