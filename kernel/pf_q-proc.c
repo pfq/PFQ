@@ -94,9 +94,9 @@ static int pfq_proc_comp(struct seq_file *m, void *v)
 
 	down(&group_sem);
 
-	for(n = 0; n < Q_MAX_GROUP; n++)
+	for(n = 0; n < Q_MAX_GID; n++)
 	{
-		pfq_gid_t gid = { n };
+		pfq_gid_t gid = (__force pfq_gid_t)n;
 
 		struct pfq_group *this_group = pfq_get_group(gid);
 
@@ -121,9 +121,9 @@ static int pfq_proc_groups(struct seq_file *m, void *v)
 
 	down(&group_sem);
 
-	for(n = 0; n < Q_MAX_GROUP; n++)
+	for(n = 0; n < Q_MAX_GID; n++)
 	{
-		pfq_gid_t gid = { n };
+		pfq_gid_t gid = (__force pfq_gid_t)n;
 
 		struct pfq_group *this_group = pfq_get_group(gid);
 		if (!this_group->policy)

@@ -59,8 +59,9 @@ int pfq_devmap_update(int action, int index, int queue, pfq_gid_t gid)
 {
     int n = 0, i,q;
 
-    if (unlikely(gid.value >= Q_MAX_GROUP || gid.value < 0)) {
-        pr_devel("[PF_Q] devmap_update: bad gid (%u)\n",gid.value);
+    if (unlikely((__force int)gid >= Q_MAX_GID ||
+		 (__force int)gid < 0)) {
+        pr_devel("[PF_Q] devmap_update: bad gid (%u)\n",gid);
         return 0;
     }
 
@@ -79,7 +80,7 @@ int pfq_devmap_update(int action, int index, int queue, pfq_gid_t gid)
             if (action == map_set) {
 
                 tmp = atomic_long_read(&pfq_devmap[i][q]);
-                tmp |= 1L << gid.value;
+                tmp |= 1L << (__force int)gid;
                 atomic_long_set(&pfq_devmap[i][q], tmp);
                 n++;
                 continue;
@@ -87,8 +88,8 @@ int pfq_devmap_update(int action, int index, int queue, pfq_gid_t gid)
 
             /* map_reset */
             tmp = atomic_long_read(&pfq_devmap[i][q]);
-            if (tmp & (1L<<gid.value)) {
-                tmp &= ~(1L<<gid.value);
+            if (tmp & (1L << (__force int)gid)) {
+                tmp &= ~(1L << (__force int)gid);
                 atomic_long_set(&pfq_devmap[i][q], tmp);
                 n++;
                 continue;

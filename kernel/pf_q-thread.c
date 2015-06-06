@@ -108,7 +108,7 @@ pfq_stop_all_tx_threads(struct pfq_sock *so)
 	{
 		if (so->tx_opt.queue[n].task) {
 
-			pr_devel("[PFQ|%d] stopping Tx thread@%p\n", so->id.value, so->tx_opt.queue[n].task);
+			pr_devel("[PFQ|%d] stopping Tx thread@%p\n", so->id, so->tx_opt.queue[n].task);
 
 			if (so->tx_opt.queue[n].cpu != -1)
 				BUG_ON(kthread_tx_pool[so->tx_opt.queue[n].cpu % Q_MAX_CPU] != so->tx_opt.queue[n].task);

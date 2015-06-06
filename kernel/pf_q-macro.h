@@ -25,7 +25,8 @@
 #define PF_Q_MACRO_H
 
 #define Q_MAX_ID                (sizeof(long)<<3)
-#define Q_MAX_GROUP             (sizeof(long)<<3)
+#define Q_MAX_GID		(sizeof(long)<<3)
+
 #define Q_SKBUFF_SHORT_BATCH	(sizeof(long)<<3)
 #define Q_SKBUFF_LONG_BATCH	128
 

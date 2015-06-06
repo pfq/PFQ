@@ -34,14 +34,10 @@
 #include <pf_q-macro.h>
 #include <pf_q-stats.h>
 #include <pf_q-shmem.h>
+#include <pf_q-types.h>
 
 
 extern atomic_long_t pfq_sock_vector[Q_MAX_ID];
-
-typedef struct
-{
-	int value;
-} pfq_id_t;
 
 
 struct pfq_rx_opt

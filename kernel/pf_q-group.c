@@ -41,17 +41,17 @@
 DEFINE_SEMAPHORE(group_sem);
 
 
-static struct pfq_group pfq_groups[Q_MAX_GROUP];
+static struct pfq_group pfq_groups[Q_MAX_GID];
 
 
 void
 pfq_groups_init(void)
 {
 	int n;
-	for(n = 0; n < Q_MAX_GROUP; n++)
+	for(n = 0; n < Q_MAX_GID; n++)
 	{
 		pfq_groups[n].pid = 0;
-		pfq_groups[n].owner.value = -1;
+		pfq_groups[n].owner = Q_INVALID_ID;
 		pfq_groups[n].policy = Q_POLICY_GROUP_UNDEFINED;
 	}
 }
@@ -76,7 +76,7 @@ pfq_group_policy_access(pfq_gid_t gid, pfq_id_t id, int policy)
         switch(g->policy)
         {
         case Q_POLICY_GROUP_PRIVATE:
-                return g->owner.value == id.value; // __pfq_has_joined_group(gid,id);
+                return g->owner == id; // __pfq_has_joined_group(gid,id);
 
         case Q_POLICY_GROUP_RESTRICTED:
                 return (policy == Q_POLICY_GROUP_RESTRICTED) && g->pid == current->tgid;
@@ -104,7 +104,7 @@ pfq_group_access(pfq_gid_t gid, pfq_id_t id)
 	switch(g->policy)
 	{
 	case Q_POLICY_GROUP_PRIVATE:
-		return g->owner.value == id.value;
+		return g->owner == id;
 
         case Q_POLICY_GROUP_RESTRICTED:
                 return g->pid == current->tgid;
@@ -129,7 +129,7 @@ __pfq_group_init(pfq_gid_t gid)
                 return;
 
 	g->pid = current->tgid;
-        g->owner.value = -1;
+        g->owner = Q_INVALID_ID;
         g->policy = Q_POLICY_GROUP_UNDEFINED;
 
         for(i = 0; i < Q_CLASS_MAX; i++)
@@ -173,7 +173,7 @@ __pfq_group_free(pfq_gid_t gid)
         pfq_devmap_update(map_reset, Q_ANY_DEVICE, Q_ANY_QUEUE, gid);
 
         g->pid = 0;
-        g->owner.value = -1;
+        g->owner = Q_INVALID_ID;
         g->policy = Q_POLICY_GROUP_UNDEFINED;
 
         filter   = (struct sk_filter *)atomic_long_xchg(&g->bp_filter, 0L);
@@ -195,7 +195,7 @@ __pfq_group_free(pfq_gid_t gid)
 
         g->vlan_filt = false;
 
-        pr_devel("[PFQ] group %d destroyed.\n", gid.value);
+        pr_devel("[PFQ] group %d destroyed.\n", gid);
 }
 
 
@@ -216,7 +216,7 @@ __pfq_join_group(pfq_gid_t gid, pfq_id_t id, unsigned long class_mask, int polic
                 __pfq_group_init(gid);
 
         if (!pfq_group_policy_access(gid, id, policy)) {
-                pr_devel("[PFQ] group gid=%d is not join-able with policy %d\n", gid.value, policy);
+                pr_devel("[PFQ] group gid=%d is not join-able with policy %d\n", gid, policy);
                 return -EACCES;
         }
 
@@ -224,11 +224,11 @@ __pfq_join_group(pfq_gid_t gid, pfq_id_t id, unsigned long class_mask, int polic
         {
                  int class = pfq_ctz(bit);
                  tmp = atomic_long_read(&g->sock_mask[class]);
-                 tmp |= 1L << id.value;
+                 tmp |= 1L << (__force int)id;
                  atomic_long_set(&g->sock_mask[class], tmp);
         })
 
-	if (g->owner.value == -1)
+	if (g->owner == Q_INVALID_ID)
 		g->owner = id;
 
 	if (g->policy == Q_POLICY_GROUP_UNDEFINED)
@@ -255,7 +255,7 @@ __pfq_leave_group(pfq_gid_t gid, pfq_id_t id)
         for(i = 0; i < Q_CLASS_MAX; ++i)
         {
                 tmp = atomic_long_read(&g->sock_mask[i]);
-                tmp &= ~(1L << id.value);
+                tmp &= ~(1L << (__force int)id);
                 atomic_long_set(&g->sock_mask[i], tmp);
         }
 
@@ -366,7 +366,7 @@ pfq_join_free_group(pfq_id_t id, unsigned long class_mask, int policy)
         down(&group_sem);
         for(; n < Q_MAX_ID; n++)
         {
-		pfq_gid_t gid = {n};
+		pfq_gid_t gid = (__force pfq_gid_t)n;
 
                 if(!pfq_get_group(gid)->pid) {
                         __pfq_join_group(gid, id, class_mask, policy);
@@ -403,7 +403,7 @@ pfq_leave_all_groups(pfq_id_t id)
         down(&group_sem);
         for(; n < Q_MAX_ID; n++)
         {
-		pfq_gid_t gid = {n};
+		pfq_gid_t gid = (__force pfq_gid_t)n;
                 __pfq_leave_group(gid, id);
         }
         up(&group_sem);
@@ -418,10 +418,10 @@ pfq_get_groups(pfq_id_t id)
         down(&group_sem);
         for(; n < Q_MAX_ID; n++)
         {
-		pfq_gid_t gid = {n};
+		pfq_gid_t gid = (__force pfq_gid_t)n;
                 unsigned long mask = pfq_get_all_groups_mask(gid);
 
-                if(mask & (1L << id.value))
+                if(mask & (1L << (__force int)id))
                         ret |= (1UL << n);
         }
         up(&group_sem);
@@ -432,9 +432,10 @@ pfq_get_groups(pfq_id_t id)
 struct pfq_group *
 pfq_get_group(pfq_gid_t gid)
 {
-        if (gid.value < 0 || gid.value >= Q_MAX_GROUP)
+        if ((__force int)gid < 0 ||
+            (__force int)gid >= Q_MAX_GID)
                 return NULL;
-        return &pfq_groups[gid.value];
+        return &pfq_groups[(__force int)gid];
 }
 
 

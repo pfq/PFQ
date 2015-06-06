@@ -43,10 +43,10 @@ pr_devel_group(pfq_gid_t gid)
 	if (g != NULL) {
 
 		pr_devel("[PFQ] group %d { policy=%d, pid=%d, owner-id=%d ...}\n",
-				gid.value,
+				gid,
 				g->policy,
 				g->pid,
-				g->owner.value);
+				g->owner);
 	}
 }
 

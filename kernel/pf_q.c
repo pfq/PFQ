@@ -629,7 +629,7 @@ pfq_create(
         /* get a unique id for this sock */
 
         so->id = pfq_get_free_id(so);
-        if (so->id.value == -1) {
+        if (so->id == -1) {
                 printk(KERN_WARNING "[PFQ] error: resource exhausted\n");
                 sk_free(sk);
                 return -EBUSY;
@@ -687,7 +687,7 @@ pfq_release(struct socket *sock)
 
 	pfq_stop_all_tx_threads(so);
 
-        pr_devel("[PFQ|%d] releasing socket...\n", id.value);
+        pr_devel("[PFQ|%d] releasing socket...\n", id);
 
         pfq_leave_all_groups(so->id);
         pfq_release_sock_id(so->id);
@@ -706,7 +706,7 @@ pfq_release(struct socket *sock)
         up (&sock_sem);
 
         if (total)
-                printk(KERN_INFO "[PFQ|%d] cleanup: %d skb purged.\n", id.value, total);
+                printk(KERN_INFO "[PFQ|%d] cleanup: %d skb purged.\n", id, total);
 
         sock_orphan(sk);
 	sock->sk = NULL;
@@ -714,7 +714,7 @@ pfq_release(struct socket *sock)
 
         up_read(&symtable_sem);
 
-	pr_devel("[PFQ|%d] socket closed.\n", id.value);
+	pr_devel("[PFQ|%d] socket closed.\n", id);
         return 0;
 }
 
