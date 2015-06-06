@@ -204,7 +204,7 @@ struct pfq_tx_queue
         size_t			size;	    /* queue length in bytes */
 
 	void __user *		ptr;	    /* reserved for user-space */
-	unsigned int __user     index;	    /* reserved for user-space */
+	unsigned int		index;	    /* reserved for user-space */
 
 } __attribute__((aligned(64)));
 
