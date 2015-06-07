@@ -41,7 +41,8 @@ bloom_src(arguments_t args, SkBuff b)
 	{
 		struct iphdr _iph;
 		const struct iphdr *ip;
-		uint32_t fold, mask, addr;
+		uint32_t fold, addr;
+		__be32 mask;
 		char *mem;
 
 		ip = skb_header_pointer(b.skb, b.skb->mac_len, sizeof(_iph), &_iph);
@@ -49,15 +50,15 @@ bloom_src(arguments_t args, SkBuff b)
 			return false;
 
 		fold = GET_ARG_0(uint32_t, args);
-		mem  = GET_ARG_1(char *, args);
-		mask = GET_ARG_2(uint32_t, args);
+		mem  = GET_ARG_1(char *,   args);
+		mask = GET_ARG_2(__be32,   args);
 
-		addr = ip->saddr & mask;
+		addr = ntohl(ip->saddr & mask);
 
-		if ( BF_TEST(mem, hfun1(addr) & fold ) &&
-		     BF_TEST(mem, hfun2(addr) & fold ) &&
-		     BF_TEST(mem, hfun3(addr) & fold ) &&
-		     BF_TEST(mem, hfun4(addr) & fold ) )
+		if ( BF_TEST(mem, hfun1(addr) & fold) &&
+		     BF_TEST(mem, hfun2(addr) & fold) &&
+		     BF_TEST(mem, hfun3(addr) & fold) &&
+		     BF_TEST(mem, hfun4(addr) & fold) )
 			return true;
 	}
 
@@ -72,7 +73,8 @@ bloom_dst(arguments_t args, SkBuff b)
 	{
 		struct iphdr _iph;
 		const struct iphdr *ip;
-		uint32_t fold, mask, addr;
+		uint32_t fold, addr;
+		__be32 mask;
 		char *mem;
 
 		ip = skb_header_pointer(b.skb, b.skb->mac_len, sizeof(_iph), &_iph);
@@ -80,15 +82,15 @@ bloom_dst(arguments_t args, SkBuff b)
 			return false;
 
 		fold = GET_ARG_0(uint32_t, args);
-		mem  = GET_ARG_1(char *, args);
-		mask = GET_ARG_2(uint32_t, args);
+		mem  = GET_ARG_1(char *,   args);
+		mask = GET_ARG_2(__be32,   args);
 
-		addr = ip->daddr & mask;
+		addr = ntohl(ip->daddr & mask);
 
-		if ( BF_TEST(mem, hfun1(addr) & fold ) &&
-		     BF_TEST(mem, hfun2(addr) & fold ) &&
-		     BF_TEST(mem, hfun3(addr) & fold ) &&
-		     BF_TEST(mem, hfun4(addr) & fold ) )
+		if ( BF_TEST(mem, hfun1(addr) & fold) &&
+		     BF_TEST(mem, hfun2(addr) & fold) &&
+		     BF_TEST(mem, hfun3(addr) & fold) &&
+		     BF_TEST(mem, hfun4(addr) & fold) )
 			return true;
 	}
 
@@ -102,7 +104,8 @@ bloom(arguments_t args, SkBuff b)
 	{
 		struct iphdr _iph;
 		const struct iphdr *ip;
-		uint32_t fold, mask, addr;
+		uint32_t fold, addr;
+		__be32 mask;
 		char *mem;
 
 		ip = skb_header_pointer(b.skb, b.skb->mac_len, sizeof(_iph), &_iph);
@@ -110,23 +113,23 @@ bloom(arguments_t args, SkBuff b)
 			return false;
 
 		fold = GET_ARG_0(uint32_t, args);
-		mem  = GET_ARG_1(char *, args);
-		mask = GET_ARG_2(uint32_t, args);
+		mem  = GET_ARG_1(char *,   args);
+		mask = GET_ARG_2(__be32,   args);
 
-		addr = ip->daddr & mask;
+		addr = ntohl(ip->daddr & mask);
 
-		if ( BF_TEST(mem, hfun1(addr) & fold ) &&
-		     BF_TEST(mem, hfun2(addr) & fold ) &&
-		     BF_TEST(mem, hfun3(addr) & fold ) &&
-		     BF_TEST(mem, hfun4(addr) & fold ) )
+		if ( BF_TEST(mem, hfun1(addr) & fold) &&
+		     BF_TEST(mem, hfun2(addr) & fold) &&
+		     BF_TEST(mem, hfun3(addr) & fold) &&
+		     BF_TEST(mem, hfun4(addr) & fold) )
 			return true;
 
-		addr = ip->saddr & mask;
+		addr = ntohl(ip->saddr & mask);
 
-		if ( BF_TEST(mem, hfun1(addr) & fold ) &&
-		     BF_TEST(mem, hfun2(addr) & fold ) &&
-		     BF_TEST(mem, hfun3(addr) & fold ) &&
-		     BF_TEST(mem, hfun4(addr) & fold ) )
+		if ( BF_TEST(mem, hfun1(addr) & fold) &&
+		     BF_TEST(mem, hfun2(addr) & fold) &&
+		     BF_TEST(mem, hfun3(addr) & fold) &&
+		     BF_TEST(mem, hfun4(addr) & fold) )
 			return true;
 	}
 
@@ -164,50 +167,54 @@ static int bloom_init(arguments_t args)
 {
 	unsigned int m = GET_ARG_0(int, args);
 	unsigned int n = LEN_ARRAY_1(args);
-	uint32_t *ips  = GET_ARRAY_1(uint32_t, args);
-	uint32_t mask;
-	size_t i, size;
+	__be32 *ips = GET_ARRAY_1(__be32, args);
+	__be32 mask;
+	size_t i;
 
 	char *mem;
 
 	m = clp2(m);
 
-	SET_ARG_0(args, m-1);	/* bloom filter fold mask */
+	/* set bloom filter fold mask */
+
+	SET_ARG_0(args, m-1);
 
 	if (m > (1UL << 24)) {
 		printk(KERN_INFO "[PFQ|init] bloom filter: maximum number of bins exceeded (2^24)!\n");
 		return -EPERM;
 	}
 
-	size = (m >> 3);
-
-	mem = kzalloc(size, GFP_KERNEL);
+	mem = kzalloc(m >> 3, GFP_KERNEL);
 	if (!mem) {
 		printk(KERN_INFO "[PFQ|init] bloom filter: out of memory!\n");
 		return -ENOMEM;
 	}
 
+	/* set bloom filter memory */
+
 	SET_ARG_1(args, mem);
 
 	mask = inet_make_mask(GET_ARG_2(int, args));
 
+	/* set network mask */
+
 	SET_ARG_2(args, mask);
 
-	pr_devel("[PFQ|init] bloom filter@%p: k=4, n=%d, m=%d size=%zu netmask=%pI4 bytes.\n", mem, n, m, size, &mask);
+	pr_devel("[PFQ|init] bloom filter@%p: k=4, n=%d, m=%d size=%u netmask=%pI4 bytes.\n", mem, n, m, m>>3, &mask);
 
 	for(i = 0; i < n; i++)
 	{
-		uint32_t h1 = hfun1(ips[i] & mask) & (m-1);
-		uint32_t h2 = hfun2(ips[i] & mask) & (m-1);
-		uint32_t h3 = hfun3(ips[i] & mask) & (m-1);
-		uint32_t h4 = hfun4(ips[i] & mask) & (m-1);
+		uint32_t h1 = hfun1(ntohl(ips[i] & mask)) & (m-1);
+		uint32_t h2 = hfun2(ntohl(ips[i] & mask)) & (m-1);
+		uint32_t h3 = hfun3(ntohl(ips[i] & mask)) & (m-1);
+		uint32_t h4 = hfun4(ntohl(ips[i] & mask)) & (m-1);
 
 		BF_SET(mem, h1);
 		BF_SET(mem, h2);
 		BF_SET(mem, h3);
 		BF_SET(mem, h4);
 
-		pr_devel("[PFQ|init] bloom filter: -> address %pI4\n", ips+i);
+		pr_devel("[PFQ|init] bloom filter: -> set address %pI4\n", ips+i);
 	}
 
 	return 0;
@@ -219,7 +226,6 @@ static int bloom_fini(arguments_t args)
 	char *mem = GET_ARG_1(char *, args);
 
 	kfree(mem);
-
 	pr_devel("[PFQ|init] bloom filter: memory freed@%p!\n", mem);
 
 	return 0;
