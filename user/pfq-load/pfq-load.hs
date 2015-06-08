@@ -17,6 +17,7 @@
 --
 
 {-# LANGUAGE DeriveDataTypeable #-}
+{-# LANGUAGE LambdaCase #-}
 
 module Main where
 
@@ -34,7 +35,7 @@ import Data.Data
 
 import System.Console.ANSI
 import System.Console.CmdArgs
-import System.Directory (getHomeDirectory)
+import System.Directory (getHomeDirectory, doesFileExist)
 import System.IO.Unsafe
 import System.IO.Error
 import System.Process
@@ -51,6 +52,9 @@ bold  = setSGRCode [SetConsoleIntensity BoldIntensity]
 reset = setSGRCode []
 
 version = "4.5"
+
+configFiles = [ "/etc/pfq.conf", "/root/.pfq.conf" ]
+
 
 data YesNo = Yes | No | Unspec
     deriving (Show, Read, Eq)
@@ -159,7 +163,7 @@ main = do
     -- load options...
     home <- getHomeDirectory
     opt  <- cmdArgsRun options
-    conf <- (<> mkConfig opt) <$> loadConfig (fromMaybe (home </> ".pfq.conf") (config opt)) opt
+    conf <- (<> mkConfig opt) <$> loadConfig (catMaybes (config opt : map Just configFiles)) opt
     pmod <- getProcModules
     core <- getNumberOfPhyCores
     bal  <- getProcessID "irqbalance"
@@ -227,10 +231,19 @@ mkConfig
     }
 
 
-loadConfig :: FilePath -> Options -> IO Config
-loadConfig conf opt =
-    catchIOError (liftM (read . unlines . filter (not . ("#" `isPrefixOf`)) . lines) (readFile conf)) (\_ -> return $ mkConfig opt)
+getFirstConfig :: [FilePath] -> IO (Maybe FilePath)
+getFirstConfig xs = filterM doesFileExist xs >>= \case
+      [ ]   -> return Nothing
+      (x:_) -> return $ Just x
 
+
+loadConfig :: [FilePath] -> Options -> IO Config
+loadConfig confs opt =
+    getFirstConfig confs >>= \case
+        Nothing -> do putStrBoldLn "Using default config..."
+                      return $ mkConfig opt
+        Just conf -> do putStrBoldLn $ "Using " ++ conf ++ " config..."
+                        liftM (read . unlines . filter (not . ("#" `isPrefixOf`)) . lines) (readFile conf)
 
 getNumberOfPhyCores :: IO Int
 getNumberOfPhyCores = readFile proc_cpuinfo >>= \file ->
