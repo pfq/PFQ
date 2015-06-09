@@ -339,11 +339,18 @@ __pfq_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int 
 
 	/* update stats */
 
-	__sparse_add(&to->stats.disc, disc, cpu);
-	__sparse_add(&global_stats.disc, disc, cpu);
-
-	__sparse_add(&to->stats.sent, tot_sent, cpu);
-	__sparse_add(&global_stats.sent, tot_sent, cpu);
+	if (cpu != Q_NO_KTHREAD) {
+		__sparse_add(&to->stats.disc, disc, cpu);
+		__sparse_add(&global_stats.disc, disc, cpu);
+		__sparse_add(&to->stats.sent, tot_sent, cpu);
+		__sparse_add(&global_stats.sent, tot_sent, cpu);
+	}
+	else {
+		sparse_add(&to->stats.disc, disc);
+		sparse_add(&global_stats.disc, disc);
+		sparse_add(&to->stats.sent, tot_sent);
+		sparse_add(&global_stats.sent, tot_sent);
+	}
 
 	/* clear the queue */
 
