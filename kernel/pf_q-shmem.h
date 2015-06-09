@@ -31,7 +31,8 @@
 
 struct pfq_sock;
 
-enum pfq_shmem_kind {
+enum pfq_shmem_kind
+{
 	pfq_shmem_virt,
 	pfq_shmem_user
 };

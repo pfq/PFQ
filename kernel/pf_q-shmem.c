@@ -83,6 +83,8 @@ pfq_mmap(struct file *file, struct socket *sock, struct vm_area_struct *vma)
                 return -EINVAL;
         }
 
+	printk(KERN_INFO "[PFQ] memory user memory: %lu bytes...\n", size);
+
         if((ret = pfq_memory_map(vma, size, so->shmem.addr, VM_LOCKED, so->shmem.kind)) < 0)
                 return ret;
 
@@ -95,15 +97,13 @@ pfq_hugepage_map(struct pfq_shmem_descr *shmem, unsigned long addr, size_t size)
 {
 	int nid;
 
-	printk(KERN_INFO "[PFQ] mapping user memory (HugePages)...\n");
+	printk(KERN_INFO "[PFQ] mapping user memory (HugePages): %zu bytes...\n", size);
 
 	shmem->npages = PAGE_ALIGN(size) / PAGE_SIZE;
 	shmem->hugepages = vmalloc(shmem->npages * sizeof(struct page *));
 
 	if (get_user_pages_fast(addr, shmem->npages, 1, shmem->hugepages) != shmem->npages) {
-
 		vfree(shmem->hugepages);
-
 		shmem->npages = 0;
 		shmem->hugepages = NULL;
 		printk(KERN_WARNING "[PFQ] could not get user pages!\n");
@@ -136,12 +136,10 @@ pfq_hugepage_unmap(struct pfq_shmem_descr *shmem)
 
 	for(i = 0; i < shmem->npages; i++)
 	{
-
 		if (!PageReserved(shmem->hugepages[i]))
 		    SetPageDirty(shmem->hugepages[i]);
 
 		page_cache_release(shmem->hugepages[i]);
-
 	}
 
 	if (current->mm)
