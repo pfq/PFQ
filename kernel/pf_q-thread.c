@@ -48,18 +48,6 @@ struct task_struct *kthread_tx_pool [Q_MAX_CPU] = { [0 ... 255] = NULL };
 
 
 int
-pfq_tx_wakeup(struct pfq_sock *so, int index)
-{
-	if (so->tx_opt.queue[index].task) {
-		wake_up_process(so->tx_opt.queue[index].task);
-		return 0;
-	}
-
-	return -EPERM;
-}
-
-
-int
 pfq_tx_thread(void *_data)
 {
         struct pfq_thread_data *data = (struct pfq_thread_data *)_data;
