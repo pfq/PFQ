@@ -82,11 +82,13 @@ namespace opt
     size_t len     = 1514;
     size_t slots   = 4096;
     size_t npackets = std::numeric_limits<size_t>::max();
+    size_t preload = 1;
 
     std::atomic_int nthreads;
 
     bool   rand_ip = false;
     bool   active_ts = false;
+
     double rate    = 0;
 
     std::vector< std::vector<int> > kthread;
@@ -111,8 +113,24 @@ namespace thread
         , m_band(std::unique_ptr<std::atomic_ullong>(new std::atomic_ullong(0)))
         , m_fail(std::unique_ptr<std::atomic_ullong>(new std::atomic_ullong(0)))
         , m_gen()
-        , m_packet(std::unique_ptr<char[]>(make_packet(opt::len)))
+        , m_packet()
         {
+            /* preload packets */
+
+            for (size_t x = 0; x < opt::preload; x++)
+            {
+                m_packet.emplace_back(make_packet(opt::len));
+
+                auto & ptr = m_packet.back();
+                auto ip = reinterpret_cast<iphdr *>(ptr.get() + 14);
+
+                if (opt::rand_ip)
+                {
+                    ip->saddr = static_cast<uint32_t>(m_gen());
+                    ip->daddr = static_cast<uint32_t>(m_gen());
+                }
+            }
+
             if (m_bind.dev.empty())
                 throw std::runtime_error("context[" + std::to_string (m_id) + "]: device unspecified");
 
@@ -144,17 +162,24 @@ namespace thread
 
         void operator()()
         {
-            if (opt::file.empty()) {
-                if (opt::active_ts)
-                    active_generator();
-                else
-                    generator();
-            }
+            if (m_packet.empty())
+                throw std::runtime_error("pool of packets empty!");
+
+            if (!opt::file.empty()) {
 #ifdef HAVE_PCAP_H
-            else {
                 pcap_generator();
-            }
+#else
+                throw std::runtime_error("pcap support disabled!");
 #endif
+            }
+            else if (opt::active_ts) {
+                active_generator();
+            }
+            else if (opt::preload > 1) {
+                pool_generator();
+            }
+            else generator();
+
             opt::nthreads--;
         }
 
@@ -174,13 +199,14 @@ namespace thread
 
         void generator()
         {
-            auto ip = reinterpret_cast<iphdr *>(m_packet.get() + 14);
+            std::cout << "generator  : online traffic started..." << std::endl;
 
             auto delta = std::chrono::nanoseconds(static_cast<uint64_t>(1000/opt::rate));
+            auto ip    = reinterpret_cast<iphdr *>(m_packet[0].get() + 14);
+            auto now   = std::chrono::system_clock::now();
+            auto len   = opt::len;
 
-            auto now = std::chrono::system_clock::now();
-
-            auto len = opt::len;
+            auto rc = opt::rate != 0.0;
 
             for(size_t n = 0; n < opt::npackets;)
             {
@@ -188,14 +214,14 @@ namespace thread
                 // poor-man rate control...
                 //
 
-                if ((n & 8191) == 0)
+                if (rc && (n & 8191) == 0)
                 {
                     while (std::chrono::system_clock::now() < (now + delta*8192))
                     {}
                     now = std::chrono::system_clock::now();
                 }
 
-                if (!m_pfq.send_async(pfq::const_buffer(reinterpret_cast<const char *>(m_packet.get()), len), opt::flush))
+                if (!m_pfq.send_async(pfq::const_buffer(reinterpret_cast<const char *>(m_packet[0].get()), len), opt::flush))
                 {
                     m_fail->fetch_add(1, std::memory_order_relaxed);
                     continue;
@@ -214,19 +240,60 @@ namespace thread
             }
         }
 
-        void active_generator()
+
+        void pool_generator()
         {
-            auto ip = reinterpret_cast<iphdr *>(m_packet.get() + 14);
+            std::cout << "generator  : " << opt::preload << " preloaded packets..." << std::endl;
 
             auto delta = std::chrono::nanoseconds(static_cast<uint64_t>(1000/opt::rate));
+            auto now   = std::chrono::system_clock::now();
+            auto len   = opt::len;
 
-            auto now = std::chrono::system_clock::now();
+            size_t idx = 0;
 
-            auto len = opt::len;
+            auto rc = opt::rate != 0.0;
 
             for(size_t n = 0; n < opt::npackets;)
             {
-                if (!m_pfq.send_at(pfq::const_buffer(reinterpret_cast<const char *>(m_packet.get()), len), now))
+                idx &= (opt::preload-1);
+
+                //
+                // poor-man rate control...
+                //
+
+                if (rc && (n & 8191) == 0)
+                {
+                    while (std::chrono::system_clock::now() < (now + delta*8192))
+                    {}
+                    now = std::chrono::system_clock::now();
+                }
+
+                if (!m_pfq.send_async(pfq::const_buffer(reinterpret_cast<const char *>(m_packet[idx].get()), len), opt::flush))
+                {
+                    m_fail->fetch_add(1, std::memory_order_relaxed);
+                    continue;
+                }
+
+                idx++;
+
+                m_sent->fetch_add(1, std::memory_order_relaxed);
+                m_band->fetch_add(len, std::memory_order_relaxed);
+
+                n++;
+            }
+        }
+
+
+        void active_generator()
+        {
+            auto delta = std::chrono::nanoseconds(static_cast<uint64_t>(1000/opt::rate));
+            auto ip    = reinterpret_cast<iphdr *>(m_packet[0].get() + 14);
+            auto now   = std::chrono::system_clock::now();
+            auto len   = opt::len;
+
+            for(size_t n = 0; n < opt::npackets;)
+            {
+                if (!m_pfq.send_at(pfq::const_buffer(reinterpret_cast<const char *>(m_packet[0].get()), len), now))
                 {
                     m_fail->fetch_add(1, std::memory_order_relaxed);
                     continue;
@@ -317,7 +384,7 @@ namespace thread
 
         std::mt19937 m_gen;
 
-        std::unique_ptr<char[]> m_packet;
+        std::vector<std::unique_ptr<char[]>> m_packet;
     };
 
 }
@@ -392,6 +459,7 @@ void usage(std::string name)
         " -r --read FILE                Read pcap trace file to send\n"
 #endif
         " -R --rand-ip                  Randomize IP addresses\n"
+        " -P --preload INT              Preload INT packets (must be a power of 2)\n"
         "    --rate DOUBLE              Packet rate in Mpps\n"
         " -a --active-tstamp            Use active timestamp as rate control\n"
         " -f --flush INT                Set flush length, used in sync Tx\n"
@@ -459,6 +527,17 @@ try
             }
 
             opt::npackets = static_cast<size_t>(std::atoi(argv[i]));
+            continue;
+        }
+
+        if ( any_strcmp(argv[i], "-P", "--preload") )
+        {
+            if (++i == argc)
+            {
+                throw std::runtime_error("number missing");
+            }
+
+            opt::preload = static_cast<size_t>(std::atoi(argv[i]));
             continue;
         }
 
@@ -586,6 +665,13 @@ try
 
     if (pfq::hugepages_mountpoint().empty())
         std::cout << "*** Warning: HugePages not mounted ***" << std::endl;
+
+    //
+    // preloaded packets must be a power of 2
+    //
+
+    if (opt::preload & (opt::preload-1))
+        throw std::runtime_error("preloaded packets must be a power of 2");
 
     //
     // create thread context:
