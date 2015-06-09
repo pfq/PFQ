@@ -235,7 +235,7 @@ __pfq_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int 
         /* initialize pointer to the current transmit queue */
 
 	begin = to->queue[idx].base_addr + (index & 1) * soft_txq->size;
-        end   = to->queue[idx].base_addr + 2 * soft_txq->size;
+        end   = begin + soft_txq->size;
 
 	/* initialize the batch */
 
@@ -243,7 +243,8 @@ __pfq_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int 
 
 	/* Tx loop */
 
-	hdr = (struct pfq_pkthdr_tx *)(ptr = begin);
+	ptr = begin;
+	hdr = (struct pfq_pkthdr_tx *)begin;
 	now = ktime_get_real();
 
 	for(; ptr < end && hdr->len != 0; hdr = (struct pfq_pkthdr_tx *)ptr)
