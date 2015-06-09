@@ -578,7 +578,7 @@ void test_tx_thread()
 {
         pfq_t * q = pfq_open(64, 1024);
 
-        assert(pfq_bind_tx(q, "lo", Q_ANY_QUEUE, Q_ANY_CPU) == 0);
+        assert(pfq_bind_tx(q, "lo", Q_ANY_QUEUE, 0) == 0);
         assert(pfq_enable(q) == 0);
 
         pfq_close(q);

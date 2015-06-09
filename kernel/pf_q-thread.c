@@ -103,6 +103,7 @@ pfq_stop_all_tx_threads(struct pfq_sock *so)
 
 			kthread_stop(so->tx_opt.queue[n].task);
 			kthread_tx_pool[so->tx_opt.queue[n].cpu % Q_MAX_CPU] = NULL;
+
 			so->tx_opt.queue[n].task = NULL;
 			so->tx_opt.queue[n].cpu = -1;
 		}

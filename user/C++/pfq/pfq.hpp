@@ -97,8 +97,6 @@ namespace pfq {
     static constexpr int any_device  = Q_ANY_DEVICE;
     static constexpr int any_queue   = Q_ANY_QUEUE;
     static constexpr int any_group   = Q_ANY_GROUP;
-
-    static constexpr int any_cpu     = Q_ANY_CPU;
     static constexpr int no_kthread  = Q_NO_KTHREAD;
 
     //////////////////////////////////////////////////////////////////////
