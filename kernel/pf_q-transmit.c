@@ -187,6 +187,27 @@ ktime_t wait_until(uint64_t ts)
 }
 
 
+static inline
+int swap_tx_queue(struct pfq_tx_queue *txs, int cpu, int *index)
+{
+	if (cpu != Q_NO_KTHREAD) {
+		*index = __atomic_add_fetch(&txs->cons, 1, __ATOMIC_RELAXED);
+		while (*index != __atomic_load_n(&txs->prod, __ATOMIC_RELAXED))
+		{
+			pfq_relax();
+			if (giveup_tx_process())
+				return -EINTR;
+		}
+	}
+	else {
+		*index = __atomic_add_fetch(&txs->cons, 1, __ATOMIC_RELAXED);
+		__atomic_store_n(&txs->prod, 1, __ATOMIC_RELAXED);
+	}
+
+	return 0;
+}
+
+
 int
 __pfq_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int cpu, int node)
 {
@@ -212,19 +233,8 @@ __pfq_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int 
 
 	/* swap the soft Tx queue */
 
-	if (cpu != Q_NO_KTHREAD) {
-		index = __atomic_add_fetch(&soft_txq->cons, 1, __ATOMIC_RELAXED);
-		while (index != __atomic_load_n(&soft_txq->prod, __ATOMIC_RELAXED))
-		{
-			pfq_relax();
-			if (giveup_tx_process())
-				break;
-		}
-	}
-	else {
-		index = __atomic_add_fetch(&soft_txq->cons, 1, __ATOMIC_RELAXED);
-		__atomic_store_n(&soft_txq->prod, 1, __ATOMIC_RELAXED);
-	}
+	if ((index = swap_tx_queue(txs, cpu, &index)) < 0)
+		return -EINTR;
 
 	index++;
 
