@@ -212,31 +212,24 @@ bool traverse_tx_queue(char *ptr, char *begin, char *end, int idx)
 {
 	struct pfq_pkthdr_tx *hdr = (struct pfq_pkthdr_tx *)ptr;
 
-	if (ptr < begin || ptr >= end) {
 #ifdef PFQ_DEBUG
+	if (ptr < begin || ptr >= end) {
 		printk(KERN_INFO "[PFQ] BUG: queue[%d] ptr overflow: %p: [%p,%p]\n", idx,
 		       ptr, begin, end);
-#endif
-		return false;
-	}
-
-	if ((char *)hdr < begin || (char *)hdr >= end) {
-#ifdef PFQ_DEBUG
-		printk(KERN_INFO "[PFQ] BUG: queue[%d] hdr overflow: %p [%p,%p]\n", idx,
-		       hdr, begin, end);
-#endif
 		return false;
 	}
 
 	if (hdr->len > 2048) {
-#ifdef PFQ_DEBUG
 		printk(KERN_INFO "[PFQ] BUG: queue[%d]@offset=%zu bad hdr->len: %zu@%p [%p,%p]\n", idx,
 		       ptr-begin, hdr->len, hdr, begin, end);
-#endif
 		return false;
 	}
 
 	return hdr->len != 0;
+#else
+	return ptr < end && (hdr->len !=0);
+#endif
+
 }
 
 
