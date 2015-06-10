@@ -43,39 +43,6 @@
 using namespace pfq;
 
 
-
-char *make_packet(size_t n)
-{
-    static unsigned char ping[98] =
-    {
-        0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xf0, 0xbf, /* L`..UF.. */
-        0x97, 0xe2, 0xff, 0xae, 0x08, 0x00, 0x45, 0x00, /* ......E. */
-        0x00, 0x54, 0xb3, 0xf9, 0x40, 0x00, 0x40, 0x01, /* .T..@.@. */
-        0xf5, 0x32, 0xc0, 0xa8, 0x00, 0x02, 0xad, 0xc2, /* .2...... */
-        0x23, 0x10, 0x08, 0x00, 0xf2, 0xea, 0x42, 0x04, /* #.....B. */
-        0x00, 0x01, 0xfe, 0xeb, 0xfc, 0x52, 0x00, 0x00, /* .....R.. */
-        0x00, 0x00, 0x06, 0xfe, 0x02, 0x00, 0x00, 0x00, /* ........ */
-        0x00, 0x00, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, /* ........ */
-        0x16, 0x17, 0x18, 0x19, 0x1a, 0x1b, 0x1c, 0x1d, /* ........ */
-        0x1e, 0x1f, 0x20, 0x21, 0x22, 0x23, 0x24, 0x25, /* .. !"#$% */
-        0x26, 0x27, 0x28, 0x29, 0x2a, 0x2b, 0x2c, 0x2d, /* &'()*+,- */
-        0x2e, 0x2f, 0x30, 0x31, 0x32, 0x33, 0x34, 0x35, /* ./012345 */
-        0x36, 0x37                                      /* 67 */
-    };
-
-    auto p = new char[n];
-
-    memcpy(p, ping, std::min(n, sizeof(ping)));
-
-    for(auto i = sizeof(ping); i < n; i++)
-    {
-        p[i] = static_cast<char>(0x38 + i - sizeof(ping));
-    }
-
-    return p;
-}
-
-
 namespace opt
 {
     size_t flush   = 1;
@@ -99,6 +66,55 @@ namespace opt
 #endif
 }
 
+
+char *make_packets(size_t size, size_t numb)
+{
+    static unsigned char ping[98] =
+    {
+        0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xf0, 0xbf, /* L`..UF.. */
+        0x97, 0xe2, 0xff, 0xae, 0x08, 0x00, 0x45, 0x00, /* ......E. */
+        0x00, 0x54, 0xb3, 0xf9, 0x40, 0x00, 0x40, 0x01, /* .T..@.@. */
+        0xf5, 0x32, 0xc0, 0xa8, 0x00, 0x02, 0xad, 0xc2, /* .2...... */
+        0x23, 0x10, 0x08, 0x00, 0xf2, 0xea, 0x42, 0x04, /* #.....B. */
+        0x00, 0x01, 0xfe, 0xeb, 0xfc, 0x52, 0x00, 0x00, /* .....R.. */
+        0x00, 0x00, 0x06, 0xfe, 0x02, 0x00, 0x00, 0x00, /* ........ */
+        0x00, 0x00, 0x10, 0x11, 0x12, 0x13, 0x14, 0x15, /* ........ */
+        0x16, 0x17, 0x18, 0x19, 0x1a, 0x1b, 0x1c, 0x1d, /* ........ */
+        0x1e, 0x1f, 0x20, 0x21, 0x22, 0x23, 0x24, 0x25, /* .. !"#$% */
+        0x26, 0x27, 0x28, 0x29, 0x2a, 0x2b, 0x2c, 0x2d, /* &'()*+,- */
+        0x2e, 0x2f, 0x30, 0x31, 0x32, 0x33, 0x34, 0x35, /* ./012345 */
+        0x36, 0x37                                      /* 67 */
+    };
+
+    char * area = new char[size * numb];
+
+    std::mt19937 gen;
+
+    for(size_t i = 0; i < numb; ++i)
+    {
+        char * packet = area + i * size;
+
+        memcpy(packet, ping, std::min(size, sizeof(ping)));
+
+        for(auto n = sizeof(ping); n < size; n++)
+        {
+            packet[n] = static_cast<char>(0x38 + n - sizeof(ping));
+        }
+
+        /* randomize IP address */
+
+        auto ip = reinterpret_cast<iphdr *>(packet + 14);
+        if (opt::rand_ip)
+        {
+            ip->saddr = static_cast<uint32_t>(gen());
+            ip->daddr = static_cast<uint32_t>(gen());
+        }
+    }
+
+    return area;
+}
+
+
 using namespace more;
 
 namespace thread
@@ -113,23 +129,8 @@ namespace thread
         , m_band(std::unique_ptr<std::atomic_ullong>(new std::atomic_ullong(0)))
         , m_fail(std::unique_ptr<std::atomic_ullong>(new std::atomic_ullong(0)))
         , m_gen()
-        , m_packet()
+        , m_packet(make_packets(opt::len, opt::preload))
         {
-            /* preload packets */
-
-            for (size_t x = 0; x < opt::preload; x++)
-            {
-                m_packet.emplace_back(make_packet(opt::len));
-
-                auto & ptr = m_packet.back();
-                auto ip = reinterpret_cast<iphdr *>(ptr.get() + 14);
-
-                if (opt::rand_ip)
-                {
-                    ip->saddr = static_cast<uint32_t>(m_gen());
-                    ip->daddr = static_cast<uint32_t>(m_gen());
-                }
-            }
 
             if (m_bind.dev.empty())
                 throw std::runtime_error("context[" + std::to_string (m_id) + "]: device unspecified");
@@ -162,7 +163,7 @@ namespace thread
 
         void operator()()
         {
-            if (m_packet.empty())
+            if (!m_packet)
                 throw std::runtime_error("pool of packets empty!");
 
             if (!opt::file.empty()) {
@@ -202,7 +203,7 @@ namespace thread
             std::cout << "generator  : online traffic started..." << std::endl;
 
             auto delta = std::chrono::nanoseconds(static_cast<uint64_t>(1000/opt::rate));
-            auto ip    = reinterpret_cast<iphdr *>(m_packet[0].get() + 14);
+            auto ip    = reinterpret_cast<iphdr *>(m_packet.get() + 14);
             auto now   = std::chrono::system_clock::now();
             auto len   = opt::len;
 
@@ -221,7 +222,7 @@ namespace thread
                     now = std::chrono::system_clock::now();
                 }
 
-                if (!m_pfq.send_async(pfq::const_buffer(reinterpret_cast<const char *>(m_packet[0].get()), len), opt::flush))
+                if (!m_pfq.send_async(pfq::const_buffer(reinterpret_cast<const char *>(m_packet.get()), len), opt::flush))
                 {
                     m_fail->fetch_add(1, std::memory_order_relaxed);
                     continue;
@@ -268,7 +269,7 @@ namespace thread
                     now = std::chrono::system_clock::now();
                 }
 
-                if (!m_pfq.send_async(pfq::const_buffer(reinterpret_cast<const char *>(m_packet[idx].get()), len), opt::flush))
+                if (!m_pfq.send_async(pfq::const_buffer(reinterpret_cast<const char *>(m_packet.get() + idx * opt::len), len), opt::flush))
                 {
                     m_fail->fetch_add(1, std::memory_order_relaxed);
                     continue;
@@ -287,13 +288,13 @@ namespace thread
         void active_generator()
         {
             auto delta = std::chrono::nanoseconds(static_cast<uint64_t>(1000/opt::rate));
-            auto ip    = reinterpret_cast<iphdr *>(m_packet[0].get() + 14);
+            auto ip    = reinterpret_cast<iphdr *>(m_packet.get() + 14);
             auto now   = std::chrono::system_clock::now();
             auto len   = opt::len;
 
             for(size_t n = 0; n < opt::npackets;)
             {
-                if (!m_pfq.send_at(pfq::const_buffer(reinterpret_cast<const char *>(m_packet[0].get()), len), now))
+                if (!m_pfq.send_at(pfq::const_buffer(reinterpret_cast<const char *>(m_packet.get()), len), now))
                 {
                     m_fail->fetch_add(1, std::memory_order_relaxed);
                     continue;
@@ -384,7 +385,7 @@ namespace thread
 
         std::mt19937 m_gen;
 
-        std::vector<std::unique_ptr<char[]>> m_packet;
+        std::unique_ptr<char[]> m_packet;
     };
 
 }
