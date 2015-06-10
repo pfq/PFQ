@@ -175,19 +175,19 @@ static inline
 unsigned int pfq_fold(unsigned int hash, unsigned int n)
 {
         hash = hash ^ (hash >> 8) ^ (hash >> 16) ^ (hash >> 24);
-	return hash % n;
+		return hash % n;
 
-        /* switch(n) {
-	 *     case 1: return 0;
-         *     case 2: return hash & 1;
-         *     case 3: {
-         *         return (hash & 3) != 3 ? (hash & 3) : 0;
-         *     }
-         *     case 4: return hash & 3;
-         * }
+		/* switch(n) {
+		 *     case 1: return 0;
+		 *     case 2: return hash & 1;
+		 *     case 3: {
+		 *         return (hash & 3) != 3 ? (hash & 3) : 0;
+		 *     }
+		 *     case 4: return hash & 3;
+		 * }
 
-         * return hash % n;
-         */
+		 * return hash % n;
+		 */
 }
 
 

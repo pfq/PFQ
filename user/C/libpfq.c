@@ -1069,8 +1069,7 @@ pfq_inject(pfq_t *q, const void *buf, size_t len, uint64_t nsec, int queue)
 	if (q->shm_addr == NULL)
 		return Q_ERROR(q, "PFQ: inject: socket not enabled");
 
-	tss = fold(queue == any_queue ? symmetric_hash(buf) : queue,
-                                 data_->tx_num_bind);
+	tss = pfq_fold((queue == Q_ANY_QUEUE ? pfq_symmetric_hash(buf) : (unsigned int)queue), q->tx_num_bind);
 
         tx = (struct pfq_tx_queue *)&sh_queue->tx[tss];
 
