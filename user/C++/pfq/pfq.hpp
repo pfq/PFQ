@@ -1335,16 +1335,13 @@ namespace pfq {
          */
 
         bool
-        inject(const_buffer buf, uint64_t ts, int queue = any_queue)
+        inject(const_buffer buf, uint64_t nsec, int queue = any_queue)
         {
             if (!data_->shm_addr)
                 throw pfq_error("PFQ: inject: socket not enabled");
 
-            const int tss = [=]() -> size_t {
-                if (queue == any_queue)
-                    return fold(symmetric_hash(buf.first), data_->tx_num_bind);
-                return fold(queue, data_->tx_num_bind);
-            }();
+            const int tss = fold(queue == any_queue ? symmetric_hash(buf.first) : queue,
+                                 data_->tx_num_bind);
 
             auto tx = &static_cast<struct pfq_shared_queue *>(data_->shm_addr)->tx[tss];
 
@@ -1354,10 +1351,13 @@ namespace pfq {
                 __atomic_store_n(&tx->prod, index, __ATOMIC_RELAXED);
             }
 
+            // get base address of the soft Tx queue:
+            //
 	        void * base_addr = static_cast<char *>(data_->tx_queue_addr)
 	                            + data_->tx_queue_size * (2 * tss + (index & 1));
 
-            if (index != tx->index) {
+            if (index != tx->index)
+            {
                     tx->index = index;
                     tx->ptr = base_addr;
             }
@@ -1366,19 +1366,23 @@ namespace pfq {
             //
 
             auto len = std::min(buf.second, data_->tx_slot_size - sizeof(struct pfq_pkthdr_tx));
+
+            // compute the current slot_size:
+            //
             auto slot_size = sizeof(struct pfq_pkthdr_tx) + align<8>(len);
 
-            if ((static_cast<char *>(tx->ptr) - static_cast<char *>(base_addr)
-                 + slot_size + sizeof(struct pfq_pkthdr_tx)) < data_->tx_queue_size)
+            // ensure there's space enough for the current slot_size + the next header:
+            //
+            if ((static_cast<char *>(tx->ptr) - static_cast<char *>(base_addr) + slot_size + sizeof(struct pfq_pkthdr_tx))
+                    < data_->tx_queue_size)
             {
                 auto hdr = (struct pfq_pkthdr_tx *)tx->ptr;
                 hdr->len = len;
-                hdr->nsec = ts;
-                memcpy(hdr+1, buf.first, hdr->len);
+                hdr->nsec = nsec;
+                memcpy(hdr+1, buf.first, len);
 
                 reinterpret_cast<char *&>(tx->ptr) += slot_size;
-                hdr = (struct pfq_pkthdr_tx *)tx->ptr;
-                hdr->len = 0;
+                static_cast<struct pfq_pkthdr_tx *>(tx->ptr)->len = 0;
 
                 return true;
             }
