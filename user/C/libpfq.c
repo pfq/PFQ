@@ -1092,6 +1092,7 @@ pfq_inject(pfq_t *q, const void *buf, size_t len, uint64_t nsec, int queue)
 	}
 
 	slot_size = sizeof(struct pfq_pkthdr_tx) + ALIGN(len, 8);
+	len = min(len, q->tx_slot_size - sizeof(struct pfq_pkthdr_tx));
 
 	if ((tx->ptr - base_addr + slot_size + sizeof(struct pfq_pkthdr_tx)) < q->tx_queue_size)
 	{

@@ -1362,7 +1362,10 @@ namespace pfq {
                     tx->ptr = base_addr;
             }
 
-            auto len = buf.second;
+            // cut the packet to maxlen:
+            //
+
+            auto len = std::min(buf.second, data_->tx_slot_size - sizeof(struct pfq_pkthdr_tx));
             auto slot_size = sizeof(struct pfq_pkthdr_tx) + align<8>(len);
 
             if ((static_cast<char *>(tx->ptr) - static_cast<char *>(base_addr)
