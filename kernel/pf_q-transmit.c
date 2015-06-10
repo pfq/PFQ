@@ -141,7 +141,6 @@ full_batch_xmit(struct local_data *local, struct pfq_skbuff_batch *skbs, struct 
 		/* attempt to transmit it */
 
 		sent = pfq_batch_xmit(skbs, dev, hw_queue);
-
 		if (sent == 0) {
 			/* if no packets are sent */
 			pfq_relax();
@@ -212,20 +211,18 @@ int
 __pfq_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int cpu, int node)
 {
 	struct pfq_skbuff_short_batch skbs;
-	struct pfq_tx_queue *soft_txq;
+	struct pfq_tx_queue *txs;
 	struct pfq_pkthdr_tx * hdr;
 	struct local_data *local;
 	size_t len, disc = 0, tot_sent = 0;
-	unsigned int index;
-	int hw_queue;
+	int hw_queue, index;
 
 	char *ptr, *begin, *end;
         ktime_t now; uint64_t last_ts;
 
-
 	/* get the Tx queue */
 
-	soft_txq = pfq_get_tx_queue(to, idx);
+	txs = pfq_get_tx_queue(to, idx);
 
 	/* get the netdev_queue for transmission */
 
@@ -244,8 +241,8 @@ __pfq_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int 
 
         /* initialize pointer to the current transmit queue */
 
-	begin = to->queue[idx].base_addr + (index & 1) * soft_txq->size;
-        end   = begin + soft_txq->size;
+	begin = to->queue[idx].base_addr + (index & 1) * txs->size;
+        end   = begin + txs->size;
 
 	/* initialize the batch */
 
@@ -253,12 +250,13 @@ __pfq_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int 
 
 	/* Tx loop */
 
+	now = ktime_get_real();
 	ptr = begin;
 	hdr = (struct pfq_pkthdr_tx *)begin;
-	now = ktime_get_real();
 
-	for(; ptr < end && hdr->len != 0; hdr = (struct pfq_pkthdr_tx *)ptr)
+	for(; (ptr < end) && (hdr->len != 0); hdr = (struct pfq_pkthdr_tx *)ptr)
 	{
+
 		struct sk_buff *skb;
 
 		/* get the tstamp of this packet */
@@ -319,13 +317,12 @@ __pfq_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int 
 		tot_sent += (sent >= 0 ? sent : ~sent);
 	}
 
-	/* packet unsent from the last batch need to be freed */
+	/* free packet unsent from the last batch */
 
 	disc = pfq_skbuff_batch_len(SKBUFF_BATCH_ADDR(skbs));
 	if (disc) {
 		struct sk_buff *skb;
 		size_t n;
-
 		for_each_skbuff(SKBUFF_BATCH_ADDR(skbs), skb, n)
 			pfq_kfree_skb_pool(skb, &local->tx_pool);
 	}

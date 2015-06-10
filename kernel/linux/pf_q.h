@@ -201,7 +201,7 @@ struct pfq_tx_queue
         unsigned int            cons;
         size_t			size;	    /* queue length in bytes */
 
-	void __user *		ptr;	    /* reserved for user-space */
+	void *			ptr;	    /* reserved for user-space */
 	unsigned int		index;	    /* reserved for user-space */
 
 } __attribute__((aligned(64)));
@@ -256,8 +256,8 @@ struct pfq_pkthdr
 
 struct pfq_pkthdr_tx
 {
-	uint64_t len;
 	uint64_t nsec; /* absolute timestamp */
+	size_t   len;
 };
 
 
