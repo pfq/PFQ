@@ -187,7 +187,7 @@ ktime_t wait_until(uint64_t ts)
 
 
 static inline
-int swap_tx_queue(struct pfq_tx_queue *txs, int cpu, int *index)
+int swap_tx_queue_and_wait(struct pfq_tx_queue *txs, int cpu, int *index)
 {
 	if (cpu != Q_NO_KTHREAD) {
 		*index = __atomic_add_fetch(&txs->cons, 1, __ATOMIC_RELAXED);
@@ -207,18 +207,52 @@ int swap_tx_queue(struct pfq_tx_queue *txs, int cpu, int *index)
 }
 
 
+static inline
+bool traverse_tx_queue(char *ptr, char *begin, char *end, int idx)
+{
+	struct pfq_pkthdr_tx *hdr = (struct pfq_pkthdr_tx *)ptr;
+
+	if (ptr < begin || ptr >= end) {
+#ifdef PFQ_DEBUG
+		printk(KERN_INFO "[PFQ] BUG: queue[%d] ptr overflow: %p: [%p,%p]\n", idx,
+		       ptr, begin, end);
+#endif
+		return false;
+	}
+
+	if ((char *)hdr < begin || (char *)hdr >= end) {
+#ifdef PFQ_DEBUG
+		printk(KERN_INFO "[PFQ] BUG: queue[%d] hdr overflow: %p [%p,%p]\n", idx,
+		       hdr, begin, end);
+#endif
+		return false;
+	}
+
+	if (hdr->len > 2048) {
+#ifdef PFQ_DEBUG
+		printk(KERN_INFO "[PFQ] BUG: queue[%d]@offset=%zu bad hdr->len: %zu@%p [%p,%p]\n", idx,
+		       ptr-begin, hdr->len, hdr, begin, end);
+#endif
+		return false;
+	}
+
+	return hdr->len != 0;
+}
+
+
 int
 __pfq_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int cpu, int node)
 {
+	size_t len, disc = 0, tot_sent = 0;
 	struct pfq_skbuff_short_batch skbs;
 	struct pfq_tx_queue *txs;
-	struct pfq_pkthdr_tx * hdr;
 	struct local_data *local;
-	size_t len, disc = 0, tot_sent = 0;
-	int hw_queue, index;
+	int hw_queue, swap;
+        int err;
 
 	char *ptr, *begin, *end;
-        ktime_t now; uint64_t last_ts;
+        ktime_t now;
+        uint64_t last_ts;
 
 	/* get the Tx queue */
 
@@ -228,21 +262,23 @@ __pfq_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int 
 
 	hw_queue = to->queue[idx].hw_queue;
 
-	/* swap the soft Tx queue */
-
-	if ((index = swap_tx_queue(txs, cpu, &index)) < 0)
-		return -EINTR;
-
-	index++;
-
 	/* get local cpu data */
 
 	local = this_cpu_ptr(cpu_data);
 
+	/* swap the soft Tx queue */
+
+	if ((err = swap_tx_queue_and_wait(txs, cpu, &swap)) < 0)
+		return err;
+
+	/* increment the swap index of the current queue */
+
+	swap++;
+
         /* initialize pointer to the current transmit queue */
 
-	begin = to->queue[idx].base_addr + (index & 1) * txs->size;
-        end   = begin + txs->size;
+	begin = to->queue[idx].base_addr + (swap & 1) * txs->size;
+        end = begin + txs->size;
 
 	/* initialize the batch */
 
@@ -252,11 +288,10 @@ __pfq_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int 
 
 	now = ktime_get_real();
 	ptr = begin;
-	hdr = (struct pfq_pkthdr_tx *)begin;
 
-	for(; (ptr < end) && (hdr->len != 0); hdr = (struct pfq_pkthdr_tx *)ptr)
+	while(traverse_tx_queue(ptr, begin, end, idx))
 	{
-
+		struct pfq_pkthdr_tx * hdr = (struct pfq_pkthdr_tx *)ptr;
 		struct sk_buff *skb;
 
 		/* get the tstamp of this packet */
@@ -293,6 +328,7 @@ __pfq_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int 
 		skb_reset_tail_pointer(skb);
 		skb->dev = dev;
 		skb->len = 0;
+
 		__skb_put(skb, len);
 
 		skb_set_queue_mapping(skb, hw_queue);
@@ -308,6 +344,7 @@ __pfq_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int 
 		/* move ptr to the next packet */
 
 		ptr += sizeof(struct pfq_pkthdr_tx) + ALIGN(hdr->len, 8);
+		hdr = (struct pfq_pkthdr_tx *)ptr;
 	}
 
 	/* flush the current batch */
@@ -329,9 +366,11 @@ __pfq_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int 
 
 	/* disc takes into account for the packets left in the shared queue */
 
-	for(; ptr < end && hdr->len != 0; disc++, hdr = (struct pfq_pkthdr_tx *)ptr)
+	while(traverse_tx_queue(ptr, begin, end, idx))
 	{
+		struct pfq_pkthdr_tx *hdr = (struct pfq_pkthdr_tx *)ptr;
 		ptr += sizeof(struct pfq_pkthdr_tx) + ALIGN(hdr->len, 8);
+		disc++;
 	}
 
 	/* update stats */
@@ -350,9 +389,10 @@ __pfq_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int 
 	}
 
 	/* clear the queue */
-
-	hdr = (struct pfq_pkthdr_tx *)begin;
-        hdr->len = 0;
+	{
+		struct pfq_pkthdr_tx *hdr = (struct pfq_pkthdr_tx *)begin;
+		hdr->len = 0;
+	}
 
 	return tot_sent;
 }
