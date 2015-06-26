@@ -234,7 +234,7 @@ extern pfq_t* pfq_open_default();
  * Q_POLICY_GROUP_PRIVATE, respectively.
  */
 
-extern pfq_t* pfq_open(size_t calpen, size_t slots);
+extern pfq_t* pfq_open(size_t caplen, size_t slots);
 
 
 /*! Open the socket and create a new private group. */
@@ -268,7 +268,7 @@ extern pfq_t* pfq_open_nogroup_(size_t caplen, size_t rx_slots, size_t tx_slots)
  */
 
 extern pfq_t* pfq_open_group(unsigned long class_mask, int group_policy,
-                size_t calpen, size_t rx_slots, size_t tx_slots);
+                size_t caplen, size_t rx_slots, size_t tx_slots);
 
 /*! Close the socket. */
 
