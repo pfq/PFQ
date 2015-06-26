@@ -60,12 +60,12 @@
 #include <poll.h>
 
 
-static 	int pfq_activate_linux(pcap_t *);
-static 	int pfq_inject_linux(pcap_t *, const void *, size_t);
+static void pfq_cleanup_linux(pcap_t *);
+static	int pfq_activate_linux(pcap_t *);
+static	int pfq_inject_linux(pcap_t *, const void *, size_t);
 static	int pfq_setdirection_linux(pcap_t *, pcap_direction_t);
-static  void pfq_cleanup_linux(pcap_t *);
-static 	int pfq_read_linux(pcap_t *, int, pcap_handler, u_char *);
-static 	int pfq_stats_linux(pcap_t *, struct pcap_stat *);
+static	int pfq_read_linux(pcap_t *, int, pcap_handler, u_char *);
+static	int pfq_stats_linux(pcap_t *, struct pcap_stat *);
 
 
 pcap_t
@@ -371,10 +371,10 @@ string_first_token(const char *ds, const char *sep)
 	if (*ds == ':')
 		ds++;
 	if ((end = strstr(ds, sep))) {
-        	char *ret = malloc(end - ds + 1);
-        	strncpy(ret, ds, end - ds);
-         	ret[end - ds] = '\0';
-         	return ret;
+		char *ret = malloc(end - ds + 1);
+		strncpy(ret, ds, end - ds);
+		ret[end - ds] = '\0';
+		return ret;
 	}
 
 	if (*ds == '\0')
@@ -477,9 +477,9 @@ pfq_count_tx_queues(struct pfq_opt const *opt)
 
         for(n = 0; n < 4; n++)
         {
-        	if (opt->tx_queue[n] != Q_ANY_QUEUE ||
-		    	opt->tx_task[n]  != Q_NO_KTHREAD)
-        		txq = n+1;
+		if (opt->tx_queue[n] != Q_ANY_QUEUE ||
+		    opt->tx_task[n]  != Q_NO_KTHREAD)
+			txq = n+1;
 	}
 
 	return txq > 0 ? txq : 1;
@@ -491,11 +491,11 @@ pfq_getenv(pcap_t *handle)
 {
 	char *opt;
 
- 	struct pfq_opt rc =
- 	{
-       		.group    = -1,
-       		.caplen   = handle->snapshot,
-       		.rx_slots = 4096,
+	struct pfq_opt rc =
+	{
+		.group    = -1,
+		.caplen   = handle->snapshot,
+		.rx_slots = 4096,
 		.tx_slots = 4096,
 		.tx_flush = 1,
 		.tx_async = 0,
@@ -557,16 +557,16 @@ pfq_parse_filename(const char *device)
 
 #define KEY(value) [KEY_ ## value] = # value
 
-#define KEY_ERR 	       -1
-#define KEY_group 	       	0
-#define KEY_caplen 	    	1
+#define KEY_ERR			-1
+#define KEY_group		0
+#define KEY_caplen		1
 #define KEY_rx_slots		2
 #define KEY_tx_slots            3
-#define KEY_tx_flush 		4
-#define KEY_tx_queue 		5
-#define KEY_tx_task 		6
-#define KEY_vlan 		7
-#define KEY_computation 	8
+#define KEY_tx_flush		4
+#define KEY_tx_queue		5
+#define KEY_tx_task		6
+#define KEY_vlan		7
+#define KEY_computation		8
 
 
 struct pfq_conf_key {
@@ -591,8 +591,8 @@ pfq_conf_find_key(const char *key)
 	int n;
 	for(n = 0; n < sizeof(pfq_conf_keys)/sizeof(pfq_conf_keys[0]); n++)
 	{
-        	if (strcasecmp(pfq_conf_keys[n].value, key) == 0)
-        		return n;
+		if (strcasecmp(pfq_conf_keys[n].value, key) == 0)
+			return n;
 	}
 	return -1;
 }
@@ -635,25 +635,25 @@ pfq_parse_config(struct pfq_opt *opt, const char *filename)
 
 			switch(pfq_conf_find_key(tkey))
 			{
-				case KEY_group:  	opt->group 	= atoi(value); 	break;
-				case KEY_caplen:	opt->caplen 	= atoi(value);  break;
-				case KEY_rx_slots: 	opt->rx_slots 	= atoi(value);  break;
-				case KEY_tx_slots:	opt->tx_slots 	= atoi(value);  break;
-				case KEY_tx_flush:	opt->tx_flush   = atoi(value);  break;
+				case KEY_group:		opt->group    = atoi(value);  break;
+				case KEY_caplen:	opt->caplen   = atoi(value);  break;
+				case KEY_rx_slots:	opt->rx_slots = atoi(value);  break;
+				case KEY_tx_slots:	opt->tx_slots = atoi(value);  break;
+				case KEY_tx_flush:	opt->tx_flush = atoi(value);  break;
 				case KEY_tx_queue:  {
 					if (pfq_parse_integers(opt->tx_queue, 4, value) < 0) {
 						fprintf(stderr, "[PFQ] %s: parse error at: %s\n", filename, tkey);
-					 	rc = -1;
+						rc = -1;
 					}
 				} break;
 				case KEY_tx_task:   {
 					if (pfq_parse_integers(opt->tx_task, 4, value) < 0) {
 						fprintf(stderr, "[PFQ] %s: parse error at: %s\n", filename, tkey);
-					 	rc = -1;
+						rc = -1;
 					}
 				} break;
-				case KEY_vlan:		opt->vlan 	= strdup(string_trim(value)); break;
-				case KEY_computation:	opt->comp 	= strdup(string_trim(value)); break;
+				case KEY_vlan:		opt->vlan = strdup(string_trim(value)); break;
+				case KEY_computation:	opt->comp = strdup(string_trim(value)); break;
 				case KEY_ERR: {
 					fprintf(stderr, "[PFQ] %s: unknown keyword '%s'\n", filename, tkey);
 					rc = -1;
@@ -697,7 +697,7 @@ pfq_activate_linux(pcap_t *handle)
 
 	if (*device == '/') {
 
-       	 	config = pfq_parse_filename(device);
+		config = pfq_parse_filename(device);
 		if (config == NULL) {
 			fprintf(stderr, "[PFQ] parse filename error: %s\n", device);
 			return -1;
@@ -706,7 +706,7 @@ pfq_activate_linux(pcap_t *handle)
 		free_config = 1;
 	}
 	else {
-        	config = getenv("PFQ_CONFIG");
+		config = getenv("PFQ_CONFIG");
 	}
 
         if (config != NULL) {
@@ -721,7 +721,7 @@ pfq_activate_linux(pcap_t *handle)
 	}
 
 	colon = strstr(device ,":");
-       	if (colon != NULL)
+	if (colon != NULL)
 		device = colon;
 
         if (handle->opt.pfq.caplen > maxlen || handle->opt.pfq.caplen == 0) {
@@ -730,27 +730,27 @@ pfq_activate_linux(pcap_t *handle)
         }
 
 	if (handle->opt.buffer_size/handle->opt.pfq.caplen > handle->opt.pfq.rx_slots)
-        	handle->opt.pfq.rx_slots = handle->opt.buffer_size/handle->opt.pfq.caplen;
+		handle->opt.pfq.rx_slots = handle->opt.buffer_size/handle->opt.pfq.caplen;
 
 
-        fprintf(stderr, "[PFQ] buffer_size = %d caplen = %d, rx_slots = %d, tx_slots = %d, tx_flush = %d\n",
-        		handle->opt.buffer_size,
-        		handle->opt.pfq.caplen,
-        		handle->opt.pfq.rx_slots,
-        		handle->opt.pfq.tx_slots,
-        		handle->opt.pfq.tx_flush);
+	fprintf(stderr, "[PFQ] buffer_size = %d caplen = %d, rx_slots = %d, tx_slots = %d, tx_flush = %d\n",
+		handle->opt.buffer_size,
+		handle->opt.pfq.caplen,
+		handle->opt.pfq.rx_slots,
+		handle->opt.pfq.tx_slots,
+		handle->opt.pfq.tx_flush);
 
-	handle->read_op 		= pfq_read_linux;
-	handle->inject_op 		= pfq_inject_linux;
-	handle->setfilter_op 		= pfq_setfilter_linux;
-	handle->setdirection_op 	= pfq_setdirection_linux;
-	handle->getnonblock_op 		= pcap_getnonblock_fd;
-	handle->setnonblock_op 		= pcap_setnonblock_fd;
-	handle->stats_op 		= pfq_stats_linux;
-	handle->cleanup_op 		= pfq_cleanup_linux;
-	handle->set_datalink_op 	= NULL;	/* can't change data link type */
+	handle->read_op		= pfq_read_linux;
+	handle->inject_op	= pfq_inject_linux;
+	handle->setfilter_op	= pfq_setfilter_linux;
+	handle->setdirection_op	= pfq_setdirection_linux;
+	handle->getnonblock_op	= pcap_getnonblock_fd;
+	handle->setnonblock_op	= pcap_setnonblock_fd;
+	handle->stats_op	= pfq_stats_linux;
+	handle->cleanup_op	= pfq_cleanup_linux;
+	handle->set_datalink_op	= NULL;	/* can't change data link type */
 
-	handle->md.pfq.ifs_promisc 	= 0;
+	handle->md.pfq.ifs_promisc = 0;
 
 	handle->fd = socket(AF_INET, SOCK_DGRAM, 0);
 	if (handle->fd == -1) {
@@ -780,7 +780,7 @@ pfq_activate_linux(pcap_t *handle)
 
 	if (handle->opt.promisc) {
 
-        	/* put all devic(es) in promisc mode */
+		/* put all devic(es) in promisc mode */
                 int n = 0;
 
 		int set_promisc(const char *dev)
@@ -861,15 +861,17 @@ pfq_activate_linux(pcap_t *handle)
 
 		int bind_group(const char *dev)
 		{
-                	fprintf(stderr, "[PFQ] binding group %d on dev %s...\n", handle->opt.pfq.group, dev);
+			fprintf(stderr, "[PFQ] binding group %d on dev %s...\n", handle->opt.pfq.group, dev);
 
 			if (pfq_bind_group(handle->md.pfq.q, handle->opt.pfq.group, dev, queue) == -1) {
-                       	 	fprintf(stderr, "[PFQ] error: %s\n", pfq_error(handle->md.pfq.q));
+				fprintf(stderr, "[PFQ] error: %s\n", pfq_error(handle->md.pfq.q));
 			}
 			return 0;
 		}
 
-		handle->md.pfq.q = pfq_open_nogroup_(handle->opt.pfq.caplen, handle->opt.pfq.rx_slots, handle->opt.pfq.tx_slots);
+		handle->md.pfq.q = pfq_open_nogroup_(handle->opt.pfq.caplen,
+						     handle->opt.pfq.rx_slots,
+						     handle->opt.pfq.tx_slots);
 		if (handle->md.pfq.q == NULL) {
 
 			snprintf(handle->errbuf, PCAP_ERRBUF_SIZE, "%s", pfq_error(handle->md.pfq.q));
@@ -878,8 +880,9 @@ pfq_activate_linux(pcap_t *handle)
 
                 fprintf(stderr, "[PFQ] group = %d\n", handle->opt.pfq.group);
 
-		if (pfq_join_group(handle->md.pfq.q, handle->opt.pfq.group, Q_CLASS_DEFAULT, Q_POLICY_GROUP_SHARED) < 0) {
-                       	fprintf(stderr, "[PFQ] error: %s\n", pfq_error(handle->md.pfq.q));
+		if (pfq_join_group(handle->md.pfq.q,
+				   handle->opt.pfq.group, Q_CLASS_DEFAULT, Q_POLICY_GROUP_SHARED) < 0) {
+			fprintf(stderr, "[PFQ] error: %s\n", pfq_error(handle->md.pfq.q));
 		}
 
 		/* bind to device(es) */
@@ -893,15 +896,18 @@ pfq_activate_linux(pcap_t *handle)
 	{
 		int bind_socket(const char *dev)
 		{
-                	fprintf(stderr, "[PFQ] binding socket on dev %s...\n", dev);
+			fprintf(stderr, "[PFQ] binding socket on dev %s...\n", dev);
 
 			if (pfq_bind(handle->md.pfq.q, dev, queue) == -1) {
-                       		fprintf(stderr, "[PFQ] error: %s\n", pfq_error(handle->md.pfq.q));
+				fprintf(stderr, "[PFQ] error: %s\n", pfq_error(handle->md.pfq.q));
 			}
 			return 0;
 		}
 
-		handle->md.pfq.q = pfq_open_group(Q_CLASS_DEFAULT, Q_POLICY_GROUP_SHARED, handle->opt.pfq.caplen, handle->opt.pfq.rx_slots, handle->opt.pfq.tx_slots);
+		handle->md.pfq.q = pfq_open_group(Q_CLASS_DEFAULT, Q_POLICY_GROUP_SHARED,
+						  handle->opt.pfq.caplen,
+						  handle->opt.pfq.rx_slots,
+						  handle->opt.pfq.tx_slots);
 		if (handle->md.pfq.q == NULL) {
 			snprintf(handle->errbuf, PCAP_ERRBUF_SIZE, "%s", pfq_error(handle->md.pfq.q));
 			goto fail;
@@ -929,14 +935,17 @@ pfq_activate_linux(pcap_t *handle)
 
 		tot = pfq_count_tx_queues(&handle->opt.pfq);
 
- 		fprintf(stderr, "[PFQ] enabling %zu logic Tx queues on dev %s...\n", tot, first_dev);
+		fprintf(stderr, "[PFQ] enabling %zu logic Tx queues on dev %s...\n", tot, first_dev);
 
 		for(idx = 0; idx < tot; idx++)
 		{
-        		fprintf(stderr, "[PFQ] binding Tx on %s, hw queue %d, core %d\n", first_dev, handle->opt.pfq.tx_queue[idx], handle->opt.pfq.tx_task[idx]);
+			fprintf(stderr, "[PFQ] binding Tx on %s, hw queue %d, core %d\n",
+				first_dev, handle->opt.pfq.tx_queue[idx], handle->opt.pfq.tx_task[idx]);
 
-			if (pfq_bind_tx(handle->md.pfq.q, first_dev, handle->opt.pfq.tx_queue[idx], handle->opt.pfq.tx_task[idx]) < 0) {
-                       		fprintf(stderr, "[PFQ] error: %s\n", pfq_error(handle->md.pfq.q));
+			if (pfq_bind_tx(handle->md.pfq.q, first_dev,
+					handle->opt.pfq.tx_queue[idx],
+					handle->opt.pfq.tx_task[idx]) < 0) {
+				fprintf(stderr, "[PFQ] error: %s\n", pfq_error(handle->md.pfq.q));
 			}
 		}
 
@@ -948,11 +957,14 @@ pfq_activate_linux(pcap_t *handle)
 
 	if (handle->opt.pfq.comp) {
 
-        	fprintf(stderr, "[PFQ] setting computation '%s' for group %d\n", handle->opt.pfq.comp, handle->opt.pfq.group);
+		fprintf(stderr, "[PFQ] setting computation '%s' for group %d\n",
+			handle->opt.pfq.comp, handle->opt.pfq.group);
 
-		if (pfq_set_group_computation_from_string(handle->md.pfq.q, handle->opt.pfq.group, handle->opt.pfq.comp) < 0) {
+		if (pfq_set_group_computation_from_string(handle->md.pfq.q,
+							  handle->opt.pfq.group,
+							  handle->opt.pfq.comp) < 0) {
 
-                       	fprintf(stderr, "[PFQ] error: %s\n", pfq_error(handle->md.pfq.q));
+			fprintf(stderr, "[PFQ] error: %s\n", pfq_error(handle->md.pfq.q));
 		}
 	}
 
@@ -962,17 +974,17 @@ pfq_activate_linux(pcap_t *handle)
 
                 if (pfq_vlan_filters_enable(handle->md.pfq.q, handle->opt.pfq.group, 1) < 0) {
 
-                       	fprintf(stderr, "[PFQ] error: %s\n", pfq_error(handle->md.pfq.q));
+			fprintf(stderr, "[PFQ] error: %s\n", pfq_error(handle->md.pfq.q));
                 }
 
 		int set_vlan_filter(const char *vid_)
 		{
 		        int vid = atoi(vid_);
 
-                	fprintf(stderr, "[PFQ] group %d setting vlan filer id=%d\n", handle->opt.pfq.group, vid);
+			fprintf(stderr, "[PFQ] group %d setting vlan filer id=%d\n", handle->opt.pfq.group, vid);
 
 			if (pfq_vlan_set_filter(handle->md.pfq.q, handle->opt.pfq.group, vid)  == -1) {
-                       		fprintf(stderr, "[PFQ] error: %s\n", pfq_error(handle->md.pfq.q));
+				fprintf(stderr, "[PFQ] error: %s\n", pfq_error(handle->md.pfq.q));
 			}
 			return 0;
 		}
@@ -1010,7 +1022,7 @@ static int
 pfq_inject_linux(pcap_t *handle, const void * buf, size_t size)
 {
 	if (handle->opt.pfq.tx_async == 0) {
-        	handle->opt.pfq.tx_async = 1;
+		handle->opt.pfq.tx_async = 1;
 		pfq_tx_async(handle->md.pfq.q, 1);
 	}
 
@@ -1105,7 +1117,7 @@ pfq_read_linux(pcap_t *handle, int max_packets, pcap_handler callback, u_char *u
 
         if (it == it_end) {
 
-        	if (pfq_read(handle->md.pfq.q, &nq, handle->md.timeout > 0 ? handle->md.timeout * 1000 : 1000000) < 0) {
+		if (pfq_read(handle->md.pfq.q, &nq, handle->md.timeout > 0 ? handle->md.timeout * 1000 : 1000000) < 0) {
 			snprintf(handle->errbuf, sizeof(handle->errbuf), "PFQ read error");
 			return PCAP_ERROR;
 		}
@@ -1180,7 +1192,7 @@ pfq_stats_linux(pcap_t *handle, struct pcap_stat *stat)
 	long if_dropped = 0;
 
 	if(pfq_get_stats(handle->md.pfq.q, &qstats) < 0)
-        	return -1;
+		return -1;
 
 	if (handle->opt.promisc) {
 		if_dropped = handle->md.proc_dropped;
