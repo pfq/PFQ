@@ -50,10 +50,10 @@ typedef char * pfq_iterator_t;
 
 struct pfq_net_queue
 {
-        pfq_iterator_t queue; 	  		/* net queue */
-        size_t         len;       		/* number of packets in the queue */
-        size_t         slot_size;
-        unsigned int   index; 	  		/* current queue index */
+	pfq_iterator_t queue;		/* net queue */
+	size_t         len;		/* number of packets in the queue */
+	size_t         slot_size;
+	unsigned int   index;		/* current queue index */
 };
 
 
@@ -130,9 +130,9 @@ static inline
 int
 pfq_yield()
 {
-        return
+	return
 #ifdef _REENTRANT
-                pthread_yield();
+	pthread_yield();
 #else
         sched_yield();
 #endif

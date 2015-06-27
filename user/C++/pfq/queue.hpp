@@ -197,13 +197,23 @@ namespace pfq {
 
     public:
 
+        //! Default Constructor
+
+        queue()
+        : addr_(nullptr)
+        , slot_size_(0)
+        , queue_len_(0)
+        , index_(0)
+        {}
+
         //! Constructor
-        /*!
-         * Construct a queue descriptor, stored at the given address.
-         */
+        //
 
         queue(void *addr, size_t slot_size, size_t queue_len, size_t index)
-        : addr_(addr), slot_size_(slot_size), queue_len_(queue_len), index_(index)
+        : addr_(addr)
+        , slot_size_(slot_size)
+        , queue_len_(queue_len)
+        , index_(index)
         {}
 
         //! Defaulted copy constructor.
