@@ -164,7 +164,7 @@ typedef struct pfq_data
 	int id;
 	int gid;
 
-	struct pfq_net_queue netq;
+	struct pfq_net_queue nq;
 } pfq_t;
 
 /* return the string error */
@@ -239,7 +239,7 @@ pfq_open_group(unsigned long class_mask, int group_policy, size_t caplen, size_t
 	q->id = -1;
 	q->gid = -1;
 
-        memset(&q->netq, 0, sizeof(q->netq));
+        memset(&q->nq, 0, sizeof(q->nq));
 
 	/* get id */
 	socklen_t size = sizeof(q->id);
@@ -707,7 +707,8 @@ pfq_set_group_computation_from_string(pfq_t *q, int gid, const char *comp)
 	{
 		int i = 0, j, ret;
 
-                struct pfq_computation_descr * prog = malloc(sizeof(size_t) * 2 + sizeof(struct pfq_functional_descr) * n);
+                struct pfq_computation_descr * prog = malloc(sizeof(size_t) * 2 +
+							     sizeof(struct pfq_functional_descr) * n);
 		if (!prog)
 			return Q_ERROR(q, "PFQ: group computation error (no memory)");
 
@@ -936,7 +937,7 @@ pfq_read(pfq_t *q, struct pfq_net_queue *nq, long int microseconds)
 
 	nq->queue = (char *)(q->rx_queue_addr) + (index & 1) * q->rx_queue_size;
 	nq->index = index;
-	nq->len   = queue_len;
+	nq->len = queue_len;
         nq->slot_size = q->rx_slot_size;
 
 	return Q_VALUE(q, (int)queue_len);
@@ -946,12 +947,12 @@ pfq_read(pfq_t *q, struct pfq_net_queue *nq, long int microseconds)
 int
 pfq_recv(pfq_t *q, void *buf, size_t buflen, struct pfq_net_queue *nq, long int microseconds)
 {
-	if (pfq_read(q, nq, microseconds) < 0)
-		return -1;
-
 	if (buflen < (q->rx_slots * q->rx_slot_size)) {
 		return Q_ERROR(q, "PFQ: buffer too small");
 	}
+
+	if (pfq_read(q, nq, microseconds) < 0)
+		return -1;
 
 	memcpy(buf, nq->queue, q->rx_slot_size * nq->len);
 	return Q_OK(q);
@@ -964,15 +965,15 @@ pfq_dispatch(pfq_t *q, pfq_handler_t cb, long int microseconds, char *user)
 	pfq_iterator_t it, it_end;
 	int n = 0;
 
-	if (pfq_read(q, &q->netq, microseconds) < 0)
+	if (pfq_read(q, &q->nq, microseconds) < 0)
 		return -1;
 
-	it = pfq_net_queue_begin(&q->netq);
-	it_end = pfq_net_queue_end(&q->netq);
+	it = pfq_net_queue_begin(&q->nq);
+	it_end = pfq_net_queue_end(&q->nq);
 
-	for(; it != it_end; it = pfq_net_queue_next(&q->netq, it))
+	for(; it != it_end; it = pfq_net_queue_next(&q->nq, it))
 	{
-		while (!pfq_iterator_ready(&q->netq, it))
+		while (!pfq_iterator_ready(&q->nq, it))
 			pfq_yield();
 
 		cb(user, pfq_iterator_header(it), pfq_iterator_data(it));
