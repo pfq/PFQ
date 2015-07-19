@@ -10,27 +10,27 @@
 
 using namespace yats;
 
-Context(PFQ)
-{
-    const std::string DEV("eth0");
+const std::string DEV("eth0");
 
-    Test(default_ctor_dtor)
+auto g = Group("PFQ")
+
+    .Single("default_ctor_dtor", []
     {
         pfq::socket x;
         Assert(x.id(), is_equal_to(-1));
-    }
+    })
 
-    Test(move_ctor)
+    .Single("move_ctor", []
     {
         pfq::socket x(64);
         pfq::socket y(std::move(x));
 
         Assert(x.fd(), is_equal_to(-1));
         Assert(y.fd(), is_not_equal_to(-1));
-    }
+    })
 
 
-    Test(assign_move_oper)
+    .Single("assign_move_oper", []
     {
         pfq::socket x(64);
         pfq::socket y;
@@ -38,10 +38,10 @@ Context(PFQ)
 
         Assert(x.fd(), is_equal_to(-1));
         Assert(y.fd(), is_not_equal_to(-1));
-    }
+    })
 
 
-    Test(swap)
+    .Single("swap", []
     {
         pfq::socket x(64);
         pfq::socket y;
@@ -49,10 +49,10 @@ Context(PFQ)
 
         Assert(x.fd(), is_equal_to(-1));
         Assert(y.fd(), is_not_equal_to(-1));
-    }
+    })
 
 
-    Test(open_close)
+    .Single("open_close", []
     {
         pfq::socket x;
         x.open(pfq::group_policy::undefined, 64);
@@ -63,10 +63,10 @@ Context(PFQ)
 
         x.close();
         Assert(x.fd(), is_equal_to(-1));
-    }
+    })
 
 
-    Test(enable_disable)
+    .Single("enable_disable", []
     {
         pfq::socket x;
 
@@ -82,10 +82,10 @@ Context(PFQ)
         x.disable();
 
         Assert(x.mem_addr() == nullptr);
-    }
+    })
 
 
-    Test(enabled)
+    .Single("enabled", []
     {
         pfq::socket x;
         Assert(x.enabled(), is_equal_to(false));
@@ -93,20 +93,20 @@ Context(PFQ)
         Assert(x.enabled(), is_equal_to(false));
         x.enable();
         Assert(x.enabled(), is_equal_to(true));
-    }
+    })
 
 
-    Test(ifindex)
+    .Single("ifindex", []
     {
         pfq::socket x;
         AssertThrow(pfq::ifindex(1, "lo"));
 
         x.open(pfq::group_policy::undefined, 64);
         Assert( pfq::ifindex(x.fd(), "lo"), is_not_equal_to(-1));
-    }
+    })
 
 
-    Test(timestamp)
+    .Single("timestamp", []
     {
         pfq::socket x;
         AssertThrow(x.timestamp_enable(true));
@@ -116,10 +116,10 @@ Context(PFQ)
         x.timestamp_enable(true);
 
         Assert(x.timestamp_enabled(), is_equal_to(true));
-    }
+    })
 
 
-    Test(caplen)
+    .Single("caplen", []
     {
         pfq::socket x;
         AssertThrow(x.caplen(64));
@@ -136,10 +136,10 @@ Context(PFQ)
 
         x.caplen(64);
         Assert(x.caplen(), is_equal_to(64UL));
-    }
+    })
 
 
-    Test(maxlen)
+    .Single("maxlen", []
     {
         pfq::socket x;
         AssertThrow(x.maxlen());
@@ -147,9 +147,9 @@ Context(PFQ)
         x.open(pfq::group_policy::undefined, 64);
 
         Assert(x.maxlen(), is_equal_to(1514UL));
-    }
+    })
 
-    Test(rx_slots)
+    .Single("rx_slots", []
     {
         pfq::socket x;
         AssertThrow(x.rx_slots(14));
@@ -166,10 +166,10 @@ Context(PFQ)
 
         x.rx_slots(4096);
         Assert(x.rx_slots(), is_equal_to(4096UL));
-    }
+    })
 
 
-    Test(rx_slot_size)
+    .Single("rx_slot_size", []
     {
         pfq::socket x;
         AssertThrow(x.rx_slot_size());
@@ -178,9 +178,9 @@ Context(PFQ)
 
         auto size = 64 + sizeof(pfq_pkthdr);
         Assert(x.rx_slot_size(), is_equal_to(size));
-    }
+    })
 
-    Test(tx_slots)
+    .Single("tx_slots", []
     {
         pfq::socket x;
         AssertThrow(x.tx_slots(14));
@@ -197,10 +197,10 @@ Context(PFQ)
 
         x.tx_slots(4096);
         Assert(x.tx_slots(), is_equal_to(4096UL));
-    }
+    })
 
 
-    Test(bind_device)
+    .Single("bind_device", []
     {
         pfq::socket x;
         AssertThrow(x.bind(DEV.c_str()));
@@ -211,10 +211,10 @@ Context(PFQ)
         x.bind(DEV.c_str());
 
         AssertThrow(x.bind_group(11, DEV.c_str()));
-    }
+    })
 
 
-    Test(unbind_device)
+    .Single("unbind_device", []
     {
         pfq::socket x;
         AssertThrow(x.unbind(DEV.c_str()));
@@ -225,20 +225,20 @@ Context(PFQ)
         x.unbind(DEV.c_str());
 
         AssertThrow(x.unbind_group(11, DEV.c_str()));
-    }
+    })
 
 
-    Test(poll)
+    .Single("poll", []
     {
         pfq::socket x;
         AssertThrow(x.poll(10));
 
         x.open(pfq::group_policy::undefined, 64);
         x.poll(0);
-    }
+    })
 
 
-    Test(read)
+    .Single("read", []
     {
         pfq::socket x;
         AssertThrow(x.read(10));
@@ -248,10 +248,10 @@ Context(PFQ)
 
         x.enable();
         Assert(x.read(10).empty());
-    }
+    })
 
 
-    Test(stats)
+    .Single("stats", []
     {
         pfq::socket x;
         AssertThrow(x.stats());
@@ -262,9 +262,9 @@ Context(PFQ)
         Assert(s.recv, is_equal_to(0UL));
         Assert(s.lost, is_equal_to(0UL));
         Assert(s.drop, is_equal_to(0UL));
-    }
+    })
 
-    Test(group_stats)
+    .Single("group_stats", []
     {
         pfq::socket x;
 
@@ -278,10 +278,10 @@ Context(PFQ)
         Assert(s.recv, is_equal_to(0UL));
         Assert(s.lost, is_equal_to(0UL));
         Assert(s.drop, is_equal_to(0UL));
-    }
+    })
 
 
-    Test(my_group_stats_priv)
+    .Single("my_group_stats_priv", []
     {
         pfq::socket x;
 
@@ -295,9 +295,9 @@ Context(PFQ)
         Assert(s.recv, is_equal_to(0UL));
         Assert(s.lost, is_equal_to(0UL));
         Assert(s.drop, is_equal_to(0UL));
-    }
+    })
 
-    Test(my_group_stats_restricted)
+    .Single("my_group_stats_restricted", []
     {
         pfq::socket x;
 
@@ -311,9 +311,9 @@ Context(PFQ)
         Assert(s.recv, is_equal_to(0UL));
         Assert(s.lost, is_equal_to(0UL));
         Assert(s.drop, is_equal_to(0UL));
-    }
+    })
 
-    Test(my_group_stats_shared)
+    .Single("my_group_stats_shared", []
     {
         pfq::socket x;
 
@@ -327,9 +327,9 @@ Context(PFQ)
         Assert(s.recv, is_equal_to(0UL));
         Assert(s.lost, is_equal_to(0UL));
         Assert(s.drop, is_equal_to(0UL));
-    }
+    })
 
-    Test(groups_mask)
+    .Single("groups_mask", []
     {
         pfq::socket x;
         AssertThrow(x.groups_mask());
@@ -340,9 +340,9 @@ Context(PFQ)
 
         auto v = x.groups();
         Assert(v.empty(), is_true());
-    }
+    })
 
-    Test(join_restricted)
+    .Single("join_restricted", []
     {
         pfq::socket x(pfq::group_policy::restricted, 64);
 
@@ -351,9 +351,9 @@ Context(PFQ)
         y.open(pfq::group_policy::undefined, 64);
 
         Assert( y.join_group(x.group_id(), pfq::group_policy::restricted), is_equal_to(x.group_id()));
-    }
+    })
 
-    Test(join_deferred)
+    .Single("join_deferred", []
     {
         pfq::socket x(pfq::group_policy::undefined, 64);
 
@@ -367,10 +367,10 @@ Context(PFQ)
                     });
 
         task.wait();
-    }
+    })
 
 
-    Test(join_restricted_thread)
+    .Single("join_restricted_thread", []
     {
         pfq::socket x(pfq::group_policy::restricted, 64);
 
@@ -381,9 +381,9 @@ Context(PFQ)
                     });
 
         task.get(); // eventually rethrow the excpetion...
-    }
+    })
 
-    Test(join_restricted_process)
+    .Single("join_restricted_process", []
     {
         pfq::socket x(pfq::group_policy::restricted, 64);
         pfq::socket z(pfq::group_policy::shared, 64);
@@ -402,9 +402,9 @@ Context(PFQ)
         }
 
         wait(nullptr);
-    }
+    })
 
-    Test(join_private_)
+    .Single("join_private_", []
     {
         pfq::socket x(64);
 
@@ -414,9 +414,9 @@ Context(PFQ)
         AssertThrow(y.join_group(x.group_id(), pfq::group_policy::shared));
         AssertThrow(y.join_group(x.group_id(), pfq::group_policy::priv));
         AssertThrow(y.join_group(x.group_id(), pfq::group_policy::undefined));
-    }
+    })
 
-    Test(join_restricted_)
+    .Single("join_restricted_", []
     {
         {
             pfq::socket x(pfq::group_policy::restricted, 64);
@@ -438,9 +438,9 @@ Context(PFQ)
             pfq::socket y(pfq::group_policy::undefined, 64);
             AssertThrow(y.join_group(x.group_id(), pfq::group_policy::undefined));
         }
-    }
+    })
 
-    Test(join_shared_)
+    .Single("join_shared_", []
     {
         {
             pfq::socket x(pfq::group_policy::shared, 64);
@@ -462,10 +462,10 @@ Context(PFQ)
             pfq::socket y(pfq::group_policy::undefined, 64);
             AssertThrow(y.join_group(x.group_id(), pfq::group_policy::undefined));
         }
-    }
+    })
 
 
-    Test(join_public)
+    .Single("join_public", []
     {
         pfq::socket x;
         AssertThrow(x.join_group(12));
@@ -481,9 +481,9 @@ Context(PFQ)
 
         Assert( v == (std::vector<int>{ 0, 1}) );
 
-    }
+    })
 
-    Test(leave_group)
+    .Single("leave_group", []
     {
         pfq::socket x;
         AssertThrow(x.leave_group(12));
@@ -496,24 +496,24 @@ Context(PFQ)
 
         Assert(x.group_id(), is_equal_to(0));
         Assert(x.groups() == std::vector<int>{ 0 });
-    }
+    })
 
 
-    Test(gid)
+    .Single("gid", []
     {
         pfq::socket x;
         Assert(x.group_id(), is_equal_to(-1));
-    }
+    })
 
 
-    Test(vlan_enable)
+    .Single("vlan_enable", []
     {
         pfq::socket x(64);
         AssertNoThrow(x.vlan_filters_enable(x.group_id(), true));
         AssertNoThrow(x.vlan_filters_enable(x.group_id(), false));
-    }
+    })
 
-    Test(vlan_filt)
+    .Single("vlan_filt", []
     {
         pfq::socket x(64);
         AssertThrow(x.vlan_set_filter(x.group_id(), 22));
@@ -524,28 +524,28 @@ Context(PFQ)
         AssertNoThrow(x.vlan_reset_filter(x.group_id(), 22));
 
         AssertNoThrow(x.vlan_filters_enable(x.group_id(), false));
-    }
+    })
 
 
-    Test(bind_tx)
+    .Single("bind_tx", []
     {
         pfq::socket q(64);
         AssertNoThrow(q.bind_tx("lo", -1));
         AssertThrow(q.bind_tx("unknown", -1));
-    }
+    })
 
 
-    Test(tx_thread)
+    .Single("tx_thread", []
     {
         pfq::socket q(64);
 
         q.bind_tx("lo", -1);
 
         q.enable();
-    }
+    })
 
 
-    Test(tx_queue_flush)
+    .Single("tx_queue_flush", []
     {
         pfq::socket q(64);
         AssertThrow(q.tx_queue_flush());
@@ -555,25 +555,23 @@ Context(PFQ)
         q.enable();
 
         AssertNoThrow(q.tx_queue_flush());
-    }
+    })
 
-    Test(egress_bind)
+    .Single("egress_bind", []
     {
         pfq::socket q(64);
         AssertNoThrow(q.egress_bind("lo", -1));
         AssertThrow(q.egress_bind("unknown", -1));
-    }
+    })
 
-    Test(egress_unbind)
+    .Single("egress_unbind", []
     {
         pfq::socket q(64);
         AssertNoThrow(q.egress_unbind());
-    }
-
-// TODO
+    });
 
 #if 0
-    Test(group_context)
+    .Single("group_context", []
     {
         pfq::socket x(pfq::group_policy::shared, 64);
 
@@ -610,11 +608,10 @@ Context(PFQ)
             break;
         }
         std::cout << std::endl;
-    }
+    })
 
 #endif
 
-}
 
 
 int main(int argc, char *argv[])
