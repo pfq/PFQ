@@ -115,18 +115,18 @@ size_t pfq_mpsc_enqueue_batch(struct pfq_rx_opt *ro,
 #ifdef PFQ_USE_SKB_LINEARIZE
 		if (unlikely(skb_is_nonlinear(skb)))
 #else
-			if (skb_is_nonlinear(skb))
+		if (skb_is_nonlinear(skb))
 #endif
-			{
-				if (skb_copy_bits(skb, 0, pkt, bytes) != 0) {
-					printk(KERN_WARNING "[PFQ] BUG! skb_copy_bits failed (bytes=%zu, skb_len=%d mac_len=%d)!\n",
-					       bytes, skb->len, skb->mac_len);
-					return 0;
-				}
+		{
+			if (skb_copy_bits(skb, 0, pkt, bytes) != 0) {
+				printk(KERN_WARNING "[PFQ] BUG! skb_copy_bits failed (bytes=%zu, skb_len=%d mac_len=%d)!\n",
+				       bytes, skb->len, skb->mac_len);
+				return 0;
 			}
-			else {
-				pfq_skb_copy_from_linear_data(skb, pkt, bytes);
-			}
+		}
+		else {
+			pfq_skb_copy_from_linear_data(skb, pkt, bytes);
+		}
 
 		/* copy state from pfq_cb annotation */
 
@@ -141,7 +141,7 @@ size_t pfq_mpsc_enqueue_batch(struct pfq_rx_opt *ro,
 			hdr->tstamp.tv.nsec = (uint32_t)ts.tv_nsec;
 		}
 
-		hdr->if_index = skb->dev->ifindex & 0xff;
+		hdr->if_index = skb->dev->ifindex;
 		hdr->gid      = (__force int)gid;
 		hdr->len      = (uint16_t)skb->len;
 		hdr->caplen   = (uint16_t)bytes;
@@ -176,6 +176,7 @@ pfq_shared_queue_enable(struct pfq_sock *so, unsigned long user_addr)
 
 		struct pfq_shared_queue * queue;
 		size_t n;
+                int i;
 
 		/* alloc queue memory */
 
@@ -188,17 +189,29 @@ pfq_shared_queue_enable(struct pfq_sock *so, unsigned long user_addr)
 				return -ENOMEM;
 		}
 
-		/* so->mem_addr and so->mem_size are set now */
-
 		/* initialize queues headers */
 
 		queue = (struct pfq_shared_queue *)so->shmem.addr;
 
-		/* initialize rx queue header */
+		/* initialize Rx queues */
 
-		queue->rx.data      = (1L << 24);
+		queue->rx.data      = 0;
 		queue->rx.size      = so->rx_opt.queue_size;
 		queue->rx.slot_size = so->rx_opt.slot_size;
+
+		/* reset Rx slots */
+
+		for(i = 0; i < 2; i++)
+		{
+			char * raw = so->shmem.addr + sizeof(struct pfq_shared_queue) + i * queue->rx.size;
+			char * end = raw + queue->rx.size;
+			const int rst = !i;
+
+			for(;raw < end; raw += queue->rx.slot_size)
+				((struct pfq_pkthdr *)raw)->commit = rst;
+		}
+
+		/* initialize TX queues */
 
 		for(n = 0; n < Q_MAX_TX_QUEUES; n++)
 		{

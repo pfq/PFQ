@@ -951,23 +951,36 @@ pfq_read(pfq_t *q, struct pfq_net_queue *nq, long int microseconds)
 		return Q_ERROR(q, "PFQ: read: socket not enabled");
 	}
 
-	qd    = (struct pfq_shared_queue *)(q->shm_addr);
-	data  = qd->rx.data;
+	qd = (struct pfq_shared_queue *)(q->shm_addr);
+
+	data = __atomic_load_n(&qd->rx.data, __ATOMIC_RELAXED);
 	index = Q_SHARED_QUEUE_INDEX(data);
 
-	if(Q_SHARED_QUEUE_LEN(data) == 0 ) {
+        /* at wrap-around reset Rx slots... */
+
+        if (((index+1) & 0xfe)== 0)
+        {
+            char * raw = (char *)(q->rx_queue_addr) + ((index+1) & 1) * q->rx_queue_size;
+            char * end = raw + q->rx_queue_size;
+            const int rst = index & 1;
+            for(; raw < end; raw += q->rx_slot_size)
+                ((struct pfq_pkthdr *)raw)->commit = rst;
+        }
+
+	if (Q_SHARED_QUEUE_LEN(data) == 0) {
 #ifdef PFQ_USE_POLL
-		if (pfq_poll(q, microseconds) < 0) {
+		if (pfq_poll(q, microseconds) < 0)
 			return Q_ERROR(q, "PFQ: poll error");
-		}
 #else
 		(void)microseconds;
+		nq->len = 0;
+		return Q_VALUE(q, (int)0);
 #endif
 	}
 
-	/* reset the next buffer... */
+	/* swap the queue... */
 
-	data = __sync_lock_test_and_set(&qd->rx.data, ((index+1) << 24));
+        data = __atomic_exchange_n(&qd->rx.data, (unsigned int)((index+1) << 24), __ATOMIC_RELAXED);
 
 	size_t queue_len = min(Q_SHARED_QUEUE_LEN(data), q->rx_slots);
 
