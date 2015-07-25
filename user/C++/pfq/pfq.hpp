@@ -1076,20 +1076,37 @@ namespace pfq {
 
             auto q = static_cast<struct pfq_shared_queue *>(data()->shm_addr);
 
-            size_t data = q->rx.data;
-            size_t index = Q_SHARED_QUEUE_INDEX(data);
+            unsigned int data, index;
 
-            if( Q_SHARED_QUEUE_LEN(data) == 0 ) {
+            data = __atomic_load_n(&q->rx.data, __ATOMIC_RELAXED);
+            index = Q_SHARED_QUEUE_INDEX(data);
+
+            // at wrap-around reset Rx slots...
+            //
+
+            if (((index+1) & 0xfe)== 0)
+            {
+                auto raw = static_cast<char *>(data_->rx_queue_addr) + ((index+1) & 1) * data_->rx_queue_size;
+                auto end = raw + data_->rx_queue_size;
+                const int rst = index & 1;
+                for(; raw < end; raw += data_->rx_slot_size)
+                    reinterpret_cast<pfq_pkthdr *>(raw)->commit = rst;
+            }
+
+            if (Q_SHARED_QUEUE_LEN(data) == 0)
+            {
 #ifdef PFQ_USE_POLL
                 this->poll(microseconds);
 #else
                 (void)microseconds;
+                return queue();
 #endif
             }
 
-            // reset the next buffer...
+            // swap the queue...
+            //
 
-            data = __sync_lock_test_and_set(&q->rx.data, (unsigned int)((index+1) << 24));
+            data = __atomic_exchange_n(&q->rx.data, (unsigned int)((index+1) << 24), __ATOMIC_RELAXED);
 
             auto queue_len = std::min(static_cast<size_t>(Q_SHARED_QUEUE_LEN(data)), data_->rx_slots);
 

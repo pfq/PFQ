@@ -94,8 +94,7 @@ namespace pfq {
             bool
             ready() const
             {
-                auto b = const_cast<volatile uint8_t &>(hdr_->commit) == index_;
-                smp_rmb();
+                auto b = __atomic_load_n(&hdr_->commit, __ATOMIC_ACQUIRE) == index_;
                 return b;
             }
 
@@ -172,8 +171,7 @@ namespace pfq {
             bool
             ready() const
             {
-                auto b = const_cast<volatile uint8_t &>(hdr_->commit) == index_;
-                smp_rmb();
+                auto b = __atomic_load_n(&hdr_->commit, __ATOMIC_ACQUIRE) == index_;
                 return b;
             }
 
@@ -340,9 +338,8 @@ namespace pfq {
 
     inline void * data_ready(pfq_pkthdr &h, uint8_t current_commit)
     {
-        if (const_cast<volatile uint8_t &>(h.commit) != current_commit)
+        if (__atomic_load_n(&h.commit, __ATOMIC_ACQUIRE) != current_commit)
             return nullptr;
-        smp_rmb();
         return &h + 1;
     }
 
@@ -354,9 +351,8 @@ namespace pfq {
 
     inline const void * data_ready(pfq_pkthdr const &h, uint8_t current_commit)
     {
-        if (const_cast<volatile uint8_t &>(h.commit) != current_commit)
+        if (__atomic_load_n(&h.commit, __ATOMIC_ACQUIRE) != current_commit)
             return nullptr;
-        smp_rmb();
         return &h + 1;
     }
 
