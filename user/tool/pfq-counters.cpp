@@ -9,6 +9,7 @@
 #include <fstream>
 #include <sstream>
 
+#include <cstdio>
 #include <thread>
 #include <string>
 #include <cstring>
@@ -57,6 +58,8 @@ namespace opt
 
     bool flow      = false;
     bool use_comp  = false;
+
+    std::string dumpfile;
 }
 
 
@@ -74,6 +77,31 @@ struct HashTuple
 
 namespace thread
 {
+    namespace pcap_emu
+    {
+        uint32_t constexpr magic_number = 0xA1B2C3D4;
+        int constexpr zone_gmt = 0;
+
+        struct file_header
+        {
+            uint32_t magic;
+            unsigned short version_major;
+            unsigned short version_minor;
+            int32_t thiszone;	/* gmt to local correction */
+            uint32_t sigfigs;	/* accuracy of timestamps */
+            uint32_t snaplen;	/* max length saved portion of each pkt */
+            uint32_t linktype;	/* data link type (LINKTYPE_*) */
+        };
+
+        struct pkthdr
+        {
+            uint32_t sec;
+            uint32_t usec;
+            uint32_t caplen;
+            uint32_t len;
+        };
+    }
+
     struct context
     {
         context(int id, const thread_binding &b)
@@ -84,9 +112,17 @@ namespace thread
         , m_batch()
         , m_set()
         , m_flow()
+        , m_filename()
+        , m_file(nullptr)
         {
             if (m_bind.gid == -1)
                 m_bind.gid = id;
+
+            if (!opt::dumpfile.empty())
+            {
+                auto fs = pfq::split(opt::dumpfile, ".");
+                m_filename = fs.at(0) + ".pfq." + std::to_string(id) + (fs.size() > 1 ? ("." + fs.at(1)) : ".pcap");
+            }
 
             m_pfq.join_group(m_bind.gid, group_policy::shared);
 
@@ -118,7 +154,6 @@ namespace thread
             }
 
             m_pfq.timestamp_enable(false);
-
             m_pfq.enable();
         }
 
@@ -130,13 +165,33 @@ namespace thread
 
         void operator()()
         {
+            if (!m_filename.empty())
+            {
+                m_pfq.timestamp_enable(true);
+                pcap_open_();
+            }
+
             for(;;)
             {
                 auto many = m_pfq.read(opt::timeout_ms);
 
                 m_read += many.size();
-
                 m_batch = std::max(m_batch, many.size());
+
+                if (m_file) {
+
+                    auto it = many.begin();
+                    for(; it != many.end(); ++it)
+                    {
+                        while (!it.ready())
+                            std::this_thread::yield();
+
+                        auto h = *it;
+                        const char *buff = static_cast<char *>(it.data());
+
+                        pcap_write_(buff, h.len, h.caplen, h.tstamp.tv.sec, h.tstamp.tv.nsec/1000);
+                    }
+                }
 
                 if (opt::flow)
                 {
@@ -159,6 +214,9 @@ namespace thread
                     }
                 }
             }
+
+            if (m_file)
+                pcap_close_();
         }
 
         pfq_stats
@@ -186,6 +244,50 @@ namespace thread
         }
 
     private:
+
+        void pcap_open_()
+        {
+            m_file = fopen(m_filename.c_str(),"wb");
+            if (m_file == nullptr)
+                throw std::runtime_error("pfq: could not open " + m_filename);
+
+            pcap_emu::file_header header;
+
+            header.magic = pcap_emu::magic_number;
+            header.version_major = 2;
+            header.version_minor = 4;
+            header.thiszone = pcap_emu::zone_gmt + 1;
+            header.sigfigs = 0;
+            header.snaplen = 0xFFFF;
+            header.linktype = 1; // ethernet;
+
+            fwrite (&header, sizeof (header), 1, m_file);
+            fflush (m_file);
+        }
+
+        void pcap_close_()
+        {
+            ::fclose(m_file);
+            m_file = nullptr;
+        }
+
+        void pcap_write_(const char *ptr, size_t len, size_t caplen, uint32_t sec, uint32_t usec)
+        {
+            pcap_emu::pkthdr header;
+
+            if (caplen != len)
+                std::cout << "**************************************** caplen: " << caplen << " " << " len: " << len << std::endl;
+
+            header.sec = sec;
+            header.usec = usec;
+            header.caplen = (uint32_t)caplen;
+            header.len = (uint32_t)len;
+
+            fwrite (&header, sizeof (header), 1, m_file);
+            fwrite (ptr, 1, caplen, m_file);
+            fflush (m_file);
+        }
+
         int m_id;
         thread_binding m_bind;
 
@@ -197,6 +299,9 @@ namespace thread
         std::unordered_set<std::tuple<uint32_t, uint32_t, uint16_t, uint16_t>, HashTuple> m_set;
 
         unsigned long m_flow;
+
+        std::string m_filename;
+        FILE * m_file;
     };
 
 }
@@ -220,7 +325,8 @@ void usage(std::string name)
         "usage: " + std::move(name) + " [OPTIONS]\n\n"
         " -h --help                     Display this help\n"
         " -c --caplen INT               Set caplen\n"
-        " -w --flow                     Enable flow counter\n"
+        " -w --write FILE               Write packets to file (pcap)\n"
+        " -l --flow                     Enable flow counter\n"
         " -s --slot INT                 Set slots\n"
         "    --seconds INT              Terminate after INT seconds\n"
         " -f --function FUNCTION\n"
@@ -298,9 +404,18 @@ try
             continue;
         }
 
-        if (any_strcmp(argv[i], "-w", "--flow"))
+        if (any_strcmp(argv[i], "-l", "--flow"))
         {
             opt::flow = true;
+            continue;
+        }
+
+        if (any_strcmp(argv[i], "-w", "--write"))
+        {
+            if (++i == argc)
+                throw std::runtime_error("filename missing");
+
+            opt::dumpfile = argv[i];
             continue;
         }
 
@@ -322,7 +437,7 @@ try
     std::cout << "caplen: " << opt::caplen << std::endl;
     std::cout << "slots : " << opt::slots << std::endl;
 
-    if (opt::slots < 1024)
+    if (opt::slots < 64)
     {
         std::cout << "too few slots may reduce performance!" << std::endl;
         _Exit(0);
