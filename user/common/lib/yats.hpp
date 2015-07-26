@@ -56,10 +56,15 @@
 
 ////////////////////////////////////////////// runtime assert:
 
-#define Assert(...)                 yats::assert        (__FILE__, __LINE__, __VA_ARGS__)
-#define AssertNoThrow(...)          yats::assert_throw  (__FILE__, __LINE__, [&](){ __VA_ARGS__; }, nothing())
-#define AssertThrow(...)            yats::assert_throw  (__FILE__, __LINE__, [&](){ __VA_ARGS__; }, anything())
-#define AssertThrowAs(e,...)        yats::assert_throw  (__FILE__, __LINE__, [&](){ __VA_ARGS__; }, e)
+#define Assert(...)                 yats::assert        (__FILE__, __LINE__, 0, __VA_ARGS__)
+#define AssertNoThrow(...)          yats::assert_throw  (__FILE__, __LINE__, 0, [&](){ __VA_ARGS__; }, nothing())
+#define AssertThrow(...)            yats::assert_throw  (__FILE__, __LINE__, 0, [&](){ __VA_ARGS__; }, anything())
+#define AssertThrowAs(e,...)        yats::assert_throw  (__FILE__, __LINE__, 0, [&](){ __VA_ARGS__; }, e)
+
+#define AssertId(n, ...)            yats::assert        (__FILE__, __LINE__, n, __VA_ARGS__)
+#define AssertNoThrowId(n, ...)     yats::assert_throw  (__FILE__, __LINE__, n, [&](){ __VA_ARGS__; }, nothing())
+#define AssertThrowId(n, ...)       yats::assert_throw  (__FILE__, __LINE__, n, [&](){ __VA_ARGS__; }, anything())
+#define AssertThrowAsId(n, e,...)   yats::assert_throw  (__FILE__, __LINE__, n, [&](){ __VA_ARGS__; }, e)
 
 ////////////////////////////////////////////// static assert:
 
@@ -138,12 +143,14 @@ namespace yats
     struct global
     {
         std::string program_name;
-        size_t assert_counter;
+
+        size_t assert_ok;
+        size_t assert_total;
 
         std::vector<struct Group *> groups;
         std::set<std::string> group_names;
 
-        std::set<std::pair<std::string, int>> yats_except;
+        std::set<std::tuple<std::string, int, int>> yats_assert;
 
         static global&
         instance()
@@ -577,7 +584,6 @@ namespace yats
     try
     {
         bool exit_immediatly = false,
-             err             = false,
              verbose         = false,
              capture_signal  = false;
         int  repeat_run      = 1000;
@@ -723,19 +729,20 @@ namespace yats
                 for(auto & p : ctx->prolog_)
                     p.second();
 
-                bool retry = true;
+                bool retry = true,
+                     err   = false;
                 do
                 {
                     try
                     {
                         t.second(repeat_run);
                         retry = false;
-                        ok++;
+                        if (!err)
+                            ok++;
                     }
                     catch(yats_error &e)
                     {
                         err = true;
-                        global::instance().yats_except.emplace(e.file_, e.line_);
                         auto msg = make_string(ctx->name_, " :: " , t.first, ": ", e.what());
                         std::cerr << msg << std::endl; ferr << msg << std::endl;
                     }
@@ -774,7 +781,8 @@ namespace yats
                 t.second();
         }
 
-        std::cerr <<  std::endl << (run-ok) << " out of " << run  << " tests failed. " << global::instance().assert_counter << " assertions passed." << std::endl;
+        std::cerr <<  std::endl << (run-ok) << " out of " << run  << " tests failed. "
+                  << global::instance().assert_ok << "/" << global::instance().assert_total << " assertions passed." << std::endl;
 
         return ok == run ? EXIT_SUCCESS : EXIT_FAILURE;
     }
@@ -974,28 +982,33 @@ namespace yats
     ////////////////////////////////////////////// YATS assertions:
 
     template <typename T, typename P>
-    void assert(const char *file, int line, const T &value, P pred)
+    void assert(const char *file, int line, int id, const T &value, P pred)
     {
-        if (global::instance().yats_except.count(std::pair<std::string, int>(file, line)))
+        if (!global::instance().yats_assert.emplace(file, line, id).second)
             return;
 
-        if (!pred(value))
-                throw yats_error(file, line, make_error(file, line, "    -> predicate ", pred.str(), " failed: got ", pretty(value)));
+        global::instance().assert_total++;
 
-        global::instance().assert_counter++;
+        if (!pred(value)) {
+                throw yats_error(file, line, make_error(file, line, "    -> predicate ", pred.str(), " failed: got ", pretty(value)));
+        }
+
+        global::instance().assert_ok++;
     }
 
     static inline
-    void assert(const char *file, int line, bool value)
+    void assert(const char *file, int line, int id, bool value)
     {
-        return assert(file, line, value, is_true());
+        return assert(file, line, id, value, is_true());
     }
 
     template <typename T, typename E>
-    void assert_throw(const char *file, int line, T const & expr, E const &obj)
+    void assert_throw(const char *file, int line, int id, T const & expr, E const &obj)
     {
-        if (global::instance().yats_except.count(std::pair<std::string, int>(file, line)))
+        if (!global::instance().yats_assert.emplace(file, line, id).second)
             return;
+
+        global::instance().assert_total++;
 
         try
         {
@@ -1009,7 +1022,7 @@ namespace yats
                                              " exception caught with reason \"",
                                              e.what(),
                                              "\" != \"", obj.what(), "\"!"));
-            global::instance().assert_counter++;
+            global::instance().assert_ok++;
             return;
         }
         catch(std::exception &e)
@@ -1020,7 +1033,7 @@ namespace yats
                                             " exception expected. Got ",
                                             yats::type_name(e),
                                             " (\"", e.what(), "\")!"));
-            global::instance().assert_counter++;
+            global::instance().assert_ok++;
             return;
         }
         catch(...)
@@ -1029,7 +1042,7 @@ namespace yats
                 throw yats_error(file, line, make_error(file, line,
                                             "    -> ", yats::type_name(obj),
                                             " exception expected: got unknown exception!"));
-            global::instance().assert_counter++;
+            global::instance().assert_ok++;
             return;
         }
 
@@ -1038,7 +1051,7 @@ namespace yats
                                         "    -> ", yats::type_name(obj),
                                         " exception expected!"));
 
-        global::instance().assert_counter++;
+        global::instance().assert_ok++;
     }
 
 } // namespace yats
