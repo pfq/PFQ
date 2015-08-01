@@ -24,6 +24,7 @@ import Data.Semigroup
 import Data.List
 import Data.List.Split
 import Data.Maybe
+import Data.Char
 
 import Control.Applicative
 import Control.Monad
@@ -226,9 +227,13 @@ mkConfig
     }
 
 
+notCommentLine :: String -> Bool
+notCommentLine = (not . ("#" `isPrefixOf`)) . (dropWhile isSpace)
+
+
 loadConfig :: FilePath -> Options -> IO Config
 loadConfig conf opt =
-    catchIOError (liftM (read . unlines . filter (not . ("#" `isPrefixOf`)) . lines) (readFile conf)) (\_ -> return $ mkConfig opt)
+    catchIOError (liftM (read . unlines . filter notCommentLine . lines) (readFile conf)) (\_ -> return $ mkConfig opt)
 
 
 getNumberOfPhyCores :: IO Int
