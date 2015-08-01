@@ -1,4 +1,4 @@
---
+
 -- Copyright (c) 2015 Nicola Bonelli <nicola@pfq.io>
 --
 -- This program is free software; you can redistribute it and/or modify
@@ -50,7 +50,8 @@ proc_modules = "/proc/modules"
 bold  = setSGRCode [SetConsoleIntensity BoldIntensity]
 reset = setSGRCode []
 
-version = "4.4"
+version = "4.4.3"
+
 
 data YesNo = Yes | No | Unspec
     deriving (Show, Read, Eq)
@@ -72,81 +73,68 @@ instance Semigroup (OptList a) where
 
 data Device =
     Device
-    {
-        devname   :: String,
-        devspeed  :: Maybe Int,
-        channels  :: Maybe Int,
-        flowctrl  :: YesNo,
-        ethopt    :: [(String, String, Int)]
+    {   devname   :: String
+    ,   devspeed  :: Maybe Int
+    ,   channels  :: Maybe Int
+    ,   flowctrl  :: YesNo
+    ,   ethopt    :: [(String, String, Int)]
     } deriving (Show, Read, Eq)
 
 
 data Driver =
     Driver
-    {
-        drvmod      :: String,
-        drvopt      :: [String],
-        instances   :: Int,
-        devices     :: [Device]
+    {   drvmod      :: String
+    ,   drvopt      :: [String]
+    ,   instances   :: Int
+    ,   devices     :: [Device]
     } deriving (Show, Read, Eq)
 
 
 data Config = Config
-    {
-         pfq_module     :: String,
-         pfq_options    :: [String],
-         exclude_core   :: [Int],
-         irq_affinity   :: [String],
-         drivers        :: [Driver]
+    {   pfq_module     :: String
+    ,   pfq_options    :: [String]
+    ,   exclude_core   :: [Int]
+    ,   irq_affinity   :: [String]
+    ,   cpu_governor   :: String
+    ,   drivers        :: [Driver]
     } deriving (Show, Read, Eq)
 
 
 instance Semigroup Config where
-    Config {
-        pfq_module   = mod1,
-        pfq_options  = opt1,
-        exclude_core = excl1,
-        irq_affinity = algo1,
-        drivers      = drvs1
-    } <>
-        Config {
-            pfq_module   = mod2,
-            pfq_options  = opt2,
-            exclude_core = excl2,
-            irq_affinity = algo2,
-            drivers      = drvs2
-        } =
-        Config {
-            pfq_module   = getOptString $ OptString mod1  <> OptString mod2,
-            pfq_options  = getOptList   $ OptList opt1 <> OptList opt2,
-            exclude_core = excl1 <> excl2,
-            irq_affinity = algo1 <> algo2,
-            drivers      = drvs1 <> drvs2
-        }
+    (Config mod1 opt1 excl1 algo1 gov1 drvs1) <> (Config mod2 opt2 excl2 algo2 gov2 drvs2) =
+     Config
+     {
+        pfq_module   = getOptString $ OptString mod1  <> OptString mod2,
+        pfq_options  = getOptList   $ OptList opt1 <> OptList opt2,
+        exclude_core = excl1 <> excl2,
+        irq_affinity = algo1 <> algo2,
+        cpu_governor = getOptString $ OptString gov1 <> OptString gov2,
+        drivers      = drvs1 <> drvs2
+     }
 
 
 data Options = Options
-    {
-         config     :: Maybe String,
-         kmodule    :: String,
-         algorithm  :: String,
-         first_core :: Int,
-         exclude    :: [Int],
-         queues     :: Maybe Int,
-         others     :: [String]
+    {   config     :: Maybe String
+    ,   kmodule    :: String
+    ,   algorithm  :: String
+    ,   governor   :: String
+    ,   first_core :: Int
+    ,   exclude    :: [Int]
+    ,   queues     :: Maybe Int
+    ,   others     :: [String]
     } deriving (Show, Read, Data, Typeable)
 
 
 options :: Mode (CmdArgs Options)
 options = cmdArgsMode $ Options
-    {
-         config     = Nothing       &= typ "FILE" &= help "Specify config file (default ~/.pfq.conf)",
-         kmodule    = ""            &= help "Override the kmodule specified in config file",
-         queues     = Nothing       &= help "Specify hardware channels (i.e. Intel RSS)",
-         algorithm  = ""            &= help "Irq affinity algorithm: naive, round-robin, even, odd, all-in:id, comb:id",
-         first_core = 0             &= typ "NUM" &= help "First core used for irq affinity",
-         exclude    = []            &= typ "CORE" &= help "Exclude core from irq affinity",
-         others     = []            &= args
+    {   config     = Nothing       &= typ "FILE" &= help "Specify config file (default ~/.pfq.conf)"
+    ,   kmodule    = ""            &= help "Override the kmodule specified in config file"
+    ,   queues     = Nothing       &= help "Specify hardware channels (i.e. Intel RSS)"
+    ,   algorithm  = ""            &= help "Irq affinity algorithm: naive, round-robin, even, odd, all-in:id, comb:id"
+    ,   governor   = ""            &= help "Set cpufreq governor"
+    ,   first_core = 0             &= typ "NUM" &= help "First core used for irq affinity"
+    ,   exclude    = []            &= typ "CORE" &= help "Exclude core from irq affinity"
+    ,   others     = []            &= args
     } &= summary ("pfq-load " ++ version) &= program "pfq-load"
 
 
@@ -163,6 +151,7 @@ main = do
     pmod <- getProcModules
     core <- getNumberOfPhyCores
     bal  <- getProcessID "irqbalance"
+    frd  <- getProcessID "cpufreqd"
 
     -- check queues
     when (maybe False (> core) (queues opt)) $ error "queues number too big!"
@@ -172,8 +161,16 @@ main = do
 
     -- check irqbalance deaemon
     unless (null bal) $ do
-        putStrBoldLn $ "Irqbalance daemon detected pid " ++ show bal ++ ". Sending SIGKILL..."
+        putStrBoldLn $ "Irqbalance daemon detected @pid " ++ show bal ++ ". Sending SIGKILL..."
         forM_ bal $ signalProcess sigKILL
+
+    -- check cpufreqd deaemon
+    unless (null frd) $ do
+        putStrBoldLn $ "Cpufreqd daemon detected @pid " ++ show frd ++ ". Sending SIGKILL..."
+        forM_ frd $ signalProcess sigKILL
+
+    -- set cpufreq governor...
+    runSystem ("/usr/bin/cpufreq-set -g " ++ cpu_governor conf) ("*** cpfreq-set error! Make sure you have cpufrequtils installed! *** ", True)
 
     -- load PFQ...
     if null (pfq_module conf)
@@ -212,18 +209,20 @@ mkRssOption driver numdev queues =
 
 mkConfig :: Options -> Config
 mkConfig
-    Options { config    = _,
-              kmodule   = mod,
-              algorithm = algo,
-              exclude   = excl,
-              others    = opt
-            } =
-    Config {
-        pfq_module    = mod,
-        pfq_options   = opt,
-        exclude_core  = excl,
-        irq_affinity  = [algo | not (null algo)],
-        drivers       = []
+    Options
+    {   config    = _
+    ,   kmodule   = mod
+    ,   algorithm = algo
+    ,   exclude   = excl
+    ,   governor  = gov
+    ,   others    = opt } =
+    Config
+    {   pfq_module    = mod
+    ,   pfq_options   = opt
+    ,   exclude_core  = excl
+    ,   irq_affinity  = [algo | not (null algo)]
+    ,   cpu_governor  = gov
+    ,   drivers       = []
     }
 
 
@@ -234,7 +233,7 @@ loadConfig conf opt =
 
 getNumberOfPhyCores :: IO Int
 getNumberOfPhyCores = readFile proc_cpuinfo >>= \file ->
-    return $ length $ filter (isInfixOf "processor") $ lines file
+    return $ (length . filter (isInfixOf "processor") . lines) file
 
 
 type ProcModules = [ (String, [String]) ]
@@ -270,7 +269,7 @@ unloadModule name = do
         put $ rmmodFromProcMOdules name proc_mods
     where rmmod name = do
             putStrBoldLn $ "Unloading " ++ name ++ "..."
-            runSystem ("/sbin/rmmod " ++ name) ("rmmod " ++ name ++ " error.") True
+            runSystem ("/sbin/rmmod " ++ name) ("rmmod " ++ name ++ " error.", True)
           isModuleLoaded name =  any (\(mod,_) -> mod == name)
 
 
@@ -280,36 +279,38 @@ data LoadMode = InsertMod | ProbeMod
 loadModule :: LoadMode -> String -> [String] -> IO ()
 loadModule mode name opts = do
     putStrBoldLn $ "Loading " ++ name ++ "..."
-    runSystem (tool ++ " " ++ name ++ " " ++ unwords opts) ("insmod " ++ name ++ " error.") True
+    runSystem (tool ++ " " ++ name ++ " " ++ unwords opts) ("insmod " ++ name ++ " error.", True)
     where tool = if mode == InsertMod then "/sbin/insmod"
                                       else "/sbin/modprobe"
 
 
 setupDevice :: Maybe Int -> Device -> IO ()
 setupDevice queues (Device dev speed channels fctrl opts) = do
+
     putStrBoldLn $ "Activating " ++ dev ++ "..."
-    runSystem ("/sbin/ifconfig " ++ dev ++ " up") "ifconfig error!" True
+    runSystem ("/sbin/ifconfig " ++ dev ++ " up") ("ifconfig error!", True)
+
     case fctrl of
         No -> do
                 putStrBoldLn $ "Disabling flow control for " ++ dev ++ "..."
-                runSystem ("/sbin/ethtool -A " ++ dev ++ " autoneg off rx off tx off") "ethtool: flowctrl error!" False
+                runSystem ("/sbin/ethtool -A " ++ dev ++ " autoneg off rx off tx off") ("ethtool: flowctrl error!", False)
         Yes -> do
                 putStrBoldLn $ "Enabling flow control for " ++ dev ++ "..."
-                runSystem ("/sbin/ethtool -A " ++ dev ++ " autoneg on rx on tx on") "ethtool: flowctrl error!" False
+                runSystem ("/sbin/ethtool -A " ++ dev ++ " autoneg on rx on tx on") ("ethtool: flowctrl error!", False)
         Unspec -> return ()
 
     when (isJust speed) $ do
         let s = fromJust speed
         putStrBoldLn $ "Setting speed (" ++ show s ++ ") for " ++ dev ++ "..."
-        runSystem ("/sbin/ethtool -s " ++ dev ++ " speed " ++ show s ++ " duplex full") "ethtool: set speed error!" False
+        runSystem ("/sbin/ethtool -s " ++ dev ++ " speed " ++ show s ++ " duplex full") ("ethtool: set speed error!", False)
 
     when (isJust queues || isJust channels) $ do
         let c = fromJust (queues <|> channels)
         putStrBoldLn $ "Setting channels to " ++ show c ++ "..."
-        runSystem ("/sbin/ethtool -L " ++ dev ++ " combined " ++ show c) "" False
+        runSystem ("/sbin/ethtool -L " ++ dev ++ " combined " ++ show c) ("", False)
 
     forM_ opts $ \(opt, arg, value) ->
-        runSystem ("/sbin/ethtool " ++ opt ++ " " ++ dev ++ " " ++ arg ++ " " ++ show value) ("ethtool:" ++ opt ++ " error!") True
+        runSystem ("/sbin/ethtool " ++ opt ++ " " ++ dev ++ " " ++ arg ++ " " ++ show value) ("ethtool:" ++ opt ++ " error!", True)
 
 
 getDevices ::  Config -> [String]
@@ -323,11 +324,11 @@ setupIRQAffinity fc excl algs devs = do
     let affinity = zip algs (tails devs)
     unless (null affinity) $
         forM_ affinity $ \(alg, devs') ->
-            runSystem ("/root/.cabal/bin/irq-affinity -f " ++ show fc  ++ " " ++ excl_opt ++ " -a " ++ alg ++ " -m TxRx " ++ unwords devs') "irq-affinity error!" True
+            runSystem ("/root/.cabal/bin/irq-affinity -f " ++ show fc  ++ " " ++ excl_opt ++ " -a " ++ alg ++ " -m TxRx " ++ unwords devs') ("irq-affinity error!", True)
 
 
-runSystem :: String -> String -> Bool -> IO ()
-runSystem cmd errmsg term = do
+runSystem :: String -> (String,Bool) -> IO ()
+runSystem cmd (errmsg,term) = do
     putStrLn $ "-> " ++ cmd
     system cmd >>= \ec -> when (ec /= ExitSuccess) $ (if term then error else putStrLn) errmsg
 
