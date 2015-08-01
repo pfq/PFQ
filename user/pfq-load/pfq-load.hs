@@ -25,6 +25,7 @@ import Data.Semigroup
 import Data.List
 import Data.List.Split
 import Data.Maybe
+import Data.Char
 
 import Control.Applicative
 import Control.Monad
@@ -234,6 +235,9 @@ getFirstConfig xs = filterM doesFileExist xs >>= \case
       [ ]   -> return Nothing
       (x:_) -> return $ Just x
 
+notCommentLine :: String -> Bool
+notCommentLine = (not . ("#" `isPrefixOf`)) . (dropWhile isSpace)
+
 
 loadConfig :: [FilePath] -> Options -> IO Config
 loadConfig confs opt =
@@ -241,7 +245,7 @@ loadConfig confs opt =
         Nothing -> do putStrBoldLn "Using default config..."
                       return $ mkConfig opt
         Just conf -> do putStrBoldLn $ "Using " ++ conf ++ " config..."
-                        liftM (read . unlines . filter (not . ("#" `isPrefixOf`)) . lines) (readFile conf)
+                        liftM (read . unlines . filter notCommentLine . lines) (readFile conf)
 
 getNumberOfPhyCores :: IO Int
 getNumberOfPhyCores = readFile proc_cpuinfo >>= \file ->
