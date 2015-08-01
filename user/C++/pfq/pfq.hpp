@@ -1083,7 +1083,6 @@ namespace pfq {
                 throw pfq_error("PFQ: read: socket not enabled");
 
             auto q = static_cast<struct pfq_shared_queue *>(data()->shm_addr);
-
             unsigned int data, index;
 
             data = __atomic_load_n(&q->rx.data, __ATOMIC_RELAXED);
