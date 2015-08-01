@@ -187,14 +187,14 @@ main = do
     -- unload drivers...
     unless (null (drivers conf)) $ do
         putStrBoldLn "Unloading vanilla/standard drivers..."
-        evalStateT (mapM_ (unloadModule . takeBaseName . drvmod) (drivers conf)) pmod2
+        evalStateT (forM_ (drivers conf) $ unloadModule . takeBaseName . drvmod) pmod2
 
     -- load and configure device drivers...
     forM_ (drivers conf) $ \drv -> do
         let rss = maybe [] (mkRssOption (drvmod drv) (instances drv)) (queues opt)
         loadModule InsertMod (drvmod drv) (drvopt drv ++ rss)
-        threadDelay 1000000
-        mapM_ (setupDevice (queues opt)) (devices drv)
+        threadDelay 2000000
+        forM_ (devices drv) $ setupDevice (queues opt)
 
     -- set interrupt affinity...
     putStrBoldLn "Setting irq affinity..."
@@ -235,8 +235,9 @@ getFirstConfig xs = filterM doesFileExist xs >>= \case
       [ ]   -> return Nothing
       (x:_) -> return $ Just x
 
+
 notCommentLine :: String -> Bool
-notCommentLine = (not . ("#" `isPrefixOf`)) . (dropWhile isSpace)
+notCommentLine = (not . ("#" `isPrefixOf`)) . dropWhile isSpace
 
 
 loadConfig :: [FilePath] -> Options -> IO Config
@@ -279,7 +280,7 @@ moduleDependencies  name =
 unloadModule :: String -> ModStateT IO ()
 unloadModule name = do
     proc_mods <- get
-    mapM_ unloadModule (moduleDependencies name proc_mods)
+    forM_ (moduleDependencies name proc_mods) unloadModule
     when (isModuleLoaded name proc_mods) $ do
         liftIO $ rmmod name
         put $ rmmodFromProcMOdules name proc_mods
