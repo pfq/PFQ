@@ -87,7 +87,6 @@ MODULE_AUTHOR("Nicola Bonelli <nicola@pfq.io>");
 
 MODULE_DESCRIPTION("Functional Networking Framework for Multi-core Architectures");
 
-module_param(direct_capture,    int, 0644);
 module_param(capture_incoming,  int, 0644);
 module_param(capture_outgoing,  int, 0644);
 
@@ -101,8 +100,6 @@ module_param(batch_len,       int, 0644);
 
 module_param(skb_pool_size,   int, 0644);
 module_param(vl_untag,        int, 0644);
-
-MODULE_PARM_DESC(direct_capture," Direct capture packets: (0 default)");
 
 MODULE_PARM_DESC(capture_incoming," Capture incoming packets: (1 default)");
 MODULE_PARM_DESC(capture_outgoing," Capture outgoing packets: (0 default)");
@@ -986,7 +983,7 @@ static void __exit pfq_exit_module(void)
 static inline
 int pfq_direct_capture(const struct sk_buff *skb)
 {
-        return direct_capture && pfq_devmap_monitor_get(skb->dev->ifindex);
+        return pfq_devmap_monitor_get(skb->dev->ifindex);
 }
 
 

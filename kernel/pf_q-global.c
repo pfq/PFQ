@@ -34,7 +34,6 @@
 
 struct local_data __percpu    * cpu_data;
 
-int direct_capture	= 0;
 int capture_incoming	= 1;
 int capture_outgoing	= 0;
 
