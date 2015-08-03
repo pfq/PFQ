@@ -81,7 +81,7 @@ data Device =
     ,   devspeed  :: Maybe Int
     ,   channels  :: Maybe Int
     ,   flowctrl  :: YesNo
-    ,   ethopt    :: [(String, String, Int)]
+    ,   ethopt    :: [(String, String)]
     } deriving (Show, Read, Eq)
 
 
@@ -193,7 +193,6 @@ main = do
     forM_ (drivers conf) $ \drv -> do
         let rss = maybe [] (mkRssOption (drvmod drv) (instances drv)) (queues opt)
         loadModule InsertMod (drvmod drv) (drvopt drv ++ rss)
-        threadDelay 2000000
         forM_ (devices drv) $ setupDevice (queues opt)
 
     -- set interrupt affinity...
@@ -305,8 +304,11 @@ setupDevice :: Maybe Int -> Device -> IO ()
 setupDevice queues (Device dev speed channels fctrl opts) = do
 
     putStrBoldLn $ "Activating " ++ dev ++ "..."
+
+    threadDelay 1000000
     runSystem ("/sbin/ifconfig " ++ dev ++ " up") ("ifconfig error!", True)
 
+    threadDelay 1000000
     case fctrl of
         No -> do
                 putStrBoldLn $ "Disabling flow control for " ++ dev ++ "..."
@@ -316,18 +318,21 @@ setupDevice queues (Device dev speed channels fctrl opts) = do
                 runSystem ("/sbin/ethtool -A " ++ dev ++ " autoneg on rx on tx on") ("ethtool: flowctrl error!", False)
         Unspec -> return ()
 
+    threadDelay 1000000
     when (isJust speed) $ do
         let s = fromJust speed
         putStrBoldLn $ "Setting speed (" ++ show s ++ ") for " ++ dev ++ "..."
         runSystem ("/sbin/ethtool -s " ++ dev ++ " speed " ++ show s ++ " duplex full") ("ethtool: set speed error!", False)
 
+    threadDelay 1000000
     when (isJust queues || isJust channels) $ do
         let c = fromJust (queues <|> channels)
         putStrBoldLn $ "Setting channels to " ++ show c ++ "..."
         runSystem ("/sbin/ethtool -L " ++ dev ++ " combined " ++ show c) ("", False)
 
-    forM_ opts $ \(opt, arg, value) ->
-        runSystem ("/sbin/ethtool " ++ opt ++ " " ++ dev ++ " " ++ arg ++ " " ++ show value) ("ethtool:" ++ opt ++ " error!", True)
+    forM_ opts $ \(opt, arg) -> do
+        threadDelay 1000000
+        runSystem ("/sbin/ethtool " ++ opt ++ " " ++ dev ++ " " ++ arg) ("ethtool:" ++ opt ++ " error!", True)
 
 
 getDevices ::  Config -> [String]
