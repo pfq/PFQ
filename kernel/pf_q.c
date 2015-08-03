@@ -76,10 +76,8 @@
 #include <pf_q-percpu.h>
 #include <pf_q-GC.h>
 
-static struct net_proto_family  pfq_family_ops;
+
 static struct packet_type       pfq_prot_hook;
-static struct proto             pfq_proto;
-static struct proto_ops         pfq_ops;
 
 
 MODULE_LICENSE("GPL");
@@ -585,88 +583,6 @@ static void pfq_sock_destruct(struct sock *sk)
 
 
 static int
-pfq_create(
-#if(LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,24))
-    struct net *net,
-#endif
-    struct socket *sock, int protocol
-#if(LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,33))
-    , int kern
-#endif
-    )
-{
-        struct pfq_sock *so;
-        struct sock *sk;
-
-        /* security and sanity check */
-
-        if (!capable(CAP_NET_ADMIN))
-                return -EPERM;
-        if (sock->type != SOCK_RAW)
-                return -ESOCKTNOSUPPORT;
-        if (protocol != __constant_htons(ETH_P_ALL))
-                return -EPROTONOSUPPORT;
-
-        sock->state = SS_UNCONNECTED;
-
-        sk = sk_alloc(net, PF_INET, GFP_KERNEL, &pfq_proto);
-        if (sk == NULL) {
-                printk(KERN_WARNING "[PFQ] error: could not allocate a socket\n");
-                return -ENOMEM;
-        }
-
-        sock->ops = &pfq_ops;
-
-        /* initialize the socket */
-
-        sock_init_data(sock,sk);
-
-        so = pfq_sk(sk);
-
-        /* get a unique id for this sock */
-
-        so->id = pfq_get_free_id(so);
-        if (so->id == -1) {
-                printk(KERN_WARNING "[PFQ] error: resource exhausted\n");
-                sk_free(sk);
-                return -EBUSY;
-        }
-
-        /* memory mapped queues are allocated later, when the socket is enabled */
-
-	so->egress_type  = pfq_endpoint_socket;
-	so->egress_index = 0;
-	so->egress_queue = 0;
-
-        so->shmem.addr = NULL;
-        so->shmem.size = 0;
-        so->shmem.kind = 0;
-
-        so->shmem.hugepages = NULL;
-        so->shmem.npages = 0;
-
-        down(&sock_sem);
-
-        /* initialize both rx_opt and tx_opt */
-
-        pfq_rx_opt_init(&so->rx_opt, cap_len);
-        pfq_tx_opt_init(&so->tx_opt, max_len);
-
-        /* initialize socket */
-
-        sk->sk_family   = PF_Q;
-        sk->sk_destruct = pfq_sock_destruct;
-
-        sk_refcnt_debug_inc(sk);
-
-        up (&sock_sem);
-
-        down_read(&symtable_sem);
-        return 0;
-}
-
-
-static int
 pfq_release(struct socket *sock)
 {
         struct sock * sk = sock->sk;
@@ -772,63 +688,52 @@ int pfq_ioctl(struct socket *sock, unsigned int cmd, unsigned long arg)
         return 0;
 }
 
-static
-void pfq_proto_ops_init(void)
+static int pfq_netdev_notifier(struct notifier_block *this, unsigned long info,
+			       void *data)
 {
-        pfq_ops = (struct proto_ops)
-        {
-                .family = PF_Q,
-                .owner = THIS_MODULE,
+	struct net_device *dev = netdev_notifier_info_to_dev(data);
 
-                /* Operations that make no sense on queue sockets. */
-                .connect    = sock_no_connect,
-                .socketpair = sock_no_socketpair,
-                .accept     = sock_no_accept,
-                .getname    = sock_no_getname,
-                .listen     = sock_no_listen,
-                .shutdown   = sock_no_shutdown,
-                .sendpage   = sock_no_sendpage,
+	if (dev) {
+                const char *kind = "NETDEV_UNKNOWN";
+		BUG_ON(dev->ifindex >= Q_MAX_DEVICE);
 
-                /* Now the operations that really occur. */
-                .release    = pfq_release,
-                .bind       = sock_no_bind,
-                .mmap       = pfq_mmap,
-                .poll       = pfq_poll,
-                .setsockopt = pfq_setsockopt,
-                .getsockopt = pfq_getsockopt,
-                .ioctl      = pfq_ioctl,
-                .recvmsg    = sock_no_recvmsg,
-                .sendmsg    = sock_no_sendmsg
-        };
+		switch(info) {
+			case NETDEV_UP			: kind = "NETDEV_UP"; break;
+			case NETDEV_DOWN		: kind = "NETDEV_DOWN"; break;
+			case NETDEV_REBOOT		: kind = "NETDEV_REBOOT"; break;
+			case NETDEV_CHANGE		: kind = "NETDEV_CHANGE"; break;
+			case NETDEV_REGISTER		: kind = "NETDEV_REGISTER"; break;
+			case NETDEV_UNREGISTER		: kind = "NETDEV_UNREGISTER"; break;
+			case NETDEV_CHANGEMTU		: kind = "NETDEV_CHANGEMTU"; break;
+			case NETDEV_CHANGEADDR		: kind = "NETDEV_CHANGEADDR"; break;
+			case NETDEV_GOING_DOWN		: kind = "NETDEV_GOING_DOWN"; break;
+			case NETDEV_CHANGENAME		: kind = "NETDEV_CHANGENAME"; break;
+			case NETDEV_FEAT_CHANGE		: kind = "NETDEV_FEAT_CHANGE"; break;
+			case NETDEV_BONDING_FAILOVER	: kind = "NETDEV_BONDING_FAILOVER"; break;
+			case NETDEV_PRE_UP		: kind = "NETDEV_PRE_UP"; break;
+			case NETDEV_PRE_TYPE_CHANGE	: kind = "NETDEV_PRE_TYPE_CHANGE"; break;
+			case NETDEV_POST_TYPE_CHANGE	: kind = "NETDEV_POST_TYPE_CHANGE"; break;
+			case NETDEV_POST_INIT		: kind = "NETDEV_POST_INIT"; break;
+			case NETDEV_UNREGISTER_FINAL	: kind = "NETDEV_UNREGISTER_FINAL"; break;
+			case NETDEV_RELEASE		: kind = "NETDEV_RELEASE"; break;
+			case NETDEV_NOTIFY_PEERS	: kind = "NETDEV_NOTIFY_PEERS"; break;
+			case NETDEV_JOIN		: kind = "NETDEV_JOIN"; break;
+			case NETDEV_CHANGEUPPER		: kind = "NETDEV_CHANGEUPPER"; break;
+			case NETDEV_RESEND_IGMP		: kind = "NETDEV_RESEND_IGMP"; break;
+			case NETDEV_PRECHANGEMTU	: kind = "NETDEV_PRECHANGEMTU"; break;
+			// case NETDEV_CHANGEINFODATA	: kind = "NETDEV_CHANGEINFODATA"; break;
+			// case NETDEV_BONDING_INFO	: kind = "NETDEV_BONDING_INFO"; break;
+		}
+		printk(KERN_INFO "[PFQ] %s: device %s, ifindex %d\n", kind, dev->name, dev->ifindex);
+		return NOTIFY_OK;
+	}
+
+	return NOTIFY_DONE;
 }
 
 
 static
-void pfq_proto_init(void)
-{
-        pfq_proto = (struct proto)
-        {
-                .name  = "PFQ",
-                .owner = THIS_MODULE,
-                .obj_size = sizeof(struct pfq_sock)
-        };
-}
-
-
-static
-void pfq_net_proto_family_init(void)
-{
-        pfq_family_ops = (struct net_proto_family)
-        {
-                .family = PF_Q,
-                .create = pfq_create,
-                .owner = THIS_MODULE,
-        };
-}
-
-
-static
-void register_device_handler(void)
+void pfq_register_device_handler(void)
 {
         if (capture_incoming || capture_outgoing) {
                 pfq_prot_hook.func = pfq_packet_rcv;
@@ -845,6 +750,138 @@ void unregister_device_handler(void)
                 dev_remove_pack(&pfq_prot_hook); /* Remove protocol hook */
         }
 }
+
+
+static struct proto_ops pfq_ops =
+{
+	.family = PF_Q,
+        .owner = THIS_MODULE,
+
+        /* Operations that make no sense on queue sockets. */
+        .connect    = sock_no_connect,
+        .socketpair = sock_no_socketpair,
+        .accept     = sock_no_accept,
+        .getname    = sock_no_getname,
+        .listen     = sock_no_listen,
+        .shutdown   = sock_no_shutdown,
+        .sendpage   = sock_no_sendpage,
+
+        /* Now the operations that really occur. */
+        .release    = pfq_release,
+        .bind       = sock_no_bind,
+        .mmap       = pfq_mmap,
+        .poll       = pfq_poll,
+        .setsockopt = pfq_setsockopt,
+        .getsockopt = pfq_getsockopt,
+        .ioctl      = pfq_ioctl,
+        .recvmsg    = sock_no_recvmsg,
+        .sendmsg    = sock_no_sendmsg
+};
+
+
+static struct proto pfq_proto =
+{
+	.name  = "PFQ",
+        .owner = THIS_MODULE,
+        .obj_size = sizeof(struct pfq_sock)
+};
+
+
+static int
+pfq_create(
+#if(LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,24))
+    struct net *net,
+#endif
+    struct socket *sock, int protocol
+#if(LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,33))
+    , int kern
+#endif
+    )
+{
+        struct pfq_sock *so;
+        struct sock *sk;
+
+        /* security and sanity check */
+
+        if (!capable(CAP_NET_ADMIN))
+                return -EPERM;
+        if (sock->type != SOCK_RAW)
+                return -ESOCKTNOSUPPORT;
+        if (protocol != __constant_htons(ETH_P_ALL))
+                return -EPROTONOSUPPORT;
+
+        sock->state = SS_UNCONNECTED;
+
+        sk = sk_alloc(net, PF_INET, GFP_KERNEL, &pfq_proto);
+        if (sk == NULL) {
+                printk(KERN_WARNING "[PFQ] error: could not allocate a socket\n");
+                return -ENOMEM;
+        }
+
+        sock->ops = &pfq_ops;
+
+        /* initialize the socket */
+
+        sock_init_data(sock,sk);
+
+        so = pfq_sk(sk);
+
+        /* get a unique id for this sock */
+
+        so->id = pfq_get_free_id(so);
+        if (so->id == -1) {
+                printk(KERN_WARNING "[PFQ] error: resource exhausted\n");
+                sk_free(sk);
+                return -EBUSY;
+        }
+
+        /* memory mapped queues are allocated later, when the socket is enabled */
+
+	so->egress_type  = pfq_endpoint_socket;
+	so->egress_index = 0;
+	so->egress_queue = 0;
+
+        so->shmem.addr = NULL;
+        so->shmem.size = 0;
+        so->shmem.kind = 0;
+
+        so->shmem.hugepages = NULL;
+        so->shmem.npages = 0;
+
+        down(&sock_sem);
+
+        /* initialize both rx_opt and tx_opt */
+
+        pfq_rx_opt_init(&so->rx_opt, cap_len);
+        pfq_tx_opt_init(&so->tx_opt, max_len);
+
+        /* initialize socket */
+
+        sk->sk_family   = PF_Q;
+        sk->sk_destruct = pfq_sock_destruct;
+
+        sk_refcnt_debug_inc(sk);
+
+        up (&sock_sem);
+
+        down_read(&symtable_sem);
+        return 0;
+}
+
+
+static struct net_proto_family pfq_family_ops =
+{
+	.family = PF_Q,
+        .create = pfq_create,
+        .owner = THIS_MODULE,
+};
+
+
+
+static struct notifier_block pfq_netdev_notifier_block =
+{
+	.notifier_call = pfq_netdev_notifier
+};
 
 
 static int __init pfq_init_module(void)
@@ -872,9 +909,6 @@ static int __init pfq_init_module(void)
 
 	/* initialize data structures ... */
 
-        pfq_net_proto_family_init();
-        pfq_proto_ops_init();
-        pfq_proto_init();
 	pfq_groups_init();
 
 	/* initialization */
@@ -912,7 +946,17 @@ static int __init pfq_init_module(void)
 	pfq_symtable_init();
 
         /* finally register the basic device handler */
-        register_device_handler();
+        pfq_register_device_handler();
+
+	/* register netdev notifier */
+        register_netdevice_notifier(&pfq_netdev_notifier_block);
+
+	/* ensure each device has ifindex < Q_MAX_DEVICE */
+	{
+		struct net_device *dev;
+		for_each_netdev(&init_net, dev)
+			BUG_ON(dev->ifindex >= Q_MAX_DEVICE);
+	}
 
 	printk(KERN_INFO "[PFQ] ready!\n");
         return 0;
@@ -941,6 +985,9 @@ static void __exit pfq_exit_module(void)
 #ifdef PFQ_USE_SKB_POOL
         pfq_skb_pool_enable(false);
 #endif
+	/* unregister netdevice notifier */
+        unregister_netdevice_notifier(&pfq_netdev_notifier_block);
+
         /* unregister the basic device handler */
         unregister_device_handler();
 

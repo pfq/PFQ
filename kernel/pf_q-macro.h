@@ -33,11 +33,8 @@
 #define Q_GC_LOG_QUEUE_LEN	16
 #define Q_GC_POOL_QUEUE_LEN	Q_SKBUFF_LONG_BATCH
 
-#define Q_MAX_DEVICE		256
-#define Q_MAX_DEVICE_MASK       (Q_MAX_DEVICE-1)
-
+#define Q_MAX_DEVICE		1024
 #define Q_MAX_HW_QUEUE          256
-#define Q_MAX_HW_QUEUE_MASK     (Q_MAX_HW_QUEUE-1)
 
 #define Q_GRACE_PERIOD		100 /* msec */
 
