@@ -1023,7 +1023,7 @@ pfq_inject_linux(pcap_t *handle, const void * buf, size_t size)
 {
 	if (handle->opt.pfq.tx_async == 0) {
 		handle->opt.pfq.tx_async = 1;
-		pfq_tx_async(handle->md.pfq.q, 1);
+		pfq_tx_async_start(handle->md.pfq.q);
 	}
 
 	int ret = pfq_send_async(handle->md.pfq.q, buf, size, handle->opt.pfq.tx_flush);
