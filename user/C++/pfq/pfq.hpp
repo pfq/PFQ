@@ -518,7 +518,7 @@ namespace pfq {
                 // HugePages
                 //
 
-                hd_ = ::open((hugepages + "/pfq." + std::to_string(fd_)).c_str(),  O_CREAT | O_RDWR, 0755);
+                hd_ = ::open((hugepages + "/pfq." + std::to_string(data_->id)).c_str(),  O_CREAT | O_RDWR, 0755);
                 if (hd_ == -1)
                     throw pfq_error(errno, "PFQ: couldn't open a HugePages descriptor");
 

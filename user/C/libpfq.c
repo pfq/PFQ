@@ -362,7 +362,7 @@ pfq_enable(pfq_t *q)
 	if (hugepages && !getenv("PFQ_NO_HUGEPAGES"))
 	{
 		/* HugePages */
-		snprintf(filename, 256, "%s/pfq.%d", hugepages, q->fd);
+		snprintf(filename, 256, "%s/pfq.%d", hugepages, q->id);
 		free (hugepages);
 
 		q->hd = open(filename, O_CREAT | O_RDWR, 0755);
