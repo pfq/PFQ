@@ -512,11 +512,16 @@ namespace pfq {
             if (::getsockopt(fd_, PF_Q, Q_SO_GET_SHMEM_SIZE, &tot_mem, &size) == -1)
                 throw pfq_error(errno, "PFQ: queue memory error");
 
+            auto env = getenv("PFQ_HUGEPAGES");
             auto hugepages = hugepages_mountpoint();
-            if (!hugepages.empty() && !getenv("PFQ_NO_HUGEPAGES"))
+
+            if (!hugepages.empty() &&
+                !getenv("PFQ_NO_HUGEPAGES") &&
+                (env == nullptr || atoi(env) != 0))
             {
                 // HugePages
                 //
+                std::clog << "[PFQ] using HugePages..." << std::endl;
 
                 hd_ = ::open((hugepages + "/pfq." + std::to_string(data_->id)).c_str(),  O_CREAT | O_RDWR, 0755);
                 if (hd_ == -1)
@@ -533,6 +538,8 @@ namespace pfq {
             {
                 // standard pages (4K)
                 //
+
+                std::clog << "[PFQ] using 4k-Pages..." << std::endl;
 
                 void * null = nullptr;
                 if(::setsockopt(fd_, PF_Q, Q_SO_ENABLE, &null, sizeof(null)) == -1)

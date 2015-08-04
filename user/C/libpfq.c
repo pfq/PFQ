@@ -348,6 +348,7 @@ pfq_enable(pfq_t *q)
 {
 	size_t tot_mem; socklen_t size = sizeof(tot_mem);
 	char filename[256];
+        char *hugepages, *env;
 
 	if (q->shm_addr != MAP_FAILED &&
 	    q->shm_addr != NULL) {
@@ -358,10 +359,16 @@ pfq_enable(pfq_t *q)
 		return Q_ERROR(q, "PFQ: queue memory error");
 	}
 
-	char *hugepages = hugepages_mountpoint();
-	if (hugepages && !getenv("PFQ_NO_HUGEPAGES"))
+	env = getenv("PFQ_HUGEPAGES");
+	hugepages = hugepages_mountpoint();
+
+	if (hugepages &&
+	    !getenv("PFQ_NO_HUGEPAGES") &&
+	    (env == NULL || atoi(env) != 0) )
 	{
 		/* HugePages */
+		fprintf(stdout, "[PFQ] using HugePages...\n");
+
 		snprintf(filename, 256, "%s/pfq.%d", hugepages, q->id);
 		free (hugepages);
 
@@ -380,6 +387,7 @@ pfq_enable(pfq_t *q)
 		/* Standard pages (4K) */
 
 		void * null = NULL;
+		fprintf(stdout, "[PFQ] using 4k-Pages...\n");
 		if(setsockopt(q->fd, PF_Q, Q_SO_ENABLE, &null, sizeof(null)) == -1)
 			return Q_ERROR(q, "PFQ: socket enable");
 
