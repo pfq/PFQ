@@ -225,7 +225,7 @@ namespace thread
 
                 m_sent->fetch_add(1, std::memory_order_relaxed);
                 m_band->fetch_add(len, std::memory_order_relaxed);
-                m_gros->fetch_add(len+20, std::memory_order_relaxed);
+                m_gros->fetch_add(len+24, std::memory_order_relaxed);
 
                 if (opt::rand_ip)
                 {
@@ -267,7 +267,7 @@ namespace thread
 
                 m_sent->fetch_add(1, std::memory_order_relaxed);
                 m_band->fetch_add(len, std::memory_order_relaxed);
-                m_gros->fetch_add(len+20, std::memory_order_relaxed);
+                m_gros->fetch_add(len+24, std::memory_order_relaxed);
 
                 n++;
             }
@@ -293,7 +293,7 @@ namespace thread
 
                 m_sent->fetch_add(1, std::memory_order_relaxed);
                 m_band->fetch_add(len, std::memory_order_relaxed);
-                m_gros->fetch_add(len+20, std::memory_order_relaxed);
+                m_gros->fetch_add(len+24, std::memory_order_relaxed);
 
                 if (opt::rand_ip)
                 {
@@ -345,7 +345,7 @@ namespace thread
 
                     m_sent->fetch_add(1, std::memory_order_relaxed);
                     m_band->fetch_add(plen, std::memory_order_relaxed);
-                    m_gros->fetch_add(plen+20, std::memory_order_relaxed);
+                    m_gros->fetch_add(plen+24, std::memory_order_relaxed);
 
                     n = pcap_next_ex(p, &hdr, (u_char const **)&data);
                     if (n == -2)
