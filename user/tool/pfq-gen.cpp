@@ -54,7 +54,8 @@ namespace opt
 
     std::atomic_int nthreads;
 
-    bool   rand_ip = false;
+    bool   rand_ip   = false;
+    bool   rand_flow = false;
     bool   active_ts = false;
 
     double rate    = 0;
@@ -309,10 +310,17 @@ namespace thread
 #ifdef HAVE_PCAP_H
         void pcap_generator()
         {
+            std::vector<uint32_t> rand_seed;
             struct pcap_pkthdr *hdr;
             u_char *data;
 
             auto rc = opt::rate != 0.0;
+
+            if (opt::rand_flow)
+            {
+                for(int i = 0; i < 256; i++)
+                    rand_seed.push_back(m_gen());
+            }
 
             for (size_t l = 0; l < opt::loop; l++)
             {
@@ -337,6 +345,20 @@ namespace thread
                     if (rc)
                         rate_control(now, delta, i);
 
+                    if (auto ip = opt::rand_ip ? reinterpret_cast<iphdr *>(data + 14) : nullptr)
+                    {
+                        ip->saddr = static_cast<uint32_t>(m_gen());
+                        ip->daddr = static_cast<uint32_t>(m_gen());
+                    }
+
+                    if (auto ip = opt::rand_flow ? reinterpret_cast<iphdr *>(data + 14) : nullptr)
+                    {
+                        auto hash = ip->saddr ^ ip->daddr;
+                        auto seed = rand_seed[hash & 255];
+                        ip->saddr ^= seed;
+                        ip->daddr ^= seed;
+                    }
+
                     if (!m_pfq.send_async(pfq::const_buffer(reinterpret_cast<const char *>(data), plen), opt::flush))
                     {
                         m_fail->fetch_add(1, std::memory_order_relaxed);
@@ -350,12 +372,6 @@ namespace thread
                     n = pcap_next_ex(p, &hdr, (u_char const **)&data);
                     if (n == -2)
                         break;
-
-                    if (auto ip = opt::rand_ip ? reinterpret_cast<iphdr *>(data + 14) : nullptr)
-                    {
-                        ip->saddr = static_cast<uint32_t>(m_gen());
-                        ip->daddr = static_cast<uint32_t>(m_gen());
-                    }
 
                     i++;
                 }
@@ -465,6 +481,7 @@ void usage(std::string name)
         "    --loop                     Loop through the trace file N times\n"
 #endif
         " -R --rand-ip                  Randomize IP addresses\n"
+        " -F --rand-flow                Randomize IP addresses (per-flow)\n"
         " -P --preload INT              Preload INT packets (must be a power of 2)\n"
         "    --rate DOUBLE              Packet rate in Mpps\n"
         " -a --active-tstamp            Use active timestamp as rate control\n"
@@ -587,6 +604,12 @@ try
         if ( any_strcmp(argv[i], "-R", "--rand-ip") )
         {
             opt::rand_ip = true;
+            continue;
+        }
+
+        if ( any_strcmp(argv[i], "-F", "--rand-flow") )
+        {
+            opt::rand_flow = true;
             continue;
         }
 
