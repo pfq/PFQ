@@ -128,6 +128,7 @@ namespace thread
         , m_pfq()
         , m_sent(std::unique_ptr<std::atomic_ullong>(new std::atomic_ullong(0)))
         , m_band(std::unique_ptr<std::atomic_ullong>(new std::atomic_ullong(0)))
+        , m_gros(std::unique_ptr<std::atomic_ullong>(new std::atomic_ullong(0)))
         , m_fail(std::unique_ptr<std::atomic_ullong>(new std::atomic_ullong(0)))
         , m_gen()
         , m_packet(make_packets(opt::len, opt::preload))
@@ -185,7 +186,7 @@ namespace thread
             opt::nthreads--;
         }
 
-        std::tuple<pfq_stats, uint64_t, uint64_t, uint64_t>
+        std::tuple<pfq_stats, uint64_t, uint64_t, uint64_t, uint64_t>
         stats() const
         {
             pfq_stats ret = {0,0,0,0,0,0,0};
@@ -194,6 +195,7 @@ namespace thread
 
             return std::make_tuple(ret, m_sent->load(std::memory_order_relaxed),
                                         m_band->load(std::memory_order_relaxed),
+                                        m_gros->load(std::memory_order_relaxed),
                                         m_fail->load(std::memory_order_relaxed));
         }
 
@@ -223,6 +225,7 @@ namespace thread
 
                 m_sent->fetch_add(1, std::memory_order_relaxed);
                 m_band->fetch_add(len, std::memory_order_relaxed);
+                m_gros->fetch_add(len+20, std::memory_order_relaxed);
 
                 if (opt::rand_ip)
                 {
@@ -264,6 +267,7 @@ namespace thread
 
                 m_sent->fetch_add(1, std::memory_order_relaxed);
                 m_band->fetch_add(len, std::memory_order_relaxed);
+                m_gros->fetch_add(len+20, std::memory_order_relaxed);
 
                 n++;
             }
@@ -289,6 +293,7 @@ namespace thread
 
                 m_sent->fetch_add(1, std::memory_order_relaxed);
                 m_band->fetch_add(len, std::memory_order_relaxed);
+                m_gros->fetch_add(len+20, std::memory_order_relaxed);
 
                 if (opt::rand_ip)
                 {
@@ -340,6 +345,7 @@ namespace thread
 
                     m_sent->fetch_add(1, std::memory_order_relaxed);
                     m_band->fetch_add(plen, std::memory_order_relaxed);
+                    m_gros->fetch_add(plen+20, std::memory_order_relaxed);
 
                     n = pcap_next_ex(p, &hdr, (u_char const **)&data);
                     if (n == -2)
@@ -378,6 +384,7 @@ namespace thread
 
         std::unique_ptr<std::atomic_ullong> m_sent;
         std::unique_ptr<std::atomic_ullong> m_band;
+        std::unique_ptr<std::atomic_ullong> m_gros;
         std::unique_ptr<std::atomic_ullong> m_fail;
 
         std::mt19937 m_gen;
@@ -713,6 +720,7 @@ try
 
     uint64_t sent, sent_ = 0;
     uint64_t band, band_ = 0;
+    uint64_t gros, gros_ = 0;
     uint64_t fail, fail_ = 0;
 
     std::cout << "------------ gen started ------------\n";
@@ -726,6 +734,7 @@ try
         cur = {0,0,0,0,0,0,0};
         sent = 0;
         band = 0;
+        gros = 0;
         fail = 0;
 
         std::for_each(thread_ctx.begin(), thread_ctx.end(), [&](const thread::context *c)
@@ -735,7 +744,8 @@ try
             cur  += std::get<0>(p);
             sent += std::get<1>(p);
             band += std::get<2>(p);
-            fail += std::get<3>(p);
+            gros += std::get<3>(p);
+            fail += std::get<4>(p);
         });
 
         auto end   = std::chrono::system_clock::now();
@@ -746,6 +756,7 @@ try
                   << "sent: " << persecond<int64_t>(sent - sent_, delta)            << ' '
                   << "fail: " << persecond<int64_t>(fail-fail_, delta)              << ' '
                   << "band: " << pretty(persecond<double>((band-band_)*8, delta))  << "bit/sec "
+                  << "gros: " << pretty(persecond<double>((gros-gros_)*8, delta))  << "bit/sec "
                   << vt100::RESET << " } - "
                   << "sent: " << vt100::BOLD << persecond<int64_t>(cur.sent - prec.sent, delta) << vt100::RESET << " pkt/sec - "
                   << "disc: " << vt100::BOLD << persecond<int64_t>(cur.disc - prec.disc, delta) << vt100::RESET << " pkt/sec" << std::endl;
@@ -753,6 +764,7 @@ try
         prec = cur, begin = end;
         sent_ = sent;
         band_ = band;
+        gros_ = gros;
         fail_ = fail;
 
         if (opt::nthreads.load(std::memory_order_relaxed) == 0)
