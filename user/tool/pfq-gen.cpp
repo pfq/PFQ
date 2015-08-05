@@ -212,16 +212,8 @@ namespace thread
 
             for(size_t n = 0; n < opt::npackets;)
             {
-                //
-                // poor-man rate control...
-                //
-
-                if (rc && (n & 8191) == 0)
-                {
-                    while (std::chrono::system_clock::now() < (now + delta*8192))
-                    {}
-                    now = std::chrono::system_clock::now();
-                }
+                if (rc)
+                    rate_control(now, delta, n);
 
                 if (!m_pfq.send_async(pfq::const_buffer(reinterpret_cast<const char *>(m_packet.get()), len), opt::flush))
                 {
@@ -259,16 +251,8 @@ namespace thread
             {
                 idx &= (opt::preload-1);
 
-                //
-                // poor-man rate control...
-                //
-
-                if (rc && (n & 8191) == 0)
-                {
-                    while (std::chrono::system_clock::now() < (now + delta*8192))
-                    {}
-                    now = std::chrono::system_clock::now();
-                }
+                if (rc)
+                    rate_control(now, delta, n);
 
                 if (!m_pfq.send_async(pfq::const_buffer(reinterpret_cast<const char *>(m_packet.get() + idx * opt::len), len), opt::flush))
                 {
@@ -323,6 +307,8 @@ namespace thread
             struct pcap_pkthdr *hdr;
             u_char *data;
 
+            auto rc = opt::rate != 0.0;
+
             for (size_t l = 0; l < opt::loop; l++)
             {
                 std::cout << "[PFQ] " << opt::file << " #" << (l+1) << "/" << opt::loop << "..." << std::endl;
@@ -341,18 +327,10 @@ namespace thread
 
                 for(size_t i = 0; i < opt::npackets;)
                 {
-                    //
-                    // poor-man rate control...
-                    //
-
-                    if ((n & 8191) == 0)
-                    {
-                        while (std::chrono::system_clock::now() < (now + delta*8192))
-                        {}
-                        now = std::chrono::system_clock::now();
-                    }
-
                     auto plen = std::min<size_t>(hdr->caplen, opt::len);
+
+                    if (rc)
+                        rate_control(now, delta, i);
 
                     if (!m_pfq.send_async(pfq::const_buffer(reinterpret_cast<const char *>(data), plen), opt::flush))
                     {
@@ -380,6 +358,17 @@ namespace thread
             }
         }
 #endif
+
+        template <typename Tp, typename Dur>
+        void rate_control(Tp &now, Dur const &delta, int n)
+        {
+            if ((n & 8191) == 0)
+            {
+                while (std::chrono::system_clock::now() < (now + delta*8192))
+                {}
+                now = std::chrono::system_clock::now();
+            }
+        }
 
         int m_id;
 
