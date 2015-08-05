@@ -761,7 +761,22 @@ try
 
     std::cout << "Shutting down sockets in 1 sec..." << std::endl;
     std::this_thread::sleep_for(std::chrono::seconds(1));
-    std::cout << "Done." << std::endl;
+
+    cur  = {0,0,0,0,0,0,0};
+    sent = 0;
+
+    std::for_each(thread_ctx.begin(), thread_ctx.end(), [&](const thread::context *c)
+    {
+        auto p = c->stats();
+
+        cur  += std::get<0>(p);
+        sent += std::get<1>(p);
+    });
+
+    std::cout << "Summary:" << std::endl;
+
+    std::cout << "    PFQ packets sent:" << cur.sent << " discarded:" << cur.disc << std::endl;
+    std::cout << "    App packets sent:" << sent << std::endl;
 
 }
 catch(std::exception &e)
