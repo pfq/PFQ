@@ -481,7 +481,9 @@ void usage(std::string name)
         "    --loop                     Loop through the trace file N times\n"
 #endif
         " -R --rand-ip                  Randomize IP addresses\n"
+#ifdef HAVE_PCAP_H
         " -F --rand-flow                Randomize IP addresses (per-flow)\n"
+#endif
         " -P --preload INT              Preload INT packets (must be a power of 2)\n"
         "    --rate DOUBLE              Packet rate in Mpps\n"
         " -a --active-tstamp            Use active timestamp as rate control\n"
@@ -527,6 +529,12 @@ try
             }
 
             opt::loop = static_cast<size_t>(std::atoi(argv[i]));
+            continue;
+        }
+
+        if ( any_strcmp(argv[i], "-F", "--rand-flow") )
+        {
+            opt::rand_flow = true;
             continue;
         }
 
@@ -607,12 +615,6 @@ try
             continue;
         }
 
-        if ( any_strcmp(argv[i], "-F", "--rand-flow") )
-        {
-            opt::rand_flow = true;
-            continue;
-        }
-
         if ( any_strcmp(argv[i], "-a", "--active-tstamp") )
         {
             opt::active_ts = true;
@@ -678,7 +680,6 @@ try
             binding.at(i).dev.front().queue.push_back(-1);
             opt::kthread.at(i).push_back(-1);
         }
-
     }
 
     std::cout << "rand_ip    : "  << std::boolalpha << opt::rand_ip << std::endl;
@@ -690,6 +691,9 @@ try
 
     if (opt::slots == 0)
         throw std::runtime_error("tx_slots set to 0!");
+
+    if (opt::rand_flow && opt::file.empty())
+        throw std::runtime_error("random flow requires reading packets from file (r)");
 
     if (opt::active_ts)
         std::cout << "timestamp  : active!" << std::endl;
