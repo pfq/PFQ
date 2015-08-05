@@ -81,14 +81,14 @@ bool valid_codec(uint8_t c)
 struct hret
 {
 	uint32_t hash;
-	bool	 pass;
+	int 	 pass;
 };
 
 
 struct hret
 heuristic_rtp(SkBuff b, bool steer)
 {
-	struct hret ret = { 0, false };
+	struct hret ret = { 0, 0 };
 
 	if (eth_hdr(b.skb)->h_proto == __constant_htons(ETH_P_IP))
 	{
@@ -111,31 +111,42 @@ heuristic_rtp(SkBuff b, bool steer)
 		if (hdr == NULL)
 			return ret;
 
+		dest = ntohs(hdr->udp.dest);
+		source = ntohs(hdr->udp.source);
+
+		if (dest == 5060 || source == 5060) {
+			ret.pass = 1;
+			return ret;
+		}
+
 		/* version => 2 */
 
 		if (!((ntohs(hdr->un.rtp.rh_flags) & 0xc000) == 0x8000))
 			return ret;
 
-		dest   = ntohs(hdr->udp.dest);
-		source = ntohs(hdr->udp.source);
-
 		if (dest < 1024 || source < 1024)
 			return ret;
 
+#if 0
 		if ((dest & 1) && (source & 1)) { /* rtcp */
 			if (hdr->un.rtcp.rh_type != 200)  /* SR  */
 				return ret;
 		}
-		else if (!((dest & 1) || (source & 1))) {
+		else
+		if (!((dest & 1) || (source & 1))) {
 			uint8_t pt = hdr->un.rtp.rh_pt;
 			if (!valid_codec(pt))
 				return ret;
 		}
+#endif
+		if (steer) {
+			ret.pass = 2;
+			ret.hash = ip->saddr ^ ip->daddr ^ ((uint32_t)(hdr->udp.source & 0xfffe) << 16) ^ (hdr->udp.dest & 0xfffe);
+		}
+		else {
+                	ret.pass = 1;
+		}
 
-		ret.pass = true;
-		if (steer)
-			ret.hash = ip->saddr ^ ip->daddr ^ ((uint32_t)(hdr->udp.source & 0xfffe) << 16) ^
-				(hdr->udp.dest & 0xfffe);
 		return ret;
 	}
 
@@ -165,9 +176,10 @@ steering_rtp(arguments_t arg, SkBuff b)
 {
 	struct hret ret = heuristic_rtp(b, true);
 
-	if (ret.pass)
+	if (ret.pass == 2)
 		return Steering(b, ret.hash);
-
+	else if (ret.pass == 1)
+		return Broadcast(b);
 	return Drop(b);
 }
 
