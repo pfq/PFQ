@@ -275,9 +275,6 @@ namespace thread
         {
             pcap_emu::pkthdr header;
 
-            if (caplen != len)
-                std::cout << "**************************************** caplen: " << caplen << " " << " len: " << len << std::endl;
-
             header.sec = sec;
             header.usec = usec;
             header.caplen = (uint32_t)caplen;
