@@ -725,7 +725,7 @@ pfq_activate_linux(pcap_t *handle)
 		device = colon;
 
         if (handle->opt.pfq.caplen > maxlen || handle->opt.pfq.caplen == 0) {
-                fprintf(stderr, "[PFQ] capture length forced to %d\n", maxlen);
+                fprintf(stdout, "[PFQ] capture length forced to %d\n", maxlen);
                 handle->opt.pfq.caplen = maxlen;
         }
 
@@ -733,7 +733,7 @@ pfq_activate_linux(pcap_t *handle)
 		handle->opt.pfq.rx_slots = handle->opt.buffer_size/handle->opt.pfq.caplen;
 
 
-	fprintf(stderr, "[PFQ] buffer_size = %d caplen = %d, rx_slots = %d, tx_slots = %d, tx_flush = %d\n",
+	fprintf(stdout, "[PFQ] buffer_size = %d caplen = %d, rx_slots = %d, tx_slots = %d, tx_flush = %d\n",
 		handle->opt.buffer_size,
 		handle->opt.pfq.caplen,
 		handle->opt.pfq.rx_slots,
@@ -861,7 +861,7 @@ pfq_activate_linux(pcap_t *handle)
 
 		int bind_group(const char *dev)
 		{
-			fprintf(stderr, "[PFQ] binding group %d on dev %s...\n", handle->opt.pfq.group, dev);
+			fprintf(stdout, "[PFQ] binding group %d on dev %s...\n", handle->opt.pfq.group, dev);
 
 			if (pfq_bind_group(handle->md.pfq.q, handle->opt.pfq.group, dev, queue) == -1) {
 				fprintf(stderr, "[PFQ] error: %s\n", pfq_error(handle->md.pfq.q));
@@ -878,7 +878,7 @@ pfq_activate_linux(pcap_t *handle)
 			goto fail;
 		}
 
-                fprintf(stderr, "[PFQ] group = %d\n", handle->opt.pfq.group);
+                fprintf(stdout, "[PFQ] group = %d\n", handle->opt.pfq.group);
 
 		if (pfq_join_group(handle->md.pfq.q,
 				   handle->opt.pfq.group, Q_CLASS_DEFAULT, Q_POLICY_GROUP_SHARED) < 0) {
@@ -896,7 +896,7 @@ pfq_activate_linux(pcap_t *handle)
 	{
 		int bind_socket(const char *dev)
 		{
-			fprintf(stderr, "[PFQ] binding socket on dev %s...\n", dev);
+			fprintf(stdout, "[PFQ] binding socket on dev %s...\n", dev);
 
 			if (pfq_bind(handle->md.pfq.q, dev, queue) == -1) {
 				fprintf(stderr, "[PFQ] error: %s\n", pfq_error(handle->md.pfq.q));
@@ -935,11 +935,11 @@ pfq_activate_linux(pcap_t *handle)
 
 		tot = pfq_count_tx_queues(&handle->opt.pfq);
 
-		fprintf(stderr, "[PFQ] enabling %zu logic Tx queues on dev %s...\n", tot, first_dev);
+		fprintf(stdout, "[PFQ] enabling %zu logic Tx queues on dev %s...\n", tot, first_dev);
 
 		for(idx = 0; idx < tot; idx++)
 		{
-			fprintf(stderr, "[PFQ] binding Tx on %s, hw queue %d, core %d\n",
+			fprintf(stdout, "[PFQ] binding Tx on %s, hw queue %d, core %d\n",
 				first_dev, handle->opt.pfq.tx_queue[idx], handle->opt.pfq.tx_task[idx]);
 
 			if (pfq_bind_tx(handle->md.pfq.q, first_dev,
@@ -957,7 +957,7 @@ pfq_activate_linux(pcap_t *handle)
 
 	if (handle->opt.pfq.comp) {
 
-		fprintf(stderr, "[PFQ] setting computation '%s' for group %d\n",
+		fprintf(stdout, "[PFQ] setting computation '%s' for group %d\n",
 			handle->opt.pfq.comp, handle->opt.pfq.group);
 
 		if (pfq_set_group_computation_from_string(handle->md.pfq.q,
@@ -981,7 +981,7 @@ pfq_activate_linux(pcap_t *handle)
 		{
 		        int vid = atoi(vid_);
 
-			fprintf(stderr, "[PFQ] group %d setting vlan filer id=%d\n", handle->opt.pfq.group, vid);
+			fprintf(stdout, "[PFQ] group %d setting vlan filer id=%d\n", handle->opt.pfq.group, vid);
 
 			if (pfq_vlan_set_filter(handle->md.pfq.q, handle->opt.pfq.group, vid)  == -1) {
 				fprintf(stderr, "[PFQ] error: %s\n", pfq_error(handle->md.pfq.q));
@@ -1046,7 +1046,7 @@ pfq_cleanup_linux(pcap_t *handle)
 		if (!(handle->md.pfq.ifs_promisc & (1 << n++)))
 			return 0;
 
-		fprintf(stderr, "[PFQ] clear promisc on dev %s...\n", dev);
+		fprintf(stdout, "[PFQ] clear promisc on dev %s...\n", dev);
 
 		memset(&ifr, 0, sizeof(ifr));
 		strncpy(ifr.ifr_name, dev,
@@ -1087,7 +1087,7 @@ pfq_cleanup_linux(pcap_t *handle)
 	}
 
 	if(handle->md.pfq.q) {
-		fprintf(stderr, "[PFQ] close socket.\n");
+		fprintf(stdout, "[PFQ] close socket.\n");
 		pfq_close(handle->md.pfq.q);
 		handle->md.pfq.q = NULL;
 	}
@@ -1180,7 +1180,7 @@ pfq_read_linux(pcap_t *handle, int max_packets, pcap_handler callback, u_char *u
 static int
 pfq_setdirection_linux(pcap_t *handle, pcap_direction_t d)
 {
-        fprintf(stderr, "[PFQ] set direciton not support with PFQ.\n");
+        fprintf(stdout, "[PFQ] set direciton not support with PFQ.\n");
 	return 0;
 }
 
