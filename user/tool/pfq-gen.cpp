@@ -45,11 +45,12 @@ using namespace pfq;
 
 namespace opt
 {
-    size_t flush   = 1;
-    size_t len     = 1514;
-    size_t slots   = 4096;
+    size_t flush    = 1;
+    size_t len      = 1514;
+    size_t slots    = 4096;
     size_t npackets = std::numeric_limits<size_t>::max();
-    size_t preload = 1;
+    size_t loop     = 1;
+    size_t preload  = 1;
 
     std::atomic_int nthreads;
 
@@ -322,53 +323,60 @@ namespace thread
             struct pcap_pkthdr *hdr;
             u_char *data;
 
-            auto p = pcap_open_offline(opt::file.c_str(), opt::errbuf);
-            if (p == nullptr)
-                throw std::runtime_error("pcap_open_offline:" + std::string(opt::errbuf));
-
-            auto n = pcap_next_ex(p, &hdr, (u_char const **)&data);
-            if (n == -2)
-                return;
-
-            auto delta = std::chrono::nanoseconds(static_cast<uint64_t>(1000/opt::rate));
-
-            auto now = std::chrono::system_clock::now();
-
-            for(size_t i = 0; i < opt::npackets;)
+            for (size_t l = 0; l < opt::loop; l++)
             {
-                //
-                // poor-man rate control...
-                //
+                std::cout << "[PFQ] " << opt::file << " #" << (l+1) << "/" << opt::loop << "..." << std::endl;
 
-                if ((n & 8191) == 0)
-                {
-                    while (std::chrono::system_clock::now() < (now + delta*8192))
-                    {}
-                    now = std::chrono::system_clock::now();
-                }
+                auto p = pcap_open_offline(opt::file.c_str(), opt::errbuf);
+                if (p == nullptr)
+                    throw std::runtime_error("pcap_open_offline:" + std::string(opt::errbuf));
 
-                auto plen = std::min<size_t>(hdr->caplen, opt::len);
-
-                if (!m_pfq.send_async(pfq::const_buffer(reinterpret_cast<const char *>(data), plen), opt::flush))
-                {
-                    m_fail->fetch_add(1, std::memory_order_relaxed);
-                    continue;
-                }
-
-                m_sent->fetch_add(1, std::memory_order_relaxed);
-                m_band->fetch_add(plen, std::memory_order_relaxed);
-
-                n = pcap_next_ex(p, &hdr, (u_char const **)&data);
+                auto n = pcap_next_ex(p, &hdr, (u_char const **)&data);
                 if (n == -2)
-                    break;
+                    return;
 
-                if (auto ip = opt::rand_ip ? reinterpret_cast<iphdr *>(data + 14) : nullptr)
+                auto delta = std::chrono::nanoseconds(static_cast<uint64_t>(1000/opt::rate));
+
+                auto now = std::chrono::system_clock::now();
+
+                for(size_t i = 0; i < opt::npackets;)
                 {
-                    ip->saddr = static_cast<uint32_t>(m_gen());
-                    ip->daddr = static_cast<uint32_t>(m_gen());
+                    //
+                    // poor-man rate control...
+                    //
+
+                    if ((n & 8191) == 0)
+                    {
+                        while (std::chrono::system_clock::now() < (now + delta*8192))
+                        {}
+                        now = std::chrono::system_clock::now();
+                    }
+
+                    auto plen = std::min<size_t>(hdr->caplen, opt::len);
+
+                    if (!m_pfq.send_async(pfq::const_buffer(reinterpret_cast<const char *>(data), plen), opt::flush))
+                    {
+                        m_fail->fetch_add(1, std::memory_order_relaxed);
+                        continue;
+                    }
+
+                    m_sent->fetch_add(1, std::memory_order_relaxed);
+                    m_band->fetch_add(plen, std::memory_order_relaxed);
+
+                    n = pcap_next_ex(p, &hdr, (u_char const **)&data);
+                    if (n == -2)
+                        break;
+
+                    if (auto ip = opt::rand_ip ? reinterpret_cast<iphdr *>(data + 14) : nullptr)
+                    {
+                        ip->saddr = static_cast<uint32_t>(m_gen());
+                        ip->daddr = static_cast<uint32_t>(m_gen());
+                    }
+
+                    i++;
                 }
 
-                i++;
+                pcap_close(p);
             }
         }
 #endif
@@ -458,6 +466,7 @@ void usage(std::string name)
         " -k --kthread IDX,IDX...       Async with kernel threads\n"
 #ifdef HAVE_PCAP_H
         " -r --read FILE                Read pcap trace file to send\n"
+        "    --loop                     Loop through the trace file N times\n"
 #endif
         " -R --rand-ip                  Randomize IP addresses\n"
         " -P --preload INT              Preload INT packets (must be a power of 2)\n"
@@ -496,6 +505,18 @@ try
             opt::file = argv[i];
             continue;
         }
+
+        if ( any_strcmp(argv[i], "--loop") )
+        {
+            if (++i == argc)
+            {
+                throw std::runtime_error("number missing");
+            }
+
+            opt::loop = static_cast<size_t>(std::atoi(argv[i]));
+            continue;
+        }
+
 #endif
 
         if ( any_strcmp(argv[i], "-f", "--flush") )
