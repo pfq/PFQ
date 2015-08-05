@@ -252,7 +252,7 @@ pfq_shared_queue_enable(struct pfq_sock *so, unsigned long user_addr)
 			 so->id,
 			 so->tx_opt.queue_size,
 			 so->tx_opt.slot_size,
-			 max_len,
+			 xmit_slot_size,
 			 pfq_queue_spsc_mem(so) * Q_MAX_TX_QUEUES, Q_MAX_TX_QUEUES);
 	}
 

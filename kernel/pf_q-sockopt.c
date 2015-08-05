@@ -196,9 +196,9 @@ int pfq_getsockopt(struct socket *sock,
 
         case Q_SO_GET_TX_MAXLEN:
         {
-                if (len != sizeof(max_len))
+                if (len != sizeof(xmit_slot_size))
                         return -EINVAL;
-                if (copy_to_user(optval, &max_len, sizeof(max_len)))
+                if (copy_to_user(optval, &xmit_slot_size, sizeof(xmit_slot_size)))
                         return -EFAULT;
         } break;
 
@@ -497,8 +497,8 @@ int pfq_setsockopt(struct socket *sock,
                 if (copy_from_user(&caplen, optval, optlen))
                         return -EFAULT;
 
-                if (caplen > (size_t)cap_len) {
-                        printk(KERN_INFO "[PFQ|%d] invalid caplen=%zu (max %d)\n", so->id, caplen, cap_len);
+                if (caplen > (size_t)capt_slot_size) {
+                        printk(KERN_INFO "[PFQ|%d] invalid caplen=%zu (max %d)\n", so->id, caplen, capt_slot_size);
                         return -EPERM;
                 }
 
@@ -519,9 +519,9 @@ int pfq_setsockopt(struct socket *sock,
                 if (copy_from_user(&slots, optval, optlen))
                         return -EFAULT;
 
-                if (slots > (size_t)max_queue_slots) {
+                if (slots > Q_MAX_SOCKQUEUE_LEN) {
                         printk(KERN_INFO "[PFQ|%d] invalid Rx slots=%zu (max %d)\n",
-                               so->id, slots, max_queue_slots);
+                               so->id, slots, Q_MAX_SOCKQUEUE_LEN);
                         return -EPERM;
                 }
 
@@ -539,9 +539,9 @@ int pfq_setsockopt(struct socket *sock,
                 if (copy_from_user(&slots, optval, optlen))
                         return -EFAULT;
 
-                if (slots > (size_t)max_queue_slots) {
+                if (slots > Q_MAX_SOCKQUEUE_LEN) {
                         printk(KERN_INFO "[PFQ|%d] invalid Tx slots=%zu (max %d)\n",
-                               so->id, slots, max_queue_slots);
+                               so->id, slots, Q_MAX_SOCKQUEUE_LEN);
                         return -EPERM;
                 }
 

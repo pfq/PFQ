@@ -165,7 +165,7 @@ static inline
 bool transmission_required(struct pfq_skbuff_batch *q, ktime_t now, uint64_t ts)
 {
 	size_t len = pfq_skbuff_batch_len(q);
-	return len == batch_len || ((len > 0) && (ts > ktime_to_ns(now)));
+	return len == xmit_batch_len || ((len > 0) && (ts > ktime_to_ns(now)));
 }
 
 
@@ -308,7 +308,7 @@ __pfq_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int 
 
 		/* allocate a packet */
 
-		skb = pfq_tx_alloc_skb(max_len, GFP_KERNEL, node);
+		skb = pfq_tx_alloc_skb(xmit_slot_size, GFP_KERNEL, node);
 		if (unlikely(skb == NULL)) {
 			printk(KERN_INFO "[PFQ] Tx could not allocate an skb!\n");
 			break;
@@ -316,7 +316,7 @@ __pfq_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int 
 
 		/* fill the skb */
 
-		len = min_t(size_t, hdr->len, max_len);
+		len = min_t(size_t, hdr->len, xmit_slot_size);
 
 		skb_reset_tail_pointer(skb);
 		skb->dev = dev;

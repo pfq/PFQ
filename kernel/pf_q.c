@@ -82,39 +82,7 @@ static struct packet_type       pfq_prot_hook;
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Nicola Bonelli <nicola@pfq.io>");
-
 MODULE_DESCRIPTION("Functional Networking Framework for Multi-core Architectures");
-
-module_param(capture_incoming,  int, 0644);
-module_param(capture_outgoing,  int, 0644);
-
-
-module_param(cap_len,         int, 0644);
-module_param(max_len,         int, 0644);
-
-module_param(max_queue_slots, int, 0644);
-
-module_param(batch_len,       int, 0644);
-
-module_param(skb_pool_size,   int, 0644);
-module_param(vl_untag,        int, 0644);
-
-MODULE_PARM_DESC(capture_incoming," Capture incoming packets: (1 default)");
-MODULE_PARM_DESC(capture_outgoing," Capture outgoing packets: (0 default)");
-
-MODULE_PARM_DESC(cap_len, " Default capture length (bytes)");
-MODULE_PARM_DESC(max_len, " Maximum transmission length (default=1514 bytes)");
-
-MODULE_PARM_DESC(max_queue_slots, " Max Queue slots (default=262144)");
-
-MODULE_PARM_DESC(batch_len,	" Batch queue length");
-MODULE_PARM_DESC(tx_max_retry,  " Transmission max retry (default=1024)");
-
-MODULE_PARM_DESC(vl_untag, " Enable vlan untagging (default=0)");
-
-#ifdef PFQ_USE_SKB_POOL
-MODULE_PARM_DESC(skb_pool_size, " Socket buffer pool size (default=1024)");
-#endif
 
 #ifdef PFQ_DEBUG
 #pragma message "[PFQ] *** PFQ_DEBUG mode ***"
@@ -122,7 +90,6 @@ MODULE_PARM_DESC(skb_pool_size, " Socket buffer pool size (default=1024)");
 #ifdef DEBUG
 #pragma message "[PFQ] *** DEBUG mode ***"
 #endif
-
 
 static DEFINE_SEMAPHORE(sock_sem);
 
@@ -493,7 +460,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 
 		PFQ_CB(buff.skb)->direct = direct;
 
-		if ((gc_size(gcollector) < batch_len) &&
+		if ((gc_size(gcollector) < capt_batch_len) &&
 		     (ktime_to_ns(ktime_sub(skb_get_ktime(buff.skb), local->last_ts)) < 1000000))
 		{
 			local_bh_enable();
@@ -852,8 +819,8 @@ pfq_create(
 
         /* initialize both rx_opt and tx_opt */
 
-        pfq_rx_opt_init(&so->rx_opt, cap_len);
-        pfq_tx_opt_init(&so->tx_opt, max_len);
+        pfq_rx_opt_init(&so->rx_opt, capt_slot_size);
+        pfq_tx_opt_init(&so->tx_opt, xmit_slot_size);
 
         /* initialize socket */
 
@@ -888,22 +855,25 @@ static int __init pfq_init_module(void)
 {
         int err = 0;
 
-        printk(KERN_INFO "[PFQ] version %d.%d.%d (loading)...\n",
-               PFQ_MAJOR(PFQ_VERSION_CODE),
-               PFQ_MINOR(PFQ_VERSION_CODE),
-               PFQ_PATCHLEVEL(PFQ_VERSION_CODE));
+        printk(KERN_INFO "[PFQ] loading...\n");
 
 	/* check options */
 
-        if (batch_len <= 0 || batch_len > Q_SKBUFF_SHORT_BATCH) {
-                printk(KERN_INFO "[PFQ] batch_len=%d not allowed: valid range (0,%zu]!\n",
-                       batch_len, Q_SKBUFF_SHORT_BATCH);
+        if (capt_batch_len <= 0 || capt_batch_len > Q_SKBUFF_SHORT_BATCH) {
+                printk(KERN_INFO "[PFQ] capt_batch_len=%d not allowed: valid range (0,%zu]!\n",
+                       capt_batch_len, Q_SKBUFF_SHORT_BATCH);
                 return -EFAULT;
         }
 
-	if (skb_pool_size > Q_POOL_MAX_SIZE) {
+        if (xmit_batch_len <= 0 || xmit_batch_len > Q_SKBUFF_SHORT_BATCH) {
+                printk(KERN_INFO "[PFQ] xmit_batch_len=%d not allowed: valid range (0,%zu]!\n",
+                       xmit_batch_len, Q_SKBUFF_SHORT_BATCH);
+                return -EFAULT;
+        }
+
+	if (skb_pool_size > Q_MAX_POOL_SIZE) {
                 printk(KERN_INFO "[PFQ] skb_pool_size=%d not allowed: valid range [0,%d]!\n",
-                       skb_pool_size, Q_POOL_MAX_SIZE);
+                       skb_pool_size, Q_MAX_POOL_SIZE);
 		return -EFAULT;
 	}
 
@@ -958,7 +928,11 @@ static int __init pfq_init_module(void)
 			BUG_ON(dev->ifindex >= Q_MAX_DEVICE);
 	}
 
-	printk(KERN_INFO "[PFQ] ready!\n");
+        printk(KERN_INFO "[PFQ] version %d.%d.%d ready!\n",
+               PFQ_MAJOR(PFQ_VERSION_CODE),
+               PFQ_MINOR(PFQ_VERSION_CODE),
+               PFQ_PATCHLEVEL(PFQ_VERSION_CODE));
+
         return 0;
 
 #ifdef PFQ_USE_SKB_POOL
