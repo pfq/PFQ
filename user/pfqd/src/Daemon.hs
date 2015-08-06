@@ -39,7 +39,7 @@ import Foreign.Ptr
 
 import Network.PFq.Default
 import Options
-import PFQdaemon
+import PFQconf
 
 import Network.PFq as Q
 
@@ -57,8 +57,13 @@ rebuildRestart opts closefds = do
    infoM "daemon" "Configuration updated. Rebuilding..."
    (src, dst) <- getConfigFiles opts
    copyFile src dst
+   userDir <- getAppUserDataDirectory "pfqd"
+   let newDaemon = userDir </> "pfqd"
    runCompiler >>= \(ec,_,msg) -> if ec == ExitSuccess
-       then infoM "daemon" "Done. Restarting..." >> closefds >> executeFile "pfqd" False ["-c" , src, "-d"] Nothing
+       then do
+            infoM "daemon" ("Done. Restarting " ++ newDaemon ++ "...")
+            closefds
+            executeFile newDaemon False ["-c" , src, "-d"] Nothing
        else mapM_ (errorM "daemon") (lines $ replace "PFQconf.hs" (config_file opts) msg)
 
 

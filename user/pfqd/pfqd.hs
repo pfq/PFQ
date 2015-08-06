@@ -1,4 +1,4 @@
-module PFQdaemon where
+module PFQconf where
 
 import Network.PFq.Lang
 import Network.PFq.Default

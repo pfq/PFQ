@@ -40,7 +40,7 @@ import Network.PFq.Lang
 import Foreign.ForeignPtr
 import Foreign.Ptr
 
-import PFQdaemon
+import PFQconf
 import Options
 import Daemon
 
@@ -78,8 +78,6 @@ main = do
 
     -- run daemon...
 
-    infoM "daemon" "Running daemon..."
-
     runDetached Nothing DevNull $
         (Q.openDefault >>= \fp ->
             withForeignPtr fp $ \q -> runQSetup opts q >> daemon opts (SLH.close s >> Q.close q))
@@ -92,9 +90,11 @@ bindDev q gid (DevQueue d hq) = Q.bindGroup q gid d hq
 
 
 runQSetup :: Options -> Ptr PFqTag -> IO ()
-runQSetup opts q =
+runQSetup opts q = do
+    infoM "daemon" $ "Running daemon with " ++ show opts ++ ", new config size = " ++ show (length pfq_config)
     forM_ pfq_config $ \(g, devs, comp) -> do
         let gid = fromIntegral g
+        infoM "daemon" $ "Setting group " ++ show gid ++ " for dev " ++ show devs ++ ", with computation: " ++ pretty comp
         Q.joinGroup q gid [class_control] policy_shared
         Q.groupComputation q gid comp
         forM_ devs $ \dev -> bindDev q gid dev
