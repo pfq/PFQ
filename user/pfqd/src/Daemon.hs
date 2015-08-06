@@ -88,6 +88,6 @@ replace old new = intercalate new . splitOn old
 
 
 runCompiler :: IO (ExitCode, String, String)
-runCompiler = readProcessWithExitCode "ghc" ["--make", "Main", "-o", "pfqd", "-lpfq"] ""
+runCompiler = readProcessWithExitCode "ghc" ["--make", "Main", "-o", "pfqd", "-lpfq", "-XOverloadedStrings"] ""
 
 
