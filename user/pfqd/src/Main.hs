@@ -89,12 +89,14 @@ bindDev q gid (Dev d) = Q.bindGroup q gid d (-1)
 bindDev q gid (DevQueue d hq) = Q.bindGroup q gid d hq
 
 
+
 runQSetup :: Options -> Ptr PFqTag -> IO ()
 runQSetup opts q = do
-    infoM "daemon" $ "Running daemon with " ++ show opts ++ ", new config size = " ++ show (length pfq_config)
+    infoM "daemon" $ "Running daemon with " ++ show opts
+    infoM "daemon" $ "Loading new configuration for " ++ show (length pfq_config) ++ " group(s)..."
     forM_ pfq_config $ \(g, devs, comp) -> do
         let gid = fromIntegral g
-        infoM "daemon" $ "Setting group " ++ show gid ++ " for dev " ++ show devs ++ ", with computation: " ++ pretty comp
+        infoM "daemon" $ "Setting up group " ++ show gid ++ " for dev " ++ show devs ++ ". Computation: " ++ pretty comp
         Q.joinGroup q gid [class_control] policy_shared
         Q.groupComputation q gid comp
         forM_ devs $ \dev -> bindDev q gid dev
