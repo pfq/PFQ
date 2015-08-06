@@ -28,8 +28,7 @@ import Foreign
 import System.Environment
 
 import Control.Concurrent
-import Control.Monad
-
+-- import Control.Monad
 -- import Foreign.C.Types
 
 
@@ -88,7 +87,7 @@ sender xs = do
             if core /= -1
             then do
                 putStrLn  $ "sending " ++ show num ++ " packets to dev " ++ dev  ++ " (async)..."
-                Q.txAsync q True
+                Q.txAsyncStart q
                 while (< num) (sendAsync q) 0
             else do
                 putStrLn  $ "sending " ++ show num ++ " packets to dev " ++ dev  ++ "..."

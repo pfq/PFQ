@@ -89,7 +89,6 @@ dumper dev = do
 
         Q.groupComputation q gid comp
 
-
         -- Q.vlanFiltersEnabled q gid True
         -- Q.vlanSetFilterId q gid (0)   -- untagged
         -- Q.vlanSetFilterId q gid (-1)  -- anyTag
