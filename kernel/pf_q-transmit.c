@@ -55,7 +55,6 @@ __pfq_dev_cap_txqueue(struct net_device *dev, int hw_queue)
 {
 	if (unlikely(hw_queue >= dev->real_num_tx_queues))
 		return 0;
-
 	return hw_queue;
 }
 
@@ -108,67 +107,6 @@ bool giveup_tx_process(void)
 }
 
 
-/*
- * full_batch_xmit:
- *
- * return  >= 0 -> OK	 ( ret = number of skb sent)
- *         < 0  -> EINT  (~ret = number of skb sent)
- *
- * batch is consumed and if interrupted, it returns the packets
- * unsent is in the batch.
- */
-
-static int
-full_batch_xmit(struct local_data *local, struct pfq_skbuff_batch *skbs, struct net_device *dev, int hw_queue)
-{
-	int total = 0;
-
-	while (pfq_skbuff_batch_len(skbs)) {
-
-		struct sk_buff *skb;
-		int sent, i;
-
-		/* check for signal pending or if the calling kthread should stop */
-
-		if (giveup_tx_process())
-			return ~total;
-
-		/* get the whole batch */
-
-		for_each_skbuff(skbs, skb, i)
-			skb_get(skb);
-
-		/* attempt to transmit it */
-
-		sent = pfq_batch_xmit(skbs, dev, hw_queue);
-		if (sent == 0) {
-			/* if no packets are sent */
-			pfq_relax();
-		}
-                else {
-			total += sent;
-
-			/* free transmitted skb */
-			for_each_skbuff_upto(sent, skbs, skb, i)
-				pfq_kfree_skb_pool(skb, &local->tx_pool);
-
-			/* remove freed pointers from the batch */
-			pfq_skbuff_batch_drop_n(skbs, sent);
-		}
-	}
-
-	return total;
-}
-
-
-static inline
-bool transmission_required(struct pfq_skbuff_batch *q, ktime_t now, uint64_t ts)
-{
-	size_t len = pfq_skbuff_batch_len(q);
-	return len == xmit_batch_len || ((len > 0) && (ts > ktime_to_ns(now)));
-}
-
-
 static inline
 ktime_t wait_until(uint64_t ts)
 {
@@ -193,6 +131,11 @@ int swap_tx_queue_and_wait(struct pfq_tx_queue *txs, int cpu, int *index)
 		*index = __atomic_add_fetch(&txs->cons, 1, __ATOMIC_RELAXED);
 		while (*index != __atomic_load_n(&txs->prod, __ATOMIC_RELAXED))
 		{
+#ifdef PFQ_DEBUG
+			static uint32_t failures = 0;
+			if ((failures++ & ((1<<24)-1))== 0)
+				printk(KERN_INFO "[PFQ] swap_tx_queue_and_wait spinning!\n");
+#endif
 			pfq_relax();
 			if (giveup_tx_process())
 				return -EINTR;
@@ -227,7 +170,7 @@ bool traverse_tx_queue(char *ptr, char *begin, char *end, int idx)
 
 	return hdr->len != 0;
 #else
-	return ptr < end && (hdr->len !=0);
+	return ptr < end && (hdr->len != 0 && hdr->len < 2048);
 #endif
 
 }
@@ -236,16 +179,15 @@ bool traverse_tx_queue(char *ptr, char *begin, char *end, int idx)
 int
 __pfq_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int cpu, int node)
 {
-	size_t len, disc = 0, tot_sent = 0;
-	struct pfq_skbuff_short_batch skbs;
+	size_t disc = 0, tot_sent = 0;
+	struct netdev_queue *txq;
 	struct pfq_tx_queue *txs;
 	struct local_data *local;
 	int hw_queue, swap;
-        int err;
+        int more = 0, err = 0;
 
 	char *ptr, *begin, *end;
-        ktime_t now;
-        uint64_t last_ts;
+	ktime_t now;
 
 	/* get the Tx queue */
 
@@ -253,7 +195,9 @@ __pfq_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int 
 
 	/* get the netdev_queue for transmission */
 
-	hw_queue = to->queue[idx].hw_queue;
+	hw_queue = __pfq_dev_cap_txqueue(dev, to->queue[idx].hw_queue);
+
+	txq = netdev_get_tx_queue(dev, hw_queue);
 
 	/* get local cpu data */
 
@@ -273,40 +217,29 @@ __pfq_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int 
 	begin = to->queue[idx].base_addr + (swap & 1) * txs->size;
         end = begin + txs->size;
 
-	/* initialize the batch */
-
-	pfq_skbuff_batch_init(SKBUFF_BATCH_ADDR(skbs));
-
 	/* Tx loop */
 
 	now = ktime_get_real();
 	ptr = begin;
 
+	__netif_tx_lock_bh(txq);
+
 	while(traverse_tx_queue(ptr, begin, end, idx))
 	{
 		struct pfq_pkthdr_tx * hdr = (struct pfq_pkthdr_tx *)ptr;
 		struct sk_buff *skb;
+		bool xmit_more;
+                size_t len;
 
-		/* get the tstamp of this packet */
+		/* wait until the Ts */
 
-		last_ts = hdr->nsec;
-
-		/* if the batch is full or the last packet is to be transmitted,
-		 * do it now. */
-
-		if (transmission_required(SKBUFF_BATCH_ADDR(skbs), now, last_ts)) {
-			int sent = full_batch_xmit(local, SKBUFF_BATCH_ADDR(skbs), dev, hw_queue);
-			tot_sent += (sent >= 0 ? sent : ~sent);
-			if (sent < 0)
-				break;
+		if (hdr->nsec > ktime_to_ns(now)) {
+			__netif_tx_unlock_bh(txq);
+			now = wait_until(hdr->nsec);
+			__netif_tx_lock_bh(txq);
 		}
 
-		/* wait until the ts */
-
-		if (last_ts > ktime_to_ns(now))
-			now = wait_until(last_ts);
-
-		/* allocate a packet */
+		/* allocate a socket buffer */
 
 		skb = pfq_tx_alloc_skb(xmit_slot_size, GFP_KERNEL, node);
 		if (unlikely(skb == NULL)) {
@@ -324,40 +257,61 @@ __pfq_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int 
 
 		__skb_put(skb, len);
 
+		/* set the Tx queue */
+
 		skb_set_queue_mapping(skb, hw_queue);
 
-		/* copy bytes in the socket buffer */
+		/* copy bytes into the payload */
 
 		skb_copy_to_linear_data(skb, hdr+1, len < 64 ? 64 : len);
 
-		/* push the packet into the batch */
+		/* transmit the packet */
 
-		pfq_skbuff_short_batch_push(SKBUFF_BATCH_ADDR(skbs), skb);
+		xmit_more = (++more == xmit_batch_len ? (more = 0, false) : true);
+		do {
+			skb_get(skb);
+			if ((err = __pfq_xmit(skb, dev, txq, xmit_more)) < 0) {
+
+				__netif_tx_unlock_bh(txq);
+
+				// if (netif_xmit_frozen_or_drv_stopped(txq)
+				pfq_relax();
+
+				__netif_tx_lock_bh(txq);
+
+#ifdef PFQ_DEBUG
+				{
+					static uint32_t failures = 0;
+					if ((failures++ & ((1<<24)-1))== 0)
+						printk(KERN_INFO "[PFQ] pfq_queue_xmit spinning!\n");
+				}
+#endif
+
+				if (giveup_tx_process()) {
+					pfq_kfree_skb_pool(skb, &local->tx_pool);
+					goto stop;
+				}
+
+			}
+		}
+		while (err < 0);
+
+		/* return the skb */
+
+		pfq_kfree_skb_pool(skb, &local->tx_pool);
 
 		/* move ptr to the next packet */
 
 		ptr += sizeof(struct pfq_pkthdr_tx) + ALIGN(hdr->len, 8);
 		hdr = (struct pfq_pkthdr_tx *)ptr;
+		tot_sent++;
 	}
 
-	/* flush the current batch */
+	stop:
 
-	if (pfq_skbuff_batch_len(SKBUFF_BATCH_ADDR(skbs))) {
-		int sent = full_batch_xmit(local, SKBUFF_BATCH_ADDR(skbs), dev, hw_queue);
-		tot_sent += (sent >= 0 ? sent : ~sent);
-	}
+	__netif_tx_unlock_bh(txq);
 
-	/* free packet unsent from the last batch */
-
-	disc = pfq_skbuff_batch_len(SKBUFF_BATCH_ADDR(skbs));
-	if (disc) {
-		struct sk_buff *skb;
-		size_t n;
-		for_each_skbuff(SKBUFF_BATCH_ADDR(skbs), skb, n)
-			pfq_kfree_skb_pool(skb, &local->tx_pool);
-	}
-
-	/* disc takes into account for the packets left in the shared queue */
+	/* count the packets left in the shared queue */
 
 	while(traverse_tx_queue(ptr, begin, end, idx))
 	{

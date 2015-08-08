@@ -55,7 +55,8 @@ void pfq_relax(void)
 {
 	if (need_resched())
 		schedule();
-	cpu_relax();
+	else
+		cpu_relax();
 }
 
 
