@@ -487,10 +487,8 @@ pfq_count_tx_queues(struct pfq_opt const *opt)
 
 
 static struct pfq_opt
-pfq_getenv(pcap_t *handle)
+pfq_opt_default(pcap_t *handle)
 {
-	char *opt;
-
 	struct pfq_opt rc =
 	{
 		.group    = -1,
@@ -505,42 +503,51 @@ pfq_getenv(pcap_t *handle)
 		.comp     = NULL
 	};
 
-	if ((opt = getenv("PFQ_GROUP")))
-		rc.group = atoi(opt);
-
-	if ((opt = getenv("PFQ_CAPLEN")))
-		rc.caplen = atoi(opt);
-
-	if ((opt = getenv("PFQ_RX_SLOTS")))
-		rc.rx_slots = atoi(opt);
-
-	if ((opt = getenv("PFQ_TX_SLOTS")))
-		rc.tx_slots = atoi(opt);
-
-	if ((opt = getenv("PFQ_TX_FLUSH")))
-		rc.tx_flush = atoi(opt);
-
-	if ((opt = getenv("PFQ_VLAN")))
-		rc.vlan = opt;
-
-	if ((opt = getenv("PFQ_COMPUTATION")))
-		rc.comp = opt;
-
-	if ((opt = getenv("PFQ_TX_QUEUE"))) {
-		if (pfq_parse_integers(rc.tx_queue, 4, opt) < 0) {
-			fprintf(stderr, "[PFQ] PFQ_TX_QUEUE parse error!\n");
-			exit(-1);
-		}
-	}
-
-	if ((opt = getenv("PFQ_TX_TASK"))) {
-		if (pfq_parse_integers(rc.tx_task, 4, opt) < 0) {
-			fprintf(stderr, "[PFQ] PFQ_TX_TASK parse error!\n");
-			exit(-1);
-		}
-	}
-
 	return rc;
+}
+
+
+static int
+pfq_parse_env(struct pfq_opt *opt)
+{
+	char *var;
+
+	if ((var = getenv("PFQ_GROUP")))
+		opt->group = atoi(var);
+
+	if ((var = getenv("PFQ_CAPLEN")))
+		opt->caplen = atoi(var);
+
+	if ((var = getenv("PFQ_RX_SLOTS")))
+		opt->rx_slots = atoi(var);
+
+	if ((var = getenv("PFQ_TX_SLOTS")))
+		opt->tx_slots = atoi(var);
+
+	if ((var = getenv("PFQ_TX_FLUSH")))
+		opt->tx_flush = atoi(var);
+
+	if ((var = getenv("PFQ_VLAN")))
+		opt->vlan = var;
+
+	if ((var = getenv("PFQ_COMPUTATION")))
+		opt->comp = var;
+
+	if ((var = getenv("PFQ_TX_QUEUE"))) {
+		if (pfq_parse_integers(opt->tx_queue, 4, var) < 0) {
+			fprintf(stderr, "[PFQ] PFQ_TX_QUEUE parse error!\n");
+			return -1;
+		}
+	}
+
+	if ((var = getenv("PFQ_TX_TASK"))) {
+		if (pfq_parse_integers(opt->tx_task, 4, var) < 0) {
+			fprintf(stderr, "[PFQ] PFQ_TX_TASK parse error!\n");
+			return -1;
+		}
+	}
+
+	return 0;
 }
 
 
@@ -681,11 +688,10 @@ pfq_activate_linux(pcap_t *handle)
 	char *device = NULL, *config = NULL, *colon;
         const int maxlen = 1514;
 	const int queue = Q_ANY_QUEUE;
-        int free_config = 0;
 	char *first_dev;
 
 
-	handle->opt.pfq  = pfq_getenv(handle);
+	handle->opt.pfq  = pfq_opt_default(handle);
 	handle->linktype = DLT_EN10MB;
 
 	/* parse config file */
@@ -702,22 +708,25 @@ pfq_activate_linux(pcap_t *handle)
 			fprintf(stderr, "[PFQ] parse filename error: %s\n", device);
 			return -1;
 		}
-
-		free_config = 1;
 	}
 	else {
-		config = getenv("PFQ_CONFIG");
+		char *conf = getenv("PFQ_CONFIG");
+		if (conf) {
+			config = strdup(conf);
+		}
 	}
 
         if (config != NULL) {
-
 		if (pfq_parse_config(&handle->opt.pfq, config) == -1) {
 			snprintf(handle->errbuf, PCAP_ERRBUF_SIZE, "pfq: config error");
 			return PCAP_ERROR;
 		}
+		free(config);
+	}
 
-		if (free_config)
-			free(config);
+	if (pfq_parse_env(&handle->opt.pfq) == -1) {
+		snprintf(handle->errbuf, PCAP_ERRBUF_SIZE, "pfq: env error!");
+		return PCAP_ERROR;
 	}
 
 	colon = strstr(device ,":");
