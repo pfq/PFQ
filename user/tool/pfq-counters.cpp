@@ -202,9 +202,8 @@ namespace thread
                         while(!it.ready())
                             std::this_thread::yield();
 
-                        iphdr  *  ipv4 = static_cast<iphdr *> (it.data());
-                        if (ipv4->protocol == IPPROTO_TCP ||
-                            ipv4->protocol == IPPROTO_UDP)
+                        iphdr  * ipv4 = reinterpret_cast<iphdr *> (static_cast<char *>(it.data()) + 14);
+                        if (ipv4->protocol == IPPROTO_TCP || ipv4->protocol == IPPROTO_UDP)
                         {
                             udphdr * udp = reinterpret_cast<udphdr *>(static_cast<char *>(it.data()) + (ipv4->ihl<<2));
 
