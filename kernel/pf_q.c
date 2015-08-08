@@ -200,7 +200,8 @@ pfq_process_batch(struct local_data * local, struct gc_data *gcollector, int cpu
 
 	for_each_skbuff(SKBUFF_BATCH_ADDR(gcollector->pool), skb, n)
         {
-		unsigned long local_group_mask = pfq_devmap_get_groups(skb->dev->ifindex, skb_get_rx_queue(skb));
+		uint16_t queue = skb_rx_queue_recorded(skb) ? skb_get_rx_queue(skb) : 0;
+		unsigned long local_group_mask = pfq_devmap_get_groups(skb->dev->ifindex, queue);
 		group_mask |= local_group_mask;
 		PFQ_CB(skb)->group_mask = local_group_mask;
 		PFQ_CB(skb)->monad = &monad;

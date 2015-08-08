@@ -146,7 +146,7 @@ size_t pfq_mpsc_enqueue_batch(struct pfq_rx_opt *ro,
 		hdr->len      = (uint16_t)skb->len;
 		hdr->caplen   = (uint16_t)bytes;
 		hdr->vlan.tci = skb->vlan_tci & ~VLAN_TAG_PRESENT;
-		hdr->hw_queue = (uint8_t)(skb_get_rx_queue(skb) & 0xff);
+		hdr->hw_queue = skb_rx_queue_recorded(skb) ? (uint8_t)(skb_get_rx_queue(skb) & 0xff) : 0;
 
 		/* commit the slot (release semantic) */
 
