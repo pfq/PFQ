@@ -85,6 +85,7 @@ int pfq_percpu_flush(void)
 
 		for_each_skbuff(SKBUFF_BATCH_ADDR(local->gc.pool), skb, n)
 		{
+			SPARSE_INC(&memory_stats.os_free);
 			kfree_skb(skb);
 		}
 

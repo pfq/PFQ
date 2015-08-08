@@ -28,6 +28,8 @@
 #include <linux/skbuff.h>
 #include <pragma/diagnostic_pop>
 
+#include <pf_q-global.h>
+#include <pf_q-stats.h>
 
 struct pfq_skb_pool
 {
@@ -37,19 +39,6 @@ struct pfq_skb_pool
 	size_t c_idx;
 };
 
-
-struct pfq_skb_pool_stat
-{
-	uint64_t        os_alloc;
-
-	uint64_t        pool_alloc;
-	uint64_t        pool_fail;
-
-	uint64_t        err_intdis;
-	uint64_t        err_shared;
-	uint64_t        err_cloned;
-	uint64_t        err_memory;
-};
 
 
 void	pfq_skb_pool_enable(bool value);
@@ -61,7 +50,7 @@ int	pfq_skb_pool_init (struct pfq_skb_pool *pool, size_t size);
 size_t	pfq_skb_pool_free (struct pfq_skb_pool *pool);
 size_t	pfq_skb_pool_flush(struct pfq_skb_pool *pool);
 
-struct  pfq_skb_pool_stat pfq_get_skb_pool_stats(void);
+struct  pfq_pool_stat pfq_get_skb_pool_stats(void);
 
 
 static inline

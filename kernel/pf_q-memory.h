@@ -188,11 +188,14 @@ ____pfq_alloc_skb_pool(unsigned int size, gfp_t priority, int fclone, int node, 
 		if (likely(pfq_skb_is_recycleable(skb, size))) {
 			SPARSE_INC(&memory_stats.pool_alloc);
 			return pfq_skb_recycle(skb);
-		} else
+		} else {
+			SPARSE_INC(&memory_stats.err_norecyl);
+			SPARSE_INC(&memory_stats.os_free);
 			kfree_skb(skb);
+		}
 	}
 	else {
-		SPARSE_INC(&memory_stats.pool_fail);
+		SPARSE_INC(&memory_stats.err_pop);
 	}
 #endif
 
@@ -208,7 +211,10 @@ void pfq_kfree_skb_pool(struct sk_buff *skb, struct pfq_skb_pool *pool)
 	bool ret = pfq_skb_pool_push(pool, skb);
 	if (ret)
 		SPARSE_INC(&memory_stats.pool_push);
+	else
+		SPARSE_INC(&memory_stats.err_push);
 #else
+	SPARSE_INC(&memory_stats.os_free);
 	kfree_skb(skb);
 #endif
 }

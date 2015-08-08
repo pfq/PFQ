@@ -410,6 +410,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 	/* if no socket is open drop the packet */
 
 	if (unlikely(pfq_get_sock_count() == 0)) {
+		SPARSE_INC(&memory_stats.os_free);
 		kfree_skb(skb);
 		return 0;
 	}
@@ -454,6 +455,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 			if (printk_ratelimit())
 				printk(KERN_INFO "[PFQ] GC: memory exhausted!\n");
 			__sparse_inc(&global_stats.lost, cpu);
+			SPARSE_INC(&memory_stats.os_free);
 			kfree_skb(skb);
 			local_bh_enable();
 			return 0;
@@ -522,6 +524,7 @@ pfq_packet_rcv
 
         return pfq_receive(NULL, skb, 0);
 out:
+	SPARSE_INC(&memory_stats.os_free);
 	kfree_skb(skb);
 	return 0;
 }

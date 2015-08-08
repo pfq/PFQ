@@ -62,6 +62,7 @@ void mpsc_queue_dtor(mpsc_queue_t *self)
         while(skb != NULL)
         {
                 struct sk_buff * next = skb->next;
+		SPARSE_INC(&memory_stats.os_free);
                 kfree_skb(skb);
                 skb = next;
         }

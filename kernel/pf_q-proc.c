@@ -154,18 +154,18 @@ static int pfq_proc_groups(struct seq_file *m, void *v)
 static int pfq_proc_stats(struct seq_file *m, void *v)
 {
 	seq_printf(m, "INPUT:\n");
-	seq_printf(m, "received  : %ld\n", sparse_read(&global_stats.recv));
-	seq_printf(m, "lost      : %ld\n", sparse_read(&global_stats.lost));
+	seq_printf(m, "  received  : %ld\n", sparse_read(&global_stats.recv));
+	seq_printf(m, "  lost      : %ld\n", sparse_read(&global_stats.lost));
 	seq_printf(m, "OUTPUT:\n");
-	seq_printf(m, "sent      : %ld\n", sparse_read(&global_stats.sent));
-	seq_printf(m, "kernel    : %ld\n", sparse_read(&global_stats.kern));
-	seq_printf(m, "forwarded : %ld\n", sparse_read(&global_stats.frwd));
-	seq_printf(m, "discarded : %ld\n", sparse_read(&global_stats.disc));
-	seq_printf(m, "aborted   : %ld\n", sparse_read(&global_stats.abrt));
+	seq_printf(m, "  sent      : %ld\n", sparse_read(&global_stats.sent));
+	seq_printf(m, "  kernel    : %ld\n", sparse_read(&global_stats.kern));
+	seq_printf(m, "  forwarded : %ld\n", sparse_read(&global_stats.frwd));
+	seq_printf(m, "  discarded : %ld\n", sparse_read(&global_stats.disc));
+	seq_printf(m, "  aborted   : %ld\n", sparse_read(&global_stats.abrt));
 #ifdef PFQ_USE_EXTENDED_PROC
 	seq_printf(m, "SCHEDULE:\n");
-	seq_printf(m, "poll      : %ld\n", sparse_read(&global_stats.poll));
-	seq_printf(m, "wakeup    : %ld\n", sparse_read(&global_stats.wake));
+	seq_printf(m, "  poll      : %ld\n", sparse_read(&global_stats.poll));
+	seq_printf(m, "  wakeup    : %ld\n", sparse_read(&global_stats.wake));
 #endif
 	return 0;
 }
@@ -178,16 +178,23 @@ static int pfq_proc_memory(struct seq_file *m, void *v)
 	long int push = sparse_read(&memory_stats.pool_push);
 	long int pop  = sparse_read(&memory_stats.pool_pop);
 
-	seq_printf(m, "OS   alloc     : %ld\n", sparse_read(&memory_stats.os_alloc));
-	seq_printf(m, "pool alloc     : %ld\n", sparse_read(&memory_stats.pool_alloc));
-	seq_printf(m, "pool failure   : %ld\n", sparse_read(&memory_stats.pool_fail));
-	seq_printf(m, "pool push      : %ld\n", push);
-	seq_printf(m, "pool pop       : %ld\n", pop);
-	seq_printf(m, "pool size      : %ld\n", push - pop);
-	seq_printf(m, "error intdisab : %ld\n", sparse_read(&memory_stats.err_intdis));
-	seq_printf(m, "error shared   : %ld\n", sparse_read(&memory_stats.err_shared));
-	seq_printf(m, "error cloned   : %ld\n", sparse_read(&memory_stats.err_cloned));
-	seq_printf(m, "error memory   : %ld\n", sparse_read(&memory_stats.err_memory));
+	seq_printf(m, "OS:\n");
+	seq_printf(m, "  alloc          : %ld\n", sparse_read(&memory_stats.os_alloc));
+	seq_printf(m, "  free           : %ld\n", sparse_read(&memory_stats.os_free));
+	seq_printf(m, "POOL:\n");
+	seq_printf(m, "  alloc          : %ld\n", sparse_read(&memory_stats.pool_alloc));
+	seq_printf(m, "  free           : %ld\n", sparse_read(&memory_stats.pool_free));
+	seq_printf(m, "  push           : %ld\n", push);
+	seq_printf(m, "  pop            : %ld\n", pop);
+	seq_printf(m, "  size           : %ld\n", push - pop);
+	seq_printf(m, "ERROR:\n");
+	seq_printf(m, "  error norecyl  : %ld\n", sparse_read(&memory_stats.err_norecyl));
+	seq_printf(m, "  error pop      : %ld\n", sparse_read(&memory_stats.err_pop));
+	seq_printf(m, "  error push     : %ld\n", sparse_read(&memory_stats.err_push));
+	seq_printf(m, "  error intdisab : %ld\n", sparse_read(&memory_stats.err_intdis));
+	seq_printf(m, "  error shared   : %ld\n", sparse_read(&memory_stats.err_shared));
+	seq_printf(m, "  error cloned   : %ld\n", sparse_read(&memory_stats.err_cloned));
+	seq_printf(m, "  error memory   : %ld\n", sparse_read(&memory_stats.err_memory));
 	return 0;
 }
 

@@ -95,7 +95,6 @@ void pfq_global_stats_reset(struct pfq_global_stats *stats)
 	sparse_set(&stats->kern, 0);
 	sparse_set(&stats->disc, 0);
 	sparse_set(&stats->abrt, 0);
-
 	sparse_set(&stats->poll, 0);
 	sparse_set(&stats->wake, 0);
 }
@@ -104,10 +103,16 @@ void pfq_global_stats_reset(struct pfq_global_stats *stats)
 struct pfq_memory_stats
 {
 	sparse_counter_t os_alloc;
+	sparse_counter_t os_free;
+
 	sparse_counter_t pool_alloc;
-	sparse_counter_t pool_fail;
+	sparse_counter_t pool_free;
 	sparse_counter_t pool_push;
 	sparse_counter_t pool_pop;
+
+	sparse_counter_t err_norecyl;
+	sparse_counter_t err_pop;
+	sparse_counter_t err_push;
 	sparse_counter_t err_intdis;
 	sparse_counter_t err_shared;
 	sparse_counter_t err_cloned;
@@ -119,15 +124,41 @@ static inline
 void pfq_memory_stats_reset(struct pfq_memory_stats *stats)
 {
         sparse_set(&stats->os_alloc,   0);
+        sparse_set(&stats->os_free,    0);
+
         sparse_set(&stats->pool_alloc, 0);
-        sparse_set(&stats->pool_fail,  0);
+        sparse_set(&stats->pool_free,  0);
         sparse_set(&stats->pool_push,  0);
         sparse_set(&stats->pool_pop,   0);
+
+        sparse_set(&stats->err_norecyl,0);
+        sparse_set(&stats->err_pop,    0);
+        sparse_set(&stats->err_push,   0);
         sparse_set(&stats->err_intdis, 0);
         sparse_set(&stats->err_shared, 0);
         sparse_set(&stats->err_cloned, 0);
         sparse_set(&stats->err_memory, 0);
 }
+
+
+struct pfq_pool_stat
+{
+	uint64_t        os_alloc;
+	uint64_t        os_free;
+
+	uint64_t        pool_alloc;
+	uint64_t        pool_free;
+	uint64_t        pool_push;
+	uint64_t        pool_pop;
+
+	uint64_t        err_norecyl;
+	uint64_t        err_pop;
+	uint64_t        err_push;
+	uint64_t        err_intdis;
+	uint64_t        err_shared;
+	uint64_t        err_cloned;
+	uint64_t        err_memory;
+};
 
 
 #endif /* PF_Q_STATS_H */

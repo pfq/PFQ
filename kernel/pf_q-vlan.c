@@ -111,6 +111,8 @@ pfq_vlan_untag(struct sk_buff *skb)
         return skb;
 
 err_free:
+
+	SPARSE_INC(&memory_stats.os_free);
         kfree_skb(skb);
         return NULL;
 }

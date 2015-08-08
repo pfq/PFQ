@@ -448,6 +448,7 @@ __pfq_xmit(struct sk_buff *skb, struct net_device *dev, struct netdev_queue *txq
 		}
 	}
 
+        SPARSE_INC(&memory_stats.os_free);
 	kfree_skb(skb);
 	return -ENETDOWN;
 out:
@@ -513,8 +514,10 @@ pfq_batch_xmit(struct pfq_skbuff_batch *skbs, struct net_device *dev, int hw_que
 	return ret;
 
 intr:
-	for_each_skbuff_from(ret + 1, skbs, skb, n)
+	for_each_skbuff_from(ret + 1, skbs, skb, n) {
+		SPARSE_INC(&memory_stats.os_free);
 		kfree_skb(skb);
+	}
 
 	__netif_tx_unlock_bh(txq);
 	return ret;
@@ -551,8 +554,10 @@ pfq_batch_xmit_by_mask(struct pfq_skbuff_batch *skbs, unsigned long long mask, s
 	return ret;
 
 intr:
-	for_each_skbuff_from(ret + 1, skbs, skb, n)
+	for_each_skbuff_from(ret + 1, skbs, skb, n) {
+		SPARSE_INC(&memory_stats.os_free);
 		kfree_skb(skb);
+	}
 
 	__netif_tx_unlock_bh(txq);
 	return ret;
