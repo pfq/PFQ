@@ -1,9 +1,11 @@
 #include <sys/types.h>
 #include <sys/wait.h>
 
+#undef NDEBUG
+#include <assert.h>
+
 #include <stdio.h>
 #include <stdlib.h>
-#include <assert.h>
 #include <pfq.h>
 
 #include <pthread.h>
