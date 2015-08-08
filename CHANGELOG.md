@@ -103,10 +103,10 @@ PFQ 4.4
 PFQ 4.5
 -------
  * HugePages support used by default. 
- * Software Tx queues extended up to 8.
  * New binding format for user/tools.
  * Stats of memory pool improved.
+ * User space tools improved.
  * Performance improvements.
- * Minor bugs fixed.
  * Code cleanup.
+ * Bugs fixed.
 
