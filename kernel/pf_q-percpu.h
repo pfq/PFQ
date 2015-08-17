@@ -42,7 +42,7 @@ int pfq_percpu_flush(void);
 
 /* per-cpu data... */
 
-struct local_data
+struct pfq_percpu_data
 {
         unsigned long           eligible_mask;
         unsigned long           sock_mask [Q_MAX_ID];
@@ -60,5 +60,6 @@ struct local_data
         struct pfq_skb_pool	rx_pool;
 
 } ____cacheline_aligned;
+
 
 #endif /* PF_Q_PERCPU_H */

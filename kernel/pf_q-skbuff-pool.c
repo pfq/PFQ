@@ -24,7 +24,7 @@
 #include <pf_q-skbuff-pool.h>
 
 #include <pf_q-percpu.h>
-#include <pf_q-global.h> /* cpu_data */
+#include <pf_q-global.h> /* percpu_data */
 
 #include <linux/printk.h>
 
@@ -36,7 +36,7 @@ void pfq_skb_pool_enable(bool value)
 	smp_wmb();
 	for_each_online_cpu(cpu)
 	{
-		struct local_data *this_cpu = per_cpu_ptr(cpu_data, cpu);
+		struct pfq_percpu_data *this_cpu = per_cpu_ptr(percpu_data, cpu);
 		atomic_set(&this_cpu->enable_skb_pool, value);
 	}
 	smp_wmb();
@@ -48,7 +48,7 @@ int pfq_skb_pool_init_all(void)
 	int cpu;
 	for_each_online_cpu(cpu)
 	{
-		struct local_data *this_cpu = per_cpu_ptr(cpu_data, cpu);
+		struct pfq_percpu_data *this_cpu = per_cpu_ptr(percpu_data, cpu);
 		if (pfq_skb_pool_init(&this_cpu->tx_pool, skb_pool_size) != 0)
 			return -ENOMEM;
 		if (pfq_skb_pool_init(&this_cpu->rx_pool, skb_pool_size) != 0)
@@ -66,7 +66,7 @@ int pfq_skb_pool_free_all(void)
 	printk(KERN_INFO "[PFQ] flushing skbuff memory pool...\n");
 	for_each_online_cpu(cpu)
 	{
-		struct local_data *local = per_cpu_ptr(cpu_data, cpu);
+		struct pfq_percpu_data *local = per_cpu_ptr(percpu_data, cpu);
 		total += pfq_skb_pool_free(&local->rx_pool);
 		total += pfq_skb_pool_free(&local->tx_pool);
 	}
@@ -82,7 +82,7 @@ int pfq_skb_pool_flush_all(void)
 	printk(KERN_INFO "[PFQ] flushing skbuff memory pool...\n");
 	for_each_online_cpu(cpu)
 	{
-		struct local_data *local = per_cpu_ptr(cpu_data, cpu);
+		struct pfq_percpu_data *local = per_cpu_ptr(percpu_data, cpu);
 		total += pfq_skb_pool_flush(&local->rx_pool);
 		total += pfq_skb_pool_flush(&local->tx_pool);
 	}

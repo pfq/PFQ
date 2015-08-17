@@ -182,7 +182,7 @@ __pfq_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int 
 	size_t disc = 0, tot_sent = 0;
 	struct netdev_queue *txq;
 	struct pfq_tx_queue *txs;
-	struct local_data *local;
+	struct pfq_percpu_data *local;
 	int hw_queue, swap;
         int more = 0, err = 0;
 
@@ -201,7 +201,7 @@ __pfq_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int 
 
 	/* get local cpu data */
 
-	local = this_cpu_ptr(cpu_data);
+	local = this_cpu_ptr(percpu_data);
 
 	/* swap the soft Tx queue */
 

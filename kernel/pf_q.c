@@ -164,7 +164,7 @@ void send_to_kernel(struct sk_buff *skb)
 
 
 static int
-pfq_process_batch(struct local_data * local, struct GC_data *collector, int cpu)
+pfq_process_batch(struct pfq_percpu_data * local, struct GC_data *collector, int cpu)
 {
 	unsigned long long sock_queue[Q_SKBUFF_SHORT_BATCH];
         unsigned long group_mask, socket_mask;
@@ -412,7 +412,7 @@ static int
 pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 {
         struct GC_data *collector;
-	struct local_data * local;
+	struct pfq_percpu_data * local;
 	int cpu;
 
 	/* if no socket is open drop the packet */
@@ -428,7 +428,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
         local_bh_disable();
 
         cpu = smp_processor_id();
-	local = per_cpu_ptr(cpu_data, cpu);
+	local = per_cpu_ptr(percpu_data, cpu);
 	collector = &local->gc;
 
 	if (likely(skb))
@@ -542,11 +542,11 @@ out:
 
 void pfq_timer(unsigned long cpu)
 {
-	struct local_data *local;
+	struct pfq_percpu_data *local;
 
 	pfq_receive(NULL, NULL, 0);
 
-	local = per_cpu_ptr(cpu_data, cpu);
+	local = per_cpu_ptr(percpu_data, cpu);
 	mod_timer_pinned(&local->timer, jiffies + msecs_to_jiffies(100));
 }
 
@@ -960,7 +960,7 @@ err3:
 	pfq_proc_fini();
 err2:
 	pfq_percpu_flush();
-	free_percpu(cpu_data);
+	free_percpu(percpu_data);
 err:
 	return err;
 }
@@ -1002,7 +1002,7 @@ static void __exit pfq_exit_module(void)
                 printk(KERN_INFO "[PFQ] %d skbuff freed.\n", total);
 
         /* free per-cpu data */
-	free_percpu(cpu_data);
+	free_percpu(percpu_data);
 
 	/* free symbol table of pfq-lang functions */
 	pfq_symtable_free();

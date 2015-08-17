@@ -45,15 +45,19 @@ int pfq_percpu_init(void)
 
 	/* create a per-cpu context */
 
-	cpu_data = alloc_percpu(struct local_data);
-	if (!cpu_data) {
+	percpu_data = alloc_percpu(struct pfq_percpu_data);
+	if (!percpu_data) {
                 printk(KERN_WARNING "[PFQ] out of memory!\n");
 		return -ENOMEM;
         }
 
         for_each_online_cpu(cpu) {
 
-                struct local_data *local = per_cpu_ptr(cpu_data, cpu);
+                struct pfq_percpu_data *local;
+
+		preempt_disable();
+
+                local = per_cpu_ptr(percpu_data, cpu);
 
 		init_timer_deferrable(&local->timer);
 
@@ -64,6 +68,8 @@ int pfq_percpu_init(void)
 		add_timer_on(&local->timer, cpu);
 
 		GC_data_init(&local->gc);
+
+		preempt_enable();
 	}
 
 	return 0;
@@ -79,9 +85,13 @@ int pfq_percpu_flush(void)
 
         for_each_online_cpu(cpu) {
 
-                struct local_data *local = per_cpu_ptr(cpu_data, cpu);
+		struct pfq_percpu_data *local;
 	        struct sk_buff *skb;
 		int n = 0;
+
+		preempt_disable();
+
+                local = per_cpu_ptr(percpu_data, cpu);
 
 		for_each_skbuff(SKBUFF_BATCH_ADDR(local->gc.pool), skb, n)
 		{
@@ -93,6 +103,8 @@ int pfq_percpu_flush(void)
 
 		GC_reset(&local->gc);
 		del_timer(&local->timer);
+
+		preempt_enable();
         }
 
 	sparse_add(&global_stats.lost, total);

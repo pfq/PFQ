@@ -158,21 +158,21 @@ GC_get_lazy_targets(struct GC_data *gc, struct skb_lazy_targets *ts)
 skbuff_t
 pfq_make_buff(struct sk_buff *skb)
 {
-	struct local_data *local = this_cpu_ptr(cpu_data);
+	struct pfq_percpu_data *local = this_cpu_ptr(percpu_data);
 	return GC_make_buff(&local->gc, skb);
 }
 
 skbuff_t
 pfq_alloc_buff(size_t size)
 {
-	struct local_data *local = this_cpu_ptr(cpu_data);
+	struct pfq_percpu_data *local = this_cpu_ptr(percpu_data);
 	return GC_alloc_buff(&local->gc, size);
 }
 
 skbuff_t
 pfq_copy_buff(skbuff_t skb)
 {
-	struct local_data *local = this_cpu_ptr(cpu_data);
+	struct pfq_percpu_data *local = this_cpu_ptr(percpu_data);
 	return GC_copy_buff(&local->gc, skb);
 }
 
