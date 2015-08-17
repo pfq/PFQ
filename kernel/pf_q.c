@@ -233,7 +233,10 @@ pfq_process_batch(struct local_data * local, struct GC_data *collector, int cpu)
 			/* skip this packet for this group ? */
 
 			if ((PFQ_CB(buff)->group_mask & bit) == 0)
+			{
+				refs.queue[refs.len++] = NULL;
 				continue;
+			}
 
 			/* increment counter for this group */
 
@@ -251,6 +254,7 @@ pfq_process_batch(struct local_data * local, struct GC_data *collector, int cpu)
 #endif
 				{
 					__sparse_inc(&this_group->stats.drop, cpu);
+					refs.queue[refs.len++] = NULL;
 					continue;
 				}
 			}
@@ -260,6 +264,7 @@ pfq_process_batch(struct local_data * local, struct GC_data *collector, int cpu)
 			if (vlan_filter_enabled) {
 				if (!pfq_check_group_vlan_filter(gid, buff->vlan_tci & ~VLAN_TAG_PRESENT)) {
 					__sparse_inc(&this_group->stats.drop, cpu);
+					refs.queue[refs.len++] = NULL;
 					continue;
 				}
 			}
@@ -284,11 +289,9 @@ pfq_process_batch(struct local_data * local, struct GC_data *collector, int cpu)
 				buff = pfq_run(buff, prg).value;
 				if (buff == NULL) {
 					__sparse_inc(&this_group->stats.drop, cpu);
+					refs.queue[refs.len++] = NULL;
 					continue;
 				}
-
-				/* save a reference to the current packet */
-				refs.queue[refs.len++] = buff;
 
 				/* update stats */
 
@@ -299,8 +302,14 @@ pfq_process_batch(struct local_data * local, struct GC_data *collector, int cpu)
 
 				if (is_drop(monad.fanout)) {
 					__sparse_inc(&this_group->stats.drop, cpu);
+					refs.queue[refs.len++] = NULL;
 					continue;
 				}
+
+				/* save a reference to the current packet */
+
+				refs.queue[refs.len++] = buff;
+
 
 				/* compute the eligible mask of sockets enabled for this packet... */
 
