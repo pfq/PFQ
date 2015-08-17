@@ -96,7 +96,7 @@ size_t copy_to_endpoint_buffs(struct pfq_sock *so, struct pfq_skbuff_batch *pool
 	switch(so->egress_type)
 	{
 	case pfq_endpoint_socket:
-		return copy_to_user_skbs(&so->rx_opt, SKBUFF_BATCH_ADDR(*pool), mask, cpu, gid);
+		return copy_to_user_skbs(&so->rx_opt, pool, mask, cpu, gid);
 
 	case pfq_endpoint_device:
 		return copy_to_dev_buffs(so, pool, mask, cpu, gid);

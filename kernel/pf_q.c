@@ -404,7 +404,6 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 {
         struct GC_data *collector;
 	struct local_data * local;
-	skbuff_t buff;
 	int cpu;
 
 	/* if no socket is open drop the packet */
@@ -425,6 +424,8 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 
 	if (likely(skb))
 	{
+		skbuff_t buff;
+
 		/* if required, timestamp the packet now */
 
 		if (skb->tstamp.tv64 == 0)

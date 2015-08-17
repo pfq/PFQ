@@ -45,7 +45,7 @@ struct pfq_cb
 
 #define PFQ_SKB(skb)    ((struct sk_buff __force *)skb)
 
-#define PFQ_CB(skb) ((struct pfq_cb __force *)(skb)->cb)
+#define PFQ_CB(skb)	((struct pfq_cb __force *)(skb)->cb)
 
 
 #define for_each_skbuff(batch, skb, n) \

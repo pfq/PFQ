@@ -38,13 +38,6 @@
 #include "forward.h"
 
 
-struct forward_queue
-{
-	struct pfq_skbuff_short_batch q;
-
-} ____chaline_aligned;
-
-
 static Action_SkBuff
 forwardIO(arguments_t args, SkBuff skb)
 {

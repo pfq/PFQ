@@ -4,7 +4,7 @@
 TARGET = pfq
 
 EXTRA_CFLAGS += -I$(obj)
-EXTRA_CFLAGS += -O3 -march=native
+EXTRA_CFLAGS += -O3 -march=native -Wno-attributes
 EXTRA_CFLAGS += -DEXPORT_SYMTAB
 
 EXTRA_CFLAGS += -DPFQ_USE_SKB_LINEARIZE
