@@ -39,7 +39,7 @@
 #include <pf_q-GC.h>
 
 
-struct lazy_fwd_targets
+struct skb_lazy_targets
 {
 	struct net_device * dev[Q_GC_LOG_QUEUE_LEN];
 	size_t cnt [Q_GC_LOG_QUEUE_LEN];
@@ -65,12 +65,12 @@ extern int pfq_batch_xmit_by_mask(struct pfq_skbuff_batch *skbs, unsigned long l
 				  struct net_device *dev, int queue_index);
 extern int pfq_xmit(struct sk_buff *skb, struct net_device *dev, int hw_queue, int more);
 
-extern int pfq_lazy_xmit(struct gc_buff, struct net_device *dev, int queue_index);
-extern int pfq_batch_lazy_xmit(struct gc_queue_buff *queue, struct net_device *dev, int queue_index);
-extern int pfq_batch_lazy_xmit_by_mask(struct gc_queue_buff *queue, unsigned long long mask,
+extern int pfq_lazy_xmit(skbuff_t skb, struct net_device *dev, int queue_index);
+extern int pfq_batch_lazy_xmit(struct GC_queue_buff *queue, struct net_device *dev, int queue_index);
+extern int pfq_batch_lazy_xmit_by_mask(struct pfq_skbuff_batch *queue, unsigned long long mask,
 				       struct net_device *dev, int queue_index);
 
-extern size_t pfq_lazy_xmit_exec(struct gc_data *gc, struct lazy_fwd_targets const *t);
+extern size_t pfq_lazy_xmit_exec(struct GC_data *gc, struct skb_lazy_targets const *t);
 
 
 #endif /* PF_Q_TRANSMIT_H */

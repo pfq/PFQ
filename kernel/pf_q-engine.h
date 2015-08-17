@@ -81,7 +81,7 @@ extern size_t pfq_number_of_arguments(struct pfq_functional_descr const *fun);
 
 extern char * strdup_user(const char __user *str);
 
-extern Action_SkBuff pfq_run(struct pfq_computation_tree *prg, SkBuff);
+extern Action_SkBuff pfq_run(SkBuff, struct pfq_computation_tree *prg);
 
 
 #endif /* PF_Q_ENGINE_H */

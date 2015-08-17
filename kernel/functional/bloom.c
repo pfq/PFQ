@@ -35,9 +35,9 @@
 
 
 static bool
-bloom_src(arguments_t args, SkBuff b)
+bloom_src(arguments_t args, SkBuff skb)
 {
-	if (eth_hdr(b.skb)->h_proto == __constant_htons(ETH_P_IP))
+	if (eth_hdr(PFQ_SKB(skb))->h_proto == __constant_htons(ETH_P_IP))
 	{
 		struct iphdr _iph;
 		const struct iphdr *ip;
@@ -45,7 +45,7 @@ bloom_src(arguments_t args, SkBuff b)
 		__be32 mask;
 		char *mem;
 
-		ip = skb_header_pointer(b.skb, b.skb->mac_len, sizeof(_iph), &_iph);
+		ip = skb_header_pointer(PFQ_SKB(skb), skb->mac_len, sizeof(_iph), &_iph);
 		if (ip == NULL)
 			return false;
 
@@ -67,9 +67,9 @@ bloom_src(arguments_t args, SkBuff b)
 
 
 static bool
-bloom_dst(arguments_t args, SkBuff b)
+bloom_dst(arguments_t args, SkBuff skb)
 {
-	if (eth_hdr(b.skb)->h_proto == __constant_htons(ETH_P_IP))
+	if (eth_hdr(PFQ_SKB(skb))->h_proto == __constant_htons(ETH_P_IP))
 	{
 		struct iphdr _iph;
 		const struct iphdr *ip;
@@ -77,7 +77,7 @@ bloom_dst(arguments_t args, SkBuff b)
 		__be32 mask;
 		char *mem;
 
-		ip = skb_header_pointer(b.skb, b.skb->mac_len, sizeof(_iph), &_iph);
+		ip = skb_header_pointer(PFQ_SKB(skb), skb->mac_len, sizeof(_iph), &_iph);
 		if (ip == NULL)
 			return false;
 
@@ -98,9 +98,9 @@ bloom_dst(arguments_t args, SkBuff b)
 }
 
 static bool
-bloom(arguments_t args, SkBuff b)
+bloom(arguments_t args, SkBuff skb)
 {
-	if (eth_hdr(b.skb)->h_proto == __constant_htons(ETH_P_IP))
+	if (eth_hdr(PFQ_SKB(skb))->h_proto == __constant_htons(ETH_P_IP))
 	{
 		struct iphdr _iph;
 		const struct iphdr *ip;
@@ -108,7 +108,7 @@ bloom(arguments_t args, SkBuff b)
 		__be32 mask;
 		char *mem;
 
-		ip = skb_header_pointer(b.skb, b.skb->mac_len, sizeof(_iph), &_iph);
+		ip = skb_header_pointer(PFQ_SKB(skb), skb->mac_len, sizeof(_iph), &_iph);
 		if (ip == NULL)
 			return false;
 
@@ -138,28 +138,28 @@ bloom(arguments_t args, SkBuff b)
 
 
 static Action_SkBuff
-bloom_filter(arguments_t args, SkBuff b)
+bloom_filter(arguments_t args, SkBuff skb)
 {
-	if (bloom(args, b))
-		return Pass(b);
-	return Drop(b);
+	if (bloom(args, skb))
+		return Pass(skb);
+	return Drop(skb);
 }
 
 
 static Action_SkBuff
-bloom_src_filter(arguments_t args, SkBuff b)
+bloom_src_filter(arguments_t args, SkBuff skb)
 {
-	if (bloom_src(args, b))
-		return Pass(b);
-	return Drop(b);
+	if (bloom_src(args, skb))
+		return Pass(skb);
+	return Drop(skb);
 }
 
 static Action_SkBuff
-bloom_dst_filter(arguments_t args, SkBuff b)
+bloom_dst_filter(arguments_t args, SkBuff skb)
 {
-	if (bloom_dst(args, b))
-		return Pass(b);
-	return Drop(b);
+	if (bloom_dst(args, skb))
+		return Pass(skb);
+	return Drop(skb);
 }
 
 

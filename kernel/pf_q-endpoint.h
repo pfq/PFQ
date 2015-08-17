@@ -34,7 +34,7 @@ enum pfq_endpoint_type
 };
 
 extern size_t copy_to_endpoint_buffs(struct pfq_sock *so,
-				     struct gc_queue_buff *pool,
+				     struct pfq_skbuff_batch *pool,
 				     unsigned long long mask,
 				     int cpu, pfq_gid_t gid);
 

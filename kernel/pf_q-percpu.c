@@ -63,7 +63,7 @@ int pfq_percpu_init(void)
 
 		add_timer_on(&local->timer, cpu);
 
-		gc_data_init(&local->gc);
+		GC_data_init(&local->gc);
 	}
 
 	return 0;
@@ -91,7 +91,7 @@ int pfq_percpu_flush(void)
 
                 total += local->gc.pool.len;
 
-		gc_reset(&local->gc);
+		GC_reset(&local->gc);
 		del_timer(&local->timer);
         }
 

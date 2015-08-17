@@ -353,6 +353,7 @@ struct pfq_group_context
         int level;
 };
 
+
 /* pfq_fprog: per-group sock_fprog */
 
 struct pfq_fprog

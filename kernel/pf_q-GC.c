@@ -21,100 +21,99 @@
  *
  ****************************************************************/
 
-
 #include <pf_q-percpu.h>
 #include <pf_q-global.h>
 #include <pf_q-GC.h>
 #include <pf_q-transmit.h>
 
-void gc_reset(struct gc_data *gc)
+void GC_reset(struct GC_data *gc)
 {
 	size_t n;
 	for(n = 0; n < gc->pool.len; ++n)
 	{
-		gc_log_init(&gc->log[n]);
+		GC_log_init(&gc->log[n]);
 	}
 	gc->pool.len = 0;
 }
 
 
-struct gc_buff
-gc_make_buff(struct gc_data *gc, struct sk_buff *skb)
+skbuff_t
+GC_make_buff(struct GC_data *gc, struct sk_buff *skb)
 {
-	struct gc_buff ret;
+	skbuff_t ret;
 
 	if (gc->pool.len >= Q_GC_POOL_QUEUE_LEN) {
-		ret.skb = NULL;
+		ret = NULL;
 	}
 	else {
                 PFQ_CB(skb)->log = &gc->log[gc->pool.len];
-		ret.skb = gc->pool.queue[gc->pool.len++].skb = skb;
+		ret = (skbuff_t __force) (gc->pool.queue[gc->pool.len++] = skb);
 	}
 
 	return ret;
 }
 
 
-struct gc_buff
-gc_alloc_buff(struct gc_data *gc, size_t size)
+skbuff_t
+GC_alloc_buff(struct GC_data *gc, size_t size)
 {
 	struct sk_buff *skb;
-	struct gc_buff ret;
+	skbuff_t ret;
 
 	if (gc->pool.len >= Q_GC_POOL_QUEUE_LEN) {
 		pr_devel("[PFQ] GC: pool exhausted!\n");
-		ret.skb = NULL;
+		ret = NULL;
 		return ret;
 	}
 
 	skb = alloc_skb(size, GFP_ATOMIC);
 	if (skb == NULL) {
 		pr_devel("[PFQ] GC: out of memory!\n");
-		ret.skb = NULL;
+		ret = NULL;
 		return ret;
 	}
 
-	/* gc_make_buff can't fail now */
+	/* GC_make_buff can't fail now */
 
-	return gc_make_buff(gc, skb);
+	return GC_make_buff(gc, skb);
 }
 
 
-struct gc_buff
-gc_copy_buff(struct gc_data *gc, struct gc_buff orig)
+skbuff_t
+GC_copy_buff(struct GC_data *gc, skbuff_t orig)
 {
 	struct sk_buff *skb;
-	struct gc_buff ret;
+	skbuff_t ret;
 
 	if (gc->pool.len >= Q_GC_POOL_QUEUE_LEN) {
 		pr_devel("[PFQ] GC: pool exhausted!\n");
-		ret.skb = NULL;
+		ret = NULL;
 		return ret;
 	}
 
-	skb = skb_copy(orig.skb, GFP_ATOMIC);
+	skb = skb_copy(PFQ_SKB(orig), GFP_ATOMIC);
 	if (skb == NULL) {
 		pr_devel("[PFQ] GC: out of memory!\n");
-		ret.skb = NULL;
+		ret = NULL;
 		return ret;
 	}
 
-	skb->mac_len = orig.skb->mac_len;
+	skb->mac_len = orig->mac_len;
 
-	/* gc_make_buff can't fail now */
+	/* GC_make_buff can't fail now */
 
-	ret = gc_make_buff(gc, skb);
+	ret = GC_make_buff(gc, skb);
 
-	PFQ_CB(ret.skb)->group_mask = PFQ_CB(orig.skb)->group_mask;
-	PFQ_CB(ret.skb)->direct     = PFQ_CB(orig.skb)->direct;
-	PFQ_CB(ret.skb)->monad      = PFQ_CB(orig.skb)->monad;
+	PFQ_CB(ret)->group_mask = PFQ_CB(orig)->group_mask;
+	PFQ_CB(ret)->direct     = PFQ_CB(orig)->direct;
+	PFQ_CB(ret)->monad      = PFQ_CB(orig)->monad;
 
 	return ret;
 }
 
 
 static inline void
-add_dev_to_targets(struct net_device *dev, struct lazy_fwd_targets *ts)
+add_dev_to_targets(struct net_device *dev, struct skb_lazy_targets *ts)
 {
 	size_t n = 0;
 
@@ -139,7 +138,7 @@ add_dev_to_targets(struct net_device *dev, struct lazy_fwd_targets *ts)
 
 
 void
-gc_get_fwd_targets(struct gc_data *gc, struct lazy_fwd_targets *ts)
+GC_get_lazy_targets(struct GC_data *gc, struct skb_lazy_targets *ts)
 {
 	size_t n, i;
 
@@ -156,21 +155,24 @@ gc_get_fwd_targets(struct gc_data *gc, struct lazy_fwd_targets *ts)
 }
 
 
-struct gc_buff pfq_make_buff(struct sk_buff *skb)
+skbuff_t
+pfq_make_buff(struct sk_buff *skb)
 {
 	struct local_data *local = this_cpu_ptr(cpu_data);
-	return gc_make_buff(&local->gc, skb);
+	return GC_make_buff(&local->gc, skb);
 }
 
-struct gc_buff pfq_alloc_buff(size_t size)
+skbuff_t
+pfq_alloc_buff(size_t size)
 {
 	struct local_data *local = this_cpu_ptr(cpu_data);
-	return gc_alloc_buff(&local->gc, size);
+	return GC_alloc_buff(&local->gc, size);
 }
 
-struct gc_buff pfq_copy_buff(struct gc_buff buff)
+skbuff_t
+pfq_copy_buff(skbuff_t skb)
 {
 	struct local_data *local = this_cpu_ptr(cpu_data);
-	return gc_copy_buff(&local->gc, buff);
+	return GC_copy_buff(&local->gc, skb);
 }
 

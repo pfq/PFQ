@@ -519,9 +519,9 @@ intr:
 
 
 int
-pfq_lazy_xmit(struct gc_buff buff, struct net_device *dev, int hw_queue)
+pfq_lazy_xmit(skbuff_t skb, struct net_device *dev, int hw_queue)
 {
-	struct gc_log *log = PFQ_CB(buff.skb)->log;
+	struct GC_log *log = PFQ_CB(skb)->log;
 
 	if (log->num_devs >= Q_GC_LOG_QUEUE_LEN) {
 		if (printk_ratelimit())
@@ -529,7 +529,7 @@ pfq_lazy_xmit(struct gc_buff buff, struct net_device *dev, int hw_queue)
 		return 0;
 	}
 
-	skb_set_queue_mapping(buff.skb, hw_queue);
+	skb_set_queue_mapping(PFQ_SKB(skb), hw_queue);
 	log->dev[log->num_devs++] = dev;
 	log->xmit_todo++;
 
@@ -538,14 +538,14 @@ pfq_lazy_xmit(struct gc_buff buff, struct net_device *dev, int hw_queue)
 
 
 int
-pfq_batch_lazy_xmit(struct gc_queue_buff *queue, struct net_device *dev, int hw_queue)
+pfq_batch_lazy_xmit(struct GC_queue_buff *queue, struct net_device *dev, int hw_queue)
 {
-	struct gc_buff buff;
+	skbuff_t skb;
 	int i, n = 0;
 
-	for_each_gcbuff(queue, buff, i)
+	for_each_skbuff(queue, skb, i)
 	{
-		if (pfq_lazy_xmit(buff, dev, hw_queue))
+		if (pfq_lazy_xmit(skb, dev, hw_queue))
 			++n;
 	}
 
@@ -554,14 +554,14 @@ pfq_batch_lazy_xmit(struct gc_queue_buff *queue, struct net_device *dev, int hw_
 
 
 int
-pfq_batch_lazy_xmit_by_mask(struct gc_queue_buff *queue, unsigned long long mask, struct net_device *dev, int hw_queue)
+pfq_batch_lazy_xmit_by_mask(struct pfq_skbuff_batch *queue, unsigned long long mask, struct net_device *dev, int hw_queue)
 {
-	struct gc_buff buff;
+	skbuff_t skb;
 	int i, n = 0;
 
-	for_each_gcbuff_bitmask(queue, mask, buff, i)
+	for_each_skbuff_bitmask(queue, mask, skb, i)
 	{
-		if (pfq_lazy_xmit(buff, dev, hw_queue))
+		if (pfq_lazy_xmit(skb, dev, hw_queue))
 			++n;
 	}
 
@@ -570,7 +570,7 @@ pfq_batch_lazy_xmit_by_mask(struct gc_queue_buff *queue, unsigned long long mask
 
 
 size_t
-pfq_lazy_xmit_exec(struct gc_data *gc, struct lazy_fwd_targets const *ts)
+pfq_lazy_xmit_exec(struct GC_data *gc, struct skb_lazy_targets const *ts)
 {
 	struct netdev_queue *txq;
 	struct net_device *dev;
@@ -592,14 +592,14 @@ pfq_lazy_xmit_exec(struct gc_data *gc, struct lazy_fwd_targets const *ts)
 
 		for(i = 0; i < gc->pool.len; i++)
 		{
-			struct gc_log *log;
+			struct GC_log *log;
                         size_t j, num;
 
 			/* select the packet */
 
-			skb = gc->pool.queue[i].skb;
+			skb = gc->pool.queue[i];
                         log = &gc->log[i];
-			num = gc_count_dev_in_log(dev, log);
+			num = GC_count_dev_in_log(dev, log);
 
 			if (num == 0)
 				continue;

@@ -64,7 +64,7 @@ size_t copy_to_user_skbs(struct pfq_rx_opt *ro, struct pfq_skbuff_batch *skbs,
 
 
 static inline
-size_t copy_to_dev_buffs(struct pfq_sock *so, struct gc_queue_buff *buffs,
+size_t copy_to_dev_buffs(struct pfq_sock *so, struct pfq_skbuff_batch *skbs,
 			 unsigned long long mask, int cpu, pfq_gid_t gid)
 {
 	struct net_device *dev;
@@ -80,7 +80,7 @@ size_t copy_to_dev_buffs(struct pfq_sock *so, struct gc_queue_buff *buffs,
                         return false;
 		}
 
-		sent = pfq_batch_lazy_xmit_by_mask(buffs, mask, dev, so->egress_queue);
+		sent = pfq_batch_lazy_xmit_by_mask(skbs, mask, dev, so->egress_queue);
 
                 dev_put(dev);
 		return sent;
@@ -90,7 +90,7 @@ size_t copy_to_dev_buffs(struct pfq_sock *so, struct gc_queue_buff *buffs,
 }
 
 
-size_t copy_to_endpoint_buffs(struct pfq_sock *so, struct gc_queue_buff *pool,
+size_t copy_to_endpoint_buffs(struct pfq_sock *so, struct pfq_skbuff_batch *pool,
 			      unsigned long long mask, int cpu, pfq_gid_t gid)
 {
 	switch(so->egress_type)

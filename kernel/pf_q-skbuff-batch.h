@@ -31,6 +31,13 @@
 #include <pf_q-skbuff.h>
 
 
+#define SKBUFF_BATCH_ADDR(batch) \
+	__builtin_choose_expr(__builtin_types_compatible_p(typeof(batch),struct pfq_skbuff_short_batch),(struct pfq_skbuff_batch *)&batch, \
+	__builtin_choose_expr(__builtin_types_compatible_p(typeof(batch),struct pfq_skbuff_long_batch), (struct pfq_skbuff_batch *)&batch, \
+	__builtin_choose_expr(__builtin_types_compatible_p(typeof(batch),struct pfq_skbuff_batch),	(struct pfq_skbuff_batch *)&batch, (void) 0)))
+
+
+
 struct pfq_skbuff_short_batch
 {
         size_t len;

@@ -24,9 +24,24 @@
 #ifndef PF_Q_TYPES_H
 #define PF_Q_TYPES_H
 
+#include <pragma/diagnostic_push>
+#include <linux/kernel.h>
+#include <linux/skbuff.h>
+#include <pragma/diagnostic_pop>
+
+#include <linux/compiler.h>
+
 typedef int __bitwise pfq_id_t;
 typedef int __bitwise pfq_gid_t;
 
+
 #define Q_INVALID_ID	(__force pfq_id_t)-1
+
+#define __GC_owned	__attribute__((address_space(7)))
+
+/* sk_buff owned by garbage collector */
+
+typedef struct sk_buff __GC_owned * skbuff_t;
+
 
 #endif  /* PF_Q_TYPES_H */

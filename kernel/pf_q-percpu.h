@@ -39,6 +39,7 @@
 int pfq_percpu_init(void);
 int pfq_percpu_flush(void);
 
+
 /* per-cpu data... */
 
 struct local_data
@@ -48,7 +49,7 @@ struct local_data
 
         int                     sock_cnt;
 
-	struct gc_data		gc;		/* garbage collector */
+	struct GC_data		gc;		/* garbage collector */
 	ktime_t			last_ts;	/* timestamp of the last packet */
 
         atomic_t                enable_skb_pool;

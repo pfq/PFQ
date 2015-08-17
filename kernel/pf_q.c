@@ -164,16 +164,16 @@ void send_to_kernel(struct sk_buff *skb)
 
 
 static int
-pfq_process_batch(struct local_data * local, struct gc_data *gcollector, int cpu)
+pfq_process_batch(struct local_data * local, struct GC_data *collector, int cpu)
 {
 	unsigned long long sock_queue[Q_SKBUFF_SHORT_BATCH];
         unsigned long group_mask, socket_mask;
-	struct lazy_fwd_targets targets;
+	struct skb_lazy_targets targets;
         struct sk_buff *skb;
 
         long unsigned n, bit, lb;
         struct pfq_monad monad;
-	struct gc_buff buff;
+	skbuff_t buff;
 	size_t this_batch_len;
 
 #ifdef PFQ_RX_PROFILE
@@ -184,7 +184,7 @@ pfq_process_batch(struct local_data * local, struct gc_data *gcollector, int cpu
 	BUILD_BUG_ON_MSG(Q_SKBUFF_SHORT_BATCH > (sizeof(sock_queue[0]) << 3), "skbuff batch overflow");
 #endif
 
-	this_batch_len = gc_size(gcollector);
+	this_batch_len = GC_size(collector);
 
 	__sparse_add(&global_stats.recv, this_batch_len, cpu);
 
@@ -198,7 +198,7 @@ pfq_process_batch(struct local_data * local, struct gc_data *gcollector, int cpu
 #endif
         /* setup all the skbs collected */
 
-	for_each_skbuff(SKBUFF_BATCH_ADDR(gcollector->pool), skb, n)
+	for_each_skbuff(SKBUFF_BATCH_ADDR(collector->pool), skb, n)
         {
 		uint16_t queue = skb_rx_queue_recorded(skb) ? skb_get_rx_queue(skb) : 0;
 		unsigned long local_group_mask = pfq_devmap_get_groups(skb->dev->ifindex, queue);
@@ -216,11 +216,11 @@ pfq_process_batch(struct local_data * local, struct gc_data *gcollector, int cpu
 		struct pfq_group * this_group = pfq_get_group(gid);
 		bool bf_filter_enabled = atomic_long_read(&this_group->bp_filter);
 		bool vlan_filter_enabled = pfq_vlan_filters_enabled(gid);
-		struct gc_queue_buff refs = { len:0 };
+		struct pfq_skbuff_short_batch refs = { len:0 };
 
 		socket_mask = 0;
 
-		for_each_gcbuff(&gcollector->pool, buff, n)
+		for_each_skbuff(&collector->pool, buff, n)
 		{
 			struct pfq_computation_tree *prg;
 			unsigned long sock_mask = 0;
@@ -232,7 +232,7 @@ pfq_process_batch(struct local_data * local, struct gc_data *gcollector, int cpu
 
 			/* skip this packet for this group ? */
 
-			if ((PFQ_CB(buff.skb)->group_mask & bit) == 0)
+			if ((PFQ_CB(buff)->group_mask & bit) == 0)
 				continue;
 
 			/* increment counter for this group */
@@ -245,9 +245,9 @@ pfq_process_batch(struct local_data * local, struct gc_data *gcollector, int cpu
 				struct sk_filter *bpf = (struct sk_filter *)atomic_long_read(&this_group->bp_filter);
 
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(3,15,0))
-				if (bpf && !sk_run_filter(buff.skb, bpf->insns))
+				if (bpf && !sk_run_filter(buff, bpf->insns))
 #else
-				if (bpf && !SK_RUN_FILTER(bpf, buff.skb))
+				if (bpf && !SK_RUN_FILTER(bpf, buff))
 #endif
 				{
 					__sparse_inc(&this_group->stats.drop, cpu);
@@ -258,7 +258,7 @@ pfq_process_batch(struct local_data * local, struct gc_data *gcollector, int cpu
 			/* check vlan filter */
 
 			if (vlan_filter_enabled) {
-				if (!pfq_check_group_vlan_filter(gid, buff.skb->vlan_tci & ~VLAN_TAG_PRESENT)) {
+				if (!pfq_check_group_vlan_filter(gid, buff->vlan_tci & ~VLAN_TAG_PRESENT)) {
 					__sparse_inc(&this_group->stats.drop, cpu);
 					continue;
 				}
@@ -269,8 +269,8 @@ pfq_process_batch(struct local_data * local, struct gc_data *gcollector, int cpu
 			prg = (struct pfq_computation_tree *)atomic_long_read(&this_group->comp);
 			if (prg) {
 				unsigned long cbit, eligible_mask = 0;
-				size_t to_kernel = PFQ_CB(buff.skb)->log->to_kernel;
-				size_t num_fwd = PFQ_CB(buff.skb)->log->num_devs;
+				size_t to_kernel = PFQ_CB(buff)->log->to_kernel;
+				size_t num_fwd = PFQ_CB(buff)->log->num_devs;
 
 				/* setup monad for this computation */
 
@@ -281,8 +281,8 @@ pfq_process_batch(struct local_data * local, struct gc_data *gcollector, int cpu
 
 				/* run the functional program */
 
-				buff = pfq_run(prg, buff).value;
-				if (buff.skb == NULL) {
+				buff = pfq_run(buff, prg).value;
+				if (buff == NULL) {
 					__sparse_inc(&this_group->stats.drop, cpu);
 					continue;
 				}
@@ -292,8 +292,8 @@ pfq_process_batch(struct local_data * local, struct gc_data *gcollector, int cpu
 
 				/* update stats */
 
-                                __sparse_add(&this_group->stats.frwd, PFQ_CB(buff.skb)->log->num_devs -num_fwd, cpu);
-                                __sparse_add(&this_group->stats.kern, PFQ_CB(buff.skb)->log->to_kernel -to_kernel, cpu);
+                                __sparse_add(&this_group->stats.frwd, PFQ_CB(buff)->log->num_devs -num_fwd, cpu);
+                                __sparse_add(&this_group->stats.kern, PFQ_CB(buff)->log->to_kernel -to_kernel, cpu);
 
 				/* skip the packet? */
 
@@ -353,24 +353,24 @@ pfq_process_batch(struct local_data * local, struct gc_data *gcollector, int cpu
 			struct pfq_sock * so;
 			pfq_id_t id = { i };
 			so= pfq_get_sock_by_id(id);
-			copy_to_endpoint_buffs(so, &refs, sock_queue[i], cpu, gid);
+			copy_to_endpoint_buffs(so, SKBUFF_BATCH_ADDR(refs), sock_queue[i], cpu, gid);
 		})
 	})
 
 	/* forward skbs to network devices */
 
-	gc_get_fwd_targets(gcollector, &targets);
+	GC_get_lazy_targets(collector, &targets);
 
 	if (targets.cnt_total)
 	{
-		size_t total = pfq_lazy_xmit_exec(gcollector, &targets);
+		size_t total = pfq_lazy_xmit_exec(collector, &targets);
 		__sparse_add(&global_stats.frwd, total, cpu);
 		__sparse_add(&global_stats.disc, targets.cnt_total - total, cpu);
 	}
 
 	/* forward skbs to kernel or to the pool */
 
-	for_each_skbuff(SKBUFF_BATCH_ADDR(gcollector->pool), skb, n)
+	for_each_skbuff(SKBUFF_BATCH_ADDR(collector->pool), skb, n)
 	{
 		struct pfq_cb *cb = PFQ_CB(skb);
 
@@ -387,7 +387,7 @@ pfq_process_batch(struct local_data * local, struct gc_data *gcollector, int cpu
 
 	/* reset the GC */
 
-	gc_reset(gcollector);
+	GC_reset(collector);
 	local_bh_enable();
 
 #ifdef PFQ_RX_PROFILE
@@ -402,9 +402,9 @@ pfq_process_batch(struct local_data * local, struct gc_data *gcollector, int cpu
 static int
 pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 {
-        struct gc_data *gcollector;
+        struct GC_data *collector;
 	struct local_data * local;
-	struct gc_buff buff;
+	skbuff_t buff;
 	int cpu;
 
 	/* if no socket is open drop the packet */
@@ -421,7 +421,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 
         cpu = smp_processor_id();
 	local = per_cpu_ptr(cpu_data, cpu);
-	gcollector = &local->gc;
+	collector = &local->gc;
 
 	if (likely(skb))
 	{
@@ -450,8 +450,8 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 
 		/* pass the ownership of this skb to the garbage collector */
 
-		buff = gc_make_buff(gcollector, skb);
-		if (buff.skb == NULL) {
+		buff = GC_make_buff(collector, skb);
+		if (buff == NULL) {
 			if (printk_ratelimit())
 				printk(KERN_INFO "[PFQ] GC: memory exhausted!\n");
 			__sparse_inc(&global_stats.lost, cpu);
@@ -461,26 +461,26 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 			return 0;
 		}
 
-		PFQ_CB(buff.skb)->direct = direct;
+		PFQ_CB(buff)->direct = direct;
 
-		if ((gc_size(gcollector) < capt_batch_len) &&
-		     (ktime_to_ns(ktime_sub(skb_get_ktime(buff.skb), local->last_ts)) < 1000000))
+		if ((GC_size(collector) < capt_batch_len) &&
+		     (ktime_to_ns(ktime_sub(skb_get_ktime(buff), local->last_ts)) < 1000000))
 		{
 			local_bh_enable();
 			return 0;
 		}
 
-		local->last_ts = skb_get_ktime(buff.skb);
+		local->last_ts = skb_get_ktime(buff);
 	}
 	else {
-                if (gc_size(gcollector) == 0)
+                if (GC_size(collector) == 0)
 		{
 			local_bh_enable();
 			return 0;
 		}
 	}
 
-	return pfq_process_batch(local, gcollector, cpu);
+	return pfq_process_batch(local, collector, cpu);
 }
 
 
