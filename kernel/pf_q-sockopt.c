@@ -589,9 +589,15 @@ int pfq_setsockopt(struct socket *sock,
 
                         struct sk_filter *filter;
 
-			if (fprog.fcode.len == 1) { /* check for dummey BPF_CLASS == BPF_RET */
+			if (fprog.fcode.len == 1) {
+				struct sock_filter tmp;
 
-				if (BPF_CLASS(fprog.fcode.filter[0].code) == BPF_RET) {
+				/* get the first filter */
+				if (copy_from_user(&tmp, fprog.fcode.filter, sizeof(tmp)))
+					return -EFAULT;
+
+				/* check whether the first filter is a dummy BPF_RET */
+				if (BPF_CLASS(tmp.code) == BPF_RET) {
 					pr_devel("[PFQ|%d] fprog: BPF_RET optimized out!\n", so->id);
 					return 0;
 				}
@@ -609,8 +615,8 @@ int pfq_setsockopt(struct socket *sock,
                         pr_devel("[PFQ|%d] fprog: gid=%d (fprog len %d bytes)\n",
 				 so->id, fprog.gid, fprog.fcode.len);
                 }
-                else {	/* reset the filter */
-
+                else {
+			/* reset the filter */
                         pfq_set_group_filter(gid, NULL);
                         pr_devel("[PFQ|%d] fprog: gid=%d (resetting filter)\n", so->id, fprog.gid);
                 }
