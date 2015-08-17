@@ -39,7 +39,7 @@ vlan_id(arguments_t args, SkBuff skb)
 }
 
 
-static Action_SkBuff
+static ActionSkBuff
 vlan_id_filter(arguments_t args, SkBuff skb)
 {
 	if (vlan_id(args, skb))

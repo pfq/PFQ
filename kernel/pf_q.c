@@ -286,7 +286,7 @@ pfq_process_batch(struct pfq_percpu_data * local, struct GC_data *collector, int
 
 				/* run the functional program */
 
-				buff = pfq_run(buff, prg).value;
+				buff = pfq_run(buff, prg).skb;
 				if (buff == NULL) {
 					__sparse_inc(&this_group->stats.drop, cpu);
 					refs.queue[refs.len++] = NULL;

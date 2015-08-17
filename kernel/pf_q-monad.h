@@ -32,14 +32,14 @@
 
 /* The Action monad */
 
-#define MakeAction(type) \
+#define MakeAction(type, name) \
 typedef struct \
 { \
-	type	value; \
-} Action_ ## type;
+	type	name; \
+} Action ## type;
 
 
-MakeAction(SkBuff);
+MakeAction(SkBuff, skb);
 
 
 /* fanout: actions types */
@@ -74,36 +74,36 @@ struct pfq_monad
 /* Fanout constructors */
 
 static inline
-Action_SkBuff
+ActionSkBuff
 Pass(SkBuff skb)
 {
-	Action_SkBuff ret = { skb };
+	ActionSkBuff ret = { skb };
         return ret;
 }
 
 static inline
-Action_SkBuff
+ActionSkBuff
 Drop(SkBuff skb)
 {
-	Action_SkBuff ret = { skb };
+	ActionSkBuff ret = { skb };
         PFQ_CB(skb)->monad->fanout.type = fanout_drop;
         return ret;
 }
 
 static inline
-Action_SkBuff
+ActionSkBuff
 Copy(SkBuff skb)
 {
-	Action_SkBuff ret = { skb };
+	ActionSkBuff ret = { skb };
         PFQ_CB(skb)->monad->fanout.type = fanout_copy;
         return ret;
 }
 
 static inline
-Action_SkBuff
+ActionSkBuff
 Broadcast(SkBuff skb)
 {
-	Action_SkBuff ret = { skb };
+	ActionSkBuff ret = { skb };
         fanout_t * a  = &PFQ_CB(skb)->monad->fanout;
         a->class_mask = Q_CLASS_ANY;
         a->type       = fanout_copy;
@@ -111,10 +111,10 @@ Broadcast(SkBuff skb)
 }
 
 static inline
-Action_SkBuff
+ActionSkBuff
 Steering(SkBuff skb, uint32_t hash)
 {
-	Action_SkBuff ret = { skb };
+	ActionSkBuff ret = { skb };
         fanout_t * a = &PFQ_CB(skb)->monad->fanout;
         a->type  = fanout_steer;
         a->hash  = hash;
@@ -122,10 +122,10 @@ Steering(SkBuff skb, uint32_t hash)
 }
 
 static inline
-Action_SkBuff
+ActionSkBuff
 Deliver(SkBuff skb, unsigned long class_mask)
 {
-	Action_SkBuff ret = { skb };
+	ActionSkBuff ret = { skb };
         fanout_t * a  = &PFQ_CB(skb)->monad->fanout;
         a->class_mask = class_mask;
         a->type       = fanout_copy;
@@ -133,10 +133,10 @@ Deliver(SkBuff skb, unsigned long class_mask)
 }
 
 static inline
-Action_SkBuff
+ActionSkBuff
 Dispatch(SkBuff skb, unsigned long class_mask, uint32_t hash)
 {
-	Action_SkBuff ret = { skb };
+	ActionSkBuff ret = { skb };
         fanout_t * a  = &PFQ_CB(skb)->monad->fanout;
         a->class_mask = class_mask;
         a->type       = fanout_steer;

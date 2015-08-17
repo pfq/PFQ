@@ -33,7 +33,7 @@
 #include <pf_q-module.h>
 
 
-static Action_SkBuff
+static ActionSkBuff
 steering_field(arguments_t args, SkBuff skb)
 {
 	uint32_t offset = GET_ARG_0(uint32_t, args);
@@ -60,7 +60,7 @@ steering_field(arguments_t args, SkBuff skb)
 }
 
 
-static Action_SkBuff
+static ActionSkBuff
 steering_link(arguments_t args, SkBuff skb)
 {
 	uint32_t * w;
@@ -71,7 +71,7 @@ steering_link(arguments_t args, SkBuff skb)
 }
 
 
-static Action_SkBuff
+static ActionSkBuff
 steering_vlan_id(arguments_t args, SkBuff skb)
 {
 	if (skb->vlan_tci & VLAN_VID_MASK)
@@ -81,7 +81,7 @@ steering_vlan_id(arguments_t args, SkBuff skb)
 }
 
 
-static Action_SkBuff
+static ActionSkBuff
 steering_ip(arguments_t args, SkBuff skb)
 {
 	if (eth_hdr(PFQ_SKB(skb))->h_proto == __constant_htons(ETH_P_IP))
@@ -124,7 +124,7 @@ static int steering_net_init(arguments_t args)
 }
 
 
-static Action_SkBuff
+static ActionSkBuff
 steering_net(arguments_t args, SkBuff skb)
 {
 	__be32 addr    = GET_ARG_0(__be32, args);
@@ -151,7 +151,7 @@ steering_net(arguments_t args, SkBuff skb)
 }
 
 
-static Action_SkBuff
+static ActionSkBuff
 steering_flow(arguments_t args, SkBuff skb)
 {
 	if (eth_hdr(PFQ_SKB(skb))->h_proto == __constant_htons(ETH_P_IP))
@@ -184,7 +184,7 @@ steering_flow(arguments_t args, SkBuff skb)
 }
 
 
-static Action_SkBuff
+static ActionSkBuff
 steering_ip6(arguments_t args, SkBuff skb)
 {
 	if (eth_hdr(PFQ_SKB(skb))->h_proto == __constant_htons(ETH_P_IPV6))

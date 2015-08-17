@@ -29,67 +29,67 @@
 #include "predicate.h"
 
 
-static inline Action_SkBuff
+static inline ActionSkBuff
 filter_ip(arguments_t args, SkBuff b)
 {
         return is_ip(b) ? Pass(b) : Drop(b);
 }
 
-static inline Action_SkBuff
+static inline ActionSkBuff
 filter_ip6(arguments_t args, SkBuff b)
 {
         return is_ip6(b) ? Pass(b) : Drop(b);
 }
 
-static inline Action_SkBuff
+static inline ActionSkBuff
 filter_udp(arguments_t args, SkBuff b)
 {
         return is_udp(b) ? Pass(b) : Drop(b);
 }
 
-static inline Action_SkBuff
+static inline ActionSkBuff
 filter_udp6(arguments_t args, SkBuff b)
 {
         return is_udp6(b) ? Pass(b) : Drop(b);
 }
 
-static inline Action_SkBuff
+static inline ActionSkBuff
 filter_tcp(arguments_t args, SkBuff b)
 {
         return is_tcp(b) ? Pass(b) : Drop(b);
 }
 
-static inline Action_SkBuff
+static inline ActionSkBuff
 filter_tcp6(arguments_t args, SkBuff b)
 {
         return is_tcp6(b) ?  Pass(b) : Drop(b);
 }
 
-static inline Action_SkBuff
+static inline ActionSkBuff
 filter_icmp(arguments_t args, SkBuff b)
 {
         return is_icmp(b) ? Pass(b) : Drop(b);
 }
 
-static inline Action_SkBuff
+static inline ActionSkBuff
 filter_icmp6(arguments_t args, SkBuff b)
 {
         return is_icmp6(b) ? Pass(b) : Drop(b);
 }
 
-static inline Action_SkBuff
+static inline ActionSkBuff
 filter_flow(arguments_t args, SkBuff b)
 {
         return is_flow(b) ? Pass(b) : Drop(b);
 }
 
-static inline Action_SkBuff
+static inline ActionSkBuff
 filter_vlan(arguments_t args, SkBuff b)
 {
         return has_vlan(b) ? Pass(b) : Drop(b);
 }
 
-static inline Action_SkBuff
+static inline ActionSkBuff
 unit(arguments_t args, SkBuff b)
 {
         return Pass(b);

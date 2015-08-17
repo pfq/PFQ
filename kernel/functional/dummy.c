@@ -36,7 +36,7 @@
 #include "misc.h"
 
 
-static Action_SkBuff
+static ActionSkBuff
 dummy(arguments_t args, SkBuff skb)
 {
         const int data = GET_ARG(int,args);
@@ -58,7 +58,7 @@ dummy(arguments_t args, SkBuff skb)
 }
 
 
-static Action_SkBuff
+static ActionSkBuff
 dummy_vector(arguments_t args, SkBuff skb)
 {
         const int *data = GET_ARRAY(int,args);
@@ -75,7 +75,7 @@ dummy_vector(arguments_t args, SkBuff skb)
 }
 
 
-static Action_SkBuff
+static ActionSkBuff
 dummy_string(arguments_t args, SkBuff skb)
 {
         const char *data = GET_ARG(const char *,args);
@@ -86,7 +86,7 @@ dummy_string(arguments_t args, SkBuff skb)
 }
 
 
-static Action_SkBuff
+static ActionSkBuff
 dummy_strings(arguments_t args, SkBuff skb)
 {
         const char **data = GET_ARRAY(const char *,args);

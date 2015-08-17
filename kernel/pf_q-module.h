@@ -134,7 +134,7 @@ typedef struct pfq_functional *  arguments_t;
 /**** function prototypes ****/
 
 
-typedef Action_SkBuff (*function_ptr_t) (arguments_t, SkBuff);
+typedef ActionSkBuff  (*function_ptr_t) (arguments_t, SkBuff);
 typedef uint64_t      (*property_ptr_t) (arguments_t, SkBuff);
 typedef bool	      (*predicate_ptr_t)(arguments_t, SkBuff);
 typedef int	      (*init_ptr_t)	(arguments_t);

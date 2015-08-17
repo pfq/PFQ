@@ -37,7 +37,7 @@
 
 
 
-static Action_SkBuff
+static ActionSkBuff
 inc_counter(arguments_t args, SkBuff skb)
 {
         const int idx = GET_ARG(int,args);
@@ -57,7 +57,7 @@ inc_counter(arguments_t args, SkBuff skb)
 }
 
 
-static Action_SkBuff
+static ActionSkBuff
 dec_counter(arguments_t args, SkBuff skb)
 {
         const int idx = GET_ARG(int,args);
@@ -77,7 +77,7 @@ dec_counter(arguments_t args, SkBuff skb)
 }
 
 
-static Action_SkBuff
+static ActionSkBuff
 crc16_sum(arguments_t args, SkBuff skb)
 {
 	u16 crc = crc16(0, (u8 const *)eth_hdr(PFQ_SKB(skb)), skb->len);
@@ -87,7 +87,7 @@ crc16_sum(arguments_t args, SkBuff skb)
 }
 
 
-static Action_SkBuff
+static ActionSkBuff
 log_msg(arguments_t args, SkBuff skb)
 {
 	const char *msg = GET_ARG(const char *, args);
@@ -99,7 +99,7 @@ log_msg(arguments_t args, SkBuff skb)
 }
 
 
-static Action_SkBuff
+static ActionSkBuff
 log_buff(arguments_t args, SkBuff skb)
 {
 	if (!printk_ratelimit())
@@ -131,7 +131,7 @@ log_buff(arguments_t args, SkBuff skb)
 }
 
 
-static Action_SkBuff
+static ActionSkBuff
 log_packet(arguments_t args, SkBuff skb)
 {
 	if (!printk_ratelimit())
@@ -190,11 +190,11 @@ log_packet(arguments_t args, SkBuff skb)
 }
 
 
-static Action_SkBuff
+static ActionSkBuff
 inv(arguments_t args, SkBuff skb)
 {
 	function_t expr = GET_ARG(function_t, args);
-	SkBuff nskb = EVAL_FUNCTION(expr, skb).value;
+	SkBuff nskb = EVAL_FUNCTION(expr, skb).skb;
 
 	if (!nskb || is_drop(PFQ_CB(nskb)->monad->fanout))
 		return Copy(nskb);
@@ -203,16 +203,16 @@ inv(arguments_t args, SkBuff skb)
 }
 
 
-static Action_SkBuff
+static ActionSkBuff
 par(arguments_t args, SkBuff skb)
 {
 	function_t f0 = GET_ARG_0(function_t, args);
 	function_t f1 = GET_ARG_1(function_t, args);
 	fanout_t fout = PFQ_CB(skb)->monad->fanout;
-        Action_SkBuff a;
+        ActionSkBuff a;
 
 	a = EVAL_FUNCTION(f0, skb);
-	if (a.value && !is_drop(PFQ_CB(a.value)->monad->fanout))
+	if (a.skb && !is_drop(PFQ_CB(a.skb)->monad->fanout))
 		return a;
 
 	PFQ_CB(skb)->monad->fanout = fout;
@@ -220,23 +220,23 @@ par(arguments_t args, SkBuff skb)
 }
 
 
-static Action_SkBuff
+static ActionSkBuff
 par3(arguments_t args, SkBuff skb)
 {
 	function_t f0 = GET_ARG_0(function_t, args);
 	function_t f1 = GET_ARG_1(function_t, args);
 	function_t f2 = GET_ARG_2(function_t, args);
 	fanout_t fout = PFQ_CB(skb)->monad->fanout;
-        Action_SkBuff a;
+        ActionSkBuff a;
 
 	a = EVAL_FUNCTION(f0, skb);
-	if (a.value && !is_drop(PFQ_CB(a.value)->monad->fanout))
+	if (a.skb && !is_drop(PFQ_CB(a.skb)->monad->fanout))
 		return a;
 
 	PFQ_CB(skb)->monad->fanout = fout;
 	a = EVAL_FUNCTION(f1, skb);
 
-	if (a.value && !is_drop(PFQ_CB(a.value)->monad->fanout))
+	if (a.skb && !is_drop(PFQ_CB(a.skb)->monad->fanout))
 		return a;
 
 	PFQ_CB(skb)->monad->fanout = fout;
@@ -244,7 +244,7 @@ par3(arguments_t args, SkBuff skb)
 }
 
 
-static Action_SkBuff
+static ActionSkBuff
 par4(arguments_t args, SkBuff skb)
 {
 	function_t f0 = GET_ARG_0(function_t, args);
@@ -252,22 +252,22 @@ par4(arguments_t args, SkBuff skb)
 	function_t f2 = GET_ARG_2(function_t, args);
 	function_t f3 = GET_ARG_3(function_t, args);
 	fanout_t fout = PFQ_CB(skb)->monad->fanout;
-        Action_SkBuff a;
+        ActionSkBuff a;
 
 	a = EVAL_FUNCTION(f0, skb);
-	if (a.value && !is_drop(PFQ_CB(a.value)->monad->fanout))
+	if (a.skb && !is_drop(PFQ_CB(a.skb)->monad->fanout))
 		return a;
 
 	PFQ_CB(skb)->monad->fanout = fout;
 	a = EVAL_FUNCTION(f1, skb);
 
-	if (a.value && !is_drop(PFQ_CB(a.value)->monad->fanout))
+	if (a.skb && !is_drop(PFQ_CB(a.skb)->monad->fanout))
 		return a;
 
 	PFQ_CB(skb)->monad->fanout = fout;
 	a = EVAL_FUNCTION(f2, skb);
 
-	if (a.value && !is_drop(PFQ_CB(a.value)->monad->fanout))
+	if (a.skb && !is_drop(PFQ_CB(a.skb)->monad->fanout))
 		return a;
 
 	PFQ_CB(skb)->monad->fanout = fout;
@@ -275,7 +275,7 @@ par4(arguments_t args, SkBuff skb)
 }
 
 
-static Action_SkBuff
+static ActionSkBuff
 par5(arguments_t args, SkBuff skb)
 {
 	function_t f0 = GET_ARG_0(function_t, args);
@@ -284,35 +284,35 @@ par5(arguments_t args, SkBuff skb)
 	function_t f3 = GET_ARG_3(function_t, args);
 	function_t f4 = GET_ARG_4(function_t, args);
 	fanout_t fout = PFQ_CB(skb)->monad->fanout;
-        Action_SkBuff a;
+        ActionSkBuff a;
 
 	a = EVAL_FUNCTION(f0, skb);
-	if (a.value && !is_drop(PFQ_CB(a.value)->monad->fanout))
+	if (a.skb && !is_drop(PFQ_CB(a.skb)->monad->fanout))
 		return a;
 
 	PFQ_CB(skb)->monad->fanout = fout;
 	a = EVAL_FUNCTION(f1, skb);
 
-	if (a.value && !is_drop(PFQ_CB(a.value)->monad->fanout))
+	if (a.skb && !is_drop(PFQ_CB(a.skb)->monad->fanout))
 		return a;
 
 	PFQ_CB(skb)->monad->fanout = fout;
 	a = EVAL_FUNCTION(f2, skb);
 
-	if (a.value && !is_drop(PFQ_CB(a.value)->monad->fanout))
+	if (a.skb && !is_drop(PFQ_CB(a.skb)->monad->fanout))
 		return a;
 
 	PFQ_CB(skb)->monad->fanout = fout;
 	a = EVAL_FUNCTION(f3, skb);
 
-	if (a.value && !is_drop(PFQ_CB(a.value)->monad->fanout))
+	if (a.skb && !is_drop(PFQ_CB(a.skb)->monad->fanout))
 		return a;
 
 	PFQ_CB(skb)->monad->fanout = fout;
 	return EVAL_FUNCTION(f4, skb);
 }
 
-static Action_SkBuff
+static ActionSkBuff
 par6(arguments_t args, SkBuff skb)
 {
 	function_t f0 = GET_ARG_0(function_t, args);
@@ -322,34 +322,34 @@ par6(arguments_t args, SkBuff skb)
 	function_t f4 = GET_ARG_4(function_t, args);
 	function_t f5 = GET_ARG_5(function_t, args);
 	fanout_t fout = PFQ_CB(skb)->monad->fanout;
-        Action_SkBuff a;
+        ActionSkBuff a;
 
 	a = EVAL_FUNCTION(f0, skb);
-	if (a.value && !is_drop(PFQ_CB(a.value)->monad->fanout))
+	if (a.skb && !is_drop(PFQ_CB(a.skb)->monad->fanout))
 		return a;
 
 	PFQ_CB(skb)->monad->fanout = fout;
 	a = EVAL_FUNCTION(f1, skb);
 
-	if (a.value && !is_drop(PFQ_CB(a.value)->monad->fanout))
+	if (a.skb && !is_drop(PFQ_CB(a.skb)->monad->fanout))
 		return a;
 
 	PFQ_CB(skb)->monad->fanout = fout;
 	a = EVAL_FUNCTION(f2, skb);
 
-	if (a.value && !is_drop(PFQ_CB(a.value)->monad->fanout))
+	if (a.skb && !is_drop(PFQ_CB(a.skb)->monad->fanout))
 		return a;
 
 	PFQ_CB(skb)->monad->fanout = fout;
 	a = EVAL_FUNCTION(f3, skb);
 
-	if (a.value && !is_drop(PFQ_CB(a.value)->monad->fanout))
+	if (a.skb && !is_drop(PFQ_CB(a.skb)->monad->fanout))
 		return a;
 
 	PFQ_CB(skb)->monad->fanout = fout;
 	a = EVAL_FUNCTION(f4, skb);
 
-	if (a.value && !is_drop(PFQ_CB(a.value)->monad->fanout))
+	if (a.skb && !is_drop(PFQ_CB(a.skb)->monad->fanout))
 		return a;
 
 	PFQ_CB(skb)->monad->fanout = fout;
@@ -357,7 +357,7 @@ par6(arguments_t args, SkBuff skb)
 }
 
 
-static Action_SkBuff
+static ActionSkBuff
 par7(arguments_t args, SkBuff skb)
 {
 	function_t f0 = GET_ARG_0(function_t, args);
@@ -368,40 +368,40 @@ par7(arguments_t args, SkBuff skb)
 	function_t f5 = GET_ARG_5(function_t, args);
 	function_t f6 = GET_ARG_6(function_t, args);
 	fanout_t fout = PFQ_CB(skb)->monad->fanout;
-        Action_SkBuff a;
+        ActionSkBuff a;
 
 	a = EVAL_FUNCTION(f0, skb);
-	if (a.value && !is_drop(PFQ_CB(a.value)->monad->fanout))
+	if (a.skb && !is_drop(PFQ_CB(a.skb)->monad->fanout))
 		return a;
 
 	PFQ_CB(skb)->monad->fanout = fout;
 	a = EVAL_FUNCTION(f1, skb);
 
-	if (a.value && !is_drop(PFQ_CB(a.value)->monad->fanout))
+	if (a.skb && !is_drop(PFQ_CB(a.skb)->monad->fanout))
 		return a;
 
 	PFQ_CB(skb)->monad->fanout = fout;
 	a = EVAL_FUNCTION(f2, skb);
 
-	if (a.value && !is_drop(PFQ_CB(a.value)->monad->fanout))
+	if (a.skb && !is_drop(PFQ_CB(a.skb)->monad->fanout))
 		return a;
 
 	PFQ_CB(skb)->monad->fanout = fout;
 	a = EVAL_FUNCTION(f3, skb);
 
-	if (a.value && !is_drop(PFQ_CB(a.value)->monad->fanout))
+	if (a.skb && !is_drop(PFQ_CB(a.skb)->monad->fanout))
 		return a;
 
 	PFQ_CB(skb)->monad->fanout = fout;
 	a = EVAL_FUNCTION(f4, skb);
 
-	if (a.value && !is_drop(PFQ_CB(a.value)->monad->fanout))
+	if (a.skb && !is_drop(PFQ_CB(a.skb)->monad->fanout))
 		return a;
 
 	PFQ_CB(skb)->monad->fanout = fout;
 	a = EVAL_FUNCTION(f5, skb);
 
-	if (a.value && !is_drop(PFQ_CB(a.value)->monad->fanout))
+	if (a.skb && !is_drop(PFQ_CB(a.skb)->monad->fanout))
 		return a;
 
 	PFQ_CB(skb)->monad->fanout = fout;
@@ -409,7 +409,7 @@ par7(arguments_t args, SkBuff skb)
 }
 
 
-static Action_SkBuff
+static ActionSkBuff
 par8(arguments_t args, SkBuff skb)
 {
 	function_t f0 = GET_ARG_0(function_t, args);
@@ -421,46 +421,46 @@ par8(arguments_t args, SkBuff skb)
 	function_t f6 = GET_ARG_6(function_t, args);
 	function_t f7 = GET_ARG_7(function_t, args);
 	fanout_t fout = PFQ_CB(skb)->monad->fanout;
-        Action_SkBuff a;
+        ActionSkBuff a;
 
 	a = EVAL_FUNCTION(f0, skb);
-	if (a.value && !is_drop(PFQ_CB(a.value)->monad->fanout))
+	if (a.skb && !is_drop(PFQ_CB(a.skb)->monad->fanout))
 		return a;
 
 	PFQ_CB(skb)->monad->fanout = fout;
 	a = EVAL_FUNCTION(f1, skb);
 
-	if (a.value && !is_drop(PFQ_CB(a.value)->monad->fanout))
+	if (a.skb && !is_drop(PFQ_CB(a.skb)->monad->fanout))
 		return a;
 
 	PFQ_CB(skb)->monad->fanout = fout;
 	a = EVAL_FUNCTION(f2, skb);
 
-	if (a.value && !is_drop(PFQ_CB(a.value)->monad->fanout))
+	if (a.skb && !is_drop(PFQ_CB(a.skb)->monad->fanout))
 		return a;
 
 	PFQ_CB(skb)->monad->fanout = fout;
 	a = EVAL_FUNCTION(f3, skb);
 
-	if (a.value && !is_drop(PFQ_CB(a.value)->monad->fanout))
+	if (a.skb && !is_drop(PFQ_CB(a.skb)->monad->fanout))
 		return a;
 
 	PFQ_CB(skb)->monad->fanout = fout;
 	a = EVAL_FUNCTION(f4, skb);
 
-	if (a.value && !is_drop(PFQ_CB(a.value)->monad->fanout))
+	if (a.skb && !is_drop(PFQ_CB(a.skb)->monad->fanout))
 		return a;
 
 	PFQ_CB(skb)->monad->fanout = fout;
 	a = EVAL_FUNCTION(f5, skb);
 
-	if (a.value && !is_drop(PFQ_CB(a.value)->monad->fanout))
+	if (a.skb && !is_drop(PFQ_CB(a.skb)->monad->fanout))
 		return a;
 
 	PFQ_CB(skb)->monad->fanout = fout;
 	a = EVAL_FUNCTION(f6, skb);
 
-	if (a.value && !is_drop(PFQ_CB(a.value)->monad->fanout))
+	if (a.skb && !is_drop(PFQ_CB(a.skb)->monad->fanout))
 		return a;
 
 	PFQ_CB(skb)->monad->fanout = fout;

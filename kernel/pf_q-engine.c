@@ -124,7 +124,7 @@ strdup_user(const char __user *str)
 }
 
 
-static inline Action_SkBuff
+static inline ActionSkBuff
 pfq_apply(struct pfq_functional *call, SkBuff skb)
 {
 	function_t fun = { call };
@@ -132,7 +132,7 @@ pfq_apply(struct pfq_functional *call, SkBuff skb)
 }
 
 
-static inline Action_SkBuff
+static inline ActionSkBuff
 pfq_bind(SkBuff skb, struct pfq_computation_tree *prg)
 {
         struct pfq_functional_node *node = prg->entry_point;
@@ -141,7 +141,7 @@ pfq_bind(SkBuff skb, struct pfq_computation_tree *prg)
         {
                 fanout_t *a;
 
-                skb = pfq_apply(&node->fun, skb).value;
+                skb = pfq_apply(&node->fun, skb).skb;
                 if (skb == NULL)
                         return Pass(skb);
 
@@ -157,7 +157,7 @@ pfq_bind(SkBuff skb, struct pfq_computation_tree *prg)
 }
 
 
-Action_SkBuff
+ActionSkBuff
 pfq_run(SkBuff skb, struct pfq_computation_tree *prg)
 {
 #ifdef PFQ_LANG_PROFILE

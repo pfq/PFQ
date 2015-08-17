@@ -38,7 +38,7 @@
 #include "forward.h"
 
 
-static Action_SkBuff
+static ActionSkBuff
 forwardIO(arguments_t args, SkBuff skb)
 {
 	struct net_device *dev = GET_ARG(struct net_device *, args);
@@ -78,7 +78,7 @@ forwardIO(arguments_t args, SkBuff skb)
 }
 
 
-static Action_SkBuff
+static ActionSkBuff
 forward(arguments_t args, SkBuff skb)
 {
 	struct net_device *dev = GET_ARG(struct net_device *, args);
@@ -132,7 +132,7 @@ forward_fini(arguments_t args)
 }
 
 
-static Action_SkBuff
+static ActionSkBuff
 bridge(arguments_t args, SkBuff skb)
 {
 	struct net_device *dev = GET_ARG(struct net_device *, args);
@@ -151,7 +151,7 @@ bridge(arguments_t args, SkBuff skb)
 }
 
 
-static Action_SkBuff
+static ActionSkBuff
 tap(arguments_t args, SkBuff skb)
 {
 	struct net_device *dev = GET_ARG(struct net_device *, args);
@@ -174,7 +174,7 @@ tap(arguments_t args, SkBuff skb)
 }
 
 
-static Action_SkBuff
+static ActionSkBuff
 tee(arguments_t args, SkBuff skb)
 {
 	struct net_device *dev = GET_ARG(struct net_device *, args);

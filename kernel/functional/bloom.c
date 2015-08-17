@@ -137,7 +137,7 @@ bloom(arguments_t args, SkBuff skb)
 }
 
 
-static Action_SkBuff
+static ActionSkBuff
 bloom_filter(arguments_t args, SkBuff skb)
 {
 	if (bloom(args, skb))
@@ -146,7 +146,7 @@ bloom_filter(arguments_t args, SkBuff skb)
 }
 
 
-static Action_SkBuff
+static ActionSkBuff
 bloom_src_filter(arguments_t args, SkBuff skb)
 {
 	if (bloom_src(args, skb))
@@ -154,7 +154,7 @@ bloom_src_filter(arguments_t args, SkBuff skb)
 	return Drop(skb);
 }
 
-static Action_SkBuff
+static ActionSkBuff
 bloom_dst_filter(arguments_t args, SkBuff skb)
 {
 	if (bloom_dst(args, skb))
