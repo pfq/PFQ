@@ -34,7 +34,7 @@
 #include <pragma/diagnostic_pop>
 
 #include <pf_q-sock.h>
-#include <pf_q-macro.h>
+#include <pf_q-define.h>
 #include <pf_q-sparse.h>
 #include <pf_q-stats.h>
 #include <pf_q-bpf.h>

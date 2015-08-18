@@ -38,26 +38,26 @@
 static int
 pfq_memory_map(struct vm_area_struct *vma, unsigned long size, char *ptr, unsigned int flags, enum pfq_shmem_kind kind)
 {
-	// unsigned long addr = vma->vm_start;
-
         vma->vm_flags |= flags;
 
 	switch(kind)
 	{
 	case pfq_shmem_virt: {
 		if (remap_vmalloc_range(vma, ptr, 0) != 0) {
-			printk(KERN_WARNING "[PFQ] remap_vmalloc_range error.\n");
+			printk(KERN_WARNING "[PFQ] error: remap_vmalloc_range failed!\n");
 			return -EAGAIN;
 		}
 	} break;
 
-	//case pfq_shmem_phys: {
-	//	if (remap_pfn_range(vma, addr, virt_to_phys(ptr) >> PAGE_SHIFT, vma->vm_end - vma->vm_start, PAGE_SHARED) != 0) {
-	//		printk(KERN_WARNING "[PFQ] remap_vmalloc_range error.\n");
-	//		return -EAGAIN;
-	//	}
-	//} break;
-
+#if 0
+	case pfq_shmem_phys: {
+		unsigned long addr = vma->vm_start;
+		if (remap_pfn_range(vma, addr, virt_to_phys(ptr) >> PAGE_SHIFT, vma->vm_end - vma->vm_start, PAGE_SHARED) != 0) {
+			printk(KERN_WARNING "[PFQ] error: remap_vmalloc_range failed!\n");
+			return -EAGAIN;
+		}
+	} break;
+#endif
 	case pfq_shmem_user:
 		break;
 	}
@@ -106,7 +106,7 @@ pfq_hugepage_map(struct pfq_shmem_descr *shmem, unsigned long addr, size_t size)
 		vfree(shmem->hugepages);
 		shmem->npages = 0;
 		shmem->hugepages = NULL;
-		printk(KERN_WARNING "[PFQ] could not get user pages!\n");
+		printk(KERN_WARNING "[PFQ] error: could not get user pages!\n");
 		return -EPERM;
 	}
 
@@ -166,7 +166,7 @@ pfq_shared_memory_alloc(struct pfq_shmem_descr *shmem, size_t mem_size)
 	shmem->kind = pfq_shmem_virt;
 
 	if (shmem->addr == NULL) {
-		printk(KERN_WARNING "[PFQ] shared memory alloc: out of memory (vmalloc %zu bytes)!", tot_mem);
+		printk(KERN_WARNING "[PFQ] shmem: out of memory (vmalloc %zu bytes)!", tot_mem);
 		return -ENOMEM;
 	}
 

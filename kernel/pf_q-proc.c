@@ -38,7 +38,7 @@
 #include <pf_q-group.h>
 #include <pf_q-bitops.h>
 #include <pf_q-sparse.h>
-#include <pf_q-macro.h>
+#include <pf_q-define.h>
 #include <pf_q-proc.h>
 #include <pf_q-memory.h>
 #include <pf_q-printk.h>
@@ -278,7 +278,7 @@ int pfq_proc_init(void)
 {
 	pfq_proc_dir = proc_mkdir("pfq", init_net.proc_net);
 	if (!pfq_proc_dir) {
-		printk(KERN_INFO "[PFQ] could not create /proc/net/pfq");
+		printk(KERN_ERR "[PFQ] error: could not create /proc/net/pfq!");
 		return -ENOMEM;
 	}
 

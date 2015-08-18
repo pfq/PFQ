@@ -41,7 +41,7 @@
 #include <pf_q-transmit.h>
 #include <pf_q-memory.h>
 #include <pf_q-sock.h>
-#include <pf_q-macro.h>
+#include <pf_q-define.h>
 #include <pf_q-global.h>
 #include <pf_q-GC.h>
 #include <pf_q-printk.h>

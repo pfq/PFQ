@@ -32,8 +32,6 @@
 #include <pf_q-global.h>
 
 
-struct pfq_percpu_data __percpu    * percpu_data;
-
 int capture_incoming	= 1;
 int capture_outgoing	= 0;
 

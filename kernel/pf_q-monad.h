@@ -26,7 +26,7 @@
 
 #include <pf_q-group.h>
 #include <pf_q-skbuff.h>
-#include <pf_q-macro.h>
+#include <pf_q-define.h>
 #include <pf_q-GC.h>
 #include <pf_q-sparse.h>
 

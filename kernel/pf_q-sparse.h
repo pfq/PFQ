@@ -30,7 +30,7 @@
 #include <asm/local.h>
 #include <pragma/diagnostic_pop>
 
-#include <pf_q-macro.h>
+#include <pf_q-define.h>
 
 #ifdef PFQ_USE_EXTENDED_PROC
 #define SPARSE_INC(x)	(sparse_inc(x))

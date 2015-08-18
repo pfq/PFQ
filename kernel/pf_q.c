@@ -55,7 +55,7 @@
 
 #include <pf_q-shmem.h>
 #include <pf_q-proc.h>
-#include <pf_q-macro.h>
+#include <pf_q-define.h>
 #include <pf_q-sockopt.h>
 #include <pf_q-devmap.h>
 #include <pf_q-group.h>
@@ -164,7 +164,7 @@ void send_to_kernel(struct sk_buff *skb)
 
 
 static int
-pfq_process_batch(struct pfq_percpu_data * local, struct GC_data *collector, int cpu)
+pfq_process_batch(struct pfq_percpu_data * local, struct GC_data *GC_ptr, int cpu)
 {
 	unsigned long long sock_queue[Q_SKBUFF_SHORT_BATCH];
         unsigned long group_mask, socket_mask;
@@ -184,7 +184,7 @@ pfq_process_batch(struct pfq_percpu_data * local, struct GC_data *collector, int
 	BUILD_BUG_ON_MSG(Q_SKBUFF_SHORT_BATCH > (sizeof(sock_queue[0]) << 3), "skbuff batch overflow");
 #endif
 
-	this_batch_len = GC_size(collector);
+	this_batch_len = GC_size(GC_ptr);
 
 	__sparse_add(&global_stats.recv, this_batch_len, cpu);
 
@@ -198,7 +198,7 @@ pfq_process_batch(struct pfq_percpu_data * local, struct GC_data *collector, int
 #endif
         /* setup all the skbs collected */
 
-	for_each_skbuff(SKBUFF_BATCH_ADDR(collector->pool), skb, n)
+	for_each_skbuff(SKBUFF_BATCH_ADDR(GC_ptr->pool), skb, n)
         {
 		uint16_t queue = skb_rx_queue_recorded(skb) ? skb_get_rx_queue(skb) : 0;
 		unsigned long local_group_mask = pfq_devmap_get_groups(skb->dev->ifindex, queue);
@@ -220,7 +220,7 @@ pfq_process_batch(struct pfq_percpu_data * local, struct GC_data *collector, int
 
 		socket_mask = 0;
 
-		for_each_skbuff(&collector->pool, buff, n)
+		for_each_skbuff(&GC_ptr->pool, buff, n)
 		{
 			struct pfq_computation_tree *prg;
 			unsigned long sock_mask = 0;
@@ -368,18 +368,18 @@ pfq_process_batch(struct pfq_percpu_data * local, struct GC_data *collector, int
 
 	/* forward skbs to network devices */
 
-	GC_get_lazy_targets(collector, &targets);
+	GC_get_lazy_targets(GC_ptr, &targets);
 
 	if (targets.cnt_total)
 	{
-		size_t total = pfq_lazy_xmit_exec(collector, &targets);
+		size_t total = pfq_lazy_xmit_exec(GC_ptr, &targets);
 		__sparse_add(&global_stats.frwd, total, cpu);
 		__sparse_add(&global_stats.disc, targets.cnt_total - total, cpu);
 	}
 
 	/* forward skbs to kernel or to the pool */
 
-	for_each_skbuff(SKBUFF_BATCH_ADDR(collector->pool), skb, n)
+	for_each_skbuff(SKBUFF_BATCH_ADDR(GC_ptr->pool), skb, n)
 	{
 		struct pfq_cb *cb = PFQ_CB(skb);
 
@@ -396,7 +396,7 @@ pfq_process_batch(struct pfq_percpu_data * local, struct GC_data *collector, int
 
 	/* reset the GC */
 
-	GC_reset(collector);
+	GC_reset(GC_ptr);
 	local_bh_enable();
 
 #ifdef PFQ_RX_PROFILE
@@ -411,7 +411,6 @@ pfq_process_batch(struct pfq_percpu_data * local, struct GC_data *collector, int
 static int
 pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 {
-        struct GC_data *collector;
 	struct pfq_percpu_data * local;
 	int cpu;
 
@@ -429,7 +428,6 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 
         cpu = smp_processor_id();
 	local = per_cpu_ptr(percpu_data, cpu);
-	collector = &local->gc;
 
 	if (likely(skb))
 	{
@@ -460,7 +458,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 
 		/* pass the ownership of this skb to the garbage collector */
 
-		buff = GC_make_buff(collector, skb);
+		buff = GC_make_buff(&local->GC, skb);
 		if (buff == NULL) {
 			if (printk_ratelimit())
 				printk(KERN_INFO "[PFQ] GC: memory exhausted!\n");
@@ -473,24 +471,24 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 
 		PFQ_CB(buff)->direct = direct;
 
-		if ((GC_size(collector) < capt_batch_len) &&
-		     (ktime_to_ns(ktime_sub(skb_get_ktime(buff), local->last_ts)) < 1000000))
+		if ((GC_size(&local->GC) < capt_batch_len) &&
+		     (ktime_to_ns(ktime_sub(skb_get_ktime(buff), local->last_rx)) < 1000000))
 		{
 			local_bh_enable();
 			return 0;
 		}
 
-		local->last_ts = skb_get_ktime(buff);
+		local->last_rx = skb_get_ktime(buff);
 	}
 	else {
-                if (GC_size(collector) == 0)
+                if (GC_size(&local->GC) == 0)
 		{
 			local_bh_enable();
 			return 0;
 		}
 	}
 
-	return pfq_process_batch(local, collector, cpu);
+	return pfq_process_batch(local, &local->GC, cpu);
 }
 
 
@@ -593,9 +591,8 @@ pfq_release(struct socket *sock)
 
         /* purge both batch and recycle queues if no socket is open */
 
-        if (pfq_get_sock_count() == 0) {
-                total += pfq_percpu_flush();
-        }
+        if (pfq_get_sock_count() == 0)
+                total += pfq_percpu_fini();
 
         up (&sock_sem);
 
@@ -795,7 +792,7 @@ pfq_create(
 
         sk = sk_alloc(net, PF_INET, GFP_KERNEL, &pfq_proto);
         if (sk == NULL) {
-                printk(KERN_WARNING "[PFQ] error: could not allocate a socket\n");
+                printk(KERN_WARNING "[PFQ] error: could not allocate a socket!\n");
                 return -ENOMEM;
         }
 
@@ -811,7 +808,7 @@ pfq_create(
 
         so->id = pfq_get_free_id(so);
         if (so->id == -1) {
-                printk(KERN_WARNING "[PFQ] error: resource exhausted\n");
+                printk(KERN_WARNING "[PFQ] error: resource exhausted!\n");
                 sk_free(sk);
                 return -EBUSY;
         }
@@ -897,9 +894,13 @@ static int __init pfq_init_module(void)
 
 	/* initialization */
 
-	err = pfq_percpu_init();
+	err = pfq_percpu_alloc();
 	if (err < 0)
 		goto err;
+
+	err = pfq_percpu_init();
+	if (err < 0)
+		goto err1;
 
 	err = pfq_proc_init();
 	if (err < 0)
@@ -959,8 +960,9 @@ err4:
 err3:
 	pfq_proc_fini();
 err2:
-	pfq_percpu_flush();
-	free_percpu(percpu_data);
+	pfq_percpu_fini();
+err1:
+	pfq_percpu_free();
 err:
 	return err;
 }
@@ -992,7 +994,7 @@ static void __exit pfq_exit_module(void)
         msleep(Q_GRACE_PERIOD);
 
         /* free per CPU data */
-        total += pfq_percpu_flush();
+        total += pfq_percpu_fini();
 
 #ifdef PFQ_USE_SKB_POOL
         total += pfq_skb_pool_free_all();
@@ -1002,7 +1004,7 @@ static void __exit pfq_exit_module(void)
                 printk(KERN_INFO "[PFQ] %d skbuff freed.\n", total);
 
         /* free per-cpu data */
-	free_percpu(percpu_data);
+        pfq_percpu_free();
 
 	/* free symbol table of pfq-lang functions */
 	pfq_symtable_free();

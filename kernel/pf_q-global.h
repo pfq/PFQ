@@ -31,8 +31,6 @@
 #include <pf_q-sparse.h>
 #include <pf_q-stats.h>
 
-extern struct pfq_percpu_data __percpu * percpu_data;
-
 extern int capture_incoming;
 extern int capture_outgoing;
 

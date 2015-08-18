@@ -31,7 +31,7 @@
 #include <net/sock.h>
 #include <pragma/diagnostic_pop>
 
-#include <pf_q-macro.h>
+#include <pf_q-define.h>
 #include <pf_q-stats.h>
 #include <pf_q-shmem.h>
 #include <pf_q-types.h>

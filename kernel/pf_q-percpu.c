@@ -37,19 +37,32 @@
 #include <pf_q-GC.h>
 
 
+struct pfq_percpu_data __percpu    * percpu_data;
+
 extern void pfq_timer (unsigned long);
+
+
+int pfq_percpu_alloc(void)
+{
+	percpu_data = alloc_percpu(struct pfq_percpu_data);
+	if (!percpu_data) {
+                printk(KERN_ERR "[PFQ] cound not allocate percpu data!\n");
+		return -ENOMEM;
+        }
+
+        return 0;
+}
+
+
+void pfq_percpu_free(void)
+{
+	free_percpu(percpu_data);
+}
+
 
 int pfq_percpu_init(void)
 {
 	int cpu;
-
-	/* create a per-cpu context */
-
-	percpu_data = alloc_percpu(struct pfq_percpu_data);
-	if (!percpu_data) {
-                printk(KERN_WARNING "[PFQ] out of memory!\n");
-		return -ENOMEM;
-        }
 
         for_each_online_cpu(cpu) {
 
@@ -67,7 +80,7 @@ int pfq_percpu_init(void)
 
 		add_timer_on(&local->timer, cpu);
 
-		GC_data_init(&local->gc);
+		GC_data_init(&local->GC);
 
 		preempt_enable();
 	}
@@ -76,7 +89,7 @@ int pfq_percpu_init(void)
 }
 
 
-int pfq_percpu_flush(void)
+int pfq_percpu_fini(void)
 {
         int cpu;
         int total = 0;
@@ -93,15 +106,15 @@ int pfq_percpu_flush(void)
 
                 local = per_cpu_ptr(percpu_data, cpu);
 
-		for_each_skbuff(SKBUFF_BATCH_ADDR(local->gc.pool), skb, n)
+		for_each_skbuff(SKBUFF_BATCH_ADDR(local->GC.pool), skb, n)
 		{
 			SPARSE_INC(&memory_stats.os_free);
 			kfree_skb(skb);
 		}
 
-                total += local->gc.pool.len;
+                total += local->GC.pool.len;
 
-		GC_reset(&local->gc);
+		GC_reset(&local->GC);
 		del_timer(&local->timer);
 
 		preempt_enable();

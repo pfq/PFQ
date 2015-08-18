@@ -33,13 +33,12 @@
 #include <pragma/diagnostic_pop>
 
 #include <pf_q-skbuff-pool.h>
-#include <pf_q-macro.h>
+#include <pf_q-define.h>
 #include <pf_q-percpu.h>
 #include <pf_q-sparse.h>
 #include <pf_q-global.h>
 
 extern int skb_pool_size;
-extern struct pfq_percpu_data __percpu * percpu_data;
 
 extern struct sk_buff * __pfq_alloc_skb(unsigned int size, gfp_t priority, int fclone, int node);
 extern struct sk_buff * pfq_dev_alloc_skb(unsigned int length);

@@ -96,7 +96,7 @@ int pfq_skb_pool_init (struct pfq_skb_pool *pool, size_t size)
 	if (size > 0) {
 		pool->skbs = kzalloc(sizeof(struct skb *) * size, GFP_KERNEL);
 		if (pool->skbs == NULL) {
-			printk(KERN_INFO "[PFQ] pfq_skb_pool_init: out of memory!\n");
+			printk(KERN_ERR "[PFQ] pfq_skb_pool_init: out of memory!\n");
 			return -ENOMEM;
 		}
 	}

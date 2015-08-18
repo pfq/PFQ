@@ -29,7 +29,7 @@
 #include <linux/pf_q.h>
 #include <pragma/diagnostic_pop>
 
-#include <pf_q-macro.h>
+#include <pf_q-define.h>
 #include <pf_q-group.h>
 
 /* pfq devmap */

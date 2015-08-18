@@ -33,14 +33,15 @@
 #include <pragma/diagnostic_pop>
 
 #include <pf_q-skbuff-pool.h>
-#include <pf_q-macro.h>
+#include <pf_q-define.h>
 #include <pf_q-GC.h>
 
+
 int pfq_percpu_init(void);
-int pfq_percpu_flush(void);
+int pfq_percpu_fini(void);
+int pfq_percpu_alloc(void);
+void pfq_percpu_free(void);
 
-
-/* per-cpu data... */
 
 struct pfq_percpu_data
 {
@@ -49,17 +50,20 @@ struct pfq_percpu_data
 
         int                     sock_cnt;
 
-	struct GC_data		gc;		/* garbage collector */
-	ktime_t			last_ts;	/* timestamp of the last packet */
+	struct GC_data		GC;		/* garbage collector */
 
-        atomic_t                enable_skb_pool;
+	ktime_t			last_rx;	/* timestamp of the last packet */
 
 	struct timer_list	timer;
 
+        atomic_t                enable_skb_pool;
         struct pfq_skb_pool	tx_pool;
         struct pfq_skb_pool	rx_pool;
 
 } ____cacheline_aligned;
+
+
+extern struct pfq_percpu_data __percpu * percpu_data;
 
 
 #endif /* PF_Q_PERCPU_H */
