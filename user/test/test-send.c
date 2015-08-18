@@ -31,7 +31,7 @@ void send_packets(pfq_t *q, unsigned long long num)
 
         for(n = 0; n < num;)
         {
-                if (pfq_send(q, ping, sizeof(ping))) {
+                if (pfq_send(q, ping, sizeof(ping), 1)) {
 			n++;
 		}
         }
@@ -45,7 +45,7 @@ void send_packets_async(pfq_t *q, unsigned long long num)
 	printf("sending %llu packets (async):\n", num);
         for(n = 0; n < num;)
         {
-                if (pfq_send_async(q, ping, sizeof(ping), 128) != -1) {
+                if (pfq_send_async(q, ping, sizeof(ping), 128, 1) != -1) {
 			n++;
 		}
         }

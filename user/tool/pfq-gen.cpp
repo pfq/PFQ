@@ -51,6 +51,7 @@ namespace opt
     size_t npackets = std::numeric_limits<size_t>::max();
     size_t loop     = 1;
     size_t preload  = 1;
+    int    copies   = 1;
 
     std::atomic_int nthreads;
 
@@ -218,7 +219,7 @@ namespace thread
                 if (rc)
                     rate_control(now, delta, n);
 
-                if (!m_pfq.send_async(pfq::const_buffer(reinterpret_cast<const char *>(m_packet.get()), len), opt::flush))
+                if (!m_pfq.send_async(pfq::const_buffer(reinterpret_cast<const char *>(m_packet.get()), len), opt::flush, opt::copies))
                 {
                     m_fail->fetch_add(1, std::memory_order_relaxed);
                     continue;
@@ -258,7 +259,7 @@ namespace thread
                 if (rc)
                     rate_control(now, delta, n);
 
-                if (!m_pfq.send_async(pfq::const_buffer(reinterpret_cast<const char *>(m_packet.get() + idx * opt::len), len), opt::flush))
+                if (!m_pfq.send_async(pfq::const_buffer(reinterpret_cast<const char *>(m_packet.get() + idx * opt::len), len), opt::flush, opt::copies))
                 {
                     m_fail->fetch_add(1, std::memory_order_relaxed);
                     continue;
@@ -284,7 +285,7 @@ namespace thread
 
             for(size_t n = 0; n < opt::npackets;)
             {
-                if (!m_pfq.send_at(pfq::const_buffer(reinterpret_cast<const char *>(m_packet.get()), len), now))
+                if (!m_pfq.send_at(pfq::const_buffer(reinterpret_cast<const char *>(m_packet.get()), len), now, opt::copies))
                 {
                     m_fail->fetch_add(1, std::memory_order_relaxed);
                     continue;
@@ -359,7 +360,7 @@ namespace thread
                         ip->daddr ^= seed;
                     }
 
-                    if (!m_pfq.send_async(pfq::const_buffer(reinterpret_cast<const char *>(data), plen), opt::flush))
+                    if (!m_pfq.send_async(pfq::const_buffer(reinterpret_cast<const char *>(data), plen), opt::flush, opt::copies))
                     {
                         m_fail->fetch_add(1, std::memory_order_relaxed);
                         continue;
@@ -474,6 +475,7 @@ void usage(std::string name)
         " -h --help                     Display this help\n"
         " -l --len INT                  Set packet length\n"
         " -n --packets INT              Number of packets\n"
+        " -c --copies INT               Number of per-packet copies\n"
         " -s --queue-slots INT          Set Tx queue length\n"
         " -k --kthread IDX,IDX...       Async with kernel threads\n"
 #ifdef HAVE_PCAP_H
@@ -548,6 +550,17 @@ try
             }
 
             opt::flush = static_cast<size_t>(std::atoi(argv[i]));
+            continue;
+        }
+
+        if ( any_strcmp(argv[i], "-c", "--copies") )
+        {
+            if (++i == argc)
+            {
+                throw std::runtime_error("hint missing");
+            }
+
+            opt::copies = static_cast<size_t>(std::atoi(argv[i]));
             continue;
         }
 
@@ -686,6 +699,11 @@ try
     std::cout << "len        : "  << opt::len << std::endl;
     std::cout << "flush-hint : "  << opt::flush << std::endl;
 
+    if (opt::npackets != std::numeric_limits<size_t>::max())
+        std::cout << "npackets   : " << opt::npackets << std::endl;
+
+    std::cout << "copies     : "  << opt::copies << std::endl;
+
     if (opt::rate != 0.0)
         std::cout << "rate       : "  << opt::rate << " Mpps" << std::endl;
 
@@ -697,6 +715,7 @@ try
 
     if (opt::active_ts)
         std::cout << "timestamp  : active!" << std::endl;
+
 
     auto mq = std::any_of(std::begin(binding), std::end(binding), [](more::thread_binding const &b) { return b.dev.front().queue.size() > 1; });
 
