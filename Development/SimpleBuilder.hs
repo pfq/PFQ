@@ -92,35 +92,34 @@ cmake  = AdornedCmd (\o -> let build = case buildType o of
 -- data types
 
 data Options = Options
-    {
-        buildType  :: Maybe BuildType,
-        cxxComp    :: Maybe String,
-        ccComp     :: Maybe String,
-        dryRun     :: Bool,
-        jobs       :: Int,
-        extra      :: [String]
+    {   buildType  :: Maybe BuildType
+    ,   cxxComp    :: Maybe String
+    ,   ccComp     :: Maybe String
+    ,   dryRun     :: Bool
+    ,   jobs       :: Int
+    ,   extra      :: [String]
     } deriving (Data, Typeable, Show, Read)
 
 
 options :: Mode (CmdArgs Options)
 options = cmdArgsMode $ Options
-    {
-         buildType = Nothing    &= explicit &= name "build"    &= help "Specify the build type (Release, Debug)",
-         cxxComp   = Nothing    &= explicit &= name "cxx"      &= help "Compiler for C++ programs",
-         ccComp    = Nothing    &= explicit &= name "cc"       &= help "Compiler for C programs",
-         dryRun    = False      &= explicit &= name "dry-run"  &= help "Print commands, don't actually run them",
-         jobs      = 0          &= help "Allow N jobs at once (if possible)",
-         extra     = []         &= typ "ITEMS" &= args
+    {   buildType = Nothing    &= explicit &= name "buildType"     &= help "Specify the build type (Release, Debug)"
+    ,   cxxComp   = Nothing    &= explicit &= name "cxx"           &= help "Compiler for C++ programs"
+    ,   ccComp    = Nothing    &= explicit &= name "cc"            &= help "Compiler for C programs"
+    ,   dryRun    = False      &= explicit &= name "dry-run"       &= help "Print commands, don't actually run them"
+    ,   jobs      = 0          &= help "Allow N jobs at once (if possible)"
+    ,   extra     = []         &= typ "ITEMS" &= args
     } &= summary ("SimpleBuilder " ++ version) &= program "Build" &= details detailsBanner
 
+
 detailsBanner = [ "[ITEMS] = COMMAND [TARGETS]",
-        "",
-        "Commands:",
-        "    configure   Prepare to build PFQ framework.",
-        "    build       Build PFQ framework.",
-        "    install     Copy the files into the install location.",
-        "    clean       Clean up after a build.",
-        "    show        Show targets.", ""]
+  "",
+  "Commands:",
+  "    configure   Prepare to build PFQ framework.",
+  "    build       Build PFQ framework.",
+  "    install     Copy the files into the install location.",
+  "    clean       Clean up after a build.",
+  "    show        Show targets.", ""]
 
 
 bold  = setSGRCode [SetConsoleIntensity BoldIntensity]
@@ -138,6 +137,7 @@ instance Eq Target where
     (Install a)   == (Install b)   = a == b || a == "*" || b == "*"
     (Clean a)     == (Clean b)     = a == b || a == "*" || b == "*"
     _ == _ = False
+
 
 instance Show Target where
     show (Configure t) = "Configuring " ++ t
@@ -158,7 +158,7 @@ evalCmd opt (AdornedCmd fun) = fun opt
 
 
 data BuildType = Release | Debug
-                    deriving (Data, Typeable, Show, Read, Eq)
+    deriving (Data, Typeable, Show, Read, Eq)
 
 data Action    = Action { basedir :: FilePath, cmds :: [Command], deps :: [Target] }
 data Component = Component { getTarget :: Target,  getAction :: Action }
@@ -178,7 +178,7 @@ into dir cs = Action dir cs []
 
 
 (.|.) :: Action -> [Target] -> Action
-action .|. ts = action{ deps = ts }
+action .|. ts = action { deps = ts }
 
 
 buildTarget :: [Target] -> FilePath -> Int -> ScriptT IO ()
@@ -205,16 +205,14 @@ buildTarget tars base level = do
 
             -- build target
             if dryRun opt
-            then void ( lift $ do
-                            putStrLn $ "cd " ++ base </> path
-                            mapM (putStrLn . evalCmd opt) cmds'
-                      )
-            else void ( lift $ do
-                            setCurrentDirectory $ base </> path
-                            ec <- mapM (system . evalCmd opt) cmds'
-                            unless (all (== ExitSuccess) ec) $
-                                error ("Error: " ++ show target ++ " aborted!")
-                       )
+            then void . lift $ do
+                       putStrLn $ "cd " ++ base </> path
+                       mapM (putStrLn . evalCmd opt) cmds'
+            else void . lift $ do
+                        setCurrentDirectory $ base </> path
+                        ec <- mapM (system . evalCmd opt) cmds'
+                        unless (all (== ExitSuccess) ec) $
+                             error ("Error: " ++ show target ++ " aborted!")
 
 
 simpleBuilder :: Script -> [String] -> IO ()
