@@ -589,7 +589,7 @@ extern int pfq_tx_async_stop(pfq_t *q);
  * A timestamp of 0 nanoseconds means 'immediate transmission'.
  */
 
-extern int pfq_inject(pfq_t *q, const void *ptr, size_t len, uint64_t nsec, int queue);
+extern int pfq_inject(pfq_t *q, const void *ptr, size_t len, uint64_t nsec, int copies, int queue);
 
 
 /*! Store the packet and transmit the packets in the queue. */
@@ -597,16 +597,16 @@ extern int pfq_inject(pfq_t *q, const void *ptr, size_t len, uint64_t nsec, int 
  * The queue is flushed (if required) and the transmission takes place.
  */
 
-extern int pfq_send(pfq_t *q, const void *ptr, size_t len);
+extern int pfq_send(pfq_t *q, const void *ptr, size_t len, int copies);
 
 
 /*! Store the packet and transmit the packets in the queue, asynchronously. */
 /*!
  * The transmission is invoked every @flush_hint packets.
- * When kernel threads are in use, @flush_hint is ignored.
+ * When TX kernel threads are in use, @flush_hint is ignored.
  */
 
-extern int pfq_send_async(pfq_t *q, const void *ptr, size_t len, size_t flush_hint);
+extern int pfq_send_async(pfq_t *q, const void *ptr, size_t len, size_t flush_hint, int copies);
 
 
 /*! Store the packet and transmit it. */
@@ -614,7 +614,7 @@ extern int pfq_send_async(pfq_t *q, const void *ptr, size_t len, size_t flush_hi
  * The transmission takes place at the given timespec time.
  */
 
-extern int pfq_send_at(pfq_t *q, const void *ptr, size_t len, struct timespec *ts);
+extern int pfq_send_at(pfq_t *q, const void *ptr, size_t len, struct timespec *ts, int copies);
 
 
 #endif /* PFQ_H */

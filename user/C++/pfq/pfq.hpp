@@ -1302,9 +1302,9 @@ namespace pfq {
          */
 
         bool
-        send(const_buffer pkt)
+        send(const_buffer pkt, int copies = 1)
         {
-            auto rc = inject(pkt, 0);
+            auto rc = inject(pkt, 0, copies);
             if (data_->tx_num_bind != data_->tx_num_async)
                 tx_queue_flush();
             return rc;
@@ -1314,13 +1314,13 @@ namespace pfq {
         //! Store the packet and transmit the packets in the queue, asynchronously.
         /*!
          * The transmission is invoked every @flush_hint packets.
-         * When kernel threads are in use, @flush_hint is ignored.
+         * When TX kernel threads are in use, @flush_hint is ignored.
          */
 
         bool
-        send_async(const_buffer pkt, size_t flush_hint = 1)
+        send_async(const_buffer pkt, size_t flush_hint, int copies = 1)
         {
-            auto rc = inject(pkt, 0);
+            auto rc = inject(pkt, 0, copies);
 
             if (++data_->tx_attempt == flush_hint) {
 
@@ -1341,13 +1341,13 @@ namespace pfq {
 
         template <typename Clock, typename Duration>
         bool
-        send_at(const_buffer pkt, std::chrono::time_point<Clock, Duration> const &tp)
+        send_at(const_buffer pkt, std::chrono::time_point<Clock, Duration> const &tp, int copies = 1)
         {
             if (data_->tx_num_bind != data_->tx_num_async)
                 throw std::runtime_error("PFQ: send_at not fully async!");
 
             auto ns = std::chrono::duration_cast<std::chrono::nanoseconds>(tp.time_since_epoch()).count();
-            return inject(pkt, ns);
+            return inject(pkt, ns, copies);
         }
 
         //! Schedule the packet for transmission.
@@ -1358,7 +1358,7 @@ namespace pfq {
          */
 
         bool
-        inject(const_buffer buf, uint64_t nsec, int queue = any_queue)
+        inject(const_buffer buf, uint64_t nsec, int copies, int queue = any_queue)
         {
             if (!data_->shm_addr)
                 throw pfq_error("PFQ: inject: socket not enabled");
@@ -1400,8 +1400,10 @@ namespace pfq {
                     < data_->tx_queue_size)
             {
                 auto hdr = (struct pfq_pkthdr_tx *)tx->ptr;
-                hdr->len = len;
                 hdr->nsec = nsec;
+                hdr->len = len;
+                hdr->copies = copies;
+
                 memcpy(hdr+1, buf.first, len);
 
                 reinterpret_cast<char *&>(tx->ptr) += slot_size;

@@ -1079,7 +1079,7 @@ pfq_unbind_tx(pfq_t *q)
 }
 
 int
-pfq_inject(pfq_t *q, const void *buf, size_t len, uint64_t nsec, int queue)
+pfq_inject(pfq_t *q, const void *buf, size_t len, uint64_t nsec, int copies, int queue)
 {
         struct pfq_shared_queue *sh_queue = (struct pfq_shared_queue *)(q->shm_addr);
         struct pfq_tx_queue *tx;
@@ -1116,8 +1116,10 @@ pfq_inject(pfq_t *q, const void *buf, size_t len, uint64_t nsec, int queue)
 		struct pfq_pkthdr_tx *hdr;
 
 		hdr = (struct pfq_pkthdr_tx *)tx->ptr;
-		hdr->len = len;
 		hdr->nsec = nsec;
+		hdr->len = len;
+		hdr->copies = copies;
+
 		memcpy(hdr+1, buf, hdr->len);
 
 		tx->ptr += slot_size;
@@ -1162,9 +1164,9 @@ pfq_tx_async_stop(pfq_t *q)
 
 
 int
-pfq_send(pfq_t *q, const void *ptr, size_t len)
+pfq_send(pfq_t *q, const void *ptr, size_t len, int copies)
 {
-        int rc = pfq_inject(q, ptr, len, 0, Q_ANY_QUEUE);
+        int rc = pfq_inject(q, ptr, len, 0, copies, Q_ANY_QUEUE);
 
 	if(q->tx_num_bind != q->tx_num_async)
 		pfq_tx_queue_flush(q, Q_ANY_QUEUE);
@@ -1174,9 +1176,10 @@ pfq_send(pfq_t *q, const void *ptr, size_t len)
 
 
 int
-pfq_send_async(pfq_t *q, const void *ptr, size_t len, size_t flush_hint)
+pfq_send_async(pfq_t *q, const void *ptr, size_t len, size_t flush_hint, int
+	       copies)
 {
-        int rc = pfq_inject(q, ptr, len, 0, Q_ANY_QUEUE);
+        int rc = pfq_inject(q, ptr, len, 0, copies, Q_ANY_QUEUE);
 
 	if (++q->tx_attempt == flush_hint) {
 
@@ -1191,14 +1194,15 @@ pfq_send_async(pfq_t *q, const void *ptr, size_t len, size_t flush_hint)
 
 
 int
-pfq_send_at(pfq_t *q, const void *ptr, size_t len, struct timespec *ts)
+pfq_send_at(pfq_t *q, const void *ptr, size_t len, struct timespec *ts, int
+	    copies)
 {
 	uint64_t nsec;
         if (q->tx_num_bind != q->tx_num_async)
 		return Q_ERROR(q, "PFQ: send_at not fully async!");
 
 	nsec = (uint64_t)(ts->tv_sec)*1000000000ull + (uint64_t)ts->tv_nsec;
-        return pfq_inject(q, ptr, len, nsec, Q_ANY_QUEUE);
+        return pfq_inject(q, ptr, len, nsec, copies, Q_ANY_QUEUE);
 }
 
 
