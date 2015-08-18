@@ -458,7 +458,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 
 		/* pass the ownership of this skb to the garbage collector */
 
-		buff = GC_make_buff(&local->GC, skb);
+		buff = GC_make_buff(local->GC, skb);
 		if (buff == NULL) {
 			if (printk_ratelimit())
 				printk(KERN_INFO "[PFQ] GC: memory exhausted!\n");
@@ -471,7 +471,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 
 		PFQ_CB(buff)->direct = direct;
 
-		if ((GC_size(&local->GC) < capt_batch_len) &&
+		if ((GC_size(local->GC) < capt_batch_len) &&
 		     (ktime_to_ns(ktime_sub(skb_get_ktime(buff), local->last_rx)) < 1000000))
 		{
 			local_bh_enable();
@@ -481,14 +481,14 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 		local->last_rx = skb_get_ktime(buff);
 	}
 	else {
-                if (GC_size(&local->GC) == 0)
+                if (GC_size(local->GC) == 0)
 		{
 			local_bh_enable();
 			return 0;
 		}
 	}
 
-	return pfq_process_batch(local, &local->GC, cpu);
+	return pfq_process_batch(local, local->GC, cpu);
 }
 
 

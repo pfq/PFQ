@@ -50,20 +50,49 @@ int pfq_percpu_alloc(void)
 		return -ENOMEM;
         }
 
+	printk(KERN_INFO "[PFQ] number of online cpus %d\n", num_online_cpus());
         return 0;
 }
 
 
 void pfq_percpu_free(void)
 {
+        struct pfq_percpu_data *local;
+	int cpu;
+
+	for_each_online_cpu(cpu) {
+                local = per_cpu_ptr(percpu_data, cpu);
+		kfree(local->GC);
+	}
+
 	free_percpu(percpu_data);
 }
 
 
 int pfq_percpu_init(void)
 {
-	int cpu;
+	struct GC_data *GCs[Q_MAX_CPU];
+	int cpu, i, n = 0;
 
+	for_each_online_cpu(cpu) {
+
+		if (n == Q_MAX_CPU) {
+			printk(KERN_ERR "[PFQ] percpu: maximum number of cpu reached (%d)!\n", Q_MAX_CPU);
+			goto err;
+		}
+
+		GCs[n] = (struct GC_data *)kmalloc(sizeof(struct GC_data), GFP_KERNEL);
+		if (!GCs[n]) {
+			printk(KERN_ERR "[PFQ] percpu: could not allocate GC[%d]!\n", n);
+			goto err;
+		}
+		n++;
+	}
+
+
+	/* allocate GCs */
+
+	n = 0;
         for_each_online_cpu(cpu) {
 
                 struct pfq_percpu_data *local;
@@ -80,12 +109,19 @@ int pfq_percpu_init(void)
 
 		add_timer_on(&local->timer, cpu);
 
-		GC_data_init(&local->GC);
+		local->GC = GCs[n++];
+
+		GC_data_init(local->GC);
 
 		preempt_enable();
 	}
 
 	return 0;
+err:
+	for(i = 0; i < n; i++)
+		kfree(GCs[i]);
+
+	return -ENOMEM;
 }
 
 
@@ -106,15 +142,15 @@ int pfq_percpu_fini(void)
 
                 local = per_cpu_ptr(percpu_data, cpu);
 
-		for_each_skbuff(SKBUFF_BATCH_ADDR(local->GC.pool), skb, n)
+		for_each_skbuff(SKBUFF_BATCH_ADDR(local->GC->pool), skb, n)
 		{
 			SPARSE_INC(&memory_stats.os_free);
 			kfree_skb(skb);
 		}
 
-                total += local->GC.pool.len;
+                total += local->GC->pool.len;
 
-		GC_reset(&local->GC);
+		GC_reset(local->GC);
 		del_timer(&local->timer);
 
 		preempt_enable();

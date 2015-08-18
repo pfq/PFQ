@@ -159,20 +159,20 @@ skbuff_t
 pfq_make_buff(struct sk_buff *skb)
 {
 	struct pfq_percpu_data *local = this_cpu_ptr(percpu_data);
-	return GC_make_buff(&local->GC, skb);
+	return GC_make_buff(local->GC, skb);
 }
 
 skbuff_t
 pfq_alloc_buff(size_t size)
 {
 	struct pfq_percpu_data *local = this_cpu_ptr(percpu_data);
-	return GC_alloc_buff(&local->GC, size);
+	return GC_alloc_buff(local->GC, size);
 }
 
 skbuff_t
 pfq_copy_buff(skbuff_t skb)
 {
 	struct pfq_percpu_data *local = this_cpu_ptr(percpu_data);
-	return GC_copy_buff(&local->GC, skb);
+	return GC_copy_buff(local->GC, skb);
 }
 

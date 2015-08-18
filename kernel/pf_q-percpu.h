@@ -50,9 +50,9 @@ struct pfq_percpu_data
 
         int                     sock_cnt;
 
-	struct GC_data		GC;		/* garbage collector */
+	struct GC_data		*GC;
 
-	ktime_t			last_rx;	/* timestamp of the last packet */
+	ktime_t			last_rx;
 
 	struct timer_list	timer;
 
