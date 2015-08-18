@@ -179,14 +179,14 @@ bool traverse_tx_queue(char *ptr, char *begin, char *end, int idx)
 int
 __pfq_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int cpu, int node)
 {
-	size_t disc = 0, tot_sent = 0;
 	struct netdev_queue *txq;
 	struct pfq_tx_queue *txs;
 	struct pfq_percpu_data *local;
 	int hw_queue, swap;
-        int more = 0, err = 0;
-
 	char *ptr, *begin, *end;
+        int more = 0, err = 0,
+            total_sent = 0,
+            disc = 0;
 	ktime_t now;
 
 	/* get the Tx queue */
@@ -270,28 +270,17 @@ __pfq_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int 
 		xmit_more = (++more == xmit_batch_len ? (more = 0, false) : true);
 		do {
 			skb_get(skb);
+
 			if ((err = __pfq_xmit(skb, dev, txq, xmit_more)) < 0) {
 
 				__netif_tx_unlock_bh(txq);
-
-				// if (netif_xmit_frozen_or_drv_stopped(txq)
 				pfq_relax();
-
 				__netif_tx_lock_bh(txq);
-
-#ifdef PFQ_DEBUG
-				{
-					static uint32_t failures = 0;
-					if ((failures++ & ((1<<24)-1))== 0)
-						printk(KERN_INFO "[PFQ] pfq_queue_xmit spinning!\n");
-				}
-#endif
 
 				if (giveup_tx_process()) {
 					pfq_kfree_skb_pool(skb, &local->tx_pool);
 					goto stop;
 				}
-
 			}
 		}
 		while (err < 0);
@@ -304,7 +293,17 @@ __pfq_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int 
 
 		ptr += sizeof(struct pfq_pkthdr_tx) + ALIGN(hdr->len, 8);
 		hdr = (struct pfq_pkthdr_tx *)ptr;
-		tot_sent++;
+
+		if (cpu != Q_NO_KTHREAD) {
+			__sparse_inc(&to->stats.sent, cpu);
+			__sparse_inc(&global_stats.sent, cpu);
+		}
+		else {
+			sparse_inc(&to->stats.sent);
+			sparse_inc(&global_stats.sent);
+		}
+
+		total_sent++;
 	}
 
 	stop:
@@ -325,23 +324,17 @@ __pfq_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int 
 	if (cpu != Q_NO_KTHREAD) {
 		__sparse_add(&to->stats.disc, disc, cpu);
 		__sparse_add(&global_stats.disc, disc, cpu);
-		__sparse_add(&to->stats.sent, tot_sent, cpu);
-		__sparse_add(&global_stats.sent, tot_sent, cpu);
 	}
 	else {
 		sparse_add(&to->stats.disc, disc);
 		sparse_add(&global_stats.disc, disc);
-		sparse_add(&to->stats.sent, tot_sent);
-		sparse_add(&global_stats.sent, tot_sent);
 	}
 
 	/* clear the queue */
-	{
-		struct pfq_pkthdr_tx *hdr = (struct pfq_pkthdr_tx *)begin;
-		hdr->len = 0;
-	}
 
-	return tot_sent;
+	((struct pfq_pkthdr_tx *)begin)->len = 0;
+
+	return total_sent;
 }
 
 
