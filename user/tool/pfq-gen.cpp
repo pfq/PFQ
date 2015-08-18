@@ -778,15 +778,18 @@ try
         auto end   = std::chrono::system_clock::now();
         auto delta = end-begin;
 
-        std::cout << "stats: { " << cur << " } -> user: { "
+        std::cout << "stats: { " << cur << " } -> app: { "
                   << vt100::BOLD
                   << "sent: " << persecond<int64_t>(sent - sent_, delta)            << ' '
                   << "fail: " << persecond<int64_t>(fail-fail_, delta)              << ' '
                   << "band: " << pretty(persecond<double>((band-band_)*8, delta))  << "bit/sec "
                   << "gros: " << pretty(persecond<double>((gros-gros_)*8, delta))  << "bit/sec "
                   << vt100::RESET << " } - "
+                  << "socket: { "
                   << "sent: " << vt100::BOLD << persecond<int64_t>(cur.sent - prec.sent, delta) << vt100::RESET << " pkt/sec - "
-                  << "disc: " << vt100::BOLD << persecond<int64_t>(cur.disc - prec.disc, delta) << vt100::RESET << " pkt/sec" << std::endl;
+                  << "disc: " << vt100::BOLD << persecond<int64_t>(cur.disc - prec.disc, delta) << vt100::RESET << " pkt/sec "
+                  << " }" << std::endl;
+
 
         prec = cur, begin = end;
         sent_ = sent;
