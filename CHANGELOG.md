@@ -102,11 +102,14 @@ PFQ 4.4
 
 PFQ 4.5
 -------
- * HugePages support used by default. 
+ * HugePages support enabled by default. 
  * New binding format for user/tools.
+ * API for pkt transmission improved.
  * Stats of memory pool improved.
+ * Support for i40e driver added.
  * User space tools improved.
  * Performance improvements.
+ * Major regressions fixed.
  * Code cleanup.
  * Bugs fixed.
 
