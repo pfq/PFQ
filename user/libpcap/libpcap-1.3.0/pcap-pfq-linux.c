@@ -1035,7 +1035,7 @@ pfq_inject_linux(pcap_t *handle, const void * buf, size_t size)
 		pfq_tx_async_start(handle->md.pfq.q);
 	}
 
-	int ret = pfq_send_async(handle->md.pfq.q, buf, size, handle->opt.pfq.tx_flush);
+	int ret = pfq_send_async(handle->md.pfq.q, buf, size, handle->opt.pfq.tx_flush, 1);
 	if (ret == -1) {
 		/* snprintf(handle->errbuf, PCAP_ERRBUF_SIZE, "%s", pfq_error(handle->md.pfq.q)); */
 		return PCAP_ERROR;
