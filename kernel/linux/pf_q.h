@@ -256,8 +256,9 @@ struct pfq_pkthdr
 
 struct pfq_pkthdr_tx
 {
-	uint64_t nsec; /* absolute timestamp */
-	size_t   len;
+	uint64_t nsec;		/* absolute timestamp */
+	int	 copies;	/* per-packet copies to send: default 1 */
+	int	 len;
 };
 
 

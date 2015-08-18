@@ -230,6 +230,7 @@ __pfq_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int 
 		struct sk_buff *skb;
 		bool xmit_more;
                 size_t len;
+                int copies;
 
 		/* wait until the Ts */
 
@@ -251,6 +252,8 @@ __pfq_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int 
 
 		len = min_t(size_t, hdr->len, xmit_slot_size);
 
+                copies = hdr->copies;
+
 		skb_reset_tail_pointer(skb);
 		skb->dev = dev;
 		skb->len = 0;
@@ -271,7 +274,7 @@ __pfq_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int 
 		do {
 			skb_get(skb);
 
-			if ((err = __pfq_xmit(skb, dev, txq, xmit_more)) < 0) {
+			if (__pfq_xmit(skb, dev, txq, xmit_more) < 0) {
 
 				__netif_tx_unlock_bh(txq);
 				pfq_relax();
@@ -282,8 +285,9 @@ __pfq_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int 
 					goto stop;
 				}
 			}
+			else copies--;
 		}
-		while (err < 0);
+		while (copies > 0);
 
 		/* return the skb */
 
@@ -295,12 +299,12 @@ __pfq_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int 
 		hdr = (struct pfq_pkthdr_tx *)ptr;
 
 		if (cpu != Q_NO_KTHREAD) {
-			__sparse_inc(&to->stats.sent, cpu);
-			__sparse_inc(&global_stats.sent, cpu);
+			__sparse_add(&to->stats.sent, hdr->copies, cpu);
+			__sparse_add(&global_stats.sent, hdr->copies, cpu);
 		}
 		else {
-			sparse_inc(&to->stats.sent);
-			sparse_inc(&global_stats.sent);
+			sparse_add(&to->stats.sent, hdr->copies);
+			sparse_add(&global_stats.sent, hdr->copies);
 		}
 
 		total_sent++;
