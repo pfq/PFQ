@@ -166,14 +166,14 @@ void send_to_kernel(struct sk_buff *skb)
 static int
 pfq_process_batch(struct pfq_percpu_data * local, struct GC_data *GC_ptr, int cpu)
 {
-	unsigned long long sock_queue[Q_SKBUFF_SHORT_BATCH];
+	unsigned long long sock_queue[Q_SKBUFF_BATCH];
         unsigned long group_mask, socket_mask;
 	struct skb_lazy_targets targets;
         struct sk_buff *skb;
 
         long unsigned n, bit, lb;
         struct pfq_monad monad;
-	skbuff_t buff;
+	struct sk_buff __GC * buff;
 	size_t this_batch_len;
 
 #ifdef PFQ_RX_PROFILE
@@ -181,7 +181,7 @@ pfq_process_batch(struct pfq_percpu_data * local, struct GC_data *GC_ptr, int cp
 #endif
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,9,0))
-	BUILD_BUG_ON_MSG(Q_SKBUFF_SHORT_BATCH > (sizeof(sock_queue[0]) << 3), "skbuff batch overflow");
+	BUILD_BUG_ON_MSG(Q_SKBUFF_BATCH > (sizeof(sock_queue[0]) << 3), "skbuff batch overflow");
 #endif
 
 	this_batch_len = GC_size(GC_ptr);
@@ -196,9 +196,10 @@ pfq_process_batch(struct pfq_percpu_data * local, struct GC_data *GC_ptr, int cp
 #ifdef PFQ_RX_PROFILE
 	start = get_cycles();
 #endif
+
         /* setup all the skbs collected */
 
-	for_each_skbuff(SKBUFF_BATCH_ADDR(GC_ptr->pool), skb, n)
+	for_each_skbuff(SKBUFF_QUEUE(GC_ptr->pool), skb, n)
         {
 		uint16_t queue = skb_rx_queue_recorded(skb) ? skb_get_rx_queue(skb) : 0;
 		unsigned long local_group_mask = pfq_devmap_get_groups(skb->dev->ifindex, queue);
@@ -216,7 +217,7 @@ pfq_process_batch(struct pfq_percpu_data * local, struct GC_data *GC_ptr, int cp
 		struct pfq_group * this_group = pfq_get_group(gid);
 		bool bf_filter_enabled = atomic_long_read(&this_group->bp_filter);
 		bool vlan_filter_enabled = pfq_vlan_filters_enabled(gid);
-		struct pfq_skbuff_short_batch refs = { len:0 };
+		struct pfq_skbuff_batch refs = { len:0 };
 
 		socket_mask = 0;
 
@@ -362,7 +363,7 @@ pfq_process_batch(struct pfq_percpu_data * local, struct GC_data *GC_ptr, int cp
 			struct pfq_sock * so;
 			pfq_id_t id = { i };
 			so= pfq_get_sock_by_id(id);
-			copy_to_endpoint_buffs(so, SKBUFF_BATCH_ADDR(refs), sock_queue[i], cpu, gid);
+			copy_to_endpoint_skbs(so, SKBUFF_QUEUE(refs), sock_queue[i], cpu, gid);
 		})
 	})
 
@@ -379,7 +380,7 @@ pfq_process_batch(struct pfq_percpu_data * local, struct GC_data *GC_ptr, int cp
 
 	/* forward skbs to kernel or to the pool */
 
-	for_each_skbuff(SKBUFF_BATCH_ADDR(GC_ptr->pool), skb, n)
+	for_each_skbuff(SKBUFF_QUEUE(GC_ptr->pool), skb, n)
 	{
 		struct pfq_cb *cb = PFQ_CB(skb);
 
@@ -431,7 +432,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 
 	if (likely(skb))
 	{
-		skbuff_t buff;
+		struct sk_buff __GC * buff;
 
 		/* if required, timestamp the packet now */
 
@@ -870,15 +871,15 @@ static int __init pfq_init_module(void)
 
 	/* check options */
 
-        if (capt_batch_len <= 0 || capt_batch_len > Q_SKBUFF_SHORT_BATCH) {
+        if (capt_batch_len <= 0 || capt_batch_len > Q_SKBUFF_BATCH) {
                 printk(KERN_INFO "[PFQ] capt_batch_len=%d not allowed: valid range (0,%zu]!\n",
-                       capt_batch_len, Q_SKBUFF_SHORT_BATCH);
+                       capt_batch_len, Q_SKBUFF_BATCH);
                 return -EFAULT;
         }
 
-        if (xmit_batch_len <= 0 || xmit_batch_len > Q_SKBUFF_SHORT_BATCH) {
+        if (xmit_batch_len <= 0 || xmit_batch_len > Q_SKBUFF_BATCH) {
                 printk(KERN_INFO "[PFQ] xmit_batch_len=%d not allowed: valid range (0,%zu]!\n",
-                       xmit_batch_len, Q_SKBUFF_SHORT_BATCH);
+                       xmit_batch_len, Q_SKBUFF_BATCH);
                 return -EFAULT;
         }
 

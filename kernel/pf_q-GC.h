@@ -35,7 +35,7 @@
 #include <pf_q-skbuff-batch.h>
 
 
-typedef skbuff_t SkBuff;
+typedef struct sk_buff __GC * SkBuff;
 
 
 struct GC_log
@@ -47,29 +47,29 @@ struct GC_log
 };
 
 
-struct GC_queue_buff
+struct GC_skbuff_queue
 {
         size_t len;
-        skbuff_t queue[Q_SKBUFF_LONG_BATCH];
+        struct sk_buff __GC * queue[Q_GC_POOL_QUEUE_LEN];
 };
 
 
 struct GC_data
 {
-	struct GC_log			log[Q_GC_POOL_QUEUE_LEN];
-	struct pfq_skbuff_long_batch	pool;
+	struct GC_log		log[Q_GC_POOL_QUEUE_LEN];
+	struct GC_skbuff_queue	pool;
 };
 
 
 extern void   GC_reset(struct GC_data *gc);
 
-extern skbuff_t GC_make_buff(struct GC_data *gc, struct sk_buff *skb);
-extern skbuff_t GC_alloc_buff(struct GC_data *gc, size_t size);
-extern skbuff_t GC_copy_buff(struct GC_data *gc, skbuff_t orig);
+extern struct sk_buff __GC * GC_make_buff(struct GC_data *gc, struct sk_buff *skb);
+extern struct sk_buff __GC * GC_alloc_buff(struct GC_data *gc, size_t size);
+extern struct sk_buff __GC * GC_copy_buff(struct GC_data *gc, struct sk_buff __GC * orig);
 
-skbuff_t pfq_make_buff(struct sk_buff *skb);
-skbuff_t pfq_alloc_buff(size_t size);
-skbuff_t pfq_copy_buff(skbuff_t skb);
+struct sk_buff __GC * pfq_make_buff(struct sk_buff *skb);
+struct sk_buff __GC * pfq_alloc_buff(size_t size);
+struct sk_buff __GC * pfq_copy_buff(struct sk_buff __GC * skb);
 
 
 struct skb_lazy_targets;

@@ -68,7 +68,7 @@ pfq_tx_thread(void *_data)
 
         for(;;)
         {
-                __pfq_queue_xmit(data->id, &data->so->tx_opt, dev, cpu, cpu_to_node(cpu));
+                __pfq_sk_queue_xmit(data->id, &data->so->tx_opt, dev, cpu, cpu_to_node(cpu));
 
                 if (kthread_should_stop())
                         break;

@@ -37,28 +37,28 @@ void GC_reset(struct GC_data *gc)
 }
 
 
-skbuff_t
+struct sk_buff __GC *
 GC_make_buff(struct GC_data *gc, struct sk_buff *skb)
 {
-	skbuff_t ret;
+	struct sk_buff __GC * ret;
 
 	if (gc->pool.len >= Q_GC_POOL_QUEUE_LEN) {
 		ret = NULL;
 	}
 	else {
                 PFQ_CB(skb)->log = &gc->log[gc->pool.len];
-		ret = (skbuff_t __force) (gc->pool.queue[gc->pool.len++] = skb);
+		ret = gc->pool.queue[gc->pool.len++] = (struct sk_buff __force __GC *) skb;
 	}
 
 	return ret;
 }
 
 
-skbuff_t
+struct sk_buff __GC *
 GC_alloc_buff(struct GC_data *gc, size_t size)
 {
 	struct sk_buff *skb;
-	skbuff_t ret;
+	struct sk_buff __GC * ret;
 
 	if (gc->pool.len >= Q_GC_POOL_QUEUE_LEN) {
 		pr_devel("[PFQ] GC: pool exhausted!\n");
@@ -79,11 +79,11 @@ GC_alloc_buff(struct GC_data *gc, size_t size)
 }
 
 
-skbuff_t
-GC_copy_buff(struct GC_data *gc, skbuff_t orig)
+struct sk_buff __GC *
+GC_copy_buff(struct GC_data *gc, struct sk_buff __GC * orig)
 {
 	struct sk_buff *skb;
-	skbuff_t ret;
+	struct sk_buff __GC * ret;
 
 	if (gc->pool.len >= Q_GC_POOL_QUEUE_LEN) {
 		pr_devel("[PFQ] GC: pool exhausted!\n");
@@ -155,22 +155,22 @@ GC_get_lazy_targets(struct GC_data *gc, struct skb_lazy_targets *ts)
 }
 
 
-skbuff_t
+struct sk_buff __GC *
 pfq_make_buff(struct sk_buff *skb)
 {
 	struct pfq_percpu_data *local = this_cpu_ptr(percpu_data);
 	return GC_make_buff(local->GC, skb);
 }
 
-skbuff_t
+struct sk_buff __GC *
 pfq_alloc_buff(size_t size)
 {
 	struct pfq_percpu_data *local = this_cpu_ptr(percpu_data);
 	return GC_alloc_buff(local->GC, size);
 }
 
-skbuff_t
-pfq_copy_buff(skbuff_t skb)
+struct sk_buff __GC *
+pfq_copy_buff(struct sk_buff __GC * skb)
 {
 	struct pfq_percpu_data *local = this_cpu_ptr(percpu_data);
 	return GC_copy_buff(local->GC, skb);

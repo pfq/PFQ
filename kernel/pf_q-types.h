@@ -34,14 +34,9 @@
 typedef int __bitwise pfq_id_t;
 typedef int __bitwise pfq_gid_t;
 
+/* skb owned by garbage collector */
 
-#define Q_INVALID_ID	(__force pfq_id_t)-1
-
-#define __GC_owned	__attribute__((address_space(7)))
-
-/* sk_buff owned by garbage collector */
-
-typedef struct sk_buff __GC_owned * skbuff_t;
+#define __GC __attribute__((address_space(7)))
 
 
 #endif  /* PF_Q_TYPES_H */

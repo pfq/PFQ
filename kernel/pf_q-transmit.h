@@ -48,26 +48,27 @@ struct skb_lazy_targets
 };
 
 
-extern int __pfq_queue_xmit(size_t index, struct pfq_tx_opt *to, struct net_device *dev, int cpu, int node);
+extern int __pfq_sk_queue_xmit(size_t index, struct pfq_tx_opt *to, struct net_device *dev, int cpu, int node);
 
 static inline int
-pfq_queue_xmit(size_t index, struct pfq_tx_opt *to, struct net_device *dev)
+pfq_sk_queue_xmit(size_t index, struct pfq_tx_opt *to, struct net_device *dev)
 {
-	return __pfq_queue_xmit(index, to, dev, Q_NO_KTHREAD, NUMA_NO_NODE);
+	return __pfq_sk_queue_xmit(index, to, dev, Q_NO_KTHREAD, NUMA_NO_NODE);
 }
 
 
-extern int pfq_queue_flush(struct pfq_sock *so, int index);
+extern int pfq_sk_queue_flush(struct pfq_sock *so, int index);
 
 
-extern int pfq_batch_xmit(struct pfq_skbuff_batch *skbs, struct net_device *dev, int queue_index);
-extern int pfq_batch_xmit_by_mask(struct pfq_skbuff_batch *skbs, unsigned long long skbs_mask,
+extern int pfq_queue_xmit(struct pfq_skbuff_queue *skbs, struct net_device *dev, int queue_index);
+extern int pfq_queue_xmit_by_mask(struct pfq_skbuff_queue *skbs, unsigned long long skbs_mask,
 				  struct net_device *dev, int queue_index);
+
 extern int pfq_xmit(struct sk_buff *skb, struct net_device *dev, int hw_queue, int more);
 
-extern int pfq_lazy_xmit(skbuff_t skb, struct net_device *dev, int queue_index);
-extern int pfq_batch_lazy_xmit(struct GC_queue_buff *queue, struct net_device *dev, int queue_index);
-extern int pfq_batch_lazy_xmit_by_mask(struct pfq_skbuff_batch *queue, unsigned long long mask,
+extern int pfq_lazy_xmit(struct sk_buff __GC * skb, struct net_device *dev, int queue_index);
+extern int pfq_queue_lazy_xmit(struct pfq_skbuff_queue __GC *queue, struct net_device *dev, int queue_index);
+extern int pfq_queue_lazy_xmit_by_mask(struct pfq_skbuff_queue __GC *queue, unsigned long long mask,
 				       struct net_device *dev, int queue_index);
 
 extern size_t pfq_lazy_xmit_exec(struct GC_data *gc, struct skb_lazy_targets const *t);

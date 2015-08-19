@@ -21,41 +21,63 @@
  *
  ****************************************************************/
 
-#ifndef PF_Q_MACRO_H
-#define PF_Q_MACRO_H
+
+#ifndef PF_Q_SKB_QUEUE_H
+#define PF_Q_SKB_QUEUE_H
 
 #include <pf_q-types.h>
 
-#define Q_MAX_ID                (sizeof(long)<<3)
-#define Q_MAX_GID		(sizeof(long)<<3)
-#define Q_SKBUFF_BATCH		(sizeof(long)<<3)
+struct pfq_skbuff_queue
+{
+        size_t len;
+        struct sk_buff *queue[];
+};
 
-#define Q_GC_LOG_QUEUE_LEN	16
-#define Q_GC_POOL_QUEUE_LEN	512
-
-#define Q_MAX_DEVICE		1024
-#define Q_MAX_HW_QUEUE          256
-
-#define Q_GRACE_PERIOD		100 /* msec */
-
-#define Q_TX_RING_SIZE          (8192)
-#define Q_TX_RING_MASK          (PFQ_TX_RING_SIZE-1)
-
-#define Q_SLOT_ALIGN(s, n)      ((s+(n-1)) & ~(n-1))
-
-#define Q_FUN_SYMB_LEN          256
-
-#define Q_MAX_CPU               256
-#define Q_MAX_CPU_MASK          (Q_MAX_CPU-1)
-
-#define Q_GROUP_PERSIST_MEM	64
-#define Q_GROUP_PERSIST_DATA	1024
-
-#define Q_MAX_POOL_SIZE         16384
-#define Q_MAX_SOCKQUEUE_LEN	262144
+struct pfq_skbuff_queue_GC
+{
+        size_t len;
+        struct sk_buff __GC *queue[];
+};
 
 
-#define Q_INVALID_ID	(__force pfq_id_t)-1
+struct GC_skbuff_queue;
+struct pfq_skbuff_batch;
 
 
-#endif /* PF_Q_MACRO_H */
+#define SKBUFF_QUEUE(q) \
+	__builtin_choose_expr(__builtin_types_compatible_p(typeof(q),struct GC_skbuff_queue),  (struct pfq_skbuff_queue *)&q, \
+	__builtin_choose_expr(__builtin_types_compatible_p(typeof(q),struct pfq_skbuff_batch), (struct pfq_skbuff_queue *)&q, (void) 0))
+
+
+static inline
+void pfq_skbuff_queue_init(struct pfq_skbuff_queue *q)
+{
+	q->len = 0;
+}
+
+
+static inline
+struct sk_buff *
+pfq_skbuff_queue_pop(struct pfq_skbuff_queue *q)
+{
+        if (q->len > 0)
+                return q->queue[--q->len];
+        return NULL;
+}
+
+
+static inline
+void pfq_skbuff_queue_clear(struct pfq_skbuff_queue *q)
+{
+        q->len = 0;
+}
+
+
+static inline
+size_t pfq_skbuff_queue_len(struct pfq_skbuff_queue *q)
+{
+        return q->len;
+}
+
+
+#endif /* PF_Q_SKB_QUEUE_H */

@@ -61,14 +61,14 @@ char *mpsc_slot_ptr(struct pfq_rx_opt *ro, struct pfq_rx_queue *qd, size_t qinde
 
 
 size_t pfq_mpsc_enqueue_batch(struct pfq_rx_opt *ro,
-			      struct pfq_skbuff_batch *skbs,
+			      struct pfq_skbuff_queue __GC *skbs,
 			      unsigned long long mask,
 			      int burst_len,
 			      pfq_gid_t gid)
 {
 	struct pfq_rx_queue *rx_queue = pfq_get_rx_queue(ro);
 	int data, qlen, qindex;
-	struct sk_buff *skb;
+	struct sk_buff __GC *skb;
 
 	size_t n, sent = 0;
 	char *this_slot;
@@ -87,7 +87,7 @@ size_t pfq_mpsc_enqueue_batch(struct pfq_rx_opt *ro,
 	qindex    = Q_SHARED_QUEUE_INDEX(data);
 	this_slot = mpsc_slot_ptr(ro, rx_queue, qindex, qlen);
 
-	for_each_skbuff_bitmask(skbs, mask, skb, n)
+	for_each_skbuff_bitmask((struct pfq_skbuff_queue_GC __force *)skbs, mask, skb, n)
 	{
 		volatile struct pfq_pkthdr *hdr;
 		size_t bytes, slot_index;
@@ -113,19 +113,19 @@ size_t pfq_mpsc_enqueue_batch(struct pfq_rx_opt *ro,
 		/* copy bytes of packet */
 
 #ifdef PFQ_USE_SKB_LINEARIZE
-		if (unlikely(skb_is_nonlinear(skb)))
+		if (unlikely(skb_is_nonlinear(PFQ_SKB(skb))))
 #else
-		if (skb_is_nonlinear(skb))
+		if (skb_is_nonlinear(PFQ_SKB(skb)))
 #endif
 		{
-			if (skb_copy_bits(skb, 0, pkt, bytes) != 0) {
+			if (skb_copy_bits(PFQ_SKB(skb), 0, pkt, bytes) != 0) {
 				printk(KERN_WARNING "[PFQ] BUG! skb_copy_bits failed (bytes=%zu, skb_len=%d mac_len=%d)!\n",
 				       bytes, skb->len, skb->mac_len);
 				return 0;
 			}
 		}
 		else {
-			pfq_skb_copy_from_linear_data(skb, pkt, bytes);
+			pfq_skb_copy_from_linear_data(PFQ_SKB(skb), pkt, bytes);
 		}
 
 		/* copy state from pfq_cb annotation */
@@ -136,7 +136,7 @@ size_t pfq_mpsc_enqueue_batch(struct pfq_rx_opt *ro,
 
 		if (ro->tstamp != 0) {
 			struct timespec ts;
-			skb_get_timestampns(skb, &ts);
+			skb_get_timestampns(PFQ_SKB(skb), &ts);
 			hdr->tstamp.tv.sec  = (uint32_t)ts.tv_sec;
 			hdr->tstamp.tv.nsec = (uint32_t)ts.tv_nsec;
 		}
@@ -146,7 +146,7 @@ size_t pfq_mpsc_enqueue_batch(struct pfq_rx_opt *ro,
 		hdr->len      = (uint16_t)skb->len;
 		hdr->caplen   = (uint16_t)bytes;
 		hdr->vlan.tci = skb->vlan_tci & ~VLAN_TAG_PRESENT;
-		hdr->hw_queue = skb_rx_queue_recorded(skb) ? (uint8_t)(skb_get_rx_queue(skb) & 0xff) : 0;
+		hdr->hw_queue = skb_rx_queue_recorded(PFQ_SKB(skb)) ? (uint8_t)(skb_get_rx_queue(PFQ_SKB(skb)) & 0xff) : 0;
 
 		/* commit the slot (release semantic) */
 

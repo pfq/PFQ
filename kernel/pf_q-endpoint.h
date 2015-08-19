@@ -25,7 +25,6 @@
 #define PF_Q_ENDPOINT_H
 
 struct pfq_sock;
-struct pfq_skbuff_batch;
 
 enum pfq_endpoint_type
 {
@@ -33,9 +32,9 @@ enum pfq_endpoint_type
 	pfq_endpoint_device
 };
 
-extern size_t copy_to_endpoint_buffs(struct pfq_sock *so,
-				     struct pfq_skbuff_batch *pool,
-				     unsigned long long mask,
-				     int cpu, pfq_gid_t gid);
+extern size_t copy_to_endpoint_skbs(struct pfq_sock *so,
+				    struct pfq_skbuff_queue __GC *pool,
+				    unsigned long long mask,
+				    int cpu, pfq_gid_t gid);
 
 #endif /* PF_Q_ENDPOINT_H */
