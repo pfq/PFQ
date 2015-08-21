@@ -46,7 +46,7 @@ int pfq_percpu_alloc(void)
 {
 	percpu_data = alloc_percpu(struct pfq_percpu_data);
 	if (!percpu_data) {
-                printk(KERN_ERR "[PFQ] cound not allocate percpu data!\n");
+                printk(KERN_ERR "[PFQ] could not allocate percpu data!\n");
 		return -ENOMEM;
         }
 
