@@ -70,7 +70,7 @@ static u16 __pfq_pick_tx_default(struct net_device *dev, struct sk_buff *skb)
 /* select the right tx hw queue, and fix it (-1 means any queue) */
 
 static struct netdev_queue *
-pfq_pick_tx(struct net_device *dev, struct sk_buff *skb, int *hw_queue)
+pfq_netdev_get_tx_queue(struct net_device *dev, struct sk_buff *skb, int *hw_queue)
 {
 	if (dev->real_num_tx_queues != 1 && *hw_queue == -1) {
 
@@ -418,7 +418,7 @@ pfq_xmit(struct sk_buff *skb, struct net_device *dev, int hw_queue, int more)
 	 * note: in case the hw_queue is set to any-queue (-1), the driver along the first skb
 	 * select the queue */
 
-	txq = pfq_pick_tx(dev, skb, &hw_queue);
+	txq = pfq_netdev_get_tx_queue(dev, skb, &hw_queue);
 
 	skb_set_queue_mapping(skb, hw_queue);
 
@@ -445,7 +445,7 @@ pfq_queue_xmit(struct pfq_skbuff_queue *skbs, struct net_device *dev, int hw_que
 	 * note: in case the hw_queue is set to any-queue (-1), the driver along the first skb
 	 * select the queue */
 
-	txq = pfq_pick_tx(dev, skbs->queue[0], &hw_queue);
+	txq = pfq_netdev_get_tx_queue(dev, skbs->queue[0], &hw_queue);
 
 	last = pfq_skbuff_queue_len(skbs) - 1;
 
@@ -487,7 +487,7 @@ pfq_queue_xmit_by_mask(struct pfq_skbuff_queue *skbs, unsigned long long mask, s
 	 * note: in case the hw_queue is set to any-queue (-1), the driver along the first skb
 	 * select the queue */
 
-	txq = pfq_pick_tx(dev, skbs->queue[0], &hw_queue);
+	txq = pfq_netdev_get_tx_queue(dev, skbs->queue[0], &hw_queue);
 
 	__netif_tx_lock_bh(txq);
 
@@ -605,7 +605,7 @@ pfq_lazy_xmit_exec(struct GC_data *gc, struct skb_lazy_targets const *ts)
 
 			if (!txq) {
 				queue = skb->queue_mapping;
-				txq = pfq_pick_tx(dev, skb, &queue);
+				txq = pfq_netdev_get_tx_queue(dev, skb, &queue);
 				__netif_tx_lock_bh(txq);
 			}
 
