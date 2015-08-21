@@ -76,12 +76,12 @@ err0:	free_percpu(percpu_data);
 
 void pfq_percpu_free(void)
 {
-        struct pfq_percpu_data *local;
+        struct pfq_percpu_data *data;
 	int cpu;
 
 	for_each_online_cpu(cpu) {
-                local = per_cpu_ptr(percpu_data, cpu);
-		kfree(local->GC);
+                data = per_cpu_ptr(percpu_data, cpu);
+		kfree(data->GC);
 	}
 
 	free_percpu(percpu_data);
@@ -116,23 +116,23 @@ int pfq_percpu_init(void)
 	n = 0;
         for_each_online_cpu(cpu) {
 
-                struct pfq_percpu_data *local;
+                struct pfq_percpu_data *data;
 
 		preempt_disable();
 
-                local = per_cpu_ptr(percpu_data, cpu);
+                data = per_cpu_ptr(percpu_data, cpu);
 
-		init_timer_deferrable(&local->timer);
+		init_timer_deferrable(&data->timer);
 
-		local->timer.function = pfq_timer;
-		local->timer.data = (unsigned long)cpu;
-		local->timer.expires = jiffies + msecs_to_jiffies(100);
+		data->timer.function = pfq_timer;
+		data->timer.data = (unsigned long)cpu;
+		data->timer.expires = jiffies + msecs_to_jiffies(100);
 
-		add_timer_on(&local->timer, cpu);
+		add_timer_on(&data->timer, cpu);
 
-		local->GC = GCs[n++];
+		data->GC = GCs[n++];
 
-		GC_data_init(local->GC);
+		GC_data_init(data->GC);
 
 		preempt_enable();
 	}
@@ -155,24 +155,24 @@ int pfq_percpu_fini(void)
 
         for_each_online_cpu(cpu) {
 
-		struct pfq_percpu_data *local;
+		struct pfq_percpu_data *data;
 	        struct sk_buff *skb;
 		int n = 0;
 
 		preempt_disable();
 
-                local = per_cpu_ptr(percpu_data, cpu);
+                data = per_cpu_ptr(percpu_data, cpu);
 
-		for_each_skbuff(SKBUFF_QUEUE(local->GC->pool), skb, n)
+		for_each_skbuff(SKBUFF_QUEUE(data->GC->pool), skb, n)
 		{
 			SPARSE_INC(&memory_stats.os_free);
 			kfree_skb(skb);
 		}
 
-                total += local->GC->pool.len;
+                total += data->GC->pool.len;
 
-		GC_reset(local->GC);
-		del_timer(&local->timer);
+		GC_reset(data->GC);
+		del_timer(&data->timer);
 
 		preempt_enable();
         }

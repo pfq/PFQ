@@ -167,7 +167,8 @@ static int
 pfq_process_batch(struct pfq_percpu_data *data,
 		  struct pfq_percpu_sock *sock,
 		  struct pfq_percpu_pool *pool,
-		  struct GC_data *GC_ptr, int cpu)
+		  struct GC_data *GC_ptr,
+		  int cpu)
 {
 	unsigned long long sock_queue[Q_SKBUFF_BATCH];
         unsigned long group_mask, socket_mask;
@@ -218,8 +219,8 @@ pfq_process_batch(struct pfq_percpu_data *data,
 		pfq_gid_t gid = { pfq_ctz(bit) };
 
 		struct pfq_group * this_group = pfq_get_group(gid);
-		bool bf_filter_enabled = atomic_long_read(&this_group->bp_filter);
-		bool vlan_filter_enabled = pfq_vlan_filters_enabled(gid);
+		bool bf_filt_enabled = atomic_long_read(&this_group->bp_filter);
+		bool vlan_filt_enabled = pfq_vlan_filters_enabled(gid);
 		struct pfq_skbuff_batch refs = { len:0 };
 
 		socket_mask = 0;
@@ -236,8 +237,7 @@ pfq_process_batch(struct pfq_percpu_data *data,
 
 			/* skip this packet for this group ? */
 
-			if ((PFQ_CB(buff)->group_mask & bit) == 0)
-			{
+			if ((PFQ_CB(buff)->group_mask & bit) == 0) {
 				refs.queue[refs.len++] = NULL;
 				continue;
 			}
@@ -248,7 +248,7 @@ pfq_process_batch(struct pfq_percpu_data *data,
 
 			/* check if bp filter is enabled */
 
-			if (bf_filter_enabled) {
+			if (bf_filt_enabled) {
 				struct sk_filter *bpf = (struct sk_filter *)atomic_long_read(&this_group->bp_filter);
 
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(3,15,0))
@@ -265,7 +265,7 @@ pfq_process_batch(struct pfq_percpu_data *data,
 
 			/* check vlan filter */
 
-			if (vlan_filter_enabled) {
+			if (vlan_filt_enabled) {
 				if (!pfq_check_group_vlan_filter(gid, buff->vlan_tci & ~VLAN_TAG_PRESENT)) {
 					__sparse_inc(&this_group->stats.drop, cpu);
 					refs.queue[refs.len++] = NULL;
@@ -323,9 +323,7 @@ pfq_process_batch(struct pfq_percpu_data *data,
 					eligible_mask |= atomic_long_read(&this_group->sock_mask[class]);
 				})
 
-				if (is_steering(monad.fanout)) {
-
-					/* cache the number of sockets in the mask */
+				if (is_steering(monad.fanout)) { /* cache the number of sockets in the mask */
 
 					if (eligible_mask != sock->eligible) {
 						unsigned long ebit;
@@ -340,6 +338,7 @@ pfq_process_batch(struct pfq_percpu_data *data,
 					if (likely(sock->cnt)) {
 						unsigned int h = monad.fanout.hash ^ (monad.fanout.hash >> 8) ^
 							(monad.fanout.hash >> 16);
+
 						sock_mask |= sock->mask[pfq_fold(h, sock->cnt)];
 					}
 				}
