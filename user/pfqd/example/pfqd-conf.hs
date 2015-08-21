@@ -1,17 +1,26 @@
 module PFQDaemon where
 
+import Config
+
 import Network.PFq.Lang
 import Network.PFq.Default
 import Network.PFq.Experimental
 
-pfq_config =
+config =
+
     [
-        (1, [Dev "eth0"],
-            ip >-> steer_flow
+        Group
+        { gid       = 1
+        , input     = [Dev "eth0"]
+        , output    = []
+        , function  = ip >-> steer_flow
+        },
+
+        Group
+        ( gid       = 2
+        , input     = [Dev "eth0", DevQueue "eth1" 1]
+        , output    = [ ]
+        , function  = icmp
         )
 
-        (2, [Dev "eth0", DevQueue "eth1" 1],
-            icmp
-        )
-
-    ] :: [(Integer, [NetDevice], Function (SkBuff -> Action SkBuff))]
+    ]

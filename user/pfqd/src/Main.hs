@@ -43,6 +43,7 @@ import Foreign.Ptr
 import PFQDaemon
 import Options
 import Daemon
+import Config
 
 
 main :: IO ()
@@ -72,8 +73,8 @@ main = do
 
     if dont_rebuild opts
         then  do
-            unless (null pfq_config) $ infoM "daemon" $ "Loading configuration for " ++ show (length pfq_config) ++ " groups:"
-            forM_ pfq_config (\(gid,devs,comp) -> infoM "daemon" ("    PFQ group " ++ show gid ++ ": " ++ pretty comp ))
+            unless (null config) $ infoM "daemon" $ "Loading configuration for " ++ show (length config) ++ " groups:"
+            forM_ config (\(Group gid devs _ comp) -> infoM "daemon" ("    PFQ group " ++ show gid ++ ": " ++ pretty comp ))
         else  infoM "daemon" "PFQd started!" >> rebuildRestart opts (SLH.close s)
 
     -- run daemon...
@@ -93,8 +94,8 @@ bindDev q gid (DevQueue d hq) = Q.bindGroup q gid d hq
 runQSetup :: Options -> Ptr PFqTag -> IO ()
 runQSetup opts q = do
     infoM "daemon" $ "Running daemon with " ++ show opts
-    infoM "daemon" $ "Loading new configuration for " ++ show (length pfq_config) ++ " group(s)..."
-    forM_ pfq_config $ \(g, devs, comp) -> do
+    infoM "daemon" $ "Loading new configuration for " ++ show (length config) ++ " group(s)..."
+    forM_ config $ \(Group g devs _ comp) -> do
         let gid = fromIntegral g
         infoM "daemon" $ "Setting up group " ++ show gid ++ " for dev " ++ show devs ++ ". Computation: " ++ pretty comp
         Q.joinGroup q gid [class_control] policy_shared
