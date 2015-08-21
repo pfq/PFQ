@@ -46,7 +46,7 @@ void pfq_percpu_free(void);
 struct pfq_percpu_sock
 {
         unsigned long           eligible;
-	unsigned long           mask[1024];
+	unsigned long           mask[Q_MAX_SOCK_MASK];
         int                     cnt;
 
 } __cacheline_aligned;

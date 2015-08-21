@@ -331,13 +331,19 @@ pfq_process_batch(struct pfq_percpu_data *data,
 						sock->cnt = 0;
 						pfq_bitwise_foreach(eligible_mask, ebit,
 						{
+							if (unlikely(sock->cnt == Q_MAX_SOCK_MASK)) {
+								printk(KERN_WARNING "[PFQ] sock_mask counter overflow!\n");
+								break;
+							}
+
 							sock->mask[sock->cnt++] = ebit;
 						})
 					}
 
 					if (likely(sock->cnt)) {
-						unsigned int h = monad.fanout.hash ^ (monad.fanout.hash >> 8) ^
-							(monad.fanout.hash >> 16);
+						unsigned int h = monad.fanout.hash ^
+								(monad.fanout.hash >> 8) ^
+								(monad.fanout.hash >> 16);
 
 						sock_mask |= sock->mask[pfq_fold(h, sock->cnt)];
 					}
@@ -361,11 +367,10 @@ pfq_process_batch(struct pfq_percpu_data *data,
 
 		pfq_bitwise_foreach(socket_mask, lb,
 		{
-			int i = pfq_ctz(lb);
+			pfq_id_t id = pfq_ctz(lb);
 			struct pfq_sock * so;
-			pfq_id_t id = { i };
-			so= pfq_get_sock_by_id(id);
-			copy_to_endpoint_skbs(so, SKBUFF_QUEUE(refs), sock_queue[i], cpu, gid);
+			so = pfq_get_sock_by_id(id);
+			copy_to_endpoint_skbs(so, SKBUFF_QUEUE(refs), sock_queue[(int __force)id], cpu, gid);
 		})
 	})
 

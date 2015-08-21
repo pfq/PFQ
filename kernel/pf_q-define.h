@@ -33,6 +33,7 @@
 #define Q_GC_LOG_QUEUE_LEN	16
 #define Q_GC_POOL_QUEUE_LEN	512
 
+#define Q_MAX_SOCK_MASK		1024
 #define Q_MAX_DEVICE		1024
 #define Q_MAX_HW_QUEUE          256
 
