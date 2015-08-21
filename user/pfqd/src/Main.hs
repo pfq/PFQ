@@ -19,6 +19,8 @@
 --  The full GNU General Public License is included in this distribution in
 --  the file called "COPYING".
 
+{-# LANGUAGE TupleSections #-}
+
 import Control.Concurrent
 import Control.Monad
 import Control.Exception as E
@@ -37,6 +39,7 @@ import System.Directory
 import Network.PFq as Q
 import Network.PFq.Lang
 
+import Foreign.Marshal.Utils
 import Foreign.ForeignPtr
 import Foreign.Ptr
 
@@ -79,27 +82,48 @@ main = do
 
     -- run daemon...
 
-    runDetached Nothing DevNull $
-        (Q.openDefault >>= \fp ->
-            withForeignPtr fp $ \q -> runQSetup opts q >> daemon opts (SLH.close s >> Q.close q))
-            `E.catch` (\e -> errorM "daemon" (show (e :: SomeException)) >> daemon opts (SLH.close s))
+    let negrs = countEgress config
+    infoM "daemon" ("Total number of egress port: " ++ show negrs)
+
+    runDetached Nothing DevNull $ do
+        fps <- replicateM (countEgress config) Q.openDefault
+        withMany withForeignPtr fps $ \egrs ->
+            (Q.openDefault >>= \fp ->
+                withForeignPtr fp $ \ctrl -> do
+                    runQSetup opts ctrl egrs
+                    foreverDaemon opts (SLH.close s >> Q.close ctrl >> mapM_ Q.close egrs))
+                `E.catch` (\e -> errorM "daemon" (show (e :: SomeException)) >> foreverDaemon opts (SLH.close s))
 
 
-bindDev :: Ptr PFqTag -> Int -> NetDevice ->  IO ()
-bindDev q gid (Dev d) = Q.bindGroup q gid d (-1)
-bindDev q gid (DevQueue d hq) = Q.bindGroup q gid d hq
+countEgress :: [Group] -> Int
+countEgress gs = sum $ map (\Group{ output = out } -> length out) gs
 
 
+bindInDev :: Ptr PFqTag -> Int -> NetDevice ->  IO ()
+bindInDev q gid (Dev d) = Q.bindGroup q gid d (-1)
+bindInDev q gid (DevQueue d hq) = Q.bindGroup q gid d hq
 
-runQSetup :: Options -> Ptr PFqTag -> IO ()
-runQSetup opts q = do
+
+bindOutDev :: Ptr PFqTag -> (Int, NetDevice) ->  IO ()
+bindOutDev q par | (gid, Dev d)         <- par = bindEgress q gid d (-1)
+                 | (gid, DevQueue d hq) <- par = bindEgress q gid d hq
+    where bindEgress q gid dev queue = do
+            infoM "daemon" ("    egress bind on dev " ++ dev ++ ", port " ++ show queue)
+            Q.joinGroup q gid [class_default] policy_shared
+            Q.egressBind q dev queue
+
+
+runQSetup :: Options -> Ptr PFqTag -> [Ptr PFqTag] -> IO ()
+runQSetup opts ctrl egrs = do
     infoM "daemon" $ "Running daemon with " ++ show opts
     infoM "daemon" $ "Loading new configuration for " ++ show (length config) ++ " group(s)..."
-    forM_ config $ \(Group g devs _ comp) -> do
+    let egrs' = zip egrs (concatMap (\Group {output = out, gid = gid} ->  map (gid,) out) config)
+    infoM "daemon" $ "Setting up egress port: " ++ show egrs'
+    mapM_ (uncurry bindOutDev) egrs'
+    forM_ config $ \(Group g ins _ comp) -> do
         let gid = fromIntegral g
-        infoM "daemon" $ "Setting up group " ++ show gid ++ " for dev " ++ show devs ++ ". Computation: " ++ pretty comp
-        Q.joinGroup q gid [class_control] policy_shared
-        Q.groupComputation q gid comp
-        forM_ devs $ \dev -> bindDev q gid dev
-
+        infoM "daemon" $ "Setting up group " ++ show gid ++ " for dev " ++ show ins ++ ". Computation: " ++ pretty comp
+        Q.joinGroup ctrl gid [class_control] policy_shared
+        Q.groupComputation ctrl gid comp
+        forM_ ins $ \dev -> bindInDev ctrl gid dev
 

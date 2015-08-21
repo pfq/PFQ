@@ -45,8 +45,8 @@ import PFQDaemon
 import Network.PFq as Q
 
 
-daemon :: Options -> IO () -> IO ()
-daemon opts closefds = forever $ do
+foreverDaemon :: Options -> IO () -> IO ()
+foreverDaemon opts closefds = forever $ do
     (src, dst) <- getConfigFiles opts
     new <- newerFile src dst
     when new $ rebuildRestart opts closefds
