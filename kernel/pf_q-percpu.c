@@ -38,6 +38,8 @@
 
 
 struct pfq_percpu_data __percpu    * percpu_data;
+struct pfq_percpu_sock __percpu    * percpu_sock;
+struct pfq_percpu_pool __percpu    * percpu_pool;
 
 extern void pfq_timer (unsigned long);
 
@@ -50,8 +52,25 @@ int pfq_percpu_alloc(void)
 		return -ENOMEM;
         }
 
+	percpu_sock = alloc_percpu(struct pfq_percpu_sock);
+	if (!percpu_sock) {
+                printk(KERN_ERR "[PFQ] could not allocate percpu sock!\n");
+                goto err0;
+        }
+
+	percpu_pool = alloc_percpu(struct pfq_percpu_pool);
+	if (!percpu_pool) {
+                printk(KERN_ERR "[PFQ] could not allocate percpu pool!\n");
+                goto err1;
+        }
+
 	printk(KERN_INFO "[PFQ] number of online cpus %d\n", num_online_cpus());
         return 0;
+
+err1:	free_percpu(percpu_sock);
+err0:	free_percpu(percpu_data);
+
+	return -ENOMEM;
 }
 
 
@@ -66,6 +85,8 @@ void pfq_percpu_free(void)
 	}
 
 	free_percpu(percpu_data);
+	free_percpu(percpu_sock);
+	free_percpu(percpu_pool);
 }
 
 

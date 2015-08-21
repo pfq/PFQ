@@ -164,7 +164,10 @@ void send_to_kernel(struct sk_buff *skb)
 
 
 static int
-pfq_process_batch(struct pfq_percpu_data * local, struct GC_data *GC_ptr, int cpu)
+pfq_process_batch(struct pfq_percpu_data *data,
+		  struct pfq_percpu_sock *sock,
+		  struct pfq_percpu_pool *pool,
+		  struct GC_data *GC_ptr, int cpu)
 {
 	unsigned long long sock_queue[Q_SKBUFF_BATCH];
         unsigned long group_mask, socket_mask;
@@ -324,20 +327,20 @@ pfq_process_batch(struct pfq_percpu_data * local, struct GC_data *GC_ptr, int cp
 
 					/* cache the number of sockets in the mask */
 
-					if (eligible_mask != local->eligible_mask) {
+					if (eligible_mask != sock->eligible) {
 						unsigned long ebit;
-						local->eligible_mask = eligible_mask;
-						local->sock_cnt = 0;
+						sock->eligible = eligible_mask;
+						sock->cnt = 0;
 						pfq_bitwise_foreach(eligible_mask, ebit,
 						{
-							local->sock_mask[local->sock_cnt++] = ebit;
+							sock->mask[sock->cnt++] = ebit;
 						})
 					}
 
-					if (likely(local->sock_cnt)) {
+					if (likely(sock->cnt)) {
 						unsigned int h = monad.fanout.hash ^ (monad.fanout.hash >> 8) ^
 							(monad.fanout.hash >> 16);
-						sock_mask |= local->sock_mask[pfq_fold(h, local->sock_cnt)];
+						sock_mask |= sock->mask[pfq_fold(h, sock->cnt)];
 					}
 				}
 				else {  /* clone or continue ... */
@@ -391,7 +394,7 @@ pfq_process_batch(struct pfq_percpu_data * local, struct GC_data *GC_ptr, int cp
 			send_to_kernel(skb);
 		}
 		else {
-			pfq_kfree_skb_pool(skb, &local->rx_pool);
+			pfq_kfree_skb_pool(skb, &pool->rx_pool);
 		}
 	}
 
@@ -412,7 +415,9 @@ pfq_process_batch(struct pfq_percpu_data * local, struct GC_data *GC_ptr, int cp
 static int
 pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 {
-	struct pfq_percpu_data * local;
+	struct pfq_percpu_data * data;
+	struct pfq_percpu_sock * sock;
+	struct pfq_percpu_pool * pool;
 	int cpu;
 
 	/* if no socket is open drop the packet */
@@ -428,7 +433,8 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
         local_bh_disable();
 
         cpu = smp_processor_id();
-	local = per_cpu_ptr(percpu_data, cpu);
+
+	data = per_cpu_ptr(percpu_data, cpu);
 
 	if (likely(skb))
 	{
@@ -459,7 +465,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 
 		/* pass the ownership of this skb to the garbage collector */
 
-		buff = GC_make_buff(local->GC, skb);
+		buff = GC_make_buff(data->GC, skb);
 		if (buff == NULL) {
 			if (printk_ratelimit())
 				printk(KERN_INFO "[PFQ] GC: memory exhausted!\n");
@@ -472,24 +478,27 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 
 		PFQ_CB(buff)->direct = direct;
 
-		if ((GC_size(local->GC) < capt_batch_len) &&
-		     (ktime_to_ns(ktime_sub(skb_get_ktime(buff), local->last_rx)) < 1000000))
+		if ((GC_size(data->GC) < capt_batch_len) &&
+		     (ktime_to_ns(ktime_sub(skb_get_ktime(buff), data->last_rx)) < 1000000))
 		{
 			local_bh_enable();
 			return 0;
 		}
 
-		local->last_rx = skb_get_ktime(buff);
+		data->last_rx = skb_get_ktime(buff);
 	}
 	else {
-                if (GC_size(local->GC) == 0)
+                if (GC_size(data->GC) == 0)
 		{
 			local_bh_enable();
 			return 0;
 		}
 	}
 
-	return pfq_process_batch(local, local->GC, cpu);
+	sock = per_cpu_ptr(percpu_sock, cpu);
+	pool = per_cpu_ptr(percpu_pool, cpu);
+
+	return pfq_process_batch(data, sock, pool, data->GC, cpu);
 }
 
 
@@ -541,12 +550,12 @@ out:
 
 void pfq_timer(unsigned long cpu)
 {
-	struct pfq_percpu_data *local;
+	struct pfq_percpu_data *data;
 
 	pfq_receive(NULL, NULL, 0);
 
-	local = per_cpu_ptr(percpu_data, cpu);
-	mod_timer_pinned(&local->timer, jiffies + msecs_to_jiffies(100));
+	data = per_cpu_ptr(percpu_data, cpu);
+	mod_timer_pinned(&data->timer, jiffies + msecs_to_jiffies(100));
 }
 
 

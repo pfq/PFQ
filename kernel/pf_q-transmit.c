@@ -181,7 +181,7 @@ __pfq_sk_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, i
 {
 	struct netdev_queue *txq;
 	struct pfq_tx_queue *txs;
-	struct pfq_percpu_data *local;
+	struct pfq_percpu_pool *pool;
 	int hw_queue, swap;
 	char *ptr, *begin, *end;
         int more = 0, err = 0,
@@ -201,7 +201,7 @@ __pfq_sk_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, i
 
 	/* get local cpu data */
 
-	local = this_cpu_ptr(percpu_data);
+	pool = this_cpu_ptr(percpu_pool);
 
 	/* swap the soft Tx queue */
 
@@ -281,7 +281,7 @@ __pfq_sk_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, i
 				__netif_tx_lock_bh(txq);
 
 				if (giveup_tx_process()) {
-					pfq_kfree_skb_pool(skb, &local->tx_pool);
+					pfq_kfree_skb_pool(skb, &pool->tx_pool);
 					goto stop;
 				}
 			}
@@ -291,7 +291,7 @@ __pfq_sk_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, i
 
 		/* return the skb */
 
-		pfq_kfree_skb_pool(skb, &local->tx_pool);
+		pfq_kfree_skb_pool(skb, &pool->tx_pool);
 
 		/* move ptr to the next packet */
 

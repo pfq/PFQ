@@ -36,8 +36,8 @@ void pfq_skb_pool_enable(bool value)
 	smp_wmb();
 	for_each_online_cpu(cpu)
 	{
-		struct pfq_percpu_data *this_cpu = per_cpu_ptr(percpu_data, cpu);
-		atomic_set(&this_cpu->enable_skb_pool, value);
+		struct pfq_percpu_pool *pool = per_cpu_ptr(percpu_pool, cpu);
+		atomic_set(&pool->enable, value);
 	}
 	smp_wmb();
 }
@@ -48,10 +48,10 @@ int pfq_skb_pool_init_all(void)
 	int cpu;
 	for_each_online_cpu(cpu)
 	{
-		struct pfq_percpu_data *this_cpu = per_cpu_ptr(percpu_data, cpu);
-		if (pfq_skb_pool_init(&this_cpu->tx_pool, skb_pool_size) != 0)
+		struct pfq_percpu_pool *pool = per_cpu_ptr(percpu_pool, cpu);
+		if (pfq_skb_pool_init(&pool->tx_pool, skb_pool_size) != 0)
 			return -ENOMEM;
-		if (pfq_skb_pool_init(&this_cpu->rx_pool, skb_pool_size) != 0)
+		if (pfq_skb_pool_init(&pool->rx_pool, skb_pool_size) != 0)
 			return -ENOMEM;
 	}
 
@@ -66,9 +66,9 @@ int pfq_skb_pool_free_all(void)
 	printk(KERN_INFO "[PFQ] flushing skbuff memory pool...\n");
 	for_each_online_cpu(cpu)
 	{
-		struct pfq_percpu_data *local = per_cpu_ptr(percpu_data, cpu);
-		total += pfq_skb_pool_free(&local->rx_pool);
-		total += pfq_skb_pool_free(&local->tx_pool);
+		struct pfq_percpu_pool *pool = per_cpu_ptr(percpu_pool, cpu);
+		total += pfq_skb_pool_free(&pool->rx_pool);
+		total += pfq_skb_pool_free(&pool->tx_pool);
 	}
 
 	return total;
@@ -82,9 +82,9 @@ int pfq_skb_pool_flush_all(void)
 	printk(KERN_INFO "[PFQ] flushing skbuff memory pool...\n");
 	for_each_online_cpu(cpu)
 	{
-		struct pfq_percpu_data *local = per_cpu_ptr(percpu_data, cpu);
-		total += pfq_skb_pool_flush(&local->rx_pool);
-		total += pfq_skb_pool_flush(&local->tx_pool);
+		struct pfq_percpu_pool *pool = per_cpu_ptr(percpu_pool, cpu);
+		total += pfq_skb_pool_flush(&pool->rx_pool);
+		total += pfq_skb_pool_flush(&pool->tx_pool);
 	}
 
 	return total;

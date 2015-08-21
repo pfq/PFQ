@@ -43,27 +43,37 @@ int pfq_percpu_alloc(void);
 void pfq_percpu_free(void);
 
 
-struct pfq_percpu_data
+struct pfq_percpu_sock
 {
-        unsigned long           eligible_mask;
-        unsigned long           sock_mask [Q_MAX_ID];
+        unsigned long           eligible;
+	unsigned long           mask[1024];
+        int                     cnt;
 
-        int                     sock_cnt;
+} __cacheline_aligned;
 
-	struct GC_data		*GC;
 
-	ktime_t			last_rx;
+struct pfq_percpu_pool
+{
+        atomic_t                enable;
 
-	struct timer_list	timer;
-
-        atomic_t                enable_skb_pool;
-        struct pfq_skb_pool	tx_pool;
+	struct pfq_skb_pool	tx_pool;
         struct pfq_skb_pool	rx_pool;
 
 } ____cacheline_aligned;
 
 
+struct pfq_percpu_data
+{
+	struct GC_data		*GC;
+	ktime_t			last_rx;
+	struct timer_list	timer;
+
+} ____cacheline_aligned;
+
+
 extern struct pfq_percpu_data __percpu * percpu_data;
+extern struct pfq_percpu_sock __percpu * percpu_sock;
+extern struct pfq_percpu_pool __percpu * percpu_pool;
 
 
 #endif /* PF_Q_PERCPU_H */

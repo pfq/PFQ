@@ -223,10 +223,10 @@ static inline
 struct sk_buff * pfq_alloc_skb(unsigned int size, gfp_t priority)
 {
 #ifdef PFQ_USE_SKB_POOL
-	struct pfq_percpu_data *this_cpu = this_cpu_ptr(percpu_data);
+	struct pfq_percpu_pool *pool = this_cpu_ptr(percpu_pool);
 
-	if (likely(atomic_read(&this_cpu->enable_skb_pool)))
-		return ____pfq_alloc_skb_pool(size, priority, 0, NUMA_NO_NODE, &this_cpu->rx_pool);
+	if (likely(atomic_read(&pool->enable)))
+		return ____pfq_alloc_skb_pool(size, priority, 0, NUMA_NO_NODE, &pool->rx_pool);
 
 	SPARSE_INC(&memory_stats.os_alloc);
 #endif
@@ -238,10 +238,10 @@ static inline
 struct sk_buff * pfq_tx_alloc_skb(unsigned int size, gfp_t priority, int node)
 {
 #ifdef PFQ_USE_SKB_POOL
-	struct pfq_percpu_data *this_cpu = this_cpu_ptr(percpu_data);
+	struct pfq_percpu_pool *pool = this_cpu_ptr(percpu_pool);
 
-	if (likely(atomic_read(&this_cpu->enable_skb_pool)))
-		return ____pfq_alloc_skb_pool(size, priority, 0, node, &this_cpu->tx_pool);
+	if (likely(atomic_read(&pool->enable)))
+		return ____pfq_alloc_skb_pool(size, priority, 0, node, &pool->tx_pool);
 
 	SPARSE_INC(&memory_stats.os_alloc);
 #endif
