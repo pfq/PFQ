@@ -17,10 +17,10 @@ config =
         },
 
         Group
-        ( gid       = 2
+        { gid       = 2
         , input     = [Dev "eth0", DevQueue "eth1" 1]
         , output    = [ ]
         , function  = icmp
-        )
+        }
 
     ]
