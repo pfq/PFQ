@@ -172,6 +172,8 @@ struct pfq_sock
         int			egress_index;
         int			egress_queue;
 
+	int			weight;
+
 	struct pfq_shmem_descr  shmem;
 
         struct pfq_rx_opt	rx_opt;

@@ -176,6 +176,7 @@ pfq_process_batch(struct pfq_percpu_data *data,
         struct sk_buff *skb;
 
         long unsigned n, bit, lb;
+
         struct pfq_monad monad;
 	struct sk_buff __GC * buff;
 	size_t this_batch_len;
@@ -331,12 +332,14 @@ pfq_process_batch(struct pfq_percpu_data *data,
 						sock->cnt = 0;
 						pfq_bitwise_foreach(eligible_mask, ebit,
 						{
-							if (unlikely(sock->cnt == Q_MAX_SOCK_MASK)) {
-								printk(KERN_WARNING "[PFQ] sock_mask counter overflow!\n");
-								break;
-							}
+							pfq_id_t id = pfq_ctz(ebit);
+							struct pfq_sock * so = pfq_get_sock_by_id(id);
+                                                        int i;
 
-							sock->mask[sock->cnt++] = ebit;
+							/* max weight = Q_MAX_SOCK_MASK / Q_MAX_ID */
+
+							for(i = 0; i < so->weight; ++i)
+								sock->mask[sock->cnt++] = ebit;
 						})
 					}
 
@@ -368,8 +371,7 @@ pfq_process_batch(struct pfq_percpu_data *data,
 		pfq_bitwise_foreach(socket_mask, lb,
 		{
 			pfq_id_t id = pfq_ctz(lb);
-			struct pfq_sock * so;
-			so = pfq_get_sock_by_id(id);
+			struct pfq_sock * so = pfq_get_sock_by_id(id);
 			copy_to_endpoint_skbs(so, SKBUFF_QUEUE(refs), sock_queue[(int __force)id], cpu, gid);
 		})
 	})
@@ -827,11 +829,15 @@ pfq_create(
                 return -EBUSY;
         }
 
+	/* default weight */
+
+	so->weight = 1;
+
         /* memory mapped queues are allocated later, when the socket is enabled */
 
-	so->egress_type  = pfq_endpoint_socket;
-	so->egress_index = 0;
-	so->egress_queue = 0;
+	so->egress_type   = pfq_endpoint_socket;
+	so->egress_index  = 0;
+	so->egress_queue  = 0;
 
         so->shmem.addr = NULL;
         so->shmem.size = 0;
