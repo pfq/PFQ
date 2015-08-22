@@ -102,18 +102,19 @@ static inline void smp_wmb() { barrier(); }
 #define Q_SO_SET_RX_SLOTS		4
 #define Q_SO_SET_RX_OFFSET		5
 #define Q_SO_SET_TX_SLOTS		7
+#define Q_SO_SET_WEIGHT			8
 
-#define Q_SO_GROUP_BIND			8
-#define Q_SO_GROUP_UNBIND		9
-#define Q_SO_GROUP_JOIN			10
-#define Q_SO_GROUP_LEAVE		11
-#define Q_SO_GROUP_FPROG		12      /* Berkeley packet filter */
-#define Q_SO_GROUP_VLAN_FILT_TOGGLE	13      /* enable/disable VLAN filters */
-#define Q_SO_GROUP_VLAN_FILT		14      /* enable/disable VLAN ID filters */
-#define Q_SO_GROUP_FUNCTION		15
+#define Q_SO_GROUP_BIND			10
+#define Q_SO_GROUP_UNBIND		11
+#define Q_SO_GROUP_JOIN			12
+#define Q_SO_GROUP_LEAVE		13
+#define Q_SO_GROUP_FPROG		14      /* Berkeley packet filter */
+#define Q_SO_GROUP_VLAN_FILT_TOGGLE	15      /* enable/disable VLAN filters */
+#define Q_SO_GROUP_VLAN_FILT		16      /* enable/disable VLAN ID filters */
+#define Q_SO_GROUP_FUNCTION		17
 
-#define Q_SO_EGRESS_BIND		16
-#define Q_SO_EGRESS_UNBIND		17
+#define Q_SO_EGRESS_BIND		18
+#define Q_SO_EGRESS_UNBIND		19
 
 #define Q_SO_GET_ID			20
 #define Q_SO_GET_STATUS			21      /* 1 = enabled, 0 = disabled */
@@ -128,12 +129,13 @@ static inline void smp_wmb() { barrier(); }
 #define Q_SO_GET_GROUPS			30
 #define Q_SO_GET_GROUP_STATS		31
 #define Q_SO_GET_GROUP_COUNTERS		32
+#define Q_SO_GET_WEIGHT			33
 
-#define Q_SO_TX_BIND			33
-#define Q_SO_TX_UNBIND			34
-#define Q_SO_TX_FLUSH			35
-#define Q_SO_TX_ASYNC_START		36
-#define Q_SO_TX_ASYNC_STOP		37
+#define Q_SO_TX_BIND			40
+#define Q_SO_TX_UNBIND			41
+#define Q_SO_TX_FLUSH			42
+#define Q_SO_TX_ASYNC_START		43
+#define Q_SO_TX_ASYNC_STOP		44
 
 
 /* general placeholders */

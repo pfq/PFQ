@@ -312,6 +312,15 @@ int pfq_getsockopt(struct socket *sock,
                         return -EFAULT;
         } break;
 
+        case Q_SO_GET_WEIGHT:
+        {
+                if (len != sizeof(so->weight))
+                        return -EINVAL;
+
+                if (copy_to_user(optval, &so->weight, sizeof(so->weight)))
+                        return -EFAULT;
+        } break;
+
         default:
                 return -EFAULT;
         }
@@ -548,6 +557,28 @@ int pfq_setsockopt(struct socket *sock,
                 so->tx_opt.queue_size = slots;
 
                 pr_devel("[PFQ|%d] tx_queue slots=%zu\n", so->id, so->tx_opt.queue_size);
+        } break;
+
+        case Q_SO_SET_WEIGHT:
+        {
+                int weight;
+
+                if (optlen != sizeof(so->weight))
+                        return -EINVAL;
+
+                if (copy_from_user(&weight, optval, optlen))
+                        return -EFAULT;
+
+		if (weight < 1 || weight > (Q_MAX_SOCK_MASK/Q_MAX_ID)) {
+                        printk(KERN_INFO "[PFQ|%d] weight %d out of range: [1, %lu]\n", so->id, weight,
+                               Q_MAX_SOCK_MASK/Q_MAX_ID);
+                        return -EPERM;
+		}
+
+                so->weight = weight;
+
+                pr_devel("[PFQ|%d] weight set to %d.\n", so->id, weight);
+
         } break;
 
         case Q_SO_GROUP_LEAVE:
