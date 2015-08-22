@@ -625,6 +625,26 @@ namespace pfq {
            return ret;
         }
 
+        //! Return the weight of the socket used during the steering phase.
+
+        int
+        weight() const
+        {
+           int w; socklen_t size = sizeof(w);
+           if (::getsockopt(fd_, PF_Q, Q_SO_GET_WEIGHT, &w, &size) == -1)
+                throw pfq_error(errno, "PFQ: get socket weight");
+           return w;
+        }
+
+        //! Set the weight of the socket used during the steering phase.
+
+        void
+        weight(int w)
+        {
+           if (::setsockopt(fd_, PF_Q, Q_SO_SET_WEIGHT, &w, sizeof(w)) == -1)
+                throw pfq_error(errno, "PFQ: set socket weight");
+        }
+
         //! Specify the capture length of packets, in bytes.
         /*!
          * Capture length must be set before the socket is enabled to capture.

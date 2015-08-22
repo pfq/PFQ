@@ -111,6 +111,9 @@ module Network.PFq
         setTimestamp,
         getTimestamp,
 
+        setWeight,
+        getWeight,
+
         setPromisc,
 
         getCaplen,
@@ -531,6 +534,23 @@ setTimestamp :: Ptr PFqTag
 setTimestamp hdl toggle = do
     let value = if toggle then 1 else 0
     pfq_timestamp_enable hdl value >>= throwPFqIf_ hdl (== -1)
+
+
+-- |Set the weight of the socket used during the steering phase.
+
+setWeight :: Ptr PFqTag
+          -> Int    -- ^ weight of socket
+          -> IO ()
+setWeight hdl value = do
+    pfq_set_weight hdl (fromIntegral value) >>= throwPFqIf_ hdl (== -1)
+
+
+-- |Get the weight of the socket used during the steering phase.
+
+getWeight :: Ptr PFqTag
+          -> IO Int
+getWeight hdl =
+    liftM fromIntegral (pfq_get_weight hdl >>= throwPFqIf hdl (== -1))
 
 
 -- |Check whether the timestamping for packets is enabled.
@@ -1087,6 +1107,9 @@ foreign import ccall unsafe pfq_is_timestamp_enabled :: Ptr PFqTag -> IO CInt
 
 foreign import ccall unsafe pfq_set_caplen          :: Ptr PFqTag -> CSize -> IO CInt
 foreign import ccall unsafe pfq_get_caplen          :: Ptr PFqTag -> IO CPtrdiff
+
+foreign import ccall unsafe pfq_set_weight          :: Ptr PFqTag -> CInt -> IO CInt
+foreign import ccall unsafe pfq_get_weight          :: Ptr PFqTag -> IO CInt
 
 foreign import ccall unsafe pfq_get_maxlen          :: Ptr PFqTag -> IO CPtrdiff
 

@@ -479,6 +479,27 @@ pfq_is_timestamp_enabled(pfq_t const *q)
 
 
 int
+pfq_set_weight(pfq_t *q, int value)
+{
+	if (setsockopt(q->fd, PF_Q, Q_SO_SET_WEIGHT, &value, sizeof(value)) == -1) {
+		return Q_ERROR(q, "PFQ: set socket weight");
+	}
+	return Q_OK(q);
+}
+
+
+int
+pfq_get_weight(pfq_t const *q)
+{
+	int ret; socklen_t size = sizeof(ret);
+
+	if (getsockopt(q->fd, PF_Q, Q_SO_GET_WEIGHT, &ret, &size) == -1) {
+	        return Q_ERROR(q, "PFQ: get socket weight");
+	}
+	return Q_VALUE(q, ret);
+}
+
+int
 pfq_ifindex(pfq_t const *q, const char *dev)
 {
 	struct ifreq ifreq_io;

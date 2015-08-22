@@ -313,6 +313,15 @@ extern int pfq_timestamp_enable(pfq_t *q, int value);
 extern int pfq_is_timestamp_enabled(pfq_t const *q);
 
 
+/*! Set the weight of the socket used during the steering phase. */
+
+extern int pfq_set_weight(pfq_t *q, int value);
+
+/*! Return the weight of the socket used during the steering phase. */
+
+extern int pfq_get_weight(pfq_t const *q);
+
+
 /*! Specify the capture length of packets, in bytes. */
 /*!
  * Capture length must be set before the socket is enabled.
