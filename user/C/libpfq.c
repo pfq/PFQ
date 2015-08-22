@@ -458,8 +458,7 @@ pfq_is_enabled(pfq_t const *q)
 int
 pfq_timestamp_enable(pfq_t *q, int value)
 {
-	int ts = value;
-	if (setsockopt(q->fd, PF_Q, Q_SO_SET_RX_TSTAMP, &ts, sizeof(ts)) == -1) {
+	if (setsockopt(q->fd, PF_Q, Q_SO_SET_RX_TSTAMP, &value, sizeof(value)) == -1) {
 		return Q_ERROR(q, "PFQ: set timestamp mode");
 	}
 	return Q_OK(q);
