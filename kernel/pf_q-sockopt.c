@@ -561,7 +561,7 @@ int pfq_setsockopt(struct socket *sock,
 
         case Q_SO_SET_WEIGHT:
         {
-                int weight;
+                int cpu, weight;
 
                 if (optlen != sizeof(so->weight))
                         return -EINVAL;
@@ -570,12 +570,20 @@ int pfq_setsockopt(struct socket *sock,
                         return -EFAULT;
 
 		if (weight < 1 || weight > (Q_MAX_SOCK_MASK/Q_MAX_ID)) {
-                        printk(KERN_INFO "[PFQ|%d] weight %d out of range: [1, %lu]\n", so->id, weight,
+                        printk(KERN_INFO "[PFQ|%d] weight=%d: invalid range (min 1, max %lu)\n", so->id, weight,
                                Q_MAX_SOCK_MASK/Q_MAX_ID);
                         return -EPERM;
 		}
 
                 so->weight = weight;
+
+		/* invalidate per-cpu sock mask cache */
+
+		for_each_online_cpu(cpu)
+		{
+			struct pfq_percpu_sock * sock = per_cpu_ptr(percpu_sock, cpu);
+			sock->eligible = 0; /* TODO should be atomic */
+		}
 
                 pr_devel("[PFQ|%d] weight set to %d.\n", so->id, weight);
 
