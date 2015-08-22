@@ -100,17 +100,17 @@ countEgress gs = sum $ map (\Group{ output = out } -> length out) gs
 
 
 bindInDev :: Ptr PFqTag -> Int -> NetDevice ->  IO ()
-bindInDev q gid (Dev d) = Q.bindGroup q gid d (-1)
-bindInDev q gid (DevQueue d hq) = Q.bindGroup q gid d hq
+bindInDev q gid (NetDevice d hq _) =
+    Q.bindGroup q gid d hq
 
 
 bindOutDev :: Ptr PFqTag -> (Int, NetDevice) ->  IO ()
-bindOutDev q par | (gid, Dev d)         <- par = bindEgress q gid d (-1)
-                 | (gid, DevQueue d hq) <- par = bindEgress q gid d hq
+bindOutDev q (gid, NetDevice d hq w) = bindEgress q gid d hq
     where bindEgress q gid dev queue = do
             infoM "daemon" ("    egress bind on dev " ++ dev ++ ", port " ++ show queue)
             Q.joinGroup q gid [class_default] policy_shared
             Q.egressBind q dev queue
+            Q.setWeight q w
 
 
 runQSetup :: Options -> Ptr PFqTag -> [Ptr PFqTag] -> IO ()
