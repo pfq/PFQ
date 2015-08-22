@@ -68,12 +68,17 @@ module Network.PFq
         class_any           ,
 
         GroupPolicy(..),
+
         policy_undefined,
         policy_priv,
         policy_restricted,
         policy_shared,
 
         PFqConstant(..),
+
+        any_device,
+        any_queue,
+        any_group,
 
         -- * Socket and Groups
 
