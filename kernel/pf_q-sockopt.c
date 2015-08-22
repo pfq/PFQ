@@ -410,6 +410,9 @@ int pfq_setsockopt(struct socket *sock,
 
                 pfq_devmap_update(map_set, binfo.if_index, binfo.hw_queue, gid);
 
+                pr_devel("[PFQ|%d] group id=%d bind: device if_index=%d hw_queue=%d\n",
+					so->id, binfo.gid, binfo.if_index, binfo.hw_queue);
+
         } break;
 
         case Q_SO_GROUP_UNBIND:
@@ -439,6 +442,9 @@ int pfq_setsockopt(struct socket *sock,
                 rcu_read_unlock();
 
                 pfq_devmap_update(map_reset, binfo.if_index, binfo.hw_queue, gid);
+
+                pr_devel("[PFQ|%d] group id=%d unbind: device if_index=%d hw_queue=%d\n",
+					so->id, binfo.gid, binfo.if_index, binfo.hw_queue);
 
         } break;
 
@@ -478,6 +484,7 @@ int pfq_setsockopt(struct socket *sock,
 		so->egress_type  = pfq_endpoint_socket;
                 so->egress_index = 0;
                 so->egress_queue = 0;
+
                 pr_devel("[PFQ|%d] egress unbind.\n", so->id);
 
         } break;
@@ -579,13 +586,15 @@ int pfq_setsockopt(struct socket *sock,
 
 		/* invalidate per-cpu sock mask cache */
 
+                pr_devel("[PFQ|%d] invalidating per-cpu sockmask cache...\n", so->id);
+
 		for_each_online_cpu(cpu)
 		{
 			struct pfq_percpu_sock * sock = per_cpu_ptr(percpu_sock, cpu);
 			sock->eligible = 0; /* TODO should be atomic */
 		}
 
-                pr_devel("[PFQ|%d] weight set to %d.\n", so->id, weight);
+                pr_devel("[PFQ|%d] new weight set to %d.\n", so->id, weight);
 
         } break;
 
@@ -602,7 +611,7 @@ int pfq_setsockopt(struct socket *sock,
                 if (pfq_leave_group(gid, so->id) < 0)
                         return -EFAULT;
 
-                pr_devel("[PFQ|%d] leave: gid=%d\n", so->id, gid);
+                pr_devel("[PFQ|%d] group id=%d left.\n", so->id, gid);
 
         } break;
 

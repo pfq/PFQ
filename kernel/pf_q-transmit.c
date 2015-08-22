@@ -163,7 +163,7 @@ bool traverse_sk_queue(char *ptr, char *begin, char *end, int idx)
 	}
 
 	if (hdr->len > 2048) {
-		printk(KERN_INFO "[PFQ] BUG: queue[%d]@offset=%zu bad hdr->len: %zu@%p [%p,%p]\n", idx,
+		printk(KERN_INFO "[PFQ] BUG: queue[%d]@offset=%zu bad hdr->len: %d@%p [%p,%p]\n", idx,
 		       ptr-begin, hdr->len, hdr, begin, end);
 		return false;
 	}
