@@ -409,10 +409,10 @@ int pfq_setsockopt(struct socket *sock,
                 }
                 rcu_read_unlock();
 
-                pfq_devmap_update(map_set, binfo.if_index, binfo.hw_queue, gid);
+                pfq_devmap_update(map_set, binfo.if_index, binfo.queue, gid);
 
-                pr_devel("[PFQ|%d] group id=%d bind: device if_index=%d hw_queue=%d\n",
-					so->id, binfo.gid, binfo.if_index, binfo.hw_queue);
+                pr_devel("[PFQ|%d] group id=%d bind: device if_index=%d queue=%d\n",
+					so->id, binfo.gid, binfo.if_index, binfo.queue);
 
         } break;
 
@@ -442,10 +442,10 @@ int pfq_setsockopt(struct socket *sock,
                 }
                 rcu_read_unlock();
 
-                pfq_devmap_update(map_reset, binfo.if_index, binfo.hw_queue, gid);
+                pfq_devmap_update(map_reset, binfo.if_index, binfo.queue, gid);
 
-                pr_devel("[PFQ|%d] group id=%d unbind: device if_index=%d hw_queue=%d\n",
-					so->id, binfo.gid, binfo.if_index, binfo.hw_queue);
+                pr_devel("[PFQ|%d] group id=%d unbind: device if_index=%d queue=%d\n",
+					so->id, binfo.gid, binfo.if_index, binfo.queue);
 
         } break;
 
@@ -466,16 +466,16 @@ int pfq_setsockopt(struct socket *sock,
                 }
                 rcu_read_unlock();
 
-                if (binfo.hw_queue < -1) {
-                        printk(KERN_INFO "[PFQ|%d] egress bind: invalid queue=%d\n", so->id, binfo.hw_queue);
+                if (binfo.queue < -1) {
+                        printk(KERN_INFO "[PFQ|%d] egress bind: invalid queue=%d\n", so->id, binfo.queue);
                         return -EPERM;
                 }
 
 		so->egress_type  = pfq_endpoint_device;
                 so->egress_index = binfo.if_index;
-                so->egress_queue = binfo.hw_queue;
+                so->egress_queue = binfo.queue;
 
-                pr_devel("[PFQ|%d] egress bind: device if_index=%d hw_queue=%d\n",
+                pr_devel("[PFQ|%d] egress bind: device if_index=%d queue=%d\n",
 			 so->id, so->egress_index, so->egress_queue);
 
         } break;
@@ -764,8 +764,8 @@ int pfq_setsockopt(struct socket *sock,
                 }
                 rcu_read_unlock();
 
-                if (binfo.hw_queue < -1) {
-                        printk(KERN_INFO "[PFQ|%d] Tx bind: invalid queue=%d\n", so->id, binfo.hw_queue);
+                if (binfo.queue < -1) {
+                        printk(KERN_INFO "[PFQ|%d] Tx bind: invalid queue=%d\n", so->id, binfo.queue);
                         return -EPERM;
                 }
 
@@ -777,12 +777,12 @@ int pfq_setsockopt(struct socket *sock,
 		}
 
                 so->tx_opt.queue[i].if_index = binfo.if_index;
-                so->tx_opt.queue[i].hw_queue = binfo.hw_queue;
+                so->tx_opt.queue[i].queue = binfo.queue;
                 so->tx_opt.queue[i].cpu = binfo.cpu;
 		so->tx_opt.num_queues++;
 
-                pr_devel("[PFQ|%d] Tx[%zu] bind: if_index=%d hw_queue=%d cpu=%d\n", so->id, i,
-			 so->tx_opt.queue[i].if_index, so->tx_opt.queue[i].hw_queue, binfo.cpu);
+                pr_devel("[PFQ|%d] Tx[%zu] bind: if_index=%d queue=%d cpu=%d\n", so->id, i,
+			 so->tx_opt.queue[i].if_index, so->tx_opt.queue[i].queue, binfo.cpu);
 
         } break;
 
@@ -801,7 +801,7 @@ int pfq_setsockopt(struct socket *sock,
 		for(n = 0; n < Q_MAX_TX_QUEUES; ++n)
 		{
 			so->tx_opt.queue[n].if_index = -1;
-			so->tx_opt.queue[n].hw_queue = -1;
+			so->tx_opt.queue[n].queue = -1;
 			so->tx_opt.queue[n].cpu = -1;
 		}
 
@@ -896,9 +896,9 @@ int pfq_setsockopt(struct socket *sock,
 			node = cpu_online(so->tx_opt.queue[n].cpu) ?
 			       cpu_to_node(so->tx_opt.queue[n].cpu) : NUMA_NO_NODE;
 
-			pr_devel("[PFQ|%d] creating Tx[%zu] kthread on cpu %d: if_index=%d hw_queue=%d\n",
+			pr_devel("[PFQ|%d] creating Tx[%zu] kthread on cpu %d: if_index=%d queue=%d\n",
 					so->id, n, so->tx_opt.queue[n].cpu, so->tx_opt.queue[n].if_index,
-					so->tx_opt.queue[n].hw_queue);
+					so->tx_opt.queue[n].queue);
 
 			so->tx_opt.queue[n].task = kthread_create_on_node(pfq_tx_thread, data, node,
 									  "pfq_tx_%d#%zu", so->id, n);
@@ -914,7 +914,7 @@ int pfq_setsockopt(struct socket *sock,
 				continue;
 			}
 
-			/* update global tx pool */
+			/* update global Tx pool */
 
 			kthread_tx_pool[so->tx_opt.queue[n].cpu % Q_MAX_CPU] = so->tx_opt.queue[n].task;
 

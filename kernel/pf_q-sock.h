@@ -104,7 +104,7 @@ struct pfq_tx_queue_info
 	void		       *base_addr;
 
 	int			if_index;
-	int			hw_queue;
+	int			queue;
 	int			cpu;
 
 	struct task_struct     *task;
@@ -152,7 +152,7 @@ void pfq_tx_opt_init(struct pfq_tx_opt *that, size_t maxlen)
 
 		that->queue[n].base_addr = NULL;
 		that->queue[n].if_index  = -1;
-		that->queue[n].hw_queue  = -1;
+		that->queue[n].queue     = -1;
 		that->queue[n].cpu       = -1;
 		that->queue[n].task	 = NULL;
 	}

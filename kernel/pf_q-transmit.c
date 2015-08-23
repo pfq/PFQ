@@ -51,11 +51,11 @@ __pfq_xmit(struct sk_buff *skb, struct net_device *dev, struct netdev_queue *txq
 
 
 static inline int
-__pfq_dev_cap_txqueue(struct net_device *dev, int hw_queue)
+__pfq_dev_cap_txqueue(struct net_device *dev, int queue)
 {
-	if (unlikely(hw_queue >= dev->real_num_tx_queues))
+	if (unlikely(queue >= dev->real_num_tx_queues))
 		return 0;
-	return hw_queue;
+	return queue;
 }
 
 
@@ -67,16 +67,17 @@ static u16 __pfq_pick_tx_default(struct net_device *dev, struct sk_buff *skb)
 #endif
 
 
-/* select the right tx hw queue, and fix it (-1 means any queue) */
+/* select the right tx hw queue, and fix it (-1 means any queue).
+ * unlike the linux netdev_pick_tx, it does *not* set the queue mapping in the skb */
 
 static struct netdev_queue *
-pfq_netdev_get_tx_queue(struct net_device *dev, struct sk_buff *skb, int *hw_queue)
+pfq_netdev_pick_tx(struct net_device *dev, struct sk_buff *skb, int *queue)
 {
-	if (dev->real_num_tx_queues != 1 && *hw_queue == -1) {
+	if (dev->real_num_tx_queues != 1 && *queue == -1) {
 
 		const struct net_device_ops *ops = dev->netdev_ops;
 
-		*hw_queue = ops->ndo_select_queue ?
+		*queue = ops->ndo_select_queue ?
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(3,13,0))
 			ops->ndo_select_queue(dev, skb)
 #elif (LINUX_VERSION_CODE == KERNEL_VERSION(3,13,0))
@@ -87,9 +88,9 @@ pfq_netdev_get_tx_queue(struct net_device *dev, struct sk_buff *skb, int *hw_que
 			: 0;
 	}
 
-	*hw_queue = __pfq_dev_cap_txqueue(dev, *hw_queue);
+	*queue = __pfq_dev_cap_txqueue(dev, *queue);
 
-	return netdev_get_tx_queue(dev, *hw_queue);
+	return netdev_get_tx_queue(dev, *queue);
 }
 
 
@@ -182,7 +183,7 @@ __pfq_sk_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, i
 	struct netdev_queue *txq;
 	struct pfq_tx_queue *txs;
 	struct pfq_percpu_pool *pool;
-	int hw_queue, swap;
+	int queue, swap;
 	char *ptr, *begin, *end;
         int more = 0, err = 0,
             total_sent = 0,
@@ -195,9 +196,9 @@ __pfq_sk_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, i
 
 	/* get the netdev_queue for transmission */
 
-	hw_queue = __pfq_dev_cap_txqueue(dev, to->queue[idx].hw_queue);
+	queue = __pfq_dev_cap_txqueue(dev, to->queue[idx].queue);
 
-	txq = netdev_get_tx_queue(dev, hw_queue);
+	txq = netdev_get_tx_queue(dev, queue);
 
 	/* get local cpu data */
 
@@ -262,7 +263,7 @@ __pfq_sk_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, i
 
 		/* set the Tx queue */
 
-		skb_set_queue_mapping(skb, hw_queue);
+		skb_set_queue_mapping(skb, queue);
 
 		/* copy bytes into the payload */
 
@@ -408,19 +409,19 @@ out:
 
 
 int
-pfq_xmit(struct sk_buff *skb, struct net_device *dev, int hw_queue, int more)
+pfq_xmit(struct sk_buff *skb, struct net_device *dev, int queue, int more)
 {
 	struct netdev_queue *txq;
 	int ret = 0;
 
-	/* get txq and fix the hw_queue for this batch.
+	/* get txq and fix the queue for this batch.
 	 *
-	 * note: in case the hw_queue is set to any-queue (-1), the driver along the first skb
+	 * note: in case the queue is set to any-queue (-1), the driver along the first skb
 	 * select the queue */
 
-	txq = pfq_netdev_get_tx_queue(dev, skb, &hw_queue);
+	txq = pfq_netdev_pick_tx(dev, skb, &queue);
 
-	skb_set_queue_mapping(skb, hw_queue);
+	skb_set_queue_mapping(skb, queue);
 
 	__netif_tx_lock_bh(txq);
 
@@ -433,19 +434,19 @@ pfq_xmit(struct sk_buff *skb, struct net_device *dev, int hw_queue, int more)
 
 
 int
-pfq_queue_xmit(struct pfq_skbuff_queue *skbs, struct net_device *dev, int hw_queue)
+pfq_queue_xmit(struct pfq_skbuff_queue *skbs, struct net_device *dev, int queue)
 {
 	struct netdev_queue *txq;
 	struct sk_buff *skb;
 	int n, ret = 0;
 	size_t last;
 
-	/* get txq and fix the hw_queue for this batch.
+	/* get txq and fix the queue for this batch.
 	 *
-	 * note: in case the hw_queue is set to any-queue (-1), the driver along the first skb
+	 * note: in case the queue is set to any-queue (-1), the driver along the first skb
 	 * select the queue */
 
-	txq = pfq_netdev_get_tx_queue(dev, skbs->queue[0], &hw_queue);
+	txq = pfq_netdev_pick_tx(dev, skbs->queue[0], &queue);
 
 	last = pfq_skbuff_queue_len(skbs) - 1;
 
@@ -453,7 +454,7 @@ pfq_queue_xmit(struct pfq_skbuff_queue *skbs, struct net_device *dev, int hw_que
 
 	for_each_skbuff(skbs, skb, n)
 	{
-		skb_set_queue_mapping(skb, hw_queue);
+		skb_set_queue_mapping(skb, queue);
 
 		if (__pfq_xmit(skb, dev, txq, n != last) == NETDEV_TX_OK)
 			++ret;
@@ -476,24 +477,24 @@ intr:
 
 
 int
-pfq_queue_xmit_by_mask(struct pfq_skbuff_queue *skbs, unsigned long long mask, struct net_device *dev, int hw_queue)
+pfq_queue_xmit_by_mask(struct pfq_skbuff_queue *skbs, unsigned long long mask, struct net_device *dev, int queue)
 {
 	struct netdev_queue *txq;
 	struct sk_buff *skb;
 	int n, ret = 0;
 
-	/* get txq and fix the hw_queue for this batch.
+	/* get txq and fix the queue for this batch.
 	 *
-	 * note: in case the hw_queue is set to any-queue (-1), the driver along the first skb
+	 * note: in case the queue is set to any-queue (-1), the driver along the first skb
 	 * select the queue */
 
-	txq = pfq_netdev_get_tx_queue(dev, skbs->queue[0], &hw_queue);
+	txq = pfq_netdev_pick_tx(dev, skbs->queue[0], &queue);
 
 	__netif_tx_lock_bh(txq);
 
 	for_each_skbuff_bitmask(skbs, mask, skb, n)
 	{
-		skb_set_queue_mapping(skb, hw_queue);
+		skb_set_queue_mapping(skb, queue);
 
 		if (__pfq_xmit(skb, dev, txq, 0) == NETDEV_TX_OK)
 			++ret;
@@ -516,7 +517,7 @@ intr:
 
 
 int
-pfq_lazy_xmit(struct sk_buff __GC * skb, struct net_device *dev, int hw_queue)
+pfq_lazy_xmit(struct sk_buff __GC * skb, struct net_device *dev, int queue)
 {
 	struct GC_log *skb_log = PFQ_CB(skb)->log;
 
@@ -526,7 +527,7 @@ pfq_lazy_xmit(struct sk_buff __GC * skb, struct net_device *dev, int hw_queue)
 		return 0;
 	}
 
-	skb_set_queue_mapping(PFQ_SKB(skb), hw_queue);
+	skb_set_queue_mapping(PFQ_SKB(skb), queue);
 	skb_log->dev[skb_log->num_devs++] = dev;
 	skb_log->xmit_todo++;
 
@@ -535,14 +536,14 @@ pfq_lazy_xmit(struct sk_buff __GC * skb, struct net_device *dev, int hw_queue)
 
 
 int
-pfq_queue_lazy_xmit(struct pfq_skbuff_queue __GC *queue, struct net_device *dev, int hw_queue)
+pfq_queue_lazy_xmit(struct pfq_skbuff_queue __GC *queue, struct net_device *dev, int queue_index)
 {
 	struct sk_buff __GC * skb;
 	int i, n = 0;
 
 	for_each_skbuff((struct pfq_skbuff_queue_GC __force *)queue, skb, i)
 	{
-		if (pfq_lazy_xmit(skb, dev, hw_queue))
+		if (pfq_lazy_xmit(skb, dev, queue_index))
 			++n;
 	}
 
@@ -552,14 +553,14 @@ pfq_queue_lazy_xmit(struct pfq_skbuff_queue __GC *queue, struct net_device *dev,
 
 int
 pfq_queue_lazy_xmit_by_mask(struct pfq_skbuff_queue __GC *queue, unsigned long long mask,
-			    struct net_device *dev, int hw_queue)
+			    struct net_device *dev, int queue_index)
 {
 	struct sk_buff __GC * skb;
 	int i, n = 0;
 
 	for_each_skbuff_bitmask((struct pfq_skbuff_queue_GC __force *)queue, mask, skb, i)
 	{
-		if (pfq_lazy_xmit(skb, dev, hw_queue))
+		if (pfq_lazy_xmit(skb, dev, queue_index))
 			++n;
 	}
 
@@ -603,11 +604,12 @@ pfq_queue_lazy_xmit_run(struct pfq_skbuff_queue __GC *skbs, struct pfq_endpoint_
 				continue;
 
 			if (queue != skb->queue_mapping) {
+
 				if (txq)
 					__netif_tx_unlock_bh(txq);
 
 				queue = skb->queue_mapping;
-				txq = pfq_netdev_get_tx_queue(dev, skb, &queue);
+				txq = pfq_netdev_pick_tx(dev, skb, &queue);
 
 				__netif_tx_lock_bh(txq);
 			}

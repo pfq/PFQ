@@ -250,7 +250,7 @@ struct pfq_pkthdr
                 uint16_t     tci;
         } vlan;
 
-        uint8_t     hw_queue;   /* max 256 queues per device */
+        uint8_t     queue;	/* max 256 queues per device */
         uint8_t     commit;
 
 } __attribute__((packed));
@@ -331,7 +331,7 @@ struct pfq_binding
 	};
 
         int if_index;
-        int hw_queue;
+        int queue;
 };
 
 struct pfq_group_join
