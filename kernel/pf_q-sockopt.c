@@ -105,7 +105,8 @@ int pfq_getsockopt(struct socket *sock,
                         }
                 }
 
-                pr_devel("[PFQ|%d] join: gid=%d class_mask=%lx\n", so->id, group.gid, group.class_mask);
+                pr_devel("[PFQ|%d] join: gid=%d class_mask=%lx policy=%d\n",
+				so->id, group.gid, group.class_mask, group.policy);
         } break;
 
         case Q_SO_GET_ID:
