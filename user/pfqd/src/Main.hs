@@ -77,7 +77,7 @@ main = do
     if dont_rebuild opts
         then  do
             unless (null config) $ infoM "daemon" $ "Loading configuration for " ++ show (length config) ++ " groups:"
-            forM_ config (\(Group gid devs _ comp) -> infoM "daemon" ("    PFQ group " ++ show gid ++ ": " ++ pretty comp ))
+            forM_ config (\(Group pol gid devs _ comp) -> infoM "daemon" ("    PFQ group " ++ show gid ++ ": " ++ pretty comp ))
         else  infoM "daemon" "PFQd started!" >> rebuildRestart opts (SLH.close s)
 
     -- run daemon...
@@ -99,16 +99,16 @@ countEgress :: [Group] -> Int
 countEgress gs = sum $ map (\Group{ output = out } -> length out) gs
 
 
-bindInDev :: Ptr PFqTag -> Int -> NetDevice ->  IO ()
-bindInDev q gid (NetDevice d hq _) =
+bindInput :: Ptr PFqTag -> Int -> NetDevice ->  IO ()
+bindInput q gid (NetDevice d hq _) =
     Q.bindGroup q gid d hq
 
 
-bindOutDev :: Ptr PFqTag -> (Int, NetDevice) ->  IO ()
-bindOutDev q (gid, NetDevice d hq w) = bindEgress q gid d hq
+bindOutput :: Ptr PFqTag -> (Int, Policy, NetDevice) ->  IO ()
+bindOutput q (gid, pol, NetDevice d hq w) = bindEgress q gid d hq
     where bindEgress q gid dev queue = do
             infoM "daemon" ("    egress bind on dev " ++ dev ++ ", port " ++ show queue)
-            Q.joinGroup q gid [class_default] policy_shared
+            Q.joinGroup q gid [class_default] (mkPolicy pol)
             Q.egressBind q dev queue
             Q.setWeight q w
 
@@ -117,13 +117,19 @@ runQSetup :: Options -> Ptr PFqTag -> [Ptr PFqTag] -> IO ()
 runQSetup opts ctrl egrs = do
     infoM "daemon" $ "Running daemon with " ++ show opts
     infoM "daemon" $ "Loading new configuration for " ++ show (length config) ++ " group(s)..."
-    let egrs' = zip egrs (concatMap (\Group {output = out, gid = gid} ->  map (gid,) out) config)
+    let egrs' = zip egrs (concatMap (\Group {policy = pol, output = out, gid = gid} ->  map (gid,pol,) out) config)
     infoM "daemon" $ "Setting up egress port: " ++ show egrs'
-    mapM_ (uncurry bindOutDev) egrs'
-    forM_ config $ \(Group g ins _ comp) -> do
+    mapM_ (uncurry bindOutput) egrs'
+    forM_ config $ \(Group pol g ins _ comp) -> do
         let gid = fromIntegral g
         infoM "daemon" $ "Setting up group " ++ show gid ++ " for dev " ++ show ins ++ ". Computation: " ++ pretty comp
-        Q.joinGroup ctrl gid [class_control] policy_shared
+        Q.joinGroup ctrl gid [class_control] (mkPolicy pol)
         Q.groupComputation ctrl gid comp
-        forM_ ins $ \dev -> bindInDev ctrl gid dev
+        forM_ ins $ \dev -> bindInput ctrl gid dev
+
+
+mkPolicy :: Policy -> Q.GroupPolicy
+mkPolicy Shared     = Q.policy_shared
+mkPolicy Restricted = Q.policy_restricted
+
 

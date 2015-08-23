@@ -25,10 +25,16 @@ dev str
 (NetDevice n q _) .^ w = NetDevice n q w
 
 
+-- | Group policy
+
+data Policy = Restricted | Shared
+                deriving (Show, Read)
+
 -- | Group data type.
 
 data Group = Group
-            {   gid       :: Int
+            {   policy    :: Policy
+            ,   gid       :: Int
             ,   input     :: [NetDevice]
             ,   output    :: [NetDevice]
             ,   function  :: Function (SkBuff -> Action SkBuff)
