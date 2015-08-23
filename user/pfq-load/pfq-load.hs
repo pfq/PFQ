@@ -240,7 +240,7 @@ clean =  unlines . filter notComment . lines
 loadConfig :: [FilePath] -> Options -> IO Config
 loadConfig confs opt =
     getFirstConfig confs >>= \case
-        Nothing   -> putStrBoldLn "Using default config..." >> (return $ mkConfig opt)
+        Nothing   -> putStrBoldLn "Using default config..." >> return (mkConfig opt)
         Just conf -> putStrBoldLn ("Using " ++ conf ++ " config...") >>
                         liftM (read . clean) (readFile conf)
 

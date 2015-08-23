@@ -546,7 +546,7 @@ setTimestamp hdl toggle = do
 setWeight :: Ptr PFqTag
           -> Int    -- ^ weight of socket
           -> IO ()
-setWeight hdl value = do
+setWeight hdl value =
     pfq_set_weight hdl (fromIntegral value) >>= throwPFqIf_ hdl (== -1)
 
 

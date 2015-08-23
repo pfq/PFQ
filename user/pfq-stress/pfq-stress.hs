@@ -93,7 +93,7 @@ main = do
 
         forM_ (zip [0..] pfqOptions) $ \(n, opt) ->
 
-            when (n `elem` (take 1024 filt)) $ do
+            when (n `elem` take 1024 filt) $ do
 
                     putChar '\n'
 
