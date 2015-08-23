@@ -11,18 +11,22 @@ data NetDevice =  NetDevice
                   { devName   :: String
                   , devQueue  :: Int
                   , devWeight :: Int
+                  , devClass  :: Q.ClassMask
                   }
                   deriving (Eq, Show, Read)
 
 
 dev :: String -> NetDevice
 dev str
-    | "." `isInfixOf` str =  let [d,q] = take 2 (splitOn "." str) in NetDevice d (read q) 1
-    | otherwise           =  NetDevice str (Q.getConstant Q.any_queue) 1
+    | "." `isInfixOf` str =  let [d,q] = take 2 (splitOn "." str) in NetDevice d (read q) 1 Q.class_default
+    | otherwise           =  NetDevice str (Q.getConstant Q.any_queue) 1 Q.class_default
 
 
 (.^) :: NetDevice -> Int -> NetDevice
-(NetDevice n q _) .^ w = NetDevice n q w
+(NetDevice n q _ cl) .^ w = NetDevice n q w cl
+
+(.&) :: NetDevice -> Q.ClassMask -> NetDevice
+(NetDevice n q w _) .& cl = NetDevice n q w cl
 
 
 -- | Group policy

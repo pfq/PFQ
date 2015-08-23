@@ -86,10 +86,10 @@ main = do
     infoM "daemon" ("Total number of egress port: " ++ show negrs)
 
     runDetached Nothing DevNull $ do
-        fps <- replicateM (countEgress config) Q.openDefault
-        withMany withForeignPtr fps $ \egrs ->
-            (Q.openDefault >>= \fp ->
-                withForeignPtr fp $ \ctrl -> do
+        (Q.openDefault >>= \fp ->
+            withForeignPtr fp $ \ctrl -> do
+            fps <- replicateM (countEgress config) Q.openDefault
+            withMany withForeignPtr fps $ \egrs -> do
                     runQSetup opts ctrl egrs
                     foreverDaemon opts (SLH.close s >> Q.close ctrl >> mapM_ Q.close egrs))
                 `E.catch` (\e -> errorM "daemon" (show (e :: SomeException)) >> foreverDaemon opts (SLH.close s))
@@ -100,15 +100,15 @@ countEgress gs = sum $ map (\Group{ output = out } -> length out) gs
 
 
 bindInput :: Ptr PFqTag -> Int -> NetDevice ->  IO ()
-bindInput q gid (NetDevice d hq _) =
+bindInput q gid (NetDevice d hq _ _) =
     Q.bindGroup q gid d hq
 
 
 bindOutput :: Ptr PFqTag -> (Int, Policy, NetDevice) ->  IO ()
-bindOutput q (gid, pol, NetDevice d hq w) = bindEgress q gid d hq
+bindOutput q (gid, pol, NetDevice d hq w cl) = bindEgress q gid d hq
     where bindEgress q gid dev queue = do
             infoM "daemon" ("    egress bind on dev " ++ dev ++ ", port " ++ show queue)
-            Q.joinGroup q gid [class_default] (mkPolicy pol)
+            Q.joinGroup q gid [cl] (mkPolicy pol)
             Q.egressBind q dev queue
             Q.setWeight q w
 
