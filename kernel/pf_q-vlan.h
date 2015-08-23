@@ -26,6 +26,7 @@
 #define PF_Q_VLAN_H
 
 #include <pragma/diagnostic_push>
+#include <linux/version.h>
 #include <linux/if_vlan.h>
 #include <pragma/diagnostic_pop>
 

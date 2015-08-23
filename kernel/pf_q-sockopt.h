@@ -25,7 +25,8 @@
 #define PF_Q_SOCKOPT_H
 
 #include <pragma/diagnostic_push>
-#include <linux/socket.h>
+#include <linux/version.h>
+#include <linux/net.h>
 #include <pragma/diagnostic_pop>
 
 extern int pfq_getsockopt(struct socket *sock,
