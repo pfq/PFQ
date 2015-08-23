@@ -87,6 +87,7 @@ pfq_invalidate_percpu_eligible_mask(pfq_id_t id)
 	{
 		struct pfq_percpu_sock * sock = per_cpu_ptr(percpu_sock, cpu);
 		sock->eligible_mask = 0; /* TODO should be atomic */
+		sock->cnt = 0;
 	}
 }
 

@@ -32,6 +32,7 @@
 
 #include <pragma/diagnostic_pop>
 
+#include <pf_q-percpu.h>
 #include <pf_q-group.h>
 #include <pf_q-devmap.h>
 #include <pf_q-bitops.h>
@@ -137,6 +138,8 @@ __pfq_group_init(pfq_gid_t gid)
                 atomic_long_set(&g->sock_mask[i], 0);
         }
 
+	pfq_invalidate_percpu_eligible_mask((pfq_id_t __force)0);
+
         atomic_long_set(&g->bp_filter,0L);
         atomic_long_set(&g->comp,     0L);
         atomic_long_set(&g->comp_ctx, 0L);
@@ -228,11 +231,20 @@ __pfq_join_group(pfq_gid_t gid, pfq_id_t id, unsigned long class_mask, int polic
                  atomic_long_set(&g->sock_mask[class], tmp);
         })
 
+	pfq_invalidate_percpu_eligible_mask(id);
+
 	if (g->owner == Q_INVALID_ID)
 		g->owner = id;
 
 	if (g->policy == Q_POLICY_GROUP_UNDEFINED)
 		g->policy = policy;
+
+	pr_devel("[PFQ|%d] group %d, sock_mask { %lu %lu %lu %lu %lu...\n", id, gid,
+		 atomic_long_read(&g->sock_mask[0]),
+		 atomic_long_read(&g->sock_mask[1]),
+		 atomic_long_read(&g->sock_mask[2]),
+		 atomic_long_read(&g->sock_mask[3]),
+		 atomic_long_read(&g->sock_mask[4]));
 
         return 0;
 }
@@ -249,9 +261,6 @@ __pfq_leave_group(pfq_gid_t gid, pfq_id_t id)
         if (g == NULL)
                 return -EINVAL;
 
-	if (!g->pid)
-		return -EPERM;
-
         for(i = 0; i < Q_CLASS_MAX; ++i)
         {
                 tmp = atomic_long_read(&g->sock_mask[i]);
@@ -259,8 +268,10 @@ __pfq_leave_group(pfq_gid_t gid, pfq_id_t id)
                 atomic_long_set(&g->sock_mask[i], tmp);
         }
 
-        if (__pfq_group_is_empty(gid))
-                __pfq_group_free(gid);
+	pfq_invalidate_percpu_eligible_mask(id);
+
+	if (g->pid && __pfq_group_is_empty(gid))
+		__pfq_group_free(gid);
 
         return 0;
 }
