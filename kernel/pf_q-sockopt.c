@@ -76,7 +76,7 @@ int pfq_getsockopt(struct socket *sock,
                         return -EFAULT;
 
                 if (group.class_mask == 0) {
-                        printk(KERN_INFO "[PFQ|%d] join error: bad class_mask (%lx)!\n",
+                        printk(KERN_INFO "[PFQ|%d] join group error: bad class_mask (%lx)!\n",
                                so->id, group.class_mask);
                         return -EINVAL;
                 }
@@ -93,19 +93,19 @@ int pfq_getsockopt(struct socket *sock,
 			pfq_gid_t gid = (__force pfq_gid_t)group.gid;
 
 			if (!pfq_get_group(gid)) {
-				printk(KERN_INFO "[PFQ|%d] group error: invalid group id %d!\n",
+				printk(KERN_INFO "[PFQ|%d] join group error: invalid group id %d!\n",
 				       so->id, gid);
 				return -EFAULT;
 			}
 
                         if (pfq_join_group(gid, so->id, group.class_mask, group.policy) < 0) {
-                                printk(KERN_INFO "[PFQ|%d] join error: permission denied (gid=%d)!\n",
+                                printk(KERN_INFO "[PFQ|%d] join group error: permission denied (gid=%d)!\n",
                                        so->id, group.gid);
                                 return -EACCES;
                         }
                 }
 
-                pr_devel("[PFQ|%d] join: gid=%d class_mask=%lx policy=%d\n",
+                pr_devel("[PFQ|%d] join group: gid=%d class_mask=%lx policy=%d\n",
 				so->id, group.gid, group.class_mask, group.policy);
         } break;
 

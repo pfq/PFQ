@@ -61,7 +61,6 @@ pfq_sock_finish(void)
 pfq_id_t
 pfq_get_free_id(struct pfq_sock * so)
 {
-        pfq_id_t id;
         int n = 0;
 
         for(; n < (__force int)Q_MAX_ID; n++)
@@ -69,12 +68,10 @@ pfq_get_free_id(struct pfq_sock * so)
                 if (!atomic_long_cmpxchg(pfq_sock_vector + n, 0, (long)so)) {
 			if(atomic_inc_return(&pfq_sock_count) == 1)
 				pfq_sock_init();
-			id = (__force pfq_id_t)n;
-                        return id;
+			return (__force pfq_id_t)n;
                 }
         }
-        id = (__force pfq_id_t)-ENOMEM;
-        return id;
+        return (__force pfq_id_t)-ENOMEM;
 }
 
 

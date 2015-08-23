@@ -168,12 +168,12 @@ __pfq_group_free(pfq_gid_t gid)
         if (g == NULL)
                 return;
 
-        /* remove this gid from demux matrix */
+        /* remove this gid from devmap matrix */
 
         pfq_devmap_update(map_reset, Q_ANY_DEVICE, Q_ANY_QUEUE, gid);
 
-        g->pid = 0;
-        g->owner = Q_INVALID_ID;
+        g->pid    = 0;
+        g->owner  = Q_INVALID_ID;
         g->policy = Q_POLICY_GROUP_UNDEFINED;
 
         filter   = (struct sk_filter *)atomic_long_xchg(&g->bp_filter, 0L);
@@ -182,7 +182,7 @@ __pfq_group_free(pfq_gid_t gid)
 
         msleep(Q_GRACE_PERIOD);   /* sleeping is possible here: user-context */
 
-	/* call fini on old computation */
+	/* finalize old computation */
 
 	if (old_comp)
 		pfq_computation_fini(old_comp);
@@ -195,7 +195,7 @@ __pfq_group_free(pfq_gid_t gid)
 
         g->vlan_filt = false;
 
-        pr_devel("[PFQ] group %d destroyed.\n", gid);
+        pr_devel("[PFQ] group gid=%d freed.\n", gid);
 }
 
 
@@ -400,6 +400,7 @@ void
 pfq_leave_all_groups(pfq_id_t id)
 {
         int n = 0;
+
         down(&group_sem);
         for(; n < Q_MAX_ID; n++)
         {
@@ -407,6 +408,8 @@ pfq_leave_all_groups(pfq_id_t id)
                 __pfq_leave_group(gid, id);
         }
         up(&group_sem);
+
+        pr_devel("[PFQ|%d] all group left.\n", id);
 }
 
 

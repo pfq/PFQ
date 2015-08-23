@@ -323,11 +323,15 @@ pfq_process_batch(struct pfq_percpu_data *data,
 					eligible_mask |= atomic_long_read(&this_group->sock_mask[class]);
 				})
 
+				/* logical dependency: when sock_masks of a
+				 * given group is modified, it is necessary to
+				 * invalidate the per-cpu sock->eligible_mask cache */
+
 				if (is_steering(monad.fanout)) { /* cache the number of sockets in the mask */
 
 					if (eligible_mask != sock->eligible) {
 						unsigned long ebit;
-						sock->eligible = eligible_mask;
+						sock->eligible_mask = eligible_mask;
 						sock->cnt = 0;
 						pfq_bitwise_foreach(eligible_mask, ebit,
 						{
@@ -598,6 +602,7 @@ pfq_release(struct socket *sock)
         pr_devel("[PFQ|%d] releasing socket...\n", id);
 
         pfq_leave_all_groups(so->id);
+
         pfq_release_sock_id(so->id);
 
         if (so->shmem.addr)
