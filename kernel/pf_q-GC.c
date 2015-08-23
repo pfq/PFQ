@@ -112,33 +112,9 @@ GC_copy_buff(struct GC_data *gc, struct sk_buff __GC * orig)
 }
 
 
-static inline void
-add_dev_to_targets(struct net_device *dev, struct skb_lazy_targets *ts)
-{
-	size_t n = 0;
-
-	for(; n < ts->num; ++n)
-	{
-		if (dev == ts->dev[n]) {
-			ts->cnt[n]++;
-			ts->cnt_total++;
-			return;
-		}
-	}
-
-	if (n < Q_GC_LOG_QUEUE_LEN) {
-		ts->dev[n] = dev;
-		ts->cnt[n] = 1;
-		ts->cnt_total++;
-		ts->num++;
-	}
-	else
-		pr_devel("[PFQ] GC: forward pool exhausted!\n");
-}
-
 
 void
-GC_get_lazy_targets(struct GC_data *gc, struct skb_lazy_targets *ts)
+GC_get_lazy_endpoints(struct GC_data *gc, struct pfq_endpoint_info *ts)
 {
 	size_t n, i;
 
@@ -149,7 +125,7 @@ GC_get_lazy_targets(struct GC_data *gc, struct skb_lazy_targets *ts)
 	{
 		for(i = 0; i < gc->log[n].num_devs; i++)
 		{
-			add_dev_to_targets(gc->log[n].dev[i], ts);
+			add_dev_to_endpoints(gc->log[n].dev[i], ts);
 		}
 	}
 }

@@ -39,14 +39,6 @@
 #include <pf_q-GC.h>
 
 
-struct skb_lazy_targets
-{
-	struct net_device * dev[Q_GC_LOG_QUEUE_LEN];
-	size_t cnt [Q_GC_LOG_QUEUE_LEN];
-	size_t cnt_total;
-	size_t num;
-};
-
 
 extern int __pfq_sk_queue_xmit(size_t index, struct pfq_tx_opt *to, struct net_device *dev, int cpu, int node);
 
@@ -71,7 +63,7 @@ extern int pfq_queue_lazy_xmit(struct pfq_skbuff_queue __GC *queue, struct net_d
 extern int pfq_queue_lazy_xmit_by_mask(struct pfq_skbuff_queue __GC *queue, unsigned long long mask,
 				       struct net_device *dev, int queue_index);
 
-extern size_t pfq_lazy_xmit_exec(struct GC_data *gc, struct skb_lazy_targets const *t);
+extern size_t pfq_queue_lazy_xmit_run(struct pfq_skbuff_queue __GC *queue, struct pfq_endpoint_info const *info);
 
 
 #endif /* PF_Q_TRANSMIT_H */

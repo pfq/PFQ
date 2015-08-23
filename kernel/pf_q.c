@@ -172,7 +172,7 @@ pfq_process_batch(struct pfq_percpu_data *data,
 {
 	unsigned long long sock_queue[Q_SKBUFF_BATCH];
         unsigned long group_mask, socket_mask;
-	struct skb_lazy_targets targets;
+	struct pfq_endpoint_info endpoints;
         struct sk_buff *skb;
 
         long unsigned n, bit, lb;
@@ -315,7 +315,6 @@ pfq_process_batch(struct pfq_percpu_data *data,
 
 				refs.queue[refs.len++] = buff;
 
-
 				/* compute the eligible mask of sockets enabled for this packet... */
 
 				pfq_bitwise_foreach(monad.fanout.class_mask, cbit,
@@ -378,13 +377,14 @@ pfq_process_batch(struct pfq_percpu_data *data,
 
 	/* forward skbs to network devices */
 
-	GC_get_lazy_targets(GC_ptr, &targets);
+	GC_get_lazy_endpoints(GC_ptr, &endpoints);
 
-	if (targets.cnt_total)
+	if (endpoints.cnt_total)
 	{
-		size_t total = pfq_lazy_xmit_exec(GC_ptr, &targets);
+		size_t total = pfq_queue_lazy_xmit_run(SKBUFF_QUEUE(GC_ptr->pool), &endpoints);
+
 		__sparse_add(&global_stats.frwd, total, cpu);
-		__sparse_add(&global_stats.disc, targets.cnt_total - total, cpu);
+		__sparse_add(&global_stats.disc, endpoints.cnt_total - total, cpu);
 	}
 
 	/* forward skbs to kernel or to the pool */

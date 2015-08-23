@@ -36,7 +36,32 @@
 #include <pf_q-endpoint.h>
 
 
-static inline
+void
+add_dev_to_endpoints(struct net_device *dev, struct pfq_endpoint_info *ts)
+{
+	size_t n = 0;
+
+	for(; n < ts->num; ++n)
+	{
+		if (dev == ts->dev[n]) {
+			ts->cnt[n]++;
+			ts->cnt_total++;
+			return;
+		}
+	}
+
+	if (n < Q_GC_LOG_QUEUE_LEN) {
+		ts->dev[n] = dev;
+		ts->cnt[n] = 1;
+		ts->cnt_total++;
+		ts->num++;
+	}
+	else
+		pr_devel("[PFQ] GC: forward pool exhausted!\n");
+}
+
+
+static
 size_t copy_to_user_skbs(struct pfq_rx_opt *ro, struct pfq_skbuff_queue __GC *skbs,
 			 unsigned long long mask, int cpu, pfq_gid_t gid)
 {
@@ -63,7 +88,7 @@ size_t copy_to_user_skbs(struct pfq_rx_opt *ro, struct pfq_skbuff_queue __GC *sk
 }
 
 
-static inline
+static
 size_t copy_to_dev_skbs(struct pfq_sock *so, struct pfq_skbuff_queue __GC *skbs,
 			 unsigned long long mask, int cpu, pfq_gid_t gid)
 {

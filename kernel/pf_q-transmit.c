@@ -551,7 +551,8 @@ pfq_queue_lazy_xmit(struct pfq_skbuff_queue __GC *queue, struct net_device *dev,
 
 
 int
-pfq_queue_lazy_xmit_by_mask(struct pfq_skbuff_queue __GC *queue, unsigned long long mask, struct net_device *dev, int hw_queue)
+pfq_queue_lazy_xmit_by_mask(struct pfq_skbuff_queue __GC *queue, unsigned long long mask,
+			    struct net_device *dev, int hw_queue)
 {
 	struct sk_buff __GC * skb;
 	int i, n = 0;
@@ -567,67 +568,63 @@ pfq_queue_lazy_xmit_by_mask(struct pfq_skbuff_queue __GC *queue, unsigned long l
 
 
 size_t
-pfq_lazy_xmit_exec(struct GC_data *gc, struct skb_lazy_targets const *ts)
+pfq_queue_lazy_xmit_run(struct pfq_skbuff_queue __GC *skbs, struct pfq_endpoint_info const *endpoints)
 {
 	struct netdev_queue *txq;
 	struct net_device *dev;
 	struct sk_buff *skb;
         size_t sent = 0;
 	size_t n, i;
-	int queue;
+	int queue = -1;
 
 	/* for each net_device... */
 
-	for(n = 0; n < ts->num; n++)
+	for(n = 0; n < endpoints->num; n++)
 	{
 		size_t sent_dev = 0;
+		dev = endpoints->dev[n];
 
-		dev = ts->dev[n];
 		txq = NULL;
+                queue = -1;
 
 		/* scan the list of skbs, and forward them in batch fashion */
 
-		for(i = 0; i < gc->pool.len; i++)
+		for(i = 0; i < skbs->len; i++)
 		{
-			struct GC_log *skb_log;
                         size_t j, num;
 
-			/* select the packet */
+			/* select packet and log */
 
-			skb = gc->pool.queue[i];
-                        skb_log = &gc->log[i];
+			skb = skbs->queue[i];
 
-			num = GC_count_dev_in_log(dev, skb_log);
+			num = GC_count_dev_in_log(dev, PFQ_CB(skb)->log);
 
 			if (num == 0)
 				continue;
 
-			/* the first packet for this dev determines the hw queue */
+			if (queue != skb->queue_mapping) {
+				if (txq)
+					__netif_tx_unlock_bh(txq);
 
-			if (!txq) {
 				queue = skb->queue_mapping;
 				txq = pfq_netdev_get_tx_queue(dev, skb, &queue);
+
 				__netif_tx_lock_bh(txq);
 			}
 
-			/* forward this skb `num` times */
+			/* forward this skb `num` times (to this device) */
 
 			for (j = 0; j < num; j++)
 			{
-				const int xmit_more = ++sent_dev != ts->cnt[n];
-
-				const bool to_clone = skb_log->to_kernel || skb_log->xmit_todo-- > 1;
+				const int xmit_more  = ++sent_dev != endpoints->cnt[n];
+				const bool to_clone  = PFQ_CB(skb)->log->to_kernel || PFQ_CB(skb)->log->xmit_todo-- > 1;
 
 				struct sk_buff *nskb = to_clone ? skb_clone(skb, GFP_ATOMIC) : skb_get(skb);
-				if (nskb) {
-					if (__pfq_xmit(nskb, dev, txq, xmit_more) == NETDEV_TX_OK)
-						sent++;
-					else
-						sparse_inc(&global_stats.abrt);
-				}
-				else {
+
+				if (nskb && __pfq_xmit(nskb, dev, txq, xmit_more) == NETDEV_TX_OK)
+					sent++;
+				else
 					sparse_inc(&global_stats.abrt);
-				}
 			}
 		}
 

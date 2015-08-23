@@ -29,6 +29,7 @@
 #include <linux/skbuff.h>
 #include <pragma/diagnostic_pop>
 
+#include <pf_q-endpoint.h>
 #include <pf_q-skbuff.h>
 #include <pf_q-define.h>
 #include <pf_q-skbuff.h>
@@ -74,7 +75,7 @@ struct sk_buff __GC * pfq_copy_buff(struct sk_buff __GC * skb);
 
 struct skb_lazy_targets;
 
-extern void  GC_get_lazy_targets(struct GC_data *gc, struct skb_lazy_targets *ts);
+extern void  GC_get_lazy_endpoints(struct GC_data *gc, struct pfq_endpoint_info *info);
 
 
 static inline size_t
