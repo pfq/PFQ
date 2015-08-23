@@ -569,7 +569,7 @@ int pfq_setsockopt(struct socket *sock,
 
         case Q_SO_SET_WEIGHT:
         {
-                int cpu, weight;
+                int weight;
 
                 if (optlen != sizeof(so->weight))
                         return -EINVAL;
@@ -587,13 +587,7 @@ int pfq_setsockopt(struct socket *sock,
 
 		/* invalidate per-cpu sock mask cache */
 
-                pr_devel("[PFQ|%d] invalidating per-cpu sockmask cache...\n", so->id);
-
-		for_each_online_cpu(cpu)
-		{
-			struct pfq_percpu_sock * sock = per_cpu_ptr(percpu_sock, cpu);
-			sock->eligible = 0; /* TODO should be atomic */
-		}
+		pfq_invalidate_percpu_eligible_mask(so->id);
 
                 pr_devel("[PFQ|%d] new weight set to %d.\n", so->id, weight);
 

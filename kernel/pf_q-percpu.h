@@ -29,6 +29,7 @@
 #include <linux/percpu.h>
 #include <linux/ktime.h>
 #include <linux/timer.h>
+#include <linux/printk.h>
 
 #include <pragma/diagnostic_pop>
 
@@ -74,6 +75,20 @@ struct pfq_percpu_data
 extern struct pfq_percpu_data __percpu * percpu_data;
 extern struct pfq_percpu_sock __percpu * percpu_sock;
 extern struct pfq_percpu_pool __percpu * percpu_pool;
+
+
+static inline void
+pfq_invalidate_percpu_eligible_mask(pfq_id_t id)
+{
+	int cpu;
+        pr_devel("[PFQ|%d] invalidating per-cpu sockmask cache...\n", (int __force)id);
+
+	for_each_online_cpu(cpu)
+	{
+		struct pfq_percpu_sock * sock = per_cpu_ptr(percpu_sock, cpu);
+		sock->eligible_mask = 0; /* TODO should be atomic */
+	}
+}
 
 
 #endif /* PF_Q_PERCPU_H */
