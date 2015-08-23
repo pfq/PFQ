@@ -159,7 +159,7 @@ tap(arguments_t args, SkBuff skb)
 
 	if (dev == NULL) {
                 if (printk_ratelimit())
-                        printk(KERN_INFO "[PFQ/lang] bridge: device error!\n");
+                        printk(KERN_INFO "[PFQ/lang] tap: device error!\n");
                 return Drop(skb);
 	}
 
@@ -182,7 +182,7 @@ tee(arguments_t args, SkBuff skb)
 
 	if (dev == NULL) {
                 if (printk_ratelimit())
-                        printk(KERN_INFO "[PFQ/lang] bridge: device error!\n");
+                        printk(KERN_INFO "[PFQ/lang] tee: device error!\n");
                 return Drop(skb);
 	}
 

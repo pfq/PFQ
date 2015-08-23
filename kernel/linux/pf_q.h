@@ -250,7 +250,7 @@ struct pfq_pkthdr
                 uint16_t     tci;
         } vlan;
 
-        uint8_t     hw_queue;   /* 256 queues per device */
+        uint8_t     hw_queue;   /* max 256 queues per device */
         uint8_t     commit;
 
 } __attribute__((packed));

@@ -518,17 +518,17 @@ intr:
 int
 pfq_lazy_xmit(struct sk_buff __GC * skb, struct net_device *dev, int hw_queue)
 {
-	struct GC_log *log = PFQ_CB(skb)->log;
+	struct GC_log *skb_log = PFQ_CB(skb)->log;
 
-	if (log->num_devs >= Q_GC_LOG_QUEUE_LEN) {
+	if (skb_log->num_devs >= Q_GC_LOG_QUEUE_LEN) {
 		if (printk_ratelimit())
 			printk(KERN_INFO "[PFQ] bridge %s: too many annotation!\n", dev->name);
 		return 0;
 	}
 
 	skb_set_queue_mapping(PFQ_SKB(skb), hw_queue);
-	log->dev[log->num_devs++] = dev;
-	log->xmit_todo++;
+	skb_log->dev[skb_log->num_devs++] = dev;
+	skb_log->xmit_todo++;
 
 	return 1;
 }
@@ -589,14 +589,15 @@ pfq_lazy_xmit_exec(struct GC_data *gc, struct skb_lazy_targets const *ts)
 
 		for(i = 0; i < gc->pool.len; i++)
 		{
-			struct GC_log *log;
+			struct GC_log *skb_log;
                         size_t j, num;
 
 			/* select the packet */
 
 			skb = gc->pool.queue[i];
-                        log = &gc->log[i];
-			num = GC_count_dev_in_log(dev, log);
+                        skb_log = &gc->log[i];
+
+			num = GC_count_dev_in_log(dev, skb_log);
 
 			if (num == 0)
 				continue;
@@ -614,7 +615,8 @@ pfq_lazy_xmit_exec(struct GC_data *gc, struct skb_lazy_targets const *ts)
 			for (j = 0; j < num; j++)
 			{
 				const int xmit_more = ++sent_dev != ts->cnt[n];
-				const bool to_clone = log->to_kernel || log->xmit_todo-- > 1;
+
+				const bool to_clone = skb_log->to_kernel || skb_log->xmit_todo-- > 1;
 
 				struct sk_buff *nskb = to_clone ? skb_clone(skb, GFP_ATOMIC) : skb_get(skb);
 				if (nskb) {
