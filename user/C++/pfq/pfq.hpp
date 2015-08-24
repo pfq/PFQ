@@ -591,7 +591,7 @@ namespace pfq {
         //! Check whether the socket capture is enabled.
 
         bool
-        enabled() const
+        is_enabled() const
         {
             if (fd_ != -1)
             {
@@ -607,7 +607,7 @@ namespace pfq {
         //! Enable/disable timestamping for packets.
 
         void
-        timestamp_enable(bool value)
+        timestamping_enable(bool value)
         {
             int ts = static_cast<int>(value);
             if (::setsockopt(fd_, PF_Q, Q_SO_SET_RX_TSTAMP, &ts, sizeof(ts)) == -1)
@@ -617,7 +617,7 @@ namespace pfq {
         //! Check whether the timestamping for packets is enabled.
 
         bool
-        timestamp_enabled() const
+        is_timestamping_enabled() const
         {
            int ret; socklen_t size = sizeof(int);
            if (::getsockopt(fd_, PF_Q, Q_SO_GET_RX_TSTAMP, &ret, &size) == -1)
@@ -653,7 +653,7 @@ namespace pfq {
         void
         caplen(size_t value)
         {
-            if (enabled())
+            if (is_enabled())
                 throw pfq_error("PFQ: enabled (caplen could not be set)");
 
             if (::setsockopt(fd_, PF_Q, Q_SO_SET_RX_CAPLEN, &value, sizeof(value)) == -1) {
@@ -694,7 +694,7 @@ namespace pfq {
         void
         rx_slots(size_t value)
         {
-            if (enabled())
+            if (is_enabled())
                 throw pfq_error("PFQ: enabled (Rx slots could not be set)");
 
             if (::setsockopt(fd_, PF_Q, Q_SO_SET_RX_SLOTS, &value, sizeof(value)) == -1) {
@@ -729,7 +729,7 @@ namespace pfq {
         void
         tx_slots(size_t value)
         {
-            if (enabled())
+            if (is_enabled())
                 throw pfq_error("PFQ: enabled (Tx slots could not be set)");
 
             if (::setsockopt(fd_, PF_Q, Q_SO_SET_TX_SLOTS, &value, sizeof(value)) == -1) {
