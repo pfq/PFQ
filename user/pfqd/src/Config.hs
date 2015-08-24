@@ -28,7 +28,7 @@ dev str
 
 
 (.&) :: NetDevice -> Q.ClassMask -> NetDevice
-(NetDevice n q w c1) .& c2 = NetDevice n q w (c1 `mappend` c2)
+(NetDevice n q w _) .& cl = NetDevice n q w cl
 
 
 -- | Group policy
