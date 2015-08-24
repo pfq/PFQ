@@ -31,14 +31,13 @@
 /* macros to test/set bits in bitwise array */
 
 
-#define BF_TEST(mem, x)  (mem[x >> 3] &  (1<<(x & 7)))
-#define BF_SET(mem, x)   (mem[x >> 3] |= (1<<(x & 7)))
+#define BF_TEST(mem, x)  (mem[(x) >> 3] &  (1<<((x) & 7)))
+#define BF_SET(mem, x)   (mem[(x) >> 3] |= (1<<((x) & 7)))
 
-
-#define A(value)   ((value & 0xff000000) >> 24)
-#define B(value)   ((value & 0x00ff0000) >> 16)
-#define C(value)   ((value & 0x0000ff00) >>  8)
-#define D(value)   ( value & 0x000000ff)
+#define A(value)   (((value) & 0xff000000) >> 24)
+#define B(value)   (((value) & 0x00ff0000) >> 16)
+#define C(value)   (((value) & 0x0000ff00) >>  8)
+#define D(value)   ( (value) & 0x000000ff)
 
 
 static inline uint32_t mix(uint32_t a, uint32_t b, uint32_t c)
