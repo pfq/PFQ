@@ -153,7 +153,7 @@ namespace thread
                 m_pfq.set_group_computation(m_bind.gid, opt::function);
             }
 
-            m_pfq.timestamp_enable(false);
+            m_pfq.timestamping_enable(false);
             m_pfq.enable();
         }
 
@@ -167,7 +167,7 @@ namespace thread
         {
             if (!m_filename.empty())
             {
-                m_pfq.timestamp_enable(true);
+                m_pfq.timestamping_enable(true);
                 pcap_open_();
             }
 

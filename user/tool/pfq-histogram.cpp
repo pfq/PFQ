@@ -42,7 +42,7 @@ try
 
     // select tstamp type:
     //
-    q.timestamp_enable(true);
+    q.timestamping_enable(true);
 
     // enable capturng for this queue:
     //

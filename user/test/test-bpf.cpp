@@ -14,7 +14,7 @@ main(int argc, char *argv[])
 
     r.bind(argv[1], pfq::any_queue);
 
-    r.timestamp_enable(true);
+    r.timestamping_enable(true);
 
     struct sock_fprog p { 1, nullptr };
 

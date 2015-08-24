@@ -15,7 +15,7 @@ main(int argc, char *argv[])
 
     q.bind(argv[1], pfq::any_queue);
 
-    q.timestamp_enable(true);
+    q.timestamping_enable(true);
 
     q.enable();
 
@@ -37,7 +37,7 @@ main(int argc, char *argv[])
 
                     printf("vlan_vid:%d vlan_prio:%d caplen:%d len:%d ifindex:%d hw_queue:%d tstamp: %u:%u -> ",
                            it->vlan.vid, it->vlan.prio,
-                           it->caplen, it->len, it->if_index, it->hw_queue,
+                           it->caplen, it->len, it->if_index, it->queue,
                                 it->tstamp.tv.sec, it->tstamp.tv.nsec);
                     char *buff = static_cast<char *>(it.data());
 

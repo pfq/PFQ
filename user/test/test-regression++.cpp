@@ -88,11 +88,11 @@ auto g = Group("PFQ")
     .Single("enabled", []
     {
         pfq::socket x;
-        Assert(x.enabled(), is_equal_to(false));
+        Assert(x.is_enabled(), is_equal_to(false));
         x.open(pfq::group_policy::undefined, 64);
-        Assert(x.enabled(), is_equal_to(false));
+        Assert(x.is_enabled(), is_equal_to(false));
         x.enable();
-        Assert(x.enabled(), is_equal_to(true));
+        Assert(x.is_enabled(), is_equal_to(true));
     })
 
 
@@ -109,13 +109,13 @@ auto g = Group("PFQ")
     .Single("timestamp", []
     {
         pfq::socket x;
-        AssertThrow(x.timestamp_enable(true));
-        AssertThrow(x.timestamp_enabled());
+        AssertThrow(x.timestamping_enable(true));
+        AssertThrow(x.is_timestamping_enabled());
 
         x.open(pfq::group_policy::undefined, 64);
-        x.timestamp_enable(true);
+        x.timestamping_enable(true);
 
-        Assert(x.timestamp_enabled(), is_equal_to(true));
+        Assert(x.is_timestamping_enabled(), is_equal_to(true));
     })
 
 
