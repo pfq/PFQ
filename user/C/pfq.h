@@ -175,19 +175,19 @@ static inline
 unsigned int pfq_fold(unsigned int hash, unsigned int n)
 {
         hash = hash ^ (hash >> 8) ^ (hash >> 16) ^ (hash >> 24);
-		return hash % n;
+	return hash % n;
 
-		/* switch(n) {
-		 *     case 1: return 0;
-		 *     case 2: return hash & 1;
-		 *     case 3: {
-		 *         return (hash & 3) != 3 ? (hash & 3) : 0;
-		 *     }
-		 *     case 4: return hash & 3;
-		 * }
+	/* switch(n) {
+	 *     case 1: return 0;
+	 *     case 2: return hash & 1;
+	 *     case 3: {
+	 *         return (hash & 3) != 3 ? (hash & 3) : 0;
+	 *     }
+	 *     case 4: return hash & 3;
+	 * }
 
-		 * return hash % n;
-		 */
+	 * return hash % n;
+	 */
 }
 
 
@@ -229,18 +229,17 @@ extern int pfq_set_promisc(pfq_t const *q, const char *dev, int value);
 extern pfq_t *pfq_open(size_t caplen, size_t rx_slots, size_t tx_slots);
 
 
-/*! Open the socket; no group is joined or created. */
+/*! Open the socket. No group is joined or created. */
 /*!
- * Groups can be later joined by means of the join function.
+ * Groups can later be joined by means of 'pfq_join_group' function.
  */
 
 extern pfq_t* pfq_open_nogroup(size_t caplen, size_t rx_slots, size_t tx_slots);
 
 
-/*! Open the socket and create a new group with the specified class and policy. */
+/*! Open the socket and create a new group with the specified parameters. */
 /*!
  * If group_policy is Q_POLICY_GROUP_UNDEFINED no gorup is joined or created.
- * All the possible parameters are specifiable.
  */
 
 extern pfq_t* pfq_open_group(unsigned long class_mask, int group_policy,
@@ -248,6 +247,9 @@ extern pfq_t* pfq_open_group(unsigned long class_mask, int group_policy,
 
 
 /*! Close the socket. */
+/*!
+ * Release the shared memory, stop kernel threads.
+ */
 
 extern int pfq_close(pfq_t *);
 
@@ -263,6 +265,12 @@ extern int pfq_group_id(pfq_t *q);
 
 
 /*! Enable the socket for packets capture and transmission. */
+/*!
+ * Allocate the shared memory for socket queues possibly using
+ * the Linux HugePages support.
+ * If the enviroment variable PFQ_HUGEPAGES is set to 0 (or
+ * PFQ_NO_HUGEPAGES is defined) standard 4K pages are used.
+ */
 
 extern int pfq_enable(pfq_t *q);
 
@@ -280,21 +288,21 @@ extern int pfq_disable(pfq_t *q);
 extern int pfq_is_enabled(pfq_t const *q);
 
 
-/*! Enable the timestamping for packets. */
+/*! Enable/disable timestamping for packets. */
 
 extern int pfq_timestamping_enable(pfq_t *q, int value);
 
 
-/*! Check whether the timestamping for packets is enabled. */
+/*! Check whether timestamping for packets is enabled. */
 
 extern int pfq_is_timestamping_enabled(pfq_t const *q);
 
 
-/*! Set the weight of the socket used during the steering phase. */
+/*! Set the weight of the socket for the steering phase. */
 
 extern int pfq_set_weight(pfq_t *q, int value);
 
-/*! Return the weight of the socket used during the steering phase. */
+/*! Return the weight of the socket. */
 
 extern int pfq_get_weight(pfq_t const *q);
 
@@ -318,10 +326,6 @@ extern ssize_t pfq_get_maxlen(pfq_t const *q);
 
 
 /*! Specify the length of the Rx queue, in number of packets. */
-/*!
- * The number of Rx slots can't exceed the value specified by
- * the max_queue_slot kernel module parameter.
- */
 
 extern int pfq_set_rx_slots(pfq_t *q, size_t value);
 
@@ -337,10 +341,6 @@ extern size_t pfq_get_rx_slot_size(pfq_t const *q);
 
 
 /*! Specify the length of the Tx queue, in number of packets. */
-/*!
- * The number of Tx slots can't exceed the value specified by
- * the max_queue_slot kernel module parameter.
- */
 
 extern int pfq_set_tx_slots(pfq_t *q, size_t value);
 
@@ -359,28 +359,29 @@ extern size_t pfq_get_tx_slots(pfq_t const *q);
 extern int pfq_bind(pfq_t *q, const char *dev, int queue);
 
 
-/*! Bind the given group to the given device/queue. */
-/*!
- * The first argument is the name of the device;
- * the second argument is the queue number or Q_ANY_QUEUE.
- */
-
-extern int pfq_bind_group(pfq_t *q, int gid, const char *dev, int queue);
-
-
-/*! Unbind the given group from the given device/queue. */
-
-extern int pfq_unbind_group(pfq_t *q, int gid, const char *dev, int queue);
-
-
 /*! Unbind the main group of the socket from the given device/queue. */
 
 extern int pfq_unbind(pfq_t *q, const char *dev, int queue);
 
 
+/*! Bind the given group to the given device/queue. */
+/*!
+ * The first argument is the group id.
+ * The second argument is the name of the device;
+ * the third argument is the queue number or Q_ANY_QUEUE.
+ */
+
+extern int pfq_bind_group(pfq_t *q, int gid, const char *dev, int queue);
+
+
+/*! Unbind the group from the given device/queue. */
+
+extern int pfq_unbind_group(pfq_t *q, int gid, const char *dev, int queue);
+
+
 /*! Set the socket as egress and bind it to the given device/queue. */
 /*!
- * The egress socket will be used within the capture groups as forwarder.
+ * The egress socket is used by groups as network forwarder.
  */
 
 extern int pfq_egress_bind(pfq_t *q, const char *dev, int queue);
@@ -393,9 +394,8 @@ extern int pfq_egress_unbind(pfq_t *q);
 
 /*! Bind the socket for transmission to the given device name and queue. */
 /*!
- *  A socket can be bound up to a maximum number of queues.
  *  The core parameter specifies the CPU index where to run a
- *  kernel thread (unless no_kthread id is specified).
+ *  kernel thread (unless Q_NO_KTHREAD is specified).
  */
 
 extern int pfq_bind_tx(pfq_t *q, const char *dev, int queue, int core);
@@ -407,6 +407,16 @@ extern int pfq_bind_tx(pfq_t *q, const char *dev, int queue, int core);
  */
 
 extern int pfq_unbind_tx(pfq_t *q);
+
+
+/*! Join the group with the given class mask and group policy */
+
+extern int pfq_join_group(pfq_t *q, int gid, unsigned long class_mask, int group_policy);
+
+
+/*! Leave the group specified by the group id. */
+
+extern int pfq_leave_group(pfq_t *q, int gid);
 
 
 /*! Return the mask of the joined groups. */
@@ -428,8 +438,8 @@ extern int pfq_set_group_computation(pfq_t *q, int gid, struct pfq_computation_d
 
 /*! Specify a functional computation for the given group, from string. */
 /*!
- * This function is limited to simple PFQ/lang functional computations.
- * Only the composition of monadic functions without arguments are supported.
+ * This ability is limited to simple PFQ/lang functional computations.
+ * Only the composition of monadic functions without arguments are currently supported.
  */
 
 extern int pfq_set_group_computation_from_string(pfq_t *q, int gid, const char *prg);
@@ -449,36 +459,27 @@ extern int pfq_group_fprog(pfq_t *q, int gid, struct sock_fprog *);
 extern int pfq_group_fprog_reset(pfq_t *q, int gid);
 
 
-/*! Set vlan filtering for the given group. */
+/*! Enable/disable vlan filtering for the given group. */
 
 extern int pfq_vlan_filters_enable(pfq_t *q, int gid, int toggle);
 
 
-/*! Specify a capture filter for the given group and vlan id. */
+/*! Specify a capture vlan filter for the given group. */
 /*!
  *  In addition to standard vlan ids, valid ids are also Q_VLAN_UNTAG and Q_VLAN_ANYTAG.
  */
 
 extern int pfq_vlan_set_filter(pfq_t *q, int gid, int vid);
 
-/*! Reset vlan filter for the given group. */
+
+/*! Reset the vlan filter for the given group. */
 
 extern int pfq_vlan_reset_filter(pfq_t *q, int gid, int vid);
 
 
-/*! Join the group with the given class mask and group policy */
-
-extern int pfq_join_group(pfq_t *q, int gid, unsigned long class_mask, int group_policy);
-
-
-/*! Leave the given group specified by the group id. */
-
-extern int pfq_leave_group(pfq_t *q, int gid);
-
-
 /*! Wait for packets. */
 /*!
- * Wait for packets available to read. A timeout in microseconds can be specified.
+ * Wait for packets available for reading. A timeout in microseconds can be specified.
  */
 
 extern int pfq_poll(pfq_t *q, long int microseconds /* = -1 -> infinite */);
@@ -486,15 +487,17 @@ extern int pfq_poll(pfq_t *q, long int microseconds /* = -1 -> infinite */);
 
 /*! Read packets in place. */
 /*!
- * Wait for packets and return the number of packets available in the queue.
- * Packets are stored in the memory mapped queue of the socket.
- * The timeout is specified in microseconds.
+ * Wait for packets and return the number of packets available.
+ * References to packets are stored into the 'pfq_net_queue' data structure.
+ *
+ * The memory of the socket queue is reset at the next read.
+ * A timeout is specified in microseconds.
  */
 
 extern int pfq_read(pfq_t *q, struct pfq_net_queue *nq, long int microseconds);
 
 
-/*! Receive packets in the given mutable buffer. */
+/*! Receive packets in the given buffer. */
 /*!
  * Wait for packets and return the number of packets available.
  * Packets are stored in the given buffer.
@@ -554,7 +557,7 @@ extern int pfq_tx_queue_flush(pfq_t *q, int queue);
 
 /*! Start Tx kernel threads. */
 /*!
- * Start kernel threads associated with Tx queues.
+ * Start kernel threads associated with the Tx queues of the socket.
  */
 
 extern int pfq_tx_async_start(pfq_t *q);
@@ -562,7 +565,7 @@ extern int pfq_tx_async_start(pfq_t *q);
 
 /*! Stop Tx kernel threads. */
 /*!
- * Stop kernel threads associated with Tx queues.
+ * Stop kernel threads associated with the Tx queues of the socket.
  */
 
 extern int pfq_tx_async_stop(pfq_t *q);
@@ -597,7 +600,7 @@ extern int pfq_send_async(pfq_t *q, const void *ptr, size_t len, size_t flush_hi
 
 /*! Store the packet and transmit it. */
 /*!
- * The transmission takes place at the given timespec time.
+ * The transmission takes place asynchronously at the given timespec time.
  */
 
 extern int pfq_send_at(pfq_t *q, const void *ptr, size_t len, struct timespec *ts, int copies);

@@ -340,7 +340,11 @@ namespace pfq {
         }
 
 
-        //! Open the socket with named-parameter idiom.
+        //! Open the socket with the named-parameter idiom.
+        /*!
+         * Unspecified parameters are set to default values as
+         * in param::make_default();
+         */
 
         template <typename ...Ts>
         void open(param::list_t, Ts&& ...args)
@@ -475,6 +479,9 @@ namespace pfq {
     public:
 
         //! Close the socket.
+        /*!
+         * Release the shared memory, stop kernel threads.
+         */
 
         void
         close()
@@ -500,6 +507,12 @@ namespace pfq {
         }
 
         //! Enable the socket for packets capture and transmission.
+        /*!
+         * Allocate the shared memory for socket queues possibly using
+         * the Linux HugePages support.
+         * If the enviroment variable PFQ_HUGEPAGES is set to 0 (or
+         * PFQ_NO_HUGEPAGES is defined) standard 4K pages are used.
+         */
 
         void
         enable()
@@ -615,7 +628,7 @@ namespace pfq {
                 throw pfq_error(errno, "PFQ: set timestamp mode");
         }
 
-        //! Check whether the timestamping for packets is enabled.
+        //! Check whether timestamping for packets is enabled.
 
         bool
         is_timestamping_enabled() const
@@ -626,7 +639,17 @@ namespace pfq {
            return ret;
         }
 
-        //! Return the weight of the socket for the steering phase.
+        //! Set the weight of the socket for the steering phase.
+
+        void
+        weight(int w)
+        {
+           if (::setsockopt(fd_, PF_Q, Q_SO_SET_WEIGHT, &w, sizeof(w)) == -1)
+                throw pfq_error(errno, "PFQ: set socket weight");
+        }
+
+
+        //! Return the weight of the socket.
 
         int
         weight() const
@@ -637,14 +660,6 @@ namespace pfq {
            return w;
         }
 
-        //! Set the weight of the socket for the steering phase.
-
-        void
-        weight(int w)
-        {
-           if (::setsockopt(fd_, PF_Q, Q_SO_SET_WEIGHT, &w, sizeof(w)) == -1)
-                throw pfq_error(errno, "PFQ: set socket weight");
-        }
 
         //! Specify the capture length of packets, in bytes.
         /*!
@@ -687,10 +702,6 @@ namespace pfq {
         }
 
         //! Specify the length of the Rx queue, in number of packets.
-        /*!
-         * The number of Rx slots can't exceed the value specified by
-         * the max_queue_slot kernel module parameter.
-         */
 
         void
         rx_slots(size_t value)
@@ -722,10 +733,6 @@ namespace pfq {
         }
 
         //! Specify the length of the Tx queue, in number of packets.
-        /*!
-         * The number of Tx slots can't exceed the value specified by
-         * the max_queue_slot kernel module parameter.
-         */
 
         void
         tx_slots(size_t value)
@@ -753,7 +760,7 @@ namespace pfq {
         //! Bind the main group of the socket to the given device/queue.
         /*!
          * The first argument is the name of the device;
-         * the second argument is the queue number or any_queue.
+         * the second argument is the queue index or 'any_queue'.
          */
 
         void
@@ -766,11 +773,23 @@ namespace pfq {
             bind_group(gid, dev, queue);
         }
 
+        //! Unbind the main group of the socket from the given device/queue.
+
+        void
+        unbind(const char *dev, int queue = any_queue)
+        {
+            auto gid = group_id();
+            if (gid < 0)
+                throw pfq_error("PFQ: default group undefined");
+
+            unbind_group(gid, dev, queue);
+        }
+
         //! Bind the group to the given device/queue.
         /*!
          * The first argument is the group id.
          * The second argument is the name of the device;
-         * the third argument is the queue number or any_queue.
+         * the third argument is the queue number or 'any_queue'.
          */
 
         void
@@ -789,18 +808,6 @@ namespace pfq {
 
             if (::setsockopt(fd_, PF_Q, Q_SO_GROUP_BIND, &b, sizeof(b)) == -1)
                 throw pfq_error(errno, "PFQ: bind error");
-        }
-
-        //! Unbind the main group of the socket from the given device/queue.
-
-        void
-        unbind(const char *dev, int queue = any_queue)
-        {
-            auto gid = group_id();
-            if (gid < 0)
-                throw pfq_error("PFQ: default group undefined");
-
-            unbind_group(gid, dev, queue);
         }
 
         //! Unbind the group from the given device/queue.
@@ -825,7 +832,7 @@ namespace pfq {
 
         //! Set the socket as egress and bind it to the given device/queue.
         /*!
-         * The egress socket will be used by groups as network forwarder.
+         * The egress socket is be used by groups as network forwarder.
          */
 
         void
@@ -859,9 +866,8 @@ namespace pfq {
 
         //! Bind the socket for transmission to the given device name and queue.
         /*!
-         *  A socket can be bound up to a maximum number of queues.
          *  The core parameter specifies the CPU index where to run a
-         *  kernel thread (unless no_kthread id is specified).
+         *  kernel thread (unless 'no_kthread' id specified).
          */
 
         void
@@ -895,6 +901,43 @@ namespace pfq {
 
             data()->tx_num_async = 0;
             data()->tx_num_bind = 0;
+        }
+
+        //! Join the group specified by the group id.
+        /*!
+         * If the policy is not specified, group_policy::shared is used by default.
+         * If the class mask is not specified, class_mask::default_ is used by default.
+         */
+
+        int
+        join_group(int gid, group_policy pol = group_policy::shared, class_mask mask = class_mask::default_)
+        {
+            if (pol == group_policy::undefined)
+                throw pfq_error("PFQ: join with undefined policy!");
+
+            struct pfq_group_join group { gid, static_cast<int16_t>(pol), static_cast<unsigned long>(mask) };
+
+            socklen_t size = sizeof(group);
+
+            if (::getsockopt(fd_, PF_Q, Q_SO_GROUP_JOIN, &group, &size) == -1)
+                throw pfq_error(errno, "PFQ: join group error");
+
+            if (data()->gid == -1)
+                data()->gid = group.gid;
+
+            return group.gid;
+        }
+
+        //! Leave the group specified by the group id.
+
+        void
+        leave_group(int gid)
+        {
+            if (::setsockopt(fd_, PF_Q, Q_SO_GROUP_LEAVE, &gid, sizeof(gid)) == -1)
+                throw pfq_error(errno, "PFQ: leave group error");
+
+            if (data()->gid == gid)
+                data()->gid = -1;
         }
 
 
@@ -987,11 +1030,10 @@ namespace pfq {
                 throw pfq_error(errno, "PFQ: group computation error");
         }
 
-
         //! Specify a functional computation for the given group, from string.
         /*!
-         * This function is limited to simple PFQ/lang functional computations.
-         * Only the composition of monadic functions without arguments are supported.
+         * This ability is limited to simple PFQ/lang functional computations.
+         * Only the composition of monadic functions without arguments are currently supported.
          */
 
         void
@@ -1036,46 +1078,9 @@ namespace pfq {
         }
 
 
-        //! Join the given group.
-        /*!
-         * If the policy is not specified, group_policy::shared is used by default.
-         * If the class mask is not specified, class_mask::default_ is used by default.
-         */
-
-        int
-        join_group(int gid, group_policy pol = group_policy::shared, class_mask mask = class_mask::default_)
-        {
-            if (pol == group_policy::undefined)
-                throw pfq_error("PFQ: join with undefined policy!");
-
-            struct pfq_group_join group { gid, static_cast<int16_t>(pol), static_cast<unsigned long>(mask) };
-
-            socklen_t size = sizeof(group);
-
-            if (::getsockopt(fd_, PF_Q, Q_SO_GROUP_JOIN, &group, &size) == -1)
-                throw pfq_error(errno, "PFQ: join group error");
-
-            if (data()->gid == -1)
-                data()->gid = group.gid;
-
-            return group.gid;
-        }
-
-        //! Leave the group specified by the group id.
-
-        void
-        leave_group(int gid)
-        {
-            if (::setsockopt(fd_, PF_Q, Q_SO_GROUP_LEAVE, &gid, sizeof(gid)) == -1)
-                throw pfq_error(errno, "PFQ: leave group error");
-
-            if (data()->gid == gid)
-                data()->gid = -1;
-        }
-
         //! Wait for packets.
         /*!
-         * Wait packets available for reading. A timeout in microseconds can be specified.
+         * Wait for packets available for reading. A timeout in microseconds can be specified.
          */
 
         int
@@ -1101,9 +1106,11 @@ namespace pfq {
 
         //! Read packets in place.
         /*!
-         * Wait for packets and return a queue descriptor.
-         * Packets are stored in the memory mapped queue of the socket.
-         * The timeout is specified in microseconds.
+         * Wait for packets and return a 'queue' descriptor, which contains
+         * the references to packets.
+         *
+         * The memory of the socket queue is reset at the next read.
+         * A timeout is specified in microseconds.
          */
 
         queue
@@ -1160,10 +1167,11 @@ namespace pfq {
             return Q_SHARED_QUEUE_INDEX(q->rx.data);
         }
 
-        //! Receive packets in the given mutable buffer.
+        //! Receive packets in the given buffer.
         /*!
          * Wait for packets and return a queue descriptor.
-         * Packets are stored in the mutable buffer passed.
+         *
+         * Packets are stored in the given buffer.
          * It is possible to specify a timeout in microseconds.
          */
 
@@ -1186,7 +1194,7 @@ namespace pfq {
         //! Collect and process packets.
 
         /*! The function takes an instance of a callable type.
-         * The object must have the following callable signature:
+         * Such a type must have the following callable signature:
          *
          * typedef void (*pfq_handler)(char *user, const struct pfq_pkthdr *h, const char *data);
          */
@@ -1210,7 +1218,7 @@ namespace pfq {
             return n;
         }
 
-        //! Set vlan filtering for the given group.
+        //! Enable/disable vlan filtering for the given group.
 
         void vlan_filters_enable(int gid, bool toggle)
         {
@@ -1220,7 +1228,7 @@ namespace pfq {
                 throw pfq_error(errno, "PFQ: vlan filters");
         }
 
-        //! Specify a capture filter for the given group and vlan id.
+        //! Specify a capture vlan filter for the given group.
         /*!
          *  In addition to standard vlan ids, valid ids are also vlan_id::untag and vlan_id::anytag.
          */
@@ -1243,7 +1251,7 @@ namespace pfq {
             });
         }
 
-        //! Reset all vlan filters.
+        //! Reset the vlan filter for the given group.
 
         void vlan_reset_filter(int gid, int vid)
         {
@@ -1452,7 +1460,8 @@ namespace pfq {
 
         //! Start kernel threads.
         /*!
-         * Start kernel threads associated with the Tx queues.
+         * Start kernel threads associated with the Tx queues of the
+         * socket.
          */
 
         void
@@ -1464,7 +1473,8 @@ namespace pfq {
 
         //! Stop kernel threads.
         /*!
-         * Stop kernel threads associated with the Tx queues.
+         * Stop kernel threads associated with the Tx queues of the
+         * socket.
          */
 
         void

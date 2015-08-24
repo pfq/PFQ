@@ -76,7 +76,7 @@ static inline void smp_wmb() { barrier(); }
 
 #define PFQ_VERSION(a,b,c)		(((a) << 16) + ((b) << 8) + (c))
 
-#define PFQ_VERSION_CODE		PFQ_VERSION(4,5,0)
+#define PFQ_VERSION_CODE		PFQ_VERSION(5,0,0)
 
 #define PFQ_MAJOR(a)			((a >> 16) & 0xff)
 #define PFQ_MINOR(a)			((a >> 8) & 0xff)
