@@ -1,0 +1,721 @@
+\hypertarget{pfq_8h}{\section{C/pfq.h File Reference}
+\label{pfq_8h}\index{C/pfq.\+h@{C/pfq.\+h}}
+}
+{\ttfamily \#include $<$stddef.\+h$>$}\\*
+{\ttfamily \#include $<$linux/pf\+\_\+q.\+h$>$}\\*
+{\ttfamily \#include $<$linux/if\+\_\+ether.\+h$>$}\\*
+{\ttfamily \#include $<$linux/ip.\+h$>$}\\*
+{\ttfamily \#include $<$linux/udp.\+h$>$}\\*
+{\ttfamily \#include $<$arpa/inet.\+h$>$}\\*
+{\ttfamily \#include $<$sched.\+h$>$}\\*
+\subsection*{Data Structures}
+\begin{DoxyCompactItemize}
+\item 
+struct \hyperlink{structpfq__net__queue}{pfq\+\_\+net\+\_\+queue}
+\end{DoxyCompactItemize}
+\subsection*{Typedefs}
+\begin{DoxyCompactItemize}
+\item 
+typedef struct pfq\+\_\+data \hyperlink{pfq_8h_a4e27e9f8aa4924f374dbb950713e8f0e}{pfq\+\_\+t}
+\item 
+typedef char $\ast$ \hyperlink{pfq_8h_a6e330e8e393bb4b5ecefdd5bf47a6f57}{pfq\+\_\+iterator\+\_\+t}
+\item 
+typedef void($\ast$ \hyperlink{pfq_8h_a20a4d1af024719d207a2f6234682ac5c}{pfq\+\_\+handler\+\_\+t} )(char $\ast$user, const struct pfq\+\_\+pkthdr $\ast$h, const char $\ast$data)
+\end{DoxyCompactItemize}
+\subsection*{Functions}
+\begin{DoxyCompactItemize}
+\item 
+const char $\ast$ \hyperlink{pfq_8h_a85fc4d99ed1ae9d304fcf0471ed59231}{pfq\+\_\+error} (\hyperlink{pfq_8h_a4e27e9f8aa4924f374dbb950713e8f0e}{pfq\+\_\+t} $\ast$)
+\item 
+int \hyperlink{pfq_8h_abe14da05a5618684ef2896ff4497ae4b}{pfq\+\_\+ifindex} (\hyperlink{pfq_8h_a4e27e9f8aa4924f374dbb950713e8f0e}{pfq\+\_\+t} const $\ast$q, const char $\ast$dev)
+\item 
+int \hyperlink{pfq_8h_ab5d185cdfcf8c7dcd2820a9f020415a0}{pfq\+\_\+set\+\_\+promisc} (\hyperlink{pfq_8h_a4e27e9f8aa4924f374dbb950713e8f0e}{pfq\+\_\+t} const $\ast$q, const char $\ast$dev, int value)
+\item 
+\hyperlink{pfq_8h_a4e27e9f8aa4924f374dbb950713e8f0e}{pfq\+\_\+t} $\ast$ \hyperlink{pfq_8h_aabd4b56f65903c1b4b8a610510685ff3}{pfq\+\_\+open} (size\+\_\+t caplen, size\+\_\+t rx\+\_\+slots, size\+\_\+t tx\+\_\+slots)
+\item 
+\hyperlink{pfq_8h_a4e27e9f8aa4924f374dbb950713e8f0e}{pfq\+\_\+t} $\ast$ \hyperlink{pfq_8h_afd6be71b02a698ef7ebfe968eaf264d5}{pfq\+\_\+open\+\_\+nogroup} (size\+\_\+t caplen, size\+\_\+t rx\+\_\+slots, size\+\_\+t tx\+\_\+slots)
+\item 
+\hyperlink{pfq_8h_a4e27e9f8aa4924f374dbb950713e8f0e}{pfq\+\_\+t} $\ast$ \hyperlink{pfq_8h_a4612e6d2546991f230ecab6bb9b6c5d8}{pfq\+\_\+open\+\_\+group} (unsigned long class\+\_\+mask, int group\+\_\+policy, size\+\_\+t caplen, size\+\_\+t rx\+\_\+slots, size\+\_\+t tx\+\_\+slots)
+\item 
+int \hyperlink{pfq_8h_a6c69fd7fecfa6e15a356e93395efe7e6}{pfq\+\_\+close} (\hyperlink{pfq_8h_a4e27e9f8aa4924f374dbb950713e8f0e}{pfq\+\_\+t} $\ast$)
+\item 
+int \hyperlink{pfq_8h_ac0b5855c75f81f92730f1fd04751ec88}{pfq\+\_\+id} (\hyperlink{pfq_8h_a4e27e9f8aa4924f374dbb950713e8f0e}{pfq\+\_\+t} $\ast$q)
+\item 
+int \hyperlink{pfq_8h_a3cf11d0765db26cf22352c015f56d64b}{pfq\+\_\+group\+\_\+id} (\hyperlink{pfq_8h_a4e27e9f8aa4924f374dbb950713e8f0e}{pfq\+\_\+t} $\ast$q)
+\item 
+int \hyperlink{pfq_8h_ac6531633cb38f851031f4b0ab0b8733c}{pfq\+\_\+enable} (\hyperlink{pfq_8h_a4e27e9f8aa4924f374dbb950713e8f0e}{pfq\+\_\+t} $\ast$q)
+\item 
+int \hyperlink{pfq_8h_a1de26a48a872051cbfc86f825f400ab6}{pfq\+\_\+disable} (\hyperlink{pfq_8h_a4e27e9f8aa4924f374dbb950713e8f0e}{pfq\+\_\+t} $\ast$q)
+\item 
+int \hyperlink{pfq_8h_a797ab131962d34faecb052d2a47f65b9}{pfq\+\_\+is\+\_\+enabled} (\hyperlink{pfq_8h_a4e27e9f8aa4924f374dbb950713e8f0e}{pfq\+\_\+t} const $\ast$q)
+\item 
+int \hyperlink{pfq_8h_a4d6fc59bab68a90f36d45b0a03da775a}{pfq\+\_\+timestamping\+\_\+enable} (\hyperlink{pfq_8h_a4e27e9f8aa4924f374dbb950713e8f0e}{pfq\+\_\+t} $\ast$q, int value)
+\item 
+int \hyperlink{pfq_8h_a8421a3d6b07e1db7f014289e118fb953}{pfq\+\_\+is\+\_\+timestamping\+\_\+enabled} (\hyperlink{pfq_8h_a4e27e9f8aa4924f374dbb950713e8f0e}{pfq\+\_\+t} const $\ast$q)
+\item 
+int \hyperlink{pfq_8h_a2f8c2c580fa82557b09b1773bb62682d}{pfq\+\_\+set\+\_\+weight} (\hyperlink{pfq_8h_a4e27e9f8aa4924f374dbb950713e8f0e}{pfq\+\_\+t} $\ast$q, int value)
+\item 
+int \hyperlink{pfq_8h_af43b9ff4fd643ff19f1f42fe45c0af6f}{pfq\+\_\+get\+\_\+weight} (\hyperlink{pfq_8h_a4e27e9f8aa4924f374dbb950713e8f0e}{pfq\+\_\+t} const $\ast$q)
+\item 
+int \hyperlink{pfq_8h_ac726d1da4c6aecfa1dcb1544c036cdc4}{pfq\+\_\+set\+\_\+caplen} (\hyperlink{pfq_8h_a4e27e9f8aa4924f374dbb950713e8f0e}{pfq\+\_\+t} $\ast$q, size\+\_\+t value)
+\item 
+ssize\+\_\+t \hyperlink{pfq_8h_a54c5dbee4fc068c08fc9d0390068577d}{pfq\+\_\+get\+\_\+caplen} (\hyperlink{pfq_8h_a4e27e9f8aa4924f374dbb950713e8f0e}{pfq\+\_\+t} const $\ast$q)
+\item 
+ssize\+\_\+t \hyperlink{pfq_8h_a27828e9f36f85060a4fd07e5aedb032c}{pfq\+\_\+get\+\_\+maxlen} (\hyperlink{pfq_8h_a4e27e9f8aa4924f374dbb950713e8f0e}{pfq\+\_\+t} const $\ast$q)
+\item 
+int \hyperlink{pfq_8h_a0d09783c6e8a992fa7ac7e47faf3a812}{pfq\+\_\+set\+\_\+rx\+\_\+slots} (\hyperlink{pfq_8h_a4e27e9f8aa4924f374dbb950713e8f0e}{pfq\+\_\+t} $\ast$q, size\+\_\+t value)
+\item 
+size\+\_\+t \hyperlink{pfq_8h_ae0ff886fe3154e0dee5d1590807c5297}{pfq\+\_\+get\+\_\+rx\+\_\+slots} (\hyperlink{pfq_8h_a4e27e9f8aa4924f374dbb950713e8f0e}{pfq\+\_\+t} const $\ast$q)
+\item 
+size\+\_\+t \hyperlink{pfq_8h_a36f38c6de7397d1c3a8e010309656def}{pfq\+\_\+get\+\_\+rx\+\_\+slot\+\_\+size} (\hyperlink{pfq_8h_a4e27e9f8aa4924f374dbb950713e8f0e}{pfq\+\_\+t} const $\ast$q)
+\item 
+int \hyperlink{pfq_8h_a9093dbc13b4c42c215e4eaeedf5db8bd}{pfq\+\_\+set\+\_\+tx\+\_\+slots} (\hyperlink{pfq_8h_a4e27e9f8aa4924f374dbb950713e8f0e}{pfq\+\_\+t} $\ast$q, size\+\_\+t value)
+\item 
+size\+\_\+t \hyperlink{pfq_8h_a4ba7ed06f84cb9e12b9b8a0d693a9a3e}{pfq\+\_\+get\+\_\+tx\+\_\+slots} (\hyperlink{pfq_8h_a4e27e9f8aa4924f374dbb950713e8f0e}{pfq\+\_\+t} const $\ast$q)
+\item 
+int \hyperlink{pfq_8h_a9e77c4cd59828b7408876a1e761b276e}{pfq\+\_\+bind} (\hyperlink{pfq_8h_a4e27e9f8aa4924f374dbb950713e8f0e}{pfq\+\_\+t} $\ast$q, const char $\ast$dev, int queue)
+\item 
+int \hyperlink{pfq_8h_a7cda443097bf879cf0202fbcf0a243c1}{pfq\+\_\+unbind} (\hyperlink{pfq_8h_a4e27e9f8aa4924f374dbb950713e8f0e}{pfq\+\_\+t} $\ast$q, const char $\ast$dev, int queue)
+\item 
+int \hyperlink{pfq_8h_ac6a80d8d3fceea2313f08cc18069f792}{pfq\+\_\+bind\+\_\+group} (\hyperlink{pfq_8h_a4e27e9f8aa4924f374dbb950713e8f0e}{pfq\+\_\+t} $\ast$q, int gid, const char $\ast$dev, int queue)
+\item 
+int \hyperlink{pfq_8h_a0bd9c9f2d6df1811297e99a1b3800c05}{pfq\+\_\+unbind\+\_\+group} (\hyperlink{pfq_8h_a4e27e9f8aa4924f374dbb950713e8f0e}{pfq\+\_\+t} $\ast$q, int gid, const char $\ast$dev, int queue)
+\item 
+int \hyperlink{pfq_8h_abdd1ad2cda7d1fc15dd426100deaafd3}{pfq\+\_\+egress\+\_\+bind} (\hyperlink{pfq_8h_a4e27e9f8aa4924f374dbb950713e8f0e}{pfq\+\_\+t} $\ast$q, const char $\ast$dev, int queue)
+\item 
+int \hyperlink{pfq_8h_a44a2ceb3f271ff19c776fcad02c8e49e}{pfq\+\_\+egress\+\_\+unbind} (\hyperlink{pfq_8h_a4e27e9f8aa4924f374dbb950713e8f0e}{pfq\+\_\+t} $\ast$q)
+\item 
+int \hyperlink{pfq_8h_a1f80c371efc1a9f5f3a2003e8e0c8567}{pfq\+\_\+bind\+\_\+tx} (\hyperlink{pfq_8h_a4e27e9f8aa4924f374dbb950713e8f0e}{pfq\+\_\+t} $\ast$q, const char $\ast$dev, int queue, int core)
+\item 
+int \hyperlink{pfq_8h_a9a1e77d289ca5408c9496c4767cb00cf}{pfq\+\_\+unbind\+\_\+tx} (\hyperlink{pfq_8h_a4e27e9f8aa4924f374dbb950713e8f0e}{pfq\+\_\+t} $\ast$q)
+\item 
+int \hyperlink{pfq_8h_a1130e49c84b3179e501969c9747989d6}{pfq\+\_\+join\+\_\+group} (\hyperlink{pfq_8h_a4e27e9f8aa4924f374dbb950713e8f0e}{pfq\+\_\+t} $\ast$q, int gid, unsigned long class\+\_\+mask, int group\+\_\+policy)
+\item 
+int \hyperlink{pfq_8h_af99c219e40110d4395b98294677f7b1b}{pfq\+\_\+leave\+\_\+group} (\hyperlink{pfq_8h_a4e27e9f8aa4924f374dbb950713e8f0e}{pfq\+\_\+t} $\ast$q, int gid)
+\item 
+int \hyperlink{pfq_8h_a801637019645491f44219a33317ce735}{pfq\+\_\+groups\+\_\+mask} (\hyperlink{pfq_8h_a4e27e9f8aa4924f374dbb950713e8f0e}{pfq\+\_\+t} const $\ast$q, unsigned long $\ast$\+\_\+mask)
+\item 
+int \hyperlink{pfq_8h_a63b881aa62dc2c45b44fdb9810f7a07f}{pfq\+\_\+set\+\_\+group\+\_\+computation} (\hyperlink{pfq_8h_a4e27e9f8aa4924f374dbb950713e8f0e}{pfq\+\_\+t} $\ast$q, int gid, struct pfq\+\_\+computation\+\_\+descr $\ast$prg)
+\item 
+int \hyperlink{pfq_8h_aa40ff5d2d51467a34f168cbb6b296509}{pfq\+\_\+set\+\_\+group\+\_\+computation\+\_\+from\+\_\+string} (\hyperlink{pfq_8h_a4e27e9f8aa4924f374dbb950713e8f0e}{pfq\+\_\+t} $\ast$q, int gid, const char $\ast$prg)
+\item 
+int \hyperlink{pfq_8h_a2f9317c43bc0586ab4909c4216a80ef8}{pfq\+\_\+group\+\_\+fprog} (\hyperlink{pfq_8h_a4e27e9f8aa4924f374dbb950713e8f0e}{pfq\+\_\+t} $\ast$q, int gid, struct sock\+\_\+fprog $\ast$)
+\item 
+int \hyperlink{pfq_8h_abd0ffab7bc739d24e66bf92e47d3db82}{pfq\+\_\+group\+\_\+fprog\+\_\+reset} (\hyperlink{pfq_8h_a4e27e9f8aa4924f374dbb950713e8f0e}{pfq\+\_\+t} $\ast$q, int gid)
+\item 
+int \hyperlink{pfq_8h_af06200d069049daf05c95b11b793b373}{pfq\+\_\+vlan\+\_\+filters\+\_\+enable} (\hyperlink{pfq_8h_a4e27e9f8aa4924f374dbb950713e8f0e}{pfq\+\_\+t} $\ast$q, int gid, int toggle)
+\item 
+int \hyperlink{pfq_8h_a5bccd205709594bc50a5c37184f35d9e}{pfq\+\_\+vlan\+\_\+set\+\_\+filter} (\hyperlink{pfq_8h_a4e27e9f8aa4924f374dbb950713e8f0e}{pfq\+\_\+t} $\ast$q, int gid, int vid)
+\item 
+int \hyperlink{pfq_8h_a5917ca4fb7191169139aeab0075e5374}{pfq\+\_\+vlan\+\_\+reset\+\_\+filter} (\hyperlink{pfq_8h_a4e27e9f8aa4924f374dbb950713e8f0e}{pfq\+\_\+t} $\ast$q, int gid, int vid)
+\item 
+int \hyperlink{pfq_8h_af1c79c9d73cd04f6731ed497314dc175}{pfq\+\_\+poll} (\hyperlink{pfq_8h_a4e27e9f8aa4924f374dbb950713e8f0e}{pfq\+\_\+t} $\ast$q, long int microseconds)
+\item 
+int \hyperlink{pfq_8h_acb9ba49bf6366c5157c61c8b60af9e0d}{pfq\+\_\+read} (\hyperlink{pfq_8h_a4e27e9f8aa4924f374dbb950713e8f0e}{pfq\+\_\+t} $\ast$q, struct \hyperlink{structpfq__net__queue}{pfq\+\_\+net\+\_\+queue} $\ast$nq, long int microseconds)
+\item 
+int \hyperlink{pfq_8h_a748d456e7adeaee2ee4ff1cd8dd4f689}{pfq\+\_\+recv} (\hyperlink{pfq_8h_a4e27e9f8aa4924f374dbb950713e8f0e}{pfq\+\_\+t} $\ast$q, void $\ast$buf, size\+\_\+t buflen, struct \hyperlink{structpfq__net__queue}{pfq\+\_\+net\+\_\+queue} $\ast$nq, long int microseconds)
+\item 
+int \hyperlink{pfq_8h_adc6f535c8d042639ea9b0dbb6e9c8fae}{pfq\+\_\+dispatch} (\hyperlink{pfq_8h_a4e27e9f8aa4924f374dbb950713e8f0e}{pfq\+\_\+t} $\ast$q, \hyperlink{pfq_8h_a20a4d1af024719d207a2f6234682ac5c}{pfq\+\_\+handler\+\_\+t} cb, long int microseconds, char $\ast$user)
+\item 
+size\+\_\+t \hyperlink{pfq_8h_a53bb7ae7f154bb16e63e595ca0dc939f}{pfq\+\_\+mem\+\_\+size} (\hyperlink{pfq_8h_a4e27e9f8aa4924f374dbb950713e8f0e}{pfq\+\_\+t} const $\ast$q)
+\item 
+const void $\ast$ \hyperlink{pfq_8h_a74b2becebc1d765af076ee49d775d5db}{pfq\+\_\+mem\+\_\+addr} (\hyperlink{pfq_8h_a4e27e9f8aa4924f374dbb950713e8f0e}{pfq\+\_\+t} const $\ast$q)
+\item 
+int \hyperlink{pfq_8h_a4f67632a53abb1047adb19d9d2df16c0}{pfq\+\_\+get\+\_\+fd} (\hyperlink{pfq_8h_a4e27e9f8aa4924f374dbb950713e8f0e}{pfq\+\_\+t} const $\ast$q)
+\item 
+int \hyperlink{pfq_8h_a5413d49d2d45f8f27d1e796cbdf45227}{pfq\+\_\+get\+\_\+stats} (\hyperlink{pfq_8h_a4e27e9f8aa4924f374dbb950713e8f0e}{pfq\+\_\+t} const $\ast$q, struct pfq\+\_\+stats $\ast$stats)
+\item 
+int \hyperlink{pfq_8h_af045476fc566e3f426184086dc8bf0f2}{pfq\+\_\+get\+\_\+group\+\_\+stats} (\hyperlink{pfq_8h_a4e27e9f8aa4924f374dbb950713e8f0e}{pfq\+\_\+t} const $\ast$q, int gid, struct pfq\+\_\+stats $\ast$stats)
+\item 
+int \hyperlink{pfq_8h_a1ab54376ba406188ac2eaa17167920af}{pfq\+\_\+get\+\_\+group\+\_\+counters} (\hyperlink{pfq_8h_a4e27e9f8aa4924f374dbb950713e8f0e}{pfq\+\_\+t} const $\ast$q, int gid, struct pfq\+\_\+counters $\ast$cs)
+\item 
+int \hyperlink{pfq_8h_a8660d52250c187ec23d9cda7e8f351bf}{pfq\+\_\+tx\+\_\+queue\+\_\+flush} (\hyperlink{pfq_8h_a4e27e9f8aa4924f374dbb950713e8f0e}{pfq\+\_\+t} $\ast$q, int queue)
+\item 
+int \hyperlink{pfq_8h_ae46eafd5130cae13e848498db781d67d}{pfq\+\_\+tx\+\_\+async\+\_\+start} (\hyperlink{pfq_8h_a4e27e9f8aa4924f374dbb950713e8f0e}{pfq\+\_\+t} $\ast$q)
+\item 
+int \hyperlink{pfq_8h_a21c77addd3b773015a44ee0aaba688fb}{pfq\+\_\+tx\+\_\+async\+\_\+stop} (\hyperlink{pfq_8h_a4e27e9f8aa4924f374dbb950713e8f0e}{pfq\+\_\+t} $\ast$q)
+\item 
+int \hyperlink{pfq_8h_a65663e50cb89fdb3aff9d6b7668ca381}{pfq\+\_\+inject} (\hyperlink{pfq_8h_a4e27e9f8aa4924f374dbb950713e8f0e}{pfq\+\_\+t} $\ast$q, const void $\ast$ptr, size\+\_\+t len, uint64\+\_\+t nsec, int copies, int queue)
+\item 
+int \hyperlink{pfq_8h_a75e46da7bdd86128def46def9327c64c}{pfq\+\_\+send} (\hyperlink{pfq_8h_a4e27e9f8aa4924f374dbb950713e8f0e}{pfq\+\_\+t} $\ast$q, const void $\ast$ptr, size\+\_\+t len, int copies)
+\item 
+int \hyperlink{pfq_8h_a74e309d43c4822e0a05d6309ef6bd4f3}{pfq\+\_\+send\+\_\+async} (\hyperlink{pfq_8h_a4e27e9f8aa4924f374dbb950713e8f0e}{pfq\+\_\+t} $\ast$q, const void $\ast$ptr, size\+\_\+t len, size\+\_\+t flush\+\_\+hint, int copies)
+\item 
+int \hyperlink{pfq_8h_a7ce16e1e8c72022d6b17a3262454e21f}{pfq\+\_\+send\+\_\+at} (\hyperlink{pfq_8h_a4e27e9f8aa4924f374dbb950713e8f0e}{pfq\+\_\+t} $\ast$q, const void $\ast$ptr, size\+\_\+t len, struct timespec $\ast$ts, int copies)
+\end{DoxyCompactItemize}
+
+
+\subsection{Typedef Documentation}
+\hypertarget{pfq_8h_a20a4d1af024719d207a2f6234682ac5c}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+handler\+\_\+t@{pfq\+\_\+handler\+\_\+t}}
+\index{pfq\+\_\+handler\+\_\+t@{pfq\+\_\+handler\+\_\+t}!pfq.\+h@{pfq.\+h}}
+\subsubsection[{pfq\+\_\+handler\+\_\+t}]{\setlength{\rightskip}{0pt plus 5cm}typedef void($\ast$ pfq\+\_\+handler\+\_\+t)(char $\ast$user, const struct pfq\+\_\+pkthdr $\ast$h, const char $\ast$data)}}\label{pfq_8h_a20a4d1af024719d207a2f6234682ac5c}
+pfq handler\+: function prototype. \hypertarget{pfq_8h_a6e330e8e393bb4b5ecefdd5bf47a6f57}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+iterator\+\_\+t@{pfq\+\_\+iterator\+\_\+t}}
+\index{pfq\+\_\+iterator\+\_\+t@{pfq\+\_\+iterator\+\_\+t}!pfq.\+h@{pfq.\+h}}
+\subsubsection[{pfq\+\_\+iterator\+\_\+t}]{\setlength{\rightskip}{0pt plus 5cm}typedef char$\ast$ {\bf pfq\+\_\+iterator\+\_\+t}}}\label{pfq_8h_a6e330e8e393bb4b5ecefdd5bf47a6f57}
+P\+F\+Q iterator type. \hypertarget{pfq_8h_a4e27e9f8aa4924f374dbb950713e8f0e}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+t@{pfq\+\_\+t}}
+\index{pfq\+\_\+t@{pfq\+\_\+t}!pfq.\+h@{pfq.\+h}}
+\subsubsection[{pfq\+\_\+t}]{\setlength{\rightskip}{0pt plus 5cm}typedef struct pfq\+\_\+data {\bf pfq\+\_\+t}}}\label{pfq_8h_a4e27e9f8aa4924f374dbb950713e8f0e}
+P\+F\+Q descriptor. 
+
+\subsection{Function Documentation}
+\hypertarget{pfq_8h_a9e77c4cd59828b7408876a1e761b276e}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+bind@{pfq\+\_\+bind}}
+\index{pfq\+\_\+bind@{pfq\+\_\+bind}!pfq.\+h@{pfq.\+h}}
+\subsubsection[{pfq\+\_\+bind}]{\setlength{\rightskip}{0pt plus 5cm}int pfq\+\_\+bind (
+\begin{DoxyParamCaption}
+\item[{{\bf pfq\+\_\+t} $\ast$}]{q, }
+\item[{const char $\ast$}]{dev, }
+\item[{int}]{queue}
+\end{DoxyParamCaption}
+)}}\label{pfq_8h_a9e77c4cd59828b7408876a1e761b276e}
+Bind the main group of the socket to the given device/queue.
+
+The first argument is the name of the device; the second argument is the queue number or Q\+\_\+\+A\+N\+Y\+\_\+\+Q\+U\+E\+U\+E. \hypertarget{pfq_8h_ac6a80d8d3fceea2313f08cc18069f792}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+bind\+\_\+group@{pfq\+\_\+bind\+\_\+group}}
+\index{pfq\+\_\+bind\+\_\+group@{pfq\+\_\+bind\+\_\+group}!pfq.\+h@{pfq.\+h}}
+\subsubsection[{pfq\+\_\+bind\+\_\+group}]{\setlength{\rightskip}{0pt plus 5cm}int pfq\+\_\+bind\+\_\+group (
+\begin{DoxyParamCaption}
+\item[{{\bf pfq\+\_\+t} $\ast$}]{q, }
+\item[{int}]{gid, }
+\item[{const char $\ast$}]{dev, }
+\item[{int}]{queue}
+\end{DoxyParamCaption}
+)}}\label{pfq_8h_ac6a80d8d3fceea2313f08cc18069f792}
+Bind the given group to the given device/queue.
+
+The first argument is the group id. The second argument is the name of the device; the third argument is the queue number or Q\+\_\+\+A\+N\+Y\+\_\+\+Q\+U\+E\+U\+E. \hypertarget{pfq_8h_a1f80c371efc1a9f5f3a2003e8e0c8567}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+bind\+\_\+tx@{pfq\+\_\+bind\+\_\+tx}}
+\index{pfq\+\_\+bind\+\_\+tx@{pfq\+\_\+bind\+\_\+tx}!pfq.\+h@{pfq.\+h}}
+\subsubsection[{pfq\+\_\+bind\+\_\+tx}]{\setlength{\rightskip}{0pt plus 5cm}int pfq\+\_\+bind\+\_\+tx (
+\begin{DoxyParamCaption}
+\item[{{\bf pfq\+\_\+t} $\ast$}]{q, }
+\item[{const char $\ast$}]{dev, }
+\item[{int}]{queue, }
+\item[{int}]{core}
+\end{DoxyParamCaption}
+)}}\label{pfq_8h_a1f80c371efc1a9f5f3a2003e8e0c8567}
+Bind the socket for transmission to the given device name and queue.
+
+The core parameter specifies the C\+P\+U index where to run a kernel thread (unless Q\+\_\+\+N\+O\+\_\+\+K\+T\+H\+R\+E\+A\+D is specified). \hypertarget{pfq_8h_a6c69fd7fecfa6e15a356e93395efe7e6}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+close@{pfq\+\_\+close}}
+\index{pfq\+\_\+close@{pfq\+\_\+close}!pfq.\+h@{pfq.\+h}}
+\subsubsection[{pfq\+\_\+close}]{\setlength{\rightskip}{0pt plus 5cm}int pfq\+\_\+close (
+\begin{DoxyParamCaption}
+\item[{{\bf pfq\+\_\+t} $\ast$}]{}
+\end{DoxyParamCaption}
+)}}\label{pfq_8h_a6c69fd7fecfa6e15a356e93395efe7e6}
+Close the socket.
+
+Release the shared memory, stop kernel threads. \hypertarget{pfq_8h_a1de26a48a872051cbfc86f825f400ab6}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+disable@{pfq\+\_\+disable}}
+\index{pfq\+\_\+disable@{pfq\+\_\+disable}!pfq.\+h@{pfq.\+h}}
+\subsubsection[{pfq\+\_\+disable}]{\setlength{\rightskip}{0pt plus 5cm}int pfq\+\_\+disable (
+\begin{DoxyParamCaption}
+\item[{{\bf pfq\+\_\+t} $\ast$}]{q}
+\end{DoxyParamCaption}
+)}}\label{pfq_8h_a1de26a48a872051cbfc86f825f400ab6}
+Disable the socket.
+
+Release the shared memory, stop kernel threads. \hypertarget{pfq_8h_adc6f535c8d042639ea9b0dbb6e9c8fae}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+dispatch@{pfq\+\_\+dispatch}}
+\index{pfq\+\_\+dispatch@{pfq\+\_\+dispatch}!pfq.\+h@{pfq.\+h}}
+\subsubsection[{pfq\+\_\+dispatch}]{\setlength{\rightskip}{0pt plus 5cm}int pfq\+\_\+dispatch (
+\begin{DoxyParamCaption}
+\item[{{\bf pfq\+\_\+t} $\ast$}]{q, }
+\item[{{\bf pfq\+\_\+handler\+\_\+t}}]{cb, }
+\item[{long int}]{microseconds, }
+\item[{char $\ast$}]{user}
+\end{DoxyParamCaption}
+)}}\label{pfq_8h_adc6f535c8d042639ea9b0dbb6e9c8fae}
+Collect and process packets.
+
+The function takes a function pointer as callback. The callback must have the following signature\+:
+
+typedef void ($\ast$pfq\+\_\+handler)(char $\ast$user, const struct pfq\+\_\+pkthdr $\ast$h, const char $\ast$data); \hypertarget{pfq_8h_abdd1ad2cda7d1fc15dd426100deaafd3}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+egress\+\_\+bind@{pfq\+\_\+egress\+\_\+bind}}
+\index{pfq\+\_\+egress\+\_\+bind@{pfq\+\_\+egress\+\_\+bind}!pfq.\+h@{pfq.\+h}}
+\subsubsection[{pfq\+\_\+egress\+\_\+bind}]{\setlength{\rightskip}{0pt plus 5cm}int pfq\+\_\+egress\+\_\+bind (
+\begin{DoxyParamCaption}
+\item[{{\bf pfq\+\_\+t} $\ast$}]{q, }
+\item[{const char $\ast$}]{dev, }
+\item[{int}]{queue}
+\end{DoxyParamCaption}
+)}}\label{pfq_8h_abdd1ad2cda7d1fc15dd426100deaafd3}
+Set the socket as egress and bind it to the given device/queue.
+
+The egress socket is used by groups as network forwarder. \hypertarget{pfq_8h_a44a2ceb3f271ff19c776fcad02c8e49e}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+egress\+\_\+unbind@{pfq\+\_\+egress\+\_\+unbind}}
+\index{pfq\+\_\+egress\+\_\+unbind@{pfq\+\_\+egress\+\_\+unbind}!pfq.\+h@{pfq.\+h}}
+\subsubsection[{pfq\+\_\+egress\+\_\+unbind}]{\setlength{\rightskip}{0pt plus 5cm}int pfq\+\_\+egress\+\_\+unbind (
+\begin{DoxyParamCaption}
+\item[{{\bf pfq\+\_\+t} $\ast$}]{q}
+\end{DoxyParamCaption}
+)}}\label{pfq_8h_a44a2ceb3f271ff19c776fcad02c8e49e}
+Unset the socket as egress. \hypertarget{pfq_8h_ac6531633cb38f851031f4b0ab0b8733c}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+enable@{pfq\+\_\+enable}}
+\index{pfq\+\_\+enable@{pfq\+\_\+enable}!pfq.\+h@{pfq.\+h}}
+\subsubsection[{pfq\+\_\+enable}]{\setlength{\rightskip}{0pt plus 5cm}int pfq\+\_\+enable (
+\begin{DoxyParamCaption}
+\item[{{\bf pfq\+\_\+t} $\ast$}]{q}
+\end{DoxyParamCaption}
+)}}\label{pfq_8h_ac6531633cb38f851031f4b0ab0b8733c}
+Enable the socket for packets capture and transmission.
+
+Allocate the shared memory for socket queues possibly using the Linux Huge\+Pages support. If the enviroment variable P\+F\+Q\+\_\+\+H\+U\+G\+E\+P\+A\+G\+E\+S is set to 0 (or P\+F\+Q\+\_\+\+N\+O\+\_\+\+H\+U\+G\+E\+P\+A\+G\+E\+S is defined) standard 4\+K pages are used. \hypertarget{pfq_8h_a85fc4d99ed1ae9d304fcf0471ed59231}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+error@{pfq\+\_\+error}}
+\index{pfq\+\_\+error@{pfq\+\_\+error}!pfq.\+h@{pfq.\+h}}
+\subsubsection[{pfq\+\_\+error}]{\setlength{\rightskip}{0pt plus 5cm}const char$\ast$ pfq\+\_\+error (
+\begin{DoxyParamCaption}
+\item[{{\bf pfq\+\_\+t} $\ast$}]{}
+\end{DoxyParamCaption}
+)}}\label{pfq_8h_a85fc4d99ed1ae9d304fcf0471ed59231}
+Return the string error.
+
+Return a string of the most recent error. \hypertarget{pfq_8h_a54c5dbee4fc068c08fc9d0390068577d}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+get\+\_\+caplen@{pfq\+\_\+get\+\_\+caplen}}
+\index{pfq\+\_\+get\+\_\+caplen@{pfq\+\_\+get\+\_\+caplen}!pfq.\+h@{pfq.\+h}}
+\subsubsection[{pfq\+\_\+get\+\_\+caplen}]{\setlength{\rightskip}{0pt plus 5cm}ssize\+\_\+t pfq\+\_\+get\+\_\+caplen (
+\begin{DoxyParamCaption}
+\item[{{\bf pfq\+\_\+t} const $\ast$}]{q}
+\end{DoxyParamCaption}
+)}}\label{pfq_8h_a54c5dbee4fc068c08fc9d0390068577d}
+Return the capture length of packets, in bytes. \hypertarget{pfq_8h_a4f67632a53abb1047adb19d9d2df16c0}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+get\+\_\+fd@{pfq\+\_\+get\+\_\+fd}}
+\index{pfq\+\_\+get\+\_\+fd@{pfq\+\_\+get\+\_\+fd}!pfq.\+h@{pfq.\+h}}
+\subsubsection[{pfq\+\_\+get\+\_\+fd}]{\setlength{\rightskip}{0pt plus 5cm}int pfq\+\_\+get\+\_\+fd (
+\begin{DoxyParamCaption}
+\item[{{\bf pfq\+\_\+t} const $\ast$}]{q}
+\end{DoxyParamCaption}
+)}}\label{pfq_8h_a4f67632a53abb1047adb19d9d2df16c0}
+Return the underlying file descriptor. \hypertarget{pfq_8h_a1ab54376ba406188ac2eaa17167920af}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+get\+\_\+group\+\_\+counters@{pfq\+\_\+get\+\_\+group\+\_\+counters}}
+\index{pfq\+\_\+get\+\_\+group\+\_\+counters@{pfq\+\_\+get\+\_\+group\+\_\+counters}!pfq.\+h@{pfq.\+h}}
+\subsubsection[{pfq\+\_\+get\+\_\+group\+\_\+counters}]{\setlength{\rightskip}{0pt plus 5cm}int pfq\+\_\+get\+\_\+group\+\_\+counters (
+\begin{DoxyParamCaption}
+\item[{{\bf pfq\+\_\+t} const $\ast$}]{q, }
+\item[{int}]{gid, }
+\item[{struct pfq\+\_\+counters $\ast$}]{cs}
+\end{DoxyParamCaption}
+)}}\label{pfq_8h_a1ab54376ba406188ac2eaa17167920af}
+Return the set of counters of the given group. \hypertarget{pfq_8h_af045476fc566e3f426184086dc8bf0f2}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+get\+\_\+group\+\_\+stats@{pfq\+\_\+get\+\_\+group\+\_\+stats}}
+\index{pfq\+\_\+get\+\_\+group\+\_\+stats@{pfq\+\_\+get\+\_\+group\+\_\+stats}!pfq.\+h@{pfq.\+h}}
+\subsubsection[{pfq\+\_\+get\+\_\+group\+\_\+stats}]{\setlength{\rightskip}{0pt plus 5cm}int pfq\+\_\+get\+\_\+group\+\_\+stats (
+\begin{DoxyParamCaption}
+\item[{{\bf pfq\+\_\+t} const $\ast$}]{q, }
+\item[{int}]{gid, }
+\item[{struct pfq\+\_\+stats $\ast$}]{stats}
+\end{DoxyParamCaption}
+)}}\label{pfq_8h_af045476fc566e3f426184086dc8bf0f2}
+Return the statistics of the given group. \hypertarget{pfq_8h_a27828e9f36f85060a4fd07e5aedb032c}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+get\+\_\+maxlen@{pfq\+\_\+get\+\_\+maxlen}}
+\index{pfq\+\_\+get\+\_\+maxlen@{pfq\+\_\+get\+\_\+maxlen}!pfq.\+h@{pfq.\+h}}
+\subsubsection[{pfq\+\_\+get\+\_\+maxlen}]{\setlength{\rightskip}{0pt plus 5cm}ssize\+\_\+t pfq\+\_\+get\+\_\+maxlen (
+\begin{DoxyParamCaption}
+\item[{{\bf pfq\+\_\+t} const $\ast$}]{q}
+\end{DoxyParamCaption}
+)}}\label{pfq_8h_a27828e9f36f85060a4fd07e5aedb032c}
+Return the max transmission length of packets, in bytes. \hypertarget{pfq_8h_a36f38c6de7397d1c3a8e010309656def}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+get\+\_\+rx\+\_\+slot\+\_\+size@{pfq\+\_\+get\+\_\+rx\+\_\+slot\+\_\+size}}
+\index{pfq\+\_\+get\+\_\+rx\+\_\+slot\+\_\+size@{pfq\+\_\+get\+\_\+rx\+\_\+slot\+\_\+size}!pfq.\+h@{pfq.\+h}}
+\subsubsection[{pfq\+\_\+get\+\_\+rx\+\_\+slot\+\_\+size}]{\setlength{\rightskip}{0pt plus 5cm}size\+\_\+t pfq\+\_\+get\+\_\+rx\+\_\+slot\+\_\+size (
+\begin{DoxyParamCaption}
+\item[{{\bf pfq\+\_\+t} const $\ast$}]{q}
+\end{DoxyParamCaption}
+)}}\label{pfq_8h_a36f38c6de7397d1c3a8e010309656def}
+Return the length of a Rx slot, in bytes. \hypertarget{pfq_8h_ae0ff886fe3154e0dee5d1590807c5297}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+get\+\_\+rx\+\_\+slots@{pfq\+\_\+get\+\_\+rx\+\_\+slots}}
+\index{pfq\+\_\+get\+\_\+rx\+\_\+slots@{pfq\+\_\+get\+\_\+rx\+\_\+slots}!pfq.\+h@{pfq.\+h}}
+\subsubsection[{pfq\+\_\+get\+\_\+rx\+\_\+slots}]{\setlength{\rightskip}{0pt plus 5cm}size\+\_\+t pfq\+\_\+get\+\_\+rx\+\_\+slots (
+\begin{DoxyParamCaption}
+\item[{{\bf pfq\+\_\+t} const $\ast$}]{q}
+\end{DoxyParamCaption}
+)}}\label{pfq_8h_ae0ff886fe3154e0dee5d1590807c5297}
+Return the length of the Rx queue, in number of packets. \hypertarget{pfq_8h_a5413d49d2d45f8f27d1e796cbdf45227}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+get\+\_\+stats@{pfq\+\_\+get\+\_\+stats}}
+\index{pfq\+\_\+get\+\_\+stats@{pfq\+\_\+get\+\_\+stats}!pfq.\+h@{pfq.\+h}}
+\subsubsection[{pfq\+\_\+get\+\_\+stats}]{\setlength{\rightskip}{0pt plus 5cm}int pfq\+\_\+get\+\_\+stats (
+\begin{DoxyParamCaption}
+\item[{{\bf pfq\+\_\+t} const $\ast$}]{q, }
+\item[{struct pfq\+\_\+stats $\ast$}]{stats}
+\end{DoxyParamCaption}
+)}}\label{pfq_8h_a5413d49d2d45f8f27d1e796cbdf45227}
+Return the socket statistics. \hypertarget{pfq_8h_a4ba7ed06f84cb9e12b9b8a0d693a9a3e}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+get\+\_\+tx\+\_\+slots@{pfq\+\_\+get\+\_\+tx\+\_\+slots}}
+\index{pfq\+\_\+get\+\_\+tx\+\_\+slots@{pfq\+\_\+get\+\_\+tx\+\_\+slots}!pfq.\+h@{pfq.\+h}}
+\subsubsection[{pfq\+\_\+get\+\_\+tx\+\_\+slots}]{\setlength{\rightskip}{0pt plus 5cm}size\+\_\+t pfq\+\_\+get\+\_\+tx\+\_\+slots (
+\begin{DoxyParamCaption}
+\item[{{\bf pfq\+\_\+t} const $\ast$}]{q}
+\end{DoxyParamCaption}
+)}}\label{pfq_8h_a4ba7ed06f84cb9e12b9b8a0d693a9a3e}
+Return the length of the Tx queue, in number of packets. \hypertarget{pfq_8h_af43b9ff4fd643ff19f1f42fe45c0af6f}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+get\+\_\+weight@{pfq\+\_\+get\+\_\+weight}}
+\index{pfq\+\_\+get\+\_\+weight@{pfq\+\_\+get\+\_\+weight}!pfq.\+h@{pfq.\+h}}
+\subsubsection[{pfq\+\_\+get\+\_\+weight}]{\setlength{\rightskip}{0pt plus 5cm}int pfq\+\_\+get\+\_\+weight (
+\begin{DoxyParamCaption}
+\item[{{\bf pfq\+\_\+t} const $\ast$}]{q}
+\end{DoxyParamCaption}
+)}}\label{pfq_8h_af43b9ff4fd643ff19f1f42fe45c0af6f}
+Return the weight of the socket. \hypertarget{pfq_8h_a2f9317c43bc0586ab4909c4216a80ef8}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+group\+\_\+fprog@{pfq\+\_\+group\+\_\+fprog}}
+\index{pfq\+\_\+group\+\_\+fprog@{pfq\+\_\+group\+\_\+fprog}!pfq.\+h@{pfq.\+h}}
+\subsubsection[{pfq\+\_\+group\+\_\+fprog}]{\setlength{\rightskip}{0pt plus 5cm}int pfq\+\_\+group\+\_\+fprog (
+\begin{DoxyParamCaption}
+\item[{{\bf pfq\+\_\+t} $\ast$}]{q, }
+\item[{int}]{gid, }
+\item[{struct sock\+\_\+fprog $\ast$}]{}
+\end{DoxyParamCaption}
+)}}\label{pfq_8h_a2f9317c43bc0586ab4909c4216a80ef8}
+Specify a B\+P\+F program for the given group.
+
+This function can be used to set a specific B\+P\+F filter for the group. It is used by P\+F\+Q/pcap library. \hypertarget{pfq_8h_abd0ffab7bc739d24e66bf92e47d3db82}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+group\+\_\+fprog\+\_\+reset@{pfq\+\_\+group\+\_\+fprog\+\_\+reset}}
+\index{pfq\+\_\+group\+\_\+fprog\+\_\+reset@{pfq\+\_\+group\+\_\+fprog\+\_\+reset}!pfq.\+h@{pfq.\+h}}
+\subsubsection[{pfq\+\_\+group\+\_\+fprog\+\_\+reset}]{\setlength{\rightskip}{0pt plus 5cm}int pfq\+\_\+group\+\_\+fprog\+\_\+reset (
+\begin{DoxyParamCaption}
+\item[{{\bf pfq\+\_\+t} $\ast$}]{q, }
+\item[{int}]{gid}
+\end{DoxyParamCaption}
+)}}\label{pfq_8h_abd0ffab7bc739d24e66bf92e47d3db82}
+Reset the B\+P\+F program fro the given group. \hypertarget{pfq_8h_a3cf11d0765db26cf22352c015f56d64b}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+group\+\_\+id@{pfq\+\_\+group\+\_\+id}}
+\index{pfq\+\_\+group\+\_\+id@{pfq\+\_\+group\+\_\+id}!pfq.\+h@{pfq.\+h}}
+\subsubsection[{pfq\+\_\+group\+\_\+id}]{\setlength{\rightskip}{0pt plus 5cm}int pfq\+\_\+group\+\_\+id (
+\begin{DoxyParamCaption}
+\item[{{\bf pfq\+\_\+t} $\ast$}]{q}
+\end{DoxyParamCaption}
+)}}\label{pfq_8h_a3cf11d0765db26cf22352c015f56d64b}
+Return the group-\/id of the socket. \hypertarget{pfq_8h_a801637019645491f44219a33317ce735}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+groups\+\_\+mask@{pfq\+\_\+groups\+\_\+mask}}
+\index{pfq\+\_\+groups\+\_\+mask@{pfq\+\_\+groups\+\_\+mask}!pfq.\+h@{pfq.\+h}}
+\subsubsection[{pfq\+\_\+groups\+\_\+mask}]{\setlength{\rightskip}{0pt plus 5cm}int pfq\+\_\+groups\+\_\+mask (
+\begin{DoxyParamCaption}
+\item[{{\bf pfq\+\_\+t} const $\ast$}]{q, }
+\item[{unsigned long $\ast$}]{\+\_\+mask}
+\end{DoxyParamCaption}
+)}}\label{pfq_8h_a801637019645491f44219a33317ce735}
+Return the mask of the joined groups.
+
+Each socket can bind to multiple groups. Each bit of the mask represents a joined group. \hypertarget{pfq_8h_ac0b5855c75f81f92730f1fd04751ec88}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+id@{pfq\+\_\+id}}
+\index{pfq\+\_\+id@{pfq\+\_\+id}!pfq.\+h@{pfq.\+h}}
+\subsubsection[{pfq\+\_\+id}]{\setlength{\rightskip}{0pt plus 5cm}int pfq\+\_\+id (
+\begin{DoxyParamCaption}
+\item[{{\bf pfq\+\_\+t} $\ast$}]{q}
+\end{DoxyParamCaption}
+)}}\label{pfq_8h_ac0b5855c75f81f92730f1fd04751ec88}
+Return the id of the socket. \hypertarget{pfq_8h_abe14da05a5618684ef2896ff4497ae4b}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+ifindex@{pfq\+\_\+ifindex}}
+\index{pfq\+\_\+ifindex@{pfq\+\_\+ifindex}!pfq.\+h@{pfq.\+h}}
+\subsubsection[{pfq\+\_\+ifindex}]{\setlength{\rightskip}{0pt plus 5cm}int pfq\+\_\+ifindex (
+\begin{DoxyParamCaption}
+\item[{{\bf pfq\+\_\+t} const $\ast$}]{q, }
+\item[{const char $\ast$}]{dev}
+\end{DoxyParamCaption}
+)}}\label{pfq_8h_abe14da05a5618684ef2896ff4497ae4b}
+Given a device name, return the interface index. \hypertarget{pfq_8h_a65663e50cb89fdb3aff9d6b7668ca381}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+inject@{pfq\+\_\+inject}}
+\index{pfq\+\_\+inject@{pfq\+\_\+inject}!pfq.\+h@{pfq.\+h}}
+\subsubsection[{pfq\+\_\+inject}]{\setlength{\rightskip}{0pt plus 5cm}int pfq\+\_\+inject (
+\begin{DoxyParamCaption}
+\item[{{\bf pfq\+\_\+t} $\ast$}]{q, }
+\item[{const void $\ast$}]{ptr, }
+\item[{size\+\_\+t}]{len, }
+\item[{uint64\+\_\+t}]{nsec, }
+\item[{int}]{copies, }
+\item[{int}]{queue}
+\end{DoxyParamCaption}
+)}}\label{pfq_8h_a65663e50cb89fdb3aff9d6b7668ca381}
+Schedule the packet for transmission.
+
+The packet is copied into a Tx queue (using a T\+S\+S symmetric hash if any\+\_\+queue is specified) and transmitted at the given timestamp by a kernel thread or when tx\+\_\+queue\+\_\+flush is called. A timestamp of 0 nanoseconds means 'immediate transmission'. \hypertarget{pfq_8h_a797ab131962d34faecb052d2a47f65b9}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+is\+\_\+enabled@{pfq\+\_\+is\+\_\+enabled}}
+\index{pfq\+\_\+is\+\_\+enabled@{pfq\+\_\+is\+\_\+enabled}!pfq.\+h@{pfq.\+h}}
+\subsubsection[{pfq\+\_\+is\+\_\+enabled}]{\setlength{\rightskip}{0pt plus 5cm}int pfq\+\_\+is\+\_\+enabled (
+\begin{DoxyParamCaption}
+\item[{{\bf pfq\+\_\+t} const $\ast$}]{q}
+\end{DoxyParamCaption}
+)}}\label{pfq_8h_a797ab131962d34faecb052d2a47f65b9}
+Check whether the socket is enabled. \hypertarget{pfq_8h_a8421a3d6b07e1db7f014289e118fb953}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+is\+\_\+timestamping\+\_\+enabled@{pfq\+\_\+is\+\_\+timestamping\+\_\+enabled}}
+\index{pfq\+\_\+is\+\_\+timestamping\+\_\+enabled@{pfq\+\_\+is\+\_\+timestamping\+\_\+enabled}!pfq.\+h@{pfq.\+h}}
+\subsubsection[{pfq\+\_\+is\+\_\+timestamping\+\_\+enabled}]{\setlength{\rightskip}{0pt plus 5cm}int pfq\+\_\+is\+\_\+timestamping\+\_\+enabled (
+\begin{DoxyParamCaption}
+\item[{{\bf pfq\+\_\+t} const $\ast$}]{q}
+\end{DoxyParamCaption}
+)}}\label{pfq_8h_a8421a3d6b07e1db7f014289e118fb953}
+Check whether timestamping for packets is enabled. \hypertarget{pfq_8h_a1130e49c84b3179e501969c9747989d6}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+join\+\_\+group@{pfq\+\_\+join\+\_\+group}}
+\index{pfq\+\_\+join\+\_\+group@{pfq\+\_\+join\+\_\+group}!pfq.\+h@{pfq.\+h}}
+\subsubsection[{pfq\+\_\+join\+\_\+group}]{\setlength{\rightskip}{0pt plus 5cm}int pfq\+\_\+join\+\_\+group (
+\begin{DoxyParamCaption}
+\item[{{\bf pfq\+\_\+t} $\ast$}]{q, }
+\item[{int}]{gid, }
+\item[{unsigned long}]{class\+\_\+mask, }
+\item[{int}]{group\+\_\+policy}
+\end{DoxyParamCaption}
+)}}\label{pfq_8h_a1130e49c84b3179e501969c9747989d6}
+Join the group with the given class mask and group policy \hypertarget{pfq_8h_af99c219e40110d4395b98294677f7b1b}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+leave\+\_\+group@{pfq\+\_\+leave\+\_\+group}}
+\index{pfq\+\_\+leave\+\_\+group@{pfq\+\_\+leave\+\_\+group}!pfq.\+h@{pfq.\+h}}
+\subsubsection[{pfq\+\_\+leave\+\_\+group}]{\setlength{\rightskip}{0pt plus 5cm}int pfq\+\_\+leave\+\_\+group (
+\begin{DoxyParamCaption}
+\item[{{\bf pfq\+\_\+t} $\ast$}]{q, }
+\item[{int}]{gid}
+\end{DoxyParamCaption}
+)}}\label{pfq_8h_af99c219e40110d4395b98294677f7b1b}
+Leave the group specified by the group id. \hypertarget{pfq_8h_a74b2becebc1d765af076ee49d775d5db}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+mem\+\_\+addr@{pfq\+\_\+mem\+\_\+addr}}
+\index{pfq\+\_\+mem\+\_\+addr@{pfq\+\_\+mem\+\_\+addr}!pfq.\+h@{pfq.\+h}}
+\subsubsection[{pfq\+\_\+mem\+\_\+addr}]{\setlength{\rightskip}{0pt plus 5cm}const void$\ast$ pfq\+\_\+mem\+\_\+addr (
+\begin{DoxyParamCaption}
+\item[{{\bf pfq\+\_\+t} const $\ast$}]{q}
+\end{DoxyParamCaption}
+)}}\label{pfq_8h_a74b2becebc1d765af076ee49d775d5db}
+Return the address of the Rx queue. \hypertarget{pfq_8h_a53bb7ae7f154bb16e63e595ca0dc939f}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+mem\+\_\+size@{pfq\+\_\+mem\+\_\+size}}
+\index{pfq\+\_\+mem\+\_\+size@{pfq\+\_\+mem\+\_\+size}!pfq.\+h@{pfq.\+h}}
+\subsubsection[{pfq\+\_\+mem\+\_\+size}]{\setlength{\rightskip}{0pt plus 5cm}size\+\_\+t pfq\+\_\+mem\+\_\+size (
+\begin{DoxyParamCaption}
+\item[{{\bf pfq\+\_\+t} const $\ast$}]{q}
+\end{DoxyParamCaption}
+)}}\label{pfq_8h_a53bb7ae7f154bb16e63e595ca0dc939f}
+Return the memory size of the Rx queue. \hypertarget{pfq_8h_aabd4b56f65903c1b4b8a610510685ff3}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+open@{pfq\+\_\+open}}
+\index{pfq\+\_\+open@{pfq\+\_\+open}!pfq.\+h@{pfq.\+h}}
+\subsubsection[{pfq\+\_\+open}]{\setlength{\rightskip}{0pt plus 5cm}{\bf pfq\+\_\+t}$\ast$ pfq\+\_\+open (
+\begin{DoxyParamCaption}
+\item[{size\+\_\+t}]{caplen, }
+\item[{size\+\_\+t}]{rx\+\_\+slots, }
+\item[{size\+\_\+t}]{tx\+\_\+slots}
+\end{DoxyParamCaption}
+)}}\label{pfq_8h_aabd4b56f65903c1b4b8a610510685ff3}
+group\+\_\+policy\+: Q\+\_\+\+P\+O\+L\+I\+C\+Y\+\_\+\+G\+R\+O\+U\+P\+\_\+\+P\+R\+I\+V\+A\+T\+E, Q\+\_\+\+P\+O\+L\+I\+C\+Y\+\_\+\+G\+R\+O\+U\+P\+\_\+\+R\+E\+S\+T\+R\+I\+C\+T\+E\+D, Q\+\_\+\+P\+O\+L\+I\+C\+Y\+\_\+\+G\+R\+O\+U\+P\+\_\+\+S\+H\+A\+R\+E\+D, Q\+\_\+\+P\+O\+L\+I\+C\+Y\+\_\+\+G\+R\+O\+U\+P\+\_\+\+U\+N\+D\+E\+F\+I\+N\+E\+D...
+
+class\+\_\+mask \+: Q\+\_\+\+C\+L\+A\+S\+S\+\_\+\+D\+E\+F\+A\+U\+L\+T$\vert$ .... = Q\+\_\+\+C\+L\+A\+S\+S\+\_\+\+A\+N\+Y
+
+Open the socket and create a new private group.
+
+The default values for class mask and group policy are Q\+\_\+\+C\+L\+A\+S\+S\+\_\+\+D\+E\+F\+A\+U\+L\+T and Q\+\_\+\+P\+O\+L\+I\+C\+Y\+\_\+\+G\+R\+O\+U\+P\+\_\+\+P\+R\+I\+V\+A\+T\+E, respectively. \hypertarget{pfq_8h_a4612e6d2546991f230ecab6bb9b6c5d8}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+open\+\_\+group@{pfq\+\_\+open\+\_\+group}}
+\index{pfq\+\_\+open\+\_\+group@{pfq\+\_\+open\+\_\+group}!pfq.\+h@{pfq.\+h}}
+\subsubsection[{pfq\+\_\+open\+\_\+group}]{\setlength{\rightskip}{0pt plus 5cm}{\bf pfq\+\_\+t}$\ast$ pfq\+\_\+open\+\_\+group (
+\begin{DoxyParamCaption}
+\item[{unsigned long}]{class\+\_\+mask, }
+\item[{int}]{group\+\_\+policy, }
+\item[{size\+\_\+t}]{caplen, }
+\item[{size\+\_\+t}]{rx\+\_\+slots, }
+\item[{size\+\_\+t}]{tx\+\_\+slots}
+\end{DoxyParamCaption}
+)}}\label{pfq_8h_a4612e6d2546991f230ecab6bb9b6c5d8}
+Open the socket and create a new group with the specified parameters.
+
+If group\+\_\+policy is Q\+\_\+\+P\+O\+L\+I\+C\+Y\+\_\+\+G\+R\+O\+U\+P\+\_\+\+U\+N\+D\+E\+F\+I\+N\+E\+D no gorup is joined or created. \hypertarget{pfq_8h_afd6be71b02a698ef7ebfe968eaf264d5}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+open\+\_\+nogroup@{pfq\+\_\+open\+\_\+nogroup}}
+\index{pfq\+\_\+open\+\_\+nogroup@{pfq\+\_\+open\+\_\+nogroup}!pfq.\+h@{pfq.\+h}}
+\subsubsection[{pfq\+\_\+open\+\_\+nogroup}]{\setlength{\rightskip}{0pt plus 5cm}{\bf pfq\+\_\+t}$\ast$ pfq\+\_\+open\+\_\+nogroup (
+\begin{DoxyParamCaption}
+\item[{size\+\_\+t}]{caplen, }
+\item[{size\+\_\+t}]{rx\+\_\+slots, }
+\item[{size\+\_\+t}]{tx\+\_\+slots}
+\end{DoxyParamCaption}
+)}}\label{pfq_8h_afd6be71b02a698ef7ebfe968eaf264d5}
+Open the socket. No group is joined or created.
+
+Groups can later be joined by means of 'pfq\+\_\+join\+\_\+group' function. \hypertarget{pfq_8h_af1c79c9d73cd04f6731ed497314dc175}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+poll@{pfq\+\_\+poll}}
+\index{pfq\+\_\+poll@{pfq\+\_\+poll}!pfq.\+h@{pfq.\+h}}
+\subsubsection[{pfq\+\_\+poll}]{\setlength{\rightskip}{0pt plus 5cm}int pfq\+\_\+poll (
+\begin{DoxyParamCaption}
+\item[{{\bf pfq\+\_\+t} $\ast$}]{q, }
+\item[{long int}]{microseconds}
+\end{DoxyParamCaption}
+)}}\label{pfq_8h_af1c79c9d73cd04f6731ed497314dc175}
+Wait for packets.
+
+Wait for packets available for reading. A timeout in microseconds can be specified. \hypertarget{pfq_8h_acb9ba49bf6366c5157c61c8b60af9e0d}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+read@{pfq\+\_\+read}}
+\index{pfq\+\_\+read@{pfq\+\_\+read}!pfq.\+h@{pfq.\+h}}
+\subsubsection[{pfq\+\_\+read}]{\setlength{\rightskip}{0pt plus 5cm}int pfq\+\_\+read (
+\begin{DoxyParamCaption}
+\item[{{\bf pfq\+\_\+t} $\ast$}]{q, }
+\item[{struct {\bf pfq\+\_\+net\+\_\+queue} $\ast$}]{nq, }
+\item[{long int}]{microseconds}
+\end{DoxyParamCaption}
+)}}\label{pfq_8h_acb9ba49bf6366c5157c61c8b60af9e0d}
+Read packets in place.
+
+Wait for packets and return the number of packets available. References to packets are stored into the '\hyperlink{structpfq__net__queue}{pfq\+\_\+net\+\_\+queue}' data structure.
+
+The memory of the socket queue is reset at the next read. A timeout is specified in microseconds. \hypertarget{pfq_8h_a748d456e7adeaee2ee4ff1cd8dd4f689}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+recv@{pfq\+\_\+recv}}
+\index{pfq\+\_\+recv@{pfq\+\_\+recv}!pfq.\+h@{pfq.\+h}}
+\subsubsection[{pfq\+\_\+recv}]{\setlength{\rightskip}{0pt plus 5cm}int pfq\+\_\+recv (
+\begin{DoxyParamCaption}
+\item[{{\bf pfq\+\_\+t} $\ast$}]{q, }
+\item[{void $\ast$}]{buf, }
+\item[{size\+\_\+t}]{buflen, }
+\item[{struct {\bf pfq\+\_\+net\+\_\+queue} $\ast$}]{nq, }
+\item[{long int}]{microseconds}
+\end{DoxyParamCaption}
+)}}\label{pfq_8h_a748d456e7adeaee2ee4ff1cd8dd4f689}
+Receive packets in the given buffer.
+
+Wait for packets and return the number of packets available. Packets are stored in the given buffer. It is possible to specify a timeout in microseconds. \hypertarget{pfq_8h_a75e46da7bdd86128def46def9327c64c}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+send@{pfq\+\_\+send}}
+\index{pfq\+\_\+send@{pfq\+\_\+send}!pfq.\+h@{pfq.\+h}}
+\subsubsection[{pfq\+\_\+send}]{\setlength{\rightskip}{0pt plus 5cm}int pfq\+\_\+send (
+\begin{DoxyParamCaption}
+\item[{{\bf pfq\+\_\+t} $\ast$}]{q, }
+\item[{const void $\ast$}]{ptr, }
+\item[{size\+\_\+t}]{len, }
+\item[{int}]{copies}
+\end{DoxyParamCaption}
+)}}\label{pfq_8h_a75e46da7bdd86128def46def9327c64c}
+Store the packet and transmit the packets in the queue.
+
+The queue is flushed (if required) and the transmission takes place. \hypertarget{pfq_8h_a74e309d43c4822e0a05d6309ef6bd4f3}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+send\+\_\+async@{pfq\+\_\+send\+\_\+async}}
+\index{pfq\+\_\+send\+\_\+async@{pfq\+\_\+send\+\_\+async}!pfq.\+h@{pfq.\+h}}
+\subsubsection[{pfq\+\_\+send\+\_\+async}]{\setlength{\rightskip}{0pt plus 5cm}int pfq\+\_\+send\+\_\+async (
+\begin{DoxyParamCaption}
+\item[{{\bf pfq\+\_\+t} $\ast$}]{q, }
+\item[{const void $\ast$}]{ptr, }
+\item[{size\+\_\+t}]{len, }
+\item[{size\+\_\+t}]{flush\+\_\+hint, }
+\item[{int}]{copies}
+\end{DoxyParamCaption}
+)}}\label{pfq_8h_a74e309d43c4822e0a05d6309ef6bd4f3}
+Store the packet and transmit the packets in the queue, asynchronously.
+
+The transmission is invoked every  packets. When T\+X kernel threads are in use,  is ignored. \hypertarget{pfq_8h_a7ce16e1e8c72022d6b17a3262454e21f}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+send\+\_\+at@{pfq\+\_\+send\+\_\+at}}
+\index{pfq\+\_\+send\+\_\+at@{pfq\+\_\+send\+\_\+at}!pfq.\+h@{pfq.\+h}}
+\subsubsection[{pfq\+\_\+send\+\_\+at}]{\setlength{\rightskip}{0pt plus 5cm}int pfq\+\_\+send\+\_\+at (
+\begin{DoxyParamCaption}
+\item[{{\bf pfq\+\_\+t} $\ast$}]{q, }
+\item[{const void $\ast$}]{ptr, }
+\item[{size\+\_\+t}]{len, }
+\item[{struct timespec $\ast$}]{ts, }
+\item[{int}]{copies}
+\end{DoxyParamCaption}
+)}}\label{pfq_8h_a7ce16e1e8c72022d6b17a3262454e21f}
+Store the packet and transmit it.
+
+The transmission takes place asynchronously at the given timespec time. \hypertarget{pfq_8h_ac726d1da4c6aecfa1dcb1544c036cdc4}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+set\+\_\+caplen@{pfq\+\_\+set\+\_\+caplen}}
+\index{pfq\+\_\+set\+\_\+caplen@{pfq\+\_\+set\+\_\+caplen}!pfq.\+h@{pfq.\+h}}
+\subsubsection[{pfq\+\_\+set\+\_\+caplen}]{\setlength{\rightskip}{0pt plus 5cm}int pfq\+\_\+set\+\_\+caplen (
+\begin{DoxyParamCaption}
+\item[{{\bf pfq\+\_\+t} $\ast$}]{q, }
+\item[{size\+\_\+t}]{value}
+\end{DoxyParamCaption}
+)}}\label{pfq_8h_ac726d1da4c6aecfa1dcb1544c036cdc4}
+Specify the capture length of packets, in bytes.
+
+Capture length must be set before the socket is enabled. \hypertarget{pfq_8h_a63b881aa62dc2c45b44fdb9810f7a07f}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+set\+\_\+group\+\_\+computation@{pfq\+\_\+set\+\_\+group\+\_\+computation}}
+\index{pfq\+\_\+set\+\_\+group\+\_\+computation@{pfq\+\_\+set\+\_\+group\+\_\+computation}!pfq.\+h@{pfq.\+h}}
+\subsubsection[{pfq\+\_\+set\+\_\+group\+\_\+computation}]{\setlength{\rightskip}{0pt plus 5cm}int pfq\+\_\+set\+\_\+group\+\_\+computation (
+\begin{DoxyParamCaption}
+\item[{{\bf pfq\+\_\+t} $\ast$}]{q, }
+\item[{int}]{gid, }
+\item[{struct pfq\+\_\+computation\+\_\+descr $\ast$}]{prg}
+\end{DoxyParamCaption}
+)}}\label{pfq_8h_a63b881aa62dc2c45b44fdb9810f7a07f}
+Specify a functional computation for the given group.
+
+The functional computation is specified by a pfq\+\_\+computation\+\_\+descriptor. \hypertarget{pfq_8h_aa40ff5d2d51467a34f168cbb6b296509}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+set\+\_\+group\+\_\+computation\+\_\+from\+\_\+string@{pfq\+\_\+set\+\_\+group\+\_\+computation\+\_\+from\+\_\+string}}
+\index{pfq\+\_\+set\+\_\+group\+\_\+computation\+\_\+from\+\_\+string@{pfq\+\_\+set\+\_\+group\+\_\+computation\+\_\+from\+\_\+string}!pfq.\+h@{pfq.\+h}}
+\subsubsection[{pfq\+\_\+set\+\_\+group\+\_\+computation\+\_\+from\+\_\+string}]{\setlength{\rightskip}{0pt plus 5cm}int pfq\+\_\+set\+\_\+group\+\_\+computation\+\_\+from\+\_\+string (
+\begin{DoxyParamCaption}
+\item[{{\bf pfq\+\_\+t} $\ast$}]{q, }
+\item[{int}]{gid, }
+\item[{const char $\ast$}]{prg}
+\end{DoxyParamCaption}
+)}}\label{pfq_8h_aa40ff5d2d51467a34f168cbb6b296509}
+Specify a functional computation for the given group, from string.
+
+This ability is limited to simple P\+F\+Q/lang functional computations. Only the composition of monadic functions without arguments are currently supported. \hypertarget{pfq_8h_ab5d185cdfcf8c7dcd2820a9f020415a0}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+set\+\_\+promisc@{pfq\+\_\+set\+\_\+promisc}}
+\index{pfq\+\_\+set\+\_\+promisc@{pfq\+\_\+set\+\_\+promisc}!pfq.\+h@{pfq.\+h}}
+\subsubsection[{pfq\+\_\+set\+\_\+promisc}]{\setlength{\rightskip}{0pt plus 5cm}int pfq\+\_\+set\+\_\+promisc (
+\begin{DoxyParamCaption}
+\item[{{\bf pfq\+\_\+t} const $\ast$}]{q, }
+\item[{const char $\ast$}]{dev, }
+\item[{int}]{value}
+\end{DoxyParamCaption}
+)}}\label{pfq_8h_ab5d185cdfcf8c7dcd2820a9f020415a0}
+Set the promiscuous mode for the given device. \hypertarget{pfq_8h_a0d09783c6e8a992fa7ac7e47faf3a812}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+set\+\_\+rx\+\_\+slots@{pfq\+\_\+set\+\_\+rx\+\_\+slots}}
+\index{pfq\+\_\+set\+\_\+rx\+\_\+slots@{pfq\+\_\+set\+\_\+rx\+\_\+slots}!pfq.\+h@{pfq.\+h}}
+\subsubsection[{pfq\+\_\+set\+\_\+rx\+\_\+slots}]{\setlength{\rightskip}{0pt plus 5cm}int pfq\+\_\+set\+\_\+rx\+\_\+slots (
+\begin{DoxyParamCaption}
+\item[{{\bf pfq\+\_\+t} $\ast$}]{q, }
+\item[{size\+\_\+t}]{value}
+\end{DoxyParamCaption}
+)}}\label{pfq_8h_a0d09783c6e8a992fa7ac7e47faf3a812}
+Specify the length of the Rx queue, in number of packets. \hypertarget{pfq_8h_a9093dbc13b4c42c215e4eaeedf5db8bd}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+set\+\_\+tx\+\_\+slots@{pfq\+\_\+set\+\_\+tx\+\_\+slots}}
+\index{pfq\+\_\+set\+\_\+tx\+\_\+slots@{pfq\+\_\+set\+\_\+tx\+\_\+slots}!pfq.\+h@{pfq.\+h}}
+\subsubsection[{pfq\+\_\+set\+\_\+tx\+\_\+slots}]{\setlength{\rightskip}{0pt plus 5cm}int pfq\+\_\+set\+\_\+tx\+\_\+slots (
+\begin{DoxyParamCaption}
+\item[{{\bf pfq\+\_\+t} $\ast$}]{q, }
+\item[{size\+\_\+t}]{value}
+\end{DoxyParamCaption}
+)}}\label{pfq_8h_a9093dbc13b4c42c215e4eaeedf5db8bd}
+Specify the length of the Tx queue, in number of packets. \hypertarget{pfq_8h_a2f8c2c580fa82557b09b1773bb62682d}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+set\+\_\+weight@{pfq\+\_\+set\+\_\+weight}}
+\index{pfq\+\_\+set\+\_\+weight@{pfq\+\_\+set\+\_\+weight}!pfq.\+h@{pfq.\+h}}
+\subsubsection[{pfq\+\_\+set\+\_\+weight}]{\setlength{\rightskip}{0pt plus 5cm}int pfq\+\_\+set\+\_\+weight (
+\begin{DoxyParamCaption}
+\item[{{\bf pfq\+\_\+t} $\ast$}]{q, }
+\item[{int}]{value}
+\end{DoxyParamCaption}
+)}}\label{pfq_8h_a2f8c2c580fa82557b09b1773bb62682d}
+Set the weight of the socket for the steering phase. \hypertarget{pfq_8h_a4d6fc59bab68a90f36d45b0a03da775a}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+timestamping\+\_\+enable@{pfq\+\_\+timestamping\+\_\+enable}}
+\index{pfq\+\_\+timestamping\+\_\+enable@{pfq\+\_\+timestamping\+\_\+enable}!pfq.\+h@{pfq.\+h}}
+\subsubsection[{pfq\+\_\+timestamping\+\_\+enable}]{\setlength{\rightskip}{0pt plus 5cm}int pfq\+\_\+timestamping\+\_\+enable (
+\begin{DoxyParamCaption}
+\item[{{\bf pfq\+\_\+t} $\ast$}]{q, }
+\item[{int}]{value}
+\end{DoxyParamCaption}
+)}}\label{pfq_8h_a4d6fc59bab68a90f36d45b0a03da775a}
+Enable/disable timestamping for packets. \hypertarget{pfq_8h_ae46eafd5130cae13e848498db781d67d}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+tx\+\_\+async\+\_\+start@{pfq\+\_\+tx\+\_\+async\+\_\+start}}
+\index{pfq\+\_\+tx\+\_\+async\+\_\+start@{pfq\+\_\+tx\+\_\+async\+\_\+start}!pfq.\+h@{pfq.\+h}}
+\subsubsection[{pfq\+\_\+tx\+\_\+async\+\_\+start}]{\setlength{\rightskip}{0pt plus 5cm}int pfq\+\_\+tx\+\_\+async\+\_\+start (
+\begin{DoxyParamCaption}
+\item[{{\bf pfq\+\_\+t} $\ast$}]{q}
+\end{DoxyParamCaption}
+)}}\label{pfq_8h_ae46eafd5130cae13e848498db781d67d}
+Start Tx kernel threads.
+
+Start kernel threads associated with the Tx queues of the socket. \hypertarget{pfq_8h_a21c77addd3b773015a44ee0aaba688fb}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+tx\+\_\+async\+\_\+stop@{pfq\+\_\+tx\+\_\+async\+\_\+stop}}
+\index{pfq\+\_\+tx\+\_\+async\+\_\+stop@{pfq\+\_\+tx\+\_\+async\+\_\+stop}!pfq.\+h@{pfq.\+h}}
+\subsubsection[{pfq\+\_\+tx\+\_\+async\+\_\+stop}]{\setlength{\rightskip}{0pt plus 5cm}int pfq\+\_\+tx\+\_\+async\+\_\+stop (
+\begin{DoxyParamCaption}
+\item[{{\bf pfq\+\_\+t} $\ast$}]{q}
+\end{DoxyParamCaption}
+)}}\label{pfq_8h_a21c77addd3b773015a44ee0aaba688fb}
+Stop Tx kernel threads.
+
+Stop kernel threads associated with the Tx queues of the socket. \hypertarget{pfq_8h_a8660d52250c187ec23d9cda7e8f351bf}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+tx\+\_\+queue\+\_\+flush@{pfq\+\_\+tx\+\_\+queue\+\_\+flush}}
+\index{pfq\+\_\+tx\+\_\+queue\+\_\+flush@{pfq\+\_\+tx\+\_\+queue\+\_\+flush}!pfq.\+h@{pfq.\+h}}
+\subsubsection[{pfq\+\_\+tx\+\_\+queue\+\_\+flush}]{\setlength{\rightskip}{0pt plus 5cm}int pfq\+\_\+tx\+\_\+queue\+\_\+flush (
+\begin{DoxyParamCaption}
+\item[{{\bf pfq\+\_\+t} $\ast$}]{q, }
+\item[{int}]{queue}
+\end{DoxyParamCaption}
+)}}\label{pfq_8h_a8660d52250c187ec23d9cda7e8f351bf}
+Flush the Tx queue(s).
+
+Transmit the packets in the Tx queues of the socket. \hypertarget{pfq_8h_a7cda443097bf879cf0202fbcf0a243c1}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+unbind@{pfq\+\_\+unbind}}
+\index{pfq\+\_\+unbind@{pfq\+\_\+unbind}!pfq.\+h@{pfq.\+h}}
+\subsubsection[{pfq\+\_\+unbind}]{\setlength{\rightskip}{0pt plus 5cm}int pfq\+\_\+unbind (
+\begin{DoxyParamCaption}
+\item[{{\bf pfq\+\_\+t} $\ast$}]{q, }
+\item[{const char $\ast$}]{dev, }
+\item[{int}]{queue}
+\end{DoxyParamCaption}
+)}}\label{pfq_8h_a7cda443097bf879cf0202fbcf0a243c1}
+Unbind the main group of the socket from the given device/queue. \hypertarget{pfq_8h_a0bd9c9f2d6df1811297e99a1b3800c05}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+unbind\+\_\+group@{pfq\+\_\+unbind\+\_\+group}}
+\index{pfq\+\_\+unbind\+\_\+group@{pfq\+\_\+unbind\+\_\+group}!pfq.\+h@{pfq.\+h}}
+\subsubsection[{pfq\+\_\+unbind\+\_\+group}]{\setlength{\rightskip}{0pt plus 5cm}int pfq\+\_\+unbind\+\_\+group (
+\begin{DoxyParamCaption}
+\item[{{\bf pfq\+\_\+t} $\ast$}]{q, }
+\item[{int}]{gid, }
+\item[{const char $\ast$}]{dev, }
+\item[{int}]{queue}
+\end{DoxyParamCaption}
+)}}\label{pfq_8h_a0bd9c9f2d6df1811297e99a1b3800c05}
+Unbind the group from the given device/queue. \hypertarget{pfq_8h_a9a1e77d289ca5408c9496c4767cb00cf}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+unbind\+\_\+tx@{pfq\+\_\+unbind\+\_\+tx}}
+\index{pfq\+\_\+unbind\+\_\+tx@{pfq\+\_\+unbind\+\_\+tx}!pfq.\+h@{pfq.\+h}}
+\subsubsection[{pfq\+\_\+unbind\+\_\+tx}]{\setlength{\rightskip}{0pt plus 5cm}int pfq\+\_\+unbind\+\_\+tx (
+\begin{DoxyParamCaption}
+\item[{{\bf pfq\+\_\+t} $\ast$}]{q}
+\end{DoxyParamCaption}
+)}}\label{pfq_8h_a9a1e77d289ca5408c9496c4767cb00cf}
+Unbind the socket for transmission.
+
+Unbind the socket for transmission from any device/queue. \hypertarget{pfq_8h_af06200d069049daf05c95b11b793b373}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+vlan\+\_\+filters\+\_\+enable@{pfq\+\_\+vlan\+\_\+filters\+\_\+enable}}
+\index{pfq\+\_\+vlan\+\_\+filters\+\_\+enable@{pfq\+\_\+vlan\+\_\+filters\+\_\+enable}!pfq.\+h@{pfq.\+h}}
+\subsubsection[{pfq\+\_\+vlan\+\_\+filters\+\_\+enable}]{\setlength{\rightskip}{0pt plus 5cm}int pfq\+\_\+vlan\+\_\+filters\+\_\+enable (
+\begin{DoxyParamCaption}
+\item[{{\bf pfq\+\_\+t} $\ast$}]{q, }
+\item[{int}]{gid, }
+\item[{int}]{toggle}
+\end{DoxyParamCaption}
+)}}\label{pfq_8h_af06200d069049daf05c95b11b793b373}
+Enable/disable vlan filtering for the given group. \hypertarget{pfq_8h_a5917ca4fb7191169139aeab0075e5374}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+vlan\+\_\+reset\+\_\+filter@{pfq\+\_\+vlan\+\_\+reset\+\_\+filter}}
+\index{pfq\+\_\+vlan\+\_\+reset\+\_\+filter@{pfq\+\_\+vlan\+\_\+reset\+\_\+filter}!pfq.\+h@{pfq.\+h}}
+\subsubsection[{pfq\+\_\+vlan\+\_\+reset\+\_\+filter}]{\setlength{\rightskip}{0pt plus 5cm}int pfq\+\_\+vlan\+\_\+reset\+\_\+filter (
+\begin{DoxyParamCaption}
+\item[{{\bf pfq\+\_\+t} $\ast$}]{q, }
+\item[{int}]{gid, }
+\item[{int}]{vid}
+\end{DoxyParamCaption}
+)}}\label{pfq_8h_a5917ca4fb7191169139aeab0075e5374}
+Reset the vlan filter for the given group. \hypertarget{pfq_8h_a5bccd205709594bc50a5c37184f35d9e}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+vlan\+\_\+set\+\_\+filter@{pfq\+\_\+vlan\+\_\+set\+\_\+filter}}
+\index{pfq\+\_\+vlan\+\_\+set\+\_\+filter@{pfq\+\_\+vlan\+\_\+set\+\_\+filter}!pfq.\+h@{pfq.\+h}}
+\subsubsection[{pfq\+\_\+vlan\+\_\+set\+\_\+filter}]{\setlength{\rightskip}{0pt plus 5cm}int pfq\+\_\+vlan\+\_\+set\+\_\+filter (
+\begin{DoxyParamCaption}
+\item[{{\bf pfq\+\_\+t} $\ast$}]{q, }
+\item[{int}]{gid, }
+\item[{int}]{vid}
+\end{DoxyParamCaption}
+)}}\label{pfq_8h_a5bccd205709594bc50a5c37184f35d9e}
+Specify a capture vlan filter for the given group.
+
+In addition to standard vlan ids, valid ids are also Q\+\_\+\+V\+L\+A\+N\+\_\+\+U\+N\+T\+A\+G and Q\+\_\+\+V\+L\+A\+N\+\_\+\+A\+N\+Y\+T\+A\+G. 

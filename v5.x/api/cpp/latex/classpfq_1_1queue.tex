@@ -1,0 +1,236 @@
+\hypertarget{classpfq_1_1queue}{\section{pfq\+:\+:queue Class Reference}
+\label{classpfq_1_1queue}\index{pfq\+::queue@{pfq\+::queue}}
+}
+
+
+This class represent a queue of packets.  
+
+
+
+
+{\ttfamily \#include $<$queue.\+hpp$>$}
+
+\subsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+struct \hyperlink{structpfq_1_1queue_1_1const__iterator}{const\+\_\+iterator}
+\begin{DoxyCompactList}\small\item\em Constant forward iterator over packets. \end{DoxyCompactList}\item 
+struct \hyperlink{structpfq_1_1queue_1_1iterator}{iterator}
+\begin{DoxyCompactList}\small\item\em Forward iterator over packets. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{classpfq_1_1queue_a9cae048d6400df0d922d72abaf7b6ed4}{queue} ()
+\begin{DoxyCompactList}\small\item\em Default Constructor. \end{DoxyCompactList}\item 
+\hyperlink{classpfq_1_1queue_ae22b5277f726ea9b39a4088128d3cc38}{queue} (void $\ast$addr, size\+\_\+t \hyperlink{classpfq_1_1queue_aa8ec2b1bd7c4fb2ec924f356c95b81ae}{slot\+\_\+size}, size\+\_\+t queue\+\_\+len, size\+\_\+t \hyperlink{classpfq_1_1queue_a6eec9332ce5248055b03376855469087}{index})
+\begin{DoxyCompactList}\small\item\em Constructor. \end{DoxyCompactList}\item 
+\hyperlink{classpfq_1_1queue_a63fb6cb036b494997edceace28b4dfac}{queue} (\hyperlink{classpfq_1_1queue}{queue} const \&)=default
+\begin{DoxyCompactList}\small\item\em Defaulted copy constructor. \end{DoxyCompactList}\item 
+\hyperlink{classpfq_1_1queue_a2605dcaac04245b5316262a4cf7cd1c0}{$\sim$queue} ()=default
+\begin{DoxyCompactList}\small\item\em Defaulted destructor. \end{DoxyCompactList}\item 
+size\+\_\+t \hyperlink{classpfq_1_1queue_a367fd68b05da07a1d95f91b8d2ae9990}{size} () const 
+\begin{DoxyCompactList}\small\item\em Return the number of packets stored in this queue. \end{DoxyCompactList}\item 
+bool \hyperlink{classpfq_1_1queue_ade52977341756f260e8e9f18c0b7b5c5}{empty} () const 
+\begin{DoxyCompactList}\small\item\em Check whether the queue is empty. \end{DoxyCompactList}\item 
+size\+\_\+t \hyperlink{classpfq_1_1queue_a6eec9332ce5248055b03376855469087}{index} () const 
+\begin{DoxyCompactList}\small\item\em Return the index position. \end{DoxyCompactList}\item 
+size\+\_\+t \hyperlink{classpfq_1_1queue_aa8ec2b1bd7c4fb2ec924f356c95b81ae}{slot\+\_\+size} () const 
+\begin{DoxyCompactList}\small\item\em Return the size of the queue slot, in bytes. \end{DoxyCompactList}\item 
+const void $\ast$ \hyperlink{classpfq_1_1queue_a62d08cb3627ed37a7f04aa58410ba8d7}{data} () const 
+\begin{DoxyCompactList}\small\item\em Return the pointer to the packet. \end{DoxyCompactList}\item 
+\hyperlink{structpfq_1_1queue_1_1iterator}{iterator} \hyperlink{classpfq_1_1queue_a107c15e5be3e53fc2dc7f8e25b3fba1e}{begin} ()
+\begin{DoxyCompactList}\small\item\em Return an iterator to the first slot of a non-\/empty queue. \end{DoxyCompactList}\item 
+\hyperlink{structpfq_1_1queue_1_1const__iterator}{const\+\_\+iterator} \hyperlink{classpfq_1_1queue_a9769ca50f14b7a5ca7196a2ec3608d44}{begin} () const 
+\begin{DoxyCompactList}\small\item\em Return a constant iterator to the first slot of a non-\/empty queue. \end{DoxyCompactList}\item 
+\hyperlink{structpfq_1_1queue_1_1iterator}{iterator} \hyperlink{classpfq_1_1queue_a1f2bcf8ef825d3c9d7761f2e4b4ed6dd}{end} ()
+\begin{DoxyCompactList}\small\item\em Return an iterator past to the end of the queue. \end{DoxyCompactList}\item 
+\hyperlink{structpfq_1_1queue_1_1const__iterator}{const\+\_\+iterator} \hyperlink{classpfq_1_1queue_a9cdca273d220e3eaa5ae1274d130174d}{end} () const 
+\begin{DoxyCompactList}\small\item\em Return a constant iterator past to the end of the queue. \end{DoxyCompactList}\item 
+\hyperlink{structpfq_1_1queue_1_1const__iterator}{const\+\_\+iterator} \hyperlink{classpfq_1_1queue_a4fc9d7f6a7a12116ef79bb648dc73527}{cbegin} () const 
+\begin{DoxyCompactList}\small\item\em Return a constant iterator to the first slot of an non-\/empty queue. \end{DoxyCompactList}\item 
+\hyperlink{structpfq_1_1queue_1_1const__iterator}{const\+\_\+iterator} \hyperlink{classpfq_1_1queue_add65cf417f0258d90f871b47a82e3eea}{cend} () const 
+\begin{DoxyCompactList}\small\item\em Return a constant iterator past to the end of the queue. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+This class represent a queue of packets. 
+
+The memory where packets are stored is not owned by this class. 
+
+\subsection{Constructor \& Destructor Documentation}
+\hypertarget{classpfq_1_1queue_a9cae048d6400df0d922d72abaf7b6ed4}{\index{pfq\+::queue@{pfq\+::queue}!queue@{queue}}
+\index{queue@{queue}!pfq\+::queue@{pfq\+::queue}}
+\subsubsection[{queue}]{\setlength{\rightskip}{0pt plus 5cm}pfq\+::queue\+::queue (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}}}\label{classpfq_1_1queue_a9cae048d6400df0d922d72abaf7b6ed4}
+
+
+Default Constructor. 
+
+\hypertarget{classpfq_1_1queue_ae22b5277f726ea9b39a4088128d3cc38}{\index{pfq\+::queue@{pfq\+::queue}!queue@{queue}}
+\index{queue@{queue}!pfq\+::queue@{pfq\+::queue}}
+\subsubsection[{queue}]{\setlength{\rightskip}{0pt plus 5cm}pfq\+::queue\+::queue (
+\begin{DoxyParamCaption}
+\item[{void $\ast$}]{addr, }
+\item[{size\+\_\+t}]{slot\+\_\+size, }
+\item[{size\+\_\+t}]{queue\+\_\+len, }
+\item[{size\+\_\+t}]{index}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}}}\label{classpfq_1_1queue_ae22b5277f726ea9b39a4088128d3cc38}
+
+
+Constructor. 
+
+\hypertarget{classpfq_1_1queue_a63fb6cb036b494997edceace28b4dfac}{\index{pfq\+::queue@{pfq\+::queue}!queue@{queue}}
+\index{queue@{queue}!pfq\+::queue@{pfq\+::queue}}
+\subsubsection[{queue}]{\setlength{\rightskip}{0pt plus 5cm}pfq\+::queue\+::queue (
+\begin{DoxyParamCaption}
+\item[{{\bf queue} const \&}]{}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [default]}}}\label{classpfq_1_1queue_a63fb6cb036b494997edceace28b4dfac}
+
+
+Defaulted copy constructor. 
+
+\hypertarget{classpfq_1_1queue_a2605dcaac04245b5316262a4cf7cd1c0}{\index{pfq\+::queue@{pfq\+::queue}!````~queue@{$\sim$queue}}
+\index{````~queue@{$\sim$queue}!pfq\+::queue@{pfq\+::queue}}
+\subsubsection[{$\sim$queue}]{\setlength{\rightskip}{0pt plus 5cm}pfq\+::queue\+::$\sim$queue (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [default]}}}\label{classpfq_1_1queue_a2605dcaac04245b5316262a4cf7cd1c0}
+
+
+Defaulted destructor. 
+
+
+
+\subsection{Member Function Documentation}
+\hypertarget{classpfq_1_1queue_a107c15e5be3e53fc2dc7f8e25b3fba1e}{\index{pfq\+::queue@{pfq\+::queue}!begin@{begin}}
+\index{begin@{begin}!pfq\+::queue@{pfq\+::queue}}
+\subsubsection[{begin}]{\setlength{\rightskip}{0pt plus 5cm}{\bf iterator} pfq\+::queue\+::begin (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}}}\label{classpfq_1_1queue_a107c15e5be3e53fc2dc7f8e25b3fba1e}
+
+
+Return an iterator to the first slot of a non-\/empty queue. 
+
+Return \hyperlink{classpfq_1_1queue_a1f2bcf8ef825d3c9d7761f2e4b4ed6dd}{end()} in case of empty queue. \hypertarget{classpfq_1_1queue_a9769ca50f14b7a5ca7196a2ec3608d44}{\index{pfq\+::queue@{pfq\+::queue}!begin@{begin}}
+\index{begin@{begin}!pfq\+::queue@{pfq\+::queue}}
+\subsubsection[{begin}]{\setlength{\rightskip}{0pt plus 5cm}{\bf const\+\_\+iterator} pfq\+::queue\+::begin (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+) const\hspace{0.3cm}{\ttfamily [inline]}}}\label{classpfq_1_1queue_a9769ca50f14b7a5ca7196a2ec3608d44}
+
+
+Return a constant iterator to the first slot of a non-\/empty queue. 
+
+Return \hyperlink{classpfq_1_1queue_a1f2bcf8ef825d3c9d7761f2e4b4ed6dd}{end()} in case of empty queue. \hypertarget{classpfq_1_1queue_a4fc9d7f6a7a12116ef79bb648dc73527}{\index{pfq\+::queue@{pfq\+::queue}!cbegin@{cbegin}}
+\index{cbegin@{cbegin}!pfq\+::queue@{pfq\+::queue}}
+\subsubsection[{cbegin}]{\setlength{\rightskip}{0pt plus 5cm}{\bf const\+\_\+iterator} pfq\+::queue\+::cbegin (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+) const\hspace{0.3cm}{\ttfamily [inline]}}}\label{classpfq_1_1queue_a4fc9d7f6a7a12116ef79bb648dc73527}
+
+
+Return a constant iterator to the first slot of an non-\/empty queue. 
+
+Return \hyperlink{classpfq_1_1queue_add65cf417f0258d90f871b47a82e3eea}{cend()} in case of empty queue. \hypertarget{classpfq_1_1queue_add65cf417f0258d90f871b47a82e3eea}{\index{pfq\+::queue@{pfq\+::queue}!cend@{cend}}
+\index{cend@{cend}!pfq\+::queue@{pfq\+::queue}}
+\subsubsection[{cend}]{\setlength{\rightskip}{0pt plus 5cm}{\bf const\+\_\+iterator} pfq\+::queue\+::cend (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+) const\hspace{0.3cm}{\ttfamily [inline]}}}\label{classpfq_1_1queue_add65cf417f0258d90f871b47a82e3eea}
+
+
+Return a constant iterator past to the end of the queue. 
+
+\hypertarget{classpfq_1_1queue_a62d08cb3627ed37a7f04aa58410ba8d7}{\index{pfq\+::queue@{pfq\+::queue}!data@{data}}
+\index{data@{data}!pfq\+::queue@{pfq\+::queue}}
+\subsubsection[{data}]{\setlength{\rightskip}{0pt plus 5cm}const void$\ast$ pfq\+::queue\+::data (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+) const\hspace{0.3cm}{\ttfamily [inline]}}}\label{classpfq_1_1queue_a62d08cb3627ed37a7f04aa58410ba8d7}
+
+
+Return the pointer to the packet. 
+
+\hypertarget{classpfq_1_1queue_ade52977341756f260e8e9f18c0b7b5c5}{\index{pfq\+::queue@{pfq\+::queue}!empty@{empty}}
+\index{empty@{empty}!pfq\+::queue@{pfq\+::queue}}
+\subsubsection[{empty}]{\setlength{\rightskip}{0pt plus 5cm}bool pfq\+::queue\+::empty (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+) const\hspace{0.3cm}{\ttfamily [inline]}}}\label{classpfq_1_1queue_ade52977341756f260e8e9f18c0b7b5c5}
+
+
+Check whether the queue is empty. 
+
+\hypertarget{classpfq_1_1queue_a1f2bcf8ef825d3c9d7761f2e4b4ed6dd}{\index{pfq\+::queue@{pfq\+::queue}!end@{end}}
+\index{end@{end}!pfq\+::queue@{pfq\+::queue}}
+\subsubsection[{end}]{\setlength{\rightskip}{0pt plus 5cm}{\bf iterator} pfq\+::queue\+::end (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}}}\label{classpfq_1_1queue_a1f2bcf8ef825d3c9d7761f2e4b4ed6dd}
+
+
+Return an iterator past to the end of the queue. 
+
+\hypertarget{classpfq_1_1queue_a9cdca273d220e3eaa5ae1274d130174d}{\index{pfq\+::queue@{pfq\+::queue}!end@{end}}
+\index{end@{end}!pfq\+::queue@{pfq\+::queue}}
+\subsubsection[{end}]{\setlength{\rightskip}{0pt plus 5cm}{\bf const\+\_\+iterator} pfq\+::queue\+::end (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+) const\hspace{0.3cm}{\ttfamily [inline]}}}\label{classpfq_1_1queue_a9cdca273d220e3eaa5ae1274d130174d}
+
+
+Return a constant iterator past to the end of the queue. 
+
+\hypertarget{classpfq_1_1queue_a6eec9332ce5248055b03376855469087}{\index{pfq\+::queue@{pfq\+::queue}!index@{index}}
+\index{index@{index}!pfq\+::queue@{pfq\+::queue}}
+\subsubsection[{index}]{\setlength{\rightskip}{0pt plus 5cm}size\+\_\+t pfq\+::queue\+::index (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+) const\hspace{0.3cm}{\ttfamily [inline]}}}\label{classpfq_1_1queue_a6eec9332ce5248055b03376855469087}
+
+
+Return the index position. 
+
+\hypertarget{classpfq_1_1queue_a367fd68b05da07a1d95f91b8d2ae9990}{\index{pfq\+::queue@{pfq\+::queue}!size@{size}}
+\index{size@{size}!pfq\+::queue@{pfq\+::queue}}
+\subsubsection[{size}]{\setlength{\rightskip}{0pt plus 5cm}size\+\_\+t pfq\+::queue\+::size (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+) const\hspace{0.3cm}{\ttfamily [inline]}}}\label{classpfq_1_1queue_a367fd68b05da07a1d95f91b8d2ae9990}
+
+
+Return the number of packets stored in this queue. 
+
+\hypertarget{classpfq_1_1queue_aa8ec2b1bd7c4fb2ec924f356c95b81ae}{\index{pfq\+::queue@{pfq\+::queue}!slot\+\_\+size@{slot\+\_\+size}}
+\index{slot\+\_\+size@{slot\+\_\+size}!pfq\+::queue@{pfq\+::queue}}
+\subsubsection[{slot\+\_\+size}]{\setlength{\rightskip}{0pt plus 5cm}size\+\_\+t pfq\+::queue\+::slot\+\_\+size (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+) const\hspace{0.3cm}{\ttfamily [inline]}}}\label{classpfq_1_1queue_aa8ec2b1bd7c4fb2ec924f356c95b81ae}
+
+
+Return the size of the queue slot, in bytes. 
+
+
+
+The documentation for this class was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+C++/pfq/\hyperlink{queue_8hpp}{queue.\+hpp}\end{DoxyCompactItemize}
