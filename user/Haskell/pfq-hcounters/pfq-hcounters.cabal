@@ -1,4 +1,4 @@
-name:                   pfq-counters-hs
+name:                   pfq-hcounters
 version:                4.5
 
 license-file:           LICENSE
@@ -8,8 +8,8 @@ category:               Utils
 build-type:             Simple
 cabal-version:          >=1.10
 
-Executable pfq-counters-hs
-    main-is:            pfq-counters-hs.hs
+Executable pfq-hcounters
+    main-is:            pfq-hcounters.hs
     build-depends:      base >= 4.7, 
                         pfq >= 4.5,
                         cmdargs, 
