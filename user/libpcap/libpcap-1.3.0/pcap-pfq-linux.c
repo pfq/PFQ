@@ -878,9 +878,9 @@ pfq_activate_linux(pcap_t *handle)
 			return 0;
 		}
 
-		handle->md.pfq.q = pfq_open_nogroup_(handle->opt.pfq.caplen,
-						     handle->opt.pfq.rx_slots,
-						     handle->opt.pfq.tx_slots);
+		handle->md.pfq.q = pfq_open_nogroup(handle->opt.pfq.caplen,
+						    handle->opt.pfq.rx_slots,
+						    handle->opt.pfq.tx_slots);
 		if (handle->md.pfq.q == NULL) {
 
 			snprintf(handle->errbuf, PCAP_ERRBUF_SIZE, "%s", pfq_error(handle->md.pfq.q));
@@ -1004,7 +1004,7 @@ pfq_activate_linux(pcap_t *handle)
 
 	/* enable timestamping */
 
-	if (pfq_timestamp_enable(handle->md.pfq.q, 1) == -1) {
+	if (pfq_timestamping_enable(handle->md.pfq.q, 1) == -1) {
 		snprintf(handle->errbuf, PCAP_ERRBUF_SIZE, "%s", pfq_error(handle->md.pfq.q));
 		goto fail;
 	}
