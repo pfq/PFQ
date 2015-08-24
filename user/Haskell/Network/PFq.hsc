@@ -339,21 +339,21 @@ newtype VlanTag = VlanTag { getVid:: CInt }
 toPktHdr :: Ptr PktHdr
          -> IO PktHdr
 toPktHdr hdr = do
-    _data <- (\h -> peekByteOff h 0)  hdr
-    _sec  <- (\h -> peekByteOff h 8)  hdr
-    _nsec <- (\h -> peekByteOff h 12) hdr
-    _ifid <- (\h -> peekByteOff h 16) hdr
-    _gid  <- (\h -> peekByteOff h 20) hdr
-    _len  <- (\h -> peekByteOff h 24) hdr
-    _cap  <- (\h -> peekByteOff h 26) hdr
-    _tci  <- (\h -> peekByteOff h 28) hdr
-    _hwq  <- (\h -> peekByteOff h 30) hdr
-    _com  <- (\h -> peekByteOff h 31) hdr
+    _data  <- (\h -> peekByteOff h 0)  hdr
+    _sec   <- (\h -> peekByteOff h 8)  hdr
+    _nsec  <- (\h -> peekByteOff h 12) hdr
+    _ifidx <- (\h -> peekByteOff h 16) hdr
+    _gid   <- (\h -> peekByteOff h 20) hdr
+    _len   <- (\h -> peekByteOff h 24) hdr
+    _cap   <- (\h -> peekByteOff h 26) hdr
+    _tci   <- (\h -> peekByteOff h 28) hdr
+    _hwq   <- (\h -> peekByteOff h 30) hdr
+    _com   <- (\h -> peekByteOff h 31) hdr
     return PktHdr {
                     hData     = fromIntegral (_data :: Word64),
                     hSec      = fromIntegral (_sec  :: Word32),
                     hNsec     = fromIntegral (_nsec :: Word32),
-                    hIfIndex  = fromIntegral (_ifid :: CInt),
+                    hIfIndex  = fromIntegral (_ifidx:: CInt),
                     hGid      = fromIntegral (_gid  :: CInt),
                     hLen      = fromIntegral (_len  :: CUShort),
                     hCapLen   = fromIntegral (_cap  :: CUShort),
@@ -846,7 +846,6 @@ dispatch hdl f timeo = do
 makeCallback :: Callback
              -> IO (FunPtr CPFqCallback)
 makeCallback fun = make_callback $ \_ hdr ptr -> toPktHdr hdr >>= flip fun ptr
-
 
 
 -- |Enable/disable vlan filtering for the given group.

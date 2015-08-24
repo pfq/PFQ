@@ -81,7 +81,6 @@ static inline void
 pfq_invalidate_percpu_eligible_mask(pfq_id_t id)
 {
 	int cpu;
-        pr_devel("[PFQ|%d] invalidating per-cpu sockmask cache...\n", (int __force)id);
 
 	for_each_online_cpu(cpu)
 	{
