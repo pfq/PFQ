@@ -1,0 +1,65 @@
+name:                   pfq-htests
+version:                5.0
+
+license-file:           LICENSE
+author:                 Nicola Bonelli
+maintainer:             nicola@pfq.io
+category:               Utils
+build-type:             Simple
+cabal-version:          >=1.10
+
+Executable test-bloom
+    main-is:            test-bloom.hs
+    build-depends:      base >= 4.7, 
+                        pfq >= 5.0
+    extra-libraries:    pfq
+    ghc-options:
+        -O2
+        -threaded
+        -rtsopts
+    default-language:   Haskell2010
+
+Executable test-read
+    main-is:            test-read.hs
+    build-depends:      base >= 4.7, 
+                        pfq >= 5.0
+    extra-libraries:    pfq
+    ghc-options:
+        -O2
+        -threaded
+        -rtsopts
+    default-language:   Haskell2010
+
+Executable test-dispatch
+    main-is:            test-read.hs
+    build-depends:      base >= 4.7, 
+                        pfq >= 5.0
+    extra-libraries:    pfq
+    ghc-options:
+        -O2
+        -threaded
+        -rtsopts
+    default-language:   Haskell2010
+
+Executable test-send
+    main-is:            test-send.hs
+    build-depends:      base >= 4.7, 
+                        pfq >= 5.0,
+                        bytestring
+    extra-libraries:    pfq
+    ghc-options:
+        -O2
+        -threaded
+        -rtsopts
+    default-language:   Haskell2010
+
+Executable test-lang
+    main-is:            test-lang.hs
+    build-depends:      base >= 4.7, 
+                        pfq >= 5.0
+    extra-libraries:    pfq
+    ghc-options:
+        -O2
+        -threaded
+        -rtsopts
+    default-language:   Haskell2010
