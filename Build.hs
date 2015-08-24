@@ -53,6 +53,11 @@ script =
         Install   "pfq-hcounters" *>>  into "user/Haskell/pfq-hcounters/" [ cabalInstall ]   .|. [ Build     "pfq-hcounters" ],
         Clean     "pfq-hcounters" *>>  into "user/Haskell/pfq-hcounters/" [ cabalClean ],
 
+        Configure "pfq-htest"     *>>  into "user/Haskell/pfq-htest/" [ cabalConfigure ] .|. [ Install   "pfq-haskell-lib" ],
+        Build     "pfq-htest"     *>>  into "user/Haskell/pfq-htest/" [ cabalBuild ]     .|. [ Configure "pfq-htest" ],
+        Install   "pfq-htest"     *>>  into "user/Haskell/pfq-htest/" [ ]                .|. [ Build     "pfq-htest" ],
+        Clean     "pfq-htest"     *>>  into "user/Haskell/pfq-htest/" [ cabalClean ],
+
         Configure "irq-affinity" *>>  into "user/irq-affinity/" [ cabalConfigure ] .|. [ Install   "pfq-haskell-lib" ],
         Build     "irq-affinity" *>>  into "user/irq-affinity/" [ cabalBuild ]     .|. [ Configure "irq-affinity" ],
         Install   "irq-affinity" *>>  into "user/irq-affinity/" [ cabalInstall ]   .|. [ Build     "irq-affinity" ],
