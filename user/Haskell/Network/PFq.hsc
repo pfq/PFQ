@@ -404,7 +404,7 @@ getPackets' index cur end slotSize
     | cur == end = return []
     | otherwise  = do
         let h = cur :: Ptr PktHdr
-        let p = cur `plusPtr` 24 :: Ptr Word8
+        let p = cur `plusPtr` #{size struct pfq_pkthdr} :: Ptr Word8
         l <- getPackets' index (cur `plusPtr` slotSize) end slotSize
         return ( Packet h p index : l )
 
@@ -814,7 +814,7 @@ read :: Ptr PFqTag
      -> Int         -- ^ timeout (msec)
      -> IO NetQueue
 read hdl msec =
-    allocaBytes 32 $ \queue -> do
+    allocaBytes #{size struct pfq_net_queue} $ \queue -> do
        pfq_read hdl queue (fromIntegral msec) >>= throwPFqIf_ hdl (== -1)
        _ptr <- (\h -> peekByteOff h 0)  queue
        _len <- (\h -> peekByteOff h (sizeOf _ptr))  queue
