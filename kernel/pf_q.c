@@ -329,7 +329,7 @@ pfq_process_batch(struct pfq_percpu_data *data,
 
 				if (is_steering(monad.fanout)) { /* cache the number of sockets in the mask */
 
-					if (eligible_mask != sock->eligible) {
+					if (eligible_mask != sock->eligible_mask) {
 						unsigned long ebit;
 						sock->eligible_mask = eligible_mask;
 						sock->cnt = 0;
