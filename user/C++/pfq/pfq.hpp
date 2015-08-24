@@ -182,7 +182,7 @@ namespace pfq {
         , data_()
         {}
 
-        //! Constructor with named-parameter idiom (param::get is the C++14 std::get)
+        //! Constructor with named-parameter idiom (make use of C++14 std::get)
 
         template <typename ...Ts>
         socket(param::list_t, Ts&& ...args)
@@ -258,11 +258,11 @@ namespace pfq {
             }
         }
 
-        //! PFQ socket is a non-copyable resource.
+        //! PFQ socket is not copyable.
 
         socket(const socket&) = delete;
 
-        //! PFQ socket is a non-copy assignable resource.
+        //! PFQ socket is not copy-assignable.
 
         socket& operator=(const socket&) = delete;
 
@@ -604,7 +604,7 @@ namespace pfq {
             return false;
         }
 
-        //! Set the timestamping for packets.
+        //! Enable/disable timestamping for packets.
 
         void
         timestamp_enable(bool value)
@@ -625,7 +625,7 @@ namespace pfq {
            return ret;
         }
 
-        //! Return the weight of the socket used during the steering phase.
+        //! Return the weight of the socket for the steering phase.
 
         int
         weight() const
@@ -636,7 +636,7 @@ namespace pfq {
            return w;
         }
 
-        //! Set the weight of the socket used during the steering phase.
+        //! Set the weight of the socket for the steering phase.
 
         void
         weight(int w)
@@ -647,7 +647,7 @@ namespace pfq {
 
         //! Specify the capture length of packets, in bytes.
         /*!
-         * Capture length must be set before the socket is enabled to capture.
+         * Capture length must be set before the socket is enabled.
          */
 
         void
@@ -739,6 +739,7 @@ namespace pfq {
             data()->tx_slots = value;
         }
 
+
         //! Return the length of the Tx queue, in number of packets.
 
         size_t
@@ -764,10 +765,11 @@ namespace pfq {
             bind_group(gid, dev, queue);
         }
 
-        //! Bind the given group to the given device/queue.
+        //! Bind the group to the given device/queue.
         /*!
-         * The first argument is the name of the device;
-         * the second argument is the queue number or any_queue.
+         * The first argument is the group id.
+         * The second argument is the name of the device;
+         * the third argument is the queue number or any_queue.
          */
 
         void
@@ -800,7 +802,7 @@ namespace pfq {
             unbind_group(gid, dev, queue);
         }
 
-        //! Unbind the given group from the given device/queue.
+        //! Unbind the group from the given device/queue.
 
         void
         unbind_group(int gid, const char *dev, int queue = any_queue)
@@ -822,7 +824,7 @@ namespace pfq {
 
         //! Set the socket as egress and bind it to the given device/queue.
         /*!
-         * The egress socket will be used within the capture groups as forwarder.
+         * The egress socket will be used by groups as network forwarder.
          */
 
         void
@@ -897,7 +899,7 @@ namespace pfq {
 
         //! Return the mask of the joined groups.
         /*!
-         * Each socket can bind to multiple groups. Each bit of the mask represents
+         * Each socket can bind to multiple groups. Each bit set in the mask represents
          * a joined group.
          */
 
@@ -910,7 +912,7 @@ namespace pfq {
             return mask;
         }
 
-        //! Obtain the list of the joined groups.
+        //! Obtain the list of gid of joined groups.
 
         std::vector<int>
         groups() const
@@ -1035,8 +1037,8 @@ namespace pfq {
 
         //! Join the given group.
         /*!
-         * If the policy is not specified, use group_policy::shared by default.
-         * If the class mask is not specified, use the class_mask::default_.
+         * If the policy is not specified, group_policy::shared is used by default.
+         * If the class mask is not specified, class_mask::default_ is used by default.
          */
 
         int
@@ -1072,7 +1074,7 @@ namespace pfq {
 
         //! Wait for packets.
         /*!
-         * Wait for packets available to read. A timeout in microseconds can be specified.
+         * Wait packets available for reading. A timeout in microseconds can be specified.
          */
 
         int
@@ -1160,7 +1162,7 @@ namespace pfq {
         //! Receive packets in the given mutable buffer.
         /*!
          * Wait for packets and return a queue descriptor.
-         * Packets are stored in the given mutable buffer.
+         * Packets are stored in the mutable buffer passed.
          * It is possible to specify a timeout in microseconds.
          */
 
@@ -1355,7 +1357,7 @@ namespace pfq {
 
         /*! Store the packet and transmit it. */
         /*!
-         * The transmission takes place at the given timespec time, specified
+         * The transmission takes place asynchronously at the given timespec time, specified
          * as a generic chrono::time_point.
          */
 
@@ -1364,7 +1366,7 @@ namespace pfq {
         send_at(const_buffer pkt, std::chrono::time_point<Clock, Duration> const &tp, int copies = 1)
         {
             if (data_->tx_num_bind != data_->tx_num_async)
-                throw std::runtime_error("PFQ: send_at not fully async!");
+                throw std::runtime_error("PFQ: send_at not async!");
 
             auto ns = std::chrono::duration_cast<std::chrono::nanoseconds>(tp.time_since_epoch()).count();
             return inject(pkt, ns, copies);
@@ -1374,7 +1376,7 @@ namespace pfq {
         /*!
          * The packet is copied into a Tx queue (using a TSS symmetric hash if any_queue is specified)
          * and transmitted at the given timestamp by a kernel thread or when tx_queue_flush is called.
-         * A timestamp of 0 nanoseconds means 'immediate transmission'.
+         * A timestamp of 0 nanoseconds means 'immediate transmission.
          */
 
         bool
@@ -1449,7 +1451,7 @@ namespace pfq {
 
         //! Start kernel threads.
         /*!
-         * Start kernel threads associated with Tx queues.
+         * Start kernel threads associated with the Tx queues.
          */
 
         void
@@ -1461,7 +1463,7 @@ namespace pfq {
 
         //! Stop kernel threads.
         /*!
-         * Stop kernel threads associated with Tx queues.
+         * Stop kernel threads associated with the Tx queues.
          */
 
         void
@@ -1470,7 +1472,6 @@ namespace pfq {
             if (::setsockopt(fd_, PF_Q, Q_SO_TX_ASYNC_STOP, nullptr, 0) == -1)
                 throw pfq_error(errno, "PFQ: Tx async stop");
         }
-
     };
 
 
