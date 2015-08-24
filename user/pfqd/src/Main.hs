@@ -85,7 +85,7 @@ main = do
     let negrs = countEgress config
     infoM "daemon" ("Total number of egress port: " ++ show negrs)
 
-    runDetached Nothing DevNull $ do
+    runDetached Nothing DevNull $
         (Q.openNoGroup 1514 4096 4096 >>= \fp ->
             withForeignPtr fp $ \ctrl -> do
             fps <- replicateM (countEgress config) (Q.openNoGroup 1514 4096 4096)
