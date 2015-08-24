@@ -219,14 +219,6 @@ extern int pfq_set_promisc(pfq_t const *q, const char *dev, int value);
  * class_mask  : Q_CLASS_DEFAULT| .... = Q_CLASS_ANY
  */
 
-/*! Open the socket. */
-/*!
- * The default values are used; no group is joined or created.
- * The newly created socket is suitable for egress sockets.
- */
-
-extern pfq_t* pfq_open_default();
-
 
 /*! Open the socket and create a new private group. */
 /*!
@@ -234,16 +226,7 @@ extern pfq_t* pfq_open_default();
  * Q_POLICY_GROUP_PRIVATE, respectively.
  */
 
-extern pfq_t* pfq_open(size_t caplen, size_t slots);
-
-
-/*! Open the socket and create a new private group. */
-/*!
- * The default values for class mask and group policy are Q_CLASS_DEFAULT and
- * Q_POLICY_GROUP_PRIVATE, respectively.
- */
-
-extern pfq_t *pfq_open_(size_t caplen, size_t rx_slots, size_t tx_slots);
+extern pfq_t *pfq_open(size_t caplen, size_t rx_slots, size_t tx_slots);
 
 
 /*! Open the socket; no group is joined or created. */
@@ -251,24 +234,18 @@ extern pfq_t *pfq_open_(size_t caplen, size_t rx_slots, size_t tx_slots);
  * Groups can be later joined by means of the join function.
  */
 
-extern pfq_t* pfq_open_nogroup(size_t caplen, size_t slots);
-
-
-/*! Open the socket; no group is joined or created. */
-/*!
- * Groups can be later joined by means of the join function.
- */
-
-extern pfq_t* pfq_open_nogroup_(size_t caplen, size_t rx_slots, size_t tx_slots);
+extern pfq_t* pfq_open_nogroup(size_t caplen, size_t rx_slots, size_t tx_slots);
 
 
 /*! Open the socket and create a new group with the specified class and policy. */
 /*!
+ * If group_policy is Q_POLICY_GROUP_UNDEFINED no gorup is joined or created.
  * All the possible parameters are specifiable.
  */
 
 extern pfq_t* pfq_open_group(unsigned long class_mask, int group_policy,
                 size_t caplen, size_t rx_slots, size_t tx_slots);
+
 
 /*! Close the socket. */
 

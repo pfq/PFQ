@@ -208,36 +208,16 @@ const char *pfq_error(pfq_t *q)
 
 /* costructor */
 
-pfq_t *
-pfq_open_default()
-{
-	return pfq_open_group(Q_CLASS_DEFAULT, Q_POLICY_GROUP_UNDEFINED, 64, 1024, 1024);
-}
-
 
 pfq_t *
-pfq_open(size_t length, size_t slots)
-{
-	return pfq_open_group(Q_CLASS_DEFAULT, Q_POLICY_GROUP_PRIVATE, length, slots, 1024);
-}
-
-
-pfq_t *
-pfq_open_(size_t caplen, size_t rx_slots, size_t tx_slots)
+pfq_open(size_t caplen, size_t rx_slots, size_t tx_slots)
 {
 	return pfq_open_group(Q_CLASS_DEFAULT, Q_POLICY_GROUP_PRIVATE, caplen, rx_slots, tx_slots);
 }
 
 
 pfq_t *
-pfq_open_nogroup(size_t caplen, size_t slots)
-{
-	return pfq_open_group(Q_CLASS_DEFAULT, Q_POLICY_GROUP_UNDEFINED, caplen, slots, 1024);
-}
-
-
-pfq_t *
-pfq_open_nogroup_(size_t caplen, size_t rx_slots, size_t tx_slots)
+pfq_open_nogroup(size_t caplen, size_t rx_slots, size_t tx_slots)
 {
 	return pfq_open_group(Q_CLASS_DEFAULT, Q_POLICY_GROUP_UNDEFINED, caplen, rx_slots, tx_slots);
 }
