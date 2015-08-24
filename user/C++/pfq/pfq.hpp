@@ -117,16 +117,17 @@ namespace pfq {
         struct rx_slots { size_t value; };
         struct tx_slots { size_t value; };
 
-        using types = std::tuple<class_, policy, caplen, rx_slots, tx_slots>;
+        using types = std::tuple<caplen, rx_slots, tx_slots, policy, class_>;
 
         inline
         types make_default()
         {
-            return std::make_tuple(param::class_   {class_mask::default_},
+            return std::make_tuple(param::caplen   {1514},
+                                   param::rx_slots {4096},
+                                   param::tx_slots {4096},
                                    param::policy   {group_policy::priv},
-                                   param::caplen   {64},
-                                   param::rx_slots {1024},
-                                   param::tx_slots {1024});
+                                   param::class_   {class_mask::default_}
+                                   );
         }
     }
 
