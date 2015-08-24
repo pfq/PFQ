@@ -538,7 +538,7 @@ setTimestamp :: Ptr PFqTag
              -> IO ()
 setTimestamp hdl toggle = do
     let value = if toggle then 1 else 0
-    pfq_timestamp_enable hdl value >>= throwPFqIf_ hdl (== -1)
+    pfq_timestamping_enable hdl value >>= throwPFqIf_ hdl (== -1)
 
 
 -- |Set the weight of the socket used during the steering phase.
@@ -563,7 +563,7 @@ getWeight hdl =
 getTimestamp :: Ptr PFqTag
              -> IO Bool
 getTimestamp hdl =
-    pfq_is_timestamp_enabled hdl >>= throwPFqIf hdl (== -1) >>= \v ->
+    pfq_is_timestamping_enabled hdl >>= throwPFqIf hdl (== -1) >>= \v ->
         return $ v /= 0
 
 
@@ -1107,8 +1107,8 @@ foreign import ccall unsafe pfq_disable             :: Ptr PFqTag -> IO CInt
 foreign import ccall unsafe pfq_is_enabled          :: Ptr PFqTag -> IO CInt
 
 foreign import ccall unsafe pfq_set_promisc         :: Ptr PFqTag -> CString -> CInt -> IO CInt
-foreign import ccall unsafe pfq_timestamp_enable    :: Ptr PFqTag -> CInt -> IO CInt
-foreign import ccall unsafe pfq_is_timestamp_enabled :: Ptr PFqTag -> IO CInt
+foreign import ccall unsafe pfq_timestamping_enable     :: Ptr PFqTag -> CInt -> IO CInt
+foreign import ccall unsafe pfq_is_timestamping_enabled :: Ptr PFqTag -> IO CInt
 
 foreign import ccall unsafe pfq_set_caplen          :: Ptr PFqTag -> CSize -> IO CInt
 foreign import ccall unsafe pfq_get_caplen          :: Ptr PFqTag -> IO CPtrdiff

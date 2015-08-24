@@ -29,7 +29,7 @@ main(int argc, char *argv[])
         	return -1;
         }
 
-        if (pfq_timestamp_enable(p, 1) < 0) {
+        if (pfq_timestamping_enable(p, 1) < 0) {
         	printf("error: %s\n", pfq_error(p));
         	return -1;
 	}

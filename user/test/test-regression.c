@@ -55,11 +55,11 @@ void test_timestamp()
 	pfq_t * q = pfq_open(64, 1024);
         assert(q);
 
-	assert(pfq_is_timestamp_enabled(q) == 0);
-	assert(pfq_timestamp_enable(q, 1) == 0);
-	assert(pfq_is_timestamp_enabled(q) == 1);
-	assert(pfq_timestamp_enable(q, 0) == 0);
-	assert(pfq_is_timestamp_enabled(q) == 0);
+	assert(pfq_is_timestamping_enabled(q) == 0);
+	assert(pfq_timestamping_enable(q, 1) == 0);
+	assert(pfq_is_timestamping_enabled(q) == 1);
+	assert(pfq_timestamping_enable(q, 0) == 0);
+	assert(pfq_is_timestamping_enabled(q) == 0);
 
 	pfq_close(q);
 }
