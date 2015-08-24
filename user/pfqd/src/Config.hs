@@ -4,6 +4,7 @@ import qualified Network.PFq as Q
 import Network.PFq.Lang
 import Data.List
 import Data.List.Split
+import Data.Monoid
 
 -- |NetDevice data type.
 
@@ -25,8 +26,9 @@ dev str
 (.^) :: NetDevice -> Int -> NetDevice
 (NetDevice n q _ cl) .^ w = NetDevice n q w cl
 
+
 (.&) :: NetDevice -> Q.ClassMask -> NetDevice
-(NetDevice n q w _) .& cl = NetDevice n q w cl
+(NetDevice n q w c1) .& c2 = NetDevice n q w (c1 `mappend` c2)
 
 
 -- | Group policy

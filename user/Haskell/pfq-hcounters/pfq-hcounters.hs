@@ -154,14 +154,14 @@ runThreads op ms =
                  handle ((\e -> M.void (putStrLn ("[pfq] Exception: " ++ show e) >> swapMVar c (-1))) :: SomeException -> IO ()) $ do
                  fp <- Q.openNoGroup (caplen op) (slots op) 1024
                  withForeignPtr fp  $ \q -> do
-                     Q.joinGroup q (groupId binding) [Q.class_default] Q.policy_shared
+                     Q.joinGroup q (groupId binding) Q.class_default Q.policy_shared
                      forM_ (netDevs binding) $ \dev ->
                        forM_ (devQueues dev) $ \queue -> do
                          Q.setPromisc q (devName dev) True
                          Q.bindGroup q (groupId binding) (devName dev) queue
                          when (isJust sf) $ do
                              putStrLn $ "[pfq] Gid " ++ show (groupId binding) ++ " is using computation: " ++ unwords (function op)
-                             Q.groupComputationFromString q (groupId binding) (unwords $ function op)
+                             Q.setGroupComputationFromString q (groupId binding) (unwords $ function op)
                      Q.enable q
                      M.void (recvLoop q (State c f S.empty))
                  )

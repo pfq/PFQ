@@ -1,4 +1,3 @@
-
 --    Copyright (c) 2011-14, Nicola Bonelli <nicola@pfq.io>
 --    All rights reserved.
 --
@@ -46,6 +45,7 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
 {-# LANGUAGE ImpredicativeTypes #-}
 {-# LANGUAGE BangPatterns #-}
+
 {-# OPTIONS_GHC -fno-warn-unused-binds #-}
 
 module Network.PFq
@@ -60,6 +60,7 @@ module Network.PFq
         Callback,
 
         ClassMask(..),
+        SocketParams(..),
 
         class_default       ,
         class_user_plane    ,
@@ -79,6 +80,8 @@ module Network.PFq
         any_device,
         any_queue,
         any_group,
+
+        defaultSocketParams,
 
         -- * Socket and Groups
 
@@ -110,8 +113,8 @@ module Network.PFq
 
         -- * Socket parameters
 
-        setTimestamp,
-        getTimestamp,
+        timestampingEnable,
+        isTimestampingEnabled,
 
         setWeight,
         getWeight,
@@ -141,8 +144,8 @@ module Network.PFq
         waitForPacket,
 
         vlanFiltersEnabled,
-        vlanSetFilterId,
-        vlanResetFilterId,
+        vlanSetFilter,
+        vlanResetFilter,
 
         -- * Packet transmission
 
@@ -155,8 +158,8 @@ module Network.PFq
 
         -- * PFQ/lang
 
-        groupComputation,
-        groupComputationFromString,
+        setGroupComputation,
+        setGroupComputationFromString,
 
         -- * Statistics and counters
 
@@ -169,6 +172,7 @@ module Network.PFq
 
 import Data.Word
 import Data.Bits
+import Data.Monoid
 import Data.List (intercalate)
 
 import qualified Data.ByteString.Char8 as C
@@ -244,12 +248,39 @@ data Packet = Packet {
    ,  pIndex :: !Word32         -- ^ index of the queue
    } deriving (Eq, Show)
 
+-- |SocketParams
+
+data SocketParams = SocketParams
+    {   parCaplen     :: Int            -- ^ capture len
+    ,   parRxSlots    :: Int            -- ^ socket Rx queue length
+    ,   parTxSlots    :: Int            -- ^ socket Tx queue length
+    ,   parPolicy     :: GroupPolicy    -- ^ default group policy: policy_undefined means no group
+    ,   parClass      :: ClassMask      -- ^ socket class
+    } deriving (Eq, Show)
+
+
+defaultSocketParams :: SocketParams
+defaultSocketParams =
+    SocketParams
+    {   parCaplen  = 1514
+    ,   parRxSlots = 4096
+    ,   parTxSlots = 4096
+    ,   parPolicy  = policy_priv
+    ,   parClass   = class_default
+    }
+
 
 -- |ClassMask type.
 newtype ClassMask = ClassMask { getClassMask :: CULong }
                         deriving (Eq, Show, Read)
 
--- |Group policy type.
+-- |Monoid instance
+instance Monoid ClassMask where
+    mempty = ClassMask 0
+    ClassMask a `mappend` ClassMask b = ClassMask (a .|. b)
+
+
+    -- |Group policy type.
 newtype GroupPolicy = GroupPolicy { getGroupPolicy :: CInt }
                         deriving (Eq, Show, Read)
 
@@ -287,11 +318,6 @@ newtype PFqConstant = PFqConstant { getConstant :: Int }
     , group_max_counters   = Q_MAX_COUNTERS
     , group_fun_descr_size = sizeof(struct pfq_functional_descr)
 }
-
-
--- | Utility function which folds a list of ClassMask.
-combineClassMasks :: [ClassMask] -> ClassMask
-combineClassMasks = ClassMask . foldr ((.|.) . getClassMask) 0
 
 
 toPktHdr :: Ptr PktHdr
@@ -427,19 +453,36 @@ openNoGroup  caplen rx_slots tx_slots =
 --
 -- All the possible parameters are specifiable.
 
-openGroup :: [ClassMask]  -- ^ list of ClassMask (e.g., [class_default])
+openGroup :: ClassMask    -- ^ ClassMask (e.g., class_default `mappend` class_control_plane)
           -> GroupPolicy  -- ^ policy for the group
           -> Int          -- ^ caplen
           -> Int          -- ^ number of Rx slots
           -> Int          -- ^ number of Tx slots
           -> IO (ForeignPtr PFqTag)
 openGroup ms policy caplen rx_slots tx_slots =
-        pfq_open_group (getClassMask $ combineClassMasks ms) (getGroupPolicy policy)
+        pfq_open_group (getClassMask ms) (getGroupPolicy policy)
             (fromIntegral caplen) (fromIntegral rx_slots)
             (fromIntegral tx_slots) >>=
             throwPFqIf nullPtr (== nullPtr) >>= \ptr ->
                 C.newForeignPtr ptr (void $ pfq_close ptr)
 
+
+-- |Open a socket with parameters.
+-- Generic open with set of parameters. Default values are defined as defaultSocketParams
+--
+
+openWith :: SocketParams  -- ^ parameters
+      -> IO (ForeignPtr PFqTag)
+openWith  SocketParams
+          {   parCaplen     = caplen
+          ,   parRxSlots    = rx_slots
+          ,   parTxSlots    = tx_slots
+          ,   parPolicy     = policy
+          ,   parClass      = cmask
+          } =
+          pfq_open_group (getClassMask cmask) (getGroupPolicy policy) (fromIntegral caplen) (fromIntegral rx_slots) (fromIntegral tx_slots) >>=
+            throwPFqIf nullPtr (== nullPtr) >>= \ptr ->
+                C.newForeignPtr ptr (void $ pfq_close ptr)
 
 -- |Close the socket.
 --
@@ -493,12 +536,20 @@ isEnabled hdl =
 
 -- |Set the timestamping for packets.
 
-setTimestamp :: Ptr PFqTag
+timestampingEnable :: Ptr PFqTag
              -> Bool        -- ^ toggle: true is on, false is off.
              -> IO ()
-setTimestamp hdl toggle = do
+timestampingEnable hdl toggle = do
     let value = if toggle then 1 else 0
     pfq_timestamping_enable hdl value >>= throwPFqIf_ hdl (== -1)
+
+-- |Check whether the timestamping for packets is enabled.
+
+isTimestampingEnabled :: Ptr PFqTag
+             -> IO Bool
+isTimestampingEnabled hdl =
+    pfq_is_timestamping_enabled hdl >>= throwPFqIf hdl (== -1) >>= \v ->
+        return $ v /= 0
 
 
 -- |Set the weight of the socket used during the steering phase.
@@ -516,15 +567,6 @@ getWeight :: Ptr PFqTag
           -> IO Int
 getWeight hdl =
     liftM fromIntegral (pfq_get_weight hdl >>= throwPFqIf hdl (== -1))
-
-
--- |Check whether the timestamping for packets is enabled.
-
-getTimestamp :: Ptr PFqTag
-             -> IO Bool
-getTimestamp hdl =
-    pfq_is_timestamping_enabled hdl >>= throwPFqIf hdl (== -1) >>= \v ->
-        return $ v /= 0
 
 
 -- |Specify the capture length of packets, in bytes.
@@ -664,6 +706,7 @@ egressBind hdl name queue =
     withCString name $ \dev ->
         pfq_egress_bind hdl dev (fromIntegral queue) >>= throwPFqIf_ hdl (== -1)
 
+
 -- | Unset the socket as egress.
 
 egressUnbind :: Ptr PFqTag -> IO ()
@@ -715,11 +758,11 @@ unbindTx hdl =
 
 joinGroup :: Ptr PFqTag
           -> Int            -- ^ group id
-          -> [ClassMask]    -- ^ class mask list
+          -> ClassMask      -- ^ class mask
           -> GroupPolicy    -- ^ group policy
           -> IO ()
 joinGroup hdl gid ms pol =
-    pfq_join_group hdl (fromIntegral gid) (getClassMask $ combineClassMasks ms) (getGroupPolicy pol)
+    pfq_join_group hdl (fromIntegral gid) (getClassMask ms) (getGroupPolicy pol)
         >>= throwPFqIf_ hdl (== -1)
 
 
@@ -804,21 +847,21 @@ vlanFiltersEnabled hdl gid value =
 -- |Specify a capture filter for the given group and vlan id.
 --
 
-vlanSetFilterId :: Ptr PFqTag
-                -> Int        -- ^ group id
-                -> Int        -- ^ vlan id
-                -> IO ()
-vlanSetFilterId hdl gid vid =
+vlanSetFilter :: Ptr PFqTag
+              -> Int        -- ^ group id
+              -> Int        -- ^ vlan id
+              -> IO ()
+vlanSetFilter hdl gid vid =
     pfq_vlan_set_filter hdl (fromIntegral gid) (fromIntegral vid)
         >>= throwPFqIf_ hdl (== -1)
 
 -- |Reset the vlan filter.
 
-vlanResetFilterId :: Ptr PFqTag
-                  -> Int        -- ^ group id
-                  -> Int        -- ^ vlan id
-                  -> IO ()
-vlanResetFilterId hdl gid vid =
+vlanResetFilter :: Ptr PFqTag
+                -> Int        -- ^ group id
+                -> Int        -- ^ vlan id
+                -> IO ()
+vlanResetFilter hdl gid vid =
     pfq_vlan_reset_filter hdl (fromIntegral gid) (fromIntegral vid)
         >>= throwPFqIf_ hdl (== -1)
 
@@ -937,12 +980,12 @@ instance Storable StorableFunDescr where
 -- The functional computation is specified as a PFQ/Lang expression.
 --
 
-groupComputation :: Ptr PFqTag
-                 -> Int                                     -- ^ group id
-                 -> Function (SkBuff -> Action SkBuff)      -- ^ expression (PFq-Lang)
-                 -> IO ()
+setGroupComputation :: Ptr PFqTag
+                    -> Int                                     -- ^ group id
+                    -> Function (SkBuff -> Action SkBuff)      -- ^ expression (PFq-Lang)
+                    -> IO ()
 
-groupComputation hdl gid comp = do
+setGroupComputation hdl gid comp = do
     let (descrList, _) = serialize comp 0
     allocaBytes (sizeOf (undefined :: CSize) * 2 + getConstant group_fun_descr_size * length descrList) $ \ ptr -> do
         pokeByteOff ptr 0 (fromIntegral (length descrList) :: CSize)     -- size
@@ -960,12 +1003,12 @@ groupComputation hdl gid comp = do
 -- This function is limited to simple PFQ/lang functional computations.
 -- Only the composition of monadic functions without arguments are supported.
 
-groupComputationFromString :: Ptr PFqTag
-                           -> Int       -- ^ group id
-                           -> String    -- ^ simple expression (PFq-Lang)
-                           -> IO ()
+setGroupComputationFromString :: Ptr PFqTag
+                              -> Int       -- ^ group id
+                              -> String    -- ^ simple expression (PFq-Lang)
+                              -> IO ()
 
-groupComputationFromString hdl gid comp =
+setGroupComputationFromString hdl gid comp =
     withCString comp $ \ptr ->
             pfq_set_group_computation_from_string hdl (fromIntegral gid) ptr >>= throwPFqIf_ hdl (== -1)
 

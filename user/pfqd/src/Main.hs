@@ -108,7 +108,7 @@ bindOutput :: Ptr PFqTag -> (Int, Policy, NetDevice) ->  IO ()
 bindOutput q (gid, pol, NetDevice d hq w cl) = bindEgress q gid d hq
     where bindEgress q gid dev queue = do
             infoM "daemon" ("    egress bind on dev " ++ dev ++ ", port " ++ show queue)
-            Q.joinGroup q gid [cl] (mkPolicy pol)
+            Q.joinGroup q gid cl (mkPolicy pol)
             Q.egressBind q dev queue
             Q.setWeight q w
 
@@ -123,8 +123,8 @@ runQSetup opts ctrl egrs = do
     forM_ config $ \(Group pol g ins _ comp) -> do
         let gid = fromIntegral g
         infoM "daemon" $ "Setting up group " ++ show gid ++ " for dev " ++ show ins ++ ". Computation: " ++ pretty comp
-        Q.joinGroup ctrl gid [class_control] (mkPolicy pol)
-        Q.groupComputation ctrl gid comp
+        Q.joinGroup ctrl gid class_control (mkPolicy pol)
+        Q.setGroupComputation ctrl gid comp
         forM_ ins $ \dev -> bindInput ctrl gid dev
 
 
