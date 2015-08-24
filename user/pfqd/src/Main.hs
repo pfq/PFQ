@@ -86,9 +86,9 @@ main = do
     infoM "daemon" ("Total number of egress port: " ++ show negrs)
 
     runDetached Nothing DevNull $ do
-        (Q.openDefault >>= \fp ->
+        (Q.openNoGroup 1514 4096 4096 >>= \fp ->
             withForeignPtr fp $ \ctrl -> do
-            fps <- replicateM (countEgress config) Q.openDefault
+            fps <- replicateM (countEgress config) (Q.openNoGroup 1514 4096 4096)
             withMany withForeignPtr fps $ \egrs -> do
                     runQSetup opts ctrl egrs
                     foreverDaemon opts (SLH.close s >> Q.close ctrl >> mapM_ Q.close egrs))

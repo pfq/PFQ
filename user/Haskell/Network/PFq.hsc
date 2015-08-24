@@ -83,10 +83,7 @@ module Network.PFq
         -- * Socket and Groups
 
         open,
-        open',
-        openDefault,
         openNoGroup,
-        openNoGroup',
         openGroup,
         close,
 
@@ -396,42 +393,18 @@ getPacketHeader p = waitForPacket p >> toPktHdr (pHdr p)
 
 {-# INLINE getPacketHeader #-}
 
--- |Open the socket.
---
--- The default values are used; no group is joined or created.
--- The newly created socket is suitable for egress sockets.
-
-openDefault :: IO (ForeignPtr PFqTag)
-openDefault = pfq_open_default  >>=
-            throwPFqIf nullPtr (== nullPtr) >>= \ptr ->
-                C.newForeignPtr ptr (void $ pfq_close ptr)
-
-
 -- |Open a socket and create a new private group.
 --
 -- The default values for class mask and group policy are 'class_default' and
 -- 'policy_priv', respectively.
 
-open :: Int  -- ^ caplen
-     -> Int  -- ^ number of Rx slots
-     -> IO (ForeignPtr PFqTag)
-open caplen slots =
-        pfq_open (fromIntegral caplen) (fromIntegral slots) >>=
-            throwPFqIf nullPtr (== nullPtr) >>= \ptr ->
-                C.newForeignPtr ptr (void $ pfq_close ptr)
 
-
--- |Open a socket and join a new private group.
---
--- The default values for class mask and group policy are 'class_default' and
--- 'policy_priv', respectively.
-
-open' :: Int  -- ^ caplen
+open  :: Int  -- ^ caplen
       -> Int  -- ^ number of Rx slots
       -> Int  -- ^ number of Tx slots
       -> IO (ForeignPtr PFqTag)
-open' caplen rx_slots tx_slots =
-        pfq_open_ (fromIntegral caplen) (fromIntegral rx_slots) (fromIntegral tx_slots) >>=
+open  caplen rx_slots tx_slots =
+        pfq_open (fromIntegral caplen) (fromIntegral rx_slots) (fromIntegral tx_slots) >>=
             throwPFqIf nullPtr (== nullPtr) >>= \ptr ->
                 C.newForeignPtr ptr (void $ pfq_close ptr)
 
@@ -440,25 +413,12 @@ open' caplen rx_slots tx_slots =
 --
 -- Groups can later be joined by means of the 'joinGroup' function.
 
-openNoGroup :: Int  -- ^ caplen
-            -> Int  -- ^ number of Rx slots
-            -> IO (ForeignPtr PFqTag)
-openNoGroup caplen slots =
-        pfq_open_nogroup (fromIntegral caplen) (fromIntegral slots) >>=
-            throwPFqIf nullPtr (== nullPtr) >>= \ptr ->
-                C.newForeignPtr ptr (void $ pfq_close ptr)
-
-
--- |Open a socket. No group is joined or created.
---
--- Groups can later be joined by means of the 'joinGroup' function.
-
-openNoGroup' :: Int  -- ^ caplen
+openNoGroup  :: Int  -- ^ caplen
              -> Int  -- ^ number of Rx slots
              -> Int  -- ^ number of Tx slots
              -> IO (ForeignPtr PFqTag)
-openNoGroup' caplen rx_slots tx_slots =
-        pfq_open_nogroup_ (fromIntegral caplen) (fromIntegral rx_slots) (fromIntegral tx_slots) >>=
+openNoGroup  caplen rx_slots tx_slots =
+        pfq_open_nogroup (fromIntegral caplen) (fromIntegral rx_slots) (fromIntegral tx_slots) >>=
             throwPFqIf nullPtr (== nullPtr) >>= \ptr ->
                 C.newForeignPtr ptr (void $ pfq_close ptr)
 
@@ -1089,11 +1049,8 @@ sendAt hdl xs ts copies =
 -- C functions from libpfq
 --
 
-foreign import ccall unsafe pfq_open_default        :: IO (Ptr PFqTag)
-foreign import ccall unsafe pfq_open                :: CSize -> CSize -> IO (Ptr PFqTag)
-foreign import ccall unsafe pfq_open_               :: CSize -> CSize -> CSize -> IO (Ptr PFqTag)
-foreign import ccall unsafe pfq_open_nogroup        :: CSize -> CSize -> IO (Ptr PFqTag)
-foreign import ccall unsafe pfq_open_nogroup_       :: CSize -> CSize -> CSize -> IO (Ptr PFqTag)
+foreign import ccall unsafe pfq_open                :: CSize -> CSize -> CSize -> IO (Ptr PFqTag)
+foreign import ccall unsafe pfq_open_nogroup        :: CSize -> CSize -> CSize -> IO (Ptr PFqTag)
 foreign import ccall unsafe pfq_open_group          :: CULong -> CInt  -> CSize -> CSize -> CSize -> IO (Ptr PFqTag)
 
 foreign import ccall unsafe pfq_close               :: Ptr PFqTag -> IO CInt
