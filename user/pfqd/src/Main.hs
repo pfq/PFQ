@@ -107,7 +107,7 @@ bindInput q gid (NetDevice d hq _ _) =
 bindOutput :: Ptr PFqTag -> (Int, Policy, NetDevice) ->  IO ()
 bindOutput q (gid, pol, NetDevice d hq w cl) = bindEgress q gid d hq
     where bindEgress q gid dev queue = do
-            infoM "daemon" ("    egress bind on dev " ++ dev ++ ", port " ++ show queue)
+            infoM "daemon" ("    egress bind on dev " ++ dev ++ ", port " ++ show queue ++ ", class " ++ show cl)
             Q.joinGroup q gid cl (mkPolicy pol)
             Q.egressBind q dev queue
             Q.setWeight q w
