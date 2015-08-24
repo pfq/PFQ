@@ -44,9 +44,9 @@ prettyPrinter comp = let (xs,_) = serialize comp 0
 
 dumpPacket :: Q.Packet -> IO ()
 dumpPacket p = do
-                Q.waitForPacket p
-                bytes <- peekByteOff (Q.pData p) 0 :: IO Word64
-                putStrLn $ "[" ++ showHex bytes "" ++ "]"
+    Q.waitForPacket p
+    bytes <- peekByteOff (Q.pData p) 0 :: IO Word64
+    putStrLn $ "[" ++ showHex bytes "" ++ "]"
 
 
 recvLoop :: Ptr PFqTag -> IO ()
@@ -59,7 +59,7 @@ recvLoop q = do
             ps <- Q.getPackets queue
             mapM_ (getPacketHeader >=> print) ps
             mapM_ dumpPacket ps
-            Q.getGroupCounters q gid >>= print
+            -- Q.getGroupCounters q gid >>= print
             recvLoop q
 
 
@@ -69,9 +69,9 @@ recvLoop q = do
 dumper :: String -> IO ()
 dumper dev = do
     putStrLn  $ "dumping " ++ dev  ++ "..."
-    fp <- Q.open 64 4096
+    fp <- Q.open 64 4096 4096
     withForeignPtr fp  $ \q -> do
-        Q.setTimestamp q True
+        Q.timestampingEnable q True
 
         gid <- Q.getGroupId q
         Q.bindGroup q gid dev (-1)
@@ -87,7 +87,7 @@ dumper dev = do
         putStrLn $ pretty comp
         prettyPrinter comp
 
-        Q.groupComputation q gid comp
+        -- Q.setGroupComputation q gid comp
 
         -- Q.vlanFiltersEnabled q gid True
         -- Q.vlanSetFilterId q gid (0)   -- untagged
@@ -102,3 +102,5 @@ main = do
     case length args of
         0   -> error "usage: test-read dev"
         _   -> dumper (head args)
+
+

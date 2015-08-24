@@ -39,15 +39,12 @@ recvDispatch q = do
 dumper :: String -> IO ()
 dumper dev = do
     putStrLn  $ "dumping " ++ dev  ++ "..."
-    fp <- Q.open 64 4096
+    fp <- Q.open 64 4096 4096
     withForeignPtr fp  $ \q -> do
-        Q.setTimestamp q True
+        Q.timestampingEnable q True
         gid <- Q.getGroupId q
         Q.bindGroup q gid dev (-1)
         Q.enable q
-
-        Q.groupComputation q gid (icmp >-> steer_ip >-> inc 0)
-
         Q.getRxSlotSize q >>= \o -> putStrLn $ "slot_size: " ++ show o
         recvDispatch q
 

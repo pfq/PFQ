@@ -62,9 +62,9 @@ recvLoop q = do
 dumper :: String -> IO ()
 dumper dev = do
     putStrLn  $ "dumping " ++ dev  ++ "..."
-    fp <- Q.open 64 4096
+    fp <- Q.open 64 4096 4096
     withForeignPtr fp  $ \q -> do
-        Q.setTimestamp q True
+        Q.timestampingEnable q True
 
         gid <- Q.getGroupId q
         Q.bindGroup q gid dev (-1)
@@ -72,10 +72,10 @@ dumper dev = do
 
         let m = bloomCalcM 2 0.000001
 
-        let comp = icmp >-> bloom_src_filter (fromIntegral m) ["192.168.0.1", "192.168.0.3"] 32 >-> icmp >-> log_packet
+        let comp = bloom_filter (fromIntegral m) ["192.168.0.0"] 16 >-> log_packet
 
         putStrLn $ pretty comp
-        Q.groupComputation q gid comp
+        Q.setGroupComputation q gid comp
 
         recvLoop q
 
