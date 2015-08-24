@@ -98,6 +98,9 @@ module Network.PFq
 
         -- * Socket control
 
+        joinGroup,
+        leaveGroup,
+
         bind,
         bindGroup,
         unbind,
@@ -107,9 +110,6 @@ module Network.PFq
         bindTx,
         bindTxOnCpu,
         unbindTx,
-
-        joinGroup,
-        leaveGroup,
 
         -- * Socket parameters
 
@@ -250,19 +250,19 @@ data Packet = Packet {
 
 -- |ClassMask type.
 newtype ClassMask = ClassMask { getClassMask :: CULong }
-                        deriving (Eq, Show)
+                        deriving (Eq, Show, Read)
 
 -- |Group policy type.
 newtype GroupPolicy = GroupPolicy { getGroupPolicy :: CInt }
-                        deriving (Eq, Show)
+                        deriving (Eq, Show, Read)
 
 -- |Async policy type.
 newtype AsyncPolicy = AsyncPolicy { getAsyncPolicy :: CInt }
-                        deriving (Eq, Show)
+                        deriving (Eq, Show, Read)
 
 -- |Generic pfq constant.
 newtype PFqConstant = PFqConstant { getConstant :: Int }
-                        deriving (Eq, Show)
+                        deriving (Eq, Show, Read)
 
 
 #{enum ClassMask, ClassMask

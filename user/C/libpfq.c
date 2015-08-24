@@ -647,7 +647,7 @@ pfq_bind_group(pfq_t *q, int gid, const char *dev, int queue)
 
 	b.gid      = gid;
 	b.if_index = index;
-	b.hw_queue = queue;
+	b.queue    = queue;
 
 	if (setsockopt(q->fd, PF_Q, Q_SO_GROUP_BIND, &b, sizeof(b)) == -1) {
 		return Q_ERROR(q, "PFQ: bind error");
@@ -685,7 +685,7 @@ pfq_egress_bind(pfq_t *q, const char *dev, int queue)
 
 	b.gid = 0;
 	b.if_index = index;
-	b.hw_queue = queue;
+	b.queue    = queue;
 
         if (setsockopt(q->fd, PF_Q, Q_SO_EGRESS_BIND, &b, sizeof(b)) == -1)
 		return Q_ERROR(q, "PFQ: egress bind error");
@@ -721,7 +721,7 @@ pfq_unbind_group(pfq_t *q, int gid, const char *dev, int queue) /* Q_ANY_QUEUE *
 
 	b.gid = gid;
 	b.if_index = index;
-	b.hw_queue = queue;
+	b.queue    = queue;
 
 	if (setsockopt(q->fd, PF_Q, Q_SO_GROUP_UNBIND, &b, sizeof(b)) == -1) {
 		return Q_ERROR(q, "PFQ: unbind error");
@@ -1072,7 +1072,7 @@ pfq_bind_tx(pfq_t *q, const char *dev, int queue, int core)
 		return Q_ERROR(q, "PFQ: device not found");
 
 	b.if_index = index;
-	b.hw_queue = queue;
+	b.queue = queue;
 	b.cpu = core;
 
         if (setsockopt(q->fd, PF_Q, Q_SO_TX_BIND, &b, sizeof(b)) == -1)
