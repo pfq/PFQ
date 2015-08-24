@@ -456,7 +456,7 @@ pfq_is_enabled(pfq_t const *q)
 
 
 int
-pfq_timestamp_enable(pfq_t *q, int value)
+pfq_timestamping_enable(pfq_t *q, int value)
 {
 	if (setsockopt(q->fd, PF_Q, Q_SO_SET_RX_TSTAMP, &value, sizeof(value)) == -1) {
 		return Q_ERROR(q, "PFQ: set timestamp mode");
@@ -466,7 +466,7 @@ pfq_timestamp_enable(pfq_t *q, int value)
 
 
 int
-pfq_is_timestamp_enabled(pfq_t const *q)
+pfq_is_timestamping_enabled(pfq_t const *q)
 {
 	int ret; socklen_t size = sizeof(int);
 

@@ -303,14 +303,14 @@ extern int pfq_disable(pfq_t *q);
 extern int pfq_is_enabled(pfq_t const *q);
 
 
-/*! Set the timestamping for packets. */
+/*! Enable the timestamping for packets. */
 
-extern int pfq_timestamp_enable(pfq_t *q, int value);
+extern int pfq_timestamping_enable(pfq_t *q, int value);
 
 
 /*! Check whether the timestamping for packets is enabled. */
 
-extern int pfq_is_timestamp_enabled(pfq_t const *q);
+extern int pfq_is_timestamping_enabled(pfq_t const *q);
 
 
 /*! Set the weight of the socket used during the steering phase. */
