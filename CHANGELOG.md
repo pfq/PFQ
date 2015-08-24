@@ -102,13 +102,14 @@ PFQ 4.4
 
 PFQ 5.0
 -------
- * Steering enhanced with configurable weights.
+ * Steering enhanced through the use of weights.
+ * General improvements of user-space tools.
  * HugePages support enabled by default. 
  * New binding format for user tools.
- * API+internals of pkt transmission improved.
+ * Packet transmission improved.
+ * API simplified and clean.
  * Stats of memory pool improved.
- * Added support for i40e driver.
- * User space tools general improvements.
+ * Support for i40e driver added.
  * New declarative syntax for pfqd config.
  * Performance improvements.
  * Regressions fixed.
