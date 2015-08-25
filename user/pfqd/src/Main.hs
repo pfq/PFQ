@@ -19,6 +19,7 @@
 --  The full GNU General Public License is included in this distribution in
 --  the file called "COPYING".
 
+
 {-# LANGUAGE TupleSections #-}
 
 import Control.Concurrent
@@ -31,10 +32,16 @@ import Data.Maybe
 import System.Log.Logger
 import qualified System.Log.Handler as SLH
 import System.Log.Handler.Syslog
+
+import System.Process
 import System.Posix.Daemon
+import System.Posix.Types
+import System.Posix.Process(getProcessID)
+
 import System.Environment
 import System.Console.CmdArgs
 import System.Directory
+import System.IO.Error
 
 import Network.PFq as Q
 import Network.PFq.Lang
@@ -69,8 +76,16 @@ main = do
 
     -- getting workdir...
 
-    workdir <-getAppUserDataDirectory "pfqd"
+    workdir <- getAppUserDataDirectory "pfqd"
     setCurrentDirectory workdir
+
+    -- log its pid...
+
+    ps <- pidof =<< getProgName
+
+    when (length ps > 1) $
+        getProcessID >>= \me ->
+            error $ "error: another session is running with pid " ++ show (head $ filter (/= me) ps)
 
     -- rebuild itself
 
@@ -132,4 +147,7 @@ mkPolicy :: Policy -> Q.GroupPolicy
 mkPolicy Shared     = Q.policy_shared
 mkPolicy Restricted = Q.policy_restricted
 
+
+pidof :: String -> IO [ProcessID]
+pidof name = liftM (map Prelude.read . words) $ catchIOError (readProcess "/bin/pidof" [name] "") (const $ return [])
 
