@@ -48,31 +48,31 @@ data Key = Key Word32 Word32 Word16 Word16
             deriving (Eq, Show)
 
 
-data State a = State { sCounter :: MVar a,
-                       sFlow    :: MVar a,
-                       sSet     :: S.Set Key
-                     }
+data State a = State
+               {    sCounter :: MVar a
+               ,    sFlow    :: MVar a
+               ,    sSet     :: S.Set Key
+               }
 
 
 -- Command line options
 --
 data Options = Options
-               {
-                caplen   :: Int,
-                slots    :: Int,
-                function :: [String],
-                thread   :: [String]
+               {    caplen   :: Int
+               ,    slots    :: Int
+               ,    function :: [String]
+               ,    thread   :: [String]
                } deriving (Data, Typeable, Show)
 
 
 -- default options
 --
 options = cmdArgsMode $
-    Options {
-        caplen   = 64,
-        slots    = 131072,
-        function = [] &= typ "FUNCTION"  &= help "Where FUNCTION = fun[ >-> fun >-> fun][.gid] (ie: steer_ip)",
-        thread   = [] &= typ "BINDING" &= help "Where BINDING = core.gid[.[eth0:queue,queue,queue...[.ethx:queue,queue...]]]"
+    Options
+    {   caplen   = 64
+    ,   slots    = 8192
+    ,   function = [] &= typ "FUNCTION"  &= help "Where FUNCTION = fun[ >-> fun >-> fun][.gid] (ie: steer_ip)"
+    ,   thread   = [] &= typ "BINDING" &= help "Where BINDING = core.gid[.[eth0:queue,queue,queue...[.ethx:queue,queue...]]]"
     } &= summary "PFq multi-threaded packet counter." &= program "pfq-counters"
 
 
@@ -84,20 +84,17 @@ type Gid   = Int
 
 
 data NetDev = NetDev
-    {
-        devName     :: String,
-        devQueues   :: [Queue]
-
+    {   devName     :: String
+    ,   devQueues   :: [Queue]
     } deriving (Eq, Show, Read)
 
 
 data Binding = Binding
-    {
-        coreNum   :: Int,
-        groupId   :: Gid,
-        netDevs   :: [NetDev]
-
+    {   coreNum   :: Int
+    ,   groupId   :: Gid
+    ,   netDevs   :: [NetDev]
     } deriving (Eq, Show)
+
 
 makeBinding :: String -> Binding
 makeBinding s = case splitOn "." s of
@@ -113,6 +110,7 @@ makeFun s =  case splitOn "." s of
                 []      -> error "makeFun: empty string"
                 [fs]    -> (-1,             map (filter (/= ' ')) $ splitOn ">->" fs)
                 fs : n  -> (read $ head n,  map (filter (/= ' ')) $ splitOn ">->" fs)
+
 
 -- main function
 --
