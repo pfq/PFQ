@@ -29,7 +29,7 @@ module Development.SimpleBuilder (
     into,
     simpleBuilder,
     numberOfPhyCores,
-    cabalConfigure,
+    cabalConfigureUser,
     cabalBuild,
     cabalInstall,
     cabalClean,
@@ -63,13 +63,13 @@ version = "0.1"
 
 -- Predefined commands
 
-cabalConfigure = BareCmd "runhaskell Setup configure --user"
-cabalBuild     = BareCmd "runhaskell Setup build"
-cabalInstall   = BareCmd "runhaskell Setup install"
-cabalClean     = BareCmd "runhaskell Setup clean"
+cabalConfigureUser = BareCmd "runhaskell Setup configure --user"
+cabalBuild         = BareCmd "runhaskell Setup build"
+cabalInstall       = BareCmd "runhaskell Setup install"
+cabalClean         = BareCmd "runhaskell Setup clean"
 
-make_install   = BareCmd "make install"
-make_clean     = BareCmd "make clean"
+make_install       = BareCmd "make install"
+make_clean         = BareCmd "make clean"
 
 make   = AdornedCmd (\o -> case () of
                             _ | jobs o == 0               -> "make"
@@ -104,8 +104,8 @@ data Options = Options
 options :: Mode (CmdArgs Options)
 options = cmdArgsMode $ Options
     {   buildType = Nothing    &= explicit &= name "buildType"     &= help "Specify the build type (Release, Debug)"
-    ,   cxxComp   = Nothing    &= explicit &= name "cxx"           &= help "Compiler for C++ programs"
-    ,   ccComp    = Nothing    &= explicit &= name "cc"            &= help "Compiler for C programs"
+    ,   cxxComp   = Nothing    &= explicit &= name "cxx"           &= help "Compiler to use for C++ programs"
+    ,   ccComp    = Nothing    &= explicit &= name "cc"            &= help "Compiler to use for C programs"
     ,   dryRun    = False      &= explicit &= name "dry-run"       &= help "Print commands, don't actually run them"
     ,   jobs      = 0          &= help "Allow N jobs at once (if possible)"
     ,   extra     = []         &= typ "ITEMS" &= args
