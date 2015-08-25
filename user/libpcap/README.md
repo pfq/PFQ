@@ -134,9 +134,9 @@ PFQ_GROUP=42 PFQ_COMPUTATION=steer_flow tcpdump -n -i pfq:eth0:eth1
 
 # additional instances specify only the PFQ_GROUP...
 
-PFQ_GORUP=42 tcpdump -n -i pfq
-PFQ_GORUP=42 tcpdump -n -i pfq
-PFQ_GORUP=42 tcpdump -n -i pfq
+PFQ_GROUP=42 tcpdump -n -i pfq
+PFQ_GROUP=42 tcpdump -n -i pfq
+PFQ_GROUP=42 tcpdump -n -i pfq
 ...
 ```
 
