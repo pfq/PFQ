@@ -5,7 +5,7 @@ Introduction
 ------------
 
 This version of pcap library is intended to support the PFQ framework, thus allowing 
-legacy applications to exploit the capture acceleration of PFQ, and at the 
+legacy applications to exploit the acceleration of capture/transmission of PFQ, and at the 
 same time to take advantage of PFQ/lang computations to filter and dispatch packets
 across pcap sockets.
 
@@ -20,7 +20,7 @@ to manage groups and in-kernel computations.
 Features
 --------
 
-* 10-Gbit Line-rate (14,8Mpps) with tcpdump.
+* 10-Gbit Line-rate (14,8Mpps) tested with tcpdump.
 * Parallel sessions of legacy applications through PFQ/lang computations.
 * Per-group in-kernel BPF (JIT compiled filters included).
 * Fully compliant with PFQ/lang and pfqd.
@@ -31,9 +31,9 @@ Details
 
 This implementation of pcap library is extended to support PFQ sockets. By default
 the library makes use of AF\_PACKET sockets. Only only when a special device name 
-is provided the PFQ acceleration takes place. 
+is provided (prefixed with the string pfq) the PFQ acceleration takes place. 
 
-For applications that do not admit arbitrary names for devices, it is possible 
+For applications that do not allow arbitrary names for devices, it is possible 
 to trigger the PFQ acceleration by specifying one of the environment variables
 described in the table below.
 
@@ -43,27 +43,28 @@ The syntax of the device name is the following:
 pfq[/config_file]:[device[:device[:device..]]]
 ```
 
-Additional PFQ parameters are passed to the library in different ways, by means of
-environment variables or by a configuration file.
+Additional PFQ parameters are passed to the library by means of environment variables 
+or by a configuration file.
 
 
 Environment variables
 ---------------------
 
-The following table summarize the PFQ parameters not allowed in pcap APIs.
+The following table summarize the PFQ parameters that cannot be passed through the 
+standard pcap APIs.
 
-Default values are those assumed if not specified otherwise. 
+If not specified otherwise, the default values are assumed. 
 
 (> 1Mpps) column reports suggested values for very high packet rates, 
 e.g. 10G with short packets. 
 
-PFQ\_TX\_QUEUE, PFQ\_TX\_TASK, and PFQ\_VLAN are specified as comma separated list.
+note: PFQ\_TX\_QUEUE, PFQ\_TX\_TASK, and PFQ\_VLAN are specified as comma separated list.
 
 
 Variable          |    Default    |  > 1Mpps  | Meaning
 ------------------|---------------|-----------|--------------------------------------------
 PFQ\_CONFIG       |               |           | Specify the PFQ/pcap config file
-PFQ\_GROUP        |  free one     |           | Specify the PFQ group for the process
+PFQ\_GROUP        |  a free one   |           | Specify the PFQ group for the process
 PFQ\_CAPLEN       | pcap snapshot |           | Override the snaplen value for capture
 PFQ\_RX\_SLOTS    |    4096       |  131072   | Define the RX queue length of the socket   
 PFQ\_TX\_SLOTS    |    4096       |   8192    | Define the TX queue length of the socket   
@@ -77,9 +78,9 @@ PFQ\_VLAN         | empty list    |           | Set the PFQ/lang computation for
 Configuration Files
 -------------------
 
-In addition to the environment variables, it is possible to specify a configuration file 
+In addition to the environment variables, it is also possible to specify a configuration file 
 on per-socket basis. This solves the problem of passing different values to multiple pcap 
-devices in multi-threaded applications.
+socket in multi-threaded applications.
 
 The path of the configuration file is passed to the library with the following syntax:
 
