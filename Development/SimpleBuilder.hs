@@ -37,6 +37,7 @@ module Development.SimpleBuilder (
     make,
     make_install,
     make_clean,
+    ldconfig
 ) where
 
 import System.Console.CmdArgs
@@ -70,6 +71,7 @@ cabalClean         = BareCmd "runhaskell Setup clean"
 
 make_install       = BareCmd "make install"
 make_clean         = BareCmd "make clean"
+ldconfig           = BareCmd "ldconfig -v"
 
 make   = AdornedCmd (\o -> case () of
                             _ | jobs o == 0               -> "make"
