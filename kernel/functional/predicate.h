@@ -51,7 +51,7 @@ less(arguments_t args, SkBuff skb)
 	uint64_t ret = EVAL_PROPERTY(p, skb);
 
 	if (IS_JUST(ret))
-		return FROM_JUST(ret) < data;
+		return FROM_JUST(uint64_t, ret) < data;
 
 	return false;
 }
@@ -65,7 +65,7 @@ less_eq(arguments_t args, SkBuff skb)
 	uint64_t ret = EVAL_PROPERTY(p, skb);
 
 	if (IS_JUST(ret))
-		return FROM_JUST(ret) <= data;
+		return FROM_JUST(uint64_t, ret) <= data;
 
 	return false;
 }
@@ -79,7 +79,7 @@ greater(arguments_t args, SkBuff skb)
 	uint64_t ret = EVAL_PROPERTY(p, skb);
 
 	if (IS_JUST(ret))
-		return FROM_JUST(ret) > data;
+		return FROM_JUST(uint64_t, ret) > data;
 
 	return false;
 }
@@ -93,7 +93,7 @@ greater_eq(arguments_t args, SkBuff skb)
 	uint64_t ret = EVAL_PROPERTY(p, skb);
 
 	if (IS_JUST(ret))
-		return FROM_JUST(ret) >= data;
+		return FROM_JUST(uint64_t, ret) >= data;
 
 	return false;
 }
@@ -107,7 +107,7 @@ equal(arguments_t args, SkBuff skb)
 	uint64_t ret = EVAL_PROPERTY(p, skb);
 
 	if (IS_JUST(ret))
-		return FROM_JUST(ret) == data;
+		return FROM_JUST(uint64_t, ret) == data;
 
 	return false;
 }
@@ -121,7 +121,7 @@ not_equal(arguments_t args, SkBuff skb)
 	uint64_t ret = EVAL_PROPERTY(p, skb);
 
 	if (IS_JUST(ret))
-		return FROM_JUST(ret) != data;
+		return FROM_JUST(uint64_t, ret) != data;
 
 	return false;
 }
@@ -135,7 +135,7 @@ any_bit(arguments_t args, SkBuff skb)
 	uint64_t ret = EVAL_PROPERTY(p, skb);
 
 	if (IS_JUST(ret))
-		return (FROM_JUST(ret) & data) != 0;
+		return (FROM_JUST(uint64_t, ret) & data) != 0;
 
 	return false;
 }
@@ -149,7 +149,7 @@ all_bit(arguments_t args, SkBuff skb)
 	uint64_t ret = EVAL_PROPERTY(p, skb);
 
 	if (IS_JUST(ret))
-		return (FROM_JUST(ret) & data) == data;
+		return (FROM_JUST(uint64_t, ret) & data) == data;
 
 	return false;
 }

@@ -40,15 +40,9 @@
 
 #include <pf_q-sparse.h>
 #include <pf_q-monad.h>
+#include <pf_q-maybe.h>
 #include <pf_q-GC.h>
 
-/**** macros ****/
-
-
-#define JUST(x)			((1ULL<<31) | x)
-#define IS_JUST(x)		((1ULL<<31) & x)
-#define FROM_JUST(x)		(~(1ULL<<31) & x)
-#define NOTHING			0
 
 #define ARGS_TYPE(a)		__builtin_choose_expr(__builtin_types_compatible_p(arguments_t, typeof(a)), a, (void)0)
 
