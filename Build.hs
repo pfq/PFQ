@@ -34,8 +34,8 @@ script =
         Clean     "pfq.ko"          *>>  into "kernel/" [ make_clean ],
 
         Configure "pfq-clib"        *>>  into "user/C/" [ cmake ],
-        Build     "pfq-clib"        *>>  into "user/C/" [ make ]         .|. [ Configure "pfq-clib" ],
-        Install   "pfq-clib"        *>>  into "user/C/" [ make_install ] .|. [ Build "pfq-clib" ],
+        Build     "pfq-clib"        *>>  into "user/C/" [ make ]                   .|. [ Configure "pfq-clib" ],
+        Install   "pfq-clib"        *>>  into "user/C/" [ make_install, ldconfig ] .|. [ Build "pfq-clib" ],
         Clean     "pfq-clib"        *>>  into "user/C/" [ make_clean ],
 
         Configure "pfq-cpplib"      *>>  into "user/C++/pfq/" [],
