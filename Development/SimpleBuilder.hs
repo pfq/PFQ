@@ -62,7 +62,7 @@ import System.Exit
 import System.IO.Unsafe
 
 import Control.Monad
-import Control.Monad.State
+import qualified Control.Monad.Trans.RWS.Lazy as RWS
 import Control.Monad.Writer.Lazy
 import Control.Applicative
 
@@ -199,7 +199,6 @@ runCmd opt cmd = let raw = evalCmd opt cmd in system raw
 data BuildType = Release | Debug
     deriving (Data, Typeable, Show, Read, Eq)
 
-
 newtype Action a = Action { getAction :: Writer ([Command], [Target]) a }
     deriving(Functor, Applicative, Monad)
 
@@ -210,11 +209,11 @@ data Component = Component { getTarget :: Target,  getActionInfo :: ActionInfo }
 
 data ActionInfo = ActionInfo { basedir :: FilePath, action :: Action () }
 
-type BuilderScript  = Writer Script ()
+type BuilderScript = Writer Script ()
 
-type Script  = [Component]
+type Script = [Component]
 
-type ScriptT = StateT (Script, [Target], Options)
+type BuilderT = RWS.RWST (Options) () [Target]
 
 
 infixr 0 *>>
@@ -235,10 +234,10 @@ requires :: Action () -> [Target] -> Action ()
 ac `requires` xs = ac >> Action (tell ([],xs))
 
 
-buildTargets :: [Target] -> FilePath -> Int -> ScriptT IO ()
-buildTargets tgts baseDir level = do
+buildTargets :: [Target] -> Script -> FilePath -> Int -> BuilderT IO ()
+buildTargets tgts script baseDir level = do
 
-    (script, done, _) <- get
+    opt <- RWS.ask
 
     let targets = map getTarget script
     let script' = filter (\(Component tar' _ ) -> tar' `elem` tgts) script
@@ -247,41 +246,42 @@ buildTargets tgts baseDir level = do
         lift $ error ("SimpleBuilder: " ++ unwords (
             map getTargetName $ filter (`notElem` targets) tgts)  ++ ": target not found!")
 
-    let tot = length script'
-
     forM_ (zip [1..] script') $ \(n, Component target (ActionInfo path action)) -> do
 
         let (cmds',deps') = execWriter $ getAction action
 
-        (_, done', opt) <- get
-        unless (target `elem` done') $ do
+        done <- RWS.get
 
-            put (script, target : done', opt)
+        unless (target `elem` done) $ do
 
-            unless (dryRun opt) $
-                lift $ putStrLn $ replicate level '.' ++ bold ++ "[" ++ show n ++ "/" ++ show tot ++ "] " ++ show target ++ ":" ++ reset
+            RWS.put (target : done)
+
+            putStrLnVerbose Nothing $ replicate level '.' ++ bold ++ "[" ++ show n ++ "/" ++ show (length script') ++ "] " ++ show target ++ ":" ++ reset
 
             -- satisfy dependencies
-            unless (null deps') $ do
-                lift $ putStrLnVerbose (verbose opt) (bold ++ "# Satisfying dependencies for " ++ show target ++ ": " ++ show deps' ++ reset)
-                forM_ deps' $ \t -> when (t `notElem` done') $ buildTargets [t] baseDir (level+1)
 
-            lift $ putStrLnVerbose (verbose opt) (bold ++ "# Building target " ++ show target ++ ": " ++ show (map (evalCmd opt) cmds') ++ reset)
+            unless (null deps') $ do
+                putStrLnVerbose (Just $ verbose opt) $ bold ++ "# Satisfying dependencies for " ++ show target ++ ": " ++ show deps' ++ reset
+                forM_ deps' $ \t -> when (t `notElem` done) $ buildTargets [t] script baseDir (level+1)
+
+            putStrLnVerbose (Just $ verbose opt) $ bold ++ "# Building target " ++ show target ++ ": " ++ show (map (evalCmd opt) cmds') ++ reset
 
             -- build target
+
             if dryRun opt
             then void . lift $ do
-                       putStrLn $ "cd " ++ baseDir </> path
-                       mapM (putStrLn . evalCmd opt) cmds'
+                    putStrLn $ "cd " ++ baseDir </> path
+                    mapM (putStrLn . evalCmd opt) cmds'
             else void . lift $ do
-                        setCurrentDirectory $ baseDir </> path
-                        ec <- mapM (runCmd opt) cmds'
-                        unless (all (== ExitSuccess) ec) $
-                             error ("SimpleBuilder: " ++ show target ++ " aborted!")
+                    setCurrentDirectory $ baseDir </> path
+                    ec <- mapM (runCmd opt) cmds'
+                    unless (all (== ExitSuccess) ec) $
+                        error ("SimpleBuilder: " ++ show target ++ " aborted!")
 
 
-putStrLnVerbose :: Bool -> String -> IO ()
-putStrLnVerbose verb xs = when verb $ putStrLn xs
+putStrLnVerbose  :: Maybe Bool -> String -> BuilderT IO ()
+putStrLnVerbose Nothing xs = liftIO $ putStrLn xs
+putStrLnVerbose (Just v) xs = when v (liftIO $ putStrLn xs)
 
 
 simpleBuilder :: BuilderScript -> [String] -> IO ()
@@ -293,10 +293,10 @@ simpleBuilder script' args = do
     baseDir <- getCurrentDirectory
 
     E.catch (case extra opt of
-            ("configure":xs) -> evalStateT (buildTargets (map Configure (mkTargets xs)) baseDir 0) (script, [], opt) >> putStrLn ( bold ++ "Done." ++ reset )
-            ("build":xs)     -> evalStateT (buildTargets (map Build     (mkTargets xs)) baseDir 0) (script, [], opt) >> putStrLn ( bold ++ "Done." ++ reset )
-            ("install":xs)   -> evalStateT (buildTargets (map Install   (mkTargets xs)) baseDir 0) (script, [], opt) >> putStrLn ( bold ++ "Done." ++ reset )
-            ("clean":xs)     -> evalStateT (buildTargets (map Clean     (mkTargets xs)) baseDir 0) (script, [], opt) >> putStrLn ( bold ++ "Done." ++ reset )
+            ("configure":xs) -> RWS.evalRWST (buildTargets (map Configure (mkTargets xs)) script baseDir 0) opt [] >> putStrLn ( bold ++ "Done." ++ reset )
+            ("build":xs)     -> RWS.evalRWST (buildTargets (map Build     (mkTargets xs)) script baseDir 0) opt [] >> putStrLn ( bold ++ "Done." ++ reset )
+            ("install":xs)   -> RWS.evalRWST (buildTargets (map Install   (mkTargets xs)) script baseDir 0) opt [] >> putStrLn ( bold ++ "Done." ++ reset )
+            ("clean":xs)     -> RWS.evalRWST (buildTargets (map Clean     (mkTargets xs)) script baseDir 0) opt [] >> putStrLn ( bold ++ "Done." ++ reset )
             ("show":_)       -> showTargets script
             _                -> putStr $ show $ helpText [] HelpFormatDefault options)
         (\e -> setCurrentDirectory baseDir >> print (e :: E.SomeException))
