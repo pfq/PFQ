@@ -182,6 +182,10 @@ instance Eq Target where
 
 data Command = BareCmd String | AdornedCmd (Options -> String)
 
+instance Show Command where
+    show (BareCmd xs) = xs
+    show (AdornedCmd f) = f (Options Nothing Nothing Nothing False False 0 [])
+
 
 evalCmd :: Options -> Command -> String
 evalCmd _   (BareCmd xs) = xs
@@ -198,6 +202,9 @@ data BuildType = Release | Debug
 
 newtype Action a = Action { getAction :: Writer ([Command], [Target]) a }
     deriving(Functor, Applicative, Monad)
+
+instance (Show a) => Show (Action a) where
+    show action =  (\(cs, ts) -> show cs ++ ": " ++ show ts) $ runWriter (getAction action)
 
 data Component = Component { getTarget :: Target,  getActionInfo :: ActionInfo }
 
