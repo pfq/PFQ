@@ -111,15 +111,15 @@ script = do
     Install   "pfqd"            *>>  into "user/pfqd/"          $ cabalInstall          `requires` [Build     "pfqd"]
     Clean     "pfqd"            *>>  into "user/pfqd/"          $ cabalClean
 
-    Configure "test"            *>>  into "user/test/"          $ cmake                 `requires` [Install "pfq-clib", Install "pfq-cpplib"]
-    Build     "test"            *>>  into "user/test/"          $ make                  `requires` [Configure "test"]
-    Install   "test"            *>>  into "user/test/"          $ empty                 `requires` [Build "test"    ]
-    Clean     "test"            *>>  into "user/test/"          $ make_clean
+    Configure "tests"           *>>  into "user/test/"          $ cmake                 `requires` [Install "pfq-clib", Install "pfq-cpplib"]
+    Build     "tests"           *>>  into "user/test/"          $ make                  `requires` [Configure "tests"]
+    Install   "tests"           *>>  into "user/test/"          $ empty                 `requires` [Build "tests"    ]
+    Clean     "tests"           *>>  into "user/test/"          $ make_clean
 
-    Configure "tool"            *>>  into "user/tool/"          $ cmake                 `requires` [Build "pfq-clib"]
-    Build     "tool"            *>>  into "user/tool/"          $ make                  `requires` [Configure "tool"]
-    Install   "tool"            *>>  into "user/tool/"          $ make_install          `requires` [Build "tool"    ]
-    Clean     "tool"            *>>  into "user/tool/"          $ make_clean
+    Configure "tools"           *>>  into "user/tool/"          $ cmake                 `requires` [Build "pfq-clib"]
+    Build     "tools"           *>>  into "user/tool/"          $ make                  `requires` [Configure "tools"]
+    Install   "tools"           *>>  into "user/tool/"          $ make_install          `requires` [Build "tools"    ]
+    Clean     "tools"           *>>  into "user/tool/"          $ make_clean
 
 
 main = simpleBuilder script =<< getArgs
