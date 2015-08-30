@@ -40,10 +40,13 @@ module Development.SimpleBuilder (
     cabalBuild,
     cabalInstall,
     cabalClean,
+    cabalDistClean,
     cmake,
+    cmake_distclean,
     make,
     make_install,
     make_clean,
+    make_distclean,
     ldconfig,
     configure,
     cmd
@@ -87,8 +90,10 @@ cabalConfigureUser = tellAction $ BareCmd "runhaskell Setup configure --user"
 cabalBuild         = tellAction $ BareCmd "runhaskell Setup build"
 cabalInstall       = tellAction $ BareCmd "runhaskell Setup install"
 cabalClean         = tellAction $ BareCmd "runhaskell Setup clean"
+cabalDistClean     = tellAction $ BareCmd "rm -rf dist"
 make_install       = tellAction $ BareCmd "make install"
 make_clean         = tellAction $ BareCmd "make clean"
+make_distclean     = tellAction $ BareCmd "make distclean"
 ldconfig           = tellAction $ BareCmd "ldconfig"
 configure          = tellAction $ BareCmd "./configure"
 
@@ -114,8 +119,20 @@ cmake  = tellAction $ AdornedCmd (\o ->
                     )
 
 
+cmake_distclean :: Action ()
+cmake_distclean = Action $ do
+    tell ([BareCmd "rm -f install_manifest.txt"], [])
+    tell ([BareCmd "rm -f cmake.depends"], [])
+    tell ([BareCmd "rm -f cmake.chek_depends"],[])
+    tell ([BareCmd "rm -f CMakeCache.txt"],[])
+    tell ([BareCmd "rm -f *.cmake"],[])
+    tell ([BareCmd "rm -f Makefile"],[])
+    tell ([BareCmd "rm -rf CMakeFiles"],[])
+
+
 cmd :: String -> Action ()
 cmd xs = Action (tell ([BareCmd xs], []))
+
 
 tellAction :: Command -> Action ()
 tellAction c = Action (tell ([c], []))
@@ -153,6 +170,7 @@ detailsBanner = [ "[ITEMS] = COMMAND [TARGETS]",
   "    build       Build PFQ framework.",
   "    install     Copy the files into the install location.",
   "    clean       Clean up after a build.",
+  "    distclean   Clean up additional files/dirs.",
   "    show        Show targets.", ""]
 
 
@@ -163,20 +181,22 @@ reset = setSGRCode []
 data Target = Configure { getTargetName :: String } |
               Build     { getTargetName :: String } |
               Install   { getTargetName :: String } |
-              Clean     { getTargetName :: String }
-
+              Clean     { getTargetName :: String } |
+              DistClean { getTargetName :: String }
 
 instance Show Target where
     show (Configure x) = "configure " ++ x
     show (Build     x) = "build " ++ x
     show (Install   x) = "install " ++ x
     show (Clean     x) = "clean " ++ x
+    show (DistClean x) = "distclean " ++ x
 
 instance Eq Target where
     (Configure a) == (Configure b) = a == b || a == "*" || b == "*"
     (Build a)     == (Build b)     = a == b || a == "*" || b == "*"
     (Install a)   == (Install b)   = a == b || a == "*" || b == "*"
     (Clean a)     == (Clean b)     = a == b || a == "*" || b == "*"
+    (DistClean a) == (DistClean b) = a == b || a == "*" || b == "*"
     _ == _ = False
 
 
@@ -297,6 +317,7 @@ simpleBuilder script' args = do
             ("build":xs)     -> RWS.evalRWST (buildTargets (map Build     (mkTargets xs)) script baseDir 0) opt [] >> putStrLn ( bold ++ "Done." ++ reset )
             ("install":xs)   -> RWS.evalRWST (buildTargets (map Install   (mkTargets xs)) script baseDir 0) opt [] >> putStrLn ( bold ++ "Done." ++ reset )
             ("clean":xs)     -> RWS.evalRWST (buildTargets (map Clean     (mkTargets xs)) script baseDir 0) opt [] >> putStrLn ( bold ++ "Done." ++ reset )
+            ("distclean":xs) -> RWS.evalRWST (buildTargets (map DistClean (mkTargets xs)) script baseDir 0) opt [] >> putStrLn ( bold ++ "Done." ++ reset )
             ("show":_)       -> showTargets script
             _                -> putStr $ show $ helpText [] HelpFormatDefault options)
         (\e -> setCurrentDirectory baseDir >> print (e :: E.SomeException))
@@ -310,7 +331,7 @@ showTargets script =
 
 {-# NOINLINE numberOfPhyCores #-}
 numberOfPhyCores :: Int
-numberOfPhyCores = unsafePerformIO $ readFile "/proc/cpuinfo" >>= \file ->
-    return $ (length . filter (isInfixOf "processor") . lines) file
+numberOfPhyCores = unsafePerformIO $
+    liftM (length . filter (isInfixOf "processor") . lines) $ readFile "/proc/cpuinfo"
 
 
