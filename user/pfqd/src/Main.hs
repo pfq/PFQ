@@ -26,7 +26,6 @@ import Control.Concurrent
 import Control.Monad
 import Control.Exception as E
 
-import Data.Default
 import Data.Maybe
 
 import System.Log.Logger
