@@ -465,9 +465,10 @@ pcap_create_interface(const char *device, char *ebuf)
 		    getenv("PFQ_COMPUTATION") 	||
 		    getenv("PFQ_VLAN")
 		   )
-			return pfq_create(device, ebuf);
+			 //CHANGE added struct pcpa_linux because in linux 1.3.0 was not available
+			return pfq_create(device, ebuf, sizeof(struct pcap_linux));
 	#endif
-	
+
 	handle = pcap_create_common(device, ebuf, sizeof (struct pcap_linux));
 	if (handle == NULL)
 		return NULL;

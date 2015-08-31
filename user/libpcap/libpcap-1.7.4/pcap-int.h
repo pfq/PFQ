@@ -110,6 +110,96 @@ extern CRITICAL_SECTION g_PcapCompileCriticalSection;
  */
 #define MAXIMUM_SNAPLEN		262144
 
+/*
+ * Used when doing a live capture.
+ */
+struct pcap_md {
+	struct pcap_stat stat;
+	/*XXX*/
+	int use_bpf;		/* using kernel filter */
+	u_long	TotPkts;	/* can't oflow for 79 hrs on ether */
+	u_long	TotAccepted;	/* count accepted by filter */
+	u_long	TotDrops;	/* count of dropped packets */
+	long	TotMissed;	/* missed by i/f during this run */
+	long	OrigMissed;	/* missed by i/f before this run */
+	char	*device;	/* device name */
+	int	timeout;	/* timeout for buffering */
+	int	must_do_on_close; /* stuff we must do when we close */
+	struct pcap *next;	/* list of open pcaps that need stuff cleared on close */
+#ifdef linux
+	int	sock_packet;	/* using Linux 2.0 compatible interface */
+	int	cooked;		/* using SOCK_DGRAM rather than SOCK_RAW */
+	int	ifindex;	/* interface index of device we're bound to */
+	int	lo_ifindex;	/* interface index of the loopback device */
+	u_int	packets_read;	/* count of packets read with recvfrom() */
+	bpf_u_int32 oldmode;	/* mode to restore when turning monitor mode off */
+	char	*mondevice;	/* mac80211 monitor device we created */
+	u_char	*mmapbuf;	/* memory-mapped region pointer */
+	size_t	mmapbuflen;	/* size of region */
+	u_int	tp_version;	/* version of tpacket_hdr for mmaped ring */
+	u_int	tp_hdrlen;	/* hdrlen of tpacket_hdr for mmaped ring */
+	u_char	*oneshot_buffer; /* buffer for copy of packet */
+	long	proc_dropped; /* packets reported dropped by /proc/net/dev */
+#endif /* linux */
+
+#ifdef PCAP_SUPPORT_PFQ
+    struct pfq_data
+    {
+        pfq_t          *q;
+        pfq_iterator_t 	current;
+        pfq_iterator_t 	end;
+        uint64_t        ifs_promisc;
+
+    } pfq;
+#endif
+
+#ifdef HAVE_DAG_API
+#ifdef HAVE_DAG_STREAMS_API
+	u_char	*dag_mem_bottom;	/* DAG card current memory bottom pointer */
+	u_char	*dag_mem_top;	/* DAG card current memory top pointer */
+#else /* HAVE_DAG_STREAMS_API */
+	void	*dag_mem_base;	/* DAG card memory base address */
+	u_int	dag_mem_bottom;	/* DAG card current memory bottom offset */
+	u_int	dag_mem_top;	/* DAG card current memory top offset */
+#endif /* HAVE_DAG_STREAMS_API */
+	int	dag_fcs_bits;	/* Number of checksum bits from link layer */
+	int	dag_offset_flags; /* Flags to pass to dag_offset(). */
+	int	dag_stream;	/* DAG stream number */
+	int	dag_timeout;	/* timeout specified to pcap_open_live.
+				 * Same as in linux above, introduce
+				 * generally? */
+#endif /* HAVE_DAG_API */
+#ifdef HAVE_SNF_API
+	snf_handle_t snf_handle; /* opaque device handle */
+	snf_ring_t   snf_ring;   /* opaque device ring handle */
+        int          snf_timeout;
+        int          snf_boardnum;
+#endif /*HAVE_SNF_API*/
+
+#ifdef HAVE_ZEROCOPY_BPF
+       /*
+        * Zero-copy read buffer -- for zero-copy BPF.  'buffer' above will
+        * alternative between these two actual mmap'd buffers as required.
+        * As there is a header on the front size of the mmap'd buffer, only
+        * some of the buffer is exposed to libpcap as a whole via bufsize;
+        * zbufsize is the true size.  zbuffer tracks the current zbuf
+        * assocated with buffer so that it can be used to decide which the
+        * next buffer to read will be.
+        */
+       u_char *zbuf1, *zbuf2, *zbuffer;
+       u_int zbufsize;
+       u_int zerocopy;
+       u_int interrupted;
+       struct timespec firstsel;
+       /*
+        * If there's currently a buffer being actively processed, then it is
+        * referenced here; 'buffer' is also pointed at it, but offset by the
+        * size of the header.
+        */
+       struct bpf_zbuf_header *bzh;
+#endif /* HAVE_ZEROCOPY_BPF */
+};
+
 struct pcap_opt {
 	char	*source;
 	int	timeout;	/* timeout for buffering */
@@ -183,17 +273,6 @@ struct pcap {
 	int selectable_fd;
 #endif /* WIN32 */
 
-#ifdef PCAP_SUPPORT_PFQ
-    struct pfq_data
-    {
-        pfq_t          *q;
-        pfq_iterator_t 	current;
-        pfq_iterator_t 	end;
-        uint64_t        ifs_promisc;
-
-    } pfq;
-#endif
-
 	/*
 	 * Read buffer.
 	 */
@@ -229,6 +308,7 @@ struct pcap {
 	int oldstyle;		/* if we're opening with pcap_open_live() */
 
 	struct pcap_opt opt;
+  struct pcap_md md;
 
 	/*
 	 * Place holder for pcap_next().
