@@ -290,15 +290,6 @@ __pfq_sk_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, i
 		}
 		while (copies > 0);
 
-		/* return the skb */
-
-		pfq_kfree_skb_pool(skb, &pool->tx_pool);
-
-		/* move ptr to the next packet */
-
-		ptr += sizeof(struct pfq_pkthdr_tx) + ALIGN(hdr->len, 8);
-		hdr = (struct pfq_pkthdr_tx *)ptr;
-
 		if (cpu != Q_NO_KTHREAD) {
 			__sparse_add(&to->stats.sent, hdr->copies, cpu);
 			__sparse_add(&global_stats.sent, hdr->copies, cpu);
@@ -307,6 +298,15 @@ __pfq_sk_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, i
 			sparse_add(&to->stats.sent, hdr->copies);
 			sparse_add(&global_stats.sent, hdr->copies);
 		}
+
+		/* return the skb */
+
+		pfq_kfree_skb_pool(skb, &pool->tx_pool);
+
+		/* move ptr to the next packet */
+
+		ptr += sizeof(struct pfq_pkthdr_tx) + ALIGN(hdr->len, 8);
+		hdr = (struct pfq_pkthdr_tx *)ptr;
 
 		total_sent++;
 	}
