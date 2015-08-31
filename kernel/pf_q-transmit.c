@@ -223,7 +223,8 @@ __pfq_sk_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, i
 	now = ktime_get_real();
 	ptr = begin;
 
-	__netif_tx_lock_bh(txq);
+	local_bh_disable();
+	HARD_TX_LOCK(dev, txq, smp_processor_id());
 
 	while(traverse_sk_queue(ptr, begin, end, idx))
 	{
@@ -236,9 +237,14 @@ __pfq_sk_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, i
 		/* wait until the Ts */
 
 		if (hdr->nsec > ktime_to_ns(now)) {
-			__netif_tx_unlock_bh(txq);
+
+			HARD_TX_UNLOCK(dev, txq);
+			local_bh_enable();
+
 			now = wait_until(hdr->nsec);
-			__netif_tx_lock_bh(txq);
+
+			local_bh_disable();
+			HARD_TX_LOCK(dev, txq, smp_processor_id());
 		}
 
 		/* allocate a socket buffer */
@@ -277,9 +283,12 @@ __pfq_sk_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, i
 
 			if (__pfq_xmit(skb, dev, txq, xmit_more) < 0) {
 
-				__netif_tx_unlock_bh(txq);
+				HARD_TX_UNLOCK(dev, txq);
+				local_bh_enable();
 				pfq_relax();
-				__netif_tx_lock_bh(txq);
+
+				local_bh_disable();
+				HARD_TX_LOCK(dev, txq, smp_processor_id());
 
 				if (giveup_tx_process()) {
 					pfq_kfree_skb_pool(skb, &pool->tx_pool);
@@ -313,7 +322,8 @@ __pfq_sk_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, i
 
 	stop:
 
-	__netif_tx_unlock_bh(txq);
+	HARD_TX_UNLOCK(dev, txq);
+	local_bh_enable();
 
 	/* count the packets left in the shared queue */
 
@@ -423,11 +433,13 @@ pfq_xmit(struct sk_buff *skb, struct net_device *dev, int queue, int more)
 
 	skb_set_queue_mapping(skb, queue);
 
-	__netif_tx_lock_bh(txq);
+	local_bh_disable();
+	HARD_TX_LOCK(dev, txq, smp_processor_id());
 
 	ret = __pfq_xmit(skb, dev, txq, more);
 
-	__netif_tx_unlock_bh(txq);
+	HARD_TX_UNLOCK(dev, txq);
+        local_bh_enable();
 
 	return ret;
 }
@@ -450,7 +462,8 @@ pfq_queue_xmit(struct pfq_skbuff_queue *skbs, struct net_device *dev, int queue)
 
 	last = pfq_skbuff_queue_len(skbs) - 1;
 
-	__netif_tx_lock_bh(txq);
+	local_bh_disable();
+	HARD_TX_LOCK(dev, txq, smp_processor_id());
 
 	for_each_skbuff(skbs, skb, n)
 	{
@@ -462,7 +475,9 @@ pfq_queue_xmit(struct pfq_skbuff_queue *skbs, struct net_device *dev, int queue)
 			goto intr;
 	}
 
-	__netif_tx_unlock_bh(txq);
+	HARD_TX_UNLOCK(dev, txq);
+	local_bh_enable();
+
 	return ret;
 
 intr:
@@ -471,7 +486,8 @@ intr:
 		kfree_skb(skb);
 	}
 
-	__netif_tx_unlock_bh(txq);
+	HARD_TX_UNLOCK(dev, txq);
+	local_bh_enable();
 	return ret;
 }
 
@@ -490,7 +506,8 @@ pfq_queue_xmit_by_mask(struct pfq_skbuff_queue *skbs, unsigned long long mask, s
 
 	txq = pfq_netdev_pick_tx(dev, skbs->queue[0], &queue);
 
-	__netif_tx_lock_bh(txq);
+	local_bh_disable();
+	HARD_TX_LOCK(dev, txq, smp_processor_id());
 
 	for_each_skbuff_bitmask(skbs, mask, skb, n)
 	{
@@ -502,7 +519,8 @@ pfq_queue_xmit_by_mask(struct pfq_skbuff_queue *skbs, unsigned long long mask, s
 			goto intr;
 	}
 
-	__netif_tx_unlock_bh(txq);
+	HARD_TX_UNLOCK(dev, txq);
+	local_bh_enable();
 	return ret;
 
 intr:
@@ -511,7 +529,9 @@ intr:
 		kfree_skb(skb);
 	}
 
-	__netif_tx_unlock_bh(txq);
+	HARD_TX_UNLOCK(dev, txq);
+	local_bh_enable();
+
 	return ret;
 }
 
@@ -605,13 +625,16 @@ pfq_queue_lazy_xmit_run(struct pfq_skbuff_queue __GC *skbs, struct pfq_endpoint_
 
 			if (queue != skb->queue_mapping) {
 
-				if (txq)
-					__netif_tx_unlock_bh(txq);
+				if (txq) {
+					HARD_TX_UNLOCK(dev, txq);
+					local_bh_enable();
+                                }
 
 				queue = skb->queue_mapping;
 				txq = pfq_netdev_pick_tx(dev, skb, &queue);
 
-				__netif_tx_lock_bh(txq);
+				local_bh_disable();
+				HARD_TX_LOCK(dev, txq, smp_processor_id());
 			}
 
 			/* forward this skb `num` times (to this device) */
@@ -630,8 +653,10 @@ pfq_queue_lazy_xmit_run(struct pfq_skbuff_queue __GC *skbs, struct pfq_endpoint_
 			}
 		}
 
-		if (txq)
-			__netif_tx_unlock_bh(txq);
+		if (txq){
+			HARD_TX_UNLOCK(dev, txq);
+			local_bh_enable();
+		}
 	}
 
 	return sent;
