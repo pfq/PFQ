@@ -277,14 +277,16 @@ __pfq_sk_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, i
 
 		/* transmit the packet */
 
-		xmit_more = (++more == xmit_batch_len ? (more = 0, false) : true);
 		do {
 			skb_get(skb);
 
+			xmit_more = (++more == xmit_batch_len ? (more = 0, false) : true);
 			if (__pfq_xmit(skb, dev, txq, xmit_more) < 0) {
 
 				HARD_TX_UNLOCK(dev, txq);
 				local_bh_enable();
+
+				more = xmit_batch_len - 1;
 				pfq_relax();
 
 				local_bh_disable();
