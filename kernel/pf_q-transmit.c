@@ -259,8 +259,6 @@ __pfq_sk_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, i
 
 		len = min_t(size_t, hdr->len, xmit_slot_size);
 
-                copies = hdr->copies;
-
 		skb_reset_tail_pointer(skb);
 		skb->dev = dev;
 		skb->len = 0;
@@ -277,10 +275,14 @@ __pfq_sk_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, i
 
 		/* transmit the packet */
 
+                copies = hdr->copies;
+
+
 		do {
 			skb_get(skb);
 
 			xmit_more = (++more == xmit_batch_len ? (more = 0, false) : true);
+
 			if (__pfq_xmit(skb, dev, txq, xmit_more) < 0) {
 
 				HARD_TX_UNLOCK(dev, txq);
@@ -297,9 +299,15 @@ __pfq_sk_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, i
 					goto stop;
 				}
 			}
-			else copies--;
+			else {
+				copies--;
+			}
 		}
 		while (copies > 0);
+
+		/* update states */
+
+		total_sent += hdr->copies;
 
 		if (cpu != Q_NO_KTHREAD) {
 			__sparse_add(&to->stats.sent, hdr->copies, cpu);
@@ -310,16 +318,12 @@ __pfq_sk_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, i
 			sparse_add(&global_stats.sent, hdr->copies);
 		}
 
-		/* return the skb */
+		/* return the skb and move ptr to the next packet */
 
 		pfq_kfree_skb_pool(skb, &pool->tx_pool);
 
-		/* move ptr to the next packet */
-
 		ptr += sizeof(struct pfq_pkthdr_tx) + ALIGN(hdr->len, 8);
 		hdr = (struct pfq_pkthdr_tx *)ptr;
-
-		total_sent++;
 	}
 
 	stop:
