@@ -175,7 +175,7 @@ module Network.PFq
 
 import Data.Word
 import Data.Bits
-import Data.Monoid()
+import Data.Monoid
 import Data.List (intercalate)
 
 import qualified Data.ByteString.Char8 as C
