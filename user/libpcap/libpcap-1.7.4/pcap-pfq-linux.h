@@ -33,6 +33,4 @@
  * Prototypes for PFQ related functions
  */
 
-pcap_t * pfq_create(const char *device, char *ebuf);
-
-
+pcap_t * pfq_create(const char *device, char *ebuf, size_t size);

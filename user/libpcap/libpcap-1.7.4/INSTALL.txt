@@ -1,3 +1,5 @@
+ATTENTION: If configure script is not presend generate it with autoconf
+
 To build libpcap, run "./configure" (a shell script). The configure
 script will determine your system attributes and generate an
 appropriate Makefile from Makefile.in. Next run "make". If everything

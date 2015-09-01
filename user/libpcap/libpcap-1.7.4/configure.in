@@ -1640,7 +1640,7 @@ fi
 
 AC_ARG_ENABLE([pfq],
 [AC_HELP_STRING([--enable-pfq],[enable PFQ support])],
-,enable_pfq=no)
+,enable_pfq=yes)
 
 if test "x$enable_pfq" != "xno" ; then
 	dnl check for PFQ sniffing support

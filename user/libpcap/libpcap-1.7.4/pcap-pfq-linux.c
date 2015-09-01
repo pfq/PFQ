@@ -67,13 +67,15 @@ static	int pfq_setdirection_linux(pcap_t *, pcap_direction_t);
 static	int pfq_read_linux(pcap_t *, int, pcap_handler, u_char *);
 static	int pfq_stats_linux(pcap_t *, struct pcap_stat *);
 
+//CANGED THIS WAS MISSED And defined in pcap-linux.c:
+#define MUST_CLEAR_PROMISC	0x00000001
 
 pcap_t
-*pfq_create(const char *device, char *ebuf)
+*pfq_create(const char *device, char *ebuf, size_t size)
 {
 	pcap_t *p;
-
-	p = pcap_create_common(device, ebuf);
+  //CHANGED from pcap_create_common in pcap_create_common_interface
+	p = pcap_create_common(device, ebuf, size);
 	if (p == NULL)
 		return NULL;
 
@@ -1208,4 +1210,3 @@ pfq_stats_linux(pcap_t *handle, struct pcap_stat *stat)
 
 	return 0;
 }
-

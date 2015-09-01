@@ -269,6 +269,9 @@
 /* target host supports CAN sniffing */
 #define PCAP_SUPPORT_CAN 1
 
+/* target host supports PFQ sniffing */
+#define PCAP_SUPPORT_PFQ 1
+
 /* target host supports canusb */
 /* #undef PCAP_SUPPORT_CANUSB */
 

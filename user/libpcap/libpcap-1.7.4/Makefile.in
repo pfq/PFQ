@@ -84,7 +84,7 @@ YACC = @V_YACC@
 	@rm -f $@
 	$(CC) $(FULL_CFLAGS) -c $(srcdir)/$*.c
 
-PSRC =	pcap-@V_PCAP@.c @USB_SRC@ @BT_SRC@ @BT_MONITOR_SRC@ @CAN_SRC@ @NETFILTER_SRC@ @CANUSB_SRC@ @DBUS_SRC@
+PSRC =	pcap-@V_PCAP@.c @USB_SRC@ @BT_SRC@ @BT_MONITOR_SRC@ @CAN_SRC@ @NETFILTER_SRC@ @CANUSB_SRC@ @DBUS_SRC@ @PFQ_SRC@
 FSRC =  fad-@V_FINDALLDEVS@.c
 SSRC =  @SSRC@
 CSRC =	pcap.c inet.c gencode.c optimize.c nametoaddr.c etherent.c \
@@ -480,7 +480,7 @@ version.c: $(srcdir)/VERSION
 		date +_%Y_%m_%d; \
 	else \
 		cat ${srcdir}/VERSION; \
-	fi | sed -e 's/.*/char pcap_version[] = "&";/' > $@
+	fi | sed -e 's/.*/static const char pcap_version_string[] = "libpcap+PFQ version &";/' > $@
 
 #
 # NOTE: this really is supposed to be static; importing a string
