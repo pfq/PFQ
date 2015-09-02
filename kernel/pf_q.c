@@ -154,15 +154,6 @@ unsigned int pfq_fold(unsigned int a, unsigned int b)
 }
 
 
-static inline
-void send_to_kernel(struct sk_buff *skb)
-{
-	skb_pull(skb, skb->mac_len);
-	skb->peeked = capture_incoming;
-	netif_receive_skb(skb);
-}
-
-
 static int
 pfq_process_batch(struct pfq_percpu_data *data,
 		  struct pfq_percpu_sock *sock,
@@ -401,7 +392,9 @@ pfq_process_batch(struct pfq_percpu_data *data,
 
 		if (cb->direct && fwd_to_kernel(skb)) {
 		        __sparse_inc(&global_stats.kern, cpu);
-			send_to_kernel(skb);
+			skb_pull(skb, skb->mac_len);
+			skb->peeked = capture_incoming;
+			netif_receive_skb(skb);
 		}
 		else {
 			pfq_kfree_skb_pool(skb, &pool->rx_pool);
