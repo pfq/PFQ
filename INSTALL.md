@@ -33,23 +33,19 @@ PFQ is developed and tested on Linux Debian Jessie.
 Debian Jessie
 -------------
 
-To install GHC 7.8 on Debian Jessie the APT pinning is required. Pinning allows to install packages
-from one version (stable, testing, unstable) without the necessity of upgrading the entire system. 
-More information is available on [Debian](https://wiki.debian.org/AptPreferences) site.
+Debian Stable (Jessie)
 
-GHC 7.8 is currently available from the `experimental` distribution. 
+Debian Jessie is currently the stable distribution. Accidentally GHC 7.8 is not yet 
+available from the stable repository.
 
-* Add the following line to apt source file (/etc/apt/sources.list)
+Hence it is recommended to either manually compile GHC or install it from a different 
+repository.  At the time of writing GHC 7.8 is available from jessie-backports repository 
+and GHC 7.10 is available from the testing one.
 
-`deb http://ftp.debian.org/debian/ experimental main non-free contrib`
-
-* Update the list of packages
-
-`apt-get update`
-
-* Install GHC 7.8
-
-`apt-get install ghc/experimental` 
+To install a package from a different repository the APT pinning is required (which allows 
+to install packages from one version (stable, testing, unstable) without the necessity of 
+upgrading the entire system).  More information is available on 
+[Debian](https://wiki.debian.org/AptPreferences) site.
 
 
 Ubuntu 14.04.1 LTS (Trusty Tahr)
