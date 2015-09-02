@@ -25,7 +25,10 @@
 #ifndef PF_Q_ENGINE_H
 #define PF_Q_ENGINE_H
 
+#include <pragma/diagnostic_push>
 #include <linux/kernel.h>
+#include <pragma/diagnostic_pop>
+
 #include <pf_q-monad.h>
 #include <pf_q-module.h>
 
@@ -78,7 +81,7 @@ extern size_t pfq_number_of_arguments(struct pfq_functional_descr const *fun);
 
 extern char * strdup_user(const char __user *str);
 
-extern Action_SkBuff pfq_run(struct pfq_computation_tree *prg, SkBuff);
+extern ActionSkBuff pfq_run(SkBuff, struct pfq_computation_tree *prg);
 
 
 #endif /* PF_Q_ENGINE_H */

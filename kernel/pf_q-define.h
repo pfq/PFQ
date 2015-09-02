@@ -24,19 +24,18 @@
 #ifndef PF_Q_MACRO_H
 #define PF_Q_MACRO_H
 
+#include <pf_q-types.h>
+
 #define Q_MAX_ID                (sizeof(long)<<3)
-#define Q_MAX_GROUP             (sizeof(long)<<3)
-#define Q_SKBUFF_SHORT_BATCH	(sizeof(long)<<3)
-#define Q_SKBUFF_LONG_BATCH	128
+#define Q_MAX_GID		(sizeof(long)<<3)
+#define Q_SKBUFF_BATCH		(sizeof(long)<<3)
 
 #define Q_GC_LOG_QUEUE_LEN	16
-#define Q_GC_POOL_QUEUE_LEN	Q_SKBUFF_LONG_BATCH
+#define Q_GC_POOL_QUEUE_LEN	512
 
-#define Q_MAX_DEVICE		256
-#define Q_MAX_DEVICE_MASK       (Q_MAX_DEVICE-1)
-
+#define Q_MAX_SOCK_MASK		1024
+#define Q_MAX_DEVICE		1024
 #define Q_MAX_HW_QUEUE          256
-#define Q_MAX_HW_QUEUE_MASK     (Q_MAX_HW_QUEUE-1)
 
 #define Q_GRACE_PERIOD		100 /* msec */
 
@@ -53,6 +52,11 @@
 #define Q_GROUP_PERSIST_MEM	64
 #define Q_GROUP_PERSIST_DATA	1024
 
-#define Q_POOL_MAX_SIZE         16384
+#define Q_MAX_POOL_SIZE         16384
+#define Q_MAX_SOCKQUEUE_LEN	262144
+
+
+#define Q_INVALID_ID	(__force pfq_id_t)-1
+
 
 #endif /* PF_Q_MACRO_H */

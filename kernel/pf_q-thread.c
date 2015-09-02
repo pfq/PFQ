@@ -25,28 +25,26 @@
  *
  */
 
+#include <pragma/diagnostic_push>
 
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/version.h>
 #include <linux/kthread.h>
+#include <linux/mutex.h>
 
-#include <pf_q-macro.h>
+#include <pragma/diagnostic_pop>
+
+#include <pf_q-define.h>
 #include <pf_q-thread.h>
 #include <pf_q-memory.h>
 #include <pf_q-sock.h>
 #include <pf_q-transmit.h>
 
-int
-pfq_tx_wakeup(struct pfq_sock *so, int index)
-{
-	if (so->tx_opt.queue[index].task) {
-		wake_up_process(so->tx_opt.queue[index].task);
-		return 0;
-	}
 
-	return -EPERM;
-}
+DEFINE_MUTEX(kthread_tx_pool_lock);
+
+struct task_struct *kthread_tx_pool [Q_MAX_CPU] = { [0 ... 255] = NULL };
 
 
 int
@@ -70,7 +68,7 @@ pfq_tx_thread(void *_data)
 
         for(;;)
         {
-                __pfq_queue_xmit(data->id, &data->so->tx_opt, dev, cpu, cpu_to_node(cpu));
+                __pfq_sk_queue_xmit(data->id, &data->so->tx_opt, dev, cpu, cpu_to_node(cpu));
 
                 if (kthread_should_stop())
                         break;
@@ -85,3 +83,33 @@ pfq_tx_thread(void *_data)
         kfree(data);
         return 0;
 }
+
+
+void
+pfq_stop_all_tx_threads(struct pfq_sock *so)
+{
+	int n = 0;
+
+	mutex_lock(&kthread_tx_pool_lock);
+
+	for(n = 0; n < so->tx_opt.num_queues; n++)
+	{
+		if (so->tx_opt.queue[n].task) {
+
+			pr_devel("[PFQ|%d] stopping Tx thread@%p\n", so->id, so->tx_opt.queue[n].task);
+
+			if (so->tx_opt.queue[n].cpu != -1)
+				BUG_ON(kthread_tx_pool[so->tx_opt.queue[n].cpu % Q_MAX_CPU] != so->tx_opt.queue[n].task);
+
+			kthread_stop(so->tx_opt.queue[n].task);
+			kthread_tx_pool[so->tx_opt.queue[n].cpu % Q_MAX_CPU] = NULL;
+
+			so->tx_opt.queue[n].task = NULL;
+			so->tx_opt.queue[n].cpu = -1;
+		}
+	}
+
+	mutex_unlock(&kthread_tx_pool_lock);
+}
+
+

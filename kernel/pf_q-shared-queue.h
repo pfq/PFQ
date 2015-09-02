@@ -25,12 +25,17 @@
 #ifndef PF_Q_SHARED_QUEUE_H
 #define PF_Q_SHARED_QUEUE_H
 
+#include <pragma/diagnostic_push>
+
 #include <linux/skbuff.h>
 #include <linux/pf_q.h>
 #include <linux/if_vlan.h>
 
+#include <pragma/diagnostic_pop>
+
+
 #include <pf_q-group.h>
-#include <pf_q-macro.h>
+#include <pf_q-define.h>
 #include <pf_q-sock.h>
 #include <pf_q-GC.h>
 
@@ -39,7 +44,7 @@ int pfq_shared_queue_enable(struct pfq_sock *so, unsigned long addr);
 int pfq_shared_queue_disable(struct pfq_sock *so);
 
 extern size_t pfq_mpsc_enqueue_batch(struct pfq_rx_opt *ro,
-		                     struct pfq_skbuff_batch *skbs,
+		                     struct pfq_skbuff_queue __GC *skbs,
 		                     unsigned long long skbs_mask,
 		                     int burst_len,
 		                     pfq_gid_t gid);

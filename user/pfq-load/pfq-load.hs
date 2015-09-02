@@ -1,4 +1,3 @@
-
 -- Copyright (c) 2015 Nicola Bonelli <nicola@pfq.io>
 --
 -- This program is free software; you can redistribute it and/or modify
@@ -17,6 +16,7 @@
 --
 
 {-# LANGUAGE DeriveDataTypeable #-}
+{-# LANGUAGE LambdaCase #-}
 
 module Main where
 
@@ -35,7 +35,7 @@ import Data.Data
 
 import System.Console.ANSI
 import System.Console.CmdArgs
-import System.Directory (getHomeDirectory)
+import System.Directory (getHomeDirectory, doesFileExist)
 import System.IO.Unsafe
 import System.IO.Error
 import System.Process
@@ -51,7 +51,9 @@ proc_modules = "/proc/modules"
 bold  = setSGRCode [SetConsoleIntensity BoldIntensity]
 reset = setSGRCode []
 
-version = "4.4.3"
+version = "5.0"
+
+configFiles = [ "/etc/pfq.conf", "/root/.pfq.conf" ]
 
 
 data YesNo = Yes | No | Unspec
@@ -78,7 +80,7 @@ data Device =
     ,   devspeed  :: Maybe Int
     ,   channels  :: Maybe Int
     ,   flowctrl  :: YesNo
-    ,   ethopt    :: [(String, String, Int)]
+    ,   ethopt    :: [(String, String)]
     } deriving (Show, Read, Eq)
 
 
@@ -104,13 +106,12 @@ data Config = Config
 instance Semigroup Config where
     (Config mod1 opt1 excl1 algo1 gov1 drvs1) <> (Config mod2 opt2 excl2 algo2 gov2 drvs2) =
      Config
-     {
-        pfq_module   = getOptString $ OptString mod1  <> OptString mod2,
-        pfq_options  = getOptList   $ OptList opt1 <> OptList opt2,
-        exclude_core = excl1 <> excl2,
-        irq_affinity = algo1 <> algo2,
-        cpu_governor = getOptString $ OptString gov1 <> OptString gov2,
-        drivers      = drvs1 <> drvs2
+     {  pfq_module   = getOptString $ OptString mod1  <> OptString mod2
+     ,  pfq_options  = getOptList   $ OptList opt1 <> OptList opt2
+     ,  exclude_core = excl1 <> excl2
+     ,  irq_affinity = algo1 <> algo2
+     ,  cpu_governor = getOptString $ OptString gov1 <> OptString gov2
+     ,  drivers      = drvs1 <> drvs2
      }
 
 
@@ -148,14 +149,14 @@ main = do
     -- load options...
     home <- getHomeDirectory
     opt  <- cmdArgsRun options
-    conf <- (<> mkConfig opt) <$> loadConfig (fromMaybe (home </> ".pfq.conf") (config opt)) opt
+    conf <- (<> mkConfig opt) <$> loadConfig (catMaybes (config opt : map Just configFiles)) opt
     pmod <- getProcModules
     core <- getNumberOfPhyCores
     bal  <- getProcessID "irqbalance"
     frd  <- getProcessID "cpufreqd"
 
     -- check queues
-    when (maybe False (> core) (queues opt)) $ error "queues number too big!"
+    when (maybe False (> core) (queues opt)) $ error "queues number is too big!"
 
     -- unload pfq and drivers that depend on it...
     evalStateT (unloadModule "pfq") pmod
@@ -171,7 +172,7 @@ main = do
         forM_ frd $ signalProcess sigKILL
 
     -- set cpufreq governor...
-    runSystem ("/usr/bin/cpufreq-set -g " ++ cpu_governor conf) ("*** cpfreq-set error! Make sure you have cpufrequtils installed! *** ", True)
+    runSystem ("/usr/bin/cpufreq-set -g " ++ cpu_governor conf) ("*** cpufreq-set error! Make sure you have cpufrequtils installed! *** ", True)
 
     -- load PFQ...
     if null (pfq_module conf)
@@ -184,14 +185,13 @@ main = do
     -- unload drivers...
     unless (null (drivers conf)) $ do
         putStrBoldLn "Unloading vanilla/standard drivers..."
-        evalStateT (mapM_ (unloadModule . takeBaseName . drvmod) (drivers conf)) pmod2
+        evalStateT (forM_ (drivers conf) $ unloadModule . takeBaseName . drvmod) pmod2
 
     -- load and configure device drivers...
     forM_ (drivers conf) $ \drv -> do
         let rss = maybe [] (mkRssOption (drvmod drv) (instances drv)) (queues opt)
         loadModule InsertMod (drvmod drv) (drvopt drv ++ rss)
-        threadDelay 1000000
-        mapM_ (setupDevice (queues opt)) (devices drv)
+        forM_ (devices drv) $ setupDevice (queues opt)
 
     -- set interrupt affinity...
     putStrBoldLn "Setting irq affinity..."
@@ -201,11 +201,10 @@ main = do
 
 
 mkRssOption :: String -> Int -> Int -> [String]
-mkRssOption driver numdev queues =
-    case () of
-     _   | "ixgbe.ko" `isSuffixOf` driver -> [ "RSS=" ++ intercalate "," (replicate numdev (show queues)) ]
-         | "igb.ko"   `isSuffixOf` driver -> [ "RSS=" ++ intercalate "," (replicate numdev (show queues)) ]
-         | otherwise -> []
+mkRssOption driver ndev nqueue
+    | "ixgbe.ko" `isSuffixOf` driver = [ "RSS=" ++ intercalate "," (replicate ndev (show nqueue)) ]
+    | "igb.ko"   `isSuffixOf` driver = [ "RSS=" ++ intercalate "," (replicate ndev (show nqueue)) ]
+    | otherwise                      = []
 
 
 mkConfig :: Options -> Config
@@ -227,13 +226,23 @@ mkConfig
     }
 
 
-notCommentLine :: String -> Bool
-notCommentLine = (not . ("#" `isPrefixOf`)) . (dropWhile isSpace)
+getFirstConfig :: [FilePath] -> IO (Maybe FilePath)
+getFirstConfig xs = filterM doesFileExist xs >>= \case
+      [ ]   -> return Nothing
+      (x:_) -> return $ Just x
 
 
-loadConfig :: FilePath -> Options -> IO Config
-loadConfig conf opt =
-    catchIOError (liftM (read . unlines . filter notCommentLine . lines) (readFile conf)) (\_ -> return $ mkConfig opt)
+clean :: String -> String
+clean =  unlines . filter notComment . lines
+        where notComment = (not . ("#" `isPrefixOf`)) . dropWhile isSpace
+
+
+loadConfig :: [FilePath] -> Options -> IO Config
+loadConfig confs opt =
+    getFirstConfig confs >>= \case
+        Nothing   -> putStrBoldLn "Using default config..." >> return (mkConfig opt)
+        Just conf -> putStrBoldLn ("Using " ++ conf ++ " config...") >>
+                        liftM (read . clean) (readFile conf)
 
 
 getNumberOfPhyCores :: IO Int
@@ -268,7 +277,7 @@ moduleDependencies  name =
 unloadModule :: String -> ModStateT IO ()
 unloadModule name = do
     proc_mods <- get
-    mapM_ unloadModule (moduleDependencies name proc_mods)
+    forM_ (moduleDependencies name proc_mods) unloadModule
     when (isModuleLoaded name proc_mods) $ do
         liftIO $ rmmod name
         put $ rmmodFromProcMOdules name proc_mods
@@ -293,8 +302,11 @@ setupDevice :: Maybe Int -> Device -> IO ()
 setupDevice queues (Device dev speed channels fctrl opts) = do
 
     putStrBoldLn $ "Activating " ++ dev ++ "..."
+
+    threadDelay 1000000
     runSystem ("/sbin/ifconfig " ++ dev ++ " up") ("ifconfig error!", True)
 
+    threadDelay 1000000
     case fctrl of
         No -> do
                 putStrBoldLn $ "Disabling flow control for " ++ dev ++ "..."
@@ -304,18 +316,21 @@ setupDevice queues (Device dev speed channels fctrl opts) = do
                 runSystem ("/sbin/ethtool -A " ++ dev ++ " autoneg on rx on tx on") ("ethtool: flowctrl error!", False)
         Unspec -> return ()
 
+    threadDelay 1000000
     when (isJust speed) $ do
         let s = fromJust speed
         putStrBoldLn $ "Setting speed (" ++ show s ++ ") for " ++ dev ++ "..."
         runSystem ("/sbin/ethtool -s " ++ dev ++ " speed " ++ show s ++ " duplex full") ("ethtool: set speed error!", False)
 
+    threadDelay 1000000
     when (isJust queues || isJust channels) $ do
         let c = fromJust (queues <|> channels)
         putStrBoldLn $ "Setting channels to " ++ show c ++ "..."
         runSystem ("/sbin/ethtool -L " ++ dev ++ " combined " ++ show c) ("", False)
 
-    forM_ opts $ \(opt, arg, value) ->
-        runSystem ("/sbin/ethtool " ++ opt ++ " " ++ dev ++ " " ++ arg ++ " " ++ show value) ("ethtool:" ++ opt ++ " error!", True)
+    forM_ opts $ \(opt, arg) -> do
+        threadDelay 1000000
+        runSystem ("/sbin/ethtool " ++ opt ++ " " ++ dev ++ " " ++ arg) ("ethtool:" ++ opt ++ " error!", True)
 
 
 getDevices ::  Config -> [String]

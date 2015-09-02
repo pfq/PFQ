@@ -81,16 +81,16 @@ bool valid_codec(uint8_t c)
 struct hret
 {
 	uint32_t hash;
-	bool	 pass;
+	int 	 pass;
 };
 
 
-struct hret
-heuristic_rtp(SkBuff b, bool steer)
+static struct hret
+heuristic_rtp(SkBuff skb, bool steer)
 {
-	struct hret ret = { 0, false };
+	struct hret ret = { 0, 0 };
 
-	if (eth_hdr(b.skb)->h_proto == __constant_htons(ETH_P_IP))
+	if (eth_hdr(PFQ_SKB(skb))->h_proto == __constant_htons(ETH_P_IP))
 	{
 		struct iphdr _iph;
 		const struct iphdr *ip;
@@ -100,42 +100,55 @@ heuristic_rtp(SkBuff b, bool steer)
 
                 uint16_t source,dest;
 
-		ip = skb_header_pointer(b.skb, b.skb->mac_len, sizeof(_iph), &_iph);
+		ip = skb_header_pointer(PFQ_SKB(skb), skb->mac_len, sizeof(_iph), &_iph);
 		if (ip == NULL)
 			return ret;
 
 		if (ip->protocol != IPPROTO_UDP)
 			return ret;
 
-		hdr = skb_header_pointer(b.skb, b.skb->mac_len + (ip->ihl<<2), sizeof(_hdr), &_hdr);
+		hdr = skb_header_pointer(PFQ_SKB(skb), skb->mac_len + (ip->ihl<<2), sizeof(_hdr), &_hdr);
 		if (hdr == NULL)
 			return ret;
+
+		dest = ntohs(hdr->udp.dest);
+		source = ntohs(hdr->udp.source);
+
+		if (dest == 5060 || source == 5060) {
+			ret.pass = 1;
+			return ret;
+		}
 
 		/* version => 2 */
 
 		if (!((ntohs(hdr->un.rtp.rh_flags) & 0xc000) == 0x8000))
 			return ret;
 
-		dest   = ntohs(hdr->udp.dest);
-		source = ntohs(hdr->udp.source);
-
 		if (dest < 1024 || source < 1024)
 			return ret;
 
+#if 0
 		if ((dest & 1) && (source & 1)) { /* rtcp */
 			if (hdr->un.rtcp.rh_type != 200)  /* SR  */
 				return ret;
 		}
-		else if (!((dest & 1) || (source & 1))) {
+		else
+		if (!((dest & 1) || (source & 1))) {
 			uint8_t pt = hdr->un.rtp.rh_pt;
 			if (!valid_codec(pt))
 				return ret;
 		}
+#endif
+		if (steer) {
+			ret.pass = 2;
+			ret.hash = (ip->saddr ^ (ip->saddr >> 8) ^ (ip->saddr >> 16) ^ (ip->saddr >> 24) ^
+				    ip->daddr ^ (ip->daddr >> 8) ^ (ip->daddr >> 16) ^ (ip->daddr >> 24) ^
+						(hdr->udp.source >> 1) ^ (hdr->udp.dest >> 1));
+		}
+		else {
+			ret.pass = 1;
+		}
 
-		ret.pass = true;
-		if (steer)
-			ret.hash = ip->saddr ^ ip->daddr ^ ((uint32_t)(hdr->udp.source & 0xfffe) << 16) ^
-				(hdr->udp.dest & 0xfffe);
 		return ret;
 	}
 
@@ -143,43 +156,44 @@ heuristic_rtp(SkBuff b, bool steer)
 }
 
 
-bool
-is_rtp(arguments_t arg, SkBuff b)
+static bool
+is_rtp(arguments_t arg, SkBuff skb)
 {
-	return heuristic_rtp(b, false).pass;
+	return heuristic_rtp(skb, false).pass;
 }
 
 
-static Action_SkBuff
-filter_rtp(arguments_t arg, SkBuff b)
+static ActionSkBuff
+filter_rtp(arguments_t arg, SkBuff skb)
 {
-	if (is_rtp(arg, b))
-		return Pass(b);
+	if (is_rtp(arg, skb))
+		return Pass(skb);
 
-	return Drop(b);
+	return Drop(skb);
 }
 
 
-static Action_SkBuff
-steering_rtp(arguments_t arg, SkBuff b)
+static ActionSkBuff
+steering_rtp(arguments_t arg, SkBuff skb)
 {
-	struct hret ret = heuristic_rtp(b, true);
+	struct hret ret = heuristic_rtp(skb, true);
 
-	if (ret.pass)
-		return Steering(b, ret.hash);
-
-	return Drop(b);
+	if (ret.pass == 2)
+		return Steering(skb, ret.hash);
+	else if (ret.pass == 1)
+		return Broadcast(skb);
+	return Drop(skb);
 }
 
 
-struct pfq_function_descr hooks_f[] = {
+static struct pfq_function_descr hooks_f[] = {
 
 	{ "rtp",       "SkBuff -> Action SkBuff",	filter_rtp	},
 	{ "steer_rtp", "SkBuff -> Action SkBuff",	steering_rtp	},
 	{ NULL, NULL}};
 
 
-struct pfq_function_descr hooks_p[] = {
+static struct pfq_function_descr hooks_p[] = {
 
 	{ "is_rtp",     "SkBuff -> Bool",	is_rtp	},
 	{ NULL, NULL}};

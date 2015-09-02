@@ -24,10 +24,8 @@
 module Main where
 
 import qualified Network.PFq as Q
--- import Network.PFq.Lang
 
 import Foreign
--- import System.Environment
 import System.Time
 import System.Exit
 
@@ -50,31 +48,31 @@ data Key = Key Word32 Word32 Word16 Word16
             deriving (Eq, Show)
 
 
-data State a = State { sCounter :: MVar a,
-                       sFlow    :: MVar a,
-                       sSet     :: S.Set Key
-                     }
+data State a = State
+               {    sCounter :: MVar a
+               ,    sFlow    :: MVar a
+               ,    sSet     :: S.Set Key
+               }
 
 
 -- Command line options
 --
 data Options = Options
-               {
-                caplen   :: Int,
-                slots    :: Int,
-                function :: [String],
-                thread   :: [String]
+               {    caplen   :: Int
+               ,    slots    :: Int
+               ,    function :: [String]
+               ,    thread   :: [String]
                } deriving (Data, Typeable, Show)
 
 
 -- default options
 --
 options = cmdArgsMode $
-    Options {
-        caplen   = 64,
-        slots    = 131072,
-        function = [] &= typ "FUNCTION"  &= help "Where FUNCTION = fun[ >-> fun >-> fun][.gid] (ie: steer_ip)",
-        thread   = [] &= typ "BINDING" &= help "Where BINDING = gid[.core[.eth0:...:ethx[.queue.queue...]]]"
+    Options
+    {   caplen   = 64
+    ,   slots    = 8192
+    ,   function = [] &= typ "FUNCTION"  &= help "Where FUNCTION = fun[ >-> fun >-> fun][.gid] (ie: steer_ip)"
+    ,   thread   = [] &= typ "BINDING" &= help "Where BINDING = core.gid[.[eth0:queue,queue,queue...[.ethx:queue,queue...]]]"
     } &= summary "PFq multi-threaded packet counter." &= program "pfq-counters"
 
 
@@ -84,21 +82,27 @@ options = cmdArgsMode $
 type Queue = Int
 type Gid   = Int
 
-data Binding = Binding {
-                         groupId   :: Int,
-                         coreNum   :: Int,
-                         devs      :: [String],
-                         queues    :: [Queue]
-                       } deriving (Eq, Show)
+
+data NetDev = NetDev
+    {   devName     :: String
+    ,   devQueues   :: [Queue]
+    } deriving (Eq, Show, Read)
+
+
+data Binding = Binding
+    {   coreNum   :: Int
+    ,   groupId   :: Gid
+    ,   netDevs   :: [NetDev]
+    } deriving (Eq, Show)
 
 
 makeBinding :: String -> Binding
 makeBinding s = case splitOn "." s of
-                        []              ->  error "makeBinding: empty string"
-                        [g]             ->  Binding (read g) 0 [] [-1]
-                        [g, c]          ->  Binding (read g) (read c) [] [-1]
-                        [g, c, ds]      ->  Binding (read g) (read c) (splitOn ":" ds) [-1]
-                        g : c : ds : qs ->  Binding (read g) (read c) (splitOn ":" ds) (map read qs)
+    []         ->  error "thread_binding: parse error"
+    [_]        ->  error "thread_binding: parse error"
+    [c, g]     ->  Binding (read c) (read g) []
+    c : g : ds ->  Binding (read c) (read g) (map (\s -> let (dn : qs) = splitOn ":" s
+                                                         in  NetDev dn (case qs of [] -> [-1]; otherwise -> map read (splitOn "," (head qs)))) ds)
 
 
 makeFun :: String -> (Gid, [String])
@@ -106,6 +110,7 @@ makeFun s =  case splitOn "." s of
                 []      -> error "makeFun: empty string"
                 [fs]    -> (-1,             map (filter (/= ' ')) $ splitOn ">->" fs)
                 fs : n  -> (read $ head n,  map (filter (/= ' ')) $ splitOn ">->" fs)
+
 
 -- main function
 --
@@ -145,16 +150,16 @@ runThreads op ms =
         f <- newMVar 0
         _ <- forkOn (coreNum binding) (
                  handle ((\e -> M.void (putStrLn ("[pfq] Exception: " ++ show e) >> swapMVar c (-1))) :: SomeException -> IO ()) $ do
-                 fp <- Q.openNoGroup (caplen op) (slots op)
+                 fp <- Q.openNoGroup (caplen op) (slots op) 1024
                  withForeignPtr fp  $ \q -> do
-                     Q.joinGroup q (groupId binding) [Q.class_default] Q.policy_shared
-                     forM_ (devs binding) $ \dev ->
-                       forM_ (queues binding) $ \queue -> do
-                         Q.setPromisc q dev True
-                         Q.bindGroup q (groupId binding) dev queue
+                     Q.joinGroup q (groupId binding) Q.class_default Q.policy_shared
+                     forM_ (netDevs binding) $ \dev ->
+                       forM_ (devQueues dev) $ \queue -> do
+                         Q.setPromisc q (devName dev) True
+                         Q.bindGroup q (groupId binding) (devName dev) queue
                          when (isJust sf) $ do
                              putStrLn $ "[pfq] Gid " ++ show (groupId binding) ++ " is using computation: " ++ unwords (function op)
-                             Q.groupComputationFromString q (groupId binding) (unwords $ function op)
+                             Q.setGroupComputationFromString q (groupId binding) (unwords $ function op)
                      Q.enable q
                      M.void (recvLoop q (State c f S.empty))
                  )

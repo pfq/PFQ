@@ -11,10 +11,10 @@
 
 #include <stdexcept>
 
-namespace extra {
+namespace more {
 
-    static inline void
-    set_affinity(std::thread &t, int n)
+    static inline
+    void set_affinity(std::thread &t, int n)
     {
         if(t.get_id() == std::thread::id())
             throw std::runtime_error("thread not running");
@@ -27,5 +27,5 @@ namespace extra {
             throw std::runtime_error("pthread_setaffinity_np");
     }
 
-} // namespace extra
+} // namespace more
 

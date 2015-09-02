@@ -6,7 +6,7 @@
 
 #pragma once
 
-namespace vt100
+namespace more { namespace vt100
 {
     namespace
     {
@@ -21,4 +21,5 @@ namespace vt100
         const char * const RED   = "\E[31m";
     }
 }
+} // namespace more
 

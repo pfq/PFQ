@@ -30,7 +30,7 @@ import System.Directory
 import System.FilePath.Posix
 
 
-haskellFiles = [ "Main.hs", "Daemon.hs", "Options.hs", "PFQdaemon.hs" ]
+haskellFiles = [ "Main.hs", "Daemon.hs", "Options.hs", "Config.hs", "PFQDaemon.hs" ]
 
 
 main = defaultMainWithHooks $

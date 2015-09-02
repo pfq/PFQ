@@ -21,11 +21,14 @@
  *
  ****************************************************************/
 
+#include <pragma/diagnostic_push>
+
 #include <linux/kernel.h>
 #include <linux/printk.h>
 #include <linux/pf_q.h>
-
 #include <asm/uaccess.h>
+
+#include <pragma/diagnostic_pop>
 
 #include <pf_q-group.h>
 #include <pf_q-engine.h>
@@ -121,17 +124,16 @@ strdup_user(const char __user *str)
 }
 
 
-static inline Action_SkBuff
-pfq_apply(struct pfq_functional *call, SkBuff b)
+static inline ActionSkBuff
+pfq_apply(struct pfq_functional *call, SkBuff skb)
 {
 	function_t fun = { call };
-
-	return EVAL_FUNCTION(fun, b);
+	return EVAL_FUNCTION(fun, skb);
 }
 
 
-static inline Action_SkBuff
-pfq_bind(SkBuff b, struct pfq_computation_tree *prg)
+static inline ActionSkBuff
+pfq_bind(SkBuff skb, struct pfq_computation_tree *prg)
 {
         struct pfq_functional_node *node = prg->entry_point;
 
@@ -139,24 +141,24 @@ pfq_bind(SkBuff b, struct pfq_computation_tree *prg)
         {
                 fanout_t *a;
 
-                b = pfq_apply(&node->fun, b).value;
-                if (b.skb == NULL)
-                        return Pass(b);
+                skb = pfq_apply(&node->fun, skb).skb;
+                if (skb == NULL)
+                        return Pass(skb);
 
-                a = &PFQ_CB(b.skb)->monad->fanout;
+                a = &PFQ_CB(skb)->monad->fanout;
 
                 if (is_drop(*a))
-                        return Pass(b);
+                        return Pass(skb);
 
                 node = node->next;
         }
 
-        return Pass(b);
+        return Pass(skb);
 }
 
 
-Action_SkBuff
-pfq_run(struct pfq_computation_tree *prg, SkBuff b)
+ActionSkBuff
+pfq_run(SkBuff skb, struct pfq_computation_tree *prg)
 {
 #ifdef PFQ_LANG_PROFILE
 	static uint64_t nrun, total;
@@ -166,12 +168,12 @@ pfq_run(struct pfq_computation_tree *prg, SkBuff b)
 #ifdef PFQ_LANG_PROFILE
 	start = get_cycles();
 
-	b =
+	skb =
 #else
 	return
 #endif
 
-	pfq_bind(b, prg);
+	pfq_bind(skb, prg);
 
 #ifdef PFQ_LANG_PROFILE
 
@@ -181,7 +183,7 @@ pfq_run(struct pfq_computation_tree *prg, SkBuff b)
 	if ((nrun++ % 1048576) == 0)
 		printk(KERN_INFO "[PFQ] PFQ/lang run: %llu_tsc.\n", total/nrun);
 
-	return b;
+	return skb;
 #endif
 
 }

@@ -23,6 +23,8 @@
  *
  ****************************************************************/
 
+#include <pragma/diagnostic_push>
+
 #include <linux/kernel.h>
 #include <linux/version.h>
 #include <linux/module.h>
@@ -49,9 +51,11 @@
 
 #include <linux/pf_q.h>
 
+#include <pragma/diagnostic_pop>
+
 #include <pf_q-shmem.h>
 #include <pf_q-proc.h>
-#include <pf_q-macro.h>
+#include <pf_q-define.h>
 #include <pf_q-sockopt.h>
 #include <pf_q-devmap.h>
 #include <pf_q-group.h>
@@ -72,50 +76,13 @@
 #include <pf_q-percpu.h>
 #include <pf_q-GC.h>
 
-static struct net_proto_family  pfq_family_ops;
+
 static struct packet_type       pfq_prot_hook;
-static struct proto             pfq_proto;
-static struct proto_ops         pfq_ops;
 
 
 MODULE_LICENSE("GPL");
 MODULE_AUTHOR("Nicola Bonelli <nicola@pfq.io>");
-
 MODULE_DESCRIPTION("Functional Networking Framework for Multi-core Architectures");
-
-module_param(direct_capture,    int, 0644);
-module_param(capture_incoming,  int, 0644);
-module_param(capture_outgoing,  int, 0644);
-
-
-module_param(cap_len,         int, 0644);
-module_param(max_len,         int, 0644);
-
-module_param(max_queue_slots, int, 0644);
-
-module_param(batch_len,       int, 0644);
-
-module_param(skb_pool_size,   int, 0644);
-module_param(vl_untag,        int, 0644);
-
-MODULE_PARM_DESC(direct_capture," Direct capture packets: (0 default)");
-
-MODULE_PARM_DESC(capture_incoming," Capture incoming packets: (1 default)");
-MODULE_PARM_DESC(capture_outgoing," Capture outgoing packets: (0 default)");
-
-MODULE_PARM_DESC(cap_len, " Default capture length (bytes)");
-MODULE_PARM_DESC(max_len, " Maximum transmission length (default=1514 bytes)");
-
-MODULE_PARM_DESC(max_queue_slots, " Max Queue slots (default=262144)");
-
-MODULE_PARM_DESC(batch_len,	" Batch queue length");
-MODULE_PARM_DESC(tx_max_retry,  " Transmission max retry (default=1024)");
-
-MODULE_PARM_DESC(vl_untag, " Enable vlan untagging (default=0)");
-
-#ifdef PFQ_USE_SKB_POOL
-MODULE_PARM_DESC(skb_pool_size, " Socket buffer pool size (default=1024)");
-#endif
 
 #ifdef PFQ_DEBUG
 #pragma message "[PFQ] *** PFQ_DEBUG mode ***"
@@ -126,6 +93,7 @@ MODULE_PARM_DESC(skb_pool_size, " Socket buffer pool size (default=1024)");
 
 static DEFINE_SEMAPHORE(sock_sem);
 
+void pfq_timer(unsigned long cpu);
 
 /* send this packet to selected sockets */
 
@@ -145,7 +113,7 @@ void mask_to_sock_queue(unsigned long n, unsigned long mask, unsigned long long 
  * from "Hacker's Delight, Henry S. Warren."
  */
 
-inline
+static inline
 unsigned clp2(unsigned int x)
 {
         x = x - 1;
@@ -162,7 +130,7 @@ unsigned clp2(unsigned int x)
  * Optimized folding operation...
  */
 
-inline
+static inline
 unsigned int pfq_fold(unsigned int a, unsigned int b)
 {
 	unsigned int c;
@@ -196,33 +164,276 @@ void send_to_kernel(struct sk_buff *skb)
 
 
 static int
-pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
+pfq_process_batch(struct pfq_percpu_data *data,
+		  struct pfq_percpu_sock *sock,
+		  struct pfq_percpu_pool *pool,
+		  struct GC_data *GC_ptr,
+		  int cpu)
 {
-	unsigned long long sock_queue[Q_SKBUFF_SHORT_BATCH];
+	unsigned long long sock_queue[Q_SKBUFF_BATCH];
         unsigned long group_mask, socket_mask;
-
-	struct local_data * local;
-        struct gc_data *gcollector;
-
-	struct lazy_fwd_targets targets;
+	struct pfq_endpoint_info endpoints;
+        struct sk_buff *skb;
 
         long unsigned n, bit, lb;
+
         struct pfq_monad monad;
-	struct gc_buff buff;
+	struct sk_buff __GC * buff;
 	size_t this_batch_len;
-        int cpu;
 
 #ifdef PFQ_RX_PROFILE
 	cycles_t start, stop;
 #endif
 
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,9,0))
-	BUILD_BUG_ON_MSG(Q_SKBUFF_SHORT_BATCH > (sizeof(sock_queue[0]) << 3), "skbuff batch overflow");
+	BUILD_BUG_ON_MSG(Q_SKBUFF_BATCH > (sizeof(sock_queue[0]) << 3), "skbuff batch overflow");
 #endif
+
+	this_batch_len = GC_size(GC_ptr);
+
+	__sparse_add(&global_stats.recv, this_batch_len, cpu);
+
+	/* cleanup sock_queue... */
+
+        memset(sock_queue, 0, sizeof(sock_queue));
+	group_mask = 0;
+
+#ifdef PFQ_RX_PROFILE
+	start = get_cycles();
+#endif
+
+        /* setup all the skbs collected */
+
+	for_each_skbuff(SKBUFF_QUEUE(GC_ptr->pool), skb, n)
+        {
+		uint16_t queue = skb_rx_queue_recorded(skb) ? skb_get_rx_queue(skb) : 0;
+		unsigned long local_group_mask = pfq_devmap_get_groups(skb->dev->ifindex, queue);
+		group_mask |= local_group_mask;
+		PFQ_CB(skb)->group_mask = local_group_mask;
+		PFQ_CB(skb)->monad = &monad;
+	}
+
+        /* process all groups enabled for this batch */
+
+	pfq_bitwise_foreach(group_mask, bit,
+	{
+		pfq_gid_t gid = { pfq_ctz(bit) };
+
+		struct pfq_group * this_group = pfq_get_group(gid);
+		bool bf_filt_enabled = atomic_long_read(&this_group->bp_filter);
+		bool vlan_filt_enabled = pfq_vlan_filters_enabled(gid);
+		struct pfq_skbuff_batch refs = { len:0 };
+
+		socket_mask = 0;
+
+		for_each_skbuff(&GC_ptr->pool, buff, n)
+		{
+			struct pfq_computation_tree *prg;
+			unsigned long sock_mask = 0;
+
+			/* stop processing packets in GC ? */
+
+			if (n == this_batch_len)
+				break;
+
+			/* skip this packet for this group ? */
+
+			if ((PFQ_CB(buff)->group_mask & bit) == 0) {
+				refs.queue[refs.len++] = NULL;
+				continue;
+			}
+
+			/* increment counter for this group */
+
+			__sparse_inc(&this_group->stats.recv, cpu);
+
+			/* check if bp filter is enabled */
+
+			if (bf_filt_enabled) {
+				struct sk_filter *bpf = (struct sk_filter *)atomic_long_read(&this_group->bp_filter);
+
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,15,0))
+				if (bpf && !sk_run_filter(buff, bpf->insns))
+#else
+				if (bpf && !SK_RUN_FILTER(bpf, buff))
+#endif
+				{
+					__sparse_inc(&this_group->stats.drop, cpu);
+					refs.queue[refs.len++] = NULL;
+					continue;
+				}
+			}
+
+			/* check vlan filter */
+
+			if (vlan_filt_enabled) {
+				if (!pfq_check_group_vlan_filter(gid, buff->vlan_tci & ~VLAN_TAG_PRESENT)) {
+					__sparse_inc(&this_group->stats.drop, cpu);
+					refs.queue[refs.len++] = NULL;
+					continue;
+				}
+			}
+
+			/* check where a functional program is available for this group */
+
+			prg = (struct pfq_computation_tree *)atomic_long_read(&this_group->comp);
+			if (prg) {
+				unsigned long cbit, eligible_mask = 0;
+				size_t to_kernel = PFQ_CB(buff)->log->to_kernel;
+				size_t num_fwd = PFQ_CB(buff)->log->num_devs;
+
+				/* setup monad for this computation */
+
+				monad.fanout.class_mask = Q_CLASS_DEFAULT;
+				monad.fanout.type = fanout_copy;
+				monad.state = 0;
+				monad.group = this_group;
+
+				/* run the functional program */
+
+				buff = pfq_run(buff, prg).skb;
+				if (buff == NULL) {
+					__sparse_inc(&this_group->stats.drop, cpu);
+					refs.queue[refs.len++] = NULL;
+					continue;
+				}
+
+				/* update stats */
+
+                                __sparse_add(&this_group->stats.frwd, PFQ_CB(buff)->log->num_devs -num_fwd, cpu);
+                                __sparse_add(&this_group->stats.kern, PFQ_CB(buff)->log->to_kernel -to_kernel, cpu);
+
+				/* skip the packet? */
+
+				if (is_drop(monad.fanout)) {
+					__sparse_inc(&this_group->stats.drop, cpu);
+					refs.queue[refs.len++] = NULL;
+					continue;
+				}
+
+				/* save a reference to the current packet */
+
+				refs.queue[refs.len++] = buff;
+
+				/* compute the eligible mask of sockets enabled for this packet... */
+
+				pfq_bitwise_foreach(monad.fanout.class_mask, cbit,
+				{
+					int class = pfq_ctz(cbit);
+					eligible_mask |= atomic_long_read(&this_group->sock_mask[class]);
+				})
+
+				/* logical dependency: when sock_masks of a
+				 * given group is modified, it is necessary to
+				 * invalidate the per-cpu sock->eligible_mask cache */
+
+				if (is_steering(monad.fanout)) { /* cache the number of sockets in the mask */
+
+					if (eligible_mask != sock->eligible_mask) {
+						unsigned long ebit;
+						sock->eligible_mask = eligible_mask;
+						sock->cnt = 0;
+						pfq_bitwise_foreach(eligible_mask, ebit,
+						{
+							pfq_id_t id = pfq_ctz(ebit);
+							struct pfq_sock * so = pfq_get_sock_by_id(id);
+                                                        int i;
+
+							/* max weight = Q_MAX_SOCK_MASK / Q_MAX_ID */
+
+							for(i = 0; i < so->weight; ++i)
+								sock->mask[sock->cnt++] = ebit;
+						})
+					}
+
+					if (likely(sock->cnt)) {
+						unsigned int h = monad.fanout.hash ^
+								(monad.fanout.hash >> 8) ^
+								(monad.fanout.hash >> 16);
+
+						sock_mask |= sock->mask[pfq_fold(h, sock->cnt)];
+					}
+				}
+				else {  /* clone or continue ... */
+
+					sock_mask |= eligible_mask;
+				}
+			}
+			else {
+				/* save a reference to the current packet */
+				refs.queue[refs.len++] = buff;
+				sock_mask |= atomic_long_read(&this_group->sock_mask[0]);
+			}
+
+			mask_to_sock_queue(n, sock_mask, sock_queue);
+			socket_mask |= sock_mask;
+		}
+
+		/* copy payloads to endpoints... */
+
+		pfq_bitwise_foreach(socket_mask, lb,
+		{
+			pfq_id_t id = pfq_ctz(lb);
+			struct pfq_sock * so = pfq_get_sock_by_id(id);
+			copy_to_endpoint_skbs(so, SKBUFF_QUEUE(refs), sock_queue[(int __force)id], cpu, gid);
+		})
+	})
+
+	/* forward skbs to network devices */
+
+	GC_get_lazy_endpoints(GC_ptr, &endpoints);
+
+	if (endpoints.cnt_total)
+	{
+		size_t total = pfq_queue_lazy_xmit_run(SKBUFF_QUEUE(GC_ptr->pool), &endpoints);
+
+		__sparse_add(&global_stats.frwd, total, cpu);
+		__sparse_add(&global_stats.disc, endpoints.cnt_total - total, cpu);
+	}
+
+	/* forward skbs to kernel or to the pool */
+
+	for_each_skbuff(SKBUFF_QUEUE(GC_ptr->pool), skb, n)
+	{
+		struct pfq_cb *cb = PFQ_CB(skb);
+
+		/* send a copy of this skb to the kernel */
+
+		if (cb->direct && fwd_to_kernel(skb)) {
+		        __sparse_inc(&global_stats.kern, cpu);
+			send_to_kernel(skb);
+		}
+		else {
+			pfq_kfree_skb_pool(skb, &pool->rx_pool);
+		}
+	}
+
+	/* reset the GC */
+
+	GC_reset(GC_ptr);
+	local_bh_enable();
+
+#ifdef PFQ_RX_PROFILE
+	stop = get_cycles();
+	if (printk_ratelimit())
+		printk(KERN_INFO "[PFQ] Rx profile: %llu_tsc.\n", (stop-start)/batch_len);
+#endif
+        return 0;
+}
+
+
+static int
+pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
+{
+	struct pfq_percpu_data * data;
+	struct pfq_percpu_sock * sock;
+	struct pfq_percpu_pool * pool;
+	int cpu;
 
 	/* if no socket is open drop the packet */
 
 	if (unlikely(pfq_get_sock_count() == 0)) {
+		SPARSE_INC(&memory_stats.os_free);
 		kfree_skb(skb);
 		return 0;
 	}
@@ -233,12 +444,12 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 
         cpu = smp_processor_id();
 
-	local = per_cpu_ptr(cpu_data, cpu);
-
-	gcollector = &local->gc;
+	data = per_cpu_ptr(percpu_data, cpu);
 
 	if (likely(skb))
 	{
+		struct sk_buff __GC * buff;
+
 		/* if required, timestamp the packet now */
 
 		if (skb->tstamp.tv64 == 0)
@@ -259,279 +470,47 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 
 		/* push the mac header: reset skb->data to the beginning of the packet */
 
-		if (likely(skb->pkt_type != PACKET_OUTGOING)) {
+		if (likely(skb->pkt_type != PACKET_OUTGOING))
 		    skb_push(skb, skb->mac_len);
-		}
 
+		/* pass the ownership of this skb to the garbage collector */
 
-		/* set the ownership of this skb to the garbage collector */
-
-		buff = gc_make_buff(gcollector, skb);
-		if (buff.skb == NULL) {
+		buff = GC_make_buff(data->GC, skb);
+		if (buff == NULL) {
 			if (printk_ratelimit())
 				printk(KERN_INFO "[PFQ] GC: memory exhausted!\n");
-
 			__sparse_inc(&global_stats.lost, cpu);
+			SPARSE_INC(&memory_stats.os_free);
 			kfree_skb(skb);
 			local_bh_enable();
 			return 0;
 		}
 
-		PFQ_CB(buff.skb)->direct = direct;
+		PFQ_CB(buff)->direct = direct;
 
-		if ((gc_size(gcollector) < batch_len) &&
-		     (ktime_to_ns(ktime_sub(skb_get_ktime(buff.skb), local->last_ts)) < 1000000))
+		if ((GC_size(data->GC) < capt_batch_len) &&
+		     (ktime_to_ns(ktime_sub(skb_get_ktime(buff), data->last_rx)) < 1000000))
 		{
 			local_bh_enable();
 			return 0;
 		}
 
-		local->last_ts = skb_get_ktime(buff.skb);
+		data->last_rx = skb_get_ktime(buff);
 	}
 	else {
-                if (gc_size(gcollector) == 0)
+                if (GC_size(data->GC) == 0)
 		{
 			local_bh_enable();
 			return 0;
 		}
 	}
 
-	/* --- process batch --- */
+	sock = per_cpu_ptr(percpu_sock, cpu);
+	pool = per_cpu_ptr(percpu_pool, cpu);
 
-	this_batch_len = gc_size(gcollector);
-
-	__sparse_add(&global_stats.recv, this_batch_len, cpu);
-
-	/* cleanup sock_queue... */
-
-        memset(sock_queue, 0, sizeof(sock_queue));
-
-	group_mask = 0;
-
-#ifdef PFQ_RX_PROFILE
-	start = get_cycles();
-#endif
-
-        /* setup all the skbs collected */
-
-	for_each_skbuff(SKBUFF_BATCH_ADDR(gcollector->pool), skb, n)
-        {
-		unsigned long local_group_mask = pfq_devmap_get_groups(skb->dev->ifindex, skb_get_rx_queue(skb));
-
-		group_mask |= local_group_mask;
-
-		PFQ_CB(skb)->group_mask = local_group_mask;
-		PFQ_CB(skb)->monad      = &monad;
-	}
-
-        /* process all groups enabled for this batch of packets */
-
-	pfq_bitwise_foreach(group_mask, bit,
-	{
-		pfq_gid_t gid = { pfq_ctz(bit) };
-
-		struct pfq_group * this_group = pfq_get_group(gid);
-
-		bool bf_filter_enabled = atomic_long_read(&this_group->bp_filter);
-		bool vlan_filter_enabled = pfq_vlan_filters_enabled(gid);
-		struct gc_queue_buff refs = { len:0 };
-
-		socket_mask = 0;
-
-		for_each_gcbuff(&gcollector->pool, buff, n)
-		{
-			struct pfq_computation_tree *prg;
-			unsigned long sock_mask = 0;
-
-			/* stop processing packets in GC ? */
-
-			if (n == this_batch_len)
-				break;
-
-			/* skip this packet for this group ? */
-
-			if ((PFQ_CB(buff.skb)->group_mask & bit) == 0)
-				continue;
-
-			/* increment recv counter for this group */
-
-			__sparse_inc(&this_group->stats.recv, cpu);
-
-
-			/* check for bp filter */
-
-			if (bf_filter_enabled) {
-
-				struct sk_filter *bpf = (struct sk_filter *)atomic_long_read(&this_group->bp_filter);
-
-#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,15,0))
-				if (bpf && !sk_run_filter(buff.skb, bpf->insns))
-#else
-				if (bpf && !SK_RUN_FILTER(bpf, buff.skb))
-#endif
-				{
-					__sparse_inc(&this_group->stats.drop, cpu);
-					continue;
-				}
-			}
-
-			/* check vlan filter */
-
-			if (vlan_filter_enabled) {
-
-				if (!pfq_check_group_vlan_filter(gid, buff.skb->vlan_tci & ~VLAN_TAG_PRESENT)) {
-					__sparse_inc(&this_group->stats.drop, cpu);
-					continue;
-				}
-			}
-
-			/* check where a functional program is available for this group */
-
-			prg = (struct pfq_computation_tree *)atomic_long_read(&this_group->comp);
-			if (prg) {
-
-				unsigned long cbit, eligible_mask = 0;
-				size_t to_kernel = PFQ_CB(buff.skb)->log->to_kernel;
-				size_t num_fwd   = PFQ_CB(buff.skb)->log->num_devs;
-
-				/* setup monad for this computation */
-
-				monad.fanout.class_mask = Q_CLASS_DEFAULT;
-				monad.fanout.type       = fanout_copy;
-				monad.state		= 0;
-				monad.group		= this_group;
-
-				/* run the functional program */
-
-				buff = pfq_run(prg, buff).value;
-
-				/* save a reference of the current packet */
-
-				if (buff.skb == NULL) {
-					__sparse_inc(&this_group->stats.drop, cpu);
-					continue;
-				}
-
-				refs.queue[refs.len++] = buff;
-
-				/* update stats */
-
-                                __sparse_add(&this_group->stats.frwd, PFQ_CB(buff.skb)->log->num_devs -num_fwd, cpu);
-                                __sparse_add(&this_group->stats.kern, PFQ_CB(buff.skb)->log->to_kernel -to_kernel, cpu);
-
-				/* skip the packet? */
-
-				if (is_drop(monad.fanout)) {
-					__sparse_inc(&this_group->stats.drop, cpu);
-					continue;
-				}
-
-				/* compute the eligible mask of sockets enabled for this packet... */
-
-				pfq_bitwise_foreach(monad.fanout.class_mask, cbit,
-				{
-					int class = pfq_ctz(cbit);
-					eligible_mask |= atomic_long_read(&this_group->sock_mask[class]);
-				})
-
-
-				if (is_steering(monad.fanout)) {
-
-					/* cache the number of sockets in the mask */
-
-					if (eligible_mask != local->eligible_mask) {
-
-						unsigned long ebit;
-
-						local->eligible_mask = eligible_mask;
-						local->sock_cnt = 0;
-
-						pfq_bitwise_foreach(eligible_mask, ebit,
-						{
-							local->sock_mask[local->sock_cnt++] = ebit;
-						})
-					}
-
-					if (likely(local->sock_cnt)) {
-						unsigned int h = monad.fanout.hash ^ (monad.fanout.hash >> 8) ^
-							(monad.fanout.hash >> 16);
-						sock_mask |= local->sock_mask[pfq_fold(h, local->sock_cnt)];
-					}
-				}
-				else {  /* clone or continue ... */
-
-					sock_mask |= eligible_mask;
-				}
-			}
-			else { /* save a reference to the current packet */
-
-				refs.queue[refs.len++] = buff;
-				sock_mask |= atomic_long_read(&this_group->sock_mask[0]);
-			}
-
-			mask_to_sock_queue(n, sock_mask, sock_queue);
-
-			socket_mask |= sock_mask;
-		}
-
-		/* copy payload of packets to endpoints... */
-
-		pfq_bitwise_foreach(socket_mask, lb,
-		{
-			int i = pfq_ctz(lb);
-			struct pfq_sock * so;
-			pfq_id_t id = { i };
-
-			so= pfq_get_sock_by_id(id);
-
-			copy_to_endpoint_buffs(so, &refs, sock_queue[i], cpu, gid);
-		})
-	})
-
-	/* forward skbs to network devices */
-
-	gc_get_fwd_targets(gcollector, &targets);
-
-	if (targets.cnt_total)
-	{
-		size_t total = pfq_lazy_xmit_exec(gcollector, &targets);
-
-		__sparse_add(&global_stats.frwd, total, cpu);
-		__sparse_add(&global_stats.disc, targets.cnt_total - total, cpu);
-	}
-
-	/* forward skbs to kernel or to the pool */
-
-	for_each_skbuff(SKBUFF_BATCH_ADDR(gcollector->pool), skb, n)
-	{
-		struct pfq_cb *cb = PFQ_CB(skb);
-
-		/* send a copy of this skb to the kernel */
-
-		if (cb->direct && fwd_to_kernel(skb)) {
-
-		        __sparse_inc(&global_stats.kern, cpu);
-			send_to_kernel(skb);
-		}
-		else {
-			pfq_kfree_skb_pool(skb, &local->rx_pool);
-		}
-	}
-
-	/* reset the GC */
-
-	gc_reset(gcollector);
-
-	local_bh_enable();
-
-#ifdef PFQ_RX_PROFILE
-	stop = get_cycles();
-
-	if (printk_ratelimit())
-		printk(KERN_INFO "[PFQ] Rx profile: %llu_tsc.\n", (stop-start)/batch_len);
-#endif
-        return 0;
+	return pfq_process_batch(data, sock, pool, data->GC, cpu);
 }
+
 
 /* simple packet HANDLER */
 
@@ -573,20 +552,20 @@ pfq_packet_rcv
 
         return pfq_receive(NULL, skb, 0);
 out:
+	SPARSE_INC(&memory_stats.os_free);
 	kfree_skb(skb);
 	return 0;
 }
 
 
-void
-pfq_timer(unsigned long cpu)
+void pfq_timer(unsigned long cpu)
 {
-	struct local_data *local;
+	struct pfq_percpu_data *data;
 
 	pfq_receive(NULL, NULL, 0);
 
-	local = per_cpu_ptr(cpu_data, cpu);
-	mod_timer_pinned(&local->timer, jiffies + msecs_to_jiffies(100));
+	data = per_cpu_ptr(percpu_data, cpu);
+	mod_timer_pinned(&data->timer, jiffies + msecs_to_jiffies(100));
 }
 
 
@@ -603,94 +582,12 @@ static void pfq_sock_destruct(struct sock *sk)
 
 
 static int
-pfq_create(
-#if(LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,24))
-    struct net *net,
-#endif
-    struct socket *sock, int protocol
-#if(LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,33))
-    , int kern
-#endif
-    )
-{
-        struct pfq_sock *so;
-        struct sock *sk;
-
-        /* security and sanity check */
-
-        if (!capable(CAP_NET_ADMIN))
-                return -EPERM;
-        if (sock->type != SOCK_RAW)
-                return -ESOCKTNOSUPPORT;
-        if (protocol != __constant_htons(ETH_P_ALL))
-                return -EPROTONOSUPPORT;
-
-        sock->state = SS_UNCONNECTED;
-
-        sk = sk_alloc(net, PF_INET, GFP_KERNEL, &pfq_proto);
-        if (sk == NULL) {
-                printk(KERN_WARNING "[PFQ] error: could not allocate a socket\n");
-                return -ENOMEM;
-        }
-
-        sock->ops = &pfq_ops;
-
-        /* initialize the socket */
-
-        sock_init_data(sock,sk);
-
-        so = pfq_sk(sk);
-
-        /* get a unique id for this sock */
-
-        so->id = pfq_get_free_id(so);
-        if (so->id.value == -1) {
-                printk(KERN_WARNING "[PFQ] error: resource exhausted\n");
-                sk_free(sk);
-                return -EBUSY;
-        }
-
-        /* memory mapped queues are allocated later, when the socket is enabled */
-
-	so->egress_type  = pfq_endpoint_socket;
-	so->egress_index = 0;
-	so->egress_queue = 0;
-
-        so->shmem.addr = NULL;
-        so->shmem.size = 0;
-        so->shmem.kind = 0;
-
-        so->shmem.hugepages = NULL;
-        so->shmem.npages = 0;
-
-        down(&sock_sem);
-
-        /* initialize both rx_opt and tx_opt */
-
-        pfq_rx_opt_init(&so->rx_opt, cap_len);
-        pfq_tx_opt_init(&so->tx_opt, max_len);
-
-        /* initialize socket */
-
-        sk->sk_family   = PF_Q;
-        sk->sk_destruct = pfq_sock_destruct;
-
-        sk_refcnt_debug_inc(sk);
-
-        up (&sock_sem);
-
-        down_read(&symtable_sem);
-        return 0;
-}
-
-
-static int
 pfq_release(struct socket *sock)
 {
         struct sock * sk = sock->sk;
         struct pfq_sock *so;
         pfq_id_t id;
-        int n, total = 0;
+        int total = 0;
 
 	if (!sk)
 		return 0;
@@ -700,18 +597,12 @@ pfq_release(struct socket *sock)
 
         /* stop TX thread (if running) */
 
-	for(n = 0; n < so->tx_opt.num_queues; n++)
-	{
-		if (so->tx_opt.queue[n].task) {
-			pr_devel("[PFQ|%d] stopping Tx thread@%p\n", id.value, so->tx_opt.queue[n].task);
-			kthread_stop(so->tx_opt.queue[n].task);
-			so->tx_opt.queue[n].task = NULL;
-		}
-	}
+	pfq_stop_all_tx_threads(so);
 
-        pr_devel("[PFQ|%d] releasing socket...\n", id.value);
+        pr_devel("[PFQ|%d] releasing socket...\n", id);
 
         pfq_leave_all_groups(so->id);
+
         pfq_release_sock_id(so->id);
 
         if (so->shmem.addr)
@@ -721,14 +612,13 @@ pfq_release(struct socket *sock)
 
         /* purge both batch and recycle queues if no socket is open */
 
-        if (pfq_get_sock_count() == 0) {
-                total += pfq_percpu_flush();
-        }
+        if (pfq_get_sock_count() == 0)
+                total += pfq_percpu_fini();
 
         up (&sock_sem);
 
         if (total)
-                printk(KERN_INFO "[PFQ|%d] cleanup: %d skb purged.\n", id.value, total);
+                printk(KERN_INFO "[PFQ|%d] cleanup: %d skb purged.\n", id, total);
 
         sock_orphan(sk);
 	sock->sk = NULL;
@@ -736,7 +626,7 @@ pfq_release(struct socket *sock)
 
         up_read(&symtable_sem);
 
-	pr_devel("[PFQ|%d] socket closed.\n", id.value);
+	pr_devel("[PFQ|%d] socket closed.\n", id);
         return 0;
 }
 
@@ -797,63 +687,52 @@ int pfq_ioctl(struct socket *sock, unsigned int cmd, unsigned long arg)
         return 0;
 }
 
-static
-void pfq_proto_ops_init(void)
+static int pfq_netdev_notifier(struct notifier_block *this, unsigned long info,
+			       void *data)
 {
-        pfq_ops = (struct proto_ops)
-        {
-                .family = PF_Q,
-                .owner = THIS_MODULE,
+	struct net_device *dev = netdev_notifier_info_to_dev(data);
 
-                /* Operations that make no sense on queue sockets. */
-                .connect    = sock_no_connect,
-                .socketpair = sock_no_socketpair,
-                .accept     = sock_no_accept,
-                .getname    = sock_no_getname,
-                .listen     = sock_no_listen,
-                .shutdown   = sock_no_shutdown,
-                .sendpage   = sock_no_sendpage,
+	if (dev) {
+                const char *kind = "NETDEV_UNKNOWN";
+		BUG_ON(dev->ifindex >= Q_MAX_DEVICE);
 
-                /* Now the operations that really occur. */
-                .release    = pfq_release,
-                .bind       = sock_no_bind,
-                .mmap       = pfq_mmap,
-                .poll       = pfq_poll,
-                .setsockopt = pfq_setsockopt,
-                .getsockopt = pfq_getsockopt,
-                .ioctl      = pfq_ioctl,
-                .recvmsg    = sock_no_recvmsg,
-                .sendmsg    = sock_no_sendmsg
-        };
+		switch(info) {
+			case NETDEV_UP			: kind = "NETDEV_UP"; break;
+			case NETDEV_DOWN		: kind = "NETDEV_DOWN"; break;
+			case NETDEV_REBOOT		: kind = "NETDEV_REBOOT"; break;
+			case NETDEV_CHANGE		: kind = "NETDEV_CHANGE"; break;
+			case NETDEV_REGISTER		: kind = "NETDEV_REGISTER"; break;
+			case NETDEV_UNREGISTER		: kind = "NETDEV_UNREGISTER"; break;
+			case NETDEV_CHANGEMTU		: kind = "NETDEV_CHANGEMTU"; break;
+			case NETDEV_CHANGEADDR		: kind = "NETDEV_CHANGEADDR"; break;
+			case NETDEV_GOING_DOWN		: kind = "NETDEV_GOING_DOWN"; break;
+			case NETDEV_CHANGENAME		: kind = "NETDEV_CHANGENAME"; break;
+			case NETDEV_FEAT_CHANGE		: kind = "NETDEV_FEAT_CHANGE"; break;
+			case NETDEV_BONDING_FAILOVER	: kind = "NETDEV_BONDING_FAILOVER"; break;
+			case NETDEV_PRE_UP		: kind = "NETDEV_PRE_UP"; break;
+			case NETDEV_PRE_TYPE_CHANGE	: kind = "NETDEV_PRE_TYPE_CHANGE"; break;
+			case NETDEV_POST_TYPE_CHANGE	: kind = "NETDEV_POST_TYPE_CHANGE"; break;
+			case NETDEV_POST_INIT		: kind = "NETDEV_POST_INIT"; break;
+			case NETDEV_UNREGISTER_FINAL	: kind = "NETDEV_UNREGISTER_FINAL"; break;
+			case NETDEV_RELEASE		: kind = "NETDEV_RELEASE"; break;
+			case NETDEV_NOTIFY_PEERS	: kind = "NETDEV_NOTIFY_PEERS"; break;
+			case NETDEV_JOIN		: kind = "NETDEV_JOIN"; break;
+			case NETDEV_CHANGEUPPER		: kind = "NETDEV_CHANGEUPPER"; break;
+			case NETDEV_RESEND_IGMP		: kind = "NETDEV_RESEND_IGMP"; break;
+			case NETDEV_PRECHANGEMTU	: kind = "NETDEV_PRECHANGEMTU"; break;
+			// case NETDEV_CHANGEINFODATA	: kind = "NETDEV_CHANGEINFODATA"; break;
+			// case NETDEV_BONDING_INFO	: kind = "NETDEV_BONDING_INFO"; break;
+		}
+		printk(KERN_INFO "[PFQ] %s: device %s, ifindex %d\n", kind, dev->name, dev->ifindex);
+		return NOTIFY_OK;
+	}
+
+	return NOTIFY_DONE;
 }
 
 
 static
-void pfq_proto_init(void)
-{
-        pfq_proto = (struct proto)
-        {
-                .name  = "PFQ",
-                .owner = THIS_MODULE,
-                .obj_size = sizeof(struct pfq_sock)
-        };
-}
-
-
-static
-void pfq_net_proto_family_init(void)
-{
-        pfq_family_ops = (struct net_proto_family)
-        {
-                .family = PF_Q,
-                .create = pfq_create,
-                .owner = THIS_MODULE,
-        };
-}
-
-
-static
-void register_device_handler(void)
+void pfq_register_device_handler(void)
 {
         if (capture_incoming || capture_outgoing) {
                 pfq_prot_hook.func = pfq_packet_rcv;
@@ -872,38 +751,181 @@ void unregister_device_handler(void)
 }
 
 
+static struct proto_ops pfq_ops =
+{
+	.family = PF_Q,
+        .owner = THIS_MODULE,
+
+        /* Operations that make no sense on queue sockets. */
+        .connect    = sock_no_connect,
+        .socketpair = sock_no_socketpair,
+        .accept     = sock_no_accept,
+        .getname    = sock_no_getname,
+        .listen     = sock_no_listen,
+        .shutdown   = sock_no_shutdown,
+        .sendpage   = sock_no_sendpage,
+
+        /* Now the operations that really occur. */
+        .release    = pfq_release,
+        .bind       = sock_no_bind,
+        .mmap       = pfq_mmap,
+        .poll       = pfq_poll,
+        .setsockopt = pfq_setsockopt,
+        .getsockopt = pfq_getsockopt,
+        .ioctl      = pfq_ioctl,
+        .recvmsg    = sock_no_recvmsg,
+        .sendmsg    = sock_no_sendmsg
+};
+
+
+static struct proto pfq_proto =
+{
+	.name  = "PFQ",
+        .owner = THIS_MODULE,
+        .obj_size = sizeof(struct pfq_sock)
+};
+
+
+static int
+pfq_create(
+#if(LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,24))
+    struct net *net,
+#endif
+    struct socket *sock, int protocol
+#if(LINUX_VERSION_CODE >= KERNEL_VERSION(2,6,33))
+    , int kern
+#endif
+    )
+{
+        struct pfq_sock *so;
+        struct sock *sk;
+
+        /* security and sanity check */
+
+        if (!capable(CAP_NET_ADMIN))
+                return -EPERM;
+        if (sock->type != SOCK_RAW)
+                return -ESOCKTNOSUPPORT;
+        if (protocol != __constant_htons(ETH_P_ALL))
+                return -EPROTONOSUPPORT;
+
+        sock->state = SS_UNCONNECTED;
+
+        sk = sk_alloc(net, PF_INET, GFP_KERNEL, &pfq_proto);
+        if (sk == NULL) {
+                printk(KERN_WARNING "[PFQ] error: could not allocate a socket!\n");
+                return -ENOMEM;
+        }
+
+        sock->ops = &pfq_ops;
+
+        /* initialize the socket */
+
+        sock_init_data(sock,sk);
+
+        so = pfq_sk(sk);
+
+        /* get a unique id for this sock */
+
+        so->id = pfq_get_free_id(so);
+        if (so->id == -1) {
+                printk(KERN_WARNING "[PFQ] error: resource exhausted!\n");
+                sk_free(sk);
+                return -EBUSY;
+        }
+
+	/* default weight */
+
+	so->weight = 1;
+
+        /* memory mapped queues are allocated later, when the socket is enabled */
+
+	so->egress_type   = pfq_endpoint_socket;
+	so->egress_index  = 0;
+	so->egress_queue  = 0;
+
+        so->shmem.addr = NULL;
+        so->shmem.size = 0;
+        so->shmem.kind = 0;
+
+        so->shmem.hugepages = NULL;
+        so->shmem.npages = 0;
+
+        down(&sock_sem);
+
+        /* initialize both rx_opt and tx_opt */
+
+        pfq_rx_opt_init(&so->rx_opt, capt_slot_size);
+        pfq_tx_opt_init(&so->tx_opt, xmit_slot_size);
+
+        /* initialize socket */
+
+        sk->sk_family   = PF_Q;
+        sk->sk_destruct = pfq_sock_destruct;
+
+        sk_refcnt_debug_inc(sk);
+
+        up (&sock_sem);
+
+        down_read(&symtable_sem);
+        return 0;
+}
+
+
+static struct net_proto_family pfq_family_ops =
+{
+	.family = PF_Q,
+        .create = pfq_create,
+        .owner = THIS_MODULE,
+};
+
+
+
+static struct notifier_block pfq_netdev_notifier_block =
+{
+	.notifier_call = pfq_netdev_notifier
+};
+
+
 static int __init pfq_init_module(void)
 {
         int err = 0;
 
-        printk(KERN_INFO "[PFQ] loading version (%s)...\n", Q_VERSION);
+        printk(KERN_INFO "[PFQ] loading...\n");
 
 	/* check options */
 
-        if (batch_len <= 0 || batch_len > Q_SKBUFF_SHORT_BATCH) {
-                printk(KERN_INFO "[PFQ] batch_len=%d not allowed: valid range (0,%zu]!\n",
-                       batch_len, Q_SKBUFF_SHORT_BATCH);
+        if (capt_batch_len <= 0 || capt_batch_len > Q_SKBUFF_BATCH) {
+                printk(KERN_INFO "[PFQ] capt_batch_len=%d not allowed: valid range (0,%zu]!\n",
+                       capt_batch_len, Q_SKBUFF_BATCH);
                 return -EFAULT;
         }
 
-	if (skb_pool_size > Q_POOL_MAX_SIZE) {
+        if (xmit_batch_len <= 0 || xmit_batch_len > Q_SKBUFF_BATCH) {
+                printk(KERN_INFO "[PFQ] xmit_batch_len=%d not allowed: valid range (0,%zu]!\n",
+                       xmit_batch_len, Q_SKBUFF_BATCH);
+                return -EFAULT;
+        }
+
+	if (skb_pool_size > Q_MAX_POOL_SIZE) {
                 printk(KERN_INFO "[PFQ] skb_pool_size=%d not allowed: valid range [0,%d]!\n",
-                       skb_pool_size, Q_POOL_MAX_SIZE);
+                       skb_pool_size, Q_MAX_POOL_SIZE);
 		return -EFAULT;
 	}
 
 	/* initialize data structures ... */
 
-        pfq_net_proto_family_init();
-        pfq_proto_ops_init();
-        pfq_proto_init();
 	pfq_groups_init();
 
 	/* initialization */
 
-	err = pfq_percpu_init();
+	err = pfq_percpu_alloc();
 	if (err < 0)
 		goto err;
+
+	err = pfq_percpu_init();
+	if (err < 0)
+		goto err1;
 
 	err = pfq_proc_init();
 	if (err < 0)
@@ -922,9 +944,9 @@ static int __init pfq_init_module(void)
 		goto err4;
 
 #ifdef PFQ_USE_SKB_POOL
-	err = pfq_skb_pool_init();
+	err = pfq_skb_pool_init_all();
         if (err < 0) {
-		pfq_skb_pool_purge();
+		pfq_skb_pool_free_all();
 		goto err5;
 	}
         printk(KERN_INFO "[PFQ] skb pool initialized.\n");
@@ -934,9 +956,23 @@ static int __init pfq_init_module(void)
 	pfq_symtable_init();
 
         /* finally register the basic device handler */
-        register_device_handler();
+        pfq_register_device_handler();
 
-	printk(KERN_INFO "[PFQ] ready!\n");
+	/* register netdev notifier */
+        register_netdevice_notifier(&pfq_netdev_notifier_block);
+
+	/* ensure each device has ifindex < Q_MAX_DEVICE */
+	{
+		struct net_device *dev;
+		for_each_netdev(&init_net, dev)
+			BUG_ON(dev->ifindex >= Q_MAX_DEVICE);
+	}
+
+        printk(KERN_INFO "[PFQ] version %d.%d.%d ready!\n",
+               PFQ_MAJOR(PFQ_VERSION_CODE),
+               PFQ_MINOR(PFQ_VERSION_CODE),
+               PFQ_PATCHLEVEL(PFQ_VERSION_CODE));
+
         return 0;
 
 #ifdef PFQ_USE_SKB_POOL
@@ -949,8 +985,9 @@ err4:
 err3:
 	pfq_proc_fini();
 err2:
-	pfq_percpu_flush();
-	free_percpu(cpu_data);
+	pfq_percpu_fini();
+err1:
+	pfq_percpu_free();
 err:
 	return err;
 }
@@ -963,6 +1000,9 @@ static void __exit pfq_exit_module(void)
 #ifdef PFQ_USE_SKB_POOL
         pfq_skb_pool_enable(false);
 #endif
+	/* unregister netdevice notifier */
+        unregister_netdevice_notifier(&pfq_netdev_notifier_block);
+
         /* unregister the basic device handler */
         unregister_device_handler();
 
@@ -978,17 +1018,18 @@ static void __exit pfq_exit_module(void)
         /* wait grace period */
         msleep(Q_GRACE_PERIOD);
 
-        /* purge both GC and recycles queues */
-        total += pfq_percpu_flush();
+        /* free per CPU data */
+        total += pfq_percpu_fini();
 
 #ifdef PFQ_USE_SKB_POOL
-        total += pfq_skb_pool_purge();
+        total += pfq_skb_pool_free_all();
+	SPARSE_ADD(&memory_stats.pool_pop, total);
 #endif
         if (total)
                 printk(KERN_INFO "[PFQ] %d skbuff freed.\n", total);
 
         /* free per-cpu data */
-	free_percpu(cpu_data);
+        pfq_percpu_free();
 
 	/* free symbol table of pfq-lang functions */
 	pfq_symtable_free();
@@ -1001,14 +1042,14 @@ static void __exit pfq_exit_module(void)
 
 /* pfq direct capture drivers support */
 
-inline
+static inline
 int pfq_direct_capture(const struct sk_buff *skb)
 {
-        return direct_capture && pfq_devmap_monitor_get(skb->dev->ifindex);
+        return pfq_devmap_monitor_get(skb->dev->ifindex);
 }
 
 
-inline
+static inline
 int pfq_normalize_skb(struct sk_buff *skb)
 {
         skb_reset_network_header(skb);

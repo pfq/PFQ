@@ -1,5 +1,3 @@
-#include <affinity.hpp>
-
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -16,6 +14,7 @@
 
 #include <pfq/pfq.hpp>
 
+#include <more/affinity.hpp>
 
 using namespace pfq;
 
@@ -43,7 +42,7 @@ try
 
     // select tstamp type:
     //
-    q.timestamp_enable(true);
+    q.timestamping_enable(true);
 
     // enable capturng for this queue:
     //

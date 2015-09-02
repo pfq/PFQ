@@ -18,26 +18,41 @@
 
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE DeriveDataTypeable #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+
 
 module Development.SimpleBuilder (
+
     Target(..),
-    Script,
+    BuilderScript,
     Command,
     Options,
     (*>>),
-    (.|.),
+    (.<),
+    requires,
     into,
     simpleBuilder,
     numberOfPhyCores,
-    cabalConfigure,
+
+    -- predefined actions
+    Development.SimpleBuilder.empty,
+    cabalConfigureUser,
     cabalBuild,
     cabalInstall,
     cabalClean,
+    cabalDistClean,
     cmake,
+    cmake_distclean,
     make,
     make_install,
     make_clean,
+    make_distclean,
+    ldconfig,
+    configure,
+    cmd
+
 ) where
+
 
 import System.Console.CmdArgs
 import System.Console.CmdArgs.Explicit
@@ -50,77 +65,113 @@ import System.Exit
 import System.IO.Unsafe
 
 import Control.Monad
-import Control.Monad.State
+import qualified Control.Monad.Trans.RWS.Lazy as RWS
+import Control.Monad.Writer.Lazy
+import Control.Applicative
 
 import qualified Control.Exception as E
 
 import Data.Data
+import Data.Monoid
 import Data.List
 import Data.Maybe
 import Data.String
 
-version = "0.1"
 
--- Predefined commands
+-- version
 
-cabalConfigure = BareCmd "runhaskell Setup configure --user"
-cabalBuild     = BareCmd "runhaskell Setup build"
-cabalInstall   = BareCmd "runhaskell Setup install"
-cabalClean     = BareCmd "runhaskell Setup clean"
+version = "0.2"
 
-make_install   = BareCmd "make install"
-make_clean     = BareCmd "make clean"
 
-make   = AdornedCmd (\o -> case () of
+-- predefined commands
+
+empty              = return () :: Action ()
+cabalConfigureUser = tellAction $ BareCmd "runhaskell Setup configure --user"
+cabalBuild         = tellAction $ BareCmd "runhaskell Setup build"
+cabalInstall       = tellAction $ BareCmd "runhaskell Setup install"
+cabalClean         = tellAction $ BareCmd "runhaskell Setup clean"
+cabalDistClean     = tellAction $ BareCmd "rm -rf dist"
+make_install       = tellAction $ BareCmd "make install"
+make_clean         = tellAction $ BareCmd "make clean"
+make_distclean     = tellAction $ BareCmd "make distclean"
+ldconfig           = tellAction $ BareCmd "ldconfig"
+configure          = tellAction $ BareCmd "./configure"
+
+
+make   = tellAction $ AdornedCmd (\o -> case () of
                             _ | jobs o == 0               -> "make"
                               | jobs o > numberOfPhyCores -> "make -j " ++ show (numberOfPhyCores + 1)
                               | otherwise                 -> "make -j " ++ show (jobs o))
 
-cmake  = AdornedCmd (\o -> let build = case buildType o of
-                                        Nothing      -> ""
-                                        Just Release -> "-DCMAKE_BUILD_TYPE=Release"
-                                        Just Debug   -> "-DCMAKE_BUILD_TYPE=Debug"
-                               cc  = case ccComp o of
-                                        Nothing  -> ""
-                                        Just xs  -> "-DCMAKE_C_COMPILER=" ++ xs
-                               cxx = case cxxComp o of
-                                        Nothing  -> ""
-                                        Just xs  -> "-DCMAKE_CXX_COMPILER=" ++ xs
-                            in unwords [ "cmake" , build, cc, cxx, "." ]
-                     )
+
+cmake  = tellAction $ AdornedCmd (\o ->
+                    let build = case buildType o of
+                                    Nothing      -> ""
+                                    Just Release -> "-DCMAKE_BUILD_TYPE=Release"
+                                    Just Debug   -> "-DCMAKE_BUILD_TYPE=Debug"
+                        cc  = case ccComp o of
+                                Nothing  -> ""
+                                Just xs  -> "-DCMAKE_C_COMPILER=" ++ xs
+                        cxx = case cxxComp o of
+                                Nothing  -> ""
+                                Just xs  -> "-DCMAKE_CXX_COMPILER=" ++ xs
+                        in unwords [ "cmake" , build, cc, cxx, "." ]
+                    )
+
+
+cmake_distclean :: Action ()
+cmake_distclean = Action $ do
+    tell ([BareCmd "rm -f install_manifest.txt"], [])
+    tell ([BareCmd "rm -f cmake.depends"], [])
+    tell ([BareCmd "rm -f cmake.chek_depends"],[])
+    tell ([BareCmd "rm -f CMakeCache.txt"],[])
+    tell ([BareCmd "rm -f *.cmake"],[])
+    tell ([BareCmd "rm -f Makefile"],[])
+    tell ([BareCmd "rm -rf CMakeFiles"],[])
+
+
+cmd :: String -> Action ()
+cmd xs = Action (tell ([BareCmd xs], []))
+
+
+tellAction :: Command -> Action ()
+tellAction c = Action (tell ([c], []))
+
 
 -- data types
 
 data Options = Options
-    {
-        buildType  :: Maybe BuildType,
-        cxxComp    :: Maybe String,
-        ccComp     :: Maybe String,
-        dryRun     :: Bool,
-        jobs       :: Int,
-        extra      :: [String]
+    {   buildType  :: Maybe BuildType
+    ,   cxxComp    :: Maybe String
+    ,   ccComp     :: Maybe String
+    ,   dryRun     :: Bool
+    ,   verbose    :: Bool
+    ,   jobs       :: Int
+    ,   extra      :: [String]
     } deriving (Data, Typeable, Show, Read)
 
 
 options :: Mode (CmdArgs Options)
 options = cmdArgsMode $ Options
-    {
-         buildType = Nothing    &= explicit &= name "build"    &= help "Specify the build type (Release, Debug)",
-         cxxComp   = Nothing    &= explicit &= name "cxx"      &= help "Compiler for C++ programs",
-         ccComp    = Nothing    &= explicit &= name "cc"       &= help "Compiler for C programs",
-         dryRun    = False      &= explicit &= name "dry-run"  &= help "Print commands, don't actually run them",
-         jobs      = 0          &= help "Allow N jobs at once (if possible)",
-         extra     = []         &= typ "ITEMS" &= args
+    {   buildType = Nothing    &= explicit &= name "buildType"     &= help "Specify the build type (Release, Debug)"
+    ,   cxxComp   = Nothing    &= explicit &= name "cxx"           &= help "Compiler to use for C++ programs"
+    ,   ccComp    = Nothing    &= explicit &= name "cc"            &= help "Compiler to use for C programs"
+    ,   dryRun    = False      &= explicit &= name "dry-run"       &= help "Print commands, don't actually run them"
+    ,   verbose   = False      &= explicit &= name "verbose"       &= help "Verbose mode"
+    ,   jobs      = 0          &= help "Allow N jobs at once (if possible)"
+    ,   extra     = []         &= typ "ITEMS" &= args
     } &= summary ("SimpleBuilder " ++ version) &= program "Build" &= details detailsBanner
 
+
 detailsBanner = [ "[ITEMS] = COMMAND [TARGETS]",
-        "",
-        "Commands:",
-        "    configure   Prepare to build PFQ framework.",
-        "    build       Build PFQ framework.",
-        "    install     Copy the files into the install location.",
-        "    clean       Clean up after a build.",
-        "    show        Show targets.", ""]
+  "",
+  "Commands:",
+  "    configure   Prepare to build PFQ framework.",
+  "    build       Build PFQ framework.",
+  "    install     Copy the files into the install location.",
+  "    clean       Clean up after a build.",
+  "    distclean   Clean up additional files/dirs.",
+  "    show        Show targets.", ""]
 
 
 bold  = setSGRCode [SetConsoleIntensity BoldIntensity]
@@ -130,26 +181,30 @@ reset = setSGRCode []
 data Target = Configure { getTargetName :: String } |
               Build     { getTargetName :: String } |
               Install   { getTargetName :: String } |
-              Clean     { getTargetName :: String }
+              Clean     { getTargetName :: String } |
+              DistClean { getTargetName :: String }
+
+instance Show Target where
+    show (Configure x) = "configure " ++ x
+    show (Build     x) = "build " ++ x
+    show (Install   x) = "install " ++ x
+    show (Clean     x) = "clean " ++ x
+    show (DistClean x) = "distclean " ++ x
 
 instance Eq Target where
     (Configure a) == (Configure b) = a == b || a == "*" || b == "*"
     (Build a)     == (Build b)     = a == b || a == "*" || b == "*"
     (Install a)   == (Install b)   = a == b || a == "*" || b == "*"
     (Clean a)     == (Clean b)     = a == b || a == "*" || b == "*"
+    (DistClean a) == (DistClean b) = a == b || a == "*" || b == "*"
     _ == _ = False
-
-instance Show Target where
-    show (Configure t) = "Configuring " ++ t
-    show (Build     t) = "Building "    ++ t
-    show (Install   t) = "Installing "  ++ t
-    show (Clean     t) = "Cleaning "    ++ t
 
 
 data Command = BareCmd String | AdornedCmd (Options -> String)
 
-instance IsString Command where
-    fromString = BareCmd
+instance Show Command where
+    show (BareCmd xs) = xs
+    show (AdornedCmd f) = f (Options Nothing Nothing Nothing False False 0 [])
 
 
 evalCmd :: Options -> Command -> String
@@ -157,78 +212,115 @@ evalCmd _   (BareCmd xs) = xs
 evalCmd opt (AdornedCmd fun) = fun opt
 
 
+runCmd :: Options -> Command -> IO ExitCode
+runCmd opt cmd = let raw = evalCmd opt cmd in system raw
+
+
 data BuildType = Release | Debug
-                    deriving (Data, Typeable, Show, Read, Eq)
+    deriving (Data, Typeable, Show, Read, Eq)
 
-data Action    = Action { basedir :: FilePath, cmds :: [Command], deps :: [Target] }
-data Component = Component { getTarget :: Target,  getAction :: Action }
+newtype Action a = Action { getAction :: Writer ([Command], [Target]) a }
+    deriving(Functor, Applicative, Monad)
 
-type Script  = [Component]
-type ScriptT = StateT (Script, [Target], Options)
+instance (Show a) => Show (Action a) where
+    show action =  (\(cs, ts) -> show cs ++ ": " ++ show ts) $ runWriter (getAction action)
 
+data Component = Component { getTarget :: Target,  getActionInfo :: ActionInfo }
 
-infix 1 *>>
+data ActionInfo = ActionInfo { basedir :: FilePath, action :: Action () }
 
-(*>>) :: Target -> Action -> Component
-t *>> r = Component t r
+type BuilderScript = Writer Script ()
 
+type Script = [Component]
 
-into :: FilePath -> [Command] -> Action
-into dir cs = Action dir cs []
-
-
-(.|.) :: Action -> [Target] -> Action
-action .|. ts = action{ deps = ts }
+type BuilderT = RWS.RWST (Options) () [Target]
 
 
-buildTarget :: [Target] -> FilePath -> Int -> ScriptT IO ()
-buildTarget tars base level = do
-    (script, done, _) <- get
+infixr 0 *>>
+
+(*>>) :: Target -> ActionInfo -> Writer [Component] ()
+t *>> r = tell [Component t r]
+
+
+into :: FilePath -> Action () -> ActionInfo
+into = ActionInfo
+
+
+(.<) :: Action () -> Target -> Action ()
+ac .< x = ac >> Action (tell ([],[x]))
+
+
+requires :: Action () -> [Target] -> Action ()
+ac `requires` xs = ac >> Action (tell ([],xs))
+
+
+buildTargets :: [Target] -> Script -> FilePath -> Int -> BuilderT IO ()
+buildTargets tgts script baseDir level = do
+
+    opt <- RWS.ask
+
     let targets = map getTarget script
-    let script' = filter (\(Component tar' _ ) -> tar' `elem` tars) script
-    when (length tars > length script') $
-        lift $ error ("Error: " ++ unwords (
-            map getTargetName $ filter (`notElem` targets) tars)  ++ ": target(s) not found!")
-    let tot = length script'
-    forM_ (zip [1..] script') $ \(n, Component target (Action path cmds' deps')) -> do
-        (_, done', opt) <- get
-        unless (target `elem` done') $ do
-            put (script, target : done', opt)
+    let script' = filter (\(Component tar' _ ) -> tar' `elem` tgts) script
 
-            unless (dryRun opt) $
-                lift $ putStrLn $ replicate level '.' ++ bold ++ "[" ++ show n ++ "/" ++ show tot ++ "] " ++ show target ++ ":" ++ reset
+    when (length tgts > length script') $
+        lift $ error ("SimpleBuilder: " ++ unwords (
+            map getTargetName $ filter (`notElem` targets) tgts)  ++ ": target not found!")
+
+    forM_ (zip [1..] script') $ \(n, Component target (ActionInfo path action)) -> do
+
+        let (cmds',deps') = execWriter $ getAction action
+
+        done <- RWS.get
+
+        unless (target `elem` done) $ do
+
+            RWS.put (target : done)
+
+            putStrLnVerbose Nothing $ replicate level '.' ++ bold ++ "[" ++ show n ++ "/" ++ show (length script') ++ "] " ++ show target ++ ":" ++ reset
 
             -- satisfy dependencies
+
             unless (null deps') $ do
-                lift $ putStrLn $ "# Satisfying dependencies for " ++ show target ++ "..."
-                forM_ deps' $ \t -> when (t `notElem` done') $ buildTarget [t] base (level+1)
+                putStrLnVerbose (Just $ verbose opt) $ bold ++ "# Satisfying dependencies for " ++ show target ++ ": " ++ show deps' ++ reset
+                forM_ deps' $ \t -> when (t `notElem` done) $ buildTargets [t] script baseDir (level+1)
+
+            putStrLnVerbose (Just $ verbose opt) $ bold ++ "# Building target " ++ show target ++ ": " ++ show (map (evalCmd opt) cmds') ++ reset
 
             -- build target
+
             if dryRun opt
-            then void ( lift $ do
-                            putStrLn $ "cd " ++ base </> path
-                            mapM (putStrLn . evalCmd opt) cmds'
-                      )
-            else void ( lift $ do
-                            setCurrentDirectory $ base </> path
-                            ec <- mapM (system . evalCmd opt) cmds'
-                            unless (all (== ExitSuccess) ec) $
-                                error ("Error: " ++ show target ++ " aborted!")
-                       )
+            then void . lift $ do
+                    putStrLn $ "cd " ++ baseDir </> path
+                    mapM (putStrLn . evalCmd opt) cmds'
+            else void . lift $ do
+                    setCurrentDirectory $ baseDir </> path
+                    ec <- mapM (runCmd opt) cmds'
+                    unless (all (== ExitSuccess) ec) $
+                        error ("SimpleBuilder: " ++ show target ++ " aborted!")
 
 
-simpleBuilder :: Script -> [String] -> IO ()
-simpleBuilder script args = do
+putStrLnVerbose  :: Maybe Bool -> String -> BuilderT IO ()
+putStrLnVerbose Nothing xs = liftIO $ putStrLn xs
+putStrLnVerbose (Just v) xs = when v (liftIO $ putStrLn xs)
+
+
+simpleBuilder :: BuilderScript -> [String] -> IO ()
+simpleBuilder script' args = do
+
+    let script = execWriter script'
+
     opt  <- cmdArgsRun options
-    base <- getCurrentDirectory
+    baseDir <- getCurrentDirectory
+
     E.catch (case extra opt of
-            ("configure":xs) -> evalStateT (buildTarget (map Configure (mkTargets xs)) base 0) (script,[], opt) >> putStrLn ( bold ++ "Done." ++ reset )
-            ("build":xs)     -> evalStateT (buildTarget (map Build     (mkTargets xs)) base 0) (script,[], opt) >> putStrLn ( bold ++ "Done." ++ reset )
-            ("install":xs)   -> evalStateT (buildTarget (map Install   (mkTargets xs)) base 0) (script,[], opt) >> putStrLn ( bold ++ "Done." ++ reset )
-            ("clean":xs)     -> evalStateT (buildTarget (map Clean     (mkTargets xs)) base 0) (script,[], opt) >> putStrLn ( bold ++ "Done." ++ reset )
+            ("configure":xs) -> RWS.evalRWST (buildTargets (map Configure (mkTargets xs)) script baseDir 0) opt [] >> putStrLn ( bold ++ "Done." ++ reset )
+            ("build":xs)     -> RWS.evalRWST (buildTargets (map Build     (mkTargets xs)) script baseDir 0) opt [] >> putStrLn ( bold ++ "Done." ++ reset )
+            ("install":xs)   -> RWS.evalRWST (buildTargets (map Install   (mkTargets xs)) script baseDir 0) opt [] >> putStrLn ( bold ++ "Done." ++ reset )
+            ("clean":xs)     -> RWS.evalRWST (buildTargets (map Clean     (mkTargets xs)) script baseDir 0) opt [] >> putStrLn ( bold ++ "Done." ++ reset )
+            ("distclean":xs) -> RWS.evalRWST (buildTargets (map DistClean (mkTargets xs)) script baseDir 0) opt [] >> putStrLn ( bold ++ "Done." ++ reset )
             ("show":_)       -> showTargets script
             _                -> putStr $ show $ helpText [] HelpFormatDefault options)
-        (\e -> setCurrentDirectory base >> print (e :: E.SomeException))
+        (\e -> setCurrentDirectory baseDir >> print (e :: E.SomeException))
     where mkTargets xs =  if null xs then ["*"] else xs
 
 
@@ -239,6 +331,7 @@ showTargets script =
 
 {-# NOINLINE numberOfPhyCores #-}
 numberOfPhyCores :: Int
-numberOfPhyCores = unsafePerformIO $ readFile "/proc/cpuinfo" >>= \file ->
-    return $ (length . filter (isInfixOf "processor") . lines) file
+numberOfPhyCores = unsafePerformIO $
+    liftM (length . filter (isInfixOf "processor") . lines) $ readFile "/proc/cpuinfo"
+
 

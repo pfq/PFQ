@@ -24,29 +24,25 @@
 #ifndef PF_Q_GLOBAL_H
 #define PF_Q_GLOBAL_H
 
+#include <pragma/diagnostic_push>
 #include <linux/types.h>
+#include <pragma/diagnostic_pop>
 
 #include <pf_q-sparse.h>
 #include <pf_q-stats.h>
 
-extern struct local_data __percpu * cpu_data;
-
-extern int direct_capture;
-
 extern int capture_incoming;
 extern int capture_outgoing;
 
-extern int max_queue_slots;
+extern int capt_slot_size;
+extern int xmit_slot_size;
 
-extern int cap_len;
-extern int max_len;
-
-extern int batch_len;
+extern int xmit_batch_len;
+extern int capt_batch_len;
 
 extern int vl_untag;
 
 extern int skb_pool_size;
-extern int tx_max_retry;
 
 extern struct pfq_global_stats global_stats;
 extern struct pfq_memory_stats memory_stats;

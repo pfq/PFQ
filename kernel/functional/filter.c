@@ -21,16 +21,20 @@
  *
  ****************************************************************/
 
+#include <pragma/diagnostic_push>
+
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/inetdevice.h>
+
+#include <pragma/diagnostic_pop>
 
 #include <pf_q-module.h>
 
 #include "filter.h"
 
 
-static Action_SkBuff
+static ActionSkBuff
 filter_generic(arguments_t args, SkBuff b)
 {
 	predicate_t pred_ = GET_ARG(predicate_t, args);
@@ -41,35 +45,35 @@ filter_generic(arguments_t args, SkBuff b)
 	return Drop(b);
 }
 
-static Action_SkBuff
+static ActionSkBuff
 filter_l3_proto(arguments_t args, SkBuff b)
 {
 	const u16 type = GET_ARG(u16, args);
         return is_l3_proto(b, type) ? Pass(b) : Drop(b);
 }
 
-static Action_SkBuff
+static ActionSkBuff
 filter_l4_proto(arguments_t args, SkBuff b)
 {
 	const u8 proto = GET_ARG(u8, args);
         return is_l4_proto(b, proto) ? Pass(b) : Drop(b);
 }
 
-static Action_SkBuff
+static ActionSkBuff
 filter_port(arguments_t args, SkBuff b)
 {
 	const u16 port = GET_ARG(u16, args);
         return has_port(b, port) ? Pass(b) : Drop(b);
 }
 
-static Action_SkBuff
+static ActionSkBuff
 filter_src_port(arguments_t args, SkBuff b)
 {
 	const u16 port = GET_ARG(u16, args);
         return has_src_port(b, port) ? Pass(b) : Drop(b);
 }
 
-static Action_SkBuff
+static ActionSkBuff
 filter_dst_port(arguments_t args, SkBuff b)
 {
 	const u16 port = GET_ARG(u16, args);
@@ -94,7 +98,7 @@ static int filter_addr_init(arguments_t args)
 }
 
 
-static Action_SkBuff
+static ActionSkBuff
 filter_addr(arguments_t args, SkBuff b)
 {
 	__be32 addr = GET_ARG_0(__be32, args);
@@ -104,7 +108,7 @@ filter_addr(arguments_t args, SkBuff b)
 }
 
 
-static Action_SkBuff
+static ActionSkBuff
 filter_src_addr(arguments_t args, SkBuff b)
 {
 	__be32 addr = GET_ARG_0(__be32, args);
@@ -113,7 +117,7 @@ filter_src_addr(arguments_t args, SkBuff b)
 	return has_src_addr(b, addr, mask) ? Pass(b) : Drop(b);
 }
 
-static Action_SkBuff
+static ActionSkBuff
 filter_dst_addr(arguments_t args, SkBuff b)
 {
 	__be32 addr = GET_ARG_0(__be32, args);
@@ -122,13 +126,13 @@ filter_dst_addr(arguments_t args, SkBuff b)
 	return has_dst_addr(b, addr, mask) ? Pass(b) : Drop(b);
 }
 
-static Action_SkBuff
+static ActionSkBuff
 filter_no_frag(arguments_t args, SkBuff b)
 {
 	return is_frag(b) ? Drop(b) : Pass(b);
 }
 
-static Action_SkBuff
+static ActionSkBuff
 filter_no_more_frag(arguments_t args, SkBuff b)
 {
 	return is_more_frag(b) ? Drop(b) : Pass(b);

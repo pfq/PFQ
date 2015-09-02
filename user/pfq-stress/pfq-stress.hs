@@ -38,21 +38,19 @@ version, pfq_counters, pfq_load :: String
 
 pfq_counters = "/usr/local/bin/pfq-counters"
 pfq_load = "/root/.cabal/bin/pfq-load"
-version = "4.4"
+version = "5.0"
 
 pfqOptions :: [ (Int, [String]) ]
-pfqOptions = [ (rss, [mkOption "direct_capture" dcap,
-                      mkOption "capture_incoming" icap,
+pfqOptions = [ (rss, [mkOption "capture_incoming" icap,
                       mkOption "capture_outgoing" ocap,
                       mkOption "skb_pool_size" skbp,
                       mkOption "batch_len" blen]) |
                       rss  <- [1,3],
-                      dcap <- [0,1],
                       icap <- [0,1],
                       ocap <- [0],
                       blen <- [1, 16],
-                      skbp <- [0, 1024],
-                      dcap /= 0 || icap /= 0]
+                      skbp <- [0, 1024]
+                      ]
 
 
 data Options = Options
@@ -95,7 +93,7 @@ main = do
 
         forM_ (zip [0..] pfqOptions) $ \(n, opt) ->
 
-            when (n `elem` (take 1024 filt)) $ do
+            when (n `elem` take 1024 filt) $ do
 
                     putChar '\n'
 

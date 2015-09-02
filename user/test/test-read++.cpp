@@ -18,7 +18,7 @@ main(int argc, char *argv[])
 
     q.enable();
 
-    q.timestamp_enable(true);
+    q.timestamping_enable(true);
 
     for(;;)
     {
@@ -36,7 +36,7 @@ main(int argc, char *argv[])
             auto h = *it;
 
             printf("caplen:%d len:%d ifindex:%d hw_queue:%d tstamp: %u:%u [commit:%d]-> ",
-					h.caplen, h.len, h.if_index, h.hw_queue,
+					h.caplen, h.len, h.if_index, h.queue,
                     h.tstamp.tv.sec, h.tstamp.tv.nsec, h.commit);
 
 			const char *buff = static_cast<char *>(it.data());

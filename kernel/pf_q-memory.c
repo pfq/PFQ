@@ -22,28 +22,16 @@
  *
  ****************************************************************/
 
+#include <pragma/diagnostic_push>
+
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/skbuff.h>
 
+#include <pragma/diagnostic_pop>
+
 #include <pf_q-memory.h>
 #include <pf_q-global.h>
-
-struct pfq_skb_pool_stat
-pfq_get_skb_pool_stats(void)
-{
-        struct pfq_skb_pool_stat ret =
-        {
-		sparse_read(&memory_stats.os_alloc),
-		sparse_read(&memory_stats.pool_alloc),
-                sparse_read(&memory_stats.pool_fail),
-                sparse_read(&memory_stats.err_intdis),
-                sparse_read(&memory_stats.err_shared),
-                sparse_read(&memory_stats.err_cloned),
-                sparse_read(&memory_stats.err_memory),
-	};
-	return ret;
-}
 
 
 /* exported symbols */
@@ -52,10 +40,10 @@ struct sk_buff *
 __pfq_alloc_skb(unsigned int size, gfp_t priority, int fclone, int node)
 {
 #ifdef PFQ_USE_SKB_POOL
-        struct local_data *this_cpu = this_cpu_ptr(cpu_data);
+        struct pfq_percpu_pool *pool = this_cpu_ptr(percpu_pool);
 
-        if (atomic_read(&this_cpu->enable_skb_pool))
-                return ____pfq_alloc_skb_pool(size, priority, fclone, node, &this_cpu->rx_pool);
+        if (atomic_read(&pool->enable))
+                return ____pfq_alloc_skb_pool(size, priority, fclone, node, &pool->rx_pool);
 #endif
         return __alloc_skb(size, priority, fclone, node);
 }

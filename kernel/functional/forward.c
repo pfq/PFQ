@@ -21,9 +21,13 @@
  *
  ****************************************************************/
 
+#include <pragma/diagnostic_push>
+
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/cache.h>
+
+#include <pragma/diagnostic_pop>
 
 #include <pf_q-skbuff-batch.h>
 #include <pf_q-transmit.h>
@@ -34,35 +38,28 @@
 #include "forward.h"
 
 
-struct forward_queue
-{
-	struct pfq_skbuff_short_batch q;
-
-} ____chaline_aligned;
-
-
-static Action_SkBuff
-forwardIO(arguments_t args, SkBuff b)
+static ActionSkBuff
+forwardIO(arguments_t args, SkBuff skb)
 {
 	struct net_device *dev = GET_ARG(struct net_device *, args);
 	struct sk_buff *nskb;
-	struct pfq_group_stats *stats = get_stats(b);
+	struct pfq_group_stats *stats = get_stats(skb);
 
 	if (dev == NULL) {
                 if (printk_ratelimit())
                         printk(KERN_INFO "[PFQ/lang] forward: device error!\n");
 		sparse_inc(&global_stats.abrt);
 		sparse_inc(&stats->abrt);
-                return Pass(b);
+                return Pass(skb);
 	}
 
-	nskb = skb_clone(b.skb, GFP_ATOMIC);
+	nskb = skb_clone(PFQ_SKB(skb), GFP_ATOMIC);
 	if (!nskb) {
                 if (printk_ratelimit())
 			printk(KERN_INFO "[PFQ/lang] forward pfq_xmit %s: no memory!\n", dev->name);
 		sparse_inc(&global_stats.abrt);
 		sparse_inc(&stats->abrt);
-		return Pass(b);
+		return Pass(skb);
 	}
 
 	if (pfq_xmit(nskb, dev, nskb->queue_mapping, 0) != 1) {
@@ -77,26 +74,26 @@ forwardIO(arguments_t args, SkBuff b)
 		sparse_inc(&stats->frwd);
 	}
 
-	return Pass(b);
+	return Pass(skb);
 }
 
 
-static Action_SkBuff
-forward(arguments_t args, SkBuff b)
+static ActionSkBuff
+forward(arguments_t args, SkBuff skb)
 {
 	struct net_device *dev = GET_ARG(struct net_device *, args);
 
 	if (dev == NULL) {
                 if (printk_ratelimit())
                         printk(KERN_INFO "[PFQ/lang] forward: device error!\n");
-                return Pass(b);
+                return Pass(skb);
 	}
 
-	pfq_lazy_xmit(b, dev, b.skb->queue_mapping);
+	pfq_lazy_xmit(skb, dev, skb->queue_mapping);
 
-	sparse_inc(&get_stats(b)->frwd);
+	sparse_inc(&get_stats(skb)->frwd);
 
-	return Pass(b);
+	return Pass(skb);
 }
 
 
@@ -135,68 +132,68 @@ forward_fini(arguments_t args)
 }
 
 
-static Action_SkBuff
-bridge(arguments_t args, SkBuff b)
+static ActionSkBuff
+bridge(arguments_t args, SkBuff skb)
 {
 	struct net_device *dev = GET_ARG(struct net_device *, args);
 
 	if (dev == NULL) {
                 if (printk_ratelimit())
                         printk(KERN_INFO "[PFQ/lang] bridge: device error!\n");
-                return Drop(b);
+                return Drop(skb);
 	}
 
-	pfq_lazy_xmit(b, dev, b.skb->queue_mapping);
+	pfq_lazy_xmit(skb, dev, skb->queue_mapping);
 
-	sparse_inc(&get_stats(b)->frwd);
+	sparse_inc(&get_stats(skb)->frwd);
 
-	return Drop(b);
+	return Drop(skb);
 }
 
 
-static Action_SkBuff
-tap(arguments_t args, SkBuff b)
+static ActionSkBuff
+tap(arguments_t args, SkBuff skb)
 {
 	struct net_device *dev = GET_ARG(struct net_device *, args);
 	predicate_t pred_  = GET_ARG_1(predicate_t, args);
 
 	if (dev == NULL) {
                 if (printk_ratelimit())
-                        printk(KERN_INFO "[PFQ/lang] bridge: device error!\n");
-                return Drop(b);
+                        printk(KERN_INFO "[PFQ/lang] tap: device error!\n");
+                return Drop(skb);
 	}
 
-        if (EVAL_PREDICATE(pred_, b))
-		return Pass(b);
+        if (EVAL_PREDICATE(pred_, skb))
+		return Pass(skb);
 
-	pfq_lazy_xmit(b, dev, b.skb->queue_mapping);
+	pfq_lazy_xmit(skb, dev, skb->queue_mapping);
 
-	sparse_inc(&get_stats(b)->frwd);
+	sparse_inc(&get_stats(skb)->frwd);
 
-	return Drop(b);
+	return Drop(skb);
 }
 
 
-static Action_SkBuff
-tee(arguments_t args, SkBuff b)
+static ActionSkBuff
+tee(arguments_t args, SkBuff skb)
 {
 	struct net_device *dev = GET_ARG(struct net_device *, args);
 	predicate_t pred_  = GET_ARG_1(predicate_t, args);
 
 	if (dev == NULL) {
                 if (printk_ratelimit())
-                        printk(KERN_INFO "[PFQ/lang] bridge: device error!\n");
-                return Drop(b);
+                        printk(KERN_INFO "[PFQ/lang] tee: device error!\n");
+                return Drop(skb);
 	}
 
-	pfq_lazy_xmit(b, dev, b.skb->queue_mapping);
+	pfq_lazy_xmit(skb, dev, skb->queue_mapping);
 
-	sparse_inc(&get_stats(b)->frwd);
+	sparse_inc(&get_stats(skb)->frwd);
 
-        if (EVAL_PREDICATE(pred_, b))
-		return Pass(b);
+        if (EVAL_PREDICATE(pred_, skb))
+		return Pass(skb);
 
-	return Drop(b);
+	return Drop(skb);
 }
 
 

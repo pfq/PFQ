@@ -31,6 +31,7 @@
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE OverlappingInstances #-}
 {-# LANGUAGE TypeSynonymInstances #-}
+{-# LANGUAGE AutoDeriveTypeable #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE GADTs #-}
@@ -42,7 +43,6 @@ module Network.PFq.Lang
         -- * Basic types
 
         IPv4(..),
-        NetDevice(..),
         Argument(..),
         Pretty(..),
         Function(..),
@@ -111,12 +111,6 @@ instance Pretty FunPtr where
 -- |Action is a monad modelled after the Identity and implemented at kernel level.
 
 newtype Action a = Identity a
-
-
--- |NetDevice data type.
-
-data NetDevice = Dev String | DevQueue String Int
-                    deriving (Eq, Show, Read)
 
 
 -- | Argument data type.

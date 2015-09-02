@@ -21,18 +21,20 @@
  *
  ****************************************************************/
 
+#include <pragma/diagnostic_push>
+
 #include <linux/kernel.h>
 #include <linux/module.h>
-
 #include <linux/list.h>
 #include <linux/string.h>
 #include <linux/semaphore.h>
 #include <linux/rwsem.h>
 
+#include <pragma/diagnostic_pop>
+
 #include <pf_q-module.h>
 #include <pf_q-group.h>
 #include <pf_q-symtable.h>
-
 #include <pf_q-string-view.h>
 #include <pf_q-signature.h>
 
@@ -172,29 +174,37 @@ pfq_symtable_register_functions(const char *module, struct list_head *category, 
 }
 
 
-static void
+static size_t
 pfq_symtable_pr_devel(const char *hdr, struct list_head *category)
 {
 	struct list_head *pos = NULL;
-	struct symtable_entry *this;
+        size_t ret = 0;
 
         down_read(&symtable_sem);
 
+#ifdef PFQ_DEBUG
 	pr_devel("[PFQ] %s:\n", hdr);
+#endif
 
 	list_for_each(pos, category)
 	{
-		this = list_entry(pos, struct symtable_entry, list);
+#ifdef PFQ_DEBUG
+		struct symtable_entry *this = list_entry(pos, struct symtable_entry, list);
 		pr_devel("      %s %pF\n", this->symbol, this->function);
+#endif
+		ret++;
 	}
 
         up_read(&symtable_sem);
+        return ret;
 }
 
 
 void
 pfq_symtable_init(void)
 {
+	size_t numfun;
+
         pfq_symtable_register_functions(NULL, &pfq_lang_functions, (struct pfq_function_descr *)filter_functions);
         pfq_symtable_register_functions(NULL, &pfq_lang_functions, (struct pfq_function_descr *)forward_functions);
         pfq_symtable_register_functions(NULL, &pfq_lang_functions, (struct pfq_function_descr *)steering_functions);
@@ -207,9 +217,10 @@ pfq_symtable_init(void)
         pfq_symtable_register_functions(NULL, &pfq_lang_functions, (struct pfq_function_descr *)combinator_functions);
         pfq_symtable_register_functions(NULL, &pfq_lang_functions, (struct pfq_function_descr *)property_functions);
 
-	pfq_symtable_pr_devel("pfq-lang functions: ",   &pfq_lang_functions);
+	numfun = pfq_symtable_pr_devel("pfq-lang functions",   &pfq_lang_functions);
 
-	printk(KERN_INFO "[PFQ] symtable initialized.\n");
+	printk(KERN_INFO "[PFQ] symtable initialized (%zu pfq-lang functions loaded).\n",
+	       numfun);
 }
 
 

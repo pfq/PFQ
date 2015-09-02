@@ -1,5 +1,5 @@
-name:                   pfq-counters-hs
-version:                4.4
+name:                   pfq-hcounters
+version:                5.0
 
 license-file:           LICENSE
 author:                 Nicola Bonelli
@@ -8,10 +8,10 @@ category:               Utils
 build-type:             Simple
 cabal-version:          >=1.10
 
-Executable pfq-counters-hs
-    main-is:            pfq-counters-hs.hs
+Executable pfq-hcounters
+    main-is:            pfq-hcounters.hs
     build-depends:      base >= 4.7, 
-                        pfq >= 4.4,
+                        pfq >= 5.0,
                         cmdargs, 
                         regex-posix, 
                         filepath , 

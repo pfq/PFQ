@@ -19,30 +19,40 @@
 --  The full GNU General Public License is included in this distribution in
 --  the file called "COPYING".
 
+
+{-# LANGUAGE TupleSections #-}
+
 import Control.Concurrent
 import Control.Monad
 import Control.Exception as E
 
-import Data.Default
 import Data.Maybe
 
 import System.Log.Logger
 import qualified System.Log.Handler as SLH
 import System.Log.Handler.Syslog
+
+import System.Process
 import System.Posix.Daemon
+import System.Posix.Types
+import System.Posix.Process(getProcessID)
+
 import System.Environment
 import System.Console.CmdArgs
 import System.Directory
+import System.IO.Error
 
 import Network.PFq as Q
 import Network.PFq.Lang
 
+import Foreign.Marshal.Utils
 import Foreign.ForeignPtr
 import Foreign.Ptr
 
-import PFQdaemon
+import PFQDaemon
 import Options
 import Daemon
+import Config
 
 
 main :: IO ()
@@ -65,38 +75,78 @@ main = do
 
     -- getting workdir...
 
-    workdir <-getAppUserDataDirectory "pfqd"
+    workdir <- getAppUserDataDirectory "pfqd"
     setCurrentDirectory workdir
+
+    -- log its pid...
+
+    ps <- pidof =<< getProgName
+
+    when (length ps > 1) $
+        getProcessID >>= \me ->
+            error $ "error: another session is running with pid " ++ show (head $ filter (/= me) ps)
 
     -- rebuild itself
 
     if dont_rebuild opts
         then  do
-            unless (null pfq_config) $ infoM "daemon" $ "Loading configuration for " ++ show (length pfq_config) ++ " groups:"
-            forM_ pfq_config (\(gid,devs,comp) -> infoM "daemon" ("    PFQ group " ++ show gid ++ ": " ++ pretty comp ))
+            unless (null config) $ infoM "daemon" $ "Loading configuration for " ++ show (length config) ++ " groups:"
+            forM_ config (\(Group pol gid devs _ comp) -> infoM "daemon" ("    PFQ group " ++ show gid ++ ": " ++ pretty comp ))
         else  infoM "daemon" "PFQd started!" >> rebuildRestart opts (SLH.close s)
 
     -- run daemon...
 
-    infoM "daemon" "Running daemon..."
+    let negrs = countEgress config
+    infoM "daemon" ("Total number of egress port: " ++ show negrs)
 
     runDetached Nothing DevNull $
-        (Q.openDefault >>= \fp ->
-            withForeignPtr fp $ \q -> runQSetup opts q >> daemon opts (SLH.close s >> Q.close q))
-            `E.catch` (\e -> errorM "daemon" (show (e :: SomeException)) >> daemon opts (SLH.close s))
+        (Q.openNoGroup 1514 4096 4096 >>= \fp ->
+            withForeignPtr fp $ \ctrl -> do
+            fps <- replicateM (countEgress config) (Q.openNoGroup 1514 4096 4096)
+            withMany withForeignPtr fps $ \egrs -> do
+                    runQSetup opts ctrl egrs
+                    foreverDaemon opts (SLH.close s >> Q.close ctrl >> mapM_ Q.close egrs))
+                `E.catch` (\e -> errorM "daemon" (show (e :: SomeException)) >> foreverDaemon opts (SLH.close s))
 
 
-bindDev :: Ptr PFqTag -> Int -> NetDevice ->  IO ()
-bindDev q gid (Dev d) = Q.bindGroup q gid d (-1)
-bindDev q gid (DevQueue d hq) = Q.bindGroup q gid d hq
+countEgress :: [Group] -> Int
+countEgress gs = sum $ map (\Group{ output = out } -> length out) gs
 
 
-runQSetup :: Options -> Ptr PFqTag -> IO ()
-runQSetup opts q =
-    forM_ pfq_config $ \(g, devs, comp) -> do
+bindInput :: Ptr PFqTag -> Int -> NetDevice ->  IO ()
+bindInput q gid (NetDevice d hq _ _) =
+    Q.bindGroup q gid d hq
+
+
+bindOutput :: Ptr PFqTag -> (Int, Policy, NetDevice) ->  IO ()
+bindOutput q (gid, pol, NetDevice d hq w cl) = bindEgress q gid d hq
+    where bindEgress q gid dev queue = do
+            infoM "daemon" ("    egress bind on dev " ++ dev ++ ", port " ++ show queue ++ ", class " ++ show cl)
+            Q.joinGroup q gid cl (mkPolicy pol)
+            Q.egressBind q dev queue
+            Q.setWeight q w
+
+
+runQSetup :: Options -> Ptr PFqTag -> [Ptr PFqTag] -> IO ()
+runQSetup opts ctrl egrs = do
+    infoM "daemon" $ "Running daemon with " ++ show opts
+    infoM "daemon" $ "Loading new configuration for " ++ show (length config) ++ " group(s)..."
+    let egrs' = zip egrs (concatMap (\Group {policy = pol, output = out, gid = gid} ->  map (gid,pol,) out) config)
+    infoM "daemon" $ "Setting up egress port: " ++ show egrs'
+    mapM_ (uncurry bindOutput) egrs'
+    forM_ config $ \(Group pol g ins _ comp) -> do
         let gid = fromIntegral g
-        Q.joinGroup q gid [class_control] policy_shared
-        Q.groupComputation q gid comp
-        forM_ devs $ \dev -> bindDev q gid dev
+        infoM "daemon" $ "Setting up group " ++ show gid ++ " for dev " ++ show ins ++ ". Computation: " ++ pretty comp
+        Q.joinGroup ctrl gid class_control (mkPolicy pol)
+        Q.setGroupComputation ctrl gid comp
+        forM_ ins $ \dev -> bindInput ctrl gid dev
 
+
+mkPolicy :: Policy -> Q.GroupPolicy
+mkPolicy Shared     = Q.policy_shared
+mkPolicy Restricted = Q.policy_restricted
+
+
+pidof :: String -> IO [ProcessID]
+pidof name = liftM (map Prelude.read . words) $ catchIOError (readProcess "/bin/pidof" [name] "") (const $ return [])
 

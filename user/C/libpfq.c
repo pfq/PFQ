@@ -91,13 +91,12 @@ static char *trim_string(char *str)
 }
 
 
-static void split_on(const char *str, const char *sep, void (*cb)(char *))
+static void __split_on(const char *str, const char *sep, void (*cb)(char *))
 {
 	const char * p = str, *q;
 	char *x;
 
 	while((q = strstr(p, sep)) != NULL) {
-
 		x = strndup(p, q-p);
 		cb(x);
 		p = q + strlen(sep);
@@ -110,25 +109,54 @@ static void split_on(const char *str, const char *sep, void (*cb)(char *))
 
 static int with_tokens(const char *str, const char *sep, int (*cb)(char **, int n))
 {
-	char *tokens[64] = { NULL };
+	char *tokens[256] = { NULL };
 	int n = 0, i, ret;
 
-	void push_back_ptr(char *ptr)
+	void push_back(char *ptr)
 	{
-		if (n < 64)
+		if (n < 256)
 			tokens[n++] = ptr;
 	}
 
-	split_on(str, sep, push_back_ptr);
+	__split_on(str, sep, push_back);
 
 	ret = cb(tokens, n);
 
 	for(i = 0; i < n; ++i)
-	{
 		free(tokens[i]);
-	}
 
 	return ret;
+}
+
+
+static char *
+hugepages_mountpoint()
+{
+	FILE *mp;
+	char *line = NULL, *mount_point = NULL;
+	size_t len = 0;
+	ssize_t read;
+
+	mp = fopen("/proc/mounts", "r");
+	if (!mp)
+		return NULL;
+
+	int set_mount_point(char **token, int n)
+	{
+		(void)n; mount_point = strdup(token[1]);
+		return 0;
+	}
+
+	while((read = getline(&line, &len, mp)) != -1) {
+		if (strstr(line, "hugetlbfs")) {
+			with_tokens(line, " ",  &set_mount_point);
+			break;
+		}
+	}
+
+	free (line);
+	fclose (mp);
+	return mount_point;
 }
 
 
@@ -180,36 +208,16 @@ const char *pfq_error(pfq_t *q)
 
 /* costructor */
 
-pfq_t *
-pfq_open_default()
-{
-	return pfq_open_group(Q_CLASS_DEFAULT, Q_POLICY_GROUP_UNDEFINED, 64, 1024, 1024);
-}
-
 
 pfq_t *
-pfq_open(size_t length, size_t slots)
-{
-	return pfq_open_group(Q_CLASS_DEFAULT, Q_POLICY_GROUP_PRIVATE, length, slots, slots);
-}
-
-
-pfq_t *
-pfq_open_(size_t caplen, size_t rx_slots, size_t tx_slots)
+pfq_open(size_t caplen, size_t rx_slots, size_t tx_slots)
 {
 	return pfq_open_group(Q_CLASS_DEFAULT, Q_POLICY_GROUP_PRIVATE, caplen, rx_slots, tx_slots);
 }
 
 
 pfq_t *
-pfq_open_nogroup(size_t caplen, size_t slots)
-{
-	return pfq_open_group(Q_CLASS_DEFAULT, Q_POLICY_GROUP_UNDEFINED, caplen, slots, slots);
-}
-
-
-pfq_t *
-pfq_open_nogroup_(size_t caplen, size_t rx_slots, size_t tx_slots)
+pfq_open_nogroup(size_t caplen, size_t rx_slots, size_t tx_slots)
 {
 	return pfq_open_group(Q_CLASS_DEFAULT, Q_POLICY_GROUP_UNDEFINED, caplen, rx_slots, tx_slots);
 }
@@ -242,7 +250,10 @@ pfq_open_group(unsigned long class_mask, int group_policy, size_t caplen, size_t
         memset(&q->nq, 0, sizeof(q->nq));
 
 	/* get id */
+
+	q->id = PFQ_VERSION_CODE;
 	socklen_t size = sizeof(q->id);
+
 	if (getsockopt(fd, PF_Q, Q_SO_GET_ID, &q->id, &size) == -1) {
 		return __error = "PFQ: get id error", free(q), NULL;
 	}
@@ -316,7 +327,8 @@ int
 pfq_enable(pfq_t *q)
 {
 	size_t tot_mem; socklen_t size = sizeof(tot_mem);
-	char filename[64];
+	char filename[256];
+        char *hugepages, *env;
 
 	if (q->shm_addr != MAP_FAILED &&
 	    q->shm_addr != NULL) {
@@ -327,30 +339,41 @@ pfq_enable(pfq_t *q)
 		return Q_ERROR(q, "PFQ: queue memory error");
 	}
 
-	snprintf(filename, 64, "/dev/hugepages/pfq.%d", q->fd);
+	env = getenv("PFQ_HUGEPAGES");
+	hugepages = hugepages_mountpoint();
 
-	q->hd = open(filename, O_CREAT | O_RDWR, 0755);
-	if (q->hd != -1)
+	if (hugepages &&
+	    !getenv("PFQ_NO_HUGEPAGES") &&
+	    (env == NULL || atoi(env) != 0) )
+	{
+		/* HugePages */
+		fprintf(stdout, "[PFQ] using HugePages...\n");
+
+		snprintf(filename, 256, "%s/pfq.%d", hugepages, q->id);
+		free (hugepages);
+
+		q->hd = open(filename, O_CREAT | O_RDWR, 0755);
+		if (q->hd == -1)
+			return Q_ERROR(q, "PFQ: couldn't open a HugePages descriptor");
+
 		q->shm_addr = mmap(NULL, tot_mem, PROT_READ|PROT_WRITE, MAP_SHARED, q->hd, 0);
+		if (q->shm_addr == MAP_FAILED)
+			return Q_ERROR(q, "PFQ: couldn't mmap HugePages");
 
-	if (q->shm_addr != MAP_FAILED &&
-	    q->shm_addr != NULL) {
-		if(setsockopt(q->fd, PF_Q, Q_SO_ENABLE, &q->shm_addr, sizeof(q->shm_addr)) == -1) {
-			return Q_ERROR(q, "PFQ: socket enable (hugepages)");
-		}
+		if(setsockopt(q->fd, PF_Q, Q_SO_ENABLE, &q->shm_addr, sizeof(q->shm_addr)) == -1)
+			return Q_ERROR(q, "PFQ: socket enable (HugePages)");
 	}
 	else {
+		/* Standard pages (4K) */
+
 		void * null = NULL;
-		if(setsockopt(q->fd, PF_Q, Q_SO_ENABLE, &null, sizeof(null)) == -1) {
+		fprintf(stdout, "[PFQ] using 4k-Pages...\n");
+		if(setsockopt(q->fd, PF_Q, Q_SO_ENABLE, &null, sizeof(null)) == -1)
 			return Q_ERROR(q, "PFQ: socket enable");
-		}
 
 		q->shm_addr = mmap(NULL, tot_mem, PROT_READ|PROT_WRITE, MAP_SHARED, q->fd, 0);
-	}
-
-	if (q->shm_addr == MAP_FAILED ||
-	    q->shm_addr == NULL) {
-		return Q_ERROR(q, "PFQ: socket enable (memory map)");
+		if (q->shm_addr == MAP_FAILED)
+			return Q_ERROR(q, "PFQ: socket enable (memory map)");
 	}
 
 	q->shm_size = tot_mem;
@@ -377,11 +400,14 @@ pfq_disable(pfq_t *q)
 			return Q_ERROR(q, "PFQ: munmap error");
 
 		if (q->hd != -1) {
-			char filename[64];
-			snprintf(filename, 64, "/dev/hugepages/pfq.%d", q->fd);
-			unlink(filename);
+			char filename[256];
+			char *hugepages = hugepages_mountpoint();
+			if (hugepages) {
+				snprintf(filename, 256, "%s/pfq.%d", hugepages, q->fd);
+				unlink(filename);
+				free(hugepages);
+			}
 		}
-
 	}
 
 	q->shm_addr = NULL;
@@ -410,10 +436,9 @@ pfq_is_enabled(pfq_t const *q)
 
 
 int
-pfq_timestamp_enable(pfq_t *q, int value)
+pfq_timestamping_enable(pfq_t *q, int value)
 {
-	int ts = value;
-	if (setsockopt(q->fd, PF_Q, Q_SO_SET_RX_TSTAMP, &ts, sizeof(ts)) == -1) {
+	if (setsockopt(q->fd, PF_Q, Q_SO_SET_RX_TSTAMP, &value, sizeof(value)) == -1) {
 		return Q_ERROR(q, "PFQ: set timestamp mode");
 	}
 	return Q_OK(q);
@@ -421,7 +446,7 @@ pfq_timestamp_enable(pfq_t *q, int value)
 
 
 int
-pfq_is_timestamp_enabled(pfq_t const *q)
+pfq_is_timestamping_enabled(pfq_t const *q)
 {
 	int ret; socklen_t size = sizeof(int);
 
@@ -431,6 +456,27 @@ pfq_is_timestamp_enabled(pfq_t const *q)
 	return Q_VALUE(q, ret);
 }
 
+
+int
+pfq_set_weight(pfq_t *q, int value)
+{
+	if (setsockopt(q->fd, PF_Q, Q_SO_SET_WEIGHT, &value, sizeof(value)) == -1) {
+		return Q_ERROR(q, "PFQ: set socket weight");
+	}
+	return Q_OK(q);
+}
+
+
+int
+pfq_get_weight(pfq_t const *q)
+{
+	int ret; socklen_t size = sizeof(ret);
+
+	if (getsockopt(q->fd, PF_Q, Q_SO_GET_WEIGHT, &ret, &size) == -1) {
+	        return Q_ERROR(q, "PFQ: get socket weight");
+	}
+	return Q_VALUE(q, ret);
+}
 
 int
 pfq_ifindex(pfq_t const *q, const char *dev)
@@ -581,7 +627,7 @@ pfq_bind_group(pfq_t *q, int gid, const char *dev, int queue)
 
 	b.gid      = gid;
 	b.if_index = index;
-	b.hw_queue = queue;
+	b.queue    = queue;
 
 	if (setsockopt(q->fd, PF_Q, Q_SO_GROUP_BIND, &b, sizeof(b)) == -1) {
 		return Q_ERROR(q, "PFQ: bind error");
@@ -619,7 +665,7 @@ pfq_egress_bind(pfq_t *q, const char *dev, int queue)
 
 	b.gid = 0;
 	b.if_index = index;
-	b.hw_queue = queue;
+	b.queue    = queue;
 
         if (setsockopt(q->fd, PF_Q, Q_SO_EGRESS_BIND, &b, sizeof(b)) == -1)
 		return Q_ERROR(q, "PFQ: egress bind error");
@@ -655,7 +701,7 @@ pfq_unbind_group(pfq_t *q, int gid, const char *dev, int queue) /* Q_ANY_QUEUE *
 
 	b.gid = gid;
 	b.if_index = index;
-	b.hw_queue = queue;
+	b.queue    = queue;
 
 	if (setsockopt(q->fd, PF_Q, Q_SO_GROUP_UNBIND, &b, sizeof(b)) == -1) {
 		return Q_ERROR(q, "PFQ: unbind error");
@@ -730,9 +776,7 @@ pfq_set_group_computation_from_string(pfq_t *q, int gid, const char *comp)
 		}
 
 		ret = pfq_set_group_computation(q, gid, prog);
-
 		free(prog);
-
 		return ret;
 	}
 
@@ -1008,7 +1052,7 @@ pfq_bind_tx(pfq_t *q, const char *dev, int queue, int core)
 		return Q_ERROR(q, "PFQ: device not found");
 
 	b.if_index = index;
-	b.hw_queue = queue;
+	b.queue = queue;
 	b.cpu = core;
 
         if (setsockopt(q->fd, PF_Q, Q_SO_TX_BIND, &b, sizeof(b)) == -1)
@@ -1035,7 +1079,7 @@ pfq_unbind_tx(pfq_t *q)
 }
 
 int
-pfq_inject(pfq_t *q, const void *buf, size_t len, uint64_t nsec, int queue)
+pfq_inject(pfq_t *q, const void *buf, size_t len, uint64_t nsec, int copies, int queue)
 {
         struct pfq_shared_queue *sh_queue = (struct pfq_shared_queue *)(q->shm_addr);
         struct pfq_tx_queue *tx;
@@ -1047,12 +1091,7 @@ pfq_inject(pfq_t *q, const void *buf, size_t len, uint64_t nsec, int queue)
 	if (q->shm_addr == NULL)
 		return Q_ERROR(q, "PFQ: inject: socket not enabled");
 
-	if (queue == Q_ANY_QUEUE) {
-		tss = pfq_fold(pfq_symmetric_hash(buf), q->tx_num_bind);
-	}
-	else {
-		tss = pfq_fold(queue,q->tx_num_bind);
-	}
+	tss = pfq_fold((queue == Q_ANY_QUEUE ? pfq_symmetric_hash(buf) : (unsigned int)queue), q->tx_num_bind);
 
         tx = (struct pfq_tx_queue *)&sh_queue->tx[tss];
 
@@ -1070,14 +1109,17 @@ pfq_inject(pfq_t *q, const void *buf, size_t len, uint64_t nsec, int queue)
 	}
 
 	slot_size = sizeof(struct pfq_pkthdr_tx) + ALIGN(len, 8);
+	len = min(len, q->tx_slot_size - sizeof(struct pfq_pkthdr_tx));
 
 	if ((tx->ptr - base_addr + slot_size + sizeof(struct pfq_pkthdr_tx)) < q->tx_queue_size)
 	{
 		struct pfq_pkthdr_tx *hdr;
 
 		hdr = (struct pfq_pkthdr_tx *)tx->ptr;
-		hdr->len = len;
 		hdr->nsec = nsec;
+		hdr->len = len;
+		hdr->copies = copies;
+
 		memcpy(hdr+1, buf, hdr->len);
 
 		tx->ptr += slot_size;
@@ -1102,19 +1144,29 @@ pfq_tx_queue_flush(pfq_t *q, int queue)
 
 
 int
-pfq_tx_async(pfq_t *q, int toggle)
+pfq_tx_async_start(pfq_t *q)
 {
-        if (setsockopt(q->fd, PF_Q, Q_SO_TX_ASYNC, &toggle, sizeof(toggle)) == -1)
-		return Q_ERROR(q, "PFQ: Tx async");
+        if (setsockopt(q->fd, PF_Q, Q_SO_TX_ASYNC_START, NULL, 0) == -1)
+		return Q_ERROR(q, "PFQ: Tx async start");
 
         return Q_OK(q);
 }
 
 
 int
-pfq_send(pfq_t *q, const void *ptr, size_t len)
+pfq_tx_async_stop(pfq_t *q)
 {
-        int rc = pfq_inject(q, ptr, len, 0, Q_ANY_QUEUE);
+        if (setsockopt(q->fd, PF_Q, Q_SO_TX_ASYNC_STOP, NULL, 0) == -1)
+		return Q_ERROR(q, "PFQ: Tx async stop");
+
+        return Q_OK(q);
+}
+
+
+int
+pfq_send(pfq_t *q, const void *ptr, size_t len, int copies)
+{
+        int rc = pfq_inject(q, ptr, len, 0, copies, Q_ANY_QUEUE);
 
 	if(q->tx_num_bind != q->tx_num_async)
 		pfq_tx_queue_flush(q, Q_ANY_QUEUE);
@@ -1124,9 +1176,10 @@ pfq_send(pfq_t *q, const void *ptr, size_t len)
 
 
 int
-pfq_send_async(pfq_t *q, const void *ptr, size_t len, size_t flush_hint)
+pfq_send_async(pfq_t *q, const void *ptr, size_t len, size_t flush_hint, int
+	       copies)
 {
-        int rc = pfq_inject(q, ptr, len, 0, Q_ANY_QUEUE);
+        int rc = pfq_inject(q, ptr, len, 0, copies, Q_ANY_QUEUE);
 
 	if (++q->tx_attempt == flush_hint) {
 
@@ -1141,14 +1194,15 @@ pfq_send_async(pfq_t *q, const void *ptr, size_t len, size_t flush_hint)
 
 
 int
-pfq_send_at(pfq_t *q, const void *ptr, size_t len, struct timespec *ts)
+pfq_send_at(pfq_t *q, const void *ptr, size_t len, struct timespec *ts, int
+	    copies)
 {
 	uint64_t nsec;
         if (q->tx_num_bind != q->tx_num_async)
 		return Q_ERROR(q, "PFQ: send_at not fully async!");
 
 	nsec = (uint64_t)(ts->tv_sec)*1000000000ull + (uint64_t)ts->tv_nsec;
-        return pfq_inject(q, ptr, len, nsec, Q_ANY_QUEUE);
+        return pfq_inject(q, ptr, len, nsec, copies, Q_ANY_QUEUE);
 }
 
 

@@ -29,25 +29,25 @@
 #include "predicate.h"
 
 
-static inline Action_SkBuff
+static inline ActionSkBuff
 forward_drop(arguments_t args, SkBuff b)
 {
         return Drop(b);
 }
 
-static inline Action_SkBuff
+static inline ActionSkBuff
 forward_broadcast(arguments_t args, SkBuff b)
 {
         return Broadcast(b);
 }
 
-static inline Action_SkBuff
+static inline ActionSkBuff
 forward_to_kernel(arguments_t args, SkBuff b)
 {
         return Pass(to_kernel(b));
 }
 
-static inline Action_SkBuff
+static inline ActionSkBuff
 forward_class(arguments_t args, SkBuff b)
 {
         const int c = GET_ARG(int, args);
@@ -61,7 +61,7 @@ forward_class(arguments_t args, SkBuff b)
         return Pass(class(b, (1ULL << c)));
 }
 
-static inline Action_SkBuff
+static inline ActionSkBuff
 forward_deliver(arguments_t args, SkBuff b)
 {
         const int c = GET_ARG(int, args);

@@ -28,7 +28,7 @@
 
 #include "predicate.h"
 
-static inline Action_SkBuff
+static inline ActionSkBuff
 conditional(arguments_t args, SkBuff b)
 {
         predicate_t pred_ = GET_ARG_0(predicate_t, args);
@@ -41,7 +41,7 @@ conditional(arguments_t args, SkBuff b)
 	return EVAL_FUNCTION(else_, b);
 }
 
-static inline Action_SkBuff
+static inline ActionSkBuff
 when(arguments_t args, SkBuff b)
 {
         predicate_t pred_ = GET_ARG_0(predicate_t, args);
@@ -53,7 +53,7 @@ when(arguments_t args, SkBuff b)
 	return Pass(b);
 }
 
-static inline Action_SkBuff
+static inline ActionSkBuff
 unless(arguments_t args, SkBuff b)
 {
         predicate_t pred_ = GET_ARG_0(predicate_t, args);

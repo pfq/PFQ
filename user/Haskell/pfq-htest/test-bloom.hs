@@ -20,14 +20,12 @@
 --  the file called "COPYING".
 
 {-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE OverloadedStrings #-}
 
 module Main where
 
 import Network.PFq as Q
 import Network.PFq.Lang
 import Network.PFq.Default
-import Network.PFq.Experimental
 
 import Foreign
 import System.Environment
@@ -36,11 +34,6 @@ import Control.Monad
 
 
 -- import Debug.Trace
-
-prettyPrinter :: Serializable a => a -> IO ()
-prettyPrinter comp = let (xs,_) = serialize comp 0
-                 in forM_ (zip [0..] xs) $ \(n, x) -> putStrLn $ "    " ++ show n ++ ": " ++ show x
-
 
 dumpPacket :: Q.Packet -> IO ()
 dumpPacket p = do
@@ -69,37 +62,26 @@ recvLoop q = do
 dumper :: String -> IO ()
 dumper dev = do
     putStrLn  $ "dumping " ++ dev  ++ "..."
-    fp <- Q.open 64 4096
+    fp <- Q.open 64 4096 4096
     withForeignPtr fp  $ \q -> do
-        Q.setTimestamp q True
+        Q.timestampingEnable q True
 
         gid <- Q.getGroupId q
         Q.bindGroup q gid dev (-1)
         Q.enable q
 
-        -- let comp = (ip >-> addr "192.168.0.0" 16 >-> inc 0 >-> unit
-        --                 >-> conditional (is_icmp .&&. has_addr "192.168.0.0" 16 .&&. (ip_tot_len .<. 1000) .&&. ip_id `any_bit` 0xffffffff )
-        --                 (inc 1 >-> mark 1 >-> steer_ip >-> when' (has_mark 1) (inc 2))
-        --                 drop')
+        let m = bloomCalcM 2 0.000001
 
-        let comp = no_frag >-> forwardIO "lo" >-> tee "lo" is_icmp >-> dummy_vector [1,2,3] >-> par' icmp udp >-> addr "192.168.0.1" 24 >-> mark 42 >-> when' is_icmp (inc 1) >-> log_packet >-> log_msg "Hello World!"
+        let comp = bloom_filter (fromIntegral m) ["192.168.0.0"] 16 >-> log_packet
 
         putStrLn $ pretty comp
-        prettyPrinter comp
+        Q.setGroupComputation q gid comp
 
-        Q.groupComputation q gid comp
-
-
-        -- Q.vlanFiltersEnabled q gid True
-        -- Q.vlanSetFilterId q gid (0)   -- untagged
-        -- Q.vlanSetFilterId q gid (-1)  -- anyTag
-
-        Q.getRxSlotSize q >>= \o -> putStrLn $ "slot_size: " ++ show o
         recvLoop q
 
 main :: IO ()
 main = do
     args <- getArgs
     case length args of
-        0   -> error "usage: test-read dev"
+        0   -> error "usage: test-bloom dev"
         _   -> dumper (head args)

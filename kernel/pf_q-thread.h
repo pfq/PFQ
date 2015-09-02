@@ -28,13 +28,20 @@
 #ifndef PF_Q_THREAD_H
 #define PF_Q_THREAD_H
 
+#include <pragma/diagnostic_push>
 #include <linux/kthread.h>
+#include <linux/mutex.h>
+#include <pragma/diagnostic_pop>
 
 #include <pf_q-sock.h>
+#include <pf_q-define.h>
+
+extern struct mutex kthread_tx_pool_lock;
+extern struct task_struct *kthread_tx_pool [Q_MAX_CPU];
 
 
 extern int pfq_tx_thread(void *data);
-extern int pfq_tx_wakeup(struct pfq_sock *so, int index);
+extern void pfq_stop_all_tx_threads(struct pfq_sock *so);
 
 struct pfq_thread_data
 {
@@ -48,7 +55,8 @@ void pfq_relax(void)
 {
 	if (need_resched())
 		schedule();
-	cpu_relax();
+	else
+		cpu_relax();
 }
 
 

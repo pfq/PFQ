@@ -24,11 +24,11 @@
 #ifndef PF_Q_MODULE_H
 #define PF_Q_MODULE_H
 
+#include <pragma/diagnostic_push>
+
 #include <linux/kernel.h>
 #include <linux/version.h>
-
 #include <linux/pf_q.h>
-
 #include <linux/skbuff.h>
 #include <linux/ip.h>
 #include <linux/icmp.h>
@@ -36,17 +36,13 @@
 #include <linux/if_ether.h>
 #include <linux/if_vlan.h>
 
+#include <pragma/diagnostic_pop>
+
 #include <pf_q-sparse.h>
 #include <pf_q-monad.h>
+#include <pf_q-maybe.h>
 #include <pf_q-GC.h>
 
-/**** macros ****/
-
-
-#define JUST(x)			((1ULL<<31) | x)
-#define IS_JUST(x)		((1ULL<<31) & x)
-#define FROM_JUST(x)		(~(1ULL<<31) & x)
-#define NOTHING			0
 
 #define ARGS_TYPE(a)		__builtin_choose_expr(__builtin_types_compatible_p(arguments_t, typeof(a)), a, (void)0)
 
@@ -132,7 +128,7 @@ typedef struct pfq_functional *  arguments_t;
 /**** function prototypes ****/
 
 
-typedef Action_SkBuff (*function_ptr_t) (arguments_t, SkBuff);
+typedef ActionSkBuff  (*function_ptr_t) (arguments_t, SkBuff);
 typedef uint64_t      (*property_ptr_t) (arguments_t, SkBuff);
 typedef bool	      (*predicate_ptr_t)(arguments_t, SkBuff);
 typedef int	      (*init_ptr_t)	(arguments_t);

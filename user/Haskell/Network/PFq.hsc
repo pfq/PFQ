@@ -1,4 +1,3 @@
-
 --    Copyright (c) 2011-14, Nicola Bonelli <nicola@pfq.io>
 --    All rights reserved.
 --
@@ -46,6 +45,7 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
 {-# LANGUAGE ImpredicativeTypes #-}
 {-# LANGUAGE BangPatterns #-}
+
 {-# OPTIONS_GHC -fno-warn-unused-binds #-}
 
 module Network.PFq
@@ -60,7 +60,6 @@ module Network.PFq
         Callback,
 
         ClassMask(..),
-
         class_default       ,
         class_user_plane    ,
         class_control_plane ,
@@ -74,15 +73,19 @@ module Network.PFq
         policy_shared,
 
         PFqConstant(..),
+        any_device,
+        any_queue,
+        any_group,
+
+        SocketParams(..),
+        defaultSocketParams,
 
         -- * Socket and Groups
 
         open,
-        open',
-        openDefault,
         openNoGroup,
-        openNoGroup',
         openGroup,
+        openParam,
         close,
 
         enable,
@@ -92,6 +95,9 @@ module Network.PFq
         isEnabled,
 
         -- * Socket control
+
+        joinGroup,
+        leaveGroup,
 
         bind,
         bindGroup,
@@ -103,13 +109,13 @@ module Network.PFq
         bindTxOnCpu,
         unbindTx,
 
-        joinGroup,
-        leaveGroup,
-
         -- * Socket parameters
 
-        setTimestamp,
-        getTimestamp,
+        timestampingEnable,
+        isTimestampingEnabled,
+
+        setWeight,
+        getWeight,
 
         setPromisc,
 
@@ -135,22 +141,28 @@ module Network.PFq
         isPacketReady,
         waitForPacket,
 
-        vlanFiltersEnabled,
-        vlanSetFilterId,
-        vlanResetFilterId,
+        VlanTag(..),
+
+        vlan_untag,
+        vlan_anytag,
+
+        vlanFiltersEnable,
+        vlanSetFilter,
+        vlanResetFilter,
 
         -- * Packet transmission
 
         txQueueFlush,
-        txAsync,
+        txAsyncStart,
+        txAsyncStop,
         send,
         sendAsync,
         sendAt,
 
         -- * PFQ/lang
 
-        groupComputation,
-        groupComputationFromString,
+        setGroupComputation,
+        setGroupComputationFromString,
 
         -- * Statistics and counters
 
@@ -163,6 +175,7 @@ module Network.PFq
 
 import Data.Word
 import Data.Bits
+import Data.Monoid
 import Data.List (intercalate)
 
 import qualified Data.ByteString.Char8 as C
@@ -232,29 +245,64 @@ data Counters = Counters {
 
 
 -- |Descriptor of the packet.
+
 data Packet = Packet {
       pHdr   :: Ptr PktHdr      -- ^ pointer to pfq packet header
    ,  pData  :: Ptr Word8       -- ^ pointer to the packet data
    ,  pIndex :: !Word32         -- ^ index of the queue
    } deriving (Eq, Show)
 
+-- |SocketParams data type.
+--
+-- To be passed as argument to 'openParam' function.
+
+data SocketParams = SocketParams
+    {   parCaplen     :: Int            -- ^ capture len
+    ,   parRxSlots    :: Int            -- ^ socket Rx queue length
+    ,   parTxSlots    :: Int            -- ^ socket Tx queue length
+    ,   parPolicy     :: GroupPolicy    -- ^ default group policy: policy_undefined means no group
+    ,   parClass      :: ClassMask      -- ^ socket class
+    } deriving (Eq, Show)
+
+
+-- |Default values of Socket parameters.
+
+defaultSocketParams :: SocketParams
+defaultSocketParams =
+    SocketParams
+    {   parCaplen  = 1514
+    ,   parRxSlots = 4096
+    ,   parTxSlots = 4096
+    ,   parPolicy  = policy_priv
+    ,   parClass   = class_default
+    }
+
 
 -- |ClassMask type.
 newtype ClassMask = ClassMask { getClassMask :: CULong }
-                        deriving (Eq, Show)
+                        deriving (Eq, Show, Read)
+
+-- |Monoid instance
+instance Monoid ClassMask where
+    mempty = ClassMask 0
+    ClassMask a `mappend` ClassMask b = ClassMask (a .|. b)
+
 
 -- |Group policy type.
 newtype GroupPolicy = GroupPolicy { getGroupPolicy :: CInt }
-                        deriving (Eq, Show)
+                        deriving (Eq, Show, Read)
 
 -- |Async policy type.
 newtype AsyncPolicy = AsyncPolicy { getAsyncPolicy :: CInt }
-                        deriving (Eq, Show)
+                        deriving (Eq, Show, Read)
 
 -- |Generic pfq constant.
 newtype PFqConstant = PFqConstant { getConstant :: Int }
-                        deriving (Eq, Show)
+                        deriving (Eq, Show, Read)
 
+-- |Vlan tag.
+newtype VlanTag = VlanTag { getVid:: CInt }
+                    deriving (Eq, Show, Read)
 
 #{enum ClassMask, ClassMask
     , class_default       = Q_CLASS_DEFAULT
@@ -277,36 +325,35 @@ newtype PFqConstant = PFqConstant { getConstant :: Int }
     , any_device           = Q_ANY_DEVICE
     , any_queue            = Q_ANY_QUEUE
     , any_group            = Q_ANY_GROUP
-    , any_cpu              = Q_ANY_CPU
     , no_kthread           = Q_NO_KTHREAD
     , group_max_counters   = Q_MAX_COUNTERS
     , group_fun_descr_size = sizeof(struct pfq_functional_descr)
 }
 
-
--- | Utility function which folds a list of ClassMask.
-combineClassMasks :: [ClassMask] -> ClassMask
-combineClassMasks = ClassMask . foldr ((.|.) . getClassMask) 0
+#{enum VlanTag, VlanTag
+    , vlan_untag           = Q_VLAN_UNTAG
+    , vlan_anytag          = Q_VLAN_ANYTAG
+}
 
 
 toPktHdr :: Ptr PktHdr
          -> IO PktHdr
 toPktHdr hdr = do
-    _data <- (\h -> peekByteOff h 0)  hdr
-    _sec  <- (\h -> peekByteOff h 8)  hdr
-    _nsec <- (\h -> peekByteOff h 12) hdr
-    _ifid <- (\h -> peekByteOff h 16) hdr
-    _gid  <- (\h -> peekByteOff h 20) hdr
-    _len  <- (\h -> peekByteOff h 24) hdr
-    _cap  <- (\h -> peekByteOff h 26) hdr
-    _tci  <- (\h -> peekByteOff h 28) hdr
-    _hwq  <- (\h -> peekByteOff h 30) hdr
-    _com  <- (\h -> peekByteOff h 31) hdr
+    _data  <- (\h -> peekByteOff h 0)  hdr
+    _sec   <- (\h -> peekByteOff h 8)  hdr
+    _nsec  <- (\h -> peekByteOff h 12) hdr
+    _ifidx <- (\h -> peekByteOff h 16) hdr
+    _gid   <- (\h -> peekByteOff h 20) hdr
+    _len   <- (\h -> peekByteOff h 24) hdr
+    _cap   <- (\h -> peekByteOff h 26) hdr
+    _tci   <- (\h -> peekByteOff h 28) hdr
+    _hwq   <- (\h -> peekByteOff h 30) hdr
+    _com   <- (\h -> peekByteOff h 31) hdr
     return PktHdr {
                     hData     = fromIntegral (_data :: Word64),
                     hSec      = fromIntegral (_sec  :: Word32),
                     hNsec     = fromIntegral (_nsec :: Word32),
-                    hIfIndex  = fromIntegral (_ifid :: CInt),
+                    hIfIndex  = fromIntegral (_ifidx:: CInt),
                     hGid      = fromIntegral (_gid  :: CInt),
                     hLen      = fromIntegral (_len  :: CUShort),
                     hCapLen   = fromIntegral (_cap  :: CUShort),
@@ -357,7 +404,7 @@ getPackets' index cur end slotSize
     | cur == end = return []
     | otherwise  = do
         let h = cur :: Ptr PktHdr
-        let p = cur `plusPtr` 24 :: Ptr Word8
+        let p = cur `plusPtr` #{size struct pfq_pkthdr} :: Ptr Word8
         l <- getPackets' index (cur `plusPtr` slotSize) end slotSize
         return ( Packet h p index : l )
 
@@ -381,22 +428,12 @@ waitForPacket p = do
 
 {-# INLINE waitForPacket #-}
 
--- |Return the 'PktHdr' of the given the 'Packet'.
+-- |Return the 'PktHdr' of the given 'Packet'.
 getPacketHeader :: Packet
           -> IO PktHdr
 getPacketHeader p = waitForPacket p >> toPktHdr (pHdr p)
 
 {-# INLINE getPacketHeader #-}
-
--- |Open the socket.
---
--- The default values are used; no group is joined or created.
--- The newly created socket is suitable for egress sockets.
-
-openDefault :: IO (ForeignPtr PFqTag)
-openDefault = pfq_open_default  >>=
-            throwPFqIf nullPtr (== nullPtr) >>= \ptr ->
-                C.newForeignPtr ptr (void $ pfq_close ptr)
 
 
 -- |Open a socket and create a new private group.
@@ -404,74 +441,65 @@ openDefault = pfq_open_default  >>=
 -- The default values for class mask and group policy are 'class_default' and
 -- 'policy_priv', respectively.
 
-open :: Int  -- ^ caplen
-     -> Int  -- ^ number of Rx slots
-     -> IO (ForeignPtr PFqTag)
-open caplen slots =
-        pfq_open (fromIntegral caplen) (fromIntegral slots) >>=
-            throwPFqIf nullPtr (== nullPtr) >>= \ptr ->
-                C.newForeignPtr ptr (void $ pfq_close ptr)
 
-
--- |Open a socket and join a new private group.
---
--- The default values for class mask and group policy are 'class_default' and
--- 'policy_priv', respectively.
-
-open' :: Int  -- ^ caplen
+open  :: Int  -- ^ caplen
       -> Int  -- ^ number of Rx slots
       -> Int  -- ^ number of Tx slots
       -> IO (ForeignPtr PFqTag)
-open' caplen rx_slots tx_slots =
-        pfq_open_ (fromIntegral caplen) (fromIntegral rx_slots) (fromIntegral tx_slots) >>=
+open  caplen rx_slots tx_slots =
+        pfq_open (fromIntegral caplen) (fromIntegral rx_slots) (fromIntegral tx_slots) >>=
             throwPFqIf nullPtr (== nullPtr) >>= \ptr ->
                 C.newForeignPtr ptr (void $ pfq_close ptr)
 
 
 -- |Open a socket. No group is joined or created.
 --
--- Groups can later be joined by means of the 'joinGroup' function.
+-- Groups can later be joined by means of 'joinGroup' function.
 
-openNoGroup :: Int  -- ^ caplen
-            -> Int  -- ^ number of Rx slots
-            -> IO (ForeignPtr PFqTag)
-openNoGroup caplen slots =
-        pfq_open_nogroup (fromIntegral caplen) (fromIntegral slots) >>=
-            throwPFqIf nullPtr (== nullPtr) >>= \ptr ->
-                C.newForeignPtr ptr (void $ pfq_close ptr)
-
-
--- |Open a socket. No group is joined or created.
---
--- Groups can later be joined by means of the 'joinGroup' function.
-
-openNoGroup' :: Int  -- ^ caplen
+openNoGroup  :: Int  -- ^ caplen
              -> Int  -- ^ number of Rx slots
              -> Int  -- ^ number of Tx slots
              -> IO (ForeignPtr PFqTag)
-openNoGroup' caplen rx_slots tx_slots =
-        pfq_open_nogroup_ (fromIntegral caplen) (fromIntegral rx_slots) (fromIntegral tx_slots) >>=
+openNoGroup  caplen rx_slots tx_slots =
+        pfq_open_nogroup (fromIntegral caplen) (fromIntegral rx_slots) (fromIntegral tx_slots) >>=
             throwPFqIf nullPtr (== nullPtr) >>= \ptr ->
                 C.newForeignPtr ptr (void $ pfq_close ptr)
 
 
--- |Open the socket and create a new group with the specified class and policy.
+-- |Open the socket and create a new group with the specified parameters.
 --
--- All the possible parameters are specifiable.
+-- If group_policy is 'policy_undefined' no gorup is joined or created.
 
-openGroup :: [ClassMask]  -- ^ list of ClassMask (e.g., [class_default])
+openGroup :: ClassMask    -- ^ ClassMask (e.g., class_default `mappend` class_control_plane)
           -> GroupPolicy  -- ^ policy for the group
           -> Int          -- ^ caplen
           -> Int          -- ^ number of Rx slots
           -> Int          -- ^ number of Tx slots
           -> IO (ForeignPtr PFqTag)
 openGroup ms policy caplen rx_slots tx_slots =
-        pfq_open_group (getClassMask $ combineClassMasks ms) (getGroupPolicy policy)
+        pfq_open_group (getClassMask ms) (getGroupPolicy policy)
             (fromIntegral caplen) (fromIntegral rx_slots)
             (fromIntegral tx_slots) >>=
             throwPFqIf nullPtr (== nullPtr) >>= \ptr ->
                 C.newForeignPtr ptr (void $ pfq_close ptr)
 
+
+-- |Open the socket with 'SocketParams'.
+--
+-- Default values are defined as 'defaultSocketParams'.
+
+openParam :: SocketParams  -- ^ parameters
+          -> IO (ForeignPtr PFqTag)
+openParam  SocketParams
+          {   parCaplen     = caplen
+          ,   parRxSlots    = rx_slots
+          ,   parTxSlots    = tx_slots
+          ,   parPolicy     = policy
+          ,   parClass      = cmask
+          } =
+          pfq_open_group (getClassMask cmask) (getGroupPolicy policy) (fromIntegral caplen) (fromIntegral rx_slots) (fromIntegral tx_slots) >>=
+            throwPFqIf nullPtr (== nullPtr) >>= \ptr ->
+                C.newForeignPtr ptr (void $ pfq_close ptr)
 
 -- |Close the socket.
 --
@@ -491,7 +519,7 @@ getId hdl =
     liftM fromIntegral (pfq_id hdl >>= throwPFqIf hdl (== -1))
 
 
--- |Return the group id of the socket.
+-- |Return the group-id of the socket.
 
 getGroupId :: Ptr PFqTag
            -> IO Int
@@ -500,6 +528,11 @@ getGroupId hdl =
 
 
 -- |Enable the socket for packets capture and transmission.
+--
+-- Allocate the shared memory for socket queues, possibly using
+-- the Linux HugePages support.
+-- If the enviroment variable PFQ_HUGEPAGES is set to 0 (or
+-- PFQ_NO_HUGEPAGES is defined) standard 4K pages are used.
 
 enable :: Ptr PFqTag
        -> IO ()
@@ -508,6 +541,8 @@ enable hdl =
 
 
 -- |Disable the socket.
+--
+-- Release the shared memory, stop kernel threads.
 
 disable :: Ptr PFqTag
         -> IO ()
@@ -523,23 +558,39 @@ isEnabled hdl =
         return $ v /= 0
 
 
--- |Set the timestamping for packets.
+-- |Enable/disable timestamping for packets.
 
-setTimestamp :: Ptr PFqTag
-             -> Bool        -- ^ toggle: true is on, false is off.
-             -> IO ()
-setTimestamp hdl toggle = do
+timestampingEnable :: Ptr PFqTag
+                   -> Bool        -- ^ toggle: True is on, False off.
+                   -> IO ()
+timestampingEnable hdl toggle = do
     let value = if toggle then 1 else 0
-    pfq_timestamp_enable hdl value >>= throwPFqIf_ hdl (== -1)
+    pfq_timestamping_enable hdl value >>= throwPFqIf_ hdl (== -1)
 
+-- |Check whether timestamping for packets is enabled.
 
--- |Check whether the timestamping for packets is enabled.
-
-getTimestamp :: Ptr PFqTag
-             -> IO Bool
-getTimestamp hdl =
-    pfq_is_timestamp_enabled hdl >>= throwPFqIf hdl (== -1) >>= \v ->
+isTimestampingEnabled :: Ptr PFqTag
+                      -> IO Bool
+isTimestampingEnabled hdl =
+    pfq_is_timestamping_enabled hdl >>= throwPFqIf hdl (== -1) >>= \v ->
         return $ v /= 0
+
+
+-- |Set the weight of the socket for the steering phase.
+
+setWeight :: Ptr PFqTag
+          -> Int    -- ^ weight of socket (valid range is [1,16))
+          -> IO ()
+setWeight hdl value =
+    pfq_set_weight hdl (fromIntegral value) >>= throwPFqIf_ hdl (== -1)
+
+
+-- |Return the weight of the socket.
+
+getWeight :: Ptr PFqTag
+          -> IO Int
+getWeight hdl =
+    liftM fromIntegral (pfq_get_weight hdl >>= throwPFqIf hdl (== -1))
 
 
 -- |Specify the capture length of packets, in bytes.
@@ -570,10 +621,7 @@ getMaxlen hdl =
     liftM fromIntegral (pfq_get_maxlen hdl >>= throwPFqIf hdl (== -1))
 
 
--- |Specify the length of the Rx queue, in number of packets./
---
--- The number of Rx slots can't exceed the value specified by
--- the max_queue_slot kernel module parameter.
+-- |Specify the length of the Rx queue, in number of packets.
 
 setRxSlots :: Ptr PFqTag
            -> Int   -- ^ number of Rx slots
@@ -600,12 +648,9 @@ getRxSlotSize hdl =
 
 
 -- |Specify the length of the Tx queue, in number of packets.
---
--- The number of Tx slots can't exceed the value specified by
--- the max_queue_slot kernel module parameter.
 
 setTxSlots :: Ptr PFqTag
-           -> Int       -- ^ numer of Tx slots
+           -> Int       -- ^ number of Tx slots
            -> IO ()
 setTxSlots hdl value =
     pfq_set_tx_slots hdl (fromIntegral value)
@@ -618,7 +663,6 @@ getTxSlots :: Ptr PFqTag
            -> IO Int
 getTxSlots hdl =
     liftM fromIntegral (pfq_get_tx_slots hdl >>= throwPFqIf hdl (== -1))
-
 
 
 -- |Bind the main group of the socket to the given device/queue.
@@ -669,28 +713,26 @@ unbindGroup hdl gid name queue =
 
 -- | Set the socket as egress and bind it to the given device/queue.
 --
--- The egress socket will be used within the capture group as forwarder.
+-- The egress socket is be used by groups as network forwarder.
 
 egressBind :: Ptr PFqTag
-       -> String      -- device name
-       -> Int         -- queue index
-       -> IO ()
+           -> String      -- device name
+           -> Int         -- queue index
+           -> IO ()
 egressBind hdl name queue =
     withCString name $ \dev ->
         pfq_egress_bind hdl dev (fromIntegral queue) >>= throwPFqIf_ hdl (== -1)
 
+
 -- | Unset the socket as egress.
 
-egressUnbind :: Ptr PFqTag -> IO ()
+egressUnbind :: Ptr PFqTag
+             -> IO ()
 egressUnbind hdl =
     pfq_egress_unbind hdl >>= throwPFqIf_ hdl (== -1)
 
 
 -- |Bind the socket for transmission to the given device name and queue.
---
---  A socket can be bound up to a maximum number of queues.
---  The core parameter specifies the CPU index where to run a
---  kernel thread (unless no_kthread id is specified).
 
 
 bindTx :: Ptr PFqTag
@@ -704,15 +746,14 @@ bindTx hdl name queue =
 
 -- |Bind the socket for transmission to the given device name and queue.
 --
---  A socket can be bound up to a maximum number of queues.
---  The core parameter specifies the CPU index where to run a
---  kernel thread.
+--  The cpu parameter specifies the CPU index where to run the
+--  kernel thread (no_kthread constant makes it equivalent to bindTx)
 
 bindTxOnCpu :: Ptr PFqTag
-       -> String      -- device name
-       -> Int         -- hw queue index
-       -> Int         -- cpu number
-       -> IO ()
+            -> String      -- device name
+            -> Int         -- hw queue index
+            -> Int         -- cpu number
+            -> IO ()
 bindTxOnCpu hdl name queue cpu =
     withCString name $ \dev ->
         pfq_bind_tx hdl dev (fromIntegral queue) (fromIntegral cpu) >>= throwPFqIf_ hdl (== -1)
@@ -723,7 +764,7 @@ bindTxOnCpu hdl name queue cpu =
 -- Unbind the socket for transmission from any device/queue.
 
 unbindTx :: Ptr PFqTag
-       -> IO ()
+         -> IO ()
 unbindTx hdl =
     pfq_unbind_tx hdl >>= throwPFqIf_ hdl (== -1)
 
@@ -732,11 +773,11 @@ unbindTx hdl =
 
 joinGroup :: Ptr PFqTag
           -> Int            -- ^ group id
-          -> [ClassMask]    -- ^ class mask list
+          -> ClassMask      -- ^ class mask
           -> GroupPolicy    -- ^ group policy
           -> IO ()
 joinGroup hdl gid ms pol =
-    pfq_join_group hdl (fromIntegral gid) (getClassMask $ combineClassMasks ms) (getGroupPolicy pol)
+    pfq_join_group hdl (fromIntegral gid) (getClassMask ms) (getGroupPolicy pol)
         >>= throwPFqIf_ hdl (== -1)
 
 
@@ -755,7 +796,7 @@ leaveGroup hdl gid =
 
 setPromisc :: Ptr PFqTag
            -> String    -- ^ device name
-           -> Bool      -- ^ toggle: true is on, false is off.
+           -> Bool      -- ^ toggle: True is on, False off.
            -> IO ()
 setPromisc hdl name value =
     withCString name $ \dev ->
@@ -765,13 +806,15 @@ setPromisc hdl name value =
 -- |Read packets in place.
 --
 -- Wait for packets and return a 'NetQueue' descriptor.
--- The timeout is specified in microseconds.
+--
+-- The memory of the socket queue is reset at the next read.
+-- A timeout is specified in microseconds.
 
 read :: Ptr PFqTag
      -> Int         -- ^ timeout (msec)
      -> IO NetQueue
 read hdl msec =
-    allocaBytes 32 $ \queue -> do
+    allocaBytes #{size struct pfq_net_queue} $ \queue -> do
        pfq_read hdl queue (fromIntegral msec) >>= throwPFqIf_ hdl (== -1)
        _ptr <- (\h -> peekByteOff h 0)  queue
        _len <- (\h -> peekByteOff h (sizeOf _ptr))  queue
@@ -784,7 +827,6 @@ read hdl msec =
                          qSlotSize  = slotSize,
                          qIndex     = fromIntegral (_cid  :: CUInt)
                        }
-
 
 -- |Collect and process packets.
 --
@@ -806,37 +848,38 @@ makeCallback :: Callback
 makeCallback fun = make_callback $ \_ hdr ptr -> toPktHdr hdr >>= flip fun ptr
 
 
+-- |Enable/disable vlan filtering for the given group.
 
--- |Set the vlan filtering for the given group.
-
-vlanFiltersEnabled :: Ptr PFqTag
-                   -> Int        -- ^ group id
-                   -> Bool       -- ^ toggle: true is on, false is off.
-                   -> IO ()
-vlanFiltersEnabled hdl gid value =
+vlanFiltersEnable :: Ptr PFqTag
+                  -> Int        -- ^ group id
+                  -> Bool       -- ^ toggle: True is on, False off.
+                  -> IO ()
+vlanFiltersEnable hdl gid value =
     pfq_vlan_filters_enable hdl (fromIntegral gid) (fromIntegral $ if value then 1 else 0 :: Int)
         >>= throwPFqIf_ hdl (== -1)
 
 
--- |Specify a capture filter for the given group and vlan id.
+-- |Specify a capture vlan filter for the given group.
 --
+-- In addition to standard vlan ids, valid ids are also 'vlan_untag' and 'vlan_anytag'.
 
-vlanSetFilterId :: Ptr PFqTag
-                -> Int        -- ^ group id
-                -> Int        -- ^ vlan id
-                -> IO ()
-vlanSetFilterId hdl gid vid =
-    pfq_vlan_set_filter hdl (fromIntegral gid) (fromIntegral vid)
+vlanSetFilter :: Ptr PFqTag
+              -> Int        -- ^ group id
+              -> VlanTag    -- ^ vlan id
+              -> IO ()
+vlanSetFilter hdl gid vid =
+    pfq_vlan_set_filter hdl (fromIntegral gid) (fromIntegral $ getVid vid)
         >>= throwPFqIf_ hdl (== -1)
 
--- |Reset the vlan filter.
 
-vlanResetFilterId :: Ptr PFqTag
-                  -> Int        -- ^ group id
-                  -> Int        -- ^ vlan id
-                  -> IO ()
-vlanResetFilterId hdl gid vid =
-    pfq_vlan_reset_filter hdl (fromIntegral gid) (fromIntegral vid)
+-- |Reset the vlan filter for the given group.
+
+vlanResetFilter :: Ptr PFqTag
+                -> Int        -- ^ group id
+                -> VlanTag    -- ^ vlan id
+                -> IO ()
+vlanResetFilter hdl gid vid =
+    pfq_vlan_reset_filter hdl (fromIntegral gid) (fromIntegral $ getVid vid)
         >>= throwPFqIf_ hdl (== -1)
 
 
@@ -871,15 +914,15 @@ makeStats p = do
     _disc <- (\ptr -> peekByteOff ptr (sizeOf (undefined :: CLong) * 4)) p
     _frwd <- (\ptr -> peekByteOff ptr (sizeOf (undefined :: CLong) * 5)) p
     _kern <- (\ptr -> peekByteOff ptr (sizeOf (undefined :: CLong) * 6)) p
-    return Statistics {
-                            sReceived = fromIntegral (_recv :: CULong),
-                            sLost     = fromIntegral (_lost :: CULong),
-                            sDropped  = fromIntegral (_drop :: CULong),
-                            sSent     = fromIntegral (_sent :: CULong),
-                            sDiscard  = fromIntegral (_disc :: CULong),
-                            sForward  = fromIntegral (_frwd :: CULong),
-                            sKernel   = fromIntegral (_kern :: CULong)
-                      }
+    return Statistics
+           { sReceived = fromIntegral (_recv :: CULong)
+           , sLost     = fromIntegral (_lost :: CULong)
+           , sDropped  = fromIntegral (_drop :: CULong)
+           , sSent     = fromIntegral (_sent :: CULong)
+           , sDiscard  = fromIntegral (_disc :: CULong)
+           , sForward  = fromIntegral (_frwd :: CULong)
+           , sKernel   = fromIntegral (_kern :: CULong)
+           }
 
 -- |Return the set of counters of the given group.
 
@@ -901,7 +944,6 @@ makeCounters ptr = do
 
 padArguments :: Int -> [Argument] -> [Argument]
 padArguments n xs = xs ++ replicate (n - length xs) ArgNull
-
 
 withSingleArg :: Argument
               -> ((IntPtr, CSize, CSize) -> IO a)
@@ -926,11 +968,9 @@ withFunDescr (FunctionDescr symbol args _ next) callback =
         withMany withSingleArg (padArguments 8 args) $ \marArgs ->
             callback (symbol', marArgs, fromIntegral next)
 
-
 fst3 (x,_,_) = x
 snd3 (_,x,_) = x
 trd3 (_,_,x) = x
-
 
 data StorableFunDescr = StorableFunDescr CString [(IntPtr,CSize,CSize)] CSize
 
@@ -954,12 +994,12 @@ instance Storable StorableFunDescr where
 -- The functional computation is specified as a PFQ/Lang expression.
 --
 
-groupComputation :: Ptr PFqTag
-                 -> Int                                     -- ^ group id
-                 -> Function (SkBuff -> Action SkBuff)      -- ^ expression (PFq-Lang)
-                 -> IO ()
+setGroupComputation :: Ptr PFqTag
+                    -> Int                                     -- ^ group id
+                    -> Function (SkBuff -> Action SkBuff)      -- ^ expression (PFq-Lang)
+                    -> IO ()
 
-groupComputation hdl gid comp = do
+setGroupComputation hdl gid comp = do
     let (descrList, _) = serialize comp 0
     allocaBytes (sizeOf (undefined :: CSize) * 2 + getConstant group_fun_descr_size * length descrList) $ \ ptr -> do
         pokeByteOff ptr 0 (fromIntegral (length descrList) :: CSize)     -- size
@@ -974,22 +1014,22 @@ groupComputation hdl gid comp = do
 
 -- |Specify a simple functional computation for the given group, from String.
 --
--- This function is limited to simple PFQ/lang functional computations.
--- Only the composition of monadic functions without arguments are supported.
+-- This ability is limited to simple PFQ/lang functional computations.
+-- Only the composition of monadic functions without arguments are currently supported.
 
-groupComputationFromString :: Ptr PFqTag
-                           -> Int       -- ^ group id
-                           -> String    -- ^ simple expression (PFq-Lang)
-                           -> IO ()
+setGroupComputationFromString :: Ptr PFqTag
+                              -> Int       -- ^ group id
+                              -> String    -- ^ simple expression (PFq-Lang)
+                              -> IO ()
 
-groupComputationFromString hdl gid comp =
+setGroupComputationFromString hdl gid comp =
     withCString comp $ \ptr ->
             pfq_set_group_computation_from_string hdl (fromIntegral gid) ptr >>= throwPFqIf_ hdl (== -1)
 
 
 -- |Flush the Tx queue(s)
 --
--- Transmit the packets in the queues associated with the socket.
+-- Transmit the packets in the Tx queues of the socket.
 
 txQueueFlush :: Ptr PFqTag
              -> Int     -- queue index (any_queue is valid)
@@ -998,15 +1038,23 @@ txQueueFlush hdl queue =
     pfq_tx_queue_flush hdl (fromIntegral queue) >>= throwPFqIf_ hdl (== -1)
 
 
--- |Start/Stop kernel threads.
+-- |Start kernel threads.
 --
--- Start/Stop kernel threads associated with Tx queues.
+-- Start kernel threads associated with the Tx queues of the socket.
 
-txAsync :: Ptr PFqTag
-        -> Bool
-        -> IO ()
-txAsync hdl toggle =
-    pfq_tx_async hdl (fromIntegral (if toggle then 1 else 0 :: Integer) ) >>= throwPFqIf_ hdl (== -1)
+txAsyncStart :: Ptr PFqTag
+             -> IO ()
+txAsyncStart hdl =
+    pfq_tx_async_start hdl >>= throwPFqIf_ hdl (== -1)
+
+-- |Stop kernel threads.
+--
+-- Stop kernel threads associated with the Tx queues of the socket.
+
+txAsyncStop :: Ptr PFqTag
+            -> IO ()
+txAsyncStop hdl =
+    pfq_tx_async_stop hdl >>= throwPFqIf_ hdl (== -1)
 
 
 -- |Store the packet and transmit the packets in the queue.
@@ -1014,51 +1062,52 @@ txAsync hdl toggle =
 -- The queue is flushed (if required) and the transmission takes place.
 
 send :: Ptr PFqTag
-          -> C.ByteString  -- ^ bytes of packet
-          -> IO Bool
-send hdl xs =
+     -> C.ByteString  -- ^ bytes of packet
+     -> Int           -- ^ copies
+     -> IO Bool
+send hdl xs copies =
     unsafeUseAsCStringLen xs $ \(p, l) ->
-        liftM (> 0) $ pfq_send hdl p (fromIntegral l)
+        liftM (> 0) $ pfq_send hdl p (fromIntegral l) (fromIntegral copies)
 
 
 -- |Store the packet and transmit the packets in the queue, asynchronously.
 --
--- The transmission is invoked every @flush_hint packets.
--- When kernel threads are in use, @flush_hint is ignored.
+-- The transmission is invoked every 'flush_hint' packets.
+-- When TX kernel threads are in use, 'flush_hint' is ignored.
 
 sendAsync :: Ptr PFqTag
           -> C.ByteString  -- ^ bytes of packet
           -> Int           -- ^ flush hint
+          -> Int           -- ^ copies
           -> IO Bool
-sendAsync hdl xs fh =
+sendAsync hdl xs fh copies =
     unsafeUseAsCStringLen xs $ \(p, l) ->
-        liftM (> 0) $ pfq_send_async hdl p (fromIntegral l) (fromIntegral fh)
+        liftM (> 0) $ pfq_send_async hdl p (fromIntegral l) (fromIntegral fh) (fromIntegral copies)
 
 
 -- |Store the packet and transmit it.
 --
--- The transmission takes place at the given TimeSpec time.
+-- The transmission takes place asynchronously at the given TimeSpec time.
 
 sendAt :: Ptr PFqTag
-          -> C.ByteString  -- ^ bytes of packet
-          -> TimeSpec      -- ^ active timestamp
-          -> IO Bool
-sendAt hdl xs ts =
+       -> C.ByteString  -- ^ bytes of packet
+       -> TimeSpec      -- ^ active timestamp
+       -> Int           -- ^ copies
+       -> IO Bool
+sendAt hdl xs ts copies =
     unsafeUseAsCStringLen xs $ \(p, l) ->
         liftM (> 0) $ pfq_inject hdl p
                         (fromIntegral l)
                         (fromIntegral (fromIntegral (sec ts) * (1000000000 :: Integer) + fromIntegral (nsec ts)))
+                        (fromIntegral copies)
                         (fromIntegral $ getConstant any_queue)
 
 
 -- C functions from libpfq
 --
 
-foreign import ccall unsafe pfq_open_default        :: IO (Ptr PFqTag)
-foreign import ccall unsafe pfq_open                :: CSize -> CSize -> IO (Ptr PFqTag)
-foreign import ccall unsafe pfq_open_               :: CSize -> CSize -> CSize -> IO (Ptr PFqTag)
-foreign import ccall unsafe pfq_open_nogroup        :: CSize -> CSize -> IO (Ptr PFqTag)
-foreign import ccall unsafe pfq_open_nogroup_       :: CSize -> CSize -> CSize -> IO (Ptr PFqTag)
+foreign import ccall unsafe pfq_open                :: CSize -> CSize -> CSize -> IO (Ptr PFqTag)
+foreign import ccall unsafe pfq_open_nogroup        :: CSize -> CSize -> CSize -> IO (Ptr PFqTag)
 foreign import ccall unsafe pfq_open_group          :: CULong -> CInt  -> CSize -> CSize -> CSize -> IO (Ptr PFqTag)
 
 foreign import ccall unsafe pfq_close               :: Ptr PFqTag -> IO CInt
@@ -1072,11 +1121,14 @@ foreign import ccall unsafe pfq_disable             :: Ptr PFqTag -> IO CInt
 foreign import ccall unsafe pfq_is_enabled          :: Ptr PFqTag -> IO CInt
 
 foreign import ccall unsafe pfq_set_promisc         :: Ptr PFqTag -> CString -> CInt -> IO CInt
-foreign import ccall unsafe pfq_timestamp_enable    :: Ptr PFqTag -> CInt -> IO CInt
-foreign import ccall unsafe pfq_is_timestamp_enabled :: Ptr PFqTag -> IO CInt
+foreign import ccall unsafe pfq_timestamping_enable     :: Ptr PFqTag -> CInt -> IO CInt
+foreign import ccall unsafe pfq_is_timestamping_enabled :: Ptr PFqTag -> IO CInt
 
 foreign import ccall unsafe pfq_set_caplen          :: Ptr PFqTag -> CSize -> IO CInt
 foreign import ccall unsafe pfq_get_caplen          :: Ptr PFqTag -> IO CPtrdiff
+
+foreign import ccall unsafe pfq_set_weight          :: Ptr PFqTag -> CInt -> IO CInt
+foreign import ccall unsafe pfq_get_weight          :: Ptr PFqTag -> IO CInt
 
 foreign import ccall unsafe pfq_get_maxlen          :: Ptr PFqTag -> IO CPtrdiff
 
@@ -1118,12 +1170,13 @@ foreign import ccall unsafe pfq_vlan_reset_filter   :: Ptr PFqTag -> CInt -> CIn
 foreign import ccall unsafe pfq_bind_tx             :: Ptr PFqTag -> CString -> CInt -> CInt -> IO CInt
 foreign import ccall unsafe pfq_unbind_tx           :: Ptr PFqTag -> IO CInt
 
-foreign import ccall unsafe pfq_send                :: Ptr PFqTag -> Ptr CChar -> CSize -> IO CInt
-foreign import ccall unsafe pfq_send_async          :: Ptr PFqTag -> Ptr CChar -> CSize -> CSize -> IO CInt
-foreign import ccall unsafe pfq_send_at             :: Ptr PFqTag -> Ptr CChar -> CSize -> CSize -> IO CInt
+foreign import ccall unsafe pfq_send                :: Ptr PFqTag -> Ptr CChar -> CSize -> CInt  -> IO CInt
+foreign import ccall unsafe pfq_send_async          :: Ptr PFqTag -> Ptr CChar -> CSize -> CSize -> CInt -> IO CInt
+foreign import ccall unsafe pfq_send_at             :: Ptr PFqTag -> Ptr CChar -> CSize -> CSize -> CInt -> IO CInt
 
-foreign import ccall unsafe pfq_inject              :: Ptr PFqTag -> Ptr CChar -> CSize -> CULLong -> CInt -> IO CInt
+foreign import ccall unsafe pfq_inject              :: Ptr PFqTag -> Ptr CChar -> CSize -> CULLong -> CInt -> CInt -> IO CInt
 foreign import ccall unsafe pfq_tx_queue_flush      :: Ptr PFqTag -> CInt -> IO CInt
-foreign import ccall unsafe pfq_tx_async            :: Ptr PFqTag -> CInt -> IO CInt
+foreign import ccall unsafe pfq_tx_async_start      :: Ptr PFqTag -> IO CInt
+foreign import ccall unsafe pfq_tx_async_stop       :: Ptr PFqTag -> IO CInt
 
 

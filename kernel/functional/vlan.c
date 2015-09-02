@@ -21,26 +21,30 @@
  *
  ****************************************************************/
 
+#include <pragma/diagnostic_push>
+
 #include <linux/kernel.h>
 #include <linux/module.h>
+
+#include <pragma/diagnostic_pop>
 
 #include <pf_q-module.h>
 
 
 static bool
-vlan_id(arguments_t args, SkBuff b)
+vlan_id(arguments_t args, SkBuff skb)
 {
 	char *mem = GET_ARG_1(char *, args);
-	return mem[ b.skb->vlan_tci & VLAN_VID_MASK ];
+	return mem[ skb->vlan_tci & VLAN_VID_MASK ];
 }
 
 
-static Action_SkBuff
-vlan_id_filter(arguments_t args, SkBuff b)
+static ActionSkBuff
+vlan_id_filter(arguments_t args, SkBuff skb)
 {
-	if (vlan_id(args, b))
-		return Pass(b);
-	return Drop(b);
+	if (vlan_id(args, skb))
+		return Pass(skb);
+	return Drop(skb);
 }
 
 

@@ -96,6 +96,23 @@ PFQ 4.3
 
 PFQ 4.4
 -------
- * Improved stability in packet transmission.
+ * Improved stability of packet transmission.
  * Bug fixes.
+
+
+PFQ 5.0
+-------
+ * Steering enhanced through the use of weights.
+ * General improvements of user-space tools.
+ * HugePages support enabled by default. 
+ * New binding format for user tools.
+ * Packet transmission improved.
+ * API simplified and clean.
+ * Stats of memory pool improved.
+ * Support for i40e driver added.
+ * New declarative syntax for pfqd config.
+ * Performance improvements.
+ * Regressions fixed.
+ * Code cleanup.
+ * Bugs fixed.
 

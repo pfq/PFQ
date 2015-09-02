@@ -24,12 +24,15 @@
 #ifndef PF_Q_SHMEM_H
 #define PF_Q_SHMEM_H
 
+#include <pragma/diagnostic_push>
 #include <linux/vmalloc.h>
 #include <linux/net.h>
+#include <pragma/diagnostic_pop>
 
 struct pfq_sock;
 
-enum pfq_shmem_kind {
+enum pfq_shmem_kind
+{
 	pfq_shmem_virt,
 	pfq_shmem_user
 };

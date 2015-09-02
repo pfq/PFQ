@@ -24,53 +24,46 @@
 #ifndef PF_Q_FUNCTIONAL_BLOOM_H
 #define PF_Q_FUNCTIONAL_BLOOM_H
 
+
 #include <pf_q-module.h>
 
-#include <asm/byteorder.h>
 
 /* macros to test/set bits in bitwise array */
 
 
-#define BF_TEST(mem, x)  (mem[(x)>>3] &  (1<<((x) & 7)))
-#define BF_SET(mem, x)   (mem[(x)>>3] |= (1<<((x) & 7)))
+#define BF_TEST(mem, x)  (mem[(x) >> 3] &  (1<<((x) & 7)))
+#define BF_SET(mem, x)   (mem[(x) >> 3] |= (1<<((x) & 7)))
 
+#define A(value)   (((value) & 0xff000000) >> 24)
+#define B(value)   (((value) & 0x00ff0000) >> 16)
+#define C(value)   (((value) & 0x0000ff00) >>  8)
+#define D(value)   ( (value) & 0x000000ff)
 
-#ifdef __LITTLE_ENDIAN
-#define A(ip)	((ip & 0xff000000) >> 24)
-#define B(ip)   ((ip & 0x00ff0000) >> 16)
-#define C(ip)   ((ip & 0x0000ff00) >>  8)
-#define D(ip)   ( ip & 0x000000ff)
-#else
-#define D(ip)	((ip & 0xff000000) >> 24)
-#define C(ip)   ((ip & 0x00ff0000) >> 16)
-#define B(ip)   ((ip & 0x0000ff00) >>  8)
-#define A(ip)   ( ip & 0x000000ff)
-#endif
 
 static inline uint32_t mix(uint32_t a, uint32_t b, uint32_t c)
 {
-	return ((a ^ b ^ c) & 0xff) | ((b ^ c) & 0xff) << 8 | (c & 0xff) << 16;
+	return ((a ^ b ^ c) & 0xff) | ((b ^ c) & 0xff) << 8 | ((c) & 0xff) << 16;
 }
 
 
-static inline uint32_t hfun1(uint32_t ip_)
+static inline uint32_t hfun1(uint32_t value)
 {
-	return mix(A(ip_), B(ip_), C(ip_));
+	return mix(A(value), B(value), C(value));
 }
 
-static inline uint32_t hfun2(uint32_t ip_)
+static inline uint32_t hfun2(uint32_t value)
 {
-	return mix(A(ip_), B(ip_), D(ip_));
+	return mix(A(value), B(value), D(value));
 }
 
-static inline uint32_t hfun3(uint32_t ip_)
+static inline uint32_t hfun3(uint32_t value)
 {
-	return mix(A(ip_), C(ip_), D(ip_));
+	return mix(A(value), C(value), D(value));
 }
 
-static inline uint32_t hfun4(uint32_t ip_)
+static inline uint32_t hfun4(uint32_t value)
 {
-	return mix(B(ip_), C(ip_), D(ip_));
+	return mix(B(value), C(value), D(value));
 }
 
 /*

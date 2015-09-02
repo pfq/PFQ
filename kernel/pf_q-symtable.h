@@ -24,11 +24,15 @@
 #ifndef PF_Q_SYMTABLE_H
 #define PF_Q_SYMTBALE_H
 
+#include <pragma/diagnostic_push>
+
 #include <linux/skbuff.h>
 #include <linux/list.h>
 #include <linux/semaphore.h>
 #include <linux/rwsem.h>
 #include <linux/pf_q.h>
+
+#include <pragma/diagnostic_pop>
 
 #include <pf_q-module.h>
 

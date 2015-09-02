@@ -26,7 +26,7 @@
 
 #include <pf_q-module.h>
 
-static inline Action_SkBuff
+static inline ActionSkBuff
 mark(arguments_t args, SkBuff b)
 {
 	const uint32_t value = GET_ARG(uint32_t, args);

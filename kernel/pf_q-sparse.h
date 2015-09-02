@@ -25,15 +25,27 @@
 #ifndef PF_Q_SPARSE_H
 #define PF_Q_SPARSE_H
 
+#include <pragma/diagnostic_push>
 #include <linux/smp.h>  /* get_cpu */
 #include <asm/local.h>
+#include <pragma/diagnostic_pop>
 
-#include <pf_q-macro.h>
+#include <pf_q-define.h>
+
+#ifdef PFQ_USE_EXTENDED_PROC
+#define SPARSE_INC(x)	(sparse_inc(x))
+#define SPARSE_DEC(x)	(sparse_dec(x))
+#define SPARSE_ADD(x,v)	(sparse_add(x,v))
+#define SPARSE_SUB(x,v)	(sparse_sub(x,v))
+#else
+#define SPARSE_INC(x)	((void)x)
+#define SPARSE_DEC(x)	((void)x)
+#define SPARSE_ADD(x,v)	((void)x)
+#define SPARSE_SUB(x,v)	((void)x)
+#endif
 
 
 typedef struct { local_t value; } ____cacheline_aligned counter_t;
-
-
 typedef struct { counter_t ctx[Q_MAX_CPU]; } sparse_counter_t;
 
 

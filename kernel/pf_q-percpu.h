@@ -24,36 +24,71 @@
 #ifndef PF_Q_PERCPU_H
 #define PF_Q_PERCPU_H
 
+#include <pragma/diagnostic_push>
+
 #include <linux/percpu.h>
 #include <linux/ktime.h>
 #include <linux/timer.h>
+#include <linux/printk.h>
+
+#include <pragma/diagnostic_pop>
 
 #include <pf_q-skbuff-pool.h>
-#include <pf_q-macro.h>
+#include <pf_q-define.h>
 #include <pf_q-GC.h>
 
+
 int pfq_percpu_init(void);
-int pfq_percpu_flush(void);
+int pfq_percpu_fini(void);
+int pfq_percpu_alloc(void);
+void pfq_percpu_free(void);
 
-/* per-cpu data... */
 
-struct local_data
+struct pfq_percpu_sock
 {
         unsigned long           eligible_mask;
-        unsigned long           sock_mask [Q_MAX_ID];
+	unsigned long           mask[Q_MAX_SOCK_MASK];
+        int                     cnt;
 
-        int                     sock_cnt;
+} __cacheline_aligned;
 
-	struct gc_data		gc;		/* garbage collector */
-	ktime_t			last_ts;	/* timestamp of the last packet */
 
-        atomic_t                enable_skb_pool;
+struct pfq_percpu_pool
+{
+        atomic_t                enable;
 
-	struct timer_list	timer;
-
-        struct pfq_sk_buff_pool tx_pool;
-        struct pfq_sk_buff_pool rx_pool;
+	struct pfq_skb_pool	tx_pool;
+        struct pfq_skb_pool	rx_pool;
 
 } ____cacheline_aligned;
+
+
+struct pfq_percpu_data
+{
+	struct GC_data		*GC;
+	ktime_t			last_rx;
+	struct timer_list	timer;
+
+} ____cacheline_aligned;
+
+
+extern struct pfq_percpu_data __percpu * percpu_data;
+extern struct pfq_percpu_sock __percpu * percpu_sock;
+extern struct pfq_percpu_pool __percpu * percpu_pool;
+
+
+static inline void
+pfq_invalidate_percpu_eligible_mask(pfq_id_t id)
+{
+	int cpu;
+
+	for_each_online_cpu(cpu)
+	{
+		struct pfq_percpu_sock * sock = per_cpu_ptr(percpu_sock, cpu);
+		sock->eligible_mask = 0; /* TODO should be atomic */
+		sock->cnt = 0;
+	}
+}
+
 
 #endif /* PF_Q_PERCPU_H */

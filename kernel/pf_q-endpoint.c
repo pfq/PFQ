@@ -21,10 +21,14 @@
  *
  ****************************************************************/
 
+#include <pragma/diagnostic_push>
+
 #include <linux/kernel.h>
 #include <linux/version.h>
 #include <linux/module.h>
 #include <linux/skbuff.h>
+
+#include <pragma/diagnostic_pop>
 
 #include <pf_q-shared-queue.h>
 #include <pf_q-sparse.h>
@@ -32,8 +36,33 @@
 #include <pf_q-endpoint.h>
 
 
-static inline
-size_t copy_to_user_skbs(struct pfq_rx_opt *ro, struct pfq_skbuff_batch *skbs,
+void
+add_dev_to_endpoints(struct net_device *dev, struct pfq_endpoint_info *ts)
+{
+	size_t n = 0;
+
+	for(; n < ts->num; ++n)
+	{
+		if (dev == ts->dev[n]) {
+			ts->cnt[n]++;
+			ts->cnt_total++;
+			return;
+		}
+	}
+
+	if (n < Q_GC_LOG_QUEUE_LEN) {
+		ts->dev[n] = dev;
+		ts->cnt[n] = 1;
+		ts->cnt_total++;
+		ts->num++;
+	}
+	else
+		pr_devel("[PFQ] GC: forward pool exhausted!\n");
+}
+
+
+static
+size_t copy_to_user_skbs(struct pfq_rx_opt *ro, struct pfq_skbuff_queue __GC *skbs,
 			 unsigned long long mask, int cpu, pfq_gid_t gid)
 {
         int len = pfq_popcount(mask);
@@ -59,8 +88,8 @@ size_t copy_to_user_skbs(struct pfq_rx_opt *ro, struct pfq_skbuff_batch *skbs,
 }
 
 
-static inline
-size_t copy_to_dev_buffs(struct pfq_sock *so, struct gc_queue_buff *buffs,
+static
+size_t copy_to_dev_skbs(struct pfq_sock *so, struct pfq_skbuff_queue __GC *skbs,
 			 unsigned long long mask, int cpu, pfq_gid_t gid)
 {
 	struct net_device *dev;
@@ -76,7 +105,7 @@ size_t copy_to_dev_buffs(struct pfq_sock *so, struct gc_queue_buff *buffs,
                         return false;
 		}
 
-		sent = pfq_batch_lazy_xmit_by_mask(buffs, mask, dev, so->egress_queue);
+		sent = pfq_queue_lazy_xmit_by_mask(skbs, mask, dev, so->egress_queue);
 
                 dev_put(dev);
 		return sent;
@@ -86,16 +115,16 @@ size_t copy_to_dev_buffs(struct pfq_sock *so, struct gc_queue_buff *buffs,
 }
 
 
-size_t copy_to_endpoint_buffs(struct pfq_sock *so, struct gc_queue_buff *pool,
+size_t copy_to_endpoint_skbs(struct pfq_sock *so, struct pfq_skbuff_queue __GC *pool,
 			      unsigned long long mask, int cpu, pfq_gid_t gid)
 {
 	switch(so->egress_type)
 	{
 	case pfq_endpoint_socket:
-		return copy_to_user_skbs(&so->rx_opt, SKBUFF_BATCH_ADDR(*pool), mask, cpu, gid);
+		return copy_to_user_skbs(&so->rx_opt, pool, mask, cpu, gid);
 
 	case pfq_endpoint_device:
-		return copy_to_dev_buffs(so, pool, mask, cpu, gid);
+		return copy_to_dev_skbs(so, pool, mask, cpu, gid);
 	}
 
 	return false;

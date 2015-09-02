@@ -1,0 +1,21 @@
+diff --git a/src/i40e/i40e_txrx.c b/src/i40e/i40e_txrx.c
+index 7f1c718..cf830cf 100644
+--- a/src/i40e/i40e_txrx.c
++++ b/src/i40e/i40e_txrx.c
+@@ -2745,6 +2745,16 @@ static void i40e_tx_map(struct i40e_ring *tx_ring, struct sk_buff *skb,
+ 	tx_ring->next_to_use = i;
+ 
+ 	/* notify HW of packet */
++	if (
++
++#if(LINUX_VERSION_CODE >= KERNEL_VERSION(3,18,0))
++		!skb->xmit_more
++#else
++		!skb->mark
++#endif
++	    ||
++	    netif_xmit_stopped(netdev_get_tx_queue(tx_ring->netdev,
++						   tx_ring->queue_index)))
+ 	writel(i, tx_ring->tail);
+ 
+ 	return;

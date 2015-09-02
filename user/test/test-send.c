@@ -31,7 +31,7 @@ void send_packets(pfq_t *q, unsigned long long num)
 
         for(n = 0; n < num;)
         {
-                if (pfq_send(q, ping, sizeof(ping))) {
+                if (pfq_send(q, ping, sizeof(ping), 1)) {
 			n++;
 		}
         }
@@ -45,7 +45,7 @@ void send_packets_async(pfq_t *q, unsigned long long num)
 	printf("sending %llu packets (async):\n", num);
         for(n = 0; n < num;)
         {
-                if (pfq_send_async(q, ping, sizeof(ping), 128) != -1) {
+                if (pfq_send_async(q, ping, sizeof(ping), 128, 1) != -1) {
 			n++;
 		}
         }
@@ -68,7 +68,7 @@ main(int argc, char *argv[])
         int node   = atoi(argv[3]);
         unsigned long long num = atoll(argv[4]);
 
-        pfq_t * q= pfq_open_(64, 1024, 1024);
+        pfq_t * q= pfq_open(64, 1024, 1024);
 
         pfq_enable(q);
 
@@ -78,7 +78,7 @@ main(int argc, char *argv[])
 		send_packets(q, num);
 	}
 	else  {
-		pfq_tx_async(q, 1);
+		pfq_tx_async_start(q);
 		send_packets_async(q, num);
 	}
 

@@ -24,23 +24,20 @@
 #ifndef PF_Q_SOCK_H
 #define PF_Q_SOCK_H
 
+#include <pragma/diagnostic_push>
 #include <linux/kernel.h>
 #include <linux/poll.h>
 #include <linux/pf_q.h>
-
 #include <net/sock.h>
+#include <pragma/diagnostic_pop>
 
-#include <pf_q-macro.h>
+#include <pf_q-define.h>
 #include <pf_q-stats.h>
 #include <pf_q-shmem.h>
+#include <pf_q-types.h>
 
 
 extern atomic_long_t pfq_sock_vector[Q_MAX_ID];
-
-typedef struct
-{
-	int value;
-} pfq_id_t;
 
 
 struct pfq_rx_opt
@@ -107,7 +104,7 @@ struct pfq_tx_queue_info
 	void		       *base_addr;
 
 	int			if_index;
-	int			hw_queue;
+	int			queue;
 	int			cpu;
 
 	struct task_struct     *task;
@@ -155,7 +152,7 @@ void pfq_tx_opt_init(struct pfq_tx_opt *that, size_t maxlen)
 
 		that->queue[n].base_addr = NULL;
 		that->queue[n].if_index  = -1;
-		that->queue[n].hw_queue  = -1;
+		that->queue[n].queue     = -1;
 		that->queue[n].cpu       = -1;
 		that->queue[n].task	 = NULL;
 	}
@@ -174,6 +171,8 @@ struct pfq_sock
 	int			egress_type;
         int			egress_index;
         int			egress_queue;
+
+	int			weight;
 
 	struct pfq_shmem_descr  shmem;
 

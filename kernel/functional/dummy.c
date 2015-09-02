@@ -21,9 +21,13 @@
  *
  ****************************************************************/
 
+#include <pragma/diagnostic_push>
+
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/crc16.h>
+
+#include <pragma/diagnostic_pop>
 
 #include <pf_q-module.h>
 #include <pf_q-sparse.h>
@@ -32,30 +36,30 @@
 #include "misc.h"
 
 
-static Action_SkBuff
-dummy(arguments_t args, SkBuff b)
+static ActionSkBuff
+dummy(arguments_t args, SkBuff skb)
 {
         const int data = GET_ARG(int,args);
 
-	SkBuff new;
+	SkBuff nskb;
 
 	printk(KERN_INFO "[PFQ/lang] dummy = %d\n", data);
 
-        new = pfq_copy_buff(b);
+        nskb = pfq_copy_buff(skb);
 
-	if (new.skb == NULL) {
+	if (nskb == NULL) {
                 printk(KERN_INFO "[PFQ/lang] clone error!!!\n");
-                return Drop(b);
+                return Drop(skb);
 	}
 
-        printk(KERN_INFO "[PFQ/lang] packet cloned: %p -> %p\n", new.skb, b.skb);
+        printk(KERN_INFO "[PFQ/lang] packet cloned: %p -> %p\n", nskb, skb);
 
-        return Pass(new);
+        return Pass(nskb);
 }
 
 
-static Action_SkBuff
-dummy_vector(arguments_t args, SkBuff b)
+static ActionSkBuff
+dummy_vector(arguments_t args, SkBuff skb)
 {
         const int *data = GET_ARRAY(int,args);
 	size_t n, len = LEN_ARRAY(args);
@@ -67,23 +71,23 @@ dummy_vector(arguments_t args, SkBuff b)
 		printk(KERN_INFO "[PFQ/lang]  data[%zu] = %d\n", n, data[n]);
 	}
 
-        return Pass(b);
+        return Pass(skb);
 }
 
 
-static Action_SkBuff
-dummy_string(arguments_t args, SkBuff b)
+static ActionSkBuff
+dummy_string(arguments_t args, SkBuff skb)
 {
         const char *data = GET_ARG(const char *,args);
 
 	printk(KERN_INFO "[PFQ/lang] dummy: vector string: %s\n", data);
 
-        return Pass(b);
+        return Pass(skb);
 }
 
 
-static Action_SkBuff
-dummy_strings(arguments_t args, SkBuff b)
+static ActionSkBuff
+dummy_strings(arguments_t args, SkBuff skb)
 {
         const char **data = GET_ARRAY(const char *,args);
 	size_t n, len = LEN_ARRAY(args);
@@ -95,7 +99,7 @@ dummy_strings(arguments_t args, SkBuff b)
 		printk(KERN_INFO "[PFQ/lang] string[%zu]: %s\n", n, data[n]);
 	}
 
-        return Pass(b);
+        return Pass(skb);
 }
 
 

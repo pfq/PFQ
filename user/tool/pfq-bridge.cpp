@@ -23,9 +23,9 @@
 #include <pfq/lang/default.hpp>
 #include <pfq/lang/experimental.hpp>
 
-#include <affinity.hpp>
-#include <binding.hpp>
-#include <vt100.hpp>
+#include <more/affinity.hpp>
+#include <more/binding.hpp>
+#include <more/vt100.hpp>
 
 using namespace pfq;
 using namespace pfq::lang;

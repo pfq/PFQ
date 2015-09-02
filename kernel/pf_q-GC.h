@@ -24,34 +24,22 @@
 #ifndef PF_Q_GC_H
 #define PF_Q_GC_H
 
+#include <pragma/diagnostic_push>
 #include <linux/string.h>
 #include <linux/skbuff.h>
+#include <pragma/diagnostic_pop>
 
+#include <pf_q-endpoint.h>
 #include <pf_q-skbuff.h>
-#include <pf_q-macro.h>
+#include <pf_q-define.h>
 #include <pf_q-skbuff.h>
 #include <pf_q-skbuff-batch.h>
 
-typedef struct gc_buff SkBuff;
+
+typedef struct sk_buff __GC * SkBuff;
 
 
-#define for_each_gcbuff(batch, buff, n) \
-        for(n = 0; (n != (batch)->len) && (buff = (batch)->queue[n]).skb; \
-                __builtin_prefetch(((batch)->queue[n+1]).skb, 0, 1), n++)
-
-
-#define for_each_gcbuff_bitmask(batch, mask, buff, n) \
-        for(n = pfq_ctz(mask); mask && ((buff = (batch)->queue[n]), buff.skb); \
-                mask ^=(1ULL << n), n = pfq_ctz(mask))
-
-
-#define SKBUFF_BATCH_ADDR(batch) \
-	__builtin_choose_expr(__builtin_types_compatible_p(typeof(batch),struct pfq_skbuff_short_batch),(struct pfq_skbuff_batch *)&batch, \
-	__builtin_choose_expr(__builtin_types_compatible_p(typeof(batch),struct pfq_skbuff_long_batch), (struct pfq_skbuff_batch *)&batch, \
-	__builtin_choose_expr(__builtin_types_compatible_p(typeof(batch),struct gc_queue_buff),		(struct pfq_skbuff_batch *)&batch, (void) 0)))
-
-
-struct gc_log
+struct GC_log
 {
 	struct net_device * dev[Q_GC_LOG_QUEUE_LEN];
 	size_t num_devs;
@@ -60,37 +48,38 @@ struct gc_log
 };
 
 
-struct gc_queue_buff
+struct GC_skbuff_queue
 {
         size_t len;
-        struct gc_buff queue[Q_SKBUFF_LONG_BATCH];
+        struct sk_buff __GC * queue[Q_GC_POOL_QUEUE_LEN];
 };
 
 
-struct gc_data
+struct GC_data
 {
-	struct gc_log		log[Q_GC_POOL_QUEUE_LEN];
-	struct gc_queue_buff	pool;
+	struct GC_log		log[Q_GC_POOL_QUEUE_LEN];
+	struct GC_skbuff_queue	pool;
 };
 
 
-extern void   gc_reset(struct gc_data *gc);
+extern void   GC_reset(struct GC_data *gc);
 
-extern struct gc_buff gc_make_buff(struct gc_data *gc, struct sk_buff *skb);
-extern struct gc_buff gc_alloc_buff(struct gc_data *gc, size_t size);
-extern struct gc_buff gc_copy_buff(struct gc_data *gc, struct gc_buff orig);
+extern struct sk_buff __GC * GC_make_buff(struct GC_data *gc, struct sk_buff *skb);
+extern struct sk_buff __GC * GC_alloc_buff(struct GC_data *gc, size_t size);
+extern struct sk_buff __GC * GC_copy_buff(struct GC_data *gc, struct sk_buff __GC * orig);
 
-extern struct gc_buff pfq_make_buff(struct sk_buff *skb);
-extern struct gc_buff pfq_alloc_buff(size_t size);
-extern struct gc_buff pfq_copy_buff(struct gc_buff buff);
+struct sk_buff __GC * pfq_make_buff(struct sk_buff *skb);
+struct sk_buff __GC * pfq_alloc_buff(size_t size);
+struct sk_buff __GC * pfq_copy_buff(struct sk_buff __GC * skb);
 
-struct lazy_fwd_targets;
 
-extern void   gc_get_fwd_targets(struct gc_data *gc, struct lazy_fwd_targets *ts);
+struct skb_lazy_targets;
+
+extern void  GC_get_lazy_endpoints(struct GC_data *gc, struct pfq_endpoint_info *info);
 
 
 static inline size_t
-gc_count_dev_in_log(struct net_device *dev, struct gc_log *log)
+GC_count_dev_in_log(struct net_device *dev, struct GC_log *log)
 {
 	size_t n, ret = 0;
 	for(n = 0; n < log->num_devs; n++)
@@ -103,14 +92,14 @@ gc_count_dev_in_log(struct net_device *dev, struct gc_log *log)
 
 
 static inline
-void gc_data_init(struct gc_data *gc)
+void GC_data_init(struct GC_data *gc)
 {
-	memset(gc, 0, sizeof(struct gc_data));
+	memset(gc, 0, sizeof(struct GC_data));
 }
 
 
 static inline
-void gc_log_init(struct gc_log *log)
+void GC_log_init(struct GC_log *log)
 {
 	log->to_kernel = 0;
 	log->xmit_todo = 0;
@@ -119,7 +108,7 @@ void gc_log_init(struct gc_log *log)
 
 
 static inline
-size_t gc_size(struct gc_data *gc)
+size_t GC_size(struct GC_data *gc)
 {
 	return gc->pool.len;
 }

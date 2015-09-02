@@ -24,25 +24,24 @@
 #ifndef PF_Q_GROUP_H
 #define PF_Q_GROUP_H
 
+#include <pragma/diagnostic_push>
 #include <linux/kernel.h>
 #include <linux/delay.h>
 #include <linux/pf_q.h>
 #include <linux/filter.h>
 #include <linux/spinlock.h>
 #include <linux/semaphore.h>
+#include <pragma/diagnostic_pop>
 
 #include <pf_q-sock.h>
-#include <pf_q-macro.h>
+#include <pf_q-define.h>
 #include <pf_q-sparse.h>
 #include <pf_q-stats.h>
 #include <pf_q-bpf.h>
+#include <pf_q-types.h>
+
 
 /* persistent state */
-
-typedef struct
-{
-	int value;
-} pfq_gid_t;
 
 
 struct pfq_group_persistent
@@ -112,7 +111,7 @@ extern void pfq_groups_init(void);
 static inline
 bool pfq_has_joined_group(pfq_gid_t gid, pfq_id_t id)
 {
-        return pfq_get_all_groups_mask(gid) & (1L << id.value);
+        return pfq_get_all_groups_mask(gid) & (1L << (__force int)id);
 }
 
 static inline
@@ -123,7 +122,7 @@ bool pfq_group_is_free(pfq_gid_t gid)
 	g = pfq_get_group(gid);
 	if (g == NULL)
 		return true;
-	if (g->owner.value != -1 || g->pid != 0)
+	if (g->owner != (__force pfq_id_t)-1 || g->pid != 0)
 		return false;
 	return true;
 }

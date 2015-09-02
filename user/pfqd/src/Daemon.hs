@@ -39,13 +39,14 @@ import Foreign.Ptr
 
 import Network.PFq.Default
 import Options
-import PFQdaemon
+import Config
+import PFQDaemon
 
 import Network.PFq as Q
 
 
-daemon :: Options -> IO () -> IO ()
-daemon opts closefds = forever $ do
+foreverDaemon :: Options -> IO () -> IO ()
+foreverDaemon opts closefds = forever $ do
     (src, dst) <- getConfigFiles opts
     new <- newerFile src dst
     when new $ rebuildRestart opts closefds
@@ -57,15 +58,20 @@ rebuildRestart opts closefds = do
    infoM "daemon" "Configuration updated. Rebuilding..."
    (src, dst) <- getConfigFiles opts
    copyFile src dst
+   userDir <- getAppUserDataDirectory "pfqd"
+   let newDaemon = userDir </> "pfqd"
    runCompiler >>= \(ec,_,msg) -> if ec == ExitSuccess
-       then infoM "daemon" "Done. Restarting..." >> closefds >> executeFile "pfqd" False ["-c" , src, "-d"] Nothing
-       else mapM_ (errorM "daemon") (lines $ replace "PFQconf.hs" (config_file opts) msg)
+       then do
+            infoM "daemon" ("Done. Restarting " ++ newDaemon ++ "...")
+            closefds
+            executeFile newDaemon False ["-c" , src, "-d"] Nothing
+       else mapM_ (errorM "daemon") (lines $ replace "PFQDaemon.hs" (config_file opts) msg)
 
 
 getConfigFiles :: Options -> IO (FilePath, FilePath)
 getConfigFiles opts = getAppUserDataDirectory "pfqd" >>=
     \udata -> let src = config_file opts
-                  dst = udata </> "PFQconf.hs" in return (src, dst)
+                  dst = udata </> "PFQDaemon.hs" in return (src, dst)
 
 
 newerFile :: FilePath -> FilePath -> IO Bool
@@ -83,6 +89,6 @@ replace old new = intercalate new . splitOn old
 
 
 runCompiler :: IO (ExitCode, String, String)
-runCompiler = readProcessWithExitCode "ghc" ["--make", "Main", "-o", "pfqd", "-lpfq"] ""
+runCompiler = readProcessWithExitCode "ghc" ["--make", "Main", "-o", "pfqd", "-lpfq", "-XOverloadedStrings"] ""
 
 

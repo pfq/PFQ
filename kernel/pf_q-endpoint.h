@@ -24,8 +24,12 @@
 #ifndef PF_Q_ENDPOINT_H
 #define PF_Q_ENDPOINT_H
 
+#include <pf_q-types.h>
+#include <pf_q-define.h>
+
 struct pfq_sock;
-struct pfq_skbuff_batch;
+struct pfq_skbuff_queue;
+struct net_device;
 
 enum pfq_endpoint_type
 {
@@ -33,9 +37,21 @@ enum pfq_endpoint_type
 	pfq_endpoint_device
 };
 
-extern size_t copy_to_endpoint_buffs(struct pfq_sock *so,
-				     struct gc_queue_buff *pool,
-				     unsigned long long mask,
-				     int cpu, pfq_gid_t gid);
+struct pfq_endpoint_info
+{
+	struct net_device * dev[Q_GC_LOG_QUEUE_LEN];
+	size_t cnt [Q_GC_LOG_QUEUE_LEN];
+	size_t cnt_total;
+	size_t num;
+};
+
+
+void add_dev_to_endpoints(struct net_device *dev, struct pfq_endpoint_info *ts);
+
+
+extern size_t copy_to_endpoint_skbs(struct pfq_sock *so,
+				    struct pfq_skbuff_queue __GC *pool,
+				    unsigned long long mask,
+				    int cpu, pfq_gid_t gid);
 
 #endif /* PF_Q_ENDPOINT_H */

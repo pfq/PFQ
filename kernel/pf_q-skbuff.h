@@ -24,30 +24,28 @@
 #ifndef PF_Q_SKBUFF_H
 #define PF_Q_SKBUFF_H
 
+#include <pragma/diagnostic_push>
 #include <linux/skbuff.h>
+#include <pragma/diagnostic_pop>
+
+#include <pf_q-types.h>
 
 struct pfq_monad;
-struct gc_log;
+struct GC_log;
 
 
 struct pfq_cb
 {
-	struct gc_log	 *log;
+	struct GC_log	 *log;
 	struct pfq_monad *monad;
         unsigned long	  group_mask;
 	int		  direct;
 };
 
 
-/* wrapper used in garbage collector */
+#define PFQ_SKB(skb)  ((struct sk_buff __force *)skb)
 
-struct gc_buff
-{
-	struct sk_buff *skb;
-};
-
-
-#define PFQ_CB(skb) ((struct pfq_cb *)(skb)->cb)
+#define PFQ_CB(skb)   ((struct pfq_cb *)PFQ_SKB(skb)->cb)
 
 
 #define for_each_skbuff(batch, skb, n) \

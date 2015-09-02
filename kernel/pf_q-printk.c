@@ -21,9 +21,13 @@
  *
  ****************************************************************/
 
+#include <pragma/diagnostic_push>
+
 #include <linux/kernel.h>
 #include <linux/printk.h>
 #include <linux/pf_q.h>
+
+#include <pragma/diagnostic_pop>
 
 #include <pf_q-group.h>
 #include <pf_q-module.h>
@@ -39,10 +43,10 @@ pr_devel_group(pfq_gid_t gid)
 	if (g != NULL) {
 
 		pr_devel("[PFQ] group %d { policy=%d, pid=%d, owner-id=%d ...}\n",
-				gid.value,
+				gid,
 				g->policy,
 				g->pid,
-				g->owner.value);
+				g->owner);
 	}
 }
 

@@ -27,11 +27,13 @@
 
 #ifdef __KERNEL__
 
+#include <pragma/diagnostic_push>
+
 #include <linux/types.h>
 #include <linux/filter.h>
 #include <linux/skbuff.h>
 
-#define Q_VERSION               "4.4"
+#include <pragma/diagnostic_pop>
 
 #else  /* user space */
 
@@ -70,6 +72,17 @@ static inline void smp_wmb() { barrier(); }
 #endif /* __KERNEL__ */
 
 
+/* PFQ version as in Linux kernel */
+
+#define PFQ_VERSION(a,b,c)		(((a) << 16) + ((b) << 8) + (c))
+
+#define PFQ_VERSION_CODE		PFQ_VERSION(5,0,0)
+
+#define PFQ_MAJOR(a)			((a >> 16) & 0xff)
+#define PFQ_MINOR(a)			((a >> 8) & 0xff)
+#define PFQ_PATCHLEVEL(a)		(a & 0xff)
+
+
 #define PF_Q				27   /* pfq socket family */
 
 #define Q_SHARED_QUEUE_INDEX(data)	((data) >> 24)
@@ -89,18 +102,19 @@ static inline void smp_wmb() { barrier(); }
 #define Q_SO_SET_RX_SLOTS		4
 #define Q_SO_SET_RX_OFFSET		5
 #define Q_SO_SET_TX_SLOTS		7
+#define Q_SO_SET_WEIGHT			8
 
-#define Q_SO_GROUP_BIND			8
-#define Q_SO_GROUP_UNBIND		9
-#define Q_SO_GROUP_JOIN			10
-#define Q_SO_GROUP_LEAVE		11
-#define Q_SO_GROUP_FPROG		12      /* Berkeley packet filter */
-#define Q_SO_GROUP_VLAN_FILT_TOGGLE	13      /* enable/disable VLAN filters */
-#define Q_SO_GROUP_VLAN_FILT		14      /* enable/disable VLAN ID filters */
-#define Q_SO_GROUP_FUNCTION		15
+#define Q_SO_GROUP_BIND			10
+#define Q_SO_GROUP_UNBIND		11
+#define Q_SO_GROUP_JOIN			12
+#define Q_SO_GROUP_LEAVE		13
+#define Q_SO_GROUP_FPROG		14      /* Berkeley packet filter */
+#define Q_SO_GROUP_VLAN_FILT_TOGGLE	15      /* enable/disable VLAN filters */
+#define Q_SO_GROUP_VLAN_FILT		16      /* enable/disable VLAN ID filters */
+#define Q_SO_GROUP_FUNCTION		17
 
-#define Q_SO_EGRESS_BIND		16
-#define Q_SO_EGRESS_UNBIND		17
+#define Q_SO_EGRESS_BIND		18
+#define Q_SO_EGRESS_UNBIND		19
 
 #define Q_SO_GET_ID			20
 #define Q_SO_GET_STATUS			21      /* 1 = enabled, 0 = disabled */
@@ -115,11 +129,13 @@ static inline void smp_wmb() { barrier(); }
 #define Q_SO_GET_GROUPS			30
 #define Q_SO_GET_GROUP_STATS		31
 #define Q_SO_GET_GROUP_COUNTERS		32
+#define Q_SO_GET_WEIGHT			33
 
-#define Q_SO_TX_BIND			33
-#define Q_SO_TX_UNBIND			34
-#define Q_SO_TX_FLUSH			35
-#define Q_SO_TX_ASYNC			36
+#define Q_SO_TX_BIND			40
+#define Q_SO_TX_UNBIND			41
+#define Q_SO_TX_FLUSH			42
+#define Q_SO_TX_ASYNC_START		43
+#define Q_SO_TX_ASYNC_STOP		44
 
 
 /* general placeholders */
@@ -127,9 +143,7 @@ static inline void smp_wmb() { barrier(); }
 #define Q_ANY_DEVICE			-1
 #define Q_ANY_QUEUE			-1
 #define Q_ANY_GROUP			-1
-
 #define Q_NO_KTHREAD			-1
-#define Q_ANY_CPU			65535
 
 /*timestamp*/
 
@@ -168,7 +182,7 @@ static inline void smp_wmb() { barrier(); }
 /*additionalconstants*/
 
 #define Q_MAX_COUNTERS			64
-#define Q_MAX_TX_QUEUES			4
+#define Q_MAX_TX_QUEUES			8
 
 
 /* PFQ socket queue */
@@ -189,8 +203,8 @@ struct pfq_tx_queue
         unsigned int            cons;
         size_t			size;	    /* queue length in bytes */
 
-	void __user *		ptr;	    /* reserved for user-space */
-	unsigned int __user     index;	    /* reserved for user-space */
+	void *			ptr;	    /* reserved for user-space */
+	unsigned int		index;	    /* reserved for user-space */
 
 } __attribute__((aligned(64)));
 
@@ -236,7 +250,7 @@ struct pfq_pkthdr
                 uint16_t     tci;
         } vlan;
 
-        uint8_t     hw_queue;   /* 256 queues per device */
+        uint8_t     queue;	/* max 256 queues per device */
         uint8_t     commit;
 
 } __attribute__((packed));
@@ -244,8 +258,9 @@ struct pfq_pkthdr
 
 struct pfq_pkthdr_tx
 {
-	uint64_t len;
-	uint64_t nsec; /* absolute timestamp */
+	uint64_t nsec;		/* absolute timestamp */
+	int	 copies;	/* per-packet copies to send: default 1 */
+	int	 len;
 };
 
 
@@ -316,7 +331,7 @@ struct pfq_binding
 	};
 
         int if_index;
-        int hw_queue;
+        int queue;
 };
 
 struct pfq_group_join
@@ -340,6 +355,7 @@ struct pfq_group_context
         int gid;
         int level;
 };
+
 
 /* pfq_fprog: per-group sock_fprog */
 

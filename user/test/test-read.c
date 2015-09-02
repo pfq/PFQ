@@ -13,7 +13,7 @@ main(int argc, char *argv[])
                 return 0;
         }
 
-        pfq_t *p = pfq_open(64, 4096);
+        pfq_t *p = pfq_open(64, 4096, 1024);
         if (p == NULL) {
                 printf("error: %s\n", pfq_error(p));
                 return -1;
@@ -29,7 +29,7 @@ main(int argc, char *argv[])
         	return -1;
         }
 
-        if (pfq_timestamp_enable(p, 1) < 0) {
+        if (pfq_timestamping_enable(p, 1) < 0) {
         	printf("error: %s\n", pfq_error(p));
         	return -1;
 	}
@@ -68,7 +68,7 @@ main(int argc, char *argv[])
 			const struct pfq_pkthdr *h = pfq_iterator_header(it);
 
                     	printf("caplen:%d len:%d ifindex:%d hw_queue:%d tstamp: %u:%u -> ",
-					h->caplen, h->len, h->if_index, h->hw_queue,
+					h->caplen, h->len, h->if_index, h->queue,
                                         h->tstamp.tv.sec, h->tstamp.tv.nsec);
 
 			const char *buff = pfq_iterator_data(it);

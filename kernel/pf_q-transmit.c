@@ -25,23 +25,25 @@
  *
  */
 
+#include <pragma/diagnostic_push>
+
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/version.h>
 #include <linux/sched.h>
 #include <linux/ktime.h>
-
 #include <linux/skbuff.h>
 #include <linux/netdevice.h>
+
+#include <pragma/diagnostic_pop>
 
 #include <pf_q-thread.h>
 #include <pf_q-transmit.h>
 #include <pf_q-memory.h>
 #include <pf_q-sock.h>
-#include <pf_q-macro.h>
+#include <pf_q-define.h>
 #include <pf_q-global.h>
 #include <pf_q-GC.h>
-
 #include <pf_q-printk.h>
 
 static inline int
@@ -49,12 +51,11 @@ __pfq_xmit(struct sk_buff *skb, struct net_device *dev, struct netdev_queue *txq
 
 
 static inline int
-__pfq_dev_cap_txqueue(struct net_device *dev, int hw_queue)
+__pfq_dev_cap_txqueue(struct net_device *dev, int queue)
 {
-	if (unlikely(hw_queue >= dev->real_num_tx_queues))
+	if (unlikely(queue >= dev->real_num_tx_queues))
 		return 0;
-
-	return hw_queue;
+	return queue;
 }
 
 
@@ -66,16 +67,17 @@ static u16 __pfq_pick_tx_default(struct net_device *dev, struct sk_buff *skb)
 #endif
 
 
-/* select the right tx hw queue, and fix it (-1 means any queue) */
+/* select the right tx hw queue, and fix it (-1 means any queue).
+ * unlike the linux netdev_pick_tx, it does *not* set the queue mapping in the skb */
 
 static struct netdev_queue *
-pfq_pick_tx(struct net_device *dev, struct sk_buff *skb, int *hw_queue)
+pfq_netdev_pick_tx(struct net_device *dev, struct sk_buff *skb, int *queue)
 {
-	if (dev->real_num_tx_queues != 1 && *hw_queue == -1) {
+	if (dev->real_num_tx_queues != 1 && *queue == -1) {
 
 		const struct net_device_ops *ops = dev->netdev_ops;
 
-		*hw_queue = ops->ndo_select_queue ?
+		*queue = ops->ndo_select_queue ?
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(3,13,0))
 			ops->ndo_select_queue(dev, skb)
 #elif (LINUX_VERSION_CODE == KERNEL_VERSION(3,13,0))
@@ -86,67 +88,34 @@ pfq_pick_tx(struct net_device *dev, struct sk_buff *skb, int *hw_queue)
 			: 0;
 	}
 
-	*hw_queue = __pfq_dev_cap_txqueue(dev, *hw_queue);
+	*queue = __pfq_dev_cap_txqueue(dev, *queue);
 
-	return netdev_get_tx_queue(dev, *hw_queue);
+	return netdev_get_tx_queue(dev, *queue);
 }
 
 
 static inline
-int giveup_tx(int cpu)
+bool is_kthread_should_stop(void)
 {
-	int pending = signal_pending(current);
-	if (cpu == Q_NO_KTHREAD)
-		return pending;
-
-	return pending || kthread_should_stop();
-}
-
-
-static int
-batch_xmit(struct pfq_skbuff_batch *skbs, struct local_data *local, struct net_device *dev, int hw_queue)
-{
-	struct sk_buff *skb;
-	int sent, i;
-
-	/* transmit the batch */
-
-	sent = pfq_batch_xmit(skbs, dev, hw_queue);
-
-	/* free the transmitted skb... */
-
-	for_each_skbuff_upto(sent, skbs, skb, i)
-		pfq_kfree_skb_pool(skb, &local->tx_pool);
-
-	/* ... and drop them from the batch */
-
-	pfq_skbuff_batch_drop_n(skbs, sent);
-
-	/* get the unsent skbs (to be transmitted later) */
-
-	for_each_skbuff(skbs, skb, i)
-		skb_get(skb);
-
-	return sent;
+	return (current->flags & PF_KTHREAD) && kthread_should_stop();
 }
 
 
 static inline
-bool tx_batch_required(struct pfq_skbuff_batch *q, ktime_t now, uint64_t ts)
+bool giveup_tx_process(void)
 {
-	size_t len = pfq_skbuff_batch_len(q);
-	return len == batch_len || ((len > 0) && (ts > ktime_to_ns(now)));
+	return signal_pending(current) || is_kthread_should_stop();
 }
 
 
 static inline
-ktime_t wait_until(uint64_t ts, int cpu)
+ktime_t wait_until(uint64_t ts)
 {
 	ktime_t now;
 	do
 	{
 		now = ktime_get_real();
-		if (unlikely(giveup_tx(cpu)))
+		if (giveup_tx_process())
 			return now;
 	}
 	while (ktime_to_ns(now) < ts
@@ -156,97 +125,131 @@ ktime_t wait_until(uint64_t ts, int cpu)
 }
 
 
-int
-__pfq_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int cpu, int node)
+static inline
+int swap_sk_queue_and_wait(struct pfq_tx_queue *txs, int cpu, int *index)
 {
-	struct pfq_skbuff_short_batch skbs;
-	struct pfq_tx_queue *soft_txq;
-	struct pfq_pkthdr_tx * hdr;
-	struct local_data *local;
-	size_t len, disc = 0, tot_sent = 0;
-	unsigned int index;
-	int hw_queue;
-
-	char *ptr, *begin, *end;
-        ktime_t now; uint64_t last_ts;
-
-
-	/* get the Tx queue */
-
-	soft_txq = pfq_get_tx_queue(to, idx);
-
-	/* get the netdev_queue for transmission */
-
-	hw_queue = to->queue[idx].hw_queue;
-
-	/* swap the soft Tx queue */
-
 	if (cpu != Q_NO_KTHREAD) {
-		index = __atomic_add_fetch(&soft_txq->cons, 1, __ATOMIC_RELAXED);
-		while (index != __atomic_load_n(&soft_txq->prod, __ATOMIC_RELAXED))
+		*index = __atomic_add_fetch(&txs->cons, 1, __ATOMIC_RELAXED);
+		while (*index != __atomic_load_n(&txs->prod, __ATOMIC_RELAXED))
 		{
+#ifdef PFQ_DEBUG
+			static uint32_t failures = 0;
+			if ((failures++ & ((1<<24)-1))== 0)
+				printk(KERN_INFO "[PFQ] swap_tx_queue_and_wait spinning!\n");
+#endif
 			pfq_relax();
-			if (unlikely(giveup_tx(cpu)))
-				break;
+			if (giveup_tx_process())
+				return -EINTR;
 		}
 	}
 	else {
-		index = __atomic_add_fetch(&soft_txq->cons, 1, __ATOMIC_RELAXED);
-		__atomic_store_n(&soft_txq->prod, 1, __ATOMIC_RELAXED);
+		*index = __atomic_add_fetch(&txs->cons, 1, __ATOMIC_RELAXED);
+		__atomic_store_n(&txs->prod, 1, __ATOMIC_RELAXED);
 	}
 
-	index++;
+	return 0;
+}
+
+
+static inline
+bool traverse_sk_queue(char *ptr, char *begin, char *end, int idx)
+{
+	struct pfq_pkthdr_tx *hdr = (struct pfq_pkthdr_tx *)ptr;
+
+#ifdef PFQ_DEBUG
+	if (ptr < begin || ptr >= end) {
+		printk(KERN_INFO "[PFQ] BUG: queue[%d] ptr overflow: %p: [%p,%p]\n", idx,
+		       ptr, begin, end);
+		return false;
+	}
+
+	if (hdr->len > 2048) {
+		printk(KERN_INFO "[PFQ] BUG: queue[%d]@offset=%zu bad hdr->len: %d@%p [%p,%p]\n", idx,
+		       ptr-begin, hdr->len, hdr, begin, end);
+		return false;
+	}
+
+	return hdr->len != 0;
+#else
+	return ptr < end && (hdr->len != 0 && hdr->len < 2048);
+#endif
+
+}
+
+
+int
+__pfq_sk_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int cpu, int node)
+{
+	struct netdev_queue *txq;
+	struct pfq_tx_queue *txs;
+	struct pfq_percpu_pool *pool;
+	int queue, swap;
+	char *ptr, *begin, *end;
+        int more = 0, err = 0,
+            total_sent = 0,
+            disc = 0;
+	ktime_t now;
+
+	/* get the Tx queue */
+
+	txs = pfq_get_tx_queue(to, idx);
+
+	/* get the netdev_queue for transmission */
+
+	queue = __pfq_dev_cap_txqueue(dev, to->queue[idx].queue);
+
+	txq = netdev_get_tx_queue(dev, queue);
 
 	/* get local cpu data */
 
-	local = this_cpu_ptr(cpu_data);
+	pool = this_cpu_ptr(percpu_pool);
+
+	/* swap the soft Tx queue */
+
+	if ((err = swap_sk_queue_and_wait(txs, cpu, &swap)) < 0)
+		return err;
+
+	/* increment the swap index of the current queue */
+
+	swap++;
 
         /* initialize pointer to the current transmit queue */
 
-	begin = to->queue[idx].base_addr + (index & 1) * soft_txq->size;
-        end   = to->queue[idx].base_addr + 2 * soft_txq->size;
-
-	/* initialize the batch */
-
-	pfq_skbuff_batch_init(SKBUFF_BATCH_ADDR(skbs));
+	begin = to->queue[idx].base_addr + (swap & 1) * txs->size;
+        end = begin + txs->size;
 
 	/* Tx loop */
 
-	hdr = (struct pfq_pkthdr_tx *)(ptr = begin);
 	now = ktime_get_real();
+	ptr = begin;
 
-	for(; ptr < end && hdr->len != 0; hdr = (struct pfq_pkthdr_tx *)ptr)
+	local_bh_disable();
+	HARD_TX_LOCK(dev, txq, smp_processor_id());
+
+	while(traverse_sk_queue(ptr, begin, end, idx))
 	{
+		struct pfq_pkthdr_tx * hdr = (struct pfq_pkthdr_tx *)ptr;
 		struct sk_buff *skb;
+		bool xmit_more;
+                size_t len;
+                int copies;
 
-		/* get the tstamp of this packet */
+		/* wait until the Ts */
 
-		last_ts = hdr->nsec;
+		if (hdr->nsec > ktime_to_ns(now)) {
 
-		/* if the batch is full, transmit it (now) */
-	retry:
-		if (tx_batch_required(SKBUFF_BATCH_ADDR(skbs), now, last_ts)) {
+			HARD_TX_UNLOCK(dev, txq);
+			local_bh_enable();
 
-			int sent = batch_xmit(SKBUFF_BATCH_ADDR(skbs), local, dev, hw_queue);
-			tot_sent += sent;
+			now = wait_until(hdr->nsec);
 
-			if (giveup_tx(cpu))
-				break;
-
-			if (sent == 0) {
-				pfq_relax();
-				goto retry;
-			}
+			local_bh_disable();
+			HARD_TX_LOCK(dev, txq, smp_processor_id());
 		}
 
-		/* wait until the ts */
+		/* allocate a socket buffer */
 
-		if (last_ts > ktime_to_ns(now))
-			now = wait_until(last_ts, cpu);
-
-		/* allocate a packet */
-
-		skb = pfq_tx_alloc_skb(max_len, GFP_KERNEL, node);
+		skb = pfq_tx_alloc_skb(xmit_slot_size, GFP_KERNEL, node);
 		if (unlikely(skb == NULL)) {
 			printk(KERN_INFO "[PFQ] Tx could not allocate an skb!\n");
 			break;
@@ -254,81 +257,105 @@ __pfq_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int 
 
 		/* fill the skb */
 
-		len = min_t(size_t, hdr->len, max_len);
+		len = min_t(size_t, hdr->len, xmit_slot_size);
 
 		skb_reset_tail_pointer(skb);
 		skb->dev = dev;
 		skb->len = 0;
+
 		__skb_put(skb, len);
 
-		skb_get(skb);
+		/* set the Tx queue */
 
-		skb_set_queue_mapping(skb, hw_queue);
+		skb_set_queue_mapping(skb, queue);
 
-		/* copy bytes in the socket buffer */
+		/* copy bytes into the payload */
 
 		skb_copy_to_linear_data(skb, hdr+1, len < 64 ? 64 : len);
 
-		/* push the packet into the batch */
+		/* transmit the packet */
 
-		pfq_skbuff_short_batch_push(SKBUFF_BATCH_ADDR(skbs), skb);
+                copies = hdr->copies;
 
-		/* move ptr to the next packet */
 
-		ptr += sizeof(struct pfq_pkthdr_tx) + ALIGN(hdr->len, 8);
-	}
+		do {
+			skb_get(skb);
 
-	/* flush the current batch */
+			xmit_more = (++more == xmit_batch_len ? (more = 0, false) : true);
 
-	while (pfq_skbuff_batch_len(SKBUFF_BATCH_ADDR(skbs))) {
+			if (__pfq_xmit(skb, dev, txq, xmit_more) < 0) {
 
-		int sent = batch_xmit(SKBUFF_BATCH_ADDR(skbs), local, dev, hw_queue);
-		tot_sent += sent;
+				HARD_TX_UNLOCK(dev, txq);
+				local_bh_enable();
 
-		/* break the loop when giveup is needed */
-		if (giveup_tx(cpu))
-			break;
+				more = xmit_batch_len - 1;
+				pfq_relax();
 
-		if (sent == 0)
-			pfq_relax();
+				local_bh_disable();
+				HARD_TX_LOCK(dev, txq, smp_processor_id());
 
-	}
-
-	/* packet unsent from the last batch are freed */
-
-	disc = pfq_skbuff_batch_len(SKBUFF_BATCH_ADDR(skbs));
-	if (disc) {
-		struct sk_buff *skb;
-		size_t n;
-		for_each_skbuff(SKBUFF_BATCH_ADDR(skbs), skb, n) {
-
-			kfree_skb(skb); /* decrement use-count to 1 */
-
-			pfq_kfree_skb_pool(skb, &local->tx_pool);
+				if (giveup_tx_process()) {
+					pfq_kfree_skb_pool(skb, &pool->tx_pool);
+					goto stop;
+				}
+			}
+			else {
+				copies--;
+			}
 		}
+		while (copies > 0);
+
+		/* update states */
+
+		total_sent += hdr->copies;
+
+		if (cpu != Q_NO_KTHREAD) {
+			__sparse_add(&to->stats.sent, hdr->copies, cpu);
+			__sparse_add(&global_stats.sent, hdr->copies, cpu);
+		}
+		else {
+			sparse_add(&to->stats.sent, hdr->copies);
+			sparse_add(&global_stats.sent, hdr->copies);
+		}
+
+		/* return the skb and move ptr to the next packet */
+
+		pfq_kfree_skb_pool(skb, &pool->tx_pool);
+
+		ptr += sizeof(struct pfq_pkthdr_tx) + ALIGN(hdr->len, 8);
+		hdr = (struct pfq_pkthdr_tx *)ptr;
 	}
 
-	/* disc takes into account packets possibly left in the shared queue */
+	stop:
 
-	for(; ptr < end && hdr->len != 0; disc++, hdr = (struct pfq_pkthdr_tx *)ptr)
+	HARD_TX_UNLOCK(dev, txq);
+	local_bh_enable();
+
+	/* count the packets left in the shared queue */
+
+	while(traverse_sk_queue(ptr, begin, end, idx))
 	{
+		struct pfq_pkthdr_tx *hdr = (struct pfq_pkthdr_tx *)ptr;
 		ptr += sizeof(struct pfq_pkthdr_tx) + ALIGN(hdr->len, 8);
+		disc++;
 	}
 
 	/* update stats */
 
-	__sparse_add(&to->stats.disc, disc, cpu);
-	__sparse_add(&global_stats.disc, disc, cpu);
-
-	__sparse_add(&to->stats.sent, tot_sent, cpu);
-	__sparse_add(&global_stats.sent, tot_sent, cpu);
+	if (cpu != Q_NO_KTHREAD) {
+		__sparse_add(&to->stats.disc, disc, cpu);
+		__sparse_add(&global_stats.disc, disc, cpu);
+	}
+	else {
+		sparse_add(&to->stats.disc, disc);
+		sparse_add(&global_stats.disc, disc);
+	}
 
 	/* clear the queue */
 
-	hdr = (struct pfq_pkthdr_tx *)begin;
-        hdr->len = 0;
+	((struct pfq_pkthdr_tx *)begin)->len = 0;
 
-	return tot_sent;
+	return total_sent;
 }
 
 
@@ -337,7 +364,7 @@ __pfq_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int 
  */
 
 int
-pfq_queue_flush(struct pfq_sock *so, int index)
+pfq_sk_queue_flush(struct pfq_sock *so, int index)
 {
 	struct net_device *dev;
 
@@ -347,12 +374,12 @@ pfq_queue_flush(struct pfq_sock *so, int index)
 
 	dev = dev_get_by_index(sock_net(&so->sk), so->tx_opt.queue[index].if_index);
 	if (!dev) {
-		printk(KERN_INFO "[PFQ] pfq_queue_flush[%d]: bad if_index:%d!\n",
+		printk(KERN_INFO "[PFQ] pfq_sk_queue_flush[%d]: bad if_index:%d!\n",
 		       index, so->tx_opt.queue[index].if_index);
 		return -EPERM;
 	}
 
-	pfq_queue_xmit(index, &so->tx_opt, dev);
+	pfq_sk_queue_xmit(index, &so->tx_opt, dev);
 	dev_put(dev);
 	return 0;
 }
@@ -389,6 +416,7 @@ __pfq_xmit(struct sk_buff *skb, struct net_device *dev, struct netdev_queue *txq
 		}
 	}
 
+        SPARSE_INC(&memory_stats.os_free);
 	kfree_skb(skb);
 	return -ENETDOWN;
 out:
@@ -397,52 +425,55 @@ out:
 
 
 int
-pfq_xmit(struct sk_buff *skb, struct net_device *dev, int hw_queue, int more)
+pfq_xmit(struct sk_buff *skb, struct net_device *dev, int queue, int more)
 {
 	struct netdev_queue *txq;
 	int ret = 0;
 
-	/* get txq and fix the hw_queue for this batch.
+	/* get txq and fix the queue for this batch.
 	 *
-	 * note: in case the hw_queue is set to any-queue (-1), the driver along the first skb
+	 * note: in case the queue is set to any-queue (-1), the driver along the first skb
 	 * select the queue */
 
-	txq = pfq_pick_tx(dev, skb, &hw_queue);
+	txq = pfq_netdev_pick_tx(dev, skb, &queue);
 
-	skb_set_queue_mapping(skb, hw_queue);
+	skb_set_queue_mapping(skb, queue);
 
-	__netif_tx_lock_bh(txq);
+	local_bh_disable();
+	HARD_TX_LOCK(dev, txq, smp_processor_id());
 
 	ret = __pfq_xmit(skb, dev, txq, more);
 
-	__netif_tx_unlock_bh(txq);
+	HARD_TX_UNLOCK(dev, txq);
+        local_bh_enable();
 
 	return ret;
 }
 
 
 int
-pfq_batch_xmit(struct pfq_skbuff_batch *skbs, struct net_device *dev, int hw_queue)
+pfq_queue_xmit(struct pfq_skbuff_queue *skbs, struct net_device *dev, int queue)
 {
 	struct netdev_queue *txq;
 	struct sk_buff *skb;
 	int n, ret = 0;
 	size_t last;
 
-	/* get txq and fix the hw_queue for this batch.
+	/* get txq and fix the queue for this batch.
 	 *
-	 * note: in case the hw_queue is set to any-queue (-1), the driver along the first skb
+	 * note: in case the queue is set to any-queue (-1), the driver along the first skb
 	 * select the queue */
 
-	txq = pfq_pick_tx(dev, skbs->queue[0], &hw_queue);
+	txq = pfq_netdev_pick_tx(dev, skbs->queue[0], &queue);
 
-	last = pfq_skbuff_batch_len(skbs) - 1;
+	last = pfq_skbuff_queue_len(skbs) - 1;
 
-	__netif_tx_lock_bh(txq);
+	local_bh_disable();
+	HARD_TX_LOCK(dev, txq, smp_processor_id());
 
 	for_each_skbuff(skbs, skb, n)
 	{
-		skb_set_queue_mapping(skb, hw_queue);
+		skb_set_queue_mapping(skb, queue);
 
 		if (__pfq_xmit(skb, dev, txq, n != last) == NETDEV_TX_OK)
 			++ret;
@@ -450,37 +481,43 @@ pfq_batch_xmit(struct pfq_skbuff_batch *skbs, struct net_device *dev, int hw_que
 			goto intr;
 	}
 
-	__netif_tx_unlock_bh(txq);
+	HARD_TX_UNLOCK(dev, txq);
+	local_bh_enable();
+
 	return ret;
 
 intr:
-	for_each_skbuff_from(ret + 1, skbs, skb, n)
+	for_each_skbuff_from(ret + 1, skbs, skb, n) {
+		SPARSE_INC(&memory_stats.os_free);
 		kfree_skb(skb);
+	}
 
-	__netif_tx_unlock_bh(txq);
+	HARD_TX_UNLOCK(dev, txq);
+	local_bh_enable();
 	return ret;
 }
 
 
 int
-pfq_batch_xmit_by_mask(struct pfq_skbuff_batch *skbs, unsigned long long mask, struct net_device *dev, int hw_queue)
+pfq_queue_xmit_by_mask(struct pfq_skbuff_queue *skbs, unsigned long long mask, struct net_device *dev, int queue)
 {
 	struct netdev_queue *txq;
 	struct sk_buff *skb;
 	int n, ret = 0;
 
-	/* get txq and fix the hw_queue for this batch.
+	/* get txq and fix the queue for this batch.
 	 *
-	 * note: in case the hw_queue is set to any-queue (-1), the driver along the first skb
+	 * note: in case the queue is set to any-queue (-1), the driver along the first skb
 	 * select the queue */
 
-	txq = pfq_pick_tx(dev, skbs->queue[0], &hw_queue);
+	txq = pfq_netdev_pick_tx(dev, skbs->queue[0], &queue);
 
-	__netif_tx_lock_bh(txq);
+	local_bh_disable();
+	HARD_TX_LOCK(dev, txq, smp_processor_id());
 
 	for_each_skbuff_bitmask(skbs, mask, skb, n)
 	{
-		skb_set_queue_mapping(skb, hw_queue);
+		skb_set_queue_mapping(skb, queue);
 
 		if (__pfq_xmit(skb, dev, txq, 0) == NETDEV_TX_OK)
 			++ret;
@@ -488,46 +525,51 @@ pfq_batch_xmit_by_mask(struct pfq_skbuff_batch *skbs, unsigned long long mask, s
 			goto intr;
 	}
 
-	__netif_tx_unlock_bh(txq);
+	HARD_TX_UNLOCK(dev, txq);
+	local_bh_enable();
 	return ret;
 
 intr:
-	for_each_skbuff_from(ret + 1, skbs, skb, n)
+	for_each_skbuff_from(ret + 1, skbs, skb, n) {
+		SPARSE_INC(&memory_stats.os_free);
 		kfree_skb(skb);
+	}
 
-	__netif_tx_unlock_bh(txq);
+	HARD_TX_UNLOCK(dev, txq);
+	local_bh_enable();
+
 	return ret;
 }
 
 
 int
-pfq_lazy_xmit(struct gc_buff buff, struct net_device *dev, int hw_queue)
+pfq_lazy_xmit(struct sk_buff __GC * skb, struct net_device *dev, int queue)
 {
-	struct gc_log *log = PFQ_CB(buff.skb)->log;
+	struct GC_log *skb_log = PFQ_CB(skb)->log;
 
-	if (log->num_devs >= Q_GC_LOG_QUEUE_LEN) {
+	if (skb_log->num_devs >= Q_GC_LOG_QUEUE_LEN) {
 		if (printk_ratelimit())
 			printk(KERN_INFO "[PFQ] bridge %s: too many annotation!\n", dev->name);
 		return 0;
 	}
 
-	skb_set_queue_mapping(buff.skb, hw_queue);
-	log->dev[log->num_devs++] = dev;
-	log->xmit_todo++;
+	skb_set_queue_mapping(PFQ_SKB(skb), queue);
+	skb_log->dev[skb_log->num_devs++] = dev;
+	skb_log->xmit_todo++;
 
 	return 1;
 }
 
 
 int
-pfq_batch_lazy_xmit(struct gc_queue_buff *queue, struct net_device *dev, int hw_queue)
+pfq_queue_lazy_xmit(struct pfq_skbuff_queue __GC *queue, struct net_device *dev, int queue_index)
 {
-	struct gc_buff buff;
+	struct sk_buff __GC * skb;
 	int i, n = 0;
 
-	for_each_gcbuff(queue, buff, i)
+	for_each_skbuff((struct pfq_skbuff_queue_GC __force *)queue, skb, i)
 	{
-		if (pfq_lazy_xmit(buff, dev, hw_queue))
+		if (pfq_lazy_xmit(skb, dev, queue_index))
 			++n;
 	}
 
@@ -536,14 +578,15 @@ pfq_batch_lazy_xmit(struct gc_queue_buff *queue, struct net_device *dev, int hw_
 
 
 int
-pfq_batch_lazy_xmit_by_mask(struct gc_queue_buff *queue, unsigned long long mask, struct net_device *dev, int hw_queue)
+pfq_queue_lazy_xmit_by_mask(struct pfq_skbuff_queue __GC *queue, unsigned long long mask,
+			    struct net_device *dev, int queue_index)
 {
-	struct gc_buff buff;
+	struct sk_buff __GC * skb;
 	int i, n = 0;
 
-	for_each_gcbuff_bitmask(queue, mask, buff, i)
+	for_each_skbuff_bitmask((struct pfq_skbuff_queue_GC __force *)queue, mask, skb, i)
 	{
-		if (pfq_lazy_xmit(buff, dev, hw_queue))
+		if (pfq_lazy_xmit(skb, dev, queue_index))
 			++n;
 	}
 
@@ -552,70 +595,74 @@ pfq_batch_lazy_xmit_by_mask(struct gc_queue_buff *queue, unsigned long long mask
 
 
 size_t
-pfq_lazy_xmit_exec(struct gc_data *gc, struct lazy_fwd_targets const *ts)
+pfq_queue_lazy_xmit_run(struct pfq_skbuff_queue __GC *skbs, struct pfq_endpoint_info const *endpoints)
 {
 	struct netdev_queue *txq;
 	struct net_device *dev;
 	struct sk_buff *skb;
         size_t sent = 0;
 	size_t n, i;
-	int queue;
+	int queue = -1;
 
 	/* for each net_device... */
 
-	for(n = 0; n < ts->num; n++)
+	for(n = 0; n < endpoints->num; n++)
 	{
 		size_t sent_dev = 0;
+		dev = endpoints->dev[n];
 
-		dev = ts->dev[n];
 		txq = NULL;
+                queue = -1;
 
 		/* scan the list of skbs, and forward them in batch fashion */
 
-		for(i = 0; i < gc->pool.len; i++)
+		for(i = 0; i < skbs->len; i++)
 		{
-			struct gc_log *log;
                         size_t j, num;
 
-			/* select the packet */
+			/* select packet and log */
 
-			skb = gc->pool.queue[i].skb;
-                        log = &gc->log[i];
-			num = gc_count_dev_in_log(dev, log);
+			skb = skbs->queue[i];
+
+			num = GC_count_dev_in_log(dev, PFQ_CB(skb)->log);
 
 			if (num == 0)
 				continue;
 
-			/* the first packet for this dev determines the hw queue */
+			if (queue != skb->queue_mapping) {
 
-			if (!txq) {
+				if (txq) {
+					HARD_TX_UNLOCK(dev, txq);
+					local_bh_enable();
+                                }
+
 				queue = skb->queue_mapping;
-				txq = pfq_pick_tx(dev, skb, &queue);
-				__netif_tx_lock_bh(txq);
+				txq = pfq_netdev_pick_tx(dev, skb, &queue);
+
+				local_bh_disable();
+				HARD_TX_LOCK(dev, txq, smp_processor_id());
 			}
 
-			/* forward this skb `num` times */
+			/* forward this skb `num` times (to this device) */
 
 			for (j = 0; j < num; j++)
 			{
-				const int xmit_more = ++sent_dev != ts->cnt[n];
-				const bool to_clone = log->to_kernel || log->xmit_todo-- > 1;
+				const int xmit_more  = ++sent_dev != endpoints->cnt[n];
+				const bool to_clone  = PFQ_CB(skb)->log->to_kernel || PFQ_CB(skb)->log->xmit_todo-- > 1;
 
 				struct sk_buff *nskb = to_clone ? skb_clone(skb, GFP_ATOMIC) : skb_get(skb);
-				if (nskb) {
-					if (__pfq_xmit(nskb, dev, txq, xmit_more) == NETDEV_TX_OK)
-						sent++;
-					else
-						sparse_inc(&global_stats.abrt);
-				}
-				else {
+
+				if (nskb && __pfq_xmit(nskb, dev, txq, xmit_more) == NETDEV_TX_OK)
+					sent++;
+				else
 					sparse_inc(&global_stats.abrt);
-				}
 			}
 		}
 
-		if (txq)
-			__netif_tx_unlock_bh(txq);
+		if (txq){
+			HARD_TX_UNLOCK(dev, txq);
+			local_bh_enable();
+		}
 	}
 
 	return sent;

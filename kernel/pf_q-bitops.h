@@ -24,7 +24,9 @@
 #ifndef PF_Q_BITOPS_H
 #define PF_Q_BITOPS_H
 
+#include <pragma/diagnostic_push>
 #include <asm/bitops.h>
+#include <pragma/diagnostic_pop>
 
 
 #if BITS_PER_LONG == 32
@@ -58,8 +60,8 @@
 
 #define pfq_bitwise_foreach(m, n, ...) \
 { \
-        typeof(m) _mask = (m); \
-	for(; n = _mask & -_mask, _mask ; _mask^=n) \
+        typeof(m) mask_ = (m); \
+	for(; n = mask_ & -mask_, mask_ ; mask_^=n) \
 	__VA_ARGS__ \
 }
 
