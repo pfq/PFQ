@@ -25,13 +25,13 @@ main(int argc, char *argv[])
         }
 
         if (pfq_bind(p, argv[1], Q_ANY_QUEUE) < 0) {
-        	printf("error: %s\n", pfq_error(p));
-        	return -1;
+		printf("error: %s\n", pfq_error(p));
+		return -1;
         }
 
         if (pfq_timestamping_enable(p, 1) < 0) {
-        	printf("error: %s\n", pfq_error(p));
-        	return -1;
+		printf("error: %s\n", pfq_error(p));
+		return -1;
 	}
 
 	printf("reading from %s...\n", argv[1]);
@@ -44,13 +44,13 @@ main(int argc, char *argv[])
 
 		int many = pfq_read(p, &nq, 1000000);
 		if (many < 0) {
-                	printf("error: %s\n", pfq_error(p));
+			printf("error: %s\n", pfq_error(p));
 			break;
 		}
 
 		if (nq.len == 0) {
- 			pfq_yield();
- 			continue;
+			pfq_yield();
+			continue;
 		}
 
 		printf("queue size: %zd\n", nq.len);
@@ -62,16 +62,16 @@ main(int argc, char *argv[])
 		{
 			int x;
 
-			while (!pfq_iterator_ready(&nq, it))
+			while (!pfq_pkt_ready(&nq, it))
 				pfq_yield();
 
-			const struct pfq_pkthdr *h = pfq_iterator_header(it);
+			const struct pfq_pkthdr *h = pfq_pkt_header(it);
 
-                    	printf("caplen:%d len:%d ifindex:%d hw_queue:%d tstamp: %u:%u -> ",
+			printf("caplen:%d len:%d ifindex:%d hw_queue:%d tstamp: %u:%u -> ",
 					h->caplen, h->len, h->if_index, h->queue,
                                         h->tstamp.tv.sec, h->tstamp.tv.nsec);
 
-			const char *buff = pfq_iterator_data(it);
+			const char *buff = pfq_pkt_data(it);
 
 			for(x=0; x < MIN(h->caplen, 34); x++)
 			{

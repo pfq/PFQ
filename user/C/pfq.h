@@ -97,7 +97,7 @@ pfq_net_queue_prev(struct pfq_net_queue const *nq, pfq_iterator_t iter)
 
 static inline
 const struct pfq_pkthdr *
-pfq_iterator_header(pfq_iterator_t iter)
+pfq_pkt_header(pfq_iterator_t iter)
 {
         return (const struct pfq_pkthdr *)iter;
 }
@@ -106,7 +106,7 @@ pfq_iterator_header(pfq_iterator_t iter)
 
 static inline
 const char *
-pfq_iterator_data(pfq_iterator_t iter)
+pfq_pkt_data(pfq_iterator_t iter)
 {
         return (const char *)(iter + sizeof(struct pfq_pkthdr));
 }
@@ -115,9 +115,9 @@ pfq_iterator_data(pfq_iterator_t iter)
 
 static inline
 int
-pfq_iterator_ready(struct pfq_net_queue const *nq, pfq_iterator_t iter)
+pfq_pkt_ready(struct pfq_net_queue const *nq, pfq_iterator_t iter)
 {
-        if (__atomic_load_n(&pfq_iterator_header(iter)->commit,
+        if (__atomic_load_n(&pfq_pkt_header(iter)->commit,
 			    __ATOMIC_ACQUIRE) != nq->index) {
                 return 0;
         }

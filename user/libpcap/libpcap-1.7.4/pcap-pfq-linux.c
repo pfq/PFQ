@@ -1135,17 +1135,17 @@ pfq_read_linux(pcap_t *handle, int max_packets, pcap_handler callback, u_char *u
                 uint16_t vlan_tci;
 		const char *pkt;
 
-		while (!pfq_iterator_ready(&nq, it))
+		while (!pfq_pkt_ready(&nq, it))
 			pfq_yield();
 
-		h = (struct pfq_pkthdr *)pfq_iterator_header(it);
+		h = (struct pfq_pkthdr *)pfq_pkt_header(it);
 
 		pcap_h.ts.tv_sec  = h->tstamp.tv.sec;
 		pcap_h.ts.tv_usec = h->tstamp.tv.nsec / 1000;
 		pcap_h.caplen     = h->caplen;
 		pcap_h.len        = h->len;
 
-		pkt = pfq_iterator_data(it);
+		pkt = pfq_pkt_data(it);
 
 		if ((vlan_tci = h->vlan.tci) != 0) {
 
