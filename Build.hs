@@ -34,44 +34,43 @@ script = do
 
     -- PFQ kernel module
 
-    Configure "pfq.ko"      *>>  into "kernel/"     empty
-    Build     "pfq.ko"      *>>  into "kernel/"     make
-    Install   "pfq.ko"      *>>  into "kernel/"  $  make_install `requires` [Build "pfq.ko", Configure "pfq.ko"]
-    Clean     "pfq.ko"      *>>  into "kernel/"     make_clean
+    Configure "pfq.ko"      *>>  into "kernel/"  $  empty
+    Build     "pfq.ko"      *>>  into "kernel/"  $  make         `requires` [Configure "pfq.ko"]
+    Install   "pfq.ko"      *>>  into "kernel/"  $  make_install `requires` [Build "pfq.ko"]
+    Clean     "pfq.ko"      *>>  into "kernel/"  $  make_clean
 
 
     -- PFQ C library
 
-    Configure "pfq-clib"    *>>  into "user/C/"        cmake
-    Build     "pfq-clib"    *>>  into "user/C/"   $    make         `requires` [Configure "pfq-clib"]
-    Install   "pfq-clib"    *>>  into "user/C/"   $ do make_install `requires` [Build "pfq-clib"    ]
-                                                       ldconfig
-    Clean     "pfq-clib"    *>>  into "user/C/"        make_clean
-    DistClean "pfq-clib"    *>>  into "user/C/"        cmake_distclean
+    Configure "pfq-clib"    *>>  into "user/C/"  $  cmake
+    Build     "pfq-clib"    *>>  into "user/C/"  $  make         `requires` [Configure "pfq-clib"]
+    Install   "pfq-clib"    *>>  into "user/C/"  $  make_install `requires` [Build "pfq-clib"] >> ldconfig
+    Clean     "pfq-clib"    *>>  into "user/C/"  $  make_clean
+    DistClean "pfq-clib"    *>>  into "user/C/"  $  cmake_distclean
 
     -- PFQ C++ library
 
-    Configure "pfq-cpplib"  *>>  into "user/C++/pfq/" empty
-    Build     "pfq-cpplib"  *>>  into "user/C++/pfq/" empty
-    Install   "pfq-cpplib"  *>>  into "user/C++/pfq/" make_install
-    Clean     "pfq-cpplib"  *>>  into "user/C++/pfq/" empty
+    Configure "pfq-cpplib"  *>>  into "user/C++/pfq/" $ empty
+    Build     "pfq-cpplib"  *>>  into "user/C++/pfq/" $ empty
+    Install   "pfq-cpplib"  *>>  into "user/C++/pfq/" $ make_install `requires` [Install "pfq.ko"]
+    Clean     "pfq-cpplib"  *>>  into "user/C++/pfq/" $ empty
 
 
     -- PFQ Haskell library
 
-    Configure "pfq-haskell-lib" *>>  into "user/Haskell/"       $ cabalConfigureUser    `requires`  [Install "pfq.ko" , Install "pfq-clib"]
-    Build     "pfq-haskell-lib" *>>  into "user/Haskell/"       $ cabalBuild            `requires`  [Configure "pfq-haskell-lib"]
-    Install   "pfq-haskell-lib" *>>  into "user/Haskell/"       $ cabalInstall          `requires`  [Build "pfq-haskell-lib"    ]
-    Clean     "pfq-haskell-lib" *>>  into "user/Haskell/"       $ cabalClean
-    DistClean "pfq-haskell-lib" *>>  into "user/Haskell/"       $ cabalDistClean
+    Configure "pfq-haskell-lib" *>>  into "user/Haskell/"   $ cabalConfigureUser    `requires`  [Install "pfq-clib"]
+    Build     "pfq-haskell-lib" *>>  into "user/Haskell/"   $ cabalBuild            `requires`  [Install "pfq.ko", Configure "pfq-haskell-lib"]
+    Install   "pfq-haskell-lib" *>>  into "user/Haskell/"   $ cabalInstall          `requires`  [Build "pfq-haskell-lib"]
+    Clean     "pfq-haskell-lib" *>>  into "user/Haskell/"   $ cabalClean
+    DistClean "pfq-haskell-lib" *>>  into "user/Haskell/"   $ cabalDistClean
 
 
     -- PFQ pcap library 1.3.0
 
     when build_libpcap_1_3_0 $ do
 
-        Configure "pfq-pcap-1.3.0"  *>>  into "user/libpcap/libpcap-1.3.0/"  $ cmd "./configure --enable-pfq" `requires` [ Install "pfq.ko", Install "pfq-clib" ]
-        Build     "pfq-pcap-1.3.0"  *>>  into "user/libpcap/libpcap-1.3.0/"  $ make                           `requires` [ Configure "pfq-pcap-1.3.0" ]
+        Configure "pfq-pcap-1.3.0"  *>>  into "user/libpcap/libpcap-1.3.0/"  $ cmd "./configure --enable-pfq" `requires` [ Install "pfq-clib" ]
+        Build     "pfq-pcap-1.3.0"  *>>  into "user/libpcap/libpcap-1.3.0/"  $ make                           `requires` [ Install "pfq.ko", Configure "pfq-pcap-1.3.0" ]
         Install   "pfq-pcap-1.3.0"  *>>  into "user/libpcap/libpcap-1.3.0/"  $ empty                          `requires` [ Build "pfq-pcap-1.3.0" ]
         Clean     "pfq-pcap-1.3.0"  *>>  into "user/libpcap/libpcap-1.3.0/"  $ make_clean
         DistClean "pfq-pcap-1.3.0"  *>>  into "user/libpcap/libpcap-1.3.0/"  $ make_distclean
@@ -81,8 +80,8 @@ script = do
 
     when build_libpcap_1_7_4 $ do
 
-        Configure "pfq-pcap-1.7.4"  *>>  into "user/libpcap/libpcap-1.7.4/"  $ cmd "./configure --enable-pfq" `requires` [ Install "pfq.ko", Install "pfq-clib" ]
-        Build     "pfq-pcap-1.7.4"  *>>  into "user/libpcap/libpcap-1.7.4/"  $ make                           `requires` [ Configure "pfq-pcap-1.7.4" ]
+        Configure "pfq-pcap-1.7.4"  *>>  into "user/libpcap/libpcap-1.7.4/"  $ cmd "./configure --enable-pfq" `requires` [ Install "pfq-clib" ]
+        Build     "pfq-pcap-1.7.4"  *>>  into "user/libpcap/libpcap-1.7.4/"  $ make                           `requires` [ Install "pfq.ko", Configure "pfq-pcap-1.7.4" ]
         Install   "pfq-pcap-1.7.4"  *>>  into "user/libpcap/libpcap-1.7.4/"  $ empty                          `requires` [ Build "pfq-pcap-1.7.4" ]
         Clean     "pfq-pcap-1.7.4"  *>>  into "user/libpcap/libpcap-1.7.4/"  $ make_clean
         DistClean "pfq-pcap-1.7.4"  *>>  into "user/libpcap/libpcap-1.7.4/"  $ make_distclean
@@ -90,11 +89,11 @@ script = do
 
     -- PFQ hcounters (exmaple)
 
-    Configure "pfq-hcounters"   *>>  into "user/Haskell/pfq-hcounters/"  $ cabalConfigureUser   `requires`  [Install   "pfq-haskell-lib"]
-    Build     "pfq-hcounters"   *>>  into "user/Haskell/pfq-hcounters/"  $ cabalBuild           `requires`  [Configure "pfq-hcounters"  ]
-    Install   "pfq-hcounters"   *>>  into "user/Haskell/pfq-hcounters/"  $ cabalInstall         `requires`  [Build     "pfq-hcounters"  ]
-    Clean     "pfq-hcounters"   *>>  into "user/Haskell/pfq-hcounters/"  $ cabalClean
-    DistClean "pfq-hcounters"   *>>  into "user/Haskell/pfq-hcounters/"  $ cabalDistClean
+    Configure "pfq-hcounters"   *>>  into "user/Haskell/pfq-hcounters/" $ cabalConfigureUser   `requires`  [Install   "pfq-haskell-lib"]
+    Build     "pfq-hcounters"   *>>  into "user/Haskell/pfq-hcounters/" $ cabalBuild           `requires`  [Configure "pfq-hcounters"  ]
+    Install   "pfq-hcounters"   *>>  into "user/Haskell/pfq-hcounters/" $ cabalInstall         `requires`  [Build     "pfq-hcounters"  ]
+    Clean     "pfq-hcounters"   *>>  into "user/Haskell/pfq-hcounters/" $ cabalClean
+    DistClean "pfq-hcounters"   *>>  into "user/Haskell/pfq-hcounters/" $ cabalDistClean
 
 
     -- PFQ htest (misc tests)
@@ -120,35 +119,35 @@ script = do
     Clean     "pfq-omatic"      *>>  into "user/pfq-omatic/"    $ cabalClean
     DistClean "pfq-omatic"      *>>  into "user/pfq-omatic/"    $ cabalDistClean
 
-    Configure "pfq-load"        *>>  into "user/pfq-load/"      $ cabalConfigureUser    `requires` [Install   "irq-affinity"   ]
-    Build     "pfq-load"        *>>  into "user/pfq-load/"      $ cabalBuild            `requires` [Configure "pfq-load"       ]
-    Install   "pfq-load"        *>>  into "user/pfq-load/"      $ cabalInstall          `requires` [Build     "pfq-load"       ]
+    Configure "pfq-load"        *>>  into "user/pfq-load/"      $ cabalConfigureUser
+    Build     "pfq-load"        *>>  into "user/pfq-load/"      $ cabalBuild            `requires` [Install "irq-affinity", Configure "pfq-load"]
+    Install   "pfq-load"        *>>  into "user/pfq-load/"      $ cabalInstall          `requires` [Build   "pfq-load"]
     Clean     "pfq-load"        *>>  into "user/pfq-load/"      $ cabalClean
     DistClean "pfq-load"        *>>  into "user/pfq-load/"      $ cabalDistClean
 
-    Configure "pfq-stress"      *>>  into "user/pfq-stress/"    $ cabalConfigureUser    `requires` [Install "irq-affinity", Install "pfq-load"]
-    Build     "pfq-stress"      *>>  into "user/pfq-stress/"    $ cabalBuild            `requires` [Configure "pfq-stress"]
-    Install   "pfq-stress"      *>>  into "user/pfq-stress/"    $ cabalInstall          `requires` [Build     "pfq-stress"]
+    Configure "pfq-stress"      *>>  into "user/pfq-stress/"    $ cabalConfigureUser
+    Build     "pfq-stress"      *>>  into "user/pfq-stress/"    $ cabalBuild            `requires` [Install "irq-affinity", Install "pfq-load", Configure "pfq-stress"]
+    Install   "pfq-stress"      *>>  into "user/pfq-stress/"    $ cabalInstall          `requires` [Build   "pfq-stress"]
     Clean     "pfq-stress"      *>>  into "user/pfq-stress/"    $ cabalClean
     DistClean "pfq-stress"      *>>  into "user/pfq-stress/"    $ cabalDistClean
 
-    Configure "pfqd"            *>>  into "user/pfqd/"          $ cabalConfigureUser    `requires` [Install   "pfq-haskell-lib", Install "pfq.ko"]
-    Build     "pfqd"            *>>  into "user/pfqd/"          $ cabalBuild            `requires` [Configure "pfqd"]
-    Install   "pfqd"            *>>  into "user/pfqd/"          $ cabalInstall          `requires` [Build     "pfqd"]
+    Configure "pfqd"            *>>  into "user/pfqd/"          $ cabalConfigureUser    `requires` [Install "pfq-haskell-lib"]
+    Build     "pfqd"            *>>  into "user/pfqd/"          $ cabalBuild            `requires` [Install "pfq.ko", Configure "pfqd"]
+    Install   "pfqd"            *>>  into "user/pfqd/"          $ cabalInstall          `requires` [Build   "pfqd"]
     Clean     "pfqd"            *>>  into "user/pfqd/"          $ cabalClean
     DistClean "pfqd"            *>>  into "user/pfqd/"          $ cabalDistClean
 
-    Configure "tests"           *>>  into "user/test/"          $ cmake                 `requires` [Install "pfq-clib", Install "pfq-cpplib"]
-    Build     "tests"           *>>  into "user/test/"          $ make                  `requires` [Configure "tests"]
-    Install   "tests"           *>>  into "user/test/"          $ empty                 `requires` [Build "tests"    ]
+    Configure "tests"           *>>  into "user/test/"          $ cmake
+    Build     "tests"           *>>  into "user/test/"          $ make                  `requires` [Install "pfq-clib", Install "pfq-cpplib", Configure "tests"]
+    Install   "tests"           *>>  into "user/test/"          $ empty                 `requires` [Build   "tests"]
     Clean     "tests"           *>>  into "user/test/"          $ make_clean
-    DistClean "tests"           *>>  into "user/test/"            cmake_distclean
+    DistClean "tests"           *>>  into "user/test/"          $ cmake_distclean
 
-    Configure "tools"           *>>  into "user/tool/"          $ cmake                 `requires` [Build "pfq-clib"]
-    Build     "tools"           *>>  into "user/tool/"          $ make                  `requires` [Configure "tools"]
-    Install   "tools"           *>>  into "user/tool/"          $ make_install          `requires` [Build "tools"    ]
+    Configure "tools"           *>>  into "user/tool/"          $ cmake
+    Build     "tools"           *>>  into "user/tool/"          $ make                  `requires` [Install "pfq-clib", Configure "tools"]
+    Install   "tools"           *>>  into "user/tool/"          $ make_install          `requires` [Build   "tools"]
     Clean     "tools"           *>>  into "user/tool/"          $ make_clean
-    DistClean "tools"           *>>  into "user/tool/"            cmake_distclean
+    DistClean "tools"           *>>  into "user/tool/"          $ cmake_distclean
 
 
 main = simpleBuilder script =<< getArgs
