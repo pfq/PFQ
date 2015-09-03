@@ -309,11 +309,11 @@ __pfq_sk_queue_xmit(size_t idx, struct pfq_sock_opt *opt, struct net_device *dev
 		total_sent += hdr->copies;
 
 		if (cpu != Q_NO_KTHREAD) {
-			__sparse_add(&opt->tx_stats.sent, hdr->copies, cpu);
+			__sparse_add(&opt->stats.sent, hdr->copies, cpu);
 			__sparse_add(&global_stats.sent, hdr->copies, cpu);
 		}
 		else {
-			sparse_add(&opt->tx_stats.sent, hdr->copies);
+			sparse_add(&opt->stats.sent, hdr->copies);
 			sparse_add(&global_stats.sent, hdr->copies);
 		}
 
@@ -341,11 +341,11 @@ stop:
 	/* update stats */
 
 	if (cpu != Q_NO_KTHREAD) {
-		__sparse_add(&opt->tx_stats.disc, disc, cpu);
+		__sparse_add(&opt->stats.disc, disc, cpu);
 		__sparse_add(&global_stats.disc, disc, cpu);
 	}
 	else {
-		sparse_add(&opt->tx_stats.disc, disc);
+		sparse_add(&opt->stats.disc, disc);
 		sparse_add(&global_stats.disc, disc);
 	}
 

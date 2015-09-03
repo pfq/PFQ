@@ -42,44 +42,43 @@ extern atomic_long_t pfq_sock_vector[Q_MAX_ID];
 
 struct pfq_tx_qinfo
 {
-	atomic_long_t			queue_ptr;
-	void				*base_addr;
+	atomic_long_t		queue_ptr;
+	void			*base_addr;
 
-	int				if_index;
-	int				queue;
-	int				cpu;
-
-	struct task_struct		*task;
+	int			if_index;
+	int			queue;
+	int			cpu;
+	struct task_struct	*task;
 };
 
 
 struct pfq_rx_qinfo
 {
-	atomic_long_t			queue_ptr;
-	void			       *base_addr;
+	atomic_long_t		queue_ptr;
+	void			*base_addr;
 };
 
 
 
 struct pfq_sock_opt
 {
-	int				tstamp;
-	size_t				caplen;
+	int			tstamp;
+	size_t			caplen;
 
-	size_t				rx_queue_size;
-	size_t				rx_slot_size;
+	size_t			rx_queue_size;
+	size_t			rx_slot_size;
 
-	size_t				tx_queue_size;
-	size_t				tx_slot_size;
-        size_t				tx_num_queues;
+	size_t			tx_queue_size;
+	size_t			tx_slot_size;
+        size_t			tx_num_queues;
 
-	wait_queue_head_t		waitqueue;
+	wait_queue_head_t	waitqueue;
 
-	struct pfq_tx_qinfo		tx_queue[Q_MAX_TX_QUEUES];
-	struct pfq_socket_tx_stats	tx_stats;
+	struct pfq_tx_qinfo	tx_queue[Q_MAX_TX_QUEUES];
+	struct pfq_rx_qinfo	rx_queue;
 
-	struct pfq_rx_qinfo		rx_queue;
-        struct pfq_socket_rx_stats	rx_stats;
+        struct pfq_sock_stats	stats;
+
 
 } ____cacheline_aligned_in_smp;
 
@@ -145,12 +144,6 @@ void pfq_sock_opt_init(struct pfq_sock_opt *that, size_t caplen, size_t maxlen)
 
         init_waitqueue_head(&that->waitqueue);
 
-        /* reset Rx stats */
-
-        sparse_set(&that->rx_stats.recv, 0);
-        sparse_set(&that->rx_stats.lost, 0);
-        sparse_set(&that->rx_stats.drop, 0);
-
 	/* Tx queues setup */
 
         that->tx_queue_size = 0;
@@ -168,10 +161,13 @@ void pfq_sock_opt_init(struct pfq_sock_opt *that, size_t caplen, size_t maxlen)
 		that->tx_queue[n].task	    = NULL;
 	}
 
-        /* reset Tx stats */
+        /* reset stats */
 
-        sparse_set(&that->tx_stats.sent, 0);
-        sparse_set(&that->tx_stats.disc, 0);
+        sparse_set(&that->stats.recv, 0);
+        sparse_set(&that->stats.lost, 0);
+        sparse_set(&that->stats.drop, 0);
+        sparse_set(&that->stats.sent, 0);
+        sparse_set(&that->stats.disc, 0);
 }
 
 
