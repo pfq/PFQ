@@ -196,7 +196,7 @@ __pfq_sk_queue_xmit(struct pfq_sock *so, struct net_device *dev, size_t idx, int
 
 	/* get the netdev_queue for transmission */
 
-	queue = __pfq_dev_cap_txqueue(dev, so->opt.tx_queue[idx].queue);
+	queue = __pfq_dev_cap_txqueue(dev, so->opt.txq[idx].queue);
 
 	txq = netdev_get_tx_queue(dev, queue);
 
@@ -215,7 +215,7 @@ __pfq_sk_queue_xmit(struct pfq_sock *so, struct net_device *dev, size_t idx, int
 
         /* initialize pointer to the current transmit queue */
 
-	begin = so->opt.tx_queue[idx].base_addr + (swap & 1) * txs->size;
+	begin = so->opt.txq[idx].base_addr + (swap & 1) * txs->size;
         end = begin + txs->size;
 
 	/* Tx loop */
@@ -366,14 +366,14 @@ pfq_sk_queue_flush(struct pfq_sock *so, int index)
 {
 	struct net_device *dev;
 
-	if (so->opt.tx_queue[index].task) {
+	if (so->opt.txq[index].task) {
 		return 0;
 	}
 
-	dev = dev_get_by_index(sock_net(&so->sk), so->opt.tx_queue[index].if_index);
+	dev = dev_get_by_index(sock_net(&so->sk), so->opt.txq[index].if_index);
 	if (!dev) {
 		printk(KERN_INFO "[PFQ] pfq_sk_queue_flush[%d]: bad if_index:%d!\n",
-		       index, so->opt.tx_queue[index].if_index);
+		       index, so->opt.txq[index].if_index);
 		return -EPERM;
 	}
 

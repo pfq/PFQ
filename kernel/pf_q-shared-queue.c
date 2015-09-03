@@ -56,7 +56,7 @@ void *pfq_skb_copy_from_linear_data(const struct sk_buff *skb, void *to, size_t 
 static inline
 char *mpsc_slot_ptr(struct pfq_sock_opt *opt, struct pfq_rx_queue *qd, size_t qindex, size_t slot)
 {
-	return (char *)(opt->rx_queue.base_addr) + (opt->rx_queue_size * (qindex & 1) + slot) * opt->rx_slot_size;
+	return (char *)(opt->rxq.base_addr) + (opt->rx_queue_size * (qindex & 1) + slot) * opt->rx_slot_size;
 }
 
 
@@ -221,24 +221,24 @@ pfq_shared_queue_enable(struct pfq_sock *so, unsigned long user_addr)
 			queue->tx[n].ptr       = NULL;
 			queue->tx[n].index     = -1;
 
-			so->opt.tx_queue[n].base_addr = so->shmem.addr + sizeof(struct pfq_shared_queue)
+			so->opt.txq[n].base_addr = so->shmem.addr + sizeof(struct pfq_shared_queue)
 				+ pfq_queue_mpsc_mem(so)
 				+ pfq_queue_spsc_mem(so) * n;
 		}
 
 		/* update the queues base_addr */
 
-		so->opt.rx_queue.base_addr = so->shmem.addr + sizeof(struct pfq_shared_queue);
+		so->opt.rxq.base_addr = so->shmem.addr + sizeof(struct pfq_shared_queue);
 
 		/* commit both the queues */
 
 		smp_wmb();
 
-		atomic_long_set(&so->opt.rx_queue.queue_ptr, (long)&queue->rx);
+		atomic_long_set(&so->opt.rxq.addr, (long)&queue->rx);
 
 		for(n = 0; n < Q_MAX_TX_QUEUES; n++)
 		{
-			atomic_long_set(&so->opt.tx_queue[n].queue_ptr, (long)&queue->tx[n]);
+			atomic_long_set(&so->opt.txq[n].addr, (long)&queue->tx[n]);
 		}
 
 		pr_devel("[PFQ|%d] Rx queue: len=%zu slot_size=%zu caplen=%zu, mem=%zu bytes\n",
@@ -267,11 +267,11 @@ pfq_shared_queue_disable(struct pfq_sock *so)
 
 	if (so->shmem.addr) {
 
-		atomic_long_set(&so->opt.rx_queue.queue_ptr, 0);
+		atomic_long_set(&so->opt.rxq.addr, 0);
 
 		for(n = 0; n < Q_MAX_TX_QUEUES; n++)
 		{
-			atomic_long_set(&so->opt.tx_queue[n].queue_ptr, 0);
+			atomic_long_set(&so->opt.txq[n].addr, 0);
 		}
 
 		msleep(Q_GRACE_PERIOD);

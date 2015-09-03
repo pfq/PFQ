@@ -114,9 +114,9 @@ void pfq_sock_opt_init(struct pfq_sock_opt *that, size_t caplen, size_t maxlen)
         /* the queue is allocate later, when the socket is enabled */
         int n;
 
-        atomic_long_set(&that->rx_queue.queue_ptr, 0);
+        atomic_long_set(&that->rxq.addr, 0);
 
-        that->rx_queue.base_addr = NULL;
+        that->rxq.base_addr = NULL;
 
         /* disable tiemstamping by default */
         that->tstamp = false;
@@ -141,13 +141,13 @@ void pfq_sock_opt_init(struct pfq_sock_opt *that, size_t caplen, size_t maxlen)
 
 	for(n = 0; n < Q_MAX_TX_QUEUES; ++n)
 	{
-		atomic_long_set(&that->tx_queue[n].queue_ptr, 0);
+		atomic_long_set(&that->txq[n].addr, 0);
 
-		that->tx_queue[n].base_addr = NULL;
-		that->tx_queue[n].if_index  = -1;
-		that->tx_queue[n].queue     = -1;
-		that->tx_queue[n].cpu       = -1;
-		that->tx_queue[n].task	    = NULL;
+		that->txq[n].base_addr = NULL;
+		that->txq[n].if_index  = -1;
+		that->txq[n].queue     = -1;
+		that->txq[n].cpu       = -1;
+		that->txq[n].task      = NULL;
 	}
 
 }

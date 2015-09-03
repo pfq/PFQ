@@ -60,7 +60,7 @@ pfq_tx_thread(void *_data)
 	}
 
 	cpu = smp_processor_id();
-        dev = dev_get_by_index(sock_net(&data->so->sk), data->so->opt.tx_queue[data->id].if_index);
+        dev = dev_get_by_index(sock_net(&data->so->sk), data->so->opt.txq[data->id].if_index);
 
 	printk(KERN_INFO "[PFQ] Tx[%zu] thread started on cpu %d.\n", data->id, cpu);
 
@@ -94,18 +94,18 @@ pfq_stop_all_tx_threads(struct pfq_sock *so)
 
 	for(n = 0; n < so->opt.tx_num_queues; n++)
 	{
-		if (so->opt.tx_queue[n].task) {
+		if (so->opt.txq[n].task) {
 
-			pr_devel("[PFQ|%d] stopping Tx thread@%p\n", so->id, so->opt.tx_queue[n].task);
+			pr_devel("[PFQ|%d] stopping Tx thread@%p\n", so->id, so->opt.txq[n].task);
 
-			if (so->opt.tx_queue[n].cpu != -1)
-				BUG_ON(kthread_tx_pool[so->opt.tx_queue[n].cpu % Q_MAX_CPU] != so->opt.tx_queue[n].task);
+			if (so->opt.txq[n].cpu != -1)
+				BUG_ON(kthread_tx_pool[so->opt.txq[n].cpu % Q_MAX_CPU] != so->opt.txq[n].task);
 
-			kthread_stop(so->opt.tx_queue[n].task);
-			kthread_tx_pool[so->opt.tx_queue[n].cpu % Q_MAX_CPU] = NULL;
+			kthread_stop(so->opt.txq[n].task);
+			kthread_tx_pool[so->opt.txq[n].cpu % Q_MAX_CPU] = NULL;
 
-			so->opt.tx_queue[n].task = NULL;
-			so->opt.tx_queue[n].cpu = -1;
+			so->opt.txq[n].task = NULL;
+			so->opt.txq[n].cpu = -1;
 		}
 	}
 

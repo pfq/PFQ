@@ -770,13 +770,13 @@ int pfq_setsockopt(struct socket *sock,
 			return -EPERM;
 		}
 
-                so->opt.tx_queue[i].if_index = binfo.if_index;
-                so->opt.tx_queue[i].queue = binfo.queue;
-                so->opt.tx_queue[i].cpu = binfo.cpu;
+                so->opt.txq[i].if_index = binfo.if_index;
+                so->opt.txq[i].queue = binfo.queue;
+                so->opt.txq[i].cpu = binfo.cpu;
 		so->opt.tx_num_queues++;
 
                 pr_devel("[PFQ|%d] Tx[%zu] bind: if_index=%d queue=%d cpu=%d\n", so->id, i,
-			 so->opt.tx_queue[i].if_index, so->opt.tx_queue[i].queue, binfo.cpu);
+			 so->opt.txq[i].if_index, so->opt.txq[i].queue, binfo.cpu);
 
         } break;
 
@@ -786,7 +786,7 @@ int pfq_setsockopt(struct socket *sock,
 
 		for(n = 0; n < Q_MAX_TX_QUEUES; ++n)
 		{
-			if (so->opt.tx_queue[n].task != NULL) {
+			if (so->opt.txq[n].task != NULL) {
 				printk(KERN_INFO "[PFQ|%d] Tx unbind error: kthread running!\n", so->id);
 				return -EPERM;
 			}
@@ -794,9 +794,9 @@ int pfq_setsockopt(struct socket *sock,
 
 		for(n = 0; n < Q_MAX_TX_QUEUES; ++n)
 		{
-			so->opt.tx_queue[n].if_index = -1;
-			so->opt.tx_queue[n].queue = -1;
-			so->opt.tx_queue[n].cpu = -1;
+			so->opt.txq[n].if_index = -1;
+			so->opt.txq[n].queue = -1;
+			so->opt.txq[n].cpu = -1;
 		}
 
         } break;
@@ -832,7 +832,7 @@ int pfq_setsockopt(struct socket *sock,
 		{
 			if (pfq_sk_queue_flush(so, n) != 0) {
 				printk(KERN_INFO "[PFQ|%d] Tx[%zu] queue flush: flush error (if_index=%d)!\n",
-				       so->id, n, so->opt.tx_queue[n].if_index);
+				       so->id, n, so->opt.txq[n].if_index);
 				err = -EPERM;
 			}
 		}
@@ -860,65 +860,65 @@ int pfq_setsockopt(struct socket *sock,
 			struct pfq_thread_data *data;
 			int node;
 
-			if (so->opt.tx_queue[n].if_index == -1)
+			if (so->opt.txq[n].if_index == -1)
 				break;
 
-			if (so->opt.tx_queue[n].cpu == Q_NO_KTHREAD) {
+			if (so->opt.txq[n].cpu == Q_NO_KTHREAD) {
 				printk(KERN_INFO "[PFQ|%d] kernel_thread: skipping queue %zu (no kthread).\n",
 				       so->id, n);
 				continue;
 			}
 
-			if (so->opt.tx_queue[n].task != NULL ||
-			    kthread_tx_pool[so->opt.tx_queue[n].cpu % Q_MAX_CPU] != NULL) {
+			if (so->opt.txq[n].task != NULL ||
+			    kthread_tx_pool[so->opt.txq[n].cpu % Q_MAX_CPU] != NULL) {
 				printk(KERN_INFO "[PFQ|%d] kernel_thread: Tx[%zu] kthread already running (cpu=%d)!\n",
 				       so->id, n,
-				       so->opt.tx_queue[n].cpu);
+				       so->opt.txq[n].cpu);
 				continue;
 			}
 
 			data = kmalloc(sizeof(struct pfq_thread_data), GFP_KERNEL);
 			if (!data) {
 				printk(KERN_INFO "[PFQ|%d] kernel_thread: could not allocate thread_data! Failed starting kthread on cpu %d!\n",
-						so->id, so->opt.tx_queue[n].cpu);
+						so->id, so->opt.txq[n].cpu);
 				err = -EPERM;
 				continue;
 			}
 
 			data->so = so;
 			data->id = n;
-			node = cpu_online(so->opt.tx_queue[n].cpu) ?
-			       cpu_to_node(so->opt.tx_queue[n].cpu) : NUMA_NO_NODE;
+			node = cpu_online(so->opt.txq[n].cpu) ?
+			       cpu_to_node(so->opt.txq[n].cpu) : NUMA_NO_NODE;
 
 			pr_devel("[PFQ|%d] creating Tx[%zu] kthread on cpu %d: if_index=%d queue=%d\n",
-					so->id, n, so->opt.tx_queue[n].cpu, so->opt.tx_queue[n].if_index,
-					so->opt.tx_queue[n].queue);
+					so->id, n, so->opt.txq[n].cpu, so->opt.txq[n].if_index,
+					so->opt.txq[n].queue);
 
-			so->opt.tx_queue[n].task = kthread_create_on_node(pfq_tx_thread, data, node,
+			so->opt.txq[n].task = kthread_create_on_node(pfq_tx_thread, data, node,
 									  "pfq_tx_%d#%zu", so->id, n);
 
-			if (IS_ERR(so->opt.tx_queue[n].task)) {
+			if (IS_ERR(so->opt.txq[n].task)) {
 
 				printk(KERN_INFO "[PFQ|%d] kernel_thread: create failed on cpu %d!\n",
-				       so->id, so->opt.tx_queue[n].cpu);
-				err = PTR_ERR(so->opt.tx_queue[n].task);
+				       so->id, so->opt.txq[n].cpu);
+				err = PTR_ERR(so->opt.txq[n].task);
 
-				so->opt.tx_queue[n].task = NULL;
+				so->opt.txq[n].task = NULL;
 				kfree (data);
 				continue;
 			}
 
 			/* update global Tx pool */
 
-			kthread_tx_pool[so->opt.tx_queue[n].cpu % Q_MAX_CPU] = so->opt.tx_queue[n].task;
+			kthread_tx_pool[so->opt.txq[n].cpu % Q_MAX_CPU] = so->opt.txq[n].task;
 
 			/* bind the thread */
 
-			kthread_bind(so->opt.tx_queue[n].task, so->opt.tx_queue[n].cpu);
+			kthread_bind(so->opt.txq[n].task, so->opt.txq[n].cpu);
 
 			/* start it */
 
-			wake_up_process(so->opt.tx_queue[n].task);
+			wake_up_process(so->opt.txq[n].task);
 
 			started++;
 		}
