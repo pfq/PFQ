@@ -277,7 +277,6 @@ __pfq_sk_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, i
 
                 copies = hdr->copies;
 
-
 		do {
 			skb_get(skb);
 
@@ -291,13 +290,13 @@ __pfq_sk_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, i
 				more = xmit_batch_len - 1;
 				pfq_relax();
 
-				local_bh_disable();
-				HARD_TX_LOCK(dev, txq, smp_processor_id());
-
 				if (giveup_tx_process()) {
 					pfq_kfree_skb_pool(skb, &pool->tx_pool);
 					goto stop;
 				}
+
+				local_bh_disable();
+				HARD_TX_LOCK(dev, txq, smp_processor_id());
 			}
 			else {
 				copies--;
@@ -326,11 +325,10 @@ __pfq_sk_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, i
 		hdr = (struct pfq_pkthdr_tx *)ptr;
 	}
 
-	stop:
-
 	HARD_TX_UNLOCK(dev, txq);
 	local_bh_enable();
 
+stop:
 	/* count the packets left in the shared queue */
 
 	while(traverse_sk_queue(ptr, begin, end, idx))
