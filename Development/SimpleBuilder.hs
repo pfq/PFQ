@@ -233,7 +233,7 @@ type BuilderScript = Writer Script ()
 
 type Script = [Component]
 
-type BuilderT = RWS.RWST (Options) () [Target]
+type BuilderT = RWS.RWST Options () [Target]
 
 
 infixr 0 *>>
@@ -263,7 +263,7 @@ buildTargets tgts script baseDir level = do
     let script' = filter (\(Component tar' _ ) -> tar' `elem` tgts) script
 
     when (length tgts > length script') $
-        lift $ error ("SimpleBuilder: " ++ unwords (
+        liftIO $ error ("SimpleBuilder: " ++ unwords (
             map getTargetName $ filter (`notElem` targets) tgts)  ++ ": target not found!")
 
     forM_ (zip [1..] script') $ \(n, Component target (ActionInfo path action)) -> do
@@ -286,17 +286,24 @@ buildTargets tgts script baseDir level = do
 
             putStrLnVerbose (Just $ verbose opt) $ bold ++ "# Building target " ++ show target ++ ": " ++ show (map (evalCmd opt) cmds') ++ reset
 
-            -- build target
+            liftIO $ do
 
-            if dryRun opt
-            then void . lift $ do
-                    putStrLn $ "cd " ++ baseDir </> path
-                    mapM (putStrLn . evalCmd opt) cmds'
-            else void . lift $ do
-                    setCurrentDirectory $ baseDir </> path
-                    ec <- mapM (runCmd opt) cmds'
-                    unless (all (== ExitSuccess) ec) $
-                        error ("SimpleBuilder: " ++ show target ++ " aborted!")
+                -- set working dir...
+
+                let workDir = dropTrailingPathSeparator $ baseDir </> path
+
+                cur <- getCurrentDirectory
+
+                when (cur /= workDir) $ do
+                    setCurrentDirectory workDir
+                    when (dryRun opt || verbose opt) $ putStrLn $ "cd " ++ workDir
+
+                -- build target
+
+                if dryRun opt then void $ mapM (putStrLn . evalCmd opt) cmds'
+                              else void $ do ec <- mapM (runCmd opt) cmds'
+                                             unless (all (== ExitSuccess) ec) $
+                                                error ("SimpleBuilder: " ++ show target ++ " aborted!")
 
 
 putStrLnVerbose  :: Maybe Bool -> String -> BuilderT IO ()
