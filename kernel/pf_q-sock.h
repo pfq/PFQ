@@ -40,132 +40,54 @@
 extern atomic_long_t pfq_sock_vector[Q_MAX_ID];
 
 
-struct pfq_rx_opt
+struct pfq_tx_qinfo
 {
-	atomic_long_t		queue_hdr;
-	void		       *base_addr;
+	atomic_long_t			queue_ptr;
+	void				*base_addr;
 
-	int			tstamp;
+	int				if_index;
+	int				queue;
+	int				cpu;
 
-	size_t			caplen;
-
-	size_t			queue_size;
-	size_t			slot_size;
-
-	wait_queue_head_t	waitqueue;
-
-        struct pfq_socket_rx_stats stats;
-
-} ____cacheline_aligned_in_smp;
-
-
-static inline
-struct pfq_rx_queue *
-pfq_get_rx_queue(struct pfq_rx_opt *that)
-{
-	return (struct pfq_rx_queue *)atomic_long_read(&that->queue_hdr);
-}
-
-
-static inline
-void pfq_rx_opt_init(struct pfq_rx_opt *that, size_t caplen)
-{
-        /* the queue is allocate later, when the socket is enabled */
-
-        atomic_long_set(&that->queue_hdr, 0);
-
-        that->base_addr = NULL;
-
-        /* disable tiemstamping by default */
-        that->tstamp = false;
-
-        /* set q_slots and q_caplen default values */
-
-        that->caplen = caplen;
-
-        that->queue_size = 0;
-        that->slot_size = 0;
-
-        /* initialize waitqueue */
-
-        init_waitqueue_head(&that->waitqueue);
-
-        /* reset stats */
-        sparse_set(&that->stats.recv, 0);
-        sparse_set(&that->stats.lost, 0);
-        sparse_set(&that->stats.drop, 0);
-
-}
-
-
-struct pfq_tx_queue_info
-{
-	atomic_long_t		queue_hdr;
-	void		       *base_addr;
-
-	int			if_index;
-	int			queue;
-	int			cpu;
-
-	struct task_struct     *task;
+	struct task_struct		*task;
 };
 
 
-struct pfq_tx_opt
+struct pfq_rx_qinfo
 {
-	uint64_t		counter;
+	atomic_long_t			queue_ptr;
+	void			       *base_addr;
+};
 
-	size_t			queue_size;
-	size_t			slot_size;
-        size_t			num_queues;
 
-	struct pfq_tx_queue_info queue[Q_MAX_TX_QUEUES];
 
-	struct pfq_socket_tx_stats stats;
+struct pfq_sock_opt
+{
+	int				tstamp;
+	size_t				caplen;
+
+	size_t				rx_queue_size;
+	size_t				rx_slot_size;
+
+	size_t				tx_queue_size;
+	size_t				tx_slot_size;
+        size_t				tx_num_queues;
+
+	wait_queue_head_t		waitqueue;
+
+	struct pfq_tx_qinfo		tx_queue[Q_MAX_TX_QUEUES];
+	struct pfq_socket_tx_stats	tx_stats;
+
+	struct pfq_rx_qinfo		rx_queue;
+        struct pfq_socket_rx_stats	rx_stats;
 
 } ____cacheline_aligned_in_smp;
 
-
-static inline
-struct pfq_tx_queue *
-pfq_get_tx_queue(struct pfq_tx_opt *that, int index)
-{
-	return (struct pfq_tx_queue *)atomic_long_read(&that->queue[index].queue_hdr);
-}
-
-
-static inline
-void pfq_tx_opt_init(struct pfq_tx_opt *that, size_t maxlen)
-{
-        /* the queue is allocate later, when the socket is enabled */
-        int n;
-
-        that->counter = 0;
-
-        that->queue_size = 0;
-        that->slot_size  = Q_SPSC_QUEUE_SLOT_SIZE(maxlen);
-	that->num_queues = 0;
-
-	for(n = 0; n < Q_MAX_TX_QUEUES; ++n)
-	{
-		atomic_long_set(&that->queue[n].queue_hdr, 0);
-
-		that->queue[n].base_addr = NULL;
-		that->queue[n].if_index  = -1;
-		that->queue[n].queue     = -1;
-		that->queue[n].cpu       = -1;
-		that->queue[n].task	 = NULL;
-	}
-
-        sparse_set(&that->stats.sent, 0);
-        sparse_set(&that->stats.disc, 0);
-}
 
 
 struct pfq_sock
 {
         struct sock		sk;
-
         pfq_id_t		id;
 
 	int			egress_type;
@@ -176,10 +98,81 @@ struct pfq_sock
 
 	struct pfq_shmem_descr  shmem;
 
-        struct pfq_rx_opt	rx_opt;
-        struct pfq_tx_opt	tx_opt;
+        struct pfq_sock_opt	opt;
 
 } ____cacheline_aligned_in_smp;
+
+
+
+static inline
+struct pfq_rx_queue *
+pfq_get_rx_queue(struct pfq_sock_opt *that)
+{
+	return (struct pfq_rx_queue *)atomic_long_read(&that->rx_queue.queue_ptr);
+}
+
+
+static inline
+struct pfq_tx_queue *
+pfq_get_tx_queue(struct pfq_sock_opt *that, int index)
+{
+	return (struct pfq_tx_queue *)atomic_long_read(&that->tx_queue[index].queue_ptr);
+}
+
+
+static inline
+void pfq_sock_opt_init(struct pfq_sock_opt *that, size_t caplen, size_t maxlen)
+{
+        /* the queue is allocate later, when the socket is enabled */
+        int n;
+
+        atomic_long_set(&that->rx_queue.queue_ptr, 0);
+
+        that->rx_queue.base_addr = NULL;
+
+        /* disable tiemstamping by default */
+        that->tstamp = false;
+
+	/* Rx queue setup */
+
+        /* set slots and caplen default values */
+
+        that->caplen = caplen;
+        that->rx_queue_size = 0;
+        that->rx_slot_size = 0;
+
+        /* initialize waitqueue */
+
+        init_waitqueue_head(&that->waitqueue);
+
+        /* reset Rx stats */
+
+        sparse_set(&that->rx_stats.recv, 0);
+        sparse_set(&that->rx_stats.lost, 0);
+        sparse_set(&that->rx_stats.drop, 0);
+
+	/* Tx queues setup */
+
+        that->tx_queue_size = 0;
+        that->tx_slot_size  = Q_SPSC_QUEUE_SLOT_SIZE(maxlen);
+	that->tx_num_queues = 0;
+
+	for(n = 0; n < Q_MAX_TX_QUEUES; ++n)
+	{
+		atomic_long_set(&that->tx_queue[n].queue_ptr, 0);
+
+		that->tx_queue[n].base_addr = NULL;
+		that->tx_queue[n].if_index  = -1;
+		that->tx_queue[n].queue     = -1;
+		that->tx_queue[n].cpu       = -1;
+		that->tx_queue[n].task	    = NULL;
+	}
+
+        /* reset Tx stats */
+
+        sparse_set(&that->tx_stats.sent, 0);
+        sparse_set(&that->tx_stats.disc, 0);
+}
 
 
 static inline

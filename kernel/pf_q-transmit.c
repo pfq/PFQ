@@ -178,7 +178,7 @@ bool traverse_sk_queue(char *ptr, char *begin, char *end, int idx)
 
 
 int
-__pfq_sk_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, int cpu, int node)
+__pfq_sk_queue_xmit(size_t idx, struct pfq_sock_opt *opt, struct net_device *dev, int cpu, int node)
 {
 	struct netdev_queue *txq;
 	struct pfq_tx_queue *txs;
@@ -192,11 +192,11 @@ __pfq_sk_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, i
 
 	/* get the Tx queue */
 
-	txs = pfq_get_tx_queue(to, idx);
+	txs = pfq_get_tx_queue(opt, idx);
 
 	/* get the netdev_queue for transmission */
 
-	queue = __pfq_dev_cap_txqueue(dev, to->queue[idx].queue);
+	queue = __pfq_dev_cap_txqueue(dev, opt->tx_queue[idx].queue);
 
 	txq = netdev_get_tx_queue(dev, queue);
 
@@ -215,7 +215,7 @@ __pfq_sk_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, i
 
         /* initialize pointer to the current transmit queue */
 
-	begin = to->queue[idx].base_addr + (swap & 1) * txs->size;
+	begin = opt->tx_queue[idx].base_addr + (swap & 1) * txs->size;
         end = begin + txs->size;
 
 	/* Tx loop */
@@ -309,11 +309,11 @@ __pfq_sk_queue_xmit(size_t idx, struct pfq_tx_opt *to, struct net_device *dev, i
 		total_sent += hdr->copies;
 
 		if (cpu != Q_NO_KTHREAD) {
-			__sparse_add(&to->stats.sent, hdr->copies, cpu);
+			__sparse_add(&opt->tx_stats.sent, hdr->copies, cpu);
 			__sparse_add(&global_stats.sent, hdr->copies, cpu);
 		}
 		else {
-			sparse_add(&to->stats.sent, hdr->copies);
+			sparse_add(&opt->tx_stats.sent, hdr->copies);
 			sparse_add(&global_stats.sent, hdr->copies);
 		}
 
@@ -341,11 +341,11 @@ stop:
 	/* update stats */
 
 	if (cpu != Q_NO_KTHREAD) {
-		__sparse_add(&to->stats.disc, disc, cpu);
+		__sparse_add(&opt->tx_stats.disc, disc, cpu);
 		__sparse_add(&global_stats.disc, disc, cpu);
 	}
 	else {
-		sparse_add(&to->stats.disc, disc);
+		sparse_add(&opt->tx_stats.disc, disc);
 		sparse_add(&global_stats.disc, disc);
 	}
 
@@ -366,18 +366,18 @@ pfq_sk_queue_flush(struct pfq_sock *so, int index)
 {
 	struct net_device *dev;
 
-	if (so->tx_opt.queue[index].task) {
+	if (so->opt.tx_queue[index].task) {
 		return 0;
 	}
 
-	dev = dev_get_by_index(sock_net(&so->sk), so->tx_opt.queue[index].if_index);
+	dev = dev_get_by_index(sock_net(&so->sk), so->opt.tx_queue[index].if_index);
 	if (!dev) {
 		printk(KERN_INFO "[PFQ] pfq_sk_queue_flush[%d]: bad if_index:%d!\n",
-		       index, so->tx_opt.queue[index].if_index);
+		       index, so->opt.tx_queue[index].if_index);
 		return -EPERM;
 	}
 
-	pfq_sk_queue_xmit(index, &so->tx_opt, dev);
+	pfq_sk_queue_xmit(index, &so->opt, dev);
 	dev_put(dev);
 	return 0;
 }

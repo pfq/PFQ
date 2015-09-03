@@ -43,7 +43,7 @@
 int pfq_shared_queue_enable(struct pfq_sock *so, unsigned long addr);
 int pfq_shared_queue_disable(struct pfq_sock *so);
 
-extern size_t pfq_mpsc_enqueue_batch(struct pfq_rx_opt *ro,
+extern size_t pfq_mpsc_enqueue_batch(struct pfq_sock_opt *opt,
 		                     struct pfq_skbuff_queue __GC *skbs,
 		                     unsigned long long skbs_mask,
 		                     int burst_len,
@@ -52,12 +52,12 @@ extern size_t pfq_mpsc_enqueue_batch(struct pfq_rx_opt *ro,
 
 static inline size_t pfq_queue_mpsc_mem(struct pfq_sock *so)
 {
-        return so->rx_opt.queue_size * so->rx_opt.slot_size * 2;
+        return so->opt.rx_queue_size * so->opt.rx_slot_size * 2;
 }
 
 static inline size_t pfq_queue_spsc_mem(struct pfq_sock *so)
 {
-        return so->tx_opt.queue_size * so->tx_opt.slot_size * 2;
+        return so->opt.tx_queue_size * so->opt.tx_slot_size * 2;
 }
 
 

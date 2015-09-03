@@ -154,15 +154,15 @@ int pfq_getsockopt(struct socket *sock,
                 if (len != sizeof(struct pfq_stats))
                         return -EINVAL;
 
-                stat.recv = sparse_read(&so->rx_opt.stats.recv);
-                stat.lost = sparse_read(&so->rx_opt.stats.lost);
-                stat.drop = sparse_read(&so->rx_opt.stats.drop);
+                stat.recv = sparse_read(&so->opt.rx_stats.recv);
+                stat.lost = sparse_read(&so->opt.rx_stats.lost);
+                stat.drop = sparse_read(&so->opt.rx_stats.drop);
 
 		stat.frwd = 0;
 		stat.kern = 0;
 
-                stat.sent = sparse_read(&so->tx_opt.stats.sent);
-                stat.disc = sparse_read(&so->tx_opt.stats.disc);
+                stat.sent = sparse_read(&so->opt.tx_stats.sent);
+                stat.disc = sparse_read(&so->opt.tx_stats.disc);
 
                 if (copy_to_user(optval, &stat, sizeof(stat)))
                         return -EFAULT;
@@ -170,9 +170,9 @@ int pfq_getsockopt(struct socket *sock,
 
         case Q_SO_GET_RX_TSTAMP:
         {
-                if (len != sizeof(so->rx_opt.tstamp))
+                if (len != sizeof(so->opt.tstamp))
                         return -EINVAL;
-                if (copy_to_user(optval, &so->rx_opt.tstamp, sizeof(so->rx_opt.tstamp)))
+                if (copy_to_user(optval, &so->opt.tstamp, sizeof(so->opt.tstamp)))
                         return -EFAULT;
         } break;
 
@@ -189,9 +189,9 @@ int pfq_getsockopt(struct socket *sock,
 
         case Q_SO_GET_RX_CAPLEN:
         {
-                if (len != sizeof(so->rx_opt.caplen))
+                if (len != sizeof(so->opt.caplen))
                         return -EINVAL;
-                if (copy_to_user(optval, &so->rx_opt.caplen, sizeof(so->rx_opt.caplen)))
+                if (copy_to_user(optval, &so->opt.caplen, sizeof(so->opt.caplen)))
                         return -EFAULT;
         } break;
 
@@ -205,17 +205,17 @@ int pfq_getsockopt(struct socket *sock,
 
         case Q_SO_GET_RX_SLOTS:
         {
-                if (len != sizeof(so->rx_opt.queue_size))
+                if (len != sizeof(so->opt.rx_queue_size))
                         return -EINVAL;
-                if (copy_to_user(optval, &so->rx_opt.queue_size, sizeof(so->rx_opt.queue_size)))
+                if (copy_to_user(optval, &so->opt.rx_queue_size, sizeof(so->opt.rx_queue_size)))
                         return -EFAULT;
         } break;
 
         case Q_SO_GET_TX_SLOTS:
         {
-                if (len != sizeof(so->tx_opt.queue_size))
+                if (len != sizeof(so->opt.tx_queue_size))
                         return -EINVAL;
-                if (copy_to_user(optval, &so->tx_opt.queue_size, sizeof(so->tx_opt.queue_size)))
+                if (copy_to_user(optval, &so->opt.tx_queue_size, sizeof(so->opt.tx_queue_size)))
                         return -EFAULT;
         } break;
 
@@ -493,21 +493,21 @@ int pfq_setsockopt(struct socket *sock,
         case Q_SO_SET_RX_TSTAMP:
         {
                 int tstamp;
-                if (optlen != sizeof(so->rx_opt.tstamp))
+                if (optlen != sizeof(so->opt.tstamp))
                         return -EINVAL;
 
                 if (copy_from_user(&tstamp, optval, optlen))
                         return -EFAULT;
 
                 tstamp = tstamp ? 1 : 0;
-                so->rx_opt.tstamp = tstamp;
+                so->opt.tstamp = tstamp;
 
                 pr_devel("[PFQ|%d] timestamp enabled.\n", so->id);
         } break;
 
         case Q_SO_SET_RX_CAPLEN:
         {
-                typeof(so->rx_opt.caplen) caplen;
+                typeof(so->opt.caplen) caplen;
 
                 if (optlen != sizeof(caplen))
                         return -EINVAL;
@@ -519,16 +519,16 @@ int pfq_setsockopt(struct socket *sock,
                         return -EPERM;
                 }
 
-                so->rx_opt.caplen = caplen;
-                so->rx_opt.slot_size = Q_MPDB_QUEUE_SLOT_SIZE(so->rx_opt.caplen);
+                so->opt.caplen = caplen;
+                so->opt.rx_slot_size = Q_MPDB_QUEUE_SLOT_SIZE(so->opt.caplen);
 
                 pr_devel("[PFQ|%d] caplen=%zu, slot_size=%zu\n",
-                                so->id, so->rx_opt.caplen, so->rx_opt.slot_size);
+                                so->id, so->opt.caplen, so->opt.rx_slot_size);
         } break;
 
         case Q_SO_SET_RX_SLOTS:
         {
-                typeof(so->rx_opt.queue_size) slots;
+                typeof(so->opt.rx_queue_size) slots;
 
                 if (optlen != sizeof(slots))
                         return -EINVAL;
@@ -542,14 +542,14 @@ int pfq_setsockopt(struct socket *sock,
                         return -EPERM;
                 }
 
-                so->rx_opt.queue_size = slots;
+                so->opt.rx_queue_size = slots;
 
-                pr_devel("[PFQ|%d] rx_queue slots=%zu\n", so->id, so->rx_opt.queue_size);
+                pr_devel("[PFQ|%d] rx_queue slots=%zu\n", so->id, so->opt.rx_queue_size);
         } break;
 
         case Q_SO_SET_TX_SLOTS:
         {
-                typeof (so->tx_opt.queue_size) slots;
+                typeof (so->opt.tx_queue_size) slots;
 
                 if (optlen != sizeof(slots))
                         return -EINVAL;
@@ -562,9 +562,9 @@ int pfq_setsockopt(struct socket *sock,
                         return -EPERM;
                 }
 
-                so->tx_opt.queue_size = slots;
+                so->opt.tx_queue_size = slots;
 
-                pr_devel("[PFQ|%d] tx_queue slots=%zu\n", so->id, so->tx_opt.queue_size);
+                pr_devel("[PFQ|%d] tx_queue slots=%zu\n", so->id, so->opt.tx_queue_size);
         } break;
 
         case Q_SO_SET_WEIGHT:
@@ -745,7 +745,7 @@ int pfq_setsockopt(struct socket *sock,
                 if (copy_from_user(&binfo, optval, optlen))
                         return -EFAULT;
 
-		if (so->tx_opt.num_queues >= Q_MAX_TX_QUEUES) {
+		if (so->opt.tx_num_queues >= Q_MAX_TX_QUEUES) {
                         printk(KERN_INFO "[PFQ|%d] Tx bind: max number of queues exceeded!\n", so->id);
 			return -EPERM;
 		}
@@ -763,20 +763,20 @@ int pfq_setsockopt(struct socket *sock,
                         return -EPERM;
                 }
 
-                i = so->tx_opt.num_queues;
+                i = so->opt.tx_num_queues;
 
 		if (binfo.cpu < -1) {
 			printk(KERN_INFO "[PFQ|%d] Tx[%zu] kthread: invalid cpu (%d)!\n", so->id, i, binfo.cpu);
 			return -EPERM;
 		}
 
-                so->tx_opt.queue[i].if_index = binfo.if_index;
-                so->tx_opt.queue[i].queue = binfo.queue;
-                so->tx_opt.queue[i].cpu = binfo.cpu;
-		so->tx_opt.num_queues++;
+                so->opt.tx_queue[i].if_index = binfo.if_index;
+                so->opt.tx_queue[i].queue = binfo.queue;
+                so->opt.tx_queue[i].cpu = binfo.cpu;
+		so->opt.tx_num_queues++;
 
                 pr_devel("[PFQ|%d] Tx[%zu] bind: if_index=%d queue=%d cpu=%d\n", so->id, i,
-			 so->tx_opt.queue[i].if_index, so->tx_opt.queue[i].queue, binfo.cpu);
+			 so->opt.tx_queue[i].if_index, so->opt.tx_queue[i].queue, binfo.cpu);
 
         } break;
 
@@ -786,7 +786,7 @@ int pfq_setsockopt(struct socket *sock,
 
 		for(n = 0; n < Q_MAX_TX_QUEUES; ++n)
 		{
-			if (so->tx_opt.queue[n].task != NULL) {
+			if (so->opt.tx_queue[n].task != NULL) {
 				printk(KERN_INFO "[PFQ|%d] Tx unbind error: kthread running!\n", so->id);
 				return -EPERM;
 			}
@@ -794,9 +794,9 @@ int pfq_setsockopt(struct socket *sock,
 
 		for(n = 0; n < Q_MAX_TX_QUEUES; ++n)
 		{
-			so->tx_opt.queue[n].if_index = -1;
-			so->tx_opt.queue[n].queue = -1;
-			so->tx_opt.queue[n].cpu = -1;
+			so->opt.tx_queue[n].if_index = -1;
+			so->opt.tx_queue[n].queue = -1;
+			so->opt.tx_queue[n].cpu = -1;
 		}
 
         } break;
@@ -812,14 +812,14 @@ int pfq_setsockopt(struct socket *sock,
 		if (copy_from_user(&queue, optval, optlen))
 			return -EFAULT;
 
-		if (pfq_get_tx_queue(&so->tx_opt, 0) == NULL) {
+		if (pfq_get_tx_queue(&so->opt, 0) == NULL) {
 			printk(KERN_INFO "[PFQ|%d] Tx queue flush: socket not enabled!\n", so->id);
 			return -EPERM;
 		}
 
-		if (queue < -1 || (queue > 0 && queue >= so->tx_opt.num_queues)) {
+		if (queue < -1 || (queue > 0 && queue >= so->opt.tx_num_queues)) {
 			printk(KERN_INFO "[PFQ|%d] Tx queue flush: bad queue %d (num_queue=%zu)!\n",
-			       so->id, queue, so->tx_opt.num_queues);
+			       so->id, queue, so->opt.tx_num_queues);
 			return -EPERM;
 		}
 
@@ -828,11 +828,11 @@ int pfq_setsockopt(struct socket *sock,
 			return pfq_sk_queue_flush(so, queue);
 		}
 
-		for(n = 0; n < so->tx_opt.num_queues; n++)
+		for(n = 0; n < so->opt.tx_num_queues; n++)
 		{
 			if (pfq_sk_queue_flush(so, n) != 0) {
 				printk(KERN_INFO "[PFQ|%d] Tx[%zu] queue flush: flush error (if_index=%d)!\n",
-				       so->id, n, so->tx_opt.queue[n].if_index);
+				       so->id, n, so->opt.tx_queue[n].if_index);
 				err = -EPERM;
 			}
 		}
@@ -846,7 +846,7 @@ int pfq_setsockopt(struct socket *sock,
                 int err = 0;
                 size_t n, started = 0;
 
-		if (pfq_get_tx_queue(&so->tx_opt, 0) == NULL) {
+		if (pfq_get_tx_queue(&so->opt, 0) == NULL) {
 			printk(KERN_INFO "[PFQ|%d] Tx queue flush: socket not enabled!\n", so->id);
 			return -EPERM;
 		}
@@ -860,65 +860,65 @@ int pfq_setsockopt(struct socket *sock,
 			struct pfq_thread_data *data;
 			int node;
 
-			if (so->tx_opt.queue[n].if_index == -1)
+			if (so->opt.tx_queue[n].if_index == -1)
 				break;
 
-			if (so->tx_opt.queue[n].cpu == Q_NO_KTHREAD) {
+			if (so->opt.tx_queue[n].cpu == Q_NO_KTHREAD) {
 				printk(KERN_INFO "[PFQ|%d] kernel_thread: skipping queue %zu (no kthread).\n",
 				       so->id, n);
 				continue;
 			}
 
-			if (so->tx_opt.queue[n].task != NULL ||
-			    kthread_tx_pool[so->tx_opt.queue[n].cpu % Q_MAX_CPU] != NULL) {
+			if (so->opt.tx_queue[n].task != NULL ||
+			    kthread_tx_pool[so->opt.tx_queue[n].cpu % Q_MAX_CPU] != NULL) {
 				printk(KERN_INFO "[PFQ|%d] kernel_thread: Tx[%zu] kthread already running (cpu=%d)!\n",
 				       so->id, n,
-				       so->tx_opt.queue[n].cpu);
+				       so->opt.tx_queue[n].cpu);
 				continue;
 			}
 
 			data = kmalloc(sizeof(struct pfq_thread_data), GFP_KERNEL);
 			if (!data) {
 				printk(KERN_INFO "[PFQ|%d] kernel_thread: could not allocate thread_data! Failed starting kthread on cpu %d!\n",
-						so->id, so->tx_opt.queue[n].cpu);
+						so->id, so->opt.tx_queue[n].cpu);
 				err = -EPERM;
 				continue;
 			}
 
 			data->so = so;
 			data->id = n;
-			node = cpu_online(so->tx_opt.queue[n].cpu) ?
-			       cpu_to_node(so->tx_opt.queue[n].cpu) : NUMA_NO_NODE;
+			node = cpu_online(so->opt.tx_queue[n].cpu) ?
+			       cpu_to_node(so->opt.tx_queue[n].cpu) : NUMA_NO_NODE;
 
 			pr_devel("[PFQ|%d] creating Tx[%zu] kthread on cpu %d: if_index=%d queue=%d\n",
-					so->id, n, so->tx_opt.queue[n].cpu, so->tx_opt.queue[n].if_index,
-					so->tx_opt.queue[n].queue);
+					so->id, n, so->opt.tx_queue[n].cpu, so->opt.tx_queue[n].if_index,
+					so->opt.tx_queue[n].queue);
 
-			so->tx_opt.queue[n].task = kthread_create_on_node(pfq_tx_thread, data, node,
+			so->opt.tx_queue[n].task = kthread_create_on_node(pfq_tx_thread, data, node,
 									  "pfq_tx_%d#%zu", so->id, n);
 
-			if (IS_ERR(so->tx_opt.queue[n].task)) {
+			if (IS_ERR(so->opt.tx_queue[n].task)) {
 
 				printk(KERN_INFO "[PFQ|%d] kernel_thread: create failed on cpu %d!\n",
-				       so->id, so->tx_opt.queue[n].cpu);
-				err = PTR_ERR(so->tx_opt.queue[n].task);
+				       so->id, so->opt.tx_queue[n].cpu);
+				err = PTR_ERR(so->opt.tx_queue[n].task);
 
-				so->tx_opt.queue[n].task = NULL;
+				so->opt.tx_queue[n].task = NULL;
 				kfree (data);
 				continue;
 			}
 
 			/* update global Tx pool */
 
-			kthread_tx_pool[so->tx_opt.queue[n].cpu % Q_MAX_CPU] = so->tx_opt.queue[n].task;
+			kthread_tx_pool[so->opt.tx_queue[n].cpu % Q_MAX_CPU] = so->opt.tx_queue[n].task;
 
 			/* bind the thread */
 
-			kthread_bind(so->tx_opt.queue[n].task, so->tx_opt.queue[n].cpu);
+			kthread_bind(so->opt.tx_queue[n].task, so->opt.tx_queue[n].cpu);
 
 			/* start it */
 
-			wake_up_process(so->tx_opt.queue[n].task);
+			wake_up_process(so->opt.tx_queue[n].task);
 
 			started++;
 		}

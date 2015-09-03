@@ -62,27 +62,27 @@ add_dev_to_endpoints(struct net_device *dev, struct pfq_endpoint_info *ts)
 
 
 static
-size_t copy_to_user_skbs(struct pfq_rx_opt *ro, struct pfq_skbuff_queue __GC *skbs,
+size_t copy_to_user_skbs(struct pfq_sock_opt *opt, struct pfq_skbuff_queue __GC *skbs,
 			 unsigned long long mask, int cpu, pfq_gid_t gid)
 {
         int len = pfq_popcount(mask);
         size_t cpy = 0;
 
-        if (likely(pfq_get_rx_queue(ro))) {
+        if (likely(pfq_get_rx_queue(opt))) {
 
 		smp_rmb();
 
-                cpy = pfq_mpsc_enqueue_batch(ro, skbs, mask, len, gid);
+                cpy = pfq_mpsc_enqueue_batch(opt, skbs, mask, len, gid);
 
-		__sparse_add(&ro->stats.recv, cpy, cpu);
+		__sparse_add(&opt->rx_stats.recv, cpy, cpu);
 
 		if (len > cpy)
-			__sparse_add(&ro->stats.drop, len - cpy, cpu);
+			__sparse_add(&opt->rx_stats.drop, len - cpy, cpu);
 
 		return cpy;
         }
 	else
-		__sparse_add(&ro->stats.lost, len, cpu);
+		__sparse_add(&opt->rx_stats.lost, len, cpu);
 
         return cpy;
 }
@@ -121,7 +121,7 @@ size_t copy_to_endpoint_skbs(struct pfq_sock *so, struct pfq_skbuff_queue __GC *
 	switch(so->egress_type)
 	{
 	case pfq_endpoint_socket:
-		return copy_to_user_skbs(&so->rx_opt, pool, mask, cpu, gid);
+		return copy_to_user_skbs(&so->opt, pool, mask, cpu, gid);
 
 	case pfq_endpoint_device:
 		return copy_to_dev_skbs(so, pool, mask, cpu, gid);

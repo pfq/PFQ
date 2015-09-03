@@ -635,9 +635,9 @@ pfq_poll(struct file *file, struct socket *sock, poll_table * wait)
 	sparse_inc(&global_stats.poll);
 #endif
 
-	poll_wait(file, &so->rx_opt.waitqueue, wait);
+	poll_wait(file, &so->opt.waitqueue, wait);
 
-        if(!pfq_get_rx_queue(&so->rx_opt))
+        if(!pfq_get_rx_queue(&so->opt))
                 return mask;
 
         if (pfq_mpsc_queue_len(so) > 0)
@@ -846,10 +846,9 @@ pfq_create(
 
         down(&sock_sem);
 
-        /* initialize both rx_opt and tx_opt */
+        /* initialize sock opt */
 
-        pfq_rx_opt_init(&so->rx_opt, capt_slot_size);
-        pfq_tx_opt_init(&so->tx_opt, xmit_slot_size);
+        pfq_sock_opt_init(&so->opt, capt_slot_size, xmit_slot_size);
 
         /* initialize socket */
 
