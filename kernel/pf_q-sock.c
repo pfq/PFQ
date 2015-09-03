@@ -41,7 +41,7 @@ atomic_long_t pfq_sock_vector[Q_MAX_ID];
 
 
 static void
-pfq_sock_init(void)
+pfq_sock_init_once(void)
 {
 #ifdef PFQ_USE_SKB_POOL
 	pfq_skb_pool_enable(true);
@@ -50,7 +50,7 @@ pfq_sock_init(void)
 
 
 static void
-pfq_sock_finish(void)
+pfq_sock_finish_once(void)
 {
 #ifdef PFQ_USE_SKB_POOL
 	pfq_skb_pool_enable(false);
@@ -67,7 +67,7 @@ pfq_get_free_id(struct pfq_sock * so)
         {
                 if (!atomic_long_cmpxchg(pfq_sock_vector + n, 0, (long)so)) {
 			if(atomic_inc_return(&pfq_sock_count) == 1)
-				pfq_sock_init();
+				pfq_sock_init_once();
 			return (__force pfq_id_t)n;
                 }
         }
@@ -105,7 +105,79 @@ void pfq_release_sock_id(pfq_id_t id)
 
         atomic_long_set(pfq_sock_vector + (__force int)id, 0);
         if (atomic_dec_return(&pfq_sock_count) == 0)
-		pfq_sock_finish();
+		pfq_sock_finish_once();
 }
 
+
+void pfq_sock_opt_init(struct pfq_sock_opt *that, size_t caplen, size_t maxlen)
+{
+        /* the queue is allocate later, when the socket is enabled */
+        int n;
+
+        atomic_long_set(&that->rx_queue.queue_ptr, 0);
+
+        that->rx_queue.base_addr = NULL;
+
+        /* disable tiemstamping by default */
+        that->tstamp = false;
+
+	/* Rx queue setup */
+
+        /* set slots and caplen default values */
+
+        that->caplen = caplen;
+        that->rx_queue_size = 0;
+        that->rx_slot_size = 0;
+
+        /* initialize waitqueue */
+
+        init_waitqueue_head(&that->waitqueue);
+
+	/* Tx queues setup */
+
+        that->tx_queue_size = 0;
+        that->tx_slot_size  = Q_SPSC_QUEUE_SLOT_SIZE(maxlen);
+	that->tx_num_queues = 0;
+
+	for(n = 0; n < Q_MAX_TX_QUEUES; ++n)
+	{
+		atomic_long_set(&that->tx_queue[n].queue_ptr, 0);
+
+		that->tx_queue[n].base_addr = NULL;
+		that->tx_queue[n].if_index  = -1;
+		that->tx_queue[n].queue     = -1;
+		that->tx_queue[n].cpu       = -1;
+		that->tx_queue[n].task	    = NULL;
+	}
+
+}
+
+
+void pfq_sock_init(struct pfq_sock *so, int id)
+{
+	/* default weight */
+
+	so->id = id;
+        /* memory mapped queues are allocated later, when the socket is enabled */
+
+	so->egress_type   = pfq_endpoint_socket;
+	so->egress_index  = 0;
+	so->egress_queue  = 0;
+
+	so->weight = 1;
+
+        so->shmem.addr = NULL;
+        so->shmem.size = 0;
+        so->shmem.kind = 0;
+        so->shmem.hugepages = NULL;
+        so->shmem.npages = 0;
+
+        /* reset stats */
+
+        sparse_set(&so->stats.recv, 0);
+        sparse_set(&so->stats.lost, 0);
+        sparse_set(&so->stats.drop, 0);
+        sparse_set(&so->stats.sent, 0);
+        sparse_set(&so->stats.disc, 0);
+}
 

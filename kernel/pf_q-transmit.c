@@ -178,7 +178,7 @@ bool traverse_sk_queue(char *ptr, char *begin, char *end, int idx)
 
 
 int
-__pfq_sk_queue_xmit(size_t idx, struct pfq_sock_opt *opt, struct net_device *dev, int cpu, int node)
+__pfq_sk_queue_xmit(size_t idx, struct pfq_sock *so, struct net_device *dev, int cpu, int node)
 {
 	struct netdev_queue *txq;
 	struct pfq_tx_queue *txs;
@@ -192,11 +192,11 @@ __pfq_sk_queue_xmit(size_t idx, struct pfq_sock_opt *opt, struct net_device *dev
 
 	/* get the Tx queue */
 
-	txs = pfq_get_tx_queue(opt, idx);
+	txs = pfq_get_tx_queue(&so->opt, idx);
 
 	/* get the netdev_queue for transmission */
 
-	queue = __pfq_dev_cap_txqueue(dev, opt->tx_queue[idx].queue);
+	queue = __pfq_dev_cap_txqueue(dev, so->opt.tx_queue[idx].queue);
 
 	txq = netdev_get_tx_queue(dev, queue);
 
@@ -215,7 +215,7 @@ __pfq_sk_queue_xmit(size_t idx, struct pfq_sock_opt *opt, struct net_device *dev
 
         /* initialize pointer to the current transmit queue */
 
-	begin = opt->tx_queue[idx].base_addr + (swap & 1) * txs->size;
+	begin = so->opt.tx_queue[idx].base_addr + (swap & 1) * txs->size;
         end = begin + txs->size;
 
 	/* Tx loop */
@@ -309,11 +309,11 @@ __pfq_sk_queue_xmit(size_t idx, struct pfq_sock_opt *opt, struct net_device *dev
 		total_sent += hdr->copies;
 
 		if (cpu != Q_NO_KTHREAD) {
-			__sparse_add(&opt->stats.sent, hdr->copies, cpu);
+			__sparse_add(&so->stats.sent, hdr->copies, cpu);
 			__sparse_add(&global_stats.sent, hdr->copies, cpu);
 		}
 		else {
-			sparse_add(&opt->stats.sent, hdr->copies);
+			sparse_add(&so->stats.sent, hdr->copies);
 			sparse_add(&global_stats.sent, hdr->copies);
 		}
 
@@ -341,11 +341,11 @@ stop:
 	/* update stats */
 
 	if (cpu != Q_NO_KTHREAD) {
-		__sparse_add(&opt->stats.disc, disc, cpu);
+		__sparse_add(&so->stats.disc, disc, cpu);
 		__sparse_add(&global_stats.disc, disc, cpu);
 	}
 	else {
-		sparse_add(&opt->stats.disc, disc);
+		sparse_add(&so->stats.disc, disc);
 		sparse_add(&global_stats.disc, disc);
 	}
 
@@ -377,7 +377,7 @@ pfq_sk_queue_flush(struct pfq_sock *so, int index)
 		return -EPERM;
 	}
 
-	pfq_sk_queue_xmit(index, &so->opt, dev);
+	pfq_sk_queue_xmit(index, so, dev);
 	dev_put(dev);
 	return 0;
 }

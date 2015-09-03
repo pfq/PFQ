@@ -154,15 +154,15 @@ int pfq_getsockopt(struct socket *sock,
                 if (len != sizeof(struct pfq_stats))
                         return -EINVAL;
 
-                stat.recv = sparse_read(&so->opt.stats.recv);
-                stat.lost = sparse_read(&so->opt.stats.lost);
-                stat.drop = sparse_read(&so->opt.stats.drop);
+                stat.recv = sparse_read(&so->stats.recv);
+                stat.lost = sparse_read(&so->stats.lost);
+                stat.drop = sparse_read(&so->stats.drop);
 
 		stat.frwd = 0;
 		stat.kern = 0;
 
-                stat.sent = sparse_read(&so->opt.stats.sent);
-                stat.disc = sparse_read(&so->opt.stats.disc);
+                stat.sent = sparse_read(&so->stats.sent);
+                stat.disc = sparse_read(&so->stats.disc);
 
                 if (copy_to_user(optval, &stat, sizeof(stat)))
                         return -EFAULT;

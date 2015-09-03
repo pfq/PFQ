@@ -792,6 +792,7 @@ pfq_create(
 {
         struct pfq_sock *so;
         struct sock *sk;
+	int id;
 
         /* security and sanity check */
 
@@ -820,31 +821,18 @@ pfq_create(
 
         /* get a unique id for this sock */
 
-        so->id = pfq_get_free_id(so);
-        if (so->id == -1) {
+        id = pfq_get_free_id(so);
+        if (id == -1) {
                 printk(KERN_WARNING "[PFQ] error: resource exhausted!\n");
                 sk_free(sk);
                 return -EBUSY;
         }
 
-	/* default weight */
-
-	so->weight = 1;
-
-        /* memory mapped queues are allocated later, when the socket is enabled */
-
-	so->egress_type   = pfq_endpoint_socket;
-	so->egress_index  = 0;
-	so->egress_queue  = 0;
-
-        so->shmem.addr = NULL;
-        so->shmem.size = 0;
-        so->shmem.kind = 0;
-
-        so->shmem.hugepages = NULL;
-        so->shmem.npages = 0;
-
         down(&sock_sem);
+
+        /* initialize sock */
+
+	pfq_sock_init(so, id);
 
         /* initialize sock opt */
 

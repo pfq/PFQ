@@ -40,12 +40,12 @@
 
 
 
-extern int __pfq_sk_queue_xmit(size_t index, struct pfq_sock_opt *opt, struct net_device *dev, int cpu, int node);
+extern int __pfq_sk_queue_xmit(size_t index, struct pfq_sock *so, struct net_device *dev, int cpu, int node);
 
 static inline int
-pfq_sk_queue_xmit(size_t index, struct pfq_sock_opt *opt, struct net_device *dev)
+pfq_sk_queue_xmit(size_t index, struct pfq_sock *so, struct net_device *dev)
 {
-	return __pfq_sk_queue_xmit(index, opt, dev, Q_NO_KTHREAD, NUMA_NO_NODE);
+	return __pfq_sk_queue_xmit(index, so, dev, Q_NO_KTHREAD, NUMA_NO_NODE);
 }
 
 

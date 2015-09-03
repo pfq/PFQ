@@ -32,6 +32,7 @@
 #include <pragma/diagnostic_pop>
 
 #include <pf_q-define.h>
+#include <pf_q-endpoint.h>
 #include <pf_q-stats.h>
 #include <pf_q-shmem.h>
 #include <pf_q-types.h>
@@ -77,9 +78,6 @@ struct pfq_sock_opt
 	struct pfq_tx_qinfo	tx_queue[Q_MAX_TX_QUEUES];
 	struct pfq_rx_qinfo	rx_queue;
 
-        struct pfq_sock_stats	stats;
-
-
 } ____cacheline_aligned_in_smp;
 
 
@@ -98,6 +96,8 @@ struct pfq_sock
 	struct pfq_shmem_descr  shmem;
 
         struct pfq_sock_opt	opt;
+
+        struct pfq_sock_stats	stats;
 
 } ____cacheline_aligned_in_smp;
 
@@ -120,58 +120,6 @@ pfq_get_tx_queue(struct pfq_sock_opt *that, int index)
 
 
 static inline
-void pfq_sock_opt_init(struct pfq_sock_opt *that, size_t caplen, size_t maxlen)
-{
-        /* the queue is allocate later, when the socket is enabled */
-        int n;
-
-        atomic_long_set(&that->rx_queue.queue_ptr, 0);
-
-        that->rx_queue.base_addr = NULL;
-
-        /* disable tiemstamping by default */
-        that->tstamp = false;
-
-	/* Rx queue setup */
-
-        /* set slots and caplen default values */
-
-        that->caplen = caplen;
-        that->rx_queue_size = 0;
-        that->rx_slot_size = 0;
-
-        /* initialize waitqueue */
-
-        init_waitqueue_head(&that->waitqueue);
-
-	/* Tx queues setup */
-
-        that->tx_queue_size = 0;
-        that->tx_slot_size  = Q_SPSC_QUEUE_SLOT_SIZE(maxlen);
-	that->tx_num_queues = 0;
-
-	for(n = 0; n < Q_MAX_TX_QUEUES; ++n)
-	{
-		atomic_long_set(&that->tx_queue[n].queue_ptr, 0);
-
-		that->tx_queue[n].base_addr = NULL;
-		that->tx_queue[n].if_index  = -1;
-		that->tx_queue[n].queue     = -1;
-		that->tx_queue[n].cpu       = -1;
-		that->tx_queue[n].task	    = NULL;
-	}
-
-        /* reset stats */
-
-        sparse_set(&that->stats.recv, 0);
-        sparse_set(&that->stats.lost, 0);
-        sparse_set(&that->stats.drop, 0);
-        sparse_set(&that->stats.sent, 0);
-        sparse_set(&that->stats.disc, 0);
-}
-
-
-static inline
 struct pfq_shared_queue *
 pfq_get_shared_queue(struct pfq_sock *p)
 {
@@ -185,11 +133,14 @@ pfq_sk(struct sock *sk)
         return (struct pfq_sock *)(sk);
 }
 
+pfq_id_t
+pfq_get_free_id(struct pfq_sock * so);
 
-int      pfq_get_sock_count(void);
-pfq_id_t pfq_get_free_id(struct pfq_sock * so);
-struct pfq_sock * pfq_get_sock_by_id(pfq_id_t id);
-void   pfq_release_sock_id(pfq_id_t id);
+void	pfq_sock_opt_init(struct pfq_sock_opt *that, size_t caplen, size_t maxlen);
+void	pfq_sock_init(struct pfq_sock *so, int id);
+int     pfq_get_sock_count(void);
+struct	pfq_sock * pfq_get_sock_by_id(pfq_id_t id);
+void	pfq_release_sock_id(pfq_id_t id);
 
 
-#endif /* PF_COMMON_H */
+#endif /* PF_Q_SOCK_H */
