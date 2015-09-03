@@ -178,7 +178,7 @@ bool traverse_sk_queue(char *ptr, char *begin, char *end, int idx)
 
 
 int
-__pfq_sk_queue_xmit(size_t idx, struct pfq_sock *so, struct net_device *dev, int cpu, int node)
+__pfq_sk_queue_xmit(struct pfq_sock *so, struct net_device *dev, size_t idx, int cpu, int node)
 {
 	struct netdev_queue *txq;
 	struct pfq_tx_queue *txs;
@@ -377,7 +377,7 @@ pfq_sk_queue_flush(struct pfq_sock *so, int index)
 		return -EPERM;
 	}
 
-	pfq_sk_queue_xmit(index, so, dev);
+	pfq_sk_queue_xmit(so, dev, index);
 	dev_put(dev);
 	return 0;
 }
