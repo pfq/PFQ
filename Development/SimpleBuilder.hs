@@ -54,10 +54,8 @@ module Development.SimpleBuilder (
 ) where
 
 
-import System.Console.CmdArgs
-import System.Console.CmdArgs.Explicit
-import System.Console.ANSI
-import System.Environment
+import System.Console.GetOpt
+
 import System.Directory
 import System.FilePath
 import System.Process
@@ -65,22 +63,22 @@ import System.Exit
 import System.IO.Unsafe
 
 import Control.Monad
+import Control.Monad.Trans.Writer.Lazy
+import Control.Monad.IO.Class
 import qualified Control.Monad.Trans.RWS.Lazy as RWS
-import Control.Monad.Writer.Lazy
+
 import Control.Applicative
 
 import qualified Control.Exception as E
 
 import Data.Data
-import Data.Monoid
 import Data.List
 import Data.Maybe
-import Data.String
 
 
 -- version
 
-version = "0.2"
+verString = "v0.3" :: String
 
 
 -- predefined commands
@@ -138,7 +136,8 @@ tellAction :: Command -> Action ()
 tellAction c = Action (tell ([c], []))
 
 
--- data types
+-- options...
+
 
 data Options = Options
     {   buildType  :: Maybe BuildType
@@ -146,43 +145,79 @@ data Options = Options
     ,   ccComp     :: Maybe String
     ,   dryRun     :: Bool
     ,   verbose    :: Bool
+    ,   version    :: Bool
+    ,   help       :: Bool
     ,   jobs       :: Int
-    ,   extra      :: [String]
-    } deriving (Data, Typeable, Show, Read)
+    } deriving (Show, Read)
+
+defaultOptions :: Options
+defaultOptions = Options
+    {   buildType  =  Nothing
+    ,   cxxComp    =  Nothing
+    ,   ccComp     =  Nothing
+    ,   dryRun     =  False
+    ,   verbose    =  False
+    ,   version    =  False
+    ,   help       =  False
+    ,   jobs       =  0
+    }
 
 
-options :: Mode (CmdArgs Options)
-options = cmdArgsMode $ Options
-    {   buildType = Nothing    &= explicit &= name "buildType"     &= help "Specify the build type (Release, Debug)"
-    ,   cxxComp   = Nothing    &= explicit &= name "cxx"           &= help "Compiler to use for C++ programs"
-    ,   ccComp    = Nothing    &= explicit &= name "cc"            &= help "Compiler to use for C programs"
-    ,   dryRun    = False      &= explicit &= name "dry-run"       &= help "Print commands, don't actually run them"
-    ,   verbose   = False      &= explicit &= name "verbose"       &= help "Verbose mode"
-    ,   jobs      = 0          &= help "Allow N jobs at once (if possible)"
-    ,   extra     = []         &= typ "ITEMS" &= args
-    } &= summary ("SimpleBuilder " ++ version) &= program "Build" &= details detailsBanner
+options :: [OptDescr (Options -> Options)]
+options =
+    [
+        Option "v" ["verbose"]
+            (NoArg (\ o -> o {verbose = True }))
+            "Verbose mode",
+        Option "V" ["version"]
+            (NoArg (\ o -> o {version = True }))
+            "Print version information",
+        Option "h?" [ "help"]
+            (NoArg (\ o -> o {help = True }))
+            "Print this help",
+        Option "d" ["dry-run"]
+            (NoArg (\ o -> o {dryRun = True }))
+            "Print commands, don't actually run them",
+        Option "j" ["jobs"]
+            (OptArg ((\ f o -> o { jobs = read f :: Int }) . fromMaybe "jobs") "NUM")
+            "Allow N jobs at once",
+        Option "b" ["build-type"]
+            (OptArg ((\ f o -> o { buildType = Just (read f) }) . fromMaybe "build-type") "type")
+            "Specify the build type (Release, Debug)",
+        Option "x" ["cxx-comp"]
+            (OptArg ((\ f o -> o { cxxComp = Just f }) . fromMaybe "cxx-comp") "COMP")
+            "Compiler to use for C++ programs",
+        Option "c" ["c-comp"]
+            (OptArg ((\ f o -> o { ccComp = Just f }) . fromMaybe "c-comp") "COMP")
+            "Compiler to use for C programs"
+    ]
 
 
-detailsBanner = [ "[ITEMS] = COMMAND [TARGETS]",
-  "",
-  "Commands:",
-  "    configure   Prepare to build PFQ framework.",
-  "    build       Build PFQ framework.",
-  "    install     Copy the files into the install location.",
-  "    clean       Clean up after a build.",
-  "    distclean   Clean up additional files/dirs.",
-  "    show        Show targets.", ""]
+helpBanner :: [String]
+helpBanner =
+  [
+      "[ITEMS] = COMMAND [TARGETS]",
+      "",
+      "Commands:",
+      "    configure   Prepare to build PFQ framework.",
+      "    build       Build PFQ framework.",
+      "    install     Copy the files into the install location.",
+      "    clean       Clean up after a build.",
+      "    distclean   Clean up additional files/dirs.",
+      "    show        Show targets.",
+      "",
+      "Options:"
+  ]
 
 
-bold  = setSGRCode [SetConsoleIntensity BoldIntensity]
-reset = setSGRCode []
-
+-- data types...
 
 data Target = Configure { getTargetName :: String } |
               Build     { getTargetName :: String } |
               Install   { getTargetName :: String } |
               Clean     { getTargetName :: String } |
               DistClean { getTargetName :: String }
+
 
 instance Show Target where
     show (Configure x) = "configure " ++ x
@@ -204,7 +239,7 @@ data Command = BareCmd String | AdornedCmd (Options -> String)
 
 instance Show Command where
     show (BareCmd xs) = xs
-    show (AdornedCmd f) = f (Options Nothing Nothing Nothing False False 0 [])
+    show (AdornedCmd f) = f defaultOptions
 
 
 evalCmd :: Options -> Command -> String
@@ -213,7 +248,7 @@ evalCmd opt (AdornedCmd fun) = fun opt
 
 
 runCmd :: Options -> Command -> IO ExitCode
-runCmd opt cmd = let raw = evalCmd opt cmd in system raw
+runCmd opt cmd' = let raw = evalCmd opt cmd' in system raw
 
 
 data BuildType = Release | Debug
@@ -223,11 +258,12 @@ newtype Action a = Action { getAction :: Writer ([Command], [Target]) a }
     deriving(Functor, Applicative, Monad)
 
 instance (Show a) => Show (Action a) where
-    show action =  (\(cs, ts) -> show cs ++ ": " ++ show ts) $ runWriter (getAction action)
+    show act =  (\(cs, ts) -> show cs ++ ": " ++ show ts) $ runWriter (getAction act)
 
 data Component = Component { getTarget :: Target,  getActionInfo :: ActionInfo }
 
 data ActionInfo = ActionInfo { basedir :: FilePath, action :: Action () }
+
 
 type BuilderScript = Writer Script ()
 
@@ -276,15 +312,15 @@ buildTargets tgts script baseDir level = do
 
             RWS.put (target : done)
 
-            putStrLnVerbose Nothing $ replicate level '.' ++ bold ++ "[" ++ show n ++ "/" ++ show (length script') ++ "] " ++ show target ++ ":" ++ reset
+            putStrLnVerbose Nothing $ replicate level '.' ++ "[" ++ show n ++ "/" ++ show (length script') ++ "] " ++ show target ++ ":"
 
             -- satisfy dependencies
 
             unless (null deps') $ do
-                putStrLnVerbose (Just $ verbose opt) $ bold ++ "# Satisfying dependencies for " ++ show target ++ ": " ++ show deps' ++ reset
+                putStrLnVerbose (Just $ verbose opt) $ "# Satisfying dependencies for " ++ show target ++ ": " ++ show deps'
                 forM_ deps' $ \t -> when (t `notElem` done) $ buildTargets [t] script baseDir (level+1)
 
-            putStrLnVerbose (Just $ verbose opt) $ bold ++ "# Building target " ++ show target ++ ": " ++ show (map (evalCmd opt) cmds') ++ reset
+            putStrLnVerbose (Just $ verbose opt) $ "# Building target " ++ show target ++ ": " ++ show (map (evalCmd opt) cmds')
 
             liftIO $ do
 
@@ -311,22 +347,33 @@ putStrLnVerbose Nothing xs = liftIO $ putStrLn xs
 putStrLnVerbose (Just v) xs = when v (liftIO $ putStrLn xs)
 
 
+parseOpts :: [String] -> IO (Options, [String])
+parseOpts argv =
+    case getOpt Permute options argv of
+        (o,n,[]  ) -> return (foldl (flip id) defaultOptions o, n)
+        (_,_,errs) -> ioError (userError (concat errs ++ usageInfo "--help for additional information" options))
+
+
 simpleBuilder :: BuilderScript -> [String] -> IO ()
 simpleBuilder script' args = do
 
+    (opt, cmds) <- parseOpts args
+
+    when (help    opt) $ putStrLn (usageInfo (unlines helpBanner) options) >> exitSuccess
+    when (version opt) $ putStrLn ("SimpleBuilder " ++ verString) >> exitSuccess
+
     let script = execWriter script'
 
-    opt  <- cmdArgsRun options
     baseDir <- getCurrentDirectory
 
-    E.catch (case extra opt of
-            ("configure":xs) -> RWS.evalRWST (buildTargets (map Configure (mkTargets xs)) script baseDir 0) opt [] >> putStrLn ( bold ++ "Done." ++ reset )
-            ("build":xs)     -> RWS.evalRWST (buildTargets (map Build     (mkTargets xs)) script baseDir 0) opt [] >> putStrLn ( bold ++ "Done." ++ reset )
-            ("install":xs)   -> RWS.evalRWST (buildTargets (map Install   (mkTargets xs)) script baseDir 0) opt [] >> putStrLn ( bold ++ "Done." ++ reset )
-            ("clean":xs)     -> RWS.evalRWST (buildTargets (map Clean     (mkTargets xs)) script baseDir 0) opt [] >> putStrLn ( bold ++ "Done." ++ reset )
-            ("distclean":xs) -> RWS.evalRWST (buildTargets (map DistClean (mkTargets xs)) script baseDir 0) opt [] >> putStrLn ( bold ++ "Done." ++ reset )
+    E.catch (case cmds of
+            ("configure":xs) -> RWS.evalRWST (buildTargets (map Configure (mkTargets xs)) script baseDir 0) opt [] >> putStrLn "Done."
+            ("build":xs)     -> RWS.evalRWST (buildTargets (map Build     (mkTargets xs)) script baseDir 0) opt [] >> putStrLn "Done."
+            ("install":xs)   -> RWS.evalRWST (buildTargets (map Install   (mkTargets xs)) script baseDir 0) opt [] >> putStrLn "Done."
+            ("clean":xs)     -> RWS.evalRWST (buildTargets (map Clean     (mkTargets xs)) script baseDir 0) opt [] >> putStrLn "Done."
+            ("distclean":xs) -> RWS.evalRWST (buildTargets (map DistClean (mkTargets xs)) script baseDir 0) opt [] >> putStrLn "Done."
             ("show":_)       -> showTargets script
-            _                -> putStr $ show $ helpText [] HelpFormatDefault options)
+            _                -> putStr $ usageInfo (unlines helpBanner) options)
         (\e -> setCurrentDirectory baseDir >> print (e :: E.SomeException))
     where mkTargets xs =  if null xs then ["*"] else xs
 

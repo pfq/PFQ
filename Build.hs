@@ -22,7 +22,7 @@
 import Development.SimpleBuilder
 import System.Environment
 
-import Control.Monad.Writer.Lazy
+import Control.Monad(when)
 
 
 build_libpcap_1_3_0 = True
