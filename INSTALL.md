@@ -73,9 +73,9 @@ Follow the instructions at [Stackage](http://www.stackage.org/install) site.
 
 Clone the source codes from the GitHub repository with The following line:
  
-`git clone https://github.com/pfq/PFQ.git`
+ `git clone https://github.com/pfq/PFQ.git`
 
-_master_ is the stable branch, while _experimental_ is the branch of the most recent version (possibly untested).
+ _master_ is the stable branch, while _experimental_ is the branch of the most recent version (possibly untested).
 
 ## Satisfy Library Dependencies
 
@@ -85,8 +85,8 @@ You can use the cabal tool to install them. From the base directory launch the c
 
 `cabal install --only-dep pfq-framework.cabal`
 
-Because of the strict dependencies of package versions imposed by authors, it could happen that this command fails.
-Hence, to relax upper bounds limits use the following one:
+Because of the dependencies of package imposed by authors, it could happen that this command fails.
+Hence, to relax upper bounds limits you might want to use the --allow-newer option:
 
 `cabal install --only-dep --allow-newer pfq-framework.cabal`
 
@@ -107,18 +107,19 @@ Example:
 
 `runhaskell Build.hs install pfq.ko pfqd --buildType=Release`
 
-## Build the software in a shared sandbox (avoid Cabal Hell!)
+## Build the software in sandbox (to avoid Cabal Hell!)
 
-To avoid Cabal Hell, the SimpleBuilder supports building Haskell packages in cabal sandboxes.
+To avoid Cabal Hell, the SimpleBuilder supports building Haskell packages in a shared cabal sandbox.
 
-You first need to create a cabal sandbox with the following commands:
+First create a cabal sandbox with the following commands:
 
 `mkdir shared-sandbox`
+
 `cabal sandbox init --sandbox=shared-sandbox`
 
-Then you satisfy the pfq-framework dependency, running:
+Then, to satisfy the pfq-framework dependencies run:
 
-`cabal install --only-dep -j4`
+`cabal install --only-dep -j4 pfq-frmework.cabal`
 
 All the required libraries will be installed in the sandbox.
 
@@ -145,4 +146,3 @@ The following components are currently part of the framework:
 * pfqd
 * tests
 * tools
-
