@@ -378,7 +378,7 @@ simpleBuilder script' args = do
 
     sb <- let sb = sandbox opt in
             if isJust sb
-                then checkDir (fromJust sb) >> canonicalizePath (fromJust sb) >>= return . Just
+                then liftM Just $ checkDir (fromJust sb) >> canonicalizePath (fromJust sb)
                 else return sb
 
     let script = execWriter script'
