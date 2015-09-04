@@ -28,7 +28,6 @@ module Development.SimpleBuilder (
     Command,
     Options,
     (*>>),
-    (.<),
     requires,
     into,
     simpleBuilder,
@@ -196,7 +195,7 @@ options =
             "Specify the build type (Release, Debug)",
         Option [] ["sandbox"]
             (OptArg ((\ f o -> o { sandbox = Just f }) . fromMaybe "sandbox") "DIR")
-            "Common Sandbox for Haskell tools/libs",
+            "Shared sandbox among Haskell tools/libs",
         Option [] ["cxx-comp"]
             (OptArg ((\ f o -> o { cxxComp = Just f }) . fromMaybe "cxx-comp") "COMP")
             "Compiler to use for C++ programs",
@@ -212,12 +211,12 @@ helpBanner =
       "[ITEMS] = COMMAND [TARGETS]",
       "",
       "Commands:",
-      "    configure   Prepare to build PFQ framework.",
-      "    build       Build PFQ framework.",
-      "    install     Copy the files into the install location.",
-      "    clean       Clean up after a build.",
-      "    distclean   Clean up additional files/dirs.",
-      "    show        Show targets.",
+      "  configure                     Prepare to build PFQ framework.",
+      "  build                         Build PFQ framework.",
+      "  install                       Copy the files into the install location.",
+      "  clean                         Clean up after a build.",
+      "  distclean                     Clean up additional files/dirs.",
+      "  show                          Show targets.",
       "",
       "Options:"
   ]
@@ -293,10 +292,6 @@ t *>> r = tell [Component t r]
 
 into :: FilePath -> Action () -> ActionInfo
 into = ActionInfo
-
-
-(.<) :: Action () -> Target -> Action ()
-ac .< x = ac >> Action (tell ([],[x]))
 
 
 requires :: Action () -> [Target] -> Action ()
