@@ -36,7 +36,7 @@ module Development.SimpleBuilder (
 
     -- predefined actions
     Development.SimpleBuilder.empty,
-    cabalConfigureUser,
+    cabalConfigure,
     cabalBuild,
     cabalInstall,
     cabalClean,
@@ -83,26 +83,34 @@ verString = "v0.3" :: String
 
 -- predefined commands
 
-empty              = return () :: Action ()
-cabalConfigureUser = tellAction $ BareCmd "runhaskell Setup configure --user"
-cabalBuild         = tellAction $ BareCmd "runhaskell Setup build"
-cabalInstall       = tellAction $ BareCmd "runhaskell Setup install"
-cabalClean         = tellAction $ BareCmd "runhaskell Setup clean"
-cabalDistClean     = tellAction $ BareCmd "rm -rf dist"
-make_install       = tellAction $ BareCmd "make install"
-make_clean         = tellAction $ BareCmd "make clean"
-make_distclean     = tellAction $ BareCmd "make distclean"
-ldconfig           = tellAction $ BareCmd "ldconfig"
-configure          = tellAction $ BareCmd "./configure"
+empty           = return () :: Action ()
+
+cabalConfigure  = tellAction $ DynamicCmd (\o -> case () of
+                    _ | Just path <- sandbox o -> "cabal sandbox init --sandbox=" ++ path ++ " && cabal configure"
+                      |  otherwise             -> "runhaskell Setup configure --user")
 
 
-make   = tellAction $ AdornedCmd (\o -> case () of
+cabalBuild      = tellAction $ StaticCmd "runhaskell Setup build"
+cabalInstall    = tellAction $ StaticCmd "runhaskell Setup install"
+cabalClean      = tellAction $ StaticCmd "runhaskell Setup clean"
+cabalDistClean  = tellAction $ StaticCmd "rm -rf dist; rm -f cabal.sandbox.config"
+
+
+make_install    = tellAction $ StaticCmd "make install"
+make_clean      = tellAction $ StaticCmd "make clean"
+make_distclean  = tellAction $ StaticCmd "make distclean"
+ldconfig        = tellAction $ StaticCmd "ldconfig"
+configure       = tellAction $ StaticCmd "./configure"
+
+
+
+make   = tellAction $ DynamicCmd (\o -> case () of
                             _ | jobs o == 0               -> "make"
                               | jobs o > numberOfPhyCores -> "make -j " ++ show (numberOfPhyCores + 1)
                               | otherwise                 -> "make -j " ++ show (jobs o))
 
 
-cmake  = tellAction $ AdornedCmd (\o ->
+cmake  = tellAction $ DynamicCmd (\o ->
                     let build = case buildType o of
                                     Nothing      -> ""
                                     Just Release -> "-DCMAKE_BUILD_TYPE=Release"
@@ -119,17 +127,17 @@ cmake  = tellAction $ AdornedCmd (\o ->
 
 cmake_distclean :: Action ()
 cmake_distclean = Action $ do
-    tell ([BareCmd "rm -f install_manifest.txt"], [])
-    tell ([BareCmd "rm -f cmake.depends"], [])
-    tell ([BareCmd "rm -f cmake.chek_depends"],[])
-    tell ([BareCmd "rm -f CMakeCache.txt"],[])
-    tell ([BareCmd "rm -f *.cmake"],[])
-    tell ([BareCmd "rm -f Makefile"],[])
-    tell ([BareCmd "rm -rf CMakeFiles"],[])
+    tell ([StaticCmd "rm -f install_manifest.txt"], [])
+    tell ([StaticCmd "rm -f cmake.depends"], [])
+    tell ([StaticCmd "rm -f cmake.chek_depends"],[])
+    tell ([StaticCmd "rm -f CMakeCache.txt"],[])
+    tell ([StaticCmd "rm -f *.cmake"],[])
+    tell ([StaticCmd "rm -f Makefile"],[])
+    tell ([StaticCmd "rm -rf CMakeFiles"],[])
 
 
 cmd :: String -> Action ()
-cmd xs = Action (tell ([BareCmd xs], []))
+cmd xs = Action (tell ([StaticCmd xs], []))
 
 
 tellAction :: Command -> Action ()
@@ -143,6 +151,7 @@ data Options = Options
     {   buildType  :: Maybe BuildType
     ,   cxxComp    :: Maybe String
     ,   ccComp     :: Maybe String
+    ,   sandbox    :: Maybe String
     ,   dryRun     :: Bool
     ,   verbose    :: Bool
     ,   version    :: Bool
@@ -155,6 +164,7 @@ defaultOptions = Options
     {   buildType  =  Nothing
     ,   cxxComp    =  Nothing
     ,   ccComp     =  Nothing
+    ,   sandbox    =  Nothing
     ,   dryRun     =  False
     ,   verbose    =  False
     ,   version    =  False
@@ -181,13 +191,16 @@ options =
         Option "j" ["jobs"]
             (OptArg ((\ f o -> o { jobs = read f :: Int }) . fromMaybe "jobs") "NUM")
             "Allow N jobs at once",
-        Option "b" ["build-type"]
+        Option [] ["build-type"]
             (OptArg ((\ f o -> o { buildType = Just (read f) }) . fromMaybe "build-type") "type")
             "Specify the build type (Release, Debug)",
-        Option "x" ["cxx-comp"]
+        Option [] ["sandbox"]
+            (OptArg ((\ f o -> o { sandbox = Just f }) . fromMaybe "sandbox") "DIR")
+            "Common Sandbox for Haskell tools/libs",
+        Option [] ["cxx-comp"]
             (OptArg ((\ f o -> o { cxxComp = Just f }) . fromMaybe "cxx-comp") "COMP")
             "Compiler to use for C++ programs",
-        Option "c" ["c-comp"]
+        Option [] ["c-comp"]
             (OptArg ((\ f o -> o { ccComp = Just f }) . fromMaybe "c-comp") "COMP")
             "Compiler to use for C programs"
     ]
@@ -235,16 +248,16 @@ instance Eq Target where
     _ == _ = False
 
 
-data Command = BareCmd String | AdornedCmd (Options -> String)
+data Command = StaticCmd String | DynamicCmd (Options -> String)
 
 instance Show Command where
-    show (BareCmd xs) = xs
-    show (AdornedCmd f) = f defaultOptions
+    show (StaticCmd xs) = xs
+    show (DynamicCmd f) = f defaultOptions
 
 
 evalCmd :: Options -> Command -> String
-evalCmd _   (BareCmd xs) = xs
-evalCmd opt (AdornedCmd fun) = fun opt
+evalCmd _   (StaticCmd xs) = xs
+evalCmd opt (DynamicCmd fun) = fun opt
 
 
 runCmd :: Options -> Command -> IO ExitCode
@@ -358,24 +371,34 @@ simpleBuilder :: BuilderScript -> [String] -> IO ()
 simpleBuilder script' args = do
 
     (opt, cmds) <- parseOpts args
+    baseDir     <- getCurrentDirectory
 
     when (help    opt) $ putStrLn (usageInfo (unlines helpBanner) options) >> exitSuccess
     when (version opt) $ putStrLn ("SimpleBuilder " ++ verString) >> exitSuccess
 
+    sb <- let sb = sandbox opt in
+            if isJust sb
+                then checkDir (fromJust sb) >> canonicalizePath (fromJust sb) >>= return . Just
+                else return sb
+
     let script = execWriter script'
 
-    baseDir <- getCurrentDirectory
-
     E.catch (case cmds of
-            ("configure":xs) -> RWS.evalRWST (buildTargets (map Configure (mkTargets xs)) script baseDir 0) opt [] >> putStrLn "Done."
-            ("build":xs)     -> RWS.evalRWST (buildTargets (map Build     (mkTargets xs)) script baseDir 0) opt [] >> putStrLn "Done."
-            ("install":xs)   -> RWS.evalRWST (buildTargets (map Install   (mkTargets xs)) script baseDir 0) opt [] >> putStrLn "Done."
-            ("clean":xs)     -> RWS.evalRWST (buildTargets (map Clean     (mkTargets xs)) script baseDir 0) opt [] >> putStrLn "Done."
-            ("distclean":xs) -> RWS.evalRWST (buildTargets (map DistClean (mkTargets xs)) script baseDir 0) opt [] >> putStrLn "Done."
+            ("configure":xs) -> RWS.evalRWST (buildTargets (map Configure (mkTargets xs)) script baseDir 0) opt{ sandbox = sb } [] >> putStrLn "Done."
+            ("build":xs)     -> RWS.evalRWST (buildTargets (map Build     (mkTargets xs)) script baseDir 0) opt{ sandbox = sb } [] >> putStrLn "Done."
+            ("install":xs)   -> RWS.evalRWST (buildTargets (map Install   (mkTargets xs)) script baseDir 0) opt{ sandbox = sb } [] >> putStrLn "Done."
+            ("clean":xs)     -> RWS.evalRWST (buildTargets (map Clean     (mkTargets xs)) script baseDir 0) opt{ sandbox = sb } [] >> putStrLn "Done."
+            ("distclean":xs) -> RWS.evalRWST (buildTargets (map DistClean (mkTargets xs)) script baseDir 0) opt{ sandbox = sb } [] >> putStrLn "Done."
             ("show":_)       -> showTargets script
             _                -> putStr $ usageInfo (unlines helpBanner) options)
         (\e -> setCurrentDirectory baseDir >> print (e :: E.SomeException))
     where mkTargets xs =  if null xs then ["*"] else xs
+
+
+checkDir :: (FilePath) -> IO ()
+checkDir path = do
+    v <- doesDirectoryExist path
+    unless v $ error ("SimpleBuilder: " ++ path ++ " directory does not exist")
 
 
 showTargets :: Script -> IO ()
