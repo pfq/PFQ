@@ -1,55 +1,53 @@
 PFQ
-===========================================================================
+===
 
-Requirements
-------------
+The following Guide is also available at [Getting-Starte-Guide](https://github.com/pfq/PFQ/wiki/Getting-Started-Guide).
 
+# Table of Contents
 
-To install PFQ, the following requisites must be present:
+This guide covers the following topics:
+
+1. What is PFQ.
+2. HW and SW Requirements.
+3. Linux Distributions.
+4. Obtaining source codes.
+5. Satisfy library dependencies.
+6. Build the software.
+7. Software components. 
+
+## What is PFQ
+
+PFQ is a multi-language network monitoring framework designed for the Linux Kernel 3.x. It is highly optimized for multi-core processors, as well as for network devices equipped with multiple hardware queues (i.e. Intel 82599 10G).
+
+PFQ consists in a Linux Kernel module and user-space libraries, for the C, C++11/14 and Haskell languages.
+
+## HW and SW Requirements
 
 * A 32/64-bit Linux operating system (Intel/AMD architectures are currently supported).
-
-* A modern Linux kernel: suggested Linux 3.0 or higher.  
-
-* Kernel headers installed, required to compile modules for your kernel.  
-
-* gcc compiler, usually the one used to compile the kernel.  
-
-* g++ compiler (g++ 4.8/clang 3.4 or higher), required to compile the user-space tools and applications.  
-
+* Linux kernel 3.0 or higher.
+* Kernel headers, required to compile modules for your kernel.
+* A gcc compiler, the one used to compile the kernel in use.
+* A g++ compiler (g++-4.8/clang-3.4 or higher), required to compile user-space tools and libraries.
 * GHC Glasgow Haskell Compiler 7.8 or higher.
-
 * Alex and happy tool.
+* CMake and make.
 
-* CMake and make tool.
-
-
-Linux distributions
--------------------
+## Linux distributions (GHC notes)
 
 PFQ is developed and tested on Linux Debian Jessie. 
 
 
-Debian Jessie
--------------
+### Debian Stable (Jessie)
 
-Debian Stable (Jessie)
+Debian Jessie is currently the stable distribution. Accidentally GHC 7.8 is not yet available from the `stable` repository. 
 
-Debian Jessie is currently the stable distribution. Accidentally GHC 7.8 is not yet 
-available from the stable repository.
+Hence it is recommended to either manually compile GHC or install it from a different repository. At the time of writing GHC 7.8 is available from `jessie-backports` repository and GHC 7.10 is available from the `testing` one.  
 
-Hence it is recommended to either manually compile GHC or install it from a different 
-repository.  At the time of writing GHC 7.8 is available from jessie-backports repository 
-and GHC 7.10 is available from the testing one.
+To install a package from a different repository the APT pinning is required (which allows to install packages
+from one version (stable, testing, unstable) without the necessity of upgrading the entire system). 
+More information is available on [Debian](https://wiki.debian.org/AptPreferences) site.
 
-To install a package from a different repository the APT pinning is required (which allows 
-to install packages from one version (stable, testing, unstable) without the necessity of 
-upgrading the entire system).  More information is available on 
-[Debian](https://wiki.debian.org/AptPreferences) site.
-
-
-Ubuntu 14.04.1 LTS (Trusty Tahr)
--------------------------------
+### Ubuntu 14.04.1 LTS (Trusty Tahr)
 
 Use Hebert's PPA to install GHC and cabal-install as described at [Stackage](http://www.stackage.org/install):
 
@@ -67,119 +65,70 @@ cabal update
 cabal install alex happy
 ```
 
-Other Linux distributions
--------------------------
+### Other Linux distributions
 
 Follow the instructions at [Stackage](http://www.stackage.org/install) site.
 
+## Obtaining Source Codes
 
-Directories 
------------ 
+Clone the source codes from the GitHub repository with The following line:
+ 
+`git clone https://github.com/pfq/PFQ.git`
 
-The framework is organized as follow: 
+_master_ is the stable branch, while _experimental_ is the branch of the most recent version (possibly untested).
 
-    .
-    ├── Development
-    ├── docs
-    ├── kernel
-    │   ├── functional
-    │   ├── linux
-    │   └── module
-    │       └── RTP
-    ├── misc
-    │   ├── Fanout
-    │   └── signature
-    ├── script
-    │   ├── irq-affinity
-    │   ├── pfq-load
-    │   └── pfq-omatic
-    └── user
-        ├── C
-        ├── C++
-        │   └── pfq
-        │       └── lang
-        ├── common
-        ├── Haskell
-        │   ├── Network
-        │   │   └── PFq
-        │   ├── pfq-counters
-        │   └── test
-        │       └── Network -> ../Network
-        ├── pfqd
-        │   ├── example
-        │   └── src
-        ├── test
-        └── tool
+## Satisfy Library Dependencies
+
+Before building the framework, ensure the Haskell libraries on which it depends are installed.
+
+You can use the cabal tool to install them. From the base directory launch the command:
+
+`cabal install --only-dep pfq-framework.cabal`
+
+Because of the strict dependencies of package versions imposed by authors, it could happen that this command fails.
+Hence, to relax upper bounds limits use the following one:
+
+`cabal install --only-dep --allow-newer pfq-framework.cabal`
 
 
-* The directory kernel/ contains the source code of PFQ, along with some
-  headers used by user-space applications.
+## Build the software
 
-* The directory user/C contains the user-space C library used by user-space
-  applications.
+* To build and install the framework:
 
-* The directory user/C++ contains the C++11-14 library used by 
-  C++ user-space applications.
+`runhaskell Build.hs install --buildType=Release`
 
-* The directory user/Haskell contains the FFI library used by Haskell user-space applications.
+The command configures, compiles and installs the framework satisfying the dependencies and the correct order to build of various components.
 
-* The directory user/test and user/tools include some tools and examples.  
-
-
-Satisfy Library Dependencies
-----------------------------
-
-Before installing the framework, ensure to have the required tools installed.
-
-pfq-framework depends on the following Haskell libraries:
-
-* filepath
-* directory
-* unix
-* process
-* daemons
-* network
-* cmdargs
-* hslogger
-* ansi-terminal
-* storable-tuple
-* storablevector
-* data-default
-* semigroups
-* mtl
-* regex-posix
-* bytestring
-* split
-
-You can use the cabal tool to install them. More information on cabal are available at: 
-[https://www.haskell.org/cabal/download.html](https://www.haskell.org/cabal/download.html).
-
-
-Build the software
-------------------
-
-1. To install libraries dependencies, from the base directory launch the following command:
-
-`cabal install --only-dep`
-
-
-2. To build and install the framework:
-
-`runhaskell Build.hs install --build Release`
-
-The command configures, compiles and installs the PFQ framework satisfying the dependencies and the correct order of build. 
-
-3. Alternatively, you can specify the list of components you want to build from the command line. 
-The following command shows the targets available:
+* Alternatively, you can specify the list of components you want to build from the command line. The following command shows the targets available:
 
 `runhaskell Build.hs show`
 
 Example:
 
-`runhaskell Build.hs install pfq.ko pfqd --build Release`
+`runhaskell Build.hs install pfq.ko pfqd --buildType=Release`
 
-Software Components
--------------------
+## Build the software in a shared sandbox (avoid Cabal Hell!)
+
+To avoid Cabal Hell, the SimpleBuilder supports building Haskell packages in cabal sandboxes.
+
+You first need to create a cabal sandbox with the following commands:
+
+`mkdir shared-sandbox`
+`cabal sandbox init --sandbox=shared-sandbox`
+
+Then you satisfy the pfq-framework dependency, running:
+
+`cabal install --only-dep -j4`
+
+All the required libraries will be installed in the sandbox.
+
+After this you can build the framework with:
+
+`runhaskell Build.hs install --buildType=Release --sandbox=shared-sandbox`
+
+The PFQ Haskell library and packages will be installed in isolation within the specified sandbox directory.
+
+## Software Components
 
 The following components are currently part of the framework:
 
@@ -187,38 +136,13 @@ The following components are currently part of the framework:
 * pfq-clib
 * pfq-cpplib
 * pfq-haskell-lib
+* pfq-hcounters
+* pfq-htest
 * irq-affinity
-* pfq-counters
 * pfq-omatic
 * pfq-load
+* pfq-stress
 * pfqd
-* C/C++-test
-* C/C++-tools
-
-
-Notes
------
-
-For PFQ, in order to obtain the maximum performance you have to configure your system
-and design your application properly.
-
-In particular, interrupt affinity is a crucial step required for both NAPI context and 
-user-space application to work at the best condition.  A good setup dramatically impacts on the performance.
-
-Multiple-queue NICs, like Intel 82599 for instance, allow to setup interrupt affinity.
-In most case the script set_irq_affinity.sh is sufficient. For more advanced setup, we suggest
-to use irq-affinity Haskell script shipped with the framework.
-
-In addition to this, when configuring PFQ bear in mind the following notes. 
-
-* The load balancing can be enabled on Intel 82599 by means of RSS or VMDQ. Other vendors may provide different technologies.
-
-* A good setup distributes interrupts among cores. In general, the more core you use the best performance you obtain. 
-  We are able to capture 14.8Mpps at user-space with a single thread and 3 hardware queues, 
-  running on top of a 2.66 Ghz 6-cores Xeon processor and Intel 82599 NIC.
-
-* For a single capturing thread, a reserved core gives it the best performance. 
-
-* Flow Control of the NIC may slow down the link. Use ethtool to disable it.
-
+* tests
+* tools
 
