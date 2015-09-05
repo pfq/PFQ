@@ -145,10 +145,10 @@ struct pcap_md {
 #ifdef PCAP_SUPPORT_PFQ
     struct pfq_data
     {
-        pfq_t          *q;
-        pfq_iterator_t 	current;
-        pfq_iterator_t 	end;
-        uint64_t        ifs_promisc;
+        pfq_t			*q;
+        pfq_iterator_t		current;
+        struct pfq_net_queue	nq;
+        uint64_t		ifs_promisc;
 
     } pfq;
 #endif

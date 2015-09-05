@@ -713,9 +713,8 @@ pfq_activate_linux(pcap_t *handle)
 	}
 	else {
 		char *conf = getenv("PFQ_CONFIG");
-		if (conf) {
+		if (conf)
 			config = strdup(conf);
-		}
 	}
 
         if (config != NULL) {
@@ -761,6 +760,10 @@ pfq_activate_linux(pcap_t *handle)
 	handle->cleanup_op	= pfq_cleanup_linux;
 	handle->set_datalink_op	= NULL;	/* can't change data link type */
 
+
+	handle->md.pfq.q	= NULL;
+	handle->md.pfq.current	= NULL;
+	pfq_net_queue_init(&handle->md.pfq.nq);
 	handle->md.pfq.ifs_promisc = 0;
 
 	handle->fd = socket(AF_INET, SOCK_DGRAM, 0);
@@ -827,6 +830,8 @@ pfq_activate_linux(pcap_t *handle)
 					 */
 					return PCAP_ERROR;
 				}
+
+				fprintf(stdout, "[PFQ] set promisc on dev %s...\n", dev);
 
 				ifr.ifr_flags |= IFF_PROMISC;
 				if (ioctl(handle->fd, SIOCSIFFLAGS, &ifr) == -1) {
@@ -964,6 +969,7 @@ pfq_activate_linux(pcap_t *handle)
 		free(first_dev);
 	}
 
+
 	/* set FUNCTION/computation */
 
 	if (handle->opt.pfq.comp) {
@@ -1057,8 +1063,6 @@ pfq_cleanup_linux(pcap_t *handle)
 		if (!(handle->md.pfq.ifs_promisc & (1 << n++)))
 			return 0;
 
-		fprintf(stdout, "[PFQ] clear promisc on dev %s...\n", dev);
-
 		memset(&ifr, 0, sizeof(ifr));
 		strncpy(ifr.ifr_name, dev,
 				sizeof(ifr.ifr_name));
@@ -1074,6 +1078,9 @@ pfq_cleanup_linux(pcap_t *handle)
 				 * Promiscuous mode is currently on;
 				 * turn it off.
 				 */
+
+				fprintf(stdout, "[PFQ] clear promisc on dev %s...\n", dev);
+
 				ifr.ifr_flags &= ~IFF_PROMISC;
 				if (ioctl(handle->fd, SIOCSIFFLAGS,
 							&ifr) == -1) {
@@ -1118,33 +1125,26 @@ static int
 pfq_read_linux(pcap_t *handle, int max_packets, pcap_handler callback, u_char *user)
 {
         int start = handle->md.packets_read;
-	struct pfq_net_queue nq;
+	struct pfq_net_queue *nq = &handle->md.pfq.nq;
+	pfq_iterator_t it = handle->md.pfq.current;
 	int n = max_packets;
 
-	pfq_iterator_t it, it_end;
-
-	it =  handle->md.pfq.current;
-	it_end = handle->md.pfq.end;
-
-        if (it == it_end) {
-
-		if (pfq_read(handle->md.pfq.q, &nq, handle->md.timeout > 0 ? handle->md.timeout * 1000 : 1000000) < 0) {
+        if (it == pfq_net_queue_end(nq)) {
+		if (pfq_read(handle->md.pfq.q, nq, handle->md.timeout > 0 ? handle->md.timeout * 1000 : 1000000) < 0) {
 			snprintf(handle->errbuf, sizeof(handle->errbuf), "PFQ read error");
 			return PCAP_ERROR;
 		}
-
-		it = handle->md.pfq.current = pfq_net_queue_begin(&nq);
-	        it_end = handle->md.pfq.end = pfq_net_queue_end(&nq);
+		it = handle->md.pfq.current = pfq_net_queue_begin(nq);
 	}
 
-	for(; (max_packets <= 0 || n > 0) && (it != it_end); it = pfq_net_queue_next(&nq, it))
+	for(; (max_packets <= 0 || n > 0) && (it != pfq_net_queue_end(nq)); it = pfq_net_queue_next(nq, it))
 	{
 		struct pcap_pkthdr pcap_h;
 		struct pfq_pkthdr *h;
                 uint16_t vlan_tci;
 		const char *pkt;
 
-		while (!pfq_pkt_ready(&nq, it))
+		while (!pfq_pkt_ready(nq, it))
 			pfq_yield();
 
 		h = (struct pfq_pkthdr *)pfq_pkt_header(it);
@@ -1177,13 +1177,13 @@ pfq_read_linux(pcap_t *handle, int max_packets, pcap_handler callback, u_char *u
 		n--;
 	}
 
-	if (handle->break_loop) {
+	handle->md.pfq.current = it;
 
+	if (handle->break_loop) {
 		handle->break_loop = 0;
 		return PCAP_ERROR_BREAK;
 	}
 
-	handle->md.pfq.current = it;
 	return handle->md.packets_read-start;
 }
 
