@@ -690,7 +690,6 @@ pfq_activate_linux(pcap_t *handle)
 	const int queue = Q_ANY_QUEUE;
 	char *first_dev;
 
-
 	handle->opt.pfq  = pfq_opt_default(handle);
 	handle->linktype = DLT_EN10MB;
 
@@ -711,9 +710,8 @@ pfq_activate_linux(pcap_t *handle)
 	}
 	else {
 		char *conf = getenv("PFQ_CONFIG");
-		if (conf) {
+		if (conf)
 			config = strdup(conf);
-		}
 	}
 
         if (config != NULL) {
@@ -829,6 +827,8 @@ pfq_activate_linux(pcap_t *handle)
 					 */
 					return PCAP_ERROR;
 				}
+
+				fprintf(stdout, "[PFQ] set promisc on dev %s...\n", dev);
 
 				ifr.ifr_flags |= IFF_PROMISC;
 				if (ioctl(handle->fd, SIOCSIFFLAGS, &ifr) == -1) {
@@ -966,6 +966,7 @@ pfq_activate_linux(pcap_t *handle)
 		free(first_dev);
 	}
 
+
 	/* set FUNCTION/computation */
 
 	if (handle->opt.pfq.comp) {
@@ -1059,8 +1060,6 @@ pfq_cleanup_linux(pcap_t *handle)
 		if (!(handle->md.pfq.ifs_promisc & (1 << n++)))
 			return 0;
 
-		fprintf(stdout, "[PFQ] clear promisc on dev %s...\n", dev);
-
 		memset(&ifr, 0, sizeof(ifr));
 		strncpy(ifr.ifr_name, dev,
 				sizeof(ifr.ifr_name));
@@ -1076,6 +1075,9 @@ pfq_cleanup_linux(pcap_t *handle)
 				 * Promiscuous mode is currently on;
 				 * turn it off.
 				 */
+
+				fprintf(stdout, "[PFQ] clear promisc on dev %s...\n", dev);
+
 				ifr.ifr_flags &= ~IFF_PROMISC;
 				if (ioctl(handle->fd, SIOCSIFFLAGS,
 							&ifr) == -1) {
