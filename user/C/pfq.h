@@ -56,6 +56,16 @@ struct pfq_net_queue
 	unsigned int   index;		/* current queue index */
 };
 
+/*! Initialize the net queue... */
+
+static inline void
+pfq_net_queue_init(struct pfq_net_queue *nq)
+{
+	nq->queue     = NULL;
+	nq->len	      = 0;
+	nq->slot_size = 0;
+	nq->index     = 0;
+}
 
 /*! Return an iterator to the first slot of a non-empty queue. */
 
