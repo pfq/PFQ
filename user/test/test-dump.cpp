@@ -23,8 +23,8 @@ main(int argc, char *argv[])
     {
             auto many = q.read( 1000000 /* timeout: micro */);
 
-            pfq::queue::iterator it = many.begin();
-            pfq::queue::iterator it_e = many.end();
+            pfq::net_queue::iterator it = many.begin();
+            pfq::net_queue::iterator it_e = many.end();
 
             for(; it != it_e; ++it)
             {

@@ -1113,7 +1113,7 @@ namespace pfq {
          * A timeout is specified in microseconds.
          */
 
-        queue
+        net_queue
         read(long int microseconds = -1)
         {
             if (!data()->shm_addr)
@@ -1143,18 +1143,18 @@ namespace pfq {
                 this->poll(microseconds);
 #else
                 (void)microseconds;
-                return queue();
+                return net_queue();
 #endif
             }
 
-            // swap the queue...
+            // swap the net_queue...
             //
 
             data = __atomic_exchange_n(&q->rx.data, (unsigned int)((index+1) << 24), __ATOMIC_RELAXED);
 
             auto queue_len = std::min(static_cast<size_t>(Q_SHARED_QUEUE_LEN(data)), data_->rx_slots);
 
-            return queue(static_cast<char *>(data_->rx_queue_addr) + (index & 1) * data_->rx_queue_size,
+            return net_queue(static_cast<char *>(data_->rx_queue_addr) + (index & 1) * data_->rx_queue_size,
                          data_->rx_slot_size, queue_len, index);
         }
 
@@ -1175,7 +1175,7 @@ namespace pfq {
          * It is possible to specify a timeout in microseconds.
          */
 
-        queue
+        net_queue
         recv(const mutable_buffer &buff, long int microseconds = -1)
         {
             if (fd_ == -1)
@@ -1187,7 +1187,7 @@ namespace pfq {
                 throw pfq_error("PFQ: buffer too small");
 
             memcpy(buff.first, this_queue.data(), this_queue.slot_size() * this_queue.size());
-            return queue(buff.first, this_queue.slot_size(), this_queue.size(), this_queue.index());
+            return net_queue(buff.first, this_queue.slot_size(), this_queue.size(), this_queue.index());
         }
 
 
