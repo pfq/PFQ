@@ -62,9 +62,9 @@ import System.Exit
 import System.IO.Unsafe
 
 import Control.Monad
-import Control.Monad.Trans.Writer.Lazy
+import Control.Monad.Writer.Lazy
 import Control.Monad.IO.Class
-import qualified Control.Monad.Trans.RWS.Lazy as RWS
+import Control.Monad.RWS.Lazy
 
 import Control.Applicative
 
@@ -140,7 +140,7 @@ cmd xs = Action (tell ([StaticCmd xs], []))
 
 
 tellAction :: Command -> Action ()
-tellAction c = Action (tell ([c], []))
+tellAction c = tell ([c], [])
 
 
 -- options...
@@ -266,11 +266,13 @@ runCmd opt cmd' = let raw = evalCmd opt cmd' in system raw
 data BuildType = Release | Debug
     deriving (Data, Typeable, Show, Read, Eq)
 
-newtype Action a = Action { getAction :: Writer ([Command], [Target]) a }
-    deriving(Functor, Applicative, Monad)
+type ActionLog = ([Command], [Target])
+
+newtype Action a = Action { runAction :: Writer ActionLog a }
+    deriving(Functor, Applicative, Monad, MonadWriter ActionLog)
 
 instance (Show a) => Show (Action a) where
-    show act =  (\(cs, ts) -> show cs ++ ": " ++ show ts) $ runWriter (getAction act)
+    show act =  (\(cs, ts) -> show cs ++ ": " ++ show ts) $ (runWriter . runAction) act
 
 data Component = Component { getTarget :: Target,  getActionInfo :: ActionInfo }
 
@@ -281,7 +283,7 @@ type BuilderScript = Writer Script ()
 
 type Script = [Component]
 
-type BuilderT = RWS.RWST Options () [Target]
+type BuilderT = RWST Options () [Target]
 
 
 infixr 0 *>>
@@ -301,7 +303,7 @@ ac `requires` xs = ac >> Action (tell ([],xs))
 buildTargets :: [Target] -> Script -> FilePath -> Int -> BuilderT IO ()
 buildTargets tgts script baseDir level = do
 
-    opt <- RWS.ask
+    opt <- ask
 
     let targets = map getTarget script
     let script' = filter (\(Component tar' _ ) -> tar' `elem` tgts) script
@@ -312,13 +314,13 @@ buildTargets tgts script baseDir level = do
 
     forM_ (zip [1..] script') $ \(n, Component target (ActionInfo path action)) -> do
 
-        let (cmds',deps') = execWriter $ getAction action
+        let (cmds',deps') = execWriter $ runAction action
 
-        done <- RWS.get
+        done <- get
 
         unless (target `elem` done) $ do
 
-            RWS.put (target : done)
+            put (target : done)
 
             putStrLnVerbose Nothing $ replicate level '.' ++ "[" ++ show n ++ "/" ++ show (length script') ++ "] " ++ show target ++ ":"
 
@@ -379,18 +381,18 @@ simpleBuilder script' args = do
     let script = execWriter script'
 
     E.catch (case cmds of
-            ("configure":xs) -> RWS.evalRWST (buildTargets (map Configure (mkTargets xs)) script baseDir 0) opt{ sandbox = sb } [] >> putStrLn "Done."
-            ("build":xs)     -> RWS.evalRWST (buildTargets (map Build     (mkTargets xs)) script baseDir 0) opt{ sandbox = sb } [] >> putStrLn "Done."
-            ("install":xs)   -> RWS.evalRWST (buildTargets (map Install   (mkTargets xs)) script baseDir 0) opt{ sandbox = sb } [] >> putStrLn "Done."
-            ("clean":xs)     -> RWS.evalRWST (buildTargets (map Clean     (mkTargets xs)) script baseDir 0) opt{ sandbox = sb } [] >> putStrLn "Done."
-            ("distclean":xs) -> RWS.evalRWST (buildTargets (map DistClean (mkTargets xs)) script baseDir 0) opt{ sandbox = sb } [] >> putStrLn "Done."
+            ("configure":xs) -> evalRWST (buildTargets (map Configure (mkTargets xs)) script baseDir 0) opt{ sandbox = sb } [] >> putStrLn "Done."
+            ("build":xs)     -> evalRWST (buildTargets (map Build     (mkTargets xs)) script baseDir 0) opt{ sandbox = sb } [] >> putStrLn "Done."
+            ("install":xs)   -> evalRWST (buildTargets (map Install   (mkTargets xs)) script baseDir 0) opt{ sandbox = sb } [] >> putStrLn "Done."
+            ("clean":xs)     -> evalRWST (buildTargets (map Clean     (mkTargets xs)) script baseDir 0) opt{ sandbox = sb } [] >> putStrLn "Done."
+            ("distclean":xs) -> evalRWST (buildTargets (map DistClean (mkTargets xs)) script baseDir 0) opt{ sandbox = sb } [] >> putStrLn "Done."
             ("show":_)       -> showTargets script
             _                -> putStr $ usageInfo (unlines helpBanner) options)
         (\e -> setCurrentDirectory baseDir >> print (e :: E.SomeException))
     where mkTargets xs =  if null xs then ["*"] else xs
 
 
-checkDir :: (FilePath) -> IO ()
+checkDir :: FilePath -> IO ()
 checkDir path = do
     v <- doesDirectoryExist path
     unless v $ error ("SimpleBuilder: " ++ path ++ " directory does not exist")
