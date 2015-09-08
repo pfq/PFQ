@@ -277,9 +277,9 @@ __pfq_sk_queue_xmit(struct pfq_sock *so, struct net_device *dev, size_t idx, int
 
                 copies = hdr->data.copies;
 
-		do {
-			skb_get(skb);
+		atomic_add(copies, &skb->users);
 
+		do {
 			xmit_more = (++more == xmit_batch_len ? (more = 0, false) : true);
 
 			if (__pfq_xmit(skb, dev, txq, xmit_more) < 0) {
