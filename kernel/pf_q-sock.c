@@ -136,7 +136,7 @@ void pfq_sock_opt_init(struct pfq_sock_opt *that, size_t caplen, size_t maxlen)
 	/* Tx queues setup */
 
         that->tx_queue_size = 0;
-        that->tx_slot_size  = Q_SPSC_QUEUE_SLOT_SIZE(maxlen);
+        that->tx_slot_size  = Q_QUEUE_SLOT_SIZE(maxlen);
 	that->tx_num_queues = 0;
 
 	for(n = 0; n < Q_MAX_TX_QUEUES; ++n)
