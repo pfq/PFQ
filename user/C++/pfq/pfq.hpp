@@ -472,7 +472,7 @@ namespace pfq {
                 throw pfq_error(errno, "PFQ: get Tx maxlen error");
 
             data_->tx_slots = tx_slots;
-            data_->tx_slot_size = align<8>(sizeof(pfq_pkthdr_tx) + maxlen);
+            data_->tx_slot_size = align<8>(sizeof(pfq_pkthdr) + maxlen);
 
         }
 
@@ -1419,26 +1419,26 @@ namespace pfq {
             // cut the packet to maxlen:
             //
 
-            auto len = std::min(buf.second, data_->tx_slot_size - sizeof(struct pfq_pkthdr_tx));
+            auto len = std::min(buf.second, data_->tx_slot_size - sizeof(struct pfq_pkthdr));
 
             // compute the current slot_size:
             //
-            auto slot_size = sizeof(struct pfq_pkthdr_tx) + align<8>(len);
+            auto slot_size = sizeof(struct pfq_pkthdr) + align<8>(len);
 
             // ensure there's space enough for the current slot_size + the next header:
             //
-            if ((static_cast<char *>(tx->ptr) - static_cast<char *>(base_addr) + slot_size + sizeof(struct pfq_pkthdr_tx))
+            if ((static_cast<char *>(tx->ptr) - static_cast<char *>(base_addr) + slot_size + sizeof(struct pfq_pkthdr))
                     < data_->tx_queue_size)
             {
-                auto hdr = (struct pfq_pkthdr_tx *)tx->ptr;
-                hdr->nsec = nsec;
+                auto hdr = (struct pfq_pkthdr *)tx->ptr;
+                hdr->tstamp.tv64 = nsec;
                 hdr->len = len;
-                hdr->copies = copies;
+                hdr->data.copies = copies;
 
                 memcpy(hdr+1, buf.first, len);
 
                 reinterpret_cast<char *&>(tx->ptr) += slot_size;
-                static_cast<struct pfq_pkthdr_tx *>(tx->ptr)->len = 0;
+                static_cast<struct pfq_pkthdr *>(tx->ptr)->len = 0;
 
                 return true;
             }

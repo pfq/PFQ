@@ -130,7 +130,7 @@ size_t pfq_mpsc_enqueue_batch(struct pfq_sock_opt *opt,
 
 		/* copy state from pfq_cb annotation */
 
-		hdr->data = PFQ_CB(skb)->monad->state;
+		hdr->data.opaque = PFQ_CB(skb)->monad->state;
 
 		/* setup the header */
 

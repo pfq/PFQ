@@ -89,7 +89,7 @@ static inline void smp_wmb() { barrier(); }
 #define Q_SHARED_QUEUE_LEN(data)	((data) & 0x00ffffffu )
 
 #define Q_MPDB_QUEUE_SLOT_SIZE(x)	ALIGN(sizeof(struct pfq_pkthdr) + x, 8)
-#define Q_SPSC_QUEUE_SLOT_SIZE(x)	ALIGN(sizeof(struct pfq_pkthdr_tx) + x, 8)
+#define Q_SPSC_QUEUE_SLOT_SIZE(x)	ALIGN(sizeof(struct pfq_pkthdr) + x, 8)
 
 
 /* PFQ socket options */
@@ -221,7 +221,16 @@ struct pfq_shared_queue
 
 struct pfq_pkthdr
 {
-        uint64_t data;          /* volatile state */
+	union
+	{
+		uint64_t opaque;		/* e.g. monad state */
+		struct
+		{
+			int	 copies;	/* for packet Tx */
+			int	 inject;	/* pkt to kernel */
+		};
+	} data;
+
 
         union
         {
@@ -255,13 +264,6 @@ struct pfq_pkthdr
 
 } __attribute__((packed));
 
-
-struct pfq_pkthdr_tx
-{
-	uint64_t nsec;		/* absolute timestamp */
-	int	 copies;	/* per-packet copies to send: default 1 */
-	int	 len;
-};
 
 
 /*

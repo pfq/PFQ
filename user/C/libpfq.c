@@ -286,7 +286,7 @@ pfq_open_group(unsigned long class_mask, int group_policy, size_t caplen, size_t
         }
 
 	q->tx_slots = tx_slots;
-	q->tx_slot_size = ALIGN(sizeof(struct pfq_pkthdr_tx) + maxlen, 8);
+	q->tx_slot_size = ALIGN(sizeof(struct pfq_pkthdr) + maxlen, 8);
 
 
 	if (group_policy != Q_POLICY_GROUP_UNDEFINED)
@@ -1108,22 +1108,22 @@ pfq_inject(pfq_t *q, const void *buf, size_t len, uint64_t nsec, int copies, int
 		tx->ptr = base_addr;
 	}
 
-	slot_size = sizeof(struct pfq_pkthdr_tx) + ALIGN(len, 8);
-	len = min(len, q->tx_slot_size - sizeof(struct pfq_pkthdr_tx));
+	slot_size = sizeof(struct pfq_pkthdr) + ALIGN(len, 8);
+	len = min(len, q->tx_slot_size - sizeof(struct pfq_pkthdr));
 
-	if ((tx->ptr - base_addr + slot_size + sizeof(struct pfq_pkthdr_tx)) < q->tx_queue_size)
+	if ((tx->ptr - base_addr + slot_size + sizeof(struct pfq_pkthdr)) < q->tx_queue_size)
 	{
-		struct pfq_pkthdr_tx *hdr;
+		struct pfq_pkthdr *hdr;
 
-		hdr = (struct pfq_pkthdr_tx *)tx->ptr;
-		hdr->nsec = nsec;
+		hdr = (struct pfq_pkthdr *)tx->ptr;
+		hdr->tstamp.tv64 = nsec;
 		hdr->len = len;
-		hdr->copies = copies;
+		hdr->data.copies = copies;
 
 		memcpy(hdr+1, buf, hdr->len);
 
 		tx->ptr += slot_size;
-		hdr = (struct pfq_pkthdr_tx *)tx->ptr;
+		hdr = (struct pfq_pkthdr *)tx->ptr;
 		hdr->len = 0;
 
 		return Q_VALUE(q, len);
