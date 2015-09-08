@@ -8323,7 +8323,7 @@ fi
 if test "${enable_pfq+set}" = set; then :
   enableval=$enable_pfq;
 else
-  enable_pfq=no
+  enable_pfq=yes
 fi
 
 
