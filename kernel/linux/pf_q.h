@@ -226,8 +226,8 @@ struct pfq_pkthdr
 		uint64_t opaque;		/* e.g. monad state */
 		struct
 		{
-			int	 copies;	/* for packet Tx */
-			int	 inject;	/* pkt to kernel */
+			unsigned int copies;	/* for packet Tx */
+			int	     inject;	/* pkt to kernel */
 		};
 	} data;
 

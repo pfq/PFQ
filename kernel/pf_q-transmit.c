@@ -232,7 +232,7 @@ __pfq_sk_queue_xmit(struct pfq_sock *so, struct net_device *dev, size_t idx, int
 		struct sk_buff *skb;
 		bool xmit_more;
                 size_t len;
-                int copies;
+                unsigned int copies;
 
 		/* wait until the Ts */
 
@@ -275,11 +275,18 @@ __pfq_sk_queue_xmit(struct pfq_sock *so, struct net_device *dev, size_t idx, int
 
 		/* transmit the packet */
 
+		if (unlikely(hdr->data.copies == 0)) {
+			hdr->data.copies = 1;
+		}
+		else if (unlikely(hdr->data.copies > Q_MAX_TX_SKB_COPY)) {
+			hdr->data.copies = Q_MAX_TX_SKB_COPY;
+		}
+
                 copies = hdr->data.copies;
 
-		atomic_add(copies, &skb->users);
-
 		do {
+			skb_get(skb);
+
 			xmit_more = (++more == xmit_batch_len ? (more = 0, false) : true);
 
 			if (__pfq_xmit(skb, dev, txq, xmit_more) < 0) {

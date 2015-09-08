@@ -36,6 +36,7 @@
 #define Q_MAX_SOCK_MASK		1024
 #define Q_MAX_DEVICE		1024
 #define Q_MAX_HW_QUEUE          256
+#define Q_MAX_TX_SKB_COPY	256
 
 #define Q_GRACE_PERIOD		100 /* msec */
 
