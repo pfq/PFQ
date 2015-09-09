@@ -177,6 +177,26 @@ bool traverse_sk_queue(char *ptr, char *begin, char *end, int idx)
 }
 
 
+static inline
+unsigned int dev_tx_skb_copies(struct net_device *dev, unsigned int req_copies)
+{
+	if (likely(req_copies == 1 || req_copies == 0))
+		return 1;
+
+	if (unlikely(!(dev->priv_flags & IFF_TX_SKB_SHARING))) {
+		if (printk_ratelimit())
+			printk(KERN_INFO "[PFQ] tx_skb_copies: device '%s' does not support TX_SKB_SHARING!\n",
+			       dev->name);
+		return 1;
+	}
+
+	if (unlikely(req_copies > Q_MAX_TX_SKB_COPY))
+		return Q_MAX_TX_SKB_COPY;
+
+	return req_copies;
+}
+
+
 int
 __pfq_sk_queue_xmit(struct pfq_sock *so, struct net_device *dev, size_t idx, int cpu, int node)
 {
@@ -204,6 +224,10 @@ __pfq_sk_queue_xmit(struct pfq_sock *so, struct net_device *dev, size_t idx, int
 
 	pool = this_cpu_ptr(percpu_pool);
 
+	/* fix cpu */
+
+	cpu = cpu == Q_NO_KTHREAD ? smp_processor_id() : cpu;
+
 	/* swap the soft Tx queue */
 
 	if ((err = swap_sk_queue_and_wait(txs, cpu, &swap)) < 0)
@@ -229,10 +253,10 @@ __pfq_sk_queue_xmit(struct pfq_sock *so, struct net_device *dev, size_t idx, int
 	while(traverse_sk_queue(ptr, begin, end, idx))
 	{
 		struct pfq_pkthdr * hdr = (struct pfq_pkthdr *)ptr;
+                unsigned int copies, skb_copies;
 		struct sk_buff *skb;
 		bool xmit_more;
                 size_t len;
-                unsigned int copies;
 
 		/* wait until the Ts */
 
@@ -265,8 +289,6 @@ __pfq_sk_queue_xmit(struct pfq_sock *so, struct net_device *dev, size_t idx, int
 
 		__skb_put(skb, len);
 
-		/* set the Tx queue */
-
 		skb_set_queue_mapping(skb, queue);
 
 		/* copy bytes into the payload */
@@ -275,14 +297,7 @@ __pfq_sk_queue_xmit(struct pfq_sock *so, struct net_device *dev, size_t idx, int
 
 		/* transmit the packet */
 
-		if (unlikely(hdr->data.copies == 0)) {
-			hdr->data.copies = 1;
-		}
-		else if (unlikely(hdr->data.copies > Q_MAX_TX_SKB_COPY)) {
-			hdr->data.copies = Q_MAX_TX_SKB_COPY;
-		}
-
-                copies = hdr->data.copies;
+                skb_copies = copies = dev_tx_skb_copies(dev, hdr->data.copies);
 
 		do {
 			skb_get(skb);
@@ -311,18 +326,12 @@ __pfq_sk_queue_xmit(struct pfq_sock *so, struct net_device *dev, size_t idx, int
 		}
 		while (copies > 0);
 
-		/* update states */
+		/* update stats */
 
-		total_sent += hdr->data.copies;
+		total_sent += skb_copies;
 
-		if (cpu != Q_NO_KTHREAD) {
-			__sparse_add(&so->stats.sent, hdr->data.copies, cpu);
-			__sparse_add(&global_stats.sent, hdr->data.copies, cpu);
-		}
-		else {
-			sparse_add(&so->stats.sent, hdr->data.copies);
-			sparse_add(&global_stats.sent, hdr->data.copies);
-		}
+		__sparse_add(&so->stats.sent, skb_copies, cpu);
+		__sparse_add(&global_stats.sent, skb_copies, cpu);
 
 		/* return the skb and move ptr to the next packet */
 
@@ -347,14 +356,8 @@ stop:
 
 	/* update stats */
 
-	if (cpu != Q_NO_KTHREAD) {
-		__sparse_add(&so->stats.disc, disc, cpu);
-		__sparse_add(&global_stats.disc, disc, cpu);
-	}
-	else {
-		sparse_add(&so->stats.disc, disc);
-		sparse_add(&global_stats.disc, disc);
-	}
+	__sparse_add(&so->stats.disc, disc, cpu);
+	__sparse_add(&global_stats.disc, disc, cpu);
 
 	/* clear the queue */
 
