@@ -1096,7 +1096,7 @@ sendAt :: Ptr PFqTag
        -> IO Bool
 sendAt hdl xs ts copies =
     unsafeUseAsCStringLen xs $ \(p, l) ->
-        liftM (> 0) $ pfq_inject hdl p
+        liftM (> 0) $ pfq_send_deferred hdl p
                         (fromIntegral l)
                         (fromIntegral (fromIntegral (sec ts) * (1000000000 :: Integer) + fromIntegral (nsec ts)))
                         (fromIntegral copies)
@@ -1174,7 +1174,7 @@ foreign import ccall unsafe pfq_send                :: Ptr PFqTag -> Ptr CChar -
 foreign import ccall unsafe pfq_send_async          :: Ptr PFqTag -> Ptr CChar -> CSize -> CSize -> CInt -> IO CInt
 foreign import ccall unsafe pfq_send_at             :: Ptr PFqTag -> Ptr CChar -> CSize -> CSize -> CInt -> IO CInt
 
-foreign import ccall unsafe pfq_inject              :: Ptr PFqTag -> Ptr CChar -> CSize -> CULLong -> CInt -> CInt -> IO CInt
+foreign import ccall unsafe pfq_send_deferred       :: Ptr PFqTag -> Ptr CChar -> CSize -> CULLong -> CInt -> CInt -> IO CInt
 foreign import ccall unsafe pfq_tx_queue_flush      :: Ptr PFqTag -> CInt -> IO CInt
 foreign import ccall unsafe pfq_tx_async_start      :: Ptr PFqTag -> IO CInt
 foreign import ccall unsafe pfq_tx_async_stop       :: Ptr PFqTag -> IO CInt

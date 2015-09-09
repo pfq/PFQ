@@ -1335,7 +1335,7 @@ namespace pfq {
         bool
         send(const_buffer pkt, int copies = 1)
         {
-            auto rc = inject(pkt, 0, copies);
+            auto rc = send_deferred(pkt, 0, copies);
             if (data_->tx_num_bind != data_->tx_num_async)
                 tx_queue_flush();
             return rc;
@@ -1351,7 +1351,7 @@ namespace pfq {
         bool
         send_async(const_buffer pkt, size_t flush_hint, int copies = 1)
         {
-            auto rc = inject(pkt, 0, copies);
+            auto rc = send_deferred(pkt, 0, copies);
 
             if (++data_->tx_attempt == flush_hint) {
 
@@ -1378,7 +1378,7 @@ namespace pfq {
                 throw std::runtime_error("PFQ: send_at not async!");
 
             auto ns = std::chrono::duration_cast<std::chrono::nanoseconds>(tp.time_since_epoch()).count();
-            return inject(pkt, ns, copies);
+            return send_deferred(pkt, ns, copies);
         }
 
         //! Schedule the packet for transmission.
@@ -1389,10 +1389,10 @@ namespace pfq {
          */
 
         bool
-        inject(const_buffer buf, uint64_t nsec, int copies, int queue = any_queue)
+        send_deferred(const_buffer buf, uint64_t nsec, int copies, int queue = any_queue)
         {
             if (!data_->shm_addr)
-                throw pfq_error("PFQ: inject: socket not enabled");
+                throw pfq_error("PFQ: send_deferred: socket not enabled");
 
             const int tss = fold(queue == any_queue ? symmetric_hash(buf.first) : queue,
                                  data_->tx_num_bind);

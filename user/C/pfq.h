@@ -588,7 +588,7 @@ extern int pfq_tx_async_stop(pfq_t *q);
  * A timestamp of 0 nanoseconds means 'immediate transmission'.
  */
 
-extern int pfq_inject(pfq_t *q, const void *ptr, size_t len, uint64_t nsec, int copies, int queue);
+extern int pfq_send_deferred(pfq_t *q, const void *ptr, size_t len, uint64_t nsec, int copies, int queue);
 
 
 /*! Store the packet and transmit the packets in the queue. */

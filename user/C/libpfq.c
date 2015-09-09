@@ -1079,7 +1079,7 @@ pfq_unbind_tx(pfq_t *q)
 }
 
 int
-pfq_inject(pfq_t *q, const void *buf, size_t len, uint64_t nsec, int copies, int queue)
+pfq_send_deferred(pfq_t *q, const void *buf, size_t len, uint64_t nsec, int copies, int queue)
 {
         struct pfq_shared_queue *sh_queue = (struct pfq_shared_queue *)(q->shm_addr);
         struct pfq_tx_queue *tx;
@@ -1089,7 +1089,7 @@ pfq_inject(pfq_t *q, const void *buf, size_t len, uint64_t nsec, int copies, int
         void *base_addr;
 
 	if (q->shm_addr == NULL)
-		return Q_ERROR(q, "PFQ: inject: socket not enabled");
+		return Q_ERROR(q, "PFQ: send_deferred: socket not enabled");
 
 	tss = pfq_fold((queue == Q_ANY_QUEUE ? pfq_symmetric_hash(buf) : (unsigned int)queue), q->tx_num_bind);
 
@@ -1166,7 +1166,7 @@ pfq_tx_async_stop(pfq_t *q)
 int
 pfq_send(pfq_t *q, const void *ptr, size_t len, int copies)
 {
-        int rc = pfq_inject(q, ptr, len, 0, copies, Q_ANY_QUEUE);
+        int rc = pfq_send_deferred(q, ptr, len, 0, copies, Q_ANY_QUEUE);
 
 	if(q->tx_num_bind != q->tx_num_async)
 		pfq_tx_queue_flush(q, Q_ANY_QUEUE);
@@ -1179,7 +1179,7 @@ int
 pfq_send_async(pfq_t *q, const void *ptr, size_t len, size_t flush_hint, int
 	       copies)
 {
-        int rc = pfq_inject(q, ptr, len, 0, copies, Q_ANY_QUEUE);
+        int rc = pfq_send_deferred(q, ptr, len, 0, copies, Q_ANY_QUEUE);
 
 	if (++q->tx_attempt == flush_hint) {
 
@@ -1202,7 +1202,7 @@ pfq_send_at(pfq_t *q, const void *ptr, size_t len, struct timespec *ts, int
 		return Q_ERROR(q, "PFQ: send_at not fully async!");
 
 	nsec = (uint64_t)(ts->tv_sec)*1000000000ull + (uint64_t)ts->tv_nsec;
-        return pfq_inject(q, ptr, len, nsec, copies, Q_ANY_QUEUE);
+        return pfq_send_deferred(q, ptr, len, nsec, copies, Q_ANY_QUEUE);
 }
 
 
