@@ -581,7 +581,7 @@ extern int pfq_tx_async_start(pfq_t *q);
 extern int pfq_tx_async_stop(pfq_t *q);
 
 
-/*! Schedule the packet for transmission. */
+/*! Schedule packet transmission. */
 /*!
  * The packet is copied into a Tx queue (using a TSS symmetric hash if any_queue is specified)
  * and transmitted at the given timestamp by a kernel thread or when tx_queue_flush is called.

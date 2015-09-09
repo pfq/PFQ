@@ -1381,7 +1381,7 @@ namespace pfq {
             return send_deferred(pkt, ns, copies);
         }
 
-        //! Schedule the packet for transmission.
+        //! Schedule packet transmission.
         /*!
          * The packet is copied into a Tx queue (using a TSS symmetric hash if any_queue is specified)
          * and transmitted at the given timestamp by a kernel thread or when tx_queue_flush is called.
@@ -1418,14 +1418,13 @@ namespace pfq {
 
             // cut the packet to maxlen:
             //
-
             auto len = std::min(buf.second, data_->tx_slot_size - sizeof(struct pfq_pkthdr));
 
             // compute the current slot_size:
             //
             auto slot_size = sizeof(struct pfq_pkthdr) + align<8>(len);
 
-            // ensure there's space enough for the current slot_size + the next header:
+            // ensure there's enough space for the current slot_size + the next header:
             //
             if ((static_cast<char *>(tx->ptr) - static_cast<char *>(base_addr) + slot_size + sizeof(struct pfq_pkthdr))
                     < data_->tx_queue_size)

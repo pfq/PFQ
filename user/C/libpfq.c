@@ -1108,8 +1108,9 @@ pfq_send_deferred(pfq_t *q, const void *buf, size_t len, uint64_t nsec, int copi
 		tx->ptr = base_addr;
 	}
 
-	slot_size = sizeof(struct pfq_pkthdr) + ALIGN(len, 8);
 	len = min(len, q->tx_slot_size - sizeof(struct pfq_pkthdr));
+
+	slot_size = sizeof(struct pfq_pkthdr) + ALIGN(len, 8);
 
 	if ((tx->ptr - base_addr + slot_size + sizeof(struct pfq_pkthdr)) < q->tx_queue_size)
 	{

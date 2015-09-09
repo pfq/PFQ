@@ -71,8 +71,8 @@ script = do
 
         Configure "pfq-pcap-1.3.0"  *>>  into "user/libpcap/libpcap-1.3.0/"  $ do cmd "autoconf" `requires` [ Install "pfq-clib" ]
                                                                                   cmd "./configure --enable-pfq"
-        Build     "pfq-pcap-1.3.0"  *>>  into "user/libpcap/libpcap-1.3.0/"  $ make                           `requires` [ Install "pfq.ko", Configure "pfq-pcap-1.3.0" ]
-        Install   "pfq-pcap-1.3.0"  *>>  into "user/libpcap/libpcap-1.3.0/"  $ empty                          `requires` [ Build "pfq-pcap-1.3.0" ]
+        Build     "pfq-pcap-1.3.0"  *>>  into "user/libpcap/libpcap-1.3.0/"  $ make              `requires` [ Install "pfq.ko", Configure "pfq-pcap-1.3.0" ]
+        Install   "pfq-pcap-1.3.0"  *>>  into "user/libpcap/libpcap-1.3.0/"  $ empty             `requires` [ Build "pfq-pcap-1.3.0" ]
         Clean     "pfq-pcap-1.3.0"  *>>  into "user/libpcap/libpcap-1.3.0/"  $ make_clean
         DistClean "pfq-pcap-1.3.0"  *>>  into "user/libpcap/libpcap-1.3.0/"  $ make_distclean
 
@@ -83,8 +83,8 @@ script = do
 
         Configure "pfq-pcap-1.7.4"  *>>  into "user/libpcap/libpcap-1.7.4/"  $ do cmd "autoconf" `requires` [ Install "pfq-clib" ]
                                                                                   cmd "./configure --enable-pfq"
-        Build     "pfq-pcap-1.7.4"  *>>  into "user/libpcap/libpcap-1.7.4/"  $ make                           `requires` [ Install "pfq.ko", Configure "pfq-pcap-1.7.4" ]
-        Install   "pfq-pcap-1.7.4"  *>>  into "user/libpcap/libpcap-1.7.4/"  $ empty                          `requires` [ Build "pfq-pcap-1.7.4" ]
+        Build     "pfq-pcap-1.7.4"  *>>  into "user/libpcap/libpcap-1.7.4/"  $ make              `requires` [ Install "pfq.ko", Configure "pfq-pcap-1.7.4" ]
+        Install   "pfq-pcap-1.7.4"  *>>  into "user/libpcap/libpcap-1.7.4/"  $ empty             `requires` [ Build "pfq-pcap-1.7.4" ]
         Clean     "pfq-pcap-1.7.4"  *>>  into "user/libpcap/libpcap-1.7.4/"  $ make_clean
         DistClean "pfq-pcap-1.7.4"  *>>  into "user/libpcap/libpcap-1.7.4/"  $ make_distclean
 
