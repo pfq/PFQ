@@ -177,6 +177,7 @@ bool traverse_sk_queue(char *ptr, char *begin, char *end, int idx)
 }
 
 
+
 static inline
 unsigned int dev_tx_skb_copies(struct net_device *dev, unsigned int req_copies)
 {
@@ -197,6 +198,10 @@ unsigned int dev_tx_skb_copies(struct net_device *dev, unsigned int req_copies)
 }
 
 
+#define for_each_sk_packet(hdr, end, fixlen) \
+        for(; (hdr < (struct pfq_pkthdr *)end) && (hdr->caplen != 0); \
+               hdr = (struct pfq_pkthdr *)((char *)(hdr+1) + ALIGN(fixlen ? fixlen : hdr->caplen, 8)))
+
 int
 __pfq_sk_queue_xmit(struct pfq_sock *so, struct net_device *dev, size_t idx, int cpu, int node)
 {
@@ -204,7 +209,8 @@ __pfq_sk_queue_xmit(struct pfq_sock *so, struct net_device *dev, size_t idx, int
 	struct pfq_tx_queue *txs;
 	struct pfq_percpu_pool *pool;
 	int queue, swap;
-	char *ptr, *begin, *end;
+	char *begin, *end;
+	struct pfq_pkthdr *hdr;
         int more = 0, err = 0,
             total_sent = 0,
             disc = 0;
@@ -240,19 +246,20 @@ __pfq_sk_queue_xmit(struct pfq_sock *so, struct net_device *dev, size_t idx, int
         /* initialize pointer to the current transmit queue */
 
 	begin = so->opt.txq[idx].base_addr + (swap & 1) * txs->size;
-        end = begin + txs->size;
+        end   = begin + txs->size;
+
 
 	/* Tx loop */
 
 	now = ktime_get_real();
-	ptr = begin;
 
 	local_bh_disable();
 	HARD_TX_LOCK(dev, txq, smp_processor_id());
 
-	while(traverse_sk_queue(ptr, begin, end, idx))
+	hdr = (struct pfq_pkthdr *)begin;
+
+	for_each_sk_packet(hdr, end, 0 /* variadic */)
 	{
-		struct pfq_pkthdr * hdr = (struct pfq_pkthdr *)ptr;
                 unsigned int copies, skb_copies;
 		struct sk_buff *skb;
 		bool xmit_more;
@@ -281,7 +288,7 @@ __pfq_sk_queue_xmit(struct pfq_sock *so, struct net_device *dev, size_t idx, int
 
 		/* fill the skb */
 
-		len = min_t(size_t, hdr->len, xmit_slot_size);
+		len = min_t(size_t, hdr->caplen, xmit_slot_size);
 
 		skb_reset_tail_pointer(skb);
 		skb->dev = dev;
@@ -336,9 +343,6 @@ __pfq_sk_queue_xmit(struct pfq_sock *so, struct net_device *dev, size_t idx, int
 		/* return the skb and move ptr to the next packet */
 
 		pfq_kfree_skb_pool(skb, &pool->tx_pool);
-
-		ptr += sizeof(struct pfq_pkthdr) + ALIGN(hdr->len, 8);
-		hdr = (struct pfq_pkthdr *)ptr;
 	}
 
 	HARD_TX_UNLOCK(dev, txq);
@@ -347,10 +351,8 @@ __pfq_sk_queue_xmit(struct pfq_sock *so, struct net_device *dev, size_t idx, int
 stop:
 	/* count the packets left in the shared queue */
 
-	while(traverse_sk_queue(ptr, begin, end, idx))
+	for_each_sk_packet(hdr, end, 0)
 	{
-		struct pfq_pkthdr *hdr = (struct pfq_pkthdr *)ptr;
-		ptr += sizeof(struct pfq_pkthdr) + ALIGN(hdr->len, 8);
 		disc++;
 	}
 

@@ -1118,7 +1118,7 @@ pfq_send_deferred(pfq_t *q, const void *buf, size_t len, uint64_t nsec, int copi
 
 		hdr = (struct pfq_pkthdr *)tx->ptr;
 		hdr->tstamp.tv64 = nsec;
-		hdr->len = len;
+		hdr->caplen = len;
 		hdr->data.copies = copies;
 
 		memcpy(hdr+1, buf, hdr->len);

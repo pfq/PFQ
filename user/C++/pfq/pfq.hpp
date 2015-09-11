@@ -1431,7 +1431,7 @@ namespace pfq {
             {
                 auto hdr = (struct pfq_pkthdr *)tx->ptr;
                 hdr->tstamp.tv64 = nsec;
-                hdr->len = len;
+                hdr->caplen = len;
                 hdr->data.copies = copies;
 
                 memcpy(hdr+1, buf.first, len);
