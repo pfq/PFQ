@@ -222,7 +222,12 @@ struct pfq_pkthdr
 {
 	union
 	{
-		uint64_t opaque;		/* e.g. monad state */
+		struct
+		{
+			uint32_t mark;		/* packet mark */
+			uint32_t state;         /* monad state */
+		};
+
 		struct
 		{
 			unsigned int copies;	/* for packet Tx */

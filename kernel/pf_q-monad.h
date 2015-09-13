@@ -66,7 +66,7 @@ typedef struct
 struct pfq_monad
 {
         struct pfq_group	*group;
-        uint64_t		state;
+        uint32_t		state;
         fanout_t		fanout;
 };
 
@@ -194,13 +194,13 @@ void set_mark(SkBuff skb, uint32_t value)
 
 
 static inline
-uint64_t get_state(SkBuff skb)
+uint32_t get_state(SkBuff skb)
 {
         return PFQ_CB(skb)->monad->state;
 }
 
 static inline
-void set_state(SkBuff skb, uint64_t state)
+void set_state(SkBuff skb, uint32_t state)
 {
         PFQ_CB(skb)->monad->state = state;
 }
