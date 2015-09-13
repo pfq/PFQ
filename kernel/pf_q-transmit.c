@@ -626,12 +626,13 @@ pfq_skb_queue_lazy_xmit_run(struct pfq_skbuff_GC_queue *skbs, struct pfq_endpoin
 
 			if (queue != skb->queue_mapping) {
 
+				queue = skb->queue_mapping;
+
 				if (txq) {
 					HARD_TX_UNLOCK(dev, txq);
 					local_bh_enable();
                                 }
 
-				queue = skb->queue_mapping;
 				txq = pfq_netdev_pick_tx(dev, PFQ_SKB(skb), &queue);
 
 				local_bh_disable();
@@ -654,7 +655,7 @@ pfq_skb_queue_lazy_xmit_run(struct pfq_skbuff_GC_queue *skbs, struct pfq_endpoin
 			}
 		}
 
-		if (txq){
+		if (txq) {
 			HARD_TX_UNLOCK(dev, txq);
 			local_bh_enable();
 		}
