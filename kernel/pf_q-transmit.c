@@ -173,6 +173,14 @@ unsigned int dev_tx_skb_copies(struct net_device *dev, unsigned int req_copies)
 }
 
 
+static inline
+bool tx_queue_last_pkt(struct pfq_pkthdr *hdr)
+{
+	struct pfq_pkthdr * next = (struct pfq_pkthdr *)((char *)(hdr+1) + ALIGN(hdr->caplen, 8));
+        return next->caplen == 0;
+}
+
+
 int
 __pfq_sk_tx_queue_xmit(struct pfq_sock *so, struct net_device *dev, size_t idx, int cpu, int node)
 {
@@ -232,8 +240,10 @@ __pfq_sk_tx_queue_xmit(struct pfq_sock *so, struct net_device *dev, size_t idx, 
 	{
                 unsigned int copies, skb_copies;
 		struct sk_buff *skb;
-		bool xmit_more;
+		bool xmit_more, last;
                 size_t len;
+
+		last = tx_queue_last_pkt(hdr);
 
 		/* wait until the Ts */
 
@@ -284,7 +294,7 @@ __pfq_sk_tx_queue_xmit(struct pfq_sock *so, struct net_device *dev, size_t idx, 
 		do {
 			skb_get(skb);
 
-			xmit_more = (++more == xmit_batch_len ? (more = 0, false) : true);
+			xmit_more = (++more == xmit_batch_len || (last && (copies == 1))) ? (more = 0, false) : true;
 
 			if (__pfq_xmit(skb, dev, txq, xmit_more) < 0) {
 
