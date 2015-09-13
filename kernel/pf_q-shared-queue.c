@@ -34,139 +34,10 @@
 
 #include <pragma/diagnostic_pop>
 
+#include <pf_q-module.h>
+#include <pf_q-memory.h>
 #include <pf_q-shared-queue.h>
 #include <pf_q-shmem.h>
-#include <pf_q-bitops.h>
-#include <pf_q-module.h>
-#include <pf_q-sock.h>
-#include <pf_q-global.h>
-#include <pf_q-memory.h>
-#include <pf_q-GC.h>
-
-
-static inline
-void *pfq_skb_copy_from_linear_data(const struct sk_buff *skb, void *to, size_t len)
-{
-	if (len < 64 && (len + skb_tailroom(skb) >= 64))
-		return memcpy(to, skb->data, 64);
-	return memcpy(to, skb->data, len);
-}
-
-
-static inline
-char *mpsc_slot_ptr(struct pfq_sock_opt *opt, struct pfq_rx_queue *qd, size_t qindex, size_t slot)
-{
-	return (char *)(opt->rxq.base_addr) + (opt->rx_queue_size * (qindex & 1) + slot) * opt->rx_slot_size;
-}
-
-
-size_t pfq_mpsc_enqueue_batch(struct pfq_sock_opt *opt,
-			      struct pfq_skbuff_queue __GC *skbs,
-			      unsigned long long mask,
-			      int burst_len,
-			      pfq_gid_t gid)
-{
-	struct pfq_rx_queue *rx_queue = pfq_get_rx_queue(opt);
-	int data, qlen, qindex;
-	struct sk_buff __GC *skb;
-
-	size_t n, sent = 0;
-	char *this_slot;
-
-	if (unlikely(rx_queue == NULL))
-		return 0;
-
-	data = atomic_read((atomic_t *)&rx_queue->data);
-
-	if (Q_SHARED_QUEUE_LEN(data) > opt->rx_queue_size)
-		return 0;
-
-	data = atomic_add_return(burst_len, (atomic_t *)&rx_queue->data);
-
-	qlen      = Q_SHARED_QUEUE_LEN(data) - burst_len;
-	qindex    = Q_SHARED_QUEUE_INDEX(data);
-	this_slot = mpsc_slot_ptr(opt, rx_queue, qindex, qlen);
-
-	for_each_skbuff_bitmask((struct pfq_skbuff_queue_GC __force *)skbs, mask, skb, n)
-	{
-		volatile struct pfq_pkthdr *hdr;
-		size_t bytes, slot_index;
-		char *pkt;
-
-		bytes = min_t(size_t, skb->len, opt->caplen);
-
-		slot_index = qlen + sent;
-
-		hdr = (struct pfq_pkthdr *)this_slot;
-		pkt = (char *)(hdr+1);
-
-		if (slot_index > opt->rx_queue_size) {
-
-			if (waitqueue_active(&opt->waitqueue)) {
-				SPARSE_INC(&global_stats.wake);
-				wake_up_interruptible(&opt->waitqueue);
-			}
-
-			return sent;
-		}
-
-		/* copy bytes of packet */
-
-#ifdef PFQ_USE_SKB_LINEARIZE
-		if (unlikely(skb_is_nonlinear(PFQ_SKB(skb))))
-#else
-		if (skb_is_nonlinear(PFQ_SKB(skb)))
-#endif
-		{
-			if (skb_copy_bits(PFQ_SKB(skb), 0, pkt, bytes) != 0) {
-				printk(KERN_WARNING "[PFQ] BUG! skb_copy_bits failed (bytes=%zu, skb_len=%d mac_len=%d)!\n",
-				       bytes, skb->len, skb->mac_len);
-				return 0;
-			}
-		}
-		else {
-			pfq_skb_copy_from_linear_data(PFQ_SKB(skb), pkt, bytes);
-		}
-
-		/* copy state from pfq_cb annotation */
-
-		hdr->data.opaque = PFQ_CB(skb)->monad->state;
-
-		/* setup the header */
-
-		if (opt->tstamp != 0) {
-			struct timespec ts;
-			skb_get_timestampns(PFQ_SKB(skb), &ts);
-			hdr->tstamp.tv.sec  = (uint32_t)ts.tv_sec;
-			hdr->tstamp.tv.nsec = (uint32_t)ts.tv_nsec;
-		}
-
-		hdr->if_index = skb->dev->ifindex;
-		hdr->gid      = (__force int)gid;
-		hdr->len      = (uint16_t)skb->len;
-		hdr->caplen   = (uint16_t)bytes;
-		hdr->vlan.tci = skb->vlan_tci & ~VLAN_TAG_PRESENT;
-		hdr->queue    = skb_rx_queue_recorded(PFQ_SKB(skb)) ? (uint8_t)(skb_get_rx_queue(PFQ_SKB(skb)) & 0xff) : 0;
-
-		/* commit the slot (release semantic) */
-
-		smp_wmb();
-
-		hdr->commit = (uint8_t)qindex;
-
-		if ((slot_index & 8191) == 0 &&
-		    waitqueue_active(&opt->waitqueue)) {
-			SPARSE_INC(&global_stats.wake);
-			wake_up_interruptible(&opt->waitqueue);
-		}
-
-		sent++;
-
-		this_slot += opt->rx_slot_size;
-	}
-
-	return sent;
-}
 
 
 int
@@ -217,13 +88,13 @@ pfq_shared_queue_enable(struct pfq_sock *so, unsigned long user_addr)
 		{
 			queue->tx[n].prod      = 0;
 			queue->tx[n].cons      = 0;
-			queue->tx[n].size      = pfq_queue_spsc_mem(so)/2;
+			queue->tx[n].size      = pfq_spsc_queue_mem(so)/2;
 			queue->tx[n].ptr       = NULL;
 			queue->tx[n].index     = -1;
 
 			so->opt.txq[n].base_addr = so->shmem.addr + sizeof(struct pfq_shared_queue)
-				+ pfq_queue_mpsc_mem(so)
-				+ pfq_queue_spsc_mem(so) * n;
+				+ pfq_mpsc_queue_mem(so)
+				+ pfq_spsc_queue_mem(so) * n;
 		}
 
 		/* update the queues base_addr */
@@ -246,14 +117,14 @@ pfq_shared_queue_enable(struct pfq_sock *so, unsigned long user_addr)
 			 so->opt.rx_queue_size,
 			 so->opt.rx_slot_size,
 			 so->opt.caplen,
-			 pfq_queue_mpsc_mem(so));
+			 pfq_mpsc_queue_mem(so));
 
 		pr_devel("[PFQ|%d] Tx queue: len=%zu slot_size=%zu maxlen=%d, mem=%zu bytes (%d queues)\n",
 			 so->id,
 			 so->opt.tx_queue_size,
 			 so->opt.tx_slot_size,
 			 xmit_slot_size,
-			 pfq_queue_spsc_mem(so) * Q_MAX_TX_QUEUES, Q_MAX_TX_QUEUES);
+			 pfq_spsc_queue_mem(so) * Q_MAX_TX_QUEUES, Q_MAX_TX_QUEUES);
 	}
 
 	return 0;

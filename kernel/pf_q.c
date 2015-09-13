@@ -376,7 +376,7 @@ pfq_process_batch(struct pfq_percpu_data *data,
 
 	if (endpoints.cnt_total)
 	{
-		size_t total = pfq_queue_lazy_xmit_run(SKBUFF_QUEUE(GC_ptr->pool), &endpoints);
+		size_t total = pfq_skb_queue_lazy_xmit_run(SKBUFF_QUEUE(GC_ptr->pool), &endpoints);
 
 		__sparse_add(&global_stats.frwd, total, cpu);
 		__sparse_add(&global_stats.disc, endpoints.cnt_total - total, cpu);

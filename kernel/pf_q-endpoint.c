@@ -31,6 +31,7 @@
 #include <pragma/diagnostic_pop>
 
 #include <pf_q-shared-queue.h>
+#include <pf_q-receive.h>
 #include <pf_q-sparse.h>
 #include <pf_q-transmit.h>
 #include <pf_q-endpoint.h>
@@ -72,7 +73,7 @@ size_t copy_to_user_skbs(struct pfq_sock *so, struct pfq_skbuff_queue __GC *skbs
 
 		smp_rmb();
 
-                cpy = pfq_mpsc_enqueue_batch(&so->opt, skbs, mask, len, gid);
+                cpy = pfq_sk_rx_queue_recv(&so->opt, skbs, mask, len, gid);
 
 		__sparse_add(&so->stats.recv, cpy, cpu);
 
@@ -105,7 +106,7 @@ size_t copy_to_dev_skbs(struct pfq_sock *so, struct pfq_skbuff_queue __GC *skbs,
                         return false;
 		}
 
-		sent = pfq_queue_lazy_xmit_by_mask(skbs, mask, dev, so->egress_queue);
+		sent = pfq_skb_queue_lazy_xmit_by_mask(skbs, mask, dev, so->egress_queue);
 
                 dev_put(dev);
 		return sent;

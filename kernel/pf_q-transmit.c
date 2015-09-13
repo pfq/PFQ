@@ -152,33 +152,6 @@ int swap_sk_queue_and_wait(struct pfq_tx_queue *txs, int cpu, int *index)
 
 
 static inline
-bool traverse_sk_queue(char *ptr, char *begin, char *end, int idx)
-{
-	struct pfq_pkthdr *hdr = (struct pfq_pkthdr *)ptr;
-
-#ifdef PFQ_DEBUG
-	if (ptr < begin || ptr >= end) {
-		printk(KERN_INFO "[PFQ] BUG: queue[%d] ptr overflow: %p: [%p,%p]\n", idx,
-		       ptr, begin, end);
-		return false;
-	}
-
-	if (hdr->len > 2048) {
-		printk(KERN_INFO "[PFQ] BUG: queue[%d]@offset=%zu bad hdr->len: %d@%p [%p,%p]\n", idx,
-		       ptr-begin, hdr->len, hdr, begin, end);
-		return false;
-	}
-
-	return hdr->len != 0;
-#else
-	return ptr < end && (hdr->len != 0 && hdr->len < 2048);
-#endif
-
-}
-
-
-
-static inline
 unsigned int dev_tx_skb_copies(struct net_device *dev, unsigned int req_copies)
 {
 	if (likely(req_copies == 1 || req_copies == 0))
@@ -198,22 +171,18 @@ unsigned int dev_tx_skb_copies(struct net_device *dev, unsigned int req_copies)
 }
 
 
-#define for_each_sk_packet(hdr, end, fixlen) \
-        for(; (hdr < (struct pfq_pkthdr *)end) && (hdr->caplen != 0); \
-               hdr = (struct pfq_pkthdr *)((char *)(hdr+1) + ALIGN(fixlen ? fixlen : hdr->caplen, 8)))
-
 int
-__pfq_sk_queue_xmit(struct pfq_sock *so, struct net_device *dev, size_t idx, int cpu, int node)
+__pfq_sk_tx_queue_xmit(struct pfq_sock *so, struct net_device *dev, size_t idx, int cpu, int node)
 {
 	struct netdev_queue *txq;
 	struct pfq_tx_queue *txs;
 	struct pfq_percpu_pool *pool;
-	int queue, swap;
-	char *begin, *end;
 	struct pfq_pkthdr *hdr;
-        int more = 0, err = 0,
-            total_sent = 0,
-            disc = 0;
+
+	int more = 0, err = 0, total_sent = 0,
+            disc = 0, queue, swap;
+
+	char *begin, *end;
 	ktime_t now;
 
 	/* get the Tx queue */
@@ -223,8 +192,7 @@ __pfq_sk_queue_xmit(struct pfq_sock *so, struct net_device *dev, size_t idx, int
 	/* get the netdev_queue for transmission */
 
 	queue = __pfq_dev_cap_txqueue(dev, so->opt.txq[idx].queue);
-
-	txq = netdev_get_tx_queue(dev, queue);
+	txq   = netdev_get_tx_queue(dev, queue);
 
 	/* get local cpu data */
 
@@ -258,7 +226,7 @@ __pfq_sk_queue_xmit(struct pfq_sock *so, struct net_device *dev, size_t idx, int
 
 	hdr = (struct pfq_pkthdr *)begin;
 
-	for_each_sk_packet(hdr, end, 0 /* variadic */)
+	for_each_sk_tx_mbuff(hdr, end)
 	{
                 unsigned int copies, skb_copies;
 		struct sk_buff *skb;
@@ -351,7 +319,7 @@ __pfq_sk_queue_xmit(struct pfq_sock *so, struct net_device *dev, size_t idx, int
 stop:
 	/* count the packets left in the shared queue */
 
-	for_each_sk_packet(hdr, end, 0)
+	for_each_sk_tx_mbuff(hdr, end)
 	{
 		disc++;
 	}
@@ -389,7 +357,7 @@ pfq_sk_queue_flush(struct pfq_sock *so, int index)
 		return -EPERM;
 	}
 
-	pfq_sk_queue_xmit(so, dev, index);
+	pfq_sk_tx_queue_xmit(so, dev, index);
 	dev_put(dev);
 	return 0;
 }
@@ -462,7 +430,7 @@ pfq_xmit(struct sk_buff *skb, struct net_device *dev, int queue, int more)
 
 
 int
-pfq_queue_xmit(struct pfq_skbuff_queue *skbs, struct net_device *dev, int queue)
+pfq_skb_queue_xmit(struct pfq_skbuff_queue *skbs, struct net_device *dev, int queue)
 {
 	struct netdev_queue *txq;
 	struct sk_buff *skb;
@@ -509,7 +477,7 @@ intr:
 
 
 int
-pfq_queue_xmit_by_mask(struct pfq_skbuff_queue *skbs, unsigned long long mask, struct net_device *dev, int queue)
+pfq_skb_queue_xmit_by_mask(struct pfq_skbuff_queue *skbs, unsigned long long mask, struct net_device *dev, int queue)
 {
 	struct netdev_queue *txq;
 	struct sk_buff *skb;
@@ -572,7 +540,7 @@ pfq_lazy_xmit(struct sk_buff __GC * skb, struct net_device *dev, int queue)
 
 
 int
-pfq_queue_lazy_xmit(struct pfq_skbuff_queue __GC *queue, struct net_device *dev, int queue_index)
+pfq_skb_queue_lazy_xmit(struct pfq_skbuff_queue __GC *queue, struct net_device *dev, int queue_index)
 {
 	struct sk_buff __GC * skb;
 	int i, n = 0;
@@ -588,7 +556,7 @@ pfq_queue_lazy_xmit(struct pfq_skbuff_queue __GC *queue, struct net_device *dev,
 
 
 int
-pfq_queue_lazy_xmit_by_mask(struct pfq_skbuff_queue __GC *queue, unsigned long long mask,
+pfq_skb_queue_lazy_xmit_by_mask(struct pfq_skbuff_queue __GC *queue, unsigned long long mask,
 			    struct net_device *dev, int queue_index)
 {
 	struct sk_buff __GC * skb;
@@ -605,7 +573,7 @@ pfq_queue_lazy_xmit_by_mask(struct pfq_skbuff_queue __GC *queue, unsigned long l
 
 
 size_t
-pfq_queue_lazy_xmit_run(struct pfq_skbuff_queue __GC *skbs, struct pfq_endpoint_info const *endpoints)
+pfq_skb_queue_lazy_xmit_run(struct pfq_skbuff_queue __GC *skbs, struct pfq_endpoint_info const *endpoints)
 {
 	struct netdev_queue *txq;
 	struct net_device *dev;

@@ -40,30 +40,35 @@
 
 
 
-extern int __pfq_sk_queue_xmit(struct pfq_sock *so, struct net_device *dev, size_t index, int cpu, int node);
+#define for_each_sk_tx_mbuff(hdr, end) \
+        for(; (hdr < (struct pfq_pkthdr *)end) && (hdr->caplen != 0); \
+               hdr = (struct pfq_pkthdr *)((char *)(hdr+1) + ALIGN(hdr->caplen, 8)))
+
+
+extern int __pfq_sk_tx_queue_xmit(struct pfq_sock *so, struct net_device *dev, size_t index, int cpu, int node);
+
 
 static inline int
-pfq_sk_queue_xmit(struct pfq_sock *so, struct net_device *dev, size_t index)
+pfq_sk_tx_queue_xmit(struct pfq_sock *so, struct net_device *dev, size_t index)
 {
-	return __pfq_sk_queue_xmit(so, dev, index, Q_NO_KTHREAD, NUMA_NO_NODE);
+	return __pfq_sk_tx_queue_xmit(so, dev, index, Q_NO_KTHREAD, NUMA_NO_NODE);
 }
 
 
 extern int pfq_sk_queue_flush(struct pfq_sock *so, int index);
 
-
-extern int pfq_queue_xmit(struct pfq_skbuff_queue *skbs, struct net_device *dev, int queue_index);
-extern int pfq_queue_xmit_by_mask(struct pfq_skbuff_queue *skbs, unsigned long long skbs_mask,
+extern int pfq_skb_queue_xmit(struct pfq_skbuff_queue *skbs, struct net_device *dev, int queue_index);
+extern int pfq_skb_queue_xmit_by_mask(struct pfq_skbuff_queue *skbs, unsigned long long skbs_mask,
 				  struct net_device *dev, int queue_index);
 
 extern int pfq_xmit(struct sk_buff *skb, struct net_device *dev, int queue, int more);
-
 extern int pfq_lazy_xmit(struct sk_buff __GC * skb, struct net_device *dev, int queue_index);
-extern int pfq_queue_lazy_xmit(struct pfq_skbuff_queue __GC *queue, struct net_device *dev, int queue_index);
-extern int pfq_queue_lazy_xmit_by_mask(struct pfq_skbuff_queue __GC *queue, unsigned long long mask,
+
+extern int pfq_skb_queue_lazy_xmit(struct pfq_skbuff_queue __GC *queue, struct net_device *dev, int queue_index);
+extern int pfq_skb_queue_lazy_xmit_by_mask(struct pfq_skbuff_queue __GC *queue, unsigned long long mask,
 				       struct net_device *dev, int queue_index);
 
-extern size_t pfq_queue_lazy_xmit_run(struct pfq_skbuff_queue __GC *queue, struct pfq_endpoint_info const *info);
+extern size_t pfq_skb_queue_lazy_xmit_run(struct pfq_skbuff_queue __GC *queue, struct pfq_endpoint_info const *info);
 
 
 #endif /* PF_Q_TRANSMIT_H */
