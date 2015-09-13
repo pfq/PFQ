@@ -22,7 +22,7 @@
  ****************************************************************/
 
 #ifndef PF_Q_SYMTABLE_H
-#define PF_Q_SYMTBALE_H
+#define PF_Q_SYMTABLE_H
 
 #include <pragma/diagnostic_push>
 
