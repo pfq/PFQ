@@ -33,20 +33,28 @@ struct pfq_skbuff_queue
         struct sk_buff *queue[];
 };
 
-struct pfq_skbuff_queue_GC
+
+struct pfq_skbuff_GC_queue
 {
         size_t len;
         struct sk_buff __GC *queue[];
 };
 
 
-struct GC_skbuff_queue;
 struct pfq_skbuff_batch;
+struct GC_skbuff_batch;
+struct GC_skbuff_queue;
 
 
-#define SKBUFF_QUEUE(q) \
-	__builtin_choose_expr(__builtin_types_compatible_p(typeof(q),struct GC_skbuff_queue),  (struct pfq_skbuff_queue *)&q, \
-	__builtin_choose_expr(__builtin_types_compatible_p(typeof(q),struct pfq_skbuff_batch), (struct pfq_skbuff_queue *)&q, (void) 0))
+#define SKBUFF_QUEUE_ADDR(q) \
+	__builtin_choose_expr(__builtin_types_compatible_p(typeof(q),struct GC_skbuff_queue ), (struct pfq_skbuff_queue *)&q, \
+	__builtin_choose_expr(__builtin_types_compatible_p(typeof(q),struct GC_skbuff_batch ), (struct pfq_skbuff_queue *)&q, \
+	__builtin_choose_expr(__builtin_types_compatible_p(typeof(q),struct pfq_skbuff_batch), (struct pfq_skbuff_queue *)&q, (void) 0)))
+
+
+#define SKBUFF_GC_QUEUE_ADDR(q) \
+	__builtin_choose_expr(__builtin_types_compatible_p(typeof(q),struct GC_skbuff_queue ), (struct pfq_skbuff_GC_queue *)&q, \
+	__builtin_choose_expr(__builtin_types_compatible_p(typeof(q),struct GC_skbuff_batch ), (struct pfq_skbuff_GC_queue *)&q, (void) 0))
 
 
 static inline

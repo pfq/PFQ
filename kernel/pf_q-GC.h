@@ -48,6 +48,12 @@ struct GC_log
 };
 
 
+struct GC_skbuff_batch
+{
+        size_t len;
+        struct sk_buff __GC *queue[Q_SKBUFF_BATCH];
+};
+
 struct GC_skbuff_queue
 {
         size_t len;

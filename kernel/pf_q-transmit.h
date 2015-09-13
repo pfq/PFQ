@@ -64,11 +64,9 @@ extern int pfq_skb_queue_xmit_by_mask(struct pfq_skbuff_queue *skbs, unsigned lo
 extern int pfq_xmit(struct sk_buff *skb, struct net_device *dev, int queue, int more);
 extern int pfq_lazy_xmit(struct sk_buff __GC * skb, struct net_device *dev, int queue_index);
 
-extern int pfq_skb_queue_lazy_xmit(struct pfq_skbuff_queue __GC *queue, struct net_device *dev, int queue_index);
-extern int pfq_skb_queue_lazy_xmit_by_mask(struct pfq_skbuff_queue __GC *queue, unsigned long long mask,
-				       struct net_device *dev, int queue_index);
-
-extern size_t pfq_skb_queue_lazy_xmit_run(struct pfq_skbuff_queue __GC *queue, struct pfq_endpoint_info const *info);
+extern int pfq_skb_queue_lazy_xmit(struct pfq_skbuff_GC_queue *queue, struct net_device *dev, int queue_index);
+extern int pfq_skb_queue_lazy_xmit_by_mask(struct pfq_skbuff_GC_queue *queue, unsigned long long mask, struct net_device *dev, int queue_index);
+extern size_t pfq_skb_queue_lazy_xmit_run(struct pfq_skbuff_GC_queue *queue, struct pfq_endpoint_info const *info);
 
 
 #endif /* PF_Q_TRANSMIT_H */

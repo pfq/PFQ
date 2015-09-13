@@ -55,7 +55,7 @@ void *pfq_skb_copy_from_linear_data(const struct sk_buff *skb, void *to, size_t 
 
 
 size_t pfq_sk_rx_queue_recv(struct pfq_sock_opt *opt,
-			    struct pfq_skbuff_queue __GC *skbs,
+			    struct pfq_skbuff_GC_queue *skbs,
 			    unsigned long long mask,
 			    int burst_len,
 			    pfq_gid_t gid)
@@ -77,11 +77,11 @@ size_t pfq_sk_rx_queue_recv(struct pfq_sock_opt *opt,
 
 	data = atomic_add_return(burst_len, (atomic_t *)&rx_queue->data);
 
-	qlen      = Q_SHARED_QUEUE_LEN(data) - burst_len;
-	qindex    = Q_SHARED_QUEUE_INDEX(data);
+	qlen = Q_SHARED_QUEUE_LEN(data) - burst_len;
+	qindex = Q_SHARED_QUEUE_INDEX(data);
 	this_slot = pfq_mpsc_slot_ptr(opt, rx_queue, qindex, qlen);
 
-	for_each_skbuff_bitmask((struct pfq_skbuff_queue_GC __force *)skbs, mask, skb, n)
+	for_each_skbuff_bitmask(skbs, mask, skb, n)
 	{
 		volatile struct pfq_pkthdr *hdr;
 		size_t bytes, slot_index;

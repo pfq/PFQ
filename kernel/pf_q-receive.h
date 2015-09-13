@@ -42,7 +42,7 @@
 
 
 extern size_t pfq_sk_rx_queue_recv(struct pfq_sock_opt *opt,
-		                   struct pfq_skbuff_queue __GC *skbs,
+		                   struct pfq_skbuff_GC_queue *skbs,
 		                   unsigned long long skbs_mask,
 		                   int burst_len,
 		                   pfq_gid_t gid);

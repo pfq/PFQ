@@ -540,12 +540,12 @@ pfq_lazy_xmit(struct sk_buff __GC * skb, struct net_device *dev, int queue)
 
 
 int
-pfq_skb_queue_lazy_xmit(struct pfq_skbuff_queue __GC *queue, struct net_device *dev, int queue_index)
+pfq_skb_queue_lazy_xmit(struct pfq_skbuff_GC_queue *queue, struct net_device *dev, int queue_index)
 {
 	struct sk_buff __GC * skb;
 	int i, n = 0;
 
-	for_each_skbuff((struct pfq_skbuff_queue_GC __force *)queue, skb, i)
+	for_each_skbuff(queue, skb, i)
 	{
 		if (pfq_lazy_xmit(skb, dev, queue_index))
 			++n;
@@ -556,13 +556,13 @@ pfq_skb_queue_lazy_xmit(struct pfq_skbuff_queue __GC *queue, struct net_device *
 
 
 int
-pfq_skb_queue_lazy_xmit_by_mask(struct pfq_skbuff_queue __GC *queue, unsigned long long mask,
+pfq_skb_queue_lazy_xmit_by_mask(struct pfq_skbuff_GC_queue *queue, unsigned long long mask,
 			    struct net_device *dev, int queue_index)
 {
 	struct sk_buff __GC * skb;
 	int i, n = 0;
 
-	for_each_skbuff_bitmask((struct pfq_skbuff_queue_GC __force *)queue, mask, skb, i)
+	for_each_skbuff_bitmask(queue, mask, skb, i)
 	{
 		if (pfq_lazy_xmit(skb, dev, queue_index))
 			++n;
@@ -573,11 +573,11 @@ pfq_skb_queue_lazy_xmit_by_mask(struct pfq_skbuff_queue __GC *queue, unsigned lo
 
 
 size_t
-pfq_skb_queue_lazy_xmit_run(struct pfq_skbuff_queue __GC *skbs, struct pfq_endpoint_info const *endpoints)
+pfq_skb_queue_lazy_xmit_run(struct pfq_skbuff_GC_queue *skbs, struct pfq_endpoint_info const *endpoints)
 {
 	struct netdev_queue *txq;
 	struct net_device *dev;
-	struct sk_buff *skb;
+	struct sk_buff __GC *skb;
         size_t sent = 0;
 	size_t n, i;
 	int queue = -1;
@@ -615,7 +615,7 @@ pfq_skb_queue_lazy_xmit_run(struct pfq_skbuff_queue __GC *skbs, struct pfq_endpo
                                 }
 
 				queue = skb->queue_mapping;
-				txq = pfq_netdev_pick_tx(dev, skb, &queue);
+				txq = pfq_netdev_pick_tx(dev, PFQ_SKB(skb), &queue);
 
 				local_bh_disable();
 				HARD_TX_LOCK(dev, txq, smp_processor_id());
@@ -628,7 +628,7 @@ pfq_skb_queue_lazy_xmit_run(struct pfq_skbuff_queue __GC *skbs, struct pfq_endpo
 				const int xmit_more  = ++sent_dev != endpoints->cnt[n];
 				const bool to_clone  = PFQ_CB(skb)->log->to_kernel || PFQ_CB(skb)->log->xmit_todo-- > 1;
 
-				struct sk_buff *nskb = to_clone ? skb_clone(skb, GFP_ATOMIC) : skb_get(skb);
+				struct sk_buff *nskb = to_clone ? skb_clone(PFQ_SKB(skb), GFP_ATOMIC) : skb_get(PFQ_SKB(skb));
 
 				if (nskb && __pfq_xmit(nskb, dev, txq, xmit_more) == NETDEV_TX_OK)
 					sent++;

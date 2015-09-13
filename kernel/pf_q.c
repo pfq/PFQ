@@ -165,11 +165,11 @@ pfq_process_batch(struct pfq_percpu_data *data,
         unsigned long group_mask, socket_mask;
 	struct pfq_endpoint_info endpoints;
         struct sk_buff *skb;
+	struct sk_buff __GC * buff;
 
         long unsigned n, bit, lb;
 
         struct pfq_monad monad;
-	struct sk_buff __GC * buff;
 	size_t this_batch_len;
 
 #ifdef PFQ_RX_PROFILE
@@ -195,7 +195,7 @@ pfq_process_batch(struct pfq_percpu_data *data,
 
         /* setup all the skbs collected */
 
-	for_each_skbuff(SKBUFF_QUEUE(GC_ptr->pool), skb, n)
+	for_each_skbuff(SKBUFF_QUEUE_ADDR(GC_ptr->pool), skb, n)
         {
 		uint16_t queue = skb_rx_queue_recorded(skb) ? skb_get_rx_queue(skb) : 0;
 		unsigned long local_group_mask = pfq_devmap_get_groups(skb->dev->ifindex, queue);
@@ -213,7 +213,7 @@ pfq_process_batch(struct pfq_percpu_data *data,
 		struct pfq_group * this_group = pfq_get_group(gid);
 		bool bf_filt_enabled = atomic_long_read(&this_group->bp_filter);
 		bool vlan_filt_enabled = pfq_vlan_filters_enabled(gid);
-		struct pfq_skbuff_batch refs = { len:0 };
+		struct GC_skbuff_batch refs = { len:0 };
 
 		socket_mask = 0;
 
@@ -246,7 +246,7 @@ pfq_process_batch(struct pfq_percpu_data *data,
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(3,15,0))
 				if (bpf && !sk_run_filter(buff, bpf->insns))
 #else
-				if (bpf && !SK_RUN_FILTER(bpf, buff))
+				if (bpf && !SK_RUN_FILTER(bpf, PFQ_SKB(buff)))
 #endif
 				{
 					__sparse_inc(&this_group->stats.drop, cpu);
@@ -366,7 +366,7 @@ pfq_process_batch(struct pfq_percpu_data *data,
 		{
 			pfq_id_t id = pfq_ctz(lb);
 			struct pfq_sock * so = pfq_get_sock_by_id(id);
-			copy_to_endpoint_skbs(so, SKBUFF_QUEUE(refs), sock_queue[(int __force)id], cpu, gid);
+			copy_to_endpoint_skbs(so, SKBUFF_GC_QUEUE_ADDR(refs), sock_queue[(int __force)id], cpu, gid);
 		})
 	})
 
@@ -376,7 +376,7 @@ pfq_process_batch(struct pfq_percpu_data *data,
 
 	if (endpoints.cnt_total)
 	{
-		size_t total = pfq_skb_queue_lazy_xmit_run(SKBUFF_QUEUE(GC_ptr->pool), &endpoints);
+		size_t total = pfq_skb_queue_lazy_xmit_run(SKBUFF_GC_QUEUE_ADDR(GC_ptr->pool), &endpoints);
 
 		__sparse_add(&global_stats.frwd, total, cpu);
 		__sparse_add(&global_stats.disc, endpoints.cnt_total - total, cpu);
@@ -384,7 +384,7 @@ pfq_process_batch(struct pfq_percpu_data *data,
 
 	/* forward skbs to kernel or to the pool */
 
-	for_each_skbuff(SKBUFF_QUEUE(GC_ptr->pool), skb, n)
+	for_each_skbuff(SKBUFF_QUEUE_ADDR(GC_ptr->pool), skb, n)
 	{
 		struct pfq_cb *cb = PFQ_CB(skb);
 
@@ -482,13 +482,13 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 		PFQ_CB(buff)->direct = direct;
 
 		if ((GC_size(data->GC) < capt_batch_len) &&
-		     (ktime_to_ns(ktime_sub(skb_get_ktime(buff), data->last_rx)) < 1000000))
+		     (ktime_to_ns(ktime_sub(skb_get_ktime(PFQ_SKB(buff)), data->last_rx)) < 1000000))
 		{
 			local_bh_enable();
 			return 0;
 		}
 
-		data->last_rx = skb_get_ktime(buff);
+		data->last_rx = skb_get_ktime(PFQ_SKB(buff));
 	}
 	else {
                 if (GC_size(data->GC) == 0)

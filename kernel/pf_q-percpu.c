@@ -163,7 +163,7 @@ int pfq_percpu_fini(void)
 
                 data = per_cpu_ptr(percpu_data, cpu);
 
-		for_each_skbuff(SKBUFF_QUEUE(data->GC->pool), skb, n)
+		for_each_skbuff(SKBUFF_QUEUE_ADDR(data->GC->pool), skb, n)
 		{
 			SPARSE_INC(&memory_stats.os_free);
 			kfree_skb(skb);

@@ -63,7 +63,7 @@ add_dev_to_endpoints(struct net_device *dev, struct pfq_endpoint_info *ts)
 
 
 static
-size_t copy_to_user_skbs(struct pfq_sock *so, struct pfq_skbuff_queue __GC *skbs,
+size_t copy_to_user_skbs(struct pfq_sock *so, struct pfq_skbuff_GC_queue *skbs,
 			 unsigned long long mask, int cpu, pfq_gid_t gid)
 {
         int len = pfq_popcount(mask);
@@ -90,7 +90,7 @@ size_t copy_to_user_skbs(struct pfq_sock *so, struct pfq_skbuff_queue __GC *skbs
 
 
 static
-size_t copy_to_dev_skbs(struct pfq_sock *so, struct pfq_skbuff_queue __GC *skbs,
+size_t copy_to_dev_skbs(struct pfq_sock *so, struct pfq_skbuff_GC_queue *skbs,
 			 unsigned long long mask, int cpu, pfq_gid_t gid)
 {
 	struct net_device *dev;
@@ -116,7 +116,7 @@ size_t copy_to_dev_skbs(struct pfq_sock *so, struct pfq_skbuff_queue __GC *skbs,
 }
 
 
-size_t copy_to_endpoint_skbs(struct pfq_sock *so, struct pfq_skbuff_queue __GC *pool,
+size_t copy_to_endpoint_skbs(struct pfq_sock *so, struct pfq_skbuff_GC_queue *pool,
 			      unsigned long long mask, int cpu, pfq_gid_t gid)
 {
 	switch(so->egress_type)

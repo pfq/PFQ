@@ -50,7 +50,7 @@ struct pfq_percpu_sock
 	unsigned long           mask[Q_MAX_SOCK_MASK];
         int                     cnt;
 
-} __cacheline_aligned;
+} ____cacheline_aligned;
 
 
 struct pfq_percpu_pool
