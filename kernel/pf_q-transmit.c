@@ -589,6 +589,16 @@ pfq_skb_queue_lazy_xmit_by_mask(struct pfq_skbuff_GC_queue *queue, unsigned long
 }
 
 
+static inline
+struct sk_buff *
+skb_tx_clone(struct net_device *dev, struct sk_buff *skb, gfp_t mask)
+{
+	if (likely(dev->priv_flags & IFF_TX_SKB_SHARING))
+		return skb_get(skb);
+	return skb_clone(skb, mask);
+}
+
+
 size_t
 pfq_skb_queue_lazy_xmit_run(struct pfq_skbuff_GC_queue *skbs, struct pfq_endpoint_info const *endpoints)
 {
@@ -646,7 +656,8 @@ pfq_skb_queue_lazy_xmit_run(struct pfq_skbuff_GC_queue *skbs, struct pfq_endpoin
 				const int xmit_more  = ++sent_dev != endpoints->cnt[n];
 				const bool to_clone  = PFQ_CB(skb)->log->to_kernel || PFQ_CB(skb)->log->xmit_todo-- > 1;
 
-				struct sk_buff *nskb = to_clone ? skb_clone(PFQ_SKB(skb), GFP_ATOMIC) : skb_get(PFQ_SKB(skb));
+				struct sk_buff *nskb = to_clone ? skb_tx_clone(dev, PFQ_SKB(skb), GFP_ATOMIC) :
+								  skb_get(PFQ_SKB(skb));
 
 				if (nskb && __pfq_xmit(nskb, dev, txq, xmit_more) == NETDEV_TX_OK)
 					sent++;
