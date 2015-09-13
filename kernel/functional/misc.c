@@ -82,7 +82,6 @@ crc16_sum(arguments_t args, SkBuff skb)
 {
 	u16 crc = crc16(0, (u8 const *)eth_hdr(PFQ_SKB(skb)), skb->len);
 	set_state(skb, crc);
-
         return Pass(skb);
 }
 
@@ -473,6 +472,7 @@ struct pfq_function_descr misc_functions[] = {
         { "inc",	"CInt    -> SkBuff -> Action SkBuff",	inc_counter	},
         { "dec",	"CInt    -> SkBuff -> Action SkBuff",	dec_counter	},
 	{ "mark",	"Word32  -> SkBuff -> Action SkBuff",	mark		},
+	{ "put_state",	"Word32  -> SkBuff -> Action SkBuff",	put_state	},
 
         { "crc16",	"SkBuff -> Action SkBuff",		crc16_sum	},
         { "log_msg",	"String -> SkBuff -> Action SkBuff",	log_msg		},

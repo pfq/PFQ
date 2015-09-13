@@ -34,4 +34,13 @@ mark(arguments_t args, SkBuff b)
 	return Pass(b);
 }
 
+static inline ActionSkBuff
+put_state(arguments_t args, SkBuff b)
+{
+	const uint32_t value = GET_ARG(uint32_t, args);
+	set_state(b, value);
+	return Pass(b);
+}
+
+
 #endif /* PF_Q_FUNCTIONAL_MISC_H */

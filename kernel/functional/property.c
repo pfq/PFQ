@@ -373,6 +373,13 @@ __get_mark(arguments_t args, SkBuff skb)
 }
 
 
+static uint64_t
+__get_state(arguments_t args, SkBuff skb)
+{
+	return JUST(get_state(skb));
+}
+
+
 struct pfq_function_descr property_functions[] = {
 
 	{ "ip_tos",	 "SkBuff -> Word64", ip_tos		},
@@ -393,6 +400,7 @@ struct pfq_function_descr property_functions[] = {
 	{ "icmp_code",   "SkBuff -> Word64", icmp_code		},
 
 	{ "get_mark",	 "SkBuff -> Word64", __get_mark		},
+	{ "get_state",	 "SkBuff -> Word64", __get_state	},
 
 	{ NULL }};
 

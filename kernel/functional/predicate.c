@@ -143,6 +143,12 @@ pred_has_mark(arguments_t args, SkBuff b)
 	return get_mark(b) == value;
 }
 
+static bool
+pred_has_state(arguments_t args, SkBuff b)
+{
+	const uint32_t value = GET_ARG(uint32_t, args);
+	return get_state(b) == value;
+}
 
 static int pred_addr_init(arguments_t args)
 {
@@ -238,6 +244,7 @@ struct pfq_function_descr predicate_functions[] = {
         { "has_dst_port", "Word16 -> SkBuff -> Bool",  pred_has_dst_port },
         { "has_vid",      "CInt   -> SkBuff -> Bool",  pred_has_vid      },
         { "has_mark",     "Word32 -> SkBuff -> Bool",  pred_has_mark     },
+        { "has_state",    "Word32 -> SkBuff -> Bool",  pred_has_state	 },
 
         { "has_addr",     "Word32 -> Word32 -> SkBuff -> Bool", pred_has_addr     , pred_addr_init },
         { "has_src_addr", "Word32 -> Word32 -> SkBuff -> Bool", pred_has_src_addr , pred_addr_init },
