@@ -109,14 +109,16 @@ bool giveup_tx_process(void)
 
 
 static inline
-ktime_t wait_until(uint64_t ts)
+ktime_t wait_until(uint64_t ts, bool *intr)
 {
 	ktime_t now;
 	do
 	{
 		now = ktime_get_real();
-		if (giveup_tx_process())
+		if (giveup_tx_process()) {
+			*intr = true;
 			return now;
+		}
 	}
 	while (ktime_to_ns(now) < ts
 	       && (pfq_relax(), true));
@@ -237,10 +239,15 @@ __pfq_sk_tx_queue_xmit(struct pfq_sock *so, struct net_device *dev, size_t idx, 
 
 		if (hdr->tstamp.tv64 > ktime_to_ns(now)) {
 
+			bool intr = false;
+
 			HARD_TX_UNLOCK(dev, txq);
 			local_bh_enable();
 
-			now = wait_until(hdr->tstamp.tv64);
+			now = wait_until(hdr->tstamp.tv64, &intr);
+
+			if (intr)
+				goto stop;
 
 			local_bh_disable();
 			HARD_TX_LOCK(dev, txq, smp_processor_id());
