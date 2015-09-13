@@ -27,6 +27,7 @@
 
 #include <pf_q-types.h>
 
+
 struct pfq_skbuff_queue
 {
         size_t len;
@@ -86,6 +87,5 @@ size_t pfq_skbuff_queue_len(struct pfq_skbuff_queue *q)
 {
         return q->len;
 }
-
 
 #endif /* PF_Q_SKB_QUEUE_H */

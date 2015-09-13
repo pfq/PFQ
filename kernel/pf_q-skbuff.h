@@ -44,32 +44,31 @@ struct pfq_cb
 
 
 #define PFQ_SKB(skb)  ((struct sk_buff __force *)skb)
-
 #define PFQ_CB(skb)   ((struct pfq_cb *)PFQ_SKB(skb)->cb)
 
 
-#define for_each_skbuff(batch, skb, n) \
-        for((n) = 0; ((n) < (batch)->len) && ((skb) = (batch)->queue[n]); \
-                __builtin_prefetch((batch)->queue[n+1], 0, 1), (n)++)
+#define for_each_skbuff(q, skb, n) \
+        for((n) = 0; ((n) < (q)->len) && ((skb) = (q)->queue[n]); \
+                __builtin_prefetch((__force void const *)(q)->queue[n+1], 0, 1), (n)++)
 
 
-#define for_each_skbuff_from(x, batch, skb, n) \
-        for((n) = (x); ((n) < (batch)->len) && ((skb) = (batch)->queue[n]); \
-                __builtin_prefetch((batch)->queue[n+1], 0, 1), (n)++)
+#define for_each_skbuff_from(x, q, skb, n) \
+        for((n) = (x); ((n) < (q)->len) && ((skb) = (q)->queue[n]); \
+                __builtin_prefetch((__force void const *)(q)->queue[n+1], 0, 1), (n)++)
 
 
-#define for_each_skbuff_upto(max, batch, skb, n) \
-        for((n) = 0; ((n) < (max)) && ((n) < (batch)->len) && ((skb) = (batch)->queue[n]); \
-                __builtin_prefetch((batch)->queue[n+1], 0, 1), (n)++)
+#define for_each_skbuff_upto(max, q, skb, n) \
+        for((n) = 0; ((n) < (max)) && ((n) < (q)->len) && ((skb) = (q)->queue[n]); \
+                __builtin_prefetch((__force void const *)(q)->queue[n+1], 0, 1), (n)++)
 
 
-#define for_each_skbuff_backward(batch, skb, n) \
-        for((n) = (batch)->len; ((n) > 0) && ((skb) = (batch)->queue[n-1]); \
-                __builtin_prefetch((batch)->queue[n-2], 0, 1), (n)--)
+#define for_each_skbuff_backward(q, skb, n) \
+        for((n) = (q)->len; ((n) > 0) && ((skb) = (q)->queue[n-1]); \
+                __builtin_prefetch((__force void const *)(q)->queue[n-2], 0, 1), (n)--)
 
 
-#define for_each_skbuff_bitmask(batch, mask, skb, n) \
-        for((n) = pfq_ctz(mask); (mask) && (skb = (batch)->queue[n]); \
+#define for_each_skbuff_bitmask(q, mask, skb, n) \
+        for((n) = pfq_ctz(mask); (mask) && (skb = (q)->queue[n]); \
                 (mask) ^=(1ULL << (n)), n = pfq_ctz(mask))
 
 
