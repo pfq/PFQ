@@ -286,6 +286,19 @@ namespace lang
 
         auto has_mark       = [] (uint32_t value) { return predicate("has_mark", value); };
 
+
+        //! Evaluate to \c true if the state of the computation is set to the given \c value, possibly by put_state function.
+        //
+        /*!
+         * Example:
+         *
+         * has_state(11)
+         *
+         * \see state
+         */
+
+        auto has_state      = [] (uint32_t value) { return predicate("has_state", value); };
+
         //! Evaluate to \c true if the SkBuff has a vlan tag.
 
         auto has_vlan       = predicate ("has_vlan");
@@ -318,6 +331,13 @@ namespace lang
         //
         // default properties:
         //
+
+        //! Evaluate to the state of the computation, possibly set by \c state function.
+        /*
+         * \see state
+         */
+
+        auto get_state  = property("get_state");
 
         //! Evaluate to the mark set by \c mark function.
         /*! By default packets are marked with 0.
@@ -674,6 +694,15 @@ namespace lang
          */
 
         auto mark           = [] (uint32_t value) { return mfunction("mark", value); };
+
+        //! Set the state of the computation to the given value.
+        /*
+         * Example:
+         *
+         * state (42)
+         */
+
+        auto put_state      = [] (uint32_t value) { return mfunction("put_state", value); };
 
         //! Increment the i-th counter of the current group.
         /*

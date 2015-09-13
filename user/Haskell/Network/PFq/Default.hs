@@ -59,6 +59,7 @@ module Network.PFq.Default
         has_src_addr,
         has_dst_addr,
 
+        has_state,
         has_mark,
         has_vlan,
         has_vid,
@@ -72,6 +73,7 @@ module Network.PFq.Default
         ip_frag     ,
         ip_ttl      ,
         get_mark    ,
+        get_state   ,
 
         tcp_source  ,
         tcp_dest    ,
@@ -194,6 +196,7 @@ module Network.PFq.Default
         inc        ,
         dec        ,
         mark       ,
+        put_state  ,
 
     ) where
 
@@ -327,6 +330,12 @@ has_vid x = Predicate "has_vid" x () () () () () () ()
 has_mark :: Word32 -> NetPredicate
 has_mark x = Predicate "has_mark" x () () () () () () ()
 
+-- | Evaluate to /True/ if the state of the computation is set to the given value, possibly by 'put_state' function.
+-- > has_state 11
+has_state :: Word32 -> NetPredicate
+has_state x = Predicate "has_state" x () () () () () () ()
+
+
 -- | Evaluate to /True/ if the SkBuff has the given Layer3 protocol.
 is_l3_proto :: Int16 -> NetPredicate
 is_l3_proto x = Predicate "is_l3_proto" x () () () () () () ()
@@ -372,6 +381,10 @@ has_dst_addr a p = Predicate "has_dst_addr" a p () () () () () ()
 
 -- | Evaluate to the mark set by 'mark' function. By default packets are marked with 0.
 get_mark = Property "get_mark" () () () () () () () ()
+
+-- | Evaluate to the state of the computation (possibly set by 'state' function).
+get_state = Property "get_state" () () () () () () () ()
+
 
 -- | Evaluate to the /tos/ field of the IP header.
 ip_tos = Property "ip_tos" () () () () () () () ()
@@ -624,6 +637,13 @@ dec n = MFunction "dec" n () () () () () () ()
 -- > mark 42
 mark :: Word32 -> NetFunction
 mark n = MFunction "mark" n () () () () () () ()
+
+-- | Set the state of the computation to the given value.
+--
+-- > state 42
+put_state :: Word32 -> NetFunction
+put_state n = MFunction "put_state" n () () () () () () ()
+
 
 -- | Monadic version of 'is_l3_proto' predicate.
 --
