@@ -188,69 +188,72 @@ pfq_signature_simplify(string_view_t str)
 	return string_view_trim(str);
 }
 
+static inline
+int __signature_arity(string_view_t s)
+{
+	string_view_t str  = pfq_signature_simplify(s);
+	string_view_t head = signature_head(str);
+	string_view_t tail = signature_tail(str);
+
+	if (!string_view_empty(tail))
+		return 1 + __signature_arity(tail);
+
+	if (string_view_empty(head))
+		return 0;
+
+	return 1;
+}
+
 int
 pfq_signature_arity(string_view_t str)
 {
-	int __signature_arity(string_view_t s)
-	{
-		string_view_t str  = pfq_signature_simplify(s);
-		string_view_t head = signature_head(str);
-		string_view_t tail = signature_tail(str);
-
-		if (!string_view_empty(tail))
-			return 1 + __signature_arity(tail);
-
-		if (string_view_empty(head))
-			return 0;
-
-		return 1;
-	}
-
 	return -1 + __signature_arity(str);
+}
+
+static inline
+string_view_t __signature_bind(string_view_t s, int stop, int n)
+{
+	string_view_t str  = pfq_signature_simplify(s),
+		      tail;
+
+	if (stop == n)
+		return str;
+
+	tail = signature_tail(str);
+
+	if (!string_view_empty(tail))
+		return __signature_bind(tail, stop + 1, n);
+
+	return tail;
 }
 
 string_view_t
 pfq_signature_bind(string_view_t str, int n)
 {
-	string_view_t __signature_bind(string_view_t s, int stop)
-	{
-		string_view_t str  = pfq_signature_simplify(s),
-			      tail;
+	return  pfq_signature_simplify(__signature_bind(str, 0, n));
+}
 
-		if (stop == n)
-			return str;
 
-		tail = signature_tail(str);
+static inline string_view_t
+__signature_arg(string_view_t s, int stop, int index)
+{
+	string_view_t str  = pfq_signature_simplify(s);
+	string_view_t head = signature_head(str);
+	string_view_t tail = signature_tail(str);
 
-		if (!string_view_empty(tail))
-			return __signature_bind(tail, stop + 1);
+	if (stop == index)
+		return head;
 
-		return tail;
-	}
+	if (!string_view_empty(tail))
+		return __signature_arg(tail, stop + 1, index);
 
-	return  pfq_signature_simplify(__signature_bind(str, 0));
+	return tail;
 }
 
 string_view_t
 pfq_signature_arg(string_view_t str, int index)
 {
-	string_view_t __signature_arg(string_view_t s, int stop)
-	{
-		string_view_t str  = pfq_signature_simplify(s);
-
-		string_view_t head = signature_head(str);
-		string_view_t tail = signature_tail(str);
-
-		if (stop == index)
-			return head;
-
-		if (!string_view_empty(tail))
-			return __signature_arg(tail, stop + 1);
-
-		return tail;
-	}
-
-	return  pfq_signature_simplify(__signature_arg(str, 0));
+	return  pfq_signature_simplify(__signature_arg(str, 0, index));
 }
 
 
@@ -339,33 +342,28 @@ compare_argument(string_view_t a, string_view_t b)
 
 
 bool
-pfq_signature_equal(string_view_t sig_a, string_view_t sig_b)
+pfq_signature_equal(string_view_t a, string_view_t b)
 {
-	bool __signature_equal(string_view_t a, string_view_t b)
-	{
-		string_view_t str_a = pfq_signature_simplify(a),
-			      str_b = pfq_signature_simplify(b);
+	string_view_t str_a = pfq_signature_simplify(a),
+		      str_b = pfq_signature_simplify(b);
 
-		string_view_t head_a = signature_head(str_a),
-			      tail_a = signature_tail(str_a),
-			      head_b = signature_head(str_b),
-			      tail_b = signature_tail(str_b);
+	string_view_t head_a = signature_head(str_a),
+		      tail_a = signature_tail(str_a),
+		      head_b = signature_head(str_b),
+		      tail_b = signature_tail(str_b);
 
-		if ((string_view_empty(tail_a) && !string_view_empty(tail_b)) ||
-		    (!string_view_empty(tail_a) && string_view_empty(tail_b)))
-			return false;
+	if ((string_view_empty(tail_a) && !string_view_empty(tail_b)) ||
+	    (!string_view_empty(tail_a) && string_view_empty(tail_b)))
+		return false;
 
-		if (!(pfq_signature_arity(head_a) == 0 ?
-			       compare_argument(head_a, head_b) : pfq_signature_equal(head_a, head_b)))
-			return false;
+	if (!(pfq_signature_arity(head_a) == 0 ?
+		       compare_argument(head_a, head_b) : pfq_signature_equal(head_a, head_b)))
+		return false;
 
-		if (string_view_empty(tail_a) && string_view_empty(tail_b))
-			return true;
+	if (string_view_empty(tail_a) && string_view_empty(tail_b))
+		return true;
 
-		return __signature_equal(tail_a, tail_b);
-	}
-
-	return __signature_equal(sig_a, sig_b);
+	return pfq_signature_equal(tail_a, tail_b);
 }
 
 
