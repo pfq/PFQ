@@ -43,9 +43,9 @@ cd ../user/Haskell && runhaskell Setup configure --user && runhaskell Setup buil
 cd -
 
 echoB "Haskell: Q-Lang docs:" 
-cd ../user/Haskell && haddock -h -o ../../docs/lang/haskell -t "PFQ/lang ${DOC_VERSION}" -p ../../docs/lang.haddock Network/PFq/Default.hs Network/PFq/Experimental.hs
+cd ../user/Haskell && haddock -h -o ../../docs/lang/haskell -t "pfq-lang ${DOC_VERSION}" -p ../../docs/lang.haddock Network/PFq/Default.hs Network/PFq/Experimental.hs
 
-echoB "PFQ/API documentation created in ${API_DIR}."
-echoB "PFQ/lang documentation created in ${LANG_DIR}."
+echoB "pfq API documentation created in ${API_DIR}."
+echoB "pfq-lang documentation created in ${LANG_DIR}."
 
 

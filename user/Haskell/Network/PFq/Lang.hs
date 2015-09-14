@@ -114,7 +114,7 @@ newtype Action a = Identity a
 
 
 -- | Argument data type.
--- Any PFQ/lang function can take up to 8 Arguments.
+-- Any pfq-lang function can take up to 8 Arguments.
 
 data Argument = forall a. (Show a, Storable a) => ArgData a     |
                 forall a. (Show a, Storable a) => ArgVector [a] |
@@ -173,16 +173,16 @@ data FunctionDescr = FunctionDescr
                      }   deriving (Show)
 
 
--- |Simple monadic in-kernel PFQ/lang function.
+-- |Simple monadic in-kernel pfq-lang function.
 
 type NetFunction  = Function (SkBuff -> Action SkBuff)
 
 
--- |Simple in-kernel PFQ/lang predicate.
+-- |Simple in-kernel pfq-lang predicate.
 
 type NetPredicate = Function (SkBuff -> Bool)
 
--- |Simple in-kernel PFQ/lang property function.
+-- |Simple in-kernel pfq-lang property function.
 
 type NetProperty  = Function (SkBuff -> Word64)
 
@@ -253,7 +253,7 @@ unwords' :: [String] -> String
 unwords' = unwords . filter (not . null)
 
 
--- |Kleisli left-to-right operator, for monadic composition of PFQ/lang functions.
+-- |Kleisli left-to-right operator, for monadic composition of pfq-lang functions.
 
 (>->) :: Function (a -> m b) -> Function (b -> m c) -> Function (a -> m c)
 f1 >-> f2 = Composition f1 f2
@@ -280,7 +280,7 @@ instance Show (Function f) where
         show (Composition a b)           = "(Composition " ++ show a ++ " " ++ show b ++ ")"
 
 
--- | Pretty class, typeclass used to print a PFQ/lang computation.
+-- | Pretty class, typeclass used to print a pfq-lang computation.
 
 class Pretty x where
         pretty :: x -> String

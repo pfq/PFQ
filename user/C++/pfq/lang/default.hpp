@@ -36,7 +36,7 @@
 #include <arpa/inet.h>
 
 /*! \file default.hpp
- *  \brief This header contains the PFQ/lang eDSL functions.
+ *  \brief This header contains the pfq-lang eDSL functions.
  */
 
 namespace pfq

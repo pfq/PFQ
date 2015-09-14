@@ -448,7 +448,7 @@ extern int pfq_set_group_computation(pfq_t *q, int gid, struct pfq_computation_d
 
 /*! Specify a functional computation for the given group, from string. */
 /*!
- * This ability is limited to simple PFQ/lang functional computations.
+ * This ability is limited to simple pfq-lang functional computations.
  * Only the composition of monadic functions without arguments are currently supported.
  */
 

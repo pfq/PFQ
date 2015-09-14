@@ -159,7 +159,7 @@ module Network.PFq
         sendAsync,
         sendAt,
 
-        -- * PFQ/lang
+        -- * pfq-lang
 
         setGroupComputation,
         setGroupComputationFromString,
@@ -994,7 +994,7 @@ instance Storable StorableFunDescr where
 
 -- |Specify a functional computation for the given group.
 --
--- The functional computation is specified as a PFQ/Lang expression.
+-- The functional computation is specified as a pfq-lang expression.
 --
 
 setGroupComputation :: Ptr PFqTag
@@ -1017,7 +1017,7 @@ setGroupComputation hdl gid comp = do
 
 -- |Specify a simple functional computation for the given group, from String.
 --
--- This ability is limited to simple PFQ/lang functional computations.
+-- This ability is limited to simple pfq-lang functional computations.
 -- Only the composition of monadic functions without arguments are currently supported.
 
 setGroupComputationFromString :: Ptr PFqTag

@@ -36,7 +36,7 @@
 namespace pfq { namespace lang { namespace experimental {
 
     /*! \file experimental.hpp
-     *  \brief This header contains the PFQ/lang eDSL experimental functions.
+     *  \brief This header contains the pfq-lang eDSL experimental functions.
      */
 
     using namespace std::placeholders;

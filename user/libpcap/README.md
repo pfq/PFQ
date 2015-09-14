@@ -6,7 +6,7 @@ Introduction
 
 This version of pcap library is intended to support the PFQ framework, thus allowing 
 legacy applications to exploit the acceleration of capture/transmission of PFQ, and at the 
-same time to take advantage of PFQ/lang computations to filter and dispatch packets
+same time to take advantage of pfq-lang computations to filter and dispatch packets
 across pcap sockets.
 
 The pcap library interface is *unchanged*. Additional data (e.g. pfq group) is passed 
@@ -21,9 +21,9 @@ Features
 --------
 
 * 10-Gbit Line-rate (14,8Mpps) tested with tcpdump.
-* Parallel sessions of legacy applications through PFQ/lang computations.
+* Parallel sessions of legacy applications through pfq-lang computations.
 * Per-group in-kernel BPF (JIT compiled filters included).
-* Fully compliant with PFQ/lang and pfqd.
+* Fully compliant with pfq-lang and pfqd.
 
 
 Details
@@ -71,8 +71,8 @@ PFQ\_TX\_SLOTS    |    4096       |   8192    | Define the TX queue length of th
 PFQ\_TX\_FLUSH    |      1        | 16..512   | Hint used to flush then transmission queue
 PFQ\_TX\_QUEUE    | empty list    |e.g. 0,1,2 | Set the TX HW queue passed to the driver
 PFQ\_TX\_TASK     | empty list    |e.g. 0,1,2 | Set the cpus for the TX kthreads (optional)
-PFQ\_COMPUTATION  |    null       |           | Set the PFQ/lang computation for the group
-PFQ\_VLAN         | empty list    |           | Set the PFQ/lang computation for the group
+PFQ\_COMPUTATION  |    null       |           | Set the pfq-lang computation for the group
+PFQ\_VLAN         | empty list    |           | Set the pfq-lang computation for the group
 
 
 Configuration Files

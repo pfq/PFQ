@@ -101,7 +101,7 @@ namespace pfq { namespace lang
     }
 
     //
-    // PFQ/lang DSL...
+    // pfq-lang DSL...
     //
 
     template <typename ...Ts>

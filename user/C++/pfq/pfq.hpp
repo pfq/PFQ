@@ -976,7 +976,7 @@ namespace pfq {
 
         //! Specify a functional computation for the given group.
         /*!
-         * The functional computation is specified as a PFQ/lang expression.
+         * The functional computation is specified as a pfq-lang expression.
          */
 
         template <typename Comp>
@@ -1032,7 +1032,7 @@ namespace pfq {
 
         //! Specify a functional computation for the given group, from string.
         /*!
-         * This ability is limited to simple PFQ/lang functional computations.
+         * This ability is limited to simple pfq-lang functional computations.
          * Only the composition of monadic functions without arguments are currently supported.
          */
 
