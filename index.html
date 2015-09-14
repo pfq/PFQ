@@ -55,13 +55,13 @@ It works with any network device driver and provides a script designed to obtain
 
 <p>The framework enables the development of high-performance networking applications with different programming languages: C, C++ and Haskell. 
 In addition, a pure functional language designed for early stages in-kernel processing is included: 
-<strong><a href="http://pfq.github.io/PFQ/v5.x/lang/haskell/index.html">PFQ/lang</a></strong>.</p>
+<strong><a href="http://pfq.github.io/PFQ/v5.x/lang/haskell/index.html">pfq-lang</a></strong>.</p>
 
-<p>PFQ/lang is inspired by Haskell and allows the creation of small applications that run on top of network device drivers.  
-Through PFQ/lang it is possible to build efficient bridges, port mirrors, simple firewalls, network balancers and so forth.</p>
+<p>pfq-lang is inspired by Haskell and allows the creation of small applications that run on top of network device drivers.  
+Through pfq-lang it is possible to build efficient bridges, port mirrors, simple firewalls, network balancers and so forth.</p>
 
 <p>The package provides the source code of the PFQ kernel module, user-space libraries for C, C++11-14 and Haskell language, 
-an implementation of PFQ/lang as eDSL for C++11-14 and Haskell, and a set of diagnostic tools.</p>
+an implementation of pfq-lang as eDSL for C++11-14 and Haskell, and a set of diagnostic tools.</p>
 
 <h3>
 <a name="features" class="anchor" href="#features"><span class="octicon octicon-link"></span></a>Features</h3>
@@ -77,9 +77,9 @@ an implementation of PFQ/lang as eDSL for C++11-14 and Haskell, and a set of dia
 <li>Groups of sockets which enable concurrent monitoring of multiple multi-threaded applications.</li>
 <li>Per-group packet steering through randomized hashing or deterministic classification.</li>
 <li>Per-group Berkeley and VLAN filters.</li>
-<li>Functional engine for in-kernel packet processing by means of <a href="http://pfq.github.io/PFQ/v5.x/lang/haskell/index.html">PFQ/lang</a>.</li>
+<li>Functional engine for in-kernel packet processing by means of <a href="http://pfq.github.io/PFQ/v5.x/lang/haskell/index.html">pfq-lang</a>.</li>
 <li>User-space libraries for C, C++11-14 and Haskell language.</li>
-<li>PFQ/lang eDLS for C++11-14 and Haskell language.</li>
+<li>pfq-lang eDLS for C++11-14 and Haskell language.</li>
 <li>Accelerated pcap library for legacy applications (line-speed tested with <a href="https://github.com/awgn/captop">captop</a>).</li>
 <li><b>pfqd</b> daemon used to configure and parallelize (pcap) legacy applications.</li>
 <li><b>pfq-omatic</b> script that automatically accelerates vanilla drivers.</li>
