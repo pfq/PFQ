@@ -1139,7 +1139,7 @@ pfq_read_linux(pcap_t *handle, int max_packets, pcap_handler callback, u_char *u
 
 	for(; (max_packets <= 0 || n > 0) && (it != pfq_net_queue_end(nq)); it = pfq_net_queue_next(nq, it))
 	{
-		struct pcap_pkthdr pcap_h;
+		struct pfq_pcap_pkthdr pcap_h;
 		struct pfq_pkthdr *h;
                 uint16_t vlan_tci;
 		const char *pkt;
@@ -1153,6 +1153,14 @@ pfq_read_linux(pcap_t *handle, int max_packets, pcap_handler callback, u_char *u
 		pcap_h.ts.tv_usec = h->tstamp.tv.nsec / 1000;
 		pcap_h.caplen     = h->caplen;
 		pcap_h.len        = h->len;
+
+		/* extended pcap header */
+
+		pcap_h.data.mark  = h->data.mark;
+		pcap_h.data.state = h->data.state;
+		pcap_h.if_index   = h->if_index;
+		pcap_h.queue	  = h->queue;
+		pcap_h.gid	  = h->gid;
 
 		pkt = pfq_pkt_data(it);
 
@@ -1171,7 +1179,7 @@ pfq_read_linux(pcap_t *handle, int max_packets, pcap_handler callback, u_char *u
 			pcap_h.len += VLAN_TAG_LEN;
 		}
 
-		callback(user, &pcap_h, pkt);
+		callback(user, (struct pcap_pkthdr *)&pcap_h, pkt);
 
 		handle->md.packets_read++;
 		n--;
