@@ -64,12 +64,14 @@ pfq_shared_queue_enable(struct pfq_sock *so, unsigned long user_addr)
 
 		queue = (struct pfq_shared_queue *)so->shmem.addr;
 
-		/* initialize Rx queues */
+
+		/* initialize Rx queue */
 
 		queue->rx.data      = 0;
 		queue->rx.len       = so->opt.rx_queue_len;
 		queue->rx.size      = pfq_mpsc_queue_mem(so)/2;
 		queue->rx.slot_size = so->opt.rx_slot_size;
+
 
 		/* reset Rx slots */
 
@@ -78,7 +80,6 @@ pfq_shared_queue_enable(struct pfq_sock *so, unsigned long user_addr)
 			char * raw = so->shmem.addr + sizeof(struct pfq_shared_queue) + i * queue->rx.size;
 			char * end = raw + queue->rx.size;
 			const int rst = !i;
-
 			for(;raw < end; raw += queue->rx.slot_size)
 				((struct pfq_pkthdr *)raw)->commit = rst;
 		}
@@ -87,11 +88,11 @@ pfq_shared_queue_enable(struct pfq_sock *so, unsigned long user_addr)
 
 		for(n = 0; n < Q_MAX_TX_QUEUES; n++)
 		{
-			queue->tx[n].prod      = 0;
-			queue->tx[n].cons      = 0;
-			queue->tx[n].size      = pfq_spsc_queue_mem(so)/2;
-			queue->tx[n].ptr       = NULL;
-			queue->tx[n].index     = -1;
+			queue->tx[n].prod  = 0;
+			queue->tx[n].cons  = 0;
+			queue->tx[n].size  = pfq_spsc_queue_mem(so)/2;
+			queue->tx[n].ptr   = NULL;
+			queue->tx[n].index = -1;
 
 			so->opt.txq[n].base_addr = so->shmem.addr + sizeof(struct pfq_shared_queue)
 				+ pfq_mpsc_queue_mem(so)

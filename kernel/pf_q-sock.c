@@ -149,20 +149,20 @@ void pfq_sock_opt_init(struct pfq_sock_opt *that, size_t caplen, size_t maxlen)
 		that->txq[n].cpu       = -1;
 		that->txq[n].task      = NULL;
 	}
-
 }
 
 
 void pfq_sock_init(struct pfq_sock *so, int id)
 {
-	/* default weight */
-
 	so->id = id;
+
         /* memory mapped queues are allocated later, when the socket is enabled */
 
 	so->egress_type   = pfq_endpoint_socket;
 	so->egress_index  = 0;
 	so->egress_queue  = 0;
+
+	/* default weight */
 
 	so->weight = 1;
 

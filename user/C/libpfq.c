@@ -602,6 +602,7 @@ pfq_get_tx_slots(pfq_t const *q)
 	return q->tx_slots;
 }
 
+
 size_t
 pfq_get_rx_slot_size(pfq_t const *q)
 {
