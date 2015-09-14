@@ -87,7 +87,6 @@ static inline void smp_wmb() { barrier(); }
 
 #define Q_SHARED_QUEUE_INDEX(data)	((data) >> 24)
 #define Q_SHARED_QUEUE_LEN(data)	((data) & 0x00ffffffu )
-
 #define Q_QUEUE_SLOT_SIZE(x)		ALIGN(sizeof(struct pfq_pkthdr) + x, 8)
 
 
@@ -190,7 +189,8 @@ static inline void smp_wmb() { barrier(); }
 struct pfq_rx_queue
 {
         unsigned int		data;
-        unsigned int            size;       /* queue length in slots */
+        unsigned int            len;        /* queue length in slots */
+        unsigned int            size;       /* queue size in bytes */
         unsigned int            slot_size;  /* sizeof(pfq_pkthdr) + caplen  */
 
 } __attribute__((aligned(64)));
@@ -200,8 +200,7 @@ struct pfq_tx_queue
 {
         unsigned int		prod;
         unsigned int            cons;
-        size_t			size;	    /* queue length in bytes */
-
+        size_t			size;	    /* queue size in bytes */
 	void *			ptr;	    /* reserved for user-space */
 	unsigned int		index;	    /* reserved for user-space */
 
