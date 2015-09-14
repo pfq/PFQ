@@ -15,14 +15,14 @@ codes.
 
 The framework enables the development of high-performance networking applications with 
 different programming languages: C, C++ and Haskell. In addition, a pure functional 
-language designed for early stages in-kernel applications is included: PFQ/lang.
+language designed for early stages in-kernel applications is included: pfq-lang.
 
-PFQ/lang is inspired by Haskell and allows the creation of small applications that run in 
-kernel space, on top of network device drivers. Through PFQ/lang it is possible to build
+pfq-lang is inspired by Haskell and allows the creation of small applications that run in 
+kernel space, on top of network device drivers. Through pfq-lang it is possible to build
 efficient bridges, port mirrors, simple firewalls, network balancers and so forth.
 
 The package provides the source code of the PFQ kernel module, user-space libraries for C, 
-C++11-14 and Haskell language, an implementation of PFQ/lang as eDSL for both  C++11-14 and 
+C++11-14 and Haskell language, an implementation of pfq-lang as eDSL for both  C++11-14 and 
 Haskell, and a set of diagnostic tools.
 
 Features
@@ -37,9 +37,9 @@ Features
 * Concurrent monitoring of multiple multi-threaded applications by means of groups of sockets.
 * Per-group packet steering through randomized hashing or deterministic classification.
 * Per-group Berkeley and VLAN filters.
-* Functional engine for in-kernel packet processing with **PFQ/lang**.
+* Functional engine for in-kernel packet processing with **pfq-lang**.
 * User-space libraries for C, C++11-14 and Haskell languages.
-* PFQ/lang eDLS for C++11-14 and Haskell language.
+* pfq-lang eDLS for C++11-14 and Haskell language.
 * Accelerated pcap library (line-speed tested with [captop][3]).
 * **pfqd** daemon used to parallelize multiple instances of pcap legacy applications.
 * **pfq-omatic**, a script designed to accelerate vanilla drivers.
