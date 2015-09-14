@@ -215,7 +215,8 @@ data NetQueue = NetQueue {
 
 -- |PFq packet header.
 data PktHdr = PktHdr {
-      hData     :: {-# UNPACK #-} !Word64       -- ^ opaque 64-bits mark
+      hMark     :: {-# UNPACK #-} !Word32       -- ^ skb 32-bits mark
+    , hState    :: {-# UNPACK #-} !Word32       -- ^ opaque 32-bits state
     , hSec      :: {-# UNPACK #-} !Word32       -- ^ timestamp (seconds)
     , hNsec     :: {-# UNPACK #-} !Word32       -- ^ timestamp (nanoseconds)
     , hIfIndex  :: {-# UNPACK #-} !Word32       -- ^ interface index
@@ -339,7 +340,8 @@ newtype VlanTag = VlanTag { getVid:: CInt }
 toPktHdr :: Ptr PktHdr
          -> IO PktHdr
 toPktHdr hdr = do
-    _data  <- (\h -> peekByteOff h 0)  hdr
+    _mark  <- (\h -> peekByteOff h 0)  hdr
+    _state <- (\h -> peekByteOff h 4)  hdr
     _sec   <- (\h -> peekByteOff h 8)  hdr
     _nsec  <- (\h -> peekByteOff h 12) hdr
     _ifidx <- (\h -> peekByteOff h 16) hdr
@@ -350,7 +352,8 @@ toPktHdr hdr = do
     _hwq   <- (\h -> peekByteOff h 30) hdr
     _com   <- (\h -> peekByteOff h 31) hdr
     return PktHdr {
-                    hData     = fromIntegral (_data :: Word64),
+                    hMark     = fromIntegral (_mark :: Word32),
+                    hState    = fromIntegral (_state:: Word32),
                     hSec      = fromIntegral (_sec  :: Word32),
                     hNsec     = fromIntegral (_nsec :: Word32),
                     hIfIndex  = fromIntegral (_ifidx:: CInt),
