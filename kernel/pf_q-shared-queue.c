@@ -68,6 +68,7 @@ pfq_shared_queue_enable(struct pfq_sock *so, unsigned long user_addr)
 
 		queue->rx.data      = 0;
 		queue->rx.len       = so->opt.rx_queue_len;
+		queue->rx.size      = pfq_mpsc_queue_mem(so)/2;
 		queue->rx.slot_size = so->opt.rx_slot_size;
 
 		/* reset Rx slots */
