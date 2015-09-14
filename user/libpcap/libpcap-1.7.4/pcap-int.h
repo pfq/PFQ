@@ -211,23 +211,23 @@ struct pcap_opt {
 	int	tstamp_precision;
 
   #ifdef PCAP_SUPPORT_PFQ
-  	struct pfq_opt
-  	{
-  		int group;
-  		int caplen;
+	struct pfq_opt
+	{
+		int group;
+		int caplen;
 
-  		int rx_slots;
-  		int tx_slots;
+		int rx_slots;
+		int tx_slots;
 
-  		int tx_flush;
-          	int tx_async;
+		int tx_flush;
+		int tx_async;
 
-  		int tx_queue[4];
-  		int tx_task[4];
+		int tx_queue[4];
+		int tx_task[4];
 
-  		const char *vlan;
-  		const char *comp;
-  	} pfq;
+		const char *vlan;
+		const char *comp;
+	} pfq;
   #endif
 };
 
