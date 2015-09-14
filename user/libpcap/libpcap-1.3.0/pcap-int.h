@@ -446,40 +446,6 @@ struct pcap_sf_patched_pkthdr {
 
 
 /*
- * Extended pcap_pkthdr for PFQ socket
- */
-
-#ifdef PCAP_SUPPORT_PFQ
-struct pfq_pcap_pkthdr {
-
-    struct pcap_timeval ts;	/* time stamp */
-    bpf_u_int32 caplen;		/* length of portion present */
-    bpf_u_int32 len;		/* length this packet (off wire) */
-
-    union
-    {
-	struct
-	{
-	    uint32_t mark;	/* packet mark */
-	    uint32_t state;     /* monad state */
-	};
-
-	struct
-	{
-	    unsigned int copies; /* for packet Tx */
-	    int	     inject;	 /* pkt to kernel */
-	};
-
-    } data;
-
-    int	    if_index;
-    int	    queue;
-    int	    gid;
-
-};
-#endif
-
-/*
  * User data structure for the one-shot callback used for pcap_next()
  * and pcap_next_ex().
  */

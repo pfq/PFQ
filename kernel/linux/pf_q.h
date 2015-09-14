@@ -217,7 +217,6 @@ struct pfq_shared_queue
 
 /* packet headers */
 
-
 struct pfq_pkthdr
 {
 	union
@@ -231,7 +230,7 @@ struct pfq_pkthdr
 		struct
 		{
 			unsigned int copies;	/* for packet Tx */
-			int	     inject;	/* pkt to kernel */
+			int inject;		/* pkt to kernel */
 		};
 	} data;
 
@@ -269,7 +268,6 @@ struct pfq_pkthdr
 } __attribute__((packed));
 
 
-
 /*
    +------------------+---------------------+                  +---------------------+          +---------------------+
    | pfq_queue_hdr    | pfq_pkthdr | packet | ...              | pfq_pkthdr | packet |...       | pfq_pkthdr | packet | ...
@@ -279,6 +277,33 @@ struct pfq_pkthdr
    +                             +                             +                            +
    */
 
+
+struct pfq_pcap_pkthdr {
+
+    struct timeval ts;		/* time stamp */
+    uint32_t caplen;		/* length of portion present */
+    uint32_t len;		/* length this packet (off wire) */
+
+    union
+    {
+	struct
+	{
+	    uint32_t mark;	/* packet mark */
+	    uint32_t state;     /* monad state */
+	};
+
+	struct
+	{
+	    unsigned int copies; /* for packet Tx */
+	    int	inject;		 /* pkt to kernel */
+	};
+
+    } data;
+
+    int	    if_index;
+    int	    queue;
+    int	    gid;
+};
 
 
 /*
