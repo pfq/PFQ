@@ -331,6 +331,7 @@ has_mark :: Word32 -> NetPredicate
 has_mark x = Predicate "has_mark" x () () () () () () ()
 
 -- | Evaluate to /True/ if the state of the computation is set to the given value, possibly by 'put_state' function.
+----
 -- > has_state 11
 has_state :: Word32 -> NetPredicate
 has_state x = Predicate "has_state" x () () () () () () ()
@@ -633,6 +634,8 @@ dec :: CInt -> NetFunction
 dec n = MFunction "dec" n () () () () () () ()
 
 -- | Mark the packet with the given value.
+-- This function is unsafe in that it breaks the pure functional paradigm.
+-- Consider using `put_state` instead.
 --
 -- > mark 42
 mark :: Word32 -> NetFunction

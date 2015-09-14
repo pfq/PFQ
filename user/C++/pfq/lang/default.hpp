@@ -688,6 +688,9 @@ namespace lang
 
         //! Mark the packet with the given value.
         /*
+         *  This function is unsafe in that it breaks the pure functional paradigm.
+         *  Consider using `put_state` instead.
+         *
          * Example:
          *
          * mark (42)
