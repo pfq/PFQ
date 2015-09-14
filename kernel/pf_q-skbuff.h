@@ -39,7 +39,8 @@ struct pfq_cb
 	struct GC_log	 *log;
 	struct pfq_monad *monad;
         unsigned long	  group_mask;
-	int		  direct;
+        uint32_t	  state;
+	bool		  direct;
 };
 
 

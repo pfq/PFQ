@@ -264,7 +264,7 @@ pfq_receive_batch(struct pfq_percpu_data *data,
 				}
 			}
 
-			/* check where a functional program is available for this group */
+			/* evaluate the computation of the current group */
 
 			PFQ_CB(buff)->state = 0;
 
@@ -343,9 +343,10 @@ pfq_receive_batch(struct pfq_percpu_data *data,
 					}
 
 					if (likely(sock->cnt)) {
-						unsigned int h = monad.fanout.hash ^
-								(monad.fanout.hash >> 8) ^
-								(monad.fanout.hash >> 16);
+						unsigned int hash = monad.fanout.hash;
+						unsigned int h = hash ^
+								(hash >> 8) ^
+								(hash >> 16);
 
 						sock_mask |= sock->mask[pfq_fold(h, sock->cnt)];
 					}
@@ -441,7 +442,6 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
         local_bh_disable();
 
         cpu = smp_processor_id();
-
 	data = per_cpu_ptr(percpu_data, cpu);
 
 	if (likely(skb))
