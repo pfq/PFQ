@@ -77,71 +77,64 @@ static inline
 ActionSkBuff
 Pass(SkBuff skb)
 {
-	ActionSkBuff ret = { skb };
-        return ret;
+        return (ActionSkBuff){skb};
 }
 
 static inline
 ActionSkBuff
 Drop(SkBuff skb)
 {
-	ActionSkBuff ret = { skb };
         PFQ_CB(skb)->monad->fanout.type = fanout_drop;
-        return ret;
+        return (ActionSkBuff){skb};
 }
 
 static inline
 ActionSkBuff
 Copy(SkBuff skb)
 {
-	ActionSkBuff ret = { skb };
         PFQ_CB(skb)->monad->fanout.type = fanout_copy;
-        return ret;
+        return (ActionSkBuff){skb};
 }
 
 static inline
 ActionSkBuff
 Broadcast(SkBuff skb)
 {
-	ActionSkBuff ret = { skb };
         fanout_t * a  = &PFQ_CB(skb)->monad->fanout;
         a->class_mask = Q_CLASS_ANY;
         a->type       = fanout_copy;
-        return ret;
+        return (ActionSkBuff){skb};
 }
 
 static inline
 ActionSkBuff
 Steering(SkBuff skb, uint32_t hash)
 {
-	ActionSkBuff ret = { skb };
         fanout_t * a = &PFQ_CB(skb)->monad->fanout;
         a->type  = fanout_steer;
         a->hash  = hash;
-        return ret;
+        return (ActionSkBuff){skb};
 }
 
 static inline
 ActionSkBuff
 Deliver(SkBuff skb, unsigned long class_mask)
 {
-	ActionSkBuff ret = { skb };
         fanout_t * a  = &PFQ_CB(skb)->monad->fanout;
         a->class_mask = class_mask;
         a->type       = fanout_copy;
-        return ret;
+        return (ActionSkBuff){skb};
 }
 
 static inline
 ActionSkBuff
 Dispatch(SkBuff skb, unsigned long class_mask, uint32_t hash)
 {
-	ActionSkBuff ret = { skb };
         fanout_t * a  = &PFQ_CB(skb)->monad->fanout;
         a->class_mask = class_mask;
         a->type       = fanout_steer;
         a->hash       = hash;
-        return ret;
+        return (ActionSkBuff){skb};
 }
 
 /* to_kernel: set the skb to be passed to kernel */

@@ -71,7 +71,7 @@ snprintf_functional_node(char *buffer, size_t size, struct pfq_functional_node c
 {
         size_t n, len = 0;
 
-	len += snprintf(buffer, size, "%4zu@%p: %pF { ", index, node, node->fun.ptr);
+	len += snprintf(buffer, size, "%4zu@%p: %pF { ", index, node, node->fun.run);
 
 	for(n = 0; n < sizeof(node->fun.arg)/sizeof(node->fun.arg[0]); n++)
 	{
@@ -95,8 +95,8 @@ snprintf_functional_node(char *buffer, size_t size, struct pfq_functional_node c
 	if (size <= len)
 		return len;
 
-	if (node->next)
-		len += snprintf(buffer + len, size - len, "} -> next:%p", node->next);
+	if (node->fun.next)
+		len += snprintf(buffer + len, size - len, "} -> next:%p", node->fun.next);
 	else
 		len += snprintf(buffer + len, size - len, "}");
 

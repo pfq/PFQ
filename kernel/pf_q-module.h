@@ -46,9 +46,10 @@
 
 #define ARGS_TYPE(a)		__builtin_choose_expr(__builtin_types_compatible_p(arguments_t, typeof(a)), a, (void)0)
 
-#define EVAL_FUNCTION(f,  b)	((function_ptr_t)f.fun->ptr)(f.fun,  b)
-#define EVAL_PROPERTY(f,  b)	((property_ptr_t)f.fun->ptr)(f.fun,  b)
-#define EVAL_PREDICATE(f, b)	((predicate_ptr_t)f.fun->ptr)(f.fun, b)
+
+#define EVAL_FUNCTION(f,skb)    eval_function(f, skb)
+#define EVAL_PROPERTY(f, skb)	((property_ptr_t )f.fun->run)(f.fun, skb)
+#define EVAL_PREDICATE(f,skb)	((predicate_ptr_t)f.fun->run)(f.fun, skb)
 
 #define GET_ARG_0(type,a) 	__builtin_choose_expr(sizeof(type) <= sizeof(uint64_t), *(type *)&ARGS_TYPE(a)->arg[0].value, (void *)ARGS_TYPE(a)->arg[0].value)
 #define GET_ARG_1(type,a)	__builtin_choose_expr(sizeof(type) <= sizeof(uint64_t), *(type *)&ARGS_TYPE(a)->arg[1].value, (void *)ARGS_TYPE(a)->arg[1].value)
@@ -99,7 +100,6 @@
 
 /**** generic functional type ****/
 
-
 struct pfq_function_descr;
 struct pfq_exec;
 
@@ -117,12 +117,13 @@ struct pfq_functional_arg
 
 struct pfq_functional
 {
-	void *  ptr;				/* pointer to function */
+	void * run;				/* pointer to function */
 	struct pfq_functional_arg arg[8];       /* arguments */
+	struct pfq_functional *next;		/* kleisli composition */
 };
 
 
-typedef struct pfq_functional *  arguments_t;
+typedef struct pfq_functional * arguments_t;
 
 
 /**** function prototypes ****/
@@ -155,6 +156,7 @@ typedef struct
 } property_t;
 
 
+
 struct pfq_functional_node
 {
 	struct pfq_functional fun;
@@ -163,8 +165,6 @@ struct pfq_functional_node
 	fini_ptr_t	      fini;
 
 	bool		      initialized;
-
-	struct pfq_functional_node *next;
 };
 
 
@@ -214,6 +214,27 @@ static inline
 bool fwd_to_kernel(struct sk_buff *skb)
 {
 	return PFQ_CB(skb)->log->to_kernel != 0;
+}
+
+
+static inline ActionSkBuff
+eval_function(function_t f, SkBuff skb)
+{
+	struct pfq_functional *fun = f.fun;
+	while (fun) {
+
+                fanout_t *a;
+		skb =  ((function_ptr_t)fun->run)(fun, skb).skb;
+		if (skb == NULL)
+			return Pass(skb);
+
+                a = &PFQ_CB(skb)->monad->fanout;
+                if (is_drop(*a))
+                        return Pass(skb);
+                fun = fun->next;
+	}
+
+	return Pass(skb);
 }
 
 

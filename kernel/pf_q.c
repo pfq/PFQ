@@ -155,7 +155,7 @@ unsigned int pfq_fold(unsigned int a, unsigned int b)
 
 
 static int
-pfq_process_batch(struct pfq_percpu_data *data,
+pfq_receive_batch(struct pfq_percpu_data *data,
 		  struct pfq_percpu_sock *sock,
 		  struct pfq_percpu_pool *pool,
 		  struct GC_data *GC_ptr,
@@ -501,7 +501,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 	sock = per_cpu_ptr(percpu_sock, cpu);
 	pool = per_cpu_ptr(percpu_pool, cpu);
 
-	return pfq_process_batch(data, sock, pool, data->GC, cpu);
+	return pfq_receive_batch(data, sock, pool, data->GC, cpu);
 }
 
 

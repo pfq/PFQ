@@ -125,35 +125,9 @@ strdup_user(const char __user *str)
 
 
 static inline ActionSkBuff
-pfq_apply(struct pfq_functional *call, SkBuff skb)
+pfq_bind(SkBuff skb, struct pfq_functional_node *node)
 {
-	function_t fun = { call };
-	return EVAL_FUNCTION(fun, skb);
-}
-
-
-static inline ActionSkBuff
-pfq_bind(SkBuff skb, struct pfq_computation_tree *prg)
-{
-        struct pfq_functional_node *node = prg->entry_point;
-
-        while (node)
-        {
-                fanout_t *a;
-
-                skb = pfq_apply(&node->fun, skb).skb;
-                if (skb == NULL)
-                        return Pass(skb);
-
-                a = &PFQ_CB(skb)->monad->fanout;
-
-                if (is_drop(*a))
-                        return Pass(skb);
-
-                node = node->next;
-        }
-
-        return Pass(skb);
+	return EVAL_FUNCTION((function_t){&node->fun}, skb);
 }
 
 
@@ -173,7 +147,7 @@ pfq_run(SkBuff skb, struct pfq_computation_tree *prg)
 	return
 #endif
 
-	pfq_bind(skb, prg);
+	pfq_bind(skb, prg->entry_point);
 
 #ifdef PFQ_LANG_PROFILE
 
@@ -498,7 +472,7 @@ pfq_computation_fini(struct pfq_computation_tree *comp)
 
 
 static struct pfq_functional_node *
-get_functional_by_index(struct pfq_computation_descr const *descr, struct pfq_computation_tree *comp, int index)
+get_functional_node_by_index(struct pfq_computation_descr const *descr, struct pfq_computation_tree *comp, int index)
 {
         if (index >= 0 && index < descr->size) {
                 return &comp->node[index];
@@ -530,6 +504,7 @@ pfq_computation_rtlink(struct pfq_computation_descr const *descr, struct pfq_com
         for(n = 0; n < descr->size; n++)
         {
 		struct pfq_functional_descr const *fun;
+		struct pfq_functional_node *next;
 		const char *signature;
 		init_ptr_t init, fini;
 		void *addr;
@@ -543,10 +518,13 @@ pfq_computation_rtlink(struct pfq_computation_descr const *descr, struct pfq_com
 			return -EPERM;
 		}
 
-		comp->node[n].fun.ptr = addr;
+		next = get_functional_node_by_index(descr, comp, descr->fun[n].next);
+
 		comp->node[n].init    = init;
 		comp->node[n].fini    = fini;
-		comp->node[n].next    = get_functional_by_index(descr, comp, descr->fun[n].next);
+
+		comp->node[n].fun.run  = addr;
+                comp->node[n].fun.next = next ? &next->fun : NULL;
 
 		comp->node[n].fun.arg[0].value = 0;
 		comp->node[n].fun.arg[1].value = 0;
@@ -649,8 +627,8 @@ pfq_computation_rtlink(struct pfq_computation_descr const *descr, struct pfq_com
 			}
 			else if (is_arg_function(&fun->arg[i])) {
 
-				comp->node[n].fun.arg[i].value = (ptrdiff_t)get_functional_by_index(descr, comp,
-												    fun->arg[i].size);
+				comp->node[n].fun.arg[i].value = (ptrdiff_t)get_functional_node_by_index(descr, comp,
+													fun->arg[i].size);
 				comp->node[n].fun.arg[i].nelem = -1;
 			}
 			else if (!is_arg_null(&fun->arg[i])) {
