@@ -168,9 +168,8 @@ pfq_receive_batch(struct pfq_percpu_data *data,
 	struct sk_buff __GC * buff;
 
         long unsigned n, bit, lb;
-
-        struct pfq_monad monad;
 	size_t this_batch_len;
+	struct pfq_monad monad;
 
 #ifdef PFQ_RX_PROFILE
 	cycles_t start, stop;
@@ -267,6 +266,8 @@ pfq_receive_batch(struct pfq_percpu_data *data,
 
 			/* check where a functional program is available for this group */
 
+			PFQ_CB(buff)->state = 0;
+
 			prg = (struct pfq_computation_tree *)atomic_long_read(&this_group->comp);
 			if (prg) {
 				unsigned long cbit, eligible_mask = 0;
@@ -277,8 +278,8 @@ pfq_receive_batch(struct pfq_percpu_data *data,
 
 				monad.fanout.class_mask = Q_CLASS_DEFAULT;
 				monad.fanout.type = fanout_copy;
-				monad.state = 0;
 				monad.group = this_group;
+                                monad.state = 0;
 
 				/* run the functional program */
 
@@ -288,6 +289,10 @@ pfq_receive_batch(struct pfq_percpu_data *data,
 					refs.queue[refs.len++] = NULL;
 					continue;
 				}
+
+				/* park the monad state */
+
+				PFQ_CB(buff)->state = monad.state;
 
 				/* update stats */
 

@@ -125,7 +125,7 @@ size_t pfq_sk_rx_queue_recv(struct pfq_sock_opt *opt,
 		/* copy state from pfq_cb annotation */
 
 		hdr->data.mark  = skb->mark;
-		hdr->data.state = PFQ_CB(skb)->monad->state;
+		hdr->data.state = PFQ_CB(skb)->state;
 
 		/* setup the header */
 
