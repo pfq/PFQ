@@ -7,7 +7,7 @@ set -e
 
 API_DIR="api"
 LANG_DIR="lang"
-DOC_VERSION="v5.0"
+DOC_VERSION="v5.1"
 BOLD=`tput bold`
 RESET=`tput sgr0`
 

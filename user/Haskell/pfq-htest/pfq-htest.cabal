@@ -1,5 +1,5 @@
 name:                   pfq-htests
-version:                5.0
+version:                5.1
 
 license-file:           LICENSE
 author:                 Nicola Bonelli
@@ -11,7 +11,7 @@ cabal-version:          >=1.10
 Executable test-bloom
     main-is:            test-bloom.hs
     build-depends:      base >= 4.7, 
-                        pfq >= 5.0
+                        pfq >= 5.1
     extra-libraries:    pfq
     ghc-options:
         -O2
@@ -22,7 +22,7 @@ Executable test-bloom
 Executable test-read
     main-is:            test-read.hs
     build-depends:      base >= 4.7, 
-                        pfq >= 5.0
+                        pfq >= 5.1
     extra-libraries:    pfq
     ghc-options:
         -O2
@@ -33,7 +33,7 @@ Executable test-read
 Executable test-dispatch
     main-is:            test-read.hs
     build-depends:      base >= 4.7, 
-                        pfq >= 5.0
+                        pfq >= 5.1
     extra-libraries:    pfq
     ghc-options:
         -O2
@@ -44,7 +44,7 @@ Executable test-dispatch
 Executable test-send
     main-is:            test-send.hs
     build-depends:      base >= 4.7, 
-                        pfq >= 5.0,
+                        pfq >= 5.1,
                         bytestring
     extra-libraries:    pfq
     ghc-options:
@@ -56,7 +56,7 @@ Executable test-send
 Executable test-lang
     main-is:            test-lang.hs
     build-depends:      base >= 4.7, 
-                        pfq >= 5.0
+                        pfq >= 5.1
     extra-libraries:    pfq
     ghc-options:
         -O2

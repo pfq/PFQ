@@ -116,3 +116,11 @@ PFQ 5.0
  * Code cleanup.
  * Bugs fixed.
 
+
+PFQ 5.1
+-------
+ * Monadic state and skb mark enabled for DSL.
+ * General and performance improvements.
+ * Bug fixes.
+
+
