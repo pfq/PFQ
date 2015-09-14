@@ -79,19 +79,19 @@ void \hyperlink{classpfq_1_1socket_a019d15a072c043d6a1333ca0c836da4c}{tx\+\_\+sl
 \begin{DoxyCompactList}\small\item\em Specify the length of the Tx queue, in number of packets. \end{DoxyCompactList}\item 
 size\+\_\+t \hyperlink{classpfq_1_1socket_a11b91a39fdae65cace365aa3583eba7d}{tx\+\_\+slots} () const 
 \begin{DoxyCompactList}\small\item\em Return the length of the Tx queue, in number of packets. \end{DoxyCompactList}\item 
-void \hyperlink{classpfq_1_1socket_a3a0fc5c70e2d2615e29d06ac55007ed3}{bind} (const char $\ast$dev, int \hyperlink{classpfq_1_1queue}{queue}=any\+\_\+queue)
+void \hyperlink{classpfq_1_1socket_a3a0fc5c70e2d2615e29d06ac55007ed3}{bind} (const char $\ast$dev, int queue=any\+\_\+queue)
 \begin{DoxyCompactList}\small\item\em Bind the main group of the socket to the given device/queue. \end{DoxyCompactList}\item 
-void \hyperlink{classpfq_1_1socket_af53d407f46ba2b4d143782ff7d585758}{unbind} (const char $\ast$dev, int \hyperlink{classpfq_1_1queue}{queue}=any\+\_\+queue)
+void \hyperlink{classpfq_1_1socket_af53d407f46ba2b4d143782ff7d585758}{unbind} (const char $\ast$dev, int queue=any\+\_\+queue)
 \begin{DoxyCompactList}\small\item\em Unbind the main group of the socket from the given device/queue. \end{DoxyCompactList}\item 
-void \hyperlink{classpfq_1_1socket_a4d4d44cc68af0290e3c494dcd10b1541}{bind\+\_\+group} (int gid, const char $\ast$dev, int \hyperlink{classpfq_1_1queue}{queue}=any\+\_\+queue)
+void \hyperlink{classpfq_1_1socket_a4d4d44cc68af0290e3c494dcd10b1541}{bind\+\_\+group} (int gid, const char $\ast$dev, int queue=any\+\_\+queue)
 \begin{DoxyCompactList}\small\item\em Bind the group to the given device/queue. \end{DoxyCompactList}\item 
-void \hyperlink{classpfq_1_1socket_a6e1f7ee7f44b6824d734d4ff7046d907}{unbind\+\_\+group} (int gid, const char $\ast$dev, int \hyperlink{classpfq_1_1queue}{queue}=any\+\_\+queue)
+void \hyperlink{classpfq_1_1socket_a6e1f7ee7f44b6824d734d4ff7046d907}{unbind\+\_\+group} (int gid, const char $\ast$dev, int queue=any\+\_\+queue)
 \begin{DoxyCompactList}\small\item\em Unbind the group from the given device/queue. \end{DoxyCompactList}\item 
-void \hyperlink{classpfq_1_1socket_a2c96741054ea764f5d8c31295ef5df29}{egress\+\_\+bind} (const char $\ast$dev, int \hyperlink{classpfq_1_1queue}{queue}=any\+\_\+queue)
+void \hyperlink{classpfq_1_1socket_a2c96741054ea764f5d8c31295ef5df29}{egress\+\_\+bind} (const char $\ast$dev, int queue=any\+\_\+queue)
 \begin{DoxyCompactList}\small\item\em Set the socket as egress and bind it to the given device/queue. \end{DoxyCompactList}\item 
 void \hyperlink{classpfq_1_1socket_ae80718e8f26cdaed3fd05bfde6d835e0}{egress\+\_\+unbind} ()
 \begin{DoxyCompactList}\small\item\em Unset the socket as egress. \end{DoxyCompactList}\item 
-void \hyperlink{classpfq_1_1socket_ae1a9ad5e1d5ad478a1a642f29f49e9c0}{bind\+\_\+tx} (const char $\ast$dev, int \hyperlink{classpfq_1_1queue}{queue}=any\+\_\+queue, int core=no\+\_\+kthread)
+void \hyperlink{classpfq_1_1socket_ae1a9ad5e1d5ad478a1a642f29f49e9c0}{bind\+\_\+tx} (const char $\ast$dev, int queue=any\+\_\+queue, int core=no\+\_\+kthread)
 \begin{DoxyCompactList}\small\item\em Bind the socket for transmission to the given device name and queue. \end{DoxyCompactList}\item 
 void \hyperlink{classpfq_1_1socket_a99ee5e145ccf3a043b3c2aacb3df30cc}{unbind\+\_\+tx} ()
 \begin{DoxyCompactList}\small\item\em Unbind the socket transmission. \end{DoxyCompactList}\item 
@@ -115,11 +115,11 @@ void \hyperlink{classpfq_1_1socket_a2327e71a6f94e54efb0da5ec36b1c620}{reset\+\_\
 \begin{DoxyCompactList}\small\item\em Reset the B\+P\+F program fro the given group. \end{DoxyCompactList}\item 
 int \hyperlink{classpfq_1_1socket_ad8ce551ea07f39317bb383ab88d66344}{poll} (long int microseconds=-\/1)
 \begin{DoxyCompactList}\small\item\em Wait for packets. \end{DoxyCompactList}\item 
-\hyperlink{classpfq_1_1queue}{queue} \hyperlink{classpfq_1_1socket_a6a79c81d3c366e49b8d64eb828ae5540}{read} (long int microseconds=-\/1)
+\hyperlink{classpfq_1_1net__queue}{net\+\_\+queue} \hyperlink{classpfq_1_1socket_a6004249d3abfe8a2329b44ba797d1909}{read} (long int microseconds=-\/1)
 \begin{DoxyCompactList}\small\item\em Read packets in place. \end{DoxyCompactList}\item 
 uint8\+\_\+t \hyperlink{classpfq_1_1socket_aba44de6422e3e10b65474e7f3999ebd0}{current\+\_\+commit} () const 
 \begin{DoxyCompactList}\small\item\em Return the current commit version (used internally by the memory mapped queue). \end{DoxyCompactList}\item 
-\hyperlink{classpfq_1_1queue}{queue} \hyperlink{classpfq_1_1socket_ace69fbf64216b7b30a8a305a9d25229b}{recv} (const \hyperlink{namespacepfq_ad7b88920eaf729154354741132483ea8}{mutable\+\_\+buffer} \&buff, long int microseconds=-\/1)
+\hyperlink{classpfq_1_1net__queue}{net\+\_\+queue} \hyperlink{classpfq_1_1socket_a57643b9011269682bf716254c2b72907}{recv} (const \hyperlink{namespacepfq_ad7b88920eaf729154354741132483ea8}{mutable\+\_\+buffer} \&buff, long int microseconds=-\/1)
 \begin{DoxyCompactList}\small\item\em Receive packets in the given buffer. \end{DoxyCompactList}\item 
 {\footnotesize template$<$typename Fun $>$ }\\size\+\_\+t \hyperlink{classpfq_1_1socket_ae6cd08be2e7c35a548a64fded4359612}{dispatch} (Fun callback, long int microseconds=-\/1, char $\ast$user=nullptr)
 \begin{DoxyCompactList}\small\item\em Collect and process packets. \end{DoxyCompactList}\item 
@@ -149,9 +149,9 @@ bool \hyperlink{classpfq_1_1socket_a7a1d64344f0c476117d5b7cc2543edad}{send\+\_\+
 \begin{DoxyCompactList}\small\item\em Store the packet and transmit the packets in the queue, asynchronously. \end{DoxyCompactList}\item 
 {\footnotesize template$<$typename Clock , typename Duration $>$ }\\bool \hyperlink{classpfq_1_1socket_a7511ca4657999e1c158859d34cffc831}{send\+\_\+at} (\hyperlink{namespacepfq_ac835a1bd09b4cbaba61c100b50d0a99f}{const\+\_\+buffer} pkt, std\+::chrono\+::time\+\_\+point$<$ Clock, Duration $>$ const \&tp, int copies=1)
 \item 
-bool \hyperlink{classpfq_1_1socket_a7cf603f39b62375ec1a459d7713300cc}{inject} (\hyperlink{namespacepfq_ac835a1bd09b4cbaba61c100b50d0a99f}{const\+\_\+buffer} buf, uint64\+\_\+t nsec, int copies, int \hyperlink{classpfq_1_1queue}{queue}=any\+\_\+queue)
-\begin{DoxyCompactList}\small\item\em Schedule the packet for transmission. \end{DoxyCompactList}\item 
-void \hyperlink{classpfq_1_1socket_a88e4764d8e7fc86b6e3ea1fbff407a96}{tx\+\_\+queue\+\_\+flush} (int \hyperlink{classpfq_1_1queue}{queue}=any\+\_\+queue)
+bool \hyperlink{classpfq_1_1socket_aee365a7044043d08507adba75eb290c6}{send\+\_\+deferred} (\hyperlink{namespacepfq_ac835a1bd09b4cbaba61c100b50d0a99f}{const\+\_\+buffer} buf, uint64\+\_\+t nsec, int copies, int queue=any\+\_\+queue)
+\begin{DoxyCompactList}\small\item\em Schedule packet transmission. \end{DoxyCompactList}\item 
+void \hyperlink{classpfq_1_1socket_a88e4764d8e7fc86b6e3ea1fbff407a96}{tx\+\_\+queue\+\_\+flush} (int queue=any\+\_\+queue)
 \begin{DoxyCompactList}\small\item\em Flush the Tx queue(s). \end{DoxyCompactList}\item 
 void \hyperlink{classpfq_1_1socket_a60613b9eec686a179332e0a86d1ea954}{tx\+\_\+async\+\_\+start} ()
 \begin{DoxyCompactList}\small\item\em Start kernel threads. \end{DoxyCompactList}\item 
@@ -485,21 +485,7 @@ Each socket can bind to multiple groups. Each bit set in the mask represents a j
 
 Return the id of the socket. 
 
-\hypertarget{classpfq_1_1socket_a7cf603f39b62375ec1a459d7713300cc}{\index{pfq\+::socket@{pfq\+::socket}!inject@{inject}}
-\index{inject@{inject}!pfq\+::socket@{pfq\+::socket}}
-\subsubsection[{inject}]{\setlength{\rightskip}{0pt plus 5cm}bool pfq\+::socket\+::inject (
-\begin{DoxyParamCaption}
-\item[{{\bf const\+\_\+buffer}}]{buf, }
-\item[{uint64\+\_\+t}]{nsec, }
-\item[{int}]{copies, }
-\item[{int}]{queue = {\ttfamily any\+\_\+queue}}
-\end{DoxyParamCaption}
-)\hspace{0.3cm}{\ttfamily [inline]}}}\label{classpfq_1_1socket_a7cf603f39b62375ec1a459d7713300cc}
-
-
-Schedule the packet for transmission. 
-
-The packet is copied into a Tx queue (using a T\+S\+S symmetric hash if any\+\_\+queue is specified) and transmitted at the given timestamp by a kernel thread or when tx\+\_\+queue\+\_\+flush is called. A timestamp of 0 nanoseconds means 'immediate transmission. \hypertarget{classpfq_1_1socket_a0a80909f34ab601e4c96ee8cb28a3230}{\index{pfq\+::socket@{pfq\+::socket}!is\+\_\+enabled@{is\+\_\+enabled}}
+\hypertarget{classpfq_1_1socket_a0a80909f34ab601e4c96ee8cb28a3230}{\index{pfq\+::socket@{pfq\+::socket}!is\+\_\+enabled@{is\+\_\+enabled}}
 \index{is\+\_\+enabled@{is\+\_\+enabled}!pfq\+::socket@{pfq\+::socket}}
 \subsubsection[{is\+\_\+enabled}]{\setlength{\rightskip}{0pt plus 5cm}bool pfq\+::socket\+::is\+\_\+enabled (
 \begin{DoxyParamCaption}
@@ -652,27 +638,27 @@ Move assignment operator.
 
 Wait for packets. 
 
-Wait for packets available for reading. A timeout in microseconds can be specified. \hypertarget{classpfq_1_1socket_a6a79c81d3c366e49b8d64eb828ae5540}{\index{pfq\+::socket@{pfq\+::socket}!read@{read}}
+Wait for packets available for reading. A timeout in microseconds can be specified. \hypertarget{classpfq_1_1socket_a6004249d3abfe8a2329b44ba797d1909}{\index{pfq\+::socket@{pfq\+::socket}!read@{read}}
 \index{read@{read}!pfq\+::socket@{pfq\+::socket}}
-\subsubsection[{read}]{\setlength{\rightskip}{0pt plus 5cm}{\bf queue} pfq\+::socket\+::read (
+\subsubsection[{read}]{\setlength{\rightskip}{0pt plus 5cm}{\bf net\+\_\+queue} pfq\+::socket\+::read (
 \begin{DoxyParamCaption}
 \item[{long int}]{microseconds = {\ttfamily -\/1}}
 \end{DoxyParamCaption}
-)\hspace{0.3cm}{\ttfamily [inline]}}}\label{classpfq_1_1socket_a6a79c81d3c366e49b8d64eb828ae5540}
+)\hspace{0.3cm}{\ttfamily [inline]}}}\label{classpfq_1_1socket_a6004249d3abfe8a2329b44ba797d1909}
 
 
 Read packets in place. 
 
 Wait for packets and return a 'queue' descriptor, which contains the references to packets.
 
-The memory of the socket queue is reset at the next read. A timeout is specified in microseconds. \hypertarget{classpfq_1_1socket_ace69fbf64216b7b30a8a305a9d25229b}{\index{pfq\+::socket@{pfq\+::socket}!recv@{recv}}
+The memory of the socket queue is reset at the next read. A timeout is specified in microseconds. \hypertarget{classpfq_1_1socket_a57643b9011269682bf716254c2b72907}{\index{pfq\+::socket@{pfq\+::socket}!recv@{recv}}
 \index{recv@{recv}!pfq\+::socket@{pfq\+::socket}}
-\subsubsection[{recv}]{\setlength{\rightskip}{0pt plus 5cm}{\bf queue} pfq\+::socket\+::recv (
+\subsubsection[{recv}]{\setlength{\rightskip}{0pt plus 5cm}{\bf net\+\_\+queue} pfq\+::socket\+::recv (
 \begin{DoxyParamCaption}
 \item[{const {\bf mutable\+\_\+buffer} \&}]{buff, }
 \item[{long int}]{microseconds = {\ttfamily -\/1}}
 \end{DoxyParamCaption}
-)\hspace{0.3cm}{\ttfamily [inline]}}}\label{classpfq_1_1socket_ace69fbf64216b7b30a8a305a9d25229b}
+)\hspace{0.3cm}{\ttfamily [inline]}}}\label{classpfq_1_1socket_a57643b9011269682bf716254c2b72907}
 
 
 Receive packets in the given buffer. 
@@ -759,7 +745,21 @@ The transmission is invoked every  packets. When T\+X kernel threads are in use,
 )\hspace{0.3cm}{\ttfamily [inline]}}}\label{classpfq_1_1socket_a7511ca4657999e1c158859d34cffc831}
 Store the packet and transmit it.
 
-The transmission takes place asynchronously at the given timespec time, specified as a generic chrono\+::time\+\_\+point. \hypertarget{classpfq_1_1socket_a5cb37765ffcb1b78c5d61211f9e806df}{\index{pfq\+::socket@{pfq\+::socket}!set\+\_\+group\+\_\+computation@{set\+\_\+group\+\_\+computation}}
+The transmission takes place asynchronously at the given timespec time, specified as a generic chrono\+::time\+\_\+point. \hypertarget{classpfq_1_1socket_aee365a7044043d08507adba75eb290c6}{\index{pfq\+::socket@{pfq\+::socket}!send\+\_\+deferred@{send\+\_\+deferred}}
+\index{send\+\_\+deferred@{send\+\_\+deferred}!pfq\+::socket@{pfq\+::socket}}
+\subsubsection[{send\+\_\+deferred}]{\setlength{\rightskip}{0pt plus 5cm}bool pfq\+::socket\+::send\+\_\+deferred (
+\begin{DoxyParamCaption}
+\item[{{\bf const\+\_\+buffer}}]{buf, }
+\item[{uint64\+\_\+t}]{nsec, }
+\item[{int}]{copies, }
+\item[{int}]{queue = {\ttfamily any\+\_\+queue}}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}}}\label{classpfq_1_1socket_aee365a7044043d08507adba75eb290c6}
+
+
+Schedule packet transmission. 
+
+The packet is copied into a Tx queue (using a T\+S\+S symmetric hash if any\+\_\+queue is specified) and transmitted at the given timestamp by a kernel thread or when tx\+\_\+queue\+\_\+flush is called. A timestamp of 0 nanoseconds means 'immediate transmission. \hypertarget{classpfq_1_1socket_a5cb37765ffcb1b78c5d61211f9e806df}{\index{pfq\+::socket@{pfq\+::socket}!set\+\_\+group\+\_\+computation@{set\+\_\+group\+\_\+computation}}
 \index{set\+\_\+group\+\_\+computation@{set\+\_\+group\+\_\+computation}!pfq\+::socket@{pfq\+::socket}}
 \subsubsection[{set\+\_\+group\+\_\+computation}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename Comp $>$ void pfq\+::socket\+::set\+\_\+group\+\_\+computation (
 \begin{DoxyParamCaption}

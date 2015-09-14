@@ -30,7 +30,7 @@
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
    <div id="projectname">PFQ C++ library
-   &#160;<span id="projectnumber">v5.0</span>
+   &#160;<span id="projectnumber">v5.1</span>
    </div>
   </td>
    <td>        <div id="MSearchBox" class="MSearchBoxInactive">
@@ -498,7 +498,7 @@ $(document).ready(function(){initNavTree('pfq_8hpp_source.html','');});
 <div class="line"><a name="l00472"></a><span class="lineno">  472</span>&#160;                <span class="keywordflow">throw</span> pfq_error(errno, <span class="stringliteral">&quot;PFQ: get Tx maxlen error&quot;</span>);</div>
 <div class="line"><a name="l00473"></a><span class="lineno">  473</span>&#160;</div>
 <div class="line"><a name="l00474"></a><span class="lineno">  474</span>&#160;            data_-&gt;tx_slots = <a class="code" href="classpfq_1_1socket.html#a11b91a39fdae65cace365aa3583eba7d">tx_slots</a>;</div>
-<div class="line"><a name="l00475"></a><span class="lineno">  475</span>&#160;            data_-&gt;tx_slot_size = align&lt;8&gt;(<span class="keyword">sizeof</span>(pfq_pkthdr_tx) + maxlen);</div>
+<div class="line"><a name="l00475"></a><span class="lineno">  475</span>&#160;            data_-&gt;tx_slot_size = align&lt;8&gt;(<span class="keyword">sizeof</span>(pfq_pkthdr) + maxlen);</div>
 <div class="line"><a name="l00476"></a><span class="lineno">  476</span>&#160;</div>
 <div class="line"><a name="l00477"></a><span class="lineno">  477</span>&#160;        }</div>
 <div class="line"><a name="l00478"></a><span class="lineno">  478</span>&#160;</div>
@@ -754,29 +754,29 @@ $(document).ready(function(){initNavTree('pfq_8hpp_source.html','');});
 <div class="line"><a name="l00759"></a><span class="lineno">  759</span>&#160;</div>
 <div class="line"><a name="l00761"></a><span class="lineno">  761</span>&#160;</div>
 <div class="line"><a name="l00766"></a><span class="lineno">  766</span>&#160;        <span class="keywordtype">void</span></div>
-<div class="line"><a name="l00767"></a><span class="lineno"><a class="line" href="classpfq_1_1socket.html#a3a0fc5c70e2d2615e29d06ac55007ed3">  767</a></span>&#160;        <a class="code" href="classpfq_1_1socket.html#a3a0fc5c70e2d2615e29d06ac55007ed3">bind</a>(<span class="keyword">const</span> <span class="keywordtype">char</span> *dev, <span class="keywordtype">int</span> <a class="code" href="classpfq_1_1queue.html">queue</a> = any_queue)</div>
+<div class="line"><a name="l00767"></a><span class="lineno"><a class="line" href="classpfq_1_1socket.html#a3a0fc5c70e2d2615e29d06ac55007ed3">  767</a></span>&#160;        <a class="code" href="classpfq_1_1socket.html#a3a0fc5c70e2d2615e29d06ac55007ed3">bind</a>(<span class="keyword">const</span> <span class="keywordtype">char</span> *dev, <span class="keywordtype">int</span> queue = any_queue)</div>
 <div class="line"><a name="l00768"></a><span class="lineno">  768</span>&#160;        {</div>
 <div class="line"><a name="l00769"></a><span class="lineno">  769</span>&#160;            <span class="keyword">auto</span> gid = <a class="code" href="classpfq_1_1socket.html#a0b82186997f22efffd336b09b19a806d">group_id</a>();</div>
 <div class="line"><a name="l00770"></a><span class="lineno">  770</span>&#160;            <span class="keywordflow">if</span> (gid &lt; 0)</div>
 <div class="line"><a name="l00771"></a><span class="lineno">  771</span>&#160;                <span class="keywordflow">throw</span> <a class="code" href="classpfq_1_1pfq__error.html">pfq_error</a>(<span class="stringliteral">&quot;PFQ: default group undefined&quot;</span>);</div>
 <div class="line"><a name="l00772"></a><span class="lineno">  772</span>&#160;</div>
-<div class="line"><a name="l00773"></a><span class="lineno">  773</span>&#160;            <a class="code" href="classpfq_1_1socket.html#a4d4d44cc68af0290e3c494dcd10b1541">bind_group</a>(gid, dev, <a class="code" href="classpfq_1_1queue.html">queue</a>);</div>
+<div class="line"><a name="l00773"></a><span class="lineno">  773</span>&#160;            <a class="code" href="classpfq_1_1socket.html#a4d4d44cc68af0290e3c494dcd10b1541">bind_group</a>(gid, dev, queue);</div>
 <div class="line"><a name="l00774"></a><span class="lineno">  774</span>&#160;        }</div>
 <div class="line"><a name="l00775"></a><span class="lineno">  775</span>&#160;</div>
 <div class="line"><a name="l00777"></a><span class="lineno">  777</span>&#160;</div>
 <div class="line"><a name="l00778"></a><span class="lineno">  778</span>&#160;        <span class="keywordtype">void</span></div>
-<div class="line"><a name="l00779"></a><span class="lineno"><a class="line" href="classpfq_1_1socket.html#af53d407f46ba2b4d143782ff7d585758">  779</a></span>&#160;        <a class="code" href="classpfq_1_1socket.html#af53d407f46ba2b4d143782ff7d585758">unbind</a>(<span class="keyword">const</span> <span class="keywordtype">char</span> *dev, <span class="keywordtype">int</span> <a class="code" href="classpfq_1_1queue.html">queue</a> = any_queue)</div>
+<div class="line"><a name="l00779"></a><span class="lineno"><a class="line" href="classpfq_1_1socket.html#af53d407f46ba2b4d143782ff7d585758">  779</a></span>&#160;        <a class="code" href="classpfq_1_1socket.html#af53d407f46ba2b4d143782ff7d585758">unbind</a>(<span class="keyword">const</span> <span class="keywordtype">char</span> *dev, <span class="keywordtype">int</span> queue = any_queue)</div>
 <div class="line"><a name="l00780"></a><span class="lineno">  780</span>&#160;        {</div>
 <div class="line"><a name="l00781"></a><span class="lineno">  781</span>&#160;            <span class="keyword">auto</span> gid = <a class="code" href="classpfq_1_1socket.html#a0b82186997f22efffd336b09b19a806d">group_id</a>();</div>
 <div class="line"><a name="l00782"></a><span class="lineno">  782</span>&#160;            <span class="keywordflow">if</span> (gid &lt; 0)</div>
 <div class="line"><a name="l00783"></a><span class="lineno">  783</span>&#160;                <span class="keywordflow">throw</span> <a class="code" href="classpfq_1_1pfq__error.html">pfq_error</a>(<span class="stringliteral">&quot;PFQ: default group undefined&quot;</span>);</div>
 <div class="line"><a name="l00784"></a><span class="lineno">  784</span>&#160;</div>
-<div class="line"><a name="l00785"></a><span class="lineno">  785</span>&#160;            <a class="code" href="classpfq_1_1socket.html#a6e1f7ee7f44b6824d734d4ff7046d907">unbind_group</a>(gid, dev, <a class="code" href="classpfq_1_1queue.html">queue</a>);</div>
+<div class="line"><a name="l00785"></a><span class="lineno">  785</span>&#160;            <a class="code" href="classpfq_1_1socket.html#a6e1f7ee7f44b6824d734d4ff7046d907">unbind_group</a>(gid, dev, queue);</div>
 <div class="line"><a name="l00786"></a><span class="lineno">  786</span>&#160;        }</div>
 <div class="line"><a name="l00787"></a><span class="lineno">  787</span>&#160;</div>
 <div class="line"><a name="l00789"></a><span class="lineno">  789</span>&#160;</div>
 <div class="line"><a name="l00795"></a><span class="lineno">  795</span>&#160;        <span class="keywordtype">void</span></div>
-<div class="line"><a name="l00796"></a><span class="lineno"><a class="line" href="classpfq_1_1socket.html#a4d4d44cc68af0290e3c494dcd10b1541">  796</a></span>&#160;        <a class="code" href="classpfq_1_1socket.html#a4d4d44cc68af0290e3c494dcd10b1541">bind_group</a>(<span class="keywordtype">int</span> gid, <span class="keyword">const</span> <span class="keywordtype">char</span> *dev, <span class="keywordtype">int</span> <a class="code" href="classpfq_1_1queue.html">queue</a> = any_queue)</div>
+<div class="line"><a name="l00796"></a><span class="lineno"><a class="line" href="classpfq_1_1socket.html#a4d4d44cc68af0290e3c494dcd10b1541">  796</a></span>&#160;        <a class="code" href="classpfq_1_1socket.html#a4d4d44cc68af0290e3c494dcd10b1541">bind_group</a>(<span class="keywordtype">int</span> gid, <span class="keyword">const</span> <span class="keywordtype">char</span> *dev, <span class="keywordtype">int</span> queue = any_queue)</div>
 <div class="line"><a name="l00797"></a><span class="lineno">  797</span>&#160;        {</div>
 <div class="line"><a name="l00798"></a><span class="lineno">  798</span>&#160;            <span class="keyword">auto</span> index = [<span class="keyword">this</span>, dev]() -&gt; <span class="keywordtype">int</span> {</div>
 <div class="line"><a name="l00799"></a><span class="lineno">  799</span>&#160;                <span class="keywordflow">if</span> (strcmp(dev, <span class="stringliteral">&quot;any&quot;</span>) == 0)</div>
@@ -787,7 +787,7 @@ $(document).ready(function(){initNavTree('pfq_8hpp_source.html','');});
 <div class="line"><a name="l00804"></a><span class="lineno">  804</span>&#160;                <span class="keywordflow">return</span> n;</div>
 <div class="line"><a name="l00805"></a><span class="lineno">  805</span>&#160;            }();</div>
 <div class="line"><a name="l00806"></a><span class="lineno">  806</span>&#160;</div>
-<div class="line"><a name="l00807"></a><span class="lineno">  807</span>&#160;            <span class="keyword">struct </span>pfq_binding b = { {gid}, index, <a class="code" href="classpfq_1_1queue.html">queue</a> };</div>
+<div class="line"><a name="l00807"></a><span class="lineno">  807</span>&#160;            <span class="keyword">struct </span>pfq_binding b = { {gid}, index, queue };</div>
 <div class="line"><a name="l00808"></a><span class="lineno">  808</span>&#160;</div>
 <div class="line"><a name="l00809"></a><span class="lineno">  809</span>&#160;            <span class="keywordflow">if</span> (::setsockopt(fd_, PF_Q, Q_SO_GROUP_BIND, &amp;b, <span class="keyword">sizeof</span>(b)) == -1)</div>
 <div class="line"><a name="l00810"></a><span class="lineno">  810</span>&#160;                <span class="keywordflow">throw</span> <a class="code" href="classpfq_1_1pfq__error.html">pfq_error</a>(errno, <span class="stringliteral">&quot;PFQ: bind error&quot;</span>);</div>
@@ -795,7 +795,7 @@ $(document).ready(function(){initNavTree('pfq_8hpp_source.html','');});
 <div class="line"><a name="l00812"></a><span class="lineno">  812</span>&#160;</div>
 <div class="line"><a name="l00814"></a><span class="lineno">  814</span>&#160;</div>
 <div class="line"><a name="l00815"></a><span class="lineno">  815</span>&#160;        <span class="keywordtype">void</span></div>
-<div class="line"><a name="l00816"></a><span class="lineno"><a class="line" href="classpfq_1_1socket.html#a6e1f7ee7f44b6824d734d4ff7046d907">  816</a></span>&#160;        <a class="code" href="classpfq_1_1socket.html#a6e1f7ee7f44b6824d734d4ff7046d907">unbind_group</a>(<span class="keywordtype">int</span> gid, <span class="keyword">const</span> <span class="keywordtype">char</span> *dev, <span class="keywordtype">int</span> <a class="code" href="classpfq_1_1queue.html">queue</a> = any_queue)</div>
+<div class="line"><a name="l00816"></a><span class="lineno"><a class="line" href="classpfq_1_1socket.html#a6e1f7ee7f44b6824d734d4ff7046d907">  816</a></span>&#160;        <a class="code" href="classpfq_1_1socket.html#a6e1f7ee7f44b6824d734d4ff7046d907">unbind_group</a>(<span class="keywordtype">int</span> gid, <span class="keyword">const</span> <span class="keywordtype">char</span> *dev, <span class="keywordtype">int</span> queue = any_queue)</div>
 <div class="line"><a name="l00817"></a><span class="lineno">  817</span>&#160;        {</div>
 <div class="line"><a name="l00818"></a><span class="lineno">  818</span>&#160;            <span class="keyword">auto</span> index = [<span class="keyword">this</span>, dev]() -&gt; <span class="keywordtype">int</span> {</div>
 <div class="line"><a name="l00819"></a><span class="lineno">  819</span>&#160;                <span class="keywordflow">if</span> (strcmp(dev, <span class="stringliteral">&quot;any&quot;</span>) == 0)</div>
@@ -806,7 +806,7 @@ $(document).ready(function(){initNavTree('pfq_8hpp_source.html','');});
 <div class="line"><a name="l00824"></a><span class="lineno">  824</span>&#160;                <span class="keywordflow">return</span> n;</div>
 <div class="line"><a name="l00825"></a><span class="lineno">  825</span>&#160;            }();</div>
 <div class="line"><a name="l00826"></a><span class="lineno">  826</span>&#160;</div>
-<div class="line"><a name="l00827"></a><span class="lineno">  827</span>&#160;            <span class="keyword">struct </span>pfq_binding b = { {gid}, index, <a class="code" href="classpfq_1_1queue.html">queue</a> };</div>
+<div class="line"><a name="l00827"></a><span class="lineno">  827</span>&#160;            <span class="keyword">struct </span>pfq_binding b = { {gid}, index, queue };</div>
 <div class="line"><a name="l00828"></a><span class="lineno">  828</span>&#160;</div>
 <div class="line"><a name="l00829"></a><span class="lineno">  829</span>&#160;            <span class="keywordflow">if</span> (::setsockopt(fd_, PF_Q, Q_SO_GROUP_UNBIND, &amp;b, <span class="keyword">sizeof</span>(b)) == -1)</div>
 <div class="line"><a name="l00830"></a><span class="lineno">  830</span>&#160;                <span class="keywordflow">throw</span> <a class="code" href="classpfq_1_1pfq__error.html">pfq_error</a>(errno, <span class="stringliteral">&quot;PFQ: unbind error&quot;</span>);</div>
@@ -814,7 +814,7 @@ $(document).ready(function(){initNavTree('pfq_8hpp_source.html','');});
 <div class="line"><a name="l00832"></a><span class="lineno">  832</span>&#160;</div>
 <div class="line"><a name="l00834"></a><span class="lineno">  834</span>&#160;</div>
 <div class="line"><a name="l00838"></a><span class="lineno">  838</span>&#160;        <span class="keywordtype">void</span></div>
-<div class="line"><a name="l00839"></a><span class="lineno"><a class="line" href="classpfq_1_1socket.html#a2c96741054ea764f5d8c31295ef5df29">  839</a></span>&#160;        <a class="code" href="classpfq_1_1socket.html#a2c96741054ea764f5d8c31295ef5df29">egress_bind</a>(<span class="keyword">const</span> <span class="keywordtype">char</span> *dev, <span class="keywordtype">int</span> <a class="code" href="classpfq_1_1queue.html">queue</a> = any_queue)</div>
+<div class="line"><a name="l00839"></a><span class="lineno"><a class="line" href="classpfq_1_1socket.html#a2c96741054ea764f5d8c31295ef5df29">  839</a></span>&#160;        <a class="code" href="classpfq_1_1socket.html#a2c96741054ea764f5d8c31295ef5df29">egress_bind</a>(<span class="keyword">const</span> <span class="keywordtype">char</span> *dev, <span class="keywordtype">int</span> queue = any_queue)</div>
 <div class="line"><a name="l00840"></a><span class="lineno">  840</span>&#160;        {</div>
 <div class="line"><a name="l00841"></a><span class="lineno">  841</span>&#160;            <span class="keyword">auto</span> index = [<span class="keyword">this</span>, dev]() -&gt; <span class="keywordtype">int</span> {</div>
 <div class="line"><a name="l00842"></a><span class="lineno">  842</span>&#160;                <span class="keywordflow">if</span> (strcmp(dev, <span class="stringliteral">&quot;any&quot;</span>) == 0)</div>
@@ -825,7 +825,7 @@ $(document).ready(function(){initNavTree('pfq_8hpp_source.html','');});
 <div class="line"><a name="l00847"></a><span class="lineno">  847</span>&#160;                <span class="keywordflow">return</span> n;</div>
 <div class="line"><a name="l00848"></a><span class="lineno">  848</span>&#160;            }();</div>
 <div class="line"><a name="l00849"></a><span class="lineno">  849</span>&#160;</div>
-<div class="line"><a name="l00850"></a><span class="lineno">  850</span>&#160;            <span class="keyword">struct </span>pfq_binding b = { {0}, index, <a class="code" href="classpfq_1_1queue.html">queue</a> };</div>
+<div class="line"><a name="l00850"></a><span class="lineno">  850</span>&#160;            <span class="keyword">struct </span>pfq_binding b = { {0}, index, queue };</div>
 <div class="line"><a name="l00851"></a><span class="lineno">  851</span>&#160;</div>
 <div class="line"><a name="l00852"></a><span class="lineno">  852</span>&#160;            <span class="keywordflow">if</span> (::setsockopt(fd_, PF_Q, Q_SO_EGRESS_BIND, &amp;b, <span class="keyword">sizeof</span>(b)) == -1)</div>
 <div class="line"><a name="l00853"></a><span class="lineno">  853</span>&#160;                <span class="keywordflow">throw</span> <a class="code" href="classpfq_1_1pfq__error.html">pfq_error</a>(errno, <span class="stringliteral">&quot;PFQ: egress bind error&quot;</span>);</div>
@@ -843,13 +843,13 @@ $(document).ready(function(){initNavTree('pfq_8hpp_source.html','');});
 <div class="line"><a name="l00866"></a><span class="lineno">  866</span>&#160;</div>
 <div class="line"><a name="l00868"></a><span class="lineno">  868</span>&#160;</div>
 <div class="line"><a name="l00873"></a><span class="lineno">  873</span>&#160;        <span class="keywordtype">void</span></div>
-<div class="line"><a name="l00874"></a><span class="lineno"><a class="line" href="classpfq_1_1socket.html#ae1a9ad5e1d5ad478a1a642f29f49e9c0">  874</a></span>&#160;        <a class="code" href="classpfq_1_1socket.html#ae1a9ad5e1d5ad478a1a642f29f49e9c0">bind_tx</a>(<span class="keyword">const</span> <span class="keywordtype">char</span> *dev, <span class="keywordtype">int</span> <a class="code" href="classpfq_1_1queue.html">queue</a> = any_queue, <span class="keywordtype">int</span> core = no_kthread)</div>
+<div class="line"><a name="l00874"></a><span class="lineno"><a class="line" href="classpfq_1_1socket.html#ae1a9ad5e1d5ad478a1a642f29f49e9c0">  874</a></span>&#160;        <a class="code" href="classpfq_1_1socket.html#ae1a9ad5e1d5ad478a1a642f29f49e9c0">bind_tx</a>(<span class="keyword">const</span> <span class="keywordtype">char</span> *dev, <span class="keywordtype">int</span> queue = any_queue, <span class="keywordtype">int</span> core = no_kthread)</div>
 <div class="line"><a name="l00875"></a><span class="lineno">  875</span>&#160;        {</div>
 <div class="line"><a name="l00876"></a><span class="lineno">  876</span>&#160;            <span class="keyword">auto</span> index = <a class="code" href="namespacepfq.html#a251ac5cc269aa123009754edf62ab8b4">ifindex</a>(this-&gt;<a class="code" href="classpfq_1_1socket.html#ad4f1a171d31215afd6aad769a5e4b004">fd</a>(), dev);</div>
 <div class="line"><a name="l00877"></a><span class="lineno">  877</span>&#160;            <span class="keywordflow">if</span> (index == -1)</div>
 <div class="line"><a name="l00878"></a><span class="lineno">  878</span>&#160;                <span class="keywordflow">throw</span> <a class="code" href="classpfq_1_1pfq__error.html">pfq_error</a>(<span class="stringliteral">&quot;PFQ: device not found&quot;</span>);</div>
 <div class="line"><a name="l00879"></a><span class="lineno">  879</span>&#160;</div>
-<div class="line"><a name="l00880"></a><span class="lineno">  880</span>&#160;            <span class="keyword">struct </span>pfq_binding b = { {core}, index, <a class="code" href="classpfq_1_1queue.html">queue</a> };</div>
+<div class="line"><a name="l00880"></a><span class="lineno">  880</span>&#160;            <span class="keyword">struct </span>pfq_binding b = { {core}, index, queue };</div>
 <div class="line"><a name="l00881"></a><span class="lineno">  881</span>&#160;</div>
 <div class="line"><a name="l00882"></a><span class="lineno">  882</span>&#160;            <span class="keywordflow">if</span> (::setsockopt(fd_, PF_Q, Q_SO_TX_BIND, &amp;b, <span class="keyword">sizeof</span>(b)) == -1)</div>
 <div class="line"><a name="l00883"></a><span class="lineno">  883</span>&#160;                <span class="keywordflow">throw</span> <a class="code" href="classpfq_1_1pfq__error.html">pfq_error</a>(errno, <span class="stringliteral">&quot;PFQ: Tx bind error&quot;</span>);</div>
@@ -1037,8 +1037,8 @@ $(document).ready(function(){initNavTree('pfq_8hpp_source.html','');});
 <div class="line"><a name="l01105"></a><span class="lineno"> 1105</span>&#160;        }</div>
 <div class="line"><a name="l01106"></a><span class="lineno"> 1106</span>&#160;</div>
 <div class="line"><a name="l01108"></a><span class="lineno"> 1108</span>&#160;</div>
-<div class="line"><a name="l01116"></a><span class="lineno"> 1116</span>&#160;        <a class="code" href="classpfq_1_1queue.html">queue</a></div>
-<div class="line"><a name="l01117"></a><span class="lineno"><a class="line" href="classpfq_1_1socket.html#a6a79c81d3c366e49b8d64eb828ae5540"> 1117</a></span>&#160;        <a class="code" href="classpfq_1_1socket.html#a6a79c81d3c366e49b8d64eb828ae5540">read</a>(<span class="keywordtype">long</span> <span class="keywordtype">int</span> microseconds = -1)</div>
+<div class="line"><a name="l01116"></a><span class="lineno"> 1116</span>&#160;        <a class="code" href="classpfq_1_1net__queue.html">net_queue</a></div>
+<div class="line"><a name="l01117"></a><span class="lineno"><a class="line" href="classpfq_1_1socket.html#a6004249d3abfe8a2329b44ba797d1909"> 1117</a></span>&#160;        <a class="code" href="classpfq_1_1socket.html#a6004249d3abfe8a2329b44ba797d1909">read</a>(<span class="keywordtype">long</span> <span class="keywordtype">int</span> microseconds = -1)</div>
 <div class="line"><a name="l01118"></a><span class="lineno"> 1118</span>&#160;        {</div>
 <div class="line"><a name="l01119"></a><span class="lineno"> 1119</span>&#160;            <span class="keywordflow">if</span> (!data()-&gt;shm_addr)</div>
 <div class="line"><a name="l01120"></a><span class="lineno"> 1120</span>&#160;                <span class="keywordflow">throw</span> <a class="code" href="classpfq_1_1pfq__error.html">pfq_error</a>(<span class="stringliteral">&quot;PFQ: read: socket not enabled&quot;</span>);</div>
@@ -1067,18 +1067,18 @@ $(document).ready(function(){initNavTree('pfq_8hpp_source.html','');});
 <div class="line"><a name="l01143"></a><span class="lineno"> 1143</span>&#160;                this-&gt;<a class="code" href="classpfq_1_1socket.html#ad8ce551ea07f39317bb383ab88d66344">poll</a>(microseconds);</div>
 <div class="line"><a name="l01144"></a><span class="lineno"> 1144</span>&#160;<span class="preprocessor">#else</span></div>
 <div class="line"><a name="l01145"></a><span class="lineno"> 1145</span>&#160;                (void)microseconds;</div>
-<div class="line"><a name="l01146"></a><span class="lineno"> 1146</span>&#160;                <span class="keywordflow">return</span> <a class="code" href="classpfq_1_1queue.html">queue</a>();</div>
+<div class="line"><a name="l01146"></a><span class="lineno"> 1146</span>&#160;                <span class="keywordflow">return</span> <a class="code" href="classpfq_1_1net__queue.html">net_queue</a>();</div>
 <div class="line"><a name="l01147"></a><span class="lineno"> 1147</span>&#160;<span class="preprocessor">#endif</span></div>
 <div class="line"><a name="l01148"></a><span class="lineno"> 1148</span>&#160;            }</div>
 <div class="line"><a name="l01149"></a><span class="lineno"> 1149</span>&#160;</div>
-<div class="line"><a name="l01150"></a><span class="lineno"> 1150</span>&#160;            <span class="comment">// swap the queue...</span></div>
+<div class="line"><a name="l01150"></a><span class="lineno"> 1150</span>&#160;            <span class="comment">// swap the net_queue...</span></div>
 <div class="line"><a name="l01151"></a><span class="lineno"> 1151</span>&#160;            <span class="comment">//</span></div>
 <div class="line"><a name="l01152"></a><span class="lineno"> 1152</span>&#160;</div>
 <div class="line"><a name="l01153"></a><span class="lineno"> 1153</span>&#160;            data = __atomic_exchange_n(&amp;q-&gt;rx.data, (<span class="keywordtype">unsigned</span> <span class="keywordtype">int</span>)((index+1) &lt;&lt; 24), __ATOMIC_RELAXED);</div>
 <div class="line"><a name="l01154"></a><span class="lineno"> 1154</span>&#160;</div>
 <div class="line"><a name="l01155"></a><span class="lineno"> 1155</span>&#160;            <span class="keyword">auto</span> queue_len = std::min(static_cast&lt;size_t&gt;(Q_SHARED_QUEUE_LEN(data)), data_-&gt;rx_slots);</div>
 <div class="line"><a name="l01156"></a><span class="lineno"> 1156</span>&#160;</div>
-<div class="line"><a name="l01157"></a><span class="lineno"> 1157</span>&#160;            <span class="keywordflow">return</span> <a class="code" href="classpfq_1_1queue.html">queue</a>(static_cast&lt;char *&gt;(data_-&gt;rx_queue_addr) + (index &amp; 1) * data_-&gt;rx_queue_size,</div>
+<div class="line"><a name="l01157"></a><span class="lineno"> 1157</span>&#160;            <span class="keywordflow">return</span> <a class="code" href="classpfq_1_1net__queue.html">net_queue</a>(static_cast&lt;char *&gt;(data_-&gt;rx_queue_addr) + (index &amp; 1) * data_-&gt;rx_queue_size,</div>
 <div class="line"><a name="l01158"></a><span class="lineno"> 1158</span>&#160;                         data_-&gt;rx_slot_size, queue_len, index);</div>
 <div class="line"><a name="l01159"></a><span class="lineno"> 1159</span>&#160;        }</div>
 <div class="line"><a name="l01160"></a><span class="lineno"> 1160</span>&#160;</div>
@@ -1091,19 +1091,19 @@ $(document).ready(function(){initNavTree('pfq_8hpp_source.html','');});
 <div class="line"><a name="l01168"></a><span class="lineno"> 1168</span>&#160;        }</div>
 <div class="line"><a name="l01169"></a><span class="lineno"> 1169</span>&#160;</div>
 <div class="line"><a name="l01171"></a><span class="lineno"> 1171</span>&#160;</div>
-<div class="line"><a name="l01178"></a><span class="lineno"> 1178</span>&#160;        <a class="code" href="classpfq_1_1queue.html">queue</a></div>
-<div class="line"><a name="l01179"></a><span class="lineno"><a class="line" href="classpfq_1_1socket.html#ace69fbf64216b7b30a8a305a9d25229b"> 1179</a></span>&#160;        <a class="code" href="classpfq_1_1socket.html#ace69fbf64216b7b30a8a305a9d25229b">recv</a>(<span class="keyword">const</span> <a class="code" href="namespacepfq.html#ad7b88920eaf729154354741132483ea8">mutable_buffer</a> &amp;buff, <span class="keywordtype">long</span> <span class="keywordtype">int</span> microseconds = -1)</div>
+<div class="line"><a name="l01178"></a><span class="lineno"> 1178</span>&#160;        <a class="code" href="classpfq_1_1net__queue.html">net_queue</a></div>
+<div class="line"><a name="l01179"></a><span class="lineno"><a class="line" href="classpfq_1_1socket.html#a57643b9011269682bf716254c2b72907"> 1179</a></span>&#160;        <a class="code" href="classpfq_1_1socket.html#a57643b9011269682bf716254c2b72907">recv</a>(<span class="keyword">const</span> <a class="code" href="namespacepfq.html#ad7b88920eaf729154354741132483ea8">mutable_buffer</a> &amp;buff, <span class="keywordtype">long</span> <span class="keywordtype">int</span> microseconds = -1)</div>
 <div class="line"><a name="l01180"></a><span class="lineno"> 1180</span>&#160;        {</div>
 <div class="line"><a name="l01181"></a><span class="lineno"> 1181</span>&#160;            <span class="keywordflow">if</span> (fd_ == -1)</div>
 <div class="line"><a name="l01182"></a><span class="lineno"> 1182</span>&#160;                <span class="keywordflow">throw</span> <a class="code" href="classpfq_1_1pfq__error.html">pfq_error</a>(<span class="stringliteral">&quot;PFQ: socket not open&quot;</span>);</div>
 <div class="line"><a name="l01183"></a><span class="lineno"> 1183</span>&#160;</div>
-<div class="line"><a name="l01184"></a><span class="lineno"> 1184</span>&#160;            <span class="keyword">auto</span> this_queue = this-&gt;<a class="code" href="classpfq_1_1socket.html#a6a79c81d3c366e49b8d64eb828ae5540">read</a>(microseconds);</div>
+<div class="line"><a name="l01184"></a><span class="lineno"> 1184</span>&#160;            <span class="keyword">auto</span> this_queue = this-&gt;<a class="code" href="classpfq_1_1socket.html#a6004249d3abfe8a2329b44ba797d1909">read</a>(microseconds);</div>
 <div class="line"><a name="l01185"></a><span class="lineno"> 1185</span>&#160;</div>
 <div class="line"><a name="l01186"></a><span class="lineno"> 1186</span>&#160;            <span class="keywordflow">if</span> (buff.second &lt; data_-&gt;rx_slots * data_-&gt;rx_slot_size)</div>
 <div class="line"><a name="l01187"></a><span class="lineno"> 1187</span>&#160;                <span class="keywordflow">throw</span> <a class="code" href="classpfq_1_1pfq__error.html">pfq_error</a>(<span class="stringliteral">&quot;PFQ: buffer too small&quot;</span>);</div>
 <div class="line"><a name="l01188"></a><span class="lineno"> 1188</span>&#160;</div>
 <div class="line"><a name="l01189"></a><span class="lineno"> 1189</span>&#160;            memcpy(buff.first, this_queue.data(), this_queue.slot_size() * this_queue.size());</div>
-<div class="line"><a name="l01190"></a><span class="lineno"> 1190</span>&#160;            <span class="keywordflow">return</span> <a class="code" href="classpfq_1_1queue.html">queue</a>(buff.first, this_queue.slot_size(), this_queue.size(), this_queue.index());</div>
+<div class="line"><a name="l01190"></a><span class="lineno"> 1190</span>&#160;            <span class="keywordflow">return</span> <a class="code" href="classpfq_1_1net__queue.html">net_queue</a>(buff.first, this_queue.slot_size(), this_queue.size(), this_queue.index());</div>
 <div class="line"><a name="l01191"></a><span class="lineno"> 1191</span>&#160;        }</div>
 <div class="line"><a name="l01192"></a><span class="lineno"> 1192</span>&#160;</div>
 <div class="line"><a name="l01193"></a><span class="lineno"> 1193</span>&#160;</div>
@@ -1111,7 +1111,7 @@ $(document).ready(function(){initNavTree('pfq_8hpp_source.html','');});
 <div class="line"><a name="l01202"></a><span class="lineno"> 1202</span>&#160;        <span class="keyword">template</span> &lt;<span class="keyword">typename</span> Fun&gt;</div>
 <div class="line"><a name="l01203"></a><span class="lineno"><a class="line" href="classpfq_1_1socket.html#ae6cd08be2e7c35a548a64fded4359612"> 1203</a></span>&#160;        <span class="keywordtype">size_t</span> <a class="code" href="classpfq_1_1socket.html#ae6cd08be2e7c35a548a64fded4359612">dispatch</a>(Fun callback, <span class="keywordtype">long</span> <span class="keywordtype">int</span> microseconds = -1, <span class="keywordtype">char</span> *user = <span class="keyword">nullptr</span>)</div>
 <div class="line"><a name="l01204"></a><span class="lineno"> 1204</span>&#160;        {</div>
-<div class="line"><a name="l01205"></a><span class="lineno"> 1205</span>&#160;            <span class="keyword">auto</span> many = this-&gt;<a class="code" href="classpfq_1_1socket.html#a6a79c81d3c366e49b8d64eb828ae5540">read</a>(microseconds);</div>
+<div class="line"><a name="l01205"></a><span class="lineno"> 1205</span>&#160;            <span class="keyword">auto</span> many = this-&gt;<a class="code" href="classpfq_1_1socket.html#a6004249d3abfe8a2329b44ba797d1909">read</a>(microseconds);</div>
 <div class="line"><a name="l01206"></a><span class="lineno"> 1206</span>&#160;</div>
 <div class="line"><a name="l01207"></a><span class="lineno"> 1207</span>&#160;            <span class="keyword">auto</span> it = std::begin(many),</div>
 <div class="line"><a name="l01208"></a><span class="lineno"> 1208</span>&#160;                 it_e = std::end(many);</div>
@@ -1227,7 +1227,7 @@ $(document).ready(function(){initNavTree('pfq_8hpp_source.html','');});
 <div class="line"><a name="l01335"></a><span class="lineno"> 1335</span>&#160;        <span class="keywordtype">bool</span></div>
 <div class="line"><a name="l01336"></a><span class="lineno"><a class="line" href="classpfq_1_1socket.html#a3c6476cbd81ea906fdbd256c50eba059"> 1336</a></span>&#160;        <a class="code" href="classpfq_1_1socket.html#a3c6476cbd81ea906fdbd256c50eba059">send</a>(<a class="code" href="namespacepfq.html#ac835a1bd09b4cbaba61c100b50d0a99f">const_buffer</a> pkt, <span class="keywordtype">int</span> copies = 1)</div>
 <div class="line"><a name="l01337"></a><span class="lineno"> 1337</span>&#160;        {</div>
-<div class="line"><a name="l01338"></a><span class="lineno"> 1338</span>&#160;            <span class="keyword">auto</span> rc = <a class="code" href="classpfq_1_1socket.html#a7cf603f39b62375ec1a459d7713300cc">inject</a>(pkt, 0, copies);</div>
+<div class="line"><a name="l01338"></a><span class="lineno"> 1338</span>&#160;            <span class="keyword">auto</span> rc = <a class="code" href="classpfq_1_1socket.html#aee365a7044043d08507adba75eb290c6">send_deferred</a>(pkt, 0, copies);</div>
 <div class="line"><a name="l01339"></a><span class="lineno"> 1339</span>&#160;            <span class="keywordflow">if</span> (data_-&gt;tx_num_bind != data_-&gt;tx_num_async)</div>
 <div class="line"><a name="l01340"></a><span class="lineno"> 1340</span>&#160;                <a class="code" href="classpfq_1_1socket.html#a88e4764d8e7fc86b6e3ea1fbff407a96">tx_queue_flush</a>();</div>
 <div class="line"><a name="l01341"></a><span class="lineno"> 1341</span>&#160;            <span class="keywordflow">return</span> rc;</div>
@@ -1238,7 +1238,7 @@ $(document).ready(function(){initNavTree('pfq_8hpp_source.html','');});
 <div class="line"><a name="l01351"></a><span class="lineno"> 1351</span>&#160;        <span class="keywordtype">bool</span></div>
 <div class="line"><a name="l01352"></a><span class="lineno"><a class="line" href="classpfq_1_1socket.html#a7a1d64344f0c476117d5b7cc2543edad"> 1352</a></span>&#160;        <a class="code" href="classpfq_1_1socket.html#a7a1d64344f0c476117d5b7cc2543edad">send_async</a>(<a class="code" href="namespacepfq.html#ac835a1bd09b4cbaba61c100b50d0a99f">const_buffer</a> pkt, <span class="keywordtype">size_t</span> flush_hint, <span class="keywordtype">int</span> copies = 1)</div>
 <div class="line"><a name="l01353"></a><span class="lineno"> 1353</span>&#160;        {</div>
-<div class="line"><a name="l01354"></a><span class="lineno"> 1354</span>&#160;            <span class="keyword">auto</span> rc = <a class="code" href="classpfq_1_1socket.html#a7cf603f39b62375ec1a459d7713300cc">inject</a>(pkt, 0, copies);</div>
+<div class="line"><a name="l01354"></a><span class="lineno"> 1354</span>&#160;            <span class="keyword">auto</span> rc = <a class="code" href="classpfq_1_1socket.html#aee365a7044043d08507adba75eb290c6">send_deferred</a>(pkt, 0, copies);</div>
 <div class="line"><a name="l01355"></a><span class="lineno"> 1355</span>&#160;</div>
 <div class="line"><a name="l01356"></a><span class="lineno"> 1356</span>&#160;            <span class="keywordflow">if</span> (++data_-&gt;tx_attempt == flush_hint) {</div>
 <div class="line"><a name="l01357"></a><span class="lineno"> 1357</span>&#160;</div>
@@ -1259,17 +1259,17 @@ $(document).ready(function(){initNavTree('pfq_8hpp_source.html','');});
 <div class="line"><a name="l01378"></a><span class="lineno"> 1378</span>&#160;                <span class="keywordflow">throw</span> std::runtime_error(<span class="stringliteral">&quot;PFQ: send_at not async!&quot;</span>);</div>
 <div class="line"><a name="l01379"></a><span class="lineno"> 1379</span>&#160;</div>
 <div class="line"><a name="l01380"></a><span class="lineno"> 1380</span>&#160;            <span class="keyword">auto</span> ns = std::chrono::duration_cast&lt;std::chrono::nanoseconds&gt;(tp.time_since_epoch()).count();</div>
-<div class="line"><a name="l01381"></a><span class="lineno"> 1381</span>&#160;            <span class="keywordflow">return</span> <a class="code" href="classpfq_1_1socket.html#a7cf603f39b62375ec1a459d7713300cc">inject</a>(pkt, ns, copies);</div>
+<div class="line"><a name="l01381"></a><span class="lineno"> 1381</span>&#160;            <span class="keywordflow">return</span> <a class="code" href="classpfq_1_1socket.html#aee365a7044043d08507adba75eb290c6">send_deferred</a>(pkt, ns, copies);</div>
 <div class="line"><a name="l01382"></a><span class="lineno"> 1382</span>&#160;        }</div>
 <div class="line"><a name="l01383"></a><span class="lineno"> 1383</span>&#160;</div>
 <div class="line"><a name="l01385"></a><span class="lineno"> 1385</span>&#160;</div>
 <div class="line"><a name="l01391"></a><span class="lineno"> 1391</span>&#160;        <span class="keywordtype">bool</span></div>
-<div class="line"><a name="l01392"></a><span class="lineno"><a class="line" href="classpfq_1_1socket.html#a7cf603f39b62375ec1a459d7713300cc"> 1392</a></span>&#160;        <a class="code" href="classpfq_1_1socket.html#a7cf603f39b62375ec1a459d7713300cc">inject</a>(<a class="code" href="namespacepfq.html#ac835a1bd09b4cbaba61c100b50d0a99f">const_buffer</a> buf, uint64_t nsec, <span class="keywordtype">int</span> copies, <span class="keywordtype">int</span> <a class="code" href="classpfq_1_1queue.html">queue</a> = any_queue)</div>
+<div class="line"><a name="l01392"></a><span class="lineno"><a class="line" href="classpfq_1_1socket.html#aee365a7044043d08507adba75eb290c6"> 1392</a></span>&#160;        <a class="code" href="classpfq_1_1socket.html#aee365a7044043d08507adba75eb290c6">send_deferred</a>(<a class="code" href="namespacepfq.html#ac835a1bd09b4cbaba61c100b50d0a99f">const_buffer</a> buf, uint64_t nsec, <span class="keywordtype">int</span> copies, <span class="keywordtype">int</span> queue = any_queue)</div>
 <div class="line"><a name="l01393"></a><span class="lineno"> 1393</span>&#160;        {</div>
 <div class="line"><a name="l01394"></a><span class="lineno"> 1394</span>&#160;            <span class="keywordflow">if</span> (!data_-&gt;shm_addr)</div>
-<div class="line"><a name="l01395"></a><span class="lineno"> 1395</span>&#160;                <span class="keywordflow">throw</span> <a class="code" href="classpfq_1_1pfq__error.html">pfq_error</a>(<span class="stringliteral">&quot;PFQ: inject: socket not enabled&quot;</span>);</div>
+<div class="line"><a name="l01395"></a><span class="lineno"> 1395</span>&#160;                <span class="keywordflow">throw</span> <a class="code" href="classpfq_1_1pfq__error.html">pfq_error</a>(<span class="stringliteral">&quot;PFQ: send_deferred: socket not enabled&quot;</span>);</div>
 <div class="line"><a name="l01396"></a><span class="lineno"> 1396</span>&#160;</div>
-<div class="line"><a name="l01397"></a><span class="lineno"> 1397</span>&#160;            <span class="keyword">const</span> <span class="keywordtype">int</span> tss = <a class="code" href="namespacepfq.html#a8abbfe940a92b69bac1a5d93fd354f9a">fold</a>(<a class="code" href="classpfq_1_1queue.html">queue</a> == any_queue ? <a class="code" href="namespacepfq.html#acd3646943e133a2651876f9ca0bd154c">symmetric_hash</a>(buf.first) : <a class="code" href="classpfq_1_1queue.html">queue</a>,</div>
+<div class="line"><a name="l01397"></a><span class="lineno"> 1397</span>&#160;            <span class="keyword">const</span> <span class="keywordtype">int</span> tss = <a class="code" href="namespacepfq.html#a8abbfe940a92b69bac1a5d93fd354f9a">fold</a>(queue == any_queue ? <a class="code" href="namespacepfq.html#acd3646943e133a2651876f9ca0bd154c">symmetric_hash</a>(buf.first) : queue,</div>
 <div class="line"><a name="l01398"></a><span class="lineno"> 1398</span>&#160;                                 data_-&gt;tx_num_bind);</div>
 <div class="line"><a name="l01399"></a><span class="lineno"> 1399</span>&#160;</div>
 <div class="line"><a name="l01400"></a><span class="lineno"> 1400</span>&#160;            <span class="keyword">auto</span> tx = &amp;<span class="keyword">static_cast&lt;</span>struct pfq_shared_queue *<span class="keyword">&gt;</span>(data_-&gt;shm_addr)-&gt;tx[tss];</div>
@@ -1293,118 +1293,118 @@ $(document).ready(function(){initNavTree('pfq_8hpp_source.html','');});
 <div class="line"><a name="l01418"></a><span class="lineno"> 1418</span>&#160;</div>
 <div class="line"><a name="l01419"></a><span class="lineno"> 1419</span>&#160;            <span class="comment">// cut the packet to maxlen:</span></div>
 <div class="line"><a name="l01420"></a><span class="lineno"> 1420</span>&#160;            <span class="comment">//</span></div>
-<div class="line"><a name="l01421"></a><span class="lineno"> 1421</span>&#160;</div>
-<div class="line"><a name="l01422"></a><span class="lineno"> 1422</span>&#160;            <span class="keyword">auto</span> len = std::min(buf.second, data_-&gt;tx_slot_size - <span class="keyword">sizeof</span>(<span class="keyword">struct</span> pfq_pkthdr_tx));</div>
-<div class="line"><a name="l01423"></a><span class="lineno"> 1423</span>&#160;</div>
-<div class="line"><a name="l01424"></a><span class="lineno"> 1424</span>&#160;            <span class="comment">// compute the current slot_size:</span></div>
-<div class="line"><a name="l01425"></a><span class="lineno"> 1425</span>&#160;            <span class="comment">//</span></div>
-<div class="line"><a name="l01426"></a><span class="lineno"> 1426</span>&#160;            <span class="keyword">auto</span> slot_size = <span class="keyword">sizeof</span>(<span class="keyword">struct </span>pfq_pkthdr_tx) + align&lt;8&gt;(len);</div>
-<div class="line"><a name="l01427"></a><span class="lineno"> 1427</span>&#160;</div>
-<div class="line"><a name="l01428"></a><span class="lineno"> 1428</span>&#160;            <span class="comment">// ensure there&#39;s space enough for the current slot_size + the next header:</span></div>
-<div class="line"><a name="l01429"></a><span class="lineno"> 1429</span>&#160;            <span class="comment">//</span></div>
-<div class="line"><a name="l01430"></a><span class="lineno"> 1430</span>&#160;            <span class="keywordflow">if</span> ((static_cast&lt;char *&gt;(tx-&gt;ptr) - static_cast&lt;char *&gt;(base_addr) + slot_size + <span class="keyword">sizeof</span>(<span class="keyword">struct</span> pfq_pkthdr_tx))</div>
-<div class="line"><a name="l01431"></a><span class="lineno"> 1431</span>&#160;                    &lt; data_-&gt;tx_queue_size)</div>
-<div class="line"><a name="l01432"></a><span class="lineno"> 1432</span>&#160;            {</div>
-<div class="line"><a name="l01433"></a><span class="lineno"> 1433</span>&#160;                <span class="keyword">auto</span> hdr = (<span class="keyword">struct </span>pfq_pkthdr_tx *)tx-&gt;ptr;</div>
-<div class="line"><a name="l01434"></a><span class="lineno"> 1434</span>&#160;                hdr-&gt;nsec = nsec;</div>
-<div class="line"><a name="l01435"></a><span class="lineno"> 1435</span>&#160;                hdr-&gt;len = len;</div>
-<div class="line"><a name="l01436"></a><span class="lineno"> 1436</span>&#160;                hdr-&gt;copies = copies;</div>
-<div class="line"><a name="l01437"></a><span class="lineno"> 1437</span>&#160;</div>
-<div class="line"><a name="l01438"></a><span class="lineno"> 1438</span>&#160;                memcpy(hdr+1, buf.first, len);</div>
-<div class="line"><a name="l01439"></a><span class="lineno"> 1439</span>&#160;</div>
-<div class="line"><a name="l01440"></a><span class="lineno"> 1440</span>&#160;                <span class="keyword">reinterpret_cast&lt;</span><span class="keywordtype">char</span> *&amp;<span class="keyword">&gt;</span>(tx-&gt;ptr) += slot_size;</div>
-<div class="line"><a name="l01441"></a><span class="lineno"> 1441</span>&#160;                <span class="keyword">static_cast&lt;</span>struct pfq_pkthdr_tx *<span class="keyword">&gt;</span>(tx-&gt;ptr)-&gt;len = 0;</div>
-<div class="line"><a name="l01442"></a><span class="lineno"> 1442</span>&#160;</div>
-<div class="line"><a name="l01443"></a><span class="lineno"> 1443</span>&#160;                <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
-<div class="line"><a name="l01444"></a><span class="lineno"> 1444</span>&#160;            }</div>
-<div class="line"><a name="l01445"></a><span class="lineno"> 1445</span>&#160;</div>
-<div class="line"><a name="l01446"></a><span class="lineno"> 1446</span>&#160;            <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
-<div class="line"><a name="l01447"></a><span class="lineno"> 1447</span>&#160;        }</div>
-<div class="line"><a name="l01448"></a><span class="lineno"> 1448</span>&#160;</div>
-<div class="line"><a name="l01450"></a><span class="lineno"> 1450</span>&#160;</div>
-<div class="line"><a name="l01454"></a><span class="lineno"> 1454</span>&#160;        <span class="keywordtype">void</span></div>
-<div class="line"><a name="l01455"></a><span class="lineno"><a class="line" href="classpfq_1_1socket.html#a88e4764d8e7fc86b6e3ea1fbff407a96"> 1455</a></span>&#160;        <a class="code" href="classpfq_1_1socket.html#a88e4764d8e7fc86b6e3ea1fbff407a96">tx_queue_flush</a>(<span class="keywordtype">int</span> <a class="code" href="classpfq_1_1queue.html">queue</a> = any_queue)</div>
-<div class="line"><a name="l01456"></a><span class="lineno"> 1456</span>&#160;        {</div>
-<div class="line"><a name="l01457"></a><span class="lineno"> 1457</span>&#160;            <span class="keywordflow">if</span> (::setsockopt(fd_, PF_Q, Q_SO_TX_FLUSH, &amp;<a class="code" href="classpfq_1_1queue.html">queue</a>, <span class="keyword">sizeof</span>(<a class="code" href="classpfq_1_1queue.html">queue</a>)) == -1)</div>
-<div class="line"><a name="l01458"></a><span class="lineno"> 1458</span>&#160;                <span class="keywordflow">throw</span> <a class="code" href="classpfq_1_1pfq__error.html">pfq_error</a>(errno, <span class="stringliteral">&quot;PFQ: Tx queue flush&quot;</span>);</div>
-<div class="line"><a name="l01459"></a><span class="lineno"> 1459</span>&#160;        }</div>
-<div class="line"><a name="l01460"></a><span class="lineno"> 1460</span>&#160;</div>
-<div class="line"><a name="l01462"></a><span class="lineno"> 1462</span>&#160;</div>
-<div class="line"><a name="l01467"></a><span class="lineno"> 1467</span>&#160;        <span class="keywordtype">void</span></div>
-<div class="line"><a name="l01468"></a><span class="lineno"><a class="line" href="classpfq_1_1socket.html#a60613b9eec686a179332e0a86d1ea954"> 1468</a></span>&#160;        <a class="code" href="classpfq_1_1socket.html#a60613b9eec686a179332e0a86d1ea954">tx_async_start</a>()</div>
-<div class="line"><a name="l01469"></a><span class="lineno"> 1469</span>&#160;        {</div>
-<div class="line"><a name="l01470"></a><span class="lineno"> 1470</span>&#160;            <span class="keywordflow">if</span> (::setsockopt(fd_, PF_Q, Q_SO_TX_ASYNC_START, <span class="keyword">nullptr</span>, 0) == -1)</div>
-<div class="line"><a name="l01471"></a><span class="lineno"> 1471</span>&#160;                <span class="keywordflow">throw</span> <a class="code" href="classpfq_1_1pfq__error.html">pfq_error</a>(errno, <span class="stringliteral">&quot;PFQ: Tx async start&quot;</span>);</div>
-<div class="line"><a name="l01472"></a><span class="lineno"> 1472</span>&#160;        }</div>
-<div class="line"><a name="l01473"></a><span class="lineno"> 1473</span>&#160;</div>
-<div class="line"><a name="l01475"></a><span class="lineno"> 1475</span>&#160;</div>
-<div class="line"><a name="l01480"></a><span class="lineno"> 1480</span>&#160;        <span class="keywordtype">void</span></div>
-<div class="line"><a name="l01481"></a><span class="lineno"><a class="line" href="classpfq_1_1socket.html#ad96bd5f41036291082fc0eaac0fec4d5"> 1481</a></span>&#160;        <a class="code" href="classpfq_1_1socket.html#ad96bd5f41036291082fc0eaac0fec4d5">tx_async_stop</a>()</div>
-<div class="line"><a name="l01482"></a><span class="lineno"> 1482</span>&#160;        {</div>
-<div class="line"><a name="l01483"></a><span class="lineno"> 1483</span>&#160;            <span class="keywordflow">if</span> (::setsockopt(fd_, PF_Q, Q_SO_TX_ASYNC_STOP, <span class="keyword">nullptr</span>, 0) == -1)</div>
-<div class="line"><a name="l01484"></a><span class="lineno"> 1484</span>&#160;                <span class="keywordflow">throw</span> <a class="code" href="classpfq_1_1pfq__error.html">pfq_error</a>(errno, <span class="stringliteral">&quot;PFQ: Tx async stop&quot;</span>);</div>
-<div class="line"><a name="l01485"></a><span class="lineno"> 1485</span>&#160;        }</div>
-<div class="line"><a name="l01486"></a><span class="lineno"> 1486</span>&#160;    };</div>
+<div class="line"><a name="l01421"></a><span class="lineno"> 1421</span>&#160;            <span class="keyword">auto</span> len = std::min(buf.second, data_-&gt;tx_slot_size - <span class="keyword">sizeof</span>(<span class="keyword">struct</span> pfq_pkthdr));</div>
+<div class="line"><a name="l01422"></a><span class="lineno"> 1422</span>&#160;</div>
+<div class="line"><a name="l01423"></a><span class="lineno"> 1423</span>&#160;            <span class="comment">// compute the current slot_size:</span></div>
+<div class="line"><a name="l01424"></a><span class="lineno"> 1424</span>&#160;            <span class="comment">//</span></div>
+<div class="line"><a name="l01425"></a><span class="lineno"> 1425</span>&#160;            <span class="keyword">auto</span> slot_size = <span class="keyword">sizeof</span>(<span class="keyword">struct </span>pfq_pkthdr) + align&lt;8&gt;(len);</div>
+<div class="line"><a name="l01426"></a><span class="lineno"> 1426</span>&#160;</div>
+<div class="line"><a name="l01427"></a><span class="lineno"> 1427</span>&#160;            <span class="comment">// ensure there&#39;s enough space for the current slot_size + the next header:</span></div>
+<div class="line"><a name="l01428"></a><span class="lineno"> 1428</span>&#160;            <span class="comment">//</span></div>
+<div class="line"><a name="l01429"></a><span class="lineno"> 1429</span>&#160;            <span class="keywordflow">if</span> ((static_cast&lt;char *&gt;(tx-&gt;ptr) - static_cast&lt;char *&gt;(base_addr) + slot_size + <span class="keyword">sizeof</span>(<span class="keyword">struct</span> pfq_pkthdr))</div>
+<div class="line"><a name="l01430"></a><span class="lineno"> 1430</span>&#160;                    &lt; data_-&gt;tx_queue_size)</div>
+<div class="line"><a name="l01431"></a><span class="lineno"> 1431</span>&#160;            {</div>
+<div class="line"><a name="l01432"></a><span class="lineno"> 1432</span>&#160;                <span class="keyword">auto</span> hdr = (<span class="keyword">struct </span>pfq_pkthdr *)tx-&gt;ptr;</div>
+<div class="line"><a name="l01433"></a><span class="lineno"> 1433</span>&#160;                hdr-&gt;tstamp.tv64 = nsec;</div>
+<div class="line"><a name="l01434"></a><span class="lineno"> 1434</span>&#160;                hdr-&gt;caplen = len;</div>
+<div class="line"><a name="l01435"></a><span class="lineno"> 1435</span>&#160;                hdr-&gt;data.copies = copies;</div>
+<div class="line"><a name="l01436"></a><span class="lineno"> 1436</span>&#160;</div>
+<div class="line"><a name="l01437"></a><span class="lineno"> 1437</span>&#160;                memcpy(hdr+1, buf.first, len);</div>
+<div class="line"><a name="l01438"></a><span class="lineno"> 1438</span>&#160;</div>
+<div class="line"><a name="l01439"></a><span class="lineno"> 1439</span>&#160;                <span class="keyword">reinterpret_cast&lt;</span><span class="keywordtype">char</span> *&amp;<span class="keyword">&gt;</span>(tx-&gt;ptr) += slot_size;</div>
+<div class="line"><a name="l01440"></a><span class="lineno"> 1440</span>&#160;                <span class="keyword">static_cast&lt;</span>struct pfq_pkthdr *<span class="keyword">&gt;</span>(tx-&gt;ptr)-&gt;len = 0;</div>
+<div class="line"><a name="l01441"></a><span class="lineno"> 1441</span>&#160;</div>
+<div class="line"><a name="l01442"></a><span class="lineno"> 1442</span>&#160;                <span class="keywordflow">return</span> <span class="keyword">true</span>;</div>
+<div class="line"><a name="l01443"></a><span class="lineno"> 1443</span>&#160;            }</div>
+<div class="line"><a name="l01444"></a><span class="lineno"> 1444</span>&#160;</div>
+<div class="line"><a name="l01445"></a><span class="lineno"> 1445</span>&#160;            <span class="keywordflow">return</span> <span class="keyword">false</span>;</div>
+<div class="line"><a name="l01446"></a><span class="lineno"> 1446</span>&#160;        }</div>
+<div class="line"><a name="l01447"></a><span class="lineno"> 1447</span>&#160;</div>
+<div class="line"><a name="l01449"></a><span class="lineno"> 1449</span>&#160;</div>
+<div class="line"><a name="l01453"></a><span class="lineno"> 1453</span>&#160;        <span class="keywordtype">void</span></div>
+<div class="line"><a name="l01454"></a><span class="lineno"><a class="line" href="classpfq_1_1socket.html#a88e4764d8e7fc86b6e3ea1fbff407a96"> 1454</a></span>&#160;        <a class="code" href="classpfq_1_1socket.html#a88e4764d8e7fc86b6e3ea1fbff407a96">tx_queue_flush</a>(<span class="keywordtype">int</span> queue = any_queue)</div>
+<div class="line"><a name="l01455"></a><span class="lineno"> 1455</span>&#160;        {</div>
+<div class="line"><a name="l01456"></a><span class="lineno"> 1456</span>&#160;            <span class="keywordflow">if</span> (::setsockopt(fd_, PF_Q, Q_SO_TX_FLUSH, &amp;queue, <span class="keyword">sizeof</span>(queue)) == -1)</div>
+<div class="line"><a name="l01457"></a><span class="lineno"> 1457</span>&#160;                <span class="keywordflow">throw</span> <a class="code" href="classpfq_1_1pfq__error.html">pfq_error</a>(errno, <span class="stringliteral">&quot;PFQ: Tx queue flush&quot;</span>);</div>
+<div class="line"><a name="l01458"></a><span class="lineno"> 1458</span>&#160;        }</div>
+<div class="line"><a name="l01459"></a><span class="lineno"> 1459</span>&#160;</div>
+<div class="line"><a name="l01461"></a><span class="lineno"> 1461</span>&#160;</div>
+<div class="line"><a name="l01466"></a><span class="lineno"> 1466</span>&#160;        <span class="keywordtype">void</span></div>
+<div class="line"><a name="l01467"></a><span class="lineno"><a class="line" href="classpfq_1_1socket.html#a60613b9eec686a179332e0a86d1ea954"> 1467</a></span>&#160;        <a class="code" href="classpfq_1_1socket.html#a60613b9eec686a179332e0a86d1ea954">tx_async_start</a>()</div>
+<div class="line"><a name="l01468"></a><span class="lineno"> 1468</span>&#160;        {</div>
+<div class="line"><a name="l01469"></a><span class="lineno"> 1469</span>&#160;            <span class="keywordflow">if</span> (::setsockopt(fd_, PF_Q, Q_SO_TX_ASYNC_START, <span class="keyword">nullptr</span>, 0) == -1)</div>
+<div class="line"><a name="l01470"></a><span class="lineno"> 1470</span>&#160;                <span class="keywordflow">throw</span> <a class="code" href="classpfq_1_1pfq__error.html">pfq_error</a>(errno, <span class="stringliteral">&quot;PFQ: Tx async start&quot;</span>);</div>
+<div class="line"><a name="l01471"></a><span class="lineno"> 1471</span>&#160;        }</div>
+<div class="line"><a name="l01472"></a><span class="lineno"> 1472</span>&#160;</div>
+<div class="line"><a name="l01474"></a><span class="lineno"> 1474</span>&#160;</div>
+<div class="line"><a name="l01479"></a><span class="lineno"> 1479</span>&#160;        <span class="keywordtype">void</span></div>
+<div class="line"><a name="l01480"></a><span class="lineno"><a class="line" href="classpfq_1_1socket.html#ad96bd5f41036291082fc0eaac0fec4d5"> 1480</a></span>&#160;        <a class="code" href="classpfq_1_1socket.html#ad96bd5f41036291082fc0eaac0fec4d5">tx_async_stop</a>()</div>
+<div class="line"><a name="l01481"></a><span class="lineno"> 1481</span>&#160;        {</div>
+<div class="line"><a name="l01482"></a><span class="lineno"> 1482</span>&#160;            <span class="keywordflow">if</span> (::setsockopt(fd_, PF_Q, Q_SO_TX_ASYNC_STOP, <span class="keyword">nullptr</span>, 0) == -1)</div>
+<div class="line"><a name="l01483"></a><span class="lineno"> 1483</span>&#160;                <span class="keywordflow">throw</span> <a class="code" href="classpfq_1_1pfq__error.html">pfq_error</a>(errno, <span class="stringliteral">&quot;PFQ: Tx async stop&quot;</span>);</div>
+<div class="line"><a name="l01484"></a><span class="lineno"> 1484</span>&#160;        }</div>
+<div class="line"><a name="l01485"></a><span class="lineno"> 1485</span>&#160;    };</div>
+<div class="line"><a name="l01486"></a><span class="lineno"> 1486</span>&#160;</div>
 <div class="line"><a name="l01487"></a><span class="lineno"> 1487</span>&#160;</div>
-<div class="line"><a name="l01488"></a><span class="lineno"> 1488</span>&#160;</div>
-<div class="line"><a name="l01489"></a><span class="lineno"> 1489</span>&#160;    <span class="keyword">template</span> &lt;<span class="keyword">typename</span> CharT, <span class="keyword">typename</span> Traits&gt;</div>
-<div class="line"><a name="l01490"></a><span class="lineno"> 1490</span>&#160;    <span class="keyword">typename</span> std::basic_ostream&lt;CharT, Traits&gt; &amp;</div>
-<div class="line"><a name="l01491"></a><span class="lineno"><a class="line" href="namespacepfq.html#a1c2bda68e2e2c718ebd80519034002a3"> 1491</a></span>&#160;    operator&lt;&lt;(std::basic_ostream&lt;CharT,Traits&gt; &amp;out, <span class="keyword">const</span> pfq_stats&amp; rhs)</div>
-<div class="line"><a name="l01492"></a><span class="lineno"> 1492</span>&#160;    {</div>
-<div class="line"><a name="l01493"></a><span class="lineno"> 1493</span>&#160;        <span class="keywordflow">return</span> out &lt;&lt; rhs.recv &lt;&lt; <span class="charliteral">&#39; &#39;</span> &lt;&lt; rhs.lost &lt;&lt; <span class="charliteral">&#39; &#39;</span> &lt;&lt; rhs.drop &lt;&lt; <span class="charliteral">&#39; &#39;</span> &lt;&lt; rhs.sent &lt;&lt; <span class="charliteral">&#39; &#39;</span> &lt;&lt; rhs.disc &lt;&lt; <span class="charliteral">&#39; &#39;</span> &lt;&lt; rhs.frwd &lt;&lt; <span class="charliteral">&#39; &#39;</span> &lt;&lt; rhs.kern;</div>
-<div class="line"><a name="l01494"></a><span class="lineno"> 1494</span>&#160;    }</div>
-<div class="line"><a name="l01495"></a><span class="lineno"> 1495</span>&#160;</div>
-<div class="line"><a name="l01496"></a><span class="lineno"> 1496</span>&#160;    <span class="keyword">inline</span> pfq_stats&amp;</div>
-<div class="line"><a name="l01497"></a><span class="lineno"><a class="line" href="namespacepfq.html#ae140b453ea425ae677dfbc69a51370f8"> 1497</a></span>&#160;    <a class="code" href="namespacepfq.html#ae140b453ea425ae677dfbc69a51370f8">operator+=</a>(pfq_stats &amp;lhs, <span class="keyword">const</span> pfq_stats &amp;rhs)</div>
-<div class="line"><a name="l01498"></a><span class="lineno"> 1498</span>&#160;    {</div>
-<div class="line"><a name="l01499"></a><span class="lineno"> 1499</span>&#160;        lhs.recv += rhs.recv;</div>
-<div class="line"><a name="l01500"></a><span class="lineno"> 1500</span>&#160;        lhs.lost += rhs.lost;</div>
-<div class="line"><a name="l01501"></a><span class="lineno"> 1501</span>&#160;        lhs.drop += rhs.drop;</div>
-<div class="line"><a name="l01502"></a><span class="lineno"> 1502</span>&#160;</div>
-<div class="line"><a name="l01503"></a><span class="lineno"> 1503</span>&#160;        lhs.sent += rhs.sent;</div>
-<div class="line"><a name="l01504"></a><span class="lineno"> 1504</span>&#160;        lhs.disc += rhs.disc;</div>
-<div class="line"><a name="l01505"></a><span class="lineno"> 1505</span>&#160;</div>
-<div class="line"><a name="l01506"></a><span class="lineno"> 1506</span>&#160;        lhs.frwd += rhs.frwd;</div>
-<div class="line"><a name="l01507"></a><span class="lineno"> 1507</span>&#160;        lhs.kern += rhs.kern;</div>
-<div class="line"><a name="l01508"></a><span class="lineno"> 1508</span>&#160;</div>
-<div class="line"><a name="l01509"></a><span class="lineno"> 1509</span>&#160;        <span class="keywordflow">return</span> lhs;</div>
-<div class="line"><a name="l01510"></a><span class="lineno"> 1510</span>&#160;    }</div>
-<div class="line"><a name="l01511"></a><span class="lineno"> 1511</span>&#160;</div>
-<div class="line"><a name="l01512"></a><span class="lineno"> 1512</span>&#160;    <span class="keyword">inline</span> pfq_stats&amp;</div>
-<div class="line"><a name="l01513"></a><span class="lineno"><a class="line" href="namespacepfq.html#aa7874ca8c38d2bb9b66a33a6c2bb0fc1"> 1513</a></span>&#160;    <a class="code" href="namespacepfq.html#aa7874ca8c38d2bb9b66a33a6c2bb0fc1">operator-=</a>(pfq_stats &amp;lhs, <span class="keyword">const</span> pfq_stats &amp;rhs)</div>
-<div class="line"><a name="l01514"></a><span class="lineno"> 1514</span>&#160;    {</div>
-<div class="line"><a name="l01515"></a><span class="lineno"> 1515</span>&#160;        lhs.recv -= rhs.recv;</div>
-<div class="line"><a name="l01516"></a><span class="lineno"> 1516</span>&#160;        lhs.lost -= rhs.lost;</div>
-<div class="line"><a name="l01517"></a><span class="lineno"> 1517</span>&#160;        lhs.drop -= rhs.drop;</div>
-<div class="line"><a name="l01518"></a><span class="lineno"> 1518</span>&#160;</div>
-<div class="line"><a name="l01519"></a><span class="lineno"> 1519</span>&#160;        lhs.sent -= rhs.sent;</div>
-<div class="line"><a name="l01520"></a><span class="lineno"> 1520</span>&#160;        lhs.disc -= rhs.disc;</div>
-<div class="line"><a name="l01521"></a><span class="lineno"> 1521</span>&#160;</div>
-<div class="line"><a name="l01522"></a><span class="lineno"> 1522</span>&#160;        lhs.frwd -= rhs.frwd;</div>
-<div class="line"><a name="l01523"></a><span class="lineno"> 1523</span>&#160;        lhs.kern -= rhs.kern;</div>
-<div class="line"><a name="l01524"></a><span class="lineno"> 1524</span>&#160;</div>
-<div class="line"><a name="l01525"></a><span class="lineno"> 1525</span>&#160;        <span class="keywordflow">return</span> lhs;</div>
-<div class="line"><a name="l01526"></a><span class="lineno"> 1526</span>&#160;    }</div>
-<div class="line"><a name="l01527"></a><span class="lineno"> 1527</span>&#160;</div>
-<div class="line"><a name="l01528"></a><span class="lineno"> 1528</span>&#160;    <span class="keyword">inline</span> pfq_stats</div>
-<div class="line"><a name="l01529"></a><span class="lineno"><a class="line" href="namespacepfq.html#a1db1dc5635be457a7ca4cd9148ceae19"> 1529</a></span>&#160;    <a class="code" href="namespacepfq.html#a1db1dc5635be457a7ca4cd9148ceae19">operator+</a>(pfq_stats lhs, <span class="keyword">const</span> pfq_stats &amp;rhs)</div>
-<div class="line"><a name="l01530"></a><span class="lineno"> 1530</span>&#160;    {</div>
-<div class="line"><a name="l01531"></a><span class="lineno"> 1531</span>&#160;        lhs += rhs;</div>
-<div class="line"><a name="l01532"></a><span class="lineno"> 1532</span>&#160;        <span class="keywordflow">return</span> lhs;</div>
-<div class="line"><a name="l01533"></a><span class="lineno"> 1533</span>&#160;    }</div>
-<div class="line"><a name="l01534"></a><span class="lineno"> 1534</span>&#160;</div>
-<div class="line"><a name="l01535"></a><span class="lineno"> 1535</span>&#160;    <span class="keyword">inline</span> pfq_stats</div>
-<div class="line"><a name="l01536"></a><span class="lineno"><a class="line" href="namespacepfq.html#ad01713142f8fa670ff8614b9f2bab3b8"> 1536</a></span>&#160;    <a class="code" href="namespacepfq.html#ad01713142f8fa670ff8614b9f2bab3b8">operator-</a>(pfq_stats lhs, <span class="keyword">const</span> pfq_stats &amp;rhs)</div>
-<div class="line"><a name="l01537"></a><span class="lineno"> 1537</span>&#160;    {</div>
-<div class="line"><a name="l01538"></a><span class="lineno"> 1538</span>&#160;        lhs -= rhs;</div>
-<div class="line"><a name="l01539"></a><span class="lineno"> 1539</span>&#160;        <span class="keywordflow">return</span> lhs;</div>
-<div class="line"><a name="l01540"></a><span class="lineno"> 1540</span>&#160;    }</div>
-<div class="line"><a name="l01541"></a><span class="lineno"> 1541</span>&#160;</div>
-<div class="line"><a name="l01542"></a><span class="lineno"> 1542</span>&#160;} <span class="comment">// namespace pfq</span></div>
-<div class="line"><a name="l01543"></a><span class="lineno"> 1543</span>&#160;</div>
+<div class="line"><a name="l01488"></a><span class="lineno"> 1488</span>&#160;    <span class="keyword">template</span> &lt;<span class="keyword">typename</span> CharT, <span class="keyword">typename</span> Traits&gt;</div>
+<div class="line"><a name="l01489"></a><span class="lineno"> 1489</span>&#160;    <span class="keyword">typename</span> std::basic_ostream&lt;CharT, Traits&gt; &amp;</div>
+<div class="line"><a name="l01490"></a><span class="lineno"><a class="line" href="namespacepfq.html#a1c2bda68e2e2c718ebd80519034002a3"> 1490</a></span>&#160;    operator&lt;&lt;(std::basic_ostream&lt;CharT,Traits&gt; &amp;out, <span class="keyword">const</span> pfq_stats&amp; rhs)</div>
+<div class="line"><a name="l01491"></a><span class="lineno"> 1491</span>&#160;    {</div>
+<div class="line"><a name="l01492"></a><span class="lineno"> 1492</span>&#160;        <span class="keywordflow">return</span> out &lt;&lt; rhs.recv &lt;&lt; <span class="charliteral">&#39; &#39;</span> &lt;&lt; rhs.lost &lt;&lt; <span class="charliteral">&#39; &#39;</span> &lt;&lt; rhs.drop &lt;&lt; <span class="charliteral">&#39; &#39;</span> &lt;&lt; rhs.sent &lt;&lt; <span class="charliteral">&#39; &#39;</span> &lt;&lt; rhs.disc &lt;&lt; <span class="charliteral">&#39; &#39;</span> &lt;&lt; rhs.frwd &lt;&lt; <span class="charliteral">&#39; &#39;</span> &lt;&lt; rhs.kern;</div>
+<div class="line"><a name="l01493"></a><span class="lineno"> 1493</span>&#160;    }</div>
+<div class="line"><a name="l01494"></a><span class="lineno"> 1494</span>&#160;</div>
+<div class="line"><a name="l01495"></a><span class="lineno"> 1495</span>&#160;    <span class="keyword">inline</span> pfq_stats&amp;</div>
+<div class="line"><a name="l01496"></a><span class="lineno"><a class="line" href="namespacepfq.html#ae140b453ea425ae677dfbc69a51370f8"> 1496</a></span>&#160;    <a class="code" href="namespacepfq.html#ae140b453ea425ae677dfbc69a51370f8">operator+=</a>(pfq_stats &amp;lhs, <span class="keyword">const</span> pfq_stats &amp;rhs)</div>
+<div class="line"><a name="l01497"></a><span class="lineno"> 1497</span>&#160;    {</div>
+<div class="line"><a name="l01498"></a><span class="lineno"> 1498</span>&#160;        lhs.recv += rhs.recv;</div>
+<div class="line"><a name="l01499"></a><span class="lineno"> 1499</span>&#160;        lhs.lost += rhs.lost;</div>
+<div class="line"><a name="l01500"></a><span class="lineno"> 1500</span>&#160;        lhs.drop += rhs.drop;</div>
+<div class="line"><a name="l01501"></a><span class="lineno"> 1501</span>&#160;</div>
+<div class="line"><a name="l01502"></a><span class="lineno"> 1502</span>&#160;        lhs.sent += rhs.sent;</div>
+<div class="line"><a name="l01503"></a><span class="lineno"> 1503</span>&#160;        lhs.disc += rhs.disc;</div>
+<div class="line"><a name="l01504"></a><span class="lineno"> 1504</span>&#160;</div>
+<div class="line"><a name="l01505"></a><span class="lineno"> 1505</span>&#160;        lhs.frwd += rhs.frwd;</div>
+<div class="line"><a name="l01506"></a><span class="lineno"> 1506</span>&#160;        lhs.kern += rhs.kern;</div>
+<div class="line"><a name="l01507"></a><span class="lineno"> 1507</span>&#160;</div>
+<div class="line"><a name="l01508"></a><span class="lineno"> 1508</span>&#160;        <span class="keywordflow">return</span> lhs;</div>
+<div class="line"><a name="l01509"></a><span class="lineno"> 1509</span>&#160;    }</div>
+<div class="line"><a name="l01510"></a><span class="lineno"> 1510</span>&#160;</div>
+<div class="line"><a name="l01511"></a><span class="lineno"> 1511</span>&#160;    <span class="keyword">inline</span> pfq_stats&amp;</div>
+<div class="line"><a name="l01512"></a><span class="lineno"><a class="line" href="namespacepfq.html#aa7874ca8c38d2bb9b66a33a6c2bb0fc1"> 1512</a></span>&#160;    <a class="code" href="namespacepfq.html#aa7874ca8c38d2bb9b66a33a6c2bb0fc1">operator-=</a>(pfq_stats &amp;lhs, <span class="keyword">const</span> pfq_stats &amp;rhs)</div>
+<div class="line"><a name="l01513"></a><span class="lineno"> 1513</span>&#160;    {</div>
+<div class="line"><a name="l01514"></a><span class="lineno"> 1514</span>&#160;        lhs.recv -= rhs.recv;</div>
+<div class="line"><a name="l01515"></a><span class="lineno"> 1515</span>&#160;        lhs.lost -= rhs.lost;</div>
+<div class="line"><a name="l01516"></a><span class="lineno"> 1516</span>&#160;        lhs.drop -= rhs.drop;</div>
+<div class="line"><a name="l01517"></a><span class="lineno"> 1517</span>&#160;</div>
+<div class="line"><a name="l01518"></a><span class="lineno"> 1518</span>&#160;        lhs.sent -= rhs.sent;</div>
+<div class="line"><a name="l01519"></a><span class="lineno"> 1519</span>&#160;        lhs.disc -= rhs.disc;</div>
+<div class="line"><a name="l01520"></a><span class="lineno"> 1520</span>&#160;</div>
+<div class="line"><a name="l01521"></a><span class="lineno"> 1521</span>&#160;        lhs.frwd -= rhs.frwd;</div>
+<div class="line"><a name="l01522"></a><span class="lineno"> 1522</span>&#160;        lhs.kern -= rhs.kern;</div>
+<div class="line"><a name="l01523"></a><span class="lineno"> 1523</span>&#160;</div>
+<div class="line"><a name="l01524"></a><span class="lineno"> 1524</span>&#160;        <span class="keywordflow">return</span> lhs;</div>
+<div class="line"><a name="l01525"></a><span class="lineno"> 1525</span>&#160;    }</div>
+<div class="line"><a name="l01526"></a><span class="lineno"> 1526</span>&#160;</div>
+<div class="line"><a name="l01527"></a><span class="lineno"> 1527</span>&#160;    <span class="keyword">inline</span> pfq_stats</div>
+<div class="line"><a name="l01528"></a><span class="lineno"><a class="line" href="namespacepfq.html#a1db1dc5635be457a7ca4cd9148ceae19"> 1528</a></span>&#160;    <a class="code" href="namespacepfq.html#a1db1dc5635be457a7ca4cd9148ceae19">operator+</a>(pfq_stats lhs, <span class="keyword">const</span> pfq_stats &amp;rhs)</div>
+<div class="line"><a name="l01529"></a><span class="lineno"> 1529</span>&#160;    {</div>
+<div class="line"><a name="l01530"></a><span class="lineno"> 1530</span>&#160;        lhs += rhs;</div>
+<div class="line"><a name="l01531"></a><span class="lineno"> 1531</span>&#160;        <span class="keywordflow">return</span> lhs;</div>
+<div class="line"><a name="l01532"></a><span class="lineno"> 1532</span>&#160;    }</div>
+<div class="line"><a name="l01533"></a><span class="lineno"> 1533</span>&#160;</div>
+<div class="line"><a name="l01534"></a><span class="lineno"> 1534</span>&#160;    <span class="keyword">inline</span> pfq_stats</div>
+<div class="line"><a name="l01535"></a><span class="lineno"><a class="line" href="namespacepfq.html#ad01713142f8fa670ff8614b9f2bab3b8"> 1535</a></span>&#160;    <a class="code" href="namespacepfq.html#ad01713142f8fa670ff8614b9f2bab3b8">operator-</a>(pfq_stats lhs, <span class="keyword">const</span> pfq_stats &amp;rhs)</div>
+<div class="line"><a name="l01536"></a><span class="lineno"> 1536</span>&#160;    {</div>
+<div class="line"><a name="l01537"></a><span class="lineno"> 1537</span>&#160;        lhs -= rhs;</div>
+<div class="line"><a name="l01538"></a><span class="lineno"> 1538</span>&#160;        <span class="keywordflow">return</span> lhs;</div>
+<div class="line"><a name="l01539"></a><span class="lineno"> 1539</span>&#160;    }</div>
+<div class="line"><a name="l01540"></a><span class="lineno"> 1540</span>&#160;</div>
+<div class="line"><a name="l01541"></a><span class="lineno"> 1541</span>&#160;} <span class="comment">// namespace pfq</span></div>
+<div class="line"><a name="l01542"></a><span class="lineno"> 1542</span>&#160;</div>
 <div class="ttc" id="namespacepfq_html_a96af1f5ed530eff563eb917516758fbbafc5364bf9dbfa34954526becad136d4b"><div class="ttname"><a href="namespacepfq.html#a96af1f5ed530eff563eb917516758fbbafc5364bf9dbfa34954526becad136d4b">pfq::class_mask::control</a></div></div>
 <div class="ttc" id="structpfq_1_1param_1_1class___html_a014cc8b1b64e04bbcd9d8f2ed793efbb"><div class="ttname"><a href="structpfq_1_1param_1_1class__.html#a014cc8b1b64e04bbcd9d8f2ed793efbb">pfq::param::class_::value</a></div><div class="ttdeci">class_mask value</div><div class="ttdef"><b>Definition:</b> pfq.hpp:113</div></div>
 <div class="ttc" id="classpfq_1_1socket_html_a019d15a072c043d6a1333ca0c836da4c"><div class="ttname"><a href="classpfq_1_1socket.html#a019d15a072c043d6a1333ca0c836da4c">pfq::socket::tx_slots</a></div><div class="ttdeci">void tx_slots(size_t value)</div><div class="ttdoc">Specify the length of the Tx queue, in number of packets. </div><div class="ttdef"><b>Definition:</b> pfq.hpp:738</div></div>
+<div class="ttc" id="classpfq_1_1socket_html_aee365a7044043d08507adba75eb290c6"><div class="ttname"><a href="classpfq_1_1socket.html#aee365a7044043d08507adba75eb290c6">pfq::socket::send_deferred</a></div><div class="ttdeci">bool send_deferred(const_buffer buf, uint64_t nsec, int copies, int queue=any_queue)</div><div class="ttdoc">Schedule packet transmission. </div><div class="ttdef"><b>Definition:</b> pfq.hpp:1392</div></div>
 <div class="ttc" id="classpfq_1_1socket_html_a0f2205329249eaa7a6229980a744fd2a"><div class="ttname"><a href="classpfq_1_1socket.html#a0f2205329249eaa7a6229980a744fd2a">pfq::socket::rx_slots</a></div><div class="ttdeci">size_t rx_slots() const </div><div class="ttdoc">Return the length of the Rx queue, in number of packets. </div><div class="ttdef"><b>Definition:</b> pfq.hpp:722</div></div>
 <div class="ttc" id="classpfq_1_1socket_html_ab68dbba5ef01041b9c96758c4a9f0a6c"><div class="ttname"><a href="classpfq_1_1socket.html#ab68dbba5ef01041b9c96758c4a9f0a6c">pfq::socket::caplen</a></div><div class="ttdeci">void caplen(size_t value)</div><div class="ttdoc">Specify the capture length of packets, in bytes. </div><div class="ttdef"><b>Definition:</b> pfq.hpp:670</div></div>
 <div class="ttc" id="structpfq_1_1param_1_1policy_html_ab0e84b461546b9e889dbe7b56ae39cdf"><div class="ttname"><a href="structpfq_1_1param_1_1policy.html#ab0e84b461546b9e889dbe7b56ae39cdf">pfq::param::policy::value</a></div><div class="ttdeci">group_policy value</div><div class="ttdef"><b>Definition:</b> pfq.hpp:114</div></div>
@@ -1422,12 +1422,12 @@ $(document).ready(function(){initNavTree('pfq_8hpp_source.html','');});
 <div class="ttc" id="namespacepfq_html_ac41249c8510558905b01fa4d866a38d7a5e543256c480ac577d30f76f9120eb74"><div class="ttname"><a href="namespacepfq.html#ac41249c8510558905b01fa4d866a38d7a5e543256c480ac577d30f76f9120eb74">pfq::group_policy::undefined</a></div></div>
 <div class="ttc" id="classpfq_1_1socket_html_a968ae9e3375650990488dcb1784a4bd1"><div class="ttname"><a href="classpfq_1_1socket.html#a968ae9e3375650990488dcb1784a4bd1">pfq::socket::set_group_computation</a></div><div class="ttdeci">void set_group_computation(int gid, std::string prog)</div><div class="ttdoc">Specify a functional computation for the given group, from string. </div><div class="ttdef"><b>Definition:</b> pfq.hpp:1040</div></div>
 <div class="ttc" id="classpfq_1_1socket_html_ab86880ccdfdd9f875e376c6c8d22a2bb"><div class="ttname"><a href="classpfq_1_1socket.html#ab86880ccdfdd9f875e376c6c8d22a2bb">pfq::socket::open</a></div><div class="ttdeci">void open(class_mask mask, group_policy policy, size_t caplen, size_t rx_slots=1024, size_t tx_slots=1024)</div><div class="ttdoc">Open the socket with the given class mask and group policy. </div><div class="ttdef"><b>Definition:</b> pfq.hpp:332</div></div>
-<div class="ttc" id="classpfq_1_1socket_html_a88e4764d8e7fc86b6e3ea1fbff407a96"><div class="ttname"><a href="classpfq_1_1socket.html#a88e4764d8e7fc86b6e3ea1fbff407a96">pfq::socket::tx_queue_flush</a></div><div class="ttdeci">void tx_queue_flush(int queue=any_queue)</div><div class="ttdoc">Flush the Tx queue(s). </div><div class="ttdef"><b>Definition:</b> pfq.hpp:1455</div></div>
+<div class="ttc" id="classpfq_1_1socket_html_a88e4764d8e7fc86b6e3ea1fbff407a96"><div class="ttname"><a href="classpfq_1_1socket.html#a88e4764d8e7fc86b6e3ea1fbff407a96">pfq::socket::tx_queue_flush</a></div><div class="ttdeci">void tx_queue_flush(int queue=any_queue)</div><div class="ttdoc">Flush the Tx queue(s). </div><div class="ttdef"><b>Definition:</b> pfq.hpp:1454</div></div>
 <div class="ttc" id="classpfq_1_1socket_html_a296d1eddfb061c1a658067006ddb9f37"><div class="ttname"><a href="classpfq_1_1socket.html#a296d1eddfb061c1a658067006ddb9f37">pfq::socket::vlan_reset_filter</a></div><div class="ttdeci">void vlan_reset_filter(int gid, int vid)</div><div class="ttdoc">Reset the vlan filter for the given group. </div><div class="ttdef"><b>Definition:</b> pfq.hpp:1256</div></div>
 <div class="ttc" id="structpfq_1_1param_1_1policy_html"><div class="ttname"><a href="structpfq_1_1param_1_1policy.html">pfq::param::policy</a></div><div class="ttdef"><b>Definition:</b> pfq.hpp:114</div></div>
 <div class="ttc" id="namespacepfq_html_a96af1f5ed530eff563eb917516758fbba539d70f37267eda88597177e215a6d2a"><div class="ttname"><a href="namespacepfq.html#a96af1f5ed530eff563eb917516758fbba539d70f37267eda88597177e215a6d2a">pfq::class_mask::user_plane</a></div></div>
 <div class="ttc" id="classpfq_1_1socket_html_a2c96741054ea764f5d8c31295ef5df29"><div class="ttname"><a href="classpfq_1_1socket.html#a2c96741054ea764f5d8c31295ef5df29">pfq::socket::egress_bind</a></div><div class="ttdeci">void egress_bind(const char *dev, int queue=any_queue)</div><div class="ttdoc">Set the socket as egress and bind it to the given device/queue. </div><div class="ttdef"><b>Definition:</b> pfq.hpp:839</div></div>
-<div class="ttc" id="namespacepfq_html_ae140b453ea425ae677dfbc69a51370f8"><div class="ttname"><a href="namespacepfq.html#ae140b453ea425ae677dfbc69a51370f8">pfq::operator+=</a></div><div class="ttdeci">pfq_stats &amp; operator+=(pfq_stats &amp;lhs, const pfq_stats &amp;rhs)</div><div class="ttdef"><b>Definition:</b> pfq.hpp:1497</div></div>
+<div class="ttc" id="namespacepfq_html_ae140b453ea425ae677dfbc69a51370f8"><div class="ttname"><a href="namespacepfq.html#ae140b453ea425ae677dfbc69a51370f8">pfq::operator+=</a></div><div class="ttdeci">pfq_stats &amp; operator+=(pfq_stats &amp;lhs, const pfq_stats &amp;rhs)</div><div class="ttdef"><b>Definition:</b> pfq.hpp:1496</div></div>
 <div class="ttc" id="classpfq_1_1socket_html_a768bee4d974acdc5ee9ee879b0903c54"><div class="ttname"><a href="classpfq_1_1socket.html#a768bee4d974acdc5ee9ee879b0903c54">pfq::socket::caplen</a></div><div class="ttdeci">size_t caplen() const </div><div class="ttdoc">Return the capture length of packets, in bytes. </div><div class="ttdef"><b>Definition:</b> pfq.hpp:685</div></div>
 <div class="ttc" id="structpfq_1_1param_1_1caplen_html_ad706d73fbbd8342fea36e920253aaa02"><div class="ttname"><a href="structpfq_1_1param_1_1caplen.html#ad706d73fbbd8342fea36e920253aaa02">pfq::param::caplen::value</a></div><div class="ttdeci">size_t value</div><div class="ttdef"><b>Definition:</b> pfq.hpp:116</div></div>
 <div class="ttc" id="namespacepfq_html_ac41249c8510558905b01fa4d866a38d7a9e81e7b963c71363e2fb3eefcfecfc0e"><div class="ttname"><a href="namespacepfq.html#ac41249c8510558905b01fa4d866a38d7a9e81e7b963c71363e2fb3eefcfecfc0e">pfq::group_policy::shared</a></div></div>
@@ -1437,26 +1437,24 @@ $(document).ready(function(){initNavTree('pfq_8hpp_source.html','');});
 <div class="ttc" id="classpfq_1_1socket_html_ad0e09474a9919723dfdf142e2b1e5386"><div class="ttname"><a href="classpfq_1_1socket.html#ad0e09474a9919723dfdf142e2b1e5386">pfq::socket::socket</a></div><div class="ttdeci">socket(size_t caplen, size_t rx_slots=1024, size_t tx_slots=1024)</div><div class="ttdoc">Constructor. </div><div class="ttdef"><b>Definition:</b> pfq.hpp:212</div></div>
 <div class="ttc" id="classpfq_1_1socket_html_a45c12f4255af4eb74bb9a75d8e1a56eb"><div class="ttname"><a href="classpfq_1_1socket.html#a45c12f4255af4eb74bb9a75d8e1a56eb">pfq::socket::groups_mask</a></div><div class="ttdeci">unsigned long groups_mask() const </div><div class="ttdoc">Return the mask of the joined groups. </div><div class="ttdef"><b>Definition:</b> pfq.hpp:951</div></div>
 <div class="ttc" id="namespacestd_html"><div class="ttname"><a href="namespacestd.html">std</a></div><div class="ttdoc">STL namespace. </div></div>
-<div class="ttc" id="classpfq_1_1socket_html_ace69fbf64216b7b30a8a305a9d25229b"><div class="ttname"><a href="classpfq_1_1socket.html#ace69fbf64216b7b30a8a305a9d25229b">pfq::socket::recv</a></div><div class="ttdeci">queue recv(const mutable_buffer &amp;buff, long int microseconds=-1)</div><div class="ttdoc">Receive packets in the given buffer. </div><div class="ttdef"><b>Definition:</b> pfq.hpp:1179</div></div>
 <div class="ttc" id="classpfq_1_1socket_html_afbd75341794fae964ed23ce5858fd153"><div class="ttname"><a href="classpfq_1_1socket.html#afbd75341794fae964ed23ce5858fd153">pfq::socket::join_group</a></div><div class="ttdeci">int join_group(int gid, group_policy pol=group_policy::shared, class_mask mask=class_mask::default_)</div><div class="ttdoc">Join the group specified by the group id. </div><div class="ttdef"><b>Definition:</b> pfq.hpp:913</div></div>
 <div class="ttc" id="structpfq_1_1param_1_1rx__slots_html_a2bafbed5d322cf89df33ca10bc397822"><div class="ttname"><a href="structpfq_1_1param_1_1rx__slots.html#a2bafbed5d322cf89df33ca10bc397822">pfq::param::rx_slots::value</a></div><div class="ttdeci">size_t value</div><div class="ttdef"><b>Definition:</b> pfq.hpp:117</div></div>
+<div class="ttc" id="classpfq_1_1net__queue_html"><div class="ttname"><a href="classpfq_1_1net__queue.html">pfq::net_queue</a></div><div class="ttdoc">This class represent a queue of packets. </div><div class="ttdef"><b>Definition:</b> queue.hpp:38</div></div>
 <div class="ttc" id="namespacepfq_html_ac41249c8510558905b01fa4d866a38d7ac89b33f8b3f6f452ef6f07d397b5dcdf"><div class="ttname"><a href="namespacepfq.html#ac41249c8510558905b01fa4d866a38d7ac89b33f8b3f6f452ef6f07d397b5dcdf">pfq::group_policy::restricted</a></div></div>
 <div class="ttc" id="namespacepfq_html"><div class="ttname"><a href="namespacepfq.html">pfq</a></div><div class="ttdef"><b>Definition:</b> pfq.hpp:52</div></div>
 <div class="ttc" id="classpfq_1_1socket_html_ac7e918bff7d1672125a8549dae750dcc"><div class="ttname"><a href="classpfq_1_1socket.html#ac7e918bff7d1672125a8549dae750dcc">pfq::socket::disable</a></div><div class="ttdeci">void disable()</div><div class="ttdoc">Disable the socket. </div><div class="ttdef"><b>Definition:</b> pfq.hpp:582</div></div>
 <div class="ttc" id="classpfq_1_1socket_html_a33c3e305c62f5a9f8a0ef74f69097ecf"><div class="ttname"><a href="classpfq_1_1socket.html#a33c3e305c62f5a9f8a0ef74f69097ecf">pfq::socket::open</a></div><div class="ttdeci">void open(param::list_t, Ts &amp;&amp;...args)</div><div class="ttdoc">Open the socket with the named-parameter idiom. </div><div class="ttdef"><b>Definition:</b> pfq.hpp:350</div></div>
 <div class="ttc" id="classpfq_1_1socket_html_a5bb4734939ffeb151e199182ec30c4de"><div class="ttname"><a href="classpfq_1_1socket.html#a5bb4734939ffeb151e199182ec30c4de">pfq::socket::group_counters</a></div><div class="ttdeci">std::vector&lt; unsigned long &gt; group_counters(int gid) const </div><div class="ttdoc">Return the set of counters of the given group. </div><div class="ttdef"><b>Definition:</b> pfq.hpp:1302</div></div>
-<div class="ttc" id="namespacepfq_html_ad01713142f8fa670ff8614b9f2bab3b8"><div class="ttname"><a href="namespacepfq.html#ad01713142f8fa670ff8614b9f2bab3b8">pfq::operator-</a></div><div class="ttdeci">pfq_stats operator-(pfq_stats lhs, const pfq_stats &amp;rhs)</div><div class="ttdef"><b>Definition:</b> pfq.hpp:1536</div></div>
+<div class="ttc" id="namespacepfq_html_ad01713142f8fa670ff8614b9f2bab3b8"><div class="ttname"><a href="namespacepfq.html#ad01713142f8fa670ff8614b9f2bab3b8">pfq::operator-</a></div><div class="ttdeci">pfq_stats operator-(pfq_stats lhs, const pfq_stats &amp;rhs)</div><div class="ttdef"><b>Definition:</b> pfq.hpp:1535</div></div>
 <div class="ttc" id="classpfq_1_1socket_html_a8e290b6b1105c22b538d38021d6bfb7d"><div class="ttname"><a href="classpfq_1_1socket.html#a8e290b6b1105c22b538d38021d6bfb7d">pfq::socket::rx_slot_size</a></div><div class="ttdeci">size_t rx_slot_size() const </div><div class="ttdoc">Return the length of a Rx slot, in bytes. </div><div class="ttdef"><b>Definition:</b> pfq.hpp:730</div></div>
 <div class="ttc" id="classpfq_1_1socket_html_a1a60820551f1601beb54649d9ae48fa2"><div class="ttname"><a href="classpfq_1_1socket.html#a1a60820551f1601beb54649d9ae48fa2">pfq::socket::socket</a></div><div class="ttdeci">socket(socket &amp;&amp;other) noexcept</div><div class="ttdoc">Move constructor. </div><div class="ttdef"><b>Definition:</b> pfq.hpp:273</div></div>
 <div class="ttc" id="classpfq_1_1socket_html_a4c179188ea8fceeb5fd47d52f93c6bda"><div class="ttname"><a href="classpfq_1_1socket.html#a4c179188ea8fceeb5fd47d52f93c6bda">pfq::socket::close</a></div><div class="ttdeci">void close()</div><div class="ttdoc">Close the socket. </div><div class="ttdef"><b>Definition:</b> pfq.hpp:487</div></div>
 <div class="ttc" id="classpfq_1_1socket_html_ac80ebddf3a94f7964c74bf02954704ce"><div class="ttname"><a href="classpfq_1_1socket.html#ac80ebddf3a94f7964c74bf02954704ce">pfq::socket::swap</a></div><div class="ttdeci">void swap(socket &amp;other)</div><div class="ttdoc">Swap two sockets. </div><div class="ttdef"><b>Definition:</b> pfq.hpp:301</div></div>
 <div class="ttc" id="classpfq_1_1socket_html_a424e7a361a31569a8c6796d2c61b238d"><div class="ttname"><a href="classpfq_1_1socket.html#a424e7a361a31569a8c6796d2c61b238d">pfq::socket::weight</a></div><div class="ttdeci">int weight() const </div><div class="ttdoc">Return the weight of the socket. </div><div class="ttdef"><b>Definition:</b> pfq.hpp:655</div></div>
-<div class="ttc" id="classpfq_1_1socket_html_a7cf603f39b62375ec1a459d7713300cc"><div class="ttname"><a href="classpfq_1_1socket.html#a7cf603f39b62375ec1a459d7713300cc">pfq::socket::inject</a></div><div class="ttdeci">bool inject(const_buffer buf, uint64_t nsec, int copies, int queue=any_queue)</div><div class="ttdoc">Schedule the packet for transmission. </div><div class="ttdef"><b>Definition:</b> pfq.hpp:1392</div></div>
 <div class="ttc" id="classpfq_1_1socket_html_af3f79e9a42964907acd581d35d42da00"><div class="ttname"><a href="classpfq_1_1socket.html#af3f79e9a42964907acd581d35d42da00">pfq::socket::id</a></div><div class="ttdeci">int id() const </div><div class="ttdoc">Return the id of the socket. </div><div class="ttdef"><b>Definition:</b> pfq.hpp:366</div></div>
 <div class="ttc" id="classpfq_1_1socket_html_a7511ca4657999e1c158859d34cffc831"><div class="ttname"><a href="classpfq_1_1socket.html#a7511ca4657999e1c158859d34cffc831">pfq::socket::send_at</a></div><div class="ttdeci">bool send_at(const_buffer pkt, std::chrono::time_point&lt; Clock, Duration &gt; const &amp;tp, int copies=1)</div><div class="ttdef"><b>Definition:</b> pfq.hpp:1375</div></div>
 <div class="ttc" id="classpfq_1_1socket_html_a5cf700fc12d67b91df3d669ac4aa737a"><div class="ttname"><a href="classpfq_1_1socket.html#a5cf700fc12d67b91df3d669ac4aa737a">pfq::socket::rx_slots</a></div><div class="ttdeci">void rx_slots(size_t value)</div><div class="ttdoc">Specify the length of the Rx queue, in number of packets. </div><div class="ttdef"><b>Definition:</b> pfq.hpp:707</div></div>
-<div class="ttc" id="classpfq_1_1socket_html_a6a79c81d3c366e49b8d64eb828ae5540"><div class="ttname"><a href="classpfq_1_1socket.html#a6a79c81d3c366e49b8d64eb828ae5540">pfq::socket::read</a></div><div class="ttdeci">queue read(long int microseconds=-1)</div><div class="ttdoc">Read packets in place. </div><div class="ttdef"><b>Definition:</b> pfq.hpp:1117</div></div>
-<div class="ttc" id="classpfq_1_1socket_html_ad96bd5f41036291082fc0eaac0fec4d5"><div class="ttname"><a href="classpfq_1_1socket.html#ad96bd5f41036291082fc0eaac0fec4d5">pfq::socket::tx_async_stop</a></div><div class="ttdeci">void tx_async_stop()</div><div class="ttdoc">Stop kernel threads. </div><div class="ttdef"><b>Definition:</b> pfq.hpp:1481</div></div>
+<div class="ttc" id="classpfq_1_1socket_html_ad96bd5f41036291082fc0eaac0fec4d5"><div class="ttname"><a href="classpfq_1_1socket.html#ad96bd5f41036291082fc0eaac0fec4d5">pfq::socket::tx_async_stop</a></div><div class="ttdeci">void tx_async_stop()</div><div class="ttdoc">Stop kernel threads. </div><div class="ttdef"><b>Definition:</b> pfq.hpp:1480</div></div>
 <div class="ttc" id="namespacepfq_html_a251ac5cc269aa123009754edf62ab8b4"><div class="ttname"><a href="namespacepfq.html#a251ac5cc269aa123009754edf62ab8b4">pfq::ifindex</a></div><div class="ttdeci">int ifindex(int fd, const char *dev)</div><div class="ttdoc">Given a device name, return the interface index. </div><div class="ttdef"><b>Definition:</b> util.hpp:68</div></div>
 <div class="ttc" id="classpfq_1_1socket_html_aee0fbc6a5f899d081c659dbaa4a4a235"><div class="ttname"><a href="classpfq_1_1socket.html#aee0fbc6a5f899d081c659dbaa4a4a235">pfq::socket::vlan_set_filter</a></div><div class="ttdeci">void vlan_set_filter(int gid, Iter beg, Iter end)</div><div class="ttdoc">Specify the vlan capture filters in the given range. </div><div class="ttdef"><b>Definition:</b> pfq.hpp:1247</div></div>
 <div class="ttc" id="classpfq_1_1socket_html_a8022eafa68b84a840292ebcfc4d1ba7a"><div class="ttname"><a href="classpfq_1_1socket.html#a8022eafa68b84a840292ebcfc4d1ba7a">pfq::socket::operator=</a></div><div class="ttdeci">socket &amp; operator=(socket &amp;&amp;other) noexcept</div><div class="ttdoc">Move assignment operator. </div><div class="ttdef"><b>Definition:</b> pfq.hpp:285</div></div>
@@ -1472,6 +1470,7 @@ $(document).ready(function(){initNavTree('pfq_8hpp_source.html','');});
 <div class="ttc" id="classpfq_1_1socket_html_aaf91b2e089edb2c4695584b01774326e"><div class="ttname"><a href="classpfq_1_1socket.html#aaf91b2e089edb2c4695584b01774326e">pfq::socket::vlan_filters_enable</a></div><div class="ttdeci">void vlan_filters_enable(int gid, bool toggle)</div><div class="ttdoc">Enable/disable vlan filtering for the given group. </div><div class="ttdef"><b>Definition:</b> pfq.hpp:1223</div></div>
 <div class="ttc" id="classpfq_1_1socket_html_a99ee5e145ccf3a043b3c2aacb3df30cc"><div class="ttname"><a href="classpfq_1_1socket.html#a99ee5e145ccf3a043b3c2aacb3df30cc">pfq::socket::unbind_tx</a></div><div class="ttdeci">void unbind_tx()</div><div class="ttdoc">Unbind the socket transmission. </div><div class="ttdef"><b>Definition:</b> pfq.hpp:897</div></div>
 <div class="ttc" id="util_8hpp_html"><div class="ttname"><a href="util_8hpp.html">util.hpp</a></div></div>
+<div class="ttc" id="classpfq_1_1socket_html_a57643b9011269682bf716254c2b72907"><div class="ttname"><a href="classpfq_1_1socket.html#a57643b9011269682bf716254c2b72907">pfq::socket::recv</a></div><div class="ttdeci">net_queue recv(const mutable_buffer &amp;buff, long int microseconds=-1)</div><div class="ttdoc">Receive packets in the given buffer. </div><div class="ttdef"><b>Definition:</b> pfq.hpp:1179</div></div>
 <div class="ttc" id="classpfq_1_1socket_html_ad8ce551ea07f39317bb383ab88d66344"><div class="ttname"><a href="classpfq_1_1socket.html#ad8ce551ea07f39317bb383ab88d66344">pfq::socket::poll</a></div><div class="ttdeci">int poll(long int microseconds=-1)</div><div class="ttdoc">Wait for packets. </div><div class="ttdef"><b>Definition:</b> pfq.hpp:1087</div></div>
 <div class="ttc" id="classpfq_1_1socket_html_a4d4d44cc68af0290e3c494dcd10b1541"><div class="ttname"><a href="classpfq_1_1socket.html#a4d4d44cc68af0290e3c494dcd10b1541">pfq::socket::bind_group</a></div><div class="ttdeci">void bind_group(int gid, const char *dev, int queue=any_queue)</div><div class="ttdoc">Bind the group to the given device/queue. </div><div class="ttdef"><b>Definition:</b> pfq.hpp:796</div></div>
 <div class="ttc" id="classpfq_1_1socket_html_ad618894910a12a08eaed3d8668db25af"><div class="ttname"><a href="classpfq_1_1socket.html#ad618894910a12a08eaed3d8668db25af">pfq::socket::set_group_fprog</a></div><div class="ttdeci">void set_group_fprog(int gid, const sock_fprog &amp;f)</div><div class="ttdoc">Specify a BPF program for the given group. </div><div class="ttdef"><b>Definition:</b> pfq.hpp:1061</div></div>
@@ -1481,11 +1480,12 @@ $(document).ready(function(){initNavTree('pfq_8hpp_source.html','');});
 <div class="ttc" id="structpfq_1_1param_1_1tx__slots_html"><div class="ttname"><a href="structpfq_1_1param_1_1tx__slots.html">pfq::param::tx_slots</a></div><div class="ttdef"><b>Definition:</b> pfq.hpp:118</div></div>
 <div class="ttc" id="structpfq_1_1param_1_1rx__slots_html"><div class="ttname"><a href="structpfq_1_1param_1_1rx__slots.html">pfq::param::rx_slots</a></div><div class="ttdef"><b>Definition:</b> pfq.hpp:117</div></div>
 <div class="ttc" id="classpfq_1_1socket_html_aba44de6422e3e10b65474e7f3999ebd0"><div class="ttname"><a href="classpfq_1_1socket.html#aba44de6422e3e10b65474e7f3999ebd0">pfq::socket::current_commit</a></div><div class="ttdeci">uint8_t current_commit() const </div><div class="ttdoc">Return the current commit version (used internally by the memory mapped queue). </div><div class="ttdef"><b>Definition:</b> pfq.hpp:1164</div></div>
-<div class="ttc" id="namespacepfq_html_a1db1dc5635be457a7ca4cd9148ceae19"><div class="ttname"><a href="namespacepfq.html#a1db1dc5635be457a7ca4cd9148ceae19">pfq::operator+</a></div><div class="ttdeci">pfq_stats operator+(pfq_stats lhs, const pfq_stats &amp;rhs)</div><div class="ttdef"><b>Definition:</b> pfq.hpp:1529</div></div>
+<div class="ttc" id="namespacepfq_html_a1db1dc5635be457a7ca4cd9148ceae19"><div class="ttname"><a href="namespacepfq.html#a1db1dc5635be457a7ca4cd9148ceae19">pfq::operator+</a></div><div class="ttdeci">pfq_stats operator+(pfq_stats lhs, const pfq_stats &amp;rhs)</div><div class="ttdef"><b>Definition:</b> pfq.hpp:1528</div></div>
 <div class="ttc" id="namespacepfq_html_a0c3aeb61dfd544cb08cb240202caf213"><div class="ttname"><a href="namespacepfq.html#a0c3aeb61dfd544cb08cb240202caf213">pfq::split</a></div><div class="ttdeci">std::vector&lt; std::string &gt; split(std::string str, const char *sep)</div><div class="ttdoc">Split a string by means of the given separator. </div><div class="ttdef"><b>Definition:</b> util.hpp:139</div></div>
 <div class="ttc" id="classpfq_1_1socket_html_a419985e445525a7dbfae6d9ace452427"><div class="ttname"><a href="classpfq_1_1socket.html#a419985e445525a7dbfae6d9ace452427">pfq::socket::socket</a></div><div class="ttdeci">socket(group_policy policy, size_t caplen, size_t rx_slots=1024, size_t tx_slots=1024)</div><div class="ttdoc">Constructor. </div><div class="ttdef"><b>Definition:</b> pfq.hpp:226</div></div>
 <div class="ttc" id="classpfq_1_1socket_html_a7a1d64344f0c476117d5b7cc2543edad"><div class="ttname"><a href="classpfq_1_1socket.html#a7a1d64344f0c476117d5b7cc2543edad">pfq::socket::send_async</a></div><div class="ttdeci">bool send_async(const_buffer pkt, size_t flush_hint, int copies=1)</div><div class="ttdoc">Store the packet and transmit the packets in the queue, asynchronously. </div><div class="ttdef"><b>Definition:</b> pfq.hpp:1352</div></div>
 <div class="ttc" id="namespacepfq_1_1param_html_a287394f9fea16ebb76e770334aedd2d5"><div class="ttname"><a href="namespacepfq_1_1param.html#a287394f9fea16ebb76e770334aedd2d5">pfq::param::types</a></div><div class="ttdeci">std::tuple&lt; caplen, rx_slots, tx_slots, policy, class_ &gt; types</div><div class="ttdef"><b>Definition:</b> pfq.hpp:120</div></div>
+<div class="ttc" id="classpfq_1_1socket_html_a6004249d3abfe8a2329b44ba797d1909"><div class="ttname"><a href="classpfq_1_1socket.html#a6004249d3abfe8a2329b44ba797d1909">pfq::socket::read</a></div><div class="ttdeci">net_queue read(long int microseconds=-1)</div><div class="ttdoc">Read packets in place. </div><div class="ttdef"><b>Definition:</b> pfq.hpp:1117</div></div>
 <div class="ttc" id="structpfq_1_1vlan__id_html_affdae3b855070274e64b5d5696d6d72e"><div class="ttname"><a href="structpfq_1_1vlan__id.html#affdae3b855070274e64b5d5696d6d72e">pfq::vlan_id::anytag</a></div><div class="ttdeci">static constexpr int anytag</div><div class="ttdef"><b>Definition:</b> pfq.hpp:91</div></div>
 <div class="ttc" id="classpfq_1_1socket_html_a5b25af762946405695f4192b08c04146"><div class="ttname"><a href="classpfq_1_1socket.html#a5b25af762946405695f4192b08c04146">pfq::socket::enable</a></div><div class="ttdeci">void enable()</div><div class="ttdoc">Enable the socket for packets capture and transmission. </div><div class="ttdef"><b>Definition:</b> pfq.hpp:518</div></div>
 <div class="ttc" id="structpfq_1_1vlan__id_html_a9e30bbd86d62e58ae5e5e080f7e046df"><div class="ttname"><a href="structpfq_1_1vlan__id.html#a9e30bbd86d62e58ae5e5e080f7e046df">pfq::vlan_id::untag</a></div><div class="ttdeci">static constexpr int untag</div><div class="ttdef"><b>Definition:</b> pfq.hpp:90</div></div>
@@ -1502,13 +1502,12 @@ $(document).ready(function(){initNavTree('pfq_8hpp_source.html','');});
 <div class="ttc" id="namespacepfq_html_a02a1861a64cc518394d3cc4361799c9f"><div class="ttname"><a href="namespacepfq.html#a02a1861a64cc518394d3cc4361799c9f">pfq::trim</a></div><div class="ttdeci">std::string trim(std::string str)</div><div class="ttdoc">Trim pending and trailing whitespaces from a string. </div><div class="ttdef"><b>Definition:</b> util.hpp:127</div></div>
 <div class="ttc" id="classpfq_1_1socket_html_a903d76a2685d7b64b9d0604686141fdc"><div class="ttname"><a href="classpfq_1_1socket.html#a903d76a2685d7b64b9d0604686141fdc">pfq::socket::is_timestamping_enabled</a></div><div class="ttdeci">bool is_timestamping_enabled() const </div><div class="ttdoc">Check whether timestamping for packets is enabled. </div><div class="ttdef"><b>Definition:</b> pfq.hpp:634</div></div>
 <div class="ttc" id="classpfq_1_1socket_html_a2327e71a6f94e54efb0da5ec36b1c620"><div class="ttname"><a href="classpfq_1_1socket.html#a2327e71a6f94e54efb0da5ec36b1c620">pfq::socket::reset_group_fprog</a></div><div class="ttdeci">void reset_group_fprog(int gid)</div><div class="ttdoc">Reset the BPF program fro the given group. </div><div class="ttdef"><b>Definition:</b> pfq.hpp:1072</div></div>
-<div class="ttc" id="classpfq_1_1socket_html_a60613b9eec686a179332e0a86d1ea954"><div class="ttname"><a href="classpfq_1_1socket.html#a60613b9eec686a179332e0a86d1ea954">pfq::socket::tx_async_start</a></div><div class="ttdeci">void tx_async_start()</div><div class="ttdoc">Start kernel threads. </div><div class="ttdef"><b>Definition:</b> pfq.hpp:1468</div></div>
+<div class="ttc" id="classpfq_1_1socket_html_a60613b9eec686a179332e0a86d1ea954"><div class="ttname"><a href="classpfq_1_1socket.html#a60613b9eec686a179332e0a86d1ea954">pfq::socket::tx_async_start</a></div><div class="ttdeci">void tx_async_start()</div><div class="ttdoc">Start kernel threads. </div><div class="ttdef"><b>Definition:</b> pfq.hpp:1467</div></div>
 <div class="ttc" id="namespacepfq_html_ac41249c8510558905b01fa4d866a38d7a908b453051b556e053731714a5193921"><div class="ttname"><a href="namespacepfq.html#ac41249c8510558905b01fa4d866a38d7a908b453051b556e053731714a5193921">pfq::group_policy::priv</a></div></div>
 <div class="ttc" id="structpfq_1_1param_1_1tx__slots_html_a0211960e3e5bfab53d2ed6bb96445723"><div class="ttname"><a href="structpfq_1_1param_1_1tx__slots.html#a0211960e3e5bfab53d2ed6bb96445723">pfq::param::tx_slots::value</a></div><div class="ttdeci">size_t value</div><div class="ttdef"><b>Definition:</b> pfq.hpp:118</div></div>
 <div class="ttc" id="classpfq_1_1socket_html_ad843f3354b92083f01be9b5055f211b8"><div class="ttname"><a href="classpfq_1_1socket.html#ad843f3354b92083f01be9b5055f211b8">pfq::socket::weight</a></div><div class="ttdeci">void weight(int w)</div><div class="ttdoc">Set the weight of the socket for the steering phase. </div><div class="ttdef"><b>Definition:</b> pfq.hpp:645</div></div>
 <div class="ttc" id="classpfq_1_1socket_html_a3cfd9674358a2ffd8b37e76d73b8a654"><div class="ttname"><a href="classpfq_1_1socket.html#a3cfd9674358a2ffd8b37e76d73b8a654">pfq::socket::operator=</a></div><div class="ttdeci">socket &amp; operator=(const socket &amp;)=delete</div><div class="ttdoc">PFQ socket is not copy-assignable. </div></div>
 <div class="ttc" id="namespacepfq_html_a8abbfe940a92b69bac1a5d93fd354f9a"><div class="ttname"><a href="namespacepfq.html#a8abbfe940a92b69bac1a5d93fd354f9a">pfq::fold</a></div><div class="ttdeci">uint32_t fold(uint32_t hash, size_t n) noexcept</div><div class="ttdef"><b>Definition:</b> util.hpp:257</div></div>
-<div class="ttc" id="classpfq_1_1queue_html"><div class="ttname"><a href="classpfq_1_1queue.html">pfq::queue</a></div><div class="ttdoc">This class represent a queue of packets. </div><div class="ttdef"><b>Definition:</b> queue.hpp:38</div></div>
 <div class="ttc" id="queue_8hpp_html"><div class="ttname"><a href="queue_8hpp.html">queue.hpp</a></div></div>
 <div class="ttc" id="classpfq_1_1socket_html_a0b82186997f22efffd336b09b19a806d"><div class="ttname"><a href="classpfq_1_1socket.html#a0b82186997f22efffd336b09b19a806d">pfq::socket::group_id</a></div><div class="ttdeci">int group_id() const </div><div class="ttdoc">Return the group-id of the socket. </div><div class="ttdef"><b>Definition:</b> pfq.hpp:376</div></div>
 <div class="ttc" id="classpfq_1_1socket_html_a6e1f7ee7f44b6824d734d4ff7046d907"><div class="ttname"><a href="classpfq_1_1socket.html#a6e1f7ee7f44b6824d734d4ff7046d907">pfq::socket::unbind_group</a></div><div class="ttdeci">void unbind_group(int gid, const char *dev, int queue=any_queue)</div><div class="ttdoc">Unbind the group from the given device/queue. </div><div class="ttdef"><b>Definition:</b> pfq.hpp:816</div></div>
@@ -1518,14 +1517,14 @@ $(document).ready(function(){initNavTree('pfq_8hpp_source.html','');});
 <div class="ttc" id="classpfq_1_1socket_html_a92eeaf78ff595546c517b5699c9a5b1e"><div class="ttname"><a href="classpfq_1_1socket.html#a92eeaf78ff595546c517b5699c9a5b1e">pfq::socket::vlan_set_filter</a></div><div class="ttdeci">void vlan_set_filter(int gid, int vid)</div><div class="ttdoc">Specify a capture vlan filter for the given group. </div><div class="ttdef"><b>Definition:</b> pfq.hpp:1236</div></div>
 <div class="ttc" id="classpfq_1_1pfq__error_html"><div class="ttname"><a href="classpfq_1_1pfq__error.html">pfq::pfq_error</a></div><div class="ttdoc">Subclass of std::system_error. </div><div class="ttdef"><b>Definition:</b> exception.hpp:34</div></div>
 <div class="ttc" id="namespacepfq_html_a96af1f5ed530eff563eb917516758fbb"><div class="ttname"><a href="namespacepfq.html#a96af1f5ed530eff563eb917516758fbb">pfq::class_mask</a></div><div class="ttdeci">class_mask</div><div class="ttdoc">class mask. </div><div class="ttdef"><b>Definition:</b> pfq.hpp:74</div></div>
-<div class="ttc" id="namespacepfq_html_aa7874ca8c38d2bb9b66a33a6c2bb0fc1"><div class="ttname"><a href="namespacepfq.html#aa7874ca8c38d2bb9b66a33a6c2bb0fc1">pfq::operator-=</a></div><div class="ttdeci">pfq_stats &amp; operator-=(pfq_stats &amp;lhs, const pfq_stats &amp;rhs)</div><div class="ttdef"><b>Definition:</b> pfq.hpp:1513</div></div>
+<div class="ttc" id="namespacepfq_html_aa7874ca8c38d2bb9b66a33a6c2bb0fc1"><div class="ttname"><a href="namespacepfq.html#aa7874ca8c38d2bb9b66a33a6c2bb0fc1">pfq::operator-=</a></div><div class="ttdeci">pfq_stats &amp; operator-=(pfq_stats &amp;lhs, const pfq_stats &amp;rhs)</div><div class="ttdef"><b>Definition:</b> pfq.hpp:1512</div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="dir_2916f9fbcacdf2e5f0583aa159c707b6.html">C++</a></li><li class="navelem"><a class="el" href="dir_f5c141fe61b0a0287f06112b2feb457f.html">pfq</a></li><li class="navelem"><a class="el" href="pfq_8hpp.html">pfq.hpp</a></li>
-    <li class="footer">Generated on Mon Aug 24 2015 21:08:52 for PFQ C++ library by
+    <li class="footer">Generated on Mon Sep 14 2015 17:54:08 for PFQ C++ library by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.8 </li>
   </ul>

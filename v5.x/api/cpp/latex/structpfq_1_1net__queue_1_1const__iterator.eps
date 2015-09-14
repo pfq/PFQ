@@ -173,7 +173,7 @@
 
 boxfont setfont
 1 boundaspect scale
-(pfq::queue::iterator) cw
+(pfq::net_queue::const_iterator) cw
 (std::iterator< std::forward_iterator_tag, pfq_pkthdr >) cw
 /boxwidth boxwidth marginwidth 2 mul add def
 /xspacing boxwidth distx add def
@@ -186,7 +186,7 @@ boundx scalefactor div boundy scalefactor div scale
 
 % ----- classes -----
 
- (pfq::queue::iterator) 0.000000 0.000000 box
+ (pfq::net_queue::const_iterator) 0.000000 0.000000 box
  (std::iterator< std::forward_iterator_tag, pfq_pkthdr >) 0.000000 1.000000 box
 
 % ----- relations -----

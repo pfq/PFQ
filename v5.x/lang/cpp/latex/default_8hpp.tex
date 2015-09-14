@@ -118,6 +118,8 @@ auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a
 \begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily true} if the destination I\+P address matches the given network address. \end{DoxyCompactList}\item 
 auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_aa4ce1fdb0d99e1ca0afdf76619c58d12}{pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::has\+\_\+mark} = \mbox{[}$\,$\mbox{]} (uint32\+\_\+t value) \{ return predicate(\char`\"{}has\+\_\+mark\char`\"{}, value); \}
 \begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} has the given {\ttfamily mark}, set by mark function. \end{DoxyCompactList}\item 
+auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a8efacc41a17e01f17a25e8fc1d784c74}{pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::has\+\_\+state} = \mbox{[}$\,$\mbox{]} (uint32\+\_\+t value) \{ return predicate(\char`\"{}has\+\_\+state\char`\"{}, value); \}
+\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily true} if the state of the computation is set to the given {\ttfamily value}, possibly by put\+\_\+state function. \end{DoxyCompactList}\item 
 auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a1f0378ddfa90777d11ffae5fbb57b4e0}{pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::has\+\_\+vlan} = predicate (\char`\"{}has\+\_\+vlan\char`\"{})
 \begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} has a vlan tag. \end{DoxyCompactList}\item 
 auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a99c204d8095fdccd50d4cb24d32e5b5b}{pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::has\+\_\+vid} = \mbox{[}$\,$\mbox{]} (int value) \{ return predicate (\char`\"{}has\+\_\+vid\char`\"{}, value); \}
@@ -126,6 +128,8 @@ auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a
 \begin{DoxyCompactList}\small\item\em \hyperlink{structpfq_1_1lang_1_1Predicate}{Predicate} which evaluates to {\ttfamily true} when the packet has one of the. \end{DoxyCompactList}\item 
 auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_ab843ad210e98a7c8a4218efaf60f8c01}{pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::vlan\+\_\+id\+\_\+filter}
 \begin{DoxyCompactList}\small\item\em Monadic function, counterpart of {\ttfamily vlan\+\_\+id} function. \end{DoxyCompactList}\item 
+auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_acd2598e95a0ebc3c21e84f9c861d0d98}{pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::get\+\_\+state} = property(\char`\"{}get\+\_\+state\char`\"{})
+\begin{DoxyCompactList}\small\item\em Evaluate to the state of the computation, possibly set by {\ttfamily state} function. \end{DoxyCompactList}\item 
 auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_ab733e24b3ca86450bea0b0888a6327d2}{pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::get\+\_\+mark} = property(\char`\"{}get\+\_\+mark\char`\"{})
 \begin{DoxyCompactList}\small\item\em Evaluate to the mark set by {\ttfamily mark} function. \end{DoxyCompactList}\item 
 auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_acc5d2b786c39d4177ab37ee16ee2295d}{pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::ip\+\_\+tos} = property(\char`\"{}ip\+\_\+tos\char`\"{})
@@ -218,6 +222,8 @@ auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a
 \begin{DoxyCompactList}\small\item\em Forward the packet to the given device and evaluates to {\ttfamily Drop}. \end{DoxyCompactList}\item 
 auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a7b831baeabda070b89ca862a9445a4a8}{pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::mark} = \mbox{[}$\,$\mbox{]} (uint32\+\_\+t value) \{ return mfunction(\char`\"{}mark\char`\"{}, value); \}
 \begin{DoxyCompactList}\small\item\em Mark the packet with the given value. \end{DoxyCompactList}\item 
+auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_afd94f51db878b2f70225c944c3f1d300}{pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::put\+\_\+state} = \mbox{[}$\,$\mbox{]} (uint32\+\_\+t value) \{ return mfunction(\char`\"{}put\+\_\+state\char`\"{}, value); \}
+\begin{DoxyCompactList}\small\item\em Set the state of the computation to the given value. \end{DoxyCompactList}\item 
 auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_acc7d3a4cca5eb30ff5456e19c613b174}{pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::inc} = \mbox{[}$\,$\mbox{]} (int value) \{ return mfunction(\char`\"{}inc\char`\"{}, value); \}
 \begin{DoxyCompactList}\small\item\em Increment the i-\/th counter of the current group. \end{DoxyCompactList}\item 
 auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a139906841e77a2eb86b761b27ceeb685}{pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::dec} = \mbox{[}$\,$\mbox{]} (int value) \{ return mfunction(\char`\"{}dec\char`\"{}, value); \}

@@ -1,8 +1,8 @@
 var searchData=
 [
-  ['read',['read',['../classpfq_1_1socket.html#a6a79c81d3c366e49b8d64eb828ae5540',1,'pfq::socket']]],
-  ['ready',['ready',['../structpfq_1_1queue_1_1iterator.html#a5310a5b6b8eb89892a2b30d4707e3934',1,'pfq::queue::iterator::ready()'],['../structpfq_1_1queue_1_1const__iterator.html#a04ad2278401bc8134b8e94f7d39f6ae5',1,'pfq::queue::const_iterator::ready()']]],
-  ['recv',['recv',['../classpfq_1_1socket.html#ace69fbf64216b7b30a8a305a9d25229b',1,'pfq::socket']]],
+  ['read',['read',['../classpfq_1_1socket.html#a6004249d3abfe8a2329b44ba797d1909',1,'pfq::socket']]],
+  ['ready',['ready',['../structpfq_1_1net__queue_1_1iterator.html#a878ca2b92a0e25589a8b986c18ff7885',1,'pfq::net_queue::iterator::ready()'],['../structpfq_1_1net__queue_1_1const__iterator.html#a80b25aeb8f332fb175896c91f3a201c4',1,'pfq::net_queue::const_iterator::ready()']]],
+  ['recv',['recv',['../classpfq_1_1socket.html#a57643b9011269682bf716254c2b72907',1,'pfq::socket']]],
   ['reset_5fgroup_5ffprog',['reset_group_fprog',['../classpfq_1_1socket.html#a2327e71a6f94e54efb0da5ec36b1c620',1,'pfq::socket']]],
   ['restricted',['restricted',['../namespacepfq.html#ac41249c8510558905b01fa4d866a38d7ac89b33f8b3f6f452ef6f07d397b5dcdf',1,'pfq']]],
   ['rx_5fslot_5fsize',['rx_slot_size',['../classpfq_1_1socket.html#a8e290b6b1105c22b538d38021d6bfb7d',1,'pfq::socket']]],

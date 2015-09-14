@@ -135,7 +135,7 @@ int \hyperlink{pfq_8h_ae46eafd5130cae13e848498db781d67d}{pfq\+\_\+tx\+\_\+async\
 \item 
 int \hyperlink{pfq_8h_a21c77addd3b773015a44ee0aaba688fb}{pfq\+\_\+tx\+\_\+async\+\_\+stop} (\hyperlink{pfq_8h_a4e27e9f8aa4924f374dbb950713e8f0e}{pfq\+\_\+t} $\ast$q)
 \item 
-int \hyperlink{pfq_8h_a65663e50cb89fdb3aff9d6b7668ca381}{pfq\+\_\+inject} (\hyperlink{pfq_8h_a4e27e9f8aa4924f374dbb950713e8f0e}{pfq\+\_\+t} $\ast$q, const void $\ast$ptr, size\+\_\+t len, uint64\+\_\+t nsec, int copies, int queue)
+int \hyperlink{pfq_8h_aeaff6bf1d8ea9bba7820e2aa882aacbc}{pfq\+\_\+send\+\_\+deferred} (\hyperlink{pfq_8h_a4e27e9f8aa4924f374dbb950713e8f0e}{pfq\+\_\+t} $\ast$q, const void $\ast$ptr, size\+\_\+t len, uint64\+\_\+t nsec, int copies, int queue)
 \item 
 int \hyperlink{pfq_8h_a75e46da7bdd86128def46def9327c64c}{pfq\+\_\+send} (\hyperlink{pfq_8h_a4e27e9f8aa4924f374dbb950713e8f0e}{pfq\+\_\+t} $\ast$q, const void $\ast$ptr, size\+\_\+t len, int copies)
 \item 
@@ -387,21 +387,7 @@ Return the id of the socket. \hypertarget{pfq_8h_abe14da05a5618684ef2896ff4497ae
 \item[{const char $\ast$}]{dev}
 \end{DoxyParamCaption}
 )}}\label{pfq_8h_abe14da05a5618684ef2896ff4497ae4b}
-Given a device name, return the interface index. \hypertarget{pfq_8h_a65663e50cb89fdb3aff9d6b7668ca381}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+inject@{pfq\+\_\+inject}}
-\index{pfq\+\_\+inject@{pfq\+\_\+inject}!pfq.\+h@{pfq.\+h}}
-\subsubsection[{pfq\+\_\+inject}]{\setlength{\rightskip}{0pt plus 5cm}int pfq\+\_\+inject (
-\begin{DoxyParamCaption}
-\item[{{\bf pfq\+\_\+t} $\ast$}]{q, }
-\item[{const void $\ast$}]{ptr, }
-\item[{size\+\_\+t}]{len, }
-\item[{uint64\+\_\+t}]{nsec, }
-\item[{int}]{copies, }
-\item[{int}]{queue}
-\end{DoxyParamCaption}
-)}}\label{pfq_8h_a65663e50cb89fdb3aff9d6b7668ca381}
-Schedule the packet for transmission.
-
-The packet is copied into a Tx queue (using a T\+S\+S symmetric hash if any\+\_\+queue is specified) and transmitted at the given timestamp by a kernel thread or when tx\+\_\+queue\+\_\+flush is called. A timestamp of 0 nanoseconds means 'immediate transmission'. \hypertarget{pfq_8h_a797ab131962d34faecb052d2a47f65b9}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+is\+\_\+enabled@{pfq\+\_\+is\+\_\+enabled}}
+Given a device name, return the interface index. \hypertarget{pfq_8h_a797ab131962d34faecb052d2a47f65b9}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+is\+\_\+enabled@{pfq\+\_\+is\+\_\+enabled}}
 \index{pfq\+\_\+is\+\_\+enabled@{pfq\+\_\+is\+\_\+enabled}!pfq.\+h@{pfq.\+h}}
 \subsubsection[{pfq\+\_\+is\+\_\+enabled}]{\setlength{\rightskip}{0pt plus 5cm}int pfq\+\_\+is\+\_\+enabled (
 \begin{DoxyParamCaption}
@@ -560,7 +546,21 @@ The transmission is invoked every  packets. When T\+X kernel threads are in use,
 )}}\label{pfq_8h_a7ce16e1e8c72022d6b17a3262454e21f}
 Store the packet and transmit it.
 
-The transmission takes place asynchronously at the given timespec time. \hypertarget{pfq_8h_ac726d1da4c6aecfa1dcb1544c036cdc4}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+set\+\_\+caplen@{pfq\+\_\+set\+\_\+caplen}}
+The transmission takes place asynchronously at the given timespec time. \hypertarget{pfq_8h_aeaff6bf1d8ea9bba7820e2aa882aacbc}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+send\+\_\+deferred@{pfq\+\_\+send\+\_\+deferred}}
+\index{pfq\+\_\+send\+\_\+deferred@{pfq\+\_\+send\+\_\+deferred}!pfq.\+h@{pfq.\+h}}
+\subsubsection[{pfq\+\_\+send\+\_\+deferred}]{\setlength{\rightskip}{0pt plus 5cm}int pfq\+\_\+send\+\_\+deferred (
+\begin{DoxyParamCaption}
+\item[{{\bf pfq\+\_\+t} $\ast$}]{q, }
+\item[{const void $\ast$}]{ptr, }
+\item[{size\+\_\+t}]{len, }
+\item[{uint64\+\_\+t}]{nsec, }
+\item[{int}]{copies, }
+\item[{int}]{queue}
+\end{DoxyParamCaption}
+)}}\label{pfq_8h_aeaff6bf1d8ea9bba7820e2aa882aacbc}
+Schedule packet transmission.
+
+The packet is copied into a Tx queue (using a T\+S\+S symmetric hash if any\+\_\+queue is specified) and transmitted at the given timestamp by a kernel thread or when tx\+\_\+queue\+\_\+flush is called. A timestamp of 0 nanoseconds means 'immediate transmission'. \hypertarget{pfq_8h_ac726d1da4c6aecfa1dcb1544c036cdc4}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+set\+\_\+caplen@{pfq\+\_\+set\+\_\+caplen}}
 \index{pfq\+\_\+set\+\_\+caplen@{pfq\+\_\+set\+\_\+caplen}!pfq.\+h@{pfq.\+h}}
 \subsubsection[{pfq\+\_\+set\+\_\+caplen}]{\setlength{\rightskip}{0pt plus 5cm}int pfq\+\_\+set\+\_\+caplen (
 \begin{DoxyParamCaption}

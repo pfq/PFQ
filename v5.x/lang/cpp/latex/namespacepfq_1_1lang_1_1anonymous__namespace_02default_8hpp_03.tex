@@ -71,6 +71,8 @@ auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a
 \begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily true} if the destination I\+P address matches the given network address. \end{DoxyCompactList}\item 
 auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_aa4ce1fdb0d99e1ca0afdf76619c58d12}{has\+\_\+mark} = \mbox{[}$\,$\mbox{]} (uint32\+\_\+t value) \{ return \hyperlink{namespacepfq_1_1lang_aca9adafc436b7f851621b979fa1aaf88}{predicate}(\char`\"{}has\+\_\+mark\char`\"{}, value); \}
 \begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} has the given {\ttfamily mark}, set by mark function. \end{DoxyCompactList}\item 
+auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a8efacc41a17e01f17a25e8fc1d784c74}{has\+\_\+state} = \mbox{[}$\,$\mbox{]} (uint32\+\_\+t value) \{ return \hyperlink{namespacepfq_1_1lang_aca9adafc436b7f851621b979fa1aaf88}{predicate}(\char`\"{}has\+\_\+state\char`\"{}, value); \}
+\begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily true} if the state of the computation is set to the given {\ttfamily value}, possibly by put\+\_\+state function. \end{DoxyCompactList}\item 
 auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a1f0378ddfa90777d11ffae5fbb57b4e0}{has\+\_\+vlan} = \hyperlink{namespacepfq_1_1lang_aca9adafc436b7f851621b979fa1aaf88}{predicate} (\char`\"{}has\+\_\+vlan\char`\"{})
 \begin{DoxyCompactList}\small\item\em Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} has a vlan tag. \end{DoxyCompactList}\item 
 auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a99c204d8095fdccd50d4cb24d32e5b5b}{has\+\_\+vid} = \mbox{[}$\,$\mbox{]} (int value) \{ return \hyperlink{namespacepfq_1_1lang_aca9adafc436b7f851621b979fa1aaf88}{predicate} (\char`\"{}has\+\_\+vid\char`\"{}, value); \}
@@ -79,6 +81,8 @@ auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a
 \begin{DoxyCompactList}\small\item\em \hyperlink{structpfq_1_1lang_1_1Predicate}{Predicate} which evaluates to {\ttfamily true} when the packet has one of the. \end{DoxyCompactList}\item 
 auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_ab843ad210e98a7c8a4218efaf60f8c01}{vlan\+\_\+id\+\_\+filter}
 \begin{DoxyCompactList}\small\item\em Monadic function, counterpart of {\ttfamily vlan\+\_\+id} function. \end{DoxyCompactList}\item 
+auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_acd2598e95a0ebc3c21e84f9c861d0d98}{get\+\_\+state} = \hyperlink{namespacepfq_1_1lang_a1249450e72229273b0db707a286aea91}{property}(\char`\"{}get\+\_\+state\char`\"{})
+\begin{DoxyCompactList}\small\item\em Evaluate to the state of the computation, possibly set by {\ttfamily state} function. \end{DoxyCompactList}\item 
 auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_ab733e24b3ca86450bea0b0888a6327d2}{get\+\_\+mark} = \hyperlink{namespacepfq_1_1lang_a1249450e72229273b0db707a286aea91}{property}(\char`\"{}get\+\_\+mark\char`\"{})
 \begin{DoxyCompactList}\small\item\em Evaluate to the mark set by {\ttfamily mark} function. \end{DoxyCompactList}\item 
 auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_acc5d2b786c39d4177ab37ee16ee2295d}{ip\+\_\+tos} = \hyperlink{namespacepfq_1_1lang_a1249450e72229273b0db707a286aea91}{property}(\char`\"{}ip\+\_\+tos\char`\"{})
@@ -171,6 +175,8 @@ auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a
 \begin{DoxyCompactList}\small\item\em Forward the packet to the given device and evaluates to {\ttfamily Drop}. \end{DoxyCompactList}\item 
 auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a7b831baeabda070b89ca862a9445a4a8}{mark} = \mbox{[}$\,$\mbox{]} (uint32\+\_\+t value) \{ return \hyperlink{namespacepfq_1_1lang_a1aacba4a159b6c2ddf275bd1fec19ec2}{mfunction}(\char`\"{}mark\char`\"{}, value); \}
 \begin{DoxyCompactList}\small\item\em Mark the packet with the given value. \end{DoxyCompactList}\item 
+auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_afd94f51db878b2f70225c944c3f1d300}{put\+\_\+state} = \mbox{[}$\,$\mbox{]} (uint32\+\_\+t value) \{ return \hyperlink{namespacepfq_1_1lang_a1aacba4a159b6c2ddf275bd1fec19ec2}{mfunction}(\char`\"{}put\+\_\+state\char`\"{}, value); \}
+\begin{DoxyCompactList}\small\item\em Set the state of the computation to the given value. \end{DoxyCompactList}\item 
 auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_acc7d3a4cca5eb30ff5456e19c613b174}{inc} = \mbox{[}$\,$\mbox{]} (int value) \{ return \hyperlink{namespacepfq_1_1lang_a1aacba4a159b6c2ddf275bd1fec19ec2}{mfunction}(\char`\"{}inc\char`\"{}, value); \}
 \begin{DoxyCompactList}\small\item\em Increment the i-\/th counter of the current group. \end{DoxyCompactList}\item 
 auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a139906841e77a2eb86b761b27ceeb685}{dec} = \mbox{[}$\,$\mbox{]} (int value) \{ return \hyperlink{namespacepfq_1_1lang_a1aacba4a159b6c2ddf275bd1fec19ec2}{mfunction}(\char`\"{}dec\char`\"{}, value); \}
@@ -598,6 +604,13 @@ By default packets are marked with 0.
 \begin{DoxySeeAlso}{See also}
 \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a7b831baeabda070b89ca862a9445a4a8}{mark} 
 \end{DoxySeeAlso}
+\hypertarget{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_acd2598e95a0ebc3c21e84f9c861d0d98}{\index{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}!get\+\_\+state@{get\+\_\+state}}
+\index{get\+\_\+state@{get\+\_\+state}!pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}}
+\subsubsection[{get\+\_\+state}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::get\+\_\+state = {\bf property}(\char`\"{}get\+\_\+state\char`\"{})}}\label{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_acd2598e95a0ebc3c21e84f9c861d0d98}
+
+
+Evaluate to the state of the computation, possibly set by {\ttfamily state} function. 
+
 \hypertarget{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a74c6b7e812fb3d312ebf534960a6a91d}{\index{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}!has\+\_\+addr@{has\+\_\+addr}}
 \index{has\+\_\+addr@{has\+\_\+addr}!pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}}
 \subsubsection[{has\+\_\+addr}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::has\+\_\+addr}}\label{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a74c6b7e812fb3d312ebf534960a6a91d}
@@ -681,7 +694,21 @@ Evaluate to {\ttfamily true} if the source I\+P address matches the given networ
 
 Evaluate to {\ttfamily true} if the \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} has the given source port. 
 
-If the transport protocol is not present or has no port, the predicate evaluates to False. \hypertarget{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a99c204d8095fdccd50d4cb24d32e5b5b}{\index{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}!has\+\_\+vid@{has\+\_\+vid}}
+If the transport protocol is not present or has no port, the predicate evaluates to False. \hypertarget{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a8efacc41a17e01f17a25e8fc1d784c74}{\index{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}!has\+\_\+state@{has\+\_\+state}}
+\index{has\+\_\+state@{has\+\_\+state}!pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}}
+\subsubsection[{has\+\_\+state}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::has\+\_\+state = \mbox{[}$\,$\mbox{]} (uint32\+\_\+t value) \{ return {\bf predicate}(\char`\"{}has\+\_\+state\char`\"{}, value); \}}}\label{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a8efacc41a17e01f17a25e8fc1d784c74}
+
+
+Evaluate to {\ttfamily true} if the state of the computation is set to the given {\ttfamily value}, possibly by put\+\_\+state function. 
+
+Example\+:
+
+has\+\_\+state(11)
+
+\begin{DoxySeeAlso}{See also}
+state 
+\end{DoxySeeAlso}
+\hypertarget{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a99c204d8095fdccd50d4cb24d32e5b5b}{\index{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}!has\+\_\+vid@{has\+\_\+vid}}
 \index{has\+\_\+vid@{has\+\_\+vid}!pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}}
 \subsubsection[{has\+\_\+vid}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::has\+\_\+vid = \mbox{[}$\,$\mbox{]} (int value) \{ return {\bf predicate} (\char`\"{}has\+\_\+vid\char`\"{}, value); \}}}\label{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a99c204d8095fdccd50d4cb24d32e5b5b}
 
@@ -974,6 +1001,13 @@ port(80) $>$$>$ log\+\_\+msg (\char`\"{}http packet!\char`\"{})
 \begin{DoxySeeAlso}{See also}
 \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a9f7161b8dfb842c5a845f413eb6bc82f}{has\+\_\+port} 
 \end{DoxySeeAlso}
+\hypertarget{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_afd94f51db878b2f70225c944c3f1d300}{\index{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}!put\+\_\+state@{put\+\_\+state}}
+\index{put\+\_\+state@{put\+\_\+state}!pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}}
+\subsubsection[{put\+\_\+state}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::put\+\_\+state = \mbox{[}$\,$\mbox{]} (uint32\+\_\+t value) \{ return {\bf mfunction}(\char`\"{}put\+\_\+state\char`\"{}, value); \}}}\label{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_afd94f51db878b2f70225c944c3f1d300}
+
+
+Set the state of the computation to the given value. 
+
 \hypertarget{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_aa8ac230fe8eeb0bccee8e31ba032cb8e}{\index{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}!rtp@{rtp}}
 \index{rtp@{rtp}!pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}}
 \subsubsection[{rtp}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::rtp = {\bf mfunction}(\char`\"{}rtp\char`\"{})}}\label{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_aa8ac230fe8eeb0bccee8e31ba032cb8e}
