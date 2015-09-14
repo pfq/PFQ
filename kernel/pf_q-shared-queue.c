@@ -67,7 +67,7 @@ pfq_shared_queue_enable(struct pfq_sock *so, unsigned long user_addr)
 		/* initialize Rx queues */
 
 		queue->rx.data      = 0;
-		queue->rx.size      = so->opt.rx_queue_size;
+		queue->rx.len       = so->opt.rx_queue_len;
 		queue->rx.slot_size = so->opt.rx_slot_size;
 
 		/* reset Rx slots */
@@ -114,14 +114,14 @@ pfq_shared_queue_enable(struct pfq_sock *so, unsigned long user_addr)
 
 		pr_devel("[PFQ|%d] Rx queue: len=%zu slot_size=%zu caplen=%zu, mem=%zu bytes\n",
 			 so->id,
-			 so->opt.rx_queue_size,
+			 so->opt.rx_queue_len,
 			 so->opt.rx_slot_size,
 			 so->opt.caplen,
 			 pfq_mpsc_queue_mem(so));
 
 		pr_devel("[PFQ|%d] Tx queue: len=%zu slot_size=%zu maxlen=%d, mem=%zu bytes (%d queues)\n",
 			 so->id,
-			 so->opt.tx_queue_size,
+			 so->opt.tx_queue_len,
 			 so->opt.tx_slot_size,
 			 xmit_slot_size,
 			 pfq_spsc_queue_mem(so) * Q_MAX_TX_QUEUES, Q_MAX_TX_QUEUES);

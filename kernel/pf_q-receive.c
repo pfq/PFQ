@@ -72,7 +72,7 @@ size_t pfq_sk_rx_queue_recv(struct pfq_sock_opt *opt,
 
 	data = atomic_read((atomic_t *)&rx_queue->data);
 
-	if (Q_SHARED_QUEUE_LEN(data) > opt->rx_queue_size)
+	if (Q_SHARED_QUEUE_LEN(data) > opt->rx_queue_len)
 		return 0;
 
 	data = atomic_add_return(burst_len, (atomic_t *)&rx_queue->data);
@@ -94,7 +94,7 @@ size_t pfq_sk_rx_queue_recv(struct pfq_sock_opt *opt,
 		hdr = (struct pfq_pkthdr *)this_slot;
 		pkt = (char *)(hdr+1);
 
-		if (slot_index > opt->rx_queue_size) {
+		if (slot_index > opt->rx_queue_len) {
 
 			if (waitqueue_active(&opt->waitqueue)) {
 				SPARSE_INC(&global_stats.wake);

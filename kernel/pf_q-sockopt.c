@@ -205,17 +205,17 @@ int pfq_getsockopt(struct socket *sock,
 
         case Q_SO_GET_RX_SLOTS:
         {
-                if (len != sizeof(so->opt.rx_queue_size))
+                if (len != sizeof(so->opt.rx_queue_len))
                         return -EINVAL;
-                if (copy_to_user(optval, &so->opt.rx_queue_size, sizeof(so->opt.rx_queue_size)))
+                if (copy_to_user(optval, &so->opt.rx_queue_len, sizeof(so->opt.rx_queue_len)))
                         return -EFAULT;
         } break;
 
         case Q_SO_GET_TX_SLOTS:
         {
-                if (len != sizeof(so->opt.tx_queue_size))
+                if (len != sizeof(so->opt.tx_queue_len))
                         return -EINVAL;
-                if (copy_to_user(optval, &so->opt.tx_queue_size, sizeof(so->opt.tx_queue_size)))
+                if (copy_to_user(optval, &so->opt.tx_queue_len, sizeof(so->opt.tx_queue_len)))
                         return -EFAULT;
         } break;
 
@@ -528,7 +528,7 @@ int pfq_setsockopt(struct socket *sock,
 
         case Q_SO_SET_RX_SLOTS:
         {
-                typeof(so->opt.rx_queue_size) slots;
+                typeof(so->opt.rx_queue_len) slots;
 
                 if (optlen != sizeof(slots))
                         return -EINVAL;
@@ -542,14 +542,14 @@ int pfq_setsockopt(struct socket *sock,
                         return -EPERM;
                 }
 
-                so->opt.rx_queue_size = slots;
+                so->opt.rx_queue_len = slots;
 
-                pr_devel("[PFQ|%d] rx_queue slots=%zu\n", so->id, so->opt.rx_queue_size);
+                pr_devel("[PFQ|%d] rx_queue slots=%zu\n", so->id, so->opt.rx_queue_len);
         } break;
 
         case Q_SO_SET_TX_SLOTS:
         {
-                typeof (so->opt.tx_queue_size) slots;
+                typeof (so->opt.tx_queue_len) slots;
 
                 if (optlen != sizeof(slots))
                         return -EINVAL;
@@ -562,9 +562,9 @@ int pfq_setsockopt(struct socket *sock,
                         return -EPERM;
                 }
 
-                so->opt.tx_queue_size = slots;
+                so->opt.tx_queue_len = slots;
 
-                pr_devel("[PFQ|%d] tx_queue slots=%zu\n", so->id, so->opt.tx_queue_size);
+                pr_devel("[PFQ|%d] tx_queue slots=%zu\n", so->id, so->opt.tx_queue_len);
         } break;
 
         case Q_SO_SET_WEIGHT:

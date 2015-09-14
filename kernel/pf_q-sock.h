@@ -66,10 +66,10 @@ struct pfq_sock_opt
 	int			tstamp;
 	size_t			caplen;
 
-	size_t			rx_queue_size;
+	size_t			rx_queue_len;
 	size_t			rx_slot_size;
 
-	size_t			tx_queue_size;
+	size_t			tx_queue_len;
 	size_t			tx_slot_size;
         size_t			tx_num_queues;
 
@@ -94,9 +94,7 @@ struct pfq_sock
 	int			weight;
 
 	struct pfq_shmem_descr  shmem;
-
         struct pfq_sock_opt	opt;
-
         struct pfq_sock_stats	stats;
 
 } ____cacheline_aligned_in_smp;

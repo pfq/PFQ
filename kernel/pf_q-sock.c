@@ -126,7 +126,7 @@ void pfq_sock_opt_init(struct pfq_sock_opt *that, size_t caplen, size_t maxlen)
         /* set slots and caplen default values */
 
         that->caplen = caplen;
-        that->rx_queue_size = 0;
+        that->rx_queue_len = 0;
         that->rx_slot_size = 0;
 
         /* initialize waitqueue */
@@ -135,7 +135,7 @@ void pfq_sock_opt_init(struct pfq_sock_opt *that, size_t caplen, size_t maxlen)
 
 	/* Tx queues setup */
 
-        that->tx_queue_size = 0;
+        that->tx_queue_len  = 0;
         that->tx_slot_size  = Q_QUEUE_SLOT_SIZE(maxlen);
 	that->tx_num_queues = 0;
 

@@ -46,12 +46,12 @@ int pfq_shared_queue_disable(struct pfq_sock *so);
 
 static inline size_t pfq_mpsc_queue_mem(struct pfq_sock *so)
 {
-        return so->opt.rx_queue_size * so->opt.rx_slot_size * 2;
+        return so->opt.rx_queue_len * so->opt.rx_slot_size * 2;
 }
 
 static inline size_t pfq_spsc_queue_mem(struct pfq_sock *so)
 {
-        return so->opt.tx_queue_size * so->opt.tx_slot_size * 2;
+        return so->opt.tx_queue_len * so->opt.tx_slot_size * 2;
 }
 
 
@@ -78,7 +78,7 @@ int pfq_mpsc_queue_index(struct pfq_sock *p)
 static inline
 char *pfq_mpsc_slot_ptr(struct pfq_sock_opt *opt, struct pfq_rx_queue *qd, size_t qindex, size_t slot)
 {
-	return (char *)(opt->rxq.base_addr) + (opt->rx_queue_size * (qindex & 1) + slot) * opt->rx_slot_size;
+	return (char *)(opt->rxq.base_addr) + (opt->rx_queue_len * (qindex & 1) + slot) * opt->rx_slot_size;
 }
 
 
