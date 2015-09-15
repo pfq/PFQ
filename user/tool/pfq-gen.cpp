@@ -58,6 +58,7 @@ namespace opt
     bool   rand_ip   = false;
     bool   rand_flow = false;
     bool   active_ts = false;
+    bool   poisson   = false;
 
     double rate    = 0;
 
@@ -177,6 +178,9 @@ namespace thread
                 throw std::runtime_error("pcap support disabled!");
 #endif
             }
+            else if (opt::poisson) {
+                active_generator(true);
+            }
             else if (opt::active_ts) {
                 active_generator();
             }
@@ -276,12 +280,20 @@ namespace thread
         }
 
 
-        void active_generator()
+        void active_generator(bool poisson = false)
         {
-            auto delta = std::chrono::nanoseconds(static_cast<uint64_t>(1000/opt::rate));
-            auto ip    = reinterpret_cast<iphdr *>(m_packet.get() + 14);
-            auto now   = std::chrono::system_clock::now();
-            auto len   = opt::len;
+            auto delta        = std::chrono::nanoseconds(static_cast<uint64_t>(1000/opt::rate));
+            auto ip           = reinterpret_cast<iphdr *>(m_packet.get() + 14);
+            auto now          = std::chrono::system_clock::now();
+            auto len          = opt::len;
+            uint64_t pkt_time = (len + 24) * 0.8;
+
+            // poisson process traffic
+            std::default_random_engine rnd;
+            // we want to control the inter-packet gap instead of the departure time
+            // otherwise we run into problems when the inter-departure time is less
+            // than the packet length
+            std::exponential_distribution<double> exp_dist(1.0 / (delta.count() - pkt_time));
 
             for(size_t n = 0; n < opt::npackets;)
             {
@@ -290,8 +302,11 @@ namespace thread
                     m_fail->fetch_add(1, std::memory_order_relaxed);
                     continue;
                 }
+                if (poisson)
+                    now += std::chrono::nanoseconds((int) exp_dist(rnd) + pkt_time);
+                else
+                    now += delta;
 
-                now += delta;
 
                 m_sent->fetch_add(1, std::memory_order_relaxed);
                 m_band->fetch_add(len, std::memory_order_relaxed);
@@ -489,6 +504,7 @@ void usage(std::string name)
         " -P --preload INT              Preload INT packets (must be a power of 2)\n"
         "    --rate DOUBLE              Packet rate in Mpps\n"
         " -a --active-tstamp            Use active timestamp as rate control\n"
+        " -p --poisson                  Use a Poisson process for inter-packet gaps, implies -a\n"
         " -f --flush INT                Set flush length, used in sync Tx\n"
         " -t --thread BINDING\n\n"
         "      " + more::netdev_format + "\n" +
@@ -634,6 +650,13 @@ try
             continue;
         }
 
+        if ( any_strcmp(argv[i], "-p", "--poisson") )
+        {
+            opt::poisson = true;
+            opt::active_ts = true;
+            continue;
+        }
+
         if ( any_strcmp(argv[i], "-t", "--thread") )
         {
             if (++i == argc)
@@ -713,9 +736,11 @@ try
     if (opt::rand_flow && opt::file.empty())
         throw std::runtime_error("random flow requires reading packets from file (r)");
 
-    if (opt::active_ts)
+    if (opt::active_ts && !opt::poisson)
         std::cout << "timestamp  : active!" << std::endl;
 
+    if (opt::poisson)
+        std::cout << "timestamp  : active with poisson Process traffic!" << std::endl;
 
     auto mq = std::any_of(std::begin(binding), std::end(binding), [](more::thread_binding const &b) { return b.dev.front().queue.size() > 1; });
 
