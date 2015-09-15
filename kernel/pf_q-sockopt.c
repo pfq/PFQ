@@ -578,7 +578,7 @@ int pfq_setsockopt(struct socket *sock,
                         return -EFAULT;
 
 		if (weight < 1 || weight > (Q_MAX_SOCK_MASK/Q_MAX_ID)) {
-                        printk(KERN_INFO "[PFQ|%d] weight=%d: invalid range (min 1, max %lu)\n", so->id, weight,
+                        printk(KERN_INFO "[PFQ|%d] weight=%d: invalid range (min 1, max %d)\n", so->id, weight,
                                Q_MAX_SOCK_MASK/Q_MAX_ID);
                         return -EPERM;
 		}
@@ -817,7 +817,7 @@ int pfq_setsockopt(struct socket *sock,
 			return -EPERM;
 		}
 
-		if (queue < -1 || (queue > 0 && queue >= so->opt.tx_num_queues)) {
+		if (queue < -1 || (queue > 0 && queue >= (int)so->opt.tx_num_queues)) {
 			printk(KERN_INFO "[PFQ|%d] Tx queue flush: bad queue %d (num_queue=%zu)!\n",
 			       so->id, queue, so->opt.tx_num_queues);
 			return -EPERM;

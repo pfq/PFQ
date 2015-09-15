@@ -486,7 +486,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 
 		PFQ_CB(buff)->direct = direct;
 
-		if ((GC_size(data->GC) < capt_batch_len) &&
+		if ((GC_size(data->GC) < (size_t)capt_batch_len) &&
 		     (ktime_to_ns(ktime_sub(skb_get_ktime(PFQ_SKB(buff)), data->last_rx)) < 1000000))
 		{
 			local_bh_enable();
@@ -881,13 +881,13 @@ static int __init pfq_init_module(void)
 	/* check options */
 
         if (capt_batch_len <= 0 || capt_batch_len > Q_SKBUFF_BATCH) {
-                printk(KERN_INFO "[PFQ] capt_batch_len=%d not allowed: valid range (0,%zu]!\n",
+                printk(KERN_INFO "[PFQ] capt_batch_len=%d not allowed: valid range (0,%d]!\n",
                        capt_batch_len, Q_SKBUFF_BATCH);
                 return -EFAULT;
         }
 
         if (xmit_batch_len <= 0 || xmit_batch_len > Q_SKBUFF_BATCH) {
-                printk(KERN_INFO "[PFQ] xmit_batch_len=%d not allowed: valid range (0,%zu]!\n",
+                printk(KERN_INFO "[PFQ] xmit_batch_len=%d not allowed: valid range (0,%d]!\n",
                        xmit_batch_len, Q_SKBUFF_BATCH);
                 return -EFAULT;
         }

@@ -66,7 +66,7 @@ static
 size_t copy_to_user_skbs(struct pfq_sock *so, struct pfq_skbuff_GC_queue *skbs,
 			 unsigned long long mask, int cpu, pfq_gid_t gid)
 {
-        int len = pfq_popcount(mask);
+        unsigned int len = pfq_popcount(mask);
         size_t cpy = 0;
 
         if (likely(pfq_get_rx_queue(&so->opt))) {

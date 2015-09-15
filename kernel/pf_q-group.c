@@ -123,7 +123,7 @@ static void
 __pfq_group_init(pfq_gid_t gid)
 {
         struct pfq_group * g;
-        int i;
+        size_t i;
 
 	g = pfq_get_group(gid);
         if (g == NULL)
@@ -255,7 +255,7 @@ __pfq_leave_group(pfq_gid_t gid, pfq_id_t id)
 {
         struct pfq_group * g;
         unsigned long tmp;
-        int i;
+        size_t i;
 
 	g = pfq_get_group(gid);
         if (g == NULL)
@@ -282,7 +282,7 @@ pfq_get_all_groups_mask(pfq_gid_t gid)
 {
         struct pfq_group * g;
         unsigned long mask = 0;
-        int i;
+        size_t i;
 
 	g = pfq_get_group(gid);
         if (g == NULL)

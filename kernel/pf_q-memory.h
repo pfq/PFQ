@@ -60,7 +60,7 @@ unsigned int pfq_skb_end_offset(const struct sk_buff *skb)
 #endif
 
 
-static inline bool pfq_skb_is_recycleable(const struct sk_buff *skb, int skb_size)
+static inline bool pfq_skb_is_recycleable(const struct sk_buff *skb, unsigned int skb_size)
 {
 	if (irqs_disabled()) {
 		SPARSE_INC(&memory_stats.err_intdis);

@@ -308,10 +308,10 @@ struct pfq_pcap_pkthdr {
 /*
  * Functional argument:
  *
- * pod	  	-> (ptr/value, sizeof,  -1 )
+ * pod	  	-> (ptr/value, sizeof,  ~0ULL )
  * pod array    -> (ptr,       sizeof,  len)
- * string 	-> (ptr,       0     ,  -1 )
- * expression 	-> (0,         index ,  -1 )
+ * string 	-> (ptr,       0     ,  ~0ULL )
+ * expression 	-> (0,         index ,  ~0ULL )
  *
  */
 

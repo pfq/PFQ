@@ -26,9 +26,9 @@
 
 #include <pf_q-types.h>
 
-#define Q_MAX_ID                (sizeof(long)<<3)
-#define Q_MAX_GID		(sizeof(long)<<3)
-#define Q_SKBUFF_BATCH		(sizeof(long)<<3)
+#define Q_MAX_ID                ((int)sizeof(long)<<3)
+#define Q_MAX_GID		((int)sizeof(long)<<3)
+#define Q_SKBUFF_BATCH		((int)sizeof(long)<<3)
 
 #define Q_GC_LOG_QUEUE_LEN	16
 #define Q_GC_POOL_QUEUE_LEN	512
