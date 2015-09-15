@@ -1,5 +1,6 @@
 #include <pf_q-maybe.h>
 
+#include <linux/ip.h>
 #include <stdio.h>
 #include <assert.h>
 
@@ -30,7 +31,6 @@ void test_signed(void)
      assert(FROM_JUST(int, b) ==  0);
      assert(FROM_JUST(int, c) == -1);
      assert(FROM_JUST(int, d) == -2);
-
      assert(FROM_JUST(long long int, f) ==  0);
      assert(FROM_JUST(long long int, g) ==  1);
      assert(FROM_JUST(long long int, h) == -1);
@@ -57,8 +57,29 @@ void test_unsigned(void)
 	assert(IS_JUST(g_));
 	assert(IS_JUST(h_));
 	assert(IS_NOTHING(i_));
+
+	assert(FROM_JUST(unsigned, a_) == 10U);
+	assert(FROM_JUST(unsigned, b_) == 0U);
+	assert(FROM_JUST(unsigned, c_) == (unsigned)-1);
+	assert(FROM_JUST(unsigned long long, f_) == 0ULL);
+	assert(FROM_JUST(unsigned long long, g_) == 1ULL);
+	assert(FROM_JUST(unsigned long long, h_) == -1ULL);
+
 }
 
+void test_header()
+{
+	struct iphdr h;
+	h.tos = 1;
+	h.ttl = 255;
+
+	long long int tos = JUST(h.tos);
+	long long int ttl = JUST(h.ttl);
+	assert(IS_JUST(tos));
+	assert(IS_JUST(ttl));
+	assert(FROM_JUST(unsigned char, tos) == 1);
+	assert(FROM_JUST(unsigned char, ttl) == 255);
+}
 
 int
 main(int argc, char *argv[])
@@ -67,6 +88,7 @@ main(int argc, char *argv[])
 	(void)argv;
 	test_signed();
 	test_unsigned();
+	test_header();
 	printf("All test successfully passed.\n");
 	return 0;
 }

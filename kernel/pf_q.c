@@ -216,15 +216,10 @@ pfq_receive_batch(struct pfq_percpu_data *data,
 
 		socket_mask = 0;
 
-		for_each_skbuff(&GC_ptr->pool, buff, n)
+		for_each_skbuff_upto(this_batch_len, &GC_ptr->pool, buff, n)
 		{
 			struct pfq_computation_tree *prg;
 			unsigned long sock_mask = 0;
-
-			/* stop processing packets in GC ? */
-
-			if (n == this_batch_len)
-				break;
 
 			/* skip this packet for this group ? */
 
