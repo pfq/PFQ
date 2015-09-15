@@ -25,27 +25,25 @@
 #ifndef PF_Q_MAYBE_H
 #define PF_Q_MAYBE_H
 
-#define _MAYBE_CHECK(a) \
-	__builtin_choose_expr(__builtin_types_compatible_p(char,		   typeof(a)),  (a), \
-	__builtin_choose_expr(__builtin_types_compatible_p(short int,		   typeof(a)),  (a), \
-	__builtin_choose_expr(__builtin_types_compatible_p(int,			   typeof(a)),  (a), \
-	__builtin_choose_expr(__builtin_types_compatible_p(long int,		   typeof(a)),  (a), \
-	__builtin_choose_expr(__builtin_types_compatible_p(long long int,	   typeof(a)),  (a), \
-	__builtin_choose_expr(__builtin_types_compatible_p(unsigned char,	   typeof(a)),  (a), \
-	__builtin_choose_expr(__builtin_types_compatible_p(unsigned short int,	   typeof(a)),  (a), \
-	__builtin_choose_expr(__builtin_types_compatible_p(unsigned int,	   typeof(a)),  (a), \
-	__builtin_choose_expr(__builtin_types_compatible_p(unsigned long int,	   typeof(a)),  (a), \
-	__builtin_choose_expr(__builtin_types_compatible_p(unsigned long long int, typeof(a)),  (a), \
+#define NOTHING			~0LL
+#define FROM_JUST(type, a)	((long long int)a < 0 ? (type)(a+1) : (type)a)
+
+#define JUST(a) \
+	__builtin_choose_expr(__builtin_types_compatible_p(char,	           typeof(a)),  _JUST(a), \
+	__builtin_choose_expr(__builtin_types_compatible_p(short int,		   typeof(a)),  _JUST(a), \
+	__builtin_choose_expr(__builtin_types_compatible_p(int,			   typeof(a)),  _JUST(a), \
+	__builtin_choose_expr(__builtin_types_compatible_p(long int,		   typeof(a)),  _JUST(a), \
+	__builtin_choose_expr(__builtin_types_compatible_p(long long int,	   typeof(a)),  _JUST(a), \
+	__builtin_choose_expr(__builtin_types_compatible_p(unsigned char,	   typeof(a)),  ((long long int)a), \
+	__builtin_choose_expr(__builtin_types_compatible_p(unsigned short int,	   typeof(a)),  ((long long int)a), \
+	__builtin_choose_expr(__builtin_types_compatible_p(unsigned int,	   typeof(a)),  ((long long int)a), \
+	__builtin_choose_expr(__builtin_types_compatible_p(unsigned long int,	   typeof(a)),  ((long long int)a), \
+	__builtin_choose_expr(__builtin_types_compatible_p(unsigned long long int, typeof(a)),  _JUST(a), \
 	(void)0))))))))))
 
-#define _JUST(a)		((long long int)a < 0 ? ((long long int)a-1) : (long long int)a)
-#define _FROM_JUST(type, a)	((long long int)a < 0 ? (type)(a+1) : (type)a)
 
-#define NOTHING			~0LL
+#define _JUST(a) ({ long long int _a = (long long int)a; (_a < 0 ? _a-1: _a); })
 
-#define JUST(a)			(_JUST(_MAYBE_CHECK(a)))
-
-#define FROM_JUST(type, a)      (_FROM_JUST(type, _MAYBE_CHECK(a)))
 
 #define IS_JUST(a) \
 	__builtin_choose_expr(__builtin_types_compatible_p(long long int, typeof(a)),		(a != (typeof(a))~0LL),\
@@ -56,5 +54,6 @@
 	__builtin_choose_expr(__builtin_types_compatible_p(long long int, typeof(a)),		(a == (typeof(a))~0LL),\
 	__builtin_choose_expr(__builtin_types_compatible_p(unsigned long long int, typeof(a)),  (a == (typeof(a))~0LL),\
 	(void)0))
+
 
 #endif /* PF_Q_MAYBE_H */
