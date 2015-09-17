@@ -41,24 +41,37 @@
 extern atomic_long_t pfq_sock_vector[Q_MAX_ID];
 
 
-struct pfq_tx_qinfo
+struct pfq_tx_info
 {
 	atomic_long_t		addr;		/* (pfq_tx_queue *) */
 	void			*base_addr;
 
 	int			if_index;
 	int			queue;
-	int			cpu;
-	struct task_struct	*task;
 };
 
+static inline
+void pfq_tx_info_init(struct pfq_tx_info *info)
+{
+	atomic_long_set(&info->addr, 0);
+	info->base_addr = NULL;
+	info->if_index  = -1;
+	info->queue     = -1;
+}
 
-struct pfq_rx_qinfo
+
+struct pfq_rx_info
 {
 	atomic_long_t		addr;		/* (pfq_rx_queue *) */
 	void			*base_addr;
 };
 
+static inline
+void pfq_rx_info_init(struct pfq_rx_info *info)
+{
+        atomic_long_set(&info->addr, 0);
+        info->base_addr = NULL;
+}
 
 
 struct pfq_sock_opt
@@ -71,12 +84,14 @@ struct pfq_sock_opt
 
 	size_t			tx_queue_len;
 	size_t			tx_slot_size;
-        size_t			tx_num_queues;
 
 	wait_queue_head_t	waitqueue;
 
-	struct pfq_tx_qinfo	txq[Q_MAX_TX_QUEUES];
-	struct pfq_rx_qinfo	rxq;
+        size_t			tx_num_async_queues;
+
+	struct pfq_tx_info	txq_async[Q_MAX_TX_QUEUES];
+	struct pfq_tx_info	txq;
+	struct pfq_rx_info	rxq;
 
 } ____cacheline_aligned_in_smp;
 
@@ -108,12 +123,19 @@ pfq_get_rx_queue(struct pfq_sock_opt *that)
 	return (struct pfq_rx_queue *)atomic_long_read(&that->rxq.addr);
 }
 
+static inline
+struct pfq_tx_queue *
+pfq_get_tx_queue(struct pfq_sock_opt *that)
+{
+	return (struct pfq_tx_queue *)atomic_long_read(&that->txq.addr);
+}
+
 
 static inline
 struct pfq_tx_queue *
-pfq_get_tx_queue(struct pfq_sock_opt *that, int index)
+pfq_get_tx_async_queue(struct pfq_sock_opt *that, int index)
 {
-	return (struct pfq_tx_queue *)atomic_long_read(&that->txq[index].addr);
+	return (struct pfq_tx_queue *)atomic_long_read(&that->txq_async[index].addr);
 }
 
 

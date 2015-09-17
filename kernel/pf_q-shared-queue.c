@@ -84,7 +84,7 @@ pfq_shared_queue_enable(struct pfq_sock *so, unsigned long user_addr)
 				((struct pfq_pkthdr *)raw)->commit = rst;
 		}
 
-		/* initialize TX queues */
+		/* initialize TX async queues */
 
 		for(n = 0; n < Q_MAX_TX_QUEUES; n++)
 		{
@@ -94,7 +94,7 @@ pfq_shared_queue_enable(struct pfq_sock *so, unsigned long user_addr)
 			queue->tx[n].ptr   = NULL;
 			queue->tx[n].index = -1;
 
-			so->opt.txq[n].base_addr = so->shmem.addr + sizeof(struct pfq_shared_queue)
+			so->opt.txq_async[n].base_addr = so->shmem.addr + sizeof(struct pfq_shared_queue)
 				+ pfq_mpsc_queue_mem(so)
 				+ pfq_spsc_queue_mem(so) * n;
 		}
@@ -111,7 +111,7 @@ pfq_shared_queue_enable(struct pfq_sock *so, unsigned long user_addr)
 
 		for(n = 0; n < Q_MAX_TX_QUEUES; n++)
 		{
-			atomic_long_set(&so->opt.txq[n].addr, (long)&queue->tx[n]);
+			atomic_long_set(&so->opt.txq_async[n].addr, (long)&queue->tx[n]);
 		}
 
 		pr_devel("[PFQ|%d] Rx queue: len=%zu slot_size=%zu caplen=%zu, mem=%zu bytes\n",
@@ -144,7 +144,7 @@ pfq_shared_queue_disable(struct pfq_sock *so)
 
 		for(n = 0; n < Q_MAX_TX_QUEUES; n++)
 		{
-			atomic_long_set(&so->opt.txq[n].addr, 0);
+			atomic_long_set(&so->opt.txq_async[n].addr, 0);
 		}
 
 		msleep(Q_GRACE_PERIOD);

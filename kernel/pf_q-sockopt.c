@@ -385,95 +385,95 @@ int pfq_setsockopt(struct socket *sock,
 
         case Q_SO_GROUP_BIND:
         {
-                struct pfq_binding binfo;
+                struct pfq_binding bind;
 		pfq_gid_t gid;
 
                 if (optlen != sizeof(struct pfq_binding))
                         return -EINVAL;
 
-                if (copy_from_user(&binfo, optval, optlen))
+                if (copy_from_user(&bind, optval, optlen))
                         return -EFAULT;
 
-		gid = (__force pfq_gid_t)binfo.gid;
+		gid = (__force pfq_gid_t)bind.gid;
 
                 if (!pfq_has_joined_group(gid, so->id)) {
-                        printk(KERN_INFO "[PFQ|%d] add bind: gid=%d not joined!\n", so->id, binfo.gid);
+                        printk(KERN_INFO "[PFQ|%d] add bind: gid=%d not joined!\n", so->id, bind.gid);
 			return -EACCES;
 		}
 
                 rcu_read_lock();
-                if (!dev_get_by_index_rcu(sock_net(&so->sk), binfo.if_index)) {
+                if (!dev_get_by_index_rcu(sock_net(&so->sk), bind.if_index)) {
                         rcu_read_unlock();
-                        printk(KERN_INFO "[PFQ|%d] bind: invalid if_index=%d!\n", so->id, binfo.if_index);
+                        printk(KERN_INFO "[PFQ|%d] bind: invalid if_index=%d!\n", so->id, bind.if_index);
                         return -EACCES;
                 }
                 rcu_read_unlock();
 
-                pfq_devmap_update(map_set, binfo.if_index, binfo.queue, gid);
+                pfq_devmap_update(map_set, bind.if_index, bind.queue, gid);
 
                 pr_devel("[PFQ|%d] group id=%d bind: device if_index=%d queue=%d\n",
-					so->id, binfo.gid, binfo.if_index, binfo.queue);
+					so->id, bind.gid, bind.if_index, bind.queue);
 
         } break;
 
         case Q_SO_GROUP_UNBIND:
         {
-                struct pfq_binding binfo;
+                struct pfq_binding bind;
 		pfq_gid_t gid;
 
                 if (optlen != sizeof(struct pfq_binding))
                         return -EINVAL;
 
-                if (copy_from_user(&binfo, optval, optlen))
+                if (copy_from_user(&bind, optval, optlen))
                         return -EFAULT;
 
-		gid = (__force pfq_gid_t)binfo.gid;
+		gid = (__force pfq_gid_t)bind.gid;
 
 		if (!pfq_has_joined_group(gid, so->id)) {
-                        printk(KERN_INFO "[PFQ|%d] remove bind: gid=%d not joined!\n", so->id, binfo.gid);
+                        printk(KERN_INFO "[PFQ|%d] remove bind: gid=%d not joined!\n", so->id, bind.gid);
 			return -EACCES;
 		}
 
                 rcu_read_lock();
-                if (!dev_get_by_index_rcu(sock_net(&so->sk), binfo.if_index)) {
+                if (!dev_get_by_index_rcu(sock_net(&so->sk), bind.if_index)) {
                         rcu_read_unlock();
-                        printk(KERN_INFO "[PFQ|%d] unbind: invalid if_index=%d\n", so->id, binfo.if_index);
+                        printk(KERN_INFO "[PFQ|%d] unbind: invalid if_index=%d\n", so->id, bind.if_index);
                         return -EPERM;
                 }
                 rcu_read_unlock();
 
-                pfq_devmap_update(map_reset, binfo.if_index, binfo.queue, gid);
+                pfq_devmap_update(map_reset, bind.if_index, bind.queue, gid);
 
                 pr_devel("[PFQ|%d] group id=%d unbind: device if_index=%d queue=%d\n",
-					so->id, binfo.gid, binfo.if_index, binfo.queue);
+					so->id, bind.gid, bind.if_index, bind.queue);
 
         } break;
 
         case Q_SO_EGRESS_BIND:
         {
-                struct pfq_binding binfo;
+                struct pfq_binding bind;
 
-                if (optlen != sizeof(binfo))
+                if (optlen != sizeof(bind))
                         return -EINVAL;
-                if (copy_from_user(&binfo, optval, optlen))
+                if (copy_from_user(&bind, optval, optlen))
                         return -EFAULT;
 
                 rcu_read_lock();
-                if (!dev_get_by_index_rcu(sock_net(&so->sk), binfo.if_index)) {
+                if (!dev_get_by_index_rcu(sock_net(&so->sk), bind.if_index)) {
                         rcu_read_unlock();
-                        printk(KERN_INFO "[PFQ|%d] egress bind: invalid if_index=%d\n", so->id, binfo.if_index);
+                        printk(KERN_INFO "[PFQ|%d] egress bind: invalid if_index=%d\n", so->id, bind.if_index);
                         return -EPERM;
                 }
                 rcu_read_unlock();
 
-                if (binfo.queue < -1) {
-                        printk(KERN_INFO "[PFQ|%d] egress bind: invalid queue=%d\n", so->id, binfo.queue);
+                if (bind.queue < -1) {
+                        printk(KERN_INFO "[PFQ|%d] egress bind: invalid queue=%d\n", so->id, bind.queue);
                         return -EPERM;
                 }
 
 		so->egress_type  = pfq_endpoint_device;
-                so->egress_index = binfo.if_index;
-                so->egress_queue = binfo.queue;
+                so->egress_index = bind.if_index;
+                so->egress_queue = bind.queue;
 
                 pr_devel("[PFQ|%d] egress bind: device if_index=%d queue=%d\n",
 			 so->id, so->egress_index, so->egress_queue);
@@ -736,47 +736,62 @@ int pfq_setsockopt(struct socket *sock,
 
         case Q_SO_TX_BIND:
         {
-                struct pfq_binding binfo;
-                size_t i;
+                struct pfq_binding bind;
 
-                if (optlen != sizeof(binfo))
+                if (optlen != sizeof(bind))
                         return -EINVAL;
 
-                if (copy_from_user(&binfo, optval, optlen))
+                if (copy_from_user(&bind, optval, optlen))
                         return -EFAULT;
 
-		if (so->opt.tx_num_queues >= Q_MAX_TX_QUEUES) {
-                        printk(KERN_INFO "[PFQ|%d] Tx bind: max number of queues exceeded!\n", so->id);
+		if (bind.tid < -1) {
+			printk(KERN_INFO "[PFQ|%d] Tx thread: invalid index (%d)!\n", so->id, bind.tid);
 			return -EPERM;
 		}
 
-                rcu_read_lock();
-                if (!dev_get_by_index_rcu(sock_net(&so->sk), binfo.if_index)) {
-                        rcu_read_unlock();
-                        printk(KERN_INFO "[PFQ|%d] Tx bind: invalid if_index=%d\n", so->id, binfo.if_index);
-                        return -EPERM;
-                }
-                rcu_read_unlock();
-
-                if (binfo.queue < -1) {
-                        printk(KERN_INFO "[PFQ|%d] Tx bind: invalid queue=%d\n", so->id, binfo.queue);
+                if (bind.queue < -1) {
+                        printk(KERN_INFO "[PFQ|%d] Tx thread: invalid queue (%d)\n", so->id, bind.queue);
                         return -EPERM;
                 }
 
-                i = so->opt.tx_num_queues;
-
-		if (binfo.cpu < -1) {
-			printk(KERN_INFO "[PFQ|%d] Tx[%zu] kthread: invalid cpu (%d)!\n", so->id, i, binfo.cpu);
+		if (bind.tid >= 0 &&
+		    so->opt.tx_num_async_queues >= Q_MAX_TX_QUEUES) {
+			printk(KERN_INFO "[PFQ|%d] Tx thread: max number of queues exceeded!\n", so->id);
 			return -EPERM;
 		}
 
-                so->opt.txq[i].if_index = binfo.if_index;
-                so->opt.txq[i].queue = binfo.queue;
-                so->opt.txq[i].cpu = binfo.cpu;
-		so->opt.tx_num_queues++;
+		/* get device */
 
-                pr_devel("[PFQ|%d] Tx[%zu] bind: if_index=%d queue=%d cpu=%d\n", so->id, i,
-			 so->opt.txq[i].if_index, so->opt.txq[i].queue, binfo.cpu);
+		rcu_read_lock();
+		if (!dev_get_by_index_rcu(sock_net(&so->sk), bind.if_index)) {
+			rcu_read_unlock();
+			printk(KERN_INFO "[PFQ|%d] Tx thread: invalid if_index=%d\n", so->id, bind.if_index);
+			return -EPERM;
+		}
+		rcu_read_unlock();
+
+		/* store if_index and queue to the queue */
+
+		if (bind.tid >= 0) /* async */
+		{
+			size_t i = so->opt.tx_num_async_queues;
+
+			so->opt.txq_async[i].if_index = bind.if_index;
+			so->opt.txq_async[i].queue = bind.queue;
+
+			so->opt.tx_num_async_queues++;
+
+			pr_devel("[PFQ|%d] Tx[%zu] bind: if_index=%d queue=%d\n", so->id, i,
+				so->opt.txq_async[i].if_index, so->opt.txq_async[i].queue);
+		}
+		else /* sync */
+		{
+			so->opt.txq.if_index = bind.if_index;
+			so->opt.txq.queue = bind.queue;
+
+			pr_devel("[PFQ|%d] Tx bind: if_index=%d queue=%d\n", so->id,
+				so->opt.txq.if_index, so->opt.txq.queue);
+		}
 
         } break;
 
@@ -786,162 +801,152 @@ int pfq_setsockopt(struct socket *sock,
 
 		for(n = 0; n < Q_MAX_TX_QUEUES; ++n)
 		{
-			if (so->opt.txq[n].task != NULL) {
-				printk(KERN_INFO "[PFQ|%d] Tx unbind error: kthread running!\n", so->id);
-				return -EPERM;
-			}
-		}
-
-		for(n = 0; n < Q_MAX_TX_QUEUES; ++n)
-		{
-			so->opt.txq[n].if_index = -1;
-			so->opt.txq[n].queue = -1;
-			so->opt.txq[n].cpu = -1;
+			so->opt.txq_async[n].if_index = -1;
+			so->opt.txq_async[n].queue = -1;
 		}
 
         } break;
 
-        case Q_SO_TX_FLUSH:
-        {
-		int queue, err = 0;
-                size_t n;
+        // case Q_SO_TX_FLUSH:
+        // {
+	// 	int queue, err = 0;
+        //         size_t n;
 
-		if (optlen != sizeof(queue))
-			return -EINVAL;
+	// 	if (optlen != sizeof(queue))
+	// 		return -EINVAL;
 
-		if (copy_from_user(&queue, optval, optlen))
-			return -EFAULT;
+	// 	if (copy_from_user(&queue, optval, optlen))
+	// 		return -EFAULT;
 
-		if (pfq_get_tx_queue(&so->opt, 0) == NULL) {
-			printk(KERN_INFO "[PFQ|%d] Tx queue flush: socket not enabled!\n", so->id);
-			return -EPERM;
-		}
+	// 	if (pfq_get_tx_queue(&so->opt, 0) == NULL) {
+	// 		printk(KERN_INFO "[PFQ|%d] Tx queue flush: socket not enabled!\n", so->id);
+	// 		return -EPERM;
+	// 	}
 
-		if (queue < -1 || (queue > 0 && queue >= (int)so->opt.tx_num_queues)) {
-			printk(KERN_INFO "[PFQ|%d] Tx queue flush: bad queue %d (num_queue=%zu)!\n",
-			       so->id, queue, so->opt.tx_num_queues);
-			return -EPERM;
-		}
+	// 	if (queue < -1 || (queue > 0 && queue >= (int)so->opt.tx_num_queues)) {
+	// 		printk(KERN_INFO "[PFQ|%d] Tx queue flush: bad queue %d (num_queue=%zu)!\n",
+	// 		       so->id, queue, so->opt.tx_num_queues);
+	// 		return -EPERM;
+	// 	}
 
-		if (queue != -1) {
-			pr_devel("[PFQ|%d] flushing Tx queue %d...\n", so->id, queue);
-			return pfq_sk_queue_flush(so, queue);
-		}
+	// 	if (queue != -1) {
+	// 		pr_devel("[PFQ|%d] flushing Tx queue %d...\n", so->id, queue);
+	// 		return pfq_sk_queue_flush(so, queue);
+	// 	}
 
-		for(n = 0; n < so->opt.tx_num_queues; n++)
-		{
-			if (pfq_sk_queue_flush(so, n) != 0) {
-				printk(KERN_INFO "[PFQ|%d] Tx[%zu] queue flush: flush error (if_index=%d)!\n",
-				       so->id, n, so->opt.txq[n].if_index);
-				err = -EPERM;
-			}
-		}
+	// 	for(n = 0; n < so->opt.tx_num_queues; n++)
+	// 	{
+	// 		if (pfq_sk_queue_flush(so, n) != 0) {
+	// 			printk(KERN_INFO "[PFQ|%d] Tx[%zu] queue flush: flush error (if_index=%d)!\n",
+	// 			       so->id, n, so->opt.txq[n].if_index);
+	// 			err = -EPERM;
+	// 		}
+	// 	}
 
-		if (err)
-			return err;
-        } break;
+	// 	if (err)
+	// 		return err;
+        // } break;
 
-        case Q_SO_TX_ASYNC_START:
-        {
-                int err = 0;
-                size_t n, started = 0;
+        // case Q_SO_TX_ASYNC_START:
+        // {
+        //         int err = 0;
+        //         size_t n, started = 0;
 
-		if (pfq_get_tx_queue(&so->opt, 0) == NULL) {
-			printk(KERN_INFO "[PFQ|%d] Tx queue flush: socket not enabled!\n", so->id);
-			return -EPERM;
-		}
+	// 	if (pfq_get_tx_queue(&so->opt, 0) == NULL) {
+	// 		printk(KERN_INFO "[PFQ|%d] Tx queue flush: socket not enabled!\n", so->id);
+	// 		return -EPERM;
+	// 	}
 
-		printk(KERN_INFO "[PFQ|%d] Starting Tx kthreads...\n", so->id);
+	// 	printk(KERN_INFO "[PFQ|%d] Starting Tx kthreads...\n", so->id);
 
-		mutex_lock(&kthread_tx_pool_lock);
+	// 	mutex_lock(&kthread_tx_pool_lock);
 
-		for(n = 0; n < Q_MAX_TX_QUEUES; n++)
-		{
-			struct pfq_thread_data *data;
-			int node;
+	// 	for(n = 0; n < Q_MAX_TX_QUEUES; n++)
+	// 	{
+	// 		struct pfq_thread_data *data;
+	// 		int node;
 
-			if (so->opt.txq[n].if_index == -1)
-				break;
+	// 		if (so->opt.txq[n].if_index == -1)
+	// 			break;
 
-			if (so->opt.txq[n].cpu == Q_NO_KTHREAD) {
-				printk(KERN_INFO "[PFQ|%d] kernel_thread: skipping queue %zu (no kthread).\n",
-				       so->id, n);
-				continue;
-			}
+	// 		if (so->opt.txq[n].cpu == Q_NO_KTHREAD) {
+	// 			printk(KERN_INFO "[PFQ|%d] kernel_thread: skipping queue %zu (no kthread).\n",
+	// 			       so->id, n);
+	// 			continue;
+	// 		}
 
-			if (so->opt.txq[n].task != NULL ||
-			    kthread_tx_pool[so->opt.txq[n].cpu % Q_MAX_CPU] != NULL) {
-				printk(KERN_INFO "[PFQ|%d] kernel_thread: Tx[%zu] kthread already running (cpu=%d)!\n",
-				       so->id, n,
-				       so->opt.txq[n].cpu);
-				continue;
-			}
+	// 		if (so->opt.txq[n].task != NULL ||
+	// 		    kthread_tx_pool[so->opt.txq[n].cpu % Q_MAX_CPU] != NULL) {
+	// 			printk(KERN_INFO "[PFQ|%d] kernel_thread: Tx[%zu] kthread already running (cpu=%d)!\n",
+	// 			       so->id, n,
+	// 			       so->opt.txq[n].cpu);
+	// 			continue;
+	// 		}
 
-			data = kmalloc(sizeof(struct pfq_thread_data), GFP_KERNEL);
-			if (!data) {
-				printk(KERN_INFO "[PFQ|%d] kernel_thread: could not allocate thread_data! Failed starting kthread on cpu %d!\n",
-						so->id, so->opt.txq[n].cpu);
-				err = -EPERM;
-				continue;
-			}
+	// 		data = kmalloc(sizeof(struct pfq_thread_data), GFP_KERNEL);
+	// 		if (!data) {
+	// 			printk(KERN_INFO "[PFQ|%d] kernel_thread: could not allocate thread_data! Failed starting kthread on cpu %d!\n",
+	// 					so->id, so->opt.txq[n].cpu);
+	// 			err = -EPERM;
+	// 			continue;
+	// 		}
 
-			data->so = so;
-			data->id = n;
-			node = cpu_online(so->opt.txq[n].cpu) ?
-			       cpu_to_node(so->opt.txq[n].cpu) : NUMA_NO_NODE;
+	// 		data->so = so;
+	// 		data->id = n;
+	// 		node = cpu_online(so->opt.txq[n].cpu) ?
+	// 		       cpu_to_node(so->opt.txq[n].cpu) : NUMA_NO_NODE;
 
-			pr_devel("[PFQ|%d] creating Tx[%zu] kthread on cpu %d: if_index=%d queue=%d\n",
-					so->id, n, so->opt.txq[n].cpu, so->opt.txq[n].if_index,
-					so->opt.txq[n].queue);
+	// 		pr_devel("[PFQ|%d] creating Tx[%zu] kthread on cpu %d: if_index=%d queue=%d\n",
+	// 				so->id, n, so->opt.txq[n].cpu, so->opt.txq[n].if_index,
+	// 				so->opt.txq[n].queue);
 
-			so->opt.txq[n].task = kthread_create_on_node(pfq_tx_thread, data, node,
-									  "pfq_tx_%d#%zu", so->id, n);
+	// 		so->opt.txq[n].task = kthread_create_on_node(pfq_tx_thread, data, node,
+	// 								  "pfq_tx_%d#%zu", so->id, n);
 
-			if (IS_ERR(so->opt.txq[n].task)) {
+	// 		if (IS_ERR(so->opt.txq[n].task)) {
 
-				printk(KERN_INFO "[PFQ|%d] kernel_thread: create failed on cpu %d!\n",
-				       so->id, so->opt.txq[n].cpu);
-				err = PTR_ERR(so->opt.txq[n].task);
+	// 			printk(KERN_INFO "[PFQ|%d] kernel_thread: create failed on cpu %d!\n",
+	// 			       so->id, so->opt.txq[n].cpu);
+	// 			err = PTR_ERR(so->opt.txq[n].task);
 
-				so->opt.txq[n].task = NULL;
-				kfree (data);
-				continue;
-			}
+	// 			so->opt.txq[n].task = NULL;
+	// 			kfree (data);
+	// 			continue;
+	// 		}
 
-			/* update global Tx pool */
+	// 		/* update global Tx pool */
 
-			kthread_tx_pool[so->opt.txq[n].cpu % Q_MAX_CPU] = so->opt.txq[n].task;
+	// 		kthread_tx_pool[so->opt.txq[n].cpu % Q_MAX_CPU] = so->opt.txq[n].task;
 
-			/* bind the thread */
+	// 		/* bind the thread */
 
-			kthread_bind(so->opt.txq[n].task, so->opt.txq[n].cpu);
+	// 		kthread_bind(so->opt.txq[n].task, so->opt.txq[n].cpu);
 
-			/* start it */
+	// 		/* start it */
 
-			wake_up_process(so->opt.txq[n].task);
+	// 		wake_up_process(so->opt.txq[n].task);
 
-			started++;
-		}
+	// 		started++;
+	// 	}
 
-		mutex_unlock(&kthread_tx_pool_lock);
+	// 	mutex_unlock(&kthread_tx_pool_lock);
 
-		printk(KERN_INFO "[PFQ|%d] %zu kernel kthread started!\n", so->id, started);
+	// 	printk(KERN_INFO "[PFQ|%d] %zu kernel kthread started!\n", so->id, started);
 
-		if (started == 0)
-			err = -EPERM;
+	// 	if (started == 0)
+	// 		err = -EPERM;
 
-		return err;
+	// 	return err;
 
-        } break;
+        // } break;
 
-        case Q_SO_TX_ASYNC_STOP:
-        {
-		printk(KERN_INFO "[PFQ|%d] Stopping Tx threads...\n", so->id);
-		pfq_stop_all_tx_threads(so);
+        // case Q_SO_TX_ASYNC_STOP:
+        // {
+	// 	printk(KERN_INFO "[PFQ|%d] Stopping Tx threads...\n", so->id);
+	// 	pfq_stop_all_tx_threads(so);
+	// 	return 0;
 
-		return 0;
-
-        } break;
+        // } break;
 
         case Q_SO_GROUP_FUNCTION:
         {

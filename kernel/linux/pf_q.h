@@ -355,9 +355,10 @@ struct pfq_vlan_toggle
 
 struct pfq_binding
 {
-        union {
+        union
+        {
 		int gid;
-		int cpu;
+		int tid;
 	};
 
         int if_index;

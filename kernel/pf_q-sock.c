@@ -111,43 +111,37 @@ void pfq_release_sock_id(pfq_id_t id)
 
 void pfq_sock_opt_init(struct pfq_sock_opt *that, size_t caplen, size_t maxlen)
 {
-        /* the queue is allocate later, when the socket is enabled */
         int n;
 
-        atomic_long_set(&that->rxq.addr, 0);
-
-        that->rxq.base_addr = NULL;
-
         /* disable tiemstamping by default */
+
         that->tstamp = false;
-
-	/* Rx queue setup */
-
-        /* set slots and caplen default values */
-
-        that->caplen = caplen;
-        that->rx_queue_len = 0;
-        that->rx_slot_size = 0;
 
         /* initialize waitqueue */
 
         init_waitqueue_head(&that->waitqueue);
 
+	/* Rx queue setup */
+
+	pfq_rx_info_init(&that->rxq);
+
+        that->caplen = caplen;
+        that->rx_queue_len = 0;
+        that->rx_slot_size = 0;
+
 	/* Tx queues setup */
+
+	pfq_tx_info_init(&that->txq);
 
         that->tx_queue_len  = 0;
         that->tx_slot_size  = Q_QUEUE_SLOT_SIZE(maxlen);
-	that->tx_num_queues = 0;
+	that->tx_num_async_queues = 0;
+
+	/* Tx async queues setup */
 
 	for(n = 0; n < Q_MAX_TX_QUEUES; ++n)
 	{
-		atomic_long_set(&that->txq[n].addr, 0);
-
-		that->txq[n].base_addr = NULL;
-		that->txq[n].if_index  = -1;
-		that->txq[n].queue     = -1;
-		that->txq[n].cpu       = -1;
-		that->txq[n].task      = NULL;
+		pfq_tx_info_init(&that->txq_async[n]);
 	}
 }
 
