@@ -716,7 +716,8 @@ static int pfq_netdev_notifier(struct notifier_block *this, unsigned long info,
 			// case NETDEV_CHANGEINFODATA	: kind = "NETDEV_CHANGEINFODATA"; break;
 			// case NETDEV_BONDING_INFO	: kind = "NETDEV_BONDING_INFO"; break;
 		}
-		printk(KERN_INFO "[PFQ] %s: device %s, ifindex %d\n", kind, dev->name, dev->ifindex);
+
+		pr_devel(KERN_INFO "[PFQ] %s: device %s, ifindex %d\n", kind, dev->name, dev->ifindex);
 		return NOTIFY_OK;
 	}
 

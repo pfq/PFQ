@@ -39,7 +39,6 @@
 extern struct mutex kthread_tx_pool_lock;
 extern struct task_struct *kthread_tx_pool [Q_MAX_CPU];
 
-
 extern int pfq_tx_thread(void *data);
 extern void pfq_stop_all_tx_threads(struct pfq_sock *so);
 
@@ -57,6 +56,13 @@ void pfq_relax(void)
 		schedule();
 	else
 		cpu_relax();
+}
+
+
+static inline
+bool is_kthread_should_stop(void)
+{
+	return (current->flags & PF_KTHREAD) && kthread_should_stop();
 }
 
 

@@ -94,12 +94,6 @@ pfq_netdev_pick_tx(struct net_device *dev, struct sk_buff *skb, int *queue)
 }
 
 
-static inline
-bool is_kthread_should_stop(void)
-{
-	return (current->flags & PF_KTHREAD) && kthread_should_stop();
-}
-
 
 static inline
 bool giveup_tx_process(void)
