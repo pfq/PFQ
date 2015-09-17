@@ -54,6 +54,8 @@ pfq_sk_tx_queue_xmit(struct pfq_sock *so, struct net_device *dev, size_t index)
 	return __pfq_sk_tx_queue_xmit(so, dev, index, Q_NO_KTHREAD, NUMA_NO_NODE);
 }
 
+extern int pfq_sk_queue_xmit_NG(struct pfq_sock *so, int qindex, int cpu, int node);
+
 
 extern int pfq_sk_queue_flush(struct pfq_sock *so, int index);
 

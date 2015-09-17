@@ -34,6 +34,7 @@
 #include <linux/ktime.h>
 #include <linux/skbuff.h>
 #include <linux/netdevice.h>
+#include <linux/delay.h>
 
 #include <pragma/diagnostic_pop>
 
@@ -668,4 +669,14 @@ pfq_skb_queue_lazy_xmit_run(struct pfq_skbuff_GC_queue *skbs, struct pfq_endpoin
 
 	return sent;
 }
+
+
+int
+pfq_sk_queue_xmit_NG(struct pfq_sock *so, int qindex, int cpu, int node)
+{
+	printk(KERN_INFO "[PFQ] SK QUEUE XMIT: queue@%p qindex=%d cpu=%d node=%d\n", so, qindex, cpu, node);
+	msleep(1000);
+	return 0;
+}
+
 
