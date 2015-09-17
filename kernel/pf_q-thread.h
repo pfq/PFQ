@@ -59,6 +59,16 @@ void pfq_relax(void)
 }
 
 
+struct pfq_thread_tx_data
+{
+	int			id;
+	int			cpu;
+	struct task_struct *	task;
+	struct pfq_sock *	sock  [Q_MAX_TX_QUEUES];
+	atomic_t		qindex[Q_MAX_TX_QUEUES];
+};
+
+
 static inline
 bool is_kthread_should_stop(void)
 {

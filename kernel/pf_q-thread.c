@@ -47,6 +47,17 @@ DEFINE_MUTEX(kthread_tx_pool_lock);
 struct task_struct *kthread_tx_pool [Q_MAX_CPU] = { [0 ... 255] = NULL };
 
 
+static struct pfq_thread_tx_data kthread_tx_pool_NG[Q_MAX_CPU] =
+{
+	[0 ... Q_MAX_CPU-1] = {
+		.id	= -1,
+		.cpu    = -1,
+		.task	= NULL,
+		.sock   = {NULL},
+		.qindex = {{-1}}
+	}
+};
+
 int
 pfq_tx_thread(void *_data)
 {
