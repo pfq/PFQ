@@ -44,6 +44,9 @@ extern int vl_untag;
 
 extern int skb_pool_size;
 
+extern int async_tx[Q_MAX_CPU];
+extern int async_tx_nr;
+
 extern struct pfq_global_stats global_stats;
 extern struct pfq_memory_stats memory_stats;
 
