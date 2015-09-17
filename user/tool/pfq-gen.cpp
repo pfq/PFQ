@@ -19,6 +19,7 @@
 #include <cmath>
 #include <tuple>
 #include <unordered_set>
+#include <system_error>
 #include <random>
 #include <limits>
 
@@ -28,6 +29,9 @@
 
 #include <linux/ip.h>
 #include <linux/udp.h>
+#include <linux/ethtool.h>
+#include <linux/sockios.h>
+#include <net/if.h>
 
 #include <more/vt100.hpp>
 #include <more/binding.hpp>
@@ -42,6 +46,33 @@
 
 using namespace pfq;
 
+
+namespace more
+{
+    static std::unique_ptr<ethtool_cmd>
+    ethtool_command(const char *ifname)
+    {
+        int sock = ::socket(AF_INET, SOCK_DGRAM, 0);
+        if (sock == -1)
+            throw std::system_error(errno, std::generic_category());
+
+        std::unique_ptr<ethtool_cmd> ecmd(new ethtool_cmd);
+
+        ecmd->cmd = ETHTOOL_GSET;
+
+        struct ifreq ifreq_io;
+        ifreq_io.ifr_data = reinterpret_cast<__caddr_t>(ecmd.get());
+        strncpy(ifreq_io.ifr_name, ifname, IFNAMSIZ);
+
+        if (ioctl(sock, SIOCETHTOOL, &ifreq_io) == -1) {
+            ::close(sock);
+            throw std::system_error(errno, std::generic_category());
+        }
+
+        ::close(sock);
+        return std::move(ecmd);
+    }
+}
 
 namespace opt
 {
@@ -60,7 +91,7 @@ namespace opt
     bool   active_ts = false;
     bool   poisson   = false;
 
-    double rate    = 0;
+    double rate      = 0;
 
     std::vector< std::vector<int> > kthread;
 
@@ -136,7 +167,6 @@ namespace thread
         , m_gen()
         , m_packet(make_packets(opt::len, opt::preload))
         {
-
             if (m_bind.dev.empty())
                 throw std::runtime_error("context[" + std::to_string (m_id) + "]: device unspecified");
 
@@ -282,18 +312,39 @@ namespace thread
 
         void active_generator(bool poisson = false)
         {
-            auto delta        = std::chrono::nanoseconds(static_cast<uint64_t>(1000/opt::rate));
-            auto ip           = reinterpret_cast<iphdr *>(m_packet.get() + 14);
-            auto now          = std::chrono::system_clock::now();
-            auto len          = opt::len;
-            uint64_t pkt_time = (len + 24) * 0.8;
+            auto delta    = std::chrono::nanoseconds(static_cast<uint64_t>(1000/opt::rate));
+            auto ip       = reinterpret_cast<iphdr *>(m_packet.get() + 14);
+            auto now      = std::chrono::system_clock::now();
+            auto len      = opt::len;
+
+            std::chrono::nanoseconds pkt_time{0};
+
+            try
+            {
+                if (poisson)
+                {
+                    auto link_speed_mbit = ethtool_cmd_speed(more::ethtool_command(m_bind.dev.front().name.c_str()).get());
+                    pkt_time = std::chrono::nanoseconds( (len + 24)*8*1000/(link_speed_mbit) );
+                    std::cout << "link       : " << link_speed_mbit/(1000.0) << " Gbit/sec" << std::endl;
+                    std::cout << "pkt_tx_time: " << pkt_time.count() << " nsec" << std::endl;
+                }
+            }
+            catch(...)
+            {
+
+                std::cout << "link       : could not detect speed of link!" << std::endl;
+                std::cout << "pkt_tx_time: 0 nsec" << std::endl;
+            }
 
             // poisson process traffic
+
             std::default_random_engine rnd;
+
             // we want to control the inter-packet gap instead of the departure time
             // otherwise we run into problems when the inter-departure time is less
             // than the packet length
-            std::exponential_distribution<double> exp_dist(1.0 / (delta.count() - pkt_time));
+
+            std::exponential_distribution<double> exp_dist(1.0 /(delta+pkt_time).count());
 
             for(size_t n = 0; n < opt::npackets;)
             {
@@ -302,11 +353,11 @@ namespace thread
                     m_fail->fetch_add(1, std::memory_order_relaxed);
                     continue;
                 }
+
                 if (poisson)
-                    now += std::chrono::nanoseconds((int) exp_dist(rnd) + pkt_time);
+                    now += std::chrono::nanoseconds(static_cast<int>(exp_dist(rnd))) + pkt_time;
                 else
                     now += delta;
-
 
                 m_sent->fetch_add(1, std::memory_order_relaxed);
                 m_band->fetch_add(len, std::memory_order_relaxed);
