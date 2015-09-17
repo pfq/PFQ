@@ -868,6 +868,34 @@ static struct notifier_block pfq_netdev_notifier_block =
 };
 
 
+
+bool check_tx_threads_affinity(void)
+{
+	int i, j;
+
+	for(i=0; i < async_tx_nr; ++i)
+	{
+		if (async_tx[i] < 0 || async_tx[i] >= num_online_cpus())
+		{
+			printk(KERN_INFO "[PFQ] error: Tx thread bad affinity on cpu:%d!\n", async_tx[i]);
+			return false;
+		}
+	}
+
+	for(i=0; i < async_tx_nr-1; ++i)
+	for(j=i+1; j < async_tx_nr; ++j)
+	{
+		if (async_tx[i] == async_tx[j])
+		{
+			printk(KERN_INFO "[PFQ] error: Tx thread affinity for cpu:%d already in use!\n", async_tx[i]);
+			return false;
+		}
+	}
+
+	return true;
+}
+
+
 static int __init pfq_init_module(void)
 {
         int err = -EFAULT;
@@ -941,6 +969,15 @@ static int __init pfq_init_module(void)
 
 	/* register netdev notifier */
         register_netdevice_notifier(&pfq_netdev_notifier_block);
+
+	/* start Tx threads for asynchronous transmission */
+	if (async_tx_nr)
+	{
+		if (!check_tx_threads_affinity())
+			goto err6;
+
+		printk(KERN_INFO "[PFQ] starting %d Tx kernel threads...\n",async_tx_nr);
+	}
 
 	/* ensure each device has ifindex < Q_MAX_DEVICE */
 	{
