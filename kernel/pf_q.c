@@ -869,7 +869,7 @@ static struct notifier_block pfq_netdev_notifier_block =
 
 static int __init pfq_init_module(void)
 {
-        int err = 0;
+        int err = -EFAULT;
 
         printk(KERN_INFO "[PFQ] loading...\n");
 
@@ -955,11 +955,11 @@ static int __init pfq_init_module(void)
 
         return 0;
 
-#ifdef PFQ_USE_SKB_POOL
+err6:
+	unregister_netdevice_notifier(&pfq_netdev_notifier_block);
+	unregister_device_handler();
 err5:
         sock_unregister(PF_Q);
-#endif
-
 err4:
         proto_unregister(&pfq_proto);
 err3:
@@ -969,7 +969,7 @@ err2:
 err1:
 	pfq_percpu_free();
 err:
-	return err;
+	return err < 0 ? err : -EFAULT;
 }
 
 
