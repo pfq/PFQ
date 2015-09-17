@@ -44,6 +44,7 @@
 
 DEFINE_MUTEX(kthread_tx_pool_lock);
 
+
 struct task_struct *kthread_tx_pool [Q_MAX_CPU] = { [0 ... 255] = NULL };
 
 
@@ -57,6 +58,116 @@ static struct pfq_thread_tx_data kthread_tx_pool_NG[Q_MAX_CPU] =
 		.qindex = {{-1}}
 	}
 };
+
+
+static int
+pfq_tx_thread_NG(void *_data)
+{
+	struct pfq_thread_tx_data *data = (struct pfq_thread_tx_data *)_data;
+
+	if (data == NULL) {
+		printk(KERN_INFO "[PFQ] Tx thread data error!\n");
+		return -EPERM;
+	}
+
+	printk(KERN_INFO "[PFQ] Tx[%d] thread-NG started on cpu %d.\n", data->id, data->cpu);
+
+	__set_current_state(TASK_RUNNING);
+        for(;;)
+	{
+		int n;
+
+		/* transmit the registered socket's queues */
+
+		for(n = 0; n < Q_MAX_TX_QUEUES; n++)
+		{
+			/* TODO: check for memory barriers */
+
+			int qindex = atomic_read(&data->qindex[n]);
+			if (qindex != -1 && data->sock != NULL)
+				pfq_sk_queue_xmit_NG(data->sock[n], qindex, data->cpu, data->node);
+		}
+
+                if (kthread_should_stop())
+                        break;
+
+		pfq_relax();
+	}
+
+        printk(KERN_INFO "[PFQ] Tx[%d] thread-NG stopped on cpu %d.\n", data->id, data->cpu);
+        return 0;
+}
+
+
+int
+pfq_start_all_tx_threads_NG(void)
+{
+	int err = 0;
+
+	if (async_tx_nr)
+	{
+		int n;
+		printk(KERN_INFO "[PFQ] starting %d Tx thread(s)...\n", async_tx_nr);
+
+		for(n = 0; n < async_tx_nr; n++)
+		{
+			struct pfq_thread_tx_data *data = &kthread_tx_pool_NG[n];
+
+			data->id  = n;
+			data->cpu = async_tx[n];
+			data->node = cpu_online(async_tx[n]) ? cpu_to_node(async_tx[n]) : NUMA_NO_NODE;
+
+			data->task = kthread_create_on_node(pfq_tx_thread_NG,
+							    data, data->node,
+							    "kpfq/%d:%d", n, data->cpu);
+			if (IS_ERR(data->task)) {
+				printk(KERN_INFO "[PFQ] kernel_thread: create failed on cpu %d!\n",
+				       data->cpu);
+				err = PTR_ERR(data->task);
+				data->task = NULL;
+				return err;
+			}
+
+			kthread_bind(data->task, data->cpu);
+			pr_devel("[PFQ] created Tx[%d] kthread on cpu %d...\n", data->id, data->cpu);
+		}
+	}
+
+	return err;
+}
+
+
+void
+pfq_stop_all_tx_threads_NG(void)
+{
+	if (async_tx_nr)
+	{
+		int n;
+
+		printk(KERN_INFO "[PFQ] stopping %d Tx thread(s)...\n", async_tx_nr);
+
+		for(n = 0; n < async_tx_nr; n++)
+		{
+			struct pfq_thread_tx_data *data = &kthread_tx_pool_NG[n];
+
+			if (data->task)
+			{
+				int i;
+				pr_devel("[PFQ stopping Tx[%d] thread@%p\n", data->id, data->task);
+				kthread_stop(data->task);
+				data->id   = -1;
+				data->cpu  = -1;
+				data->task = NULL;
+				for(i=0; i < Q_MAX_TX_QUEUES; ++i)
+				{
+					data->sock[i] = NULL;
+					atomic_set(&data->qindex[i], -1);
+				}
+			}
+		}
+	}
+}
+
 
 int
 pfq_tx_thread(void *_data)

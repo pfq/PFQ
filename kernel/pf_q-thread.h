@@ -42,6 +42,9 @@ extern struct task_struct *kthread_tx_pool [Q_MAX_CPU];
 extern int pfq_tx_thread(void *data);
 extern void pfq_stop_all_tx_threads(struct pfq_sock *so);
 
+extern int pfq_start_all_tx_threads_NG(void);
+extern void pfq_stop_all_tx_threads_NG(void);
+
 struct pfq_thread_data
 {
 	struct pfq_sock *so;
@@ -63,6 +66,7 @@ struct pfq_thread_tx_data
 {
 	int			id;
 	int			cpu;
+	int			node;
 	struct task_struct *	task;
 	struct pfq_sock *	sock  [Q_MAX_TX_QUEUES];
 	atomic_t		qindex[Q_MAX_TX_QUEUES];
