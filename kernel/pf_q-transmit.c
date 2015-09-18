@@ -97,21 +97,21 @@ pfq_netdev_pick_tx(struct net_device *dev, struct sk_buff *skb, int *queue)
 
 
 static inline
-bool giveup_tx_process(void)
+bool giveup_tx_process(atomic_t const *stop)
 {
-	return signal_pending(current) || is_kthread_should_stop();
+	return atomic_read(stop) == -1 || signal_pending(current) || is_kthread_should_stop();
 }
 
 
 static inline
-ktime_t wait_until(uint64_t ts, bool *intr)
+ktime_t wait_until(uint64_t ts, atomic_t const *stop, bool *intr)
 {
 	ktime_t now;
 	do
 	{
 		now = ktime_get_real();
-		if (giveup_tx_process()) {
-			*intr = true;
+		if (giveup_tx_process(stop)) {
+			*intr= true;
 			return now;
 		}
 	}
@@ -173,7 +173,7 @@ unsigned int dev_tx_skb_copies(struct net_device *dev, unsigned int req_copies)
 
 
 static inline
-bool tx_queue_last_pkt(struct pfq_pkthdr *hdr)
+bool is_last_tx_pkt(struct pfq_pkthdr *hdr)
 {
 	struct pfq_pkthdr * next = (struct pfq_pkthdr *)((char *)(hdr+1) + ALIGN(hdr->caplen, 8));
         return next->caplen == 0;
@@ -181,11 +181,11 @@ bool tx_queue_last_pkt(struct pfq_pkthdr *hdr)
 
 
 int
-pfq_sk_queue_xmit_NG(struct pfq_sock *so, int sock_queue, int cpu, int node)
+pfq_sk_queue_xmit_NG(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic_t const *stop)
 {
-	struct netdev_queue *txq;
-	struct pfq_tx_queue *txmem;
 	struct pfq_percpu_pool *pool;
+	struct pfq_tx_queue *txmem;
+	struct netdev_queue *txq;
 	struct pfq_pkthdr *hdr;
         struct net_device *dev;
 
@@ -196,7 +196,7 @@ pfq_sk_queue_xmit_NG(struct pfq_sock *so, int sock_queue, int cpu, int node)
 	/* get the Tx queue */
 
 	txmem = sock_queue < 0 ? pfq_get_tx_queue(&so->opt) :
-				pfq_get_tx_async_queue(&so->opt, sock_queue);
+				 pfq_get_tx_async_queue(&so->opt, sock_queue);
 
         if (txmem == NULL) { /* socket not yet enabled... */
 		return 0;
@@ -204,13 +204,12 @@ pfq_sk_queue_xmit_NG(struct pfq_sock *so, int sock_queue, int cpu, int node)
 
 	/* swap the soft Tx queue */
 
-	if ((swap_sk_tx_queue(txmem, cpu, &swap_idx)) < 0)
-	{
+	if ((swap_sk_tx_queue(txmem, cpu, &swap_idx)) < 0) {
 		/* swap-pending request... */
 		return 0;
 	}
 
-	/* get default (locked) device */
+	/* get default device */
 
 	dev = so->opt.txq_async[sock_queue].default_dev;
 
@@ -223,15 +222,9 @@ pfq_sk_queue_xmit_NG(struct pfq_sock *so, int sock_queue, int cpu, int node)
 
 	pool = this_cpu_ptr(percpu_pool);
 
-	/* fix cpu */
+	/* fix cpu (required to update stats) */
 
 	cpu = cpu == Q_NO_KTHREAD ? smp_processor_id() : cpu;
-
-	// TODO
-	// printk(KERN_INFO "[PFQ] sock_queue=%d, cpu=%d, node=%d txmem=%p dev=%p dev_name=%s\n",
-	//        sock_queue, cpu, node, txmem, dev, dev ? dev->name : "NULL");
-	// msleep(10);
-	// return 0;
 
 	/* increment the swap index of the current queue */
 
@@ -240,7 +233,7 @@ pfq_sk_queue_xmit_NG(struct pfq_sock *so, int sock_queue, int cpu, int node)
         /* initialize pointer to the current transmit queue */
 
 	begin = so->opt.txq_async[sock_queue].base_addr + (swap_idx & 1) * txmem->size;
-        end   = begin + txmem->size;
+        end = begin + txmem->size;
 
 	/* Tx loop */
 
@@ -258,7 +251,7 @@ pfq_sk_queue_xmit_NG(struct pfq_sock *so, int sock_queue, int cpu, int node)
 		bool xmit_more, last;
                 size_t len;
 
-		last = tx_queue_last_pkt(hdr);
+		last = is_last_tx_pkt(hdr);
 
 		/* wait until the Ts */
 
@@ -269,10 +262,9 @@ pfq_sk_queue_xmit_NG(struct pfq_sock *so, int sock_queue, int cpu, int node)
 			HARD_TX_UNLOCK(dev, txq);
 			local_bh_enable();
 
-			now = wait_until(hdr->tstamp.tv64, &intr);
-
+			now = wait_until(hdr->tstamp.tv64, stop, &intr);
 			if (intr)
-				goto stop;
+				goto exit;
 
 			local_bh_disable();
 			HARD_TX_LOCK(dev, txq, smp_processor_id());
@@ -319,9 +311,9 @@ pfq_sk_queue_xmit_NG(struct pfq_sock *so, int sock_queue, int cpu, int node)
 				more = xmit_batch_len - 1;
 				pfq_relax();
 
-				if (giveup_tx_process()) {
+				if (giveup_tx_process(stop)) {
 					pfq_kfree_skb_pool(skb, &pool->tx_pool);
-					goto stop;
+					goto exit;
 				}
 
 				local_bh_disable();
@@ -348,7 +340,7 @@ pfq_sk_queue_xmit_NG(struct pfq_sock *so, int sock_queue, int cpu, int node)
 	HARD_TX_UNLOCK(dev, txq);
 	local_bh_enable();
 
-stop:
+exit:
 	/* count the packets left in the shared queue */
 
 	for_each_sk_tx_mbuff(hdr, end)
