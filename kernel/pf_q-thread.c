@@ -74,18 +74,25 @@ pfq_tx_thread_NG(void *_data)
 	printk(KERN_INFO "[PFQ] Tx[%d] thread-NG started on cpu %d.\n", data->id, data->cpu);
 
 	__set_current_state(TASK_RUNNING);
+
         for(;;)
 	{
 		/* transmit the registered socket's queues */
+		bool reg = false;
 		int n;
 
 		for(n = 0; n < Q_MAX_TX_QUEUES; n++)
 		{
 			int qindex = atomic_read(&data->qindex[n]);
                         smp_rmb();
-			if (qindex != -1 && data->sock != NULL)
+			if (qindex != -1 && data->sock != NULL) {
+				reg = true;
 				pfq_sk_queue_xmit_NG(data->sock[n], qindex, data->cpu, data->node);
+			}
 		}
+
+		if (!reg)
+			msleep(10);
 
                 if (kthread_should_stop())
                         break;
