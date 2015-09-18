@@ -197,6 +197,8 @@ pfq_start_all_tx_threads_NG(void)
 			kthread_bind(data->task, data->cpu);
 
 			pr_devel("[PFQ] created Tx[%d] kthread on cpu %d...\n", data->id, data->cpu);
+
+			wake_up_process(data->task);
 		}
 	}
 
