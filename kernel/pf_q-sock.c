@@ -27,9 +27,10 @@
 #include <linux/module.h>
 #include <linux/version.h>
 #include <linux/types.h>
-
 #include <pragma/diagnostic_pop>
 
+#include <pf_q-thread.h>
+#include <pf_q-dev.h>
 #include <pf_q-sock.h>
 #include <pf_q-memory.h>
 
@@ -173,5 +174,37 @@ void pfq_sock_init(struct pfq_sock *so, int id)
         sparse_set(&so->stats.drop, 0);
         sparse_set(&so->stats.sent, 0);
         sparse_set(&so->stats.disc, 0);
+}
+
+
+int
+pfq_sock_tx_unbind(struct pfq_sock *so)
+{
+	size_t n;
+
+	/* unbind sync Tx queue */
+
+	if (so->opt.txq.if_index != -1) {
+		dev_put_by_index(sock_net(&so->sk), so->opt.txq.if_index);
+	}
+
+	so->opt.txq.if_index = -1;
+	so->opt.txq.queue = -1;
+
+	/* unbind async Tx queue */
+
+	for(n = 0; n < Q_MAX_TX_QUEUES; ++n)
+	{
+		if (so->opt.txq_async[n].if_index != -1) {
+			dev_put_by_index(sock_net(&so->sk), so->opt.txq_async[n].if_index);
+		}
+		so->opt.txq_async[n].if_index = -1;
+		so->opt.txq_async[n].queue = -1;
+	}
+
+	if (pfq_unbind_tx_thread_NG(so) < 0)
+		return -EPERM;
+
+	return 0;
 }
 
