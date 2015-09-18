@@ -772,8 +772,19 @@ int pfq_setsockopt(struct socket *sock,
 
 			so->opt.txq_async[i].if_index = bind.if_index;
 			so->opt.txq_async[i].queue = bind.queue;
-
 			so->opt.tx_num_async_queues++;
+
+			smp_wmb();
+
+			if (pfq_bind_tx_thread_NG(bind.tid, so, bind.queue) < 0)
+			{
+				dev_put_by_index(sock_net(&so->sk), bind.if_index);
+				so->opt.txq_async[i].if_index = -1;
+				so->opt.txq_async[i].queue = -1;
+				so->opt.tx_num_async_queues--;
+				printk(KERN_INFO "[PFQ|%d] could not bind Tx[%d] thread: resource busy!\n", so->id, bind.tid);
+				return -EBUSY;
+			}
 
 			pr_devel("[PFQ|%d] Tx[%zu] bind: if_index=%d queue=%d\n", so->id, i,
 				so->opt.txq_async[i].if_index, so->opt.txq_async[i].queue);
@@ -791,14 +802,7 @@ int pfq_setsockopt(struct socket *sock,
 
 	case Q_SO_TX_UNBIND:
 	{
-		size_t n;
-
-		for(n = 0; n < Q_MAX_TX_QUEUES; ++n)
-		{
-			so->opt.txq_async[n].if_index = -1;
-			so->opt.txq_async[n].queue = -1;
-		}
-
+		pfq_sock_tx_unbind(so);
         } break;
 
         // case Q_SO_TX_FLUSH:
