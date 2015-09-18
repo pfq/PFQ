@@ -864,25 +864,26 @@ namespace pfq {
         }
 
 
-        //! Bind the socket for transmission to the given device name and queue.
+        //! Bind the socket queue for transmission to the given device name and queue.
         /*!
-         *  The core parameter specifies the CPU index where to run a
-         *  kernel thread (unless 'no_kthread' id specified).
+         *  The tid parameter specifies the index (id) of the transmitter
+         *  thread. If 'no_kthread' specified, bind refers to synchronous
+         *  transmissions.
          */
 
         void
-        bind_tx(const char *dev, int queue = any_queue, int core = no_kthread)
+        bind_tx(const char *dev, int queue = any_queue, int tid = no_kthread)
         {
             auto index = ifindex(this->fd(), dev);
             if (index == -1)
                 throw pfq_error("PFQ: device not found");
 
-            struct pfq_binding b = { {core}, index, queue };
+            struct pfq_binding b = { {tid}, index, queue };
 
             if (::setsockopt(fd_, PF_Q, Q_SO_TX_BIND, &b, sizeof(b)) == -1)
                 throw pfq_error(errno, "PFQ: Tx bind error");
 
-            if (core != no_kthread)
+            if (tid != no_kthread)
                 data()->tx_num_async++;
 
             data()->tx_num_bind++;
@@ -1457,31 +1458,6 @@ namespace pfq {
                 throw pfq_error(errno, "PFQ: Tx queue flush");
         }
 
-        //! Start kernel threads.
-        /*!
-         * Start kernel threads associated with the Tx queues of the
-         * socket.
-         */
-
-        void
-        tx_async_start()
-        {
-            if (::setsockopt(fd_, PF_Q, Q_SO_TX_ASYNC_START, nullptr, 0) == -1)
-                throw pfq_error(errno, "PFQ: Tx async start");
-        }
-
-        //! Stop kernel threads.
-        /*!
-         * Stop kernel threads associated with the Tx queues of the
-         * socket.
-         */
-
-        void
-        tx_async_stop()
-        {
-            if (::setsockopt(fd_, PF_Q, Q_SO_TX_ASYNC_STOP, nullptr, 0) == -1)
-                throw pfq_error(errno, "PFQ: Tx async stop");
-        }
     };
 
 
