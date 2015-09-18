@@ -582,15 +582,18 @@ pfq_release(struct socket *sock)
         pfq_id_t id;
         int total = 0;
 
+
 	if (!sk)
 		return 0;
 
         so = pfq_sk(sk);
         id = so->id;
 
-        /* stop TX thread (if running) */
+        /* unbind TX threads */
 
-	pfq_stop_all_tx_threads(so);
+        pr_devel("[PFQ|%d] unbinding devs and Tx threads...\n", id);
+
+	pfq_sock_tx_unbind(so);
 
         pr_devel("[PFQ|%d] releasing socket...\n", id);
 

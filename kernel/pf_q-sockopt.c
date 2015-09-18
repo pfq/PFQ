@@ -373,7 +373,7 @@ int pfq_setsockopt(struct socket *sock,
 	{
 		int err = 0;
 
-		pfq_stop_all_tx_threads(so);
+		pfq_sock_tx_unbind(so);
 
                 err = pfq_shared_queue_disable(so);
                 if (err < 0) {
