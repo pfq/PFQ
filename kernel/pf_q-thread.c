@@ -49,6 +49,7 @@ struct task_struct *kthread_tx_pool [Q_MAX_CPU] = { [0 ... 255] = NULL };
 
 DEFINE_MUTEX(pfq_thread_tx_pool_lock);
 
+
 static struct pfq_thread_tx_data pfq_thread_tx_pool[Q_MAX_CPU] =
 {
 	[0 ... Q_MAX_CPU-1] = {
@@ -56,7 +57,7 @@ static struct pfq_thread_tx_data pfq_thread_tx_pool[Q_MAX_CPU] =
 		.cpu    = -1,
 		.task	= NULL,
 		.sock   = {NULL, NULL, NULL, NULL},
-		.qindex = {{-1}, {-1}, {-1}, {-1}}
+		.sock_queue = {{-1}, {-1}, {-1}, {-1}}
 	}
 };
 
@@ -86,13 +87,14 @@ pfq_tx_thread_NG(void *_data)
 			struct pfq_sock *sock;
 			int sock_queue;
 
-			sock_queue = atomic_read(&data->qindex[n]);
+			sock_queue = atomic_read(&data->sock_queue[n]);
 			smp_rmb();
 			sock = data->sock[n];
 
 			if (sock_queue != -1 && sock != NULL) {
 				reg = true;
-				pfq_sk_queue_xmit_NG(sock, sock_queue, data->cpu, data->node);
+				pfq_sk_queue_xmit_NG(sock, sock_queue,
+						     data->cpu, data->node, &data->sock_queue[n]);
 			}
 		}
 
@@ -125,7 +127,7 @@ pfq_bind_tx_thread_NG(int tx_index, struct pfq_sock *sock, int sock_queue)
 
 	for(n = 0; n < Q_MAX_TX_QUEUES; n++)
 	{
-		if (atomic_read(&data->qindex[n]) == -1)
+		if (atomic_read(&data->sock_queue[n]) == -1)
 			break;
 	}
 
@@ -136,7 +138,7 @@ pfq_bind_tx_thread_NG(int tx_index, struct pfq_sock *sock, int sock_queue)
 
 	data->sock[n] = sock;
 	smp_wmb();
-	atomic_set(&data->qindex[n], sock_queue);
+	atomic_set(&data->sock_queue[n], sock_queue);
 
         mutex_unlock(&pfq_thread_tx_pool_lock);
         return 0;
@@ -155,10 +157,10 @@ pfq_unbind_tx_thread_NG(struct pfq_sock *sock)
 
 		for(i = 0; i < Q_MAX_TX_QUEUES; i++)
 		{
-			if (atomic_read(&data->qindex[i]) != -1)
+			if (atomic_read(&data->sock_queue[i]) != -1)
 			{
 				if (data->sock[i] == sock) {
-					atomic_set(&data->qindex[i], -1);
+					atomic_set(&data->sock_queue[i], -1);
 					smp_wmb();
 					msleep(Q_GRACE_PERIOD);
 					data->sock[i] = NULL;
@@ -229,13 +231,15 @@ pfq_stop_all_tx_threads_NG(void)
 			{
 				int i;
 				pr_devel("[PFQ stopping Tx[%d] thread@%p\n", data->id, data->task);
+
 				kthread_stop(data->task);
 				data->id   = -1;
 				data->cpu  = -1;
 				data->task = NULL;
+
 				for(i=0; i < Q_MAX_TX_QUEUES; ++i)
 				{
-					atomic_set(&data->qindex[i], -1);
+					atomic_set(&data->sock_queue[i], -1);
 					data->sock[i] = NULL;
 				}
 			}

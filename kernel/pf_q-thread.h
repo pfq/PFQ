@@ -45,6 +45,7 @@ extern void pfq_stop_all_tx_threads_NG(void);
 extern int pfq_bind_tx_thread_NG(int tx_index, struct pfq_sock *sock, int sock_queue);
 extern int pfq_unbind_tx_thread_NG(struct pfq_sock *sock);
 
+
 struct pfq_thread_data
 {
 	struct pfq_sock *so;
@@ -68,8 +69,8 @@ struct pfq_thread_tx_data
 	int			cpu;
 	int			node;
 	struct task_struct *	task;
-	struct pfq_sock *	sock  [Q_MAX_TX_QUEUES];
-	atomic_t		qindex[Q_MAX_TX_QUEUES];
+	struct pfq_sock *	sock[Q_MAX_TX_QUEUES];
+	atomic_t		sock_queue[Q_MAX_TX_QUEUES];
 };
 
 

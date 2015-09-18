@@ -183,13 +183,12 @@ bool is_last_tx_pkt(struct pfq_pkthdr *hdr)
 int
 pfq_sk_queue_xmit_NG(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic_t const *stop)
 {
+	int more = 0, total_sent = 0, disc = 0, queue, swap_idx;
 	struct pfq_percpu_pool *pool;
 	struct pfq_tx_queue *txmem;
 	struct netdev_queue *txq;
 	struct pfq_pkthdr *hdr;
         struct net_device *dev;
-
-	int more = 0, total_sent = 0, disc = 0, queue, swap_idx;
 	char *begin, *end;
 	ktime_t now;
 
