@@ -123,25 +123,29 @@ ktime_t wait_until(uint64_t ts, bool *intr)
 
 
 static inline
-int swap_sk_queue_and_wait(struct pfq_tx_queue *txs, int cpu, int *index)
+int swap_sk_tx_queue(struct pfq_tx_queue *txmem, int cpu, int *index)
 {
 	if (cpu != Q_NO_KTHREAD) {
-		*index = __atomic_add_fetch(&txs->cons, 1, __ATOMIC_RELAXED);
-		while (*index != __atomic_load_n(&txs->prod, __ATOMIC_RELAXED))
-		{
-#ifdef PFQ_DEBUG
-			static uint32_t failures = 0;
-			if ((failures++ & ((1<<24)-1))== 0)
-				printk(KERN_INFO "[PFQ] swap_tx_queue_and_wait spinning!\n");
-#endif
-			pfq_relax();
-			if (giveup_tx_process())
-				return -EINTR;
+
+		if (txmem->swap) {
+			int prod = __atomic_load_n(&txmem->prod, __ATOMIC_RELAXED);
+			if (prod == __atomic_load_n(&txmem->cons, __ATOMIC_RELAXED)) {
+				txmem->swap = false;
+				*index = prod;
+				return 0;
+			}
+			return -1;
+		}
+		else {
+			__atomic_add_fetch(&txmem->cons, 1, __ATOMIC_RELAXED);
+			txmem->swap = true;
+			return -1;
 		}
 	}
 	else {
-		*index = __atomic_add_fetch(&txs->cons, 1, __ATOMIC_RELAXED);
-		__atomic_store_n(&txs->prod, 1, __ATOMIC_RELAXED);
+		*index = __atomic_add_fetch(&txmem->cons, 1, __ATOMIC_RELAXED);
+		__atomic_store_n(&txmem->prod, 1, __ATOMIC_RELAXED);
+		return 0;
 	}
 
 	return 0;
@@ -177,27 +181,43 @@ bool tx_queue_last_pkt(struct pfq_pkthdr *hdr)
 
 
 int
-__pfq_sk_tx_queue_xmit(struct pfq_sock *so, struct net_device *dev, size_t idx, int cpu, int node)
+pfq_sk_queue_xmit_NG(struct pfq_sock *so, int sock_queue, int cpu, int node)
 {
 	struct netdev_queue *txq;
-	struct pfq_tx_queue *txs;
+	struct pfq_tx_queue *txmem;
 	struct pfq_percpu_pool *pool;
 	struct pfq_pkthdr *hdr;
+        struct net_device *dev;
 
-	int more = 0, err = 0, total_sent = 0,
-            disc = 0, queue, swap;
-
+	int more = 0, total_sent = 0, disc = 0, queue, swap_idx;
 	char *begin, *end;
 	ktime_t now;
 
 	/* get the Tx queue */
 
-	txs = pfq_get_tx_async_queue(&so->opt, idx);
+	txmem = sock_queue < 0 ? pfq_get_tx_queue(&so->opt) :
+				pfq_get_tx_async_queue(&so->opt, sock_queue);
+
+        if (txmem == NULL) { /* socket not yet enabled... */
+		return 0;
+	}
+
+	/* swap the soft Tx queue */
+
+	if ((swap_sk_tx_queue(txmem, cpu, &swap_idx)) < 0)
+	{
+		/* swap-pending request... */
+		return 0;
+	}
+
+	/* get default (locked) device */
+
+	dev = so->opt.txq_async[sock_queue].default_dev;
 
 	/* get the netdev_queue for transmission */
 
-	queue = __pfq_dev_cap_txqueue(dev, so->opt.txq_async[idx].queue);
-	txq   = netdev_get_tx_queue(dev, queue);
+	queue = __pfq_dev_cap_txqueue(dev, so->opt.txq_async[sock_queue].queue);
+	txq = netdev_get_tx_queue(dev, queue);
 
 	/* get local cpu data */
 
@@ -207,20 +227,20 @@ __pfq_sk_tx_queue_xmit(struct pfq_sock *so, struct net_device *dev, size_t idx, 
 
 	cpu = cpu == Q_NO_KTHREAD ? smp_processor_id() : cpu;
 
-	/* swap the soft Tx queue */
-
-	if ((err = swap_sk_queue_and_wait(txs, cpu, &swap)) < 0)
-		return err;
+	// TODO
+	// printk(KERN_INFO "[PFQ] sock_queue=%d, cpu=%d, node=%d txmem=%p dev=%p dev_name=%s\n",
+	//        sock_queue, cpu, node, txmem, dev, dev ? dev->name : "NULL");
+	// msleep(10);
+	// return 0;
 
 	/* increment the swap index of the current queue */
 
-	swap++;
+	swap_idx++;
 
         /* initialize pointer to the current transmit queue */
 
-	begin = so->opt.txq_async[idx].base_addr + (swap & 1) * txs->size;
-        end   = begin + txs->size;
-
+	begin = so->opt.txq_async[sock_queue].base_addr + (swap_idx & 1) * txmem->size;
+        end   = begin + txmem->size;
 
 	/* Tx loop */
 
@@ -347,6 +367,7 @@ stop:
 
 	return total_sent;
 }
+
 
 
 /*
@@ -670,13 +691,5 @@ pfq_skb_queue_lazy_xmit_run(struct pfq_skbuff_GC_queue *skbs, struct pfq_endpoin
 	return sent;
 }
 
-
-int
-pfq_sk_queue_xmit_NG(struct pfq_sock *so, int qindex, int cpu, int node)
-{
-	printk(KERN_INFO "[PFQ] SK QUEUE XMIT: queue@%p qindex=%d cpu=%d node=%d\n", so, qindex, cpu, node);
-	msleep(1000);
-	return 0;
-}
 
 
