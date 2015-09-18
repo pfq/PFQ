@@ -36,12 +36,10 @@
 #define Q_MAX_SOCK_MASK		1024
 #define Q_MAX_DEVICE		1024
 #define Q_MAX_HW_QUEUE          256
+
 #define Q_MAX_TX_SKB_COPY	256
 
-#define Q_GRACE_PERIOD		100 /* msec */
-
-#define Q_TX_RING_SIZE          (8192)
-#define Q_TX_RING_MASK          (PFQ_TX_RING_SIZE-1)
+#define Q_GRACE_PERIOD		50 /* msec */
 
 #define Q_SLOT_ALIGN(s, n)      ((s+(n-1)) & ~(n-1))
 

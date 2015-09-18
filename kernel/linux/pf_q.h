@@ -158,7 +158,7 @@ static inline void smp_wmb() { barrier(); }
 #define Q_VLAN_UNTAG			0
 #define Q_VLAN_ANYTAG			-1
 
-/*grouppolicies*/
+/*group policies*/
 
 #define Q_POLICY_GROUP_UNDEFINED	0
 #define Q_POLICY_GROUP_PRIVATE		1
@@ -173,11 +173,11 @@ static inline void smp_wmb() { barrier(); }
 #define Q_CLASS_DEFAULT			Q_CLASS(0)
 #define Q_CLASS_USER_PLANE		Q_CLASS(1)
 #define Q_CLASS_CONTROL_PLANE		Q_CLASS(2)
-#define Q_CLASS_CONTROL			Q_CLASS(Q_CLASS_MAX-1)			/*reservedformanagement*/
-#define Q_CLASS_ANY			(((unsigned long)-1)^Q_CLASS_CONTROL)	/*anyclassexceptmanagement*/
+#define Q_CLASS_CONTROL			Q_CLASS(Q_CLASS_MAX-1)			/*reserved for management*/
+#define Q_CLASS_ANY			(((unsigned long)-1)^Q_CLASS_CONTROL)	/*any class except management*/
 
 
-/*additionalconstants*/
+/*additional constants*/
 
 #define Q_MAX_COUNTERS			64
 #define Q_MAX_TX_QUEUES			8
