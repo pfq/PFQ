@@ -55,8 +55,8 @@ static struct pfq_thread_tx_data pfq_thread_tx_pool[Q_MAX_CPU] =
 		.id	= -1,
 		.cpu    = -1,
 		.task	= NULL,
-		.sock   = {NULL},
-		.qindex = {{-1}, {-1}, {-1}, {-1}, {-1}, {-1}, {-1}, {-1}}
+		.sock   = {NULL, NULL, NULL, NULL},
+		.qindex = {{-1}, {-1}, {-1}, {-1}}
 	}
 };
 
