@@ -1398,23 +1398,24 @@ namespace pfq {
             const int tss = fold(queue == any_queue ? symmetric_hash(buf.first) : queue,
                                  data_->tx_num_bind);
 
-            auto tx = &static_cast<struct pfq_shared_queue *>(data_->shm_addr)->tx[tss];
+            auto atx = &static_cast<struct pfq_shared_queue *>(data_->shm_addr)->ax[tss];
 
-            auto index = __atomic_load_n(&tx->cons, __ATOMIC_RELAXED);
-            if (index != __atomic_load_n(&tx->prod, __ATOMIC_RELAXED))
+            auto index = __atomic_load_n(&atx->cons, __ATOMIC_RELAXED);
+            if (index != __atomic_load_n(&atx->prod, __ATOMIC_RELAXED))
             {
-                __atomic_store_n(&tx->prod, index, __ATOMIC_RELAXED);
+                __atomic_store_n(&atx->prod, index, __ATOMIC_RELAXED);
             }
 
             // get base address of the soft Tx queue:
             //
 	        void * base_addr = static_cast<char *>(data_->tx_queue_addr)
+	                            + data_->tx_queue_size * 2
 	                            + data_->tx_queue_size * (2 * tss + (index & 1));
 
-            if (index != tx->index)
+            if (index != atx->index)
             {
-                    tx->index = index;
-                    tx->ptr = base_addr;
+                    atx->index = index;
+                    atx->ptr = base_addr;
             }
 
             // cut the packet to maxlen:
@@ -1427,18 +1428,18 @@ namespace pfq {
 
             // ensure there's enough space for the current slot_size + the next header:
             //
-            if ((static_cast<char *>(tx->ptr) - static_cast<char *>(base_addr) + slot_size + sizeof(struct pfq_pkthdr))
+            if ((static_cast<char *>(atx->ptr) - static_cast<char *>(base_addr) + slot_size + sizeof(struct pfq_pkthdr))
                     < data_->tx_queue_size)
             {
-                auto hdr = (struct pfq_pkthdr *)tx->ptr;
+                auto hdr = (struct pfq_pkthdr *)atx->ptr;
                 hdr->tstamp.tv64 = nsec;
                 hdr->caplen = len;
                 hdr->data.copies = copies;
 
                 memcpy(hdr+1, buf.first, len);
 
-                reinterpret_cast<char *&>(tx->ptr) += slot_size;
-                static_cast<struct pfq_pkthdr *>(tx->ptr)->len = 0;
+                reinterpret_cast<char *&>(atx->ptr) += slot_size;
+                static_cast<struct pfq_pkthdr *>(atx->ptr)->len = 0;
 
                 return true;
             }
