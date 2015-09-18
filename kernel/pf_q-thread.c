@@ -75,15 +75,13 @@ pfq_tx_thread_NG(void *_data)
 	__set_current_state(TASK_RUNNING);
         for(;;)
 	{
-		int n;
-
 		/* transmit the registered socket's queues */
+		int n;
 
 		for(n = 0; n < Q_MAX_TX_QUEUES; n++)
 		{
-			/* TODO: check for memory barriers */
-
 			int qindex = atomic_read(&data->qindex[n]);
+                        smp_rmb();
 			if (qindex != -1 && data->sock != NULL)
 				pfq_sk_queue_xmit_NG(data->sock[n], qindex, data->cpu, data->node);
 		}
@@ -95,6 +93,61 @@ pfq_tx_thread_NG(void *_data)
 	}
 
         printk(KERN_INFO "[PFQ] Tx[%d] thread-NG stopped on cpu %d.\n", data->id, data->cpu);
+        return 0;
+}
+
+
+int
+pfq_bind_tx_thread_NG(struct pfq_thread_tx_data *data, struct pfq_sock *sock, int tx_idx)
+{
+	int n;
+	mutex_lock(&kthread_tx_pool_lock);
+
+	for(n = 0; n < Q_MAX_TX_QUEUES; n++)
+	{
+		if (atomic_read(&data->qindex[n]) == -1)
+			break;
+	}
+
+	if (n == Q_MAX_TX_QUEUES) {
+		mutex_unlock(&kthread_tx_pool_lock);
+		return -EINVAL;
+	}
+
+	data->sock[n] = sock;
+	smp_wmb();
+	atomic_set(&data->qindex[n], tx_idx);
+
+        mutex_unlock(&kthread_tx_pool_lock);
+        return 0;
+}
+
+
+int
+pfq_unbind_tx_thread_NG(struct pfq_sock *sock)
+{
+	int n, i;
+	mutex_lock(&kthread_tx_pool_lock);
+
+	for(n = 0; n < tx_thread_nr; n++)
+	{
+		for(i = 0; i < Q_MAX_TX_QUEUES; i++)
+		{
+			struct pfq_thread_tx_data *data = &pfq_thread_tx_pool[n];
+
+			if (atomic_read(&data->qindex[i]) != -1)
+			{
+				if (data->sock[i] == sock) {
+					atomic_set(&data->qindex[i], -1);
+					smp_wmb();
+					msleep(Q_GRACE_PERIOD);
+					data->sock[i] = NULL;
+				}
+			}
+		}
+	}
+
+        mutex_unlock(&kthread_tx_pool_lock);
         return 0;
 }
 
@@ -128,6 +181,7 @@ pfq_start_all_tx_threads_NG(void)
 			}
 
 			kthread_bind(data->task, data->cpu);
+
 			pr_devel("[PFQ] created Tx[%d] kthread on cpu %d...\n", data->id, data->cpu);
 		}
 	}
