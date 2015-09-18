@@ -48,7 +48,7 @@ DEFINE_MUTEX(kthread_tx_pool_lock);
 struct task_struct *kthread_tx_pool [Q_MAX_CPU] = { [0 ... 255] = NULL };
 
 
-static struct pfq_thread_tx_data kthread_tx_pool_NG[Q_MAX_CPU] =
+static struct pfq_thread_tx_data pfq_thread_tx_pool[Q_MAX_CPU] =
 {
 	[0 ... Q_MAX_CPU-1] = {
 		.id	= -1,
@@ -104,19 +104,18 @@ pfq_start_all_tx_threads_NG(void)
 {
 	int err = 0;
 
-	if (async_tx_nr)
+	if (tx_thread_nr)
 	{
 		int n;
-		printk(KERN_INFO "[PFQ] starting %d Tx thread(s)...\n", async_tx_nr);
+		printk(KERN_INFO "[PFQ] starting %d Tx thread(s)...\n", tx_thread_nr);
 
-		for(n = 0; n < async_tx_nr; n++)
+		for(n = 0; n < tx_thread_nr; n++)
 		{
-			struct pfq_thread_tx_data *data = &kthread_tx_pool_NG[n];
+			struct pfq_thread_tx_data *data = &pfq_thread_tx_pool[n];
 
-			data->id  = n;
-			data->cpu = async_tx[n];
-			data->node = cpu_online(async_tx[n]) ? cpu_to_node(async_tx[n]) : NUMA_NO_NODE;
-
+			data->id = n;
+			data->cpu = tx_thread_affinity[n];
+			data->node = cpu_online(tx_thread_affinity[n]) ? cpu_to_node(tx_thread_affinity[n]) : NUMA_NO_NODE;
 			data->task = kthread_create_on_node(pfq_tx_thread_NG,
 							    data, data->node,
 							    "kpfq/%d:%d", n, data->cpu);
@@ -140,15 +139,15 @@ pfq_start_all_tx_threads_NG(void)
 void
 pfq_stop_all_tx_threads_NG(void)
 {
-	if (async_tx_nr)
+	if (tx_thread_nr)
 	{
 		int n;
 
-		printk(KERN_INFO "[PFQ] stopping %d Tx thread(s)...\n", async_tx_nr);
+		printk(KERN_INFO "[PFQ] stopping %d Tx thread(s)...\n", tx_thread_nr);
 
-		for(n = 0; n < async_tx_nr; n++)
+		for(n = 0; n < tx_thread_nr; n++)
 		{
-			struct pfq_thread_tx_data *data = &kthread_tx_pool_NG[n];
+			struct pfq_thread_tx_data *data = &pfq_thread_tx_pool[n];
 
 			if (data->task)
 			{
