@@ -202,13 +202,15 @@ struct pfq_tx_queue
 	void *			ptr;	    /* reserved for user-space */
 	unsigned int		index;	    /* reserved for user-space */
 
+	bool			swap;	    /* swap pending */
 } __attribute__((aligned(64)));
 
 
 struct pfq_shared_queue
 {
         struct pfq_rx_queue rx;
-        struct pfq_tx_queue tx[Q_MAX_TX_QUEUES];
+        struct pfq_tx_queue tx;
+        struct pfq_tx_queue ax[Q_MAX_TX_QUEUES];
 };
 
 

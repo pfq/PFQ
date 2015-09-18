@@ -190,8 +190,12 @@ pfq_sock_tx_unbind(struct pfq_sock *so)
 
 	so->opt.txq.if_index = -1;
 	so->opt.txq.queue = -1;
+	so->opt.txq.default_dev = NULL;
 
 	/* unbind async Tx queue */
+
+	if (pfq_unbind_tx_thread_NG(so) < 0)
+		return -EPERM;
 
 	for(n = 0; n < Q_MAX_TX_QUEUES; ++n)
 	{
@@ -200,10 +204,8 @@ pfq_sock_tx_unbind(struct pfq_sock *so)
 		}
 		so->opt.txq_async[n].if_index = -1;
 		so->opt.txq_async[n].queue = -1;
+		so->opt.txq_async[n].default_dev = NULL;
 	}
-
-	if (pfq_unbind_tx_thread_NG(so) < 0)
-		return -EPERM;
 
 	return 0;
 }

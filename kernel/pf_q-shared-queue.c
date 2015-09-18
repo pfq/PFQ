@@ -45,7 +45,7 @@ pfq_shared_queue_enable(struct pfq_sock *so, unsigned long user_addr)
 {
 	if (!so->shmem.addr) {
 
-		struct pfq_shared_queue * queue;
+		struct pfq_shared_queue * mapped_queue;
 		size_t n;
                 int i;
 
@@ -62,56 +62,66 @@ pfq_shared_queue_enable(struct pfq_sock *so, unsigned long user_addr)
 
 		/* initialize queues headers */
 
-		queue = (struct pfq_shared_queue *)so->shmem.addr;
-
+		mapped_queue = (struct pfq_shared_queue *)so->shmem.addr;
 
 		/* initialize Rx queue */
 
-		queue->rx.data      = 0;
-		queue->rx.len       = so->opt.rx_queue_len;
-		queue->rx.size      = pfq_mpsc_queue_mem(so)/2;
-		queue->rx.slot_size = so->opt.rx_slot_size;
+		mapped_queue->rx.data      = 0;
+		mapped_queue->rx.len       = so->opt.rx_queue_len;
+		mapped_queue->rx.size      = pfq_mpsc_queue_mem(so)/2;
+		mapped_queue->rx.slot_size = so->opt.rx_slot_size;
 
+		so->opt.rxq.base_addr = so->shmem.addr + sizeof(struct pfq_shared_queue);
 
 		/* reset Rx slots */
 
 		for(i = 0; i < 2; i++)
 		{
-			char * raw = so->shmem.addr + sizeof(struct pfq_shared_queue) + i * queue->rx.size;
-			char * end = raw + queue->rx.size;
+			char * raw = so->shmem.addr + sizeof(struct pfq_shared_queue) + i * mapped_queue->rx.size;
+			char * end = raw + mapped_queue->rx.size;
 			const int rst = !i;
-			for(;raw < end; raw += queue->rx.slot_size)
+			for(;raw < end; raw += mapped_queue->rx.slot_size)
 				((struct pfq_pkthdr *)raw)->commit = rst;
 		}
+
+		/* initialize TX queues */
+
+		mapped_queue->tx.prod  = 0;
+		mapped_queue->tx.cons  = 0;
+		mapped_queue->tx.size  = pfq_spsc_queue_mem(so)/2;
+		mapped_queue->tx.ptr   = NULL;
+		mapped_queue->tx.index = -1;
+		mapped_queue->tx.swap  = false;
+
+		so->opt.txq.base_addr = so->shmem.addr + sizeof(struct pfq_shared_queue) + pfq_mpsc_queue_mem(so) + pfq_spsc_queue_mem(so);
+
 
 		/* initialize TX async queues */
 
 		for(n = 0; n < Q_MAX_TX_QUEUES; n++)
 		{
-			queue->tx[n].prod  = 0;
-			queue->tx[n].cons  = 0;
-			queue->tx[n].size  = pfq_spsc_queue_mem(so)/2;
-			queue->tx[n].ptr   = NULL;
-			queue->tx[n].index = -1;
+			mapped_queue->ax[n].prod  = 0;
+			mapped_queue->ax[n].cons  = 0;
+			mapped_queue->ax[n].size  = pfq_spsc_queue_mem(so)/2;
+			mapped_queue->ax[n].ptr   = NULL;
+			mapped_queue->ax[n].index = -1;
+			mapped_queue->ax[n].swap = false;
 
 			so->opt.txq_async[n].base_addr = so->shmem.addr + sizeof(struct pfq_shared_queue)
 				+ pfq_mpsc_queue_mem(so)
-				+ pfq_spsc_queue_mem(so) * n;
+				+ pfq_spsc_queue_mem(so) * (1 + n);
 		}
 
-		/* update the queues base_addr */
-
-		so->opt.rxq.base_addr = so->shmem.addr + sizeof(struct pfq_shared_queue);
-
-		/* commit both the queues */
+		/* commit queues */
 
 		smp_wmb();
 
-		atomic_long_set(&so->opt.rxq.addr, (long)&queue->rx);
+		atomic_long_set(&so->opt.rxq.addr, (long)&mapped_queue->rx);
+		atomic_long_set(&so->opt.txq.addr, (long)&mapped_queue->tx);
 
 		for(n = 0; n < Q_MAX_TX_QUEUES; n++)
 		{
-			atomic_long_set(&so->opt.txq_async[n].addr, (long)&queue->tx[n]);
+			atomic_long_set(&so->opt.txq_async[n].addr, (long)&mapped_queue->ax[n]);
 		}
 
 		pr_devel("[PFQ|%d] Rx queue: len=%zu slot_size=%zu caplen=%zu, mem=%zu bytes\n",
@@ -121,7 +131,14 @@ pfq_shared_queue_enable(struct pfq_sock *so, unsigned long user_addr)
 			 so->opt.caplen,
 			 pfq_mpsc_queue_mem(so));
 
-		pr_devel("[PFQ|%d] Tx queue: len=%zu slot_size=%zu maxlen=%d, mem=%zu bytes (%d queues)\n",
+		pr_devel("[PFQ|%d] Tx queue: len=%zu slot_size=%zu maxlen=%d, mem=%zu bytes\n",
+			 so->id,
+			 so->opt.tx_queue_len,
+			 so->opt.tx_slot_size,
+			 xmit_slot_size,
+			 pfq_spsc_queue_mem(so));
+
+		pr_devel("[PFQ|%d] Tx async queues: len=%zu slot_size=%zu maxlen=%d, mem=%zu bytes (%d queues)\n",
 			 so->id,
 			 so->opt.tx_queue_len,
 			 so->opt.tx_slot_size,

@@ -83,11 +83,16 @@ pfq_tx_thread_NG(void *_data)
 
 		for(n = 0; n < Q_MAX_TX_QUEUES; n++)
 		{
-			int qindex = atomic_read(&data->qindex[n]);
-                        smp_rmb();
-			if (qindex != -1 && data->sock != NULL) {
+			struct pfq_sock *sock;
+			int sock_queue;
+
+			sock_queue = atomic_read(&data->qindex[n]);
+			smp_rmb();
+			sock = data->sock[n];
+
+			if (sock_queue != -1 && sock != NULL) {
 				reg = true;
-				pfq_sk_queue_xmit_NG(data->sock[n], qindex, data->cpu, data->node);
+				pfq_sk_queue_xmit_NG(sock, sock_queue, data->cpu, data->node);
 			}
 		}
 
@@ -101,6 +106,7 @@ pfq_tx_thread_NG(void *_data)
 	}
 
         printk(KERN_INFO "[PFQ] Tx[%d] thread-NG stopped on cpu %d.\n", data->id, data->cpu);
+	data->task = NULL;
         return 0;
 }
 

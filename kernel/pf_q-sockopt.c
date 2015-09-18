@@ -376,6 +376,8 @@ int pfq_setsockopt(struct socket *sock,
 
 		pfq_sock_tx_unbind(so);
 
+		msleep(Q_GRACE_PERIOD);
+
                 err = pfq_shared_queue_disable(so);
                 if (err < 0) {
                         printk(KERN_INFO "[PFQ|%d] disable error!\n", so->id);
@@ -734,6 +736,7 @@ int pfq_setsockopt(struct socket *sock,
         case Q_SO_TX_BIND:
         {
                 struct pfq_binding bind;
+                struct net_device *dev;
 
                 if (optlen != sizeof(bind))
                         return -EINVAL;
@@ -759,7 +762,7 @@ int pfq_setsockopt(struct socket *sock,
 
 		/* get device */
 
-		if (!dev_get_by_index(sock_net(&so->sk), bind.if_index)) {
+		if (!(dev = dev_get_by_index(sock_net(&so->sk), bind.if_index))) {
 			printk(KERN_INFO "[PFQ|%d] Tx thread: invalid if_index=%d\n", so->id, bind.if_index);
 			return -EPERM;
 		}
@@ -772,6 +775,7 @@ int pfq_setsockopt(struct socket *sock,
 
 			so->opt.txq_async[i].if_index = bind.if_index;
 			so->opt.txq_async[i].queue = bind.queue;
+			so->opt.txq_async[i].default_dev = dev;
 			so->opt.tx_num_async_queues++;
 
 			smp_wmb();
@@ -781,7 +785,9 @@ int pfq_setsockopt(struct socket *sock,
 				dev_put_by_index(sock_net(&so->sk), bind.if_index);
 				so->opt.txq_async[i].if_index = -1;
 				so->opt.txq_async[i].queue = -1;
+				so->opt.txq_async[i].default_dev = NULL;
 				so->opt.tx_num_async_queues--;
+
 				printk(KERN_INFO "[PFQ|%d] could not bind Tx[%d] thread: resource busy!\n", so->id, bind.tid);
 				return -EBUSY;
 			}
@@ -793,7 +799,7 @@ int pfq_setsockopt(struct socket *sock,
 		{
 			so->opt.txq.if_index = bind.if_index;
 			so->opt.txq.queue = bind.queue;
-
+			so->opt.txq.default_dev = dev;
 			pr_devel("[PFQ|%d] Tx bind: if_index=%d queue=%d\n", so->id,
 				so->opt.txq.if_index, so->opt.txq.queue);
 		}
@@ -805,46 +811,11 @@ int pfq_setsockopt(struct socket *sock,
 		pfq_sock_tx_unbind(so);
         } break;
 
-        // case Q_SO_TX_FLUSH:
-        // {
-	// 	int queue, err = 0;
-        //         size_t n;
-
-	// 	if (optlen != sizeof(queue))
-	// 		return -EINVAL;
-
-	// 	if (copy_from_user(&queue, optval, optlen))
-	// 		return -EFAULT;
-
-	// 	if (pfq_get_tx_queue(&so->opt, 0) == NULL) {
-	// 		printk(KERN_INFO "[PFQ|%d] Tx queue flush: socket not enabled!\n", so->id);
-	// 		return -EPERM;
-	// 	}
-
-	// 	if (queue < -1 || (queue > 0 && queue >= (int)so->opt.tx_num_queues)) {
-	// 		printk(KERN_INFO "[PFQ|%d] Tx queue flush: bad queue %d (num_queue=%zu)!\n",
-	// 		       so->id, queue, so->opt.tx_num_queues);
-	// 		return -EPERM;
-	// 	}
-
-	// 	if (queue != -1) {
-	// 		pr_devel("[PFQ|%d] flushing Tx queue %d...\n", so->id, queue);
-	// 		return pfq_sk_queue_flush(so, queue);
-	// 	}
-
-	// 	for(n = 0; n < so->opt.tx_num_queues; n++)
-	// 	{
-	// 		if (pfq_sk_queue_flush(so, n) != 0) {
-	// 			printk(KERN_INFO "[PFQ|%d] Tx[%zu] queue flush: flush error (if_index=%d)!\n",
-	// 			       so->id, n, so->opt.txq[n].if_index);
-	// 			err = -EPERM;
-	// 		}
-	// 	}
-
-	// 	if (err)
-	// 		return err;
-        // } break;
-
+        case Q_SO_TX_FLUSH:
+        {
+		printk(KERN_INFO "[PFQ|%d] TX_FLUSH...\n", so->id);
+		return 0;
+        } break;
 
         case Q_SO_GROUP_FUNCTION:
         {
@@ -854,6 +825,7 @@ int pfq_setsockopt(struct socket *sock,
                 size_t psize, ucsize;
                 void *context = NULL;
                 pfq_gid_t gid;
+
                 int err = 0;
 
                 if (optlen != sizeof(tmp))

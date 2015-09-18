@@ -582,14 +582,13 @@ pfq_release(struct socket *sock)
         pfq_id_t id;
         int total = 0;
 
-
 	if (!sk)
 		return 0;
 
         so = pfq_sk(sk);
         id = so->id;
 
-        /* unbind TX threads */
+        /* unbind AX threads */
 
         pr_devel("[PFQ|%d] unbinding devs and Tx threads...\n", id);
 
@@ -601,8 +600,12 @@ pfq_release(struct socket *sock)
 
         pfq_release_sock_id(so->id);
 
-        if (so->shmem.addr)
+	msleep(Q_GRACE_PERIOD);
+
+        if (so->shmem.addr) {
+		pr_devel("[PFQ|%d] freeing shared memory...\n", id);
                 pfq_shared_queue_disable(so);
+	}
 
         down(&sock_sem);
 
