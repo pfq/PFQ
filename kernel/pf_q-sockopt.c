@@ -745,18 +745,18 @@ int pfq_setsockopt(struct socket *sock,
                         return -EFAULT;
 
 		if (bind.tid < -1) {
-			printk(KERN_INFO "[PFQ|%d] Tx thread: invalid index (%d)!\n", so->id, bind.tid);
+			printk(KERN_INFO "[PFQ|%d] Tx thread: invalid thread index (%d)!\n", so->id, bind.tid);
 			return -EPERM;
 		}
 
                 if (bind.queue < -1) {
-                        printk(KERN_INFO "[PFQ|%d] Tx thread: invalid queue (%d)\n", so->id, bind.queue);
+                        printk(KERN_INFO "[PFQ|%d] Tx thread: invalid socket queue (%d)\n", so->id, bind.queue);
                         return -EPERM;
                 }
 
 		if (bind.tid >= 0 &&
 		    so->opt.tx_num_async_queues >= Q_MAX_TX_QUEUES) {
-			printk(KERN_INFO "[PFQ|%d] Tx thread: max number of queues exceeded!\n", so->id);
+			printk(KERN_INFO "[PFQ|%d] Tx thread: max number of sock queues exceeded!\n", so->id);
 			return -EPERM;
 		}
 
@@ -770,9 +770,9 @@ int pfq_setsockopt(struct socket *sock,
 		}
 		rcu_read_unlock();
 
-		/* store if_index and queue to the queue */
+		/* update the socket queue information */
 
-		if (bind.tid >= 0) /* async */
+		if (bind.tid >= 0) /* async queues */
 		{
 			size_t i = so->opt.tx_num_async_queues;
 
@@ -784,7 +784,7 @@ int pfq_setsockopt(struct socket *sock,
 			pr_devel("[PFQ|%d] Tx[%zu] bind: if_index=%d queue=%d\n", so->id, i,
 				so->opt.txq_async[i].if_index, so->opt.txq_async[i].queue);
 		}
-		else /* sync */
+		else /* sync queue */
 		{
 			so->opt.txq.if_index = bind.if_index;
 			so->opt.txq.queue = bind.queue;
