@@ -47,6 +47,7 @@ DEFINE_MUTEX(kthread_tx_pool_lock);
 
 struct task_struct *kthread_tx_pool [Q_MAX_CPU] = { [0 ... 255] = NULL };
 
+DEFINE_MUTEX(pfq_thread_tx_pool_lock);
 
 static struct pfq_thread_tx_data pfq_thread_tx_pool[Q_MAX_CPU] =
 {
@@ -55,7 +56,7 @@ static struct pfq_thread_tx_data pfq_thread_tx_pool[Q_MAX_CPU] =
 		.cpu    = -1,
 		.task	= NULL,
 		.sock   = {NULL},
-		.qindex = {{-1}}
+		.qindex = {{-1}, {-1}, {-1}, {-1}, {-1}, {-1}, {-1}, {-1}}
 	}
 };
 
@@ -98,10 +99,16 @@ pfq_tx_thread_NG(void *_data)
 
 
 int
-pfq_bind_tx_thread_NG(struct pfq_thread_tx_data *data, struct pfq_sock *sock, int tx_idx)
+pfq_bind_tx_thread_NG(int tx_index, struct pfq_sock *sock, int sock_queue)
 {
+	struct pfq_thread_tx_data *data;
 	int n;
-	mutex_lock(&kthread_tx_pool_lock);
+
+	if (tx_index >= tx_thread_nr)
+		return -EBUSY;
+
+	data = &pfq_thread_tx_pool[tx_index];
+	mutex_lock(&pfq_thread_tx_pool_lock);
 
 	for(n = 0; n < Q_MAX_TX_QUEUES; n++)
 	{
@@ -110,15 +117,15 @@ pfq_bind_tx_thread_NG(struct pfq_thread_tx_data *data, struct pfq_sock *sock, in
 	}
 
 	if (n == Q_MAX_TX_QUEUES) {
-		mutex_unlock(&kthread_tx_pool_lock);
+		mutex_unlock(&pfq_thread_tx_pool_lock);
 		return -EINVAL;
 	}
 
 	data->sock[n] = sock;
 	smp_wmb();
-	atomic_set(&data->qindex[n], tx_idx);
+	atomic_set(&data->qindex[n], sock_queue);
 
-        mutex_unlock(&kthread_tx_pool_lock);
+        mutex_unlock(&pfq_thread_tx_pool_lock);
         return 0;
 }
 
@@ -127,14 +134,14 @@ int
 pfq_unbind_tx_thread_NG(struct pfq_sock *sock)
 {
 	int n, i;
-	mutex_lock(&kthread_tx_pool_lock);
+	mutex_lock(&pfq_thread_tx_pool_lock);
 
 	for(n = 0; n < tx_thread_nr; n++)
 	{
+		struct pfq_thread_tx_data *data = &pfq_thread_tx_pool[n];
+
 		for(i = 0; i < Q_MAX_TX_QUEUES; i++)
 		{
-			struct pfq_thread_tx_data *data = &pfq_thread_tx_pool[n];
-
 			if (atomic_read(&data->qindex[i]) != -1)
 			{
 				if (data->sock[i] == sock) {
@@ -147,7 +154,7 @@ pfq_unbind_tx_thread_NG(struct pfq_sock *sock)
 		}
 	}
 
-        mutex_unlock(&kthread_tx_pool_lock);
+        mutex_unlock(&pfq_thread_tx_pool_lock);
         return 0;
 }
 
@@ -213,8 +220,8 @@ pfq_stop_all_tx_threads_NG(void)
 				data->task = NULL;
 				for(i=0; i < Q_MAX_TX_QUEUES; ++i)
 				{
-					data->sock[i] = NULL;
 					atomic_set(&data->qindex[i], -1);
+					data->sock[i] = NULL;
 				}
 			}
 		}
@@ -258,32 +265,6 @@ pfq_tx_thread(void *_data)
 
         kfree(data);
         return 0;
-}
-
-
-void
-pfq_stop_all_tx_threads(struct pfq_sock *so)
-{
-	// int n = 0;
-	// mutex_lock(&kthread_tx_pool_lock);
-	// for(n = 0; n < so->opt.tx_num_async_queues; n++)
-	// {
-	// 	if (so->opt.txq_async[n].task) {
-
-	// 		pr_devel("[PFQ|%d] stopping Tx thread@%p\n", so->id, so->opt.txq[n].task);
-
-	// 		if (so->opt.txq[n].cpu != -1)
-	// 			BUG_ON(kthread_tx_pool[so->opt.txq[n].cpu % Q_MAX_CPU] != so->opt.txq[n].task);
-
-	// 		kthread_stop(so->opt.txq[n].task);
-	// 		kthread_tx_pool[so->opt.txq[n].cpu % Q_MAX_CPU] = NULL;
-
-	// 		so->opt.txq[n].task = NULL;
-	// 		so->opt.txq[n].cpu = -1;
-	// 	}
-	// }
-        //
-	// mutex_unlock(&kthread_tx_pool_lock);
 }
 
 
