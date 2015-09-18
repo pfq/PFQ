@@ -156,7 +156,7 @@ namespace thread
 {
     struct context
     {
-        context(int id, const thread_binding &b, std::vector<int> kcpu)
+        context(int id, const thread_binding &b, std::vector<int> kthread)
         : m_id(id)
         , m_bind(b)
         , m_pfq()
@@ -173,19 +173,16 @@ namespace thread
             auto q = pfq::socket(param::list, param::tx_slots{opt::slots});
 
             std::cout << "thread     : " << id << " -> "  << show(m_bind) << " kthread { ";
-            for(auto x : kcpu)
+            for(auto x : kthread)
                 std::cout << x  << ' ';
             std::cout << "}" << std::endl;
 
             for(unsigned int n = 0; n < m_bind.dev.front().queue.size(); n++)
             {
-                q.bind_tx (m_bind.dev.front().name.c_str(), m_bind.dev.front().queue[n], n >= kcpu.size() ? -1 : kcpu.at(n));
+                q.bind_tx (m_bind.dev.front().name.c_str(), m_bind.dev.front().queue[n], n >= kthread.size() ? no_kthread : kthread.at(n));
             }
 
             q.enable();
-
-            if (std::any_of(std::begin(kcpu), std::end(kcpu), [](int cpu) { return cpu != -1; }))
-                    q.tx_async_start();
 
             m_pfq = std::move(q);
         }
@@ -735,10 +732,6 @@ try
 
         throw std::runtime_error(std::string("pfq-gen: ") + argv[i] + " unknown option");
     }
-
-    //
-    // process kthread:
-    //
 
     while (opt::kthread.size() < binding.size())
         opt::kthread.push_back(std::vector<int>{});
