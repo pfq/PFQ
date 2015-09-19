@@ -117,6 +117,25 @@ struct pfq_sock
 } ____cacheline_aligned_in_smp;
 
 
+/* queue info */
+
+static inline
+struct pfq_rx_info *
+pfq_get_rx_queue_info(struct pfq_sock_opt *that)
+{
+	return &that->rxq;
+}
+
+static inline
+struct pfq_tx_info *
+pfq_get_tx_queue_info(struct pfq_sock_opt *that, int index)
+{
+	if (index == -1)
+	    return &that->txq;
+	return &that->txq_async[index];
+}
+
+/* queues */
 
 static inline
 struct pfq_rx_queue *
@@ -127,19 +146,14 @@ pfq_get_rx_queue(struct pfq_sock_opt *that)
 
 static inline
 struct pfq_tx_queue *
-pfq_get_tx_queue(struct pfq_sock_opt *that)
+pfq_get_tx_queue(struct pfq_sock_opt *that, int index)
 {
-	return (struct pfq_tx_queue *)atomic_long_read(&that->txq.addr);
-}
-
-
-static inline
-struct pfq_tx_queue *
-pfq_get_tx_async_queue(struct pfq_sock_opt *that, int index)
-{
+	if (index == -1)
+		return (struct pfq_tx_queue *)atomic_long_read(&that->txq.addr);
 	return (struct pfq_tx_queue *)atomic_long_read(&that->txq_async[index].addr);
 }
 
+/* memory mapped queues */
 
 static inline
 struct pfq_shared_queue *
