@@ -983,7 +983,7 @@ static int __init pfq_init_module(void)
 		if ((err = check_tx_threads_affinity()) < 0)
 			goto err6;
 
-		if ((err = pfq_start_all_tx_threads_NG()) < 0)
+		if ((err = pfq_start_all_tx_threads()) < 0)
 			goto err7;
 	}
 
@@ -1002,7 +1002,7 @@ static int __init pfq_init_module(void)
         return 0;
 
 err7:
-	pfq_stop_all_tx_threads_NG();
+	pfq_stop_all_tx_threads();
 err6:
 	unregister_netdevice_notifier(&pfq_netdev_notifier_block);
 	unregister_device_handler();
@@ -1026,7 +1026,7 @@ static void __exit pfq_exit_module(void)
         int total = 0;
 
 	/* stop Tx threads */
-	pfq_stop_all_tx_threads_NG();
+	pfq_stop_all_tx_threads();
 
 #ifdef PFQ_USE_SKB_POOL
         pfq_skb_pool_enable(false);

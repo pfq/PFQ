@@ -193,7 +193,7 @@ pfq_sock_tx_bind(struct pfq_sock *so, int tid, int if_index, int queue, struct
 
 	smp_wmb();
 
-	if (pfq_bind_tx_thread_NG(tid, so, queue) < 0)
+	if (pfq_bind_tx_thread(tid, so, queue) < 0)
 	{
 		so->opt.txq_async[i].if_index = -1;
 		so->opt.txq_async[i].queue = -1;
@@ -225,7 +225,7 @@ pfq_sock_tx_unbind(struct pfq_sock *so)
 
 	/* unbind async Tx queue */
 
-	if (pfq_unbind_tx_thread_NG(so) < 0)
+	if (pfq_unbind_tx_thread(so) < 0)
 		return -EPERM;
 
 	for(n = 0; n < Q_MAX_TX_QUEUES; ++n)

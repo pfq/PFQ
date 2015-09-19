@@ -63,7 +63,7 @@ static struct pfq_thread_tx_data pfq_thread_tx_pool[Q_MAX_CPU] =
 
 
 static int
-pfq_tx_thread_NG(void *_data)
+pfq_tx_thread(void *_data)
 {
 	struct pfq_thread_tx_data *data = (struct pfq_thread_tx_data *)_data;
 
@@ -93,7 +93,7 @@ pfq_tx_thread_NG(void *_data)
 
 			if (sock_queue != -1 && sock != NULL) {
 				reg = true;
-				pfq_sk_queue_xmit_NG(sock, sock_queue,
+				pfq_sk_queue_xmit(sock, sock_queue,
 						     data->cpu, data->node, &data->sock_queue[n]);
 			}
 		}
@@ -114,7 +114,7 @@ pfq_tx_thread_NG(void *_data)
 
 
 int
-pfq_bind_tx_thread_NG(int tx_index, struct pfq_sock *sock, int sock_queue)
+pfq_bind_tx_thread(int tx_index, struct pfq_sock *sock, int sock_queue)
 {
 	struct pfq_thread_tx_data *data;
 	int n;
@@ -146,7 +146,7 @@ pfq_bind_tx_thread_NG(int tx_index, struct pfq_sock *sock, int sock_queue)
 
 
 int
-pfq_unbind_tx_thread_NG(struct pfq_sock *sock)
+pfq_unbind_tx_thread(struct pfq_sock *sock)
 {
 	int n, i;
 	mutex_lock(&pfq_thread_tx_pool_lock);
@@ -175,7 +175,7 @@ pfq_unbind_tx_thread_NG(struct pfq_sock *sock)
 
 
 int
-pfq_start_all_tx_threads_NG(void)
+pfq_start_all_tx_threads(void)
 {
 	int err = 0;
 
@@ -191,7 +191,7 @@ pfq_start_all_tx_threads_NG(void)
 			data->id = n;
 			data->cpu = tx_thread_affinity[n];
 			data->node = cpu_online(tx_thread_affinity[n]) ? cpu_to_node(tx_thread_affinity[n]) : NUMA_NO_NODE;
-			data->task = kthread_create_on_node(pfq_tx_thread_NG,
+			data->task = kthread_create_on_node(pfq_tx_thread,
 							    data, data->node,
 							    "kpfq/%d:%d", n, data->cpu);
 			if (IS_ERR(data->task)) {
@@ -215,7 +215,7 @@ pfq_start_all_tx_threads_NG(void)
 
 
 void
-pfq_stop_all_tx_threads_NG(void)
+pfq_stop_all_tx_threads(void)
 {
 	if (tx_thread_nr)
 	{
