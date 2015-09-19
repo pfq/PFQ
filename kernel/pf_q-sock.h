@@ -43,11 +43,11 @@ extern atomic_long_t pfq_sock_vector[Q_MAX_ID];
 
 struct pfq_tx_info
 {
-	atomic_long_t		addr;		/* (pfq_tx_queue *) */
+	atomic_long_t		addr;			/* (pfq_tx_queue *) */
 	void			*base_addr;
-	int			if_index;	/* default ifindex */
-	int			queue;          /* default queue */
-	struct net_device	*default_dev;	/* default dev */
+	int			default_ifindex;	/* default ifindex */
+	int			default_queue;          /* default queue */
+	struct net_device	*default_dev;		/* default dev */
 };
 
 
@@ -56,9 +56,9 @@ void pfq_tx_info_init(struct pfq_tx_info *info)
 {
 	atomic_long_set(&info->addr, 0);
 	info->base_addr = NULL;
-	info->if_index  = -1;
-	info->queue     = -1;
-	info->default_dev = NULL;
+	info->default_ifindex  = -1;
+	info->default_queue    = -1;
+	info->default_dev      = NULL;
 }
 
 

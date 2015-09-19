@@ -214,10 +214,9 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 
 	dev = txinfo->default_dev;
 
-
 	/* get the netdev_queue for transmission */
 
-	queue = __pfq_dev_cap_txqueue(dev, txinfo->queue);
+	queue = __pfq_dev_cap_txqueue(dev, txinfo->default_queue);
 	txq = netdev_get_tx_queue(dev, queue);
 
 	if (cpu != Q_NO_KTHREAD) { /* get local pool data */
