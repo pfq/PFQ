@@ -93,7 +93,7 @@ pfq_shared_queue_enable(struct pfq_sock *so, unsigned long user_addr)
 		mapped_queue->tx.index = -1;
 		mapped_queue->tx.swap  = false;
 
-		so->opt.txq.base_addr = so->shmem.addr + sizeof(struct pfq_shared_queue) + pfq_mpsc_queue_mem(so) + pfq_spsc_queue_mem(so);
+		so->opt.txq.base_addr = so->shmem.addr + sizeof(struct pfq_shared_queue) + pfq_mpsc_queue_mem(so);
 
 
 		/* initialize TX async queues */
