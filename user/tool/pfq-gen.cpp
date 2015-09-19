@@ -1,7 +1,6 @@
 /***************************************************************
  *
  * (C) 2011 - Nicola Bonelli <nicola@pfq.io>
- *            Andrea Di Pietro <andrea.dipietro@for.unipi.it>
  *
  ****************************************************************/
 
@@ -76,7 +75,7 @@ namespace more
 
 namespace opt
 {
-    size_t flush    = 1;
+    size_t flush_hint = 1;
     size_t len      = 1514;
     size_t slots    = 4096;
     size_t npackets = std::numeric_limits<size_t>::max();
@@ -170,6 +169,8 @@ namespace thread
             if (m_bind.dev.empty())
                 throw std::runtime_error("context[" + std::to_string (m_id) + "]: device unspecified");
 
+            m_async = kthread != std::vector<int>{-1};
+
             auto q = pfq::socket(param::list, param::tx_slots{opt::slots});
 
             std::cout << "thread     : " << id << " -> "  << show(m_bind) << " kthread { ";
@@ -179,7 +180,7 @@ namespace thread
 
             for(unsigned int n = 0; n < m_bind.dev.front().queue.size(); n++)
             {
-                q.bind_tx (m_bind.dev.front().name.c_str(), m_bind.dev.front().queue[n], n >= kthread.size() ? no_kthread : kthread.at(n));
+                q.bind_tx (m_bind.dev.front().name.c_str(), m_bind.dev.front().queue[n], kthread.at(n));
             }
 
             q.enable();
@@ -209,7 +210,7 @@ namespace thread
                 active_generator(true);
             }
             else if (opt::active_ts) {
-                active_generator();
+                active_generator(false);
             }
             else if (opt::preload > 1) {
                 pool_generator();
@@ -250,10 +251,21 @@ namespace thread
                 if (rc)
                     rate_control(now, delta, n);
 
-                if (!m_pfq.send_async(pfq::const_buffer(reinterpret_cast<const char *>(m_packet.get()), len), opt::flush, opt::copies))
+                if (m_async)
                 {
-                    m_fail->fetch_add(1, std::memory_order_relaxed);
-                    continue;
+                    if (!m_pfq.send_async(pfq::const_buffer(reinterpret_cast<const char *>(m_packet.get()), len), opt::copies))
+                    {
+                        m_fail->fetch_add(1, std::memory_order_relaxed);
+                        continue;
+                    }
+                }
+                else
+                {
+                    if (!m_pfq.send(pfq::const_buffer(reinterpret_cast<const char *>(m_packet.get()), len), opt::flush_hint, opt::copies))
+                    {
+                        m_fail->fetch_add(1, std::memory_order_relaxed);
+                        continue;
+                    }
                 }
 
                 m_sent->fetch_add(1, std::memory_order_relaxed);
@@ -290,10 +302,21 @@ namespace thread
                 if (rc)
                     rate_control(now, delta, n);
 
-                if (!m_pfq.send_async(pfq::const_buffer(reinterpret_cast<const char *>(m_packet.get() + idx * opt::len), len), opt::flush, opt::copies))
+                if (m_async)
                 {
-                    m_fail->fetch_add(1, std::memory_order_relaxed);
-                    continue;
+                    if (!m_pfq.send_async(pfq::const_buffer(reinterpret_cast<const char *>(m_packet.get() + idx * opt::len), len), opt::copies))
+                    {
+                        m_fail->fetch_add(1, std::memory_order_relaxed);
+                        continue;
+                    }
+                }
+                else
+                {
+                    if (!m_pfq.send(pfq::const_buffer(reinterpret_cast<const char *>(m_packet.get() + idx * opt::len), len), opt::flush_hint, opt::copies))
+                    {
+                        m_fail->fetch_add(1, std::memory_order_relaxed);
+                        continue;
+                    }
                 }
 
                 idx++;
@@ -423,10 +446,21 @@ namespace thread
                         ip->daddr ^= seed;
                     }
 
-                    if (!m_pfq.send_async(pfq::const_buffer(reinterpret_cast<const char *>(data), plen), opt::flush, opt::copies))
+                    if (m_async)
                     {
-                        m_fail->fetch_add(1, std::memory_order_relaxed);
-                        continue;
+                        if (!m_pfq.send_async(pfq::const_buffer(reinterpret_cast<const char *>(data), plen), opt::copies))
+                        {
+                            m_fail->fetch_add(1, std::memory_order_relaxed);
+                            continue;
+                        }
+                    }
+                    else
+                    {
+                        if (!m_pfq.send(pfq::const_buffer(reinterpret_cast<const char *>(data), plen), opt::flush_hint, opt::copies))
+                        {
+                            m_fail->fetch_add(1, std::memory_order_relaxed);
+                            continue;
+                        }
                     }
 
                     m_sent->fetch_add(1, std::memory_order_relaxed);
@@ -470,6 +504,8 @@ namespace thread
         std::mt19937 m_gen;
 
         std::unique_ptr<char[]> m_packet;
+
+        bool m_async;
     };
 
 }
@@ -613,7 +649,7 @@ try
                 throw std::runtime_error("hint missing");
             }
 
-            opt::flush = static_cast<size_t>(std::atoi(argv[i]));
+            opt::flush_hint = static_cast<size_t>(std::atoi(argv[i]));
             continue;
         }
 
@@ -752,8 +788,16 @@ try
         while (binding.at(i).dev.front().queue.size() < opt::kthread.at(i).size())
             binding.at(i).dev.front().queue.push_back(queue_num++);
 
-        while (opt::kthread.at(i).size() < binding.at(i).dev.front().queue.size())
-            opt::kthread.at(i).push_back(-1);
+        if (opt::kthread.at(i).empty() && binding.at(i).dev.front().queue.size() > 1)
+            throw std::runtime_error("multiple hw queues require async transmission (-k)");
+
+        while (opt::kthread.at(i).size() < binding.at(i).dev.front().queue.size()) {
+
+            if (opt::kthread.at(i).empty() && opt::active_ts)
+                throw std::runtime_error("active_ts requires async transmission (-k)");
+
+            opt::kthread.at(i).push_back(opt::kthread.at(i).empty() ? no_kthread : opt::kthread.at(i).back());
+        }
 
         if (binding.at(i).dev.front().queue.empty())
         {
@@ -762,9 +806,30 @@ try
         }
     }
 
+    if (opt::slots == 0)
+        throw std::runtime_error("tx_slots set to 0!");
+
+    if (opt::rand_flow && opt::file.empty())
+        throw std::runtime_error("random flow requires reading packets from file (r)");
+
+    // HugePages warning...
+    //
+
+    if (pfq::hugepages_mountpoint().empty())
+        std::cout << "*** Warning: HugePages not mounted ***" << std::endl;
+
+    // preloaded packets must be a power of 2
+    //
+
+    if (opt::preload & (opt::preload-1))
+        throw std::runtime_error("preloaded packets must be a power of 2");
+
+    ////////////////////////////////////////////////////////////////////////////////////
+
+
     std::cout << "rand_ip    : "  << std::boolalpha << opt::rand_ip << std::endl;
     std::cout << "len        : "  << opt::len << std::endl;
-    std::cout << "flush-hint : "  << opt::flush << std::endl;
+    std::cout << "flush-hint : "  << opt::flush_hint << std::endl;
 
     if (opt::npackets != std::numeric_limits<size_t>::max())
         std::cout << "npackets   : " << opt::npackets << std::endl;
@@ -773,12 +838,6 @@ try
 
     if (opt::rate != 0.0)
         std::cout << "rate       : "  << opt::rate << " Mpps" << std::endl;
-
-    if (opt::slots == 0)
-        throw std::runtime_error("tx_slots set to 0!");
-
-    if (opt::rand_flow && opt::file.empty())
-        throw std::runtime_error("random flow requires reading packets from file (r)");
 
     if (opt::active_ts && !opt::poisson)
         std::cout << "timestamp  : active!" << std::endl;
@@ -792,19 +851,6 @@ try
     {
         std::cout << vt100::BOLD << "*** Multiple queue detected! Consider to randomize IP addresses with -R option! ***" << vt100::RESET << std::endl;
     }
-
-    // HugePages warning...
-    //
-
-    if (pfq::hugepages_mountpoint().empty())
-        std::cout << "*** Warning: HugePages not mounted ***" << std::endl;
-
-    //
-    // preloaded packets must be a power of 2
-    //
-
-    if (opt::preload & (opt::preload-1))
-        throw std::runtime_error("preloaded packets must be a power of 2");
 
     //
     // create thread context:
@@ -911,5 +957,5 @@ try
 }
 catch(std::exception &e)
 {
-    std::cerr << e.what() << std::endl;
+    std::cerr << "pfq-gen: " << e.what() << std::endl;
 }
