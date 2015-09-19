@@ -344,7 +344,7 @@ namespace thread
             // otherwise we run into problems when the inter-departure time is less
             // than the packet length
 
-            std::exponential_distribution<double> exp_dist(1.0 /(delta+pkt_time).count());
+            std::exponential_distribution<double> exp_dist(1.0 /(delta-pkt_time).count());
 
             for(size_t n = 0; n < opt::npackets;)
             {
