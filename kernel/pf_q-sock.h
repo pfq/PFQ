@@ -164,6 +164,7 @@ int     pfq_get_sock_count(void);
 struct	pfq_sock * pfq_get_sock_by_id(pfq_id_t id);
 void	pfq_release_sock_id(pfq_id_t id);
 
+int	pfq_sock_tx_bind(struct pfq_sock *so, int tid, int if_index, int queue, struct net_device *default_dev);
 int	pfq_sock_tx_unbind(struct pfq_sock *so);
 
 #endif /* PF_Q_SOCK_H */

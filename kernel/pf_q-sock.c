@@ -178,6 +178,37 @@ void pfq_sock_init(struct pfq_sock *so, int id)
 
 
 int
+pfq_sock_tx_bind(struct pfq_sock *so, int tid, int if_index, int queue, struct
+		 net_device *dev)
+{
+	size_t i = so->opt.tx_num_async_queues;
+
+	if (i >= Q_MAX_TX_QUEUES)
+		return -EPERM;
+
+	so->opt.txq_async[i].if_index = if_index;
+	so->opt.txq_async[i].queue = queue;
+	so->opt.txq_async[i].default_dev = dev;
+	so->opt.tx_num_async_queues++;
+
+	smp_wmb();
+
+	if (pfq_bind_tx_thread_NG(tid, so, queue) < 0)
+	{
+		so->opt.txq_async[i].if_index = -1;
+		so->opt.txq_async[i].queue = -1;
+		so->opt.txq_async[i].default_dev = NULL;
+		so->opt.tx_num_async_queues--;
+
+		printk(KERN_INFO "[PFQ|%d] could not bind Tx[%d] thread: resource busy!\n", so->id, tid);
+		return -EBUSY;
+	}
+
+	return 0;
+}
+
+
+int
 pfq_sock_tx_unbind(struct pfq_sock *so)
 {
 	size_t n;
@@ -199,9 +230,9 @@ pfq_sock_tx_unbind(struct pfq_sock *so)
 
 	for(n = 0; n < Q_MAX_TX_QUEUES; ++n)
 	{
-		if (so->opt.txq_async[n].if_index != -1) {
+		if (so->opt.txq_async[n].if_index != -1)
 			dev_put_by_index(sock_net(&so->sk), so->opt.txq_async[n].if_index);
-		}
+
 		so->opt.txq_async[n].if_index = -1;
 		so->opt.txq_async[n].queue = -1;
 		so->opt.txq_async[n].default_dev = NULL;

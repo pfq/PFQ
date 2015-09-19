@@ -736,7 +736,7 @@ int pfq_setsockopt(struct socket *sock,
         case Q_SO_TX_BIND:
         {
                 struct pfq_binding bind;
-                struct net_device *dev;
+                struct net_device *dev = NULL;
 
                 if (optlen != sizeof(bind))
                         return -EINVAL;
@@ -762,7 +762,8 @@ int pfq_setsockopt(struct socket *sock,
 
 		/* get device */
 
-		if (!(dev = dev_get_by_index(sock_net(&so->sk), bind.if_index))) {
+		if (bind.if_index != -1 &&
+		    !(dev = dev_get_by_index(sock_net(&so->sk), bind.if_index))) {
 			printk(KERN_INFO "[PFQ|%d] Tx thread: invalid if_index=%d\n", so->id, bind.if_index);
 			return -EPERM;
 		}
@@ -771,29 +772,15 @@ int pfq_setsockopt(struct socket *sock,
 
 		if (bind.tid >= 0) /* async queues */
 		{
-			size_t i = so->opt.tx_num_async_queues;
+			int err = pfq_sock_tx_bind(so, bind.tid, bind.if_index, bind.queue, dev);
+			if (err < 0) {
+				if (bind.if_index != -1)
+					dev_put_by_index(sock_net(&so->sk), bind.if_index);
 
-			so->opt.txq_async[i].if_index = bind.if_index;
-			so->opt.txq_async[i].queue = bind.queue;
-			so->opt.txq_async[i].default_dev = dev;
-			so->opt.tx_num_async_queues++;
-
-			smp_wmb();
-
-			if (pfq_bind_tx_thread_NG(bind.tid, so, bind.queue) < 0)
-			{
-				dev_put_by_index(sock_net(&so->sk), bind.if_index);
-				so->opt.txq_async[i].if_index = -1;
-				so->opt.txq_async[i].queue = -1;
-				so->opt.txq_async[i].default_dev = NULL;
-				so->opt.tx_num_async_queues--;
-
-				printk(KERN_INFO "[PFQ|%d] could not bind Tx[%d] thread: resource busy!\n", so->id, bind.tid);
-				return -EBUSY;
+				return err;
 			}
 
-			pr_devel("[PFQ|%d] Tx[%zu] bind: if_index=%d queue=%d\n", so->id, i,
-				so->opt.txq_async[i].if_index, so->opt.txq_async[i].queue);
+			pr_devel("[PFQ|%d] Tx[%d] bind: if_index=%d queue=%d\n", so->id, bind.tid, bind.if_index, bind.queue);
 		}
 		else /* sync queue */
 		{
