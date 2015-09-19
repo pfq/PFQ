@@ -163,9 +163,7 @@ namespace pfq {
             size_t tx_slot_size;
 
             size_t tx_attempt;
-
-            size_t tx_num_bind;
-            size_t tx_num_async;
+            size_t tx_num_async_bind;
         };
 
         int fd_;
@@ -424,7 +422,6 @@ namespace pfq {
                                         nullptr,
                                         0,
                                         nullptr,
-                                        0,
                                         0,
                                         0,
                                         0,
@@ -874,19 +871,17 @@ namespace pfq {
         void
         bind_tx(const char *dev, int queue = any_queue, int tid = no_kthread)
         {
-            auto index = ifindex(this->fd(), dev);
-            if (index == -1)
+            auto if_index = ifindex(this->fd(), dev);
+            if (if_index == -1)
                 throw pfq_error("PFQ: device not found");
 
-            struct pfq_binding b = { {tid}, index, queue };
+            struct pfq_binding b = { {tid}, if_index, queue };
 
             if (::setsockopt(fd_, PF_Q, Q_SO_TX_BIND, &b, sizeof(b)) == -1)
                 throw pfq_error(errno, "PFQ: Tx bind error");
 
             if (tid != no_kthread)
-                data()->tx_num_async++;
-
-            data()->tx_num_bind++;
+                data()->tx_num_async_bind ++;
         }
 
         //! Unbind the socket transmission.
@@ -900,8 +895,7 @@ namespace pfq {
             if (::setsockopt(fd_, PF_Q, Q_SO_TX_UNBIND, nullptr, 0) == -1)
                 throw pfq_error(errno, "PFQ: Tx unbind error");
 
-            data()->tx_num_async = 0;
-            data()->tx_num_bind = 0;
+            data()->tx_num_async_bind = 0;
         }
 
         //! Join the group specified by the group id.
@@ -1330,39 +1324,69 @@ namespace pfq {
 
         //! Store the packet and transmit the packets in the queue.
         /*!
-         * The queue is flushed (if required) and the transmission takes place.
+         * The queue is flushed every flush_hint packets.
          */
 
         bool
-        send(const_buffer pkt, int copies = 1)
+        send(const_buffer pkt, size_t flush_hint = 1, int copies = 1)
         {
-            auto rc = send_deferred(pkt, 0, copies);
-            if (data_->tx_num_bind != data_->tx_num_async)
-                tx_queue_flush();
-            return rc;
+            if (unlikely(!data_->shm_addr))
+                throw pfq_error("PFQ: send: socket not enabled");
+
+            auto tx = &static_cast<struct pfq_shared_queue *>(data_->shm_addr)->tx;
+
+            // get base address of the socket Tx queue:
+            //
+	        void * base_addr = static_cast<char *>(data_->tx_queue_addr);
+
+            if (tx->ptr == NULL)
+                tx->ptr = base_addr;
+
+            // cut the packet to maxlen:
+            //
+            auto len = std::min(pkt.second, data_->tx_slot_size - sizeof(struct pfq_pkthdr));
+
+            // compute the current slot_size:
+            //
+            auto slot_size = sizeof(struct pfq_pkthdr) + align<8>(len);
+
+            // ensure there's enough space for the current slot_size + the next header:
+            //
+            if ((static_cast<char *>(tx->ptr) - static_cast<char *>(base_addr) + slot_size + sizeof(struct pfq_pkthdr))
+                    < data_->tx_queue_size)
+            {
+                auto hdr = (struct pfq_pkthdr *)tx->ptr;
+                hdr->tstamp.tv64 = 0;
+                hdr->caplen      = len;
+                hdr->data.copies = copies;
+
+                memcpy(hdr+1, pkt.first, len);
+
+                reinterpret_cast<char *&>(tx->ptr) += slot_size;
+                static_cast<struct pfq_pkthdr *>(tx->ptr)->len = 0;
+
+                if (++data_->tx_attempt == flush_hint)
+                {
+                    data_->tx_attempt = 0;
+                    this->tx_queue_flush(0);
+                }
+
+                return true;
+            }
+
+            return false;
         }
 
 
         //! Store the packet and transmit the packets in the queue, asynchronously.
         /*!
-         * The transmission is invoked every @flush_hint packets.
-         * When TX kernel threads are in use, @flush_hint is ignored.
+         * The transmission is handled by TX kernel threads.
          */
 
         bool
-        send_async(const_buffer pkt, size_t flush_hint, int copies = 1)
+        send_async(const_buffer pkt, int copies = 1)
         {
-            auto rc = send_deferred(pkt, 0, copies);
-
-            if (++data_->tx_attempt == flush_hint) {
-
-                data_->tx_attempt = 0;
-
-                if (data_->tx_num_bind != data_->tx_num_async)
-                    tx_queue_flush(any_queue);
-            }
-
-            return rc;
+            return send_deferred(pkt, 0, copies);
         }
 
         /*! Store the packet and transmit it. */
@@ -1375,9 +1399,6 @@ namespace pfq {
         bool
         send_at(const_buffer pkt, std::chrono::time_point<Clock, Duration> const &tp, int copies = 1)
         {
-            if (data_->tx_num_bind != data_->tx_num_async)
-                throw std::runtime_error("PFQ: send_at not async!");
-
             auto ns = std::chrono::duration_cast<std::chrono::nanoseconds>(tp.time_since_epoch()).count();
             return send_deferred(pkt, ns, copies);
         }
@@ -1385,18 +1406,19 @@ namespace pfq {
         //! Schedule packet transmission.
         /*!
          * The packet is copied into a Tx queue (using a TSS symmetric hash if any_queue is specified)
-         * and transmitted at the given timestamp by a kernel thread or when tx_queue_flush is called.
+         * and transmitted at the given timestamp by a Tx kernel thread.
          * A timestamp of 0 nanoseconds means 'immediate transmission.
          */
 
         bool
-        send_deferred(const_buffer buf, uint64_t nsec, int copies, int queue = any_queue)
+        send_deferred(const_buffer pkt, uint64_t nsec, int copies, int queue = any_queue)
         {
-            if (!data_->shm_addr)
+            if (unlikely(!data_->shm_addr))
                 throw pfq_error("PFQ: send_deferred: socket not enabled");
+            if (unlikely(data_->tx_num_async_bind == 0))
+                throw pfq_error("PFQ: send_deferred: socket not bound to async thread");
 
-            const int tss = fold(queue == any_queue ? symmetric_hash(buf.first) : queue,
-                                 data_->tx_num_bind);
+            const int tss = fold(queue == any_queue ? symmetric_hash(pkt.first) : queue, data_->tx_num_async_bind);
 
             auto atx = &static_cast<struct pfq_shared_queue *>(data_->shm_addr)->ax[tss];
 
@@ -1409,8 +1431,7 @@ namespace pfq {
             // get base address of the soft Tx queue:
             //
 	        void * base_addr = static_cast<char *>(data_->tx_queue_addr)
-	                            + data_->tx_queue_size * 2
-	                            + data_->tx_queue_size * (2 * tss + (index & 1));
+	                            + data_->tx_queue_size * (2 * (1+tss) + (index & 1));
 
             if (index != atx->index)
             {
@@ -1420,7 +1441,7 @@ namespace pfq {
 
             // cut the packet to maxlen:
             //
-            auto len = std::min(buf.second, data_->tx_slot_size - sizeof(struct pfq_pkthdr));
+            auto len = std::min(pkt.second, data_->tx_slot_size - sizeof(struct pfq_pkthdr));
 
             // compute the current slot_size:
             //
@@ -1436,24 +1457,24 @@ namespace pfq {
                 hdr->caplen = len;
                 hdr->data.copies = copies;
 
-                memcpy(hdr+1, buf.first, len);
+                memcpy(hdr+1, pkt.first, len);
 
                 reinterpret_cast<char *&>(atx->ptr) += slot_size;
                 static_cast<struct pfq_pkthdr *>(atx->ptr)->len = 0;
-
                 return true;
             }
 
             return false;
         }
 
-        //! Flush the Tx queue(s).
+        //! Flush the Tx queue.
         /*!
-         * Transmit the packets in the Tx queues of the socket.
+         * Transmit the packets in the queue of the socket.
+         * queue = 0:   synchronous tx queue
          */
 
         void
-        tx_queue_flush(int queue = any_queue)
+        tx_queue_flush(int queue = 0)
         {
             if (::setsockopt(fd_, PF_Q, Q_SO_TX_FLUSH, &queue, sizeof(queue)) == -1)
                 throw pfq_error(errno, "PFQ: Tx queue flush");
