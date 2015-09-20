@@ -1350,13 +1350,24 @@ namespace pfq {
             //
             auto slot_size = sizeof(struct pfq_pkthdr) + align<8>(len);
 
+            auto flush_and_ret = [&](int n, bool value)
+            {
+                if (++data_->tx_attempt == flush_hint)
+                {
+                    data_->tx_attempt = 0;
+                    tx->ptr = nullptr;
+                    this->tx_queue_flush(n);
+                }
+                return value;
+            };
+
             // ensure there's enough space for the current slot_size + the next header:
             //
-            if ((static_cast<char *>(tx->ptr) - static_cast<char *>(base_addr) + slot_size + sizeof(struct pfq_pkthdr))
-                    < data_->tx_queue_size)
+            if ((static_cast<char *>(tx->ptr) - static_cast<char *>(base_addr) + slot_size + sizeof(struct pfq_pkthdr)) < data_->tx_queue_size)
             {
                 auto hdr = (struct pfq_pkthdr *)tx->ptr;
                 hdr->tstamp.tv64 = 0;
+                hdr->ifindex     = 0;
                 hdr->caplen      = len;
                 hdr->data.copies = copies;
 
@@ -1364,17 +1375,10 @@ namespace pfq {
 
                 reinterpret_cast<char *&>(tx->ptr) += slot_size;
                 static_cast<struct pfq_pkthdr *>(tx->ptr)->len = 0;
-
-                if (++data_->tx_attempt == flush_hint)
-                {
-                    data_->tx_attempt = 0;
-                    this->tx_queue_flush(0);
-                }
-
-                return true;
+                return flush_and_ret(0, true);
             }
 
-            return false;
+            return flush_and_ret(0, false);
         }
 
 
@@ -1456,7 +1460,7 @@ namespace pfq {
                 hdr->tstamp.tv64 = nsec;
                 hdr->caplen = len;
                 hdr->data.copies = copies;
-
+                hdr->ifindex = 0;
                 memcpy(hdr+1, pkt.first, len);
 
                 reinterpret_cast<char *&>(atx->ptr) += slot_size;
