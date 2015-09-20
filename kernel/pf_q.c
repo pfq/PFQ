@@ -875,7 +875,7 @@ static struct notifier_block pfq_netdev_notifier_block =
 
 
 
-int
+static int
 check_tx_threads_affinity(void)
 {
 	int i, j;

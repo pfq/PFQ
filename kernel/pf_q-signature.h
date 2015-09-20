@@ -37,7 +37,7 @@ int    pfq_signature_arity(string_view_t sig);
 bool   pfq_signature_equal(string_view_t a, string_view_t b);
 bool   pfq_signature_is_function(string_view_t sig);
 
-size_t pfq_signature_sizeof(string_view_t str);
+ptrdiff_t pfq_signature_sizeof(string_view_t str);
 
 bool   pfq_signature_check(string_view_t sig);
 bool   pfq_signature_type_check(string_view_t t);

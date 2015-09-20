@@ -287,17 +287,15 @@ static struct
 };
 
 
-size_t
+ptrdiff_t
 pfq_signature_sizeof(string_view_t str)
 {
 	size_t n;
-
 	for(n = 0; n < sizeof(sizeof_table)/sizeof(sizeof_table[0]); n++)
 	{
 		if (!string_view_compare(str, sizeof_table[n].symb))
 			return sizeof_table[n].size;
 	}
-
 	return -1;
 }
 

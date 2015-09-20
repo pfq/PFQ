@@ -163,7 +163,7 @@ namespace pfq {
             size_t tx_slot_size;
 
             size_t tx_attempt;
-            size_t tx_num_async_bind;
+            size_t tx_num_async;
         };
 
         int fd_;
@@ -861,7 +861,7 @@ namespace pfq {
         }
 
 
-        //! Bind the socket queue for transmission to the given device name and queue.
+        //! Bind the socket for transmission to the given device name and queue.
         /*!
          *  The tid parameter specifies the index (id) of the transmitter
          *  thread. If 'no_kthread' specified, bind refers to synchronous
@@ -881,7 +881,7 @@ namespace pfq {
                 throw pfq_error(errno, "PFQ: Tx bind error");
 
             if (tid != no_kthread)
-                data()->tx_num_async_bind ++;
+                data()->tx_num_async++;
         }
 
         //! Unbind the socket transmission.
@@ -895,7 +895,7 @@ namespace pfq {
             if (::setsockopt(fd_, PF_Q, Q_SO_TX_UNBIND, nullptr, 0) == -1)
                 throw pfq_error(errno, "PFQ: Tx unbind error");
 
-            data()->tx_num_async_bind = 0;
+            data()->tx_num_async = 0;
         }
 
         //! Join the group specified by the group id.
@@ -1321,17 +1321,10 @@ namespace pfq {
             return data()->shm_addr;
         }
 
-
         //! Store the packet and transmit the packets in the queue.
         /*!
          * The queue is flushed every flush_hint packets.
          */
-
-        bool
-        send(const_buffer pkt, size_t flush_hint = 1, int copies = 1)
-        {
-            return send_to(pkt, 0, 0, flush_hint, copies);
-        }
 
         bool
         send_to(const_buffer pkt, int ifindex, int queue, size_t flush_hint = 1, int copies = 1)
@@ -1345,7 +1338,7 @@ namespace pfq {
             //
 	        void * base_addr = static_cast<char *>(data_->tx_queue_addr);
 
-            if (tx->ptr == NULL)
+            if (tx->ptr == nullptr)
                 tx->ptr = base_addr;
 
             // cut the packet to maxlen:
@@ -1388,10 +1381,24 @@ namespace pfq {
             return flush_and_ret(0, false);
         }
 
-
-        //! Store the packet and transmit the packets in the queue, asynchronously.
+        //! Store the packet and transmit the packets in the queue.
         /*!
-         * The transmission is handled by TX kernel threads.
+         * The queue is flushed every flush_hint packets.
+         * Requires the socket is bound for transmission to a net device and queue.
+         * See 'bind_tx'.
+         */
+
+        bool
+        send(const_buffer pkt, size_t flush_hint = 1, int copies = 1)
+        {
+            return send_to(pkt, 0, 0, flush_hint, copies);
+        }
+
+        //! Transmit the packet asynchronously.
+        /*!
+         * The transmission is handled by kernel.
+         * Requires the socket is bound for transmission to one (or multiple) kernel threads.
+         * See 'bind_tx'.
          */
 
         bool
@@ -1400,10 +1407,12 @@ namespace pfq {
             return send_deferred(pkt, 0, copies);
         }
 
-        /*! Store the packet and transmit it. */
+        /*! Transmit the packet asynchronously. */
         /*!
          * The transmission takes place asynchronously at the given timespec time, specified
          * as a generic chrono::time_point.
+         * Requires the socket is bound for transmission to one (or multiple) kernel threads.
+         * See 'bind_tx'.
          */
 
         template <typename Clock, typename Duration>
@@ -1418,7 +1427,7 @@ namespace pfq {
         /*!
          * The packet is copied into a Tx queue (using a TSS symmetric hash if any_queue is specified)
          * and transmitted at the given timestamp by a Tx kernel thread.
-         * A timestamp of 0 nanoseconds means 'immediate transmission.
+         * A timestamp of 0 nanoseconds means immediate transmission.
          */
 
         bool
@@ -1426,12 +1435,13 @@ namespace pfq {
         {
             if (unlikely(!data_->shm_addr))
                 throw pfq_error("PFQ: send_deferred: socket not enabled");
-            if (unlikely(data_->tx_num_async_bind == 0))
+
+            if (unlikely(data_->tx_num_async == 0))
                 throw pfq_error("PFQ: send_deferred: socket not bound to async thread");
 
-            const int tss = fold(queue == any_queue ? symmetric_hash(pkt.first) : queue, data_->tx_num_async_bind);
+            const int tss = fold(queue == any_queue ? symmetric_hash(pkt.first) : queue, data_->tx_num_async);
 
-            auto atx = &static_cast<struct pfq_shared_queue *>(data_->shm_addr)->ax[tss];
+            auto atx = &static_cast<struct pfq_shared_queue *>(data_->shm_addr)->tx_async[tss];
 
             auto index = __atomic_load_n(&atx->cons, __ATOMIC_RELAXED);
             if (index != __atomic_load_n(&atx->prod, __ATOMIC_RELAXED))

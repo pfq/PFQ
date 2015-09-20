@@ -467,8 +467,8 @@ pfq_skb_queue_xmit(struct pfq_skbuff_queue *skbs, struct net_device *dev, int qu
 {
 	struct netdev_queue *txq;
 	struct sk_buff *skb;
-	int n, ret = 0;
-	size_t last;
+	size_t n, last;
+	int ret = 0;
 
 	/* get txq and fix the queue for this batch.
 	 *
