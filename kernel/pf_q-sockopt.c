@@ -31,7 +31,7 @@
 
 #include <pragma/diagnostic_pop>
 
-#include <pf_q-dev.h>
+#include <pf_q-netdev.h>
 #include <pf_q-transmit.h>
 #include <pf_q-thread.h>
 #include <pf_q-global.h>

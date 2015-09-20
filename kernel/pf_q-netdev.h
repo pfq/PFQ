@@ -112,6 +112,22 @@ void pfq_hard_tx_unlock(struct net_dev_queue *dq)
 }
 
 
+static inline
+int dev_put_by_index(struct net *net, int ifindex)
+{
+	struct net_device *dev;
+	int err = -EPERM;
+	rcu_read_lock();
+	dev = dev_get_by_index_rcu(net, ifindex);
+	if (dev) {
+		dev_put(dev);
+		err = 0;
+	}
+	rcu_read_unlock();
+	return err;
+}
+
+
 extern int dev_queue_get(struct net *net, struct net_device_cache const *default_dev, dev_queue_id_t id, struct net_dev_queue *dq);
 
 
