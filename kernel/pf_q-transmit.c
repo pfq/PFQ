@@ -168,10 +168,10 @@ static inline
 dev_queue_id_t
 get_next_dq(struct pfq_pkthdr *hdr, dev_queue_id_t const default_dq)
 {
-	dev_queue_id_t next_dq = PFQ_NETQ_ID(hdr->ifindex, hdr->queue);
-	if (PFQ_NETQ_IS_DEFAULT(next_dq))
+	dev_queue_id_t next_qid = PFQ_NETQ_ID(hdr->ifindex, hdr->queue);
+	if (PFQ_NETQ_IS_DEFAULT(next_qid))
 		return default_dq;
-	return next_dq;
+	return next_qid;
 }
 
 
@@ -188,7 +188,7 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 
 	int more = 0, total_sent = 0, disc = 0, swap_idx = -1;
 	const dev_queue_id_t default_dq = PFQ_NETQ_ID(txinfo->def_ifindex, txinfo->def_queue);
-	dev_queue_id_t current_dq;
+	dev_queue_id_t current_qid;
 	struct pfq_tx_queue *txm;
 
 	/* get the Tx queue */
@@ -237,9 +237,9 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 
 	/* get the default dev_queue, and lock it */
 
-	current_dq = default_dq;
+	current_qid = default_dq;
 
-	dev_queue_get(sock_net(&so->sk), &default_dev, current_dq , &dq);
+	dev_queue_get(sock_net(&so->sk), &default_dev, current_qid , &dq);
 
 	local_bh_disable();
 	pfq_hard_tx_lock(&dq);
@@ -254,23 +254,29 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 		struct sk_buff *skb;
 		size_t len;
 		bool xmit_more, last_tx = is_last_tx_pkt(hdr);
-		dev_queue_id_t next_dq = get_next_dq(hdr, default_dq);
+		dev_queue_id_t next_qid = get_next_dq(hdr, default_dq);
 
-		if (PFQ_NETQ_IS_NULL(next_dq)) {
-			continue;	/* skip this packet */
+		if (PFQ_NETQ_IS_NULL(next_qid)) {
+			/* skip this packet */
+			continue;
 		}
 
-		if (current_dq != next_dq) {
-			current_dq = next_dq;
+		/* netdev queue switch..*/
+
+		if (current_qid != next_qid) {
+			current_qid = next_qid;
+
 			pfq_hard_tx_unlock(&dq);
+
 			dev_queue_put(sock_net(&so->sk), &default_dev, &dq);
-			dev_queue_get(sock_net(&so->sk), &default_dev, current_dq , &dq);
+			dev_queue_get(sock_net(&so->sk), &default_dev, next_qid , &dq);
+
 			pfq_hard_tx_lock(&dq);
 		}
 
 		if (dq.dev == NULL) { /* device not existing */
 			if (printk_ratelimit())
-				printk(KERN_INFO "[PFQ] dev: ifindex=%d not found!\n", PFQ_NETQ_IFINDEX(current_dq));
+				printk(KERN_INFO "[PFQ] dev: ifindex=%d not found!\n", PFQ_NETQ_IFINDEX(current_qid));
 			continue;
 		}
 

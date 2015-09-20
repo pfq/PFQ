@@ -35,12 +35,12 @@ int dev_queue_get(struct net *net, struct net_device_cache const *default_dev, d
 		dq->dev = NULL;
 		dq->queue = NULL;
 		dq->queue_mapping = 0;
+		return -1;
 	}
-	else {
-		dq->dev = dev;
-		dq->queue_mapping = __pfq_dev_cap_txqueue(dev, PFQ_NETQ_QUEUE(id));
-		dq->queue = netdev_get_tx_queue(dev, dq->queue_mapping);
-	}
+
+	dq->dev = dev;
+	dq->queue_mapping = __pfq_dev_cap_txqueue(dev, PFQ_NETQ_QUEUE(id));
+	dq->queue = netdev_get_tx_queue(dev, dq->queue_mapping);
 	return 0;
 }
 
