@@ -1330,6 +1330,12 @@ namespace pfq {
         bool
         send(const_buffer pkt, size_t flush_hint = 1, int copies = 1)
         {
+            return send_to(pkt, 0, 0, flush_hint, copies);
+        }
+
+        bool
+        send_to(const_buffer pkt, int ifindex, int queue, size_t flush_hint = 1, int copies = 1)
+        {
             if (unlikely(!data_->shm_addr))
                 throw pfq_error("PFQ: send: socket not enabled");
 
@@ -1367,7 +1373,8 @@ namespace pfq {
             {
                 auto hdr = (struct pfq_pkthdr *)tx->ptr;
                 hdr->tstamp.tv64 = 0;
-                hdr->ifindex     = 0;
+                hdr->ifindex     = ifindex;
+                hdr->queue       = queue;
                 hdr->caplen      = len;
                 hdr->data.copies = copies;
 
