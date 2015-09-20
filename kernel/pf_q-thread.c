@@ -42,12 +42,10 @@
 #include <pf_q-transmit.h>
 
 
-DEFINE_MUTEX(kthread_tx_pool_lock);
-
-
 struct task_struct *kthread_tx_pool [Q_MAX_CPU] = { [0 ... 255] = NULL };
 
-DEFINE_MUTEX(pfq_thread_tx_pool_lock);
+
+static DEFINE_MUTEX(pfq_thread_tx_pool_lock);
 
 
 static struct pfq_thread_tx_data pfq_thread_tx_pool[Q_MAX_CPU] =

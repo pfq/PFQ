@@ -45,9 +45,9 @@ struct pfq_tx_info
 {
 	atomic_long_t		addr;			/* (pfq_tx_queue *) */
 	void			*base_addr;
-	int			default_ifindex;	/* default ifindex */
-	int			default_queue;          /* default queue */
-	struct net_device	*default_dev;		/* default dev */
+	int			def_ifindex;		/* default ifindex */
+	int			def_queue;		/* default queue */
+	struct net_device	*def_dev;		/* default dev */
 };
 
 
@@ -56,9 +56,9 @@ void pfq_tx_info_init(struct pfq_tx_info *info)
 {
 	atomic_long_set(&info->addr, 0);
 	info->base_addr = NULL;
-	info->default_ifindex  = -1;
-	info->default_queue    = -1;
-	info->default_dev      = NULL;
+	info->def_ifindex  = -1;
+	info->def_queue    = -1;
+	info->def_dev      = NULL;
 }
 
 

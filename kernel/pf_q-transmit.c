@@ -367,32 +367,6 @@ exit:
 
 
 
-/*
- * flush the soft queue
- */
-
-// int
-// pfq_sk_queue_flush(struct pfq_sock *so, int index)
-// {
-// 	struct net_device *dev;
-//
-// 	if (so->opt.txq_async[index].task) {
-// 		return 0;
-// 	}
-//
-// 	dev = dev_get_by_index(sock_net(&so->sk), so->opt.txq[index].if_index);
-// 	if (!dev) {
-// 		printk(KERN_INFO "[PFQ] pfq_sk_queue_flush[%d]: bad if_index:%d!\n",
-// 		       index, so->opt.txq[index].if_index);
-// 		return -EPERM;
-// 	}
-//
-// 	pfq_sk_tx_queue_xmit(so, dev, index);
-// 	dev_put(dev);
-// 	return 0;
-// }
-
-
 static inline int
 __pfq_xmit(struct sk_buff *skb, struct net_device *dev, struct netdev_queue *txq, int xmit_more)
 {

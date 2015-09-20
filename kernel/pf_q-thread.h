@@ -36,7 +36,6 @@
 #include <pf_q-sock.h>
 #include <pf_q-define.h>
 
-extern struct mutex kthread_tx_pool_lock;
 extern struct task_struct *kthread_tx_pool [Q_MAX_CPU];
 
 extern int pfq_start_all_tx_threads(void);

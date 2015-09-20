@@ -243,7 +243,7 @@ struct pfq_pkthdr
                 } tv;               /* note: compact timespec for 64 bits arch. */
         } tstamp;
 
-        int         if_index;   /* interface index */
+        int         ifindex;	/* interface index */
         int         gid;        /* group id */
 
         uint16_t    len;        /* length of the packet (off wire) */
@@ -299,7 +299,7 @@ struct pfq_pcap_pkthdr {
 
     } data;
 
-    int	    if_index;
+    int	    ifindex;
     int	    queue;
     int	    gid;
 };

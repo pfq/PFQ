@@ -136,7 +136,7 @@ size_t pfq_sk_rx_queue_recv(struct pfq_sock_opt *opt,
 			hdr->tstamp.tv.nsec = (uint32_t)ts.tv_nsec;
 		}
 
-		hdr->if_index = skb->dev->ifindex;
+		hdr->ifindex  = skb->dev->ifindex;
 		hdr->gid      = (__force int)gid;
 		hdr->len      = (uint16_t)skb->len;
 		hdr->caplen   = (uint16_t)bytes;

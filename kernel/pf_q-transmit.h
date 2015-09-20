@@ -39,20 +39,17 @@
 #include <pf_q-GC.h>
 
 
+/* socket queues */
 
 #define for_each_sk_tx_mbuff(hdr, end) \
         for(; (hdr < (struct pfq_pkthdr *)end) && (hdr->caplen != 0); \
                hdr = (struct pfq_pkthdr *)((char *)(hdr+1) + ALIGN(hdr->caplen, 8)))
 
 
-extern int __pfq_sk_tx_queue_xmit(struct pfq_sock *so, struct net_device *dev,
-				  size_t index, int cpu, int node);
-
-
 extern int pfq_sk_queue_xmit(struct pfq_sock *so, int qindex, int cpu, int node, atomic_t const *stop);
-
-
 extern int pfq_sk_queue_flush(struct pfq_sock *so, int index);
+
+/* skb queues */
 
 extern int pfq_skb_queue_xmit(struct pfq_skbuff_queue *skbs, struct net_device *dev, int queue_index);
 extern int pfq_skb_queue_xmit_by_mask(struct pfq_skbuff_queue *skbs, unsigned long long skbs_mask,

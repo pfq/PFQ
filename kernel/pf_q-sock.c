@@ -186,18 +186,18 @@ pfq_sock_tx_bind(struct pfq_sock *so, int tid, int if_index, int queue, struct
 	if (i >= Q_MAX_TX_QUEUES)
 		return -EPERM;
 
-	so->opt.txq_async[i].default_ifindex = if_index;
-	so->opt.txq_async[i].default_queue = queue;
-	so->opt.txq_async[i].default_dev = dev;
+	so->opt.txq_async[i].def_ifindex = if_index;
+	so->opt.txq_async[i].def_queue = queue;
+	so->opt.txq_async[i].def_dev = dev;
 	so->opt.tx_num_async_queues++;
 
 	smp_wmb();
 
 	if (pfq_bind_tx_thread(tid, so, queue) < 0)
 	{
-		so->opt.txq_async[i].default_ifindex = -1;
-		so->opt.txq_async[i].default_queue = -1;
-		so->opt.txq_async[i].default_dev = NULL;
+		so->opt.txq_async[i].def_ifindex = -1;
+		so->opt.txq_async[i].def_queue = -1;
+		so->opt.txq_async[i].def_dev = NULL;
 		so->opt.tx_num_async_queues--;
 
 		printk(KERN_INFO "[PFQ|%d] could not bind Tx[%d] thread: resource busy!\n", so->id, tid);
@@ -215,13 +215,13 @@ pfq_sock_tx_unbind(struct pfq_sock *so)
 
 	/* unbind sync Tx queue */
 
-	if (so->opt.txq.default_ifindex != -1) {
-		dev_put_by_index(sock_net(&so->sk), so->opt.txq.default_ifindex);
+	if (so->opt.txq.def_ifindex != -1) {
+		dev_put_by_index(sock_net(&so->sk), so->opt.txq.def_ifindex);
 	}
 
-	so->opt.txq.default_ifindex = -1;
-	so->opt.txq.default_queue = -1;
-	so->opt.txq.default_dev = NULL;
+	so->opt.txq.def_ifindex = -1;
+	so->opt.txq.def_queue = -1;
+	so->opt.txq.def_dev = NULL;
 
 	/* unbind async Tx queue */
 
@@ -230,12 +230,12 @@ pfq_sock_tx_unbind(struct pfq_sock *so)
 
 	for(n = 0; n < Q_MAX_TX_QUEUES; ++n)
 	{
-		if (so->opt.txq_async[n].default_ifindex != -1)
-			dev_put_by_index(sock_net(&so->sk), so->opt.txq_async[n].default_ifindex);
+		if (so->opt.txq_async[n].def_ifindex != -1)
+			dev_put_by_index(sock_net(&so->sk), so->opt.txq_async[n].def_ifindex);
 
-		so->opt.txq_async[n].default_ifindex = -1;
-		so->opt.txq_async[n].default_queue = -1;
-		so->opt.txq_async[n].default_dev = NULL;
+		so->opt.txq_async[n].def_ifindex = -1;
+		so->opt.txq_async[n].def_queue = -1;
+		so->opt.txq_async[n].def_dev = NULL;
 	}
 
 	return 0;
