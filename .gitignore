@@ -1,0 +1,13 @@
+Makefile
+pfq.mod.c
+*.symvers
+modules.order
+sandbox/*
+dist
+install_manifest.txt
+*.so
+*.a
+*.3pcap
+*.manfile
+*.manmisc
+cabal.sandbox.config
