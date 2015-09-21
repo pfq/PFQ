@@ -799,7 +799,7 @@ int pfq_setsockopt(struct socket *sock,
 		pfq_sock_tx_unbind(so);
         } break;
 
-        case Q_SO_TX_FLUSH:
+        case Q_SO_TX_QUEUE:
         {
 		int queue;
 
@@ -810,17 +810,17 @@ int pfq_setsockopt(struct socket *sock,
 			return -EFAULT;
 
 		if (pfq_get_tx_queue(&so->opt, -1) == NULL) {
-			printk(KERN_INFO "[PFQ|%d] Tx queue flush: socket not enabled!\n", so->id);
+			printk(KERN_INFO "[PFQ|%d] Tx queue: socket not enabled!\n", so->id);
 			return -EPERM;
 		}
 
-		if (queue == 0) { /* flush Tx queue */
+		if (queue == 0) { /* transmit Tx queue */
 			atomic_t stop = {0};
 			pfq_sk_queue_xmit(so, -1, Q_NO_KTHREAD, NUMA_NO_NODE, &stop);
 			return 0;
 		}
 
-		printk(KERN_INFO "[PFQ|%d] Tx queue flush: bad queue %d!\n", so->id, queue);
+		printk(KERN_INFO "[PFQ|%d] Tx queue: bad queue %d!\n", so->id, queue);
 		return -EPERM;
 
         } break;

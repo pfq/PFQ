@@ -560,18 +560,19 @@ extern int pfq_get_group_stats(pfq_t const *q, int gid, struct pfq_stats *stats)
 extern int pfq_get_group_counters(pfq_t const *q, int gid, struct pfq_counters *cs);
 
 
-/*! Flush the Tx queue(s). */
+/*! Transmit the packets in the queue. */
 /*!
- * Transmit the packets in the Tx queues of the socket.
+ * Transmit the packets in the queue of the socket. 'queue = 0' is the
+ * queue of the socket enabled for synchronous transmission.
  */
 
-extern int pfq_tx_queue_flush(pfq_t *q, int queue);
+extern int pfq_tx_queue(pfq_t *q, int queue);
 
 
 /*! Schedule packet transmission. */
 /*!
  * The packet is copied into a Tx queue (using a TSS symmetric hash if any_queue is specified)
- * and transmitted at the given timestamp by a kernel thread or when tx_queue_flush is called.
+ * and transmitted at the given timestamp by a kernel thread or when pfq_tx_queue is called.
  * A timestamp of 0 nanoseconds means 'immediate transmission'.
  */
 

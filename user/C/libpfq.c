@@ -1124,10 +1124,10 @@ pfq_send_deferred(pfq_t *q, const void *buf, size_t len, uint64_t nsec, unsigned
 
 
 int
-pfq_tx_queue_flush(pfq_t *q, int queue)
+pfq_tx_queue(pfq_t *q, int queue)
 {
-        if (setsockopt(q->fd, PF_Q, Q_SO_TX_FLUSH, &queue, sizeof(queue)) == -1)
-		return Q_ERROR(q, "PFQ: Tx queue flush");
+        if (setsockopt(q->fd, PF_Q, Q_SO_TX_QUEUE, &queue, sizeof(queue)) == -1)
+		return Q_ERROR(q, "PFQ: Tx queue");
         return Q_OK(q);
 }
 
@@ -1171,7 +1171,7 @@ pfq_send_to(pfq_t *q, const void *buf, size_t len, int ifindex, int queue, size_
 		if (++q->tx_attempt == flush_hint) {
 			q->tx_attempt = 0;
 			tx->ptr = NULL;
-			pfq_tx_queue_flush(q, 0);
+			pfq_tx_queue(q, 0);
 		}
 
 		return Q_VALUE(q, (int)len);
@@ -1180,7 +1180,7 @@ pfq_send_to(pfq_t *q, const void *buf, size_t len, int ifindex, int queue, size_
 	if (++q->tx_attempt == flush_hint) {
 		q->tx_attempt = 0;
 		tx->ptr = NULL;
-		pfq_tx_queue_flush(q, 0);
+		pfq_tx_queue(q, 0);
 	}
 
 	return Q_VALUE(q, -1);

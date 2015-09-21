@@ -131,7 +131,7 @@ static inline void smp_wmb() { barrier(); }
 
 #define Q_SO_TX_BIND			40
 #define Q_SO_TX_UNBIND			41
-#define Q_SO_TX_FLUSH			42
+#define Q_SO_TX_QUEUE			42
 
 
 /* general placeholders */

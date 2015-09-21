@@ -1354,7 +1354,7 @@ namespace pfq {
                 {
                     data_->tx_attempt = 0;
                     tx->ptr = nullptr;
-                    this->tx_queue_flush(n);
+                    this->tx_queue(n);
                 }
                 return value;
             };
@@ -1485,19 +1485,18 @@ namespace pfq {
             return false;
         }
 
-        //! Flush the Tx queue.
+        //! Transmit the packets in the queue.
         /*!
-         * Transmit the packets in the queue of the socket.
-         * queue = 0:   synchronous tx queue
+         * Transmit the packets in the queue of the socket. 'queue = 0' is the
+         * queue of the socket enabled for synchronous transmission.
          */
 
         void
-        tx_queue_flush(int queue = 0)
+        tx_queue(int queue = 0)
         {
-            if (::setsockopt(fd_, PF_Q, Q_SO_TX_FLUSH, &queue, sizeof(queue)) == -1)
-                throw pfq_error(errno, "PFQ: Tx queue flush");
+            if (::setsockopt(fd_, PF_Q, Q_SO_TX_QUEUE, &queue, sizeof(queue)) == -1)
+                throw pfq_error(errno, "PFQ: Tx queue");
         }
-
     };
 
 
