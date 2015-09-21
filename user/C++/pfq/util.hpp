@@ -58,7 +58,7 @@ namespace pfq {
     inline T align(T value)
     {
         static_assert((N & (N-1)) == 0, "align: N not a power of two");
-        return (value + (N-1)) & ~(N-1);
+        return (value + static_cast<T>(N-1)) & ~static_cast<T>(N-1);
     }
 
 
@@ -254,7 +254,7 @@ namespace pfq {
 
 
     inline uint32_t
-    fold(uint32_t hash, size_t n) noexcept
+    fold(uint32_t hash, uint32_t n) noexcept
     {
         hash = hash ^ (hash >> 8) ^ (hash >> 16) ^ (hash >> 24);
         return hash % n;

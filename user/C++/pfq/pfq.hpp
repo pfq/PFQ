@@ -23,6 +23,19 @@
 
 #pragma once
 
+#include <cstddef>
+#include <tuple>
+#include <memory>
+#include <vector>
+#include <type_traits>
+#include <algorithm>
+#include <thread>
+#include <chrono>
+
+#include <pfq/util.hpp>
+#include <pfq/queue.hpp>
+#include <pfq/lang/lang.hpp>
+
 #include <linux/if_ether.h>
 #include <linux/ip.h>
 #include <linux/pf_q.h>
@@ -36,18 +49,6 @@
 #include <sys/mman.h>
 #include <fcntl.h>
 #include <poll.h>
-
-#include <tuple>
-#include <memory>
-#include <vector>
-#include <type_traits>
-#include <algorithm>
-#include <thread>
-#include <chrono>
-
-#include <pfq/util.hpp>
-#include <pfq/queue.hpp>
-#include <pfq/lang/lang.hpp>
 
 namespace pfq {
 
@@ -459,18 +460,16 @@ namespace pfq {
             if (::setsockopt(fd_, PF_Q, Q_SO_SET_TX_SLOTS, &tx_slots, sizeof(tx_slots)) == -1)
                 throw pfq_error(errno, "PFQ: set Tx slots error");
 
-
             // get maxlen
 
-            int maxlen;
+            unsigned int maxlen;
             size = sizeof(maxlen);
 
             if (::getsockopt(fd_, PF_Q, Q_SO_GET_TX_MAXLEN, &maxlen, &size) == -1)
                 throw pfq_error(errno, "PFQ: get Tx maxlen error");
 
             data_->tx_slots = tx_slots;
-            data_->tx_slot_size = align<8>(sizeof(pfq_pkthdr) + maxlen);
-
+            data_->tx_slot_size = align<8>(sizeof(pfq_pkthdr) + static_cast<size_t>(maxlen));
         }
 
     public:
@@ -695,7 +694,7 @@ namespace pfq {
            int ret; socklen_t size = sizeof(ret);
            if (::getsockopt(fd_, PF_Q, Q_SO_GET_TX_MAXLEN, &ret, &size) == -1)
                 throw pfq_error(errno, "PFQ: get maxlen error");
-           return ret;
+           return static_cast<size_t>(ret);
         }
 
         //! Specify the length of the Rx queue, in number of packets.
@@ -960,9 +959,9 @@ namespace pfq {
             auto grps = this->groups_mask();
             for(int n = 0; grps != 0; n++)
             {
-                if (grps & (1L << n)) {
+                if (grps & (1UL << n)) {
                     vec.push_back(n);
-                    grps &= ~(1L << n);
+                    grps &= ~(1UL << n);
                 }
             }
 
@@ -1127,7 +1126,7 @@ namespace pfq {
             {
                 auto raw = static_cast<char *>(data_->rx_queue_addr) + ((index+1) & 1) * data_->rx_queue_size;
                 auto end = raw + data_->rx_queue_size;
-                const int rst = index & 1;
+                const uint8_t rst = index & 1;
                 for(; raw < end; raw += data_->rx_slot_size)
                     reinterpret_cast<pfq_pkthdr *>(raw)->commit = rst;
             }
@@ -1159,7 +1158,7 @@ namespace pfq {
         current_commit() const
         {
             auto q = static_cast<struct pfq_shared_queue *>(data_->shm_addr);
-            return Q_SHARED_QUEUE_INDEX(q->rx.data);
+            return static_cast<uint8_t>(Q_SHARED_QUEUE_INDEX(q->rx.data));
         }
 
         //! Receive packets in the given buffer.
@@ -1327,7 +1326,7 @@ namespace pfq {
          */
 
         bool
-        send_to(const_buffer pkt, int ifindex, int queue, size_t flush_hint = 1, int copies = 1)
+        send_to(const_buffer pkt, int ifindex, int queue, size_t flush_hint = 1, unsigned int copies = 1)
         {
             if (unlikely(!data_->shm_addr))
                 throw pfq_error("PFQ: send: socket not enabled");
@@ -1336,7 +1335,7 @@ namespace pfq {
 
             // get base address of the socket Tx queue:
             //
-	        void * base_addr = static_cast<char *>(data_->tx_queue_addr);
+	        char * base_addr = static_cast<char *>(data_->tx_queue_addr);
 
             if (tx->ptr == nullptr)
                 tx->ptr = base_addr;
@@ -1362,19 +1361,19 @@ namespace pfq {
 
             // ensure there's enough space for the current slot_size + the next header:
             //
-            if ((static_cast<char *>(tx->ptr) - static_cast<char *>(base_addr) + slot_size + sizeof(struct pfq_pkthdr)) < data_->tx_queue_size)
+            if ((static_cast<size_t>(tx->ptr - base_addr) + slot_size + sizeof(struct pfq_pkthdr)) < data_->tx_queue_size)
             {
                 auto hdr = (struct pfq_pkthdr *)tx->ptr;
                 hdr->tstamp.tv64 = 0;
                 hdr->ifindex     = ifindex;
-                hdr->queue       = queue;
-                hdr->caplen      = len;
+                hdr->queue       = static_cast<uint8_t>(queue);
+                hdr->caplen      = static_cast<uint16_t>(len);
                 hdr->data.copies = copies;
 
                 memcpy(hdr+1, pkt.first, len);
 
                 reinterpret_cast<char *&>(tx->ptr) += slot_size;
-                static_cast<struct pfq_pkthdr *>(tx->ptr)->len = 0;
+                reinterpret_cast<struct pfq_pkthdr *>(tx->ptr)->len = 0;
                 return flush_and_ret(0, true);
             }
 
@@ -1389,7 +1388,7 @@ namespace pfq {
          */
 
         bool
-        send(const_buffer pkt, size_t flush_hint = 1, int copies = 1)
+        send(const_buffer pkt, size_t flush_hint = 1, unsigned int copies = 1)
         {
             return send_to(pkt, 0, 0, flush_hint, copies);
         }
@@ -1402,7 +1401,7 @@ namespace pfq {
          */
 
         bool
-        send_async(const_buffer pkt, int copies = 1)
+        send_async(const_buffer pkt, unsigned int copies = 1)
         {
             return send_deferred(pkt, 0, copies);
         }
@@ -1417,10 +1416,10 @@ namespace pfq {
 
         template <typename Clock, typename Duration>
         bool
-        send_at(const_buffer pkt, std::chrono::time_point<Clock, Duration> const &tp, int copies = 1)
+        send_at(const_buffer pkt, std::chrono::time_point<Clock, Duration> const &tp, unsigned int copies = 1)
         {
             auto ns = std::chrono::duration_cast<std::chrono::nanoseconds>(tp.time_since_epoch()).count();
-            return send_deferred(pkt, ns, copies);
+            return send_deferred(pkt, static_cast<uint64_t>(ns), copies);
         }
 
         //! Schedule packet transmission.
@@ -1431,7 +1430,7 @@ namespace pfq {
          */
 
         bool
-        send_deferred(const_buffer pkt, uint64_t nsec, int copies, int queue = any_queue)
+        send_deferred(const_buffer pkt, uint64_t nsec, unsigned int copies, int queue = any_queue)
         {
             if (unlikely(!data_->shm_addr))
                 throw pfq_error("PFQ: send_deferred: socket not enabled");
@@ -1439,7 +1438,7 @@ namespace pfq {
             if (unlikely(data_->tx_num_async == 0))
                 throw pfq_error("PFQ: send_deferred: socket not bound to async thread");
 
-            const int tss = fold(queue == any_queue ? symmetric_hash(pkt.first) : queue, data_->tx_num_async);
+            const uint32_t tss = fold(queue == any_queue ? symmetric_hash(pkt.first) : static_cast<uint32_t>(queue), static_cast<uint32_t>(data_->tx_num_async));
 
             auto atx = &static_cast<struct pfq_shared_queue *>(data_->shm_addr)->tx_async[tss];
 
@@ -1451,8 +1450,7 @@ namespace pfq {
 
             // get base address of the soft Tx queue:
             //
-	        void * base_addr = static_cast<char *>(data_->tx_queue_addr)
-	                            + data_->tx_queue_size * (2 * (1+tss) + (index & 1));
+	        char * base_addr = static_cast<char *>(data_->tx_queue_addr) + data_->tx_queue_size * (2 * (1+tss) + (index & 1));
 
             if (index != atx->index)
             {
@@ -1470,18 +1468,17 @@ namespace pfq {
 
             // ensure there's enough space for the current slot_size + the next header:
             //
-            if ((static_cast<char *>(atx->ptr) - static_cast<char *>(base_addr) + slot_size + sizeof(struct pfq_pkthdr))
-                    < data_->tx_queue_size)
+            if ((static_cast<size_t>(atx->ptr - base_addr) + slot_size + sizeof(struct pfq_pkthdr)) < data_->tx_queue_size)
             {
                 auto hdr = (struct pfq_pkthdr *)atx->ptr;
                 hdr->tstamp.tv64 = nsec;
-                hdr->caplen = len;
+                hdr->caplen = static_cast<uint16_t>(len);
                 hdr->data.copies = copies;
                 hdr->ifindex = 0;
                 memcpy(hdr+1, pkt.first, len);
 
                 reinterpret_cast<char *&>(atx->ptr) += slot_size;
-                static_cast<struct pfq_pkthdr *>(atx->ptr)->len = 0;
+                reinterpret_cast<struct pfq_pkthdr *>(atx->ptr)->len = 0;
                 return true;
             }
 

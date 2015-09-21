@@ -330,7 +330,7 @@ struct pfq_functional_descr
 {
         const char __user *		symbol;
 	struct pfq_functional_arg_descr arg[8];
-        size_t				next;
+        ptrdiff_t			next;
 };
 
 

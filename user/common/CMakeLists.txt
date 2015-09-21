@@ -42,9 +42,9 @@ endif()
 set(CMAKE_CXX_FLAGS                "${CMAKE_CXX_FLAGS} ${CXX_FLAGS_COMPAT} -O2 -Wall -Wextra")
 
 if (COMP_VERSION VERSION_EQUAL 4.8 OR COMP_VERSION VERSION_GREATER 4.8)
-    set(CMAKE_CXX_FLAGS_DEBUG      "${CMAKE_CXX_FLAGS_DEBUG} ${CXX_FLAGS_COMPAT} -Wall -Wextra -fsanitize=address")
+    set(CMAKE_CXX_FLAGS_DEBUG      "${CMAKE_CXX_FLAGS_DEBUG} ${CXX_FLAGS_COMPAT} -Wall -Wextra -Wconversion -Wsign-conversion -fsanitize=address")
 else()
-    set(CMAKE_CXX_FLAGS_DEBUG      "${CMAKE_CXX_FLAGS_DEBUG} ${CXX_FLAGS_COMPAT} -Wall -Wextra")
+    set(CMAKE_CXX_FLAGS_DEBUG      "${CMAKE_CXX_FLAGS_DEBUG} ${CXX_FLAGS_COMPAT} -Wall -Wextra -Wconversion -Wsign-conversion")
 endif()
 
 set(CMAKE_CXX_FLAGS_MINSIZEREL     "${CMAKE_CXX_FLAGS_MINSIZEREL} ${CXX_FLAGS_COMPAT} -Wall -Wextra")
@@ -55,7 +55,7 @@ set(CMAKE_CXX_FLAGS_RELEASE        "${CMAKE_CXX_FLAGS_RELEASE} ${CXX_FLAGS_COMPA
 #
 
 set(CMAKE_C_FLAGS                   "${CMAKE_C_FLAGS} -O2 -Wall -Wextra")
-set(CMAKE_C_FLAGS_DEBUG             "${CMAKE_C_FLAGS_DEBUG} -Wall -Wextra")
+set(CMAKE_C_FLAGS_DEBUG             "${CMAKE_C_FLAGS_DEBUG} -Wall -Wextra -Wconversion -Wsign-conversion -Wshadow")
 set(CMAKE_C_FLAGS_MINSIZEREL        "${CMAKE_C_FLAGS_MINSIZEREL} -Wall -Wextra")
 set(CMAKE_C_FLAGS_RELEASE           "${CMAKE_C_FLAGS_RELEASE} -Wall -Wextra")
 

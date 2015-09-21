@@ -81,7 +81,7 @@ namespace opt
     size_t npackets = std::numeric_limits<size_t>::max();
     size_t loop     = 1;
     size_t preload  = 1;
-    int    copies   = 1;
+    unsigned int copies   = 1;
 
     std::atomic_int nthreads;
 
@@ -406,7 +406,7 @@ namespace thread
             if (opt::rand_flow)
             {
                 for(int i = 0; i < 256; i++)
-                    rand_seed.push_back(m_gen());
+                    rand_seed.push_back(static_cast<uint32_t>(m_gen()));
             }
 
             for (size_t l = 0; l < opt::loop; l++)
@@ -480,7 +480,7 @@ namespace thread
 #endif
 
         template <typename Tp, typename Dur>
-        void rate_control(Tp &now, Dur const &delta, int n)
+        void rate_control(Tp &now, Dur const &delta, size_t n)
         {
             if ((n & 8191) == 0)
             {
@@ -660,7 +660,7 @@ try
                 throw std::runtime_error("hint missing");
             }
 
-            opt::copies = static_cast<size_t>(std::atoi(argv[i]));
+            opt::copies = static_cast<unsigned int>(std::atoi(argv[i]));
             continue;
         }
 
@@ -776,7 +776,7 @@ try
     // process binding:
     //
 
-    size_t queue_num = 0;
+    int queue_num = 0;
 
     for(size_t i = 0; i < binding.size(); ++i)
     {
@@ -861,7 +861,7 @@ try
         thread_ctx.push_back(new thread::context(static_cast<int>(i), binding[i], opt::kthread.at(i)));
     }
 
-    opt::nthreads.store(binding.size(), std::memory_order_relaxed);
+    opt::nthreads.store(static_cast<int>(binding.size()), std::memory_order_relaxed);
 
     //
     // create threads:
@@ -872,7 +872,7 @@ try
 
         auto t = new std::thread(std::ref(*thread_ctx[i++]));
 
-        more::set_affinity(*t, b.cpu);
+        more::set_affinity(*t, static_cast<size_t>(b.cpu));
 
         t->detach();
     });

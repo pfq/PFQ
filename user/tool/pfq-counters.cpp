@@ -460,7 +460,7 @@ try
         auto t = new std::thread(std::ref(*thread_ctx[static_cast<size_t>(i++)]));
 
         if (b.cpu != -1)
-            more::set_affinity(*t, b.cpu);
+            more::set_affinity(*t, static_cast<size_t>(b.cpu));
 
         t->detach();
     });

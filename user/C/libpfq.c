@@ -21,9 +21,6 @@
  *
  ****************************************************************/
 
-#include <linux/if_ether.h>
-#include <linux/pf_q.h>
-
 #include <sys/socket.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -34,10 +31,11 @@
 #include <net/ethernet.h>
 #include <arpa/inet.h>
 
-#include <stdio.h>
-#include <unistd.h>
 #include <stdlib.h>
+#include <stdio.h>
+#include <stddef.h>
 #include <stdarg.h>
+#include <unistd.h>
 #include <string.h>
 #include <errno.h>
 #include <signal.h>
@@ -46,6 +44,9 @@
 #include <fcntl.h>
 
 #include <poll.h>
+
+#include <linux/if_ether.h>
+#include <linux/pf_q.h>
 
 #include <pfq.h>
 
@@ -744,8 +745,7 @@ static int __do_set_group_computation(char **fun, size_t n, va_list arg_list)
 	pfq_t * q= va_arg(arg_list, pfq_t *);
         int gid  = va_arg(arg_list, int);
 
-        struct pfq_computation_descr * prog = malloc(sizeof(size_t) * 2 +
-						     sizeof(struct pfq_functional_descr) * n);
+        struct pfq_computation_descr * prog = malloc(sizeof(size_t) * 2 + sizeof(struct pfq_functional_descr) * n);
 	if (!prog)
 		return Q_ERROR(q, "PFQ: group computation error (no memory)");
 
@@ -755,7 +755,7 @@ static int __do_set_group_computation(char **fun, size_t n, va_list arg_list)
 	for(i = 0; i < n; i++)
 	{
 		prog->fun[i].symbol = trim_string(fun[i]);
-		prog->fun[i].next = i+1;
+		prog->fun[i].next = (ptrdiff_t)i+1;
 
 		for (j = 0; j < 8; j++)
 		{
@@ -966,9 +966,9 @@ pfq_read(pfq_t *q, struct pfq_net_queue *nq, long int microseconds)
         {
             char * raw = (char *)(q->rx_queue_addr) + ((index+1) & 1) * q->rx_queue_size;
             char * end = raw + q->rx_queue_size;
-            const int rst = index & 1;
+            const uint8_t rst = index & 1;
             for(; raw < end; raw += q->rx_slot_size)
-                ((struct pfq_pkthdr *)raw)->commit = (uint8_t)rst;
+                ((struct pfq_pkthdr *)raw)->commit = rst;
         }
 
 	if (Q_SHARED_QUEUE_LEN(data) == 0) {
@@ -1075,7 +1075,7 @@ pfq_send_deferred(pfq_t *q, const void *buf, size_t len, uint64_t nsec, unsigned
         struct pfq_shared_queue *sh_queue = (struct pfq_shared_queue *)(q->shm_addr);
         struct pfq_tx_queue *atx;
         unsigned int tss, index;
-        ptrdiff_t slot_size;
+        size_t slot_size;
         char *base_addr;
 
 	if (unlikely(q->shm_addr == NULL))
@@ -1103,9 +1103,9 @@ pfq_send_deferred(pfq_t *q, const void *buf, size_t len, uint64_t nsec, unsigned
 
 	len = min(len, q->tx_slot_size - sizeof(struct pfq_pkthdr));
 
-	slot_size = (ptrdiff_t)(sizeof(struct pfq_pkthdr) + ALIGN(len, 8));
+	slot_size = sizeof(struct pfq_pkthdr) + ALIGN(len, 8);
 
-	if ((atx->ptr - base_addr + (ptrdiff_t)slot_size + (ptrdiff_t)sizeof(struct pfq_pkthdr)) < (ptrdiff_t)q->tx_queue_size)
+	if (((size_t)(atx->ptr - base_addr) + slot_size + sizeof(struct pfq_pkthdr)) < q->tx_queue_size)
 	{
 		struct pfq_pkthdr *hdr = (struct pfq_pkthdr *)atx->ptr;
 		hdr->tstamp.tv64 = nsec;
@@ -1137,7 +1137,7 @@ pfq_send_to(pfq_t *q, const void *buf, size_t len, int ifindex, int queue, size_
 {
         struct pfq_shared_queue *sh_queue = (struct pfq_shared_queue *)(q->shm_addr);
         struct pfq_tx_queue *tx;
-        ptrdiff_t slot_size;
+        size_t slot_size;
         char *base_addr;
 
 	if (unlikely(q->shm_addr == NULL))
@@ -1152,9 +1152,9 @@ pfq_send_to(pfq_t *q, const void *buf, size_t len, int ifindex, int queue, size_
 
 	len = min(len, q->tx_slot_size - sizeof(struct pfq_pkthdr));
 
-	slot_size = (ptrdiff_t)(sizeof(struct pfq_pkthdr) + ALIGN(len, 8));
+	slot_size = sizeof(struct pfq_pkthdr) + ALIGN(len, 8);
 
-	if ((tx->ptr - base_addr + slot_size + (ptrdiff_t)sizeof(struct pfq_pkthdr)) < (ptrdiff_t)q->tx_queue_size)
+	if (((size_t)(tx->ptr - base_addr) + slot_size + sizeof(struct pfq_pkthdr)) < q->tx_queue_size)
 	{
 		struct pfq_pkthdr *hdr = (struct pfq_pkthdr *)tx->ptr;
 		hdr->tstamp.tv64 = 0;

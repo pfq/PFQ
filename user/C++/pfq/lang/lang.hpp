@@ -261,8 +261,8 @@ namespace pfq { namespace lang
     {
         std::string                     symbol;
         std::array<argument_type, 8>    arg;
-        ptrdiff_t                       index;
-        ptrdiff_t                       link;
+        std::ptrdiff_t                  index;
+        std::ptrdiff_t                  link;
     };
 
 
@@ -293,7 +293,7 @@ namespace pfq { namespace lang
         if (ser.empty())
             return argument_type(x);
 
-        return argument_type(funptr, ser[0].index);
+        return argument_type(funptr, static_cast<std::size_t>(ser[0].index));
     }
 
     template <typename ...Ts, typename ...Ti>
@@ -323,7 +323,7 @@ namespace pfq { namespace lang
     {
         for(auto & e : vec)
         {
-            if (e.link == static_cast<std::ptrdiff_t>(n + vec.size()))
+            if (e.link == n + static_cast<std::ptrdiff_t>(vec.size()))
                 e.link = -1;
         }
     }
@@ -591,15 +591,14 @@ namespace pfq { namespace lang
     serialize (std::vector<MFunction<>> const &cont, std::ptrdiff_t n)
     {
         std::vector<FunctionDescr> ret, v;
-        std::size_t n1 = n;
 
         for(auto & f : cont)
         {
-            std::tie(v, n1) = serialize(f, n1);
+            std::tie(v, n) = serialize(f, n);
             ret = std::move(ret) + v;
         }
 
-        return { ret, n1 };
+        return { ret, n };
     }
 
 
@@ -662,7 +661,7 @@ namespace pfq { namespace lang
 
     template <typename C1, typename C2>
     inline std::pair<std::vector<FunctionDescr>, std::size_t>
-    serialize(Composition<C1, C2> const &f, std::size_t n)
+    serialize(Composition<C1, C2> const &f, std::ptrdiff_t n)
     {
         std::vector<FunctionDescr> v1, v2;
         std::size_t n1, n2;
