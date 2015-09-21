@@ -51,9 +51,8 @@
 
 /* useful macros */
 
-
-#define  ALIGN(value, size) (((value) + ((size)-1)) & (~((size)-1)))
-
+#define ALIGN(x, a)            ALIGN_MASK(x, (typeof(x))(a) - 1)
+#define ALIGN_MASK(x, mask)    (((x) + (mask)) & ~(mask))
 
 #define Q_VALUE(q,value)   __builtin_choose_expr(__builtin_types_compatible_p(typeof(q), pfq_t *), (((pfq_t *)q)->error = NULL, (value)), \
 				( __builtin_choose_expr(__builtin_types_compatible_p(typeof(q), pfq_t const *), (((pfq_t *)q)->error = NULL, (value)), (void)0)))
@@ -79,7 +78,7 @@
 
 static char *trim_string(char *str)
 {
-	int i = 0, j = strlen (str) - 1;
+	ptrdiff_t i = 0, j = (ptrdiff_t)strlen (str) - 1;
 
 	while ( isspace ( str[i] ) && str[i] != '\0' )
 		i++;
@@ -97,7 +96,7 @@ static void __split_on(const char *str, const char *sep, void (*cb)(char *))
 	char *x;
 
 	while((q = strstr(p, sep)) != NULL) {
-		x = strndup(p, q-p);
+		x = strndup(p, (size_t)(q-p));
 		cb(x);
 		p = q + strlen(sep);
 	}
@@ -286,7 +285,7 @@ pfq_open_group(unsigned long class_mask, int group_policy, size_t caplen, size_t
         }
 
 	q->tx_slots = tx_slots;
-	q->tx_slot_size = ALIGN(sizeof(struct pfq_pkthdr) + maxlen, 8);
+	q->tx_slot_size = ALIGN(sizeof(struct pfq_pkthdr) + (size_t)maxlen, 8);
 
 
 	if (group_policy != Q_POLICY_GROUP_UNDEFINED)
@@ -750,9 +749,10 @@ pfq_set_group_computation(pfq_t *q, int gid, struct pfq_computation_descr *comp)
 int
 pfq_set_group_computation_from_string(pfq_t *q, int gid, const char *comp)
 {
-	int do_set_group_computation(char **fun, int n)
+	int do_set_group_computation(char **fun, size_t n)
 	{
-		int i = 0, j, ret;
+		size_t i, j;
+		int ret;
 
                 struct pfq_computation_descr * prog = malloc(sizeof(size_t) * 2 +
 							     sizeof(struct pfq_functional_descr) * n);
@@ -973,7 +973,7 @@ pfq_read(pfq_t *q, struct pfq_net_queue *nq, long int microseconds)
             char * end = raw + q->rx_queue_size;
             const int rst = index & 1;
             for(; raw < end; raw += q->rx_slot_size)
-                ((struct pfq_pkthdr *)raw)->commit = rst;
+                ((struct pfq_pkthdr *)raw)->commit = (uint8_t)rst;
         }
 
 	if (Q_SHARED_QUEUE_LEN(data) == 0) {
