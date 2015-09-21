@@ -199,7 +199,7 @@ struct pfq_tx_queue
         unsigned int		prod;
         unsigned int            cons;
         size_t			size;	    /* queue size in bytes */
-	void *			ptr;	    /* reserved for user-space */
+	char *			ptr;	    /* reserved for user-space */
 	unsigned int		index;	    /* reserved for user-space */
 	int			swap;	    /* swap pending */
 } __attribute__((aligned(64)));

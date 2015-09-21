@@ -38,6 +38,7 @@
 #include <sched.h>
 #endif
 
+
 /*! PFQ descriptor. */
 
 typedef struct pfq_data pfq_t;
@@ -154,6 +155,7 @@ typedef void (*pfq_handler_t)(char *user, const struct pfq_pkthdr *h, const char
 
 
 /*! Symmetric hashx */
+
 
 static inline
 unsigned int pfq_symmetric_hash(const char *buf)

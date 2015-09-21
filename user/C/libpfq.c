@@ -37,6 +37,7 @@
 #include <stdio.h>
 #include <unistd.h>
 #include <stdlib.h>
+#include <stdarg.h>
 #include <string.h>
 #include <errno.h>
 #include <signal.h>
@@ -48,120 +49,9 @@
 
 #include <pfq.h>
 
-
-/* useful macros */
-
-#define ALIGN(x, a)            ALIGN_MASK(x, (typeof(x))(a) - 1)
-#define ALIGN_MASK(x, mask)    (((x) + (mask)) & ~(mask))
-
-#define Q_VALUE(q,value)   __builtin_choose_expr(__builtin_types_compatible_p(typeof(q), pfq_t *), (((pfq_t *)q)->error = NULL, (value)), \
-				( __builtin_choose_expr(__builtin_types_compatible_p(typeof(q), pfq_t const *), (((pfq_t *)q)->error = NULL, (value)), (void)0)))
-
-#define Q_ERROR(q,msg)	  __builtin_choose_expr(__builtin_types_compatible_p(typeof(q), pfq_t *), (((pfq_t *)q)->error = (msg), -1), \
-				( __builtin_choose_expr(__builtin_types_compatible_p(typeof(q), pfq_t const *), (((pfq_t *)q)->error = (msg), -1), (void)0)))
-
-#define Q_OK(q) Q_VALUE(q,0)
-
-
-#define max(a,b) \
-	({ __typeof__ (a) _a = (a); \
-	   __typeof__ (b) _b = (b); \
-	  _a > _b ? _a : _b; })
-
-#define min(a,b) \
-	({ __typeof__ (a) _a = (a); \
-	   __typeof__ (b) _b = (b); \
-	  _a < _b ? _a : _b; })
-
-
-/* string utils */
-
-static char *trim_string(char *str)
-{
-	ptrdiff_t i = 0, j = (ptrdiff_t)strlen (str) - 1;
-
-	while ( isspace ( str[i] ) && str[i] != '\0' )
-		i++;
-	while ( isspace ( str[j] ) && j >= 0 )
-		j--;
-
-	str[j+1] = '\0';
-	return str+i;
-}
-
-
-static void __split_on(const char *str, const char *sep, void (*cb)(char *))
-{
-	const char * p = str, *q;
-	char *x;
-
-	while((q = strstr(p, sep)) != NULL) {
-		x = strndup(p, (size_t)(q-p));
-		cb(x);
-		p = q + strlen(sep);
-	}
-
-	x = strdup(p);
-	cb(x);
-}
-
-
-static int with_tokens(const char *str, const char *sep, int (*cb)(char **, int n))
-{
-	char *tokens[256] = { NULL };
-	int n = 0, i, ret;
-
-	void push_back(char *ptr)
-	{
-		if (n < 256)
-			tokens[n++] = ptr;
-	}
-
-	__split_on(str, sep, push_back);
-
-	ret = cb(tokens, n);
-
-	for(i = 0; i < n; ++i)
-		free(tokens[i]);
-
-	return ret;
-}
-
-
-static char *
-hugepages_mountpoint()
-{
-	FILE *mp;
-	char *line = NULL, *mount_point = NULL;
-	size_t len = 0;
-	ssize_t read;
-
-	mp = fopen("/proc/mounts", "r");
-	if (!mp)
-		return NULL;
-
-	int set_mount_point(char **token, size_t n)
-	{
-		(void)n; mount_point = strdup(token[1]);
-		return 0;
-	}
-
-	while((read = getline(&line, &len, mp)) != -1) {
-		if (strstr(line, "hugetlbfs")) {
-			with_tokens(line, " ",  &set_mount_point);
-			break;
-		}
-	}
-
-	free (line);
-	fclose (mp);
-	return mount_point;
-}
-
-
 /* pfq descriptor */
 
-typedef struct pfq_data
+struct pfq_data
 {
 	void * shm_addr;
 	size_t shm_size;
@@ -191,7 +81,108 @@ typedef struct pfq_data
 	int gid;
 
 	struct pfq_net_queue nq;
-} pfq_t;
+};
+
+
+/* macros */
+
+#define ALIGN(x, a)            ALIGN_MASK(x, (typeof(x))(a) - 1)
+#define ALIGN_MASK(x, mask)    (((x) + (mask)) & ~(mask))
+
+#define Q_VALUE(q,value)   __builtin_choose_expr(__builtin_types_compatible_p(typeof(q), pfq_t *), (((pfq_t *)q)->error = NULL, (value)), \
+				( __builtin_choose_expr(__builtin_types_compatible_p(typeof(q), pfq_t const *), (((pfq_t *)q)->error = NULL, (value)), (void)0)))
+
+#define Q_ERROR(q,msg)	  __builtin_choose_expr(__builtin_types_compatible_p(typeof(q), pfq_t *), (((pfq_t *)q)->error = (msg), -1), \
+				( __builtin_choose_expr(__builtin_types_compatible_p(typeof(q), pfq_t const *), (((pfq_t *)q)->error = (msg), -1), (void)0)))
+
+#define Q_OK(q) Q_VALUE(q,0)
+
+
+#define max(a,b) \
+	({ __typeof__ (a) _a = (a); \
+	   __typeof__ (b) _b = (b); \
+	  _a > _b ? _a : _b; })
+
+#define min(a,b) \
+	({ __typeof__ (a) _a = (a); \
+	   __typeof__ (b) _b = (b); \
+	  _a < _b ? _a : _b; })
+
+
+/* basic string utils */
+
+static char *
+trim_string(char *str)
+{
+	ptrdiff_t i = 0, j = (ptrdiff_t)strlen (str) - 1;
+
+	while ( isspace ( str[i] ) && str[i] != '\0' )
+		i++;
+	while ( isspace ( str[j] ) && j >= 0 )
+		j--;
+
+	str[j+1] = '\0';
+	return str+i;
+}
+
+static int
+with_tokens(const char *p, const char *sep, int (*call)(char **, size_t n, va_list), ...)
+{
+	char *tokens[256] = { NULL };
+	size_t i, n = 0;
+	const char * q;
+        int ret;
+
+	/* parse string */
+
+	while((q = strstr(p, sep)) != NULL) {
+		tokens[n++] = strndup(p, (size_t)(q-p));
+		p = q + strlen(sep);
+	}
+
+	tokens[n++] = strdup(p);
+
+	/* call callback */
+	{
+		va_list arg_list;
+		va_start(arg_list, call);
+		ret = call(tokens, n, arg_list);
+		va_end(arg_list);
+	}
+
+	/* free memory */
+
+        for(i = 0; i < n; ++i)
+		free(tokens[i]);
+
+	return ret;
+}
+
+static char *
+hugepages_mountpoint()
+{
+	FILE *mp;
+	char *line = NULL, *mount_point = NULL;
+	size_t len = 0;
+	ssize_t read;
+
+	mp = fopen("/proc/mounts", "r");
+	if (!mp)
+		return NULL;
+
+	while((read = getline(&line, &len, mp)) != -1) {
+		char mbuff[256];
+		if(sscanf(line, "hugetlbfs %s", mbuff) == 1) {
+			mount_point = strdup(mbuff);
+			break;
+		}
+	}
+
+	free (line);
+	fclose (mp);
+	return mount_point;
+}
+
 
 /* return the string error */
 
@@ -745,42 +736,46 @@ pfq_set_group_computation(pfq_t *q, int gid, struct pfq_computation_descr *comp)
 }
 
 
+static int __do_set_group_computation(char **fun, size_t n, va_list arg_list)
+{
+	size_t i, j;
+	int ret;
+
+	pfq_t * q= va_arg(arg_list, pfq_t *);
+        int gid  = va_arg(arg_list, int);
+
+        struct pfq_computation_descr * prog = malloc(sizeof(size_t) * 2 +
+						     sizeof(struct pfq_functional_descr) * n);
+	if (!prog)
+		return Q_ERROR(q, "PFQ: group computation error (no memory)");
+
+	prog->entry_point = 0;
+	prog->size = n;
+
+	for(i = 0; i < n; i++)
+	{
+		prog->fun[i].symbol = trim_string(fun[i]);
+		prog->fun[i].next = i+1;
+
+		for (j = 0; j < 8; j++)
+		{
+			prog->fun[i].arg[j].addr  = NULL;
+			prog->fun[i].arg[j].size  = 0;
+			prog->fun[i].arg[j].nelem = 0;
+		}
+
+	}
+
+	ret = pfq_set_group_computation(q, gid, prog);
+	free(prog);
+	return ret;
+}
+
+
 int
 pfq_set_group_computation_from_string(pfq_t *q, int gid, const char *comp)
 {
-	int do_set_group_computation(char **fun, size_t n)
-	{
-		size_t i, j;
-		int ret;
-
-                struct pfq_computation_descr * prog = malloc(sizeof(size_t) * 2 +
-							     sizeof(struct pfq_functional_descr) * n);
-		if (!prog)
-			return Q_ERROR(q, "PFQ: group computation error (no memory)");
-
-		prog->entry_point = 0;
-		prog->size = n;
-
-		for(i = 0; i < n; i++)
-		{
-			prog->fun[i].symbol = trim_string(fun[i]);
-			prog->fun[i].next = i+1;
-
-			for (j = 0; j < 8; j++)
-			{
-				prog->fun[i].arg[j].addr  = NULL;
-				prog->fun[i].arg[j].size  = 0;
-				prog->fun[i].arg[j].nelem = 0;
-			}
-
-		}
-
-		ret = pfq_set_group_computation(q, gid, prog);
-		free(prog);
-		return ret;
-	}
-
-	return with_tokens(comp, ">->", &do_set_group_computation);
+	return with_tokens(comp, ">->", &__do_set_group_computation, q, gid);
 }
 
 
@@ -857,6 +852,7 @@ pfq_poll(pfq_t *q, long int microseconds /* = -1 -> infinite */)
 {
 	struct timespec timeout;
 	struct pollfd fd = {q->fd, POLLIN, 0 };
+        int ret;
 
 	if (q->fd == -1) {
 		return Q_ERROR(q, "PFQ: socket not open");
@@ -867,7 +863,7 @@ pfq_poll(pfq_t *q, long int microseconds /* = -1 -> infinite */)
 		timeout.tv_nsec = (microseconds%1000000) * 1000;
 	}
 
-	int ret = ppoll(&fd, 1, microseconds < 0 ? NULL : &timeout, NULL);
+	ret = ppoll(&fd, 1, microseconds < 0 ? NULL : &timeout, NULL);
 	if (ret < 0 && errno != EINTR) {
 	    return Q_ERROR(q, "PFQ: ppoll error");
 	}
@@ -1080,7 +1076,7 @@ pfq_send_deferred(pfq_t *q, const void *buf, size_t len, uint64_t nsec, unsigned
         struct pfq_tx_queue *atx;
         unsigned int tss, index;
         ptrdiff_t slot_size;
-        void *base_addr;
+        char *base_addr;
 
 	if (unlikely(q->shm_addr == NULL))
 		return Q_ERROR(q, "PFQ: send_deferred: socket not enabled");
@@ -1142,7 +1138,7 @@ pfq_send_to(pfq_t *q, const void *buf, size_t len, int ifindex, int queue, size_
         struct pfq_shared_queue *sh_queue = (struct pfq_shared_queue *)(q->shm_addr);
         struct pfq_tx_queue *tx;
         ptrdiff_t slot_size;
-        void *base_addr;
+        char *base_addr;
 
 	if (unlikely(q->shm_addr == NULL))
 		return Q_ERROR(q, "PFQ: send_deferred: socket not enabled");
