@@ -404,8 +404,9 @@ extern int pfq_egress_unbind(pfq_t *q);
 
 /*! Bind the socket for transmission to the given device name and queue. */
 /*!
- *  The core parameter specifies the CPU index where to run a
- *  kernel thread (unless Q_NO_KTHREAD is specified).
+ *  The tid parameter specifies the index (id) of the transmitter
+ *  thread. If 'Q_NO_KTHREAD' specified, bind refers to synchronous
+ *  transmissions.
  */
 
 extern int pfq_bind_tx(pfq_t *q, const char *dev, int queue, int core);
@@ -565,22 +566,6 @@ extern int pfq_get_group_counters(pfq_t const *q, int gid, struct pfq_counters *
 extern int pfq_tx_queue_flush(pfq_t *q, int queue);
 
 
-/*! Start Tx kernel threads. */
-/*!
- * Start kernel threads associated with the Tx queues of the socket.
- */
-
-extern int pfq_tx_async_start(pfq_t *q);
-
-
-/*! Stop Tx kernel threads. */
-/*!
- * Stop kernel threads associated with the Tx queues of the socket.
- */
-
-extern int pfq_tx_async_stop(pfq_t *q);
-
-
 /*! Schedule packet transmission. */
 /*!
  * The packet is copied into a Tx queue (using a TSS symmetric hash if any_queue is specified)
@@ -588,32 +573,48 @@ extern int pfq_tx_async_stop(pfq_t *q);
  * A timestamp of 0 nanoseconds means 'immediate transmission'.
  */
 
-extern int pfq_send_deferred(pfq_t *q, const void *ptr, size_t len, uint64_t nsec, int copies, int queue);
+extern int pfq_send_deferred(pfq_t *q, const void *ptr, size_t len, uint64_t nsec, unsigned int copies, int queue);
+
+
+//! Store the packet and transmit the packets in the queue.
+/*!
+ * The queue is flushed every flush_hint packets.
+ */
+
+extern int pfq_send_to(pfq_t *q, const void *ptr, size_t len, int ifindex, int queue, size_t flush_hint, unsigned int copies);
 
 
 /*! Store the packet and transmit the packets in the queue. */
 /*!
- * The queue is flushed (if required) and the transmission takes place.
+ * The queue is flushed every flush_hint packets.
+ * Requires the socket is bound for transmission to a net device and queue.
+ * See 'pfq_bind_tx'.
  */
 
-extern int pfq_send(pfq_t *q, const void *ptr, size_t len, int copies);
+static inline
+int pfq_send(pfq_t *q, const void *ptr, size_t len, size_t flush_hint, unsigned int copies)
+{
+	return pfq_send_to(q, ptr, len, 0, 0, flush_hint, copies);
+}
 
-
-/*! Store the packet and transmit the packets in the queue, asynchronously. */
+/*! Transmit the packet asynchronously. */
 /*!
- * The transmission is invoked every @flush_hint packets.
- * When TX kernel threads are in use, @flush_hint is ignored.
+ * The transmission is handled by kernel.
+ * Requires the socket is bound for transmission to one (or multiple) kernel threads.
+ * See 'pfq_bind_tx'.
  */
 
-extern int pfq_send_async(pfq_t *q, const void *ptr, size_t len, size_t flush_hint, int copies);
+extern int pfq_send_async(pfq_t *q, const void *ptr, size_t len, unsigned int copies);
 
 
-/*! Store the packet and transmit it. */
+/*! Transmit the packet asynchronously. */
 /*!
  * The transmission takes place asynchronously at the given timespec time.
+ * Requires the socket is bound for transmission to a net device and queue.
+ * See 'pfq_bind_tx'.
  */
 
-extern int pfq_send_at(pfq_t *q, const void *ptr, size_t len, struct timespec *ts, int copies);
+extern int pfq_send_at(pfq_t *q, const void *ptr, size_t len, struct timespec *ts, unsigned int copies);
 
 
 #endif /* PFQ_H */

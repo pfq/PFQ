@@ -140,7 +140,7 @@ hugepages_mountpoint()
 	if (!mp)
 		return NULL;
 
-	int set_mount_point(char **token, int n)
+	int set_mount_point(char **token, size_t n)
 	{
 		(void)n; mount_point = strdup(token[1]);
 		return 0;
@@ -180,7 +180,6 @@ typedef struct pfq_data
 
 	size_t tx_attempt;
 
-	size_t tx_num_bind;
 	size_t tx_num_async;
 
 	const char * error;
@@ -1040,28 +1039,24 @@ pfq_dispatch(pfq_t *q, pfq_handler_t cb, long int microseconds, char *user)
         return Q_VALUE(q, n);
 }
 
-/* Tx APIs */
 
 int
-pfq_bind_tx(pfq_t *q, const char *dev, int queue, int core)
+pfq_bind_tx(pfq_t *q, const char *dev, int queue, int tid)
 {
 	struct pfq_binding b;
-        int index;
+        int ifindex;
 
-        index = pfq_ifindex(q, dev);
-        if (index == -1)
+        ifindex = pfq_ifindex(q, dev);
+        if (ifindex == -1)
 		return Q_ERROR(q, "PFQ: device not found");
 
-	b.if_index = index;
-	b.queue = queue;
-	b.cpu = core;
+	b = (struct pfq_binding){ {tid}, ifindex, queue };
 
         if (setsockopt(q->fd, PF_Q, Q_SO_TX_BIND, &b, sizeof(b)) == -1)
 		return Q_ERROR(q, "PFQ: Tx bind error");
 
-	if (core != Q_NO_KTHREAD)
+	if (tid != Q_NO_KTHREAD)
 		q->tx_num_async++;
-	q->tx_num_bind++;
 
 	return Q_OK(q);
 }
@@ -1074,61 +1069,58 @@ pfq_unbind_tx(pfq_t *q)
 		return Q_ERROR(q, "PFQ: Tx unbind error");
 
 	q->tx_num_async = 0;
-	q->tx_num_bind = 0;
-
 	return Q_OK(q);
 }
 
+
 int
-pfq_send_deferred(pfq_t *q, const void *buf, size_t len, uint64_t nsec, int copies, int queue)
+pfq_send_deferred(pfq_t *q, const void *buf, size_t len, uint64_t nsec, unsigned int copies, int queue)
 {
         struct pfq_shared_queue *sh_queue = (struct pfq_shared_queue *)(q->shm_addr);
-        struct pfq_tx_queue *tx;
-        unsigned int index;
-        size_t slot_size;
-        int tss;
+        struct pfq_tx_queue *atx;
+        unsigned int tss, index;
+        ptrdiff_t slot_size;
         void *base_addr;
 
-	if (q->shm_addr == NULL)
+	if (unlikely(q->shm_addr == NULL))
 		return Q_ERROR(q, "PFQ: send_deferred: socket not enabled");
 
-	tss = pfq_fold((queue == Q_ANY_QUEUE ? pfq_symmetric_hash(buf) : (unsigned int)queue), q->tx_num_bind);
+        if (unlikely(q->tx_num_async == 0))
+                return Q_ERROR(q, "PFQ: send_deferred: socket not bound to async thread");
 
-        tx = (struct pfq_tx_queue *)&sh_queue->tx[tss];
+	tss = pfq_fold((queue == Q_ANY_QUEUE ? pfq_symmetric_hash(buf) : (unsigned int)queue), (unsigned int)q->tx_num_async);
 
-	index = __atomic_load_n(&tx->cons, __ATOMIC_RELAXED);
-	if (index != __atomic_load_n(&tx->prod, __ATOMIC_RELAXED))
+        atx = (struct pfq_tx_queue *)&sh_queue->tx_async[tss];
+
+	index = __atomic_load_n(&atx->cons, __ATOMIC_RELAXED);
+	if (index != __atomic_load_n(&atx->prod, __ATOMIC_RELAXED))
 	{
-		__atomic_store_n(&tx->prod, index, __ATOMIC_RELAXED);
+		__atomic_store_n(&atx->prod, index, __ATOMIC_RELAXED);
 	}
 
-	base_addr = q->tx_queue_addr + q->tx_queue_size * (2 * tss + (index & 1));
+	base_addr = q->tx_queue_addr + q->tx_queue_size * (2 * (1+tss) + (index & 1));
 
-	if (index != tx->index) {
-		tx->index = index;
-		tx->ptr = base_addr;
+	if (index != atx->index) {
+		atx->index = index;
+		atx->ptr = base_addr;
 	}
 
 	len = min(len, q->tx_slot_size - sizeof(struct pfq_pkthdr));
 
-	slot_size = sizeof(struct pfq_pkthdr) + ALIGN(len, 8);
+	slot_size = (ptrdiff_t)(sizeof(struct pfq_pkthdr) + ALIGN(len, 8));
 
-	if ((tx->ptr - base_addr + slot_size + sizeof(struct pfq_pkthdr)) < q->tx_queue_size)
+	if ((atx->ptr - base_addr + (ptrdiff_t)slot_size + (ptrdiff_t)sizeof(struct pfq_pkthdr)) < (ptrdiff_t)q->tx_queue_size)
 	{
-		struct pfq_pkthdr *hdr;
-
-		hdr = (struct pfq_pkthdr *)tx->ptr;
+		struct pfq_pkthdr *hdr = (struct pfq_pkthdr *)atx->ptr;
 		hdr->tstamp.tv64 = nsec;
-		hdr->caplen = len;
+		hdr->caplen = (uint16_t)len;
 		hdr->data.copies = copies;
-
+                hdr->ifindex = 0;
 		memcpy(hdr+1, buf, hdr->len);
 
-		tx->ptr += slot_size;
-		hdr = (struct pfq_pkthdr *)tx->ptr;
-		hdr->len = 0;
-
-		return Q_VALUE(q, len);
+		atx->ptr += slot_size;
+		((struct pfq_pkthdr *)atx->ptr)->len = 0;
+		return Q_VALUE(q, (int)len);
 	}
 
 	return Q_VALUE(q, -1);
@@ -1140,71 +1132,78 @@ pfq_tx_queue_flush(pfq_t *q, int queue)
 {
         if (setsockopt(q->fd, PF_Q, Q_SO_TX_FLUSH, &queue, sizeof(queue)) == -1)
 		return Q_ERROR(q, "PFQ: Tx queue flush");
-
         return Q_OK(q);
 }
 
 
 int
-pfq_tx_async_start(pfq_t *q)
+pfq_send_to(pfq_t *q, const void *buf, size_t len, int ifindex, int queue, size_t flush_hint, unsigned int copies)
 {
-        if (setsockopt(q->fd, PF_Q, Q_SO_TX_ASYNC_START, NULL, 0) == -1)
-		return Q_ERROR(q, "PFQ: Tx async start");
+        struct pfq_shared_queue *sh_queue = (struct pfq_shared_queue *)(q->shm_addr);
+        struct pfq_tx_queue *tx;
+        ptrdiff_t slot_size;
+        void *base_addr;
 
-        return Q_OK(q);
-}
+	if (unlikely(q->shm_addr == NULL))
+		return Q_ERROR(q, "PFQ: send_deferred: socket not enabled");
 
+        tx = (struct pfq_tx_queue *)&sh_queue->tx;
 
-int
-pfq_tx_async_stop(pfq_t *q)
-{
-        if (setsockopt(q->fd, PF_Q, Q_SO_TX_ASYNC_STOP, NULL, 0) == -1)
-		return Q_ERROR(q, "PFQ: Tx async stop");
+	base_addr = q->tx_queue_addr;
 
-        return Q_OK(q);
-}
+	if (tx->ptr == NULL)
+		tx->ptr = base_addr;
 
+	len = min(len, q->tx_slot_size - sizeof(struct pfq_pkthdr));
 
-int
-pfq_send(pfq_t *q, const void *ptr, size_t len, int copies)
-{
-        int rc = pfq_send_deferred(q, ptr, len, 0, copies, Q_ANY_QUEUE);
+	slot_size = (ptrdiff_t)(sizeof(struct pfq_pkthdr) + ALIGN(len, 8));
 
-	if(q->tx_num_bind != q->tx_num_async)
-		pfq_tx_queue_flush(q, Q_ANY_QUEUE);
+	if ((tx->ptr - base_addr + slot_size + (ptrdiff_t)sizeof(struct pfq_pkthdr)) < (ptrdiff_t)q->tx_queue_size)
+	{
+		struct pfq_pkthdr *hdr = (struct pfq_pkthdr *)tx->ptr;
+		hdr->tstamp.tv64 = 0;
+		hdr->ifindex     = ifindex;
+		hdr->queue       = (uint8_t)queue;
+		hdr->caplen      = (uint16_t)len;
+		hdr->data.copies = copies;
 
-	return Q_VALUE(q, rc);
-}
+		memcpy(hdr+1, buf, hdr->len);
 
+		tx->ptr += slot_size;
+		((struct pfq_pkthdr *)tx->ptr)->len = 0;
 
-int
-pfq_send_async(pfq_t *q, const void *ptr, size_t len, size_t flush_hint, int
-	       copies)
-{
-        int rc = pfq_send_deferred(q, ptr, len, 0, copies, Q_ANY_QUEUE);
+		if (++q->tx_attempt == flush_hint) {
+			q->tx_attempt = 0;
+			tx->ptr = NULL;
+			pfq_tx_queue_flush(q, 0);
+		}
 
-	if (++q->tx_attempt == flush_hint) {
-
-		q->tx_attempt = 0;
-
-		if (q->tx_num_bind != q->tx_num_async)
-			pfq_tx_queue_flush(q, Q_ANY_QUEUE);
+		return Q_VALUE(q, (int)len);
 	}
 
-	return Q_VALUE(q, rc);
+	if (++q->tx_attempt == flush_hint) {
+		q->tx_attempt = 0;
+		tx->ptr = NULL;
+		pfq_tx_queue_flush(q, 0);
+	}
+
+	return Q_VALUE(q, -1);
 }
 
 
 int
-pfq_send_at(pfq_t *q, const void *ptr, size_t len, struct timespec *ts, int
+pfq_send_async(pfq_t *q, const void *ptr, size_t len, unsigned int copies)
+{
+        return pfq_send_deferred(q, ptr, len, 0, copies, Q_ANY_QUEUE);
+}
+
+
+int
+pfq_send_at(pfq_t *q, const void *ptr, size_t len, struct timespec *ts, unsigned int
 	    copies)
 {
-	uint64_t nsec;
-        if (q->tx_num_bind != q->tx_num_async)
-		return Q_ERROR(q, "PFQ: send_at not fully async!");
-
-	nsec = (uint64_t)(ts->tv_sec)*1000000000ull + (uint64_t)ts->tv_nsec;
-        return pfq_send_deferred(q, ptr, len, nsec, copies, Q_ANY_QUEUE);
+	uint64_t ns = (uint64_t)(ts->tv_sec)*1000000000ull + (uint64_t)ts->tv_nsec;
+        return pfq_send_deferred(q, ptr, len, ns, copies, Q_ANY_QUEUE);
 }
 
 
