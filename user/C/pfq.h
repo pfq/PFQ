@@ -563,7 +563,7 @@ extern int pfq_get_group_counters(pfq_t const *q, int gid, struct pfq_counters *
 /*! Transmit the packets in the queue. */
 /*!
  * Transmit the packets in the queue of the socket. 'queue = 0' is the
- * queue of the socket enabled for synchronous transmission.
+ * queue enabled for synchronous transmission.
  */
 
 extern int pfq_tx_queue(pfq_t *q, int queue);
