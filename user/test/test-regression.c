@@ -587,15 +587,15 @@ void test_tx_thread()
 }
 
 
-void test_tx_queue_flush()
+void test_tx_queue()
 {
         pfq_t * q = pfq_open(64, 1024, 1024);
-        assert(pfq_tx_queue_flush(q, Q_ANY_QUEUE) == -1);
+        assert(pfq_tx_queue(q, 1) == -1);
 
         assert(pfq_bind_tx(q, "lo", Q_ANY_QUEUE, Q_NO_KTHREAD) == 0);
         assert(pfq_enable(q) == 0);
 
-        assert(pfq_tx_queue_flush(q, Q_ANY_QUEUE) == 0);
+        assert(pfq_tx_queue(q, 0) == 0);
 
         pfq_close(q);
 }
@@ -672,12 +672,12 @@ main(int argc __attribute__((unused)), char *argv[]__attribute__((unused)))
 
         TEST(test_tx_thread);
 
-        TEST(test_tx_queue_flush);
+        TEST(test_tx_queue);
 
         TEST(test_egress_bind);
         TEST(test_egress_unbind);
 
         printf("Tests successfully passed.\n");
-    	return 0;
+	return 0;
 }
 

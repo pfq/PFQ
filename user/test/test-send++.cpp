@@ -45,8 +45,6 @@ void send_packets_async(pfq::socket &q, int64_t num)
         if (q.send_async(pfq::const_buffer(reinterpret_cast<const char *>(ping), sizeof(ping)), 128))
             n++;
     }
-
-    q.tx_queue_flush();
 }
 
 
@@ -55,25 +53,24 @@ main(int argc, char *argv[])
 try
 {
     if (argc < 5)
-        throw std::runtime_error(std::string("usage: ").append(argv[0]).append(" dev queue node num"));
+        throw std::runtime_error(std::string("usage: ").append(argv[0]).append(" dev queue kthread num"));
 
     const char *dev = argv[1];
     int queue       = atoi(argv[2]);
-    int node        = atoi(argv[3]);
+    int kthread     = atoi(argv[3]);
     int64_t num     = atoll(argv[4]);
 
     pfq::socket q(64, 1024, 1024);
 
     q.enable();
 
-    q.bind_tx(dev, queue, node);
+    q.bind_tx(dev, queue, kthread);
 
 
-    if (node == -1) {
+    if (kthread == -1) {
         send_packets(q, num);
     }
     else {
-        q.tx_async_start();
         send_packets_async(q, num);
     }
 

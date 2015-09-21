@@ -545,16 +545,16 @@ auto g = Group("PFQ")
     })
 
 
-    .Single("tx_queue_flush", []
+    .Single("tx_queue", []
     {
         pfq::socket q(64);
-        AssertThrow(q.tx_queue_flush());
+        AssertThrow(q.tx_queue(0));
 
         q.bind_tx("lo", -1);
 
         q.enable();
 
-        AssertNoThrow(q.tx_queue_flush());
+        AssertNoThrow(q.tx_queue(0));
     })
 
     .Single("egress_bind", []

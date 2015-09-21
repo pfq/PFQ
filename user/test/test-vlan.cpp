@@ -37,7 +37,7 @@ main(int argc, char *argv[])
 
                     printf("vlan_vid:%d vlan_prio:%d caplen:%d len:%d ifindex:%d hw_queue:%d tstamp: %u:%u -> ",
                            it->vlan.vid, it->vlan.prio,
-                           it->caplen, it->len, it->if_index, it->queue,
+                           it->caplen, it->len, it->ifindex, it->queue,
                                 it->tstamp.tv.sec, it->tstamp.tv.nsec);
                     char *buff = static_cast<char *>(it.data());
 
