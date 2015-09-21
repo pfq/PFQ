@@ -52,13 +52,12 @@ ping = C.pack [
 
 sendSync :: Ptr Q.PFqTag -> Int -> IO Int
 sendSync q n  =
-    Q.send q ping 1 >>= (\b -> if b then return (n+1)
-                                  else return n)
+    Q.send q ping 1 1 >>= (\b -> if b then return (n+1) else return n)
 
 
 sendAsync :: Ptr Q.PFqTag -> Int -> IO Int
 sendAsync q n =
-    Q.sendAsync q ping 128 1 >>= (\b -> if b then return (n+1)
+    Q.sendAsync q ping 1 >>= (\b -> if b then return (n+1)
                                              else return n)
 
 
@@ -75,19 +74,18 @@ sender xs = do
 
     let dev    = head xs
     let queue  = read (xs !! 1) :: Int
-    let core   = read (xs !! 2) :: Int
+    let kthread= read (xs !! 2) :: Int
     let num    = read (xs !! 3) :: Int
 
     fp <- Q.open 64 1024 1024
 
     withForeignPtr fp  $ \q -> do
             Q.enable q
-            Q.bindTxOnCpu q dev queue core
+            Q.bindTx q dev queue kthread
 
-            if core /= -1
+            if kthread /= -1
             then do
                 putStrLn  $ "sending " ++ show num ++ " packets to dev " ++ dev  ++ " (async)..."
-                Q.txAsyncStart q
                 while (< num) (sendAsync q) 0
             else do
                 putStrLn  $ "sending " ++ show num ++ " packets to dev " ++ dev  ++ "..."
