@@ -88,16 +88,14 @@ pfq_tx_thread(void *_data)
 			sock_queue = atomic_read(&data->sock_queue[n]);
 			smp_rmb();
 			sock = data->sock[n];
-
 			if (sock_queue != -1 && sock != NULL) {
 				reg = true;
-				pfq_sk_queue_xmit(sock, sock_queue,
-						     data->cpu, data->node, &data->sock_queue[n]);
+				pfq_sk_queue_xmit(sock, sock_queue, data->cpu, data->node, &data->sock_queue[n]);
 			}
 		}
 
 		if (!reg)
-			msleep(10);
+			msleep(1);
 
                 if (kthread_should_stop())
                         break;
