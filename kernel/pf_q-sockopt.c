@@ -430,19 +430,19 @@ int pfq_setsockopt(struct socket *sock,
 		gid = (__force pfq_gid_t)bind.gid;
 
 		if (!pfq_has_joined_group(gid, so->id)) {
-                        printk(KERN_INFO "[PFQ|%d] remove bind: gid=%d not joined!\n", so->id, bind.gid);
+                        printk(KERN_INFO "[PFQ|%d] group id=%d unbind: gid=%d not joined!\n", so->id, gid, bind.gid);
 			return -EACCES;
 		}
 
-                if (!dev_put_by_index(sock_net(&so->sk), bind.if_index)) {
-                        printk(KERN_INFO "[PFQ|%d] unbind: invalid if_index=%d\n", so->id, bind.if_index);
+                if (dev_put_by_index(sock_net(&so->sk), bind.if_index) < 0) {
+                        printk(KERN_INFO "[PFQ|%d] group id=%d unbind: invalid if_index=%d!\n", so->id, gid, bind.if_index);
                         return -EPERM;
                 }
 
                 pfq_devmap_update(map_reset, bind.if_index, bind.queue, gid);
 
                 pr_devel("[PFQ|%d] group id=%d unbind: device if_index=%d queue=%d\n",
-					so->id, bind.gid, bind.if_index, bind.queue);
+					so->id, gid, bind.if_index, bind.queue);
 
         } break;
 
@@ -476,7 +476,8 @@ int pfq_setsockopt(struct socket *sock,
 
         case Q_SO_EGRESS_UNBIND:
         {
-                if (!dev_put_by_index(sock_net(&so->sk), so->egress_index)) {
+                if (so->egress_index &&
+                    dev_put_by_index(sock_net(&so->sk), so->egress_index) < 0) {
                         printk(KERN_INFO "[PFQ|%d] egress bind: invalid if_index=%d\n", so->id, so->egress_index);
                         return -EPERM;
                 }
