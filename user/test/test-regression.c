@@ -146,8 +146,8 @@ void test_bind_device()
 	pfq_t * q = pfq_open(64, 1024, 1024);
         assert(q);
 
-       	assert(pfq_bind(q, "unknown", Q_ANY_QUEUE) == -1);
-       	assert(pfq_bind(q, "eth0", Q_ANY_QUEUE) == 0);
+	assert(pfq_bind(q, "unknown", Q_ANY_QUEUE) == -1);
+	assert(pfq_bind(q, "eth0", Q_ANY_QUEUE) == 0);
 	assert(pfq_bind_group(q, 11, "eth0", Q_ANY_QUEUE) == -1);
 
 	pfq_close(q);
@@ -159,11 +159,11 @@ void test_unbind_device()
 	pfq_t * q = pfq_open(64, 1024, 1024);
         assert(q);
 
-       	assert(pfq_unbind(q, "unknown", Q_ANY_QUEUE) == -1);
-       	assert(pfq_unbind(q, "eth0", Q_ANY_QUEUE) == 0);
+	assert(pfq_unbind(q, "unknown", Q_ANY_QUEUE) == -1);
+	assert(pfq_unbind(q, "eth0", Q_ANY_QUEUE) == 0);
 
 	assert(pfq_bind(q, "eth0", Q_ANY_QUEUE) == 0);
-       	assert(pfq_unbind(q, "eth0", Q_ANY_QUEUE) == 0);
+	assert(pfq_unbind(q, "eth0", Q_ANY_QUEUE) == 0);
 
 	assert(pfq_unbind_group(q, 11, "eth0", Q_ANY_QUEUE) == -1);
 
@@ -481,8 +481,8 @@ void test_join_restricted_process()
 
 void test_join_group()
 {
-    	pfq_t * q = pfq_open_group(Q_CLASS_DEFAULT, Q_POLICY_GROUP_UNDEFINED, 64, 1024, 1024);
-    	assert(q);
+	pfq_t * q = pfq_open_group(Q_CLASS_DEFAULT, Q_POLICY_GROUP_UNDEFINED, 64, 1024, 1024);
+	assert(q);
 
 	int gid = pfq_join_group(q, 0, Q_CLASS_DEFAULT, Q_POLICY_GROUP_SHARED);
 	assert(gid == 0);
@@ -500,16 +500,13 @@ void test_join_group()
 
 void test_leave_group()
 {
-    	pfq_t * q = pfq_open_group(Q_CLASS_DEFAULT, Q_POLICY_GROUP_UNDEFINED, 64, 1024, 1024);
-    	assert(q);
+	pfq_t * q = pfq_open_group(Q_CLASS_DEFAULT, Q_POLICY_GROUP_UNDEFINED, 64, 1024, 1024);
+	assert(q);
 
 	int gid = pfq_join_group(q, 22, Q_CLASS_DEFAULT, Q_POLICY_GROUP_SHARED);
 	assert(gid == 22);
 
-	assert(pfq_leave_group(q, 21) == -1);
-
 	assert(pfq_leave_group(q, 22) == 0);
-
 	assert(pfq_group_id(q) == -1);
 
 	unsigned long mask;

@@ -222,6 +222,7 @@ auto g = Group("PFQ")
         x.open(pfq::group_policy::shared, 64);
 
         AssertThrow(x.unbind("unknown"));
+        x.bind(DEV.c_str());
         x.unbind(DEV.c_str());
 
         AssertThrow(x.unbind_group(11, DEV.c_str()));
