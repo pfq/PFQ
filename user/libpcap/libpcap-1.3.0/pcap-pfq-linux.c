@@ -364,23 +364,18 @@ string_for_each_token(const char *ds, const char *sep, pfq_token_handler_t handl
 
 
 static char *
-string_first_token(const char *ds, const char *sep)
+string_first_token(const char *str, const char *sep)
 {
 	char *end;
 
-	if (*ds == ':')
-		ds++;
-	if ((end = strstr(ds, sep))) {
-		char *ret = malloc(end - ds + 1);
-		strncpy(ret, ds, end - ds);
-		ret[end - ds] = '\0';
+	if ((end = strstr(str, sep))) {
+		char *ret = malloc(end - str + 1);
+		strncpy(ret, str, end - str);
+		ret[end - str] = '\0';
 		return ret;
 	}
 
-	if (*ds == '\0')
-		return NULL;
-
-	return strdup(ds);
+	return strdup(str);
 }
 
 
@@ -396,6 +391,38 @@ string_trim(char *str)
 
 	str[j+1] = '\0';
 	return str+i;
+}
+
+
+static char *
+pfq_get_config_file(const char *fullname)
+{
+	char *end, *conf;
+	if (!fullname)
+		return NULL;
+	conf = strstr(fullname, "pfq/");
+	if (conf == NULL)
+		return NULL;
+	conf = strdup(conf+4);
+	if (end = strchr(conf, ':')) {
+		*end = '\0';
+	}
+	return conf;
+}
+
+
+static char *
+pfq_get_devname(const char *fullname)
+{
+	char *dev;
+	if (!fullname)
+		return NULL;
+	dev = strstr(fullname, "pfq");
+	if (!dev)
+		return strdup(fullname);
+	if (dev = strchr(dev, ':'))
+		return strdup(dev+1);
+	return NULL;
 }
 
 
@@ -471,18 +498,13 @@ pfq_parse_integers(int *out, size_t max, const char *in)
 
 
 static size_t
-pfq_count_tx_queues(struct pfq_opt const *opt)
+pfq_count_tx_thread(struct pfq_opt const *opt)
 {
-	size_t n, txq = 0;
-
+	size_t n, tx = 0;
         for(n = 0; n < 4; n++)
-        {
-		if (opt->tx_queue[n] != Q_ANY_QUEUE ||
-		    opt->tx_task[n]  != Q_NO_KTHREAD)
-			txq = n+1;
-	}
-
-	return txq > 0 ? txq : 1;
+		if (opt->tx_thread[n]  != Q_NO_KTHREAD)
+			tx++;
+	return tx;
 }
 
 
@@ -495,10 +517,10 @@ pfq_opt_default(pcap_t *handle)
 		.caplen   = handle->snapshot,
 		.rx_slots = 4096,
 		.tx_slots = 4096,
-		.tx_flush = 1,
+		.tx_fhint = 1,
 		.tx_async = 0,
 		.tx_queue = {-1, -1, -1, -1},
-		.tx_task  = { Q_NO_KTHREAD, Q_NO_KTHREAD, Q_NO_KTHREAD, Q_NO_KTHREAD },
+		.tx_thread= { Q_NO_KTHREAD, Q_NO_KTHREAD, Q_NO_KTHREAD, Q_NO_KTHREAD },
 		.vlan     = NULL,
 		.comp     = NULL
 	};
@@ -524,8 +546,8 @@ pfq_parse_env(struct pfq_opt *opt)
 	if ((var = getenv("PFQ_TX_SLOTS")))
 		opt->tx_slots = atoi(var);
 
-	if ((var = getenv("PFQ_TX_FLUSH")))
-		opt->tx_flush = atoi(var);
+	if ((var = getenv("PFQ_TX_FHINT")))
+		opt->tx_fhint = atoi(var);
 
 	if ((var = getenv("PFQ_VLAN")))
 		opt->vlan = var;
@@ -540,8 +562,8 @@ pfq_parse_env(struct pfq_opt *opt)
 		}
 	}
 
-	if ((var = getenv("PFQ_TX_TASK"))) {
-		if (pfq_parse_integers(opt->tx_task, 4, var) < 0) {
+	if ((var = getenv("PFQ_TX_THREAD"))) {
+		if (pfq_parse_integers(opt->tx_thread, 4, var) < 0) {
 			fprintf(stderr, "[PFQ] PFQ_TX_TASK parse error!\n");
 			return -1;
 		}
@@ -551,27 +573,16 @@ pfq_parse_env(struct pfq_opt *opt)
 }
 
 
-static char *
-pfq_parse_filename(const char *device)
-{
-	char *str;
-	if (*device != '/')
-		return NULL;
-	str = strdup(device+1);
-	return strtok(str, ":");
-}
-
-
 #define KEY(value) [KEY_ ## value] = # value
 
-#define KEY_ERR			-1
+#define KEY_ERR		       -1
 #define KEY_group		0
 #define KEY_caplen		1
 #define KEY_rx_slots		2
 #define KEY_tx_slots            3
-#define KEY_tx_flush		4
+#define KEY_tx_fhint		4
 #define KEY_tx_queue		5
-#define KEY_tx_task		6
+#define KEY_tx_thread		6
 #define KEY_vlan		7
 #define KEY_computation		8
 
@@ -585,8 +596,8 @@ struct pfq_conf_key {
 	KEY(rx_slots),
 	KEY(tx_slots),
 	KEY(tx_queue),
-	KEY(tx_flush),
-	KEY(tx_task),
+	KEY(tx_fhint),
+	KEY(tx_thread),
 	KEY(vlan),
 	KEY(computation)
 };
@@ -646,15 +657,15 @@ pfq_parse_config(struct pfq_opt *opt, const char *filename)
 				case KEY_caplen:	opt->caplen   = atoi(value);  break;
 				case KEY_rx_slots:	opt->rx_slots = atoi(value);  break;
 				case KEY_tx_slots:	opt->tx_slots = atoi(value);  break;
-				case KEY_tx_flush:	opt->tx_flush = atoi(value);  break;
+				case KEY_tx_fhint:	opt->tx_fhint = atoi(value);  break;
 				case KEY_tx_queue:  {
 					if (pfq_parse_integers(opt->tx_queue, 4, value) < 0) {
 						fprintf(stderr, "[PFQ] %s: parse error at: %s\n", filename, tkey);
 						rc = -1;
 					}
 				} break;
-				case KEY_tx_task:   {
-					if (pfq_parse_integers(opt->tx_task, 4, value) < 0) {
+				case KEY_tx_thread:   {
+					if (pfq_parse_integers(opt->tx_thread, 4, value) < 0) {
 						fprintf(stderr, "[PFQ] %s: parse error at: %s\n", filename, tkey);
 						rc = -1;
 					}
@@ -685,7 +696,7 @@ err:
 static int
 pfq_activate_linux(pcap_t *handle)
 {
-	char *device = NULL, *config = NULL, *colon;
+	char *device = NULL, *config = NULL;
         const int maxlen = 1514;
 	const int queue = Q_ANY_QUEUE;
 	char *first_dev;
@@ -693,22 +704,13 @@ pfq_activate_linux(pcap_t *handle)
 	handle->opt.pfq  = pfq_opt_default(handle);
 	handle->linktype = DLT_EN10MB;
 
-	/* parse config file */
+	config = pfq_get_config_file(handle->opt.source);
+	device = pfq_get_devname(handle->opt.source);
 
-	if (strncmp(handle->opt.source, "pfq", 3) == 0)
-		device = handle->opt.source + 3;
-	else
-		device = handle->opt.source;
+        fprintf(stdout, "[PFQ] running on device %s...\n", device);
+	fprintf(stdout, "[PFQ] configuration file %s...\n", config);
 
-	if (*device == '/') {
-
-		config = pfq_parse_filename(device);
-		if (config == NULL) {
-			fprintf(stderr, "[PFQ] parse filename error: %s\n", device);
-			return -1;
-		}
-	}
-	else {
+	if (config == NULL) {
 		char *conf = getenv("PFQ_CONFIG");
 		if (conf)
 			config = strdup(conf);
@@ -727,10 +729,6 @@ pfq_activate_linux(pcap_t *handle)
 		return PCAP_ERROR;
 	}
 
-	colon = strstr(device ,":");
-	if (colon != NULL)
-		device = colon;
-
         if (handle->opt.pfq.caplen > maxlen || handle->opt.pfq.caplen == 0) {
                 fprintf(stdout, "[PFQ] capture length forced to %d\n", maxlen);
                 handle->opt.pfq.caplen = maxlen;
@@ -740,12 +738,12 @@ pfq_activate_linux(pcap_t *handle)
 		handle->opt.pfq.rx_slots = handle->opt.buffer_size/handle->opt.pfq.caplen;
 
 
-	fprintf(stdout, "[PFQ] buffer_size = %d caplen = %d, rx_slots = %d, tx_slots = %d, tx_flush = %d\n",
+	fprintf(stdout, "[PFQ] buffer_size = %d caplen = %d, rx_slots = %d, tx_slots = %d, tx_fhint = %d\n",
 		handle->opt.buffer_size,
 		handle->opt.pfq.caplen,
 		handle->opt.pfq.rx_slots,
 		handle->opt.pfq.tx_slots,
-		handle->opt.pfq.tx_flush);
+		handle->opt.pfq.tx_fhint);
 
 	handle->read_op		= pfq_read_linux;
 	handle->inject_op	= pfq_inject_linux;
@@ -946,26 +944,35 @@ pfq_activate_linux(pcap_t *handle)
 
 		size_t tot, idx;
 
-		tot = pfq_count_tx_queues(&handle->opt.pfq);
+		tot = pfq_count_tx_thread(&handle->opt.pfq);
+		if (tot) {
+			fprintf(stdout, "[PFQ] enabling %zu Tx async on dev %s...\n", tot, first_dev);
 
-		fprintf(stdout, "[PFQ] enabling %zu logic Tx queues on dev %s...\n", tot, first_dev);
+			handle->opt.pfq.tx_async = 1;
 
-		for(idx = 0; idx < tot; idx++)
-		{
-			fprintf(stdout, "[PFQ] binding Tx on %s, hw queue %d, core %d\n",
-				first_dev, handle->opt.pfq.tx_queue[idx], handle->opt.pfq.tx_task[idx]);
+			for(idx = 0; idx < tot; idx++)
+			{
+				fprintf(stdout, "[PFQ] binding Tx on %s, hw queue %d, tx-thread %d\n",
+					first_dev, handle->opt.pfq.tx_queue[idx], handle->opt.pfq.tx_thread[idx]);
 
-			if (pfq_bind_tx(handle->md.pfq.q, first_dev,
-					handle->opt.pfq.tx_queue[idx],
-					handle->opt.pfq.tx_task[idx]) < 0) {
+				if (pfq_bind_tx(handle->md.pfq.q, first_dev,
+						handle->opt.pfq.tx_queue[idx],
+						handle->opt.pfq.tx_thread[idx]) < 0) {
+					fprintf(stderr, "[PFQ] error: %s\n", pfq_error(handle->md.pfq.q));
+					goto fail;
+				}
+			}
+		}
+		else {
+			fprintf(stdout, "[PFQ] enabling Tx on dev %s...\n", first_dev);
+			if (pfq_bind_tx(handle->md.pfq.q, first_dev, 0, -1)) {
 				fprintf(stderr, "[PFQ] error: %s\n", pfq_error(handle->md.pfq.q));
+				goto fail;
 			}
 		}
 
-
 		free(first_dev);
 	}
-
 
 	/* set FUNCTION/computation */
 
@@ -1035,17 +1042,19 @@ fail:
 static int
 pfq_inject_linux(pcap_t *handle, const void * buf, size_t size)
 {
-	if (handle->opt.pfq.tx_async == 0) {
-		handle->opt.pfq.tx_async = 1;
-		pfq_tx_async_start(handle->md.pfq.q);
-	}
+	int ret;
 
-	int ret = pfq_send_async(handle->md.pfq.q, buf, size, handle->opt.pfq.tx_flush, 1);
-	if (ret == -1) {
+	if (handle->opt.pfq.tx_async)
+		ret = pfq_send_async(handle->md.pfq.q, buf, size, 1);
+	else
+		ret = pfq_send(handle->md.pfq.q, buf, size, handle->opt.pfq.tx_fhint, 1);
+
+        if (ret == -1) {
 		/* snprintf(handle->errbuf, PCAP_ERRBUF_SIZE, "%s", pfq_error(handle->md.pfq.q)); */
 		return PCAP_ERROR;
-	}
+        }
 	return ret;
+
 }
 
 
@@ -1155,7 +1164,7 @@ pfq_read_linux(pcap_t *handle, int max_packets, pcap_handler callback, u_char *u
 
 		pcap_h.data.mark  = h->data.mark;
 		pcap_h.data.state = h->data.state;
-		pcap_h.if_index   = h->if_index;
+		pcap_h.ifindex    = h->ifindex;
 		pcap_h.queue	  = h->queue;
 		pcap_h.gid	  = h->gid;
 
