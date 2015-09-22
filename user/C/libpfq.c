@@ -1112,7 +1112,7 @@ pfq_send_deferred(pfq_t *q, const void *buf, size_t len, uint64_t nsec, unsigned
 		hdr->caplen = (uint16_t)len;
 		hdr->data.copies = copies;
                 hdr->ifindex = 0;
-		memcpy(hdr+1, buf, hdr->len);
+		memcpy(hdr+1, buf, len);
 
 		atx->ptr += slot_size;
 		((struct pfq_pkthdr *)atx->ptr)->len = 0;
@@ -1135,7 +1135,6 @@ pfq_tx_queue(pfq_t *q, int queue)
 int
 pfq_send_to(pfq_t *q, const void *buf, size_t len, int ifindex, int queue, size_t flush_hint, unsigned int copies)
 {
-        struct pfq_shared_queue *sh_queue = (struct pfq_shared_queue *)(q->shm_addr);
         struct pfq_tx_queue *tx;
         size_t slot_size;
         char *base_addr;
@@ -1143,7 +1142,7 @@ pfq_send_to(pfq_t *q, const void *buf, size_t len, int ifindex, int queue, size_
 	if (unlikely(q->shm_addr == NULL))
 		return Q_ERROR(q, "PFQ: send_deferred: socket not enabled");
 
-        tx = (struct pfq_tx_queue *)&sh_queue->tx;
+        tx = &((struct pfq_shared_queue *)q->shm_addr)->tx;
 
 	base_addr = q->tx_queue_addr;
 
@@ -1163,7 +1162,7 @@ pfq_send_to(pfq_t *q, const void *buf, size_t len, int ifindex, int queue, size_
 		hdr->caplen      = (uint16_t)len;
 		hdr->data.copies = copies;
 
-		memcpy(hdr+1, buf, hdr->len);
+		memcpy(hdr+1, buf, len);
 
 		tx->ptr += slot_size;
 		((struct pfq_pkthdr *)tx->ptr)->len = 0;
