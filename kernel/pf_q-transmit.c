@@ -180,7 +180,7 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 {
 	struct pfq_tx_info * txinfo = pfq_get_tx_queue_info(&so->opt, sock_queue);
 	struct net_device_cache default_dev;
-	struct pfq_percpu_pool *pool = NULL;
+	struct pfq_skb_pool *skb_pool = NULL;
 	struct net_dev_queue dq;
 	struct pfq_pkthdr *hdr;
 	char *begin, *end;
@@ -210,7 +210,9 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 	if (cpu != Q_NO_KTHREAD)
 	{
 		/* get local pool data */
-		pool = this_cpu_ptr(percpu_pool);
+		struct pfq_percpu_pool *pool = this_cpu_ptr(percpu_pool);
+		if (likely(atomic_read(&pool->enable)))
+			skb_pool = &pool->tx_pool;
 
 		/* swap queue */
 		if ((swap_sk_tx_queue(txm, &swap_idx)) < 0) {
@@ -299,8 +301,7 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 
 		/* allocate a socket buffer */
 
-		skb = pool ? pfq_tx_alloc_skb(xmit_slot_size, GFP_KERNEL, node)
-			   : alloc_skb(xmit_slot_size, GFP_KERNEL);
+		skb = pfq_alloc_skb_pool(xmit_slot_size, GFP_KERNEL, node, skb_pool);
 
 		if (unlikely(skb == NULL)) {
 			if (printk_ratelimit())
@@ -342,8 +343,7 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 				pfq_relax();
 
 				if (giveup_tx_process(stop)) {
-					pool ? pfq_kfree_skb_pool(skb, &pool->tx_pool)
-					     : kfree_skb(skb);
+					pfq_kfree_skb_pool(skb, skb_pool);
 					goto exit;
 				}
 
@@ -365,9 +365,7 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 
 		/* return the skb and move ptr to the next packet */
 
-		pool ? pfq_kfree_skb_pool(skb, &pool->tx_pool)
-		     : kfree_skb(skb);
-
+		pfq_kfree_skb_pool(skb, skb_pool);
 	}
 
 	pfq_hard_tx_unlock(&dq);

@@ -176,11 +176,10 @@ struct sk_buff * pfq_netdev_alloc_skb_ip_align(struct net_device *dev,
 
 static inline
 struct sk_buff *
-____pfq_alloc_skb_pool(unsigned int size, gfp_t priority, int fclone, int node, struct pfq_skb_pool *pool)
+____pfq_alloc_skb_pool(unsigned int size, gfp_t priority, int fclone, int node, struct pfq_skb_pool *skb_pool)
 {
-
 #ifdef PFQ_USE_SKB_POOL
-	struct sk_buff *skb = pfq_skb_pool_pop(pool);
+	struct sk_buff *skb = pfq_skb_pool_pop(skb_pool);
 	if (likely(skb != NULL)) {
 		SPARSE_INC(&memory_stats.pool_pop);
 
@@ -204,22 +203,6 @@ ____pfq_alloc_skb_pool(unsigned int size, gfp_t priority, int fclone, int node, 
 
 
 static inline
-void pfq_kfree_skb_pool(struct sk_buff *skb, struct pfq_skb_pool *pool)
-{
-#ifdef PFQ_USE_SKB_POOL
-	bool ret = pfq_skb_pool_push(pool, skb);
-	if (ret)
-		SPARSE_INC(&memory_stats.pool_push);
-	else
-		SPARSE_INC(&memory_stats.err_push);
-#else
-	SPARSE_INC(&memory_stats.os_free);
-	kfree_skb(skb);
-#endif
-}
-
-
-static inline
 struct sk_buff * pfq_alloc_skb(unsigned int size, gfp_t priority)
 {
 #ifdef PFQ_USE_SKB_POOL
@@ -235,14 +218,25 @@ struct sk_buff * pfq_alloc_skb(unsigned int size, gfp_t priority)
 
 
 static inline
-struct sk_buff * pfq_tx_alloc_skb(unsigned int size, gfp_t priority, int node)
+struct sk_buff * pfq_alloc_skb_fclone(unsigned int size, gfp_t priority)
+{
+	return __pfq_alloc_skb(size, priority, 1, NUMA_NO_NODE);
+}
+
+
+/* explicit pool allocation/free: pool can be NULL */
+
+
+static inline
+struct sk_buff *
+pfq_alloc_skb_pool(unsigned int size, gfp_t priority, int node, struct pfq_skb_pool *skb_pool)
 {
 #ifdef PFQ_USE_SKB_POOL
-	struct pfq_percpu_pool *pool = this_cpu_ptr(percpu_pool);
-
-	if (likely(atomic_read(&pool->enable)))
-		return ____pfq_alloc_skb_pool(size, priority, 0, node, &pool->tx_pool);
-
+	if (likely(skb_pool)) {
+		struct pfq_percpu_pool *pool = this_cpu_ptr(percpu_pool);
+		if (likely(atomic_read(&pool->enable)))
+			return ____pfq_alloc_skb_pool(size, priority, 0, node, skb_pool);
+	}
 	SPARSE_INC(&memory_stats.os_alloc);
 #endif
 	return __alloc_skb(size, priority, 0, NUMA_NO_NODE);
@@ -250,9 +244,20 @@ struct sk_buff * pfq_tx_alloc_skb(unsigned int size, gfp_t priority, int node)
 
 
 static inline
-struct sk_buff * pfq_alloc_skb_fclone(unsigned int size, gfp_t priority)
+void pfq_kfree_skb_pool(struct sk_buff *skb, struct pfq_skb_pool *skb_pool)
 {
-	return __pfq_alloc_skb(size, priority, 1, NUMA_NO_NODE);
+#ifdef PFQ_USE_SKB_POOL
+	if (likely(skb_pool)) {
+		bool ret = pfq_skb_pool_push(skb_pool, skb);
+		if (ret)
+			SPARSE_INC(&memory_stats.pool_push);
+		else
+			SPARSE_INC(&memory_stats.err_push);
+		return;
+	}
+#endif
+	SPARSE_INC(&memory_stats.os_free);
+	kfree_skb(skb);
 }
 
 
