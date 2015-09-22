@@ -42,7 +42,7 @@ void send_packets_async(pfq::socket &q, int64_t num)
     std::cout << "sending " << num << " packets (async):" << std::endl;
     for(int64_t n = 0; n < num;)
     {
-        if (q.send_async(pfq::const_buffer(reinterpret_cast<const char *>(ping), sizeof(ping)), 128))
+        if (q.send_async(pfq::const_buffer(reinterpret_cast<const char *>(ping), sizeof(ping))))
             n++;
     }
 }
@@ -62,10 +62,9 @@ try
 
     pfq::socket q(64, 1024, 1024);
 
-    q.enable();
-
     q.bind_tx(dev, queue, kthread);
 
+    q.enable();
 
     if (kthread == -1) {
         send_packets(q, num);

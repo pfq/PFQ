@@ -68,9 +68,9 @@ main(int argc, char *argv[])
 
         pfq_t * q= pfq_open(64, 1024, 1024);
 
-        pfq_enable(q);
-
         pfq_bind_tx(q, dev, queue, kthread);
+
+        pfq_enable(q);
 
 	if (kthread == -1) {
 		send_packets(q, num);
