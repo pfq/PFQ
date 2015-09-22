@@ -166,11 +166,11 @@ bool is_last_tx_pkt(struct pfq_pkthdr *hdr)
 
 static inline
 dev_queue_id_t
-get_next_dq(struct pfq_pkthdr *hdr, dev_queue_id_t const default_dq)
+get_next_dq(struct pfq_pkthdr *hdr, dev_queue_id_t const default_qid)
 {
 	dev_queue_id_t next_qid = PFQ_NETQ_ID(hdr->ifindex, hdr->queue);
 	if (PFQ_NETQ_IS_DEFAULT(next_qid))
-		return default_dq;
+		return default_qid;
 	return next_qid;
 }
 
@@ -187,7 +187,7 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 	ktime_t now;
 
 	int more = 0, total_sent = 0, disc = 0, swap_idx = -1;
-	const dev_queue_id_t default_dq = PFQ_NETQ_ID(txinfo->def_ifindex, txinfo->def_queue);
+	const dev_queue_id_t default_qid = PFQ_NETQ_ID(txinfo->def_ifindex, txinfo->def_queue);
 	dev_queue_id_t current_qid;
 	struct pfq_tx_queue *txm;
 
@@ -228,42 +228,43 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 
 	swap_idx++;
 
-	/* initialize pointer to the current transmit queue */
+	/* initialize boundaries of the transmit queue */
 
 	begin = txinfo->base_addr + (swap_idx & 1) * txm->size;
 	end = begin + txm->size;
 
-	/* Tx loop */
-
-	now = ktime_get_real();
-
 	/* get the default dev_queue, and lock it */
 
-	current_qid = default_dq;
+	current_qid = default_qid;
+
+	/* the pointers to netdev and queue */
 
 	dev_queue_get(sock_net(&so->sk), &default_dev, current_qid , &dq);
+
+	/* lock the default queue */
 
 	local_bh_disable();
 	pfq_hard_tx_lock(&dq);
 
 	/* traverse the queue */
 
-	hdr = (struct pfq_pkthdr *)begin;
+	now = ktime_get_real();
 
+	hdr = (struct pfq_pkthdr *)begin;
 	for_each_sk_tx_mbuff(hdr, end)
 	{
 		unsigned int copies, skb_copies;
 		struct sk_buff *skb;
 		size_t len;
 		bool xmit_more, last_tx = is_last_tx_pkt(hdr);
-		dev_queue_id_t next_qid = get_next_dq(hdr, default_dq);
+		dev_queue_id_t next_qid = get_next_dq(hdr, default_qid);
 
 		if (PFQ_NETQ_IS_NULL(next_qid)) {
 			/* skip this packet */
 			continue;
 		}
 
-		/* netdev queue switch..*/
+		/* netdev queue switch ? */
 
 		if (current_qid != next_qid) {
 			current_qid = next_qid;
@@ -276,7 +277,7 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 			pfq_hard_tx_lock(&dq);
 		}
 
-		if (dq.dev == NULL) { /* device not existing */
+		if (unlikely(dq.dev == NULL)) { /* device not existing */
 			if (printk_ratelimit())
 				printk(KERN_INFO "[PFQ] dev: ifindex=%d not found!\n", PFQ_NETQ_IFINDEX(current_qid));
 			continue;
