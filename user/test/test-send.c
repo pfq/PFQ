@@ -68,7 +68,10 @@ main(int argc, char *argv[])
 
         pfq_t * q= pfq_open(64, 1024, 1024);
 
-        pfq_bind_tx(q, dev, queue, kthread);
+        if (pfq_bind_tx(q, dev, queue, kthread) < 0) {
+		fprintf(stderr, "%s\n", pfq_error(q));
+		return -1;
+	}
 
         pfq_enable(q);
 
