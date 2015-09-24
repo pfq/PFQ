@@ -25,10 +25,6 @@ import System.Environment
 import Control.Monad(when)
 
 
-build_libpcap_1_3_0 = True
-build_libpcap_1_7_4 = True
-
-
 script :: BuilderScript
 script = do
 
@@ -65,28 +61,14 @@ script = do
     DistClean "pfq-haskell-lib" *>>  into "user/Haskell/"   $ cabalDistClean
 
 
-    -- PFQ pcap library 1.3.0
-
-    when build_libpcap_1_3_0 $ do
-
-        Configure "pfq-pcap-1.3.0"  *>>  into "user/libpcap/libpcap-1.3.0/"  $ do cmd "autoconf" `requires` [ Install "pfq-clib" ]
-                                                                                  cmd "./configure --enable-pfq"
-        Build     "pfq-pcap-1.3.0"  *>>  into "user/libpcap/libpcap-1.3.0/"  $ make              `requires` [ Install "pfq.ko", Configure "pfq-pcap-1.3.0" ]
-        Install   "pfq-pcap-1.3.0"  *>>  into "user/libpcap/libpcap-1.3.0/"  $ empty             `requires` [ Build "pfq-pcap-1.3.0" ]
-        Clean     "pfq-pcap-1.3.0"  *>>  into "user/libpcap/libpcap-1.3.0/"  $ make_clean
-        DistClean "pfq-pcap-1.3.0"  *>>  into "user/libpcap/libpcap-1.3.0/"  $ make_distclean
-
-
     -- PFQ pcap library 1.7.4
 
-    when build_libpcap_1_7_4 $ do
-
-        Configure "pfq-pcap-1.7.4"  *>>  into "user/libpcap/libpcap-1.7.4/"  $ do cmd "autoconf" `requires` [ Install "pfq-clib" ]
-                                                                                  cmd "./configure --enable-pfq"
-        Build     "pfq-pcap-1.7.4"  *>>  into "user/libpcap/libpcap-1.7.4/"  $ make              `requires` [ Install "pfq.ko", Configure "pfq-pcap-1.7.4" ]
-        Install   "pfq-pcap-1.7.4"  *>>  into "user/libpcap/libpcap-1.7.4/"  $ empty             `requires` [ Build "pfq-pcap-1.7.4" ]
-        Clean     "pfq-pcap-1.7.4"  *>>  into "user/libpcap/libpcap-1.7.4/"  $ make_clean
-        DistClean "pfq-pcap-1.7.4"  *>>  into "user/libpcap/libpcap-1.7.4/"  $ make_distclean
+    Configure "pfq-pcap-1.7.4"  *>>  into "user/libpcap/libpcap-1.7.4/"  $ do cmd "autoconf" `requires` [ Install "pfq-clib" ]
+                                                                              cmd "./configure --enable-pfq"
+    Build     "pfq-pcap-1.7.4"  *>>  into "user/libpcap/libpcap-1.7.4/"  $ make              `requires` [ Install "pfq.ko", Configure "pfq-pcap-1.7.4" ]
+    Install   "pfq-pcap-1.7.4"  *>>  into "user/libpcap/libpcap-1.7.4/"  $ empty             `requires` [ Build "pfq-pcap-1.7.4" ]
+    Clean     "pfq-pcap-1.7.4"  *>>  into "user/libpcap/libpcap-1.7.4/"  $ make_clean
+    DistClean "pfq-pcap-1.7.4"  *>>  into "user/libpcap/libpcap-1.7.4/"  $ make_distclean
 
 
     -- PFQ hcounters (exmaple)
