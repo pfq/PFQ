@@ -571,34 +571,40 @@ extern int pfq_tx_queue(pfq_t *q, int queue);
 
 /*! Schedule packet transmission. */
 /*!
- * The packet is copied into a Tx queue (using a TSS symmetric hash if any_queue is specified)
- * and transmitted at the given timestamp by a kernel thread or when pfq_tx_queue is called.
- * A timestamp of 0 nanoseconds means 'immediate transmission'.
+ * The packet is copied into a Tx queue. If 'async' is 1 and 'queue' is set to any_queue, a TSS symmetric hash
+ * function is used to select the Tx queue and the packet is transmitted at the given timestamp by a Tx kernel thread.
+ * Otherwise the queue is flushed every 'fhint' packets.
+ * A timestamp of 0 nanoseconds means immediate transmission.
  */
 
-extern int pfq_send_deferred(pfq_t *q, const void *ptr, size_t len, uint64_t nsec, unsigned int copies, int queue);
-
-
-//! Store the packet and transmit the packets in the queue.
-/*!
- * The queue is flushed every flush_hint packets.
- */
-
-extern int pfq_send_to(pfq_t *q, const void *ptr, size_t len, int ifindex, int queue, size_t flush_hint, unsigned int copies);
+extern int pfq_send_raw(pfq_t *q, const void *ptr, size_t len, int ifindex, int qindex, uint64_t nsec, size_t fhint, unsigned int copies, int async, int queue);
 
 
 /*! Store the packet and transmit the packets in the queue. */
 /*!
- * The queue is flushed every flush_hint packets.
+ * The queue is flushed every fhint packets.
  * Requires the socket is bound for transmission to a net device and queue.
  * See 'pfq_bind_tx'.
  */
 
 static inline
-int pfq_send(pfq_t *q, const void *ptr, size_t len, size_t flush_hint, unsigned int copies)
+int pfq_send(pfq_t *q, const void *ptr, size_t len, size_t fhint, unsigned int copies)
 {
-	return pfq_send_to(q, ptr, len, 0, 0, flush_hint, copies);
+	return pfq_send_raw(q, ptr, len, 0, 0, 0, fhint, copies, 0, Q_ANY_QUEUE);
 }
+
+
+/*! Store the packet and transmit the packets in the queue. */
+/*!
+ * The queue is flushed every fhint packets.
+ */
+
+static inline
+int pfq_send_to(pfq_t *q, const void *ptr, size_t len, int ifindex, int qindex, size_t fhint, unsigned int copies)
+{
+	return pfq_send_raw(q, ptr, len, ifindex, qindex, 0, fhint, copies, 0, Q_ANY_QUEUE);
+}
+
 
 /*! Transmit the packet asynchronously. */
 /*!
@@ -607,7 +613,11 @@ int pfq_send(pfq_t *q, const void *ptr, size_t len, size_t flush_hint, unsigned 
  * See 'pfq_bind_tx'.
  */
 
-extern int pfq_send_async(pfq_t *q, const void *ptr, size_t len, unsigned int copies);
+static inline
+int pfq_send_async(pfq_t *q, const void *ptr, size_t len, unsigned int copies)
+{
+	return pfq_send_raw(q, ptr, len, 0, 0, 0, 0, copies, 1, Q_ANY_QUEUE);
+}
 
 
 /*! Transmit the packet asynchronously. */
@@ -617,7 +627,12 @@ extern int pfq_send_async(pfq_t *q, const void *ptr, size_t len, unsigned int co
  * See 'pfq_bind_tx'.
  */
 
-extern int pfq_send_at(pfq_t *q, const void *ptr, size_t len, struct timespec *ts, unsigned int copies);
+static inline
+int pfq_send_at(pfq_t *q, const void *ptr, size_t len, struct timespec *ts, unsigned int copies)
+{
+	uint64_t ns = (uint64_t)(ts->tv_sec)*1000000000ull + (uint64_t)ts->tv_nsec;
+        return pfq_send_raw(q, ptr, len, 0, 0, ns, 0, copies, 1, Q_ANY_QUEUE);
+}
 
 
 #endif /* PFQ_H */

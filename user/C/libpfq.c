@@ -1070,53 +1070,74 @@ pfq_unbind_tx(pfq_t *q)
 
 
 int
-pfq_send_deferred(pfq_t *q, const void *buf, size_t len, uint64_t nsec, unsigned int copies, int queue)
+pfq_send_raw(pfq_t *q, const void *buf, size_t len, int ifindex, int qindex, uint64_t nsec,
+	     size_t fhint, unsigned int copies, int async, int queue)
 {
         struct pfq_shared_queue *sh_queue = (struct pfq_shared_queue *)(q->shm_addr);
-        struct pfq_tx_queue *atx;
-        unsigned int tss, index;
+        struct pfq_tx_queue *tx;
+        unsigned int index;
         size_t slot_size;
         char *base_addr;
+        ptrdiff_t offset;
+        int tss;
 
 	if (unlikely(q->shm_addr == NULL))
 		return Q_ERROR(q, "PFQ: send_deferred: socket not enabled");
 
-        if (unlikely(q->tx_num_async == 0))
-                return Q_ERROR(q, "PFQ: send_deferred: socket not bound to async thread");
+	if (async) {
+		if (unlikely(q->tx_num_async == 0))
+			return Q_ERROR(q, "PFQ: send_deferred: socket not bound to async thread");
 
-	tss = pfq_fold((queue == Q_ANY_QUEUE ? pfq_symmetric_hash(buf) : (unsigned int)queue), (unsigned int)q->tx_num_async);
+		tss = (int)pfq_fold((queue == Q_ANY_QUEUE ? pfq_symmetric_hash(buf) : (unsigned int)queue),
+										      (unsigned int)q->tx_num_async);
 
-        atx = (struct pfq_tx_queue *)&sh_queue->tx_async[tss];
+		tx = (struct pfq_tx_queue *)&sh_queue->tx_async[tss];
+	}
+	else {
+		tss = -1;
+		tx = (struct pfq_tx_queue *)&sh_queue->tx;
+	}
 
-	index = __atomic_load_n(&atx->cons, __ATOMIC_RELAXED);
-	if (index != __atomic_load_n(&atx->prod, __ATOMIC_RELAXED))
+	index = __atomic_load_n(&tx->cons.index, __ATOMIC_RELAXED);
+	if (index != __atomic_load_n(&tx->prod.index, __ATOMIC_RELAXED))
 	{
-		__atomic_store_n(&atx->prod, index, __ATOMIC_RELAXED);
+                __atomic_store_n(&tx->prod.index, index, __ATOMIC_RELAXED);
+                __atomic_store_n((index & 1) ? &tx->prod.off1 : &tx->prod.off0, 0, __ATOMIC_RELAXED);
 	}
 
-	base_addr = q->tx_queue_addr + q->tx_queue_size * (2 * (1+tss) + (index & 1));
 
-	if (index != atx->index) {
-		atx->index = index;
-		atx->ptr = base_addr;
-	}
+	base_addr = q->tx_queue_addr + q->tx_queue_size * (size_t)(2 * (1+tss) + (index & 1 ? 1 : 0));
+
+        offset = __atomic_load_n((index & 1) ? &tx->prod.off1 : &tx->prod.off0, __ATOMIC_RELAXED);
 
 	len = min(len, q->tx_slot_size - sizeof(struct pfq_pkthdr));
 
 	slot_size = sizeof(struct pfq_pkthdr) + ALIGN(len, 8);
 
-	if (((size_t)(atx->ptr - base_addr) + slot_size + sizeof(struct pfq_pkthdr)) < q->tx_queue_size)
+	if (((size_t)(offset) + slot_size) < q->tx_queue_size)
 	{
-		struct pfq_pkthdr *hdr = (struct pfq_pkthdr *)atx->ptr;
+		struct pfq_pkthdr *hdr = (struct pfq_pkthdr *)(base_addr + offset);
 		hdr->tstamp.tv64 = nsec;
 		hdr->caplen = (uint16_t)len;
 		hdr->data.copies = copies;
-                hdr->ifindex = 0;
+                hdr->ifindex = ifindex;
+                hdr->queue = (uint8_t)qindex;
 		memcpy(hdr+1, buf, len);
 
-		atx->ptr += slot_size;
-		((struct pfq_pkthdr *)atx->ptr)->len = 0;
+                __atomic_store_n((index & 1) ? &tx->prod.off1 : &tx->prod.off0,
+			offset + (ptrdiff_t)slot_size, __ATOMIC_RELEASE);
+
+		if (++q->tx_attempt == fhint) {
+			q->tx_attempt = 0;
+			pfq_tx_queue(q, 0);
+		}
+
 		return Q_VALUE(q, (int)len);
+	}
+
+	if (++q->tx_attempt == fhint) {
+		q->tx_attempt = 0;
+		pfq_tx_queue(q, 0);
 	}
 
 	return Q_VALUE(q, -1);
@@ -1129,76 +1150,6 @@ pfq_tx_queue(pfq_t *q, int queue)
         if (setsockopt(q->fd, PF_Q, Q_SO_TX_QUEUE, &queue, sizeof(queue)) == -1)
 		return Q_ERROR(q, "PFQ: Tx queue");
         return Q_OK(q);
-}
-
-
-int
-pfq_send_to(pfq_t *q, const void *buf, size_t len, int ifindex, int queue, size_t flush_hint, unsigned int copies)
-{
-        struct pfq_tx_queue *tx;
-        size_t slot_size;
-        char *base_addr;
-
-	if (unlikely(q->shm_addr == NULL))
-		return Q_ERROR(q, "PFQ: send_deferred: socket not enabled");
-
-        tx = &((struct pfq_shared_queue *)q->shm_addr)->tx;
-
-	base_addr = q->tx_queue_addr;
-
-	if (tx->ptr == NULL)
-		tx->ptr = base_addr;
-
-	len = min(len, q->tx_slot_size - sizeof(struct pfq_pkthdr));
-
-	slot_size = sizeof(struct pfq_pkthdr) + ALIGN(len, 8);
-
-	if (((size_t)(tx->ptr - base_addr) + slot_size + sizeof(struct pfq_pkthdr)) < q->tx_queue_size)
-	{
-		struct pfq_pkthdr *hdr = (struct pfq_pkthdr *)tx->ptr;
-		hdr->tstamp.tv64 = 0;
-		hdr->ifindex     = ifindex;
-		hdr->queue       = (uint8_t)queue;
-		hdr->caplen      = (uint16_t)len;
-		hdr->data.copies = copies;
-
-		memcpy(hdr+1, buf, len);
-
-		tx->ptr += slot_size;
-		((struct pfq_pkthdr *)tx->ptr)->len = 0;
-
-		if (++q->tx_attempt == flush_hint) {
-			q->tx_attempt = 0;
-			tx->ptr = NULL;
-			pfq_tx_queue(q, 0);
-		}
-
-		return Q_VALUE(q, (int)len);
-	}
-
-	if (++q->tx_attempt == flush_hint) {
-		q->tx_attempt = 0;
-		tx->ptr = NULL;
-		pfq_tx_queue(q, 0);
-	}
-
-	return Q_VALUE(q, -1);
-}
-
-
-int
-pfq_send_async(pfq_t *q, const void *ptr, size_t len, unsigned int copies)
-{
-        return pfq_send_deferred(q, ptr, len, 0, copies, Q_ANY_QUEUE);
-}
-
-
-int
-pfq_send_at(pfq_t *q, const void *ptr, size_t len, struct timespec *ts, unsigned int
-	    copies)
-{
-	uint64_t ns = (uint64_t)(ts->tv_sec)*1000000000ull + (uint64_t)ts->tv_nsec;
-        return pfq_send_deferred(q, ptr, len, ns, copies, Q_ANY_QUEUE);
 }
 
 
