@@ -1322,95 +1322,46 @@ namespace pfq {
 
         //! Store the packet and transmit the packets in the queue.
         /*!
-         * The queue is flushed every flush_hint packets.
-         */
-
-        bool
-        send_to(const_buffer pkt, int ifindex, int queue, size_t flush_hint = 1, unsigned int copies = 1)
-        {
-            if (unlikely(!data_->shm_addr))
-                throw pfq_error("PFQ: send: socket not enabled");
-
-            auto tx = &static_cast<struct pfq_shared_queue *>(data_->shm_addr)->tx;
-
-            // get base address of the socket Tx queue:
-            //
-	        char * base_addr = static_cast<char *>(data_->tx_queue_addr);
-
-            if (tx->ptr == nullptr)
-                tx->ptr = base_addr;
-
-            // cut the packet to maxlen:
-            //
-            auto len = std::min(pkt.second, data_->tx_slot_size - sizeof(struct pfq_pkthdr));
-
-            // compute the current slot_size:
-            //
-            auto slot_size = sizeof(struct pfq_pkthdr) + align<8>(len);
-
-            auto flush_and_ret = [&](int n, bool value)
-            {
-                if (++data_->tx_attempt == flush_hint)
-                {
-                    data_->tx_attempt = 0;
-                    tx->ptr = nullptr;
-                    this->tx_queue(n);
-                }
-                return value;
-            };
-
-            // ensure there's enough space for the current slot_size + the next header:
-            //
-            if ((static_cast<size_t>(tx->ptr - base_addr) + slot_size + sizeof(struct pfq_pkthdr)) < data_->tx_queue_size)
-            {
-                auto hdr = (struct pfq_pkthdr *)tx->ptr;
-                hdr->tstamp.tv64 = 0;
-                hdr->ifindex     = ifindex;
-                hdr->queue       = static_cast<uint8_t>(queue);
-                hdr->caplen      = static_cast<uint16_t>(len);
-                hdr->data.copies = copies;
-
-                memcpy(hdr+1, pkt.first, len);
-
-                reinterpret_cast<char *&>(tx->ptr) += slot_size;
-                reinterpret_cast<struct pfq_pkthdr *>(tx->ptr)->len = 0;
-                return flush_and_ret(0, true);
-            }
-
-            return flush_and_ret(0, false);
-        }
-
-        //! Store the packet and transmit the packets in the queue.
-        /*!
-         * The queue is flushed every flush_hint packets.
+         * The queue is flushed every fhint packets.
          * Requires the socket is bound for transmission to a net device and queue.
          * See 'bind_tx'.
          */
 
         bool
-        send(const_buffer pkt, size_t flush_hint = 1, unsigned int copies = 1)
+        send(const_buffer pkt, size_t fhint = 1, unsigned int copies = 1)
         {
-            return send_to(pkt, 0, 0, flush_hint, copies);
+            return send_raw(pkt, 0, 0, 0, fhint, copies, false);
         }
+
+        //! Store the packet and transmit the packets in the queue.
+        /*!
+         * The queue is flushed every fhint packets.
+         */
+
+        bool
+        send_to(const_buffer pkt, int ifindex, int queue, size_t fhint = 1, unsigned int copies = 1)
+        {
+            return send_raw(pkt, ifindex, queue, 0, fhint, copies, false);
+        }
+
 
         //! Transmit the packet asynchronously.
         /*!
-         * The transmission is handled by kernel.
-         * Requires the socket is bound for transmission to one (or multiple) kernel threads.
+         * Requires the socket is bound for transmission to one (or multiple) PFQ kernel threads.
          * See 'bind_tx'.
          */
 
         bool
         send_async(const_buffer pkt, unsigned int copies = 1)
         {
-            return send_deferred(pkt, 0, copies);
+            return send_raw(pkt, 0, 0, 0, 0, copies, true, any_queue);
         }
 
         /*! Transmit the packet asynchronously. */
         /*!
          * The transmission takes place asynchronously at the given timespec time, specified
          * as a generic chrono::time_point.
-         * Requires the socket is bound for transmission to one (or multiple) kernel threads.
+         * Requires the socket is bound for transmission to one (or multiple) PFQ kernel threads.
          * See 'bind_tx'.
          */
 
@@ -1419,44 +1370,63 @@ namespace pfq {
         send_at(const_buffer pkt, std::chrono::time_point<Clock, Duration> const &tp, unsigned int copies = 1)
         {
             auto ns = std::chrono::duration_cast<std::chrono::nanoseconds>(tp.time_since_epoch()).count();
-            return send_deferred(pkt, static_cast<uint64_t>(ns), copies);
+            return send_raw(pkt, 0, 0, static_cast<uint64_t>(ns), 0, copies, true, any_queue);
         }
 
         //! Schedule packet transmission.
         /*!
-         * The packet is copied into a Tx queue (using a TSS symmetric hash if any_queue is specified)
-         * and transmitted at the given timestamp by a Tx kernel thread.
+         * The packet is copied into a Tx queue. If 'async' is true and 'queue' is set to any_queue, a TSS symmetric hash
+         * function is used to select the Tx queue and the packet is transmitted at the given timestamp by a Tx kernel thread.
+         * Otherwise the queue is flushed every 'fhint' packets.
          * A timestamp of 0 nanoseconds means immediate transmission.
          */
 
         bool
-        send_deferred(const_buffer pkt, uint64_t nsec, unsigned int copies, int queue = any_queue)
+        send_raw(const_buffer pkt, int ifindex, int qindex, uint64_t nsec, size_t fhint, unsigned int copies, bool async = false, int queue = any_queue)
         {
             if (unlikely(!data_->shm_addr))
-                throw pfq_error("PFQ: send_deferred: socket not enabled");
+                throw pfq_error("PFQ: send_to: socket not enabled");
 
-            if (unlikely(data_->tx_num_async == 0))
-                throw pfq_error("PFQ: send_deferred: socket not bound to async thread");
+            int tss;
 
-            const uint32_t tss = fold(queue == any_queue ? symmetric_hash(pkt.first) : static_cast<uint32_t>(queue), static_cast<uint32_t>(data_->tx_num_async));
+            auto tx = [&] {
 
-            auto atx = &static_cast<struct pfq_shared_queue *>(data_->shm_addr)->tx_async[tss];
+                if (async) {
+                    if (unlikely(data_->tx_num_async == 0))
+                        throw pfq_error("PFQ: send_to: socket not bound to async threads");
+                    tss = static_cast<int>(fold(queue == any_queue ? symmetric_hash(pkt.first) : static_cast<uint32_t>(queue), static_cast<uint32_t>(data_->tx_num_async)));
+                    return &static_cast<struct pfq_shared_queue *>(data_->shm_addr)->tx_async[tss];
+                }
 
-            auto index = __atomic_load_n(&atx->cons, __ATOMIC_RELAXED);
-            if (index != __atomic_load_n(&atx->prod, __ATOMIC_RELAXED))
+                tss = -1;
+                return &static_cast<struct pfq_shared_queue *>(data_->shm_addr)->tx;
+            }();
+
+            auto flush_and_ret = [&](bool value)
             {
-                __atomic_store_n(&atx->prod, index, __ATOMIC_RELAXED);
-            }
+                if (!async && ++data_->tx_attempt == fhint)
+                {
+                    data_->tx_attempt = 0;
+                    this->tx_queue(0);
+                }
+                return value;
+            };
 
-            // get base address of the soft Tx queue:
+            // swap the queue...
             //
-	        char * base_addr = static_cast<char *>(data_->tx_queue_addr) + data_->tx_queue_size * (2 * (1+tss) + (index & 1));
 
-            if (index != atx->index)
+            auto index = __atomic_load_n(&tx->cons.index, __ATOMIC_RELAXED);
+            if (index != __atomic_load_n(&tx->prod.index, __ATOMIC_RELAXED))
             {
-                    atx->index = index;
-                    atx->ptr = base_addr;
+                __atomic_store_n(&tx->prod.index, index, __ATOMIC_RELAXED);
+                __atomic_store_n((index & 1) ? &tx->prod.off1 : &tx->prod.off0, 0, __ATOMIC_RELAXED);
             }
+
+            char * base_addr = static_cast<char *>(data_->tx_queue_addr) + data_->tx_queue_size * static_cast<size_t>(2 * (1+tss) + (index & 1 ? 1 : 0));
+
+            // get the current offset...
+            //
+            auto offset = __atomic_load_n((index & 1) ? &tx->prod.off1 : &tx->prod.off0, __ATOMIC_RELAXED);
 
             // cut the packet to maxlen:
             //
@@ -1468,21 +1438,21 @@ namespace pfq {
 
             // ensure there's enough space for the current slot_size + the next header:
             //
-            if ((static_cast<size_t>(atx->ptr - base_addr) + slot_size + sizeof(struct pfq_pkthdr)) < data_->tx_queue_size)
+            if ((static_cast<size_t>(offset) + slot_size) < data_->tx_queue_size)
             {
-                auto hdr = (struct pfq_pkthdr *)atx->ptr;
+                auto hdr = (struct pfq_pkthdr *)(base_addr + offset);
                 hdr->tstamp.tv64 = nsec;
-                hdr->caplen = static_cast<uint16_t>(len);
+                hdr->caplen      = static_cast<uint16_t>(len);
                 hdr->data.copies = copies;
-                hdr->ifindex = 0;
+                hdr->ifindex     = ifindex;
+                hdr->queue       = static_cast<uint8_t>(qindex);
                 memcpy(hdr+1, pkt.first, len);
 
-                reinterpret_cast<char *&>(atx->ptr) += slot_size;
-                reinterpret_cast<struct pfq_pkthdr *>(atx->ptr)->len = 0;
-                return true;
+                __atomic_store_n((index & 1) ? &tx->prod.off1 : &tx->prod.off0, offset + static_cast<ptrdiff_t>(slot_size), __ATOMIC_RELEASE);
+                return flush_and_ret(true);
             }
 
-            return false;
+            return flush_and_ret(false);
         }
 
         //! Transmit the packets in the queue.
