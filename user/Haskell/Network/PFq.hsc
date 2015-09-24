@@ -1033,11 +1033,20 @@ txQueue hdl queue =
 send :: Ptr PFqTag
      -> C.ByteString  -- ^ bytes of packet
      -> Int           -- ^ copies
-     -> Int           -- ^ flush_hint
+     -> Int           -- ^ fhint
      -> IO Bool
-send hdl xs copies flush_hint =
+send hdl xs copies fhint =
     unsafeUseAsCStringLen xs $ \(p, l) ->
-        liftM (> 0) $ pfq_send_to hdl p (fromIntegral l) 0 0 (fromIntegral flush_hint) (fromIntegral copies)
+        liftM (> 0) $ pfq_send_raw hdl
+                        p
+                        (fromIntegral l)
+                        0
+                        0
+                        0
+                        (fromIntegral fhint)
+                        (fromIntegral copies)
+                        0
+                        (fromIntegral $ getConstant any_queue)
 
 
 -- |Store the packet and transmit the packets in the queue.
@@ -1047,13 +1056,22 @@ send hdl xs copies flush_hint =
 sendTo :: Ptr PFqTag
        -> C.ByteString  -- ^ bytes of packet
        -> Int           -- ^ ifindex
-       -> Int           -- ^ queue
+       -> Int           -- ^ qindex
        -> Int           -- ^ copies
-       -> Int           -- ^ flush_hint
+       -> Int           -- ^ fhint
        -> IO Bool
-sendTo hdl xs ifindex queue copies flush_hint =
+sendTo hdl xs ifindex qindex copies fhint =
     unsafeUseAsCStringLen xs $ \(p, l) ->
-    liftM (> 0) $ pfq_send_to hdl p (fromIntegral l) (fromIntegral ifindex) (fromIntegral queue) (fromIntegral flush_hint) (fromIntegral copies)
+    liftM (> 0) $ pfq_send_raw hdl
+                    p
+                    (fromIntegral l)
+                    (fromIntegral ifindex)
+                    (fromIntegral qindex)
+                    0
+                    (fromIntegral fhint)
+                    (fromIntegral copies)
+                    0
+                    (fromIntegral $ getConstant any_queue)
 
 
 -- |Store the packet and transmit the packets in the queue, asynchronously.
@@ -1067,7 +1085,16 @@ sendAsync :: Ptr PFqTag
           -> IO Bool
 sendAsync hdl xs copies =
     unsafeUseAsCStringLen xs $ \(p, l) ->
-        liftM (> 0) $ pfq_send_async hdl p (fromIntegral l) (fromIntegral copies)
+        liftM (> 0) $ pfq_send_raw hdl
+                        p
+                        (fromIntegral l)
+                        0
+                        0
+                        0
+                        0
+                        (fromIntegral copies)
+                        1
+                        (fromIntegral $ getConstant any_queue)
 
 
 -- |Store the packet and transmit it.
@@ -1081,10 +1108,15 @@ sendAt :: Ptr PFqTag
        -> IO Bool
 sendAt hdl xs ts copies =
     unsafeUseAsCStringLen xs $ \(p, l) ->
-        liftM (> 0) $ pfq_send_deferred hdl p
+        liftM (> 0) $ pfq_send_raw hdl
+                        p
                         (fromIntegral l)
+                        0
+                        0
                         (fromIntegral (fromIntegral (sec ts) * (1000000000 :: Integer) + fromIntegral (nsec ts)))
+                        0
                         (fromIntegral copies)
+                        1
                         (fromIntegral $ getConstant any_queue)
 
 
@@ -1155,10 +1187,7 @@ foreign import ccall unsafe pfq_vlan_reset_filter   :: Ptr PFqTag -> CInt -> CIn
 foreign import ccall unsafe pfq_bind_tx             :: Ptr PFqTag -> CString -> CInt -> CInt -> IO CInt
 foreign import ccall unsafe pfq_unbind_tx           :: Ptr PFqTag -> IO CInt
 
-foreign import ccall unsafe pfq_send                :: Ptr PFqTag -> Ptr CChar -> CSize -> CSize -> CUInt -> IO CInt
-foreign import ccall unsafe pfq_send_async          :: Ptr PFqTag -> Ptr CChar -> CSize -> CUInt -> IO CInt
-foreign import ccall unsafe pfq_send_to             :: Ptr PFqTag -> Ptr CChar -> CSize -> CInt -> CInt -> CSize -> CUInt -> IO CInt
-foreign import ccall unsafe pfq_send_deferred       :: Ptr PFqTag -> Ptr CChar -> CSize -> CULLong -> CUInt -> CInt -> IO CInt
+foreign import ccall unsafe pfq_send_raw            :: Ptr PFqTag -> Ptr CChar -> CSize -> CInt -> CInt -> CULLong -> CSize -> CUInt -> CInt -> CInt -> IO CInt
 
 foreign import ccall unsafe pfq_tx_queue            :: Ptr PFqTag -> CInt -> IO CInt
 
