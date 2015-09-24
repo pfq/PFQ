@@ -264,7 +264,9 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 			pfq_hard_tx_lock(&dq);
 		}
 
-		if (unlikely(dq.dev == NULL)) { /* device not existing */
+		/* check device */
+
+		if (unlikely(dq.dev == NULL)) {
 			if (printk_ratelimit())
 				printk(KERN_INFO "[PFQ] dev: ifindex=%d not found!\n", PFQ_NETQ_IFINDEX(current_qid));
 			continue;
@@ -280,11 +282,12 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 			local_bh_enable();
 
 			now = wait_until(hdr->tstamp.tv64, stop, &intr);
-			if (intr)
-				goto exit;
 
 			local_bh_disable();
 			pfq_hard_tx_lock(&dq);
+
+			if (intr)
+				goto exit;
 		}
 
 		/* allocate a socket buffer */
@@ -321,23 +324,18 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 		do {
 			skb_get(skb);
 
-			xmit_more = (++more == xmit_batch_len || (last_tx && (copies == 1))) ? (more = 0, false) : true;
+			// xmit_more = (++more == xmit_batch_len || (last_tx && (copies == 1))) ? (more = 0, false) : true;
+
+			xmit_more = ++more == xmit_batch_len ? (more = 0, false) : true;
 
 			if (__pfq_xmit(skb, dq.dev, dq.queue, xmit_more) < 0) {
 
-				pfq_hard_tx_unlock(&dq);
-				local_bh_enable();
-
-				more = xmit_batch_len - 1;
-				pfq_relax();
-
-				if (giveup_tx_process(stop)) {
+				if (giveup_tx_process(stop) || netif_xmit_frozen_or_drv_stopped(dq.queue)) {
 					pfq_kfree_skb_pool(skb, skb_pool);
 					goto exit;
 				}
 
-				local_bh_disable();
-				pfq_hard_tx_lock(&dq);
+				more = xmit_batch_len - 1;
 			}
 			else {
 				copies--;
@@ -357,6 +355,7 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 		pfq_kfree_skb_pool(skb, skb_pool);
 	}
 
+exit:
 	/* unlock the current locked queue */
 
 	pfq_hard_tx_unlock(&dq);
@@ -370,7 +369,6 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 
 	txm->cons.off = prod_off;
 
-exit:
 	/* count the packets left in the shared queue */
 
 	for_each_sk_tx_mbuff(hdr, end)

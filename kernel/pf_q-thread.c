@@ -32,6 +32,7 @@
 #include <linux/version.h>
 #include <linux/kthread.h>
 #include <linux/mutex.h>
+#include <linux/jiffies.h>
 
 #include <pragma/diagnostic_pop>
 
@@ -53,6 +54,7 @@ static struct pfq_thread_tx_data pfq_thread_tx_pool[Q_MAX_CPU] =
 	[0 ... Q_MAX_CPU-1] = {
 		.id	= -1,
 		.cpu    = -1,
+		.node   = -1,
 		.task	= NULL,
 		.sock   = {NULL, NULL, NULL, NULL},
 		.sock_queue = {{-1}, {-1}, {-1}, {-1}}
@@ -60,17 +62,36 @@ static struct pfq_thread_tx_data pfq_thread_tx_pool[Q_MAX_CPU] =
 };
 
 
+
+void
+pfq_tx_thread_dump(struct pfq_thread_tx_data const *data)
+{
+	char msg[256];
+	int n, off = 0;
+	off += sprintf(msg + off, "Tx[%d] cpu=%d node=%d ", data->id, data->cpu, data->node);
+	for(n = 0; n < Q_MAX_TX_QUEUES; ++n)
+	{
+		int sock_queue = atomic_read(&data->sock_queue[n]);
+		if (sock_queue != -1)
+			off += sprintf(msg + off, "(sock:%d,queue:%d) ", data->sock[n]->id, sock_queue);
+	}
+
+	printk(KERN_INFO "[PFQ] %s...(PING!)\n", msg);
+}
+
+
 static int
 pfq_tx_thread(void *_data)
 {
 	struct pfq_thread_tx_data *data = (struct pfq_thread_tx_data *)_data;
+        int now = 0;
 
 	if (data == NULL) {
 		printk(KERN_INFO "[PFQ] Tx thread data error!\n");
 		return -EPERM;
 	}
 
-	printk(KERN_INFO "[PFQ] Tx[%d] thread-NG started on cpu %d.\n", data->id, data->cpu);
+	printk(KERN_INFO "[PFQ] Tx[%d] thread started on cpu %d.\n", data->id, data->cpu);
 
 	__set_current_state(TASK_RUNNING);
 
@@ -94,36 +115,43 @@ pfq_tx_thread(void *_data)
 			}
 		}
 
-		if (!reg)
-			msleep(1);
-
                 if (kthread_should_stop())
                         break;
 
 		pfq_relax();
+
+		if (now != jiffies/(HZ*30)) {
+			now = jiffies/(HZ*30);
+			pfq_tx_thread_dump(data);
+		}
+
+		if (!reg) {
+			msleep(1);
+		}
 	}
 
-        printk(KERN_INFO "[PFQ] Tx[%d] thread-NG stopped on cpu %d.\n", data->id, data->cpu);
+        printk(KERN_INFO "[PFQ] Tx[%d] thread stopped on cpu %d.\n", data->id, data->cpu);
 	data->task = NULL;
         return 0;
 }
 
 
 int
-pfq_bind_tx_thread(int tx_index, struct pfq_sock *sock, int sock_queue)
+pfq_bind_tx_thread(int tid, struct pfq_sock *sock, int sock_queue)
 {
-	struct pfq_thread_tx_data *data;
+	struct pfq_thread_tx_data *thread_data;
 	int n;
 
-	if (tx_index >= tx_thread_nr)
+	if (tid >= tx_thread_nr)
 		return -EBUSY;
 
-	data = &pfq_thread_tx_pool[tx_index];
+	thread_data = &pfq_thread_tx_pool[tid];
+
 	mutex_lock(&pfq_thread_tx_pool_lock);
 
 	for(n = 0; n < Q_MAX_TX_QUEUES; n++)
 	{
-		if (atomic_read(&data->sock_queue[n]) == -1)
+		if (atomic_read(&thread_data->sock_queue[n]) == -1)
 			break;
 	}
 
@@ -132,11 +160,12 @@ pfq_bind_tx_thread(int tx_index, struct pfq_sock *sock, int sock_queue)
 		return -EINVAL;
 	}
 
-	data->sock[n] = sock;
+	thread_data->sock[n] = sock;
 	smp_wmb();
-	atomic_set(&data->sock_queue[n], sock_queue);
+	atomic_set(&thread_data->sock_queue[n], sock_queue);
 
         mutex_unlock(&pfq_thread_tx_pool_lock);
+        printk(KERN_INFO "[PFQ] Tx[%d] thread bound to sock_id = %d, queue = %d...\n", tid, sock->id, sock_queue);
         return 0;
 }
 
