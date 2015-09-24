@@ -195,14 +195,26 @@ struct pfq_rx_queue
 } __attribute__((aligned(64)));
 
 
+
 struct pfq_tx_queue
 {
-        unsigned int		prod;
-        unsigned int            cons;
-        size_t			size;	    /* queue size in bytes */
-	char *			ptr;	    /* reserved for user-space */
-	unsigned int		index;	    /* reserved for user-space */
-	int			swap;	    /* swap pending */
+        size_t				size;	    /* queue size in bytes */
+
+	struct
+	{
+		unsigned int		index;
+		ptrdiff_t		off0;
+		ptrdiff_t	        off1;
+
+	} prod __attribute__((aligned(64)));
+
+	struct
+	{
+		unsigned int		index;
+		ptrdiff_t		off;
+
+	} cons __attribute__((aligned(64)));
+
 } __attribute__((aligned(64)));
 
 

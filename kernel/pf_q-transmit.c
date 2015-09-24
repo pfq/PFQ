@@ -116,24 +116,16 @@ ktime_t wait_until(uint64_t ts, atomic_t const *stop, bool *intr)
 
 
 static inline
-int swap_sk_tx_queue(struct pfq_tx_queue *txm, int *index)
+ptrdiff_t swap_sk_tx_queue(struct pfq_tx_queue *txm, int *prod)
 {
-	if (txm->swap) {
-		int prod = __atomic_load_n(&txm->prod, __ATOMIC_RELAXED);
-		if (prod == __atomic_load_n(&txm->cons, __ATOMIC_RELAXED)) {
-			txm->swap = false;
-			*index = prod;
-			return 0;
-		}
-		return -1;
-	}
-	else {
-		__atomic_add_fetch(&txm->cons, 1, __ATOMIC_RELAXED);
-		txm->swap = true;
-		return -1;
+	*prod = __atomic_load_n(&txm->prod.index, __ATOMIC_RELAXED);
+	if (*prod == __atomic_load_n(&txm->cons.index, __ATOMIC_RELAXED))
+	{
+		__atomic_store_n(&txm->cons.index, *prod+1, __ATOMIC_RELAXED);
+		txm->cons.off = 0;
 	}
 
-	return 0;
+	return __atomic_load_n((*prod & 1) ? &txm->prod.off1 : &txm->prod.off0, __ATOMIC_ACQUIRE);
 }
 
 
@@ -164,6 +156,7 @@ bool is_last_tx_pkt(struct pfq_pkthdr *hdr)
         return next->caplen == 0;
 }
 
+
 static inline
 dev_queue_id_t
 get_next_dq(struct pfq_pkthdr *hdr, dev_queue_id_t const default_qid)
@@ -184,9 +177,11 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 	struct net_dev_queue dq;
 	struct pfq_pkthdr *hdr;
 	char *begin, *end;
+	ptrdiff_t prod_off;
 	ktime_t now;
 
-	int more = 0, total_sent = 0, disc = 0, swap_idx = -1;
+	int more = 0, total_sent = 0, disc = 0, prod_idx;
+
 	const dev_queue_id_t default_qid = PFQ_NETQ_ID(txinfo->def_ifindex, txinfo->def_queue);
 	dev_queue_id_t current_qid;
 	struct pfq_tx_queue *txm;
@@ -194,10 +189,8 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 	/* get the Tx queue */
 
 	txm = pfq_get_tx_queue(&so->opt, sock_queue);
-	if (txm == NULL) {
-		/* socket not enabled... */
-		return 0;
-	}
+	if (txm == NULL)
+		return 0; /* socket not enabled... */
 
 	/* setup default device */
 
@@ -205,7 +198,8 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 	default_dev.dev = txinfo->def_dev;
 	default_dev.net = sock_net(&so->sk);
 
-	/* swap the soft async Tx queue */
+
+	/* enable skb_pool for Tx threads */
 
 	if (cpu != Q_NO_KTHREAD)
 	{
@@ -213,31 +207,23 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 		struct pfq_percpu_pool *pool = this_cpu_ptr(percpu_pool);
 		if (likely(atomic_read(&pool->enable)))
 			skb_pool = &pool->tx_pool;
-
-		/* swap queue */
-		if ((swap_sk_tx_queue(txm, &swap_idx)) < 0) {
-			/* swap-pending request... */
-			return 0;
-		}
 	}
 	else {
 		cpu = smp_processor_id();
 	}
 
-	/* increment the index of the current queue */
+	/* initialize boundaries for the transmit queue */
 
-	swap_idx++;
+	prod_off = swap_sk_tx_queue(txm, &prod_idx);
+	begin    = txinfo->base_addr + (prod_idx & 1) * txm->size + txm->cons.off;
+	end      = txinfo->base_addr + (prod_idx & 1) * txm->size + prod_off;
 
-	/* initialize boundaries of the transmit queue */
-
-	begin = txinfo->base_addr + (swap_idx & 1) * txm->size;
-	end = begin + txm->size;
 
 	/* get the default dev_queue, and lock it */
 
 	current_qid = default_qid;
 
-	/* the pointers to netdev and queue */
+	/* get the pointers to netdev and queue */
 
 	dev_queue_get(sock_net(&so->sk), &default_dev, current_qid , &dq);
 
@@ -246,16 +232,17 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 	local_bh_disable();
 	pfq_hard_tx_lock(&dq);
 
-	/* traverse the queue */
+	/* transmit the queue */
 
 	now = ktime_get_real();
-
 	hdr = (struct pfq_pkthdr *)begin;
+
 	for_each_sk_tx_mbuff(hdr, end)
 	{
 		unsigned int copies, skb_copies;
 		struct sk_buff *skb;
 		size_t len;
+
 		bool xmit_more, last_tx = is_last_tx_pkt(hdr);
 		dev_queue_id_t next_qid = get_next_dq(hdr, default_qid);
 
@@ -326,6 +313,7 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 
 		skb_copy_to_linear_data(skb, hdr+1, len < 64 ? 64 : len);
 
+
 		/* transmit the packet */
 
 		skb_copies = copies = dev_tx_skb_copies(dq.dev, hdr->data.copies);
@@ -369,10 +357,19 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 		pfq_kfree_skb_pool(skb, skb_pool);
 	}
 
+	/* unlock the current locked queue */
+
 	pfq_hard_tx_unlock(&dq);
 	local_bh_enable();
 
+	/* release the device */
+
 	dev_queue_put(sock_net(&so->sk), &default_dev, &dq);
+
+	/* update the local consumer offset */
+
+	txm->cons.off = prod_off;
+
 exit:
 	/* count the packets left in the shared queue */
 
@@ -385,11 +382,6 @@ exit:
 
 	__sparse_add(&so->stats.disc, disc, cpu);
 	__sparse_add(&global_stats.disc, disc, cpu);
-
-	/* clear the queue */
-
-	((struct pfq_pkthdr *)begin)->len = 0;
-
 
 	return total_sent;
 }

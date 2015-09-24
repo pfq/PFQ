@@ -86,12 +86,13 @@ pfq_shared_queue_enable(struct pfq_sock *so, unsigned long user_addr)
 
 		/* initialize TX queues */
 
-		mapped_queue->tx.prod  = 0;
-		mapped_queue->tx.cons  = 0;
 		mapped_queue->tx.size  = pfq_spsc_queue_mem(so)/2;
-		mapped_queue->tx.ptr   = NULL;
-		mapped_queue->tx.index = -1;
-		mapped_queue->tx.swap  = false;
+
+		mapped_queue->tx.prod.index = 0;
+		mapped_queue->tx.prod.off0  = 0;
+		mapped_queue->tx.prod.off1  = 0;
+		mapped_queue->tx.cons.index = 0;
+		mapped_queue->tx.cons.off   = 0;
 
 		so->opt.txq.base_addr = so->shmem.addr + sizeof(struct pfq_shared_queue) + pfq_mpsc_queue_mem(so);
 
@@ -100,12 +101,13 @@ pfq_shared_queue_enable(struct pfq_sock *so, unsigned long user_addr)
 
 		for(n = 0; n < Q_MAX_TX_QUEUES; n++)
 		{
-			mapped_queue->tx_async[n].prod  = 0;
-			mapped_queue->tx_async[n].cons  = 0;
 			mapped_queue->tx_async[n].size  = pfq_spsc_queue_mem(so)/2;
-			mapped_queue->tx_async[n].ptr   = NULL;
-			mapped_queue->tx_async[n].index = -1;
-			mapped_queue->tx_async[n].swap = false;
+
+			mapped_queue->tx_async[n].prod.index = 0;
+			mapped_queue->tx_async[n].prod.off0  = 0;
+			mapped_queue->tx_async[n].prod.off1  = 0;
+			mapped_queue->tx_async[n].cons.index = 0;
+			mapped_queue->tx_async[n].cons.off   = 0;
 
 			so->opt.txq_async[n].base_addr = so->shmem.addr + sizeof(struct pfq_shared_queue)
 				+ pfq_mpsc_queue_mem(so)
