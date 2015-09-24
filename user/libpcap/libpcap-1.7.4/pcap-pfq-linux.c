@@ -566,7 +566,7 @@ pfq_parse_env(struct pfq_opt *opt)
 
 	if ((var = getenv("PFQ_TX_THREAD"))) {
 		if (pfq_parse_integers(opt->tx_thread, 4, var) < 0) {
-			fprintf(stderr, "[PFQ] PFQ_TX_TASK parse error!\n");
+			fprintf(stderr, "[PFQ] PFQ_TX_THREAD parse error!\n");
 			return -1;
 		}
 	}

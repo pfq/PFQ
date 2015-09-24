@@ -459,9 +459,9 @@ pcap_create_interface(const char *device, char *ebuf)
 		    getenv("PFQ_GENLEN")  	||
 		    getenv("PFQ_RX_SLOTS")	||
 		    getenv("PFQ_TX_SLOTS")	||
-		    getenv("PFQ_TX_FLUSH")	||
+		    getenv("PFQ_TX_FHINT")	||
 		    getenv("PFQ_TX_QUEUE") 	||
-		    getenv("PFQ_TX_TASK") 	||
+		    getenv("PFQ_TX_THREAD") 	||
 		    getenv("PFQ_COMPUTATION") 	||
 		    getenv("PFQ_VLAN")
 		   )

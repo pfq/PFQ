@@ -58,7 +58,7 @@ If not specified otherwise, the default values are assumed.
 (> 1Mpps) column reports suggested values for very high packet rates, 
 e.g. 10G with short packets. 
 
-note: PFQ\_TX\_QUEUE, PFQ\_TX\_TASK, and PFQ\_VLAN are specified as comma separated list.
+note: PFQ\_TX\_QUEUE, PFQ\_TX\_THREAD, and PFQ\_VLAN are specified as comma separated list.
 
 
 Variable          |    Default    |  > 1Mpps  | Meaning
@@ -68,9 +68,9 @@ PFQ\_GROUP        |  a free one   |           | Specify the PFQ group for the pr
 PFQ\_CAPLEN       | pcap snapshot |           | Override the snaplen value for capture
 PFQ\_RX\_SLOTS    |    4096       |  131072   | Define the RX queue length of the socket   
 PFQ\_TX\_SLOTS    |    4096       |   8192    | Define the TX queue length of the socket   
-PFQ\_TX\_FLUSH    |      1        | 16..512   | Hint used to flush then transmission queue
+PFQ\_TX\_FHINT    |      1        | 16..512   | Hint used to flush the transmission queue
 PFQ\_TX\_QUEUE    | empty list    |e.g. 0,1,2 | Set the TX HW queue passed to the driver
-PFQ\_TX\_TASK     | empty list    |e.g. 0,1,2 | Set the cpus for the TX kthreads (optional)
+PFQ\_TX\_THREAD   | empty list    |e.g. 0,1,2 | Set the index of the PFQ TX threads (optional)
 PFQ\_COMPUTATION  |    null       |           | Set the pfq-lang computation for the group
 PFQ\_VLAN         | empty list    |           | Set the pfq-lang computation for the group
 
@@ -105,8 +105,8 @@ caplen = 64
 
 rx_slots = 131072
 
-tx_task  = 0,1
-tx_queue = 0,1
+tx_thread = 0,1
+tx_queue  = 0,1
 
 computation = ip >-> steer_flow
 ```
