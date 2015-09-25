@@ -315,20 +315,29 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 		skb_copies = copies = dev_tx_skb_copies(dq.dev, hdr->data.copies);
 
 		do {
+			bool xmit_more = ++more == xmit_batch_len ? (more = 0, false) : true;
+
 			skb_get(skb);
-
-			// xmit_more = (++more == xmit_batch_len || (last_tx && (copies == 1))) ? (more = 0, false) : true;
-
-			xmit_more = ++more == xmit_batch_len ? (more = 0, false) : true;
 
 			if (__pfq_xmit(skb, dq.dev, dq.queue, xmit_more) < 0) {
 
-				if (giveup_tx_process(stop) || netif_xmit_frozen_or_drv_stopped(dq.queue)) {
+				more = xmit_batch_len - 1;
+
+				if (giveup_tx_process(stop)) {
 					pfq_kfree_skb_pool(skb, skb_pool);
 					goto exit;
 				}
 
-				more = xmit_batch_len - 1;
+				if (netif_xmit_frozen_or_drv_stopped(dq.queue)) {
+
+					pfq_hard_tx_unlock(&dq);
+					local_bh_enable();
+
+					pfq_relax();
+
+					local_bh_disable();
+					pfq_hard_tx_lock(&dq);
+				}
 			}
 			else {
 				dq.queue->trans_start = jnow;
