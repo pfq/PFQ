@@ -50,7 +50,7 @@
 
 
 static inline int
-__pfq_xmit(struct sk_buff *skb, struct net_device *dev, struct netdev_queue *txq, int xmit_more);
+__pfq_xmit(struct sk_buff *skb, struct net_device *dev, int xmit_more);
 
 
 #if (LINUX_VERSION_CODE > KERNEL_VERSION(3,13,0))
@@ -306,12 +306,11 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 			local_bh_enable();
 
 			now = wait_until(hdr->tstamp.tv64, stop, &intr);
+			if (intr)
+				goto exit;
 
 			local_bh_disable();
 			pfq_hard_tx_lock(&dq);
-
-			if (intr)
-				goto exit;
 		}
 
 		/* allocate a socket buffer */
@@ -345,17 +344,17 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 
 			skb_get(skb);
 
-			if (__pfq_xmit(skb, dq.dev, dq.queue, xmit_more) < 0) {
+			if (__pfq_xmit(skb, dq.dev, xmit_more) < 0) {
 
-				more = 0;
+				more = xmit_batch_len - 1;
+
+				pfq_relax_dev_queue(&dq);
 
 				if (giveup_tx_process(stop)) {
+					pfq_hard_tx_unlock(&dq);
+					local_bh_enable();
 					pfq_kfree_skb_pool(skb, skb_pool);
 					goto exit;
-				}
-
-				if (netif_xmit_frozen_or_drv_stopped(dq.queue)) {
-					pfq_relax_dev_queue(&dq);
 				}
 			}
 			else {
@@ -377,12 +376,11 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 		pfq_kfree_skb_pool(skb, skb_pool);
 	}
 
-exit:
 	/* unlock the current locked queue */
 
 	pfq_hard_tx_unlock(&dq);
 	local_bh_enable();
-
+exit:
 	/* release the device */
 
 	dev_queue_put(sock_net(&so->sk), &default_dev, &dq);
@@ -408,13 +406,9 @@ exit:
 
 
 static inline int
-__pfq_xmit(struct sk_buff *skb, struct net_device *dev, struct netdev_queue *txq, int xmit_more)
+__pfq_xmit(struct sk_buff *skb, struct net_device *dev, int xmit_more)
 {
 	int rc = -ENOMEM;
-
-#ifndef PFQ_USE_XMIT_MORE
-	xmit_more = 0;
-#endif
 
 #if(LINUX_VERSION_CODE >= KERNEL_VERSION(3,18,0))
 	skb->xmit_more = xmit_more;
@@ -422,28 +416,13 @@ __pfq_xmit(struct sk_buff *skb, struct net_device *dev, struct netdev_queue *txq
 	skb->mark = xmit_more;
 #endif
 
-	skb_reset_mac_header(skb);
-
-	if (dev->flags & IFF_UP) {
-
-#if (LINUX_VERSION_CODE <= KERNEL_VERSION(3,2,0))
-		if (!netif_tx_queue_stopped(txq))
-#else
-		if (!netif_xmit_stopped(txq))
-#endif
-		{
-			rc = dev->netdev_ops->ndo_start_xmit(skb, dev);
-			if (dev_xmit_complete(rc))
-				goto out;
-		}
-	}
+	rc = dev->netdev_ops->ndo_start_xmit(skb, dev);
+	if (dev_xmit_complete(rc))
+		return rc;
 
         SPARSE_INC(&memory_stats.os_free);
 	kfree_skb(skb);
-
 	return -ENETDOWN;
-out:
-	return rc;
 }
 
 
@@ -460,12 +439,13 @@ pfq_xmit(struct sk_buff *skb, struct net_device *dev, int queue, int more)
 
 	txq = pfq_netdev_pick_tx(dev, skb, &queue);
 
+	skb_reset_mac_header(skb);
 	skb_set_queue_mapping(skb, queue);
 
 	local_bh_disable();
 	HARD_TX_LOCK(dev, txq, smp_processor_id());
 
-	ret = __pfq_xmit(skb, dev, txq, more);
+	ret = __pfq_xmit(skb, dev, more);
 
 	HARD_TX_UNLOCK(dev, txq);
         local_bh_enable();
@@ -496,9 +476,10 @@ pfq_skb_queue_xmit(struct pfq_skbuff_queue *skbs, struct net_device *dev, int qu
 
 	for_each_skbuff(skbs, skb, n)
 	{
+		skb_reset_mac_header(skb);
 		skb_set_queue_mapping(skb, queue);
 
-		if (__pfq_xmit(skb, dev, txq, n != last) == NETDEV_TX_OK)
+		if (__pfq_xmit(skb, dev, n != last) == NETDEV_TX_OK)
 			++ret;
 		else
 			goto intr;
@@ -540,9 +521,10 @@ pfq_skb_queue_xmit_by_mask(struct pfq_skbuff_queue *skbs, unsigned long long mas
 
 	for_each_skbuff_bitmask(skbs, mask, skb, n)
 	{
+		skb_reset_mac_header(skb);
 		skb_set_queue_mapping(skb, queue);
 
-		if (__pfq_xmit(skb, dev, txq, 0) == NETDEV_TX_OK)
+		if (__pfq_xmit(skb, dev, 0) == NETDEV_TX_OK)
 			++ret;
 		else
 			goto intr;
@@ -687,7 +669,7 @@ pfq_skb_queue_lazy_xmit_run(struct pfq_skbuff_GC_queue *skbs, struct pfq_endpoin
 				struct sk_buff *nskb = to_clone ? skb_tx_clone(dev, PFQ_SKB(skb), GFP_ATOMIC) :
 								  skb_get(PFQ_SKB(skb));
 
-				if (nskb && __pfq_xmit(nskb, dev, txq, xmit_more) == NETDEV_TX_OK)
+				if (nskb && __pfq_xmit(nskb, dev, xmit_more) == NETDEV_TX_OK)
 					sent++;
 				else
 					sparse_inc(&global_stats.abrt);
