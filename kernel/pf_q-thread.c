@@ -63,7 +63,7 @@ static struct pfq_thread_tx_data pfq_thread_tx_pool[Q_MAX_CPU] =
 
 
 
-void
+static void
 pfq_tx_thread_dump(struct pfq_thread_tx_data const *data)
 {
 	char msg[256];

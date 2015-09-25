@@ -252,7 +252,7 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 
 	for_each_sk_tx_mbuff(hdr, end)
 	{
-		unsigned int copies, skb_copies;
+		unsigned int copies, total_copies;
 		struct sk_buff *skb;
 		size_t len;
 
@@ -330,7 +330,7 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 
 		/* transmit the packet */
 
-		skb_copies = copies = dev_tx_skb_copies(dq.dev, hdr->data.copies);
+		total_copies = copies = dev_tx_skb_copies(dq.dev, hdr->data.copies);
 
 		do {
 			bool xmit_more = ++more == xmit_batch_len ? (more = 0, false) : true;
@@ -359,10 +359,10 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 
 		/* update stats */
 
-		total_sent += skb_copies;
+		total_sent += total_copies;
 
-		__sparse_add(&so->stats.sent, skb_copies, cpu);
-		__sparse_add(&global_stats.sent, skb_copies, cpu);
+		__sparse_add(&so->stats.sent, total_copies, cpu);
+		__sparse_add(&global_stats.sent, total_copies, cpu);
 
 		/* return the skb and move ptr to the next packet */
 

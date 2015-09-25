@@ -46,19 +46,19 @@
 #include <stdint.h>
 #include <stddef.h>
 
-static inline void barrier() { asm volatile ("" ::: "memory"); }
+static inline void barrier() { __asm__ volatile ("" ::: "memory"); }
 
 #if defined(__LP64__) /* 64 bit */
 
-static inline void mb()  { asm volatile ("mfence" ::: "memory"); }
-static inline void rmb() { asm volatile ("lfence" ::: "memory"); }
-static inline void wmb() { asm volatile ("sfence" ::: "memory"); }
+static inline void mb()  { __asm__ volatile ("mfence" ::: "memory"); }
+static inline void rmb() { __asm__ volatile ("lfence" ::: "memory"); }
+static inline void wmb() { __asm__ volatile ("sfence" ::: "memory"); }
 
 #else /* 32-bit */
 
-static inline void mb()  { asm volatile ("lock; addl $0,0(%%esp)" ::: "memory"); }
-static inline void rmb() { asm volatile ("lock; addl $0,0(%%esp)" ::: "memory"); }
-static inline void wmb() { asm volatile ("lock; addl $0,0(%%esp)" ::: "memory"); }
+static inline void mb()  { __asm__ volatile ("lock; addl $0,0(%%esp)" ::: "memory"); }
+static inline void rmb() { __asm__ volatile ("lock; addl $0,0(%%esp)" ::: "memory"); }
+static inline void wmb() { __asm__ volatile ("lock; addl $0,0(%%esp)" ::: "memory"); }
 
 #endif
 
