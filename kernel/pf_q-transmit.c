@@ -150,18 +150,10 @@ unsigned int dev_tx_skb_copies(struct net_device *dev, unsigned int req_copies)
 
 
 static inline
-bool is_last_tx_pkt(struct pfq_pkthdr *hdr)
+dev_qid_t
+get_next_dq(struct pfq_pkthdr *hdr, dev_qid_t const default_qid)
 {
-	struct pfq_pkthdr * next = (struct pfq_pkthdr *)((char *)(hdr+1) + ALIGN(hdr->caplen, 8));
-        return next->caplen == 0;
-}
-
-
-static inline
-dev_queue_id_t
-get_next_dq(struct pfq_pkthdr *hdr, dev_queue_id_t const default_qid)
-{
-	dev_queue_id_t next_qid = PFQ_NETQ_ID(hdr->ifindex, hdr->queue);
+	dev_qid_t next_qid = PFQ_NETQ_ID(hdr->ifindex, hdr->queue);
 	if (PFQ_NETQ_IS_DEFAULT(next_qid))
 		return default_qid;
 	return next_qid;
@@ -176,15 +168,17 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 	struct pfq_skb_pool *skb_pool = NULL;
 	struct net_dev_queue dq;
 	struct pfq_pkthdr *hdr;
+	struct pfq_tx_queue *txm;
 	char *begin, *end;
 	ptrdiff_t prod_off;
 	ktime_t now;
 
 	int more = 0, total_sent = 0, disc = 0, prod_idx;
 
-	const dev_queue_id_t default_qid = PFQ_NETQ_ID(txinfo->def_ifindex, txinfo->def_queue);
-	dev_queue_id_t current_qid;
-	struct pfq_tx_queue *txm;
+	const dev_qid_t default_qid = PFQ_NETQ_ID(txinfo->def_ifindex, txinfo->def_queue);
+	dev_qid_t current_qid;
+
+	unsigned long jnow;
 
 	/* get the Tx queue */
 
@@ -218,7 +212,6 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 	begin    = txinfo->base_addr + (prod_idx & 1) * txm->size + txm->cons.off;
 	end      = txinfo->base_addr + (prod_idx & 1) * txm->size + prod_off;
 
-
 	/* get the default dev_queue, and lock it */
 
 	current_qid = default_qid;
@@ -234,8 +227,9 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 
 	/* transmit the queue */
 
-	now = ktime_get_real();
-	hdr = (struct pfq_pkthdr *)begin;
+	now  = ktime_get_real();
+	jnow = jiffies;
+	hdr  = (struct pfq_pkthdr *)begin;
 
 	for_each_sk_tx_mbuff(hdr, end)
 	{
@@ -243,15 +237,14 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 		struct sk_buff *skb;
 		size_t len;
 
-		bool xmit_more, last_tx = is_last_tx_pkt(hdr);
-		dev_queue_id_t next_qid = get_next_dq(hdr, default_qid);
+		dev_qid_t next_qid = get_next_dq(hdr, default_qid);
 
 		if (PFQ_NETQ_IS_NULL(next_qid)) {
 			/* skip this packet */
 			continue;
 		}
 
-		/* netdev queue switch ? */
+		/* netdev switch queue ? */
 
 		if (current_qid != next_qid) {
 			current_qid = next_qid;
@@ -272,7 +265,7 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 			continue;
 		}
 
-		/* wait until the Ts */
+		/* wait until the Ts ? */
 
 		if (hdr->tstamp.tv64 > ktime_to_ns(now)) {
 
@@ -338,6 +331,7 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 				more = xmit_batch_len - 1;
 			}
 			else {
+				dq.queue->trans_start = jnow;
 				copies--;
 			}
 		}
