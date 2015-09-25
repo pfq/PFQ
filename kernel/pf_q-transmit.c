@@ -160,6 +160,25 @@ get_next_dq(struct pfq_pkthdr *hdr, dev_qid_t const default_qid)
 }
 
 
+static inline
+void pfq_relax_dev_queue(struct net_dev_queue *dq)
+{
+	if (need_resched()) {
+
+		pfq_hard_tx_unlock(dq);
+		local_bh_enable();
+
+		schedule();
+
+		local_bh_disable();
+		pfq_hard_tx_lock(dq);
+	}
+	else {
+		cpu_relax();
+	}
+}
+
+
 int
 pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic_t const *stop)
 {
@@ -309,7 +328,6 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 
 		skb_copy_to_linear_data(skb, hdr+1, len < 64 ? 64 : len);
 
-
 		/* transmit the packet */
 
 		skb_copies = copies = dev_tx_skb_copies(dq.dev, hdr->data.copies);
@@ -329,14 +347,7 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 				}
 
 				if (netif_xmit_frozen_or_drv_stopped(dq.queue)) {
-
-					pfq_hard_tx_unlock(&dq);
-					local_bh_enable();
-
-					pfq_relax();
-
-					local_bh_disable();
-					pfq_hard_tx_lock(&dq);
+					pfq_relax_dev_queue(&dq);
 				}
 			}
 			else {
@@ -421,6 +432,7 @@ __pfq_xmit(struct sk_buff *skb, struct net_device *dev, struct netdev_queue *txq
 
         SPARSE_INC(&memory_stats.os_free);
 	kfree_skb(skb);
+
 	return -ENETDOWN;
 out:
 	return rc;
