@@ -63,6 +63,7 @@ static struct pfq_thread_tx_data pfq_thread_tx_pool[Q_MAX_CPU] =
 
 
 
+#ifdef PFQ_DEBUG
 static void
 pfq_tx_thread_dump(struct pfq_thread_tx_data const *data)
 {
@@ -78,13 +79,16 @@ pfq_tx_thread_dump(struct pfq_thread_tx_data const *data)
 
 	printk(KERN_INFO "[PFQ] %s...(PING!)\n", msg);
 }
-
+#endif
 
 static int
 pfq_tx_thread(void *_data)
 {
 	struct pfq_thread_tx_data *data = (struct pfq_thread_tx_data *)_data;
+
+#ifdef PFQ_DEBUG
         int now = 0;
+#endif
 
 	if (data == NULL) {
 		printk(KERN_INFO "[PFQ] Tx thread data error!\n");
@@ -120,14 +124,15 @@ pfq_tx_thread(void *_data)
 
 		pfq_relax();
 
+#ifdef PFQ_DEBUG
 		if (now != jiffies/(HZ*30)) {
 			now = jiffies/(HZ*30);
 			pfq_tx_thread_dump(data);
 		}
+#endif
 
-		if (!reg) {
+		if (!reg)
 			msleep(1);
-		}
 	}
 
         printk(KERN_INFO "[PFQ] Tx[%d] thread stopped on cpu %d.\n", data->id, data->cpu);
@@ -214,8 +219,8 @@ pfq_start_all_tx_threads(void)
 			struct pfq_thread_tx_data *data = &pfq_thread_tx_pool[n];
 
 			data->id = n;
-			data->cpu = tx_thread_affinity[n];
-			data->node = cpu_online(tx_thread_affinity[n]) ? cpu_to_node(tx_thread_affinity[n]) : NUMA_NO_NODE;
+			data->cpu = tx_affinity[n];
+			data->node = cpu_online(tx_affinity[n]) ? cpu_to_node(tx_affinity[n]) : NUMA_NO_NODE;
 			data->task = kthread_create_on_node(pfq_tx_thread,
 							    data, data->node,
 							    "kpfq/%d:%d", n, data->cpu);

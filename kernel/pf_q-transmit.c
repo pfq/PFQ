@@ -179,6 +179,17 @@ void pfq_relax_dev_queue(struct net_dev_queue *dq)
 }
 
 
+static inline
+bool get_xmit_more(int *more)
+{
+	if (++(*more) >= xmit_batch_len) {
+		*more = 0;
+		return false;
+	}
+	return true;
+}
+
+
 int
 pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic_t const *stop)
 {
@@ -258,8 +269,9 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 
 		dev_qid_t next_qid = get_next_dq(hdr, default_qid);
 
+		/* skip this packet ? */
+
 		if (PFQ_NETQ_IS_NULL(next_qid)) {
-			/* skip this packet */
 			continue;
 		}
 
@@ -305,7 +317,6 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 		/* allocate a socket buffer */
 
 		skb = pfq_alloc_skb_pool(xmit_slot_size, GFP_KERNEL, node, skb_pool);
-
 		if (unlikely(skb == NULL)) {
 			if (printk_ratelimit())
 				printk(KERN_INFO "[PFQ] Tx could not allocate an skb!\n");
@@ -323,9 +334,6 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 		__skb_put(skb, len);
 
 		skb_set_queue_mapping(skb, dq.queue_mapping);
-
-		/* copy bytes into the payload */
-
 		skb_copy_to_linear_data(skb, hdr+1, len < 64 ? 64 : len);
 
 		/* transmit the packet */
@@ -333,13 +341,13 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 		total_copies = copies = dev_tx_skb_copies(dq.dev, hdr->data.copies);
 
 		do {
-			bool xmit_more = ++more == xmit_batch_len ? (more = 0, false) : true;
+			bool xmit_more = get_xmit_more(&more);
 
 			skb_get(skb);
 
 			if (__pfq_xmit(skb, dq.dev, dq.queue, xmit_more) < 0) {
 
-				more = xmit_batch_len - 1;
+				more = 0;
 
 				if (giveup_tx_process(stop)) {
 					pfq_kfree_skb_pool(skb, skb_pool);

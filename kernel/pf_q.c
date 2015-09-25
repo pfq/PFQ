@@ -882,9 +882,9 @@ check_tx_threads_affinity(void)
 
 	for(i=0; i < tx_thread_nr; ++i)
 	{
-		if (tx_thread_affinity[i] < 0 || tx_thread_affinity[i] >= num_online_cpus())
+		if (tx_affinity[i] < 0 || tx_affinity[i] >= num_online_cpus())
 		{
-			printk(KERN_INFO "[PFQ] error: Tx thread bad affinity on cpu:%d!\n", tx_thread_affinity[i]);
+			printk(KERN_INFO "[PFQ] error: Tx thread bad affinity on cpu:%d!\n", tx_affinity[i]);
 			return -EFAULT;
 		}
 	}
@@ -892,9 +892,9 @@ check_tx_threads_affinity(void)
 	for(i=0; i < tx_thread_nr-1; ++i)
 	for(j=i+1; j < tx_thread_nr; ++j)
 	{
-		if (tx_thread_affinity[i] == tx_thread_affinity[j])
+		if (tx_affinity[i] == tx_affinity[j])
 		{
-			printk(KERN_INFO "[PFQ] error: Tx thread affinity for cpu:%d already in use!\n", tx_thread_affinity[i]);
+			printk(KERN_INFO "[PFQ] error: Tx thread affinity for cpu:%d already in use!\n", tx_affinity[i]);
 			return -EFAULT;
 		}
 	}

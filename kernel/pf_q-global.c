@@ -45,7 +45,7 @@ int vl_untag		= 0;
 
 int skb_pool_size	= 1024;
 
-int tx_thread_affinity[Q_MAX_CPU] = {0};
+int tx_affinity[Q_MAX_CPU] = {0};
 int tx_thread_nr;
 
 struct pfq_global_stats global_stats;
@@ -63,7 +63,7 @@ module_param(xmit_batch_len,	int, 0644);
 
 module_param(skb_pool_size,	int, 0644);
 module_param(vl_untag,		int, 0644);
-module_param_array(tx_thread_affinity, int, &tx_thread_nr, 0644);
+module_param_array(tx_affinity, int, &tx_thread_nr, 0644);
 
 MODULE_PARM_DESC(capture_incoming," Capture incoming packets: (1 default)");
 MODULE_PARM_DESC(capture_outgoing," Capture outgoing packets: (0 default)");
@@ -80,5 +80,5 @@ MODULE_PARM_DESC(vl_untag, " Enable vlan untagging (default=0)");
 MODULE_PARM_DESC(skb_pool_size, " Socket buffer pool size (default=1024)");
 #endif
 
-MODULE_PARM_DESC(tx_thread_affinity, " Kernel Tx threads cpus' affinity");
+MODULE_PARM_DESC(tx_affinity, " Tx threads cpus' affinity");
 
