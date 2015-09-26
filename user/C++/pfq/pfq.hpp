@@ -1339,14 +1339,15 @@ namespace pfq {
          */
 
         bool
-        send_to(const_buffer pkt, int ifindex, int queue, size_t fhint = 1, unsigned int copies = 1)
+        send_to(const_buffer pkt, int ifindex, int qindex, size_t fhint = 1, unsigned int copies = 1)
         {
-            return send_raw(pkt, ifindex, queue, 0, fhint, copies, false);
+            return send_raw(pkt, ifindex, qindex, 0, fhint, copies, false);
         }
 
 
         //! Transmit the packet asynchronously.
         /*!
+         * The transmission is handled by PFQ kernel threads.
          * Requires the socket is bound for transmission to one (or multiple) PFQ kernel threads.
          * See 'bind_tx'.
          */
@@ -1373,10 +1374,10 @@ namespace pfq {
             return send_raw(pkt, 0, 0, static_cast<uint64_t>(ns), 0, copies, true, any_queue);
         }
 
-        //! Schedule packet transmission.
+        //! Schedule a packet transmission.
         /*!
          * The packet is copied into a Tx queue. If 'async' is true and 'queue' is set to any_queue, a TSS symmetric hash
-         * function is used to select the Tx queue and the packet is transmitted at the given timestamp by a Tx kernel thread.
+         * function is used to select the Tx queue. The packet is transmitted at the given timestamp by a PFQ kernel thread.
          * Otherwise the queue is flushed every 'fhint' packets.
          * A timestamp of 0 nanoseconds means immediate transmission.
          */

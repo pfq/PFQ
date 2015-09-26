@@ -1028,7 +1028,9 @@ txQueue hdl queue =
 
 -- |Store the packet and transmit the packets in the queue.
 --
--- The queue is flushed (if required) and the transmission takes place.
+-- The queue is flushed every fhint packets.
+-- Requires the socket is bound for transmission to a net device and queue.
+-- See 'bindTx'.
 
 send :: Ptr PFqTag
      -> C.ByteString  -- ^ bytes of packet
@@ -1051,7 +1053,7 @@ send hdl xs copies fhint =
 
 -- |Store the packet and transmit the packets in the queue.
 --
--- The queue is flushed (if required) and the transmission takes place.
+-- The queue is flushed every fhint packets.
 
 sendTo :: Ptr PFqTag
        -> C.ByteString  -- ^ bytes of packet
@@ -1074,10 +1076,11 @@ sendTo hdl xs ifindex qindex copies fhint =
                     (fromIntegral $ getConstant any_queue)
 
 
--- |Store the packet and transmit the packets in the queue, asynchronously.
+-- |Transmit the packet asynchronously.
 --
--- The transmission is invoked every 'flush_hint' packets.
--- When TX kernel threads are in use, 'flush_hint' is ignored.
+-- The transmission is handled by PFQ kernel threads.
+-- Requires the socket is bound for transmission to one (or multiple) PFQ kernel threads.
+-- See 'bindTx'.
 
 sendAsync :: Ptr PFqTag
           -> C.ByteString  -- ^ bytes of packet
@@ -1097,9 +1100,11 @@ sendAsync hdl xs copies =
                         (fromIntegral $ getConstant any_queue)
 
 
--- |Store the packet and transmit it.
+-- |Transmit the packet asynchronously.
 --
--- The transmission takes place asynchronously at the given TimeSpec time.
+-- The transmission takes place asynchronously at the given Timespec time.
+-- Requires the socket is bound for transmission to one (or multiple) PFQ kernel threads.
+-- See 'bindTx'.
 
 sendAt :: Ptr PFqTag
        -> C.ByteString  -- ^ bytes of packet

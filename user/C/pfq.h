@@ -572,7 +572,7 @@ extern int pfq_tx_queue(pfq_t *q, int queue);
 /*! Schedule packet transmission. */
 /*!
  * The packet is copied into a Tx queue. If 'async' is 1 and 'queue' is set to any_queue, a TSS symmetric hash
- * function is used to select the Tx queue and the packet is transmitted at the given timestamp by a Tx kernel thread.
+ * function is used to select the Tx queue. The packet is transmitted at the given timestamp by a PFQ kernel thread.
  * Otherwise the queue is flushed every 'fhint' packets.
  * A timestamp of 0 nanoseconds means immediate transmission.
  */
@@ -608,8 +608,8 @@ int pfq_send_to(pfq_t *q, const void *ptr, size_t len, int ifindex, int qindex, 
 
 /*! Transmit the packet asynchronously. */
 /*!
- * The transmission is handled by kernel.
- * Requires the socket is bound for transmission to one (or multiple) kernel threads.
+ * The transmission is handled by PFQ kernel threads.
+ * Requires the socket is bound for transmission to one (or multiple) PFQ kernel threads.
  * See 'pfq_bind_tx'.
  */
 
@@ -623,7 +623,7 @@ int pfq_send_async(pfq_t *q, const void *ptr, size_t len, unsigned int copies)
 /*! Transmit the packet asynchronously. */
 /*!
  * The transmission takes place asynchronously at the given timespec time.
- * Requires the socket is bound for transmission to a net device and queue.
+ * Requires the socket is bound for transmission to one (or multiple) PFQ kernel threads.
  * See 'pfq_bind_tx'.
  */
 
