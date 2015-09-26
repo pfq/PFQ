@@ -47,7 +47,7 @@ var lang_8hpp =
     [ "serialize", "lang_8hpp.html#a2e348096a954026da9afbc9cccb1782a", null ],
     [ "serialize", "lang_8hpp.html#ad851806bad7a4396e236a7ad52a8aca5", null ],
     [ "serialize", "lang_8hpp.html#af7276855e5133126a11b075d19a63a7f", null ],
-    [ "serialize", "lang_8hpp.html#ad5a149c9a27022cf32a497eaac3e9027", null ],
+    [ "serialize", "lang_8hpp.html#a10060155d79b978287b3a4c1460ba494", null ],
     [ "serialize_all", "lang_8hpp.html#aa384517310897d6b63391f8c967d414a", null ],
     [ "show", "lang_8hpp.html#a6b371b706602987f7e45c7558824fa34", null ],
     [ "show", "lang_8hpp.html#a1e54c94175cad1980fc43030d265b58a", null ],

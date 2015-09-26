@@ -30,7 +30,7 @@
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
    <div id="projectname">PFQ C++ library
-   &#160;<span id="projectnumber">v5.1</span>
+   &#160;<span id="projectnumber">v5.2</span>
    </div>
   </td>
    <td>        <div id="MSearchBox" class="MSearchBoxInactive">
@@ -150,7 +150,7 @@ $(document).ready(function(){initNavTree('util_8hpp_source.html','');});
 <div class="line"><a name="l00058"></a><span class="lineno"><a class="line" href="namespacepfq.html#a9db75e7163c5f764248401d10a2a3f9b">   58</a></span>&#160;    <span class="keyword">inline</span> T <a class="code" href="namespacepfq.html#a9db75e7163c5f764248401d10a2a3f9b">align</a>(T value)</div>
 <div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160;    {</div>
 <div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160;        static_assert((N &amp; (N-1)) == 0, <span class="stringliteral">&quot;align: N not a power of two&quot;</span>);</div>
-<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;        <span class="keywordflow">return</span> (value + (N-1)) &amp; ~(N-1);</div>
+<div class="line"><a name="l00061"></a><span class="lineno">   61</span>&#160;        <span class="keywordflow">return</span> (value + static_cast&lt;T&gt;(N-1)) &amp; ~static_cast&lt;T&gt;(N-1);</div>
 <div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160;    }</div>
 <div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160;</div>
 <div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;</div>
@@ -335,7 +335,7 @@ $(document).ready(function(){initNavTree('util_8hpp_source.html','');});
 <div class="line"><a name="l00254"></a><span class="lineno">  254</span>&#160;</div>
 <div class="line"><a name="l00255"></a><span class="lineno">  255</span>&#160;</div>
 <div class="line"><a name="l00256"></a><span class="lineno">  256</span>&#160;    <span class="keyword">inline</span> uint32_t</div>
-<div class="line"><a name="l00257"></a><span class="lineno"><a class="line" href="namespacepfq.html#a8abbfe940a92b69bac1a5d93fd354f9a">  257</a></span>&#160;    <a class="code" href="namespacepfq.html#a8abbfe940a92b69bac1a5d93fd354f9a">fold</a>(uint32_t hash, <span class="keywordtype">size_t</span> n) noexcept</div>
+<div class="line"><a name="l00257"></a><span class="lineno"><a class="line" href="namespacepfq.html#a881bd432d152026217ddbf0ae5d72833">  257</a></span>&#160;    <a class="code" href="namespacepfq.html#a881bd432d152026217ddbf0ae5d72833">fold</a>(uint32_t hash, uint32_t n) noexcept</div>
 <div class="line"><a name="l00258"></a><span class="lineno">  258</span>&#160;    {</div>
 <div class="line"><a name="l00259"></a><span class="lineno">  259</span>&#160;        hash = hash ^ (hash &gt;&gt; 8) ^ (hash &gt;&gt; 16) ^ (hash &gt;&gt; 24);</div>
 <div class="line"><a name="l00260"></a><span class="lineno">  260</span>&#160;        <span class="keywordflow">return</span> hash % n;</div>
@@ -399,9 +399,10 @@ $(document).ready(function(){initNavTree('util_8hpp_source.html','');});
 <div class="line"><a name="l00318"></a><span class="lineno">  318</span>&#160;</div>
 <div class="line"><a name="l00319"></a><span class="lineno">  319</span>&#160;} <span class="comment">// namespace pfq</span></div>
 <div class="line"><a name="l00320"></a><span class="lineno">  320</span>&#160;</div>
+<div class="ttc" id="namespacepfq_html_a881bd432d152026217ddbf0ae5d72833"><div class="ttname"><a href="namespacepfq.html#a881bd432d152026217ddbf0ae5d72833">pfq::fold</a></div><div class="ttdeci">uint32_t fold(uint32_t hash, uint32_t n) noexcept</div><div class="ttdef"><b>Definition:</b> util.hpp:257</div></div>
 <div class="ttc" id="namespacepfq_html_aa68a4c07117073eeb820b32f955dda00"><div class="ttname"><a href="namespacepfq.html#aa68a4c07117073eeb820b32f955dda00">pfq::nametoindex</a></div><div class="ttdeci">size_t nametoindex(const char *dev)</div><div class="ttdoc">Given the device name return the related index. </div><div class="ttdef"><b>Definition:</b> util.hpp:104</div></div>
 <div class="ttc" id="namespacepfq_html_a62b9f1831dc714353f6edcb66a4fad4d"><div class="ttname"><a href="namespacepfq.html#a62b9f1831dc714353f6edcb66a4fad4d">pfq::set_promisc</a></div><div class="ttdeci">void set_promisc(int fd, const char *dev, bool value)</div><div class="ttdoc">Set/unset the promiscuous mode for the given device. </div><div class="ttdef"><b>Definition:</b> util.hpp:82</div></div>
-<div class="ttc" id="namespacepfq_html"><div class="ttname"><a href="namespacepfq.html">pfq</a></div><div class="ttdef"><b>Definition:</b> pfq.hpp:52</div></div>
+<div class="ttc" id="namespacepfq_html"><div class="ttname"><a href="namespacepfq.html">pfq</a></div><div class="ttdef"><b>Definition:</b> pfq.hpp:53</div></div>
 <div class="ttc" id="namespacepfq_html_a251ac5cc269aa123009754edf62ab8b4"><div class="ttname"><a href="namespacepfq.html#a251ac5cc269aa123009754edf62ab8b4">pfq::ifindex</a></div><div class="ttdeci">int ifindex(int fd, const char *dev)</div><div class="ttdoc">Given a device name, return the interface index. </div><div class="ttdef"><b>Definition:</b> util.hpp:68</div></div>
 <div class="ttc" id="namespacepfq_html_a9db75e7163c5f764248401d10a2a3f9b"><div class="ttname"><a href="namespacepfq.html#a9db75e7163c5f764248401d10a2a3f9b">pfq::align</a></div><div class="ttdeci">T align(T value)</div><div class="ttdoc">Return the value aligned to the next power of two. </div><div class="ttdef"><b>Definition:</b> util.hpp:58</div></div>
 <div class="ttc" id="namespacepfq_html_ad7b88920eaf729154354741132483ea8"><div class="ttname"><a href="namespacepfq.html#ad7b88920eaf729154354741132483ea8">pfq::mutable_buffer</a></div><div class="ttdeci">std::pair&lt; char *, size_t &gt; mutable_buffer</div><div class="ttdef"><b>Definition:</b> util.hpp:51</div></div>
@@ -418,7 +419,6 @@ $(document).ready(function(){initNavTree('util_8hpp_source.html','');});
 <div class="ttc" id="namespacepfq_html_a35dc28fdd850e9c82f1f3861cce2f9cb"><div class="ttname"><a href="namespacepfq.html#a35dc28fdd850e9c82f1f3861cce2f9cb">pfq::get_num_queues</a></div><div class="ttdeci">size_t get_num_queues(const char *dev, const char *kind=&quot;TxRx&quot;)</div><div class="ttdef"><b>Definition:</b> util.hpp:208</div></div>
 <div class="ttc" id="namespacepfq_html_ac835a1bd09b4cbaba61c100b50d0a99f"><div class="ttname"><a href="namespacepfq.html#ac835a1bd09b4cbaba61c100b50d0a99f">pfq::const_buffer</a></div><div class="ttdeci">std::pair&lt; const char *, const size_t &gt; const_buffer</div><div class="ttdef"><b>Definition:</b> util.hpp:52</div></div>
 <div class="ttc" id="namespacepfq_html_a02a1861a64cc518394d3cc4361799c9f"><div class="ttname"><a href="namespacepfq.html#a02a1861a64cc518394d3cc4361799c9f">pfq::trim</a></div><div class="ttdeci">std::string trim(std::string str)</div><div class="ttdoc">Trim pending and trailing whitespaces from a string. </div><div class="ttdef"><b>Definition:</b> util.hpp:127</div></div>
-<div class="ttc" id="namespacepfq_html_a8abbfe940a92b69bac1a5d93fd354f9a"><div class="ttname"><a href="namespacepfq.html#a8abbfe940a92b69bac1a5d93fd354f9a">pfq::fold</a></div><div class="ttdeci">uint32_t fold(uint32_t hash, size_t n) noexcept</div><div class="ttdef"><b>Definition:</b> util.hpp:257</div></div>
 <div class="ttc" id="namespacepfq_html_acd3646943e133a2651876f9ca0bd154c"><div class="ttname"><a href="namespacepfq.html#acd3646943e133a2651876f9ca0bd154c">pfq::symmetric_hash</a></div><div class="ttdeci">uint32_t symmetric_hash(const char *buf) noexcept</div><div class="ttdoc">symmetric hash (TSS). </div><div class="ttdef"><b>Definition:</b> util.hpp:234</div></div>
 <div class="ttc" id="classpfq_1_1pfq__error_html"><div class="ttname"><a href="classpfq_1_1pfq__error.html">pfq::pfq_error</a></div><div class="ttdoc">Subclass of std::system_error. </div><div class="ttdef"><b>Definition:</b> exception.hpp:34</div></div>
 </div><!-- fragment --></div><!-- contents -->
@@ -427,7 +427,7 @@ $(document).ready(function(){initNavTree('util_8hpp_source.html','');});
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="dir_2916f9fbcacdf2e5f0583aa159c707b6.html">C++</a></li><li class="navelem"><a class="el" href="dir_f5c141fe61b0a0287f06112b2feb457f.html">pfq</a></li><li class="navelem"><a class="el" href="util_8hpp.html">util.hpp</a></li>
-    <li class="footer">Generated on Mon Sep 14 2015 19:04:51 for PFQ C++ library by
+    <li class="footer">Generated on Sat Sep 26 2015 14:47:31 for PFQ C++ library by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.8 </li>
   </ul>

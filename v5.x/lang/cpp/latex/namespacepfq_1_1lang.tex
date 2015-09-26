@@ -141,7 +141,7 @@ $<$ \hyperlink{structpfq_1_1lang_1_1FunctionDescr}{Function\+Descr} $>$\\*
 {\footnotesize template$<$typename C1 , typename C2 $>$ }\\std\+::string \hyperlink{namespacepfq_1_1lang_a073037bfa3d5b01e3b25af56cd504df3}{show} (\hyperlink{structpfq_1_1lang_1_1Composition}{Composition}$<$ C1, C2 $>$ const \&comp)
 \item 
 {\footnotesize template$<$typename C1 , typename C2 $>$ }\\std\+::pair$<$ std\+::vector\\*
-$<$ \hyperlink{structpfq_1_1lang_1_1FunctionDescr}{Function\+Descr} $>$, std\+::size\+\_\+t $>$ \hyperlink{namespacepfq_1_1lang_ad5a149c9a27022cf32a497eaac3e9027}{serialize} (\hyperlink{structpfq_1_1lang_1_1Composition}{Composition}$<$ C1, C2 $>$ const \&f, std\+::size\+\_\+t n)
+$<$ \hyperlink{structpfq_1_1lang_1_1FunctionDescr}{Function\+Descr} $>$, std\+::size\+\_\+t $>$ \hyperlink{namespacepfq_1_1lang_a10060155d79b978287b3a4c1460ba494}{serialize} (\hyperlink{structpfq_1_1lang_1_1Composition}{Composition}$<$ C1, C2 $>$ const \&f, std\+::ptrdiff\+\_\+t n)
 \item 
 {\footnotesize template$<$typename P1 , typename P2 , typename std\+::enable\+\_\+if$<$ is\+\_\+predicate$<$ P1 $>$\+::value \&\&is\+\_\+predicate$<$ P2 $>$\+::value $>$\+::type $\ast$  = nullptr$>$ }\\auto \hyperlink{namespacepfq_1_1lang_af24d9c3092f064b0732a4b601dde2c64}{operator\&} (P1 const \&p1, P2 const \&p2) -\/$>$ decltype(\hyperlink{namespacepfq_1_1lang_aca9adafc436b7f851621b979fa1aaf88}{predicate}(nullptr, p1, p2))
 \begin{DoxyCompactList}\small\item\em Combine two predicate expressions with a specific boolean 'and' operation. \end{DoxyCompactList}\item 
@@ -483,14 +483,14 @@ Combine two predicate expressions with a specific boolean 'or' operation.
 \item[{std\+::ptrdiff\+\_\+t}]{n}
 \end{DoxyParamCaption}
 )\hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq_1_1lang_af7276855e5133126a11b075d19a63a7f}
-\hypertarget{namespacepfq_1_1lang_ad5a149c9a27022cf32a497eaac3e9027}{\index{pfq\+::lang@{pfq\+::lang}!serialize@{serialize}}
+\hypertarget{namespacepfq_1_1lang_a10060155d79b978287b3a4c1460ba494}{\index{pfq\+::lang@{pfq\+::lang}!serialize@{serialize}}
 \index{serialize@{serialize}!pfq\+::lang@{pfq\+::lang}}
 \subsubsection[{serialize}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename C1 , typename C2 $>$ std\+::pair$<$std\+::vector$<${\bf Function\+Descr}$>$, std\+::size\+\_\+t$>$ pfq\+::lang\+::serialize (
 \begin{DoxyParamCaption}
 \item[{Composition$<$ C1, C2 $>$ const \&}]{f, }
-\item[{std\+::size\+\_\+t}]{n}
+\item[{std\+::ptrdiff\+\_\+t}]{n}
 \end{DoxyParamCaption}
-)\hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq_1_1lang_ad5a149c9a27022cf32a497eaac3e9027}
+)\hspace{0.3cm}{\ttfamily [inline]}}}\label{namespacepfq_1_1lang_a10060155d79b978287b3a4c1460ba494}
 \hypertarget{namespacepfq_1_1lang_aa384517310897d6b63391f8c967d414a}{\index{pfq\+::lang@{pfq\+::lang}!serialize\+\_\+all@{serialize\+\_\+all}}
 \index{serialize\+\_\+all@{serialize\+\_\+all}!pfq\+::lang@{pfq\+::lang}}
 \subsubsection[{serialize\+\_\+all}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename... Ts$>$ std\+::pair$<$std\+::vector$<${\bf Function\+Descr}$>$, std\+::ptrdiff\+\_\+t$>$ pfq\+::lang\+::serialize\+\_\+all (

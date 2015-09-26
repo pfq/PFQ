@@ -129,19 +129,9 @@ int \hyperlink{pfq_8h_af045476fc566e3f426184086dc8bf0f2}{pfq\+\_\+get\+\_\+group
 \item 
 int \hyperlink{pfq_8h_a1ab54376ba406188ac2eaa17167920af}{pfq\+\_\+get\+\_\+group\+\_\+counters} (\hyperlink{pfq_8h_a4e27e9f8aa4924f374dbb950713e8f0e}{pfq\+\_\+t} const $\ast$q, int gid, struct pfq\+\_\+counters $\ast$cs)
 \item 
-int \hyperlink{pfq_8h_a8660d52250c187ec23d9cda7e8f351bf}{pfq\+\_\+tx\+\_\+queue\+\_\+flush} (\hyperlink{pfq_8h_a4e27e9f8aa4924f374dbb950713e8f0e}{pfq\+\_\+t} $\ast$q, int queue)
+int \hyperlink{pfq_8h_af0bf388d241b0dfc5253af3b1fd3ec8f}{pfq\+\_\+tx\+\_\+queue} (\hyperlink{pfq_8h_a4e27e9f8aa4924f374dbb950713e8f0e}{pfq\+\_\+t} $\ast$q, int queue)
 \item 
-int \hyperlink{pfq_8h_ae46eafd5130cae13e848498db781d67d}{pfq\+\_\+tx\+\_\+async\+\_\+start} (\hyperlink{pfq_8h_a4e27e9f8aa4924f374dbb950713e8f0e}{pfq\+\_\+t} $\ast$q)
-\item 
-int \hyperlink{pfq_8h_a21c77addd3b773015a44ee0aaba688fb}{pfq\+\_\+tx\+\_\+async\+\_\+stop} (\hyperlink{pfq_8h_a4e27e9f8aa4924f374dbb950713e8f0e}{pfq\+\_\+t} $\ast$q)
-\item 
-int \hyperlink{pfq_8h_aeaff6bf1d8ea9bba7820e2aa882aacbc}{pfq\+\_\+send\+\_\+deferred} (\hyperlink{pfq_8h_a4e27e9f8aa4924f374dbb950713e8f0e}{pfq\+\_\+t} $\ast$q, const void $\ast$ptr, size\+\_\+t len, uint64\+\_\+t nsec, int copies, int queue)
-\item 
-int \hyperlink{pfq_8h_a75e46da7bdd86128def46def9327c64c}{pfq\+\_\+send} (\hyperlink{pfq_8h_a4e27e9f8aa4924f374dbb950713e8f0e}{pfq\+\_\+t} $\ast$q, const void $\ast$ptr, size\+\_\+t len, int copies)
-\item 
-int \hyperlink{pfq_8h_a74e309d43c4822e0a05d6309ef6bd4f3}{pfq\+\_\+send\+\_\+async} (\hyperlink{pfq_8h_a4e27e9f8aa4924f374dbb950713e8f0e}{pfq\+\_\+t} $\ast$q, const void $\ast$ptr, size\+\_\+t len, size\+\_\+t flush\+\_\+hint, int copies)
-\item 
-int \hyperlink{pfq_8h_a7ce16e1e8c72022d6b17a3262454e21f}{pfq\+\_\+send\+\_\+at} (\hyperlink{pfq_8h_a4e27e9f8aa4924f374dbb950713e8f0e}{pfq\+\_\+t} $\ast$q, const void $\ast$ptr, size\+\_\+t len, struct timespec $\ast$ts, int copies)
+int \hyperlink{pfq_8h_a3ee7daadb1ac57df06f0f7370df60bb7}{pfq\+\_\+send\+\_\+raw} (\hyperlink{pfq_8h_a4e27e9f8aa4924f374dbb950713e8f0e}{pfq\+\_\+t} $\ast$q, const void $\ast$ptr, size\+\_\+t len, int ifindex, int qindex, uint64\+\_\+t nsec, size\+\_\+t fhint, unsigned int copies, int async, int queue)
 \end{DoxyCompactItemize}
 
 
@@ -193,7 +183,7 @@ The first argument is the group id. The second argument is the name of the devic
 )}}\label{pfq_8h_a1f80c371efc1a9f5f3a2003e8e0c8567}
 Bind the socket for transmission to the given device name and queue.
 
-The core parameter specifies the C\+P\+U index where to run a kernel thread (unless Q\+\_\+\+N\+O\+\_\+\+K\+T\+H\+R\+E\+A\+D is specified). \hypertarget{pfq_8h_a6c69fd7fecfa6e15a356e93395efe7e6}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+close@{pfq\+\_\+close}}
+The tid parameter specifies the index (id) of the transmitter thread. If 'Q\+\_\+\+N\+O\+\_\+\+K\+T\+H\+R\+E\+A\+D' specified, bind refers to synchronous transmissions. \hypertarget{pfq_8h_a6c69fd7fecfa6e15a356e93395efe7e6}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+close@{pfq\+\_\+close}}
 \index{pfq\+\_\+close@{pfq\+\_\+close}!pfq.\+h@{pfq.\+h}}
 \subsubsection[{pfq\+\_\+close}]{\setlength{\rightskip}{0pt plus 5cm}int pfq\+\_\+close (
 \begin{DoxyParamCaption}
@@ -508,59 +498,25 @@ The memory of the socket queue is reset at the next read. A timeout is specified
 )}}\label{pfq_8h_a748d456e7adeaee2ee4ff1cd8dd4f689}
 Receive packets in the given buffer.
 
-Wait for packets and return the number of packets available. Packets are stored in the given buffer. It is possible to specify a timeout in microseconds. \hypertarget{pfq_8h_a75e46da7bdd86128def46def9327c64c}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+send@{pfq\+\_\+send}}
-\index{pfq\+\_\+send@{pfq\+\_\+send}!pfq.\+h@{pfq.\+h}}
-\subsubsection[{pfq\+\_\+send}]{\setlength{\rightskip}{0pt plus 5cm}int pfq\+\_\+send (
+Wait for packets and return the number of packets available. Packets are stored in the given buffer. It is possible to specify a timeout in microseconds. \hypertarget{pfq_8h_a3ee7daadb1ac57df06f0f7370df60bb7}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+send\+\_\+raw@{pfq\+\_\+send\+\_\+raw}}
+\index{pfq\+\_\+send\+\_\+raw@{pfq\+\_\+send\+\_\+raw}!pfq.\+h@{pfq.\+h}}
+\subsubsection[{pfq\+\_\+send\+\_\+raw}]{\setlength{\rightskip}{0pt plus 5cm}int pfq\+\_\+send\+\_\+raw (
 \begin{DoxyParamCaption}
 \item[{{\bf pfq\+\_\+t} $\ast$}]{q, }
 \item[{const void $\ast$}]{ptr, }
 \item[{size\+\_\+t}]{len, }
-\item[{int}]{copies}
-\end{DoxyParamCaption}
-)}}\label{pfq_8h_a75e46da7bdd86128def46def9327c64c}
-Store the packet and transmit the packets in the queue.
-
-The queue is flushed (if required) and the transmission takes place. \hypertarget{pfq_8h_a74e309d43c4822e0a05d6309ef6bd4f3}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+send\+\_\+async@{pfq\+\_\+send\+\_\+async}}
-\index{pfq\+\_\+send\+\_\+async@{pfq\+\_\+send\+\_\+async}!pfq.\+h@{pfq.\+h}}
-\subsubsection[{pfq\+\_\+send\+\_\+async}]{\setlength{\rightskip}{0pt plus 5cm}int pfq\+\_\+send\+\_\+async (
-\begin{DoxyParamCaption}
-\item[{{\bf pfq\+\_\+t} $\ast$}]{q, }
-\item[{const void $\ast$}]{ptr, }
-\item[{size\+\_\+t}]{len, }
-\item[{size\+\_\+t}]{flush\+\_\+hint, }
-\item[{int}]{copies}
-\end{DoxyParamCaption}
-)}}\label{pfq_8h_a74e309d43c4822e0a05d6309ef6bd4f3}
-Store the packet and transmit the packets in the queue, asynchronously.
-
-The transmission is invoked every  packets. When T\+X kernel threads are in use,  is ignored. \hypertarget{pfq_8h_a7ce16e1e8c72022d6b17a3262454e21f}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+send\+\_\+at@{pfq\+\_\+send\+\_\+at}}
-\index{pfq\+\_\+send\+\_\+at@{pfq\+\_\+send\+\_\+at}!pfq.\+h@{pfq.\+h}}
-\subsubsection[{pfq\+\_\+send\+\_\+at}]{\setlength{\rightskip}{0pt plus 5cm}int pfq\+\_\+send\+\_\+at (
-\begin{DoxyParamCaption}
-\item[{{\bf pfq\+\_\+t} $\ast$}]{q, }
-\item[{const void $\ast$}]{ptr, }
-\item[{size\+\_\+t}]{len, }
-\item[{struct timespec $\ast$}]{ts, }
-\item[{int}]{copies}
-\end{DoxyParamCaption}
-)}}\label{pfq_8h_a7ce16e1e8c72022d6b17a3262454e21f}
-Store the packet and transmit it.
-
-The transmission takes place asynchronously at the given timespec time. \hypertarget{pfq_8h_aeaff6bf1d8ea9bba7820e2aa882aacbc}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+send\+\_\+deferred@{pfq\+\_\+send\+\_\+deferred}}
-\index{pfq\+\_\+send\+\_\+deferred@{pfq\+\_\+send\+\_\+deferred}!pfq.\+h@{pfq.\+h}}
-\subsubsection[{pfq\+\_\+send\+\_\+deferred}]{\setlength{\rightskip}{0pt plus 5cm}int pfq\+\_\+send\+\_\+deferred (
-\begin{DoxyParamCaption}
-\item[{{\bf pfq\+\_\+t} $\ast$}]{q, }
-\item[{const void $\ast$}]{ptr, }
-\item[{size\+\_\+t}]{len, }
+\item[{int}]{ifindex, }
+\item[{int}]{qindex, }
 \item[{uint64\+\_\+t}]{nsec, }
-\item[{int}]{copies, }
+\item[{size\+\_\+t}]{fhint, }
+\item[{unsigned int}]{copies, }
+\item[{int}]{async, }
 \item[{int}]{queue}
 \end{DoxyParamCaption}
-)}}\label{pfq_8h_aeaff6bf1d8ea9bba7820e2aa882aacbc}
+)}}\label{pfq_8h_a3ee7daadb1ac57df06f0f7370df60bb7}
 Schedule packet transmission.
 
-The packet is copied into a Tx queue (using a T\+S\+S symmetric hash if any\+\_\+queue is specified) and transmitted at the given timestamp by a kernel thread or when tx\+\_\+queue\+\_\+flush is called. A timestamp of 0 nanoseconds means 'immediate transmission'. \hypertarget{pfq_8h_ac726d1da4c6aecfa1dcb1544c036cdc4}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+set\+\_\+caplen@{pfq\+\_\+set\+\_\+caplen}}
+The packet is copied into a Tx queue. If 'async' is 1 and 'queue' is set to any\+\_\+queue, a T\+S\+S symmetric hash function is used to select the Tx queue. The packet is transmitted at the given timestamp by a P\+F\+Q kernel thread. Otherwise the queue is flushed every 'fhint' packets. A timestamp of 0 nanoseconds means immediate transmission. \hypertarget{pfq_8h_ac726d1da4c6aecfa1dcb1544c036cdc4}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+set\+\_\+caplen@{pfq\+\_\+set\+\_\+caplen}}
 \index{pfq\+\_\+set\+\_\+caplen@{pfq\+\_\+set\+\_\+caplen}!pfq.\+h@{pfq.\+h}}
 \subsubsection[{pfq\+\_\+set\+\_\+caplen}]{\setlength{\rightskip}{0pt plus 5cm}int pfq\+\_\+set\+\_\+caplen (
 \begin{DoxyParamCaption}
@@ -633,35 +589,17 @@ Set the weight of the socket for the steering phase. \hypertarget{pfq_8h_a4d6fc5
 \item[{int}]{value}
 \end{DoxyParamCaption}
 )}}\label{pfq_8h_a4d6fc59bab68a90f36d45b0a03da775a}
-Enable/disable timestamping for packets. \hypertarget{pfq_8h_ae46eafd5130cae13e848498db781d67d}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+tx\+\_\+async\+\_\+start@{pfq\+\_\+tx\+\_\+async\+\_\+start}}
-\index{pfq\+\_\+tx\+\_\+async\+\_\+start@{pfq\+\_\+tx\+\_\+async\+\_\+start}!pfq.\+h@{pfq.\+h}}
-\subsubsection[{pfq\+\_\+tx\+\_\+async\+\_\+start}]{\setlength{\rightskip}{0pt plus 5cm}int pfq\+\_\+tx\+\_\+async\+\_\+start (
-\begin{DoxyParamCaption}
-\item[{{\bf pfq\+\_\+t} $\ast$}]{q}
-\end{DoxyParamCaption}
-)}}\label{pfq_8h_ae46eafd5130cae13e848498db781d67d}
-Start Tx kernel threads.
-
-Start kernel threads associated with the Tx queues of the socket. \hypertarget{pfq_8h_a21c77addd3b773015a44ee0aaba688fb}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+tx\+\_\+async\+\_\+stop@{pfq\+\_\+tx\+\_\+async\+\_\+stop}}
-\index{pfq\+\_\+tx\+\_\+async\+\_\+stop@{pfq\+\_\+tx\+\_\+async\+\_\+stop}!pfq.\+h@{pfq.\+h}}
-\subsubsection[{pfq\+\_\+tx\+\_\+async\+\_\+stop}]{\setlength{\rightskip}{0pt plus 5cm}int pfq\+\_\+tx\+\_\+async\+\_\+stop (
-\begin{DoxyParamCaption}
-\item[{{\bf pfq\+\_\+t} $\ast$}]{q}
-\end{DoxyParamCaption}
-)}}\label{pfq_8h_a21c77addd3b773015a44ee0aaba688fb}
-Stop Tx kernel threads.
-
-Stop kernel threads associated with the Tx queues of the socket. \hypertarget{pfq_8h_a8660d52250c187ec23d9cda7e8f351bf}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+tx\+\_\+queue\+\_\+flush@{pfq\+\_\+tx\+\_\+queue\+\_\+flush}}
-\index{pfq\+\_\+tx\+\_\+queue\+\_\+flush@{pfq\+\_\+tx\+\_\+queue\+\_\+flush}!pfq.\+h@{pfq.\+h}}
-\subsubsection[{pfq\+\_\+tx\+\_\+queue\+\_\+flush}]{\setlength{\rightskip}{0pt plus 5cm}int pfq\+\_\+tx\+\_\+queue\+\_\+flush (
+Enable/disable timestamping for packets. \hypertarget{pfq_8h_af0bf388d241b0dfc5253af3b1fd3ec8f}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+tx\+\_\+queue@{pfq\+\_\+tx\+\_\+queue}}
+\index{pfq\+\_\+tx\+\_\+queue@{pfq\+\_\+tx\+\_\+queue}!pfq.\+h@{pfq.\+h}}
+\subsubsection[{pfq\+\_\+tx\+\_\+queue}]{\setlength{\rightskip}{0pt plus 5cm}int pfq\+\_\+tx\+\_\+queue (
 \begin{DoxyParamCaption}
 \item[{{\bf pfq\+\_\+t} $\ast$}]{q, }
 \item[{int}]{queue}
 \end{DoxyParamCaption}
-)}}\label{pfq_8h_a8660d52250c187ec23d9cda7e8f351bf}
-Flush the Tx queue(s).
+)}}\label{pfq_8h_af0bf388d241b0dfc5253af3b1fd3ec8f}
+Transmit the packets in the queue.
 
-Transmit the packets in the Tx queues of the socket. \hypertarget{pfq_8h_a7cda443097bf879cf0202fbcf0a243c1}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+unbind@{pfq\+\_\+unbind}}
+Transmit the packets in the queue of the socket. 'queue = 0' is the queue enabled for synchronous transmission. \hypertarget{pfq_8h_a7cda443097bf879cf0202fbcf0a243c1}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+unbind@{pfq\+\_\+unbind}}
 \index{pfq\+\_\+unbind@{pfq\+\_\+unbind}!pfq.\+h@{pfq.\+h}}
 \subsubsection[{pfq\+\_\+unbind}]{\setlength{\rightskip}{0pt plus 5cm}int pfq\+\_\+unbind (
 \begin{DoxyParamCaption}

@@ -1,9 +1,10 @@
 var searchData=
 [
-  ['send',['send',['../classpfq_1_1socket.html#a3c6476cbd81ea906fdbd256c50eba059',1,'pfq::socket']]],
-  ['send_5fasync',['send_async',['../classpfq_1_1socket.html#a7a1d64344f0c476117d5b7cc2543edad',1,'pfq::socket']]],
-  ['send_5fat',['send_at',['../classpfq_1_1socket.html#a7511ca4657999e1c158859d34cffc831',1,'pfq::socket']]],
-  ['send_5fdeferred',['send_deferred',['../classpfq_1_1socket.html#aee365a7044043d08507adba75eb290c6',1,'pfq::socket']]],
+  ['send',['send',['../classpfq_1_1socket.html#a2d80378cecae811bedc0ae8ff9412e62',1,'pfq::socket']]],
+  ['send_5fasync',['send_async',['../classpfq_1_1socket.html#a16f84967f992ee861e5f18d5e29a3275',1,'pfq::socket']]],
+  ['send_5fat',['send_at',['../classpfq_1_1socket.html#a730cae7c25a32b22cc79615cbf3f86aa',1,'pfq::socket']]],
+  ['send_5fraw',['send_raw',['../classpfq_1_1socket.html#a736fac07a067a852e13f7c31362b6adb',1,'pfq::socket']]],
+  ['send_5fto',['send_to',['../classpfq_1_1socket.html#a3fddba43aa4da1f30fc04cdc3556054a',1,'pfq::socket']]],
   ['set_5fgroup_5fcomputation',['set_group_computation',['../classpfq_1_1socket.html#a5cb37765ffcb1b78c5d61211f9e806df',1,'pfq::socket::set_group_computation(int gid, Comp const &amp;comp)'],['../classpfq_1_1socket.html#acd2ef781a82b49566f03a085ba091138',1,'pfq::socket::set_group_computation(int gid, pfq_computation_descr *prog)'],['../classpfq_1_1socket.html#a968ae9e3375650990488dcb1784a4bd1',1,'pfq::socket::set_group_computation(int gid, std::string prog)']]],
   ['set_5fgroup_5ffprog',['set_group_fprog',['../classpfq_1_1socket.html#ad618894910a12a08eaed3d8668db25af',1,'pfq::socket']]],
   ['set_5fpromisc',['set_promisc',['../namespacepfq.html#a62b9f1831dc714353f6edcb66a4fad4d',1,'pfq']]],

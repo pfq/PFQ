@@ -30,7 +30,7 @@
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
    <div id="projectname">pfq-lang eDLS
-   &#160;<span id="projectnumber">v5.1</span>
+   &#160;<span id="projectnumber">v5.2</span>
    </div>
   </td>
    <td>        <div id="MSearchBox" class="MSearchBoxInactive">
@@ -352,8 +352,8 @@ $(document).ready(function(){initNavTree('lang_8hpp_source.html','');});
 <div class="line"><a name="l00261"></a><span class="lineno">  261</span>&#160;    {</div>
 <div class="line"><a name="l00262"></a><span class="lineno"><a class="line" href="structpfq_1_1lang_1_1FunctionDescr.html#a21f51c65f55dddd54de1171d8914c030">  262</a></span>&#160;        std::string                     <a class="code" href="structpfq_1_1lang_1_1FunctionDescr.html#a21f51c65f55dddd54de1171d8914c030">symbol</a>;</div>
 <div class="line"><a name="l00263"></a><span class="lineno"><a class="line" href="structpfq_1_1lang_1_1FunctionDescr.html#af1fe3a86f26dc3f74532ce718a195006">  263</a></span>&#160;        std::array&lt;argument_type, 8&gt;    <a class="code" href="structpfq_1_1lang_1_1FunctionDescr.html#af1fe3a86f26dc3f74532ce718a195006">arg</a>;</div>
-<div class="line"><a name="l00264"></a><span class="lineno"><a class="line" href="structpfq_1_1lang_1_1FunctionDescr.html#a4d9c2d281e407d12964765e3e83d96a5">  264</a></span>&#160;        ptrdiff_t                       <a class="code" href="structpfq_1_1lang_1_1FunctionDescr.html#a4d9c2d281e407d12964765e3e83d96a5">index</a>;</div>
-<div class="line"><a name="l00265"></a><span class="lineno"><a class="line" href="structpfq_1_1lang_1_1FunctionDescr.html#a2a4e8faafeb322d43070236093d2181b">  265</a></span>&#160;        ptrdiff_t                       <a class="code" href="structpfq_1_1lang_1_1FunctionDescr.html#a2a4e8faafeb322d43070236093d2181b">link</a>;</div>
+<div class="line"><a name="l00264"></a><span class="lineno"><a class="line" href="structpfq_1_1lang_1_1FunctionDescr.html#ae818027f48319f8f4f59d3c47202d883">  264</a></span>&#160;        std::ptrdiff_t                  <a class="code" href="structpfq_1_1lang_1_1FunctionDescr.html#ae818027f48319f8f4f59d3c47202d883">index</a>;</div>
+<div class="line"><a name="l00265"></a><span class="lineno"><a class="line" href="structpfq_1_1lang_1_1FunctionDescr.html#a09e00f9d57300893f95661b56e6b114e">  265</a></span>&#160;        std::ptrdiff_t                  <a class="code" href="structpfq_1_1lang_1_1FunctionDescr.html#a09e00f9d57300893f95661b56e6b114e">link</a>;</div>
 <div class="line"><a name="l00266"></a><span class="lineno">  266</span>&#160;    };</div>
 <div class="line"><a name="l00267"></a><span class="lineno">  267</span>&#160;</div>
 <div class="line"><a name="l00268"></a><span class="lineno">  268</span>&#160;</div>
@@ -369,7 +369,7 @@ $(document).ready(function(){initNavTree('lang_8hpp_source.html','');});
 <div class="line"><a name="l00278"></a><span class="lineno">  278</span>&#160;        {</div>
 <div class="line"><a name="l00279"></a><span class="lineno">  279</span>&#160;            out += n++ ? (<span class="charliteral">&#39; &#39;</span> + <a class="code" href="namespacepfq_1_1lang.html#a6b371b706602987f7e45c7558824fa34">show</a>(a)) : <a class="code" href="namespacepfq_1_1lang.html#a6b371b706602987f7e45c7558824fa34">show</a>(a);</div>
 <div class="line"><a name="l00280"></a><span class="lineno">  280</span>&#160;        }</div>
-<div class="line"><a name="l00281"></a><span class="lineno">  281</span>&#160;        out +=  <span class="stringliteral">&quot;] &quot;</span> + std::to_string(descr.<a class="code" href="structpfq_1_1lang_1_1FunctionDescr.html#a4d9c2d281e407d12964765e3e83d96a5">index</a>) + <span class="stringliteral">&quot; &quot;</span> + std::to_string(descr.<a class="code" href="structpfq_1_1lang_1_1FunctionDescr.html#a2a4e8faafeb322d43070236093d2181b">link</a>) + <span class="charliteral">&#39;)&#39;</span>;</div>
+<div class="line"><a name="l00281"></a><span class="lineno">  281</span>&#160;        out +=  <span class="stringliteral">&quot;] &quot;</span> + std::to_string(descr.<a class="code" href="structpfq_1_1lang_1_1FunctionDescr.html#ae818027f48319f8f4f59d3c47202d883">index</a>) + <span class="stringliteral">&quot; &quot;</span> + std::to_string(descr.<a class="code" href="structpfq_1_1lang_1_1FunctionDescr.html#a09e00f9d57300893f95661b56e6b114e">link</a>) + <span class="charliteral">&#39;)&#39;</span>;</div>
 <div class="line"><a name="l00282"></a><span class="lineno">  282</span>&#160;</div>
 <div class="line"><a name="l00283"></a><span class="lineno">  283</span>&#160;        <span class="keywordflow">return</span> out;</div>
 <div class="line"><a name="l00284"></a><span class="lineno">  284</span>&#160;    }</div>
@@ -383,7 +383,7 @@ $(document).ready(function(){initNavTree('lang_8hpp_source.html','');});
 <div class="line"><a name="l00293"></a><span class="lineno">  293</span>&#160;        <span class="keywordflow">if</span> (ser.empty())</div>
 <div class="line"><a name="l00294"></a><span class="lineno">  294</span>&#160;            <span class="keywordflow">return</span> <a class="code" href="structpfq_1_1lang_1_1argument__type.html">argument_type</a>(x);</div>
 <div class="line"><a name="l00295"></a><span class="lineno">  295</span>&#160;</div>
-<div class="line"><a name="l00296"></a><span class="lineno">  296</span>&#160;        <span class="keywordflow">return</span> <a class="code" href="structpfq_1_1lang_1_1argument__type.html">argument_type</a>(<a class="code" href="namespacepfq_1_1lang.html#a8d957b8f6df7198413d3ff9bd698e682">funptr</a>, ser[0].index);</div>
+<div class="line"><a name="l00296"></a><span class="lineno">  296</span>&#160;        <span class="keywordflow">return</span> <a class="code" href="structpfq_1_1lang_1_1argument__type.html">argument_type</a>(<a class="code" href="namespacepfq_1_1lang.html#a8d957b8f6df7198413d3ff9bd698e682">funptr</a>, static_cast&lt;std::size_t&gt;(ser[0].index));</div>
 <div class="line"><a name="l00297"></a><span class="lineno">  297</span>&#160;    }</div>
 <div class="line"><a name="l00298"></a><span class="lineno">  298</span>&#160;</div>
 <div class="line"><a name="l00299"></a><span class="lineno">  299</span>&#160;    <span class="keyword">template</span> &lt;<span class="keyword">typename</span> ...Ts, <span class="keyword">typename</span> ...Ti&gt;</div>
@@ -413,7 +413,7 @@ $(document).ready(function(){initNavTree('lang_8hpp_source.html','');});
 <div class="line"><a name="l00323"></a><span class="lineno">  323</span>&#160;    {</div>
 <div class="line"><a name="l00324"></a><span class="lineno">  324</span>&#160;        <span class="keywordflow">for</span>(<span class="keyword">auto</span> &amp; e : vec)</div>
 <div class="line"><a name="l00325"></a><span class="lineno">  325</span>&#160;        {</div>
-<div class="line"><a name="l00326"></a><span class="lineno">  326</span>&#160;            <span class="keywordflow">if</span> (e.link == static_cast&lt;std::ptrdiff_t&gt;(n + vec.size()))</div>
+<div class="line"><a name="l00326"></a><span class="lineno">  326</span>&#160;            <span class="keywordflow">if</span> (e.link == n + static_cast&lt;std::ptrdiff_t&gt;(vec.size()))</div>
 <div class="line"><a name="l00327"></a><span class="lineno">  327</span>&#160;                e.link = -1;</div>
 <div class="line"><a name="l00328"></a><span class="lineno">  328</span>&#160;        }</div>
 <div class="line"><a name="l00329"></a><span class="lineno">  329</span>&#160;    }</div>
@@ -662,91 +662,90 @@ $(document).ready(function(){initNavTree('lang_8hpp_source.html','');});
 <div class="line"><a name="l00591"></a><span class="lineno"><a class="line" href="namespacepfq_1_1lang.html#af7276855e5133126a11b075d19a63a7f">  591</a></span>&#160;    <a class="code" href="namespacepfq_1_1lang.html#ae121f9fc8e23fbd6873d45d02e9adb81">serialize</a> (std::vector&lt;<a class="code" href="structpfq_1_1lang_1_1MFunction.html">MFunction&lt;&gt;</a>&gt; <span class="keyword">const</span> &amp;cont, std::ptrdiff_t n)</div>
 <div class="line"><a name="l00592"></a><span class="lineno">  592</span>&#160;    {</div>
 <div class="line"><a name="l00593"></a><span class="lineno">  593</span>&#160;        std::vector&lt;FunctionDescr&gt; ret, v;</div>
-<div class="line"><a name="l00594"></a><span class="lineno">  594</span>&#160;        std::size_t n1 = n;</div>
-<div class="line"><a name="l00595"></a><span class="lineno">  595</span>&#160;</div>
-<div class="line"><a name="l00596"></a><span class="lineno">  596</span>&#160;        <span class="keywordflow">for</span>(<span class="keyword">auto</span> &amp; f : cont)</div>
-<div class="line"><a name="l00597"></a><span class="lineno">  597</span>&#160;        {</div>
-<div class="line"><a name="l00598"></a><span class="lineno">  598</span>&#160;            std::tie(v, n1) = <a class="code" href="namespacepfq_1_1lang.html#ae121f9fc8e23fbd6873d45d02e9adb81">serialize</a>(f, n1);</div>
-<div class="line"><a name="l00599"></a><span class="lineno">  599</span>&#160;            ret = std::move(ret) + v;</div>
-<div class="line"><a name="l00600"></a><span class="lineno">  600</span>&#160;        }</div>
-<div class="line"><a name="l00601"></a><span class="lineno">  601</span>&#160;</div>
-<div class="line"><a name="l00602"></a><span class="lineno">  602</span>&#160;        <span class="keywordflow">return</span> { ret, n1 };</div>
-<div class="line"><a name="l00603"></a><span class="lineno">  603</span>&#160;    }</div>
+<div class="line"><a name="l00594"></a><span class="lineno">  594</span>&#160;</div>
+<div class="line"><a name="l00595"></a><span class="lineno">  595</span>&#160;        <span class="keywordflow">for</span>(<span class="keyword">auto</span> &amp; f : cont)</div>
+<div class="line"><a name="l00596"></a><span class="lineno">  596</span>&#160;        {</div>
+<div class="line"><a name="l00597"></a><span class="lineno">  597</span>&#160;            std::tie(v, n) = <a class="code" href="namespacepfq_1_1lang.html#ae121f9fc8e23fbd6873d45d02e9adb81">serialize</a>(f, n);</div>
+<div class="line"><a name="l00598"></a><span class="lineno">  598</span>&#160;            ret = std::move(ret) + v;</div>
+<div class="line"><a name="l00599"></a><span class="lineno">  599</span>&#160;        }</div>
+<div class="line"><a name="l00600"></a><span class="lineno">  600</span>&#160;</div>
+<div class="line"><a name="l00601"></a><span class="lineno">  601</span>&#160;        <span class="keywordflow">return</span> { ret, n };</div>
+<div class="line"><a name="l00602"></a><span class="lineno">  602</span>&#160;    }</div>
+<div class="line"><a name="l00603"></a><span class="lineno">  603</span>&#160;</div>
 <div class="line"><a name="l00604"></a><span class="lineno">  604</span>&#160;</div>
-<div class="line"><a name="l00605"></a><span class="lineno">  605</span>&#160;</div>
-<div class="line"><a name="l00606"></a><span class="lineno">  606</span>&#160;    <span class="comment">//</span></div>
-<div class="line"><a name="l00607"></a><span class="lineno">  607</span>&#160;    <span class="comment">// Composition</span></div>
-<div class="line"><a name="l00608"></a><span class="lineno">  608</span>&#160;    <span class="comment">//</span></div>
-<div class="line"><a name="l00609"></a><span class="lineno">  609</span>&#160;</div>
-<div class="line"><a name="l00610"></a><span class="lineno"><a class="line" href="structpfq_1_1lang_1_1kleisly.html">  610</a></span>&#160;    <span class="keyword">template</span> &lt;<span class="keyword">typename</span> F, <span class="keyword">typename</span> G&gt; <span class="keyword">struct </span><a class="code" href="structpfq_1_1lang_1_1kleisly.html">kleisly</a>;</div>
-<div class="line"><a name="l00611"></a><span class="lineno">  611</span>&#160;</div>
-<div class="line"><a name="l00612"></a><span class="lineno">  612</span>&#160;    <span class="keyword">template</span> &lt;<span class="keyword">typename</span> F, <span class="keyword">typename</span> G&gt;</div>
-<div class="line"><a name="l00613"></a><span class="lineno">  613</span>&#160;    <span class="keyword">struct </span><a class="code" href="structpfq_1_1lang_1_1Composition.html">Composition</a></div>
-<div class="line"><a name="l00614"></a><span class="lineno">  614</span>&#160;    {</div>
-<div class="line"><a name="l00615"></a><span class="lineno">  615</span>&#160;        static_assert(<a class="code" href="structpfq_1_1lang_1_1is__monadic__function.html">is_monadic_function&lt;F&gt;::value</a>, <span class="stringliteral">&quot;composition: argument 1 must be a monadic function&quot;</span>);</div>
-<div class="line"><a name="l00616"></a><span class="lineno">  616</span>&#160;        static_assert(<a class="code" href="structpfq_1_1lang_1_1is__monadic__function.html">is_monadic_function&lt;G&gt;::value</a>, <span class="stringliteral">&quot;composition: argument 2 must be a monadic function&quot;</span>);</div>
-<div class="line"><a name="l00617"></a><span class="lineno">  617</span>&#160;</div>
-<div class="line"><a name="l00618"></a><span class="lineno">  618</span>&#160;        <span class="keyword">using</span> type = <span class="keyword">typename</span> <a class="code" href="structpfq_1_1lang_1_1kleisly.html">kleisly&lt;typename F::type, typename G::type&gt;::type</a>;</div>
-<div class="line"><a name="l00619"></a><span class="lineno">  619</span>&#160;</div>
-<div class="line"><a name="l00620"></a><span class="lineno">  620</span>&#160;        F f_;</div>
-<div class="line"><a name="l00621"></a><span class="lineno">  621</span>&#160;        G g_;</div>
-<div class="line"><a name="l00622"></a><span class="lineno">  622</span>&#160;    };</div>
-<div class="line"><a name="l00623"></a><span class="lineno">  623</span>&#160;</div>
-<div class="line"><a name="l00624"></a><span class="lineno">  624</span>&#160;    <span class="keyword">template</span> &lt;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> &gt; <span class="keyword">class </span>M, <span class="keyword">typename</span> A, <span class="keyword">typename</span> B, <span class="keyword">typename</span> C&gt;</div>
-<div class="line"><a name="l00625"></a><span class="lineno"><a class="line" href="structpfq_1_1lang_1_1kleisly_3_01Function_3_01M_3_01B_01_4_07A_08_01_4_00_01Function_3_01M_3_01C_01_4_07B_08_4_01_4.html">  625</a></span>&#160;    <span class="keyword">struct </span><a class="code" href="structpfq_1_1lang_1_1kleisly.html">kleisly</a>&lt; <a class="code" href="structpfq_1_1lang_1_1Function.html">Function</a>&lt; M&lt;B&gt;(A) &gt;, <a class="code" href="structpfq_1_1lang_1_1Function.html">Function</a> &lt; M&lt;C&gt;(B)&gt; &gt;</div>
-<div class="line"><a name="l00626"></a><span class="lineno">  626</span>&#160;    {</div>
-<div class="line"><a name="l00627"></a><span class="lineno"><a class="line" href="structpfq_1_1lang_1_1kleisly_3_01Function_3_01M_3_01B_01_4_07A_08_01_4_00_01Function_3_01M_3_01C_01_4_07B_08_4_01_4.html#add8114ae2219624ca829d1409d6695bc">  627</a></span>&#160;        <span class="keyword">using</span> <a class="code" href="structpfq_1_1lang_1_1Function.html">type</a> = <a class="code" href="structpfq_1_1lang_1_1Function.html">Function &lt; M&lt;C&gt;</a>(A) &gt;;</div>
-<div class="line"><a name="l00628"></a><span class="lineno">  628</span>&#160;    };</div>
-<div class="line"><a name="l00629"></a><span class="lineno">  629</span>&#160;</div>
-<div class="line"><a name="l00630"></a><span class="lineno">  630</span>&#160;    <span class="keyword">template</span> &lt;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> &gt; <span class="keyword">class </span>M, <span class="keyword">typename</span> A, <span class="keyword">typename</span> B, <span class="keyword">typename</span> F, <span class="keyword">typename</span> G&gt;</div>
-<div class="line"><a name="l00631"></a><span class="lineno"><a class="line" href="structpfq_1_1lang_1_1kleisly_3_01Function_3_01M_3_01B_01_4_07A_08_01_4_00_01Composition_3_01F_00_01G_01_4_01_4.html">  631</a></span>&#160;    <span class="keyword">struct </span><a class="code" href="structpfq_1_1lang_1_1kleisly.html">kleisly</a>&lt; <a class="code" href="structpfq_1_1lang_1_1Function.html">Function</a>&lt; M&lt;B&gt;(A) &gt;, <a class="code" href="structpfq_1_1lang_1_1Composition.html">Composition</a> &lt;F, G&gt; &gt;</div>
-<div class="line"><a name="l00632"></a><span class="lineno">  632</span>&#160;    {</div>
-<div class="line"><a name="l00633"></a><span class="lineno"><a class="line" href="structpfq_1_1lang_1_1kleisly_3_01Function_3_01M_3_01B_01_4_07A_08_01_4_00_01Composition_3_01F_00_01G_01_4_01_4.html#aa5c026817ce615e5e51ed76159b2e759">  633</a></span>&#160;        <span class="keyword">using</span> <a class="code" href="structpfq_1_1lang_1_1kleisly_3_01Function_3_01M_3_01B_01_4_07A_08_01_4_00_01Composition_3_01F_00_01G_01_4_01_4.html#aa5c026817ce615e5e51ed76159b2e759">type</a> = <span class="keyword">typename</span> <a class="code" href="structpfq_1_1lang_1_1kleisly.html">kleisly&lt; Function&lt;M&lt;B&gt;</a>(A)&gt;, <span class="keyword">typename</span> <a class="code" href="structpfq_1_1lang_1_1kleisly.html">kleisly&lt;F,G&gt;::type</a>&gt;::<a class="code" href="structpfq_1_1lang_1_1kleisly_3_01Function_3_01M_3_01B_01_4_07A_08_01_4_00_01Composition_3_01F_00_01G_01_4_01_4.html#aa5c026817ce615e5e51ed76159b2e759">type</a>;</div>
-<div class="line"><a name="l00634"></a><span class="lineno">  634</span>&#160;    };</div>
-<div class="line"><a name="l00635"></a><span class="lineno">  635</span>&#160;</div>
-<div class="line"><a name="l00636"></a><span class="lineno">  636</span>&#160;    <span class="comment">//</span></div>
-<div class="line"><a name="l00637"></a><span class="lineno">  637</span>&#160;    <span class="comment">// Kleisli composition: &gt;&gt;</span></div>
-<div class="line"><a name="l00638"></a><span class="lineno">  638</span>&#160;    <span class="comment">//</span></div>
-<div class="line"><a name="l00639"></a><span class="lineno">  639</span>&#160;</div>
-<div class="line"><a name="l00640"></a><span class="lineno">  640</span>&#160;    <span class="keyword">template</span> &lt;<span class="keyword">typename</span> C1,</div>
-<div class="line"><a name="l00641"></a><span class="lineno">  641</span>&#160;              <span class="keyword">typename</span> C2,</div>
-<div class="line"><a name="l00642"></a><span class="lineno">  642</span>&#160;              <span class="keyword">typename</span> = <span class="keyword">typename</span> <a class="code" href="structpfq_1_1lang_1_1kleisly.html">kleisly&lt;typename C1::type, typename C2::type&gt;::type</a>&gt;</div>
-<div class="line"><a name="l00643"></a><span class="lineno">  643</span>&#160;    <span class="keyword">inline</span> <a class="code" href="structpfq_1_1lang_1_1Composition.html">Composition&lt;C1, C2&gt;</a></div>
-<div class="line"><a name="l00644"></a><span class="lineno"><a class="line" href="namespacepfq_1_1lang.html#aa5c4ec63004bfee1742b763ca4a53b23">  644</a></span>&#160;    <a class="code" href="namespacepfq_1_1lang.html#aa5c4ec63004bfee1742b763ca4a53b23">operator&gt;&gt;</a>(C1 c1, C2 c2)</div>
-<div class="line"><a name="l00645"></a><span class="lineno">  645</span>&#160;    {</div>
-<div class="line"><a name="l00646"></a><span class="lineno">  646</span>&#160;        <span class="keywordflow">return</span> { std::move(c1), std::move(c2) };</div>
-<div class="line"><a name="l00647"></a><span class="lineno">  647</span>&#160;    }</div>
-<div class="line"><a name="l00648"></a><span class="lineno">  648</span>&#160;</div>
-<div class="line"><a name="l00649"></a><span class="lineno">  649</span>&#160;    <span class="keyword">template</span> &lt;<span class="keyword">typename</span> C1, <span class="keyword">typename</span> C2&gt;</div>
-<div class="line"><a name="l00650"></a><span class="lineno">  650</span>&#160;    <span class="keyword">inline</span> std::string</div>
-<div class="line"><a name="l00651"></a><span class="lineno"><a class="line" href="namespacepfq_1_1lang.html#a5340947126ab493f4d30d5fe36193978">  651</a></span>&#160;    <a class="code" href="namespacepfq_1_1lang.html#a7a4c9ec62feae5479366427beeff5b74">pretty</a>(<a class="code" href="structpfq_1_1lang_1_1Composition.html">Composition&lt;C1,C2&gt;</a> <span class="keyword">const</span> &amp;comp)</div>
-<div class="line"><a name="l00652"></a><span class="lineno">  652</span>&#160;    {</div>
-<div class="line"><a name="l00653"></a><span class="lineno">  653</span>&#160;        <span class="keywordflow">return</span> <a class="code" href="namespacepfq_1_1lang.html#a7a4c9ec62feae5479366427beeff5b74">pretty</a>(comp.f_) + <span class="stringliteral">&quot; &gt;-&gt; &quot;</span> + <a class="code" href="namespacepfq_1_1lang.html#a7a4c9ec62feae5479366427beeff5b74">pretty</a>(comp.g_);</div>
-<div class="line"><a name="l00654"></a><span class="lineno">  654</span>&#160;    }</div>
-<div class="line"><a name="l00655"></a><span class="lineno">  655</span>&#160;</div>
-<div class="line"><a name="l00656"></a><span class="lineno">  656</span>&#160;    <span class="keyword">template</span> &lt;<span class="keyword">typename</span> C1, <span class="keyword">typename</span> C2&gt;</div>
-<div class="line"><a name="l00657"></a><span class="lineno">  657</span>&#160;    <span class="keyword">inline</span> std::string</div>
-<div class="line"><a name="l00658"></a><span class="lineno"><a class="line" href="namespacepfq_1_1lang.html#a073037bfa3d5b01e3b25af56cd504df3">  658</a></span>&#160;    <a class="code" href="namespacepfq_1_1lang.html#a6b371b706602987f7e45c7558824fa34">show</a>(<a class="code" href="structpfq_1_1lang_1_1Composition.html">Composition&lt;C1,C2&gt;</a> <span class="keyword">const</span> &amp;comp)</div>
-<div class="line"><a name="l00659"></a><span class="lineno">  659</span>&#160;    {</div>
-<div class="line"><a name="l00660"></a><span class="lineno">  660</span>&#160;        <span class="keywordflow">return</span> <span class="stringliteral">&quot;(Composition &quot;</span> + <a class="code" href="namespacepfq_1_1lang.html#a6b371b706602987f7e45c7558824fa34">show</a>(comp.f_) + <span class="stringliteral">&quot; &quot;</span> + <a class="code" href="namespacepfq_1_1lang.html#a6b371b706602987f7e45c7558824fa34">show</a>(comp.g_) + <span class="stringliteral">&quot;)&quot;</span>;</div>
-<div class="line"><a name="l00661"></a><span class="lineno">  661</span>&#160;    }</div>
-<div class="line"><a name="l00662"></a><span class="lineno">  662</span>&#160;</div>
-<div class="line"><a name="l00663"></a><span class="lineno">  663</span>&#160;    <span class="keyword">template</span> &lt;<span class="keyword">typename</span> C1, <span class="keyword">typename</span> C2&gt;</div>
-<div class="line"><a name="l00664"></a><span class="lineno">  664</span>&#160;    <span class="keyword">inline</span> std::pair&lt;std::vector&lt;FunctionDescr&gt;, std::size_t&gt;</div>
-<div class="line"><a name="l00665"></a><span class="lineno"><a class="line" href="namespacepfq_1_1lang.html#ad5a149c9a27022cf32a497eaac3e9027">  665</a></span>&#160;    <a class="code" href="namespacepfq_1_1lang.html#ae121f9fc8e23fbd6873d45d02e9adb81">serialize</a>(<a class="code" href="structpfq_1_1lang_1_1Composition.html">Composition&lt;C1, C2&gt;</a> <span class="keyword">const</span> &amp;f, std::size_t n)</div>
-<div class="line"><a name="l00666"></a><span class="lineno">  666</span>&#160;    {</div>
-<div class="line"><a name="l00667"></a><span class="lineno">  667</span>&#160;        std::vector&lt;FunctionDescr&gt; v1, v2;</div>
-<div class="line"><a name="l00668"></a><span class="lineno">  668</span>&#160;        std::size_t n1, n2;</div>
-<div class="line"><a name="l00669"></a><span class="lineno">  669</span>&#160;</div>
-<div class="line"><a name="l00670"></a><span class="lineno">  670</span>&#160;        std::tie(v1, n1) = <a class="code" href="namespacepfq_1_1lang.html#ae121f9fc8e23fbd6873d45d02e9adb81">serialize</a>(f.f_, n);</div>
-<div class="line"><a name="l00671"></a><span class="lineno">  671</span>&#160;        std::tie(v2, n2) = <a class="code" href="namespacepfq_1_1lang.html#ae121f9fc8e23fbd6873d45d02e9adb81">serialize</a>(f.g_, n1);</div>
-<div class="line"><a name="l00672"></a><span class="lineno">  672</span>&#160;</div>
-<div class="line"><a name="l00673"></a><span class="lineno">  673</span>&#160;        <span class="keywordflow">return</span> { std::move(v1) + std::move(v2), n2 };</div>
-<div class="line"><a name="l00674"></a><span class="lineno">  674</span>&#160;    }</div>
-<div class="line"><a name="l00675"></a><span class="lineno">  675</span>&#160;</div>
-<div class="line"><a name="l00676"></a><span class="lineno">  676</span>&#160;} <span class="comment">// namespace lang</span></div>
-<div class="line"><a name="l00677"></a><span class="lineno">  677</span>&#160;} <span class="comment">// namespace pfq</span></div>
-<div class="line"><a name="l00678"></a><span class="lineno">  678</span>&#160;</div>
+<div class="line"><a name="l00605"></a><span class="lineno">  605</span>&#160;    <span class="comment">//</span></div>
+<div class="line"><a name="l00606"></a><span class="lineno">  606</span>&#160;    <span class="comment">// Composition</span></div>
+<div class="line"><a name="l00607"></a><span class="lineno">  607</span>&#160;    <span class="comment">//</span></div>
+<div class="line"><a name="l00608"></a><span class="lineno">  608</span>&#160;</div>
+<div class="line"><a name="l00609"></a><span class="lineno"><a class="line" href="structpfq_1_1lang_1_1kleisly.html">  609</a></span>&#160;    <span class="keyword">template</span> &lt;<span class="keyword">typename</span> F, <span class="keyword">typename</span> G&gt; <span class="keyword">struct </span><a class="code" href="structpfq_1_1lang_1_1kleisly.html">kleisly</a>;</div>
+<div class="line"><a name="l00610"></a><span class="lineno">  610</span>&#160;</div>
+<div class="line"><a name="l00611"></a><span class="lineno">  611</span>&#160;    <span class="keyword">template</span> &lt;<span class="keyword">typename</span> F, <span class="keyword">typename</span> G&gt;</div>
+<div class="line"><a name="l00612"></a><span class="lineno">  612</span>&#160;    <span class="keyword">struct </span><a class="code" href="structpfq_1_1lang_1_1Composition.html">Composition</a></div>
+<div class="line"><a name="l00613"></a><span class="lineno">  613</span>&#160;    {</div>
+<div class="line"><a name="l00614"></a><span class="lineno">  614</span>&#160;        static_assert(<a class="code" href="structpfq_1_1lang_1_1is__monadic__function.html">is_monadic_function&lt;F&gt;::value</a>, <span class="stringliteral">&quot;composition: argument 1 must be a monadic function&quot;</span>);</div>
+<div class="line"><a name="l00615"></a><span class="lineno">  615</span>&#160;        static_assert(<a class="code" href="structpfq_1_1lang_1_1is__monadic__function.html">is_monadic_function&lt;G&gt;::value</a>, <span class="stringliteral">&quot;composition: argument 2 must be a monadic function&quot;</span>);</div>
+<div class="line"><a name="l00616"></a><span class="lineno">  616</span>&#160;</div>
+<div class="line"><a name="l00617"></a><span class="lineno">  617</span>&#160;        <span class="keyword">using</span> type = <span class="keyword">typename</span> <a class="code" href="structpfq_1_1lang_1_1kleisly.html">kleisly&lt;typename F::type, typename G::type&gt;::type</a>;</div>
+<div class="line"><a name="l00618"></a><span class="lineno">  618</span>&#160;</div>
+<div class="line"><a name="l00619"></a><span class="lineno">  619</span>&#160;        F f_;</div>
+<div class="line"><a name="l00620"></a><span class="lineno">  620</span>&#160;        G g_;</div>
+<div class="line"><a name="l00621"></a><span class="lineno">  621</span>&#160;    };</div>
+<div class="line"><a name="l00622"></a><span class="lineno">  622</span>&#160;</div>
+<div class="line"><a name="l00623"></a><span class="lineno">  623</span>&#160;    <span class="keyword">template</span> &lt;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> &gt; <span class="keyword">class </span>M, <span class="keyword">typename</span> A, <span class="keyword">typename</span> B, <span class="keyword">typename</span> C&gt;</div>
+<div class="line"><a name="l00624"></a><span class="lineno"><a class="line" href="structpfq_1_1lang_1_1kleisly_3_01Function_3_01M_3_01B_01_4_07A_08_01_4_00_01Function_3_01M_3_01C_01_4_07B_08_4_01_4.html">  624</a></span>&#160;    <span class="keyword">struct </span><a class="code" href="structpfq_1_1lang_1_1kleisly.html">kleisly</a>&lt; <a class="code" href="structpfq_1_1lang_1_1Function.html">Function</a>&lt; M&lt;B&gt;(A) &gt;, <a class="code" href="structpfq_1_1lang_1_1Function.html">Function</a> &lt; M&lt;C&gt;(B)&gt; &gt;</div>
+<div class="line"><a name="l00625"></a><span class="lineno">  625</span>&#160;    {</div>
+<div class="line"><a name="l00626"></a><span class="lineno"><a class="line" href="structpfq_1_1lang_1_1kleisly_3_01Function_3_01M_3_01B_01_4_07A_08_01_4_00_01Function_3_01M_3_01C_01_4_07B_08_4_01_4.html#add8114ae2219624ca829d1409d6695bc">  626</a></span>&#160;        <span class="keyword">using</span> <a class="code" href="structpfq_1_1lang_1_1Function.html">type</a> = <a class="code" href="structpfq_1_1lang_1_1Function.html">Function &lt; M&lt;C&gt;</a>(A) &gt;;</div>
+<div class="line"><a name="l00627"></a><span class="lineno">  627</span>&#160;    };</div>
+<div class="line"><a name="l00628"></a><span class="lineno">  628</span>&#160;</div>
+<div class="line"><a name="l00629"></a><span class="lineno">  629</span>&#160;    <span class="keyword">template</span> &lt;<span class="keyword">template</span> &lt;<span class="keyword">typename</span> &gt; <span class="keyword">class </span>M, <span class="keyword">typename</span> A, <span class="keyword">typename</span> B, <span class="keyword">typename</span> F, <span class="keyword">typename</span> G&gt;</div>
+<div class="line"><a name="l00630"></a><span class="lineno"><a class="line" href="structpfq_1_1lang_1_1kleisly_3_01Function_3_01M_3_01B_01_4_07A_08_01_4_00_01Composition_3_01F_00_01G_01_4_01_4.html">  630</a></span>&#160;    <span class="keyword">struct </span><a class="code" href="structpfq_1_1lang_1_1kleisly.html">kleisly</a>&lt; <a class="code" href="structpfq_1_1lang_1_1Function.html">Function</a>&lt; M&lt;B&gt;(A) &gt;, <a class="code" href="structpfq_1_1lang_1_1Composition.html">Composition</a> &lt;F, G&gt; &gt;</div>
+<div class="line"><a name="l00631"></a><span class="lineno">  631</span>&#160;    {</div>
+<div class="line"><a name="l00632"></a><span class="lineno"><a class="line" href="structpfq_1_1lang_1_1kleisly_3_01Function_3_01M_3_01B_01_4_07A_08_01_4_00_01Composition_3_01F_00_01G_01_4_01_4.html#aa5c026817ce615e5e51ed76159b2e759">  632</a></span>&#160;        <span class="keyword">using</span> <a class="code" href="structpfq_1_1lang_1_1kleisly_3_01Function_3_01M_3_01B_01_4_07A_08_01_4_00_01Composition_3_01F_00_01G_01_4_01_4.html#aa5c026817ce615e5e51ed76159b2e759">type</a> = <span class="keyword">typename</span> <a class="code" href="structpfq_1_1lang_1_1kleisly.html">kleisly&lt; Function&lt;M&lt;B&gt;</a>(A)&gt;, <span class="keyword">typename</span> <a class="code" href="structpfq_1_1lang_1_1kleisly.html">kleisly&lt;F,G&gt;::type</a>&gt;::<a class="code" href="structpfq_1_1lang_1_1kleisly_3_01Function_3_01M_3_01B_01_4_07A_08_01_4_00_01Composition_3_01F_00_01G_01_4_01_4.html#aa5c026817ce615e5e51ed76159b2e759">type</a>;</div>
+<div class="line"><a name="l00633"></a><span class="lineno">  633</span>&#160;    };</div>
+<div class="line"><a name="l00634"></a><span class="lineno">  634</span>&#160;</div>
+<div class="line"><a name="l00635"></a><span class="lineno">  635</span>&#160;    <span class="comment">//</span></div>
+<div class="line"><a name="l00636"></a><span class="lineno">  636</span>&#160;    <span class="comment">// Kleisli composition: &gt;&gt;</span></div>
+<div class="line"><a name="l00637"></a><span class="lineno">  637</span>&#160;    <span class="comment">//</span></div>
+<div class="line"><a name="l00638"></a><span class="lineno">  638</span>&#160;</div>
+<div class="line"><a name="l00639"></a><span class="lineno">  639</span>&#160;    <span class="keyword">template</span> &lt;<span class="keyword">typename</span> C1,</div>
+<div class="line"><a name="l00640"></a><span class="lineno">  640</span>&#160;              <span class="keyword">typename</span> C2,</div>
+<div class="line"><a name="l00641"></a><span class="lineno">  641</span>&#160;              <span class="keyword">typename</span> = <span class="keyword">typename</span> <a class="code" href="structpfq_1_1lang_1_1kleisly.html">kleisly&lt;typename C1::type, typename C2::type&gt;::type</a>&gt;</div>
+<div class="line"><a name="l00642"></a><span class="lineno">  642</span>&#160;    <span class="keyword">inline</span> <a class="code" href="structpfq_1_1lang_1_1Composition.html">Composition&lt;C1, C2&gt;</a></div>
+<div class="line"><a name="l00643"></a><span class="lineno"><a class="line" href="namespacepfq_1_1lang.html#aa5c4ec63004bfee1742b763ca4a53b23">  643</a></span>&#160;    <a class="code" href="namespacepfq_1_1lang.html#aa5c4ec63004bfee1742b763ca4a53b23">operator&gt;&gt;</a>(C1 c1, C2 c2)</div>
+<div class="line"><a name="l00644"></a><span class="lineno">  644</span>&#160;    {</div>
+<div class="line"><a name="l00645"></a><span class="lineno">  645</span>&#160;        <span class="keywordflow">return</span> { std::move(c1), std::move(c2) };</div>
+<div class="line"><a name="l00646"></a><span class="lineno">  646</span>&#160;    }</div>
+<div class="line"><a name="l00647"></a><span class="lineno">  647</span>&#160;</div>
+<div class="line"><a name="l00648"></a><span class="lineno">  648</span>&#160;    <span class="keyword">template</span> &lt;<span class="keyword">typename</span> C1, <span class="keyword">typename</span> C2&gt;</div>
+<div class="line"><a name="l00649"></a><span class="lineno">  649</span>&#160;    <span class="keyword">inline</span> std::string</div>
+<div class="line"><a name="l00650"></a><span class="lineno"><a class="line" href="namespacepfq_1_1lang.html#a5340947126ab493f4d30d5fe36193978">  650</a></span>&#160;    <a class="code" href="namespacepfq_1_1lang.html#a7a4c9ec62feae5479366427beeff5b74">pretty</a>(<a class="code" href="structpfq_1_1lang_1_1Composition.html">Composition&lt;C1,C2&gt;</a> <span class="keyword">const</span> &amp;comp)</div>
+<div class="line"><a name="l00651"></a><span class="lineno">  651</span>&#160;    {</div>
+<div class="line"><a name="l00652"></a><span class="lineno">  652</span>&#160;        <span class="keywordflow">return</span> <a class="code" href="namespacepfq_1_1lang.html#a7a4c9ec62feae5479366427beeff5b74">pretty</a>(comp.f_) + <span class="stringliteral">&quot; &gt;-&gt; &quot;</span> + <a class="code" href="namespacepfq_1_1lang.html#a7a4c9ec62feae5479366427beeff5b74">pretty</a>(comp.g_);</div>
+<div class="line"><a name="l00653"></a><span class="lineno">  653</span>&#160;    }</div>
+<div class="line"><a name="l00654"></a><span class="lineno">  654</span>&#160;</div>
+<div class="line"><a name="l00655"></a><span class="lineno">  655</span>&#160;    <span class="keyword">template</span> &lt;<span class="keyword">typename</span> C1, <span class="keyword">typename</span> C2&gt;</div>
+<div class="line"><a name="l00656"></a><span class="lineno">  656</span>&#160;    <span class="keyword">inline</span> std::string</div>
+<div class="line"><a name="l00657"></a><span class="lineno"><a class="line" href="namespacepfq_1_1lang.html#a073037bfa3d5b01e3b25af56cd504df3">  657</a></span>&#160;    <a class="code" href="namespacepfq_1_1lang.html#a6b371b706602987f7e45c7558824fa34">show</a>(<a class="code" href="structpfq_1_1lang_1_1Composition.html">Composition&lt;C1,C2&gt;</a> <span class="keyword">const</span> &amp;comp)</div>
+<div class="line"><a name="l00658"></a><span class="lineno">  658</span>&#160;    {</div>
+<div class="line"><a name="l00659"></a><span class="lineno">  659</span>&#160;        <span class="keywordflow">return</span> <span class="stringliteral">&quot;(Composition &quot;</span> + <a class="code" href="namespacepfq_1_1lang.html#a6b371b706602987f7e45c7558824fa34">show</a>(comp.f_) + <span class="stringliteral">&quot; &quot;</span> + <a class="code" href="namespacepfq_1_1lang.html#a6b371b706602987f7e45c7558824fa34">show</a>(comp.g_) + <span class="stringliteral">&quot;)&quot;</span>;</div>
+<div class="line"><a name="l00660"></a><span class="lineno">  660</span>&#160;    }</div>
+<div class="line"><a name="l00661"></a><span class="lineno">  661</span>&#160;</div>
+<div class="line"><a name="l00662"></a><span class="lineno">  662</span>&#160;    <span class="keyword">template</span> &lt;<span class="keyword">typename</span> C1, <span class="keyword">typename</span> C2&gt;</div>
+<div class="line"><a name="l00663"></a><span class="lineno">  663</span>&#160;    <span class="keyword">inline</span> std::pair&lt;std::vector&lt;FunctionDescr&gt;, std::size_t&gt;</div>
+<div class="line"><a name="l00664"></a><span class="lineno"><a class="line" href="namespacepfq_1_1lang.html#a10060155d79b978287b3a4c1460ba494">  664</a></span>&#160;    <a class="code" href="namespacepfq_1_1lang.html#ae121f9fc8e23fbd6873d45d02e9adb81">serialize</a>(<a class="code" href="structpfq_1_1lang_1_1Composition.html">Composition&lt;C1, C2&gt;</a> <span class="keyword">const</span> &amp;f, std::ptrdiff_t n)</div>
+<div class="line"><a name="l00665"></a><span class="lineno">  665</span>&#160;    {</div>
+<div class="line"><a name="l00666"></a><span class="lineno">  666</span>&#160;        std::vector&lt;FunctionDescr&gt; v1, v2;</div>
+<div class="line"><a name="l00667"></a><span class="lineno">  667</span>&#160;        std::size_t n1, n2;</div>
+<div class="line"><a name="l00668"></a><span class="lineno">  668</span>&#160;</div>
+<div class="line"><a name="l00669"></a><span class="lineno">  669</span>&#160;        std::tie(v1, n1) = <a class="code" href="namespacepfq_1_1lang.html#ae121f9fc8e23fbd6873d45d02e9adb81">serialize</a>(f.f_, n);</div>
+<div class="line"><a name="l00670"></a><span class="lineno">  670</span>&#160;        std::tie(v2, n2) = <a class="code" href="namespacepfq_1_1lang.html#ae121f9fc8e23fbd6873d45d02e9adb81">serialize</a>(f.g_, n1);</div>
+<div class="line"><a name="l00671"></a><span class="lineno">  671</span>&#160;</div>
+<div class="line"><a name="l00672"></a><span class="lineno">  672</span>&#160;        <span class="keywordflow">return</span> { std::move(v1) + std::move(v2), n2 };</div>
+<div class="line"><a name="l00673"></a><span class="lineno">  673</span>&#160;    }</div>
+<div class="line"><a name="l00674"></a><span class="lineno">  674</span>&#160;</div>
+<div class="line"><a name="l00675"></a><span class="lineno">  675</span>&#160;} <span class="comment">// namespace lang</span></div>
+<div class="line"><a name="l00676"></a><span class="lineno">  676</span>&#160;} <span class="comment">// namespace pfq</span></div>
+<div class="line"><a name="l00677"></a><span class="lineno">  677</span>&#160;</div>
 <div class="ttc" id="structpfq_1_1lang_1_1ipv4__t_html_a5080d5f65781ad95e605d066f1693502"><div class="ttname"><a href="structpfq_1_1lang_1_1ipv4__t.html#a5080d5f65781ad95e605d066f1693502">pfq::lang::ipv4_t::value</a></div><div class="ttdeci">uint32_t value</div><div class="ttdef"><b>Definition:</b> lang.hpp:84</div></div>
 <div class="ttc" id="structpfq_1_1lang_1_1argument__type_html_a775f6b6bf458de21aef78e3b806ead9d"><div class="ttname"><a href="structpfq_1_1lang_1_1argument__type.html#a775f6b6bf458de21aef78e3b806ead9d">pfq::lang::argument_type::argument_type</a></div><div class="ttdeci">argument_type(const char *p)</div><div class="ttdef"><b>Definition:</b> lang.hpp:172</div></div>
 <div class="ttc" id="structpfq_1_1lang_1_1is__monadic__function_html"><div class="ttname"><a href="structpfq_1_1lang_1_1is__monadic__function.html">pfq::lang::is_monadic_function</a></div><div class="ttdef"><b>Definition:</b> lang.hpp:135</div></div>
@@ -771,22 +770,23 @@ $(document).ready(function(){initNavTree('lang_8hpp_source.html','');});
 <div class="ttc" id="namespacepfq_html"><div class="ttname"><a href="namespacepfq.html">pfq</a></div><div class="ttdef"><b>Definition:</b> lang.hpp:42</div></div>
 <div class="ttc" id="structpfq_1_1lang_1_1argument__type_html"><div class="ttname"><a href="structpfq_1_1lang_1_1argument__type.html">pfq::lang::argument_type</a></div><div class="ttdef"><b>Definition:</b> lang.hpp:144</div></div>
 <div class="ttc" id="structpfq_1_1lang_1_1argument__type_html_ae5d502317434728683578c32b6056275"><div class="ttname"><a href="structpfq_1_1lang_1_1argument__type.html#ae5d502317434728683578c32b6056275">pfq::lang::argument_type::size</a></div><div class="ttdeci">size_t size</div><div class="ttdef"><b>Definition:</b> lang.hpp:219</div></div>
-<div class="ttc" id="structpfq_1_1lang_1_1FunctionDescr_html_a2a4e8faafeb322d43070236093d2181b"><div class="ttname"><a href="structpfq_1_1lang_1_1FunctionDescr.html#a2a4e8faafeb322d43070236093d2181b">pfq::lang::FunctionDescr::link</a></div><div class="ttdeci">ptrdiff_t link</div><div class="ttdef"><b>Definition:</b> lang.hpp:265</div></div>
+<div class="ttc" id="structpfq_1_1lang_1_1FunctionDescr_html_ae818027f48319f8f4f59d3c47202d883"><div class="ttname"><a href="structpfq_1_1lang_1_1FunctionDescr.html#ae818027f48319f8f4f59d3c47202d883">pfq::lang::FunctionDescr::index</a></div><div class="ttdeci">std::ptrdiff_t index</div><div class="ttdef"><b>Definition:</b> lang.hpp:264</div></div>
 <div class="ttc" id="structpfq_1_1lang_1_1Property_html"><div class="ttname"><a href="structpfq_1_1lang_1_1Property.html">pfq::lang::Property</a></div><div class="ttdef"><b>Definition:</b> lang.hpp:108</div></div>
 <div class="ttc" id="structpfq_1_1lang_1_1argument__type_html_aaa36abcce4c5e2418fc5a10328619a2d"><div class="ttname"><a href="structpfq_1_1lang_1_1argument__type.html#aaa36abcce4c5e2418fc5a10328619a2d">pfq::lang::argument_type::argument_type</a></div><div class="ttdeci">argument_type(std::nullptr_t)</div><div class="ttdef"><b>Definition:</b> lang.hpp:152</div></div>
 <div class="ttc" id="structpfq_1_1lang_1_1is__property_html"><div class="ttname"><a href="structpfq_1_1lang_1_1is__property.html">pfq::lang::is_property</a></div><div class="ttdef"><b>Definition:</b> lang.hpp:121</div></div>
 <div class="ttc" id="namespacepfq_1_1lang_html_a3c5b96416a3c3834aefd442157498bbd"><div class="ttname"><a href="namespacepfq_1_1lang.html#a3c5b96416a3c3834aefd442157498bbd">pfq::lang::NetPredicate</a></div><div class="ttdeci">Function&lt; bool(SkBuff) &gt; NetPredicate</div><div class="ttdef"><b>Definition:</b> lang.hpp:68</div></div>
-<div class="ttc" id="namespacepfq_1_1lang_html_aa5c4ec63004bfee1742b763ca4a53b23"><div class="ttname"><a href="namespacepfq_1_1lang.html#aa5c4ec63004bfee1742b763ca4a53b23">pfq::lang::operator&gt;&gt;</a></div><div class="ttdeci">Composition&lt; C1, C2 &gt; operator&gt;&gt;(C1 c1, C2 c2)</div><div class="ttdef"><b>Definition:</b> lang.hpp:644</div></div>
+<div class="ttc" id="namespacepfq_1_1lang_html_aa5c4ec63004bfee1742b763ca4a53b23"><div class="ttname"><a href="namespacepfq_1_1lang.html#aa5c4ec63004bfee1742b763ca4a53b23">pfq::lang::operator&gt;&gt;</a></div><div class="ttdeci">Composition&lt; C1, C2 &gt; operator&gt;&gt;(C1 c1, C2 c2)</div><div class="ttdef"><b>Definition:</b> lang.hpp:643</div></div>
 <div class="ttc" id="structpfq_1_1lang_1_1Predicate_html"><div class="ttname"><a href="structpfq_1_1lang_1_1Predicate.html">pfq::lang::Predicate</a></div><div class="ttdef"><b>Definition:</b> lang.hpp:111</div></div>
 <div class="ttc" id="structpfq_1_1lang_1_1ipv4__t_html_a86fa55f6ef31157415d65d43ce228fae"><div class="ttname"><a href="structpfq_1_1lang_1_1ipv4__t.html#a86fa55f6ef31157415d65d43ce228fae">pfq::lang::ipv4_t::ipv4_t</a></div><div class="ttdeci">ipv4_t(const char *addr)</div><div class="ttdef"><b>Definition:</b> lang.hpp:78</div></div>
 <div class="ttc" id="structpfq_1_1lang_1_1argument__type_html_a3586d8765421e7a9fc01ee5185be7f32"><div class="ttname"><a href="structpfq_1_1lang_1_1argument__type.html#a3586d8765421e7a9fc01ee5185be7f32">pfq::lang::argument_type::argument_type</a></div><div class="ttdeci">argument_type(std::shared_ptr&lt; StorableShowBase &gt; p, size_t s, size_t n)</div><div class="ttdef"><b>Definition:</b> lang.hpp:206</div></div>
-<div class="ttc" id="structpfq_1_1lang_1_1kleisly_html"><div class="ttname"><a href="structpfq_1_1lang_1_1kleisly.html">pfq::lang::kleisly</a></div><div class="ttdef"><b>Definition:</b> lang.hpp:610</div></div>
+<div class="ttc" id="structpfq_1_1lang_1_1kleisly_html"><div class="ttname"><a href="structpfq_1_1lang_1_1kleisly.html">pfq::lang::kleisly</a></div><div class="ttdef"><b>Definition:</b> lang.hpp:609</div></div>
 <div class="ttc" id="structpfq_1_1lang_1_1MFunction_html_ad71e16a351d465079c8c4cc014157b2b"><div class="ttname"><a href="structpfq_1_1lang_1_1MFunction.html#ad71e16a351d465079c8c4cc014157b2b">pfq::lang::MFunction::symbol_</a></div><div class="ttdeci">std::string symbol_</div><div class="ttdef"><b>Definition:</b> lang.hpp:534</div></div>
 <div class="ttc" id="structpfq_1_1lang_1_1argument__type_html_a4285751f800858bb96057e3ffd44dc77"><div class="ttname"><a href="structpfq_1_1lang_1_1argument__type.html#a4285751f800858bb96057e3ffd44dc77">pfq::lang::argument_type::argument_type</a></div><div class="ttdeci">argument_type(Tp const &amp;)</div><div class="ttdef"><b>Definition:</b> lang.hpp:213</div></div>
 <div class="ttc" id="namespacepfq_1_1lang_html_aa02ee91ad7ff586907fc8526b84e0f53"><div class="ttname"><a href="namespacepfq_1_1lang.html#aa02ee91ad7ff586907fc8526b84e0f53">pfq::lang::NetFunction</a></div><div class="ttdeci">Function&lt; Action&lt; SkBuff &gt;(SkBuff) &gt; NetFunction</div><div class="ttdef"><b>Definition:</b> lang.hpp:67</div></div>
 <div class="ttc" id="structpfq_1_1lang_1_1SkBuff_html"><div class="ttname"><a href="structpfq_1_1lang_1_1SkBuff.html">pfq::lang::SkBuff</a></div><div class="ttdef"><b>Definition:</b> lang.hpp:48</div></div>
 <div class="ttc" id="structpfq_1_1lang_1_1Predicate_html_ad604e102c7599051e801d790cca70591"><div class="ttname"><a href="structpfq_1_1lang_1_1Predicate.html#ad604e102c7599051e801d790cca70591">pfq::lang::Predicate::Predicate</a></div><div class="ttdeci">Predicate(std::string symbol, Tp &amp;&amp;...args)</div><div class="ttdef"><b>Definition:</b> lang.hpp:461</div></div>
-<div class="ttc" id="structpfq_1_1lang_1_1kleisly_3_01Function_3_01M_3_01B_01_4_07A_08_01_4_00_01Composition_3_01F_00_01G_01_4_01_4_html_aa5c026817ce615e5e51ed76159b2e759"><div class="ttname"><a href="structpfq_1_1lang_1_1kleisly_3_01Function_3_01M_3_01B_01_4_07A_08_01_4_00_01Composition_3_01F_00_01G_01_4_01_4.html#aa5c026817ce615e5e51ed76159b2e759">pfq::lang::kleisly&lt; Function&lt; M&lt; B &gt;(A) &gt;, Composition&lt; F, G &gt; &gt;::type</a></div><div class="ttdeci">typename kleisly&lt; Function&lt; M&lt; B &gt;(A)&gt;, typename kleisly&lt; F, G &gt;::type &gt;::type type</div><div class="ttdef"><b>Definition:</b> lang.hpp:633</div></div>
+<div class="ttc" id="structpfq_1_1lang_1_1FunctionDescr_html_a09e00f9d57300893f95661b56e6b114e"><div class="ttname"><a href="structpfq_1_1lang_1_1FunctionDescr.html#a09e00f9d57300893f95661b56e6b114e">pfq::lang::FunctionDescr::link</a></div><div class="ttdeci">std::ptrdiff_t link</div><div class="ttdef"><b>Definition:</b> lang.hpp:265</div></div>
+<div class="ttc" id="structpfq_1_1lang_1_1kleisly_3_01Function_3_01M_3_01B_01_4_07A_08_01_4_00_01Composition_3_01F_00_01G_01_4_01_4_html_aa5c026817ce615e5e51ed76159b2e759"><div class="ttname"><a href="structpfq_1_1lang_1_1kleisly_3_01Function_3_01M_3_01B_01_4_07A_08_01_4_00_01Composition_3_01F_00_01G_01_4_01_4.html#aa5c026817ce615e5e51ed76159b2e759">pfq::lang::kleisly&lt; Function&lt; M&lt; B &gt;(A) &gt;, Composition&lt; F, G &gt; &gt;::type</a></div><div class="ttdeci">typename kleisly&lt; Function&lt; M&lt; B &gt;(A)&gt;, typename kleisly&lt; F, G &gt;::type &gt;::type type</div><div class="ttdef"><b>Definition:</b> lang.hpp:632</div></div>
 <div class="ttc" id="structpfq_1_1lang_1_1is__predicate_html"><div class="ttname"><a href="structpfq_1_1lang_1_1is__predicate.html">pfq::lang::is_predicate</a></div><div class="ttdef"><b>Definition:</b> lang.hpp:128</div></div>
 <div class="ttc" id="structpfq_1_1lang_1_1Property_html_a27cdbc97fd6ffc8b92ff75599c7dce72"><div class="ttname"><a href="structpfq_1_1lang_1_1Property.html#a27cdbc97fd6ffc8b92ff75599c7dce72">pfq::lang::Property::symbol_</a></div><div class="ttdeci">std::string symbol_</div><div class="ttdef"><b>Definition:</b> lang.hpp:398</div></div>
 <div class="ttc" id="structpfq_1_1lang_1_1ipv4__t_html"><div class="ttname"><a href="structpfq_1_1lang_1_1ipv4__t.html">pfq::lang::ipv4_t</a></div><div class="ttdef"><b>Definition:</b> lang.hpp:74</div></div>
@@ -807,7 +807,6 @@ $(document).ready(function(){initNavTree('lang_8hpp_source.html','');});
 <div class="ttc" id="namespacepfq_1_1lang_html_a1aacba4a159b6c2ddf275bd1fec19ec2"><div class="ttname"><a href="namespacepfq_1_1lang.html#a1aacba4a159b6c2ddf275bd1fec19ec2">pfq::lang::mfunction</a></div><div class="ttdeci">MFunction&lt; typename std::decay&lt; Ts &gt;::type...&gt; mfunction(std::string symbol, Ts &amp;&amp;...args)</div><div class="ttdef"><b>Definition:</b> lang.hpp:540</div></div>
 <div class="ttc" id="structpfq_1_1lang_1_1FunctionDescr_html_a21f51c65f55dddd54de1171d8914c030"><div class="ttname"><a href="structpfq_1_1lang_1_1FunctionDescr.html#a21f51c65f55dddd54de1171d8914c030">pfq::lang::FunctionDescr::symbol</a></div><div class="ttdeci">std::string symbol</div><div class="ttdef"><b>Definition:</b> lang.hpp:262</div></div>
 <div class="ttc" id="namespacepfq_1_1lang_html_ac28f404ec59b7aea311721e0f26b5577"><div class="ttname"><a href="namespacepfq_1_1lang.html#ac28f404ec59b7aea311721e0f26b5577">pfq::lang::make_argument</a></div><div class="ttdeci">argument_type make_argument(T const &amp;x, std::vector&lt; FunctionDescr &gt; const &amp;ser)</div><div class="ttdef"><b>Definition:</b> lang.hpp:291</div></div>
-<div class="ttc" id="structpfq_1_1lang_1_1FunctionDescr_html_a4d9c2d281e407d12964765e3e83d96a5"><div class="ttname"><a href="structpfq_1_1lang_1_1FunctionDescr.html#a4d9c2d281e407d12964765e3e83d96a5">pfq::lang::FunctionDescr::index</a></div><div class="ttdeci">ptrdiff_t index</div><div class="ttdef"><b>Definition:</b> lang.hpp:264</div></div>
 <div class="ttc" id="structpfq_1_1lang_1_1FunctionDescr_html_af1fe3a86f26dc3f74532ce718a195006"><div class="ttname"><a href="structpfq_1_1lang_1_1FunctionDescr.html#af1fe3a86f26dc3f74532ce718a195006">pfq::lang::FunctionDescr::arg</a></div><div class="ttdeci">std::array&lt; argument_type, 8 &gt; arg</div><div class="ttdef"><b>Definition:</b> lang.hpp:263</div></div>
 <div class="ttc" id="namespacepfq_1_1lang_html_a8d957b8f6df7198413d3ff9bd698e682"><div class="ttname"><a href="namespacepfq_1_1lang.html#a8d957b8f6df7198413d3ff9bd698e682">pfq::lang::funptr</a></div><div class="ttdeci">struct pfq::lang::funptr_t funptr</div></div>
 </div><!-- fragment --></div><!-- contents -->
@@ -816,7 +815,7 @@ $(document).ready(function(){initNavTree('lang_8hpp_source.html','');});
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="dir_2916f9fbcacdf2e5f0583aa159c707b6.html">C++</a></li><li class="navelem"><a class="el" href="dir_f5c141fe61b0a0287f06112b2feb457f.html">pfq</a></li><li class="navelem"><a class="el" href="dir_a171f0db53f771baaddfd0e93f871e64.html">lang</a></li><li class="navelem"><a class="el" href="lang_8hpp.html">lang.hpp</a></li>
-    <li class="footer">Generated on Mon Sep 14 2015 19:04:51 for pfq-lang eDLS by
+    <li class="footer">Generated on Sat Sep 26 2015 14:47:32 for pfq-lang eDLS by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.8 </li>
   </ul>

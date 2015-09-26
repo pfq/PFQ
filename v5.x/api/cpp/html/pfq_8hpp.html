@@ -30,7 +30,7 @@
  <tr style="height: 56px;">
   <td style="padding-left: 0.5em;">
    <div id="projectname">PFQ C++ library
-   &#160;<span id="projectnumber">v5.1</span>
+   &#160;<span id="projectnumber">v5.2</span>
    </div>
   </td>
    <td>        <div id="MSearchBox" class="MSearchBoxInactive">
@@ -97,7 +97,18 @@ $(document).ready(function(){initNavTree('pfq_8hpp.html','');});
 <div class="title">pfq.hpp File Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><code>#include &lt;linux/if_ether.h&gt;</code><br />
+<div class="textblock"><code>#include &lt;cstddef&gt;</code><br />
+<code>#include &lt;tuple&gt;</code><br />
+<code>#include &lt;memory&gt;</code><br />
+<code>#include &lt;vector&gt;</code><br />
+<code>#include &lt;type_traits&gt;</code><br />
+<code>#include &lt;algorithm&gt;</code><br />
+<code>#include &lt;thread&gt;</code><br />
+<code>#include &lt;chrono&gt;</code><br />
+<code>#include &lt;<a class="el" href="util_8hpp_source.html">pfq/util.hpp</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="queue_8hpp_source.html">pfq/queue.hpp</a>&gt;</code><br />
+<code>#include &lt;pfq/lang/lang.hpp&gt;</code><br />
+<code>#include &lt;linux/if_ether.h&gt;</code><br />
 <code>#include &lt;linux/ip.h&gt;</code><br />
 <code>#include &lt;linux/pf_q.h&gt;</code><br />
 <code>#include &lt;sys/types.h&gt;</code><br />
@@ -109,16 +120,6 @@ $(document).ready(function(){initNavTree('pfq_8hpp.html','');});
 <code>#include &lt;sys/mman.h&gt;</code><br />
 <code>#include &lt;fcntl.h&gt;</code><br />
 <code>#include &lt;poll.h&gt;</code><br />
-<code>#include &lt;tuple&gt;</code><br />
-<code>#include &lt;memory&gt;</code><br />
-<code>#include &lt;vector&gt;</code><br />
-<code>#include &lt;type_traits&gt;</code><br />
-<code>#include &lt;algorithm&gt;</code><br />
-<code>#include &lt;thread&gt;</code><br />
-<code>#include &lt;chrono&gt;</code><br />
-<code>#include &lt;<a class="el" href="util_8hpp_source.html">pfq/util.hpp</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="queue_8hpp_source.html">pfq/queue.hpp</a>&gt;</code><br />
-<code>#include &lt;pfq/lang/lang.hpp&gt;</code><br />
 </div>
 <p><a href="pfq_8hpp_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
@@ -198,7 +199,7 @@ Traits &gt; &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a cla
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="dir_2916f9fbcacdf2e5f0583aa159c707b6.html">C++</a></li><li class="navelem"><a class="el" href="dir_f5c141fe61b0a0287f06112b2feb457f.html">pfq</a></li><li class="navelem"><a class="el" href="pfq_8hpp.html">pfq.hpp</a></li>
-    <li class="footer">Generated on Mon Sep 14 2015 19:04:51 for PFQ C++ library by
+    <li class="footer">Generated on Sat Sep 26 2015 14:47:31 for PFQ C++ library by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.8 </li>
   </ul>

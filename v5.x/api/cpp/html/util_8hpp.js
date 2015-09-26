@@ -8,7 +8,7 @@ var util_8hpp =
     [ "mutable_buffer", "util_8hpp.html#ad7b88920eaf729154354741132483ea8", null ],
     [ "align", "util_8hpp.html#a9db75e7163c5f764248401d10a2a3f9b", null ],
     [ "fmap", "util_8hpp.html#a75e00e20d4294c941fce79c9e884201a", null ],
-    [ "fold", "util_8hpp.html#a8abbfe940a92b69bac1a5d93fd354f9a", null ],
+    [ "fold", "util_8hpp.html#a881bd432d152026217ddbf0ae5d72833", null ],
     [ "get", "util_8hpp.html#a09da2abc1a228d7f77c35bed3bdb157d", null ],
     [ "get_irq_by_device", "util_8hpp.html#ad3359e328bf6619dc4595eadb0d354ba", null ],
     [ "get_num_queues", "util_8hpp.html#a35dc28fdd850e9c82f1f3861cce2f9cb", null ],
