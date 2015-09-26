@@ -339,7 +339,8 @@ buildTargets tgts script baseDir level = do
                                   else void $
                                        do ec <- mapM (execCmd opt) cmds'
                                           unless (all (== ExitSuccess) ec) $
-                                              error ("SimpleBuilder: " ++ show target ++ " aborted!")
+                                            let show_cmd (c,e) = show c ++ " -> (" ++ show e ++ ")" in
+                                                error ("SimpleBuilder: " ++ show target ++ " aborted: " ++ intercalate ", " (zipWith (curry show_cmd) cmds' ec) ++ "!")
 
 
 putStrLnVerbose  :: Maybe Bool -> String -> BuilderT IO ()
