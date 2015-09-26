@@ -124,3 +124,9 @@ PFQ 5.1
  * Bug fixes.
 
 
+PFQ 5.2
+-------
+ * Transmission APIs updated.
+ * Transmission performance improvements.
+ * Bug fixes.
+
