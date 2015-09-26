@@ -48,6 +48,9 @@ struct net_dev_queue
 #define PFQ_NETQ_IFINDEX(id)		((int)(id >> 32))
 #define PFQ_NETQ_QUEUE(id)		((int)(id & 0xffffffff))
 
+#define PFQ_NETQ_NULL			PFQ_NETQ_ID(-1,-1)
+#define PFQ_NETQ_DEFAULT		PFQ_NETQ_ID(0,0)
+
 #define PFQ_NETQ_IS_NULL(id)		(PFQ_NETQ_IFINDEX(id) == -1)
 #define PFQ_NETQ_IS_DEFAULT(id)		(PFQ_NETQ_IFINDEX(id) == 0)
 

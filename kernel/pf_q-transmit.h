@@ -43,7 +43,7 @@
 
 #define for_each_sk_tx_mbuff(hdr, end) \
         for(; (hdr < (struct pfq_pkthdr *)end) && (hdr->caplen != 0); \
-               hdr = (struct pfq_pkthdr *)((char *)(hdr+1) + ALIGN(hdr->caplen, 8)))
+               hdr = Q_NEXT_PKTHDR(hdr))
 
 
 extern int pfq_sk_queue_xmit(struct pfq_sock *so, int qindex, int cpu, int node, atomic_t const *stop);
