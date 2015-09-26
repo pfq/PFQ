@@ -150,13 +150,12 @@ unsigned int dev_tx_skb_copies(struct net_device *dev, unsigned int req_copies)
 
 
 static inline
-dev_qid_t
-get_next_dq(struct pfq_pkthdr *hdr, dev_qid_t const default_qid)
+devq_id_t
+make_devq_id(struct pfq_pkthdr *hdr, devq_id_t const default_qid)
 {
-	dev_qid_t next_qid = PFQ_NETQ_ID(hdr->ifindex, hdr->queue);
-	if (PFQ_NETQ_IS_DEFAULT(next_qid))
+	devq_id_t qid = PFQ_NETQ_ID(hdr->ifindex, hdr->queue);
+	if (PFQ_NETQ_IS_DEFAULT(qid))
 		return default_qid;
-	return next_qid;
 }
 
 

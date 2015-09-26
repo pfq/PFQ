@@ -27,7 +27,7 @@
 
 #include <pf_q-netdev.h>
 
-int dev_queue_get(struct net *net, struct net_device_cache const *default_dev, dev_qid_t id,
+int dev_queue_get(struct net *net, struct net_device_cache const *default_dev, devq_id_t id,
 		  struct net_dev_queue *dq)
 {
 	struct net_device *dev = __fast_dev_get_by_index(net, default_dev, PFQ_NETQ_IFINDEX(id));

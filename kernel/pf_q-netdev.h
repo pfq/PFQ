@@ -34,7 +34,7 @@
 #include <pragma/diagnostic_pop>
 
 
-typedef uint64_t dev_qid_t;
+typedef uint64_t devq_id_t;
 
 struct net_dev_queue
 {
@@ -131,7 +131,7 @@ int dev_put_by_index(struct net *net, int ifindex)
 }
 
 
-extern int dev_queue_get(struct net *net, struct net_device_cache const *default_dev, dev_qid_t id, struct net_dev_queue *dq);
+extern int dev_queue_get(struct net *net, struct net_device_cache const *default_dev, devq_id_t id, struct net_dev_queue *dq);
 
 
 #endif /* PF_Q_NETDEV_H */
