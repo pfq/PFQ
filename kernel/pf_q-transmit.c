@@ -235,14 +235,13 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 		struct sk_buff *skb;
 		size_t len;
 
-		cur_qid = make_devq_id(hdr, default_qid);
-
 		/* skip this packet ? */
 
-		if (PFQ_NETQ_IS_NULL(cur_qid))
+		cur_qid = make_devq_id(hdr, default_qid);
+		if (unlikely(PFQ_NETQ_IS_NULL(cur_qid)))
 			continue;
 
-		/* get next next_qid ...*/
+		/* get next_qid ...*/
 
 		next = Q_NEXT_PKTHDR(hdr);
 		next_qid = next < (struct pfq_pkthdr *)end ? make_devq_id(next, default_qid) : PFQ_NETQ_NULL;
@@ -277,14 +276,13 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 			last = false;
 		}
 
-		/* check device */
+		/* ensure the device is ok */
 
 		if (unlikely(devq.dev == NULL)) {
 			if (printk_ratelimit())
 				printk(KERN_INFO "[PFQ] dev: ifindex=%d not found!\n", PFQ_NETQ_IFINDEX(cur_qid));
 			continue;
 		}
-
 
 		/* wait until the Ts ? */
 
@@ -304,7 +302,7 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 		}
 
 
-		/* allocate a socket buffer */
+		/* allocate a new socket buffer */
 
 		skb = pfq_alloc_skb_pool(xmit_slot_size, GFP_KERNEL, node, skb_pool);
 		if (unlikely(skb == NULL)) {
@@ -326,13 +324,12 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 		skb_set_queue_mapping(skb, devq.queue_mapping);
 		skb_copy_to_linear_data(skb, hdr+1, len < 64 ? 64 : len);
 
-
-		/* transmit the packet */
+		/* transmit the packet(s) */
 
 		total_copies = copies = dev_tx_skb_copies(devq.dev, hdr->data.copies);
 
 		do {
-			bool xmit_more = !last || copies != 1;
+			const bool xmit_more = !last || copies != 1;
 
 			skb_get(skb);
 
@@ -340,6 +337,8 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 
 				pfq_hard_tx_unlock(&devq);
 				local_bh_enable();
+
+				batch_cntr = 0;
 
 				pfq_relax();
 
@@ -365,7 +364,7 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 		__sparse_add(&so->stats.sent, total_copies, cpu);
 		__sparse_add(&global_stats.sent, total_copies, cpu);
 
-		/* return the skb and move ptr to the next packet */
+		/* return the skb to the pool */
 
 		pfq_kfree_skb_pool(skb, skb_pool);
 	}
@@ -374,6 +373,7 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 
 	pfq_hard_tx_unlock(&devq);
 	local_bh_enable();
+
 exit:
 	/* release the device */
 
@@ -397,7 +397,6 @@ exit:
 
 	return total_sent;
 }
-
 
 static inline int
 __pfq_xmit(struct sk_buff *skb, struct net_device *dev, int xmit_more)
