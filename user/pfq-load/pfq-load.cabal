@@ -2,7 +2,7 @@
 -- see http://haskell.org/cabal/users-guide/
 
 name:                   pfq-load
-version:                5.1
+version:                5.2
 
 license-file:           LICENSE
 author:                 Nicola Bonelli

@@ -51,7 +51,7 @@ proc_modules = "/proc/modules"
 bold  = setSGRCode [SetConsoleIntensity BoldIntensity]
 reset = setSGRCode []
 
-version = "5.1"
+version = "5.2"
 
 configFiles = [ "/etc/pfq.conf", "/root/.pfq.conf" ]
 
