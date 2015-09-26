@@ -55,7 +55,7 @@ struct net_dev_queue
 #define PFQ_NETQ_IS_DEFAULT(id)		(PFQ_NETQ_IFINDEX(id) == 0)
 
 #define PFQ_NETQ_FMT			"(%d:%d)"
-#define PFQ_NETQ_FMT_ARG(id)		PFQ_NETQ_IFINDEX(id), PFQ_NETQ_QUEUE(id)
+#define PFQ_NETQ_ARG(id)		PFQ_NETQ_IFINDEX(id), PFQ_NETQ_QUEUE(id)
 
 
 struct net_device_cache

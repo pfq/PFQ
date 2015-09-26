@@ -332,8 +332,11 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 		total_copies = copies = dev_tx_skb_copies(devq.dev, hdr->data.copies);
 
 		do {
+			bool xmit_more = !last || copies != 1;
+
 			skb_get(skb);
-			if (__pfq_xmit(skb, devq.dev, !last || copies != 1) < 0) {
+
+			if (__pfq_xmit(skb, devq.dev, xmit_more) < 0) {
 
 				pfq_hard_tx_unlock(&devq);
 				local_bh_enable();
