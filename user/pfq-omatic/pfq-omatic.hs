@@ -31,11 +31,11 @@ import Text.Regex.Posix
 import Data.List
 import Data.Maybe
 import Data.Function(on)
+import qualified Network.PFq as Q (version)
 
-pfq_omatic_ver,pfq_kcompat,proc_cpuinfo :: String
+pfq_kcompat,proc_cpuinfo :: String
 pfq_symvers :: [String]
 
-pfq_omatic_ver  = "5.2"
 proc_cpuinfo    = "/proc/cpuinfo"
 pfq_kcompat     = "/usr/include/linux/pf_q-kcompat.h"
 pfq_symvers     = [ "/lib/modules/" ++ uname_r ++ "/kernel/net/pfq/Module.symvers",
@@ -55,7 +55,7 @@ getMostRecentFile xs = do
 main :: IO ()
 main = do
     args <- getArgs
-    putStrLn $ "[PFQ] pfq-omatic: v" ++ pfq_omatic_ver
+    putStrLn $ "[PFQ] pfq-omatic: PFQ v" ++ Q.version
     generalChecks
     getRecursiveContents "." [".c"] >>= mapM_ tryPatch
     symver <- liftM fromJust $ getMostRecentFile pfq_symvers

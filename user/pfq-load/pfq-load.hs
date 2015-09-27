@@ -43,6 +43,7 @@ import System.Exit
 import System.FilePath
 import System.Posix.Signals
 import System.Posix.Types
+import qualified Network.PFq as Q (version)
 
 proc_cpuinfo, proc_modules :: String
 proc_cpuinfo = "/proc/cpuinfo"
@@ -50,8 +51,6 @@ proc_modules = "/proc/modules"
 
 bold  = setSGRCode [SetConsoleIntensity BoldIntensity]
 reset = setSGRCode []
-
-version = "5.2"
 
 configFiles = [ "/etc/pfq.conf", "/root/.pfq.conf" ]
 
@@ -137,7 +136,7 @@ options = cmdArgsMode $ Options
     ,   first_core = 0             &= typ "NUM" &= help "First core used for irq affinity"
     ,   exclude    = []            &= typ "CORE" &= help "Exclude core from irq affinity"
     ,   others     = []            &= args
-    } &= summary ("pfq-load " ++ version) &= program "pfq-load"
+    } &= summary ("pfq-load (PFQ " ++ Q.version ++ ")") &= program "pfq-load"
 
 
 -------------------------------------------------------------------------------------------

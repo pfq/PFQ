@@ -18,5 +18,7 @@ Executable pfq-stress
                         ansi-terminal,
                         process,
                         unix,
-                        here
-    default-language:   Haskell2010
+                        here,
+                        pfq
+   extra-libraries:     pfq
+   default-language:    Haskell2010

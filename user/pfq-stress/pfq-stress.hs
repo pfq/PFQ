@@ -33,12 +33,12 @@ import Control.Concurrent (threadDelay)
 import Data.String.Here
 import Data.Data
 import Data.List (intercalate, (\\))
+import qualified Network.PFq as Q (version)
 
-version, pfq_counters, pfq_load :: String
+pfq_counters, pfq_load :: String
 
 pfq_counters = "/usr/local/bin/pfq-counters"
 pfq_load = "/root/.cabal/bin/pfq-load"
-version = "5.2"
 
 pfqOptions :: [ (Int, [String]) ]
 pfqOptions = [ (rss, [mkOption "capture_incoming" icap,
@@ -75,7 +75,7 @@ options = cmdArgsMode $ Options
          run        = []            &= help "List of tests to run",
          skip       = []            &= help "List of tests to skip",
          dryRun     = False         &= help "Don't actually run tests"
-    } &= summary ("pfq-tOest " ++ version) &= program "pfq-test"
+    } &= summary ("pfq-stress (PFQ " ++ Q.version ++ ")") &= program "pfq-stress"
 
 
 

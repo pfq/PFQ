@@ -22,5 +22,7 @@ Executable pfq-load
                         process,
                         ansi-terminal,
                         mtl,
-                        unix
+                        unix,
+                        pfq
+    extra-libraries:    pfq
     default-language:   Haskell2010
