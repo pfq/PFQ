@@ -165,12 +165,12 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 {
 	struct pfq_tx_info * txinfo = pfq_get_tx_queue_info(&so->opt, sock_queue);
 	struct net_device_cache default_dev;
-	struct pfq_skb_pool *skb_pool = NULL;
 	struct net_dev_queue devq = { NULL, NULL };
+	struct pfq_skb_pool *skb_pool = NULL;
 	struct pfq_pkthdr *hdr;
 	struct pfq_tx_queue *txm;
-	char *begin, *end;
 	ptrdiff_t prod_off;
+	char *begin, *end;
 	ktime_t now;
 
 	int total_sent = 0, disc = 0, batch_cntr = 0, prod_idx;
@@ -179,14 +179,12 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 	devq_id_t prec_qid = default_qid;
 
 	unsigned long jnow;
-	bool last = false;
 
 	/* get the Tx queue */
 
 	txm = pfq_get_tx_queue(&so->opt, sock_queue);
 	if (txm == NULL)
 		return 0; /* socket not enabled... */
-
 
 	/* setup default device */
 
@@ -214,7 +212,6 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 	begin    = txinfo->base_addr + (prod_idx & 1) * txm->size + txm->cons.off;
 	end      = txinfo->base_addr + (prod_idx & 1) * txm->size + prod_off;
 
-
 	/* lock the default devq */
 
 	dev_queue_get(sock_net(&so->sk), &default_dev, default_qid , &devq);
@@ -234,6 +231,7 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 		struct pfq_pkthdr *next;
 		struct sk_buff *skb;
 		size_t len;
+                bool last;
 
 		/* skip this packet ? */
 
