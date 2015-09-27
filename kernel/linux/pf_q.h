@@ -76,13 +76,12 @@ static inline void smp_wmb() { barrier(); }
 /* PFQ version as in Linux kernel */
 
 #define PFQ_VERSION(a,b,c)		(((a) << 16) + ((b) << 8) + (c))
-
-#define PFQ_VERSION_CODE		PFQ_VERSION(5,2,0)
-
 #define PFQ_MAJOR(a)			((a >> 16) & 0xff)
 #define PFQ_MINOR(a)			((a >> 8) & 0xff)
 #define PFQ_PATCHLEVEL(a)		(a & 0xff)
 
+#define PFQ_VERSION_CODE		PFQ_VERSION(5,2,0)
+#define PFQ_VERSION_STRING		"5.2.0"
 
 #define PF_Q				27   /* pfq socket family */
 

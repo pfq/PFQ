@@ -75,6 +75,7 @@ module Network.PFq
         any_device,
         any_queue,
         any_group,
+        version,
 
         SocketParams(..),
         defaultSocketParams,
@@ -337,6 +338,10 @@ newtype VlanTag = VlanTag { getVid:: CInt }
     , vlan_untag           = Q_VLAN_UNTAG
     , vlan_anytag          = Q_VLAN_ANYTAG
 }
+
+
+version :: String
+version = #{const_str PFQ_VERSION_STRING }
 
 
 toPktHdr :: Ptr PktHdr

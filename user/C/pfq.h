@@ -212,6 +212,8 @@ static const int pfq_major_version	= PFQ_MAJOR(PFQ_VERSION_CODE);
 static const int pfq_minor_version	= PFQ_MINOR(PFQ_VERSION_CODE);
 static const int pfq_patchlevel_version = PFQ_PATCHLEVEL(PFQ_VERSION_CODE);
 
+extern const char *pfq_string_version;
+
 
 /*! Return the string error. */
 /*!

@@ -139,6 +139,8 @@ namespace pfq {
     constexpr const int minor_version = PFQ_MINOR(PFQ_VERSION_CODE);
     constexpr const int patchlevel_version = PFQ_PATCHLEVEL(PFQ_VERSION_CODE);
 
+    constexpr const char * string_version = PFQ_VERSION_STRING;
+
     //! PFQ: the socket
     /*!
      * This class is the main interface to the PFQ kernel module.
