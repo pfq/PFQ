@@ -327,7 +327,6 @@ newtype VlanTag = VlanTag { getVid:: CInt }
     , any_group            = Q_ANY_GROUP
     , no_kthread           = Q_NO_KTHREAD
     , group_max_counters   = Q_MAX_COUNTERS
-    , group_fun_descr_size = sizeof(struct pfq_functional_descr)
 }
 
 #{enum VlanTag, VlanTag
@@ -963,7 +962,7 @@ trd3 (_,_,x) = x
 data StorableFunDescr = StorableFunDescr CString [(IntPtr,CSize,CSize)] CSize
 
 instance Storable StorableFunDescr where
-        sizeOf _    = getConstant group_fun_descr_size
+        sizeOf _    = #{size struct pfq_functional_descr}
         alignment _ = alignment (undefined :: CSize)
         peek        = undefined
         poke ptr (StorableFunDescr symbol args next) = do
@@ -989,11 +988,11 @@ setGroupComputation :: Ptr PFqTag
 
 setGroupComputation hdl gid comp = do
     let (descrList, _) = serialize comp 0
-    allocaBytes (sizeOf (undefined :: CSize) * 2 + getConstant group_fun_descr_size * length descrList) $ \ ptr -> do
+    allocaBytes (sizeOf (undefined :: CSize) * 2 + #{size struct pfq_functional_descr} * length descrList) $ \ ptr -> do
         pokeByteOff ptr 0 (fromIntegral (length descrList) :: CSize)     -- size
         pokeByteOff ptr (sizeOf(undefined :: CSize)) (0 :: CSize)        -- entry_point: always the first one!
         withMany withFunDescr descrList $ \marshList -> do
-            let offset n = sizeOf(undefined :: CSize) * 2 + getConstant group_fun_descr_size * n
+            let offset n = sizeOf(undefined :: CSize) * 2 + #{size struct pfq_functional_descr} * n
             forM_ (zip [0..] marshList) $ \(n, (symbol, parms, next)) ->
                 pokeByteOff ptr (offset n)
                     (StorableFunDescr symbol parms (fromIntegral next))
