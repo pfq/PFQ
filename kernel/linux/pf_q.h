@@ -374,8 +374,8 @@ struct pfq_binding
 		int tid;
 	};
 
-        int if_index;
-        int queue;
+        int ifindex;
+        int qindex;
 };
 
 struct pfq_group_join

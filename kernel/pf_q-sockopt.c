@@ -404,15 +404,15 @@ int pfq_setsockopt(struct socket *sock,
 			return -EACCES;
 		}
 
-                if (!dev_get_by_index(sock_net(&so->sk), bind.if_index)) {
-                        printk(KERN_INFO "[PFQ|%d] bind: invalid if_index=%d!\n", so->id, bind.if_index);
+                if (!dev_get_by_index(sock_net(&so->sk), bind.ifindex)) {
+                        printk(KERN_INFO "[PFQ|%d] bind: invalid ifindex=%d!\n", so->id, bind.ifindex);
                         return -EACCES;
                 }
 
-                pfq_devmap_update(map_set, bind.if_index, bind.queue, gid);
+                pfq_devmap_update(map_set, bind.ifindex, bind.qindex, gid);
 
-                pr_devel("[PFQ|%d] group id=%d bind: device if_index=%d queue=%d\n",
-					so->id, bind.gid, bind.if_index, bind.queue);
+                pr_devel("[PFQ|%d] group id=%d bind: device ifindex=%d qindex=%d\n",
+					so->id, bind.gid, bind.ifindex, bind.qindex);
 
         } break;
 
@@ -434,15 +434,15 @@ int pfq_setsockopt(struct socket *sock,
 			return -EACCES;
 		}
 
-                if (dev_put_by_index(sock_net(&so->sk), bind.if_index) < 0) {
-                        printk(KERN_INFO "[PFQ|%d] group id=%d unbind: invalid if_index=%d!\n", so->id, gid, bind.if_index);
+                if (dev_put_by_index(sock_net(&so->sk), bind.ifindex) < 0) {
+                        printk(KERN_INFO "[PFQ|%d] group id=%d unbind: invalid ifindex=%d!\n", so->id, gid, bind.ifindex);
                         return -EPERM;
                 }
 
-                pfq_devmap_update(map_reset, bind.if_index, bind.queue, gid);
+                pfq_devmap_update(map_reset, bind.ifindex, bind.qindex, gid);
 
-                pr_devel("[PFQ|%d] group id=%d unbind: device if_index=%d queue=%d\n",
-					so->id, gid, bind.if_index, bind.queue);
+                pr_devel("[PFQ|%d] group id=%d unbind: device ifindex=%d qindex=%d\n",
+					so->id, gid, bind.ifindex, bind.qindex);
 
         } break;
 
@@ -455,21 +455,21 @@ int pfq_setsockopt(struct socket *sock,
                 if (copy_from_user(&bind, optval, optlen))
                         return -EFAULT;
 
-                if (!dev_get_by_index(sock_net(&so->sk), bind.if_index)) {
-                        printk(KERN_INFO "[PFQ|%d] egress bind: invalid if_index=%d\n", so->id, bind.if_index);
+                if (!dev_get_by_index(sock_net(&so->sk), bind.ifindex)) {
+                        printk(KERN_INFO "[PFQ|%d] egress bind: invalid ifindex=%d\n", so->id, bind.ifindex);
                         return -EPERM;
                 }
 
-                if (bind.queue < -1) {
-                        printk(KERN_INFO "[PFQ|%d] egress bind: invalid queue=%d\n", so->id, bind.queue);
+                if (bind.qindex < -1) {
+                        printk(KERN_INFO "[PFQ|%d] egress bind: invalid qindex=%d\n", so->id, bind.qindex);
                         return -EPERM;
                 }
 
 		so->egress_type  = pfq_endpoint_device;
-                so->egress_index = bind.if_index;
-                so->egress_queue = bind.queue;
+                so->egress_index = bind.ifindex;
+                so->egress_queue = bind.qindex;
 
-                pr_devel("[PFQ|%d] egress bind: device if_index=%d queue=%d\n",
+                pr_devel("[PFQ|%d] egress bind: device ifindex=%d qindex=%d\n",
 			 so->id, so->egress_index, so->egress_queue);
 
         } break;
@@ -750,22 +750,22 @@ int pfq_setsockopt(struct socket *sock,
 			return -EPERM;
 		}
 
-                if (bind.queue < -1) {
-                        printk(KERN_INFO "[PFQ|%d] Tx thread: invalid socket queue (%d)\n", so->id, bind.queue);
-                        return -EPERM;
-                }
-
 		if (bind.tid >= 0 &&
 		    so->opt.tx_num_async_queues >= Q_MAX_TX_QUEUES) {
 			printk(KERN_INFO "[PFQ|%d] Tx thread: max number of sock queues exceeded!\n", so->id);
 			return -EPERM;
 		}
 
+                if (bind.qindex < -1) {
+                        printk(KERN_INFO "[PFQ|%d] Tx thread: invalid hw queue (%d)\n", so->id, bind.qindex);
+                        return -EPERM;
+                }
+
 		/* get device */
 
-		if (bind.if_index != -1 &&
-		    !(dev = dev_get_by_index(sock_net(&so->sk), bind.if_index))) {
-			printk(KERN_INFO "[PFQ|%d] Tx thread: invalid if_index=%d\n", so->id, bind.if_index);
+		if (bind.ifindex != -1 &&
+		    !(dev = dev_get_by_index(sock_net(&so->sk), bind.ifindex))) {
+			printk(KERN_INFO "[PFQ|%d] Tx thread: invalid ifindex=%d\n", so->id, bind.ifindex);
 			return -EPERM;
 		}
 
@@ -773,22 +773,22 @@ int pfq_setsockopt(struct socket *sock,
 
 		if (bind.tid >= 0) /* async queues */
 		{
-			int err = pfq_sock_tx_bind(so, bind.tid, bind.if_index, bind.queue, dev);
+			int err = pfq_sock_tx_bind(so, bind.tid, bind.ifindex, bind.qindex, dev);
 			if (err < 0) {
-				if (bind.if_index != -1)
-					dev_put_by_index(sock_net(&so->sk), bind.if_index);
+				if (bind.ifindex != -1)
+					dev_put_by_index(sock_net(&so->sk), bind.ifindex);
 
 				return err;
 			}
 
-			pr_devel("[PFQ|%d] Tx[%d] bind: if_index=%d queue=%d\n", so->id, bind.tid, bind.if_index, bind.queue);
+			pr_devel("[PFQ|%d] Tx[%d] bind: if_index=%d qindex=%d\n", so->id, bind.tid, bind.ifindex, bind.qindex);
 		}
 		else /* sync queue */
 		{
-			so->opt.txq.def_ifindex = bind.if_index;
-			so->opt.txq.def_queue = bind.queue;
+			so->opt.txq.def_ifindex = bind.ifindex;
+			so->opt.txq.def_queue = bind.qindex;
 			so->opt.txq.def_dev = dev;
-			pr_devel("[PFQ|%d] Tx bind: if_index=%d queue=%d\n", so->id,
+			pr_devel("[PFQ|%d] Tx bind: if_index=%d qindex=%d\n", so->id,
 				so->opt.txq.def_ifindex,
 				so->opt.txq.def_queue);
 		}
