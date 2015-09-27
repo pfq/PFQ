@@ -61,11 +61,10 @@ size_t pfq_sk_rx_queue_recv(struct pfq_sock_opt *opt,
 			    pfq_gid_t gid)
 {
 	struct pfq_rx_queue *rx_queue = pfq_get_rx_queue(opt);
+	struct pfq_pkthdr *hdr;
 	int data, qlen, qindex;
 	struct sk_buff __GC *skb;
-
 	size_t n, sent = 0;
-	char *this_slot;
 
 	if (unlikely(rx_queue == NULL))
 		return 0;
@@ -79,19 +78,16 @@ size_t pfq_sk_rx_queue_recv(struct pfq_sock_opt *opt,
 
 	qlen = Q_SHARED_QUEUE_LEN(data) - burst_len;
 	qindex = Q_SHARED_QUEUE_INDEX(data);
-	this_slot = pfq_mpsc_slot_ptr(opt, rx_queue, qindex, qlen);
+	hdr = (struct pfq_pkthdr *) pfq_mpsc_slot_ptr(opt, rx_queue, qindex, qlen);
 
 	for_each_skbuff_bitmask(skbs, mask, skb, n)
 	{
-		volatile struct pfq_pkthdr *hdr;
 		size_t bytes, slot_index;
 		char *pkt;
 
 		bytes = min_t(size_t, skb->len, opt->caplen);
 
 		slot_index = qlen + sent;
-
-		hdr = (struct pfq_pkthdr *)this_slot;
 		pkt = (char *)(hdr+1);
 
 		if (slot_index > opt->rx_queue_len) {
@@ -157,7 +153,7 @@ size_t pfq_sk_rx_queue_recv(struct pfq_sock_opt *opt,
 
 		sent++;
 
-		this_slot += opt->rx_slot_size;
+		hdr = Q_NEXT_PKTHDR(hdr, opt->rx_slot_size);
 	}
 
 	return sent;

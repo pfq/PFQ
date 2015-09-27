@@ -243,7 +243,7 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 
 		/* get next_qid ...*/
 
-		next = Q_NEXT_PKTHDR(hdr);
+		next = Q_NEXT_PKTHDR(hdr, 0);
 		next_qid = next < (struct pfq_pkthdr *)end ? make_devq_id(next, default_qid) : PFQ_NETQ_NULL;
 
 		/* devq switch, or relax the batch queue (at the first packet of
