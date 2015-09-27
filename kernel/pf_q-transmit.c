@@ -251,12 +251,16 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 
 		batch_cntr++;
 
-		if (prec_qid != cur_qid || batch_cntr == 1) {
+		if (prec_qid != cur_qid || (batch_cntr == 1 && need_resched())) {
 
 			pfq_hard_tx_unlock(&devq);
 			local_bh_enable();
 
 			dev_queue_put(sock_net(&so->sk), &default_dev, &devq);
+
+			if (batch_cntr == 1)
+				schedule();
+
 			dev_queue_get(sock_net(&so->sk), &default_dev, cur_qid , &devq);
 
 			local_bh_disable();
