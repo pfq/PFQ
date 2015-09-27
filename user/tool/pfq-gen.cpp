@@ -180,6 +180,12 @@ namespace thread
 
             for(unsigned int n = 0; n < m_bind.dev.front().queue.size(); n++)
             {
+                std::cout << "tx_bind    : " << m_bind.dev.front().name << ':' << m_bind.dev.front().queue[n];
+                if (kthread.at(n) >= 0)
+                    std::cout << " -> [kpfq/" <<  kthread.at(n) << "]" << std::endl;
+                else
+                    std::cout << std::endl;
+
                 q.bind_tx (m_bind.dev.front().name.c_str(), m_bind.dev.front().queue[n], kthread.at(n));
             }
 
