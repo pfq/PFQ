@@ -36,10 +36,6 @@
 #include <pf_q-module.h>
 
 
-#define for_each_sk_rx_mbuff(hdr, n, m, fixsize) \
-        for(; (hdr < (struct pfq_pkthdr *)end) && (n < m); \
-               n++, hdr = (struct pfq_pkthdr *)((char *)(hdr+1) + ALIGN(fixsize, 8)))
-
 
 extern size_t pfq_sk_rx_queue_recv(struct pfq_sock_opt *opt,
 		                   struct pfq_skbuff_GC_queue *skbs,

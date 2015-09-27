@@ -41,10 +41,6 @@
 
 /* socket queues */
 
-#define for_each_sk_tx_mbuff(hdr, end) \
-        for(; (hdr < (struct pfq_pkthdr *)end) && (hdr->caplen != 0); \
-               hdr = Q_NEXT_PKTHDR(hdr, 0))
-
 
 extern int pfq_sk_queue_xmit(struct pfq_sock *so, int qindex, int cpu, int node, atomic_t const *stop);
 extern int pfq_sk_queue_flush(struct pfq_sock *so, int index);

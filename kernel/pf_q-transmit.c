@@ -227,7 +227,7 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 	jnow = jiffies;
 	hdr  = (struct pfq_pkthdr *)begin;
 
-	for_each_sk_tx_mbuff(hdr, end)
+	for_each_sk_mbuff(hdr, end, 0)
 	{
 		unsigned int copies, total_copies;
 		devq_id_t cur_qid, next_qid;
@@ -389,7 +389,7 @@ exit:
 
 	/* count the packets left in the shared queue */
 
-	for_each_sk_tx_mbuff(hdr, end)
+	for_each_sk_mbuff(hdr, end, 0)
 	{
 		disc++;
 	}
