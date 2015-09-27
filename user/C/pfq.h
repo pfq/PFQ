@@ -207,6 +207,12 @@ unsigned int pfq_fold(unsigned int hash, unsigned int n)
  *          library functions             *
  * ************************************** */
 
+static const int pfq_version_code	= PFQ_VERSION_CODE;
+static const int pfq_major_version	= PFQ_MAJOR(PFQ_VERSION_CODE);
+static const int pfq_minor_version	= PFQ_MINOR(PFQ_VERSION_CODE);
+static const int pfq_patchlevel_version = PFQ_PATCHLEVEL(PFQ_VERSION_CODE);
+
+
 /*! Return the string error. */
 /*!
  * Return a string of the most recent error.

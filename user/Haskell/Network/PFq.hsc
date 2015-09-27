@@ -327,6 +327,10 @@ newtype VlanTag = VlanTag { getVid:: CInt }
     , any_group            = Q_ANY_GROUP
     , no_kthread           = Q_NO_KTHREAD
     , group_max_counters   = Q_MAX_COUNTERS
+    , version_code         = PFQ_VERSION_CODE
+    , major_version        = PFQ_MAJOR(PFQ_VERSION_CODE)
+    , minor_version        = PFQ_MINOR(PFQ_VERSION_CODE)
+    , patchlevel_version   = PFQ_PATCHLEVEL(PFQ_VERSION_CODE)
 }
 
 #{enum VlanTag, VlanTag
