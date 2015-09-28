@@ -730,8 +730,8 @@ unbindGroup hdl gid name queue =
 -- The egress socket is be used by groups as network forwarder.
 
 egressBind :: Ptr PFqTag
-           -> String      -- device name
-           -> Int         -- queue index
+           -> String      -- ^ device name
+           -> Int         -- ^ queue index
            -> IO ()
 egressBind hdl name queue =
     withCString name $ \dev ->
@@ -750,9 +750,9 @@ egressUnbind hdl =
 --
 
 bindTx :: Ptr PFqTag
-       -> String      -- device name
-       -> Int         -- hw queue index
-       -> Int         -- kthread id (number)
+       -> String      -- ^ device name
+       -> Int         -- ^ hw queue index
+       -> Int         -- ^ PFQ thread id (number)
        -> IO ()
 bindTx hdl name queue kthread =
     withCString name $ \dev ->
@@ -1032,7 +1032,7 @@ setGroupComputationFromString hdl gid comp =
 -- Transmit the packets in the Tx queues of the socket.
 
 transmitQueue :: Ptr PFqTag
-        -> Int     -- queue index (0 is valid queue)
+        -> Int     -- ^ queue index (0 is sync tx queue)
         -> IO ()
 transmitQueue hdl queue =
     pfq_transmit_queue hdl (fromIntegral queue) >>= throwPFqIf_ hdl (== -1)
