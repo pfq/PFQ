@@ -917,9 +917,9 @@ static int __init pfq_init_module(void)
                 return -EFAULT;
         }
 
-        if (xmit_batch_len <= 0 || xmit_batch_len > Q_SKBUFF_BATCH) {
+        if (xmit_batch_len <= 0 || xmit_batch_len > (Q_SKBUFF_BATCH*4)) {
                 printk(KERN_INFO "[PFQ] xmit_batch_len=%d not allowed: valid range (0,%d]!\n",
-                       xmit_batch_len, Q_SKBUFF_BATCH);
+                       xmit_batch_len, Q_SKBUFF_BATCH * 4);
                 return -EFAULT;
         }
 
