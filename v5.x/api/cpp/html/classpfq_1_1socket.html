@@ -316,12 +316,12 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:a730cae7c25a32b22cc79615cbf3f86aa"><td class="memTemplParams" colspan="2">template&lt;typename Clock , typename Duration &gt; </td></tr>
 <tr class="memitem:a730cae7c25a32b22cc79615cbf3f86aa"><td class="memTemplItemLeft" align="right" valign="top">bool&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="classpfq_1_1socket.html#a730cae7c25a32b22cc79615cbf3f86aa">send_at</a> (<a class="el" href="namespacepfq.html#ac835a1bd09b4cbaba61c100b50d0a99f">const_buffer</a> pkt, std::chrono::time_point&lt; Clock, Duration &gt; const &amp;tp, unsigned int copies=1)</td></tr>
 <tr class="separator:a730cae7c25a32b22cc79615cbf3f86aa"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a736fac07a067a852e13f7c31362b6adb"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpfq_1_1socket.html#a736fac07a067a852e13f7c31362b6adb">send_raw</a> (<a class="el" href="namespacepfq.html#ac835a1bd09b4cbaba61c100b50d0a99f">const_buffer</a> pkt, int <a class="el" href="namespacepfq.html#a251ac5cc269aa123009754edf62ab8b4">ifindex</a>, int qindex, uint64_t nsec, size_t fhint, unsigned int copies, bool async=false, int queue=any_queue)</td></tr>
-<tr class="memdesc:a736fac07a067a852e13f7c31362b6adb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Schedule a packet transmission.  <a href="#a736fac07a067a852e13f7c31362b6adb">More...</a><br /></td></tr>
-<tr class="separator:a736fac07a067a852e13f7c31362b6adb"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:add3ae894be6b7ab0e83f26bf290c5467"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpfq_1_1socket.html#add3ae894be6b7ab0e83f26bf290c5467">tx_queue</a> (int queue=0)</td></tr>
-<tr class="memdesc:add3ae894be6b7ab0e83f26bf290c5467"><td class="mdescLeft">&#160;</td><td class="mdescRight">Transmit the packets in the queue.  <a href="#add3ae894be6b7ab0e83f26bf290c5467">More...</a><br /></td></tr>
-<tr class="separator:add3ae894be6b7ab0e83f26bf290c5467"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acac34057071b86506de185c1a68f9296"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpfq_1_1socket.html#acac34057071b86506de185c1a68f9296">send_raw</a> (<a class="el" href="namespacepfq.html#ac835a1bd09b4cbaba61c100b50d0a99f">const_buffer</a> pkt, int <a class="el" href="namespacepfq.html#a251ac5cc269aa123009754edf62ab8b4">ifindex</a>, int qindex, uint64_t nsec, unsigned int copies, bool async=false, int queue=any_queue)</td></tr>
+<tr class="memdesc:acac34057071b86506de185c1a68f9296"><td class="mdescLeft">&#160;</td><td class="mdescRight">Schedule a packet transmission.  <a href="#acac34057071b86506de185c1a68f9296">More...</a><br /></td></tr>
+<tr class="separator:acac34057071b86506de185c1a68f9296"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a1378f9f0351c8fbb3123fc793bed22d2"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpfq_1_1socket.html#a1378f9f0351c8fbb3123fc793bed22d2">transmit_queue</a> (int queue=0)</td></tr>
+<tr class="memdesc:a1378f9f0351c8fbb3123fc793bed22d2"><td class="mdescLeft">&#160;</td><td class="mdescRight">Transmit the packets in the queue.  <a href="#a1378f9f0351c8fbb3123fc793bed22d2">More...</a><br /></td></tr>
+<tr class="separator:a1378f9f0351c8fbb3123fc793bed22d2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
 <div class="textblock"><p>PFQ: the socket. </p>
@@ -1887,7 +1887,7 @@ template&lt;typename Clock , typename Duration &gt; </div>
 
 </div>
 </div>
-<a class="anchor" id="a736fac07a067a852e13f7c31362b6adb"></a>
+<a class="anchor" id="acac34057071b86506de185c1a68f9296"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -1917,12 +1917,6 @@ template&lt;typename Clock , typename Duration &gt; </div>
           <td></td>
           <td class="paramtype">uint64_t&#160;</td>
           <td class="paramname"><em>nsec</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">size_t&#160;</td>
-          <td class="paramname"><em>fhint</em>, </td>
         </tr>
         <tr>
           <td class="paramkey"></td>
@@ -2242,7 +2236,7 @@ template&lt;typename Comp &gt; </div>
 
 </div>
 </div>
-<a class="anchor" id="add3ae894be6b7ab0e83f26bf290c5467"></a>
+<a class="anchor" id="a1378f9f0351c8fbb3123fc793bed22d2"></a>
 <div class="memitem">
 <div class="memproto">
 <table class="mlabels">
@@ -2250,7 +2244,7 @@ template&lt;typename Comp &gt; </div>
   <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">void pfq::socket::tx_queue </td>
+          <td class="memname">void pfq::socket::transmit_queue </td>
           <td>(</td>
           <td class="paramtype">int&#160;</td>
           <td class="paramname"><em>queue</em> = <code>0</code></td><td>)</td>
@@ -2681,7 +2675,7 @@ template&lt;typename Iter &gt; </div>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="namespacepfq.html">pfq</a></li><li class="navelem"><a class="el" href="classpfq_1_1socket.html">socket</a></li>
-    <li class="footer">Generated on Sat Sep 26 2015 14:47:31 for PFQ C++ library by
+    <li class="footer">Generated on Mon Sep 28 2015 11:01:57 for PFQ C++ library by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.8 </li>
   </ul>

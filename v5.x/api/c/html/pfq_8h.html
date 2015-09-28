@@ -90,7 +90,8 @@ $(document).ready(function(){initNavTree('pfq_8h.html','');});
   <div class="summary">
 <a href="#nested-classes">Data Structures</a> &#124;
 <a href="#typedef-members">Typedefs</a> &#124;
-<a href="#func-members">Functions</a>  </div>
+<a href="#func-members">Functions</a> &#124;
+<a href="#var-members">Variables</a>  </div>
   <div class="headertitle">
 <div class="title">pfq.h File Reference</div>  </div>
 </div><!--header-->
@@ -225,10 +226,19 @@ Functions</h2></td></tr>
 <tr class="separator:af045476fc566e3f426184086dc8bf0f2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1ab54376ba406188ac2eaa17167920af"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pfq_8h.html#a1ab54376ba406188ac2eaa17167920af">pfq_get_group_counters</a> (<a class="el" href="pfq_8h.html#a4e27e9f8aa4924f374dbb950713e8f0e">pfq_t</a> const *q, int gid, struct pfq_counters *cs)</td></tr>
 <tr class="separator:a1ab54376ba406188ac2eaa17167920af"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:af0bf388d241b0dfc5253af3b1fd3ec8f"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pfq_8h.html#af0bf388d241b0dfc5253af3b1fd3ec8f">pfq_tx_queue</a> (<a class="el" href="pfq_8h.html#a4e27e9f8aa4924f374dbb950713e8f0e">pfq_t</a> *q, int queue)</td></tr>
-<tr class="separator:af0bf388d241b0dfc5253af3b1fd3ec8f"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a3ee7daadb1ac57df06f0f7370df60bb7"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pfq_8h.html#a3ee7daadb1ac57df06f0f7370df60bb7">pfq_send_raw</a> (<a class="el" href="pfq_8h.html#a4e27e9f8aa4924f374dbb950713e8f0e">pfq_t</a> *q, const void *ptr, size_t len, int ifindex, int qindex, uint64_t nsec, size_t fhint, unsigned int copies, int async, int queue)</td></tr>
-<tr class="separator:a3ee7daadb1ac57df06f0f7370df60bb7"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a85ce3bdba670a52062725b22bc7c7dd1"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pfq_8h.html#a85ce3bdba670a52062725b22bc7c7dd1">pfq_transmit_queue</a> (<a class="el" href="pfq_8h.html#a4e27e9f8aa4924f374dbb950713e8f0e">pfq_t</a> *q, int queue)</td></tr>
+<tr class="separator:a85ce3bdba670a52062725b22bc7c7dd1"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aaf72eedc4910bb90c75407c79671f791"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pfq_8h.html#aaf72eedc4910bb90c75407c79671f791">pfq_send_raw</a> (<a class="el" href="pfq_8h.html#a4e27e9f8aa4924f374dbb950713e8f0e">pfq_t</a> *q, const void *ptr, size_t len, int ifindex, int qindex, uint64_t nsec, unsigned int copies, int async, int queue)</td></tr>
+<tr class="separator:aaf72eedc4910bb90c75407c79671f791"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a15c39feea7bbcaa36fd78211efa65e62"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pfq_8h.html#a15c39feea7bbcaa36fd78211efa65e62">pfq_send</a> (<a class="el" href="pfq_8h.html#a4e27e9f8aa4924f374dbb950713e8f0e">pfq_t</a> *q, const void *ptr, size_t len, size_t fhint, unsigned int copies)</td></tr>
+<tr class="separator:a15c39feea7bbcaa36fd78211efa65e62"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac853454a94d92a986a8e8480ac904996"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pfq_8h.html#ac853454a94d92a986a8e8480ac904996">pfq_send_to</a> (<a class="el" href="pfq_8h.html#a4e27e9f8aa4924f374dbb950713e8f0e">pfq_t</a> *q, const void *ptr, size_t len, int ifindex, int qindex, size_t fhint, unsigned int copies)</td></tr>
+<tr class="separator:ac853454a94d92a986a8e8480ac904996"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
+Variables</h2></td></tr>
+<tr class="memitem:a3c492bcb7b1972e9b57e9ee1200c3731"><td class="memItemLeft" align="right" valign="top">const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pfq_8h.html#a3c492bcb7b1972e9b57e9ee1200c3731">pfq_string_version</a></td></tr>
+<tr class="separator:a3c492bcb7b1972e9b57e9ee1200c3731"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Typedef Documentation</h2>
 <a class="anchor" id="a20a4d1af024719d207a2f6234682ac5c"></a>
@@ -1270,7 +1280,53 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="a3ee7daadb1ac57df06f0f7370df60bb7"></a>
+<a class="anchor" id="a15c39feea7bbcaa36fd78211efa65e62"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int pfq_send </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="pfq_8h.html#a4e27e9f8aa4924f374dbb950713e8f0e">pfq_t</a> *&#160;</td>
+          <td class="paramname"><em>q</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const void *&#160;</td>
+          <td class="paramname"><em>ptr</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>len</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>fhint</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">unsigned int&#160;</td>
+          <td class="paramname"><em>copies</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Store the packet and transmit the packets in the queue.</p>
+<p>The queue is flushed every fhint packets. Requires the socket is bound for transmission to a net device and queue. See 'pfq_bind_tx'. </p>
+
+</div>
+</div>
+<a class="anchor" id="aaf72eedc4910bb90c75407c79671f791"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
@@ -1313,12 +1369,6 @@ Functions</h2></td></tr>
         <tr>
           <td class="paramkey"></td>
           <td></td>
-          <td class="paramtype">size_t&#160;</td>
-          <td class="paramname"><em>fhint</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
           <td class="paramtype">unsigned int&#160;</td>
           <td class="paramname"><em>copies</em>, </td>
         </tr>
@@ -1343,6 +1393,64 @@ Functions</h2></td></tr>
 </div><div class="memdoc">
 <p>Schedule packet transmission.</p>
 <p>The packet is copied into a Tx queue. If 'async' is 1 and 'queue' is set to any_queue, a TSS symmetric hash function is used to select the Tx queue. The packet is transmitted at the given timestamp by a PFQ kernel thread. Otherwise the queue is flushed every 'fhint' packets. A timestamp of 0 nanoseconds means immediate transmission. </p>
+
+</div>
+</div>
+<a class="anchor" id="ac853454a94d92a986a8e8480ac904996"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">int pfq_send_to </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="pfq_8h.html#a4e27e9f8aa4924f374dbb950713e8f0e">pfq_t</a> *&#160;</td>
+          <td class="paramname"><em>q</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const void *&#160;</td>
+          <td class="paramname"><em>ptr</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>len</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>ifindex</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>qindex</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">size_t&#160;</td>
+          <td class="paramname"><em>fhint</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">unsigned int&#160;</td>
+          <td class="paramname"><em>copies</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+<p>Store the packet and transmit the packets in the queue.</p>
+<p>The queue is flushed every fhint packets. </p>
 
 </div>
 </div>
@@ -1583,12 +1691,12 @@ Functions</h2></td></tr>
 
 </div>
 </div>
-<a class="anchor" id="af0bf388d241b0dfc5253af3b1fd3ec8f"></a>
+<a class="anchor" id="a85ce3bdba670a52062725b22bc7c7dd1"></a>
 <div class="memitem">
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">int pfq_tx_queue </td>
+          <td class="memname">int pfq_transmit_queue </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="pfq_8h.html#a4e27e9f8aa4924f374dbb950713e8f0e">pfq_t</a> *&#160;</td>
           <td class="paramname"><em>q</em>, </td>
@@ -1801,13 +1909,26 @@ Functions</h2></td></tr>
 
 </div>
 </div>
+<h2 class="groupheader">Variable Documentation</h2>
+<a class="anchor" id="a3c492bcb7b1972e9b57e9ee1200c3731"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">const char* pfq_string_version</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
 </div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="dir_af99bb3c152a306abd27951285ad1127.html">C</a></li><li class="navelem"><a class="el" href="pfq_8h.html">pfq.h</a></li>
-    <li class="footer">Generated on Sat Sep 26 2015 14:47:31 for PFQ C library by
+    <li class="footer">Generated on Mon Sep 28 2015 11:01:56 for PFQ C library by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.8 </li>
   </ul>

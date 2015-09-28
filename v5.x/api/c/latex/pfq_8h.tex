@@ -129,9 +129,18 @@ int \hyperlink{pfq_8h_af045476fc566e3f426184086dc8bf0f2}{pfq\+\_\+get\+\_\+group
 \item 
 int \hyperlink{pfq_8h_a1ab54376ba406188ac2eaa17167920af}{pfq\+\_\+get\+\_\+group\+\_\+counters} (\hyperlink{pfq_8h_a4e27e9f8aa4924f374dbb950713e8f0e}{pfq\+\_\+t} const $\ast$q, int gid, struct pfq\+\_\+counters $\ast$cs)
 \item 
-int \hyperlink{pfq_8h_af0bf388d241b0dfc5253af3b1fd3ec8f}{pfq\+\_\+tx\+\_\+queue} (\hyperlink{pfq_8h_a4e27e9f8aa4924f374dbb950713e8f0e}{pfq\+\_\+t} $\ast$q, int queue)
+int \hyperlink{pfq_8h_a85ce3bdba670a52062725b22bc7c7dd1}{pfq\+\_\+transmit\+\_\+queue} (\hyperlink{pfq_8h_a4e27e9f8aa4924f374dbb950713e8f0e}{pfq\+\_\+t} $\ast$q, int queue)
 \item 
-int \hyperlink{pfq_8h_a3ee7daadb1ac57df06f0f7370df60bb7}{pfq\+\_\+send\+\_\+raw} (\hyperlink{pfq_8h_a4e27e9f8aa4924f374dbb950713e8f0e}{pfq\+\_\+t} $\ast$q, const void $\ast$ptr, size\+\_\+t len, int ifindex, int qindex, uint64\+\_\+t nsec, size\+\_\+t fhint, unsigned int copies, int async, int queue)
+int \hyperlink{pfq_8h_aaf72eedc4910bb90c75407c79671f791}{pfq\+\_\+send\+\_\+raw} (\hyperlink{pfq_8h_a4e27e9f8aa4924f374dbb950713e8f0e}{pfq\+\_\+t} $\ast$q, const void $\ast$ptr, size\+\_\+t len, int ifindex, int qindex, uint64\+\_\+t nsec, unsigned int copies, int async, int queue)
+\item 
+int \hyperlink{pfq_8h_a15c39feea7bbcaa36fd78211efa65e62}{pfq\+\_\+send} (\hyperlink{pfq_8h_a4e27e9f8aa4924f374dbb950713e8f0e}{pfq\+\_\+t} $\ast$q, const void $\ast$ptr, size\+\_\+t len, size\+\_\+t fhint, unsigned int copies)
+\item 
+int \hyperlink{pfq_8h_ac853454a94d92a986a8e8480ac904996}{pfq\+\_\+send\+\_\+to} (\hyperlink{pfq_8h_a4e27e9f8aa4924f374dbb950713e8f0e}{pfq\+\_\+t} $\ast$q, const void $\ast$ptr, size\+\_\+t len, int ifindex, int qindex, size\+\_\+t fhint, unsigned int copies)
+\end{DoxyCompactItemize}
+\subsection*{Variables}
+\begin{DoxyCompactItemize}
+\item 
+const char $\ast$ \hyperlink{pfq_8h_a3c492bcb7b1972e9b57e9ee1200c3731}{pfq\+\_\+string\+\_\+version}
 \end{DoxyCompactItemize}
 
 
@@ -498,7 +507,20 @@ The memory of the socket queue is reset at the next read. A timeout is specified
 )}}\label{pfq_8h_a748d456e7adeaee2ee4ff1cd8dd4f689}
 Receive packets in the given buffer.
 
-Wait for packets and return the number of packets available. Packets are stored in the given buffer. It is possible to specify a timeout in microseconds. \hypertarget{pfq_8h_a3ee7daadb1ac57df06f0f7370df60bb7}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+send\+\_\+raw@{pfq\+\_\+send\+\_\+raw}}
+Wait for packets and return the number of packets available. Packets are stored in the given buffer. It is possible to specify a timeout in microseconds. \hypertarget{pfq_8h_a15c39feea7bbcaa36fd78211efa65e62}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+send@{pfq\+\_\+send}}
+\index{pfq\+\_\+send@{pfq\+\_\+send}!pfq.\+h@{pfq.\+h}}
+\subsubsection[{pfq\+\_\+send}]{\setlength{\rightskip}{0pt plus 5cm}int pfq\+\_\+send (
+\begin{DoxyParamCaption}
+\item[{{\bf pfq\+\_\+t} $\ast$}]{q, }
+\item[{const void $\ast$}]{ptr, }
+\item[{size\+\_\+t}]{len, }
+\item[{size\+\_\+t}]{fhint, }
+\item[{unsigned int}]{copies}
+\end{DoxyParamCaption}
+)}}\label{pfq_8h_a15c39feea7bbcaa36fd78211efa65e62}
+Store the packet and transmit the packets in the queue.
+
+The queue is flushed every fhint packets. Requires the socket is bound for transmission to a net device and queue. See 'pfq\+\_\+bind\+\_\+tx'. \hypertarget{pfq_8h_aaf72eedc4910bb90c75407c79671f791}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+send\+\_\+raw@{pfq\+\_\+send\+\_\+raw}}
 \index{pfq\+\_\+send\+\_\+raw@{pfq\+\_\+send\+\_\+raw}!pfq.\+h@{pfq.\+h}}
 \subsubsection[{pfq\+\_\+send\+\_\+raw}]{\setlength{\rightskip}{0pt plus 5cm}int pfq\+\_\+send\+\_\+raw (
 \begin{DoxyParamCaption}
@@ -508,15 +530,29 @@ Wait for packets and return the number of packets available. Packets are stored 
 \item[{int}]{ifindex, }
 \item[{int}]{qindex, }
 \item[{uint64\+\_\+t}]{nsec, }
-\item[{size\+\_\+t}]{fhint, }
 \item[{unsigned int}]{copies, }
 \item[{int}]{async, }
 \item[{int}]{queue}
 \end{DoxyParamCaption}
-)}}\label{pfq_8h_a3ee7daadb1ac57df06f0f7370df60bb7}
+)}}\label{pfq_8h_aaf72eedc4910bb90c75407c79671f791}
 Schedule packet transmission.
 
-The packet is copied into a Tx queue. If 'async' is 1 and 'queue' is set to any\+\_\+queue, a T\+S\+S symmetric hash function is used to select the Tx queue. The packet is transmitted at the given timestamp by a P\+F\+Q kernel thread. Otherwise the queue is flushed every 'fhint' packets. A timestamp of 0 nanoseconds means immediate transmission. \hypertarget{pfq_8h_ac726d1da4c6aecfa1dcb1544c036cdc4}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+set\+\_\+caplen@{pfq\+\_\+set\+\_\+caplen}}
+The packet is copied into a Tx queue. If 'async' is 1 and 'queue' is set to any\+\_\+queue, a T\+S\+S symmetric hash function is used to select the Tx queue. The packet is transmitted at the given timestamp by a P\+F\+Q kernel thread. Otherwise the queue is flushed every 'fhint' packets. A timestamp of 0 nanoseconds means immediate transmission. \hypertarget{pfq_8h_ac853454a94d92a986a8e8480ac904996}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+send\+\_\+to@{pfq\+\_\+send\+\_\+to}}
+\index{pfq\+\_\+send\+\_\+to@{pfq\+\_\+send\+\_\+to}!pfq.\+h@{pfq.\+h}}
+\subsubsection[{pfq\+\_\+send\+\_\+to}]{\setlength{\rightskip}{0pt plus 5cm}int pfq\+\_\+send\+\_\+to (
+\begin{DoxyParamCaption}
+\item[{{\bf pfq\+\_\+t} $\ast$}]{q, }
+\item[{const void $\ast$}]{ptr, }
+\item[{size\+\_\+t}]{len, }
+\item[{int}]{ifindex, }
+\item[{int}]{qindex, }
+\item[{size\+\_\+t}]{fhint, }
+\item[{unsigned int}]{copies}
+\end{DoxyParamCaption}
+)}}\label{pfq_8h_ac853454a94d92a986a8e8480ac904996}
+Store the packet and transmit the packets in the queue.
+
+The queue is flushed every fhint packets. \hypertarget{pfq_8h_ac726d1da4c6aecfa1dcb1544c036cdc4}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+set\+\_\+caplen@{pfq\+\_\+set\+\_\+caplen}}
 \index{pfq\+\_\+set\+\_\+caplen@{pfq\+\_\+set\+\_\+caplen}!pfq.\+h@{pfq.\+h}}
 \subsubsection[{pfq\+\_\+set\+\_\+caplen}]{\setlength{\rightskip}{0pt plus 5cm}int pfq\+\_\+set\+\_\+caplen (
 \begin{DoxyParamCaption}
@@ -589,14 +625,14 @@ Set the weight of the socket for the steering phase. \hypertarget{pfq_8h_a4d6fc5
 \item[{int}]{value}
 \end{DoxyParamCaption}
 )}}\label{pfq_8h_a4d6fc59bab68a90f36d45b0a03da775a}
-Enable/disable timestamping for packets. \hypertarget{pfq_8h_af0bf388d241b0dfc5253af3b1fd3ec8f}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+tx\+\_\+queue@{pfq\+\_\+tx\+\_\+queue}}
-\index{pfq\+\_\+tx\+\_\+queue@{pfq\+\_\+tx\+\_\+queue}!pfq.\+h@{pfq.\+h}}
-\subsubsection[{pfq\+\_\+tx\+\_\+queue}]{\setlength{\rightskip}{0pt plus 5cm}int pfq\+\_\+tx\+\_\+queue (
+Enable/disable timestamping for packets. \hypertarget{pfq_8h_a85ce3bdba670a52062725b22bc7c7dd1}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+transmit\+\_\+queue@{pfq\+\_\+transmit\+\_\+queue}}
+\index{pfq\+\_\+transmit\+\_\+queue@{pfq\+\_\+transmit\+\_\+queue}!pfq.\+h@{pfq.\+h}}
+\subsubsection[{pfq\+\_\+transmit\+\_\+queue}]{\setlength{\rightskip}{0pt plus 5cm}int pfq\+\_\+transmit\+\_\+queue (
 \begin{DoxyParamCaption}
 \item[{{\bf pfq\+\_\+t} $\ast$}]{q, }
 \item[{int}]{queue}
 \end{DoxyParamCaption}
-)}}\label{pfq_8h_af0bf388d241b0dfc5253af3b1fd3ec8f}
+)}}\label{pfq_8h_a85ce3bdba670a52062725b22bc7c7dd1}
 Transmit the packets in the queue.
 
 Transmit the packets in the queue of the socket. 'queue = 0' is the queue enabled for synchronous transmission. \hypertarget{pfq_8h_a7cda443097bf879cf0202fbcf0a243c1}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+unbind@{pfq\+\_\+unbind}}
@@ -657,3 +693,8 @@ Reset the vlan filter for the given group. \hypertarget{pfq_8h_a5bccd205709594bc
 Specify a capture vlan filter for the given group.
 
 In addition to standard vlan ids, valid ids are also Q\+\_\+\+V\+L\+A\+N\+\_\+\+U\+N\+T\+A\+G and Q\+\_\+\+V\+L\+A\+N\+\_\+\+A\+N\+Y\+T\+A\+G. 
+
+\subsection{Variable Documentation}
+\hypertarget{pfq_8h_a3c492bcb7b1972e9b57e9ee1200c3731}{\index{pfq.\+h@{pfq.\+h}!pfq\+\_\+string\+\_\+version@{pfq\+\_\+string\+\_\+version}}
+\index{pfq\+\_\+string\+\_\+version@{pfq\+\_\+string\+\_\+version}!pfq.\+h@{pfq.\+h}}
+\subsubsection[{pfq\+\_\+string\+\_\+version}]{\setlength{\rightskip}{0pt plus 5cm}const char$\ast$ pfq\+\_\+string\+\_\+version}}\label{pfq_8h_a3c492bcb7b1972e9b57e9ee1200c3731}

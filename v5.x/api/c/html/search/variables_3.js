@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['slot_5fsize',['slot_size',['../structpfq__net__queue.html#ad15e389ac5a91523cccb571c094d3f4e',1,'pfq_net_queue']]]
+  ['queue',['queue',['../structpfq__net__queue.html#a4858e72d7edbe741638986afc0ba9282',1,'pfq_net_queue']]]
 ];

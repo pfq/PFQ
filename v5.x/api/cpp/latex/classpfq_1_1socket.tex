@@ -151,9 +151,9 @@ bool \hyperlink{classpfq_1_1socket_a16f84967f992ee861e5f18d5e29a3275}{send\+\_\+
 \begin{DoxyCompactList}\small\item\em Transmit the packet asynchronously. \end{DoxyCompactList}\item 
 {\footnotesize template$<$typename Clock , typename Duration $>$ }\\bool \hyperlink{classpfq_1_1socket_a730cae7c25a32b22cc79615cbf3f86aa}{send\+\_\+at} (\hyperlink{namespacepfq_ac835a1bd09b4cbaba61c100b50d0a99f}{const\+\_\+buffer} pkt, std\+::chrono\+::time\+\_\+point$<$ Clock, Duration $>$ const \&tp, unsigned int copies=1)
 \item 
-bool \hyperlink{classpfq_1_1socket_a736fac07a067a852e13f7c31362b6adb}{send\+\_\+raw} (\hyperlink{namespacepfq_ac835a1bd09b4cbaba61c100b50d0a99f}{const\+\_\+buffer} pkt, int \hyperlink{namespacepfq_a251ac5cc269aa123009754edf62ab8b4}{ifindex}, int qindex, uint64\+\_\+t nsec, size\+\_\+t fhint, unsigned int copies, bool async=false, int queue=any\+\_\+queue)
+bool \hyperlink{classpfq_1_1socket_acac34057071b86506de185c1a68f9296}{send\+\_\+raw} (\hyperlink{namespacepfq_ac835a1bd09b4cbaba61c100b50d0a99f}{const\+\_\+buffer} pkt, int \hyperlink{namespacepfq_a251ac5cc269aa123009754edf62ab8b4}{ifindex}, int qindex, uint64\+\_\+t nsec, unsigned int copies, bool async=false, int queue=any\+\_\+queue)
 \begin{DoxyCompactList}\small\item\em Schedule a packet transmission. \end{DoxyCompactList}\item 
-void \hyperlink{classpfq_1_1socket_add3ae894be6b7ab0e83f26bf290c5467}{tx\+\_\+queue} (int queue=0)
+void \hyperlink{classpfq_1_1socket_a1378f9f0351c8fbb3123fc793bed22d2}{transmit\+\_\+queue} (int queue=0)
 \begin{DoxyCompactList}\small\item\em Transmit the packets in the queue. \end{DoxyCompactList}\end{DoxyCompactItemize}
 
 
@@ -743,7 +743,7 @@ The transmission is handled by P\+F\+Q kernel threads. Requires the socket is bo
 )\hspace{0.3cm}{\ttfamily [inline]}}}\label{classpfq_1_1socket_a730cae7c25a32b22cc79615cbf3f86aa}
 Transmit the packet asynchronously.
 
-The transmission takes place asynchronously at the given timespec time, specified as a generic chrono\+::time\+\_\+point. Requires the socket is bound for transmission to one (or multiple) P\+F\+Q kernel threads. See 'bind\+\_\+tx'. \hypertarget{classpfq_1_1socket_a736fac07a067a852e13f7c31362b6adb}{\index{pfq\+::socket@{pfq\+::socket}!send\+\_\+raw@{send\+\_\+raw}}
+The transmission takes place asynchronously at the given timespec time, specified as a generic chrono\+::time\+\_\+point. Requires the socket is bound for transmission to one (or multiple) P\+F\+Q kernel threads. See 'bind\+\_\+tx'. \hypertarget{classpfq_1_1socket_acac34057071b86506de185c1a68f9296}{\index{pfq\+::socket@{pfq\+::socket}!send\+\_\+raw@{send\+\_\+raw}}
 \index{send\+\_\+raw@{send\+\_\+raw}!pfq\+::socket@{pfq\+::socket}}
 \subsubsection[{send\+\_\+raw}]{\setlength{\rightskip}{0pt plus 5cm}bool pfq\+::socket\+::send\+\_\+raw (
 \begin{DoxyParamCaption}
@@ -751,12 +751,11 @@ The transmission takes place asynchronously at the given timespec time, specifie
 \item[{int}]{ifindex, }
 \item[{int}]{qindex, }
 \item[{uint64\+\_\+t}]{nsec, }
-\item[{size\+\_\+t}]{fhint, }
 \item[{unsigned int}]{copies, }
 \item[{bool}]{async = {\ttfamily false}, }
 \item[{int}]{queue = {\ttfamily any\+\_\+queue}}
 \end{DoxyParamCaption}
-)\hspace{0.3cm}{\ttfamily [inline]}}}\label{classpfq_1_1socket_a736fac07a067a852e13f7c31362b6adb}
+)\hspace{0.3cm}{\ttfamily [inline]}}}\label{classpfq_1_1socket_acac34057071b86506de185c1a68f9296}
 
 
 Schedule a packet transmission. 
@@ -857,13 +856,13 @@ Swap two sockets.
 
 Enable/disable timestamping for packets. 
 
-\hypertarget{classpfq_1_1socket_add3ae894be6b7ab0e83f26bf290c5467}{\index{pfq\+::socket@{pfq\+::socket}!tx\+\_\+queue@{tx\+\_\+queue}}
-\index{tx\+\_\+queue@{tx\+\_\+queue}!pfq\+::socket@{pfq\+::socket}}
-\subsubsection[{tx\+\_\+queue}]{\setlength{\rightskip}{0pt plus 5cm}void pfq\+::socket\+::tx\+\_\+queue (
+\hypertarget{classpfq_1_1socket_a1378f9f0351c8fbb3123fc793bed22d2}{\index{pfq\+::socket@{pfq\+::socket}!transmit\+\_\+queue@{transmit\+\_\+queue}}
+\index{transmit\+\_\+queue@{transmit\+\_\+queue}!pfq\+::socket@{pfq\+::socket}}
+\subsubsection[{transmit\+\_\+queue}]{\setlength{\rightskip}{0pt plus 5cm}void pfq\+::socket\+::transmit\+\_\+queue (
 \begin{DoxyParamCaption}
 \item[{int}]{queue = {\ttfamily 0}}
 \end{DoxyParamCaption}
-)\hspace{0.3cm}{\ttfamily [inline]}}}\label{classpfq_1_1socket_add3ae894be6b7ab0e83f26bf290c5467}
+)\hspace{0.3cm}{\ttfamily [inline]}}}\label{classpfq_1_1socket_a1378f9f0351c8fbb3123fc793bed22d2}
 
 
 Transmit the packets in the queue. 

@@ -92,7 +92,8 @@ $(document).ready(function(){initNavTree('namespacepfq.html','');});
 <a href="#nested-classes">Classes</a> &#124;
 <a href="#typedef-members">Typedefs</a> &#124;
 <a href="#enum-members">Enumerations</a> &#124;
-<a href="#func-members">Functions</a>  </div>
+<a href="#func-members">Functions</a> &#124;
+<a href="#var-members">Variables</a>  </div>
   <div class="headertitle">
 <div class="title">pfq Namespace Reference</div>  </div>
 </div><!--header-->
@@ -209,6 +210,19 @@ Traits &gt; &amp;&#160;</td><td class="memTemplItemRight" valign="bottom"><a cla
 <tr class="memitem:a50ce09535c2c899fe6b3c069681b4cae"><td class="memItemLeft" align="right" valign="top">const void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepfq.html#a50ce09535c2c899fe6b3c069681b4cae">data_ready</a> (pfq_pkthdr const &amp;h, uint8_t current_commit)</td></tr>
 <tr class="memdesc:a50ce09535c2c899fe6b3c069681b4cae"><td class="mdescLeft">&#160;</td><td class="mdescRight">Return a constant pointer to the packet.  <a href="#a50ce09535c2c899fe6b3c069681b4cae">More...</a><br /></td></tr>
 <tr class="separator:a50ce09535c2c899fe6b3c069681b4cae"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
+Variables</h2></td></tr>
+<tr class="memitem:a7a40dd66aee22cafaf240382a6d965ab"><td class="memItemLeft" align="right" valign="top">constexpr const int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepfq.html#a7a40dd66aee22cafaf240382a6d965ab">version_code</a> = PFQ_VERSION_CODE</td></tr>
+<tr class="separator:a7a40dd66aee22cafaf240382a6d965ab"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5edeb73b0430a772b181d778b1c90bbc"><td class="memItemLeft" align="right" valign="top">constexpr const int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepfq.html#a5edeb73b0430a772b181d778b1c90bbc">major_version</a> = PFQ_MAJOR(PFQ_VERSION_CODE)</td></tr>
+<tr class="separator:a5edeb73b0430a772b181d778b1c90bbc"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7f444700f822d8632dee37560ab76a7b"><td class="memItemLeft" align="right" valign="top">constexpr const int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepfq.html#a7f444700f822d8632dee37560ab76a7b">minor_version</a> = PFQ_MINOR(PFQ_VERSION_CODE)</td></tr>
+<tr class="separator:a7f444700f822d8632dee37560ab76a7b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa1b1daa6a96155899c26c206325e97a9"><td class="memItemLeft" align="right" valign="top">constexpr const int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepfq.html#aa1b1daa6a96155899c26c206325e97a9">patchlevel_version</a> = PFQ_PATCHLEVEL(PFQ_VERSION_CODE)</td></tr>
+<tr class="separator:aa1b1daa6a96155899c26c206325e97a9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a30c944a281046dafc6e1cd2629cc6e15"><td class="memItemLeft" align="right" valign="top">constexpr const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepfq.html#a30c944a281046dafc6e1cd2629cc6e15">string_version</a> = PFQ_VERSION_STRING</td></tr>
+<tr class="separator:a30c944a281046dafc6e1cd2629cc6e15"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Typedef Documentation</h2>
 <a class="anchor" id="ac835a1bd09b4cbaba61c100b50d0a99f"></a>
@@ -982,13 +996,74 @@ template&lt;typename CharT , typename Traits &gt; </div>
 
 </div>
 </div>
+<h2 class="groupheader">Variable Documentation</h2>
+<a class="anchor" id="a5edeb73b0430a772b181d778b1c90bbc"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr const int pfq::major_version = PFQ_MAJOR(PFQ_VERSION_CODE)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a7f444700f822d8632dee37560ab76a7b"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr const int pfq::minor_version = PFQ_MINOR(PFQ_VERSION_CODE)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="aa1b1daa6a96155899c26c206325e97a9"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr const int pfq::patchlevel_version = PFQ_PATCHLEVEL(PFQ_VERSION_CODE)</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a30c944a281046dafc6e1cd2629cc6e15"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr const char* pfq::string_version = PFQ_VERSION_STRING</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
+<a class="anchor" id="a7a40dd66aee22cafaf240382a6d965ab"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">constexpr const int pfq::version_code = PFQ_VERSION_CODE</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+</div>
+</div>
 </div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="namespacepfq.html">pfq</a></li>
-    <li class="footer">Generated on Sat Sep 26 2015 14:47:31 for PFQ C++ library by
+    <li class="footer">Generated on Mon Sep 28 2015 11:01:57 for PFQ C++ library by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.8 </li>
   </ul>

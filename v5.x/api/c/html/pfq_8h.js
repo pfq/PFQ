@@ -42,7 +42,9 @@ var pfq_8h =
     [ "pfq_poll", "pfq_8h.html#af1c79c9d73cd04f6731ed497314dc175", null ],
     [ "pfq_read", "pfq_8h.html#acb9ba49bf6366c5157c61c8b60af9e0d", null ],
     [ "pfq_recv", "pfq_8h.html#a748d456e7adeaee2ee4ff1cd8dd4f689", null ],
-    [ "pfq_send_raw", "pfq_8h.html#a3ee7daadb1ac57df06f0f7370df60bb7", null ],
+    [ "pfq_send", "pfq_8h.html#a15c39feea7bbcaa36fd78211efa65e62", null ],
+    [ "pfq_send_raw", "pfq_8h.html#aaf72eedc4910bb90c75407c79671f791", null ],
+    [ "pfq_send_to", "pfq_8h.html#ac853454a94d92a986a8e8480ac904996", null ],
     [ "pfq_set_caplen", "pfq_8h.html#ac726d1da4c6aecfa1dcb1544c036cdc4", null ],
     [ "pfq_set_group_computation", "pfq_8h.html#a63b881aa62dc2c45b44fdb9810f7a07f", null ],
     [ "pfq_set_group_computation_from_string", "pfq_8h.html#aa40ff5d2d51467a34f168cbb6b296509", null ],
@@ -51,11 +53,12 @@ var pfq_8h =
     [ "pfq_set_tx_slots", "pfq_8h.html#a9093dbc13b4c42c215e4eaeedf5db8bd", null ],
     [ "pfq_set_weight", "pfq_8h.html#a2f8c2c580fa82557b09b1773bb62682d", null ],
     [ "pfq_timestamping_enable", "pfq_8h.html#a4d6fc59bab68a90f36d45b0a03da775a", null ],
-    [ "pfq_tx_queue", "pfq_8h.html#af0bf388d241b0dfc5253af3b1fd3ec8f", null ],
+    [ "pfq_transmit_queue", "pfq_8h.html#a85ce3bdba670a52062725b22bc7c7dd1", null ],
     [ "pfq_unbind", "pfq_8h.html#a7cda443097bf879cf0202fbcf0a243c1", null ],
     [ "pfq_unbind_group", "pfq_8h.html#a0bd9c9f2d6df1811297e99a1b3800c05", null ],
     [ "pfq_unbind_tx", "pfq_8h.html#a9a1e77d289ca5408c9496c4767cb00cf", null ],
     [ "pfq_vlan_filters_enable", "pfq_8h.html#af06200d069049daf05c95b11b793b373", null ],
     [ "pfq_vlan_reset_filter", "pfq_8h.html#a5917ca4fb7191169139aeab0075e5374", null ],
-    [ "pfq_vlan_set_filter", "pfq_8h.html#a5bccd205709594bc50a5c37184f35d9e", null ]
+    [ "pfq_vlan_set_filter", "pfq_8h.html#a5bccd205709594bc50a5c37184f35d9e", null ],
+    [ "pfq_string_version", "pfq_8h.html#a3c492bcb7b1972e9b57e9ee1200c3731", null ]
 ];

@@ -2,6 +2,7 @@ var searchData=
 [
   ['details',['details',['../namespacepfq_1_1param_1_1details.html',1,'pfq::param']]],
   ['param',['param',['../namespacepfq_1_1param.html',1,'pfq']]],
+  ['patchlevel_5fversion',['patchlevel_version',['../namespacepfq.html#aa1b1daa6a96155899c26c206325e97a9',1,'pfq']]],
   ['pfq',['pfq',['../namespacepfq.html',1,'']]],
   ['pfq_2ehpp',['pfq.hpp',['../pfq_8hpp.html',1,'']]],
   ['pfq_5ferror',['pfq_error',['../classpfq_1_1pfq__error.html',1,'pfq']]],

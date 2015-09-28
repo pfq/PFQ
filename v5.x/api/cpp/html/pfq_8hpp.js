@@ -26,5 +26,10 @@ var pfq_8hpp =
     [ "operator+=", "pfq_8hpp.html#ae140b453ea425ae677dfbc69a51370f8", null ],
     [ "operator-", "pfq_8hpp.html#ad01713142f8fa670ff8614b9f2bab3b8", null ],
     [ "operator-=", "pfq_8hpp.html#aa7874ca8c38d2bb9b66a33a6c2bb0fc1", null ],
-    [ "operator<<", "pfq_8hpp.html#a1c2bda68e2e2c718ebd80519034002a3", null ]
+    [ "operator<<", "pfq_8hpp.html#a1c2bda68e2e2c718ebd80519034002a3", null ],
+    [ "major_version", "pfq_8hpp.html#a5edeb73b0430a772b181d778b1c90bbc", null ],
+    [ "minor_version", "pfq_8hpp.html#a7f444700f822d8632dee37560ab76a7b", null ],
+    [ "patchlevel_version", "pfq_8hpp.html#aa1b1daa6a96155899c26c206325e97a9", null ],
+    [ "string_version", "pfq_8hpp.html#a30c944a281046dafc6e1cd2629cc6e15", null ],
+    [ "version_code", "pfq_8hpp.html#a7a40dd66aee22cafaf240382a6d965ab", null ]
 ];
