@@ -45,6 +45,7 @@ struct pfq_mbuff_xmit_context
 	struct net_device_cache		default_dev;
 	struct net_dev_queue		dev_queue;
 	struct pfq_skb_pool	       *skb_pool;
+	struct net		       *net;
 
 	int				batch_cntr;
 
@@ -53,16 +54,11 @@ struct pfq_mbuff_xmit_context
 
 	ktime_t			        now;
 	unsigned long			jiffies;
-
-	char				*begin;
-	char				*end;
 };
 
 
 /* socket queues */
 
-extern int pfq_mbuff_xmit(struct pfq_pkthdr *hdr, struct pfq_mbuff_xmit_context *ctx, struct net *n,
-			  int node, atomic_t const *stop, bool *intr);
 extern int pfq_sk_queue_xmit(struct pfq_sock *so, int qindex, int cpu, int node, atomic_t const *stop);
 extern int pfq_sk_queue_flush(struct pfq_sock *so, int index);
 

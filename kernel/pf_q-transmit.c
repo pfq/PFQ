@@ -160,9 +160,10 @@ make_devq_id(struct pfq_pkthdr *hdr, devq_id_t const default_qid)
 }
 
 
-int
-pfq_mbuff_xmit(struct pfq_pkthdr *hdr, struct pfq_mbuff_xmit_context *ctx, struct net *n,
-	       int node, atomic_t const *stop, bool *intr)
+
+static int
+__pfq_mbuff_xmit(struct pfq_pkthdr *hdr, struct pfq_mbuff_xmit_context *ctx, int slot_size,
+	       int node, atomic_t const *stop, bool last_pkt, bool *intr)
 {
 	unsigned int copies, total_copies;
 	devq_id_t cur_qid, next_qid;
@@ -179,8 +180,8 @@ pfq_mbuff_xmit(struct pfq_pkthdr *hdr, struct pfq_mbuff_xmit_context *ctx, struc
 
 	/* get next_qid ...*/
 
-	next = Q_NEXT_PKTHDR(hdr, 0);
-	next_qid = next < (struct pfq_pkthdr *)ctx->end ? make_devq_id(next, ctx->default_qid) : PFQ_NETQ_NULL;
+	next = Q_NEXT_PKTHDR(hdr, slot_size);
+	next_qid = last_pkt ? PFQ_NETQ_NULL : make_devq_id(next, ctx->default_qid);
 
 
 	/* dev_queue switch, or relax the batch queue (at the first packet of
@@ -193,12 +194,12 @@ pfq_mbuff_xmit(struct pfq_pkthdr *hdr, struct pfq_mbuff_xmit_context *ctx, struc
 		pfq_hard_tx_unlock(&ctx->dev_queue);
 		local_bh_enable();
 
-		dev_queue_put(n, &ctx->default_dev, &ctx->dev_queue);
+		dev_queue_put(ctx->net, &ctx->default_dev, &ctx->dev_queue);
 
 		if (ctx->batch_cntr == 1)
 			schedule();
 
-		dev_queue_get(n, &ctx->default_dev, cur_qid , &ctx->dev_queue);
+		dev_queue_get(ctx->net, &ctx->default_dev, cur_qid , &ctx->dev_queue);
 
 		local_bh_disable();
 		pfq_hard_tx_lock(&ctx->dev_queue);
@@ -209,7 +210,7 @@ pfq_mbuff_xmit(struct pfq_pkthdr *hdr, struct pfq_mbuff_xmit_context *ctx, struc
 
 	/* is this the last skb of the batch ? */
 
-	if (ctx->batch_cntr >= xmit_batch_len || cur_qid != next_qid) {
+	if (ctx->batch_cntr >= xmit_batch_len || cur_qid != next_qid || last_pkt) {
 		last = true;
 		ctx->batch_cntr = 0;
 	}
@@ -233,11 +234,12 @@ pfq_mbuff_xmit(struct pfq_pkthdr *hdr, struct pfq_mbuff_xmit_context *ctx, struc
 		local_bh_enable();
 
 		ctx->now = wait_until(hdr->tstamp.tv64, stop, intr);
-		if (*intr)
-			return 0;
 
 		local_bh_disable();
 		pfq_hard_tx_lock(&ctx->dev_queue);
+
+		if (*intr)
+			return 0;
 	}
 
 
@@ -281,14 +283,14 @@ pfq_mbuff_xmit(struct pfq_pkthdr *hdr, struct pfq_mbuff_xmit_context *ctx, struc
 
 			pfq_relax();
 
+			local_bh_disable();
+			pfq_hard_tx_lock(&ctx->dev_queue);
+
 			if (giveup_tx_process(stop)) {
 				pfq_kfree_skb_pool(skb, ctx->skb_pool);
 				*intr = true;
 				return total_copies - copies;
 			}
-
-			local_bh_disable();
-			pfq_hard_tx_lock(&ctx->dev_queue);
 		}
 		else {
 			ctx->dev_queue.queue->trans_start = ctx->jiffies;
@@ -311,10 +313,10 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 	struct pfq_mbuff_xmit_context ctx;
 	struct pfq_tx_queue *txm;
 	struct pfq_pkthdr *hdr;
-	struct net *n = sock_net(&so->sk);
 	ptrdiff_t prod_off;
 
 	int total_sent = 0, disc = 0, prod_idx;
+        char *begin, *end;
 
 	/* get the Tx queue */
 
@@ -331,6 +333,7 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 	ctx.default_dev.dev = txinfo->def_dev;
 	ctx.default_dev.net = sock_net(&so->sk);
 	ctx.batch_cntr = 0;
+        ctx.net = sock_net(&so->sk);
 
 	/* enable skb_pool for Tx threads */
 
@@ -349,10 +352,8 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 	/* initialize boundaries for the transmit queue */
 
 	prod_off  = swap_sk_tx_queue(txm, &prod_idx);
-
-	ctx.begin = txinfo->base_addr + (prod_idx & 1) * txm->size + txm->cons.off;
-	ctx.end   = txinfo->base_addr + (prod_idx & 1) * txm->size + prod_off;
-
+	begin = txinfo->base_addr + (prod_idx & 1) * txm->size + txm->cons.off;
+	end   = txinfo->base_addr + (prod_idx & 1) * txm->size + prod_off;
 
 	/* lock the default dev_queue */
 
@@ -366,9 +367,9 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 	ctx.now = ktime_get_real();
 	ctx.jiffies = jiffies;
 
-	hdr  = (struct pfq_pkthdr *)ctx.begin;
+	hdr  = (struct pfq_pkthdr *)begin;
 
-	for_each_sk_mbuff(hdr, ctx.end, 0)
+	for_each_sk_mbuff(hdr, end, 0)
 	{
 		devq_id_t qid;
                 bool intr = false;
@@ -380,7 +381,8 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 		if (unlikely(PFQ_NETQ_IS_NULL(qid)))
 			continue;
 
-		sent = pfq_mbuff_xmit(hdr, &ctx, n, node, stop, &intr);
+		sent = __pfq_mbuff_xmit(hdr, &ctx, 0, node, stop,
+					Q_NEXT_PKTHDR(hdr, 0) >= (struct pfq_pkthdr *)end , &intr);
 
 		/* update stats */
 
@@ -407,7 +409,7 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 
 	/* count the packets left in the shared queue */
 
-	for_each_sk_mbuff(hdr, ctx.end, 0)
+	for_each_sk_mbuff(hdr, end, 0)
 	{
 		disc++;
 	}
