@@ -574,7 +574,7 @@ extern int pfq_get_group_counters(pfq_t const *q, int gid, struct pfq_counters *
  * queue enabled for synchronous transmission.
  */
 
-extern int pfq_tx_queue(pfq_t *q, int queue);
+extern int pfq_transmit_queue(pfq_t *q, int queue);
 
 
 /*! Schedule packet transmission. */
@@ -585,7 +585,7 @@ extern int pfq_tx_queue(pfq_t *q, int queue);
  * A timestamp of 0 nanoseconds means immediate transmission.
  */
 
-extern int pfq_send_raw(pfq_t *q, const void *ptr, size_t len, int ifindex, int qindex, uint64_t nsec, size_t fhint, unsigned int copies, int async, int queue);
+extern int pfq_send_raw(pfq_t *q, const void *ptr, size_t len, int ifindex, int qindex, uint64_t nsec, unsigned int copies, int async, int queue);
 
 
 /*! Store the packet and transmit the packets in the queue. */
@@ -595,11 +595,8 @@ extern int pfq_send_raw(pfq_t *q, const void *ptr, size_t len, int ifindex, int 
  * See 'pfq_bind_tx'.
  */
 
-static inline
-int pfq_send(pfq_t *q, const void *ptr, size_t len, size_t fhint, unsigned int copies)
-{
-	return pfq_send_raw(q, ptr, len, 0, 0, 0, fhint, copies, 0, Q_ANY_QUEUE);
-}
+extern
+int pfq_send(pfq_t *q, const void *ptr, size_t len, size_t fhint, unsigned int copies);
 
 
 /*! Store the packet and transmit the packets in the queue. */
@@ -607,11 +604,8 @@ int pfq_send(pfq_t *q, const void *ptr, size_t len, size_t fhint, unsigned int c
  * The queue is flushed every fhint packets.
  */
 
-static inline
-int pfq_send_to(pfq_t *q, const void *ptr, size_t len, int ifindex, int qindex, size_t fhint, unsigned int copies)
-{
-	return pfq_send_raw(q, ptr, len, ifindex, qindex, 0, fhint, copies, 0, Q_ANY_QUEUE);
-}
+extern
+int pfq_send_to(pfq_t *q, const void *ptr, size_t len, int ifindex, int qindex, size_t fhint, unsigned int copies);
 
 
 /*! Transmit the packet asynchronously. */
@@ -624,7 +618,7 @@ int pfq_send_to(pfq_t *q, const void *ptr, size_t len, int ifindex, int qindex, 
 static inline
 int pfq_send_async(pfq_t *q, const void *ptr, size_t len, unsigned int copies)
 {
-	return pfq_send_raw(q, ptr, len, 0, 0, 0, 0, copies, 1, Q_ANY_QUEUE);
+	return pfq_send_raw(q, ptr, len, 0, 0, 0, copies, 1, Q_ANY_QUEUE);
 }
 
 
@@ -639,7 +633,7 @@ static inline
 int pfq_send_at(pfq_t *q, const void *ptr, size_t len, struct timespec *ts, unsigned int copies)
 {
 	uint64_t ns = (uint64_t)(ts->tv_sec)*1000000000ull + (uint64_t)ts->tv_nsec;
-        return pfq_send_raw(q, ptr, len, 0, 0, ns, 0, copies, 1, Q_ANY_QUEUE);
+        return pfq_send_raw(q, ptr, len, 0, 0, ns, copies, 1, Q_ANY_QUEUE);
 }
 
 

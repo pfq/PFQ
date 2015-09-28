@@ -154,7 +154,7 @@ module Network.PFq
         sendAsync,
         sendAt,
 
-        txQueue,
+        transmitQueue,
 
         bindTx,
         unbindTx,
@@ -1027,11 +1027,11 @@ setGroupComputationFromString hdl gid comp =
 --
 -- Transmit the packets in the Tx queues of the socket.
 
-txQueue :: Ptr PFqTag
+transmitQueue :: Ptr PFqTag
         -> Int     -- queue index (0 is valid queue)
         -> IO ()
-txQueue hdl queue =
-    pfq_tx_queue hdl (fromIntegral queue) >>= throwPFqIf_ hdl (== -1)
+transmitQueue hdl queue =
+    pfq_transmit_queue hdl (fromIntegral queue) >>= throwPFqIf_ hdl (== -1)
 
 
 -- |Store the packet and transmit the packets in the queue.
@@ -1047,16 +1047,11 @@ send :: Ptr PFqTag
      -> IO Bool
 send hdl xs copies fhint =
     unsafeUseAsCStringLen xs $ \(p, l) ->
-        liftM (> 0) $ pfq_send_raw hdl
+        liftM (> 0) $ pfq_send hdl
                         p
                         (fromIntegral l)
-                        0
-                        0
-                        0
                         (fromIntegral fhint)
                         (fromIntegral copies)
-                        0
-                        (fromIntegral $ getConstant any_queue)
 
 
 -- |Store the packet and transmit the packets in the queue.
@@ -1072,16 +1067,13 @@ sendTo :: Ptr PFqTag
        -> IO Bool
 sendTo hdl xs ifindex qindex copies fhint =
     unsafeUseAsCStringLen xs $ \(p, l) ->
-    liftM (> 0) $ pfq_send_raw hdl
+    liftM (> 0) $ pfq_send_to hdl
                     p
                     (fromIntegral l)
                     (fromIntegral ifindex)
                     (fromIntegral qindex)
-                    0
                     (fromIntegral fhint)
                     (fromIntegral copies)
-                    0
-                    (fromIntegral $ getConstant any_queue)
 
 
 -- |Transmit the packet asynchronously.
@@ -1099,7 +1091,6 @@ sendAsync hdl xs copies =
         liftM (> 0) $ pfq_send_raw hdl
                         p
                         (fromIntegral l)
-                        0
                         0
                         0
                         0
@@ -1127,7 +1118,6 @@ sendAt hdl xs ts copies =
                         0
                         0
                         (fromIntegral (fromIntegral (sec ts) * (1000000000 :: Integer) + fromIntegral (nsec ts)))
-                        0
                         (fromIntegral copies)
                         1
                         (fromIntegral $ getConstant any_queue)
@@ -1200,7 +1190,9 @@ foreign import ccall unsafe pfq_vlan_reset_filter   :: Ptr PFqTag -> CInt -> CIn
 foreign import ccall unsafe pfq_bind_tx             :: Ptr PFqTag -> CString -> CInt -> CInt -> IO CInt
 foreign import ccall unsafe pfq_unbind_tx           :: Ptr PFqTag -> IO CInt
 
-foreign import ccall unsafe pfq_send_raw            :: Ptr PFqTag -> Ptr CChar -> CSize -> CInt -> CInt -> CULLong -> CSize -> CUInt -> CInt -> CInt -> IO CInt
+foreign import ccall unsafe pfq_send                :: Ptr PFqTag -> Ptr CChar -> CSize -> CSize -> CUInt -> IO CInt
+foreign import ccall unsafe pfq_send_to             :: Ptr PFqTag -> Ptr CChar -> CSize -> CInt -> CInt -> CSize -> CUInt -> IO CInt
+foreign import ccall unsafe pfq_send_raw            :: Ptr PFqTag -> Ptr CChar -> CSize -> CInt -> CInt -> CULLong -> CUInt -> CInt -> CInt -> IO CInt
 
-foreign import ccall unsafe pfq_tx_queue            :: Ptr PFqTag -> CInt -> IO CInt
+foreign import ccall unsafe pfq_transmit_queue      :: Ptr PFqTag -> CInt -> IO CInt
 

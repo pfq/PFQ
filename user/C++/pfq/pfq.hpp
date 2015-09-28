@@ -1337,7 +1337,13 @@ namespace pfq {
         bool
         send(const_buffer pkt, size_t fhint = 1, unsigned int copies = 1)
         {
-            return send_raw(pkt, 0, 0, 0, fhint, copies, false);
+            auto ret = send_raw(pkt, 0, 0, 0, copies, false);
+            if (++data_->tx_attempt == fhint)
+            {
+                data_->tx_attempt = 0;
+                this->transmit_queue(0);
+            }
+            return ret;
         }
 
         //! Store the packet and transmit the packets in the queue.
@@ -1348,9 +1354,14 @@ namespace pfq {
         bool
         send_to(const_buffer pkt, int ifindex, int qindex, size_t fhint = 1, unsigned int copies = 1)
         {
-            return send_raw(pkt, ifindex, qindex, 0, fhint, copies, false);
+            auto ret = send_raw(pkt, ifindex, qindex, 0, copies, false);
+            if (++data_->tx_attempt == fhint)
+            {
+                data_->tx_attempt = 0;
+                this->transmit_queue(0);
+            }
+            return ret;
         }
-
 
         //! Transmit the packet asynchronously.
         /*!
@@ -1362,7 +1373,7 @@ namespace pfq {
         bool
         send_async(const_buffer pkt, unsigned int copies = 1)
         {
-            return send_raw(pkt, 0, 0, 0, 0, copies, true, any_queue);
+            return send_raw(pkt, 0, 0, 0, copies, true, any_queue);
         }
 
         /*! Transmit the packet asynchronously. */
@@ -1378,7 +1389,7 @@ namespace pfq {
         send_at(const_buffer pkt, std::chrono::time_point<Clock, Duration> const &tp, unsigned int copies = 1)
         {
             auto ns = std::chrono::duration_cast<std::chrono::nanoseconds>(tp.time_since_epoch()).count();
-            return send_raw(pkt, 0, 0, static_cast<uint64_t>(ns), 0, copies, true, any_queue);
+            return send_raw(pkt, 0, 0, static_cast<uint64_t>(ns), copies, true, any_queue);
         }
 
         //! Schedule a packet transmission.
@@ -1390,7 +1401,7 @@ namespace pfq {
          */
 
         bool
-        send_raw(const_buffer pkt, int ifindex, int qindex, uint64_t nsec, size_t fhint, unsigned int copies, bool async = false, int queue = any_queue)
+        send_raw(const_buffer pkt, int ifindex, int qindex, uint64_t nsec, unsigned int copies, bool async = false, int queue = any_queue)
         {
             if (unlikely(!data_->shm_addr))
                 throw pfq_error("PFQ: send_to: socket not enabled");
@@ -1409,16 +1420,6 @@ namespace pfq {
                 tss = -1;
                 return &static_cast<struct pfq_shared_queue *>(data_->shm_addr)->tx;
             }();
-
-            auto flush_and_ret = [&](bool value)
-            {
-                if (!async && ++data_->tx_attempt == fhint)
-                {
-                    data_->tx_attempt = 0;
-                    this->tx_queue(0);
-                }
-                return value;
-            };
 
             // swap the queue...
             //
@@ -1457,10 +1458,10 @@ namespace pfq {
                 memcpy(hdr+1, pkt.first, len);
 
                 __atomic_store_n((index & 1) ? &tx->prod.off1 : &tx->prod.off0, offset + static_cast<ptrdiff_t>(slot_size), __ATOMIC_RELEASE);
-                return flush_and_ret(true);
+                return true;
             }
 
-            return flush_and_ret(false);
+            return false;
         }
 
         //! Transmit the packets in the queue.
@@ -1470,7 +1471,7 @@ namespace pfq {
          */
 
         void
-        tx_queue(int queue = 0)
+        transmit_queue(int queue = 0)
         {
             if (::setsockopt(fd_, PF_Q, Q_SO_TX_QUEUE, &queue, sizeof(queue)) == -1)
                 throw pfq_error(errno, "PFQ: Tx queue");

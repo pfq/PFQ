@@ -549,13 +549,13 @@ auto g = Group("PFQ")
     .Single("tx_queue", []
     {
         pfq::socket q(64);
-        AssertThrow(q.tx_queue(0));
+        AssertThrow(q.transmit_queue(0));
 
         q.bind_tx("lo", -1);
 
         q.enable();
 
-        AssertNoThrow(q.tx_queue(0));
+        AssertNoThrow(q.transmit_queue(0));
     })
 
     .Single("egress_bind", []

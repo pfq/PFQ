@@ -1074,7 +1074,7 @@ pfq_unbind_tx(pfq_t *q)
 
 int
 pfq_send_raw(pfq_t *q, const void *buf, size_t len, int ifindex, int qindex, uint64_t nsec,
-	     size_t fhint, unsigned int copies, int async, int queue)
+	     unsigned int copies, int async, int queue)
 {
         struct pfq_shared_queue *sh_queue = (struct pfq_shared_queue *)(q->shm_addr);
         struct pfq_tx_queue *tx;
@@ -1130,25 +1130,37 @@ pfq_send_raw(pfq_t *q, const void *buf, size_t len, int ifindex, int qindex, uin
                 __atomic_store_n((index & 1) ? &tx->prod.off1 : &tx->prod.off0,
 			offset + (ptrdiff_t)slot_size, __ATOMIC_RELEASE);
 
-		if (++q->tx_attempt == fhint) {
-			q->tx_attempt = 0;
-			pfq_tx_queue(q, 0);
-		}
 
 		return Q_VALUE(q, (int)len);
-	}
-
-	if (++q->tx_attempt == fhint) {
-		q->tx_attempt = 0;
-		pfq_tx_queue(q, 0);
 	}
 
 	return Q_VALUE(q, -1);
 }
 
+int
+pfq_send(pfq_t *q, const void *ptr, size_t len, size_t fhint, unsigned int copies)
+{
+	int ret = pfq_send_raw(q, ptr, len, 0, 0, 0, copies, 0, Q_ANY_QUEUE);
+	if (++q->tx_attempt == fhint) {
+		q->tx_attempt = 0;
+		pfq_transmit_queue(q, 0);
+	}
+	return ret;
+}
 
 int
-pfq_tx_queue(pfq_t *q, int queue)
+pfq_send_to(pfq_t *q, const void *ptr, size_t len, int ifindex, int qindex, size_t fhint, unsigned int copies)
+{
+	int ret = pfq_send_raw(q, ptr, len, ifindex, qindex, 0, copies, 0, Q_ANY_QUEUE);
+	if (++q->tx_attempt == fhint) {
+		q->tx_attempt = 0;
+		pfq_transmit_queue(q, 0);
+	}
+	return ret;
+}
+
+int
+pfq_transmit_queue(pfq_t *q, int queue)
 {
         if (setsockopt(q->fd, PF_Q, Q_SO_TX_QUEUE, &queue, sizeof(queue)) == -1)
 		return Q_ERROR(q, "PFQ: Tx queue");
