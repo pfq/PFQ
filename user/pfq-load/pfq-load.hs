@@ -171,7 +171,8 @@ main = do
         forM_ frd $ signalProcess sigKILL
 
     -- set cpufreq governor...
-    runSystem ("/usr/bin/cpufreq-set -g " ++ cpu_governor conf) ("*** cpufreq-set error! Make sure you have cpufrequtils installed! *** ", True)
+    unless (null (cpu_governor conf)) $
+        runSystem ("/usr/bin/cpufreq-set -g " ++ cpu_governor conf) ("*** cpufreq-set error! Make sure you have cpufrequtils installed! *** ", True)
 
     -- load PFQ...
     if null (pfq_module conf)
