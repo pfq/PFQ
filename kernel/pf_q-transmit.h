@@ -37,11 +37,32 @@
 #include <pf_q-sock.h>
 #include <pf_q-module.h>
 #include <pf_q-GC.h>
+#include <pf_q-netdev.h>
+
+
+struct pfq_mbuff_xmit_context
+{
+	struct net_device_cache		default_dev;
+	struct net_dev_queue		dev_queue;
+	struct pfq_skb_pool	       *skb_pool;
+
+	int				batch_cntr;
+
+	devq_id_t			default_qid;
+	devq_id_t			prec_qid;
+
+	ktime_t			        now;
+	unsigned long			jiffies;
+
+	char				*begin;
+	char				*end;
+};
 
 
 /* socket queues */
 
-
+extern int pfq_mbuff_xmit(struct pfq_pkthdr *hdr, struct pfq_mbuff_xmit_context *ctx, struct net *n,
+			  int node, atomic_t const *stop, bool *intr);
 extern int pfq_sk_queue_xmit(struct pfq_sock *so, int qindex, int cpu, int node, atomic_t const *stop);
 extern int pfq_sk_queue_flush(struct pfq_sock *so, int index);
 
