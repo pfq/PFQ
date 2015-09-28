@@ -75,6 +75,10 @@ module Network.PFq
         any_device,
         any_queue,
         any_group,
+        version_code,
+        major_version,
+        minor_version,
+        patchlevel_version,
         version,
 
         SocketParams(..),
