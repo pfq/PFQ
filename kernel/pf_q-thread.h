@@ -45,13 +45,6 @@ extern int pfq_bind_tx_thread(int tx_index, struct pfq_sock *sock, int sock_queu
 extern int pfq_unbind_tx_thread(struct pfq_sock *sock);
 
 
-struct pfq_thread_data
-{
-	struct pfq_sock *so;
-	size_t		id;
-};
-
-
 static inline
 void pfq_relax(void)
 {
@@ -70,7 +63,8 @@ struct pfq_thread_tx_data
 	struct task_struct *	task;
 	struct pfq_sock *	sock[Q_MAX_TX_QUEUES];
 	atomic_t		sock_queue[Q_MAX_TX_QUEUES];
-};
+
+} __attribute__((aligned(64)));
 
 
 static inline
