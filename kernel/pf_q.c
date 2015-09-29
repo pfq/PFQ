@@ -420,8 +420,6 @@ static int
 pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 {
 	struct pfq_percpu_data * data;
-	struct pfq_percpu_sock * sock;
-	struct pfq_percpu_pool * pool;
 	int cpu;
 
 	/* if no socket is open drop the packet */
@@ -453,7 +451,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 		if (vl_untag && skb->protocol == cpu_to_be16(ETH_P_8021Q)) {
 			skb = pfq_vlan_untag(skb);
 			if (unlikely(!skb)) {
-				sparse_inc(&global_stats.lost);
+				__sparse_inc(&global_stats.lost, cpu);
 				local_bh_enable();
 				return -1;
 			}
@@ -498,10 +496,10 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 		}
 	}
 
-	sock = per_cpu_ptr(percpu_sock, cpu);
-	pool = per_cpu_ptr(percpu_pool, cpu);
-
-	return pfq_receive_batch(data, sock, pool, data->GC, cpu);
+	return pfq_receive_batch(data,
+				 per_cpu_ptr(percpu_sock, cpu),
+				 per_cpu_ptr(percpu_pool, cpu),
+				 data->GC, cpu);
 }
 
 
