@@ -242,7 +242,6 @@ __pfq_mbuff_xmit(struct pfq_pkthdr *hdr, struct pfq_mbuff_xmit_context *ctx, int
 			return 0;
 	}
 
-
 	/* allocate a new socket buffer */
 
 	skb = pfq_alloc_skb_pool(xmit_slot_size, GFP_KERNEL, node, ctx->skb_pool);
@@ -276,15 +275,17 @@ __pfq_mbuff_xmit(struct pfq_pkthdr *hdr, struct pfq_mbuff_xmit_context *ctx, int
 
 		if (__pfq_xmit(skb, ctx->dev_queue.dev, xmit_more) < 0) {
 
-			pfq_hard_tx_unlock(&ctx->dev_queue);
-			local_bh_enable();
-
 			ctx->batch_cntr = 0;
 
-			pfq_relax();
+			if (need_resched()) {
+				pfq_hard_tx_unlock(&ctx->dev_queue);
+				local_bh_enable();
 
-			local_bh_disable();
-			pfq_hard_tx_lock(&ctx->dev_queue);
+				pfq_relax();
+
+				local_bh_disable();
+				pfq_hard_tx_lock(&ctx->dev_queue);
+			}
 
 			if (giveup_tx_process(stop)) {
 				pfq_kfree_skb_pool(skb, ctx->skb_pool);
@@ -390,7 +391,7 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 		__sparse_add(&so->stats.sent, sent, cpu);
 		__sparse_add(&global_stats.sent, sent, cpu);
 
-		if (intr)
+		if (unlikely(intr))
 			break;
 	}
 

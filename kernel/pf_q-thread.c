@@ -101,7 +101,7 @@ pfq_tx_thread(void *_data)
 	{
 		/* transmit the registered socket's queues */
 		bool reg = false;
-		int n;
+		int total_sent = 0, n;
 
 		for(n = 0; n < Q_MAX_TX_QUEUES; n++)
 		{
@@ -113,7 +113,7 @@ pfq_tx_thread(void *_data)
 			sock = data->sock[n];
 			if (sock_queue != -1 && sock != NULL) {
 				reg = true;
-				pfq_sk_queue_xmit(sock, sock_queue, data->cpu, data->node, &data->sock_queue[n]);
+				total_sent += pfq_sk_queue_xmit(sock, sock_queue, data->cpu, data->node, &data->sock_queue[n]);
 			}
 		}
 
@@ -128,6 +128,9 @@ pfq_tx_thread(void *_data)
 			pfq_tx_thread_dump(data);
 		}
 #endif
+
+		if (total_sent == 0)
+			schedule();
 
 		if (!reg)
 			msleep(1);
