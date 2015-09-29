@@ -310,7 +310,7 @@ __pfq_mbuff_xmit(struct pfq_pkthdr *hdr, struct pfq_mbuff_xmit_context *ctx, int
 int
 pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic_t const *stop)
 {
-	struct pfq_tx_info * txinfo = pfq_get_tx_queue_info(&so->opt, sock_queue);
+	struct pfq_tx_info const * txinfo = pfq_get_tx_queue_info(&so->opt, sock_queue);
 	struct pfq_mbuff_xmit_context ctx;
 	struct pfq_tx_queue *txm;
 	struct pfq_pkthdr *hdr;
