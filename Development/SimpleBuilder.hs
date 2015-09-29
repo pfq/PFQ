@@ -65,7 +65,6 @@ import Control.Monad
 import Control.Monad.Writer.Lazy
 import Control.Monad.IO.Class
 import Control.Monad.RWS.Lazy
-
 import Control.Applicative
 
 import qualified Control.Exception as E
@@ -337,10 +336,24 @@ buildTargets tgts script baseDir level = do
                                   then void $
                                        mapM (putStrLn . evalCmd opt) cmds'
                                   else void $
-                                       do ec <- mapM (execCmd opt) cmds'
-                                          unless (all (== ExitSuccess) ec) $
+                                       do ec <- sequenceWhile (== ExitSuccess) $ map (execCmd opt) cmds'
+                                          when (length ec /= length cmds') $
                                             let show_cmd (c,e) = show c ++ " -> (" ++ show e ++ ")" in
-                                                error ("SimpleBuilder: " ++ show target ++ " aborted: " ++ intercalate ", " (zipWith (curry show_cmd) cmds' ec) ++ "!")
+                                                error ("SimpleBuilder: " ++ show target ++ " aborted: '" ++ show (head (drop (length ec) cmds'))  ++ "' command failed!")
+
+
+
+--  ...from monad extras
+
+sequenceWhile :: Monad m => (a -> Bool) -> [m a] -> m [a]
+sequenceWhile _ [] = return []
+sequenceWhile p (m:ms) = do
+    a <- m
+    if p a
+        then do
+            as <- sequenceWhile p ms
+            return (a:as)
+        else return []
 
 
 putStrLnVerbose  :: Maybe Bool -> String -> BuilderT IO ()
