@@ -77,7 +77,7 @@ namespace opt
 {
     size_t flush_hint = 1;
     size_t len      = 1514;
-    size_t slots    = 4096;
+    size_t slots    = 8192;
     size_t npackets = std::numeric_limits<size_t>::max();
     size_t loop     = 1;
     size_t preload  = 1;
