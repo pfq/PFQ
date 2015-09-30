@@ -72,7 +72,7 @@ extern int pfq_computation_rtlink(struct pfq_computation_descr const *descr,
 				  void *context);
 
 extern int pfq_computation_init(struct pfq_computation_tree *comp);
-extern int pfq_computation_destroy(struct pfq_computation_tree *comp);
+extern int pfq_computation_destruct(struct pfq_computation_tree *comp);
 
 extern struct pfq_computation_tree * pfq_computation_alloc(struct pfq_computation_descr const *);
 extern void * pfq_context_alloc(struct pfq_computation_descr const *);

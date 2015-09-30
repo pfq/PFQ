@@ -86,7 +86,6 @@ size_t pfq_sk_rx_queue_recv(struct pfq_sock_opt *opt,
 		char *pkt;
 
 		bytes = min_t(size_t, skb->len, opt->caplen);
-
 		slot_index = qlen + sent;
 		pkt = (char *)(hdr+1);
 

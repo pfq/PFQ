@@ -32,6 +32,10 @@
 #include <pragma/diagnostic_pop>
 
 
+/*
+ * a group of sparse counters is a per-cpu generic structure of local_t members
+ */
+
 #define sparse_read(ptr, var) ({ \
 	long ret = 0; int i; \
 	for_each_possible_cpu(i) { \

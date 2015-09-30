@@ -181,7 +181,10 @@ pfq_id_t
 pfq_get_free_id(struct pfq_sock * so);
 
 void	pfq_sock_opt_init(struct pfq_sock_opt *that, size_t caplen, size_t maxlen);
+
 int	pfq_sock_init(struct pfq_sock *so, int id);
+void	pfq_sock_destruct(struct sock *sk);
+
 int     pfq_get_sock_count(void);
 struct	pfq_sock * pfq_get_sock_by_id(pfq_id_t id);
 void	pfq_release_sock_id(pfq_id_t id);

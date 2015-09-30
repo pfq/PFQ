@@ -156,16 +156,8 @@ class(SkBuff skb, uint64_t class_mask)
         return skb;
 }
 
-/* utility function: counter */
 
-static inline
-struct pfq_group_counters * get_group_counters(SkBuff skb)
-{
-	return this_cpu_ptr(PFQ_CB(skb)->monad->group->counters);
-}
-
-
-/* utility function: mark, volatile state, persistent state */
+/* utility function: mark, monad state, and persistent group counters */
 
 
 static inline
@@ -180,8 +172,6 @@ void set_mark(SkBuff skb, uint32_t value)
         skb->mark = value;
 }
 
-
-
 static inline
 uint32_t get_state(SkBuff skb)
 {
@@ -194,11 +184,16 @@ void set_state(SkBuff skb, uint32_t state)
         PFQ_CB(skb)->monad->state = state;
 }
 
-
 static inline
-struct pfq_group_stats *get_group_stats(SkBuff skb)
+struct pfq_group_stats * get_group_stats(SkBuff skb)
 {
 	return this_cpu_ptr(PFQ_CB(skb)->monad->group->stats);
+}
+
+static inline
+struct pfq_group_counters * get_group_counters(SkBuff skb)
+{
+	return this_cpu_ptr(PFQ_CB(skb)->monad->group->counters);
 }
 
 

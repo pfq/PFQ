@@ -146,7 +146,7 @@ err:
 }
 
 
-int pfq_percpu_destroy(void)
+int pfq_percpu_destruct(void)
 {
         int cpu;
         int total = 0;

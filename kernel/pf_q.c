@@ -471,7 +471,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 			if (printk_ratelimit())
 				printk(KERN_INFO "[PFQ] GC: memory exhausted!\n");
 			__sparse_inc(&global_stats, lost, cpu);
-			sparse_inc(&memory_stats, os_free);
+			__sparse_inc(&memory_stats, os_free, cpu);
 			kfree_skb(skb);
 			local_bh_enable();
 			return 0;
@@ -560,21 +560,6 @@ void pfq_timer(unsigned long cpu)
 }
 
 
-static void pfq_sock_destruct(struct sock *sk)
-{
-	struct pfq_sock *so = pfq_sk(sk);
-
-	free_percpu(so->stats);
-
-        skb_queue_purge(&sk->sk_error_queue);
-
-        WARN_ON(atomic_read(&sk->sk_rmem_alloc));
-        WARN_ON(atomic_read(&sk->sk_wmem_alloc));
-
-        sk_refcnt_debug_dec(sk);
-}
-
-
 static int
 pfq_release(struct socket *sock)
 {
@@ -612,7 +597,7 @@ pfq_release(struct socket *sock)
         /* purge both batch and recycle queues if no socket is open */
 
         if (pfq_get_sock_count() == 0)
-                total += pfq_percpu_destroy();
+                total += pfq_percpu_destruct();
 
         up (&sock_sem);
 
@@ -1016,9 +1001,9 @@ err5:
 err4:
         proto_unregister(&pfq_proto);
 err3:
-	pfq_proc_destroy();
+	pfq_proc_destruct();
 err2:
-	pfq_percpu_destroy();
+	pfq_percpu_destruct();
 err1:
 	pfq_percpu_free();
 err:
@@ -1055,7 +1040,7 @@ static void __exit pfq_exit_module(void)
         msleep(Q_GRACE_PERIOD);
 
         /* free per CPU data */
-        total += pfq_percpu_destroy();
+        total += pfq_percpu_destruct();
 
 #ifdef PFQ_USE_SKB_POOL
         total += pfq_skb_pool_free_all();
@@ -1070,9 +1055,9 @@ static void __exit pfq_exit_module(void)
 	/* free symbol table of pfq-lang functions */
 	pfq_symtable_free();
 
-	pfq_proc_destroy();
+	pfq_proc_destruct();
 
-	pfq_groups_destroy();
+	pfq_groups_destruct();
 
         printk(KERN_INFO "[PFQ] unloaded.\n");
 }

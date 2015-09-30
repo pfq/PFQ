@@ -91,7 +91,7 @@ extern bool pfq_group_policy_access(pfq_gid_t gid, pfq_id_t id, int policy);
 extern bool pfq_group_access(pfq_gid_t gid, pfq_id_t id);
 
 extern int pfq_groups_init(void);
-extern void pfq_groups_destroy(void);
+extern void pfq_groups_destruct(void);
 
 static inline
 bool pfq_has_joined_group(pfq_gid_t gid, pfq_id_t id)

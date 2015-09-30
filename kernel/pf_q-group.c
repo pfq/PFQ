@@ -71,13 +71,13 @@ pfq_groups_init(void)
 
 	return 0;
 err:
-	pfq_groups_destroy();
+	pfq_groups_destruct();
 	return -ENOMEM;
 }
 
 
 void
-pfq_groups_destroy(void)
+pfq_groups_destruct(void)
 {
 	int n;
 	for(n = 0; n < Q_MAX_GID; n++)
@@ -210,7 +210,7 @@ __pfq_group_free(pfq_gid_t gid)
 	/* finalize old computation */
 
 	if (old_comp)
-		pfq_computation_destroy(old_comp);
+		pfq_computation_destruct(old_comp);
 
 	kfree(old_comp);
 	kfree(old_ctx);
@@ -360,7 +360,7 @@ pfq_set_group_prog(pfq_gid_t gid, struct pfq_computation_tree *comp, void *ctx)
 	/* call fini on old computation */
 
 	if (old_comp)
-		pfq_computation_destroy(old_comp);
+		pfq_computation_destruct(old_comp);
 
         /* free the old computation/context */
 

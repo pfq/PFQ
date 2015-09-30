@@ -281,7 +281,7 @@ int pfq_proc_init(void)
 }
 
 
-int pfq_proc_destroy(void)
+int pfq_proc_destruct(void)
 {
 	remove_proc_entry(proc_computations,	pfq_proc_dir);
 	remove_proc_entry(proc_groups,		pfq_proc_dir);

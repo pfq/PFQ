@@ -452,7 +452,7 @@ pfq_computation_init(struct pfq_computation_tree *comp)
 }
 
 int
-pfq_computation_destroy(struct pfq_computation_tree *comp)
+pfq_computation_destruct(struct pfq_computation_tree *comp)
 {
 	size_t n;
 
@@ -463,7 +463,7 @@ pfq_computation_destroy(struct pfq_computation_tree *comp)
 			pr_devel("[PFQ] %zu: finalizing computation %pF...\n", n, comp->node[n].fini);
 
 			if (comp->node[n].fini( &comp->node[n].fun ) < 0) {
-				printk(KERN_INFO "[PFQ] computation_destroy: error in function (%zu)!\n", n);
+				printk(KERN_INFO "[PFQ] computation_destruct: error in function (%zu)!\n", n);
 			}
 		}
 	}

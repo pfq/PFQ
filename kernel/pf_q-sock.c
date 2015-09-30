@@ -174,9 +174,9 @@ int pfq_sock_init(struct pfq_sock *so, int id)
 
         /* memory mapped queues are allocated later, when the socket is enabled */
 
-	so->egress_type   = pfq_endpoint_socket;
-	so->egress_index  = 0;
-	so->egress_queue  = 0;
+	so->egress_type = pfq_endpoint_socket;
+	so->egress_index = 0;
+	so->egress_queue = 0;
 
 	/* default weight */
 
@@ -189,6 +189,22 @@ int pfq_sock_init(struct pfq_sock *so, int id)
         so->shmem.npages = 0;
 
         return 0;
+}
+
+
+void pfq_sock_destruct(struct sock *sk)
+{
+	struct pfq_sock *so = pfq_sk(sk);
+
+	free_percpu(so->stats);
+        so->stats = NULL;
+
+        skb_queue_purge(&sk->sk_error_queue);
+
+        WARN_ON(atomic_read(&sk->sk_rmem_alloc));
+        WARN_ON(atomic_read(&sk->sk_wmem_alloc));
+
+        sk_refcnt_debug_dec(sk);
 }
 
 
