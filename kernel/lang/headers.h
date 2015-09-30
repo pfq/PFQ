@@ -24,11 +24,11 @@
 #ifndef PF_Q_FUNCTIONAL_HEADERS_H
 #define PF_Q_FUNCTIONAL_HEADERS_H
 
-#include <functional/combinator.h>
-#include <functional/conditional.h>
-#include <functional/predicate.h>
-#include <functional/forward.h>
-#include <functional/filter.h>
-#include <functional/misc.h>
+#include <lang/combinator.h>
+#include <lang/conditional.h>
+#include <lang/predicate.h>
+#include <lang/forward.h>
+#include <lang/filter.h>
+#include <lang/misc.h>
 
 #endif /* PF_Q_FUNCTIONAL_HEADERS_H */
