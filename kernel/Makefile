@@ -23,7 +23,7 @@ EXTRA_CFLAGS += -DPFQ_USE_SKB_POOL
 obj-m := $(TARGET).o
 
 pfq-objs := pf_q.o pf_q-sockopt.o pf_q-global.o pf_q-proc.o pf_q-devmap.o pf_q-sock.o pf_q-shmem.o pf_q-memory.o pf_q-skbuff-pool.o \
-			pf_q-group.o pf_q-endpoint.o pf_q-symtable.o pf_q-engine.o pf_q-shared-queue.o pf_q-percpu.o pf_q-bpf.o pf_q-vlan.o \
+			pf_q-group.o pf_q-stats.o pf_q-endpoint.o pf_q-symtable.o pf_q-engine.o pf_q-shared-queue.o pf_q-percpu.o pf_q-bpf.o pf_q-vlan.o \
 		    pf_q-thread.o pf_q-receive.o pf_q-transmit.o pf_q-signature.o pf_q-GC.o pf_q-netdev.o pf_q-printk.o \
 		    functional/filter.o functional/steering.o functional/forward.o \
 		    functional/predicate.o functional/combinator.o functional/conditional.o \

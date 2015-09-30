@@ -36,29 +36,12 @@
 
 struct pfq_sock_stats
 {
-        local_t  recv;         /* received by the queue */
-        local_t  lost;         /* packets lost due to socket queue congestion */
-        local_t  drop;         /* dropped by filters */
-        local_t  sent;         /* sent by the driver */
-        local_t  disc;         /* discarded by the driver */
+        local_t recv;		/* received by the queue */
+        local_t lost;		/* packets lost due to socket queue congestion */
+        local_t drop;		/* dropped by filters */
+        local_t sent;		/* sent by the driver */
+        local_t disc;		/* discarded by the driver */
 };
-
-
-static inline
-void pfq_sock_stats_reset(struct pfq_sock_stats __percpu *stats)
-{
-	int i;
-	for_each_possible_cpu(i)
-	{
-		struct pfq_sock_stats * stat = per_cpu_ptr(stats, i);
-
-		local_set(&stat->recv, 0);
-		local_set(&stat->lost, 0);
-		local_set(&stat->drop, 0);
-		local_set(&stat->sent, 0);
-		local_set(&stat->disc, 0);
-	}
-}
 
 
 struct pfq_group_stats
@@ -72,41 +55,10 @@ struct pfq_group_stats
 };
 
 
-static inline
-void pfq_group_stats_reset(struct pfq_group_stats __percpu *stats)
-{
-	int i;
-	for_each_possible_cpu(i)
-	{
-		struct pfq_group_stats * stat = per_cpu_ptr(stats, i);
-
-		local_set(&stat->recv, 0);
-		local_set(&stat->drop, 0);
-		local_set(&stat->frwd, 0);
-		local_set(&stat->kern, 0);
-		local_set(&stat->disc, 0);
-		local_set(&stat->abrt, 0);
-	}
-}
-
-
 struct pfq_group_counters
 {
-	local_t		value[Q_MAX_COUNTERS];
+	local_t	value[Q_MAX_COUNTERS];
 };
-
-static inline
-void pfq_group_counters_reset(struct pfq_group_counters __percpu *counters)
-{
-
-	int i, n;
-	for_each_possible_cpu(i)
-	{
-		struct pfq_group_counters * ctr = per_cpu_ptr(counters, i);
-		for(n = 0; n < Q_MAX_COUNTERS; n++)
-			local_set(&ctr->value[n], 0);
-	}
-}
 
 
 struct pfq_global_stats
@@ -121,27 +73,6 @@ struct pfq_global_stats
         local_t poll;		/* number of poll */
         local_t wake;		/* number of wakeup */
 };
-
-
-static inline
-void pfq_global_stats_reset(struct pfq_global_stats __percpu *stats)
-{
-	int i;
-	for_each_possible_cpu(i)
-	{
-		struct pfq_global_stats * stat = per_cpu_ptr(stats, i);
-
-		local_set(&stat->recv, 0);
-		local_set(&stat->lost, 0);
-		local_set(&stat->sent, 0);
-		local_set(&stat->frwd, 0);
-		local_set(&stat->kern, 0);
-		local_set(&stat->disc, 0);
-		local_set(&stat->abrt, 0);
-		local_set(&stat->poll, 0);
-		local_set(&stat->wake, 0);
-	}
-}
 
 
 struct pfq_memory_stats
@@ -162,49 +93,31 @@ struct pfq_memory_stats
 };
 
 
-static inline
-void pfq_memory_stats_reset(struct pfq_memory_stats __percpu *stats)
-{
-	int i;
-	for_each_possible_cpu(i)
-	{
-		struct pfq_memory_stats * stat = per_cpu_ptr(stats, i);
-
-		local_set(&stat->os_alloc,   0);
-		local_set(&stat->os_free,    0);
-		local_set(&stat->pool_alloc, 0);
-		local_set(&stat->pool_free,  0);
-		local_set(&stat->pool_push,  0);
-		local_set(&stat->pool_pop,   0);
-		local_set(&stat->err_norecyl,0);
-		local_set(&stat->err_pop,    0);
-		local_set(&stat->err_push,   0);
-		local_set(&stat->err_intdis, 0);
-		local_set(&stat->err_shared, 0);
-		local_set(&stat->err_cloned, 0);
-		local_set(&stat->err_memory, 0);
-	}
-}
-
-
 struct pfq_pool_stat
 {
-	uint64_t        os_alloc;
-	uint64_t        os_free;
+	uint64_t os_alloc;
+	uint64_t os_free;
 
-	uint64_t        pool_alloc;
-	uint64_t        pool_free;
-	uint64_t        pool_push;
-	uint64_t        pool_pop;
+	uint64_t pool_alloc;
+	uint64_t pool_free;
+	uint64_t pool_push;
+	uint64_t pool_pop;
 
-	uint64_t        err_norecyl;
-	uint64_t        err_pop;
-	uint64_t        err_push;
-	uint64_t        err_intdis;
-	uint64_t        err_shared;
-	uint64_t        err_cloned;
-	uint64_t        err_memory;
+	uint64_t err_norecyl;
+	uint64_t err_pop;
+	uint64_t err_push;
+	uint64_t err_intdis;
+	uint64_t err_shared;
+	uint64_t err_cloned;
+	uint64_t err_memory;
 };
+
+
+extern void pfq_sock_stats_reset(struct pfq_sock_stats __percpu *stats);
+extern void pfq_group_stats_reset(struct pfq_group_stats __percpu *stats);
+extern void pfq_group_counters_reset(struct pfq_group_counters __percpu *counters);
+extern void pfq_global_stats_reset(struct pfq_global_stats __percpu *stats);
+extern void pfq_memory_stats_reset(struct pfq_memory_stats __percpu *stats);
 
 
 #endif /* PF_Q_STATS_H */
