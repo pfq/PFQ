@@ -595,7 +595,6 @@ pfq_release(struct socket *sock)
         pr_devel("[PFQ|%d] releasing socket...\n", id);
 
         pfq_leave_all_groups(so->id);
-
         pfq_release_sock_id(so->id);
 
 	msleep(Q_GRACE_PERIOD);
@@ -610,7 +609,7 @@ pfq_release(struct socket *sock)
         /* purge both batch and recycle queues if no socket is open */
 
         if (pfq_get_sock_count() == 0)
-                total += pfq_percpu_fini();
+                total += pfq_percpu_destroy();
 
         up (&sock_sem);
 

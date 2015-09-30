@@ -915,7 +915,7 @@ int pfq_setsockopt(struct socket *sock,
 
 		if (pfq_computation_init(comp) < 0) {
                         printk(KERN_INFO "[PFQ|%d] initialization of computation aborted!", so->id);
-                        pfq_computation_fini(comp);
+                        pfq_computation_destroy(comp);
                         err = -EPERM;
                         goto error;
 		}

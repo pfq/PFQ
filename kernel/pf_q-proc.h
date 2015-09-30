@@ -36,6 +36,6 @@
 extern struct proc_dir_entry *pfq_proc_dir;
 
 extern int pfq_proc_init(void);
-extern int pfq_proc_fini(void);
+extern int pfq_proc_destroy(void);
 
 #endif /*  PF_Q_PROC_H */
