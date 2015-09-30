@@ -165,7 +165,7 @@ int pfq_percpu_destroy(void)
 
 		for_each_skbuff(SKBUFF_QUEUE_ADDR(data->GC->pool), skb, n)
 		{
-			SPARSE_INC(&memory_stats.os_free);
+			sparse_inc(&memory_stats, os_free);
 			kfree_skb(skb);
 		}
 
@@ -177,7 +177,7 @@ int pfq_percpu_destroy(void)
 		preempt_enable();
         }
 
-	sparse_add(&global_stats.lost, total);
+	sparse_add(&global_stats, lost, total);
         return total;
 }
 

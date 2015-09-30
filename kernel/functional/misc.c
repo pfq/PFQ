@@ -41,17 +41,15 @@ static ActionSkBuff
 inc_counter(arguments_t args, SkBuff skb)
 {
         const int idx = GET_ARG(int,args);
+        struct pfq_group_counters * ctrs = get_group_counters(skb);
 
-        sparse_counter_t * ctr;
-
-        ctr = get_counter(skb, idx);
-        if (ctr)  {
-                sparse_inc(ctr);
-        }
-        else {
+	if (idx < 0 || idx >= Q_MAX_COUNTERS) {
                 if (printk_ratelimit())
                         printk(KERN_INFO "[PFQ/lang] counter[%d]: bad index!\n", idx);
-        }
+	}
+	else {
+		local_inc(&ctrs->value[idx]);
+	}
 
         return Pass(skb);
 }
@@ -61,17 +59,15 @@ static ActionSkBuff
 dec_counter(arguments_t args, SkBuff skb)
 {
         const int idx = GET_ARG(int,args);
+        struct pfq_group_counters * ctrs = get_group_counters(skb);
 
-        sparse_counter_t * ctr;
-
-        ctr = get_counter(skb, idx);
-        if (ctr)  {
-                sparse_dec(ctr);
-        }
-        else {
+	if (idx < 0 || idx >= Q_MAX_COUNTERS) {
                 if (printk_ratelimit())
                         printk(KERN_INFO "[PFQ/lang] counter[%d]: bad index!\n", idx);
-        }
+	}
+	else {
+		local_dec(&ctrs->value[idx]);
+	}
 
         return Pass(skb);
 }

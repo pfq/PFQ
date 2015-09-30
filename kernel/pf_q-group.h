@@ -41,21 +41,6 @@
 #include <pf_q-types.h>
 
 
-/* persistent state */
-
-
-struct pfq_group_persistent
-{
-        sparse_counter_t counter[Q_MAX_COUNTERS];
-
-	struct _persistent
-	{
-		spinlock_t	lock;
-		char		memory[Q_GROUP_PERSIST_MEM];
-
-	} persistent [Q_GROUP_PERSIST_DATA];
-};
-
 
 struct pfq_group
 {
@@ -74,9 +59,8 @@ struct pfq_group
         atomic_long_t comp;                             /* struct pfq_computation_tree *  (new functional program) */
         atomic_long_t comp_ctx;                         /* void *: storage context (new functional program) */
 
-	struct pfq_group_stats stats;
-
-        struct pfq_group_persistent context;
+	struct pfq_group_stats __percpu *stats;
+	struct pfq_group_counters __percpu *counters;
 };
 
 
@@ -106,7 +90,8 @@ extern void pfq_set_group_vlan_filter(pfq_gid_t gid, bool value, int vid);
 extern bool pfq_group_policy_access(pfq_gid_t gid, pfq_id_t id, int policy);
 extern bool pfq_group_access(pfq_gid_t gid, pfq_id_t id);
 
-extern void pfq_groups_init(void);
+extern int pfq_groups_init(void);
+extern void pfq_groups_destroy(void);
 
 static inline
 bool pfq_has_joined_group(pfq_gid_t gid, pfq_id_t id)

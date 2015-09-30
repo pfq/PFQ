@@ -52,10 +52,7 @@ struct proc_dir_entry *pfq_proc_dir = NULL;
 static const char proc_computations[] = "computations";
 static const char proc_groups[]       = "groups";
 static const char proc_stats[]        = "stats";
-
-#ifdef PFQ_USE_EXTENDED_PROC
 static const char proc_memory[]       = "memory";
-#endif
 
 
 static void
@@ -130,12 +127,12 @@ static int pfq_proc_groups(struct seq_file *m, void *v)
 			continue;
 
 		seq_printf(m, "%5zu: %-9lu %-9lu %-9lu %-9lu %-9lu %-9lu", n,
-			   sparse_read(&this_group->stats.recv),
-			   sparse_read(&this_group->stats.drop),
-			   sparse_read(&this_group->stats.frwd),
-			   sparse_read(&this_group->stats.kern),
-			   sparse_read(&this_group->stats.disc),
-			   sparse_read(&this_group->stats.abrt));
+			   sparse_read(this_group->stats, recv),
+			   sparse_read(this_group->stats, drop),
+			   sparse_read(this_group->stats, frwd),
+			   sparse_read(this_group->stats, kern),
+			   sparse_read(this_group->stats, disc),
+			   sparse_read(this_group->stats, abrt));
 
 		seq_printf(m, "%3d %3d ", this_group->policy, this_group->pid);
 
@@ -154,47 +151,43 @@ static int pfq_proc_groups(struct seq_file *m, void *v)
 static int pfq_proc_stats(struct seq_file *m, void *v)
 {
 	seq_printf(m, "INPUT:\n");
-	seq_printf(m, "  received  : %ld\n", sparse_read(&global_stats.recv));
-	seq_printf(m, "  lost      : %ld\n", sparse_read(&global_stats.lost));
+	seq_printf(m, "  received  : %ld\n", sparse_read(&global_stats, recv));
+	seq_printf(m, "  lost      : %ld\n", sparse_read(&global_stats, lost));
 	seq_printf(m, "OUTPUT:\n");
-	seq_printf(m, "  sent      : %ld\n", sparse_read(&global_stats.sent));
-	seq_printf(m, "  kernel    : %ld\n", sparse_read(&global_stats.kern));
-	seq_printf(m, "  forwarded : %ld\n", sparse_read(&global_stats.frwd));
-	seq_printf(m, "  discarded : %ld\n", sparse_read(&global_stats.disc));
-	seq_printf(m, "  aborted   : %ld\n", sparse_read(&global_stats.abrt));
-#ifdef PFQ_USE_EXTENDED_PROC
+	seq_printf(m, "  sent      : %ld\n", sparse_read(&global_stats, sent));
+	seq_printf(m, "  kernel    : %ld\n", sparse_read(&global_stats, kern));
+	seq_printf(m, "  forwarded : %ld\n", sparse_read(&global_stats, frwd));
+	seq_printf(m, "  discarded : %ld\n", sparse_read(&global_stats, disc));
+	seq_printf(m, "  aborted   : %ld\n", sparse_read(&global_stats, abrt));
 	seq_printf(m, "SCHEDULE:\n");
-	seq_printf(m, "  poll      : %ld\n", sparse_read(&global_stats.poll));
-	seq_printf(m, "  wakeup    : %ld\n", sparse_read(&global_stats.wake));
-#endif
+	seq_printf(m, "  poll      : %ld\n", sparse_read(&global_stats, poll));
+	seq_printf(m, "  wakeup    : %ld\n", sparse_read(&global_stats, wake));
 	return 0;
 }
 
 
-#ifdef PFQ_USE_EXTENDED_PROC
-
 static int pfq_proc_memory(struct seq_file *m, void *v)
 {
-	long int push = sparse_read(&memory_stats.pool_push);
-	long int pop  = sparse_read(&memory_stats.pool_pop);
+	long int push = sparse_read(&memory_stats, pool_push);
+	long int pop  = sparse_read(&memory_stats, pool_pop);
 
 	seq_printf(m, "OS:\n");
-	seq_printf(m, "  alloc          : %ld\n", sparse_read(&memory_stats.os_alloc));
-	seq_printf(m, "  free           : %ld\n", sparse_read(&memory_stats.os_free));
+	seq_printf(m, "  alloc          : %ld\n", sparse_read(&memory_stats, os_alloc));
+	seq_printf(m, "  free           : %ld\n", sparse_read(&memory_stats, os_free));
 	seq_printf(m, "POOL:\n");
-	seq_printf(m, "  alloc          : %ld\n", sparse_read(&memory_stats.pool_alloc));
-	seq_printf(m, "  free           : %ld\n", sparse_read(&memory_stats.pool_free));
+	seq_printf(m, "  alloc          : %ld\n", sparse_read(&memory_stats, pool_alloc));
+	seq_printf(m, "  free           : %ld\n", sparse_read(&memory_stats, pool_free));
 	seq_printf(m, "  push           : %ld\n", push);
 	seq_printf(m, "  pop            : %ld\n", pop);
 	seq_printf(m, "  size           : %ld\n", push - pop);
 	seq_printf(m, "ERROR:\n");
-	seq_printf(m, "  error norecyl  : %ld\n", sparse_read(&memory_stats.err_norecyl));
-	seq_printf(m, "  error pop      : %ld\n", sparse_read(&memory_stats.err_pop));
-	seq_printf(m, "  error push     : %ld\n", sparse_read(&memory_stats.err_push));
-	seq_printf(m, "  error intdisab : %ld\n", sparse_read(&memory_stats.err_intdis));
-	seq_printf(m, "  error shared   : %ld\n", sparse_read(&memory_stats.err_shared));
-	seq_printf(m, "  error cloned   : %ld\n", sparse_read(&memory_stats.err_cloned));
-	seq_printf(m, "  error memory   : %ld\n", sparse_read(&memory_stats.err_memory));
+	seq_printf(m, "  error norecyl  : %ld\n", sparse_read(&memory_stats, err_norecyl));
+	seq_printf(m, "  error pop      : %ld\n", sparse_read(&memory_stats, err_pop));
+	seq_printf(m, "  error push     : %ld\n", sparse_read(&memory_stats, err_push));
+	seq_printf(m, "  error intdisab : %ld\n", sparse_read(&memory_stats, err_intdis));
+	seq_printf(m, "  error shared   : %ld\n", sparse_read(&memory_stats, err_shared));
+	seq_printf(m, "  error cloned   : %ld\n", sparse_read(&memory_stats, err_cloned));
+	seq_printf(m, "  error memory   : %ld\n", sparse_read(&memory_stats, err_memory));
 	return 0;
 }
 
@@ -220,9 +213,6 @@ static const struct file_operations pfq_proc_memory_fops = {
 	.llseek  = seq_lseek,
 	.release = single_release,
 };
-
-
-#endif
 
 
 static int pfq_proc_groups_open(struct inode *inode, struct file *file)
@@ -285,22 +275,18 @@ int pfq_proc_init(void)
 	proc_create(proc_computations,	0644, pfq_proc_dir, &pfq_proc_comp_fops);
 	proc_create(proc_groups,	0644, pfq_proc_dir, &pfq_proc_groups_fops);
 	proc_create(proc_stats,		0644, pfq_proc_dir, &pfq_proc_stats_fops);
-#ifdef PFQ_USE_EXTENDED_PROC
 	proc_create(proc_memory,	0644, pfq_proc_dir, &pfq_proc_memory_fops);
-#endif
 
 	return 0;
 }
 
 
-int pfq_proc_fini(void)
+int pfq_proc_destroy(void)
 {
 	remove_proc_entry(proc_computations,	pfq_proc_dir);
 	remove_proc_entry(proc_groups,		pfq_proc_dir);
 	remove_proc_entry(proc_stats,		pfq_proc_dir);
-#ifdef PFQ_USE_EXTENDED_PROC
 	remove_proc_entry(proc_memory,		pfq_proc_dir);
-#endif
 	remove_proc_entry("pfq", init_net.proc_net);
 
 	return 0;

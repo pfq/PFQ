@@ -181,7 +181,7 @@ pfq_receive_batch(struct pfq_percpu_data *data,
 
 	this_batch_len = GC_size(GC_ptr);
 
-	__sparse_add(&global_stats.recv, this_batch_len, cpu);
+	__sparse_add(&global_stats, recv, this_batch_len, cpu);
 
 	/* cleanup sock_queue... */
 
@@ -230,7 +230,7 @@ pfq_receive_batch(struct pfq_percpu_data *data,
 
 			/* increment counter for this group */
 
-			__sparse_inc(&this_group->stats.recv, cpu);
+			__sparse_inc(this_group->stats, recv, cpu);
 
 			/* check if bp filter is enabled */
 
@@ -243,7 +243,7 @@ pfq_receive_batch(struct pfq_percpu_data *data,
 				if (bpf && !SK_RUN_FILTER(bpf, PFQ_SKB(buff)))
 #endif
 				{
-					__sparse_inc(&this_group->stats.drop, cpu);
+					__sparse_inc(this_group->stats, drop, cpu);
 					refs.queue[refs.len++] = NULL;
 					continue;
 				}
@@ -253,7 +253,7 @@ pfq_receive_batch(struct pfq_percpu_data *data,
 
 			if (vlan_filt_enabled) {
 				if (!pfq_check_group_vlan_filter(gid, buff->vlan_tci & ~VLAN_TAG_PRESENT)) {
-					__sparse_inc(&this_group->stats.drop, cpu);
+					__sparse_inc(this_group->stats, drop, cpu);
 					refs.queue[refs.len++] = NULL;
 					continue;
 				}
@@ -280,7 +280,7 @@ pfq_receive_batch(struct pfq_percpu_data *data,
 
 				buff = pfq_run(buff, prg).skb;
 				if (buff == NULL) {
-					__sparse_inc(&this_group->stats.drop, cpu);
+					__sparse_inc(this_group->stats, drop, cpu);
 					refs.queue[refs.len++] = NULL;
 					continue;
 				}
@@ -291,13 +291,13 @@ pfq_receive_batch(struct pfq_percpu_data *data,
 
 				/* update stats */
 
-                                __sparse_add(&this_group->stats.frwd, PFQ_CB(buff)->log->num_devs -num_fwd, cpu);
-                                __sparse_add(&this_group->stats.kern, PFQ_CB(buff)->log->to_kernel -to_kernel, cpu);
+                                __sparse_add(this_group->stats, frwd, PFQ_CB(buff)->log->num_devs -num_fwd, cpu);
+                                __sparse_add(this_group->stats, kern, PFQ_CB(buff)->log->to_kernel -to_kernel, cpu);
 
 				/* skip the packet? */
 
 				if (is_drop(monad.fanout)) {
-					__sparse_inc(&this_group->stats.drop, cpu);
+					__sparse_inc(this_group->stats, drop, cpu);
 					refs.queue[refs.len++] = NULL;
 					continue;
 				}
@@ -379,8 +379,8 @@ pfq_receive_batch(struct pfq_percpu_data *data,
 	{
 		size_t total = pfq_skb_queue_lazy_xmit_run(SKBUFF_GC_QUEUE_ADDR(GC_ptr->pool), &endpoints);
 
-		__sparse_add(&global_stats.frwd, total, cpu);
-		__sparse_add(&global_stats.disc, endpoints.cnt_total - total, cpu);
+		__sparse_add(&global_stats, frwd, total, cpu);
+		__sparse_add(&global_stats, disc, endpoints.cnt_total - total, cpu);
 	}
 
 	/* forward skbs to kernel or to the pool */
@@ -392,7 +392,7 @@ pfq_receive_batch(struct pfq_percpu_data *data,
 		/* send a copy of this skb to the kernel */
 
 		if (cb->direct && fwd_to_kernel(skb)) {
-		        __sparse_inc(&global_stats.kern, cpu);
+		        __sparse_inc(&global_stats, kern, cpu);
 			skb_pull(skb, skb->mac_len);
 			skb->peeked = capture_incoming;
 			netif_receive_skb(skb);
@@ -425,7 +425,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 	/* if no socket is open drop the packet */
 
 	if (unlikely(pfq_get_sock_count() == 0)) {
-		SPARSE_INC(&memory_stats.os_free);
+		sparse_inc(&memory_stats, os_free);
 		kfree_skb(skb);
 		return 0;
 	}
@@ -451,7 +451,7 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 		if (vl_untag && skb->protocol == cpu_to_be16(ETH_P_8021Q)) {
 			skb = pfq_vlan_untag(skb);
 			if (unlikely(!skb)) {
-				__sparse_inc(&global_stats.lost, cpu);
+				__sparse_inc(&global_stats, lost, cpu);
 				local_bh_enable();
 				return -1;
 			}
@@ -470,8 +470,8 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 		if (buff == NULL) {
 			if (printk_ratelimit())
 				printk(KERN_INFO "[PFQ] GC: memory exhausted!\n");
-			__sparse_inc(&global_stats.lost, cpu);
-			SPARSE_INC(&memory_stats.os_free);
+			__sparse_inc(&global_stats, lost, cpu);
+			sparse_inc(&memory_stats, os_free);
 			kfree_skb(skb);
 			local_bh_enable();
 			return 0;
@@ -543,7 +543,7 @@ pfq_packet_rcv
 
         return pfq_receive(NULL, skb, 0);
 out:
-	SPARSE_INC(&memory_stats.os_free);
+	sparse_inc(&memory_stats, os_free);
 	kfree_skb(skb);
 	return 0;
 }
@@ -560,9 +560,12 @@ void pfq_timer(unsigned long cpu)
 }
 
 
-
 static void pfq_sock_destruct(struct sock *sk)
 {
+	struct pfq_sock *so = pfq_sk(sk);
+
+	free_percpu(so->stats);
+
         skb_queue_purge(&sk->sk_error_queue);
 
         WARN_ON(atomic_read(&sk->sk_rmem_alloc));
@@ -634,7 +637,7 @@ pfq_poll(struct file *file, struct socket *sock, poll_table * wait)
         struct pfq_sock *so = pfq_sk(sk);
         unsigned int mask = 0;
 
-	sparse_inc(&global_stats.poll);
+	sparse_inc(&global_stats, poll);
 
 	poll_wait(file, &so->opt.waitqueue, wait);
 
@@ -809,7 +812,7 @@ pfq_create(
 
         sk = sk_alloc(net, PF_INET, GFP_KERNEL, &pfq_proto);
         if (sk == NULL) {
-                printk(KERN_WARNING "[PFQ] error: could not allocate a socket!\n");
+                printk(KERN_WARNING "[PFQ] error: pfq_sock_init: could not allocate a socket!\n");
                 return -ENOMEM;
         }
 
@@ -825,7 +828,7 @@ pfq_create(
 
         id = pfq_get_free_id(so);
         if (id == -1) {
-                printk(KERN_WARNING "[PFQ] error: resource exhausted!\n");
+                printk(KERN_WARNING "[PFQ] error: pfq_sock_init: resource exhausted!\n");
                 sk_free(sk);
                 return -EBUSY;
         }
@@ -834,7 +837,12 @@ pfq_create(
 
         /* initialize sock */
 
-	pfq_sock_init(so, id);
+	if (pfq_sock_init(so, id) < 0) {
+                printk(KERN_WARNING "[PFQ] error: pfq_sock_init: no memory!\n");
+		sk_free(sk);
+		up(&sock_sem);
+		return -EINVAL;
+	}
 
         /* initialize sock opt */
 
@@ -926,7 +934,9 @@ static int __init pfq_init_module(void)
 
 	/* initialize data structures ... */
 
-	pfq_groups_init();
+	err = pfq_groups_init();
+	if (err < 0)
+		goto err;
 
 	/* initialization */
 
@@ -1006,9 +1016,9 @@ err5:
 err4:
         proto_unregister(&pfq_proto);
 err3:
-	pfq_proc_fini();
+	pfq_proc_destroy();
 err2:
-	pfq_percpu_fini();
+	pfq_percpu_destroy();
 err1:
 	pfq_percpu_free();
 err:
@@ -1045,11 +1055,11 @@ static void __exit pfq_exit_module(void)
         msleep(Q_GRACE_PERIOD);
 
         /* free per CPU data */
-        total += pfq_percpu_fini();
+        total += pfq_percpu_destroy();
 
 #ifdef PFQ_USE_SKB_POOL
         total += pfq_skb_pool_free_all();
-	SPARSE_ADD(&memory_stats.pool_pop, total);
+	sparse_add(&memory_stats, pool_pop, total);
 #endif
         if (total)
                 printk(KERN_INFO "[PFQ] %d skbuff freed.\n", total);
@@ -1060,7 +1070,9 @@ static void __exit pfq_exit_module(void)
 	/* free symbol table of pfq-lang functions */
 	pfq_symtable_free();
 
-	pfq_proc_fini();
+	pfq_proc_destroy();
+
+	pfq_groups_destroy();
 
         printk(KERN_INFO "[PFQ] unloaded.\n");
 }

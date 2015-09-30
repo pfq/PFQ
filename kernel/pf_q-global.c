@@ -26,6 +26,7 @@
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/types.h>
+#include <linux/percpu.h>
 
 #include <pragma/diagnostic_pop>
 
@@ -48,8 +49,9 @@ int skb_pool_size	= 1024;
 int tx_affinity[Q_MAX_CPU] = {0};
 int tx_thread_nr;
 
-struct pfq_global_stats global_stats;
-struct pfq_memory_stats memory_stats;
+
+DEFINE_PER_CPU(struct pfq_global_stats, global_stats);
+DEFINE_PER_CPU(struct pfq_memory_stats, memory_stats);
 
 
 module_param(capture_incoming,  int, 0644);

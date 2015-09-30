@@ -75,15 +75,15 @@ size_t copy_to_user_skbs(struct pfq_sock *so, struct pfq_skbuff_GC_queue *skbs,
 
                 cpy = pfq_sk_rx_queue_recv(&so->opt, skbs, mask, len, gid);
 
-		__sparse_add(&so->stats.recv, cpy, cpu);
+		__sparse_add(so->stats, recv, cpy, cpu);
 
 		if (len > cpy)
-			__sparse_add(&so->stats.drop, len - cpy, cpu);
+			__sparse_add(so->stats, drop, len - cpy, cpu);
 
 		return cpy;
         }
 	else
-		__sparse_add(&so->stats.lost, len, cpu);
+		__sparse_add(so->stats, lost, len, cpu);
 
         return cpy;
 }

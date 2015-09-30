@@ -119,7 +119,7 @@ pfq_skb_pool_flush(struct pfq_skb_pool *pool)
 	{
 		if (pool->skbs[n]) {
 			total++;
-			SPARSE_INC(&memory_stats.os_free);
+			sparse_inc(&memory_stats, os_free);
 			kfree_skb(pool->skbs[n]);
 			pool->skbs[n] = NULL;
 		}
@@ -146,21 +146,21 @@ pfq_get_skb_pool_stats(void)
 {
         struct pfq_pool_stat ret =
         {
-		sparse_read(&memory_stats.os_alloc),
-		sparse_read(&memory_stats.os_free),
+		sparse_read(&memory_stats, os_alloc),
+		sparse_read(&memory_stats, os_free),
 
-		sparse_read(&memory_stats.pool_alloc),
-		sparse_read(&memory_stats.pool_free),
-		sparse_read(&memory_stats.pool_push),
-		sparse_read(&memory_stats.pool_pop),
+		sparse_read(&memory_stats, pool_alloc),
+		sparse_read(&memory_stats, pool_free),
+		sparse_read(&memory_stats, pool_push),
+		sparse_read(&memory_stats, pool_pop),
 
-                sparse_read(&memory_stats.err_norecyl),
-                sparse_read(&memory_stats.err_pop),
-                sparse_read(&memory_stats.err_push),
-                sparse_read(&memory_stats.err_intdis),
-                sparse_read(&memory_stats.err_shared),
-                sparse_read(&memory_stats.err_cloned),
-                sparse_read(&memory_stats.err_memory),
+                sparse_read(&memory_stats, err_norecyl),
+                sparse_read(&memory_stats, err_pop),
+                sparse_read(&memory_stats, err_push),
+                sparse_read(&memory_stats, err_intdis),
+                sparse_read(&memory_stats, err_shared),
+                sparse_read(&memory_stats, err_cloned),
+                sparse_read(&memory_stats, err_memory),
 	};
 	return ret;
 }

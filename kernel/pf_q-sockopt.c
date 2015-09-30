@@ -31,6 +31,7 @@
 
 #include <pragma/diagnostic_pop>
 
+#include <pf_q-stats.h>
 #include <pf_q-netdev.h>
 #include <pf_q-transmit.h>
 #include <pf_q-thread.h>
@@ -155,15 +156,15 @@ int pfq_getsockopt(struct socket *sock,
                 if (len != sizeof(struct pfq_stats))
                         return -EINVAL;
 
-                stat.recv = sparse_read(&so->stats.recv);
-                stat.lost = sparse_read(&so->stats.lost);
-                stat.drop = sparse_read(&so->stats.drop);
+                stat.recv = sparse_read(so->stats, recv);
+                stat.lost = sparse_read(so->stats, lost);
+                stat.drop = sparse_read(so->stats, drop);
 
 		stat.frwd = 0;
 		stat.kern = 0;
 
-                stat.sent = sparse_read(&so->stats.sent);
-                stat.disc = sparse_read(&so->stats.disc);
+                stat.sent = sparse_read(so->stats, sent);
+                stat.disc = sparse_read(so->stats, disc);
 
                 if (copy_to_user(optval, &stat, sizeof(stat)))
                         return -EFAULT;
@@ -232,7 +233,7 @@ int pfq_getsockopt(struct socket *sock,
 
         case Q_SO_GET_GROUP_STATS:
         {
-                struct pfq_group *g;
+                struct pfq_group *group;
                 struct pfq_stats stat;
                 pfq_gid_t gid;
 
@@ -244,8 +245,8 @@ int pfq_getsockopt(struct socket *sock,
 
                 gid = (__force pfq_gid_t)stat.recv;
 
-                g = pfq_get_group(gid);
-                if (g == NULL) {
+                group = pfq_get_group(gid);
+                if (group == NULL) {
                         printk(KERN_INFO "[PFQ|%d] group error: invalid group id %d!\n", so->id, gid);
                         return -EFAULT;
                 }
@@ -263,10 +264,10 @@ int pfq_getsockopt(struct socket *sock,
                 }
 
 
-                stat.recv = sparse_read(&g->stats.recv);
-                stat.drop = sparse_read(&g->stats.drop);
-                stat.frwd = sparse_read(&g->stats.frwd);
-                stat.kern = sparse_read(&g->stats.kern);
+                stat.recv = sparse_read(group->stats, recv);
+                stat.drop = sparse_read(group->stats, drop);
+                stat.frwd = sparse_read(group->stats, frwd);
+                stat.kern = sparse_read(group->stats, kern);
 
                 stat.lost = 0;
                 stat.sent = 0;
@@ -278,7 +279,7 @@ int pfq_getsockopt(struct socket *sock,
 
         case Q_SO_GET_GROUP_COUNTERS:
         {
-                struct pfq_group *g;
+                struct pfq_group *group;
                 struct pfq_counters cs;
                 pfq_gid_t gid;
                 int i;
@@ -291,8 +292,8 @@ int pfq_getsockopt(struct socket *sock,
 
                 gid = (__force pfq_gid_t)cs.counter[0];
 
-                g = pfq_get_group(gid);
-                if (g == NULL) {
+                group = pfq_get_group(gid);
+                if (group == NULL) {
                         printk(KERN_INFO "[PFQ|%d] group error: invalid group id %d!\n", so->id, gid);
                         return -EFAULT;
                 }
@@ -307,7 +308,7 @@ int pfq_getsockopt(struct socket *sock,
 
                 for(i = 0; i < Q_MAX_COUNTERS; i++)
                 {
-                        cs.counter[i] = sparse_read(&g->context.counter[i]);
+                        cs.counter[i] = sparse_read(group->counters, value[i]);
                 }
 
                 if (copy_to_user(optval, &cs, sizeof(cs)))

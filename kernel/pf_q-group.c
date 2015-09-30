@@ -45,7 +45,7 @@ DEFINE_SEMAPHORE(group_sem);
 static struct pfq_group pfq_groups[Q_MAX_GID];
 
 
-void
+int
 pfq_groups_init(void)
 {
 	int n;
@@ -54,6 +54,38 @@ pfq_groups_init(void)
 		pfq_groups[n].pid = 0;
 		pfq_groups[n].owner = Q_INVALID_ID;
 		pfq_groups[n].policy = Q_POLICY_GROUP_UNDEFINED;
+
+		pfq_groups[n].stats = alloc_percpu(struct pfq_group_stats);
+		if (pfq_groups[n].stats == NULL) {
+			goto err;
+		}
+
+		pfq_groups[n].counters = alloc_percpu(struct pfq_group_counters);
+		if (pfq_groups[n].counters == NULL) {
+			goto err;
+		}
+
+		pfq_group_stats_reset(pfq_groups[n].stats);
+		pfq_group_counters_reset(pfq_groups[n].counters);
+	}
+
+	return 0;
+err:
+	pfq_groups_destroy();
+	return -ENOMEM;
+}
+
+
+void
+pfq_groups_destroy(void)
+{
+	int n;
+	for(n = 0; n < Q_MAX_GID; n++)
+	{
+		free_percpu(pfq_groups[n].stats);
+		free_percpu(pfq_groups[n].counters);
+		pfq_groups[n].stats = NULL;
+		pfq_groups[n].counters = NULL;
 	}
 }
 
@@ -68,19 +100,19 @@ bool __pfq_group_is_empty(pfq_gid_t gid)
 bool
 pfq_group_policy_access(pfq_gid_t gid, pfq_id_t id, int policy)
 {
-        struct pfq_group * g;
+        struct pfq_group * group;
 
-        g = pfq_get_group(gid);
-        if (g == NULL)
+        group = pfq_get_group(gid);
+        if (group == NULL)
                 return false;
 
-        switch(g->policy)
+        switch(group->policy)
         {
         case Q_POLICY_GROUP_PRIVATE:
-                return g->owner == id; // __pfq_has_joined_group(gid,id);
+                return group->owner == id; // __pfq_has_joined_group(gid,id);
 
         case Q_POLICY_GROUP_RESTRICTED:
-                return (policy == Q_POLICY_GROUP_RESTRICTED) && g->pid == current->tgid;
+                return (policy == Q_POLICY_GROUP_RESTRICTED) && group->pid == current->tgid;
 
         case Q_POLICY_GROUP_SHARED:
                 return policy == Q_POLICY_GROUP_SHARED;
@@ -96,19 +128,19 @@ pfq_group_policy_access(pfq_gid_t gid, pfq_id_t id, int policy)
 bool
 pfq_group_access(pfq_gid_t gid, pfq_id_t id)
 {
-	struct pfq_group *g;
+	struct pfq_group *group;
 
-	g = pfq_get_group(gid);
-	if (g == NULL)
+	group = pfq_get_group(gid);
+	if (group == NULL)
 		return false;
 
-	switch(g->policy)
+	switch(group->policy)
 	{
 	case Q_POLICY_GROUP_PRIVATE:
-		return g->owner == id;
+		return group->owner == id;
 
         case Q_POLICY_GROUP_RESTRICTED:
-                return g->pid == current->tgid;
+                return group->pid == current->tgid;
 
         case Q_POLICY_GROUP_SHARED:
         case Q_POLICY_GROUP_UNDEFINED:
@@ -122,73 +154,63 @@ pfq_group_access(pfq_gid_t gid, pfq_id_t id)
 static void
 __pfq_group_init(pfq_gid_t gid)
 {
-        struct pfq_group * g;
+        struct pfq_group * group;
         size_t i;
 
-	g = pfq_get_group(gid);
-        if (g == NULL)
+	group = pfq_get_group(gid);
+        if (group == NULL)
                 return;
 
-	g->pid = current->tgid;
-        g->owner = Q_INVALID_ID;
-        g->policy = Q_POLICY_GROUP_UNDEFINED;
+	group->pid = current->tgid;
+        group->owner = Q_INVALID_ID;
+        group->policy = Q_POLICY_GROUP_UNDEFINED;
 
         for(i = 0; i < Q_CLASS_MAX; i++)
         {
-                atomic_long_set(&g->sock_mask[i], 0);
+                atomic_long_set(&group->sock_mask[i], 0);
         }
 
 	pfq_invalidate_percpu_eligible_mask((pfq_id_t __force)0);
 
-        atomic_long_set(&g->bp_filter,0L);
-        atomic_long_set(&g->comp,     0L);
-        atomic_long_set(&g->comp_ctx, 0L);
+        atomic_long_set(&group->bp_filter,0L);
+        atomic_long_set(&group->comp,     0L);
+        atomic_long_set(&group->comp_ctx, 0L);
 
-	pfq_group_stats_reset(&g->stats);
-
-        for(i = 0; i < Q_MAX_COUNTERS; i++)
-        {
-                sparse_set(&g->context.counter[i], 0);
-        }
-
-	for(i = 0; i < Q_GROUP_PERSIST_DATA; i++)
-	{
-		spin_lock_init(&g->context.persistent[i].lock);
-		memset(g->context.persistent[i].memory, 0, sizeof(g->context.persistent[i].memory));
-	}
+	pfq_group_stats_reset(group->stats);
+	pfq_group_counters_reset(group->counters);
 }
 
 
 static void
 __pfq_group_free(pfq_gid_t gid)
 {
-        struct pfq_group * g;
+        struct pfq_group * group;
         struct sk_filter *filter;
         struct pfq_computation_tree *old_comp;
         void *old_ctx;
 
-	g = pfq_get_group(gid);
-        if (g == NULL)
+	group = pfq_get_group(gid);
+        if (group == NULL)
                 return;
 
         /* remove this gid from devmap matrix */
 
         pfq_devmap_update(map_reset, Q_ANY_DEVICE, Q_ANY_QUEUE, gid);
 
-        g->pid    = 0;
-        g->owner  = Q_INVALID_ID;
-        g->policy = Q_POLICY_GROUP_UNDEFINED;
+        group->pid    = 0;
+        group->owner  = Q_INVALID_ID;
+        group->policy = Q_POLICY_GROUP_UNDEFINED;
 
-        filter   = (struct sk_filter *)atomic_long_xchg(&g->bp_filter, 0L);
-        old_comp = (struct pfq_computation_tree *)atomic_long_xchg(&g->comp, 0L);
-        old_ctx  = (void *)atomic_long_xchg(&g->comp_ctx, 0L);
+        filter   = (struct sk_filter *)atomic_long_xchg(&group->bp_filter, 0L);
+        old_comp = (struct pfq_computation_tree *)atomic_long_xchg(&group->comp, 0L);
+        old_ctx  = (void *)atomic_long_xchg(&group->comp_ctx, 0L);
 
         msleep(Q_GRACE_PERIOD);   /* sleeping is possible here: user-context */
 
 	/* finalize old computation */
 
 	if (old_comp)
-		pfq_computation_fini(old_comp);
+		pfq_computation_destroy(old_comp);
 
 	kfree(old_comp);
 	kfree(old_ctx);
@@ -196,7 +218,7 @@ __pfq_group_free(pfq_gid_t gid)
 	if (filter)
 		pfq_free_sk_filter(filter);
 
-        g->vlan_filt = false;
+        group->vlan_filt = false;
 
         pr_devel("[PFQ] group gid=%d freed.\n", gid);
 }
@@ -205,17 +227,17 @@ __pfq_group_free(pfq_gid_t gid)
 static int
 __pfq_join_group(pfq_gid_t gid, pfq_id_t id, unsigned long class_mask, int policy)
 {
-        struct pfq_group * g;
+        struct pfq_group * group;
         unsigned long tmp = 0;
         unsigned long bit;
 
-	g = pfq_get_group(gid);
-        if (g == NULL)
+	group = pfq_get_group(gid);
+        if (group == NULL)
                 return -EINVAL;
 
 	/* if this group is unused, initializes it */
 
-        if (!g->pid)
+        if (!group->pid)
                 __pfq_group_init(gid);
 
         if (!pfq_group_policy_access(gid, id, policy)) {
@@ -226,25 +248,25 @@ __pfq_join_group(pfq_gid_t gid, pfq_id_t id, unsigned long class_mask, int polic
         pfq_bitwise_foreach(class_mask, bit,
         {
                  int class = pfq_ctz(bit);
-                 tmp = atomic_long_read(&g->sock_mask[class]);
+                 tmp = atomic_long_read(&group->sock_mask[class]);
                  tmp |= 1L << (__force int)id;
-                 atomic_long_set(&g->sock_mask[class], tmp);
+                 atomic_long_set(&group->sock_mask[class], tmp);
         })
 
 	pfq_invalidate_percpu_eligible_mask(id);
 
-	if (g->owner == Q_INVALID_ID)
-		g->owner = id;
+	if (group->owner == Q_INVALID_ID)
+		group->owner = id;
 
-	if (g->policy == Q_POLICY_GROUP_UNDEFINED)
-		g->policy = policy;
+	if (group->policy == Q_POLICY_GROUP_UNDEFINED)
+		group->policy = policy;
 
 	pr_devel("[PFQ|%d] group %d, sock_mask { %lu %lu %lu %lu %lu...\n", id, gid,
-		 atomic_long_read(&g->sock_mask[0]),
-		 atomic_long_read(&g->sock_mask[1]),
-		 atomic_long_read(&g->sock_mask[2]),
-		 atomic_long_read(&g->sock_mask[3]),
-		 atomic_long_read(&g->sock_mask[4]));
+		 atomic_long_read(&group->sock_mask[0]),
+		 atomic_long_read(&group->sock_mask[1]),
+		 atomic_long_read(&group->sock_mask[2]),
+		 atomic_long_read(&group->sock_mask[3]),
+		 atomic_long_read(&group->sock_mask[4]));
 
         return 0;
 }
@@ -253,24 +275,24 @@ __pfq_join_group(pfq_gid_t gid, pfq_id_t id, unsigned long class_mask, int polic
 static int
 __pfq_leave_group(pfq_gid_t gid, pfq_id_t id)
 {
-        struct pfq_group * g;
+        struct pfq_group * group;
         unsigned long tmp;
         size_t i;
 
-	g = pfq_get_group(gid);
-        if (g == NULL)
+	group = pfq_get_group(gid);
+        if (group == NULL)
                 return -EINVAL;
 
         for(i = 0; i < Q_CLASS_MAX; ++i)
         {
-                tmp = atomic_long_read(&g->sock_mask[i]);
+                tmp = atomic_long_read(&group->sock_mask[i]);
                 tmp &= ~(1L << (__force int)id);
-                atomic_long_set(&g->sock_mask[i], tmp);
+                atomic_long_set(&group->sock_mask[i], tmp);
         }
 
 	pfq_invalidate_percpu_eligible_mask(id);
 
-	if (g->pid && __pfq_group_is_empty(gid))
+	if (group->pid && __pfq_group_is_empty(gid))
 		__pfq_group_free(gid);
 
         return 0;
@@ -280,17 +302,17 @@ __pfq_leave_group(pfq_gid_t gid, pfq_id_t id)
 unsigned long
 pfq_get_all_groups_mask(pfq_gid_t gid)
 {
-        struct pfq_group * g;
+        struct pfq_group * group;
         unsigned long mask = 0;
         size_t i;
 
-	g = pfq_get_group(gid);
-        if (g == NULL)
+	group = pfq_get_group(gid);
+        if (group == NULL)
                 return mask;
 
         for(i = 0; i < Q_CLASS_MAX; ++i)
         {
-                mask |= atomic_long_read(&g->sock_mask[i]);
+                mask |= atomic_long_read(&group->sock_mask[i]);
         }
         return mask;
 }
@@ -299,16 +321,16 @@ pfq_get_all_groups_mask(pfq_gid_t gid)
 void
 pfq_set_group_filter(pfq_gid_t gid, struct sk_filter *filter)
 {
-        struct pfq_group * g;
+        struct pfq_group * group;
         struct sk_filter * old_filter;
 
-	g = pfq_get_group(gid);
-        if (g == NULL) {
+	group = pfq_get_group(gid);
+        if (group == NULL) {
                 pfq_free_sk_filter(filter);
                 return;
         }
 
-        old_filter = (void *)atomic_long_xchg(&g->bp_filter, (long)filter);
+        old_filter = (void *)atomic_long_xchg(&group->bp_filter, (long)filter);
 
         msleep(Q_GRACE_PERIOD);
 
@@ -320,25 +342,25 @@ pfq_set_group_filter(pfq_gid_t gid, struct sk_filter *filter)
 int
 pfq_set_group_prog(pfq_gid_t gid, struct pfq_computation_tree *comp, void *ctx)
 {
-        struct pfq_group * g;
+        struct pfq_group * group;
         struct pfq_computation_tree *old_comp;
         void *old_ctx;
 
-	g = pfq_get_group(gid);
-        if (g == NULL)
+	group = pfq_get_group(gid);
+        if (group == NULL)
                 return -EINVAL;
 
         down(&group_sem);
 
-        old_comp = (struct pfq_computation_tree *)atomic_long_xchg(&g->comp, (long)comp);
-        old_ctx  = (void *)atomic_long_xchg(&g->comp_ctx, (long)ctx);
+        old_comp = (struct pfq_computation_tree *)atomic_long_xchg(&group->comp, (long)comp);
+        old_ctx  = (void *)atomic_long_xchg(&group->comp_ctx, (long)ctx);
 
         msleep(Q_GRACE_PERIOD);   /* sleeping is possible here: user-context */
 
 	/* call fini on old computation */
 
 	if (old_comp)
-		pfq_computation_fini(old_comp);
+		pfq_computation_destroy(old_comp);
 
         /* free the old computation/context */
 
@@ -353,11 +375,11 @@ pfq_set_group_prog(pfq_gid_t gid, struct pfq_computation_tree *comp, void *ctx)
 int
 pfq_join_group(pfq_gid_t gid, pfq_id_t id, unsigned long class_mask, int policy)
 {
-        struct pfq_group * g;
+        struct pfq_group * group;
         int ret;
 
-	g = pfq_get_group(gid);
-        if (g == NULL)
+	group = pfq_get_group(gid);
+        if (group == NULL)
                 return -EINVAL;
 
         down(&group_sem);
@@ -393,11 +415,11 @@ pfq_join_free_group(pfq_id_t id, unsigned long class_mask, int policy)
 int
 pfq_leave_group(pfq_gid_t gid, pfq_id_t id)
 {
-        struct pfq_group * g;
+        struct pfq_group * group;
         int ret;
 
-	g = pfq_get_group(gid);
-        if (g == NULL)
+	group = pfq_get_group(gid);
+        if (group == NULL)
                 return -EINVAL;
 
         down(&group_sem);
@@ -456,43 +478,43 @@ pfq_get_group(pfq_gid_t gid)
 bool
 pfq_vlan_filters_enabled(pfq_gid_t gid)
 {
-        struct pfq_group *g;
+        struct pfq_group *group;
 
-        g = pfq_get_group(gid);
-        if (g == NULL)
+        group = pfq_get_group(gid);
+        if (group == NULL)
 		return false;
-        return g->vlan_filt;
+        return group->vlan_filt;
 }
 
 
 bool
 pfq_check_group_vlan_filter(pfq_gid_t gid, int vid)
 {
-        struct pfq_group *g;
+        struct pfq_group *group;
 
-        g= pfq_get_group(gid);
-        if (g == NULL)
+        group= pfq_get_group(gid);
+        if (group == NULL)
                 return false;
 
-        return g->vid_filters[vid & 4095];
+        return group->vid_filters[vid & 4095];
 }
 
 
 bool
 pfq_toggle_group_vlan_filters(pfq_gid_t gid, bool value)
 {
-        struct pfq_group *g;
+        struct pfq_group *group;
 
-        g = pfq_get_group(gid);
-        if (g == NULL)
+        group = pfq_get_group(gid);
+        if (group == NULL)
                 return false;
 
         if (value)
-                memset(g->vid_filters, 0, 4096);
+                memset(group->vid_filters, 0, 4096);
 
         smp_wmb();
 
-        g->vlan_filt = value;
+        group->vlan_filt = value;
         return true;
 }
 
@@ -500,12 +522,12 @@ pfq_toggle_group_vlan_filters(pfq_gid_t gid, bool value)
 void
 pfq_set_group_vlan_filter(pfq_gid_t gid, bool value, int vid)
 {
-        struct pfq_group *g;
+        struct pfq_group *group;
 
-        g = pfq_get_group(gid);
-        if (g == NULL)
+        group = pfq_get_group(gid);
+        if (group == NULL)
                 return;
 
-        g->vid_filters[vid & 4095] = value;
+        group->vid_filters[vid & 4095] = value;
 }
 

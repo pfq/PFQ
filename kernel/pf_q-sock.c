@@ -147,8 +147,29 @@ void pfq_sock_opt_init(struct pfq_sock_opt *that, size_t caplen, size_t maxlen)
 }
 
 
-void pfq_sock_init(struct pfq_sock *so, int id)
+int pfq_sock_init(struct pfq_sock *so, int id)
 {
+	int i;
+
+	/* setup stats */
+
+	so->stats = alloc_percpu(struct pfq_sock_stats);
+	if (!so->stats)
+		return -ENOMEM;
+
+	for_each_possible_cpu(i)
+	{
+		struct pfq_sock_stats * stat = per_cpu_ptr(so->stats, i);
+
+		local_set(&stat->recv, 0);
+		local_set(&stat->lost, 0);
+		local_set(&stat->drop, 0);
+		local_set(&stat->sent, 0);
+		local_set(&stat->disc, 0);
+	}
+
+	/* setup id */
+
 	so->id = id;
 
         /* memory mapped queues are allocated later, when the socket is enabled */
@@ -167,13 +188,7 @@ void pfq_sock_init(struct pfq_sock *so, int id)
         so->shmem.hugepages = NULL;
         so->shmem.npages = 0;
 
-        /* reset stats */
-
-        sparse_set(&so->stats.recv, 0);
-        sparse_set(&so->stats.lost, 0);
-        sparse_set(&so->stats.drop, 0);
-        sparse_set(&so->stats.sent, 0);
-        sparse_set(&so->stats.disc, 0);
+        return 0;
 }
 
 

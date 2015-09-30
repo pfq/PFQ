@@ -43,13 +43,15 @@ forwardIO(arguments_t args, SkBuff skb)
 {
 	struct net_device *dev = GET_ARG(struct net_device *, args);
 	struct sk_buff *nskb;
-	struct pfq_group_stats *stats = get_stats(skb);
+
+	struct pfq_group_stats *stats = get_group_stats(skb);
 
 	if (dev == NULL) {
                 if (printk_ratelimit())
                         printk(KERN_INFO "[PFQ/lang] forward: device error!\n");
-		sparse_inc(&global_stats.abrt);
-		sparse_inc(&stats->abrt);
+		sparse_inc(&global_stats, abrt);
+		local_inc(&stats->abrt);
+
                 return Pass(skb);
 	}
 
@@ -57,8 +59,8 @@ forwardIO(arguments_t args, SkBuff skb)
 	if (!nskb) {
                 if (printk_ratelimit())
 			printk(KERN_INFO "[PFQ/lang] forward pfq_xmit %s: no memory!\n", dev->name);
-		sparse_inc(&global_stats.abrt);
-		sparse_inc(&stats->abrt);
+		sparse_inc(&global_stats, abrt);
+		local_inc(&stats->abrt);
 		return Pass(skb);
 	}
 
@@ -66,12 +68,12 @@ forwardIO(arguments_t args, SkBuff skb)
                 if (printk_ratelimit())
                         printk(KERN_INFO "[PFQ/lang] forward pfq_xmit: error on device %s!\n", dev->name);
 
-		sparse_inc(&global_stats.disc);
-		sparse_inc(&stats->disc);
+		sparse_inc(&global_stats, disc);
+		local_inc(&stats->disc);
 	}
 	else {
-		sparse_inc(&global_stats.frwd);
-		sparse_inc(&stats->frwd);
+		sparse_inc(&global_stats, frwd);
+		local_inc(&stats->frwd);
 	}
 
 	return Pass(skb);
@@ -82,6 +84,7 @@ static ActionSkBuff
 forward(arguments_t args, SkBuff skb)
 {
 	struct net_device *dev = GET_ARG(struct net_device *, args);
+        struct pfq_group_stats *stats;
 
 	if (dev == NULL) {
                 if (printk_ratelimit())
@@ -91,7 +94,8 @@ forward(arguments_t args, SkBuff skb)
 
 	pfq_lazy_xmit(skb, dev, skb->queue_mapping);
 
-	sparse_inc(&get_stats(skb)->frwd);
+	stats = get_group_stats(skb);
+	local_inc(&stats->frwd);
 
 	return Pass(skb);
 }
@@ -145,7 +149,7 @@ bridge(arguments_t args, SkBuff skb)
 
 	pfq_lazy_xmit(skb, dev, skb->queue_mapping);
 
-	sparse_inc(&get_stats(skb)->frwd);
+	local_inc(&get_group_stats(skb)->frwd);
 
 	return Drop(skb);
 }
@@ -168,7 +172,7 @@ tap(arguments_t args, SkBuff skb)
 
 	pfq_lazy_xmit(skb, dev, skb->queue_mapping);
 
-	sparse_inc(&get_stats(skb)->frwd);
+	local_inc(&get_group_stats(skb)->frwd);
 
 	return Drop(skb);
 }
@@ -188,7 +192,7 @@ tee(arguments_t args, SkBuff skb)
 
 	pfq_lazy_xmit(skb, dev, skb->queue_mapping);
 
-	sparse_inc(&get_stats(skb)->frwd);
+	local_inc(&get_group_stats(skb)->frwd);
 
         if (EVAL_PREDICATE(pred_, skb))
 		return Pass(skb);

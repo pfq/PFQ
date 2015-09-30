@@ -26,114 +26,164 @@
 
 #include <pragma/diagnostic_push>
 #include <linux/kernel.h>
+#include <linux/cpumask.h>
+#include <linux/percpu-defs.h>
 #include <linux/pf_q.h>
 #include <pragma/diagnostic_pop>
 
 #include <pf_q-sparse.h>
 
 
-/* sparse_counter_t stats */
-
-
 struct pfq_sock_stats
 {
-        sparse_counter_t  recv;         /* received by the queue */
-        sparse_counter_t  lost;         /* packets lost due to socket queue congestion */
-        sparse_counter_t  drop;         /* dropped by filters */
-
-        sparse_counter_t  sent;         /* sent by the driver */
-        sparse_counter_t  disc;         /* discarded by the driver */
+        local_t  recv;         /* received by the queue */
+        local_t  lost;         /* packets lost due to socket queue congestion */
+        local_t  drop;         /* dropped by filters */
+        local_t  sent;         /* sent by the driver */
+        local_t  disc;         /* discarded by the driver */
 };
+
+
+static inline
+void pfq_sock_stats_reset(struct pfq_sock_stats __percpu *stats)
+{
+	int i;
+	for_each_possible_cpu(i)
+	{
+		struct pfq_sock_stats * stat = per_cpu_ptr(stats, i);
+
+		local_set(&stat->recv, 0);
+		local_set(&stat->lost, 0);
+		local_set(&stat->drop, 0);
+		local_set(&stat->sent, 0);
+		local_set(&stat->disc, 0);
+	}
+}
 
 
 struct pfq_group_stats
 {
-        sparse_counter_t recv;		/* received by the group/computation */
-        sparse_counter_t drop;          /* drop by computation: fanout monad */
-        sparse_counter_t frwd;          /* forwarded to devices */
-        sparse_counter_t kern;          /* passed to kernel */
-        sparse_counter_t disc;          /* discarded due to driver congestion */
-        sparse_counter_t abrt;          /* aborted (e.g. memory problems) */
+        local_t recv;		/* received by the group/computation */
+        local_t drop;		/* drop by computation: fanout monad */
+        local_t frwd;		/* forwarded to devices */
+        local_t kern;		/* passed to kernel */
+        local_t disc;		/* discarded due to driver congestion */
+        local_t abrt;		/* aborted (e.g. memory problems) */
+};
+
+
+static inline
+void pfq_group_stats_reset(struct pfq_group_stats __percpu *stats)
+{
+	int i;
+	for_each_possible_cpu(i)
+	{
+		struct pfq_group_stats * stat = per_cpu_ptr(stats, i);
+
+		local_set(&stat->recv, 0);
+		local_set(&stat->drop, 0);
+		local_set(&stat->frwd, 0);
+		local_set(&stat->kern, 0);
+		local_set(&stat->disc, 0);
+		local_set(&stat->abrt, 0);
+	}
+}
+
+
+struct pfq_group_counters
+{
+	local_t		value[Q_MAX_COUNTERS];
 };
 
 static inline
-void pfq_group_stats_reset(struct pfq_group_stats *stats)
+void pfq_group_counters_reset(struct pfq_group_counters __percpu *counters)
 {
-        sparse_set(&stats->recv, 0);
-        sparse_set(&stats->drop, 0);
-        sparse_set(&stats->frwd, 0);
-        sparse_set(&stats->kern, 0);
-        sparse_set(&stats->disc, 0);
-        sparse_set(&stats->abrt, 0);
+
+	int i, n;
+	for_each_possible_cpu(i)
+	{
+		struct pfq_group_counters * ctr = per_cpu_ptr(counters, i);
+		for(n = 0; n < Q_MAX_COUNTERS; n++)
+			local_set(&ctr->value[n], 0);
+	}
 }
+
 
 struct pfq_global_stats
 {
-	sparse_counter_t recv;		/* received by PFQ */
-	sparse_counter_t lost;		/* lost during capture, due to PFQ problem (e.g. memory problem) */
-        sparse_counter_t sent;		/* transmitted from user-space */
-        sparse_counter_t frwd;		/* forwarded to devices */
-        sparse_counter_t kern;		/* passed to kernel */
-        sparse_counter_t disc;		/* discarded due to driver congestion */
-        sparse_counter_t abrt;		/* aborted (e.g. memory problems) */
-
-        sparse_counter_t poll;		/* number of poll */
-        sparse_counter_t wake;		/* number of wakeup */
+	local_t recv;		/* received by PFQ */
+	local_t lost;		/* lost during capture, due to PFQ problem (e.g. memory problem) */
+        local_t sent;		/* transmitted from user-space */
+        local_t frwd;		/* forwarded to devices */
+        local_t kern;		/* passed to kernel */
+        local_t disc;		/* discarded due to driver congestion */
+        local_t abrt;		/* aborted (e.g. memory problems) */
+        local_t poll;		/* number of poll */
+        local_t wake;		/* number of wakeup */
 };
 
+
 static inline
-void pfq_global_stats_reset(struct pfq_global_stats *stats)
+void pfq_global_stats_reset(struct pfq_global_stats __percpu *stats)
 {
-	sparse_set(&stats->recv, 0);
-	sparse_set(&stats->lost, 0);
-	sparse_set(&stats->sent, 0);
-	sparse_set(&stats->frwd, 0);
-	sparse_set(&stats->kern, 0);
-	sparse_set(&stats->disc, 0);
-	sparse_set(&stats->abrt, 0);
-	sparse_set(&stats->poll, 0);
-	sparse_set(&stats->wake, 0);
+	int i;
+	for_each_possible_cpu(i)
+	{
+		struct pfq_global_stats * stat = per_cpu_ptr(stats, i);
+
+		local_set(&stat->recv, 0);
+		local_set(&stat->lost, 0);
+		local_set(&stat->sent, 0);
+		local_set(&stat->frwd, 0);
+		local_set(&stat->kern, 0);
+		local_set(&stat->disc, 0);
+		local_set(&stat->abrt, 0);
+		local_set(&stat->poll, 0);
+		local_set(&stat->wake, 0);
+	}
 }
 
 
 struct pfq_memory_stats
 {
-	sparse_counter_t os_alloc;
-	sparse_counter_t os_free;
-
-	sparse_counter_t pool_alloc;
-	sparse_counter_t pool_free;
-	sparse_counter_t pool_push;
-	sparse_counter_t pool_pop;
-
-	sparse_counter_t err_norecyl;
-	sparse_counter_t err_pop;
-	sparse_counter_t err_push;
-	sparse_counter_t err_intdis;
-	sparse_counter_t err_shared;
-	sparse_counter_t err_cloned;
-	sparse_counter_t err_memory;
+	local_t os_alloc;
+	local_t os_free;
+	local_t pool_alloc;
+	local_t pool_free;
+	local_t pool_push;
+	local_t pool_pop;
+	local_t err_norecyl;
+	local_t err_pop;
+	local_t err_push;
+	local_t err_intdis;
+	local_t err_shared;
+	local_t err_cloned;
+	local_t err_memory;
 };
 
 
 static inline
-void pfq_memory_stats_reset(struct pfq_memory_stats *stats)
+void pfq_memory_stats_reset(struct pfq_memory_stats __percpu *stats)
 {
-        sparse_set(&stats->os_alloc,   0);
-        sparse_set(&stats->os_free,    0);
+	int i;
+	for_each_possible_cpu(i)
+	{
+		struct pfq_memory_stats * stat = per_cpu_ptr(stats, i);
 
-        sparse_set(&stats->pool_alloc, 0);
-        sparse_set(&stats->pool_free,  0);
-        sparse_set(&stats->pool_push,  0);
-        sparse_set(&stats->pool_pop,   0);
-
-        sparse_set(&stats->err_norecyl,0);
-        sparse_set(&stats->err_pop,    0);
-        sparse_set(&stats->err_push,   0);
-        sparse_set(&stats->err_intdis, 0);
-        sparse_set(&stats->err_shared, 0);
-        sparse_set(&stats->err_cloned, 0);
-        sparse_set(&stats->err_memory, 0);
+		local_set(&stat->os_alloc,   0);
+		local_set(&stat->os_free,    0);
+		local_set(&stat->pool_alloc, 0);
+		local_set(&stat->pool_free,  0);
+		local_set(&stat->pool_push,  0);
+		local_set(&stat->pool_pop,   0);
+		local_set(&stat->err_norecyl,0);
+		local_set(&stat->err_pop,    0);
+		local_set(&stat->err_push,   0);
+		local_set(&stat->err_intdis, 0);
+		local_set(&stat->err_shared, 0);
+		local_set(&stat->err_cloned, 0);
+		local_set(&stat->err_memory, 0);
+	}
 }
 
 

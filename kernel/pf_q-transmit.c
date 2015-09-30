@@ -388,8 +388,8 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 		/* update stats */
 
 		total_sent += sent;
-		__sparse_add(&so->stats.sent, sent, cpu);
-		__sparse_add(&global_stats.sent, sent, cpu);
+		__sparse_add(so->stats, sent, sent, cpu);
+		__sparse_add(&global_stats, sent, sent, cpu);
 
 		if (unlikely(intr))
 			break;
@@ -417,8 +417,8 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 
 	/* update stats */
 
-	__sparse_add(&so->stats.disc, disc, cpu);
-	__sparse_add(&global_stats.disc, disc, cpu);
+	__sparse_add(so->stats, disc, disc, cpu);
+	__sparse_add(&global_stats, disc, disc, cpu);
 
 	return total_sent;
 }
@@ -439,7 +439,7 @@ __pfq_xmit(struct sk_buff *skb, struct net_device *dev, int xmit_more)
 	if (dev_xmit_complete(rc))
 		return rc;
 
-        SPARSE_INC(&memory_stats.os_free);
+        sparse_inc(&memory_stats, os_free);
 	kfree_skb(skb);
 	return -ENETDOWN;
 }
@@ -511,7 +511,7 @@ pfq_skb_queue_xmit(struct pfq_skbuff_queue *skbs, struct net_device *dev, int qu
 
 intr:
 	for_each_skbuff_from(ret + 1, skbs, skb, n) {
-		SPARSE_INC(&memory_stats.os_free);
+		sparse_inc(&memory_stats, os_free);
 		kfree_skb(skb);
 	}
 
@@ -555,7 +555,7 @@ pfq_skb_queue_xmit_by_mask(struct pfq_skbuff_queue *skbs, unsigned long long mas
 
 intr:
 	for_each_skbuff_from(ret + 1, skbs, skb, n) {
-		SPARSE_INC(&memory_stats.os_free);
+		sparse_inc(&memory_stats, os_free);
 		kfree_skb(skb);
 	}
 
@@ -691,7 +691,7 @@ pfq_skb_queue_lazy_xmit_run(struct pfq_skbuff_GC_queue *skbs, struct pfq_endpoin
 				if (nskb && __pfq_xmit(nskb, dev, xmit_more) == NETDEV_TX_OK)
 					sent++;
 				else
-					sparse_inc(&global_stats.abrt);
+					sparse_inc(&global_stats, abrt);
 			}
 		}
 

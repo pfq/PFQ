@@ -159,13 +159,9 @@ class(SkBuff skb, uint64_t class_mask)
 /* utility function: counter */
 
 static inline
-sparse_counter_t *
-get_counter(SkBuff skb, int n)
+struct pfq_group_counters * get_group_counters(SkBuff skb)
 {
-        if (n < 0 || n >= Q_MAX_COUNTERS)
-                return NULL;
-
-	return & PFQ_CB(skb)->monad->group->context.counter[n];
+	return this_cpu_ptr(PFQ_CB(skb)->monad->group->counters);
 }
 
 
@@ -200,29 +196,10 @@ void set_state(SkBuff skb, uint32_t state)
 
 
 static inline
-struct pfq_group_stats *get_stats(SkBuff skb)
+struct pfq_group_stats *get_group_stats(SkBuff skb)
 {
-	return &PFQ_CB(skb)->monad->group->stats;
+	return this_cpu_ptr(PFQ_CB(skb)->monad->group->stats);
 }
 
-
-static inline void *
-__get_persistent(SkBuff skb, int n)
-{
-	struct pfq_group_persistent *ctx = &PFQ_CB(skb)->monad->group->context;
-	spin_lock(&ctx->persistent[n].lock);
-	return ctx->persistent[n].memory;
-}
-
-
-#define get_persistent(type, b, n) __builtin_choose_expr(sizeof(type) <= Q_GROUP_PERSIST_MEM, __get_persistent(b, n) , (void)0)
-
-
-static inline
-void put_persistent(SkBuff skb, int n)
-{
-	struct pfq_group_persistent *ctx = &PFQ_CB(skb)->monad->group->context;
-	spin_unlock(&ctx->persistent[n].lock);
-}
 
 #endif /* PF_Q_MONAD_H */

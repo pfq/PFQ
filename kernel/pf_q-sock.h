@@ -28,6 +28,7 @@
 #include <linux/kernel.h>
 #include <linux/poll.h>
 #include <linux/pf_q.h>
+#include <linux/percpu.h>
 #include <net/sock.h>
 #include <pragma/diagnostic_pop>
 
@@ -62,9 +63,9 @@ void pfq_tx_info_init(struct pfq_tx_info *info)
 {
 	atomic_long_set(&info->addr, 0);
 	info->base_addr = NULL;
-	info->def_ifindex  = -1;
-	info->def_queue    = -1;
-	info->def_dev      = NULL;
+	info->def_ifindex = -1;
+	info->def_queue = -1;
+	info->def_dev = NULL;
 }
 
 
@@ -118,7 +119,8 @@ struct pfq_sock
 
 	struct pfq_shmem_descr  shmem;
         struct pfq_sock_opt	opt;
-        struct pfq_sock_stats	stats;
+
+        struct pfq_sock_stats __percpu *stats;
 
 } ____cacheline_aligned_in_smp;
 
@@ -179,7 +181,7 @@ pfq_id_t
 pfq_get_free_id(struct pfq_sock * so);
 
 void	pfq_sock_opt_init(struct pfq_sock_opt *that, size_t caplen, size_t maxlen);
-void	pfq_sock_init(struct pfq_sock *so, int id);
+int	pfq_sock_init(struct pfq_sock *so, int id);
 int     pfq_get_sock_count(void);
 struct	pfq_sock * pfq_get_sock_by_id(pfq_id_t id);
 void	pfq_release_sock_id(pfq_id_t id);
