@@ -26,8 +26,8 @@
 #include <assert.h>
 #include <string.h>
 
-#include "kcompat.h"
-#include "pf_q-signature.h"
+#include <kcompat.h>
+#include <lang/signature.h>
 
 extern int compare_argument(string_view_t sig1, string_view_t sig2);
 extern int count_outmost_brackets(string_view_t sig);

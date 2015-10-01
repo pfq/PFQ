@@ -21,6 +21,8 @@
  *
  ****************************************************************/
 
+#ifdef __KERNEL__
+
 #include <pragma/diagnostic_push>
 
 #include <linux/kernel.h>
@@ -29,8 +31,12 @@
 #include <linux/limits.h>
 
 #include <pragma/diagnostic_pop>
+#else
+#include <kcompat.h>
+#endif
 
 #include <lang/signature.h>
+
 
 int count_outmost_brackets(string_view_t str);
 const char * find_next_arrow(string_view_t str);

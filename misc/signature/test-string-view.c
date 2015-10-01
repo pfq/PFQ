@@ -21,7 +21,8 @@
  *
  ****************************************************************/
 
-#include "pf_q-string-view.h"
+#include <kcompat.h>
+#include <lang/string-view.h>
 
 #include <assert.h>
 

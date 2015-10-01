@@ -451,10 +451,10 @@ extern int pfq_groups_mask(pfq_t const *q, unsigned long *_mask);
 
 /*! Specify a functional computation for the given group. */
 /*!
- * The functional computation is specified by a pfq_computation_descriptor.
+ * The functional computation is specified by a pfq_lang_computation_descriptor.
  */
 
-extern int pfq_set_group_computation(pfq_t *q, int gid, struct pfq_computation_descr *prg);
+extern int pfq_set_group_computation(pfq_t *q, int gid, struct pfq_lang_computation_descr *prg);
 
 
 /*! Specify a functional computation for the given group, from string. */

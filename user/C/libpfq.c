@@ -728,7 +728,7 @@ pfq_groups_mask(pfq_t const *q, unsigned long *_mask)
 }
 
 int
-pfq_set_group_computation(pfq_t *q, int gid, struct pfq_computation_descr *comp)
+pfq_set_group_computation(pfq_t *q, int gid, struct pfq_lang_computation_descr *comp)
 {
         struct pfq_group_computation p = { gid, comp };
 
@@ -748,7 +748,7 @@ static int __do_set_group_computation(char **fun, size_t n, va_list arg_list)
 	pfq_t * q= va_arg(arg_list, pfq_t *);
         int gid  = va_arg(arg_list, int);
 
-        struct pfq_computation_descr * prog = malloc(sizeof(size_t) * 2 + sizeof(struct pfq_functional_descr) * n);
+        struct pfq_lang_computation_descr * prog = malloc(sizeof(size_t) * 2 + sizeof(struct pfq_lang_functional_descr) * n);
 	if (!prog)
 		return Q_ERROR(q, "PFQ: group computation error (no memory)");
 

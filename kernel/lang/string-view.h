@@ -33,7 +33,7 @@
 #include <pragma/diagnostic_pop>
 
 #else
-#include <kcompat.h>
+#include <stddef.h>
 #endif
 
 #define SVIEW_FMT	"%.*s"

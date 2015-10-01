@@ -990,8 +990,8 @@ namespace pfq {
 
             auto ser = pfq::lang::serialize(comp, 0).first;
 
-            std::unique_ptr<pfq_computation_descr, free_deleter> prg (
-                reinterpret_cast<pfq_computation_descr *>(::malloc(sizeof(size_t) * 2 + sizeof(pfq_functional_descr) * ser.size())));
+            std::unique_ptr<pfq_lang_computation_descr, free_deleter> prg (
+                reinterpret_cast<pfq_lang_computation_descr *>(::malloc(sizeof(size_t) * 2 + sizeof(pfq_lang_functional_descr) * ser.size())));
 
             prg->size = ser.size();
             prg->entry_point = 0;
@@ -1019,12 +1019,12 @@ namespace pfq {
 
         //! Specify a functional computation for the given group.
         /*!
-         * The functional computation is specified by a pfq_computation_descriptor.
+         * The functional computation is specified by a pfq_lang_computation_descriptor.
          * This function should not be used; use the pfq-lang eDSL instead.
          */
 
         void
-        set_group_computation(int gid, pfq_computation_descr *prog)
+        set_group_computation(int gid, pfq_lang_computation_descr *prog)
         {
             struct pfq_group_computation p { gid, prog };
             if (::setsockopt(fd_, PF_Q, Q_SO_GROUP_FUNCTION, &p, sizeof(p)) == -1)

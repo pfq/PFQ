@@ -975,7 +975,7 @@ trd3 (_,_,x) = x
 data StorableFunDescr = StorableFunDescr CString [(IntPtr,CSize,CSize)] CSize
 
 instance Storable StorableFunDescr where
-        sizeOf _    = #{size struct pfq_functional_descr}
+        sizeOf _    = #{size struct pfq_lang_functional_descr}
         alignment _ = alignment (undefined :: CSize)
         peek        = undefined
         poke ptr (StorableFunDescr symbol args next) = do
@@ -1001,11 +1001,11 @@ setGroupComputation :: Ptr PFqTag
 
 setGroupComputation hdl gid comp = do
     let (descrList, _) = serialize comp 0
-    allocaBytes (sizeOf (undefined :: CSize) * 2 + #{size struct pfq_functional_descr} * length descrList) $ \ ptr -> do
+    allocaBytes (sizeOf (undefined :: CSize) * 2 + #{size struct pfq_lang_functional_descr} * length descrList) $ \ ptr -> do
         pokeByteOff ptr 0 (fromIntegral (length descrList) :: CSize)     -- size
         pokeByteOff ptr (sizeOf(undefined :: CSize)) (0 :: CSize)        -- entry_point: always the first one!
         withMany withFunDescr descrList $ \marshList -> do
-            let offset n = sizeOf(undefined :: CSize) * 2 + #{size struct pfq_functional_descr} * n
+            let offset n = sizeOf(undefined :: CSize) * 2 + #{size struct pfq_lang_functional_descr} * n
             forM_ (zip [0..] marshList) $ \(n, (symbol, parms, next)) ->
                 pokeByteOff ptr (offset n)
                     (StorableFunDescr symbol parms (fromIntegral next))
