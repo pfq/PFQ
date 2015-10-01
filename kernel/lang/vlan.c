@@ -1,6 +1,6 @@
 /***************************************************************
  *
- * (C) 2011-14 Nicola Bonelli <nicola@pfq.io>
+ * (C) 2011-15 Nicola Bonelli <nicola@pfq.io>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,7 +28,7 @@
 
 #include <pragma/diagnostic_pop>
 
-#include <pf_q-module.h>
+#include <lang/module.h>
 
 
 static bool
@@ -93,7 +93,7 @@ static int vlan_fini(arguments_t args)
 }
 
 
-struct pfq_function_descr vlan_functions[] = {
+struct pfq_lang_function_descr vlan_functions[] = {
 
 	{ "vlan_id",		"[CInt] -> SkBuff -> Bool",		vlan_id,	vlan_init,	vlan_fini },
 	{ "vlan_id_filter",	"[CInt] -> SkBuff -> Action SkBuff",	vlan_id_filter, vlan_init,	vlan_fini },

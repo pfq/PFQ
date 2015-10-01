@@ -1,6 +1,6 @@
 /***************************************************************
  *
- * (C) 2011-14 Nicola Bonelli <nicola@pfq.io>
+ * (C) 2011-15 Nicola Bonelli <nicola@pfq.io>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,8 +22,8 @@
  ****************************************************************/
 
 
-#ifndef PF_Q_MAYBE_H
-#define PF_Q_MAYBE_H
+#ifndef PFQ_LANG_MAYBE_H
+#define PFQ_LANG_MAYBE_H
 
 #define NOTHING			~0LL
 #define FROM_JUST(type, a)	((long long int)a < 0 ? (type)(a+1) : (type)a)
@@ -56,4 +56,4 @@
 	(void)0))
 
 
-#endif /* PF_Q_MAYBE_H */
+#endif /* PFQ_LANG_MAYBE_H */

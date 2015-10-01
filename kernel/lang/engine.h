@@ -1,6 +1,6 @@
 /***************************************************************
  *
- * (C) 2011-14 Nicola Bonelli <nicola@pfq.io>
+ * (C) 2011-15 Nicola Bonelli <nicola@pfq.io>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,66 +22,66 @@
  ****************************************************************/
 
 
-#ifndef PF_Q_ENGINE_H
-#define PF_Q_ENGINE_H
+#ifndef PFQ_LANG_ENGINE_H
+#define PFQ_LANG_ENGINE_H
 
 #include <pragma/diagnostic_push>
 #include <linux/kernel.h>
 #include <pragma/diagnostic_pop>
 
-#include <pf_q-monad.h>
-#include <pf_q-module.h>
+#include <lang/monad.h>
+#include <lang/module.h>
 
 
-static inline bool is_arg_null(struct pfq_functional_arg_descr const *arg)
+static inline bool is_arg_null(struct pfq_lang_functional_arg_descr const *arg)
 {
 	return !arg->addr && !arg->size && !arg->nelem;
 }
 
-static inline bool is_arg_data(struct pfq_functional_arg_descr const *arg)
+static inline bool is_arg_data(struct pfq_lang_functional_arg_descr const *arg)
 {
 	return arg->addr && arg->size != 0 && arg->nelem == ~0ULL;
 }
 
-static inline bool is_arg_vector(struct pfq_functional_arg_descr const *arg)
+static inline bool is_arg_vector(struct pfq_lang_functional_arg_descr const *arg)
 {
 	return arg->size != 0 && arg->nelem != ~0ULL;
 }
 
-static inline bool is_arg_string(struct pfq_functional_arg_descr const *arg)
+static inline bool is_arg_string(struct pfq_lang_functional_arg_descr const *arg)
 {
 	return arg->addr && arg->size == 0 && arg->nelem == -0ULL;
 }
 
-static inline bool is_arg_vector_str(struct pfq_functional_arg_descr const *arg)
+static inline bool is_arg_vector_str(struct pfq_lang_functional_arg_descr const *arg)
 {
 	return arg->addr && arg->size == 0 && arg->nelem != ~0ULL;
 }
 
-static inline bool is_arg_function(struct pfq_functional_arg_descr const *arg)
+static inline bool is_arg_function(struct pfq_lang_functional_arg_descr const *arg)
 {
 	return !arg->addr && arg->size != 0 && arg->nelem == ~0ULL;
 }
 
 
-extern int pfq_check_computation_descr(struct pfq_computation_descr const *
+extern int pfq_lang_check_computation_descr(struct pfq_lang_computation_descr const *
 				       descr);
 
-extern int pfq_computation_rtlink(struct pfq_computation_descr const *descr,
-				  struct pfq_computation_tree *comp,
+extern int pfq_lang_computation_rtlink(struct pfq_lang_computation_descr const *descr,
+				  struct pfq_lang_computation_tree *comp,
 				  void *context);
 
-extern int pfq_computation_init(struct pfq_computation_tree *comp);
-extern int pfq_computation_destruct(struct pfq_computation_tree *comp);
+extern int pfq_lang_computation_init(struct pfq_lang_computation_tree *comp);
+extern int pfq_lang_computation_destruct(struct pfq_lang_computation_tree *comp);
 
-extern struct pfq_computation_tree * pfq_computation_alloc(struct pfq_computation_descr const *);
-extern void * pfq_context_alloc(struct pfq_computation_descr const *);
-extern const char *pfq_signature_by_user_symbol(const char __user *symb);
-extern size_t pfq_number_of_arguments(struct pfq_functional_descr const *fun);
+extern struct pfq_lang_computation_tree * pfq_lang_computation_alloc(struct pfq_lang_computation_descr const *);
+extern void * pfq_lang_context_alloc(struct pfq_lang_computation_descr const *);
+extern const char *pfq_lang_signature_by_user_symbol(const char __user *symb);
+extern size_t pfq_lang_number_of_arguments(struct pfq_lang_functional_descr const *fun);
 
 extern char * strdup_user(const char __user *str);
 
-extern ActionSkBuff pfq_run(SkBuff, struct pfq_computation_tree *prg);
+extern ActionSkBuff pfq_lang_run(SkBuff, struct pfq_lang_computation_tree *prg);
 
 
-#endif /* PF_Q_ENGINE_H */
+#endif /* PFQ_LANG_ENGINE_H */

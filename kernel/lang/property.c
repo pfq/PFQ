@@ -1,6 +1,6 @@
 /***************************************************************
  *
- * (C) 2011-14 Nicola Bonelli <nicola@pfq.io>
+ * (C) 2011-15 Nicola Bonelli <nicola@pfq.io>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -28,7 +28,7 @@
 
 #include <pragma/diagnostic_pop>
 
-#include <pf_q-module.h>
+#include <lang/module.h>
 
 
 /****************************************************************
@@ -380,7 +380,7 @@ __get_state(arguments_t args, SkBuff skb)
 }
 
 
-struct pfq_function_descr property_functions[] = {
+struct pfq_lang_function_descr property_functions[] = {
 
 	{ "ip_tos",	 "SkBuff -> Word64", ip_tos		},
 	{ "ip_tot_len",  "SkBuff -> Word64", ip_tot_len		},

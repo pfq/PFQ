@@ -30,29 +30,26 @@
 
 #include <pragma/diagnostic_pop>
 
-#include <pf_q-group.h>
-#include <pf_q-engine.h>
-#include <pf_q-module.h>
-#include <pf_q-symtable.h>
-#include <pf_q-signature.h>
-#include <pf_q-engine.h>
-
+#include <lang/engine.h>
 #include <lang/headers.h>
+#include <lang/symtable.h>
+#include <lang/signature.h>
+#include <lang/module.h>
 
 
 const char *
-pfq_signature_by_user_symbol(const char __user *symb)
+pfq_lang_signature_by_user_symbol(const char __user *symb)
 {
 	struct symtable_entry *entry;
         const char *symbol;
 
         symbol = strdup_user(symb);
         if (symbol == NULL) {
-                pr_devel("[PFQ] pfq_signature_by_user_symbol: strdup!\n");
+                pr_devel("[PFQ] pfq_lang_signature_by_user_symbol: strdup!\n");
                 return NULL;
         }
 
-        entry = pfq_symtable_search(&pfq_lang_functions, symbol);
+        entry = pfq_lang_symtable_search(&pfq_lang_functions, symbol);
         if (entry == NULL) {
                 kfree (symbol);
                 return NULL;
@@ -125,14 +122,14 @@ strdup_user(const char __user *str)
 
 
 static inline ActionSkBuff
-pfq_bind(SkBuff skb, struct pfq_functional_node *node)
+pfq_lang_bind(SkBuff skb, struct pfq_lang_functional_node *node)
 {
 	return EVAL_FUNCTION((function_t){&node->fun}, skb);
 }
 
 
 ActionSkBuff
-pfq_run(SkBuff skb, struct pfq_computation_tree *prg)
+pfq_lang_run(SkBuff skb, struct pfq_lang_computation_tree *prg)
 {
 #ifdef PFQ_LANG_PROFILE
 	static uint64_t nrun, total;
@@ -147,7 +144,7 @@ pfq_run(SkBuff skb, struct pfq_computation_tree *prg)
 	return
 #endif
 
-	pfq_bind(skb, prg->entry_point);
+	pfq_lang_bind(skb, prg->entry_point);
 
 #ifdef PFQ_LANG_PROFILE
 
@@ -163,10 +160,10 @@ pfq_run(SkBuff skb, struct pfq_computation_tree *prg)
 }
 
 
-struct pfq_computation_tree *
-pfq_computation_alloc (struct pfq_computation_descr const *descr)
+struct pfq_lang_computation_tree *
+pfq_lang_computation_alloc (struct pfq_lang_computation_descr const *descr)
 {
-        struct pfq_computation_tree * c = kzalloc(sizeof(size_t) + descr->size * sizeof(struct pfq_functional_node),
+        struct pfq_lang_computation_tree * c = kzalloc(sizeof(size_t) + descr->size * sizeof(struct pfq_lang_functional_node),
 						  GFP_KERNEL);
         c->size = descr->size;
         return c;
@@ -174,14 +171,14 @@ pfq_computation_alloc (struct pfq_computation_descr const *descr)
 
 
 void *
-pfq_context_alloc(struct pfq_computation_descr const *descr)
+pfq_lang_context_alloc(struct pfq_lang_computation_descr const *descr)
 {
         size_t size = 0, n = 0;
         void *ret;
 
         for(; n < descr->size; n++)
         {
-		struct pfq_functional_descr const * fun = &descr->fun[n];
+		struct pfq_lang_functional_descr const * fun = &descr->fun[n];
 		int i;
 
 		for(i = 0; i < sizeof(fun->arg)/sizeof(fun->arg[0]); i++)
@@ -210,7 +207,7 @@ pfq_context_alloc(struct pfq_computation_descr const *descr)
 
 
 size_t
-pfq_number_of_arguments(struct pfq_functional_descr const *fun)
+pfq_lang_number_of_arguments(struct pfq_lang_functional_descr const *fun)
 {
 	size_t n = 0;
 	int i;
@@ -227,9 +224,9 @@ pfq_number_of_arguments(struct pfq_functional_descr const *fun)
 
 
 static bool
-function_signature_match(struct pfq_functional_descr const *fun, string_view_t fullsig, size_t index)
+function_signature_match(struct pfq_lang_functional_descr const *fun, string_view_t fullsig, size_t index)
 {
-	const char *signature = pfq_signature_by_user_symbol(fun->symbol);
+	const char *signature = pfq_lang_signature_by_user_symbol(fun->symbol);
 	string_view_t sig;
 	size_t nargs;
 
@@ -238,11 +235,11 @@ function_signature_match(struct pfq_functional_descr const *fun, string_view_t f
 		return false;
 	}
 
-	nargs = pfq_number_of_arguments(fun);
+	nargs = pfq_lang_number_of_arguments(fun);
 
-	sig = pfq_signature_bind(make_string_view(signature), nargs);
+	sig = pfq_lang_signature_bind(make_string_view(signature), nargs);
 
-	if (!pfq_signature_equal(sig, fullsig)) {
+	if (!pfq_lang_signature_equal(sig, fullsig)) {
 
 		pr_devel("[PFQ] %zu: invalid function: %s (%zu args bound)!\n", index, signature, nargs);
 		return false;
@@ -253,10 +250,10 @@ function_signature_match(struct pfq_functional_descr const *fun, string_view_t f
 
 
 static int
-check_argument_descr(struct pfq_functional_arg_descr const *arg, string_view_t expected)
+check_argument_descr(struct pfq_lang_functional_arg_descr const *arg, string_view_t expected)
 {
 	if (is_arg_data(arg)) {
-		ptrdiff_t size = pfq_signature_sizeof(expected);
+		ptrdiff_t size = pfq_lang_signature_sizeof(expected);
 		if (size != -1) {
 			if (size != arg->size) {
 				pr_devel("[PFQ] invalid argument: expected " SVIEW_FMT ", pod size = %zu (size mismatch)!\n", SVIEW_ARG(expected), arg->size);
@@ -276,13 +273,13 @@ check_argument_descr(struct pfq_functional_arg_descr const *arg, string_view_t e
 			return -EPERM;
 		}
 
-		type = pfq_signature_remove_extent(expected);
+		type = pfq_lang_signature_remove_extent(expected);
                 if(string_view_empty(type)) {
 			pr_devel("[PFQ] invalid argument: expected a non empty vector!\n");
 			return -EPERM;
 		}
 
-		size = pfq_signature_sizeof(type);
+		size = pfq_lang_signature_sizeof(type);
 		if (size != -1) {
 			if (size != arg->size) {
 				pr_devel("[PFQ] invalid argument: expected " SVIEW_FMT ", pod size = %zu (size mismatch)!\n", SVIEW_ARG(type), arg->size);
@@ -316,7 +313,7 @@ check_argument_descr(struct pfq_functional_arg_descr const *arg, string_view_t e
 
 
 int
-pfq_check_computation_descr(struct pfq_computation_descr const *descr)
+pfq_lang_check_computation_descr(struct pfq_lang_computation_descr const *descr)
 {
         size_t entry_point = descr->entry_point, n;
 
@@ -331,7 +328,7 @@ pfq_check_computation_descr(struct pfq_computation_descr const *descr)
 
 	for(n = 0; n < descr->size; n++)
 	{
-		struct pfq_functional_descr const * fun = &descr->fun[n];
+		struct pfq_lang_functional_descr const * fun = &descr->fun[n];
 		const char *signature;
 		size_t nargs;
 		int i;
@@ -341,11 +338,11 @@ pfq_check_computation_descr(struct pfq_computation_descr const *descr)
 			return -EPERM;
 		}
 
-		nargs = pfq_number_of_arguments(fun);
+		nargs = pfq_lang_number_of_arguments(fun);
 
 		/* get the signature */
 
-		signature = pfq_signature_by_user_symbol(fun->symbol);
+		signature = pfq_lang_signature_by_user_symbol(fun->symbol);
 		if (!signature) {
 			printk(KERN_INFO "[PFQ] resolve_signature_by_symbol: '%s' no such function!\n", fun->symbol);
 			return -EPERM;
@@ -365,7 +362,7 @@ pfq_check_computation_descr(struct pfq_computation_descr const *descr)
 
 		for(i = 0; i < nargs; i++)
 		{
-			string_view_t sarg = pfq_signature_arg(make_string_view(signature), i);
+			string_view_t sarg = pfq_lang_signature_arg(make_string_view(signature), i);
 
 			if (fun->arg[i].nelem > 65536 &&
 			    fun->arg[i].nelem != -1) {
@@ -415,7 +412,7 @@ resolve_user_symbol(struct list_head *cat, const char __user *symb, const char *
                 return NULL;
         }
 
-        entry = pfq_symtable_search(cat, symbol);
+        entry = pfq_lang_symtable_search(cat, symbol);
         if (entry == NULL) {
                 pr_devel("[PFQ] resolve_symbol: '%s' no such function!\n", symbol);
                 return NULL;
@@ -431,7 +428,7 @@ resolve_user_symbol(struct list_head *cat, const char __user *symb, const char *
 
 
 int
-pfq_computation_init(struct pfq_computation_tree *comp)
+pfq_lang_computation_init(struct pfq_lang_computation_tree *comp)
 {
 	size_t n;
 	for (n = 0; n < comp->size; n++)
@@ -452,7 +449,7 @@ pfq_computation_init(struct pfq_computation_tree *comp)
 }
 
 int
-pfq_computation_destruct(struct pfq_computation_tree *comp)
+pfq_lang_computation_destruct(struct pfq_lang_computation_tree *comp)
 {
 	size_t n;
 
@@ -471,8 +468,8 @@ pfq_computation_destruct(struct pfq_computation_tree *comp)
 }
 
 
-static struct pfq_functional_node *
-get_functional_node_by_index(struct pfq_computation_descr const *descr, struct pfq_computation_tree *comp, int index)
+static struct pfq_lang_functional_node *
+get_functional_node_by_index(struct pfq_lang_computation_descr const *descr, struct pfq_lang_computation_tree *comp, int index)
 {
         if (index >= 0 && index < descr->size) {
                 return &comp->node[index];
@@ -483,11 +480,11 @@ get_functional_node_by_index(struct pfq_computation_descr const *descr, struct p
 
 
 /*
- * Prerequisite: valid computation (check by means of pfq_validate_computation_descr)
+ * Prerequisite: valid computation (check by means of pfq_lang_validate_computation_descr)
  */
 
 int
-pfq_computation_rtlink(struct pfq_computation_descr const *descr, struct pfq_computation_tree *comp, void *context)
+pfq_lang_computation_rtlink(struct pfq_lang_computation_descr const *descr, struct pfq_lang_computation_tree *comp, void *context)
 {
 	size_t n;
 
@@ -503,8 +500,8 @@ pfq_computation_rtlink(struct pfq_computation_descr const *descr, struct pfq_com
 
         for(n = 0; n < descr->size; n++)
         {
-		struct pfq_functional_descr const *fun;
-		struct pfq_functional_node *next;
+		struct pfq_lang_functional_descr const *fun;
+		struct pfq_lang_functional_node *next;
 		const char *signature;
 		init_ptr_t init, fini;
 		void *addr;
@@ -633,7 +630,7 @@ pfq_computation_rtlink(struct pfq_computation_descr const *descr, struct pfq_com
 			}
 			else if (!is_arg_null(&fun->arg[i])) {
 
-				printk(KERN_INFO "[PFQ] pfq_computation_rtlink: internal error@ function:%zu argument[%zu] => { %p, %zu, %zu }!\n",
+				printk(KERN_INFO "[PFQ] pfq_lang_computation_rtlink: internal error@ function:%zu argument[%zu] => { %p, %zu, %zu }!\n",
 				       n, i, (void __user *)fun->arg[i].addr, fun->arg[i].size, fun->arg[i].nelem);
 				return -EPERM;
 			}

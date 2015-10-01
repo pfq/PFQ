@@ -1,6 +1,6 @@
 /***************************************************************
  *
- * (C) 2011-14 Nicola Bonelli <nicola@pfq.io>
+ * (C) 2011-15 Nicola Bonelli <nicola@pfq.io>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -56,7 +56,7 @@ struct pfq_group
         bool   vlan_filt;                               /* enable/disable vlan filtering */
         char   vid_filters[4096];                       /* vlan filters */
 
-        atomic_long_t comp;                             /* struct pfq_computation_tree *  (new functional program) */
+        atomic_long_t comp;                             /* struct pfq_lang_computation_tree *  (new functional program) */
         atomic_long_t comp_ctx;                         /* void *: storage context (new functional program) */
 
 	struct pfq_group_stats __percpu *stats;
@@ -66,12 +66,12 @@ struct pfq_group
 
 extern struct semaphore group_sem;
 
-struct pfq_computation_tree;
+struct pfq_lang_computation_tree;
 
 extern int  pfq_join_free_group(pfq_id_t id, unsigned long class_mask, int policy);
 extern int  pfq_join_group(pfq_gid_t gid, pfq_id_t id, unsigned long class_mask, int policy);
 extern int  pfq_leave_group(pfq_gid_t gid, pfq_id_t id);
-extern int  pfq_set_group_prog(pfq_gid_t gid, struct pfq_computation_tree *prog, void *ctx);
+extern int  pfq_set_group_prog(pfq_gid_t gid, struct pfq_lang_computation_tree *prog, void *ctx);
 extern void pfq_leave_all_groups(pfq_id_t id);
 
 extern unsigned long pfq_get_groups(pfq_id_t id);

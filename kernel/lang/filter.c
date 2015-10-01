@@ -1,6 +1,6 @@
 /***************************************************************
  *
- * (C) 2011-14 Nicola Bonelli <nicola@pfq.io>
+ * (C) 2011-15 Nicola Bonelli <nicola@pfq.io>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,9 +29,8 @@
 
 #include <pragma/diagnostic_pop>
 
-#include <pf_q-module.h>
-
-#include "filter.h"
+#include <lang/module.h>
+#include <lang/filter.h>
 
 
 static ActionSkBuff
@@ -139,7 +138,7 @@ filter_no_more_frag(arguments_t args, SkBuff b)
 }
 
 
-struct pfq_function_descr filter_functions[] = {
+struct pfq_lang_function_descr filter_functions[] = {
 
         { "unit",	  "SkBuff -> Action SkBuff",	unit			},
         { "ip",           "SkBuff -> Action SkBuff",	filter_ip		},

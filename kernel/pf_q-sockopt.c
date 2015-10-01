@@ -1,6 +1,6 @@
 /***************************************************************
  *
- * (C) 2011-14 Nicola Bonelli <nicola@pfq.io>
+ * (C) 2011-15 Nicola Bonelli <nicola@pfq.io>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -40,13 +40,15 @@
 #include <pf_q-group.h>
 #include <pf_q-memory.h>
 #include <pf_q-devmap.h>
-#include <pf_q-symtable.h>
-#include <pf_q-engine.h>
-#include <pf_q-printk.h>
 #include <pf_q-thread.h>
 #include <pf_q-sockopt.h>
 #include <pf_q-endpoint.h>
 #include <pf_q-shared-queue.h>
+#include <pf_q-printk.h>
+
+#include <lang/engine.h>
+#include <lang/symtable.h>
+#include <lang/printk.h>
 
 int pfq_getsockopt(struct socket *sock,
                 int level, int optname,
@@ -829,8 +831,8 @@ int pfq_setsockopt(struct socket *sock,
 
         case Q_SO_GROUP_FUNCTION:
         {
-                struct pfq_computation_descr *descr = NULL;
-                struct pfq_computation_tree *comp = NULL;
+                struct pfq_lang_computation_descr *descr = NULL;
+                struct pfq_lang_computation_tree *comp = NULL;
                 struct pfq_group_computation tmp;
                 size_t psize, ucsize;
                 void *context = NULL;
@@ -856,7 +858,7 @@ int pfq_setsockopt(struct socket *sock,
 
                 pr_devel("[PFQ|%d] computation size: %zu\n", so->id, psize);
 
-                ucsize = sizeof(size_t) * 2 + psize * sizeof(struct pfq_functional_descr);
+                ucsize = sizeof(size_t) * 2 + psize * sizeof(struct pfq_lang_functional_descr);
 
                 descr = kmalloc(ucsize, GFP_KERNEL);
                 if (descr == NULL) {
@@ -876,7 +878,7 @@ int pfq_setsockopt(struct socket *sock,
 
 		/* check the correctness of computation */
 
-		if (pfq_check_computation_descr(descr) < 0) {
+		if (pfq_lang_check_computation_descr(descr) < 0) {
                         printk(KERN_INFO "[PFQ|%d] invalid expression!\n", so->id);
                         err = -EFAULT;
                         goto error;
@@ -884,16 +886,16 @@ int pfq_setsockopt(struct socket *sock,
 
                 /* allocate context */
 
-                context = pfq_context_alloc(descr);
+                context = pfq_lang_context_alloc(descr);
                 if (context == NULL) {
                         printk(KERN_INFO "[PFQ|%d] context: alloc error!\n", so->id);
                         err = -EFAULT;
                         goto error;
                 }
 
-                /* allocate a pfq_computation_tree */
+                /* allocate a pfq_lang_computation_tree */
 
-                comp = pfq_computation_alloc(descr);
+                comp = pfq_lang_computation_alloc(descr);
                 if (comp == NULL) {
                         printk(KERN_INFO "[PFQ|%d] computation: alloc error!\n", so->id);
                         err = -EFAULT;
@@ -902,7 +904,7 @@ int pfq_setsockopt(struct socket *sock,
 
                 /* link functions of computation */
 
-                if (pfq_computation_rtlink(descr, comp, context) < 0) {
+                if (pfq_lang_computation_rtlink(descr, comp, context) < 0) {
                         printk(KERN_INFO "[PFQ|%d] computation aborted!", so->id);
                         err = -EPERM;
                         goto error;
@@ -914,9 +916,9 @@ int pfq_setsockopt(struct socket *sock,
 
 		/* run init functions */
 
-		if (pfq_computation_init(comp) < 0) {
+		if (pfq_lang_computation_init(comp) < 0) {
                         printk(KERN_INFO "[PFQ|%d] initialization of computation aborted!", so->id);
-                        pfq_computation_destruct(comp);
+                        pfq_lang_computation_destruct(comp);
                         err = -EPERM;
                         goto error;
 		}

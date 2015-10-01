@@ -1,6 +1,6 @@
 /***************************************************************
  *
- * (C) 2011-14 Nicola Bonelli <nicola@pfq.io>
+ * (C) 2011-15 Nicola Bonelli <nicola@pfq.io>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,10 +21,10 @@
  *
  ****************************************************************/
 
-#ifndef PF_Q_FUNCTIONAL_MISC_H
-#define PF_Q_FUNCTIONAL_MISC_H
+#ifndef PFQ_LANG_MISC_H
+#define PFQ_LANG_MISC_H
 
-#include <pf_q-module.h>
+#include <lang/module.h>
 
 static inline ActionSkBuff
 mark(arguments_t args, SkBuff b)
@@ -43,4 +43,4 @@ put_state(arguments_t args, SkBuff b)
 }
 
 
-#endif /* PF_Q_FUNCTIONAL_MISC_H */
+#endif /* PFQ_LANG_MISC_H */

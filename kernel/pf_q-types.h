@@ -1,6 +1,6 @@
 /***************************************************************
  *
- * (C) 2011-14 Nicola Bonelli <nicola@pfq.io>
+ * (C) 2011-15 Nicola Bonelli <nicola@pfq.io>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,10 +33,6 @@
 
 typedef int __bitwise pfq_id_t;
 typedef int __bitwise pfq_gid_t;
-
-/* skb owned by garbage collector */
-
-#define __GC __attribute__((address_space(7)))
 
 
 #endif  /* PF_Q_TYPES_H */

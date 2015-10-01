@@ -1,6 +1,6 @@
 /***************************************************************
  *
- * (C) 2011-14 Nicola Bonelli <nicola@pfq.io>
+ * (C) 2011-15 Nicola Bonelli <nicola@pfq.io>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,9 +29,8 @@
 
 #include <pragma/diagnostic_pop>
 
-#include <pf_q-module.h>
-
-#include "bloom.h"
+#include <lang/module.h>
+#include <lang/bloom.h>
 
 
 static bool
@@ -232,7 +231,7 @@ static int bloom_fini(arguments_t args)
 }
 
 
-struct pfq_function_descr bloom_functions[] = {
+struct pfq_lang_function_descr bloom_functions[] = {
 
 	{"bloom",		"CInt -> [Word32] -> CInt -> SkBuff -> Bool",		bloom,			bloom_init,	bloom_fini},
 	{"bloom_src",		"CInt -> [Word32] -> CInt -> SkBuff -> Bool",		bloom_src,		bloom_init,	bloom_fini},

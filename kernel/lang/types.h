@@ -21,38 +21,11 @@
  *
  ****************************************************************/
 
-#ifndef PF_Q_ENDPOINT_H
-#define PF_Q_ENDPOINT_H
+#ifndef PFQ_LANG_TYPES_H
+#define PFQ_LANG_TYPES_H
 
-#include <pf_q-types.h>
-#include <pf_q-define.h>
+/* skb owned by garbage collector */
 
-struct pfq_sock;
-struct pfq_skbuff_GC_queue;
-struct net_device;
+#define __GC __attribute__((address_space(7)))
 
-enum pfq_endpoint_type
-{
-	pfq_endpoint_socket,
-	pfq_endpoint_device
-};
-
-
-struct pfq_endpoint_info
-{
-	struct net_device * dev[Q_GC_LOG_QUEUE_LEN];
-	size_t cnt [Q_GC_LOG_QUEUE_LEN];
-	size_t cnt_total;
-	size_t num;
-};
-
-
-void add_dev_to_endpoints(struct net_device *dev, struct pfq_endpoint_info *ts);
-
-
-extern size_t copy_to_endpoint_skbs(struct pfq_sock *so,
-				    struct pfq_skbuff_GC_queue *pool,
-				    unsigned long long mask,
-				    int cpu, pfq_gid_t gid);
-
-#endif /* PF_Q_ENDPOINT_H */
+#endif /* PFQ_LANG_TYPES_H */

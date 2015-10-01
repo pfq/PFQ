@@ -1,6 +1,6 @@
 /***************************************************************
  *
- * (C) 2011-14 Nicola Bonelli <nicola@pfq.io>
+ * (C) 2011-15 Nicola Bonelli <nicola@pfq.io>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,8 +21,8 @@
  *
  ****************************************************************/
 
-#ifndef PF_Q_STRING_VIEW_H
-#define PF_Q_STRING_VIEW_H
+#ifndef PFQ_LANG_STRING_VIEW_H
+#define PFQ_LANG_STRING_VIEW_H
 
 #ifdef __KERNEL__
 
@@ -184,4 +184,4 @@ string_view_fputs(FILE *stream, string_view_t str)
 #endif
 
 
-#endif /* PF_Q_STRING_VIEW_H */
+#endif /* PFQ_LANG_STRING_VIEW_H */

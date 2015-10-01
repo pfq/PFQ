@@ -1,6 +1,6 @@
 /***************************************************************
  *
- * (C) 2011-14 Nicola Bonelli <nicola@pfq.io>
+ * (C) 2011-15 Nicola Bonelli <nicola@pfq.io>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,8 +21,8 @@
  *
  ****************************************************************/
 
-#ifndef PF_Q_MODULE_H
-#define PF_Q_MODULE_H
+#ifndef PFQ_LANG_MODULE_H
+#define PFQ_LANG_MODULE_H
 
 #include <pragma/diagnostic_push>
 
@@ -38,10 +38,11 @@
 
 #include <pragma/diagnostic_pop>
 
+#include <lang/GC.h>
+#include <lang/monad.h>
+#include <lang/maybe.h>
+
 #include <pf_q-sparse.h>
-#include <pf_q-monad.h>
-#include <pf_q-maybe.h>
-#include <pf_q-GC.h>
 
 
 #define ARGS_TYPE(a)		__builtin_choose_expr(__builtin_types_compatible_p(arguments_t, typeof(a)), a, (void)0)
@@ -100,30 +101,30 @@
 
 /**** generic functional type ****/
 
-struct pfq_function_descr;
-struct pfq_exec;
+struct pfq_lang_function_descr;
+struct pfq_lang_exec;
 
-extern struct list_head pfq_lang_functions;
-extern int pfq_symtable_register_functions  (const char *module, struct list_head *category, struct pfq_function_descr *fun);
-extern int pfq_symtable_unregister_functions(const char *module, struct list_head *category, struct pfq_function_descr *fun);
+extern struct list_head pfq_lang_lang_functions;
+extern int pfq_lang_symtable_register_functions  (const char *module, struct list_head *category, struct pfq_lang_function_descr *fun);
+extern int pfq_lang_symtable_unregister_functions(const char *module, struct list_head *category, struct pfq_lang_function_descr *fun);
 
 
-struct pfq_functional_arg
+struct pfq_lang_functional_arg
 {
         ptrdiff_t     value;
         size_t	      nelem;	/* > 0 array */
 };
 
 
-struct pfq_functional
+struct pfq_lang_functional
 {
 	void * run;				/* pointer to function */
-	struct pfq_functional_arg arg[8];       /* arguments */
-	struct pfq_functional *next;		/* kleisli composition */
+	struct pfq_lang_functional_arg arg[8];       /* arguments */
+	struct pfq_lang_functional *next;		/* kleisli composition */
 };
 
 
-typedef struct pfq_functional * arguments_t;
+typedef struct pfq_lang_functional * arguments_t;
 
 
 /**** function prototypes ****/
@@ -137,29 +138,29 @@ typedef int	      (*fini_ptr_t)	(arguments_t);
 
 typedef struct
 {
-	struct pfq_functional * fun;
+	struct pfq_lang_functional * fun;
 
 } function_t;
 
 
 typedef struct
 {
-	struct pfq_functional * fun;
+	struct pfq_lang_functional * fun;
 
 } predicate_t;
 
 
 typedef struct
 {
-	struct pfq_functional * fun;
+	struct pfq_lang_functional * fun;
 
 } property_t;
 
 
 
-struct pfq_functional_node
+struct pfq_lang_functional_node
 {
-	struct pfq_functional fun;
+	struct pfq_lang_functional fun;
 
 	init_ptr_t	      init;
 	fini_ptr_t	      fini;
@@ -168,17 +169,17 @@ struct pfq_functional_node
 };
 
 
-struct pfq_computation_tree
+struct pfq_lang_computation_tree
 {
 	size_t size;
-	struct pfq_functional_node *entry_point;
-	struct pfq_functional_node node[];
+	struct pfq_lang_functional_node *entry_point;
+	struct pfq_lang_functional_node node[];
 };
 
 
 /* function descriptors */
 
-struct pfq_function_descr
+struct pfq_lang_function_descr
 {
 	const char *    symbol;
 	const char *	signature;
@@ -220,7 +221,7 @@ bool fwd_to_kernel(struct sk_buff *skb)
 static inline ActionSkBuff
 eval_function(function_t f, SkBuff skb)
 {
-	struct pfq_functional *fun = f.fun;
+	struct pfq_lang_functional *fun = f.fun;
 	while (fun) {
 
                 fanout_t *a;
@@ -238,17 +239,17 @@ eval_function(function_t f, SkBuff skb)
 }
 
 
-extern struct pfq_function_descr  filter_functions[];
-extern struct pfq_function_descr  bloom_functions[];
-extern struct pfq_function_descr  vlan_functions[];
-extern struct pfq_function_descr  forward_functions[];
-extern struct pfq_function_descr  steering_functions[];
-extern struct pfq_function_descr  predicate_functions[];
-extern struct pfq_function_descr  combinator_functions[];
-extern struct pfq_function_descr  property_functions[];
-extern struct pfq_function_descr  high_order_functions[];
-extern struct pfq_function_descr  misc_functions[];
-extern struct pfq_function_descr  dummy_functions[];
+extern struct pfq_lang_function_descr  filter_functions[];
+extern struct pfq_lang_function_descr  bloom_functions[];
+extern struct pfq_lang_function_descr  vlan_functions[];
+extern struct pfq_lang_function_descr  forward_functions[];
+extern struct pfq_lang_function_descr  steering_functions[];
+extern struct pfq_lang_function_descr  predicate_functions[];
+extern struct pfq_lang_function_descr  combinator_functions[];
+extern struct pfq_lang_function_descr  property_functions[];
+extern struct pfq_lang_function_descr  high_order_functions[];
+extern struct pfq_lang_function_descr  misc_functions[];
+extern struct pfq_lang_function_descr  dummy_functions[];
 
 
-#endif /* PF_Q_MODULE_H */
+#endif /* PFQ_LANG_MODULE_H */

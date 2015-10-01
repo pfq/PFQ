@@ -1,6 +1,6 @@
 /***************************************************************
  *
- * (C) 2011-14 Nicola Bonelli <nicola@pfq.io>
+ * (C) 2011-15 Nicola Bonelli <nicola@pfq.io>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,12 +21,11 @@
  *
  ****************************************************************/
 
-#ifndef PF_Q_FUNCTIONAL_CONDITIONAL_H
-#define PF_Q_FUNCTIONAL_CONDITIONAL_H
+#ifndef PFQ_LANG_CONDITIONAL_H
+#define PFQ_LANG_CONDITIONAL_H
 
-#include <pf_q-module.h>
-
-#include "predicate.h"
+#include <lang/module.h>
+#include <lang/predicate.h>
 
 static inline ActionSkBuff
 conditional(arguments_t args, SkBuff b)
@@ -66,4 +65,4 @@ unless(arguments_t args, SkBuff b)
 }
 
 
-#endif /* PF_Q_FUNCTIONAL_CONDITIONAL_H */
+#endif /* PFQ_LANG_CONDITIONAL_H */

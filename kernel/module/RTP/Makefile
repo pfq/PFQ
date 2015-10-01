@@ -1,4 +1,4 @@
-# (C) 2011-12 Nicola Bonelli <nicola@pfq.io>
+# (C) 2011-15 Nicola Bonelli <nicola@pfq.io>
 #
 
 

@@ -1,6 +1,6 @@
 /***************************************************************
  *
- * (C) 2011-14 Nicola Bonelli <nicola@pfq.io>
+ * (C) 2011-15 Nicola Bonelli <nicola@pfq.io>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,9 +33,10 @@
 
 #include <pragma/diagnostic_pop>
 
-#include <pf_q-skbuff-pool.h>
+#include <pf_q-pool.h>
 #include <pf_q-define.h>
-#include <pf_q-GC.h>
+
+#include <lang/GC.h>
 
 
 int pfq_percpu_init(void);

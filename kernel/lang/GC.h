@@ -1,6 +1,6 @@
 /***************************************************************
  *
- * (C) 2011-14 Nicola Bonelli <nicola@pfq.io>
+ * (C) 2011-15 Nicola Bonelli <nicola@pfq.io>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,8 +21,8 @@
  *
  ****************************************************************/
 
-#ifndef PF_Q_GC_H
-#define PF_Q_GC_H
+#ifndef PFQ_LANG_GC_H
+#define PFQ_LANG_GC_H
 
 #include <pragma/diagnostic_push>
 #include <linux/string.h>
@@ -33,7 +33,6 @@
 #include <pf_q-skbuff.h>
 #include <pf_q-define.h>
 #include <pf_q-skbuff.h>
-#include <pf_q-skbuff-batch.h>
 
 
 typedef struct sk_buff __GC * SkBuff;
@@ -74,9 +73,9 @@ extern struct sk_buff __GC * GC_make_buff(struct GC_data *gc, struct sk_buff *sk
 extern struct sk_buff __GC * GC_alloc_buff(struct GC_data *gc, size_t size);
 extern struct sk_buff __GC * GC_copy_buff(struct GC_data *gc, struct sk_buff __GC * orig);
 
-struct sk_buff __GC * pfq_make_buff(struct sk_buff *skb);
-struct sk_buff __GC * pfq_alloc_buff(size_t size);
-struct sk_buff __GC * pfq_copy_buff(struct sk_buff __GC * skb);
+struct sk_buff __GC * pfq_lang_make_buff(struct sk_buff *skb);
+struct sk_buff __GC * pfq_lang_alloc_buff(size_t size);
+struct sk_buff __GC * pfq_lang_copy_buff(struct sk_buff __GC * skb);
 
 
 struct skb_lazy_targets;
@@ -120,4 +119,4 @@ size_t GC_size(struct GC_data *gc)
 }
 
 
-#endif /* PF_Q_GC_H */
+#endif /* PFQ_LANG_GC_H */

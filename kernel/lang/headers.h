@@ -1,6 +1,6 @@
 /***************************************************************
  *
- * (C) 2011-14 Nicola Bonelli <nicola@pfq.io>
+ * (C) 2011-15 Nicola Bonelli <nicola@pfq.io>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,8 +21,8 @@
  *
  ****************************************************************/
 
-#ifndef PF_Q_FUNCTIONAL_HEADERS_H
-#define PF_Q_FUNCTIONAL_HEADERS_H
+#ifndef PFQ_LANG_HEADERS_H
+#define PFQ_LANG_HEADERS_H
 
 #include <lang/combinator.h>
 #include <lang/conditional.h>
@@ -31,4 +31,4 @@
 #include <lang/filter.h>
 #include <lang/misc.h>
 
-#endif /* PF_Q_FUNCTIONAL_HEADERS_H */
+#endif /* PFQ_LANG_HEADERS_H */

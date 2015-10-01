@@ -1,6 +1,6 @@
 /***************************************************************
  *
- * (C) 2011-14 Nicola Bonelli <nicola@pfq.io>
+ * (C) 2011-15 Nicola Bonelli <nicola@pfq.io>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,15 +27,8 @@
 
 #include <pf_q-group.h>
 
-struct pfq_computation_descr;
-struct pfq_computation_tree;
-struct pfq_functional_node;
-
 extern void   pr_devel_group(pfq_gid_t gid);
 extern void   pr_devel_buffer(const unsigned char *buff, size_t len);
-extern void   pr_devel_computation_descr(struct pfq_computation_descr const *);
-extern void   pr_devel_computation_tree(struct pfq_computation_tree const *);
-extern size_t snprintf_functional_node(char *buffer, size_t size, struct pfq_functional_node const *node, size_t index);
 
 
 #endif /* PF_Q_PRINTK_H */

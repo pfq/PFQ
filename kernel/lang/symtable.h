@@ -1,6 +1,6 @@
 /***************************************************************
  *
- * (C) 2011-14 Nicola Bonelli <nicola@pfq.io>
+ * (C) 2011-15 Nicola Bonelli <nicola@pfq.io>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,8 +21,8 @@
  *
  ****************************************************************/
 
-#ifndef PF_Q_SYMTABLE_H
-#define PF_Q_SYMTABLE_H
+#ifndef PFQ_LANG_SYMTABLE_H
+#define PFQ_LANG_SYMTABLE_H
 
 #include <pragma/diagnostic_push>
 
@@ -34,7 +34,7 @@
 
 #include <pragma/diagnostic_pop>
 
-#include <pf_q-module.h>
+#include <lang/module.h>
 
 
 /* symtable_entry */
@@ -60,17 +60,17 @@ extern struct list_head pfq_lang_functions;
 
 /* symtable */
 
-extern void pfq_symtable_init(void);
-extern void pfq_symtable_free(void);
+extern void pfq_lang_symtable_init(void);
+extern void pfq_lang_symtable_free(void);
 
-extern int  pfq_symtable_register_function(const char *module, struct list_head *category, const char *symbol,
+extern int  pfq_lang_symtable_register_function(const char *module, struct list_head *category, const char *symbol,
 					   void * fun, init_ptr_t init, fini_ptr_t fini, const char *signature);
-extern int  pfq_symtable_unregister_function(const char *module, struct list_head *category, const char *symbol);
+extern int  pfq_lang_symtable_unregister_function(const char *module, struct list_head *category, const char *symbol);
 
-extern int pfq_symtable_register_functions  (const char *module, struct list_head *category, struct pfq_function_descr *fun);
-extern int pfq_symtable_unregister_functions(const char *module, struct list_head *category, struct pfq_function_descr *fun);
+extern int  pfq_lang_symtable_register_functions  (const char *module, struct list_head *category, struct pfq_lang_function_descr *fun);
+extern int  pfq_lang_symtable_unregister_functions(const char *module, struct list_head *category, struct pfq_lang_function_descr *fun);
 
-extern struct symtable_entry *pfq_symtable_search(struct list_head *category, const char *symbol);
+extern struct symtable_entry *pfq_lang_symtable_search(struct list_head *category, const char *symbol);
 
 
-#endif /* PF_Q_SYMTABLE_H */
+#endif /* PFQ_LANG_SYMTABLE_H */

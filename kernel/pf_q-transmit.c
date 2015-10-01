@@ -44,10 +44,10 @@
 #include <pf_q-sock.h>
 #include <pf_q-define.h>
 #include <pf_q-global.h>
-#include <pf_q-GC.h>
 #include <pf_q-printk.h>
 #include <pf_q-netdev.h>
 
+#include <lang/GC.h>
 
 static inline int
 __pfq_xmit(struct sk_buff *skb, struct net_device *dev, int xmit_more);

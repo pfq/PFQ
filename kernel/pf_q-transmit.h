@@ -33,12 +33,12 @@
 #include <linux/netdevice.h>
 #include <pragma/diagnostic_pop>
 
-#include <pf_q-skbuff-batch.h>
+#include <pf_q-skbuff.h>
 #include <pf_q-sock.h>
-#include <pf_q-module.h>
-#include <pf_q-GC.h>
 #include <pf_q-netdev.h>
 
+#include <lang/GC.h>
+#include <lang/module.h>
 
 struct pfq_mbuff_xmit_context
 {

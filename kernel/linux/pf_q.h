@@ -1,6 +1,6 @@
 /***************************************************************
  *
- * (C) 2011-14 Nicola Bonelli <nicola@pfq.io>
+ * (C) 2011-15 Nicola Bonelli <nicola@pfq.io>
  *             Andrea Di Pietro <andrea.dipietro@for.unipi.it>
  *
  * This program is free software; you can redistribute it and/or modify
@@ -327,7 +327,7 @@ struct pfq_pcap_pkthdr {
  *
  */
 
-struct pfq_functional_arg_descr
+struct pfq_lang_functional_arg_descr
 {
 	const void __user *	addr;
 	size_t			size;
@@ -339,19 +339,19 @@ struct pfq_functional_arg_descr
  * Functional descriptor:
  */
 
-struct pfq_functional_descr
+struct pfq_lang_functional_descr
 {
-        const char __user *		symbol;
-	struct pfq_functional_arg_descr arg[8];
-        ptrdiff_t			next;
+        const char __user *			symbol;
+	struct pfq_lang_functional_arg_descr	arg[8];
+        ptrdiff_t				next;
 };
 
 
-struct pfq_computation_descr
+struct pfq_lang_computation_descr
 {
-        size_t                          size;
-        size_t                          entry_point;
-        struct pfq_functional_descr     fun[];
+        size_t					size;
+        size_t					entry_point;
+        struct pfq_lang_functional_descr	fun[];
 };
 
 
@@ -387,7 +387,7 @@ struct pfq_group_join
 struct pfq_group_computation
 {
         int gid;
-        struct pfq_computation_descr __user *prog;
+        struct pfq_lang_computation_descr __user *prog;
 };
 
 

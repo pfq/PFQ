@@ -1,6 +1,6 @@
 /***************************************************************
  *
- * (C) 2011-14 Nicola Bonelli <nicola@pfq.io>
+ * (C) 2011-15 Nicola Bonelli <nicola@pfq.io>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,9 +29,8 @@
 
 #include <pragma/diagnostic_pop>
 
-#include <pf_q-module.h>
-
-#include "predicate.h"
+#include <lang/module.h>
+#include <lang/predicate.h>
 
 
 static bool
@@ -212,7 +211,7 @@ pred_is_more_frag(arguments_t args, SkBuff b)
         return  is_more_frag(b);
 }
 
-struct pfq_function_descr predicate_functions[] = {
+struct pfq_lang_function_descr predicate_functions[] = {
 
         { "less",	"(SkBuff -> Word64) -> Word64 -> SkBuff -> Bool", less	},
         { "less_eq",	"(SkBuff -> Word64) -> Word64 -> SkBuff -> Bool", less_eq	},

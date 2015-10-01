@@ -1,6 +1,6 @@
 /***************************************************************
  *
- * (C) 2011-14 Nicola Bonelli <nicola@pfq.io>
+ * (C) 2011-15 Nicola Bonelli <nicola@pfq.io>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,10 +21,9 @@
  *
  ****************************************************************/
 
-#include <pf_q-skbuff-pool.h>
-
+#include <pf_q-pool.h>
 #include <pf_q-percpu.h>
-#include <pf_q-global.h> /* percpu_data */
+#include <pf_q-global.h>
 
 #include <linux/printk.h>
 

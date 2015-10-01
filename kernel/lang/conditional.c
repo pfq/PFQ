@@ -1,6 +1,6 @@
 /***************************************************************
  *
- * (C) 2011-14 Nicola Bonelli <nicola@pfq.io>
+ * (C) 2011-15 Nicola Bonelli <nicola@pfq.io>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,9 +21,9 @@
  *
  ****************************************************************/
 
-#include "conditional.h"
+#include <lang/conditional.h>
 
-struct pfq_function_descr high_order_functions[] = {
+struct pfq_lang_function_descr high_order_functions[] = {
 
         { "conditional", "(SkBuff -> Bool) -> (SkBuff -> Action SkBuff) -> (SkBuff -> Action SkBuff) -> SkBuff -> Action SkBuff ",  conditional  },
         { "when",        "(SkBuff -> Bool) -> (SkBuff -> Action SkBuff) -> SkBuff -> Action SkBuff",	when	},

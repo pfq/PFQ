@@ -1,6 +1,6 @@
 /***************************************************************
  *
- * (C) 2011-14 Nicola Bonelli <nicola@pfq.io>
+ * (C) 2011-15 Nicola Bonelli <nicola@pfq.io>
  *             Andrea Di Pietro <andrea.dipietro@for.unipi.it>
  * 	       Loris Gazzarrini <loris.gazzarrini@iet.unipi.it>
  *
@@ -59,8 +59,6 @@
 #include <pf_q-sockopt.h>
 #include <pf_q-devmap.h>
 #include <pf_q-group.h>
-#include <pf_q-engine.h>
-#include <pf_q-symtable.h>
 #include <pf_q-bitops.h>
 #include <pf_q-bpf.h>
 #include <pf_q-memory.h>
@@ -71,11 +69,13 @@
 #include <pf_q-stats.h>
 #include <pf_q-endpoint.h>
 #include <pf_q-shared-queue.h>
-#include <pf_q-skbuff-pool.h>
+#include <pf_q-pool.h>
 #include <pf_q-transmit.h>
 #include <pf_q-percpu.h>
-#include <pf_q-GC.h>
 
+#include <lang/engine.h>
+#include <lang/symtable.h>
+#include <lang/GC.h>
 
 static struct packet_type       pfq_prot_hook;
 
@@ -169,7 +169,7 @@ pfq_receive_batch(struct pfq_percpu_data *data,
 
         long unsigned n, bit, lb;
 	size_t this_batch_len;
-	struct pfq_monad monad;
+	struct pfq_lang_monad monad;
 
 #ifdef PFQ_RX_PROFILE
 	cycles_t start, stop;
@@ -218,7 +218,7 @@ pfq_receive_batch(struct pfq_percpu_data *data,
 
 		for_each_skbuff_upto(this_batch_len, &GC_ptr->pool, buff, n)
 		{
-			struct pfq_computation_tree *prg;
+			struct pfq_lang_computation_tree *prg;
 			unsigned long sock_mask = 0;
 
 			/* skip this packet for this group ? */
@@ -263,7 +263,7 @@ pfq_receive_batch(struct pfq_percpu_data *data,
 
 			PFQ_CB(buff)->state = 0;
 
-			prg = (struct pfq_computation_tree *)atomic_long_read(&this_group->comp);
+			prg = (struct pfq_lang_computation_tree *)atomic_long_read(&this_group->comp);
 			if (prg) {
 				unsigned long cbit, eligible_mask = 0;
 				size_t to_kernel = PFQ_CB(buff)->log->to_kernel;
@@ -278,7 +278,7 @@ pfq_receive_batch(struct pfq_percpu_data *data,
 
 				/* run the functional program */
 
-				buff = pfq_run(buff, prg).skb;
+				buff = pfq_lang_run(buff, prg).skb;
 				if (buff == NULL) {
 					__sparse_inc(this_group->stats, drop, cpu);
 					refs.queue[refs.len++] = NULL;
@@ -959,7 +959,7 @@ static int __init pfq_init_module(void)
 #endif
 
 	/* register pfq-lang default functions */
-	pfq_symtable_init();
+	pfq_lang_symtable_init();
 
         /* finally register the basic device handler */
         pfq_register_device_handler();
@@ -1053,7 +1053,7 @@ static void __exit pfq_exit_module(void)
         pfq_percpu_free();
 
 	/* free symbol table of pfq-lang functions */
-	pfq_symtable_free();
+	pfq_lang_symtable_free();
 
 	pfq_proc_destruct();
 
@@ -1140,8 +1140,8 @@ EXPORT_SYMBOL_GPL(pfq_netif_rx);
 EXPORT_SYMBOL_GPL(pfq_netif_receive_skb);
 EXPORT_SYMBOL_GPL(pfq_gro_receive);
 
-EXPORT_SYMBOL_GPL(pfq_symtable_register_functions);
-EXPORT_SYMBOL_GPL(pfq_symtable_unregister_functions);
+EXPORT_SYMBOL_GPL(pfq_lang_symtable_register_functions);
+EXPORT_SYMBOL_GPL(pfq_lang_symtable_unregister_functions);
 
 module_init(pfq_init_module);
 module_exit(pfq_exit_module);

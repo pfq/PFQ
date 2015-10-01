@@ -1,6 +1,6 @@
 /***************************************************************
  *
- * (C) 2011-14 Nicola Bonelli <nicola@pfq.io>
+ * (C) 2011-15 Nicola Bonelli <nicola@pfq.io>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,11 +29,12 @@
 
 #include <pragma/diagnostic_pop>
 
-#include <pf_q-module.h>
-#include <pf_q-sparse.h>
+#include <lang/module.h>
+#include <lang/headers.h>
+#include <lang/misc.h>
 
-#include "headers.h"
-#include "misc.h"
+
+#include <pf_q-sparse.h>
 
 
 static ActionSkBuff
@@ -45,7 +46,7 @@ dummy(arguments_t args, SkBuff skb)
 
 	printk(KERN_INFO "[PFQ/lang] dummy = %d\n", data);
 
-        nskb = pfq_copy_buff(skb);
+        nskb = pfq_lang_copy_buff(skb);
 
 	if (nskb == NULL) {
                 printk(KERN_INFO "[PFQ/lang] clone error!!!\n");
@@ -119,7 +120,7 @@ dummy_fini(arguments_t args)
 
 
 
-struct pfq_function_descr dummy_functions[] = {
+struct pfq_lang_function_descr dummy_functions[] = {
 
         { "dummy",         "CInt   -> SkBuff -> Action SkBuff",	  dummy, dummy_init,	     dummy_fini },
         { "dummy_vector",  "[CInt] -> SkBuff -> Action SkBuff",	  dummy_vector, dummy_init,  dummy_fini },

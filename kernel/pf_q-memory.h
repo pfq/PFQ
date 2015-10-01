@@ -1,6 +1,6 @@
 /***************************************************************
  *
- * (C) 2011-14 Nicola Bonelli <nicola@pfq.io>
+ * (C) 2011-15 Nicola Bonelli <nicola@pfq.io>
  * 	       Loris Gazzarrini <loris.gazzarrini@iet.unipi.it>
  *
  * This program is free software; you can redistribute it and/or modify
@@ -32,7 +32,7 @@
 #include <net/dst.h>
 #include <pragma/diagnostic_pop>
 
-#include <pf_q-skbuff-pool.h>
+#include <pf_q-pool.h>
 #include <pf_q-define.h>
 #include <pf_q-percpu.h>
 #include <pf_q-sparse.h>

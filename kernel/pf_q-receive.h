@@ -33,7 +33,7 @@
 #include <linux/netdevice.h>
 #include <pragma/diagnostic_pop>
 
-#include <pf_q-module.h>
+#include <lang/module.h>
 
 
 

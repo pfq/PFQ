@@ -1,6 +1,6 @@
 /***************************************************************
  *
- * (C) 2011-14 Nicola Bonelli <nicola@pfq.io>
+ * (C) 2011-15 Nicola Bonelli <nicola@pfq.io>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,14 +21,15 @@
  *
  ****************************************************************/
 
-#ifndef PF_Q_MONAD_H
-#define PF_Q_MONAD_H
+#ifndef PFQ_LANG_MONAD_H
+#define PFQ_LANG_MONAD_H
 
 #include <pf_q-group.h>
 #include <pf_q-skbuff.h>
 #include <pf_q-define.h>
-#include <pf_q-GC.h>
 #include <pf_q-sparse.h>
+
+#include <lang/GC.h>
 
 /* The Action monad */
 
@@ -63,7 +64,7 @@ typedef struct
 
 /* Action monad */
 
-struct pfq_monad
+struct pfq_lang_monad
 {
         struct pfq_group	*group;
         uint32_t		state;
@@ -197,4 +198,4 @@ struct pfq_group_counters * get_group_counters(SkBuff skb)
 }
 
 
-#endif /* PF_Q_MONAD_H */
+#endif /* PFQ_LANG_MONAD_H */

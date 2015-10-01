@@ -1,6 +1,6 @@
 /***************************************************************
  *
- * (C) 2011-14 Nicola Bonelli <nicola@pfq.io>
+ * (C) 2011-15 Nicola Bonelli <nicola@pfq.io>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -22,25 +22,25 @@
  ****************************************************************/
 
 
-#ifndef PF_Q_SIGNATURE_H
-#define PF_Q_SIGNATURE_H
+#ifndef PFQ_LANG_SIGNATURE_H
+#define PFQ_LANG_SIGNATURE_H
 
-#include <pf_q-string-view.h>
+#include <lang/string-view.h>
 
-string_view_t pfq_signature_simplify(string_view_t sig);
-string_view_t pfq_signature_bind(string_view_t sig, int n);
-string_view_t pfq_signature_arg(string_view_t sig, int n);
-string_view_t pfq_signature_remove_extent(string_view_t str);
+string_view_t pfq_lang_signature_simplify(string_view_t sig);
+string_view_t pfq_lang_signature_bind(string_view_t sig, int n);
+string_view_t pfq_lang_signature_arg(string_view_t sig, int n);
+string_view_t pfq_lang_signature_remove_extent(string_view_t str);
 
-int    pfq_signature_redundant_brackets(string_view_t sig);
-int    pfq_signature_arity(string_view_t sig);
-bool   pfq_signature_equal(string_view_t a, string_view_t b);
-bool   pfq_signature_is_function(string_view_t sig);
+int    pfq_lang_signature_redundant_brackets(string_view_t sig);
+int    pfq_lang_signature_arity(string_view_t sig);
+bool   pfq_lang_signature_equal(string_view_t a, string_view_t b);
+bool   pfq_lang_signature_is_function(string_view_t sig);
 
-ptrdiff_t pfq_signature_sizeof(string_view_t str);
+ptrdiff_t pfq_lang_signature_sizeof(string_view_t str);
 
-bool   pfq_signature_check(string_view_t sig);
-bool   pfq_signature_type_check(string_view_t t);
+bool   pfq_lang_signature_check(string_view_t sig);
+bool   pfq_lang_signature_type_check(string_view_t t);
 
 
-#endif /* PF_Q_SIGNATURE_H */
+#endif /* PFQ_LANG_SIGNATURE_H */

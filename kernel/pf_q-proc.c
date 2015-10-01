@@ -33,7 +33,6 @@
 
 #include <pragma/diagnostic_pop>
 
-#include <pf_q-module.h>
 #include <pf_q-global.h>
 #include <pf_q-group.h>
 #include <pf_q-bitops.h>
@@ -42,6 +41,9 @@
 #include <pf_q-proc.h>
 #include <pf_q-memory.h>
 #include <pf_q-printk.h>
+
+#include <lang/printk.h>
+#include <lang/module.h>
 
 #if LINUX_VERSION_CODE < KERNEL_VERSION(3,10,0)
 #define PDE_DATA(a) PDE(a)->data
@@ -56,7 +58,7 @@ static const char proc_memory[]       = "memory";
 
 
 static void
-seq_printf_functional_node(struct seq_file *m, struct pfq_functional_node const *node, size_t index)
+seq_printf_functional_node(struct seq_file *m, struct pfq_lang_functional_node const *node, size_t index)
 {
 	char buffer[256];
 
@@ -67,7 +69,7 @@ seq_printf_functional_node(struct seq_file *m, struct pfq_functional_node const 
 
 
 static void
-seq_printf_computation_tree(struct seq_file *m, struct pfq_computation_tree const *tree)
+seq_printf_computation_tree(struct seq_file *m, struct pfq_lang_computation_tree const *tree)
 {
 	size_t n;
 
@@ -86,7 +88,7 @@ seq_printf_computation_tree(struct seq_file *m, struct pfq_computation_tree cons
 
 static int pfq_proc_comp(struct seq_file *m, void *v)
 {
-	struct pfq_computation_tree *comp;
+	struct pfq_lang_computation_tree *comp;
 	size_t n;
 
 	down(&group_sem);
@@ -100,7 +102,7 @@ static int pfq_proc_comp(struct seq_file *m, void *v)
 		if (!this_group->policy)
 			continue;
 
-		comp = (struct pfq_computation_tree *)atomic_long_read(&this_group->comp);
+		comp = (struct pfq_lang_computation_tree *)atomic_long_read(&this_group->comp);
 
 		seq_printf(m, "group=%zu ", n);
 		seq_printf_computation_tree(m, comp);

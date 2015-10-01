@@ -1,6 +1,6 @@
 /***************************************************************
  *
- * (C) 2011-14 Nicola Bonelli <nicola@pfq.io>
+ * (C) 2011-15 Nicola Bonelli <nicola@pfq.io>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -27,7 +27,7 @@
 
 #include <linux/pf_q.h>
 
-#include "../../pf_q-module.h"
+#include "../../module.h"
 
 
 MODULE_LICENSE("GPL");
@@ -186,14 +186,14 @@ steering_rtp(arguments_t arg, SkBuff skb)
 }
 
 
-static struct pfq_function_descr hooks_f[] = {
+static struct pfq_lang_function_descr hooks_f[] = {
 
 	{ "rtp",       "SkBuff -> Action SkBuff",	filter_rtp	},
 	{ "steer_rtp", "SkBuff -> Action SkBuff",	steering_rtp	},
 	{ NULL, NULL}};
 
 
-static struct pfq_function_descr hooks_p[] = {
+static struct pfq_lang_function_descr hooks_p[] = {
 
 	{ "is_rtp",     "SkBuff -> Bool",	is_rtp	},
 	{ NULL, NULL}};
@@ -201,12 +201,12 @@ static struct pfq_function_descr hooks_p[] = {
 
 static int __init usr_init_module(void)
 {
-	if (pfq_symtable_register_functions("[RTP]", &pfq_lang_functions, hooks_f) < 0)
+	if (pfq_lang_symtable_register_functions("[RTP]", &pfq_lang_functions, hooks_f) < 0)
 		return -EPERM;
 
-	if (pfq_symtable_register_functions("[RTP]", &pfq_lang_functions, hooks_p) < 0)
+	if (pfq_lang_symtable_register_functions("[RTP]", &pfq_lang_functions, hooks_p) < 0)
 	{
-		pfq_symtable_unregister_functions("[RTP]", &pfq_lang_functions, hooks_f);
+		pfq_lang_symtable_unregister_functions("[RTP]", &pfq_lang_functions, hooks_f);
 		return -EPERM;
 	}
 
@@ -216,8 +216,8 @@ static int __init usr_init_module(void)
 
 static void __exit usr_exit_module(void)
 {
-	pfq_symtable_unregister_functions("[RTP]", &pfq_lang_functions, hooks_f);
-	pfq_symtable_unregister_functions("[RTP]", &pfq_lang_functions, hooks_p);
+	pfq_lang_symtable_unregister_functions("[RTP]", &pfq_lang_functions, hooks_f);
+	pfq_lang_symtable_unregister_functions("[RTP]", &pfq_lang_functions, hooks_p);
 }
 
 

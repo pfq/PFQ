@@ -1,6 +1,6 @@
 /***************************************************************
  *
- * (C) 2011-14 Nicola Bonelli <nicola@pfq.io>
+ * (C) 2011-15 Nicola Bonelli <nicola@pfq.io>
  *             Andrea Di Pietro <andrea.dipietro@for.unipi.it>
  *
  * This program is free software; you can redistribute it and/or modify
@@ -37,7 +37,8 @@
 #include <pf_q-group.h>
 #include <pf_q-define.h>
 #include <pf_q-sock.h>
-#include <pf_q-GC.h>
+
+#include <lang/GC.h>
 
 
 int pfq_shared_queue_enable(struct pfq_sock *so, unsigned long addr);

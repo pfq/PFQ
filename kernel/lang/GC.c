@@ -1,6 +1,6 @@
 /***************************************************************
  *
- * (C) 2011-14 Nicola Bonelli <nicola@pfq.io>
+ * (C) 2011-15 Nicola Bonelli <nicola@pfq.io>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,10 +21,12 @@
  *
  ****************************************************************/
 
+#include <lang/GC.h>
+
 #include <pf_q-percpu.h>
 #include <pf_q-global.h>
-#include <pf_q-GC.h>
 #include <pf_q-transmit.h>
+
 
 void GC_reset(struct GC_data *gc)
 {
@@ -132,21 +134,21 @@ GC_get_lazy_endpoints(struct GC_data *gc, struct pfq_endpoint_info *ts)
 
 
 struct sk_buff __GC *
-pfq_make_buff(struct sk_buff *skb)
+pfq_lang_make_buff(struct sk_buff *skb)
 {
 	struct pfq_percpu_data *data = this_cpu_ptr(percpu_data);
 	return GC_make_buff(data->GC, skb);
 }
 
 struct sk_buff __GC *
-pfq_alloc_buff(size_t size)
+pfq_lang_alloc_buff(size_t size)
 {
 	struct pfq_percpu_data *data = this_cpu_ptr(percpu_data);
 	return GC_alloc_buff(data->GC, size);
 }
 
 struct sk_buff __GC *
-pfq_copy_buff(struct sk_buff __GC * skb)
+pfq_lang_copy_buff(struct sk_buff __GC * skb)
 {
 	struct pfq_percpu_data *data = this_cpu_ptr(percpu_data);
 	return GC_copy_buff(data->GC, skb);

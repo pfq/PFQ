@@ -1,6 +1,6 @@
 /***************************************************************
  *
- * (C) 2011-14 Nicola Bonelli <nicola@pfq.io>
+ * (C) 2011-15 Nicola Bonelli <nicola@pfq.io>
  *             Andrea Di Pietro <andrea.dipietro@for.unipi.it>
  *
  * This program is free software; you can redistribute it and/or modify
@@ -36,8 +36,8 @@
 #include <pf_q-group.h>
 #include <pf_q-devmap.h>
 #include <pf_q-bitops.h>
-#include <pf_q-engine.h>
 
+#include <lang/engine.h>
 
 DEFINE_SEMAPHORE(group_sem);
 
@@ -186,7 +186,7 @@ __pfq_group_free(pfq_gid_t gid)
 {
         struct pfq_group * group;
         struct sk_filter *filter;
-        struct pfq_computation_tree *old_comp;
+        struct pfq_lang_computation_tree *old_comp;
         void *old_ctx;
 
 	group = pfq_get_group(gid);
@@ -202,7 +202,7 @@ __pfq_group_free(pfq_gid_t gid)
         group->policy = Q_POLICY_GROUP_UNDEFINED;
 
         filter   = (struct sk_filter *)atomic_long_xchg(&group->bp_filter, 0L);
-        old_comp = (struct pfq_computation_tree *)atomic_long_xchg(&group->comp, 0L);
+        old_comp = (struct pfq_lang_computation_tree *)atomic_long_xchg(&group->comp, 0L);
         old_ctx  = (void *)atomic_long_xchg(&group->comp_ctx, 0L);
 
         msleep(Q_GRACE_PERIOD);   /* sleeping is possible here: user-context */
@@ -210,7 +210,7 @@ __pfq_group_free(pfq_gid_t gid)
 	/* finalize old computation */
 
 	if (old_comp)
-		pfq_computation_destruct(old_comp);
+		pfq_lang_computation_destruct(old_comp);
 
 	kfree(old_comp);
 	kfree(old_ctx);
@@ -340,10 +340,10 @@ pfq_set_group_filter(pfq_gid_t gid, struct sk_filter *filter)
 
 
 int
-pfq_set_group_prog(pfq_gid_t gid, struct pfq_computation_tree *comp, void *ctx)
+pfq_set_group_prog(pfq_gid_t gid, struct pfq_lang_computation_tree *comp, void *ctx)
 {
         struct pfq_group * group;
-        struct pfq_computation_tree *old_comp;
+        struct pfq_lang_computation_tree *old_comp;
         void *old_ctx;
 
 	group = pfq_get_group(gid);
@@ -352,7 +352,7 @@ pfq_set_group_prog(pfq_gid_t gid, struct pfq_computation_tree *comp, void *ctx)
 
         down(&group_sem);
 
-        old_comp = (struct pfq_computation_tree *)atomic_long_xchg(&group->comp, (long)comp);
+        old_comp = (struct pfq_lang_computation_tree *)atomic_long_xchg(&group->comp, (long)comp);
         old_ctx  = (void *)atomic_long_xchg(&group->comp_ctx, (long)ctx);
 
         msleep(Q_GRACE_PERIOD);   /* sleeping is possible here: user-context */
@@ -360,7 +360,7 @@ pfq_set_group_prog(pfq_gid_t gid, struct pfq_computation_tree *comp, void *ctx)
 	/* call fini on old computation */
 
 	if (old_comp)
-		pfq_computation_destruct(old_comp);
+		pfq_lang_computation_destruct(old_comp);
 
         /* free the old computation/context */
 

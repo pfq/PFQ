@@ -33,8 +33,8 @@
 
 #include <pf_q-global.h>
 #include <pf_q-memory.h>
-#include <pf_q-module.h>
-#include <pf_q-GC.h>
+
+#include <lang/GC.h>
 
 
 struct pfq_percpu_data __percpu    * percpu_data;

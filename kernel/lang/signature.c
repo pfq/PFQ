@@ -1,6 +1,6 @@
 /***************************************************************
  *
- * (C) 2011-14 Nicola Bonelli <nicola@pfq.io>
+ * (C) 2011-15 Nicola Bonelli <nicola@pfq.io>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,7 +30,7 @@
 
 #include <pragma/diagnostic_pop>
 
-#include <pf_q-signature.h>
+#include <lang/signature.h>
 
 int count_outmost_brackets(string_view_t str);
 const char * find_next_arrow(string_view_t str);
@@ -147,9 +147,9 @@ signature_tail(string_view_t str)
 
 
 string_view_t
-pfq_signature_remove_extent(string_view_t str)
+pfq_lang_signature_remove_extent(string_view_t str)
 {
-	string_view_t ret = pfq_signature_simplify(str);
+	string_view_t ret = pfq_lang_signature_simplify(str);
 
 	if (string_view_at(ret, 0) == '(' &&
 	    string_view_at(ret, string_view_length(ret)-1) == ')') {
@@ -160,18 +160,18 @@ pfq_signature_remove_extent(string_view_t str)
 	    string_view_at(ret, string_view_length(ret)-1) == ']') {
 		ret.begin +=1;
 		ret.end -=1;
-		return pfq_signature_simplify(ret);
+		return pfq_lang_signature_simplify(ret);
 	}
 
-	if (pfq_signature_arity(ret) > 0)
+	if (pfq_lang_signature_arity(ret) > 0)
 		return ret;
 
-	return pfq_signature_simplify(string_view_chr(ret, ' '));
+	return pfq_lang_signature_simplify(string_view_chr(ret, ' '));
 }
 
 
 string_view_t
-pfq_signature_simplify(string_view_t str)
+pfq_lang_signature_simplify(string_view_t str)
 {
 	int red = count_outmost_brackets(str);
 	int n;
@@ -191,7 +191,7 @@ pfq_signature_simplify(string_view_t str)
 static inline
 int __signature_arity(string_view_t s)
 {
-	string_view_t str  = pfq_signature_simplify(s);
+	string_view_t str  = pfq_lang_signature_simplify(s);
 	string_view_t head = signature_head(str);
 	string_view_t tail = signature_tail(str);
 
@@ -205,7 +205,7 @@ int __signature_arity(string_view_t s)
 }
 
 int
-pfq_signature_arity(string_view_t str)
+pfq_lang_signature_arity(string_view_t str)
 {
 	return -1 + __signature_arity(str);
 }
@@ -213,7 +213,7 @@ pfq_signature_arity(string_view_t str)
 static inline
 string_view_t __signature_bind(string_view_t s, int stop, int n)
 {
-	string_view_t str  = pfq_signature_simplify(s),
+	string_view_t str  = pfq_lang_signature_simplify(s),
 		      tail;
 
 	if (stop == n)
@@ -228,16 +228,16 @@ string_view_t __signature_bind(string_view_t s, int stop, int n)
 }
 
 string_view_t
-pfq_signature_bind(string_view_t str, int n)
+pfq_lang_signature_bind(string_view_t str, int n)
 {
-	return  pfq_signature_simplify(__signature_bind(str, 0, n));
+	return  pfq_lang_signature_simplify(__signature_bind(str, 0, n));
 }
 
 
 static inline string_view_t
 __signature_arg(string_view_t s, int stop, int index)
 {
-	string_view_t str  = pfq_signature_simplify(s);
+	string_view_t str  = pfq_lang_signature_simplify(s);
 	string_view_t head = signature_head(str);
 	string_view_t tail = signature_tail(str);
 
@@ -251,9 +251,9 @@ __signature_arg(string_view_t s, int stop, int index)
 }
 
 string_view_t
-pfq_signature_arg(string_view_t str, int index)
+pfq_lang_signature_arg(string_view_t str, int index)
 {
-	return  pfq_signature_simplify(__signature_arg(str, 0, index));
+	return  pfq_lang_signature_simplify(__signature_arg(str, 0, index));
 }
 
 
@@ -288,7 +288,7 @@ static struct
 
 
 ptrdiff_t
-pfq_signature_sizeof(string_view_t str)
+pfq_lang_signature_sizeof(string_view_t str)
 {
 	size_t n;
 	for(n = 0; n < sizeof(sizeof_table)/sizeof(sizeof_table[0]); n++)
@@ -315,8 +315,8 @@ static
 bool
 compare_argument(string_view_t a, string_view_t b)
 {
-	string_view_t str_a = pfq_signature_simplify(a);
-	string_view_t str_b = pfq_signature_simplify(b);
+	string_view_t str_a = pfq_lang_signature_simplify(a);
+	string_view_t str_b = pfq_lang_signature_simplify(b);
 
 	const char *ap = str_a.begin;
 	const char *bp = str_b.begin;
@@ -340,10 +340,10 @@ compare_argument(string_view_t a, string_view_t b)
 
 
 bool
-pfq_signature_equal(string_view_t a, string_view_t b)
+pfq_lang_signature_equal(string_view_t a, string_view_t b)
 {
-	string_view_t str_a = pfq_signature_simplify(a),
-		      str_b = pfq_signature_simplify(b);
+	string_view_t str_a = pfq_lang_signature_simplify(a),
+		      str_b = pfq_lang_signature_simplify(b);
 
 	string_view_t head_a = signature_head(str_a),
 		      tail_a = signature_tail(str_a),
@@ -354,33 +354,33 @@ pfq_signature_equal(string_view_t a, string_view_t b)
 	    (!string_view_empty(tail_a) && string_view_empty(tail_b)))
 		return false;
 
-	if (!(pfq_signature_arity(head_a) == 0 ?
-		       compare_argument(head_a, head_b) : pfq_signature_equal(head_a, head_b)))
+	if (!(pfq_lang_signature_arity(head_a) == 0 ?
+		       compare_argument(head_a, head_b) : pfq_lang_signature_equal(head_a, head_b)))
 		return false;
 
 	if (string_view_empty(tail_a) && string_view_empty(tail_b))
 		return true;
 
-	return pfq_signature_equal(tail_a, tail_b);
+	return pfq_lang_signature_equal(tail_a, tail_b);
 }
 
 
 bool
-pfq_signature_is_function(string_view_t sig)
+pfq_lang_signature_is_function(string_view_t sig)
 {
-	return pfq_signature_arity(sig) > 0;
+	return pfq_lang_signature_arity(sig) > 0;
 }
 
 
 bool
-pfq_signature_type_check(string_view_t type)
+pfq_lang_signature_type_check(string_view_t type)
 {
 	for(; !string_view_empty(type);)
 	{
-		if (pfq_signature_sizeof(type) != -1 || islower(string_view_at(type, 0)))
+		if (pfq_lang_signature_sizeof(type) != -1 || islower(string_view_at(type, 0)))
 			return true;
 
-		type = pfq_signature_remove_extent(type);
+		type = pfq_lang_signature_remove_extent(type);
 	}
 
 	return false;
@@ -388,15 +388,15 @@ pfq_signature_type_check(string_view_t type)
 
 
 bool
-pfq_signature_check(string_view_t sig)
+pfq_lang_signature_check(string_view_t sig)
 {
-	int n, size = pfq_signature_arity(sig);
+	int n, size = pfq_lang_signature_arity(sig);
 	bool ret = true;
 
 	for(n = 0; n <= size && ret; n++)
 	{
-		string_view_t arg = pfq_signature_arg(sig, n);
-		ret = pfq_signature_arity(sig) > 0 ? pfq_signature_check(arg) : pfq_signature_type_check(arg);
+		string_view_t arg = pfq_lang_signature_arg(sig, n);
+		ret = pfq_lang_signature_arity(sig) > 0 ? pfq_lang_signature_check(arg) : pfq_lang_signature_type_check(arg);
 	}
 
 	return ret;

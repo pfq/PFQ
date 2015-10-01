@@ -1,6 +1,6 @@
 /***************************************************************
  *
- * (C) 2011-14 Nicola Bonelli <nicola@pfq.io>
+ * (C) 2011-15 Nicola Bonelli <nicola@pfq.io>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -30,7 +30,7 @@
 
 #include <pragma/diagnostic_pop>
 
-#include <pf_q-module.h>
+#include <lang/module.h>
 
 
 static ActionSkBuff
@@ -213,7 +213,7 @@ steering_ip6(arguments_t args, SkBuff skb)
 }
 
 
-struct pfq_function_descr steering_functions[] = {
+struct pfq_lang_function_descr steering_functions[] = {
 
 	{ "steer_link",  "SkBuff -> Action SkBuff", steering_link    },
 	{ "steer_vlan",  "SkBuff -> Action SkBuff", steering_vlan_id },

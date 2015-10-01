@@ -1,6 +1,6 @@
 /***************************************************************
  *
- * (C) 2011-14 Nicola Bonelli <nicola@pfq.io>
+ * (C) 2011-15 Nicola Bonelli <nicola@pfq.io>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,12 +29,11 @@
 
 #include <pragma/diagnostic_pop>
 
-#include <pf_q-module.h>
+#include <lang/module.h>
+#include <lang/headers.h>
+#include <lang/misc.h>
+
 #include <pf_q-sparse.h>
-
-#include "headers.h"
-#include "misc.h"
-
 
 
 static ActionSkBuff
@@ -463,7 +462,7 @@ par8(arguments_t args, SkBuff skb)
 }
 
 
-struct pfq_function_descr misc_functions[] = {
+struct pfq_lang_function_descr misc_functions[] = {
 
         { "inc",	"CInt    -> SkBuff -> Action SkBuff",	inc_counter	},
         { "dec",	"CInt    -> SkBuff -> Action SkBuff",	dec_counter	},

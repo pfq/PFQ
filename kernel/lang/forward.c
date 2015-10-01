@@ -1,6 +1,6 @@
 /***************************************************************
  *
- * (C) 2011-14 Nicola Bonelli <nicola@pfq.io>
+ * (C) 2011-15 Nicola Bonelli <nicola@pfq.io>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,13 +29,13 @@
 
 #include <pragma/diagnostic_pop>
 
-#include <pf_q-skbuff-batch.h>
+#include <lang/module.h>
+#include <lang/forward.h>
+
+
+#include <pf_q-skbuff.h>
 #include <pf_q-transmit.h>
-#include <pf_q-module.h>
 #include <pf_q-global.h>
-
-
-#include "forward.h"
 
 
 static ActionSkBuff
@@ -201,7 +201,7 @@ tee(arguments_t args, SkBuff skb)
 }
 
 
-struct pfq_function_descr forward_functions[] = {
+struct pfq_lang_function_descr forward_functions[] = {
 
         { "drop",       "SkBuff -> Action SkBuff",		forward_drop		},
         { "broadcast",  "SkBuff -> Action SkBuff",		forward_broadcast	},

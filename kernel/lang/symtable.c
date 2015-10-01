@@ -1,6 +1,6 @@
 /***************************************************************
  *
- * (C) 2011-14 Nicola Bonelli <nicola@pfq.io>
+ * (C) 2011-15 Nicola Bonelli <nicola@pfq.io>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,11 +32,11 @@
 
 #include <pragma/diagnostic_pop>
 
-#include <pf_q-module.h>
-#include <pf_q-group.h>
-#include <pf_q-symtable.h>
-#include <pf_q-string-view.h>
-#include <pf_q-signature.h>
+
+#include <lang/module.h>
+#include <lang/string-view.h>
+#include <lang/signature.h>
+#include <lang/symtable.h>
 
 
 DECLARE_RWSEM(symtable_sem);
@@ -48,7 +48,7 @@ EXPORT_SYMBOL_GPL(pfq_lang_functions);
 
 
 static void
-__pfq_symtable_free(struct list_head *category)
+__pfq_lang_symtable_free(struct list_head *category)
 {
 	struct list_head *pos = NULL, *q;
 	struct symtable_entry *this;
@@ -63,7 +63,7 @@ __pfq_symtable_free(struct list_head *category)
 
 
 static struct symtable_entry *
-__pfq_symtable_search(struct list_head *category, const char *symbol)
+__pfq_lang_symtable_search(struct list_head *category, const char *symbol)
 {
 	struct list_head *pos = NULL;
 	struct symtable_entry *this;
@@ -83,17 +83,17 @@ __pfq_symtable_search(struct list_head *category, const char *symbol)
 
 
 static int
-__pfq_symtable_register_function(struct list_head *category, const char *symbol, void *fun,
+__pfq_lang_symtable_register_function(struct list_head *category, const char *symbol, void *fun,
 				 init_ptr_t init, fini_ptr_t fini, const char *signature)
 {
 	struct symtable_entry * elem;
 
-	if (__pfq_symtable_search(category, symbol) != NULL) {
+	if (__pfq_lang_symtable_search(category, symbol) != NULL) {
 		printk(KERN_INFO "[PFQ] symtable error: symbol '%s' already in use!\n", symbol);
 		return -EPERM;
 	}
 
-	if (!pfq_signature_check(make_string_view(signature))) {
+	if (!pfq_lang_signature_check(make_string_view(signature))) {
 		printk(KERN_INFO "[PFQ] symtable error: symbol '%s' bad signature '%s'!\n", symbol, signature);
 		return -EFAULT;
 	}
@@ -121,7 +121,7 @@ __pfq_symtable_register_function(struct list_head *category, const char *symbol,
 
 
 static int
-__pfq_symtable_unregister_function(struct list_head *category, const char *symbol)
+__pfq_lang_symtable_unregister_function(struct list_head *category, const char *symbol)
 {
 	struct list_head *pos = NULL, *q;
 	struct symtable_entry *this;
@@ -141,30 +141,30 @@ __pfq_symtable_unregister_function(struct list_head *category, const char *symbo
 
 
 int
-pfq_symtable_unregister_functions(const char *module, struct list_head *category, struct pfq_function_descr *fun)
+pfq_lang_symtable_unregister_functions(const char *module, struct list_head *category, struct pfq_lang_function_descr *fun)
 {
 	int i = 0;
 	for(; fun[i].symbol != NULL; i++)
 	{
-		pfq_symtable_unregister_function(module, category, fun[i].symbol);
+		pfq_lang_symtable_unregister_function(module, category, fun[i].symbol);
 	}
 	return 0;
 }
 
 
 int
-pfq_symtable_register_functions(const char *module, struct list_head *category, struct pfq_function_descr *fun)
+pfq_lang_symtable_register_functions(const char *module, struct list_head *category, struct pfq_lang_function_descr *fun)
 {
 	int i = 0;
 	for(; fun[i].symbol != NULL; i++)
 	{
-		if (pfq_symtable_register_function(module, category, fun[i].symbol, fun[i].ptr,
+		if (pfq_lang_symtable_register_function(module, category, fun[i].symbol, fun[i].ptr,
 						   fun[i].init, fun[i].fini, fun[i].signature) < 0) {
                         /* unregister all functions */
                         int j = 0;
 
                         for(; j < i; j++)
-                                pfq_symtable_unregister_function(module, category, fun[j].symbol);
+                                pfq_lang_symtable_unregister_function(module, category, fun[j].symbol);
 
                         return -EFAULT;
                 }
@@ -175,7 +175,7 @@ pfq_symtable_register_functions(const char *module, struct list_head *category, 
 
 
 static size_t
-pfq_symtable_pr_devel(const char *hdr, struct list_head *category)
+pfq_lang_symtable_pr_devel(const char *hdr, struct list_head *category)
 {
 	struct list_head *pos = NULL;
         size_t ret = 0;
@@ -201,23 +201,23 @@ pfq_symtable_pr_devel(const char *hdr, struct list_head *category)
 
 
 void
-pfq_symtable_init(void)
+pfq_lang_symtable_init(void)
 {
 	size_t numfun;
 
-        pfq_symtable_register_functions(NULL, &pfq_lang_functions, (struct pfq_function_descr *)filter_functions);
-        pfq_symtable_register_functions(NULL, &pfq_lang_functions, (struct pfq_function_descr *)forward_functions);
-        pfq_symtable_register_functions(NULL, &pfq_lang_functions, (struct pfq_function_descr *)steering_functions);
-        pfq_symtable_register_functions(NULL, &pfq_lang_functions, (struct pfq_function_descr *)high_order_functions);
-        pfq_symtable_register_functions(NULL, &pfq_lang_functions, (struct pfq_function_descr *)bloom_functions);
-        pfq_symtable_register_functions(NULL, &pfq_lang_functions, (struct pfq_function_descr *)vlan_functions);
-        pfq_symtable_register_functions(NULL, &pfq_lang_functions, (struct pfq_function_descr *)misc_functions);
-        pfq_symtable_register_functions(NULL, &pfq_lang_functions, (struct pfq_function_descr *)dummy_functions);
-        pfq_symtable_register_functions(NULL, &pfq_lang_functions, (struct pfq_function_descr *)predicate_functions);
-        pfq_symtable_register_functions(NULL, &pfq_lang_functions, (struct pfq_function_descr *)combinator_functions);
-        pfq_symtable_register_functions(NULL, &pfq_lang_functions, (struct pfq_function_descr *)property_functions);
+        pfq_lang_symtable_register_functions(NULL, &pfq_lang_functions, (struct pfq_lang_function_descr *)filter_functions);
+        pfq_lang_symtable_register_functions(NULL, &pfq_lang_functions, (struct pfq_lang_function_descr *)forward_functions);
+        pfq_lang_symtable_register_functions(NULL, &pfq_lang_functions, (struct pfq_lang_function_descr *)steering_functions);
+        pfq_lang_symtable_register_functions(NULL, &pfq_lang_functions, (struct pfq_lang_function_descr *)high_order_functions);
+        pfq_lang_symtable_register_functions(NULL, &pfq_lang_functions, (struct pfq_lang_function_descr *)bloom_functions);
+        pfq_lang_symtable_register_functions(NULL, &pfq_lang_functions, (struct pfq_lang_function_descr *)vlan_functions);
+        pfq_lang_symtable_register_functions(NULL, &pfq_lang_functions, (struct pfq_lang_function_descr *)misc_functions);
+        pfq_lang_symtable_register_functions(NULL, &pfq_lang_functions, (struct pfq_lang_function_descr *)dummy_functions);
+        pfq_lang_symtable_register_functions(NULL, &pfq_lang_functions, (struct pfq_lang_function_descr *)predicate_functions);
+        pfq_lang_symtable_register_functions(NULL, &pfq_lang_functions, (struct pfq_lang_function_descr *)combinator_functions);
+        pfq_lang_symtable_register_functions(NULL, &pfq_lang_functions, (struct pfq_lang_function_descr *)property_functions);
 
-	numfun = pfq_symtable_pr_devel("pfq-lang functions",   &pfq_lang_functions);
+	numfun = pfq_lang_symtable_pr_devel("pfq-lang functions",   &pfq_lang_functions);
 
 	printk(KERN_INFO "[PFQ] symtable initialized (%zu pfq-lang functions loaded).\n",
 	       numfun);
@@ -225,11 +225,11 @@ pfq_symtable_init(void)
 
 
 void
-pfq_symtable_free(void)
+pfq_lang_symtable_free(void)
 {
         down_write(&symtable_sem);
 
-        __pfq_symtable_free(&pfq_lang_functions);
+        __pfq_lang_symtable_free(&pfq_lang_functions);
 
         up_write(&symtable_sem);
 
@@ -238,13 +238,13 @@ pfq_symtable_free(void)
 
 
 struct symtable_entry *
-pfq_symtable_search(struct list_head *category, const char *symbol)
+pfq_lang_symtable_search(struct list_head *category, const char *symbol)
 {
 	void *ptr;
 
         down_read(&symtable_sem);
 
-	ptr = __pfq_symtable_search(category, symbol);
+	ptr = __pfq_lang_symtable_search(category, symbol);
 
 	up_read(&symtable_sem);
 
@@ -253,14 +253,14 @@ pfq_symtable_search(struct list_head *category, const char *symbol)
 
 
 int
-pfq_symtable_register_function(const char *module, struct list_head *category, const char *symbol, void *fun,
+pfq_lang_symtable_register_function(const char *module, struct list_head *category, const char *symbol, void *fun,
 			       init_ptr_t init, fini_ptr_t fini, const char *signature)
 {
 	int rc;
 
         down_write(&symtable_sem);
 
-	rc = __pfq_symtable_register_function(category, symbol, fun, init, fini, signature);
+	rc = __pfq_lang_symtable_register_function(category, symbol, fun, init, fini, signature);
 
 	up_write(&symtable_sem);
 
@@ -272,17 +272,17 @@ pfq_symtable_register_function(const char *module, struct list_head *category, c
 
 
 int
-pfq_symtable_unregister_function(const char *module, struct list_head *category, const char *symbol)
+pfq_lang_symtable_unregister_function(const char *module, struct list_head *category, const char *symbol)
 {
 	struct symtable_entry * elem;
 
         down_write(&symtable_sem);
 
-	elem = __pfq_symtable_search(category, symbol);
+	elem = __pfq_lang_symtable_search(category, symbol);
 	if (elem == NULL)
 		return -EFAULT;
 
-        __pfq_symtable_unregister_function(category, symbol);
+        __pfq_lang_symtable_unregister_function(category, symbol);
 
         up_write(&symtable_sem);
 

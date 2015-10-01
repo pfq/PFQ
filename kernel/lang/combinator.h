@@ -1,6 +1,6 @@
 /***************************************************************
  *
- * (C) 2011-14 Nicola Bonelli <nicola@pfq.io>
+ * (C) 2011-15 Nicola Bonelli <nicola@pfq.io>
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -21,10 +21,10 @@
  *
  ****************************************************************/
 
-#ifndef PF_Q_FUNCTIONAL_COMBINATOR_H
-#define PF_Q_FUNCTIONAL_COMBINATOR_H
+#ifndef PFQ_LANG_COMBINATOR_H
+#define PFQ_LANG_COMBINATOR_H
 
-#include "predicate.h"
+#include <lang/predicate.h>
 
 static inline
 bool not(arguments_t args, SkBuff b)
@@ -64,4 +64,4 @@ bool xor(arguments_t args, SkBuff b)
 }
 
 
-#endif /* PF_Q_FUNCTIONAL_COMBINATOR_H */
+#endif /* PFQ_LANG_COMBINATOR_H */
