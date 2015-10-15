@@ -1140,8 +1140,8 @@ EXPORT_SYMBOL_GPL(pfq_netif_rx);
 EXPORT_SYMBOL_GPL(pfq_netif_receive_skb);
 EXPORT_SYMBOL_GPL(pfq_gro_receive);
 
-EXPORT_SYMBOL_GPL(pfq_lang_symtable_register_functions);
-EXPORT_SYMBOL_GPL(pfq_lang_symtable_unregister_functions);
+EXPORT_SYMBOL(pfq_lang_symtable_register_functions);
+EXPORT_SYMBOL(pfq_lang_symtable_unregister_functions);
 
 module_init(pfq_init_module);
 module_exit(pfq_exit_module);

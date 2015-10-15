@@ -44,7 +44,7 @@ DECLARE_RWSEM(symtable_sem);
 LIST_HEAD(pfq_lang_functions);
 
 
-EXPORT_SYMBOL_GPL(pfq_lang_functions);
+EXPORT_SYMBOL(pfq_lang_functions);
 
 
 static void
