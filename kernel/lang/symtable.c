@@ -135,12 +135,12 @@ __pfq_lang_symtable_unregister_function(struct list_head *category, const char *
 			return 0;
 		}
 	}
-	printk(KERN_INFO "[PFQ] symtable error: '%s' no such function\n", symbol);
-	return -EFAULT;
+
+	return -EINVAL;
 }
 
 
-int
+void
 pfq_lang_symtable_unregister_functions(const char *module, struct list_head *category, struct pfq_lang_function_descr *fun)
 {
 	int i = 0;
@@ -148,7 +148,6 @@ pfq_lang_symtable_unregister_functions(const char *module, struct list_head *cat
 	{
 		pfq_lang_symtable_unregister_function(module, category, fun[i].symbol);
 	}
-	return 0;
 }
 
 
@@ -274,21 +273,17 @@ pfq_lang_symtable_register_function(const char *module, struct list_head *catego
 int
 pfq_lang_symtable_unregister_function(const char *module, struct list_head *category, const char *symbol)
 {
-	struct symtable_entry * elem;
+	int rc;
 
         down_write(&symtable_sem);
 
-	elem = __pfq_lang_symtable_search(category, symbol);
-	if (elem == NULL)
-		return -EFAULT;
-
-        __pfq_lang_symtable_unregister_function(category, symbol);
+        rc = __pfq_lang_symtable_unregister_function(category, symbol);
 
         up_write(&symtable_sem);
 
-	printk(KERN_INFO "[PFQ]%s '%s' function unregistered.\n", module, symbol);
+	printk(KERN_INFO "[PFQ]%s '%s' function %s\n", module, symbol, rc == 0 ? "unregistered." : "not found!");
 
-	return 0;
+	return rc;
 }
 
 

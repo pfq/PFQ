@@ -106,7 +106,7 @@ struct pfq_lang_exec;
 
 extern struct list_head pfq_lang_lang_functions;
 extern int pfq_lang_symtable_register_functions  (const char *module, struct list_head *category, struct pfq_lang_function_descr *fun);
-extern int pfq_lang_symtable_unregister_functions(const char *module, struct list_head *category, struct pfq_lang_function_descr *fun);
+extern void pfq_lang_symtable_unregister_functions(const char *module, struct list_head *category, struct pfq_lang_function_descr *fun);
 
 
 struct pfq_lang_functional_arg
