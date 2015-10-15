@@ -78,7 +78,6 @@ __pfq_lang_symtable_search(struct list_head *category, const char *symbol)
 			return this;
 	}
 	return NULL;
-
 }
 
 
@@ -253,7 +252,7 @@ pfq_lang_symtable_search(struct list_head *category, const char *symbol)
 
 int
 pfq_lang_symtable_register_function(const char *module, struct list_head *category, const char *symbol, void *fun,
-			       init_ptr_t init, fini_ptr_t fini, const char *signature)
+				    init_ptr_t init, fini_ptr_t fini, const char *signature)
 {
 	int rc;
 
@@ -281,7 +280,7 @@ pfq_lang_symtable_unregister_function(const char *module, struct list_head *cate
 
         up_write(&symtable_sem);
 
-	printk(KERN_INFO "[PFQ]%s '%s' function %s\n", module, symbol, rc == 0 ? "unregistered." : "not found!");
+	printk(KERN_INFO "[PFQ]%s '%s' function %s\n", module, symbol, rc == 0 ? "unregistered." : "not registered.");
 
 	return rc;
 }
