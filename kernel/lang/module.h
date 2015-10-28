@@ -35,6 +35,7 @@
 #include <linux/ipv6.h>
 #include <linux/if_ether.h>
 #include <linux/if_vlan.h>
+#include <linux/types.h>
 
 #include <pragma/diagnostic_pop>
 
@@ -47,29 +48,28 @@
 
 #define ARGS_TYPE(a)		__builtin_choose_expr(__builtin_types_compatible_p(arguments_t, typeof(a)), a, (void)0)
 
-
 #define EVAL_FUNCTION(f,skb)    eval_function(f, skb)
 #define EVAL_PROPERTY(f, skb)	((property_ptr_t )f.fun->run)(f.fun, skb)
 #define EVAL_PREDICATE(f,skb)	((predicate_ptr_t)f.fun->run)(f.fun, skb)
 
-#define GET_ARG_0(type,a) 	__builtin_choose_expr(sizeof(type) <= sizeof(uint64_t), *(type *)&ARGS_TYPE(a)->arg[0].value, (void *)ARGS_TYPE(a)->arg[0].value)
-#define GET_ARG_1(type,a)	__builtin_choose_expr(sizeof(type) <= sizeof(uint64_t), *(type *)&ARGS_TYPE(a)->arg[1].value, (void *)ARGS_TYPE(a)->arg[1].value)
-#define GET_ARG_2(type,a)	__builtin_choose_expr(sizeof(type) <= sizeof(uint64_t), *(type *)&ARGS_TYPE(a)->arg[2].value, (void *)ARGS_TYPE(a)->arg[2].value)
-#define GET_ARG_3(type,a)	__builtin_choose_expr(sizeof(type) <= sizeof(uint64_t), *(type *)&ARGS_TYPE(a)->arg[3].value, (void *)ARGS_TYPE(a)->arg[3].value)
-#define GET_ARG_4(type,a)	__builtin_choose_expr(sizeof(type) <= sizeof(uint64_t), *(type *)&ARGS_TYPE(a)->arg[4].value, (void *)ARGS_TYPE(a)->arg[4].value)
-#define GET_ARG_5(type,a)	__builtin_choose_expr(sizeof(type) <= sizeof(uint64_t), *(type *)&ARGS_TYPE(a)->arg[5].value, (void *)ARGS_TYPE(a)->arg[5].value)
-#define GET_ARG_6(type,a)	__builtin_choose_expr(sizeof(type) <= sizeof(uint64_t), *(type *)&ARGS_TYPE(a)->arg[6].value, (void *)ARGS_TYPE(a)->arg[6].value)
-#define GET_ARG_7(type,a)	__builtin_choose_expr(sizeof(type) <= sizeof(uint64_t), *(type *)&ARGS_TYPE(a)->arg[7].value, (void *)ARGS_TYPE(a)->arg[7].value)
+#define GET_ARG_0(type,a) 	__builtin_choose_expr(sizeof(type) <= sizeof(uintptr_t), *(type *)&ARGS_TYPE(a)->arg[0].value, (void *)ARGS_TYPE(a)->arg[0].value)
+#define GET_ARG_1(type,a)	__builtin_choose_expr(sizeof(type) <= sizeof(uintptr_t), *(type *)&ARGS_TYPE(a)->arg[1].value, (void *)ARGS_TYPE(a)->arg[1].value)
+#define GET_ARG_2(type,a)	__builtin_choose_expr(sizeof(type) <= sizeof(uintptr_t), *(type *)&ARGS_TYPE(a)->arg[2].value, (void *)ARGS_TYPE(a)->arg[2].value)
+#define GET_ARG_3(type,a)	__builtin_choose_expr(sizeof(type) <= sizeof(uintptr_t), *(type *)&ARGS_TYPE(a)->arg[3].value, (void *)ARGS_TYPE(a)->arg[3].value)
+#define GET_ARG_4(type,a)	__builtin_choose_expr(sizeof(type) <= sizeof(uintptr_t), *(type *)&ARGS_TYPE(a)->arg[4].value, (void *)ARGS_TYPE(a)->arg[4].value)
+#define GET_ARG_5(type,a)	__builtin_choose_expr(sizeof(type) <= sizeof(uintptr_t), *(type *)&ARGS_TYPE(a)->arg[5].value, (void *)ARGS_TYPE(a)->arg[5].value)
+#define GET_ARG_6(type,a)	__builtin_choose_expr(sizeof(type) <= sizeof(uintptr_t), *(type *)&ARGS_TYPE(a)->arg[6].value, (void *)ARGS_TYPE(a)->arg[6].value)
+#define GET_ARG_7(type,a)	__builtin_choose_expr(sizeof(type) <= sizeof(uintptr_t), *(type *)&ARGS_TYPE(a)->arg[7].value, (void *)ARGS_TYPE(a)->arg[7].value)
 #define GET_ARG(type,a)		GET_ARG_0(type,a)
 
-#define SET_ARG_0(a, v)		__builtin_choose_expr(sizeof(typeof(v)) <= sizeof(ptrdiff_t), *(typeof(v) *)(&ARGS_TYPE(a)->arg[0].value) = v, (void)0)
-#define SET_ARG_1(a, v)		__builtin_choose_expr(sizeof(typeof(v)) <= sizeof(ptrdiff_t), *(typeof(v) *)(&ARGS_TYPE(a)->arg[1].value) = v, (void)0)
-#define SET_ARG_2(a, v)		__builtin_choose_expr(sizeof(typeof(v)) <= sizeof(ptrdiff_t), *(typeof(v) *)(&ARGS_TYPE(a)->arg[2].value) = v, (void)0)
-#define SET_ARG_3(a, v)		__builtin_choose_expr(sizeof(typeof(v)) <= sizeof(ptrdiff_t), *(typeof(v) *)(&ARGS_TYPE(a)->arg[3].value) = v, (void)0)
-#define SET_ARG_4(a, v)		__builtin_choose_expr(sizeof(typeof(v)) <= sizeof(ptrdiff_t), *(typeof(v) *)(&ARGS_TYPE(a)->arg[4].value) = v, (void)0)
-#define SET_ARG_5(a, v)		__builtin_choose_expr(sizeof(typeof(v)) <= sizeof(ptrdiff_t), *(typeof(v) *)(&ARGS_TYPE(a)->arg[5].value) = v, (void)0)
-#define SET_ARG_6(a, v)		__builtin_choose_expr(sizeof(typeof(v)) <= sizeof(ptrdiff_t), *(typeof(v) *)(&ARGS_TYPE(a)->arg[6].value) = v, (void)0)
-#define SET_ARG_7(a, v)		__builtin_choose_expr(sizeof(typeof(v)) <= sizeof(ptrdiff_t), *(typeof(v) *)(&ARGS_TYPE(a)->arg[7].value) = v, (void)0)
+#define SET_ARG_0(a, v)		__builtin_choose_expr(sizeof(typeof(v)) <= sizeof(uintptr_t), *(typeof(v) *)(&ARGS_TYPE(a)->arg[0].value) = v, (void)0)
+#define SET_ARG_1(a, v)		__builtin_choose_expr(sizeof(typeof(v)) <= sizeof(uintptr_t), *(typeof(v) *)(&ARGS_TYPE(a)->arg[1].value) = v, (void)0)
+#define SET_ARG_2(a, v)		__builtin_choose_expr(sizeof(typeof(v)) <= sizeof(uintptr_t), *(typeof(v) *)(&ARGS_TYPE(a)->arg[2].value) = v, (void)0)
+#define SET_ARG_3(a, v)		__builtin_choose_expr(sizeof(typeof(v)) <= sizeof(uintptr_t), *(typeof(v) *)(&ARGS_TYPE(a)->arg[3].value) = v, (void)0)
+#define SET_ARG_4(a, v)		__builtin_choose_expr(sizeof(typeof(v)) <= sizeof(uintptr_t), *(typeof(v) *)(&ARGS_TYPE(a)->arg[4].value) = v, (void)0)
+#define SET_ARG_5(a, v)		__builtin_choose_expr(sizeof(typeof(v)) <= sizeof(uintptr_t), *(typeof(v) *)(&ARGS_TYPE(a)->arg[5].value) = v, (void)0)
+#define SET_ARG_6(a, v)		__builtin_choose_expr(sizeof(typeof(v)) <= sizeof(uintptr_t), *(typeof(v) *)(&ARGS_TYPE(a)->arg[6].value) = v, (void)0)
+#define SET_ARG_7(a, v)		__builtin_choose_expr(sizeof(typeof(v)) <= sizeof(uintptr_t), *(typeof(v) *)(&ARGS_TYPE(a)->arg[7].value) = v, (void)0)
 #define SET_ARG(type,a)		SET_ARG_0(type,a)
 
 #define GET_ARRAY_0(type,a) 	((type *)ARGS_TYPE(a)->arg[0].value)
@@ -92,12 +92,7 @@
 #define LEN_ARRAY_7(a)		(ARGS_TYPE(a)->arg[7].nelem)
 #define LEN_ARRAY(a)		LEN_ARRAY_0(a)
 
-#define GET_ARG_AT(n,type,a)	__builtin_choose_expr(sizeof(type) <= sizeof(uint64_t), *(type *)&ARGS_TYPE(a)->arg[n].value, (void *)ARGS_TYPE(a)->arg[n].value)
-#define SET_ARG_AT(n,a, v)	__builtin_choose_expr(sizeof(typeof(v)) <= sizeof(ptrdiff_t), *(typeof(v) *)(&ARGS_TYPE(a)->arg[n].value) = v, (void)0)
-
-#define GET_ARRAY_AT(n,type,a)  ((type *)ARGS_TYPE(a)->arg[n].value)
-#define LEN_ARRAY_AT(n,a)	(ARGS_TYPE(a)->arg[n].nelem)
-
+#define SAFE_CAST(v)		__builtin_choose_expr(sizeof(typeof(v)) <= sizeof(uintptr_t), v, (void)0)
 
 /**** generic functional type ****/
 
