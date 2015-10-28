@@ -38,6 +38,75 @@
 #include <pf_q-global.h>
 
 
+static int
+forward_init(arguments_t args)
+{
+	const char *name = GET_ARG(const char *, args);
+	struct net_device *dev = dev_get_by_name(&init_net, name);
+
+	if (dev == NULL) {
+                printk(KERN_INFO "[PFQ|init] forward: %s no such device!\n", name);
+                return -EINVAL;
+	}
+
+	/* override the address of the string (it's safe because its memory is owned by the group)... */
+
+	SET_ARG(args, dev);
+	printk(KERN_INFO "[PFQ|init] forward: device '%s' locked\n", dev->name);
+	return 0;
+}
+
+
+static int
+forward_fini(arguments_t args)
+{
+	struct net_device *dev = GET_ARG(struct net_device *, args);
+	if (dev) {
+		dev_put(dev);
+		printk(KERN_INFO "[PFQ|fini] forward: device '%s' released\n", dev->name);
+	}
+	return 0;
+}
+
+
+static int
+link_init(arguments_t args)
+{
+        const char **dev_name = GET_ARRAY(const char *, args);
+	size_t n, ndev = LEN_ARRAY(args);
+
+	for(n = 0; n < ndev; n++)
+	{
+		struct net_device *dev = dev_get_by_name(&init_net, dev_name[n]);
+		if (dev == NULL) {
+			printk(KERN_INFO "[PFQ|init] link: %s no such device!\n", dev_name[n]);
+			dev_name[n] = NULL;
+			continue;
+		}
+
+		dev_name[n] = (char *)SAFE_CAST(dev);
+	}
+	return 0;
+}
+
+
+static int
+link_fini(arguments_t args)
+{
+        struct net_device **dev = GET_ARRAY(struct net_device *,args);
+	size_t n, ndev = LEN_ARRAY(args);
+
+	for(n = 0; n < ndev; n++)
+	{
+		if (dev[n]) {
+			dev_put(dev[n]);
+			printk(KERN_INFO "[PFQ|fini] forward: device '%s' released\n", dev[n]->name);
+		}
+	}
+	return 0;
+}
+
+
 static ActionSkBuff
 forwardIO(arguments_t args, SkBuff skb)
 {
@@ -101,41 +170,6 @@ forward(arguments_t args, SkBuff skb)
 }
 
 
-static int
-forward_init(arguments_t args)
-{
-	const char *name = GET_ARG(const char *, args);
-	struct net_device *dev = dev_get_by_name(&init_net, name);
-
-	if (dev == NULL) {
-                printk(KERN_INFO "[PFQ|init] forward: %s no such device!\n", name);
-                return -EINVAL;
-	}
-
-	/* it is safe to override the address of the string... */
-
-	SET_ARG(args, dev);
-
-	printk(KERN_INFO "[PFQ|init] forward: device '%s' locked\n", dev->name);
-	return 0;
-}
-
-
-static int
-forward_fini(arguments_t args)
-{
-	struct net_device *dev = GET_ARG(struct net_device *, args);
-
-	if (dev)
-	{
-		dev_put(dev);
-		printk(KERN_INFO "[PFQ|fini] forward: device '%s' released\n", dev->name);
-	}
-
-	return 0;
-}
-
-
 static ActionSkBuff
 bridge(arguments_t args, SkBuff skb)
 {
@@ -152,6 +186,27 @@ bridge(arguments_t args, SkBuff skb)
 	local_inc(&get_group_stats(skb)->frwd);
 
 	return Drop(skb);
+}
+
+
+static ActionSkBuff
+link(arguments_t args, SkBuff skb)
+{
+        struct net_device **dev = GET_ARRAY(struct net_device *,args);
+	size_t n, ndev = LEN_ARRAY(args);
+        struct pfq_group_stats *stats = get_group_stats(skb);
+
+	for(n = 0; n < ndev; n++)
+	{
+		if (dev[n] != NULL && skb->dev != dev[n])
+		{
+                        printk(KERN_INFO "[PFQ/lang] forwarding to  device %s!\n", dev[n]->name);
+			pfq_lazy_xmit(skb, dev[n], skb->queue_mapping);
+			local_inc(&stats->frwd);
+		}
+	}
+
+	return Pass(skb);
 }
 
 
@@ -209,12 +264,13 @@ struct pfq_lang_function_descr forward_functions[] = {
         { "deliver",	"CInt -> SkBuff -> Action SkBuff",	forward_deliver		},
         { "kernel",	"SkBuff -> Action SkBuff",		forward_to_kernel	},
 
-	{ "forwardIO",  "String -> SkBuff -> Action SkBuff",	forwardIO,  forward_init, forward_fini },
-	{ "forward",    "String -> SkBuff -> Action SkBuff",	forward,    forward_init, forward_fini },
+	{ "forwardIO",  "String -> SkBuff -> Action SkBuff",			 forwardIO, forward_init, forward_fini },
+	{ "forward",    "String -> SkBuff -> Action SkBuff",			 forward,   forward_init, forward_fini },
+	{ "link",	"[String] -> SkBuff -> Action SkBuff",			 link,	    link_init,    link_fini    },
 
-	{ "bridge",     "String -> SkBuff -> Action SkBuff",	bridge,			forward_init, forward_fini },
-	{ "tee",	"String -> (SkBuff -> Bool) -> SkBuff -> Action SkBuff", tee,	forward_init, forward_fini },
-	{ "tap",	"String -> (SkBuff -> Bool) -> SkBuff -> Action SkBuff", tap,	forward_init, forward_fini },
+	{ "bridge",     "String -> SkBuff -> Action SkBuff",			 bridge,    forward_init, forward_fini },
+	{ "tee",	"String -> (SkBuff -> Bool) -> SkBuff -> Action SkBuff", tee,	    forward_init, forward_fini },
+	{ "tap",	"String -> (SkBuff -> Bool) -> SkBuff -> Action SkBuff", tap,	    forward_init, forward_fini },
 
         { NULL }};
 
