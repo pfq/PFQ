@@ -58,6 +58,18 @@ namespace pfq { namespace lang { namespace experimental {
 
         auto crc16         = mfunction("crc16");
 
+
+        //! Forward the socket buffer to the list of specified devices.
+        /*!
+         * Unlike forward, the buffer is not forwarded to the device from which it comes from.
+         *
+         * link_ ({"eth1", "eth2"})
+         *
+         */
+
+        auto link_ = [] (std::vector<std::string> const &devs) { return mfunction("link", devs); };
+
+
         //! Function that returns the parallel of 3 monadic NetFunctions.
         /*!
          * Logic 'or' for manadic filters:

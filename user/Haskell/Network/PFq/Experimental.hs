@@ -57,7 +57,9 @@ module Network.PFq.Experimental
         gtp_up,
         is_gtp,
         is_gtp_cp,
-        is_gtp_up
+        is_gtp_up,
+
+        link
 
     ) where
 
@@ -90,6 +92,16 @@ dummy_strings xs  = MFunction "dummy_strings" xs () () () () () () ()
 
 crc16 :: NetFunction
 crc16 = MFunction "crc16" () () () () () () () ()
+
+
+-- | Forward the socket buffer to the list of specified devices.
+--  Unlike forward, the buffer is not forwarded to the device from which it comes from.
+--
+-- > link ["eth1", "eth2"]
+
+link :: [String] -> NetFunction
+link ds = MFunction "forward" ds () () () () () () ()
+
 
 -- | Function that returns the parallel of 3 monadic NetFunctions.
 
