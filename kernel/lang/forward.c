@@ -200,7 +200,6 @@ link(arguments_t args, SkBuff skb)
 	{
 		if (dev[n] != NULL && skb->dev != dev[n])
 		{
-                        printk(KERN_INFO "[PFQ/lang] forwarding to  device %s!\n", dev[n]->name);
 			pfq_lazy_xmit(skb, dev[n], skb->queue_mapping);
 			local_inc(&stats->frwd);
 		}
