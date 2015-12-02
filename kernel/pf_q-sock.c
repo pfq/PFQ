@@ -213,8 +213,10 @@ pfq_sock_tx_bind(struct pfq_sock *so, int tid, int ifindex, int qindex, struct
 		 net_device *dev)
 {
 	size_t queue = so->opt.tx_num_async_queues;
-	if (queue >= Q_MAX_TX_QUEUES)
+	if (queue >= Q_MAX_TX_QUEUES) {
+		printk(KERN_INFO "[PFQ|%d] could not bind Tx[%d] thread to queue %zu (out of range)!\n", so->id, tid, queue);
 		return -EPERM;
+	}
 
 	so->opt.txq_async[queue].def_ifindex = ifindex;
 	so->opt.txq_async[queue].def_queue = qindex;
@@ -229,8 +231,6 @@ pfq_sock_tx_bind(struct pfq_sock *so, int tid, int ifindex, int qindex, struct
 		so->opt.txq_async[queue].def_queue = -1;
 		so->opt.txq_async[queue].def_dev = NULL;
 		so->opt.tx_num_async_queues--;
-
-		printk(KERN_INFO "[PFQ|%d] could not bind Tx[%d] thread: resource busy!\n", so->id, tid);
 		return -EBUSY;
 	}
 

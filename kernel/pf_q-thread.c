@@ -148,8 +148,10 @@ pfq_bind_tx_thread(int tid, struct pfq_sock *sock, int sock_queue)
 	struct pfq_thread_tx_data *thread_data;
 	int n;
 
-	if (tid >= tx_thread_nr)
+	if (tid >= tx_thread_nr) {
+		printk(KERN_INFO "[PFQ] Tx[%d] thread not available (%d Tx threads running)!\n", tid, tx_thread_nr);
 		return -EBUSY;
+	}
 
 	thread_data = &pfq_thread_tx_pool[tid];
 
@@ -163,6 +165,7 @@ pfq_bind_tx_thread(int tid, struct pfq_sock *sock, int sock_queue)
 
 	if (n == Q_MAX_TX_QUEUES) {
 		mutex_unlock(&pfq_thread_tx_pool_lock);
+		printk(KERN_INFO "[PFQ] Tx[%d] thread busy (no queue available)!\n", tid);
 		return -EINVAL;
 	}
 
