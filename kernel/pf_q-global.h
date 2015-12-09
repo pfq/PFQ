@@ -49,6 +49,8 @@ extern int skb_pool_size;
 extern int tx_affinity[Q_MAX_CPU];
 extern int tx_thread_nr;
 
+extern int tx_rate_control_eager;
+
 DECLARE_PER_CPU(struct pfq_global_stats, global_stats);
 DECLARE_PER_CPU(struct pfq_memory_stats, memory_stats);
 

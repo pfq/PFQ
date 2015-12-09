@@ -48,6 +48,7 @@ int skb_pool_size	= 1024;
 
 int tx_affinity[Q_MAX_CPU] = {0};
 int tx_thread_nr;
+int tx_rate_control_eager = 1;
 
 
 DEFINE_PER_CPU(struct pfq_global_stats, global_stats);
@@ -83,4 +84,5 @@ MODULE_PARM_DESC(skb_pool_size, " Socket buffer pool size (default=1024)");
 #endif
 
 MODULE_PARM_DESC(tx_affinity, " Tx threads cpus' affinity");
+MODULE_PARM_DESC(tx_rate_control_eager, " Tx rate control eager (default enabled = 1)");
 

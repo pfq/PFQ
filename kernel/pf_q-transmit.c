@@ -97,6 +97,23 @@ bool giveup_tx_process(atomic_t const *stop)
 
 
 static inline
+ktime_t busy_wait_until(uint64_t ts, atomic_t const *stop, bool *intr)
+{
+	ktime_t now;
+	do
+	{
+		now = ktime_get_real();
+		if (giveup_tx_process(stop)) {
+			*intr= true;
+			return now;
+		}
+	}
+	while (ktime_to_ns(now) < ts);
+	return now;
+}
+
+
+static inline
 ktime_t wait_until(uint64_t ts, atomic_t const *stop, bool *intr)
 {
 	ktime_t now;
@@ -226,21 +243,35 @@ __pfq_mbuff_xmit(struct pfq_pkthdr *hdr, struct pfq_mbuff_xmit_context *ctx, int
 		return 0;
 	}
 
-	/* wait until the Ts ? */
+	/* wait until the timestap */
 
-	if (hdr->tstamp.tv64 > ktime_to_ns(ctx->now)) {
+	if (hdr->tstamp.tv64)
+	{
+		if (hdr->tstamp.tv64 > ktime_to_ns(ctx->now)) {
 
-		pfq_hard_tx_unlock(&ctx->dev_queue);
-		local_bh_enable();
+			if ((hdr->tstamp.tv64 - ktime_to_ns(ctx->now)) < 200000) {
 
-		ctx->now = wait_until(hdr->tstamp.tv64, stop, intr);
+				ctx->now = busy_wait_until(hdr->tstamp.tv64, stop, intr);
+			}
+			else {
+				pfq_hard_tx_unlock(&ctx->dev_queue);
+				local_bh_enable();
 
-		local_bh_disable();
-		pfq_hard_tx_lock(&ctx->dev_queue);
+				ctx->now = wait_until(hdr->tstamp.tv64, stop, intr);
 
-		if (*intr)
-			return 0;
+				local_bh_disable();
+				pfq_hard_tx_lock(&ctx->dev_queue);
+			}
+
+			if (*intr)
+				return 0;
+		}
+		else {
+			if (!tx_rate_control_eager)
+				return 0;
+		}
 	}
+
 
 	/* allocate a new socket buffer */
 
