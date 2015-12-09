@@ -249,7 +249,7 @@ __pfq_mbuff_xmit(struct pfq_pkthdr *hdr, struct pfq_mbuff_xmit_context *ctx, int
 	{
 		if (hdr->tstamp.tv64 > ktime_to_ns(ctx->now)) {
 
-			if ((hdr->tstamp.tv64 - ktime_to_ns(ctx->now)) < 200000) {
+			if ((hdr->tstamp.tv64 - ktime_to_ns(ctx->now)) < 100000) { /* < 100us, just like pktgen */
 
 				ctx->now = busy_wait_until(hdr->tstamp.tv64, stop, intr);
 			}
@@ -418,9 +418,12 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 
 		/* update stats */
 
-		total_sent += sent;
-		__sparse_add(so->stats, sent, sent, cpu);
-		__sparse_add(&global_stats, sent, sent, cpu);
+		if (sent)
+		{
+			total_sent += sent;
+			__sparse_add(so->stats, sent, sent, cpu);
+			__sparse_add(&global_stats, sent, sent, cpu);
+		}
 
 		if (unlikely(intr))
 			break;
