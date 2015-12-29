@@ -18,6 +18,8 @@ Library
                  storablevector,
                  storable-record, 
                  network,
+                 aeson,
+                 scientific,
                  clock
 
   exposed-modules: Network.PFq

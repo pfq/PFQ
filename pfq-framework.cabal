@@ -31,9 +31,12 @@ Library
                  regex-posix, 
                  semigroups, 
                  split,
+                 aeson,
+                 scientific,
                  storable-record, 
                  storable-tuple,
                  storablevector,
                  unix
+                    
 
 

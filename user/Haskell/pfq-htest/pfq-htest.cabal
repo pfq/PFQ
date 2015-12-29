@@ -56,7 +56,9 @@ Executable test-send
 Executable test-lang
     main-is:            test-lang.hs
     build-depends:      base >= 4.7, 
-                        pfq >= 5.2
+                        pfq >= 5.2,
+                        aeson,
+                        bytestring
     extra-libraries:    pfq
     ghc-options:
         -O2
