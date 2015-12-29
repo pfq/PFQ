@@ -17,32 +17,50 @@
 --  The full GNU General Public License is included in this distribution in
 --  the file called "COPYING".
 
+{-# LANGUAGE OverloadedStrings #-}
+
 import Network.PFq.Default
 import Network.PFq.Experimental
 import Network.PFq.Lang
 
+import Data.Aeson
+import Data.Maybe
+
+import qualified Data.ByteString.Lazy.Char8 as BL
 import Control.Monad
 
 -- prettyPrinter (debug):
 
-prettyPrinter :: Serializable a => a -> IO ()
-prettyPrinter comp = let (xs,_) = serialize comp 0
-                 in forM_ (zip [0..] xs) $ \(n, x) -> putStrLn $ "    " ++ show n ++ ": " ++ show x
+prettyPrinter :: (Show a) => [a] -> IO ()
+prettyPrinter xs = forM_ (zip [0..] xs) $ \(n, x) -> putStrLn $ "    " ++ show n ++ ": " ++ show x
 
 main = do
         let mycond = is_ip .&&. (is_tcp .||. is_udp)
         let mycond1 = is_udp
 
-        let comp = par' (ip >-> udp) (ip >-> tcp) >-> steer_rtp >-> dummy 24
-                    >-> conditional (mycond  .||. mycond1)
-                                        steer_ip
-                                        (inc 1 >-> drop')
-                         >-> when' is_tcp (inc 2)  >-> dummy 11
+        let comp = par' (ip >-> udp) (ip >-> tcp) >-> steer_rtp >->
+                         when' is_tcp (inc 2) >->
+                         dummy 42 >->
+                         dummy_string "hello world" >->
+                         dummy_strings ["hello", "world"] >->
+                         dummy_vector [1,2,3]
 
         putStrLn "\nFunctional computation (show):"
         print comp
         putStrLn "\nFunctional computation (prettyPrint):"
         putStrLn $ pretty comp
         putStrLn "\nSerialized AST:"
-        prettyPrinter comp
+
+        let (ser, _) = serialize comp 0
+
+        prettyPrinter ser
+
+        putStrLn "\nSerialized JSON:"
+
+        let json = encode ser
+        BL.putStrLn json
+        let ser2 = decode json :: Maybe [FunctionDescr]
+
+        putStrLn "\nDeserialized AST:"
+        prettyPrinter $ fromJust ser2
 
