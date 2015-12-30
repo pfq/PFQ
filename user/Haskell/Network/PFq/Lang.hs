@@ -156,42 +156,42 @@ data Argument = forall a. (Show a, Storable a, Typeable a, ToJSON a, FromJSON a)
 
 
 instance ToJSON Argument where
-  toJSON (ArgData x)     = object [ "type" .= show (typeOf x),        "value" .= toJSON x  ]
-  toJSON (ArgVector xs)  = object [ "type" .= show (typeOf xs),       "value" .= toJSON xs ]
-  toJSON (ArgString xs)  = object [ "type" .= ("String"   :: String), "value" .= toJSON xs ]
-  toJSON (ArgSVector xs) = object [ "type" .= ("[String]" :: String), "value" .= toJSON xs ]
-  toJSON (ArgFunPtr x)   = object [ "type" .= ("fun"      :: String), "value" .= toJSON x  ]
-  toJSON (ArgNull)       = object [ "type" .= (""         :: String), "value" .= toJSON () ]
+  toJSON (ArgData x)     = object [ "argType" .= show (typeOf x),        "argValue" .= toJSON x  ]
+  toJSON (ArgVector xs)  = object [ "argType" .= show (typeOf xs),       "argValue" .= toJSON xs ]
+  toJSON (ArgString xs)  = object [ "argType" .= ("String"   :: String), "argValue" .= toJSON xs ]
+  toJSON (ArgSVector xs) = object [ "argType" .= ("[String]" :: String), "argValue" .= toJSON xs ]
+  toJSON (ArgFunPtr x)   = object [ "argType" .= ("fun"      :: String), "argValue" .= toJSON x  ]
+  toJSON (ArgNull)       = object [ "argType" .= (""         :: String), "argValue" .= toJSON () ]
 
 
 instance FromJSON Argument where
   parseJSON (Object v) = do
-    type_ <- v .: "type"
+    type_ <- v .: "argType"
     case () of
-      _ | type_ == "CInt"   -> (ArgData :: CInt   -> Argument) <$> (v .: "value")
-        | type_ == "Int64"  -> (ArgData :: Int64  -> Argument) <$> (v .: "value")
-        | type_ == "Int32"  -> (ArgData :: Int32  -> Argument) <$> (v .: "value")
-        | type_ == "Int16"  -> (ArgData :: Int16  -> Argument) <$> (v .: "value")
-        | type_ == "Int8"   -> (ArgData :: Int8   -> Argument) <$> (v .: "value")
-        | type_ == "Word64" -> (ArgData :: Word64 -> Argument) <$> (v .: "value")
-        | type_ == "Word32" -> (ArgData :: Word32 -> Argument) <$> (v .: "value")
-        | type_ == "Word16" -> (ArgData :: Word16 -> Argument) <$> (v .: "value")
-        | type_ == "Word8"  -> (ArgData :: Word8  -> Argument) <$> (v .: "value")
-        | type_ == "IPv4"   -> (ArgData :: IPv4   -> Argument) <$> (v .: "value")
-        | type_ == "String" -> (ArgString  :: String -> Argument)   <$> (v .: "value")
-        | type_ == "fun"    -> (ArgFunPtr  :: Int  -> Argument)     <$> (v .: "value")
+      _ | type_ == "CInt"   -> (ArgData :: CInt   -> Argument)      <$> (v .: "argValue")
+        | type_ == "Int64"  -> (ArgData :: Int64  -> Argument)      <$> (v .: "argValue")
+        | type_ == "Int32"  -> (ArgData :: Int32  -> Argument)      <$> (v .: "argValue")
+        | type_ == "Int16"  -> (ArgData :: Int16  -> Argument)      <$> (v .: "argValue")
+        | type_ == "Int8"   -> (ArgData :: Int8   -> Argument)      <$> (v .: "argValue")
+        | type_ == "Word64" -> (ArgData :: Word64 -> Argument)      <$> (v .: "argValue")
+        | type_ == "Word32" -> (ArgData :: Word32 -> Argument)      <$> (v .: "argValue")
+        | type_ == "Word16" -> (ArgData :: Word16 -> Argument)      <$> (v .: "argValue")
+        | type_ == "Word8"  -> (ArgData :: Word8  -> Argument)      <$> (v .: "argValue")
+        | type_ == "IPv4"   -> (ArgData :: IPv4   -> Argument)      <$> (v .: "argValue")
+        | type_ == "String" -> (ArgString  :: String -> Argument)   <$> (v .: "argValue")
+        | type_ == "fun"    -> (ArgFunPtr  :: Int  -> Argument)     <$> (v .: "argValue")
         | "[" `isPrefixOf` type_ -> case () of
-                                      _ | type_ == "[CInt]"   -> (ArgVector  :: [CInt]   -> Argument) <$> (v .: "value")
-                                        | type_ == "[Int64]"  -> (ArgVector  :: [Int64]  -> Argument) <$> (v .: "value")
-                                        | type_ == "[Int32]"  -> (ArgVector  :: [Int32]  -> Argument) <$> (v .: "value")
-                                        | type_ == "[Int16]"  -> (ArgVector  :: [Int16]  -> Argument) <$> (v .: "value")
-                                        | type_ == "[Int8]"   -> (ArgVector  :: [Int8]   -> Argument) <$> (v .: "value")
-                                        | type_ == "[Word64]" -> (ArgVector  :: [Word64] -> Argument) <$> (v .: "value")
-                                        | type_ == "[Word32]" -> (ArgVector  :: [Word32] -> Argument) <$> (v .: "value")
-                                        | type_ == "[Word16]" -> (ArgVector  :: [Word16] -> Argument) <$> (v .: "value")
-                                        | type_ == "[Word8]"  -> (ArgVector  :: [Word8]  -> Argument) <$> (v .: "value")
-                                        | type_ == "[IPv4]"   -> (ArgVector  :: [IPv4]   -> Argument) <$> (v .: "value")
-                                        | type_ == "[String]" -> (ArgSVector :: [String] -> Argument) <$> (v .: "value")
+                                      _ | type_ == "[CInt]"   -> (ArgVector  :: [CInt]   -> Argument) <$> (v .: "argValue")
+                                        | type_ == "[Int64]"  -> (ArgVector  :: [Int64]  -> Argument) <$> (v .: "argValue")
+                                        | type_ == "[Int32]"  -> (ArgVector  :: [Int32]  -> Argument) <$> (v .: "argValue")
+                                        | type_ == "[Int16]"  -> (ArgVector  :: [Int16]  -> Argument) <$> (v .: "argValue")
+                                        | type_ == "[Int8]"   -> (ArgVector  :: [Int8]   -> Argument) <$> (v .: "argValue")
+                                        | type_ == "[Word64]" -> (ArgVector  :: [Word64] -> Argument) <$> (v .: "argValue")
+                                        | type_ == "[Word32]" -> (ArgVector  :: [Word32] -> Argument) <$> (v .: "argValue")
+                                        | type_ == "[Word16]" -> (ArgVector  :: [Word16] -> Argument) <$> (v .: "argValue")
+                                        | type_ == "[Word8]"  -> (ArgVector  :: [Word8]  -> Argument) <$> (v .: "argValue")
+                                        | type_ == "[IPv4]"   -> (ArgVector  :: [IPv4]   -> Argument) <$> (v .: "argValue")
+                                        | type_ == "[String]" -> (ArgSVector :: [String] -> Argument) <$> (v .: "argValue")
                                         | otherwise           -> error $ "FromJSON: Argument type " ++ type_ ++ " not supported!"
         | null type_          -> return ArgNull
         | otherwise           -> error $ "FromJSON: Argument type " ++ type_ ++ " not supported!"
@@ -234,17 +234,17 @@ instance Argumentable () where
 
 mkArgument :: (Argumentable a) => a -> [FunctionDescr] -> Argument
 mkArgument x [] = argument x
-mkArgument _ xs = argument (FunPtr (functionIndex (head xs)))
+mkArgument _ xs = argument (FunPtr (funIndex (head xs)))
 
 
 -- | Function descriptor.
 
 data FunctionDescr =
   FunctionDescr
-  { functionSymbol    :: Symbol
-  , functionArguments :: [Argument]
-  , functionIndex     :: Int
-  , functionLink      :: Int
+  { funSymbol    :: Symbol
+  , funArgs      :: [Argument]
+  , funIndex     :: Int
+  , funLink      :: Int
   }   deriving (Show, Generic)
 
 

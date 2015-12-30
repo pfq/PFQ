@@ -41,7 +41,7 @@ endif(PCAP_HEADER_FOUND)
 # C++14 tests
                                         
 if ("${CMAKE_CXX_FLAGS}" MATCHES "std=c\\+\\+1y")
-    add_executable(test-lang test-lang.cpp)
+    add_executable(test-lang++ test-lang.cpp)
 endif()
 
 # C tests

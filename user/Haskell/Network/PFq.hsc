@@ -1022,7 +1022,7 @@ setGroupComputationFromString :: Ptr PFqTag
                               -> IO ()
 
 setGroupComputationFromString hdl gid comp =
-  readProcess "qlang" ["--json"] ("main = " ++ comp) >>= setGroupComputationFromJSON hdl gid
+  readProcess "qlang" ["--json"] comp >>= setGroupComputationFromJSON hdl gid
 
 
 -- |Specify a simple functional computation for the given group, from JSON string.
