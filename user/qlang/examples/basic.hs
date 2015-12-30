@@ -1,0 +1,5 @@
+-- basic
+--
+
+main = ip
+
