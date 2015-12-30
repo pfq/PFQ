@@ -1031,7 +1031,7 @@ setGroupComputationFromString hdl gid comp =
 
 setGroupComputationFromJSON :: Ptr PFqTag
                             -> Int       -- ^ group id
-                            -> String    -- ^ decode (String) :: [FunctionDesc]
+                            -> String    -- ^ decode (json) :: [FunctionDesc]
                             -> IO ()
 
 setGroupComputationFromJSON hdl gid comp =
