@@ -24,6 +24,7 @@ compile raw = do
       when (verb opt > 0) (putStrLn ("imports: " ++ show imports))
       res <- runInterpreter $ do
           setImportsQ imports
+          set [languageExtensions := [ OverloadedStrings ]]
           interpret (mkMainFunction code) (as :: (Function (SkBuff -> Action SkBuff)))
       either throw (\comp -> return (C.unpack $ A.encode comp))  res
 
