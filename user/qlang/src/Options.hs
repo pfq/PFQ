@@ -27,12 +27,13 @@ import Data.Data
 type OptionT = ReaderT Options
 
 data Options = Options
-    -- Pattern:
+    -- Generic:
     {   output              :: Maybe String
+    ,   modules             :: [String]
     -- IR (intermediate representation):
     ,   json                :: Bool
     ,   fdescr              :: Bool
-    -- Generic
+    -- other
     ,   verb                :: Int
     ,   files               :: [FilePath]
     } deriving (Data, Typeable, Show)
