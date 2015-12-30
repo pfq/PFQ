@@ -1,13 +1,18 @@
+{-# LANGUAGE TupleSections #-}
+
 module QLang.Util
   ( defaultImports
   , parseImports
   , parseCode
   , mkMainFunction
+  , mkImportList
   ) where
 
 import Language.Haskell.Interpreter
 import Data.List
 
+import Control.Monad.Trans.Reader
+import Options
 
 dropWhite :: String -> String
 dropWhite = dropWhile (`elem` " \\\a\b\t\n\v\f\r")
@@ -45,4 +50,7 @@ parseImports xs = case () of
 mkMainFunction :: String -> String
 mkMainFunction code = "(let " ++ code ++ " in main)"
 
-
+mkImportList :: (Monad m) => [(ModuleName, Maybe String)] -> OptionT m [(ModuleName, Maybe String)]
+mkImportList xs = do
+  opt <- ask
+  return $ defaultImports ++  map (, Nothing) (modules opt) ++ xs
