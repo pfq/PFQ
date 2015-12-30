@@ -353,7 +353,7 @@ pfq_lang_check_computation_descr(struct pfq_lang_computation_descr const *descr)
 		if (n == entry_point || fun->next != -1 ) {  /* next != -1 means monadic function! */
 
 			if (!function_signature_match(fun, make_string_view("SkBuff -> Action SkBuff"), n)) {
-				printk(KERN_INFO "[PFQ] %zu: %s: invalid signature!\n", n, signature);
+				printk(KERN_INFO "[PFQ] function[%zu]: %s: invalid signature!\n", n, signature);
 				return -EPERM;
 			}
 		}
@@ -366,7 +366,7 @@ pfq_lang_check_computation_descr(struct pfq_lang_computation_descr const *descr)
 
 			if (fun->arg[i].nelem > 65536 &&
 			    fun->arg[i].nelem != -1) {
-				printk(KERN_INFO "[PFQ] %zu: invalid argument (%d): number of array elements is %zu!\n",
+				printk(KERN_INFO "[PFQ] function[%zu]: invalid argument(%d): number of array elements is %zu!\n",
 				       n, i, fun->arg[i].nelem);
 				return -EPERM;
 			}
@@ -375,13 +375,13 @@ pfq_lang_check_computation_descr(struct pfq_lang_computation_descr const *descr)
 				size_t x = fun->arg[i].size;
 
 				if (x >= descr->size) {
-					printk(KERN_INFO "[PFQ] %zu: %s: invalid argument(%d): %zu!\n",
+					printk(KERN_INFO "[PFQ] function[%zu]: %s: invalid argument(%d): %zu!\n",
 					       n, signature, i, x);
 					return -EPERM;
 				}
 
 				if (!function_signature_match(&descr->fun[x], sarg, x)) {
-					printk(KERN_INFO "[PFQ] %zu: %s: invalid argument(%d): expected signature "
+					printk(KERN_INFO "[PFQ] function[%zu]: %s: invalid argument(%d): expected signature "
 					       SVIEW_FMT "!\n", n, signature, i, SVIEW_ARG(sarg));
 					return -EPERM;
 				}
@@ -389,7 +389,7 @@ pfq_lang_check_computation_descr(struct pfq_lang_computation_descr const *descr)
 			}
 
 			if (check_argument_descr(&fun->arg[i], sarg) != 0) {
-				printk(KERN_INFO "[PFQ] %zu: invalid argument %d!\n", n, i);
+				printk(KERN_INFO "[PFQ] function[%zu]: %s: invalid argument(%d)!\n", n, signature, i);
 				return -EPERM;
 			}
 		}
