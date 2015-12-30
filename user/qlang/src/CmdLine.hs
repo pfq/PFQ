@@ -27,10 +27,10 @@ import Paths_qlang
 options :: Mode (CmdArgs Options)
 options = cmdArgsMode $ Options
           {     output = Nothing &= typ "FILE"   &= help "write output to FILE"
-          ,     modules = []     &= typ "FILE"   &= help "specify additional modules to import" &= name "import"
-          ,     json = False     &= groupname "IR:" &=help "Format output as json object" &= explicit &= name "json"
+          ,     modules = []     &= typ "FILE"   &= help "specify additional modules to import" &=explicit &= name "import"
+          ,     json = False     &= groupname "IR" &=help "Format output as json object" &= explicit &= name "json"
           ,     fdescr = False   &= help "Format output as list of function descriptors" &= explicit &= name "fdescr"
-          ,     verb = 0         &= help "Control verbosity level (0..3)" &= explicit &= name "verbosity"
+          ,     verb = 0         &= groupname "Other" &= help "Control verbosity level (0..3)" &= explicit &= name "verbosity"
           ,     files = []       &= args
           } &= summary ("qlang " ++ showVersion version)  &= program "qlang"
 
