@@ -21,7 +21,6 @@
 module Options where
 
 import Control.Monad.Trans.Reader
-import Data.Maybe
 import Data.Data
 
 type OptionT = ReaderT Options

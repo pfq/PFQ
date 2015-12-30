@@ -3,14 +3,9 @@
 module QLang.FDescr where
 
 import Language.Haskell.Interpreter
-import Network.PFq.Default
-import Network.PFq.Experimental
 import Network.PFq.Lang as Q
 
-import qualified Data.Aeson as A
-import Control.Exception
-import Data.Either
-import qualified Data.ByteString.Lazy.Char8 as C
+import Control.Exception (throw)
 
 import QLang.Util
 import Control.Monad.Trans.Reader

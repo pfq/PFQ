@@ -1,4 +1,3 @@
-
 module Paths_qlang where
 
 import Data.Version(Version(..))
