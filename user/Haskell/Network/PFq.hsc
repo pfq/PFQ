@@ -208,7 +208,9 @@ import Foreign.Concurrent as C (newForeignPtr)
 import Foreign.ForeignPtr (ForeignPtr)
 
 import Network.PFq.Lang
+
 import System.Clock
+import System.Process(readProcess)
 
 -- |Packet capture handle.
 newtype PFqTag = PFqTag ()
@@ -1020,8 +1022,7 @@ setGroupComputationFromString :: Ptr PFqTag
                               -> IO ()
 
 setGroupComputationFromString hdl gid comp =
-    withCString comp $ \ptr ->
-            pfq_set_group_computation_from_string hdl (fromIntegral gid) ptr >>= throwPFqIf_ hdl (== -1)
+  readProcess "qlang" ["--json"] ("main = " ++ comp) >>= setGroupComputationFromJSON hdl gid
 
 
 -- |Specify a simple functional computation for the given group, from JSON string.
@@ -1048,14 +1049,14 @@ setGroupComputationFromDescr :: Ptr PFqTag
                     -> Int                  -- ^ group id
                     -> [FunctionDescr]      -- ^ expression (PFq-Lang)
                     -> IO ()
-setGroupComputationFromDescr hdl gid descr = do
+setGroupComputationFromDescr hdl gid descr =
     allocaBytes (sizeOf (undefined :: CSize) * 2 + #{size struct pfq_lang_functional_descr} * length descr) $ \ ptr -> do
         pokeByteOff ptr 0 (fromIntegral (length descr) :: CSize)     -- size
-        pokeByteOff ptr (sizeOf(undefined :: CSize)) (0 :: CSize)        -- entry_point: always the first one!
+        pokeByteOff ptr (sizeOf(undefined :: CSize)) (0 :: CSize)    -- entry_point: always the first one!
         withMany withFunDescr descr $ \marshList -> do
-            let offset n = sizeOf(undefined :: CSize) * 2 + #{size struct pfq_lang_functional_descr} * n
+            let mkOffset n = sizeOf(undefined :: CSize) * 2 + #{size struct pfq_lang_functional_descr} * n
             forM_ (zip [0..] marshList) $ \(n, (symbol, parms, next)) ->
-                pokeByteOff ptr (offset n)
+                pokeByteOff ptr (mkOffset n)
                     (StorableFunDescr symbol parms (fromIntegral next))
             pfq_set_group_computation hdl (fromIntegral gid) ptr >>= throwPFqIf_ hdl (== -1)
 
