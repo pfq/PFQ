@@ -69,7 +69,7 @@ dummy_vector(arguments_t args, SkBuff skb)
 
 	for(n = 0; n < len; n++)
 	{
-		printk(KERN_INFO "[PFQ/lang]  data[%zu] = %d\n", n, data[n]);
+		printk(KERN_INFO "[PFQ/lang] data[%zu] = %d\n", n, data[n]);
 	}
 
         return Pass(skb);
@@ -81,7 +81,7 @@ dummy_string(arguments_t args, SkBuff skb)
 {
         const char *data = GET_ARG(const char *,args);
 
-	printk(KERN_INFO "[PFQ/lang] dummy: vector string: %s\n", data);
+	printk(KERN_INFO "[PFQ/lang] dummy: string: %s\n", data);
 
         return Pass(skb);
 }
