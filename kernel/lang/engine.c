@@ -295,7 +295,6 @@ check_argument_descr(struct pfq_lang_functional_arg_descr const *arg, string_vie
 			pr_devel("[PFQ] invalid argument: expected " SVIEW_FMT ", got String!\n", SVIEW_ARG(expected));
 			return -EPERM;
 		}
-
 		return 0;
 	}
 
@@ -304,10 +303,11 @@ check_argument_descr(struct pfq_lang_functional_arg_descr const *arg, string_vie
 			pr_devel("[PFQ] invalid argument: expected " SVIEW_FMT ", got [String]!\n", SVIEW_ARG(expected));
 			return -EPERM;
 		}
-
 		return 0;
 	}
 
+	printk(KERN_INFO "[PFQ] check_argument_descr: internal error: addr=%p size=%zu nelem=%zu\n", arg->addr,
+	       arg->size, arg->nelem);
 	return -EPERM;
 }
 
