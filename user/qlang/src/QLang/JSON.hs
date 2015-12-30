@@ -3,13 +3,10 @@
 module QLang.JSON where
 
 import Language.Haskell.Interpreter
-import Network.PFq.Default
-import Network.PFq.Experimental
 import Network.PFq.Lang
 
 import qualified Data.Aeson as A
 import Control.Exception
-import Data.Either
 import qualified Data.ByteString.Lazy.Char8 as C
 
 import QLang.Util
