@@ -49,9 +49,9 @@ main = do
   code <- hGetContents inHandle
 
   result <- try $ case () of
-          _ | json opts -> runReaderT (QLang.JSON.compile code) opts
+          _ | json opts   -> runReaderT (QLang.JSON.compile code) opts
             | fdescr opts -> runReaderT (QLang.FDescr.compile code) opts
-            | otherwise -> error "qlang: operation not supported"
+            | otherwise -> return ""
 
   case result of
     Left (WontCompile es)  ->  error $ unlines (map errMsg es)
@@ -60,5 +60,6 @@ main = do
     Left (UnknownError xs) ->  error xs
     Right out -> hPutStr outHandle out
 
+  hPutStr outHandle "\n"
   hClose outHandle
   hClose inHandle
