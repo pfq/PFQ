@@ -169,9 +169,11 @@ instance FromJSON Argument where
     type_ <- v .: "type"
     case () of
       _ | type_ == "CInt"   -> (ArgData :: CInt   -> Argument) <$> (v .: "value")
+        | type_ == "Int64"  -> (ArgData :: Int64  -> Argument) <$> (v .: "value")
         | type_ == "Int32"  -> (ArgData :: Int32  -> Argument) <$> (v .: "value")
         | type_ == "Int16"  -> (ArgData :: Int16  -> Argument) <$> (v .: "value")
         | type_ == "Int8"   -> (ArgData :: Int8   -> Argument) <$> (v .: "value")
+        | type_ == "Word64" -> (ArgData :: Word64 -> Argument) <$> (v .: "value")
         | type_ == "Word32" -> (ArgData :: Word32 -> Argument) <$> (v .: "value")
         | type_ == "Word16" -> (ArgData :: Word16 -> Argument) <$> (v .: "value")
         | type_ == "Word8"  -> (ArgData :: Word8  -> Argument) <$> (v .: "value")
@@ -180,9 +182,11 @@ instance FromJSON Argument where
         | type_ == "fun"    -> (ArgFunPtr  :: Int  -> Argument)     <$> (v .: "value")
         | "[" `isPrefixOf` type_ -> case () of
                                       _ | type_ == "[CInt]"   -> (ArgVector  :: [CInt]   -> Argument) <$> (v .: "value")
+                                        | type_ == "[Int64]"  -> (ArgVector  :: [Int64]  -> Argument) <$> (v .: "value")
                                         | type_ == "[Int32]"  -> (ArgVector  :: [Int32]  -> Argument) <$> (v .: "value")
                                         | type_ == "[Int16]"  -> (ArgVector  :: [Int16]  -> Argument) <$> (v .: "value")
                                         | type_ == "[Int8]"   -> (ArgVector  :: [Int8]   -> Argument) <$> (v .: "value")
+                                        | type_ == "[Word64]" -> (ArgVector  :: [Word64] -> Argument) <$> (v .: "value")
                                         | type_ == "[Word32]" -> (ArgVector  :: [Word32] -> Argument) <$> (v .: "value")
                                         | type_ == "[Word16]" -> (ArgVector  :: [Word16] -> Argument) <$> (v .: "value")
                                         | type_ == "[Word8]"  -> (ArgVector  :: [Word8]  -> Argument) <$> (v .: "value")
