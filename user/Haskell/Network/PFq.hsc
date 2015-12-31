@@ -167,6 +167,8 @@ module Network.PFq
 
         setGroupComputation,
         setGroupComputationFromString,
+        setGroupComputationFromDescr,
+        setGroupComputationFromJSON,
 
         -- * Statistics and counters
 
@@ -177,12 +179,16 @@ module Network.PFq
     ) where
 
 
+import Data.Aeson
 import Data.Word
 import Data.Bits
-import Data.Monoid
+import Data.Maybe (fromJust)
+import Data.Monoid()
 import Data.List (intercalate)
 
 import qualified Data.ByteString.Char8 as C
+import qualified Data.ByteString.Lazy.Char8 as BL (pack)
+
 import Data.ByteString.Unsafe
 import qualified Data.StorableVector as SV
 import qualified Data.StorableVector.Base as SV
@@ -202,7 +208,9 @@ import Foreign.Concurrent as C (newForeignPtr)
 import Foreign.ForeignPtr (ForeignPtr)
 
 import Network.PFq.Lang
+
 import System.Clock
+import System.Process(readProcess)
 
 -- |Packet capture handle.
 newtype PFqTag = PFqTag ()
@@ -999,17 +1007,8 @@ setGroupComputation :: Ptr PFqTag
                     -> Function (SkBuff -> Action SkBuff)      -- ^ expression (PFq-Lang)
                     -> IO ()
 
-setGroupComputation hdl gid comp = do
-    let (descrList, _) = serialize comp 0
-    allocaBytes (sizeOf (undefined :: CSize) * 2 + #{size struct pfq_lang_functional_descr} * length descrList) $ \ ptr -> do
-        pokeByteOff ptr 0 (fromIntegral (length descrList) :: CSize)     -- size
-        pokeByteOff ptr (sizeOf(undefined :: CSize)) (0 :: CSize)        -- entry_point: always the first one!
-        withMany withFunDescr descrList $ \marshList -> do
-            let offset n = sizeOf(undefined :: CSize) * 2 + #{size struct pfq_lang_functional_descr} * n
-            forM_ (zip [0..] marshList) $ \(n, (symbol, parms, next)) ->
-                pokeByteOff ptr (offset n)
-                    (StorableFunDescr symbol parms (fromIntegral next))
-            pfq_set_group_computation hdl (fromIntegral gid) ptr >>= throwPFqIf_ hdl (== -1)
+setGroupComputation hdl gid comp =
+    setGroupComputationFromDescr hdl gid (fst $ serialize comp 0)
 
 
 -- |Specify a simple functional computation for the given group, from String.
@@ -1023,8 +1022,43 @@ setGroupComputationFromString :: Ptr PFqTag
                               -> IO ()
 
 setGroupComputationFromString hdl gid comp =
-    withCString comp $ \ptr ->
-            pfq_set_group_computation_from_string hdl (fromIntegral gid) ptr >>= throwPFqIf_ hdl (== -1)
+  readProcess "qlang" ["--json"] ("main = " ++ comp) >>= setGroupComputationFromJSON hdl gid
+
+
+-- |Specify a simple functional computation for the given group, from JSON string.
+--
+-- This ability is limited to simple pfq-lang functional computations.
+-- Only the composition of monadic functions without arguments are currently supported.
+
+setGroupComputationFromJSON :: Ptr PFqTag
+                            -> Int       -- ^ group id
+                            -> String    -- ^ decode (json) :: [FunctionDesc]
+                            -> IO ()
+
+setGroupComputationFromJSON hdl gid comp =
+    setGroupComputationFromDescr hdl gid (fromJust $ decode (BL.pack comp))
+
+
+-- |Specify a functional computation for the given group.
+--
+-- The functional computation is specified as a list of FuncitonDescr.
+--
+
+
+setGroupComputationFromDescr :: Ptr PFqTag
+                    -> Int                  -- ^ group id
+                    -> [FunctionDescr]      -- ^ expression (PFq-Lang)
+                    -> IO ()
+setGroupComputationFromDescr hdl gid descr =
+    allocaBytes (sizeOf (undefined :: CSize) * 2 + #{size struct pfq_lang_functional_descr} * length descr) $ \ ptr -> do
+        pokeByteOff ptr 0 (fromIntegral (length descr) :: CSize)     -- size
+        pokeByteOff ptr (sizeOf(undefined :: CSize)) (0 :: CSize)    -- entry_point: always the first one!
+        withMany withFunDescr descr $ \marshList -> do
+            let mkOffset n = sizeOf(undefined :: CSize) * 2 + #{size struct pfq_lang_functional_descr} * n
+            forM_ (zip [0..] marshList) $ \(n, (symbol, parms, next)) ->
+                pokeByteOff ptr (mkOffset n)
+                    (StorableFunDescr symbol parms (fromIntegral next))
+            pfq_set_group_computation hdl (fromIntegral gid) ptr >>= throwPFqIf_ hdl (== -1)
 
 
 -- |Flush the Tx queue(s)

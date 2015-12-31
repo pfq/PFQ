@@ -44,10 +44,10 @@
 
 struct pfq_group
 {
-        int policy;                                     /* policy for the group */
-        int pid;	                                /* process id for restricted/private group */
+        int policy;                                     /* group policy */
+        int pid;	                                /* process id */
 
-	pfq_id_t owner;					/* id of the owner */
+	pfq_id_t owner;					/* owner's pfq id */
 
         atomic_long_t sock_mask[Q_CLASS_MAX];           /* for class: Q_CLASS_DEFAULT, Q_CLASS_USER_PLANE, Q_CLASS_CONTROL_PLANE etc... */
 

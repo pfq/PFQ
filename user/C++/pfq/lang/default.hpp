@@ -316,7 +316,7 @@ namespace lang
         /*!
          * vlan id specified by the list. Example:
          *
-         * when (vland_id ({1,13,42,43}), msg_log("Got a packet!"))
+         * when (vland_id ({1,13,42,43}), log_msg("Got a packet!"))
          */
 
         auto vlan_id        = [] (std::vector<int> const &vs) {

@@ -17,7 +17,10 @@ Library
                  storable-tuple,
                  storablevector,
                  storable-record, 
+                 process,
                  network,
+                 aeson,
+                 scientific,
                  clock
 
   exposed-modules: Network.PFq

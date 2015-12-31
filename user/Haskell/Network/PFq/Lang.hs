@@ -30,10 +30,12 @@
 {-# LANGUAGE ExistentialQuantification #-}
 {-# LANGUAGE UndecidableInstances #-}
 {-# LANGUAGE OverlappingInstances #-}
+{-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeSynonymInstances #-}
 {-# LANGUAGE AutoDeriveTypeable #-}
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE FlexibleContexts #-}
+{-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE GADTs #-}
 
 {-# OPTIONS_GHC -fno-warn-unused-binds #-}
@@ -62,18 +64,42 @@ module Network.PFq.Lang
 
 -- import Debug.Trace
 
+import GHC.Generics
+import Data.Int
+import Data.Word
+
+import Data.Aeson
+import Data.Typeable
+import Data.Maybe
+import Data.Monoid()
+import Data.String
+import Data.List (isPrefixOf)
+import Data.Scientific (toBoundedInteger)
+
 import Network.Socket
+import Foreign.C.Types
 import Foreign.Storable
 import Foreign.Storable.Newtype as Store
 
-import Data.Word
-import Data.String
 import System.IO.Unsafe
 
 
+-- | CInt instance...
+
+instance ToJSON CInt where
+  toJSON n = toJSON (fromIntegral n :: Int)
+
+instance FromJSON CInt where
+  parseJSON (Number n) = return (fromJust $ toBoundedInteger n)
+  parseJSON _ = mempty
+
 -- | IPv4 data type
 
-newtype IPv4 = IPv4 { getIP4Address :: HostAddress }
+newtype IPv4 = IPv4 { getIP4Address :: HostAddress } deriving (Generic)
+
+instance ToJSON IPv4
+instance FromJSON IPv4
+
 
 instance IsString IPv4 where
     fromString xs = IPv4 $ unsafePerformIO (inet_addr xs)
@@ -100,13 +126,18 @@ newtype SkBuff = SkBuff ()
 
 -- |Function pointer data type represents a function in a list of FunctionDescr.
 
-newtype FunPtr = FunPtr Int
+data FunPtr = FunPtr Int deriving (Generic, Typeable)
+
+instance ToJSON FunPtr
+instance FromJSON FunPtr
+
 
 instance Show FunPtr where
     show (FunPtr n) = "FunPtr(" ++ show n ++ ")"
 
 instance Pretty FunPtr where
     pretty (FunPtr n) = "FunPtr(" ++ show n ++ ")"
+
 
 -- |Action is a monad modelled after the Identity and implemented at kernel level.
 
@@ -116,12 +147,57 @@ newtype Action a = Identity a
 -- | Argument data type.
 -- Any pfq-lang function can take up to 8 Arguments.
 
-data Argument = forall a. (Show a, Storable a) => ArgData a     |
-                forall a. (Show a, Storable a) => ArgVector [a] |
-                ArgString String                                |
-                ArgSVector [String]                             |
-                ArgFunPtr Int                                   |
+data Argument = forall a. (Show a, Storable a, Typeable a, ToJSON a, FromJSON a) => ArgData a       |
+                forall a. (Show a, Storable a, Typeable a, ToJSON a, FromJSON a) => ArgVector [a]   |
+                ArgString String                                                                    |
+                ArgSVector [String]                                                                 |
+                ArgFunPtr Int                                                                       |
                 ArgNull
+
+
+instance ToJSON Argument where
+  toJSON (ArgData x)     = object [ "type" .= show (typeOf x),        "value" .= toJSON x  ]
+  toJSON (ArgVector xs)  = object [ "type" .= show (typeOf xs),       "value" .= toJSON xs ]
+  toJSON (ArgString xs)  = object [ "type" .= ("String"   :: String), "value" .= toJSON xs ]
+  toJSON (ArgSVector xs) = object [ "type" .= ("[String]" :: String), "value" .= toJSON xs ]
+  toJSON (ArgFunPtr x)   = object [ "type" .= ("fun"      :: String), "value" .= toJSON x  ]
+  toJSON (ArgNull)       = object [ "type" .= (""         :: String), "value" .= toJSON () ]
+
+
+instance FromJSON Argument where
+  parseJSON (Object v) = do
+    type_ <- v .: "type"
+    case () of
+      _ | type_ == "CInt"   -> (ArgData :: CInt   -> Argument) <$> (v .: "value")
+        | type_ == "Int64"  -> (ArgData :: Int64  -> Argument) <$> (v .: "value")
+        | type_ == "Int32"  -> (ArgData :: Int32  -> Argument) <$> (v .: "value")
+        | type_ == "Int16"  -> (ArgData :: Int16  -> Argument) <$> (v .: "value")
+        | type_ == "Int8"   -> (ArgData :: Int8   -> Argument) <$> (v .: "value")
+        | type_ == "Word64" -> (ArgData :: Word64 -> Argument) <$> (v .: "value")
+        | type_ == "Word32" -> (ArgData :: Word32 -> Argument) <$> (v .: "value")
+        | type_ == "Word16" -> (ArgData :: Word16 -> Argument) <$> (v .: "value")
+        | type_ == "Word8"  -> (ArgData :: Word8  -> Argument) <$> (v .: "value")
+        | type_ == "IPv4"   -> (ArgData :: IPv4   -> Argument) <$> (v .: "value")
+        | type_ == "String" -> (ArgString  :: String -> Argument)   <$> (v .: "value")
+        | type_ == "fun"    -> (ArgFunPtr  :: Int  -> Argument)     <$> (v .: "value")
+        | "[" `isPrefixOf` type_ -> case () of
+                                      _ | type_ == "[CInt]"   -> (ArgVector  :: [CInt]   -> Argument) <$> (v .: "value")
+                                        | type_ == "[Int64]"  -> (ArgVector  :: [Int64]  -> Argument) <$> (v .: "value")
+                                        | type_ == "[Int32]"  -> (ArgVector  :: [Int32]  -> Argument) <$> (v .: "value")
+                                        | type_ == "[Int16]"  -> (ArgVector  :: [Int16]  -> Argument) <$> (v .: "value")
+                                        | type_ == "[Int8]"   -> (ArgVector  :: [Int8]   -> Argument) <$> (v .: "value")
+                                        | type_ == "[Word64]" -> (ArgVector  :: [Word64] -> Argument) <$> (v .: "value")
+                                        | type_ == "[Word32]" -> (ArgVector  :: [Word32] -> Argument) <$> (v .: "value")
+                                        | type_ == "[Word16]" -> (ArgVector  :: [Word16] -> Argument) <$> (v .: "value")
+                                        | type_ == "[Word8]"  -> (ArgVector  :: [Word8]  -> Argument) <$> (v .: "value")
+                                        | type_ == "[IPv4]"   -> (ArgVector  :: [IPv4]   -> Argument) <$> (v .: "value")
+                                        | type_ == "[String]" -> (ArgSVector :: [String] -> Argument) <$> (v .: "value")
+                                        | otherwise           -> error $ "FromJSON: Argument type " ++ type_ ++ " not supported!"
+        | null type_          -> return ArgNull
+        | otherwise           -> error $ "FromJSON: Argument type " ++ type_ ++ " not supported!"
+
+  parseJSON _ = mempty
+
 
 instance Show Argument where
     show (ArgNull)       = "()"
@@ -134,7 +210,7 @@ instance Show Argument where
 
 -- | Argumentable class, a typeclass for building function Arguments.
 
-class (Show a, Pretty a) => Argumentable a where
+class (Show a, Pretty a, ToJSON a, FromJSON a) => Argumentable a where
     argument :: a -> Argument
 
 instance Argumentable String where
@@ -143,10 +219,10 @@ instance Argumentable String where
 instance Argumentable [String] where
     argument = ArgSVector
 
-instance (Show a, Pretty a, Storable a) => Argumentable a where
+instance (Show a, Pretty a, Storable a, Typeable a, ToJSON a, FromJSON a) => Argumentable a where
     argument = ArgData
 
-instance (Show a, Pretty [a], Storable a) => Argumentable [a] where
+instance (Show a, Pretty [a], Storable a, Typeable a, ToJSON a, FromJSON a) => Argumentable [a] where
     argument = ArgVector
 
 instance Argumentable FunPtr where
@@ -163,14 +239,24 @@ mkArgument _ xs = argument (FunPtr (functionIndex (head xs)))
 
 -- | Function descriptor.
 
-data FunctionDescr = FunctionDescr
-                     {
-                        functionSymbol    :: Symbol,
-                        functionArguments :: [Argument],
-                        functionIndex     :: Int,
-                        functionLink      :: Int
+data FunctionDescr =
+  FunctionDescr
+  { functionSymbol    :: Symbol
+  , functionArguments :: [Argument]
+  , functionIndex     :: Int
+  , functionLink      :: Int
+  }   deriving (Show, Generic)
 
-                     }   deriving (Show)
+
+instance ToJSON FunctionDescr
+instance FromJSON FunctionDescr
+
+
+instance ToJSON (Function f) where
+  toJSON comp = toJSON (fst(serialize comp 0))
+
+instance FromJSON (Function f) where
+  parseJSON = undefined
 
 
 -- |Simple monadic in-kernel pfq-lang function.

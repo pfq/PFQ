@@ -849,7 +849,7 @@ int pfq_setsockopt(struct socket *sock,
 		gid = (__force pfq_gid_t)tmp.gid;
 
 		if (!pfq_has_joined_group(gid, so->id)) {
-                        printk(KERN_INFO "[PFQ|%d] group computation: gid=%d not joined!\n", so->id, tmp.gid);
+                        printk(KERN_INFO "[PFQ|%d] computation: gid=%d not joined!\n", so->id, tmp.gid);
 			return -EACCES;
 		}
 
@@ -879,7 +879,7 @@ int pfq_setsockopt(struct socket *sock,
 		/* check the correctness of computation */
 
 		if (pfq_lang_check_computation_descr(descr) < 0) {
-                        printk(KERN_INFO "[PFQ|%d] invalid expression!\n", so->id);
+                        printk(KERN_INFO "[PFQ|%d] computation: invalid expression!\n", so->id);
                         err = -EFAULT;
                         goto error;
 		}
@@ -888,7 +888,7 @@ int pfq_setsockopt(struct socket *sock,
 
                 context = pfq_lang_context_alloc(descr);
                 if (context == NULL) {
-                        printk(KERN_INFO "[PFQ|%d] context: alloc error!\n", so->id);
+                        printk(KERN_INFO "[PFQ|%d] computation: alloc error!\n", so->id);
                         err = -EFAULT;
                         goto error;
                 }
@@ -917,7 +917,7 @@ int pfq_setsockopt(struct socket *sock,
 		/* run init functions */
 
 		if (pfq_lang_computation_init(comp) < 0) {
-                        printk(KERN_INFO "[PFQ|%d] initialization of computation aborted!", so->id);
+                        printk(KERN_INFO "[PFQ|%d] computation: initialization aborted!", so->id);
                         pfq_lang_computation_destruct(comp);
                         err = -EPERM;
                         goto error;
@@ -926,7 +926,7 @@ int pfq_setsockopt(struct socket *sock,
                 /* enable functional program */
 
                 if (pfq_set_group_prog(gid, comp, context) < 0) {
-                        printk(KERN_INFO "[PFQ|%d] set group program error!\n", so->id);
+                        printk(KERN_INFO "[PFQ|%d] computation: set program error!\n", so->id);
                         err = -EPERM;
                         goto error;
                 }
