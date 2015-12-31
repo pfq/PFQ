@@ -678,7 +678,8 @@ static int pfq_netdev_notifier(struct notifier_block *this, unsigned long info,
                 const char *kind = "NETDEV_UNKNOWN";
 		BUG_ON(dev->ifindex >= Q_MAX_DEVICE);
 
-		switch(info) {
+		switch(info)
+		{
 			case NETDEV_UP			: kind = "NETDEV_UP"; break;
 			case NETDEV_DOWN		: kind = "NETDEV_DOWN"; break;
 			case NETDEV_REBOOT		: kind = "NETDEV_REBOOT"; break;
@@ -702,11 +703,9 @@ static int pfq_netdev_notifier(struct notifier_block *this, unsigned long info,
 			case NETDEV_CHANGEUPPER		: kind = "NETDEV_CHANGEUPPER"; break;
 			case NETDEV_RESEND_IGMP		: kind = "NETDEV_RESEND_IGMP"; break;
 			case NETDEV_PRECHANGEMTU	: kind = "NETDEV_PRECHANGEMTU"; break;
-			// case NETDEV_CHANGEINFODATA	: kind = "NETDEV_CHANGEINFODATA"; break;
-			// case NETDEV_BONDING_INFO	: kind = "NETDEV_BONDING_INFO"; break;
 		}
 
-		pr_devel(KERN_INFO "[PFQ] %s: device %s, ifindex %d\n", kind, dev->name, dev->ifindex);
+		pr_devel("[PFQ] %s: device %s, ifindex %d\n", kind, dev->name, dev->ifindex);
 		return NOTIFY_OK;
 	}
 

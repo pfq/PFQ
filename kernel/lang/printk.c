@@ -76,9 +76,7 @@ static void
 pr_devel_functional_node(struct pfq_lang_functional_node const *node, size_t index)
 {
 	char buffer[256];
-
 	snprintf_functional_node(buffer, sizeof(buffer), node, index);
-
 	pr_devel("%s\n", buffer);
 }
 
@@ -91,7 +89,7 @@ pr_devel_computation_tree(struct pfq_lang_computation_tree const *tree)
 		pr_devel("[PFQ] computation (unspecified)\n");
 		return;
 	}
-        pr_devel("[PFQ] computation size=%zu entry_point=%p\n", tree->size, tree->entry_point);
+        pr_devel("[PFQ] binary computation: size=%zu entry_point=%p\n", tree->size, tree->entry_point);
         for(n = 0; n < tree->size; n++)
         {
                 pr_devel_functional_node(&tree->node[n], n);
@@ -169,7 +167,7 @@ pr_devel_computation_descr(struct pfq_lang_computation_descr const *descr)
 		pr_devel("[PFQ] computation (unspecified)\n");
 		return;
 	}
-        pr_devel("[PFQ] computation size=%zu entry_point=%zu\n", descr->size, descr->entry_point);
+        pr_devel("[PFQ] ATS descriptor: size=%zu entry_point=%zu\n", descr->size, descr->entry_point);
         for(n = 0; n < descr->size; n++)
         {
                 pr_devel_functional_descr(&descr->fun[n], n);
