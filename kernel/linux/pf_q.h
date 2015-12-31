@@ -320,10 +320,11 @@ struct pfq_pcap_pkthdr {
 /*
  * Functional argument:
  *
- * pod	  	-> (ptr/value, sizeof,  ~0ULL )
+ * pod	  	-> (ptr/value, sizeof,  -1)
  * pod array    -> (ptr,       sizeof,  len)
- * string 	-> (ptr,       0     ,  ~0ULL )
- * expression 	-> (0,         index ,  ~0ULL )
+ * string 	-> (ptr,       0     ,  -1)
+ * string array -> (ptr,       sizeof,  len)
+ * expression 	-> (0,         index ,  -1)
  *
  */
 
@@ -331,7 +332,7 @@ struct pfq_lang_functional_arg_descr
 {
 	const void __user *	addr;
 	size_t			size;
-	size_t			nelem;   /* > 1 is an array */
+	ptrdiff_t		nelem;
 };
 
 

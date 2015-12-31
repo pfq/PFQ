@@ -17,7 +17,7 @@ This guide covers the following topics:
 
 ## What is PFQ
 
-PFQ is a multi-language network monitoring framework designed for the Linux Kernel 3.x. It is highly optimized for multi-core processors, as well as for network devices equipped with multiple hardware queues (i.e. Intel 82599 10G).
+PFQ is a multi-language network monitoring framework designed for the Linux Kernel 3.x (or higher). It is highly optimized for multi-core processors, as well as for network devices equipped with multiple hardware queues (i.e. Intel 82599 10G).
 
 PFQ consists in a Linux Kernel module and user-space libraries, for the C, C++11/14 and Haskell languages.
 
@@ -34,17 +34,17 @@ PFQ consists in a Linux Kernel module and user-space libraries, for the C, C++11
 
 ## Linux distributions (GHC notes)
 
-PFQ is developed and tested on Linux Debian Jessie. 
+PFQ is developed and tested on a Linux Debian Jessie. 
 
 
 ### Debian Stable (Jessie)
 
-Debian Jessie is currently the stable distribution. Accidentally GHC 7.8 is not yet available from the `stable` repository. 
+Debian Jessie is the current stable distribution. 
+Accidentally the GHC 7.8 Haskell compiler (or higher) is required to build the framework and is not yet available from the `stable` repository. 
+Hence it is recommended to either manually compile/install GHC or obtain it from a different repository. At the time of writing GHC 7.10 is available from `jessie-backports`.  
 
-Hence it is recommended to either manually compile GHC or install it from a different repository. At the time of writing GHC 7.8 is available from `jessie-backports` repository and GHC 7.10 is available from the `testing` one.  
-
-To install a package from a different repository the APT pinning is required (which allows to install packages
-from one version (stable, testing, unstable) without the necessity of upgrading the entire system). 
+Note: To get a package from a different repository you can use APT pinning, which allows to install packages
+from one version (stable, testing, unstable) without the necessity of upgrading the entire system. 
 More information is available on [Debian](https://wiki.debian.org/AptPreferences) site.
 
 ### Ubuntu 14.04.1 LTS (Trusty Tahr)
@@ -71,22 +71,24 @@ Follow the instructions at [Stackage](http://www.stackage.org/install) site.
 
 ## Obtaining Source Codes
 
-Clone the source codes from the GitHub repository with The following line:
+Clone the source codes from the GitHub repository with the following command:
  
- `git clone https://github.com/pfq/PFQ.git`
+`git clone https://github.com/pfq/PFQ.git`
 
- _master_ is the stable branch, while _experimental_ is the branch of the most recent version (possibly untested).
+The _master_ brach is the stable one, while the _experimental_ is the branch of the most recent version (possibly untested).
 
 ## Satisfy Library Dependencies
 
-Before building the framework, ensure the Haskell libraries on which it depends are installed.
+Before building the framework ensure the Haskell libraries upon which it depends are installed. You can use the cabal tool to install them. 
 
-You can use the cabal tool to install them. From the base directory launch the command:
+From the base directory launch the command:
 
 `cabal install --only-dep pfq-framework.cabal`
 
-Because of the dependencies of package imposed by authors, it could happen that this command fails.
-Hence, to relax upper bounds limits you might want to use the --allow-newer option:
+Because of the dependencies of packages set by authors, the command could fails (e.g. if the user
+has installed more recent versions).
+
+Hence, to relax upper bounds limits you might try to use the --allow-newer cabal option:
 
 `cabal install --only-dep --allow-newer pfq-framework.cabal`
 
@@ -97,37 +99,57 @@ Hence, to relax upper bounds limits you might want to use the --allow-newer opti
 
 `runhaskell Build.hs install --buildType=Release`
 
-The command configures, compiles and installs the framework satisfying the dependencies and the correct order to build of various components.
+The command configures, compiles and installs PFQ framework satisfying the dependencies and the correct order of build of various components.
 
 * Alternatively, you can specify the list of components you want to build from the command line. The following command shows the targets available:
 
-`runhaskell Build.hs show`
+```
+runhaskell Build.hs show
 
-Example:
+targets:
+    pfq.ko
+    pfq-clib
+    pfq-cpplib
+    pfq-haskell-lib
+    pfq-pcap-1.3.0
+    pfq-pcap-1.7.4
+    pfq-hcounters
+    pfq-htest
+    irq-affinity
+    pfq-omatic
+    pfq-load
+    pfq-stress
+    pfqd
+    tests
+    tools
+```
+
+For example, to install pfq.ko and pfqd:
 
 `runhaskell Build.hs install pfq.ko pfqd --buildType=Release`
 
-## Build the software in sandbox (to avoid Cabal Hell!)
+## Build the software in sandbox!
 
-To avoid Cabal Hell, the SimpleBuilder supports building Haskell packages in a shared cabal sandbox.
+To avoid Cabal Hell, SimpleBuilder does support building Haskell packages in a shared cabal sandbox.
 
-First create a cabal sandbox with the following commands:
+First, create and initialize a cabal sandbox with the commands:
 
-`mkdir shared-sandbox`
+```
+mkdir shared-sandbox
+cabal sandbox init --sandbox=shared-sandbox
+```
 
-`cabal sandbox init --sandbox=shared-sandbox`
+Then, to satisfy the the dependencies run:
 
-Then, to satisfy the pfq-framework dependencies run:
+`cabal install --only-dep -j4 pfq-framework.cabal`
 
-`cabal install --only-dep -j4 pfq-frmework.cabal`
+All the required libraries will be installed in the newly sandbox created.
 
-All the required libraries will be installed in the sandbox.
-
-After this you can build the framework with:
+After this you can simply build the framework with:
 
 `runhaskell Build.hs install --buildType=Release --sandbox=shared-sandbox`
 
-The PFQ Haskell library and packages will be installed in isolation within the specified sandbox directory.
+The PFQ Haskell library and packages will be installed in isolation within the specified sandbox folder.
 
 ## Software Components
 
@@ -146,3 +168,4 @@ The following components are currently part of the framework:
 * pfqd
 * tests
 * tools
+

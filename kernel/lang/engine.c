@@ -69,9 +69,7 @@ pod_memory_get(void **ptr, size_t size)
 		return NULL;
 
         ret = *ptr;
-
         *ptr += ALIGN(size, 8);
-
         return ret;
 }
 
@@ -113,6 +111,7 @@ strdup_user(const char __user *str)
         ret = (char *)kmalloc(len, GFP_KERNEL);
         if (!ret)
                 return NULL;
+
         if (copy_from_user(ret, str, len)) {
                 kfree(ret);
                 return NULL;
@@ -147,7 +146,6 @@ pfq_lang_run(SkBuff skb, struct pfq_lang_computation_tree *prg)
 	pfq_lang_bind(skb, prg->entry_point);
 
 #ifdef PFQ_LANG_PROFILE
-
 	stop = get_cycles();
 	total += (stop-start);
 
@@ -165,7 +163,9 @@ pfq_lang_computation_alloc (struct pfq_lang_computation_descr const *descr)
 {
         struct pfq_lang_computation_tree * c = kzalloc(sizeof(size_t) + descr->size * sizeof(struct pfq_lang_functional_node),
 						  GFP_KERNEL);
-        c->size = descr->size;
+	if (c)
+		c->size = descr->size;
+
         return c;
 }
 
@@ -295,7 +295,6 @@ check_argument_descr(struct pfq_lang_functional_arg_descr const *arg, string_vie
 			pr_devel("[PFQ] invalid argument: expected " SVIEW_FMT ", got String!\n", SVIEW_ARG(expected));
 			return -EPERM;
 		}
-
 		return 0;
 	}
 
@@ -304,10 +303,11 @@ check_argument_descr(struct pfq_lang_functional_arg_descr const *arg, string_vie
 			pr_devel("[PFQ] invalid argument: expected " SVIEW_FMT ", got [String]!\n", SVIEW_ARG(expected));
 			return -EPERM;
 		}
-
 		return 0;
 	}
 
+	printk(KERN_INFO "[PFQ] check_argument_descr: internal error: addr=%p size=%zu nelem=%zu\n", arg->addr,
+	       arg->size, arg->nelem);
 	return -EPERM;
 }
 
@@ -517,21 +517,18 @@ pfq_lang_computation_rtlink(struct pfq_lang_computation_descr const *descr, stru
 
 		next = get_functional_node_by_index(descr, comp, descr->fun[n].next);
 
-		comp->node[n].init    = init;
-		comp->node[n].fini    = fini;
+		comp->node[n].init = init;
+		comp->node[n].fini = fini;
 
 		comp->node[n].fun.run  = addr;
                 comp->node[n].fun.next = next ? &next->fun : NULL;
 
-		comp->node[n].fun.arg[0].value = 0;
-		comp->node[n].fun.arg[1].value = 0;
-		comp->node[n].fun.arg[2].value = 0;
-		comp->node[n].fun.arg[3].value = 0;
+		for(i = 0; i < sizeof(comp->node[n].fun.arg)/sizeof(comp->node[n].fun.arg[0]); i++)
+		{
+			comp->node[n].fun.arg[i].value = 0;
+			comp->node[n].fun.arg[i].nelem = 0;
+		}
 
-		comp->node[n].fun.arg[0].nelem = 0;
-		comp->node[n].fun.arg[1].nelem = 0;
-		comp->node[n].fun.arg[2].nelem = 0;
-		comp->node[n].fun.arg[3].nelem = 0;
 
 		for(i = 0; i < sizeof(fun->arg)/sizeof(fun->arg[0]); i++)
 		{
