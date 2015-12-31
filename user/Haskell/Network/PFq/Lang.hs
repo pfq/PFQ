@@ -160,7 +160,7 @@ instance ToJSON Argument where
   toJSON (ArgVector xs)  = object [ "argType" .= show (typeOf xs),       "argValue" .= toJSON xs ]
   toJSON (ArgString xs)  = object [ "argType" .= ("String"   :: String), "argValue" .= toJSON xs ]
   toJSON (ArgSVector xs) = object [ "argType" .= ("[String]" :: String), "argValue" .= toJSON xs ]
-  toJSON (ArgFunPtr x)   = object [ "argType" .= ("fun"      :: String), "argValue" .= toJSON x  ]
+  toJSON (ArgFunPtr x)   = object [ "argType" .= ("Fun"      :: String), "argValue" .= toJSON x  ]
   toJSON (ArgNull)       = object [ "argType" .= (""         :: String), "argValue" .= toJSON () ]
 
 
@@ -179,7 +179,7 @@ instance FromJSON Argument where
         | type_ == "Word8"  -> (ArgData :: Word8  -> Argument)      <$> (v .: "argValue")
         | type_ == "IPv4"   -> (ArgData :: IPv4   -> Argument)      <$> (v .: "argValue")
         | type_ == "String" -> (ArgString  :: String -> Argument)   <$> (v .: "argValue")
-        | type_ == "fun"    -> (ArgFunPtr  :: Int  -> Argument)     <$> (v .: "argValue")
+        | type_ == "Fun"    -> (ArgFunPtr  :: Int  -> Argument)     <$> (v .: "argValue")
         | "[" `isPrefixOf` type_ -> case () of
                                       _ | type_ == "[CInt]"   -> (ArgVector  :: [CInt]   -> Argument) <$> (v .: "argValue")
                                         | type_ == "[Int64]"  -> (ArgVector  :: [Int64]  -> Argument) <$> (v .: "argValue")
