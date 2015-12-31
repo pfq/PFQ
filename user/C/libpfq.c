@@ -25,6 +25,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/ioctl.h>
+#include <sys/wait.h>
 #include <sys/mman.h>
 
 #include <net/if.h>
@@ -82,6 +83,12 @@ struct pfq_data
 	int gid;
 
 	struct pfq_net_queue nq;
+};
+
+struct popen2
+{
+    pid_t child_pid;
+    int   from_child, to_child;
 };
 
 
@@ -727,6 +734,44 @@ pfq_groups_mask(pfq_t const *q, unsigned long *_mask)
 	return Q_OK(q);
 }
 
+
+static int
+popen2(const char *command, struct popen2 *childinfo)
+{
+	int pipe_stdin[2], pipe_stdout[2];
+	pid_t p;
+
+	if(pipe(pipe_stdin))
+		return -1;
+
+	if(pipe(pipe_stdout)) {
+		close(pipe_stdin[0]);
+		close(pipe_stdin[1]);
+		return -1;
+	}
+
+	p = fork();
+	if(p < 0)
+		return p; /* Fork failed */
+
+	if(p == 0) {
+		close(pipe_stdin[1]);
+		dup2(pipe_stdin[0], 0);
+		close(pipe_stdout[0]);
+		dup2(pipe_stdout[1], 1);
+		if (execl("/bin/sh", "sh", "-c", command, NULL) < 0)
+			return -1;
+		exit(1);
+	}
+
+	close(pipe_stdin[0]);
+	close(pipe_stdout[1]);
+
+	childinfo->child_pid = p;
+	childinfo->to_child = pipe_stdin[1];
+	childinfo->from_child = pipe_stdout[0];
+	return 0;
+}
 int
 pfq_set_group_computation(pfq_t *q, int gid, struct pfq_lang_computation_descr *comp)
 {
