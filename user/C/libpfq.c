@@ -25,6 +25,7 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <sys/ioctl.h>
+#include <sys/wait.h>
 #include <sys/mman.h>
 
 #include <net/if.h>
@@ -49,6 +50,8 @@
 #include <linux/pf_q.h>
 
 #include <pfq.h>
+
+#include "parson.h"
 
 /* pfq descriptor */
 
@@ -82,6 +85,12 @@ struct pfq_data
 	int gid;
 
 	struct pfq_net_queue nq;
+};
+
+struct popen2
+{
+    pid_t child_pid;
+    int   from_child, to_child;
 };
 
 
@@ -727,6 +736,46 @@ pfq_groups_mask(pfq_t const *q, unsigned long *_mask)
 	return Q_OK(q);
 }
 
+
+static int
+popen2(const char *command, struct popen2 *childinfo)
+{
+	int pipe_stdin[2], pipe_stdout[2];
+	pid_t p;
+
+	if(pipe(pipe_stdin))
+		return -1;
+
+	if(pipe(pipe_stdout)) {
+		close(pipe_stdin[0]);
+		close(pipe_stdin[1]);
+		return -1;
+	}
+
+	p = fork();
+	if(p < 0)
+		return p; /* Fork failed */
+
+	if(p == 0) {
+		close(pipe_stdin[1]);
+		dup2(pipe_stdin[0], 0);
+		close(pipe_stdout[0]);
+		dup2(pipe_stdout[1], 1);
+		if (execl("/bin/sh", "sh", "-c", command, NULL) < 0)
+			return -1;
+		exit(1);
+	}
+
+	close(pipe_stdin[0]);
+	close(pipe_stdout[1]);
+
+	childinfo->child_pid = p;
+	childinfo->to_child = pipe_stdin[1];
+	childinfo->from_child = pipe_stdout[0];
+	return 0;
+}
+
+
 int
 pfq_set_group_computation(pfq_t *q, int gid, struct pfq_lang_computation_descr *comp)
 {
@@ -740,45 +789,267 @@ pfq_set_group_computation(pfq_t *q, int gid, struct pfq_lang_computation_descr *
 }
 
 
-static int __do_set_group_computation(char **fun, size_t n, va_list arg_list)
+#define PFQ_ALLOCA(type, value) ({		\
+	void * new = alloca(sizeof(type));      \
+	*(type *)new = value;			\
+	new;					\
+})
+
+int
+pfq_set_group_computation_from_json(pfq_t *q, int gid, const char *input)
 {
-	size_t i, j;
-	int ret;
+	JSON_Value * root = json_parse_string(input);
+	JSON_Array * funs;
+	struct pfq_lang_computation_descr *prog;
+	size_t n;
 
-	pfq_t * q= va_arg(arg_list, pfq_t *);
-        int gid  = va_arg(arg_list, int);
+	printf("%s\n", input);
 
-        struct pfq_lang_computation_descr * prog = malloc(sizeof(size_t) * 2 + sizeof(struct pfq_lang_functional_descr) * n);
-	if (!prog)
-		return Q_ERROR(q, "PFQ: group computation error (no memory)");
-
-	prog->entry_point = 0;
-	prog->size = n;
-
-	for(i = 0; i < n; i++)
-	{
-		prog->fun[i].symbol = trim_string(fun[i]);
-		prog->fun[i].next = (ptrdiff_t)i+1;
-
-		for (j = 0; j < 8; j++)
-		{
-			prog->fun[i].arg[j].addr  = NULL;
-			prog->fun[i].arg[j].size  = 0;
-			prog->fun[i].arg[j].nelem = 0;
-		}
-
+	if (json_value_get_type(root) != JSONArray) {
+		json_value_free(root);
+		return Q_ERROR(q, "PFQ: computation: JSON parse error");
 	}
 
-	ret = pfq_set_group_computation(q, gid, prog);
-	free(prog);
-	return ret;
-}
+	funs = json_value_get_array(root);
+	prog = alloca(sizeof(size_t) * 2 + sizeof(struct pfq_lang_functional_descr) * json_array_get_count(funs));
+        if (!prog) {
+		json_value_free(root);
+		return Q_ERROR(q, "PFQ: computation: JSON alloca!");
+	}
 
+	prog->entry_point = 0;
+	prog->size = json_array_get_count(funs);
+
+	for(n = 0; n < json_array_get_count(funs); ++n)
+	{
+		JSON_Object *fun = json_array_get_object(funs, n);
+		JSON_Array  *args;
+		size_t i;
+
+		prog->fun[n].symbol = json_object_get_string   (fun, "funSymbol");
+                prog->fun[n].next = (int)json_object_get_number(fun, "funLink");
+
+		args   = json_object_get_array(fun, "funArgs");
+
+		if (!args) {
+			json_value_free(root);
+			return Q_ERROR(q, "PFQ: computation: JSON funArgs missing!");
+		}
+
+		for(i = 0; i < json_array_get_count(args); ++i)
+		{
+			JSON_Object *arg = json_array_get_object(args, i);
+			const char *type;
+			type = json_object_get_string(arg, "argType");
+			if (!type) {
+				json_value_free(root);
+				return Q_ERROR(q, "PFQ: computation: JSON argType missing!");
+			}
+
+			if (strcmp(type, "CInt") == 0)
+			{
+				JSON_Value * value = json_object_get_value(arg, "argValue");
+				if (!value) {
+					json_value_free(root);
+					return Q_ERROR(q, "PFQ: computation: JSON argValue missing!");
+				}
+
+				prog->fun[n].arg[i].addr  = PFQ_ALLOCA(int, (int)json_value_get_number(value));
+				prog->fun[n].arg[i].size  = sizeof(int);
+				prog->fun[n].arg[i].nelem = -1;
+			}
+			else if (strcmp(type, "Int64") == 0)
+			{
+				JSON_Value * value = json_object_get_value(arg, "argValue");
+				if (!value) {
+					json_value_free(root);
+					return Q_ERROR(q, "PFQ: computation: JSON argValue missing!");
+				}
+
+				prog->fun[n].arg[i].addr  = PFQ_ALLOCA(int64_t, (int64_t)json_value_get_number(value));
+				prog->fun[n].arg[i].size  = sizeof(int64_t);
+				prog->fun[n].arg[i].nelem = -1;
+			}
+			else if (strcmp(type, "Int32") == 0)
+			{
+				JSON_Value * value = json_object_get_value(arg, "argValue");
+				if (!value) {
+					json_value_free(root);
+					return Q_ERROR(q, "PFQ: computation: JSON argValue missing!");
+				}
+
+				prog->fun[n].arg[i].addr  = PFQ_ALLOCA(int32_t, (int32_t)json_value_get_number(value));
+				prog->fun[n].arg[i].size  = sizeof(int32_t);
+				prog->fun[n].arg[i].nelem = -1;
+			}
+			else if (strcmp(type, "Int16") == 0)
+			{
+				JSON_Value * value = json_object_get_value(arg, "argValue");
+				if (!value) {
+					json_value_free(root);
+					return Q_ERROR(q, "PFQ: computation: JSON argValue missing!");
+				}
+
+				prog->fun[n].arg[i].addr  = PFQ_ALLOCA(int16_t, (int16_t)json_value_get_number(value));
+				prog->fun[n].arg[i].size  = sizeof(int16_t);
+				prog->fun[n].arg[i].nelem = -1;
+			}
+			else if (strcmp(type, "Int8") == 0)
+			{
+				JSON_Value * value = json_object_get_value(arg, "argValue");
+				if (!value) {
+					json_value_free(root);
+					return Q_ERROR(q, "PFQ: computation: JSON argValue missing!");
+				}
+
+				prog->fun[n].arg[i].addr  = PFQ_ALLOCA(int8_t, (int8_t)json_value_get_number(value));
+				prog->fun[n].arg[i].size  = sizeof(int8_t);
+				prog->fun[n].arg[i].nelem = -1;
+			}
+			else if (strcmp(type, "Word64") == 0)
+			{
+				JSON_Value * value = json_object_get_value(arg, "argValue");
+				if (!value) {
+					json_value_free(root);
+					return Q_ERROR(q, "PFQ: computation: JSON argValue missing!");
+				}
+
+				prog->fun[n].arg[i].addr  = PFQ_ALLOCA(uint64_t, (uint64_t)json_value_get_number(value));
+				prog->fun[n].arg[i].size  = sizeof(uint64_t);
+				prog->fun[n].arg[i].nelem = -1;
+			}
+			else if (strcmp(type, "Word32") == 0)
+			{
+				JSON_Value * value = json_object_get_value(arg, "argValue");
+				if (!value) {
+					json_value_free(root);
+					return Q_ERROR(q, "PFQ: computation: JSON argValue missing!");
+				}
+
+				prog->fun[n].arg[i].addr  = PFQ_ALLOCA(uint32_t, (uint32_t)json_value_get_number(value));
+				prog->fun[n].arg[i].size  = sizeof(uint32_t);
+				prog->fun[n].arg[i].nelem = -1;
+			}
+			else if (strcmp(type, "Word16") == 0)
+			{
+				JSON_Value * value = json_object_get_value(arg, "argValue");
+				if (!value) {
+					json_value_free(root);
+					return Q_ERROR(q, "PFQ: computation: JSON argValue missing!");
+				}
+
+				prog->fun[n].arg[i].addr  = PFQ_ALLOCA(uint16_t, (uint16_t)json_value_get_number(value));
+				prog->fun[n].arg[i].size  = sizeof(uint16_t);
+				prog->fun[n].arg[i].nelem = -1;
+			}
+			else if (strcmp(type, "Word8") == 0)
+			{
+				JSON_Value * value = json_object_get_value(arg, "argValue");
+				if (!value) {
+					json_value_free(root);
+					return Q_ERROR(q, "PFQ: computation: JSON argValue missing!");
+				}
+
+				prog->fun[n].arg[i].addr  = PFQ_ALLOCA(uint8_t, (uint8_t)json_value_get_number(value));
+				prog->fun[n].arg[i].size  = sizeof(uint8_t);
+				prog->fun[n].arg[i].nelem = -1;
+			}
+			else if (strcmp(type, "Fun") == 0)
+			{
+				JSON_Value * value = json_object_get_value(arg, "argValue");
+				if (!value) {
+					json_value_free(root);
+					return Q_ERROR(q, "PFQ: computation: JSON argValue missing!");
+				}
+
+				prog->fun[n].arg[i].addr  = NULL;
+				prog->fun[n].arg[i].size  = (size_t)json_value_get_number(value);
+				prog->fun[n].arg[i].nelem = -1;
+			}
+			else if (strcmp(type, "String") == 0)
+			{
+				JSON_Value * value = json_object_get_value(arg, "argValue");
+				if (!value) {
+					json_value_free(root);
+					return Q_ERROR(q, "PFQ: computation: JSON argValue missing!");
+				}
+
+				prog->fun[n].arg[i].addr  = json_value_get_string(value);
+				prog->fun[n].arg[i].size  = 0;
+				prog->fun[n].arg[i].nelem = -1;
+			}
+			else if (strlen(type) == 0)
+			{
+				prog->fun[n].arg[i].addr  = NULL;
+				prog->fun[n].arg[i].size  = 0;
+				prog->fun[n].arg[i].nelem = 0;
+			}
+			else {
+				json_value_free(root);
+				return Q_ERROR(q, "PFQ: computation: JSON unknown argType!");
+			}
+
+			printf("  arg: %s -> value: %p %zu %zu\n", type, prog->fun[n].arg[i].addr, prog->fun[n].arg[i].size, prog->fun[n].arg[i].nelem);
+		}
+
+		printf("%.10s -> %d\n", prog->fun[n].symbol, prog->fun[n].next);
+	}
+
+	return pfq_set_group_computation(q, gid, prog);
+}
 
 int
 pfq_set_group_computation_from_string(pfq_t *q, int gid, const char *comp)
 {
-	return with_tokens(comp, ">->", &__do_set_group_computation, q, gid);
+	ssize_t chunk, size = 0, max_size = 4096;
+	struct popen2 p;
+	char *page;
+	int status;
+
+	page = malloc((size_t)max_size);
+	if (!page)
+		return Q_ERROR(q, "PFQ: computation_from_string: memory error");
+
+	if (popen2("qlang --json", &p) < 0) {
+		free(page);
+		return Q_ERROR(q, "PFQ: computation_from_string: popen2 error");
+	}
+
+	if (write(p.to_child, comp, strlen(comp)) < 0) {
+		free(page);
+		return Q_ERROR(q, "PFQ: computation_from_string: write error");
+	}
+
+	close(p.to_child);
+
+	if (waitpid(p.child_pid, &status, 0) < 0) {
+		free(page);
+		return Q_ERROR(q, "PFQ: computation_from_string: waitpid error");
+	}
+
+	if (!WIFEXITED(status) || WEXITSTATUS(status) != 0) {
+		free(page);
+		return Q_ERROR(q, "PFQ: computation_from_string: qlang compiler error!");
+	}
+
+	while((chunk=read(p.from_child, page + size, (size_t)(max_size -size))) > 0)
+	{
+		size += chunk;
+		if (size == max_size) {
+			max_size += 4096;
+			page = realloc(page, (size_t)max_size);
+			if (!page)
+				return Q_ERROR(q, "PFQ: set_group_computation_from_string: realloc");
+		}
+	}
+
+	close(p.from_child);
+	*(page+size) = '\0';
+
+	status = pfq_set_group_computation_from_json(q, gid, page);
+
+	free(page);
+	return status;
 }
 
 
