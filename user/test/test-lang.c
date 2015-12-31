@@ -21,7 +21,7 @@ main(int argc, char *argv[])
 
 	printf("testing computation...\n");
 	if (pfq_set_group_computation_from_string(q, pfq_group_id(q),
-			"main = ip >-> tcp >-> dummy 42 >-> dummy 11 >-> dummy 9") < 0) {
+			"main = ip >-> tcp >-> when' is_ip drop' >-> dummy_string \"hello world!\"") < 0) {
                 printf("error: %s\n", pfq_error(q));
                 return -1;
 	}
