@@ -457,12 +457,15 @@ extern int pfq_groups_mask(pfq_t const *q, unsigned long *_mask);
 extern int pfq_set_group_computation(pfq_t *q, int gid, struct pfq_lang_computation_descr *prg);
 
 
+/*! Specify a functional computation for the given group, from JSON description. */
+/*!
+ */
+extern int pfq_set_group_computation_from_json(pfq_t *q, int gid, const char *prg);
+
+
 /*! Specify a functional computation for the given group, from string. */
 /*!
- * This ability is limited to simple pfq-lang functional computations.
- * Only the composition of monadic functions without arguments are currently supported.
  */
-
 extern int pfq_set_group_computation_from_string(pfq_t *q, int gid, const char *prg);
 
 
