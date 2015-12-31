@@ -47,12 +47,14 @@ endif()
 # C tests
 
 add_executable(test-read test-read.c)
+add_executable(test-lang test-lang.c)
 add_executable(test-send test-send.c)
 add_executable(test-dispatch test-dispatch.c)
 add_executable(test-regression test-regression.c)
 
 target_link_libraries(test-read -lpfq)
 target_link_libraries(test-send -lpfq)
+target_link_libraries(test-lang -lpfq)
 target_link_libraries(test-dispatch -lpfq)
 
 target_link_libraries(test-regression -lpfq -pthread)      
