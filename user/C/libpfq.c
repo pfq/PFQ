@@ -772,6 +772,8 @@ popen2(const char *command, struct popen2 *childinfo)
 	childinfo->from_child = pipe_stdout[0];
 	return 0;
 }
+
+
 int
 pfq_set_group_computation(pfq_t *q, int gid, struct pfq_lang_computation_descr *comp)
 {
@@ -823,7 +825,55 @@ static int __do_set_group_computation(char **fun, size_t n, va_list arg_list)
 int
 pfq_set_group_computation_from_string(pfq_t *q, int gid, const char *comp)
 {
-	return with_tokens(comp, ">->", &__do_set_group_computation, q, gid);
+	ssize_t chunk, size = 0, max_size = 4096;
+	struct popen2 p;
+	char *page;
+	int status;
+
+	page = malloc((size_t)max_size);
+	if (!page)
+		return Q_ERROR(q, "PFQ: computation_from_string: memory error");
+
+	if (popen2("qlang --json", &p) < 0) {
+		free(page);
+		return Q_ERROR(q, "PFQ: computation_from_string: popen2 error");
+	}
+
+	if (write(p.to_child, comp, strlen(comp)) < 0) {
+		free(page);
+		return Q_ERROR(q, "PFQ: computation_from_string: write error");
+	}
+
+	close(p.to_child);
+
+	if (waitpid(p.child_pid, &status, 0) < 0) {
+		free(page);
+		return Q_ERROR(q, "PFQ: computation_from_string: waitpid error");
+	}
+
+	if (!WIFEXITED(status) || WEXITSTATUS(status) != 0) {
+		free(page);
+		return Q_ERROR(q, "PFQ: computation_from_string: qlang compiler error!");
+	}
+
+	while((chunk=read(p.from_child, page + size, (size_t)(max_size -size))) > 0)
+	{
+		size += chunk;
+		if (size == max_size) {
+			max_size += 4096;
+			page = realloc(page, (size_t)max_size);
+			if (!page)
+				return Q_ERROR(q, "PFQ: set_group_computation_from_string: realloc");
+		}
+	}
+
+	close(p.from_child);
+	*(page+size) = '\0';
+
+	status = pfq_set_group_computation_from_json(q, gid, page);
+
+	free(page);
+	return status;
 }
 
 
