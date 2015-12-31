@@ -954,18 +954,6 @@ pfq_set_group_computation_from_json(pfq_t *q, int gid, const char *input)
 				prog->fun[n].arg[i].size  = sizeof(uint8_t);
 				prog->fun[n].arg[i].nelem = -1;
 			}
-			else if (strcmp(type, "Word8") == 0)
-			{
-				JSON_Value * value = json_object_get_value(arg, "argValue");
-				if (!value) {
-					json_value_free(root);
-					return Q_ERROR(q, "PFQ: computation: JSON argValue missing!");
-				}
-
-				prog->fun[n].arg[i].addr  = PFQ_ALLOCA(uint8_t, (uint8_t)json_value_get_number(value));
-				prog->fun[n].arg[i].size  = sizeof(uint8_t);
-				prog->fun[n].arg[i].nelem = -1;
-			}
 			else if (strcmp(type, "Fun") == 0)
 			{
 				JSON_Value * value = json_object_get_value(arg, "argValue");
@@ -975,7 +963,19 @@ pfq_set_group_computation_from_json(pfq_t *q, int gid, const char *input)
 				}
 
 				prog->fun[n].arg[i].addr  = NULL;
-				prog->fun[n].arg[i].size  = (int)json_value_get_number(value);
+				prog->fun[n].arg[i].size  = (size_t)json_value_get_number(value);
+				prog->fun[n].arg[i].nelem = -1;
+			}
+			else if (strcmp(type, "String") == 0)
+			{
+				JSON_Value * value = json_object_get_value(arg, "argValue");
+				if (!value) {
+					json_value_free(root);
+					return Q_ERROR(q, "PFQ: computation: JSON argValue missing!");
+				}
+
+				prog->fun[n].arg[i].addr  = json_value_get_string(value);
+				prog->fun[n].arg[i].size  = 0;
 				prog->fun[n].arg[i].nelem = -1;
 			}
 			else if (strlen(type) == 0)
