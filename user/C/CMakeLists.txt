@@ -1,13 +1,13 @@
 cmake_minimum_required(VERSION 2.4)
 
-set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3 -march=native -Wall -Wextra -Wshadow -Wconversion -Wsign-conversion")
+set (CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -O3 -march=native -Wall -Wextra -Wshadow -Wconversion")
 
 include_directories(../../kernel .)
 
 add_definitions(-D_GNU_SOURCE)
 
-add_library(pfq_static STATIC libpfq.c)
-add_library(pfq SHARED libpfq.c)
+add_library(pfq_static STATIC libpfq.c parson.c)
+add_library(pfq SHARED libpfq.c parson.c)
 
 install_targets(/lib pfq)
 install_targets(/lib pfq_static)
