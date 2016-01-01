@@ -52,6 +52,11 @@
 
 #include <pfq/pfq-int.h>
 
+extern "C"
+{
+    int pfq_set_group_computation_from_string(pfq_t *q, int gid, const char *prg);
+}
+
 namespace pfq {
 
     //! group policies.
@@ -992,23 +997,12 @@ namespace pfq {
         }
 
         //! Specify a functional computation for the given group, from string.
-        /*!
-         * This ability is limited to simple pfq-lang functional computations.
-         * Only the composition of monadic functions without arguments are currently supported.
-         */
 
         void
-        set_group_computation(int gid, std::string prog)
+        set_group_computation(int gid, std::string const &comp)
         {
-            std::vector<pfq::lang::MFunction<>> comp;
-            auto fs = split(prog, ">->");
-
-            for (auto & f : fs)
-            {
-                comp.push_back(pfq::lang::mfunction(trim(f)));
-            }
-
-            set_group_computation(gid, comp);
+            if (pfq_set_group_computation_from_string(data(), gid, comp.c_str()) < 0)
+                throw pfq_error(errno, "PFQ: group computation error");
         }
 
 
