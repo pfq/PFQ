@@ -50,42 +50,10 @@
 #include <linux/pf_q.h>
 
 #include <pfq.h>
+#include <pfq-int.h>
 
 #include "parson.h"
 
-/* pfq descriptor */
-
-struct pfq_data
-{
-	void * shm_addr;
-	size_t shm_size;
-
-	void * tx_queue_addr;
-	size_t tx_queue_size;
-
-	void * rx_queue_addr;
-	size_t rx_queue_size;
-
-	size_t rx_slots;
-	size_t rx_slot_size;
-
-        size_t tx_slots;
-	size_t tx_slot_size;
-
-	size_t tx_attempt;
-
-	size_t tx_num_async;
-
-	const char * error;
-
-	int fd;
-	int hd;
-
-	int id;
-	int gid;
-
-	struct pfq_net_queue nq;
-};
 
 struct popen2
 {
