@@ -33,7 +33,7 @@ main(int argc, char *argv[])
     //                              (inc (1) >> mark (1) >> steer_ip >> when (has_mark (1), inc (2))),
     //                               drop);
 
-    auto comp = ip >> tee_ ("lo", is_icmp) >> dummy_vector({1,2,3}) >> par(icmp, icmp) >> addr("192.168.0.1", 16)  >> unit >> inc (0) >> log_msg ("This is a test message!") >>
+    auto comp = ip >> tee_ ("lo", is_icmp) >> dummy_ip("192.168.1.1") >> dummy_vector({1,2,3}) >> par(icmp, icmp) >> addr("192.168.0.1", 16)  >> unit >> inc (0) >> log_msg ("This is a test message!") >>
                     conditional (is_icmp, (inc (1) >> mark (1) >> steer_ip >> when (has_mark (1), inc (2))), drop);
 
 
