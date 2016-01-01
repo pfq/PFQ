@@ -13,3 +13,4 @@ install_targets(/lib pfq)
 install_targets(/lib pfq_static)
 
 install_files(/include/pfq pfq.h)
+install_files(/include/pfq pfq-int.h)
