@@ -95,7 +95,7 @@ instance FromJSON CInt where
 
 -- | IPv4 data type
 
-newtype IPv4 = IPv4 { getIP4Address :: HostAddress } deriving (Generic)
+newtype IPv4 = IPv4 { getHostAddress :: HostAddress } deriving (Generic)
 
 instance ToJSON IPv4
 instance FromJSON IPv4
@@ -105,13 +105,13 @@ instance IsString IPv4 where
     fromString xs = IPv4 $ unsafePerformIO (inet_addr xs)
 
 instance Storable IPv4 where
-    sizeOf    = Store.sizeOf getIP4Address
-    alignment = Store.alignment getIP4Address
+    sizeOf    = Store.sizeOf getHostAddress
+    alignment = Store.alignment getHostAddress
     peek      = Store.peek IPv4
-    poke      = Store.poke getIP4Address
+    poke      = Store.poke getHostAddress
 
 instance Show IPv4 where
-    show a = unsafePerformIO $ inet_ntoa (getIP4Address a)
+    show a = unsafePerformIO $ inet_ntoa (getHostAddress a)
 
 
 -- |Symbol is a 'String' representing the name of a function.
@@ -168,18 +168,18 @@ instance FromJSON Argument where
   parseJSON (Object v) = do
     type_ <- v .: "argType"
     case () of
-      _ | type_ == "CInt"   -> (ArgData :: CInt   -> Argument)      <$> (v .: "argValue")
-        | type_ == "Int64"  -> (ArgData :: Int64  -> Argument)      <$> (v .: "argValue")
-        | type_ == "Int32"  -> (ArgData :: Int32  -> Argument)      <$> (v .: "argValue")
-        | type_ == "Int16"  -> (ArgData :: Int16  -> Argument)      <$> (v .: "argValue")
-        | type_ == "Int8"   -> (ArgData :: Int8   -> Argument)      <$> (v .: "argValue")
-        | type_ == "Word64" -> (ArgData :: Word64 -> Argument)      <$> (v .: "argValue")
-        | type_ == "Word32" -> (ArgData :: Word32 -> Argument)      <$> (v .: "argValue")
-        | type_ == "Word16" -> (ArgData :: Word16 -> Argument)      <$> (v .: "argValue")
-        | type_ == "Word8"  -> (ArgData :: Word8  -> Argument)      <$> (v .: "argValue")
-        | type_ == "IPv4"   -> (ArgData :: IPv4   -> Argument)      <$> (v .: "argValue")
-        | type_ == "String" -> (ArgString  :: String -> Argument)   <$> (v .: "argValue")
-        | type_ == "Fun"    -> (ArgFunPtr  :: Int  -> Argument)     <$> (v .: "argValue")
+      _ | type_ == "CInt"   -> (ArgData :: CInt   -> Argument)     <$>  (v .: "argValue")
+        | type_ == "Int64"  -> (ArgData :: Int64  -> Argument)     <$>  (v .: "argValue")
+        | type_ == "Int32"  -> (ArgData :: Int32  -> Argument)     <$>  (v .: "argValue")
+        | type_ == "Int16"  -> (ArgData :: Int16  -> Argument)     <$>  (v .: "argValue")
+        | type_ == "Int8"   -> (ArgData :: Int8   -> Argument)     <$>  (v .: "argValue")
+        | type_ == "Word64" -> (ArgData :: Word64 -> Argument)     <$>  (v .: "argValue")
+        | type_ == "Word32" -> (ArgData :: Word32 -> Argument)     <$>  (v .: "argValue")
+        | type_ == "Word16" -> (ArgData :: Word16 -> Argument)     <$>  (v .: "argValue")
+        | type_ == "Word8"  -> (ArgData :: Word8  -> Argument)     <$>  (v .: "argValue")
+        | type_ == "IPv4"   -> (ArgData :: IPv4   -> Argument)     <$>  (v .: "argValue")
+        | type_ == "String" -> (ArgString :: String -> Argument)   <$>  (v .: "argValue")
+        | type_ == "Fun"    -> (ArgFunPtr :: Int    -> Argument)   <$>  (v .: "argValue")
         | "[" `isPrefixOf` type_ -> case () of
                                       _ | type_ == "[CInt]"   -> (ArgVector  :: [CInt]   -> Argument) <$> (v .: "argValue")
                                         | type_ == "[Int64]"  -> (ArgVector  :: [Int64]  -> Argument) <$> (v .: "argValue")
