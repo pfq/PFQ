@@ -139,10 +139,10 @@ static int pfq_proc_groups(struct seq_file *m, void *v)
 		seq_printf(m, "%3d %3d ", this_group->policy, this_group->pid);
 
 		seq_printf(m, "%08lx %08lx %08lx %08lx \n",
-			   atomic_long_read(&this_group->sock_mask[pfq_ctz(Q_CLASS_DEFAULT)]),
-			   atomic_long_read(&this_group->sock_mask[pfq_ctz(Q_CLASS_USER_PLANE)]),
-			   atomic_long_read(&this_group->sock_mask[pfq_ctz(Q_CLASS_CONTROL_PLANE)]),
-			   atomic_long_read(&this_group->sock_mask[63]));
+			   atomic_long_read(&this_group->sock_id[pfq_ctz(Q_CLASS_DEFAULT)]),
+			   atomic_long_read(&this_group->sock_id[pfq_ctz(Q_CLASS_USER_PLANE)]),
+			   atomic_long_read(&this_group->sock_id[pfq_ctz(Q_CLASS_CONTROL_PLANE)]),
+			   atomic_long_read(&this_group->sock_id[Q_CLASS_MAX-1]));
 
 	}
 

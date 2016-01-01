@@ -872,11 +872,12 @@ int pfq_setsockopt(struct socket *sock,
                         goto error;
                 }
 
-                /* print user computation */
+                /* print computation */
 
                 pr_devel_computation_descr(descr);
 
-		/* check the correctness of computation */
+
+		/* perform computation sanity check */
 
 		if (pfq_lang_check_computation_descr(descr) < 0) {
                         printk(KERN_INFO "[PFQ|%d] computation: invalid expression!\n", so->id);
@@ -902,7 +903,7 @@ int pfq_setsockopt(struct socket *sock,
                         goto error;
                 }
 
-                /* link functions of computation */
+                /* link functions */
 
                 if (pfq_lang_computation_rtlink(descr, comp, context) < 0) {
                         printk(KERN_INFO "[PFQ|%d] computation aborted!", so->id);

@@ -311,7 +311,7 @@ pfq_receive_batch(struct pfq_percpu_data *data,
 				pfq_bitwise_foreach(monad.fanout.class_mask, cbit,
 				{
 					int class = pfq_ctz(cbit);
-					eligible_mask |= atomic_long_read(&this_group->sock_mask[class]);
+					eligible_mask |= atomic_long_read(&this_group->sock_id[class]);
 				})
 
 				/* logical dependency: when sock_masks of a
@@ -354,7 +354,7 @@ pfq_receive_batch(struct pfq_percpu_data *data,
 			else {
 				/* save a reference to the current packet */
 				refs.queue[refs.len++] = buff;
-				sock_mask |= atomic_long_read(&this_group->sock_mask[0]);
+				sock_mask |= atomic_long_read(&this_group->sock_id[0]);
 			}
 
 			mask_to_sock_queue(n, sock_mask, sock_queue);
