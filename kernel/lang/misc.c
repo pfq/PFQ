@@ -44,7 +44,7 @@ inc_counter(arguments_t args, SkBuff skb)
 
 	if (idx < 0 || idx >= Q_MAX_COUNTERS) {
                 if (printk_ratelimit())
-                        printk(KERN_INFO "[PFQ/lang] counter[%d]: bad index!\n", idx);
+                        printk(KERN_INFO "[pfq-lang] counter[%d]: bad index!\n", idx);
 	}
 	else {
 		local_inc(&ctrs->value[idx]);
@@ -62,7 +62,7 @@ dec_counter(arguments_t args, SkBuff skb)
 
 	if (idx < 0 || idx >= Q_MAX_COUNTERS) {
                 if (printk_ratelimit())
-                        printk(KERN_INFO "[PFQ/lang] counter[%d]: bad index!\n", idx);
+                        printk(KERN_INFO "[pfq-lang] counter[%d]: bad index!\n", idx);
 	}
 	else {
 		local_dec(&ctrs->value[idx]);
@@ -87,7 +87,7 @@ log_msg(arguments_t args, SkBuff skb)
 	const char *msg = GET_ARG(const char *, args);
 
 	if (printk_ratelimit())
-		printk(KERN_INFO "[PFQ/lang] log_msg: %s\n", msg);
+		printk(KERN_INFO "[pfq-lang] log_msg: %s\n", msg);
 
 	return Pass(skb);
 }
@@ -99,7 +99,7 @@ log_buff(arguments_t args, SkBuff skb)
 	if (!printk_ratelimit())
 		return Pass(skb);
 
-	printk(KERN_INFO "[PFQ/lang] [%p] len=%u head=%u tail=%u\n", skb,
+	printk(KERN_INFO "[pfq-lang] [%p] len=%u head=%u tail=%u\n", skb,
 								skb->len,
 								skb_headroom(PFQ_SKB(skb)),
 								skb_tailroom(PFQ_SKB(skb)));
@@ -148,7 +148,7 @@ log_packet(arguments_t args, SkBuff skb)
 			if (udp == NULL)
 				return Pass(skb);
 
-			printk(KERN_INFO "[PFQ/lang] IP %pI4.%d > %pI4.%d: UDP\n",
+			printk(KERN_INFO "[pfq-lang] IP %pI4.%d > %pI4.%d: UDP\n",
 						&ip->saddr, ntohs(udp->source),
 						&ip->daddr, ntohs(udp->dest));
 			return Pass(skb);
@@ -159,18 +159,18 @@ log_packet(arguments_t args, SkBuff skb)
 			if (tcp == NULL)
 				return Pass(skb);
 
-			printk(KERN_INFO "[PFQ/lang] IP %pI4.%d > %pI4.%d: TCP\n", &ip->saddr, ntohs(tcp->source),
+			printk(KERN_INFO "[pfq-lang] IP %pI4.%d > %pI4.%d: TCP\n", &ip->saddr, ntohs(tcp->source),
 									      &ip->daddr, ntohs(tcp->dest));
 			return Pass(skb);
 		}
 		case IPPROTO_ICMP: {
 
-			printk(KERN_INFO "[PFQ/lang] IP %pI4 > %pI4: ICMP\n", &ip->saddr, &ip->daddr);
+			printk(KERN_INFO "[pfq-lang] IP %pI4 > %pI4: ICMP\n", &ip->saddr, &ip->daddr);
 			return Pass(skb);
 		}
 		default: {
 
-			printk(KERN_INFO "[PFQ/lang] IP %pI4 > %pI4: proto %x\n", &ip->saddr, &ip->daddr,
+			printk(KERN_INFO "[pfq-lang] IP %pI4 > %pI4: proto %x\n", &ip->saddr, &ip->daddr,
 									     ip->protocol);
 			return Pass(skb);
 		}
@@ -178,7 +178,7 @@ log_packet(arguments_t args, SkBuff skb)
 		}
 
 	} else
-		printk(KERN_INFO "[PFQ/lang] ETH proto %x\n", ntohs(eth_hdr(PFQ_SKB(skb))->h_proto));
+		printk(KERN_INFO "[pfq-lang] ETH proto %x\n", ntohs(eth_hdr(PFQ_SKB(skb))->h_proto));
 
         return Pass(skb);
 }
