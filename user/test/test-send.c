@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <pfq.h>
+#include <pfq/pfq.h>
 
 /* Frame (98 bytes) */
 
