@@ -35,6 +35,7 @@ module Network.PFq.Experimental
         -- | This set of experimental functions may be subject to changes in future releases
 
         dummy        ,
+        dummy_ip     ,
         dummy_vector ,
         dummy_string ,
         dummy_strings,
@@ -80,6 +81,8 @@ deliver n = MFunction "deliver" n () () () () () () ()
 dummy :: CInt -> NetFunction
 dummy n = MFunction "dummy" n () () () () () () ()
 
+dummy_ip  :: IPv4 -> NetFunction
+dummy_ip xs  = MFunction "dummy_ip" xs () () () () () () ()
 
 dummy_vector  :: [CInt] -> NetFunction
 dummy_vector xs  = MFunction "dummy_vector" xs () () () () () () ()

@@ -51,6 +51,7 @@ namespace pfq { namespace lang { namespace experimental {
         auto deliver       = [] (int value) { return mfunction("deliver", value); };
 
         auto dummy         = [] (int value) { return mfunction("dummy", value); };
+        auto dummy_ip      = [] (const char *addr) { return mfunction("dummy_ip", ipv4_t{addr}); };
         auto dummy_vector  = [] (std::vector<int> const &vec) { return mfunction("dummy_vector", vec); };
 
         auto dummy_string  = [] (std::string s) { return mfunction("dummy_string", std::move(s)); };
