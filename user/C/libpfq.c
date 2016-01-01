@@ -978,6 +978,25 @@ pfq_set_group_computation_from_json(pfq_t *q, int gid, const char *input)
 				prog->fun[n].arg[i].size  = 0;
 				prog->fun[n].arg[i].nelem = -1;
 			}
+			else if (strcmp(type, "IPv4") == 0)
+			{
+				JSON_Object * obj = json_object_get_object(arg, "argValue");
+				JSON_Value  * value;
+				if (!obj) {
+					json_value_free(root);
+					return Q_ERROR(q, "PFQ: computation: JSON argValue missing!");
+				}
+
+				value = json_object_get_value(obj, "getHostAddress");
+                                if (!value) {
+					json_value_free(root);
+					return Q_ERROR(q, "PFQ: computation: JSON IPv4 internal error!");
+				}
+
+				prog->fun[n].arg[i].addr  = PFQ_ALLOCA(uint32_t, (uint32_t)json_value_get_number(value));
+				prog->fun[n].arg[i].size  = sizeof(uint32_t);
+				prog->fun[n].arg[i].nelem = -1;
+			}
 			else if (strlen(type) == 0)
 			{
 				prog->fun[n].arg[i].addr  = NULL;
@@ -985,11 +1004,11 @@ pfq_set_group_computation_from_json(pfq_t *q, int gid, const char *input)
 				prog->fun[n].arg[i].nelem = 0;
 			}
 			else {
+				static __thread char *e = NULL; free(e);
+				asprintf(&e, "PFQ: computation: JSON unknown argType: %s!", type);
 				json_value_free(root);
-				return Q_ERROR(q, "PFQ: computation: JSON unknown argType!");
+				return Q_ERROR(q, e);
 			}
-
-			printf("  arg: %s -> value: %p %zu %zu\n", type, prog->fun[n].arg[i].addr, prog->fun[n].arg[i].size, prog->fun[n].arg[i].nelem);
 		}
 
 		printf("%.10s -> %d\n", prog->fun[n].symbol, prog->fun[n].next);
