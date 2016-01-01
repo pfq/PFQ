@@ -49,8 +49,8 @@
 #include <linux/if_ether.h>
 #include <linux/pf_q.h>
 
-#include <pfq.h>
-#include <pfq-int.h>
+#include <pfq/pfq.h>
+#include <pfq/pfq-int.h>
 
 #include "parson.h"
 

@@ -38,7 +38,7 @@
 #include <sched.h>
 #endif
 
-#include <pfq-int.h>
+#include <pfq/pfq-int.h>
 
 
 /*! Initialize the net queue... */

@@ -12,5 +12,4 @@ add_library(pfq SHARED libpfq.c parson.c)
 install_targets(/lib pfq)
 install_targets(/lib pfq_static)
 
-install_files(/include/pfq pfq.h)
-install_files(/include/pfq pfq-int.h)
+install_files(/include/pfq FILES pfq/pfq.h pfq/pfq-int.h)
