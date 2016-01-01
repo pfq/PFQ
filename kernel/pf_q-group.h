@@ -49,7 +49,8 @@ struct pfq_group
 
 	pfq_id_t owner;					/* owner's pfq id */
 
-        atomic_long_t sock_mask[Q_CLASS_MAX];           /* for class: Q_CLASS_DEFAULT, Q_CLASS_USER_PLANE, Q_CLASS_CONTROL_PLANE etc... */
+        atomic_long_t sock_id[Q_CLASS_MAX];		/* list of (bitwise) socket ids that joined this group, for each different class:
+        						   Q_CLASS_DEFAULT, Q_CLASS_USER_PLANE, Q_CLASS_CONTROL_PLANE etc... */
 
         atomic_long_t bp_filter;			/* struct sk_filter pointer */
 

@@ -167,7 +167,7 @@ __pfq_group_init(pfq_gid_t gid)
 
         for(i = 0; i < Q_CLASS_MAX; i++)
         {
-                atomic_long_set(&group->sock_mask[i], 0);
+                atomic_long_set(&group->sock_id[i], 0);
         }
 
 	pfq_invalidate_percpu_eligible_mask((pfq_id_t __force)0);
@@ -248,9 +248,9 @@ __pfq_join_group(pfq_gid_t gid, pfq_id_t id, unsigned long class_mask, int polic
         pfq_bitwise_foreach(class_mask, bit,
         {
                  int class = pfq_ctz(bit);
-                 tmp = atomic_long_read(&group->sock_mask[class]);
+                 tmp = atomic_long_read(&group->sock_id[class]);
                  tmp |= 1L << (__force int)id;
-                 atomic_long_set(&group->sock_mask[class], tmp);
+                 atomic_long_set(&group->sock_id[class], tmp);
         })
 
 	pfq_invalidate_percpu_eligible_mask(id);
@@ -261,12 +261,12 @@ __pfq_join_group(pfq_gid_t gid, pfq_id_t id, unsigned long class_mask, int polic
 	if (group->policy == Q_POLICY_GROUP_UNDEFINED)
 		group->policy = policy;
 
-	pr_devel("[PFQ|%d] group %d, sock_mask { %lu %lu %lu %lu %lu...\n", id, gid,
-		 atomic_long_read(&group->sock_mask[0]),
-		 atomic_long_read(&group->sock_mask[1]),
-		 atomic_long_read(&group->sock_mask[2]),
-		 atomic_long_read(&group->sock_mask[3]),
-		 atomic_long_read(&group->sock_mask[4]));
+	pr_devel("[PFQ|%d] group %d, sock_ids { %lu %lu %lu %lu %lu...\n", id, gid,
+		 atomic_long_read(&group->sock_id[0]),
+		 atomic_long_read(&group->sock_id[1]),
+		 atomic_long_read(&group->sock_id[2]),
+		 atomic_long_read(&group->sock_id[3]),
+		 atomic_long_read(&group->sock_id[4]));
 
         return 0;
 }
@@ -285,9 +285,9 @@ __pfq_leave_group(pfq_gid_t gid, pfq_id_t id)
 
         for(i = 0; i < Q_CLASS_MAX; ++i)
         {
-                tmp = atomic_long_read(&group->sock_mask[i]);
+                tmp = atomic_long_read(&group->sock_id[i]);
                 tmp &= ~(1L << (__force int)id);
-                atomic_long_set(&group->sock_mask[i], tmp);
+                atomic_long_set(&group->sock_id[i], tmp);
         }
 
 	pfq_invalidate_percpu_eligible_mask(id);
@@ -312,7 +312,7 @@ pfq_get_all_groups_mask(pfq_gid_t gid)
 
         for(i = 0; i < Q_CLASS_MAX; ++i)
         {
-                mask |= atomic_long_read(&group->sock_mask[i]);
+                mask |= atomic_long_read(&group->sock_id[i]);
         }
         return mask;
 }
