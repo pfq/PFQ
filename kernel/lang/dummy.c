@@ -36,7 +36,6 @@
 
 #include <pf_q-sparse.h>
 
-
 static ActionSkBuff
 dummy(arguments_t args, SkBuff skb)
 {
@@ -44,16 +43,16 @@ dummy(arguments_t args, SkBuff skb)
 
 	SkBuff nskb;
 
-	printk(KERN_INFO "[PFQ/lang] dummy = %d\n", data);
+	printk(KERN_INFO "[pfq-lang] dummy = %d\n", data);
 
         nskb = pfq_lang_copy_buff(skb);
 
 	if (nskb == NULL) {
-                printk(KERN_INFO "[PFQ/lang] clone error!!!\n");
+                printk(KERN_INFO "[pfq-lang] clone error!!!\n");
                 return Drop(skb);
 	}
 
-        printk(KERN_INFO "[PFQ/lang] packet cloned: %p -> %p\n", nskb, skb);
+        printk(KERN_INFO "[pfq-lang] packet cloned: %p -> %p\n", nskb, skb);
 
         return Pass(nskb);
 }
@@ -74,11 +73,11 @@ dummy_vector(arguments_t args, SkBuff skb)
         const int *data = GET_ARRAY(int,args);
 	size_t n, len = LEN_ARRAY(args);
 
-	printk(KERN_INFO "[PFQ/lang] dummy: vector len: %zu...\n", len);
+	printk(KERN_INFO "[pfq-lang] dummy: vector len: %zu...\n", len);
 
 	for(n = 0; n < len; n++)
 	{
-		printk(KERN_INFO "[PFQ/lang] data[%zu] = %d\n", n, data[n]);
+		printk(KERN_INFO "[pfq-lang] data[%zu] = %d\n", n, data[n]);
 	}
 
         return Pass(skb);
@@ -90,7 +89,7 @@ dummy_string(arguments_t args, SkBuff skb)
 {
         const char *data = GET_ARG(const char *,args);
 
-	printk(KERN_INFO "[PFQ/lang] dummy: string: %s\n", data);
+	printk(KERN_INFO "[pfq-lang] dummy: string: %s\n", data);
 
         return Pass(skb);
 }
@@ -102,11 +101,11 @@ dummy_strings(arguments_t args, SkBuff skb)
         const char **data = GET_ARRAY(const char *,args);
 	size_t n, len = LEN_ARRAY(args);
 
-	printk(KERN_INFO "[PFQ/lang] dummy: vector strings len: %zu...\n", len);
+	printk(KERN_INFO "[pfq-lang] dummy: vector strings len: %zu...\n", len);
 
 	for(n = 0; n < len; n++)
 	{
-		printk(KERN_INFO "[PFQ/lang] string[%zu]: %s\n", n, data[n]);
+		printk(KERN_INFO "[pfq-lang] string[%zu]: %s\n", n, data[n]);
 	}
 
         return Pass(skb);
@@ -116,14 +115,14 @@ dummy_strings(arguments_t args, SkBuff skb)
 static int
 dummy_init(arguments_t args)
 {
-	printk(KERN_INFO "[PFQ/lang] %s :)\n", __PRETTY_FUNCTION__);
+	printk(KERN_INFO "[pfq-lang] %s :)\n", __PRETTY_FUNCTION__);
 	return 0;
 }
 
 static int
 dummy_fini(arguments_t args)
 {
-	printk(KERN_INFO "[PFQ/lang] %s :(\n", __PRETTY_FUNCTION__);
+	printk(KERN_INFO "[pfq-lang] %s :(\n", __PRETTY_FUNCTION__);
 	return 0;
 }
 

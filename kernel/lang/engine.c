@@ -150,7 +150,7 @@ pfq_lang_run(SkBuff skb, struct pfq_lang_computation_tree *prg)
 	total += (stop-start);
 
 	if ((nrun++ % 1048576) == 0)
-		printk(KERN_INFO "[PFQ] PFQ/lang run: %llu_tsc.\n", total/nrun);
+		printk(KERN_INFO "[pfq-lang] run: %llu_tsc.\n", total/nrun);
 
 	return skb;
 #endif
