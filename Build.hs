@@ -34,7 +34,7 @@ script = do
     Build     "pfq.ko"      *>>  into "kernel/"  $  make         `requires` [Configure "pfq.ko"]
     Install   "pfq.ko"      *>>  into "kernel/"  $  make_install `requires` [Build "pfq.ko"]
     Clean     "pfq.ko"      *>>  into "kernel/"  $  make_clean
-
+    DistClean "pfq.ko"      *>>  into "kernel/"  $  make_clean
 
     -- PFQ C library
 
@@ -48,7 +48,7 @@ script = do
 
     Configure "pfq-cpplib"  *>>  into "user/C++/pfq/" $ empty
     Build     "pfq-cpplib"  *>>  into "user/C++/pfq/" $ empty
-    Install   "pfq-cpplib"  *>>  into "user/C++/pfq/" $ make_install `requires` [Install "pfq.ko"]
+    Install   "pfq-cpplib"  *>>  into "user/C++/pfq/" $ make_install `requires` [Install "pfq-clib", Install "pfq.ko"]
     Clean     "pfq-cpplib"  *>>  into "user/C++/pfq/" $ empty
 
 
@@ -70,7 +70,6 @@ script = do
     Clean     "pfq-pcap-1.7.4"  *>>  into "user/libpcap/libpcap-1.7.4/"  $ make_clean
     DistClean "pfq-pcap-1.7.4"  *>>  into "user/libpcap/libpcap-1.7.4/"  $ make_distclean
 
-
     -- PFQ hcounters (exmaple)
 
     Configure "pfq-hcounters"   *>>  into "user/Haskell/pfq-hcounters/" $ cabalConfigure    `requires`  [Install   "pfq-haskell-lib"]
@@ -87,6 +86,15 @@ script = do
     Install   "pfq-htest"       *>>  into "user/Haskell/pfq-htest/"     $ empty             `requires` [Build     "pfq-htest"      ]
     Clean     "pfq-htest"       *>>  into "user/Haskell/pfq-htest/"     $ cabalClean
     DistClean "pfq-htest"       *>>  into "user/Haskell/pfq-htest/"     $ cabalDistClean
+
+
+    -- qlang compiler:
+
+    Configure "qlang"   *>>  into "user/qlang/" $ cabalConfigure    `requires`  [Install   "pfq-haskell-lib"]
+    Build     "qlang"   *>>  into "user/qlang/" $ cabalBuild        `requires`  [Configure "qlang"  ]
+    Install   "qlang"   *>>  into "user/qlang/" $ cabalInstall      `requires`  [Build     "qlang"  ]
+    Clean     "qlang"   *>>  into "user/qlang/" $ cabalClean
+    DistClean "qlang"   *>>  into "user/qlang/" $ cabalDistClean
 
 
     -- PFQ user tools
