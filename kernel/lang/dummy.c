@@ -60,6 +60,15 @@ dummy(arguments_t args, SkBuff skb)
 
 
 static ActionSkBuff
+dummy_ip(arguments_t args, SkBuff skb)
+{
+	__be32  ipv4 = GET_ARG_0(__be32, args);
+	pr_devel("[pfq-lang] ip:%pI4\n", &ipv4);
+	return Pass (skb);
+}
+
+
+static ActionSkBuff
 dummy_vector(arguments_t args, SkBuff skb)
 {
         const int *data = GET_ARRAY(int,args);
@@ -123,6 +132,7 @@ dummy_fini(arguments_t args)
 struct pfq_lang_function_descr dummy_functions[] = {
 
         { "dummy",         "CInt   -> SkBuff -> Action SkBuff",	  dummy, dummy_init,	     dummy_fini },
+        { "dummy_ip",      "Word32 -> SkBuff -> Action SkBuff",	  dummy_ip,	dummy_init,  dummy_fini },
         { "dummy_vector",  "[CInt] -> SkBuff -> Action SkBuff",	  dummy_vector, dummy_init,  dummy_fini },
         { "dummy_string",  "String -> SkBuff -> Action SkBuff",	  dummy_string, dummy_init,  dummy_fini },
         { "dummy_strings", "[String] -> SkBuff -> Action SkBuff", dummy_strings, dummy_init, dummy_fini },
