@@ -384,11 +384,11 @@ string_first_token(const char *str, const char *sep)
 static char *
 string_trim(char *str)
 {
-	int i = 0, j = strlen (str) - 1;
+	int i = 0, j = strlen(str) - 1;
 
 	while (isspace(str[i]) && str[i] != '\0')
 		i++;
-	while (isspace(str[j]) && j >= 0)
+	while (j >= 0 && isspace(str[j]))
 		j--;
 
 	str[j+1] = '\0';
@@ -586,10 +586,10 @@ pfq_parse_env(struct pfq_opt *opt)
 #define KEY_tx_queue		5
 #define KEY_tx_thread		6
 #define KEY_vlan		7
-#define KEY_computation		8
 
 
-struct pfq_conf_key {
+struct pfq_conf_key
+{
 	const char *value;
 } pfq_conf_keys[] =
 {
@@ -600,8 +600,7 @@ struct pfq_conf_key {
 	KEY(tx_queue),
 	KEY(tx_fhint),
 	KEY(tx_thread),
-	KEY(vlan),
-	KEY(computation)
+	KEY(vlan)
 };
 
 
@@ -617,13 +616,26 @@ pfq_conf_find_key(const char *key)
 	return -1;
 }
 
+#define QLANG_MARKER "qlang="
+
+char *
+str_append(char *str1, const char *str2)
+{
+	char * ret = realloc(str1, strlen(str1) + strlen(str2) + 1);
+	strcat(ret, str2);
+	return ret;
+}
+
 
 static int
 pfq_parse_config(struct pfq_opt *opt, const char *filename)
 {
-	char line[256];
+	char line[1024];
 	FILE *file;
-	int rc = 0;
+	int rc = 0, n;
+        char *comp;
+
+	comp = malloc(64); comp[0] = '\0';
 
 	file = fopen(filename, "r");
 	if (!file) {
@@ -631,69 +643,73 @@ pfq_parse_config(struct pfq_opt *opt, const char *filename)
 		rc = -1; goto err;
 	}
 
-	while (fgets(line, sizeof(line), file)) {
+	for(n = 0; fgets(line, sizeof(line), file); n++) {
 
-		char *key = NULL, *value = NULL;
+		char *key = NULL, *value = NULL, *tkey;
 
-		int n = sscanf(line, "%m[^=]=%m[ \ta-z0-9=>_,-]",&key, &value);
+		if (strstr(line, QLANG_MARKER) == line) {
+			comp = str_append(comp, line + sizeof(QLANG_MARKER));
+			continue;
+		}
 
-		if (n > 0) {
+		int ret = sscanf(line, "%m[^=]=%m[^\n]",&key, &value);
+		if (ret < 0) {
+			fprintf(stderr, "[PFQ] %s: parse error at: %s\n", filename, key);
+			rc = -1; goto next;
+		}
 
-			char *tkey = string_trim(key);
+		if (ret == 0)
+			goto next;
 
-			if (!strlen(tkey))
-				goto next;
-
-			if (tkey[0] == '#')
-				goto next;
-
-			if (n != 2) {
+		tkey = string_trim(key);
+		if (ret == 1) {
+			if (strlen(tkey) && tkey[0] != '#') {
 				fprintf(stderr, "[PFQ] %s: parse error at: %s\n", filename, key);
 				rc = -1;
-				goto next;
 			}
+			goto next;
+		}
 
-			switch(pfq_conf_find_key(tkey))
-			{
-				case KEY_group:		opt->group    = atoi(value);  break;
-				case KEY_caplen:	opt->caplen   = atoi(value);  break;
-				case KEY_rx_slots:	opt->rx_slots = atoi(value);  break;
-				case KEY_tx_slots:	opt->tx_slots = atoi(value);  break;
-				case KEY_tx_fhint:	opt->tx_fhint = atoi(value);  break;
-				case KEY_tx_queue:  {
-					if (pfq_parse_integers(opt->tx_queue, 4, value) < 0) {
-						fprintf(stderr, "[PFQ] %s: parse error at: %s\n", filename, tkey);
-						rc = -1;
-					}
-				} break;
-				case KEY_tx_thread:   {
-					if (pfq_parse_integers(opt->tx_thread, 4, value) < 0) {
-						fprintf(stderr, "[PFQ] %s: parse error at: %s\n", filename, tkey);
-						rc = -1;
-					}
-				} break;
-				case KEY_vlan:		opt->vlan = strdup(string_trim(value)); break;
-				case KEY_computation:	opt->comp = strdup(string_trim(value)); break;
-				case KEY_ERR: {
-					fprintf(stderr, "[PFQ] %s: unknown keyword '%s'\n", filename, tkey);
+		// ret > 1
+
+		switch(pfq_conf_find_key(tkey))
+		{
+			case KEY_group:		opt->group    = atoi(value);  break;
+			case KEY_caplen:	opt->caplen   = atoi(value);  break;
+			case KEY_rx_slots:	opt->rx_slots = atoi(value);  break;
+			case KEY_tx_slots:	opt->tx_slots = atoi(value);  break;
+			case KEY_tx_fhint:	opt->tx_fhint = atoi(value);  break;
+			case KEY_tx_queue:  {
+				if (pfq_parse_integers(opt->tx_queue, 4, value) < 0) {
+					fprintf(stderr, "[PFQ] %s: parse error at: %s\n", filename, tkey);
 					rc = -1;
-				} break;
-				default: assert(!"[PFQ] config parser: internal error!");
-			}
+				}
+			} break;
+			case KEY_tx_thread:   {
+				if (pfq_parse_integers(opt->tx_thread, 4, value) < 0) {
+					fprintf(stderr, "[PFQ] %s: parse error at: %s\n", filename, tkey);
+					rc = -1;
+				}
+			} break;
+			case KEY_vlan:		opt->vlan = strdup(string_trim(value)); break;
+			case KEY_ERR: {
+				fprintf(stderr, "[PFQ] %s: unknown keyword '%s'\n", filename, tkey);
+				rc = -1;
+			} break;
+			default: assert(!"[PFQ] config parser: internal error!");
 		}
 	next:
 		free(key);
 		free(value);
-
 		if (rc == -1)
 			break;
 	}
 
 	fclose(file);
+	opt->comp = comp;
 err:
 	return rc;
 }
-
 
 static int
 pfq_activate_linux(pcap_t *handle)
@@ -706,17 +722,20 @@ pfq_activate_linux(pcap_t *handle)
 	handle->opt.pfq  = pfq_opt_default(handle);
 	handle->linktype = DLT_EN10MB;
 
-	config = pfq_get_config_file(handle->opt.source);
 	device = pfq_get_devname(handle->opt.source);
-
         fprintf(stdout, "[PFQ] running on device %s...\n", device);
-	fprintf(stdout, "[PFQ] configuration file %s...\n", config);
+
+	config = pfq_get_config_file(handle->opt.source);
+
 
 	if (config == NULL) {
 		char *conf = getenv("PFQ_CONFIG");
 		if (conf)
 			config = strdup(conf);
 	}
+
+	if (config)
+		fprintf(stdout, "[PFQ] configuration file %s...\n", config);
 
         if (config != NULL) {
 		if (pfq_parse_config(&handle->opt.pfq, config) == -1) {
@@ -725,6 +744,7 @@ pfq_activate_linux(pcap_t *handle)
 		}
 		free(config);
 	}
+
 
 	if (pfq_parse_env(&handle->opt.pfq) == -1) {
 		snprintf(handle->errbuf, PCAP_ERRBUF_SIZE, "pfq: env error!");
