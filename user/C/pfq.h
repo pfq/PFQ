@@ -38,24 +38,8 @@
 #include <sched.h>
 #endif
 
+#include <pfq-int.h>
 
-/*! PFQ descriptor. */
-
-typedef struct pfq_data pfq_t;
-
-/*! PFQ iterator type. */
-
-typedef char * pfq_iterator_t;
-
-/*! pfq_net_queue is a struct which represents a net queue. */
-
-struct pfq_net_queue
-{
-	pfq_iterator_t queue;		/* net queue */
-	size_t         len;		/* number of packets in the queue */
-	size_t         slot_size;
-	unsigned int   index;		/* current queue index */
-};
 
 /*! Initialize the net queue... */
 
