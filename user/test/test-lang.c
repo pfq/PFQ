@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <pfq.h>
+#include <pfq/pfq.h>
 
 #define MIN(a,b) (a < b ? a : b)
 
@@ -21,7 +21,7 @@ main(int argc, char *argv[])
 
 	printf("testing computation...\n");
 	if (pfq_set_group_computation_from_string(q, pfq_group_id(q),
-			"main = ip >-> tcp >-> when' is_ip drop' >-> dummy_string \"hello world!\"") < 0) {
+			"main = when' is_ip drop' >-> dummy 42 >-> dummy_ip \"192.168.0.1\" >-> dummy_string \"hello world!\"") < 0) {
                 printf("error: %s\n", pfq_error(q));
                 return -1;
 	}

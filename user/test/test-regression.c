@@ -6,7 +6,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include <pfq.h>
+#include <pfq/pfq.h>
 
 #include <pthread.h>
 
