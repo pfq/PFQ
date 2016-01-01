@@ -22,7 +22,7 @@ add_executable(pfq-histogram pfq-histogram.cpp)
 add_executable(pfq-gen pfq-gen.cpp)
 add_executable(pfq-bridge pfq-bridge.cpp)
 
-target_link_libraries(pfq-counters -pthread)
+target_link_libraries(pfq-counters -pthread -lpfq)
 target_link_libraries(pfq-histogram -pthread)
 target_link_libraries(pfq-bridge -pthread)
 
