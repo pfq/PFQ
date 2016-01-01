@@ -1048,10 +1048,7 @@ namespace pfq {
         poll(long int microseconds = -1 /* infinite */)
         {
             struct timespec timeout;
-            struct pollfd fd = {data_->fd, POLLIN, 0 };
-
-            if (data_->fd == -1)
-                throw pfq_error("PFQ: socket not open");
+            struct pollfd fd = {data()->fd, POLLIN, 0 };
 
             if (microseconds >= 0) {
                 timeout.tv_sec  = microseconds / 1000000;
