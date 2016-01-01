@@ -771,8 +771,6 @@ pfq_set_group_computation_from_json(pfq_t *q, int gid, const char *input)
 	struct pfq_lang_computation_descr *prog;
 	size_t n;
 
-	printf("%s\n", input);
-
 	if (json_value_get_type(root) != JSONArray) {
 		json_value_free(root);
 		return Q_ERROR(q, "PFQ: computation: JSON parse error");
@@ -978,8 +976,6 @@ pfq_set_group_computation_from_json(pfq_t *q, int gid, const char *input)
 				return Q_ERROR(q, e);
 			}
 		}
-
-		printf("%.10s -> %d\n", prog->fun[n].symbol, prog->fun[n].next);
 	}
 
 	return pfq_set_group_computation(q, gid, prog);
