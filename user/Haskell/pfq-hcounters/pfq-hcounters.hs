@@ -60,7 +60,7 @@ data State a = State
 data Options = Options
                {    caplen   :: Int
                ,    slots    :: Int
-               ,    function :: [String]
+               ,    function :: [(Gid, String)]
                ,    thread   :: [String]
                } deriving (Data, Typeable, Show)
 
@@ -71,7 +71,7 @@ options = cmdArgsMode $
     Options
     {   caplen   = 64
     ,   slots    = 8192
-    ,   function = [] &= typ "FUNCTION"  &= help "Where FUNCTION = fun[ >-> fun >-> fun][.gid] (ie: steer_ip)"
+    ,   function = [] &= typ "FUNCTION"  &= help "Where FUNCTION = gid,computation (ie: 0,steer_ip)"
     ,   thread   = [] &= typ "BINDING" &= help "Where BINDING = core.gid[.[eth0:queue,queue,queue...[.ethx:queue,queue...]]]"
     } &= summary "PFq multi-threaded packet counter." &= program "pfq-counters"
 
@@ -105,13 +105,6 @@ makeBinding s = case splitOn "." s of
                                                          in  NetDev dn (case qs of [] -> [-1]; otherwise -> map read (splitOn "," (head qs)))) ds)
 
 
-makeFun :: String -> (Gid, [String])
-makeFun s =  case splitOn "." s of
-                []      -> error "makeFun: empty string"
-                [fs]    -> (-1,             map (filter (/= ' ')) $ splitOn ">->" fs)
-                fs : n  -> (read $ head n,  map (filter (/= ' ')) $ splitOn ">->" fs)
-
-
 -- main function
 --
 
@@ -119,7 +112,7 @@ main :: IO ()
 main = do
     op <- cmdArgsRun options
     putStrLn $ "[pfq] " ++ show op
-    cs  <- runThreads op (M.fromList $ map makeFun (function op))
+    cs  <- runThreads op (M.fromList (function op))
     t   <- getClockTime
     dumpStat cs t
 
@@ -141,11 +134,11 @@ diffUSec t1 t0 = (tdSec delta * 1000000) + truncate ((fromIntegral(tdPicosec del
                     where delta = diffClockTimes t1 t0
 
 
-runThreads :: (Num a) => Options -> M.Map Gid [String] -> IO [MVar a]
-runThreads op ms =
+runThreads :: (Num a) => Options -> M.Map Gid String -> IO [MVar a]
+runThreads op mfuns =
     forM (thread op) $ \tb -> do
         let binding = makeBinding tb
-            sf = M.lookup (groupId binding) ms <|> M.lookup (-1) ms
+            mfun = M.lookup (groupId binding) mfuns <|> M.lookup (-1) mfuns
         c <- newMVar 0
         f <- newMVar 0
         _ <- forkOn (coreNum binding) (
@@ -157,9 +150,9 @@ runThreads op ms =
                        forM_ (devQueues dev) $ \queue -> do
                          Q.setPromisc q (devName dev) True
                          Q.bindGroup q (groupId binding) (devName dev) queue
-                         when (isJust sf) $ do
-                             putStrLn $ "[pfq] Gid " ++ show (groupId binding) ++ " is using computation: " ++ unwords (function op)
-                             Q.setGroupComputationFromString q (groupId binding) (unwords $ function op)
+                         when (isJust mfun) $ do
+                             putStrLn $ "[pfq] Gid " ++ show (groupId binding) ++ " is using computation: " ++ fromJust mfun
+                             Q.setGroupComputationFromString q (groupId binding) (fromJust mfun)
                      Q.enable q
                      M.void (recvLoop q (State c f S.empty))
                  )
