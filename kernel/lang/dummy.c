@@ -62,7 +62,7 @@ static ActionSkBuff
 dummy_ip(arguments_t args, SkBuff skb)
 {
 	__be32  ipv4 = GET_ARG_0(__be32, args);
-	pr_devel("[pfq-lang] ip:%pI4\n", &ipv4);
+	printk(KERN_INFO "[pfq-lang] ip:%pI4\n", &ipv4);
 	return Pass (skb);
 }
 
