@@ -447,7 +447,7 @@ extern int pfq_set_group_computation(pfq_t *q, int gid, struct pfq_lang_computat
 extern int pfq_set_group_computation_from_json(pfq_t *q, int gid, const char *prg);
 
 
-/*! Specify a functional computation for the given group, from string. */
+/*! Specify a functional computation for the given group, from string as pfq-lang program. */
 /*!
  */
 extern int pfq_set_group_computation_from_string(pfq_t *q, int gid, const char *prg);

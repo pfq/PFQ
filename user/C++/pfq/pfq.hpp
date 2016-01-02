@@ -55,6 +55,7 @@
 extern "C"
 {
     int pfq_set_group_computation_from_string(pfq_t *q, int gid, const char *prg);
+    int pfq_set_group_computation_from_json(pfq_t *q, int gid, const char *descr);
 }
 
 namespace pfq {
@@ -996,13 +997,22 @@ namespace pfq {
                 throw pfq_error(errno, "PFQ: group computation error");
         }
 
-        //! Specify a functional computation for the given group, from string.
+        //! Specify a functional computation for the given group, from string as pfq-lang program.
 
         void
         set_group_computation(int gid, std::string const &comp)
         {
             if (pfq_set_group_computation_from_string(data(), gid, comp.c_str()) < 0)
-                throw pfq_error(errno, "PFQ: group computation error");
+                throw pfq_error(errno, "PFQ: pfq-lang: group computation error");
+        }
+
+        //! Specify a functional computation for the given group, from JSON description.
+
+        void
+        set_group_computation_json(int gid, std::string const &comp)
+        {
+            if (pfq_set_group_computation_from_json(data(), gid, comp.c_str()) < 0)
+                throw pfq_error(errno, "PFQ: JSON: group computation error");
         }
 
 

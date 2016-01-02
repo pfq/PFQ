@@ -1011,10 +1011,8 @@ setGroupComputation hdl gid comp =
     setGroupComputationFromDescr hdl gid (fst $ serialize comp 0)
 
 
--- |Specify a simple functional computation for the given group, from String.
+-- |Specify a simple functional computation for the given group, from String as pfq-lang program.
 --
--- This ability is limited to simple pfq-lang functional computations.
--- Only the composition of monadic functions without arguments are currently supported.
 
 setGroupComputationFromString :: Ptr PFqTag
                               -> Int       -- ^ group id
@@ -1025,10 +1023,8 @@ setGroupComputationFromString hdl gid comp =
   readProcess "qlang" ["--json"] comp >>= setGroupComputationFromJSON hdl gid
 
 
--- |Specify a simple functional computation for the given group, from JSON string.
+-- |Specify a simple functional computation for the given group, from JSON description.
 --
--- This ability is limited to simple pfq-lang functional computations.
--- Only the composition of monadic functions without arguments are currently supported.
 
 setGroupComputationFromJSON :: Ptr PFqTag
                             -> Int       -- ^ group id
