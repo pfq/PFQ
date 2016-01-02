@@ -1051,15 +1051,30 @@ pfq_set_group_computation_from_json(pfq_t *q, int gid, const char *input)
 			}
 			else if (strcmp(type, "[String]") == 0)
 			{
+				size_t j, m, total_size;
+                                char *addr;
+
 				JSON_Array * value = json_object_get_array(arg, "argValue");
 				if (!value) {
 					json_value_free(root);
 					return Q_ERROR(q, "PFQ: computation: JSON argValue missing!");
 				}
 
-                                size_t m = json_array_get_count(value);
+                                total_size = m = json_array_get_count(value);
 
-				prog->fun[n].arg[i].addr  = PFQ_ALLOCA_N(char *, m, (char *)json_array_get_string(value, idx));
+				for(j = 0; j < m; j++)
+					total_size += strlen(json_array_get_string(value, j));
+
+				addr = alloca(total_size); addr[0] = '\0';
+
+				for(j = 0; j < m; j++) {
+					strcat(addr, json_array_get_string(value, j));
+					strcat(addr, "\x1e");
+				}
+
+				addr[total_size-1] = '\0';
+
+				prog->fun[n].arg[i].addr  = addr;
 				prog->fun[n].arg[i].size  = 0;
 				prog->fun[n].arg[i].nelem = (ptrdiff_t)m;
 			}
