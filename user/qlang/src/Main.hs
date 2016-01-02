@@ -28,38 +28,47 @@ import System.IO
 
 import Data.Maybe
 import Control.Exception
+import Control.Monad (when)
 
 import qualified QLang.JSON
 import qualified QLang.FDescr
+import qualified QLang.Compiler
+import qualified QLang.PFQ
 
-notNull = not . null
 
-
+main :: IO ()
 main = do
-  opts <- cmdArgsRun options
 
-  inHandle <- if notNull (files opts)
-                then openFile (head (files opts)) ReadMode
+  opt' <- cmdArgsRun options
+
+  inHandle <- if notNull (files opt')
+                then openFile (head (files opt')) ReadMode
                 else return stdin
 
-  outHandle <- if isJust (output opts)
-                then openFile (fromJust $ output opts) WriteMode
+  outHandle <- if isJust (output opt')
+                then openFile (fromJust $ output opt') WriteMode
                 else return stdout
 
   code <- hGetContents inHandle
 
-  result <- try $ case () of
-          _ | json opts   -> runReaderT (QLang.JSON.compile code) opts
-            | fdescr opts -> runReaderT (QLang.FDescr.compile code) opts
-            | otherwise -> return ""
+  result <- try $ runReaderT (QLang.Compiler.compile code) opt'
 
   case result of
     Left (WontCompile es)  ->  error $ unlines (map errMsg es)
     Left (NotAllowed xs)   ->  error xs
     Left (GhcException xs) ->  error xs
     Left (UnknownError xs) ->  error xs
-    Right out -> hPutStr outHandle out
+    Right comp -> do
+      (case () of
+          _ | json opt'   -> runReaderT (QLang.JSON.compile comp) opt'
+            | fdescr opt' -> runReaderT (QLang.FDescr.compile comp) opt'
+            | otherwise   -> return "") >>= hPutStr outHandle
+      when (isJust (gid opt')) $ runReaderT (QLang.PFQ.load comp) opt' >>= hPutStr stderr
 
   hPutStr outHandle "\n"
   hClose outHandle
   hClose inHandle
+
+
+notNull = not . null
+

@@ -17,11 +17,27 @@
 
 {-# LANGUAGE TupleSections #-}
 
-module QLang.FDescr where
+module QLang.PFQ where
 
+import Language.Haskell.Interpreter
 import Network.PFq.Lang as Q
+import Network.PFq as Q
+
+import Control.Monad.Trans.Reader
+import Control.Monad()
 import Options
 
+import Data.Maybe
+import Foreign.ForeignPtr
 
-compile :: (Monad m) => Q.Function (SkBuff -> Action SkBuff) -> OptionT m String
-compile comp = return $ show (fst $ Q.serialize comp 0)
+
+load :: Q.Function (SkBuff -> Action SkBuff) -> OptionT IO String
+load comp = do
+  gid' <- return . fromJust . gid  =<< ask
+  lift $ Q.openNoGroup 64 4096 4096 >>= \fp ->
+              withForeignPtr fp $ \ctrl -> do
+                Q.joinGroup ctrl gid' class_control policy_shared
+                Q.setGroupComputation ctrl gid' comp
+                return $ "PFQ: computation loaded for gid " ++ show gid' ++ "."
+
+
