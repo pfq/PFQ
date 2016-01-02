@@ -17,11 +17,30 @@
 
 {-# LANGUAGE TupleSections #-}
 
-module QLang.FDescr where
+module QLang.Compiler where
 
+import Language.Haskell.Interpreter
 import Network.PFq.Lang as Q
+
+import Control.Exception
+
+import QLang.Parser
+import Control.Monad.Trans.Reader
+import Control.Monad(when)
 import Options
 
 
-compile :: (Monad m) => Q.Function (SkBuff -> Action SkBuff) -> OptionT m String
-compile comp = return $ show (fst $ Q.serialize comp 0)
+compile :: String -> OptionT IO (Q.Function (SkBuff -> Action SkBuff))
+compile raw = do
+    let (code, localImports) = parseCode raw
+    opt <- ask
+    imports <- mkImportList localImports
+    lift $ do
+      when (verb opt > 0) (putStrLn ("imports: " ++ show imports))
+      res <- runInterpreter $ do
+          setImportsQ imports
+          set [languageExtensions := [ OverloadedStrings ]]
+          interpret (mkMainFunction code) (as :: (Function (SkBuff -> Action SkBuff)))
+      either throw return res
+
+

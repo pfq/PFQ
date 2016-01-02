@@ -17,7 +17,7 @@
 
 {-# LANGUAGE TupleSections #-}
 
-module QLang.Util
+module QLang.Parser
   ( defaultImports
   , parseImports
   , parseCode
@@ -30,6 +30,7 @@ import Data.List
 
 import Control.Monad.Trans.Reader
 import Options
+
 
 dropWhite :: String -> String
 dropWhite = dropWhile (`elem` " \\\a\b\t\n\v\f\r")
@@ -71,3 +72,4 @@ mkImportList :: (Monad m) => [(ModuleName, Maybe String)] -> OptionT m [(ModuleN
 mkImportList xs = do
   opt <- ask
   return $ defaultImports ++  map (, Nothing) (modules opt) ++ xs
+

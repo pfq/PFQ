@@ -19,6 +19,7 @@ Executable qlang
                         CmdLine
                         Options
                         Paths
+                        QLang.Parser
     build-depends:      base >=4.7, 
                         transformers,
                         bytestring,
@@ -29,4 +30,5 @@ Executable qlang
                         hint,
                         pfq
     extra-libraries:    pfq
+    ghc-options:        -Wall 
     default-language:   Haskell2010

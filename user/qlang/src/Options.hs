@@ -32,6 +32,7 @@ data Options = Options
     -- IR (intermediate representation):
     ,   json                :: Bool
     ,   fdescr              :: Bool
+    ,   gid                 :: Maybe Int
     -- other
     ,   verb                :: Int
     ,   files               :: [FilePath]
