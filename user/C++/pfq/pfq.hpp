@@ -949,15 +949,11 @@ namespace pfq {
         template <typename Comp>
         void set_group_computation(int gid, Comp const &comp)
         {
-            struct free_deleter
-            {
-                void operator()(void *a) const { ::free(a); }
-            };
-
             auto ser = pfq::lang::serialize(comp, 0).first;
 
-            std::unique_ptr<pfq_lang_computation_descr, free_deleter> prg (
-                reinterpret_cast<pfq_lang_computation_descr *>(::malloc(sizeof(size_t) * 2 + sizeof(pfq_lang_functional_descr) * ser.size())));
+            std::unique_ptr<pfq_lang_computation_descr, decltype(free) *> prg (
+                reinterpret_cast<pfq_lang_computation_descr *>(::malloc(sizeof(size_t) * 2 + sizeof(pfq_lang_functional_descr) * ser.size())),
+                free);
 
             prg->size = ser.size();
             prg->entry_point = 0;
