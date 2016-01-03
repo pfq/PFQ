@@ -7,14 +7,11 @@ Introduction
 This version of pcap library is intended to support the PFQ framework, thus allowing 
 legacy applications to exploit the acceleration of capture/transmission of PFQ, and at the 
 same time to take advantage of pfq-lang computations to filter and dispatch packets
-across pcap sockets.
+across pcap sockets of the same group.
 
 The pcap library interface is *unchanged*. Additional data (e.g. pfq group) is passed 
-to the library as environment variables (or via configuration file), while sniffing 
-from multiple devices is possible by specifying their name in colon-separated fashion.
-
-The greatest benefits are achieved with the cooperation of pfqd, a user-space daemon used
-to manage groups and in-kernel computations.
+to the library as environment variables (or via configuration file), and sniffing 
+from multiple devices is also possible by specifying their name in colon-separated fashion.
 
 
 Features
@@ -44,7 +41,7 @@ pfq[/config_file]:[device[:device[:device..]]]
 ```
 
 Additional PFQ parameters are passed to the library by means of environment variables 
-or by a configuration file.
+or configuration file.
 
 
 Environment variables
@@ -56,7 +53,7 @@ standard pcap APIs.
 If not specified otherwise, the default values are assumed. 
 
 (> 1Mpps) column reports suggested values for very high packet rates, 
-e.g. 10G with short packets. 
+e.g. 10G links with short packets. 
 
 note: PFQ\_TX\_QUEUE, PFQ\_TX\_THREAD, and PFQ\_VLAN are specified as comma separated list.
 
@@ -71,18 +68,18 @@ PFQ\_TX\_SLOTS    |    4096       |   8192    | Define the TX queue length of th
 PFQ\_TX\_FHINT    |      1        | 16..512   | Hint used to flush the transmission queue
 PFQ\_TX\_QUEUE    | empty list    |e.g. 0,1,2 | Set the TX HW queue passed to the driver
 PFQ\_TX\_THREAD   | empty list    |e.g. 0,1,2 | Set the index of the PFQ TX threads (optional)
-PFQ\_COMPUTATION  |    null       |           | Set the pfq-lang computation for the group
-PFQ\_VLAN         | empty list    |           | Set the pfq-lang computation for the group
+PFQ\_LANG         |    null       |           | Set the pfq-lang computation for the group
+PFQ\_VLAN         | empty list    |           | Set the pfq vlan filter list for the group
 
 
 Configuration Files
 -------------------
 
-In addition to the environment variables, it is also possible to specify a configuration file 
-on per-socket basis. This solves the problem of passing different values to multiple pcap 
-socket in multi-threaded applications.
+In addition to environment variables, it is also possible to specify PFQ parameters with 
+a configuration file, on per-socket basis. This solves the problem of passing different values 
+to multiple pcap socket in multi-threaded applications.
 
-The path of the configuration file is passed to the library with the following syntax:
+The path of the configuration file is passed to the library along with the device name:
 
 ```
 pfq/config_file:[device[:device[:device..]]]
@@ -108,7 +105,17 @@ rx_slots = 131072
 tx_thread = 0,1
 tx_queue  = 0,1
 
-computation = ip >-> steer_flow
+qlang = main = ip >-> steer_flow
+```
+
+It is possible to specify multi-line pfq-lang computations, by prefixing each
+line with qlang =:
+
+
+```
+qlang =
+qlang = main = ip >-> 
+qlang =             tcp
 ```
 
 Examples
@@ -131,7 +138,7 @@ Load balancing TCP/UDP flows:
 ```
 # master process set computation and binding to devices...
 
-PFQ_GROUP=42 PFQ_COMPUTATION=steer_flow tcpdump -n -i pfq:eth0:eth1
+PFQ_GROUP=42 PFQ_LANG="main = steer_flow" tcpdump -n -i pfq:eth0:eth1
 
 # additional instances specify only the PFQ_GROUP...
 
