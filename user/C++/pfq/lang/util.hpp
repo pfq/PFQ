@@ -378,6 +378,30 @@ namespace pfq { namespace lang
         }
     };
 
+    template <>
+    struct StorableShow<std::vector<std::string>> final : StorableShowBase
+    {
+        StorableShow(std::vector<std::string> v)
+        : value(std::move(v))
+        {
+            for(auto & s : value)
+               pod.push_back(s.c_str());
+        }
+
+        std::vector<std::string> value;
+        std::vector<const char *> pod;
+
+        const void *forall_addr() const override
+        {
+            return pod.data();
+        }
+
+        std::string forall_show() const override
+        {
+            return show(value);
+        }
+    };
+
 } // namespace lang
 } // namespace pfq
 

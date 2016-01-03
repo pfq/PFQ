@@ -184,7 +184,6 @@ import Data.Word
 import Data.Bits
 import Data.Maybe (fromJust)
 import Data.Monoid()
-import Data.List (intercalate)
 
 import qualified Data.ByteString.Char8 as C
 import qualified Data.ByteString.Lazy.Char8 as BL (pack)
@@ -962,7 +961,7 @@ withSingleArg arg callback =
         ArgFunPtr i   -> callback (ptrToIntPtr nullPtr, fromIntegral i         , -1)
         ArgString s   -> withCString s $ \ ptr -> callback (ptrToIntPtr ptr, 0 , -1)
         ArgVector xs  -> let vec = SV.pack xs in SV.withStartPtr vec $ \ ptr len -> callback (ptrToIntPtr ptr, fromIntegral $ sizeOf (head xs), fromIntegral len)
-        ArgSVector xs -> let s = intercalate "\x1e" xs in withCString s $ \ ptr -> callback (ptrToIntPtr ptr, 0, fromIntegral (length xs))
+        ArgVectorStr xs -> withMany withCString xs $ \xs' -> let vec = SV.pack xs' in SV.withStartPtr vec $ \ ptr len -> callback (ptrToIntPtr ptr, 0, fromIntegral len)
         ArgData v     -> alloca $ \ptr -> poke ptr v >> callback (ptrToIntPtr ptr, fromIntegral $ sizeOf v, -1)
 
 
