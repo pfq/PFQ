@@ -99,6 +99,31 @@ pod_user(void **ptr, void const __user *arg, size_t size)
 }
 
 
+static size_t
+strlen_vec_user(char const __user * const __user * user_vec, size_t size)
+{
+	char const __user **vec;
+	size_t n, ret = 0;
+
+	vec = (char const __user **)kmalloc(size * sizeof(char *), GFP_KERNEL);
+	if (!vec) {
+                pr_devel("[PFQ] strlen_vec_user: could not get memory!\n");
+		return 0;
+	}
+
+	if (copy_from_user(vec, user_vec, size * sizeof(char *))) {
+                pr_devel("[PFQ] strlen_vec_user: copy_from_user!\n");
+		kfree(vec);
+		return 0;
+	}
+	for(n = 0; n < size; n++)
+		ret += strlen_user(vec[n]);
+
+	kfree(vec);
+	return ret;
+}
+
+
 char *
 strdup_user(const char __user *str)
 {
@@ -187,7 +212,7 @@ pfq_lang_context_alloc(struct pfq_lang_computation_descr const *descr)
 
 				size_t s = is_arg_string(&fun->arg[i])     ?  strlen_user(fun->arg[i].addr) :
 					   is_arg_vector(&fun->arg[i])	   ?  fun->arg[i].size * fun->arg[i].nelem :
-					   is_arg_vector_str(&fun->arg[i]) ?  fun->arg[i].nelem * sizeof(char *) + strlen_user(fun->arg[i].addr) :
+					   is_arg_vector_str(&fun->arg[i]) ?  fun->arg[i].nelem * sizeof(char *) + strlen_vec_user((const char __user * __user const *)fun->arg[i].addr, fun->arg[i].nelem) :
 					   is_arg_data  (&fun->arg[i])	   ?  (fun->arg[i].size > 8 ? fun->arg[i].size : 0 ) : 0;
 
 				size += ALIGN(s, 8);
@@ -529,7 +554,6 @@ pfq_lang_computation_rtlink(struct pfq_lang_computation_descr const *descr, stru
 			comp->node[n].fun.arg[i].nelem = 0;
 		}
 
-
 		for(i = 0; i < sizeof(fun->arg)/sizeof(fun->arg[0]); i++)
 		{
 			if (is_arg_string(&fun->arg[i])) {
@@ -545,29 +569,25 @@ pfq_lang_computation_rtlink(struct pfq_lang_computation_descr const *descr, stru
 			}
 			else if (is_arg_vector_str(&fun->arg[i])) {
 
-				char **base_ptr, **ptr;
-				char *str;
+				const char __user ** user_ptr;
+				char ** base_ptr;
 				size_t j;
 
-				base_ptr = ptr = (char **)context;
+				user_ptr = pod_user(&context, fun->arg[i].addr, fun->arg[i].nelem * sizeof(char *));
+                                base_ptr = (char **)user_ptr;
 
-				context += sizeof(char *) * fun->arg[i].nelem;
-
-				str = pod_user(&context, fun->arg[i].addr, strlen_user(fun->arg[i].addr));
-				if (str == NULL) {
-					printk(KERN_INFO "[PFQ] %zu: pod_user(2): internal error!\n", n);
+				if (!base_ptr) {
+					printk(KERN_INFO "[PFQ] %zu: pod_user(2): could not get memory!\n", n);
 					return -EPERM;
 				}
 
 				for(j = 0; j < fun->arg[i].nelem; j++)
 				{
-					char *end;
-					*(ptr++) = str;
-					end = strchr(str, '\x1e');
-					if (end == NULL)
-						break;
-					*end = '\0';
-					str = end+1;
+					base_ptr[j] = pod_user(&context, user_ptr[j], strlen_user(user_ptr[j]));
+					if (base_ptr[j] == NULL) {
+						printk(KERN_INFO "[PFQ] %zu: pod_user(2): internal error!\n", n);
+						return -EPERM;
+					}
 				}
 
 				comp->node[n].fun.arg[i].value = (ptrdiff_t)base_ptr;
