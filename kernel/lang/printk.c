@@ -142,7 +142,7 @@ pr_devel_functional_descr(struct pfq_lang_functional_descr const *descr, size_t 
 		}
 		else if (is_arg_vector_str(&descr->arg[n])) {
 			char * tmp = strdup_user(descr->arg[n].addr);
-			len += snprintf(buffer + len, size - len, "'%s...' ", tmp);
+			len += snprintf(buffer + len, size - len, "'str[%zu]' ", descr->arg[n].nelem);
 			kfree(tmp);
 		}
 		else if (!is_arg_null(&descr->arg[n])) {
