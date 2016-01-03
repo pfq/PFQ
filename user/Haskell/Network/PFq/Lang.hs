@@ -150,7 +150,7 @@ newtype Action a = Identity a
 data Argument = forall a. (Show a, Storable a, Typeable a, ToJSON a, FromJSON a) => ArgData a       |
                 forall a. (Show a, Storable a, Typeable a, ToJSON a, FromJSON a) => ArgVector [a]   |
                 ArgString String                                                                    |
-                ArgSVector [String]                                                                 |
+                ArgVectorStr [String]                                                                 |
                 ArgFunPtr Int                                                                       |
                 ArgNull
 
@@ -159,7 +159,7 @@ instance ToJSON Argument where
   toJSON (ArgData x)     = object [ "argType" .= show (typeOf x),        "argValue" .= toJSON x  ]
   toJSON (ArgVector xs)  = object [ "argType" .= show (typeOf xs),       "argValue" .= toJSON xs ]
   toJSON (ArgString xs)  = object [ "argType" .= ("String"   :: String), "argValue" .= toJSON xs ]
-  toJSON (ArgSVector xs) = object [ "argType" .= ("[String]" :: String), "argValue" .= toJSON xs ]
+  toJSON (ArgVectorStr xs) = object [ "argType" .= ("[String]" :: String), "argValue" .= toJSON xs ]
   toJSON (ArgFunPtr x)   = object [ "argType" .= ("Fun"      :: String), "argValue" .= toJSON x  ]
   toJSON (ArgNull)       = object [ "argType" .= (""         :: String), "argValue" .= toJSON () ]
 
@@ -191,7 +191,7 @@ instance FromJSON Argument where
                                         | type_ == "[Word16]" -> (ArgVector  :: [Word16] -> Argument) <$> (v .: "argValue")
                                         | type_ == "[Word8]"  -> (ArgVector  :: [Word8]  -> Argument) <$> (v .: "argValue")
                                         | type_ == "[IPv4]"   -> (ArgVector  :: [IPv4]   -> Argument) <$> (v .: "argValue")
-                                        | type_ == "[String]" -> (ArgSVector :: [String] -> Argument) <$> (v .: "argValue")
+                                        | type_ == "[String]" -> (ArgVectorStr :: [String] -> Argument) <$> (v .: "argValue")
                                         | otherwise           -> error $ "FromJSON: Argument type " ++ type_ ++ " not supported!"
         | null type_          -> return ArgNull
         | otherwise           -> error $ "FromJSON: Argument type " ++ type_ ++ " not supported!"
@@ -205,7 +205,7 @@ instance Show Argument where
     show (ArgString xs)  = xs
     show (ArgData x)     = show x
     show (ArgVector xs)  = show xs
-    show (ArgSVector xs) = show xs
+    show (ArgVectorStr xs) = show xs
 
 
 -- | Argumentable class, a typeclass for building function Arguments.
@@ -217,7 +217,7 @@ instance Argumentable String where
     argument = ArgString
 
 instance Argumentable [String] where
-    argument = ArgSVector
+    argument = ArgVectorStr
 
 instance (Show a, Pretty a, Storable a, Typeable a, ToJSON a, FromJSON a) => Argumentable a where
     argument = ArgData
