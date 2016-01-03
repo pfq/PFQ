@@ -181,20 +181,11 @@ namespace pfq { namespace lang
         , nelem(static_cast<std::size_t>(-1))
         { }
 
-        argument_type(std::vector<std::string> const &svec)
+        argument_type(std::vector<std::string> const &vec)
         {
-            std::string str;
-            int n = 0;
-            for(auto const & s : svec)
-            {
-                if (n++)
-                    str += '\x1e';
-                str += s;
-            }
-
-            ptr = std::make_shared<StorableShow<std::string>>(std::move(str));
-            size = 0;
-            nelem = svec.size();
+            nelem = vec.size();
+            ptr   = std::make_shared<StorableShow<std::vector<std::string>>>(std::move(vec));
+            size  = 0;
         }
 
         argument_type(funptr_t, std::size_t n)
