@@ -554,8 +554,10 @@ pfq_parse_env(struct pfq_opt *opt)
 	if ((var = getenv("PFQ_VLAN")))
 		opt->vlan = var;
 
-	if ((var = getenv("PFQ_COMPUTATION")))
+	if ((var = getenv("PFQ_LANG"))) {
+		free(opt->comp);
 		opt->comp = var;
+	}
 
 	if ((var = getenv("PFQ_TX_QUEUE"))) {
 		if (pfq_parse_integers(opt->tx_queue, 4, var) < 0) {
@@ -616,13 +618,18 @@ pfq_conf_find_key(const char *key)
 	return -1;
 }
 
-#define QLANG_MARKER "qlang="
-
 char *
 str_append(char *str1, const char *str2)
 {
-	char * ret = realloc(str1, strlen(str1) + strlen(str2) + 1);
-	strcat(ret, str2);
+	char *ret;
+	if (str1) {
+		ret = realloc(str1, strlen(str1) + strlen(str2) + 1);
+		strcat(ret, str2);
+	}
+	else {
+		ret = malloc(strlen(str2) + 1);
+		strcpy(ret, str2);
+	}
 	return ret;
 }
 
@@ -630,12 +637,10 @@ str_append(char *str1, const char *str2)
 static int
 pfq_parse_config(struct pfq_opt *opt, const char *filename)
 {
+        char *pfq_lang = NULL;
 	char line[1024];
 	FILE *file;
 	int rc = 0, n;
-        char *comp;
-
-	comp = malloc(64); comp[0] = '\0';
 
 	file = fopen(filename, "r");
 	if (!file) {
@@ -647,11 +652,6 @@ pfq_parse_config(struct pfq_opt *opt, const char *filename)
 
 		char *key = NULL, *value = NULL, *tkey;
 
-		if (strstr(line, QLANG_MARKER) == line) {
-			comp = str_append(comp, line + sizeof(QLANG_MARKER));
-			continue;
-		}
-
 		int ret = sscanf(line, "%m[^=]=%m[^\n]",&key, &value);
 		if (ret < 0) {
 			fprintf(stderr, "[PFQ] %s: parse error at: %s\n", filename, key);
@@ -662,6 +662,15 @@ pfq_parse_config(struct pfq_opt *opt, const char *filename)
 			goto next;
 
 		tkey = string_trim(key);
+
+		if (strcmp(tkey, "qlang") == 0) {
+			if (value) {
+				pfq_lang = str_append(pfq_lang, value);
+				pfq_lang = str_append(pfq_lang, "\n");
+			}
+			continue;
+		}
+
 		if (ret == 1) {
 			if (strlen(tkey) && tkey[0] != '#') {
 				fprintf(stderr, "[PFQ] %s: parse error at: %s\n", filename, key);
@@ -706,7 +715,11 @@ pfq_parse_config(struct pfq_opt *opt, const char *filename)
 	}
 
 	fclose(file);
-	opt->comp = comp;
+
+	if (pfq_lang) {
+		free(opt->comp);
+		opt->comp = pfq_lang;
+	}
 err:
 	return rc;
 }
