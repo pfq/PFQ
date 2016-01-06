@@ -794,7 +794,15 @@ pfq_create(
 
         sock->state = SS_UNCONNECTED;
 
-        sk = sk_alloc(net, PF_INET, GFP_KERNEL, &pfq_proto);
+	sk = sk_alloc(  net
+		     ,  PF_INET
+		     ,  GFP_KERNEL
+		     ,  &pfq_proto
+#if(LINUX_VERSION_CODE >= KERNEL_VERSION(4,2,0))
+		     ,  kern
+#endif
+		     );
+
         if (sk == NULL) {
                 printk(KERN_WARNING "[PFQ] error: pfq_sock_init: could not allocate a socket!\n");
                 return -ENOMEM;
