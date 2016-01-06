@@ -225,18 +225,9 @@ namespace pfq { namespace lang
     // show and pretty
     //
 
-    inline std::string fix_string(std::string that)
-    {
-        for(auto &c : that)
-        {
-            if (c == '\x1e') c = '|';
-        }
-        return that;
-    }
-
     inline std::string show(std::string const &that)
     {
-        return '"' + fix_string(that) + '"';
+        return '"' + that + '"';
     }
 
     template <typename T, typename std::enable_if<has_insertion_operator<T>::value>::type * = nullptr >
@@ -266,7 +257,7 @@ namespace pfq { namespace lang
 
     inline std::string pretty(std::string const &that)
     {
-        return "\"" + fix_string(that) + "\"";
+        return "\"" + that + "\"";
     }
 
     template <typename T, typename std::enable_if<has_insertion_operator<T>::value>::type * = nullptr >
