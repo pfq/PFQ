@@ -332,12 +332,6 @@ instance Storable NetPredicate where
     poke      = undefined
 
 
--- | Like unwords, drop empty string instead...
-
-unwords' :: [String] -> String
-unwords' = unwords . filter (not . null)
-
-
 -- |Kleisli left-to-right operator, for monadic composition of pfq-lang functions.
 
 (>->) :: Function (a -> m b) -> Function (b -> m c) -> Function (a -> m c)
@@ -345,7 +339,7 @@ f1 >-> f2 = Composition f1 f2
 
 
 shows' :: (Show a, Show b, Show c, Show d, Show e, Show f, Show g, Show h) => String -> String -> a -> b -> c -> d -> e -> f -> g -> h -> String
-shows' kind symb a b c d e f g h = let args = unwords' [show a, show b, show c, show d, show e, show f, show g, show h]
+shows' kind symb a b c d e f g h = let args = unwords $ filter (not .null) [show a, show b, show c, show d, show e, show f, show g, show h]
                                    in if null args then "(" ++ kind ++ " " ++ symb ++ ")"
                                                    else "(" ++ kind ++ " " ++ symb ++ " " ++ args  ++ ")"
 
@@ -387,7 +381,7 @@ instance Pretty () where
 
 
 pretties :: (Pretty a, Pretty b, Pretty c, Pretty d, Pretty e, Pretty f, Pretty g, Pretty h) => String -> a -> b -> c -> d -> e -> f -> g -> h -> String
-pretties symb a b c d e f g h = let args = unwords' [pretty a, pretty b, pretty c, pretty d, pretty e, pretty f, pretty g, pretty h]
+pretties symb a b c d e f g h = let args = unwords $ filter (not . null) [pretty a, pretty b, pretty c, pretty d, pretty e, pretty f, pretty g, pretty h]
                                   in if null args then symb
                                                   else "(" ++ symb ++ " " ++ args  ++ ")"
 
