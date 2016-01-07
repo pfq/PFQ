@@ -28,9 +28,9 @@ void show_comp(C const &c)
 int
 main()
 {
-    auto fun0  = mfunction("fun");
-    auto fun1  = [](int n) { return mfunction("fun1", n); };
-    auto fun2  = [](std::string s) { return mfunction("fun", std::move(s)); };
+    auto fun0  = function("fun");
+    auto fun1  = [](int n) { return function("fun1", n); };
+    auto fun2  = [](std::string s) { return function("fun", std::move(s)); };
 
     auto prop0 = property("prop0");
     auto prop1 = [](int n ) { return property("prop1", n); };
@@ -44,12 +44,12 @@ main()
     auto or_   = [] (auto p1, auto p2) { return predicate("or", p1, p2); };
     auto and_  = [] (auto p1, auto p2) { return predicate("and", p1, p2); };
 
-    auto hfun  = [] (auto p) { return mfunction("hfun", p); };
+    auto hfun  = [] (auto p) { return function("hfun", p); };
 
-    auto cond  = [] (auto p, auto c1, auto c2) { return mfunction("cond", p, c1, c2); };
+    auto cond  = [] (auto p, auto c1, auto c2) { return function("cond", p, c1, c2); };
 
-    auto integers = mfunction("int", std::vector<int>{1, 2, 3});
-    auto strings  = mfunction("str", std::vector<std::string>{"one", "two", "tree"});
+    auto integers = function("int", std::vector<int>{1, 2, 3});
+    auto strings  = function("str", std::vector<std::string>{"one", "two", "tree"});
 
     show_comp (fun0);
     show_comp (fun1(42));

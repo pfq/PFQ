@@ -59,14 +59,14 @@ namespace pfq { namespace lang
     //
 
     template <typename Sig>
-    struct Function
+    struct KFunction
     {
-        using type = Function<Sig>;
+        using type = KFunction<Sig>;
     };
 
-    using NetFunction  = Function< Action<SkBuff>(SkBuff) >;
-    using NetPredicate = Function< bool(SkBuff) >;
-    using NetProperty  = Function< uint64_t(SkBuff) >;
+    using NetFunction  = KFunction< Action<SkBuff>(SkBuff) >;
+    using NetPredicate = KFunction< bool(SkBuff) >;
+    using NetProperty  = KFunction< uint64_t(SkBuff) >;
 
     // ipv4_t, network byte order type with converting constructor
     //
@@ -111,7 +111,7 @@ namespace pfq { namespace lang
     struct Predicate;
 
     template <typename ...Ts>
-    struct MFunction;
+    struct Function;
 
     template <typename F, typename G>
     struct Composition;
@@ -133,7 +133,7 @@ namespace pfq { namespace lang
 
     template <typename Tp>
     struct is_monadic_function :
-        bool_type<is_same_type_constructor<Tp, MFunction>::value   ||
+        bool_type<is_same_type_constructor<Tp, Function>::value   ||
                   is_same_type_constructor<Tp, Composition>::value>
     { };
 
@@ -511,13 +511,13 @@ namespace pfq { namespace lang
     ///////////////////////////////////////////////////////////////////////////////////////
     ///////////////////////////////////////////////////////////////////////////////////////
 
-    //////// MFunction:
+    //////// Function:
 
     template <typename ... Ts>
-    struct MFunction : NetFunction
+    struct Function : NetFunction
     {
         template <typename ...Tp>
-        MFunction(std::string symbol, Tp &&...args)
+        Function(std::string symbol, Tp &&...args)
         : symbol_(std::move(symbol))
         , args_(std::forward<Tp>(args)...)
         { }
@@ -527,23 +527,23 @@ namespace pfq { namespace lang
     };
 
     template <typename ...Ts>
-    MFunction<typename std::decay<Ts>::type...>
-    mfunction(std::string symbol, Ts &&...args)
+    Function<typename std::decay<Ts>::type...>
+    function(std::string symbol, Ts &&...args)
     {
-        return MFunction<typename std::decay<Ts>::type...>(std::move(symbol), std::forward<Ts>(args)...);
+        return Function<typename std::decay<Ts>::type...>(std::move(symbol), std::forward<Ts>(args)...);
     }
 
     ///////// pretty function:
 
     inline std::string
-    pretty(MFunction<> const &f)
+    pretty(Function<> const &f)
     {
        return f.symbol_;
     }
 
     template <typename ...Ts>
     inline std::string
-    pretty(MFunction<Ts...> const &f)
+    pretty(Function<Ts...> const &f)
     {
         std::string ret = '(' + f.symbol_;
         tuple_for_each(f.args_, pretty_tuple(ret));
@@ -553,16 +553,16 @@ namespace pfq { namespace lang
     ///////// show function:
 
     inline std::string
-    show(MFunction<> const &f)
+    show(Function<> const &f)
     {
        return f.symbol_;
     }
 
     template <typename ...Ts>
     inline std::string
-    show(MFunction<Ts...> const &f)
+    show(Function<Ts...> const &f)
     {
-        std::string ret = "(MFunction " + f.symbol_;
+        std::string ret = "(Function " + f.symbol_;
         tuple_for_each(f.args_, show_tuple(ret));
         return ret + ')';
     }
@@ -571,7 +571,7 @@ namespace pfq { namespace lang
 
     template <typename ...Ts>
     inline std::pair<std::vector<FunctionDescr>, std::ptrdiff_t>
-    serialize(MFunction<Ts...> const &p, std::ptrdiff_t n)
+    serialize(Function<Ts...> const &p, std::ptrdiff_t n)
     {
         return serialize_all(p.symbol_, n, true, p.args_);
     }
@@ -579,7 +579,7 @@ namespace pfq { namespace lang
     ///////// serialize vector of functions:
 
     inline std::pair<std::vector<FunctionDescr>, std::ptrdiff_t>
-    serialize (std::vector<MFunction<>> const &cont, std::ptrdiff_t n)
+    serialize (std::vector<Function<>> const &cont, std::ptrdiff_t n)
     {
         std::vector<FunctionDescr> ret, v;
 
@@ -612,15 +612,15 @@ namespace pfq { namespace lang
     };
 
     template <template <typename > class M, typename A, typename B, typename C>
-    struct kleisly< Function< M<B>(A) >, Function < M<C>(B)> >
+    struct kleisly< KFunction< M<B>(A) >, KFunction < M<C>(B)> >
     {
-        using type = Function < M<C>(A) >;
+        using type = KFunction < M<C>(A) >;
     };
 
     template <template <typename > class M, typename A, typename B, typename F, typename G>
-    struct kleisly< Function< M<B>(A) >, Composition <F, G> >
+    struct kleisly< KFunction< M<B>(A) >, Composition <F, G> >
     {
-        using type = typename kleisly< Function<M<B>(A)>, typename kleisly<F,G>::type>::type;
+        using type = typename kleisly< KFunction<M<B>(A)>, typename kleisly<F,G>::type>::type;
     };
 
     //

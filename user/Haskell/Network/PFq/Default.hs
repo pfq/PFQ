@@ -434,42 +434,42 @@ icmp_code = Property "icmp_code" () () () () () () () ()
 -- physical links.
 --
 -- > ip >-> steer_link
-steer_link = MFunction "steer_link" () () () () () () () () :: NetFunction
+steer_link = Function "steer_link" () () () () () () () () :: NetFunction
 
 -- | Dispatch the packet across the sockets
 -- with a randomized algorithm that maintains the integrity of
 -- vlan links.
 --
 -- > steer_vlan
-steer_vlan = MFunction "steer_vlan" () () () () () () () () :: NetFunction
+steer_vlan = Function "steer_vlan" () () () () () () () () :: NetFunction
 
 -- | Dispatch the packet across the sockets
 -- with a randomized algorithm that maintains the integrity of
 -- IP flows.
 --
 -- > steer_ip
-steer_ip = MFunction "steer_ip" () () () () () () () () :: NetFunction
+steer_ip = Function "steer_ip" () () () () () () () () :: NetFunction
 
 -- | Dispatch the packet across the sockets
 -- with a randomized algorithm that maintains the integrity of
 -- IPv6 flows.
 --
 -- > steer_ip6 >-> log_msg "Steering an IPv6 packet"
-steer_ip6 = MFunction "steer_ip6" () () () () () () () () :: NetFunction
+steer_ip6 = Function "steer_ip6" () () () () () () () () :: NetFunction
 
 -- | Dispatch the packet across the sockets
 -- with a randomized algorithm that maintains the integrity of
 -- TCP/UDP flows.
 --
 -- > steer_flow >-> log_msg "Steering a flow"
-steer_flow = MFunction "steer_flow" () () () () () () () () :: NetFunction
+steer_flow = Function "steer_flow" () () () () () () () () :: NetFunction
 
 -- | Dispatch the packet across the sockets
 -- with a randomized algorithm that maintains the integrity of
 -- RTP/RTCP flows.
 --
 -- > steer_rtp
-steer_rtp = MFunction "steer_rtp" () () () () () () () () :: NetFunction
+steer_rtp = Function "steer_rtp" () () () () () () () () :: NetFunction
 
 -- | Dispatch the packet across the sockets
 -- with a randomized algorithm that maintains the integrity of
@@ -477,7 +477,7 @@ steer_rtp = MFunction "steer_rtp" () () () () () () () () :: NetFunction
 --
 -- > steer_net "192.168.0.0" 16 24
 steer_net :: IPv4 -> CInt -> CInt -> NetFunction
-steer_net net p sub = MFunction "steer_net" net p sub () () () () ()
+steer_net net p sub = Function "steer_net" net p sub () () () () ()
 
 -- | Dispatch the packet across the sockets
 -- with a randomized algorithm. The function uses as /hash/ the field
@@ -485,7 +485,7 @@ steer_net net p sub = MFunction "steer_net" net p sub () () () () ()
 steer_field :: CInt -- ^ offset from the beginning of the packet, in bytes
             -> CInt -- ^ sizeof field in bits
             -> NetFunction
-steer_field off size = MFunction "steer_field" off size () () () () () ()
+steer_field off size = Function "steer_field" off size () () () () () ()
 
 -- Predefined filters:
 
@@ -498,46 +498,46 @@ steer_field off size = MFunction "steer_field" off size () () () () () ()
 --
 -- > udp >-> kernel
 filter' :: NetPredicate -> NetFunction
-filter' p = MFunction "filter" p () () () () () () ()
+filter' p = Function "filter" p () () () () () () ()
 
 -- | Evaluate to /Pass SkBuff/ if it is an IPv4 packet, /Drop/ it otherwise.
-ip = MFunction "ip" () () () () () () () () :: NetFunction
+ip = Function "ip" () () () () () () () () :: NetFunction
 
 -- | Evaluate to /Pass SkBuff/ if it is an IPv6 packet, /Drop/ it otherwise.
-ip6 = MFunction "ip6" () () () () () () () () :: NetFunction
+ip6 = Function "ip6" () () () () () () () () :: NetFunction
 
 -- | Evaluate to /Pass SkBuff/ if it is an UDP packet, /Drop/ it otherwise.
-udp = MFunction "udp" () () () () () () () () :: NetFunction
+udp = Function "udp" () () () () () () () () :: NetFunction
 
 -- | Evaluate to /Pass SkBuff/ if it is a TCP packet, /Drop/ it otherwise.
-tcp = MFunction "tcp" () () () () () () () () :: NetFunction
+tcp = Function "tcp" () () () () () () () () :: NetFunction
 
 -- | Evaluate to /Pass SkBuff/ if it is an ICMP packet, /Drop/ it otherwise.
-icmp = MFunction "icmp" () () () () () () () () :: NetFunction
+icmp = Function "icmp" () () () () () () () () :: NetFunction
 
 -- | Evaluate to /Pass SkBuff/ if it is an UDP packet (on top of IPv6), /Drop/ it otherwise.
-udp6 = MFunction "udp6" () () () () () () () () :: NetFunction
+udp6 = Function "udp6" () () () () () () () () :: NetFunction
 
 -- | Evaluate to /Pass SkBuff/ if it is a TCP packet (on top of IPv6), /Drop/ it otherwise.
-tcp6 = MFunction "tcp6" () () () () () () () () :: NetFunction
+tcp6 = Function "tcp6" () () () () () () () () :: NetFunction
 
 -- | Evaluate to /Pass SkBuff/ if it is an ICMP packet (on top of IPv6), /Drop/ it otherwise.
-icmp6 = MFunction "icmp6" () () () () () () () () :: NetFunction
+icmp6 = Function "icmp6" () () () () () () () () :: NetFunction
 
 -- | Evaluate to /Pass SkBuff/ if it has a vlan tag, /Drop/ it otherwise.
-vlan = MFunction "vlan" () () () () () () () () :: NetFunction
+vlan = Function "vlan" () () () () () () () () :: NetFunction
 
 -- | Evaluate to /Pass SkBuff/ if it is a TCP or UDP packet, /Drop/ it otherwise.
-flow = MFunction "flow" () () () () () () () () :: NetFunction
+flow = Function "flow" () () () () () () () () :: NetFunction
 
 -- | Evaluate to /Pass SkBuff/ if it is a RTP/RTCP packet, /Drop/ it otherwise.
-rtp = MFunction "rtp" () () () () () () () () :: NetFunction
+rtp = Function "rtp" () () () () () () () () :: NetFunction
 
 -- | Evaluate to /Pass SkBuff/ if it is not a fragment, /Drop/ it otherwise.
-no_frag = MFunction "no_frag" () () () () () () () () :: NetFunction
+no_frag = Function "no_frag" () () () () () () () () :: NetFunction
 
 -- | Evaluate to /Pass SkBuff/ if it is not a fragment or if it's the first fragment, /Drop/ it otherwise.
-no_more_frag = MFunction "no_more_frag" () () () () () () () () :: NetFunction
+no_more_frag = Function "no_more_frag" () () () () () () () () :: NetFunction
 
 -- | Forward the packet to the given device.
 -- This function is lazy, in that the action is logged and performed
@@ -545,7 +545,7 @@ no_more_frag = MFunction "no_more_frag" () () () () () () () () :: NetFunction
 --
 -- > forward "eth1"
 forward :: String -> NetFunction
-forward d = MFunction "forward" d () () () () () () ()
+forward d = Function "forward" d () () () () () () ()
 
 -- | Forward the packet to the given device and evaluates to /Drop/. Example:
 --
@@ -554,7 +554,7 @@ forward d = MFunction "forward" d () () () () () () ()
 -- Conditional bridge, forward the packet to eth1 if UDP, send it to the kernel
 -- otherwise.
 bridge :: String -> NetFunction
-bridge d = MFunction "bridge" d () () () () () () ()
+bridge d = Function "bridge" d () () () () () () ()
 
 -- | Forward the packet to the given device and, evaluates to /Pass SkBuff/ or /Drop/,
 -- depending on the value returned by the predicate. Example:
@@ -567,7 +567,7 @@ bridge d = MFunction "bridge" d () () () () () () ()
 --
 -- Only a little bit more efficient.
 tee :: String -> NetPredicate -> NetFunction
-tee d p = MFunction "tee" d p () () () () () ()
+tee d p = Function "tee" d p () () () () () ()
 
 -- | Evaluate to /Pass SkBuff/, or forward the packet to the given device and evaluate to /Drop/,
 -- depending on the value returned by the predicate. Example:
@@ -580,58 +580,58 @@ tee d p = MFunction "tee" d p () () () () () ()
 --
 -- Only a little bit more efficient.
 tap :: String -> NetPredicate -> NetFunction
-tap d p = MFunction "tap" d p () () () () () ()
+tap d p = Function "tap" d p () () () () () ()
 
 -- | Forward the packet to the given device. This operation breaks the purity of the language,
 -- and it is possibly slower than the lazy "forward" counterpart.
 --
 -- > forwardIO "eth1"
 forwardIO :: String -> NetFunction
-forwardIO d = MFunction "forwardIO" d () () () () () () ()
+forwardIO d = Function "forwardIO" d () () () () () () ()
 
 -- | Send a copy of the packet to the kernel (the sk_buff may have been captured directly
 -- by PFQ).
 --
 -- To avoid loop, this function is ignored for packets sniffed from the kernel.
-kernel = MFunction "kernel" () () () () () () () () :: NetFunction
+kernel = Function "kernel" () () () () () () () () :: NetFunction
 
 -- | Broadcast the packet to all the sockets that have joined the group for which this computation
 -- is specified.
-broadcast = MFunction "broadcast" () () () () () () () () :: NetFunction
+broadcast = Function "broadcast" () () () () () () () () :: NetFunction
 
 -- | Drop the packet. The computation evaluates to /Drop/.
-drop'= MFunction "drop" () () () () () () () () :: NetFunction
+drop'= Function "drop" () () () () () () () () :: NetFunction
 
 -- | Unit operation implements left- and right-identity for Action monad.
-unit = MFunction "unit" () () () () () () () () :: NetFunction
+unit = Function "unit" () () () () () () () () :: NetFunction
 
 -- | Log a message to syslog.
 --
 -- > udp >-> log_msg "This is an UDP packet"
 log_msg :: String -> NetFunction
-log_msg msg = MFunction "log_msg" msg () () () () () () ()
+log_msg msg = Function "log_msg" msg () () () () () () ()
 
 -- | Dump the payload of packet to syslog.
 --
 -- > icmp >-> log_buff
-log_buff = MFunction "log_buff" () () () () () () () () :: NetFunction
+log_buff = Function "log_buff" () () () () () () () () :: NetFunction
 
 -- | Log the packet to syslog, with a syntax similar to tcpdump.
 --
 -- > icmp >-> log_msg "This is an ICMP packet:" >-> log_packet
-log_packet = MFunction "log_packet" () () () () () () () () :: NetFunction
+log_packet = Function "log_packet" () () () () () () () () :: NetFunction
 
 -- | Increment the i-th counter of the current group.
 --
 -- > inc 10
 inc :: CInt -> NetFunction
-inc n = MFunction "inc" n () () () () () () ()
+inc n = Function "inc" n () () () () () () ()
 
 -- | Decrement the i-th counter of the current group.
 --
 -- > dec 10
 dec :: CInt -> NetFunction
-dec n = MFunction "dec" n () () () () () () ()
+dec n = Function "dec" n () () () () () () ()
 
 -- | Mark the packet with the given value.
 -- This function is unsafe in that it breaks the pure functional paradigm.
@@ -639,13 +639,13 @@ dec n = MFunction "dec" n () () () () () () ()
 --
 -- > mark 42
 mark :: Word32 -> NetFunction
-mark n = MFunction "mark" n () () () () () () ()
+mark n = Function "mark" n () () () () () () ()
 
 -- | Set the state of the computation to the given value.
 --
 -- > state 42
 put_state :: Word32 -> NetFunction
-put_state n = MFunction "put_state" n () () () () () () ()
+put_state n = Function "put_state" n () () () () () () ()
 
 
 -- | Monadic version of 'is_l3_proto' predicate.
@@ -655,7 +655,7 @@ put_state n = MFunction "put_state" n () () () () () () ()
 --
 -- > l3_proto 0x842 >-> log_msg "Wake-on-LAN packet!"
 l3_proto :: Int16 -> NetFunction
-l3_proto p = MFunction "l3_proto" p () () () () () () ()
+l3_proto p = Function "l3_proto" p () () () () () () ()
 
 -- | Monadic version of 'is_l4_proto' predicate.
 --
@@ -664,7 +664,7 @@ l3_proto p = MFunction "l3_proto" p () () () () () () ()
 --
 -- > l4_proto 89 >-> log_msg "OSFP packet!"
 l4_proto :: Int8 -> NetFunction
-l4_proto p = MFunction "l4_proto" p () () () () () () ()
+l4_proto p = Function "l4_proto" p () () () () () () ()
 
 -- | Monadic version of 'has_port' predicate.
 --
@@ -673,15 +673,15 @@ l4_proto p = MFunction "l4_proto" p () () () () () () ()
 --
 -- > port 80 >-> log_msg "http packet!"
 port :: Int16 -> NetFunction
-port p = MFunction "port" p () () () () () () ()
+port p = Function "port" p () () () () () () ()
 
 -- | Monadic version of 'has_src_port' predicate.
 src_port :: Int16 -> NetFunction
-src_port p = MFunction "src_port" p () () () () () () ()
+src_port p = Function "src_port" p () () () () () () ()
 
 -- | Monadic version of 'has_dst_port' predicate.
 dst_port :: Int16 -> NetFunction
-dst_port a = MFunction "dst_port" a () () () () () () ()
+dst_port a = Function "dst_port" a () () () () () () ()
 
 -- | Monadic version of 'has_addr' predicate.
 --
@@ -697,9 +697,9 @@ src_addr :: IPv4 -> CInt -> NetFunction
 -- | Monadic version of 'has_src_addr' predicate.
 dst_addr :: IPv4 -> CInt -> NetFunction
 
-addr net p = MFunction "addr" net p () () () () () ()
-src_addr net p = MFunction "src_addr" net p () () () () () ()
-dst_addr net p = MFunction "dst_addr" net p () () () () () ()
+addr net p = Function "addr" net p () () () () () ()
+src_addr net p = Function "src_addr" net p () () () () () ()
+dst_addr net p = Function "dst_addr" net p () () () () () ()
 
 -- | Conditional execution of monadic NetFunctions.
 --
@@ -709,11 +709,11 @@ dst_addr net p = MFunction "dst_addr" net p () () () () () ()
 --
 -- > when' is_tcp (log_msg "This is a TCP Packet")
 when' :: NetPredicate -> NetFunction -> NetFunction
-when' p c = MFunction "when" p c () () () () () ()
+when' p c = Function "when" p c () () () () () ()
 
 -- | The reverse of "when'"
 unless' :: NetPredicate -> NetFunction -> NetFunction
-unless' p c = MFunction "unless" p c () () () () () ()
+unless' p c = Function "unless" p c () () () () () ()
 
 -- | conditional execution of monadic netfunctions.
 --
@@ -722,13 +722,13 @@ unless' p c = MFunction "unless" p c () () () () () ()
 --
 -- > conditional is_udp (forward "eth1") (forward "eth2")
 conditional :: NetPredicate -> NetFunction -> NetFunction -> NetFunction
-conditional p c1 c2 = MFunction "conditional" p c1 c2 () () () () ()
+conditional p c1 c2 = Function "conditional" p c1 c2 () () () () ()
 
 -- | Function that inverts a monadic NetFunction. Useful to invert filters:
 --
 -- > inv ip >-> log_msg "This is not an IPv4 Packet"
 inv :: NetFunction -> NetFunction
-inv x = MFunction "inv" x () () () () () () ()
+inv x = Function "inv" x () () () () () () ()
 
 -- | Function that returns the parallel of two monadic NetFunctions.
 --
@@ -736,7 +736,7 @@ inv x = MFunction "inv" x () () () () () () ()
 --
 -- > par' udp icmp >-> log_msg "This is an UDP or ICMP Packet"
 par' :: NetFunction -> NetFunction -> NetFunction
-par' a b = MFunction "par" a b () () () () () ()
+par' a b = Function "par" a b () () () () () ()
 
 -- | Predicate which evaluates to /True/ when the packet has one of the
 -- vlan id specified by the list. Example:
@@ -747,7 +747,7 @@ vlan_id ids = Predicate "vlan_id" ids () () () () () () ()
 
 -- | Monadic function, counterpart of 'vlan_id' function.
 vlan_id_filter :: [CInt] -> NetFunction
-vlan_id_filter ids = MFunction "vlan_id_filter" ids () () () () () () ()
+vlan_id_filter ids = Function "vlan_id_filter" ids () () () () () () ()
 
 -- | Predicate that evaluates to /True/ when the source or the destination address
 -- of the packet matches the ones specified by the bloom list.
@@ -787,9 +787,9 @@ bloom m hs p     = let ips = unsafePerformIO (mapM inet_addr hs) in Predicate "b
 bloom_src m hs p = let ips = unsafePerformIO (mapM inet_addr hs) in Predicate "bloom_src" m ips p () () () () ()
 bloom_dst m hs p = let ips = unsafePerformIO (mapM inet_addr hs) in Predicate "bloom_dst" m ips p () () () () ()
 
-bloom_filter m hs p     = let ips = unsafePerformIO (mapM inet_addr hs) in MFunction "bloom_filter" m ips p () () () () ()
-bloom_src_filter m hs p = let ips = unsafePerformIO (mapM inet_addr hs) in MFunction "bloom_src_filter" m ips p () () () () ()
-bloom_dst_filter m hs p = let ips = unsafePerformIO (mapM inet_addr hs) in MFunction "bloom_dst_filter" m ips p () () () () ()
+bloom_filter m hs p     = let ips = unsafePerformIO (mapM inet_addr hs) in Function "bloom_filter" m ips p () () () () ()
+bloom_src_filter m hs p = let ips = unsafePerformIO (mapM inet_addr hs) in Function "bloom_src_filter" m ips p () () () () ()
+bloom_dst_filter m hs p = let ips = unsafePerformIO (mapM inet_addr hs) in Function "bloom_dst_filter" m ips p () () () () ()
 
 -- bloom filter, utility functions:
 

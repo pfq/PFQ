@@ -73,28 +73,28 @@ import Foreign.C.Types
 -- | Specify the class mask for the given packet.
 
 class'  :: CInt -> NetFunction
-class'  n = MFunction "class" n () () () () () () ()
+class'  n = Function "class" n () () () () () () ()
 
 deliver :: CInt -> NetFunction
-deliver n = MFunction "deliver" n () () () () () () ()
+deliver n = Function "deliver" n () () () () () () ()
 
 dummy :: CInt -> NetFunction
-dummy n = MFunction "dummy" n () () () () () () ()
+dummy n = Function "dummy" n () () () () () () ()
 
 dummy_ip  :: IPv4 -> NetFunction
-dummy_ip xs  = MFunction "dummy_ip" xs () () () () () () ()
+dummy_ip xs  = Function "dummy_ip" xs () () () () () () ()
 
 dummy_vector  :: [CInt] -> NetFunction
-dummy_vector xs  = MFunction "dummy_vector" xs () () () () () () ()
+dummy_vector xs  = Function "dummy_vector" xs () () () () () () ()
 
 dummy_string :: String -> NetFunction
-dummy_string xs  = MFunction "dummy_string" xs () () () () () () ()
+dummy_string xs  = Function "dummy_string" xs () () () () () () ()
 
 dummy_strings :: [String] -> NetFunction
-dummy_strings xs  = MFunction "dummy_strings" xs () () () () () () ()
+dummy_strings xs  = Function "dummy_strings" xs () () () () () () ()
 
 crc16 :: NetFunction
-crc16 = MFunction "crc16" () () () () () () () ()
+crc16 = Function "crc16" () () () () () () () ()
 
 
 -- | Forward the socket buffer to the list of specified devices.
@@ -103,28 +103,28 @@ crc16 = MFunction "crc16" () () () () () () () ()
 -- > link ["eth1", "eth2"]
 
 link :: [String] -> NetFunction
-link ds = MFunction "forward" ds () () () () () () ()
+link ds = Function "forward" ds () () () () () () ()
 
 
 -- | Function that returns the parallel of 3 monadic NetFunctions.
 
 par3 :: NetFunction -> NetFunction -> NetFunction -> NetFunction
-par3 a b c = MFunction "par3" a b c () () () () ()
+par3 a b c = Function "par3" a b c () () () () ()
 
 par4 :: NetFunction -> NetFunction -> NetFunction -> NetFunction -> NetFunction
-par4 a b c d = MFunction "par4" a b c d () () () ()
+par4 a b c d = Function "par4" a b c d () () () ()
 
 par5 :: NetFunction -> NetFunction -> NetFunction -> NetFunction -> NetFunction -> NetFunction
-par5 a b c d e = MFunction "par5" a b c d e () () ()
+par5 a b c d e = Function "par5" a b c d e () () ()
 
 par6 :: NetFunction -> NetFunction -> NetFunction -> NetFunction -> NetFunction -> NetFunction -> NetFunction
-par6 a b c d e f = MFunction "par6" a b c d e f () ()
+par6 a b c d e f = Function "par6" a b c d e f () ()
 
 par7 :: NetFunction -> NetFunction -> NetFunction -> NetFunction -> NetFunction -> NetFunction -> NetFunction -> NetFunction
-par7 a b c d e f g = MFunction "par7" a b c d e f g ()
+par7 a b c d e f g = Function "par7" a b c d e f g ()
 
 par8 :: NetFunction -> NetFunction -> NetFunction -> NetFunction -> NetFunction -> NetFunction -> NetFunction -> NetFunction -> NetFunction
-par8 a b c d e f g h = MFunction "par8" a b c d e f g h
+par8 a b c d e f g h = Function "par8" a b c d e f g h
 
 
 -- | Dispatch the packet across the sockets
@@ -135,17 +135,17 @@ par8 a b c d e f g h = MFunction "par8" a b c d e f g h
 -- > (steer_gtp_usr "192.168.0.0" 16)
 
 steer_gtp_usr :: IPv4 -> CInt -> NetFunction
-steer_gtp_usr net prefix = MFunction "steer_gtp_usr" net prefix () () () () () () :: NetFunction
+steer_gtp_usr net prefix = Function "steer_gtp_usr" net prefix () () () () () () :: NetFunction
 
 
 -- | Evaluate to /Pass SkBuff/ in case of GTP packet, /Drop/ it otherwise.
-gtp    = MFunction "gtp" () () () () () () () () :: NetFunction
+gtp    = Function "gtp" () () () () () () () () :: NetFunction
 
 -- | Evaluate to /Pass SkBuff/ in case of GTP Control-Plane packet, /Drop/ it otherwise.
-gtp_cp  = MFunction "gtp_cp" () () () () () () () () :: NetFunction
+gtp_cp  = Function "gtp_cp" () () () () () () () () :: NetFunction
 
 -- | Evaluate to /Pass SkBuff/ in case of GTP User-Plane packet, /Drop/ it otherwise.
-gtp_up  = MFunction "gtp_up" () () () () () () () () :: NetFunction
+gtp_up  = Function "gtp_up" () () () () () () () () :: NetFunction
 
 -- | Evaluate to /True/ if the SkBuff is a GTP packet.
 is_gtp = Predicate "is_gtp" () () () () () () () () :: NetPredicate
