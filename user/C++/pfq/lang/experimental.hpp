@@ -47,17 +47,17 @@ namespace pfq { namespace lang { namespace experimental {
 
     namespace
     {
-        auto class_        = [] (int value) { return mfunction("class", value); };
-        auto deliver       = [] (int value) { return mfunction("deliver", value); };
+        auto class_        = [] (int value) { return function("class", value); };
+        auto deliver       = [] (int value) { return function("deliver", value); };
 
-        auto dummy         = [] (int value) { return mfunction("dummy", value); };
-        auto dummy_ip      = [] (const char *addr) { return mfunction("dummy_ip", ipv4_t{addr}); };
-        auto dummy_vector  = [] (std::vector<int> const &vec) { return mfunction("dummy_vector", vec); };
+        auto dummy         = [] (int value) { return function("dummy", value); };
+        auto dummy_ip      = [] (const char *addr) { return function("dummy_ip", ipv4_t{addr}); };
+        auto dummy_vector  = [] (std::vector<int> const &vec) { return function("dummy_vector", vec); };
 
-        auto dummy_string  = [] (std::string s) { return mfunction("dummy_string", std::move(s)); };
-        auto dummy_strings = [] (std::vector<std::string> const &vec) { return mfunction("dummy_strings", vec); };
+        auto dummy_string  = [] (std::string s) { return function("dummy_string", std::move(s)); };
+        auto dummy_strings = [] (std::vector<std::string> const &vec) { return function("dummy_strings", vec); };
 
-        auto crc16         = mfunction("crc16");
+        auto crc16         = function("crc16");
 
 
         //! Forward the socket buffer to the list of specified devices.
@@ -68,7 +68,7 @@ namespace pfq { namespace lang { namespace experimental {
          *
          */
 
-        auto link_ = [] (std::vector<std::string> const &devs) { return mfunction("link", devs); };
+        auto link_ = [] (std::vector<std::string> const &devs) { return function("link", devs); };
 
 
         //! Function that returns the parallel of 3 monadic NetFunctions.
@@ -81,34 +81,34 @@ namespace pfq { namespace lang { namespace experimental {
 
         template <typename F0, typename F1, typename F2>
         auto par3(F0 f0, F1 f1, F2 f2)
-            -> decltype(mfunction(nullptr, f0, f1, f2))
+            -> decltype(function(nullptr, f0, f1, f2))
         {
             static_assert(is_monadic_function<F0>::value, "par: argument 0: monadic function expected");
             static_assert(is_monadic_function<F1>::value, "par: argument 1: monadic function expected");
             static_assert(is_monadic_function<F2>::value, "par: argument 2: monadic function expected");
 
-            return mfunction("par3", f0, f1, f2);
+            return function("par3", f0, f1, f2);
         }
 
         //! Function that returns the parallel of 4 monadic NetFunctions.
 
         template <typename F0, typename F1, typename F2, typename F3>
         auto par4(F0 f0, F1 f1, F2 f2, F3 f3)
-            -> decltype(mfunction(nullptr, f0, f1, f2, f3))
+            -> decltype(function(nullptr, f0, f1, f2, f3))
         {
             static_assert(is_monadic_function<F0>::value, "par: argument 0: monadic function expected");
             static_assert(is_monadic_function<F1>::value, "par: argument 1: monadic function expected");
             static_assert(is_monadic_function<F2>::value, "par: argument 2: monadic function expected");
             static_assert(is_monadic_function<F3>::value, "par: argument 3: monadic function expected");
 
-            return mfunction("par4", f0, f1, f2, f3);
+            return function("par4", f0, f1, f2, f3);
         }
 
         //! Function that returns the parallel of 5 monadic NetFunctions.
 
         template <typename F0, typename F1, typename F2, typename F3, typename F4>
         auto par5(F0 f0, F1 f1, F2 f2, F3 f3, F4 f4)
-            -> decltype(mfunction(nullptr, f0, f1, f2, f3, f4))
+            -> decltype(function(nullptr, f0, f1, f2, f3, f4))
         {
             static_assert(is_monadic_function<F0>::value, "par: argument 0: monadic function expected");
             static_assert(is_monadic_function<F1>::value, "par: argument 1: monadic function expected");
@@ -116,14 +116,14 @@ namespace pfq { namespace lang { namespace experimental {
             static_assert(is_monadic_function<F3>::value, "par: argument 3: monadic function expected");
             static_assert(is_monadic_function<F4>::value, "par: argument 4: monadic function expected");
 
-            return mfunction("par5", f0, f1, f2, f3, f4);
+            return function("par5", f0, f1, f2, f3, f4);
         }
 
         //! Function that returns the parallel of 6 monadic NetFunctions.
 
         template <typename F0, typename F1, typename F2, typename F3, typename F4, typename F5>
         auto par6(F0 f0, F1 f1, F2 f2, F3 f3, F4 f4, F5 f5)
-            -> decltype(mfunction(nullptr, f0, f1, f2, f3, f4, f5))
+            -> decltype(function(nullptr, f0, f1, f2, f3, f4, f5))
         {
             static_assert(is_monadic_function<F0>::value, "par: argument 0: monadic function expected");
             static_assert(is_monadic_function<F1>::value, "par: argument 1: monadic function expected");
@@ -132,14 +132,14 @@ namespace pfq { namespace lang { namespace experimental {
             static_assert(is_monadic_function<F4>::value, "par: argument 4: monadic function expected");
             static_assert(is_monadic_function<F5>::value, "par: argument 5: monadic function expected");
 
-            return mfunction("par6", f0, f1, f2, f3, f4, f5);
+            return function("par6", f0, f1, f2, f3, f4, f5);
         }
 
         //! Function that returns the parallel of 7 monadic NetFunctions.
 
         template <typename F0, typename F1, typename F2, typename F3, typename F4, typename F5, typename F6>
         auto par7(F0 f0, F1 f1, F2 f2, F3 f3, F4 f4, F5 f5, F6 f6)
-            -> decltype(mfunction(nullptr, f0, f1, f2, f3, f4, f5, f6))
+            -> decltype(function(nullptr, f0, f1, f2, f3, f4, f5, f6))
         {
             static_assert(is_monadic_function<F0>::value, "par: argument 0: monadic function expected");
             static_assert(is_monadic_function<F1>::value, "par: argument 1: monadic function expected");
@@ -149,14 +149,14 @@ namespace pfq { namespace lang { namespace experimental {
             static_assert(is_monadic_function<F5>::value, "par: argument 5: monadic function expected");
             static_assert(is_monadic_function<F6>::value, "par: argument 6: monadic function expected");
 
-            return mfunction("par7", f0, f1, f2, f3, f4, f5, f6);
+            return function("par7", f0, f1, f2, f3, f4, f5, f6);
         }
 
         //! Function that returns the parallel of 8 monadic NetFunctions.
 
         template <typename F0, typename F1, typename F2, typename F3, typename F4, typename F5, typename F6, typename F7>
         auto par8(F0 f0, F1 f1, F2 f2, F3 f3, F4 f4, F5 f5, F6 f6, F7 f7)
-            -> decltype(mfunction(nullptr, f0, f1, f2, f3, f4, f5, f6, f7))
+            -> decltype(function(nullptr, f0, f1, f2, f3, f4, f5, f6, f7))
         {
             static_assert(is_monadic_function<F0>::value, "par: argument 0: monadic function expected");
             static_assert(is_monadic_function<F1>::value, "par: argument 1: monadic function expected");
@@ -167,20 +167,20 @@ namespace pfq { namespace lang { namespace experimental {
             static_assert(is_monadic_function<F6>::value, "par: argument 6: monadic function expected");
             static_assert(is_monadic_function<F7>::value, "par: argument 7: monadic function expected");
 
-            return mfunction("par8", f0, f1, f2, f3, f4, f5, f6, f7);
+            return function("par8", f0, f1, f2, f3, f4, f5, f6, f7);
         }
 
         //! Evaluate to \c Pass SkBuff if it is a GTP packet, \c Drop it otherwise.
 
-        auto gtp            = mfunction("gtp");
+        auto gtp            = function("gtp");
 
         //! Evaluate to \c Pass SkBuff if it is a GTP Control-Plane packet, \c Drop it otherwise.
 
-        auto gtp_cp         = mfunction("gtp_cp");
+        auto gtp_cp         = function("gtp_cp");
 
         //! Evaluate to \c Pass SkBuff if it is a GTP User-Plane packet, \c Drop it otherwise.
 
-        auto gtp_up         = mfunction("gtp_up");
+        auto gtp_up         = function("gtp_up");
 
         //! Evaluate to \c Pass SkBuff if it is a GTP packet, \c Drop it otherwise.
 
@@ -205,7 +205,7 @@ namespace pfq { namespace lang { namespace experimental {
 
         auto steer_gtp_usr = [] (const char *net, int prefix)
         {
-            return mfunction("steer_gtp_usr", ipv4_t{net}, prefix);
+            return function("steer_gtp_usr", ipv4_t{net}, prefix);
         };
 
     }

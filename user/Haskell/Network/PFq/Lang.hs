@@ -150,7 +150,7 @@ newtype Action a = Identity a
 data Argument = forall a. (Show a, Storable a, Typeable a, ToJSON a, FromJSON a) => ArgData a       |
                 forall a. (Show a, Storable a, Typeable a, ToJSON a, FromJSON a) => ArgVector [a]   |
                 ArgString String                                                                    |
-                ArgVectorStr [String]                                                                 |
+                ArgVectorStr [String]                                                               |
                 ArgFunPtr Int                                                                       |
                 ArgNull
 
@@ -245,7 +245,7 @@ data FunctionDescr =
   , funArgs      :: [Argument]
   , funIndex     :: Int
   , funLink      :: Int
-  }   deriving (Show, Generic)
+  } deriving (Show, Generic)
 
 
 instance ToJSON FunctionDescr
@@ -263,7 +263,6 @@ instance FromJSON (Function f) where
 
 type NetFunction  = Function (SkBuff -> Action SkBuff)
 
-
 -- |Simple in-kernel pfq-lang predicate.
 
 type NetPredicate = Function (SkBuff -> Bool)
@@ -277,7 +276,7 @@ type NetProperty  = Function (SkBuff -> Word64)
 
 data Function fun where
     {
-        MFunction    :: forall a b c d e f g h. (Serializable a, Argumentable a,
+        Function    :: forall a b c d e f g h. (Serializable a, Argumentable a,
                                                  Serializable b, Argumentable b,
                                                  Serializable c, Argumentable c,
                                                  Serializable d, Argumentable d,
@@ -352,7 +351,7 @@ shows' kind symb a b c d e f g h = let args = unwords' [show a, show b, show c, 
 
 instance Show (Function f) where
 
-        show (MFunction symb a b c d e f g h) = shows' "Function" symb a b c d e f g h
+        show (Function  symb a b c d e f g h) = shows' "Function" symb a b c d e f g h
         show (Predicate symb a b c d e f g h) = shows' "Predicate" symb a b c d e f g h
         show (Property  symb a b c d e f g h) = shows' "Property" symb a b c d e f g h
 
@@ -394,7 +393,7 @@ pretties symb a b c d e f g h = let args = unwords' [pretty a, pretty b, pretty 
 
 instance Pretty (Function f) where
 
-        pretty (MFunction symb a b c d e f g h) = pretties symb a b c d e f g h
+        pretty (Function symb a b c d e f g h) = pretties symb a b c d e f g h
         pretty (Predicate symb a b c d e f g h) = pretties symb a b c d e f g h
         pretty (Property  symb a b c d e f g h) = pretties symb a b c d e f g h
 
@@ -452,7 +451,7 @@ serializeAll symb n cont a b c d e f g h =
 
 instance Serializable (Function f) where
 
-    serialize (MFunction symb a b c d e f g h) n = serializeAll symb n True a b c d e f g h
+    serialize (Function symb a b c d e f g h) n = serializeAll symb n True a b c d e f g h
 
     serialize (Composition a b) n = let (s1, n1) = serialize a n
                                         (s2, n2) = serialize b n1

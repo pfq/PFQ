@@ -326,7 +326,7 @@ namespace lang
         //! Monadic function, counterpart of \c vlan_id function. \see vlan_id
 
         auto vlan_id_filter = [] (std::vector<int> const &vs) {
-                                    return mfunction("vlan_id_filter", vs);
+                                    return function("vlan_id_filter", vs);
                               };
         //
         // default properties:
@@ -411,7 +411,7 @@ namespace lang
          * ip >> steer_link
          */
 
-        auto steer_link = mfunction("steer_link");
+        auto steer_link = function("steer_link");
 
         //! Dispatch the packet across the sockets
         /*!
@@ -421,7 +421,7 @@ namespace lang
          * steer_vlan
          */
 
-        auto steer_vlan = mfunction("steer_vlan");
+        auto steer_vlan = function("steer_vlan");
 
         //! Dispatch the packet across the sockets
         /*!
@@ -431,7 +431,7 @@ namespace lang
          * steer_ip
          */
 
-        auto steer_ip   = mfunction("steer_ip");
+        auto steer_ip   = function("steer_ip");
 
         //! Dispatch the packet across the sockets
         /*!
@@ -441,7 +441,7 @@ namespace lang
          * steer_ip6 >> log_msg("Steering an IPv6 packet")
          */
 
-        auto steer_ip6  = mfunction("steer_ip6");
+        auto steer_ip6  = function("steer_ip6");
 
         //! Dispatch the packet across the sockets
         /*!
@@ -451,7 +451,7 @@ namespace lang
          * steer_flow >> log_msg ("Steering a flow")
          */
 
-        auto steer_flow = mfunction("steer_flow");
+        auto steer_flow = function("steer_flow");
 
         //! Dispatch the packet across the sockets
         /*!
@@ -461,7 +461,7 @@ namespace lang
          * steer_rtp
          */
 
-        auto steer_rtp  = mfunction("steer_rtp");
+        auto steer_rtp  = function("steer_rtp");
 
         //! Dispatch the packet across the sockets
         /*!
@@ -482,7 +482,7 @@ namespace lang
             if (inet_pton(AF_INET, net, &na.addr) <= 0)
                 throw std::runtime_error("pfq::lang::steer_net");
 
-            return mfunction("steer_net", na);
+            return function("steer_net", na);
         };
 
         //! Dispatch the packet across the sockets
@@ -493,7 +493,7 @@ namespace lang
          */
 
         auto steer_field = [] (int off_bytes, int size_bits) {
-                                return mfunction("steer_field", off_bytes, size_bits);
+                                return function("steer_field", off_bytes, size_bits);
                            };
         //
         // default filters:
@@ -512,63 +512,63 @@ namespace lang
 
         template <typename Predicate>
         auto filter(Predicate p)
-            -> decltype (mfunction(nullptr, p))
+            -> decltype (function(nullptr, p))
         {
             static_assert(is_predicate<Predicate>::value, "filter: argument 0: predicate expected");
-            return mfunction("filter", p);
+            return function("filter", p);
         }
 
         //! Evaluate to \c Pass SkBuff if it is an IPv4 packet, \c Drop it otherwise.
 
-        auto ip             = mfunction("ip");
+        auto ip             = function("ip");
 
         //! Evaluate to \c Pass SkBuff if it is an IPv6 packet, \c Drop it otherwise.
 
-        auto ip6            = mfunction("ip6");
+        auto ip6            = function("ip6");
 
         //! Evaluate to \c Pass SkBuff if it is an UDP packet, \c Drop it otherwise.
 
-        auto udp            = mfunction("udp");
+        auto udp            = function("udp");
 
         //! Evaluate to \c Pass SkBuff if it is a TCP packet, \c Drop it otherwise.
 
-        auto tcp            = mfunction("tcp");
+        auto tcp            = function("tcp");
 
         //! Evaluate to \c Pass SkBuff if it is an ICMP packet, \c Drop it otherwise.
 
-        auto icmp           = mfunction("icmp");
+        auto icmp           = function("icmp");
 
         //! Evaluate to \c Pass SkBuff if it is an UDP packet (on top of IPv6), \c Drop it otherwise.
 
-        auto udp6           = mfunction("udp6");
+        auto udp6           = function("udp6");
 
         //! Evaluate to \c Pass SkBuff if it is a TCP packet (on top of IPv6), \c Drop it otherwise.
 
-        auto tcp6           = mfunction("tcp6");
+        auto tcp6           = function("tcp6");
 
         //! Evaluate to \c Pass SkBuff if it is an ICMP packet (on top of IPv6), \c Drop it otherwise.
 
-        auto icmp6          = mfunction("icmp6");
+        auto icmp6          = function("icmp6");
 
         //! Evaluate to \c Pass SkBuff if it has a vlan tag, \c Drop it otherwise.
 
-        auto vlan           = mfunction("vlan");
+        auto vlan           = function("vlan");
 
         //! Evaluate to \c Pass SkBuff if it is a TCP or UDP packet, \c Drop it otherwise.
 
-        auto flow           = mfunction("flow");
+        auto flow           = function("flow");
 
         //! Evaluate to \c Pass SkBuff if it is a RTP/RTCP packet, \c Drop it otherwise.
 
-        auto rtp            = mfunction("rtp");
+        auto rtp            = function("rtp");
 
         //! Evaluate to \c Pass SkBuff if it is not a fragment, \c Drop it otherwise.
 
-        auto no_frag        = mfunction("no_frag");
+        auto no_frag        = function("no_frag");
 
         //! Evaluate to \c Pass SkBuff if it is not a fragment or if it is the first fragment, \c Drop it otherwise.
 
-        auto no_more_frag   = mfunction("no_more_frag");
+        auto no_more_frag   = function("no_more_frag");
 
         //! Send a copy of the packet to the kernel.
         /*!
@@ -576,23 +576,23 @@ namespace lang
          * To avoid loop, this function is ignored for packets sniffed from the kernel.
          */
 
-        auto kernel         = mfunction("kernel");
+        auto kernel         = function("kernel");
 
         //! Broadcast the packet to all the sockets that have joined the group for which this computation is specified.
 
-        auto broadcast      = mfunction("broadcast");
+        auto broadcast      = function("broadcast");
 
         //! Drop the packet. The computation evaluates to \c Drop.
 
-        auto drop           = mfunction("drop");
+        auto drop           = function("drop");
 
         //! Unit operation implements left- and right-identity for Action monad.
 
-        auto unit           = mfunction("unit");
+        auto unit           = function("unit");
 
         //! Unit operation implements left- and right-identity for Action monad.
 
-        auto log_msg        = [] (std::string msg) { return mfunction("log_msg", std::move(msg)); };
+        auto log_msg        = [] (std::string msg) { return function("log_msg", std::move(msg)); };
 
         //! Dump the payload of packet to syslog.
         /*!
@@ -602,7 +602,7 @@ namespace lang
          *
          */
 
-        auto log_buff       = mfunction("log_buff");
+        auto log_buff       = function("log_buff");
 
         //! Log the packet to syslog, with a syntax similar to tcpdump.
         /*!
@@ -612,7 +612,7 @@ namespace lang
          *
          */
 
-        auto log_packet     = mfunction("log_packet");
+        auto log_packet     = function("log_packet");
 
         //! Forward the packet to the given device.
         /*!
@@ -622,7 +622,7 @@ namespace lang
          * forward ("eth1")
          */
 
-        auto forward    = [] (std::string dev) { return mfunction("forward", std::move(dev)); };
+        auto forward    = [] (std::string dev) { return function("forward", std::move(dev)); };
 
         //! Forward the packet to the given device.
         /*! This operation breaks the purity of the language, and it is possibly slower
@@ -631,7 +631,7 @@ namespace lang
          * forwardIO ("eth1")
          */
 
-        auto forwardIO  = [] (std::string dev) { return mfunction("forwardIO", std::move(dev)); };
+        auto forwardIO  = [] (std::string dev) { return function("forwardIO", std::move(dev)); };
 
         //! Forward the packet to the given device and evaluates to \c Drop.
         /*!
@@ -642,7 +642,7 @@ namespace lang
          * Conditional bridge, forward the packet to eth1 if UDP, send it to the kernel otherwise.
          */
 
-        auto bridge     = [] (std::string dev) { return mfunction("bridge", std::move(dev)); };
+        auto bridge     = [] (std::string dev) { return function("bridge", std::move(dev)); };
 
         //! Forward the packet to the given device.
         /*! It evaluates to \c Pass SkBuff or \c Drop,
@@ -659,10 +659,10 @@ namespace lang
 
         template <typename Predicate>
         auto tee_(std::string dev, Predicate p)
-            -> decltype(mfunction(nullptr, dev, p))
+            -> decltype(function(nullptr, dev, p))
         {
             static_assert(is_predicate<Predicate>::value, "tee: argument 1: predicate expected");
-            return mfunction("tee", dev, p);
+            return function("tee", dev, p);
         }
 
         //! Evaluate to \c Pass SkBuff, or forward the packet to the given device.
@@ -680,10 +680,10 @@ namespace lang
 
         template <typename Predicate>
         auto tap(std::string dev, Predicate p)
-            -> decltype(mfunction(nullptr, dev, p))
+            -> decltype(function(nullptr, dev, p))
         {
             static_assert(is_predicate<Predicate>::value, "tap: argument 1: predicate expected");
-            return mfunction("tap", dev, p);
+            return function("tap", dev, p);
         }
 
         //! Mark the packet with the given value.
@@ -696,7 +696,7 @@ namespace lang
          * mark (42)
          */
 
-        auto mark           = [] (uint32_t value) { return mfunction("mark", value); };
+        auto mark           = [] (uint32_t value) { return function("mark", value); };
 
         //! Set the state of the computation to the given value.
         /*
@@ -705,7 +705,7 @@ namespace lang
          * state (42)
          */
 
-        auto put_state      = [] (uint32_t value) { return mfunction("put_state", value); };
+        auto put_state      = [] (uint32_t value) { return function("put_state", value); };
 
         //! Increment the i-th counter of the current group.
         /*
@@ -714,7 +714,7 @@ namespace lang
          * inc (10)
          */
 
-        auto inc            = [] (int value) { return mfunction("inc", value); };
+        auto inc            = [] (int value) { return function("inc", value); };
 
         //! Decrement the i-th counter of the current group.
         /*
@@ -723,7 +723,7 @@ namespace lang
          * dec (10)
          */
 
-        auto dec            = [] (int value) { return mfunction("dec", value); };
+        auto dec            = [] (int value) { return function("dec", value); };
 
         //! Monadic version of \c is_l3_proto predicate.
         /*!
@@ -735,7 +735,7 @@ namespace lang
          * \see is_l3_proto
          */
 
-        auto l3_proto       = [] (uint16_t type) { return mfunction ("l3_proto", type); };
+        auto l3_proto       = [] (uint16_t type) { return function ("l3_proto", type); };
 
         //! Monadic version of \c is_l4_proto predicate.
         /*!
@@ -747,7 +747,7 @@ namespace lang
          * \see is_l4_proto
          */
 
-        auto l4_proto       = [] (uint8_t proto) { return mfunction ("l4_proto", proto); };
+        auto l4_proto       = [] (uint8_t proto) { return function ("l4_proto", proto); };
 
         //! Monadic version of \c has_port predicate.
         /*!
@@ -759,15 +759,15 @@ namespace lang
          * \see has_port
          */
 
-        auto port           = [] (uint16_t p) { return mfunction ("port", p); };
+        auto port           = [] (uint16_t p) { return function ("port", p); };
 
         //! Monadic version of \c has_src_port predicate.  \see has_src_port
 
-        auto src_port       = [] (uint16_t p) { return mfunction ("src_port", p); };
+        auto src_port       = [] (uint16_t p) { return function ("src_port", p); };
 
         //! Monadic version of \c has_dst_port predicate.  \see has_dst_port
 
-        auto dst_port       = [] (uint16_t p) { return mfunction ("dst_port", p); };
+        auto dst_port       = [] (uint16_t p) { return function ("dst_port", p); };
 
         //! Monadic version of \c has_addr predicate.
         /*!
@@ -781,21 +781,21 @@ namespace lang
 
         auto addr = [] (const char *net, int prefix)
         {
-            return mfunction("addr", ipv4_t{net}, prefix);
+            return function("addr", ipv4_t{net}, prefix);
         };
 
         //! Monadic version of \c has_src_addr predicate.  \see has_src_addr
 
         auto src_addr = [] (const char *net, int prefix)
         {
-            return mfunction("src_addr", ipv4_t{net}, prefix);
+            return function("src_addr", ipv4_t{net}, prefix);
         };
 
         //! Monadic version of \c has_dst_addr predicate.  \see has_dst_addr
 
         auto dst_addr = [] (const char *net, int prefix)
         {
-            return mfunction("dst_addr", ipv4_t{net}, prefix);
+            return function("dst_addr", ipv4_t{net}, prefix);
         };
 
         //! Conditional execution of monadic NetFunctions.
@@ -810,24 +810,24 @@ namespace lang
 
         template <typename Predicate, typename Fun>
         auto when(Predicate p, Fun f)
-            -> decltype(mfunction(nullptr, p, f))
+            -> decltype(function(nullptr, p, f))
         {
             static_assert(is_predicate<Predicate>::value,  "when: argument 0: predicate expected");
             static_assert(is_monadic_function<Fun>::value, "when: argument 1: monadic function expected");
 
-            return mfunction("when", p, f);
+            return function("when", p, f);
         }
 
         //! The reverse of \c when. \see when
 
         template <typename Predicate, typename Fun>
         auto unless(Predicate p, Fun f)
-            -> decltype(mfunction(nullptr, p, f))
+            -> decltype(function(nullptr, p, f))
         {
             static_assert(is_predicate<Predicate>::value,  "unless: argument 0: predicate expected");
             static_assert(is_monadic_function<Fun>::value, "unless: argument 1: monadic function expected");
 
-            return mfunction("unless", p, f);
+            return function("unless", p, f);
         }
 
         //! conditional execution of monadic netfunctions.
@@ -841,13 +841,13 @@ namespace lang
 
         template <typename Predicate, typename F1, typename F2>
         auto conditional(Predicate p, F1 f1, F2 f2)
-            -> decltype(mfunction(nullptr, p, f1, f2))
+            -> decltype(function(nullptr, p, f1, f2))
         {
             static_assert(is_predicate<Predicate>::value,  "conditional: argument 0: predicate expected");
             static_assert(is_monadic_function<F1>::value,  "conditional: argument 1: monadic function expected");
             static_assert(is_monadic_function<F2>::value,  "conditional: argument 1: monadic function expected");
 
-            return mfunction("conditional", p, f1, f2);
+            return function("conditional", p, f1, f2);
         }
 
         //! Function that inverts a monadic NetFunction.
@@ -860,11 +860,11 @@ namespace lang
 
         template <typename Fun>
         auto inv(Fun f)
-            -> decltype(mfunction(nullptr, f))
+            -> decltype(function(nullptr, f))
         {
             static_assert(is_monadic_function<Fun>::value, "inv: argument 0: monadic function expected");
 
-            return mfunction("inv", f);
+            return function("inv", f);
         }
 
         //! Function that returns the parallel of two monadic NetFunctions.
@@ -877,12 +877,12 @@ namespace lang
 
         template <typename F1, typename F2>
         auto par(F1 f1, F2 f2)
-            -> decltype(mfunction(nullptr, f1, f2))
+            -> decltype(function(nullptr, f1, f2))
         {
             static_assert(is_monadic_function<F1>::value, "par: argument 0: monadic function expected");
             static_assert(is_monadic_function<F2>::value, "par: argument 1: monadic function expected");
 
-            return mfunction("par", f1, f2);
+            return function("par", f1, f2);
         }
 
         //
@@ -926,21 +926,21 @@ namespace lang
 
         auto bloom_filter      = [] (int m, std::vector<std::string> const &ips, int prefix) {
                                     auto addrs = fmap(details::inet_addr, ips);
-                                    return mfunction("bloom_filter", m, std::move(addrs), prefix);
+                                    return function("bloom_filter", m, std::move(addrs), prefix);
                                 };
 
         //! Monadic counterpart of \c bloom_src function.  \see bloom_src
 
         auto bloom_src_filter  = [] (int m, std::vector<std::string> const &ips, int prefix) {
                                     auto addrs = fmap(details::inet_addr, ips);
-                                    return mfunction("bloom_src_filter", m, std::move(addrs), prefix);
+                                    return function("bloom_src_filter", m, std::move(addrs), prefix);
                                 };
 
         //! Monadic counterpart of \c bloom_dst function. \see bloom_dst
 
         auto bloom_dst_filter  = [] (int m, std::vector<std::string> const &ips, int prefix) {
                                     auto addrs = fmap(details::inet_addr, ips);
-                                    return mfunction("bloom_dst_filter", m, std::move(addrs), prefix);
+                                    return function("bloom_dst_filter", m, std::move(addrs), prefix);
                                 };
         //
         // bloom filter, utility functions:
