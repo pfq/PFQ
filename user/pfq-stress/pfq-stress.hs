@@ -33,7 +33,7 @@ import Control.Concurrent (threadDelay)
 import Data.String.Here
 import Data.Data
 import Data.List (intercalate, (\\))
-import qualified Network.PFq as Q (version)
+import qualified Network.PFQ as Q (version)
 
 pfq_counters, pfq_load :: String
 

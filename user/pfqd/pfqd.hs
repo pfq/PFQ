@@ -1,8 +1,8 @@
 module PFQDaemon where
 
 import Config
-import Network.PFq.Lang
-import Network.PFq.Default
-import Network.PFq.Experimental
+import Network.PFQ.Lang
+import Network.PFQ.Lang.Default
+import Network.PFQ.Lang.Experimental
 
 config = [] :: [Group]

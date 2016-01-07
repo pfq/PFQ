@@ -30,7 +30,7 @@
 {-# LANGUAGE ImpredicativeTypes #-}
 {-# LANGUAGE OverloadedStrings  #-}
 
-module Network.PFq.Default
+module Network.PFQ.Lang.Default
     (
         -- * Predicates
         -- | Collection of predicates used in conditional expressions.
@@ -201,9 +201,9 @@ module Network.PFq.Default
     ) where
 
 
-import           Data.Int
-import           Network.PFq.Lang
+import           Network.PFQ.Lang
 
+import           Data.Int
 import           Data.Word
 
 import           Network.Socket

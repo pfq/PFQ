@@ -19,12 +19,12 @@
 
 module Main where
 
-import Network.PFq as Q
+import Network.PFQ as Q
 import Foreign
 import System.Environment
 
-import Network.PFq.Lang
-import Network.PFq.Default
+import Network.PFQ.Lang
+import Network.PFQ.Lang.Default
 
 handler :: Q.Callback
 handler h _ = print h

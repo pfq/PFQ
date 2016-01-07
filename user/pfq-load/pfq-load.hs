@@ -43,7 +43,7 @@ import System.Exit
 import System.FilePath
 import System.Posix.Signals
 import System.Posix.Types
-import qualified Network.PFq as Q (version)
+import qualified Network.PFQ as Q (version)
 
 proc_cpuinfo, proc_modules :: String
 proc_cpuinfo = "/proc/cpuinfo"

@@ -19,7 +19,7 @@
 
 module QLang.FDescr where
 
-import Network.PFq.Lang as Q
+import Network.PFQ.Lang as Q
 import Options
 
 

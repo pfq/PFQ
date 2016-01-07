@@ -31,7 +31,7 @@ import Text.Regex.Posix
 import Data.List
 import Data.Maybe
 import Data.Function(on)
-import qualified Network.PFq as Q (version)
+import qualified Network.PFQ as Q (version)
 
 pfq_kcompat,proc_cpuinfo :: String
 pfq_symvers :: [String]

@@ -40,7 +40,7 @@
 
 {-# OPTIONS_GHC -fno-warn-unused-binds #-}
 
-module Network.PFq.Lang
+module Network.PFQ.Lang
     (
         -- * Basic types
 

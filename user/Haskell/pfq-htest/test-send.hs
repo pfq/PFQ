@@ -23,14 +23,11 @@
 
 module Main where
 
-import qualified Network.PFq as Q
+import qualified Network.PFQ as Q
 import Foreign
+
 import System.Environment
-
 import Control.Concurrent
--- import Control.Monad
--- import Foreign.C.Types
-
 
 import qualified Data.ByteString as C
 

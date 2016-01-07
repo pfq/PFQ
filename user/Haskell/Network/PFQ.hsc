@@ -28,14 +28,14 @@
 
 ------------------------------------------------------------------------------
 -- |
---  Module      : Network.PFq
+--  Module      : Network.PFQ
 --  Copyright   : Nicola Bonelli (c) 2012-2015
 --  License     : GPL
 --  Maintainer  : nicola@pfq.io
 --  Stability   : experimental
 --  Portability : non-portable
 --
--- The 'Network.PFq' module is a low level binding to the
+-- The 'Network.PFQ' module is a low level binding to the
 -- functions in @libpfq@.  See <https://github.com/pfq/PFQ/wiki> for more
 -- information.
 --
@@ -47,7 +47,7 @@
 
 {-# OPTIONS_GHC -fno-warn-unused-binds #-}
 
-module Network.PFq
+module Network.PFQ
     (
         -- * Types
 
@@ -134,7 +134,7 @@ module Network.PFq
 
         -- * Packet capture
 
-        Network.PFq.read,
+        Network.PFQ.read,
         dispatch,
 
         getPackets,
@@ -206,7 +206,7 @@ import Foreign.Storable
 import Foreign.Concurrent as C (newForeignPtr)
 import Foreign.ForeignPtr (ForeignPtr)
 
-import Network.PFq.Lang
+import Network.PFQ.Lang
 
 import System.Clock
 import System.Process(readProcess)
@@ -224,7 +224,7 @@ data NetQueue = NetQueue {
    ,  qIndex      :: {-# UNPACK #-} !Word32     -- ^ index of the queue
    } deriving (Eq, Show)
 
--- |PFq packet header.
+-- |PFQ packet header.
 data PktHdr = PktHdr {
       hMark     :: {-# UNPACK #-} !Word32       -- ^ skb 32-bits mark
     , hState    :: {-# UNPACK #-} !Word32       -- ^ opaque 32-bits state
@@ -239,7 +239,7 @@ data PktHdr = PktHdr {
     , hCommit   :: {-# UNPACK #-} !Word8        -- ^ commit bit
     } deriving (Eq, Show)
 
--- |PFq statistics.
+-- |PFQ statistics.
 data Statistics = Statistics {
       sReceived   ::  Integer  -- ^ packets received
     , sLost       ::  Integer  -- ^ packets lost
@@ -250,7 +250,7 @@ data Statistics = Statistics {
     , sKernel     ::  Integer  -- ^ packets forwarded to kernel
     } deriving (Eq, Show)
 
--- |PFq counters.
+-- |PFQ counters.
 data Counters = Counters {
       counter     ::  [Integer] -- ^ per-group counter
     } deriving (Eq, Show)
@@ -1003,7 +1003,7 @@ instance Storable StorableFunDescr where
 
 setGroupComputation :: Ptr PFqTag
                     -> Int                                     -- ^ group id
-                    -> Function (SkBuff -> Action SkBuff)      -- ^ expression (PFq-Lang)
+                    -> Function (SkBuff -> Action SkBuff)      -- ^ expression (pfq-Lang)
                     -> IO ()
 
 setGroupComputation hdl gid comp =
@@ -1015,7 +1015,7 @@ setGroupComputation hdl gid comp =
 
 setGroupComputationFromString :: Ptr PFqTag
                               -> Int       -- ^ group id
-                              -> String    -- ^ simple expression (PFq-Lang)
+                              -> String    -- ^ simple expression (pfq-lang)
                               -> IO ()
 
 setGroupComputationFromString hdl gid comp =
@@ -1042,7 +1042,7 @@ setGroupComputationFromJSON hdl gid comp =
 
 setGroupComputationFromDescr :: Ptr PFqTag
                     -> Int                  -- ^ group id
-                    -> [FunctionDescr]      -- ^ expression (PFq-Lang)
+                    -> [FunctionDescr]      -- ^ expression (pfq-lang)
                     -> IO ()
 setGroupComputationFromDescr hdl gid descr =
     allocaBytes (sizeOf (undefined :: CSize) * 2 + #{size struct pfq_lang_functional_descr} * length descr) $ \ ptr -> do

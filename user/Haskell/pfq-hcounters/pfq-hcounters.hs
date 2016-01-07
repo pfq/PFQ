@@ -23,7 +23,7 @@
 
 module Main where
 
-import qualified Network.PFq as Q
+import qualified Network.PFQ as Q
 
 import Foreign
 import System.Time
@@ -73,7 +73,7 @@ options = cmdArgsMode $
     ,   slots    = 8192
     ,   function = [] &= typ "FUNCTION"  &= help "Where FUNCTION = gid,computation (ie: 0,steer_ip)"
     ,   thread   = [] &= typ "BINDING" &= help "Where BINDING = core.gid[.[eth0:queue,queue,queue...[.ethx:queue,queue...]]]"
-    } &= summary "PFq multi-threaded packet counter." &= program "pfq-counters"
+    } &= summary "PFQ multi-threaded packet counter." &= program "pfq-counters"
 
 
 -- Group Options
