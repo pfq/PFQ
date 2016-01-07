@@ -37,12 +37,13 @@ import System.Exit
 import Foreign.ForeignPtr
 import Foreign.Ptr
 
-import Network.PFq.Default
+import Network.PFQ as Q
+import Network.PFQ.Lang.Default
+
 import Options
 import Config
 import PFQDaemon
 
-import Network.PFq as Q
 
 
 foreverDaemon :: Options -> IO () -> IO ()

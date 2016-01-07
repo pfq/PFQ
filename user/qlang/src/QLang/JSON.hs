@@ -19,7 +19,7 @@
 
 module QLang.JSON where
 
-import Network.PFq.Lang as Q
+import Network.PFQ.Lang as Q
 
 import qualified Data.Aeson as A
 import qualified Data.ByteString.Lazy.Char8 as C

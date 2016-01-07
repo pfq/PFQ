@@ -20,8 +20,8 @@
 module QLang.PFQ where
 
 import Language.Haskell.Interpreter
-import Network.PFq.Lang as Q
-import Network.PFq as Q
+import Network.PFQ.Lang as Q
+import Network.PFQ as Q
 
 import Control.Monad.Trans.Reader
 import Control.Monad()

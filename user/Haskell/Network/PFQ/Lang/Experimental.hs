@@ -29,7 +29,7 @@
 
 {-# LANGUAGE ImpredicativeTypes #-}
 
-module Network.PFq.Experimental
+module Network.PFQ.Lang.Experimental
     (
         -- * Experimental Functions
         -- | This set of experimental functions may be subject to changes in future releases
@@ -65,7 +65,7 @@ module Network.PFq.Experimental
     ) where
 
 
-import Network.PFq.Lang
+import Network.PFQ.Lang
 import Foreign.C.Types
 
 -- Experimental in-kernel computations

@@ -1,7 +1,8 @@
 module Config where
 
-import qualified Network.PFq as Q
-import Network.PFq.Lang
+import qualified Network.PFQ as Q
+import Network.PFQ.Lang
+
 import Data.List
 import Data.List.Split
 import Data.Monoid

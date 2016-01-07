@@ -23,9 +23,9 @@ Library
                  scientific,
                  clock
 
-  exposed-modules: Network.PFq
-                   Network.PFq.Default
-                   Network.PFq.Experimental
-                   Network.PFq.Lang
+  exposed-modules: Network.PFQ
+                   Network.PFQ.Lang
+                   Network.PFQ.Lang.Default
+                   Network.PFQ.Lang.Experimental
   ghc-options:     -Wall -fno-warn-missing-signatures
   extra-libraries: pfq

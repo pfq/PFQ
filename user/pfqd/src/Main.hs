@@ -42,8 +42,8 @@ import System.Console.CmdArgs
 import System.Directory
 import System.IO.Error
 
-import Network.PFq as Q
-import Network.PFq.Lang
+import Network.PFQ as Q
+import Network.PFQ.Lang
 
 import Foreign.Marshal.Utils
 import Foreign.ForeignPtr

@@ -19,9 +19,9 @@
 
 {-# LANGUAGE OverloadedStrings #-}
 
-import Network.PFq.Default
-import Network.PFq.Experimental
-import Network.PFq.Lang
+import Network.PFQ.Lang
+import Network.PFQ.Lang.Default
+import Network.PFQ.Lang.Experimental
 
 import Data.Aeson
 import Data.Maybe
