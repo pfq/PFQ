@@ -1,6 +1,9 @@
 PFQ v5.2 
 ========
 
+[![Stability](https://img.shields.io/badge/stability-experimental-red.svg)](http://github.com/badges/stability-badges)
+[![Gitter](https://badges.gitter.im/PFQ/pfq.svg)](https://gitter.im/PFQ/pfq?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
+
 Introduction
 ------------
 
