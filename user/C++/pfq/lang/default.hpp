@@ -405,6 +405,15 @@ namespace lang
 
         //! Dispatch the packet across the sockets.
         /*!
+         * Dispatch with a randomized algorithm in Round-Robin fashion.
+         *
+         * ip >> steer_rrobin
+         */
+
+        auto steer_rrobin = function("steer_rrobin");
+
+        //! Dispatch the packet across the sockets.
+        /*!
          * Dispatch with a randomized algorithm that maintains the integrity
          * of physical links. Example:
          *

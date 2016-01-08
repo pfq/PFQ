@@ -148,6 +148,7 @@ module Network.PFQ.Lang.Default
         -- | Monadic functions used to dispatch packets across sockets.
         -- They evaluate to /Steer Hash Skbuff/, if the packet has a certain property, /Drop/ otherwise.
 
+        steer_rrobin ,
         steer_link ,
         steer_vlan ,
         steer_ip   ,
@@ -428,6 +429,11 @@ icmp_code = Property "icmp_code" () () () () () () () ()
 
 
 -- Predefined in-kernel computations:
+
+-- | Dispatch the packet across the sockets in Round-Robin fashion.
+--
+-- > ip >-> steer_rrobin
+steer_rrobin = Function "steer_rrobin" () () () () () () () () :: NetFunction
 
 -- | Dispatch the packet across the sockets
 -- with a randomized algorithm that maintains the integrity of
