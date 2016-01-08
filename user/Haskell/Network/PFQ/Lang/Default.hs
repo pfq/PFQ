@@ -51,6 +51,11 @@ module Network.PFQ.Lang.Default
         is_first_frag,
         is_more_frag,
 
+        is_rtp,
+        is_rtcp,
+        is_sip,
+        is_voip,
+
         has_port,
         has_src_port,
         has_dst_port,
@@ -129,7 +134,11 @@ module Network.PFQ.Lang.Default
         l3_proto   ,
         l4_proto   ,
         flow       ,
-        rtp        ,
+
+        rtp         ,
+        rtcp        ,
+        sip         ,
+        voip        ,
 
         vlan_id_filter,
 
@@ -155,9 +164,10 @@ module Network.PFQ.Lang.Default
         steer_ip   ,
         steer_ip6  ,
         steer_flow ,
-        steer_rtp  ,
         steer_net  ,
         steer_field,
+        steer_rtp  ,
+        steer_voip ,
 
         -- * Forwarders
 
@@ -347,6 +357,20 @@ is_l3_proto x = Predicate "is_l3_proto" x () () () () () () ()
 is_l4_proto :: Int8 -> NetPredicate
 is_l4_proto x = Predicate "is_l4_proto" x () () () () () () ()
 
+is_rtp, is_rtcp, is_sip, is_voip :: NetPredicate
+
+-- | Evaluate to /True/ if the SkBuff is a RTP packet.
+is_rtp = Predicate "is_rtp" () () () () () () () ()
+
+-- | Evaluate to /True/ if the SkBuff is a RTCP packet.
+is_rtcp = Predicate "is_rtcp" () () () () () () () ()
+
+-- | Evaluate to /True/ if the SkBuff is a SIP packet.
+is_sip = Predicate "is_sip" () () () () () () () ()
+
+-- | Evaluate to /True/ if the SkBuff is a VoIP packet (RTP|RTCP|SIP).
+is_voip = Predicate "is_voip" () () () () () () () ()
+
 
 has_port, has_src_port, has_dst_port :: Int16 -> NetPredicate
 
@@ -486,6 +510,13 @@ steer_rtp = Function "steer_rtp" () () () () () () () () :: NetFunction
 
 -- | Dispatch the packet across the sockets
 -- with a randomized algorithm that maintains the integrity of
+-- RTP/RTCP flows; SIP packets are broadcasted.
+--
+-- > steer_voip
+steer_voip = Function "steer_voip" () () () () () () () () :: NetFunction
+
+-- | Dispatch the packet across the sockets
+-- with a randomized algorithm that maintains the integrity of
 -- sub networks.
 --
 -- > steer_net "192.168.0.0" 16 24
@@ -543,8 +574,17 @@ vlan = Function "vlan" () () () () () () () () :: NetFunction
 -- | Evaluate to /Pass SkBuff/ if it is a TCP or UDP packet, /Drop/ it otherwise.
 flow = Function "flow" () () () () () () () () :: NetFunction
 
--- | Evaluate to /Pass SkBuff/ if it is a RTP/RTCP packet, /Drop/ it otherwise.
+-- | Evaluate to /Pass SkBuff/ if it is a RTP packet, /Drop/ it otherwise.
 rtp = Function "rtp" () () () () () () () () :: NetFunction
+
+-- | Evaluate to /Pass SkBuff/ if it is a RTCP packet, /Drop/ it otherwise.
+rtcp = Function "rtcp" () () () () () () () () :: NetFunction
+
+-- | Evaluate to /Pass SkBuff/ if it is a SIP packet, /Drop/ it otherwise.
+sip = Function "sip" () () () () () () () () :: NetFunction
+
+-- | Evaluate to /Pass SkBuff/ if it is a VoIP packet (RTP|RTCP|SIP), /Drop/ it otherwise.
+voip = Function "voip" () () () () () () () () :: NetFunction
 
 -- | Evaluate to /Pass SkBuff/ if it is not a fragment, /Drop/ it otherwise.
 no_frag = Function "no_frag" () () () () () () () () :: NetFunction
