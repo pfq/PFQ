@@ -736,7 +736,7 @@ pfq_activate_linux(pcap_t *handle)
 	handle->linktype = DLT_EN10MB;
 
 	device = pfq_get_devname(handle->opt.source);
-        fprintf(stdout, "[PFQ] running on device %s...\n", device);
+	fprintf(stdout, "[PFQ] running on device %s...\n", device);
 
 	config = pfq_get_config_file(handle->opt.source);
 
@@ -879,18 +879,20 @@ pfq_activate_linux(pcap_t *handle)
 			return 0;
 		}
 
-		if (strcmp(device, "any") != 0) {
+		if (device && strcmp(device, "any")) {
 			if (string_for_each_token(device, ":", set_promisc) < 0) {
 				goto fail;
 			}
 		}
 	}
 
-	handle->md.device = strdup(device);
-	if (handle->md.device == NULL) {
-		snprintf(handle->errbuf, PCAP_ERRBUF_SIZE, "strdup: %s",
-			 pcap_strerror(errno) );
-		goto fail;
+	if (device) {
+		handle->md.device = strdup(device);
+		if (handle->md.device == NULL) {
+			snprintf(handle->errbuf, PCAP_ERRBUF_SIZE, "strdup: %s",
+				 pcap_strerror(errno) );
+			goto fail;
+		}
 	}
 
 	/*
@@ -900,8 +902,7 @@ pfq_activate_linux(pcap_t *handle)
 	 */
 
 	if (handle->opt.promisc)
-		handle->md.proc_dropped = linux_if_drops(handle->md.device);
-
+		handle->md.proc_dropped = handle->md.device ? linux_if_drops(handle->md.device) : 0;
 
 	if (handle->opt.pfq.group != -1) {
 
@@ -931,9 +932,9 @@ pfq_activate_linux(pcap_t *handle)
 			fprintf(stderr, "[PFQ] error: %s\n", pfq_error(handle->md.pfq.q));
 		}
 
-		/* bind to device(es) */
+		/* bind to device(es) if specified */
 
-		if (strcmp(device, "any") != 0) {
+		if (device && strcmp(device, "any") != 0) {
 			if (string_for_each_token(device, ":", bind_group) < 0)
 				goto fail;
 		}
@@ -959,9 +960,9 @@ pfq_activate_linux(pcap_t *handle)
 			goto fail;
 		}
 
-		/* bind to device(es) */
+		/* bind to device(es) if specified */
 
-		if (strcmp(device, "any") != 0) {
+		if (device && strcmp(device, "any") != 0) {
 			if (string_for_each_token(device, ":", bind_socket) < 0)
 				goto fail;
 		}
@@ -975,38 +976,41 @@ pfq_activate_linux(pcap_t *handle)
 
 	/* bind TX to device/queue */
 
-	if ((first_dev = string_first_token(device, ":"))) {
+	if (device && strcmp(device, "any"))
+	{
+		if ((first_dev = string_first_token(device, ":"))) {
 
-		size_t tot, idx;
+			size_t tot, idx;
 
-		tot = pfq_count_tx_thread(&handle->opt.pfq);
-		if (tot) {
-			fprintf(stdout, "[PFQ] enabling %zu Tx async on dev %s...\n", tot, first_dev);
+			tot = pfq_count_tx_thread(&handle->opt.pfq);
+			if (tot) {
+				fprintf(stdout, "[PFQ] enabling %zu Tx async on dev %s...\n", tot, first_dev);
 
-			handle->opt.pfq.tx_async = 1;
+				handle->opt.pfq.tx_async = 1;
 
-			for(idx = 0; idx < tot; idx++)
-			{
-				fprintf(stdout, "[PFQ] binding Tx on %s, hw queue %d, tx-thread %d\n",
-					first_dev, handle->opt.pfq.tx_queue[idx], handle->opt.pfq.tx_thread[idx]);
+				for(idx = 0; idx < tot; idx++)
+				{
+					fprintf(stdout, "[PFQ] binding Tx on %s, hw queue %d, tx-thread %d\n",
+						first_dev, handle->opt.pfq.tx_queue[idx], handle->opt.pfq.tx_thread[idx]);
 
-				if (pfq_bind_tx(handle->md.pfq.q, first_dev,
-						handle->opt.pfq.tx_queue[idx],
-						handle->opt.pfq.tx_thread[idx]) < 0) {
+					if (pfq_bind_tx(handle->md.pfq.q, first_dev,
+							handle->opt.pfq.tx_queue[idx],
+							handle->opt.pfq.tx_thread[idx]) < 0) {
+						fprintf(stderr, "[PFQ] error: %s\n", pfq_error(handle->md.pfq.q));
+						goto fail;
+					}
+				}
+			}
+			else {
+				fprintf(stdout, "[PFQ] enabling Tx on dev %s...\n", first_dev);
+				if (pfq_bind_tx(handle->md.pfq.q, first_dev, 0, -1)) {
 					fprintf(stderr, "[PFQ] error: %s\n", pfq_error(handle->md.pfq.q));
 					goto fail;
 				}
 			}
-		}
-		else {
-			fprintf(stdout, "[PFQ] enabling Tx on dev %s...\n", first_dev);
-			if (pfq_bind_tx(handle->md.pfq.q, first_dev, 0, -1)) {
-				fprintf(stderr, "[PFQ] error: %s\n", pfq_error(handle->md.pfq.q));
-				goto fail;
-			}
-		}
 
-		free(first_dev);
+			free(first_dev);
+		}
 	}
 
 	/* set FUNCTION/computation */
@@ -1140,7 +1144,7 @@ pfq_cleanup_linux(pcap_t *handle)
 
 	if (handle->md.must_do_on_close & MUST_CLEAR_PROMISC) {
 
-		if (strcmp(handle->md.device, "any") != 0) {
+		if (handle->md.device && strcmp(handle->md.device, "any") != 0) {
 			string_for_each_token(handle->md.device, ":", clear_promisc);
 		}
 	}
@@ -1153,11 +1157,8 @@ pfq_cleanup_linux(pcap_t *handle)
 
 	close(handle->fd);
 
-	if (handle->md.device != NULL) {
-		free(handle->md.device);
-		handle->md.device = NULL;
-	}
-
+	free(handle->md.device);
+	handle->md.device = NULL;
 	pcap_cleanup_live_common(handle);
 }
 
@@ -1256,11 +1257,9 @@ pfq_stats_linux(pcap_t *handle, struct pcap_stat *stat)
 
 	if (handle->opt.promisc) {
 		if_dropped = handle->md.proc_dropped;
-		handle->md.proc_dropped = linux_if_drops(handle->md.device);
+		handle->md.proc_dropped = handle->md.device ? linux_if_drops(handle->md.device) : 0;
 		handle->md.stat.ps_ifdrop += (handle->md.proc_dropped - if_dropped);
 	}
-
-	/* qstats.lost takes into account the border effect due to setup/shutdown of pfq socket */
 
 	stat->ps_recv   = handle->md.packets_read;
 	stat->ps_drop   = (u_int) qstats.drop;
