@@ -80,8 +80,8 @@ static inline void smp_wmb() { barrier(); }
 #define PFQ_MINOR(a)			((a >> 8) & 0xff)
 #define PFQ_PATCHLEVEL(a)		(a & 0xff)
 
-#define PFQ_VERSION_CODE		PFQ_VERSION(5,2,0)
-#define PFQ_VERSION_STRING		"5.2.0"
+#define PFQ_VERSION_CODE		PFQ_VERSION(6,0,0)
+#define PFQ_VERSION_STRING		"6.0.0"
 
 #define PF_Q				27   /* pfq socket family */
 

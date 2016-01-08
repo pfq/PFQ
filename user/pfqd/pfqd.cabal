@@ -2,7 +2,7 @@
 -- see http://haskell.org/cabal/users-guide/
 
 name:                pfqd
-version:             5.2
+version:             6.0
 -- synopsis:            
 -- description:         
 homepage:            www.pfq.io
@@ -20,7 +20,7 @@ executable pfqd
   main-is:             Main.hs
   hs-source-dirs:      src
   build-depends:       base >= 4.7,
-                       pfq >= 5.2,
+                       pfq >= 6.0,
                        data-default, 
                        daemons,
                        cmdargs,
