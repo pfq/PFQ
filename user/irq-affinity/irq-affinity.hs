@@ -74,12 +74,11 @@ type BindStateT = StateT (Options, Int)
 
 options :: Mode (CmdArgs Options)
 options = cmdArgsMode $ Options
-    {
-         firstcore = 0       &= typ "CORE" &= help "first core involved",
-         exclude   = []      &= typ "CORE" &= help "exclude core from binding",
-         algorithm = ""      &= help "binding algorithm: naive, round-robin, even, odd, all-in:id, comb:id",
-         msitype   = Nothing &= typ "MSI" &= help "MSI type: TxRx, Rx, Tx or None",
-         devices   = []      &= args
+    {   firstcore = 0       &= typ "CORE" &= help "first core involved"
+    ,   exclude   = []      &= typ "CORE" &= help "exclude core from binding"
+    ,   algorithm = ""      &= help "binding algorithm: naive, round-robin, even, odd, all-in:id, comb:id"
+    ,   msitype   = Nothing &= typ "MSI" &= help "MSI type: TxRx, Rx, Tx or None"
+    ,   devices   = []      &= args
     } &= summary "irq-affinity: advanced Linux interrupt affinity binding." &= program "irq-affinity"
 
 

@@ -54,27 +54,25 @@ pfqOptions = [ (rss, [mkOption "capture_incoming" icap,
 
 
 data Options = Options
-    {
-         core       :: Int,
-         gid        :: Int,
-         seconds    :: Int,
-         device     :: [String],
-         dryRun     :: Bool,
-         run        :: [Int],
-         skip       :: [Int]
+    {   core       :: Int
+    ,   gid        :: Int
+    ,   seconds    :: Int
+    ,   device     :: [String]
+    ,   dryRun     :: Bool
+    ,   run        :: [Int]
+    ,   skip       :: [Int]
     } deriving (Show, Read, Data, Typeable)
 
 
 options :: Mode (CmdArgs Options)
 options = cmdArgsMode $ Options
-    {
-         core       = 0             &= typ "NUM" &= help "core where to run the tests",
-         gid        = 0             &= typ "NUM" &= help "PFQ group id of the tests",
-         seconds    = 5             &= typ "NUM" &= help "Duration of each test in seconds",
-         device     = []            &= help "List of devices where to run the tests",
-         run        = []            &= help "List of tests to run",
-         skip       = []            &= help "List of tests to skip",
-         dryRun     = False         &= help "Don't actually run tests"
+    {   core       = 0             &= typ "NUM" &= help "core where to run the tests"
+    ,   gid        = 0             &= typ "NUM" &= help "PFQ group id of the tests"
+    ,   seconds    = 5             &= typ "NUM" &= help "Duration of each test in seconds"
+    ,   device     = []            &= help "List of devices where to run the tests"
+    ,   run        = []            &= help "List of tests to run"
+    ,   skip       = []            &= help "List of tests to skip"
+    ,   dryRun     = False         &= help "Don't actually run tests"
     } &= summary ("pfq-stress (PFQ " ++ Q.version ++ ")") &= program "pfq-stress"
 
 
@@ -90,17 +88,14 @@ main = do
     withFile "stress.run" WriteMode $ \h -> do
 
         sPutStrLn h $ bold ++ "[PFQ] Running regression tests..." ++ reset
-
         forM_ (zip [0..] pfqOptions) $ \(n, opt) ->
 
             when (n `elem` take 1024 filt) $ do
 
-                    putChar '\n'
-
                     let banner = [i|${bold}[PFQ] ####### Test #${n}${reset}: ${opt}|]
 
+                    putChar '\n'
                     sPutStrLn h banner
-
                     unless (dryRun opts) $ threadDelay 3000000
 
                     runSystem [i|${pfq_load} -q ${fst opt} ${unwords (snd opt)}|] "Could not load PFQ module!" ((not . dryRun) opts)

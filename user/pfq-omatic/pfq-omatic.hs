@@ -38,9 +38,9 @@ pfq_symvers :: [String]
 
 proc_cpuinfo    = "/proc/cpuinfo"
 pfq_kcompat     = "/usr/include/linux/pf_q-kcompat.h"
-pfq_symvers     = [ "/lib/modules/" ++ uname_r ++ "/kernel/net/pfq/Module.symvers",
-                    home_dir ++ "/PFQ/kernel/Module.symvers",
-                    "/opt/PFQ/kernel/Module.symvers"
+pfq_symvers     = [ "/lib/modules/" ++ uname_r ++ "/kernel/net/pfq/Module.symvers"
+                  , home_dir ++ "/PFQ/kernel/Module.symvers"
+                  , "/opt/PFQ/kernel/Module.symvers"
                   ]
 
 
