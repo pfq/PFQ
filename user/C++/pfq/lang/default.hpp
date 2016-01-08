@@ -328,6 +328,23 @@ namespace lang
         auto vlan_id_filter = [] (std::vector<int> const &vs) {
                                     return function("vlan_id_filter", vs);
                               };
+
+        //! Evaluate to \c true if the SkBuff is an RTP packet.
+
+        auto is_rtp          = predicate ("is_rtp");
+
+        //! Evaluate to \c true if the SkBuff is an RTCP packet.
+
+        auto is_rtcp         = predicate ("is_rtcp");
+
+        //! Evaluate to \c true if the SkBuff is a SIP packet.
+
+        auto is_sip          = predicate ("is_sip");
+
+        //! Evaluate to \c true if the SkBuff is a VoIP packet (RTP|RTCP|SIP).
+
+        auto is_voip         = predicate ("is_voip");
+
         //
         // default properties:
         //
@@ -481,6 +498,16 @@ namespace lang
         //! Dispatch the packet across the sockets
         /*!
          * Dispatch with a randomized algorithm that maintains the integrity
+         * of RTP/RTCP flows; SIP packets are boradcasted Example:
+         *
+         * steer_voip
+         */
+
+        auto steer_voip  = function("steer_voip");
+
+        //! Dispatch the packet across the sockets
+        /*!
+         * Dispatch with a randomized algorithm that maintains the integrity
          * of sub networks. Example:
          *
          * steer_net("192.168.0.0", 16, 24)
@@ -573,9 +600,22 @@ namespace lang
 
         auto flow           = function("flow");
 
-        //! Evaluate to \c Pass SkBuff if it is a RTP/RTCP packet, \c Drop it otherwise.
+        //! Evaluate to \c Pass SkBuff if it is a RTP packet, \c Drop it otherwise.
 
         auto rtp            = function("rtp");
+
+        //! Evaluate to \c Pass SkBuff if it is a RTCP packet, \c Drop it otherwise.
+
+        auto rtcp           = function("rtcp");
+
+        //! Evaluate to \c Pass SkBuff if it is a SIP packet, \c Drop it otherwise.
+
+        auto sip            = function("sip");
+
+        //! Evaluate to \c Pass SkBuff if it is a VoIP packet (RTP|RTCP|SIP), \c Drop it otherwise.
+
+        auto voip           = function("voip");
+
 
         //! Evaluate to \c Pass SkBuff if it is not a fragment, \c Drop it otherwise.
 
