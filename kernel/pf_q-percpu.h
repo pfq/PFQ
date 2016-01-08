@@ -69,6 +69,7 @@ struct pfq_percpu_data
 	struct GC_data		*GC;
 	ktime_t			last_rx;
 	struct timer_list	timer;
+	uint32_t		counter;
 
 } ____cacheline_aligned;
 

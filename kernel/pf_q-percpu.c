@@ -124,6 +124,8 @@ int pfq_percpu_init(void)
 
 		init_timer_deferrable(&data->timer);
 
+		data->counter = 0;
+
 		data->timer.function = pfq_timer;
 		data->timer.data = (unsigned long)cpu;
 		data->timer.expires = jiffies + msecs_to_jiffies(100);
