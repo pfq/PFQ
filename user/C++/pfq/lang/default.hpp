@@ -403,14 +403,20 @@ namespace lang
         // default netfunctions:
         //
 
-        //! Dispatch the packet across the sockets.
+        //! Dispatch the packet across the sockets in Round-Robin fashion.
         /*!
-         * Dispatch with a randomized algorithm in Round-Robin fashion.
-         *
          * ip >> steer_rrobin
          */
 
         auto steer_rrobin = function("steer_rrobin");
+
+        //! Dispatch the packet to a given socket with id.
+        /*!
+         *
+         * ip >> steer_to(1)
+         */
+
+        auto steer_to = [] (int idx) { return function("steer_to", idx); };
 
         //! Dispatch the packet across the sockets.
         /*!
