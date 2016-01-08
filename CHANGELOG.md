@@ -130,3 +130,13 @@ PFQ 5.2
  * Transmission performance improvements.
  * Bug fixes.
 
+
+PFQ 6.0
+-------
+ * Experimental pfq-lang compiler.
+ * pfq-lang expressions are now JSON serializable.
+ * API extended with setGroupComputationFromString,
+   setGroupComputationFromJSON...
+ * General improvements.
+ * Regressions and bugs fixes.
+
