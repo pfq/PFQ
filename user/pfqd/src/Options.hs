@@ -29,17 +29,15 @@ import System.Console.CmdArgs
 --
 
 data Options = Options
-    {
-        config_file    :: String,
-        dont_rebuild   :: Bool
+    {   config_file    :: String
+    ,   dont_rebuild   :: Bool
     }    deriving (Data, Typeable, Show)
 
 
 options :: Mode (CmdArgs Options)
 options = cmdArgsMode $ Options
-    {
-        config_file  = ""    &= typ "FILE" &= help "Config file",
-        dont_rebuild = False &= help "Don't rebuild itself"
+    {   config_file  = ""    &= typ "FILE" &= help "Config file"
+    ,   dont_rebuild = False &= help "Don't rebuild itself"
 
     } &= summary "pfqd: pfq group manager." &= program "pfqd"
 
