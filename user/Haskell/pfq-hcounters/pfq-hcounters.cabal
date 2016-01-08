@@ -1,5 +1,5 @@
 name:                   pfq-hcounters
-version:                5.2
+version:                6.0
 
 license-file:           LICENSE
 author:                 Nicola Bonelli
@@ -11,7 +11,7 @@ cabal-version:          >=1.10
 Executable pfq-hcounters
     main-is:            pfq-hcounters.hs
     build-depends:      base >= 4.7, 
-                        pfq >= 5.2,
+                        pfq >= 6.0,
                         cmdargs, 
                         regex-posix, 
                         filepath , 

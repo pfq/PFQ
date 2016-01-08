@@ -1,5 +1,5 @@
 name:            pfq
-version:         5.2
+version:         6.0
 synopsis:        PFQ interface for user-level packet capture
 description:     PFQ interface for user-level packet capture
 maintainer:      Nicola Bonelli <nicola@pfq.io> 
