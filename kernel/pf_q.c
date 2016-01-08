@@ -201,6 +201,7 @@ pfq_receive_batch(struct pfq_percpu_data *data,
 		group_mask |= local_group_mask;
 		PFQ_CB(skb)->group_mask = local_group_mask;
 		PFQ_CB(skb)->monad = &monad;
+		PFQ_CB(skb)->counter = data->counter++;
 	}
 
         /* process all groups enabled for this batch */
