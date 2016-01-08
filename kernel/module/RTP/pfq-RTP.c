@@ -50,7 +50,7 @@ struct rtcphdr {
 	uint32_t rh_ssrc;	/* synchronization src id */
 };
 
-/* Rtp/Rtcp packet */
+/* RTP/RTCP packet */
 
 struct headers {
 	struct udphdr udp;
@@ -78,17 +78,26 @@ bool valid_codec(uint8_t c)
 }
 
 
+enum htype
+{
+	type_unknown = 0,
+	type_rtp,
+	type_rtcp,
+	type_sip
+};
+
+
 struct hret
 {
-	uint32_t hash;
-	int 	 pass;
+	uint32_t	hash;
+	enum htype	type;
 };
 
 
 static struct hret
-heuristic_rtp(SkBuff skb, bool steer)
+heuristic_voip(SkBuff skb, bool steer)
 {
-	struct hret ret = { 0, 0 };
+	struct hret ret = { 0, type_unknown };
 
 	if (eth_hdr(PFQ_SKB(skb))->h_proto == __constant_htons(ETH_P_IP))
 	{
@@ -104,9 +113,6 @@ heuristic_rtp(SkBuff skb, bool steer)
 		if (ip == NULL)
 			return ret;
 
-		if (ip->protocol != IPPROTO_UDP)
-			return ret;
-
 		hdr = skb_header_pointer(PFQ_SKB(skb), skb->mac_len + (ip->ihl<<2), sizeof(_hdr), &_hdr);
 		if (hdr == NULL)
 			return ret;
@@ -114,10 +120,16 @@ heuristic_rtp(SkBuff skb, bool steer)
 		dest = ntohs(hdr->udp.dest);
 		source = ntohs(hdr->udp.source);
 
-		if (dest == 5060 || source == 5060) {
-			ret.pass = 1;
+		/* check for SIP packets */
+
+		if (dest == 5060 || source == 5060 ||
+		    dest == 5061 || source == 5061) {
+			ret.type = type_sip;
 			return ret;
 		}
+
+                if (ip->protocol != IPPROTO_UDP)
+			return ret;
 
 		/* version => 2 */
 
@@ -127,26 +139,24 @@ heuristic_rtp(SkBuff skb, bool steer)
 		if (dest < 1024 || source < 1024)
 			return ret;
 
-#if 0
-		if ((dest & 1) && (source & 1)) { /* rtcp */
-			if (hdr->un.rtcp.rh_type != 200)  /* SR  */
+		if ((dest & 1) && (source & 1)) {		/* RTCP? */
+			if (hdr->un.rtcp.rh_type != 200)	/* SR  */
 				return ret;
+			ret.type = type_rtcp;
 		}
-		else
-		if (!((dest & 1) || (source & 1))) {
-			uint8_t pt = hdr->un.rtp.rh_pt;
-			if (!valid_codec(pt))
-				return ret;
+		else {						/* RTP? */
+			if (!((dest & 1) || (source & 1))) {
+				uint8_t pt = hdr->un.rtp.rh_pt;
+				if (!valid_codec(pt))
+					return ret;
+			}
+			ret.type = type_rtp;
 		}
-#endif
+
 		if (steer) {
-			ret.pass = 2;
 			ret.hash = (ip->saddr ^ (ip->saddr >> 8) ^ (ip->saddr >> 16) ^ (ip->saddr >> 24) ^
 				    ip->daddr ^ (ip->daddr >> 8) ^ (ip->daddr >> 16) ^ (ip->daddr >> 24) ^
 						(hdr->udp.source >> 1) ^ (hdr->udp.dest >> 1));
-		}
-		else {
-			ret.pass = 1;
 		}
 
 		return ret;
@@ -159,7 +169,25 @@ heuristic_rtp(SkBuff skb, bool steer)
 static bool
 is_rtp(arguments_t arg, SkBuff skb)
 {
-	return heuristic_rtp(skb, false).pass;
+	return heuristic_voip(skb, false).type == type_rtp;
+}
+
+static bool
+is_rtcp(arguments_t arg, SkBuff skb)
+{
+	return heuristic_voip(skb, false).type == type_rtcp;
+}
+
+static bool
+is_sip(arguments_t arg, SkBuff skb)
+{
+	return heuristic_voip(skb, false).type == type_sip;
+}
+
+static bool
+is_voip(arguments_t arg, SkBuff skb)
+{
+	return heuristic_voip(skb, false).type != type_unknown;
 }
 
 
@@ -168,7 +196,30 @@ filter_rtp(arguments_t arg, SkBuff skb)
 {
 	if (is_rtp(arg, skb))
 		return Pass(skb);
+	return Drop(skb);
+}
 
+static ActionSkBuff
+filter_rtcp(arguments_t arg, SkBuff skb)
+{
+	if (is_rtcp(arg, skb))
+		return Pass(skb);
+	return Drop(skb);
+}
+
+static ActionSkBuff
+filter_sip(arguments_t arg, SkBuff skb)
+{
+	if (is_sip(arg, skb))
+		return Pass(skb);
+	return Drop(skb);
+}
+
+static ActionSkBuff
+filter_voip(arguments_t arg, SkBuff skb)
+{
+	if (is_voip(arg, skb))
+		return Pass(skb);
 	return Drop(skb);
 }
 
@@ -176,12 +227,33 @@ filter_rtp(arguments_t arg, SkBuff skb)
 static ActionSkBuff
 steering_rtp(arguments_t arg, SkBuff skb)
 {
-	struct hret ret = heuristic_rtp(skb, true);
+	struct hret ret = heuristic_voip(skb, true);
 
-	if (ret.pass == 2)
-		return Steering(skb, ret.hash);
-	else if (ret.pass == 1)
-		return Broadcast(skb);
+	switch(ret.type)
+	{
+	case type_unknown: return Drop(skb);
+	case type_rtp:	   return Steering(skb, ret.hash);
+	case type_rtcp:    return steering(skb, ret.hash);
+	case type_sip:     return Drop(skb);
+	}
+
+	return Drop(skb);
+}
+
+
+static ActionSkBuff
+steering_voip(arguments_t arg, SkBuff skb)
+{
+	struct hret ret = heuristic_voip(skb, true);
+
+	switch(ret.type)
+	{
+	case type_unknown: return Drop(skb);
+	case type_rtp:	   return Steering(skb, ret.hash);
+	case type_rtcp:    return Steering(skb, ret.hash);
+	case type_sip:     return Broadcast(skb);
+	}
+
 	return Drop(skb);
 }
 
@@ -189,13 +261,20 @@ steering_rtp(arguments_t arg, SkBuff skb)
 static struct pfq_lang_function_descr hooks_f[] = {
 
 	{ "rtp",       "SkBuff -> Action SkBuff",	filter_rtp	},
+	{ "rtcp",      "SkBuff -> Action SkBuff",	filter_rtcp	},
+	{ "sip",       "SkBuff -> Action SkBuff",	filter_sip	},
+	{ "voip",      "SkBuff -> Action SkBuff",	filter_voip	},
 	{ "steer_rtp", "SkBuff -> Action SkBuff",	steering_rtp	},
+	{ "steer_voip","SkBuff -> Action SkBuff",	steering_voip	},
 	{ NULL, NULL}};
 
 
 static struct pfq_lang_function_descr hooks_p[] = {
 
 	{ "is_rtp",     "SkBuff -> Bool",	is_rtp	},
+	{ "is_rtcp",    "SkBuff -> Bool",	is_rtcp	},
+	{ "is_sip",     "SkBuff -> Bool",	is_sip	},
+	{ "is_voip",    "SkBuff -> Bool",	is_voip	},
 	{ NULL, NULL}};
 
 
