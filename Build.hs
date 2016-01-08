@@ -72,20 +72,20 @@ script = do
 
     -- PFQ hcounters (exmaple)
 
-    Configure "pfq-hcounters"   *>>  into "user/Haskell/pfq-hcounters/" $ cabalConfigure    `requires`  [Install   "pfq-haskell-lib"]
-    Build     "pfq-hcounters"   *>>  into "user/Haskell/pfq-hcounters/" $ cabalBuild        `requires`  [Configure "pfq-hcounters"  ]
-    Install   "pfq-hcounters"   *>>  into "user/Haskell/pfq-hcounters/" $ cabalInstall      `requires`  [Build     "pfq-hcounters"  ]
-    Clean     "pfq-hcounters"   *>>  into "user/Haskell/pfq-hcounters/" $ cabalClean
-    DistClean "pfq-hcounters"   *>>  into "user/Haskell/pfq-hcounters/" $ cabalDistClean
+    Configure "pfq-hcounters"   *>>  into "user/pfq-hcounters/" $ cabalConfigure    `requires`  [Install   "pfq-haskell-lib"]
+    Build     "pfq-hcounters"   *>>  into "user/pfq-hcounters/" $ cabalBuild        `requires`  [Configure "pfq-hcounters"  ]
+    Install   "pfq-hcounters"   *>>  into "user/pfq-hcounters/" $ cabalInstall      `requires`  [Build     "pfq-hcounters"  ]
+    Clean     "pfq-hcounters"   *>>  into "user/pfq-hcounters/" $ cabalClean
+    DistClean "pfq-hcounters"   *>>  into "user/pfq-hcounters/" $ cabalDistClean
 
 
     -- PFQ htest (misc tests)
 
-    Configure "pfq-htest"       *>>  into "user/Haskell/pfq-htest/"     $ cabalConfigure    `requires` [Install   "pfq-haskell-lib"]
-    Build     "pfq-htest"       *>>  into "user/Haskell/pfq-htest/"     $ cabalBuild        `requires` [Configure "pfq-htest"      ]
-    Install   "pfq-htest"       *>>  into "user/Haskell/pfq-htest/"     $ empty             `requires` [Build     "pfq-htest"      ]
-    Clean     "pfq-htest"       *>>  into "user/Haskell/pfq-htest/"     $ cabalClean
-    DistClean "pfq-htest"       *>>  into "user/Haskell/pfq-htest/"     $ cabalDistClean
+    Configure "pfq-htest"       *>>  into "user/pfq-htest/"     $ cabalConfigure    `requires` [Install   "pfq-haskell-lib"]
+    Build     "pfq-htest"       *>>  into "user/pfq-htest/"     $ cabalBuild        `requires` [Configure "pfq-htest"      ]
+    Install   "pfq-htest"       *>>  into "user/pfq-htest/"     $ empty             `requires` [Build     "pfq-htest"      ]
+    Clean     "pfq-htest"       *>>  into "user/pfq-htest/"     $ cabalClean
+    DistClean "pfq-htest"       *>>  into "user/pfq-htest/"     $ cabalDistClean
 
 
     -- qlang compiler:
