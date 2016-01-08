@@ -149,6 +149,7 @@ module Network.PFQ.Lang.Default
         -- They evaluate to /Steer Hash Skbuff/, if the packet has a certain property, /Drop/ otherwise.
 
         steer_rrobin ,
+        steer_to   ,
         steer_link ,
         steer_vlan ,
         steer_ip   ,
@@ -434,6 +435,12 @@ icmp_code = Property "icmp_code" () () () () () () () ()
 --
 -- > ip >-> steer_rrobin
 steer_rrobin = Function "steer_rrobin" () () () () () () () () :: NetFunction
+
+-- | Dispatch the packet to a given socket with id.
+--
+-- > ip >-> steer_to 1
+steer_to :: CInt -> NetFunction
+steer_to idx = Function "steer_to" idx () () () () () () () :: NetFunction
 
 -- | Dispatch the packet across the sockets
 -- with a randomized algorithm that maintains the integrity of

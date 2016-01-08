@@ -41,6 +41,13 @@ steering_rrobin(arguments_t args, SkBuff skb)
 
 
 static ActionSkBuff
+steering_to(arguments_t args, SkBuff skb)
+{
+	return Steering(skb, GET_ARG_0(uint32_t, args));
+}
+
+
+static ActionSkBuff
 steering_field(arguments_t args, SkBuff skb)
 {
 	uint32_t offset = GET_ARG_0(uint32_t, args);
@@ -223,6 +230,7 @@ steering_ip6(arguments_t args, SkBuff skb)
 struct pfq_lang_function_descr steering_functions[] = {
 
 	{ "steer_rrobin","SkBuff -> Action SkBuff", steering_rrobin  },
+	{ "steer_to",    "CInt   -> SkBuff -> Action SkBuff", steering_to },
 	{ "steer_link",  "SkBuff -> Action SkBuff", steering_link    },
 	{ "steer_vlan",  "SkBuff -> Action SkBuff", steering_vlan_id },
 	{ "steer_ip",    "SkBuff -> Action SkBuff", steering_ip      },
