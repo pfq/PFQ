@@ -158,6 +158,7 @@ module Network.PFQ.Lang.Default
         -- They evaluate to /Steer Hash Skbuff/, if the packet has a certain property, /Drop/ otherwise.
 
         steer_rrobin ,
+        steer_rss  ,
         steer_to   ,
         steer_link ,
         steer_vlan ,
