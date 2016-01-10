@@ -80,7 +80,7 @@ size_t pfq_sk_rx_queue_recv(struct pfq_sock_opt *opt,
 	qindex = Q_SHARED_QUEUE_INDEX(data);
 	hdr = (struct pfq_pkthdr *) pfq_mpsc_slot_ptr(opt, rx_queue, qindex, qlen);
 
-	for_each_skbuff_bitmask(skbs, mask, skb, n)
+	for_each_skbuff_bitmask(skbs, skb, n, mask)
 	{
 		size_t bytes, slot_index;
 		char *pkt;
