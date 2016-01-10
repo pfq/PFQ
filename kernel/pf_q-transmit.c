@@ -147,7 +147,7 @@ ptrdiff_t swap_sk_tx_queue(struct pfq_tx_queue *txm, int *prod)
 
 
 static
-unsigned int dev_tx_skb_copies(struct net_device *dev, unsigned int req_copies)
+unsigned int dev_tx_max_skb_copies(struct net_device *dev, unsigned int req_copies)
 {
 	if (likely(req_copies == 1 || req_copies == 0))
 		return 1;
@@ -216,13 +216,21 @@ __pfq_mbuff_xmit(struct pfq_pkthdr *hdr, struct pfq_mbuff_xmit_context *ctx, int
 		if (ctx->batch_cntr == 1)
 			schedule();
 
-		dev_queue_get(ctx->net, &ctx->default_dev, cur_qid , &ctx->dev_queue);
+		dev_queue_get(ctx->net, &ctx->default_dev, cur_qid, &ctx->dev_queue);
 
 		local_bh_disable();
 		pfq_hard_tx_lock(&ctx->dev_queue);
 
-		ctx->prec_qid  = cur_qid;
+		ctx->prec_qid = cur_qid;
 		ctx->batch_cntr = 1;
+	}
+
+	/* ensure the device is ok */
+
+	if (unlikely(ctx->dev_queue.dev == NULL)) {
+		if (printk_ratelimit())
+			printk(KERN_INFO "[PFQ] dev: ifindex=%d not found!\n", PFQ_NETQ_IFINDEX(cur_qid));
+		return 0;
 	}
 
 	/* is this the last skb of the batch ? */
@@ -235,15 +243,7 @@ __pfq_mbuff_xmit(struct pfq_pkthdr *hdr, struct pfq_mbuff_xmit_context *ctx, int
 		last = false;
 	}
 
-	/* ensure the device is ok */
-
-	if (unlikely(ctx->dev_queue.dev == NULL)) {
-		if (printk_ratelimit())
-			printk(KERN_INFO "[PFQ] dev: ifindex=%d not found!\n", PFQ_NETQ_IFINDEX(cur_qid));
-		return 0;
-	}
-
-	/* wait until the timestap */
+	/* wait until the timestap expires */
 
 	if (hdr->tstamp.tv64)
 	{
@@ -272,7 +272,6 @@ __pfq_mbuff_xmit(struct pfq_pkthdr *hdr, struct pfq_mbuff_xmit_context *ctx, int
 		}
 	}
 
-
 	/* allocate a new socket buffer */
 
 	skb = pfq_alloc_skb_pool(xmit_slot_size, GFP_KERNEL, node, ctx->skb_pool);
@@ -297,10 +296,12 @@ __pfq_mbuff_xmit(struct pfq_pkthdr *hdr, struct pfq_mbuff_xmit_context *ctx, int
 
 	/* transmit the packet(s) */
 
-	total_copies = copies = dev_tx_skb_copies(ctx->dev_queue.dev, hdr->data.copies);
+	total_copies = copies = dev_tx_max_skb_copies(ctx->dev_queue.dev, hdr->data.copies);
 
 	do {
 		const bool xmit_more = !last || copies != 1;
+
+		/* if copies > 1, then the device support TX_SKB_SHARING */
 
 		skb_get(skb);
 
@@ -359,12 +360,13 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 	/* setup ctx */
 
 	ctx.default_qid = PFQ_NETQ_ID(txinfo->def_ifindex, txinfo->def_queue);
-        ctx.prec_qid = PFQ_NETQ_ID(txinfo->def_ifindex, txinfo->def_queue);
+        ctx.prec_qid    = PFQ_NETQ_ID(txinfo->def_ifindex, txinfo->def_queue);
 
 	ctx.default_dev.ifindex = txinfo->def_ifindex;
 	ctx.default_dev.dev = txinfo->def_dev;
 	ctx.default_dev.net = sock_net(&so->sk);
 	ctx.batch_cntr = 0;
+
         ctx.net = sock_net(&so->sk);
 
 	/* enable skb_pool for Tx threads */
@@ -383,7 +385,7 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 
 	/* initialize boundaries for the transmit queue */
 
-	prod_off  = swap_sk_tx_queue(txm, &prod_idx);
+	prod_off = swap_sk_tx_queue(txm, &prod_idx);
 	begin = txinfo->base_addr + (prod_idx & 1) * txm->size + txm->cons.off;
 	end   = txinfo->base_addr + (prod_idx & 1) * txm->size + prod_off;
 
@@ -550,7 +552,6 @@ intr:
 
 	HARD_TX_UNLOCK(dev, txq);
 	local_bh_enable();
-
 	return ret;
 }
 
@@ -657,8 +658,7 @@ pfq_skb_queue_lazy_xmit_run(struct pfq_skbuff_GC_queue *skbs, struct pfq_endpoin
 				const int xmit_more  = ++sent_dev != endpoints->cnt[n];
 				const bool to_clone  = PFQ_CB(skb)->log->to_kernel || PFQ_CB(skb)->log->xmit_todo-- > 1;
 
-				struct sk_buff *nskb = to_clone ? skb_tx_clone(dev, PFQ_SKB(skb), GFP_ATOMIC) :
-								  skb_get(PFQ_SKB(skb));
+				struct sk_buff *nskb = to_clone ? skb_clone(PFQ_SKB(skb), GFP_ATOMIC) : skb_get(PFQ_SKB(skb));
 
 				if (nskb && __pfq_xmit(nskb, dev, xmit_more) == NETDEV_TX_OK)
 					sent++;

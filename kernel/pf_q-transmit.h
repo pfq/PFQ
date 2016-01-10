@@ -60,7 +60,6 @@ struct pfq_mbuff_xmit_context
 /* socket queues */
 
 extern int pfq_sk_queue_xmit(struct pfq_sock *so, int qindex, int cpu, int node, atomic_t const *stop);
-extern int pfq_sk_queue_flush(struct pfq_sock *so, int index);
 
 /* skb queues */
 
