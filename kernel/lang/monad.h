@@ -117,37 +117,8 @@ Steering(SkBuff skb, uint32_t hash)
         return (ActionSkBuff){skb};
 }
 
-static inline
-ActionSkBuff
-Deliver(SkBuff skb, unsigned long class_mask)
-{
-        fanout_t * a  = &PFQ_CB(skb)->monad->fanout;
-        a->class_mask = class_mask;
-        a->type       = fanout_copy;
-        return (ActionSkBuff){skb};
-}
 
-static inline
-ActionSkBuff
-Dispatch(SkBuff skb, unsigned long class_mask, uint32_t hash)
-{
-        fanout_t * a  = &PFQ_CB(skb)->monad->fanout;
-        a->class_mask = class_mask;
-        a->type       = fanout_steer;
-        a->hash       = hash;
-        return (ActionSkBuff){skb};
-}
-
-/* to_kernel: set the skb to be passed to kernel */
-
-static inline
-SkBuff
-to_kernel(SkBuff skb)
-{
-        PFQ_CB(skb)->log->to_kernel = true;
-        return skb;
-}
-
+/* utility functions */
 
 static inline
 SkBuff
@@ -157,8 +128,13 @@ class(SkBuff skb, uint64_t class_mask)
         return skb;
 }
 
-
-/* utility function: mark, monad state, and persistent group counters */
+static inline
+SkBuff
+to_kernel(SkBuff skb)
+{
+        PFQ_CB(skb)->log->to_kernel = true;
+        return skb;
+}
 
 
 static inline
