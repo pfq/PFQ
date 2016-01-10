@@ -42,7 +42,7 @@ namespace pfq { namespace lang { namespace experimental {
     using namespace std::placeholders;
 
     //
-    // experimental functions...
+    // experimental/testing functions...
     //
 
     namespace
@@ -55,7 +55,6 @@ namespace pfq { namespace lang { namespace experimental {
         auto dummy_strings = [] (std::vector<std::string> const &vec) { return function("dummy_strings", vec); };
 
         auto crc16         = function("crc16");
-
 
         //! Function that returns the parallel of 3 monadic NetFunctions.
         /*!

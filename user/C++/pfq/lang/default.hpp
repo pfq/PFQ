@@ -39,10 +39,8 @@
  *  \brief This header contains the pfq-lang eDSL functions.
  */
 
-namespace pfq
-{
-namespace lang
-{
+namespace pfq { namespace lang {
+
     using namespace std::placeholders;
 
     //
@@ -640,7 +638,7 @@ namespace lang
 
         auto kernel         = function("kernel");
 
-        //! Broadcast the packet to all the sockets that have joined the group for which this computation is specified.
+        //! Broadcast the packet to all the sockets that have joined the group.
 
         auto broadcast      = function("broadcast");
 
