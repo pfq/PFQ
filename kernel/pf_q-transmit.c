@@ -572,7 +572,8 @@ pfq_skb_queue_xmit_by_mask(struct pfq_skbuff_queue *skbs, unsigned long long mas
 	local_bh_disable();
 	HARD_TX_LOCK(dev, txq, smp_processor_id());
 
-	for_each_skbuff_bitmask(skbs, mask, skb, n)
+
+	for_each_skbuff_bitmask(skbs, skb, n, mask)
 	{
 		skb_reset_mac_header(skb);
 		skb_set_queue_mapping(skb, queue);
@@ -642,7 +643,7 @@ pfq_skb_queue_lazy_xmit_by_mask(struct pfq_skbuff_GC_queue *queue, unsigned long
 	struct sk_buff __GC * skb;
 	int i, n = 0;
 
-	for_each_skbuff_bitmask(queue, mask, skb, i)
+	for_each_skbuff_bitmask(queue, skb, i, mask)
 	{
 		if (pfq_lazy_xmit(skb, dev, queue_index))
 			++n;

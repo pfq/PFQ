@@ -95,6 +95,13 @@ struct pfq_skbuff_GC_queue
                 __builtin_prefetch((__force void const *)(q)->queue[n+1], 0, 1), (n)++)
 
 
+#define PFQ_SKBUFF_MASK_ALL	~0ULL
+
+#define for_each_skbuff_bitmask(q, skb, n, mask) \
+        for((n) = pfq_ctz(mask); ((n) < (q)->len) && (mask) && (skb = (q)->queue[n]); \
+                (mask) ^=(1ULL << (n)), n = pfq_ctz(mask))
+
+
 #define for_each_skbuff_from(x, q, skb, n) \
         for((n) = (x); ((n) < (q)->len) && ((skb) = (q)->queue[n]); \
                 __builtin_prefetch((__force void const *)(q)->queue[n+1], 0, 1), (n)++)
@@ -109,10 +116,6 @@ struct pfq_skbuff_GC_queue
         for((n) = (q)->len; ((n) > 0) && ((skb) = (q)->queue[n-1]); \
                 __builtin_prefetch((__force void const *)(q)->queue[n-2], 0, 1), (n)--)
 
-
-#define for_each_skbuff_bitmask(q, mask, skb, n) \
-        for((n) = pfq_ctz(mask); (mask) && (skb = (q)->queue[n]); \
-                (mask) ^=(1ULL << (n)), n = pfq_ctz(mask))
 
 
 static inline
