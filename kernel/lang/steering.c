@@ -40,6 +40,19 @@ steering_rrobin(arguments_t args, SkBuff skb)
 }
 
 
+
+static ActionSkBuff
+steering_rss(arguments_t args, SkBuff skb)
+{
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,14,0))
+	uint32_t hash = 0;
+#else
+	uint32_t hash = skb_get_hash(skb);
+#endif
+	return Steering(skb, hash);
+}
+
+
 static ActionSkBuff
 steering_to(arguments_t args, SkBuff skb)
 {
@@ -230,12 +243,13 @@ steering_ip6(arguments_t args, SkBuff skb)
 struct pfq_lang_function_descr steering_functions[] = {
 
 	{ "steer_rrobin","SkBuff -> Action SkBuff", steering_rrobin  },
-	{ "steer_to",    "CInt   -> SkBuff -> Action SkBuff", steering_to },
+	{ "steer_rss",   "SkBuff -> Action SkBuff", steering_rss     },
 	{ "steer_link",  "SkBuff -> Action SkBuff", steering_link    },
 	{ "steer_vlan",  "SkBuff -> Action SkBuff", steering_vlan_id },
 	{ "steer_ip",    "SkBuff -> Action SkBuff", steering_ip      },
 	{ "steer_ip6",	 "SkBuff -> Action SkBuff", steering_ip6     },
 	{ "steer_flow",  "SkBuff -> Action SkBuff", steering_flow    },
+	{ "steer_to",    "CInt   -> SkBuff -> Action SkBuff", steering_to },
 	{ "steer_field", "Word32 -> Word32 -> SkBuff -> Action SkBuff", steering_field },
 	{ "steer_net",   "Word32 -> Word32 -> Word32 -> SkBuff -> Action SkBuff", steering_net, steering_net_init },
 	{ NULL }};
