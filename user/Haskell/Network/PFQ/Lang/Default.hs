@@ -666,8 +666,7 @@ link ds = Function "forward" ds () () () () () () ()
 -- To avoid loop, this function is ignored for packets sniffed from the kernel.
 kernel = Function "kernel" () () () () () () () () :: NetFunction
 
--- | Broadcast the packet to all the sockets that have joined the group for which this computation
--- is specified.
+-- | Broadcast the packet to all the sockets that have joined the group.
 broadcast = Function "broadcast" () () () () () () () () :: NetFunction
 
 -- | Drop the packet. The computation evaluates to /Drop/.

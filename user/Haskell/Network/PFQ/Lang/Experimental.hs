@@ -63,8 +63,7 @@ module Network.PFQ.Lang.Experimental
 import Network.PFQ.Lang
 import Foreign.C.Types
 
--- Experimental in-kernel computations
-
+-- Experimental/Testing in-kernel computations
 
 dummy :: CInt -> NetFunction
 dummy n = Function "dummy" n () () () () () () ()
@@ -83,7 +82,6 @@ dummy_strings xs  = Function "dummy_strings" xs () () () () () () ()
 
 crc16 :: NetFunction
 crc16 = Function "crc16" () () () () () () () ()
-
 
 -- | Function that returns the parallel of 3 monadic NetFunctions.
 
