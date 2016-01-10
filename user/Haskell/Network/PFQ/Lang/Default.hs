@@ -460,6 +460,12 @@ icmp_code = Property "icmp_code" () () () () () () () ()
 -- > ip >-> steer_rrobin
 steer_rrobin = Function "steer_rrobin" () () () () () () () () :: NetFunction
 
+
+-- | Dispatch the packet across the sockets using the RSS hash.
+--
+-- > ip >-> steer_rss
+steer_rss = Function "steer_rss" () () () () () () () () :: NetFunction
+
 -- | Dispatch the packet to a given socket with id.
 --
 -- > ip >-> steer_to 1

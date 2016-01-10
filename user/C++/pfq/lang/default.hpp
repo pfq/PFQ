@@ -427,6 +427,13 @@ namespace lang
 
         auto steer_rrobin = function("steer_rrobin");
 
+        //! Dispatch the packet across the sockets using the RSS hash.
+        /*!
+         * ip >> steer_rss
+         */
+
+        auto steer_rss = function("steer_rss");
+
         //! Dispatch the packet to a given socket with id.
         /*!
          *
