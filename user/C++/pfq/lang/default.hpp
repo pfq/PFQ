@@ -648,6 +648,10 @@ namespace lang
 
         auto drop           = function("drop");
 
+        //! Specify the class for the given packet.. The computation evaluates to \c Pass.
+
+        auto class_        = [] (int value) { return function("class", value); };
+
         //! Unit operation implements left- and right-identity for Action monad.
 
         auto unit           = function("unit");
@@ -747,6 +751,17 @@ namespace lang
             static_assert(is_predicate<Predicate>::value, "tap: argument 1: predicate expected");
             return function("tap", dev, p);
         }
+
+        //! Forward the socket buffer to the list of specified devices.
+        /*!
+         * Unlike forward, the buffer is not forwarded to the device from which it comes from.
+         *
+         * link_ ({"eth1", "eth2"})
+         *
+         */
+
+        auto link_ = [] (std::vector<std::string> const &devs) { return function("link", devs); };
+
 
         //! Mark the packet with the given value.
         /*

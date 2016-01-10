@@ -47,7 +47,6 @@ namespace pfq { namespace lang { namespace experimental {
 
     namespace
     {
-        auto class_        = [] (int value) { return function("class", value); };
         auto dummy         = [] (int value) { return function("dummy", value); };
         auto dummy_ip      = [] (const char *addr) { return function("dummy_ip", ipv4_t{addr}); };
         auto dummy_vector  = [] (std::vector<int> const &vec) { return function("dummy_vector", vec); };
@@ -56,17 +55,6 @@ namespace pfq { namespace lang { namespace experimental {
         auto dummy_strings = [] (std::vector<std::string> const &vec) { return function("dummy_strings", vec); };
 
         auto crc16         = function("crc16");
-
-
-        //! Forward the socket buffer to the list of specified devices.
-        /*!
-         * Unlike forward, the buffer is not forwarded to the device from which it comes from.
-         *
-         * link_ ({"eth1", "eth2"})
-         *
-         */
-
-        auto link_ = [] (std::vector<std::string> const &devs) { return function("link", devs); };
 
 
         //! Function that returns the parallel of 3 monadic NetFunctions.
