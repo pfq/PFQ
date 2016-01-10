@@ -60,18 +60,4 @@ forward_class(arguments_t args, SkBuff b)
         return Pass(class(b, (1ULL << c)));
 }
 
-static inline ActionSkBuff
-forward_deliver(arguments_t args, SkBuff b)
-{
-        const int c = GET_ARG(int, args);
-
-        if (!c) {
-                if (printk_ratelimit())
-                        printk(KERN_INFO "[pfq-lang] deliver: internal error!\n");
-                return Pass(b);
-        }
-
-        return Deliver(b, (1ULL << c));
-}
-
 #endif /* PFQ_LANG_FORWARD_H */

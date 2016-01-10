@@ -43,8 +43,6 @@ module Network.PFQ.Lang.Experimental
         crc16      ,
 
         class'     ,
-        deliver    ,
-
         par3,
         par4,
         par5,
@@ -75,8 +73,6 @@ import Foreign.C.Types
 class'  :: CInt -> NetFunction
 class'  n = Function "class" n () () () () () () ()
 
-deliver :: CInt -> NetFunction
-deliver n = Function "deliver" n () () () () () () ()
 
 dummy :: CInt -> NetFunction
 dummy n = Function "dummy" n () () () () () () ()

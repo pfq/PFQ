@@ -48,8 +48,6 @@ namespace pfq { namespace lang { namespace experimental {
     namespace
     {
         auto class_        = [] (int value) { return function("class", value); };
-        auto deliver       = [] (int value) { return function("deliver", value); };
-
         auto dummy         = [] (int value) { return function("dummy", value); };
         auto dummy_ip      = [] (const char *addr) { return function("dummy_ip", ipv4_t{addr}); };
         auto dummy_vector  = [] (std::vector<int> const &vec) { return function("dummy_vector", vec); };
