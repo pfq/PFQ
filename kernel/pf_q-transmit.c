@@ -508,64 +508,18 @@ pfq_xmit(struct sk_buff *skb, struct net_device *dev, int queue, int more)
 
 
 int
-pfq_skb_queue_xmit(struct pfq_skbuff_queue *skbs, struct net_device *dev, int queue)
+pfq_skb_queue_xmit(struct pfq_skbuff_queue *skbs, unsigned long long mask, struct net_device *dev, int queue)
 {
 	struct netdev_queue *txq;
 	struct sk_buff *skb;
-	size_t n, last;
-	int ret = 0;
+	int n, last_idx, ret = 0;
 
 	/* get txq and fix the queue for this batch.
 	 *
 	 * note: in case the queue is set to any-queue (-1), the driver along the first skb
 	 * select the queue */
 
-	txq = pfq_netdev_pick_tx(dev, skbs->queue[0], &queue);
-
-	last = pfq_skbuff_queue_len(skbs) - 1;
-
-	local_bh_disable();
-	HARD_TX_LOCK(dev, txq, smp_processor_id());
-
-	for_each_skbuff(skbs, skb, n)
-	{
-		skb_reset_mac_header(skb);
-		skb_set_queue_mapping(skb, queue);
-
-		if (__pfq_xmit(skb, dev, n != last) == NETDEV_TX_OK)
-			++ret;
-		else
-			goto intr;
-	}
-
-	HARD_TX_UNLOCK(dev, txq);
-	local_bh_enable();
-
-	return ret;
-
-intr:
-	for_each_skbuff_from(ret + 1, skbs, skb, n) {
-		sparse_inc(&memory_stats, os_free);
-		kfree_skb(skb);
-	}
-
-	HARD_TX_UNLOCK(dev, txq);
-	local_bh_enable();
-	return ret;
-}
-
-
-int
-pfq_skb_queue_xmit_by_mask(struct pfq_skbuff_queue *skbs, unsigned long long mask, struct net_device *dev, int queue)
-{
-	struct netdev_queue *txq;
-	struct sk_buff *skb;
-	int n, ret = 0;
-
-	/* get txq and fix the queue for this batch.
-	 *
-	 * note: in case the queue is set to any-queue (-1), the driver along the first skb
-	 * select the queue */
+	last_idx = pfq_skbuff_queue_len(skbs) - 1;
 
 	txq = pfq_netdev_pick_tx(dev, skbs->queue[0], &queue);
 
@@ -578,7 +532,7 @@ pfq_skb_queue_xmit_by_mask(struct pfq_skbuff_queue *skbs, unsigned long long mas
 		skb_reset_mac_header(skb);
 		skb_set_queue_mapping(skb, queue);
 
-		if (__pfq_xmit(skb, dev, 0) == NETDEV_TX_OK)
+		if (__pfq_xmit(skb, dev, !( n == last_idx || ((mask & (mask-1)) == 0))) == NETDEV_TX_OK)
 			++ret;
 		else
 			goto intr;
@@ -621,24 +575,7 @@ pfq_lazy_xmit(struct sk_buff __GC * skb, struct net_device *dev, int queue)
 
 
 int
-pfq_skb_queue_lazy_xmit(struct pfq_skbuff_GC_queue *queue, struct net_device *dev, int queue_index)
-{
-	struct sk_buff __GC * skb;
-	int i, n = 0;
-
-	for_each_skbuff(queue, skb, i)
-	{
-		if (pfq_lazy_xmit(skb, dev, queue_index))
-			++n;
-	}
-
-	return n;
-}
-
-
-int
-pfq_skb_queue_lazy_xmit_by_mask(struct pfq_skbuff_GC_queue *queue, unsigned long long mask,
-			    struct net_device *dev, int queue_index)
+pfq_skb_queue_lazy_xmit(struct pfq_skbuff_GC_queue *queue, unsigned long long mask, struct net_device *dev, int queue_index)
 {
 	struct sk_buff __GC * skb;
 	int i, n = 0;
@@ -663,7 +600,7 @@ skb_tx_clone(struct net_device *dev, struct sk_buff *skb, gfp_t mask)
 }
 
 
-size_t
+int
 pfq_skb_queue_lazy_xmit_run(struct pfq_skbuff_GC_queue *skbs, struct pfq_endpoint_info const *endpoints)
 {
 	struct netdev_queue *txq;

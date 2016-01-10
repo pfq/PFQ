@@ -106,7 +106,7 @@ size_t copy_to_dev_skbs(struct pfq_sock *so, struct pfq_skbuff_GC_queue *skbs,
                         return false;
 		}
 
-		sent = pfq_skb_queue_lazy_xmit_by_mask(skbs, mask, dev, so->egress_queue);
+		sent = pfq_skb_queue_lazy_xmit(skbs, mask, dev, so->egress_queue);
 
                 dev_put(dev);
 		return sent;
