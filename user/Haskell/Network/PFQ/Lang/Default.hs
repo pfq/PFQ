@@ -175,9 +175,11 @@ module Network.PFQ.Lang.Default
         kernel     ,
         broadcast  ,
         drop'      ,
+        class'     ,
 
         forward    ,
         forwardIO  ,
+        link       ,
 
         bridge     ,
         tee        ,
@@ -649,6 +651,15 @@ tap d p = Function "tap" d p () () () () () ()
 forwardIO :: String -> NetFunction
 forwardIO d = Function "forwardIO" d () () () () () () ()
 
+-- | Forward the socket buffer to the list of specified devices.
+--  Unlike forward, the buffer is not forwarded to the device from which it comes from.
+--
+-- > link ["eth1", "eth2"]
+
+link :: [String] -> NetFunction
+link ds = Function "forward" ds () () () () () () ()
+
+
 -- | Send a copy of the packet to the kernel (the sk_buff may have been captured directly
 -- by PFQ).
 --
@@ -661,6 +672,10 @@ broadcast = Function "broadcast" () () () () () () () () :: NetFunction
 
 -- | Drop the packet. The computation evaluates to /Drop/.
 drop'= Function "drop" () () () () () () () () :: NetFunction
+
+-- | Specify the class for the given packet. The computation evaluates to /Pass/.
+class'  :: CInt -> NetFunction
+class'  n = Function "class" n () () () () () () ()
 
 -- | Unit operation implements left- and right-identity for Action monad.
 unit = Function "unit" () () () () () () () () :: NetFunction

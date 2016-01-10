@@ -42,7 +42,6 @@ module Network.PFQ.Lang.Experimental
 
         crc16      ,
 
-        class'     ,
         par3,
         par4,
         par5,
@@ -58,8 +57,6 @@ module Network.PFQ.Lang.Experimental
         is_gtp_cp,
         is_gtp_up,
 
-        link
-
     ) where
 
 
@@ -67,11 +64,6 @@ import Network.PFQ.Lang
 import Foreign.C.Types
 
 -- Experimental in-kernel computations
-
--- | Specify the class mask for the given packet.
-
-class'  :: CInt -> NetFunction
-class'  n = Function "class" n () () () () () () ()
 
 
 dummy :: CInt -> NetFunction
@@ -91,15 +83,6 @@ dummy_strings xs  = Function "dummy_strings" xs () () () () () () ()
 
 crc16 :: NetFunction
 crc16 = Function "crc16" () () () () () () () ()
-
-
--- | Forward the socket buffer to the list of specified devices.
---  Unlike forward, the buffer is not forwarded to the device from which it comes from.
---
--- > link ["eth1", "eth2"]
-
-link :: [String] -> NetFunction
-link ds = Function "forward" ds () () () () () () ()
 
 
 -- | Function that returns the parallel of 3 monadic NetFunctions.
