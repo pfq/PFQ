@@ -90,7 +90,7 @@ From the base directory launch the command:
 
 * To build and install the framework:
 
-`runhaskell Build.hs install --buildType=Release`
+`runhaskell Build.hs install --build-type=Release`
 
 The command configures, compiles and installs PFQ framework satisfying the dependencies and the correct order of build of various components.
 
@@ -119,7 +119,7 @@ targets:
 
 For example, to install pfq.ko and pfqd:
 
-`runhaskell Build.hs install pfq.ko pfqd --buildType=Release`
+`runhaskell Build.hs install pfq.ko pfqd --build-type=Release`
 
 ## Build the software in sandbox!
 
@@ -140,7 +140,7 @@ All the required libraries will be installed in the newly sandbox created.
 
 After this you can simply build the framework with:
 
-`runhaskell Build.hs install --buildType=Release --sandbox=shared-sandbox`
+`cabal exec -- runhaskell Build.hs install --build-type=Release --sandbox=shared-sandbox`
 
 The PFQ Haskell library and packages will be installed in isolation within the specified sandbox folder.
 
