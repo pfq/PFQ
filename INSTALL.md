@@ -83,13 +83,6 @@ Before building the framework ensure the Haskell libraries upon which it depends
 
 From the base directory launch the command:
 
-`cabal install --only-dep pfq-framework.cabal`
-
-Because of the dependencies of packages set by authors, the command could fails (e.g. if the user
-has installed more recent versions).
-
-Hence, to relax upper bounds limits you might try to use the --allow-newer cabal option:
-
 `cabal install --only-dep --allow-newer pfq-framework.cabal`
 
 
@@ -141,7 +134,7 @@ cabal sandbox init --sandbox=shared-sandbox
 
 Then, to satisfy the the dependencies run:
 
-`cabal install --only-dep -j4 pfq-framework.cabal`
+`cabal install --only-dep --allow-newer -j4 pfq-framework.cabal`
 
 All the required libraries will be installed in the newly sandbox created.
 
