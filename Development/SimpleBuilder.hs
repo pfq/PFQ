@@ -87,15 +87,25 @@ empty = return () :: Action ()
 
 cabalConfigure = tellCmd $
     DynamicCmd
-        (\o ->
-              case () of
+        (\o -> case () of
                   _   | Just path <- sandbox o -> "cabal sandbox init --sandbox=" ++ path ++ " && cabal configure"
                       | otherwise -> "runhaskell Setup configure --user")
 
+cabalBuild = tellCmd $
+    DynamicCmd $ \o -> if isJust (sandbox o)
+                            then "cabal build"
+                            else "runhaskell Setup build"
 
-cabalBuild      = tellCmd $ StaticCmd "runhaskell Setup build"
-cabalInstall    = tellCmd $ StaticCmd "runhaskell Setup install"
-cabalClean      = tellCmd $ StaticCmd "runhaskell Setup clean"
+cabalInstall = tellCmd $
+    DynamicCmd $ \o -> if isJust (sandbox o)
+                            then "cabal install"
+                            else "runhaskell Setup install"
+
+cabalClean = tellCmd $
+    DynamicCmd $ \o -> if isJust (sandbox o)
+                            then "cabal clean"
+                            else "runhaskell Setup clean"
+
 cabalDistClean  = tellCmd $ StaticCmd "rm -rf dist; rm -f cabal.sandbox.config"
 
 make_install    = tellCmd $ StaticCmd "make install"
@@ -322,7 +332,7 @@ buildTargets tgts script baseDir level = do
                                   \t -> when (t `notElem` done) $
                                         buildTargets [t] script baseDir (level + 1)
                        putStrLnVerbose
-                           (Just $ verbose opt) $ "# Building target " ++ show target ++ ": " ++ show (map (evalCmd opt) cmds')
+                           (Just $ verbose opt) $ "# Building target '" ++ show target ++ "': " ++ show (map (evalCmd opt) cmds')
                        liftIO $
                            do -- set working dir...
                               let workDir = dropTrailingPathSeparator $ baseDir </> path
