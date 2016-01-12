@@ -56,7 +56,9 @@ int dev_queue_get(struct net *net, dev_queue_t id, struct net_dev_queue *dq)
 			*dq = net_dev_queue_null;
 			return -EFAULT;
 		}
-
+#ifdef PFQ_DEBUG
+		printk(KERN_INFO "[PFQ] dev_queue_get: ifindex=%d, ref=%d\n", ifindex, netdev_refcnt_read_by_index(net, ifindex));
+#endif
 		dq->id = id;
 		dq->dev = dev;
 		dq->queue_mapping = __pfq_dev_cap_txqueue(dev, PFQ_DEVQ_QUEUE(id));

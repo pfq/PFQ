@@ -43,7 +43,6 @@ forward_init(arguments_t args)
 {
 	const char *name = GET_ARG(const char *, args);
 	struct net_device *dev = dev_get_by_name(&init_net, name);
-
 	if (dev == NULL) {
                 printk(KERN_INFO "[PFQ|init] forward: %s no such device!\n", name);
                 return -EINVAL;
