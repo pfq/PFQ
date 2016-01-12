@@ -211,7 +211,7 @@ static int
 __pfq_mbuff_xmit(struct pfq_pkthdr *hdr, struct net_dev_queue *dev_queue,
 		 struct pfq_mbuff_xmit_context *ctx, int slot_size, int node, bool xmit_more, atomic_t const *stop, bool *intr)
 {
-	int copies, total_copies;
+	int copies, sent = 0;
 	struct sk_buff *skb;
 	size_t len;
 
@@ -245,7 +245,7 @@ __pfq_mbuff_xmit(struct pfq_pkthdr *hdr, struct net_dev_queue *dev_queue,
 
 	/* transmit the packet(s) */
 
-	total_copies = copies = dev_tx_max_skb_copies(dev_queue->dev, hdr->data.copies);
+	copies = dev_tx_max_skb_copies(dev_queue->dev, hdr->data.copies);
 
 	atomic_set(&skb->users, copies + 1);
 
@@ -269,13 +269,14 @@ __pfq_mbuff_xmit(struct pfq_pkthdr *hdr, struct net_dev_queue *dev_queue,
 		}
 		else {
 			dev_queue->queue->trans_start = ctx->jiffies;
+			sent++;
 		}
 	}
 	while (--copies > 0);
 
 	pfq_kfree_skb_pool(skb, ctx->skb_pool);
 
-	return total_copies;
+	return sent;
 }
 
 
