@@ -62,6 +62,9 @@ extern struct net_dev_queue net_dev_queue_null;
 #define PFQ_DEVQ_ARG(id)		PFQ_DEVQ_IFINDEX(id), PFQ_DEVQ_QUEUE(id)
 
 
+extern int netdev_refcnt_read_by_index(struct net *net, int ifindex);
+extern int dev_queue_get(struct net *net, dev_queue_t id, struct net_dev_queue *dq);
+
 static inline int
 __pfq_dev_cap_txqueue(struct net_device *dev, int queue)
 {
@@ -110,9 +113,6 @@ int dev_put_by_index(struct net *net, int ifindex)
 	rcu_read_unlock();
 	return err;
 }
-
-
-extern int dev_queue_get(struct net *net, dev_queue_t id, struct net_dev_queue *dq);
 
 
 #endif /* PF_Q_NETDEV_H */
