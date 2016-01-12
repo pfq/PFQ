@@ -46,7 +46,6 @@ struct pfq_mbuff_xmit_context
 	struct net		       *net;
 	ktime_t			        now;
 	unsigned long			jiffies;
-	int				batch_cntr;
 };
 
 

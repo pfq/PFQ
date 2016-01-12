@@ -256,8 +256,6 @@ __pfq_mbuff_xmit(struct pfq_pkthdr *hdr, struct net_dev_queue *dev_queue,
 
 		if (__pfq_xmit(skb, dev_queue->dev, xmit_more_) < 0) {
 
-			ctx->batch_cntr = 0;
-
 			if (need_resched())
 			{
 				pfq_hard_tx_unlock(dev_queue);
@@ -292,7 +290,7 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 
 	ptrdiff_t prod_off;
 
-	int total_sent = 0, disc = 0, prod_idx;
+	int total_sent = 0, disc = 0, batch_cntr = 0, prod_idx;
         char *begin, *end;
 
 	/* get the Tx queue */
@@ -323,7 +321,6 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 
         /* setup context */
 
-	ctx.batch_cntr = 0;
         ctx.net = sock_net(&so->sk);
 	ctx.now = ktime_get_real();
 	ctx.jiffies = jiffies;
@@ -347,7 +344,7 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 	for_each_sk_mbuff(hdr, end, 0)
 	{
 		dev_queue_t qid;
-                bool intr = false;
+                bool intr = false, xmit_more = true;
 		int sent;
 
 		/* skip this packet ? */
@@ -378,10 +375,14 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 			pfq_hard_tx_lock(&dev_queue);
 		}
 
-		/* ensure the device is OK */
+		if (++batch_cntr >= xmit_batch_len)
+		{
+			xmit_more = false;
+			batch_cntr = 0;
+		}
 
 		sent = __pfq_mbuff_xmit(hdr, &dev_queue, &ctx, 0, node,
-					Q_NEXT_PKTHDR(hdr, 0) >= (struct pfq_pkthdr *)end, stop, &intr);
+					xmit_more && (Q_NEXT_PKTHDR(hdr, 0) < (struct pfq_pkthdr *)end), stop, &intr);
 
 		/* update stats */
 
