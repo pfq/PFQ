@@ -199,7 +199,6 @@ ____pfq_alloc_skb_pool(unsigned int size, gfp_t priority, int fclone, int node, 
 		sparse_inc(&memory_stats, err_pop);
 	}
 #endif
-
 	sparse_inc(&memory_stats, os_alloc);
 	return  __alloc_skb(size, priority, fclone, node);
 }
