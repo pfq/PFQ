@@ -209,8 +209,7 @@ void pfq_sock_destruct(struct sock *sk)
 
 
 int
-pfq_sock_tx_bind(struct pfq_sock *so, int tid, int ifindex, int qindex, struct
-		 net_device *dev)
+pfq_sock_tx_bind(struct pfq_sock *so, int tid, int ifindex, int qindex)
 {
 	size_t queue = so->opt.tx_num_async_queues;
 	int err = 0;
@@ -222,7 +221,6 @@ pfq_sock_tx_bind(struct pfq_sock *so, int tid, int ifindex, int qindex, struct
 
 	so->opt.txq_async[queue].def_ifindex = ifindex;
 	so->opt.txq_async[queue].def_queue = qindex;
-	so->opt.txq_async[queue].def_dev = dev;
 	so->opt.tx_num_async_queues++;
 
 	smp_wmb();
@@ -231,7 +229,6 @@ pfq_sock_tx_bind(struct pfq_sock *so, int tid, int ifindex, int qindex, struct
 	{
 		so->opt.txq_async[queue].def_ifindex = -1;
 		so->opt.txq_async[queue].def_queue = -1;
-		so->opt.txq_async[queue].def_dev = NULL;
 		so->opt.tx_num_async_queues--;
 		return err;
 	}
@@ -253,7 +250,6 @@ pfq_sock_tx_unbind(struct pfq_sock *so)
 
 	so->opt.txq.def_ifindex = -1;
 	so->opt.txq.def_queue = -1;
-	so->opt.txq.def_dev = NULL;
 
 	/* unbind async Tx queue */
 
@@ -267,7 +263,6 @@ pfq_sock_tx_unbind(struct pfq_sock *so)
 
 		so->opt.txq_async[n].def_ifindex = -1;
 		so->opt.txq_async[n].def_queue = -1;
-		so->opt.txq_async[n].def_dev = NULL;
 	}
 
 	return 0;

@@ -54,7 +54,6 @@ struct pfq_tx_info
 	void			*base_addr;
 	int			def_ifindex;		/* default ifindex */
 	int			def_queue;		/* default queue */
-	struct net_device	*def_dev;		/* default dev */
 };
 
 
@@ -65,7 +64,6 @@ void pfq_tx_info_init(struct pfq_tx_info *info)
 	info->base_addr = NULL;
 	info->def_ifindex = -1;
 	info->def_queue = -1;
-	info->def_dev = NULL;
 }
 
 
@@ -189,7 +187,7 @@ int     pfq_get_sock_count(void);
 struct	pfq_sock * pfq_get_sock_by_id(pfq_id_t id);
 void	pfq_release_sock_id(pfq_id_t id);
 
-int	pfq_sock_tx_bind(struct pfq_sock *so, int tid, int if_index, int queue, struct net_device *default_dev);
+int	pfq_sock_tx_bind(struct pfq_sock *so, int tid, int if_index, int queue);
 int	pfq_sock_tx_unbind(struct pfq_sock *so);
 
 #endif /* PF_Q_SOCK_H */
