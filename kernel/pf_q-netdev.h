@@ -90,7 +90,7 @@ void pfq_hard_tx_unlock(struct net_dev_queue *dq)
 
 
 static inline
-void dev_queue_put(struct net_dev_queue *dq)
+void dev_queue_put(struct net *net, struct net_dev_queue *dq)
 {
 	if(likely(dq->dev)) {
 		dev_put(dq->dev);
