@@ -211,9 +211,12 @@ static int
 __pfq_mbuff_xmit(struct pfq_pkthdr *hdr, struct net_dev_queue *dev_queue,
 		 struct pfq_mbuff_xmit_context *ctx, int slot_size, int node, bool xmit_more, atomic_t const *stop, bool *intr)
 {
-	unsigned int copies, total_copies;
+	int copies, total_copies;
 	struct sk_buff *skb;
 	size_t len;
+
+	if (!dev_queue->dev)
+		return 0;
 
 	/* wait until for the timestap to expire (if specified) */
 
@@ -236,9 +239,7 @@ __pfq_mbuff_xmit(struct pfq_pkthdr *hdr, struct net_dev_queue *dev_queue,
 	skb_reset_tail_pointer(skb);
 	skb->dev = dev_queue->dev;
 	skb->len = 0;
-
 	__skb_put(skb, len);
-
 	skb_set_queue_mapping(skb, dev_queue->queue_mapping);
 	skb_copy_to_linear_data(skb, hdr+1, len < 64 ? 64 : len);
 
@@ -379,12 +380,8 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 
 		/* ensure the device is OK */
 
-		if (!dev_queue.dev) {
-			continue;
-		}
-
 		sent = __pfq_mbuff_xmit(hdr, &dev_queue, &ctx, 0, node,
-				        Q_NEXT_PKTHDR(hdr, 0) >= (struct pfq_pkthdr *)end, stop, &intr);
+					Q_NEXT_PKTHDR(hdr, 0) >= (struct pfq_pkthdr *)end, stop, &intr);
 
 		/* update stats */
 
@@ -444,7 +441,7 @@ __pfq_xmit(struct sk_buff *skb, struct net_device *dev, int xmit_more)
 		return rc;
 
         sparse_inc(&memory_stats, os_free);
-	__kfree_skb(skb);
+	kfree_skb(skb);
 	return -ENETDOWN;
 }
 
