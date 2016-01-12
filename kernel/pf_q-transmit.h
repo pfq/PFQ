@@ -42,18 +42,11 @@
 
 struct pfq_mbuff_xmit_context
 {
-	struct net_device_cache		default_dev;
-	struct net_dev_queue		dev_queue;
 	struct pfq_skb_pool	       *skb_pool;
 	struct net		       *net;
-
-	int				batch_cntr;
-
-	devq_id_t			default_qid;
-	devq_id_t			prec_qid;
-
 	ktime_t			        now;
 	unsigned long			jiffies;
+	int				batch_cntr;
 };
 
 
