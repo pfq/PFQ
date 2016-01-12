@@ -365,7 +365,7 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 			local_bh_enable();
 
 			/* release the device */
-			dev_queue_put(&dev_queue);
+			dev_queue_put(ctx.net, &dev_queue);
 
 			if (dev_queue_get(ctx.net, qid, &dev_queue) < 0)
 			{
@@ -405,7 +405,7 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 
 	/* release the device */
 
-	dev_queue_put(&dev_queue);
+	dev_queue_put(ctx.net, &dev_queue);
 
 	/* update the local consumer offset */
 
