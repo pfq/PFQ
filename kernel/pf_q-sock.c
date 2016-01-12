@@ -242,12 +242,6 @@ pfq_sock_tx_unbind(struct pfq_sock *so)
 {
 	size_t n;
 
-	/* unbind sync Tx queue */
-
-	if (so->opt.txq.def_ifindex != -1) {
-		dev_put_by_index(sock_net(&so->sk), so->opt.txq.def_ifindex);
-	}
-
 	so->opt.txq.def_ifindex = -1;
 	so->opt.txq.def_queue = -1;
 
