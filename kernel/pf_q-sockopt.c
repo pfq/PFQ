@@ -458,10 +458,13 @@ int pfq_setsockopt(struct socket *sock,
                 if (copy_from_user(&bind, optval, optlen))
                         return -EFAULT;
 
-                if (!dev_get_by_index(sock_net(&so->sk), bind.ifindex)) {
+		rcu_read_lock();
+                if (!dev_get_by_index_rcu(sock_net(&so->sk), bind.ifindex)) {
                         printk(KERN_INFO "[PFQ|%d] egress bind: invalid ifindex=%d\n", so->id, bind.ifindex);
+                        rcu_read_unlock();
                         return -EPERM;
                 }
+                rcu_read_unlock();
 
                 if (bind.qindex < -1) {
                         printk(KERN_INFO "[PFQ|%d] egress bind: invalid qindex=%d\n", so->id, bind.qindex);
@@ -479,12 +482,6 @@ int pfq_setsockopt(struct socket *sock,
 
         case Q_SO_EGRESS_UNBIND:
         {
-                if (so->egress_index &&
-                    dev_put_by_index(sock_net(&so->sk), so->egress_index) < 0) {
-                        printk(KERN_INFO "[PFQ|%d] egress bind: invalid if_index=%d\n", so->id, so->egress_index);
-                        return -EPERM;
-                }
-
 		so->egress_type  = pfq_endpoint_socket;
                 so->egress_index = 0;
                 so->egress_queue = 0;
@@ -766,11 +763,14 @@ int pfq_setsockopt(struct socket *sock,
 
 		/* get device */
 
+		rcu_read_lock();
 		if (bind.ifindex != -1 &&
-		    !(dev = dev_get_by_index(sock_net(&so->sk), bind.ifindex))) {
+		    !(dev = dev_get_by_index_rcu(sock_net(&so->sk), bind.ifindex))) {
 			printk(KERN_INFO "[PFQ|%d] Tx thread: invalid ifindex=%d\n", so->id, bind.ifindex);
+			rcu_read_unlock();
 			return -EPERM;
 		}
+		rcu_read_unlock();
 
 		/* update the socket queue information */
 
@@ -778,9 +778,6 @@ int pfq_setsockopt(struct socket *sock,
 		{
 			int err = pfq_sock_tx_bind(so, bind.tid, bind.ifindex, bind.qindex, dev);
 			if (err < 0) {
-				if (bind.ifindex != -1)
-					dev_put_by_index(sock_net(&so->sk), bind.ifindex);
-
 				return err;
 			}
 
