@@ -30,6 +30,20 @@
 struct net_dev_queue net_dev_queue_null = { PFQ_DEVQ_NULL, NULL, NULL, 0 };
 
 
+int netdev_refcnt_read_by_index(struct net *net, int ifindex)
+{
+	struct net_device *dev;
+	int ref = -1;
+	rcu_read_lock();
+	dev = dev_get_by_index_rcu(net, ifindex);
+	if (dev) {
+		ref = netdev_refcnt_read(dev);
+	}
+	rcu_read_unlock();
+	return ref;
+}
+
+
 int dev_queue_get(struct net *net, dev_queue_t id, struct net_dev_queue *dq)
 {
 	int ifindex = PFQ_DEVQ_IFINDEX(id);
