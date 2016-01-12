@@ -45,6 +45,7 @@
 #include <pf_q-endpoint.h>
 #include <pf_q-shared-queue.h>
 #include <pf_q-printk.h>
+#include <pf_q-netdev.h>
 
 #include <lang/engine.h>
 #include <lang/symtable.h>
@@ -407,10 +408,20 @@ int pfq_setsockopt(struct socket *sock,
 			return -EACCES;
 		}
 
-                if (!dev_get_by_index(sock_net(&so->sk), bind.ifindex)) {
+#ifdef PFQ_DEBUG
+		{
+			int ref = netdev_refcnt_read_by_index(sock_net(&so->sk), bind.ifindex);
+			printk(KERN_INFO "[PFQ] GROUP_BIND: dev_get_by_index: ifindex=%d ref=%d\n", bind.ifindex, ref);
+		}
+#endif
+
+		rcu_read_lock();
+                if (!dev_get_by_index_rcu(sock_net(&so->sk), bind.ifindex)) {
                         printk(KERN_INFO "[PFQ|%d] bind: invalid ifindex=%d!\n", so->id, bind.ifindex);
+                        rcu_read_unlock();
                         return -EACCES;
                 }
+                rcu_read_unlock();
 
                 pfq_devmap_update(map_set, bind.ifindex, bind.qindex, gid);
 
@@ -437,10 +448,12 @@ int pfq_setsockopt(struct socket *sock,
 			return -EACCES;
 		}
 
-                if (dev_put_by_index(sock_net(&so->sk), bind.ifindex) < 0) {
-                        printk(KERN_INFO "[PFQ|%d] group id=%d unbind: invalid ifindex=%d!\n", so->id, gid, bind.ifindex);
-                        return -EPERM;
-                }
+#ifdef PFQ_DEBUG
+		{
+			int ref = netdev_refcnt_read_by_index(sock_net(&so->sk), bind.ifindex);
+			printk(KERN_INFO "[PFQ] GROUP_UNBIND: dev_put_by_index: ifindex=%d ref=%d\n", bind.ifindex, ref);
+		}
+#endif
 
                 pfq_devmap_update(map_reset, bind.ifindex, bind.qindex, gid);
 
