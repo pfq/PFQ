@@ -27,20 +27,27 @@
 
 #include <pf_q-netdev.h>
 
-int dev_queue_get(struct net *net, struct net_device_cache const *default_dev, devq_id_t id,
-		  struct net_dev_queue *dq)
-{
-	struct net_device *dev = __fast_dev_get_by_index(net, default_dev, PFQ_NETQ_IFINDEX(id));
-	if (dev == NULL) {
-		dq->dev = NULL;
-		dq->queue = NULL;
-		dq->queue_mapping = 0;
-		return -1;
-	}
+struct net_dev_queue net_dev_queue_null = { PFQ_DEVQ_NULL, NULL, NULL, 0 };
 
-	dq->dev = dev;
-	dq->queue_mapping = __pfq_dev_cap_txqueue(dev, PFQ_NETQ_QUEUE(id));
-	dq->queue = netdev_get_tx_queue(dev, dq->queue_mapping);
+
+int dev_queue_get(struct net *net, dev_queue_t id, struct net_dev_queue *dq)
+{
+	int ifindex = PFQ_DEVQ_IFINDEX(id);
+
+	if ( ifindex != 0 &&
+	     ifindex != PFQ_DEVQ_IFINDEX(dq->id))
+	{
+		struct net_device *dev = dev_get_by_index(net, ifindex);
+		if (dev == NULL) {
+			*dq = net_dev_queue_null;
+			return -EFAULT;
+		}
+
+		dq->id = id;
+		dq->dev = dev;
+		dq->queue_mapping = __pfq_dev_cap_txqueue(dev, PFQ_DEVQ_QUEUE(id));
+		dq->queue = netdev_get_tx_queue(dev, dq->queue_mapping);
+	}
 	return 0;
 }
 

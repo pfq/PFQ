@@ -96,8 +96,13 @@ bool giveup_tx_process(atomic_t const *stop)
 }
 
 
+/*
+ * wait function for active timestamping
+ *
+ */
+
 static inline
-ktime_t busy_wait_until(uint64_t ts, atomic_t const *stop, bool *intr)
+ktime_t wait_until_busy(uint64_t ts, atomic_t const *stop, bool *intr)
 {
 	ktime_t now;
 	do
@@ -114,7 +119,7 @@ ktime_t busy_wait_until(uint64_t ts, atomic_t const *stop, bool *intr)
 
 
 static inline
-ktime_t wait_until(uint64_t ts, atomic_t const *stop, bool *intr)
+ktime_t wait_until_relaxed(uint64_t ts, atomic_t const *stop, bool *intr)
 {
 	ktime_t now;
 	do
@@ -129,6 +134,36 @@ ktime_t wait_until(uint64_t ts, atomic_t const *stop, bool *intr)
 	       && (pfq_relax(), true));
 
 	return now;
+}
+
+
+static
+ktime_t wait_until(uint64_t tv64, ktime_t now, struct net_dev_queue *dev_queue, atomic_t const *stop, bool *intr)
+{
+	ktime_t now_;
+
+	if (tv64 > ktime_to_ns(now)) {
+
+		if ((tv64 - ktime_to_ns(now)) < 100000) { /* < 100us, just like pktgen */
+
+			now_ = wait_until_busy(tv64, stop, intr);
+		}
+		else {
+			pfq_hard_tx_unlock(dev_queue);
+			local_bh_enable();
+
+			now_ = wait_until_relaxed(tv64, stop, intr);
+
+			local_bh_disable();
+			pfq_hard_tx_lock(dev_queue);
+		}
+	}
+	else {
+		if (!tx_rate_control_eager)
+			return now;
+	}
+
+	return now_;
 }
 
 
@@ -166,111 +201,24 @@ unsigned int dev_tx_max_skb_copies(struct net_device *dev, unsigned int req_copi
 }
 
 
-static inline
-devq_id_t
-make_devq_id(struct pfq_pkthdr *hdr, devq_id_t const default_qid)
-{
-	devq_id_t qid = PFQ_NETQ_ID(hdr->ifindex, hdr->queue);
-	if (PFQ_NETQ_IS_DEFAULT(qid))
-		return default_qid;
-	return qid;
-}
 
+/*
+ * transmit a mbuff packet to the given dev_queue
+ */
 
 
 static int
-__pfq_mbuff_xmit(struct pfq_pkthdr *hdr, struct pfq_mbuff_xmit_context *ctx, int slot_size,
-	       int node, atomic_t const *stop, bool last_pkt, bool *intr)
+__pfq_mbuff_xmit(struct pfq_pkthdr *hdr, struct net_dev_queue *dev_queue,
+		 struct pfq_mbuff_xmit_context *ctx, int slot_size, int node, bool xmit_more, atomic_t const *stop, bool *intr)
 {
 	unsigned int copies, total_copies;
-	devq_id_t cur_qid, next_qid;
-	struct pfq_pkthdr *next;
 	struct sk_buff *skb;
 	size_t len;
-	bool last;
 
-	/* skip this packet ? */
-
-	cur_qid = make_devq_id(hdr, ctx->default_qid);
-	if (unlikely(PFQ_NETQ_IS_NULL(cur_qid)))
-		return 0;
-
-	/* get next_qid ...*/
-
-	next = Q_NEXT_PKTHDR(hdr, slot_size);
-	next_qid = last_pkt ? PFQ_NETQ_NULL : make_devq_id(next, ctx->default_qid);
-
-
-	/* dev_queue switch, or relax the batch queue (at the first packet of
-	 * this new batch) ? */
-
-	ctx->batch_cntr++;
-
-	if (ctx->prec_qid != cur_qid || (ctx->batch_cntr == 1 && need_resched())) {
-
-		pfq_hard_tx_unlock(&ctx->dev_queue);
-		local_bh_enable();
-
-		dev_queue_put(ctx->net, &ctx->default_dev, &ctx->dev_queue);
-
-		if (ctx->batch_cntr == 1)
-			schedule();
-
-		dev_queue_get(ctx->net, &ctx->default_dev, cur_qid, &ctx->dev_queue);
-
-		local_bh_disable();
-		pfq_hard_tx_lock(&ctx->dev_queue);
-
-		ctx->prec_qid = cur_qid;
-		ctx->batch_cntr = 1;
-	}
-
-	/* ensure the device is ok */
-
-	if (unlikely(ctx->dev_queue.dev == NULL)) {
-		if (printk_ratelimit())
-			printk(KERN_INFO "[PFQ] dev: ifindex=%d not found!\n", PFQ_NETQ_IFINDEX(cur_qid));
-		return 0;
-	}
-
-	/* is this the last skb of the batch ? */
-
-	if (ctx->batch_cntr >= xmit_batch_len || cur_qid != next_qid || last_pkt) {
-		last = true;
-		ctx->batch_cntr = 0;
-	}
-	else {
-		last = false;
-	}
-
-	/* wait until the timestap expires */
+	/* wait until for the timestap to expire (if specified) */
 
 	if (hdr->tstamp.tv64)
-	{
-		if (hdr->tstamp.tv64 > ktime_to_ns(ctx->now)) {
-
-			if ((hdr->tstamp.tv64 - ktime_to_ns(ctx->now)) < 100000) { /* < 100us, just like pktgen */
-
-				ctx->now = busy_wait_until(hdr->tstamp.tv64, stop, intr);
-			}
-			else {
-				pfq_hard_tx_unlock(&ctx->dev_queue);
-				local_bh_enable();
-
-				ctx->now = wait_until(hdr->tstamp.tv64, stop, intr);
-
-				local_bh_disable();
-				pfq_hard_tx_lock(&ctx->dev_queue);
-			}
-
-			if (*intr)
-				return 0;
-		}
-		else {
-			if (!tx_rate_control_eager)
-				return 0;
-		}
-	}
+		ctx->now = wait_until(hdr->tstamp.tv64, ctx->now, dev_queue, stop, intr);
 
 	/* allocate a new socket buffer */
 
@@ -286,51 +234,45 @@ __pfq_mbuff_xmit(struct pfq_pkthdr *hdr, struct pfq_mbuff_xmit_context *ctx, int
 	len = min_t(size_t, hdr->caplen, xmit_slot_size);
 
 	skb_reset_tail_pointer(skb);
-	skb->dev = ctx->dev_queue.dev;
+	skb->dev = dev_queue->dev;
 	skb->len = 0;
 
 	__skb_put(skb, len);
 
-	skb_set_queue_mapping(skb, ctx->dev_queue.queue_mapping);
+	skb_set_queue_mapping(skb, dev_queue->queue_mapping);
 	skb_copy_to_linear_data(skb, hdr+1, len < 64 ? 64 : len);
 
 	/* transmit the packet(s) */
 
-	total_copies = copies = dev_tx_max_skb_copies(ctx->dev_queue.dev, hdr->data.copies);
+	total_copies = copies = dev_tx_max_skb_copies(dev_queue->dev, hdr->data.copies);
+
+	atomic_set(&skb->users, copies + 1);
 
 	do {
-		const bool xmit_more = !last || copies != 1;
+		const bool xmit_more_ = xmit_more || copies != 1;
 
 		/* if copies > 1, then the device support TX_SKB_SHARING */
 
-		skb_get(skb);
-
-		if (__pfq_xmit(skb, ctx->dev_queue.dev, xmit_more) < 0) {
+		if (__pfq_xmit(skb, dev_queue->dev, xmit_more_) < 0) {
 
 			ctx->batch_cntr = 0;
 
-			if (need_resched()) {
-				pfq_hard_tx_unlock(&ctx->dev_queue);
+			if (need_resched())
+			{
+				pfq_hard_tx_unlock(dev_queue);
 				local_bh_enable();
 
 				pfq_relax();
 
 				local_bh_disable();
-				pfq_hard_tx_lock(&ctx->dev_queue);
-			}
-
-			if (giveup_tx_process(stop)) {
-				pfq_kfree_skb_pool(skb, ctx->skb_pool);
-				*intr = true;
-				return total_copies - copies;
+				pfq_hard_tx_lock(dev_queue);
 			}
 		}
 		else {
-			ctx->dev_queue.queue->trans_start = ctx->jiffies;
-			copies--;
+			dev_queue->queue->trans_start = ctx->jiffies;
 		}
 	}
-	while (copies > 0);
+	while (--copies > 0);
 
 	pfq_kfree_skb_pool(skb, ctx->skb_pool);
 
@@ -338,14 +280,15 @@ __pfq_mbuff_xmit(struct pfq_pkthdr *hdr, struct pfq_mbuff_xmit_context *ctx, int
 }
 
 
-
 int
 pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic_t const *stop)
 {
 	struct pfq_tx_info const * txinfo = pfq_get_tx_queue_info(&so->opt, sock_queue);
+	struct net_dev_queue dev_queue = net_dev_queue_null;
 	struct pfq_mbuff_xmit_context ctx;
 	struct pfq_tx_queue *txm;
 	struct pfq_pkthdr *hdr;
+
 	ptrdiff_t prod_off;
 
 	int total_sent = 0, disc = 0, prod_idx;
@@ -357,17 +300,6 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 	if (txm == NULL)
 		return 0; /* socket not enabled... */
 
-	/* setup ctx */
-
-	ctx.default_qid = PFQ_NETQ_ID(txinfo->def_ifindex, txinfo->def_queue);
-        ctx.prec_qid    = PFQ_NETQ_ID(txinfo->def_ifindex, txinfo->def_queue);
-
-	ctx.default_dev.ifindex = txinfo->def_ifindex;
-	ctx.default_dev.dev = txinfo->def_dev;
-	ctx.default_dev.net = sock_net(&so->sk);
-	ctx.batch_cntr = 0;
-
-        ctx.net = sock_net(&so->sk);
 
 	/* enable skb_pool for Tx threads */
 
@@ -375,8 +307,7 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 	{
 		/* get local pool data */
 		struct pfq_percpu_pool *pool = this_cpu_ptr(percpu_pool);
-		if (likely(atomic_read(&pool->enable)))
-			ctx.skb_pool = &pool->tx_pool;
+		ctx.skb_pool = likely(atomic_read(&pool->enable)) ? &pool->tx_pool : NULL;
 	}
 	else {
 		cpu = smp_processor_id();
@@ -386,37 +317,74 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 	/* initialize boundaries for the transmit queue */
 
 	prod_off = swap_sk_tx_queue(txm, &prod_idx);
-	begin = txinfo->base_addr + (prod_idx & 1) * txm->size + txm->cons.off;
-	end   = txinfo->base_addr + (prod_idx & 1) * txm->size + prod_off;
+	begin    = txinfo->base_addr + (prod_idx & 1) * txm->size + txm->cons.off;
+	end      = txinfo->base_addr + (prod_idx & 1) * txm->size + prod_off;
 
-	/* lock the default dev_queue */
+        /* setup context */
 
-	dev_queue_get(sock_net(&so->sk), &ctx.default_dev, ctx.default_qid , &ctx.dev_queue);
-
-	local_bh_disable();
-	pfq_hard_tx_lock(&ctx.dev_queue);
-
-	/* traverse the socket queue */
-
+	ctx.batch_cntr = 0;
+        ctx.net = sock_net(&so->sk);
 	ctx.now = ktime_get_real();
 	ctx.jiffies = jiffies;
 
-	hdr  = (struct pfq_pkthdr *)begin;
+	hdr = (struct pfq_pkthdr *)begin;
+
+	/* disable bh and lock the dev_queue */
+
+	if (dev_queue_get(ctx.net, PFQ_DEVQ_ID(txinfo->def_ifindex, txinfo->def_queue), &dev_queue) < 0)
+	{
+		if (printk_ratelimit())
+			printk(KERN_INFO "[PFQ] sk_queue_xmit: could not lock default device!\n");
+		return 0;
+	}
+
+	local_bh_disable();
+	pfq_hard_tx_lock(&dev_queue);
+
+	/* traverse the socket queue */
 
 	for_each_sk_mbuff(hdr, end, 0)
 	{
-		devq_id_t qid;
+		dev_queue_t qid;
                 bool intr = false;
 		int sent;
 
 		/* skip this packet ? */
 
-		qid = make_devq_id(hdr, ctx.default_qid);
-		if (unlikely(PFQ_NETQ_IS_NULL(qid)))
+		qid = PFQ_DEVQ_ID(hdr->ifindex, hdr->queue);
+		if (unlikely(qid == PFQ_DEVQ_NULL))
 			continue;
 
-		sent = __pfq_mbuff_xmit(hdr, &ctx, 0, node, stop,
-					Q_NEXT_PKTHDR(hdr, 0) >= (struct pfq_pkthdr *)end , &intr);
+		/* swap queue/device lock */
+
+		if (qid != PFQ_DEVQ_DEFAULT &&
+		    qid != dev_queue.id) {
+
+			/* unlock the current locked queue */
+
+			pfq_hard_tx_unlock(&dev_queue);
+			local_bh_enable();
+
+			/* release the device */
+			dev_queue_put(&dev_queue);
+
+			if (dev_queue_get(ctx.net, qid, &dev_queue) < 0)
+			{
+				continue;
+			}
+
+			local_bh_disable();
+			pfq_hard_tx_lock(&dev_queue);
+		}
+
+		/* ensure the device is OK */
+
+		if (!dev_queue.dev) {
+			continue;
+		}
+
+		sent = __pfq_mbuff_xmit(hdr, &dev_queue, &ctx, 0, node,
+				        Q_NEXT_PKTHDR(hdr, 0) >= (struct pfq_pkthdr *)end, stop, &intr);
 
 		/* update stats */
 
@@ -433,12 +401,12 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 
 	/* unlock the current locked queue */
 
-	pfq_hard_tx_unlock(&ctx.dev_queue);
+	pfq_hard_tx_unlock(&dev_queue);
 	local_bh_enable();
 
 	/* release the device */
 
-	dev_queue_put(sock_net(&so->sk), &ctx.default_dev, &ctx.dev_queue);
+	dev_queue_put(&dev_queue);
 
 	/* update the local consumer offset */
 
@@ -476,7 +444,7 @@ __pfq_xmit(struct sk_buff *skb, struct net_device *dev, int xmit_more)
 		return rc;
 
         sparse_inc(&memory_stats, os_free);
-	kfree_skb(skb);
+	__kfree_skb(skb);
 	return -ENETDOWN;
 }
 
@@ -528,7 +496,6 @@ pfq_skb_queue_xmit(struct pfq_skbuff_queue *skbs, unsigned long long mask, struc
 	local_bh_disable();
 	HARD_TX_LOCK(dev, txq, smp_processor_id());
 
-
 	for_each_skbuff_bitmask(skbs, skb, n, mask)
 	{
 		skb_reset_mac_header(skb);
@@ -545,6 +512,8 @@ pfq_skb_queue_xmit(struct pfq_skbuff_queue *skbs, unsigned long long mask, struc
 	return ret;
 
 intr:
+	/* the ret-i packet is already freed by the driver */
+
 	for_each_skbuff_from(ret + 1, skbs, skb, n) {
 		sparse_inc(&memory_stats, os_free);
 		kfree_skb(skb);
