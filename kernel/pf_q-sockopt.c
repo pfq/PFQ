@@ -737,7 +737,6 @@ int pfq_setsockopt(struct socket *sock,
         case Q_SO_TX_BIND:
         {
                 struct pfq_binding bind;
-                struct net_device *dev = NULL;
 
                 if (optlen != sizeof(bind))
                         return -EINVAL;
@@ -764,8 +763,7 @@ int pfq_setsockopt(struct socket *sock,
 		/* get device */
 
 		rcu_read_lock();
-		if (bind.ifindex != -1 &&
-		    !(dev = dev_get_by_index_rcu(sock_net(&so->sk), bind.ifindex))) {
+		if (bind.ifindex != -1 && !dev_get_by_index_rcu(sock_net(&so->sk), bind.ifindex)) {
 			printk(KERN_INFO "[PFQ|%d] Tx thread: invalid ifindex=%d\n", so->id, bind.ifindex);
 			rcu_read_unlock();
 			return -EPERM;
@@ -776,7 +774,7 @@ int pfq_setsockopt(struct socket *sock,
 
 		if (bind.tid >= 0) /* async queues */
 		{
-			int err = pfq_sock_tx_bind(so, bind.tid, bind.ifindex, bind.qindex, dev);
+			int err = pfq_sock_tx_bind(so, bind.tid, bind.ifindex, bind.qindex);
 			if (err < 0) {
 				return err;
 			}
@@ -787,7 +785,6 @@ int pfq_setsockopt(struct socket *sock,
 		{
 			so->opt.txq.def_ifindex = bind.ifindex;
 			so->opt.txq.def_queue = bind.qindex;
-			so->opt.txq.def_dev = dev;
 			pr_devel("[PFQ|%d] Tx bind: if_index=%d qindex=%d\n", so->id,
 				so->opt.txq.def_ifindex,
 				so->opt.txq.def_queue);
