@@ -137,6 +137,8 @@ struct sk_buff * pfq_skb_recycle(struct sk_buff *skb)
 
 	shinfo = skb_shinfo(skb);
 	memset(shinfo, 0, offsetof(struct skb_shared_info, dataref));
+
+	atomic_set(&skb->users, 1);
 	atomic_set(&shinfo->dataref,1);
 
 	memset(skb, 0, offsetof(struct sk_buff, tail));
