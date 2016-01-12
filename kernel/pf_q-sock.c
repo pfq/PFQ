@@ -252,9 +252,6 @@ pfq_sock_tx_unbind(struct pfq_sock *so)
 
 	for(n = 0; n < Q_MAX_TX_QUEUES; ++n)
 	{
-		if (so->opt.txq_async[n].def_ifindex != -1)
-			dev_put_by_index(sock_net(&so->sk), so->opt.txq_async[n].def_ifindex);
-
 		so->opt.txq_async[n].def_ifindex = -1;
 		so->opt.txq_async[n].def_queue = -1;
 	}
