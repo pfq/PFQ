@@ -263,11 +263,10 @@ pfq_enable(pfq_t *q)
 	env = getenv("PFQ_HUGEPAGES");
 	hugepages = hugepages_mountpoint();
 
-	if (hugepages &&
-	    !getenv("PFQ_NO_HUGEPAGES") &&
-	    (env == NULL || atoi(env) != 0) )
+	if (hugepages && env && (atoi(env) != 0))
 	{
 		/* HugePages */
+
 		fprintf(stdout, "[PFQ] using HugePages...\n");
 
 		snprintf(filename, 256, "%s/pfq.%d", hugepages, q->id);
@@ -288,7 +287,9 @@ pfq_enable(pfq_t *q)
 		/* Standard pages (4K) */
 
 		void * null = NULL;
+
 		fprintf(stdout, "[PFQ] using 4k-Pages...\n");
+
 		if(setsockopt(q->fd, PF_Q, Q_SO_ENABLE, &null, sizeof(null)) == -1)
 			return Q_ERROR(q, "PFQ: socket enable");
 
