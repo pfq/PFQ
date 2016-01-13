@@ -209,9 +209,9 @@ unsigned int dev_tx_max_skb_copies(struct net_device *dev, unsigned int req_copi
 
 static int
 __pfq_mbuff_xmit(struct pfq_pkthdr *hdr, struct net_dev_queue *dev_queue,
-		 struct pfq_mbuff_xmit_context *ctx, int slot_size, int node, bool xmit_more, atomic_t const *stop, bool *intr)
+		 struct pfq_mbuff_xmit_context *ctx, int slot_size, int node, int copies, bool xmit_more, atomic_t const *stop, bool *intr)
 {
-	int copies, sent = 0;
+	int sent = 0;
 	struct sk_buff *skb;
 	size_t len;
 
@@ -245,8 +245,6 @@ __pfq_mbuff_xmit(struct pfq_pkthdr *hdr, struct net_dev_queue *dev_queue,
 
 	/* transmit the packet(s) */
 
-	copies = dev_tx_max_skb_copies(dev_queue->dev, hdr->data.copies);
-
 	atomic_set(&skb->users, copies + 1);
 
 	do {
@@ -268,13 +266,16 @@ __pfq_mbuff_xmit(struct pfq_pkthdr *hdr, struct net_dev_queue *dev_queue,
 			}
 		}
 		else {
-			dev_queue->queue->trans_start = ctx->jiffies;
 			sent++;
 		}
 	}
 	while (--copies > 0);
 
 	pfq_kfree_skb_pool(skb, ctx->skb_pool);
+
+	if (sent) {
+		dev_queue->queue->trans_start = ctx->jiffies;
+	}
 
 	return sent;
 }
@@ -346,7 +347,7 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 	{
 		dev_queue_t qid;
                 bool intr = false, xmit_more = true;
-		int sent;
+		int sent, copies;
 
 		/* skip this packet ? */
 
@@ -376,14 +377,15 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 			pfq_hard_tx_lock(&dev_queue);
 		}
 
-		if (++batch_cntr >= xmit_batch_len)
+                copies = dev_tx_max_skb_copies(dev_queue.dev, hdr->data.copies);
+		batch_cntr += copies;
+		if (batch_cntr >= xmit_batch_len)
 		{
 			xmit_more = false;
 			batch_cntr = 0;
 		}
 
-		sent = __pfq_mbuff_xmit(hdr, &dev_queue, &ctx, 0, node,
-					xmit_more && (Q_NEXT_PKTHDR(hdr, 0) < (struct pfq_pkthdr *)end), stop, &intr);
+		sent = __pfq_mbuff_xmit(hdr, &dev_queue, &ctx, 0, node, copies, xmit_more && (Q_NEXT_PKTHDR(hdr, 0) < (struct pfq_pkthdr *)end), stop, &intr);
 
 		/* update stats */
 
