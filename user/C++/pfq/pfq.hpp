@@ -502,12 +502,11 @@ namespace pfq {
             auto env = getenv("PFQ_HUGEPAGES");
             auto hugepages = hugepages_mountpoint();
 
-            if (!hugepages.empty() &&
-                !getenv("PFQ_NO_HUGEPAGES") &&
-                (env == nullptr || atoi(env) != 0))
+            if (!hugepages.empty() && env && (atoi(env) != 0))
             {
                 // HugePages
                 //
+
                 std::clog << "[PFQ] using HugePages..." << std::endl;
 
                 d->hd = ::open((hugepages + "/pfq." + std::to_string(d->id)).c_str(),  O_CREAT | O_RDWR, 0755);
