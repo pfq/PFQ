@@ -252,7 +252,7 @@ __pfq_mbuff_xmit(struct pfq_pkthdr *hdr, struct net_dev_queue *dev_queue,
 
 		/* if copies > 1, then the device support TX_SKB_SHARING */
 
-		if (__pfq_xmit(skb, dev_queue->dev, xmit_more_) < 0) {
+		if (__pfq_xmit(skb, dev_queue->dev, xmit_more_) != NETDEV_TX_OK) {
 
 			if (need_resched())
 			{
@@ -385,7 +385,8 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 			batch_cntr = 0;
 		}
 
-		sent = __pfq_mbuff_xmit(hdr, &dev_queue, &ctx, 0, node, copies, xmit_more && (Q_NEXT_PKTHDR(hdr, 0) < (struct pfq_pkthdr *)end), stop, &intr);
+		sent = __pfq_mbuff_xmit(hdr, &dev_queue, &ctx, 0, node, copies,
+					xmit_more && (Q_NEXT_PKTHDR(hdr, 0) < (struct pfq_pkthdr *)end), stop, &intr);
 
 		/* update stats */
 
@@ -441,8 +442,9 @@ __pfq_xmit(struct sk_buff *skb, struct net_device *dev, int xmit_more)
 #endif
 
 	rc = dev->netdev_ops->ndo_start_xmit(skb, dev);
-	if (dev_xmit_complete(rc))
+	if (dev_xmit_complete(rc)) {
 		return rc;
+	}
 
         sparse_inc(&memory_stats, os_free);
 	kfree_skb(skb);
