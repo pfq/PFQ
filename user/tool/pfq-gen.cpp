@@ -21,7 +21,7 @@
 #include <system_error>
 #include <random>
 #include <limits>
-
+#include <csignal>
 
 #include <pfq/pfq.hpp>
 #include <pfq/util.hpp>
@@ -73,23 +73,25 @@ namespace more
     }
 }
 
+
 namespace opt
 {
     size_t flush_hint = 1;
     size_t len      = 1514;
     size_t slots    = 8192;
     size_t npackets = std::numeric_limits<size_t>::max();
+    size_t seconds  = std::numeric_limits<size_t>::max();
     size_t loop     = 1;
     size_t preload  = 1;
-    unsigned int copies   = 1;
+    unsigned int copies = 1;
 
     std::atomic_int nthreads;
+    std::atomic_bool stop;
 
     bool   rand_ip   = false;
     bool   rand_flow = false;
     bool   active_ts = false;
     bool   poisson   = false;
-
     double rate      = 0;
 
     std::vector< std::vector<int> > kthread;
@@ -285,6 +287,9 @@ namespace thread
                 }
 
                 n++;
+
+                if (opt::stop.load(std::memory_order_relaxed))
+                    break;
             }
         }
 
@@ -332,6 +337,9 @@ namespace thread
                 m_gros->fetch_add(len+24, std::memory_order_relaxed);
 
                 n++;
+
+                if (opt::stop.load(std::memory_order_relaxed))
+                    break;
             }
         }
 
@@ -396,6 +404,9 @@ namespace thread
                 }
 
                 n++;
+
+                if (opt::stop.load(std::memory_order_relaxed))
+                    break;
             }
         }
 
@@ -478,6 +489,9 @@ namespace thread
                         break;
 
                     i++;
+
+                    if (opt::stop.load(std::memory_order_relaxed))
+                        break;
                 }
 
                 pcap_close(p);
@@ -579,7 +593,8 @@ void usage(std::string name)
         "usage: " + std::move(name) + " [OPTIONS]\n\n"
         " -h --help                     Display this help\n"
         " -l --len INT                  Set packet length\n"
-        " -n --packets INT              Number of packets\n"
+        " -n --packets INT              Number of packets to transmit\n"
+        "    --second NT                Number of seconds to transmit\n"
         " -c --copies INT               Number of per-packet copies\n"
         " -s --queue-slots INT          Set Tx queue length\n"
         " -k --kthread IDX,IDX...       Async with kernel threads\n"
@@ -604,6 +619,12 @@ void usage(std::string name)
 
 
 std::vector<thread::context *> thread_ctx;
+
+void sighandler(int)
+{
+    opt::stop.store(true, std::memory_order_relaxed);
+}
+
 
 int
 main(int argc, char *argv[])
@@ -689,6 +710,17 @@ try
             }
 
             opt::npackets = static_cast<size_t>(std::atoi(argv[i]));
+            continue;
+        }
+
+        if ( any_strcmp(argv[i], "--seconds") )
+        {
+            if (++i == argc)
+            {
+                throw std::runtime_error("number missing");
+            }
+
+            opt::seconds = static_cast<size_t>(std::atoi(argv[i]));
             continue;
         }
 
@@ -839,6 +871,8 @@ try
 
     if (opt::npackets != std::numeric_limits<size_t>::max())
         std::cout << "npackets   : " << opt::npackets << std::endl;
+    if (opt::seconds != std::numeric_limits<size_t>::max())
+        std::cout << "seconds    : " << opt::seconds << std::endl;
 
     std::cout << "copies     : "  << opt::copies << std::endl;
 
@@ -890,11 +924,13 @@ try
     uint64_t gros, gros_ = 0;
     uint64_t fail, fail_ = 0;
 
+    signal(SIGINT, sighandler);
+
     std::cout << "------------ gen started ------------\n";
 
     auto begin = std::chrono::system_clock::now();
 
-    for(int y=0; true; y++)
+    for(size_t y=0; y < opt::seconds; y++)
     {
         std::this_thread::sleep_for(std::chrono::seconds(1));
 
@@ -930,14 +966,14 @@ try
                   << "disc: " << vt100::BOLD << persecond<int64_t>(cur.disc - prec.disc, delta) << vt100::RESET << " pkt/sec "
                   << " }" << std::endl;
 
-
         prec = cur, begin = end;
         sent_ = sent;
         band_ = band;
         gros_ = gros;
         fail_ = fail;
 
-        if (opt::nthreads.load(std::memory_order_relaxed) == 0)
+        if (opt::nthreads.load(std::memory_order_relaxed) == 0 ||
+            opt::stop.load(std::memory_order_relaxed))
             break;
     }
 
