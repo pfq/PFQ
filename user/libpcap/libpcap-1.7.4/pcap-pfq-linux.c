@@ -503,9 +503,10 @@ static size_t
 pfq_count_tx_thread(struct pfq_opt const *opt)
 {
 	size_t n, tx = 0;
-        for(n = 0; n < 4; n++)
-		if (opt->tx_thread[n]  != Q_NO_KTHREAD)
+        for(n = 0; n < 4; n++) {
+		if (opt->tx_thread[n] != Q_NO_KTHREAD)
 			tx++;
+	}
 	return tx;
 }
 
@@ -513,7 +514,7 @@ pfq_count_tx_thread(struct pfq_opt const *opt)
 static struct pfq_opt
 pfq_opt_default(pcap_t *handle)
 {
-	struct pfq_opt rc =
+	return (struct pfq_opt)
 	{
 		.group    = -1,
 		.caplen   = handle->snapshot,
@@ -526,8 +527,6 @@ pfq_opt_default(pcap_t *handle)
 		.vlan     = NULL,
 		.comp     = NULL
 	};
-
-	return rc;
 }
 
 
