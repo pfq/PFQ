@@ -406,7 +406,6 @@ pfq_receive_batch(struct pfq_percpu_data *data,
 	/* reset the GC */
 
 	GC_reset(GC_ptr);
-	local_bh_enable();
 
 #ifdef PFQ_RX_PROFILE
 	stop = get_cycles();
@@ -431,10 +430,6 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 		return 0;
 	}
 
-	/* disable soft-irq */
-
-        local_bh_disable();
-
         cpu = smp_processor_id();
 	data = per_cpu_ptr(percpu_data, cpu);
 
@@ -453,7 +448,6 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 			skb = pfq_vlan_untag(skb);
 			if (unlikely(!skb)) {
 				__sparse_inc(&global_stats, lost, cpu);
-				local_bh_enable();
 				return -1;
 			}
 		}
@@ -474,7 +468,6 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 			__sparse_inc(&global_stats, lost, cpu);
 			__sparse_inc(&memory_stats, os_free, cpu);
 			kfree_skb(skb);
-			local_bh_enable();
 			return 0;
 		}
 
@@ -483,7 +476,6 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 		if ((GC_size(data->GC) < (size_t)capt_batch_len) &&
 		     (ktime_to_ns(ktime_sub(skb_get_ktime(PFQ_SKB(buff)), data->last_rx)) < 1000000))
 		{
-			local_bh_enable();
 			return 0;
 		}
 
@@ -492,7 +484,6 @@ pfq_receive(struct napi_struct *napi, struct sk_buff * skb, int direct)
 	else {
                 if (GC_size(data->GC) == 0)
 		{
-			local_bh_enable();
 			return 0;
 		}
 	}
