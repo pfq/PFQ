@@ -183,7 +183,7 @@ import Data.Aeson
 import Data.Word
 import Data.Bits
 import Data.Maybe (fromJust)
-import Data.Monoid()
+import Data.Monoid
 
 import qualified Data.ByteString.Char8 as C
 import qualified Data.ByteString.Lazy.Char8 as BL (pack)
