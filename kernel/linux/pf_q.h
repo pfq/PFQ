@@ -420,6 +420,7 @@ struct pfq_stats
 
         unsigned long int sent;		/* sent by the driver */
         unsigned long int disc;		/* discarded by the driver */
+        unsigned long int fail;		/* tx fail due to driver congestion */
 
 	unsigned long int frwd;		/* forwarded to devices */
 	unsigned long int kern;		/* forwarded to kernel  */

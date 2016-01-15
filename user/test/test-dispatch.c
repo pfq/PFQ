@@ -41,23 +41,23 @@ main(int argc, char *argv[])
 
         int caplen = pfq_get_caplen(p);
         if (caplen < 0) {
-        	printf("error: %s\n", pfq_error(p));
-        	return -1;
+		printf("error: %s\n", pfq_error(p));
+		return -1;
         }
 
         printf("caplen: %d\n", caplen);
 
         int id = pfq_id(p);
         if (id < 0) {
-        	printf("error: %s\n", pfq_error(p));
-        	return -1;
+		printf("error: %s\n", pfq_error(p));
+		return -1;
         }
 
         printf("id: %d\n", id);
 
         if (pfq_bind(p, argv[1], Q_ANY_QUEUE) < 0) {
-        	printf("error: %s\n", pfq_error(p));
-        	return -1;
+		printf("error: %s\n", pfq_error(p));
+		return -1;
         }
 
         int n = 0;

@@ -231,7 +231,7 @@ namespace thread
         std::tuple<pfq_stats, uint64_t, uint64_t, uint64_t, uint64_t>
         stats() const
         {
-            pfq_stats ret = {0,0,0,0,0,0,0};
+            pfq_stats ret = {0,0,0,0,0,0,0,0};
 
             ret += m_pfq.stats();
 
@@ -917,7 +917,7 @@ try
         t->detach();
     });
 
-    pfq_stats cur, prec = {0,0,0,0,0,0,0};
+    pfq_stats cur, prec = {0,0,0,0,0,0,0,0};
 
     uint64_t sent, sent_ = 0;
     uint64_t band, band_ = 0;
@@ -934,7 +934,7 @@ try
     {
         std::this_thread::sleep_for(std::chrono::seconds(1));
 
-        cur = {0,0,0,0,0,0,0};
+        cur = {0,0,0,0,0,0,0,0};
         sent = 0;
         band = 0;
         gros = 0;
