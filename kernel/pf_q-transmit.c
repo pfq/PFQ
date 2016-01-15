@@ -201,27 +201,91 @@ unsigned int dev_tx_max_skb_copies(struct net_device *dev, unsigned int req_copi
 }
 
 
-
 /*
- * transmit a mbuff packet to the given dev_queue
+ *  single packet transmission...
  */
 
+static inline int
+__pfq_xmit_retry(struct sk_buff *skb, struct net_device *dev, int xmit_more, bool retry)
+{
+	int rc = -ENOMEM;
 
-static int
+#if(LINUX_VERSION_CODE >= KERNEL_VERSION(3,18,0))
+	skb->xmit_more = xmit_more;
+#else
+	skb->mark = xmit_more;
+#endif
+
+	rc = dev->netdev_ops->ndo_start_xmit(skb, dev);
+	if (dev_xmit_complete(rc)) {
+		return rc;
+	}
+
+	if (!retry)
+	{
+		sparse_inc(&memory_stats, os_free);
+		kfree_skb(skb);
+	}
+
+	return -ENETDOWN;
+}
+
+
+static inline int
+__pfq_xmit(struct sk_buff *skb, struct net_device *dev, int xmit_more)
+{
+	return __pfq_xmit_retry(skb, dev, xmit_more, false);
+}
+
+
+int
+pfq_xmit(struct sk_buff *skb, struct net_device *dev, int queue, int more)
+{
+	struct netdev_queue *txq;
+	int ret = 0;
+
+	/* get txq and fix the queue for this batch.
+	 *
+	 * note: in case the queue is set to any-queue (-1), the driver along the first skb
+	 * select the queue */
+
+	txq = pfq_netdev_pick_tx(dev, skb, &queue);
+
+	skb_reset_mac_header(skb);
+	skb_set_queue_mapping(skb, queue);
+
+	local_bh_disable();
+	HARD_TX_LOCK(dev, txq, smp_processor_id());
+
+	ret = __pfq_xmit(skb, dev, more);
+
+	HARD_TX_UNLOCK(dev, txq);
+        local_bh_enable();
+
+	return ret;
+}
+
+
+/*
+ * transmit a mbuff packet with copies
+ */
+
+static tx_ret
 __pfq_mbuff_xmit(struct pfq_pkthdr *hdr, struct net_dev_queue *dev_queue,
 		 struct pfq_mbuff_xmit_context *ctx, int slot_size, int node, int copies, bool xmit_more, atomic_t const *stop, bool *intr)
 {
-	int sent = 0;
 	struct sk_buff *skb;
+        tx_ret ret = { 0 };
 	size_t len;
 
 	if (!dev_queue->dev)
-		return 0;
+		return (tx_ret){.ok = 0, .fail = copies};
 
 	/* wait until for the timestap to expire (if specified) */
 
 	if (hdr->tstamp.tv64)
 		ctx->now = wait_until(hdr->tstamp.tv64, ctx->now, dev_queue, stop, intr);
+
 
 	/* allocate a new socket buffer */
 
@@ -229,7 +293,7 @@ __pfq_mbuff_xmit(struct pfq_pkthdr *hdr, struct net_dev_queue *dev_queue,
 	if (unlikely(skb == NULL)) {
 		if (printk_ratelimit())
 			printk(KERN_INFO "[PFQ] Tx could not allocate an skb!\n");
-		return 0;
+		return (tx_ret){.ok = 0, .fail = copies};
 	}
 
 	/* fill the socket buffer */
@@ -254,6 +318,8 @@ __pfq_mbuff_xmit(struct pfq_pkthdr *hdr, struct net_dev_queue *dev_queue,
 
 		if (__pfq_xmit(skb, dev_queue->dev, xmit_more_) != NETDEV_TX_OK) {
 
+			ret.fail++;
+
 			if (need_resched())
 			{
 				pfq_hard_tx_unlock(dev_queue);
@@ -266,40 +332,43 @@ __pfq_mbuff_xmit(struct pfq_pkthdr *hdr, struct net_dev_queue *dev_queue,
 			}
 		}
 		else {
-			sent++;
+			ret.ok++;
 		}
 	}
 	while (--copies > 0);
 
 	pfq_kfree_skb_pool(skb, ctx->skb_pool);
 
-	if (sent) {
+	if (ret.ok) {
 		dev_queue->queue->trans_start = ctx->jiffies;
 	}
 
-	return sent;
+	return ret;
 }
 
 
-int
+/*
+ * transmit queues of packets (from memory mapped queue)...
+ */
+
+tx_ret
 pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic_t const *stop)
 {
 	struct pfq_tx_info const * txinfo = pfq_get_tx_queue_info(&so->opt, sock_queue);
 	struct net_dev_queue dev_queue = net_dev_queue_null;
 	struct pfq_mbuff_xmit_context ctx;
+	int batch_cntr = 0, prod_idx;
 	struct pfq_tx_queue *txm;
 	struct pfq_pkthdr *hdr;
-
 	ptrdiff_t prod_off;
-
-	int total_sent = 0, disc = 0, batch_cntr = 0, prod_idx;
         char *begin, *end;
+        tx_ret ret = {0};
 
 	/* get the Tx queue */
 
 	txm = pfq_get_tx_queue(&so->opt, sock_queue);
 	if (txm == NULL)
-		return 0; /* socket not enabled... */
+		return ret; /* socket not enabled... */
 
 
 	/* enable skb_pool for Tx threads */
@@ -335,7 +404,7 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 	{
 		if (printk_ratelimit())
 			printk(KERN_INFO "[PFQ] sk_queue_xmit: could not lock default device!\n");
-		return 0;
+		return ret;
 	}
 
 	local_bh_disable();
@@ -347,7 +416,8 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 	{
 		dev_queue_t qid;
                 bool intr = false, xmit_more = true;
-		int sent, copies;
+		int copies;
+                tx_ret tmp;
 
 		/* skip this packet ? */
 
@@ -385,18 +455,10 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 			batch_cntr = 0;
 		}
 
-		sent = __pfq_mbuff_xmit(hdr, &dev_queue, &ctx, 0, node, copies,
+		tmp = __pfq_mbuff_xmit(hdr, &dev_queue, &ctx, 0, node, copies,
 					xmit_more && (Q_NEXT_PKTHDR(hdr, 0) < (struct pfq_pkthdr *)end), stop, &intr);
 
-		/* update stats */
-
-		if (sent)
-		{
-			total_sent += sent;
-			__sparse_add(so->stats, sent, sent, cpu);
-			__sparse_add(&global_stats, sent, sent, cpu);
-		}
-
+		ret.value += tmp.value;
 		if (unlikely(intr))
 			break;
 	}
@@ -418,74 +480,24 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 
 	for_each_sk_mbuff(hdr, end, 0)
 	{
-		disc++;
+		ret.fail++;
 	}
-
-	/* update stats */
-
-	__sparse_add(so->stats, disc, disc, cpu);
-	__sparse_add(&global_stats, disc, disc, cpu);
-
-	return total_sent;
-}
-
-
-static inline int
-__pfq_xmit(struct sk_buff *skb, struct net_device *dev, int xmit_more)
-{
-	int rc = -ENOMEM;
-
-#if(LINUX_VERSION_CODE >= KERNEL_VERSION(3,18,0))
-	skb->xmit_more = xmit_more;
-#else
-	skb->mark = xmit_more;
-#endif
-
-	rc = dev->netdev_ops->ndo_start_xmit(skb, dev);
-	if (dev_xmit_complete(rc)) {
-		return rc;
-	}
-
-        sparse_inc(&memory_stats, os_free);
-	kfree_skb(skb);
-	return -ENETDOWN;
-}
-
-
-int
-pfq_xmit(struct sk_buff *skb, struct net_device *dev, int queue, int more)
-{
-	struct netdev_queue *txq;
-	int ret = 0;
-
-	/* get txq and fix the queue for this batch.
-	 *
-	 * note: in case the queue is set to any-queue (-1), the driver along the first skb
-	 * select the queue */
-
-	txq = pfq_netdev_pick_tx(dev, skb, &queue);
-
-	skb_reset_mac_header(skb);
-	skb_set_queue_mapping(skb, queue);
-
-	local_bh_disable();
-	HARD_TX_LOCK(dev, txq, smp_processor_id());
-
-	ret = __pfq_xmit(skb, dev, more);
-
-	HARD_TX_UNLOCK(dev, txq);
-        local_bh_enable();
 
 	return ret;
 }
 
 
-int
+/*
+ * transmit queues of packets (from a skbuff_queue)...
+ */
+
+tx_ret
 pfq_skb_queue_xmit(struct pfq_skbuff_queue *skbs, unsigned long long mask, struct net_device *dev, int queue)
 {
 	struct netdev_queue *txq;
 	struct sk_buff *skb;
-	int n, last_idx, ret = 0;
+	int n, last_idx;
+	tx_ret ret = {0};
 
 	/* get txq and fix the queue for this batch.
 	 *
@@ -505,9 +517,11 @@ pfq_skb_queue_xmit(struct pfq_skbuff_queue *skbs, unsigned long long mask, struc
 		skb_set_queue_mapping(skb, queue);
 
 		if (__pfq_xmit(skb, dev, !( n == last_idx || ((mask & (mask-1)) == 0))) == NETDEV_TX_OK)
-			++ret;
-		else
+			++ret.ok;
+		else {
+			++ret.fail;
 			goto intr;
+		}
 	}
 
 	HARD_TX_UNLOCK(dev, txq);
@@ -517,9 +531,10 @@ pfq_skb_queue_xmit(struct pfq_skbuff_queue *skbs, unsigned long long mask, struc
 intr:
 	/* the ret-i packet is already freed by the driver */
 
-	for_each_skbuff_from(ret + 1, skbs, skb, n) {
+	for_each_skbuff_from(ret.ok + 1, skbs, skb, n) {
 		sparse_inc(&memory_stats, os_free);
 		kfree_skb(skb);
+		++ret.fail;
 	}
 
 	HARD_TX_UNLOCK(dev, txq);
@@ -527,6 +542,9 @@ intr:
 	return ret;
 }
 
+/*
+ * lazy transmit packet...
+ */
 
 int
 pfq_lazy_xmit(struct sk_buff __GC * skb, struct net_device *dev, int queue)
@@ -560,16 +578,6 @@ pfq_skb_queue_lazy_xmit(struct pfq_skbuff_GC_queue *queue, unsigned long long ma
 	}
 
 	return n;
-}
-
-
-static inline
-struct sk_buff *
-skb_tx_clone(struct net_device *dev, struct sk_buff *skb, gfp_t mask)
-{
-	if (likely(dev->priv_flags & IFF_TX_SKB_SHARING))
-		return skb_get(skb);
-	return skb_clone(skb, mask);
 }
 
 
