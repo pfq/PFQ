@@ -316,26 +316,29 @@ __pfq_mbuff_xmit(struct pfq_pkthdr *hdr, struct net_dev_queue *dev_queue,
 
 		/* if copies > 1, then the device support TX_SKB_SHARING */
 
-		if (__pfq_xmit(skb, dev_queue->dev, xmit_more_) != NETDEV_TX_OK) {
+		if (__pfq_xmit_retry(skb, dev_queue->dev, xmit_more_, true) != NETDEV_TX_OK) {
 
 			ret.fail++;
 
-			if (need_resched())
-			{
-				pfq_hard_tx_unlock(dev_queue);
-				local_bh_enable();
+			pfq_hard_tx_unlock(dev_queue);
+			local_bh_enable();
 
-				pfq_relax();
-
-				local_bh_disable();
-				pfq_hard_tx_lock(dev_queue);
+			if (giveup_tx_process(stop)) {
+				atomic_set(&skb->users, 1);
+				pfq_kfree_skb_pool(skb, ctx->skb_pool);
+				return ret;
 			}
+
+			local_bh_disable();
+			pfq_hard_tx_lock(dev_queue);
+
 		}
 		else {
 			ret.ok++;
+			copies--;
 		}
 	}
-	while (--copies > 0);
+	while (copies > 0);
 
 	pfq_kfree_skb_pool(skb, ctx->skb_pool);
 
