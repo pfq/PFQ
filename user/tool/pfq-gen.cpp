@@ -964,6 +964,7 @@ try
                   << "socket: { "
                   << "sent: " << vt100::BOLD << persecond<int64_t>(cur.sent - prec.sent, delta) << vt100::RESET << " pkt/sec - "
                   << "disc: " << vt100::BOLD << persecond<int64_t>(cur.disc - prec.disc, delta) << vt100::RESET << " pkt/sec "
+                  << "fail: " << vt100::BOLD << persecond<int64_t>(cur.fail - prec.fail, delta) << vt100::RESET << " pkt/sec "
                   << " }" << std::endl;
 
         prec = cur, begin = end;
@@ -993,7 +994,7 @@ try
 
     std::cout << "Summary:" << std::endl;
 
-    std::cout << "    PFQ packets sent:" << cur.sent << " discarded:" << cur.disc << std::endl;
+    std::cout << "    PFQ packets sent:" << cur.sent << " discarded:" << cur.disc << " attempt:" << cur.fail << std::endl;
     std::cout << "    App packets sent:" << sent << std::endl;
 
 }
