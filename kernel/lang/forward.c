@@ -112,13 +112,13 @@ forwardIO(arguments_t args, SkBuff skb)
 	struct net_device *dev = GET_ARG(struct net_device *, args);
 	struct sk_buff *nskb;
 
-	struct pfq_group_stats *stats = get_group_stats(skb);
+	pfq_group_stats_t *stats = get_group_stats(skb);
 
 	if (dev == NULL) {
                 if (printk_ratelimit())
                         printk(KERN_INFO "[pfq-lang] forward: device error!\n");
-		sparse_inc(&global_stats, abrt);
-		local_inc(&stats->abrt);
+		sparse_inc(&global_stats, disc);
+		local_inc(&stats->disc);
 
                 return Pass(skb);
 	}
@@ -127,8 +127,8 @@ forwardIO(arguments_t args, SkBuff skb)
 	if (!nskb) {
                 if (printk_ratelimit())
 			printk(KERN_INFO "[pfq-lang] forward pfq_xmit %s: no memory!\n", dev->name);
-		sparse_inc(&global_stats, abrt);
-		local_inc(&stats->abrt);
+		sparse_inc(&global_stats, disc);
+		local_inc(&stats->disc);
 		return Pass(skb);
 	}
 
@@ -152,7 +152,7 @@ static ActionSkBuff
 forward(arguments_t args, SkBuff skb)
 {
 	struct net_device *dev = GET_ARG(struct net_device *, args);
-        struct pfq_group_stats *stats;
+        pfq_group_stats_t *stats;
 
 	if (dev == NULL) {
                 if (printk_ratelimit())
@@ -193,7 +193,7 @@ link(arguments_t args, SkBuff skb)
 {
         struct net_device **dev = GET_ARRAY(struct net_device *,args);
 	size_t n, ndev = LEN_ARRAY(args);
-        struct pfq_group_stats *stats = get_group_stats(skb);
+        pfq_group_stats_t *stats = get_group_stats(skb);
 
 	for(n = 0; n < ndev; n++)
 	{

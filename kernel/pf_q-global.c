@@ -51,7 +51,7 @@ int tx_thread_nr;
 int tx_rate_control_eager = 1;
 
 
-DEFINE_PER_CPU(struct pfq_global_stats, global_stats);
+DEFINE_PER_CPU(pfq_global_stats_t, global_stats);
 DEFINE_PER_CPU(struct pfq_memory_stats, memory_stats);
 
 

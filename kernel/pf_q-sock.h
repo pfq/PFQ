@@ -118,7 +118,7 @@ struct pfq_sock
 	struct pfq_shmem_descr  shmem;
         struct pfq_sock_opt	opt;
 
-        struct pfq_sock_stats __percpu *stats;
+        pfq_sock_stats_t __percpu *stats;
 
 } ____cacheline_aligned_in_smp;
 

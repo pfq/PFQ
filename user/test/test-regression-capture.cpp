@@ -524,7 +524,7 @@ try
         std::this_thread::sleep_for(std::chrono::seconds(1));
 
         sum = 0;
-        sum_stats = {0,0,0,0,0,0,0};
+        sum_stats = {0,0,0,0,0,0,0,0};
 
         std::for_each(ctx.begin(), ctx.end(), [&](const test::ctx &c) {
                       sum += c.read();
