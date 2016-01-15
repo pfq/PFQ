@@ -814,9 +814,9 @@ int pfq_setsockopt(struct socket *sock,
 			tx_ret tx = pfq_sk_queue_xmit(so, -1, Q_NO_KTHREAD, NUMA_NO_NODE, &stop);
 
 			sparse_add(so->stats, sent, tx.ok);
-			sparse_add(so->stats, disc, tx.fail);
+			sparse_add(so->stats, fail, tx.fail);
 			sparse_add(&global_stats, sent, tx.ok);
-			sparse_add(&global_stats, disc, tx.fail);
+			sparse_add(&global_stats, fail, tx.fail);
 
 			return 0;
 		}
