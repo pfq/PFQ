@@ -51,12 +51,14 @@ typedef union
 
 } tx_ret;
 
+
 struct pfq_mbuff_xmit_context
 {
 	struct pfq_skb_pool	       *skb_pool;
 	struct net		       *net;
 	ktime_t			        now;
 	unsigned long			jiffies;
+	int				node;
 };
 
 

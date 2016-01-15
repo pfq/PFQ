@@ -272,7 +272,7 @@ pfq_xmit(struct sk_buff *skb, struct net_device *dev, int queue, int more)
 
 static tx_ret
 __pfq_mbuff_xmit(struct pfq_pkthdr *hdr, struct net_dev_queue *dev_queue,
-		 struct pfq_mbuff_xmit_context *ctx, int slot_size, int node, int copies, bool xmit_more, atomic_t const *stop, bool *intr)
+		 struct pfq_mbuff_xmit_context *ctx, int copies, bool xmit_more, atomic_t const *stop, bool *intr)
 {
 	struct sk_buff *skb;
         tx_ret ret = { 0 };
@@ -291,7 +291,7 @@ __pfq_mbuff_xmit(struct pfq_pkthdr *hdr, struct net_dev_queue *dev_queue,
 
 	/* allocate a new socket buffer */
 
-	skb = pfq_alloc_skb_pool(xmit_slot_size, GFP_KERNEL, node, ctx->skb_pool);
+	skb = pfq_alloc_skb_pool(xmit_slot_size, GFP_KERNEL, ctx->node, ctx->skb_pool);
 	if (unlikely(skb == NULL)) {
 		if (printk_ratelimit())
 			printk(KERN_INFO "[PFQ] Tx could not allocate an skb!\n");
@@ -406,6 +406,7 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
         ctx.net = sock_net(&so->sk);
 	ctx.now = ktime_get_real();
 	ctx.jiffies = jiffies;
+        ctx.node = node;
 
 	hdr = (struct pfq_pkthdr *)begin;
 
@@ -475,7 +476,7 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 			batch_cntr = 0;
 		}
 
-		tmp = __pfq_mbuff_xmit(hdr, &dev_queue, &ctx, 0, node, copies,
+		tmp = __pfq_mbuff_xmit(hdr, &dev_queue, &ctx, copies,
 					xmit_more && (Q_NEXT_PKTHDR(hdr, 0) < (struct pfq_pkthdr *)end), stop, &intr);
 
 		ret.value += tmp.value;
