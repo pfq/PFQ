@@ -28,7 +28,7 @@
 #include <pf_q-stats.h>
 
 
-void pfq_kernel_stats_read(struct pfq_kernel_stats *kstats, struct pfq_stats *stats)
+void pfq_kernel_stats_read(struct pfq_kernel_stats __percpu *kstats, struct pfq_stats *stats)
 {
 	stats->recv = sparse_read(kstats, recv);
 	stats->lost = sparse_read(kstats, lost);

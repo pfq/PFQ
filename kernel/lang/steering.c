@@ -47,7 +47,7 @@ steering_rss(arguments_t args, SkBuff skb)
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(3,14,0))
 	uint32_t hash = 0;
 #else
-	uint32_t hash = skb_get_hash(skb);
+	uint32_t hash = skb_get_hash(PFQ_SKB(skb));
 #endif
 	return Steering(skb, hash);
 }
