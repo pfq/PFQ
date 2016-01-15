@@ -37,6 +37,7 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE GADTs #-}
+{-# LANGUAGE CPP #-}
 
 {-# OPTIONS_GHC -fno-warn-unused-binds #-}
 
@@ -71,11 +72,16 @@ import Data.Word
 import Data.Aeson
 import Data.Typeable
 import Data.Maybe
-import Data.Monoid
 import Data.String
-import Data.Functor
 import Data.List (isPrefixOf)
 import Data.Scientific (toBoundedInteger)
+
+#if __GLASGOW_HASKELL__ < 710
+import Data.Monoid
+import Data.Functor
+#else
+import Data.Monoid()
+#endif
 
 import Network.Socket
 import Foreign.C.Types

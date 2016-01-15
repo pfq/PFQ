@@ -44,6 +44,7 @@
 {-# LANGUAGE ForeignFunctionInterface #-}
 {-# LANGUAGE ImpredicativeTypes #-}
 {-# LANGUAGE BangPatterns #-}
+{-# LANGUAGE CPP #-}
 
 {-# OPTIONS_GHC -fno-warn-unused-binds #-}
 
@@ -183,7 +184,12 @@ import Data.Aeson
 import Data.Word
 import Data.Bits
 import Data.Maybe (fromJust)
+
+#if __GLASGOW_HASKELL__ < 710
 import Data.Monoid
+#else
+import Data.Monoid()
+#endif
 
 import qualified Data.ByteString.Char8 as C
 import qualified Data.ByteString.Lazy.Char8 as BL (pack)
