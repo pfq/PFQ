@@ -286,6 +286,9 @@ __pfq_mbuff_xmit(struct pfq_pkthdr *hdr, struct net_dev_queue *dev_queue,
 	if (hdr->tstamp.tv64)
 		ctx->now = wait_until(hdr->tstamp.tv64, ctx->now, dev_queue, stop, intr);
 
+	if (*intr)
+		return (tx_ret){.ok = 0, .fail = copies};
+
 
 	/* allocate a new socket buffer */
 
@@ -323,14 +326,17 @@ __pfq_mbuff_xmit(struct pfq_pkthdr *hdr, struct net_dev_queue *dev_queue,
 			pfq_hard_tx_unlock(dev_queue);
 			local_bh_enable();
 
-			if (giveup_tx_process(stop)) {
-				atomic_set(&skb->users, 1);
-				pfq_kfree_skb_pool(skb, ctx->skb_pool);
-				return ret;
-			}
+			pfq_relax();
 
 			local_bh_disable();
 			pfq_hard_tx_lock(dev_queue);
+
+			if (giveup_tx_process(stop)) {
+				atomic_set(&skb->users, 1);
+				pfq_kfree_skb_pool(skb, ctx->skb_pool);
+				*intr = true;
+				return ret;
+			}
 
 		}
 		else {
