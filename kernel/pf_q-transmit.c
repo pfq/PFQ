@@ -443,16 +443,25 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 
 			/* unlock the current locked queue */
 
-			pfq_hard_tx_unlock(&dev_queue);
-			local_bh_enable();
+			if (likely(dev_queue.id != PFQ_DEVQ_NULL)) {
 
-			/* release the device */
-			dev_queue_put(ctx.net, &dev_queue);
+				pfq_hard_tx_unlock(&dev_queue);
+				local_bh_enable();
+
+				/* release the device */
+				dev_queue_put(ctx.net, &dev_queue);
+			}
+
+			/* try to get the new dev_queue */
 
 			if (dev_queue_get(ctx.net, qid, &dev_queue) < 0)
 			{
+				if (printk_ratelimit())
+					printk(KERN_INFO "[PFQ] sk_queue_xmit: could not lock " PFQ_DEVQ_FMT "!\n", PFQ_DEVQ_ARG(qid));
 				continue;
 			}
+
+			/* disable bh and lock it */
 
 			local_bh_disable();
 			pfq_hard_tx_lock(&dev_queue);
