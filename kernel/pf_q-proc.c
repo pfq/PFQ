@@ -157,9 +157,10 @@ static int pfq_proc_stats(struct seq_file *m, void *v)
 	seq_printf(m, "  lost      : %ld\n", sparse_read(&global_stats, lost));
 	seq_printf(m, "OUTPUT:\n");
 	seq_printf(m, "  sent      : %ld\n", sparse_read(&global_stats, sent));
-	seq_printf(m, "  kernel    : %ld\n", sparse_read(&global_stats, kern));
 	seq_printf(m, "  forwarded : %ld\n", sparse_read(&global_stats, frwd));
+	seq_printf(m, "  kernel    : %ld\n", sparse_read(&global_stats, kern));
 	seq_printf(m, "  discarded : %ld\n", sparse_read(&global_stats, disc));
+	seq_printf(m, "  failed    : %ld\n", sparse_read(&global_stats, fail));
 	seq_printf(m, "  aborted   : %ld\n", sparse_read(&global_stats, abrt));
 	seq_printf(m, "SCHEDULE:\n");
 	seq_printf(m, "  poll      : %ld\n", sparse_read(&global_stats, poll));
