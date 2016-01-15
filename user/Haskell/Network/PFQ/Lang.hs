@@ -71,8 +71,9 @@ import Data.Word
 import Data.Aeson
 import Data.Typeable
 import Data.Maybe
-import Data.Monoid()
+import Data.Monoid
 import Data.String
+import Data.Functor
 import Data.List (isPrefixOf)
 import Data.Scientific (toBoundedInteger)
 
@@ -95,7 +96,7 @@ instance FromJSON CInt where
 
 -- | IPv4 data type
 
-newtype IPv4 = IPv4 { getHostAddress :: HostAddress } deriving (Generic)
+newtype IPv4 = IPv4 { getHostAddress :: HostAddress } deriving (Generic, Typeable)
 
 instance ToJSON IPv4
 instance FromJSON IPv4
