@@ -283,12 +283,11 @@ __pfq_mbuff_xmit(struct pfq_pkthdr *hdr, struct net_dev_queue *dev_queue,
 
 	/* wait until for the timestap to expire (if specified) */
 
-	if (hdr->tstamp.tv64)
+	if (hdr->tstamp.tv64) {
 		ctx->now = wait_until(hdr->tstamp.tv64, ctx->now, dev_queue, stop, intr);
-
-	if (*intr)
-		return (tx_ret){.ok = 0, .fail = copies};
-
+		if (*intr)
+			return (tx_ret){.ok = 0, .fail = copies};
+	}
 
 	/* allocate a new socket buffer */
 
@@ -310,7 +309,7 @@ __pfq_mbuff_xmit(struct pfq_pkthdr *hdr, struct net_dev_queue *dev_queue,
 	skb_set_queue_mapping(skb, dev_queue->queue_mapping);
 	skb_copy_to_linear_data(skb, hdr+1, len < 64 ? 64 : len);
 
-	/* transmit the packet(s) */
+	/* transmit the packet + copies */
 
 	atomic_set(&skb->users, copies + 1);
 
@@ -323,13 +322,16 @@ __pfq_mbuff_xmit(struct pfq_pkthdr *hdr, struct net_dev_queue *dev_queue,
 
 			ret.fail++;
 
-			pfq_hard_tx_unlock(dev_queue);
-			local_bh_enable();
+			if (need_resched())
+			{
+				pfq_hard_tx_unlock(dev_queue);
+				local_bh_enable();
 
-			pfq_relax();
+				schedule();
 
-			local_bh_disable();
-			pfq_hard_tx_lock(dev_queue);
+				local_bh_disable();
+				pfq_hard_tx_lock(dev_queue);
+			}
 
 			if (giveup_tx_process(stop)) {
 				atomic_set(&skb->users, 1);
@@ -423,8 +425,8 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 
 	for_each_sk_mbuff(hdr, end, 0)
 	{
-		dev_queue_t qid;
                 bool intr = false, xmit_more = true;
+		dev_queue_t qid;
 		int copies;
                 tx_ret tmp;
 
