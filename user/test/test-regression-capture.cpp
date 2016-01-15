@@ -510,7 +510,7 @@ try
                   });
 
     unsigned long long sum, old = 0;
-    pfq_stats sum_stats, old_stats = {0,0,0,0,0,0,0};
+    pfq_stats sum_stats, old_stats = {0,0,0,0,0,0,0,0};
 
     std::cout << "----------- capture started ------------\n";
 

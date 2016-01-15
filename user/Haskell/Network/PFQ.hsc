@@ -246,6 +246,7 @@ data Statistics = Statistics {
     , sDropped    ::  Integer  -- ^ packets dropped
     , sSent       ::  Integer  -- ^ packets sent
     , sDiscard    ::  Integer  -- ^ packets discarded
+    , sFailure    ::  Integer  -- ^ packets Tx failure
     , sForward    ::  Integer  -- ^ packets forwarded to devices
     , sKernel     ::  Integer  -- ^ packets forwarded to kernel
     } deriving (Eq, Show)
@@ -919,8 +920,9 @@ makeStats p = do
     _drop <- (\ptr -> peekByteOff ptr (sizeOf (undefined :: CLong) * 2)) p
     _sent <- (\ptr -> peekByteOff ptr (sizeOf (undefined :: CLong) * 3)) p
     _disc <- (\ptr -> peekByteOff ptr (sizeOf (undefined :: CLong) * 4)) p
-    _frwd <- (\ptr -> peekByteOff ptr (sizeOf (undefined :: CLong) * 5)) p
-    _kern <- (\ptr -> peekByteOff ptr (sizeOf (undefined :: CLong) * 6)) p
+    _fail <- (\ptr -> peekByteOff ptr (sizeOf (undefined :: CLong) * 5)) p
+    _frwd <- (\ptr -> peekByteOff ptr (sizeOf (undefined :: CLong) * 6)) p
+    _kern <- (\ptr -> peekByteOff ptr (sizeOf (undefined :: CLong) * 7)) p
     return Statistics
            { sReceived = fromIntegral (_recv :: CULong)
            , sLost     = fromIntegral (_lost :: CULong)
@@ -928,6 +930,7 @@ makeStats p = do
            , sSent     = fromIntegral (_sent :: CULong)
            , sDiscard  = fromIntegral (_disc :: CULong)
            , sForward  = fromIntegral (_frwd :: CULong)
+           , sFailure  = fromIntegral (_frwd :: CULong)
            , sKernel   = fromIntegral (_kern :: CULong)
            }
 
