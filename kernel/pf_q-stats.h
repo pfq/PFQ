@@ -34,45 +34,27 @@
 #include <pf_q-sparse.h>
 
 
-struct pfq_sock_stats
+struct pfq_kernel_stats
 {
-        local_t recv;		/* received by the queue */
+        local_t recv;		/* received by the queue/group/computation */
         local_t lost;		/* packets lost due to socket queue congestion */
-        local_t drop;		/* dropped by filters */
+        local_t drop;		/* dropped by filters or computation */
         local_t sent;		/* sent by the driver */
-        local_t disc;		/* discarded by the driver */
-};
-
-
-struct pfq_group_stats
-{
-        local_t recv;		/* received by the group/computation */
-        local_t drop;		/* drop by computation: fanout monad */
+        local_t disc;		/* discarded due to driver congestion */
+        local_t fail;		/* tx failed due to driver congestion */
         local_t frwd;		/* forwarded to devices */
         local_t kern;		/* passed to kernel */
-        local_t disc;		/* discarded due to driver congestion */
-        local_t abrt;		/* aborted (e.g. memory problems) */
 };
+
+
+typedef struct pfq_kernel_stats	pfq_sock_stats_t;
+typedef struct pfq_kernel_stats	pfq_group_stats_t;
+typedef struct pfq_kernel_stats	pfq_global_stats_t;
 
 
 struct pfq_group_counters
 {
 	local_t	value[Q_MAX_COUNTERS];
-};
-
-
-struct pfq_global_stats
-{
-	local_t recv;		/* received by PFQ */
-	local_t lost;		/* lost during capture, due to PFQ problem (e.g. memory problem) */
-        local_t sent;		/* transmitted from user-space */
-        local_t frwd;		/* forwarded to devices */
-        local_t kern;		/* passed to kernel */
-        local_t disc;		/* discarded due to driver congestion */
-        local_t fail;		/* tx failed due to driver congestion */
-        local_t abrt;		/* aborted (e.g. memory problems) */
-        local_t poll;		/* number of poll */
-        local_t wake;		/* number of wakeup */
 };
 
 
@@ -114,11 +96,26 @@ struct pfq_pool_stat
 };
 
 
-extern void pfq_sock_stats_reset(struct pfq_sock_stats __percpu *stats);
-extern void pfq_group_stats_reset(struct pfq_group_stats __percpu *stats);
+extern void pfq_kernel_stats_read(struct pfq_kernel_stats *kstats, struct pfq_stats *stats);
+
+extern void pfq_kernel_stats_reset(struct pfq_kernel_stats __percpu *stats);
 extern void pfq_group_counters_reset(struct pfq_group_counters __percpu *counters);
-extern void pfq_global_stats_reset(struct pfq_global_stats __percpu *stats);
 extern void pfq_memory_stats_reset(struct pfq_memory_stats __percpu *stats);
+
+static inline void pfq_global_stats_reset(struct pfq_kernel_stats __percpu *stats)
+{
+	pfq_kernel_stats_reset(stats);
+}
+
+static inline void pfq_group_stats_reset(struct pfq_kernel_stats __percpu *stats)
+{
+	pfq_kernel_stats_reset(stats);
+}
+
+static inline void pfq_sock_stats_reset(struct pfq_kernel_stats __percpu *stats)
+{
+	pfq_kernel_stats_reset(stats);
+}
 
 
 #endif /* PF_Q_STATS_H */

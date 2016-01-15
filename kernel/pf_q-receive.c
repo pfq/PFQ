@@ -92,7 +92,6 @@ size_t pfq_sk_rx_queue_recv(struct pfq_sock_opt *opt,
 		if (slot_index > opt->rx_queue_len) {
 
 			if (waitqueue_active(&opt->waitqueue)) {
-				sparse_inc(&global_stats, wake);
 				wake_up_interruptible(&opt->waitqueue);
 			}
 
@@ -146,7 +145,6 @@ size_t pfq_sk_rx_queue_recv(struct pfq_sock_opt *opt,
 
 		if ((slot_index & 8191) == 0 &&
 		    waitqueue_active(&opt->waitqueue)) {
-			sparse_inc(&global_stats, wake);
 			wake_up_interruptible(&opt->waitqueue);
 		}
 

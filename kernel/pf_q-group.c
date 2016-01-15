@@ -55,7 +55,7 @@ pfq_groups_init(void)
 		pfq_groups[n].owner = Q_INVALID_ID;
 		pfq_groups[n].policy = Q_POLICY_GROUP_UNDEFINED;
 
-		pfq_groups[n].stats = alloc_percpu(struct pfq_group_stats);
+		pfq_groups[n].stats = alloc_percpu(pfq_group_stats_t);
 		if (pfq_groups[n].stats == NULL) {
 			goto err;
 		}

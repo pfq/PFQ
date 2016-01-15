@@ -162,7 +162,7 @@ void set_state(SkBuff skb, uint32_t state)
 }
 
 static inline
-struct pfq_group_stats * get_group_stats(SkBuff skb)
+pfq_group_stats_t * get_group_stats(SkBuff skb)
 {
 	return this_cpu_ptr(PFQ_CB(skb)->monad->group->stats);
 }

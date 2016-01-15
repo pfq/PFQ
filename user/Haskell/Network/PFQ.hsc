@@ -929,8 +929,8 @@ makeStats p = do
            , sDropped  = fromIntegral (_drop :: CULong)
            , sSent     = fromIntegral (_sent :: CULong)
            , sDiscard  = fromIntegral (_disc :: CULong)
+           , sFailure  = fromIntegral (_fail :: CULong)
            , sForward  = fromIntegral (_frwd :: CULong)
-           , sFailure  = fromIntegral (_frwd :: CULong)
            , sKernel   = fromIntegral (_kern :: CULong)
            }
 

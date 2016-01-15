@@ -980,7 +980,7 @@ try
     std::cout << "Shutting down sockets in 1 sec..." << std::endl;
     std::this_thread::sleep_for(std::chrono::seconds(1));
 
-    cur  = {0,0,0,0,0,0,0};
+    cur  = {0,0,0,0,0,0,0,0};
     sent = 0;
 
     std::for_each(thread_ctx.begin(), thread_ctx.end(), [&](const thread::context *c)

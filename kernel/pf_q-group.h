@@ -60,7 +60,7 @@ struct pfq_group
         atomic_long_t comp;                             /* struct pfq_lang_computation_tree *  (new functional program) */
         atomic_long_t comp_ctx;                         /* void *: storage context (new functional program) */
 
-	struct pfq_group_stats __percpu *stats;
+	pfq_group_stats_t __percpu *stats;
 	struct pfq_group_counters __percpu *counters;
 };
 

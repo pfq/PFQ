@@ -153,19 +153,22 @@ int pfq_sock_init(struct pfq_sock *so, int id)
 
 	/* setup stats */
 
-	so->stats = alloc_percpu(struct pfq_sock_stats);
+	so->stats = alloc_percpu(pfq_sock_stats_t);
 	if (!so->stats)
 		return -ENOMEM;
 
 	for_each_possible_cpu(i)
 	{
-		struct pfq_sock_stats * stat = per_cpu_ptr(so->stats, i);
+		pfq_sock_stats_t * stat = per_cpu_ptr(so->stats, i);
 
 		local_set(&stat->recv, 0);
 		local_set(&stat->lost, 0);
 		local_set(&stat->drop, 0);
 		local_set(&stat->sent, 0);
 		local_set(&stat->disc, 0);
+		local_set(&stat->fail, 0);
+		local_set(&stat->frwd, 0);
+		local_set(&stat->kern, 0);
 	}
 
 	/* setup id */

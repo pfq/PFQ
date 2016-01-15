@@ -643,7 +643,7 @@ pfq_skb_queue_lazy_xmit_run(struct pfq_skbuff_GC_queue *skbs, struct pfq_endpoin
 				if (nskb && __pfq_xmit(nskb, dev, xmit_more) == NETDEV_TX_OK)
 					sent++;
 				else
-					sparse_inc(&global_stats, abrt);
+					sparse_inc(&global_stats, disc);
 			}
 		}
 

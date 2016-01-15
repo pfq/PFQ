@@ -484,7 +484,7 @@ try
 
         sum = 0;
         flow = 0;
-        sum_stats = {0,0,0,0,0,0,0};
+        sum_stats = {0,0,0,0,0,0,0,0};
 
         std::for_each(thread_ctx.begin(), thread_ctx.end(), [&](const thread::context *c) {
             sum += c->read();
