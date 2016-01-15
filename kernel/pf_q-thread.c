@@ -107,13 +107,20 @@ pfq_tx_thread(void *_data)
 		{
 			struct pfq_sock *sock;
 			int sock_queue;
+			tx_ret tx;
 
 			sock_queue = atomic_read(&data->sock_queue[n]);
 			smp_rmb();
 			sock = data->sock[n];
 			if (sock_queue != -1 && sock != NULL) {
 				reg = true;
-				total_sent += pfq_sk_queue_xmit(sock, sock_queue, data->cpu, data->node, &data->sock_queue[n]);
+				tx = pfq_sk_queue_xmit(sock, sock_queue, data->cpu, data->node, &data->sock_queue[n]);
+				total_sent += tx.ok;
+
+				sparse_add(sock->stats, sent, tx.ok);
+				sparse_add(sock->stats, disc, tx.fail);
+				sparse_add(&global_stats, sent, tx.ok);
+				sparse_add(&global_stats, disc, tx.fail);
 			}
 		}
 

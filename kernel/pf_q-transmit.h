@@ -40,6 +40,17 @@
 #include <lang/GC.h>
 #include <lang/module.h>
 
+
+typedef union
+{
+	uint64_t value;
+	struct {
+		uint32_t ok;
+		uint32_t fail;
+	};
+
+} tx_ret;
+
 struct pfq_mbuff_xmit_context
 {
 	struct pfq_skb_pool	       *skb_pool;
@@ -51,12 +62,12 @@ struct pfq_mbuff_xmit_context
 
 /* socket queues */
 
-extern int pfq_sk_queue_xmit(struct pfq_sock *so, int qindex, int cpu, int node, atomic_t const *stop);
+extern tx_ret pfq_sk_queue_xmit(struct pfq_sock *so, int qindex, int cpu, int node, atomic_t const *stop);
 
 /* skb queues */
 
 extern int pfq_xmit(struct sk_buff *skb, struct net_device *dev, int queue, int more);
-extern int pfq_skb_queue_xmit(struct pfq_skbuff_queue *skbs, unsigned long long skbs_mask, struct net_device *dev, int queue_index);
+extern tx_ret pfq_skb_queue_xmit(struct pfq_skbuff_queue *skbs, unsigned long long skbs_mask, struct net_device *dev, int queue_index);
 
 /* skb lazy xmit */
 
