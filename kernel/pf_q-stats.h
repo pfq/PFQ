@@ -69,6 +69,7 @@ struct pfq_global_stats
         local_t frwd;		/* forwarded to devices */
         local_t kern;		/* passed to kernel */
         local_t disc;		/* discarded due to driver congestion */
+        local_t fail;		/* tx failed due to driver congestion */
         local_t abrt;		/* aborted (e.g. memory problems) */
         local_t poll;		/* number of poll */
         local_t wake;		/* number of wakeup */
