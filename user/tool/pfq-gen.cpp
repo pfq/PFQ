@@ -959,9 +959,12 @@ try
         std::cout << "   app   : { "
                   << vt100::BOLD
                   << "sent: " << persecond<int64_t>(sent - sent_, delta)            << ' '
-                  << "fail: " << persecond<int64_t>(fail-fail_, delta)              << ' '
-                  << "band: " << pretty(persecond<double>((band-band_)*8, delta))  << "bit/sec "
-                  << "gros: " << pretty(persecond<double>((gros-gros_)*8, delta))  << "bit/sec "
+                  << "fail: " << persecond<int64_t>(fail-fail_, delta)              << " ";
+       if (opt::copies > 1)
+           std::cout << " (x " << opt::copies << ") => ";
+
+       std::cout  << "band: " << pretty(persecond<double>((band-band_)*8 * opt::copies, delta))  << "bit/sec "
+                  << "gros: " << pretty(persecond<double>((gros-gros_)*8 * opt::copies, delta))  << "bit/sec "
                   << vt100::RESET << " }" << std::endl;
 
         std::cout << "   socket: { "
