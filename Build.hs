@@ -99,11 +99,11 @@ script = do
 
     -- PFQ user tools
 
-    Configure "irq-affinity"    *>>  into "user/irq-affinity/"  $ cabalConfigure    `requires` [Install   "pfq-haskell-lib"]
-    Build     "irq-affinity"    *>>  into "user/irq-affinity/"  $ cabalBuild        `requires` [Configure "irq-affinity"   ]
-    Install   "irq-affinity"    *>>  into "user/irq-affinity/"  $ cabalInstall      `requires` [Build     "irq-affinity"   ]
-    Clean     "irq-affinity"    *>>  into "user/irq-affinity/"  $ cabalClean
-    DistClean "irq-affinity"    *>>  into "user/irq-affinity/"  $ cabalDistClean
+    Configure "pfq-affinity"    *>>  into "user/pfq-affinity/"  $ cabalConfigure    `requires` [Install   "pfq-haskell-lib"]
+    Build     "pfq-affinity"    *>>  into "user/pfq-affinity/"  $ cabalBuild        `requires` [Configure "pfq-affinity"   ]
+    Install   "pfq-affinity"    *>>  into "user/pfq-affinity/"  $ cabalInstall      `requires` [Build     "pfq-affinity"   ]
+    Clean     "pfq-affinity"    *>>  into "user/pfq-affinity/"  $ cabalClean
+    DistClean "pfq-affinity"    *>>  into "user/pfq-affinity/"  $ cabalDistClean
 
     Configure "pfq-omatic"      *>>  into "user/pfq-omatic/"    $ cabalConfigure    `requires` [Install   "pfq-haskell-lib"]
     Build     "pfq-omatic"      *>>  into "user/pfq-omatic/"    $ cabalBuild        `requires` [Configure "pfq-omatic"     ]
@@ -112,13 +112,13 @@ script = do
     DistClean "pfq-omatic"      *>>  into "user/pfq-omatic/"    $ cabalDistClean
 
     Configure "pfq-load"        *>>  into "user/pfq-load/"      $ cabalConfigure
-    Build     "pfq-load"        *>>  into "user/pfq-load/"      $ cabalBuild        `requires` [Install "irq-affinity", Configure "pfq-load"]
+    Build     "pfq-load"        *>>  into "user/pfq-load/"      $ cabalBuild        `requires` [Install "pfq-affinity", Configure "pfq-load"]
     Install   "pfq-load"        *>>  into "user/pfq-load/"      $ cabalInstall      `requires` [Build   "pfq-load"]
     Clean     "pfq-load"        *>>  into "user/pfq-load/"      $ cabalClean
     DistClean "pfq-load"        *>>  into "user/pfq-load/"      $ cabalDistClean
 
     Configure "pfq-stress"      *>>  into "user/pfq-stress/"    $ cabalConfigure
-    Build     "pfq-stress"      *>>  into "user/pfq-stress/"    $ cabalBuild        `requires` [Install "irq-affinity", Install "pfq-load", Configure "pfq-stress"]
+    Build     "pfq-stress"      *>>  into "user/pfq-stress/"    $ cabalBuild        `requires` [Install "pfq-affinity", Install "pfq-load", Configure "pfq-stress"]
     Install   "pfq-stress"      *>>  into "user/pfq-stress/"    $ cabalInstall      `requires` [Build   "pfq-stress"]
     Clean     "pfq-stress"      *>>  into "user/pfq-stress/"    $ cabalClean
     DistClean "pfq-stress"      *>>  into "user/pfq-stress/"    $ cabalDistClean
