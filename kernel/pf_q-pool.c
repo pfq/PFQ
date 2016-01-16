@@ -36,7 +36,8 @@ void pfq_skb_pool_enable(bool value)
 	for_each_possible_cpu(cpu)
 	{
 		struct pfq_percpu_pool *pool = per_cpu_ptr(percpu_pool, cpu);
-		atomic_set(&pool->enable, value);
+		if (pool)
+			atomic_set(&pool->enable, value);
 	}
 	smp_wmb();
 }
@@ -48,10 +49,12 @@ int pfq_skb_pool_init_all(void)
 	for_each_possible_cpu(cpu)
 	{
 		struct pfq_percpu_pool *pool = per_cpu_ptr(percpu_pool, cpu);
-		if (pfq_skb_pool_init(&pool->tx_pool, skb_pool_size) != 0)
-			return -ENOMEM;
-		if (pfq_skb_pool_init(&pool->rx_pool, skb_pool_size) != 0)
-			return -ENOMEM;
+		if (pool) {
+			if (pfq_skb_pool_init(&pool->tx_pool, skb_pool_size) != 0)
+				return -ENOMEM;
+			if (pfq_skb_pool_init(&pool->rx_pool, skb_pool_size) != 0)
+				return -ENOMEM;
+		}
 	}
 
 	return 0;
@@ -66,8 +69,10 @@ int pfq_skb_pool_free_all(void)
 	for_each_possible_cpu(cpu)
 	{
 		struct pfq_percpu_pool *pool = per_cpu_ptr(percpu_pool, cpu);
-		total += pfq_skb_pool_free(&pool->rx_pool);
-		total += pfq_skb_pool_free(&pool->tx_pool);
+		if (pool) {
+			total += pfq_skb_pool_free(&pool->rx_pool);
+			total += pfq_skb_pool_free(&pool->tx_pool);
+		}
 	}
 
 	return total;
@@ -82,8 +87,10 @@ int pfq_skb_pool_flush_all(void)
 	for_each_possible_cpu(cpu)
 	{
 		struct pfq_percpu_pool *pool = per_cpu_ptr(percpu_pool, cpu);
-		total += pfq_skb_pool_flush(&pool->rx_pool);
-		total += pfq_skb_pool_flush(&pool->tx_pool);
+		if (pool) {
+			total += pfq_skb_pool_flush(&pool->rx_pool);
+			total += pfq_skb_pool_flush(&pool->tx_pool);
+		}
 	}
 
 	return total;
@@ -92,20 +99,22 @@ int pfq_skb_pool_flush_all(void)
 
 int pfq_skb_pool_init (struct pfq_skb_pool *pool, size_t size)
 {
-	if (size > 0) {
-		pool->skbs = kzalloc(sizeof(struct skb *) * size, GFP_KERNEL);
-		if (pool->skbs == NULL) {
-			printk(KERN_ERR "[PFQ] pfq_skb_pool_init: out of memory!\n");
-			return -ENOMEM;
+	if (pool) {
+		if (size > 0) {
+			pool->skbs = kzalloc(sizeof(struct skb *) * size, GFP_KERNEL);
+			if (pool->skbs == NULL) {
+				printk(KERN_ERR "[PFQ] pfq_skb_pool_init: out of memory!\n");
+				return -ENOMEM;
+			}
 		}
-	}
-	else {
-		pool->skbs = NULL;
-	}
+		else {
+			pool->skbs = NULL;
+		}
 
-	pool->size  = size;
-	pool->p_idx = 0;
-	pool->c_idx = 0;
+		pool->size  = size;
+		pool->p_idx = 0;
+		pool->c_idx = 0;
+	}
 	return 0;
 }
 
@@ -114,28 +123,33 @@ size_t
 pfq_skb_pool_flush(struct pfq_skb_pool *pool)
 {
 	size_t n, total = 0;
-	for(n = 0; n < pool->size; n++)
-	{
-		if (pool->skbs[n]) {
-			total++;
-			sparse_inc(&memory_stats, os_free);
-			kfree_skb(pool->skbs[n]);
-			pool->skbs[n] = NULL;
+	if (pool) {
+		for(n = 0; n < pool->size; n++)
+		{
+			if (pool->skbs[n]) {
+				total++;
+				sparse_inc(&memory_stats, os_free);
+				kfree_skb(pool->skbs[n]);
+				pool->skbs[n] = NULL;
+			}
 		}
-	}
 
-	pool->p_idx = 0;
-	pool->c_idx = 0;
+		pool->p_idx = 0;
+		pool->c_idx = 0;
+	}
 	return total;
 }
 
 
 size_t pfq_skb_pool_free(struct pfq_skb_pool *pool)
 {
-	size_t total = pfq_skb_pool_flush(pool);
-	kfree(pool->skbs);
-	pool->skbs = NULL;
-	pool->size = 0;
+	size_t total = 0;
+	if (pool) {
+		total = pfq_skb_pool_flush(pool);
+		kfree(pool->skbs);
+		pool->skbs = NULL;
+		pool->size = 0;
+	}
 	return total;
 }
 
