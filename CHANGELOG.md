@@ -133,10 +133,10 @@ PFQ 5.2
 
 PFQ 6.0
 -------
- * Experimental pfq-lang compiler.
- * pfq-lang expressions are now JSON serializable.
+ * pfq-lang expressions are JSON serializable.
  * API extended with setGroupComputationFromString,
    setGroupComputationFromJSON...
- * General improvements.
+ * Experimental qlang compiler.
  * Regressions and bugs fixes.
+ * General improvements.
 
