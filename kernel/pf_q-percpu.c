@@ -79,7 +79,7 @@ void pfq_percpu_free(void)
         struct pfq_percpu_data *data;
 	int cpu;
 
-	for_each_online_cpu(cpu) {
+	for_each_possible_cpu(cpu) {
                 data = per_cpu_ptr(percpu_data, cpu);
 		kfree(data->GC);
 	}
@@ -95,7 +95,7 @@ int pfq_percpu_init(void)
 	struct GC_data *GCs[Q_MAX_CPU];
 	int cpu, i, n = 0;
 
-	for_each_online_cpu(cpu) {
+	for_each_possible_cpu(cpu) {
 
 		if (n == Q_MAX_CPU) {
 			printk(KERN_ERR "[PFQ] percpu: maximum number of cpu reached (%d)!\n", Q_MAX_CPU);
@@ -114,7 +114,7 @@ int pfq_percpu_init(void)
 	/* allocate GCs */
 
 	n = 0;
-        for_each_online_cpu(cpu) {
+        for_each_possible_cpu(cpu) {
 
                 struct pfq_percpu_data *data;
 
@@ -155,7 +155,7 @@ int pfq_percpu_destruct(void)
 
         /* destroy prefetch queues (of each cpu) */
 
-        for_each_online_cpu(cpu) {
+        for_each_possible_cpu(cpu) {
 
 		struct pfq_percpu_data *data;
 	        struct sk_buff *skb;
