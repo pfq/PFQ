@@ -75,7 +75,7 @@ options :: Mode (CmdArgs Options)
 options = cmdArgsMode $ Options
     {   firstcore = 0       &= typ "CORE" &= help "first core involved"
     ,   exclude   = []      &= typ "CORE" &= help "exclude core from binding"
-    ,   algorithm = ""      &= help "binding algorithm: round-robin, multiple/n, even, odd, all-in:id, step:id, custom:step/multi"
+    ,   algorithm = ""      &= help "binding algorithm: round-robin, naive, multiple/n, even, odd, all-in:id, step:id, custom:step/multi"
     ,   msitype   = Nothing &= typ "MSI" &= help "MSI type: TxRx, Rx, Tx or None"
     ,   devices   = []      &= args
     } &= summary "pfq-affinity: advanced Linux interrupt affinity binding." &= program "pfq-affinity"
