@@ -517,7 +517,7 @@ int pfq_setsockopt(struct socket *sock,
                 }
 
                 so->opt.caplen = caplen;
-                so->opt.rx_slot_size = Q_QUEUE_SLOT_SIZE(so->opt.caplen);
+                so->opt.rx_slot_size = Q_SHARED_QUEUE_SLOT_SIZE(so->opt.caplen);
 
                 pr_devel("[PFQ|%d] caplen=%zu, slot_size=%zu\n",
                                 so->id, so->opt.caplen, so->opt.rx_slot_size);

@@ -477,7 +477,7 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 		}
 
 		tmp = __pfq_mbuff_xmit(hdr, &dev_queue, &ctx, copies,
-					xmit_more && (Q_NEXT_PKTHDR(hdr, 0) < (struct pfq_pkthdr *)end), stop, &intr);
+					xmit_more && (Q_SHARED_QUEUE_NEXT_PKTHDR(hdr, 0) < (struct pfq_pkthdr *)end), stop, &intr);
 
 		ret.value += tmp.value;
 		if (unlikely(intr))
