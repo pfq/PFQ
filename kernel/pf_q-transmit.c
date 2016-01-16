@@ -424,12 +424,20 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 
 	/* traverse the socket queue */
 
-	for_each_sk_mbuff(hdr, end, 0)
+	for_each_sk_mbuff(hdr, end, 0 /* dynamic slot size */)
 	{
                 bool intr = false, xmit_more = true;
 		dev_queue_t qid;
 		int copies;
                 tx_ret tmp;
+
+		/* caplen cannot be set to 0 */
+
+		if (!hdr->caplen) {
+			if (printk_ratelimit())
+				printk(KERN_INFO "[PFQ] sk_queue_xmit: zero caplen (BUG!)\n");
+			break;
+		}
 
 		/* skip this packet ? */
 
@@ -468,10 +476,11 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 			pfq_hard_tx_lock(&dev_queue);
 		}
 
+		/* calc the max number of copies */
                 copies = dev_tx_max_skb_copies(dev_queue.dev, hdr->data.copies);
 		batch_cntr += copies;
-		if (batch_cntr >= xmit_batch_len)
-		{
+
+		if (batch_cntr >= xmit_batch_len) {
 			xmit_more = false;
 			batch_cntr = 0;
 		}
