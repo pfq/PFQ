@@ -66,10 +66,10 @@ static int vlan_init(arguments_t args)
 	{
 		int vid = vids[i];
 		if (vid == -1) {
-			int n;
-			for(n = 1; n < 4096; n++)
+			int j;
+			for(j = 1; j < 4096; n++)
 			{
-				mem[n] = 1;
+				mem[j] = 1;
 			}
 		}
 		else
