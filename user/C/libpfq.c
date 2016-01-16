@@ -1455,7 +1455,7 @@ pfq_send_raw(pfq_t *q, const void *buf, size_t len, int ifindex, int qindex, uin
         struct pfq_shared_queue *sh_queue = (struct pfq_shared_queue *)(q->shm_addr);
         struct pfq_tx_queue *tx;
         unsigned int index;
-        size_t slot_size;
+        size_t this_slot_size;
         char *base_addr;
         ptrdiff_t offset;
         int tss;
@@ -1491,9 +1491,9 @@ pfq_send_raw(pfq_t *q, const void *buf, size_t len, int ifindex, int qindex, uin
 
 	len = min(len, q->tx_slot_size - sizeof(struct pfq_pkthdr));
 
-	slot_size = sizeof(struct pfq_pkthdr) + ALIGN(len, 8);
+	this_slot_size = ALIGN(sizeof(struct pfq_pkthdr) + len, 8);
 
-	if (((size_t)(offset) + slot_size) < q->tx_queue_size)
+	if (((size_t)(offset) + this_slot_size) < q->tx_queue_size)
 	{
 		struct pfq_pkthdr *hdr = (struct pfq_pkthdr *)(base_addr + offset);
 		hdr->tstamp.tv64 = nsec;
@@ -1504,7 +1504,7 @@ pfq_send_raw(pfq_t *q, const void *buf, size_t len, int ifindex, int qindex, uin
 		memcpy(hdr+1, buf, len);
 
                 __atomic_store_n((index & 1) ? &tx->prod.off1 : &tx->prod.off0,
-			offset + (ptrdiff_t)slot_size, __ATOMIC_RELEASE);
+			offset + (ptrdiff_t)this_slot_size, __ATOMIC_RELEASE);
 
 
 		return Q_VALUE(q, (int)len);

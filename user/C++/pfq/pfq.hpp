@@ -1397,13 +1397,13 @@ namespace pfq {
             //
             auto len = std::min(pkt.second, data_->tx_slot_size - sizeof(struct pfq_pkthdr));
 
-            // compute the current slot_size:
+            // compute the current dynamic slot_size:
             //
-            auto slot_size = sizeof(struct pfq_pkthdr) + align<8>(len);
+            auto this_slot_size = align<8>(sizeof(struct pfq_pkthdr) + len);
 
-            // ensure there's enough space for the current slot_size + the next header:
+            // ensure there's enough space for the current this_slot_size + the next header:
             //
-            if ((static_cast<size_t>(offset) + slot_size) < data_->tx_queue_size)
+            if ((static_cast<size_t>(offset) + this_slot_size) < data_->tx_queue_size)
             {
                 auto hdr = (struct pfq_pkthdr *)(base_addr + offset);
                 hdr->tstamp.tv64 = nsec;
@@ -1413,7 +1413,7 @@ namespace pfq {
                 hdr->queue       = static_cast<uint8_t>(qindex);
                 memcpy(hdr+1, pkt.first, len);
 
-                __atomic_store_n((index & 1) ? &tx->prod.off1 : &tx->prod.off0, offset + static_cast<ptrdiff_t>(slot_size), __ATOMIC_RELEASE);
+                __atomic_store_n((index & 1) ? &tx->prod.off1 : &tx->prod.off0, offset + static_cast<ptrdiff_t>(this_slot_size), __ATOMIC_RELEASE);
                 return true;
             }
 
