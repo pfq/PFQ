@@ -66,6 +66,8 @@ module_param(xmit_batch_len,	int, 0644);
 
 module_param(skb_pool_size,	int, 0644);
 module_param(vl_untag,		int, 0644);
+module_param(tx_rate_control_eager, int, 0644);
+
 module_param_array(tx_affinity, int, &tx_thread_nr, 0644);
 
 MODULE_PARM_DESC(capture_incoming," Capture incoming packets: (1 default)");
