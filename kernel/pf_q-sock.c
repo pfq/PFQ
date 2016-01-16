@@ -135,7 +135,7 @@ void pfq_sock_opt_init(struct pfq_sock_opt *that, size_t caplen, size_t maxlen)
 	pfq_tx_info_init(&that->txq);
 
         that->tx_queue_len  = 0;
-        that->tx_slot_size  = Q_QUEUE_SLOT_SIZE(maxlen);
+        that->tx_slot_size  = Q_SHARED_QUEUE_SLOT_SIZE(maxlen);
 	that->tx_num_async_queues = 0;
 
 	/* Tx async queues setup */

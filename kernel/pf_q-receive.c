@@ -150,7 +150,7 @@ size_t pfq_sk_rx_queue_recv(struct pfq_sock_opt *opt,
 
 		sent++;
 
-		hdr = Q_NEXT_PKTHDR(hdr, opt->rx_slot_size);
+		hdr = Q_SHARED_QUEUE_NEXT_PKTHDR(hdr, opt->rx_slot_size);
 	}
 
 	return sent;
