@@ -434,7 +434,7 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 		/* skip this packet ? */
 
 		qid = PFQ_DEVQ_ID(hdr->ifindex, hdr->queue);
-		if (unlikely(qid == PFQ_DEVQ_NULL))
+		if (unlikely(PFQ_DEVQ_IS_NULL(qid)))
 			continue;
 
 		/* swap queue/device lock */
@@ -444,7 +444,7 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 
 			/* unlock the current locked queue */
 
-			if (likely(dev_queue.id != PFQ_DEVQ_NULL)) {
+			if (likely(!PFQ_DEVQ_IS_NULL(dev_queue.id))) {
 
 				pfq_hard_tx_unlock(&dev_queue);
 				local_bh_enable();
