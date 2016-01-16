@@ -51,12 +51,14 @@ struct net_dev_queue
 extern struct net_dev_queue net_dev_queue_null;
 
 
-#define PFQ_DEVQ_ID(ifindex, queue)	((uint64_t)ifindex << 32 | (uint32_t)queue)
+#define PFQ_DEVQ_ID(ifindex, queue)	((uint64_t)ifindex << 32 | (uint16_t)queue)
 #define PFQ_DEVQ_IFINDEX(id)		((int)(id >> 32))
 #define PFQ_DEVQ_QUEUE(id)		((int)(id & 0xffffffff))
 
-#define PFQ_DEVQ_NULL			PFQ_DEVQ_ID(-1,-1)
+#define PFQ_DEVQ_NULL			PFQ_DEVQ_ID(-1,0)
 #define PFQ_DEVQ_DEFAULT		PFQ_DEVQ_ID(0,0)
+
+#define PFQ_DEVQ_IS_NULL(id)		(PFQ_DEVQ_IFINDEX(id) == -1)
 
 #define PFQ_DEVQ_FMT			"(%d:%d)"
 #define PFQ_DEVQ_ARG(id)		PFQ_DEVQ_IFINDEX(id), PFQ_DEVQ_QUEUE(id)
