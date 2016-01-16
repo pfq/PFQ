@@ -22,7 +22,7 @@ module Main where
 
 import Data.Maybe
 import Data.List(isInfixOf)
-import Data.List.Split(splitOn)
+import Data.List.Split(splitOneOf)
 import Control.Monad.State
 
 import Numeric(showHex,readHex)
@@ -57,12 +57,11 @@ instance Show MSI where
 --
 
 data Options = Options
-    {
-         firstcore :: Int,
-         exclude   :: [Int],
-         algorithm :: String,
-         msitype   :: Maybe MSI,
-         devices   :: [Device]
+    {   firstcore :: Int
+    ,   exclude   :: [Int]
+    ,   algorithm :: String
+    ,   msitype   :: Maybe MSI
+    ,   devices   :: [Device]
     } deriving (Data, Typeable, Show)
 
 
@@ -76,30 +75,33 @@ options :: Mode (CmdArgs Options)
 options = cmdArgsMode $ Options
     {   firstcore = 0       &= typ "CORE" &= help "first core involved"
     ,   exclude   = []      &= typ "CORE" &= help "exclude core from binding"
-    ,   algorithm = ""      &= help "binding algorithm: naive, round-robin, even, odd, all-in:id, comb:id"
+    ,   algorithm = ""      &= help "binding algorithm: round-robin, multiple/n, even, odd, all-in:id, step:id, custom:step/multi"
     ,   msitype   = Nothing &= typ "MSI" &= help "MSI type: TxRx, Rx, Tx or None"
     ,   devices   = []      &= args
-    } &= summary "irq-affinity: advanced Linux interrupt affinity binding." &= program "irq-affinity"
+    } &= summary "pfq-affinity: advanced Linux interrupt affinity binding." &= program "pfq-affinity"
 
 
 -- binding algorithm
 --
 
-data Alg = Alg
-    {
-        firstCore :: Int,
-        stepCore  :: Int,
-        runFilt   :: Int -> Bool
+data IrqBinding = IrqBinding
+    {   firstCore :: Int
+    ,   stepCore  :: Int
+    ,   multi     :: Int
+    ,   runFilter :: Int -> Bool
     }
 
-makeAlg :: [String] -> Int -> Alg
-makeAlg ["naive"]         n = Alg n     1 none
-makeAlg ["round-robin"]   _ = Alg (-1)  1 none
-makeAlg ["even"]          _ = Alg (-1)  1 even
-makeAlg ["odd"]           _ = Alg (-1)  1 odd
-makeAlg ["all-in", n]     _ = Alg (read n) 0 none
-makeAlg ["comb", s]       n = Alg n (read s) none
-makeAlg _ _                 = error "Unknown algorithm"
+makeIrqBinding :: [String] -> Int -> IrqBinding
+makeIrqBinding ["round-robin"]    first  = IrqBinding (-1)      1       1       none
+makeIrqBinding ["naive"]          first  = IrqBinding first     1       1       none
+makeIrqBinding ["multiple", m]    first  = IrqBinding first     1    (read m)   none
+makeIrqBinding ["even"]           first  = IrqBinding first     1       1       even
+makeIrqBinding ["odd"]            first  = IrqBinding first     1       1       odd
+makeIrqBinding ["all-in", n]      _      = IrqBinding (read n)  0       1       none
+makeIrqBinding ["step",   s]      first  = IrqBinding first   (read s)  1       none
+makeIrqBinding ["custom", s, m]   first  = IrqBinding first   (read s) (read m) none
+
+makeIrqBinding _ _                      = error "PFQ: unknown IRQ binding algorithm"
 
 
 none :: a -> Bool
@@ -129,14 +131,14 @@ makeBinding :: String -> BindStateT IO ()
 makeBinding dev = do
     (op,start) <- get
     let msi  = msitype op
-        alg  = makeAlg (splitOn ":" $ algorithm op) (firstcore op)
+        alg  = makeIrqBinding (splitOneOf ":/" $ algorithm op) (firstcore op)
         irq  = getInterrupts dev msi
         core = mkBinding dev (exclude op) start alg msi
     lift $ do
         putStrLn $ "Setting binding for device " ++ dev ++
             case msi of { Nothing -> ":"; Just None -> "(none):"; _ -> " (" ++ show msi ++ "):" }
-        when (null irq) $ error $ "irq(s) not found for dev " ++ dev ++ "!"
-        when (null core) $ error "no eligible cores found!"
+        when (null irq) $ error $ "PFQ: irq(s) not found for dev " ++ dev ++ "!"
+        when (null core) $ error "PFQ: no eligible cores found!"
         mapM_ setIrqAffinity $ zip irq core
     put (op, last core + 1)
 
@@ -152,7 +154,7 @@ showBinding dev = do
     lift $ do
         putStrLn $ "Binding for device " ++ dev ++
             case msi of { Nothing -> ":"; Just None -> "(none):";  _ -> " (" ++ show (fromJust msi) ++ "):" }
-        when (null irq) $ error $ "irq vector not found for dev " ++ dev ++ "!"
+        when (null irq) $ error $ "PFQ: irq vector not found for dev " ++ dev ++ "!"
         forM_ irq $ \n ->
             getIrqAffinity n >>= \cs -> putStrLn $ "   irq " ++ show n ++ " -> core " ++ show cs
 
@@ -183,15 +185,15 @@ getCpusFromMask mask  = [ n | n <- [0 .. 127], let p2 = 1 `shiftL` n, mask .&. p
 -- given a device and a binding algorithm, create the eligible list of core
 --
 
-mkBinding :: Device -> [Int] -> Int -> Alg -> Maybe MSI -> [Int]
-mkBinding _   _  _ _ Nothing = error "to create irq bindings you need to specify the MSI type"
-mkBinding dev excl f (Alg f' s filt) msi =
-    take nq [ n | let f''= if f' == -1 then f else f',
-                      x <- [f'', f''+s .. 64],
+mkBinding :: Device -> [Int] -> Int -> IrqBinding -> Maybe MSI -> [Int]
+mkBinding _   _  _ _ Nothing = error "PFQ: to create IRQ bindings you need to specify the MSI type"
+mkBinding dev excl f (IrqBinding f' step multi filt) msi =
+    take nqueue [ n | let f''= if f' == -1 then f else f',
+                      x <- [f'', f''+ step .. ] >>= replicate multi,
                       let n = x `mod` getNumberOfPhyCores,
                       filt n,
                       n `notElem` excl ]
-        where nq = getNumberOfQueues dev msi
+        where nqueue = getNumberOfQueues dev msi
 
 
 getDeviceName :: String -> Maybe MSI -> String

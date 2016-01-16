@@ -344,7 +344,7 @@ setupIRQAffinity fc excl algs devs = do
     let affinity = zip algs (tails devs)
     unless (null affinity) $
         forM_ affinity $ \(alg, devs') ->
-            runSystem ("irq-affinity -f " ++ show fc  ++ " " ++ excl_opt ++ " -a " ++ alg ++ " -m TxRx " ++ unwords devs') ("irq-affinity error!", True)
+            runSystem ("pfq-affinity -f " ++ show fc  ++ " " ++ excl_opt ++ " -a " ++ alg ++ " -m TxRx " ++ unwords devs') ("pfq-affinity error!", True)
 
 
 runSystem :: String -> (String,Bool) -> IO ()
