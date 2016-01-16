@@ -37,18 +37,18 @@
  */
 
 #define sparse_read(ptr, var) ({ \
-	long ret = 0; int i; \
-	for_each_possible_cpu(i) { \
-		ret += local_read(&(per_cpu_ptr(ptr, i)->var)); \
+	long _ret = 0; int _i; \
+	for_each_possible_cpu(_i) { \
+		_ret += local_read(&(per_cpu_ptr(ptr, _i)->var)); \
 	} \
-	ret; \
+	_ret; \
 })
 
 
 #define sparse_set(ptr, var, value) ({ \
-	long ret = 0; int i, this = get_cpu(); \
-	for_each_possible_cpu(i) { \
-		local_set(&(per_cpu_ptr(ptr, i)->var)), i == this ? value : 0); \
+	int _i, this = get_cpu(); \
+	for_each_possible_cpu(_i) { \
+		local_set(&(per_cpu_ptr(ptr, _i)->var)), _i == this ? value : 0); \
 	} \
 	put_cpu(); \
 })
