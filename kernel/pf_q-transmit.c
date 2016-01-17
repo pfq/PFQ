@@ -256,7 +256,7 @@ pfq_xmit(struct sk_buff *skb, struct net_device *dev, int queue, int more)
 	local_bh_disable();
 	HARD_TX_LOCK(dev, txq, smp_processor_id());
 
-	if (netif_xmit_frozen_or_drv_stopped(txq))
+	if (unlikely(netif_xmit_frozen_or_drv_stopped(txq)))
 		return NETDEV_TX_BUSY;
 
 	ret = __pfq_xmit(skb, dev, more);
@@ -308,7 +308,9 @@ __pfq_mbuff_xmit(struct pfq_pkthdr *hdr, struct net_dev_queue *dev_queue,
 	skb->dev = dev_queue->dev;
 	skb->len = 0;
 	__skb_put(skb, len);
+
 	skb_set_queue_mapping(skb, dev_queue->queue_mapping);
+
 	skb_copy_to_linear_data(skb, hdr+1, len < 64 ? 64 : len);
 
 	/* transmit the packet + copies */
@@ -320,9 +322,8 @@ __pfq_mbuff_xmit(struct pfq_pkthdr *hdr, struct net_dev_queue *dev_queue,
 
 		/* if copies > 1, then the device support TX_SKB_SHARING */
 
-		if (!netif_xmit_frozen_or_drv_stopped(dev_queue->queue) &&
+		if (likely(!netif_xmit_frozen_or_drv_stopped(dev_queue->queue)) &&
 			__pfq_xmit_retry(skb, dev_queue->dev, xmit_more_, true) == NETDEV_TX_OK) {
-
 			ret.ok++;
 			copies--;
 		}
@@ -551,7 +552,7 @@ pfq_skb_queue_xmit(struct pfq_skbuff_queue *skbs, unsigned long long mask, struc
 		skb_reset_mac_header(skb);
 		skb_set_queue_mapping(skb, queue);
 
-		if (!netif_xmit_frozen_or_drv_stopped(txq) &&
+		if (likely(!netif_xmit_frozen_or_drv_stopped(txq)) &&
 			__pfq_xmit(skb, dev, !( n == last_idx || ((mask & (mask-1)) == 0))) == NETDEV_TX_OK)
 			++ret.ok;
 		else {
