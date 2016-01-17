@@ -375,12 +375,11 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
         char *begin, *end;
         tx_ret ret = {0};
 
-	/* get the Tx queue */
+	/* get the Tx queue descriptor */
 
 	txm = pfq_get_tx_queue(&so->opt, sock_queue);
 	if (txm == NULL)
 		return ret; /* socket not enabled... */
-
 
 	/* enable skb_pool for Tx threads */
 
@@ -395,13 +394,13 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 		ctx.skb_pool = NULL;
 	}
 
-	/* initialize boundaries for the transmit queue */
+	/* initialize the boundaries of this queue */
 
 	prod_off = swap_sk_tx_queue(txm, &prod_idx);
 	begin    = txinfo->base_addr + (prod_idx & 1) * txm->size + txm->cons.off;
 	end      = txinfo->base_addr + (prod_idx & 1) * txm->size + prod_off;
 
-        /* setup context */
+        /* setup the context */
 
         ctx.net = sock_net(&so->sk);
 	ctx.now = ktime_get_real();
@@ -410,7 +409,7 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 
 	hdr = (struct pfq_pkthdr *)begin;
 
-	/* disable bh and lock the dev_queue */
+	/* lock the dev_queue and disable bh */
 
 	if (dev_queue_get(ctx.net, PFQ_DEVQ_ID(txinfo->def_ifindex, txinfo->def_queue), &dev_queue) < 0)
 	{
@@ -477,18 +476,26 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 		}
 
 		/* calc the max number of copies */
+
                 copies = dev_tx_max_skb_copies(dev_queue.dev, hdr->data.copies);
 		batch_cntr += copies;
+
+                /* set the xmit_more */
 
 		if (batch_cntr >= xmit_batch_len) {
 			xmit_more = false;
 			batch_cntr = 0;
 		}
 
+		/* transmit this packet */
+
 		tmp = __pfq_mbuff_xmit(hdr, &dev_queue, &ctx, copies,
 					xmit_more && (Q_SHARED_QUEUE_NEXT_PKTHDR(hdr, 0) < (struct pfq_pkthdr *)end), stop, &intr);
 
+		/* update the return value */
+
 		ret.value += tmp.value;
+
 		if (unlikely(intr))
 			break;
 	}
@@ -498,7 +505,7 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 	pfq_hard_tx_unlock(&dev_queue);
 	local_bh_enable();
 
-	/* release the device */
+	/* release the dev_queue */
 
 	dev_queue_put(ctx.net, &dev_queue);
 
