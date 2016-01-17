@@ -92,8 +92,14 @@ void pfq_percpu_free(void)
 
 int pfq_percpu_init(void)
 {
-	struct GC_data *GCs[Q_MAX_CPU];
+	struct GC_data **GCs;
 	int cpu, i, n = 0;
+
+	GCs = (struct GC_data **)kzalloc(sizeof(struct GC_data *) * Q_MAX_CPU, GFP_KERNEL);
+	if (!GCs) {
+		printk(KERN_ERR "[PFQ] percpu: out of memory!\n");
+		return -ENOMEM;
+	}
 
 	for_each_possible_cpu(cpu) {
 
@@ -109,7 +115,6 @@ int pfq_percpu_init(void)
 		}
 		n++;
 	}
-
 
 	/* allocate GCs */
 
@@ -139,11 +144,13 @@ int pfq_percpu_init(void)
 		preempt_enable();
 	}
 
+	kfree(GCs);
 	return 0;
 err:
 	for(i = 0; i < n; i++)
 		kfree(GCs[i]);
 
+	kfree(GCs);
 	return -ENOMEM;
 }
 
