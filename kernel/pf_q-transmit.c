@@ -208,7 +208,7 @@ unsigned int dev_tx_max_skb_copies(struct net_device *dev, unsigned int req_copi
 static inline int
 __pfq_xmit_retry(struct sk_buff *skb, struct net_device *dev, int xmit_more, bool retry)
 {
-	int rc = -ENOMEM;
+	int rc;
 
 #if(LINUX_VERSION_CODE >= KERNEL_VERSION(3,18,0))
 	skb->xmit_more = xmit_more;
@@ -221,13 +221,12 @@ __pfq_xmit_retry(struct sk_buff *skb, struct net_device *dev, int xmit_more, boo
 		return rc;
 	}
 
-	if (!retry)
-	{
+	if (!retry) {
 		sparse_inc(&memory_stats, os_free);
 		kfree_skb(skb);
 	}
 
-	return -ENETDOWN;
+	return rc;
 }
 
 
@@ -256,6 +255,9 @@ pfq_xmit(struct sk_buff *skb, struct net_device *dev, int queue, int more)
 
 	local_bh_disable();
 	HARD_TX_LOCK(dev, txq, smp_processor_id());
+
+	if (netif_xmit_frozen_or_drv_stopped(txq))
+		return NETDEV_TX_BUSY;
 
 	ret = __pfq_xmit(skb, dev, more);
 
@@ -318,41 +320,37 @@ __pfq_mbuff_xmit(struct pfq_pkthdr *hdr, struct net_dev_queue *dev_queue,
 
 		/* if copies > 1, then the device support TX_SKB_SHARING */
 
-		if (__pfq_xmit_retry(skb, dev_queue->dev, xmit_more_, true) != NETDEV_TX_OK) {
+		if (!netif_xmit_frozen_or_drv_stopped(dev_queue->queue) &&
+			__pfq_xmit_retry(skb, dev_queue->dev, xmit_more_, true) == NETDEV_TX_OK) {
 
+			ret.ok++;
+			copies--;
+		}
+		else {
 			ret.fail++;
 
-			if (need_resched())
-			{
-				pfq_hard_tx_unlock(dev_queue);
-				local_bh_enable();
+			pfq_hard_tx_unlock(dev_queue);
+			local_bh_enable();
 
+			if (need_resched())
 				schedule();
 
-				local_bh_disable();
-				pfq_hard_tx_lock(dev_queue);
-			}
+			local_bh_disable();
+			pfq_hard_tx_lock(dev_queue);
 
 			if (giveup_tx_process(stop)) {
 				atomic_set(&skb->users, 1);
-				pfq_kfree_skb_pool(skb, ctx->skb_pool);
 				*intr = true;
-				return ret;
+				break;
 			}
-
-		}
-		else {
-			ret.ok++;
-			copies--;
 		}
 	}
 	while (copies > 0);
 
 	pfq_kfree_skb_pool(skb, ctx->skb_pool);
 
-	if (ret.ok) {
+	if (ret.ok)
 		dev_queue->queue->trans_start = ctx->jiffies;
-	}
 
 	return ret;
 }
@@ -553,7 +551,8 @@ pfq_skb_queue_xmit(struct pfq_skbuff_queue *skbs, unsigned long long mask, struc
 		skb_reset_mac_header(skb);
 		skb_set_queue_mapping(skb, queue);
 
-		if (__pfq_xmit(skb, dev, !( n == last_idx || ((mask & (mask-1)) == 0))) == NETDEV_TX_OK)
+		if (!netif_xmit_frozen_or_drv_stopped(txq) &&
+			__pfq_xmit(skb, dev, !( n == last_idx || ((mask & (mask-1)) == 0))) == NETDEV_TX_OK)
 			++ret.ok;
 		else {
 			++ret.fail;
