@@ -8,45 +8,48 @@ Introduction
 ------------
 
 PFQ is a functional networking framework designed for the Linux operating system 
-that allows efficient packets capture/transmission (10G and beyond), in-kernel 
+that allows efficient packets capture/transmission (10G, 40G and beyond), in-kernel
 functional processing and packets steering across sockets/end-points.
 
 PFQ is highly optimized for multi-core architecture, as well as for network devices 
 equipped with multiple hardware queues. It works with any network device driver and 
-provides a script designed to obtain accelerated versions starting from source 
+provides a script designed to compile accelerated versions starting from the source
 codes.
 
 The framework enables the development of high-performance networking applications with 
 different programming languages: C, C++ and Haskell. In addition, a pure functional 
-language designed for early stages in-kernel applications is included: pfq-lang.
+language designed for early stages in-kernel packet processing is included: pfq-lang.
 
-pfq-lang is inspired by Haskell and allows the creation of small applications that run in 
-kernel space, on top of network device drivers. Through pfq-lang it is possible to build
-efficient bridges, port mirrors, simple firewalls, network balancers and so forth.
+pfq-lang is inspired by Haskell and allows the define of small applications that run
+on top of network device drivers. Through pfq-lang it is possible to build efficient
+bridges, port mirrors, simple firewalls, network balancers and so forth.
 
 The package provides the source code of the PFQ kernel module, user-space libraries for C, 
-C++11-14 and Haskell language, an implementation of pfq-lang as eDSL for both  C++11-14 and 
-Haskell, and a set of diagnostic tools.
+C++11-14 and Haskell language, an implementation of pfq-lang as eDSL for C++11-14 and
+Haskell, an experimental qlang compiler and a set of diagnostic tools.
+
 
 Features
 --------
 
-* Full lock-free architecture.
+* Data-path with full lock-free architecture.
 * Preallocated pools of socket buffers.
 * Compliant with a plethora of network devices drivers.
-* Rx and Tx line-rate on 10G links (14,8 Mpps), on-top-of Intel ixgbe _vanilla_ drivers.
+* Rx and Tx line-rate on 10-Gbit links (14,8 Mpps), tested with Intel ixgbe _vanilla_ drivers.
 * Transparent support of kernel threads for asynchronous packets transmission.
-* Asynchronous transmission with active timestamping (which determines when to transmit a packet).
-* Concurrent monitoring of multiple multi-threaded applications by means of groups of sockets.
+* Transmission with active timestamping.
+* Groups of sockets which enable concurrent monitoring of multiple multi-threaded applications.
 * Per-group packet steering through randomized hashing or deterministic classification.
 * Per-group Berkeley and VLAN filters.
+* User-space libraries for C, C++11-14 and Haskell language.
 * Functional engine for in-kernel packet processing with **pfq-lang**.
-* User-space libraries for C, C++11-14 and Haskell languages.
 * pfq-lang eDLS for C++11-14 and Haskell language.
-* Accelerated pcap library (line-speed tested with [captop][3]).
-* **pfqd** daemon used to parallelize multiple instances of pcap legacy applications.
-* **pfq-omatic**, a script designed to accelerate vanilla drivers.
-* I/O user<->kernel shared-memory on top of **HugePages**.
+* qlang compiler used to parse and compile pfq-lang programs.
+* Accelerated pcap library for legacy applications (line-speed tested with [captop][3]).
+* I/O user<->kernel memory-mapped communications allocated on top of HugePages.
+* **pfqd** daemon used to configure and parallelize (pcap) legacy applications.
+* **pfq-omatic** script that automatically accelerates vanilla drivers.
+
 
 Publications
 ------------
