@@ -48,20 +48,20 @@
 <a name="what-is-pfq" class="anchor" href="#what-is-pfq"><span class="octicon octicon-link"></span></a>What is PFQ?</h3>
 
 <p>PFQ is a functional networking framework designed for the Linux operating system that allows efficient packets capture/transmission
-(10g and beyond), in-kernel functional processing and packets steering across sockets/end-points.</p>
+(10G, 40G and beyond), in-kernel functional processing and packets steering across sockets/end-points.</p>
 
 <p>PFQ is highly optimized for multi-core architecture, as well as for network devices equipped with multiple hardware queues. 
-It works with any network device driver and provides a script designed to obtain accelerated versions starting from source codes.</p>
+It works with any network device driver and provides a script designed to compile accelerated versions starting from the source codes.</p>
 
 <p>The framework enables the development of high-performance networking applications with different programming languages: C, C++ and Haskell. 
-In addition, a pure functional language designed for early stages in-kernel processing is included: 
+In addition, a pure functional language designed for early stages in-kernel packet processing is included: 
 <strong><a href="http://pfq.github.io/PFQ/v5.x/lang/haskell/index.html">pfq-lang</a></strong>.</p>
 
-<p>pfq-lang is inspired by Haskell and allows the creation of small applications that run on top of network device drivers.  
+<p>pfq-lang is inspired by Haskell and allows the define of small applications that run on top of network device drivers.  
 Through pfq-lang it is possible to build efficient bridges, port mirrors, simple firewalls, network balancers and so forth.</p>
 
 <p>The package provides the source code of the PFQ kernel module, user-space libraries for C, C++11-14 and Haskell language, 
-an implementation of pfq-lang as eDSL for C++11-14 and Haskell, and a set of diagnostic tools.</p>
+an implementation of pfq-lang as eDSL for C++11-14 and Haskell, an experimental qlang compiler and a set of diagnostic tools.</p>
 
 <h3>
 <a name="features" class="anchor" href="#features"><span class="octicon octicon-link"></span></a>Features</h3>
@@ -73,17 +73,18 @@ an implementation of pfq-lang as eDSL for C++11-14 and Haskell, and a set of dia
 <li>Compliant with a plethora of network devices drivers.</li>
 <li>Rx and Tx line-rate on 10-Gbit links (14,8 Mpps), on-top-of Intel ixgbe <i>vanilla</i> drivers.</li>
 <li>Transparent support of kernel threads for asynchronous packets transmission.</li>
-<li>Transmission with active timestamping (which determines when to transmit a packet).</li>
+<li>Transmission with active timestamping.</li>
 <li>Groups of sockets which enable concurrent monitoring of multiple multi-threaded applications.</li>
 <li>Per-group packet steering through randomized hashing or deterministic classification.</li>
 <li>Per-group Berkeley and VLAN filters.</li>
-<li>Functional engine for in-kernel packet processing by means of <a href="http://pfq.github.io/PFQ/v5.x/lang/haskell/index.html">pfq-lang</a>.</li>
 <li>User-space libraries for C, C++11-14 and Haskell language.</li>
-<li>pfq-lang eDLS for C++11-14 and Haskell language.</li>
+<li>Functional engine for in-kernel packet processing with <a href="http://pfq.github.io/PFQ/v5.x/lang/haskell/index.html">pfq-lang</a>.</li>
+<li><b>pfq-lang</b> eDLS for C++11-14 and Haskell language.</li>
+<li><b>qlang</b> compiler used to parse and compile pfq-lang programs.</li>
 <li>Accelerated pcap library for legacy applications (line-speed tested with <a href="https://github.com/awgn/captop">captop</a>).</li>
+<li>I/O user<->kernel memory-mapped communications allocated on top of <b>HugePages</b>.</li>
 <li><b>pfqd</b> daemon used to configure and parallelize (pcap) legacy applications.</li>
 <li><b>pfq-omatic</b> script that automatically accelerates vanilla drivers.</li>
-<li>I/O user<->kernel memory-mapped communications allocated on top of <b>HugePages</b>.</li>
 
 </ul>
 
