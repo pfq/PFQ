@@ -164,22 +164,34 @@ showBinding dev = do
 
 setIrqAffinity :: (Int, Int) -> IO ()
 setIrqAffinity (irq, core) = do
-    putStrLn $ "   irq " ++ show irq ++ " -> core " ++ show core
-    writeFile ("/proc/irq/" ++ show irq ++ "/smp_affinity") (showHex (makeCpuMask [core]) "")
+    putStrLn $ "   irq " ++ show irq ++ " -> core " ++ show core ++ " {mask = " ++ mask ++ "}"
+    writeFile ("/proc/irq/" ++ show irq ++ "/smp_affinity") mask
+      where mask = showMask $ makeCpuMask [core]
 
 
 getIrqAffinity :: Int -> IO [Int]
-getIrqAffinity irq = do
-    s <- readFile ("/proc/irq/" ++ show irq ++ "/smp_affinity")
-    return $ getCpusFromMask . fst . head $ readHex s
+getIrqAffinity irq =
+    liftM (getCpusListFromMask . readMask) $ readFile ("/proc/irq/" ++ show irq ++ "/smp_affinity")
 
 
-makeCpuMask :: [Int] -> Int
-makeCpuMask = foldr (\cpu mask -> mask .|. (1 `shiftL` cpu)) 0
+intersperseEvery n x xs = zip xs [1 .. l] >>= ins
+  where ins (x',k) = if k `mod` n == 0 && k /= l then [x',x] else [x']
+        l = length xs
+
+showMask :: Integer -> String
+showMask mask = reverse . intersperseEvery 8 ',' . reverse $ showHex mask ""
 
 
-getCpusFromMask :: Int -> [Int]
-getCpusFromMask mask  = [ n | n <- [0 .. 127], let p2 = 1 `shiftL` n, mask .&. p2 /= 0]
+readMask :: String -> Integer
+readMask = fst . head . readHex . filter (/= ',')
+
+
+makeCpuMask :: [Int] -> Integer
+makeCpuMask = foldr (\cpu mask -> mask .|. (1 `shiftL` cpu)) (0 :: Integer)
+
+
+getCpusListFromMask :: Integer -> [Int]
+getCpusListFromMask mask  = [ n | n <- [0 .. 4095], let p2 = 1 `shiftL` n, mask .&. p2 /= 0 ]
 
 
 -- given a device and a binding algorithm, create the eligible list of core
