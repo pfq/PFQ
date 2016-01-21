@@ -67,6 +67,7 @@ data Options = Options
 
 type BindStateT = StateT (Options, Int)
 
+type CpuMask = Integer
 
 -- default options
 --
@@ -178,19 +179,19 @@ intersperseEvery n x xs = zip xs [1 .. l] >>= ins
   where ins (x',k) = if k `mod` n == 0 && k /= l then [x',x] else [x']
         l = length xs
 
-showMask :: Integer -> String
+showMask :: CpuMask -> String
 showMask mask = reverse . intersperseEvery 8 ',' . reverse $ showHex mask ""
 
 
-readMask :: String -> Integer
+readMask :: String -> CpuMask
 readMask = fst . head . readHex . filter (/= ',')
 
 
-makeCpuMask :: [Int] -> Integer
-makeCpuMask = foldr (\cpu mask -> mask .|. (1 `shiftL` cpu)) (0 :: Integer)
+makeCpuMask :: [Int] -> CpuMask
+makeCpuMask = foldr (\cpu mask -> mask .|. (1 `shiftL` cpu)) (0 :: CpuMask)
 
 
-getCpusListFromMask :: Integer -> [Int]
+getCpusListFromMask :: CpuMask -> [Int]
 getCpusListFromMask mask  = [ n | n <- [0 .. 4095], let p2 = 1 `shiftL` n, mask .&. p2 /= 0 ]
 
 
