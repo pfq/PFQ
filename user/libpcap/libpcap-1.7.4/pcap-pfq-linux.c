@@ -58,7 +58,7 @@
 #include <net/if.h>
 #include <sys/mman.h>
 #include <poll.h>
-
+#include <ctype.h>
 
 static void pfq_cleanup_linux(pcap_t *);
 static	int pfq_activate_linux(pcap_t *);
@@ -1185,8 +1185,13 @@ pfq_read_linux(pcap_t *handle, int max_packets, pcap_handler callback, u_char *u
                 uint16_t vlan_tci;
 		const char *pkt;
 
-		while (!pfq_pkt_ready(nq, it))
+		while (!pfq_pkt_ready(nq, it)) {
+			if (handle->break_loop) {
+				handle->break_loop = 0;
+				return PCAP_ERROR_BREAK;
+			}
 			pfq_yield();
+		}
 
 		h = (struct pfq_pkthdr *)pfq_pkt_header(it);
 
