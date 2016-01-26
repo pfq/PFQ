@@ -452,17 +452,16 @@ pcap_create_interface(const char *device, char *ebuf)
 	pcap_t *handle;
 
 	#ifdef PCAP_SUPPORT_PFQ
-		if (strstr(device, "pfq") 	||
-		    getenv("PFQ_CONFIG")  	||
-		    getenv("PFQ_GROUP")	  	||
-		    getenv("PFQ_CAPLEN")  	||
-		    getenv("PFQ_GENLEN")  	||
+		if (strstr(device, "pfq")	||
+		    getenv("PFQ_CONFIG")	||
+		    getenv("PFQ_GROUP")		||
+		    getenv("PFQ_CAPLEN")	||
 		    getenv("PFQ_RX_SLOTS")	||
 		    getenv("PFQ_TX_SLOTS")	||
 		    getenv("PFQ_TX_FHINT")	||
-		    getenv("PFQ_TX_QUEUE") 	||
-		    getenv("PFQ_TX_THREAD") 	||
-		    getenv("PFQ_COMPUTATION") 	||
+		    getenv("PFQ_TX_QUEUE")	||
+		    getenv("PFQ_TX_THREAD")	||
+		    getenv("PFQ_LANG")		||
 		    getenv("PFQ_VLAN")
 		   )
 			 //CHANGE added struct pcpa_linux because in linux 1.3.0 was not available
