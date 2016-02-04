@@ -168,16 +168,16 @@ ktime_t wait_until(uint64_t tv64, ktime_t now, struct net_dev_queue *dev_queue, 
 
 
 static inline
-ptrdiff_t swap_sk_tx_queue(struct pfq_tx_queue *txm, int *prod)
+ptrdiff_t swap_sk_tx_queue(struct pfq_tx_queue *txm)
 {
-	*prod = __atomic_load_n(&txm->prod.index, __ATOMIC_RELAXED);
-	if (*prod == __atomic_load_n(&txm->cons.index, __ATOMIC_RELAXED))
+	unsigned int prod = __atomic_load_n(&txm->prod.index, __ATOMIC_RELAXED);
+	if (prod != __atomic_load_n(&txm->cons.index, __ATOMIC_RELAXED))
 	{
-		__atomic_store_n(&txm->cons.index, *prod+1, __ATOMIC_RELAXED);
+		__atomic_store_n(&txm->cons.index, prod, __ATOMIC_RELAXED);
 		txm->cons.off = 0;
 	}
 
-	return __atomic_load_n((*prod & 1) ? &txm->prod.off1 : &txm->prod.off0, __ATOMIC_ACQUIRE);
+	return __atomic_load_n((prod & 1) ? &txm->prod.off1 : &txm->prod.off0, __ATOMIC_ACQUIRE);
 }
 
 
@@ -512,7 +512,7 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 
 	/* update the local consumer offset */
 
-	txm->cons.off = prod_off;
+	txm->cons.off = (char *)hdr - begin;
 
 	/* count the packets left in the shared queue */
 

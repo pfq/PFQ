@@ -1478,9 +1478,9 @@ pfq_send_raw(pfq_t *q, const void *buf, size_t len, int ifindex, int qindex, uin
 	}
 
 	index = __atomic_load_n(&tx->cons.index, __ATOMIC_RELAXED);
-	if (index != __atomic_load_n(&tx->prod.index, __ATOMIC_RELAXED))
+	if (index == __atomic_load_n(&tx->prod.index, __ATOMIC_RELAXED))
 	{
-                __atomic_store_n(&tx->prod.index, index, __ATOMIC_RELAXED);
+                __atomic_store_n(&tx->prod.index, ++index, __ATOMIC_RELAXED);
                 __atomic_store_n((index & 1) ? &tx->prod.off1 : &tx->prod.off0, 0, __ATOMIC_RELAXED);
 	}
 
@@ -1505,7 +1505,6 @@ pfq_send_raw(pfq_t *q, const void *buf, size_t len, int ifindex, int qindex, uin
 
                 __atomic_store_n((index & 1) ? &tx->prod.off1 : &tx->prod.off0,
 			offset + (ptrdiff_t)this_slot_size, __ATOMIC_RELEASE);
-
 
 		return Q_VALUE(q, (int)len);
 	}

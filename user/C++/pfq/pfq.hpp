@@ -1381,9 +1381,9 @@ namespace pfq {
             //
 
             auto index = __atomic_load_n(&tx->cons.index, __ATOMIC_RELAXED);
-            if (index != __atomic_load_n(&tx->prod.index, __ATOMIC_RELAXED))
+            if (index == __atomic_load_n(&tx->prod.index, __ATOMIC_RELAXED))
             {
-                __atomic_store_n(&tx->prod.index, index, __ATOMIC_RELAXED);
+                __atomic_store_n(&tx->prod.index, ++index, __ATOMIC_RELAXED);
                 __atomic_store_n((index & 1) ? &tx->prod.off1 : &tx->prod.off0, 0, __ATOMIC_RELAXED);
             }
 
