@@ -117,8 +117,8 @@ pfq_tx_thread(void *_data)
 				tx = pfq_sk_queue_xmit(sock, sock_queue, data->cpu, data->node, &data->sock_queue[n]);
 				total_sent += tx.ok;
 
-				sparse_add(sock->stats, sent, tx.ok);
-				sparse_add(sock->stats, fail, tx.fail);
+				sparse_add(sock->stats,	  sent, tx.ok);
+				sparse_add(sock->stats,   fail, tx.fail);
 				sparse_add(&global_stats, sent, tx.ok);
 				sparse_add(&global_stats, fail, tx.fail);
 			}

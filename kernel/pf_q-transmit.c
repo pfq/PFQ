@@ -334,10 +334,8 @@ __pfq_mbuff_xmit(struct pfq_pkthdr *hdr, struct net_dev_queue *dev_queue,
 
 			pfq_hard_tx_unlock(dev_queue);
 			local_bh_enable();
-
 			if (need_resched())
 				schedule();
-
 			local_bh_disable();
 			pfq_hard_tx_lock(dev_queue);
 
@@ -369,7 +367,7 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 	struct pfq_tx_info const * txinfo = pfq_get_tx_queue_info(&so->opt, sock_queue);
 	struct net_dev_queue dev_queue = net_dev_queue_null;
 	struct pfq_mbuff_xmit_context ctx;
-	int batch_cntr = 0, prod_idx;
+	int batch_cntr = 0, cons_idx;
 	struct pfq_tx_queue *txm;
 	struct pfq_pkthdr *hdr;
 	ptrdiff_t prod_off;
@@ -397,9 +395,11 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 
 	/* initialize the boundaries of this queue */
 
-	prod_off = swap_sk_tx_queue(txm, &prod_idx);
-	begin    = txinfo->base_addr + (prod_idx & 1) * txm->size + txm->cons.off;
-	end      = txinfo->base_addr + (prod_idx & 1) * txm->size + prod_off;
+	prod_off = swap_sk_tx_queue(txm);
+	cons_idx = txm->cons.index;
+
+	begin    = txinfo->base_addr + (cons_idx & 1) * txm->size + txm->cons.off;
+	end      = txinfo->base_addr + (cons_idx & 1) * txm->size + prod_off;
 
         /* setup the context */
 
@@ -429,9 +429,9 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
                 bool intr = false, xmit_more = true;
 		dev_queue_t qid;
 		int copies;
-                tx_ret tmp;
+                tx_ret tmp = {0};
 
-		/* caplen cannot be set to 0 */
+		/* ensure caplen is not set to 0 */
 
 		if (!hdr->caplen) {
 			if (printk_ratelimit())
@@ -439,13 +439,13 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 			break;
 		}
 
-		/* skip this packet ? */
+		/* skip the current packet ? */
 
 		qid = PFQ_DEVQ_ID(hdr->ifindex, hdr->queue);
 		if (unlikely(PFQ_DEVQ_IS_NULL(qid)))
 			continue;
 
-		/* swap queue/device lock */
+		/* swap queue/device lock if required */
 
 		if (qid != PFQ_DEVQ_DEFAULT &&
 		    qid != dev_queue.id) {
@@ -476,7 +476,7 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 			pfq_hard_tx_lock(&dev_queue);
 		}
 
-		/* calc the max number of copies */
+		/* get the max number of copies */
 
                 copies = dev_tx_max_skb_copies(dev_queue.dev, hdr->data.copies);
 		batch_cntr += copies;
@@ -491,7 +491,8 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 		/* transmit this packet */
 
 		tmp = __pfq_mbuff_xmit(hdr, &dev_queue, &ctx, copies,
-					xmit_more && (Q_SHARED_QUEUE_NEXT_PKTHDR(hdr, 0) < (struct pfq_pkthdr *)end), stop, &intr);
+			xmit_more && (Q_SHARED_QUEUE_NEXT_PKTHDR(hdr, 0) < (struct pfq_pkthdr *)end), stop, &intr);
+
 
 		/* update the return value */
 
