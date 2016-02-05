@@ -1383,8 +1383,9 @@ namespace pfq {
             auto index = __atomic_load_n(&tx->cons.index, __ATOMIC_RELAXED);
             if (index == __atomic_load_n(&tx->prod.index, __ATOMIC_RELAXED))
             {
-                __atomic_store_n(&tx->prod.index, ++index, __ATOMIC_RELAXED);
-                __atomic_store_n((index & 1) ? &tx->prod.off1 : &tx->prod.off0, 0, __ATOMIC_RELAXED);
+                ++index;
+                __atomic_store_n(&tx->prod.index, index, __ATOMIC_SEQ_CST);
+                __atomic_store_n((index & 1) ? &tx->prod.off1 : &tx->prod.off0, 0, __ATOMIC_SEQ_CST);
             }
 
             char * base_addr = static_cast<char *>(data_->tx_queue_addr) + data_->tx_queue_size * static_cast<size_t>(2 * (1+tss) + (index & 1 ? 1 : 0));

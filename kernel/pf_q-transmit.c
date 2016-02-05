@@ -167,17 +167,35 @@ ktime_t wait_until(uint64_t tv64, ktime_t now, struct net_dev_queue *dev_queue, 
 }
 
 
+
 static inline
-ptrdiff_t swap_sk_tx_queue(struct pfq_tx_queue *txm)
+ptrdiff_t acquire_sk_tx_prod_off_by(struct pfq_tx_queue *txm, int index)
 {
-	unsigned int prod = __atomic_load_n(&txm->prod.index, __ATOMIC_RELAXED);
-	if (prod != __atomic_load_n(&txm->cons.index, __ATOMIC_RELAXED))
+	return __atomic_load_n((index & 1) ? &txm->prod.off1 : &txm->prod.off0, __ATOMIC_ACQUIRE);
+}
+
+
+static inline
+ptrdiff_t maybe_swap_sk_tx_queue(struct pfq_tx_queue *txm, unsigned int *cons_ret)
+{
+	unsigned int prod_idx = __atomic_load_n(&txm->prod.index, __ATOMIC_RELAXED);
+	unsigned int cons_idx = __atomic_load_n(&txm->cons.index, __ATOMIC_RELAXED);
+
+	ptrdiff_t prod_off = acquire_sk_tx_prod_off_by(txm, cons_idx);
+
+	if (prod_idx != cons_idx && txm->cons.off == prod_off)
 	{
-		__atomic_store_n(&txm->cons.index, prod, __ATOMIC_RELAXED);
+		__atomic_store_n(&txm->cons.index, prod_idx, __ATOMIC_RELAXED);
 		txm->cons.off = 0;
+		*cons_ret = prod_idx;
+		return acquire_sk_tx_prod_off_by(txm, prod_idx);
+	}
+	else
+	{
+		*cons_ret = cons_idx;
 	}
 
-	return __atomic_load_n((prod & 1) ? &txm->prod.off1 : &txm->prod.off0, __ATOMIC_ACQUIRE);
+	return prod_off;
 }
 
 
@@ -395,8 +413,7 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 
 	/* initialize the boundaries of this queue */
 
-	prod_off = swap_sk_tx_queue(txm);
-	cons_idx = txm->cons.index;
+	prod_off = maybe_swap_sk_tx_queue(txm, &cons_idx);
 
 	begin    = txinfo->base_addr + (cons_idx & 1) * txm->size + txm->cons.off;
 	end      = txinfo->base_addr + (cons_idx & 1) * txm->size + prod_off;
@@ -513,7 +530,7 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 
 	/* update the local consumer offset */
 
-	txm->cons.off = (char *)hdr - begin;
+	txm->cons.off = prod_off;
 
 	/* count the packets left in the shared queue */
 
