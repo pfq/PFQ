@@ -20,7 +20,7 @@
 
 module Options where
 
-import Control.Monad.Trans.Reader
+import Control.Monad.Reader
 import Data.Data
 
 type OptionT = ReaderT Options

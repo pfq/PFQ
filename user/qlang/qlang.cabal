@@ -21,7 +21,7 @@ Executable qlang
                         Paths
                         QLang.Parser
     build-depends:      base >=4.7, 
-                        transformers,
+                        mtl,
                         bytestring,
                         cmdargs, 
                         filepath, 

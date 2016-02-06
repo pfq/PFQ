@@ -25,7 +25,7 @@ import Network.PFQ.Lang as Q
 import Control.Exception
 
 import QLang.Parser
-import Control.Monad.Trans.Reader
+import Control.Monad.Reader
 import Control.Monad(when)
 import Options
 

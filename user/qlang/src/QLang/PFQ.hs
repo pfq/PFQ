@@ -23,7 +23,7 @@ import Language.Haskell.Interpreter
 import Network.PFQ.Lang as Q
 import Network.PFQ as Q
 
-import Control.Monad.Trans.Reader
+import Control.Monad.Reader
 import Control.Monad()
 import Options
 

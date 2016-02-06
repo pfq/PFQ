@@ -20,7 +20,7 @@
 module Main where
 
 import Language.Haskell.Interpreter
-import Control.Monad.Trans.Reader
+import Control.Monad.Reader
 import System.Console.CmdArgs
 import CmdLine
 import Options

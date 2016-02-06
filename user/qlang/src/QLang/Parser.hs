@@ -28,7 +28,7 @@ module QLang.Parser
 import Language.Haskell.Interpreter
 import Data.List
 
-import Control.Monad.Trans.Reader
+import Control.Monad.Reader
 import Options
 
 
