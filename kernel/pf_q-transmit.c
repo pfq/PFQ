@@ -178,7 +178,7 @@ ptrdiff_t acquire_sk_tx_prod_off_by(struct pfq_tx_queue *txm, int index)
 static inline
 ptrdiff_t maybe_swap_sk_tx_queue(struct pfq_tx_queue *txm, unsigned int *cons_ret)
 {
-	unsigned int prod_idx = __atomic_load_n(&txm->prod.index, __ATOMIC_RELAXED);
+	unsigned int prod_idx = __atomic_load_n(&txm->prod.index, __ATOMIC_ACQUIRE);
 	unsigned int cons_idx = __atomic_load_n(&txm->cons.index, __ATOMIC_RELAXED);
 
 	ptrdiff_t prod_off = acquire_sk_tx_prod_off_by(txm, cons_idx);
