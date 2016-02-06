@@ -41,9 +41,9 @@ main = do
 
   opt' <- cmdArgsRun options
 
-  inHandle <- if notNull (files opt')
-                then openFile (head (files opt')) ReadMode
-                else return stdin
+  inHandle <- if null (files opt')
+                then return stdin
+                else openFile (head (files opt')) ReadMode
 
   outHandle <- if isJust (output opt')
                 then openFile (fromJust $ output opt') WriteMode
@@ -68,7 +68,4 @@ main = do
   hPutStr outHandle "\n"
   hClose outHandle
   hClose inHandle
-
-
-notNull = not . null
 
