@@ -17,18 +17,19 @@
 
 {-# LANGUAGE TupleSections #-}
 
-module QLang.Compiler where
+module QLang.Compiler
+(
+  compile
+) where
 
 import Language.Haskell.Interpreter
 import Network.PFQ.Lang as Q
 
 import Control.Exception
-
-import QLang.Parser
 import Control.Monad.Reader
-import Control.Monad(when)
 import Options
 
+import QLang.Parser
 
 compile :: String -> OptionT IO (Q.Function (SkBuff -> Action SkBuff))
 compile raw = do
