@@ -17,7 +17,10 @@
 
 {-# LANGUAGE TupleSections #-}
 
-module QLang.FDescr where
+module QLang.FDescr
+(
+  compile
+) where
 
 import Network.PFQ.Lang as Q
 import Options

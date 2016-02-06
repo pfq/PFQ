@@ -18,7 +18,10 @@
 
 {-# LANGUAGE DeriveDataTypeable #-}
 
-module Options where
+module Options
+( OptionT
+, Options(..)
+) where
 
 import Control.Monad.Reader
 import Data.Data

@@ -17,7 +17,10 @@
 
 {-# LANGUAGE TupleSections #-}
 
-module QLang.JSON where
+module QLang.JSON
+(
+  compile
+) where
 
 import Network.PFQ.Lang as Q
 

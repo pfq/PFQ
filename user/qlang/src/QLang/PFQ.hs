@@ -17,7 +17,10 @@
 
 {-# LANGUAGE TupleSections #-}
 
-module QLang.PFQ where
+module QLang.PFQ
+(
+  load
+)where
 
 import Language.Haskell.Interpreter
 import Network.PFQ.Lang as Q
