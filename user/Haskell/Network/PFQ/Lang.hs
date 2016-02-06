@@ -29,7 +29,6 @@
 
 {-# LANGUAGE ExistentialQuantification #-}
 {-# LANGUAGE UndecidableInstances #-}
-{-# LANGUAGE OverlappingInstances #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TypeSynonymInstances #-}
 {-# LANGUAGE AutoDeriveTypeable #-}
@@ -38,6 +37,9 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE CPP #-}
+#if __GLASGOW_HASKELL__ < 710
+{-# LANGUAGE OverlappingInstances #-}
+#endif
 
 {-# OPTIONS_GHC -fno-warn-unused-binds #-}
 
@@ -226,10 +228,18 @@ instance Argumentable String where
 instance Argumentable [String] where
     argument = ArgVectorStr
 
-instance (Show a, Pretty a, Storable a, Typeable a, ToJSON a, FromJSON a) => Argumentable a where
+instance
+#if __GLASGOW_HASKELL__ >= 710
+ {-# OVERLAPPABLE #-}
+#endif
+  (Show a, Pretty a, Storable a, Typeable a, ToJSON a, FromJSON a) => Argumentable a where
     argument = ArgData
 
-instance (Show a, Pretty [a], Storable a, Typeable a, ToJSON a, FromJSON a) => Argumentable [a] where
+instance
+#if __GLASGOW_HASKELL__ >= 710
+ {-# OVERLAPPABLE #-}
+#endif
+  (Show a, Pretty [a], Storable a, Typeable a, ToJSON a, FromJSON a) => Argumentable [a] where
     argument = ArgVector
 
 instance Argumentable FunPtr where
@@ -371,16 +381,25 @@ instance Show (Function f) where
 class Pretty x where
         pretty :: x -> String
 
-instance (Show a) => Pretty a where
+instance
+#if __GLASGOW_HASKELL__ >= 710
+ {-# OVERLAPPABLE #-}
+#endif
+  (Show a) => Pretty a where
     pretty = show
 
 instance Pretty String where
     pretty = id
 
-instance Pretty [String] where
+instance
+ Pretty [String] where
     pretty = unwords
 
-instance (Pretty a) => Pretty [a] where
+instance
+#if __GLASGOW_HASKELL__ >= 710
+ {-# OVERLAPPABLE #-}
+#endif
+  (Pretty a) => Pretty [a] where
     pretty xs = unwords (map pretty xs)
 
 instance Pretty () where
@@ -450,7 +469,11 @@ serializeAll symb n cont a b c d e f g h =
               fixComputation n8 s9, n9)
 
 
-instance Serializable (Function f) where
+instance
+#if __GLASGOW_HASKELL__ >= 710
+ {-# OVERLAPPABLE #-}
+#endif
+  Serializable (Function f) where
 
     serialize (Function symb a b c d e f g h) n = serializeAll symb n True a b c d e f g h
 
@@ -484,7 +507,11 @@ instance Serializable NetProperty where
     serialize _ _ = undefined
 
 
-instance Serializable a where
+instance
+#if __GLASGOW_HASKELL__ >= 710
+ {-# OVERLAPPABLE #-}
+#endif
+  Serializable a where
     serialize _ n = ([], n)
 
 instance Serializable () where
