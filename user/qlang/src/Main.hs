@@ -28,7 +28,6 @@ import System.IO
 
 import Data.Maybe
 import Control.Exception
-import Control.Monad (when)
 
 import qualified QLang.JSON
 import qualified QLang.FDescr
