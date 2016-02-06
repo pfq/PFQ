@@ -536,6 +536,9 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 
 	for_each_sk_mbuff(hdr, end, 0)
 	{
+		/* dynamic slot size: ensure the caplen is non zero! */
+		if (!hdr->caplen)
+			break;
 		ret.fail++;
 	}
 
