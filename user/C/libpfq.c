@@ -1481,8 +1481,8 @@ pfq_send_raw(pfq_t *q, const void *buf, size_t len, int ifindex, int qindex, uin
 	if (index == __atomic_load_n(&tx->prod.index, __ATOMIC_RELAXED))
 	{
 		++index;
-                __atomic_store_n(&tx->prod.index, index, __ATOMIC_SEQ_CST);
-                __atomic_store_n((index & 1) ? &tx->prod.off1 : &tx->prod.off0, 0, __ATOMIC_SEQ_CST);
+                __atomic_store_n((index & 1) ? &tx->prod.off1 : &tx->prod.off0, 0, __ATOMIC_RELEASE);
+                __atomic_store_n(&tx->prod.index, index, __ATOMIC_RELEASE);
 	}
 
 	base_addr = q->tx_queue_addr + q->tx_queue_size * (size_t)(2 * (1+tss) + (index & 1 ? 1 : 0));
