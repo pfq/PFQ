@@ -169,7 +169,7 @@ ktime_t wait_until(uint64_t tv64, ktime_t now, struct net_dev_queue *dev_queue, 
 
 
 static inline
-ptrdiff_t acquire_sk_tx_prod_off_by(struct pfq_tx_queue *txm, int index)
+ptrdiff_t acquire_sk_tx_prod_off_by(int index, struct pfq_tx_queue *txm)
 {
 	return __atomic_load_n((index & 1) ? &txm->prod.off1 : &txm->prod.off0, __ATOMIC_ACQUIRE);
 }
@@ -181,14 +181,14 @@ ptrdiff_t maybe_swap_sk_tx_queue(struct pfq_tx_queue *txm, unsigned int *cons_re
 	unsigned int prod_idx = __atomic_load_n(&txm->prod.index, __ATOMIC_ACQUIRE);
 	unsigned int cons_idx = __atomic_load_n(&txm->cons.index, __ATOMIC_RELAXED);
 
-	ptrdiff_t prod_off = acquire_sk_tx_prod_off_by(txm, cons_idx);
+	ptrdiff_t prod_off = acquire_sk_tx_prod_off_by(cons_idx, txm);
 
 	if (prod_idx != cons_idx && txm->cons.off == prod_off)
 	{
 		__atomic_store_n(&txm->cons.index, prod_idx, __ATOMIC_RELAXED);
 		txm->cons.off = 0;
 		*cons_ret = prod_idx;
-		return acquire_sk_tx_prod_off_by(txm, prod_idx);
+		return acquire_sk_tx_prod_off_by(prod_idx, txm);
 	}
 	else
 	{
@@ -414,7 +414,6 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 	/* initialize the boundaries of this queue */
 
 	prod_off = maybe_swap_sk_tx_queue(txm, &cons_idx);
-
 	begin    = txinfo->base_addr + (cons_idx & 1) * txm->size + txm->cons.off;
 	end      = txinfo->base_addr + (cons_idx & 1) * txm->size + prod_off;
 
@@ -444,11 +443,10 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 	for_each_sk_mbuff(hdr, end, 0 /* dynamic slot size */)
 	{
                 bool intr = false, xmit_more = true;
-		dev_queue_t qid;
-		int copies;
+		dev_queue_t qid; int copies;
                 tx_ret tmp = {0};
 
-		/* ensure caplen is not set to 0 */
+		/* because dynamic slot size, ensure caplen is not set to 0 */
 
 		if (!hdr->caplen) {
 			if (printk_ratelimit())
