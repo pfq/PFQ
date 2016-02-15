@@ -292,7 +292,6 @@ type NetProperty  = Function (SkBuff -> Word64)
 -- | Parametric Function data type.
 
 data Function fun where
-    {
         Function    :: forall a b c d e f g h. (Serializable a, Argumentable a,
                                                  Serializable b, Argumentable b,
                                                  Serializable c, Argumentable c,
@@ -301,7 +300,7 @@ data Function fun where
                                                  Serializable f, Argumentable f,
                                                  Serializable g, Argumentable g,
                                                  Serializable h, Argumentable h
-                                                ) => Symbol -> a -> b -> c -> d -> e -> f -> g -> h -> NetFunction;
+                                                ) => Symbol -> a -> b -> c -> d -> e -> f -> g -> h -> NetFunction
 
         Predicate    :: forall a b c d e f g h. (Serializable a, Argumentable a,
                                                  Serializable b, Argumentable b,
@@ -311,7 +310,7 @@ data Function fun where
                                                  Serializable f, Argumentable f,
                                                  Serializable g, Argumentable g,
                                                  Serializable h, Argumentable h
-                                                ) => Symbol -> a -> b -> c -> d -> e -> f -> g -> h -> NetPredicate;
+                                                ) => Symbol -> a -> b -> c -> d -> e -> f -> g -> h -> NetPredicate
 
         Property     :: forall a b c d e f g h. (Serializable a, Argumentable a,
                                                  Serializable b, Argumentable b,
@@ -321,13 +320,11 @@ data Function fun where
                                                  Serializable f, Argumentable f,
                                                  Serializable g, Argumentable g,
                                                  Serializable h, Argumentable h
-                                                ) => Symbol -> a -> b -> c -> d -> e -> f -> g -> h -> NetProperty;
+                                                ) => Symbol -> a -> b -> c -> d -> e -> f -> g -> h -> NetProperty
 
-        Combinator1  :: Symbol -> NetPredicate -> NetPredicate;
-        Combinator2  :: Symbol -> NetPredicate -> NetPredicate -> NetPredicate;
-
-        Composition  :: forall f1 f2 f. (Serializable (Function f1), Serializable (Function f2)) => Function f1 -> Function f2 -> Function f;
-    }
+        Combinator1  :: Symbol -> NetPredicate -> NetPredicate
+        Combinator2  :: Symbol -> NetPredicate -> NetPredicate -> NetPredicate
+        Composition  :: forall f1 f2 f. (Serializable (Function f1), Serializable (Function f2)) => Function f1 -> Function f2 -> Function f
 
 
 instance Storable NetFunction where
