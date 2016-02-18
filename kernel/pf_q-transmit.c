@@ -503,15 +503,19 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 			batch_cntr = 0;
 		}
 
-		/* transmit this packet */
+		if (likely(netif_running(dev_queue.dev) &&
+			netif_carrier_ok(dev_queue.dev))) {
 
-		tmp = __pfq_mbuff_xmit(hdr, &dev_queue, &ctx, copies,
-			xmit_more && (Q_SHARED_QUEUE_NEXT_PKTHDR(hdr, 0) < (struct pfq_pkthdr *)end), stop, &intr);
+			/* transmit this packet */
+
+			tmp = __pfq_mbuff_xmit(hdr, &dev_queue, &ctx, copies,
+				xmit_more && (Q_SHARED_QUEUE_NEXT_PKTHDR(hdr, 0) < (struct pfq_pkthdr *)end), stop, &intr);
 
 
-		/* update the return value */
+			/* update the return value */
 
-		ret.value += tmp.value;
+			ret.value += tmp.value;
+		}
 
 		if (unlikely(intr))
 			break;
