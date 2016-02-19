@@ -352,8 +352,10 @@ __pfq_mbuff_xmit(struct pfq_pkthdr *hdr, struct net_dev_queue *dev_queue,
 
 			pfq_hard_tx_unlock(dev_queue);
 			local_bh_enable();
+
 			if (need_resched())
 				schedule();
+
 			local_bh_disable();
 			pfq_hard_tx_lock(dev_queue);
 
@@ -446,7 +448,7 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 		dev_queue_t qid; int copies;
                 tx_ret tmp = {0};
 
-		/* because dynamic slot size, ensure caplen is not set to 0 */
+		/* because of dynamic slot size, ensure that caplen is not set to 0 */
 
 		if (unlikely(!hdr->caplen)) {
 			if (printk_ratelimit())
@@ -503,14 +505,13 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 			batch_cntr = 0;
 		}
 
+		/* transmit this packet */
+
 		if (likely(netif_running(dev_queue.dev) &&
 			netif_carrier_ok(dev_queue.dev))) {
 
-			/* transmit this packet */
-
 			tmp = __pfq_mbuff_xmit(hdr, &dev_queue, &ctx, copies,
 				xmit_more && (Q_SHARED_QUEUE_NEXT_PKTHDR(hdr, 0) < (struct pfq_pkthdr *)end), stop, &intr);
-
 
 			/* update the return value */
 
