@@ -448,7 +448,7 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 
 		/* because dynamic slot size, ensure caplen is not set to 0 */
 
-		if (!hdr->caplen) {
+		if (unlikely(!hdr->caplen)) {
 			if (printk_ratelimit())
 				printk(KERN_INFO "[PFQ] sk_queue_xmit: zero caplen (BUG!)\n");
 			break;
@@ -539,7 +539,7 @@ pfq_sk_queue_xmit(struct pfq_sock *so, int sock_queue, int cpu, int node, atomic
 	for_each_sk_mbuff(hdr, end, 0)
 	{
 		/* dynamic slot size: ensure the caplen is non zero! */
-		if (!hdr->caplen)
+		if (unlikely(!hdr->caplen))
 			break;
 		ret.fail++;
 	}
