@@ -65,25 +65,41 @@ steering_field(arguments_t args, SkBuff skb)
 {
 	uint32_t offset = GET_ARG_0(uint32_t, args);
 	uint32_t size   = GET_ARG_1(uint32_t, args);
+	uint32_t data;
 
-	uint32_t data, *ptr;
-	uint32_t mask;
-
-	if (size > (sizeof(data)*8)) {	/* size is number of bits */
-
+	if (size > 4) {
 		if (printk_ratelimit())
-			printk(KERN_INFO "[pfq-lang] steering_field: bit-size too big (max. 32)!\n");
-
+			printk(KERN_INFO "[pfq-lang] steering_field: size too big (max. 4 bytes)!\n");
 		return Drop(skb);
 	}
 
-	ptr = skb_header_pointer(PFQ_SKB(skb), offset, sizeof(uint32_t), &data);
-	if (ptr == NULL)
+	if (!skb_header_pointer(PFQ_SKB(skb), offset, size, &data))
 		return Drop(skb);
 
-	mask = (1ULL << size) - 1;
+	return Steering(skb, data);
+}
 
-	return Steering(skb, *ptr & mask);
+
+static ActionSkBuff
+steering_field2(arguments_t args, SkBuff skb)
+{
+	uint32_t offset1 = GET_ARG_0(uint32_t, args);
+	uint32_t offset2 = GET_ARG_1(uint32_t, args);
+	uint32_t size    = GET_ARG_2(uint32_t, args);
+	uint32_t data1, data2;
+
+	if (size > 4) {
+		if (printk_ratelimit())
+			printk(KERN_INFO "[pfq-lang] steering_field: size too big (max. 4 bytes)!\n");
+		return Drop(skb);
+	}
+
+	if (!skb_header_pointer(PFQ_SKB(skb), offset1, size, &data1))
+		return Drop(skb);
+	if (!skb_header_pointer(PFQ_SKB(skb), offset2, size, &data2))
+		return Drop(skb);
+
+	return Steering(skb, data1 ^ data2);
 }
 
 
@@ -166,10 +182,10 @@ steering_net(arguments_t args, SkBuff skb)
 			return Drop(skb);
 
 		if ((ip->saddr & mask) == addr)
-			return Steering(skb, __swab32(ntohl(ip->saddr & submask)));
+			return Steering(skb, ip->saddr & submask);
 
 		if ((ip->daddr & mask) == addr)
-			return Steering(skb, __swab32(ntohl(ip->daddr & submask)));
+			return Steering(skb, ip->daddr & submask);
 	}
 
 	return Drop(skb);
@@ -249,6 +265,7 @@ struct pfq_lang_function_descr steering_functions[] = {
 	{ "steer_flow",  "SkBuff -> Action SkBuff", steering_flow    },
 	{ "steer_to",    "CInt   -> SkBuff -> Action SkBuff", steering_to },
 	{ "steer_field", "Word32 -> Word32 -> SkBuff -> Action SkBuff", steering_field },
+	{ "steer_field2","Word32 -> Word32 -> Word32 -> SkBuff -> Action SkBuff", steering_field2 },
 	{ "steer_net",   "Word32 -> Word32 -> Word32 -> SkBuff -> Action SkBuff", steering_net, steering_net_init },
 	{ NULL }};
 
