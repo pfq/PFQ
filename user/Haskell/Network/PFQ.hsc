@@ -365,17 +365,17 @@ version = #{const_str PFQ_VERSION_STRING }
 toPktHdr :: Ptr PktHdr
          -> IO PktHdr
 toPktHdr hdr = do
-    _mark  <- (\h -> peekByteOff h 0)  hdr
-    _state <- (\h -> peekByteOff h 4)  hdr
-    _sec   <- (\h -> peekByteOff h 8)  hdr
-    _nsec  <- (\h -> peekByteOff h 12) hdr
-    _ifidx <- (\h -> peekByteOff h 16) hdr
-    _gid   <- (\h -> peekByteOff h 20) hdr
-    _len   <- (\h -> peekByteOff h 24) hdr
-    _cap   <- (\h -> peekByteOff h 26) hdr
-    _tci   <- (\h -> peekByteOff h 28) hdr
-    _hwq   <- (\h -> peekByteOff h 30) hdr
-    _com   <- (\h -> peekByteOff h 31) hdr
+    _mark  <- (`peekByteOff` 0)  hdr
+    _state <- (`peekByteOff` 4)  hdr
+    _sec   <- (`peekByteOff` 8)  hdr
+    _nsec  <- (`peekByteOff` 12) hdr
+    _ifidx <- (`peekByteOff` 16) hdr
+    _gid   <- (`peekByteOff` 20) hdr
+    _len   <- (`peekByteOff` 24) hdr
+    _cap   <- (`peekByteOff` 26) hdr
+    _tci   <- (`peekByteOff` 28) hdr
+    _hwq   <- (`peekByteOff` 30) hdr
+    _com   <- (`peekByteOff` 31) hdr
     return PktHdr {
                     hMark     = fromIntegral (_mark :: Word32),
                     hState    = fromIntegral (_state:: Word32),
@@ -441,7 +441,7 @@ getPackets' index cur end slotSize
 
 isPacketReady :: Packet -> IO Bool
 isPacketReady p = do
-    !_com  <- (\h -> peekByteOff h 31) (pHdr p)
+    !_com  <- (`peekByteOff` 31) (pHdr p)
     return ((_com :: CUChar) == fromIntegral (pIndex p))
 
 {-# INLINE isPacketReady #-}
@@ -830,10 +830,10 @@ read :: Ptr PFqTag
 read hdl msec =
     allocaBytes #{size struct pfq_net_queue} $ \queue -> do
        pfq_read hdl queue (fromIntegral msec) >>= throwPFqIf_ hdl (== -1)
-       _ptr <- (\h -> peekByteOff h 0)  queue
-       _len <- (\h -> peekByteOff h (sizeOf _ptr))  queue
-       _css <- (\h -> peekByteOff h (sizeOf _ptr + sizeOf _len)) queue
-       _cid <- (\h -> peekByteOff h (sizeOf _ptr + sizeOf _len + sizeOf _css)) queue
+       _ptr <- ( `peekByteOff` 0)  queue
+       _len <- ( `peekByteOff` sizeOf _ptr)  queue
+       _css <- ( `peekByteOff` (sizeOf _ptr + sizeOf _len)) queue
+       _cid <- ( `peekByteOff` (sizeOf _ptr + sizeOf _len + sizeOf _css)) queue
        let slotSize'= fromIntegral(_css :: CSize)
        let slotSize = slotSize' + slotSize' `mod` 8
        return NetQueue { qPtr       = _ptr :: Ptr PktHdr,
@@ -921,14 +921,14 @@ getGroupStats hdl gid =
 makeStats :: Ptr a
           -> IO Statistics
 makeStats p = do
-    _recv <- (\ptr -> peekByteOff ptr (sizeOf (undefined :: CLong) * 0)) p
-    _lost <- (\ptr -> peekByteOff ptr (sizeOf (undefined :: CLong) * 1)) p
-    _drop <- (\ptr -> peekByteOff ptr (sizeOf (undefined :: CLong) * 2)) p
-    _sent <- (\ptr -> peekByteOff ptr (sizeOf (undefined :: CLong) * 3)) p
-    _disc <- (\ptr -> peekByteOff ptr (sizeOf (undefined :: CLong) * 4)) p
-    _fail <- (\ptr -> peekByteOff ptr (sizeOf (undefined :: CLong) * 5)) p
-    _frwd <- (\ptr -> peekByteOff ptr (sizeOf (undefined :: CLong) * 6)) p
-    _kern <- (\ptr -> peekByteOff ptr (sizeOf (undefined :: CLong) * 7)) p
+    _recv <- ( `peekByteOff` 0) p
+    _lost <- ( `peekByteOff` sizeOf(undefined :: CLong)) p
+    _drop <- ( `peekByteOff` (sizeOf (undefined :: CLong) * 2)) p
+    _sent <- ( `peekByteOff` (sizeOf (undefined :: CLong) * 3)) p
+    _disc <- ( `peekByteOff` (sizeOf (undefined :: CLong) * 4)) p
+    _fail <- ( `peekByteOff` (sizeOf (undefined :: CLong) * 5)) p
+    _frwd <- ( `peekByteOff` (sizeOf (undefined :: CLong) * 6)) p
+    _kern <- ( `peekByteOff` (sizeOf (undefined :: CLong) * 7)) p
     return Statistics
            { sReceived = fromIntegral (_recv :: CULong)
            , sLost     = fromIntegral (_lost :: CULong)

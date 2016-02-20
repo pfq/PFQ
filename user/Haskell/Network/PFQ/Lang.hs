@@ -165,12 +165,12 @@ data Argument = forall a. (Show a, Storable a, Typeable a, ToJSON a, FromJSON a)
 
 
 instance ToJSON Argument where
-  toJSON (ArgData x)     = object [ "argType" .= show (typeOf x),        "argValue" .= toJSON x  ]
-  toJSON (ArgVector xs)  = object [ "argType" .= show (typeOf xs),       "argValue" .= toJSON xs ]
-  toJSON (ArgString xs)  = object [ "argType" .= ("String"   :: String), "argValue" .= toJSON xs ]
+  toJSON (ArgData x)       = object [ "argType" .= show (typeOf x),        "argValue" .= toJSON x  ]
+  toJSON (ArgVector xs)    = object [ "argType" .= show (typeOf xs),       "argValue" .= toJSON xs ]
+  toJSON (ArgString xs)    = object [ "argType" .= ("String"   :: String), "argValue" .= toJSON xs ]
   toJSON (ArgVectorStr xs) = object [ "argType" .= ("[String]" :: String), "argValue" .= toJSON xs ]
-  toJSON (ArgFunPtr x)   = object [ "argType" .= ("Fun"      :: String), "argValue" .= toJSON x  ]
-  toJSON (ArgNull)       = object [ "argType" .= (""         :: String), "argValue" .= toJSON () ]
+  toJSON (ArgFunPtr x)     = object [ "argType" .= ("Fun"      :: String), "argValue" .= toJSON x  ]
+  toJSON ArgNull           = object [ "argType" .= (""         :: String), "argValue" .= toJSON () ]
 
 
 instance FromJSON Argument where
@@ -209,7 +209,7 @@ instance FromJSON Argument where
 
 
 instance Show Argument where
-    show (ArgNull)       = "()"
+    show ArgNull         = "()"
     show (ArgFunPtr n)   = show (FunPtr n)
     show (ArgString xs)  = xs
     show (ArgData x)     = show x
@@ -367,8 +367,8 @@ instance Show (Function f) where
         show (Combinator2 "and" p1 p2)   = "(Combinator and " ++ show p1 ++" " ++ show p2 ++ ")"
         show (Combinator2 "or"  p1 p2)   = "(Combinator or  " ++ show p1 ++" " ++ show p2 ++ ")"
         show (Combinator2 "xor" p1 p2)   = "(Combinator xor " ++ show p1 ++" " ++ show p2 ++ ")"
-        show (Combinator1 {})            = undefined
-        show (Combinator2 {})            = undefined
+        show Combinator1 {}              = undefined
+        show Combinator2 {}              = undefined
 
         show (Composition a b)           = "(Composition " ++ show a ++ " " ++ show b ++ ")"
 
@@ -418,8 +418,8 @@ instance Pretty (Function f) where
         pretty (Combinator2 "and" p1 p2)   = "(" ++ pretty p1 ++" && " ++ pretty p2 ++ ")"
         pretty (Combinator2 "or"  p1 p2)   = "(" ++ pretty p1 ++" || " ++ pretty p2 ++ ")"
         pretty (Combinator2 "xor" p1 p2)   = "(" ++ pretty p1 ++" ^^ " ++ pretty p2 ++ ")"
-        pretty (Combinator1{} )            = undefined
-        pretty (Combinator2{})             = undefined
+        pretty Combinator1{}               = undefined
+        pretty Combinator2{}               = undefined
         pretty (Composition a b)           = pretty a ++ " >-> " ++ pretty b
 
 

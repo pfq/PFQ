@@ -242,7 +242,7 @@ import           Foreign.Storable.Tuple ()
 -- false, and vice versa.
 not' :: NetPredicate -> NetPredicate
 
-not' p     = Combinator1 "not"  p
+not'       = Combinator1 "not"
 p1 .||. p2 = Combinator2 "or"   p1 p2
 p1 .&&. p2 = Combinator2 "and"  p1 p2
 p1 .^^. p2 = Combinator2 "xor"  p1 p2

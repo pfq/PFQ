@@ -101,7 +101,7 @@ par7 :: NetFunction -> NetFunction -> NetFunction -> NetFunction -> NetFunction 
 par7 a b c d e f g = Function "par7" a b c d e f g ()
 
 par8 :: NetFunction -> NetFunction -> NetFunction -> NetFunction -> NetFunction -> NetFunction -> NetFunction -> NetFunction -> NetFunction
-par8 a b c d e f g h = Function "par8" a b c d e f g h
+par8 = Function "par8"
 
 
 -- | Dispatch the packet across the sockets
