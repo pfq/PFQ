@@ -117,8 +117,8 @@ heuristic_voip(SkBuff skb, bool steer)
 		if (hdr == NULL)
 			return ret;
 
-		dest = ntohs(hdr->udp.dest);
-		source = ntohs(hdr->udp.source);
+		dest = be16_to_cpu(hdr->udp.dest);
+		source = be16_to_cpu(hdr->udp.source);
 
 		/* check for SIP packets */
 
@@ -133,7 +133,7 @@ heuristic_voip(SkBuff skb, bool steer)
 
 		/* version => 2 */
 
-		if (!((ntohs(hdr->un.rtp.rh_flags) & 0xc000) == 0x8000))
+		if (!((be16_to_cpu(hdr->un.rtp.rh_flags) & 0xc000) == 0x8000))
 			return ret;
 
 		if (dest < 1024 || source < 1024)

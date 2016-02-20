@@ -44,7 +44,7 @@ void pfq_vlan_set_encap_proto(struct sk_buff *skb, struct vlan_hdr *vhdr)
          */
 
         proto = vhdr->h_vlan_encapsulated_proto;
-        if (ntohs(proto) >= 1536) {
+        if (be16_to_cpu(proto) >= 1536) {
                 skb->protocol = proto;
                 return;
         }
@@ -95,7 +95,7 @@ pfq_vlan_untag(struct sk_buff *skb)
                 goto err_free;
 
         vhdr = (struct vlan_hdr *) skb->data;
-        vlan_tci = ntohs(vhdr->h_vlan_TCI);
+        vlan_tci = be16_to_cpu(vhdr->h_vlan_TCI);
 
         __vlan_hwaccel_put_tag(skb, vlan_tci);
 

@@ -149,8 +149,8 @@ log_packet(arguments_t args, SkBuff skb)
 				return Pass(skb);
 
 			printk(KERN_INFO "[pfq-lang] IP %pI4.%d > %pI4.%d: UDP\n",
-						&ip->saddr, ntohs(udp->source),
-						&ip->daddr, ntohs(udp->dest));
+						&ip->saddr, be16_to_cpu(udp->source),
+						&ip->daddr, be16_to_cpu(udp->dest));
 			return Pass(skb);
 		}
 		case IPPROTO_TCP: {
@@ -159,8 +159,8 @@ log_packet(arguments_t args, SkBuff skb)
 			if (tcp == NULL)
 				return Pass(skb);
 
-			printk(KERN_INFO "[pfq-lang] IP %pI4.%d > %pI4.%d: TCP\n", &ip->saddr, ntohs(tcp->source),
-									      &ip->daddr, ntohs(tcp->dest));
+			printk(KERN_INFO "[pfq-lang] IP %pI4.%d > %pI4.%d: TCP\n", &ip->saddr, be16_to_cpu(tcp->source),
+									      &ip->daddr, be16_to_cpu(tcp->dest));
 			return Pass(skb);
 		}
 		case IPPROTO_ICMP: {
@@ -178,7 +178,7 @@ log_packet(arguments_t args, SkBuff skb)
 		}
 
 	} else
-		printk(KERN_INFO "[pfq-lang] ETH proto %x\n", ntohs(eth_hdr(PFQ_SKB(skb))->h_proto));
+		printk(KERN_INFO "[pfq-lang] ETH proto %x\n", be16_to_cpu(eth_hdr(PFQ_SKB(skb))->h_proto));
 
         return Pass(skb);
 }

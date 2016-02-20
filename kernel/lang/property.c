@@ -66,7 +66,7 @@ ip_tot_len(arguments_t args, SkBuff skb)
 		if (ip == NULL)
 			return NOTHING;
 
-		return JUST(ntohs(ip->tot_len));
+		return JUST(be16_to_cpu(ip->tot_len));
 	}
 
 	return NOTHING;
@@ -85,7 +85,7 @@ ip_id(arguments_t args, SkBuff skb)
 		if (ip == NULL)
 			return NOTHING;
 
-		return JUST(ntohs(ip->id));
+		return JUST(be16_to_cpu(ip->id));
 	}
 
 	return NOTHING;
@@ -122,7 +122,7 @@ ip_frag(arguments_t args, SkBuff skb)
 		if (ip == NULL)
 			return NOTHING;
 
-		return JUST(ntohs(ip->frag_off));
+		return JUST(be16_to_cpu(ip->frag_off));
 	}
 
 	return NOTHING;
@@ -155,7 +155,7 @@ tcp_source(arguments_t args, SkBuff skb)
 		if (tcp == NULL)
 			return NOTHING;
 
-		return JUST(ntohs(tcp->source));
+		return JUST(be16_to_cpu(tcp->source));
 	}
 
 	return NOTHING;
@@ -184,7 +184,7 @@ tcp_dest(arguments_t args, SkBuff skb)
 		if (tcp == NULL)
 			return NOTHING;
 
-		return JUST(ntohs(tcp->dest));
+		return JUST(be16_to_cpu(tcp->dest));
 	}
 
 	return NOTHING;
@@ -244,7 +244,7 @@ udp_source(arguments_t args, SkBuff skb)
 		if (udp == NULL)
 			return NOTHING;
 
-		return JUST(ntohs(udp->source));
+		return JUST(be16_to_cpu(udp->source));
 	}
 
 	return NOTHING;
@@ -273,7 +273,7 @@ udp_dest(arguments_t args, SkBuff skb)
 		if (udp == NULL)
 			return NOTHING;
 
-		return JUST(ntohs(udp->dest));
+		return JUST(be16_to_cpu(udp->dest));
 	}
 
 	return NOTHING;
@@ -301,7 +301,7 @@ udp_len(arguments_t args, SkBuff skb)
 		if (udp == NULL)
 			return NOTHING;
 
-		return JUST(ntohs(udp->len));
+		return JUST(be16_to_cpu(udp->len));
 	}
 
 	return NOTHING;

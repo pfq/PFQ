@@ -52,7 +52,7 @@ bloom_src(arguments_t args, SkBuff skb)
 		mem  = GET_ARG_1(char *,   args);
 		mask = GET_ARG_2(__be32,   args);
 
-		addr = ntohl(ip->saddr & mask);
+		addr = be32_to_cpu(ip->saddr & mask);
 
 		if ( BF_TEST(mem, hfun1(addr) & fold) &&
 		     BF_TEST(mem, hfun2(addr) & fold) &&
@@ -84,7 +84,7 @@ bloom_dst(arguments_t args, SkBuff skb)
 		mem  = GET_ARG_1(char *,   args);
 		mask = GET_ARG_2(__be32,   args);
 
-		addr = ntohl(ip->daddr & mask);
+		addr = be32_to_cpu(ip->daddr & mask);
 
 		if ( BF_TEST(mem, hfun1(addr) & fold) &&
 		     BF_TEST(mem, hfun2(addr) & fold) &&
@@ -115,7 +115,7 @@ bloom(arguments_t args, SkBuff skb)
 		mem  = GET_ARG_1(char *,   args);
 		mask = GET_ARG_2(__be32,   args);
 
-		addr = ntohl(ip->daddr & mask);
+		addr = be32_to_cpu(ip->daddr & mask);
 
 		if ( BF_TEST(mem, hfun1(addr) & fold) &&
 		     BF_TEST(mem, hfun2(addr) & fold) &&
@@ -123,7 +123,7 @@ bloom(arguments_t args, SkBuff skb)
 		     BF_TEST(mem, hfun4(addr) & fold) )
 			return true;
 
-		addr = ntohl(ip->saddr & mask);
+		addr = be32_to_cpu(ip->saddr & mask);
 
 		if ( BF_TEST(mem, hfun1(addr) & fold) &&
 		     BF_TEST(mem, hfun2(addr) & fold) &&
@@ -203,10 +203,10 @@ static int bloom_init(arguments_t args)
 
 	for(i = 0; i < n; i++)
 	{
-		uint32_t h1 = hfun1(ntohl(ips[i] & mask)) & (m-1);
-		uint32_t h2 = hfun2(ntohl(ips[i] & mask)) & (m-1);
-		uint32_t h3 = hfun3(ntohl(ips[i] & mask)) & (m-1);
-		uint32_t h4 = hfun4(ntohl(ips[i] & mask)) & (m-1);
+		uint32_t h1 = hfun1(be32_to_cpu(ips[i] & mask)) & (m-1);
+		uint32_t h2 = hfun2(be32_to_cpu(ips[i] & mask)) & (m-1);
+		uint32_t h3 = hfun3(be32_to_cpu(ips[i] & mask)) & (m-1);
+		uint32_t h4 = hfun4(be32_to_cpu(ips[i] & mask)) & (m-1);
 
 		BF_SET(mem, h1);
 		BF_SET(mem, h2);
