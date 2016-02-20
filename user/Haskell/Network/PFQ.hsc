@@ -902,7 +902,7 @@ vlanResetFilter hdl gid vid =
 getStats :: Ptr PFqTag
          -> IO Statistics
 getStats hdl =
-    allocaBytes (sizeOf (undefined :: CLong) * 7) $ \sp -> do
+    allocaBytes #{size struct pfq_stats} $ \sp -> do
         pfq_get_stats hdl sp >>= throwPFqIf_ hdl (== -1)
         makeStats sp
 
@@ -913,7 +913,7 @@ getGroupStats :: Ptr PFqTag
               -> Int            -- ^ group id
               -> IO Statistics
 getGroupStats hdl gid =
-    allocaBytes (sizeOf (undefined :: CLong) * 7) $ \sp -> do
+    allocaBytes #{size struct pfq_stats} $ \sp -> do
         pfq_get_group_stats hdl (fromIntegral gid) sp >>= throwPFqIf_ hdl (== -1)
         makeStats sp
 
@@ -946,7 +946,7 @@ getGroupCounters :: Ptr PFqTag
                  -> Int            -- ^ group id
                  -> IO Counters
 getGroupCounters hdl gid =
-    allocaBytes (sizeOf (undefined :: CLong) * getConstant group_max_counters) $ \sp -> do
+    allocaBytes #{size struct pfq_counters} $ \sp -> do
         pfq_get_group_counters hdl (fromIntegral gid) sp >>= throwPFqIf_ hdl (== -1)
         makeCounters sp
 
