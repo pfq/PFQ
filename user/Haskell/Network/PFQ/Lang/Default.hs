@@ -167,6 +167,7 @@ module Network.PFQ.Lang.Default
         steer_flow ,
         steer_net  ,
         steer_field,
+        steer_field2,
         steer_rtp  ,
         steer_voip ,
 
@@ -538,7 +539,17 @@ steer_net net p sub = Function "steer_net" net p sub () () () () ()
 steer_field :: CInt -- ^ offset from the beginning of the packet, in bytes
             -> CInt -- ^ sizeof field in bits
             -> NetFunction
-steer_field off size = Function "steer_field" off size () () () () () ()
+steer_field offset size = Function "steer_field" offset size () () () () () ()
+
+-- | Dispatch the packet across the sockets
+-- with a randomized algorithm. The function uses as /hash/ the xor operation
+-- of the fields of /size/ bytes taken at /offset1/ and /offset2/ bytes from the
+-- beginning of the packet.
+steer_field2 :: CInt -- ^ offset1 from the beginning of the packet, in bytes
+             -> CInt -- ^ offset2 from the beginning of the packet, in bytes
+             -> CInt -- ^ sizeof field in bytes (max 4)
+             -> NetFunction
+steer_field2 offset1 offset2 size = Function "steer_field2" offset1 offset2 size () () () () ()
 
 -- Predefined filters:
 
