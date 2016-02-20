@@ -499,7 +499,7 @@ has_src_port(SkBuff skb, uint16_t port)
 			if (udp == NULL)
 				return false;
 
-			return udp->source == htons(port);
+			return udp->source == cpu_to_be16(port);
 		}
 		case IPPROTO_TCP: {
 			struct tcphdr _tcph; const struct tcphdr *tcp;
@@ -507,7 +507,7 @@ has_src_port(SkBuff skb, uint16_t port)
 			if (tcp == NULL)
 				return false;
 
-			return tcp->source == htons(port);
+			return tcp->source == cpu_to_be16(port);
 		}
 
 		default:
@@ -538,7 +538,7 @@ has_dst_port(SkBuff skb, uint16_t port)
 			if (udp == NULL)
 				return false;
 
-			return udp->dest == htons(port);
+			return udp->dest == cpu_to_be16(port);
 		}
 		case IPPROTO_TCP: {
 			struct tcphdr _tcph; const struct tcphdr *tcp;
@@ -546,7 +546,7 @@ has_dst_port(SkBuff skb, uint16_t port)
 			if (tcp == NULL)
 				return false;
 
-			return tcp->dest == htons(port);
+			return tcp->dest == cpu_to_be16(port);
 		}
 
 		default:
