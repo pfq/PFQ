@@ -173,7 +173,7 @@ int pfq_sock_init(struct pfq_sock *so, int id)
 
 	/* setup id */
 
-	so->id = id;
+	so->id = (__force pfq_id_t)id;
 
         /* memory mapped queues are allocated later, when the socket is enabled */
 
