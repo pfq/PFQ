@@ -477,56 +477,58 @@ steer_to :: CInt -> NetFunction
 steer_to idx = Function "steer_to" idx () () () () () () () :: NetFunction
 
 -- | Dispatch the packet across the sockets
--- with a randomized algorithm that maintains the integrity of
+-- with a randomized algorithm that maintains the coherence of
 -- physical links.
 --
--- > ip >-> steer_link
+-- > steer_link
 steer_link = Function "steer_link" () () () () () () () () :: NetFunction
 
 -- | Dispatch the packet across the sockets
 -- with a randomized algorithm that maintains the integrity of
+-- | Dispatch the packet across the sockets
+-- with a randomized algorithm that maintains the coherence of
 -- vlan links.
 --
 -- > steer_vlan
 steer_vlan = Function "steer_vlan" () () () () () () () () :: NetFunction
 
 -- | Dispatch the packet across the sockets
--- with a randomized algorithm that maintains the integrity of
+-- with a randomized algorithm that maintains the coherence of
 -- IP flows.
 --
 -- > steer_ip
 steer_ip = Function "steer_ip" () () () () () () () () :: NetFunction
 
 -- | Dispatch the packet across the sockets
--- with a randomized algorithm that maintains the integrity of
+-- with a randomized algorithm that maintains the coherence of
 -- IPv6 flows.
 --
 -- > steer_ip6 >-> log_msg "Steering an IPv6 packet"
 steer_ip6 = Function "steer_ip6" () () () () () () () () :: NetFunction
 
 -- | Dispatch the packet across the sockets
--- with a randomized algorithm that maintains the integrity of
+-- with a randomized algorithm that maintains the coherence of
 -- TCP/UDP flows.
 --
 -- > steer_flow >-> log_msg "Steering a flow"
 steer_flow = Function "steer_flow" () () () () () () () () :: NetFunction
 
 -- | Dispatch the packet across the sockets
--- with a randomized algorithm that maintains the integrity of
+-- with a randomized algorithm that maintains the coherence of
 -- RTP/RTCP flows.
 --
 -- > steer_rtp
 steer_rtp = Function "steer_rtp" () () () () () () () () :: NetFunction
 
 -- | Dispatch the packet across the sockets
--- with a randomized algorithm that maintains the integrity of
+-- with a randomized algorithm that maintains the coherence of
 -- RTP/RTCP flows; SIP packets are broadcasted.
 --
 -- > steer_voip
 steer_voip = Function "steer_voip" () () () () () () () () :: NetFunction
 
 -- | Dispatch the packet across the sockets
--- with a randomized algorithm that maintains the integrity of
+-- with a randomized algorithm that maintains the coherence of
 -- sub networks.
 --
 -- > steer_net "192.168.0.0" 16 24
