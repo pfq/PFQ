@@ -131,6 +131,13 @@ unsigned clp2(unsigned int x)
  */
 
 static inline
+uint32_t prefold(uint32_t hash)
+{
+	return hash ^ (hash >> 8) ^ (hash >> 16) ^ (hash >> 24);
+}
+
+
+static inline
 unsigned int pfq_fold(unsigned int a, unsigned int b)
 {
 	unsigned int c;
@@ -319,7 +326,9 @@ pfq_receive_batch(struct pfq_percpu_data *data,
 				 * given group is modified, it is necessary to
 				 * invalidate the per-cpu sock->eligible_mask cache */
 
-				if (is_steering(monad.fanout)) { /* cache the number of sockets in the mask */
+				if (is_steering(monad.fanout)) { /* single or double */
+
+					/* cache the number of sockets in the mask */
 
 					if (eligible_mask != sock->eligible_mask) {
 						unsigned long ebit;
@@ -339,12 +348,14 @@ pfq_receive_batch(struct pfq_percpu_data *data,
 					}
 
 					if (likely(sock->cnt)) {
-						unsigned int hash = monad.fanout.hash;
-						unsigned int h = hash ^ (hash >> 8) ^ (hash >> 16) ^ (hash >> 24);
-						sock_mask |= sock->mask[pfq_fold(h, sock->cnt)];
+
+						sock_mask |= sock->mask[pfq_fold(prefold(monad.fanout.hash), sock->cnt)];
+
+						if (is_double_steering(monad.fanout))
+							sock_mask |= sock->mask[pfq_fold(prefold(monad.fanout.hash2), sock->cnt)];
 					}
 				}
-				else {  /* clone or continue ... */
+				else {  /* broadcast */
 
 					sock_mask |= eligible_mask;
 				}
