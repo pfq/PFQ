@@ -52,7 +52,7 @@
 #define EVAL_PROPERTY(f, skb)	((property_ptr_t )f.fun->run)(f.fun, skb)
 #define EVAL_PREDICATE(f,skb)	((predicate_ptr_t)f.fun->run)(f.fun, skb)
 
-#define GET_ARG_0(type,a) 	__builtin_choose_expr(sizeof(type) <= sizeof(uintptr_t), *(type *)&ARGS_TYPE(a)->arg[0].value, (void *)ARGS_TYPE(a)->arg[0].value)
+#define GET_ARG_0(type,a)	__builtin_choose_expr(sizeof(type) <= sizeof(uintptr_t), *(type *)&ARGS_TYPE(a)->arg[0].value, (void *)ARGS_TYPE(a)->arg[0].value)
 #define GET_ARG_1(type,a)	__builtin_choose_expr(sizeof(type) <= sizeof(uintptr_t), *(type *)&ARGS_TYPE(a)->arg[1].value, (void *)ARGS_TYPE(a)->arg[1].value)
 #define GET_ARG_2(type,a)	__builtin_choose_expr(sizeof(type) <= sizeof(uintptr_t), *(type *)&ARGS_TYPE(a)->arg[2].value, (void *)ARGS_TYPE(a)->arg[2].value)
 #define GET_ARG_3(type,a)	__builtin_choose_expr(sizeof(type) <= sizeof(uintptr_t), *(type *)&ARGS_TYPE(a)->arg[3].value, (void *)ARGS_TYPE(a)->arg[3].value)
@@ -72,7 +72,7 @@
 #define SET_ARG_7(a, v)		__builtin_choose_expr(sizeof(typeof(v)) <= sizeof(uintptr_t), *(typeof(v) *)(&ARGS_TYPE(a)->arg[7].value) = v, (void)0)
 #define SET_ARG(type,a)		SET_ARG_0(type,a)
 
-#define GET_ARRAY_0(type,a) 	((type *)ARGS_TYPE(a)->arg[0].value)
+#define GET_ARRAY_0(type,a)	((type *)ARGS_TYPE(a)->arg[0].value)
 #define GET_ARRAY_1(type,a)	((type *)ARGS_TYPE(a)->arg[1].value)
 #define GET_ARRAY_2(type,a)	((type *)ARGS_TYPE(a)->arg[2].value)
 #define GET_ARRAY_3(type,a)	((type *)ARGS_TYPE(a)->arg[3].value)
@@ -82,7 +82,7 @@
 #define GET_ARRAY_7(type,a)	((type *)ARGS_TYPE(a)->arg[7].value)
 #define GET_ARRAY(type, a)	GET_ARRAY_0(type,a)
 
-#define LEN_ARRAY_0(a) 		(ARGS_TYPE(a)->arg[0].nelem)
+#define LEN_ARRAY_0(a)		(ARGS_TYPE(a)->arg[0].nelem)
 #define LEN_ARRAY_1(a)		(ARGS_TYPE(a)->arg[1].nelem)
 #define LEN_ARRAY_2(a)		(ARGS_TYPE(a)->arg[2].nelem)
 #define LEN_ARRAY_3(a)		(ARGS_TYPE(a)->arg[3].nelem)
@@ -113,8 +113,8 @@ struct pfq_lang_functional_arg
 
 struct pfq_lang_functional
 {
-	void * run;				/* pointer to function */
-	struct pfq_lang_functional_arg arg[8];       /* arguments */
+	void * run;					/* pointer to function */
+	struct pfq_lang_functional_arg arg[8];		/* arguments */
 	struct pfq_lang_functional *next;		/* kleisli composition */
 };
 
