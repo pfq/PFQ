@@ -170,7 +170,8 @@ module Network.PFQ.Lang.Default
         steer_flow ,
         steer_net  ,
         steer_field,
-        steer_field2,
+        steer_field_double,
+        steer_field_symmetric,
         steer_rtp  ,
         steer_voip ,
 
@@ -569,11 +570,21 @@ steer_field offset size = Function "steer_field" offset size () () () () () ()
 -- with a randomized algorithm. The function uses as /hash/ the xor operation
 -- of the fields of /size/ bytes taken at /offset1/ and /offset2/ bytes from the
 -- beginning of the packet.
-steer_field2 :: CInt -- ^ offset1 from the beginning of the packet, in bytes
-             -> CInt -- ^ offset2 from the beginning of the packet, in bytes
-             -> CInt -- ^ sizeof field in bytes (max 4)
-             -> NetFunction
-steer_field2 offset1 offset2 size = Function "steer_field2" offset1 offset2 size () () () () ()
+steer_field_double :: CInt -- ^ offset1 from the beginning of the packet, in bytes
+                   -> CInt -- ^ offset2 from the beginning of the packet, in bytes
+                   -> CInt -- ^ sizeof field in bytes (max 4)
+                   -> NetFunction
+steer_field_double offset1 offset2 size = Function "steer_field_double" offset1 offset2 size () () () () ()
+
+-- | Dispatch the packet across the sockets
+-- with a randomized algorithm. The function uses as /hash/ the xor operation
+-- of the fields of /size/ bytes taken at /offset1/ and /offset2/ bytes from the
+-- beginning of the packet.
+steer_field_symmetric :: CInt -- ^ offset1 from the beginning of the packet, in bytes
+                      -> CInt -- ^ offset2 from the beginning of the packet, in bytes
+                      -> CInt -- ^ sizeof field in bytes (max 4)
+                      -> NetFunction
+steer_field_symmetric offset1 offset2 size = Function "steer_field_symmetric" offset1 offset2 size () () () () ()
 
 -- Predefined filters:
 
