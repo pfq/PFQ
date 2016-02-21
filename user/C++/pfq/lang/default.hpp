@@ -493,12 +493,22 @@ namespace pfq { namespace lang {
         //! Dispatch the packet across the sockets
         /*!
          * Dispatch with a randomized algorithm that maintains the coherence
-         * of IPv6 flows. Example:
+         * of both IPv6 addresses. Example:
          *
          * steer_ip6 >> log_msg("Steering an IPv6 packet")
          */
 
         auto steer_ip6  = function("steer_ip6");
+
+        //! Dispatch the packet across the sockets
+        /*!
+         * Dispatch with a randomized algorithm that maintains the coherence
+         * of IPv6 flows. Example:
+         *
+         * steer_p2p6 >> log_msg("Steering an IPv6 packet")
+         */
+
+        auto steer_p2p6  = function("steer_p2p6");
 
         //! Dispatch the packet across the sockets
         /*!
