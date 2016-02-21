@@ -65,7 +65,7 @@ steering_field(arguments_t args, SkBuff skb)
 {
 	uint32_t offset = GET_ARG_0(uint32_t, args);
 	uint32_t size   = GET_ARG_1(uint32_t, args);
-	uint32_t data;
+	uint32_t *data, data_;
 
 	if (size > 4) {
 		if (printk_ratelimit())
@@ -73,10 +73,10 @@ steering_field(arguments_t args, SkBuff skb)
 		return Drop(skb);
 	}
 
-	if (!skb_header_pointer(PFQ_SKB(skb), offset, size, &data))
+	if (!(data = skb_header_pointer(PFQ_SKB(skb), offset, size, &data_)))
 		return Drop(skb);
 
-	return Steering(skb, data);
+	return Steering(skb, *data);
 }
 
 
