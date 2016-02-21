@@ -340,10 +340,7 @@ pfq_receive_batch(struct pfq_percpu_data *data,
 
 					if (likely(sock->cnt)) {
 						unsigned int hash = monad.fanout.hash;
-						unsigned int h = hash ^
-								(hash >> 8) ^
-								(hash >> 16);
-
+						unsigned int h = hash ^ (hash >> 8) ^ (hash >> 16) ^ (hash >> 24);
 						sock_mask |= sock->mask[pfq_fold(h, sock->cnt)];
 					}
 				}
