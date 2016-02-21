@@ -489,7 +489,8 @@ steer_link = Function "steer_link" () () () () () () () () :: NetFunction
 
 -- | Dispatch the packet across the sockets
 -- with a randomized algorithm that maintains the coherence of both
--- mac addresses.
+-- mac addresses. This alter the total volume of traffic, as the
+-- packets can be steered to at most two sockets.
 --
 -- > steer_mac
 steer_mac = Function "steer_mac" () () () () () () () () :: NetFunction
@@ -511,6 +512,7 @@ steer_p2p = Function "steer_p2p" () () () () () () () () :: NetFunction
 -- | Dispatch the packet across the sockets
 -- with a randomized algorithm that maintains the coherence of both
 -- IP addresses.
+-- This alter the total volume of traffic (see /steer_mac/).
 --
 -- > steer_ip
 steer_ip = Function "steer_ip" () () () () () () () () :: NetFunction
@@ -518,6 +520,7 @@ steer_ip = Function "steer_ip" () () () () () () () () :: NetFunction
 -- | Dispatch the packet across the sockets
 -- with a randomized algorithm that maintains the coherence of
 -- both IPv6 addresses.
+-- This alter the total volume of traffic (see /steer_mac/).
 --
 -- > steer_ip6 >-> log_msg "Steering an IPv6 packet"
 steer_ip6 = Function "steer_ip6" () () () () () () () () :: NetFunction
@@ -570,6 +573,7 @@ steer_field offset size = Function "steer_field" offset size () () () () () ()
 -- with a randomized algorithm. The function uses as /hash/ the xor operation
 -- of the fields of /size/ bytes taken at /offset1/ and /offset2/ bytes from the
 -- beginning of the packet.
+-- This alter the total volume of traffic (see /steer_mac/).
 steer_field_double :: CInt -- ^ offset1 from the beginning of the packet, in bytes
                    -> CInt -- ^ offset2 from the beginning of the packet, in bytes
                    -> CInt -- ^ sizeof field in bytes (max 4)
