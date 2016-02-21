@@ -1,0 +1,146 @@
+\hypertarget{structpfq_1_1net__queue_1_1iterator}{}\section{pfq\+:\+:net\+\_\+queue\+:\+:iterator Struct Reference}
+\label{structpfq_1_1net__queue_1_1iterator}\index{pfq\+::net\+\_\+queue\+::iterator@{pfq\+::net\+\_\+queue\+::iterator}}
+
+
+Forward iterator over packets.  
+
+
+
+
+{\ttfamily \#include $<$queue.\+hpp$>$}
+
+Inheritance diagram for pfq\+:\+:net\+\_\+queue\+:\+:iterator\+:\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[height=2.000000cm]{structpfq_1_1net__queue_1_1iterator}
+\end{center}
+\end{figure}
+\subsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\hyperlink{structpfq_1_1net__queue_1_1iterator_a32b5b8db4f59df4c074e0aafe98c79a5}{iterator} (pfq\+\_\+pkthdr $\ast$h, size\+\_\+t \hyperlink{classpfq_1_1net__queue_a9f745871293123f417a492aa861c13cc}{slot\+\_\+size}, size\+\_\+t \hyperlink{classpfq_1_1net__queue_ab33bdebd885e677a3e079c0193624e52}{index})
+\item 
+\hyperlink{structpfq_1_1net__queue_1_1iterator_a796f1d97807c57026713f2664bf992bc}{$\sim$iterator} ()=default
+\item 
+\hyperlink{structpfq_1_1net__queue_1_1iterator_a49a7278fa0b900830b46675c1365d370}{iterator} (const \hyperlink{structpfq_1_1net__queue_1_1iterator}{iterator} \&other)
+\item 
+\hyperlink{structpfq_1_1net__queue_1_1iterator}{iterator} \& \hyperlink{structpfq_1_1net__queue_1_1iterator_a4e7bf9ea9183af5efd3ade9a50e3350c}{operator++} ()
+\item 
+\hyperlink{structpfq_1_1net__queue_1_1iterator}{iterator} \hyperlink{structpfq_1_1net__queue_1_1iterator_ad108401f7fd2b6df0fa885ab651cc2fa}{operator++} (int)
+\item 
+pfq\+\_\+pkthdr $\ast$ \hyperlink{structpfq_1_1net__queue_1_1iterator_ae8bef3a6b332d22fff606e4aeaa6a1d0}{operator-\/$>$} () const 
+\item 
+pfq\+\_\+pkthdr \& \hyperlink{structpfq_1_1net__queue_1_1iterator_a8ba14cea90784881ea3b31fe0ef33c3c}{operator$\ast$} () const 
+\item 
+void $\ast$ \hyperlink{structpfq_1_1net__queue_1_1iterator_aa7f321b403fbd77d168478475ae5bd3c}{data} () const 
+\item 
+bool \hyperlink{structpfq_1_1net__queue_1_1iterator_a878ca2b92a0e25589a8b986c18ff7885}{ready} () const 
+\item 
+bool \hyperlink{structpfq_1_1net__queue_1_1iterator_a16c662d3c3dc43b6354b78a308376826}{operator==} (const \hyperlink{structpfq_1_1net__queue_1_1iterator}{iterator} \&other) const 
+\item 
+bool \hyperlink{structpfq_1_1net__queue_1_1iterator_a789cabd61a87acc677d2f565d0c043f4}{operator!=} (const \hyperlink{structpfq_1_1net__queue_1_1iterator}{iterator} \&other) const 
+\end{DoxyCompactItemize}
+\subsection*{Friends}
+\begin{DoxyCompactItemize}
+\item 
+struct \hyperlink{structpfq_1_1net__queue_1_1iterator_a0fa1c59b5fb1d453f45032bc7a6ea3b0}{net\+\_\+queue\+::const\+\_\+iterator}
+\end{DoxyCompactItemize}
+
+
+\subsection{Detailed Description}
+Forward iterator over packets. 
+
+\subsection{Constructor \& Destructor Documentation}
+\index{pfq\+::net\+\_\+queue\+::iterator@{pfq\+::net\+\_\+queue\+::iterator}!iterator@{iterator}}
+\index{iterator@{iterator}!pfq\+::net\+\_\+queue\+::iterator@{pfq\+::net\+\_\+queue\+::iterator}}
+\subsubsection[{\texorpdfstring{iterator(pfq\+\_\+pkthdr $\ast$h, size\+\_\+t slot\+\_\+size, size\+\_\+t index)}{iterator(pfq_pkthdr *h, size_t slot_size, size_t index)}}]{\setlength{\rightskip}{0pt plus 5cm}pfq\+::net\+\_\+queue\+::iterator\+::iterator (
+\begin{DoxyParamCaption}
+\item[{pfq\+\_\+pkthdr $\ast$}]{h, }
+\item[{size\+\_\+t}]{slot\+\_\+size, }
+\item[{size\+\_\+t}]{index}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}}\hypertarget{structpfq_1_1net__queue_1_1iterator_a32b5b8db4f59df4c074e0aafe98c79a5}{}\label{structpfq_1_1net__queue_1_1iterator_a32b5b8db4f59df4c074e0aafe98c79a5}
+\index{pfq\+::net\+\_\+queue\+::iterator@{pfq\+::net\+\_\+queue\+::iterator}!````~iterator@{$\sim$iterator}}
+\index{````~iterator@{$\sim$iterator}!pfq\+::net\+\_\+queue\+::iterator@{pfq\+::net\+\_\+queue\+::iterator}}
+\subsubsection[{\texorpdfstring{$\sim$iterator()=default}{~iterator()=default}}]{\setlength{\rightskip}{0pt plus 5cm}pfq\+::net\+\_\+queue\+::iterator\+::$\sim$iterator (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [default]}}\hypertarget{structpfq_1_1net__queue_1_1iterator_a796f1d97807c57026713f2664bf992bc}{}\label{structpfq_1_1net__queue_1_1iterator_a796f1d97807c57026713f2664bf992bc}
+\index{pfq\+::net\+\_\+queue\+::iterator@{pfq\+::net\+\_\+queue\+::iterator}!iterator@{iterator}}
+\index{iterator@{iterator}!pfq\+::net\+\_\+queue\+::iterator@{pfq\+::net\+\_\+queue\+::iterator}}
+\subsubsection[{\texorpdfstring{iterator(const iterator \&other)}{iterator(const iterator &other)}}]{\setlength{\rightskip}{0pt plus 5cm}pfq\+::net\+\_\+queue\+::iterator\+::iterator (
+\begin{DoxyParamCaption}
+\item[{const {\bf iterator} \&}]{other}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}}\hypertarget{structpfq_1_1net__queue_1_1iterator_a49a7278fa0b900830b46675c1365d370}{}\label{structpfq_1_1net__queue_1_1iterator_a49a7278fa0b900830b46675c1365d370}
+
+
+\subsection{Member Function Documentation}
+\index{pfq\+::net\+\_\+queue\+::iterator@{pfq\+::net\+\_\+queue\+::iterator}!data@{data}}
+\index{data@{data}!pfq\+::net\+\_\+queue\+::iterator@{pfq\+::net\+\_\+queue\+::iterator}}
+\subsubsection[{\texorpdfstring{data() const }{data() const }}]{\setlength{\rightskip}{0pt plus 5cm}void$\ast$ pfq\+::net\+\_\+queue\+::iterator\+::data (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+) const\hspace{0.3cm}{\ttfamily [inline]}}\hypertarget{structpfq_1_1net__queue_1_1iterator_aa7f321b403fbd77d168478475ae5bd3c}{}\label{structpfq_1_1net__queue_1_1iterator_aa7f321b403fbd77d168478475ae5bd3c}
+\index{pfq\+::net\+\_\+queue\+::iterator@{pfq\+::net\+\_\+queue\+::iterator}!operator"!=@{operator"!=}}
+\index{operator"!=@{operator"!=}!pfq\+::net\+\_\+queue\+::iterator@{pfq\+::net\+\_\+queue\+::iterator}}
+\subsubsection[{\texorpdfstring{operator"!=(const iterator \&other) const }{operator!=(const iterator &other) const }}]{\setlength{\rightskip}{0pt plus 5cm}bool pfq\+::net\+\_\+queue\+::iterator\+::operator!= (
+\begin{DoxyParamCaption}
+\item[{const {\bf iterator} \&}]{other}
+\end{DoxyParamCaption}
+) const\hspace{0.3cm}{\ttfamily [inline]}}\hypertarget{structpfq_1_1net__queue_1_1iterator_a789cabd61a87acc677d2f565d0c043f4}{}\label{structpfq_1_1net__queue_1_1iterator_a789cabd61a87acc677d2f565d0c043f4}
+\index{pfq\+::net\+\_\+queue\+::iterator@{pfq\+::net\+\_\+queue\+::iterator}!operator$\ast$@{operator$\ast$}}
+\index{operator$\ast$@{operator$\ast$}!pfq\+::net\+\_\+queue\+::iterator@{pfq\+::net\+\_\+queue\+::iterator}}
+\subsubsection[{\texorpdfstring{operator$\ast$() const }{operator*() const }}]{\setlength{\rightskip}{0pt plus 5cm}pfq\+\_\+pkthdr\& pfq\+::net\+\_\+queue\+::iterator\+::operator$\ast$ (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+) const\hspace{0.3cm}{\ttfamily [inline]}}\hypertarget{structpfq_1_1net__queue_1_1iterator_a8ba14cea90784881ea3b31fe0ef33c3c}{}\label{structpfq_1_1net__queue_1_1iterator_a8ba14cea90784881ea3b31fe0ef33c3c}
+\index{pfq\+::net\+\_\+queue\+::iterator@{pfq\+::net\+\_\+queue\+::iterator}!operator++@{operator++}}
+\index{operator++@{operator++}!pfq\+::net\+\_\+queue\+::iterator@{pfq\+::net\+\_\+queue\+::iterator}}
+\subsubsection[{\texorpdfstring{operator++()}{operator++()}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf iterator}\& pfq\+::net\+\_\+queue\+::iterator\+::operator++ (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}}\hypertarget{structpfq_1_1net__queue_1_1iterator_a4e7bf9ea9183af5efd3ade9a50e3350c}{}\label{structpfq_1_1net__queue_1_1iterator_a4e7bf9ea9183af5efd3ade9a50e3350c}
+\index{pfq\+::net\+\_\+queue\+::iterator@{pfq\+::net\+\_\+queue\+::iterator}!operator++@{operator++}}
+\index{operator++@{operator++}!pfq\+::net\+\_\+queue\+::iterator@{pfq\+::net\+\_\+queue\+::iterator}}
+\subsubsection[{\texorpdfstring{operator++(int)}{operator++(int)}}]{\setlength{\rightskip}{0pt plus 5cm}{\bf iterator} pfq\+::net\+\_\+queue\+::iterator\+::operator++ (
+\begin{DoxyParamCaption}
+\item[{int}]{}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}}\hypertarget{structpfq_1_1net__queue_1_1iterator_ad108401f7fd2b6df0fa885ab651cc2fa}{}\label{structpfq_1_1net__queue_1_1iterator_ad108401f7fd2b6df0fa885ab651cc2fa}
+\index{pfq\+::net\+\_\+queue\+::iterator@{pfq\+::net\+\_\+queue\+::iterator}!operator-\/$>$@{operator-\/$>$}}
+\index{operator-\/$>$@{operator-\/$>$}!pfq\+::net\+\_\+queue\+::iterator@{pfq\+::net\+\_\+queue\+::iterator}}
+\subsubsection[{\texorpdfstring{operator-\/$>$() const }{operator->() const }}]{\setlength{\rightskip}{0pt plus 5cm}pfq\+\_\+pkthdr$\ast$ pfq\+::net\+\_\+queue\+::iterator\+::operator-\/$>$ (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+) const\hspace{0.3cm}{\ttfamily [inline]}}\hypertarget{structpfq_1_1net__queue_1_1iterator_ae8bef3a6b332d22fff606e4aeaa6a1d0}{}\label{structpfq_1_1net__queue_1_1iterator_ae8bef3a6b332d22fff606e4aeaa6a1d0}
+\index{pfq\+::net\+\_\+queue\+::iterator@{pfq\+::net\+\_\+queue\+::iterator}!operator==@{operator==}}
+\index{operator==@{operator==}!pfq\+::net\+\_\+queue\+::iterator@{pfq\+::net\+\_\+queue\+::iterator}}
+\subsubsection[{\texorpdfstring{operator==(const iterator \&other) const }{operator==(const iterator &other) const }}]{\setlength{\rightskip}{0pt plus 5cm}bool pfq\+::net\+\_\+queue\+::iterator\+::operator== (
+\begin{DoxyParamCaption}
+\item[{const {\bf iterator} \&}]{other}
+\end{DoxyParamCaption}
+) const\hspace{0.3cm}{\ttfamily [inline]}}\hypertarget{structpfq_1_1net__queue_1_1iterator_a16c662d3c3dc43b6354b78a308376826}{}\label{structpfq_1_1net__queue_1_1iterator_a16c662d3c3dc43b6354b78a308376826}
+\index{pfq\+::net\+\_\+queue\+::iterator@{pfq\+::net\+\_\+queue\+::iterator}!ready@{ready}}
+\index{ready@{ready}!pfq\+::net\+\_\+queue\+::iterator@{pfq\+::net\+\_\+queue\+::iterator}}
+\subsubsection[{\texorpdfstring{ready() const }{ready() const }}]{\setlength{\rightskip}{0pt plus 5cm}bool pfq\+::net\+\_\+queue\+::iterator\+::ready (
+\begin{DoxyParamCaption}
+{}
+\end{DoxyParamCaption}
+) const\hspace{0.3cm}{\ttfamily [inline]}}\hypertarget{structpfq_1_1net__queue_1_1iterator_a878ca2b92a0e25589a8b986c18ff7885}{}\label{structpfq_1_1net__queue_1_1iterator_a878ca2b92a0e25589a8b986c18ff7885}
+
+
+\subsection{Friends And Related Function Documentation}
+\index{pfq\+::net\+\_\+queue\+::iterator@{pfq\+::net\+\_\+queue\+::iterator}!net\+\_\+queue\+::const\+\_\+iterator@{net\+\_\+queue\+::const\+\_\+iterator}}
+\index{net\+\_\+queue\+::const\+\_\+iterator@{net\+\_\+queue\+::const\+\_\+iterator}!pfq\+::net\+\_\+queue\+::iterator@{pfq\+::net\+\_\+queue\+::iterator}}
+\subsubsection[{\texorpdfstring{net\+\_\+queue\+::const\+\_\+iterator}{net_queue::const_iterator}}]{\setlength{\rightskip}{0pt plus 5cm}friend struct {\bf net\+\_\+queue\+::const\+\_\+iterator}\hspace{0.3cm}{\ttfamily [friend]}}\hypertarget{structpfq_1_1net__queue_1_1iterator_a0fa1c59b5fb1d453f45032bc7a6ea3b0}{}\label{structpfq_1_1net__queue_1_1iterator_a0fa1c59b5fb1d453f45032bc7a6ea3b0}
+
+
+The documentation for this struct was generated from the following file\+:\begin{DoxyCompactItemize}
+\item 
+C++/pfq/\hyperlink{queue_8hpp}{queue.\+hpp}\end{DoxyCompactItemize}
