@@ -166,6 +166,7 @@ module Network.PFQ.Lang.Default
         steer_p2p  ,
         steer_ip   ,
         steer_ip6  ,
+        steer_p2p6 ,
         steer_flow ,
         steer_net  ,
         steer_field,
@@ -515,10 +516,17 @@ steer_ip = Function "steer_ip" () () () () () () () () :: NetFunction
 
 -- | Dispatch the packet across the sockets
 -- with a randomized algorithm that maintains the coherence of
--- IPv6 flows.
+-- both IPv6 addresses.
 --
 -- > steer_ip6 >-> log_msg "Steering an IPv6 packet"
 steer_ip6 = Function "steer_ip6" () () () () () () () () :: NetFunction
+
+-- | Dispatch the packet across the sockets
+-- with a randomized algorithm that maintains the coherence of
+-- IPv6 flows.
+--
+-- > steer_p2p6 >-> log_msg "Steering an IPv6 packet"
+steer_p2p6 = Function "steer_p2p6" () () () () () () () () :: NetFunction
 
 -- | Dispatch the packet across the sockets
 -- with a randomized algorithm that maintains the coherence of
