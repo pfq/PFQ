@@ -137,7 +137,7 @@ steering_ip(arguments_t args, SkBuff skb)
 
 		hash = ip->saddr ^ ip->daddr;
 
-		return Steering(skb, *(uint32_t *)&hash);
+		return Steering(skb, (__force uint32_t)hash);
 	}
 
 	return Drop(skb);
@@ -182,10 +182,10 @@ steering_net(arguments_t args, SkBuff skb)
 			return Drop(skb);
 
 		if ((ip->saddr & mask) == addr)
-			return Steering(skb, ip->saddr & submask);
+			return Steering(skb, (__force uint32_t)(ip->saddr & submask));
 
 		if ((ip->daddr & mask) == addr)
-			return Steering(skb, ip->daddr & submask);
+			return Steering(skb, (__force uint32_t)(ip->daddr & submask));
 	}
 
 	return Drop(skb);
@@ -218,7 +218,7 @@ steering_flow(arguments_t args, SkBuff skb)
 
 		hash = ip->saddr ^ ip->daddr ^ (__force __be32)udp->source ^ (__force __be32)udp->dest;
 
-		return Steering(skb, *(uint32_t *)&hash);
+		return Steering(skb, (__force uint32_t)hash);
 	}
 
 	return Drop(skb);
@@ -247,7 +247,7 @@ steering_ip6(arguments_t args, SkBuff skb)
 			ip6->daddr.in6_u.u6_addr32[2] ^
 			ip6->daddr.in6_u.u6_addr32[3];
 
-		return Steering(skb, *(uint32_t *)&hash);
+		return Steering(skb, (__force uint32_t)hash);
 	}
 
 	return Drop(skb);
