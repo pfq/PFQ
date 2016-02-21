@@ -575,14 +575,26 @@ namespace pfq { namespace lang {
 
         //! Dispatch the packet across the sockets
         /*!
+         * Dispatch with a randomized algorithm. The function uses as hashes
+         * the fields of /size/ bytes (max 4) taken at /offset1/ and /offset2/ bytes from the
+         * beginning of the packet.
+         *
+         */
+
+        auto steer_field_double = [] (int offset1, int offset2, int bytes) {
+                                return function("steer_field_double", offset1, offset2, bytes);
+                           };
+
+        //! Dispatch the packet across the sockets
+        /*!
          * Dispatch with a randomized algorithm. The function uses as /hash/ the xor operation of
          * the fields of /size/ bytes (max 4) taken at /offset1/ and /offset2/ bytes from the
          * beginning of the packet.
          *
          */
 
-        auto steer_field2 = [] (int offset1, int offset2, int bytes) {
-                                return function("steer_field2", offset1, offset2, bytes);
+        auto steer_field_symmetric = [] (int offset1, int offset2, int bytes) {
+                                return function("steer_field_symmetric", offset1, offset2, bytes);
                            };
 
         //
