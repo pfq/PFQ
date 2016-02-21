@@ -450,6 +450,16 @@ namespace pfq { namespace lang {
 
         auto steer_link = function("steer_link");
 
+        //! Dispatch the packet across the sockets.
+        /*!
+         * Dispatch with a randomized algorithm that maintains the coherence
+         * of mac address. Example:
+         *
+         * steer_mac
+         */
+
+        auto steer_mac = function("steer_mac");
+
         //! Dispatch the packet across the sockets
         /*!
          * Dispatch with a randomized algorithm that maintains the coherence
