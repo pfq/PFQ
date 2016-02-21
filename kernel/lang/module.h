@@ -203,8 +203,22 @@ is_copy(fanout_t a)
 static inline bool
 is_steering(fanout_t a)
 {
+	return a.type == fanout_steer ||
+	       a.type == fanout_double;
+}
+
+static inline bool
+is_single_steering(fanout_t a)
+{
 	return a.type == fanout_steer;
 }
+
+static inline bool
+is_double_steering(fanout_t a)
+{
+	return a.type == fanout_double;
+}
+
 
 static inline
 bool fwd_to_kernel(struct sk_buff *skb)
