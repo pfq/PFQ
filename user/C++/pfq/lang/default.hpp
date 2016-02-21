@@ -473,12 +473,22 @@ namespace pfq { namespace lang {
         //! Dispatch the packet across the sockets
         /*!
          * Dispatch with a randomized algorithm that maintains the coherence
-         * of IP flows. Example:
+         * of both IP addresses. Example:
          *
          * steer_ip
          */
 
         auto steer_ip   = function("steer_ip");
+
+        //! Dispatch the packet across the sockets
+        /*!
+         * Dispatch with a randomized algorithm that maintains the coherence
+         * of IP flows. Example:
+         *
+         * ip >-> steer_p2p
+         */
+
+        auto steer_p2p = function("steer_p2p");
 
         //! Dispatch the packet across the sockets
         /*!
