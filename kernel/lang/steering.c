@@ -108,7 +108,13 @@ steering_link(arguments_t args, SkBuff skb)
 {
 	uint16_t * w;
 	w = (uint16_t *)eth_hdr(PFQ_SKB(skb));
-	return Steering(skb, w[0] ^ w[1] ^ w[2] ^ w[3] ^ w[4] ^ w[5]); // 6 * sizeof(uint16_t) = 12 bytes.
+
+	if ((w[0] & w[1] & w[2]) == 0xffff ||
+	    (w[3] & w[4] & w[5]) == 0xffff)
+		return Broadcast(skb);
+
+	return Steering(skb, w[0] ^ w[1] ^ w[2] ^ w[3] ^ w[4] ^ w[5]);
+}
 }
 
 
