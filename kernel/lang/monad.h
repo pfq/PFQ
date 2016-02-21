@@ -47,9 +47,10 @@ MakeAction(SkBuff, skb);
 
 enum fanout
 {
-        fanout_drop  = 0,
-        fanout_copy  = 1,
-        fanout_steer = 2
+        fanout_drop   = 0,
+        fanout_copy   = 1,
+        fanout_steer  = 2,
+        fanout_double = 3
 };
 
 
@@ -57,6 +58,7 @@ typedef struct
 {
         unsigned long	class_mask;
         uint32_t	hash;
+        uint32_t	hash2;
         uint8_t		type;
 
 } fanout_t;
@@ -117,6 +119,16 @@ Steering(SkBuff skb, uint32_t hash)
         return (ActionSkBuff){skb};
 }
 
+static inline
+ActionSkBuff
+DoubleSteering(SkBuff skb, uint32_t h1, uint32_t h2)
+{
+        fanout_t * a = &PFQ_CB(skb)->monad->fanout;
+        a->type  = fanout_double;
+        a->hash  = h1;
+        a->hash2 = h2;
+        return (ActionSkBuff){skb};
+}
 
 /* utility functions */
 
