@@ -137,6 +137,14 @@ PFQ 6.0
  * API extended with setGroupComputationFromString,
    setGroupComputationFromJSON...
  * Experimental qlang compiler.
+ * Pfq-lang: new steering functions added.
+    * `steer_rrobin`
+    * `steer_rss`
+    * `steer_mac`
+    * `steer_p2p`
+    * `steer_p2p6`
+    * `steer_field_double`
+    * `steer_field_symmetric`
  * Regressions and bugs fixes.
  * General improvements.
 
