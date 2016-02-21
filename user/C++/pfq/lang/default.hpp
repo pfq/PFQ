@@ -442,17 +442,17 @@ namespace pfq { namespace lang {
 
         //! Dispatch the packet across the sockets.
         /*!
-         * Dispatch with a randomized algorithm that maintains the integrity
+         * Dispatch with a randomized algorithm that maintains the coherence
          * of physical links. Example:
          *
-         * ip >> steer_link
+         * steer_link
          */
 
         auto steer_link = function("steer_link");
 
         //! Dispatch the packet across the sockets
         /*!
-         * Dispatch with a randomized algorithm that maintains the integrity
+         * Dispatch with a randomized algorithm that maintains the coherence
          * of vlan links. Example:
          *
          * steer_vlan
@@ -462,7 +462,7 @@ namespace pfq { namespace lang {
 
         //! Dispatch the packet across the sockets
         /*!
-         * Dispatch with a randomized algorithm that maintains the integrity
+         * Dispatch with a randomized algorithm that maintains the coherence
          * of IP flows. Example:
          *
          * steer_ip
@@ -472,7 +472,7 @@ namespace pfq { namespace lang {
 
         //! Dispatch the packet across the sockets
         /*!
-         * Dispatch with a randomized algorithm that maintains the integrity
+         * Dispatch with a randomized algorithm that maintains the coherence
          * of IPv6 flows. Example:
          *
          * steer_ip6 >> log_msg("Steering an IPv6 packet")
@@ -482,7 +482,7 @@ namespace pfq { namespace lang {
 
         //! Dispatch the packet across the sockets
         /*!
-         * Dispatch with a randomized algorithm that maintains the integrity
+         * Dispatch with a randomized algorithm that maintains the coherence
          * of TCP/UDP flows. Example:
          *
          * steer_flow >> log_msg ("Steering a flow")
@@ -492,7 +492,7 @@ namespace pfq { namespace lang {
 
         //! Dispatch the packet across the sockets
         /*!
-         * Dispatch with a randomized algorithm that maintains the integrity
+         * Dispatch with a randomized algorithm that maintains the coherence
          * of RTP/RTCP flows. Example:
          *
          * steer_rtp
@@ -502,7 +502,7 @@ namespace pfq { namespace lang {
 
         //! Dispatch the packet across the sockets
         /*!
-         * Dispatch with a randomized algorithm that maintains the integrity
+         * Dispatch with a randomized algorithm that maintains the coherence
          * of RTP/RTCP flows; SIP packets are boradcasted Example:
          *
          * steer_voip
@@ -512,7 +512,7 @@ namespace pfq { namespace lang {
 
         //! Dispatch the packet across the sockets
         /*!
-         * Dispatch with a randomized algorithm that maintains the integrity
+         * Dispatch with a randomized algorithm that maintains the coherence
          * of sub networks. Example:
          *
          * steer_net("192.168.0.0", 16, 24)
