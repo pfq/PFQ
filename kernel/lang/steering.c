@@ -177,6 +177,10 @@ steering_p2p(arguments_t args, SkBuff skb)
 		if (ip == NULL)
 			return Drop(skb);
 
+		if (ip->saddr == (__force __be32)0xffffffff ||
+		    ip->daddr == (__force __be32)0xffffffff)
+			return Broadcast(skb);
+
 		return Steering(skb, (__force uint32_t)(ip->saddr ^ ip->daddr));
 	}
 
@@ -195,6 +199,10 @@ steering_ip(arguments_t args, SkBuff skb)
 		ip = skb_header_pointer(PFQ_SKB(skb), skb->mac_len, sizeof(_iph), &_iph);
 		if (ip == NULL)
 			return Drop(skb);
+
+		if (ip->saddr == (__force __be32)0xffffffff ||
+		    ip->daddr == (__force __be32)0xffffffff)
+			return Broadcast(skb);
 
 		return DoubleSteering(skb, (__force uint32_t)ip->saddr,
 					   (__force uint32_t)ip->daddr);
@@ -239,6 +247,10 @@ steering_net(arguments_t args, SkBuff skb)
 		ip = skb_header_pointer(PFQ_SKB(skb), skb->mac_len, sizeof(_iph), &_iph);
 		if (ip == NULL)
 			return Drop(skb);
+
+		if (ip->saddr == (__force __be32)0xffffffff ||
+		    ip->daddr == (__force __be32)0xffffffff)
+			return Broadcast(skb);
 
 		if ((ip->saddr & mask) == addr)
 			return Steering(skb, (__force uint32_t)(ip->saddr & submask));
