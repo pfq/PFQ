@@ -362,55 +362,55 @@ namespace pfq { namespace lang {
 
         auto get_mark   = property("get_mark");
 
-        //! Evaluate to the /tos/ field of the IP header.
+        //! Evaluate to the \c tos field of the IP header.
 
         auto ip_tos     = property("ip_tos");
 
-        //! Evaluate to the /tot_len/ field of the IP header.
+        //! Evaluate to the \c tot_len field of the IP header.
 
         auto ip_tot_len = property("ip_tot_len");
 
-        //! Evaluate to the /ip_id/ field of the IP header.
+        //! Evaluate to the \c ip_id field of the IP header.
 
         auto ip_id      = property("ip_id");
 
-        //! Evaluate to the /frag/ field of the IP header.
+        //! Evaluate to the \c frag field of the IP header.
 
         auto ip_frag    = property("ip_frag");
 
-        //! Evaluate to the /TTL/ field of the IP header.
+        //! Evaluate to the \c TTL field of the IP header.
 
         auto ip_ttl     = property("ip_ttl");
 
-        //! Evaluate to the /source port/ of the TCP header.
+        //! Evaluate to the \c source_port of the TCP header.
 
         auto tcp_source = property("tcp_source");
 
-        //! Evaluate to the /destination port/ of the TCP header.
+        //! Evaluate to the \c destination_port of the TCP header.
 
         auto tcp_dest   = property("tcp_dest");
 
-        //! Evaluate to the /length/ field of the TCP header.
+        //! Evaluate to the \c length field of the TCP header.
 
         auto tcp_hdrlen = property("tcp_hdrlen");
 
-        //! Evaluate to the /source port/ of the UDP header.
+        //! Evaluate to the \c source_port of the UDP header.
 
         auto udp_source = property("udp_source");
 
-        //! Evaluate to the /destination port/ of the UDP header.
+        //! Evaluate to the \c destination_port of the UDP header.
 
         auto udp_dest   = property("udp_dest");
 
-        //! Evaluate to the /length/ field of the UDP header.
+        //! Evaluate to the \c length field of the UDP header.
 
         auto udp_len    = property("udp_len");
 
-        //! Evaluate to the /type/ field of the ICMP header.
+        //! Evaluate to the \c type field of the ICMP header.
 
         auto icmp_type  = property("icmp_type");
 
-        //! Evaluate to the /code/ field of the ICMP header.
+        //! Evaluate to the \c code field of the ICMP header.
 
         auto icmp_code  = property("icmp_code");
 
@@ -567,8 +567,8 @@ namespace pfq { namespace lang {
 
         //! Dispatch the packet across the sockets
         /*!
-         * Dispatch with a randomized algorithm. The function uses as /hash/ the field
-         * of /size/ bytes (max 4) taken at /offset/ bytes from the beginning of the packet.
+         * Dispatch with a randomized algorithm. The function uses as \c hash the field
+         * of \c size bytes (max 4) taken at \c offset bytes from the beginning of the packet.
          *
          */
 
@@ -579,7 +579,7 @@ namespace pfq { namespace lang {
         //! Dispatch the packet across the sockets
         /*!
          * Dispatch with a randomized algorithm. The function uses as hashes
-         * the fields of /size/ bytes (max 4) taken at /offset1/ and /offset2/ bytes from the
+         * the fields of \c size bytes (max 4) taken at \c offset1 and \c offset2 bytes from the
          * beginning of the packet.
          * This alter the total volume of traffic (\see steer_mac).
          */
@@ -590,10 +590,9 @@ namespace pfq { namespace lang {
 
         //! Dispatch the packet across the sockets
         /*!
-         * Dispatch with a randomized algorithm. The function uses as /hash/ the xor operation of
-         * the fields of /size/ bytes (max 4) taken at /offset1/ and /offset2/ bytes from the
+         * Dispatch with a randomized algorithm. The function uses as \c hash the xor operation of
+         * the fields of \c size bytes (max 4) taken at \c offset1 and \c offset2 bytes from the
          * beginning of the packet.
-         *
          */
 
         auto steer_field_symmetric = [] (int offset1, int offset2, int bytes) {
@@ -1082,7 +1081,7 @@ namespace pfq { namespace lang {
         constexpr int bloomK = 4;
 
         //! Bloom filter: utility function that computes the optimal /M/, given the parameter /N/ and
-        // the false-positive probability /p/.
+        // the false-positive probability \c p.
 
         inline int bloom_calc_m(int n, double p)
         {
@@ -1090,7 +1089,7 @@ namespace pfq { namespace lang {
         }
 
         //! Bloom filter: utility function that computes the optimal /N/, given the parameter /M/ and
-        // the false-positive probability /p/.
+        // the false-positive probability \c p.
 
         inline int bloom_calc_n(int m, double p)
         {
