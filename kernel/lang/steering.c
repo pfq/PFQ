@@ -115,6 +115,20 @@ steering_link(arguments_t args, SkBuff skb)
 
 	return Steering(skb, w[0] ^ w[1] ^ w[2] ^ w[3] ^ w[4] ^ w[5]);
 }
+
+
+static ActionSkBuff
+steering_mac(arguments_t args, SkBuff skb)
+{
+	uint16_t * w;
+	w = (uint16_t *)eth_hdr(PFQ_SKB(skb));
+
+	if ((w[0] & w[1] & w[2]) == 0xffff ||
+	    (w[3] & w[4] & w[5]) == 0xffff)
+		return Broadcast(skb);
+
+	return DoubleSteering(skb, w[0] ^ w[1] ^ w[2],
+				   w[3] ^ w[4] ^ w[5]);
 }
 
 
@@ -265,6 +279,7 @@ struct pfq_lang_function_descr steering_functions[] = {
 	{ "steer_rrobin","SkBuff -> Action SkBuff", steering_rrobin  },
 	{ "steer_rss",   "SkBuff -> Action SkBuff", steering_rss     },
 	{ "steer_link",  "SkBuff -> Action SkBuff", steering_link    },
+	{ "steer_mac",   "SkBuff -> Action SkBuff", steering_mac     },
 	{ "steer_vlan",  "SkBuff -> Action SkBuff", steering_vlan_id },
 	{ "steer_ip",    "SkBuff -> Action SkBuff", steering_ip      },
 	{ "steer_ip6",	 "SkBuff -> Action SkBuff", steering_ip6     },
