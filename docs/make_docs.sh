@@ -39,11 +39,11 @@ echoB "C++: Q-Lang docs:"
 cd ../user && cat ../docs/cpp-lang.doxy | doxygen -
 
 echoB "Haskell: library docs:" 
-cd ../user/Haskell && runhaskell Setup configure --user && runhaskell Setup build && haddock -h -o ../../docs/api/haskell  -t "PFQ Library ${DOC_VERSION}" -p ../../docs/library.haddock dist/build/Network/PFq.hs
+cd ../user/Haskell && runhaskell Setup configure --user && runhaskell Setup build && haddock -h -o ../../docs/api/haskell  -t "PFQ Library ${DOC_VERSION}" -p ../../docs/library.haddock dist/build/Network/PFQ.hs
 cd -
 
 echoB "Haskell: Q-Lang docs:" 
-cd ../user/Haskell && haddock -h -o ../../docs/lang/haskell -t "pfq-lang ${DOC_VERSION}" -p ../../docs/lang.haddock Network/PFq/Default.hs Network/PFq/Experimental.hs
+cd ../user/Haskell && haddock -h -o ../../docs/lang/haskell -t "pfq-lang ${DOC_VERSION}" -p ../../docs/lang.haddock Network/PFQ/Lang/Default.hs Network/PFQ/Lang/Experimental.hs
 
 echoB "pfq API documentation created in ${API_DIR}."
 echoB "pfq-lang documentation created in ${LANG_DIR}."
