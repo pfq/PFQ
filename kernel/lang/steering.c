@@ -143,26 +143,42 @@ steering_vlan_id(arguments_t args, SkBuff skb)
 
 
 static ActionSkBuff
+steering_p2p(arguments_t args, SkBuff skb)
+{
+	if (eth_hdr(PFQ_SKB(skb))->h_proto == __constant_htons(ETH_P_IP))
+	{
+		struct iphdr _iph;
+		const struct iphdr *ip;
+
+		ip = skb_header_pointer(PFQ_SKB(skb), skb->mac_len, sizeof(_iph), &_iph);
+		if (ip == NULL)
+			return Drop(skb);
+
+		return Steering(skb, (__force uint32_t)(ip->saddr ^ ip->daddr));
+	}
+
+	return Drop(skb);
+}
+
+
+static ActionSkBuff
 steering_ip(arguments_t args, SkBuff skb)
 {
 	if (eth_hdr(PFQ_SKB(skb))->h_proto == __constant_htons(ETH_P_IP))
 	{
 		struct iphdr _iph;
 		const struct iphdr *ip;
-		__be32 hash;
 
 		ip = skb_header_pointer(PFQ_SKB(skb), skb->mac_len, sizeof(_iph), &_iph);
 		if (ip == NULL)
 			return Drop(skb);
 
-		hash = ip->saddr ^ ip->daddr;
-
-		return Steering(skb, (__force uint32_t)hash);
+		return DoubleSteering(skb, (__force uint32_t)ip->saddr,
+					   (__force uint32_t)ip->daddr);
 	}
 
 	return Drop(skb);
 }
-
 
 static int steering_net_init(arguments_t args)
 {
@@ -282,6 +298,7 @@ struct pfq_lang_function_descr steering_functions[] = {
 	{ "steer_mac",   "SkBuff -> Action SkBuff", steering_mac     },
 	{ "steer_vlan",  "SkBuff -> Action SkBuff", steering_vlan_id },
 	{ "steer_ip",    "SkBuff -> Action SkBuff", steering_ip      },
+	{ "steer_p2p",   "SkBuff -> Action SkBuff", steering_p2p     },
 	{ "steer_ip6",	 "SkBuff -> Action SkBuff", steering_ip6     },
 	{ "steer_flow",  "SkBuff -> Action SkBuff", steering_flow    },
 	{ "steer_to",    "CInt   -> SkBuff -> Action SkBuff", steering_to },
