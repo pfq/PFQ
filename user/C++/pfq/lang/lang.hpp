@@ -155,14 +155,14 @@ namespace pfq { namespace lang
         , nelem()
         {}
 
-        template <typename Tp, typename std::enable_if<std::is_pod<Tp>::value >::type * = nullptr>
+        template <typename Tp, typename std::enable_if<std::is_trivial<Tp>::value >::type * = nullptr>
         argument_type(Tp const &pod)
         : ptr(std::make_shared<StorableShow<Tp>>(pod))
         , size(sizeof(Tp))
         , nelem(static_cast<std::size_t>(-1))
         { }
 
-        template <typename Tp, typename std::enable_if<std::is_pod<Tp>::value>::type * = nullptr>
+        template <typename Tp, typename std::enable_if<std::is_trivial<Tp>::value>::type * = nullptr>
         argument_type(std::vector<Tp> const &vec)
         : ptr(std::make_shared<StorableShow<std::vector<Tp>>>(vec))
         , size(sizeof(Tp))
@@ -200,10 +200,10 @@ namespace pfq { namespace lang
         , nelem(n)
         {}
 
-        template <typename Tp, typename std::enable_if<!std::is_pod<Tp>::value >::type * = nullptr>
+        template <typename Tp, typename std::enable_if<!std::is_trivial<Tp>::value >::type * = nullptr>
         argument_type(Tp const &)
         {
-            throw std::logic_error("undefined");
+            throw std::logic_error("data: T must be a trivial type!");
         }
 
         std::shared_ptr<StorableShowBase> ptr;
