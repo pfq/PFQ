@@ -1137,6 +1137,58 @@ pfq_set_group_computation_from_json(pfq_t *q, int gid, const char *input)
 				prog->fun[n].arg[i].size  = sizeof(uint32_t);
 				prog->fun[n].arg[i].nelem = (ptrdiff_t)m;
 			}
+			else if (strcmp(type, "[CIDR]") == 0)
+			{
+				JSON_Array  * array = json_object_get_array(arg, "argValue");
+
+				size_t m = json_array_get_count(array);
+
+				prog->fun[n].arg[i].addr  = PFQ_ALLOCA_N(struct CIDR, m, (struct CIDR)({
+
+								JSON_Object *obj_addr, * obj = json_array_get_object(array, idx);
+								JSON_Array  * sub_array;
+								JSON_Value  * value_addr, * value_prefix;
+
+								if (!obj) {
+									json_value_free(root);
+									return Q_ERROR(q, "PFQ: computation: JSON argValue missing!");
+								}
+
+								sub_array = json_object_get_array(obj, "getNetworkPair");
+								if (!sub_array) {
+									json_value_free(root);
+									return Q_ERROR(q, "PFQ: computation: JSON getNetworkPair missing!");
+								}
+
+								obj_addr = json_array_get_object(sub_array, 0);
+								if (!obj_addr) {
+									json_value_free(root);
+									return Q_ERROR(q, "PFQ: computation: JSON getNetworkPair: net-address missing!");
+								}
+
+								value_addr = json_object_get_value(obj_addr, "getHostAddress");
+								if (!value_addr) {
+									json_value_free(root);
+									return Q_ERROR(q, "PFQ: computation: JSON getHostAddress: net-address missing!");
+								}
+
+								value_prefix = json_array_get_value(sub_array, 1);
+								if (!value_prefix) {
+									json_value_free(root);
+									return Q_ERROR(q, "PFQ: computation: JSON getNetworkPair: preifx missing!");
+								}
+
+								if (!value_addr) {
+									json_value_free(root);
+									return Q_ERROR(q, "PFQ: computation: JSON IPv4 internal error!");
+								}
+
+								(struct CIDR){.addr = (uint32_t)json_value_get_number(value_addr), .prefix = (int)json_value_get_number(value_prefix) };
+							    }));
+				prog->fun[n].arg[i].size  = sizeof(struct CIDR);
+				prog->fun[n].arg[i].nelem = (ptrdiff_t)m;
+
+			}
 			else if (strlen(type) == 0)
 			{
 				prog->fun[n].arg[i].addr  = NULL;
