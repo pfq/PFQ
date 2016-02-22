@@ -46,8 +46,9 @@ import Data.Aeson
 import Data.Typeable
 import Data.String
 import Data.List
-import Data.Maybe (fromJust)
+import Data.Maybe (isJust, fromJust)
 import Data.Scientific (toBoundedInteger)
+import Control.Monad (when)
 
 import Network.Socket
 import System.IO.Unsafe
@@ -82,7 +83,6 @@ instance IsString IPv4 where
 instance Show IPv4 where
     show a = unsafePerformIO $ inetNtoA a
 
-
 instance ToJSON IPv4
 instance FromJSON IPv4
 
@@ -102,9 +102,11 @@ instance Show CIDR where
     show (CIDR (addr,prefix)) = unsafePerformIO (inetNtoA addr) ++ "/" ++ show prefix
 
 instance IsString CIDR where
-  fromString xs = CIDR (fromString addr,read $ tail prefix)
-    where (addr, prefix) = splitAt (fromJust $ elemIndex '/' xs) xs
-
+  fromString xs = CIDR (fromString addr, read $ tail prefix)
+    where (addr, prefix) = if isJust slash
+                            then splitAt (fromJust slash) xs
+                            else error "CIDR: bad format (slash sep. missing)"
+          slash = elemIndex '/' xs
 
 instance ToJSON CIDR
 instance FromJSON CIDR
@@ -116,7 +118,8 @@ inetAtoN :: String -> IO IPv4
 inetAtoN xs =
   withCString xs $ \str ->
     allocaBytes 4 $ \addr -> do
-      inet_pton (packFamily AF_INET) str addr
+      r <- (inet_pton (packFamily AF_INET) str addr)
+      when (r /= 1) $ error "inetAtoN: bad address format"
       fmap IPv4 (peek $ castPtr addr)
 
 
@@ -125,16 +128,17 @@ inetNtoA (IPv4 h) =
   alloca $ \ptr -> do
   poke ptr h
   allocaBytes 16 $ \str -> do
-    inet_ntop (packFamily AF_INET) (castPtr ptr) str 16
+    p <- inet_ntop (packFamily AF_INET) (castPtr ptr) str 16
+    when (p == nullPtr) $ error "inetNtoA: bad IPv4 format"
     peekCString str
 
 
 -- FFI network functions:
 
 foreign import ccall unsafe "inet_ntop"
-  inet_ntop :: CInt -> Ptr () -> Ptr CChar -> CSize -> IO ()
+  inet_ntop :: CInt -> Ptr () -> Ptr CChar -> CSize -> IO (Ptr ())
 
 foreign import ccall unsafe "inet_pton"
-  inet_pton :: CInt -> Ptr CChar -> Ptr () -> IO ()
+  inet_pton :: CInt -> Ptr CChar -> Ptr () -> IO CInt
 
 
