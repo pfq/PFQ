@@ -40,6 +40,7 @@ module Network.PFQ.Lang.Experimental
         dummy_string ,
         dummy_strings,
         dummy_cidr,
+        dummy_cidrs,
 
         crc16      ,
 
@@ -85,6 +86,9 @@ dummy_strings xs  = Function "dummy_strings" xs () () () () () () ()
 
 dummy_cidr  :: CIDR -> NetFunction
 dummy_cidr x  = Function "dummy_cidr" x () () () () () () ()
+
+dummy_cidrs  :: [CIDR] -> NetFunction
+dummy_cidrs xs  = Function "dummy_cidrs" xs () () () () () () ()
 
 
 crc16 :: NetFunction
