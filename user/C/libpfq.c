@@ -724,6 +724,12 @@ pfq_set_group_computation(pfq_t *q, int gid, struct pfq_lang_computation_descr *
 })
 
 
+struct CIDR
+{
+	uint32_t addr;
+	int prefix;
+};
+
 int
 pfq_set_group_computation_from_json(pfq_t *q, int gid, const char *input)
 {
@@ -762,6 +768,8 @@ pfq_set_group_computation_from_json(pfq_t *q, int gid, const char *input)
 			json_value_free(root);
 			return Q_ERROR(q, "PFQ: computation: JSON funArgs missing!");
 		}
+
+		/* parse the list of arguments */
 
 		for(i = 0; i < json_array_get_count(args); ++i)
 		{
@@ -922,6 +930,50 @@ pfq_set_group_computation_from_json(pfq_t *q, int gid, const char *input)
 
 				prog->fun[n].arg[i].addr  = PFQ_ALLOCA(uint32_t, (uint32_t)json_value_get_number(value));
 				prog->fun[n].arg[i].size  = sizeof(uint32_t);
+				prog->fun[n].arg[i].nelem = -1;
+			}
+			else if (strcmp(type, "CIDR") == 0)
+			{
+				JSON_Object *obj_addr, * obj = json_object_get_object(arg, "argValue");
+				JSON_Array  * sub_array;
+				JSON_Value  * value_addr, * value_prefix;
+
+				if (!obj) {
+					json_value_free(root);
+					return Q_ERROR(q, "PFQ: computation: JSON argValue missing!");
+				}
+
+				sub_array = json_object_get_array(obj, "getNetworkPair");
+				if (!sub_array) {
+					json_value_free(root);
+					return Q_ERROR(q, "PFQ: computation: JSON getNetworkPair missing!");
+				}
+
+				obj_addr = json_array_get_object(sub_array, 0);
+				if (!obj_addr) {
+					json_value_free(root);
+					return Q_ERROR(q, "PFQ: computation: JSON getNetworkPair: net-address missing!");
+				}
+
+				value_addr = json_object_get_value(obj_addr, "getHostAddress");
+				if (!value_addr) {
+					json_value_free(root);
+					return Q_ERROR(q, "PFQ: computation: JSON getHostAddress: net-address missing!");
+				}
+
+				value_prefix = json_array_get_value(sub_array, 1);
+				if (!value_prefix) {
+					json_value_free(root);
+					return Q_ERROR(q, "PFQ: computation: JSON getNetworkPair: preifx missing!");
+				}
+
+                                if (!value_addr) {
+					json_value_free(root);
+					return Q_ERROR(q, "PFQ: computation: JSON IPv4 internal error!");
+				}
+
+				prog->fun[n].arg[i].addr  = PFQ_ALLOCA(struct CIDR, ((struct CIDR){.addr = (uint32_t)json_value_get_number(value_addr), .prefix = (int)json_value_get_number(value_prefix) }));
+				prog->fun[n].arg[i].size  = sizeof(struct CIDR);
 				prog->fun[n].arg[i].nelem = -1;
 			}
 			else if (strcmp(type, "[CInt]") == 0)
