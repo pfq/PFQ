@@ -1135,7 +1135,7 @@ pfq_set_group_computation_from_json(pfq_t *q, int gid, const char *input)
                                                                 val ? json_value_get_number(val) : 0;
 							    }));
 				prog->fun[n].arg[i].size  = sizeof(uint32_t);
-				prog->fun[n].arg[i].nelem = -1;
+				prog->fun[n].arg[i].nelem = (ptrdiff_t)m;
 			}
 			else if (strlen(type) == 0)
 			{
