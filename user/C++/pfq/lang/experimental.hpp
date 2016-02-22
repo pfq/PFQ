@@ -50,6 +50,7 @@ namespace pfq { namespace lang { namespace experimental {
         auto dummy         = [] (int value) { return function("dummy", value); };
         auto dummy_ip      = [] (const char *addr) { return function("dummy_ip", ipv4_t{addr}); };
         auto dummy_cidr    = [] (CIDR data) { return function("dummy_cidr", data); };
+        auto dummy_cidrs   = [] (std::vector<CIDR> const &data) { return function("dummy_cidrs", data); };
 
         auto dummy_vector  = [] (std::vector<int> const &vec) { return function("dummy_vector", vec); };
 
