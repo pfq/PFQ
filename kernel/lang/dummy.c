@@ -121,6 +121,19 @@ dummy_cidr(arguments_t args, SkBuff skb)
 	return Pass (skb);
 }
 
+static ActionSkBuff
+dummy_cidrs(arguments_t args, SkBuff skb)
+{
+        const struct CIDR *data = GET_ARRAY(struct CIDR, args);
+	size_t n, len = LEN_ARRAY(args);
+
+	for(n = 0; n < len; n++)
+	{
+		printk(KERN_INFO "[pfq-lang] (addr:%pI4,%d)\n", &data[n].addr, data[n].prefix);
+	}
+	return Pass (skb);
+}
+
 
 static int
 dummy_init(arguments_t args)
@@ -143,6 +156,7 @@ struct pfq_lang_function_descr dummy_functions[] = {
         { "dummy",         "CInt   -> SkBuff -> Action SkBuff",	  dummy, dummy_init,	     dummy_fini },
         { "dummy_ip",      "Word32 -> SkBuff -> Action SkBuff",	  dummy_ip,	dummy_init,  dummy_fini },
         { "dummy_cidr",	   "CIDR   -> SkBuff -> Action SkBuff",   dummy_cidr,	dummy_init,  dummy_fini },
+        { "dummy_cidrs",   "[CIDR] -> SkBuff -> Action SkBuff",   dummy_cidrs,	dummy_init,  dummy_fini },
         { "dummy_vector",  "[CInt] -> SkBuff -> Action SkBuff",	  dummy_vector, dummy_init,  dummy_fini },
         { "dummy_string",  "String -> SkBuff -> Action SkBuff",	  dummy_string, dummy_init,  dummy_fini },
         { "dummy_strings", "[String] -> SkBuff -> Action SkBuff", dummy_strings, dummy_init, dummy_fini },
