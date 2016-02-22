@@ -75,6 +75,15 @@ main()
     show_comp (integers);
     show_comp (strings);
 
+    auto c1 = CIDR("192.168.0.0", 16);
+
+    std::cout << show(c1) << std::endl;
+    std::cout << pretty(c1) << std::endl;
+
+    auto c2 = CIDR("10.10.10.0", 24);
+
+    std::cout << show(c2) << std::endl;
+    std::cout << pretty(c2) << std::endl;
 
     return 0;
 }
