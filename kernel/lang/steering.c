@@ -243,6 +243,7 @@ steering_net(arguments_t args, SkBuff skb)
 	{
 		struct iphdr _iph;
 		const struct iphdr *ip;
+		bool src_net, dst_net;
 
 		ip = skb_header_pointer(PFQ_SKB(skb), skb->mac_len, sizeof(_iph), &_iph);
 		if (ip == NULL)
@@ -252,10 +253,16 @@ steering_net(arguments_t args, SkBuff skb)
 		    ip->daddr == (__force __be32)0xffffffff)
 			return Broadcast(skb);
 
-		if ((ip->saddr & mask) == addr)
+		src_net = (ip->saddr & mask) == addr;
+		dst_net = (ip->daddr & mask) == addr;
+
+		if (src_net && dst_net)
+			return DoubleSteering(skb, (__force uint32_t)(ip->saddr & submask),
+						   (__force uint32_t)(ip->daddr & submask));
+		if (src_net)
 			return Steering(skb, (__force uint32_t)(ip->saddr & submask));
 
-		if ((ip->daddr & mask) == addr)
+		if (dst_net)
 			return Steering(skb, (__force uint32_t)(ip->daddr & submask));
 	}
 
