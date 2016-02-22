@@ -73,9 +73,7 @@ import Data.Word
 
 import Data.Aeson
 import Data.Typeable
-import Data.Maybe
 import Data.List (isPrefixOf)
-import Data.Scientific (toBoundedInteger)
 
 #if __GLASGOW_HASKELL__ < 710
 import Data.Monoid
@@ -88,16 +86,6 @@ import Foreign.C.Types
 import Foreign.Storable
 
 import Network.PFQ.Types
-
--- | CInt instance...
-
-instance ToJSON CInt where
-  toJSON n = toJSON (fromIntegral n :: Int)
-
-instance FromJSON CInt where
-  parseJSON (Number n) = return (fromJust $ toBoundedInteger n)
-  parseJSON _ = mempty
-
 
 -- |Symbol is a 'String' representing the name of a function.
 

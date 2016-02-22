@@ -39,6 +39,7 @@ module Network.PFQ.Lang.Experimental
         dummy_vector ,
         dummy_string ,
         dummy_strings,
+        dummy_netaddr,
 
         crc16      ,
 
@@ -61,6 +62,8 @@ module Network.PFQ.Lang.Experimental
 
 
 import Network.PFQ.Lang
+import Network.PFQ.Types
+
 import Foreign.C.Types
 
 -- Experimental/Testing in-kernel computations
@@ -79,6 +82,10 @@ dummy_string xs  = Function "dummy_string" xs () () () () () () ()
 
 dummy_strings :: [String] -> NetFunction
 dummy_strings xs  = Function "dummy_strings" xs () () () () () () ()
+
+dummy_netaddr  :: CIDR -> NetFunction
+dummy_netaddr x  = Function "dummy_netaddr" x () () () () () () ()
+
 
 crc16 :: NetFunction
 crc16 = Function "crc16" () () () () () () () ()

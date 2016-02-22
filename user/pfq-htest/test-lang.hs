@@ -20,6 +20,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 
 import Network.PFQ.Lang
+import Network.PFQ.Types
 import Network.PFQ.Lang.Default
 import Network.PFQ.Lang.Experimental
 
@@ -35,6 +36,19 @@ prettyPrinter :: (Show a) => [a] -> IO ()
 prettyPrinter xs = forM_ (zip [0..] xs) $ \(n, x) -> putStrLn $ "    " ++ show n ++ ": " ++ show x
 
 main = do
+        let na1 = CIDR ("10.10.0.0",16)
+        let na2 = "192.168.0.1/24" :: CIDR
+        print na1
+        print na2
+
+        putStrLn "\nSerialize CIDR:"
+        let s1 = encode na1
+        BL.putStrLn s1
+
+        let d1 = decode s1 :: Maybe CIDR
+        putStrLn "\nDeserialized CIDR:"
+        print $ fromJust d1
+
         let mycond = is_ip .&&. (is_tcp .||. is_udp)
         let mycond1 = is_udp
 
@@ -64,4 +78,5 @@ main = do
 
         putStrLn "\nDeserialized AST:"
         prettyPrinter $ fromJust ser2
+
 

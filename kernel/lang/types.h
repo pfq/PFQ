@@ -28,4 +28,13 @@
 
 #define __GC __attribute__((address_space(7)))
 
+
+/* CIDR notation */
+
+struct CIDR
+{
+	__be32	addr;
+	int	prefix;
+};
+
 #endif /* PFQ_LANG_TYPES_H */

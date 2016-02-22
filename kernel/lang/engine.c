@@ -414,7 +414,7 @@ pfq_lang_check_computation_descr(struct pfq_lang_computation_descr const *descr)
 			}
 
 			if (check_argument_descr(&fun->arg[i], sarg) != 0) {
-				printk(KERN_INFO "[PFQ] function[%zu]: %s: invalid argument(%d)!\n", n, signature, i);
+				printk(KERN_INFO "[PFQ] function[%zu]: %s: invalid argument(%d): bad argument!\n", n, signature, i);
 				return -EPERM;
 			}
 		}
