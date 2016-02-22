@@ -213,6 +213,7 @@ import Foreign.Concurrent as C (newForeignPtr)
 import Foreign.ForeignPtr (ForeignPtr)
 
 import Network.PFQ.Lang
+import Network.PFQ.Types
 
 import System.Clock
 import System.Process(readProcess)

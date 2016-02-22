@@ -24,6 +24,7 @@ Library
                  clock
 
   exposed-modules: Network.PFQ
+                   Network.PFQ.Types
                    Network.PFQ.Lang
                    Network.PFQ.Lang.Default
                    Network.PFQ.Lang.Experimental
