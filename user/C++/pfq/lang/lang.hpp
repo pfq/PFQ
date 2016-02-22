@@ -100,6 +100,58 @@ namespace pfq { namespace lang
         return show(value);
     }
 
+    // CIDR: network address + prefix notation.
+    //
+
+    struct CIDR
+    {
+        CIDR() = default;
+
+        CIDR(const char *a, int p)
+        : prefix(p)
+        {
+            if (inet_pton(AF_INET, a, &addr) <= 0)
+                throw std::runtime_error("pfq::lang::CIDR");
+        }
+
+        CIDR(const char *descr)
+        {
+            auto slash = strchr(descr, '/');
+            if (slash == nullptr)
+                throw std::runtime_error("CIDR: bad format (slash missing)");
+
+            std::string a(descr, slash);
+
+            if (inet_pton(AF_INET, a.c_str(), &addr) <= 0)
+                throw std::runtime_error("pfq::lang::CIDR");
+
+            prefix = atoi(slash+1);
+        }
+
+        uint32_t addr;
+        int      prefix;
+    };
+
+
+    inline std::string
+    show(CIDR value)
+    {
+        char buff[16];
+        if (inet_ntop(AF_INET, &value.addr, buff, sizeof(buff)) == NULL)
+            throw std::runtime_error("pfq::lang::CIDR::inet_ntop");
+        return "CIDR{" + std::string{buff} + ',' + std::to_string(value.prefix) + '}';
+    }
+
+    inline std::string
+    pretty(CIDR value)
+    {
+        char buff[16];
+        if (inet_ntop(AF_INET, &value.addr, buff, sizeof(buff)) == NULL)
+            throw std::runtime_error("pfq::lang::CIDR::inet_ntop");
+        return std::string{buff} + '/' + std::to_string(value.prefix);
+    }
+
+
     //
     // pfq-lang DSL...
     //
