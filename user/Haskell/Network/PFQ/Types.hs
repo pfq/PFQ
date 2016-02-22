@@ -105,7 +105,7 @@ instance IsString CIDR where
   fromString xs = CIDR (fromString addr, read $ tail prefix)
     where (addr, prefix) = if isJust slash
                             then splitAt (fromJust slash) xs
-                            else error "CIDR: bad format (slash sep. missing)"
+                            else error "CIDR: bad format (slash missing)"
           slash = elemIndex '/' xs
 
 instance ToJSON CIDR
