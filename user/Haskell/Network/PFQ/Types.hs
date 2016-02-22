@@ -26,13 +26,16 @@
 --
 --
 
+{-# LANGUAGE ForeignFunctionInterface #-}
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE CPP #-}
 
 module Network.PFQ.Types
   (
     IPv4(..)
+  , CIDR(..)
   , inetAtoN
   , inetNtoA
   ) where
@@ -42,17 +45,31 @@ import GHC.Generics
 import Data.Aeson
 import Data.Typeable
 import Data.String
+import Data.List
+import Data.Maybe (fromJust)
+import Data.Scientific (toBoundedInteger)
 
 import Network.Socket
 import System.IO.Unsafe
 
 import Foreign.Storable
+import Foreign.Storable.Tuple()
 import qualified Foreign.Storable.Newtype as Store
 
 import Foreign.C.Types
 import Foreign.C.String
 import Foreign.Ptr
 import Foreign.Marshal.Alloc
+
+
+-- | CInt instance...
+
+instance ToJSON CInt where
+  toJSON n = toJSON (fromIntegral n :: Int)
+
+instance FromJSON CInt where
+  parseJSON (Number n) = return (fromJust $ toBoundedInteger n)
+  parseJSON _ = mempty
 
 
 -- | IPv4 data type
@@ -74,6 +91,23 @@ instance Storable IPv4 where
     alignment = Store.alignment getHostAddress
     peek      = Store.peek IPv4
     poke      = Store.poke getHostAddress
+
+
+-- | CIDR data-type
+
+newtype CIDR = CIDR { getNetworkPair :: (IPv4, CInt) } deriving (Generic, Typeable, Storable)
+
+
+instance Show CIDR where
+    show (CIDR (addr,prefix)) = unsafePerformIO (inetNtoA addr) ++ "/" ++ show prefix
+
+instance IsString CIDR where
+  fromString xs = CIDR (fromString addr,read $ tail prefix)
+    where (addr, prefix) = splitAt (fromJust $ elemIndex '/' xs) xs
+
+
+instance ToJSON CIDR
+instance FromJSON CIDR
 
 
 -- Thread-safe utility functions for IPv4 conversion to String and viceversa

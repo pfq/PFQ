@@ -32,6 +32,7 @@
 #include <lang/module.h>
 #include <lang/headers.h>
 #include <lang/misc.h>
+#include <lang/types.h>
 
 
 #include <pf_q-sparse.h>
@@ -112,6 +113,15 @@ dummy_strings(arguments_t args, SkBuff skb)
 }
 
 
+static ActionSkBuff
+dummy_netaddr(arguments_t args, SkBuff skb)
+{
+	struct CIDR na = GET_ARG_0(struct CIDR, args);
+	printk(KERN_INFO "[pfq-lang] (addr:%pI4,%d)\n", &na.addr, na.prefix);
+	return Pass (skb);
+}
+
+
 static int
 dummy_init(arguments_t args)
 {
@@ -132,6 +142,7 @@ struct pfq_lang_function_descr dummy_functions[] = {
 
         { "dummy",         "CInt   -> SkBuff -> Action SkBuff",	  dummy, dummy_init,	     dummy_fini },
         { "dummy_ip",      "Word32 -> SkBuff -> Action SkBuff",	  dummy_ip,	dummy_init,  dummy_fini },
+        { "dummy_netaddr", "CIDR   -> SkBuff -> Action SkBuff",   dummy_netaddr,dummy_init,  dummy_fini },
         { "dummy_vector",  "[CInt] -> SkBuff -> Action SkBuff",	  dummy_vector, dummy_init,  dummy_fini },
         { "dummy_string",  "String -> SkBuff -> Action SkBuff",	  dummy_string, dummy_init,  dummy_fini },
         { "dummy_strings", "[String] -> SkBuff -> Action SkBuff", dummy_strings, dummy_init, dummy_fini },

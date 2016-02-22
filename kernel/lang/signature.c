@@ -36,6 +36,7 @@
 #endif
 
 #include <lang/signature.h>
+#include <lang/types.h>
 
 
 int count_outmost_brackets(string_view_t str);
@@ -287,6 +288,7 @@ static struct
 	{.symb = "Word16",  .size = sizeof(uint16_t)},
 	{.symb = "Word32",  .size = sizeof(uint32_t)},
 	{.symb = "Word64",  .size = sizeof(uint64_t)},
+	{.symb = "CIDR",    .size = sizeof(struct CIDR)},
 	{.symb = "String",  .size = 0},
 	{.symb = "Action",  .size = 0},
 	{.symb = "SkBuff",  .size = 0}
