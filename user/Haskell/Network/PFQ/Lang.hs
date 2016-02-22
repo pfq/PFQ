@@ -74,7 +74,6 @@ import Data.Word
 import Data.Aeson
 import Data.Typeable
 import Data.Maybe
-import Data.String
 import Data.List (isPrefixOf)
 import Data.Scientific (toBoundedInteger)
 
@@ -85,13 +84,10 @@ import Data.Functor
 import Data.Monoid()
 #endif
 
-import Network.Socket
 import Foreign.C.Types
 import Foreign.Storable
-import Foreign.Storable.Newtype as Store
 
-import System.IO.Unsafe
-
+import Network.PFQ.Types
 
 -- | CInt instance...
 
@@ -101,26 +97,6 @@ instance ToJSON CInt where
 instance FromJSON CInt where
   parseJSON (Number n) = return (fromJust $ toBoundedInteger n)
   parseJSON _ = mempty
-
--- | IPv4 data type
-
-newtype IPv4 = IPv4 { getHostAddress :: HostAddress } deriving (Generic, Typeable)
-
-instance ToJSON IPv4
-instance FromJSON IPv4
-
-
-instance IsString IPv4 where
-    fromString xs = IPv4 $ unsafePerformIO (inet_addr xs)
-
-instance Storable IPv4 where
-    sizeOf    = Store.sizeOf getHostAddress
-    alignment = Store.alignment getHostAddress
-    peek      = Store.peek IPv4
-    poke      = Store.poke getHostAddress
-
-instance Show IPv4 where
-    show a = unsafePerformIO $ inet_ntoa (getHostAddress a)
 
 
 -- |Symbol is a 'String' representing the name of a function.
