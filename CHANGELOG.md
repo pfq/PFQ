@@ -149,6 +149,7 @@ PFQ 6.0
     * `steer_field_double`
     * `steer_field_symmetric`
     * `steer_ip_local`
+    * `steer_link_local`
  * General improvements.
  * Regressions and bugs fixes.
 
