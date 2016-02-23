@@ -54,7 +54,7 @@ main = do
 
         let comp = par' (ip >-> udp) (ip >-> tcp) >-> steer_rtp >->
                          when' is_tcp (inc 2) >->
-                         addr "192.168.0.0" 24 >->
+                         addr "192.168.0.0/24" >->
                          dummy 42 >->
                          dummy_string "hello world" >->
                          dummy_strings ["hello", "world"] >->
