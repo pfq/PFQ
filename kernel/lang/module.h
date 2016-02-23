@@ -52,6 +52,16 @@
 #define EVAL_PROPERTY(f, skb)	((property_ptr_t )f.fun->run)(f.fun, skb)
 #define EVAL_PREDICATE(f,skb)	((predicate_ptr_t)f.fun->run)(f.fun, skb)
 
+#define GET_PTR_0(type,a)	__builtin_choose_expr(sizeof(type) <= sizeof(uintptr_t), (type *)&ARGS_TYPE(a)->arg[0].value, (void *)ARGS_TYPE(a)->arg[0].value)
+#define GET_PTR_1(type,a)	__builtin_choose_expr(sizeof(type) <= sizeof(uintptr_t), (type *)&ARGS_TYPE(a)->arg[1].value, (void *)ARGS_TYPE(a)->arg[1].value)
+#define GET_PTR_2(type,a)	__builtin_choose_expr(sizeof(type) <= sizeof(uintptr_t), (type *)&ARGS_TYPE(a)->arg[2].value, (void *)ARGS_TYPE(a)->arg[2].value)
+#define GET_PTR_3(type,a)	__builtin_choose_expr(sizeof(type) <= sizeof(uintptr_t), (type *)&ARGS_TYPE(a)->arg[3].value, (void *)ARGS_TYPE(a)->arg[3].value)
+#define GET_PTR_4(type,a)	__builtin_choose_expr(sizeof(type) <= sizeof(uintptr_t), (type *)&ARGS_TYPE(a)->arg[4].value, (void *)ARGS_TYPE(a)->arg[4].value)
+#define GET_PTR_5(type,a)	__builtin_choose_expr(sizeof(type) <= sizeof(uintptr_t), (type *)&ARGS_TYPE(a)->arg[5].value, (void *)ARGS_TYPE(a)->arg[5].value)
+#define GET_PTR_6(type,a)	__builtin_choose_expr(sizeof(type) <= sizeof(uintptr_t), (type *)&ARGS_TYPE(a)->arg[6].value, (void *)ARGS_TYPE(a)->arg[6].value)
+#define GET_PTR_7(type,a)	__builtin_choose_expr(sizeof(type) <= sizeof(uintptr_t), (type *)&ARGS_TYPE(a)->arg[7].value, (void *)ARGS_TYPE(a)->arg[7].value)
+#define GET_PTR(type,a)		GET_ARG_0(type,a)
+
 #define GET_ARG_0(type,a)	__builtin_choose_expr(sizeof(type) <= sizeof(uintptr_t), *(type *)&ARGS_TYPE(a)->arg[0].value, (void *)ARGS_TYPE(a)->arg[0].value)
 #define GET_ARG_1(type,a)	__builtin_choose_expr(sizeof(type) <= sizeof(uintptr_t), *(type *)&ARGS_TYPE(a)->arg[1].value, (void *)ARGS_TYPE(a)->arg[1].value)
 #define GET_ARG_2(type,a)	__builtin_choose_expr(sizeof(type) <= sizeof(uintptr_t), *(type *)&ARGS_TYPE(a)->arg[2].value, (void *)ARGS_TYPE(a)->arg[2].value)
