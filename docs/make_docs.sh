@@ -7,7 +7,8 @@ set -e
 
 API_DIR="api"
 LANG_DIR="lang"
-DOC_VERSION="v6.0"
+API_VERSION="v6.0"
+LANG_VERSION="(Spec 0.1)"
 BOLD=`tput bold`
 RESET=`tput sgr0`
 
@@ -39,12 +40,12 @@ echoB "C++: Q-Lang docs:"
 cd ../user && cat ../docs/cpp-lang.doxy | doxygen -
 
 echoB "Haskell: library docs:" 
-cd ../user/Haskell && runhaskell Setup configure --user && runhaskell Setup build && haddock -h -o ../../docs/api/haskell  -t "PFQ Library ${DOC_VERSION}" \
+cd ../user/Haskell && runhaskell Setup configure --user && runhaskell Setup build && haddock -h -o ../../docs/api/haskell  -t "PFQ Library ${API_VERSION}" \
     -p ../../docs/library.haddock dist/build/Network/PFQ.hs
 cd -
 
 echoB "Haskell: Q-Lang docs:" 
-cd ../user/Haskell && haddock -h -o ../../docs/lang/haskell -t "pfq-lang ${DOC_VERSION}"  \
+cd ../user/Haskell && haddock -h -o ../../docs/lang/haskell -t "pfq-lang ${LANG_VERSION}"  \
     -p ../../docs/lang.haddock \
         Network/PFQ/Types.hs \
         Network/PFQ/Lang/Default.hs \
