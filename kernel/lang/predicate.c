@@ -151,16 +151,10 @@ pred_has_state(arguments_t args, SkBuff b)
 
 static int pred_addr_init(arguments_t args)
 {
-	__be32 mask, ipv4 = GET_ARG_0(__be32, args);
-	int prefix  = GET_ARG_1(int, args);
-
-	mask = inet_make_mask(prefix);
-
-	SET_ARG_0(args, ipv4 & mask);
-	SET_ARG_1(args, mask);
-
-	pr_devel("[PFQ|init] predicate: addr:%pI4 mask:%pI4\n", &ipv4, &mask);
-
+	struct CIDR_ *data;
+	CIDR_INIT(args, 0);
+	data = GET_PTR_0(struct CIDR_, args);
+	pr_devel("[PFQ|init] predicate: addr:%pI4 mask:%pI4\n", &data->addr, &data->mask);
 	return 0;
 }
 
@@ -245,9 +239,9 @@ struct pfq_lang_function_descr predicate_functions[] = {
         { "has_mark",     "Word32 -> SkBuff -> Bool",  pred_has_mark     },
         { "has_state",    "Word32 -> SkBuff -> Bool",  pred_has_state	 },
 
-        { "has_addr",     "Word32 -> Word32 -> SkBuff -> Bool", pred_has_addr     , pred_addr_init },
-        { "has_src_addr", "Word32 -> Word32 -> SkBuff -> Bool", pred_has_src_addr , pred_addr_init },
-        { "has_dst_addr", "Word32 -> Word32 -> SkBuff -> Bool", pred_has_dst_addr , pred_addr_init },
+        { "has_addr",     "CIDR -> SkBuff -> Bool", pred_has_addr     , pred_addr_init },
+        { "has_src_addr", "CIDR -> SkBuff -> Bool", pred_has_src_addr , pred_addr_init },
+        { "has_dst_addr", "CIDR -> SkBuff -> Bool", pred_has_dst_addr , pred_addr_init },
 
         { NULL }};
 

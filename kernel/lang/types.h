@@ -24,6 +24,8 @@
 #ifndef PFQ_LANG_TYPES_H
 #define PFQ_LANG_TYPES_H
 
+#include <linux/inetdevice.h>
+
 /* skb owned by garbage collector */
 
 #define __GC __attribute__((address_space(7)))
@@ -36,5 +38,25 @@ struct CIDR
 	__be32	addr;
 	int	prefix;
 };
+
+struct CIDR_
+{
+	__be32	addr;
+	__be32  mask;
+};
+
+
+/* note: use can use inet_mask_len(data->mask) to get the prefix */
+
+static inline
+void to_CIDR_(struct CIDR *data)
+{
+	struct CIDR_ * data_ = (struct CIDR_ *)data;
+	__be32 mask = inet_make_mask(data->prefix);
+	data_->addr &= mask;
+	data_->mask  = mask;
+}
+
+#define CIDR_INIT(a,i)		to_CIDR_((struct CIDR *)&ARGS_TYPE(a)->arg[i].value)
 
 #endif /* PFQ_LANG_TYPES_H */
