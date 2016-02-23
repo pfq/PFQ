@@ -48,6 +48,7 @@ module Network.PFQ.Lang
         -- * Basic types
 
         IPv4(..),
+        CIDR(..),
         Argument(..),
         Pretty(..),
         Function(..),
@@ -151,6 +152,7 @@ instance FromJSON Argument where
         | type_ == "Word16" -> (ArgData :: Word16 -> Argument)     <$>  (v .: "argValue")
         | type_ == "Word8"  -> (ArgData :: Word8  -> Argument)     <$>  (v .: "argValue")
         | type_ == "IPv4"   -> (ArgData :: IPv4   -> Argument)     <$>  (v .: "argValue")
+        | type_ == "CIDR"   -> (ArgData :: CIDR   -> Argument)     <$>  (v .: "argValue")
         | type_ == "String" -> (ArgString :: String -> Argument)   <$>  (v .: "argValue")
         | type_ == "Fun"    -> (ArgFunPtr :: Int    -> Argument)   <$>  (v .: "argValue")
         | "[" `isPrefixOf` type_ -> case () of
@@ -164,8 +166,9 @@ instance FromJSON Argument where
                                         | type_ == "[Word16]" -> (ArgVector  :: [Word16] -> Argument) <$> (v .: "argValue")
                                         | type_ == "[Word8]"  -> (ArgVector  :: [Word8]  -> Argument) <$> (v .: "argValue")
                                         | type_ == "[IPv4]"   -> (ArgVector  :: [IPv4]   -> Argument) <$> (v .: "argValue")
+                                        | type_ == "[CIDR]"   -> (ArgVector  :: [CIDR]   -> Argument) <$> (v .: "argValue")
                                         | type_ == "[String]" -> (ArgVectorStr :: [String] -> Argument) <$> (v .: "argValue")
-                                        | otherwise           -> error $ "FromJSON: Argument type " ++ type_ ++ " not supported!"
+                                        | otherwise -> error $ "FromJSON: Argument type " ++ type_ ++ " not supported!"
         | null type_          -> return ArgNull
         | otherwise           -> error $ "FromJSON: Argument type " ++ type_ ++ " not supported!"
 
