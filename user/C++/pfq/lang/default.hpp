@@ -485,6 +485,17 @@ namespace pfq { namespace lang {
         //! Dispatch the packet across the sockets
         /*!
          * Dispatch with a randomized algorithm that maintains the coherence
+         * of local IP addresses.
+         * This alter the total volume of traffic (\see steer_mac).
+         *
+         * steer_ip_local "192.168.1.0/24"
+         */
+
+        auto steer_ip_local = [] (CIDR data) { return function("steer_ip_local", data); };
+
+        //! Dispatch the packet across the sockets
+        /*!
+         * Dispatch with a randomized algorithm that maintains the coherence
          * of IP flows. Example:
          *
          * ip >-> steer_p2p

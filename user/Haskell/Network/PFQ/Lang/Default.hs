@@ -165,6 +165,7 @@ module Network.PFQ.Lang.Default
         steer_vlan ,
         steer_p2p  ,
         steer_ip   ,
+        steer_ip_local,
         steer_ip6  ,
         steer_p2p6 ,
         steer_flow ,
@@ -519,6 +520,14 @@ steer_p2p = Function "steer_p2p" () () () () () () () () :: NetFunction
 --
 -- > steer_ip
 steer_ip = Function "steer_ip" () () () () () () () () :: NetFunction
+
+-- | Dispatch the packet across the sockets
+-- with a randomized algorithm that maintains the coherence of local
+-- IP addresses.
+-- This alter the total volume of traffic (see 'steer_mac').
+--
+-- > steer_ip_local "192.168.1.0/24"
+steer_ip_local d = Function "steer_ip_local" d () () () () () () () :: NetFunction
 
 -- | Dispatch the packet across the sockets
 -- with a randomized algorithm that maintains the coherence of
