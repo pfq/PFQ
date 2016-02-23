@@ -162,29 +162,23 @@ static int pred_addr_init(arguments_t args)
 static bool
 pred_has_addr(arguments_t args, SkBuff b)
 {
-	__be32 addr = GET_ARG_0(__be32, args);
-	__be32 mask = GET_ARG_1(__be32, args);
-
-	return has_addr(b, addr, mask);
+	struct CIDR_ *data = GET_PTR_0(struct CIDR_, args);
+	return has_addr(b, data->addr, data->mask);
 }
 
 
 static bool
 pred_has_src_addr(arguments_t args, SkBuff b)
 {
-	__be32 addr = GET_ARG_0(__be32, args);
-	__be32 mask = GET_ARG_1(__be32, args);
-
-	return has_src_addr(b, addr, mask);
+	struct CIDR_ *data = GET_PTR_0(struct CIDR_, args);
+	return has_src_addr(b, data->addr, data->mask);
 }
 
 static bool
 pred_has_dst_addr(arguments_t args, SkBuff b)
 {
-	__be32 addr = GET_ARG_0(__be32, args);
-	__be32 mask = GET_ARG_1(__be32, args);
-
-	return has_dst_addr(b, addr, mask);
+	struct CIDR_ *data = GET_PTR_0(struct CIDR_, args);
+	return has_dst_addr(b, data->addr, data->mask);
 }
 
 static bool
