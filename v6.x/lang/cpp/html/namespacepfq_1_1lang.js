@@ -3,6 +3,7 @@ var namespacepfq_1_1lang =
     [ "experimental", "namespacepfq_1_1lang_1_1experimental.html", null ],
     [ "Action", "structpfq_1_1lang_1_1Action.html", null ],
     [ "argument_type", "structpfq_1_1lang_1_1argument__type.html", "structpfq_1_1lang_1_1argument__type" ],
+    [ "CIDR", "structpfq_1_1lang_1_1CIDR.html", "structpfq_1_1lang_1_1CIDR" ],
     [ "Composition", "structpfq_1_1lang_1_1Composition.html", "structpfq_1_1lang_1_1Composition" ],
     [ "Function", "structpfq_1_1lang_1_1Function.html", "structpfq_1_1lang_1_1Function" ],
     [ "FunctionDescr", "structpfq_1_1lang_1_1FunctionDescr.html", "structpfq_1_1lang_1_1FunctionDescr" ],

@@ -11,9 +11,9 @@
 \item 
 \hyperlink{structpfq_1_1lang_1_1argument__type_aaa36abcce4c5e2418fc5a10328619a2d}{argument\+\_\+type} (std\+::nullptr\+\_\+t)
 \item 
-{\footnotesize template$<$typename Tp , typename std\+::enable\+\_\+if$<$ std\+::is\+\_\+pod$<$ Tp $>$\+::value $>$\+::type $\ast$  = nullptr$>$ }\\\hyperlink{structpfq_1_1lang_1_1argument__type_a1ed803face97c18de5b24a852174f160}{argument\+\_\+type} (Tp const \&pod)
+{\footnotesize template$<$typename Tp , typename std\+::enable\+\_\+if$<$ std\+::is\+\_\+trivial$<$ Tp $>$\+::value $>$\+::type $\ast$  = nullptr$>$ }\\\hyperlink{structpfq_1_1lang_1_1argument__type_a1ed803face97c18de5b24a852174f160}{argument\+\_\+type} (Tp const \&pod)
 \item 
-{\footnotesize template$<$typename Tp , typename std\+::enable\+\_\+if$<$ std\+::is\+\_\+pod$<$ Tp $>$\+::value $>$\+::type $\ast$  = nullptr$>$ }\\\hyperlink{structpfq_1_1lang_1_1argument__type_a214fc2f5dc718677454cde46788cef1d}{argument\+\_\+type} (std\+::vector$<$ Tp $>$ const \&vec)
+{\footnotesize template$<$typename Tp , typename std\+::enable\+\_\+if$<$ std\+::is\+\_\+trivial$<$ Tp $>$\+::value $>$\+::type $\ast$  = nullptr$>$ }\\\hyperlink{structpfq_1_1lang_1_1argument__type_a214fc2f5dc718677454cde46788cef1d}{argument\+\_\+type} (std\+::vector$<$ Tp $>$ const \&vec)
 \item 
 \hyperlink{structpfq_1_1lang_1_1argument__type_a775f6b6bf458de21aef78e3b806ead9d}{argument\+\_\+type} (const char $\ast$p)
 \item 
@@ -25,7 +25,7 @@
 \item 
 \hyperlink{structpfq_1_1lang_1_1argument__type_a3586d8765421e7a9fc01ee5185be7f32}{argument\+\_\+type} (std\+::shared\+\_\+ptr$<$ Storable\+Show\+Base $>$ p, size\+\_\+t s, size\+\_\+t n)
 \item 
-{\footnotesize template$<$typename Tp , typename std\+::enable\+\_\+if$<$!std\+::is\+\_\+pod$<$ Tp $>$\+::value $>$\+::type $\ast$  = nullptr$>$ }\\\hyperlink{structpfq_1_1lang_1_1argument__type_a4285751f800858bb96057e3ffd44dc77}{argument\+\_\+type} (Tp const \&)
+{\footnotesize template$<$typename Tp , typename std\+::enable\+\_\+if$<$!std\+::is\+\_\+trivial$<$ Tp $>$\+::value $>$\+::type $\ast$  = nullptr$>$ }\\\hyperlink{structpfq_1_1lang_1_1argument__type_a4285751f800858bb96057e3ffd44dc77}{argument\+\_\+type} (Tp const \&)
 \end{DoxyCompactItemize}
 \subsection*{Public Attributes}
 \begin{DoxyCompactItemize}
@@ -55,14 +55,14 @@ size\+\_\+t \hyperlink{structpfq_1_1lang_1_1argument__type_ac0016fd1fba8c2cb6922
 )\hspace{0.3cm}{\ttfamily [inline]}}\hypertarget{structpfq_1_1lang_1_1argument__type_aaa36abcce4c5e2418fc5a10328619a2d}{}\label{structpfq_1_1lang_1_1argument__type_aaa36abcce4c5e2418fc5a10328619a2d}
 \index{pfq\+::lang\+::argument\+\_\+type@{pfq\+::lang\+::argument\+\_\+type}!argument\+\_\+type@{argument\+\_\+type}}
 \index{argument\+\_\+type@{argument\+\_\+type}!pfq\+::lang\+::argument\+\_\+type@{pfq\+::lang\+::argument\+\_\+type}}
-\subsubsection[{\texorpdfstring{argument\+\_\+type(\+Tp const \&pod)}{argument_type(Tp const &pod)}}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename Tp , typename std\+::enable\+\_\+if$<$ std\+::is\+\_\+pod$<$ Tp $>$\+::value $>$\+::type $\ast$  = nullptr$>$ pfq\+::lang\+::argument\+\_\+type\+::argument\+\_\+type (
+\subsubsection[{\texorpdfstring{argument\+\_\+type(\+Tp const \&pod)}{argument_type(Tp const &pod)}}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename Tp , typename std\+::enable\+\_\+if$<$ std\+::is\+\_\+trivial$<$ Tp $>$\+::value $>$\+::type $\ast$  = nullptr$>$ pfq\+::lang\+::argument\+\_\+type\+::argument\+\_\+type (
 \begin{DoxyParamCaption}
 \item[{Tp const \&}]{pod}
 \end{DoxyParamCaption}
 )\hspace{0.3cm}{\ttfamily [inline]}}\hypertarget{structpfq_1_1lang_1_1argument__type_a1ed803face97c18de5b24a852174f160}{}\label{structpfq_1_1lang_1_1argument__type_a1ed803face97c18de5b24a852174f160}
 \index{pfq\+::lang\+::argument\+\_\+type@{pfq\+::lang\+::argument\+\_\+type}!argument\+\_\+type@{argument\+\_\+type}}
 \index{argument\+\_\+type@{argument\+\_\+type}!pfq\+::lang\+::argument\+\_\+type@{pfq\+::lang\+::argument\+\_\+type}}
-\subsubsection[{\texorpdfstring{argument\+\_\+type(std\+::vector$<$ Tp $>$ const \&vec)}{argument_type(std::vector< Tp > const &vec)}}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename Tp , typename std\+::enable\+\_\+if$<$ std\+::is\+\_\+pod$<$ Tp $>$\+::value $>$\+::type $\ast$  = nullptr$>$ pfq\+::lang\+::argument\+\_\+type\+::argument\+\_\+type (
+\subsubsection[{\texorpdfstring{argument\+\_\+type(std\+::vector$<$ Tp $>$ const \&vec)}{argument_type(std::vector< Tp > const &vec)}}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename Tp , typename std\+::enable\+\_\+if$<$ std\+::is\+\_\+trivial$<$ Tp $>$\+::value $>$\+::type $\ast$  = nullptr$>$ pfq\+::lang\+::argument\+\_\+type\+::argument\+\_\+type (
 \begin{DoxyParamCaption}
 \item[{std\+::vector$<$ Tp $>$ const \&}]{vec}
 \end{DoxyParamCaption}
@@ -107,7 +107,7 @@ size\+\_\+t \hyperlink{structpfq_1_1lang_1_1argument__type_ac0016fd1fba8c2cb6922
 )\hspace{0.3cm}{\ttfamily [inline]}}\hypertarget{structpfq_1_1lang_1_1argument__type_a3586d8765421e7a9fc01ee5185be7f32}{}\label{structpfq_1_1lang_1_1argument__type_a3586d8765421e7a9fc01ee5185be7f32}
 \index{pfq\+::lang\+::argument\+\_\+type@{pfq\+::lang\+::argument\+\_\+type}!argument\+\_\+type@{argument\+\_\+type}}
 \index{argument\+\_\+type@{argument\+\_\+type}!pfq\+::lang\+::argument\+\_\+type@{pfq\+::lang\+::argument\+\_\+type}}
-\subsubsection[{\texorpdfstring{argument\+\_\+type(\+Tp const \&)}{argument_type(Tp const &)}}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename Tp , typename std\+::enable\+\_\+if$<$!std\+::is\+\_\+pod$<$ Tp $>$\+::value $>$\+::type $\ast$  = nullptr$>$ pfq\+::lang\+::argument\+\_\+type\+::argument\+\_\+type (
+\subsubsection[{\texorpdfstring{argument\+\_\+type(\+Tp const \&)}{argument_type(Tp const &)}}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename Tp , typename std\+::enable\+\_\+if$<$!std\+::is\+\_\+trivial$<$ Tp $>$\+::value $>$\+::type $\ast$  = nullptr$>$ pfq\+::lang\+::argument\+\_\+type\+::argument\+\_\+type (
 \begin{DoxyParamCaption}
 \item[{Tp const \&}]{}
 \end{DoxyParamCaption}

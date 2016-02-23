@@ -106,10 +106,10 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:aa89bbfb7ed7487d09512e29bc8df723a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aaa36abcce4c5e2418fc5a10328619a2d"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpfq_1_1lang_1_1argument__type.html#aaa36abcce4c5e2418fc5a10328619a2d">argument_type</a> (std::nullptr_t)</td></tr>
 <tr class="separator:aaa36abcce4c5e2418fc5a10328619a2d"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a1ed803face97c18de5b24a852174f160"><td class="memTemplParams" colspan="2">template&lt;typename Tp , typename std::enable_if&lt; std::is_pod&lt; Tp &gt;::value &gt;::type *  = nullptr&gt; </td></tr>
+<tr class="memitem:a1ed803face97c18de5b24a852174f160"><td class="memTemplParams" colspan="2">template&lt;typename Tp , typename std::enable_if&lt; std::is_trivial&lt; Tp &gt;::value &gt;::type *  = nullptr&gt; </td></tr>
 <tr class="memitem:a1ed803face97c18de5b24a852174f160"><td class="memTemplItemLeft" align="right" valign="top">&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="structpfq_1_1lang_1_1argument__type.html#a1ed803face97c18de5b24a852174f160">argument_type</a> (Tp const &amp;pod)</td></tr>
 <tr class="separator:a1ed803face97c18de5b24a852174f160"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a214fc2f5dc718677454cde46788cef1d"><td class="memTemplParams" colspan="2">template&lt;typename Tp , typename std::enable_if&lt; std::is_pod&lt; Tp &gt;::value &gt;::type *  = nullptr&gt; </td></tr>
+<tr class="memitem:a214fc2f5dc718677454cde46788cef1d"><td class="memTemplParams" colspan="2">template&lt;typename Tp , typename std::enable_if&lt; std::is_trivial&lt; Tp &gt;::value &gt;::type *  = nullptr&gt; </td></tr>
 <tr class="memitem:a214fc2f5dc718677454cde46788cef1d"><td class="memTemplItemLeft" align="right" valign="top">&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="structpfq_1_1lang_1_1argument__type.html#a214fc2f5dc718677454cde46788cef1d">argument_type</a> (std::vector&lt; Tp &gt; const &amp;vec)</td></tr>
 <tr class="separator:a214fc2f5dc718677454cde46788cef1d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a775f6b6bf458de21aef78e3b806ead9d"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpfq_1_1lang_1_1argument__type.html#a775f6b6bf458de21aef78e3b806ead9d">argument_type</a> (const char *p)</td></tr>
@@ -122,7 +122,7 @@ Public Member Functions</h2></td></tr>
 <tr class="separator:a25b9c5fc803a86259615dd54e13a19e8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a3586d8765421e7a9fc01ee5185be7f32"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpfq_1_1lang_1_1argument__type.html#a3586d8765421e7a9fc01ee5185be7f32">argument_type</a> (std::shared_ptr&lt; StorableShowBase &gt; p, size_t s, size_t n)</td></tr>
 <tr class="separator:a3586d8765421e7a9fc01ee5185be7f32"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a4285751f800858bb96057e3ffd44dc77"><td class="memTemplParams" colspan="2">template&lt;typename Tp , typename std::enable_if&lt;!std::is_pod&lt; Tp &gt;::value &gt;::type *  = nullptr&gt; </td></tr>
+<tr class="memitem:a4285751f800858bb96057e3ffd44dc77"><td class="memTemplParams" colspan="2">template&lt;typename Tp , typename std::enable_if&lt;!std::is_trivial&lt; Tp &gt;::value &gt;::type *  = nullptr&gt; </td></tr>
 <tr class="memitem:a4285751f800858bb96057e3ffd44dc77"><td class="memTemplItemLeft" align="right" valign="top">&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="structpfq_1_1lang_1_1argument__type.html#a4285751f800858bb96057e3ffd44dc77">argument_type</a> (Tp const &amp;)</td></tr>
 <tr class="separator:a4285751f800858bb96057e3ffd44dc77"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
@@ -187,7 +187,7 @@ Public Attributes</h2></td></tr>
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename Tp , typename std::enable_if&lt; std::is_pod&lt; Tp &gt;::value &gt;::type *  = nullptr&gt; </div>
+template&lt;typename Tp , typename std::enable_if&lt; std::is_trivial&lt; Tp &gt;::value &gt;::type *  = nullptr&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
@@ -213,7 +213,7 @@ template&lt;typename Tp , typename std::enable_if&lt; std::is_pod&lt; Tp &gt;::v
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename Tp , typename std::enable_if&lt; std::is_pod&lt; Tp &gt;::value &gt;::type *  = nullptr&gt; </div>
+template&lt;typename Tp , typename std::enable_if&lt; std::is_trivial&lt; Tp &gt;::value &gt;::type *  = nullptr&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
@@ -385,7 +385,7 @@ template&lt;typename Tp , typename std::enable_if&lt; std::is_pod&lt; Tp &gt;::v
 <div class="memitem">
 <div class="memproto">
 <div class="memtemplate">
-template&lt;typename Tp , typename std::enable_if&lt;!std::is_pod&lt; Tp &gt;::value &gt;::type *  = nullptr&gt; </div>
+template&lt;typename Tp , typename std::enable_if&lt;!std::is_trivial&lt; Tp &gt;::value &gt;::type *  = nullptr&gt; </div>
 <table class="mlabels">
   <tr>
   <td class="mlabels-left">
@@ -453,7 +453,7 @@ template&lt;typename Tp , typename std::enable_if&lt;!std::is_pod&lt; Tp &gt;::v
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="namespacepfq.html">pfq</a></li><li class="navelem"><a class="el" href="namespacepfq_1_1lang.html">lang</a></li><li class="navelem"><a class="el" href="structpfq_1_1lang_1_1argument__type.html">argument_type</a></li>
-    <li class="footer">Generated on Sun Feb 21 2016 19:02:10 for pfq-lang eDLS by
+    <li class="footer">Generated on Tue Feb 23 2016 10:20:55 for pfq-lang eDLS by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.11 </li>
   </ul>

@@ -8,6 +8,8 @@ var experimental_8hpp =
     [ "par8", "experimental_8hpp.html#aa89f35d8e04819ca5414e4815cf0e6f9", null ],
     [ "crc16", "experimental_8hpp.html#a8152d34c5c69cc26aaa2b4a14ed37af1", null ],
     [ "dummy", "experimental_8hpp.html#a5fc8274e9598b8524f833264174b62b7", null ],
+    [ "dummy_cidr", "experimental_8hpp.html#a331aab492ad841b1c7a0d95efea00e76", null ],
+    [ "dummy_cidrs", "experimental_8hpp.html#ad239e0d3cd310dbf3b86ec109242aca1", null ],
     [ "dummy_ip", "experimental_8hpp.html#abc66a4fd883f91bb1fd0d4d369b2499c", null ],
     [ "dummy_string", "experimental_8hpp.html#a354cb0bfb9d9033e9d87f03fba7c7267", null ],
     [ "dummy_strings", "experimental_8hpp.html#af6c041f2494f9dd06acb73d42524e3ad", null ],

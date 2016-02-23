@@ -5,6 +5,7 @@ var hierarchy =
     [ "bool_type", null, [
       [ "pfq::lang::is_monadic_function< Tp >", "structpfq_1_1lang_1_1is__monadic__function.html", null ]
     ] ],
+    [ "pfq::lang::CIDR", "structpfq_1_1lang_1_1CIDR.html", null ],
     [ "pfq::lang::Composition< F, G >", "structpfq_1_1lang_1_1Composition.html", null ],
     [ "false_type", null, [
       [ "pfq::lang::is_predicate< Tp >", "structpfq_1_1lang_1_1is__predicate.html", null ],
