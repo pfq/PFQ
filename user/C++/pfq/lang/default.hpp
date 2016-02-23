@@ -453,6 +453,17 @@ namespace pfq { namespace lang {
         //! Dispatch the packet across the sockets.
         /*!
          * Dispatch with a randomized algorithm that maintains the coherence
+         * of local mac addresses. Example:
+         *
+         * steer_link_local("4c:60:de:86:55:46")
+         */
+
+        auto steer_link_local = [](std::string mac_gw) { return function("steer_link_local", std::move(mac_gw)); };
+
+
+        //! Dispatch the packet across the sockets.
+        /*!
+         * Dispatch with a randomized algorithm that maintains the coherence
          * of mac address. This alter the total volume of traffic, as the packets
          * can be steered to at most two sockets. Example:
          *

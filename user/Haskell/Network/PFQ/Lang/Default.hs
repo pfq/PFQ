@@ -161,6 +161,7 @@ module Network.PFQ.Lang.Default
         steer_rss  ,
         steer_to   ,
         steer_link ,
+        steer_link_local,
         steer_mac  ,
         steer_vlan ,
         steer_p2p  ,
@@ -490,6 +491,14 @@ steer_to idx = Function "steer_to" idx () () () () () () () :: NetFunction
 --
 -- > steer_link
 steer_link = Function "steer_link" () () () () () () () () :: NetFunction
+
+-- | Dispatch the packet across the sockets
+-- with a randomized algorithm that maintains the coherence of
+-- local mac addresses.
+--
+-- > steer_link_local "4c:60:de:86:55:46"
+steer_link_local :: String -> NetFunction
+steer_link_local mac_gw = Function "steer_link_local" mac_gw () () () () () () () :: NetFunction
 
 -- | Dispatch the packet across the sockets
 -- with a randomized algorithm that maintains the coherence of both
