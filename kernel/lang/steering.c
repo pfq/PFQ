@@ -211,6 +211,47 @@ steering_ip(arguments_t args, SkBuff skb)
 	return Drop(skb);
 }
 
+static int steering_ip_local_init(arguments_t args)
+{
+	CIDR_INIT(args, 0);
+	return 0;
+}
+
+static ActionSkBuff
+steering_ip_local(arguments_t args, SkBuff skb)
+{
+	struct CIDR_ *data = GET_PTR_0(struct CIDR_, args);
+
+	if (eth_hdr(PFQ_SKB(skb))->h_proto == __constant_htons(ETH_P_IP))
+	{
+		struct iphdr _iph;
+		const struct iphdr *ip;
+
+		ip = skb_header_pointer(PFQ_SKB(skb), skb->mac_len, sizeof(_iph), &_iph);
+		if (ip == NULL)
+			return Drop(skb);
+
+		if (ip->saddr == (__force __be32)0xffffffff ||
+		    ip->daddr == (__force __be32)0xffffffff)
+			return Broadcast(skb);
+
+                if ((ip->daddr & data->mask) == data->addr &&
+                    (ip->saddr & data->mask) == data->addr)
+			return DoubleSteering(skb, (__force uint32_t)ip->saddr,
+						   (__force uint32_t)ip->daddr);
+
+                if ((ip->saddr & data->mask) == data->addr)
+			return Steering(skb, (__force uint32_t)ip->saddr);
+
+                if ((ip->daddr & data->mask) == data->addr)
+			return Steering(skb, (__force uint32_t)ip->daddr);
+
+	}
+
+	return Drop(skb);
+}
+
+
 static int steering_net_init(arguments_t args)
 {
 	__be32 addr = GET_ARG_0(__be32, args);
@@ -370,14 +411,19 @@ struct pfq_lang_function_descr steering_functions[] = {
 	{ "steer_mac",   "SkBuff -> Action SkBuff", steering_mac     },
 	{ "steer_vlan",  "SkBuff -> Action SkBuff", steering_vlan_id },
 	{ "steer_ip",    "SkBuff -> Action SkBuff", steering_ip      },
+
+	{ "steer_ip_local","CIDR -> SkBuff -> Action SkBuff", steering_ip_local, steering_ip_local_init },
+
 	{ "steer_p2p",   "SkBuff -> Action SkBuff", steering_p2p     },
 	{ "steer_ip6",	 "SkBuff -> Action SkBuff", steering_ip6     },
 	{ "steer_p2p6",	 "SkBuff -> Action SkBuff", steering_p2p6    },
 	{ "steer_flow",  "SkBuff -> Action SkBuff", steering_flow    },
 	{ "steer_to",    "CInt   -> SkBuff -> Action SkBuff", steering_to },
+
 	{ "steer_field", "Word32 -> Word32 -> SkBuff -> Action SkBuff", steering_field },
 	{ "steer_field_double",   "Word32 -> Word32 -> Word32 -> SkBuff -> Action SkBuff", steering_field_double},
 	{ "steer_field_symmetric","Word32 -> Word32 -> Word32 -> SkBuff -> Action SkBuff", steering_field_symmetric },
+
 	{ "steer_net",   "Word32 -> Word32 -> Word32 -> SkBuff -> Action SkBuff", steering_net, steering_net_init },
 	{ NULL }};
 
