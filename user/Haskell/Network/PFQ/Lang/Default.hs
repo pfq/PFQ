@@ -222,6 +222,7 @@ module Network.PFQ.Lang.Default
 
 
 import           Network.PFQ.Lang
+import           Network.PFQ.Types
 
 import           Data.Int
 import           Data.Word
@@ -401,18 +402,20 @@ has_dst_port x = Predicate "has_dst_port" x () () () () () () ()
 
 -- | Evaluate to /True/ if the source or destination IP address matches the given network address. I.e.,
 --
--- > has_addr "192.168.0.0" 24
-has_addr :: IPv4 -> CInt -> NetPredicate
+-- > has_addr "192.168.0.0/24"
+-- > has_addr (CIRD ("192.168.0.0", 24))
+
+has_addr :: CIDR -> NetPredicate
 
 -- | Evaluate to /True/ if the source IP address matches the given network address.
-has_src_addr :: IPv4 -> CInt -> NetPredicate
+has_src_addr :: CIDR -> NetPredicate
 
 -- | Evaluate to /True/ if the destination IP address matches the given network address.
-has_dst_addr :: IPv4 -> CInt -> NetPredicate
+has_dst_addr :: CIDR -> NetPredicate
 
-has_addr a p     = Predicate "has_addr"     a p () () () () () ()
-has_src_addr a p = Predicate "has_src_addr" a p () () () () () ()
-has_dst_addr a p = Predicate "has_dst_addr" a p () () () () () ()
+has_addr a       = Predicate "has_addr"     a () () () () () () ()
+has_src_addr a   = Predicate "has_src_addr" a () () () () () () ()
+has_dst_addr a   = Predicate "has_dst_addr" a () () () () () () ()
 
 -- | Evaluate to the mark set by 'mark' function. By default packets are marked with 0.
 get_mark = Property "get_mark" () () () () () () () ()
@@ -812,18 +815,19 @@ dst_port a = Function "dst_port" a () () () () () () ()
 -- predicates are used in conditional expressions, while monadic functions
 -- are combined with kleisli operator:
 --
--- > addr "192.168.0.0" 24 >-> log_packet
-addr :: IPv4 -> CInt -> NetFunction
+-- > addr "192.168.0.0/24" >-> log_packet
+-- > addr (CIRD ("192.168.0.0",24)) >-> log_packet
+addr :: CIDR -> NetFunction
 
 -- | Monadic version of 'has_src_addr' predicate.
-src_addr :: IPv4 -> CInt -> NetFunction
+src_addr :: CIDR -> NetFunction
 
 -- | Monadic version of 'has_src_addr' predicate.
-dst_addr :: IPv4 -> CInt -> NetFunction
+dst_addr :: CIDR -> NetFunction
 
-addr net p = Function "addr" net p () () () () () ()
-src_addr net p = Function "src_addr" net p () () () () () ()
-dst_addr net p = Function "dst_addr" net p () () () () () ()
+addr net   = Function "addr" net () () () () () () ()
+src_addr net = Function "src_addr" net () () () () () () ()
+dst_addr net = Function "dst_addr" net () () () () () () ()
 
 -- | Conditional execution of monadic NetFunctions.
 --

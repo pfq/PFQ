@@ -251,26 +251,26 @@ namespace pfq { namespace lang {
         /*!
          * Example:
          *
-         * has_addr ("192.168.0.0",24)
+         * has_addr ({"192.168.0.0",24})
          */
 
-        auto has_addr = [] (const char *addr, int prefix)
+        auto has_addr = [] (CIDR data)
         {
-            return predicate("has_addr", ipv4_t {addr}, prefix);
+            return predicate("has_addr", data);
         };
 
         //! Evaluate to \c true if the source IP address matches the given network address.
 
-        auto has_src_addr = [] (const char *addr, int prefix)
+        auto has_src_addr = [] (CIDR data)
         {
-            return predicate("has_src_addr", ipv4_t {addr}, prefix);
+            return predicate("has_src_addr", data);
         };
 
         //! Evaluate to \c true if the destination IP address matches the given network address.
 
-        auto has_dst_addr = [] (const char *addr, int prefix)
+        auto has_dst_addr = [] (CIDR data)
         {
-            return predicate("has_dst_addr", ipv4_t{addr}, prefix);
+            return predicate("has_dst_addr", data);
         };
 
         //! Evaluate to \c true if the SkBuff has the given \c mark, set by mark function.
@@ -906,28 +906,28 @@ namespace pfq { namespace lang {
          * Predicates are used in conditional expressions, while monadic functions
          * are combined with kleisli operator:
          *
-         * addr ("192.168.0.0",24) >> log_packet
+         * addr ({"192.168.0.0",24}) >> log_packet
          *
          * \see has_addr
          */
 
-        auto addr = [] (const char *net, int prefix)
+        auto addr = [] (CIDR data)
         {
-            return function("addr", ipv4_t{net}, prefix);
+            return function("addr", data);
         };
 
         //! Monadic version of \c has_src_addr predicate.  \see has_src_addr
 
-        auto src_addr = [] (const char *net, int prefix)
+        auto src_addr = [] (CIDR data)
         {
-            return function("src_addr", ipv4_t{net}, prefix);
+            return function("src_addr", data);
         };
 
         //! Monadic version of \c has_dst_addr predicate.  \see has_dst_addr
 
-        auto dst_addr = [] (const char *net, int prefix)
+        auto dst_addr = [] (CIDR data)
         {
-            return function("dst_addr", ipv4_t{net}, prefix);
+            return function("dst_addr", data);
         };
 
         //! Conditional execution of monadic NetFunctions.
