@@ -140,6 +140,46 @@ steering_link(arguments_t args, SkBuff skb)
 }
 
 
+static int steering_link_local_init(arguments_t args)
+{
+	char *mac = GET_ARG(char *, args);
+	char mac_addr[6];
+
+	if (!mac_pton(mac, mac_addr)) {
+		printk(KERN_INFO "[pfq-lang] steering_link_local: bad mac address format!\n");
+		return -EINVAL;
+	}
+
+	memcpy(mac, mac_addr, 6);
+	printk(KERN_INFO "[pfq-lang] steering_link_local: gateway MAC -> %*phC\n", 6, mac);
+	return 0;
+}
+
+
+static ActionSkBuff
+steering_link_local(arguments_t args, SkBuff skb)
+{
+	uint16_t * gw_mac = GET_ARG(uint16_t *, args);
+	uint16_t * w;
+	w = (uint16_t *)eth_hdr(PFQ_SKB(skb));
+
+	if ((w[0] & w[1] & w[2]) == 0xffff ||
+	    (w[3] & w[4] & w[5]) == 0xffff)
+		return Broadcast(skb);
+
+	if (w[0] == gw_mac[0] &&
+	    w[1] == gw_mac[1] &&
+	    w[2] == gw_mac[2])
+		return Steering(skb, w[3] ^ w[4] ^ w[5]);
+
+	if (w[3] == gw_mac[0] &&
+	    w[4] == gw_mac[1] &&
+	    w[5] == gw_mac[2])
+		return Steering(skb, w[0] ^ w[1] ^ w[2]);
+
+	return DoubleSteering(skb, w[0] ^ w[1] ^ w[2], w[3] ^ w[4] ^ w[5]);
+}
+
 static ActionSkBuff
 steering_mac(arguments_t args, SkBuff skb)
 {
@@ -408,6 +448,7 @@ struct pfq_lang_function_descr steering_functions[] = {
 	{ "steer_rrobin","SkBuff -> Action SkBuff", steering_rrobin  },
 	{ "steer_rss",   "SkBuff -> Action SkBuff", steering_rss     },
 	{ "steer_link",  "SkBuff -> Action SkBuff", steering_link    },
+	{ "steer_link_local",  "String -> SkBuff -> Action SkBuff", steering_link_local, steering_link_local_init },
 	{ "steer_mac",   "SkBuff -> Action SkBuff", steering_mac     },
 	{ "steer_vlan",  "SkBuff -> Action SkBuff", steering_vlan_id },
 	{ "steer_ip",    "SkBuff -> Action SkBuff", steering_ip      },
