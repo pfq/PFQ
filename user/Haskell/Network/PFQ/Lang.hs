@@ -35,6 +35,7 @@
 {-# LANGUAGE FlexibleInstances #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE DeriveGeneric #-}
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# LANGUAGE GADTs #-}
 {-# LANGUAGE CPP #-}
 #if __GLASGOW_HASKELL__ < 710
@@ -47,26 +48,29 @@ module Network.PFQ.Lang
     (
         -- * Basic types
 
-        IPv4(..),
-        CIDR(..),
-        Argument(..),
-        Pretty(..),
-        Function(..),
-        Serializable(..),
-        FunctionDescr(..),
-        Action,
-        SkBuff,
+      IPv4(..)
+    , CIDR(..)
+    , Argument(..)
+    , Pretty(..)
+    , Function(..)
+    , Serializable(..)
+    , FunctionDescr(..)
+    , SkBuff(..)
+    , Action
 
-        -- * Function types
+    -- * Function types
 
-        NetFunction,
-        NetPredicate,
-        NetProperty,
-        (>->),
+    , NetFunction
+    , NetPredicate
+    , NetProperty
+    , (>->)
     ) where
 
 
 -- import Debug.Trace
+
+import Control.Monad
+import Control.Monad.Identity
 
 import GHC.Generics
 import Data.Int
@@ -85,7 +89,6 @@ import Data.Monoid()
 
 import Foreign.C.Types
 import Foreign.Storable
-
 import Network.PFQ.Types
 
 -- |Symbol is a 'String' representing the name of a function.
@@ -96,7 +99,6 @@ type Symbol = String
 -- |SkBuff placeholder type is used to model the kernel sk_buff data structure.
 
 newtype SkBuff = SkBuff ()
-
 
 -- |Function pointer data type represents a function in a list of FunctionDescr.
 
@@ -113,9 +115,9 @@ instance Pretty FunPtr where
     pretty (FunPtr n) = "FunPtr(" ++ show n ++ ")"
 
 
--- |Action is a monad modelled after the Identity and implemented at kernel level.
+-- |Action is a monad modelled after the Identity as it is implemented at kernel level.
 
-newtype Action a = Identity a
+newtype Action a = Action { getIdentity :: Identity a } deriving (Functor, Applicative, Monad)
 
 
 -- | Argument data type.
@@ -124,18 +126,18 @@ newtype Action a = Identity a
 data Argument = forall a. (Show a, Storable a, Typeable a, ToJSON a, FromJSON a) => ArgData a       |
                 forall a. (Show a, Storable a, Typeable a, ToJSON a, FromJSON a) => ArgVector [a]   |
                 ArgString String                                                                    |
-                ArgVectorStr [String]                                                               |
+                ArgStrings [String]                                                               |
                 ArgFunPtr Int                                                                       |
                 ArgNull
 
 
 instance ToJSON Argument where
-  toJSON (ArgData x)       = object [ "argType" .= show (typeOf x),        "argValue" .= toJSON x  ]
-  toJSON (ArgVector xs)    = object [ "argType" .= show (typeOf xs),       "argValue" .= toJSON xs ]
-  toJSON (ArgString xs)    = object [ "argType" .= ("String"   :: String), "argValue" .= toJSON xs ]
-  toJSON (ArgVectorStr xs) = object [ "argType" .= ("[String]" :: String), "argValue" .= toJSON xs ]
-  toJSON (ArgFunPtr x)     = object [ "argType" .= ("Fun"      :: String), "argValue" .= toJSON x  ]
-  toJSON ArgNull           = object [ "argType" .= (""         :: String), "argValue" .= toJSON () ]
+  toJSON (ArgData x)     = object [ "argType" .= show (typeOf x),        "argValue" .= toJSON x  ]
+  toJSON (ArgVector xs)  = object [ "argType" .= show (typeOf xs),       "argValue" .= toJSON xs ]
+  toJSON (ArgString xs)  = object [ "argType" .= ("String"   :: String), "argValue" .= toJSON xs ]
+  toJSON (ArgStrings xs) = object [ "argType" .= ("[String]" :: String), "argValue" .= toJSON xs ]
+  toJSON (ArgFunPtr x)   = object [ "argType" .= ("Fun"      :: String), "argValue" .= toJSON x  ]
+  toJSON ArgNull         = object [ "argType" .= (""         :: String), "argValue" .= toJSON () ]
 
 
 instance FromJSON Argument where
@@ -155,20 +157,21 @@ instance FromJSON Argument where
         | type_ == "CIDR"   -> (ArgData :: CIDR   -> Argument)     <$>  (v .: "argValue")
         | type_ == "String" -> (ArgString :: String -> Argument)   <$>  (v .: "argValue")
         | type_ == "Fun"    -> (ArgFunPtr :: Int    -> Argument)   <$>  (v .: "argValue")
-        | "[" `isPrefixOf` type_ -> case () of
-                                      _ | type_ == "[CInt]"   -> (ArgVector  :: [CInt]   -> Argument) <$> (v .: "argValue")
-                                        | type_ == "[Int64]"  -> (ArgVector  :: [Int64]  -> Argument) <$> (v .: "argValue")
-                                        | type_ == "[Int32]"  -> (ArgVector  :: [Int32]  -> Argument) <$> (v .: "argValue")
-                                        | type_ == "[Int16]"  -> (ArgVector  :: [Int16]  -> Argument) <$> (v .: "argValue")
-                                        | type_ == "[Int8]"   -> (ArgVector  :: [Int8]   -> Argument) <$> (v .: "argValue")
-                                        | type_ == "[Word64]" -> (ArgVector  :: [Word64] -> Argument) <$> (v .: "argValue")
-                                        | type_ == "[Word32]" -> (ArgVector  :: [Word32] -> Argument) <$> (v .: "argValue")
-                                        | type_ == "[Word16]" -> (ArgVector  :: [Word16] -> Argument) <$> (v .: "argValue")
-                                        | type_ == "[Word8]"  -> (ArgVector  :: [Word8]  -> Argument) <$> (v .: "argValue")
-                                        | type_ == "[IPv4]"   -> (ArgVector  :: [IPv4]   -> Argument) <$> (v .: "argValue")
-                                        | type_ == "[CIDR]"   -> (ArgVector  :: [CIDR]   -> Argument) <$> (v .: "argValue")
-                                        | type_ == "[String]" -> (ArgVectorStr :: [String] -> Argument) <$> (v .: "argValue")
-                                        | otherwise -> error $ "FromJSON: Argument type " ++ type_ ++ " not supported!"
+        | "[" `isPrefixOf` type_ ->
+            case () of
+              _ | type_ == "[CInt]"   -> (ArgVector  :: [CInt]   -> Argument) <$> (v .: "argValue")
+                | type_ == "[Int64]"  -> (ArgVector  :: [Int64]  -> Argument) <$> (v .: "argValue")
+                | type_ == "[Int32]"  -> (ArgVector  :: [Int32]  -> Argument) <$> (v .: "argValue")
+                | type_ == "[Int16]"  -> (ArgVector  :: [Int16]  -> Argument) <$> (v .: "argValue")
+                | type_ == "[Int8]"   -> (ArgVector  :: [Int8]   -> Argument) <$> (v .: "argValue")
+                | type_ == "[Word64]" -> (ArgVector  :: [Word64] -> Argument) <$> (v .: "argValue")
+                | type_ == "[Word32]" -> (ArgVector  :: [Word32] -> Argument) <$> (v .: "argValue")
+                | type_ == "[Word16]" -> (ArgVector  :: [Word16] -> Argument) <$> (v .: "argValue")
+                | type_ == "[Word8]"  -> (ArgVector  :: [Word8]  -> Argument) <$> (v .: "argValue")
+                | type_ == "[IPv4]"   -> (ArgVector  :: [IPv4]   -> Argument) <$> (v .: "argValue")
+                | type_ == "[CIDR]"   -> (ArgVector  :: [CIDR]   -> Argument) <$> (v .: "argValue")
+                | type_ == "[String]" -> (ArgStrings :: [String] -> Argument) <$> (v .: "argValue")
+                | otherwise -> error $ "FromJSON: Argument type " ++ type_ ++ " not supported!"
         | null type_          -> return ArgNull
         | otherwise           -> error $ "FromJSON: Argument type " ++ type_ ++ " not supported!"
 
@@ -178,45 +181,45 @@ instance FromJSON Argument where
 instance Show Argument where
     show ArgNull         = "()"
     show (ArgFunPtr n)   = show (FunPtr n)
-    show (ArgString xs)  = xs
+    show (ArgString xs)  = show xs
     show (ArgData x)     = show x
     show (ArgVector xs)  = show xs
-    show (ArgVectorStr xs) = show xs
+    show (ArgStrings xs) = show xs
 
 
--- | Argumentable class, a typeclass for building function Arguments.
+-- | ArgumentClass class, a typeclass for building function Arguments.
 
-class (Show a, Pretty a, ToJSON a, FromJSON a) => Argumentable a where
+class (Show a, Pretty a, ToJSON a, FromJSON a) => ArgumentClass a where
     argument :: a -> Argument
 
-instance Argumentable String where
+instance ArgumentClass String where
     argument = ArgString
 
-instance Argumentable [String] where
-    argument = ArgVectorStr
+instance ArgumentClass [String] where
+    argument = ArgStrings
 
 instance
 #if __GLASGOW_HASKELL__ >= 710
  {-# OVERLAPPABLE #-}
 #endif
-  (Show a, Pretty a, Storable a, Typeable a, ToJSON a, FromJSON a) => Argumentable a where
+  (Show a, Pretty a, Storable a, Typeable a, ToJSON a, FromJSON a) => ArgumentClass a where
     argument = ArgData
 
 instance
 #if __GLASGOW_HASKELL__ >= 710
  {-# OVERLAPPABLE #-}
 #endif
-  (Show a, Pretty [a], Storable a, Typeable a, ToJSON a, FromJSON a) => Argumentable [a] where
+  (Show a, Pretty [a], Storable a, Typeable a, ToJSON a, FromJSON a) => ArgumentClass [a] where
     argument = ArgVector
 
-instance Argumentable FunPtr where
+instance ArgumentClass FunPtr where
     argument (FunPtr n) = ArgFunPtr n
 
-instance Argumentable () where
+instance ArgumentClass () where
     argument () = ArgNull
 
 
-mkArgument :: (Argumentable a) => a -> [FunctionDescr] -> Argument
+mkArgument :: (ArgumentClass a) => a -> [FunctionDescr] -> Argument
 mkArgument x [] = argument x
 mkArgument _ xs = argument (FunPtr (funIndex (head xs)))
 
@@ -243,6 +246,7 @@ instance FromJSON (Function f) where
   parseJSON = undefined
 
 
+
 -- |Simple monadic in-kernel pfq-lang function.
 
 type NetFunction  = Function (SkBuff -> Action SkBuff)
@@ -256,38 +260,43 @@ type NetPredicate = Function (SkBuff -> Bool)
 type NetProperty  = Function (SkBuff -> Word64)
 
 
+
 -- | Parametric Function data type.
 
 data Function fun where
-        Function    :: forall a b c d e f g h. (Serializable a, Argumentable a,
-                                                 Serializable b, Argumentable b,
-                                                 Serializable c, Argumentable c,
-                                                 Serializable d, Argumentable d,
-                                                 Serializable e, Argumentable e,
-                                                 Serializable f, Argumentable f,
-                                                 Serializable g, Argumentable g,
-                                                 Serializable h, Argumentable h
-                                                ) => Symbol -> a -> b -> c -> d -> e -> f -> g -> h -> NetFunction
 
-        Predicate    :: forall a b c d e f g h. (Serializable a, Argumentable a,
-                                                 Serializable b, Argumentable b,
-                                                 Serializable c, Argumentable c,
-                                                 Serializable d, Argumentable d,
-                                                 Serializable e, Argumentable e,
-                                                 Serializable f, Argumentable f,
-                                                 Serializable g, Argumentable g,
-                                                 Serializable h, Argumentable h
-                                                ) => Symbol -> a -> b -> c -> d -> e -> f -> g -> h -> NetPredicate
+        Function :: forall a b c d e f g h.
+          (Serializable a, ArgumentClass a,
+           Serializable b, ArgumentClass b,
+           Serializable c, ArgumentClass c,
+           Serializable d, ArgumentClass d,
+           Serializable e, ArgumentClass e,
+           Serializable f, ArgumentClass f,
+           Serializable g, ArgumentClass g,
+           Serializable h, ArgumentClass h
+          ) => Symbol -> a -> b -> c -> d -> e -> f -> g -> h -> NetFunction
 
-        Property     :: forall a b c d e f g h. (Serializable a, Argumentable a,
-                                                 Serializable b, Argumentable b,
-                                                 Serializable c, Argumentable c,
-                                                 Serializable d, Argumentable d,
-                                                 Serializable e, Argumentable e,
-                                                 Serializable f, Argumentable f,
-                                                 Serializable g, Argumentable g,
-                                                 Serializable h, Argumentable h
-                                                ) => Symbol -> a -> b -> c -> d -> e -> f -> g -> h -> NetProperty
+        Predicate :: forall a b c d e f g h.
+          (Serializable a, ArgumentClass a,
+           Serializable b, ArgumentClass b,
+           Serializable c, ArgumentClass c,
+           Serializable d, ArgumentClass d,
+           Serializable e, ArgumentClass e,
+           Serializable f, ArgumentClass f,
+           Serializable g, ArgumentClass g,
+           Serializable h, ArgumentClass h
+           ) => Symbol -> a -> b -> c -> d -> e -> f -> g -> h -> NetPredicate
+
+        Property :: forall a b c d e f g h.
+          (Serializable a, ArgumentClass a,
+           Serializable b, ArgumentClass b,
+           Serializable c, ArgumentClass c,
+           Serializable d, ArgumentClass d,
+           Serializable e, ArgumentClass e,
+           Serializable f, ArgumentClass f,
+           Serializable g, ArgumentClass g,
+           Serializable h, ArgumentClass h
+           ) => Symbol -> a -> b -> c -> d -> e -> f -> g -> h -> NetProperty
 
         Combinator1  :: Symbol -> NetPredicate -> NetPredicate
         Combinator2  :: Symbol -> NetPredicate -> NetPredicate -> NetPredicate
@@ -315,7 +324,7 @@ instance Storable NetPredicate where
 
 -- |Kleisli left-to-right operator, for monadic composition of pfq-lang functions.
 
-(>->) :: Function (a -> m b) -> Function (b -> m c) -> Function (a -> m c)
+(>->) :: forall a b c m. (Monad m) => Function (a -> m b) -> Function (b -> m c) -> Function (a -> m c)
 f1 >-> f2 = Composition f1 f2
 
 
@@ -330,14 +339,14 @@ instance Show (Function f) where
         show (Predicate symb a b c d e f g h) = shows' "Predicate" symb a b c d e f g h
         show (Property  symb a b c d e f g h) = shows' "Property" symb a b c d e f g h
 
-        show (Combinator1 "not" p)       = "(Combinator not " ++ show p  ++ ")"
-        show (Combinator2 "and" p1 p2)   = "(Combinator and " ++ show p1 ++" " ++ show p2 ++ ")"
-        show (Combinator2 "or"  p1 p2)   = "(Combinator or  " ++ show p1 ++" " ++ show p2 ++ ")"
-        show (Combinator2 "xor" p1 p2)   = "(Combinator xor " ++ show p1 ++" " ++ show p2 ++ ")"
-        show Combinator1 {}              = undefined
-        show Combinator2 {}              = undefined
+        show (Combinator1 "not" p)     = "(Combinator not " ++ show p  ++ ")"
+        show (Combinator2 "and" p1 p2) = "(Combinator and " ++ show p1 ++" " ++ show p2 ++ ")"
+        show (Combinator2 "or"  p1 p2) = "(Combinator or  " ++ show p1 ++" " ++ show p2 ++ ")"
+        show (Combinator2 "xor" p1 p2) = "(Combinator xor " ++ show p1 ++" " ++ show p2 ++ ")"
+        show Combinator1 {}            = undefined
+        show Combinator2 {}            = undefined
 
-        show (Composition a b)           = "(Composition " ++ show a ++ " " ++ show b ++ ")"
+        show (Composition a b)         = "(Composition " ++ show a ++ " " ++ show b ++ ")"
 
 
 -- | Pretty class, typeclass used to print a pfq-lang computation.
@@ -397,14 +406,14 @@ class Serializable a where
     serialize :: a -> Int -> ([FunctionDescr], Int)
 
 
-serializeAll :: (Serializable a, Argumentable a,
-                Serializable b, Argumentable b,
-                Serializable c, Argumentable c,
-                Serializable d, Argumentable d,
-                Serializable e, Argumentable e,
-                Serializable f, Argumentable f,
-                Serializable g, Argumentable g,
-                Serializable h, Argumentable h) => String -> Int -> Bool -> a -> b -> c -> d -> e -> f -> g -> h -> ([FunctionDescr], Int)
+serializeAll :: (Serializable a, ArgumentClass a,
+                 Serializable b, ArgumentClass b,
+                 Serializable c, ArgumentClass c,
+                 Serializable d, ArgumentClass d,
+                 Serializable e, ArgumentClass e,
+                 Serializable f, ArgumentClass f,
+                 Serializable g, ArgumentClass g,
+                 Serializable h, ArgumentClass h) => String -> Int -> Bool -> a -> b -> c -> d -> e -> f -> g -> h -> ([FunctionDescr], Int)
 serializeAll symb n cont a b c d e f g h =
     let (s1, n1) = ([FunctionDescr symb [mkArgument a s2,
                                          mkArgument b s3,
@@ -423,14 +432,19 @@ serializeAll symb n cont a b c d e f g h =
         (s8, n8) = serialize g n7
         (s9, n9) = serialize h n8
 
-    in (s1 ++ fixComputation n1 s2 ++
-              fixComputation n2 s3 ++
-              fixComputation n3 s4 ++
-              fixComputation n4 s5 ++
-              fixComputation n5 s6 ++
-              fixComputation n6 s7 ++
-              fixComputation n7 s8 ++
-              fixComputation n8 s9, n9)
+    in (s1 ++ fixDescrList n1 s2 ++
+              fixDescrList n2 s3 ++
+              fixDescrList n3 s4 ++
+              fixDescrList n4 s5 ++
+              fixDescrList n5 s6 ++
+              fixDescrList n6 s7 ++
+              fixDescrList n7 s8 ++
+              fixDescrList n8 s9, n9)
+
+    where fixDescrList :: Int -> [FunctionDescr] -> [FunctionDescr]
+          fixDescrList idx xs = map (\(FunctionDescr sym as cur next) -> FunctionDescr sym as cur (cut next)) xs
+                where
+                    cut x = if x == (idx + length xs) then (-1) else x
 
 
 instance
@@ -467,7 +481,6 @@ instance Serializable NetPredicate where
 instance Serializable NetProperty where
 
     serialize (Property  symb a b c d e f g h) n = serializeAll symb n False a b c d e f g h
-
     serialize _ _ = undefined
 
 
@@ -480,10 +493,4 @@ instance
 
 instance Serializable () where
     serialize _ n = ([], n)
-
-
-fixComputation :: Int -> [FunctionDescr] -> [FunctionDescr]
-fixComputation n xs = map (\(FunctionDescr sym as cur next) -> FunctionDescr sym as cur (cut next)) xs
-                where
-                    cut x = if x == (n + length xs) then (-1) else x
 
