@@ -32,193 +32,179 @@
 
 module Network.PFQ.Lang.Default
     (
-        -- * Predicates
-        -- | Collection of predicates used in conditional expressions.
+      -- * Predicates
+      -- | Collection of predicates used in conditional expressions.
 
-        is_ip,
-        is_udp,
-        is_tcp,
-        is_icmp,
-        is_ip6,
-        is_udp6,
-        is_tcp6,
-        is_icmp6,
-        is_flow,
-        is_l3_proto,
-        is_l4_proto,
+      is_ip
+    , is_udp
+    , is_tcp
+    , is_icmp
+    , is_ip6
+    , is_udp6
+    , is_tcp6
+    , is_icmp6
+    , is_flow
+    , is_l3_proto
+    , is_l4_proto
 
-        is_frag,
-        is_first_frag,
-        is_more_frag,
+    , is_frag
+    , is_first_frag
+    , is_more_frag
 
-        is_rtp,
-        is_rtcp,
-        is_sip,
-        is_voip,
+    , is_rtp
+    , is_rtcp
+    , is_sip
+    , is_voip
 
-        has_port,
-        has_src_port,
-        has_dst_port,
+    , has_port
+    , has_src_port
+    , has_dst_port
 
-        has_addr,
-        has_src_addr,
-        has_dst_addr,
+    , has_addr
+    , has_src_addr
+    , has_dst_addr
 
-        has_state,
-        has_mark,
-        has_vlan,
-        has_vid,
-        vlan_id,
+    , has_state
+    , has_mark
+    , has_vlan
+    , has_vid
+    , vlan_id
 
-        -- * Properties
+      -- * Properties
 
-        ip_tos      ,
-        ip_tot_len  ,
-        ip_id       ,
-        ip_frag     ,
-        ip_ttl      ,
-        get_mark    ,
-        get_state   ,
+    , ip_tos
+    , ip_tot_len
+    , ip_id
+    , ip_frag
+    , ip_ttl
+    , get_mark
+    , get_state
+    , tcp_source
+    , tcp_dest
+    , tcp_hdrlen
+    , udp_source
+    , udp_dest
+    , udp_len
+    , icmp_type
+    , icmp_code
 
-        tcp_source  ,
-        tcp_dest    ,
-        tcp_hdrlen  ,
+      -- * Combinators
 
-        udp_source  ,
-        udp_dest    ,
-        udp_len     ,
-
-        icmp_type   ,
-        icmp_code   ,
-
-        -- * Combinators
-
-        (.||.),
-        (.&&.),
-        (.^^.),
-        not',
-        inv ,
-        par',
+    , (.||.)
+    , (.&&.)
+    , (.^^.)
+    , not'
+    , inv
+    , par'
 
         -- * Comparators
         -- | Take a NetProperty, a value, and return a predicate that compares the values.
 
-        (.<.),
-        (.<=.),
-        (.==.),
-        (./=.),
-        (.>.),
-        (.>=.),
-        any_bit,
-        all_bit,
+    , (.<.)
+    , (.<=.)
+    , (.==.)
+    , (./=.)
+    , (.>.)
+    , (.>=.)
+    , any_bit
+    , all_bit
 
         -- * Conditionals
 
-        conditional ,
-        when'       ,
-        unless'     ,
+    , conditional
+    , when'
+    , unless'
 
         -- * Filters
         -- | A collection of monadic NetFunctions.
 
-        filter'    ,
-        ip         ,
-        ip6        ,
-        udp        ,
-        tcp        ,
-        icmp       ,
-        udp6       ,
-        tcp6       ,
-        icmp6      ,
-        vlan       ,
-        l3_proto   ,
-        l4_proto   ,
-        flow       ,
-
-        rtp         ,
-        rtcp        ,
-        sip         ,
-        voip        ,
-
-        vlan_id_filter,
-
-        no_frag    ,
-        no_more_frag,
-
-        port       ,
-        src_port   ,
-        dst_port   ,
-
-        addr       ,
-        src_addr   ,
-        dst_addr   ,
+    , filter'
+    , ip
+    , ip6
+    , udp
+    , tcp
+    , icmp
+    , udp6
+    , tcp6
+    , icmp6
+    , vlan
+    , l3_proto
+    , l4_proto
+    , flow
+    , rtp
+    , rtcp
+    , sip
+    , voip
+    , vlan_id_filter
+    , no_frag
+    , no_more_frag
+    , port
+    , src_port
+    , dst_port
+    , addr
+    , src_addr
+    , dst_addr
 
         -- * Steering functions
         -- | Monadic functions used to dispatch packets across sockets.
         -- They evaluate to /Steer Hash Skbuff/, if the packet has a certain property, /Drop/ otherwise.
 
-        steer_rrobin ,
-        steer_rss  ,
-        steer_to   ,
-        steer_link ,
-        steer_link_local,
-        steer_mac  ,
-        steer_vlan ,
-        steer_p2p  ,
-        steer_ip   ,
-        steer_ip_local,
-        steer_ip6  ,
-        steer_p2p6 ,
-        steer_flow ,
-        steer_net  ,
-        steer_field,
-        steer_field_double,
-        steer_field_symmetric,
-        steer_rtp  ,
-        steer_voip ,
+    , steer_rrobin
+    , steer_rss
+    , steer_to
+    , steer_link
+    , steer_link_local
+    , steer_mac
+    , steer_vlan
+    , steer_p2p
+    , steer_ip
+    , steer_ip_local
+    , steer_ip6
+    , steer_p2p6
+    , steer_flow
+    , steer_net
+    , steer_field
+    , steer_field_double
+    , steer_field_symmetric
+    , steer_rtp
+    , steer_voip
 
         -- * Forwarders
-
-        kernel     ,
-        broadcast  ,
-        drop'      ,
-        class'     ,
-
-        forward    ,
-        forwardIO  ,
-        link       ,
-
-        bridge     ,
-        tee        ,
-        tap        ,
+    , kernel
+    , broadcast
+    , drop'
+    , class'
+    , forward
+    , forwardIO
+    , link
+    , bridge
+    , tee
+    , tap
 
         -- * Logging
-
-        log_msg    ,
-        log_buff   ,
-        log_packet ,
+    , log_msg
+    , log_buff
+    , log_packet
 
         -- * Bloom Filters
 
-        bloom       ,
-        bloom_src   ,
-        bloom_dst   ,
-
-        bloom_filter,
-        bloom_src_filter,
-        bloom_dst_filter,
-
-        bloomCalcN  ,
-        bloomCalcM  ,
-        bloomCalcP  ,
+    , bloom
+    , bloom_src
+    , bloom_dst
+    , bloom_filter
+    , bloom_src_filter
+    , bloom_dst_filter
+    , bloomCalcN
+    , bloomCalcM
+    , bloomCalcP
 
         -- * Miscellaneous
 
-        unit       ,
-        inc        ,
-        dec        ,
-        mark       ,
-        put_state  ,
+    , unit
+    , inc
+    , dec
+    , mark
+    , put_state
 
     ) where
 

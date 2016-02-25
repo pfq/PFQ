@@ -970,7 +970,7 @@ withSingleArg arg callback =
         ArgFunPtr i   -> callback (ptrToIntPtr nullPtr, fromIntegral i         , -1)
         ArgString s   -> withCString s $ \ ptr -> callback (ptrToIntPtr ptr, 0 , -1)
         ArgVector xs  -> let vec = SV.pack xs in SV.withStartPtr vec $ \ ptr len -> callback (ptrToIntPtr ptr, fromIntegral $ sizeOf (head xs), fromIntegral len)
-        ArgVectorStr xs -> withMany withCString xs $ \xs' -> let vec = SV.pack xs' in SV.withStartPtr vec $ \ ptr len -> callback (ptrToIntPtr ptr, 0, fromIntegral len)
+        ArgStrings xs -> withMany withCString xs $ \xs' -> let vec = SV.pack xs' in SV.withStartPtr vec $ \ ptr len -> callback (ptrToIntPtr ptr, 0, fromIntegral len)
         ArgData v     -> alloca $ \ptr -> poke ptr v >> callback (ptrToIntPtr ptr, fromIntegral $ sizeOf v, -1)
 
 

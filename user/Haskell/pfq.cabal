@@ -21,7 +21,8 @@ Library
                  network,
                  aeson,
                  scientific,
-                 clock
+                 clock,
+                 mtl
 
   exposed-modules: Network.PFQ
                    Network.PFQ.Types
