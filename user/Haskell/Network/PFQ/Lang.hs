@@ -337,16 +337,12 @@ instance Storable NetPredicate where
 f1 >-> f2 = Composition f1 f2
 
 
-shows' :: (Show a, Show b, Show c, Show d, Show e, Show f, Show g, Show h) => String -> String -> a -> b -> c -> d -> e -> f -> g -> h -> String
-shows' kind symb a b c d e f g h = let args = unwords $ filter (not .null) [show a, show b, show c, show d, show e, show f, show g, show h]
-                                   in if null args then "(" ++ kind ++ " " ++ symb ++ ")"
-                                                   else "(" ++ kind ++ " " ++ symb ++ " " ++ args  ++ ")"
 
 instance Show (Function f) where
 
-        show (Function  symb a b c d e f g h) = shows' "Function" symb a b c d e f g h
-        show (Predicate symb a b c d e f g h) = shows' "Predicate" symb a b c d e f g h
-        show (Property  symb a b c d e f g h) = shows' "Property" symb a b c d e f g h
+        show (Function  symb a b c d e f g h) = showFunction "Function"  symb a b c d e f g h
+        show (Predicate symb a b c d e f g h) = showFunction "Predicate" symb a b c d e f g h
+        show (Property  symb a b c d e f g h) = showFunction "Property"  symb a b c d e f g h
 
         show (Combinator1 "not" p)     = "(Combinator not " ++ show p  ++ ")"
         show (Combinator2 "and" p1 p2) = "(Combinator and " ++ show p1 ++" " ++ show p2 ++ ")"
@@ -388,16 +384,11 @@ instance Pretty () where
     pretty _ = ""
 
 
-pretties :: (Pretty a, Pretty b, Pretty c, Pretty d, Pretty e, Pretty f, Pretty g, Pretty h) => String -> a -> b -> c -> d -> e -> f -> g -> h -> String
-pretties symb a b c d e f g h = let args = unwords $ filter (not . null) [pretty a, pretty b, pretty c, pretty d, pretty e, pretty f, pretty g, pretty h]
-                                  in if null args then symb
-                                                  else "(" ++ symb ++ " " ++ args  ++ ")"
-
 instance Pretty (Function f) where
 
-        pretty (Function symb a b c d e f g h) = pretties symb a b c d e f g h
-        pretty (Predicate symb a b c d e f g h) = pretties symb a b c d e f g h
-        pretty (Property  symb a b c d e f g h) = pretties symb a b c d e f g h
+        pretty (Function  symb a b c d e f g h) = prettyFunction symb a b c d e f g h
+        pretty (Predicate symb a b c d e f g h) = prettyFunction symb a b c d e f g h
+        pretty (Property  symb a b c d e f g h) = prettyFunction symb a b c d e f g h
 
         pretty (Combinator1 "not" p)       = "(not " ++ pretty p ++ ")"
         pretty (Combinator2 "and" p1 p2)   = "(" ++ pretty p1 ++" && " ++ pretty p2 ++ ")"
@@ -467,9 +458,7 @@ instance
     serialize (Composition a b) n = let (s1, n1) = serialize a n
                                         (s2, n2) = serialize b n1
                                     in (s1 ++ s2, n2)
-
     serialize _ _ = undefined
-
 
 
 instance Serializable NetPredicate where
@@ -503,3 +492,16 @@ instance
 instance Serializable () where
     serialize _ n = ([], n)
 
+
+
+showFunction :: (Show a, Show b, Show c, Show d, Show e, Show f, Show g, Show h) => String -> String -> a -> b -> c -> d -> e -> f -> g -> h -> String
+showFunction kind symb a b c d e f g h =
+  let args = (unwords . filter (not .null)) [show a, show b, show c, show d, show e, show f, show g, show h]
+    in if null args then "(" ++ kind ++ " " ++ symb ++ ")"
+                    else "(" ++ kind ++ " " ++ symb ++ " " ++ args  ++ ")"
+
+prettyFunction :: (Pretty a, Pretty b, Pretty c, Pretty d, Pretty e, Pretty f, Pretty g, Pretty h) => String -> a -> b -> c -> d -> e -> f -> g -> h -> String
+prettyFunction symb a b c d e f g h =
+  let args = unwords $ filter (not . null) [pretty a, pretty b, pretty c, pretty d, pretty e, pretty f, pretty g, pretty h]
+  in if null args then symb
+                  else "(" ++ symb ++ " " ++ args  ++ ")"
