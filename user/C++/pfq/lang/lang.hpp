@@ -294,7 +294,7 @@ namespace pfq { namespace lang
         if (arg.ptr)
             return arg.ptr->forall_show();
         else if (arg.size)
-            return "arg#" + std::to_string(arg.size) + "";
+            return "arg#" + std::to_string(arg.size);
         return "";
     }
 
@@ -315,13 +315,13 @@ namespace pfq { namespace lang
         std::string out;
         size_t n = 0;
 
-        out = "FunctionDescr " + descr.symbol + " [";
+        out = "FunctionDescr { " + descr.symbol + " [";
 
         for(auto const &a : descr.arg)
         {
             out += n++ ? (' ' + show(a)) : show(a);
         }
-        out +=  "] " + std::to_string(descr.index) + " " + std::to_string(descr.link) + ')';
+        out +=  "] " + std::to_string(descr.index) + " " + std::to_string(descr.link) + '}';
 
         return out;
     }
@@ -356,19 +356,6 @@ namespace pfq { namespace lang
             make_argument(std::get<6>(args), std::get<6>(ref)),
             make_argument(std::get<7>(args), std::get<7>(ref))
         }};
-    }
-
-    //
-    // fix the link of this computation
-    //
-
-    inline void fix_computation(std::ptrdiff_t n, std::vector<FunctionDescr> &vec)
-    {
-        for(auto & e : vec)
-        {
-            if (e.link == n + static_cast<std::ptrdiff_t>(vec.size()))
-                e.link = -1;
-        }
     }
 
     //
@@ -412,14 +399,24 @@ namespace pfq { namespace lang
             n+1
         );
 
-        fix_computation(n1, s2);
-        fix_computation(n2, s3);
-        fix_computation(n3, s4);
-        fix_computation(n4, s5);
-        fix_computation(n5, s6);
-        fix_computation(n6, s7);
-        fix_computation(n7, s8);
-        fix_computation(n8, s9);
+        // fix the links of these function descriptors
+        //
+
+        auto fix_descr_list = [&] (std::ptrdiff_t n, std::vector<FunctionDescr> &vec)
+        {
+            for(auto & e : vec)
+                if (e.link == n + static_cast<std::ptrdiff_t>(vec.size()))
+                    e.link = -1;
+        };
+
+        fix_descr_list(n1, s2);
+        fix_descr_list(n2, s3);
+        fix_descr_list(n3, s4);
+        fix_descr_list(n4, s5);
+        fix_descr_list(n5, s6);
+        fix_descr_list(n6, s7);
+        fix_descr_list(n7, s8);
+        fix_descr_list(n8, s9);
 
         return std::make_pair(s1 + s2 + s3 + s4 + s5 + s6 + s7 + s8 + s9, n9);
     }
@@ -451,36 +448,30 @@ namespace pfq { namespace lang
 
     ///////// pretty property:
 
-    inline std::string
-    pretty(Property<> const &p)
-    {
-       return p.symbol_;
-    }
-
     template <typename ...Ts>
     inline std::string
     pretty(Property<Ts...> const &p)
     {
-        std::string ret = '(' + p.symbol_;
-        tuple_for_each(p.args_, pretty_tuple(ret));
-        return ret + ')';
+        if (sizeof...(Ts)) {
+            std::string ret = '(' + p.symbol_;
+            tuple_for_each(p.args_, pretty_tuple(ret));
+            return ret + ')';
+        }
+        return p.symbol_;
     }
 
     ///////// show property:
-
-    inline std::string
-    show(Property<> const &p)
-    {
-       return p.symbol_;
-    }
 
     template <typename ...Ts>
     inline std::string
     show(Property<Ts...> const &p)
     {
-        std::string ret = "(Property " + p.symbol_;
-        tuple_for_each(p.args_, show_tuple(ret));
-        return ret + ')';
+        if (sizeof...(Ts)) {
+            std::string ret = "(Property " + p.symbol_;
+            tuple_for_each(p.args_, show_tuple(ret));
+            return ret + ')';
+        }
+        return p.symbol_;
     }
 
     ///////// serialize property:
@@ -519,36 +510,30 @@ namespace pfq { namespace lang
 
     ///////// pretty predicate:
 
-    inline std::string
-    pretty(Predicate<> const &p)
-    {
-       return p.symbol_;
-    }
-
     template <typename ...Ts>
     inline std::string
     pretty(Predicate<Ts...> const &p)
     {
-        std::string ret = '(' + p.symbol_;
-        tuple_for_each(p.args_, pretty_tuple(ret));
-        return ret + ')';
+        if (sizeof...(Ts)) {
+            std::string ret = '(' + p.symbol_;
+            tuple_for_each(p.args_, pretty_tuple(ret));
+            return ret + ')';
+        }
+        return p.symbol_;
     }
 
     ///////// show predicate:
-
-    inline std::string
-    show(Predicate<> const &p)
-    {
-       return p.symbol_;
-    }
 
     template <typename ...Ts>
     inline std::string
     show(Predicate<Ts...> const &p)
     {
-        std::string ret = "(Predicate " + p.symbol_;
-        tuple_for_each(p.args_, show_tuple(ret));
-        return ret + ')';
+        if (sizeof...(Ts)) {
+            std::string ret = "(Predicate " + p.symbol_;
+            tuple_for_each(p.args_, show_tuple(ret));
+            return ret + ')';
+        }
+        return p.symbol_;
     }
 
     ///////// serialize predicate:
@@ -587,36 +572,30 @@ namespace pfq { namespace lang
 
     ///////// pretty function:
 
-    inline std::string
-    pretty(Function<> const &f)
-    {
-       return f.symbol_;
-    }
-
     template <typename ...Ts>
     inline std::string
     pretty(Function<Ts...> const &f)
     {
-        std::string ret = '(' + f.symbol_;
-        tuple_for_each(f.args_, pretty_tuple(ret));
-        return ret + ')';
+        if (sizeof...(Ts)) {
+            std::string ret = '(' + f.symbol_;
+            tuple_for_each(f.args_, pretty_tuple(ret));
+            return ret + ')';
+        }
+        return f.symbol_;
     }
 
     ///////// show function:
-
-    inline std::string
-    show(Function<> const &f)
-    {
-       return f.symbol_;
-    }
 
     template <typename ...Ts>
     inline std::string
     show(Function<Ts...> const &f)
     {
-        std::string ret = "(Function " + f.symbol_;
-        tuple_for_each(f.args_, show_tuple(ret));
-        return ret + ')';
+        if (sizeof...(Ts)) {
+            std::string ret = "(Function " + f.symbol_;
+            tuple_for_each(f.args_, show_tuple(ret));
+            return ret + ')';
+        }
+        return f.symbol_;
     }
 
     ///////// serialize function:
@@ -674,6 +653,7 @@ namespace pfq { namespace lang
     {
         using type = typename kleisly< KFunction<M<B>(A)>, typename kleisly<F,G>::type>::type;
     };
+
 
     //
     // Kleisli composition: >>
