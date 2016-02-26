@@ -187,6 +187,15 @@ instance Show Argument where
     show (ArgStrings xs) = show xs
 
 
+instance Pretty Argument where
+    pretty  ArgNull        = ""
+    pretty (ArgFunPtr n)   = show (FunPtr n)
+    pretty (ArgString xs)  = show xs
+    pretty (ArgData x)     = show x
+    pretty (ArgVector xs)  = show xs
+    pretty (ArgStrings xs) = show xs
+
+
 -- | ArgumentClass class, a typeclass for building function Arguments.
 
 class (Show a, Pretty a, ToJSON a, FromJSON a) => ArgumentClass a where
