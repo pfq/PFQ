@@ -309,7 +309,7 @@ data Function fun where
 
         Combinator1  :: Symbol -> NetPredicate -> NetPredicate
         Combinator2  :: Symbol -> NetPredicate -> NetPredicate -> NetPredicate
-        Composition  :: forall f1 f2 f. (Serializable (Function f1), Serializable (Function f2)) => Function f1 -> Function f2 -> Function f
+        Kleisli      :: forall f1 f2 f. (Serializable (Function f1), Serializable (Function f2)) => Function f1 -> Function f2 -> Function f
 
 
 instance Storable NetFunction where
@@ -334,7 +334,7 @@ instance Storable NetPredicate where
 -- |Kleisli left-to-right operator, for monadic composition of pfq-lang functions.
 
 (>->) :: forall a b c m. (Monad m) => Function (a -> m b) -> Function (b -> m c) -> Function (a -> m c)
-f1 >-> f2 = Composition f1 f2
+f1 >-> f2 = Kleisli f1 f2
 
 
 
@@ -348,10 +348,10 @@ instance Show (Function f) where
         show (Combinator2 "and" p1 p2) = "(Combinator and " ++ show p1 ++" " ++ show p2 ++ ")"
         show (Combinator2 "or"  p1 p2) = "(Combinator or  " ++ show p1 ++" " ++ show p2 ++ ")"
         show (Combinator2 "xor" p1 p2) = "(Combinator xor " ++ show p1 ++" " ++ show p2 ++ ")"
-        show Combinator1 {}            = undefined
-        show Combinator2 {}            = undefined
+        show Combinator1 {} = undefined
+        show Combinator2 {} = undefined
 
-        show (Composition a b)         = "(Composition " ++ show a ++ " " ++ show b ++ ")"
+        show (Kleisli a b) = "(Kleisli " ++ show a ++ " " ++ show b ++ ")"
 
 
 -- | Pretty class, typeclass used to print a pfq-lang computation.
@@ -396,7 +396,7 @@ instance Pretty (Function f) where
         pretty (Combinator2 "xor" p1 p2)   = "(" ++ pretty p1 ++" ^^ " ++ pretty p2 ++ ")"
         pretty Combinator1{}               = undefined
         pretty Combinator2{}               = undefined
-        pretty (Composition a b)           = pretty a ++ " >-> " ++ pretty b
+        pretty (Kleisli a b)               = pretty a ++ " >-> " ++ pretty b
 
 
 -- | Serializable class, a typeclass used to serialize computations.
@@ -455,9 +455,9 @@ instance
 
     serialize (Function symb a b c d e f g h) n = serializeAll symb n True a b c d e f g h
 
-    serialize (Composition a b) n = let (s1, n1) = serialize a n
-                                        (s2, n2) = serialize b n1
-                                    in (s1 ++ s2, n2)
+    serialize (Kleisli a b) n = let (s1, n1) = serialize a n
+                                    (s2, n2) = serialize b n1
+                                in (s1 ++ s2, n2)
     serialize _ _ = undefined
 
 

@@ -166,7 +166,7 @@ namespace pfq { namespace lang
     struct Function;
 
     template <typename F, typename G>
-    struct Composition;
+    struct Kleisli;
 
 
     template <typename Tp>
@@ -186,7 +186,7 @@ namespace pfq { namespace lang
     template <typename Tp>
     struct is_monadic_function :
         bool_type<is_same_type_constructor<Tp, Function>::value   ||
-                  is_same_type_constructor<Tp, Composition>::value>
+                  is_same_type_constructor<Tp, Kleisli>::value>
     { };
 
     //////// Function argument_type class:
@@ -646,13 +646,13 @@ namespace pfq { namespace lang
 
 
     //
-    // Composition
+    // Kleisli
     //
 
     template <typename F, typename G> struct kleisly;
 
     template <typename F, typename G>
-    struct Composition
+    struct Kleisli
     {
         static_assert(is_monadic_function<F>::value, "composition: argument 1 must be a monadic function");
         static_assert(is_monadic_function<G>::value, "composition: argument 2 must be a monadic function");
@@ -670,7 +670,7 @@ namespace pfq { namespace lang
     };
 
     template <template <typename > class M, typename A, typename B, typename F, typename G>
-    struct kleisly< KFunction< M<B>(A) >, Composition <F, G> >
+    struct kleisly< KFunction< M<B>(A) >, Kleisli <F, G> >
     {
         using type = typename kleisly< KFunction<M<B>(A)>, typename kleisly<F,G>::type>::type;
     };
@@ -682,7 +682,7 @@ namespace pfq { namespace lang
     template <typename C1,
               typename C2,
               typename = typename kleisly<typename C1::type, typename C2::type>::type>
-    inline Composition<C1, C2>
+    inline Kleisli<C1, C2>
     operator>>(C1 c1, C2 c2)
     {
         return { std::move(c1), std::move(c2) };
@@ -690,21 +690,21 @@ namespace pfq { namespace lang
 
     template <typename C1, typename C2>
     inline std::string
-    pretty(Composition<C1,C2> const &comp)
+    pretty(Kleisli<C1,C2> const &comp)
     {
         return pretty(comp.f_) + " >-> " + pretty(comp.g_);
     }
 
     template <typename C1, typename C2>
     inline std::string
-    show(Composition<C1,C2> const &comp)
+    show(Kleisli<C1,C2> const &comp)
     {
-        return "(Composition " + show(comp.f_) + " " + show(comp.g_) + ")";
+        return "(Kleisli " + show(comp.f_) + " " + show(comp.g_) + ")";
     }
 
     template <typename C1, typename C2>
     inline std::pair<std::vector<FunctionDescr>, std::size_t>
-    serialize(Composition<C1, C2> const &f, std::ptrdiff_t n)
+    serialize(Kleisli<C1, C2> const &f, std::ptrdiff_t n)
     {
         std::vector<FunctionDescr> v1, v2;
         std::size_t n1, n2;
