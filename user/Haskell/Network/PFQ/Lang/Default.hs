@@ -93,9 +93,9 @@ module Network.PFQ.Lang.Default
     , (.||.)
     , (.&&.)
     , (.^^.)
-    , not'
+    , Network.PFQ.Lang.Default.not
     , inv
-    , par'
+    , par
 
         -- * Comparators
         -- | Take a NetProperty, a value, and return a predicate that compares the values.
@@ -112,13 +112,13 @@ module Network.PFQ.Lang.Default
         -- * Conditionals
 
     , conditional
-    , when'
-    , unless'
+    , when
+    , unless
 
         -- * Filters
         -- | A collection of monadic NetFunctions.
 
-    , filter'
+    , Network.PFQ.Lang.Default.filter
     , ip
     , ip6
     , udp
@@ -172,8 +172,8 @@ module Network.PFQ.Lang.Default
         -- * Forwarders
     , kernel
     , broadcast
-    , drop'
-    , class'
+    , Network.PFQ.Lang.Default.drop
+    , classify
     , forward
     , forwardIO
     , link
@@ -210,7 +210,7 @@ module Network.PFQ.Lang.Default
 
 
 import           Network.PFQ.Lang
-import           Network.PFQ.Types
+-- import           Network.PFQ.Types
 
 import           Data.Int
 import           Data.Word
@@ -234,9 +234,9 @@ import           Foreign.Storable.Tuple ()
 
 -- | Return a new predicate that evaluates to /True/, when the given one evaluates to
 -- false, and vice versa.
-not' :: NetPredicate -> NetPredicate
+not :: NetPredicate -> NetPredicate
 
-not'       = Combinator1 "not"
+not = Combinator1 "not"
 p1 .||. p2 = Combinator2 "or"   p1 p2
 p1 .&&. p2 = Combinator2 "and"  p1 p2
 p1 .^^. p2 = Combinator2 "xor"  p1 p2
@@ -248,7 +248,7 @@ infixl 5 .||.
 -- | Return a predicate that evaluates to /True/, if the property is less than
 -- the given value. Example:
 --
--- >  when' (ip_ttl .<. 64) drop'
+-- >  when (ip_ttl .<. 64) drop
 
 (.<.)  :: NetProperty -> Word64 -> NetPredicate
 (.<=.) :: NetProperty -> Word64 -> NetPredicate
@@ -602,13 +602,13 @@ steer_field_symmetric offset1 offset2 size = Function "steer_field_symmetric" of
 -- | Transform the given predicate in its counterpart monadic version.
 -- Example:
 --
--- > filter' is_udp >-> kernel
+-- > filter is_udp >-> kernel
 --
 -- is logically equivalent to:
 --
 -- > udp >-> kernel
-filter' :: NetPredicate -> NetFunction
-filter' p = Function "filter" p () () () () () () ()
+filter :: NetPredicate -> NetFunction
+filter p = Function "filter" p () () () () () () ()
 
 -- | Evaluate to /Pass SkBuff/ if it is an IPv4 packet, /Drop/ it otherwise.
 ip = Function "ip" () () () () () () () () :: NetFunction
@@ -668,7 +668,7 @@ forward d = Function "forward" d () () () () () () ()
 
 -- | Forward the packet to the given device and evaluates to /Drop/. Example:
 --
--- > when' is_udp (bridge "eth1") >-> kernel
+-- > when is_udp (bridge "eth1") >-> kernel
 --
 -- Conditional bridge, forward the packet to eth1 if UDP, send it to the kernel
 -- otherwise.
@@ -695,7 +695,7 @@ tee d p = Function "tee" d p () () () () () ()
 --
 -- Logically equivalent to:
 --
--- > unless' is_udp (forward "eth1" >-> drop') >-> kernel
+-- > unless is_udp (forward "eth1" >-> drop) >-> kernel
 --
 -- Only a little bit more efficient.
 tap :: String -> NetPredicate -> NetFunction
@@ -727,11 +727,11 @@ kernel = Function "kernel" () () () () () () () () :: NetFunction
 broadcast = Function "broadcast" () () () () () () () () :: NetFunction
 
 -- | Drop the packet. The computation evaluates to /Drop/.
-drop'= Function "drop" () () () () () () () () :: NetFunction
+drop= Function "drop" () () () () () () () () :: NetFunction
 
 -- | Specify the class for the given packet. The computation evaluates to /Pass/.
-class'  :: CInt -> NetFunction
-class'  n = Function "class" n () () () () () () ()
+classify :: CInt -> NetFunction
+classify n = Function "class" n () () () () () () ()
 
 -- | Unit operation implements left- and right-identity for Action monad.
 unit = Function "unit" () () () () () () () () :: NetFunction
@@ -839,13 +839,13 @@ dst_addr net = Function "dst_addr" net () () () () () () ()
 -- otherwise does nothing.
 -- Example:
 --
--- > when' is_tcp (log_msg "This is a TCP Packet")
-when' :: NetPredicate -> NetFunction -> NetFunction
-when' p c = Function "when" p c () () () () () ()
+-- > when is_tcp (log_msg "This is a TCP Packet")
+when :: NetPredicate -> NetFunction -> NetFunction
+when p c = Function "when" p c () () () () () ()
 
--- | The reverse of "when'"
-unless' :: NetPredicate -> NetFunction -> NetFunction
-unless' p c = Function "unless" p c () () () () () ()
+-- | The reverse of "when"
+unless :: NetPredicate -> NetFunction -> NetFunction
+unless p c = Function "unless" p c () () () () () ()
 
 -- | conditional execution of monadic netfunctions.
 --
@@ -866,14 +866,14 @@ inv x = Function "inv" x () () () () () () ()
 --
 -- Logic 'or' for monadic filters:
 --
--- > par' udp icmp >-> log_msg "This is an UDP or ICMP Packet"
-par' :: NetFunction -> NetFunction -> NetFunction
-par' a b = Function "par" a b () () () () () ()
+-- > par udp icmp >-> log_msg "This is an UDP or ICMP Packet"
+par :: NetFunction -> NetFunction -> NetFunction
+par a b = Function "par" a b () () () () () ()
 
 -- | Predicate which evaluates to /True/ when the packet has one of the
 -- vlan id specified by the list. Example:
 --
--- > when' (vland_id [1,13,42,43]) (log_msg "Got a packet!")
+-- > when (vland_id [1,13,42,43]) (log_msg "Got a packet!")
 vlan_id :: [CInt] -> NetPredicate
 vlan_id ids = Predicate "vlan_id" ids () () () () () () ()
 
@@ -886,7 +886,7 @@ vlan_id_filter ids = Function "vlan_id_filter" ids () () () () () () ()
 --
 -- The first 'CInt' argument specifies the size of the bloom filter. Example:
 --
--- > when' (bloom 1024 ["192.168.0.13", "192.168.0.42"] 32) log_packet >-> kernel
+-- > when (bloom 1024 ["192.168.0.13", "192.168.0.42"] 32) log_packet >-> kernel
 {-# NOINLINE bloom #-}
 bloom ::  CInt        -- ^ Hint: size of bloom filter (M)
       ->  [HostName]  -- ^ List of Host/Network address to match
