@@ -21,8 +21,8 @@
 
 import Network.PFQ.Lang
 import Network.PFQ.Types
-import Network.PFQ.Lang.Default
-import Network.PFQ.Lang.Experimental
+import Network.PFQ.Lang.Default as Q
+import Network.PFQ.Lang.Experimental as Q
 
 import Data.Aeson
 import Data.Maybe
@@ -52,8 +52,8 @@ main = do
         let mycond = is_ip .&&. (is_tcp .||. is_udp)
         let mycond1 = is_udp
 
-        let comp = par' (ip >-> udp) (ip >-> tcp) >-> steer_rtp >->
-                         when' is_tcp (inc 2) >->
+        let comp = par (ip >-> udp) (ip >-> tcp) >-> steer_rtp >->
+                         Q.when is_tcp (inc 2) >->
                          addr "192.168.0.0/24" >->
                          steer_link_local "4c:60:de:86:55:46" >->
                          dummy 42 >->

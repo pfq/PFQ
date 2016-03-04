@@ -38,7 +38,6 @@ import Foreign.ForeignPtr
 import Foreign.Ptr
 
 import Network.PFQ as Q
-import Network.PFQ.Lang.Default
 
 import Options
 import Config
