@@ -46,7 +46,7 @@ parseCode code =  (unlines (snd ps), map parseImports (fst ps))
 
 
 defaultImports :: [(ModuleName, Maybe String)]
-defaultImports = [("Prelude", Nothing)
+defaultImports = [("Prelude", Just "P")
                  ,("Network.PFQ.Lang", Nothing)
                  ,("Network.PFQ.Types", Nothing)
                  ,("Network.PFQ.Lang.Default", Nothing)
