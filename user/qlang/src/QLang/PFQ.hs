@@ -36,7 +36,7 @@ import Foreign.ForeignPtr
 
 load :: Q.Function (SkBuff -> Action SkBuff) -> OptionT IO String
 load comp = do
-  gid' <- return . fromJust . gid  =<< ask
+  gid' <- liftM (fromJust . gid) ask
   lift $ Q.openNoGroup 64 4096 4096 >>= \fp ->
               withForeignPtr fp $ \ctrl -> do
                 Q.joinGroup ctrl gid' class_control policy_shared

@@ -25,6 +25,7 @@ module QLang.Compiler
 import Language.Haskell.Interpreter
 import Network.PFQ.Lang as Q
 
+import System.IO
 import Control.Exception
 import Control.Monad.Reader
 import Options
@@ -37,7 +38,8 @@ compile raw = do
     opt <- ask
     imports <- mkImportList localImports
     lift $ do
-      when (verb opt > 0) (putStrLn ("imports: " ++ show imports))
+      when (verb opt > 0) $ hPutStrLn stderr "Imports: " >> mapM_ print imports
+      when (verb opt > 1) $ hPutStrLn stderr "\nCode:" >> putStrLn code
       res <- runInterpreter $ do
           setImportsQ imports
           set [languageExtensions := [ OverloadedStrings ]]
