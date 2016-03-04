@@ -49,6 +49,12 @@ import Data.List
 import Data.Maybe (isJust, fromJust)
 import Data.Scientific (toBoundedInteger)
 import Control.Monad (when)
+#if __GLASGOW_HASKELL__ < 710
+import Data.Monoid
+#else
+import Data.Monoid()
+#endif
+
 
 import Network.Socket
 import System.IO.Unsafe
