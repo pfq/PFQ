@@ -1,9 +1,9 @@
 -- example
 --
 
-import Data.List
-import qualified Data.Map
-import qualified Data.Set as S
+import Data.List -- comment
+import qualified Data.Map -- comment
+import qualified Data.Set as S  -- comment
 
 main = unit
 
