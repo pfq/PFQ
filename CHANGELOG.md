@@ -134,11 +134,11 @@ PFQ 5.2
 PFQ 6.0
 -------
  * Experimental qlang compiler released.
- * pfq-lang expressions are JSON serializable.
  * API extended with setGroupComputationFromString,
    setGroupComputationFromJSON...
- * Internal Fanout monad extended to support 
+ * Internal Fanout monad extended with 
    DoubleSteering.
+ * pfq-lang: expressions are now JSON serializable.
  * Pfq-lang: native CIDR type added.
  * Pfq-lang: new steering functions:
     * `steer_rrobin`
