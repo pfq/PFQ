@@ -290,6 +290,9 @@ Variables</h2></td></tr>
 <tr class="memitem:ac1f3f9a2caf886a1441e62860a4ca058"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03.html#ac1f3f9a2caf886a1441e62860a4ca058">steer_link</a> = <a class="el" href="namespacepfq_1_1lang.html#a1a4638059d700ae08d0ca63886ff2bb3">function</a>(&quot;steer_link&quot;)</td></tr>
 <tr class="memdesc:ac1f3f9a2caf886a1441e62860a4ca058"><td class="mdescLeft">&#160;</td><td class="mdescRight">Dispatch the packet across the sockets.  <a href="#ac1f3f9a2caf886a1441e62860a4ca058">More...</a><br /></td></tr>
 <tr class="separator:ac1f3f9a2caf886a1441e62860a4ca058"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a6bcbd11933d00917b62ef72890a98c3c"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03.html#a6bcbd11933d00917b62ef72890a98c3c">steer_link_local</a> = [](std::string mac_gw) { return <a class="el" href="namespacepfq_1_1lang.html#a1a4638059d700ae08d0ca63886ff2bb3">function</a>(&quot;steer_link_local&quot;, std::move(mac_gw)); }</td></tr>
+<tr class="memdesc:a6bcbd11933d00917b62ef72890a98c3c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Dispatch the packet across the sockets.  <a href="#a6bcbd11933d00917b62ef72890a98c3c">More...</a><br /></td></tr>
+<tr class="separator:a6bcbd11933d00917b62ef72890a98c3c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad51e91e3b485c729ac1ba39a46e337a0"><td class="memItemLeft" align="right" valign="top">auto&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03.html#ad51e91e3b485c729ac1ba39a46e337a0">steer_mac</a> = <a class="el" href="namespacepfq_1_1lang.html#a1a4638059d700ae08d0ca63886ff2bb3">function</a>(&quot;steer_mac&quot;)</td></tr>
 <tr class="memdesc:ad51e91e3b485c729ac1ba39a46e337a0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Dispatch the packet across the sockets.  <a href="#ad51e91e3b485c729ac1ba39a46e337a0">More...</a><br /></td></tr>
 <tr class="separator:ad51e91e3b485c729ac1ba39a46e337a0"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -864,7 +867,7 @@ template&lt;typename Predicate , typename Fun &gt; </div>
         </tr>
       </table>
 </div><div class="memdoc">
-<b>Initial value:</b><div class="fragment"><div class="line">= [] (<span class="keywordtype">int</span> m, std::vector&lt;std::string&gt; <span class="keyword">const</span> &amp;ips, <span class="keywordtype">int</span> prefix) {</div><div class="line">                                <span class="keyword">auto</span> addrs = fmap(details::inet_addr, ips);</div><div class="line">                                <span class="keywordflow">return</span> <a class="code" href="namespacepfq_1_1lang.html#aca9adafc436b7f851621b979fa1aaf88">predicate</a>(<span class="stringliteral">&quot;bloom&quot;</span>, m, std::move(addrs), prefix);</div><div class="line">                          }</div><div class="ttc" id="namespacepfq_1_1lang_html_aca9adafc436b7f851621b979fa1aaf88"><div class="ttname"><a href="namespacepfq_1_1lang.html#aca9adafc436b7f851621b979fa1aaf88">pfq::lang::predicate</a></div><div class="ttdeci">Predicate&lt; typename std::decay&lt; Ts &gt;::type... &gt; predicate(std::string symbol, Ts &amp;&amp;...args)</div><div class="ttdef"><b>Definition:</b> lang.hpp:515</div></div>
+<b>Initial value:</b><div class="fragment"><div class="line">= [] (<span class="keywordtype">int</span> m, std::vector&lt;std::string&gt; <span class="keyword">const</span> &amp;ips, <span class="keywordtype">int</span> prefix) {</div><div class="line">                                <span class="keyword">auto</span> addrs = fmap(details::inet_addr, ips);</div><div class="line">                                <span class="keywordflow">return</span> <a class="code" href="namespacepfq_1_1lang.html#aca9adafc436b7f851621b979fa1aaf88">predicate</a>(<span class="stringliteral">&quot;bloom&quot;</span>, m, std::move(addrs), prefix);</div><div class="line">                          }</div><div class="ttc" id="namespacepfq_1_1lang_html_aca9adafc436b7f851621b979fa1aaf88"><div class="ttname"><a href="namespacepfq_1_1lang.html#aca9adafc436b7f851621b979fa1aaf88">pfq::lang::predicate</a></div><div class="ttdeci">Predicate&lt; typename std::decay&lt; Ts &gt;::type... &gt; predicate(std::string symbol, Ts &amp;&amp;...args)</div><div class="ttdef"><b>Definition:</b> lang.hpp:506</div></div>
 </div><!-- fragment -->
 <p><a class="el" href="structpfq_1_1lang_1_1Predicate.html">Predicate</a> that evaluates to <code>true</code> when the source or the destination address. </p>
 <p>The first <code>int</code> argument specifies the size of the bloom filter. The second <code>vector</code> argument specifies the list of IP/network addresses of the bloom filter. The third <code>int</code> argument specifies the network prefix. Example:</p>
@@ -881,7 +884,7 @@ template&lt;typename Predicate , typename Fun &gt; </div>
         </tr>
       </table>
 </div><div class="memdoc">
-<b>Initial value:</b><div class="fragment"><div class="line">= [] (<span class="keywordtype">int</span> m, std::vector&lt;std::string&gt; <span class="keyword">const</span> &amp;ips, <span class="keywordtype">int</span> prefix) {</div><div class="line">                                <span class="keyword">auto</span> addrs = fmap(details::inet_addr, ips);</div><div class="line">                                <span class="keywordflow">return</span> <a class="code" href="namespacepfq_1_1lang.html#aca9adafc436b7f851621b979fa1aaf88">predicate</a>(<span class="stringliteral">&quot;bloom_dst&quot;</span>, m, std::move(addrs), prefix);</div><div class="line">                          }</div><div class="ttc" id="namespacepfq_1_1lang_html_aca9adafc436b7f851621b979fa1aaf88"><div class="ttname"><a href="namespacepfq_1_1lang.html#aca9adafc436b7f851621b979fa1aaf88">pfq::lang::predicate</a></div><div class="ttdeci">Predicate&lt; typename std::decay&lt; Ts &gt;::type... &gt; predicate(std::string symbol, Ts &amp;&amp;...args)</div><div class="ttdef"><b>Definition:</b> lang.hpp:515</div></div>
+<b>Initial value:</b><div class="fragment"><div class="line">= [] (<span class="keywordtype">int</span> m, std::vector&lt;std::string&gt; <span class="keyword">const</span> &amp;ips, <span class="keywordtype">int</span> prefix) {</div><div class="line">                                <span class="keyword">auto</span> addrs = fmap(details::inet_addr, ips);</div><div class="line">                                <span class="keywordflow">return</span> <a class="code" href="namespacepfq_1_1lang.html#aca9adafc436b7f851621b979fa1aaf88">predicate</a>(<span class="stringliteral">&quot;bloom_dst&quot;</span>, m, std::move(addrs), prefix);</div><div class="line">                          }</div><div class="ttc" id="namespacepfq_1_1lang_html_aca9adafc436b7f851621b979fa1aaf88"><div class="ttname"><a href="namespacepfq_1_1lang.html#aca9adafc436b7f851621b979fa1aaf88">pfq::lang::predicate</a></div><div class="ttdeci">Predicate&lt; typename std::decay&lt; Ts &gt;::type... &gt; predicate(std::string symbol, Ts &amp;&amp;...args)</div><div class="ttdef"><b>Definition:</b> lang.hpp:506</div></div>
 </div><!-- fragment --><p>Similarly to <code>bloom</code>, evaluates to <code>true</code> when the destination address of the packet matches the ones specified by the bloom list. </p><dl class="section see"><dt>See also</dt><dd><a class="el" href="namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03.html#abfcd230137acb93cfd99f7a0a7c1f17f" title="Predicate that evaluates to true when the source or the destination address. ">bloom</a> </dd></dl>
 
 </div>
@@ -925,7 +928,7 @@ template&lt;typename Predicate , typename Fun &gt; </div>
         </tr>
       </table>
 </div><div class="memdoc">
-<b>Initial value:</b><div class="fragment"><div class="line">= [] (<span class="keywordtype">int</span> m, std::vector&lt;std::string&gt; <span class="keyword">const</span> &amp;ips, <span class="keywordtype">int</span> prefix) {</div><div class="line">                                <span class="keyword">auto</span> addrs = fmap(details::inet_addr, ips);</div><div class="line">                                <span class="keywordflow">return</span> <a class="code" href="namespacepfq_1_1lang.html#aca9adafc436b7f851621b979fa1aaf88">predicate</a>(<span class="stringliteral">&quot;bloom_src&quot;</span>, m, std::move(addrs), prefix);</div><div class="line">                          }</div><div class="ttc" id="namespacepfq_1_1lang_html_aca9adafc436b7f851621b979fa1aaf88"><div class="ttname"><a href="namespacepfq_1_1lang.html#aca9adafc436b7f851621b979fa1aaf88">pfq::lang::predicate</a></div><div class="ttdeci">Predicate&lt; typename std::decay&lt; Ts &gt;::type... &gt; predicate(std::string symbol, Ts &amp;&amp;...args)</div><div class="ttdef"><b>Definition:</b> lang.hpp:515</div></div>
+<b>Initial value:</b><div class="fragment"><div class="line">= [] (<span class="keywordtype">int</span> m, std::vector&lt;std::string&gt; <span class="keyword">const</span> &amp;ips, <span class="keywordtype">int</span> prefix) {</div><div class="line">                                <span class="keyword">auto</span> addrs = fmap(details::inet_addr, ips);</div><div class="line">                                <span class="keywordflow">return</span> <a class="code" href="namespacepfq_1_1lang.html#aca9adafc436b7f851621b979fa1aaf88">predicate</a>(<span class="stringliteral">&quot;bloom_src&quot;</span>, m, std::move(addrs), prefix);</div><div class="line">                          }</div><div class="ttc" id="namespacepfq_1_1lang_html_aca9adafc436b7f851621b979fa1aaf88"><div class="ttname"><a href="namespacepfq_1_1lang.html#aca9adafc436b7f851621b979fa1aaf88">pfq::lang::predicate</a></div><div class="ttdeci">Predicate&lt; typename std::decay&lt; Ts &gt;::type... &gt; predicate(std::string symbol, Ts &amp;&amp;...args)</div><div class="ttdef"><b>Definition:</b> lang.hpp:506</div></div>
 </div><!-- fragment --><p>Similarly to <code>bloom</code>, evaluates to <code>true</code> when the source address of the packet matches the ones specified by the bloom list. </p><dl class="section see"><dt>See also</dt><dd><a class="el" href="namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03.html#abfcd230137acb93cfd99f7a0a7c1f17f" title="Predicate that evaluates to true when the source or the destination address. ">bloom</a> </dd></dl>
 
 </div>
@@ -1145,7 +1148,7 @@ template&lt;typename Predicate , typename Fun &gt; </div>
         </tr>
       </table>
 </div><div class="memdoc">
-<b>Initial value:</b><div class="fragment"><div class="line">= [] (CIDR data)</div><div class="line">        {</div><div class="line">            <span class="keywordflow">return</span> <a class="code" href="namespacepfq_1_1lang.html#aca9adafc436b7f851621b979fa1aaf88">predicate</a>(<span class="stringliteral">&quot;has_addr&quot;</span>, data);</div><div class="line">        }</div><div class="ttc" id="namespacepfq_1_1lang_html_aca9adafc436b7f851621b979fa1aaf88"><div class="ttname"><a href="namespacepfq_1_1lang.html#aca9adafc436b7f851621b979fa1aaf88">pfq::lang::predicate</a></div><div class="ttdeci">Predicate&lt; typename std::decay&lt; Ts &gt;::type... &gt; predicate(std::string symbol, Ts &amp;&amp;...args)</div><div class="ttdef"><b>Definition:</b> lang.hpp:515</div></div>
+<b>Initial value:</b><div class="fragment"><div class="line">= [] (CIDR data)</div><div class="line">        {</div><div class="line">            <span class="keywordflow">return</span> <a class="code" href="namespacepfq_1_1lang.html#aca9adafc436b7f851621b979fa1aaf88">predicate</a>(<span class="stringliteral">&quot;has_addr&quot;</span>, data);</div><div class="line">        }</div><div class="ttc" id="namespacepfq_1_1lang_html_aca9adafc436b7f851621b979fa1aaf88"><div class="ttname"><a href="namespacepfq_1_1lang.html#aca9adafc436b7f851621b979fa1aaf88">pfq::lang::predicate</a></div><div class="ttdeci">Predicate&lt; typename std::decay&lt; Ts &gt;::type... &gt; predicate(std::string symbol, Ts &amp;&amp;...args)</div><div class="ttdef"><b>Definition:</b> lang.hpp:506</div></div>
 </div><!-- fragment -->
 <p>Evaluate to <code>true</code> if the source or destination IP address matches the given network address. I.e.,. </p>
 <p>Example:</p>
@@ -1162,7 +1165,7 @@ template&lt;typename Predicate , typename Fun &gt; </div>
         </tr>
       </table>
 </div><div class="memdoc">
-<b>Initial value:</b><div class="fragment"><div class="line">= [] (CIDR data)</div><div class="line">        {</div><div class="line">            <span class="keywordflow">return</span> <a class="code" href="namespacepfq_1_1lang.html#aca9adafc436b7f851621b979fa1aaf88">predicate</a>(<span class="stringliteral">&quot;has_dst_addr&quot;</span>, data);</div><div class="line">        }</div><div class="ttc" id="namespacepfq_1_1lang_html_aca9adafc436b7f851621b979fa1aaf88"><div class="ttname"><a href="namespacepfq_1_1lang.html#aca9adafc436b7f851621b979fa1aaf88">pfq::lang::predicate</a></div><div class="ttdeci">Predicate&lt; typename std::decay&lt; Ts &gt;::type... &gt; predicate(std::string symbol, Ts &amp;&amp;...args)</div><div class="ttdef"><b>Definition:</b> lang.hpp:515</div></div>
+<b>Initial value:</b><div class="fragment"><div class="line">= [] (CIDR data)</div><div class="line">        {</div><div class="line">            <span class="keywordflow">return</span> <a class="code" href="namespacepfq_1_1lang.html#aca9adafc436b7f851621b979fa1aaf88">predicate</a>(<span class="stringliteral">&quot;has_dst_addr&quot;</span>, data);</div><div class="line">        }</div><div class="ttc" id="namespacepfq_1_1lang_html_aca9adafc436b7f851621b979fa1aaf88"><div class="ttname"><a href="namespacepfq_1_1lang.html#aca9adafc436b7f851621b979fa1aaf88">pfq::lang::predicate</a></div><div class="ttdeci">Predicate&lt; typename std::decay&lt; Ts &gt;::type... &gt; predicate(std::string symbol, Ts &amp;&amp;...args)</div><div class="ttdef"><b>Definition:</b> lang.hpp:506</div></div>
 </div><!-- fragment -->
 <p>Evaluate to <code>true</code> if the destination IP address matches the given network address. </p>
 
@@ -1226,7 +1229,7 @@ template&lt;typename Predicate , typename Fun &gt; </div>
         </tr>
       </table>
 </div><div class="memdoc">
-<b>Initial value:</b><div class="fragment"><div class="line">= [] (CIDR data)</div><div class="line">        {</div><div class="line">            <span class="keywordflow">return</span> <a class="code" href="namespacepfq_1_1lang.html#aca9adafc436b7f851621b979fa1aaf88">predicate</a>(<span class="stringliteral">&quot;has_src_addr&quot;</span>, data);</div><div class="line">        }</div><div class="ttc" id="namespacepfq_1_1lang_html_aca9adafc436b7f851621b979fa1aaf88"><div class="ttname"><a href="namespacepfq_1_1lang.html#aca9adafc436b7f851621b979fa1aaf88">pfq::lang::predicate</a></div><div class="ttdeci">Predicate&lt; typename std::decay&lt; Ts &gt;::type... &gt; predicate(std::string symbol, Ts &amp;&amp;...args)</div><div class="ttdef"><b>Definition:</b> lang.hpp:515</div></div>
+<b>Initial value:</b><div class="fragment"><div class="line">= [] (CIDR data)</div><div class="line">        {</div><div class="line">            <span class="keywordflow">return</span> <a class="code" href="namespacepfq_1_1lang.html#aca9adafc436b7f851621b979fa1aaf88">predicate</a>(<span class="stringliteral">&quot;has_src_addr&quot;</span>, data);</div><div class="line">        }</div><div class="ttc" id="namespacepfq_1_1lang_html_aca9adafc436b7f851621b979fa1aaf88"><div class="ttname"><a href="namespacepfq_1_1lang.html#aca9adafc436b7f851621b979fa1aaf88">pfq::lang::predicate</a></div><div class="ttdeci">Predicate&lt; typename std::decay&lt; Ts &gt;::type... &gt; predicate(std::string symbol, Ts &amp;&amp;...args)</div><div class="ttdef"><b>Definition:</b> lang.hpp:506</div></div>
 </div><!-- fragment -->
 <p>Evaluate to <code>true</code> if the source IP address matches the given network address. </p>
 
@@ -1740,7 +1743,7 @@ template&lt;typename Predicate , typename Fun &gt; </div>
 </div><div class="memdoc">
 
 <p>Monadic version of <code>is_l3_proto</code> predicate. </p>
-<p>Predicates are used in conditional expressions, while monadic functions are combined with Kleisli operator:</p>
+<p>Predicates are used in conditional expressions, while monadic functions are combined with <a class="el" href="structpfq_1_1lang_1_1Kleisli.html">Kleisli</a> operator:</p>
 <p>l3_proto (0x842) &gt;&gt; log_msg ("Wake-on-LAN packet!")</p>
 <dl class="section see"><dt>See also</dt><dd><a class="el" href="namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03.html#a814bb9c3c833dc2af342d695b1d503e8" title="Evaluate to true if the SkBuff has the given Layer3 protocol. ">is_l3_proto</a> </dd></dl>
 
@@ -1757,7 +1760,7 @@ template&lt;typename Predicate , typename Fun &gt; </div>
 </div><div class="memdoc">
 
 <p>Monadic version of <code>is_l4_proto</code> predicate. </p>
-<p>Predicates are used in conditional expressions, while monadic functions are combined with Kleisli operator:</p>
+<p>Predicates are used in conditional expressions, while monadic functions are combined with <a class="el" href="structpfq_1_1lang_1_1Kleisli.html">Kleisli</a> operator:</p>
 <p>l4_proto(89) &gt;&gt; log_msg("OSFP packet!")</p>
 <dl class="section see"><dt>See also</dt><dd><a class="el" href="namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03.html#a9d06d4dedca1ebdc3b270cb2f3e9e42b" title="Evaluate to true if the SkBuff has the given Layer4 protocol. ">is_l4_proto</a> </dd></dl>
 
@@ -1878,7 +1881,7 @@ template&lt;typename Predicate , typename Fun &gt; </div>
 </div><div class="memdoc">
 
 <p>Monadic version of <code>has_port</code> predicate. </p>
-<p>Predicates are used in conditional expressions, while monadic functions are combined with Kleisli operator:</p>
+<p>Predicates are used in conditional expressions, while monadic functions are combined with <a class="el" href="structpfq_1_1lang_1_1Kleisli.html">Kleisli</a> operator:</p>
 <p>port(80) &gt;&gt; log_msg ("http packet!")</p>
 <dl class="section see"><dt>See also</dt><dd><a class="el" href="namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03.html#a9f7161b8dfb842c5a845f413eb6bc82f" title="Evaluate to true if the SkBuff has the given source or destination port. ">has_port</a> </dd></dl>
 
@@ -2095,6 +2098,22 @@ template&lt;typename Predicate , typename Fun &gt; </div>
 
 </div>
 </div>
+<a class="anchor" id="a6bcbd11933d00917b62ef72890a98c3c"></a>
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">auto pfq::lang::anonymous_namespace{default.hpp}::steer_link_local = [](std::string mac_gw) { return <a class="el" href="namespacepfq_1_1lang.html#a1a4638059d700ae08d0ca63886ff2bb3">function</a>(&quot;steer_link_local&quot;, std::move(mac_gw)); }</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Dispatch the packet across the sockets. </p>
+<p>Dispatch with a randomized algorithm that maintains the coherence of local mac addresses. Example:</p>
+<p>steer_link_local("4c:60:de:86:55:46") </p>
+
+</div>
+</div>
 <a class="anchor" id="ad51e91e3b485c729ac1ba39a46e337a0"></a>
 <div class="memitem">
 <div class="memproto">
@@ -2120,7 +2139,7 @@ template&lt;typename Predicate , typename Fun &gt; </div>
         </tr>
       </table>
 </div><div class="memdoc">
-<b>Initial value:</b><div class="fragment"><div class="line">= [] (<span class="keyword">const</span> <span class="keywordtype">char</span> *net, <span class="keywordtype">int</span> prefix, <span class="keywordtype">int</span> subprefix)</div><div class="line">        {</div><div class="line">            <span class="keyword">struct </span>supernet {</div><div class="line">                uint32_t <a class="code" href="namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03.html#a13cabe468839119d8d68540e3c60718b">addr</a>;</div><div class="line">                <span class="keywordtype">int</span>      prefix;</div><div class="line">                <span class="keywordtype">int</span>      subprefix;</div><div class="line">            } na = { 0, prefix, subprefix };</div><div class="line"></div><div class="line">            <span class="keywordflow">if</span> (inet_pton(AF_INET, net, &amp;na.addr) &lt;= 0)</div><div class="line">                <span class="keywordflow">throw</span> std::runtime_error(<span class="stringliteral">&quot;pfq::lang::steer_net&quot;</span>);</div><div class="line"></div><div class="line">            <span class="keywordflow">return</span> <span class="keyword">function</span>(<span class="stringliteral">&quot;steer_net&quot;</span>, na);</div><div class="line">        }</div><div class="ttc" id="namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_html_a13cabe468839119d8d68540e3c60718b"><div class="ttname"><a href="namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03.html#a13cabe468839119d8d68540e3c60718b">pfq::lang::anonymous_namespace{default.hpp}::addr</a></div><div class="ttdeci">auto addr</div><div class="ttdoc">Monadic version of has_addr predicate. </div><div class="ttdef"><b>Definition:</b> default.hpp:925</div></div>
+<b>Initial value:</b><div class="fragment"><div class="line">= [] (<span class="keyword">const</span> <span class="keywordtype">char</span> *net, <span class="keywordtype">int</span> prefix, <span class="keywordtype">int</span> subprefix)</div><div class="line">        {</div><div class="line">            <span class="keyword">struct </span>supernet {</div><div class="line">                uint32_t <a class="code" href="namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03.html#a13cabe468839119d8d68540e3c60718b">addr</a>;</div><div class="line">                <span class="keywordtype">int</span>      prefix;</div><div class="line">                <span class="keywordtype">int</span>      subprefix;</div><div class="line">            } na = { 0, prefix, subprefix };</div><div class="line"></div><div class="line">            <span class="keywordflow">if</span> (inet_pton(AF_INET, net, &amp;na.addr) &lt;= 0)</div><div class="line">                <span class="keywordflow">throw</span> std::runtime_error(<span class="stringliteral">&quot;pfq::lang::steer_net&quot;</span>);</div><div class="line"></div><div class="line">            <span class="keywordflow">return</span> <span class="keyword">function</span>(<span class="stringliteral">&quot;steer_net&quot;</span>, na);</div><div class="line">        }</div><div class="ttc" id="namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_html_a13cabe468839119d8d68540e3c60718b"><div class="ttname"><a href="namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03.html#a13cabe468839119d8d68540e3c60718b">pfq::lang::anonymous_namespace{default.hpp}::addr</a></div><div class="ttdeci">auto addr</div><div class="ttdoc">Monadic version of has_addr predicate. </div><div class="ttdef"><b>Definition:</b> default.hpp:936</div></div>
 </div><!-- fragment -->
 <p>Dispatch the packet across the sockets. </p>
 <p>Dispatch with a randomized algorithm that maintains the coherence of sub networks. Example:</p>
@@ -2430,7 +2449,7 @@ template&lt;typename Predicate , typename Fun &gt; </div>
         </tr>
       </table>
 </div><div class="memdoc">
-<b>Initial value:</b><div class="fragment"><div class="line">= [] (std::vector&lt;int&gt; <span class="keyword">const</span> &amp;vs) {</div><div class="line">                                    <span class="keywordflow">return</span> <a class="code" href="namespacepfq_1_1lang.html#aca9adafc436b7f851621b979fa1aaf88">predicate</a>(<span class="stringliteral">&quot;vlan_id&quot;</span>, vs);</div><div class="line">                                }</div><div class="ttc" id="namespacepfq_1_1lang_html_aca9adafc436b7f851621b979fa1aaf88"><div class="ttname"><a href="namespacepfq_1_1lang.html#aca9adafc436b7f851621b979fa1aaf88">pfq::lang::predicate</a></div><div class="ttdeci">Predicate&lt; typename std::decay&lt; Ts &gt;::type... &gt; predicate(std::string symbol, Ts &amp;&amp;...args)</div><div class="ttdef"><b>Definition:</b> lang.hpp:515</div></div>
+<b>Initial value:</b><div class="fragment"><div class="line">= [] (std::vector&lt;int&gt; <span class="keyword">const</span> &amp;vs) {</div><div class="line">                                    <span class="keywordflow">return</span> <a class="code" href="namespacepfq_1_1lang.html#aca9adafc436b7f851621b979fa1aaf88">predicate</a>(<span class="stringliteral">&quot;vlan_id&quot;</span>, vs);</div><div class="line">                                }</div><div class="ttc" id="namespacepfq_1_1lang_html_aca9adafc436b7f851621b979fa1aaf88"><div class="ttname"><a href="namespacepfq_1_1lang.html#aca9adafc436b7f851621b979fa1aaf88">pfq::lang::predicate</a></div><div class="ttdeci">Predicate&lt; typename std::decay&lt; Ts &gt;::type... &gt; predicate(std::string symbol, Ts &amp;&amp;...args)</div><div class="ttdef"><b>Definition:</b> lang.hpp:506</div></div>
 </div><!-- fragment -->
 <p><a class="el" href="structpfq_1_1lang_1_1Predicate.html">Predicate</a> which evaluates to <code>true</code> when the packet has one of the. </p>
 <p>vlan id specified by the list. Example:</p>
@@ -2473,7 +2492,7 @@ template&lt;typename Predicate , typename Fun &gt; </div>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="namespacepfq.html">pfq</a></li><li class="navelem"><a class="el" href="namespacepfq_1_1lang.html">lang</a></li><li class="navelem"><a class="el" href="namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03.html">anonymous_namespace{default.hpp}</a></li>
-    <li class="footer">Generated on Tue Feb 23 2016 10:36:36 for pfq-lang eDLS by
+    <li class="footer">Generated on Sat Mar 5 2016 14:57:57 for pfq-lang eDLS by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.11 </li>
   </ul>

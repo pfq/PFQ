@@ -13,6 +13,7 @@ var searchData=
   ['steer_5fip6',['steer_ip6',['../namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03.html#a02291b124a4aa900d78797e386517f69',1,'pfq::lang::anonymous_namespace{default.hpp}']]],
   ['steer_5fip_5flocal',['steer_ip_local',['../namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03.html#a573c7621db324727daedc11fd27ab709',1,'pfq::lang::anonymous_namespace{default.hpp}']]],
   ['steer_5flink',['steer_link',['../namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03.html#ac1f3f9a2caf886a1441e62860a4ca058',1,'pfq::lang::anonymous_namespace{default.hpp}']]],
+  ['steer_5flink_5flocal',['steer_link_local',['../namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03.html#a6bcbd11933d00917b62ef72890a98c3c',1,'pfq::lang::anonymous_namespace{default.hpp}']]],
   ['steer_5fmac',['steer_mac',['../namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03.html#ad51e91e3b485c729ac1ba39a46e337a0',1,'pfq::lang::anonymous_namespace{default.hpp}']]],
   ['steer_5fnet',['steer_net',['../namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03.html#a6f8d514e40bb2b0e874fb26d2b416dc3',1,'pfq::lang::anonymous_namespace{default.hpp}']]],
   ['steer_5fp2p',['steer_p2p',['../namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03.html#a93e5f91a2b955269de017225cf62e711',1,'pfq::lang::anonymous_namespace{default.hpp}']]],

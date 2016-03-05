@@ -16,8 +16,6 @@ struct \hyperlink{structpfq_1_1lang_1_1argument__type}{argument\+\_\+type}
 \item 
 struct \hyperlink{structpfq_1_1lang_1_1CIDR}{C\+I\+DR}
 \item 
-struct \hyperlink{structpfq_1_1lang_1_1Composition}{Composition}
-\item 
 struct \hyperlink{structpfq_1_1lang_1_1Function}{Function}
 \item 
 struct \hyperlink{structpfq_1_1lang_1_1FunctionDescr}{Function\+Descr}
@@ -38,11 +36,13 @@ struct \hyperlink{structpfq_1_1lang_1_1is__property_3_01Property_3_01Ts_8_8_8_01
 \item 
 struct \hyperlink{structpfq_1_1lang_1_1KFunction}{K\+Function}
 \item 
+struct \hyperlink{structpfq_1_1lang_1_1Kleisli}{Kleisli}
+\item 
 struct \hyperlink{structpfq_1_1lang_1_1kleisly}{kleisly}
 \item 
-struct \hyperlink{structpfq_1_1lang_1_1kleisly_3_01KFunction_3_01M_3_01B_01_4_07A_08_01_4_00_01Composition_3_01F_00_01G_01_4_01_4}{kleisly$<$ K\+Function$<$ M$<$ B $>$(\+A) $>$, Composition$<$ F, G $>$ $>$}
-\item 
 struct \hyperlink{structpfq_1_1lang_1_1kleisly_3_01KFunction_3_01M_3_01B_01_4_07A_08_01_4_00_01KFunction_3_01M_3_01C_01_4_07B_08_4_01_4}{kleisly$<$ K\+Function$<$ M$<$ B $>$(\+A) $>$, K\+Function$<$ M$<$ C $>$(\+B)$>$ $>$}
+\item 
+struct \hyperlink{structpfq_1_1lang_1_1kleisly_3_01KFunction_3_01M_3_01B_01_4_07A_08_01_4_00_01Kleisli_3_01F_00_01G_01_4_01_4}{kleisly$<$ K\+Function$<$ M$<$ B $>$(\+A) $>$, Kleisli$<$ F, G $>$ $>$}
 \item 
 struct \hyperlink{structpfq_1_1lang_1_1Predicate}{Predicate}
 \item 
@@ -80,19 +80,13 @@ std\+::string \hyperlink{namespacepfq_1_1lang_a7e9458d3c3b90f405ee6df6cbfc43c58}
 \item 
 {\footnotesize template$<$typename... Ts, typename... Ti$>$ }\\std\+::array$<$ \hyperlink{structpfq_1_1lang_1_1argument__type}{argument\+\_\+type}, 8 $>$ \hyperlink{namespacepfq_1_1lang_aacc9139aafd72e1f19af3a74c1fdc6dc}{make\+\_\+arguments} (std\+::tuple$<$ Ts... $>$ const \&args, std\+::tuple$<$ Ti... $>$ const \&ref)
 \item 
-void \hyperlink{namespacepfq_1_1lang_adffac06fa2bba45eca6f8eeab33262d2}{fix\+\_\+computation} (std\+::ptrdiff\+\_\+t n, std\+::vector$<$ \hyperlink{structpfq_1_1lang_1_1FunctionDescr}{Function\+Descr} $>$ \&vec)
-\item 
 {\footnotesize template$<$typename Ts , typename std\+::enable\+\_\+if$<$!is\+\_\+monadic\+\_\+function$<$ Ts $>$\+::value $>$\+::type $\ast$  = nullptr$>$ }\\std\+::pair$<$ std\+::vector$<$ \hyperlink{structpfq_1_1lang_1_1FunctionDescr}{Function\+Descr} $>$, std\+::ptrdiff\+\_\+t $>$ \hyperlink{namespacepfq_1_1lang_ae121f9fc8e23fbd6873d45d02e9adb81}{serialize} (Ts const \&, std\+::ptrdiff\+\_\+t n)
 \item 
 {\footnotesize template$<$typename... Ts$>$ }\\std\+::pair$<$ std\+::vector$<$ \hyperlink{structpfq_1_1lang_1_1FunctionDescr}{Function\+Descr} $>$, std\+::ptrdiff\+\_\+t $>$ \hyperlink{namespacepfq_1_1lang_acd7f9c34960d4f3511228a5568628acf}{serialize\+\_\+all} (std\+::string symb, std\+::ptrdiff\+\_\+t n, bool cont, std\+::tuple$<$ Ts... $>$ const \&args\+\_\+)
 \item 
 {\footnotesize template$<$typename... Ts$>$ }\\\hyperlink{structpfq_1_1lang_1_1Property}{Property}$<$ typename std\+::decay$<$ Ts $>$\+::type... $>$ \hyperlink{namespacepfq_1_1lang_a1249450e72229273b0db707a286aea91}{property} (std\+::string symbol, Ts \&\&...args)
 \item 
-std\+::string \hyperlink{namespacepfq_1_1lang_ac2521931d090c58e1edaf556692f66d2}{pretty} (\hyperlink{structpfq_1_1lang_1_1Property}{Property}$<$$>$ const \&p)
-\item 
 {\footnotesize template$<$typename... Ts$>$ }\\std\+::string \hyperlink{namespacepfq_1_1lang_ad72cdee2fca49246a75620232dfe061a}{pretty} (\hyperlink{structpfq_1_1lang_1_1Property}{Property}$<$ Ts... $>$ const \&p)
-\item 
-std\+::string \hyperlink{namespacepfq_1_1lang_ad0e3d7a27621b981fa381f110ba59db7}{show} (\hyperlink{structpfq_1_1lang_1_1Property}{Property}$<$$>$ const \&p)
 \item 
 {\footnotesize template$<$typename... Ts$>$ }\\std\+::string \hyperlink{namespacepfq_1_1lang_a94bf1496c888adfd3d99e25895ed6df8}{show} (\hyperlink{structpfq_1_1lang_1_1Property}{Property}$<$ Ts... $>$ const \&p)
 \item 
@@ -100,11 +94,7 @@ std\+::string \hyperlink{namespacepfq_1_1lang_ad0e3d7a27621b981fa381f110ba59db7}
 \item 
 {\footnotesize template$<$typename... Ts$>$ }\\\hyperlink{structpfq_1_1lang_1_1Predicate}{Predicate}$<$ typename std\+::decay$<$ Ts $>$\+::type... $>$ \hyperlink{namespacepfq_1_1lang_aca9adafc436b7f851621b979fa1aaf88}{predicate} (std\+::string symbol, Ts \&\&...args)
 \item 
-std\+::string \hyperlink{namespacepfq_1_1lang_a5bd21fba49ed1266540c831a9110fec6}{pretty} (\hyperlink{structpfq_1_1lang_1_1Predicate}{Predicate}$<$$>$ const \&p)
-\item 
 {\footnotesize template$<$typename... Ts$>$ }\\std\+::string \hyperlink{namespacepfq_1_1lang_a365497365bebd1ef44492e8027a6b3c0}{pretty} (\hyperlink{structpfq_1_1lang_1_1Predicate}{Predicate}$<$ Ts... $>$ const \&p)
-\item 
-std\+::string \hyperlink{namespacepfq_1_1lang_aeb7cd494cccb45ea7a0a400a51811646}{show} (\hyperlink{structpfq_1_1lang_1_1Predicate}{Predicate}$<$$>$ const \&p)
 \item 
 {\footnotesize template$<$typename... Ts$>$ }\\std\+::string \hyperlink{namespacepfq_1_1lang_a42c749f45910e4c14d412cc3db5791e5}{show} (\hyperlink{structpfq_1_1lang_1_1Predicate}{Predicate}$<$ Ts... $>$ const \&p)
 \item 
@@ -112,11 +102,7 @@ std\+::string \hyperlink{namespacepfq_1_1lang_aeb7cd494cccb45ea7a0a400a51811646}
 \item 
 {\footnotesize template$<$typename... Ts$>$ }\\\hyperlink{structpfq_1_1lang_1_1Function}{Function}$<$ typename std\+::decay$<$ Ts $>$\+::type... $>$ \hyperlink{namespacepfq_1_1lang_a1a4638059d700ae08d0ca63886ff2bb3}{function} (std\+::string symbol, Ts \&\&...args)
 \item 
-std\+::string \hyperlink{namespacepfq_1_1lang_a2e0ab6225ca9d5195bbebc1c5c58b5fc}{pretty} (\hyperlink{structpfq_1_1lang_1_1Function}{Function}$<$$>$ const \&f)
-\item 
 {\footnotesize template$<$typename... Ts$>$ }\\std\+::string \hyperlink{namespacepfq_1_1lang_ae99e641e0f2d5461ed2c09ce92a82156}{pretty} (\hyperlink{structpfq_1_1lang_1_1Function}{Function}$<$ Ts... $>$ const \&f)
-\item 
-std\+::string \hyperlink{namespacepfq_1_1lang_aa99530de2408b7864fd641d2fd595f89}{show} (\hyperlink{structpfq_1_1lang_1_1Function}{Function}$<$$>$ const \&f)
 \item 
 {\footnotesize template$<$typename... Ts$>$ }\\std\+::string \hyperlink{namespacepfq_1_1lang_adb5a6dd5a3af8c170720c866a7839daa}{show} (\hyperlink{structpfq_1_1lang_1_1Function}{Function}$<$ Ts... $>$ const \&f)
 \item 
@@ -124,13 +110,13 @@ std\+::string \hyperlink{namespacepfq_1_1lang_aa99530de2408b7864fd641d2fd595f89}
 \item 
 std\+::pair$<$ std\+::vector$<$ \hyperlink{structpfq_1_1lang_1_1FunctionDescr}{Function\+Descr} $>$, std\+::ptrdiff\+\_\+t $>$ \hyperlink{namespacepfq_1_1lang_aa88658cb028dffc2e03a0fe2e8304bec}{serialize} (std\+::vector$<$ \hyperlink{structpfq_1_1lang_1_1Function}{Function}$<$$>$$>$ const \&cont, std\+::ptrdiff\+\_\+t n)
 \item 
-{\footnotesize template$<$typename C1 , typename C2 , typename  = typename kleisly$<$typename C1\+::type, typename C2\+::type$>$\+::type$>$ }\\\hyperlink{structpfq_1_1lang_1_1Composition}{Composition}$<$ C1, C2 $>$ \hyperlink{namespacepfq_1_1lang_aa5c4ec63004bfee1742b763ca4a53b23}{operator$>$$>$} (C1 c1, C2 c2)
+{\footnotesize template$<$typename C1 , typename C2 , typename  = typename kleisly$<$typename C1\+::type, typename C2\+::type$>$\+::type$>$ }\\\hyperlink{structpfq_1_1lang_1_1Kleisli}{Kleisli}$<$ C1, C2 $>$ \hyperlink{namespacepfq_1_1lang_a7572c906145bed1281a8c4ce8c8eff79}{operator$>$$>$} (C1 c1, C2 c2)
 \item 
-{\footnotesize template$<$typename C1 , typename C2 $>$ }\\std\+::string \hyperlink{namespacepfq_1_1lang_a5340947126ab493f4d30d5fe36193978}{pretty} (\hyperlink{structpfq_1_1lang_1_1Composition}{Composition}$<$ C1, C2 $>$ const \&comp)
+{\footnotesize template$<$typename C1 , typename C2 $>$ }\\std\+::string \hyperlink{namespacepfq_1_1lang_a11d127d1c25e1628bc76dd2067467dcd}{pretty} (\hyperlink{structpfq_1_1lang_1_1Kleisli}{Kleisli}$<$ C1, C2 $>$ const \&comp)
 \item 
-{\footnotesize template$<$typename C1 , typename C2 $>$ }\\std\+::string \hyperlink{namespacepfq_1_1lang_a073037bfa3d5b01e3b25af56cd504df3}{show} (\hyperlink{structpfq_1_1lang_1_1Composition}{Composition}$<$ C1, C2 $>$ const \&comp)
+{\footnotesize template$<$typename C1 , typename C2 $>$ }\\std\+::string \hyperlink{namespacepfq_1_1lang_aecdf72ea1b9163a219332275af8c81f2}{show} (\hyperlink{structpfq_1_1lang_1_1Kleisli}{Kleisli}$<$ C1, C2 $>$ const \&comp)
 \item 
-{\footnotesize template$<$typename C1 , typename C2 $>$ }\\std\+::pair$<$ std\+::vector$<$ \hyperlink{structpfq_1_1lang_1_1FunctionDescr}{Function\+Descr} $>$, std\+::size\+\_\+t $>$ \hyperlink{namespacepfq_1_1lang_a10060155d79b978287b3a4c1460ba494}{serialize} (\hyperlink{structpfq_1_1lang_1_1Composition}{Composition}$<$ C1, C2 $>$ const \&f, std\+::ptrdiff\+\_\+t n)
+{\footnotesize template$<$typename C1 , typename C2 $>$ }\\std\+::pair$<$ std\+::vector$<$ \hyperlink{structpfq_1_1lang_1_1FunctionDescr}{Function\+Descr} $>$, std\+::size\+\_\+t $>$ \hyperlink{namespacepfq_1_1lang_ac064e0b32cebb9c8f7073ba87a840d42}{serialize} (\hyperlink{structpfq_1_1lang_1_1Kleisli}{Kleisli}$<$ C1, C2 $>$ const \&f, std\+::ptrdiff\+\_\+t n)
 \item 
 {\footnotesize template$<$typename P1 , typename P2 , typename std\+::enable\+\_\+if$<$ is\+\_\+predicate$<$ P1 $>$\+::value \&\&is\+\_\+predicate$<$ P2 $>$\+::value $>$\+::type $\ast$  = nullptr$>$ }\\auto \hyperlink{namespacepfq_1_1lang_af24d9c3092f064b0732a4b601dde2c64}{operator\&} (P1 const \&p1, P2 const \&p2) -\/$>$ decltype(\hyperlink{namespacepfq_1_1lang_aca9adafc436b7f851621b979fa1aaf88}{predicate}(nullptr, p1, p2))
 \begin{DoxyCompactList}\small\item\em Combine two predicate expressions with a specific boolean \textquotesingle{}and\textquotesingle{} operation. \end{DoxyCompactList}\item 
@@ -202,14 +188,6 @@ Return a predicate that evaluates to {\ttfamily true}, if the property has all b
 
 Return a predicate that evaluates to {\ttfamily true}, if the property has at least one bit set among those specified by the given mask. 
 
-\index{pfq\+::lang@{pfq\+::lang}!fix\+\_\+computation@{fix\+\_\+computation}}
-\index{fix\+\_\+computation@{fix\+\_\+computation}!pfq\+::lang@{pfq\+::lang}}
-\subsubsection[{\texorpdfstring{fix\+\_\+computation(std\+::ptrdiff\+\_\+t n, std\+::vector$<$ Function\+Descr $>$ \&vec)}{fix_computation(std::ptrdiff_t n, std::vector< FunctionDescr > &vec)}}]{\setlength{\rightskip}{0pt plus 5cm}void pfq\+::lang\+::fix\+\_\+computation (
-\begin{DoxyParamCaption}
-\item[{std\+::ptrdiff\+\_\+t}]{n, }
-\item[{std\+::vector$<$ {\bf Function\+Descr} $>$ \&}]{vec}
-\end{DoxyParamCaption}
-)\hspace{0.3cm}{\ttfamily [inline]}}\hypertarget{namespacepfq_1_1lang_adffac06fa2bba45eca6f8eeab33262d2}{}\label{namespacepfq_1_1lang_adffac06fa2bba45eca6f8eeab33262d2}
 \index{pfq\+::lang@{pfq\+::lang}!function@{function}}
 \index{function@{function}!pfq\+::lang@{pfq\+::lang}}
 \subsubsection[{\texorpdfstring{function(std\+::string symbol, Ts \&\&...\+args)}{function(std::string symbol, Ts &&...args)}}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename... Ts$>$ {\bf Function}$<$typename std\+::decay$<$Ts$>$\+::type...$>$ pfq\+::lang\+::function (
@@ -321,12 +299,12 @@ when (ip\+\_\+ttl $<$ 64, drop) \index{pfq\+::lang@{pfq\+::lang}!operator$<$=@{o
     \hspace{0.3cm}{\ttfamily [inline]}}\hypertarget{namespacepfq_1_1lang_a8278e1cf39622e9eb4859f4720da1d16}{}\label{namespacepfq_1_1lang_a8278e1cf39622e9eb4859f4720da1d16}
 \index{pfq\+::lang@{pfq\+::lang}!operator$>$$>$@{operator$>$$>$}}
 \index{operator$>$$>$@{operator$>$$>$}!pfq\+::lang@{pfq\+::lang}}
-\subsubsection[{\texorpdfstring{operator$>$$>$(\+C1 c1, C2 c2)}{operator>>(C1 c1, C2 c2)}}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename C1 , typename C2 , typename  = typename kleisly$<$typename C1\+::type, typename C2\+::type$>$\+::type$>$ {\bf Composition}$<$C1, C2$>$ pfq\+::lang\+::operator$>$$>$ (
+\subsubsection[{\texorpdfstring{operator$>$$>$(\+C1 c1, C2 c2)}{operator>>(C1 c1, C2 c2)}}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename C1 , typename C2 , typename  = typename kleisly$<$typename C1\+::type, typename C2\+::type$>$\+::type$>$ {\bf Kleisli}$<$C1, C2$>$ pfq\+::lang\+::operator$>$$>$ (
 \begin{DoxyParamCaption}
 \item[{C1}]{c1, }
 \item[{C2}]{c2}
 \end{DoxyParamCaption}
-)\hspace{0.3cm}{\ttfamily [inline]}}\hypertarget{namespacepfq_1_1lang_aa5c4ec63004bfee1742b763ca4a53b23}{}\label{namespacepfq_1_1lang_aa5c4ec63004bfee1742b763ca4a53b23}
+)\hspace{0.3cm}{\ttfamily [inline]}}\hypertarget{namespacepfq_1_1lang_a7572c906145bed1281a8c4ce8c8eff79}{}\label{namespacepfq_1_1lang_a7572c906145bed1281a8c4ce8c8eff79}
 \index{pfq\+::lang@{pfq\+::lang}!operator$^\wedge$@{operator$^\wedge$}}
 \index{operator$^\wedge$@{operator$^\wedge$}!pfq\+::lang@{pfq\+::lang}}
 \subsubsection[{\texorpdfstring{operator$^\wedge$(\+P1 const \&p1, P2 const \&p2) -\/$>$ decltype(predicate(nullptr, p1, p2))}{operator^(P1 const &p1, P2 const &p2) -> decltype(predicate(nullptr, p1, p2))}}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename P1 , typename P2 , typename std\+::enable\+\_\+if$<$ is\+\_\+predicate$<$ P1 $>$\+::value \&\&is\+\_\+predicate$<$ P2 $>$\+::value $>$\+::type $\ast$  = nullptr$>$ auto pfq\+::lang\+::operator$^\wedge$ (
@@ -384,25 +362,11 @@ Combine two predicate expressions with a specific boolean \textquotesingle{}or\t
 )\hspace{0.3cm}{\ttfamily [inline]}}\hypertarget{namespacepfq_1_1lang_a2dc4c3535607e668e86aa96674c41eb0}{}\label{namespacepfq_1_1lang_a2dc4c3535607e668e86aa96674c41eb0}
 \index{pfq\+::lang@{pfq\+::lang}!pretty@{pretty}}
 \index{pretty@{pretty}!pfq\+::lang@{pfq\+::lang}}
-\subsubsection[{\texorpdfstring{pretty(\+Property$<$$>$ const \&p)}{pretty(Property<> const &p)}}]{\setlength{\rightskip}{0pt plus 5cm}std\+::string pfq\+::lang\+::pretty (
-\begin{DoxyParamCaption}
-\item[{{\bf Property}$<$$>$ const \&}]{p}
-\end{DoxyParamCaption}
-)\hspace{0.3cm}{\ttfamily [inline]}}\hypertarget{namespacepfq_1_1lang_ac2521931d090c58e1edaf556692f66d2}{}\label{namespacepfq_1_1lang_ac2521931d090c58e1edaf556692f66d2}
-\index{pfq\+::lang@{pfq\+::lang}!pretty@{pretty}}
-\index{pretty@{pretty}!pfq\+::lang@{pfq\+::lang}}
 \subsubsection[{\texorpdfstring{pretty(\+Property$<$ Ts... $>$ const \&p)}{pretty(Property< Ts... > const &p)}}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename... Ts$>$ std\+::string pfq\+::lang\+::pretty (
 \begin{DoxyParamCaption}
 \item[{{\bf Property}$<$ Ts... $>$ const \&}]{p}
 \end{DoxyParamCaption}
 )\hspace{0.3cm}{\ttfamily [inline]}}\hypertarget{namespacepfq_1_1lang_ad72cdee2fca49246a75620232dfe061a}{}\label{namespacepfq_1_1lang_ad72cdee2fca49246a75620232dfe061a}
-\index{pfq\+::lang@{pfq\+::lang}!pretty@{pretty}}
-\index{pretty@{pretty}!pfq\+::lang@{pfq\+::lang}}
-\subsubsection[{\texorpdfstring{pretty(\+Predicate$<$$>$ const \&p)}{pretty(Predicate<> const &p)}}]{\setlength{\rightskip}{0pt plus 5cm}std\+::string pfq\+::lang\+::pretty (
-\begin{DoxyParamCaption}
-\item[{{\bf Predicate}$<$$>$ const \&}]{p}
-\end{DoxyParamCaption}
-)\hspace{0.3cm}{\ttfamily [inline]}}\hypertarget{namespacepfq_1_1lang_a5bd21fba49ed1266540c831a9110fec6}{}\label{namespacepfq_1_1lang_a5bd21fba49ed1266540c831a9110fec6}
 \index{pfq\+::lang@{pfq\+::lang}!pretty@{pretty}}
 \index{pretty@{pretty}!pfq\+::lang@{pfq\+::lang}}
 \subsubsection[{\texorpdfstring{pretty(\+Predicate$<$ Ts... $>$ const \&p)}{pretty(Predicate< Ts... > const &p)}}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename... Ts$>$ std\+::string pfq\+::lang\+::pretty (
@@ -412,13 +376,6 @@ Combine two predicate expressions with a specific boolean \textquotesingle{}or\t
 )\hspace{0.3cm}{\ttfamily [inline]}}\hypertarget{namespacepfq_1_1lang_a365497365bebd1ef44492e8027a6b3c0}{}\label{namespacepfq_1_1lang_a365497365bebd1ef44492e8027a6b3c0}
 \index{pfq\+::lang@{pfq\+::lang}!pretty@{pretty}}
 \index{pretty@{pretty}!pfq\+::lang@{pfq\+::lang}}
-\subsubsection[{\texorpdfstring{pretty(\+Function$<$$>$ const \&f)}{pretty(Function<> const &f)}}]{\setlength{\rightskip}{0pt plus 5cm}std\+::string pfq\+::lang\+::pretty (
-\begin{DoxyParamCaption}
-\item[{{\bf Function}$<$$>$ const \&}]{f}
-\end{DoxyParamCaption}
-)\hspace{0.3cm}{\ttfamily [inline]}}\hypertarget{namespacepfq_1_1lang_a2e0ab6225ca9d5195bbebc1c5c58b5fc}{}\label{namespacepfq_1_1lang_a2e0ab6225ca9d5195bbebc1c5c58b5fc}
-\index{pfq\+::lang@{pfq\+::lang}!pretty@{pretty}}
-\index{pretty@{pretty}!pfq\+::lang@{pfq\+::lang}}
 \subsubsection[{\texorpdfstring{pretty(\+Function$<$ Ts... $>$ const \&f)}{pretty(Function< Ts... > const &f)}}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename... Ts$>$ std\+::string pfq\+::lang\+::pretty (
 \begin{DoxyParamCaption}
 \item[{{\bf Function}$<$ Ts... $>$ const \&}]{f}
@@ -426,11 +383,11 @@ Combine two predicate expressions with a specific boolean \textquotesingle{}or\t
 )\hspace{0.3cm}{\ttfamily [inline]}}\hypertarget{namespacepfq_1_1lang_ae99e641e0f2d5461ed2c09ce92a82156}{}\label{namespacepfq_1_1lang_ae99e641e0f2d5461ed2c09ce92a82156}
 \index{pfq\+::lang@{pfq\+::lang}!pretty@{pretty}}
 \index{pretty@{pretty}!pfq\+::lang@{pfq\+::lang}}
-\subsubsection[{\texorpdfstring{pretty(\+Composition$<$ C1, C2 $>$ const \&comp)}{pretty(Composition< C1, C2 > const &comp)}}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename C1 , typename C2 $>$ std\+::string pfq\+::lang\+::pretty (
+\subsubsection[{\texorpdfstring{pretty(\+Kleisli$<$ C1, C2 $>$ const \&comp)}{pretty(Kleisli< C1, C2 > const &comp)}}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename C1 , typename C2 $>$ std\+::string pfq\+::lang\+::pretty (
 \begin{DoxyParamCaption}
-\item[{{\bf Composition}$<$ C1, C2 $>$ const \&}]{comp}
+\item[{{\bf Kleisli}$<$ C1, C2 $>$ const \&}]{comp}
 \end{DoxyParamCaption}
-)\hspace{0.3cm}{\ttfamily [inline]}}\hypertarget{namespacepfq_1_1lang_a5340947126ab493f4d30d5fe36193978}{}\label{namespacepfq_1_1lang_a5340947126ab493f4d30d5fe36193978}
+)\hspace{0.3cm}{\ttfamily [inline]}}\hypertarget{namespacepfq_1_1lang_a11d127d1c25e1628bc76dd2067467dcd}{}\label{namespacepfq_1_1lang_a11d127d1c25e1628bc76dd2067467dcd}
 \index{pfq\+::lang@{pfq\+::lang}!property@{property}}
 \index{property@{property}!pfq\+::lang@{pfq\+::lang}}
 \subsubsection[{\texorpdfstring{property(std\+::string symbol, Ts \&\&...\+args)}{property(std::string symbol, Ts &&...args)}}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename... Ts$>$ {\bf Property}$<$typename std\+::decay$<$Ts$>$\+::type...$>$ pfq\+::lang\+::property (
@@ -481,12 +438,12 @@ Combine two predicate expressions with a specific boolean \textquotesingle{}or\t
 )\hspace{0.3cm}{\ttfamily [inline]}}\hypertarget{namespacepfq_1_1lang_aa88658cb028dffc2e03a0fe2e8304bec}{}\label{namespacepfq_1_1lang_aa88658cb028dffc2e03a0fe2e8304bec}
 \index{pfq\+::lang@{pfq\+::lang}!serialize@{serialize}}
 \index{serialize@{serialize}!pfq\+::lang@{pfq\+::lang}}
-\subsubsection[{\texorpdfstring{serialize(\+Composition$<$ C1, C2 $>$ const \&f, std\+::ptrdiff\+\_\+t n)}{serialize(Composition< C1, C2 > const &f, std::ptrdiff_t n)}}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename C1 , typename C2 $>$ std\+::pair$<$std\+::vector$<${\bf Function\+Descr}$>$, std\+::size\+\_\+t$>$ pfq\+::lang\+::serialize (
+\subsubsection[{\texorpdfstring{serialize(\+Kleisli$<$ C1, C2 $>$ const \&f, std\+::ptrdiff\+\_\+t n)}{serialize(Kleisli< C1, C2 > const &f, std::ptrdiff_t n)}}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename C1 , typename C2 $>$ std\+::pair$<$std\+::vector$<${\bf Function\+Descr}$>$, std\+::size\+\_\+t$>$ pfq\+::lang\+::serialize (
 \begin{DoxyParamCaption}
-\item[{{\bf Composition}$<$ C1, C2 $>$ const \&}]{f, }
+\item[{{\bf Kleisli}$<$ C1, C2 $>$ const \&}]{f, }
 \item[{std\+::ptrdiff\+\_\+t}]{n}
 \end{DoxyParamCaption}
-)\hspace{0.3cm}{\ttfamily [inline]}}\hypertarget{namespacepfq_1_1lang_a10060155d79b978287b3a4c1460ba494}{}\label{namespacepfq_1_1lang_a10060155d79b978287b3a4c1460ba494}
+)\hspace{0.3cm}{\ttfamily [inline]}}\hypertarget{namespacepfq_1_1lang_ac064e0b32cebb9c8f7073ba87a840d42}{}\label{namespacepfq_1_1lang_ac064e0b32cebb9c8f7073ba87a840d42}
 \index{pfq\+::lang@{pfq\+::lang}!serialize\+\_\+all@{serialize\+\_\+all}}
 \index{serialize\+\_\+all@{serialize\+\_\+all}!pfq\+::lang@{pfq\+::lang}}
 \subsubsection[{\texorpdfstring{serialize\+\_\+all(std\+::string symb, std\+::ptrdiff\+\_\+t n, bool cont, std\+::tuple$<$ Ts... $>$ const \&args\+\_\+)}{serialize_all(std::string symb, std::ptrdiff_t n, bool cont, std::tuple< Ts... > const &args_)}}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename... Ts$>$ std\+::pair$<$std\+::vector$<${\bf Function\+Descr}$>$, std\+::ptrdiff\+\_\+t$>$ pfq\+::lang\+::serialize\+\_\+all (
@@ -527,25 +484,11 @@ Combine two predicate expressions with a specific boolean \textquotesingle{}or\t
 )\hspace{0.3cm}{\ttfamily [inline]}}\hypertarget{namespacepfq_1_1lang_a7e9458d3c3b90f405ee6df6cbfc43c58}{}\label{namespacepfq_1_1lang_a7e9458d3c3b90f405ee6df6cbfc43c58}
 \index{pfq\+::lang@{pfq\+::lang}!show@{show}}
 \index{show@{show}!pfq\+::lang@{pfq\+::lang}}
-\subsubsection[{\texorpdfstring{show(\+Property$<$$>$ const \&p)}{show(Property<> const &p)}}]{\setlength{\rightskip}{0pt plus 5cm}std\+::string pfq\+::lang\+::show (
-\begin{DoxyParamCaption}
-\item[{{\bf Property}$<$$>$ const \&}]{p}
-\end{DoxyParamCaption}
-)\hspace{0.3cm}{\ttfamily [inline]}}\hypertarget{namespacepfq_1_1lang_ad0e3d7a27621b981fa381f110ba59db7}{}\label{namespacepfq_1_1lang_ad0e3d7a27621b981fa381f110ba59db7}
-\index{pfq\+::lang@{pfq\+::lang}!show@{show}}
-\index{show@{show}!pfq\+::lang@{pfq\+::lang}}
 \subsubsection[{\texorpdfstring{show(\+Property$<$ Ts... $>$ const \&p)}{show(Property< Ts... > const &p)}}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename... Ts$>$ std\+::string pfq\+::lang\+::show (
 \begin{DoxyParamCaption}
 \item[{{\bf Property}$<$ Ts... $>$ const \&}]{p}
 \end{DoxyParamCaption}
 )\hspace{0.3cm}{\ttfamily [inline]}}\hypertarget{namespacepfq_1_1lang_a94bf1496c888adfd3d99e25895ed6df8}{}\label{namespacepfq_1_1lang_a94bf1496c888adfd3d99e25895ed6df8}
-\index{pfq\+::lang@{pfq\+::lang}!show@{show}}
-\index{show@{show}!pfq\+::lang@{pfq\+::lang}}
-\subsubsection[{\texorpdfstring{show(\+Predicate$<$$>$ const \&p)}{show(Predicate<> const &p)}}]{\setlength{\rightskip}{0pt plus 5cm}std\+::string pfq\+::lang\+::show (
-\begin{DoxyParamCaption}
-\item[{{\bf Predicate}$<$$>$ const \&}]{p}
-\end{DoxyParamCaption}
-)\hspace{0.3cm}{\ttfamily [inline]}}\hypertarget{namespacepfq_1_1lang_aeb7cd494cccb45ea7a0a400a51811646}{}\label{namespacepfq_1_1lang_aeb7cd494cccb45ea7a0a400a51811646}
 \index{pfq\+::lang@{pfq\+::lang}!show@{show}}
 \index{show@{show}!pfq\+::lang@{pfq\+::lang}}
 \subsubsection[{\texorpdfstring{show(\+Predicate$<$ Ts... $>$ const \&p)}{show(Predicate< Ts... > const &p)}}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename... Ts$>$ std\+::string pfq\+::lang\+::show (
@@ -555,13 +498,6 @@ Combine two predicate expressions with a specific boolean \textquotesingle{}or\t
 )\hspace{0.3cm}{\ttfamily [inline]}}\hypertarget{namespacepfq_1_1lang_a42c749f45910e4c14d412cc3db5791e5}{}\label{namespacepfq_1_1lang_a42c749f45910e4c14d412cc3db5791e5}
 \index{pfq\+::lang@{pfq\+::lang}!show@{show}}
 \index{show@{show}!pfq\+::lang@{pfq\+::lang}}
-\subsubsection[{\texorpdfstring{show(\+Function$<$$>$ const \&f)}{show(Function<> const &f)}}]{\setlength{\rightskip}{0pt plus 5cm}std\+::string pfq\+::lang\+::show (
-\begin{DoxyParamCaption}
-\item[{{\bf Function}$<$$>$ const \&}]{f}
-\end{DoxyParamCaption}
-)\hspace{0.3cm}{\ttfamily [inline]}}\hypertarget{namespacepfq_1_1lang_aa99530de2408b7864fd641d2fd595f89}{}\label{namespacepfq_1_1lang_aa99530de2408b7864fd641d2fd595f89}
-\index{pfq\+::lang@{pfq\+::lang}!show@{show}}
-\index{show@{show}!pfq\+::lang@{pfq\+::lang}}
 \subsubsection[{\texorpdfstring{show(\+Function$<$ Ts... $>$ const \&f)}{show(Function< Ts... > const &f)}}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename... Ts$>$ std\+::string pfq\+::lang\+::show (
 \begin{DoxyParamCaption}
 \item[{{\bf Function}$<$ Ts... $>$ const \&}]{f}
@@ -569,11 +505,11 @@ Combine two predicate expressions with a specific boolean \textquotesingle{}or\t
 )\hspace{0.3cm}{\ttfamily [inline]}}\hypertarget{namespacepfq_1_1lang_adb5a6dd5a3af8c170720c866a7839daa}{}\label{namespacepfq_1_1lang_adb5a6dd5a3af8c170720c866a7839daa}
 \index{pfq\+::lang@{pfq\+::lang}!show@{show}}
 \index{show@{show}!pfq\+::lang@{pfq\+::lang}}
-\subsubsection[{\texorpdfstring{show(\+Composition$<$ C1, C2 $>$ const \&comp)}{show(Composition< C1, C2 > const &comp)}}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename C1 , typename C2 $>$ std\+::string pfq\+::lang\+::show (
+\subsubsection[{\texorpdfstring{show(\+Kleisli$<$ C1, C2 $>$ const \&comp)}{show(Kleisli< C1, C2 > const &comp)}}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename C1 , typename C2 $>$ std\+::string pfq\+::lang\+::show (
 \begin{DoxyParamCaption}
-\item[{{\bf Composition}$<$ C1, C2 $>$ const \&}]{comp}
+\item[{{\bf Kleisli}$<$ C1, C2 $>$ const \&}]{comp}
 \end{DoxyParamCaption}
-)\hspace{0.3cm}{\ttfamily [inline]}}\hypertarget{namespacepfq_1_1lang_a073037bfa3d5b01e3b25af56cd504df3}{}\label{namespacepfq_1_1lang_a073037bfa3d5b01e3b25af56cd504df3}
+)\hspace{0.3cm}{\ttfamily [inline]}}\hypertarget{namespacepfq_1_1lang_aecdf72ea1b9163a219332275af8c81f2}{}\label{namespacepfq_1_1lang_aecdf72ea1b9163a219332275af8c81f2}
 
 
 \subsection{Variable Documentation}

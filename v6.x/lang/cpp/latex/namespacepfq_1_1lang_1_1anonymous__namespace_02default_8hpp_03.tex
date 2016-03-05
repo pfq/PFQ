@@ -126,6 +126,8 @@ auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a
 \begin{DoxyCompactList}\small\item\em Dispatch the packet to a given socket with id. \end{DoxyCompactList}\item 
 auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_ac1f3f9a2caf886a1441e62860a4ca058}{steer\+\_\+link} = \hyperlink{namespacepfq_1_1lang_a1a4638059d700ae08d0ca63886ff2bb3}{function}(\char`\"{}steer\+\_\+link\char`\"{})
 \begin{DoxyCompactList}\small\item\em Dispatch the packet across the sockets. \end{DoxyCompactList}\item 
+auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a6bcbd11933d00917b62ef72890a98c3c}{steer\+\_\+link\+\_\+local} = \mbox{[}$\,$\mbox{]}(std\+::string mac\+\_\+gw) \{ return \hyperlink{namespacepfq_1_1lang_a1a4638059d700ae08d0ca63886ff2bb3}{function}(\char`\"{}steer\+\_\+link\+\_\+local\char`\"{}, std\+::move(mac\+\_\+gw)); \}
+\begin{DoxyCompactList}\small\item\em Dispatch the packet across the sockets. \end{DoxyCompactList}\item 
 auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_ad51e91e3b485c729ac1ba39a46e337a0}{steer\+\_\+mac} = \hyperlink{namespacepfq_1_1lang_a1a4638059d700ae08d0ca63886ff2bb3}{function}(\char`\"{}steer\+\_\+mac\char`\"{})
 \begin{DoxyCompactList}\small\item\em Dispatch the packet across the sockets. \end{DoxyCompactList}\item 
 auto \hyperlink{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a2c6a8ad5a3ae8b60a6a3d18a510f22ac}{steer\+\_\+vlan} = \hyperlink{namespacepfq_1_1lang_a1a4638059d700ae08d0ca63886ff2bb3}{function}(\char`\"{}steer\+\_\+vlan\char`\"{})
@@ -990,7 +992,7 @@ To avoid loop, this function is ignored for packets sniffed from the kernel. \in
 
 Monadic version of {\ttfamily is\+\_\+l3\+\_\+proto} predicate. 
 
-Predicates are used in conditional expressions, while monadic functions are combined with Kleisli operator\+:
+Predicates are used in conditional expressions, while monadic functions are combined with \hyperlink{structpfq_1_1lang_1_1Kleisli}{Kleisli} operator\+:
 
 l3\+\_\+proto (0x842) $>$$>$ log\+\_\+msg (\char`\"{}\+Wake-\/on-\/\+L\+A\+N packet!\char`\"{})
 
@@ -1004,7 +1006,7 @@ l3\+\_\+proto (0x842) $>$$>$ log\+\_\+msg (\char`\"{}\+Wake-\/on-\/\+L\+A\+N pac
 
 Monadic version of {\ttfamily is\+\_\+l4\+\_\+proto} predicate. 
 
-Predicates are used in conditional expressions, while monadic functions are combined with Kleisli operator\+:
+Predicates are used in conditional expressions, while monadic functions are combined with \hyperlink{structpfq_1_1lang_1_1Kleisli}{Kleisli} operator\+:
 
 l4\+\_\+proto(89) $>$$>$ log\+\_\+msg(\char`\"{}\+O\+S\+F\+P packet!\char`\"{})
 
@@ -1073,7 +1075,7 @@ Evaluate to {\ttfamily Pass} \hyperlink{structpfq_1_1lang_1_1SkBuff}{Sk\+Buff} i
 
 Monadic version of {\ttfamily has\+\_\+port} predicate. 
 
-Predicates are used in conditional expressions, while monadic functions are combined with Kleisli operator\+:
+Predicates are used in conditional expressions, while monadic functions are combined with \hyperlink{structpfq_1_1lang_1_1Kleisli}{Kleisli} operator\+:
 
 port(80) $>$$>$ log\+\_\+msg (\char`\"{}http packet!\char`\"{})
 
@@ -1225,7 +1227,16 @@ Dispatch the packet across the sockets.
 
 Dispatch with a randomized algorithm that maintains the coherence of physical links. Example\+:
 
-steer\+\_\+link \index{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}!steer\+\_\+mac@{steer\+\_\+mac}}
+steer\+\_\+link \index{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}!steer\+\_\+link\+\_\+local@{steer\+\_\+link\+\_\+local}}
+\index{steer\+\_\+link\+\_\+local@{steer\+\_\+link\+\_\+local}!pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}}
+\subsubsection[{\texorpdfstring{steer\+\_\+link\+\_\+local}{steer_link_local}}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::steer\+\_\+link\+\_\+local = \mbox{[}$\,$\mbox{]}(std\+::string mac\+\_\+gw) \{ return {\bf function}(\char`\"{}steer\+\_\+link\+\_\+local\char`\"{}, std\+::move(mac\+\_\+gw)); \}}\hypertarget{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a6bcbd11933d00917b62ef72890a98c3c}{}\label{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_a6bcbd11933d00917b62ef72890a98c3c}
+
+
+Dispatch the packet across the sockets. 
+
+Dispatch with a randomized algorithm that maintains the coherence of local mac addresses. Example\+:
+
+steer\+\_\+link\+\_\+local(\char`\"{}4c\+:60\+:de\+:86\+:55\+:46\char`\"{}) \index{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}!steer\+\_\+mac@{steer\+\_\+mac}}
 \index{steer\+\_\+mac@{steer\+\_\+mac}!pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}@{pfq\+::lang\+::anonymous\+\_\+namespace\lcurly{}default.\+hpp\rcurly{}}}
 \subsubsection[{\texorpdfstring{steer\+\_\+mac}{steer_mac}}]{\setlength{\rightskip}{0pt plus 5cm}auto pfq\+::lang\+::anonymous\+\_\+namespace\{default.\+hpp\}\+::steer\+\_\+mac = {\bf function}(\char`\"{}steer\+\_\+mac\char`\"{})}\hypertarget{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_ad51e91e3b485c729ac1ba39a46e337a0}{}\label{namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03_ad51e91e3b485c729ac1ba39a46e337a0}
 

@@ -133,7 +133,7 @@ Classes</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpfq_1_1lang_1_1Function.html">pfq::lang::Function&lt; Ts &gt;</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpfq_1_1lang_1_1Composition.html">pfq::lang::Composition&lt; F, G &gt;</a></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpfq_1_1lang_1_1Kleisli.html">pfq::lang::Kleisli&lt; F, G &gt;</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpfq_1_1lang_1_1is__property.html">pfq::lang::is_property&lt; Tp &gt;</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -159,11 +159,11 @@ Classes</h2></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpfq_1_1lang_1_1kleisly.html">pfq::lang::kleisly&lt; F, G &gt;</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpfq_1_1lang_1_1Composition.html">pfq::lang::Composition&lt; F, G &gt;</a></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpfq_1_1lang_1_1Kleisli.html">pfq::lang::Kleisli&lt; F, G &gt;</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpfq_1_1lang_1_1kleisly_3_01KFunction_3_01M_3_01B_01_4_07A_08_01_4_00_01KFunction_3_01M_3_01C_01_4_07B_08_4_01_4.html">pfq::lang::kleisly&lt; KFunction&lt; M&lt; B &gt;(A) &gt;, KFunction&lt; M&lt; C &gt;(B)&gt; &gt;</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpfq_1_1lang_1_1kleisly_3_01KFunction_3_01M_3_01B_01_4_07A_08_01_4_00_01Composition_3_01F_00_01G_01_4_01_4.html">pfq::lang::kleisly&lt; KFunction&lt; M&lt; B &gt;(A) &gt;, Composition&lt; F, G &gt; &gt;</a></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structpfq_1_1lang_1_1kleisly_3_01KFunction_3_01M_3_01B_01_4_07A_08_01_4_00_01Kleisli_3_01F_00_01G_01_4_01_4.html">pfq::lang::kleisly&lt; KFunction&lt; M&lt; B &gt;(A) &gt;, Kleisli&lt; F, G &gt; &gt;</a></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="namespaces"></a>
@@ -204,8 +204,6 @@ Functions</h2></td></tr>
 <tr class="memitem:aacc9139aafd72e1f19af3a74c1fdc6dc"><td class="memTemplParams" colspan="2">template&lt;typename... Ts, typename... Ti&gt; </td></tr>
 <tr class="memitem:aacc9139aafd72e1f19af3a74c1fdc6dc"><td class="memTemplItemLeft" align="right" valign="top">std::array&lt; argument_type, 8 &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1lang.html#aacc9139aafd72e1f19af3a74c1fdc6dc">pfq::lang::make_arguments</a> (std::tuple&lt; Ts... &gt; const &amp;args, std::tuple&lt; Ti... &gt; const &amp;ref)</td></tr>
 <tr class="separator:aacc9139aafd72e1f19af3a74c1fdc6dc"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:adffac06fa2bba45eca6f8eeab33262d2"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1lang.html#adffac06fa2bba45eca6f8eeab33262d2">pfq::lang::fix_computation</a> (std::ptrdiff_t n, std::vector&lt; FunctionDescr &gt; &amp;vec)</td></tr>
-<tr class="separator:adffac06fa2bba45eca6f8eeab33262d2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae121f9fc8e23fbd6873d45d02e9adb81"><td class="memTemplParams" colspan="2">template&lt;typename Ts , typename std::enable_if&lt;!is_monadic_function&lt; Ts &gt;::value &gt;::type *  = nullptr&gt; </td></tr>
 <tr class="memitem:ae121f9fc8e23fbd6873d45d02e9adb81"><td class="memTemplItemLeft" align="right" valign="top">std::pair&lt; std::vector&lt; FunctionDescr &gt;, std::ptrdiff_t &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1lang.html#ae121f9fc8e23fbd6873d45d02e9adb81">pfq::lang::serialize</a> (Ts const &amp;, std::ptrdiff_t n)</td></tr>
 <tr class="separator:ae121f9fc8e23fbd6873d45d02e9adb81"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -215,13 +213,9 @@ Functions</h2></td></tr>
 <tr class="memitem:a1249450e72229273b0db707a286aea91"><td class="memTemplParams" colspan="2">template&lt;typename... Ts&gt; </td></tr>
 <tr class="memitem:a1249450e72229273b0db707a286aea91"><td class="memTemplItemLeft" align="right" valign="top">Property&lt; typename std::decay&lt; Ts &gt;::type... &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1lang.html#a1249450e72229273b0db707a286aea91">pfq::lang::property</a> (std::string symbol, Ts &amp;&amp;...args)</td></tr>
 <tr class="separator:a1249450e72229273b0db707a286aea91"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac2521931d090c58e1edaf556692f66d2"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1lang.html#ac2521931d090c58e1edaf556692f66d2">pfq::lang::pretty</a> (Property&lt;&gt; const &amp;p)</td></tr>
-<tr class="separator:ac2521931d090c58e1edaf556692f66d2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad72cdee2fca49246a75620232dfe061a"><td class="memTemplParams" colspan="2">template&lt;typename... Ts&gt; </td></tr>
 <tr class="memitem:ad72cdee2fca49246a75620232dfe061a"><td class="memTemplItemLeft" align="right" valign="top">std::string&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1lang.html#ad72cdee2fca49246a75620232dfe061a">pfq::lang::pretty</a> (Property&lt; Ts... &gt; const &amp;p)</td></tr>
 <tr class="separator:ad72cdee2fca49246a75620232dfe061a"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ad0e3d7a27621b981fa381f110ba59db7"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1lang.html#ad0e3d7a27621b981fa381f110ba59db7">pfq::lang::show</a> (Property&lt;&gt; const &amp;p)</td></tr>
-<tr class="separator:ad0e3d7a27621b981fa381f110ba59db7"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a94bf1496c888adfd3d99e25895ed6df8"><td class="memTemplParams" colspan="2">template&lt;typename... Ts&gt; </td></tr>
 <tr class="memitem:a94bf1496c888adfd3d99e25895ed6df8"><td class="memTemplItemLeft" align="right" valign="top">std::string&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1lang.html#a94bf1496c888adfd3d99e25895ed6df8">pfq::lang::show</a> (Property&lt; Ts... &gt; const &amp;p)</td></tr>
 <tr class="separator:a94bf1496c888adfd3d99e25895ed6df8"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -231,13 +225,9 @@ Functions</h2></td></tr>
 <tr class="memitem:aca9adafc436b7f851621b979fa1aaf88"><td class="memTemplParams" colspan="2">template&lt;typename... Ts&gt; </td></tr>
 <tr class="memitem:aca9adafc436b7f851621b979fa1aaf88"><td class="memTemplItemLeft" align="right" valign="top">Predicate&lt; typename std::decay&lt; Ts &gt;::type... &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1lang.html#aca9adafc436b7f851621b979fa1aaf88">pfq::lang::predicate</a> (std::string symbol, Ts &amp;&amp;...args)</td></tr>
 <tr class="separator:aca9adafc436b7f851621b979fa1aaf88"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5bd21fba49ed1266540c831a9110fec6"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1lang.html#a5bd21fba49ed1266540c831a9110fec6">pfq::lang::pretty</a> (Predicate&lt;&gt; const &amp;p)</td></tr>
-<tr class="separator:a5bd21fba49ed1266540c831a9110fec6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a365497365bebd1ef44492e8027a6b3c0"><td class="memTemplParams" colspan="2">template&lt;typename... Ts&gt; </td></tr>
 <tr class="memitem:a365497365bebd1ef44492e8027a6b3c0"><td class="memTemplItemLeft" align="right" valign="top">std::string&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1lang.html#a365497365bebd1ef44492e8027a6b3c0">pfq::lang::pretty</a> (Predicate&lt; Ts... &gt; const &amp;p)</td></tr>
 <tr class="separator:a365497365bebd1ef44492e8027a6b3c0"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aeb7cd494cccb45ea7a0a400a51811646"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1lang.html#aeb7cd494cccb45ea7a0a400a51811646">pfq::lang::show</a> (Predicate&lt;&gt; const &amp;p)</td></tr>
-<tr class="separator:aeb7cd494cccb45ea7a0a400a51811646"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a42c749f45910e4c14d412cc3db5791e5"><td class="memTemplParams" colspan="2">template&lt;typename... Ts&gt; </td></tr>
 <tr class="memitem:a42c749f45910e4c14d412cc3db5791e5"><td class="memTemplItemLeft" align="right" valign="top">std::string&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1lang.html#a42c749f45910e4c14d412cc3db5791e5">pfq::lang::show</a> (Predicate&lt; Ts... &gt; const &amp;p)</td></tr>
 <tr class="separator:a42c749f45910e4c14d412cc3db5791e5"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -247,13 +237,9 @@ Functions</h2></td></tr>
 <tr class="memitem:a1a4638059d700ae08d0ca63886ff2bb3"><td class="memTemplParams" colspan="2">template&lt;typename... Ts&gt; </td></tr>
 <tr class="memitem:a1a4638059d700ae08d0ca63886ff2bb3"><td class="memTemplItemLeft" align="right" valign="top">Function&lt; typename std::decay&lt; Ts &gt;::type... &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1lang.html#a1a4638059d700ae08d0ca63886ff2bb3">pfq::lang::function</a> (std::string symbol, Ts &amp;&amp;...args)</td></tr>
 <tr class="separator:a1a4638059d700ae08d0ca63886ff2bb3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a2e0ab6225ca9d5195bbebc1c5c58b5fc"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1lang.html#a2e0ab6225ca9d5195bbebc1c5c58b5fc">pfq::lang::pretty</a> (Function&lt;&gt; const &amp;f)</td></tr>
-<tr class="separator:a2e0ab6225ca9d5195bbebc1c5c58b5fc"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae99e641e0f2d5461ed2c09ce92a82156"><td class="memTemplParams" colspan="2">template&lt;typename... Ts&gt; </td></tr>
 <tr class="memitem:ae99e641e0f2d5461ed2c09ce92a82156"><td class="memTemplItemLeft" align="right" valign="top">std::string&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1lang.html#ae99e641e0f2d5461ed2c09ce92a82156">pfq::lang::pretty</a> (Function&lt; Ts... &gt; const &amp;f)</td></tr>
 <tr class="separator:ae99e641e0f2d5461ed2c09ce92a82156"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa99530de2408b7864fd641d2fd595f89"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1lang.html#aa99530de2408b7864fd641d2fd595f89">pfq::lang::show</a> (Function&lt;&gt; const &amp;f)</td></tr>
-<tr class="separator:aa99530de2408b7864fd641d2fd595f89"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adb5a6dd5a3af8c170720c866a7839daa"><td class="memTemplParams" colspan="2">template&lt;typename... Ts&gt; </td></tr>
 <tr class="memitem:adb5a6dd5a3af8c170720c866a7839daa"><td class="memTemplItemLeft" align="right" valign="top">std::string&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1lang.html#adb5a6dd5a3af8c170720c866a7839daa">pfq::lang::show</a> (Function&lt; Ts... &gt; const &amp;f)</td></tr>
 <tr class="separator:adb5a6dd5a3af8c170720c866a7839daa"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -262,18 +248,18 @@ Functions</h2></td></tr>
 <tr class="separator:a91564354df60bcd58020fbe47e1a7b2a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa88658cb028dffc2e03a0fe2e8304bec"><td class="memItemLeft" align="right" valign="top">std::pair&lt; std::vector&lt; FunctionDescr &gt;, std::ptrdiff_t &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1lang.html#aa88658cb028dffc2e03a0fe2e8304bec">pfq::lang::serialize</a> (std::vector&lt; Function&lt;&gt;&gt; const &amp;cont, std::ptrdiff_t n)</td></tr>
 <tr class="separator:aa88658cb028dffc2e03a0fe2e8304bec"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa5c4ec63004bfee1742b763ca4a53b23"><td class="memTemplParams" colspan="2">template&lt;typename C1 , typename C2 , typename  = typename kleisly&lt;typename C1::type, typename C2::type&gt;::type&gt; </td></tr>
-<tr class="memitem:aa5c4ec63004bfee1742b763ca4a53b23"><td class="memTemplItemLeft" align="right" valign="top">Composition&lt; C1, C2 &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1lang.html#aa5c4ec63004bfee1742b763ca4a53b23">pfq::lang::operator&gt;&gt;</a> (C1 c1, C2 c2)</td></tr>
-<tr class="separator:aa5c4ec63004bfee1742b763ca4a53b23"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5340947126ab493f4d30d5fe36193978"><td class="memTemplParams" colspan="2">template&lt;typename C1 , typename C2 &gt; </td></tr>
-<tr class="memitem:a5340947126ab493f4d30d5fe36193978"><td class="memTemplItemLeft" align="right" valign="top">std::string&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1lang.html#a5340947126ab493f4d30d5fe36193978">pfq::lang::pretty</a> (Composition&lt; C1, C2 &gt; const &amp;comp)</td></tr>
-<tr class="separator:a5340947126ab493f4d30d5fe36193978"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a073037bfa3d5b01e3b25af56cd504df3"><td class="memTemplParams" colspan="2">template&lt;typename C1 , typename C2 &gt; </td></tr>
-<tr class="memitem:a073037bfa3d5b01e3b25af56cd504df3"><td class="memTemplItemLeft" align="right" valign="top">std::string&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1lang.html#a073037bfa3d5b01e3b25af56cd504df3">pfq::lang::show</a> (Composition&lt; C1, C2 &gt; const &amp;comp)</td></tr>
-<tr class="separator:a073037bfa3d5b01e3b25af56cd504df3"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a10060155d79b978287b3a4c1460ba494"><td class="memTemplParams" colspan="2">template&lt;typename C1 , typename C2 &gt; </td></tr>
-<tr class="memitem:a10060155d79b978287b3a4c1460ba494"><td class="memTemplItemLeft" align="right" valign="top">std::pair&lt; std::vector&lt; FunctionDescr &gt;, std::size_t &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1lang.html#a10060155d79b978287b3a4c1460ba494">pfq::lang::serialize</a> (Composition&lt; C1, C2 &gt; const &amp;f, std::ptrdiff_t n)</td></tr>
-<tr class="separator:a10060155d79b978287b3a4c1460ba494"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7572c906145bed1281a8c4ce8c8eff79"><td class="memTemplParams" colspan="2">template&lt;typename C1 , typename C2 , typename  = typename kleisly&lt;typename C1::type, typename C2::type&gt;::type&gt; </td></tr>
+<tr class="memitem:a7572c906145bed1281a8c4ce8c8eff79"><td class="memTemplItemLeft" align="right" valign="top">Kleisli&lt; C1, C2 &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1lang.html#a7572c906145bed1281a8c4ce8c8eff79">pfq::lang::operator&gt;&gt;</a> (C1 c1, C2 c2)</td></tr>
+<tr class="separator:a7572c906145bed1281a8c4ce8c8eff79"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a11d127d1c25e1628bc76dd2067467dcd"><td class="memTemplParams" colspan="2">template&lt;typename C1 , typename C2 &gt; </td></tr>
+<tr class="memitem:a11d127d1c25e1628bc76dd2067467dcd"><td class="memTemplItemLeft" align="right" valign="top">std::string&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1lang.html#a11d127d1c25e1628bc76dd2067467dcd">pfq::lang::pretty</a> (Kleisli&lt; C1, C2 &gt; const &amp;comp)</td></tr>
+<tr class="separator:a11d127d1c25e1628bc76dd2067467dcd"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aecdf72ea1b9163a219332275af8c81f2"><td class="memTemplParams" colspan="2">template&lt;typename C1 , typename C2 &gt; </td></tr>
+<tr class="memitem:aecdf72ea1b9163a219332275af8c81f2"><td class="memTemplItemLeft" align="right" valign="top">std::string&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1lang.html#aecdf72ea1b9163a219332275af8c81f2">pfq::lang::show</a> (Kleisli&lt; C1, C2 &gt; const &amp;comp)</td></tr>
+<tr class="separator:aecdf72ea1b9163a219332275af8c81f2"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac064e0b32cebb9c8f7073ba87a840d42"><td class="memTemplParams" colspan="2">template&lt;typename C1 , typename C2 &gt; </td></tr>
+<tr class="memitem:ac064e0b32cebb9c8f7073ba87a840d42"><td class="memTemplItemLeft" align="right" valign="top">std::pair&lt; std::vector&lt; FunctionDescr &gt;, std::size_t &gt;&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1lang.html#ac064e0b32cebb9c8f7073ba87a840d42">pfq::lang::serialize</a> (Kleisli&lt; C1, C2 &gt; const &amp;f, std::ptrdiff_t n)</td></tr>
+<tr class="separator:ac064e0b32cebb9c8f7073ba87a840d42"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="var-members"></a>
 Variables</h2></td></tr>
@@ -286,7 +272,7 @@ Variables</h2></td></tr>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="dir_2916f9fbcacdf2e5f0583aa159c707b6.html">C++</a></li><li class="navelem"><a class="el" href="dir_f5c141fe61b0a0287f06112b2feb457f.html">pfq</a></li><li class="navelem"><a class="el" href="dir_a171f0db53f771baaddfd0e93f871e64.html">lang</a></li><li class="navelem"><a class="el" href="lang_8hpp.html">lang.hpp</a></li>
-    <li class="footer">Generated on Tue Feb 23 2016 10:36:36 for pfq-lang eDLS by
+    <li class="footer">Generated on Sat Mar 5 2016 14:57:57 for pfq-lang eDLS by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.11 </li>
   </ul>

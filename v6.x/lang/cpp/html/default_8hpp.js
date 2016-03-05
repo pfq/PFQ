@@ -108,6 +108,7 @@ var default_8hpp =
     [ "steer_ip6", "default_8hpp.html#a02291b124a4aa900d78797e386517f69", null ],
     [ "steer_ip_local", "default_8hpp.html#a573c7621db324727daedc11fd27ab709", null ],
     [ "steer_link", "default_8hpp.html#ac1f3f9a2caf886a1441e62860a4ca058", null ],
+    [ "steer_link_local", "default_8hpp.html#a6bcbd11933d00917b62ef72890a98c3c", null ],
     [ "steer_mac", "default_8hpp.html#ad51e91e3b485c729ac1ba39a46e337a0", null ],
     [ "steer_net", "default_8hpp.html#a6f8d514e40bb2b0e874fb26d2b416dc3", null ],
     [ "steer_p2p", "default_8hpp.html#a93e5f91a2b955269de017225cf62e711", null ],
