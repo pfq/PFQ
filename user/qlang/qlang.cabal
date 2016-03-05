@@ -25,6 +25,7 @@ Executable qlang
                         bytestring,
                         cmdargs, 
                         filepath, 
+                        directory,
                         aeson,
                         unix,
                         hint,

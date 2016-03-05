@@ -32,6 +32,6 @@ options = cmdArgsMode $ Options
           ,     fdescr = False   &= help "Format output as list of function descriptors" &= explicit &= name "fdescr"
           ,     gid = Nothing    &= help "Specify the PFQ gid to set the computation for" &= explicit &= name "gid"
           ,     verb = 0         &= groupname "Other" &= help "Control verbosity level (0..3)" &= explicit &= name "verbosity"
-          ,     files = []       &= args
+          ,     file = Nothing   &= args
           } &= summary ("qlang " ++ showVersion version)  &= program "qlang"
 

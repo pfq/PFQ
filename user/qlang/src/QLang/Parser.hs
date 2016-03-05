@@ -33,12 +33,13 @@ import Data.Maybe
 
 
 defaultImports :: [(ModuleName, Maybe String)]
-defaultImports = [("Prelude", Just "P")
-                 ,("Network.PFQ.Lang", Nothing)
-                 ,("Network.PFQ.Types", Nothing)
-                 ,("Network.PFQ.Lang.Default", Nothing)
-                 ,("Network.PFQ.Lang.Experimental", Nothing)
-                 ]
+defaultImports =
+    [ ("Prelude", Just "P")
+    , ("Network.PFQ.Lang", Nothing)
+    , ("Network.PFQ.Types", Nothing)
+    , ("Network.PFQ.Lang.Default", Nothing)
+    , ("Network.PFQ.Lang.Experimental", Nothing)
+    ]
 
 
 parseCode :: String -> (String, [(ModuleName, Maybe String)])
