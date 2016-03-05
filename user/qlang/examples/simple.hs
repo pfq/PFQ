@@ -1,9 +1,11 @@
 -- example
 --
 
-filterFunction = par ip ip6
+import Network.PFQ.Lang.Default
+
+import Lib.Filter
 
 main =
     steer_flow >->
-    filterFunction >-> when is_tcp drop >-> kernel
+      when is_tcp drop >-> kernel
 
