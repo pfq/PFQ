@@ -69,7 +69,7 @@ module Network.PFQ.Lang
 
 -- import Debug.Trace
 
-import Control.Monad
+import Control.Monad()
 import Control.Monad.Identity
 
 import GHC.Generics
@@ -81,8 +81,9 @@ import Data.Typeable
 import Data.List (isPrefixOf)
 
 #if __GLASGOW_HASKELL__ < 710
+import Control.Applicative
 import Data.Monoid
-import Data.Functor
+import Data.Functor()
 #else
 import Data.Monoid()
 #endif
@@ -117,7 +118,7 @@ instance Pretty FunPtr where
 
 -- |Action is a monad modelled after the Identity as it is implemented at kernel level.
 
-newtype Action a = Action { getIdentity :: Identity a } deriving (Functor, Applicative, Monad)
+newtype Action a = Action { getIdentity :: Identity a } deriving (Functor, Applicative, Monad, Typeable)
 
 
 -- | Argument data type.

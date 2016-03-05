@@ -16,6 +16,7 @@
 --
 
 {-# LANGUAGE TupleSections #-}
+{-# LANGUAGE CPP #-}
 
 module QLang.Compiler
 (
@@ -34,6 +35,10 @@ import Control.Monad.Reader
 import Options
 
 import QLang.Parser
+
+#if __GLASGOW_HASKELL__ < 710
+import Control.Applicative
+#endif
 
 
 printIndent :: (Show a) => Int -> a -> IO ()

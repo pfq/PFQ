@@ -63,7 +63,6 @@ module Network.PFQ.Lang.Experimental
 
 
 import Network.PFQ.Lang
-import Network.PFQ.Types
 
 import Foreign.C.Types
 
