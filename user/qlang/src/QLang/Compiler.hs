@@ -25,25 +25,66 @@ module QLang.Compiler
 import Language.Haskell.Interpreter
 import Network.PFQ.Lang as Q
 
+import Data.Maybe
 import System.IO
+import System.Directory
+import System.FilePath.Posix (dropFileName, (</>), (<.>))
 import Control.Exception
 import Control.Monad.Reader
 import Options
 
 import QLang.Parser
 
+
+printIndent :: (Show a) => Int -> a -> IO ()
+printIndent n x = putStrLn $ replicate n ' ' ++ show x
+
+
+modToFilePath :: FilePath -> String -> String
+modToFilePath base n = base </> fixPath n <.> "hs"
+    where fixPath = map (\c -> if c == '.' then '/' else c)
+
+
 compile :: String -> OptionT IO (Q.Function (SkBuff -> Action SkBuff))
 compile raw = do
     let (code, localImports) = parseCode raw
     opt <- ask
     imports <- mkImportList localImports
-    lift $ do
-      when (verb opt > 0) $ hPutStrLn stderr "Imports: " >> mapM_ print imports
-      when (verb opt > 1) $ hPutStrLn stderr "\nCode:" >> putStrLn code
-      res <- runInterpreter $ do
-          setImportsQ imports
-          set [languageExtensions := [ OverloadedStrings ]]
-          interpret (mkMainFunction code) (as :: (Function (SkBuff -> Action SkBuff)))
-      either throw return res
 
+    whenLevel 2 $ lift (hPutStrLn stderr "Code:" >> putStrLn code)
+    whenLevel 1 $ lift (hPutStrLn stderr "Imports: " >> mapM_ (printIndent 4) imports)
+
+    res <- lift $ runInterpreter $ do
+
+        -- get the base path of the qlang main file:
+
+        basePath <- dropFileName <$> maybe (return ".") (lift . canonicalizePath) (file opt)
+        when (verb opt >= 1) $ lift $ putStrLn ("SeachPath: " ++ basePath)
+
+        -- get the list the module to load (from the import list):
+
+        flags <- lift $ mapM (doesFileExist . modToFilePath basePath . fst) imports
+        let mods = mapMaybe (\(i,b) -> if b then Just i else Nothing) $ zip (map fst imports) flags
+
+        -- dump the list of local modules:
+        -- when (verb opt >= 1) $ lift $ putStrLn ("Local modules: " ++ show mods)
+
+        -- specify options:
+
+        set [languageExtensions := [ OverloadedStrings ], searchPath := [basePath] ]
+
+        -- load local modules:
+        loadModules mods
+
+        -- import installed modules:
+        setImportsQ imports
+
+        -- print the list of modules loaded:
+        when (verb opt >= 1) $ getLoadedModules >>= \xs -> unless (null xs) $ lift $ hPutStrLn stderr "\nModules:" >> mapM_ (printIndent 4) xs
+
+        -- interpret the pfq-lang computation:
+
+        interpret (mkMainFunction code) (as :: (Function (SkBuff -> Action SkBuff)))
+
+    either throw return res
 

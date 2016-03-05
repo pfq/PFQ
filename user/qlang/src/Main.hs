@@ -40,31 +40,24 @@ main = do
 
   opt' <- cmdArgsRun options
 
-  inHandle <- if null (files opt')
-                then return stdin
-                else openFile (head (files opt')) ReadMode
+  bracket (maybe (return stdin)  (`openFile` ReadMode)  (file opt')) hClose $ \inHandle ->
+    bracket (maybe (return stdout) (`openFile` WriteMode) (output opt')) hClose $ \outHandle -> do
 
-  outHandle <- if isJust (output opt')
-                then openFile (fromJust $ output opt') WriteMode
-                else return stdout
+      code <- hGetContents inHandle
 
-  code <- hGetContents inHandle
+      result <- try $ runReaderT (QLang.Compiler.compile code) opt'
 
-  result <- try $ runReaderT (QLang.Compiler.compile code) opt'
+      case result of
+        Left (WontCompile es)  ->  error $ unlines (map errMsg es)
+        Left (NotAllowed xs)   ->  error xs
+        Left (GhcException xs) ->  error xs
+        Left (UnknownError xs) ->  error xs
+        Right comp -> do
+            (case () of
+                _ | json opt'   -> runReaderT (QLang.JSON.compile comp) opt'
+                  | fdescr opt' -> runReaderT (QLang.FDescr.compile comp) opt'
+                  | otherwise   -> return "") >>= hPutStr outHandle
+            when (isJust (gid opt')) $ runReaderT (QLang.PFQ.load comp) opt' >>= hPutStr stderr
 
-  case result of
-    Left (WontCompile es)  ->  error $ unlines (map errMsg es)
-    Left (NotAllowed xs)   ->  error xs
-    Left (GhcException xs) ->  error xs
-    Left (UnknownError xs) ->  error xs
-    Right comp -> do
-      (case () of
-          _ | json opt'   -> runReaderT (QLang.JSON.compile comp) opt'
-            | fdescr opt' -> runReaderT (QLang.FDescr.compile comp) opt'
-            | otherwise   -> return "") >>= hPutStr outHandle
-      when (isJust (gid opt')) $ runReaderT (QLang.PFQ.load comp) opt' >>= hPutStr stderr
-
-  hPutStr outHandle "\n"
-  hClose outHandle
-  hClose inHandle
+      hPutStr outHandle "\n"
 

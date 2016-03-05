@@ -21,6 +21,7 @@
 module Options
 ( OptionT
 , Options(..)
+, whenLevel
 ) where
 
 import Control.Monad.Reader
@@ -38,6 +39,12 @@ data Options = Options
     ,   gid                 :: Maybe Int
     -- other
     ,   verb                :: Int
-    ,   files               :: [FilePath]
+    ,   file                :: Maybe FilePath
     } deriving (Data, Typeable, Show)
+
+
+
+whenLevel :: (Monad m) => Int -> OptionT m () ->  OptionT m ()
+whenLevel level run = ask >>= \opt -> when (verb opt >= level) run
+
 
