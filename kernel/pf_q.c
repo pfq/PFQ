@@ -699,9 +699,15 @@ static int pfq_netdev_notifier(struct notifier_block *this, unsigned long info,
 			case NETDEV_RELEASE		: kind = "NETDEV_RELEASE"; break;
 			case NETDEV_NOTIFY_PEERS	: kind = "NETDEV_NOTIFY_PEERS"; break;
 			case NETDEV_JOIN		: kind = "NETDEV_JOIN"; break;
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,11,0))
 			case NETDEV_CHANGEUPPER		: kind = "NETDEV_CHANGEUPPER"; break;
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,13,0))
 			case NETDEV_RESEND_IGMP		: kind = "NETDEV_RESEND_IGMP"; break;
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
 			case NETDEV_PRECHANGEMTU	: kind = "NETDEV_PRECHANGEMTU"; break;
+#endif
+#endif
+#endif
 		}
 
 		pr_devel("[PFQ] %s: device %s, ifindex %d\n", kind, dev->name, dev->ifindex);
