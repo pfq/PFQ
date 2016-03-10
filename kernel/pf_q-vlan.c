@@ -61,7 +61,7 @@ void pfq_vlan_set_encap_proto(struct sk_buff *skb, struct vlan_hdr *vhdr)
                  * 802.2 SSAP/DSAP. This won't work for fault tolerant netware
                  * but does for the rest.
                  */
-                skb->protocol = __contant_htons(ETH_P_802_3);
+                skb->protocol = __constant_htons(ETH_P_802_3);
         else
                 /*
                  * Real 802.2 LLC
