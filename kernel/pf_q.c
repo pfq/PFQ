@@ -246,12 +246,15 @@ pfq_receive_batch(struct pfq_percpu_data *data,
 			if (bf_filt_enabled) {
 				struct sk_filter *bpf = (struct sk_filter *)atomic_long_read(&this_group->bp_filter);
 
+				if (bpf &&
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(3,15,0))
-				if (bpf && !sk_run_filter(buff, bpf->insns))
+					!sk_run_filter(buff, bpf->insns)
+#elif (LINUX_VERSION_CODE < KERNEL_VERSION(4,4,0))
+					!SK_RUN_FILTER(bpf, PFQ_SKB(buff))
 #else
-				if (bpf && !SK_RUN_FILTER(bpf, PFQ_SKB(buff)))
+					!bpf_prog_run_clear_cb(bpf->prog, PFQ_SKB(buff))
 #endif
-				{
+				) {
 					__sparse_inc(this_group->stats, drop, cpu);
 					refs.queue[refs.len++] = NULL;
 					continue;

@@ -29,7 +29,11 @@
 #if (LINUX_VERSION_CODE <= KERNEL_VERSION(3,14,0))
 static inline bool netif_xmit_frozen_or_drv_stopped(const struct netdev_queue *queue)
 {
+#if (LINUX_VERSION_CODE < KERNEL_VERSION(3,3,0))
+	return netif_tx_queue_frozen_or_stopped(queue);
+#else
 	return netif_xmit_frozen_or_stopped(queue);
+#endif
 }
 #endif
 
