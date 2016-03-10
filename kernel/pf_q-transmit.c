@@ -46,6 +46,7 @@
 #include <pf_q-global.h>
 #include <pf_q-printk.h>
 #include <pf_q-netdev.h>
+#include <pf_q-kcompact.h>
 
 #include <lang/GC.h>
 
