@@ -695,16 +695,18 @@ static int pfq_netdev_notifier(struct notifier_block *this, unsigned long info,
 			case NETDEV_PRE_TYPE_CHANGE	: kind = "NETDEV_PRE_TYPE_CHANGE"; break;
 			case NETDEV_POST_TYPE_CHANGE	: kind = "NETDEV_POST_TYPE_CHANGE"; break;
 			case NETDEV_POST_INIT		: kind = "NETDEV_POST_INIT"; break;
-			case NETDEV_UNREGISTER_FINAL	: kind = "NETDEV_UNREGISTER_FINAL"; break;
 			case NETDEV_RELEASE		: kind = "NETDEV_RELEASE"; break;
 			case NETDEV_NOTIFY_PEERS	: kind = "NETDEV_NOTIFY_PEERS"; break;
 			case NETDEV_JOIN		: kind = "NETDEV_JOIN"; break;
+#if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,8,0))
+			case NETDEV_UNREGISTER_FINAL	: kind = "NETDEV_UNREGISTER_FINAL"; break;
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,11,0))
 			case NETDEV_CHANGEUPPER		: kind = "NETDEV_CHANGEUPPER"; break;
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,13,0))
 			case NETDEV_RESEND_IGMP		: kind = "NETDEV_RESEND_IGMP"; break;
 #if (LINUX_VERSION_CODE >= KERNEL_VERSION(3,14,0))
 			case NETDEV_PRECHANGEMTU	: kind = "NETDEV_PRECHANGEMTU"; break;
+#endif
 #endif
 #endif
 #endif
