@@ -72,6 +72,7 @@
 #include <pf_q-pool.h>
 #include <pf_q-transmit.h>
 #include <pf_q-percpu.h>
+#include <pf_q-kcompact.h>
 
 #include <lang/engine.h>
 #include <lang/symtable.h>
