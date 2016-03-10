@@ -28,6 +28,9 @@
 
 #include <pragma/diagnostic_pop>
 
+#include <pf_q-sparse.h>
+#include <pf_q-global.h>
+
 /* inspired to linux kernel vlan_untag */
 
 #if (LINUX_VERSION_CODE < KERNEL_VERSION(3,9,0))
