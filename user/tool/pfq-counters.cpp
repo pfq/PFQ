@@ -17,6 +17,7 @@
 #include <algorithm>
 #include <iterator>
 #include <atomic>
+#include <set>
 #include <cmath>
 #include <tuple>
 #include <limits>
@@ -58,6 +59,7 @@ namespace opt
 
     bool flow      = false;
     bool use_comp  = false;
+    bool promisc   = true;
 
     std::string dumpfile;
 }
@@ -325,6 +327,7 @@ void usage(std::string name)
         " -l --flow                     Enable flow counter\n"
         " -s --slot INT                 Set slots\n"
         "    --seconds INT              Terminate after INT seconds\n"
+        "    --no-promisc               Disable promiscuous mode (enabled by default)\n"
         " -f --function FUNCTION\n"
         " -t --thread BINDING\n\n"
         "      " + more::netdev_format + "\n"
@@ -424,6 +427,12 @@ try
             continue;
         }
 
+        if ( any_strcmp(argv[i], "--no-promisc") )
+        {
+            opt::promisc = false;
+            continue;
+        }
+
         if (any_strcmp(argv[i], "-h", "-?", "--help"))
             usage(argv[0]);
 
@@ -450,7 +459,37 @@ try
 
     std::cout << "poll timeout " << opt::timeout_ms << " usec" << std::endl;
 
+    // set promiscuous mode...
+    //
+
+    {
+        auto sd = ::socket(AF_INET, SOCK_DGRAM, 0);
+        if (sd == -1)
+            throw std::runtime_error("could not open a SOCK_DGRAM");
+
+        std::set<std::string> devs;
+
+        for(auto & tb : thread_bindings)
+        {
+            for(auto & d : tb.dev)
+            {
+                devs.insert(d.name);
+            }
+        }
+
+        std::cout << std::boolalpha;
+        for(auto & d : devs)
+        {
+            set_promisc(sd, d.c_str(), opt::promisc);
+            std::cout << "+ promiscuous: " << d <<
+                         " (" << ( opt::promisc ? "enabled" : "disabled") << ")" << std::endl;
+        }
+
+        ::close(sd);
+    }
+
     // create threads:
+    //
 
     int i = 0;
     std::for_each(thread_bindings.begin(), thread_bindings.end(), [&](thread_binding &b) {
