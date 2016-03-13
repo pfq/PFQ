@@ -127,7 +127,7 @@ newtype Action a = Action { getIdentity :: Identity a } deriving (Functor, Appli
 data Argument = forall a. (Show a, Storable a, Typeable a, ToJSON a, FromJSON a) => ArgData a       |
                 forall a. (Show a, Storable a, Typeable a, ToJSON a, FromJSON a) => ArgVector [a]   |
                 ArgString String                                                                    |
-                ArgStrings [String]                                                               |
+                ArgStrings [String]                                                                 |
                 ArgFunPtr Int                                                                       |
                 ArgNull
 
@@ -338,7 +338,6 @@ instance Storable NetPredicate where
 f1 >-> f2 = Kleisli f1 f2
 
 
-
 instance Show (Function f) where
 
         show (Function  symb a b c d e f g h) = showFunction "Function"  symb a b c d e f g h
@@ -372,14 +371,14 @@ instance Pretty String where
 
 instance
  Pretty [String] where
-    pretty = unwords
+    pretty = prettyUnwords
 
 instance
 #if __GLASGOW_HASKELL__ >= 710
  {-# OVERLAPPABLE #-}
 #endif
   (Pretty a) => Pretty [a] where
-    pretty xs = unwords (map pretty xs)
+    pretty xs = prettyUnwords (map pretty xs)
 
 instance Pretty () where
     pretty _ = ""
@@ -494,15 +493,18 @@ instance Serializable () where
     serialize _ n = ([], n)
 
 
-
 showFunction :: (Show a, Show b, Show c, Show d, Show e, Show f, Show g, Show h) => String -> String -> a -> b -> c -> d -> e -> f -> g -> h -> String
 showFunction kind symb a b c d e f g h =
-  let args = (unwords . filter (not .null)) [show a, show b, show c, show d, show e, show f, show g, show h]
+  let args = prettyUnwords [show a, show b, show c, show d, show e, show f, show g, show h]
     in if null args then "(" ++ kind ++ " " ++ symb ++ ")"
                     else "(" ++ kind ++ " " ++ symb ++ " " ++ args  ++ ")"
 
 prettyFunction :: (Pretty a, Pretty b, Pretty c, Pretty d, Pretty e, Pretty f, Pretty g, Pretty h) => String -> a -> b -> c -> d -> e -> f -> g -> h -> String
 prettyFunction symb a b c d e f g h =
-  let args = unwords $ filter (not . null) [pretty a, pretty b, pretty c, pretty d, pretty e, pretty f, pretty g, pretty h]
+  let args = prettyUnwords [pretty a, pretty b, pretty c, pretty d, pretty e, pretty f, pretty g, pretty h]
   in if null args then symb
                   else "(" ++ symb ++ " " ++ args  ++ ")"
+
+prettyUnwords :: [String] -> String
+prettyUnwords = unwords . filter (not .null)
+
