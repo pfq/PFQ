@@ -48,7 +48,6 @@ import Data.Typeable
 import Data.String
 import Data.List
 import Data.Maybe (isJust, fromJust)
-import Data.Scientific (toBoundedInteger)
 import Control.Monad (when)
 #if __GLASGOW_HASKELL__ < 710
 import Data.Monoid
@@ -68,16 +67,6 @@ import Foreign.C.Types
 import Foreign.C.String
 import Foreign.Ptr
 import Foreign.Marshal.Alloc
-
-
--- | CInt instance...
-
-instance ToJSON CInt where
-  toJSON n = toJSON (fromIntegral n :: Int)
-
-instance FromJSON CInt where
-  parseJSON (Number n) = return (fromJust $ toBoundedInteger n)
-  parseJSON _ = mempty
 
 
 -- | IPv4 data type
@@ -102,7 +91,7 @@ instance Storable IPv4 where
 
 -- | CIDR data-type
 
-newtype CIDR = CIDR { getNetworkPair :: (IPv4, CInt) } deriving (Generic, Typeable, Storable)
+newtype CIDR = CIDR { getNetworkPair :: (IPv4, Int) } deriving (Generic, Typeable, Storable)
 
 
 instance Show CIDR where

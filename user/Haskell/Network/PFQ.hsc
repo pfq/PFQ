@@ -198,8 +198,6 @@ import Data.ByteString.Unsafe
 import qualified Data.StorableVector as SV
 import qualified Data.StorableVector.Base as SV
 
--- import Debug.Trace
-
 import Control.Monad
 import Control.Concurrent
 
@@ -223,6 +221,7 @@ newtype PFqTag = PFqTag ()
 #include <pfq/pfq.h>
 
 -- |Capture Queue handle.
+
 data NetQueue = NetQueue {
       qPtr        :: Ptr PktHdr                 -- ^ pointer to the memory mapped queue
    ,  qLen        :: {-# UNPACK #-} !Word64     -- ^ queue length
@@ -231,6 +230,7 @@ data NetQueue = NetQueue {
    } deriving (Eq, Show)
 
 -- |PFQ packet header.
+
 data PktHdr = PktHdr {
       hMark     :: {-# UNPACK #-} !Word32       -- ^ skb 32-bits mark
     , hState    :: {-# UNPACK #-} !Word32       -- ^ opaque 32-bits state
@@ -246,6 +246,7 @@ data PktHdr = PktHdr {
     } deriving (Eq, Show)
 
 -- |PFQ statistics.
+
 data Statistics = Statistics {
       sReceived   ::  Integer  -- ^ packets received
     , sLost       ::  Integer  -- ^ packets lost
@@ -258,6 +259,7 @@ data Statistics = Statistics {
     } deriving (Eq, Show)
 
 -- |PFQ counters.
+
 data Counters = Counters {
       counter     ::  [Integer] -- ^ per-group counter
     } deriving (Eq, Show)
@@ -275,8 +277,8 @@ data Packet = Packet {
 --
 -- To be passed as argument to 'openParam' function.
 
-data SocketParams = SocketParams
-    {   parCaplen     :: Int            -- ^ capture len
+data SocketParams = SocketParams {
+        parCaplen     :: Int            -- ^ capture len
     ,   parRxSlots    :: Int            -- ^ socket Rx queue length
     ,   parTxSlots    :: Int            -- ^ socket Tx queue length
     ,   parPolicy     :: GroupPolicy    -- ^ default group policy: policy_undefined means no group
@@ -287,9 +289,8 @@ data SocketParams = SocketParams
 -- |Default values of Socket parameters.
 
 defaultSocketParams :: SocketParams
-defaultSocketParams =
-    SocketParams
-    {   parCaplen  = 1514
+defaultSocketParams = SocketParams {
+        parCaplen  = 1514
     ,   parRxSlots = 4096
     ,   parTxSlots = 4096
     ,   parPolicy  = policy_priv
@@ -322,6 +323,7 @@ newtype PFqConstant = PFqConstant { getConstant :: Int }
 -- |Vlan tag.
 newtype VlanTag = VlanTag { getVid:: CInt }
                     deriving (Eq, Show, Read)
+
 
 #{enum ClassMask, ClassMask
     , class_default       = Q_CLASS_DEFAULT
@@ -958,7 +960,9 @@ makeCounters ptr = do
     return $ Counters $ map fromIntegral (cs :: [CULong])
 
 
-padArguments :: Int -> [Argument] -> [Argument]
+padArguments :: Int
+             -> [Argument]
+             -> [Argument]
 padArguments n xs = xs ++ replicate (n - length xs) ArgNull
 
 withSingleArg :: Argument
@@ -1050,9 +1054,9 @@ setGroupComputationFromJSON hdl gid comp =
 
 
 setGroupComputationFromDescr :: Ptr PFqTag
-                    -> Int                  -- ^ group id
-                    -> [FunctionDescr]      -- ^ expression (pfq-lang)
-                    -> IO ()
+                             -> Int                  -- ^ group id
+                             -> [FunctionDescr]      -- ^ expression (pfq-lang)
+                             -> IO ()
 setGroupComputationFromDescr hdl gid descr =
     allocaBytes (sizeOf (undefined :: CSize) * 2 + #{size struct pfq_lang_functional_descr} * length descr) $ \ ptr -> do
         pokeByteOff ptr 0 (fromIntegral (length descr) :: CSize)     -- size
@@ -1070,8 +1074,8 @@ setGroupComputationFromDescr hdl gid descr =
 -- Transmit the packets in the Tx queues of the socket.
 
 transmitQueue :: Ptr PFqTag
-        -> Int     -- ^ queue index (0 is sync tx queue)
-        -> IO ()
+              -> Int     -- ^ queue index (0 is sync tx queue)
+              -> IO ()
 transmitQueue hdl queue =
     pfq_transmit_queue hdl (fromIntegral queue) >>= throwPFqIf_ hdl (== -1)
 

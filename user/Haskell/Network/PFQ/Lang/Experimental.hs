@@ -64,17 +64,15 @@ module Network.PFQ.Lang.Experimental
 
 import Network.PFQ.Lang
 
-import Foreign.C.Types
-
 -- Experimental/Testing in-kernel computations
 
-dummy :: CInt -> NetFunction
+dummy :: Int -> NetFunction
 dummy n = Function "dummy" n () () () () () () ()
 
 dummy_ip  :: IPv4 -> NetFunction
 dummy_ip xs  = Function "dummy_ip" xs () () () () () () ()
 
-dummy_vector  :: [CInt] -> NetFunction
+dummy_vector  :: [Int] -> NetFunction
 dummy_vector xs  = Function "dummy_vector" xs () () () () () () ()
 
 dummy_string :: String -> NetFunction
@@ -121,7 +119,7 @@ par8 = Function "par8"
 --
 -- > (steer_gtp_usr "192.168.0.0" 16)
 
-steer_gtp_usr :: IPv4 -> CInt -> NetFunction
+steer_gtp_usr :: IPv4 -> Int -> NetFunction
 steer_gtp_usr net prefix = Function "steer_gtp_usr" net prefix () () () () () () :: NetFunction
 
 
@@ -142,5 +140,4 @@ is_gtp_cp = Predicate "is_gtp_cp" () () () () () () () () :: NetPredicate
 
 -- | Evaluate to /True/ if the SkBuff is a GTP User-Plane packet.
 is_gtp_up = Predicate "is_gtp_up" () () () () () () () () :: NetPredicate
-
 
