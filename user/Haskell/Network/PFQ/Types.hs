@@ -114,7 +114,7 @@ inetAtoN :: String -> IO IPv4
 inetAtoN xs =
   withCString xs $ \str ->
     allocaBytes 4 $ \addr -> do
-      r <- (inet_pton (packFamily AF_INET) str addr)
+      r <- inet_pton (packFamily AF_INET) str addr
       when (r /= 1) $ error "inetAtoN: bad address format"
       fmap IPv4 (peek $ castPtr addr)
 
