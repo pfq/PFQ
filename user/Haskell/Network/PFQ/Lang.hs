@@ -196,7 +196,7 @@ instance Pretty Argument where
 
 -- | ArgumentClass class, a typeclass for building function Arguments.
 
-class (Show a, Pretty a, ToJSON a, FromJSON a) => ArgumentClass a where
+class (Show a, Pretty a, ToJSON a, FromJSON a, Serializable a) => ArgumentClass a where
     argument :: a -> Argument
 
 instance ArgumentClass String where
@@ -209,14 +209,14 @@ instance
 #if __GLASGOW_HASKELL__ >= 710
  {-# OVERLAPPABLE #-}
 #endif
-  (Show a, Pretty a, Storable a, Typeable a, ToJSON a, FromJSON a) => ArgumentClass a where
+  (Show a, Pretty a, Storable a, Typeable a, ToJSON a, FromJSON a, Serializable a) => ArgumentClass a where
     argument = ArgData
 
 instance
 #if __GLASGOW_HASKELL__ >= 710
  {-# OVERLAPPABLE #-}
 #endif
-  (Show a, Pretty [a], Storable a, Typeable a, ToJSON a, FromJSON a) => ArgumentClass [a] where
+  (Show a, Pretty [a], Storable a, Typeable a, ToJSON a, FromJSON a, Serializable a) => ArgumentClass [a] where
     argument = ArgVector
 
 instance ArgumentClass FunPtr where
@@ -273,37 +273,34 @@ type NetProperty  = Function (SkBuff -> Word64)
 data Function fun where
 
         Function :: forall a b c d e f g h.
-          (Serializable a, ArgumentClass a,
-           Serializable b, ArgumentClass b,
-           Serializable c, ArgumentClass c,
-           Serializable d, ArgumentClass d,
-           Serializable e, ArgumentClass e,
-           Serializable f, ArgumentClass f,
-           Serializable g, ArgumentClass g,
-           Serializable h, ArgumentClass h
-          ) => Symbol -> a -> b -> c -> d -> e -> f -> g -> h -> NetFunction
+          ( ArgumentClass a
+          , ArgumentClass b
+          , ArgumentClass c
+          , ArgumentClass d
+          , ArgumentClass e
+          , ArgumentClass f
+          , ArgumentClass g
+          , ArgumentClass h) => Symbol -> a -> b -> c -> d -> e -> f -> g -> h -> NetFunction
 
         Predicate :: forall a b c d e f g h.
-          (Serializable a, ArgumentClass a,
-           Serializable b, ArgumentClass b,
-           Serializable c, ArgumentClass c,
-           Serializable d, ArgumentClass d,
-           Serializable e, ArgumentClass e,
-           Serializable f, ArgumentClass f,
-           Serializable g, ArgumentClass g,
-           Serializable h, ArgumentClass h
-           ) => Symbol -> a -> b -> c -> d -> e -> f -> g -> h -> NetPredicate
+          ( ArgumentClass a
+          , ArgumentClass b
+          , ArgumentClass c
+          , ArgumentClass d
+          , ArgumentClass e
+          , ArgumentClass f
+          , ArgumentClass g
+          , ArgumentClass h) => Symbol -> a -> b -> c -> d -> e -> f -> g -> h -> NetPredicate
 
         Property :: forall a b c d e f g h.
-          (Serializable a, ArgumentClass a,
-           Serializable b, ArgumentClass b,
-           Serializable c, ArgumentClass c,
-           Serializable d, ArgumentClass d,
-           Serializable e, ArgumentClass e,
-           Serializable f, ArgumentClass f,
-           Serializable g, ArgumentClass g,
-           Serializable h, ArgumentClass h
-           ) => Symbol -> a -> b -> c -> d -> e -> f -> g -> h -> NetProperty
+          ( ArgumentClass a
+          , ArgumentClass b
+          , ArgumentClass c
+          , ArgumentClass d
+          , ArgumentClass e
+          , ArgumentClass f
+          , ArgumentClass g
+          , ArgumentClass h) => Symbol -> a -> b -> c -> d -> e -> f -> g -> h -> NetProperty
 
         Combinator1  :: Symbol -> NetPredicate -> NetPredicate
         Combinator2  :: Symbol -> NetPredicate -> NetPredicate -> NetPredicate
@@ -387,13 +384,13 @@ instance Pretty (Function f) where
         pretty (Predicate symb a b c d e f g h) = prettyFunction symb a b c d e f g h
         pretty (Property  symb a b c d e f g h) = prettyFunction symb a b c d e f g h
 
-        pretty (Combinator1 "not" p)       = "(not " ++ pretty p ++ ")"
-        pretty (Combinator2 "and" p1 p2)   = "(" ++ pretty p1 ++" && " ++ pretty p2 ++ ")"
-        pretty (Combinator2 "or"  p1 p2)   = "(" ++ pretty p1 ++" || " ++ pretty p2 ++ ")"
-        pretty (Combinator2 "xor" p1 p2)   = "(" ++ pretty p1 ++" ^^ " ++ pretty p2 ++ ")"
-        pretty Combinator1{}               = undefined
-        pretty Combinator2{}               = undefined
-        pretty (Kleisli a b)               = pretty a ++ " >-> " ++ pretty b
+        pretty (Combinator1 "not" p)     = "(not " ++ pretty p ++ ")"
+        pretty (Combinator2 "and" p1 p2) = "(" ++ pretty p1 ++" && " ++ pretty p2 ++ ")"
+        pretty (Combinator2 "or"  p1 p2) = "(" ++ pretty p1 ++" || " ++ pretty p2 ++ ")"
+        pretty (Combinator2 "xor" p1 p2) = "(" ++ pretty p1 ++" ^^ " ++ pretty p2 ++ ")"
+        pretty Combinator1{} = undefined
+        pretty Combinator2{} = undefined
+        pretty (Kleisli a b) = pretty a ++ " >-> " ++ pretty b
 
 
 -- | Serializable class, a typeclass used to serialize computations.
@@ -403,14 +400,14 @@ class Serializable a where
     serialize :: a -> Int -> ([FunctionDescr], Int)
 
 
-serializeAll :: (Serializable a, ArgumentClass a,
-                 Serializable b, ArgumentClass b,
-                 Serializable c, ArgumentClass c,
-                 Serializable d, ArgumentClass d,
-                 Serializable e, ArgumentClass e,
-                 Serializable f, ArgumentClass f,
-                 Serializable g, ArgumentClass g,
-                 Serializable h, ArgumentClass h) => String -> Int -> Bool -> a -> b -> c -> d -> e -> f -> g -> h -> ([FunctionDescr], Int)
+serializeAll :: ( ArgumentClass a
+                , ArgumentClass b
+                , ArgumentClass c
+                , ArgumentClass d
+                , ArgumentClass e
+                , ArgumentClass f
+                , ArgumentClass g
+                , ArgumentClass h) => String -> Int -> Bool -> a -> b -> c -> d -> e -> f -> g -> h -> ([FunctionDescr], Int)
 serializeAll symb n cont a b c d e f g h =
     let (s1, n1) = ([FunctionDescr symb [mkArgument a s2,
                                          mkArgument b s3,
