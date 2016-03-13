@@ -210,7 +210,6 @@ module Network.PFQ.Lang.Default
 
 
 import           Network.PFQ.Lang
--- import           Network.PFQ.Types
 
 import           Data.Int
 import           Data.Word
@@ -218,7 +217,6 @@ import           Data.Word
 import           Network.Socket
 import           System.IO.Unsafe
 
-import           Foreign.C.Types
 import           Foreign.Storable.Tuple ()
 
 -- Default combinators
@@ -330,7 +328,7 @@ is_more_frag = Predicate "is_more_frag" () () () () () () () ()
 -- | Evaluate to /True/ if the SkBuff has the given vlan id.
 --
 -- > has_vid 42
-has_vid :: CInt -> NetPredicate
+has_vid :: Int -> NetPredicate
 has_vid x = Predicate "has_vid" x () () () () () () ()
 
 -- | Evaluate to /True/ if the SkBuff has the given mark, set by 'mark' function.
@@ -468,7 +466,7 @@ steer_rss = Function "steer_rss" () () () () () () () () :: NetFunction
 -- | Dispatch the packet to a given socket with id.
 --
 -- > ip >-> steer_to 1
-steer_to :: CInt -> NetFunction
+steer_to :: Int -> NetFunction
 steer_to idx = Function "steer_to" idx () () () () () () () :: NetFunction
 
 -- | Dispatch the packet across the sockets
@@ -565,14 +563,14 @@ steer_voip = Function "steer_voip" () () () () () () () () :: NetFunction
 -- sub networks.
 --
 -- > steer_net "192.168.0.0" 16 24
-steer_net :: IPv4 -> CInt -> CInt -> NetFunction
+steer_net :: IPv4 -> Int -> Int -> NetFunction
 steer_net net p sub = Function "steer_net" net p sub () () () () ()
 
 -- | Dispatch the packet across the sockets
 -- with a randomized algorithm. The function uses as /hash/ the field
 -- of /size/ bits taken at /offset/ bytes from the beginning of the packet.
-steer_field :: CInt -- ^ offset from the beginning of the packet, in bytes
-            -> CInt -- ^ sizeof field in bits
+steer_field :: Int -- ^ offset from the beginning of the packet, in bytes
+            -> Int -- ^ sizeof field in bits
             -> NetFunction
 steer_field offset size = Function "steer_field" offset size () () () () () ()
 
@@ -581,9 +579,9 @@ steer_field offset size = Function "steer_field" offset size () () () () () ()
 -- of the fields of /size/ bytes taken at /offset1/ and /offset2/ bytes from the
 -- beginning of the packet.
 -- This alter the total volume of traffic (see 'steer_mac').
-steer_field_double :: CInt -- ^ offset1 from the beginning of the packet, in bytes
-                   -> CInt -- ^ offset2 from the beginning of the packet, in bytes
-                   -> CInt -- ^ sizeof field in bytes (max 4)
+steer_field_double :: Int -- ^ offset1 from the beginning of the packet, in bytes
+                   -> Int -- ^ offset2 from the beginning of the packet, in bytes
+                   -> Int -- ^ sizeof field in bytes (max 4)
                    -> NetFunction
 steer_field_double offset1 offset2 size = Function "steer_field_double" offset1 offset2 size () () () () ()
 
@@ -591,9 +589,9 @@ steer_field_double offset1 offset2 size = Function "steer_field_double" offset1 
 -- with a randomized algorithm. The function uses as /hash/ the xor operation
 -- of the fields of /size/ bytes taken at /offset1/ and /offset2/ bytes from the
 -- beginning of the packet.
-steer_field_symmetric :: CInt -- ^ offset1 from the beginning of the packet, in bytes
-                      -> CInt -- ^ offset2 from the beginning of the packet, in bytes
-                      -> CInt -- ^ sizeof field in bytes (max 4)
+steer_field_symmetric :: Int -- ^ offset1 from the beginning of the packet, in bytes
+                      -> Int -- ^ offset2 from the beginning of the packet, in bytes
+                      -> Int -- ^ sizeof field in bytes (max 4)
                       -> NetFunction
 steer_field_symmetric offset1 offset2 size = Function "steer_field_symmetric" offset1 offset2 size () () () () ()
 
@@ -730,7 +728,7 @@ broadcast = Function "broadcast" () () () () () () () () :: NetFunction
 drop= Function "drop" () () () () () () () () :: NetFunction
 
 -- | Specify the class for the given packet. The computation evaluates to /Pass/.
-classify :: CInt -> NetFunction
+classify :: Int -> NetFunction
 classify n = Function "class" n () () () () () () ()
 
 -- | Unit operation implements left- and right-identity for Action monad.
@@ -755,13 +753,13 @@ log_packet = Function "log_packet" () () () () () () () () :: NetFunction
 -- | Increment the i-th counter of the current group.
 --
 -- > inc 10
-inc :: CInt -> NetFunction
+inc :: Int -> NetFunction
 inc n = Function "inc" n () () () () () () ()
 
 -- | Decrement the i-th counter of the current group.
 --
 -- > dec 10
-dec :: CInt -> NetFunction
+dec :: Int -> NetFunction
 dec n = Function "dec" n () () () () () () ()
 
 -- | Mark the packet with the given value.
@@ -874,46 +872,46 @@ par a b = Function "par" a b () () () () () ()
 -- vlan id specified by the list. Example:
 --
 -- > when (vland_id [1,13,42,43]) (log_msg "Got a packet!")
-vlan_id :: [CInt] -> NetPredicate
+vlan_id :: [Int] -> NetPredicate
 vlan_id ids = Predicate "vlan_id" ids () () () () () () ()
 
 -- | Monadic function, counterpart of 'vlan_id' function.
-vlan_id_filter :: [CInt] -> NetFunction
+vlan_id_filter :: [Int] -> NetFunction
 vlan_id_filter ids = Function "vlan_id_filter" ids () () () () () () ()
 
 -- | Predicate that evaluates to /True/ when the source or the destination address
 -- of the packet matches the ones specified by the bloom list.
 --
--- The first 'CInt' argument specifies the size of the bloom filter. Example:
+-- The first 'Int' argument specifies the size of the bloom filter. Example:
 --
 -- > when (bloom 1024 ["192.168.0.13", "192.168.0.42"] 32) log_packet >-> kernel
 {-# NOINLINE bloom #-}
-bloom ::  CInt        -- ^ Hint: size of bloom filter (M)
+bloom ::  Int         -- ^ Hint: size of bloom filter (M)
       ->  [HostName]  -- ^ List of Host/Network address to match
-      ->  CInt        -- ^ Network prefix
+      ->  Int         -- ^ Network prefix
       ->  NetPredicate
 
 -- | Similarly to 'bloom', evaluates to /True/ when the source address
 -- of the packet matches the ones specified by the bloom list.
 {-# NOINLINE bloom_src #-}
-bloom_src :: CInt -> [HostName] -> CInt -> NetPredicate
+bloom_src :: Int -> [HostName] -> Int -> NetPredicate
 
 -- | Similarly to 'bloom', evaluates to /True/ when the destination address
 -- of the packet matches the ones specified by the bloom list.
 {-# NOINLINE bloom_dst #-}
-bloom_dst :: CInt -> [HostName] -> CInt -> NetPredicate
+bloom_dst :: Int -> [HostName] -> Int -> NetPredicate
 
 -- | Monadic counterpart of 'bloom' function.
 {-# NOINLINE bloom_filter #-}
-bloom_filter :: CInt -> [HostName] -> CInt -> NetFunction
+bloom_filter :: Int -> [HostName] -> Int -> NetFunction
 
 -- | Monadic counterpart of 'bloom_src' function.
 {-# NOINLINE bloom_src_filter #-}
-bloom_src_filter :: CInt -> [HostName] -> CInt -> NetFunction
+bloom_src_filter :: Int -> [HostName] -> Int -> NetFunction
 
 -- | Monadic counterpart of 'bloom_dst' function.
 {-# NOINLINE bloom_dst_filter #-}
-bloom_dst_filter :: CInt -> [HostName] -> CInt -> NetFunction
+bloom_dst_filter :: Int -> [HostName] -> Int -> NetFunction
 
 bloom m hs p     = let ips = unsafePerformIO (mapM inet_addr hs) in Predicate "bloom" m ips p () () () () ()
 bloom_src m hs p = let ips = unsafePerformIO (mapM inet_addr hs) in Predicate "bloom_src" m ips p () () () () ()

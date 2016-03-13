@@ -781,7 +781,7 @@ pfq_set_group_computation_from_json(pfq_t *q, int gid, const char *input)
 				return Q_ERROR(q, "PFQ: computation: JSON argType missing!");
 			}
 
-			if (strcmp(type, "CInt") == 0)
+			if (strcmp(type, "Int") == 0)
 			{
 				JSON_Value * value = json_object_get_value(arg, "argValue");
 				if (!value) {
@@ -976,7 +976,7 @@ pfq_set_group_computation_from_json(pfq_t *q, int gid, const char *input)
 				prog->fun[n].arg[i].size  = sizeof(struct CIDR);
 				prog->fun[n].arg[i].nelem = -1;
 			}
-			else if (strcmp(type, "[CInt]") == 0)
+			else if (strcmp(type, "[Int]") == 0)
 			{
 				JSON_Array * value = json_object_get_array(arg, "argValue");
 				if (!value) {

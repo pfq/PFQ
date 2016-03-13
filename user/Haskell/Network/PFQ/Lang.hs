@@ -67,8 +67,6 @@ module Network.PFQ.Lang
     ) where
 
 
--- import Debug.Trace
-
 import Control.Monad()
 import Control.Monad.Identity
 
@@ -88,7 +86,6 @@ import Data.Functor()
 import Data.Monoid()
 #endif
 
-import Foreign.C.Types
 import Foreign.Storable
 import Network.PFQ.Types
 
@@ -145,7 +142,7 @@ instance FromJSON Argument where
   parseJSON (Object v) = do
     type_ <- v .: "argType"
     case () of
-      _ | type_ == "CInt"   -> (ArgData :: CInt   -> Argument)     <$>  (v .: "argValue")
+      _ | type_ == "Int"    -> (ArgData :: Int   -> Argument)      <$>  (v .: "argValue")
         | type_ == "Int64"  -> (ArgData :: Int64  -> Argument)     <$>  (v .: "argValue")
         | type_ == "Int32"  -> (ArgData :: Int32  -> Argument)     <$>  (v .: "argValue")
         | type_ == "Int16"  -> (ArgData :: Int16  -> Argument)     <$>  (v .: "argValue")
@@ -160,7 +157,7 @@ instance FromJSON Argument where
         | type_ == "Fun"    -> (ArgFunPtr :: Int    -> Argument)   <$>  (v .: "argValue")
         | "[" `isPrefixOf` type_ ->
             case () of
-              _ | type_ == "[CInt]"   -> (ArgVector  :: [CInt]   -> Argument) <$> (v .: "argValue")
+              _ | type_ == "[Int]"    -> (ArgVector  :: [Int]   -> Argument) <$> (v .: "argValue")
                 | type_ == "[Int64]"  -> (ArgVector  :: [Int64]  -> Argument) <$> (v .: "argValue")
                 | type_ == "[Int32]"  -> (ArgVector  :: [Int32]  -> Argument) <$> (v .: "argValue")
                 | type_ == "[Int16]"  -> (ArgVector  :: [Int16]  -> Argument) <$> (v .: "argValue")
