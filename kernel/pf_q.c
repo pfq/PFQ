@@ -29,7 +29,7 @@
 #include <linux/version.h>
 #include <linux/module.h>
 #include <linux/moduleparam.h>
-#include <linux/semaphore.h>
+#include <linux/mutex.h>
 #include <linux/rwsem.h>
 #include <linux/socket.h>
 #include <linux/types.h>
@@ -92,7 +92,7 @@ MODULE_DESCRIPTION("Functional Networking Framework for Multi-core Architectures
 #pragma message "[PFQ] *** DEBUG mode ***"
 #endif
 
-static DEFINE_SEMAPHORE(sock_sem);
+static DEFINE_MUTEX(sock_lock);
 
 void pfq_timer(unsigned long cpu);
 
@@ -596,14 +596,14 @@ pfq_release(struct socket *sock)
                 pfq_shared_queue_disable(so);
 	}
 
-        down(&sock_sem);
+        mutex_lock(&sock_lock);
 
         /* purge both batch and recycle queues if no socket is open */
 
         if (pfq_get_sock_count() == 0)
                 total += pfq_percpu_destruct();
 
-        up (&sock_sem);
+        mutex_unlock(&sock_lock);
 
         if (total)
                 printk(KERN_INFO "[PFQ|%d] cleanup: %d skb purged.\n", id, total);
@@ -835,14 +835,14 @@ pfq_create(
                 return -EBUSY;
         }
 
-        down(&sock_sem);
+        mutex_lock(&sock_lock);
 
         /* initialize sock */
 
 	if (pfq_sock_init(so, id) < 0) {
                 printk(KERN_WARNING "[PFQ] error: pfq_sock_init: no memory!\n");
 		sk_free(sk);
-		up(&sock_sem);
+		mutex_unlock(&sock_lock);
 		return -EINVAL;
 	}
 
@@ -857,7 +857,7 @@ pfq_create(
 
         sk_refcnt_debug_inc(sk);
 
-        up (&sock_sem);
+        mutex_unlock(&sock_lock);
 
         down_read(&symtable_sem);
         return 0;
