@@ -27,7 +27,7 @@
 #include <linux/kernel.h>
 #include <linux/bug.h>
 #include <linux/module.h>
-#include <linux/semaphore.h>
+#include <linux/mutex.h>
 #include <linux/sched.h>
 
 #include <pragma/diagnostic_pop>
@@ -39,7 +39,8 @@
 
 #include <lang/engine.h>
 
-DEFINE_SEMAPHORE(group_sem);
+
+DEFINE_MUTEX(group_lock);
 
 
 static struct pfq_group pfq_groups[Q_MAX_GID];
@@ -350,7 +351,7 @@ pfq_set_group_prog(pfq_gid_t gid, struct pfq_lang_computation_tree *comp, void *
         if (group == NULL)
                 return -EINVAL;
 
-        down(&group_sem);
+        mutex_lock(&group_lock);
 
         old_comp = (struct pfq_lang_computation_tree *)atomic_long_xchg(&group->comp, (long)comp);
         old_ctx  = (void *)atomic_long_xchg(&group->comp_ctx, (long)ctx);
@@ -367,7 +368,7 @@ pfq_set_group_prog(pfq_gid_t gid, struct pfq_lang_computation_tree *comp, void *
         kfree(old_comp);
         kfree(old_ctx);
 
-        up(&group_sem);
+        mutex_unlock(&group_lock);
         return 0;
 }
 
@@ -382,11 +383,11 @@ pfq_join_group(pfq_gid_t gid, pfq_id_t id, unsigned long class_mask, int policy)
         if (group == NULL)
                 return -EINVAL;
 
-        down(&group_sem);
+        mutex_lock(&group_lock);
 
         ret = __pfq_join_group(gid, id, class_mask, policy);
 
-        up(&group_sem);
+        mutex_unlock(&group_lock);
         return ret;
 }
 
@@ -396,18 +397,18 @@ pfq_join_free_group(pfq_id_t id, unsigned long class_mask, int policy)
 {
         int n = 0;
 
-        down(&group_sem);
+        mutex_lock(&group_lock);
         for(; n < Q_MAX_ID; n++)
         {
 		pfq_gid_t gid = (__force pfq_gid_t)n;
 
                 if(!pfq_get_group(gid)->pid) {
                         __pfq_join_group(gid, id, class_mask, policy);
-                        up(&group_sem);
+                        mutex_unlock(&group_lock);
                         return n;
                 }
         }
-        up(&group_sem);
+        mutex_unlock(&group_lock);
         return -EPERM;
 }
 
@@ -422,9 +423,9 @@ pfq_leave_group(pfq_gid_t gid, pfq_id_t id)
         if (group == NULL)
                 return -EINVAL;
 
-        down(&group_sem);
+        mutex_lock(&group_lock);
         ret = __pfq_leave_group(gid,id);
-        up(&group_sem);
+        mutex_unlock(&group_lock);
         return ret;
 }
 
@@ -434,13 +435,13 @@ pfq_leave_all_groups(pfq_id_t id)
 {
         int n = 0;
 
-        down(&group_sem);
+        mutex_lock(&group_lock);
         for(; n < Q_MAX_ID; n++)
         {
 		pfq_gid_t gid = (__force pfq_gid_t)n;
                 __pfq_leave_group(gid, id);
         }
-        up(&group_sem);
+        mutex_unlock(&group_lock);
 
         pr_devel("[PFQ|%d] all group left.\n", id);
 }
@@ -451,7 +452,7 @@ pfq_get_groups(pfq_id_t id)
 {
         unsigned long ret = 0;
         int n = 0;
-        down(&group_sem);
+        mutex_lock(&group_lock);
         for(; n < Q_MAX_ID; n++)
         {
 		pfq_gid_t gid = (__force pfq_gid_t)n;
@@ -460,7 +461,7 @@ pfq_get_groups(pfq_id_t id)
                 if(mask & (1L << (__force int)id))
                         ret |= (1UL << n);
         }
-        up(&group_sem);
+        mutex_unlock(&group_lock);
         return ret;
 }
 

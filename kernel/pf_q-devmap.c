@@ -26,14 +26,15 @@
 
 #include <linux/kernel.h>
 #include <linux/module.h>
-#include <linux/semaphore.h>
+#include <linux/mutex.h>
 
 #include <pragma/diagnostic_pop>
 
 #include <pf_q-devmap.h>
 #include <pf_q-group.h>
 
-static DEFINE_SEMAPHORE(devmap_sem);
+
+static DEFINE_MUTEX(devmap_lock);
 
 atomic_long_t   pfq_devmap [Q_MAX_DEVICE][Q_MAX_HW_QUEUE];
 atomic_t        pfq_devmap_monitor [Q_MAX_DEVICE];
@@ -65,7 +66,7 @@ int pfq_devmap_update(int action, int index, int queue, pfq_gid_t gid)
         return 0;
     }
 
-    down(&devmap_sem);
+    mutex_lock(&devmap_lock);
 
     for(i=0; i < Q_MAX_DEVICE; ++i)
     {
@@ -101,8 +102,7 @@ int pfq_devmap_update(int action, int index, int queue, pfq_gid_t gid)
 
     pfq_devmap_monitor_update();
 
-    up(&devmap_sem);
-
+    mutex_unlock(&devmap_lock);
     return n;
 }
 

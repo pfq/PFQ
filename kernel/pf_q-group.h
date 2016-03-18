@@ -65,7 +65,7 @@ struct pfq_group
 };
 
 
-extern struct semaphore group_sem;
+extern struct mutex group_lock;
 
 struct pfq_lang_computation_tree;
 
