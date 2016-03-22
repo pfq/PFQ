@@ -281,12 +281,7 @@ namespace pfq {
         void
         open(group_policy policy, size_t caplen, size_t rx_slots = 1024, size_t tx_slots = 1024)
         {
-            this->open(caplen, rx_slots, tx_slots);
-
-            if (policy != group_policy::undefined)
-            {
-                data()->gid = this->join_group(any_group, policy, class_mask::default_);
-            }
+            this->open(policy, class_mask::default_, caplen, rx_slots, tx_slots);
         }
 
         //! Open the socket with the given class mask and group policy.
@@ -298,12 +293,7 @@ namespace pfq {
         void
         open(class_mask mask, group_policy policy, size_t caplen, size_t rx_slots = 1024, size_t tx_slots = 1024)
         {
-            this->open(caplen, rx_slots, tx_slots);
-
-            if (policy != group_policy::undefined)
-            {
-                data()->gid = this->join_group(any_group, policy, mask);
-            }
+            this->open(policy, mask, caplen, rx_slots, tx_slots);
         }
 
 
@@ -376,7 +366,7 @@ namespace pfq {
 
 
         void
-        open(size_t caplen, size_t rx_slots, size_t tx_slots)
+        open(group_policy policy, class_mask mask, size_t caplen, size_t rx_slots, size_t tx_slots)
         {
             if (data_)
                 throw system_error("PFQ: socket already open");
@@ -450,6 +440,14 @@ namespace pfq {
 
             data_->tx_slots = tx_slots;
             data_->tx_slot_size = align<8>(sizeof(pfq_pkthdr) + static_cast<size_t>(maxlen));
+
+            // join group if specified...
+            //
+
+            if (policy != group_policy::undefined)
+            {
+                data()->gid = this->join_group(any_group, policy, mask);
+            }
         }
 
     public:
