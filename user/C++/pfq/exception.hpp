@@ -27,33 +27,33 @@
 
 namespace pfq {
 
-    /** pfq_error represent problems related to the PFQ system.
+    /** system_error represent problems related to the PFQ system.
      *  @brief Subclass of std::system_error.
      */
 
-    class pfq_error final : public std::system_error
+    class system_error final : public std::system_error
     {
     public:
 
-        pfq_error(std::string const &reason)
+        system_error(std::string const &reason)
         : std::system_error(0, std::generic_category(), reason.c_str())
         {}
 
-        pfq_error(int ev, std::string const &reason)
+        system_error(int ev, std::string const &reason)
         : std::system_error(ev, std::generic_category(), reason.c_str())
         {}
 
-        pfq_error(int ev, const char * reason)
+        system_error(int ev, const char * reason)
         : std::system_error(ev, std::generic_category(), reason)
         {}
 
-        pfq_error(const char *reason)
+        system_error(const char *reason)
         : std::system_error(0, std::generic_category(), reason)
         {}
 
-        pfq_error(const pfq_error &) = default;
+        system_error(const system_error &) = default;
 
-        virtual ~pfq_error() noexcept
+        virtual ~system_error() noexcept
         {}
     };
 

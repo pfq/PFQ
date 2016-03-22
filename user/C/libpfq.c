@@ -120,7 +120,7 @@ static __thread const char * __error;
 const char *pfq_string_version = PFQ_VERSION_STRING;
 
 
-const char *pfq_error(pfq_t *q)
+const char *pfq_error(pfq_t const *q)
 {
         const char * p = q == NULL ? __error : q->error;
 	return p == NULL ? "NULL" : p;

@@ -71,7 +71,7 @@ namespace pfq {
         memset(&ifreq_io, 0, sizeof(struct ifreq));
         strncpy(ifreq_io.ifr_name, dev, IFNAMSIZ);
         if (::ioctl(fd, SIOCGIFINDEX, &ifreq_io) == -1)
-            throw pfq_error(errno, ("PFQ: " + std::string (dev) + ": ifindex"));
+            throw system_error(errno, ("PFQ: " + std::string (dev) + ": ifindex"));
 
         return ifreq_io.ifr_ifindex;
     }
@@ -87,7 +87,7 @@ namespace pfq {
         strncpy(ifreq_io.ifr_name, dev, IFNAMSIZ);
 
         if(::ioctl(fd, SIOCGIFFLAGS, &ifreq_io) == -1)
-            throw pfq_error(errno, "PFQ: " + std::string(dev) + ": set_promisc");
+            throw system_error(errno, "PFQ: " + std::string(dev) + ": set_promisc");
 
         if (value)
             ifreq_io.ifr_flags |= IFF_PROMISC;
@@ -95,7 +95,7 @@ namespace pfq {
             ifreq_io.ifr_flags &= ~IFF_PROMISC;
 
         if(::ioctl(fd, SIOCSIFFLAGS, &ifreq_io) == -1)
-            throw pfq_error(errno, "PFQ: " + std::string(dev) + ": set_promisc");
+            throw system_error(errno, "PFQ: " + std::string(dev) + ": set_promisc");
     }
 
     //! Given the device name return the related index.
@@ -105,7 +105,7 @@ namespace pfq {
     {
         auto i = ::if_nametoindex(dev);
         if (i == 0)
-            throw pfq_error(errno, "PFQ: " + std::string(dev) + ": nametoindex");
+            throw system_error(errno, "PFQ: " + std::string(dev) + ": nametoindex");
         return i;
     }
 
@@ -116,7 +116,7 @@ namespace pfq {
     {
         char buf[IF_NAMESIZE];
         if (::if_indextoname(i, buf) == nullptr)
-            throw pfq_error(errno, "PFQ: " + std::to_string(i) + ": indextoname");
+            throw system_error(errno, "PFQ: " + std::to_string(i) + ": indextoname");
         return buf;
     }
 
