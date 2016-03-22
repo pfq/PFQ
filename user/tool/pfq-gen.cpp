@@ -822,12 +822,14 @@ try
     // loading rand seeds...
     //
 
+    std::cout << "rand_ip    : "  << std::boolalpha << opt::rand_ip << std::endl;
+
     if (opt::rand_flow)
     {
         auto max_seed = (1ULL <<opt::rand_depth);
         std::mt19937 gen;
 
-        std::cout << "loading " << max_seed << " seeds..." << std::endl;
+        std::cout << "rand_flow  : loading " << max_seed << " seeds..." << std::endl;
 
         opt::rand_seed.reserve(max_seed);
 
@@ -893,7 +895,6 @@ try
     ////////////////////////////////////////////////////////////////////////////////////
 
 
-    std::cout << "rand_ip    : "  << std::boolalpha << opt::rand_ip << std::endl;
     std::cout << "len        : "  << opt::len << std::endl;
     std::cout << "flush-hint : "  << opt::flush_hint << std::endl;
 
