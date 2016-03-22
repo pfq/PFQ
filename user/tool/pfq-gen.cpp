@@ -94,6 +94,9 @@ namespace opt
     bool   poisson   = false;
     double rate      = 0;
 
+    uint32_t rand_depth = 8;
+    std::vector<uint32_t> rand_seed;
+
     std::vector< std::vector<int> > kthread;
 
     std::string file;
@@ -414,17 +417,11 @@ namespace thread
 #ifdef HAVE_PCAP_H
         void pcap_generator()
         {
-            std::vector<uint32_t> rand_seed;
             struct pcap_pkthdr *hdr;
             u_char *data;
 
             auto rc = opt::rate != 0.0;
-
-            if (opt::rand_flow)
-            {
-                for(int i = 0; i < 256; i++)
-                    rand_seed.push_back(static_cast<uint32_t>(m_gen()));
-            }
+            auto rand_seed_mask = ((1ULL << opt::rand_depth)-1);
 
             for (size_t l = 0; l < opt::loop; l++)
             {
@@ -439,7 +436,6 @@ namespace thread
                     return;
 
                 auto delta = std::chrono::nanoseconds(static_cast<uint64_t>(1000/opt::rate));
-
                 auto now = std::chrono::system_clock::now();
 
                 for(size_t i = 0; i < opt::npackets;)
@@ -458,7 +454,7 @@ namespace thread
                     if (auto ip = opt::rand_flow ? reinterpret_cast<iphdr *>(data + 14) : nullptr)
                     {
                         auto hash = ip->saddr ^ ip->daddr;
-                        auto seed = rand_seed[hash & 255];
+                        auto seed = opt::rand_seed[(hash+l) & rand_seed_mask];
                         ip->saddr ^= seed;
                         ip->daddr ^= seed;
                     }
@@ -604,7 +600,8 @@ void usage(std::string name)
 #endif
         " -R --rand-ip                  Randomize IP addresses\n"
 #ifdef HAVE_PCAP_H
-        " -F --rand-flow                Randomize IP addresses (per-flow)\n"
+        " -F --rand-flow                Randomize IP addresses per-flow\n"
+        "    --rand-depth               Depth of flow randomization (0-32: default 8)\n"
 #endif
         " -P --preload INT              Preload INT packets (must be a power of 2)\n"
         "    --rate DOUBLE              Packet rate in Mpps\n"
@@ -664,6 +661,21 @@ try
         if ( any_strcmp(argv[i], "-F", "--rand-flow") )
         {
             opt::rand_flow = true;
+            continue;
+        }
+
+        if ( any_strcmp(argv[i], "--rand-depth") )
+        {
+            if (++i == argc)
+            {
+                throw std::runtime_error("number missing");
+            }
+
+            opt::rand_depth = static_cast<size_t>(std::atoi(argv[i]));
+
+            if (opt::rand_depth > 31)
+                throw std::runtime_error("rand-depth: too large value [0-32]!");
+
             continue;
         }
 
@@ -805,6 +817,22 @@ try
             usage(argv[0]);
 
         throw std::runtime_error(std::string("pfq-gen: ") + argv[i] + " unknown option");
+    }
+
+    // loading rand seeds...
+    //
+
+    if (opt::rand_flow)
+    {
+        auto max_seed = (1ULL <<opt::rand_depth);
+        std::mt19937 gen;
+
+        std::cout << "loading " << max_seed << " seeds..." << std::endl;
+
+        opt::rand_seed.reserve(max_seed);
+
+        for(uint64_t i = 0; i < max_seed; i++)
+            opt::rand_seed.push_back(static_cast<uint32_t>(gen()));
     }
 
     while (opt::kthread.size() < binding.size())
