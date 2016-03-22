@@ -56,6 +56,8 @@ extern "C"
 {
     int pfq_set_group_computation_from_string(pfq_t *q, int gid, const char *prg);
     int pfq_set_group_computation_from_json(pfq_t *q, int gid, const char *descr);
+    pfq_t* pfq_open_group(unsigned long class_mask, int group_policy, size_t caplen, size_t rx_slots, size_t tx_slots);
+    const char * pfq_error(pfq_t const *q);
 }
 
 namespace pfq {
@@ -178,11 +180,11 @@ namespace pfq {
 
             param::load(def, std::forward<Ts>(args)...);
 
-            this->open(param::get<param::class_>(def).value,
-                       param::get<param::policy>(def).value,
-                       param::get<param::caplen>(def).value,
-                       param::get<param::rx_slots>(def).value,
-                       param::get<param::tx_slots>(def).value);
+            this->open_(param::get<param::class_>(def).value,
+                        param::get<param::policy>(def).value,
+                        param::get<param::caplen>(def).value,
+                        param::get<param::rx_slots>(def).value,
+                        param::get<param::tx_slots>(def).value);
         }
 
         //! Constructor
@@ -281,7 +283,7 @@ namespace pfq {
         void
         open(group_policy policy, size_t caplen, size_t rx_slots = 1024, size_t tx_slots = 1024)
         {
-            this->open(policy, class_mask::default_, caplen, rx_slots, tx_slots);
+            this->open_(class_mask::default_, policy, caplen, rx_slots, tx_slots);
         }
 
         //! Open the socket with the given class mask and group policy.
@@ -293,7 +295,7 @@ namespace pfq {
         void
         open(class_mask mask, group_policy policy, size_t caplen, size_t rx_slots = 1024, size_t tx_slots = 1024)
         {
-            this->open(policy, mask, caplen, rx_slots, tx_slots);
+            this->open_(mask, policy, caplen, rx_slots, tx_slots);
         }
 
 
@@ -310,11 +312,11 @@ namespace pfq {
 
             param::load(def, std::forward<Ts>(args)...);
 
-            this->open(param::get<param::class_>(def).value,
-                       param::get<param::policy>(def).value,
-                       param::get<param::caplen>(def).value,
-                       param::get<param::rx_slots>(def).value,
-                       param::get<param::tx_slots>(def).value);
+            this->open_(param::get<param::class_>(def).value,
+                        param::get<param::policy>(def).value,
+                        param::get<param::caplen>(def).value,
+                        param::get<param::rx_slots>(def).value,
+                        param::get<param::tx_slots>(def).value);
         }
 
         //! Return the id of the socket.
@@ -366,88 +368,21 @@ namespace pfq {
 
 
         void
-        open(group_policy policy, class_mask mask, size_t caplen, size_t rx_slots, size_t tx_slots)
+        open_(class_mask mask, group_policy policy, size_t caplen, size_t rx_slots, size_t tx_slots)
         {
             if (data_)
                 throw system_error("PFQ: socket already open");
 
-            auto fd = ::socket(PF_Q, SOCK_RAW, htons(ETH_P_ALL));
-            if (fd == -1)
-                throw system_error("PFQ: module not loaded");
+            auto ptr = pfq_open_group(static_cast<unsigned long>(mask),
+                                      static_cast<int>(policy),
+                                      caplen,
+                                      rx_slots,
+                                      tx_slots);
 
-            // allocate pdata
+            if (!ptr)
+                throw system_error(errno, pfq_error(NULL));
 
-            data_.reset(new pfq_data_int {  nullptr,
-                                            0,
-                                            nullptr,
-                                            0,
-                                            nullptr,
-                                            0,
-
-                                            0,
-                                            0,
-                                            0,
-                                            0,
-                                            0,
-                                            0,
-
-                                            nullptr,
-                                            -1,
-                                            -1,
-                                            -1,
-                                            -1,
-
-                                            {0, 0, 0, 0}
-                                     });
-
-            data_->fd = fd;
-
-            // get id
-
-            data_->id = PFQ_VERSION_CODE;
-            socklen_t size = sizeof(data_->id);
-
-            if (::getsockopt(fd, PF_Q, Q_SO_GET_ID, &data_->id, &size) == -1)
-                throw system_error(errno, "PFQ: get id error");
-
-            // set Rx queue slots
-
-            if (::setsockopt(fd, PF_Q, Q_SO_SET_RX_SLOTS, &rx_slots, sizeof(rx_slots)) == -1)
-                throw system_error(errno, "PFQ: set Rx slots error");
-
-            data_->rx_slots = rx_slots;
-
-            // set caplen
-            //
-
-            if (::setsockopt(fd, PF_Q, Q_SO_SET_RX_CAPLEN, &caplen, sizeof(caplen)) == -1)
-                throw system_error(errno, "PFQ: set Rx caplen error");
-
-            data_->rx_slot_size = align<8>(sizeof(pfq_pkthdr) + caplen);
-
-            // set Tx queue slots
-
-            if (::setsockopt(fd, PF_Q, Q_SO_SET_TX_SLOTS, &tx_slots, sizeof(tx_slots)) == -1)
-                throw system_error(errno, "PFQ: set Tx slots error");
-
-            // get maxlen
-
-            unsigned int maxlen;
-            size = sizeof(maxlen);
-
-            if (::getsockopt(fd, PF_Q, Q_SO_GET_TX_MAXLEN, &maxlen, &size) == -1)
-                throw system_error(errno, "PFQ: get Tx maxlen error");
-
-            data_->tx_slots = tx_slots;
-            data_->tx_slot_size = align<8>(sizeof(pfq_pkthdr) + static_cast<size_t>(maxlen));
-
-            // join group if specified...
-            //
-
-            if (policy != group_policy::undefined)
-            {
-                data()->gid = this->join_group(any_group, policy, mask);
-            }
+            data_.reset(ptr);
         }
 
     public:
@@ -996,7 +931,7 @@ namespace pfq {
         set_group_computation(int gid, std::string const &comp)
         {
             if (pfq_set_group_computation_from_string(data(), gid, comp.c_str()) < 0)
-                throw system_error(errno, "PFQ: pfq-lang: group computation error");
+                throw system_error(errno, pfq_error(data()));
         }
 
         //! Specify a functional computation for the given group, from JSON description.
@@ -1005,7 +940,7 @@ namespace pfq {
         set_group_computation_json(int gid, std::string const &comp)
         {
             if (pfq_set_group_computation_from_json(data(), gid, comp.c_str()) < 0)
-                throw system_error(errno, "PFQ: JSON: group computation error");
+                throw system_error(errno, pfq_error(data()));
         }
 
 
