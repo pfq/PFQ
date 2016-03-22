@@ -41,6 +41,8 @@
 #include <pfq/pfq-int.h>
 
 
+#ifndef __cplusplus
+
 /*! Initialize the net queue... */
 
 static inline void
@@ -133,10 +135,6 @@ pfq_yield()
 #endif
 }
 
-/*! pfq handler: function prototype. */
-
-typedef void (*pfq_handler_t)(char *user, const struct pfq_pkthdr *h, const char *data);
-
 
 /*! Symmetric hashx */
 
@@ -197,6 +195,17 @@ static const int pfq_minor_version	= PFQ_MINOR(PFQ_VERSION_CODE);
 static const int pfq_patchlevel_version = PFQ_PATCHLEVEL(PFQ_VERSION_CODE);
 
 extern const char *pfq_string_version;
+
+
+#endif /*__cplusplus */
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+/*! pfq handler: function prototype. */
+
+typedef void (*pfq_handler_t)(char *user, const struct pfq_pkthdr *h, const char *data);
 
 
 /*! Return the string error. */
@@ -438,7 +447,7 @@ extern int pfq_groups_mask(pfq_t const *q, unsigned long *_mask);
  * The functional computation is specified by a pfq_lang_computation_descriptor.
  */
 
-extern int pfq_set_group_computation(pfq_t *q, int gid, struct pfq_lang_computation_descr *prg);
+extern int pfq_set_group_computation(pfq_t *q, int gid, struct pfq_lang_computation_descr const *prg);
 
 
 /*! Specify a functional computation for the given group, from JSON description. */
@@ -459,7 +468,7 @@ extern int pfq_set_group_computation_from_string(pfq_t *q, int gid, const char *
  * It is used by PFQ/pcap library.
  */
 
-extern int pfq_group_fprog(pfq_t *q, int gid, struct sock_fprog *);
+extern int pfq_group_fprog(pfq_t *q, int gid, struct sock_fprog const *);
 
 
 /*! Reset the BPF program fro the given group. */
@@ -623,5 +632,9 @@ int pfq_send_at(pfq_t *q, const void *ptr, size_t len, struct timespec *ts, unsi
         return pfq_send_raw(q, ptr, len, 0, 0, ns, copies, 1, Q_ANY_QUEUE);
 }
 
+
+#ifdef __cplusplus
+}
+#endif
 
 #endif /* PFQ_H */
