@@ -700,7 +700,7 @@ popen2(const char *command, struct popen2 *childinfo)
 
 
 int
-pfq_set_group_computation(pfq_t *q, int gid, struct pfq_lang_computation_descr *comp)
+pfq_set_group_computation(pfq_t *q, int gid, struct pfq_lang_computation_descr const *comp)
 {
         struct pfq_group_computation p = { gid, comp };
 
@@ -1266,7 +1266,7 @@ pfq_set_group_computation_from_string(pfq_t *q, int gid, const char *comp)
 
 
 int
-pfq_group_fprog(pfq_t *q, int gid, struct sock_fprog *f)
+pfq_group_fprog(pfq_t *q, int gid, struct sock_fprog const *f)
 {
 	struct pfq_fprog fprog;
 
@@ -1294,8 +1294,9 @@ int
 pfq_group_fprog_reset(pfq_t *q, int gid)
 {
 	struct sock_fprog null = { 0, NULL };
-
-	return pfq_group_fprog(q, gid, &null);
+	if (pfq_group_fprog(q, gid, &null) < 0)
+		return Q_ERROR(q, "PFQ: reset group fprog error");
+	return Q_OK(q);
 }
 
 
@@ -1372,7 +1373,6 @@ int
 pfq_get_group_stats(pfq_t const *q, int gid, struct pfq_stats *stats)
 {
 	socklen_t size = sizeof(struct pfq_stats);
-
 	stats->recv = (unsigned int)gid;
 	if (getsockopt(q->fd, PF_Q, Q_SO_GET_GROUP_STATS, stats, &size) == -1) {
 		return Q_ERROR(q, "PFQ: get group stats error");
@@ -1385,7 +1385,6 @@ int
 pfq_get_group_counters(pfq_t const *q, int gid, struct pfq_counters *cs)
 {
 	socklen_t size = sizeof(struct pfq_counters);
-
 	cs->counter[0] = (unsigned int)gid;
 
 	if (getsockopt(q->fd, PF_Q, Q_SO_GET_GROUP_COUNTERS, cs, &size) == -1) {

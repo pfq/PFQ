@@ -388,7 +388,7 @@ struct pfq_group_join
 struct pfq_group_computation
 {
         int gid;
-        struct pfq_lang_computation_descr __user *prog;
+        struct pfq_lang_computation_descr const __user *prog;
 };
 
 
