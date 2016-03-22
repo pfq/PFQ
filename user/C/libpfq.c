@@ -149,7 +149,6 @@ pfq_open_group(unsigned long class_mask, int group_policy, size_t caplen, size_t
 {
 	int fd = socket(PF_Q, SOCK_RAW, htons(ETH_P_ALL));
 	int maxlen;
-
 	pfq_t * q;
 
 	if (fd == -1) {
@@ -179,7 +178,8 @@ pfq_open_group(unsigned long class_mask, int group_policy, size_t caplen, size_t
 		return __error = "PFQ: get id error", free(q), NULL;
 	}
 
-	/* set rx queue slots */
+	/* set Rx queue slots */
+
 	if (setsockopt(fd, PF_Q, Q_SO_SET_RX_SLOTS, &rx_slots, sizeof(rx_slots)) == -1) {
 		return __error = "PFQ: set Rx slots error", free(q), NULL;
 	}
@@ -187,6 +187,7 @@ pfq_open_group(unsigned long class_mask, int group_policy, size_t caplen, size_t
 	q->rx_slots = rx_slots;
 
 	/* set caplen */
+
 	if (setsockopt(fd, PF_Q, Q_SO_SET_RX_CAPLEN, &caplen, sizeof(caplen)) == -1) {
 		return __error = "PFQ: set Rx caplen error", free(q), NULL;
 	}
@@ -194,6 +195,7 @@ pfq_open_group(unsigned long class_mask, int group_policy, size_t caplen, size_t
 	q->rx_slot_size = ALIGN(sizeof(struct pfq_pkthdr) + caplen, 8);
 
 	/* set Tx queue slots */
+
 	if (setsockopt(fd, PF_Q, Q_SO_SET_TX_SLOTS, &tx_slots, sizeof(tx_slots)) == -1) {
 		return __error = "PFQ: set Tx slots error", free(q), NULL;
 	}
@@ -209,6 +211,7 @@ pfq_open_group(unsigned long class_mask, int group_policy, size_t caplen, size_t
 	q->tx_slots = tx_slots;
 	q->tx_slot_size = ALIGN(sizeof(struct pfq_pkthdr) + (size_t)maxlen, 8);
 
+	/* join group if specified */
 
 	if (group_policy != Q_POLICY_GROUP_UNDEFINED)
 	{
