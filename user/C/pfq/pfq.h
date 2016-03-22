@@ -204,7 +204,7 @@ extern const char *pfq_string_version;
  * Return a string of the most recent error.
  */
 
-extern const char *pfq_error(pfq_t *);
+extern const char *pfq_error(pfq_t const *);
 
 
 /*! Given a device name, return the interface index. */
