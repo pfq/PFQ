@@ -56,6 +56,7 @@ extern "C"
 {
     int pfq_set_group_computation_from_string(pfq_t *q, int gid, const char *prg);
     int pfq_set_group_computation_from_json(pfq_t *q, int gid, const char *descr);
+    int pfq_close(pfq_t *q);
     pfq_t* pfq_open_group(unsigned long class_mask, int group_policy, size_t caplen, size_t rx_slots, size_t tx_slots);
     const char * pfq_error(pfq_t const *q);
 }
@@ -397,16 +398,8 @@ namespace pfq {
         {
             if (data_)
             {
-                if (data_->shm_addr)
-                    this->disable();
-
-                if (::close(data_->fd) < 0)
-                    throw system_error("FPQ: close error");
-
-                if (data_->hd != -1)
-                    ::close(data_->hd);
-
-                data_.reset(nullptr);
+                if (pfq_close(data_.release()) < 0)
+                    throw system_error(errno, pfq_error(data()));
             }
         }
 
