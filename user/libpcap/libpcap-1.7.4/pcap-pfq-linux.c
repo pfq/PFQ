@@ -60,6 +60,8 @@
 #include <poll.h>
 #include <ctype.h>
 
+#include "pcap-pfq-linux.h"
+
 static void pfq_cleanup_linux(pcap_t *);
 static	int pfq_activate_linux(pcap_t *);
 static	int pfq_inject_linux(pcap_t *, const void *, size_t);
@@ -535,37 +537,37 @@ pfq_parse_env(struct pfq_opt *opt)
 {
 	char *var;
 
-	if ((var = getenv("PFQ_GROUP")))
+	if ((var = pfq_getenv("PFQ_GROUP")))
 		opt->group = atoi(var);
 
-	if ((var = getenv("PFQ_CAPLEN")))
+	if ((var = pfq_getenv("PFQ_CAPLEN")))
 		opt->caplen = atoi(var);
 
-	if ((var = getenv("PFQ_RX_SLOTS")))
+	if ((var = pfq_getenv("PFQ_RX_SLOTS")))
 		opt->rx_slots = atoi(var);
 
-	if ((var = getenv("PFQ_TX_SLOTS")))
+	if ((var = pfq_getenv("PFQ_TX_SLOTS")))
 		opt->tx_slots = atoi(var);
 
-	if ((var = getenv("PFQ_TX_FHINT")))
+	if ((var = pfq_getenv("PFQ_TX_FHINT")))
 		opt->tx_fhint = atoi(var);
 
-	if ((var = getenv("PFQ_VLAN")))
+	if ((var = pfq_getenv("PFQ_VLAN")))
 		opt->vlan = var;
 
-	if ((var = getenv("PFQ_LANG"))) {
+	if ((var = pfq_getenv("PFQ_LANG"))) {
 		free(opt->comp);
 		opt->comp = var;
 	}
 
-	if ((var = getenv("PFQ_TX_QUEUE"))) {
+	if ((var = pfq_getenv("PFQ_TX_QUEUE"))) {
 		if (pfq_parse_integers(opt->tx_queue, 4, var) < 0) {
 			fprintf(stderr, "[PFQ] PFQ_TX_QUEUE parse error!\n");
 			return -1;
 		}
 	}
 
-	if ((var = getenv("PFQ_TX_THREAD"))) {
+	if ((var = pfq_getenv("PFQ_TX_THREAD"))) {
 		if (pfq_parse_integers(opt->tx_thread, 4, var) < 0) {
 			fprintf(stderr, "[PFQ] PFQ_TX_THREAD parse error!\n");
 			return -1;
@@ -741,7 +743,7 @@ pfq_activate_linux(pcap_t *handle)
 
 
 	if (config == NULL) {
-		char *conf = getenv("PFQ_CONFIG");
+		char *conf = pfq_getenv("PFQ_CONFIG");
 		if (conf)
 			config = strdup(conf);
 	}

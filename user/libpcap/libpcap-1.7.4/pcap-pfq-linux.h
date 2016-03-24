@@ -33,4 +33,22 @@
  * Prototypes for PFQ related functions
  */
 
+#include <sys/types.h>
+#include <sys/syscall.h>
+#include <stdlib.h>
+#include <stdio.h>
+
 pcap_t * pfq_create(const char *device, char *ebuf, size_t size);
+
+
+static char *
+pfq_getenv(const char *var)
+{
+	char ptvar[256];
+	char *ret = NULL;
+	snprintf(ptvar, 256, "%s_%d", var, syscall(__NR_gettid));
+	if ((ret = getenv(ptvar)))
+	    return ret;
+	return getenv(var);
+}
+
