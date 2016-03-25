@@ -35,6 +35,7 @@
 #include <more/vt100.hpp>
 #include <more/binding.hpp>
 #include <more/affinity.hpp>
+#include <more/pretty.hpp>
 
 
 #ifdef HAVE_PCAP_H
@@ -538,50 +539,6 @@ bool any_strcmp(const char *arg, const char *opt, Ts&&...args)
 }
 
 
-template <typename U, typename T, typename Duration>
-U persecond(T value, Duration dur)
-{
-    return static_cast<U>(value) * 1000000 /
-        std::chrono::duration_cast<std::chrono::microseconds>(dur).count();
-}
-
-template <typename T>
-std::string to_string_(std::ostringstream &out, T &&arg)
-{
-    out << std::move(arg);
-    return out.str();
-}
-template <typename T, typename ...Ts>
-std::string to_string_(std::ostringstream &out, T &&arg, Ts&&... args)
-{
-    out << std::move(arg);
-    return to_string_(out, std::forward<Ts>(args)...);
-}
-template <typename ...Ts>
-inline std::string
-to_string(Ts&& ... args)
-{
-    std::ostringstream out;
-    return to_string_(out, std::forward<Ts>(args)...);
-}
-
-template <typename T>
-std::string
-pretty(T value)
-{
-    if (value < 1000000000) {
-    if (value < 1000000) {
-    if (value < 1000) {
-         return to_string(value);
-    }
-    else return to_string(value/1000, "_K");
-    }
-    else return to_string(value/1000000, "_M");
-    }
-    else return to_string(value/1000000000, "_G");
-}
-
-
 void usage(std::string name)
 {
     throw std::runtime_error
@@ -992,8 +949,8 @@ try
        if (opt::copies > 1)
            std::cout << " (x " << opt::copies << ") => ";
 
-       std::cout  << "band: " << pretty(persecond<double>((band-band_)*8 * opt::copies, delta))  << "bit/sec "
-                  << "gros: " << pretty(persecond<double>((gros-gros_)*8 * opt::copies, delta))  << "bit/sec "
+       std::cout  << "band: " << pretty_number(persecond<double>((band-band_)*8 * opt::copies, delta))  << "bit/sec "
+                  << "gros: " << pretty_number(persecond<double>((gros-gros_)*8 * opt::copies, delta))  << "bit/sec "
                   << vt100::RESET << " }" << std::endl;
 
         std::cout << "   socket: { "
