@@ -31,6 +31,7 @@
 #include <more/binding.hpp>
 #include <more/affinity.hpp>
 #include <more/vt100.hpp>
+#include <more/pretty.hpp>
 
 #include <linux/ip.h>
 #include <linux/udp.h>
@@ -340,16 +341,6 @@ void usage(std::string name)
 std::vector<thread::context *> thread_ctx;
 
 
-template <typename T>
-std::string
-pretty_value(T value)
-{
-    if (value > 1000000)
-        return std::to_string(static_cast<double>(value)/1000000) + "M";
-    return std::to_string(value);
-}
-
-
 int
 main(int argc, char *argv[])
 try
@@ -560,7 +551,7 @@ try
         auto rate = (static_cast<int64_t>(sum-old)*1000000)/
                         std::chrono::duration_cast<std::chrono::microseconds>(end-begin).count();
 
-        std::cout << "capture: " << vt100::BOLD << pretty_value(rate) << " pkt/sec" << vt100::RESET;
+        std::cout << "capture: " << vt100::BOLD << pretty_number(rate) << " pkt/sec" << vt100::RESET;
 
         if (flow) {
             std::cout << " flow: " << flow;

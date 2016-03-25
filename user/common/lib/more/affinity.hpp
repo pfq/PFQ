@@ -6,10 +6,10 @@
 
 #pragma once
 
-#include <thread>
 #include <pthread.h> // pthread_setaffinity_np
 #include <sched.h>
 
+#include <thread>
 #include <stdexcept>
 
 namespace more {
