@@ -63,7 +63,6 @@ module Network.PFQ.Lang
     , NetFunction
     , NetPredicate
     , NetProperty
-    , (>->)
     ) where
 
 
@@ -324,12 +323,6 @@ instance Storable NetPredicate where
     alignment = undefined
     peek      = undefined
     poke      = undefined
-
-
--- |Kleisli left-to-right operator, for monadic composition of pfq-lang functions.
-
-(>->) :: forall a b c m. (Monad m) => Function (a -> m b) -> Function (b -> m c) -> Function (a -> m c)
-f1 >-> f2 = Kleisli f1 f2
 
 
 instance Show (Function f) where
