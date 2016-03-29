@@ -27,6 +27,7 @@ Library
   exposed-modules: Network.PFQ
                    Network.PFQ.Types
                    Network.PFQ.Lang
+                   Network.PFQ.Lang.Prelude
                    Network.PFQ.Lang.Default
                    Network.PFQ.Lang.Experimental
   ghc-options:     -Wall -fno-warn-missing-signatures
