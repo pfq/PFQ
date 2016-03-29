@@ -37,6 +37,7 @@ defaultImports =
     [ ("Prelude", Just "P")
     , ("Network.PFQ.Lang", Nothing)
     , ("Network.PFQ.Types", Nothing)
+    , ("Network.PFQ.Lang.Prelude", Nothing)
     , ("Network.PFQ.Lang.Default", Nothing)
     , ("Network.PFQ.Lang.Experimental", Nothing)
     ]
@@ -66,5 +67,5 @@ mkMainFunction code = "(let " ++ code ++ " in main)"
 mkImportList :: (Monad m) => [(ModuleName, Maybe String)] -> OptionT m [(ModuleName, Maybe String)]
 mkImportList xs = do
   opt <- ask
-  return $ defaultImports ++  map (, Nothing) (modules opt) ++ xs
+  return $ defaultImports ++ map (, Nothing) (modules opt) ++ xs
 
