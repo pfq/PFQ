@@ -53,6 +53,7 @@ modToFilePath base n = base </> fixPath n <.> "hs"
 compile :: String -> OptionT IO (Q.Function (SkBuff -> Action SkBuff))
 compile raw = do
     let (code, localImports) = parseCode raw
+
     opt <- ask
     imports <- mkImportList localImports
 
@@ -76,7 +77,8 @@ compile raw = do
 
         -- specify options:
 
-        set [languageExtensions := [ OverloadedStrings ], searchPath := [basePath] ]
+        set [ languageExtensions := [ OverloadedStrings, RebindableSyntax ]
+            , searchPath := [basePath] ]
 
         -- load local modules:
         loadModules mods
