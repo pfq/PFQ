@@ -138,8 +138,9 @@ PFQ 6.0
    setGroupComputationFromJSON...
  * Internal Fanout monad extended with 
    DoubleSteering.
- * pfq-lang: expressions are now JSON serializable.
+ * Pfq-lang: expressions are now JSON serializable.
  * Pfq-lang: native CIDR type added.
+ * Pfq-lang: do notation implemented.
  * Pfq-lang: new steering functions:
     * `steer_rrobin`
     * `steer_rss`
