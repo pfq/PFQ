@@ -223,39 +223,39 @@ newtype PFqTag = PFqTag ()
 -- |Capture Queue handle.
 
 data NetQueue = NetQueue {
-      qPtr        :: Ptr PktHdr                 -- ^ pointer to the memory mapped queue
-   ,  qLen        :: {-# UNPACK #-} !Word64     -- ^ queue length
-   ,  qSlotSize   :: {-# UNPACK #-} !Word64     -- ^ size of a slot = pfq header + packet
-   ,  qIndex      :: {-# UNPACK #-} !Word32     -- ^ index of the queue
+      qPtr      :: Ptr PktHdr               -- ^ pointer to the memory mapped queue
+   ,  qLen      :: {-# UNPACK #-} !Word64   -- ^ queue length
+   ,  qSlotSize :: {-# UNPACK #-} !Word64   -- ^ size of a slot = pfq header + packet
+   ,  qIndex    :: {-# UNPACK #-} !Word32   -- ^ index of the queue
    } deriving (Eq, Show)
 
 -- |PFQ packet header.
 
 data PktHdr = PktHdr {
-      hMark     :: {-# UNPACK #-} !Word32       -- ^ skb 32-bits mark
-    , hState    :: {-# UNPACK #-} !Word32       -- ^ opaque 32-bits state
-    , hSec      :: {-# UNPACK #-} !Word32       -- ^ timestamp (seconds)
-    , hNsec     :: {-# UNPACK #-} !Word32       -- ^ timestamp (nanoseconds)
-    , hIfIndex  :: {-# UNPACK #-} !Word32       -- ^ interface index
-    , hGid      :: {-# UNPACK #-} !Word32       -- ^ group id
-    , hLen      :: {-# UNPACK #-} !Word16       -- ^ packet length (wire size)
-    , hCapLen   :: {-# UNPACK #-} !Word16       -- ^ capture length
-    , hTci      :: {-# UNPACK #-} !Word16       -- ^ vlan tci
-    , hHwQueue  :: {-# UNPACK #-} !Word8        -- ^ hardware queue index
-    , hCommit   :: {-# UNPACK #-} !Word8        -- ^ commit bit
+      hMark     :: {-# UNPACK #-} !Word32   -- ^ skb 32-bits mark
+    , hState    :: {-# UNPACK #-} !Word32   -- ^ opaque 32-bits state
+    , hSec      :: {-# UNPACK #-} !Word32   -- ^ timestamp (seconds)
+    , hNsec     :: {-# UNPACK #-} !Word32   -- ^ timestamp (nanoseconds)
+    , hIfIndex  :: {-# UNPACK #-} !Word32   -- ^ interface index
+    , hGid      :: {-# UNPACK #-} !Word32   -- ^ group id
+    , hLen      :: {-# UNPACK #-} !Word16   -- ^ packet length (wire size)
+    , hCapLen   :: {-# UNPACK #-} !Word16   -- ^ capture length
+    , hTci      :: {-# UNPACK #-} !Word16   -- ^ vlan tci
+    , hHwQueue  :: {-# UNPACK #-} !Word8    -- ^ hardware queue index
+    , hCommit   :: {-# UNPACK #-} !Word8    -- ^ commit bit
     } deriving (Eq, Show)
 
 -- |PFQ statistics.
 
 data Statistics = Statistics {
-      sReceived   ::  Integer  -- ^ packets received
-    , sLost       ::  Integer  -- ^ packets lost
-    , sDropped    ::  Integer  -- ^ packets dropped
-    , sSent       ::  Integer  -- ^ packets sent
-    , sDiscard    ::  Integer  -- ^ packets discarded
-    , sFailure    ::  Integer  -- ^ packets Tx failure
-    , sForward    ::  Integer  -- ^ packets forwarded to devices
-    , sKernel     ::  Integer  -- ^ packets forwarded to kernel
+      sReceived   ::  Integer               -- ^ packets received
+    , sLost       ::  Integer               -- ^ packets lost
+    , sDropped    ::  Integer               -- ^ packets dropped
+    , sSent       ::  Integer               -- ^ packets sent
+    , sDiscard    ::  Integer               -- ^ packets discarded
+    , sFailure    ::  Integer               -- ^ packets Tx failure
+    , sForward    ::  Integer               -- ^ packets forwarded to devices
+    , sKernel     ::  Integer               -- ^ packets forwarded to kernel
     } deriving (Eq, Show)
 
 -- |PFQ counters.
@@ -378,18 +378,17 @@ toPktHdr hdr = do
     _tci   <- (`peekByteOff` 28) hdr
     _hwq   <- (`peekByteOff` 30) hdr
     _com   <- (`peekByteOff` 31) hdr
-    return PktHdr {
-                    hMark     = fromIntegral (_mark :: Word32),
-                    hState    = fromIntegral (_state:: Word32),
-                    hSec      = fromIntegral (_sec  :: Word32),
-                    hNsec     = fromIntegral (_nsec :: Word32),
-                    hIfIndex  = fromIntegral (_ifidx:: CInt),
-                    hGid      = fromIntegral (_gid  :: CInt),
-                    hLen      = fromIntegral (_len  :: CUShort),
-                    hCapLen   = fromIntegral (_cap  :: CUShort),
-                    hTci      = fromIntegral (_tci  :: CUShort),
-                    hHwQueue  = fromIntegral (_hwq  :: CUChar),
-                    hCommit   = fromIntegral (_com  :: CUChar)
+    return PktHdr {  hMark     = fromIntegral (_mark :: Word32)
+                  ,  hState    = fromIntegral (_state:: Word32)
+                  ,  hSec      = fromIntegral (_sec  :: Word32)
+                  ,  hNsec     = fromIntegral (_nsec :: Word32)
+                  ,  hIfIndex  = fromIntegral (_ifidx:: CInt)
+                  ,  hGid      = fromIntegral (_gid  :: CInt)
+                  ,  hLen      = fromIntegral (_len  :: CUShort)
+                  ,  hCapLen   = fromIntegral (_cap  :: CUShort)
+                  ,  hTci      = fromIntegral (_tci  :: CUShort)
+                  ,  hHwQueue  = fromIntegral (_hwq  :: CUChar)
+                  ,  hCommit   = fromIntegral (_com  :: CUChar)
                   }
 
 -- | The type of the callback function passed to 'dispatch'.
@@ -443,7 +442,7 @@ getPackets' index cur end slotSize
 
 isPacketReady :: Packet -> IO Bool
 isPacketReady p = do
-    !_com  <- (`peekByteOff` 31) (pHdr p)
+    !_com  <- (`peekByteOff` (#{size struct pfq_pkthdr}-1)) (pHdr p)
     return ((_com :: CUChar) == fromIntegral (pIndex p))
 
 {-# INLINE isPacketReady #-}
@@ -833,15 +832,13 @@ read hdl msec =
     allocaBytes #{size struct pfq_net_queue} $ \queue -> do
        pfq_read hdl queue (fromIntegral msec) >>= throwPFqIf_ hdl (== -1)
        _ptr <- ( `peekByteOff` 0)  queue
-       _len <- ( `peekByteOff` sizeOf _ptr)  queue
+       _len <- ( `peekByteOff` sizeOf _ptr) queue
        _css <- ( `peekByteOff` (sizeOf _ptr + sizeOf _len)) queue
        _cid <- ( `peekByteOff` (sizeOf _ptr + sizeOf _len + sizeOf _css)) queue
-       let slotSize'= fromIntegral(_css :: CSize)
-       let slotSize = slotSize' + slotSize' `mod` 8
-       return NetQueue { qPtr       = _ptr :: Ptr PktHdr,
-                         qLen       = fromIntegral (_len :: CSize),
-                         qSlotSize  = slotSize,
-                         qIndex     = fromIntegral (_cid  :: CUInt)
+       return NetQueue { qPtr       = _ptr :: Ptr PktHdr
+                       , qLen       = fromIntegral (_len :: CSize)
+                       , qSlotSize  = fromIntegral (_css :: CSize)
+                       , qIndex     = fromIntegral (_cid :: CUInt)
                        }
 
 -- |Collect and process packets.
