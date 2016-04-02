@@ -486,7 +486,7 @@ steer_link_local mac_gw = Function "steer_link_local" mac_gw () () () () () () (
 
 -- | Dispatch the packet across the sockets
 -- with a randomized algorithm that maintains the coherence of both
--- mac addresses. This alter the total volume of traffic, as the
+-- mac addresses. This alter the total amount of traffic, as the
 -- packets can be steered to at most two sockets.
 --
 -- > steer_mac
@@ -509,7 +509,7 @@ steer_p2p = Function "steer_p2p" () () () () () () () () :: NetFunction
 -- | Dispatch the packet across the sockets
 -- with a randomized algorithm that maintains the coherence of both
 -- IP addresses.
--- This alter the total volume of traffic (see 'steer_mac').
+-- This alter the total amount of traffic (see 'steer_mac').
 --
 -- > steer_ip
 steer_ip = Function "steer_ip" () () () () () () () () :: NetFunction
@@ -517,7 +517,7 @@ steer_ip = Function "steer_ip" () () () () () () () () :: NetFunction
 -- | Dispatch the packet across the sockets
 -- with a randomized algorithm that maintains the coherence of local
 -- IP addresses.
--- This alter the total volume of traffic (see 'steer_mac').
+-- This alter the total amount of traffic (see 'steer_mac').
 --
 -- > steer_ip_local "192.168.1.0/24"
 steer_ip_local d = Function "steer_ip_local" d () () () () () () () :: NetFunction
@@ -525,7 +525,7 @@ steer_ip_local d = Function "steer_ip_local" d () () () () () () () :: NetFuncti
 -- | Dispatch the packet across the sockets
 -- with a randomized algorithm that maintains the coherence of
 -- both IPv6 addresses.
--- This alter the total volume of traffic (see 'steer_mac').
+-- This alter the total amount of traffic (see 'steer_mac').
 --
 -- > steer_ip6 >-> log_msg "Steering an IPv6 packet"
 steer_ip6 = Function "steer_ip6" () () () () () () () () :: NetFunction
@@ -578,7 +578,7 @@ steer_field offset size = Function "steer_field" offset size () () () () () ()
 -- with a randomized algorithm. The function uses as /hash/ the xor operation
 -- of the fields of /size/ bytes taken at /offset1/ and /offset2/ bytes from the
 -- beginning of the packet.
--- This alter the total volume of traffic (see 'steer_mac').
+-- This alter the total amount of traffic (see 'steer_mac').
 steer_field_double :: Int -- ^ offset1 from the beginning of the packet, in bytes
                    -> Int -- ^ offset2 from the beginning of the packet, in bytes
                    -> Int -- ^ sizeof field in bytes (max 4)
