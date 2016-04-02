@@ -48,6 +48,7 @@ echoB "Haskell: Q-Lang docs:"
 cd ../user/Haskell && haddock -h -o ../../docs/lang/haskell -t "pfq-lang ${LANG_VERSION}"  \
     -p ../../docs/lang.haddock \
         Network/PFQ/Types.hs \
+        Network/PFQ/Lang/Prelude.hs \
         Network/PFQ/Lang/Default.hs \
         Network/PFQ/Lang/Experimental.hs
 
