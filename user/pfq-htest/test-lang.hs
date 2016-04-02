@@ -21,7 +21,6 @@
 
 import Network.PFQ.Lang
 import Network.PFQ.Types
-import Network.PFQ.Lang.Prelude
 import Network.PFQ.Lang.Default as Q
 import Network.PFQ.Lang.Experimental as Q
 
