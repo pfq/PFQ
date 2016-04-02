@@ -464,7 +464,7 @@ namespace pfq { namespace lang {
         //! Dispatch the packet across the sockets.
         /*!
          * Dispatch with a randomized algorithm that maintains the coherence
-         * of mac address. This alter the total volume of traffic, as the packets
+         * of mac address. This alter the total amount of traffic, as the packets
          * can be steered to at most two sockets. Example:
          *
          * steer_mac
@@ -486,7 +486,7 @@ namespace pfq { namespace lang {
         /*!
          * Dispatch with a randomized algorithm that maintains the coherence
          * of both IP addresses.
-         * This alter the total volume of traffic (\see steer_mac).
+         * This alter the total amount of traffic (\see steer_mac).
          *
          * steer_ip
          */
@@ -497,7 +497,7 @@ namespace pfq { namespace lang {
         /*!
          * Dispatch with a randomized algorithm that maintains the coherence
          * of local IP addresses.
-         * This alter the total volume of traffic (\see steer_mac).
+         * This alter the total amount of traffic (\see steer_mac).
          *
          * steer_ip_local "192.168.1.0/24"
          */
@@ -518,7 +518,7 @@ namespace pfq { namespace lang {
         /*!
          * Dispatch with a randomized algorithm that maintains the coherence
          * of both IPv6 addresses.
-         * This alter the total volume of traffic (\see steer_mac).
+         * This alter the total amount of traffic (\see steer_mac).
          *
          * steer_ip6 >> log_msg("Steering an IPv6 packet")
          */
@@ -603,7 +603,7 @@ namespace pfq { namespace lang {
          * Dispatch with a randomized algorithm. The function uses as hashes
          * the fields of \c size bytes (max 4) taken at \c offset1 and \c offset2 bytes from the
          * beginning of the packet.
-         * This alter the total volume of traffic (\see steer_mac).
+         * This alter the total amount of traffic (\see steer_mac).
          */
 
         auto steer_field_double = [] (int offset1, int offset2, int bytes) {
