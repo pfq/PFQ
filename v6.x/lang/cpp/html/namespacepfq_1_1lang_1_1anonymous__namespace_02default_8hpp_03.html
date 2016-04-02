@@ -1999,7 +1999,7 @@ template&lt;typename Predicate , typename Fun &gt; </div>
 </div><div class="memdoc">
 <b>Initial value:</b><div class="fragment"><div class="line">= [] (<span class="keywordtype">int</span> offset1, <span class="keywordtype">int</span> offset2, <span class="keywordtype">int</span> bytes) {</div><div class="line">                                <span class="keywordflow">return</span> <span class="keyword">function</span>(<span class="stringliteral">&quot;steer_field_double&quot;</span>, offset1, offset2, bytes);</div><div class="line">                           }</div></div><!-- fragment -->
 <p>Dispatch the packet across the sockets. </p>
-<p>Dispatch with a randomized algorithm. The function uses as hashes the fields of <code>size</code> bytes (max 4) taken at <code>offset1</code> and <code>offset2</code> bytes from the beginning of the packet. This alter the total volume of traffic (</p><dl class="section see"><dt>See also</dt><dd><a class="el" href="namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03.html#ad51e91e3b485c729ac1ba39a46e337a0" title="Dispatch the packet across the sockets. ">steer_mac</a>). </dd></dl>
+<p>Dispatch with a randomized algorithm. The function uses as hashes the fields of <code>size</code> bytes (max 4) taken at <code>offset1</code> and <code>offset2</code> bytes from the beginning of the packet. This alter the total amount of traffic (</p><dl class="section see"><dt>See also</dt><dd><a class="el" href="namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03.html#ad51e91e3b485c729ac1ba39a46e337a0" title="Dispatch the packet across the sockets. ">steer_mac</a>). </dd></dl>
 
 </div>
 </div>
@@ -2045,7 +2045,7 @@ template&lt;typename Predicate , typename Fun &gt; </div>
 </div><div class="memdoc">
 
 <p>Dispatch the packet across the sockets. </p>
-<p>Dispatch with a randomized algorithm that maintains the coherence of both IP addresses. This alter the total volume of traffic (</p><dl class="section see"><dt>See also</dt><dd><a class="el" href="namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03.html#ad51e91e3b485c729ac1ba39a46e337a0" title="Dispatch the packet across the sockets. ">steer_mac</a>).</dd></dl>
+<p>Dispatch with a randomized algorithm that maintains the coherence of both IP addresses. This alter the total amount of traffic (</p><dl class="section see"><dt>See also</dt><dd><a class="el" href="namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03.html#ad51e91e3b485c729ac1ba39a46e337a0" title="Dispatch the packet across the sockets. ">steer_mac</a>).</dd></dl>
 <p>steer_ip </p>
 
 </div>
@@ -2061,7 +2061,7 @@ template&lt;typename Predicate , typename Fun &gt; </div>
 </div><div class="memdoc">
 
 <p>Dispatch the packet across the sockets. </p>
-<p>Dispatch with a randomized algorithm that maintains the coherence of both IPv6 addresses. This alter the total volume of traffic (</p><dl class="section see"><dt>See also</dt><dd><a class="el" href="namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03.html#ad51e91e3b485c729ac1ba39a46e337a0" title="Dispatch the packet across the sockets. ">steer_mac</a>).</dd></dl>
+<p>Dispatch with a randomized algorithm that maintains the coherence of both IPv6 addresses. This alter the total amount of traffic (</p><dl class="section see"><dt>See also</dt><dd><a class="el" href="namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03.html#ad51e91e3b485c729ac1ba39a46e337a0" title="Dispatch the packet across the sockets. ">steer_mac</a>).</dd></dl>
 <p>steer_ip6 &gt;&gt; log_msg("Steering an IPv6 packet") </p>
 
 </div>
@@ -2077,7 +2077,7 @@ template&lt;typename Predicate , typename Fun &gt; </div>
 </div><div class="memdoc">
 
 <p>Dispatch the packet across the sockets. </p>
-<p>Dispatch with a randomized algorithm that maintains the coherence of local IP addresses. This alter the total volume of traffic (</p><dl class="section see"><dt>See also</dt><dd><a class="el" href="namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03.html#ad51e91e3b485c729ac1ba39a46e337a0" title="Dispatch the packet across the sockets. ">steer_mac</a>).</dd></dl>
+<p>Dispatch with a randomized algorithm that maintains the coherence of local IP addresses. This alter the total amount of traffic (</p><dl class="section see"><dt>See also</dt><dd><a class="el" href="namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03.html#ad51e91e3b485c729ac1ba39a46e337a0" title="Dispatch the packet across the sockets. ">steer_mac</a>).</dd></dl>
 <p>steer_ip_local "192.168.1.0/24" </p>
 
 </div>
@@ -2125,7 +2125,7 @@ template&lt;typename Predicate , typename Fun &gt; </div>
 </div><div class="memdoc">
 
 <p>Dispatch the packet across the sockets. </p>
-<p>Dispatch with a randomized algorithm that maintains the coherence of mac address. This alter the total volume of traffic, as the packets can be steered to at most two sockets. Example:</p>
+<p>Dispatch with a randomized algorithm that maintains the coherence of mac address. This alter the total amount of traffic, as the packets can be steered to at most two sockets. Example:</p>
 <p>steer_mac </p>
 
 </div>
@@ -2492,7 +2492,7 @@ template&lt;typename Predicate , typename Fun &gt; </div>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="namespacepfq.html">pfq</a></li><li class="navelem"><a class="el" href="namespacepfq_1_1lang.html">lang</a></li><li class="navelem"><a class="el" href="namespacepfq_1_1lang_1_1anonymous__namespace_02default_8hpp_03.html">anonymous_namespace{default.hpp}</a></li>
-    <li class="footer">Generated on Sat Mar 5 2016 14:57:57 for pfq-lang eDLS by
+    <li class="footer">Generated on Sat Apr 2 2016 16:46:35 for pfq-lang eDLS by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.11 </li>
   </ul>

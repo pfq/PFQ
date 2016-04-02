@@ -124,6 +124,7 @@ $(document).ready(function(){initNavTree('pfq_8hpp.html','');});
 <code>#include &lt;fcntl.h&gt;</code><br />
 <code>#include &lt;poll.h&gt;</code><br />
 <code>#include &lt;pfq/pfq-int.h&gt;</code><br />
+<code>#include &lt;pfq/pfq.h&gt;</code><br />
 </div>
 <p><a href="pfq_8hpp_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
@@ -182,10 +183,6 @@ Enumerations</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:aa40ff5d2d51467a34f168cbb6b296509"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pfq_8hpp.html#aa40ff5d2d51467a34f168cbb6b296509">pfq_set_group_computation_from_string</a> (pfq_t *q, int gid, const char *prg)</td></tr>
-<tr class="separator:aa40ff5d2d51467a34f168cbb6b296509"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ab543f56ee27b0b2a088d09b1b671747a"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="pfq_8hpp.html#ab543f56ee27b0b2a088d09b1b671747a">pfq_set_group_computation_from_json</a> (pfq_t *q, int gid, const char *descr)</td></tr>
-<tr class="separator:ab543f56ee27b0b2a088d09b1b671747a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af1fd1aeb980688527db587b35f55abf2"><td class="memItemLeft" align="right" valign="top">types&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepfq_1_1param.html#af1fd1aeb980688527db587b35f55abf2">pfq::param::make_default</a> ()</td></tr>
 <tr class="separator:af1fd1aeb980688527db587b35f55abf2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1c2bda68e2e2c718ebd80519034002a3"><td class="memTemplParams" colspan="2">template&lt;typename CharT , typename Traits &gt; </td></tr>
@@ -213,78 +210,13 @@ Variables</h2></td></tr>
 <tr class="memitem:a30c944a281046dafc6e1cd2629cc6e15"><td class="memItemLeft" align="right" valign="top">constexpr const char *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacepfq.html#a30c944a281046dafc6e1cd2629cc6e15">pfq::string_version</a> = PFQ_VERSION_STRING</td></tr>
 <tr class="separator:a30c944a281046dafc6e1cd2629cc6e15"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Function Documentation</h2>
-<a class="anchor" id="ab543f56ee27b0b2a088d09b1b671747a"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">int pfq_set_group_computation_from_json </td>
-          <td>(</td>
-          <td class="paramtype">pfq_t *&#160;</td>
-          <td class="paramname"><em>q</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>gid</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const char *&#160;</td>
-          <td class="paramname"><em>descr</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
-<a class="anchor" id="aa40ff5d2d51467a34f168cbb6b296509"></a>
-<div class="memitem">
-<div class="memproto">
-      <table class="memname">
-        <tr>
-          <td class="memname">int pfq_set_group_computation_from_string </td>
-          <td>(</td>
-          <td class="paramtype">pfq_t *&#160;</td>
-          <td class="paramname"><em>q</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">int&#160;</td>
-          <td class="paramname"><em>gid</em>, </td>
-        </tr>
-        <tr>
-          <td class="paramkey"></td>
-          <td></td>
-          <td class="paramtype">const char *&#160;</td>
-          <td class="paramname"><em>prg</em>&#160;</td>
-        </tr>
-        <tr>
-          <td></td>
-          <td>)</td>
-          <td></td><td></td>
-        </tr>
-      </table>
-</div><div class="memdoc">
-
-</div>
-</div>
 </div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="dir_2916f9fbcacdf2e5f0583aa159c707b6.html">C++</a></li><li class="navelem"><a class="el" href="dir_f5c141fe61b0a0287f06112b2feb457f.html">pfq</a></li><li class="navelem"><a class="el" href="pfq_8hpp.html">pfq.hpp</a></li>
-    <li class="footer">Generated on Sat Mar 5 2016 14:57:57 for PFQ C++ library by
+    <li class="footer">Generated on Sat Apr 2 2016 16:46:35 for PFQ C++ library by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.11 </li>
   </ul>

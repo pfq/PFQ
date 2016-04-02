@@ -24,6 +24,7 @@
 {\ttfamily \#include $<$fcntl.\+h$>$}\\*
 {\ttfamily \#include $<$poll.\+h$>$}\\*
 {\ttfamily \#include $<$pfq/pfq-\/int.\+h$>$}\\*
+{\ttfamily \#include $<$pfq/pfq.\+h$>$}\\*
 \subsection*{Classes}
 \begin{DoxyCompactItemize}
 \item 
@@ -74,10 +75,6 @@ enum \hyperlink{namespacepfq_a96af1f5ed530eff563eb917516758fbb}{pfq\+::class\+\_
 \subsection*{Functions}
 \begin{DoxyCompactItemize}
 \item 
-int \hyperlink{pfq_8hpp_aa40ff5d2d51467a34f168cbb6b296509}{pfq\+\_\+set\+\_\+group\+\_\+computation\+\_\+from\+\_\+string} (pfq\+\_\+t $\ast$q, int gid, const char $\ast$prg)
-\item 
-int \hyperlink{pfq_8hpp_ab543f56ee27b0b2a088d09b1b671747a}{pfq\+\_\+set\+\_\+group\+\_\+computation\+\_\+from\+\_\+json} (pfq\+\_\+t $\ast$q, int gid, const char $\ast$descr)
-\item 
 types \hyperlink{namespacepfq_1_1param_af1fd1aeb980688527db587b35f55abf2}{pfq\+::param\+::make\+\_\+default} ()
 \item 
 {\footnotesize template$<$typename CharT , typename Traits $>$ }\\std\+::basic\+\_\+ostream$<$ CharT, Traits $>$ \& \hyperlink{namespacepfq_a1c2bda68e2e2c718ebd80519034002a3}{pfq\+::operator$<$$<$} (std\+::basic\+\_\+ostream$<$ CharT, Traits $>$ \&out, const pfq\+\_\+stats \&rhs)
@@ -103,24 +100,3 @@ constexpr const int \hyperlink{namespacepfq_aa1b1daa6a96155899c26c206325e97a9}{p
 \item 
 constexpr const char $\ast$ \hyperlink{namespacepfq_a30c944a281046dafc6e1cd2629cc6e15}{pfq\+::string\+\_\+version} = P\+F\+Q\+\_\+\+V\+E\+R\+S\+I\+O\+N\+\_\+\+S\+T\+R\+I\+NG
 \end{DoxyCompactItemize}
-
-
-\subsection{Function Documentation}
-\index{pfq.\+hpp@{pfq.\+hpp}!pfq\+\_\+set\+\_\+group\+\_\+computation\+\_\+from\+\_\+json@{pfq\+\_\+set\+\_\+group\+\_\+computation\+\_\+from\+\_\+json}}
-\index{pfq\+\_\+set\+\_\+group\+\_\+computation\+\_\+from\+\_\+json@{pfq\+\_\+set\+\_\+group\+\_\+computation\+\_\+from\+\_\+json}!pfq.\+hpp@{pfq.\+hpp}}
-\subsubsection[{\texorpdfstring{pfq\+\_\+set\+\_\+group\+\_\+computation\+\_\+from\+\_\+json(pfq\+\_\+t $\ast$q, int gid, const char $\ast$descr)}{pfq_set_group_computation_from_json(pfq_t *q, int gid, const char *descr)}}]{\setlength{\rightskip}{0pt plus 5cm}int pfq\+\_\+set\+\_\+group\+\_\+computation\+\_\+from\+\_\+json (
-\begin{DoxyParamCaption}
-\item[{pfq\+\_\+t $\ast$}]{q, }
-\item[{int}]{gid, }
-\item[{const char $\ast$}]{descr}
-\end{DoxyParamCaption}
-)}\hypertarget{pfq_8hpp_ab543f56ee27b0b2a088d09b1b671747a}{}\label{pfq_8hpp_ab543f56ee27b0b2a088d09b1b671747a}
-\index{pfq.\+hpp@{pfq.\+hpp}!pfq\+\_\+set\+\_\+group\+\_\+computation\+\_\+from\+\_\+string@{pfq\+\_\+set\+\_\+group\+\_\+computation\+\_\+from\+\_\+string}}
-\index{pfq\+\_\+set\+\_\+group\+\_\+computation\+\_\+from\+\_\+string@{pfq\+\_\+set\+\_\+group\+\_\+computation\+\_\+from\+\_\+string}!pfq.\+hpp@{pfq.\+hpp}}
-\subsubsection[{\texorpdfstring{pfq\+\_\+set\+\_\+group\+\_\+computation\+\_\+from\+\_\+string(pfq\+\_\+t $\ast$q, int gid, const char $\ast$prg)}{pfq_set_group_computation_from_string(pfq_t *q, int gid, const char *prg)}}]{\setlength{\rightskip}{0pt plus 5cm}int pfq\+\_\+set\+\_\+group\+\_\+computation\+\_\+from\+\_\+string (
-\begin{DoxyParamCaption}
-\item[{pfq\+\_\+t $\ast$}]{q, }
-\item[{int}]{gid, }
-\item[{const char $\ast$}]{prg}
-\end{DoxyParamCaption}
-)}\hypertarget{pfq_8hpp_aa40ff5d2d51467a34f168cbb6b296509}{}\label{pfq_8hpp_aa40ff5d2d51467a34f168cbb6b296509}

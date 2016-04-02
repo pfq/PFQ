@@ -94,7 +94,7 @@ void \hyperlink{classpfq_1_1socket_a177de236ffec9f988df80b5c1725ba96}{bind\+\_\+
 \begin{DoxyCompactList}\small\item\em Bind the socket for transmission to the given device name and queue. \end{DoxyCompactList}\item 
 void \hyperlink{classpfq_1_1socket_a99ee5e145ccf3a043b3c2aacb3df30cc}{unbind\+\_\+tx} ()
 \begin{DoxyCompactList}\small\item\em Unbind the socket transmission. \end{DoxyCompactList}\item 
-int \hyperlink{classpfq_1_1socket_afbd75341794fae964ed23ce5858fd153}{join\+\_\+group} (int gid, \hyperlink{namespacepfq_ac41249c8510558905b01fa4d866a38d7}{group\+\_\+policy} pol=\hyperlink{namespacepfq_ac41249c8510558905b01fa4d866a38d7a9e81e7b963c71363e2fb3eefcfecfc0e}{group\+\_\+policy\+::shared}, \hyperlink{namespacepfq_a96af1f5ed530eff563eb917516758fbb}{class\+\_\+mask} mask=\hyperlink{namespacepfq_a96af1f5ed530eff563eb917516758fbba172b03053216c6158fe380805998ad6c}{class\+\_\+mask\+::default\+\_\+})
+int \hyperlink{classpfq_1_1socket_a118d0b045183cd226387e3851696c50f}{join\+\_\+group} (int gid, \hyperlink{namespacepfq_ac41249c8510558905b01fa4d866a38d7}{group\+\_\+policy} policy=\hyperlink{namespacepfq_ac41249c8510558905b01fa4d866a38d7a9e81e7b963c71363e2fb3eefcfecfc0e}{group\+\_\+policy\+::shared}, \hyperlink{namespacepfq_a96af1f5ed530eff563eb917516758fbb}{class\+\_\+mask} mask=\hyperlink{namespacepfq_a96af1f5ed530eff563eb917516758fbba172b03053216c6158fe380805998ad6c}{class\+\_\+mask\+::default\+\_\+})
 \begin{DoxyCompactList}\small\item\em Join the group specified by the group id. \end{DoxyCompactList}\item 
 void \hyperlink{classpfq_1_1socket_ac512d6b89db52da73a51ba9112658180}{leave\+\_\+group} (int gid)
 \begin{DoxyCompactList}\small\item\em Leave the group specified by the group id. \end{DoxyCompactList}\item 
@@ -104,7 +104,7 @@ std\+::vector$<$ int $>$ \hyperlink{classpfq_1_1socket_a7bb02f670cf9c16b4339f650
 \begin{DoxyCompactList}\small\item\em Obtain the list of gid of joined groups. \end{DoxyCompactList}\item 
 {\footnotesize template$<$typename Comp $>$ }\\void \hyperlink{classpfq_1_1socket_a5cb37765ffcb1b78c5d61211f9e806df}{set\+\_\+group\+\_\+computation} (int gid, Comp const \&comp)
 \begin{DoxyCompactList}\small\item\em Specify a functional computation for the given group. \end{DoxyCompactList}\item 
-void \hyperlink{classpfq_1_1socket_a35c7a1ad075271006a1a59839f1a1854}{set\+\_\+group\+\_\+computation} (int gid, pfq\+\_\+lang\+\_\+computation\+\_\+descr $\ast$prog)
+void \hyperlink{classpfq_1_1socket_a5f0ff8e78f374974ae32753c313e931c}{set\+\_\+group\+\_\+computation} (int gid, pfq\+\_\+lang\+\_\+computation\+\_\+descr const $\ast$prog)
 \begin{DoxyCompactList}\small\item\em Specify a functional computation for the given group. \end{DoxyCompactList}\item 
 void \hyperlink{classpfq_1_1socket_aa326867f9a3ca1391158161ff54d564c}{set\+\_\+group\+\_\+computation} (int gid, std\+::string const \&comp)
 \begin{DoxyCompactList}\small\item\em Specify a functional computation for the given group, from string as pfq-\/lang program. \end{DoxyCompactList}\item 
@@ -508,13 +508,13 @@ Check whether timestamping for packets is enabled.
 
 \index{pfq\+::socket@{pfq\+::socket}!join\+\_\+group@{join\+\_\+group}}
 \index{join\+\_\+group@{join\+\_\+group}!pfq\+::socket@{pfq\+::socket}}
-\subsubsection[{\texorpdfstring{join\+\_\+group(int gid, group\+\_\+policy pol=group\+\_\+policy\+::shared, class\+\_\+mask mask=class\+\_\+mask\+::default\+\_\+)}{join_group(int gid, group_policy pol=group_policy::shared, class_mask mask=class_mask::default_)}}]{\setlength{\rightskip}{0pt plus 5cm}int pfq\+::socket\+::join\+\_\+group (
+\subsubsection[{\texorpdfstring{join\+\_\+group(int gid, group\+\_\+policy policy=group\+\_\+policy\+::shared, class\+\_\+mask mask=class\+\_\+mask\+::default\+\_\+)}{join_group(int gid, group_policy policy=group_policy::shared, class_mask mask=class_mask::default_)}}]{\setlength{\rightskip}{0pt plus 5cm}int pfq\+::socket\+::join\+\_\+group (
 \begin{DoxyParamCaption}
 \item[{int}]{gid, }
-\item[{{\bf group\+\_\+policy}}]{pol = {\ttfamily {\bf group\+\_\+policy\+::shared}}, }
+\item[{{\bf group\+\_\+policy}}]{policy = {\ttfamily {\bf group\+\_\+policy\+::shared}}, }
 \item[{{\bf class\+\_\+mask}}]{mask = {\ttfamily {\bf class\+\_\+mask\+::default\+\_\+}}}
 \end{DoxyParamCaption}
-)\hspace{0.3cm}{\ttfamily [inline]}}\hypertarget{classpfq_1_1socket_afbd75341794fae964ed23ce5858fd153}{}\label{classpfq_1_1socket_afbd75341794fae964ed23ce5858fd153}
+)\hspace{0.3cm}{\ttfamily [inline]}}\hypertarget{classpfq_1_1socket_a118d0b045183cd226387e3851696c50f}{}\label{classpfq_1_1socket_a118d0b045183cd226387e3851696c50f}
 
 
 Join the group specified by the group id. 
@@ -790,12 +790,12 @@ Specify a functional computation for the given group.
 
 The functional computation is specified as a pfq-\/lang expression. \index{pfq\+::socket@{pfq\+::socket}!set\+\_\+group\+\_\+computation@{set\+\_\+group\+\_\+computation}}
 \index{set\+\_\+group\+\_\+computation@{set\+\_\+group\+\_\+computation}!pfq\+::socket@{pfq\+::socket}}
-\subsubsection[{\texorpdfstring{set\+\_\+group\+\_\+computation(int gid, pfq\+\_\+lang\+\_\+computation\+\_\+descr $\ast$prog)}{set_group_computation(int gid, pfq_lang_computation_descr *prog)}}]{\setlength{\rightskip}{0pt plus 5cm}void pfq\+::socket\+::set\+\_\+group\+\_\+computation (
+\subsubsection[{\texorpdfstring{set\+\_\+group\+\_\+computation(int gid, pfq\+\_\+lang\+\_\+computation\+\_\+descr const $\ast$prog)}{set_group_computation(int gid, pfq_lang_computation_descr const *prog)}}]{\setlength{\rightskip}{0pt plus 5cm}void pfq\+::socket\+::set\+\_\+group\+\_\+computation (
 \begin{DoxyParamCaption}
 \item[{int}]{gid, }
-\item[{pfq\+\_\+lang\+\_\+computation\+\_\+descr $\ast$}]{prog}
+\item[{pfq\+\_\+lang\+\_\+computation\+\_\+descr const $\ast$}]{prog}
 \end{DoxyParamCaption}
-)\hspace{0.3cm}{\ttfamily [inline]}}\hypertarget{classpfq_1_1socket_a35c7a1ad075271006a1a59839f1a1854}{}\label{classpfq_1_1socket_a35c7a1ad075271006a1a59839f1a1854}
+)\hspace{0.3cm}{\ttfamily [inline]}}\hypertarget{classpfq_1_1socket_a5f0ff8e78f374974ae32753c313e931c}{}\label{classpfq_1_1socket_a5f0ff8e78f374974ae32753c313e931c}
 
 
 Specify a functional computation for the given group. 

@@ -1,7 +1,7 @@
 var dir_f5c141fe61b0a0287f06112b2feb457f =
 [
     [ "exception.hpp", "exception_8hpp.html", [
-      [ "pfq_error", "classpfq_1_1pfq__error.html", "classpfq_1_1pfq__error" ]
+      [ "system_error", "classpfq_1_1system__error.html", "classpfq_1_1system__error" ]
     ] ],
     [ "pfq.hpp", "pfq_8hpp.html", "pfq_8hpp" ],
     [ "queue.hpp", "queue_8hpp.html", "queue_8hpp" ],

@@ -11,7 +11,7 @@ var hierarchy =
     [ "pfq::param::rx_slots", "structpfq_1_1param_1_1rx__slots.html", null ],
     [ "pfq::socket", "classpfq_1_1socket.html", null ],
     [ "std::system_error", null, [
-      [ "pfq::pfq_error", "classpfq_1_1pfq__error.html", null ]
+      [ "pfq::system_error", "classpfq_1_1system__error.html", null ]
     ] ],
     [ "pfq::param::tx_slots", "structpfq_1_1param_1_1tx__slots.html", null ],
     [ "pfq::param::details::type_index< Ts >", "structpfq_1_1param_1_1details_1_1type__index.html", null ],

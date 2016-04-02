@@ -27,8 +27,6 @@ var pfq_8hpp =
     [ "operator-", "pfq_8hpp.html#ad01713142f8fa670ff8614b9f2bab3b8", null ],
     [ "operator-=", "pfq_8hpp.html#aa7874ca8c38d2bb9b66a33a6c2bb0fc1", null ],
     [ "operator<<", "pfq_8hpp.html#a1c2bda68e2e2c718ebd80519034002a3", null ],
-    [ "pfq_set_group_computation_from_json", "pfq_8hpp.html#ab543f56ee27b0b2a088d09b1b671747a", null ],
-    [ "pfq_set_group_computation_from_string", "pfq_8hpp.html#aa40ff5d2d51467a34f168cbb6b296509", null ],
     [ "major_version", "pfq_8hpp.html#a5edeb73b0430a772b181d778b1c90bbc", null ],
     [ "minor_version", "pfq_8hpp.html#a7f444700f822d8632dee37560ab76a7b", null ],
     [ "patchlevel_version", "pfq_8hpp.html#aa1b1daa6a96155899c26c206325e97a9", null ],
