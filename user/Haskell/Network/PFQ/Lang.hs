@@ -63,6 +63,7 @@ module Network.PFQ.Lang
     , NetFunction
     , NetPredicate
     , NetProperty
+    , (>->)
     ) where
 
 
@@ -304,6 +305,12 @@ data Function fun where
         Combinator1  :: Symbol -> NetPredicate -> NetPredicate
         Combinator2  :: Symbol -> NetPredicate -> NetPredicate -> NetPredicate
         Kleisli      :: forall f1 f2 f. (Serializable (Function f1), Serializable (Function f2)) => Function f1 -> Function f2 -> Function f
+
+
+-- |Kleisli left-to-right operator
+
+(>->) :: forall a b c m. (Monad m) => Function (a -> m b) -> Function (b -> m c) -> Function (a -> m c)
+f1 >-> f2 = Kleisli f1 f2
 
 
 instance Storable NetFunction where
