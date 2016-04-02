@@ -25,7 +25,6 @@ module Main where
 
 import Network.PFQ as Q
 import Network.PFQ.Lang
-import Network.PFQ.Lang.Prelude
 import Network.PFQ.Lang.Default
 
 import Foreign
