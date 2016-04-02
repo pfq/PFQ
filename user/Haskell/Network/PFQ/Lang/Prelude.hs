@@ -34,6 +34,7 @@ module Network.PFQ.Lang.Prelude
     , (>>=)
     , return
     , fromInteger
+    , fromRational
     ) where
 
 
@@ -49,4 +50,8 @@ _ >>= _ = P.undefined
 
 fromInteger :: (P.Num a) => P.Integer -> a
 fromInteger = P.fromInteger
+
+
+fromRational :: (P.Fractional a) => P.Rational -> a
+fromRational = P.fromRational
 
