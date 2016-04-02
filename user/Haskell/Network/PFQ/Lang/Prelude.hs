@@ -27,12 +27,10 @@
 --
 --
 
-
-{-# LANGUAGE ExistentialQuantification #-}
+{-# LANGUAGE RebindableSyntax #-}
 
 module Network.PFQ.Lang.Prelude
-    ( (>->)
-    , (>>)
+    ( (>>)
     , (>>=)
     , return
     , fromInteger
@@ -41,12 +39,6 @@ module Network.PFQ.Lang.Prelude
 
 import qualified Prelude as P hiding ((>>), (>>=), return)
 import Network.PFQ.Lang
-
--- |Kleisli left-to-right operator, for monadic composition of pfq-lang functions.
-
-(>->) :: forall a b c m. (P.Monad m) => Function (a -> m b) -> Function (b -> m c) -> Function (a -> m c)
-f1 >-> f2 = Kleisli f1 f2
-
 
 a >> b = a >-> b
 
