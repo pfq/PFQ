@@ -79,7 +79,7 @@ options = cmdArgsMode $ Options
     ,   algorithm = ""      &= help "binding algorithm: round-robin, naive, multiple/n, even, odd, all-in:id, step:id, custom:step/multi"
     ,   msitype   = Nothing &= typ "MSI" &= help "MSI type: TxRx, Rx, Tx or None"
     ,   devices   = []      &= args
-    } &= summary "pfq-affinity: advanced Linux interrupt affinity binding." &= program "pfq-affinity"
+    } &= summary "pfq-affinity: Linux advanced interrupt-affinity binding." &= program "pfq-affinity"
 
 
 -- binding algorithm
