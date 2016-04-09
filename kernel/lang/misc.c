@@ -468,16 +468,15 @@ trace(arguments_t args, SkBuff skb)
 	struct pfq_lang_monad *mon = PFQ_CB(skb)->monad;
 
 	if (printk_ratelimit())
-		printk(KERN_INFO "[pfq-lang] TRACE state:%u fanout:{%lu %u %u %u} lift:%d %s %s %s\n"
+		printk(KERN_INFO "[pfq-lang] TRACE state:%u fanout:{%lu %u %u %u} shift:%d %s\n"
 					, mon->state
 					, mon->fanout.class_mask
 					, mon->fanout.hash
 					, mon->fanout.hash2
 					, mon->fanout.type
-					, mon->lift
+					, mon->shift
 					, mon->ip  ? "ip"  : ""
-					, mon->tcp ? "tcp" : ""
-					, mon->udp ? "udp" : "");
+					);
 
 	return Pass(skb);
 }

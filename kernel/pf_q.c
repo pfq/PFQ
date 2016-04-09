@@ -287,10 +287,8 @@ pfq_receive_batch(struct pfq_percpu_data *data,
 				monad.fanout.type = fanout_copy;
 				monad.group = this_group;
 				monad.state = 0;
-				monad.lift  = 0;
+				monad.shift = 0;
 				monad.ip    = NULL;
-				monad.tcp   = NULL;
-				monad.udp   = NULL;
 
 				/* run the functional program */
 
