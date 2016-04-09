@@ -71,6 +71,10 @@ struct pfq_lang_monad
         struct pfq_group	*group;
         uint32_t		state;
         fanout_t		fanout;
+        int			lift;
+	void *			ip;
+	void *			tcp;
+	void *			udp;
 };
 
 
