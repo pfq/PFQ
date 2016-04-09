@@ -72,7 +72,7 @@ struct pfq_lang_monad
         uint32_t		state;
         fanout_t		fanout;
         int			shift;
-	void *			ip;
+	size_t			ipoff;
 };
 
 

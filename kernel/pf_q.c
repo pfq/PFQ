@@ -288,7 +288,7 @@ pfq_receive_batch(struct pfq_percpu_data *data,
 				monad.group = this_group;
 				monad.state = 0;
 				monad.shift = 0;
-				monad.ip    = NULL;
+				monad.ipoff = 0;
 
 				/* run the functional program */
 
