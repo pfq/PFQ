@@ -12,8 +12,8 @@ that allows efficient packets capture/transmission (10G, 40G and beyond), in-ker
 functional processing and packets steering across sockets/end-points.
 
 PFQ is highly optimized for multi-core architecture, as well as for network devices 
-equipped with multiple hardware queues. It works with any network device driver and 
-provides a script designed to compile accelerated versions starting from the source
+equipped with multiple hardware queues. It works with any NIC and provides a script 
+designed to compile accelerated versions of device drivers starting from the source 
 codes.
 
 The framework enables the development of high-performance networking applications with 
