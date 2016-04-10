@@ -85,7 +85,7 @@ steerings = do
     steer_vlan
     steer_p2p
     steer_ip
-    -- steer_ip_local "192.168.1.0/24"
+    steer_ip_local "192.168.1.0/24"
     steer_ip6
     steer_p2p6
     steer_flow
