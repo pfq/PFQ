@@ -773,10 +773,9 @@ mark n = Function "mark" n () () () () () () ()
 
 -- | Set the state of the computation to the given value.
 --
--- > state 42
+-- > put_state 42
 put_state :: Word32 -> NetFunction
 put_state n = Function "put_state" n () () () () () () ()
-
 
 -- | Monadic version of 'is_l3_proto' predicate.
 --
