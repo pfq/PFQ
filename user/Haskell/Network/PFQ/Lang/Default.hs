@@ -520,6 +520,7 @@ steer_ip = Function "steer_ip" () () () () () () () () :: NetFunction
 -- This alter the total amount of traffic (see 'steer_mac').
 --
 -- > steer_ip_local "192.168.1.0/24"
+steer_ip_local :: CIDR -> NetFunction
 steer_ip_local d = Function "steer_ip_local" d () () () () () () () :: NetFunction
 
 -- | Dispatch the packet across the sockets
