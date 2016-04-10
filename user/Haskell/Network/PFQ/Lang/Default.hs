@@ -756,7 +756,7 @@ drop= Function "drop" () () () () () () () () :: NetFunction
 
 -- | Specify the class for the given packet. The computation evaluates to /Pass/.
 classify :: Int -> NetFunction
-classify n = Function "class" n () () () () () () ()
+classify n = Function "classify" n () () () () () () ()
 
 -- | Unit operation implements left- and right-identity for Action monad.
 unit = Function "unit" () () () () () () () () :: NetFunction

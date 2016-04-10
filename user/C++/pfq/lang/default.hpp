@@ -779,7 +779,7 @@ namespace pfq { namespace lang {
 
         //! Specify the class for the given packet.. The computation evaluates to \c Pass.
 
-        auto class_        = [] (int value) { return function("class", value); };
+        auto classify       = [] (int value) { return function("classify", value); };
 
         //! Unit operation implements left- and right-identity for Action monad.
 
