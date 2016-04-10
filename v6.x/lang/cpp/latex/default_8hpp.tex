@@ -46,6 +46,18 @@ This header contains the pfq-\/lang e\+D\+SL functions.
 \item 
 {\footnotesize template$<$typename P , typename std\+::enable\+\_\+if$<$ is\+\_\+property$<$ P $>$\+::value $>$\+::type $\ast$  = nullptr$>$ }\\auto \hyperlink{namespacepfq_1_1lang_a4943eabefcfed4198394f42f913a14e8}{pfq\+::lang\+::operator!=} (P const \&prop, uint64\+\_\+t arg) -\/$>$ decltype(predicate(nullptr, prop, arg))
 \item 
+{\footnotesize template$<$typename P , typename std\+::enable\+\_\+if$<$ is\+\_\+property$<$ P $>$\+::value $>$\+::type $\ast$  = nullptr$>$ }\\auto \hyperlink{namespacepfq_1_1lang_a2217aa601457dcb21231ae59fe2bb8a2}{pfq\+::lang\+::operator$>$} (uint64\+\_\+t arg, P const \&prop) -\/$>$ decltype(predicate(nullptr, prop, arg))
+\item 
+{\footnotesize template$<$typename P , typename std\+::enable\+\_\+if$<$ is\+\_\+property$<$ P $>$\+::value $>$\+::type $\ast$  = nullptr$>$ }\\auto \hyperlink{namespacepfq_1_1lang_a8a51f8f94279b3b4c7c3e2b52a89470c}{pfq\+::lang\+::operator$>$=} (uint64\+\_\+t arg, P const \&prop) -\/$>$ decltype(predicate(nullptr, prop, arg))
+\item 
+{\footnotesize template$<$typename P , typename std\+::enable\+\_\+if$<$ is\+\_\+property$<$ P $>$\+::value $>$\+::type $\ast$  = nullptr$>$ }\\auto \hyperlink{namespacepfq_1_1lang_aff17190c67c14754515551bc27f056da}{pfq\+::lang\+::operator$<$} (uint64\+\_\+t arg, P const \&prop) -\/$>$ decltype(predicate(nullptr, prop, arg))
+\item 
+{\footnotesize template$<$typename P , typename std\+::enable\+\_\+if$<$ is\+\_\+property$<$ P $>$\+::value $>$\+::type $\ast$  = nullptr$>$ }\\auto \hyperlink{namespacepfq_1_1lang_ab78da35da3a46ac1e889653ace01c7a8}{pfq\+::lang\+::operator$<$=} (uint64\+\_\+t arg, P const \&prop) -\/$>$ decltype(predicate(nullptr, prop, arg))
+\item 
+{\footnotesize template$<$typename P , typename std\+::enable\+\_\+if$<$ is\+\_\+property$<$ P $>$\+::value $>$\+::type $\ast$  = nullptr$>$ }\\auto \hyperlink{namespacepfq_1_1lang_a3228fe8e103aaca7682f0256ea6b254c}{pfq\+::lang\+::operator==} (uint64\+\_\+t arg, P const \&prop) -\/$>$ decltype(predicate(nullptr, prop, arg))
+\item 
+{\footnotesize template$<$typename P , typename std\+::enable\+\_\+if$<$ is\+\_\+property$<$ P $>$\+::value $>$\+::type $\ast$  = nullptr$>$ }\\auto \hyperlink{namespacepfq_1_1lang_a55e12516137152fe0525bfc203b5fe50}{pfq\+::lang\+::operator!=} (uint64\+\_\+t arg, P const \&prop) -\/$>$ decltype(predicate(nullptr, prop, arg))
+\item 
 {\footnotesize template$<$typename P $>$ }\\auto \hyperlink{namespacepfq_1_1lang_ac247c3827084d381d8518dabfff43bb2}{pfq\+::lang\+::any\+\_\+bit} (P const \&prop, uint64\+\_\+t mask) -\/$>$ decltype(predicate(nullptr, prop, mask))
 \begin{DoxyCompactList}\small\item\em Return a predicate that evaluates to {\ttfamily true}, if the property has at least one bit set among those specified by the given mask. \end{DoxyCompactList}\item 
 {\footnotesize template$<$typename P $>$ }\\auto \hyperlink{namespacepfq_1_1lang_a62b1989f7b5d84549a99b1df46743bd6}{pfq\+::lang\+::all\+\_\+bit} (P const \&prop, uint64\+\_\+t mask) -\/$>$ decltype(predicate(nullptr, prop, mask))

@@ -138,6 +138,18 @@ std\+::pair$<$ std\+::vector$<$ \hyperlink{structpfq_1_1lang_1_1FunctionDescr}{F
 \item 
 {\footnotesize template$<$typename P , typename std\+::enable\+\_\+if$<$ is\+\_\+property$<$ P $>$\+::value $>$\+::type $\ast$  = nullptr$>$ }\\auto \hyperlink{namespacepfq_1_1lang_a4943eabefcfed4198394f42f913a14e8}{operator!=} (P const \&prop, uint64\+\_\+t arg) -\/$>$ decltype(\hyperlink{namespacepfq_1_1lang_aca9adafc436b7f851621b979fa1aaf88}{predicate}(nullptr, prop, arg))
 \item 
+{\footnotesize template$<$typename P , typename std\+::enable\+\_\+if$<$ is\+\_\+property$<$ P $>$\+::value $>$\+::type $\ast$  = nullptr$>$ }\\auto \hyperlink{namespacepfq_1_1lang_a2217aa601457dcb21231ae59fe2bb8a2}{operator$>$} (uint64\+\_\+t arg, P const \&prop) -\/$>$ decltype(\hyperlink{namespacepfq_1_1lang_aca9adafc436b7f851621b979fa1aaf88}{predicate}(nullptr, prop, arg))
+\item 
+{\footnotesize template$<$typename P , typename std\+::enable\+\_\+if$<$ is\+\_\+property$<$ P $>$\+::value $>$\+::type $\ast$  = nullptr$>$ }\\auto \hyperlink{namespacepfq_1_1lang_a8a51f8f94279b3b4c7c3e2b52a89470c}{operator$>$=} (uint64\+\_\+t arg, P const \&prop) -\/$>$ decltype(\hyperlink{namespacepfq_1_1lang_aca9adafc436b7f851621b979fa1aaf88}{predicate}(nullptr, prop, arg))
+\item 
+{\footnotesize template$<$typename P , typename std\+::enable\+\_\+if$<$ is\+\_\+property$<$ P $>$\+::value $>$\+::type $\ast$  = nullptr$>$ }\\auto \hyperlink{namespacepfq_1_1lang_aff17190c67c14754515551bc27f056da}{operator$<$} (uint64\+\_\+t arg, P const \&prop) -\/$>$ decltype(\hyperlink{namespacepfq_1_1lang_aca9adafc436b7f851621b979fa1aaf88}{predicate}(nullptr, prop, arg))
+\item 
+{\footnotesize template$<$typename P , typename std\+::enable\+\_\+if$<$ is\+\_\+property$<$ P $>$\+::value $>$\+::type $\ast$  = nullptr$>$ }\\auto \hyperlink{namespacepfq_1_1lang_ab78da35da3a46ac1e889653ace01c7a8}{operator$<$=} (uint64\+\_\+t arg, P const \&prop) -\/$>$ decltype(\hyperlink{namespacepfq_1_1lang_aca9adafc436b7f851621b979fa1aaf88}{predicate}(nullptr, prop, arg))
+\item 
+{\footnotesize template$<$typename P , typename std\+::enable\+\_\+if$<$ is\+\_\+property$<$ P $>$\+::value $>$\+::type $\ast$  = nullptr$>$ }\\auto \hyperlink{namespacepfq_1_1lang_a3228fe8e103aaca7682f0256ea6b254c}{operator==} (uint64\+\_\+t arg, P const \&prop) -\/$>$ decltype(\hyperlink{namespacepfq_1_1lang_aca9adafc436b7f851621b979fa1aaf88}{predicate}(nullptr, prop, arg))
+\item 
+{\footnotesize template$<$typename P , typename std\+::enable\+\_\+if$<$ is\+\_\+property$<$ P $>$\+::value $>$\+::type $\ast$  = nullptr$>$ }\\auto \hyperlink{namespacepfq_1_1lang_a55e12516137152fe0525bfc203b5fe50}{operator!=} (uint64\+\_\+t arg, P const \&prop) -\/$>$ decltype(\hyperlink{namespacepfq_1_1lang_aca9adafc436b7f851621b979fa1aaf88}{predicate}(nullptr, prop, arg))
+\item 
 {\footnotesize template$<$typename P $>$ }\\auto \hyperlink{namespacepfq_1_1lang_ac247c3827084d381d8518dabfff43bb2}{any\+\_\+bit} (P const \&prop, uint64\+\_\+t mask) -\/$>$ decltype(\hyperlink{namespacepfq_1_1lang_aca9adafc436b7f851621b979fa1aaf88}{predicate}(nullptr, prop, mask))
 \begin{DoxyCompactList}\small\item\em Return a predicate that evaluates to {\ttfamily true}, if the property has at least one bit set among those specified by the given mask. \end{DoxyCompactList}\item 
 {\footnotesize template$<$typename P $>$ }\\auto \hyperlink{namespacepfq_1_1lang_a62b1989f7b5d84549a99b1df46743bd6}{all\+\_\+bit} (P const \&prop, uint64\+\_\+t mask) -\/$>$ decltype(\hyperlink{namespacepfq_1_1lang_aca9adafc436b7f851621b979fa1aaf88}{predicate}(nullptr, prop, mask))
@@ -233,6 +245,15 @@ Return a new predicate that evaluates to true, when the given one evaluates to f
 \end{DoxyParamCaption}
 ) -\/$>$ decltype({\bf predicate}(nullptr, prop, arg))
     \hspace{0.3cm}{\ttfamily [inline]}}\hypertarget{namespacepfq_1_1lang_a4943eabefcfed4198394f42f913a14e8}{}\label{namespacepfq_1_1lang_a4943eabefcfed4198394f42f913a14e8}
+\index{pfq\+::lang@{pfq\+::lang}!operator"!=@{operator"!=}}
+\index{operator"!=@{operator"!=}!pfq\+::lang@{pfq\+::lang}}
+\subsubsection[{\texorpdfstring{operator"!=(uint64\+\_\+t arg, P const \&prop) -\/$>$ decltype(predicate(nullptr, prop, arg))}{operator!=(uint64_t arg, P const &prop) -> decltype(predicate(nullptr, prop, arg))}}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename P , typename std\+::enable\+\_\+if$<$ is\+\_\+property$<$ P $>$\+::value $>$\+::type $\ast$  = nullptr$>$ auto pfq\+::lang\+::operator!= (
+\begin{DoxyParamCaption}
+\item[{uint64\+\_\+t}]{arg, }
+\item[{P const \&}]{prop}
+\end{DoxyParamCaption}
+) -\/$>$ decltype({\bf predicate}(nullptr, prop, arg))
+    \hspace{0.3cm}{\ttfamily [inline]}}\hypertarget{namespacepfq_1_1lang_a55e12516137152fe0525bfc203b5fe50}{}\label{namespacepfq_1_1lang_a55e12516137152fe0525bfc203b5fe50}
 \index{pfq\+::lang@{pfq\+::lang}!operator\&@{operator\&}}
 \index{operator\&@{operator\&}!pfq\+::lang@{pfq\+::lang}}
 \subsubsection[{\texorpdfstring{operator\&(\+P1 const \&p1, P2 const \&p2) -\/$>$ decltype(predicate(nullptr, p1, p2))}{operator&(P1 const &p1, P2 const &p2) -> decltype(predicate(nullptr, p1, p2))}}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename P1 , typename P2 , typename std\+::enable\+\_\+if$<$ is\+\_\+predicate$<$ P1 $>$\+::value \&\&is\+\_\+predicate$<$ P2 $>$\+::value $>$\+::type $\ast$  = nullptr$>$ auto pfq\+::lang\+::operator\& (
@@ -261,7 +282,16 @@ Return a predicate that evaluates to {\ttfamily true}, if the property is less t
 
 Example\+:
 
-when (ip\+\_\+ttl $<$ 64, drop) \index{pfq\+::lang@{pfq\+::lang}!operator$<$=@{operator$<$=}}
+when (ip\+\_\+ttl $<$ 64, drop) \index{pfq\+::lang@{pfq\+::lang}!operator$<$@{operator$<$}}
+\index{operator$<$@{operator$<$}!pfq\+::lang@{pfq\+::lang}}
+\subsubsection[{\texorpdfstring{operator$<$(uint64\+\_\+t arg, P const \&prop) -\/$>$ decltype(predicate(nullptr, prop, arg))}{operator<(uint64_t arg, P const &prop) -> decltype(predicate(nullptr, prop, arg))}}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename P , typename std\+::enable\+\_\+if$<$ is\+\_\+property$<$ P $>$\+::value $>$\+::type $\ast$  = nullptr$>$ auto pfq\+::lang\+::operator$<$ (
+\begin{DoxyParamCaption}
+\item[{uint64\+\_\+t}]{arg, }
+\item[{P const \&}]{prop}
+\end{DoxyParamCaption}
+) -\/$>$ decltype({\bf predicate}(nullptr, prop, arg))
+    \hspace{0.3cm}{\ttfamily [inline]}}\hypertarget{namespacepfq_1_1lang_aff17190c67c14754515551bc27f056da}{}\label{namespacepfq_1_1lang_aff17190c67c14754515551bc27f056da}
+\index{pfq\+::lang@{pfq\+::lang}!operator$<$=@{operator$<$=}}
 \index{operator$<$=@{operator$<$=}!pfq\+::lang@{pfq\+::lang}}
 \subsubsection[{\texorpdfstring{operator$<$=(\+P const \&prop, uint64\+\_\+t arg) -\/$>$ decltype(predicate(nullptr, prop, arg))}{operator<=(P const &prop, uint64_t arg) -> decltype(predicate(nullptr, prop, arg))}}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename P , typename std\+::enable\+\_\+if$<$ is\+\_\+property$<$ P $>$\+::value $>$\+::type $\ast$  = nullptr$>$ auto pfq\+::lang\+::operator$<$= (
 \begin{DoxyParamCaption}
@@ -270,6 +300,15 @@ when (ip\+\_\+ttl $<$ 64, drop) \index{pfq\+::lang@{pfq\+::lang}!operator$<$=@{o
 \end{DoxyParamCaption}
 ) -\/$>$ decltype({\bf predicate}(nullptr, prop, arg))
     \hspace{0.3cm}{\ttfamily [inline]}}\hypertarget{namespacepfq_1_1lang_a039a937311f139f9a6e84c49c6505c70}{}\label{namespacepfq_1_1lang_a039a937311f139f9a6e84c49c6505c70}
+\index{pfq\+::lang@{pfq\+::lang}!operator$<$=@{operator$<$=}}
+\index{operator$<$=@{operator$<$=}!pfq\+::lang@{pfq\+::lang}}
+\subsubsection[{\texorpdfstring{operator$<$=(uint64\+\_\+t arg, P const \&prop) -\/$>$ decltype(predicate(nullptr, prop, arg))}{operator<=(uint64_t arg, P const &prop) -> decltype(predicate(nullptr, prop, arg))}}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename P , typename std\+::enable\+\_\+if$<$ is\+\_\+property$<$ P $>$\+::value $>$\+::type $\ast$  = nullptr$>$ auto pfq\+::lang\+::operator$<$= (
+\begin{DoxyParamCaption}
+\item[{uint64\+\_\+t}]{arg, }
+\item[{P const \&}]{prop}
+\end{DoxyParamCaption}
+) -\/$>$ decltype({\bf predicate}(nullptr, prop, arg))
+    \hspace{0.3cm}{\ttfamily [inline]}}\hypertarget{namespacepfq_1_1lang_ab78da35da3a46ac1e889653ace01c7a8}{}\label{namespacepfq_1_1lang_ab78da35da3a46ac1e889653ace01c7a8}
 \index{pfq\+::lang@{pfq\+::lang}!operator==@{operator==}}
 \index{operator==@{operator==}!pfq\+::lang@{pfq\+::lang}}
 \subsubsection[{\texorpdfstring{operator==(\+P const \&prop, uint64\+\_\+t arg) -\/$>$ decltype(predicate(nullptr, prop, arg))}{operator==(P const &prop, uint64_t arg) -> decltype(predicate(nullptr, prop, arg))}}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename P , typename std\+::enable\+\_\+if$<$ is\+\_\+property$<$ P $>$\+::value $>$\+::type $\ast$  = nullptr$>$ auto pfq\+::lang\+::operator== (
@@ -279,6 +318,15 @@ when (ip\+\_\+ttl $<$ 64, drop) \index{pfq\+::lang@{pfq\+::lang}!operator$<$=@{o
 \end{DoxyParamCaption}
 ) -\/$>$ decltype({\bf predicate}(nullptr, prop, arg))
     \hspace{0.3cm}{\ttfamily [inline]}}\hypertarget{namespacepfq_1_1lang_a87c8fa322873efdbddaa437f194b72b0}{}\label{namespacepfq_1_1lang_a87c8fa322873efdbddaa437f194b72b0}
+\index{pfq\+::lang@{pfq\+::lang}!operator==@{operator==}}
+\index{operator==@{operator==}!pfq\+::lang@{pfq\+::lang}}
+\subsubsection[{\texorpdfstring{operator==(uint64\+\_\+t arg, P const \&prop) -\/$>$ decltype(predicate(nullptr, prop, arg))}{operator==(uint64_t arg, P const &prop) -> decltype(predicate(nullptr, prop, arg))}}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename P , typename std\+::enable\+\_\+if$<$ is\+\_\+property$<$ P $>$\+::value $>$\+::type $\ast$  = nullptr$>$ auto pfq\+::lang\+::operator== (
+\begin{DoxyParamCaption}
+\item[{uint64\+\_\+t}]{arg, }
+\item[{P const \&}]{prop}
+\end{DoxyParamCaption}
+) -\/$>$ decltype({\bf predicate}(nullptr, prop, arg))
+    \hspace{0.3cm}{\ttfamily [inline]}}\hypertarget{namespacepfq_1_1lang_a3228fe8e103aaca7682f0256ea6b254c}{}\label{namespacepfq_1_1lang_a3228fe8e103aaca7682f0256ea6b254c}
 \index{pfq\+::lang@{pfq\+::lang}!operator$>$@{operator$>$}}
 \index{operator$>$@{operator$>$}!pfq\+::lang@{pfq\+::lang}}
 \subsubsection[{\texorpdfstring{operator$>$(\+P const \&prop, uint64\+\_\+t arg) -\/$>$ decltype(predicate(nullptr, prop, arg))}{operator>(P const &prop, uint64_t arg) -> decltype(predicate(nullptr, prop, arg))}}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename P , typename std\+::enable\+\_\+if$<$ is\+\_\+property$<$ P $>$\+::value $>$\+::type $\ast$  = nullptr$>$ auto pfq\+::lang\+::operator$>$ (
@@ -288,6 +336,15 @@ when (ip\+\_\+ttl $<$ 64, drop) \index{pfq\+::lang@{pfq\+::lang}!operator$<$=@{o
 \end{DoxyParamCaption}
 ) -\/$>$ decltype({\bf predicate}(nullptr, prop, arg))
     \hspace{0.3cm}{\ttfamily [inline]}}\hypertarget{namespacepfq_1_1lang_a708ca1f29e8dd2461859c46369e89322}{}\label{namespacepfq_1_1lang_a708ca1f29e8dd2461859c46369e89322}
+\index{pfq\+::lang@{pfq\+::lang}!operator$>$@{operator$>$}}
+\index{operator$>$@{operator$>$}!pfq\+::lang@{pfq\+::lang}}
+\subsubsection[{\texorpdfstring{operator$>$(uint64\+\_\+t arg, P const \&prop) -\/$>$ decltype(predicate(nullptr, prop, arg))}{operator>(uint64_t arg, P const &prop) -> decltype(predicate(nullptr, prop, arg))}}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename P , typename std\+::enable\+\_\+if$<$ is\+\_\+property$<$ P $>$\+::value $>$\+::type $\ast$  = nullptr$>$ auto pfq\+::lang\+::operator$>$ (
+\begin{DoxyParamCaption}
+\item[{uint64\+\_\+t}]{arg, }
+\item[{P const \&}]{prop}
+\end{DoxyParamCaption}
+) -\/$>$ decltype({\bf predicate}(nullptr, prop, arg))
+    \hspace{0.3cm}{\ttfamily [inline]}}\hypertarget{namespacepfq_1_1lang_a2217aa601457dcb21231ae59fe2bb8a2}{}\label{namespacepfq_1_1lang_a2217aa601457dcb21231ae59fe2bb8a2}
 \index{pfq\+::lang@{pfq\+::lang}!operator$>$=@{operator$>$=}}
 \index{operator$>$=@{operator$>$=}!pfq\+::lang@{pfq\+::lang}}
 \subsubsection[{\texorpdfstring{operator$>$=(\+P const \&prop, uint64\+\_\+t arg) -\/$>$ decltype(predicate(nullptr, prop, arg))}{operator>=(P const &prop, uint64_t arg) -> decltype(predicate(nullptr, prop, arg))}}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename P , typename std\+::enable\+\_\+if$<$ is\+\_\+property$<$ P $>$\+::value $>$\+::type $\ast$  = nullptr$>$ auto pfq\+::lang\+::operator$>$= (
@@ -297,6 +354,15 @@ when (ip\+\_\+ttl $<$ 64, drop) \index{pfq\+::lang@{pfq\+::lang}!operator$<$=@{o
 \end{DoxyParamCaption}
 ) -\/$>$ decltype({\bf predicate}(nullptr, prop, arg))
     \hspace{0.3cm}{\ttfamily [inline]}}\hypertarget{namespacepfq_1_1lang_a8278e1cf39622e9eb4859f4720da1d16}{}\label{namespacepfq_1_1lang_a8278e1cf39622e9eb4859f4720da1d16}
+\index{pfq\+::lang@{pfq\+::lang}!operator$>$=@{operator$>$=}}
+\index{operator$>$=@{operator$>$=}!pfq\+::lang@{pfq\+::lang}}
+\subsubsection[{\texorpdfstring{operator$>$=(uint64\+\_\+t arg, P const \&prop) -\/$>$ decltype(predicate(nullptr, prop, arg))}{operator>=(uint64_t arg, P const &prop) -> decltype(predicate(nullptr, prop, arg))}}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename P , typename std\+::enable\+\_\+if$<$ is\+\_\+property$<$ P $>$\+::value $>$\+::type $\ast$  = nullptr$>$ auto pfq\+::lang\+::operator$>$= (
+\begin{DoxyParamCaption}
+\item[{uint64\+\_\+t}]{arg, }
+\item[{P const \&}]{prop}
+\end{DoxyParamCaption}
+) -\/$>$ decltype({\bf predicate}(nullptr, prop, arg))
+    \hspace{0.3cm}{\ttfamily [inline]}}\hypertarget{namespacepfq_1_1lang_a8a51f8f94279b3b4c7c3e2b52a89470c}{}\label{namespacepfq_1_1lang_a8a51f8f94279b3b4c7c3e2b52a89470c}
 \index{pfq\+::lang@{pfq\+::lang}!operator$>$$>$@{operator$>$$>$}}
 \index{operator$>$$>$@{operator$>$$>$}!pfq\+::lang@{pfq\+::lang}}
 \subsubsection[{\texorpdfstring{operator$>$$>$(\+C1 c1, C2 c2)}{operator>>(C1 c1, C2 c2)}}]{\setlength{\rightskip}{0pt plus 5cm}template$<$typename C1 , typename C2 , typename  = typename kleisly$<$typename C1\+::type, typename C2\+::type$>$\+::type$>$ {\bf Kleisli}$<$C1, C2$>$ pfq\+::lang\+::operator$>$$>$ (
