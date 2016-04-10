@@ -80,7 +80,7 @@ dumper dev = do
 
         -- pfq-lang example:
         -- let comp = (ip >-> addr "192.168.0.0" 16 >-> inc 0 >-> unit
-        --                 >-> conditional (is_icmp .&&. has_addr "192.168.0.0" 16 .&&. (ip_tot_len .<. 1000) .&&. ip_id `any_bit` 0xffffffff )
+        --                 >-> conditional (is_icmp .&&. has_addr "192.168.0.0" 16 .&&. (ip_tot_len .< 1000) .&&. ip_id `any_bit` 0xffffffff )
         --                 (inc 1 >-> mark 1 >-> steer_ip >-> when' (has_mark 1) (inc 2))
         --                 drop')
 

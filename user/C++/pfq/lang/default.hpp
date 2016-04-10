@@ -142,6 +142,58 @@ namespace pfq { namespace lang {
         return predicate("not_equal", prop, arg);
     }
 
+    // symmetric comparators...
+    //
+
+    template <typename P, typename std::enable_if<is_property<P>::value>::type * = nullptr>
+    auto inline
+    operator>(uint64_t arg, P const &prop)
+    -> decltype(predicate(nullptr, prop, arg))
+    {
+        return predicate("less", prop, arg);
+    }
+
+    template <typename P, typename std::enable_if<is_property<P>::value>::type * = nullptr>
+    auto inline
+    operator>=(uint64_t arg, P const &prop)
+    -> decltype(predicate(nullptr, prop, arg))
+    {
+        return predicate("less_eq", prop, arg);
+    }
+
+    template <typename P, typename std::enable_if<is_property<P>::value>::type * = nullptr>
+    auto inline
+    operator<(uint64_t arg, P const &prop)
+    -> decltype(predicate(nullptr, prop, arg))
+    {
+        return predicate("greater", prop, arg);
+    }
+
+    template <typename P, typename std::enable_if<is_property<P>::value>::type * = nullptr>
+    auto inline
+    operator<=(uint64_t arg, P const &prop)
+    -> decltype(predicate(nullptr, prop, arg))
+    {
+        return predicate("greater_eq", prop, arg);
+    }
+
+    template <typename P, typename std::enable_if<is_property<P>::value>::type * = nullptr>
+    auto inline
+    operator==(uint64_t arg, P const &prop)
+    -> decltype(predicate(nullptr, prop, arg))
+    {
+        return predicate("equal", prop, arg);
+    }
+
+    template <typename P, typename std::enable_if<is_property<P>::value>::type * = nullptr>
+    auto inline
+    operator!=(uint64_t arg, P const &prop)
+    -> decltype(predicate(nullptr, prop, arg))
+    {
+        return predicate("not_equal", prop, arg);
+    }
+
+
     //! Return a predicate that evaluates to \c true, if the property has at least one bit set among those specified by the given mask.
 
     template <typename P>
