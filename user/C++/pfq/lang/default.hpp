@@ -856,7 +856,7 @@ namespace pfq { namespace lang {
         /*
          * Example:
          *
-         * state (42)
+         * put_state (42)
          */
 
         auto put_state      = [] (uint32_t value) { return function("put_state", value); };
