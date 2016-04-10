@@ -105,17 +105,17 @@ rx_slots = 131072
 tx_thread = 0,1
 tx_queue  = 0,1
 
-qlang = main = ip >-> steer_flow
+pfq-lang = main = ip >-> steer_flow
 ```
 
 It is possible to specify multi-line pfq-lang computations, by prefixing each
-line with qlang =:
+line with pfq-lang =:
 
 
 ```
-qlang =
-qlang = main = ip >-> 
-qlang =             tcp
+pfq-lang =
+pfq-lang = main = ip >-> 
+pfq-lang =             tcp
 ```
 
 Examples

@@ -88,13 +88,13 @@ script = do
     DistClean "pfq-htest"       *>>  into "user/pfq-htest/"     $ cabalDistClean
 
 
-    -- qlang compiler:
+    -- pfq-lang compiler:
 
-    Configure "qlang"   *>>  into "user/qlang/" $ cabalConfigure    `requires`  [Install   "pfq-haskell-lib"]
-    Build     "qlang"   *>>  into "user/qlang/" $ cabalBuild        `requires`  [Configure "qlang"  ]
-    Install   "qlang"   *>>  into "user/qlang/" $ cabalInstall      `requires`  [Build     "qlang"  ]
-    Clean     "qlang"   *>>  into "user/qlang/" $ cabalClean
-    DistClean "qlang"   *>>  into "user/qlang/" $ cabalDistClean
+    Configure "pfq-lang"   *>>  into "user/pfq-lang/" $ cabalConfigure    `requires`  [Install   "pfq-haskell-lib"]
+    Build     "pfq-lang"   *>>  into "user/pfq-lang/" $ cabalBuild        `requires`  [Configure "pfq-lang"  ]
+    Install   "pfq-lang"   *>>  into "user/pfq-lang/" $ cabalInstall      `requires`  [Build     "pfq-lang"  ]
+    Clean     "pfq-lang"   *>>  into "user/pfq-lang/" $ cabalClean
+    DistClean "pfq-lang"   *>>  into "user/pfq-lang/" $ cabalDistClean
 
 
     -- PFQ user tools

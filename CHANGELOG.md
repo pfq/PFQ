@@ -133,7 +133,7 @@ PFQ 5.2
 
 PFQ 6.0
 -------
- * Experimental qlang compiler released.
+ * Experimental pfq-lang compiler released.
  * API extended with setGroupComputationFromString,
    setGroupComputationFromJSON...
  * Internal Fanout monad extended with 

@@ -1222,7 +1222,7 @@ pfq_set_group_computation_from_string(pfq_t *q, int gid, const char *comp)
 	if (!page)
 		return Q_ERROR(q, "PFQ: computation_from_string: memory error");
 
-	if (popen2("qlang --json", &p) < 0) {
+	if (popen2("pfq-lang --json", &p) < 0) {
 		free(page);
 		return Q_ERROR(q, "PFQ: computation_from_string: popen2 error");
 	}
@@ -1241,7 +1241,7 @@ pfq_set_group_computation_from_string(pfq_t *q, int gid, const char *comp)
 
 	if (!WIFEXITED(status) || WEXITSTATUS(status) != 0) {
 		free(page);
-		return Q_ERROR(q, "PFQ: computation_from_string: qlang compiler error!");
+		return Q_ERROR(q, "PFQ: computation_from_string: pfq-lang compiler error!");
 	}
 
 	while((chunk=read(p.from_child, page + size, (size_t)(max_size -size))) > 0)

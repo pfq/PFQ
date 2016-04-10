@@ -62,7 +62,7 @@ compile raw = do
 
     res <- lift $ runInterpreter $ do
 
-        -- get the base path of the qlang main file:
+        -- get the base path of the pfq-lang main file:
 
         basePath <- dropFileName <$> maybe (return ".") (lift . canonicalizePath) (file opt)
         when (verb opt >= 1) $ lift $ putStrLn ("SeachPath: " ++ basePath)
