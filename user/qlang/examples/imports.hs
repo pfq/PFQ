@@ -1,4 +1,4 @@
--- example
+-- imports
 --
 
 import Data.List -- comment

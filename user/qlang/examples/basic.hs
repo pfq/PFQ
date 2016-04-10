@@ -2,5 +2,5 @@
 -- basic
 --
 
-main = filter is_ip >-> when is_tcp drop
+main = when is_tcp drop
 
