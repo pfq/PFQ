@@ -39,6 +39,212 @@ combinators = is_ip .||. is_ip6 .&&. (not is_tcp .^^. is_udp)
 combinators2 = par ip (inv udp)
 
 
+comparators =
+    (ip_tos      .<  42)  .||.
+    (ip_tot_len  .<  42)  .||.
+    (ip_id       .<  42)  .||.
+    (ip_frag     .<  42)  .||.
+    (ip_ttl      .<  42)  .||.
+    (get_mark    .<  42)  .||.
+    (get_state   .<  42)  .||.
+    (tcp_source  .<  42)  .||.
+    (tcp_dest    .<  42)  .||.
+    (tcp_hdrlen  .<  42)  .||.
+    (udp_source  .<  42)  .||.
+    (udp_dest    .<  42)  .||.
+    (udp_len     .<  42)  .||.
+    (icmp_type   .<  42)  .||.
+    (icmp_code   .<  42)
+
+comparators2 =
+    (ip_tos      .<=  42)  .||.
+    (ip_tot_len  .<=  42)  .||.
+    (ip_id       .<=  42)  .||.
+    (ip_frag     .<=  42)  .||.
+    (ip_ttl      .<=  42)  .||.
+    (get_mark    .<=  42)  .||.
+    (get_state   .<=  42)  .||.
+    (tcp_source  .<=  42)  .||.
+    (tcp_dest    .<=  42)  .||.
+    (tcp_hdrlen  .<=  42)  .||.
+    (udp_source  .<=  42)  .||.
+    (udp_dest    .<=  42)  .||.
+    (udp_len     .<=  42)  .||.
+    (icmp_type   .<=  42)  .||.
+    (icmp_code   .<=  42)
+
+comparators3 =
+    (ip_tos      .==  42)  .||.
+    (ip_tot_len  .==  42)  .||.
+    (ip_id       .==  42)  .||.
+    (ip_frag     .==  42)  .||.
+    (ip_ttl      .==  42)  .||.
+    (get_mark    .==  42)  .||.
+    (get_state   .==  42)  .||.
+    (tcp_source  .==  42)  .||.
+    (tcp_dest    .==  42)  .||.
+    (tcp_hdrlen  .==  42)  .||.
+    (udp_source  .==  42)  .||.
+    (udp_dest    .==  42)  .||.
+    (udp_len     .==  42)  .||.
+    (icmp_type   .==  42)  .||.
+    (icmp_code   .==  42)
+
+comparators4 =
+    (ip_tos      ./=  42)  .||.
+    (ip_tot_len  ./=  42)  .||.
+    (ip_id       ./=  42)  .||.
+    (ip_frag     ./=  42)  .||.
+    (ip_ttl      ./=  42)  .||.
+    (get_mark    ./=  42)  .||.
+    (get_state   ./=  42)  .||.
+    (tcp_source  ./=  42)  .||.
+    (tcp_dest    ./=  42)  .||.
+    (tcp_hdrlen  ./=  42)  .||.
+    (udp_source  ./=  42)  .||.
+    (udp_dest    ./=  42)  .||.
+    (udp_len     ./=  42)  .||.
+    (icmp_type   ./=  42)  .||.
+    (icmp_code   ./=  42)
+
+comparators5 =
+    (ip_tos      .> 42)  .||.
+    (ip_tot_len  .> 42)  .||.
+    (ip_id       .> 42)  .||.
+    (ip_frag     .> 42)  .||.
+    (ip_ttl      .> 42)  .||.
+    (get_mark    .> 42)  .||.
+    (get_state   .> 42)  .||.
+    (tcp_source  .> 42)  .||.
+    (tcp_dest    .> 42)  .||.
+    (tcp_hdrlen  .> 42)  .||.
+    (udp_source  .> 42)  .||.
+    (udp_dest    .> 42)  .||.
+    (udp_len     .> 42)  .||.
+    (icmp_type   .> 42)  .||.
+    (icmp_code   .> 42)
+
+comparators6 =
+    (ip_tos      .>= 42)  .||.
+    (ip_tot_len  .>= 42)  .||.
+    (ip_id       .>= 42)  .||.
+    (ip_frag     .>= 42)  .||.
+    (ip_ttl      .>= 42)  .||.
+    (get_mark    .>= 42)  .||.
+    (get_state   .>= 42)  .||.
+    (tcp_source  .>= 42)  .||.
+    (tcp_dest    .>= 42)  .||.
+    (tcp_hdrlen  .>= 42)  .||.
+    (udp_source  .>= 42)  .||.
+    (udp_dest    .>= 42)  .||.
+    (udp_len     .>= 42)  .||.
+    (icmp_type   .>= 42)  .||.
+    (icmp_code   .>= 42)
+
+
+comparators7 =
+    (42 <. ip_tos      )  .||.
+    (42 <. ip_tot_len  )  .||.
+    (42 <. ip_id       )  .||.
+    (42 <. ip_frag     )  .||.
+    (42 <. ip_ttl      )  .||.
+    (42 <. get_mark    )  .||.
+    (42 <. get_state   )  .||.
+    (42 <. tcp_source  )  .||.
+    (42 <. tcp_dest    )  .||.
+    (42 <. tcp_hdrlen  )  .||.
+    (42 <. udp_source  )  .||.
+    (42 <. udp_dest    )  .||.
+    (42 <. udp_len     )  .||.
+    (42 <. icmp_type   )  .||.
+    (42 <. icmp_code   )
+
+comparators8 =
+    (42 <=. ip_tos      )  .||.
+    (42 <=. ip_tot_len  )  .||.
+    (42 <=. ip_id       )  .||.
+    (42 <=. ip_frag     )  .||.
+    (42 <=. ip_ttl      )  .||.
+    (42 <=. get_mark    )  .||.
+    (42 <=. get_state   )  .||.
+    (42 <=. tcp_source  )  .||.
+    (42 <=. tcp_dest    )  .||.
+    (42 <=. tcp_hdrlen  )  .||.
+    (42 <=. udp_source  )  .||.
+    (42 <=. udp_dest    )  .||.
+    (42 <=. udp_len     )  .||.
+    (42 <=. icmp_type   )  .||.
+    (42 <=. icmp_code   )
+
+comparators9 =
+    (42 ==. ip_tos     )  .||.
+    (42 ==. ip_tot_len )  .||.
+    (42 ==. ip_id      )  .||.
+    (42 ==. ip_frag    )  .||.
+    (42 ==. ip_ttl     )  .||.
+    (42 ==. get_mark   )  .||.
+    (42 ==. get_state  )  .||.
+    (42 ==. tcp_source )  .||.
+    (42 ==. tcp_dest   )  .||.
+    (42 ==. tcp_hdrlen )  .||.
+    (42 ==. udp_source )  .||.
+    (42 ==. udp_dest   )  .||.
+    (42 ==. udp_len    )  .||.
+    (42 ==. icmp_type  )  .||.
+    (42 ==. icmp_code  )
+
+comparators10 =
+    (42 /=. ip_tos     )  .||.
+    (42 /=. ip_tot_len )  .||.
+    (42 /=. ip_id      )  .||.
+    (42 /=. ip_frag    )  .||.
+    (42 /=. ip_ttl     )  .||.
+    (42 /=. get_mark   )  .||.
+    (42 /=. get_state  )  .||.
+    (42 /=. tcp_source )  .||.
+    (42 /=. tcp_dest   )  .||.
+    (42 /=. tcp_hdrlen )  .||.
+    (42 /=. udp_source )  .||.
+    (42 /=. udp_dest   )  .||.
+    (42 /=. udp_len    )  .||.
+    (42 /=. icmp_type  )  .||.
+    (42 /=. icmp_code  )
+
+comparators11 =
+    (42 >. ip_tos     )  .||.
+    (42 >. ip_tot_len )  .||.
+    (42 >. ip_id      )  .||.
+    (42 >. ip_frag    )  .||.
+    (42 >. ip_ttl     )  .||.
+    (42 >. get_mark   )  .||.
+    (42 >. get_state  )  .||.
+    (42 >. tcp_source )  .||.
+    (42 >. tcp_dest   )  .||.
+    (42 >. tcp_hdrlen )  .||.
+    (42 >. udp_source )  .||.
+    (42 >. udp_dest   )  .||.
+    (42 >. udp_len    )  .||.
+    (42 >. icmp_type  )  .||.
+    (42 >. icmp_code  )
+
+comparators12 =
+    (42 >=. ip_tos     )  .||.
+    (42 >=. ip_tot_len )  .||.
+    (42 >=. ip_id      )  .||.
+    (42 >=. ip_frag    )  .||.
+    (42 >=. ip_ttl     )  .||.
+    (42 >=. get_mark   )  .||.
+    (42 >=. get_state  )  .||.
+    (42 >=. tcp_source )  .||.
+    (42 >=. tcp_dest   )  .||.
+    (42 >=. tcp_hdrlen )  .||.
+    (42 >=. udp_source )  .||.
+    (42 >=. udp_dest   )  .||.
+    (42 >=. udp_len    )  .||.
+    (42 >=. icmp_type  )  .||.
+    (42 >=. icmp_code  )
+
+
 cond = do
     conditional is_tcp (log_msg "tcp") unit
     when is_tcp (drop)
@@ -137,6 +343,18 @@ misc = do
 main = do
     filter predicates
     filter combinators
+    filter comparators
+    filter comparators2
+    filter comparators3
+    filter comparators4
+    filter comparators5
+    filter comparators6
+    filter comparators7
+    filter comparators8
+    filter comparators9
+    filter comparators10
+    filter comparators11
+    filter comparators12
     combinators2
     cond
     filters
