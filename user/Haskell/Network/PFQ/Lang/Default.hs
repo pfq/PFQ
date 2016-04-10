@@ -389,7 +389,7 @@ has_dst_port x = Predicate "has_dst_port" x () () () () () () ()
 -- | Evaluate to /True/ if the source or destination IP address matches the given network address. I.e.,
 --
 -- > has_addr "192.168.0.0/24"
--- > has_addr (CIRD ("192.168.0.0", 24))
+-- > has_addr (CIDR ("192.168.0.0", 24))
 
 has_addr :: CIDR -> NetPredicate
 
@@ -568,9 +568,9 @@ steer_net net p sub = Function "steer_net" net p sub () () () () ()
 
 -- | Dispatch the packet across the sockets
 -- with a randomized algorithm. The function uses as /hash/ the field
--- of /size/ bits taken at /offset/ bytes from the beginning of the packet.
+-- of /size/ bytes taken at /offset/ bytes from the beginning of the packet.
 steer_field :: Int -- ^ offset from the beginning of the packet, in bytes
-            -> Int -- ^ sizeof field in bits
+            -> Int -- ^ sizeof field in bytes (max 4)
             -> NetFunction
 steer_field offset size = Function "steer_field" offset size () () () () () ()
 
@@ -818,7 +818,7 @@ dst_port a = Function "dst_port" a () () () () () () ()
 -- are combined with kleisli operator:
 --
 -- > addr "192.168.0.0/24" >-> log_packet
--- > addr (CIRD ("192.168.0.0",24)) >-> log_packet
+-- > addr (CIDR ("192.168.0.0",24)) >-> log_packet
 addr :: CIDR -> NetFunction
 
 -- | Monadic version of 'has_src_addr' predicate.
