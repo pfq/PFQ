@@ -35,10 +35,12 @@ module Network.PFQ.Lang.Prelude
     , return
     , fromInteger
     , fromRational
+    , fromString
     ) where
 
 
 import qualified Prelude as P hiding ((>>), (>>=), return)
+import qualified Data.String as S
 import Network.PFQ.Lang
 
 a >> b = a >-> b
@@ -54,4 +56,8 @@ fromInteger = P.fromInteger
 
 fromRational :: (P.Fractional a) => P.Rational -> a
 fromRational = P.fromRational
+
+fromString :: (S.IsString a) => P.String -> a
+fromString = S.fromString
+
 
