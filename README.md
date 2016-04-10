@@ -26,7 +26,7 @@ bridges, port mirrors, simple firewalls, network balancers and so forth.
 
 The package provides the source code of the PFQ kernel module, user-space libraries for C, 
 C++11-14 and Haskell language, an implementation of pfq-lang as eDSL for C++11-14 and
-Haskell, an experimental qlang compiler and a set of diagnostic tools.
+Haskell, an experimental pfq-lang compiler and a set of diagnostic tools.
 
 
 Features
@@ -44,7 +44,7 @@ Features
 * User-space libraries for C, C++11-14 and Haskell language.
 * Functional engine for in-kernel packet processing with **pfq-lang**.
 * pfq-lang eDLS for C++11-14 and Haskell language.
-* **qlang** compiler used to parse and compile pfq-lang programs.
+* **pfq-lang** compiler used to parse and compile pfq-lang programs.
 * Accelerated pcap library for legacy applications (line-speed tested with [captop][3]).
 * I/O user<->kernel memory-mapped communications allocated on top of HugePages.
 * **pfqd** daemon used to configure and parallelize (pcap) legacy applications.

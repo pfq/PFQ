@@ -664,7 +664,7 @@ pfq_parse_config(struct pfq_opt *opt, const char *filename)
 
 		tkey = string_trim(key);
 
-		if (strcmp(tkey, "qlang") == 0) {
+		if (strcmp(tkey, "pfq-lang") == 0) {
 			if (value) {
 				pfq_lang = str_append(pfq_lang, value);
 				pfq_lang = str_append(pfq_lang, "\n");

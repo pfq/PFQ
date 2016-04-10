@@ -22,7 +22,7 @@ import System.Console.CmdArgs
 import Data.Version (showVersion)
 
 import Options
-import Paths_qlang
+import Paths_pfq_lang
 
 options :: Mode (CmdArgs Options)
 options = cmdArgsMode $ Options
@@ -33,5 +33,5 @@ options = cmdArgsMode $ Options
           ,     gid = Nothing    &= help "Specify the PFQ gid to set the computation for" &= explicit &= name "gid"
           ,     verb = 0         &= groupname "Other" &= help "Control verbosity level (0..3)" &= explicit &= name "verbosity"
           ,     file = Nothing   &= args
-          } &= summary ("qlang " ++ showVersion version)  &= program "qlang"
+          } &= summary ("pfq-lang " ++ showVersion version)  &= program "pfq-lang"
 
