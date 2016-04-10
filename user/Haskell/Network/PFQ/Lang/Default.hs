@@ -100,12 +100,18 @@ module Network.PFQ.Lang.Default
         -- * Comparators
         -- | Take a NetProperty, a value, and return a predicate that compares the values.
 
-    , (.<.)
-    , (.<=.)
-    , (.==.)
-    , (./=.)
-    , (.>.)
-    , (.>=.)
+    , (.<)
+    , (.<=)
+    , (.==)
+    , (./=)
+    , (.>)
+    , (.>=)
+    , (<.)
+    , (<=.)
+    , (==.)
+    , (/=.)
+    , (>.)
+    , (>=.)
     , any_bit
     , all_bit
 
@@ -246,29 +252,49 @@ infixl 5 .||.
 -- | Return a predicate that evaluates to /True/, if the property is less than
 -- the given value. Example:
 --
--- >  when (ip_ttl .<. 64) drop
+-- >  when (ip_ttl .< 64) drop
 
-(.<.)  :: NetProperty -> Word64 -> NetPredicate
-(.<=.) :: NetProperty -> Word64 -> NetPredicate
-(.==.) :: NetProperty -> Word64 -> NetPredicate
-(./=.) :: NetProperty -> Word64 -> NetPredicate
-(.>.)  :: NetProperty -> Word64 -> NetPredicate
-(.>=.) :: NetProperty -> Word64 -> NetPredicate
+(.<)  :: NetProperty -> Word64 -> NetPredicate
+(.<=) :: NetProperty -> Word64 -> NetPredicate
+(.==) :: NetProperty -> Word64 -> NetPredicate
+(./=) :: NetProperty -> Word64 -> NetPredicate
+(.>)  :: NetProperty -> Word64 -> NetPredicate
+(.>=) :: NetProperty -> Word64 -> NetPredicate
 
-p .<.  x = Predicate "less" p x () () () () () ()
-p .<=. x = Predicate "less_eq" p x () () () () () ()
-p .==. x = Predicate "equal" p x () () () () () ()
-p ./=. x = Predicate "not_equal" p x () () () () () ()
-p .>.  x = Predicate "greater" p x () () () () () ()
-p .>=. x = Predicate "greater_eq" p x () () () () () ()
+(<.)  :: Word64 -> NetProperty ->  NetPredicate
+(<=.) :: Word64 -> NetProperty ->  NetPredicate
+(==.) :: Word64 -> NetProperty ->  NetPredicate
+(/=.) :: Word64 -> NetProperty ->  NetPredicate
+(>.)  :: Word64 -> NetProperty ->  NetPredicate
+(>=.) :: Word64 -> NetProperty ->  NetPredicate
 
-infix 4 .<.
-infix 4 .<=.
-infix 4 .>.
-infix 4 .>=.
-infix 4 .==.
-infix 4 ./=.
+p .<  x = Predicate "less" p x () () () () () ()
+p .<= x = Predicate "less_eq" p x () () () () () ()
+p .== x = Predicate "equal" p x () () () () () ()
+p ./= x = Predicate "not_equal" p x () () () () () ()
+p .>  x = Predicate "greater" p x () () () () () ()
+p .>= x = Predicate "greater_eq" p x () () () () () ()
 
+x >.  p = Predicate "less" p x () () () () () ()
+x >=. p = Predicate "less_eq" p x () () () () () ()
+x ==. p = Predicate "equal" p x () () () () () ()
+x /=. p = Predicate "not_equal" p x () () () () () ()
+x <.  p = Predicate "greater" p x () () () () () ()
+x <=. p = Predicate "greater_eq" p x () () () () () ()
+
+infix 4 .<
+infix 4 .<=
+infix 4 .>
+infix 4 .>=
+infix 4 .==
+infix 4 ./=
+
+infix 4 <.
+infix 4 <=.
+infix 4 >.
+infix 4 >=.
+infix 4 ==.
+infix 4 /=.
 
 -- | Return a predicate that evaluates to /True/, if the property has at least
 -- one bit set among those specified by the given mask.
