@@ -226,7 +226,8 @@ struct pcap_opt {
 		int tx_thread[4];
 
 		char *vlan;
-		char *comp;
+		char *lang;
+		char *lang_lit;
 	} pfq;
   #endif
 };
