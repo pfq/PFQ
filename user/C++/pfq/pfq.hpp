@@ -756,7 +756,7 @@ namespace pfq {
             throw_if(q, pfq_set_group_computation(q, gid, prog));
         }
 
-        //! Specify a functional computation for the given group, from string as pfq-lang program.
+        //! Specify a functional computation for the given group, as pfq-lang program from string.
 
         void
         set_group_computation(int gid, std::string const &comp)
