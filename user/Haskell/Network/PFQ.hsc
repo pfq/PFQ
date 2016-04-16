@@ -1031,19 +1031,21 @@ setGroupComputationFromFile :: Ptr PFqTag
 
 setGroupComputationFromFile hdl gid file =
   readFile file >>= \str -> length str `seq` setGroupComputationFromString hdl gid str
--- |Specify a simple functional computation for the given group, from String as pfq-lang program.
+
+-- |Specify a functional computation for the given group, as pfq-lang program from string.
 --
 
 setGroupComputationFromString :: Ptr PFqTag
                               -> Int       -- ^ group id
-                              -> String    -- ^ simple expression (pfq-lang)
+                              -> String    -- ^ pfq-lang expression
                               -> IO ()
 
 setGroupComputationFromString hdl gid comp =
   readProcess "pfq-lang" ["--json"] comp >>= setGroupComputationFromJSON hdl gid
 
 
--- |Specify a simple functional computation for the given group, from JSON description.
+
+-- |Specify a functional computation for the given group, from JSON description.
 --
 
 setGroupComputationFromJSON :: Ptr PFqTag
