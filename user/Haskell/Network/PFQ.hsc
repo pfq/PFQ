@@ -168,6 +168,7 @@ module Network.PFQ
 
         setGroupComputation,
         setGroupComputationFromString,
+        setGroupComputationFromFile,
         setGroupComputationFromDescr,
         setGroupComputationFromJSON,
 
@@ -1020,6 +1021,16 @@ setGroupComputation hdl gid comp =
     setGroupComputationFromDescr hdl gid (fst $ serialize comp 0)
 
 
+-- |Specify a functional computation for the given group, as pfq-lang program from file.
+--
+
+setGroupComputationFromFile :: Ptr PFqTag
+                              -> Int       -- ^ group id
+                              -> FilePath  -- ^ pfq-lang file
+                              -> IO ()
+
+setGroupComputationFromFile hdl gid file =
+  readFile file >>= \str -> length str `seq` setGroupComputationFromString hdl gid str
 -- |Specify a simple functional computation for the given group, from String as pfq-lang program.
 --
 
@@ -1220,6 +1231,7 @@ foreign import ccall unsafe pfq_get_group_counters  :: Ptr PFqTag -> CInt -> Ptr
 
 foreign import ccall unsafe pfq_set_group_computation :: Ptr PFqTag -> CInt -> Ptr a -> IO CInt
 foreign import ccall unsafe pfq_set_group_computation_from_string :: Ptr PFqTag -> CInt -> CString -> IO CInt
+foreign import ccall unsafe pfq_set_group_computation_from_file   :: Ptr PFqTag -> CInt -> CString -> IO CInt
 
 foreign import ccall pfq_dispatch                   :: Ptr PFqTag -> FunPtr CPFqCallback -> CLong -> Ptr Word8 -> IO CInt
 foreign import ccall "wrapper" make_callback        :: CPFqCallback -> IO (FunPtr CPFqCallback)
