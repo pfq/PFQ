@@ -527,7 +527,8 @@ pfq_opt_default(pcap_t *handle)
 		.tx_queue = {-1, -1, -1, -1},
 		.tx_thread= { Q_NO_KTHREAD, Q_NO_KTHREAD, Q_NO_KTHREAD, Q_NO_KTHREAD },
 		.vlan     = NULL,
-		.comp     = NULL
+		.lang     = NULL,
+		.lang_lit = NULL,
 	};
 }
 
@@ -556,8 +557,13 @@ pfq_parse_env(struct pfq_opt *opt)
 		opt->vlan = var;
 
 	if ((var = pfq_getenv("PFQ_LANG"))) {
-		free(opt->comp);
-		opt->comp = var;
+		free(opt->lang);
+		opt->lang = var;
+	}
+
+	if ((var = pfq_getenv("PFQ_COMP"))) {
+		free(opt->lang_lit);
+		opt->lang_lit = var;
 	}
 
 	if ((var = pfq_getenv("PFQ_TX_QUEUE"))) {
@@ -589,7 +595,7 @@ pfq_parse_env(struct pfq_opt *opt)
 #define KEY_tx_queue		5
 #define KEY_tx_thread		6
 #define KEY_vlan		7
-
+#define KEY_lang		8
 
 struct pfq_conf_key
 {
@@ -603,7 +609,8 @@ struct pfq_conf_key
 	KEY(tx_queue),
 	KEY(tx_fhint),
 	KEY(tx_thread),
-	KEY(vlan)
+	KEY(vlan),
+	KEY(lang)
 };
 
 
@@ -638,7 +645,6 @@ str_append(char *str1, const char *str2)
 static int
 pfq_parse_config(struct pfq_opt *opt, const char *filename)
 {
-        char *pfq_lang = NULL;
 	char line[1024];
 	FILE *file;
 	int rc = 0, n;
@@ -662,25 +668,22 @@ pfq_parse_config(struct pfq_opt *opt, const char *filename)
 		if (ret == 0)
 			goto next;
 
-		tkey = string_trim(key);
+		/* ret > 0 */
 
-		if (strcmp(tkey, "pfq-lang") == 0) {
-			if (value) {
-				pfq_lang = str_append(pfq_lang, value);
-				pfq_lang = str_append(pfq_lang, "\n");
-			}
+		tkey = string_trim(key);
+		if (strlen(tkey) == 0)
+			continue;
+
+		/*  strlen > 0 */
+
+		if (line[0] == '>') {
+			opt->lang_lit = str_append(opt->lang_lit, line+1);
+			opt->lang_lit = str_append(opt->lang_lit, "\n");
 			continue;
 		}
 
-		if (ret == 1) {
-			if (strlen(tkey) && tkey[0] != '#') {
-				fprintf(stderr, "[PFQ] %s: parse error at: %s\n", filename, key);
-				rc = -1;
-			}
-			goto next;
-		}
-
-		// ret > 1
+		if (tkey[0] == '#') /* skip comments */
+			continue;
 
 		switch(pfq_conf_find_key(tkey))
 		{
@@ -701,12 +704,13 @@ pfq_parse_config(struct pfq_opt *opt, const char *filename)
 					rc = -1;
 				}
 			} break;
-			case KEY_vlan:		opt->vlan = strdup(string_trim(value)); break;
-			case KEY_ERR: {
-				fprintf(stderr, "[PFQ] %s: unknown keyword '%s'\n", filename, tkey);
+			case KEY_vlan:		free (opt->vlan); opt->vlan = strdup(string_trim(value)); break;
+			case KEY_lang:		free (opt->lang); opt->lang = strdup(string_trim(value)); break;
+			case KEY_ERR:
+			default: {
+				fprintf(stderr, "[PFQ] %s: parse error (unknown keyword '%s')\n", filename, tkey);
 				rc = -1;
 			} break;
-			default: assert(!"[PFQ] config parser: internal error!");
 		}
 	next:
 		free(key);
@@ -717,10 +721,6 @@ pfq_parse_config(struct pfq_opt *opt, const char *filename)
 
 	fclose(file);
 
-	if (pfq_lang) {
-		free(opt->comp);
-		opt->comp = pfq_lang;
-	}
 err:
 	return rc;
 }
@@ -1014,16 +1014,30 @@ pfq_activate_linux(pcap_t *handle)
 		}
 	}
 
-	/* set FUNCTION/computation */
+	/* set pfq-lang computation */
 
-	if (handle->opt.pfq.comp) {
+	/* Haskell bird style? */
 
-		fprintf(stdout, "[PFQ] setting computation '%s' for group %d\n",
-			handle->opt.pfq.comp, handle->opt.pfq.group);
+	if (handle->opt.pfq.lang_lit) {
+
+		fprintf(stdout, "[PFQ] loading pfq-lang program '%s' for group %d\n",
+			handle->opt.pfq.lang_lit, handle->opt.pfq.group);
 
 		if (pfq_set_group_computation_from_string(handle->md.pfq.q,
 							  handle->opt.pfq.group,
-							  handle->opt.pfq.comp) < 0) {
+							  handle->opt.pfq.lang_lit) < 0) {
+
+			fprintf(stderr, "[PFQ] error: %s\n", pfq_error(handle->md.pfq.q));
+		}
+	}
+	else if (handle->opt.pfq.lang) {
+
+		fprintf(stdout, "[PFQ] loading pfq-lang program '%s' for group %d\n",
+			handle->opt.pfq.lang, handle->opt.pfq.group);
+
+		if (pfq_set_group_computation_from_file(handle->md.pfq.q,
+							handle->opt.pfq.group,
+							handle->opt.pfq.lang) < 0) {
 
 			fprintf(stderr, "[PFQ] error: %s\n", pfq_error(handle->md.pfq.q));
 		}
