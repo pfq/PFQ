@@ -765,6 +765,15 @@ namespace pfq {
             throw_if(q, pfq_set_group_computation_from_string(q, gid, comp.c_str()));
         }
 
+        //! Specify a functional computation for the given group, as pfq-lang program from file.
+
+        void
+        set_group_computation(int gid, const char *filepath)
+        {
+            auto q = this->data();
+            throw_if(q, pfq_set_group_computation_from_file(q, gid, filepath));
+        }
+
         //! Specify a functional computation for the given group, from JSON description.
 
         void

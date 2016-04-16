@@ -1210,6 +1210,7 @@ pfq_set_group_computation_from_json(pfq_t *q, int gid, const char *input)
 	return pfq_set_group_computation(q, gid, prog);
 }
 
+
 int
 pfq_set_group_computation_from_string(pfq_t *q, int gid, const char *comp)
 {
@@ -1262,6 +1263,37 @@ pfq_set_group_computation_from_string(pfq_t *q, int gid, const char *comp)
 
 	free(page);
 	return status;
+}
+
+
+int
+pfq_set_group_computation_from_file(pfq_t *q, int gid, const char *filepath)
+{
+	char *buffer;
+	long size;
+        int rc;
+
+	FILE *f = fopen(filepath, "rb");
+	if (f == NULL)
+		return Q_ERROR(q, "PFQ: set_group_computation_from_file: fopen");
+
+	fseek(f, 0L, SEEK_END);
+	size = ftell(f);
+	rewind(f);
+
+	buffer = malloc((size_t)size+1);
+	if (buffer == NULL) {
+		fclose(f);
+		return Q_ERROR(q, "PFQ: set_group_computation_from_file: malloc");
+        }
+
+	fread(buffer, (size_t)size, 1, f);
+	buffer[size] = '\0';
+	fclose(f);
+
+	rc = pfq_set_group_computation_from_string(q, gid, buffer);
+	free(buffer);
+	return rc;
 }
 
 

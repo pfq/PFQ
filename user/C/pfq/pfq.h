@@ -462,6 +462,12 @@ extern int pfq_set_group_computation_from_json(pfq_t *q, int gid, const char *pr
 extern int pfq_set_group_computation_from_string(pfq_t *q, int gid, const char *prg);
 
 
+/*! Specify a functional computation for the given group, as pfq-lang program file. */
+/*!
+ */
+extern int pfq_set_group_computation_from_file(pfq_t *q, int gid, const char *filepath);
+
+
 /*! Specify a BPF program for the given group. */
 /*!
  * This function can be used to set a specific BPF filter for the group.
