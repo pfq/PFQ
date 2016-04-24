@@ -65,4 +65,24 @@ unless(arguments_t args, SkBuff b)
 }
 
 
+static inline ActionSkBuff
+shift(arguments_t args, SkBuff b)
+{
+        function_t  fun_  = GET_ARG_0(function_t, args);
+	ActionSkBuff ret;
+
+	PFQ_CB(b)->monad->shift++;
+	PFQ_CB(b)->monad->ipoff = 0;
+	PFQ_CB(b)->monad->ipproto = IPPROTO_NONE;
+
+	ret = EVAL_FUNCTION(fun_, b);
+
+	PFQ_CB(b)->monad->shift--;
+	PFQ_CB(b)->monad->ipoff = 0;
+	PFQ_CB(b)->monad->ipproto = IPPROTO_NONE;
+
+	return ret;
+}
+
+
 #endif /* PFQ_LANG_CONDITIONAL_H */

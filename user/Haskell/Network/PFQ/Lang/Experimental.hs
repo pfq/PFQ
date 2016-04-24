@@ -58,6 +58,7 @@ module Network.PFQ.Lang.Experimental
     , is_gtp
     , is_gtp_cp
     , is_gtp_up
+    , shift
     , trace
 
     ) where
@@ -141,6 +142,13 @@ is_gtp_cp = Predicate "is_gtp_cp" () () () () () () () () :: NetPredicate
 
 -- | Evaluate to /True/ if the SkBuff is a GTP User-Plane packet.
 is_gtp_up = Predicate "is_gtp_up" () () () () () () () () :: NetPredicate
+
+
+-- The function shift an action...
+--
+-- > shift steer_flow
+shift :: NetFunction -> NetFunction
+shift f = Function "shift" f () () () () () () ()
 
 
 -- | Log monadic/state information to syslog.
