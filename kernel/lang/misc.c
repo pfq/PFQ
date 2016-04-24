@@ -25,6 +25,12 @@
 
 #include <linux/kernel.h>
 #include <linux/module.h>
+#include <linux/ip.h>
+#include <linux/ipv6.h>
+#include <linux/tcp.h>
+#include <linux/udp.h>
+#include <linux/icmp.h>
+#include <linux/icmpv6.h>
 #include <linux/crc16.h>
 
 #include <pragma/diagnostic_pop>
@@ -124,6 +130,137 @@ log_buff(arguments_t args, SkBuff skb)
 	return Pass(skb);
 }
 
+static void
+log_ip6_packet(arguments_t args, SkBuff skb)
+{
+	struct ipv6hdr _iph;
+	const struct ipv6hdr *ip6;
+
+	ip6 = skb_ip6_header_pointer(PFQ_SKB(skb), 0, sizeof(_iph), &_iph);
+	if (ip6)
+	{
+		switch(ip6->nexthdr)
+		{
+		case IPPROTO_UDP: {
+			struct udphdr _udph; const struct udphdr *udp;
+			udp = skb_ip6_header_pointer(PFQ_SKB(skb), sizeof(struct ipv6hdr), sizeof(struct udphdr), &_udph);
+			if (udp)
+			{
+				printk(KERN_INFO "[pfq-lang] IP6 %pI6.%d > %pI6.%d: UDP\n",
+							&ip6->saddr, be16_to_cpu(udp->source),
+							&ip6->daddr, be16_to_cpu(udp->dest));
+			}
+			else
+			{
+				printk(KERN_INFO "[pfq-lang] IP6 %pI6 > %pI6: UDP (broken)\n", &ip6->saddr, &ip6->daddr);
+			}
+		} break;
+		case IPPROTO_TCP: {
+			struct tcphdr _tcph; const struct tcphdr *tcp;
+			tcp = skb_ip6_header_pointer(PFQ_SKB(skb), sizeof(struct ipv6hdr), sizeof(struct tcphdr), &_tcph);
+			if (tcp)
+			{
+				printk(KERN_INFO "[pfq-lang] IP6 %pI6.%d > %pI6.%d: TCP\n",
+							&ip6->saddr, be16_to_cpu(tcp->source),
+							&ip6->daddr, be16_to_cpu(tcp->dest));
+			}
+			else
+			{
+				printk(KERN_INFO "[pfq-lang] IP6 %pI6 > %pI6: TCP (broken)\n", &ip6->saddr, &ip6->daddr);
+			}
+		} break;
+		case IPPROTO_ICMPV6: {
+			struct icmp6hdr _icmp6; const struct icmp6hdr *icmp6;
+			icmp6 = skb_ip6_header_pointer(PFQ_SKB(skb), sizeof(struct ipv6hdr), sizeof(struct icmp6hdr), &_icmp6);
+                        if (icmp6)
+			{
+				printk(KERN_INFO "[pfq-lang] IP6 %pI6 > %pI6: ICMP6 type=%d (code=%d)\n",
+							&ip6->saddr, &ip6->daddr, icmp6->icmp6_type, icmp6->icmp6_code);
+			}
+			else
+			{
+				printk(KERN_INFO "[pfq-lang] IP6 %pI6 > %pI6: ICMP6 (broken)\n", &ip6->saddr, &ip6->daddr);
+			}
+		} break;
+		default: {
+
+			printk(KERN_INFO "[pfq-lang] IP6 %pI6 > %pI6: proto %x\n",
+							&ip6->saddr, &ip6->daddr, ip6->nexthdr);
+		} break;
+		}
+	}
+	else
+	{
+		printk(KERN_INFO "[pfq-lang] IP6 (broken)\n");
+	}
+}
+
+
+static void
+log_ip4_packet(arguments_t args, SkBuff skb)
+{
+	struct iphdr _iph;
+	const struct iphdr *ip;
+
+	ip = skb_ip_header_pointer(PFQ_SKB(skb), 0, sizeof(_iph), &_iph);
+	if (ip)
+	{
+		switch(ip->protocol)
+		{
+		case IPPROTO_UDP: {
+			struct udphdr _udph; const struct udphdr *udp;
+			udp = skb_ip_header_pointer(PFQ_SKB(skb), (ip->ihl<<2), sizeof(struct udphdr), &_udph);
+			if (udp)
+			{
+				printk(KERN_INFO "[pfq-lang] IP4 %pI4.%d > %pI4.%d: UDP\n",
+							&ip->saddr, be16_to_cpu(udp->source),
+							&ip->daddr, be16_to_cpu(udp->dest));
+			}
+			else
+			{
+				printk(KERN_INFO "[pfq-lang] IP4 %pI4 > %pI4: UDP (broken)\n", &ip->saddr, &ip->daddr);
+			}
+		} break;
+		case IPPROTO_TCP: {
+			struct tcphdr _tcph; const struct tcphdr *tcp;
+			tcp = skb_ip_header_pointer(PFQ_SKB(skb), (ip->ihl<<2), sizeof(struct tcphdr), &_tcph);
+			if (tcp)
+			{
+				printk(KERN_INFO "[pfq-lang] IP4 %pI4.%d > %pI4.%d: TCP\n",
+							&ip->saddr, be16_to_cpu(tcp->source),
+							&ip->daddr, be16_to_cpu(tcp->dest));
+			}
+			else
+			{
+				printk(KERN_INFO "[pfq-lang] IP4 %pI4 > %pI4: TCP (broken)\n", &ip->saddr, &ip->daddr);
+			}
+		} break;
+		case IPPROTO_ICMP: {
+			struct icmphdr _icmp; const struct icmphdr *icmp;
+			icmp = skb_ip_header_pointer(PFQ_SKB(skb), (ip->ihl<<2), sizeof(struct icmphdr), &_icmp);
+                        if (icmp)
+			{
+				printk(KERN_INFO "[pfq-lang] IP4 %pI4 > %pI4: ICMP type=%d (code=%d)\n",
+							&ip->saddr, &ip->daddr, icmp->type, icmp->code);
+			}
+			else
+			{
+				printk(KERN_INFO "[pfq-lang] IP4 %pI4 > %pI4: ICMP (broken)\n", &ip->saddr, &ip->daddr);
+			}
+		} break;
+		default: {
+
+			printk(KERN_INFO "[pfq-lang] IP4 %pI4 > %pI4: proto %x\n",
+							&ip->saddr, &ip->daddr, ip->protocol);
+		} break;
+		}
+	}
+	else
+	{
+		printk(KERN_INFO "[pfq-lang] IP4 (broken)\n");
+	}
+}
+
 
 static ActionSkBuff
 log_packet(arguments_t args, SkBuff skb)
@@ -131,54 +268,15 @@ log_packet(arguments_t args, SkBuff skb)
 	if (!printk_ratelimit())
 		return Pass(skb);
 
-	if (eth_hdr(PFQ_SKB(skb))->h_proto == __constant_htons(ETH_P_IP))
+	switch(skb_ip_protocol(skb))
 	{
-		struct iphdr _iph;
-		const struct iphdr *ip;
-
-		ip = skb_ip_header_pointer(PFQ_SKB(skb), 0, sizeof(_iph), &_iph);
-		if (ip == NULL)
-			return Pass(skb);
-
-		switch(ip->protocol)
-		{
-		case IPPROTO_UDP: {
-			struct udphdr _udph; const struct udphdr *udp;
-			udp = skb_ip_header_pointer(PFQ_SKB(skb), (ip->ihl<<2), sizeof(struct udphdr), &_udph);
-			if (udp == NULL)
-				return Pass(skb);
-
-			printk(KERN_INFO "[pfq-lang] IP %pI4.%d > %pI4.%d: UDP\n",
-						&ip->saddr, be16_to_cpu(udp->source),
-						&ip->daddr, be16_to_cpu(udp->dest));
-			return Pass(skb);
-		}
-		case IPPROTO_TCP: {
-			struct tcphdr _tcph; const struct tcphdr *tcp;
-			tcp = skb_ip_header_pointer(PFQ_SKB(skb), (ip->ihl<<2), sizeof(struct tcphdr), &_tcph);
-			if (tcp == NULL)
-				return Pass(skb);
-
-			printk(KERN_INFO "[pfq-lang] IP %pI4.%d > %pI4.%d: TCP\n", &ip->saddr, be16_to_cpu(tcp->source),
-									      &ip->daddr, be16_to_cpu(tcp->dest));
-			return Pass(skb);
-		}
-		case IPPROTO_ICMP: {
-
-			printk(KERN_INFO "[pfq-lang] IP %pI4 > %pI4: ICMP\n", &ip->saddr, &ip->daddr);
-			return Pass(skb);
-		}
-		default: {
-
-			printk(KERN_INFO "[pfq-lang] IP %pI4 > %pI4: proto %x\n", &ip->saddr, &ip->daddr,
-									     ip->protocol);
-			return Pass(skb);
-		}
-
-		}
-
-	} else
-		printk(KERN_INFO "[pfq-lang] ETH proto %x\n", be16_to_cpu(eth_hdr(PFQ_SKB(skb))->h_proto));
+	case IPPROTO_IP: {
+		log_ip4_packet(args, skb);
+	} break;
+	case IPPROTO_IPV6: {
+		log_ip6_packet(args, skb);
+	} break;
+	}
 
         return Pass(skb);
 }
