@@ -135,9 +135,22 @@ skb_generic_ip_header_pointer(SkBuff skb, int ip_proto, int offset, int len, voi
 	return skb_header_pointer(PFQ_SKB(skb), PFQ_CB(skb)->monad->ipoff + offset, len, buffer);
 }
 
-
 #define skb_ip_header_pointer(skb, offset, len, buffer) skb_generic_ip_header_pointer(skb, IPPROTO_IP, offset, len, buffer)
 #define skb_ip6_header_pointer(skb, offset, len, buffer) skb_generic_ip_header_pointer(skb, IPPROTO_IPV6, offset, len, buffer)
+
+static inline int
+skb_ip_protocol(SkBuff skb)
+{
+	if (unlikely(PFQ_CB(skb)->monad->ipoff < 0))
+		return IPPROTO_NONE;
+
+	if (PFQ_CB(skb)->monad->ipproto == IPPROTO_NONE)
+	{
+		skb_ip_header_pointer(skb, 0, 0, NULL);
+	}
+
+	return PFQ_CB(skb)->monad->ipproto;
+}
 
 
 
