@@ -47,33 +47,15 @@ filter_udp(arguments_t args, SkBuff b)
 }
 
 static inline ActionSkBuff
-filter_udp6(arguments_t args, SkBuff b)
-{
-        return is_udp6(b) ? Pass(b) : Drop(b);
-}
-
-static inline ActionSkBuff
 filter_tcp(arguments_t args, SkBuff b)
 {
         return is_tcp(b) ? Pass(b) : Drop(b);
 }
 
 static inline ActionSkBuff
-filter_tcp6(arguments_t args, SkBuff b)
-{
-        return is_tcp6(b) ?  Pass(b) : Drop(b);
-}
-
-static inline ActionSkBuff
 filter_icmp(arguments_t args, SkBuff b)
 {
         return is_icmp(b) ? Pass(b) : Drop(b);
-}
-
-static inline ActionSkBuff
-filter_icmp6(arguments_t args, SkBuff b)
-{
-        return is_icmp6(b) ? Pass(b) : Drop(b);
 }
 
 static inline ActionSkBuff

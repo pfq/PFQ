@@ -52,33 +52,15 @@ pred_is_udp(arguments_t args, SkBuff b)
 }
 
 static bool
-pred_is_udp6(arguments_t args, SkBuff b)
-{
-        return  is_udp6(b);
-}
-
-static bool
 pred_is_tcp(arguments_t args, SkBuff b)
 {
         return  is_tcp(b);
 }
 
 static bool
-pred_is_tcp6(arguments_t args, SkBuff b)
-{
-        return  is_tcp6(b);
-}
-
-static bool
 pred_is_icmp(arguments_t args, SkBuff b)
 {
         return  is_icmp(b);
-}
-
-static bool
-pred_is_icmp6(arguments_t args, SkBuff b)
-{
-        return  is_icmp6(b);
 }
 
 static bool
@@ -215,9 +197,6 @@ struct pfq_lang_function_descr predicate_functions[] = {
         { "is_udp",        "SkBuff -> Bool", pred_is_udp   },
         { "is_icmp",       "SkBuff -> Bool", pred_is_icmp  },
         { "is_ip6",	   "SkBuff -> Bool", pred_is_ip6   },
-        { "is_udp6",	   "SkBuff -> Bool", pred_is_udp6  },
-        { "is_tcp6",       "SkBuff -> Bool", pred_is_tcp6  },
-        { "is_icmp6",      "SkBuff -> Bool", pred_is_icmp6 },
         { "is_flow",       "SkBuff -> Bool", pred_is_flow  },
         { "has_vlan",      "SkBuff -> Bool", pred_has_vlan },
         { "is_frag",	   "SkBuff -> Bool", pred_is_frag  },
