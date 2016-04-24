@@ -102,6 +102,8 @@ log_msg(arguments_t args, SkBuff skb)
 static ActionSkBuff
 log_buff(arguments_t args, SkBuff skb)
 {
+	int maxlen;
+
 	if (!printk_ratelimit())
 		return Pass(skb);
 
@@ -110,23 +112,8 @@ log_buff(arguments_t args, SkBuff skb)
 								skb_headroom(PFQ_SKB(skb)),
 								skb_tailroom(PFQ_SKB(skb)));
 
-	printk(KERN_INFO "      [%p] %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x %2x...\n",
-				skb->data,
-				skb->data[0],
-				skb->data[1],
-				skb->data[2],
-				skb->data[3],
-				skb->data[4],
-				skb->data[5],
-				skb->data[6],
-				skb->data[7],
-				skb->data[8],
-				skb->data[9],
-				skb->data[10],
-				skb->data[11],
-				skb->data[12],
-				skb->data[13]);
-
+	maxlen = (int)min(skb->len, 34U);
+	printk(KERN_INFO "[pfq-lang] [%*ph ...]\n", maxlen, skb->data);
 	return Pass(skb);
 }
 
