@@ -8,5 +8,5 @@ import Network.PFQ.Lang.Prelude
 import Network.PFQ.Lang.Default
 
 
-filterFunction = par ip ip6
+filterFunction = par ip ip
 

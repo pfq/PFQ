@@ -28,7 +28,7 @@ main()
     check_computation(q, filter(has_mark(42)));
     check_computation(q, filter(is_ip  & is_tcp ));
     check_computation(q, filter(is_udp | is_tcp ));
-    check_computation(q, filter(is_ip6 ^ has_mark(11) ));
+    check_computation(q, filter(is_tcp ^ has_mark(11) ));
     check_computation(q, filter(is_ip & ( is_tcp | is_udp) ));
 
     // computations:

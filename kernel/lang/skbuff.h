@@ -86,18 +86,6 @@ skb_next_ip_offset(struct sk_buff *skb, int offset, int *proto)
                 return next_ip_offset(PFQ_SKB(skb), offset + (ip->ihl<<2), ip->protocol, proto);
 
 	} break;
-	case IPPROTO_IPV6: {
-
-		struct ipv6hdr _ip6h;
-		const struct ipv6hdr *ip6;
-
-		ip6 = skb_header_pointer(PFQ_SKB(skb), offset, sizeof(_ip6h), &_ip6h);
-		if (ip6 == NULL)
-			return -1;
-
-                return next_ip_offset(PFQ_SKB(skb), offset + sizeof(struct ipv6hdr), ip6->nexthdr, proto);
-
-	} break;
 	}
 
 	return -1;
@@ -137,7 +125,6 @@ skb_generic_ip_header_pointer(SkBuff skb, int ip_proto, int offset, int len, voi
 
 
 #define skb_ip_header_pointer(skb, offset, len, buffer) skb_generic_ip_header_pointer(skb, IPPROTO_IP, offset, len, buffer)
-#define skb_ip6_header_pointer(skb, offset, len, buffer) skb_generic_ip_header_pointer(skb, IPPROTO_IPV6, offset, len, buffer)
 
 
 

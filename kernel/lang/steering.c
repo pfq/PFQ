@@ -384,65 +384,6 @@ steering_flow(arguments_t args, SkBuff skb)
 }
 
 
-static ActionSkBuff
-steering_p2p6(arguments_t args, SkBuff skb)
-{
-	if (eth_hdr(PFQ_SKB(skb))->h_proto == __constant_htons(ETH_P_IPV6))
-	{
-		struct ipv6hdr _ip6h;
-		const struct ipv6hdr *ip6;
-		__be32 hash;
-
-		ip6 = skb_header_pointer(PFQ_SKB(skb), skb->mac_len, sizeof(_ip6h), &_ip6h);
-		if (ip6 == NULL)
-			return Drop(skb);
-
-		hash = ip6->saddr.in6_u.u6_addr32[0] ^
-			ip6->saddr.in6_u.u6_addr32[1] ^
-			ip6->saddr.in6_u.u6_addr32[2] ^
-			ip6->saddr.in6_u.u6_addr32[3] ^
-			ip6->daddr.in6_u.u6_addr32[0] ^
-			ip6->daddr.in6_u.u6_addr32[1] ^
-			ip6->daddr.in6_u.u6_addr32[2] ^
-			ip6->daddr.in6_u.u6_addr32[3];
-
-		return Steering(skb, (__force uint32_t)hash);
-	}
-
-	return Drop(skb);
-}
-
-static ActionSkBuff
-steering_ip6(arguments_t args, SkBuff skb)
-{
-	if (eth_hdr(PFQ_SKB(skb))->h_proto == __constant_htons(ETH_P_IPV6))
-	{
-		struct ipv6hdr _ip6h;
-		const struct ipv6hdr *ip6;
-		__be32 h1, h2;
-
-		ip6 = skb_header_pointer(PFQ_SKB(skb), skb->mac_len, sizeof(_ip6h), &_ip6h);
-		if (ip6 == NULL)
-			return Drop(skb);
-
-		h1 = ip6->saddr.in6_u.u6_addr32[0] ^
-		     ip6->saddr.in6_u.u6_addr32[1] ^
-		     ip6->saddr.in6_u.u6_addr32[2] ^
-		     ip6->saddr.in6_u.u6_addr32[3];
-
-		h2 = ip6->daddr.in6_u.u6_addr32[0] ^
-		     ip6->daddr.in6_u.u6_addr32[1] ^
-		     ip6->daddr.in6_u.u6_addr32[2] ^
-		     ip6->daddr.in6_u.u6_addr32[3];
-
-		return DoubleSteering(skb, (__force uint32_t)h1,
-					   (__force uint32_t)h2);
-	}
-
-	return Drop(skb);
-}
-
-
 struct pfq_lang_function_descr steering_functions[] = {
 
 	{ "steer_rrobin","SkBuff -> Action SkBuff", steering_rrobin  },
@@ -456,8 +397,6 @@ struct pfq_lang_function_descr steering_functions[] = {
 	{ "steer_ip_local","CIDR -> SkBuff -> Action SkBuff", steering_ip_local, steering_ip_local_init },
 
 	{ "steer_p2p",   "SkBuff -> Action SkBuff", steering_p2p     },
-	{ "steer_ip6",	 "SkBuff -> Action SkBuff", steering_ip6     },
-	{ "steer_p2p6",	 "SkBuff -> Action SkBuff", steering_p2p6    },
 	{ "steer_flow",  "SkBuff -> Action SkBuff", steering_flow    },
 	{ "steer_to",    "CInt   -> SkBuff -> Action SkBuff", steering_to },
 

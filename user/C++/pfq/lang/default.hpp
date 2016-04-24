@@ -222,10 +222,6 @@ namespace pfq { namespace lang {
 
         auto is_ip          = predicate ("is_ip");
 
-        //! Evaluate to \c true if the SkBuff is an IPv6 packet.
-
-        auto is_ip6         = predicate ("is_ip6");
-
         //! Evaluate to \c true if the SkBuff is an UDP packet.
 
         auto is_udp         = predicate ("is_udp");
@@ -237,18 +233,6 @@ namespace pfq { namespace lang {
         //! Evaluate to \c true if the SkBuff is an ICMP packet.
 
         auto is_icmp        = predicate ("is_icmp");
-
-        //! Evaluate to \c true if the SkBuff is an UDP packet, on top of IPv6.
-
-        auto is_udp6        = predicate ("is_udp6");
-
-        //! Evaluate to \c true if the SkBuff is a TCP packet, on top of IPv6.
-
-        auto is_tcp6        = predicate ("is_tcp6");
-
-        //! Evaluate to \c true if the SkBuff is an ICMP packet, on top of IPv6.
-
-        auto is_icmp6       = predicate ("is_icmp6");
 
         //! Evaluate to \c true if the SkBuff is an UDP or TCP packet.
 
@@ -569,27 +553,6 @@ namespace pfq { namespace lang {
         //! Dispatch the packet across the sockets
         /*!
          * Dispatch with a randomized algorithm that maintains the coherence
-         * of both IPv6 addresses.
-         * This alter the total amount of traffic (\see steer_mac).
-         *
-         * steer_ip6 >> log_msg("Steering an IPv6 packet")
-         */
-
-        auto steer_ip6  = function("steer_ip6");
-
-        //! Dispatch the packet across the sockets
-        /*!
-         * Dispatch with a randomized algorithm that maintains the coherence
-         * of IPv6 flows. Example:
-         *
-         * steer_p2p6 >> log_msg("Steering an IPv6 packet")
-         */
-
-        auto steer_p2p6  = function("steer_p2p6");
-
-        //! Dispatch the packet across the sockets
-        /*!
-         * Dispatch with a randomized algorithm that maintains the coherence
          * of TCP/UDP flows. Example:
          *
          * steer_flow >> log_msg ("Steering a flow")
@@ -700,10 +663,6 @@ namespace pfq { namespace lang {
 
         auto ip             = function("ip");
 
-        //! Evaluate to \c Pass SkBuff if it is an IPv6 packet, \c Drop it otherwise.
-
-        auto ip6            = function("ip6");
-
         //! Evaluate to \c Pass SkBuff if it is an UDP packet, \c Drop it otherwise.
 
         auto udp            = function("udp");
@@ -715,18 +674,6 @@ namespace pfq { namespace lang {
         //! Evaluate to \c Pass SkBuff if it is an ICMP packet, \c Drop it otherwise.
 
         auto icmp           = function("icmp");
-
-        //! Evaluate to \c Pass SkBuff if it is an UDP packet (on top of IPv6), \c Drop it otherwise.
-
-        auto udp6           = function("udp6");
-
-        //! Evaluate to \c Pass SkBuff if it is a TCP packet (on top of IPv6), \c Drop it otherwise.
-
-        auto tcp6           = function("tcp6");
-
-        //! Evaluate to \c Pass SkBuff if it is an ICMP packet (on top of IPv6), \c Drop it otherwise.
-
-        auto icmp6          = function("icmp6");
 
         //! Evaluate to \c Pass SkBuff if it has a vlan tag, \c Drop it otherwise.
 

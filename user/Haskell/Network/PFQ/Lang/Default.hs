@@ -39,10 +39,6 @@ module Network.PFQ.Lang.Default
     , is_udp
     , is_tcp
     , is_icmp
-    , is_ip6
-    , is_udp6
-    , is_tcp6
-    , is_icmp6
     , is_flow
     , is_l3_proto
     , is_l4_proto
@@ -126,13 +122,9 @@ module Network.PFQ.Lang.Default
 
     , Network.PFQ.Lang.Default.filter
     , ip
-    , ip6
     , udp
     , tcp
     , icmp
-    , udp6
-    , tcp6
-    , icmp6
     , vlan
     , l3_proto
     , l4_proto
@@ -165,8 +157,6 @@ module Network.PFQ.Lang.Default
     , steer_p2p
     , steer_ip
     , steer_ip_local
-    , steer_ip6
-    , steer_p2p6
     , steer_flow
     , steer_net
     , steer_field
@@ -315,9 +305,6 @@ p `all_bit` x = Predicate "all_bit" p x () () () () () ()
 -- | Evaluate to /True/ if the SkBuff is an IPv4 packet.
 is_ip = Predicate "is_ip" () () () () () () () ()
 
--- | Evaluate to /True/ if the SkBuff is an IPv6 packet.
-is_ip6 = Predicate "is_ip6" () () () () () () () ()
-
 -- | Evaluate to /True/ if the SkBuff is an UDP packet.
 is_udp = Predicate "is_udp" () () () () () () () ()
 
@@ -326,15 +313,6 @@ is_tcp = Predicate "is_tcp" () () () () () () () ()
 
 -- | Evaluate to /True/ if the SkBuff is an ICMP packet.
 is_icmp = Predicate "is_icmp" () () () () () () () ()
-
--- | Evaluate to /True/ if the SkBuff is an UDP packet, on top of IPv6.
-is_udp6 = Predicate "is_udp6" () () () () () () () ()
-
--- | Evaluate to /True/ if the SkBuff is a TCP packet, on top of IPv6.
-is_tcp6 = Predicate "is_tcp6" () () () () () () () ()
-
--- | Evaluate to /True/ if the SkBuff is an ICMP packet, on top of IPv6.
-is_icmp6 = Predicate "is_icmp6" () () () () () () () ()
 
 -- | Evaluate to /True/ if the SkBuff is an UDP or TCP packet.
 is_flow = Predicate "is_flow" () () () () () () () ()
@@ -551,21 +529,6 @@ steer_ip_local d = Function "steer_ip_local" d () () () () () () () :: NetFuncti
 
 -- | Dispatch the packet across the sockets
 -- with a randomized algorithm that maintains the coherence of
--- both IPv6 addresses.
--- This alter the total amount of traffic (see 'steer_mac').
---
--- > steer_ip6 >-> log_msg "Steering an IPv6 packet"
-steer_ip6 = Function "steer_ip6" () () () () () () () () :: NetFunction
-
--- | Dispatch the packet across the sockets
--- with a randomized algorithm that maintains the coherence of
--- IPv6 flows.
---
--- > steer_p2p6 >-> log_msg "Steering an IPv6 packet"
-steer_p2p6 = Function "steer_p2p6" () () () () () () () () :: NetFunction
-
--- | Dispatch the packet across the sockets
--- with a randomized algorithm that maintains the coherence of
 -- TCP/UDP flows.
 --
 -- > steer_flow >-> log_msg "Steering a flow"
@@ -638,9 +601,6 @@ filter p = Function "filter" p () () () () () () ()
 -- | Evaluate to /Pass SkBuff/ if it is an IPv4 packet, /Drop/ it otherwise.
 ip = Function "ip" () () () () () () () () :: NetFunction
 
--- | Evaluate to /Pass SkBuff/ if it is an IPv6 packet, /Drop/ it otherwise.
-ip6 = Function "ip6" () () () () () () () () :: NetFunction
-
 -- | Evaluate to /Pass SkBuff/ if it is an UDP packet, /Drop/ it otherwise.
 udp = Function "udp" () () () () () () () () :: NetFunction
 
@@ -649,15 +609,6 @@ tcp = Function "tcp" () () () () () () () () :: NetFunction
 
 -- | Evaluate to /Pass SkBuff/ if it is an ICMP packet, /Drop/ it otherwise.
 icmp = Function "icmp" () () () () () () () () :: NetFunction
-
--- | Evaluate to /Pass SkBuff/ if it is an UDP packet (on top of IPv6), /Drop/ it otherwise.
-udp6 = Function "udp6" () () () () () () () () :: NetFunction
-
--- | Evaluate to /Pass SkBuff/ if it is a TCP packet (on top of IPv6), /Drop/ it otherwise.
-tcp6 = Function "tcp6" () () () () () () () () :: NetFunction
-
--- | Evaluate to /Pass SkBuff/ if it is an ICMP packet (on top of IPv6), /Drop/ it otherwise.
-icmp6 = Function "icmp6" () () () () () () () () :: NetFunction
 
 -- | Evaluate to /Pass SkBuff/ if it has a vlan tag, /Drop/ it otherwise.
 vlan = Function "vlan" () () () () () () () () :: NetFunction

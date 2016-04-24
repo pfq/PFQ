@@ -6,10 +6,6 @@ predicates =
     is_udp                              .||.
     is_tcp                              .||.
     is_icmp                             .||.
-    is_ip6                              .||.
-    is_udp6                             .||.
-    is_tcp6                             .||.
-    is_icmp6                            .||.
     is_flow                             .||.
     is_l3_proto 42                      .||.
     is_l4_proto 8                       .||.
@@ -33,7 +29,7 @@ predicates =
     vlan_id [1, 12]
 
 
-combinators = is_ip .||. is_ip6 .&&. (not is_tcp .^^. is_udp)
+combinators = is_ip .||. is_ip .&&. (not is_tcp .^^. is_udp)
 
 
 combinators2 = par ip (inv udp)
@@ -248,18 +244,14 @@ comparators12 =
 cond = do
     conditional is_tcp (log_msg "tcp") unit
     when is_tcp (drop)
-    unless is_ip6 kernel
+    unless is_ip kernel
 
 
 filters = do
     ip
-    ip6
     udp
     tcp
     icmp
-    udp6
-    tcp6
-    icmp6
     vlan
     l3_proto 42
     l3_proto 0x842
@@ -292,8 +284,6 @@ steerings = do
     steer_p2p
     steer_ip
     steer_ip_local "192.168.1.0/24"
-    steer_ip6
-    steer_p2p6
     steer_flow
     steer_net "192.168.0.0" 16 24
     steer_field 14 2

@@ -146,7 +146,6 @@ PFQ 6.0
     * `steer_rss`
     * `steer_mac`
     * `steer_p2p`
-    * `steer_p2p6`
     * `steer_field_double`
     * `steer_field_symmetric`
     * `steer_ip_local`

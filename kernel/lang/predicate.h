@@ -174,14 +174,6 @@ is_ip(SkBuff skb)
         return false;
 }
 
-static inline bool
-is_ip6(SkBuff skb)
-{
-	if (eth_hdr(PFQ_SKB(skb))->h_proto == __constant_htons(ETH_P_IPV6))
-                return skb_header_available(PFQ_SKB(skb), skb->mac_len, sizeof(struct ipv6hdr));
-
-        return false;
-}
 
 static inline bool
 is_udp(SkBuff skb)
@@ -206,27 +198,6 @@ is_udp(SkBuff skb)
 
 
 static inline bool
-is_udp6(SkBuff skb)
-{
-	if (eth_hdr(PFQ_SKB(skb))->h_proto == __constant_htons(ETH_P_IPV6))
-	{
-		struct ipv6hdr _iph6;
-		const struct ipv6hdr *ip6;
-
-		ip6 = skb_header_pointer(PFQ_SKB(skb), skb->mac_len, sizeof(_iph6), &_iph6);
-		if (ip6 == NULL)
-                        return false;
-
-		if (ip6->nexthdr != IPPROTO_UDP)
-                        return false;
-
-                return skb_header_available(PFQ_SKB(skb), skb->mac_len  + sizeof(struct ipv6hdr), sizeof(struct udphdr));
-	}
-
-        return false;
-}
-
-static inline bool
 is_tcp(SkBuff skb)
 {
 	if (eth_hdr(PFQ_SKB(skb))->h_proto == __constant_htons(ETH_P_IP))
@@ -249,27 +220,6 @@ is_tcp(SkBuff skb)
 
 
 static inline bool
-is_tcp6(SkBuff skb)
-{
-	if (eth_hdr(PFQ_SKB(skb))->h_proto == __constant_htons(ETH_P_IPV6))
-	{
-		struct ipv6hdr _iph6;
-		const struct ipv6hdr *ip6;
-
-		ip6 = skb_header_pointer(PFQ_SKB(skb), skb->mac_len, sizeof(_iph6), &_iph6);
-		if (ip6 == NULL)
-                        return false;
-
-		if (ip6->nexthdr != IPPROTO_TCP)
-                        return false;
-
-                return skb_header_available(PFQ_SKB(skb), skb->mac_len  + sizeof(struct ipv6hdr), sizeof(struct tcphdr));
-	}
-
-        return false;
-}
-
-static inline bool
 is_icmp(SkBuff skb)
 {
 	if (eth_hdr(PFQ_SKB(skb))->h_proto == __constant_htons(ETH_P_IP))
@@ -285,30 +235,6 @@ is_icmp(SkBuff skb)
                         return false;
 
 		return skb_header_available(PFQ_SKB(skb), skb->mac_len + (ip->ihl<<2), sizeof(struct icmphdr));
-	}
-
-        return false;
-}
-
-
-static inline bool
-is_icmp6(SkBuff skb)
-{
-	if (eth_hdr(PFQ_SKB(skb))->h_proto == __constant_htons(ETH_P_IPV6))
-	{
-		struct ipv6hdr _iph6;
-		const struct ipv6hdr *ip6;
-
-		ip6 = skb_header_pointer(PFQ_SKB(skb), skb->mac_len, sizeof(_iph6), &_iph6);
-		if (ip6 == NULL)
-                        return false;
-
-		if (ip6->nexthdr != IPPROTO_ICMPV6)
-                        return false;
-
-		// ... the icmpv6 header is 32 bits long.
-
-                return skb_header_available(PFQ_SKB(skb), skb->mac_len  + sizeof(struct ipv6hdr), 32 >> 3);
 	}
 
         return false;
