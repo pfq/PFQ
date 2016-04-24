@@ -136,7 +136,7 @@ log_packet(arguments_t args, SkBuff skb)
 		struct iphdr _iph;
 		const struct iphdr *ip;
 
-		ip = skb_header_pointer(PFQ_SKB(skb), skb->mac_len, sizeof(_iph), &_iph);
+		ip = skb_ip_header_pointer(PFQ_SKB(skb), 0, sizeof(_iph), &_iph);
 		if (ip == NULL)
 			return Pass(skb);
 
@@ -144,7 +144,7 @@ log_packet(arguments_t args, SkBuff skb)
 		{
 		case IPPROTO_UDP: {
 			struct udphdr _udph; const struct udphdr *udp;
-			udp = skb_header_pointer(PFQ_SKB(skb), skb->mac_len + (ip->ihl<<2), sizeof(struct udphdr), &_udph);
+			udp = skb_ip_header_pointer(PFQ_SKB(skb), (ip->ihl<<2), sizeof(struct udphdr), &_udph);
 			if (udp == NULL)
 				return Pass(skb);
 
@@ -155,7 +155,7 @@ log_packet(arguments_t args, SkBuff skb)
 		}
 		case IPPROTO_TCP: {
 			struct tcphdr _tcph; const struct tcphdr *tcp;
-			tcp = skb_header_pointer(PFQ_SKB(skb), skb->mac_len + (ip->ihl<<2), sizeof(struct tcphdr), &_tcph);
+			tcp = skb_ip_header_pointer(PFQ_SKB(skb), (ip->ihl<<2), sizeof(struct tcphdr), &_tcph);
 			if (tcp == NULL)
 				return Pass(skb);
 
