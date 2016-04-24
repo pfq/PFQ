@@ -467,6 +467,8 @@ trace(arguments_t args, SkBuff skb)
 {
 	struct pfq_lang_monad *mon = PFQ_CB(skb)->monad;
 
+	skb_ip_protocol(skb);
+
 	if (printk_ratelimit())
 		printk(KERN_INFO "[pfq-lang] TRACE state:%u fanout:{%lu %u %u %u} shift:%d ipoff:%d ipproto:%d\n"
 					, mon->state
