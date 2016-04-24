@@ -422,7 +422,7 @@ steering_ip6(arguments_t args, SkBuff skb)
 		const struct ipv6hdr *ip6;
 		__be32 h1, h2;
 
-		ip6 = skb_ipv6_header_pointer(PFQ_SKB(skb), 0, sizeof(_ip6h), &_ip6h);
+		ip6 = skb_ip6_header_pointer(PFQ_SKB(skb), 0, sizeof(_ip6h), &_ip6h);
 		if (ip6 == NULL)
 			return Drop(skb);
 
