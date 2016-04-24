@@ -289,6 +289,7 @@ pfq_receive_batch(struct pfq_percpu_data *data,
 				monad.state = 0;
 				monad.shift = 0;
 				monad.ipoff = 0;
+				monad.ipproto = IPPROTO_NONE;
 
 				/* run the functional program */
 
