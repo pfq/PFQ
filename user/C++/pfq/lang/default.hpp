@@ -1038,6 +1038,105 @@ namespace pfq { namespace lang {
             return function("par", f1, f2);
         }
 
+        //! Function that returns the parallel of n- monadic NetFunctions.
+        /*!
+         * Logic 'or' for manadic filters:
+         *
+         * par3 (udp, tcp, icmp) >> log_msg ("This is an UDP/TCP or an ICMP Packet")
+         *
+         */
+
+        template <typename F0, typename F1, typename F2>
+        auto par3(F0 f0, F1 f1, F2 f2)
+            -> decltype(function(nullptr, f0, f1, f2))
+        {
+            static_assert(is_monadic_function<F0>::value, "par: argument 0: monadic function expected");
+            static_assert(is_monadic_function<F1>::value, "par: argument 1: monadic function expected");
+            static_assert(is_monadic_function<F2>::value, "par: argument 2: monadic function expected");
+
+            return function("par3", f0, f1, f2);
+        }
+
+        //! Function that returns the parallel of 4 monadic NetFunctions.
+
+        template <typename F0, typename F1, typename F2, typename F3>
+        auto par4(F0 f0, F1 f1, F2 f2, F3 f3)
+            -> decltype(function(nullptr, f0, f1, f2, f3))
+        {
+            static_assert(is_monadic_function<F0>::value, "par: argument 0: monadic function expected");
+            static_assert(is_monadic_function<F1>::value, "par: argument 1: monadic function expected");
+            static_assert(is_monadic_function<F2>::value, "par: argument 2: monadic function expected");
+            static_assert(is_monadic_function<F3>::value, "par: argument 3: monadic function expected");
+
+            return function("par4", f0, f1, f2, f3);
+        }
+
+        //! Function that returns the parallel of 5 monadic NetFunctions.
+
+        template <typename F0, typename F1, typename F2, typename F3, typename F4>
+        auto par5(F0 f0, F1 f1, F2 f2, F3 f3, F4 f4)
+            -> decltype(function(nullptr, f0, f1, f2, f3, f4))
+        {
+            static_assert(is_monadic_function<F0>::value, "par: argument 0: monadic function expected");
+            static_assert(is_monadic_function<F1>::value, "par: argument 1: monadic function expected");
+            static_assert(is_monadic_function<F2>::value, "par: argument 2: monadic function expected");
+            static_assert(is_monadic_function<F3>::value, "par: argument 3: monadic function expected");
+            static_assert(is_monadic_function<F4>::value, "par: argument 4: monadic function expected");
+
+            return function("par5", f0, f1, f2, f3, f4);
+        }
+
+        //! Function that returns the parallel of 6 monadic NetFunctions.
+
+        template <typename F0, typename F1, typename F2, typename F3, typename F4, typename F5>
+        auto par6(F0 f0, F1 f1, F2 f2, F3 f3, F4 f4, F5 f5)
+            -> decltype(function(nullptr, f0, f1, f2, f3, f4, f5))
+        {
+            static_assert(is_monadic_function<F0>::value, "par: argument 0: monadic function expected");
+            static_assert(is_monadic_function<F1>::value, "par: argument 1: monadic function expected");
+            static_assert(is_monadic_function<F2>::value, "par: argument 2: monadic function expected");
+            static_assert(is_monadic_function<F3>::value, "par: argument 3: monadic function expected");
+            static_assert(is_monadic_function<F4>::value, "par: argument 4: monadic function expected");
+            static_assert(is_monadic_function<F5>::value, "par: argument 5: monadic function expected");
+
+            return function("par6", f0, f1, f2, f3, f4, f5);
+        }
+
+        //! Function that returns the parallel of 7 monadic NetFunctions.
+
+        template <typename F0, typename F1, typename F2, typename F3, typename F4, typename F5, typename F6>
+        auto par7(F0 f0, F1 f1, F2 f2, F3 f3, F4 f4, F5 f5, F6 f6)
+            -> decltype(function(nullptr, f0, f1, f2, f3, f4, f5, f6))
+        {
+            static_assert(is_monadic_function<F0>::value, "par: argument 0: monadic function expected");
+            static_assert(is_monadic_function<F1>::value, "par: argument 1: monadic function expected");
+            static_assert(is_monadic_function<F2>::value, "par: argument 2: monadic function expected");
+            static_assert(is_monadic_function<F3>::value, "par: argument 3: monadic function expected");
+            static_assert(is_monadic_function<F4>::value, "par: argument 4: monadic function expected");
+            static_assert(is_monadic_function<F5>::value, "par: argument 5: monadic function expected");
+            static_assert(is_monadic_function<F6>::value, "par: argument 6: monadic function expected");
+
+            return function("par7", f0, f1, f2, f3, f4, f5, f6);
+        }
+
+        //! Function that returns the parallel of 8 monadic NetFunctions.
+
+        template <typename F0, typename F1, typename F2, typename F3, typename F4, typename F5, typename F6, typename F7>
+        auto par8(F0 f0, F1 f1, F2 f2, F3 f3, F4 f4, F5 f5, F6 f6, F7 f7)
+            -> decltype(function(nullptr, f0, f1, f2, f3, f4, f5, f6, f7))
+        {
+            static_assert(is_monadic_function<F0>::value, "par: argument 0: monadic function expected");
+            static_assert(is_monadic_function<F1>::value, "par: argument 1: monadic function expected");
+            static_assert(is_monadic_function<F2>::value, "par: argument 2: monadic function expected");
+            static_assert(is_monadic_function<F3>::value, "par: argument 3: monadic function expected");
+            static_assert(is_monadic_function<F4>::value, "par: argument 4: monadic function expected");
+            static_assert(is_monadic_function<F5>::value, "par: argument 5: monadic function expected");
+            static_assert(is_monadic_function<F6>::value, "par: argument 6: monadic function expected");
+            static_assert(is_monadic_function<F7>::value, "par: argument 7: monadic function expected");
+
+            return function("par8", f0, f1, f2, f3, f4, f5, f6, f7);
+        }
+
         //
         // bloom filters:
         //

@@ -44,14 +44,8 @@ module Network.PFQ.Lang.Experimental
 
     , crc16
 
-    , par3
-    , par4
-    , par5
-    , par6
-    , par7
-    , par8
-
     , steer_gtp_usr
+
     , gtp
     , gtp_cp
     , gtp_up
@@ -92,27 +86,6 @@ dummy_cidrs xs  = Function "dummy_cidrs" xs () () () () () () ()
 
 crc16 :: NetFunction
 crc16 = Function "crc16" () () () () () () () ()
-
--- | Function that returns the parallel of 3 monadic NetFunctions.
-
-par3 :: NetFunction -> NetFunction -> NetFunction -> NetFunction
-par3 a b c = Function "par3" a b c () () () () ()
-
-par4 :: NetFunction -> NetFunction -> NetFunction -> NetFunction -> NetFunction
-par4 a b c d = Function "par4" a b c d () () () ()
-
-par5 :: NetFunction -> NetFunction -> NetFunction -> NetFunction -> NetFunction -> NetFunction
-par5 a b c d e = Function "par5" a b c d e () () ()
-
-par6 :: NetFunction -> NetFunction -> NetFunction -> NetFunction -> NetFunction -> NetFunction -> NetFunction
-par6 a b c d e f = Function "par6" a b c d e f () ()
-
-par7 :: NetFunction -> NetFunction -> NetFunction -> NetFunction -> NetFunction -> NetFunction -> NetFunction -> NetFunction
-par7 a b c d e f g = Function "par7" a b c d e f g ()
-
-par8 :: NetFunction -> NetFunction -> NetFunction -> NetFunction -> NetFunction -> NetFunction -> NetFunction -> NetFunction -> NetFunction
-par8 = Function "par8"
-
 
 -- | Dispatch the packet across the sockets
 -- with a randomized algorithm that maintains the integrity of
