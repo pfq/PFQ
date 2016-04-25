@@ -208,6 +208,7 @@ pfq_lang_symtable_init(void)
         pfq_lang_symtable_register_functions(NULL, &pfq_lang_functions, (struct pfq_lang_function_descr *)steering_functions);
         pfq_lang_symtable_register_functions(NULL, &pfq_lang_functions, (struct pfq_lang_function_descr *)high_order_functions);
         pfq_lang_symtable_register_functions(NULL, &pfq_lang_functions, (struct pfq_lang_function_descr *)bloom_functions);
+        pfq_lang_symtable_register_functions(NULL, &pfq_lang_functions, (struct pfq_lang_function_descr *)control_functions);
         pfq_lang_symtable_register_functions(NULL, &pfq_lang_functions, (struct pfq_lang_function_descr *)vlan_functions);
         pfq_lang_symtable_register_functions(NULL, &pfq_lang_functions, (struct pfq_lang_function_descr *)misc_functions);
         pfq_lang_symtable_register_functions(NULL, &pfq_lang_functions, (struct pfq_lang_function_descr *)dummy_functions);
