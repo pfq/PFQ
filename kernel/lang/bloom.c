@@ -45,7 +45,7 @@ bloom_src(arguments_t args, SkBuff skb)
 		__be32 mask;
 		char *mem;
 
-		ip = skb_ip_header_pointer(PFQ_SKB(skb), 0, sizeof(_iph), &_iph);
+		ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
 		if (ip == NULL)
 			return false;
 
@@ -77,7 +77,7 @@ bloom_dst(arguments_t args, SkBuff skb)
 		__be32 mask;
 		char *mem;
 
-		ip = skb_ip_header_pointer(PFQ_SKB(skb), 0, sizeof(_iph), &_iph);
+		ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
 		if (ip == NULL)
 			return false;
 
@@ -108,7 +108,7 @@ bloom(arguments_t args, SkBuff skb)
 		__be32 mask;
 		char *mem;
 
-		ip = skb_ip_header_pointer(PFQ_SKB(skb), 0, sizeof(_iph), &_iph);
+		ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
 		if (ip == NULL)
 			return false;
 
