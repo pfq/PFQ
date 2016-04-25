@@ -39,94 +39,69 @@
 static uint64_t
 ip_tos(arguments_t args, SkBuff skb)
 {
-	if (eth_hdr(PFQ_SKB(skb))->h_proto == __constant_htons(ETH_P_IP))
-	{
-		struct iphdr _iph;
-		const struct iphdr *ip;
+	struct iphdr _iph;
+	const struct iphdr *ip;
 
-		ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
-		if (ip == NULL)
-			return NOTHING;
+	ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
+	if (ip == NULL)
+		return NOTHING;
 
-		return JUST(ip->tos);
-	}
-
-	return NOTHING;
+	return JUST(ip->tos);
 }
 
 
 static uint64_t
 ip_tot_len(arguments_t args, SkBuff skb)
 {
-	if (eth_hdr(PFQ_SKB(skb))->h_proto == __constant_htons(ETH_P_IP))
-	{
-		struct iphdr _iph;
-		const struct iphdr *ip;
+	struct iphdr _iph;
+	const struct iphdr *ip;
 
-		ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
-		if (ip == NULL)
-			return NOTHING;
+	ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
+	if (ip == NULL)
+		return NOTHING;
 
-		return JUST(be16_to_cpu(ip->tot_len));
-	}
-
-	return NOTHING;
+	return JUST(be16_to_cpu(ip->tot_len));
 }
 
 
 static uint64_t
 ip_id(arguments_t args, SkBuff skb)
 {
-	if (eth_hdr(PFQ_SKB(skb))->h_proto == __constant_htons(ETH_P_IP))
-	{
-		struct iphdr _iph;
-		const struct iphdr *ip;
+	struct iphdr _iph;
+	const struct iphdr *ip;
 
-		ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
-		if (ip == NULL)
-			return NOTHING;
+	ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
+	if (ip == NULL)
+		return NOTHING;
 
-		return JUST(be16_to_cpu(ip->id));
-	}
-
-	return NOTHING;
+	return JUST(be16_to_cpu(ip->id));
 }
 
 
 static uint64_t
 ip_ttl(arguments_t args, SkBuff skb)
 {
-	if (eth_hdr(PFQ_SKB(skb))->h_proto == __constant_htons(ETH_P_IP))
-	{
-		struct iphdr _iph;
-		const struct iphdr *ip;
+	struct iphdr _iph;
+	const struct iphdr *ip;
 
-		ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
-		if (ip == NULL)
-			return NOTHING;
+	ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
+	if (ip == NULL)
+		return NOTHING;
 
-		return JUST(ip->ttl);
-	}
-
-	return NOTHING;
+	return JUST(ip->ttl);
 }
 
 static uint64_t
 ip_frag(arguments_t args, SkBuff skb)
 {
-	if (eth_hdr(PFQ_SKB(skb))->h_proto == __constant_htons(ETH_P_IP))
-	{
-		struct iphdr _iph;
-		const struct iphdr *ip;
+	struct iphdr _iph;
+	const struct iphdr *ip;
 
-		ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
-		if (ip == NULL)
-			return NOTHING;
+	ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
+	if (ip == NULL)
+		return NOTHING;
 
-		return JUST(be16_to_cpu(ip->frag_off));
-	}
-
-	return NOTHING;
+	return JUST(be16_to_cpu(ip->frag_off));
 }
 
 
@@ -137,86 +112,71 @@ ip_frag(arguments_t args, SkBuff skb)
 static uint64_t
 tcp_source(arguments_t args, SkBuff skb)
 {
-	if (eth_hdr(PFQ_SKB(skb))->h_proto == __constant_htons(ETH_P_IP))
-	{
-		struct iphdr _iph;
-		const struct iphdr *ip;
+	struct iphdr _iph;
+	const struct iphdr *ip;
 
-		struct tcphdr _tcp;
-		const struct tcphdr *tcp;
+	struct tcphdr _tcp;
+	const struct tcphdr *tcp;
 
-		ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
-		if (ip == NULL)
-			return NOTHING;
+	ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
+	if (ip == NULL)
+		return NOTHING;
 
-		if (ip->protocol != IPPROTO_TCP)
-			return NOTHING;
+	if (ip->protocol != IPPROTO_TCP)
+		return NOTHING;
 
-		tcp = skb_ip_header_pointer(skb, (ip->ihl<<2), sizeof(_tcp), &_tcp);
-		if (tcp == NULL)
-			return NOTHING;
+	tcp = skb_ip_header_pointer(skb, (ip->ihl<<2), sizeof(_tcp), &_tcp);
+	if (tcp == NULL)
+		return NOTHING;
 
-		return JUST(be16_to_cpu(tcp->source));
-	}
-
-	return NOTHING;
+	return JUST(be16_to_cpu(tcp->source));
 }
 
 
 static uint64_t
 tcp_dest(arguments_t args, SkBuff skb)
 {
-	if (eth_hdr(PFQ_SKB(skb))->h_proto == __constant_htons(ETH_P_IP))
-	{
-		struct iphdr _iph;
-		const struct iphdr *ip;
+	struct iphdr _iph;
+	const struct iphdr *ip;
 
-		struct tcphdr _tcp;
-		const struct tcphdr *tcp;
+	struct tcphdr _tcp;
+	const struct tcphdr *tcp;
 
-		ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
-		if (ip == NULL)
-			return NOTHING;
+	ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
+	if (ip == NULL)
+		return NOTHING;
 
-		if (ip->protocol != IPPROTO_TCP)
-			return NOTHING;
+	if (ip->protocol != IPPROTO_TCP)
+		return NOTHING;
 
-		tcp = skb_ip_header_pointer(skb, (ip->ihl<<2), sizeof(_tcp), &_tcp);
-		if (tcp == NULL)
-			return NOTHING;
+	tcp = skb_ip_header_pointer(skb, (ip->ihl<<2), sizeof(_tcp), &_tcp);
+	if (tcp == NULL)
+		return NOTHING;
 
-		return JUST(be16_to_cpu(tcp->dest));
-	}
-
-	return NOTHING;
+	return JUST(be16_to_cpu(tcp->dest));
 }
 
 static uint64_t
 tcp_hdrlen_(arguments_t args, SkBuff skb)
 {
-	if (eth_hdr(PFQ_SKB(skb))->h_proto == __constant_htons(ETH_P_IP))
-	{
-		struct iphdr _iph;
-		const struct iphdr *ip;
+	struct iphdr _iph;
+	const struct iphdr *ip;
 
-		struct tcphdr _tcp;
-		const struct tcphdr *tcp;
+	struct tcphdr _tcp;
+	const struct tcphdr *tcp;
 
-		ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
-		if (ip == NULL)
-			return NOTHING;
+	ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
+	if (ip == NULL)
+		return NOTHING;
 
-		if (ip->protocol != IPPROTO_TCP)
-			return NOTHING;
+	if (ip->protocol != IPPROTO_TCP)
+		return NOTHING;
 
-		tcp = skb_ip_header_pointer(skb, (ip->ihl<<2), sizeof(_tcp), &_tcp);
-		if (tcp == NULL)
-			return NOTHING;
+	tcp = skb_ip_header_pointer(skb, (ip->ihl<<2), sizeof(_tcp), &_tcp);
+	if (tcp == NULL)
+		return NOTHING;
 
-		return JUST(tcp->doff * 4);
-	}
-
-	return NOTHING;
+	return JUST(tcp->doff * 4);
 }
 
 /****************************************************************
@@ -226,144 +186,119 @@ tcp_hdrlen_(arguments_t args, SkBuff skb)
 static uint64_t
 udp_source(arguments_t args, SkBuff skb)
 {
-	if (eth_hdr(PFQ_SKB(skb))->h_proto == __constant_htons(ETH_P_IP))
-	{
-		struct iphdr _iph;
-		const struct iphdr *ip;
+	struct iphdr _iph;
+	const struct iphdr *ip;
 
-		struct udphdr _udp;
-		const struct udphdr *udp;
+	struct udphdr _udp;
+	const struct udphdr *udp;
 
-		ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
-		if (ip == NULL)
-			return NOTHING;
+	ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
+	if (ip == NULL)
+		return NOTHING;
 
-		if (ip->protocol != IPPROTO_TCP)
-			return NOTHING;
+	if (ip->protocol != IPPROTO_TCP)
+		return NOTHING;
 
-		udp = skb_ip_header_pointer(skb, (ip->ihl<<2), sizeof(_udp), &_udp);
-		if (udp == NULL)
-			return NOTHING;
+	udp = skb_ip_header_pointer(skb, (ip->ihl<<2), sizeof(_udp), &_udp);
+	if (udp == NULL)
+		return NOTHING;
 
-		return JUST(be16_to_cpu(udp->source));
-	}
-
-	return NOTHING;
+	return JUST(be16_to_cpu(udp->source));
 }
 
 
 static uint64_t
 udp_dest(arguments_t args, SkBuff skb)
 {
-	if (eth_hdr(PFQ_SKB(skb))->h_proto == __constant_htons(ETH_P_IP))
-	{
-		struct iphdr _iph;
-		const struct iphdr *ip;
+	struct iphdr _iph;
+	const struct iphdr *ip;
 
-		struct udphdr _udp;
-		const struct udphdr *udp;
+	struct udphdr _udp;
+	const struct udphdr *udp;
 
-		ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
-		if (ip == NULL)
-			return NOTHING;
+	ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
+	if (ip == NULL)
+		return NOTHING;
 
-		if (ip->protocol != IPPROTO_TCP)
-			return NOTHING;
+	if (ip->protocol != IPPROTO_TCP)
+		return NOTHING;
 
-		udp = skb_ip_header_pointer(skb, (ip->ihl<<2), sizeof(_udp), &_udp);
-		if (udp == NULL)
-			return NOTHING;
+	udp = skb_ip_header_pointer(skb, (ip->ihl<<2), sizeof(_udp), &_udp);
+	if (udp == NULL)
+		return NOTHING;
 
-		return JUST(be16_to_cpu(udp->dest));
-	}
-
-	return NOTHING;
+	return JUST(be16_to_cpu(udp->dest));
 }
 
 static uint64_t
 udp_len(arguments_t args, SkBuff skb)
 {
-	if (eth_hdr(PFQ_SKB(skb))->h_proto == __constant_htons(ETH_P_IP))
-	{
-		struct iphdr _iph;
-		const struct iphdr *ip;
+	struct iphdr _iph;
+	const struct iphdr *ip;
 
-		struct udphdr _udp;
-		const struct udphdr *udp;
+	struct udphdr _udp;
+	const struct udphdr *udp;
 
-		ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
-		if (ip == NULL)
-			return NOTHING;
+	ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
+	if (ip == NULL)
+		return NOTHING;
 
-		if (ip->protocol != IPPROTO_TCP)
-			return NOTHING;
+	if (ip->protocol != IPPROTO_TCP)
+		return NOTHING;
 
-		udp = skb_ip_header_pointer(skb, (ip->ihl<<2), sizeof(_udp), &_udp);
-		if (udp == NULL)
-			return NOTHING;
+	udp = skb_ip_header_pointer(skb, (ip->ihl<<2), sizeof(_udp), &_udp);
+	if (udp == NULL)
+		return NOTHING;
 
-		return JUST(be16_to_cpu(udp->len));
-	}
-
-	return NOTHING;
+	return JUST(be16_to_cpu(udp->len));
 }
 
 
 static uint64_t
 icmp_type(arguments_t args, SkBuff skb)
 {
-	if (eth_hdr(PFQ_SKB(skb))->h_proto == __constant_htons(ETH_P_IP))
-	{
-		struct iphdr _iph;
-		const struct iphdr *ip;
+	struct iphdr _iph;
+	const struct iphdr *ip;
 
-		struct icmphdr _icmp;
-		const struct icmphdr *icmp;
+	struct icmphdr _icmp;
+	const struct icmphdr *icmp;
 
-		ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
-		if (ip == NULL)
-			return NOTHING;
+	ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
+	if (ip == NULL)
+		return NOTHING;
 
-		if (ip->protocol != IPPROTO_ICMP)
-			return NOTHING;
+	if (ip->protocol != IPPROTO_ICMP)
+		return NOTHING;
 
-		icmp = skb_ip_header_pointer(skb, (ip->ihl<<2), sizeof(_icmp), &_icmp);
-		if (icmp == NULL)
-			return NOTHING;
+	icmp = skb_ip_header_pointer(skb, (ip->ihl<<2), sizeof(_icmp), &_icmp);
+	if (icmp == NULL)
+		return NOTHING;
 
-		return JUST(icmp->type);
-	}
-
-	return NOTHING;
+	return JUST(icmp->type);
 }
 
 
 static uint64_t
 icmp_code(arguments_t args, SkBuff skb)
 {
-	if (eth_hdr(PFQ_SKB(skb))->h_proto == __constant_htons(ETH_P_IP))
-	{
-		struct iphdr _iph;
-		const struct iphdr *ip;
+	struct iphdr _iph;
+	const struct iphdr *ip;
 
-		struct icmphdr _icmp;
-		const struct icmphdr *icmp;
+	struct icmphdr _icmp;
+	const struct icmphdr *icmp;
 
-		ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
-		if (ip == NULL)
-			return NOTHING;
+	ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
+	if (ip == NULL)
+		return NOTHING;
 
-		if (ip->protocol != IPPROTO_ICMP)
-			return NOTHING;
+	if (ip->protocol != IPPROTO_ICMP)
+		return NOTHING;
 
-		icmp = skb_ip_header_pointer(skb, (ip->ihl<<2), sizeof(_icmp), &_icmp);
-		if (icmp == NULL)
-			return NOTHING;
+	icmp = skb_ip_header_pointer(skb, (ip->ihl<<2), sizeof(_icmp), &_icmp);
+	if (icmp == NULL)
+		return NOTHING;
 
-		return JUST(icmp->code);
-	}
-
-	return NOTHING;
+	return JUST(icmp->code);
 }
 
 

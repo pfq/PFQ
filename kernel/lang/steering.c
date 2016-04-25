@@ -209,8 +209,6 @@ steering_vlan_id(arguments_t args, SkBuff skb)
 static ActionSkBuff
 steering_p2p(arguments_t args, SkBuff skb)
 {
-	if (eth_hdr(PFQ_SKB(skb))->h_proto == __constant_htons(ETH_P_IP))
-	{
 		struct iphdr _iph;
 		const struct iphdr *ip;
 
@@ -225,15 +223,10 @@ steering_p2p(arguments_t args, SkBuff skb)
 		return Steering(skb, (__force uint32_t)(ip->saddr ^ ip->daddr));
 	}
 
-	return Drop(skb);
-}
-
 
 static ActionSkBuff
 steering_ip(arguments_t args, SkBuff skb)
 {
-	if (eth_hdr(PFQ_SKB(skb))->h_proto == __constant_htons(ETH_P_IP))
-	{
 		struct iphdr _iph;
 		const struct iphdr *ip;
 
@@ -249,9 +242,6 @@ steering_ip(arguments_t args, SkBuff skb)
 					   (__force uint32_t)ip->daddr);
 	}
 
-	return Drop(skb);
-}
-
 static int steering_ip_local_init(arguments_t args)
 {
 	CIDR_INIT(args, 0);
@@ -262,9 +252,6 @@ static ActionSkBuff
 steering_ip_local(arguments_t args, SkBuff skb)
 {
 	struct CIDR_ *data = GET_PTR_0(struct CIDR_, args);
-
-	if (eth_hdr(PFQ_SKB(skb))->h_proto == __constant_htons(ETH_P_IP))
-	{
 		struct iphdr _iph;
 		const struct iphdr *ip;
 
@@ -286,8 +273,6 @@ steering_ip_local(arguments_t args, SkBuff skb)
 
                 if ((ip->daddr & data->mask) == data->addr)
 			return Steering(skb, (__force uint32_t)ip->daddr);
-
-	}
 
 	return Drop(skb);
 }
@@ -321,8 +306,6 @@ steering_net(arguments_t args, SkBuff skb)
 	__be32 mask    = GET_ARG_1(__be32, args);
 	__be32 submask = GET_ARG_2(__be32, args);
 
-	if (eth_hdr(PFQ_SKB(skb))->h_proto == __constant_htons(ETH_P_IP))
-	{
 		struct iphdr _iph;
 		const struct iphdr *ip;
 		bool src_net, dst_net;
@@ -346,7 +329,6 @@ steering_net(arguments_t args, SkBuff skb)
 
 		if (dst_net)
 			return Steering(skb, (__force uint32_t)(ip->daddr & submask));
-	}
 
 	return Drop(skb);
 }
@@ -355,8 +337,6 @@ steering_net(arguments_t args, SkBuff skb)
 static ActionSkBuff
 steering_flow(arguments_t args, SkBuff skb)
 {
-	if (eth_hdr(PFQ_SKB(skb))->h_proto == __constant_htons(ETH_P_IP))
-	{
 		struct iphdr _iph;
 		const struct iphdr *ip;
 
@@ -380,9 +360,6 @@ steering_flow(arguments_t args, SkBuff skb)
 
 		return Steering(skb, (__force uint32_t)hash);
 	}
-
-	return Drop(skb);
-}
 
 
 struct pfq_lang_function_descr steering_functions[] = {

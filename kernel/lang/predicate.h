@@ -169,9 +169,8 @@ skb_header_available(struct sk_buff *skb, int offset, int len)
 static inline bool
 is_ip(SkBuff skb)
 {
-	if (eth_hdr(PFQ_SKB(skb))->h_proto == __constant_htons(ETH_P_IP))
-	        return skb_header_available(PFQ_SKB(skb), skb->mac_len, sizeof(struct iphdr));
-
+	if (skb_ip_version(skb) == 4)
+		return true;
         return false;
 }
 
@@ -179,8 +178,6 @@ is_ip(SkBuff skb)
 static inline bool
 is_udp(SkBuff skb)
 {
-	if (eth_hdr(PFQ_SKB(skb))->h_proto == __constant_htons(ETH_P_IP))
-	{
 		struct iphdr _iph;
 		const struct iphdr *ip;
 
@@ -194,15 +191,10 @@ is_udp(SkBuff skb)
                 return skb_header_available(PFQ_SKB(skb), skb->mac_len  + (ip->ihl<<2), sizeof(struct udphdr));
 	}
 
-        return false;
-}
-
 
 static inline bool
 is_tcp(SkBuff skb)
 {
-	if (eth_hdr(PFQ_SKB(skb))->h_proto == __constant_htons(ETH_P_IP))
-	{
 		struct iphdr _iph;
 		const struct iphdr *ip;
 
@@ -216,15 +208,10 @@ is_tcp(SkBuff skb)
 		return skb_header_available(PFQ_SKB(skb), skb->mac_len + (ip->ihl<<2), sizeof(struct tcphdr));
 	}
 
-        return false;
-}
-
 
 static inline bool
 is_icmp(SkBuff skb)
 {
-	if (eth_hdr(PFQ_SKB(skb))->h_proto == __constant_htons(ETH_P_IP))
-	{
 		struct iphdr _iph;
 		const struct iphdr *ip;
 
@@ -238,15 +225,10 @@ is_icmp(SkBuff skb)
 		return skb_header_available(PFQ_SKB(skb), skb->mac_len + (ip->ihl<<2), sizeof(struct icmphdr));
 	}
 
-        return false;
-}
-
 
 static inline bool
 has_addr(SkBuff skb, __be32 addr, __be32 mask)
 {
-	if (eth_hdr(PFQ_SKB(skb))->h_proto == __constant_htons(ETH_P_IP))
-	{
 		struct iphdr _iph;
 		const struct iphdr *ip;
 
@@ -257,7 +239,6 @@ has_addr(SkBuff skb, __be32 addr, __be32 mask)
 		if ((ip->saddr & mask) == (addr & mask) ||
 		    (ip->daddr & mask) == (addr & mask))
 			return true;
-	}
 
         return false;
 }
@@ -266,8 +247,6 @@ has_addr(SkBuff skb, __be32 addr, __be32 mask)
 static inline bool
 has_src_addr(SkBuff skb, __be32 addr, __be32 mask)
 {
-	if (eth_hdr(PFQ_SKB(skb))->h_proto == __constant_htons(ETH_P_IP))
-	{
 		struct iphdr _iph;
 		const struct iphdr *ip;
 
@@ -277,7 +256,6 @@ has_src_addr(SkBuff skb, __be32 addr, __be32 mask)
 
 		if ((ip->saddr & mask) == (addr & mask))
 			return true;
-	}
 
         return false;
 }
@@ -285,8 +263,6 @@ has_src_addr(SkBuff skb, __be32 addr, __be32 mask)
 static inline bool
 has_dst_addr(SkBuff skb, __be32 addr, __be32 mask)
 {
-	if (eth_hdr(PFQ_SKB(skb))->h_proto == __constant_htons(ETH_P_IP))
-	{
 		struct iphdr _iph;
 		const struct iphdr *ip;
 
@@ -296,7 +272,6 @@ has_dst_addr(SkBuff skb, __be32 addr, __be32 mask)
 
 		if ((ip->daddr & mask) == (addr & mask))
 			return true;
-	}
 
         return false;
 }
@@ -305,8 +280,6 @@ has_dst_addr(SkBuff skb, __be32 addr, __be32 mask)
 static inline bool
 is_flow(SkBuff skb)
 {
-	if (eth_hdr(PFQ_SKB(skb))->h_proto == __constant_htons(ETH_P_IP))
-	{
 		struct iphdr _iph;
 		const struct iphdr *ip;
 
@@ -322,9 +295,6 @@ is_flow(SkBuff skb)
 					    sizeof(struct udphdr) : sizeof(struct tcphdr));
 	}
 
-        return false;
-}
-
 
 static inline bool
 is_l3_proto(SkBuff skb, uint16_t type)
@@ -336,8 +306,6 @@ is_l3_proto(SkBuff skb, uint16_t type)
 static inline bool
 is_l4_proto(SkBuff skb, u8 protocol)
 {
-	if (eth_hdr(PFQ_SKB(skb))->h_proto == __constant_htons(ETH_P_IP))
-	{
 		struct iphdr _iph;
 		const struct iphdr *ip;
 
@@ -348,15 +316,10 @@ is_l4_proto(SkBuff skb, u8 protocol)
                 return ip->protocol == protocol;
 	}
 
-	return false;
-}
-
 
 static inline bool
 is_frag(SkBuff skb)
 {
-	if (eth_hdr(PFQ_SKB(skb))->h_proto == __constant_htons(ETH_P_IP))
-	{
 		struct iphdr _iph;
 		const struct iphdr *ip;
 
@@ -367,14 +330,9 @@ is_frag(SkBuff skb)
                 return (ip->frag_off & __constant_htons(IP_MF|IP_OFFSET)) != 0;
 	}
 
-	return false;
-}
-
 static inline bool
 is_first_frag(SkBuff skb)
 {
-	if (eth_hdr(PFQ_SKB(skb))->h_proto == __constant_htons(ETH_P_IP))
-	{
 		struct iphdr _iph;
 		const struct iphdr *ip;
 
@@ -385,14 +343,9 @@ is_first_frag(SkBuff skb)
                 return (ip->frag_off & __constant_htons(IP_MF|IP_OFFSET)) == __constant_htons(IP_MF);
 	}
 
-	return false;
-}
-
 static inline bool
 is_more_frag(SkBuff skb)
 {
-	if (eth_hdr(PFQ_SKB(skb))->h_proto == __constant_htons(ETH_P_IP))
-	{
 		struct iphdr _iph;
 		const struct iphdr *ip;
 
@@ -403,14 +356,9 @@ is_more_frag(SkBuff skb)
 		return (ip->frag_off & __constant_htons(IP_OFFSET)) != 0;
 	}
 
-	return false;
-}
-
 static inline bool
 has_src_port(SkBuff skb, uint16_t port)
 {
-	if (eth_hdr(PFQ_SKB(skb))->h_proto == __constant_htons(ETH_P_IP))
-	{
 		struct iphdr _iph;
 		const struct iphdr *ip;
 
@@ -436,10 +384,6 @@ has_src_port(SkBuff skb, uint16_t port)
 
 			return tcp->source == cpu_to_be16(port);
 		}
-
-		default:
-			return false;
-		}
 	}
 
 	return false;
@@ -448,8 +392,6 @@ has_src_port(SkBuff skb, uint16_t port)
 static inline bool
 has_dst_port(SkBuff skb, uint16_t port)
 {
-	if (eth_hdr(PFQ_SKB(skb))->h_proto == __constant_htons(ETH_P_IP))
-	{
 		struct iphdr _iph;
 		const struct iphdr *ip;
 
@@ -474,10 +416,6 @@ has_dst_port(SkBuff skb, uint16_t port)
 				return false;
 
 			return tcp->dest == cpu_to_be16(port);
-		}
-
-		default:
-			return false;
 		}
 	}
 
