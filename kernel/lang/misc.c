@@ -190,7 +190,7 @@ log_packet(arguments_t args, SkBuff skb)
 	if (!printk_ratelimit())
 		return Pass(skb);
 
-	switch(skb_ip_protocol(skb))
+	switch(skb_ip_version(skb))
 	{
 	case IPPROTO_IP: {
 		log_ip4_packet(args, skb);
@@ -205,7 +205,7 @@ trace(arguments_t args, SkBuff skb)
 {
 	struct pfq_lang_monad *mon = PFQ_CB(skb)->monad;
 
-	skb_ip_protocol(skb);
+	skb_ip_version(skb);
 
 	if (printk_ratelimit())
 		printk(KERN_INFO "[pfq-lang] TRACE state:%u fanout:{%lu %u %u %u} shift:%d ipoff:%d ipproto:%d\n"

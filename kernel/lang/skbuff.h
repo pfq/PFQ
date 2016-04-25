@@ -125,20 +125,46 @@ skb_generic_ip_header_pointer(SkBuff skb, int ip_proto, int offset, int len, voi
 
 #define skb_ip_header_pointer(skb, offset, len, buffer) skb_generic_ip_header_pointer(skb, IPPROTO_IP, offset, len, buffer)
 
+
 static inline int
-skb_ip_protocol(SkBuff skb)
+skb_ip_version(SkBuff skb)
 {
 	if (unlikely(PFQ_CB(skb)->monad->ipoff < 0))
-		return IPPROTO_NONE;
+		return 0;
 
 	if (PFQ_CB(skb)->monad->ipproto == IPPROTO_NONE)
 	{
 		skb_ip_header_pointer(skb, 0, 0, NULL);
 	}
 
-	return PFQ_CB(skb)->monad->ipproto;
+	return PFQ_CB(skb)->monad->ipproto == IPPROTO_IP   ? 4 :
+	       PFQ_CB(skb)->monad->ipproto == IPPROTO_IPV6 ? 6 : 0;
 }
 
+
+static inline int
+skb_ip_protocol(SkBuff skb)
+{
+	switch(skb_ip_version(skb))
+	{
+	case 4: {
+		struct iphdr _iph;
+		const struct iphdr *ip;
+		ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
+		if (ip)
+			return ip->protocol;
+	} break;
+	case 6: {
+		struct ipv6hdr _iph;
+		const struct ipv6hdr *ip6;
+		ip6 = skb_ip6_header_pointer(skb, 0, sizeof(_iph), &_iph);
+		if (ip6)
+			return ip6->nexthdr;
+	} break;
+	}
+
+	return IPPROTO_NONE;
+}
 
 
 #endif /* PFQ_LANG_SKBUFF_H */
