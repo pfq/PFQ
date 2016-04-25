@@ -54,6 +54,7 @@ var classpfq_1_1socket =
     [ "set_group_computation", "classpfq_1_1socket.html#a5cb37765ffcb1b78c5d61211f9e806df", null ],
     [ "set_group_computation", "classpfq_1_1socket.html#a5f0ff8e78f374974ae32753c313e931c", null ],
     [ "set_group_computation", "classpfq_1_1socket.html#aa326867f9a3ca1391158161ff54d564c", null ],
+    [ "set_group_computation", "classpfq_1_1socket.html#acb1eaaaadbcbbee8b5f2054b01e51fda", null ],
     [ "set_group_computation_json", "classpfq_1_1socket.html#ac60650eec56374ac4be3c69b43255b85", null ],
     [ "set_group_fprog", "classpfq_1_1socket.html#ad618894910a12a08eaed3d8668db25af", null ],
     [ "stats", "classpfq_1_1socket.html#a0a0a637d733613bf86d6d85168d2e37f", null ],

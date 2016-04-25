@@ -107,7 +107,9 @@ std\+::vector$<$ int $>$ \hyperlink{classpfq_1_1socket_a7bb02f670cf9c16b4339f650
 void \hyperlink{classpfq_1_1socket_a5f0ff8e78f374974ae32753c313e931c}{set\+\_\+group\+\_\+computation} (int gid, pfq\+\_\+lang\+\_\+computation\+\_\+descr const $\ast$prog)
 \begin{DoxyCompactList}\small\item\em Specify a functional computation for the given group. \end{DoxyCompactList}\item 
 void \hyperlink{classpfq_1_1socket_aa326867f9a3ca1391158161ff54d564c}{set\+\_\+group\+\_\+computation} (int gid, std\+::string const \&comp)
-\begin{DoxyCompactList}\small\item\em Specify a functional computation for the given group, from string as pfq-\/lang program. \end{DoxyCompactList}\item 
+\begin{DoxyCompactList}\small\item\em Specify a functional computation for the given group, as pfq-\/lang program from string. \end{DoxyCompactList}\item 
+void \hyperlink{classpfq_1_1socket_acb1eaaaadbcbbee8b5f2054b01e51fda}{set\+\_\+group\+\_\+computation} (int gid, const char $\ast$filepath)
+\begin{DoxyCompactList}\small\item\em Specify a functional computation for the given group, as pfq-\/lang program from file. \end{DoxyCompactList}\item 
 void \hyperlink{classpfq_1_1socket_ac60650eec56374ac4be3c69b43255b85}{set\+\_\+group\+\_\+computation\+\_\+json} (int gid, std\+::string const \&comp)
 \begin{DoxyCompactList}\small\item\em Specify a functional computation for the given group, from J\+S\+ON description. \end{DoxyCompactList}\item 
 void \hyperlink{classpfq_1_1socket_ad618894910a12a08eaed3d8668db25af}{set\+\_\+group\+\_\+fprog} (int gid, const sock\+\_\+fprog \&f)
@@ -810,7 +812,19 @@ The functional computation is specified by a pfq\+\_\+lang\+\_\+computation\+\_\
 )\hspace{0.3cm}{\ttfamily [inline]}}\hypertarget{classpfq_1_1socket_aa326867f9a3ca1391158161ff54d564c}{}\label{classpfq_1_1socket_aa326867f9a3ca1391158161ff54d564c}
 
 
-Specify a functional computation for the given group, from string as pfq-\/lang program. 
+Specify a functional computation for the given group, as pfq-\/lang program from string. 
+
+\index{pfq\+::socket@{pfq\+::socket}!set\+\_\+group\+\_\+computation@{set\+\_\+group\+\_\+computation}}
+\index{set\+\_\+group\+\_\+computation@{set\+\_\+group\+\_\+computation}!pfq\+::socket@{pfq\+::socket}}
+\subsubsection[{\texorpdfstring{set\+\_\+group\+\_\+computation(int gid, const char $\ast$filepath)}{set_group_computation(int gid, const char *filepath)}}]{\setlength{\rightskip}{0pt plus 5cm}void pfq\+::socket\+::set\+\_\+group\+\_\+computation (
+\begin{DoxyParamCaption}
+\item[{int}]{gid, }
+\item[{const char $\ast$}]{filepath}
+\end{DoxyParamCaption}
+)\hspace{0.3cm}{\ttfamily [inline]}}\hypertarget{classpfq_1_1socket_acb1eaaaadbcbbee8b5f2054b01e51fda}{}\label{classpfq_1_1socket_acb1eaaaadbcbbee8b5f2054b01e51fda}
+
+
+Specify a functional computation for the given group, as pfq-\/lang program from file. 
 
 \index{pfq\+::socket@{pfq\+::socket}!set\+\_\+group\+\_\+computation\+\_\+json@{set\+\_\+group\+\_\+computation\+\_\+json}}
 \index{set\+\_\+group\+\_\+computation\+\_\+json@{set\+\_\+group\+\_\+computation\+\_\+json}!pfq\+::socket@{pfq\+::socket}}

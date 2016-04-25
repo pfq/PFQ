@@ -249,8 +249,11 @@ Public Member Functions</h2></td></tr>
 <tr class="memdesc:a5f0ff8e78f374974ae32753c313e931c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Specify a functional computation for the given group.  <a href="#a5f0ff8e78f374974ae32753c313e931c">More...</a><br /></td></tr>
 <tr class="separator:a5f0ff8e78f374974ae32753c313e931c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa326867f9a3ca1391158161ff54d564c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpfq_1_1socket.html#aa326867f9a3ca1391158161ff54d564c">set_group_computation</a> (int gid, std::string const &amp;comp)</td></tr>
-<tr class="memdesc:aa326867f9a3ca1391158161ff54d564c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Specify a functional computation for the given group, from string as pfq-lang program.  <a href="#aa326867f9a3ca1391158161ff54d564c">More...</a><br /></td></tr>
+<tr class="memdesc:aa326867f9a3ca1391158161ff54d564c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Specify a functional computation for the given group, as pfq-lang program from string.  <a href="#aa326867f9a3ca1391158161ff54d564c">More...</a><br /></td></tr>
 <tr class="separator:aa326867f9a3ca1391158161ff54d564c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:acb1eaaaadbcbbee8b5f2054b01e51fda"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpfq_1_1socket.html#acb1eaaaadbcbbee8b5f2054b01e51fda">set_group_computation</a> (int gid, const char *filepath)</td></tr>
+<tr class="memdesc:acb1eaaaadbcbbee8b5f2054b01e51fda"><td class="mdescLeft">&#160;</td><td class="mdescRight">Specify a functional computation for the given group, as pfq-lang program from file.  <a href="#acb1eaaaadbcbbee8b5f2054b01e51fda">More...</a><br /></td></tr>
+<tr class="separator:acb1eaaaadbcbbee8b5f2054b01e51fda"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac60650eec56374ac4be3c69b43255b85"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classpfq_1_1socket.html#ac60650eec56374ac4be3c69b43255b85">set_group_computation_json</a> (int gid, std::string const &amp;comp)</td></tr>
 <tr class="memdesc:ac60650eec56374ac4be3c69b43255b85"><td class="mdescLeft">&#160;</td><td class="mdescRight">Specify a functional computation for the given group, from JSON description.  <a href="#ac60650eec56374ac4be3c69b43255b85">More...</a><br /></td></tr>
 <tr class="separator:ac60650eec56374ac4be3c69b43255b85"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -2121,7 +2124,43 @@ template&lt;typename Comp &gt; </div>
 </table>
 </div><div class="memdoc">
 
-<p>Specify a functional computation for the given group, from string as pfq-lang program. </p>
+<p>Specify a functional computation for the given group, as pfq-lang program from string. </p>
+
+</div>
+</div>
+<a class="anchor" id="acb1eaaaadbcbbee8b5f2054b01e51fda"></a>
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">void pfq::socket::set_group_computation </td>
+          <td>(</td>
+          <td class="paramtype">int&#160;</td>
+          <td class="paramname"><em>gid</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const char *&#160;</td>
+          <td class="paramname"><em>filepath</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">inline</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Specify a functional computation for the given group, as pfq-lang program from file. </p>
 
 </div>
 </div>
@@ -2714,7 +2753,7 @@ template&lt;typename Iter &gt; </div>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="namespacepfq.html">pfq</a></li><li class="navelem"><a class="el" href="classpfq_1_1socket.html">socket</a></li>
-    <li class="footer">Generated on Sun Apr 10 2016 18:19:11 for PFQ C++ library by
+    <li class="footer">Generated on Mon Apr 25 2016 17:56:41 for PFQ C++ library by
     <a href="http://www.doxygen.org/index.html">
     <img class="footer" src="doxygen.png" alt="doxygen"/></a> 1.8.11 </li>
   </ul>
