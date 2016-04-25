@@ -169,103 +169,83 @@ skb_header_available(struct sk_buff *skb, int offset, int len)
 static inline bool
 is_ip(SkBuff skb)
 {
-	if (eth_hdr(PFQ_SKB(skb))->h_proto == __constant_htons(ETH_P_IP))
-	        return skb_header_available(PFQ_SKB(skb), skb->mac_len, sizeof(struct iphdr));
-
+	if (skb_ip_version(skb) == 4)
+		return true;
         return false;
 }
 
 static inline bool
 is_ip6(SkBuff skb)
 {
-	if (eth_hdr(PFQ_SKB(skb))->h_proto == __constant_htons(ETH_P_IPV6))
-                return skb_header_available(PFQ_SKB(skb), skb->mac_len, sizeof(struct ipv6hdr));
-
+	if (skb_ip_version(skb) == 6)
+		return true;
         return false;
 }
 
 static inline bool
 is_udp(SkBuff skb)
 {
-	if (eth_hdr(PFQ_SKB(skb))->h_proto == __constant_htons(ETH_P_IP))
-	{
-		struct iphdr _iph;
-		const struct iphdr *ip;
+	struct iphdr _iph;
+	const struct iphdr *ip;
 
-		ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
-		if (ip == NULL)
-                        return false;
+	ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
+	if (ip == NULL)
+                return false;
 
-		if (ip->protocol != IPPROTO_UDP)
-                        return false;
+	if (ip->protocol != IPPROTO_UDP)
+                return false;
 
-                return skb_header_available(PFQ_SKB(skb), skb->mac_len  + (ip->ihl<<2), sizeof(struct udphdr));
-	}
-
-        return false;
+        return skb_header_available(PFQ_SKB(skb), skb->mac_len  + (ip->ihl<<2), sizeof(struct udphdr));
 }
 
 
 static inline bool
 is_tcp(SkBuff skb)
 {
-	if (eth_hdr(PFQ_SKB(skb))->h_proto == __constant_htons(ETH_P_IP))
-	{
-		struct iphdr _iph;
-		const struct iphdr *ip;
+	struct iphdr _iph;
+	const struct iphdr *ip;
 
-		ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
-		if (ip == NULL)
-                        return false;
+	ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
+	if (ip == NULL)
+                return false;
 
-		if (ip->protocol != IPPROTO_TCP)
-                        return false;
+	if (ip->protocol != IPPROTO_TCP)
+                return false;
 
-		return skb_header_available(PFQ_SKB(skb), skb->mac_len + (ip->ihl<<2), sizeof(struct tcphdr));
-	}
-
-        return false;
+	return skb_header_available(PFQ_SKB(skb), skb->mac_len + (ip->ihl<<2), sizeof(struct tcphdr));
 }
 
 
 static inline bool
 is_icmp(SkBuff skb)
 {
-	if (eth_hdr(PFQ_SKB(skb))->h_proto == __constant_htons(ETH_P_IP))
-	{
-		struct iphdr _iph;
-		const struct iphdr *ip;
+	struct iphdr _iph;
+	const struct iphdr *ip;
 
-		ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
-		if (ip == NULL)
-                        return false;
+	ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
+	if (ip == NULL)
+                return false;
 
-		if (ip->protocol != IPPROTO_ICMP)
-                        return false;
+	if (ip->protocol != IPPROTO_ICMP)
+                return false;
 
-		return skb_header_available(PFQ_SKB(skb), skb->mac_len + (ip->ihl<<2), sizeof(struct icmphdr));
-	}
-
-        return false;
+	return skb_header_available(PFQ_SKB(skb), skb->mac_len + (ip->ihl<<2), sizeof(struct icmphdr));
 }
 
 
 static inline bool
 has_addr(SkBuff skb, __be32 addr, __be32 mask)
 {
-	if (eth_hdr(PFQ_SKB(skb))->h_proto == __constant_htons(ETH_P_IP))
-	{
-		struct iphdr _iph;
-		const struct iphdr *ip;
+	struct iphdr _iph;
+	const struct iphdr *ip;
 
-		ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
-		if (ip == NULL)
-			return false;
+	ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
+	if (ip == NULL)
+		return false;
 
-		if ((ip->saddr & mask) == (addr & mask) ||
-		    (ip->daddr & mask) == (addr & mask))
-			return true;
-	}
+	if ((ip->saddr & mask) == (addr & mask) ||
+	    (ip->daddr & mask) == (addr & mask))
+		return true;
 
         return false;
 }
@@ -274,18 +254,15 @@ has_addr(SkBuff skb, __be32 addr, __be32 mask)
 static inline bool
 has_src_addr(SkBuff skb, __be32 addr, __be32 mask)
 {
-	if (eth_hdr(PFQ_SKB(skb))->h_proto == __constant_htons(ETH_P_IP))
-	{
-		struct iphdr _iph;
-		const struct iphdr *ip;
+	struct iphdr _iph;
+	const struct iphdr *ip;
 
-		ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
-		if (ip == NULL)
-			return false;
+	ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
+	if (ip == NULL)
+		return false;
 
-		if ((ip->saddr & mask) == (addr & mask))
-			return true;
-	}
+	if ((ip->saddr & mask) == (addr & mask))
+		return true;
 
         return false;
 }
@@ -293,18 +270,15 @@ has_src_addr(SkBuff skb, __be32 addr, __be32 mask)
 static inline bool
 has_dst_addr(SkBuff skb, __be32 addr, __be32 mask)
 {
-	if (eth_hdr(PFQ_SKB(skb))->h_proto == __constant_htons(ETH_P_IP))
-	{
-		struct iphdr _iph;
-		const struct iphdr *ip;
+	struct iphdr _iph;
+	const struct iphdr *ip;
 
-		ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
-		if (ip == NULL)
-			return false;
+	ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
+	if (ip == NULL)
+		return false;
 
-		if ((ip->daddr & mask) == (addr & mask))
-			return true;
-	}
+	if ((ip->daddr & mask) == (addr & mask))
+		return true;
 
         return false;
 }
@@ -313,24 +287,19 @@ has_dst_addr(SkBuff skb, __be32 addr, __be32 mask)
 static inline bool
 is_flow(SkBuff skb)
 {
-	if (eth_hdr(PFQ_SKB(skb))->h_proto == __constant_htons(ETH_P_IP))
-	{
-		struct iphdr _iph;
-		const struct iphdr *ip;
+	struct iphdr _iph;
+	const struct iphdr *ip;
 
-		ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
-		if (ip == NULL)
-			return false;
+	ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
+	if (ip == NULL)
+		return false;
 
-		if (ip->protocol != IPPROTO_UDP &&
-		    ip->protocol != IPPROTO_TCP)
-                        return false;
+	if (ip->protocol != IPPROTO_UDP &&
+	    ip->protocol != IPPROTO_TCP)
+                return false;
 
-		return skb_header_available(PFQ_SKB(skb), skb->mac_len + (ip->ihl<<2), ip->protocol == IPPROTO_UDP ?
-					    sizeof(struct udphdr) : sizeof(struct tcphdr));
-	}
-
-        return false;
+	return skb_header_available(PFQ_SKB(skb), skb->mac_len + (ip->ihl<<2), ip->protocol == IPPROTO_UDP ?
+				    sizeof(struct udphdr) : sizeof(struct tcphdr));
 }
 
 
@@ -344,110 +313,84 @@ is_l3_proto(SkBuff skb, uint16_t type)
 static inline bool
 is_l4_proto(SkBuff skb, u8 protocol)
 {
-	if (eth_hdr(PFQ_SKB(skb))->h_proto == __constant_htons(ETH_P_IP))
-	{
-		struct iphdr _iph;
-		const struct iphdr *ip;
+	struct iphdr _iph;
+	const struct iphdr *ip;
 
-		ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
-		if (ip == NULL)
-			return false;
+	ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
+	if (ip == NULL)
+		return false;
 
-                return ip->protocol == protocol;
-	}
-
-	return false;
+        return ip->protocol == protocol;
 }
 
 
 static inline bool
 is_frag(SkBuff skb)
 {
-	if (eth_hdr(PFQ_SKB(skb))->h_proto == __constant_htons(ETH_P_IP))
-	{
-		struct iphdr _iph;
-		const struct iphdr *ip;
+	struct iphdr _iph;
+	const struct iphdr *ip;
 
-		ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
-		if (ip == NULL)
-			return false;
+	ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
+	if (ip == NULL)
+		return false;
 
-                return (ip->frag_off & __constant_htons(IP_MF|IP_OFFSET)) != 0;
-	}
-
-	return false;
+        return (ip->frag_off & __constant_htons(IP_MF|IP_OFFSET)) != 0;
 }
 
 static inline bool
 is_first_frag(SkBuff skb)
 {
-	if (eth_hdr(PFQ_SKB(skb))->h_proto == __constant_htons(ETH_P_IP))
-	{
-		struct iphdr _iph;
-		const struct iphdr *ip;
+	struct iphdr _iph;
+	const struct iphdr *ip;
 
-		ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
-		if (ip == NULL)
-			return false;
+	ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
+	if (ip == NULL)
+		return false;
 
-                return (ip->frag_off & __constant_htons(IP_MF|IP_OFFSET)) == __constant_htons(IP_MF);
-	}
-
-	return false;
+        return (ip->frag_off & __constant_htons(IP_MF|IP_OFFSET)) == __constant_htons(IP_MF);
 }
 
 static inline bool
 is_more_frag(SkBuff skb)
 {
-	if (eth_hdr(PFQ_SKB(skb))->h_proto == __constant_htons(ETH_P_IP))
-	{
-		struct iphdr _iph;
-		const struct iphdr *ip;
+	struct iphdr _iph;
+	const struct iphdr *ip;
 
-		ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
-		if (ip == NULL)
-			return false;
+	ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
+	if (ip == NULL)
+		return false;
 
-		return (ip->frag_off & __constant_htons(IP_OFFSET)) != 0;
-	}
-
-	return false;
+	return (ip->frag_off & __constant_htons(IP_OFFSET)) != 0;
 }
 
 static inline bool
 has_src_port(SkBuff skb, uint16_t port)
 {
-	if (eth_hdr(PFQ_SKB(skb))->h_proto == __constant_htons(ETH_P_IP))
+	struct iphdr _iph;
+	const struct iphdr *ip;
+
+	ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
+	if (ip == NULL)
+		return false;
+
+	switch(ip->protocol)
 	{
-		struct iphdr _iph;
-		const struct iphdr *ip;
-
-		ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
-		if (ip == NULL)
+	case IPPROTO_UDP: {
+		struct udphdr _udph; const struct udphdr *udp;
+		udp = skb_ip_header_pointer(skb, (ip->ihl<<2), sizeof(struct udphdr), &_udph);
+		if (udp == NULL)
 			return false;
 
-		switch(ip->protocol)
-		{
-		case IPPROTO_UDP: {
-			struct udphdr _udph; const struct udphdr *udp;
-			udp = skb_ip_header_pointer(skb, (ip->ihl<<2), sizeof(struct udphdr), &_udph);
-			if (udp == NULL)
-				return false;
-
-			return udp->source == cpu_to_be16(port);
-		}
-		case IPPROTO_TCP: {
-			struct tcphdr _tcph; const struct tcphdr *tcp;
-			tcp = skb_ip_header_pointer(skb, (ip->ihl<<2), sizeof(struct tcphdr), &_tcph);
-			if (tcp == NULL)
-				return false;
-
-			return tcp->source == cpu_to_be16(port);
-		}
-
-		default:
+		return udp->source == cpu_to_be16(port);
+	}
+	case IPPROTO_TCP: {
+		struct tcphdr _tcph; const struct tcphdr *tcp;
+		tcp = skb_ip_header_pointer(skb, (ip->ihl<<2), sizeof(struct tcphdr), &_tcph);
+		if (tcp == NULL)
 			return false;
-		}
+
+		return tcp->source == cpu_to_be16(port);
+	}
 	}
 
 	return false;
@@ -456,37 +399,31 @@ has_src_port(SkBuff skb, uint16_t port)
 static inline bool
 has_dst_port(SkBuff skb, uint16_t port)
 {
-	if (eth_hdr(PFQ_SKB(skb))->h_proto == __constant_htons(ETH_P_IP))
+	struct iphdr _iph;
+	const struct iphdr *ip;
+
+	ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
+	if (ip == NULL)
+		return false;
+
+	switch(ip->protocol)
 	{
-		struct iphdr _iph;
-		const struct iphdr *ip;
-
-		ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
-		if (ip == NULL)
+	case IPPROTO_UDP: {
+		struct udphdr _udph; const struct udphdr *udp;
+		udp = skb_ip_header_pointer(skb, (ip->ihl<<2), sizeof(struct udphdr), &_udph);
+		if (udp == NULL)
 			return false;
 
-		switch(ip->protocol)
-		{
-		case IPPROTO_UDP: {
-			struct udphdr _udph; const struct udphdr *udp;
-			udp = skb_ip_header_pointer(skb, (ip->ihl<<2), sizeof(struct udphdr), &_udph);
-			if (udp == NULL)
-				return false;
-
-			return udp->dest == cpu_to_be16(port);
-		}
-		case IPPROTO_TCP: {
-			struct tcphdr _tcph; const struct tcphdr *tcp;
-			tcp = skb_ip_header_pointer(skb, (ip->ihl<<2), sizeof(struct tcphdr), &_tcph);
-			if (tcp == NULL)
-				return false;
-
-			return tcp->dest == cpu_to_be16(port);
-		}
-
-		default:
+		return udp->dest == cpu_to_be16(port);
+	}
+	case IPPROTO_TCP: {
+		struct tcphdr _tcph; const struct tcphdr *tcp;
+		tcp = skb_ip_header_pointer(skb, (ip->ihl<<2), sizeof(struct tcphdr), &_tcph);
+		if (tcp == NULL)
 			return false;
-		}
+
+		return tcp->dest == cpu_to_be16(port);
+	}
 	}
 
 	return false;

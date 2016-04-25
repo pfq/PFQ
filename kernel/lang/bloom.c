@@ -37,30 +37,27 @@
 static bool
 bloom_src(arguments_t args, SkBuff skb)
 {
-	if (eth_hdr(PFQ_SKB(skb))->h_proto == __constant_htons(ETH_P_IP))
-	{
-		struct iphdr _iph;
-		const struct iphdr *ip;
-		uint32_t fold, addr;
-		__be32 mask;
-		char *mem;
+	struct iphdr _iph;
+	const struct iphdr *ip;
+	uint32_t fold, addr;
+	__be32 mask;
+	char *mem;
 
-		ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
-		if (ip == NULL)
-			return false;
+	ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
+	if (ip == NULL)
+		return false;
 
-		fold = GET_ARG_0(uint32_t, args);
-		mem  = GET_ARG_1(char *,   args);
-		mask = GET_ARG_2(__be32,   args);
+	fold = GET_ARG_0(uint32_t, args);
+	mem  = GET_ARG_1(char *,   args);
+	mask = GET_ARG_2(__be32,   args);
 
-		addr = be32_to_cpu(ip->saddr & mask);
+	addr = be32_to_cpu(ip->saddr & mask);
 
-		if ( BF_TEST(mem, hfun1(addr) & fold) &&
-		     BF_TEST(mem, hfun2(addr) & fold) &&
-		     BF_TEST(mem, hfun3(addr) & fold) &&
-		     BF_TEST(mem, hfun4(addr) & fold) )
-			return true;
-	}
+	if ( BF_TEST(mem, hfun1(addr) & fold) &&
+	     BF_TEST(mem, hfun2(addr) & fold) &&
+	     BF_TEST(mem, hfun3(addr) & fold) &&
+	     BF_TEST(mem, hfun4(addr) & fold) )
+		return true;
 
 	return false;
 }
@@ -69,30 +66,27 @@ bloom_src(arguments_t args, SkBuff skb)
 static bool
 bloom_dst(arguments_t args, SkBuff skb)
 {
-	if (eth_hdr(PFQ_SKB(skb))->h_proto == __constant_htons(ETH_P_IP))
-	{
-		struct iphdr _iph;
-		const struct iphdr *ip;
-		uint32_t fold, addr;
-		__be32 mask;
-		char *mem;
+	struct iphdr _iph;
+	const struct iphdr *ip;
+	uint32_t fold, addr;
+	__be32 mask;
+	char *mem;
 
-		ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
-		if (ip == NULL)
-			return false;
+	ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
+	if (ip == NULL)
+		return false;
 
-		fold = GET_ARG_0(uint32_t, args);
-		mem  = GET_ARG_1(char *,   args);
-		mask = GET_ARG_2(__be32,   args);
+	fold = GET_ARG_0(uint32_t, args);
+	mem  = GET_ARG_1(char *,   args);
+	mask = GET_ARG_2(__be32,   args);
 
-		addr = be32_to_cpu(ip->daddr & mask);
+	addr = be32_to_cpu(ip->daddr & mask);
 
-		if ( BF_TEST(mem, hfun1(addr) & fold) &&
-		     BF_TEST(mem, hfun2(addr) & fold) &&
-		     BF_TEST(mem, hfun3(addr) & fold) &&
-		     BF_TEST(mem, hfun4(addr) & fold) )
-			return true;
-	}
+	if ( BF_TEST(mem, hfun1(addr) & fold) &&
+	     BF_TEST(mem, hfun2(addr) & fold) &&
+	     BF_TEST(mem, hfun3(addr) & fold) &&
+	     BF_TEST(mem, hfun4(addr) & fold) )
+		return true;
 
 	return false;
 }
@@ -100,38 +94,35 @@ bloom_dst(arguments_t args, SkBuff skb)
 static bool
 bloom(arguments_t args, SkBuff skb)
 {
-	if (eth_hdr(PFQ_SKB(skb))->h_proto == __constant_htons(ETH_P_IP))
-	{
-		struct iphdr _iph;
-		const struct iphdr *ip;
-		uint32_t fold, addr;
-		__be32 mask;
-		char *mem;
+	struct iphdr _iph;
+	const struct iphdr *ip;
+	uint32_t fold, addr;
+	__be32 mask;
+	char *mem;
 
-		ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
-		if (ip == NULL)
-			return false;
+	ip = skb_ip_header_pointer(skb, 0, sizeof(_iph), &_iph);
+	if (ip == NULL)
+		return false;
 
-		fold = GET_ARG_0(uint32_t, args);
-		mem  = GET_ARG_1(char *,   args);
-		mask = GET_ARG_2(__be32,   args);
+	fold = GET_ARG_0(uint32_t, args);
+	mem  = GET_ARG_1(char *,   args);
+	mask = GET_ARG_2(__be32,   args);
 
-		addr = be32_to_cpu(ip->daddr & mask);
+	addr = be32_to_cpu(ip->daddr & mask);
 
-		if ( BF_TEST(mem, hfun1(addr) & fold) &&
-		     BF_TEST(mem, hfun2(addr) & fold) &&
-		     BF_TEST(mem, hfun3(addr) & fold) &&
-		     BF_TEST(mem, hfun4(addr) & fold) )
-			return true;
+	if ( BF_TEST(mem, hfun1(addr) & fold) &&
+	     BF_TEST(mem, hfun2(addr) & fold) &&
+	     BF_TEST(mem, hfun3(addr) & fold) &&
+	     BF_TEST(mem, hfun4(addr) & fold) )
+		return true;
 
-		addr = be32_to_cpu(ip->saddr & mask);
+	addr = be32_to_cpu(ip->saddr & mask);
 
-		if ( BF_TEST(mem, hfun1(addr) & fold) &&
-		     BF_TEST(mem, hfun2(addr) & fold) &&
-		     BF_TEST(mem, hfun3(addr) & fold) &&
-		     BF_TEST(mem, hfun4(addr) & fold) )
-			return true;
-	}
+	if ( BF_TEST(mem, hfun1(addr) & fold) &&
+	     BF_TEST(mem, hfun2(addr) & fold) &&
+	     BF_TEST(mem, hfun3(addr) & fold) &&
+	     BF_TEST(mem, hfun4(addr) & fold) )
+		return true;
 
 	return false;
 }
